@@ -10,15 +10,17 @@ import (
 	"path/filepath"
 )
 
+// FSHelper - Wrapper struct for File System utility commands
 type FSHelper struct {
 }
 
+// NewFSHelper - Returns a new FSHelper
 func NewFSHelper() *FSHelper {
 	result := &FSHelper{}
 	return result
 }
 
-// Returns true if the given path resolves to a directory on the filesystem
+// DirExists - Returns true if the given path resolves to a directory on the filesystem
 func (fs *FSHelper) DirExists(path string) bool {
 	fi, err := os.Lstat(path)
 	if err != nil {

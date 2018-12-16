@@ -13,6 +13,7 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 )
 
+// SystemHelper - Defines everything related to the system
 type SystemHelper struct {
 	log               *Logger
 	fs                *FSHelper
@@ -22,6 +23,7 @@ type SystemHelper struct {
 	wailsSystemConfig string
 }
 
+// NewSystemHelper - Creates a new System Helper
 func NewSystemHelper() *SystemHelper {
 	result := &SystemHelper{
 		fs:             NewFSHelper(),
@@ -164,17 +166,20 @@ func (s *SystemHelper) Initialise() error {
 	return s.setup()
 }
 
+// SystemConfig - Defines system wode configuration data
 type SystemConfig struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
 }
 
+// NewSystemConfig - Creates a new SystemConfig helper object
 func NewSystemConfig(filename string) (*SystemConfig, error) {
 	result := &SystemConfig{}
 	err := result.load(filename)
 	return result, err
 }
 
+// Save - Saves the system config to the given filename
 func (sc *SystemConfig) Save(filename string) error {
 	// Convert config to JSON string
 	theJSON, err := json.MarshalIndent(sc, "", "  ")
