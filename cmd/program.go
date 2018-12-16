@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"os/exec"
 	"path/filepath"
 )
@@ -40,4 +41,26 @@ func (p *ProgramHelper) FindProgram(programName string) *Program {
 		Name: programName,
 		Path: path,
 	}
+}
+
+func (p *Program) GetFullPathToBinary() (string, error) {
+	result := filepath.Join(p.Path, p.Name)
+	return filepath.Abs(result)
+}
+
+// Run will execute the program with the given parameters
+// Returns stdout + stderr as strings and an error if one occured
+func (p *Program) Run(vars ...string) (stdout, stderr string, err error) {
+	command, err := p.GetFullPathToBinary()
+	if err != nil {
+		return "", "", err
+	}
+	cmd := exec.Command(command, vars...)
+	var stdo, stde bytes.Buffer
+	cmd.Stdout = &stdo
+	cmd.Stderr = &stde
+	err = cmd.Run()
+	stdout = string(stdo.Bytes())
+	stderr = string(stde.Bytes())
+	return
 }
