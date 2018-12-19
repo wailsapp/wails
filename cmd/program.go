@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 )
 
 // ProgramHelper - Utility functions around installed applications
@@ -44,16 +45,15 @@ func (p *ProgramHelper) FindProgram(programName string) *Program {
 }
 
 func (p *Program) GetFullPathToBinary() (string, error) {
-	result := filepath.Join(p.Path, p.Name)
-	return filepath.Abs(result)
+	return filepath.Abs(p.Path)
 }
 
 // Run will execute the program with the given parameters
 // Returns stdout + stderr as strings and an error if one occured
-func (p *Program) Run(vars ...string) (stdout, stderr string, err error) {
+func (p *Program) Run(vars ...string) (stdout, stderr string, err error, exitCode int) {
 	command, err := p.GetFullPathToBinary()
 	if err != nil {
-		return "", "", err
+		return "", "", err, 1
 	}
 	cmd := exec.Command(command, vars...)
 	var stdo, stde bytes.Buffer
@@ -62,5 +62,23 @@ func (p *Program) Run(vars ...string) (stdout, stderr string, err error) {
 	err = cmd.Run()
 	stdout = string(stdo.Bytes())
 	stderr = string(stde.Bytes())
+
+	// https://stackoverflow.com/questions/10385551/get-exit-code-go
+	if err != nil {
+		// try to get the exit code
+		if exitError, ok := err.(*exec.ExitError); ok {
+			ws := exitError.Sys().(syscall.WaitStatus)
+			exitCode = ws.ExitStatus()
+		} else {
+			exitCode = 1
+			if stderr == "" {
+				stderr = err.Error()
+			}
+		}
+	} else {
+		// success, exitCode should be 0 if go is ok
+		ws := cmd.ProcessState.Sys().(syscall.WaitStatus)
+		exitCode = ws.ExitStatus()
+	}
 	return
 }
