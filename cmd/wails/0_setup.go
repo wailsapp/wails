@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"runtime"
 
 	"github.com/wailsapp/wails/cmd"
@@ -26,6 +27,17 @@ Create your first project by running 'wails init'.`
 		if runtime.GOOS != "windows" {
 			successMessage = "🚀 " + successMessage
 		}
+		switch runtime.GOOS {
+		case "darwin":
+			logger.Yellow("Detected Platform: OSX")
+		case "windows":
+			logger.Yellow("Detected Platform: Windows")
+		case "linux":
+			logger.Yellow("Detected Platform: Linux")
+		default:
+			return fmt.Errorf("Platform %s is currently not supported", runtime.GOOS)
+		}
+
 		logger.Yellow("Checking for prerequisites...")
 		// Check we have a cgo capable environment
 
