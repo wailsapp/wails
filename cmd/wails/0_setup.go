@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"runtime"
 
 	"github.com/wailsapp/wails/cmd"
@@ -22,36 +21,37 @@ func init() {
 			return err
 		}
 
-		var successMessage string
-
+		var successMessage = `Ready for take off!
+Create your first project by running 'wails init'.`
+		if runtime.GOOS != "windows" {
+			successMessage = "🚀 " + successMessage
+		}
 		logger.Yellow("Checking for prerequisites...")
 		// Check we have a cgo capable environment
-		programHelper := cmd.NewProgramHelper()
-		prerequisites := make(map[string]map[string]string)
-		prerequisites["darwin"] = make(map[string]string)
-		prerequisites["darwin"]["clang"] = "Please install with `xcode-select --install` and try again"
-		prerequisites["darwin"]["npm"] = "Please download and install npm + node from here: https://nodejs.org/en/"
-		switch runtime.GOOS {
-		case "darwin":
-			successMessage = "🚀  Awesome! We are going to the moon! 🚀"
-		default:
-			return fmt.Errorf("platform '%s' is unsupported at this time", runtime.GOOS)
+
+		successDeps, failedDeps, err := cmd.CheckBinaryPrerequisites()
+		if err != nil {
+			return err
 		}
 
-		errors := false
-		for name, help := range prerequisites[runtime.GOOS] {
-			bin := programHelper.FindProgram(name)
-			if bin == nil {
-				errors = true
-				logger.Red("Unable to find '%s' - %s", name, help)
-			} else {
-				logger.Green("Found program '%s' at '%s'", name, bin.Path)
-			}
+		for _, dep := range *successDeps {
+			logger.Green("Found '%s' at '%s'", dep.Name, dep.Path)
 		}
 
-		if errors {
-			err = fmt.Errorf("There were missing dependencies")
-		} else {
+		logger.White("")
+
+		for _, dep := range *failedDeps {
+			logger.Red("PreRequisite '%s' missing. %s", dep.Name, dep.Help)
+		}
+
+		// Check non-binary prerequisites
+		err = cmd.CheckNonBinaryPrerequisites()
+
+		if err != nil {
+			return err
+		}
+
+		if len(*failedDeps) == 0 {
 			logger.Yellow(successMessage)
 		}
 
