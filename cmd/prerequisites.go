@@ -51,11 +51,24 @@ var platformbinaryPrerequisites = make(map[string]*binaryPrerequisites)
 func init() {
 	platformbinaryPrerequisites["darwin"] = &binaryPrerequisites{}
 	newDarwinbinaryPrerequisite("clang", "Please install with `xcode-select --install` and try again")
+	platformbinaryPrerequisites["linux"] = &binaryPrerequisites{}
+	linuxInfo := GetLinuxDistroInfo()
+	switch linuxInfo.Distribution {
+	case Ubuntu:
+		newLinuxbinaryPrerequisite("gcc", "Please install with 'sudo apt install build-essential' ")
+	default:
+		newLinuxbinaryPrerequisite("gcc", "Please install with your system package manager.")
+	}
 }
 
 func newDarwinbinaryPrerequisite(name, help string) {
 	prereq := newBinaryPrerequisite(name, help)
 	platformbinaryPrerequisites["darwin"].Add(prereq)
+}
+
+func newLinuxbinaryPrerequisite(name, help string) {
+	prereq := newBinaryPrerequisite(name, help)
+	platformbinaryPrerequisites["linux"].Add(prereq)
 }
 
 func CheckBinaryPrerequisites() (*binaryPrerequisites, *binaryPrerequisites, error) {
