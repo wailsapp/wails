@@ -52,7 +52,7 @@ func getRequiredProgramsLinux() *Prerequisites {
 	case Ubuntu:
 		result.Add(newPrerequisite("gcc", "Please install with `sudo apt install build-essentials` and try again"))
 		result.Add(newPrerequisite("pkg-config", "Please install with `sudo apt install pkg-config` and try again"))
-		result.Add(newPrerequisite("npm", "Please install from https://nodejs.org/en/download/ and try again"))
+		result.Add(newPrerequisite("npm", "Please install with `sudo apt install npm` and try again"))
 
 	default:
 		result.Add(newPrerequisite("gcc", "Please install with your system package manager and try again"))
