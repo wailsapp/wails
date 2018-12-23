@@ -44,16 +44,17 @@ func (p *ProgramHelper) FindProgram(programName string) *Program {
 	}
 }
 
+// GetFullPathToBinary returns the full path the the current binary
 func (p *Program) GetFullPathToBinary() (string, error) {
 	return filepath.Abs(p.Path)
 }
 
 // Run will execute the program with the given parameters
 // Returns stdout + stderr as strings and an error if one occured
-func (p *Program) Run(vars ...string) (stdout, stderr string, err error, exitCode int) {
+func (p *Program) Run(vars ...string) (stdout, stderr string, exitCode int, err error) {
 	command, err := p.GetFullPathToBinary()
 	if err != nil {
-		return "", "", err, 1
+		return "", "", 1, err
 	}
 	cmd := exec.Command(command, vars...)
 	var stdo, stde bytes.Buffer

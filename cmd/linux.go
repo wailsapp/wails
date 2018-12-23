@@ -11,6 +11,7 @@ type LinuxDistribution int
 const (
 	// Unknown is the catch-all distro
 	Unknown LinuxDistribution = 0
+	// Ubuntu distribution
 	Ubuntu  LinuxDistribution = 1
 )
 
@@ -31,7 +32,7 @@ func GetLinuxDistroInfo() *DistroInfo {
 
 	lsbRelease := program.FindProgram("lsb_release")
 	if lsbRelease != nil {
-		stdout, _, err, _ := lsbRelease.Run("-a")
+		stdout, _, _, err := lsbRelease.Run("-a")
 		if err != nil {
 			return result
 		}
@@ -72,7 +73,7 @@ func DpkgInstalled(packageName string) (bool, error) {
 	if dpkg == nil {
 		return false, fmt.Errorf("cannot check dependencies: dpkg not found")
 	}
-	_, _, _, exitCode := dpkg.Run("-L", packageName)
+	_, _, exitCode, _ := dpkg.Run("-L", packageName)
 	result = exitCode == 0
 	return result, nil
 }

@@ -62,6 +62,8 @@ func getRequiredProgramsLinux() *Prerequisites {
 // TODO: Test this on Windows
 func getRequiredProgramsWindows() *Prerequisites {
 	result := &Prerequisites{}
+	result.Add(newPrerequisite("gcc", "Please install gcc from here and try again: http://tdm-gcc.tdragon.net/download. You will need to add the bin directory to your path, EG: C:\\TDM-GCC-64\\bin\\"))
+	result.Add(newPrerequisite("npm", "Please install node/npm from here and try again: https://nodejs.org/en/download/"))
 	return result
 }
 
