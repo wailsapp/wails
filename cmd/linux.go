@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -8,8 +9,9 @@ import (
 type LinuxDistribution int
 
 const (
-	// Ubuntu distro
-	Ubuntu LinuxDistribution = 0
+	// Unknown is the catch-all distro
+	Unknown LinuxDistribution = 0
+	Ubuntu  LinuxDistribution = 1
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -18,11 +20,12 @@ type DistroInfo struct {
 	Description   string
 	Release       string
 	Codename      string
-	DistributorId string
+	DistributorID string
 }
 
+// GetLinuxDistroInfo returns information about the running linux distribution
 func GetLinuxDistroInfo() *DistroInfo {
-	result := &DistroInfo{}
+	result := &DistroInfo{Distribution: Unknown}
 	program := NewProgramHelper()
 	// Does lsb_release exist?
 
@@ -30,7 +33,7 @@ func GetLinuxDistroInfo() *DistroInfo {
 	if lsbRelease != nil {
 		stdout, _, err, _ := lsbRelease.Run("-a")
 		if err != nil {
-			return nil
+			return result
 		}
 
 		for _, line := range strings.Split(stdout, "\n") {
@@ -41,7 +44,11 @@ func GetLinuxDistroInfo() *DistroInfo {
 				value := strings.TrimSpace(details[1])
 				switch key {
 				case "Distributor ID":
-					result.DistributorId = value
+					result.DistributorID = value
+					switch value {
+					case "Ubuntu":
+						result.Distribution = Ubuntu
+					}
 				case "Description":
 					result.Description = value
 				case "Release":
@@ -55,4 +62,17 @@ func GetLinuxDistroInfo() *DistroInfo {
 
 	}
 	return result
+}
+
+// DpkgInstalled uses dpkg to see if a package is installed
+func DpkgInstalled(packageName string) (bool, error) {
+	result := false
+	program := NewProgramHelper()
+	dpkg := program.FindProgram("dpkg")
+	if dpkg == nil {
+		return false, fmt.Errorf("cannot check dependencies: dpkg not found")
+	}
+	_, _, _, exitCode := dpkg.Run("-L", packageName)
+	result = exitCode == 0
+	return result, nil
 }

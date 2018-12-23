@@ -5,88 +5,100 @@ import (
 	"runtime"
 )
 
-// binaryPrerequisite defines a binaryPrerequisite
-type binaryPrerequisite struct {
+// Prerequisite defines a Prerequisite!
+type Prerequisite struct {
 	Name string
 	Help string
 	Path string
 }
 
-func newBinaryPrerequisite(name, help string) *binaryPrerequisite {
-	return &binaryPrerequisite{Name: name, Help: help}
+func newPrerequisite(name, help string) *Prerequisite {
+	return &Prerequisite{Name: name, Help: help}
 }
 
-// binaryPrerequisites is a list of binaryPrerequisites
-type binaryPrerequisites []*binaryPrerequisite
+// Prerequisites is a list of things required to use Wails
+type Prerequisites []*Prerequisite
 
 // Add given prereq object to list
-func (p *binaryPrerequisites) Add(prereq *binaryPrerequisite) {
+func (p *Prerequisites) Add(prereq *Prerequisite) {
 	*p = append(*p, prereq)
 }
 
-func (p *binaryPrerequisites) check() (success *binaryPrerequisites, failed *binaryPrerequisites) {
-	success = &binaryPrerequisites{}
-	failed = &binaryPrerequisites{}
-	programHelper := NewProgramHelper()
-	for _, prereq := range *p {
-		bin := programHelper.FindProgram(prereq.Name)
-		if bin == nil {
-			failed.Add(prereq)
-		} else {
-			path, err := bin.GetFullPathToBinary()
-			if err != nil {
-				failed.Add(prereq)
-			} else {
-				prereq.Path = path
-				success.Add(prereq)
-			}
-		}
-	}
-
-	return success, failed
-}
-
-var platformbinaryPrerequisites = make(map[string]*binaryPrerequisites)
-
-func init() {
-	platformbinaryPrerequisites["darwin"] = &binaryPrerequisites{}
-	newDarwinbinaryPrerequisite("clang", "Please install with `xcode-select --install` and try again")
-	platformbinaryPrerequisites["linux"] = &binaryPrerequisites{}
-	linuxInfo := GetLinuxDistroInfo()
-	switch linuxInfo.Distribution {
-	case Ubuntu:
-		newLinuxbinaryPrerequisite("gcc", "Please install with 'sudo apt install build-essential' ")
+// GetRequiredPrograms returns a list of programs required for the platform
+func GetRequiredPrograms() (*Prerequisites, error) {
+	switch runtime.GOOS {
+	case "darwin":
+		return getRequiredProgramsOSX(), nil
+	case "linux":
+		return getRequiredProgramsLinux(), nil
+	case "windows":
+		return getRequiredProgramsWindows(), nil
 	default:
-		newLinuxbinaryPrerequisite("gcc", "Please install with your system package manager.")
+		return nil, fmt.Errorf("platform '%s' not supported at this time", runtime.GOOS)
 	}
 }
 
-func newDarwinbinaryPrerequisite(name, help string) {
-	prereq := newBinaryPrerequisite(name, help)
-	platformbinaryPrerequisites["darwin"].Add(prereq)
+func getRequiredProgramsOSX() *Prerequisites {
+	result := &Prerequisites{}
+	result.Add(newPrerequisite("clang", "Please install with `xcode-select --install` and try again"))
+	return result
 }
 
-func newLinuxbinaryPrerequisite(name, help string) {
-	prereq := newBinaryPrerequisite(name, help)
-	platformbinaryPrerequisites["linux"].Add(prereq)
-}
-
-func CheckBinaryPrerequisites() (*binaryPrerequisites, *binaryPrerequisites, error) {
-	platformPreReqs := platformbinaryPrerequisites[runtime.GOOS]
-	if platformPreReqs == nil {
-		return nil, nil, fmt.Errorf("Platform '%s' is not supported at this time", runtime.GOOS)
-	}
-	success, failed := platformPreReqs.check()
-	return success, failed, nil
-}
-
-func CheckNonBinaryPrerequisites() error {
-
-	var err error
-
-	// Check non-binaries
-	if runtime.GOOS == "linux" {
+func getRequiredProgramsLinux() *Prerequisites {
+	result := &Prerequisites{}
+	distroInfo := GetLinuxDistroInfo()
+	switch distroInfo.Distribution {
+	case Ubuntu:
+		result.Add(newPrerequisite("gcc", "Please install with `sudo apt install build-essentials` and try again"))
+		result.Add(newPrerequisite("pkg-config", "Please install with `sudo apt install pkg-config` and try again"))
+	default:
+		result.Add(newPrerequisite("gcc", "Please install with your system package manager and try again"))
+		result.Add(newPrerequisite("pkg-config", "Please install with your system package manager and try again"))
 
 	}
-	return err
+	return result
+}
+
+// TODO: Test this on Windows
+func getRequiredProgramsWindows() *Prerequisites {
+	result := &Prerequisites{}
+	return result
+}
+
+// GetRequiredLibraries returns a list of libraries (packages) required for the platform
+func GetRequiredLibraries() (*Prerequisites, error) {
+	switch runtime.GOOS {
+	case "darwin":
+		return getRequiredLibrariesOSX()
+	case "linux":
+		return getRequiredLibrariesLinux()
+	case "windows":
+		return getRequiredLibrariesWindows()
+	default:
+		return nil, fmt.Errorf("platform '%s' not supported at this time", runtime.GOOS)
+	}
+}
+
+func getRequiredLibrariesOSX() (*Prerequisites, error) {
+	result := &Prerequisites{}
+	return result, nil
+}
+
+func getRequiredLibrariesLinux() (*Prerequisites, error) {
+	result := &Prerequisites{}
+	distroInfo := GetLinuxDistroInfo()
+	switch distroInfo.Distribution {
+	case Ubuntu:
+		result.Add(newPrerequisite("libgtk-3-dev", "Please install with `sudo apt install libgtk-3-dev` and try again"))
+		result.Add(newPrerequisite("libwebkit2gtk-4.0-dev", "Please install with `sudo apt install libwebkit2gtk-4.0-dev` and try again"))
+	default:
+		result.Add(newPrerequisite("libgtk-3-dev", "Please install with your system package manager and try again"))
+		result.Add(newPrerequisite("libwebkit2gtk-4.0-dev", "Please install with your system package manager and try again"))
+	}
+	return result, nil
+}
+
+func getRequiredLibrariesWindows() (*Prerequisites, error) {
+	result := &Prerequisites{}
+	return result, nil
 }
