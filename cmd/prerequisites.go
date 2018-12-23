@@ -41,6 +41,7 @@ func GetRequiredPrograms() (*Prerequisites, error) {
 func getRequiredProgramsOSX() *Prerequisites {
 	result := &Prerequisites{}
 	result.Add(newPrerequisite("clang", "Please install with `xcode-select --install` and try again"))
+	result.Add(newPrerequisite("npm", "Please install from https://nodejs.org/en/download/ and try again"))
 	return result
 }
 
@@ -51,9 +52,12 @@ func getRequiredProgramsLinux() *Prerequisites {
 	case Ubuntu:
 		result.Add(newPrerequisite("gcc", "Please install with `sudo apt install build-essentials` and try again"))
 		result.Add(newPrerequisite("pkg-config", "Please install with `sudo apt install pkg-config` and try again"))
+		result.Add(newPrerequisite("npm", "Please install from https://nodejs.org/en/download/ and try again"))
+
 	default:
 		result.Add(newPrerequisite("gcc", "Please install with your system package manager and try again"))
 		result.Add(newPrerequisite("pkg-config", "Please install with your system package manager and try again"))
+		result.Add(newPrerequisite("npm", "Please install from https://nodejs.org/en/download/ and try again"))
 
 	}
 	return result
