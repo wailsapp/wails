@@ -12,10 +12,12 @@ func init() {
 
 	commandDescription := `Sets up your local environment to develop Wails apps.`
 
-	initCommand := app.Command("setup", "Setup the Wails environment").
+	setupCommand := app.Command("setup", "Setup the Wails environment").
 		LongDescription(commandDescription)
 
-	initCommand.Action(func() error {
+	app.DefaultCommand(setupCommand)
+
+	setupCommand.Action(func() error {
 
 		system := cmd.NewSystemHelper()
 		err := system.Initialise()

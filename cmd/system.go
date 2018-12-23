@@ -132,6 +132,11 @@ func (s *SystemHelper) setup() error {
 	return answers.Save(s.wailsSystemConfig)
 }
 
+const introText = `
+Wails is a lightweight framework for creating web-like desktop apps in Go. 
+I'll need to ask you a few questions so I can fill in your project templates and then I will try and see if you have the correct dependencies installed. If you don't have the right tools installed, I'll try and suggest how to install them.
+`
+
 // Initialise attempts to set up the Wails system.
 // An error is returns if there is a problem
 func (s *SystemHelper) Initialise() error {
@@ -139,7 +144,7 @@ func (s *SystemHelper) Initialise() error {
 	// System dir doesn't exist
 	if !s.systemDirExists() {
 		s.log.Green("Welcome to Wails!")
-		s.log.Green("To get you set up, I'll need to ask you a few things...")
+		s.log.Green(introText)
 		return s.setup()
 	}
 
