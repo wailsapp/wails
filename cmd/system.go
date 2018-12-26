@@ -6,10 +6,12 @@ import (
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"time"
 
 	"github.com/AlecAivazis/survey"
+	"github.com/leaanthony/spinner"
 	homedir "github.com/mitchellh/go-homedir"
 )
 
@@ -137,6 +139,16 @@ Wails is a lightweight framework for creating web-like desktop apps in Go.
 I'll need to ask you a few questions so I can fill in your project templates and then I will try and see if you have the correct dependencies installed. If you don't have the right tools installed, I'll try and suggest how to install them.
 `
 
+// CheckInitialised checks if the system has been set up
+// and if not, runs setup
+func (s *SystemHelper) CheckInitialised() error {
+	if !s.systemDirExists() {
+		s.log.Yellow("System not initialised. Running setup.")
+		return s.setup()
+	}
+	return nil
+}
+
 // Initialise attempts to set up the Wails system.
 // An error is returns if there is a problem
 func (s *SystemHelper) Initialise() error {
@@ -207,4 +219,72 @@ func (sc *SystemConfig) load(filename string) error {
 		return err
 	}
 	return nil
+}
+
+// CheckDependencies will look for Wails dependencies on the system
+// Errors are reported in error and the bool return value is whether
+// the dependencies are all installed.
+func CheckDependencies(logger *Logger) (error, bool) {
+
+	switch runtime.GOOS {
+	case "darwin":
+		logger.Yellow("Detected Platform: OSX")
+	case "windows":
+		logger.Yellow("Detected Platform: Windows")
+	case "linux":
+		logger.Yellow("Detected Platform: Linux")
+	default:
+		return fmt.Errorf("Platform %s is currently not supported", runtime.GOOS), false
+	}
+
+	logger.Yellow("Checking for prerequisites...")
+	// Check we have a cgo capable environment
+
+	requiredPrograms, err := GetRequiredPrograms()
+	if err != nil {
+		return nil, false
+	}
+	errors := false
+	spinner := spinner.New()
+	programHelper := NewProgramHelper()
+	for _, program := range *requiredPrograms {
+		spinner.Start("Looking for program '%s'", program.Name)
+		bin := programHelper.FindProgram(program.Name)
+		if bin == nil {
+			errors = true
+			spinner.Errorf("Program '%s' not found. %s", program.Name, program.Help)
+		} else {
+			spinner.Successf("Program '%s' found: %s", program.Name, bin.Path)
+		}
+	}
+
+	// Linux has library deps
+	if runtime.GOOS == "linux" {
+		// Check library prerequisites
+		requiredLibraries, err := GetRequiredLibraries()
+		if err != nil {
+			return err, false
+		}
+		distroInfo := GetLinuxDistroInfo()
+		for _, library := range *requiredLibraries {
+			spinner.Start()
+			switch distroInfo.Distribution {
+			case Ubuntu:
+				installed, err := DpkgInstalled(library.Name)
+				if err != nil {
+					return err, false
+				}
+				if !installed {
+					errors = true
+					spinner.Errorf("Library '%s' not found. %s", library.Name, library.Help)
+				} else {
+					spinner.Successf("Library '%s' installed.", library.Name)
+				}
+			default:
+				return fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.DistributorID, library.Name), false
+			}
+		}
+	}
+
+	return err, !errors
 }

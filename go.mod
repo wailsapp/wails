@@ -2,7 +2,9 @@ module github.com/wailsapp/wails
 
 require (
 	github.com/AlecAivazis/survey v1.7.1
+	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc
 	github.com/fatih/color v1.7.0
+	github.com/gobuffalo/packr v1.21.9
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/leaanthony/spinner v0.4.0
 	github.com/leaanthony/synx v0.0.0-20180923230033-60efbd9984b0 // indirect

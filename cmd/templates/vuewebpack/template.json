@@ -1,0 +1,10 @@
+{
+  "name": "Vue2/Webpack",
+  "shortdescription": "A basic Vue2/WebPack4 template",
+  "description": "A basic template using Vue 2 and bundled using Webpack 4",
+  "author": "Lea Anthony<lea.anthony@gmail.com>",
+  "created": "2018-12-01",
+  "frontenddir": "frontend",
+  "install": "npm install",
+  "build": "npm run build"
+}
