@@ -256,7 +256,6 @@ func (po *ProjectOptions) PromptForInputs() error {
 		// Ask for the framework
 		var frameworkName string
 		frameworks, err := GetFrameworks()
-		fmt.Printf("Frameworks = %+v\n", frameworks)
 		frameworkNames := []string{}
 		metadataMap := make(map[string]*FrameworkMetadata)
 		for _, frameworkMetadata := range frameworks {
@@ -311,6 +310,8 @@ func (po *ProjectOptions) PromptForInputs() error {
 	return nil
 }
 
+// WriteProjectConfig writes the project configuration into
+// the project directory
 func (po *ProjectOptions) WriteProjectConfig() error {
 	targetDir, err := filepath.Abs(po.OutputDirectory)
 	if err != nil {
@@ -326,6 +327,8 @@ func (po *ProjectOptions) WriteProjectConfig() error {
 	return ioutil.WriteFile(targetFile, filedata, 0600)
 }
 
+// LoadConfig loads the project configuration file from the
+// given directory
 func (po *ProjectOptions) LoadConfig(projectDir string) error {
 	targetFile := filepath.Join(projectDir, "project.json")
 	rawBytes, err := ioutil.ReadFile(targetFile)
