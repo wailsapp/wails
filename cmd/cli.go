@@ -172,7 +172,10 @@ func (c *Command) Run(args []string) error {
 	if c.App.defaultCommand != nil {
 		// Prevent recursion!
 		if c.App.defaultCommand != c {
-			return c.App.defaultCommand.Run(args)
+			// only run default command if no args passed
+			if len(args) == 0 {
+				return c.App.defaultCommand.Run(args)
+			}
 		}
 	}
 
