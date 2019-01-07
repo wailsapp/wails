@@ -10,3 +10,8 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+examples/**/example*
+!examples/**/*.*
+cmd/wails/wails
+.DS_Store

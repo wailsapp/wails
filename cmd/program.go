@@ -2,17 +2,23 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"syscall"
 )
 
 // ProgramHelper - Utility functions around installed applications
-type ProgramHelper struct{}
+type ProgramHelper struct {
+	shell *ShellHelper
+}
 
 // NewProgramHelper - Creates a new ProgramHelper
 func NewProgramHelper() *ProgramHelper {
-	return &ProgramHelper{}
+	return &ProgramHelper{
+		shell: NewShellHelper(),
+	}
 }
 
 // IsInstalled tries to determine if the given binary name is installed
@@ -82,4 +88,32 @@ func (p *Program) Run(vars ...string) (stdout, stderr string, exitCode int, err 
 		exitCode = ws.ExitStatus()
 	}
 	return
+}
+
+// InstallGoPackage installs the given Go package
+func (p *ProgramHelper) InstallGoPackage(packageName string) error {
+	args := strings.Split("get -u "+packageName, " ")
+	_, stderr, err := p.shell.Run("go", args...)
+	if err != nil {
+		fmt.Println(stderr)
+	}
+	return err
+}
+
+// RunCommand runs the given command
+func (p *ProgramHelper) RunCommand(command string) error {
+	args := strings.Split(command, " ")
+	program := args[0]
+	// TODO: Run FindProgram here and get the full path to the exe
+	program, err := exec.LookPath(program)
+	if err != nil {
+		fmt.Printf("ERROR: Looks like '%s' isn't installed. Please install and try again.", program)
+		return err
+	}
+	args = args[1:]
+	_, stderr, err := p.shell.Run(program, args...)
+	if err != nil {
+		fmt.Println(stderr)
+	}
+	return err
 }
