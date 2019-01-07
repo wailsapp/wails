@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey"
-	"github.com/leaanthony/spinner"
 	homedir "github.com/mitchellh/go-homedir"
 )
 
@@ -224,7 +223,7 @@ func (sc *SystemConfig) load(filename string) error {
 // CheckDependencies will look for Wails dependencies on the system
 // Errors are reported in error and the bool return value is whether
 // the dependencies are all installed.
-func CheckDependencies(logger *Logger) (error, bool) {
+func CheckDependencies(logger *Logger) (bool, error) {
 
 	switch runtime.GOOS {
 	case "darwin":
@@ -234,7 +233,7 @@ func CheckDependencies(logger *Logger) (error, bool) {
 	case "linux":
 		logger.Yellow("Detected Platform: Linux")
 	default:
-		return fmt.Errorf("Platform %s is currently not supported", runtime.GOOS), false
+		return false, fmt.Errorf("Platform %s is currently not supported", runtime.GOOS)
 	}
 
 	logger.Yellow("Checking for prerequisites...")
@@ -242,19 +241,17 @@ func CheckDependencies(logger *Logger) (error, bool) {
 
 	requiredPrograms, err := GetRequiredPrograms()
 	if err != nil {
-		return nil, false
+		return false, nil
 	}
 	errors := false
-	spinner := spinner.New()
 	programHelper := NewProgramHelper()
 	for _, program := range *requiredPrograms {
-		spinner.Start("Looking for program '%s'", program.Name)
 		bin := programHelper.FindProgram(program.Name)
 		if bin == nil {
 			errors = true
-			spinner.Errorf("Program '%s' not found. %s", program.Name, program.Help)
+			logger.Red("Program '%s' not found. %s", program.Name, program.Help)
 		} else {
-			spinner.Successf("Program '%s' found: %s", program.Name, bin.Path)
+			logger.Green("Program '%s' found: %s", program.Name, bin.Path)
 		}
 	}
 
@@ -263,28 +260,27 @@ func CheckDependencies(logger *Logger) (error, bool) {
 		// Check library prerequisites
 		requiredLibraries, err := GetRequiredLibraries()
 		if err != nil {
-			return err, false
+			return false, err
 		}
 		distroInfo := GetLinuxDistroInfo()
 		for _, library := range *requiredLibraries {
-			spinner.Start()
 			switch distroInfo.Distribution {
 			case Ubuntu:
 				installed, err := DpkgInstalled(library.Name)
 				if err != nil {
-					return err, false
+					return false, err
 				}
 				if !installed {
 					errors = true
-					spinner.Errorf("Library '%s' not found. %s", library.Name, library.Help)
+					logger.Red("Library '%s' not found. %s", library.Name, library.Help)
 				} else {
-					spinner.Successf("Library '%s' installed.", library.Name)
+					logger.Green("Library '%s' installed.", library.Name)
 				}
 			default:
-				return fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.DistributorID, library.Name), false
+				return false, fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.DistributorID, library.Name)
 			}
 		}
 	}
 
-	return err, !errors
+	return !errors, err
 }

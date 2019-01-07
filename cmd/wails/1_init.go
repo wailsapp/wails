@@ -34,7 +34,7 @@ Any flags that are required and not given will be prompted for.`
 			return err
 		}
 
-		err, success := cmd.CheckDependencies(logger)
+		success, err := cmd.CheckDependencies(logger)
 		if !success {
 			return err
 		}
