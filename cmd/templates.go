@@ -16,6 +16,7 @@ import (
 
 const templateSuffix = ".template"
 
+// TemplateHelper helps with creating projects
 type TemplateHelper struct {
 	system      *SystemHelper
 	fs          *FSHelper
@@ -25,12 +26,14 @@ type TemplateHelper struct {
 	metadataFilename string
 }
 
+// Template defines a single template
 type Template struct {
 	Name     string
 	Dir      string
 	Metadata map[string]interface{}
 }
 
+// NewTemplateHelper creates a new template helper
 func NewTemplateHelper() *TemplateHelper {
 	result := TemplateHelper{
 		system:           NewSystemHelper(),
@@ -45,6 +48,7 @@ func NewTemplateHelper() *TemplateHelper {
 	return &result
 }
 
+// GetTemplateNames returns a map of all available templates
 func (t *TemplateHelper) GetTemplateNames() (map[string]string, error) {
 	templateDirs, err := t.fs.GetSubdirs(t.templateDir)
 	if err != nil {
@@ -53,6 +57,8 @@ func (t *TemplateHelper) GetTemplateNames() (map[string]string, error) {
 	return templateDirs, nil
 }
 
+// GetTemplateDetails returns a map of Template structs containing details
+// of the found templates
 func (t *TemplateHelper) GetTemplateDetails() (map[string]*Template, error) {
 	templateDirs, err := t.fs.GetSubdirs(t.templateDir)
 	if err != nil {
@@ -81,6 +87,7 @@ func (t *TemplateHelper) GetTemplateDetails() (map[string]*Template, error) {
 	return result, nil
 }
 
+// LoadMetadata loads the template's 'metadata.json' file
 func (t *TemplateHelper) LoadMetadata(dir string) (map[string]interface{}, error) {
 	templateFile := filepath.Join(dir, t.metadataFilename)
 	result := make(map[string]interface{})
@@ -95,6 +102,7 @@ func (t *TemplateHelper) LoadMetadata(dir string) (map[string]interface{}, error
 	return result, err
 }
 
+// TemplateExists returns true if the given template name exists
 func (t *TemplateHelper) TemplateExists(templateName string) (bool, error) {
 	templates, err := t.GetTemplateNames()
 	if err != nil {
@@ -104,6 +112,8 @@ func (t *TemplateHelper) TemplateExists(templateName string) (bool, error) {
 	return exists, nil
 }
 
+// InstallTemplate installs the template given in the project options to the
+// project path given
 func (t *TemplateHelper) InstallTemplate(projectPath string, projectOptions *ProjectOptions) error {
 
 	// Get template files
