@@ -32,8 +32,6 @@ func NewBundleHelper() *BundleHelper {
 	}
 }
 
-// var assetsBox packr.Box
-
 type plistData struct {
 	Title    string
 	Exe      string
