@@ -10,8 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-
-	"github.com/alecthomas/template"
+	"text/template"
 )
 
 const templateSuffix = ".template"

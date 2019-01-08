@@ -1,5 +1,6 @@
 {
-  "name": "frontend",
+  "name": "{{.NPMProjectName}}",
+  "author": "{{.Author.Name}}<{{.Author.Email}}>",
   "version": "0.1.0",
   "private": true,
   "scripts": {

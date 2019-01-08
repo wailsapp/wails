@@ -12,7 +12,7 @@ func main() {
 	app := wails.CreateApp(&wails.AppConfig{
 		Width:  1024,
 		Height: 768,
-		Title:  "Vue Simple",
+		Title:  "{{.Name}}",
 		JS:     assets.String("app.js"),
 		CSS:    assets.String("app.css"),
 	})
