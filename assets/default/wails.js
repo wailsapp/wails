@@ -41,11 +41,9 @@
 
 	// -------------- JS ----------------
 	function addScript(js, callbackID) {
-		console.log("Adding script: " + js)
 		var script = document.createElement("script");
 		script.text = js;
 		document.body.appendChild(script);
-		console.log("Calling back with:" + callbackID);
 		window.wails.events.emit(callbackID);
 	}
 
