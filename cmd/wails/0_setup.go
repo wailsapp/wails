@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"runtime"
 
+	"github.com/leaanthony/spinner"
+
 	"github.com/wailsapp/wails/cmd"
 )
 
@@ -84,6 +86,19 @@ Create your first project by running 'wails init'.`
 					return fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.DistributorID, library.Name)
 				}
 			}
+		}
+
+		// packr
+		if !programHelper.IsInstalled("packr") {
+			buildSpinner := spinner.New()
+			buildSpinner.SetSpinSpeed(50)
+			buildSpinner.Start("Installing packr...")
+			err := programHelper.InstallGoPackage("github.com/gobuffalo/packr/...")
+			if err != nil {
+				buildSpinner.Error()
+				return err
+			}
+			buildSpinner.Success()
 		}
 
 		logger.White("")

@@ -91,7 +91,9 @@ func init() {
 			}
 
 			// Check if frontend deps have been updated
-			buildSpinner.Start("Installing frontend dependencies (This may take a while)...")
+			feSpinner := spinner.New("Installing frontend dependencies (This may take a while)...")
+			feSpinner.SetSpinSpeed(50)
+			feSpinner.Start()
 
 			requiresNPMInstall := true
 
@@ -113,7 +115,7 @@ func init() {
 					if savedMD5sum == packageJSONMD5 {
 						// Same - no need for reinstall
 						requiresNPMInstall = false
-						buildSpinner.Success("Skipped frontend dependencies (-f to force rebuild)")
+						feSpinner.Success("Skipped frontend dependencies (-f to force rebuild)")
 					}
 				}
 			}
@@ -124,29 +126,30 @@ func init() {
 				// Install dependencies
 				err = program.RunCommand(projectOptions.FrontEnd.Install)
 				if err != nil {
-					buildSpinner.Error()
+					feSpinner.Error()
 					return err
 				}
-				buildSpinner.Success()
+				feSpinner.Success()
 
 				// Update md5sum file
 				ioutil.WriteFile(md5sumFile, []byte(packageJSONMD5), 0644)
 			}
 
 			// Build frontend
-			buildSpinner.Start("Building frontend...")
+			buildFESpinner := spinner.New("Building frontend...")
+			buildFESpinner.SetSpinSpeed(50)
+			buildFESpinner.Start()
 			err = program.RunCommand(projectOptions.FrontEnd.Build)
 			if err != nil {
-				buildSpinner.Error()
+				buildFESpinner.Error()
 				return err
 			}
-			buildSpinner.Success()
+			buildFESpinner.Success()
 		}
 
 		// Run packr in project directory
 		err = os.Chdir(projectDir)
 		if err != nil {
-			buildSpinner.Error()
 			return err
 		}
 
@@ -154,9 +157,10 @@ func init() {
 		buildTags := []string{}
 
 		// Do we have any frameworks specified?
+		frameworkSpinner := spinner.New()
+		frameworkSpinner.SetSpinSpeed(50)
 		if projectOptions.Framework != nil {
-			buildSpinner.Start()
-			buildSpinner.Success("Compiling support for " + projectOptions.Framework.Name)
+			frameworkSpinner.Success("Compiling support for " + projectOptions.Framework.Name)
 			buildTags = append(buildTags, projectOptions.Framework.BuildTag)
 		}
 
@@ -171,16 +175,20 @@ func init() {
 		// 	buildSpinner.Success()
 		// }
 
-		buildSpinner.Start("Installing Dependencies...")
+		depSpinner := spinner.New("Installing Dependencies...")
+		depSpinner.SetSpinSpeed(50)
+		depSpinner.Start()
 		installCommand := "go get"
 		err = program.RunCommand(installCommand)
 		if err != nil {
-			buildSpinner.Error()
+			depSpinner.Error()
 			return err
 		}
-		buildSpinner.Success()
+		depSpinner.Success()
 
-		buildSpinner.Start("Packing + Compiling project...")
+		packSpinner := spinner.New("Packing + Compiling project...")
+		packSpinner.SetSpinSpeed(50)
+		packSpinner.Start()
 
 		buildCommand := "packr build"
 
@@ -200,10 +208,10 @@ func init() {
 
 		err = program.RunCommand(buildCommand)
 		if err != nil {
-			buildSpinner.Error()
+			packSpinner.Error()
 			return err
 		}
-		buildSpinner.Success()
+		packSpinner.Success()
 
 		if bundle == false {
 			logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
@@ -211,14 +219,16 @@ func init() {
 		}
 
 		// Bundle app
-		buildSpinner.Start("Bundling Application")
+		bundleSpinner := spinner.New("Bundling Application")
+		bundleSpinner.SetSpinSpeed(50)
+		bundleSpinner.Start()
 		bundler := cmd.NewBundleHelper()
 		err = bundler.Bundle(projectOptions)
 		if err != nil {
-			buildSpinner.Error()
+			bundleSpinner.Error()
 			return err
 		}
-		buildSpinner.Success()
+		bundleSpinner.Success()
 		logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
 		return nil
 	})
