@@ -4,7 +4,12 @@ import (
 	wails "github.com/wailsapp/wails"
 )
 
-var html = `<h1> Basic Template </h1>`
+var html = `
+<div style='text-align:center'>
+<h1> Basic Template </h1>
+Welcome to your basic Wails app!
+</div>
+`
 
 func main() {
 
@@ -12,7 +17,7 @@ func main() {
 	app := wails.CreateApp(&wails.AppConfig{
 		Width:  1024,
 		Height: 768,
-		Title:  "My Project",
+		Title:  "{{.Name}}",
 		HTML:   html,
 	})
 	app.Run()

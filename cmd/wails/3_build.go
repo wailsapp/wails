@@ -91,7 +91,7 @@ func init() {
 			}
 
 			// Check if frontend deps have been updated
-			buildSpinner.Start("Installing frontend dependencies...")
+			buildSpinner.Start("Installing frontend dependencies (This may take a while)...")
 
 			requiresNPMInstall := true
 
