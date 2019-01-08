@@ -34,12 +34,10 @@ Any flags that are required and not given will be prompted for.`
 			return err
 		}
 
-		success, err := cmd.CheckDependencies(logger)
+		success, err := cmd.CheckDependenciesSilent(logger)
 		if !success {
 			return err
 		}
-
-		logger.White("")
 
 		// Do we want to just force defaults?
 		if projectOptions.UseDefaults {

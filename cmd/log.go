@@ -9,52 +9,88 @@ import (
 
 // Logger struct
 type Logger struct {
+	errorOnly bool
 }
 
 // NewLogger creates a new logger!
 func NewLogger() *Logger {
-	return &Logger{}
+	return &Logger{errorOnly: false}
+}
+
+func (l *Logger) SetErrorOnly(errorOnly bool) {
+	l.errorOnly = errorOnly
 }
 
 // Yellow - Outputs yellow text
 func (l *Logger) Yellow(format string, a ...interface{}) {
+	if l.errorOnly {
+		return
+	}
 	color.New(color.FgHiYellow).PrintfFunc()(format+"\n", a...)
 }
 
 // Yellowf - Outputs yellow text without the newline
 func (l *Logger) Yellowf(format string, a ...interface{}) {
+	if l.errorOnly {
+		return
+	}
+
 	color.New(color.FgHiYellow).PrintfFunc()(format, a...)
 }
 
 // Green - Outputs Green text
 func (l *Logger) Green(format string, a ...interface{}) {
+	if l.errorOnly {
+		return
+	}
+
 	color.New(color.FgHiGreen).PrintfFunc()(format+"\n", a...)
 }
 
 // White - Outputs White text
 func (l *Logger) White(format string, a ...interface{}) {
+	if l.errorOnly {
+		return
+	}
+
 	color.New(color.FgHiWhite).PrintfFunc()(format+"\n", a...)
 }
 
 // WhiteUnderline - Outputs White text with underline
 func (l *Logger) WhiteUnderline(format string, a ...interface{}) {
+	if l.errorOnly {
+		return
+	}
+
 	l.White(format, a...)
 	l.White(l.underline(format))
 }
 
 // YellowUnderline - Outputs Yellow text with underline
 func (l *Logger) YellowUnderline(format string, a ...interface{}) {
+	if l.errorOnly {
+		return
+	}
+
 	l.Yellow(format, a...)
 	l.Yellow(l.underline(format))
 }
 
 // underline returns a string of a line, the length of the message given to it
 func (l *Logger) underline(message string) string {
+	if l.errorOnly {
+		return ""
+	}
+
 	return strings.Repeat("-", len(message))
 }
 
 // Red - Outputs Red text
 func (l *Logger) Red(format string, a ...interface{}) {
+	if l.errorOnly {
+		return
+	}
+
 	color.New(color.FgHiRed).PrintfFunc()(format+"\n", a...)
 }
 

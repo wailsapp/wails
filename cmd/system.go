@@ -220,6 +220,13 @@ func (sc *SystemConfig) load(filename string) error {
 	return nil
 }
 
+func CheckDependenciesSilent(logger *Logger) (bool, error) {
+	logger.SetErrorOnly(true)
+	result, err := CheckDependencies(logger)
+	logger.SetErrorOnly(false)
+	return result, err
+}
+
 // CheckDependencies will look for Wails dependencies on the system
 // Errors are reported in error and the bool return value is whether
 // the dependencies are all installed.
@@ -281,6 +288,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 			}
 		}
 	}
+	logger.White("")
 
 	return !errors, err
 }
