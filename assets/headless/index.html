@@ -1,0 +1,179 @@
+<html>
+
+<head>
+  <title>Wails Headless</title>
+  <style>
+    .wails-reconnect-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      font-family: sans-serif;
+      display: none;
+      z-index: 999999;
+    }
+
+    .wails-reconnect-overlay-content {
+      padding: 20px 30px;
+      text-align: center;
+      width: 20em;
+      position: relative;
+      height: 17em;
+      border-radius: 1em;
+      margin: 5% auto 0;
+      background-color: white;
+      box-shadow: 1px 1px 20px 3px;
+      background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC8AAAAuCAMAAACPpbA7AAAAqFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAAAAAAAAEBAQAAAAAAAAAAAAEBAQEBAQDAwMBAQEAAAABAQEAAAAAAAAAAAABAQEAAAAAAAACAgICAgIBAQEAAAAAAAAAAAAAAAAAAAAAAAABAQEAAAACAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFBQWKCj6oAAAAN3RSTlMALiIqDhkGBAswJjP0GxP6NR4W9/ztjRDMhWU50G9g5eHXvbZ9XEI9xZTcqZl2aldKo55QwoCvZUgzhAAAAs9JREFUSMeNleeWqjAUhU0BCaH3Itiw9zKT93+zG02QK1hm/5HF+jzZJ6fQe6cyXE+jg9X7o9wxuylIIf4Tv2V3+bOrEXnf8dwQ/KQIGDN2/S+4OmVCVXL/ScBnfibxURqIByP/hONE8r8T+bDMlQ98KSl7Y8hzjpS8v1qtDh8u5f8KQpGpfnPPhqG8JeogN37Hq9eaN2xRhIwAaGnvws8F1ShxqK5ob2twYi1FAMD4rXsYtnC/JEiRbl4cUrCWhnMCLRFemXezXbb59QK4WASOsm6n2W1+4CBT2JmtzQ6fsrbGubR/NFbd2g5Y179+5w/GEHaKsHjYCet7CgrXU3txarNC7YxOVJtIj4/ERzMdZfzc31hp+8cD6eGILgarZY9uZ12hAs03vfBD9C171gS5Omz7OcvxALQIn4u8RRBBBcsi9WW2woO9ipLgfzpYlggg3ZRdROUC8KT7QLqq3W9KB5BbdFVg4929kdwp6+qaZnMCCNBdj+NyN1W885Ry/AL3D4AQbsVV4noCiM/C83kyYq80XlDAYQtralOiDzoRAHlotWl8q2tjvYlOgcg1A8jEApZa+C06TBdAz2Qv0wu11I/zZOyJQ6EwGez2P2b8PIQr1hwwnAZsAxwA4UAYOyXUxM/xp6tHAn4GUmPGM9R28oVxgC0e/zQJJI6DyhyZ1r7uzRQhpcW7x7vTaWSzKSG6aep77kroTEl3U81uSVaUTtgEINfC8epx+Q4F9SpplHG84Ek6m4RAq9/TLkOBrxyeuddZhHvGIp1XXfFy3Z3vtwNblKGiDn+J+92vwwABHghj7HnzlS1H5kB49AZvdGCFgiBPq69qfXPr3y++yilF0ON4R8eR7spAsLpZ95NqAW5tab1c4vkZm6aleajchMwYTdILQQTwE2OV411ZM9WztDjPql12caBi6gDpUKmDd4U1XNdQxZ4LIXQ5/Tr4P7I9tYcFrDK3AAAAAElFTkSuQmCC");
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .wails-reconnect-overlay-title {
+      font-size: 2em;
+    }
+
+    .wails-reconnect-overlay-message {
+      font-size: 1.3em;
+    }
+
+    /* https://codepen.io/EastingAndNorthing/pen/aNWrZz - Cheers Mark! */
+
+    .wails-reconnect-overlay-loadingspinner {
+      pointer-events: none;
+      width: 2.5em;
+      height: 2.5em;
+      border: 0.4em solid transparent;
+      border-color: #eee;
+      border-top-color: #3E67EC;
+      border-radius: 50%;
+      animation: loadingspin 1s linear infinite;
+      margin: auto;
+      padding: 2.5em;
+    }
+
+    @keyframes loadingspin {
+      100% {
+        transform: rotate(360deg)
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wails-reconnect-overlay">
+    <div class="wails-reconnect-overlay-content">
+      <div class="wails-reconnect-overlay-title">Disconnected</div><br>
+      <div class="wails-reconnect-overlay-loadingspinner"></div><br>
+      <div class="wails-reconnect-overlay-message">Waiting for backend</div>
+    </div>
+  </div>
+
+  <div id="app"></div>
+
+  <script id="wails-headless-runtime">
+    (function () {
+
+      var websocket = null;
+      var connectTimer = null;
+      var reconnectOverlay = document.querySelector(".wails-reconnect-overlay");
+      var connectionState = "disconnected";
+
+      function showReconnectOverlay() {
+        reconnectOverlay.style.display = 'block';
+      }
+
+      function hideReconnectOverlay() {
+        reconnectOverlay.style.display = 'none';
+      }
+
+      window.external = {
+        invoke: function (msg) {
+          websocket.send(msg);
+        }
+      };
+
+      function addScript(script, id) {
+        var s = document.createElement("script")
+        if (id) {
+          s.id = id;
+        }
+        s.textContent = script;
+        document.head.appendChild(s)
+      }
+
+      function handleConnect() {
+        console.log("[Wails] Connected to backend");
+        addKeyListener();
+        hideReconnectOverlay();
+        clearInterval(connectTimer);
+        websocket.onclose = handleDisconnect;
+        websocket.onmessage = handleMessage;
+        connectionState = "connected";
+        // websocket.onerror = function () { }
+      }
+
+      function handleDisconnect() {
+        console.log("[Wails] Disconnected from backend");
+        websocket = null;
+        removeKeyListener();
+        connectionState = "disconnected";
+        showReconnectOverlay();
+        connect();
+      }
+
+      function connect() {
+        connectTimer = setInterval(function () {
+          if (websocket == null) {
+            websocket = new WebSocket("ws://localhost:34115/ws")
+            websocket.onopen = handleConnect;
+            websocket.onerror = function (e) {
+              e.stopImmediatePropagation();
+              e.stopPropagation();
+              e.preventDefault();
+              websocket = null;
+              return false
+            }
+          }
+        }, 300);
+      }
+
+      function handleMessage(e) {
+        addScript(e.data);
+      }
+
+      // Key listener
+      var delta = 300;
+      var lastKeypressTime = 0;
+      function KeyHandler(event) {
+        if (event.key === "`") {
+          var thisKeypressTime = new Date();
+          if (thisKeypressTime - lastKeypressTime <= delta) {
+            console.log("Double tap!")
+            // optional - if we'd rather not detect a triple-press
+            // as a second double-press, reset the timestamp
+            thisKeypressTime = 0;
+          }
+          lastKeypressTime = thisKeypressTime;
+        }
+      }
+
+      function addKeyListener() {
+        document.body.addEventListener('keydown', KeyHandler);
+      }
+
+      function removeKeyListener() {
+        document.body.removeEventListener('keydown', KeyHandler);
+      }
+
+      connect();
+
+
+    }());
+
+  </script>
+
+</body>
+
+</html>
