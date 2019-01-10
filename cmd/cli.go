@@ -105,6 +105,7 @@ func NewCommand(name string, description string, app *Cli, parentCommandPath str
 		Shortdescription: description,
 		SubCommandsMap:   make(map[string]*Command),
 		App:              app,
+		log:              NewLogger(),
 	}
 
 	// Set up command path
@@ -181,6 +182,7 @@ func (c *Command) Run(args []string) error {
 
 	// Nothing left we can do
 	c.PrintHelp()
+
 	return nil
 }
 

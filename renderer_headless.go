@@ -14,8 +14,8 @@ import (
 var headlessAssets = packr.NewBox("./assets/headless")
 var defaultAssets = packr.NewBox("./assets/default")
 
-// Window defines the main application window
-// Default values in []
+// Headless is a backend that opens a local web server
+// and renders the files over a websocket
 type Headless struct {
 	// Common
 	log          *CustomLogger
@@ -34,6 +34,7 @@ type Headless struct {
 	theConnection    *websocket.Conn
 }
 
+// Initialise the Headless Renderer
 func (h *Headless) Initialise(appConfig *AppConfig, ipcManager *ipcManager, eventManager *eventManager) error {
 	h.ipcManager = ipcManager
 	h.appConfig = appConfig
@@ -68,7 +69,7 @@ func (h *Headless) injectCSS(css string) {
 }
 
 func (h *Headless) rootHandler(w http.ResponseWriter, r *http.Request) {
-	indexHTML := headlessAssets.String("index.html")
+	indexHTML := BoxString(&headlessAssets, "index.html")
 	fmt.Fprintf(w, "%s", indexHTML)
 }
 
@@ -102,11 +103,11 @@ func (h *Headless) start(conn *websocket.Conn) {
 	// for the html() function
 	if h.appConfig.isHTMLFragment {
 		// Inject jquery
-		jquery := defaultAssets.String("jquery.3.3.1.min.js")
+		jquery := BoxString(&defaultAssets, "jquery.3.3.1.min.js")
 		h.evalJS(jquery)
 	}
 
-	wailsRuntime := defaultAssets.String("wails.js")
+	wailsRuntime := BoxString(&defaultAssets, "wails.js")
 	h.evalJS(wailsRuntime)
 
 	// Inject the initial JS
@@ -177,12 +178,13 @@ func (h *Headless) start(conn *websocket.Conn) {
 			continue
 		}
 
-		h.log.Infof("Got message: %#v\n", string(buffer))
+		h.log.Debugf("Got message: %#v\n", string(buffer))
 
 		h.ipcManager.Dispatch(string(buffer))
 	}
 }
 
+// Run the app in headless mode!
 func (h *Headless) Run() error {
 	h.server = &http.Server{Addr: ":34115"}
 	http.HandleFunc("/ws", h.wsHandler)
@@ -198,32 +200,49 @@ func (h *Headless) Run() error {
 	return err
 }
 
+// NewBinding creates a new binding with the frontend
 func (h *Headless) NewBinding(methodName string) error {
 	objectCode := fmt.Sprintf("window.wails._.newBinding(`%s`);", methodName)
 	h.bindingCache = append(h.bindingCache, objectCode)
 	return nil
 }
 
+// InjectFramework sets up what JS/CSS should be injected
+// at startup
 func (h *Headless) InjectFramework(js, css string) {
 	h.frameworkJS = js
 	h.frameworkCSS = css
 }
 
+// SelectFile is unsupported for Headless but required
+// for the Renderer interface
 func (h *Headless) SelectFile() string {
 	h.log.Error("SelectFile() unsupported in headless mode")
 	return ""
 }
+
+// SelectDirectory is unsupported for Headless but required
+// for the Renderer interface
 func (h *Headless) SelectDirectory() string {
 	h.log.Error("SelectDirectory() unsupported in headless mode")
 	return ""
 }
+
+// SelectSaveFile is unsupported for Headless but required
+// for the Renderer interface
 func (h *Headless) SelectSaveFile() string {
 	h.log.Error("SelectSaveFile() unsupported in headless mode")
 	return ""
 }
+
+// AddJSList adds a slice of JS strings to the list of js
+// files injected at startup
 func (h *Headless) AddJSList(jsCache []string) {
 	h.jsCache = jsCache
 }
+
+// AddCSSList adds a slice of CSS strings to the list of css
+// files injected at startup
 func (h *Headless) AddCSSList(cssCache []string) {
 	h.cssCache = cssCache
 }
@@ -234,6 +253,7 @@ func (h *Headless) Callback(data string) error {
 	return h.evalJS(callbackCMD)
 }
 
+// NotifyEvent notifies the frontend of an event
 func (h *Headless) NotifyEvent(event *eventData) error {
 
 	// Look out! Nils about!
@@ -261,19 +281,33 @@ func (h *Headless) NotifyEvent(event *eventData) error {
 	return h.evalJS(message)
 }
 
+// SetColour is unsupported for Headless but required
+// for the Renderer interface
 func (h *Headless) SetColour(colour string) error {
 	h.log.WarnFields("SetColour ignored for headless more", Fields{"col": colour})
 	return nil
 }
+
+// Fullscreen is unsupported for Headless but required
+// for the Renderer interface
 func (h *Headless) Fullscreen() {
 	h.log.Warn("Fullscreen() unsupported in headless mode")
 }
+
+// UnFullscreen is unsupported for Headless but required
+// for the Renderer interface
 func (h *Headless) UnFullscreen() {
 	h.log.Warn("UnFullscreen() unsupported in headless mode")
 }
+
+// SetTitle is currently unsupported for Headless but required
+// for the Renderer interface
 func (h *Headless) SetTitle(title string) {
 	h.log.WarnFields("SetTitle() unsupported in headless mode", Fields{"title": title})
 }
+
+// Close is unsupported for Headless but required
+// for the Renderer interface
 func (h *Headless) Close() {
 	h.log.Warn("Close() unsupported in headless mode")
 }

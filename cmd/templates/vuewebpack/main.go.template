@@ -13,8 +13,8 @@ func main() {
 		Width:  1024,
 		Height: 768,
 		Title:  "{{.Name}}",
-		JS:     assets.String("app.js"),
-		CSS:    assets.String("app.css"),
+		JS:     BoxString(&assets, "app.js"),
+		CSS:    BoxString(&assets, "app.css"),
 	})
 	app.Bind(newQuotesCollection())
 	app.Run()

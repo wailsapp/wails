@@ -220,6 +220,8 @@ func (sc *SystemConfig) load(filename string) error {
 	return nil
 }
 
+// CheckDependenciesSilent checks for dependencies but
+// only outputs if there's an error
 func CheckDependenciesSilent(logger *Logger) (bool, error) {
 	logger.SetErrorOnly(true)
 	result, err := CheckDependencies(logger)

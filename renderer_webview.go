@@ -163,7 +163,7 @@ func (w *webViewRenderer) Run() error {
 	// Runtime assets
 	assets := packr.NewBox("./assets/default")
 
-	wailsRuntime := assets.String("wails.js")
+	wailsRuntime := BoxString(&assets, "wails.js")
 	w.evalJS(wailsRuntime)
 
 	// Ping the wait channel when the wails runtime is loaded
@@ -173,7 +173,7 @@ func (w *webViewRenderer) Run() error {
 		go func() {
 			// Will we mount a custom component
 			// Inject jquery
-			jquery := assets.String("jquery.3.3.1.min.js")
+			jquery := BoxString(&assets, "jquery.3.3.1.min.js")
 			w.evalJSSync(jquery)
 
 			// Inject Bindings

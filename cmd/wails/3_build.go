@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 
+	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
 )
@@ -14,6 +14,7 @@ func init() {
 
 	var bundle = false
 	var forceRebuild = false
+	var releaseMode = false
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
 
@@ -21,7 +22,8 @@ func init() {
 	initCmd := app.Command("build", "Builds your Wails project").
 		LongDescription(commandDescription).
 		BoolFlag("b", "Bundle application on successful build", &bundle).
-		BoolFlag("f", "Force rebuild of application components", &forceRebuild)
+		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
+		BoolFlag("r", "Build in Release mode", &releaseMode)
 
 	initCmd.Action(func() error {
 		log := cmd.NewLogger()
@@ -186,27 +188,40 @@ func init() {
 		}
 		depSpinner.Success()
 
-		packSpinner := spinner.New("Packing + Compiling project...")
+		compileMessage := "Packing + Compiling project"
+		if releaseMode {
+			compileMessage += " (Release Mode)"
+		}
+
+		packSpinner := spinner.New(compileMessage + "...")
 		packSpinner.SetSpinSpeed(50)
 		packSpinner.Start()
 
-		buildCommand := "packr build"
+		buildCommand := slicer.String()
+		buildCommand.AddSlice([]string{"packr", "build"})
 
 		// Add build tags
 		if len(buildTags) > 0 {
-			buildCommand += fmt.Sprintf(" --tags '%s'", strings.Join(buildTags, " "))
+			buildCommand.Add("--tags")
+			buildCommand.AddSlice(buildTags)
+
 		}
 
 		if projectOptions.BinaryName != "" {
-			buildCommand += " -o " + projectOptions.BinaryName
+			buildCommand.Add("-o")
+			buildCommand.Add(projectOptions.BinaryName)
 		}
 
 		// If we are forcing a rebuild
 		if forceRebuild {
-			buildCommand += " -a"
+			buildCommand.Add(" -a")
 		}
 
-		err = program.RunCommand(buildCommand)
+		// Release mode
+		if releaseMode {
+			buildCommand.AddSlice([]string{"-ldflags","-X github.com/wailsapp/wails.DebugMode=false"})
+		}
+		err = program.RunCommandArray(buildCommand.AsSlice())
 		if err != nil {
 			packSpinner.Error()
 			return err

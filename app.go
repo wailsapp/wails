@@ -7,8 +7,8 @@ import (
 
 // -------------------------------- Compile time Flags ------------------------------
 
-// ReleaseMode indicates if we are in Release Mode
-var ReleaseMode = false
+// DebugMode indicates if we are in debug Mode
+var DebugMode = "true"
 
 // ----------------------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ func CreateApp(optionalConfig ...*AppConfig) *App {
 	}
 
 	result := &App{
-		logLevel:       "debug",
+		logLevel:       "info",
 		renderer:       &webViewRenderer{},
 		ipc:            newIPCManager(),
 		bindingManager: newBindingManager(),
@@ -55,12 +55,10 @@ func CreateApp(optionalConfig ...*AppConfig) *App {
 	result.config = appconfig
 
 	// Set up the CLI if not in release mode
-	if !ReleaseMode {
+	if DebugMode == "true" {
 		result.cli = result.setupCli()
-	}
-
-	// Disable Inspector in release mode
-	if ReleaseMode {
+	} else {
+		// Disable Inspector in release mode
 		result.config.DisableInspector = true
 	}
 
@@ -68,8 +66,13 @@ func CreateApp(optionalConfig ...*AppConfig) *App {
 }
 
 // Run the app
-func (a *App) Run() {
-	a.cli.Run()
+func (a *App) Run() error {
+	if DebugMode == "true" {
+		return a.cli.Run()
+	} else {
+		a.logLevel = "error"
+		return a.start()
+	}
 }
 
 func (a *App) start() error {

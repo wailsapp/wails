@@ -103,6 +103,11 @@ func (p *ProgramHelper) InstallGoPackage(packageName string) error {
 // RunCommand runs the given command
 func (p *ProgramHelper) RunCommand(command string) error {
 	args := strings.Split(command, " ")
+	return p.RunCommandArray(args)
+}
+
+// RunCommandArray runs the command specified in the array
+func (p *ProgramHelper) RunCommandArray(args []string) error {
 	program := args[0]
 	// TODO: Run FindProgram here and get the full path to the exe
 	program, err := exec.LookPath(program)
