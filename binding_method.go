@@ -136,8 +136,8 @@ func (b *boundMethod) call(data string) ([]reflect.Value, error) {
 		}
 		args[index] = value
 	}
-	b.log.Infof("Unmarshalled Args: %+v\n", jsArgs)
-	b.log.Infof("Converted Args: %+v\n", args)
+	b.log.Debugf("Unmarshalled Args: %+v\n", jsArgs)
+	b.log.Debugf("Converted Args: %+v\n", args)
 	results := b.method.Call(args)
 
 	b.log.Debugf("results = %+v", results)
