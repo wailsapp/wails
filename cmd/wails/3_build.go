@@ -162,6 +162,7 @@ func init() {
 		frameworkSpinner := spinner.New()
 		frameworkSpinner.SetSpinSpeed(50)
 		if projectOptions.Framework != nil {
+			frameworkSpinner.Start()
 			frameworkSpinner.Success("Compiling support for " + projectOptions.Framework.Name)
 			buildTags = append(buildTags, projectOptions.Framework.BuildTag)
 		}
@@ -219,7 +220,7 @@ func init() {
 
 		// Release mode
 		if releaseMode {
-			buildCommand.AddSlice([]string{"-ldflags","-X github.com/wailsapp/wails.DebugMode=false"})
+			buildCommand.AddSlice([]string{"-ldflags", "-X github.com/wailsapp/wails.DebugMode=false"})
 		}
 		err = program.RunCommandArray(buildCommand.AsSlice())
 		if err != nil {
