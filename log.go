@@ -29,6 +29,8 @@ func setLogLevel(level string) {
 		logger.SetLevel(log.DebugLevel)
 	case "warn":
 		logger.SetLevel(log.WarnLevel)
+	case "error":
+		logger.SetLevel(log.ErrorLevel)
 	case "fatal":
 		logger.SetLevel(log.FatalLevel)
 	case "panic":

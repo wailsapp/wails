@@ -216,6 +216,8 @@ github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORN
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/pty v1.1.3/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
+github.com/leaanthony/slicer v0.0.0-20190110113548-aa9ea12f976a h1:+nH6CKt4ZdMj+AabQrU0SLtZWYyQ1ovzLCA21se+raw=
+github.com/leaanthony/slicer v0.0.0-20190110113548-aa9ea12f976a/go.mod h1:VMB/HGvr3uR3MRpFWHWAm0w+DHQLzPHYe2pKfpFlQIQ=
 github.com/leaanthony/spinner v0.4.0 h1:y/7FqQqqObRKYI+33bg9DGhHIY7cQHicm+Vz0Uda0Ik=
 github.com/leaanthony/spinner v0.4.0/go.mod h1:2Mmv+8Brcw3NwPT1DdOLmW6+zWpSamDDFFsUvVHo2cc=
 github.com/leaanthony/spinner v0.5.0 h1:OJKn+0KP6ilHxwCEOv5Lo0wPM4PgWZWLJTeUprGJK0g=

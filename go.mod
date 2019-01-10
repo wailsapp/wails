@@ -12,6 +12,7 @@ require (
 	github.com/gorilla/websocket v1.4.0
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
+	github.com/leaanthony/slicer v0.0.0-20190110113548-aa9ea12f976a
 	github.com/leaanthony/spinner v0.4.0
 	github.com/leaanthony/synx v0.0.0-20180923230033-60efbd9984b0 // indirect
 	github.com/leaanthony/wincursor v0.0.0-20180705115120-056510f32d15 // indirect

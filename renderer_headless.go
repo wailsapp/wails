@@ -177,12 +177,13 @@ func (h *Headless) start(conn *websocket.Conn) {
 			continue
 		}
 
-		h.log.Infof("Got message: %#v\n", string(buffer))
+		h.log.Debugf("Got message: %#v\n", string(buffer))
 
 		h.ipcManager.Dispatch(string(buffer))
 	}
 }
 
+// Run the app in headless mode!
 func (h *Headless) Run() error {
 	h.server = &http.Server{Addr: ":34115"}
 	http.HandleFunc("/ws", h.wsHandler)
