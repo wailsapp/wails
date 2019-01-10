@@ -19,7 +19,6 @@ export default {
     getNewQuote: function() {
       var self = this;
       wails.$.main.QuotesCollection.GetQuote().then(result => {
-        console.log(result);
         self.quote = result;
       });
     }
