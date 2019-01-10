@@ -85,7 +85,7 @@ func newAppConfig(userConfig *AppConfig) (*AppConfig, error) {
 		Resizable: true,
 		Title:     "My Wails App",
 		Colour:    "#FFF", // White by default
-		HTML:      defaultAssets.String("default.html"),
+		HTML:      BoxString(&defaultAssets, "default.html"),
 	}
 
 	if userConfig != nil {
