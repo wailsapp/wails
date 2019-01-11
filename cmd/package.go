@@ -16,16 +16,16 @@ import (
 	"github.com/jackmordaunt/icns"
 )
 
-// BundleHelper helps with the 'wails bundle' command
-type BundleHelper struct {
+// PackageHelper helps with the 'wails package' command
+type PackageHelper struct {
 	fs     *FSHelper
 	log    *Logger
 	system *SystemHelper
 }
 
-// NewBundleHelper creates a new BundleHelper!
-func NewBundleHelper() *BundleHelper {
-	return &BundleHelper{
+// NewPackageHelper creates a new PackageHelper!
+func NewPackageHelper() *PackageHelper {
+	return &PackageHelper{
 		fs:     NewFSHelper(),
 		log:    NewLogger(),
 		system: NewSystemHelper(),
@@ -33,23 +33,23 @@ func NewBundleHelper() *BundleHelper {
 }
 
 type plistData struct {
-	Title    string
-	Exe      string
-	BundleID string
-	Version  string
-	Author   string
-	Date     string
+	Title     string
+	Exe       string
+	PackageID string
+	Version   string
+	Author    string
+	Date      string
 }
 
-func newPlistData(title, exe, bundleID, version, author string) *plistData {
+func newPlistData(title, exe, packageID, version, author string) *plistData {
 	now := time.Now().Format(time.RFC822)
 	return &plistData{
-		Title:    title,
-		Exe:      exe,
-		Version:  version,
-		BundleID: bundleID,
-		Author:   author,
-		Date:     now,
+		Title:     title,
+		Exe:       exe,
+		Version:   version,
+		PackageID: packageID,
+		Author:    author,
+		Date:      now,
 	}
 }
 
@@ -60,26 +60,32 @@ func defaultString(val string, defaultVal string) string {
 	return defaultVal
 }
 
-func (b *BundleHelper) getBundleFileBaseDir() string {
-	return filepath.Join(b.system.homeDir, "go", "src", "github.com", "wailsapp", "wails", "cmd", "bundle", runtime.GOOS)
+func (b *PackageHelper) getPackageFileBaseDir() string {
+	// Calculate template base dir
+	_, filename, _, _ := runtime.Caller(1)
+	return filepath.Join(path.Dir(filename), "packages", runtime.GOOS)
 }
 
-// Bundle the application into a platform specific package
-func (b *BundleHelper) Bundle(po *ProjectOptions) error {
+// Package the application into a platform specific package
+func (b *PackageHelper) Package(po *ProjectOptions) error {
 	// Check we have the exe
 	if !b.fs.FileExists(po.BinaryName) {
 		return fmt.Errorf("cannot bundle non-existant binary file '%s'. Please build with 'wails build' first", po.BinaryName)
 	}
 	switch runtime.GOOS {
 	case "darwin":
-		return b.bundleOSX(po)
+		return b.packageOSX(po)
+	case "windows":
+		return fmt.Errorf("windows is not supported at this time. Please see https://github.com/wailsapp/wails/issues/3")
+	case "linux":
+		return fmt.Errorf("linux is not supported at this time. Please see https://github.com/wailsapp/wails/issues/2")
 	default:
 		return fmt.Errorf("platform '%s' not supported for bundling yet", runtime.GOOS)
 	}
 }
 
-// Bundle the application
-func (b *BundleHelper) bundleOSX(po *ProjectOptions) error {
+// Package the application for OSX
+func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 
 	system := NewSystemHelper()
 	config, err := system.LoadConfig()
@@ -91,8 +97,8 @@ func (b *BundleHelper) bundleOSX(po *ProjectOptions) error {
 	exe := defaultString(po.BinaryName, name)
 	version := defaultString(po.Version, "0.1.0")
 	author := defaultString(config.Name, "Anonymous")
-	bundleID := strings.Join([]string{"wails", name, version}, ".")
-	plistData := newPlistData(name, exe, bundleID, version, author)
+	packageID := strings.Join([]string{"wails", name, version}, ".")
+	plistData := newPlistData(name, exe, packageID, version, author)
 	appname := po.Name + ".app"
 
 	// Check binary exists
@@ -102,7 +108,7 @@ func (b *BundleHelper) bundleOSX(po *ProjectOptions) error {
 		return fmt.Errorf("Target '%s' not available. Has it been compiled yet?", exe)
 	}
 
-	// REmove the existing bundle
+	// Remove the existing package
 	os.RemoveAll(appname)
 
 	exeDir := path.Join(b.fs.Cwd(), appname, "/Contents/MacOS")
@@ -110,7 +116,7 @@ func (b *BundleHelper) bundleOSX(po *ProjectOptions) error {
 	resourceDir := path.Join(b.fs.Cwd(), appname, "/Contents/Resources")
 	b.fs.MkDirs(resourceDir, 0755)
 	tmpl := template.New("infoPlist")
-	plistFile := filepath.Join(b.getBundleFileBaseDir(), "info.plist")
+	plistFile := filepath.Join(b.getPackageFileBaseDir(), "info.plist")
 	infoPlist, err := ioutil.ReadFile(plistFile)
 	if err != nil {
 		return err
@@ -140,11 +146,11 @@ func (b *BundleHelper) bundleOSX(po *ProjectOptions) error {
 	if err != nil {
 		return err
 	}
-	err = b.bundleIcon(resourceDir)
+	err = b.packageIcon(resourceDir)
 	return err
 }
 
-func (b *BundleHelper) bundleIcon(resourceDir string) error {
+func (b *PackageHelper) packageIcon(resourceDir string) error {
 
 	// TODO: Read this from project.json
 	const appIconFilename = "appicon.png"
@@ -155,7 +161,7 @@ func (b *BundleHelper) bundleIcon(resourceDir string) error {
 	if !b.fs.FileExists(srcIcon) {
 
 		// Install default icon
-		iconfile := filepath.Join(b.getBundleFileBaseDir(), "icon.png")
+		iconfile := filepath.Join(b.getPackageFileBaseDir(), "icon.png")
 		iconData, err := ioutil.ReadFile(iconfile)
 		if err != nil {
 			return err

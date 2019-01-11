@@ -12,7 +12,7 @@ import (
 
 func init() {
 
-	var bundle = false
+	var packageApp = false
 	var forceRebuild = false
 	var releaseMode = false
 	buildSpinner := spinner.NewSpinner()
@@ -21,7 +21,7 @@ func init() {
 	commandDescription := `This command will check to ensure all pre-requistes are installed prior to building. If not, it will attempt to install them. Building comprises of a number of steps: install frontend dependencies, build frontend, pack frontend, compile main application.`
 	initCmd := app.Command("build", "Builds your Wails project").
 		LongDescription(commandDescription).
-		BoolFlag("b", "Bundle application on successful build", &bundle).
+		BoolFlag("p", "Package application on successful build (Implies -r)", &packageApp).
 		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
 		BoolFlag("r", "Build in Release mode", &releaseMode)
 
@@ -190,7 +190,7 @@ func init() {
 		depSpinner.Success()
 
 		compileMessage := "Packing + Compiling project"
-		if releaseMode {
+		if releaseMode || packageApp {
 			compileMessage += " (Release Mode)"
 		}
 
@@ -219,7 +219,7 @@ func init() {
 		}
 
 		// Release mode
-		if releaseMode {
+		if releaseMode || packageApp {
 			buildCommand.AddSlice([]string{"-ldflags", "-X github.com/wailsapp/wails.DebugMode=false"})
 		}
 		err = program.RunCommandArray(buildCommand.AsSlice())
@@ -229,22 +229,22 @@ func init() {
 		}
 		packSpinner.Success()
 
-		if bundle == false {
+		if packageApp == false {
 			logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
 			return nil
 		}
 
-		// Bundle app
-		bundleSpinner := spinner.New("Bundling Application")
-		bundleSpinner.SetSpinSpeed(50)
-		bundleSpinner.Start()
-		bundler := cmd.NewBundleHelper()
-		err = bundler.Bundle(projectOptions)
+		// Package app
+		packageSpinner := spinner.New("Packaging Application")
+		packageSpinner.SetSpinSpeed(50)
+		packageSpinner.Start()
+		packager := cmd.NewPackageHelper()
+		err = packager.Package(projectOptions)
 		if err != nil {
-			bundleSpinner.Error()
+			packageSpinner.Error()
 			return err
 		}
-		bundleSpinner.Success()
+		packageSpinner.Success()
 		logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
 		return nil
 	})
