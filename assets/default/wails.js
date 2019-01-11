@@ -1,9 +1,8 @@
 // Wails runtime JS
 
 (function () {
-	window.wails = window.wails || {
-		$: {}
-	};
+	window.wails = window.wails || {};
+	window.backend = {};
 
 	/****************** Utility Functions ************************/
 
@@ -63,7 +62,7 @@
 
 	/************************* Bindings *************************/
 
-	var bindingsBasePath = window.wails.$;
+	var bindingsBasePath = window.backend;
 
 	// Creates the path given in the bindings path
 	function addBindingPath(pathSections) {
@@ -92,10 +91,13 @@
 	function newBinding(bindingName) {
 
 		// Get all the sections of the binding
-		var bindingSections = bindingName.split('.');
+		var bindingSections = bindingName.split('.').splice(1);
 
 		// Get the actual function/method call name
 		var callName = bindingSections.pop();
+
+		let pathToBinding;
+		let err;
 
 		// Add path to binding
 		[pathToBinding, err] = addBindingPath(bindingSections)

@@ -18,7 +18,7 @@ export default {
   methods: {
     getNewQuote: function() {
       var self = this;
-      wails.$.main.QuotesCollection.GetQuote().then(result => {
+      backend.QuotesCollection.GetQuote().then(result => {
         self.quote = result;
       });
     }
