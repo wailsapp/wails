@@ -39,6 +39,7 @@ func (h *Headless) Initialise(appConfig *AppConfig, ipcManager *ipcManager, even
 	h.ipcManager = ipcManager
 	h.appConfig = appConfig
 	h.eventManager = eventManager
+	ipcManager.bindRenderer(h)
 	h.log = newCustomLogger("Headless")
 	return nil
 }
@@ -99,16 +100,12 @@ func (h *Headless) start(conn *websocket.Conn) {
 	// set external.invoke
 	h.log.Infof("Connected to frontend.")
 
-	// If we are given an HTML fragment, load jquery
-	// for the html() function
-	if h.appConfig.isHTMLFragment {
-		// Inject jquery
-		jquery := BoxString(&defaultAssets, "jquery.3.3.1.min.js")
-		h.evalJS(jquery)
-	}
-
 	wailsRuntime := BoxString(&defaultAssets, "wails.js")
 	h.evalJS(wailsRuntime)
+
+	// Inject jquery
+	jquery := BoxString(&defaultAssets, "jquery.3.3.1.min.js")
+	h.evalJS(jquery)
 
 	// Inject the initial JS
 	for _, js := range h.initialisationJS {
