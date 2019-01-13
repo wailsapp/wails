@@ -101,6 +101,10 @@
         }
         s.textContent = script;
         document.head.appendChild(s)
+        if (script.indexOf("window.wails._.") == 0) {
+          var elem = document.querySelector('#' + id);
+          elem.parentNode.removeChild(elem);
+        }
       }
 
       function handleConnect() {
@@ -139,8 +143,13 @@
         }, 300);
       }
 
+      let idcounter = 0
+      function generateID() {
+        return "wails-" + idcounter++;
+      }
+
       function handleMessage(e) {
-        addScript(e.data);
+        addScript(e.data, generateID());
       }
 
       // Key listener
@@ -168,7 +177,6 @@
       }
 
       connect();
-
 
     }());
 

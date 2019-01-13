@@ -125,16 +125,6 @@ func (h *Headless) start(conn *websocket.Conn) {
 		h.injectCSS(h.frameworkCSS)
 	}
 
-	// If given an HMTL fragment, mount it on #app
-	// Otherwise, replace the html tag
-	var injectHTML string
-	if h.appConfig.isHTMLFragment {
-		injectHTML = fmt.Sprintf("$('#app').html('%s')", h.appConfig.HTML)
-	} else {
-		injectHTML = fmt.Sprintf("$('html').html('%s')", h.appConfig.HTML)
-	}
-	h.evalJS(injectHTML)
-
 	// Inject user CSS
 	if h.appConfig.CSS != "" {
 		outputCSS := fmt.Sprintf("%.45s", h.appConfig.CSS)
@@ -274,7 +264,7 @@ func (h *Headless) NotifyEvent(event *eventData) error {
 		}
 	}
 
-	message := fmt.Sprintf("wails._.notify('%s','%s')", event.Name, data)
+	message := fmt.Sprintf("window.wails._.notify('%s','%s')", event.Name, data)
 	return h.evalJS(message)
 }
 
