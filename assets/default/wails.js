@@ -157,7 +157,6 @@
 		return new Promise(function (resolve, reject) {
 
 			// Create a unique callbackID
-			debugger;
 			var callbackID;
 			do {
 				callbackID = bindingName + "-" + randomFunc();
@@ -203,7 +202,6 @@
 	function callback(incomingMessage) {
 		// Parse the message
 		var message
-		debugger;
 		try {
 			message = JSON.parse(incomingMessage)
 		} catch (e) {
