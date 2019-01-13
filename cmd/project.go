@@ -249,7 +249,7 @@ func (po *ProjectOptions) PromptForInputs() error {
 	}
 
 	// Setup NPM Project name
-	po.NPMProjectName = strings.Replace(po.Name, " ", "_", -1)
+	po.NPMProjectName = strings.ToLower(strings.Replace(po.Name, " ", "_", -1))
 
 	// If we selected custom, prompt for framework
 	if po.Template == "custom - Choose your own CSS Framework" {
