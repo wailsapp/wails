@@ -215,7 +215,7 @@ func init() {
 
 		// If we are forcing a rebuild
 		if forceRebuild {
-			buildCommand.Add(" -a")
+			buildCommand.Add("-a")
 		}
 
 		// Release mode
