@@ -1,5 +1,6 @@
 package wails
 
+// Runtime is the Wails Runtime Interface, given to a user who has defined the WailsInit method
 type Runtime struct {
 	Events *RuntimeEvents
 	Log    *RuntimeLog

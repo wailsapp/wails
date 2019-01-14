@@ -1,5 +1,6 @@
 package wails
 
+// RuntimeEvents exposes the events interface
 type RuntimeEvents struct {
 	eventManager *eventManager
 }
