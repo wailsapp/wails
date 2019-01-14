@@ -126,6 +126,13 @@ func (h *Headless) start(conn *websocket.Conn) {
 		h.injectCSS(h.frameworkCSS)
 	}
 
+	var injectHTML string
+	if h.appConfig.isHTMLFragment {
+		injectHTML = fmt.Sprintf("$('#app').html('%s')", h.appConfig.HTML)
+	}
+
+	h.evalJS(injectHTML)
+
 	// Inject user CSS
 	if h.appConfig.CSS != "" {
 		outputCSS := fmt.Sprintf("%.45s", h.appConfig.CSS)
