@@ -63,6 +63,7 @@ func (h *Headless) injectCSS(css string) {
 		h.log.Fatal("Unable to minify CSS: " + css)
 	}
 	minifiedCSS := string(minified)
+	minifiedCSS = strings.Replace(minifiedCSS, "\\", "\\\\", -1)
 	minifiedCSS = strings.Replace(minifiedCSS, "'", "\\'", -1)
 	minifiedCSS = strings.Replace(minifiedCSS, "\n", " ", -1)
 	inject := fmt.Sprintf("wails._.injectCSS('%s')", minifiedCSS)
