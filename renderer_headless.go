@@ -141,6 +141,12 @@ func (h *Headless) start(conn *websocket.Conn) {
 		}
 		h.log.DebugFields("Inject User CSS", Fields{"css": outputCSS})
 		h.injectCSS(h.appConfig.CSS)
+	} else {
+		// Use default wails css
+		h.log.Debug("Injecting Default Wails CSS")
+		defaultCSS := BoxString(&defaultAssets, "wails.css")
+
+		h.injectCSS(defaultCSS)
 	}
 
 	// Inject all the CSS files that have been added
