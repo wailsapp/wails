@@ -208,6 +208,12 @@ func (w *webViewRenderer) Run() error {
 				}
 				w.log.DebugFields("Inject User CSS", Fields{"css": outputCSS})
 				w.injectCSS(w.config.CSS)
+			} else {
+				// Use default wails css
+				w.log.Debug("Injecting Default Wails CSS")
+				defaultCSS := BoxString(&defaultAssets, "wails.css")
+
+				w.injectCSS(defaultCSS)
 			}
 
 			// Inject all the CSS files that have been added
