@@ -8,6 +8,7 @@
 
 <script>
 import "../assets/css/quote.css";
+import { eventBus } from "../main";
 
 export default {
   data() {
@@ -24,7 +25,7 @@ export default {
     }
   },
   created() {
-    this.getNewQuote();
+    eventBus.$on("ready", this.getNewQuote);
   }
 };
 </script>
