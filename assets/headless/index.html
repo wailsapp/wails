@@ -94,22 +94,34 @@
         }
       };
 
-      function addScript(script, id) {
-        var s = document.createElement("script")
-        if (id) {
-          s.id = id;
-        }
+      // Adds a script to the Dom.
+      // Removes it if second parameter is true.
+      function addScript(script, remove) {
+        var s = document.createElement("script");
         s.textContent = script;
-        document.head.appendChild(s)
-        if (script.indexOf("window.wails._.") == 0) {
-          var elem = document.querySelector('#' + id);
-          elem.parentNode.removeChild(elem);
+        document.head.appendChild(s);
+
+        // Remove internal messages from the DOM
+        if (remove) {
+          s.parentNode.removeChild(s);
         }
       }
 
+      // Adapted from webview - thanks zserge!
+      function injectCSS(css) {
+        var elem = document.createElement("style");
+        elem.setAttribute("type", "text/css");
+        if (elem.styleSheet) {
+          elem.styleSheet.cssText = css;
+        } else {
+          elem.appendChild(document.createTextNode(css));
+        }
+        var head = document.head || document.getElementsByTagName("head")[0];
+        head.appendChild(elem);
+      }
+
       function handleConnect() {
-        console.log("[Wails] Connected to backend");
-        addKeyListener();
+        log("Connected to backend");
         hideReconnectOverlay();
         clearInterval(connectTimer);
         websocket.onclose = handleDisconnect;
@@ -119,9 +131,8 @@
       }
 
       function handleDisconnect() {
-        console.log("[Wails] Disconnected from backend");
+        log("Disconnected from backend");
         websocket = null;
-        removeKeyListener();
         connectionState = "disconnected";
         showReconnectOverlay();
         connect();
@@ -142,38 +153,69 @@
           }
         }, 300);
       }
-
-      let idcounter = 0
-      function generateID() {
-        return "wails-" + idcounter++;
+      function log(message) {
+        console.log(
+          "%c wails headless %c " + message + " ",
+          "background: #aa0000; color: #fff; border-radius: 3px 0px 0px 3px; padding: 1px; font-size: 0.7rem",
+          "background: #009900; color: #fff; border-radius: 0px 3px 3px 0px; padding: 1px; font-size: 0.7rem"
+        );
       }
 
-      function handleMessage(e) {
-        addScript(e.data, generateID());
-      }
+      function handleMessage(message) {
+        // As a bridge we ignore js and css injections
+        debugger;
 
-      // Key listener
-      var delta = 300;
-      var lastKeypressTime = 0;
-      function KeyHandler(event) {
-        if (event.key === "`") {
-          var thisKeypressTime = new Date();
-          if (thisKeypressTime - lastKeypressTime <= delta) {
-            console.log("Double tap!")
-            // optional - if we'd rather not detect a triple-press
-            // as a second double-press, reset the timestamp
-            thisKeypressTime = 0;
-          }
-          lastKeypressTime = thisKeypressTime;
+        switch (message.data[0]) {
+          // Wails library - inject!
+          case "w":
+            addScript(message.data.slice(1));
+
+            // Now wails runtime is loaded, wails for the ready event
+            // and callback to the main app
+            window.wails.events.on("wails:loaded", function () {
+              log("Wails Ready");
+            });
+            log("Loaded Wails Runtime");
+            break;
+
+          // Notification
+          case "n":
+            log("Notification: " + message.data.slice(1))
+            addScript(message.data.slice(1), true);
+            break;
+
+          // Binding
+          case "b":
+            var binding = message.data.slice(1)
+            //log("Binding: " + binding)
+            window.wails._.newBinding(binding);
+            break;
+
+          // Call back
+          case "c":
+            var callbackData = message.data.slice(1);
+            log("Callback = " + callbackData);
+            window.wails._.callback(callbackData);
+            break;
+
+          // CSS
+          case "s":
+            addScript(message.data.slice(1), true);
+            break;
+
+          // JS
+          case "j":
+            addScript(message.data.slice(1));
+            break;
+
+          // HTML
+          case "h":
+            addScript(message.data.slice(1), true);
+            break;
+
+          default:
+            log("Ignored message: " + message.data.slice(0, 100))
         }
-      }
-
-      function addKeyListener() {
-        document.body.addEventListener('keydown', KeyHandler);
-      }
-
-      function removeKeyListener() {
-        document.body.removeEventListener('keydown', KeyHandler);
       }
 
       connect();
