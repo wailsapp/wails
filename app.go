@@ -69,10 +69,10 @@ func CreateApp(optionalConfig ...*AppConfig) *App {
 func (a *App) Run() error {
 	if DebugMode == "true" {
 		return a.cli.Run()
-	} else {
-		a.logLevel = "error"
-		return a.start()
 	}
+
+	a.logLevel = "error"
+	return a.start()
 }
 
 func (a *App) start() error {

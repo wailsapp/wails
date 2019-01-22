@@ -1,8 +1,14 @@
-import Vue from 'vue'
-import App from './App.vue'
+import Vue from "vue";
+export const eventBus = new Vue();
 
-Vue.config.productionTip = false
-
+import App from "./App.vue";
 new Vue({
-  render: h => h(App),
-}).$mount('#app')
+  render: h => h(App)
+}).$mount("#app");
+
+import Bridge from "./wailsbridge";
+Bridge.Start(startApp);
+
+function startApp() {
+  eventBus.$emit("ready");
+}

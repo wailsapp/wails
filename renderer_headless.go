@@ -14,6 +14,22 @@ import (
 var headlessAssets = packr.NewBox("./assets/headless")
 var defaultAssets = packr.NewBox("./assets/default")
 
+type messageType int
+
+const (
+	jsMessage messageType = iota
+	cssMessage
+	htmlMessage
+	notifyMessage
+	bindingMessage
+	callbackMessage
+	wailsRuntimeMessage
+)
+
+func (m messageType) toString() string {
+	return [...]string{"j", "s", "h", "n", "b", "c", "w"}[m]
+}
+
 // Headless is a backend that opens a local web server
 // and renders the files over a websocket
 type Headless struct {
@@ -32,6 +48,8 @@ type Headless struct {
 	initialisationJS []string
 	server           *http.Server
 	theConnection    *websocket.Conn
+	bridgeMode       bool
+	connectionType   string
 }
 
 // Initialise the Headless Renderer
@@ -39,16 +57,23 @@ func (h *Headless) Initialise(appConfig *AppConfig, ipcManager *ipcManager, even
 	h.ipcManager = ipcManager
 	h.appConfig = appConfig
 	h.eventManager = eventManager
+	h.bridgeMode = false
+	h.connectionType = "Websocket"
+
 	ipcManager.bindRenderer(h)
 	h.log = newCustomLogger("Headless")
 	return nil
 }
 
-func (h *Headless) evalJS(js string) error {
+func (h *Headless) evalJS(js string, mtype messageType) error {
+
+	message := mtype.toString() + js
+
 	if h.theConnection == nil {
-		h.initialisationJS = append(h.initialisationJS, js)
+		h.initialisationJS = append(h.initialisationJS, message)
 	} else {
-		h.sendMessage(h.theConnection, js)
+		// Prepend message type to message
+		h.sendMessage(h.theConnection, message)
 	}
 
 	return nil
@@ -67,12 +92,18 @@ func (h *Headless) injectCSS(css string) {
 	minifiedCSS = strings.Replace(minifiedCSS, "'", "\\'", -1)
 	minifiedCSS = strings.Replace(minifiedCSS, "\n", " ", -1)
 	inject := fmt.Sprintf("wails._.injectCSS('%s')", minifiedCSS)
-	h.evalJS(inject)
+	h.evalJS(inject, cssMessage)
 }
 
 func (h *Headless) rootHandler(w http.ResponseWriter, r *http.Request) {
 	indexHTML := BoxString(&headlessAssets, "index.html")
 	fmt.Fprintf(w, "%s", indexHTML)
+}
+
+func (h *Headless) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
+	h.bridgeMode = true
+	h.connectionType = "Bridge"
+	h.wsHandler(w, r)
 }
 
 func (h *Headless) wsHandler(w http.ResponseWriter, r *http.Request) {
@@ -81,9 +112,9 @@ func (h *Headless) wsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
 	}
 	h.theConnection = conn
-	h.log.Infof("Connection %p accepted.", h.theConnection)
+	h.log.Infof("%s connection accepted [%p].", h.connectionType, h.theConnection)
 	conn.SetCloseHandler(func(int, string) error {
-		h.log.Infof("Connection %p dropped.", h.theConnection)
+		h.log.Infof("%s connection dropped [%p].", h.connectionType, h.theConnection)
 		h.theConnection = nil
 		return nil
 	})
@@ -100,74 +131,83 @@ func (h *Headless) start(conn *websocket.Conn) {
 
 	// set external.invoke
 	h.log.Infof("Connected to frontend.")
+	h.log.Infof("Mode = %s", h.connectionType)
 
 	wailsRuntime := BoxString(&defaultAssets, "wails.js")
-	h.evalJS(wailsRuntime)
+	h.evalJS(wailsRuntime, wailsRuntimeMessage)
 
-	// Inject jquery
-	jquery := BoxString(&defaultAssets, "jquery.3.3.1.min.js")
-	h.evalJS(jquery)
+	if !h.bridgeMode {
+		// Inject jquery
+		jquery := BoxString(&defaultAssets, "jquery.3.3.1.min.js")
+		h.evalJS(jquery, jsMessage)
+	}
 
 	// Inject the initial JS
 	for _, js := range h.initialisationJS {
-		h.sendMessage(conn, js)
+		h.sendMessage(h.theConnection, js)
 	}
 
 	// Inject bindings
 	for _, binding := range h.bindingCache {
-		h.evalJS(binding)
+		h.evalJS(binding, bindingMessage)
 	}
 
-	// Inject Framework
-	if h.frameworkJS != "" {
-		h.evalJS(h.frameworkJS)
-	}
-	if h.frameworkCSS != "" {
-		h.injectCSS(h.frameworkCSS)
-	}
-
-	var injectHTML string
-	if h.appConfig.isHTMLFragment {
-		injectHTML = fmt.Sprintf("$('#app').html('%s')", h.appConfig.HTML)
-	}
-
-	h.evalJS(injectHTML)
-
-	// Inject user CSS
-	if h.appConfig.CSS != "" {
-		outputCSS := fmt.Sprintf("%.45s", h.appConfig.CSS)
-		if len(outputCSS) > 45 {
-			outputCSS += "..."
+	// In Bridge mode, we only send the wails runtime and bindings
+	// so ignore this whole section
+	if !h.bridgeMode {
+		// Inject Framework
+		if h.frameworkJS != "" {
+			h.evalJS(h.frameworkJS, jsMessage)
 		}
-		h.log.DebugFields("Inject User CSS", Fields{"css": outputCSS})
-		h.injectCSS(h.appConfig.CSS)
-	} else {
-		// Use default wails css
-		h.log.Debug("Injecting Default Wails CSS")
-		defaultCSS := BoxString(&defaultAssets, "wails.css")
-
-		h.injectCSS(defaultCSS)
-	}
-
-	// Inject all the CSS files that have been added
-	for _, css := range h.cssCache {
-		h.injectCSS(css)
-	}
-
-	// Inject all the JS files that have been added
-	for _, js := range h.jsCache {
-		h.evalJS(js)
-	}
-
-	// Inject user JS
-	if h.appConfig.JS != "" {
-		outputJS := fmt.Sprintf("%.45s", h.appConfig.JS)
-		if len(outputJS) > 45 {
-			outputJS += "..."
+		if h.frameworkCSS != "" {
+			h.injectCSS(h.frameworkCSS)
 		}
-		h.log.DebugFields("Inject User JS", Fields{"js": outputJS})
-		h.evalJS(h.appConfig.JS)
+
+		// Inject user CSS
+		if h.appConfig.CSS != "" {
+			outputCSS := fmt.Sprintf("%.45s", h.appConfig.CSS)
+			if len(outputCSS) > 45 {
+				outputCSS += "..."
+			}
+			h.log.DebugFields("Inject User CSS", Fields{"css": outputCSS})
+			h.injectCSS(h.appConfig.CSS)
+		} else {
+			// Use default wails css
+			h.log.Debug("Injecting Default Wails CSS")
+			defaultCSS := BoxString(&defaultAssets, "wails.css")
+
+			h.injectCSS(defaultCSS)
+		}
+
+		// Inject all the CSS files that have been added
+		for _, css := range h.cssCache {
+			h.injectCSS(css)
+		}
+
+		// Inject all the JS files that have been added
+		for _, js := range h.jsCache {
+			h.evalJS(js, jsMessage)
+		}
+
+		// Inject user JS
+		if h.appConfig.JS != "" {
+			outputJS := fmt.Sprintf("%.45s", h.appConfig.JS)
+			if len(outputJS) > 45 {
+				outputJS += "..."
+			}
+			h.log.DebugFields("Inject User JS", Fields{"js": outputJS})
+			h.evalJS(h.appConfig.JS, jsMessage)
+		}
+
+		var injectHTML string
+		if h.appConfig.isHTMLFragment {
+			injectHTML = fmt.Sprintf("$('#app').html('%s')", h.appConfig.HTML)
+			h.evalJS(injectHTML, htmlMessage)
+		}
 	}
+
+	// Emit that everything is loaded and ready
+	h.eventManager.Emit("wails:ready")
 
 	for {
 		messageType, buffer, err := conn.ReadMessage()
@@ -189,10 +229,12 @@ func (h *Headless) start(conn *websocket.Conn) {
 func (h *Headless) Run() error {
 	h.server = &http.Server{Addr: ":34115"}
 	http.HandleFunc("/ws", h.wsHandler)
+	http.HandleFunc("/bridge", h.wsBridgeHandler)
 	http.HandleFunc("/", h.rootHandler)
 
-	h.log.Info("Started on port 34115")
-	h.log.Info("Application running at http://localhost:34115")
+	h.log.Info("Headless mode started.")
+	h.log.Info("If using the Wails bridge, it will connect automatically.")
+	h.log.Info("You may also connect manually by browsing to http://localhost:34115")
 
 	err := h.server.ListenAndServe()
 	if err != nil {
@@ -203,8 +245,7 @@ func (h *Headless) Run() error {
 
 // NewBinding creates a new binding with the frontend
 func (h *Headless) NewBinding(methodName string) error {
-	objectCode := fmt.Sprintf("window.wails._.newBinding(`%s`);", methodName)
-	h.bindingCache = append(h.bindingCache, objectCode)
+	h.bindingCache = append(h.bindingCache, methodName)
 	return nil
 }
 
@@ -250,8 +291,7 @@ func (h *Headless) AddCSSList(cssCache []string) {
 
 // Callback sends a callback to the frontend
 func (h *Headless) Callback(data string) error {
-	callbackCMD := fmt.Sprintf("window.wails._.callback('%s');", data)
-	return h.evalJS(callbackCMD)
+	return h.evalJS(data, callbackMessage)
 }
 
 // NotifyEvent notifies the frontend of an event
@@ -279,7 +319,7 @@ func (h *Headless) NotifyEvent(event *eventData) error {
 	}
 
 	message := fmt.Sprintf("window.wails._.notify('%s','%s')", event.Name, data)
-	return h.evalJS(message)
+	return h.evalJS(message, notifyMessage)
 }
 
 // SetColour is unsupported for Headless but required
