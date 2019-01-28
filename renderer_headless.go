@@ -127,6 +127,58 @@ func (h *Headless) sendMessage(conn *websocket.Conn, msg string) {
 	}
 }
 
+func (h *Headless) injectAllFiles() {
+	// Inject Framework
+	if h.frameworkJS != "" {
+		h.evalJS(h.frameworkJS, jsMessage)
+	}
+	if h.frameworkCSS != "" {
+		h.injectCSS(h.frameworkCSS)
+	}
+
+	// Inject user CSS
+	if h.appConfig.CSS != "" {
+		outputCSS := fmt.Sprintf("%.45s", h.appConfig.CSS)
+		if len(outputCSS) > 45 {
+			outputCSS += "..."
+		}
+		h.log.DebugFields("Inject User CSS", Fields{"css": outputCSS})
+		h.injectCSS(h.appConfig.CSS)
+	} else {
+		// Use default wails css
+		h.log.Debug("Injecting Default Wails CSS")
+		defaultCSS := BoxString(&defaultAssets, "wails.css")
+
+		h.injectCSS(defaultCSS)
+	}
+
+	// Inject all the CSS files that have been added
+	for _, css := range h.cssCache {
+		h.injectCSS(css)
+	}
+
+	// Inject all the JS files that have been added
+	for _, js := range h.jsCache {
+		h.evalJS(js, jsMessage)
+	}
+
+	// Inject user JS
+	if h.appConfig.JS != "" {
+		outputJS := fmt.Sprintf("%.45s", h.appConfig.JS)
+		if len(outputJS) > 45 {
+			outputJS += "..."
+		}
+		h.log.DebugFields("Inject User JS", Fields{"js": outputJS})
+		h.evalJS(h.appConfig.JS, jsMessage)
+	}
+
+	var injectHTML string
+	if h.appConfig.isHTMLFragment {
+		injectHTML = fmt.Sprintf("$('#app').html('%s')", h.appConfig.HTML)
+		h.evalJS(injectHTML, htmlMessage)
+	}
+}
+
 func (h *Headless) start(conn *websocket.Conn) {
 
 	// set external.invoke
@@ -152,58 +204,9 @@ func (h *Headless) start(conn *websocket.Conn) {
 		h.evalJS(binding, bindingMessage)
 	}
 
-	// In Bridge mode, we only send the wails runtime and bindings
-	// so ignore this whole section
+	// In standard headless mode, we send all of the files
 	if !h.bridgeMode {
-		// Inject Framework
-		if h.frameworkJS != "" {
-			h.evalJS(h.frameworkJS, jsMessage)
-		}
-		if h.frameworkCSS != "" {
-			h.injectCSS(h.frameworkCSS)
-		}
-
-		// Inject user CSS
-		if h.appConfig.CSS != "" {
-			outputCSS := fmt.Sprintf("%.45s", h.appConfig.CSS)
-			if len(outputCSS) > 45 {
-				outputCSS += "..."
-			}
-			h.log.DebugFields("Inject User CSS", Fields{"css": outputCSS})
-			h.injectCSS(h.appConfig.CSS)
-		} else {
-			// Use default wails css
-			h.log.Debug("Injecting Default Wails CSS")
-			defaultCSS := BoxString(&defaultAssets, "wails.css")
-
-			h.injectCSS(defaultCSS)
-		}
-
-		// Inject all the CSS files that have been added
-		for _, css := range h.cssCache {
-			h.injectCSS(css)
-		}
-
-		// Inject all the JS files that have been added
-		for _, js := range h.jsCache {
-			h.evalJS(js, jsMessage)
-		}
-
-		// Inject user JS
-		if h.appConfig.JS != "" {
-			outputJS := fmt.Sprintf("%.45s", h.appConfig.JS)
-			if len(outputJS) > 45 {
-				outputJS += "..."
-			}
-			h.log.DebugFields("Inject User JS", Fields{"js": outputJS})
-			h.evalJS(h.appConfig.JS, jsMessage)
-		}
-
-		var injectHTML string
-		if h.appConfig.isHTMLFragment {
-			injectHTML = fmt.Sprintf("$('#app').html('%s')", h.appConfig.HTML)
-			h.evalJS(injectHTML, htmlMessage)
-		}
+		h.injectAllFiles()
 	}
 
 	// Emit that everything is loaded and ready
