@@ -1,25 +1,21 @@
 package main
 
 import (
+  "github.com/gobuffalo/packr"
 	wails "github.com/wailsapp/wails"
 )
 
-var html = `
-<div style='text-align:center'>
-<div class="wails-logo" style="width: 25rem;margin: auto;height: 25rem;"></div>
-<h1> Basic Template </h1>
-Welcome to your basic Wails app!
-</div>
-`
-
 func main() {
+
+	// Assets
+	assets := packr.NewBox("./frontend")
 
 	// Initialise the app
 	app := wails.CreateApp(&wails.AppConfig{
 		Width:  1024,
 		Height: 768,
 		Title:  "{{.Name}}",
-		HTML:   html,
+		HTML:   wails.BoxString(&assets, "main.html"),
 	})
 	app.Run()
 }
