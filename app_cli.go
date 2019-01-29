@@ -15,7 +15,7 @@ func (app *App) setupCli() *cmd.Cli {
 	// Setup cli to handle loglevel and headless flags
 	result.
 		StringFlag("loglevel", "Sets the log level [debug|info|error|panic|fatal]. Default debug", &app.logLevel).
-		BoolFlag("headless", "Runs the app in headless mode", &app.headless).
+		// BoolFlag("headless", "Runs the app in headless mode", &app.headless).
 		Action(app.start)
 
 	// Banner

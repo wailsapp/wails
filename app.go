@@ -2,7 +2,6 @@ package wails
 
 import (
 	"github.com/wailsapp/wails/cmd"
-	"github.com/wailsapp/wails/cmd/frameworks"
 )
 
 // -------------------------------- Compile time Flags ------------------------------
@@ -18,7 +17,6 @@ type App struct {
 	cli            *cmd.Cli        // In debug mode, we have a cli
 	renderer       Renderer        // The renderer is what we will render the app to
 	logLevel       string          // The log level of the app
-	headless       bool            // Indicates if the app should be started in headless mode
 	ipc            *ipcManager     // Handles the IPC calls
 	log            *CustomLogger   // Logger
 	bindingManager *bindingManager // Handles binding of Go code to renderer
@@ -84,7 +82,7 @@ func (a *App) start() error {
 	a.log.Info("Starting")
 
 	// Check if we are to run in headless mode
-	if a.headless {
+	if DebugMode == "true" {
 		a.renderer = &Headless{}
 	}
 
@@ -107,11 +105,6 @@ func (a *App) start() error {
 	err = a.bindingManager.start(a.renderer, a.runtime)
 	if err != nil {
 		return err
-	}
-
-	// Inject framework, if specified
-	if frameworks.FrameworkToUse != nil {
-		a.renderer.InjectFramework(frameworks.FrameworkToUse.JS, frameworks.FrameworkToUse.CSS)
 	}
 
 	// Inject CSS

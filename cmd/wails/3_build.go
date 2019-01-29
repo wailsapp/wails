@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
+	"path/filepath"
+	"runtime"
 
 	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
@@ -56,6 +59,10 @@ func init() {
 			if projectOptions.FrontEnd.Install == "" {
 				return fmt.Errorf("Frontend install command not set in project.json")
 			}
+			if projectOptions.FrontEnd.Bridge == "" {
+				return fmt.Errorf("Frontend bridge config not set in project.json")
+			}
+
 		}
 
 		// Check pre-requisites are installed
@@ -137,6 +144,22 @@ func init() {
 				ioutil.WriteFile(md5sumFile, []byte(packageJSONMD5), 0644)
 			}
 
+			// Determine which wails bridge to install
+			var bridgeFile = "wailsbridge.js"
+			if releaseMode || packageApp {
+				// Release mode
+				bridgeFile = "wailsbridge.prod.js"
+			}
+
+			// Copy bridge to project
+			_, filename, _, _ := runtime.Caller(1)
+			bridgeFileSource := filepath.Join(path.Dir(filename), "..", "assets", "default", bridgeFile)
+			bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, projectOptions.FrontEnd.Bridge, "wailsbridge.js")
+			err = fs.CopyFile(bridgeFileSource, bridgeFileTarget)
+			if err != nil {
+				return err
+			}
+
 			// Build frontend
 			buildFESpinner := spinner.New("Building frontend...")
 			buildFESpinner.SetSpinSpeed(50)
@@ -157,26 +180,6 @@ func init() {
 
 		// Support build tags
 		buildTags := []string{}
-
-		// Do we have any frameworks specified?
-		frameworkSpinner := spinner.New()
-		frameworkSpinner.SetSpinSpeed(50)
-		if projectOptions.Framework != nil {
-			frameworkSpinner.Start()
-			frameworkSpinner.Success("Compiling support for " + projectOptions.Framework.Name)
-			buildTags = append(buildTags, projectOptions.Framework.BuildTag)
-		}
-
-		// // Initialise Go Module - if go.mod doesn't exist
-		// if !fs.FileExists("go.mod") {
-		// 	buildSpinner.Start("Initialising Go module...")
-		// 	err = program.RunCommand("go mod init " + projectOptions.BinaryName)
-		// 	if err != nil {
-		// 		buildSpinner.Error()
-		// 		return err
-		// 	}
-		// 	buildSpinner.Success()
-		// }
 
 		depSpinner := spinner.New("Installing Dependencies...")
 		depSpinner.SetSpinSpeed(50)

@@ -19,6 +19,7 @@ type frontend struct {
 	Dir     string `json:"dir"`
 	Install string `json:"install"`
 	Build   string `json:"build"`
+	Bridge  string `json:"bridge"`
 }
 
 type framework struct {
@@ -151,17 +152,16 @@ func InputQuestion(name, message string, defaultValue string, required bool) *su
 
 // ProjectOptions holds all the options available for a project
 type ProjectOptions struct {
-	Name            string     `json:"name"`
-	Description     string     `json:"description"`
-	Author          *author    `json:"author,omitempty"`
-	Version         string     `json:"version"`
-	OutputDirectory string     `json:"-"`
-	UseDefaults     bool       `json:"-"`
-	Template        string     `json:"-"`
-	BinaryName      string     `json:"binaryname"`
-	FrontEnd        *frontend  `json:"frontend,omitempty"`
-	NPMProjectName  string     `json:"-"`
-	Framework       *framework `json:"framework,omitempty"`
+	Name            string    `json:"name"`
+	Description     string    `json:"description"`
+	Author          *author   `json:"author,omitempty"`
+	Version         string    `json:"version"`
+	OutputDirectory string    `json:"-"`
+	UseDefaults     bool      `json:"-"`
+	Template        string    `json:"-"`
+	BinaryName      string    `json:"binaryname"`
+	FrontEnd        *frontend `json:"frontend,omitempty"`
+	NPMProjectName  string    `json:"-"`
 	system          *SystemHelper
 	log             *Logger
 	templates       *TemplateHelper
@@ -251,38 +251,6 @@ func (po *ProjectOptions) PromptForInputs() error {
 	// Setup NPM Project name
 	po.NPMProjectName = strings.ToLower(strings.Replace(po.Name, " ", "_", -1))
 
-	// If we selected custom, prompt for framework
-	if po.Template == "custom - Choose your own CSS Framework" {
-		// Ask for the framework
-		var frameworkName string
-		frameworks, err := GetFrameworks()
-		frameworkNames := []string{}
-		metadataMap := make(map[string]*FrameworkMetadata)
-		for _, frameworkMetadata := range frameworks {
-			frameworkDetails := fmt.Sprintf("%s - %s", frameworkMetadata.Name, frameworkMetadata.Description)
-			metadataMap[frameworkDetails] = frameworkMetadata
-			frameworkNames = append(frameworkNames, frameworkDetails)
-		}
-		if err != nil {
-			return err
-		}
-		var frameworkQuestion []*survey.Question
-		frameworkQuestion = append(frameworkQuestion, SelectQuestion("Framework", "Select framework", frameworkNames, frameworkNames[0], true))
-		err = survey.Ask(frameworkQuestion, &frameworkName)
-		if err != nil {
-			return err
-		}
-		// Get metadata
-		metadata := metadataMap[frameworkName]
-
-		// Add to project config
-		po.Framework = &framework{
-			Name:     metadata.Name,
-			BuildTag: metadata.BuildTag,
-		}
-
-	}
-
 	// Fix template name
 	if po.templateNameMap[po.Template] != "" {
 		po.Template = po.templateNameMap[po.Template]
@@ -305,6 +273,12 @@ func (po *ProjectOptions) PromptForInputs() error {
 			return fmt.Errorf("build set in template metadata but not frontenddir")
 		}
 		po.FrontEnd.Build = templateMetadata["build"].(string)
+	}
+	if templateMetadata["bridge"] != nil {
+		if po.FrontEnd == nil {
+			return fmt.Errorf("bridge set in template metadata but not frontenddir")
+		}
+		po.FrontEnd.Bridge = templateMetadata["bridge"].(string)
 	}
 
 	return nil
