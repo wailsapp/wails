@@ -13,7 +13,6 @@ type Renderer interface {
 	NotifyEvent(eventData *eventData) error
 
 	// Injection
-	InjectFramework(js string, css string)
 	AddJSList(js []string)
 	AddCSSList(css []string)
 

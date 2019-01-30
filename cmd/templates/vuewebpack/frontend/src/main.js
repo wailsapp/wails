@@ -7,8 +7,7 @@ new Vue({
 }).$mount("#app");
 
 import Bridge from "./wailsbridge";
-Bridge.Start(startApp);
-
-function startApp() {
+Bridge.OnReady(() => {
   eventBus.$emit("ready");
-}
+});
+Bridge.Start();

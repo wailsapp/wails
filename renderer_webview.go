@@ -171,10 +171,6 @@ func (w *webViewRenderer) Run() error {
 
 		// Run this in a different go routine to free up the main process
 		go func() {
-			// Will we mount a custom component
-			// Inject jquery
-			jquery := BoxString(&assets, "jquery.3.3.1.min.js")
-			w.evalJSSync(jquery)
 
 			// Inject Bindings
 			for _, binding := range w.bindingCache {
@@ -188,17 +184,6 @@ func (w *webViewRenderer) Run() error {
 			if w.frameworkCSS != "" {
 				w.injectCSS(w.frameworkCSS)
 			}
-
-			// Do we have custom html?
-			// If given an HMTL fragment, mount it on #app
-			// Otherwise, replace the html tag
-			var injectHTML string
-			if w.config.isHTMLFragment {
-				injectHTML = fmt.Sprintf("$('#app').html('%s')", w.config.HTML)
-			} else {
-				injectHTML = fmt.Sprintf("$('html').html('%s')", w.config.HTML)
-			}
-			w.evalJSSync(injectHTML)
 
 			// Inject user CSS
 			if w.config.CSS != "" {
@@ -252,11 +237,6 @@ func (w *webViewRenderer) NewBinding(methodName string) error {
 	objectCode := fmt.Sprintf("window.wails._.newBinding('%s');", methodName)
 	w.bindingCache = append(w.bindingCache, objectCode)
 	return nil
-}
-
-func (w *webViewRenderer) InjectFramework(js, css string) {
-	w.frameworkJS = js
-	w.frameworkCSS = css
 }
 
 func (w *webViewRenderer) SelectFile() string {

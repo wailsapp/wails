@@ -25,7 +25,11 @@ export default {
     }
   },
   created() {
+    if( !backend ) {
     eventBus.$on("ready", this.getNewQuote);
+    } else {
+      this.getNewQuote();
+    }
   }
 };
 </script>

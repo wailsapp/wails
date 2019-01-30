@@ -11,7 +11,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var headlessAssets = packr.NewBox("./assets/headless")
 var defaultAssets = packr.NewBox("./assets/default")
 
 type messageType int
@@ -48,8 +47,6 @@ type Headless struct {
 	initialisationJS []string
 	server           *http.Server
 	theConnection    *websocket.Conn
-	bridgeMode       bool
-	connectionType   string
 }
 
 // Initialise the Headless Renderer
@@ -57,9 +54,6 @@ func (h *Headless) Initialise(appConfig *AppConfig, ipcManager *ipcManager, even
 	h.ipcManager = ipcManager
 	h.appConfig = appConfig
 	h.eventManager = eventManager
-	h.bridgeMode = false
-	h.connectionType = "Websocket"
-
 	ipcManager.bindRenderer(h)
 	h.log = newCustomLogger("Headless")
 	return nil
@@ -95,26 +89,15 @@ func (h *Headless) injectCSS(css string) {
 	h.evalJS(inject, cssMessage)
 }
 
-func (h *Headless) rootHandler(w http.ResponseWriter, r *http.Request) {
-	indexHTML := BoxString(&headlessAssets, "index.html")
-	fmt.Fprintf(w, "%s", indexHTML)
-}
-
 func (h *Headless) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
-	h.bridgeMode = true
-	h.connectionType = "Bridge"
-	h.wsHandler(w, r)
-}
-
-func (h *Headless) wsHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
 	if err != nil {
 		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
 	}
 	h.theConnection = conn
-	h.log.Infof("%s connection accepted [%p].", h.connectionType, h.theConnection)
+	h.log.Infof("Connection from frontend accepted.", h.theConnection)
 	conn.SetCloseHandler(func(int, string) error {
-		h.log.Infof("%s connection dropped [%p].", h.connectionType, h.theConnection)
+		h.log.Infof("Connection dropped [%p].", h.theConnection)
 		h.theConnection = nil
 		return nil
 	})
@@ -127,72 +110,13 @@ func (h *Headless) sendMessage(conn *websocket.Conn, msg string) {
 	}
 }
 
-func (h *Headless) injectAllFiles() {
-	// Inject Framework
-	if h.frameworkJS != "" {
-		h.evalJS(h.frameworkJS, jsMessage)
-	}
-	if h.frameworkCSS != "" {
-		h.injectCSS(h.frameworkCSS)
-	}
-
-	// Inject user CSS
-	if h.appConfig.CSS != "" {
-		outputCSS := fmt.Sprintf("%.45s", h.appConfig.CSS)
-		if len(outputCSS) > 45 {
-			outputCSS += "..."
-		}
-		h.log.DebugFields("Inject User CSS", Fields{"css": outputCSS})
-		h.injectCSS(h.appConfig.CSS)
-	} else {
-		// Use default wails css
-		h.log.Debug("Injecting Default Wails CSS")
-		defaultCSS := BoxString(&defaultAssets, "wails.css")
-
-		h.injectCSS(defaultCSS)
-	}
-
-	// Inject all the CSS files that have been added
-	for _, css := range h.cssCache {
-		h.injectCSS(css)
-	}
-
-	// Inject all the JS files that have been added
-	for _, js := range h.jsCache {
-		h.evalJS(js, jsMessage)
-	}
-
-	// Inject user JS
-	if h.appConfig.JS != "" {
-		outputJS := fmt.Sprintf("%.45s", h.appConfig.JS)
-		if len(outputJS) > 45 {
-			outputJS += "..."
-		}
-		h.log.DebugFields("Inject User JS", Fields{"js": outputJS})
-		h.evalJS(h.appConfig.JS, jsMessage)
-	}
-
-	var injectHTML string
-	if h.appConfig.isHTMLFragment {
-		injectHTML = fmt.Sprintf("$('#app').html('%s')", h.appConfig.HTML)
-		h.evalJS(injectHTML, htmlMessage)
-	}
-}
-
 func (h *Headless) start(conn *websocket.Conn) {
 
 	// set external.invoke
 	h.log.Infof("Connected to frontend.")
-	h.log.Infof("Mode = %s", h.connectionType)
 
 	wailsRuntime := BoxString(&defaultAssets, "wails.js")
 	h.evalJS(wailsRuntime, wailsRuntimeMessage)
-
-	if !h.bridgeMode {
-		// Inject jquery
-		jquery := BoxString(&defaultAssets, "jquery.3.3.1.min.js")
-		h.evalJS(jquery, jsMessage)
-	}
 
 	// Inject the initial JS
 	for _, js := range h.initialisationJS {
@@ -202,11 +126,6 @@ func (h *Headless) start(conn *websocket.Conn) {
 	// Inject bindings
 	for _, binding := range h.bindingCache {
 		h.evalJS(binding, bindingMessage)
-	}
-
-	// In standard headless mode, we send all of the files
-	if !h.bridgeMode {
-		h.injectAllFiles()
 	}
 
 	// Emit that everything is loaded and ready
@@ -231,13 +150,10 @@ func (h *Headless) start(conn *websocket.Conn) {
 // Run the app in headless mode!
 func (h *Headless) Run() error {
 	h.server = &http.Server{Addr: ":34115"}
-	http.HandleFunc("/ws", h.wsHandler)
 	http.HandleFunc("/bridge", h.wsBridgeHandler)
-	http.HandleFunc("/", h.rootHandler)
 
 	h.log.Info("Headless mode started.")
-	h.log.Info("If using the Wails bridge, it will connect automatically.")
-	h.log.Info("You may also connect manually by browsing to http://localhost:34115")
+	h.log.Info("The Wails bridge will connect automatically.")
 
 	err := h.server.ListenAndServe()
 	if err != nil {
@@ -250,13 +166,6 @@ func (h *Headless) Run() error {
 func (h *Headless) NewBinding(methodName string) error {
 	h.bindingCache = append(h.bindingCache, methodName)
 	return nil
-}
-
-// InjectFramework sets up what JS/CSS should be injected
-// at startup
-func (h *Headless) InjectFramework(js, css string) {
-	h.frameworkJS = js
-	h.frameworkCSS = css
 }
 
 // SelectFile is unsupported for Headless but required
