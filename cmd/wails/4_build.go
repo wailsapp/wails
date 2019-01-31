@@ -17,17 +17,14 @@ func init() {
 
 	var packageApp = false
 	var forceRebuild = false
-	var releaseMode = false
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
 
 	commandDescription := `This command will check to ensure all pre-requistes are installed prior to building. If not, it will attempt to install them. Building comprises of a number of steps: install frontend dependencies, build frontend, pack frontend, compile main application.`
 	initCmd := app.Command("build", "Builds your Wails project").
 		LongDescription(commandDescription).
-		BoolFlag("p", "Package application on successful build (Implies -r)", &packageApp).
-		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
-		BoolFlag("r", "Build in Release mode", &releaseMode)
-
+		BoolFlag("p", "Package application on successful build", &packageApp).
+		BoolFlag("f", "Force rebuild of application components", &forceRebuild)
 	initCmd.Action(func() error {
 		log := cmd.NewLogger()
 		message := "Building Application"
@@ -145,11 +142,7 @@ func init() {
 			}
 
 			// Determine which wails bridge to install
-			var bridgeFile = "wailsbridge.js"
-			if releaseMode || packageApp {
-				// Release mode
-				bridgeFile = "wailsbridge.prod.js"
-			}
+			bridgeFile := "wailsbridge.prod.js"
 
 			// Copy bridge to project
 			_, filename, _, _ := runtime.Caller(1)
@@ -193,9 +186,6 @@ func init() {
 		depSpinner.Success()
 
 		compileMessage := "Packing + Compiling project"
-		if releaseMode || packageApp {
-			compileMessage += " (Release Mode)"
-		}
 
 		packSpinner := spinner.New(compileMessage + "...")
 		packSpinner.SetSpinSpeed(50)
@@ -222,9 +212,8 @@ func init() {
 		}
 
 		// Release mode
-		if releaseMode || packageApp {
-			buildCommand.AddSlice([]string{"-ldflags", "-X github.com/wailsapp/wails.DebugMode=false"})
-		}
+		buildCommand.AddSlice([]string{"-ldflags", "-X github.com/wailsapp/wails.DebugMode=false"})
+
 		err = program.RunCommandArray(buildCommand.AsSlice())
 		if err != nil {
 			packSpinner.Error()
