@@ -20,6 +20,7 @@ type frontend struct {
 	Install string `json:"install"`
 	Build   string `json:"build"`
 	Bridge  string `json:"bridge"`
+	Serve   string `json:"serve"`
 }
 
 type framework struct {
@@ -274,11 +275,19 @@ func (po *ProjectOptions) PromptForInputs() error {
 		}
 		po.FrontEnd.Build = templateMetadata["build"].(string)
 	}
+
 	if templateMetadata["bridge"] != nil {
 		if po.FrontEnd == nil {
 			return fmt.Errorf("bridge set in template metadata but not frontenddir")
 		}
 		po.FrontEnd.Bridge = templateMetadata["bridge"].(string)
+	}
+
+	if templateMetadata["serve"] != nil {
+		if po.FrontEnd == nil {
+			return fmt.Errorf("serve set in template metadata but not frontenddir")
+		}
+		po.FrontEnd.Serve = templateMetadata["serve"].(string)
 	}
 
 	return nil

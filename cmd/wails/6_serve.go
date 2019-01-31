@@ -6,6 +6,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
@@ -216,6 +217,10 @@ func init() {
 
 		// Run the App
 		logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
+		go func() {
+			time.Sleep(2 * time.Second)
+			logger.Green(">>>>> To connect, you will need to run '" + projectOptions.FrontEnd.Serve + "' in the '" + projectOptions.FrontEnd.Dir + "' directory <<<<<")
+		}()
 		logger.Yellow("Serving Application: " + projectOptions.BinaryName)
 		cmd := exec.Command(projectOptions.BinaryName)
 		cmd.Stdout = os.Stdout
