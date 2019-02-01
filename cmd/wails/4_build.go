@@ -17,6 +17,7 @@ func init() {
 
 	var packageApp = false
 	var forceRebuild = false
+	var debugMode = false
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
 
@@ -24,7 +25,9 @@ func init() {
 	initCmd := app.Command("build", "Builds your Wails project").
 		LongDescription(commandDescription).
 		BoolFlag("p", "Package application on successful build", &packageApp).
-		BoolFlag("f", "Force rebuild of application components", &forceRebuild)
+		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
+		BoolFlag("d", "Build in Debug mode", &debugMode)
+
 	initCmd.Action(func() error {
 		log := cmd.NewLogger()
 		message := "Building Application"
@@ -141,7 +144,6 @@ func init() {
 				ioutil.WriteFile(md5sumFile, []byte(packageJSONMD5), 0644)
 			}
 
-			// Determine which wails bridge to install
 			bridgeFile := "wailsbridge.prod.js"
 
 			// Copy bridge to project
@@ -186,6 +188,9 @@ func init() {
 		depSpinner.Success()
 
 		compileMessage := "Packing + Compiling project"
+		if debugMode {
+			compileMessage += " (Debug Mode)"
+		}
 
 		packSpinner := spinner.New(compileMessage + "...")
 		packSpinner.SetSpinSpeed(50)
@@ -212,8 +217,10 @@ func init() {
 		}
 
 		// Release mode
-		buildCommand.AddSlice([]string{"-ldflags", "-X github.com/wailsapp/wails.DebugMode=false"})
-
+		logger.Red("debugMode = %t", debugMode)
+		if !debugMode {
+			buildCommand.AddSlice([]string{"-ldflags", "-X github.com/wailsapp/wails.DebugMode=false"})
+		}
 		err = program.RunCommandArray(buildCommand.AsSlice())
 		if err != nil {
 			packSpinner.Error()
