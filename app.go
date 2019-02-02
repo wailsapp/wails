@@ -1,6 +1,8 @@
 package wails
 
 import (
+	"fmt"
+
 	"github.com/wailsapp/wails/cmd"
 )
 
@@ -8,6 +10,9 @@ import (
 
 // DebugMode indicates if we are in debug Mode
 var DebugMode = "true"
+
+// BackendRenderer indicates which renderer to use for the backend
+var BackendRenderer = "webview"
 
 // ----------------------------------------------------------------------------------
 
@@ -60,6 +65,8 @@ func CreateApp(optionalConfig ...*AppConfig) *App {
 		result.config.DisableInspector = true
 	}
 
+	fmt.Println("Debug mode = " + DebugMode)
+
 	return result
 }
 
@@ -82,7 +89,9 @@ func (a *App) start() error {
 	a.log.Info("Starting")
 
 	// Check if we are to run in headless mode
-	if DebugMode == "true" {
+	fmt.Printf("Backend Renderer = %s\n", BackendRenderer)
+	a.log.Info("Backend Renderer = " + BackendRenderer)
+	if BackendRenderer == "headless" {
 		a.renderer = &Headless{}
 	}
 

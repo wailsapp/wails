@@ -43,35 +43,8 @@ func init() {
 			return err
 		}
 
-		// // Validate config
-		// // Check if we have a frontend
-		// if projectOptions.FrontEnd != nil {
-		// 	if projectOptions.FrontEnd.Dir == "" {
-		// 		return fmt.Errorf("Frontend directory not set in project.json")
-		// 	}
-		// 	if projectOptions.FrontEnd.Build == "" {
-		// 		return fmt.Errorf("Frontend build command not set in project.json")
-		// 	}
-		// 	if projectOptions.FrontEnd.Install == "" {
-		// 		return fmt.Errorf("Frontend install command not set in project.json")
-		// 	}
-		// 	if projectOptions.FrontEnd.Bridge == "" {
-		// 		return fmt.Errorf("Frontend bridge config not set in project.json")
-		// 	}
-
-		// }
-
-		// // Check pre-requisites are installed
-
 		// Program checker
 		program := cmd.NewProgramHelper()
-
-		// if projectOptions.FrontEnd != nil {
-		// 	// npm
-		// 	if !program.IsInstalled("npm") {
-		// 		return fmt.Errorf("it appears npm is not installed. Please install and run again")
-		// 	}
-		// }
 
 		// packr
 		if !program.IsInstalled("packr") {
@@ -87,59 +60,6 @@ func init() {
 		// Save project directory
 		projectDir := fs.Cwd()
 
-		// Install backend deps - needed?
-		// if projectOptions.FrontEnd != nil {
-		// 	// Install frontend deps
-		// 	err = os.Chdir(projectOptions.FrontEnd.Dir)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-
-		// 	// Check if frontend deps have been updated
-		// 	feSpinner := spinner.New("Installing frontend dependencies (This may take a while)...")
-		// 	feSpinner.SetSpinSpeed(50)
-		// 	feSpinner.Start()
-
-		// 	requiresNPMInstall := true
-
-		// 	// Read in package.json MD5
-		// 	packageJSONMD5, err := fs.FileMD5("package.json")
-		// 	if err != nil {
-		// 		return err
-		// 	}
-
-		// 	const md5sumFile = "package.json.md5"
-
-		// 	// If we aren't forcing the install and the md5sum file exists
-		// 	if !forceRebuild && fs.FileExists(md5sumFile) {
-		// 		// Yes - read contents
-		// 		savedMD5sum, err := fs.LoadAsString(md5sumFile)
-		// 		// File exists
-		// 		if err == nil {
-		// 			// Compare md5
-		// 			if savedMD5sum == packageJSONMD5 {
-		// 				// Same - no need for reinstall
-		// 				requiresNPMInstall = false
-		// 				feSpinner.Success("Skipped frontend dependencies (-f to force rebuild)")
-		// 			}
-		// 		}
-		// 	}
-
-		// 	// Md5 sum package.json
-		// 	// Different? Build
-		// 	if requiresNPMInstall || forceRebuild {
-		// 		// Install dependencies
-		// 		err = program.RunCommand(projectOptions.FrontEnd.Install)
-		// 		if err != nil {
-		// 			feSpinner.Error()
-		// 			return err
-		// 		}
-		// 		feSpinner.Success()
-
-		// 		// Update md5sum file
-		// 		ioutil.WriteFile(md5sumFile, []byte(packageJSONMD5), 0644)
-		// 	}
-
 		// Copy bridge to project
 		var bridgeFile = "wailsbridge.js"
 		_, filename, _, _ := runtime.Caller(1)
@@ -149,18 +69,6 @@ func init() {
 		if err != nil {
 			return err
 		}
-
-		// 	// Build frontend
-		// 	buildFESpinner := spinner.New("Building frontend...")
-		// 	buildFESpinner.SetSpinSpeed(50)
-		// 	buildFESpinner.Start()
-		// 	err = program.RunCommand(projectOptions.FrontEnd.Build)
-		// 	if err != nil {
-		// 		buildFESpinner.Error()
-		// 		return err
-		// 	}
-		// 	buildFESpinner.Success()
-		// }
 
 		// Run packr in project directory
 		err = os.Chdir(projectDir)
@@ -208,6 +116,8 @@ func init() {
 			buildCommand.Add("-a")
 		}
 
+		buildCommand.AddSlice([]string{"-ldflags", "-X github.com/wailsapp/wails.BackendRenderer=headless"})
+		// logger.Green("buildCommand = %+v", buildCommand)
 		err = program.RunCommandArray(buildCommand.AsSlice())
 		if err != nil {
 			packSpinner.Error()
