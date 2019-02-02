@@ -116,6 +116,7 @@ func (p *ProgramHelper) RunCommandArray(args []string) error {
 		return err
 	}
 	args = args[1:]
+	// fmt.Printf("RunCommandArray = %s %+v\n", program, args)
 	_, stderr, err := p.shell.Run(program, args...)
 	if err != nil {
 		fmt.Println(stderr)
