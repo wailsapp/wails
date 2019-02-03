@@ -91,7 +91,7 @@ func init() {
 		// Save project directory
 		projectDir := fs.Cwd()
 
-		// Install backend deps - needed?
+		// Install deps
 		if projectOptions.FrontEnd != nil {
 			// Install frontend deps
 			err = os.Chdir(projectOptions.FrontEnd.Dir)
@@ -217,10 +217,11 @@ func init() {
 		}
 
 		// Release mode
-		logger.Red("debugMode = %t", debugMode)
-		if !debugMode {
-			buildCommand.AddSlice([]string{"-ldflags", "-X github.com/wailsapp/wails.DebugMode=false"})
+		buildMode := "prod"
+		if debugMode {
+			buildMode = "debug"
 		}
+		buildCommand.AddSlice([]string{"-ldflags", "-X github.com/wailsapp/wails.BuildMode=" + buildMode})
 		err = program.RunCommandArray(buildCommand.AsSlice())
 		if err != nil {
 			packSpinner.Error()
