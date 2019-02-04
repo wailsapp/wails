@@ -12,8 +12,8 @@ html {
   overflow: hidden;
   /* https://leaverou.github.io/css3patterns/#carbon */
   background: linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
-    linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px,
-    linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px,
+    linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0,
+    linear-gradient(27deg, #222 5px, transparent 5px) 0 10px,
     linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
     linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
     linear-gradient(
@@ -46,10 +46,8 @@ html {
       format("woff2"),
     /* Super Modern Browsers */
       url("../fonts/roboto/roboto-v18-latin-regular.woff") format("woff"),
-    /* Modern Browsers */
-      url("../fonts/roboto/roboto-v18-latin-regular.ttf")
+    /* Modern Browsers */ url("../fonts/roboto/roboto-v18-latin-regular.ttf")
       format("truetype"),
     /* Safari, Android, iOS */
-      url("../fonts/roboto/roboto-v18-latin-regular.svg#Roboto")
-      format("svg"); /* Legacy iOS */
+      url("../fonts/roboto/roboto-v18-latin-regular.svg#Roboto") format("svg"); /* Legacy iOS */
 }
