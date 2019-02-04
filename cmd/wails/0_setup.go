@@ -5,7 +5,6 @@ import (
 	"runtime"
 
 	"github.com/leaanthony/spinner"
-
 	"github.com/wailsapp/wails/cmd"
 )
 
@@ -31,64 +30,29 @@ Create your first project by running 'wails init'.`
 		if runtime.GOOS != "windows" {
 			successMessage = "🚀 " + successMessage
 		}
-		switch runtime.GOOS {
-		case "darwin":
-			logger.Yellow("Detected Platform: OSX")
-		case "windows":
-			logger.Yellow("Detected Platform: Windows")
-		case "linux":
-			logger.Yellow("Detected Platform: Linux")
-		default:
-			return fmt.Errorf("Platform %s is currently not supported", runtime.GOOS)
-		}
-
-		logger.Yellow("Checking for prerequisites...")
-		// Check we have a cgo capable environment
-
-		requiredPrograms, err := cmd.GetRequiredPrograms()
+		// Platform check
+		err = platformCheck()
 		if err != nil {
 			return err
 		}
-		errors := false
-		programHelper := cmd.NewProgramHelper()
-		for _, program := range *requiredPrograms {
-			bin := programHelper.FindProgram(program.Name)
-			if bin == nil {
-				errors = true
-				logger.Red("Program '%s' not found. %s", program.Name, program.Help)
-			} else {
-				logger.Green("Program '%s' found: %s", program.Name, bin.Path)
-			}
+
+		// Check we have a cgo capable environment
+		logger.Yellow("Checking for prerequisites...")
+		errors, err := checkRequiredPrograms()
+		if err != nil {
+			return err
 		}
 
 		// Linux has library deps
-		if runtime.GOOS == "linux" {
-			// Check library prerequisites
-			requiredLibraries, err := cmd.GetRequiredLibraries()
-			if err != nil {
-				return err
-			}
-			distroInfo := cmd.GetLinuxDistroInfo()
-			for _, library := range *requiredLibraries {
-				switch distroInfo.Distribution {
-				case cmd.Ubuntu:
-					installed, err := cmd.DpkgInstalled(library.Name)
-					if err != nil {
-						return err
-					}
-					if !installed {
-						errors = true
-						logger.Red("Library '%s' not found. %s", library.Name, library.Help)
-					} else {
-						logger.Green("Library '%s' installed.", library.Name)
-					}
-				default:
-					return fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.DistributorID, library.Name)
-				}
-			}
+		errors, err = checkLibraries()
+		if err != nil {
+			return err
 		}
 
 		// packr
+		err = cmd.CheckPackr()
+
+		programHelper := cmd.NewProgramHelper()
 		if !programHelper.IsInstalled("packr") {
 			buildSpinner := spinner.New()
 			buildSpinner.SetSpinSpeed(50)
@@ -109,4 +73,66 @@ Create your first project by running 'wails init'.`
 
 		return err
 	})
+}
+
+func platformCheck() error {
+	switch runtime.GOOS {
+	case "darwin":
+		logger.Yellow("Detected Platform: OSX")
+	case "windows":
+		logger.Yellow("Detected Platform: Windows")
+	case "linux":
+		logger.Yellow("Detected Platform: Linux")
+	default:
+		return fmt.Errorf("Platform %s is currently not supported", runtime.GOOS)
+	}
+	return nil
+}
+
+func checkLibraries() (errors bool, err error) {
+	if runtime.GOOS == "linux" {
+		// Check library prerequisites
+		requiredLibraries, err := cmd.GetRequiredLibraries()
+		if err != nil {
+			return false, err
+		}
+		distroInfo := cmd.GetLinuxDistroInfo()
+		for _, library := range *requiredLibraries {
+			switch distroInfo.Distribution {
+			case cmd.Ubuntu:
+				installed, err := cmd.DpkgInstalled(library.Name)
+				if err != nil {
+					return false, err
+				}
+				if !installed {
+					errors = true
+					logger.Red("Library '%s' not found. %s", library.Name, library.Help)
+				} else {
+					logger.Green("Library '%s' installed.", library.Name)
+				}
+			default:
+				return false, fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.DistributorID, library.Name)
+			}
+		}
+	}
+	return false, nil
+}
+
+func checkRequiredPrograms() (errors bool, err error) {
+	requiredPrograms, err := cmd.GetRequiredPrograms()
+	if err != nil {
+		return true, err
+	}
+	errors = false
+	programHelper := cmd.NewProgramHelper()
+	for _, program := range *requiredPrograms {
+		bin := programHelper.FindProgram(program.Name)
+		if bin == nil {
+			errors = true
+			logger.Red("Program '%s' not found. %s", program.Name, program.Help)
+		} else {
+			logger.Green("Program '%s' found: %s", program.Name, bin.Path)
+		}
+	}
+	return
 }
