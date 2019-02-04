@@ -3,9 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
-	"path/filepath"
-	"time"
 
 	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
@@ -94,25 +91,6 @@ func init() {
 		}
 
 		logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
-
-		go func() {
-			time.Sleep(2 * time.Second)
-			logger.Green(">>>>> To connect, you will need to run '" + projectOptions.FrontEnd.Serve + "' in the '" + projectOptions.FrontEnd.Dir + "' directory <<<<<")
-		}()
-		location, err := filepath.Abs(projectOptions.BinaryName)
-		if err != nil {
-			return err
-		}
-
-		logger.Yellow("Serving Application: " + location)
-		cmd := exec.Command(location)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err = cmd.Run()
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return cmd.ServeProject(projectOptions, logger)
 	})
 }
