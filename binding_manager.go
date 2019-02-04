@@ -163,8 +163,71 @@ func (b *bindingManager) bind(object interface{}) {
 	b.objectsToBind = append(b.objectsToBind, object)
 }
 
+func (b *bindingManager) processFunctionCall(callData *callData) (interface{}, error) {
+	// Return values
+	var result []reflect.Value
+	var err error
+
+	function := b.functions[callData.BindingName]
+	if function == nil {
+		return nil, fmt.Errorf("Invalid function name '%s'", callData.BindingName)
+	}
+	result, err = function.call(callData.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	// Do we have an error return type?
+	if function.hasErrorReturnType {
+		// We do - last result is an error type
+		// Check if the last result was nil
+		b.log.Debugf("# of return types: %d", len(function.returnTypes))
+		b.log.Debugf("# of results: %d", len(result))
+		errorResult := result[len(function.returnTypes)-1]
+		if !errorResult.IsNil() {
+			// It wasn't - we have an error
+			return nil, errorResult.Interface().(error)
+		}
+	}
+	return result[0].Interface(), nil
+}
+
+func (b *bindingManager) processMethodCall(callData *callData) (interface{}, error) {
+	// Return values
+	var result []reflect.Value
+	var err error
+
+	// do we have this method?
+	method := b.methods[callData.BindingName]
+	if method == nil {
+		return nil, fmt.Errorf("Invalid method name '%s'", callData.BindingName)
+	}
+
+	result, err = method.call(callData.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	// Do we have an error return type?
+	if method.hasErrorReturnType {
+		// We do - last result is an error type
+		// Check if the last result was nil
+		b.log.Debugf("# of return types: %d", len(method.returnTypes))
+		b.log.Debugf("# of results: %d", len(result))
+		errorResult := result[len(method.returnTypes)-1]
+		if !errorResult.IsNil() {
+			// It wasn't - we have an error
+			return nil, errorResult.Interface().(error)
+		}
+	}
+	if result != nil {
+		return result[0].Interface(), nil
+	}
+	return nil, nil
+}
+
 // process an incoming call request
-func (b *bindingManager) processCall(callData *callData) (interface{}, error) {
+func (b *bindingManager) processCall(callData *callData) (result interface{}, err error) {
 	b.log.Debugf("Wanting to call %s", callData.BindingName)
 
 	// Determine if this is function call or method call by the number of
@@ -176,13 +239,10 @@ func (b *bindingManager) processCall(callData *callData) (interface{}, error) {
 		}
 	}
 
-	// Return values
-	var result []reflect.Value
-	var err error
-
 	// We need to catch reflect related panics and return
 	// a decent error message
 	// TODO: DEBUG THIS!
+
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%s", r.(string))
@@ -191,59 +251,14 @@ func (b *bindingManager) processCall(callData *callData) (interface{}, error) {
 
 	switch dotCount {
 	case 1:
-		function := b.functions[callData.BindingName]
-		if function == nil {
-			return nil, fmt.Errorf("Invalid function name '%s'", callData.BindingName)
-		}
-		result, err = function.call(callData.Data)
-		if err != nil {
-			return nil, err
-		}
-
-		// Do we have an error return type?
-		if function.hasErrorReturnType {
-			// We do - last result is an error type
-			// Check if the last result was nil
-			b.log.Debugf("# of return types: %d", len(function.returnTypes))
-			b.log.Debugf("# of results: %d", len(result))
-			errorResult := result[len(function.returnTypes)-1]
-			if !errorResult.IsNil() {
-				// It wasn't - we have an error
-				return nil, errorResult.Interface().(error)
-			}
-		}
-		return result[0].Interface(), nil
+		result, err = b.processFunctionCall(callData)
 	case 2:
-		// do we have this method?
-		method := b.methods[callData.BindingName]
-		if method == nil {
-			return nil, fmt.Errorf("Invalid method name '%s'", callData.BindingName)
-		}
-		result, err = method.call(callData.Data)
-		if err != nil {
-			return nil, err
-		}
-
-		// Do we have an error return type?
-		if method.hasErrorReturnType {
-			// We do - last result is an error type
-			// Check if the last result was nil
-			b.log.Debugf("# of return types: %d", len(method.returnTypes))
-			b.log.Debugf("# of results: %d", len(result))
-			errorResult := result[len(method.returnTypes)-1]
-			if !errorResult.IsNil() {
-				// It wasn't - we have an error
-				return nil, errorResult.Interface().(error)
-			}
-		}
-		if result != nil {
-			return result[0].Interface(), nil
-		}
-		return nil, nil
-
+		result, err = b.processMethodCall(callData)
 	default:
-		return nil, fmt.Errorf("Invalid binding name '%s'", callData.BindingName)
+		result = nil
+		err = fmt.Errorf("Invalid binding name '%s'", callData.BindingName)
 	}
+	return
 }
 
 // callWailsInitMethods calls all of the WailsInit methods that were

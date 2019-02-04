@@ -18,8 +18,12 @@ body {
   border-color: #117;
 }
 
-p { margin-bottom: 1.5em; }
-p:last-child { margin-bottom: 0; }
+p {
+  margin-bottom: 1.5em;
+}
+p:last-child {
+  margin-bottom: 0;
+}
 
 blockquote {
   display: block;
@@ -32,9 +36,9 @@ blockquote {
   color: #117;
 }
 blockquote:before {
-  content: '\201C';
+  content: "\201C";
   position: absolute;
-  top: 0em;
+  top: 0;
   left: 50%;
   transform: translate(-50%, -50%);
   background: #fff;
@@ -54,22 +58,22 @@ blockquote:after {
 
 /* https://fdossena.com/?p=html5cool/buttons/i.frag */
 button {
-  display:inline-block;
-  padding:0.35em 1.2em;
-  border:0.1em solid #000;
-  margin:0 0.3em 0.3em 0;
-  border-radius:0.12em;
+  display: inline-block;
+  padding: 0.35em 1.2em;
+  border: 0.1em solid #000;
+  margin: 0 0.3em 0.3em 0;
+  border-radius: 0.12em;
   box-sizing: border-box;
-  text-decoration:none;
-  font-family:'Roboto',sans-serif;
-  font-weight:300;
+  text-decoration: none;
+  font-family: "Roboto", sans-serif;
+  font-weight: 300;
   font-size: 1em;
-  color:#000;
-  text-align:center;
+  color: #000;
+  text-align: center;
   transition: all 0.2s;
 }
-button:hover{
-  color:#FFF;
-  background-color:#000;
+button:hover {
+  color: #fff;
+  background-color: #000;
   cursor: pointer;
 }
