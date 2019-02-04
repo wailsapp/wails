@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
@@ -30,6 +32,7 @@ func ValidateFrontendConfig(projectOptions *ProjectOptions) error {
 	return nil
 }
 
+// InstallGoDependencies will run go get in the current directory
 func InstallGoDependencies() error {
 	depSpinner := spinner.New("Installing Dependencies...")
 	depSpinner.SetSpinSpeed(50)
@@ -43,6 +46,7 @@ func InstallGoDependencies() error {
 	return nil
 }
 
+// BuildApplication will attempt to build the project based on the given inputs
 func BuildApplication(binaryName string, forceRebuild bool, buildMode string) error {
 	compileMessage := "Packing + Compiling project"
 	if buildMode == "debug" {
@@ -76,6 +80,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string) er
 	return nil
 }
 
+// PackageApplication will attempt to package the application in a pltform dependent way
 func PackageApplication(projectOptions *ProjectOptions) error {
 	// Package app
 	packageSpinner := spinner.New("Packaging Application")
@@ -90,6 +95,7 @@ func PackageApplication(projectOptions *ProjectOptions) error {
 	return nil
 }
 
+// BuildFrontend runs the given build command
 func BuildFrontend(buildCommand string) error {
 	buildFESpinner := spinner.New("Building frontend...")
 	buildFESpinner.SetSpinSpeed(50)
@@ -103,6 +109,7 @@ func BuildFrontend(buildCommand string) error {
 	return nil
 }
 
+// CheckPackr checks if packr is installed and if not, attempts to fetch it
 func CheckPackr() (err error) {
 	programHelper := NewProgramHelper()
 	if !programHelper.IsInstalled("packr") {
@@ -119,6 +126,7 @@ func CheckPackr() (err error) {
 	return nil
 }
 
+// InstallFrontendDeps attempts to install the frontend dependencies based on the given options
 func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forceRebuild bool) error {
 
 	// Install frontend deps
@@ -177,7 +185,7 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 
 	// Copy bridge to project
 	_, filename, _, _ := runtime.Caller(1)
-	bridgeFileSource := filepath.Join(path.Dir(filename), "..", "assets", "default", bridgeFile)
+	bridgeFileSource := filepath.Join(path.Dir(filename), "..", "..", "assets", "default", bridgeFile)
 	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, projectOptions.FrontEnd.Bridge, "wailsbridge.js")
 	err = fs.CopyFile(bridgeFileSource, bridgeFileTarget)
 	if err != nil {
@@ -192,74 +200,26 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	return nil
 }
 
-// func CopyBridgeFile(projectDir string, projectOptions ProjectOptions, bridgeMode bool) error {
-// 	// Copy bridge to project
-// 	fs := NewFSHelper()
-// 	var bridgeFile = "wailsbridge.prod.js"
-// 	if bridgeMode {
-// 		bridgeFile = "wailsbridge.js"
-// 	}
-// 	_, filename, _, _ := runtime.Caller(1)
-// 	bridgeFileSource := filepath.Join(path.Dir(filename), "..", "assets", "default", bridgeFile)
-// 	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, projectOptions.FrontEnd.Bridge, bridgeFile)
-// 	err := fs.CopyFile(bridgeFileSource, bridgeFileTarget)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+// ServeProject attempts to serve up the current project so that it may be connected to
+// via the Wails bridge
+func ServeProject(projectOptions *ProjectOptions, logger *Logger) error {
+	go func() {
+		time.Sleep(2 * time.Second)
+		logger.Green(">>>>> To connect, you will need to run '" + projectOptions.FrontEnd.Serve + "' in the '" + projectOptions.FrontEnd.Dir + "' directory <<<<<")
+	}()
+	location, err := filepath.Abs(projectOptions.BinaryName)
+	if err != nil {
+		return err
+	}
 
-// func InstallFrontend(projectOptions *ProjectOptions) error {
-// 	// Install frontend deps
-// 	err := os.Chdir(projectOptions.FrontEnd.Dir)
-// 	if err != nil {
-// 		return err
-// 	}
+	logger.Yellow("Serving Application: " + location)
+	cmd := exec.Command(location)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
 
-// 	// Check if frontend deps have been updated
-// 	feSpinner := spinner.New("Installing frontend dependencies (This may take a while)...")
-// 	feSpinner.SetSpinSpeed(50)
-// 	feSpinner.Start()
-
-// 	requiresNPMInstall := true
-
-// 	// Read in package.json MD5
-// 	fs := NewFSHelper()
-// 	packageJSONMD5, err := fs.FileMD5("package.json")
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	const md5sumFile = "package.json.md5"
-
-// 	// If we aren't forcing the install and the md5sum file exists
-// 	if !forceRebuild && fs.FileExists(md5sumFile) {
-// 		// Yes - read contents
-// 		savedMD5sum, err := fs.LoadAsString(md5sumFile)
-// 		// File exists
-// 		if err == nil {
-// 			// Compare md5
-// 			if savedMD5sum == packageJSONMD5 {
-// 				// Same - no need for reinstall
-// 				requiresNPMInstall = false
-// 				feSpinner.Success("Skipped frontend dependencies (-f to force rebuild)")
-// 			}
-// 		}
-// 	}
-
-// 	// Md5 sum package.json
-// 	// Different? Build
-// 	if requiresNPMInstall || forceRebuild {
-// 		// Install dependencies
-// 		err = program.RunCommand(projectOptions.FrontEnd.Install)
-// 		if err != nil {
-// 			feSpinner.Error()
-// 			return err
-// 		}
-// 		feSpinner.Success()
-
-// 		// Update md5sum file
-// 		ioutil.WriteFile(md5sumFile, []byte(packageJSONMD5), 0644)
-// 	}
-// 	return nil
-// }
+	return nil
+}

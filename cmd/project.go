@@ -178,7 +178,6 @@ func (po *ProjectOptions) Defaults() {
 func (po *ProjectOptions) PromptForInputs() error {
 
 	var questions []*survey.Question
-	fs := NewFSHelper()
 
 	if po.Name == "" {
 		questions = append(questions, InputQuestion("Name", "The name of the project", "My Project", true))
@@ -187,31 +186,15 @@ func (po *ProjectOptions) PromptForInputs() error {
 	}
 
 	if po.BinaryName == "" {
-		var binaryNameComputed string
-		if po.Name != "" {
-			binaryNameComputed = strings.ToLower(po.Name)
-			binaryNameComputed = strings.Replace(binaryNameComputed, " ", "-", -1)
-			binaryNameComputed = strings.Replace(binaryNameComputed, string(filepath.Separator), "-", -1)
-			binaryNameComputed = strings.Replace(binaryNameComputed, ":", "-", -1)
-		}
+		var binaryNameComputed = computeBinaryName(po.Name)
 		questions = append(questions, InputQuestion("BinaryName", "The output binary name", binaryNameComputed, true))
 	} else {
 		fmt.Println("Output binary Name: " + po.BinaryName)
 	}
 
-	if po.OutputDirectory != "" {
-		projectPath, err := filepath.Abs(po.OutputDirectory)
-		if err != nil {
-			return err
-		}
-
-		if fs.DirExists(projectPath) {
-			return fmt.Errorf("directory '%s' already exists", projectPath)
-		}
-
-		fmt.Println("Project Directory: " + po.OutputDirectory)
-	} else {
-		questions = append(questions, InputQuestion("OutputDirectory", "Project directory name", "", true))
+	err := processOutputDirectory(po.OutputDirectory, &questions)
+	if err != nil {
+		return err
 	}
 
 	templateDetails, err := po.templates.GetTemplateDetails()
@@ -319,4 +302,34 @@ func (po *ProjectOptions) LoadConfig(projectDir string) error {
 		return err
 	}
 	return json.Unmarshal(rawBytes, po)
+}
+
+func computeBinaryName(projectName string) string {
+	if projectName == "" {
+		return ""
+	}
+	var binaryNameComputed = strings.ToLower(projectName)
+	binaryNameComputed = strings.Replace(binaryNameComputed, " ", "-", -1)
+	binaryNameComputed = strings.Replace(binaryNameComputed, string(filepath.Separator), "-", -1)
+	binaryNameComputed = strings.Replace(binaryNameComputed, ":", "-", -1)
+	return binaryNameComputed
+}
+
+func processOutputDirectory(outputDirectory string, questions *[]*survey.Question) error {
+
+	if outputDirectory != "" {
+		projectPath, err := filepath.Abs(outputDirectory)
+		if err != nil {
+			return err
+		}
+
+		if NewFSHelper().DirExists(projectPath) {
+			return fmt.Errorf("directory '%s' already exists", projectPath)
+		}
+
+		fmt.Println("Project Directory: " + outputDirectory)
+	} else {
+		*questions = append(*questions, InputQuestion("OutputDirectory", "Project directory name", "", true))
+	}
+	return nil
 }

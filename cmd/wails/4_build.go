@@ -49,8 +49,6 @@ func init() {
 			return err
 		}
 
-		// Check pre-requisites are installed
-
 		// Program checker
 		program := cmd.NewProgramHelper()
 
@@ -61,7 +59,7 @@ func init() {
 			}
 		}
 
-		// packr
+		// Check Packr is installed
 		err = cmd.CheckPackr()
 		if err != nil {
 			return err
