@@ -1,18 +1,13 @@
 package wails
 
 import (
-	"fmt"
-
 	"github.com/wailsapp/wails/cmd"
 )
 
 // -------------------------------- Compile time Flags ------------------------------
 
-// DebugMode indicates if we are in debug Mode
-var DebugMode = "true"
-
-// BackendRenderer indicates which renderer to use for the backend
-var BackendRenderer = "webview"
+// BuildMode indicates what mode we are in
+var BuildMode = "prod"
 
 // ----------------------------------------------------------------------------------
 
@@ -58,21 +53,19 @@ func CreateApp(optionalConfig ...*AppConfig) *App {
 	result.config = appconfig
 
 	// Set up the CLI if not in release mode
-	if DebugMode == "true" {
+	if BuildMode != "prod" {
 		result.cli = result.setupCli()
 	} else {
 		// Disable Inspector in release mode
 		result.config.DisableInspector = true
 	}
 
-	fmt.Println("Debug mode = " + DebugMode)
-
 	return result
 }
 
 // Run the app
 func (a *App) Run() error {
-	if DebugMode == "true" {
+	if BuildMode != "prod" {
 		return a.cli.Run()
 	}
 
@@ -89,9 +82,7 @@ func (a *App) start() error {
 	a.log.Info("Starting")
 
 	// Check if we are to run in headless mode
-	fmt.Printf("Backend Renderer = %s\n", BackendRenderer)
-	a.log.Info("Backend Renderer = " + BackendRenderer)
-	if BackendRenderer == "headless" {
+	if BuildMode == "bridge" {
 		a.renderer = &Headless{}
 	}
 

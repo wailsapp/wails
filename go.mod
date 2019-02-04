@@ -14,10 +14,6 @@ require (
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/leaanthony/slicer v0.0.0-20190110113548-aa9ea12f976a
 	github.com/leaanthony/spinner v0.5.0
-	github.com/leaanthony/synx v0.0.0-20180923230033-60efbd9984b0 // indirect
-	github.com/leaanthony/wincursor v0.0.0-20180705115120-056510f32d15 // indirect
-	github.com/mattn/go-colorable v0.0.9 // indirect
-	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mitchellh/go-homedir v1.0.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect

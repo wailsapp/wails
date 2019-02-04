@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
 )
@@ -49,20 +48,9 @@ func init() {
 
 		// Validate config
 		// Check if we have a frontend
-		if projectOptions.FrontEnd != nil {
-			if projectOptions.FrontEnd.Dir == "" {
-				return fmt.Errorf("Frontend directory not set in project.json")
-			}
-			if projectOptions.FrontEnd.Build == "" {
-				return fmt.Errorf("Frontend build command not set in project.json")
-			}
-			if projectOptions.FrontEnd.Install == "" {
-				return fmt.Errorf("Frontend install command not set in project.json")
-			}
-			if projectOptions.FrontEnd.Bridge == "" {
-				return fmt.Errorf("Frontend bridge config not set in project.json")
-			}
-
+		err = cmd.ValidateFrontendConfig(projectOptions)
+		if err != nil {
+			return err
 		}
 
 		// Check pre-requisites are installed
@@ -91,8 +79,9 @@ func init() {
 		// Save project directory
 		projectDir := fs.Cwd()
 
-		// Install backend deps - needed?
+		// Install deps
 		if projectOptions.FrontEnd != nil {
+
 			// Install frontend deps
 			err = os.Chdir(projectOptions.FrontEnd.Dir)
 			if err != nil {
@@ -156,95 +145,45 @@ func init() {
 			}
 
 			// Build frontend
-			buildFESpinner := spinner.New("Building frontend...")
-			buildFESpinner.SetSpinSpeed(50)
-			buildFESpinner.Start()
-			err = program.RunCommand(projectOptions.FrontEnd.Build)
+			err = cmd.BuildFrontend(projectOptions.FrontEnd.Build)
 			if err != nil {
-				buildFESpinner.Error()
 				return err
 			}
-			buildFESpinner.Success()
 		}
 
-		// Run packr in project directory
+		// Move to project directory
 		err = os.Chdir(projectDir)
 		if err != nil {
 			return err
 		}
 
-		// Support build tags
-		buildTags := []string{}
-
-		depSpinner := spinner.New("Installing Dependencies...")
-		depSpinner.SetSpinSpeed(50)
-		depSpinner.Start()
-		installCommand := "go get"
-		err = program.RunCommand(installCommand)
+		// Install dependencies
+		err = cmd.InstallGoDependencies()
 		if err != nil {
-			depSpinner.Error()
 			return err
 		}
-		depSpinner.Success()
 
-		compileMessage := "Packing + Compiling project"
+		// Build application
+		buildMode := "prod"
 		if debugMode {
-			compileMessage += " (Debug Mode)"
+			buildMode = "debug"
 		}
-
-		packSpinner := spinner.New(compileMessage + "...")
-		packSpinner.SetSpinSpeed(50)
-		packSpinner.Start()
-
-		buildCommand := slicer.String()
-		buildCommand.AddSlice([]string{"packr", "build"})
-
-		// Add build tags
-		if len(buildTags) > 0 {
-			buildCommand.Add("--tags")
-			buildCommand.AddSlice(buildTags)
-
-		}
-
-		if projectOptions.BinaryName != "" {
-			buildCommand.Add("-o")
-			buildCommand.Add(projectOptions.BinaryName)
-		}
-
-		// If we are forcing a rebuild
-		if forceRebuild {
-			buildCommand.Add("-a")
-		}
-
-		// Release mode
-		logger.Red("debugMode = %t", debugMode)
-		if !debugMode {
-			buildCommand.AddSlice([]string{"-ldflags", "-X github.com/wailsapp/wails.DebugMode=false"})
-		}
-		err = program.RunCommandArray(buildCommand.AsSlice())
+		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode)
 		if err != nil {
-			packSpinner.Error()
 			return err
 		}
-		packSpinner.Success()
 
-		if packageApp == false {
-			logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
-			return nil
+		// Package application
+		if packageApp {
+			err = cmd.PackageApplication(projectOptions)
+			if err != nil {
+				return err
+			}
 		}
 
-		// Package app
-		packageSpinner := spinner.New("Packaging Application")
-		packageSpinner.SetSpinSpeed(50)
-		packageSpinner.Start()
-		packager := cmd.NewPackageHelper()
-		err = packager.Package(projectOptions)
-		if err != nil {
-			packageSpinner.Error()
-			return err
-		}
-		packageSpinner.Success()
 		logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
+
 		return nil
+
 	})
 }
