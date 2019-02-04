@@ -10,7 +10,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
 )
@@ -47,20 +46,9 @@ func init() {
 
 		// Validate config
 		// Check if we have a frontend
-		if projectOptions.FrontEnd != nil {
-			if projectOptions.FrontEnd.Dir == "" {
-				return fmt.Errorf("Frontend directory not set in project.json")
-			}
-			if projectOptions.FrontEnd.Build == "" {
-				return fmt.Errorf("Frontend build command not set in project.json")
-			}
-			if projectOptions.FrontEnd.Install == "" {
-				return fmt.Errorf("Frontend install command not set in project.json")
-			}
-			if projectOptions.FrontEnd.Bridge == "" {
-				return fmt.Errorf("Frontend bridge config not set in project.json")
-			}
-
+		err = cmd.ValidateFrontendConfig(projectOptions)
+		if err != nil {
+			return err
 		}
 
 		// Check pre-requisites are installed
@@ -154,15 +142,10 @@ func init() {
 			}
 
 			// Build frontend
-			buildFESpinner := spinner.New("Building frontend...")
-			buildFESpinner.SetSpinSpeed(50)
-			buildFESpinner.Start()
-			err = program.RunCommand(projectOptions.FrontEnd.Build)
+			err = cmd.BuildFrontend(projectOptions.FrontEnd.Build)
 			if err != nil {
-				buildFESpinner.Error()
 				return err
 			}
-			buildFESpinner.Success()
 		}
 
 		// Run packr in project directory
@@ -171,54 +154,17 @@ func init() {
 			return err
 		}
 
-		// Support build tags
-		buildTags := []string{}
-
-		depSpinner := spinner.New("Installing Dependencies...")
-		depSpinner.SetSpinSpeed(50)
-		depSpinner.Start()
-		installCommand := "go get"
-		err = program.RunCommand(installCommand)
+		// Install dependencies
+		err = cmd.InstallGoDependencies()
 		if err != nil {
-			depSpinner.Error()
 			return err
 		}
-		depSpinner.Success()
 
-		compileMessage := "Packing + Compiling project (Bridge Mode)"
-
-		packSpinner := spinner.New(compileMessage + "...")
-		packSpinner.SetSpinSpeed(50)
-		packSpinner.Start()
-
-		buildCommand := slicer.String()
-		buildCommand.AddSlice([]string{"packr", "build"})
-
-		// Add build tags
-		if len(buildTags) > 0 {
-			buildCommand.Add("--tags")
-			buildCommand.AddSlice(buildTags)
-
-		}
-
-		if projectOptions.BinaryName != "" {
-			buildCommand.Add("-o")
-			buildCommand.Add(projectOptions.BinaryName)
-		}
-
-		// If we are forcing a rebuild
-		if forceRebuild {
-			buildCommand.Add("-a")
-		}
-
-		// Release mode
-		buildCommand.AddSlice([]string{"-ldflags", "-X github.com/wailsapp/wails.BuildMode=bridge"})
-		err = program.RunCommandArray(buildCommand.AsSlice())
+		buildMode := "bridge"
+		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode)
 		if err != nil {
-			packSpinner.Error()
 			return err
 		}
-		packSpinner.Success()
 
 		logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
 
