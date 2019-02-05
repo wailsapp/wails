@@ -179,18 +179,9 @@ func (po *ProjectOptions) PromptForInputs() error {
 
 	var questions []*survey.Question
 
-	if po.Name == "" {
-		questions = append(questions, InputQuestion("Name", "The name of the project", "My Project", true))
-	} else {
-		fmt.Println("Project Name: " + po.Name)
-	}
+	processProjectName(po.Name, &questions)
 
-	if po.BinaryName == "" {
-		var binaryNameComputed = computeBinaryName(po.Name)
-		questions = append(questions, InputQuestion("BinaryName", "The output binary name", binaryNameComputed, true))
-	} else {
-		fmt.Println("Output binary Name: " + po.BinaryName)
-	}
+	processBinaryName(po.BinaryName, po.Name, &questions)
 
 	err := processOutputDirectory(po.OutputDirectory, &questions)
 	if err != nil {
@@ -242,35 +233,10 @@ func (po *ProjectOptions) PromptForInputs() error {
 
 	// Populate template details
 	templateMetadata := templateDetails[po.Template].Metadata
-	if templateMetadata["frontenddir"] != nil {
-		po.FrontEnd = &frontend{}
-		po.FrontEnd.Dir = templateMetadata["frontenddir"].(string)
-	}
-	if templateMetadata["install"] != nil {
-		if po.FrontEnd == nil {
-			return fmt.Errorf("install set in template metadata but not frontenddir")
-		}
-		po.FrontEnd.Install = templateMetadata["install"].(string)
-	}
-	if templateMetadata["build"] != nil {
-		if po.FrontEnd == nil {
-			return fmt.Errorf("build set in template metadata but not frontenddir")
-		}
-		po.FrontEnd.Build = templateMetadata["build"].(string)
-	}
 
-	if templateMetadata["bridge"] != nil {
-		if po.FrontEnd == nil {
-			return fmt.Errorf("bridge set in template metadata but not frontenddir")
-		}
-		po.FrontEnd.Bridge = templateMetadata["bridge"].(string)
-	}
-
-	if templateMetadata["serve"] != nil {
-		if po.FrontEnd == nil {
-			return fmt.Errorf("serve set in template metadata but not frontenddir")
-		}
-		po.FrontEnd.Serve = templateMetadata["serve"].(string)
+	err = processTemplateMetadata(templateMetadata, po)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -330,6 +296,57 @@ func processOutputDirectory(outputDirectory string, questions *[]*survey.Questio
 		fmt.Println("Project Directory: " + outputDirectory)
 	} else {
 		*questions = append(*questions, InputQuestion("OutputDirectory", "Project directory name", "", true))
+	}
+	return nil
+}
+
+func processProjectName(name string, questions *[]*survey.Question) {
+	if name == "" {
+		*questions = append(*questions, InputQuestion("Name", "The name of the project", "My Project", true))
+	} else {
+		fmt.Println("Project Name: " + name)
+	}
+}
+
+func processBinaryName(binaryName string, name string, questions *[]*survey.Question) {
+	if binaryName == "" {
+		var binaryNameComputed = computeBinaryName(name)
+		*questions = append(*questions, InputQuestion("BinaryName", "The output binary name", binaryNameComputed, true))
+	} else {
+		fmt.Println("Output binary Name: " + binaryName)
+	}
+}
+
+func processTemplateMetadata(templateMetadata map[string]interface{}, po *ProjectOptions) error {
+	if templateMetadata["frontenddir"] != nil {
+		po.FrontEnd = &frontend{}
+		po.FrontEnd.Dir = templateMetadata["frontenddir"].(string)
+	}
+	if templateMetadata["install"] != nil {
+		if po.FrontEnd == nil {
+			return fmt.Errorf("install set in template metadata but not frontenddir")
+		}
+		po.FrontEnd.Install = templateMetadata["install"].(string)
+	}
+	if templateMetadata["build"] != nil {
+		if po.FrontEnd == nil {
+			return fmt.Errorf("build set in template metadata but not frontenddir")
+		}
+		po.FrontEnd.Build = templateMetadata["build"].(string)
+	}
+
+	if templateMetadata["bridge"] != nil {
+		if po.FrontEnd == nil {
+			return fmt.Errorf("bridge set in template metadata but not frontenddir")
+		}
+		po.FrontEnd.Bridge = templateMetadata["bridge"].(string)
+	}
+
+	if templateMetadata["serve"] != nil {
+		if po.FrontEnd == nil {
+			return fmt.Errorf("serve set in template metadata but not frontenddir")
+		}
+		po.FrontEnd.Serve = templateMetadata["serve"].(string)
 	}
 	return nil
 }
