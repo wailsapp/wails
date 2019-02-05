@@ -70,7 +70,14 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string) er
 		buildCommand.Add("-a")
 	}
 
-	buildCommand.AddSlice([]string{"-ldflags", "-X github.com/wailsapp/wails.BuildMode=" + buildMode})
+	// Setup ld flags
+	ldflags := "-w -s "
+	if buildMode == "debug" {
+		ldflags = ""
+	}
+	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
+
+	buildCommand.AddSlice([]string{"-ldflags", ldflags})
 	err := NewProgramHelper().RunCommandArray(buildCommand.AsSlice())
 	if err != nil {
 		packSpinner.Error()
