@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-playground/colors"
 	"github.com/gobuffalo/packr"
-	"github.com/wailsapp/wails/webview"
+	"github.com/wailsapp/webview"
 )
 
 // Window defines the main application window
