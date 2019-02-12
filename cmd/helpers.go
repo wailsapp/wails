@@ -134,7 +134,7 @@ func CheckPackr() (err error) {
 }
 
 // InstallFrontendDeps attempts to install the frontend dependencies based on the given options
-func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forceRebuild bool) error {
+func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forceRebuild bool, caller string) error {
 
 	// Install frontend deps
 	err := os.Chdir(projectOptions.FrontEnd.Dir)
@@ -189,6 +189,9 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	}
 
 	bridgeFile := "wailsbridge.prod.js"
+	if caller == "serve" {
+		bridgeFile = "wailsbridge.js"
+	}
 
 	// Copy bridge to project
 	_, filename, _, _ := runtime.Caller(1)

@@ -188,7 +188,7 @@ function startBridge() {
       // Call back
       case "c":
         var callbackData = message.data.slice(1);
-        log("Callback = " + callbackData);
+        window.wailsbridge.log("Callback = " + callbackData);
         window.wails._.callback(callbackData);
         break;
     }

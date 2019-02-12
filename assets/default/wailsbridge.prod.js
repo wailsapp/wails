@@ -11,7 +11,7 @@ export default {
   // Passes the main Wails object to the callback if given.
   Start: function(callback) {
     if (callback) {
-      callback();
+      window.wails.events.on("wails:ready", callback);
     }
   }
 };

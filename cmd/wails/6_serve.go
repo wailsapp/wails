@@ -66,7 +66,7 @@ func init() {
 
 		// Install deps
 		if projectOptions.FrontEnd != nil {
-			err = cmd.InstallFrontendDeps(projectDir, projectOptions, forceRebuild)
+			err = cmd.InstallFrontendDeps(projectDir, projectOptions, forceRebuild, "serve")
 			if err != nil {
 				return err
 			}
