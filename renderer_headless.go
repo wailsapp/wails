@@ -95,7 +95,7 @@ func (h *Headless) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
 	}
 	h.theConnection = conn
-	h.log.Infof("Connection from frontend accepted.", h.theConnection)
+	h.log.Infof("Connection from frontend accepted [%p].", h.theConnection)
 	conn.SetCloseHandler(func(int, string) error {
 		h.log.Infof("Connection dropped [%p].", h.theConnection)
 		h.theConnection = nil

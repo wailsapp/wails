@@ -4,6 +4,8 @@ import (
 	"log"
 	"strings"
 
+	"github.com/wailsapp/wails/cmd"
+
 	"github.com/gobuffalo/packr"
 )
 
@@ -18,6 +20,9 @@ func escapeJS(js string) (string, error) {
 func BoxString(box *packr.Box, filename string) string {
 	result, err := box.FindString(filename)
 	if err != nil {
+		if BuildMode == cmd.BuildModeBridge {
+			return ""
+		}
 		log.Fatal(err)
 	}
 	return result
