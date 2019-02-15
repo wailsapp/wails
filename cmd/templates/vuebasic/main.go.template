@@ -5,6 +5,10 @@ import (
 	"github.com/wailsapp/wails"
 )
 
+func basic() string {
+	return "Hello World!"
+}
+
 func main() {
 
 	assets := packr.NewBox("./frontend/dist")
@@ -16,6 +20,6 @@ func main() {
 		JS:     wails.BoxString(&assets, "app.js"),
 		CSS:    wails.BoxString(&assets, "app.css"),
 	})
-	app.Bind(newQuotesCollection())
+	app.Bind(basic)
 	app.Run()
 }
