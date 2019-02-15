@@ -62,6 +62,8 @@ func init() {
 		}
 
 		// Save project directory
+		// TODO: Remove compiling frontend once packr
+		// allows optional boxes
 		projectDir := fs.Cwd()
 
 		// Install deps
@@ -84,7 +86,7 @@ func init() {
 			return err
 		}
 
-		buildMode := "bridge"
+		buildMode := cmd.BuildModeBridge
 		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode)
 		if err != nil {
 			return err

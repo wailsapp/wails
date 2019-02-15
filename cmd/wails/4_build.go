@@ -89,9 +89,9 @@ func init() {
 		}
 
 		// Build application
-		buildMode := "prod"
+		buildMode := cmd.BuildModeProd
 		if debugMode {
-			buildMode = "debug"
+			buildMode = cmd.BuildModeDebug
 		}
 		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode)
 		if err != nil {

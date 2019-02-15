@@ -7,7 +7,7 @@ import (
 // -------------------------------- Compile time Flags ------------------------------
 
 // BuildMode indicates what mode we are in
-var BuildMode = "prod"
+var BuildMode = cmd.BuildModeProd
 
 // ----------------------------------------------------------------------------------
 
@@ -53,7 +53,7 @@ func CreateApp(optionalConfig ...*AppConfig) *App {
 	result.config = appconfig
 
 	// Set up the CLI if not in release mode
-	if BuildMode != "prod" {
+	if BuildMode != BuildModeProd {
 		result.cli = result.setupCli()
 	} else {
 		// Disable Inspector in release mode
@@ -65,7 +65,7 @@ func CreateApp(optionalConfig ...*AppConfig) *App {
 
 // Run the app
 func (a *App) Run() error {
-	if BuildMode != "prod" {
+	if BuildMode != BuildModeProd {
 		return a.cli.Run()
 	}
 
@@ -82,7 +82,7 @@ func (a *App) start() error {
 	a.log.Info("Starting")
 
 	// Check if we are to run in headless mode
-	if BuildMode == "bridge" {
+	if BuildMode == BuildModeBridge {
 		a.renderer = &Headless{}
 	}
 

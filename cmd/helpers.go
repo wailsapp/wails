@@ -49,7 +49,8 @@ func InstallGoDependencies() error {
 // BuildApplication will attempt to build the project based on the given inputs
 func BuildApplication(binaryName string, forceRebuild bool, buildMode string) error {
 	compileMessage := "Packing + Compiling project"
-	if buildMode == "debug" {
+
+	if buildMode == BuildModeDebug {
 		compileMessage += " (Debug Mode)"
 	}
 
@@ -72,7 +73,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string) er
 
 	// Setup ld flags
 	ldflags := "-w -s "
-	if buildMode == "debug" {
+	if buildMode == BuildModeDebug {
 		ldflags = ""
 	}
 	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
