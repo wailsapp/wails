@@ -118,11 +118,6 @@ func (h *Headless) start(conn *websocket.Conn) {
 	wailsRuntime := BoxString(&defaultAssets, "wails.js")
 	h.evalJS(wailsRuntime, wailsRuntimeMessage)
 
-	// Inject the initial JS
-	for _, js := range h.initialisationJS {
-		h.sendMessage(h.theConnection, js)
-	}
-
 	// Inject bindings
 	for _, binding := range h.bindingCache {
 		h.evalJS(binding, bindingMessage)
