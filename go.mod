@@ -18,7 +18,7 @@ require (
 	github.com/mitchellh/go-homedir v1.0.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/sirupsen/logrus v1.2.0
-	github.com/wailsapp/webview v0.2.0
+	github.com/wailsapp/webview v0.2.5
 	golang.org/x/net v0.0.0-20190107155100-1a61f4433d85 // indirect
 	gopkg.in/AlecAivazis/survey.v1 v1.7.1 // indirect
 )
