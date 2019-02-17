@@ -4,10 +4,8 @@ import (
 	"strings"
 
 	"github.com/dchest/htmlmin"
-	"github.com/gobuffalo/packr"
+	"github.com/leaanthony/mewn"
 )
-
-var assets = packr.NewBox("./assets/default")
 
 // AppConfig is the configuration structure used when creating a Wails App object
 type AppConfig struct {
@@ -85,7 +83,7 @@ func newAppConfig(userConfig *AppConfig) (*AppConfig, error) {
 		Resizable: true,
 		Title:     "My Wails App",
 		Colour:    "#FFF", // White by default
-		HTML:      BoxString(&defaultAssets, "default.html"),
+		HTML:      mewn.String("./assets/default/default.html"),
 	}
 
 	if userConfig != nil {

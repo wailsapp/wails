@@ -55,15 +55,14 @@ func init() {
 			}
 		}
 
-		// Check Packr is installed
-		err = cmd.CheckPackr()
+		// Check Mewn is installed
+		err = cmd.CheckMewn()
 		if err != nil {
 			return err
 		}
 
 		// Save project directory
-		// TODO: Remove compiling frontend once packr
-		// allows optional boxes
+		// TODO: Test not compiling front end for bridge mode
 		projectDir := fs.Cwd()
 
 		// Install deps
@@ -74,7 +73,7 @@ func init() {
 			}
 		}
 
-		// Run packr in project directory
+		// Move to project directory
 		err = os.Chdir(projectDir)
 		if err != nil {
 			return err

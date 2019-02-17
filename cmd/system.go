@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/AlecAivazis/survey"
+	"gopkg.in/AlecAivazis/survey.v1"
 	homedir "github.com/mitchellh/go-homedir"
 )
 
