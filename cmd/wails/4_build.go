@@ -59,8 +59,8 @@ func init() {
 			}
 		}
 
-		// Check Packr is installed
-		err = cmd.CheckPackr()
+		// Check Mewn is installed
+		err = cmd.CheckMewn()
 		if err != nil {
 			return err
 		}

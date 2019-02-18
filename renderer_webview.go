@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-playground/colors"
-	"github.com/gobuffalo/packr"
+	"github.com/leaanthony/mewn"
 	"github.com/wailsapp/webview"
 )
 
@@ -161,9 +161,7 @@ func (w *webViewRenderer) Run() error {
 	w.log.Info("Run()")
 
 	// Runtime assets
-	assets := packr.NewBox("./assets/default")
-
-	wailsRuntime := BoxString(&assets, "wails.js")
+	wailsRuntime := mewn.String("./wailsruntimeassets/default/wails.js")
 	w.evalJS(wailsRuntime)
 
 	// Ping the wait channel when the wails runtime is loaded
@@ -196,7 +194,7 @@ func (w *webViewRenderer) Run() error {
 			} else {
 				// Use default wails css
 				w.log.Debug("Injecting Default Wails CSS")
-				defaultCSS := BoxString(&defaultAssets, "wails.css")
+				defaultCSS := mewn.String("./wailsruntimeassets/default/wails.css")
 
 				w.injectCSS(defaultCSS)
 			}

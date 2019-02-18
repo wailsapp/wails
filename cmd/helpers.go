@@ -59,7 +59,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string) er
 	packSpinner.Start()
 
 	buildCommand := slicer.String()
-	buildCommand.AddSlice([]string{"packr", "build"})
+	buildCommand.AddSlice([]string{"mewn", "build"})
 
 	if binaryName != "" {
 		buildCommand.Add("-o")
@@ -117,14 +117,14 @@ func BuildFrontend(buildCommand string) error {
 	return nil
 }
 
-// CheckPackr checks if packr is installed and if not, attempts to fetch it
-func CheckPackr() (err error) {
+// CheckMewn checks if mewn is installed and if not, attempts to fetch it
+func CheckMewn() (err error) {
 	programHelper := NewProgramHelper()
-	if !programHelper.IsInstalled("packr") {
+	if !programHelper.IsInstalled("mewn") {
 		buildSpinner := spinner.New()
 		buildSpinner.SetSpinSpeed(50)
-		buildSpinner.Start("Installing packr...")
-		err := programHelper.InstallGoPackage("github.com/gobuffalo/packr/...")
+		buildSpinner.Start("Installing Mewn asset packer...")
+		err := programHelper.InstallGoPackage("github.com/leaanthony/mewn/cmd/mewn")
 		if err != nil {
 			buildSpinner.Error()
 			return err
@@ -196,7 +196,7 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 
 	// Copy bridge to project
 	_, filename, _, _ := runtime.Caller(1)
-	bridgeFileSource := filepath.Join(path.Dir(filename), "..", "..", "assets", "default", bridgeFile)
+	bridgeFileSource := filepath.Join(path.Dir(filename), "..", "..", "wailsruntimeassets", "bridge", bridgeFile)
 	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, projectOptions.FrontEnd.Bridge, "wailsbridge.js")
 	err = fs.CopyFile(bridgeFileSource, bridgeFileTarget)
 	if err != nil {

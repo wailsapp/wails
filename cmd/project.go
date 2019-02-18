@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/AlecAivazis/survey"
+	"gopkg.in/AlecAivazis/survey.v1"
 )
 
 type author struct {

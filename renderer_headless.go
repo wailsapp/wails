@@ -7,11 +7,9 @@ import (
 	"strings"
 
 	"github.com/dchest/htmlmin"
-	"github.com/gobuffalo/packr"
 	"github.com/gorilla/websocket"
+	"github.com/leaanthony/mewn"
 )
-
-var defaultAssets = packr.NewBox("./assets/default")
 
 type messageType int
 
@@ -115,7 +113,7 @@ func (h *Headless) start(conn *websocket.Conn) {
 	// set external.invoke
 	h.log.Infof("Connected to frontend.")
 
-	wailsRuntime := BoxString(&defaultAssets, "wails.js")
+	wailsRuntime := mewn.String("./wailsruntimeassets/default/wails.js")
 	h.evalJS(wailsRuntime, wailsRuntimeMessage)
 
 	// Inject bindings
