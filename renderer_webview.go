@@ -161,7 +161,7 @@ func (w *webViewRenderer) Run() error {
 	w.log.Info("Run()")
 
 	// Runtime assets
-	wailsRuntime := mewn.String("./assets/default/wails.js")
+	wailsRuntime := mewn.String("./wailsruntimeassets/default/wails.js")
 	w.evalJS(wailsRuntime)
 
 	// Ping the wait channel when the wails runtime is loaded
@@ -194,7 +194,7 @@ func (w *webViewRenderer) Run() error {
 			} else {
 				// Use default wails css
 				w.log.Debug("Injecting Default Wails CSS")
-				defaultCSS := mewn.String("./assets/default/wails.css")
+				defaultCSS := mewn.String("./wailsruntimeassets/default/wails.css")
 
 				w.injectCSS(defaultCSS)
 			}

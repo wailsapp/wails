@@ -196,7 +196,7 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 
 	// Copy bridge to project
 	_, filename, _, _ := runtime.Caller(1)
-	bridgeFileSource := filepath.Join(path.Dir(filename), "..", "..", "assets", "bridge", bridgeFile)
+	bridgeFileSource := filepath.Join(path.Dir(filename), "..", "..", "wailsruntimeassets", "bridge", bridgeFile)
 	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, projectOptions.FrontEnd.Bridge, "wailsbridge.js")
 	err = fs.CopyFile(bridgeFileSource, bridgeFileTarget)
 	if err != nil {

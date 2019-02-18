@@ -113,7 +113,7 @@ func (h *Headless) start(conn *websocket.Conn) {
 	// set external.invoke
 	h.log.Infof("Connected to frontend.")
 
-	wailsRuntime := mewn.String("./assets/default/wails.js")
+	wailsRuntime := mewn.String("./wailsruntimeassets/default/wails.js")
 	h.evalJS(wailsRuntime, wailsRuntimeMessage)
 
 	// Inject bindings
