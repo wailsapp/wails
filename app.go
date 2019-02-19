@@ -46,6 +46,8 @@ func CreateApp(optionalConfig ...*AppConfig) *App {
 		log:            newCustomLogger("App"),
 	}
 
+	result.log.Info("AIOSDOIIOASIDAOSIOASID")
+
 	appconfig, err := newAppConfig(userConfig)
 	if err != nil {
 		result.log.Fatalf("Cannot use custom HTML: %s", err.Error())
