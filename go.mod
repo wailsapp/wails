@@ -16,5 +16,4 @@ require (
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/sirupsen/logrus v1.3.0
 	github.com/wailsapp/webview v0.2.5
-	gopkg.in/AlecAivazis/survey.v1 v1.8.2
 )

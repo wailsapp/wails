@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"time"
 
-	"gopkg.in/AlecAivazis/survey.v1"
 	homedir "github.com/mitchellh/go-homedir"
 )
 
@@ -82,9 +81,6 @@ func (s *SystemHelper) BackupConfig() (string, error) {
 
 func (s *SystemHelper) setup() error {
 
-	// Answers. We all need them.
-	answers := &SystemConfig{}
-
 	// Try to load current values - ignore errors
 	config, err := s.LoadConfig()
 	defaultName := ""
@@ -93,31 +89,10 @@ func (s *SystemHelper) setup() error {
 		defaultName = config.Name
 		defaultEmail = config.Email
 	}
-	// Questions
-	var simpleQs = []*survey.Question{
-		{
-			Name: "Name",
-			Prompt: &survey.Input{
-				Message: "What is your name:",
-				Default: defaultName,
-			},
-			Validate: survey.Required,
-		},
-		{
-			Name: "Email",
-			Prompt: &survey.Input{
-				Message: "What is your email address:",
-				Default: defaultEmail,
-			},
-			Validate: survey.Required,
-		},
-	}
 
-	// ask the questions
-	err = survey.Ask(simpleQs, answers)
-	if err != nil {
-		return err
-	}
+	systemConfig := make(map[string]string)
+	systemConfig["name"] = PromptRequired("What is your name", defaultName)
+	systemConfig["email"] = PromptRequired("What is your email address", defaultEmail)
 
 	// Create the directory
 	err = s.fs.MkDirs(s.wailsSystemDir)
@@ -125,12 +100,21 @@ func (s *SystemHelper) setup() error {
 		return err
 	}
 
+	// Save
+	configData, err := json.Marshal(&systemConfig)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(s.wailsSystemConfig, configData, 0755)
+	if err != nil {
+		return err
+	}
 	fmt.Println()
 	s.log.White("Wails config saved to: " + s.wailsSystemConfig)
 	s.log.White("Feel free to customise these settings.")
 	fmt.Println()
 
-	return answers.Save(s.wailsSystemConfig)
+	return nil
 }
 
 const introText = `
