@@ -6,8 +6,6 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"strings"
-
-	"gopkg.in/AlecAivazis/survey.v1"
 )
 
 type author struct {
@@ -120,36 +118,36 @@ func (ph *ProjectHelper) NewProjectOptions() *ProjectOptions {
 	return &result
 }
 
-// SelectQuestion creates a new select type question for Survey
-func SelectQuestion(name, message string, options []string, defaultValue string, required bool) *survey.Question {
-	result := survey.Question{
-		Name: name,
-		Prompt: &survey.Select{
-			Message: message,
-			Options: options,
-			Default: defaultValue,
-		},
-	}
-	if required {
-		result.Validate = survey.Required
-	}
-	return &result
-}
+// // SelectQuestion creates a new select type question for Survey
+// func SelectQuestion(name, message string, options []string, defaultValue string, required bool) *survey.Question {
+// 	result := survey.Question{
+// 		Name: name,
+// 		Prompt: &survey.Select{
+// 			Message: message,
+// 			Options: options,
+// 			Default: defaultValue,
+// 		},
+// 	}
+// 	if required {
+// 		result.Validate = survey.Required
+// 	}
+// 	return &result
+// }
 
 // InputQuestion creates a new input type question for Survey
-func InputQuestion(name, message string, defaultValue string, required bool) *survey.Question {
-	result := survey.Question{
-		Name: name,
-		Prompt: &survey.Input{
-			Message: message + ":",
-			Default: defaultValue,
-		},
-	}
-	if required {
-		result.Validate = survey.Required
-	}
-	return &result
-}
+// func InputQuestion(name, message string, defaultValue string, required bool) *survey.Question {
+// 	result := survey.Question{
+// 		Name: name,
+// 		Prompt: &survey.Input{
+// 			Message: message + ":",
+// 			Default: defaultValue,
+// 		},
+// 	}
+// 	if required {
+// 		result.Validate = survey.Required
+// 	}
+// 	return &result
+// }
 
 // ProjectOptions holds all the options available for a project
 type ProjectOptions struct {
@@ -177,13 +175,11 @@ func (po *ProjectOptions) Defaults() {
 // PromptForInputs asks the user to input project details
 func (po *ProjectOptions) PromptForInputs() error {
 
-	var questions []*survey.Question
+	processProjectName(po)
 
-	processProjectName(po.Name, &questions)
+	processBinaryName(po)
 
-	processBinaryName(po.BinaryName, po.Name, &questions)
-
-	err := processOutputDirectory(po.OutputDirectory, &questions)
+	err := processOutputDirectory(po)
 	if err != nil {
 		return err
 	}
@@ -212,15 +208,12 @@ func (po *ProjectOptions) PromptForInputs() error {
 	if po.Template != "" {
 		if _, ok := templateDetails[po.Template]; !ok {
 			po.log.Error("Template '%s' invalid.", po.Template)
-			questions = append(questions, SelectQuestion("Template", "Select template", templates, templates[0], true))
+			templateSelected := PromptSelection("Select template", templates)
+			po.Template = templates[templateSelected]
 		}
 	} else {
-		questions = append(questions, SelectQuestion("Template", "Select template", templates, templates[0], true))
-	}
-
-	err = survey.Ask(questions, po)
-	if err != nil {
-		return err
+		templateSelected := PromptSelection("Select template", templates)
+		po.Template = templates[templateSelected]
 	}
 
 	// Setup NPM Project name
@@ -281,10 +274,10 @@ func computeBinaryName(projectName string) string {
 	return binaryNameComputed
 }
 
-func processOutputDirectory(outputDirectory string, questions *[]*survey.Question) error {
-
-	if outputDirectory != "" {
-		projectPath, err := filepath.Abs(outputDirectory)
+func processOutputDirectory(po *ProjectOptions) error {
+	// po.OutputDirectory
+	if po.OutputDirectory != "" {
+		projectPath, err := filepath.Abs(po.OutputDirectory)
 		if err != nil {
 			return err
 		}
@@ -293,27 +286,27 @@ func processOutputDirectory(outputDirectory string, questions *[]*survey.Questio
 			return fmt.Errorf("directory '%s' already exists", projectPath)
 		}
 
-		fmt.Println("Project Directory: " + outputDirectory)
+		fmt.Println("Project Directory: " + po.OutputDirectory)
 	} else {
-		*questions = append(*questions, InputQuestion("OutputDirectory", "Project directory name", "", true))
+		po.OutputDirectory = PromptRequired("Project directory name")
 	}
 	return nil
 }
 
-func processProjectName(name string, questions *[]*survey.Question) {
-	if name == "" {
-		*questions = append(*questions, InputQuestion("Name", "The name of the project", "My Project", true))
+func processProjectName(po *ProjectOptions) {
+	if po.Name == "" {
+		po.Name = Prompt("The name of the project", "My Project")
 	} else {
-		fmt.Println("Project Name: " + name)
+		fmt.Println("Project Name: " + po.Name)
 	}
 }
 
-func processBinaryName(binaryName string, name string, questions *[]*survey.Question) {
-	if binaryName == "" {
-		var binaryNameComputed = computeBinaryName(name)
-		*questions = append(*questions, InputQuestion("BinaryName", "The output binary name", binaryNameComputed, true))
+func processBinaryName(po *ProjectOptions) {
+	if po.BinaryName == "" {
+		var binaryNameComputed = computeBinaryName(po.Name)
+		po.BinaryName = Prompt("The output binary name", binaryNameComputed)
 	} else {
-		fmt.Println("Output binary Name: " + binaryName)
+		fmt.Println("Output binary Name: " + po.BinaryName)
 	}
 }
 
