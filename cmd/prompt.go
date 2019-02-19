@@ -8,7 +8,7 @@ import (
 // Prompt asks the user for a value
 func Prompt(question string, defaultValue ...string) string {
 	var answer string
-	haveDefault := len(defaultValue) > 0
+	haveDefault := len(defaultValue) > 0 && defaultValue[0] != ""
 
 	if haveDefault {
 		question = fmt.Sprintf("%s (%s)", question, defaultValue[0])

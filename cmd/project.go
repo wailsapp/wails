@@ -118,37 +118,6 @@ func (ph *ProjectHelper) NewProjectOptions() *ProjectOptions {
 	return &result
 }
 
-// // SelectQuestion creates a new select type question for Survey
-// func SelectQuestion(name, message string, options []string, defaultValue string, required bool) *survey.Question {
-// 	result := survey.Question{
-// 		Name: name,
-// 		Prompt: &survey.Select{
-// 			Message: message,
-// 			Options: options,
-// 			Default: defaultValue,
-// 		},
-// 	}
-// 	if required {
-// 		result.Validate = survey.Required
-// 	}
-// 	return &result
-// }
-
-// InputQuestion creates a new input type question for Survey
-// func InputQuestion(name, message string, defaultValue string, required bool) *survey.Question {
-// 	result := survey.Question{
-// 		Name: name,
-// 		Prompt: &survey.Input{
-// 			Message: message + ":",
-// 			Default: defaultValue,
-// 		},
-// 	}
-// 	if required {
-// 		result.Validate = survey.Required
-// 	}
-// 	return &result
-// }
-
 // ProjectOptions holds all the options available for a project
 type ProjectOptions struct {
 	Name            string    `json:"name"`
