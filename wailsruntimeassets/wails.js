@@ -1,5 +1,4 @@
 // Wails runtime JS
-
 (function () {
 	window.wails = window.wails || {};
 	window.backend = {};
@@ -11,7 +10,8 @@
 	function cryptoRandom() {
 		var array = new Uint32Array(1);
 		return window.crypto.getRandomValues(array)[0];
-	}
+    }
+    
 
 	// LOLRandom
 	function basicRandom() {
@@ -32,9 +32,9 @@
 		// Don't xss yourself :-)
 		try {
 			new Function("var " + name);
-			return true
+			return true;
 		} catch (e) {
-			return false
+			return false;
 		}
 	}
 
@@ -57,7 +57,7 @@
 			elem.appendChild(document.createTextNode(css));
 		}
 		var head = document.head || document.getElementsByTagName('head')[0];
-		head.appendChild(elem)
+		head.appendChild(elem);
 	}
 
 	/************************* Bindings *************************/
@@ -67,25 +67,27 @@
 	// Creates the path given in the bindings path
 	function addBindingPath(pathSections) {
 		// Start at the base path
-		var currentPath = bindingsBasePath
+		var currentPath = bindingsBasePath;
 		// for each section of the given path
-		for (var section of pathSections) {
+		for (var sectionIndex in pathSections) {
+
+			var section = pathSections[sectionIndex];
 
 			// Is section a valid javascript identifier?
 			if (!isValidIdentifier(section)) {
-				var errMessage = section + " is not a valid javascript identifier."
-				var err = new Error(errMessage)
-				return [null, err]
+				var errMessage = section + " is not a valid javascript identifier.";
+				var err = new Error(errMessage);
+				return [null, err];
 			}
 
 			// Add if doesn't exist
 			if (!currentPath[section]) {
-				currentPath[section] = {}
+				currentPath[section] = {};
 			}
 			// update current path to new path
-			currentPath = currentPath[section]
+			currentPath = currentPath[section];
 		}
-		return [currentPath, null]
+		return [currentPath, null];
 	}
 
 	function newBinding(bindingName) {
@@ -96,15 +98,17 @@
 		// Get the actual function/method call name
 		var callName = bindingSections.pop();
 
-		let pathToBinding;
-		let err;
+		var pathToBinding;
+		var err;
 
 		// Add path to binding
-		[pathToBinding, err] = addBindingPath(bindingSections)
+		var bs = addBindingPath(bindingSections);
+		var pathToBinding = bs[0];
+		var err = bs[1];
 
 		if (err != null) {
 			// We need to return an error
-			return err
+			return err;
 		}
 
 		// Add binding call
@@ -115,7 +119,7 @@
 
 			// Actual function
 			function dynamic() {
-				var args = [].slice.call(arguments)
+				var args = [].slice.call(arguments);
 				return call(bindingName, args, timeout);
 			}
 
@@ -160,12 +164,12 @@
 			var callbackID;
 			do {
 				callbackID = bindingName + "-" + randomFunc();
-			} while (callbacks[callbackID])
+			} while (callbacks[callbackID]);
 
 			// Set timeout
 			if (timeout > 0) {
 				var timeoutHandle = setTimeout(function () {
-					reject(Error("Call to " + bindingName + " timed out. Request ID: " + callbackID))
+					reject(Error("Call to " + bindingName + " timed out. Request ID: " + callbackID));
 				}, timeout);
 			}
 
@@ -176,7 +180,7 @@
 				resolve: resolve
 			}
 			try {
-				var payloaddata = JSON.stringify(data)
+				var payloaddata = JSON.stringify(data);
 				// Create the message
 				message = {
 					type: "call",
@@ -188,39 +192,38 @@
 				}
 
 				// Make the call
-				var payload = JSON.stringify(message)
+				var payload = JSON.stringify(message);
 				external.invoke(payload);
 			} catch (e) {
-				console.error(e)
+				console.error(e);
 			}
 		})
 	}
-
 
 	// Called by the backend to return data to a previously called
 	// binding invocation
 	function callback(incomingMessage) {
 		// Parse the message
-		var message
+		var message;
 		try {
-			message = JSON.parse(incomingMessage)
+			message = JSON.parse(incomingMessage);
 		} catch (e) {
-			wails.log.debug("Invalid JSON passed to callback: " + e.message)
-			wails.log.debug("Message: " + incomingMessage)
-			return
+			wails.log.debug("Invalid JSON passed to callback: " + e.message);
+			wails.log.debug("Message: " + incomingMessage);
+			return;
 		}
-		callbackID = message.callbackid
-		callbackData = callbacks[callbackID]
+		callbackID = message.callbackid;
+		callbackData = callbacks[callbackID];
 		if (!callbackData) {
-			console.error("Callback '" + callbackID + "' not registed!!!")
+			console.error("Callback '" + callbackID + "' not registed!!!");
 			return
 		}
-		clearTimeout(callbackData.timeoutHandle)
-		delete callbacks[callbackID]
+		clearTimeout(callbackData.timeoutHandle);
+		delete callbacks[callbackID];
 		if (message.error) {
-			return callbackData.reject(message.error)
+			return callbackData.reject(message.error);
 		}
-		return callbackData.resolve(message.data)
+		return callbackData.resolve(message.data);
 	}
 
 	/************************************************************/
@@ -236,11 +239,12 @@
 		eventListeners[eventName].push(callback);
 	}
 
+
 	// notify informs frontend listeners that an event was emitted with the given data
 	function notify(eventName, data) {
 		if (eventListeners[eventName]) {
-			eventListeners[eventName].forEach(element => {
-				var parsedData = []
+			eventListeners[eventName].forEach(function(element) {
+				var parsedData = [];
 				// Parse data if we have it
 				if (data) {
 					try {
@@ -273,6 +277,7 @@
 
 	// Events calls
 	window.wails.events = { emit: emit, on: on };
+
 
 	/************************************************************/
 
@@ -327,7 +332,8 @@
 		callbacks: callbacks,
 		injectCSS: injectCSS,
 		addScript: addScript,
-	}
+    }
+    
 
 	/************************************************************/
 

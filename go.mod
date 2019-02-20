@@ -1,6 +1,7 @@
 module github.com/wailsapp/wails
 
 require (
+	github.com/akavel/rsrc v0.0.0-20170831122431-f6a15ece2cfd // indirect
 	github.com/dchest/cssmin v0.0.0-20151210170030-fb8d9b44afdc // indirect
 	github.com/dchest/htmlmin v0.0.0-20150526090704-e254725e81ac
 	github.com/dchest/jsmin v0.0.0-20160823214000-faeced883947 // indirect

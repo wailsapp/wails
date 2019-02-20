@@ -68,15 +68,15 @@ func (b *PackageHelper) getPackageFileBaseDir() string {
 
 // Package the application into a platform specific package
 func (b *PackageHelper) Package(po *ProjectOptions) error {
-	// Check we have the exe
-	if !b.fs.FileExists(po.BinaryName) {
-		return fmt.Errorf("cannot bundle non-existant binary file '%s'. Please build with 'wails build' first", po.BinaryName)
-	}
 	switch runtime.GOOS {
 	case "darwin":
+		// Check we have the exe
+		if !b.fs.FileExists(po.BinaryName) {
+			return fmt.Errorf("cannot bundle non-existant binary file '%s'. Please build with 'wails build' first", po.BinaryName)
+		}
 		return b.packageOSX(po)
 	case "windows":
-		return fmt.Errorf("windows is not supported at this time. Please see https://github.com/wailsapp/wails/issues/3")
+		return b.packageWindows(po)
 	case "linux":
 		return fmt.Errorf("linux is not supported at this time. Please see https://github.com/wailsapp/wails/issues/2")
 	default:
@@ -146,15 +146,63 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 	if err != nil {
 		return err
 	}
-	err = b.packageIcon(resourceDir)
+	err = b.packageIconOSX(resourceDir)
 	return err
 }
 
-func (b *PackageHelper) packageIcon(resourceDir string) error {
+func (b *PackageHelper) packageWindows(po *ProjectOptions) error {
+	basename := strings.TrimSuffix(po.BinaryName, ".exe")
+
+	// Copy icon
+	tgtIconFile := filepath.Join(b.fs.Cwd(), basename+".ico")
+	if !b.fs.FileExists(tgtIconFile) {
+		srcIconfile := filepath.Join(b.getPackageFileBaseDir(), "wails.ico")
+		err := b.fs.CopyFile(srcIconfile, tgtIconFile)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Copy manifest
+	tgtManifestFile := filepath.Join(b.fs.Cwd(), basename+".exe.manifest")
+	if !b.fs.FileExists(tgtManifestFile) {
+		srcManifestfile := filepath.Join(b.getPackageFileBaseDir(), "wails.exe.manifest")
+		err := b.fs.CopyFile(srcManifestfile, tgtManifestFile)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Copy rc file
+	tgtRCFile := filepath.Join(b.fs.Cwd(), basename+".rc")
+	if !b.fs.FileExists(tgtRCFile) {
+		srcRCfile := filepath.Join(b.getPackageFileBaseDir(), "wails.rc")
+		rcfilebytes, err := ioutil.ReadFile(srcRCfile)
+		if err != nil {
+			return err
+		}
+		rcfiledata := strings.Replace(string(rcfilebytes), "$NAME$", basename, -1)
+		err = ioutil.WriteFile(tgtRCFile, []byte(rcfiledata), 0755)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Build syso
+	sysofile := filepath.Join(b.fs.Cwd(), basename+"-res.syso")
+	windresCommand := []string{"windres", "-o", sysofile, tgtRCFile}
+	err := NewProgramHelper().RunCommandArray(windresCommand)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (b *PackageHelper) copyIcon(resourceDir string) (string, error) {
 
 	// TODO: Read this from project.json
 	const appIconFilename = "appicon.png"
-
 	srcIcon := path.Join(b.fs.Cwd(), appIconFilename)
 
 	// Check if appicon.png exists
@@ -164,14 +212,22 @@ func (b *PackageHelper) packageIcon(resourceDir string) error {
 		iconfile := filepath.Join(b.getPackageFileBaseDir(), "icon.png")
 		iconData, err := ioutil.ReadFile(iconfile)
 		if err != nil {
-			return err
+			return "", err
 		}
 		err = ioutil.WriteFile(srcIcon, iconData, 0644)
 		if err != nil {
-			return err
+			return "", err
 		}
 	}
+	return srcIcon, nil
+}
 
+func (b *PackageHelper) packageIconOSX(resourceDir string) error {
+
+	srcIcon, err := b.copyIcon(resourceDir)
+	if err != nil {
+		return err
+	}
 	tgtBundle := path.Join(resourceDir, "iconfile.icns")
 	imageFile, err := os.Open(srcIcon)
 	if err != nil {

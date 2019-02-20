@@ -47,7 +47,22 @@ func InstallGoDependencies() error {
 }
 
 // BuildApplication will attempt to build the project based on the given inputs
-func BuildApplication(binaryName string, forceRebuild bool, buildMode string) error {
+func BuildApplication(binaryName string, forceRebuild bool, buildMode string, packageApp bool, projectOptions *ProjectOptions) error {
+
+	// Generate Windows assets if needed
+	if runtime.GOOS == "windows" && packageApp {
+		err := PackageApplication(projectOptions)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Check Mewn is installed
+	err := CheckMewn()
+	if err != nil {
+		return err
+	}
+
 	compileMessage := "Packing + Compiling project"
 
 	if buildMode == BuildModeDebug {
@@ -76,22 +91,45 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string) er
 	if buildMode == BuildModeDebug {
 		ldflags = ""
 	}
+
+	// Add windows flags
+	if runtime.GOOS == "windows" {
+		ldflags += "-H windowsgui "
+	}
+
 	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
 
 	buildCommand.AddSlice([]string{"-ldflags", ldflags})
-	err := NewProgramHelper().RunCommandArray(buildCommand.AsSlice())
+	err = NewProgramHelper().RunCommandArray(buildCommand.AsSlice())
 	if err != nil {
 		packSpinner.Error()
 		return err
 	}
 	packSpinner.Success()
+
+	// Package application
+	if runtime.GOOS != "windows" && packageApp {
+		err = PackageApplication(projectOptions)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 // PackageApplication will attempt to package the application in a pltform dependent way
 func PackageApplication(projectOptions *ProjectOptions) error {
 	// Package app
-	packageSpinner := spinner.New("Packaging Application")
+	message := "Generating .app"
+	if runtime.GOOS == "windows" {
+		err := CheckWindres()
+		if err != nil {
+			return err
+		}
+		message = "Generating resource bundle"
+	}
+	packageSpinner := spinner.New(message)
 	packageSpinner.SetSpinSpeed(50)
 	packageSpinner.Start()
 	err := NewPackageHelper().Package(projectOptions)
@@ -130,6 +168,18 @@ func CheckMewn() (err error) {
 			return err
 		}
 		buildSpinner.Success()
+	}
+	return nil
+}
+
+// CheckWindres checks if Windres is installed and if not, aborts
+func CheckWindres() (err error) {
+	if runtime.GOOS != "windows" {
+		return nil
+	}
+	programHelper := NewProgramHelper()
+	if !programHelper.IsInstalled("windres") {
+		return fmt.Errorf("windres not installed. It comes by default with mingw. Ensure you have installed mingw correctly.")
 	}
 	return nil
 }

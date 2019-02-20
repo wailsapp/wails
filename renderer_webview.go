@@ -161,7 +161,7 @@ func (w *webViewRenderer) Run() error {
 	w.log.Info("Run()")
 
 	// Runtime assets
-	wailsRuntime := mewn.String("./wailsruntimeassets/default/wails.js")
+	wailsRuntime := mewn.String("./wailsruntimeassets/default/wails.min.js")
 	w.evalJS(wailsRuntime)
 
 	// Ping the wait channel when the wails runtime is loaded

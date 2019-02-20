@@ -24,6 +24,7 @@ func init() {
 		BoolFlag("d", "Build in Debug mode", &debugMode)
 
 	initCmd.Action(func() error {
+
 		log := cmd.NewLogger()
 		message := "Building Application"
 		if forceRebuild {
@@ -59,12 +60,6 @@ func init() {
 			}
 		}
 
-		// Check Mewn is installed
-		err = cmd.CheckMewn()
-		if err != nil {
-			return err
-		}
-
 		// Save project directory
 		projectDir := fs.Cwd()
 
@@ -93,17 +88,10 @@ func init() {
 		if debugMode {
 			buildMode = cmd.BuildModeDebug
 		}
-		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode)
+
+		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode, packageApp, projectOptions)
 		if err != nil {
 			return err
-		}
-
-		// Package application
-		if packageApp {
-			err = cmd.PackageApplication(projectOptions)
-			if err != nil {
-				return err
-			}
 		}
 
 		logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
