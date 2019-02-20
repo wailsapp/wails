@@ -12,6 +12,7 @@ import (
 
 	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
+	"github.com/wailsapp/wails/cmd"
 )
 
 // ValidateFrontendConfig checks if the frontend config is valid
@@ -99,6 +100,10 @@ func PackageApplication(projectOptions *ProjectOptions) error {
 	// Package app
 	message := "Generating .app"
 	if runtime.GOOS == "windows" {
+		err = cmd.CheckWindres()
+		if err != nil {
+			return err
+		}
 		message = "Generating resource bundle"
 	}
 	packageSpinner := spinner.New(message)

@@ -25,6 +25,7 @@ func init() {
 		BoolFlag("d", "Build in Debug mode", &debugMode)
 
 	initCmd.Action(func() error {
+
 		log := cmd.NewLogger()
 		message := "Building Application"
 		if forceRebuild {
@@ -95,16 +96,10 @@ func init() {
 			buildMode = cmd.BuildModeDebug
 		}
 
-		if runtime.GOOS == "windows" {
-			if packageApp {
-				err = cmd.CheckWindres()
-				if err != nil {
-					return err
-				}
-				err = cmd.PackageApplication(projectOptions)
-				if err != nil {
-					return err
-				}
+		if runtime.GOOS == "windows" && packageApp {
+			err = cmd.PackageApplication(projectOptions)
+			if err != nil {
+				return err
 			}
 		}
 		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode)
