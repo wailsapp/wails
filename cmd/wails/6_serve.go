@@ -86,7 +86,7 @@ func init() {
 		}
 
 		buildMode := cmd.BuildModeBridge
-		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode)
+		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode, false, projectOptions)
 		if err != nil {
 			return err
 		}
