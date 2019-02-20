@@ -12,7 +12,6 @@ import (
 
 	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
-	"github.com/wailsapp/wails/cmd"
 )
 
 // ValidateFrontendConfig checks if the frontend config is valid
@@ -48,7 +47,22 @@ func InstallGoDependencies() error {
 }
 
 // BuildApplication will attempt to build the project based on the given inputs
-func BuildApplication(binaryName string, forceRebuild bool, buildMode string) error {
+func BuildApplication(binaryName string, forceRebuild bool, buildMode string, packageApp bool, projectOptions *ProjectOptions) error {
+
+	// Generate Windows assets if needed
+	if runtime.GOOS == "windows" && packageApp {
+		err := PackageApplication(projectOptions)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Check Mewn is installed
+	err := CheckMewn()
+	if err != nil {
+		return err
+	}
+
 	compileMessage := "Packing + Compiling project"
 
 	if buildMode == BuildModeDebug {
@@ -86,12 +100,21 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string) er
 	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
 
 	buildCommand.AddSlice([]string{"-ldflags", ldflags})
-	err := NewProgramHelper().RunCommandArray(buildCommand.AsSlice())
+	err = NewProgramHelper().RunCommandArray(buildCommand.AsSlice())
 	if err != nil {
 		packSpinner.Error()
 		return err
 	}
 	packSpinner.Success()
+
+	// Package application
+	if runtime.GOOS != "windows" && packageApp {
+		err = PackageApplication(projectOptions)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -100,7 +123,7 @@ func PackageApplication(projectOptions *ProjectOptions) error {
 	// Package app
 	message := "Generating .app"
 	if runtime.GOOS == "windows" {
-		err = cmd.CheckWindres()
+		err := CheckWindres()
 		if err != nil {
 			return err
 		}

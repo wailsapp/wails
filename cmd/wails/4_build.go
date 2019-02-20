@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"runtime"
 
 	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
@@ -61,12 +60,6 @@ func init() {
 			}
 		}
 
-		// Check Mewn is installed
-		err = cmd.CheckMewn()
-		if err != nil {
-			return err
-		}
-
 		// Save project directory
 		projectDir := fs.Cwd()
 
@@ -96,23 +89,9 @@ func init() {
 			buildMode = cmd.BuildModeDebug
 		}
 
-		if runtime.GOOS == "windows" && packageApp {
-			err = cmd.PackageApplication(projectOptions)
-			if err != nil {
-				return err
-			}
-		}
-		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode)
+		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode, packageApp, projectOptions)
 		if err != nil {
 			return err
-		}
-
-		// Package application
-		if runtime.GOOS != "windows" && packageApp {
-			err = cmd.PackageApplication(projectOptions)
-			if err != nil {
-				return err
-			}
 		}
 
 		logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
