@@ -1,6 +1,7 @@
 module github.com/wailsapp/wails
 
 require (
+	github.com/akavel/rsrc v0.0.0-20170831122431-f6a15ece2cfd // indirect
 	github.com/dchest/cssmin v0.0.0-20151210170030-fb8d9b44afdc // indirect
 	github.com/dchest/htmlmin v0.0.0-20150526090704-e254725e81ac
 	github.com/dchest/jsmin v0.0.0-20160823214000-faeced883947 // indirect
@@ -8,6 +9,7 @@ require (
 	github.com/go-playground/colors v1.2.0
 	github.com/gorilla/websocket v1.4.0
 	github.com/jackmordaunt/icns v1.0.0
+	github.com/josephspurrier/goversioninfo v0.0.0-20190209210621-63e6d1acd3dd // indirect
 	github.com/leaanthony/mewn v0.9.0
 	github.com/leaanthony/slicer v1.0.0
 	github.com/leaanthony/spinner v0.5.0

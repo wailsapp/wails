@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
@@ -93,13 +94,26 @@ func init() {
 		if debugMode {
 			buildMode = cmd.BuildModeDebug
 		}
+
+		if runtime.GOOS == "windows" {
+			if packageApp {
+				err = cmd.CheckWindres()
+				if err != nil {
+					return err
+				}
+				err = cmd.PackageApplication(projectOptions)
+				if err != nil {
+					return err
+				}
+			}
+		}
 		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode)
 		if err != nil {
 			return err
 		}
 
 		// Package application
-		if packageApp {
+		if runtime.GOOS != "windows" && packageApp {
 			err = cmd.PackageApplication(projectOptions)
 			if err != nil {
 				return err

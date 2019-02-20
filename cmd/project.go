@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -82,10 +83,26 @@ func (ph *ProjectHelper) GenerateProject(projectOptions *ProjectOptions) error {
 	if err != nil {
 		return err
 	}
+
+	// // If we are on windows, dump a windows_resource.json
+	// if runtime.GOOS == "windows" {
+	// 	ph.GenerateWindowsResourceConfig(projectOptions)
+	// }
+
 	ph.log.Yellow("Project '%s' generated in directory '%s'!", projectOptions.Name, projectOptions.OutputDirectory)
 	ph.log.Yellow("To compile the project, run 'wails build' in the project directory.")
 	return nil
 }
+
+// // GenerateWindowsResourceConfig generates the default windows resource file
+// func (ph *ProjectHelper) GenerateWindowsResourceConfig(po *ProjectOptions) {
+
+// 	fmt.Println(buffer.String())
+
+// 	// vi.Build()
+// 	// vi.Walk()
+// 	// err := vi.WriteSyso(outPath, runtime.GOARCH)
+// }
 
 // LoadProjectConfig loads the project config from the given directory
 func (ph *ProjectHelper) LoadProjectConfig(dir string) (*ProjectOptions, error) {
@@ -245,38 +262,41 @@ func computeBinaryName(projectName string) string {
 
 func processOutputDirectory(po *ProjectOptions) error {
 	// po.OutputDirectory
-	if po.OutputDirectory != "" {
-		projectPath, err := filepath.Abs(po.OutputDirectory)
-		if err != nil {
-			return err
-		}
-
-		if NewFSHelper().DirExists(projectPath) {
-			return fmt.Errorf("directory '%s' already exists", projectPath)
-		}
-
-		fmt.Println("Project Directory: " + po.OutputDirectory)
-	} else {
+	if po.OutputDirectory == "" {
 		po.OutputDirectory = PromptRequired("Project directory name")
 	}
+	projectPath, err := filepath.Abs(po.OutputDirectory)
+	if err != nil {
+		return err
+	}
+
+	if NewFSHelper().DirExists(projectPath) {
+		return fmt.Errorf("directory '%s' already exists", projectPath)
+	}
+
+	fmt.Println("Project Directory: " + po.OutputDirectory)
 	return nil
 }
 
 func processProjectName(po *ProjectOptions) {
 	if po.Name == "" {
 		po.Name = Prompt("The name of the project", "My Project")
-	} else {
-		fmt.Println("Project Name: " + po.Name)
 	}
+	fmt.Println("Project Name: " + po.Name)
+
 }
 
 func processBinaryName(po *ProjectOptions) {
 	if po.BinaryName == "" {
 		var binaryNameComputed = computeBinaryName(po.Name)
 		po.BinaryName = Prompt("The output binary name", binaryNameComputed)
-	} else {
-		fmt.Println("Output binary Name: " + po.BinaryName)
+		if runtime.GOOS == "windows" {
+			if !strings.HasSuffix(po.BinaryName, ".exe") {
+				po.BinaryName += ".exe"
+			}
+		}
 	}
+	fmt.Println("Output binary Name: " + po.BinaryName)
 }
 
 func processTemplateMetadata(templateMetadata map[string]interface{}, po *ProjectOptions) error {

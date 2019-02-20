@@ -18,7 +18,6 @@ func Prompt(question string, defaultValue ...string) string {
 	if haveDefault {
 		if len(answer) == 0 {
 			answer = defaultValue[0]
-			fmt.Println(" -> " + answer)
 		}
 	}
 	return answer
