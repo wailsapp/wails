@@ -194,6 +194,7 @@ func (c *Command) Action(callback Action) *Command {
 
 // PrintHelp - Output the help text for this command
 func (c *Command) PrintHelp() {
+	c.log.PrintBanner()
 	versionString := c.AppVersion
 	if versionString != "" {
 		versionString = " " + versionString
@@ -211,7 +212,6 @@ func (c *Command) PrintHelp() {
 		fmt.Println(c.Longdescription + "\n")
 	}
 	if len(c.SubCommands) > 0 {
-		fmt.Println("")
 		c.log.White("Available commands:")
 		fmt.Println("")
 		for _, subcommand := range c.SubCommands {
@@ -222,9 +222,9 @@ func (c *Command) PrintHelp() {
 			}
 			fmt.Printf("   %s%s%s %s\n", subcommand.Name, spacer, subcommand.Shortdescription, isDefault)
 		}
+		fmt.Println("")
 	}
 	if c.flagCount > 0 {
-		fmt.Println("")
 		c.log.White("Flags:")
 		fmt.Println()
 		c.Flags.SetOutput(os.Stdout)

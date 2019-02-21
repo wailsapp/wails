@@ -21,7 +21,7 @@ func (app *App) setupCli() *cmd.Cli {
 	// Banner
 	result.PreRun(func(cli *cmd.Cli) error {
 		log := cmd.NewLogger()
-		log.PrintBanner()
+		log.PrintSmallBanner()
 		fmt.Println()
 		log.YellowUnderline(app.config.Title + " - Debug Build")
 		return nil
