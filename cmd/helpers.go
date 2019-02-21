@@ -50,8 +50,9 @@ func InstallGoDependencies() error {
 func BuildApplication(binaryName string, forceRebuild bool, buildMode string, packageApp bool, projectOptions *ProjectOptions) error {
 
 	// Generate Windows assets if needed
-	if runtime.GOOS == "windows" && packageApp {
-		err := PackageApplication(projectOptions)
+	if runtime.GOOS == "windows" {
+		cleanUp := !packageApp
+		err := NewPackageHelper().PackageWindows(projectOptions, cleanUp)
 		if err != nil {
 			return err
 		}
@@ -106,14 +107,6 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		return err
 	}
 	packSpinner.Success()
-
-	// Package application
-	if runtime.GOOS != "windows" && packageApp {
-		err = PackageApplication(projectOptions)
-		if err != nil {
-			return err
-		}
-	}
 
 	return nil
 }

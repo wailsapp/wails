@@ -80,6 +80,22 @@ func (fs *FSHelper) Cwd() string {
 	return cwd
 }
 
+// RemoveFile removes the given filename
+func (fs *FSHelper) RemoveFile(filename string) error {
+	return os.Remove(filename)
+}
+
+// RemoveFiles removes the given filenames
+func (fs *FSHelper) RemoveFiles(files []string) error {
+	for _, filename := range files {
+		err := os.Remove(filename)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // GetSubdirs will return a list of FQPs to subdirectories in the given directory
 func (fs *FSHelper) GetSubdirs(dir string) (map[string]string, error) {
 
