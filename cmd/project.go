@@ -263,7 +263,7 @@ func computeBinaryName(projectName string) string {
 func processOutputDirectory(po *ProjectOptions) error {
 	// po.OutputDirectory
 	if po.OutputDirectory == "" {
-		po.OutputDirectory = PromptRequired("Project directory name")
+		po.OutputDirectory = PromptRequired("Project directory name", computeBinaryName(po.Name))
 	}
 	projectPath, err := filepath.Abs(po.OutputDirectory)
 	if err != nil {
