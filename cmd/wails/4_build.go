@@ -25,12 +25,12 @@ func init() {
 
 	initCmd.Action(func() error {
 
-		log := cmd.NewLogger()
 		message := "Building Application"
 		if forceRebuild {
 			message += " (force rebuild)"
 		}
-		log.WhiteUnderline(message)
+		logger.PrintSmallBanner(message)
+		fmt.Println()
 
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}

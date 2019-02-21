@@ -24,7 +24,7 @@ Any flags that are required and not given will be prompted for.`
 
 	initCommand.Action(func() error {
 
-		logger.WhiteUnderline("Initialising project")
+		logger.PrintSmallBanner("Initialising project")
 		fmt.Println()
 
 		// Check if the system is initialised

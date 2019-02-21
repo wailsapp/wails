@@ -18,6 +18,8 @@ func init() {
 
 	setupCommand.Action(func() error {
 
+		logger.PrintBanner();
+
 		system := cmd.NewSystemHelper()
 		err := system.Initialise()
 		if err != nil {

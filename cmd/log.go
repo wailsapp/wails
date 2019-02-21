@@ -99,6 +99,16 @@ func (l *Logger) Error(format string, a ...interface{}) {
 	color.New(color.FgHiRed).PrintfFunc()("Error: "+format+"\n", a...)
 }
 
+func (l *Logger) PrintSmallBanner(message ...string) {
+	yellow := color.New(color.FgYellow).SprintFunc()
+	red := color.New(color.FgRed).SprintFunc()
+	msg := ""
+	if len(message) > 0 {
+		msg = " - " + message[0]
+	}
+	fmt.Printf("%s %s%s\n", yellow("Wails"), red(Version), msg)
+}
+
 // PrintBanner prints the Wails banner before running commands
 func (l *Logger) PrintBanner() error {
 	banner1 := ` _       __      _ __    
