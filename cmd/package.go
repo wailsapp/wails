@@ -76,7 +76,7 @@ func (b *PackageHelper) Package(po *ProjectOptions) error {
 		}
 		return b.packageOSX(po)
 	case "windows":
-		return b.packageWindows(po)
+		return b.PackageWindows(po, true)
 	case "linux":
 		return fmt.Errorf("linux is not supported at this time. Please see https://github.com/wailsapp/wails/issues/2")
 	default:
@@ -150,7 +150,7 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 	return err
 }
 
-func (b *PackageHelper) packageWindows(po *ProjectOptions) error {
+func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	basename := strings.TrimSuffix(po.BinaryName, ".exe")
 
 	// Copy icon
@@ -194,6 +194,15 @@ func (b *PackageHelper) packageWindows(po *ProjectOptions) error {
 	err := NewProgramHelper().RunCommandArray(windresCommand)
 	if err != nil {
 		return err
+	}
+
+	// clean up
+	if cleanUp {
+		filesToDelete := []string{tgtIconFile, tgtManifestFile, tgtRCFile}
+		err := b.fs.RemoveFiles(filesToDelete)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
