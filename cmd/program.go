@@ -106,6 +106,15 @@ func (p *ProgramHelper) RunCommand(command string) error {
 	return p.RunCommandArray(args)
 }
 
+func (p *ProgramHelper) GetOutputFromCommand(command string) (string, string, error) {
+	args := strings.Split(command, " ")
+	if len(args) > 1 {
+		return p.shell.Run(args[0], args[1:]...)
+	} else {
+		return p.shell.Run(args[0])
+	}
+}
+
 // RunCommandArray runs the command specified in the array
 func (p *ProgramHelper) RunCommandArray(args []string) error {
 	program := args[0]
