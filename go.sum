@@ -101,8 +101,12 @@ github.com/leaanthony/mewn v0.9.0 h1:GExA7M15ikWytAIBKgs9SDl9EOC04JSjvL29qiLTAq4
 github.com/leaanthony/mewn v0.9.0/go.mod h1:CRkTx8unLiSSilu/Sd7i1LwrdaAL+3eQ3ses99qGMEQ=
 github.com/leaanthony/mewn v0.9.1 h1:+qmAnR5nETU/00o5wvYJ7w9Y36R9uIBRB9I15E9Ru8A=
 github.com/leaanthony/mewn v0.9.1/go.mod h1:CRkTx8unLiSSilu/Sd7i1LwrdaAL+3eQ3ses99qGMEQ=
+github.com/leaanthony/mewn v0.9.4 h1:thDAdV8DkCwqHcFLnfMLQtTHqK1N8leF7sD/SPsLMHI=
+github.com/leaanthony/mewn v0.9.4/go.mod h1:CRkTx8unLiSSilu/Sd7i1LwrdaAL+3eQ3ses99qGMEQ=
 github.com/leaanthony/slicer v1.0.0 h1:BV2CySexcZ20qyHp5qBTxQhsazR6e8MBTF1EHmGu1xw=
 github.com/leaanthony/slicer v1.0.0/go.mod h1:VMB/HGvr3uR3MRpFWHWAm0w+DHQLzPHYe2pKfpFlQIQ=
+github.com/leaanthony/slicer v1.2.0 h1:XZ+1l7cCO36j238iv5ZXkJAcM3hPtD0xb41/WE+QmuU=
+github.com/leaanthony/slicer v1.2.0/go.mod h1:VMB/HGvr3uR3MRpFWHWAm0w+DHQLzPHYe2pKfpFlQIQ=
 github.com/leaanthony/spinner v0.5.0 h1:HQykt/iTy7fmINEREtRbWrt+8j4MxC8dtvWBxEWM9oA=
 github.com/leaanthony/spinner v0.5.0/go.mod h1:8TSFz9SL1AUC4XSbEFYE6SfN5Mlus51qYluVGrie9ww=
 github.com/leaanthony/synx v0.1.0 h1:R0lmg2w6VMb8XcotOwAe5DLyzwjLrskNkwU7LLWsyL8=

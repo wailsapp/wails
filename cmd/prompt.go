@@ -34,18 +34,29 @@ func PromptRequired(question string, defaultValue ...string) string {
 }
 
 // PromptSelection asks the user to choose an option
-func PromptSelection(question string, options []string) int {
+func PromptSelection(question string, options []string, optionalDefaultValue ...int) int {
 
+	defaultValue := -1
+	message := "Please choose an option"
 	fmt.Println(question + ":")
+
+	if len(optionalDefaultValue) > 0 {
+		defaultValue = optionalDefaultValue[0] + 1
+		message = fmt.Sprintf("%s [%d]", message, defaultValue)
+	}
+
 	for index, option := range options {
 		fmt.Printf("  %d: %s\n", index+1, option)
 	}
 
-	fmt.Println()
 	selectedValue := -1
 
 	for {
-		choice := Prompt("Please choose an option")
+		choice := Prompt(message)
+		if choice == "" && defaultValue > -1 {
+			selectedValue = defaultValue - 1
+			break
+		}
 
 		// index
 		number, err := strconv.Atoi(choice)

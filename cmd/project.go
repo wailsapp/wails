@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/leaanthony/slicer"
 )
 
 type author struct {
@@ -47,21 +49,19 @@ func NewProjectHelper() *ProjectHelper {
 // GenerateProject generates a new project using the options given
 func (ph *ProjectHelper) GenerateProject(projectOptions *ProjectOptions) error {
 
-	fs := NewFSHelper()
-	exists, err := ph.templates.TemplateExists(projectOptions.Template)
-	if err != nil {
-		return err
-	}
+	// exists := ph.templates.TemplateExists(projectOptions.Template)
 
-	if !exists {
-		return fmt.Errorf("template '%s' is invalid", projectOptions.Template)
-	}
+	// if !exists {
+	// 	return fmt.Errorf("template '%s' is invalid", projectOptions.Template)
+	// }
 
 	// Calculate project path
 	projectPath, err := filepath.Abs(projectOptions.OutputDirectory)
 	if err != nil {
 		return err
 	}
+
+	_ = projectPath
 
 	if fs.DirExists(projectPath) {
 		return fmt.Errorf("directory '%s' already exists", projectPath)
@@ -114,15 +114,14 @@ func (ph *ProjectHelper) LoadProjectConfig(dir string) (*ProjectOptions, error) 
 // NewProjectOptions creates a new default set of project options
 func (ph *ProjectHelper) NewProjectOptions() *ProjectOptions {
 	result := ProjectOptions{
-		Name:            "",
-		Description:     "Enter your project description",
-		Version:         "0.1.0",
-		BinaryName:      "",
-		system:          NewSystemHelper(),
-		log:             NewLogger(),
-		templates:       NewTemplateHelper(),
-		templateNameMap: make(map[string]string),
-		Author:          &author{},
+		Name:        "",
+		Description: "Enter your project description",
+		Version:     "0.1.0",
+		BinaryName:  "",
+		system:      NewSystemHelper(),
+		log:         NewLogger(),
+		templates:   NewTemplateHelper(),
+		Author:      &author{},
 	}
 
 	// Populate system config
@@ -137,25 +136,25 @@ func (ph *ProjectHelper) NewProjectOptions() *ProjectOptions {
 
 // ProjectOptions holds all the options available for a project
 type ProjectOptions struct {
-	Name            string    `json:"name"`
-	Description     string    `json:"description"`
-	Author          *author   `json:"author,omitempty"`
-	Version         string    `json:"version"`
-	OutputDirectory string    `json:"-"`
-	UseDefaults     bool      `json:"-"`
-	Template        string    `json:"-"`
-	BinaryName      string    `json:"binaryname"`
-	FrontEnd        *frontend `json:"frontend,omitempty"`
-	NPMProjectName  string    `json:"-"`
-	system          *SystemHelper
-	log             *Logger
-	templates       *TemplateHelper
-	templateNameMap map[string]string // Converts template prompt text to template name
+	Name             string    `json:"name"`
+	Description      string    `json:"description"`
+	Author           *author   `json:"author,omitempty"`
+	Version          string    `json:"version"`
+	OutputDirectory  string    `json:"-"`
+	UseDefaults      bool      `json:"-"`
+	Template         string    `json:"-"`
+	BinaryName       string    `json:"binaryname"`
+	FrontEnd         *frontend `json:"frontend,omitempty"`
+	NPMProjectName   string    `json:"-"`
+	system           *SystemHelper
+	log              *Logger
+	templates        *TemplateHelper
+	selectedTemplate *TemplateDetails
 }
 
 // Defaults sets the default project template
 func (po *ProjectOptions) Defaults() {
-	po.Template = "basic"
+	po.Template = "vuebasic"
 }
 
 // PromptForInputs asks the user to input project details
@@ -170,48 +169,31 @@ func (po *ProjectOptions) PromptForInputs() error {
 		return err
 	}
 
-	templateDetails, err := po.templates.GetTemplateDetails()
-	if err != nil {
-		return err
+	// Process Templates
+	templateList := slicer.Interface()
+	options := slicer.String()
+	for _, templateDetails := range po.templates.TemplateList.details {
+		templateList.Add(templateDetails)
+		options.Add(fmt.Sprintf("%s - %s", templateDetails.Metadata.Name, templateDetails.Metadata.ShortDescription))
 	}
 
-	templates := []string{}
-	// Add a Custom Template
-	// templates = append(templates, "Custom - Choose your own CSS framework")
-	for templateName, templateDetails := range templateDetails {
-		templateText := templateName
-		// Check if metadata json exists
-		if templateDetails.Metadata != nil {
-			shortdescription := templateDetails.Metadata["shortdescription"]
-			if shortdescription != "" {
-				templateText += " - " + shortdescription.(string)
-			}
-		}
-		templates = append(templates, templateText)
-		po.templateNameMap[templateText] = templateName
+	templateIndex := 0
+
+	if len(options.AsSlice()) > 1 {
+		templateIndex = PromptSelection("Please select a template", options.AsSlice(), 0)
 	}
 
-	if po.Template != "" {
-		if _, ok := templateDetails[po.Template]; !ok {
-			po.log.Error("Template '%s' invalid.", po.Template)
-			templateSelected := PromptSelection("Select template", templates)
-			po.Template = templates[templateSelected]
-		}
-	} else {
-		templateSelected := PromptSelection("Select template", templates)
-		po.Template = templates[templateSelected]
-	}
+	// After selection do this....
+	po.selectedTemplate = templateList.AsSlice()[templateIndex].(*TemplateDetails)
 
 	// Setup NPM Project name
 	po.NPMProjectName = strings.ToLower(strings.Replace(po.Name, " ", "_", -1))
 
 	// Fix template name
-	if po.templateNameMap[po.Template] != "" {
-		po.Template = po.templateNameMap[po.Template]
-	}
+	po.Template = strings.Split(po.selectedTemplate.Path, "/")[0]
 
-	// Populate template details
-	templateMetadata := templateDetails[po.Template].Metadata
+	// // Populate template details
+	templateMetadata := po.selectedTemplate.Metadata
 
 	err = processTemplateMetadata(templateMetadata, po)
 	if err != nil {
@@ -299,36 +281,36 @@ func processBinaryName(po *ProjectOptions) {
 	fmt.Println("Output binary Name: " + po.BinaryName)
 }
 
-func processTemplateMetadata(templateMetadata map[string]interface{}, po *ProjectOptions) error {
-	if templateMetadata["frontenddir"] != nil {
+func processTemplateMetadata(templateMetadata *TemplateMetadata, po *ProjectOptions) error {
+	if templateMetadata.FrontendDir != "" {
 		po.FrontEnd = &frontend{}
-		po.FrontEnd.Dir = templateMetadata["frontenddir"].(string)
+		po.FrontEnd.Dir = templateMetadata.FrontendDir
 	}
-	if templateMetadata["install"] != nil {
+	if templateMetadata.Install != "" {
 		if po.FrontEnd == nil {
 			return fmt.Errorf("install set in template metadata but not frontenddir")
 		}
-		po.FrontEnd.Install = templateMetadata["install"].(string)
+		po.FrontEnd.Install = templateMetadata.Install
 	}
-	if templateMetadata["build"] != nil {
+	if templateMetadata.Build != "" {
 		if po.FrontEnd == nil {
 			return fmt.Errorf("build set in template metadata but not frontenddir")
 		}
-		po.FrontEnd.Build = templateMetadata["build"].(string)
+		po.FrontEnd.Build = templateMetadata.Build
 	}
 
-	if templateMetadata["bridge"] != nil {
+	if templateMetadata.Bridge != "" {
 		if po.FrontEnd == nil {
 			return fmt.Errorf("bridge set in template metadata but not frontenddir")
 		}
-		po.FrontEnd.Bridge = templateMetadata["bridge"].(string)
+		po.FrontEnd.Bridge = templateMetadata.Bridge
 	}
 
-	if templateMetadata["serve"] != nil {
+	if templateMetadata.Serve != "" {
 		if po.FrontEnd == nil {
 			return fmt.Errorf("serve set in template metadata but not frontenddir")
 		}
-		po.FrontEnd.Serve = templateMetadata["serve"].(string)
+		po.FrontEnd.Serve = templateMetadata.Serve
 	}
 	return nil
 }

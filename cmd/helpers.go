@@ -14,6 +14,8 @@ import (
 	"github.com/leaanthony/spinner"
 )
 
+var fs = NewFSHelper()
+
 // ValidateFrontendConfig checks if the frontend config is valid
 func ValidateFrontendConfig(projectOptions *ProjectOptions) error {
 	if projectOptions.FrontEnd.Dir == "" {

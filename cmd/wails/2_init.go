@@ -17,7 +17,7 @@ Any flags that are required and not given will be prompted for.`
 		LongDescription(commandDescription).
 		BoolFlag("f", "Use defaults", &projectOptions.UseDefaults).
 		StringFlag("dir", "Directory to create project in", &projectOptions.OutputDirectory).
-		StringFlag("template", "Template name", &projectOptions.Template).
+		// StringFlag("template", "Template name", &projectOptions.Template).
 		StringFlag("name", "Project name", &projectOptions.Name).
 		StringFlag("description", "Project description", &projectOptions.Description).
 		StringFlag("output", "Output binary name", &projectOptions.BinaryName)
