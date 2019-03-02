@@ -41,6 +41,12 @@ func (fs *FSHelper) FileExists(path string) bool {
 	return fi.Mode().IsRegular()
 }
 
+func (fs *FSHelper) CreateFile(filename string, data []byte) error {
+	// Ensure directory exists
+	fs.MkDirs(filepath.Dir(filename))
+	return ioutil.WriteFile(filename, data, 0644)
+}
+
 // MkDirs creates the given nested directories.
 // Returns error on failure
 func (fs *FSHelper) MkDirs(fullPath string, mode ...os.FileMode) error {

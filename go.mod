@@ -27,8 +27,8 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.7.0 // indirect
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/kisielk/errcheck v1.2.0 // indirect
-	github.com/leaanthony/mewn v0.9.1
-	github.com/leaanthony/slicer v1.0.0
+	github.com/leaanthony/mewn v0.9.4
+	github.com/leaanthony/slicer v1.2.0
 	github.com/leaanthony/spinner v0.5.0
 	github.com/mattn/go-colorable v0.1.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
