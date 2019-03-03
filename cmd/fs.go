@@ -41,6 +41,8 @@ func (fs *FSHelper) FileExists(path string) bool {
 	return fi.Mode().IsRegular()
 }
 
+// CreateFile creates a file at the given filename location with the contents
+// set to the given data. It will create intermediary directories if needed.
 func (fs *FSHelper) CreateFile(filename string, data []byte) error {
 	// Ensure directory exists
 	fs.MkDirs(filepath.Dir(filename))

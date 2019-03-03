@@ -17,6 +17,7 @@ func NewLogger() *Logger {
 	return &Logger{errorOnly: false}
 }
 
+// SetErrorOnly ensures that only errors are logged out
 func (l *Logger) SetErrorOnly(errorOnly bool) {
 	l.errorOnly = errorOnly
 }
@@ -99,6 +100,7 @@ func (l *Logger) Error(format string, a ...interface{}) {
 	color.New(color.FgHiRed).PrintfFunc()("Error: "+format+"\n", a...)
 }
 
+// PrintSmallBanner prints a condensed banner
 func (l *Logger) PrintSmallBanner(message ...string) {
 	yellow := color.New(color.FgYellow).SprintFunc()
 	red := color.New(color.FgRed).SprintFunc()

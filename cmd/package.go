@@ -150,6 +150,7 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 	return err
 }
 
+// PackageWindows packages the application for windows platforms
 func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	basename := strings.TrimSuffix(po.BinaryName, ".exe")
 

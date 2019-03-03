@@ -174,7 +174,7 @@ func CheckWindres() (err error) {
 	}
 	programHelper := NewProgramHelper()
 	if !programHelper.IsInstalled("windres") {
-		return fmt.Errorf("windres not installed. It comes by default with mingw. Ensure you have installed mingw correctly.")
+		return fmt.Errorf("windres not installed. It comes by default with mingw. Ensure you have installed mingw correctly")
 	}
 	return nil
 }
