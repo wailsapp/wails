@@ -1,25 +1,26 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
 )
 
 // Prompt asks the user for a value
 func Prompt(question string, defaultValue ...string) string {
 	var answer string
-	haveDefault := len(defaultValue) > 0 && defaultValue[0] != ""
 
-	if haveDefault {
-		question = fmt.Sprintf("%s (%s)", question, defaultValue[0])
+	if len(defaultValue) > 0 {
+		answer = defaultValue[0]
+		question = fmt.Sprintf("%s (%s)", question, answer)
 	}
 	fmt.Printf(question + ": ")
-	fmt.Scanln(&answer)
-	if haveDefault {
-		if len(answer) == 0 {
-			answer = defaultValue[0]
-		}
+	scanner := bufio.NewScanner(os.Stdin)
+	if scanner.Scan() {
+		answer = scanner.Text()
 	}
+
 	return answer
 }
 
