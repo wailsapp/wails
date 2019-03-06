@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"runtime"
 	"strconv"
+	"strings"
 )
 
 // Prompt asks the user for a value
@@ -16,9 +18,16 @@ func Prompt(question string, defaultValue ...string) string {
 		question = fmt.Sprintf("%s (%s)", question, answer)
 	}
 	fmt.Printf(question + ": ")
-	scanner := bufio.NewScanner(os.Stdin)
-	if scanner.Scan() {
-		answer = scanner.Text()
+	reader := bufio.NewReader(os.Stdin)
+	input, _ := reader.ReadString('\n')
+	EOL := "\n"
+	if runtime.GOOS == "windows" {
+		EOL = "\r\n"
+	}
+	input = strings.Replace(input, EOL, "", -1)
+
+	if input != "" {
+		answer = input
 	}
 
 	return answer
