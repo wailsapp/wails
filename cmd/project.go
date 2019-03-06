@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -190,7 +191,7 @@ func (po *ProjectOptions) PromptForInputs() error {
 	po.NPMProjectName = strings.ToLower(strings.Replace(po.Name, " ", "_", -1))
 
 	// Fix template name
-	po.Template = strings.Split(po.selectedTemplate.Path, "/")[0]
+	po.Template = strings.Split(po.selectedTemplate.Path, string(os.PathSeparator))[0]
 
 	// // Populate template details
 	templateMetadata := po.selectedTemplate.Metadata
