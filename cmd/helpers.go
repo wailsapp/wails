@@ -5,11 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"runtime"
 	"time"
 
+	mewn "github.com/leaanthony/mewn"
 	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
 )
@@ -77,7 +77,13 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	packSpinner.Start()
 
 	buildCommand := slicer.String()
-	buildCommand.AddSlice([]string{"mewn", "build"})
+	buildCommand.Add("mewn")
+
+	if buildMode == BuildModeBridge {
+		// Ignore errors
+		buildCommand.Add("-i")
+	}
+	buildCommand.Add("build")
 
 	if binaryName != "" {
 		buildCommand.Add("-o")
@@ -240,10 +246,10 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	}
 
 	// Copy bridge to project
-	_, filename, _, _ := runtime.Caller(1)
-	bridgeFileSource := filepath.Join(path.Dir(filename), "..", "..", "wailsruntimeassets", "bridge", bridgeFile)
+	bridgeAssets := mewn.Group("../wailsruntimeassets/bridge/")
+	bridgeFileData := bridgeAssets.Bytes(bridgeFile)
 	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, projectOptions.FrontEnd.Bridge, "wailsbridge.js")
-	err = fs.CopyFile(bridgeFileSource, bridgeFileTarget)
+	err = fs.CreateFile(bridgeFileTarget, bridgeFileData)
 	if err != nil {
 		return err
 	}
