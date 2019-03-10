@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
@@ -24,19 +25,53 @@ func init() {
 		logger.PrintSmallBanner(message)
 		fmt.Println()
 
+		// Check Mewn is installed
+		err := cmd.CheckMewn()
+		if err != nil {
+			return err
+		}
+
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}
 
 		// Check we are in project directory
 		// Check project.json loads correctly
 		fs := cmd.NewFSHelper()
-		err := projectOptions.LoadConfig(fs.Cwd())
+		err = projectOptions.LoadConfig(fs.Cwd())
 		if err != nil {
 			return err
 		}
 
-		// Check Mewn is installed
-		err = cmd.CheckMewn()
+		// Validate config
+		// Check if we have a frontend
+		err = cmd.ValidateFrontendConfig(projectOptions)
+		if err != nil {
+			return err
+		}
+
+		// Program checker
+		program := cmd.NewProgramHelper()
+
+		if projectOptions.FrontEnd != nil {
+			// npm
+			if !program.IsInstalled("npm") {
+				return fmt.Errorf("it appears npm is not installed. Please install and run again")
+			}
+		}
+
+		// Save project directory
+		projectDir := fs.Cwd()
+
+		// Install deps
+		if projectOptions.FrontEnd != nil {
+			err = cmd.InstallFrontendDeps(projectDir, projectOptions, forceRebuild, "serve")
+			if err != nil {
+				return err
+			}
+		}
+
+		// Move to project directory
+		err = os.Chdir(projectDir)
 		if err != nil {
 			return err
 		}
