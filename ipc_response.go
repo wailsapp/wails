@@ -1,8 +1,8 @@
 package wails
 
 import (
+	"encoding/hex"
 	"encoding/json"
-	"strings"
 )
 
 // ipcResponse contains the response data from an RPC call
@@ -37,7 +37,9 @@ func newSuccessResponse(callbackID string, data interface{}) *ipcResponse {
 // Serialise formats the response to a string
 func (i *ipcResponse) Serialise() (string, error) {
 	b, err := json.Marshal(i)
-	result := strings.Replace(string(b), "\\", "\\\\", -1)
-	result = strings.Replace(result, "'", "\\'", -1)
+	if err != nil {
+		return "", err
+	}
+	result := hex.EncodeToString(b)
 	return result, err
 }

@@ -10,8 +10,8 @@
 	function cryptoRandom() {
 		var array = new Uint32Array(1);
 		return window.crypto.getRandomValues(array)[0];
-    }
-    
+	}
+
 
 	// LOLRandom
 	function basicRandom() {
@@ -203,6 +203,10 @@
 	// Called by the backend to return data to a previously called
 	// binding invocation
 	function callback(incomingMessage) {
+
+		// Decode the message - Credit: https://stackoverflow.com/a/13865680
+		incomingMessage = decodeURIComponent(incomingMessage.replace(/\s+/g, '').replace(/[0-9a-f]{2}/g, '%$&'));
+
 		// Parse the message
 		var message;
 		try {
@@ -243,7 +247,7 @@
 	// notify informs frontend listeners that an event was emitted with the given data
 	function notify(eventName, data) {
 		if (eventListeners[eventName]) {
-			eventListeners[eventName].forEach(function(element) {
+			eventListeners[eventName].forEach(function (element) {
 				var parsedData = [];
 				// Parse data if we have it
 				if (data) {
@@ -332,8 +336,8 @@
 		callbacks: callbacks,
 		injectCSS: injectCSS,
 		addScript: addScript,
-    }
-    
+	}
+
 
 	/************************************************************/
 
