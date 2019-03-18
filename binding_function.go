@@ -153,8 +153,11 @@ func (b *boundFunction) setInputValue(index int, typ reflect.Type, val interface
 		}
 	}()
 
-	// Do the conversion
-	result = reflect.ValueOf(val).Convert(typ)
-
+	// Translate javascript null values
+	if val == nil {
+		result = reflect.Zero(typ)
+	} else {
+		result = reflect.ValueOf(val).Convert(typ)
+	}
 	return result, err
 }
