@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/dchest/htmlmin"
 	"github.com/gorilla/websocket"
@@ -45,6 +46,9 @@ type Headless struct {
 	initialisationJS []string
 	server           *http.Server
 	theConnection    *websocket.Conn
+
+	// Mutex for writing to the socket
+	lock sync.Mutex
 }
 
 // Initialise the Headless Renderer
@@ -103,6 +107,10 @@ func (h *Headless) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Headless) sendMessage(conn *websocket.Conn, msg string) {
+
+	h.lock.Lock()
+	defer h.lock.Unlock()
+
 	if err := conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
 		h.log.Error(err.Error())
 	}
