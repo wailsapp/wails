@@ -116,6 +116,14 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	}
 	packSpinner.Success()
 
+	// packageApp
+	if packageApp {
+		err = PackageApplication(projectOptions)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
