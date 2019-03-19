@@ -26,6 +26,9 @@ func init() {
 	initCmd.Action(func() error {
 
 		message := "Building Application"
+		if packageApp {
+			message = "Packaging Application"
+		}
 		if forceRebuild {
 			message += " (force rebuild)"
 		}
