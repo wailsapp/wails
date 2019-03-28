@@ -81,21 +81,24 @@ func (s *SystemHelper) BackupConfig() (string, error) {
 
 func (s *SystemHelper) setup() error {
 
+	systemConfig := make(map[string]string)
+
 	// Try to load current values - ignore errors
-	config, err := s.LoadConfig()
-	defaultName := ""
-	defaultEmail := ""
-	if config != nil {
-		defaultName = config.Name
-		defaultEmail = config.Email
+	config, _ := s.LoadConfig()
+
+	if config.Name != "" {
+		systemConfig["name"] = PromptRequired("What is your name", config.Name)
+	} else {
+		systemConfig["name"] = PromptRequired("What is your name")
+	}
+	if config.Email != "" {
+		systemConfig["email"] = PromptRequired("What is your email address", config.Email)
+	} else {
+		systemConfig["email"] = PromptRequired("What is your email address")
 	}
 
-	systemConfig := make(map[string]string)
-	systemConfig["name"] = PromptRequired("What is your name", defaultName)
-	systemConfig["email"] = PromptRequired("What is your email address", defaultEmail)
-
 	// Create the directory
-	err = s.fs.MkDirs(s.wailsSystemDir)
+	err := s.fs.MkDirs(s.wailsSystemDir)
 	if err != nil {
 		return err
 	}
