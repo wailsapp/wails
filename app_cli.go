@@ -9,6 +9,7 @@ func (app *App) setupCli() *cmd.Cli {
 
 	// Create a new cli
 	result := cmd.NewCli(app.config.Title, "Debug build")
+	result.Version(cmd.Version)
 
 	// Setup cli to handle loglevel and headless flags
 	result.
