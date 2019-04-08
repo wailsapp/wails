@@ -1,5 +1,5 @@
 <p align="center" style="text-align: center">
-   <img src="https://github.com/wailsapp/docs/raw/master/.vuepress/public/media/logo.png" width="50%"><br/>
+   <img src="https://github.com/wailsapp/docs/raw/master/.vuepress/public/media/logo_cropped.png" width="40%"><br/>
 </p>
 <p align="center">
   A framework for building desktop applications using Go & Web Technologies.
