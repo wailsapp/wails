@@ -1,8 +1,8 @@
-# Wails
+<p align="center" style="text-align: center">
+   <img src="https://github.com/wailsapp/docs/raw/master/.vuepress/public/media/logo.png" width="50%"><br/>
+   <h3 style="text-align: center">A framework for building desktop applications using Go & Web Technologies.</h3>
+</p>
 
-<p align="center"><img src="https://github.com/wailsapp/docs/raw/master/.vuepress/public/media/logo.png" width="50%"></p>
-
-A framework for building desktop applications using Go & Web Technologies.
 
 ## About
 
@@ -38,9 +38,7 @@ Make sure you have the xcode command line tools installed. This can be done by r
 
 `sudo apt install pkg-config build-essential libgtk-3-dev libwebkit2gtk-4.0-dev`
 
-::: tip
-If you have successfully installed these dependencies on a different flavour of Linux, please consider submitting a PR.
-:::
+Note: If you have successfully installed these dependencies on a different flavour of Linux, please consider submitting a PR.
 
 ### Windows
 
