@@ -1,8 +1,9 @@
 <p align="center" style="text-align: center">
    <img src="https://github.com/wailsapp/docs/raw/master/.vuepress/public/media/logo.png" width="50%"><br/>
-   <h3 style="text-align: center">A framework for building desktop applications using Go & Web Technologies.</h3>
 </p>
-
+<p align="center">
+  A framework for building desktop applications using Go & Web Technologies.
+</p>
 
 ## About
 
