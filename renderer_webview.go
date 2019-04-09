@@ -122,7 +122,7 @@ func (w *webViewRenderer) evalJSSync(js string) error {
 
 	go func() {
 		exit := false
-		// We are done when we recieve the Callback ID
+		// We are done when we receive the Callback ID
 		w.log.Debug("SyncJS: sending with ID = " + ID)
 		w.eventManager.On(ID, func(...interface{}) {
 			w.log.Debug("SyncJS: Got callback ID = " + ID)

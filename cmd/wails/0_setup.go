@@ -23,8 +23,8 @@ func init() {
 		var err error
 
 		system := cmd.NewSystemHelper()
-		err := system.Initialise()
-		if err = nil {
+		err = system.Initialise()
+		if err == nil {
 			return err
 		}
 
