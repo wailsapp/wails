@@ -12,7 +12,7 @@ const (
 	// Unknown is the catch-all distro
 	Unknown LinuxDistribution = 0
 	// Ubuntu distribution
-	Ubuntu  LinuxDistribution = 1
+	Ubuntu LinuxDistribution = 1
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -67,13 +67,11 @@ func GetLinuxDistroInfo() *DistroInfo {
 
 // DpkgInstalled uses dpkg to see if a package is installed
 func DpkgInstalled(packageName string) (bool, error) {
-	result := false
 	program := NewProgramHelper()
 	dpkg := program.FindProgram("dpkg")
 	if dpkg == nil {
 		return false, fmt.Errorf("cannot check dependencies: dpkg not found")
 	}
 	_, _, exitCode, _ := dpkg.Run("-L", packageName)
-	result = exitCode == 0
-	return result, nil
+	return exitCode == 0, nil
 }

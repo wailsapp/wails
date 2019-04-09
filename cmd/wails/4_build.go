@@ -43,7 +43,7 @@ func init() {
 		fs := cmd.NewFSHelper()
 		err := projectOptions.LoadConfig(fs.Cwd())
 		if err != nil {
-			return err
+			return fmt.Errorf("Unable to find 'project.json'. Please check you are in a Wails project directory")
 		}
 
 		// Validate config

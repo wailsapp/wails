@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"io/ioutil"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 
 	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
@@ -54,7 +54,7 @@ func init() {
 			updateSpinner := spinner.NewSpinner()
 			updateSpinner.SetSpinSpeed(40)
 			updateSpinner.Start("Updating to  : " + latestVersion)
-			err = cmd.NewProgramHelper().RunCommandArray([]string{"go","get","-u","github.com/wailsapp/wails/cmd/wails"})
+			err = cmd.NewProgramHelper().RunCommandArray([]string{"go", "get", "-u", "github.com/wailsapp/wails/cmd/wails"})
 			if err != nil {
 				updateSpinner.Error(err.Error())
 				return err

@@ -87,7 +87,7 @@ func (e *eventManager) start(renderer Renderer) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	// Run main loop in seperate goroutine
+	// Run main loop in separate goroutine
 	go func() {
 		wg.Done()
 		e.log.Info("Listening")
@@ -126,7 +126,7 @@ func (e *eventManager) start(renderer Renderer) {
 					}
 				}
 
-				// Remove expired listners in place
+				// Remove expired listeners in place
 				if len(listenersToRemove) > 0 {
 					listeners := e.listeners[event.Name][:0]
 					for _, listener := range listeners {

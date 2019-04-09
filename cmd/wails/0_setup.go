@@ -18,11 +18,13 @@ func init() {
 
 	setupCommand.Action(func() error {
 
-		logger.PrintBanner();
+		logger.PrintBanner()
+
+		var err error
 
 		system := cmd.NewSystemHelper()
 		err := system.Initialise()
-		if err != nil {
+		if err = nil {
 			return err
 		}
 
@@ -39,7 +41,8 @@ Create your first project by running 'wails init'.`
 
 		// Check we have a cgo capable environment
 		logger.Yellow("Checking for prerequisites...")
-		errors, err := checkRequiredPrograms()
+		var errors bool
+		errors, err = checkRequiredPrograms()
 		if err != nil {
 			return err
 		}

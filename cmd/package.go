@@ -72,7 +72,7 @@ func (b *PackageHelper) Package(po *ProjectOptions) error {
 	case "darwin":
 		// Check we have the exe
 		if !b.fs.FileExists(po.BinaryName) {
-			return fmt.Errorf("cannot bundle non-existant binary file '%s'. Please build with 'wails build' first", po.BinaryName)
+			return fmt.Errorf("cannot bundle non-existent binary file '%s'. Please build with 'wails build' first", po.BinaryName)
 		}
 		return b.packageOSX(po)
 	case "windows":
@@ -255,9 +255,5 @@ func (b *PackageHelper) packageIconOSX(resourceDir string) error {
 
 	}
 	defer dest.Close()
-	if err := icns.Encode(dest, srcImg); err != nil {
-		return err
-
-	}
-	return nil
+	return icns.Encode(dest, srcImg)
 }

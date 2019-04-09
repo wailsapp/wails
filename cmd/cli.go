@@ -195,10 +195,7 @@ func (c *Command) Action(callback Action) *Command {
 // PrintHelp - Output the help text for this command
 func (c *Command) PrintHelp() {
 	c.log.PrintBanner()
-	versionString := c.AppVersion
-	if versionString != "" {
-		versionString = " " + versionString
-	}
+
 	commandTitle := c.CommandPath
 	if c.Shortdescription != "" {
 		commandTitle += " - " + c.Shortdescription

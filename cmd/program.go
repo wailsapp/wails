@@ -56,7 +56,7 @@ func (p *Program) GetFullPathToBinary() (string, error) {
 }
 
 // Run will execute the program with the given parameters
-// Returns stdout + stderr as strings and an error if one occured
+// Returns stdout + stderr as strings and an error if one occurred
 func (p *Program) Run(vars ...string) (stdout, stderr string, exitCode int, err error) {
 	command, err := p.GetFullPathToBinary()
 	if err != nil {
