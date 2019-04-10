@@ -41,14 +41,15 @@ Create your first project by running 'wails init'.`
 
 		// Check we have a cgo capable environment
 		logger.Yellow("Checking for prerequisites...")
-		var errors bool
-		errors, err = checkRequiredPrograms()
+		var requiredProgramErrors bool
+		requiredProgramErrors, err = checkRequiredPrograms()
 		if err != nil {
 			return err
 		}
 
 		// Linux has library deps
-		errors, err = checkLibraries()
+		var libraryErrors bool
+		libraryErrors, err = checkLibraries()
 		if err != nil {
 			return err
 		}
@@ -61,6 +62,8 @@ Create your first project by running 'wails init'.`
 
 		logger.White("")
 
+		// Check for errors
+		var errors = libraryErrors || requiredProgramErrors
 		if !errors {
 			logger.Yellow(successMessage)
 		}
