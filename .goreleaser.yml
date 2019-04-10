@@ -6,7 +6,7 @@ before:
 builds:
 - env:
   - CGO_ENABLED=0
-  main: ./cmd/wails/main.go 
+  main: ./cmd/wails/main.go
 archive:
   replacements:
     darwin: Darwin
