@@ -57,7 +57,7 @@ func (h *Headless) Initialise(appConfig *AppConfig, ipcManager *ipcManager, even
 	h.appConfig = appConfig
 	h.eventManager = eventManager
 	ipcManager.bindRenderer(h)
-	h.log = newCustomLogger("Headless")
+	h.log = newCustomLogger("Bridge")
 	return nil
 }
 
@@ -153,8 +153,8 @@ func (h *Headless) Run() error {
 	h.server = &http.Server{Addr: ":34115"}
 	http.HandleFunc("/bridge", h.wsBridgeHandler)
 
-	h.log.Info("Headless mode started.")
-	h.log.Info("The Wails bridge will connect automatically.")
+	h.log.Info("Bridge mode started.")
+	h.log.Info("The frontend will connect automatically.")
 
 	err := h.server.ListenAndServe()
 	if err != nil {
