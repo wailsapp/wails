@@ -111,6 +111,7 @@ function startBridge() {
   // Removes it if second parameter is true.
   function addScript(script, remove) {
     var s = document.createElement("script");
+    s.setAttribute('type', 'text/javascript');
     s.textContent = script;
     document.head.appendChild(s);
 
