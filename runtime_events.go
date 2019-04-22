@@ -18,5 +18,5 @@ func (r *RuntimeEvents) On(eventName string, callback func(optionalData ...inter
 
 // Emit pass through
 func (r *RuntimeEvents) Emit(eventName string, optionalData ...interface{}) {
-	r.eventManager.Emit(eventName, optionalData)
+	r.eventManager.Emit(eventName, optionalData...)
 }
