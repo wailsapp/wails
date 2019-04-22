@@ -36,7 +36,7 @@ func ValidateFrontendConfig(projectOptions *ProjectOptions) error {
 
 // InstallGoDependencies will run go get in the current directory
 func InstallGoDependencies() error {
-	depSpinner := spinner.New("Installing Dependencies...")
+	depSpinner := spinner.New("Ensuring Dependencies are up to date...")
 	depSpinner.SetSpinSpeed(50)
 	depSpinner.Start()
 	err := NewProgramHelper().RunCommand("go get")
@@ -203,7 +203,7 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	}
 
 	// Check if frontend deps have been updated
-	feSpinner := spinner.New("Installing frontend dependencies (This may take a while)...")
+	feSpinner := spinner.New("Ensuring frontend dependencies are up to date (This may take a while)")
 	feSpinner.SetSpinSpeed(50)
 	feSpinner.Start()
 
