@@ -70,7 +70,11 @@ func (a *App) Run() error {
 	}
 
 	a.logLevel = "error"
-	return a.start()
+	err := a.start()
+	if err != nil {
+		a.log.Error(err.Error())
+	}
+	return err
 }
 
 func (a *App) start() error {
@@ -114,9 +118,7 @@ func (a *App) start() error {
 	a.renderer.AddJSList(a.jsCache)
 
 	// Run the renderer
-	a.renderer.Run()
-
-	return nil
+	return a.renderer.Run()
 }
 
 // Bind allows the user to bind the given object
