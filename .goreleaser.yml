@@ -6,6 +6,16 @@ before:
 builds:
 - env:
   - CGO_ENABLED=0
+  goos:
+    - windows
+    - linux
+    - darwin
+  goarch:
+    - 386
+    - amd64
+  ignore:
+  - goos: darwin
+    goarch: 386
   main: ./cmd/wails/main.go
 archive:
   replacements:
