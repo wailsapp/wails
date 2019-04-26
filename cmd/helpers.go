@@ -248,6 +248,22 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 		ioutil.WriteFile(md5sumFile, []byte(packageJSONMD5), 0644)
 	}
 
+	// Install the bridge library
+	err = InstallBridge(caller, projectDir, projectOptions)
+	if err != nil {
+		return err
+	}
+
+	// Build frontend
+	err = BuildFrontend(projectOptions.FrontEnd.Build)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// InstallBridge installs the relevant bridge javascript library
+func InstallBridge(caller string, projectDir string, projectOptions *ProjectOptions) error {
 	bridgeFile := "wailsbridge.prod.js"
 	if caller == "serve" {
 		bridgeFile = "wailsbridge.js"
@@ -257,13 +273,7 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	bridgeAssets := mewn.Group("../wailsruntimeassets/bridge/")
 	bridgeFileData := bridgeAssets.Bytes(bridgeFile)
 	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, projectOptions.FrontEnd.Bridge, "wailsbridge.js")
-	err = fs.CreateFile(bridgeFileTarget, bridgeFileData)
-	if err != nil {
-		return err
-	}
-
-	// Build frontend
-	err = BuildFrontend(projectOptions.FrontEnd.Build)
+	err := fs.CreateFile(bridgeFileTarget, bridgeFileData)
 	if err != nil {
 		return err
 	}
