@@ -41,6 +41,15 @@ func init() {
 			return err
 		}
 
+		// Save project directory
+		projectDir := fs.Cwd()
+
+		// Install the bridge library
+		err = cmd.InstallBridge("serve", projectDir, projectOptions)
+		if err != nil {
+			return err
+		}
+
 		// Install dependencies
 		err = cmd.InstallGoDependencies()
 		if err != nil {
