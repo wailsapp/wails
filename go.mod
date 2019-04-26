@@ -20,7 +20,7 @@ require (
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/sirupsen/logrus v1.3.0
 	github.com/stretchr/testify v1.3.0 // indirect
-	github.com/wailsapp/webview v0.2.5
+	github.com/wailsapp/webview v0.2.7
 	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2 // indirect
 	golang.org/x/net v0.0.0-20190310014029-b774fd8d5c0f // indirect
 	golang.org/x/sys v0.0.0-20190310054646-10058d7d4faa // indirect
