@@ -172,21 +172,21 @@ func (h *Headless) NewBinding(methodName string) error {
 // SelectFile is unsupported for Headless but required
 // for the Renderer interface
 func (h *Headless) SelectFile() string {
-	h.log.Error("SelectFile() unsupported in bridge mode")
+	h.log.Warn("SelectFile() unsupported in bridge mode")
 	return ""
 }
 
 // SelectDirectory is unsupported for Headless but required
 // for the Renderer interface
 func (h *Headless) SelectDirectory() string {
-	h.log.Error("SelectDirectory() unsupported in bridge mode")
+	h.log.Warn("SelectDirectory() unsupported in bridge mode")
 	return ""
 }
 
 // SelectSaveFile is unsupported for Headless but required
 // for the Renderer interface
 func (h *Headless) SelectSaveFile() string {
-	h.log.Error("SelectSaveFile() unsupported in bridge mode")
+	h.log.Warn("SelectSaveFile() unsupported in bridge mode")
 	return ""
 }
 
