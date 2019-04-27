@@ -172,21 +172,21 @@ func (h *Headless) NewBinding(methodName string) error {
 // SelectFile is unsupported for Headless but required
 // for the Renderer interface
 func (h *Headless) SelectFile() string {
-	h.log.Error("SelectFile() unsupported in headless mode")
+	h.log.Error("SelectFile() unsupported in bridge mode")
 	return ""
 }
 
 // SelectDirectory is unsupported for Headless but required
 // for the Renderer interface
 func (h *Headless) SelectDirectory() string {
-	h.log.Error("SelectDirectory() unsupported in headless mode")
+	h.log.Error("SelectDirectory() unsupported in bridge mode")
 	return ""
 }
 
 // SelectSaveFile is unsupported for Headless but required
 // for the Renderer interface
 func (h *Headless) SelectSaveFile() string {
-	h.log.Error("SelectSaveFile() unsupported in headless mode")
+	h.log.Error("SelectSaveFile() unsupported in bridge mode")
 	return ""
 }
 
@@ -245,23 +245,23 @@ func (h *Headless) SetColour(colour string) error {
 // Fullscreen is unsupported for Headless but required
 // for the Renderer interface
 func (h *Headless) Fullscreen() {
-	h.log.Warn("Fullscreen() unsupported in headless mode")
+	h.log.Warn("Fullscreen() unsupported in bridge mode")
 }
 
 // UnFullscreen is unsupported for Headless but required
 // for the Renderer interface
 func (h *Headless) UnFullscreen() {
-	h.log.Warn("UnFullscreen() unsupported in headless mode")
+	h.log.Warn("UnFullscreen() unsupported in bridge mode")
 }
 
 // SetTitle is currently unsupported for Headless but required
 // for the Renderer interface
 func (h *Headless) SetTitle(title string) {
-	h.log.WarnFields("SetTitle() unsupported in headless mode", Fields{"title": title})
+	h.log.WarnFields("SetTitle() unsupported in bridge mode", Fields{"title": title})
 }
 
 // Close is unsupported for Headless but required
 // for the Renderer interface
 func (h *Headless) Close() {
-	h.log.Warn("Close() unsupported in headless mode")
+	h.log.Warn("Close() unsupported in bridge mode")
 }
