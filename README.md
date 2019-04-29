@@ -24,6 +24,10 @@ The traditional method of providing web interfaces to Go programs is via a built
 - Powerful cli tool
 - Multiplatform
 
+## Project Status
+
+Wails is currently in Beta. Please make sure you read the [Project Status](https://wails.app/project_status.html) if you are interested in using this project.
+
 ## Installation
 
 Wails uses cgo to bind to the native rendering engines so a number of platform dependent libraries are needed as well as an installation of Go. The basic requirements are:
@@ -69,17 +73,37 @@ It is recommended at this stage to read the comprehensive documentation at [http
 
  * Who is this project aimed at?
 
-   Go programmers who want to bundle an HMTL frontend with their applications, without resorting to creating a server and opening a browser to view it.
+   Go programmers who want to bundle an HMTL/JS/CSS frontend with their applications, without resorting to creating a server and opening a browser to view it.
+
+ * What's with the name?
+
+   When I saw WebView, I thought "What I really want is tooling around building a WebView app, a bit like Rails is to Ruby". So initially it was a play on words (Webview on Rails). It just so happened to also be a homophone of the English name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it stuck.
 
 ## Shoulders of Giants
 
 Without the following people, this project would never have existed:
 
-  * [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been immense. More patience than you can throw a stick at.
+  * [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been immense. More patience than you can throw a stick at (Not long now Dustin!).
   * [Serge Zaitsev](https://github.com/zserge) - Creator of [Webview](https://github.com/zserge/webview) which Wails uses for the windowing.
 
 Special Mentions:
 
-  * [Bill Kennedy](https://twitter.com/goinggodotnet) - Go guru, encourager and all-round nice guy, whose energy and inspiration powered me on when I had none left.
-  * [Mark Bates](https://github.com/markbates) - Creator of [Packr](https://github.com/gobuffalo/packr), inspiration for packing strategies.
+  * [Bill Kennedy](https://twitter.com/goinggodotnet) - Go guru, encourager and all-round nice guy, whose infectious energy and inspiration powered me on when I had none left.
+  * [Mark Bates](https://github.com/markbates) - Creator of [Packr](https://github.com/gobuffalo/packr), inspiration for packing strategies which fed into some of the tooling.
+
+This project was mainly coded to the following albums:
+
+  * [Manic Street Preachers - Resistance Is Futile](https://open.spotify.com/album/1R2rsEUqXjIvAbzM0yHrxA)
+  * [Manic Street Preachers - This Is My Truth, Tell Me Yours](https://open.spotify.com/album/4VzCL9kjhgGQeKCiojK1YN)
+  * [The Midnight - Endless Summer](https://open.spotify.com/album/4Krg8zvprquh7TVn9OxZn8)
+  * [Gary Newman - Savage (Songs from a Broken World)](https://open.spotify.com/album/3kMfsD07Q32HRWKRrpcexr)
+  * [Steve Vai - Passion & Warfare](https://open.spotify.com/album/0oL0OhrE2rYVns4IGj8h2m)
+  * [Ben Howard - Every Kingdom](https://open.spotify.com/album/1nJsbWm3Yy2DW1KIc1OKle)
+  * [Ben Howard - Noonday Dream](https://open.spotify.com/album/6astw05cTiXEc2OvyByaPs)
+  * [Adwaith - Melyn](https://open.spotify.com/album/2vBE40Rp60tl7rNqIZjaXM)
+  * [Gwidaith Hen Fran - Cedors Hen Wrach](https://open.spotify.com/album/3v2hrfNGINPLuDP0YDTOjm)
+  * [Metallica - Metallica](https://open.spotify.com/album/2Kh43m04B1UkVcpcRa1Zug)
+  * [Bloc Party - Silent Alarm](https://open.spotify.com/album/6SsIdN05HQg2GwYLfXuzLB)
+  * [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
+  * [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
 
