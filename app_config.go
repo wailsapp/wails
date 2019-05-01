@@ -41,7 +41,7 @@ func (a *AppConfig) merge(in *AppConfig) error {
 		a.HTML = strings.TrimSpace(inlineHTML)
 
 		// Deduce whether this is a full html page or a fragment
-		// The document is determined to be a fragment if an HMTL
+		// The document is determined to be a fragment if an HTML
 		// tag exists and is located before the first div tag
 		HTMLTagIndex := strings.Index(a.HTML, "<html")
 		DivTagIndex := strings.Index(a.HTML, "<div")
