@@ -73,7 +73,7 @@ It is recommended at this stage to read the comprehensive documentation at [http
 
  * Who is this project aimed at?
 
-   Go programmers who want to bundle an HMTL/JS/CSS frontend with their applications, without resorting to creating a server and opening a browser to view it.
+   Go programmers who want to bundle an HTML/JS/CSS frontend with their applications, without resorting to creating a server and opening a browser to view it.
 
  * What's with the name?
 
