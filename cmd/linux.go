@@ -10,9 +10,11 @@ type LinuxDistribution int
 
 const (
 	// Unknown is the catch-all distro
-	Unknown LinuxDistribution = 0
+	Unknown LinuxDistribution = iota
 	// Ubuntu distribution
-	Ubuntu LinuxDistribution = 1
+	Ubuntu
+	// Arch linux distribution
+	Arch
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -49,6 +51,8 @@ func GetLinuxDistroInfo() *DistroInfo {
 					switch value {
 					case "Ubuntu":
 						result.Distribution = Ubuntu
+					case "Arch":
+						result.Distribution = Arch
 					}
 				case "Description":
 					result.Description = value
@@ -73,5 +77,16 @@ func DpkgInstalled(packageName string) (bool, error) {
 		return false, fmt.Errorf("cannot check dependencies: dpkg not found")
 	}
 	_, _, exitCode, _ := dpkg.Run("-L", packageName)
+	return exitCode == 0, nil
+}
+
+// PacmanInstalled uses pacman to see if a package is installed.
+func PacmanInstalled(packageName string) (bool, error) {
+	program := NewProgramHelper()
+	pacman := program.FindProgram("pacman")
+	if pacman == nil {
+		return false, fmt.Errorf("cannot check dependencies: pacman not found")
+	}
+	_, _, exitCode, _ := pacman.Run("-Qs", packageName)
 	return exitCode == 0, nil
 }

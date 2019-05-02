@@ -97,6 +97,9 @@ func getRequiredLibrariesLinux() (*Prerequisites, error) {
 	case Ubuntu:
 		result.Add(newPrerequisite("libgtk-3-dev", "Please install with `sudo apt install libgtk-3-dev` and try again"))
 		result.Add(newPrerequisite("libwebkit2gtk-4.0-dev", "Please install with `sudo apt install libwebkit2gtk-4.0-dev` and try again"))
+	case Arch:
+		result.Add(newPrerequisite("gtk3", "Please install with `sudo pacman -S gtk3` and try again"))
+		result.Add(newPrerequisite("webkit2gtk", "Please install with `sudo pacman -S webkit2gtk"))
 	default:
 		result.Add(newPrerequisite("libgtk-3-dev", "Please install with your system package manager and try again"))
 		result.Add(newPrerequisite("libwebkit2gtk-4.0-dev", "Please install with your system package manager and try again"))

@@ -272,6 +272,17 @@ func CheckDependencies(logger *Logger) (bool, error) {
 				} else {
 					logger.Green("Library '%s' installed.", library.Name)
 				}
+			case Arch:
+				installed, err := PacmanInstalled(library.Name)
+				if err != nil {
+					return false, err
+				}
+				if !installed {
+					errors = true
+					logger.Red("Library '%s' not found. %s", library.Name, library.Help)
+				} else {
+					logger.Green("Library '%s' installed.", library.Name)
+				}
 			default:
 				return false, fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.DistributorID, library.Name)
 			}
