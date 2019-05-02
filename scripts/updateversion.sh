@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
-TAG=$(git describe --abbrev=0 --tags)
+if [ "$#" != "1" ]; then 
+  echo "Tag required"
+  exit 1
+fi
+TAG=${1}
 cat << EOF > cmd/version.go
 package cmd
 
 // Version - Wails version
 const Version = "${TAG}"
 EOF
+git add cmd/version.go
+git commit cmd/version.go -m "Bump to ${TAG}" 
+git tag ${TAG}
