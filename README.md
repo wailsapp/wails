@@ -86,6 +86,8 @@ Without the following people, this project would never have existed:
   * [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been immense. More patience than you can throw a stick at (Not long now Dustin!).
   * [Serge Zaitsev](https://github.com/zserge) - Creator of [Webview](https://github.com/zserge/webview) which Wails uses for the windowing.
 
+And without [these people](CONTRIBUTORS.md), it wouldn't be what it is today.
+
 Special Mentions:
 
   * [Bill Kennedy](https://twitter.com/goinggodotnet) - Go guru, encourager and all-round nice guy, whose infectious energy and inspiration powered me on when I had none left.
