@@ -9,7 +9,7 @@ require (
 	github.com/gorilla/websocket v1.4.0
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
-	github.com/leaanthony/mewn v0.10.4
+	github.com/leaanthony/mewn v0.10.5
 	github.com/leaanthony/slicer v1.3.1
 	github.com/leaanthony/spinner v0.5.0
 	github.com/mattn/go-colorable v0.1.1 // indirect
