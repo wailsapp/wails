@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/leaanthony/spinner"
+	"github.com/mitchellh/go-homedir"
 	"github.com/wailsapp/wails/cmd"
 )
 
@@ -54,7 +56,14 @@ func init() {
 			updateSpinner := spinner.NewSpinner()
 			updateSpinner.SetSpinSpeed(40)
 			updateSpinner.Start("Updating to  : " + latestVersion)
-			err = cmd.NewProgramHelper().RunCommandArray([]string{"go", "get", "-u", "github.com/wailsapp/wails/cmd/wails"})
+
+			// Run command in non module directory
+			homeDir, err := homedir.Dir()
+			if err != nil {
+				log.Fatal("Cannot find home directory! Please file a bug report!")
+			}
+
+			err = cmd.NewProgramHelper().RunCommandArray([]string{"go", "get", "github.com/wailsapp/wails/.../."}, homeDir)
 			if err != nil {
 				updateSpinner.Error(err.Error())
 				return err

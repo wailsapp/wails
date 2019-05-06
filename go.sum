@@ -21,8 +21,6 @@ github.com/konsorten/go-windows-terminal-sequences v1.0.1 h1:mweAR1A6xJ3oS2pRaGi
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/konsorten/go-windows-terminal-sequences v1.0.2 h1:DB17ag19krx9CFsz4o3enTrPXyIXCl+2iCXH/aMAp9s=
 github.com/konsorten/go-windows-terminal-sequences v1.0.2/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
-github.com/leaanthony/mewn v0.10.4 h1:b16/E0r6CuXN8WYuDJIgwRocLQlmMjfBsooEJr6FdqY=
-github.com/leaanthony/mewn v0.10.4/go.mod h1:i3ygCWW96qVQlGa8sjWnTM0IKAijoFvTwATDIZgK4k0=
 github.com/leaanthony/mewn v0.10.5 h1:QKYVj8tI94alvVFZer7wPy66IcNpyNPITIkdhXbThX4=
 github.com/leaanthony/mewn v0.10.5/go.mod h1:i3ygCWW96qVQlGa8sjWnTM0IKAijoFvTwATDIZgK4k0=
 github.com/leaanthony/slicer v1.3.1 h1:n2iIV2sxvL/3bpnmVY0vBjXf3yYFWcB6CYLVMrzJxRw=

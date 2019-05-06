@@ -107,7 +107,7 @@ func (p *ProgramHelper) RunCommand(command string) error {
 }
 
 // RunCommandArray runs the command specified in the array
-func (p *ProgramHelper) RunCommandArray(args []string) error {
+func (p *ProgramHelper) RunCommandArray(args []string, dir ...string) error {
 	program := args[0]
 	// TODO: Run FindProgram here and get the full path to the exe
 	program, err := exec.LookPath(program)
@@ -116,8 +116,13 @@ func (p *ProgramHelper) RunCommandArray(args []string) error {
 		return err
 	}
 	args = args[1:]
+	var stderr string
 	// fmt.Printf("RunCommandArray = %s %+v\n", program, args)
-	_, stderr, err := p.shell.Run(program, args...)
+	if len(dir) > 0 {
+		_, stderr, err = p.shell.RunInDirectory(dir[0], program, args...)
+	} else {
+		_, stderr, err = p.shell.Run(program, args...)
+	}
 	if err != nil {
 		fmt.Println(stderr)
 	}
