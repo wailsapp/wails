@@ -245,7 +245,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 		bin := programHelper.FindProgram(program.Name)
 		if bin == nil {
 			errors = true
-			logger.Red("Program '%s' not found. %s", program.Name, program.Help)
+			logger.Error("Program '%s' not found. %s", program.Name, program.Help)
 		} else {
 			logger.Green("Program '%s' found: %s", program.Name, bin.Path)
 		}
@@ -268,7 +268,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 				}
 				if !installed {
 					errors = true
-					logger.Red("Library '%s' not found. %s", library.Name, library.Help)
+					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
 				} else {
 					logger.Green("Library '%s' installed.", library.Name)
 				}
@@ -279,7 +279,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 				}
 				if !installed {
 					errors = true
-					logger.Red("Library '%s' not found. %s", library.Name, library.Help)
+					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
 				} else {
 					logger.Green("Library '%s' installed.", library.Name)
 				}

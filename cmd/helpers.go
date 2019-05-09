@@ -83,6 +83,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		// Ignore errors
 		buildCommand.Add("-i")
 	}
+
 	buildCommand.Add("build")
 
 	if binaryName != "" {
@@ -127,7 +128,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	return nil
 }
 
-// PackageApplication will attempt to package the application in a pltform dependent way
+// PackageApplication will attempt to package the application in a platform dependent way
 func PackageApplication(projectOptions *ProjectOptions) error {
 	// Package app
 	message := "Generating .app"
