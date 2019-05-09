@@ -117,7 +117,7 @@ func (p *ProgramHelper) RunCommandArray(args []string, dir ...string) error {
 	}
 	args = args[1:]
 	var stderr string
-	fmt.Printf("RunCommandArray = %s %+v\n", program, args)
+	// fmt.Printf("RunCommandArray = %s %+v\n", program, args)
 	if len(dir) > 0 {
 		_, stderr, err = p.shell.RunInDirectory(dir[0], program, args...)
 	} else {
