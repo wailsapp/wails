@@ -63,7 +63,7 @@ Windows requires gcc and related tooling. The recommended download is from [http
 Installation is as simple as running the following command:
 
 <pre style='color:white'>
-go get -u github.com/wailsapp/wails/cmd/wails
+go get github.com/wailsapp/wails/cmd/wails
 </pre>
 
 ## Next Steps
