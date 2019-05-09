@@ -92,7 +92,7 @@ func (p *Program) Run(vars ...string) (stdout, stderr string, exitCode int, err 
 
 // InstallGoPackage installs the given Go package
 func (p *ProgramHelper) InstallGoPackage(packageName string) error {
-	args := strings.Split("get -u "+packageName, " ")
+	args := strings.Split("get "+packageName, " ")
 	_, stderr, err := p.shell.Run("go", args...)
 	if err != nil {
 		fmt.Println(stderr)
@@ -117,7 +117,7 @@ func (p *ProgramHelper) RunCommandArray(args []string, dir ...string) error {
 	}
 	args = args[1:]
 	var stderr string
-	// fmt.Printf("RunCommandArray = %s %+v\n", program, args)
+	fmt.Printf("RunCommandArray = %s %+v\n", program, args)
 	if len(dir) > 0 {
 		_, stderr, err = p.shell.RunInDirectory(dir[0], program, args...)
 	} else {
