@@ -76,7 +76,7 @@ func (b *PackageHelper) Package(po *ProjectOptions) error {
 		}
 		return b.packageOSX(po)
 	case "windows":
-		return b.PackageWindows(po, true)
+		return b.PackageWindows(po, false)
 	case "linux":
 		return fmt.Errorf("linux is not supported at this time. Please see https://github.com/wailsapp/wails/issues/2")
 	default:
@@ -199,7 +199,7 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 
 	// clean up
 	if cleanUp {
-		filesToDelete := []string{tgtIconFile, tgtManifestFile, tgtRCFile}
+		filesToDelete := []string{tgtIconFile, tgtManifestFile, tgtRCFile, sysofile}
 		err := b.fs.RemoveFiles(filesToDelete)
 		if err != nil {
 			return err
