@@ -1,11 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 
 	"github.com/leaanthony/spinner"
 	"github.com/mitchellh/go-homedir"
@@ -14,13 +11,16 @@ import (
 
 func init() {
 
+	var prereleaseRequired bool
+
 	// var forceRebuild = false
 	checkSpinner := spinner.NewSpinner()
 	checkSpinner.SetSpinSpeed(50)
 
-	commandDescription := `This command checks if there are updates to Wails.`
+	commandDescription := `This command allows you to update your version of Wails.`
 	updateCmd := app.Command("update", "Check for Updates.").
-		LongDescription(commandDescription)
+		LongDescription(commandDescription).
+		BoolFlag("pre", "Update to latest Prerelease", &prereleaseRequired)
 
 	updateCmd.Action(func() error {
 
@@ -30,49 +30,79 @@ func init() {
 
 		// Get versions
 		checkSpinner.Start(message)
-		resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/tags")
+
+		github := cmd.NewGitHubHelper()
+		var desiredVersion *cmd.SemanticVersion
+		var err error
+
+		if prereleaseRequired {
+			desiredVersion, err = github.GetLatestPreRelease()
+		} else {
+			desiredVersion, err = github.GetLatestStableRelease()
+		}
 		if err != nil {
 			checkSpinner.Error(err.Error())
 			return err
 		}
 		checkSpinner.Success()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			checkSpinner.Error(err.Error())
-			return err
-		}
-
-		data := []map[string]interface{}{}
-		err = json.Unmarshal(body, &data)
-		if err != nil {
-			return err
-		}
-
-		latestVersion := data[0]["name"].(string)
 		fmt.Println()
-		fmt.Println("Current Version: " + cmd.Version)
-		fmt.Println(" Latest Version: " + latestVersion)
-		if latestVersion != cmd.Version {
-			updateSpinner := spinner.NewSpinner()
-			updateSpinner.SetSpinSpeed(40)
-			updateSpinner.Start("Updating to  : " + latestVersion)
 
-			// Run command in non module directory
-			homeDir, err := homedir.Dir()
-			if err != nil {
-				log.Fatal("Cannot find home directory! Please file a bug report!")
-			}
-
-			err = cmd.NewProgramHelper().RunCommandArray([]string{"go", "get", "github.com/wailsapp/wails/.../."}, homeDir)
-			if err != nil {
-				updateSpinner.Error(err.Error())
-				return err
-			}
-			updateSpinner.Success()
-			logger.Yellow("Wails updated to " + latestVersion)
+		fmt.Println("  Current Version   : " + cmd.Version)
+		if prereleaseRequired {
+			fmt.Printf("  Latest Prerelease : v%s\n", desiredVersion)
 		} else {
-			logger.Yellow("Looks like you're up to date!")
+			fmt.Printf("  Latest Release    : v%s\n", desiredVersion)
 		}
-		return nil
+
+		return updateToVersion(desiredVersion)
 	})
+}
+
+func updateToVersion(version *cmd.SemanticVersion) error {
+
+	// Early exit
+	if version.String() == cmd.Version {
+		logger.Green("Looks like you're up to date!")
+		return nil
+	}
+
+	compareVersion := cmd.Version
+	if version.IsPreRelease() {
+		compareVersion += "-0"
+	}
+
+	currentVersion, err := cmd.NewSemanticVersion(compareVersion)
+	if err != nil {
+		return err
+	}
+
+	// Compare
+	success, err := version.IsGreaterThan(currentVersion)
+	if !success {
+		logger.Red("The requested version is lower than the current version. Aborting.")
+		return nil
+	}
+
+	desiredVersion := "v" + version.String()
+	fmt.Println()
+	updateSpinner := spinner.NewSpinner()
+	updateSpinner.SetSpinSpeed(40)
+	updateSpinner.Start("Installing Wails " + desiredVersion)
+
+	// Run command in non module directory
+	homeDir, err := homedir.Dir()
+	if err != nil {
+		log.Fatal("Cannot find home directory! Please file a bug report!")
+	}
+
+	err = cmd.NewProgramHelper().RunCommandArray([]string{"go", "get", "github.com/wailsapp/wails/cmd/wails@" + desiredVersion}, homeDir)
+	if err != nil {
+		updateSpinner.Error(err.Error())
+		return err
+	}
+	updateSpinner.Success()
+	fmt.Println()
+	logger.Green("Wails updated to " + desiredVersion)
+
+	return nil
 }

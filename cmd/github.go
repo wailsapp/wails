@@ -5,34 +5,24 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"regexp"
 	"sort"
-
-	"github.com/Masterminds/semver"
 )
 
 // GitHubHelper is a utility class for interacting with GitHub
 type GitHubHelper struct {
-	validPrereleaseRegex *regexp.Regexp
-	validReleaseRegex    *regexp.Regexp
 }
 
 // NewGitHubHelper returns a new GitHub Helper
 func NewGitHubHelper() *GitHubHelper {
-	const SemVerRegex string = `v?([0-9]+)(\.[0-9]+)?(\.[0-9]+)?`
-	const SemPreVerRegex string = `v?([0-9]+)(\.[0-9]+)?(\.[0-9]+)?-([0-9A-Za-z\-]+(\.[0-9A-Za-z\-]+)*)`
-
-	return &GitHubHelper{
-		validPrereleaseRegex: regexp.MustCompile(SemPreVerRegex),
-		validReleaseRegex:    regexp.MustCompile(SemVerRegex),
-	}
+	return &GitHubHelper{}
 }
 
 // GetVersionTags gets the list of tags on the Wails repo
 // It retuns a list of sorted tags in descending order
-func (g *GitHubHelper) GetVersionTags() ([]*semver.Version, error) {
+func (g *GitHubHelper) GetVersionTags() ([]*SemanticVersion, error) {
 
-	result := []*semver.Version{}
+	result := []*SemanticVersion{}
+
 	var err error
 
 	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/tags")
@@ -53,7 +43,7 @@ func (g *GitHubHelper) GetVersionTags() ([]*semver.Version, error) {
 	// Convert tag data to Version structs
 	for _, tag := range data {
 		version := tag["name"].(string)
-		semver, err := semver.NewVersion(version)
+		semver, err := NewSemanticVersion(version)
 		if err != nil {
 			return result, err
 		}
@@ -61,32 +51,41 @@ func (g *GitHubHelper) GetVersionTags() ([]*semver.Version, error) {
 	}
 
 	// Reverse Sort
-	sort.Sort(sort.Reverse(semver.Collection(result)))
+	sort.Sort(sort.Reverse(SemverCollection(result)))
 
 	return result, err
 }
 
-func (g *GitHubHelper) isRelease(tag *semver.Version) bool {
-	return g.validReleaseRegex.MatchString(tag.String())
-}
-
-func (g *GitHubHelper) isPreRelease(tag *semver.Version) bool {
-	return g.validPrereleaseRegex.MatchString(tag.String())
-}
-
 // GetLatestStableRelease gets the latest stable release on GitHub
-func (g *GitHubHelper) GetLatestStableRelease() (result string, err error) {
+func (g *GitHubHelper) GetLatestStableRelease() (result *SemanticVersion, err error) {
 
 	tags, err := g.GetVersionTags()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	for _, tag := range tags {
-		if g.isRelease(tag) {
-			return "v" + tag.String(), nil
+		if tag.IsRelease() {
+			return tag, nil
 		}
 	}
 
-	return "", fmt.Errorf("no release tag found")
+	return nil, fmt.Errorf("no release tag found")
+}
+
+// GetLatestPreRelease gets the latest prerelease on GitHub
+func (g *GitHubHelper) GetLatestPreRelease() (result *SemanticVersion, err error) {
+
+	tags, err := g.GetVersionTags()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, tag := range tags {
+		if tag.IsPreRelease() {
+			return tag, nil
+		}
+	}
+
+	return nil, fmt.Errorf("no prerelease tag found")
 }
