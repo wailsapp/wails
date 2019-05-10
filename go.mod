@@ -12,7 +12,6 @@ require (
 	github.com/leaanthony/mewn v0.10.5
 	github.com/leaanthony/slicer v1.3.1
 	github.com/leaanthony/spinner v0.5.0
-	github.com/matishsiao/goInfo v0.0.0-20170803142006-617e6440957e
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.6 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
