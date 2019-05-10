@@ -291,7 +291,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 				}
 				if !installed {
 					errors = true
-					logger.Red("Library '%s' not found. %s", library.Name, library.Help)
+					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
 				} else {
 					logger.Green("Library '%s' installed.", library.Name)
 				}

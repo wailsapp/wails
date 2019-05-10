@@ -31,8 +31,6 @@ github.com/leaanthony/synx v0.1.0 h1:R0lmg2w6VMb8XcotOwAe5DLyzwjLrskNkwU7LLWsyL8
 github.com/leaanthony/synx v0.1.0/go.mod h1:Iz7eybeeG8bdq640iR+CwYb8p+9EOsgMWghkSRyZcqs=
 github.com/leaanthony/wincursor v0.1.0 h1:Dsyp68QcF5cCs65AMBmxoYNEm0n8K7mMchG6a8fYxf8=
 github.com/leaanthony/wincursor v0.1.0/go.mod h1:7TVwwrzSH/2Y9gLOGH+VhA+bZhoWXBRgbGNTMk+yimE=
-github.com/matishsiao/goInfo v0.0.0-20170803142006-617e6440957e h1:Y+GY+bv5vf1gssphFsGiq6R8qdHxnpDZvYljFnXfhD8=
-github.com/matishsiao/goInfo v0.0.0-20170803142006-617e6440957e/go.mod h1:yLZrFIhv+Z20hxHvcZpEyKVQp9HMsOJkXAxx7yDqtvg=
 github.com/mattn/go-colorable v0.0.9 h1:UVL0vNpWh04HeJXV0KLcaT7r06gOH2l4OW6ddYRUIY4=
 github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaOChaDxuIBZU=
 github.com/mattn/go-colorable v0.1.1 h1:G1f5SKeVxmagw/IyvzvtZE4Gybcc4Tr1tf7I8z0XgOg=
