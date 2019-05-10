@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"regexp"
 	"strings"
 )
 
@@ -15,6 +18,8 @@ const (
 	Ubuntu
 	// Arch linux distribution
 	Arch
+	// RedHat linux distribution
+	RedHat
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -64,7 +69,19 @@ func GetLinuxDistroInfo() *DistroInfo {
 				}
 			}
 		}
-
+		// check if /etc/os-release exists
+	} else if _, err := os.Stat("/etc/os-release"); !os.IsNotExist(err) {
+		// read /etc/os-release
+		osRelease, _ := ioutil.ReadFile("/etc/os-release")
+		// compile a regex to find NAME=distro
+		re := regexp.MustCompile(`^NAME=(.*)\n`)
+		// extract the distro name
+		osName := string(re.FindSubmatch(osRelease)[1])
+		// Check distro name against list of RedHat distros
+		if osName == "Fedora" || osName == "CentOS" {
+			//if it matches set result.Distribution to RedHat
+			result.Distribution = RedHat
+		}
 	}
 	return result
 }
@@ -88,5 +105,16 @@ func PacmanInstalled(packageName string) (bool, error) {
 		return false, fmt.Errorf("cannot check dependencies: pacman not found")
 	}
 	_, _, exitCode, _ := pacman.Run("-Qs", packageName)
+	return exitCode == 0, nil
+}
+
+// YumInstalled uses yum to see if a package is installed
+func YumInstalled(packageName string) (bool, error) {
+	program := NewProgramHelper()
+	yum := program.FindProgram("yum")
+	if yum == nil {
+		return false, fmt.Errorf("cannot check dependencies: yum not found")
+	}
+	_, _, exitCode, _ := yum.Run("list", packageName, "--available")
 	return exitCode == 0, nil
 }
