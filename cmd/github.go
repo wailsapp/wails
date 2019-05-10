@@ -33,15 +33,6 @@ func NewGitHubHelper() *GitHubHelper {
 func (g *GitHubHelper) GetVersionTags() ([]*semver.Version, error) {
 
 	result := []*semver.Version{}
-
-	// Test data
-	v0_14_0, _ := semver.NewVersion("v0.12.4")
-	result = append(result, v0_14_0)
-	v0_13_0pre, _ := semver.NewVersion("v0.12.3-pre1")
-	result = append(result, v0_13_0pre)
-	v0_13_1pre, _ := semver.NewVersion("v0.12.3-pre2")
-	result = append(result, v0_13_1pre)
-
 	var err error
 
 	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/tags")
