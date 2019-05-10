@@ -17,6 +17,7 @@ func NewShellHelper() *ShellHelper {
 // Run the given command
 func (sh *ShellHelper) Run(command string, vars ...string) (stdout, stderr string, err error) {
 	cmd := exec.Command(command, vars...)
+	cmd.Env = append(cmd.Env, "GO111MODULE=on")
 	var stdo, stde bytes.Buffer
 	cmd.Stdout = &stdo
 	cmd.Stderr = &stde
@@ -30,6 +31,7 @@ func (sh *ShellHelper) Run(command string, vars ...string) (stdout, stderr strin
 func (sh *ShellHelper) RunInDirectory(dir string, command string, vars ...string) (stdout, stderr string, err error) {
 	cmd := exec.Command(command, vars...)
 	cmd.Dir = dir
+	cmd.Env = append(cmd.Env, "GO111MODULE=on")
 	var stdo, stde bytes.Buffer
 	cmd.Stdout = &stdo
 	cmd.Stderr = &stde
