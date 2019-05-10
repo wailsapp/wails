@@ -63,7 +63,7 @@ func NewTemplateList(filenames *mewnlib.FileGroup) *TemplateList {
 		if err != nil {
 			log.Fatalf("corrupt metadata for template: %s", filename)
 		}
-		path := strings.Split(filename, string(filepath.Separator))[0]
+		path := strings.Split(filepath.FromSlash(filename), string(filepath.Separator))[0]
 		thisTemplate := &TemplateDetails{Path: path, Metadata: &metadata}
 		result.details[filename] = thisTemplate
 	})
