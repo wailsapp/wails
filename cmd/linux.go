@@ -108,13 +108,13 @@ func PacmanInstalled(packageName string) (bool, error) {
 	return exitCode == 0, nil
 }
 
-// YumInstalled uses yum to see if a package is installed
-func YumInstalled(packageName string) (bool, error) {
+// RpmInstalled uses rpm to see if a package is installed
+func RpmInstalled(packageName string) (bool, error) {
 	program := NewProgramHelper()
-	yum := program.FindProgram("yum")
-	if yum == nil {
-		return false, fmt.Errorf("cannot check dependencies: yum not found")
+	rpm := program.FindProgram("rpm")
+	if rpm == nil {
+		return false, fmt.Errorf("cannot check dependencies: rpm not found")
 	}
-	_, _, exitCode, _ := yum.Run("list", packageName, "--available")
+	_, _, exitCode, _ := rpm.Run("--query", packageName)
 	return exitCode == 0, nil
 }

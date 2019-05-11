@@ -285,7 +285,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 				}
 			case RedHat:
 
-				installed, err := YumInstalled(library.Name)
+				installed, err := RpmInstalled(library.Name)
 				if err != nil {
 					return false, err
 				}
