@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/masterminds/semver"
 )
 
@@ -48,6 +50,30 @@ func (s *SemanticVersion) IsGreaterThan(version *SemanticVersion) (bool, error) 
 		return false, msgs[0]
 	}
 	return true, nil
+}
+
+// IsGreaterThanOrEqual returns true if this version is greater than or equal the given version
+func (s *SemanticVersion) IsGreaterThanOrEqual(version *SemanticVersion) (bool, error) {
+	// Set up new constraint
+	constraint, err := semver.NewConstraint(">= " + version.Version.String())
+	if err != nil {
+		return false, err
+	}
+
+	// Check if the desired one is greater than the requested on
+	success, msgs := constraint.Validate(s.Version)
+	if !success {
+		return false, msgs[0]
+	}
+	return true, nil
+}
+
+// MainVersion returns the main version of any version+prerelease+metadata
+// EG: MainVersion("1.2.3-pre") => "1.2.3"
+func (s *SemanticVersion) MainVersion() *SemanticVersion {
+	mainVersion := fmt.Sprintf("%d.%d.%d", s.Version.Major(), s.Version.Minor(), s.Version.Patch())
+	result, _ := NewSemanticVersion(mainVersion)
+	return result
 }
 
 // SemverCollection is a collection of SemanticVersion objects
