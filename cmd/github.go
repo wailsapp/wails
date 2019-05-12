@@ -22,7 +22,6 @@ func NewGitHubHelper() *GitHubHelper {
 func (g *GitHubHelper) GetVersionTags() ([]*SemanticVersion, error) {
 
 	result := []*SemanticVersion{}
-
 	var err error
 
 	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/tags")
@@ -88,4 +87,22 @@ func (g *GitHubHelper) GetLatestPreRelease() (result *SemanticVersion, err error
 	}
 
 	return nil, fmt.Errorf("no prerelease tag found")
+}
+
+// IsValidTag returns true if the given string is a valid tag
+func (g *GitHubHelper) IsValidTag(tagVersion string) (bool, error) {
+	if tagVersion[0] == 'v' {
+		tagVersion = tagVersion[1:]
+	}
+	tags, err := g.GetVersionTags()
+	if err != nil {
+		return false, err
+	}
+
+	for _, tag := range tags {
+		if tag.String() == tagVersion {
+			return true, nil
+		}
+	}
+	return false, nil
 }
