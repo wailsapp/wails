@@ -18,7 +18,7 @@ func init() {
 
 	commandDescription := `Generates an issue in Github using the given title, description and system report.`
 
-	initCommand := app.Command("issue", "Generates an issue in Github.").
+	initCommand := app.Command("issue", "Generates an issue in Github").
 		LongDescription(commandDescription)
 
 	initCommand.Action(func() error {

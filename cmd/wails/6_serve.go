@@ -14,7 +14,7 @@ func init() {
 	buildSpinner.SetSpinSpeed(50)
 
 	commandDescription := `This command builds then serves your application in bridge mode. Useful for developing your app in a browser.`
-	initCmd := app.Command("serve", "Run your Wails project in bridge mode.").
+	initCmd := app.Command("serve", "Run your Wails project in bridge mode").
 		LongDescription(commandDescription).
 		BoolFlag("f", "Force rebuild of application components", &forceRebuild)
 
