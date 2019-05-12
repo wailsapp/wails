@@ -103,11 +103,11 @@ func updateToVersion(targetVersion *cmd.SemanticVersion, force bool) error {
 
 		// Release -> Pre-Release = Massage current version to prerelease format
 		if targetVersion.IsPreRelease() && currentVersion.IsRelease() {
-			currentVersion, err = cmd.NewSemanticVersion(compareVersion)
+			testVersion, err := cmd.NewSemanticVersion(compareVersion + "-0")
 			if err != nil {
 				return err
 			}
-			success, _ = targetVersion.IsGreaterThan(currentVersion)
+			success, _ = targetVersion.IsGreaterThan(testVersion)
 		}
 		// Pre-Release -> Release = Massage target version to prerelease format
 		if targetVersion.IsRelease() && currentVersion.IsPreRelease() {
