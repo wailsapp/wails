@@ -1,15 +1,12 @@
 package cmd
 
 import (
-	"regexp"
-
 	"github.com/masterminds/semver"
 )
 
+// SemanticVersion is a struct containing a semantic version
 type SemanticVersion struct {
-	Version              *semver.Version
-	validPrereleaseRegex *regexp.Regexp
-	validReleaseRegex    *regexp.Regexp
+	Version *semver.Version
 }
 
 // NewSemanticVersion creates a new SemanticVersion object with the given version string
@@ -18,30 +15,26 @@ func NewSemanticVersion(version string) (*SemanticVersion, error) {
 	if err != nil {
 		return nil, err
 	}
-	const SemVerRegex string = `v?([0-9]+)(\.[0-9]+)?(\.[0-9]+)?`
-	const SemPreVerRegex string = `v?([0-9]+)(\.[0-9]+)?(\.[0-9]+)?-([0-9A-Za-z\-]+(\.[0-9A-Za-z\-]+)*)`
-
 	return &SemanticVersion{
-		Version:              semverVersion,
-		validPrereleaseRegex: regexp.MustCompile(SemPreVerRegex),
-		validReleaseRegex:    regexp.MustCompile(SemVerRegex),
+		Version: semverVersion,
 	}, nil
 }
 
 // IsRelease returns true if it's a release version
 func (s *SemanticVersion) IsRelease() bool {
-	return s.validReleaseRegex.MatchString(s.Version.String())
+	return len(s.Version.Prerelease()) == 0 && len(s.Version.Metadata()) == 0
 }
 
 // IsPreRelease returns true if it's a prerelease version
 func (s *SemanticVersion) IsPreRelease() bool {
-	return s.validPrereleaseRegex.MatchString(s.Version.String())
+	return len(s.Version.Prerelease()) > 0
 }
 
 func (s *SemanticVersion) String() string {
 	return s.Version.String()
 }
 
+// IsGreaterThan returns true if this version is greater than the given version
 func (s *SemanticVersion) IsGreaterThan(version *SemanticVersion) (bool, error) {
 	// Set up new constraint
 	constraint, err := semver.NewConstraint("> " + version.Version.String())
