@@ -12,7 +12,8 @@
       "program": "${workspaceFolder}/cmd/wails/main.go",
       "env": {},
       "args": [
-        "setup"
+        "update",
+        "-pre"
       ]
     }
   ]
