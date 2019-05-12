@@ -83,7 +83,7 @@ func updateToVersion(targetVersion *cmd.SemanticVersion, force bool) error {
 	var targetVersionString = "v" + targetVersion.String()
 
 	// Early exit
-	if targetVersion.String() == cmd.Version {
+	if targetVersionString == cmd.Version {
 		logger.Green("Looks like you're up to date!")
 		return nil
 	}
