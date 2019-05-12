@@ -80,6 +80,8 @@ func init() {
 
 func updateToVersion(targetVersion *cmd.SemanticVersion, force bool) error {
 
+	var targetVersionString = "v" + targetVersion.String()
+
 	// Early exit
 	if targetVersion.String() == cmd.Version {
 		logger.Green("Looks like you're up to date!")
@@ -97,16 +99,28 @@ func updateToVersion(targetVersion *cmd.SemanticVersion, force bool) error {
 			return err
 		}
 
+		var success bool
+
 		// Release -> Pre-Release = Massage current version to prerelease format
 		if targetVersion.IsPreRelease() && currentVersion.IsRelease() {
-			currentVersion, err = cmd.NewSemanticVersion(compareVersion + "-0")
+			currentVersion, err = cmd.NewSemanticVersion(compareVersion)
+			if err != nil {
+				return err
+			}
+			success, err = targetVersion.IsGreaterThan(currentVersion)
 			if err != nil {
 				return err
 			}
 		}
 		// Pre-Release -> Release = Massage target version to prerelease format
 		if targetVersion.IsRelease() && currentVersion.IsPreRelease() {
-			targetVersion, err = cmd.NewSemanticVersion(targetVersion.String() + "-0")
+			// We are ok with greater than or equal
+			mainversion := currentVersion.MainVersion()
+			targetVersion, err = cmd.NewSemanticVersion(targetVersion.String())
+			if err != nil {
+				return err
+			}
+			success, err = targetVersion.IsGreaterThanOrEqual(mainversion)
 			if err != nil {
 				return err
 			}
@@ -115,10 +129,9 @@ func updateToVersion(targetVersion *cmd.SemanticVersion, force bool) error {
 		desiredVersion = "v" + targetVersion.String()
 
 		// Compare
-		success, err := targetVersion.IsGreaterThan(currentVersion)
 		if !success {
 			logger.Red("The requested version is lower than the current version.")
-			logger.Red("If this is what you really want to do, use `wails update -version %s`", desiredVersion)
+			logger.Red("If this is what you really want to do, use `wails update -version %s`", targetVersionString)
 			return nil
 		}
 	} else {
