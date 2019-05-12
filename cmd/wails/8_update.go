@@ -107,10 +107,7 @@ func updateToVersion(targetVersion *cmd.SemanticVersion, force bool) error {
 			if err != nil {
 				return err
 			}
-			success, err = targetVersion.IsGreaterThan(currentVersion)
-			if err != nil {
-				return err
-			}
+			success, _ = targetVersion.IsGreaterThan(currentVersion)
 		}
 		// Pre-Release -> Release = Massage target version to prerelease format
 		if targetVersion.IsRelease() && currentVersion.IsPreRelease() {
@@ -120,13 +117,15 @@ func updateToVersion(targetVersion *cmd.SemanticVersion, force bool) error {
 			if err != nil {
 				return err
 			}
-			success, err = targetVersion.IsGreaterThanOrEqual(mainversion)
-			if err != nil {
-				return err
-			}
+			success, _ = targetVersion.IsGreaterThanOrEqual(mainversion)
 		}
 
-		desiredVersion = "v" + targetVersion.String()
+		// Release -> Release = Standard check
+		if (targetVersion.IsRelease() && currentVersion.IsRelease()) ||
+			(targetVersion.IsPreRelease() && currentVersion.IsPreRelease()) {
+
+			success, _ = targetVersion.IsGreaterThan(currentVersion)
+		}
 
 		// Compare
 		if !success {
@@ -134,6 +133,9 @@ func updateToVersion(targetVersion *cmd.SemanticVersion, force bool) error {
 			logger.Red("If this is what you really want to do, use `wails update -version %s`", targetVersionString)
 			return nil
 		}
+
+		desiredVersion = "v" + targetVersion.String()
+
 	} else {
 		desiredVersion = "v" + targetVersion.String()
 	}
