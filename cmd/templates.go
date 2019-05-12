@@ -107,6 +107,7 @@ func (t *TemplateHelper) InstallTemplate(projectPath string, projectOptions *Pro
 	templateJSONFilename := filepath.Join(templatePath, "template.json")
 
 	templateFiles := templateFilenames.Filter(func(filename string) bool {
+		filename = filepath.FromSlash(filename)
 		return strings.HasPrefix(filename, templatePath) && filename != templateJSONFilename
 	})
 
