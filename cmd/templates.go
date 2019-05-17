@@ -3,7 +3,6 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -79,13 +78,9 @@ func (t *TemplateHelper) GetTemplateDetails() (map[string]*TemplateDetails, erro
 
 	// Get the subdirectory details
 	templateDirs, err := t.templateDir.GetSubdirs()
-
-	// templateDirs, err := t.fs.GetSubdirs(t.templateDir)
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("%+v\n", templateDirs)
 
 	result := make(map[string]*TemplateDetails)
 

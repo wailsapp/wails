@@ -203,6 +203,8 @@ func (po *ProjectOptions) PromptForInputs() error {
 		po.selectedTemplate = templateList.AsSlice()[templateIndex].(*TemplateDetails)
 	}
 
+	fmt.Println("Template: " + po.selectedTemplate.Metadata.Name)
+
 	// Setup NPM Project name
 	po.NPMProjectName = strings.ToLower(strings.Replace(po.Name, " ", "_", -1))
 
@@ -282,7 +284,6 @@ func processProjectName(po *ProjectOptions) {
 		po.Name = Prompt("The name of the project", "My Project")
 	}
 	fmt.Println("Project Name: " + po.Name)
-
 }
 
 func processBinaryName(po *ProjectOptions) {
