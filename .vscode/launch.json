@@ -5,12 +5,33 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch",
+      "name": "Wails Init",
       "type": "go",
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}/cmd/wails/main.go",
       "env": {},
+      "cwd": "/tmp",
+      "args": [
+        "init",
+        "-name",
+        "runtime",
+        "-dir",
+        "runtime",
+        "-output",
+        "runtime",
+        "-template",
+        "vuebasic"
+      ]
+    },
+    {
+      "name": "Wails Update Pre",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/cmd/wails/main.go",
+      "env": {},
+      "cwd": "/tmp",
       "args": [
         "update",
         "-pre"

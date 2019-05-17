@@ -7,7 +7,11 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
+	"runtime"
+
+	"github.com/leaanthony/slicer"
 )
 
 // FSHelper - Wrapper struct for File System utility commands
@@ -104,11 +108,30 @@ func (fs *FSHelper) RemoveFiles(files []string) error {
 	return nil
 }
 
+type Dir struct {
+	localPath string
+	fullPath  string
+}
+
+func (fs *FSHelper) Dir(dir string) (*Dir, error) {
+	fullPath, err := filepath.Abs(dir)
+	return &Dir{fullPath: fullPath}, err
+}
+
+func (fs *FSHelper) LocalDir(dir string) (*Dir, error) {
+	_, filename, _, _ := runtime.Caller(1)
+	fullPath, err := filepath.Abs(filepath.Join(path.Dir(filename), dir))
+	return &Dir{
+		localPath: dir,
+		fullPath:  fullPath,
+	}, err
+}
+
 // GetSubdirs will return a list of FQPs to subdirectories in the given directory
-func (fs *FSHelper) GetSubdirs(dir string) (map[string]string, error) {
+func (d *Dir) GetSubdirs() (map[string]string, error) {
 
 	// Read in the directory information
-	fileInfo, err := ioutil.ReadDir(dir)
+	fileInfo, err := ioutil.ReadDir(d.fullPath)
 	if err != nil {
 		return nil, err
 	}
@@ -120,10 +143,29 @@ func (fs *FSHelper) GetSubdirs(dir string) (map[string]string, error) {
 	// map["directoryName"] = "path/to/directoryName"
 	for _, file := range fileInfo {
 		if file.IsDir() {
-			subdirs[file.Name()] = filepath.Join(dir, file.Name())
+			subdirs[file.Name()] = filepath.Join(d.fullPath, file.Name())
 		}
 	}
 	return subdirs, nil
+}
+
+// GetAllFilenames returns all filename in and below this directory
+func (d *Dir) GetAllFilenames() (*slicer.StringSlicer, error) {
+	result := slicer.String()
+	err := filepath.Walk(d.fullPath, func(dir string, info os.FileInfo, err error) error {
+		if dir == d.fullPath {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		// Don't copy template metadata
+		result.Add(dir)
+
+		return nil
+	})
+	return result, err
 }
 
 // MkDir creates the given directory.
@@ -135,8 +177,13 @@ func (fs *FSHelper) MkDir(dir string) error {
 // LoadAsString will attempt to load the given file and return
 // its contents as a string
 func (fs *FSHelper) LoadAsString(filename string) (string, error) {
-	bytes, err := ioutil.ReadFile(filename)
+	bytes, err := fs.LoadAsBytes(filename)
 	return string(bytes), err
+}
+
+// LoadAsBytes returns the contents of the file as a byte slice
+func (fs *FSHelper) LoadAsBytes(filename string) ([]byte, error) {
+	return ioutil.ReadFile(filename)
 }
 
 // FileMD5 returns the md5sum of the given file
