@@ -58,6 +58,8 @@ func GetLinuxDistroInfo() *DistroInfo {
 						result.Distribution = Ubuntu
 					case "Arch":
 						result.Distribution = Arch
+					case "ManjaroLinux":
+						result.Distribution = Arch
 					}
 				case "Description":
 					result.Description = value
