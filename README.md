@@ -64,6 +64,8 @@ Windows requires gcc and related tooling. The recommended download is from [http
 
 ## Installation
 
+**Ensure Go modules are enabled: GO111MODULE=on and go/bin is in your PATH variable.**
+
 Installation is as simple as running the following command:
 
 <pre style='color:white'>
