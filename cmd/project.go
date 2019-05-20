@@ -79,25 +79,10 @@ func (ph *ProjectHelper) GenerateProject(projectOptions *ProjectOptions) error {
 		return err
 	}
 
-	// // If we are on windows, dump a windows_resource.json
-	// if runtime.GOOS == "windows" {
-	// 	ph.GenerateWindowsResourceConfig(projectOptions)
-	// }
-
 	ph.log.Yellow("Project '%s' generated in directory '%s'!", projectOptions.Name, projectOptions.OutputDirectory)
 	ph.log.Yellow("To compile the project, run 'wails build' in the project directory.")
 	return nil
 }
-
-// // GenerateWindowsResourceConfig generates the default windows resource file
-// func (ph *ProjectHelper) GenerateWindowsResourceConfig(po *ProjectOptions) {
-
-// 	fmt.Println(buffer.String())
-
-// 	// vi.Build()
-// 	// vi.Walk()
-// 	// err := vi.WriteSyso(outPath, runtime.GOARCH)
-// }
 
 // LoadProjectConfig loads the project config from the given directory
 func (ph *ProjectHelper) LoadProjectConfig(dir string) (*ProjectOptions, error) {
