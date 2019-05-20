@@ -53,11 +53,17 @@ Any flags that are required and not given will be prompted for.`
 			}
 		}
 
+		genSpinner := spinner.NewSpinner()
+		genSpinner.SetSpinSpeed(50)
+		genSpinner.Start("Generating project...")
+
 		// Generate the project
 		err = projectHelper.GenerateProject(projectOptions)
 		if err != nil {
+			genSpinner.Error()
 			return err
 		}
+		genSpinner.Success()
 
 		// Build the project
 		cwd, _ := os.Getwd()
@@ -65,7 +71,7 @@ Any flags that are required and not given will be prompted for.`
 		program := cmd.NewProgramHelper()
 		buildSpinner := spinner.NewSpinner()
 		buildSpinner.SetSpinSpeed(50)
-		buildSpinner.Start("Performing initial build (this may take a while)...")
+		buildSpinner.Start("Building project (this may take a while)...")
 		err = program.RunCommandArray([]string{"wails", "build"}, projectDir)
 		if err != nil {
 			buildSpinner.Error(err.Error())
