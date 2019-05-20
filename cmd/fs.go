@@ -110,16 +110,20 @@ func (fs *FSHelper) RemoveFiles(files []string) error {
 	return nil
 }
 
+// Dir represents a directory on disk.
+// localPath is relative to the file that created the struct
 type Dir struct {
 	localPath string
 	fullPath  string
 }
 
-func (fs *FSHelper) Dir(dir string) (*Dir, error) {
+// Directory creates a new Dir struct and calculates the fullPath
+func (fs *FSHelper) Directory(dir string) (*Dir, error) {
 	fullPath, err := filepath.Abs(dir)
 	return &Dir{fullPath: fullPath}, err
 }
 
+// LocalDir creates a new Dir struct and calculates both local and fullPath
 func (fs *FSHelper) LocalDir(dir string) (*Dir, error) {
 	_, filename, _, _ := runtime.Caller(1)
 	fullPath, err := filepath.Abs(filepath.Join(path.Dir(filename), dir))
