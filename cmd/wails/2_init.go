@@ -2,7 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
+	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
 )
 
@@ -53,8 +56,24 @@ Any flags that are required and not given will be prompted for.`
 		// Generate the project
 		err = projectHelper.GenerateProject(projectOptions)
 		if err != nil {
-			logger.Error(err.Error())
+			return err
 		}
+
+		// Build the project
+		cwd, _ := os.Getwd()
+		projectDir := filepath.Join(cwd, projectOptions.OutputDirectory)
+		program := cmd.NewProgramHelper()
+		buildSpinner := spinner.NewSpinner()
+		buildSpinner.SetSpinSpeed(50)
+		buildSpinner.Start("Performing initial build (this may take a while)...")
+		err = program.RunCommandArray([]string{"wails", "build"}, projectDir)
+		if err != nil {
+			buildSpinner.Error(err.Error())
+			return err
+		}
+		buildSpinner.Success()
+		logger.Yellow("Project '%s' built in directory '%s'!", projectOptions.Name, projectOptions.OutputDirectory)
+
 		return err
 	})
 }
