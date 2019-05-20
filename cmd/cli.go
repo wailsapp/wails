@@ -96,6 +96,7 @@ type Command struct {
 	flagCount         int
 	log               *Logger
 	helpFlag          bool
+	hidden            bool
 }
 
 // NewCommand creates a new Command
@@ -106,6 +107,7 @@ func NewCommand(name string, description string, app *Cli, parentCommandPath str
 		SubCommandsMap:   make(map[string]*Command),
 		App:              app,
 		log:              NewLogger(),
+		hidden:           false,
 	}
 
 	// Set up command path
@@ -212,6 +214,9 @@ func (c *Command) PrintHelp() {
 		c.log.White("Available commands:")
 		fmt.Println("")
 		for _, subcommand := range c.SubCommands {
+			if subcommand.isHidden() {
+				continue
+			}
 			spacer := strings.Repeat(" ", 3+c.longestSubcommand-len(subcommand.Name))
 			isDefault := ""
 			if subcommand.isDefaultCommand() {
@@ -235,6 +240,16 @@ func (c *Command) PrintHelp() {
 // isDefaultCommand returns true if called on the default command
 func (c *Command) isDefaultCommand() bool {
 	return c.App.defaultCommand == c
+}
+
+// isHidden returns true if the command is a hidden command
+func (c *Command) isHidden() bool {
+	return c.hidden
+}
+
+// Hidden hides the command from the Help system
+func (c *Command) Hidden() {
+	c.hidden = true
 }
 
 // Command - Defines a subcommand

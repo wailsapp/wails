@@ -3,12 +3,14 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"path/filepath"
 	"strings"
 	"text/template"
 
+	"github.com/kennygrant/sanitize"
 	"github.com/leaanthony/slicer"
 )
 
@@ -55,6 +57,36 @@ func NewTemplateHelper() *TemplateHelper {
 		templateDir:      templateDir,
 		metadataFilename: "template.json",
 	}
+}
+
+// IsValidTemplate returns true if the given tempalte name resides on disk
+func (t *TemplateHelper) IsValidTemplate(templateName string) bool {
+	pathToTemplate := filepath.Join(t.templateDir.fullPath, templateName)
+	return t.fs.DirExists(pathToTemplate)
+}
+
+// SanitizeFilename sanitizes the given string to make a valid filename
+func (t *TemplateHelper) SanitizeFilename(name string) string {
+	return sanitize.Name(name)
+}
+
+// CreateNewTemplate creates a new template based on the given directory name and string
+func (t *TemplateHelper) CreateNewTemplate(dirname string, details *TemplateMetadata) (string, error) {
+
+	// Check if this template has already been created
+	if t.IsValidTemplate(dirname) {
+		return "", fmt.Errorf("cannot create template in directory '%s' - already exists", dirname)
+	}
+
+	targetDir := filepath.Join(t.templateDir.fullPath, dirname)
+	err := t.fs.MkDir(targetDir)
+	if err != nil {
+		return "", err
+	}
+	targetMetadata := filepath.Join(targetDir, t.metadataFilename)
+	err = t.fs.SaveAsJSON(details, targetMetadata)
+
+	return targetDir, err
 }
 
 // LoadMetadata loads the template's 'metadata.json' file

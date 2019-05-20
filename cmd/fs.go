@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"bytes"
 	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -172,6 +174,22 @@ func (d *Dir) GetAllFilenames() (*slicer.StringSlicer, error) {
 // Returns error on failure
 func (fs *FSHelper) MkDir(dir string) error {
 	return os.Mkdir(dir, 0700)
+}
+
+// SaveAsJSON saves the JSON representation of the given data to the given filename
+func (fs *FSHelper) SaveAsJSON(data interface{}, filename string) error {
+
+	var buf bytes.Buffer
+	e := json.NewEncoder(&buf)
+	e.SetEscapeHTML(false)
+	e.SetIndent("", "  ")
+	e.Encode(data)
+
+	err := ioutil.WriteFile(filename, buf.Bytes(), 0755)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // LoadAsString will attempt to load the given file and return
