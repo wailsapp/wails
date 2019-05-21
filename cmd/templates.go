@@ -141,7 +141,7 @@ func (t *TemplateHelper) GetTemplateDetails() (map[string]*TemplateDetails, erro
 func (t *TemplateHelper) GetTemplateFilenames(template *TemplateDetails) (*slicer.StringSlicer, error) {
 
 	// Get the subdirectory details
-	templateDir, err := t.fs.Dir(template.Path)
+	templateDir, err := t.fs.Directory(template.Path)
 	if err != nil {
 		return nil, err
 	}
