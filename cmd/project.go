@@ -79,8 +79,6 @@ func (ph *ProjectHelper) GenerateProject(projectOptions *ProjectOptions) error {
 		return err
 	}
 
-	ph.log.Yellow("Project '%s' generated in directory '%s'!", projectOptions.Name, projectOptions.OutputDirectory)
-	ph.log.Yellow("To compile the project, run 'wails build' in the project directory.")
 	return nil
 }
 
