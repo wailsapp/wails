@@ -8,5 +8,6 @@
   "install": "npm install",
   "build": "npm run build",
   "serve": "npm run serve",
-  "bridge": "src"
+  "bridge": "src",
+  "wailsdir": "src/wails"
 }

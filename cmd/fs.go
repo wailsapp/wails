@@ -14,6 +14,7 @@ import (
 	"runtime"
 
 	"github.com/leaanthony/slicer"
+	"github.com/otiai10/copy"
 )
 
 // FSHelper - Wrapper struct for File System utility commands
@@ -119,6 +120,7 @@ type Dir struct {
 
 // Directory creates a new Dir struct and calculates the fullPath
 func (fs *FSHelper) Directory(dir string) (*Dir, error) {
+	dir = filepath.FromSlash(dir)
 	fullPath, err := filepath.Abs(dir)
 	return &Dir{fullPath: fullPath}, err
 }
@@ -126,11 +128,17 @@ func (fs *FSHelper) Directory(dir string) (*Dir, error) {
 // LocalDir creates a new Dir struct and calculates both local and fullPath
 func (fs *FSHelper) LocalDir(dir string) (*Dir, error) {
 	_, filename, _, _ := runtime.Caller(1)
+	dir = filepath.FromSlash(dir)
 	fullPath, err := filepath.Abs(filepath.Join(path.Dir(filename), dir))
 	return &Dir{
 		localPath: dir,
 		fullPath:  fullPath,
 	}, err
+}
+
+// CopyFiles copies all the files from the directory to the given directory
+func (d *Dir) CopyFiles(targetDirectory string) error {
+	return copy.Copy(d.fullPath, targetDirectory)
 }
 
 // GetSubdirs will return a list of FQPs to subdirectories in the given directory

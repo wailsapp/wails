@@ -210,6 +210,8 @@ func (t *TemplateHelper) InstallTemplate(projectPath string, projectOptions *Pro
 	}
 
 	// Install frontend
+	fe := NewFrontendHelper()
+	err = fe.InstallRuntime(projectOptions)
 
-	return nil
+	return err
 }

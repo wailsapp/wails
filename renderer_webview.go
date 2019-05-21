@@ -160,12 +160,16 @@ func (w *webViewRenderer) Run() error {
 
 	w.log.Info("Run()")
 
-	// Runtime assets
-	wailsRuntime := mewn.String("./wailsruntimeassets/default/wails.min.js")
-	w.evalJS(wailsRuntime)
+	// // Runtime assets
+	// wailsRuntime := mewn.String("./wailsruntimeassets/default/wails.min.js")
+	// w.evalJS(wailsRuntime)
+
+	w.eventManager.Emit("wails:backendready")
 
 	// Ping the wait channel when the wails runtime is loaded
 	w.eventManager.On("wails:loaded", func(...interface{}) {
+
+		w.log.Debug("Got the wails:loaded event")
 
 		// Run this in a different go routine to free up the main process
 		go func() {
