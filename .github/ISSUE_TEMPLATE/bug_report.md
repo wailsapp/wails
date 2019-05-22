@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+## Before opening an issue via github, please consider running `wails issue`!
+
 **Description**
 A clear and concise description of what the bug is.
 
@@ -24,7 +26,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **System Details**
-Please paste the output of `wails report` here.
+Please provide your platform, GO version and variables, etc
 
 **Additional context**
 Add any other context about the problem here.
