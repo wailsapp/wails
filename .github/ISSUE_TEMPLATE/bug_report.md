@@ -7,7 +7,9 @@ assignees: ''
 
 ---
 
-## Before opening an issue via github, please consider running `wails issue`!
+---
+## If you have a technical issue, please do not open a bug this way! Please use the `wails issue` command!
+---
 
 **Description**
 A clear and concise description of what the bug is.
