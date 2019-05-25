@@ -3,8 +3,8 @@ import Vue from "vue";
 // Setup Vuetify
 import Vuetify from 'vuetify';
 Vue.use(Vuetify);
-import 'vuetify/dist/vuetify.min.css'
-import 'material-design-icons-iconfont'
+import 'vuetify/dist/vuetify.min.css';
+import 'material-design-icons-iconfont';
 
 import App from "./App.vue";
 
