@@ -9,10 +9,11 @@ require (
 	github.com/go-playground/colors v1.2.0
 	github.com/gorilla/websocket v1.4.0
 	github.com/jackmordaunt/icns v1.0.0
+	github.com/kennygrant/sanitize v1.2.4
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
-	github.com/leaanthony/mewn v0.10.5
+	github.com/leaanthony/mewn v0.10.7
 	github.com/leaanthony/slicer v1.3.1
-	github.com/leaanthony/spinner v0.5.0
+	github.com/leaanthony/spinner v0.5.3
 	github.com/masterminds/semver v1.4.2
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
@@ -23,6 +24,8 @@ require (
 	github.com/sirupsen/logrus v1.4.1
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/wailsapp/webview v0.2.7
+	golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529 // indirect
 	golang.org/x/net v0.0.0-20190509222800-a4d6f7feada5 // indirect
 	golang.org/x/sys v0.0.0-20190509141414-a5b02f93d862
+	gopkg.in/AlecAivazis/survey.v1 v1.8.4
 )

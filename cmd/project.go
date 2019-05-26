@@ -50,12 +50,6 @@ func NewProjectHelper() *ProjectHelper {
 // GenerateProject generates a new project using the options given
 func (ph *ProjectHelper) GenerateProject(projectOptions *ProjectOptions) error {
 
-	// exists := ph.templates.TemplateExists(projectOptions.Template)
-
-	// if !exists {
-	// 	return fmt.Errorf("template '%s' is invalid", projectOptions.Template)
-	// }
-
 	// Calculate project path
 	projectPath, err := filepath.Abs(projectOptions.OutputDirectory)
 	if err != nil {
@@ -90,8 +84,6 @@ func (ph *ProjectHelper) GenerateProject(projectOptions *ProjectOptions) error {
 	// 	ph.GenerateWindowsResourceConfig(projectOptions)
 	// }
 
-	ph.log.Yellow("Project '%s' generated in directory '%s'!", projectOptions.Name, projectOptions.OutputDirectory)
-	ph.log.Yellow("To compile the project, run 'wails build' in the project directory.")
 	return nil
 }
 
@@ -173,19 +165,43 @@ func (po *ProjectOptions) PromptForInputs() error {
 	// Process Templates
 	templateList := slicer.Interface()
 	options := slicer.String()
-	for _, templateDetails := range po.templates.TemplateList.details {
-		templateList.Add(templateDetails)
-		options.Add(fmt.Sprintf("%s - %s", templateDetails.Metadata.Name, templateDetails.Metadata.ShortDescription))
+	templateDetails, err := po.templates.GetTemplateDetails()
+	if err != nil {
+		return err
 	}
 
-	templateIndex := 0
+	if po.Template != "" {
+		// Check template is valid if given
+		if templateDetails[po.Template] == nil {
+			keys := make([]string, 0, len(templateDetails))
+			for k := range templateDetails {
+				keys = append(keys, k)
+			}
+			return fmt.Errorf("invalid template name '%s'. Valid options: %s", po.Template, strings.Join(keys, ", "))
+		}
+		po.selectedTemplate = templateDetails[po.Template]
+	} else {
 
-	if len(options.AsSlice()) > 1 {
-		templateIndex = PromptSelection("Please select a template", options.AsSlice(), 0)
+		for _, templateDetail := range templateDetails {
+			templateList.Add(templateDetail)
+			options.Add(fmt.Sprintf("%s - %s", templateDetail.Metadata.Name, templateDetail.Metadata.ShortDescription))
+		}
+
+		templateIndex := 0
+
+		if len(options.AsSlice()) > 1 {
+			templateIndex = PromptSelection("Please select a template", options.AsSlice(), 0)
+		}
+
+		if len(templateList.AsSlice()) == 0 {
+			return fmt.Errorf("aborting: no templates found")
+		}
+
+		// After selection do this....
+		po.selectedTemplate = templateList.AsSlice()[templateIndex].(*TemplateDetails)
 	}
 
-	// After selection do this....
-	po.selectedTemplate = templateList.AsSlice()[templateIndex].(*TemplateDetails)
+	fmt.Println("Template: " + po.selectedTemplate.Metadata.Name)
 
 	// Setup NPM Project name
 	po.NPMProjectName = strings.ToLower(strings.Replace(po.Name, " ", "_", -1))
@@ -266,7 +282,6 @@ func processProjectName(po *ProjectOptions) {
 		po.Name = Prompt("The name of the project", "My Project")
 	}
 	fmt.Println("Project Name: " + po.Name)
-
 }
 
 func processBinaryName(po *ProjectOptions) {

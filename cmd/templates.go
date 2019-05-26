@@ -3,20 +3,21 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"text/template"
 
-	mewn "github.com/leaanthony/mewn"
-	mewnlib "github.com/leaanthony/mewn/lib"
+	"github.com/kennygrant/sanitize"
 	"github.com/leaanthony/slicer"
 )
 
 // TemplateMetadata holds all the metadata for a Wails template
 type TemplateMetadata struct {
 	Name             string `json:"name"`
+	Version          string `json:"version"`
 	ShortDescription string `json:"shortdescription"`
 	Description      string `json:"description"`
 	Install          string `json:"install"`
@@ -26,72 +27,125 @@ type TemplateMetadata struct {
 	FrontendDir      string `json:"frontenddir"`
 	Serve            string `json:"serve"`
 	Bridge           string `json:"bridge"`
+	WailsDir         string `json:"wailsdir"`
 }
 
 // TemplateDetails holds information about a specific template
 type TemplateDetails struct {
-	BasePath string
+	Name     string
 	Path     string
 	Metadata *TemplateMetadata
-}
-
-// TemplateList is a list of available templates
-type TemplateList struct {
-	details map[string]*TemplateDetails
-}
-
-// NewTemplateList creates a new TemplateList object
-func NewTemplateList(filenames *mewnlib.FileGroup) *TemplateList {
-	// Iterate each template and store information
-
-	result := &TemplateList{details: make(map[string]*TemplateDetails)}
-
-	entries := slicer.String()
-	entries.AddSlice(filenames.Entries())
-
-	// Find all template.json files
-	metadataFiles := entries.Filter(func(filename string) bool {
-		match, _ := regexp.MatchString("(.)+template.json$", filename)
-		return match
-	})
-
-	// Load each metadata file
-	metadataFiles.Each(func(filename string) {
-		fileData := filenames.Bytes(filename)
-		var metadata TemplateMetadata
-		err := json.Unmarshal(fileData, &metadata)
-		if err != nil {
-			log.Fatalf("corrupt metadata for template: %s", filename)
-		}
-		path := strings.Split(filename, "/")[0]
-		thisTemplate := &TemplateDetails{Path: path, Metadata: &metadata}
-		result.details[filename] = thisTemplate
-	})
-
-	return result
-}
-
-// Template holds details about a Wails template
-type Template struct {
-	Name        string
-	Path        string
-	Description string
+	fs       *FSHelper
 }
 
 // TemplateHelper is a utility object to help with processing templates
 type TemplateHelper struct {
-	TemplateList *TemplateList
-	Files        *mewnlib.FileGroup
+	templateDir      *Dir
+	fs               *FSHelper
+	metadataFilename string
 }
 
 // NewTemplateHelper creates a new template helper
 func NewTemplateHelper() *TemplateHelper {
-	files := mewn.Group("./templates")
+
+	templateDir, err := fs.LocalDir("./templates")
+	if err != nil {
+		log.Fatal("Unable to find the template directory. Please reinstall Wails.")
+	}
 
 	return &TemplateHelper{
-		TemplateList: NewTemplateList(files),
-		Files:        files,
+		templateDir:      templateDir,
+		metadataFilename: "template.json",
 	}
+}
+
+// IsValidTemplate returns true if the given tempalte name resides on disk
+func (t *TemplateHelper) IsValidTemplate(templateName string) bool {
+	pathToTemplate := filepath.Join(t.templateDir.fullPath, templateName)
+	return t.fs.DirExists(pathToTemplate)
+}
+
+// SanitizeFilename sanitizes the given string to make a valid filename
+func (t *TemplateHelper) SanitizeFilename(name string) string {
+	return sanitize.Name(name)
+}
+
+// CreateNewTemplate creates a new template based on the given directory name and string
+func (t *TemplateHelper) CreateNewTemplate(dirname string, details *TemplateMetadata) (string, error) {
+
+	// Check if this template has already been created
+	if t.IsValidTemplate(dirname) {
+		return "", fmt.Errorf("cannot create template in directory '%s' - already exists", dirname)
+	}
+
+	targetDir := filepath.Join(t.templateDir.fullPath, dirname)
+	err := t.fs.MkDir(targetDir)
+	if err != nil {
+		return "", err
+	}
+	targetMetadata := filepath.Join(targetDir, t.metadataFilename)
+	err = t.fs.SaveAsJSON(details, targetMetadata)
+
+	return targetDir, err
+}
+
+// LoadMetadata loads the template's 'metadata.json' file
+func (t *TemplateHelper) LoadMetadata(dir string) (*TemplateMetadata, error) {
+	templateFile := filepath.Join(dir, t.metadataFilename)
+	result := &TemplateMetadata{}
+	if !t.fs.FileExists(templateFile) {
+		return nil, nil
+	}
+	rawJSON, err := ioutil.ReadFile(templateFile)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(rawJSON, &result)
+	return result, err
+}
+
+// GetTemplateDetails returns a map of Template structs containing details
+// of the found templates
+func (t *TemplateHelper) GetTemplateDetails() (map[string]*TemplateDetails, error) {
+
+	// Get the subdirectory details
+	templateDirs, err := t.templateDir.GetSubdirs()
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]*TemplateDetails)
+
+	for name, dir := range templateDirs {
+		result[name] = &TemplateDetails{
+			Path: dir,
+		}
+		_ = &TemplateMetadata{}
+		metadata, err := t.LoadMetadata(dir)
+		if err != nil {
+			return nil, err
+		}
+		result[name].Metadata = metadata
+		if metadata.Name != "" {
+			result[name].Name = metadata.Name
+		} else {
+			// Ignore bad templates?
+			result[name] = nil
+		}
+	}
+
+	return result, nil
+}
+
+// GetTemplateFilenames returns all the filenames of the given template
+func (t *TemplateHelper) GetTemplateFilenames(template *TemplateDetails) (*slicer.StringSlicer, error) {
+
+	// Get the subdirectory details
+	templateDir, err := t.fs.Directory(template.Path)
+	if err != nil {
+		return nil, err
+	}
+	return templateDir.GetAllFilenames()
 }
 
 // InstallTemplate installs the template given in the project options to the
@@ -99,19 +153,20 @@ func NewTemplateHelper() *TemplateHelper {
 func (t *TemplateHelper) InstallTemplate(projectPath string, projectOptions *ProjectOptions) error {
 
 	// Get template files
+	templateFilenames, err := t.GetTemplateFilenames(projectOptions.selectedTemplate)
+	if err != nil {
+		return err
+	}
+
 	templatePath := projectOptions.selectedTemplate.Path
 
-	templateFilenames := slicer.String()
-	templateFilenames.AddSlice(projectOptions.templates.Files.Entries())
-
-	templateJSONFilename := filepath.Join(templatePath, "template.json")
+	templateJSONFilename := filepath.Join(templatePath, t.metadataFilename)
 
 	templateFiles := templateFilenames.Filter(func(filename string) bool {
 		filename = filepath.FromSlash(filename)
 		return strings.HasPrefix(filename, templatePath) && filename != templateJSONFilename
 	})
 
-	var err error
 	templateFiles.Each(func(templateFile string) {
 
 		// Setup filenames
@@ -120,11 +175,14 @@ func (t *TemplateHelper) InstallTemplate(projectPath string, projectOptions *Pro
 		if err != nil {
 			return
 		}
-		filedata := projectOptions.templates.Files.Bytes(templateFile)
+		filedata, err := t.fs.LoadAsBytes(templateFile)
+		if err != nil {
+			return
+		}
 
 		// If file is a template, process it
 		if strings.HasSuffix(templateFile, ".template") {
-			templateData := projectOptions.templates.Files.String(templateFile)
+			templateData := string(filedata)
 			tmpl := template.New(templateFile)
 			tmpl.Parse(templateData)
 			var tpl bytes.Buffer

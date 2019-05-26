@@ -68,6 +68,17 @@ func (s *SystemHelper) ConfigFileIsValid() bool {
 	return err == nil
 }
 
+// GetAuthor returns a formatted string of the user's name and email
+func (s *SystemHelper) GetAuthor() (string, error) {
+	var config *SystemConfig
+	config, err := s.LoadConfig()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s <%s>", config.Name, config.Email), nil
+}
+
 // BackupConfig attempts to backup the system config file
 func (s *SystemHelper) BackupConfig() (string, error) {
 	now := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
