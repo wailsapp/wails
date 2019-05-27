@@ -8,5 +8,6 @@ Wails is what it is because of the time and effort given by these great people. 
 * [Adrian Lanzafame](https://github.com/lanzafame)
 * [0xflotus](https://github.com/0xflotus)
 * [Michael D Henderson](https://github.com/mdhender)
-* [fred2104] (https://github.com/fishfishfish2104)
-* [intelwalk] (https://github.com/intelwalk)
+* [fred2104](https://github.com/fishfishfish2104)
+* [intelwalk](https://github.com/intelwalk)
+* [Mark Stenglein](https://github.com/ocelotsloth)
