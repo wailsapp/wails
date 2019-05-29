@@ -12,10 +12,6 @@ type Renderer interface {
 	// Events
 	NotifyEvent(eventData *eventData) error
 
-	// Injection
-	AddJSList(js []string)
-	AddCSSList(css []string)
-
 	// Dialog Runtime
 	SelectFile() string
 	SelectDirectory() string
