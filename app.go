@@ -22,11 +22,6 @@ type App struct {
 	bindingManager *bindingManager // Handles binding of Go code to renderer
 	eventManager   *eventManager   // Handles all the events
 	runtime        *Runtime        // The runtime object for registered structs
-
-	// This is a list of all the JS/CSS that needs injecting
-	// It will get injected in order
-	jsCache  []string
-	cssCache []string
 }
 
 // CreateApp creates the application window with the given configuration
@@ -111,12 +106,6 @@ func (a *App) start() error {
 		return err
 	}
 
-	// Inject CSS
-	a.renderer.AddCSSList(a.cssCache)
-
-	// Inject JS
-	a.renderer.AddJSList(a.jsCache)
-
 	// Run the renderer
 	return a.renderer.Run()
 }
@@ -125,16 +114,4 @@ func (a *App) start() error {
 // with the application
 func (a *App) Bind(object interface{}) {
 	a.bindingManager.bind(object)
-}
-
-// AddJS adds a piece of Javascript to a cache that
-// gets injected at runtime
-func (a *App) AddJS(js string) {
-	a.jsCache = append(a.jsCache, js)
-}
-
-// AddCSS adds a CSS string to a cache that
-// gets injected at runtime
-func (a *App) AddCSS(js string) {
-	a.cssCache = append(a.cssCache, js)
 }
