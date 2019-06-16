@@ -1,0 +1,14 @@
+{
+  "name": "React JS",
+  "version": "1.0.0",
+  "shortdescription": "Create React App v3 template",
+  "description": "Create React App v3 standar tooling",
+  "install": "npm install",
+  "build": "npm run build",
+  "author": "bh90210 <ktc@pm.me>",
+  "created": "2019-06-07 18:23:48.666414555 +0300 EEST m=+223.934866008",
+  "frontenddir": "frontend",
+  "serve": "npm run start",
+  "bridge": "src",
+  "wailsdir": ""
+}

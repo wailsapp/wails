@@ -11,3 +11,4 @@ Wails is what it is because of the time and effort given by these great people. 
 * [fred2104](https://github.com/fishfishfish2104)
 * [intelwalk](https://github.com/intelwalk)
 * [Mark Stenglein](https://github.com/ocelotsloth)
+* [admin_3.exe](https://github.com/bh90210)
