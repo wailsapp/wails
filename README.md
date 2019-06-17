@@ -18,6 +18,7 @@ The traditional method of providing web interfaces to Go programs is via a built
 
 - Use standard Go libraries/frameworks for the backend
 - Use any frontend technology to build your UI
+- Quickly create Vue, Vuetify or React frontends for your Go programs
 - Expose Go methods/functions to the frontend via a single bind command
 - Uses native rendering engines - no embedded browser
 - Shared events system
@@ -97,7 +98,7 @@ Without the following people, this project would never have existed:
   * [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been immense. More patience than you can throw a stick at (Not long now Dustin!).
   * [Serge Zaitsev](https://github.com/zserge) - Creator of [Webview](https://github.com/zserge/webview) which Wails uses for the windowing.
 
-And without [these people](CONTRIBUTORS.md), it wouldn't be what it is today.
+And without [these people](CONTRIBUTORS.md), it wouldn't be what it is today. A huge thank you to each and every one of you!
 
 Special Mentions:
 
