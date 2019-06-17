@@ -77,10 +77,16 @@ func GetLinuxDistroInfo() *DistroInfo {
 		re := regexp.MustCompile(`^NAME=(.*)\n`)
 		// extract the distro name
 		osName := string(re.FindSubmatch(osRelease)[1])
-		// Check distro name against list of RedHat distros
-		if osName == "Fedora" || osName == "CentOS" {
-			//if it matches set result.Distribution to RedHat
+		// strip quotations
+		osName = strings.Trim(osName, "\"")
+		// Check distro name against list of distros
+		switch osName {
+		case "Fedora":
 			result.Distribution = RedHat
+		case "CentOS":
+			result.Distribution = RedHat
+		case "Arch Linux":
+			result.Distribution = Arch
 		}
 	}
 	return result

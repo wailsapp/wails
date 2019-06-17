@@ -21,13 +21,6 @@ type webViewRenderer struct {
 	config       *AppConfig
 	eventManager *eventManager
 	bindingCache []string
-	frameworkJS  string
-	frameworkCSS string
-
-	// This is a list of all the JS/CSS that needs injecting
-	// It will get injected in order
-	jsCache  []string
-	cssCache []string
 }
 
 // Initialise sets up the WebView
@@ -175,13 +168,13 @@ func (w *webViewRenderer) Run() error {
 				w.evalJSSync(binding)
 			}
 
-			// Inject Framework
-			if w.frameworkJS != "" {
-				w.evalJSSync(w.frameworkJS)
-			}
-			if w.frameworkCSS != "" {
-				w.injectCSS(w.frameworkCSS)
-			}
+			// // Inject Framework
+			// if w.frameworkJS != "" {
+			// 	w.evalJSSync(w.frameworkJS)
+			// }
+			// if w.frameworkCSS != "" {
+			// 	w.injectCSS(w.frameworkCSS)
+			// }
 
 			// Inject user CSS
 			if w.config.CSS != "" {
@@ -197,16 +190,6 @@ func (w *webViewRenderer) Run() error {
 				defaultCSS := mewn.String("./wailsruntimeassets/default/wails.css")
 
 				w.injectCSS(defaultCSS)
-			}
-
-			// Inject all the CSS files that have been added
-			for _, css := range w.cssCache {
-				w.injectCSS(css)
-			}
-
-			// Inject all the JS files that have been added
-			for _, js := range w.jsCache {
-				w.evalJSSync(js)
 			}
 
 			// Inject user JS
@@ -287,17 +270,6 @@ func (w *webViewRenderer) SelectSaveFile() string {
 	}()
 	wg.Wait()
 	return result
-}
-
-// AddJS adds a piece of Javascript to a cache that
-// gets injected at runtime
-func (w *webViewRenderer) AddJSList(jsCache []string) {
-	w.jsCache = jsCache
-}
-
-// AddCSSList sets the cssCache to the given list of strings
-func (w *webViewRenderer) AddCSSList(cssCache []string) {
-	w.cssCache = cssCache
 }
 
 // Callback sends a callback to the frontend

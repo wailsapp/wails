@@ -37,10 +37,6 @@ type Headless struct {
 	appConfig    *AppConfig
 	eventManager *eventManager
 	bindingCache []string
-	frameworkJS  string
-	frameworkCSS string
-	jsCache      []string
-	cssCache     []string
 
 	// Headless specific
 	initialisationJS []string
@@ -188,18 +184,6 @@ func (h *Headless) SelectDirectory() string {
 func (h *Headless) SelectSaveFile() string {
 	h.log.Warn("SelectSaveFile() unsupported in bridge mode")
 	return ""
-}
-
-// AddJSList adds a slice of JS strings to the list of js
-// files injected at startup
-func (h *Headless) AddJSList(jsCache []string) {
-	h.jsCache = jsCache
-}
-
-// AddCSSList adds a slice of CSS strings to the list of css
-// files injected at startup
-func (h *Headless) AddCSSList(cssCache []string) {
-	h.cssCache = cssCache
 }
 
 // Callback sends a callback to the frontend
