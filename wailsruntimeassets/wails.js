@@ -200,6 +200,11 @@
 		})
 	}
 
+	// systemCall is used to call wails methods from the frontend
+	function systemCall(method, data) {
+		return call(".wails." + method, data);
+	}
+
 	// Called by the backend to return data to a previously called
 	// binding invocation
 	function callback(incomingMessage) {
@@ -284,6 +289,17 @@
 
 
 	/************************************************************/
+
+	/************************* Browser **************************/
+
+
+	function openURL(url) {
+		return systemCall("browser.openURL", url);
+	}
+
+	window.wails.browser = {
+		openURL
+	}
 
 	/************************* Logging **************************/
 
