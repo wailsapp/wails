@@ -304,7 +304,7 @@
 	window.wails.Browser = {
 		OpenURL,
 		OpenFile,
-	}
+	};
 
 	/************************* Logging **************************/
 
