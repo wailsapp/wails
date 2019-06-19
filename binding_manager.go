@@ -17,6 +17,7 @@ binding:
 type bindingManager struct {
 	methods          map[string]*boundMethod
 	functions        map[string]*boundFunction
+	internalMethods  *internalMethods
 	initMethods      []*boundMethod
 	log              *CustomLogger
 	renderer         Renderer
@@ -27,9 +28,10 @@ type bindingManager struct {
 
 func newBindingManager() *bindingManager {
 	result := &bindingManager{
-		methods:   make(map[string]*boundMethod),
-		functions: make(map[string]*boundFunction),
-		log:       newCustomLogger("Bind"),
+		methods:         make(map[string]*boundMethod),
+		functions:       make(map[string]*boundFunction),
+		log:             newCustomLogger("Bind"),
+		internalMethods: newInternalMethods(),
 	}
 	return result
 }
@@ -163,6 +165,11 @@ func (b *bindingManager) bind(object interface{}) {
 	b.objectsToBind = append(b.objectsToBind, object)
 }
 
+func (b *bindingManager) processInternalCall(callData *callData) (interface{}, error) {
+	// Strip prefix
+	return b.internalMethods.processCall(callData)
+}
+
 func (b *bindingManager) processFunctionCall(callData *callData) (interface{}, error) {
 	// Return values
 	var result []reflect.Value
@@ -254,6 +261,8 @@ func (b *bindingManager) processCall(callData *callData) (result interface{}, er
 		result, err = b.processFunctionCall(callData)
 	case 2:
 		result, err = b.processMethodCall(callData)
+	case 3:
+		result, err = b.processInternalCall(callData)
 	default:
 		result = nil
 		err = fmt.Errorf("Invalid binding name '%s'", callData.BindingName)
