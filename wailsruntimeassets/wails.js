@@ -293,12 +293,17 @@
 	/************************* Browser **************************/
 
 
-	function openURL(url) {
-		return systemCall("browser.openURL", url);
+	function OpenURL(url) {
+		return systemCall("Browser.OpenURL", url);
 	}
 
-	window.wails.browser = {
-		openURL
+	function OpenFile(filename) {
+		return systemCall("Browser.OpenFile", filename);
+	}
+
+	window.wails.Browser = {
+		OpenURL,
+		OpenFile,
 	}
 
 	/************************* Logging **************************/

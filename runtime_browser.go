@@ -18,3 +18,8 @@ func newRuntimeBrowser() *RuntimeBrowser {
 func (r *RuntimeBrowser) OpenURL(url string) error {
 	return browser.OpenURL(url)
 }
+
+// OpenFile opens the given file in the system's default browser
+func (r *RuntimeBrowser) OpenFile(filePath string) error {
+	return browser.OpenFile(filePath)
+}
