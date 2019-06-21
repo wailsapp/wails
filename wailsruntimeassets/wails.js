@@ -259,7 +259,7 @@
 					try {
 						parsedData = JSON.parse(data);
 					} catch (e) {
-						wails.Log.Error("Invalid JSON data sent to notify. Event name = " + eventName)
+						wails.Log.Error("Invalid JSON data sent to notify. Event name = " + eventName);
 					}
 				}
 				element.apply(null, parsedData);
@@ -289,7 +289,7 @@
 		return function (eventName, eventData) {
 			console.warn('Method events.' + oldName + ' has been deprecated. Please use Events.' + newName);
 			return fn(eventName, eventData);
-		}
+		};
 	}
 
 	// Deprecated Events calls
@@ -346,7 +346,7 @@
 		return function (message) {
 			console.warn('Method Log.' + oldName + ' has been deprecated. Please use Log.' + newName);
 			return fn(message);
-		}
+		};
 	}
 
 	function logDebug(message) {
