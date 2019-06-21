@@ -167,7 +167,7 @@ function startBridge() {
 
         // Now wails runtime is loaded, wails for the ready event
         // and callback to the main app
-        window.wails.events.on("wails:loaded", function () {
+        window.wails.Events.On("wails:loaded", function () {
           window.wailsbridge.log("Wails Ready");
           if (window.wailsbridge.callback) {
             window.wailsbridge.log("Notifying application");
