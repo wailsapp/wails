@@ -43,7 +43,7 @@
 		var script = document.createElement("script");
 		script.text = js;
 		document.body.appendChild(script);
-		window.wails.events.emit(callbackID);
+		window.wails.Events.Emit(callbackID);
 	}
 
 	// -------------- CSS ---------------
@@ -217,8 +217,8 @@
 		try {
 			message = JSON.parse(incomingMessage);
 		} catch (e) {
-			wails.log.debug("Invalid JSON passed to callback: " + e.message);
-			wails.log.debug("Message: " + incomingMessage);
+			wails.Log.Debug("Invalid JSON passed to callback: " + e.message);
+			wails.Log.Debug("Message: " + incomingMessage);
 			return;
 		}
 		callbackID = message.callbackid;
@@ -259,7 +259,7 @@
 					try {
 						parsedData = JSON.parse(data);
 					} catch (e) {
-						wails.log.error("Invalid JSON data sent to notify. Event name = " + eventName)
+						wails.Log.Error("Invalid JSON data sent to notify. Event name = " + eventName)
 					}
 				}
 				element.apply(null, parsedData);
@@ -284,8 +284,26 @@
 		external.invoke(JSON.stringify(message));
 	}
 
+	function deprecatedEventsFunction(fn, oldName) {
+		var newName = oldName[0].toUpperCase() + oldName.substring(1);
+		return function (eventName, eventData) {
+			console.warn('Method events.' + oldName + ' has been deprecated. Please use Events.' + newName);
+			return fn(eventName, eventData);
+		}
+	}
+
+	// Deprecated Events calls
+	window.wails.events = {
+		emit: deprecatedEventsFunction(emit, 'emit'),
+		on: deprecatedEventsFunction(on, 'on'),
+	};
+
 	// Events calls
-	window.wails.events = { emit: emit, on: on };
+	window.wails.Events = {
+		Emit: emit,
+		On: on
+	};
+
 
 
 	/************************************************************/
@@ -323,6 +341,14 @@
 		external.invoke(JSON.stringify(message));
 	}
 
+	function deprecatedLogFunction(fn, oldName) {
+		var newName = oldName[0].toUpperCase() + oldName.substring(1);
+		return function (message) {
+			console.warn('Method Log.' + oldName + ' has been deprecated. Please use Log.' + newName);
+			return fn(message);
+		}
+	}
+
 	function logDebug(message) {
 		sendLogMessage("debug", message);
 	}
@@ -340,12 +366,21 @@
 	}
 
 	window.wails.log = {
-		debug: logDebug,
-		info: logInfo,
-		warning: logWarning,
-		error: logError,
-		fatal: logFatal,
+		debug: deprecatedLogFunction(logDebug, 'debug'),
+		info: deprecatedLogFunction(logInfo, 'info'),
+		warning: deprecatedLogFunction(logWarning, 'warning'),
+		error: deprecatedLogFunction(logError, 'error'),
+		fatal: deprecatedLogFunction(logFatal, 'fatal'),
 	};
+
+	window.wails.Log = {
+		Debug: logDebug,
+		Info: logInfo,
+		Warning: logWarning,
+		Error: logError,
+		Fatal: logFatal,
+	};
+
 
 	/************************** Exports *************************/
 
@@ -357,12 +392,12 @@
 		callbacks: callbacks,
 		injectCSS: injectCSS,
 		addScript: addScript,
-	}
+	};
 
 
 	/************************************************************/
 
 	// Notify backend that the runtime has finished loading
-	window.wails.events.emit("wails:loaded");
+	window.wails.Events.Emit("wails:loaded");
 
 })()
