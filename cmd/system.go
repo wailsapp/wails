@@ -307,7 +307,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 					logger.Green("Library '%s' installed.", library.Name)
 				}
 			default:
-				return false, fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.DistributorID, library.Name)
+				return false, RequestSupportForDistribution(distroInfo, library.Name)
 			}
 		}
 	}

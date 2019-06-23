@@ -3,9 +3,12 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/pkg/browser"
 )
 
 // LinuxDistribution is of type int
@@ -123,4 +126,29 @@ func RpmInstalled(packageName string) (bool, error) {
 	}
 	_, _, exitCode, _ := rpm.Run("--query", packageName)
 	return exitCode == 0, nil
+}
+
+// RequestSupportForDistribution promts the user to submit a request to support their
+// currently unsupported distribution
+func RequestSupportForDistribution(distroInfo *DistroInfo, libraryName string) error {
+	var logger = NewLogger()
+	defaultError := fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.DistributorID, libraryName)
+
+	logger.Yellow("Distribution '%s' is not currently supported, but we would love to!", distroInfo.DistributorID)
+	q := fmt.Sprintf("Would you like to submit a request to support distribution '%s'?", distroInfo.DistributorID)
+	result := Prompt(q, "yes")
+	if strings.ToLower(result) != "yes" {
+		return defaultError
+	}
+
+	title := fmt.Sprintf("Support Distribution '%s'", distroInfo.DistributorID)
+
+	body := fmt.Sprintf("**Description**\nDistribution '%s' is curently unsupported.\n\n**Further Information**\n\n**Please add any extra information here, EG: libraries that are needed to make the distribution work, or commands to install them", distroInfo.DistributorID)
+	fullURL := "https://github.com/wailsapp/wails/issues/new?"
+	params := "title=" + title + "&body=" + body
+
+	fmt.Println("Opening browser to file request.")
+	browser.OpenURL(fullURL + url.PathEscape(params))
+	return nil
+
 }
