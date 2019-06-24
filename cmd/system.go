@@ -295,7 +295,6 @@ func CheckDependencies(logger *Logger) (bool, error) {
 					logger.Green("Library '%s' installed.", library.Name)
 				}
 			case RedHat:
-
 				installed, err := RpmInstalled(library.Name)
 				if err != nil {
 					return false, err
