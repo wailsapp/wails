@@ -23,6 +23,8 @@ const (
 	Arch
 	// RedHat linux distribution
 	RedHat
+	// Debian distribution
+	Debian
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -62,8 +64,8 @@ func GetLinuxDistroInfo() *DistroInfo {
 						result.Distribution = Ubuntu
 					case "Arch", "ManjaroLinux":
 						result.Distribution = Arch
-						// case "Debian":
-						// 	result.Distribution = Debian
+					case "Debian":
+						result.Distribution = Debian
 					}
 				case "Description":
 					result.Description = value
@@ -109,8 +111,8 @@ func GetLinuxDistroInfo() *DistroInfo {
 			result.Distribution = RedHat
 		case "Arch Linux":
 			result.Distribution = Arch
-		// case "Debian GNU/Linux":
-		// 	result.Distribution = Debian
+		case "Debian GNU/Linux":
+			result.Distribution = Debian
 		default:
 			result.Distribution = Unknown
 			result.DistributorID = osName
