@@ -49,11 +49,10 @@ func getRequiredProgramsLinux() *Prerequisites {
 	result := &Prerequisites{}
 	distroInfo := GetLinuxDistroInfo()
 	switch distroInfo.Distribution {
-	case Ubuntu:
+	case Ubuntu, Debian:
 		result.Add(newPrerequisite("gcc", "Please install with `sudo apt install build-essentials` and try again"))
 		result.Add(newPrerequisite("pkg-config", "Please install with `sudo apt install pkg-config` and try again"))
 		result.Add(newPrerequisite("npm", "Please install with `sudo snap install node --channel=12/stable --classic` and try again"))
-
 	default:
 		result.Add(newPrerequisite("gcc", "Please install with your system package manager and try again"))
 		result.Add(newPrerequisite("pkg-config", "Please install with your system package manager and try again"))
