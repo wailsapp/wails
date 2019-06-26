@@ -143,11 +143,13 @@ type ProjectOptions struct {
 	log              *Logger
 	templates        *TemplateHelper
 	selectedTemplate *TemplateDetails
+	WailsVersion     string
 }
 
 // Defaults sets the default project template
 func (po *ProjectOptions) Defaults() {
 	po.Template = "vuebasic"
+	po.WailsVersion = Version
 }
 
 // PromptForInputs asks the user to input project details
