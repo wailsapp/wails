@@ -160,6 +160,9 @@ func (t *TemplateHelper) InstallTemplate(projectPath string, projectOptions *Pro
 
 	templatePath := projectOptions.selectedTemplate.Path
 
+	// Save the version
+	projectOptions.WailsVersion = Version
+
 	templateJSONFilename := filepath.Join(templatePath, t.metadataFilename)
 
 	templateFiles := templateFilenames.Filter(func(filename string) bool {
