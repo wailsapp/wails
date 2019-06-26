@@ -186,7 +186,7 @@ func RequestSupportForDistribution(distroInfo *DistroInfo, libraryName string) e
 	str.WriteString(fmt.Sprintf("| Distribution Version   | %s |\n", distroInfo.Release))
 	str.WriteString(fmt.Sprintf("| Discovered by   | %s |\n", distroInfo.DiscoveredBy))
 
-	body := fmt.Sprintf("**Description**\nDistribution '%s' is curently unsupported.\n\n**Further Information**\n\n%s\n\n*Please add any extra information here, EG: libraries that are needed to make the distribution work, or commands to install them*", distroInfo.DistributorID, str.String())
+	body := fmt.Sprintf("**Description**\nDistribution '%s' is currently unsupported.\n\n**Further Information**\n\n%s\n\n*Please add any extra information here, EG: libraries that are needed to make the distribution work, or commands to install them*", distroInfo.DistributorID, str.String())
 	fullURL := "https://github.com/wailsapp/wails/issues/new?"
 	params := "title=" + title + "&body=" + body
 
