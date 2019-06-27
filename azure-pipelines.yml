@@ -6,8 +6,17 @@
 trigger:
 - develop
 
+strategy:
+  matrix:
+    linux:
+      imageName: 'ubuntu-16.04'
+    mac:
+      imageName: 'macos-10.13'
+    # windows:
+    #   imageName: 'vs2017-win2016'
+
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: $(imageName)
 
 variables:
   GOBIN:  '$(GOPATH)/bin' # Go binaries path
@@ -17,7 +26,9 @@ variables:
   modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
 
 steps:
-- script: |
+
+# Linux
+- bash: |
     mkdir -p '$(GOBIN)'
     mkdir -p '$(GOPATH)/pkg'
     mkdir -p '$(modulePath)'
@@ -28,10 +39,12 @@ steps:
     echo '##vso[task.prependpath]$(GOROOT)/bin'
   displayName: 'Set up the Go workspace'
 
-- script: |
+- bash: |
     go version
     go get -v -t -d ./...
     cd cmd/wails
     go build -v .
   workingDirectory: '$(modulePath)'
   displayName: 'Get dependencies, then build'
+
+# Windows TBD
