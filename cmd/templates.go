@@ -16,18 +16,26 @@ import (
 
 // TemplateMetadata holds all the metadata for a Wails template
 type TemplateMetadata struct {
-	Name             string `json:"name"`
-	Version          string `json:"version"`
-	ShortDescription string `json:"shortdescription"`
-	Description      string `json:"description"`
-	Install          string `json:"install"`
-	Build            string `json:"build"`
-	Author           string `json:"author"`
-	Created          string `json:"created"`
-	FrontendDir      string `json:"frontenddir"`
-	Serve            string `json:"serve"`
-	Bridge           string `json:"bridge"`
-	WailsDir         string `json:"wailsdir"`
+	Name                 string                `json:"name"`
+	Version              string                `json:"version"`
+	ShortDescription     string                `json:"shortdescription"`
+	Description          string                `json:"description"`
+	Install              string                `json:"install"`
+	Build                string                `json:"build"`
+	Author               string                `json:"author"`
+	Created              string                `json:"created"`
+	FrontendDir          string                `json:"frontenddir"`
+	Serve                string                `json:"serve"`
+	Bridge               string                `json:"bridge"`
+	WailsDir             string                `json:"wailsdir"`
+	TemplateDependencies []*TemplateDependency `json:"dependencies,omitempty"`
+}
+
+// TemplateDependency defines a binary dependency for the template
+// EG: ng for angular
+type TemplateDependency struct {
+	Bin  string `json:"bin"`
+	Help string `json:"help"`
 }
 
 // TemplateDetails holds information about a specific template
@@ -151,6 +159,31 @@ func (t *TemplateHelper) GetTemplateFilenames(template *TemplateDetails) (*slice
 // InstallTemplate installs the template given in the project options to the
 // project path given
 func (t *TemplateHelper) InstallTemplate(projectPath string, projectOptions *ProjectOptions) error {
+
+	// Check dependencies before installing
+	dependencies := projectOptions.selectedTemplate.Metadata.TemplateDependencies
+	if dependencies != nil {
+		programHelper := NewProgramHelper()
+		logger := NewLogger()
+		errors := []string{}
+		for _, dep := range dependencies {
+			program := programHelper.FindProgram(dep.Bin)
+			if program == nil {
+				errors = append(errors, dep.Help)
+			}
+		}
+		if len(errors) > 0 {
+			mainError := "template dependencies not installed"
+			if len(errors) == 1 {
+				mainError = errors[0]
+			} else {
+				for _, error := range errors {
+					logger.Red(error)
+				}
+			}
+			return fmt.Errorf(mainError)
+		}
+	}
 
 	// Get template files
 	templateFilenames, err := t.GetTemplateFilenames(projectOptions.selectedTemplate)
