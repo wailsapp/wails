@@ -10,8 +10,8 @@ strategy:
   matrix:
     linux:
       imageName: 'ubuntu-16.04'
-    mac:
-      imageName: 'macos-10.13'
+    # mac:
+    #   imageName: 'macos-10.13'
     # windows:
     #   imageName: 'vs2017-win2016'
 
@@ -43,8 +43,13 @@ steps:
     go version
     go get -v -t -d ./...
     cd cmd/wails
-    go build -v .
+    go install
   workingDirectory: '$(modulePath)'
   displayName: 'Get dependencies, then build'
+
+- bash: |
+    wails version
+  workingDirectory: '$(modulePath)'
+  displayName: 'Check we have output'
 
 # Windows TBD
