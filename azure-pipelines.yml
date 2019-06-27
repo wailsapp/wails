@@ -4,14 +4,14 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/go
 
 trigger:
-- master
+- develop
 
 pool:
   vmImage: 'ubuntu-latest'
 
 variables:
   GOBIN:  '$(GOPATH)/bin' # Go binaries path
-  GOROOT: '/usr/local/go1.11' # Go installation path
+  GOROOT: '/usr/local/go1.12' # Go installation path
   GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
   GOMODULE: 'on'
   modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
@@ -31,6 +31,7 @@ steps:
 - script: |
     go version
     go get -v -t -d ./...
+    cd cmd/wails
     go build -v .
   workingDirectory: '$(modulePath)'
   displayName: 'Get dependencies, then build'
