@@ -191,6 +191,8 @@ function startBridge() {
         var callbackData = message.data.slice(1);
         window.wails._.callback(callbackData);
         break;
+      default:
+        window.wails.Log.Error("Unknown message type received: " + message.data[0])
     }
   }
 
