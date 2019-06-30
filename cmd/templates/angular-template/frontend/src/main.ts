@@ -8,7 +8,6 @@ import 'zone.js'
 
 import Bridge from './wailsbridge';
 
-
 if (environment.production) {
   enableProdMode();
 }
