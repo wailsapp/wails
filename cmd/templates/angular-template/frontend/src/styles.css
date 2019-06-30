@@ -1,0 +1,24 @@
+/* You can add global styles to this file, and also import other style files */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  background-color: #282c34;
+}
+
+p {
+  color: white
+}
+
+h1 {
+  color: white
+}
+
+button {
+  background-color: white;
+  color: black;
+}
