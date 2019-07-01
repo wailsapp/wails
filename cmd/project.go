@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/leaanthony/slicer"
@@ -184,14 +185,18 @@ func (po *ProjectOptions) PromptForInputs() error {
 		po.selectedTemplate = templateDetails[po.Template]
 	} else {
 
-		for _, templateDetail := range templateDetails {
+		keys := make([]string, 0)
+		for k := range templateDetails {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			templateDetail := templateDetails[k]
 			templateList.Add(templateDetail)
 			options.Add(fmt.Sprintf("%s - %s", templateDetail.Metadata.Name, templateDetail.Metadata.ShortDescription))
 		}
 
 		templateIndex := 0
-
-		options.Sort()
 
 		if len(options.AsSlice()) > 1 {
 			templateIndex = PromptSelection("Please select a template", options.AsSlice(), 0)
