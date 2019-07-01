@@ -191,6 +191,8 @@ func (po *ProjectOptions) PromptForInputs() error {
 
 		templateIndex := 0
 
+		options.Sort()
+
 		if len(options.AsSlice()) > 1 {
 			templateIndex = PromptSelection("Please select a template", options.AsSlice(), 0)
 		}
