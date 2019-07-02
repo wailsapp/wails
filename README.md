@@ -10,6 +10,7 @@
    <a href="https://github.com/wailsapp/wails/issues"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="CodeFactor" /></a>
    <a href="https://houndci.com"><img src="https://img.shields.io/badge/Reviewed_by-Hound-8E64B0.svg"/></a>
    <a href="https://github.com/avelino/awesome-go" rel="nofollow"><img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome"></a>
+   <a href="https://dashboard.guardrails.io/default/gh/wailsapp/wails"><img src="https://badges.guardrails.io/wailsapp/wails.svg?token=53657bc22ec360d7673c894fdd70568e918ec581d10d84427ed4de5fe1eeff1a"></a>
 </p>
 
 The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
@@ -45,7 +46,7 @@ Make sure you have the xcode command line tools installed. This can be done by r
 
 ### Linux
 
-#### Ubuntu 18.04
+#### Ubuntu 18.04, Debian 9
 
 `sudo apt install pkg-config build-essential libgtk-3-dev libwebkit2gtk-4.0-dev`
 

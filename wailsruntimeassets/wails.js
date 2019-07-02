@@ -31,7 +31,7 @@
 	function isValidIdentifier(name) {
 		// Don't xss yourself :-)
 		try {
-			new Function("var " + name);
+			new Function('var ' + name);
 			return true;
 		} catch (e) {
 			return false;
@@ -40,10 +40,10 @@
 
 	// -------------- JS ----------------
 	function addScript(js, callbackID) {
-		var script = document.createElement("script");
+		var script = document.createElement('script');
 		script.text = js;
 		document.body.appendChild(script);
-		window.wails.events.emit(callbackID);
+		window.wails.Events.Emit(callbackID);
 	}
 
 	// -------------- CSS ---------------
@@ -75,7 +75,7 @@
 
 			// Is section a valid javascript identifier?
 			if (!isValidIdentifier(section)) {
-				var errMessage = section + " is not a valid javascript identifier.";
+				var errMessage = section + ' is not a valid javascript identifier.';
 				var err = new Error(errMessage);
 				return [null, err];
 			}
@@ -97,9 +97,6 @@
 
 		// Get the actual function/method call name
 		var callName = bindingSections.pop();
-
-		var pathToBinding;
-		var err;
 
 		// Add path to binding
 		var bs = addBindingPath(bindingSections);
@@ -126,12 +123,12 @@
 			// Allow setting timeout to function
 			dynamic.setTimeout = function (newTimeout) {
 				timeout = newTimeout;
-			}
+			};
 
 			// Allow getting timeout to function
 			dynamic.getTimeout = function () {
 				return timeout;
-			}
+			};
 
 			return dynamic;
 		}();
@@ -163,13 +160,13 @@
 			// Create a unique callbackID
 			var callbackID;
 			do {
-				callbackID = bindingName + "-" + randomFunc();
+				callbackID = bindingName + '-' + randomFunc();
 			} while (callbacks[callbackID]);
 
 			// Set timeout
 			if (timeout > 0) {
 				var timeoutHandle = setTimeout(function () {
-					reject(Error("Call to " + bindingName + " timed out. Request ID: " + callbackID));
+					reject(Error('Call to ' + bindingName + ' timed out. Request ID: ' + callbackID));
 				}, timeout);
 			}
 
@@ -178,26 +175,32 @@
 				timeoutHandle: timeoutHandle,
 				reject: reject,
 				resolve: resolve
-			}
+			};
 			try {
 				var payloaddata = JSON.stringify(data);
 				// Create the message
-				message = {
-					type: "call",
+				var message = {
+					type: 'call',
 					callbackid: callbackID,
 					payload: {
 						bindingName: bindingName,
 						data: payloaddata,
 					}
-				}
+				};
 
 				// Make the call
 				var payload = JSON.stringify(message);
 				external.invoke(payload);
 			} catch (e) {
+				// eslint-disable-next-line
 				console.error(e);
 			}
-		})
+		});
+	}
+
+	// systemCall is used to call wails methods from the frontend
+	function systemCall(method, data) {
+		return call('.wails.' + method, data);
 	}
 
 	// Called by the backend to return data to a previously called
@@ -212,15 +215,16 @@
 		try {
 			message = JSON.parse(incomingMessage);
 		} catch (e) {
-			wails.log.debug("Invalid JSON passed to callback: " + e.message);
-			wails.log.debug("Message: " + incomingMessage);
+			window.wails.Log.Debug('Invalid JSON passed to callback: ' + e.message);
+			window.wails.Log.Debug('Message: ' + incomingMessage);
 			return;
 		}
-		callbackID = message.callbackid;
-		callbackData = callbacks[callbackID];
+		var callbackID = message.callbackid;
+		var callbackData = callbacks[callbackID];
 		if (!callbackData) {
-			console.error("Callback '" + callbackID + "' not registed!!!");
-			return
+			// eslint-disable-next-line
+			console.error('Callback \'' + callbackID + '\' not registed!!!');
+			return;
 		}
 		clearTimeout(callbackData.timeoutHandle);
 		delete callbacks[callbackID];
@@ -254,7 +258,7 @@
 					try {
 						parsedData = JSON.parse(data);
 					} catch (e) {
-						wails.log.error("Invalid JSON data sent to notify. Event name = " + eventName)
+						window.wails.Log.Error('Invalid JSON data sent to notify. Event name = ' + eventName);
 					}
 				}
 				element.apply(null, parsedData);
@@ -269,21 +273,56 @@
 		var data = JSON.stringify([].slice.apply(arguments).slice(1));
 
 		// Notify backend
-		message = {
-			type: "event",
+		var message = {
+			type: 'event',
 			payload: {
 				name: eventName,
 				data: data,
 			}
-		}
+		};
 		external.invoke(JSON.stringify(message));
 	}
 
+	function deprecatedEventsFunction(fn, oldName) {
+		var newName = oldName[0].toUpperCase() + oldName.substring(1);
+		return function (eventName, eventData) {
+			// eslint-disable-next-line
+			console.warn('Method events.' + oldName + ' has been deprecated. Please use Events.' + newName);
+			return fn(eventName, eventData);
+		};
+	}
+
+	// Deprecated Events calls
+	window.wails.events = {
+		emit: deprecatedEventsFunction(emit, 'emit'),
+		on: deprecatedEventsFunction(on, 'on'),
+	};
+
 	// Events calls
-	window.wails.events = { emit: emit, on: on };
+	window.wails.Events = {
+		Emit: emit,
+		On: on
+	};
+
 
 
 	/************************************************************/
+
+	/************************* Browser **************************/
+
+
+	function OpenURL(url) {
+		return systemCall('Browser.OpenURL', url);
+	}
+
+	function OpenFile(filename) {
+		return systemCall('Browser.OpenFile', filename);
+	}
+
+	window.wails.Browser = {
+		OpenURL,
+		OpenFile,
+	};
 
 	/************************* Logging **************************/
 
@@ -293,38 +332,56 @@
 
 		// Log Message
 		message = {
-			type: "log",
+			type: 'log',
 			payload: {
 				level: level,
 				message: message,
 			}
-		}
+		};
 		external.invoke(JSON.stringify(message));
 	}
 
+	function deprecatedLogFunction(fn, oldName) {
+		var newName = oldName[0].toUpperCase() + oldName.substring(1);
+		return function (message) {
+			// eslint-disable-next-line
+			console.warn('Method Log.' + oldName + ' has been deprecated. Please use Log.' + newName);
+			return fn(message);
+		};
+	}
+
 	function logDebug(message) {
-		sendLogMessage("debug", message);
+		sendLogMessage('debug', message);
 	}
 	function logInfo(message) {
-		sendLogMessage("info", message);
+		sendLogMessage('info', message);
 	}
 	function logWarning(message) {
-		sendLogMessage("warning", message);
+		sendLogMessage('warning', message);
 	}
 	function logError(message) {
-		sendLogMessage("error", message);
+		sendLogMessage('error', message);
 	}
 	function logFatal(message) {
-		sendLogMessage("fatal", message);
+		sendLogMessage('fatal', message);
 	}
 
 	window.wails.log = {
-		debug: logDebug,
-		info: logInfo,
-		warning: logWarning,
-		error: logError,
-		fatal: logFatal,
+		debug: deprecatedLogFunction(logDebug, 'debug'),
+		info: deprecatedLogFunction(logInfo, 'info'),
+		warning: deprecatedLogFunction(logWarning, 'warning'),
+		error: deprecatedLogFunction(logError, 'error'),
+		fatal: deprecatedLogFunction(logFatal, 'fatal'),
 	};
+
+	window.wails.Log = {
+		Debug: logDebug,
+		Info: logInfo,
+		Warning: logWarning,
+		Error: logError,
+		Fatal: logFatal,
+	};
+
 
 	/************************** Exports *************************/
 
@@ -336,12 +393,12 @@
 		callbacks: callbacks,
 		injectCSS: injectCSS,
 		addScript: addScript,
-	}
+	};
 
 
 	/************************************************************/
 
 	// Notify backend that the runtime has finished loading
-	window.wails.events.emit("wails:loaded");
+	window.wails.Events.Emit('wails:loaded');
 
-})()
+})();

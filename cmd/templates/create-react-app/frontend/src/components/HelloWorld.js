@@ -26,22 +26,8 @@ class HelloWorld extends React.Component {
     this.setState({ showModal: false });
   }
 
-
-  startAsync() {
-    this.setState({
-      loading: true
-    });
-
-    window.backend.basic().then(result =>
-      this.setState({
-        loading: false,
-        result
-      })
-    );
-  }
-
   render() {
-    const { loading, result } = this.state;
+    const { result } = this.state;
     return (
       <div className="App">
         <button onClick={this.handleOpenModal} type="button">

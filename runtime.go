@@ -6,6 +6,7 @@ type Runtime struct {
 	Log        *RuntimeLog
 	Dialog     *RuntimeDialog
 	Window     *RuntimeWindow
+	Browser    *RuntimeBrowser
 	FileSystem *RuntimeFileSystem
 }
 
@@ -15,6 +16,7 @@ func newRuntime(eventManager *eventManager, renderer Renderer) *Runtime {
 		Log:        newRuntimeLog(),
 		Dialog:     newRuntimeDialog(renderer),
 		Window:     newRuntimeWindow(renderer),
+		Browser:    newRuntimeBrowser(),
 		FileSystem: newRuntimeFileSystem(),
 	}
 }
