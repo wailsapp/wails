@@ -25,6 +25,8 @@ const (
 	RedHat
 	// Debian distribution
 	Debian
+	// Zorin distribution
+	Zorin
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -66,6 +68,8 @@ func GetLinuxDistroInfo() *DistroInfo {
 						result.Distribution = Arch
 					case "Debian":
 						result.Distribution = Debian
+					case "Zorin":
+						result.Distribution = Zorin
 					}
 				case "Description":
 					result.Description = value

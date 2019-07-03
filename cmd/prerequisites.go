@@ -49,7 +49,7 @@ func getRequiredProgramsLinux() *Prerequisites {
 	result := &Prerequisites{}
 	distroInfo := GetLinuxDistroInfo()
 	switch distroInfo.Distribution {
-	case Ubuntu, Debian:
+	case Ubuntu, Debian, Zorin:
 		result.Add(newPrerequisite("gcc", "Please install with `sudo apt install build-essentials` and try again"))
 		result.Add(newPrerequisite("pkg-config", "Please install with `sudo apt install pkg-config` and try again"))
 		result.Add(newPrerequisite("npm", "Please install with `sudo snap install node --channel=12/stable --classic` and try again"))
@@ -93,7 +93,7 @@ func getRequiredLibrariesLinux() (*Prerequisites, error) {
 	result := &Prerequisites{}
 	distroInfo := GetLinuxDistroInfo()
 	switch distroInfo.Distribution {
-	case Ubuntu:
+	case Ubuntu, Debian, Zorin:
 		result.Add(newPrerequisite("libgtk-3-dev", "Please install with `sudo apt install libgtk-3-dev` and try again"))
 		result.Add(newPrerequisite("libwebkit2gtk-4.0-dev", "Please install with `sudo apt install libwebkit2gtk-4.0-dev` and try again"))
 	case Arch:
