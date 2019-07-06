@@ -27,6 +27,9 @@ const (
 	Debian
 	// Gentoo distribution
 	Gentoo
+	// Zorin distribution
+	Zorin
+
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -70,6 +73,8 @@ func GetLinuxDistroInfo() *DistroInfo {
 						result.Distribution = Debian
 					case "Gentoo":
 						result.Distribution = Gentoo
+					case "Zorin":
+						result.Distribution = Zorin
 					}
 				case "Description":
 					result.Description = value

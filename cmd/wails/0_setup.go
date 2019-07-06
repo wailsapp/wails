@@ -96,7 +96,7 @@ func checkLibraries() (errors bool, err error) {
 		distroInfo := cmd.GetLinuxDistroInfo()
 		for _, library := range *requiredLibraries {
 			switch distroInfo.Distribution {
-			case cmd.Ubuntu, cmd.Debian:
+			case cmd.Ubuntu, cmd.Zorin, cmd.Debian:
 				installed, err := cmd.DpkgInstalled(library.Name)
 				if err != nil {
 					return false, err

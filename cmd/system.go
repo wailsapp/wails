@@ -272,7 +272,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 		distroInfo := GetLinuxDistroInfo()
 		for _, library := range *requiredLibraries {
 			switch distroInfo.Distribution {
-			case Ubuntu, Debian:
+			case Ubuntu, Zorin, Debian:
 				installed, err := DpkgInstalled(library.Name)
 				if err != nil {
 					return false, err
