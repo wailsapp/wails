@@ -58,6 +58,10 @@ Make sure you have the xcode command line tools installed. This can be done by r
 
 `sudo yum install webkit2gtk-devel gtk3-devel`
 
+#### Solus
+
+`sudo eopkg it -c system.devel libwebkit-gtk-devel gtk3-devel`
+
 Note: If you have successfully installed these dependencies on a different flavour of Linux, please consider submitting a PR.
 
 ### Windows
