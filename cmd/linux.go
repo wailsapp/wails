@@ -29,7 +29,6 @@ const (
 	Gentoo
 	// Zorin distribution
 	Zorin
-
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -75,6 +74,8 @@ func GetLinuxDistroInfo() *DistroInfo {
 						result.Distribution = Gentoo
 					case "Zorin":
 						result.Distribution = Zorin
+					case "Fedora":
+						result.Distribution = RedHat
 					}
 				case "Description":
 					result.Description = value
