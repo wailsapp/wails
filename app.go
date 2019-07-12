@@ -20,7 +20,7 @@ var BuildMode = cmd.BuildModeProd
 
 // App defines the main application struct
 type App struct {
-	config         *Config              // The Application configuration object
+	config         *AppConfig              // The Application configuration object
 	cli            *cmd.Cli             // In debug mode, we have a cli
 	renderer       interfaces.Renderer    // The renderer is what we will render the app to
 	logLevel       string               // The log level of the app
@@ -33,8 +33,8 @@ type App struct {
 
 // CreateApp creates the application window with the given configuration
 // If none given, the defaults are used
-func CreateApp(optionalConfig ...*Config) *App {
-	var userConfig *Config
+func CreateApp(optionalConfig ...*AppConfig) *App {
+	var userConfig *AppConfig
 	if len(optionalConfig) > 0 {
 		userConfig = optionalConfig[0]
 	}
