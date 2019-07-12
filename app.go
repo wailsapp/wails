@@ -2,6 +2,13 @@ package wails
 
 import (
 	"github.com/wailsapp/wails/cmd"
+	"github.com/wailsapp/wails/lib/logger"
+	"github.com/wailsapp/wails/runtime/go/runtime"
+	"github.com/wailsapp/wails/lib/renderer"
+	"github.com/wailsapp/wails/lib/binding"
+	"github.com/wailsapp/wails/lib/ipc"
+	"github.com/wailsapp/wails/lib/event"
+	"github.com/wailsapp/wails/lib/interfaces"
 )
 
 // -------------------------------- Compile time Flags ------------------------------
@@ -13,35 +20,35 @@ var BuildMode = cmd.BuildModeProd
 
 // App defines the main application struct
 type App struct {
-	config         *AppConfig      // The Application configuration object
-	cli            *cmd.Cli        // In debug mode, we have a cli
-	renderer       Renderer        // The renderer is what we will render the app to
-	logLevel       string          // The log level of the app
-	ipc            *ipcManager     // Handles the IPC calls
-	log            *CustomLogger   // Logger
-	bindingManager *bindingManager // Handles binding of Go code to renderer
-	eventManager   *eventManager   // Handles all the events
-	runtime        *Runtime        // The runtime object for registered structs
+	config         *Config              // The Application configuration object
+	cli            *cmd.Cli             // In debug mode, we have a cli
+	renderer       interfaces.Renderer    // The renderer is what we will render the app to
+	logLevel       string               // The log level of the app
+	ipc            interfaces.IPCManager          // Handles the IPC calls
+	log            *logger.CustomLogger // Logger
+	bindingManager interfaces.BindingManager     // Handles binding of Go code to renderer
+	eventManager   interfaces.EventManager        // Handles all the events
+	runtime        interfaces.Runtime     // The runtime object for registered structs
 }
 
 // CreateApp creates the application window with the given configuration
 // If none given, the defaults are used
-func CreateApp(optionalConfig ...*AppConfig) *App {
-	var userConfig *AppConfig
+func CreateApp(optionalConfig ...*Config) *App {
+	var userConfig *Config
 	if len(optionalConfig) > 0 {
 		userConfig = optionalConfig[0]
 	}
 
 	result := &App{
 		logLevel:       "info",
-		renderer:       &webViewRenderer{},
-		ipc:            newIPCManager(),
-		bindingManager: newBindingManager(),
-		eventManager:   newEventManager(),
-		log:            newCustomLogger("App"),
+		renderer:       renderer.NewWebView(),
+		ipc:            ipc.NewManager(),
+		bindingManager: binding.NewManager(),
+		eventManager:   event.NewManager(),
+		log:            logger.NewCustomLogger("App"),
 	}
 
-	appconfig, err := newAppConfig(userConfig)
+	appconfig, err := newConfig(userConfig)
 	if err != nil {
 		result.log.Fatalf("Cannot use custom HTML: %s", err.Error())
 	}
@@ -75,14 +82,14 @@ func (a *App) Run() error {
 func (a *App) start() error {
 
 	// Set the log level
-	setLogLevel(a.logLevel)
+	logger.SetLogLevel(a.logLevel)
 
 	// Log starup
 	a.log.Info("Starting")
 
 	// Check if we are to run in headless mode
 	if BuildMode == cmd.BuildModeBridge {
-		a.renderer = &Headless{}
+		a.renderer = &renderer.Headless{}
 	}
 
 	// Initialise the renderer
@@ -92,16 +99,16 @@ func (a *App) start() error {
 	}
 
 	// Start event manager and give it our renderer
-	a.eventManager.start(a.renderer)
+	a.eventManager.Start(a.renderer)
 
 	// Start the IPC Manager and give it the event manager and binding manager
-	a.ipc.start(a.eventManager, a.bindingManager)
+	a.ipc.Start(a.eventManager, a.bindingManager)
 
 	// Create the runtime
-	a.runtime = newRuntime(a.eventManager, a.renderer)
+	a.runtime = runtime.NewRuntime(a.eventManager, a.renderer)
 
 	// Start binding manager and give it our renderer
-	err = a.bindingManager.start(a.renderer, a.runtime)
+	err = a.bindingManager.Start(a.renderer, a.runtime)
 	if err != nil {
 		return err
 	}
@@ -113,5 +120,5 @@ func (a *App) start() error {
 // Bind allows the user to bind the given object
 // with the application
 func (a *App) Bind(object interface{}) {
-	a.bindingManager.bind(object)
+	a.bindingManager.Bind(object)
 }

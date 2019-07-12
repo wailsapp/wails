@@ -271,7 +271,7 @@ func InstallBridge(caller string, projectDir string, projectOptions *ProjectOpti
 	}
 
 	// Copy bridge to project
-	bridgeAssets := mewn.Group("../wailsruntimeassets/bridge/")
+	bridgeAssets := mewn.Group("../runtime/bridge/")
 	bridgeFileData := bridgeAssets.Bytes(bridgeFile)
 	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, projectOptions.FrontEnd.Bridge, "wailsbridge.js")
 	err := fs.CreateFile(bridgeFileTarget, bridgeFileData)
