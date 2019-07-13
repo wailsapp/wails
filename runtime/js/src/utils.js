@@ -7,6 +7,7 @@
 The lightweight framework for web-like apps
 (c) Lea Anthony 2019-present
 */
+/* jshint esversion: 6 */
 
 import { Emit } from './events';
 
