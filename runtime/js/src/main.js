@@ -20,24 +20,24 @@ window.backend = {};
 
 // Setup internal calls
 var internal = {
-  NewBinding,
-  Callback,
-  Notify,
-  AddScript,
-  InjectCSS
-}
+	NewBinding,
+	Callback,
+	Notify,
+	AddScript,
+	InjectCSS
+};
 
 // Setup runtime structure
 var runtime = {
-  Log,
-  Events: {
-    On,
-    Emit,
-    Heartbeat,
-    Acknowledge,
-  },
-  _: internal,
-}
+	Log,
+	Events: {
+		On,
+		Emit,
+		Heartbeat,
+		Acknowledge,
+	},
+	_: internal,
+};
 
 // Augment global
 Object.assign(window.wails, runtime);

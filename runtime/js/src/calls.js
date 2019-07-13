@@ -99,16 +99,17 @@ export function Callback(incomingMessage) {
   try {
     message = JSON.parse(incomingMessage);
   } catch (e) {
-    Debug('Invalid JSON passed to callback: ' + e.message);
-    Debug('Message: ' + incomingMessage);
-    return;
+    const error = `Invalid JSON passed to callback: ${e.message}. Message: ${incomingMessage}`;
+    Debug(error);
+    throw new Error(error);
   }
   var callbackID = message.callbackid;
   var callbackData = callbacks[callbackID];
   if (!callbackData) {
     // eslint-disable-next-line
-    console.error(`Callback '${callbackID}' not registed!!!`);
-    return;
+    const error = `Callback '${callbackID}' not registed!!!`;
+    console.error(error);
+    throw new Error(error);
   }
   clearTimeout(callbackData.timeoutHandle);
 

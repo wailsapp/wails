@@ -13,6 +13,7 @@ function Invoke(message) {
   if (window && window.external && window.external.invoke) {
     window.external.invoke(message);
   } else {
+    //eslint-disable-line
     console.log(`[No external.invoke] ${message}`);
   }
 }
