@@ -29,7 +29,7 @@ var internal = {
 // Setup runtime structure
 var runtime = {
   Log,
-  Event: {
+  Events: {
     On,
     Emit,
     Heartbeat,

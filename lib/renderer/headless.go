@@ -86,7 +86,7 @@ func (h *Headless) injectCSS(css string) {
 	minifiedCSS = strings.Replace(minifiedCSS, "\\", "\\\\", -1)
 	minifiedCSS = strings.Replace(minifiedCSS, "'", "\\'", -1)
 	minifiedCSS = strings.Replace(minifiedCSS, "\n", " ", -1)
-	inject := fmt.Sprintf("wails._.injectCSS('%s')", minifiedCSS)
+	inject := fmt.Sprintf("wails._.InjectCSS('%s')", minifiedCSS)
 	h.evalJS(inject, cssMessage)
 }
 
@@ -218,7 +218,7 @@ func (h *Headless) NotifyEvent(event *messages.EventData) error {
 		}
 	}
 
-	message := fmt.Sprintf("window.wails._.notify('%s','%s')", event.Name, data)
+	message := fmt.Sprintf("window.wails._.Notify('%s','%s')", event.Name, data)
 	return h.evalJS(message, notifyMessage)
 }
 

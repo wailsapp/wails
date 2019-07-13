@@ -8,14 +8,13 @@ The lightweight framework for web-like apps
 (c) Lea Anthony 2019-present
 */
 
-// var Invoke = window.external.invoke;
 
-var Invoke;
-
-if (window && window.external && window.external.invoke) {
-  Invoke = window.external.invoke;
-} else {
-  Invoke = console.log;
+function Invoke(message) {
+  if (window && window.external && window.external.invoke) {
+    window.external.invoke(message);
+  } else {
+    console.log(`[No external.invoke] ${message}`);
+  }
 }
 
 export function SendMessage(type, payload, callbackID) {
@@ -24,5 +23,6 @@ export function SendMessage(type, payload, callbackID) {
     callbackID,
     payload
   };
+
   Invoke(JSON.stringify(message));
 }

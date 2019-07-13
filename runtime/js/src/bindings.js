@@ -10,7 +10,7 @@ The lightweight framework for web-like apps
 
 import { Call } from './calls';
 
-var bindingsBasePath = window.backend;
+window.backend = {};
 
 // Determines if the given identifier is valid Javascript
 function isValidIdentifier(name) {
@@ -23,52 +23,37 @@ function isValidIdentifier(name) {
   }
 }
 
-// Creates the path given in the bindings path
-function addBindingPath(pathSections) {
-  // Start at the base path
-  var currentPath = bindingsBasePath;
-  // for each section of the given path
-  for (var sectionIndex in pathSections) {
-
-    var section = pathSections[sectionIndex];
-
-    // Is section a valid javascript identifier?
-    if (!isValidIdentifier(section)) {
-      var errMessage = section + ' is not a valid javascript identifier.';
-      var err = new Error(errMessage);
-      return [null, err];
-    }
-
-    // Add if doesn't exist
-    if (!currentPath[section]) {
-      currentPath[section] = {};
-    }
-    // update current path to new path
-    currentPath = currentPath[section];
-  }
-  return [currentPath, null];
-}
-
+// eslint-disable-next-line max-lines-per-function
 export function NewBinding(bindingName) {
 
   // Get all the sections of the binding
-  var bindingSections = bindingName.split('.').splice(1);
+  var bindingSections = [].concat(bindingName.split('.').splice(1));
+  var pathToBinding = window.backend;
+
+  // Check if we have a path (IE Struct)
+  if (bindingSections.length > 1) {
+    // Iterate over binding sections, adding them to the window.backend object
+    for (let index = 0; index < bindingSections.length - 1; index += 1) {
+      const name = bindingSections[index];
+      // Is name a valid javascript identifier?
+      if (!isValidIdentifier(name)) {
+        return new Error(`${name} is not a valid javascript identifier.`);
+      }
+      pathToBinding[name] = {};
+      pathToBinding = pathToBinding[name];
+    }
+  }
 
   // Get the actual function/method call name
-  var callName = bindingSections.pop();
+  const name = bindingSections.pop();
 
-  // Add path to binding
-  var bs = addBindingPath(bindingSections);
-  var pathToBinding = bs[0];
-  var err = bs[1];
-
-  if (err != null) {
-    // We need to return an error
-    return err;
+  // Is name a valid javascript identifier?
+  if (!isValidIdentifier(name)) {
+    return new Error(`${name} is not a valid javascript identifier.`);
   }
 
   // Add binding call
-  pathToBinding[callName] = function () {
+  pathToBinding[name] = function () {
 
     // No timeout by default
     var timeout = 0;

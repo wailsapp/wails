@@ -141,7 +141,7 @@ func (w *WebView) evalJSSync(js string) error {
 			wg.Done()
 			exit = true
 		})
-		command := fmt.Sprintf("wails._.addScript('%s', '%s')", minified, ID)
+		command := fmt.Sprintf("wails._.AddScript('%s', '%s')", minified, ID)
 		w.window.Dispatch(func() {
 			w.window.Eval(command)
 		})
@@ -226,7 +226,7 @@ func (w *WebView) Run() error {
 
 // NewBinding registers a new binding with the frontend
 func (w *WebView) NewBinding(methodName string) error {
-	objectCode := fmt.Sprintf("window.wails._.newBinding('%s');", methodName)
+	objectCode := fmt.Sprintf("window.wails._.NewBinding('%s');", methodName)
 	w.bindingCache = append(w.bindingCache, objectCode)
 	return nil
 }
@@ -288,7 +288,7 @@ func (w *WebView) SelectSaveFile() string {
 
 // Callback sends a callback to the frontend
 func (w *WebView) Callback(data string) error {
-	callbackCMD := fmt.Sprintf("window.wails._.callback('%s');", data)
+	callbackCMD := fmt.Sprintf("window.wails._.Callback('%s');", data)
 	return w.evalJS(callbackCMD)
 }
 
@@ -316,7 +316,7 @@ func (w *WebView) NotifyEvent(event *messages.EventData) error {
 		}
 	}
 
-	message := fmt.Sprintf("wails._.notify('%s','%s')", event.Name, data)
+	message := fmt.Sprintf("wails._.Notify('%s','%s')", event.Name, data)
 	return w.evalJS(message)
 }
 
