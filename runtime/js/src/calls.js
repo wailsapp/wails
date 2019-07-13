@@ -10,7 +10,7 @@ The lightweight framework for web-like apps
 /* jshint esversion: 6 */
 
 import { Debug } from './log';
-import { SendMessage } from './ipc'
+import { SendMessage } from './ipc';
 
 var callbacks = {};
 
@@ -75,10 +75,10 @@ export function Call(bindingName, data, timeout) {
 			const payload = {
 				bindingName: bindingName,
 				data: JSON.stringify(data),
-			}
+			};
 
 			// Make the call
-			SendMessage('call', payload, callbackID)
+			SendMessage('call', payload, callbackID);
 		} catch (e) {
 			// eslint-disable-next-line
 			console.error(e);
@@ -106,9 +106,8 @@ export function Callback(incomingMessage) {
 	var callbackID = message.callbackid;
 	var callbackData = callbacks[callbackID];
 	if (!callbackData) {
-		// eslint-disable-next-line
 		const error = `Callback '${callbackID}' not registed!!!`;
-		console.error(error);
+		console.error(error); // eslint-disable-line
 		throw new Error(error);
 	}
 	clearTimeout(callbackData.timeoutHandle);

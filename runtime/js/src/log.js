@@ -19,8 +19,8 @@ function sendLogMessage(level, message) {
 	const payload = {
 		level: level,
 		message: message,
-	}
-	SendMessage('log', payload)
+	};
+	SendMessage('log', payload);
 }
 
 export function Debug(message) {

@@ -98,8 +98,8 @@ export function Emit(eventName) {
 	const payload = {
 		name: eventName,
 		data: data,
-	}
-	SendMessage('event', payload)
+	};
+	SendMessage('event', payload);
 }
 
 const heartbeatCallbacks = {};
