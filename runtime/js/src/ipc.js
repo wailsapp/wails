@@ -10,20 +10,20 @@ The lightweight framework for web-like apps
 /* jshint esversion: 6 */
 
 function Invoke(message) {
-  if (window && window.external && window.external.invoke) {
-    window.external.invoke(message);
-  } else {
-    //eslint-disable-line
-    console.log(`[No external.invoke] ${message}`);
-  }
+	if (window && window.external && window.external.invoke) {
+		window.external.invoke(message);
+	} else {
+		//eslint-disable-line
+		console.log(`[No external.invoke] ${message}`);
+	}
 }
 
 export function SendMessage(type, payload, callbackID) {
-  const message = {
-    type,
-    callbackID,
-    payload
-  };
+	const message = {
+		type,
+		callbackID,
+		payload
+	};
 
-  Invoke(JSON.stringify(message));
+	Invoke(JSON.stringify(message));
 }

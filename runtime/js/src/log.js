@@ -15,31 +15,31 @@ import { SendMessage } from './ipc';
 // level + message
 function sendLogMessage(level, message) {
 
-  // Log Message
-  const payload = {
-    level: level,
-    message: message,
-  }
-  SendMessage('log', payload)
+	// Log Message
+	const payload = {
+		level: level,
+		message: message,
+	}
+	SendMessage('log', payload)
 }
 
 export function Debug(message) {
-  sendLogMessage('debug', message);
+	sendLogMessage('debug', message);
 }
 
 export function Info(message) {
-  sendLogMessage('info', message);
+	sendLogMessage('info', message);
 }
 
 export function Warning(message) {
-  sendLogMessage('warning', message);
+	sendLogMessage('warning', message);
 }
 
 export function Error(message) {
-  sendLogMessage('error', message);
+	sendLogMessage('error', message);
 }
 
 export function Fatal(message) {
-  sendLogMessage('fatal', message);
+	sendLogMessage('fatal', message);
 }
 

@@ -12,23 +12,23 @@ The lightweight framework for web-like apps
 import { Emit } from './events';
 
 export function AddScript(js, callbackID) {
-  var script = document.createElement('script');
-  script.text = js;
-  document.body.appendChild(script);
-  if (callbackID) {
-    Emit(callbackID);
-  }
+	var script = document.createElement('script');
+	script.text = js;
+	document.body.appendChild(script);
+	if (callbackID) {
+		Emit(callbackID);
+	}
 }
 
 // Adapted from webview - thanks zserge!
 export function InjectCSS(css) {
-  var elem = document.createElement('style');
-  elem.setAttribute('type', 'text/css');
-  if (elem.styleSheet) {
-    elem.styleSheet.cssText = css;
-  } else {
-    elem.appendChild(document.createTextNode(css));
-  }
-  var head = document.head || document.getElementsByTagName('head')[0];
-  head.appendChild(elem);
+	var elem = document.createElement('style');
+	elem.setAttribute('type', 'text/css');
+	if (elem.styleSheet) {
+		elem.styleSheet.cssText = css;
+	} else {
+		elem.appendChild(document.createTextNode(css));
+	}
+	var head = document.head || document.getElementsByTagName('head')[0];
+	head.appendChild(elem);
 }

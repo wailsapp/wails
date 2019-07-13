@@ -15,66 +15,66 @@ window.backend = {};
 
 // Determines if the given identifier is valid Javascript
 function isValidIdentifier(name) {
-  // Don't xss yourself :-)
-  try {
-    new Function('var ' + name);
-    return true;
-  } catch (e) {
-    return false;
-  }
+	// Don't xss yourself :-)
+	try {
+		new Function('var ' + name);
+		return true;
+	} catch (e) {
+		return false;
+	}
 }
 
 // eslint-disable-next-line max-lines-per-function
 export function NewBinding(bindingName) {
 
-  // Get all the sections of the binding
-  var bindingSections = [].concat(bindingName.split('.').splice(1));
-  var pathToBinding = window.backend;
+	// Get all the sections of the binding
+	var bindingSections = [].concat(bindingName.split('.').splice(1));
+	var pathToBinding = window.backend;
 
-  // Check if we have a path (IE Struct)
-  if (bindingSections.length > 1) {
-    // Iterate over binding sections, adding them to the window.backend object
-    for (let index = 0; index < bindingSections.length - 1; index += 1) {
-      const name = bindingSections[index];
-      // Is name a valid javascript identifier?
-      if (!isValidIdentifier(name)) {
-        return new Error(`${name} is not a valid javascript identifier.`);
-      }
-      pathToBinding[name] = {};
-      pathToBinding = pathToBinding[name];
-    }
-  }
+	// Check if we have a path (IE Struct)
+	if (bindingSections.length > 1) {
+		// Iterate over binding sections, adding them to the window.backend object
+		for (let index = 0; index < bindingSections.length - 1; index += 1) {
+			const name = bindingSections[index];
+			// Is name a valid javascript identifier?
+			if (!isValidIdentifier(name)) {
+				return new Error(`${name} is not a valid javascript identifier.`);
+			}
+			pathToBinding[name] = {};
+			pathToBinding = pathToBinding[name];
+		}
+	}
 
-  // Get the actual function/method call name
-  const name = bindingSections.pop();
+	// Get the actual function/method call name
+	const name = bindingSections.pop();
 
-  // Is name a valid javascript identifier?
-  if (!isValidIdentifier(name)) {
-    return new Error(`${name} is not a valid javascript identifier.`);
-  }
+	// Is name a valid javascript identifier?
+	if (!isValidIdentifier(name)) {
+		return new Error(`${name} is not a valid javascript identifier.`);
+	}
 
-  // Add binding call
-  pathToBinding[name] = function () {
+	// Add binding call
+	pathToBinding[name] = function () {
 
-    // No timeout by default
-    var timeout = 0;
+		// No timeout by default
+		var timeout = 0;
 
-    // Actual function
-    function dynamic() {
-      var args = [].slice.call(arguments);
-      return Call(bindingName, args, timeout);
-    }
+		// Actual function
+		function dynamic() {
+			var args = [].slice.call(arguments);
+			return Call(bindingName, args, timeout);
+		}
 
-    // Allow setting timeout to function
-    dynamic.setTimeout = function (newTimeout) {
-      timeout = newTimeout;
-    };
+		// Allow setting timeout to function
+		dynamic.setTimeout = function (newTimeout) {
+			timeout = newTimeout;
+		};
 
-    // Allow getting timeout to function
-    dynamic.getTimeout = function () {
-      return timeout;
-    };
+		// Allow getting timeout to function
+		dynamic.getTimeout = function () {
+			return timeout;
+		};
 
-    return dynamic;
-  }();
+		return dynamic;
+	}();
 }

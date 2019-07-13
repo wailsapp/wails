@@ -12,9 +12,9 @@ The lightweight framework for web-like apps
 import { SystemCall } from './calls';
 
 export function OpenURL(url) {
-  return SystemCall('Browser.OpenURL', url);
+	return SystemCall('Browser.OpenURL', url);
 }
 
 export function OpenFile(filename) {
-  return SystemCall('Browser.OpenFile', filename);
+	return SystemCall('Browser.OpenFile', filename);
 }
