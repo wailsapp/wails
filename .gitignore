@@ -16,4 +16,4 @@ examples/**/example*
 cmd/wails/wails
 .DS_Store
 tmp
-node_modules
+node_modules/
