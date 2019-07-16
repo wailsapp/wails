@@ -94,17 +94,17 @@ func (i *Manager) Start(eventManager interfaces.EventManager, bindingManager int
 					logdata := incomingMessage.Payload.(*messages.LogData)
 					switch logdata.Level {
 					case "info":
-						i.log.Info(logdata.Message)
+						logger.GlobalLogger.Info(logdata.Message)
 					case "debug":
-						i.log.Debug(logdata.Message)
+						logger.GlobalLogger.Debug(logdata.Message)
 					case "warning":
-						i.log.Warn(logdata.Message)
+						logger.GlobalLogger.Warn(logdata.Message)
 					case "error":
-						i.log.Error(logdata.Message)
+						logger.GlobalLogger.Error(logdata.Message)
 					case "fatal":
-						i.log.Fatal(logdata.Message)
+						logger.GlobalLogger.Fatal(logdata.Message)
 					default:
-						i.log.ErrorFields("Invalid log level sent", logger.Fields{
+						logger.ErrorFields("Invalid log level sent", logger.Fields{
 							"level":   logdata.Level,
 							"message": logdata.Message,
 						})

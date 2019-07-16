@@ -7,8 +7,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Global logger reference
-var logger = logrus.New()
+// GlobalLogger is the global logger
+var GlobalLogger = logrus.New()
 
 // Fields is used by the customLogger object to output
 // fields along with a message
@@ -16,27 +16,32 @@ type Fields map[string]interface{}
 
 // Default options for the global logger
 func init() {
-	logger.SetOutput(os.Stdout)
-	logger.SetLevel(logrus.DebugLevel)
+	GlobalLogger.SetOutput(os.Stdout)
+	GlobalLogger.SetLevel(logrus.DebugLevel)
+}
+
+// ErrorFields is a helper for logging fields to the global logger
+func ErrorFields(message string, fields Fields) {
+	GlobalLogger.WithFields(map[string]interface{}(fields)).Error(message)
 }
 
 // SetLogLevel sets the log level to the given level
 func SetLogLevel(level string) {
 	switch strings.ToLower(level) {
 	case "info":
-		logger.SetLevel(logrus.InfoLevel)
+		GlobalLogger.SetLevel(logrus.InfoLevel)
 	case "debug":
-		logger.SetLevel(logrus.DebugLevel)
+		GlobalLogger.SetLevel(logrus.DebugLevel)
 	case "warn":
-		logger.SetLevel(logrus.WarnLevel)
+		GlobalLogger.SetLevel(logrus.WarnLevel)
 	case "error":
-		logger.SetLevel(logrus.ErrorLevel)
+		GlobalLogger.SetLevel(logrus.ErrorLevel)
 	case "fatal":
-		logger.SetLevel(logrus.FatalLevel)
+		GlobalLogger.SetLevel(logrus.FatalLevel)
 	case "panic":
-		logger.SetLevel(logrus.PanicLevel)
+		GlobalLogger.SetLevel(logrus.PanicLevel)
 	default:
-		logger.SetLevel(logrus.DebugLevel)
-		logger.Warnf("Log level '%s' not recognised. Setting to Debug.", level)
+		GlobalLogger.SetLevel(logrus.DebugLevel)
+		GlobalLogger.Warnf("Log level '%s' not recognised. Setting to Debug.", level)
 	}
 }
