@@ -5,8 +5,8 @@ import homedir "github.com/mitchellh/go-homedir"
 // FileSystem exposes file system utilities to the runtime
 type FileSystem struct {}
 
-// Creates a new FileSystem struct
-func newFileSystem() *FileSystem {
+// NewFileSystem creates a new FileSystem struct
+func NewFileSystem() *FileSystem {
 	return &FileSystem{}
 }
 

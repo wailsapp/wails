@@ -2,13 +2,12 @@ package wails
 
 import (
 	"github.com/wailsapp/wails/cmd"
-	"github.com/wailsapp/wails/lib/logger"
-	"github.com/wailsapp/wails/runtime/go/runtime"
-	"github.com/wailsapp/wails/lib/renderer"
 	"github.com/wailsapp/wails/lib/binding"
-	"github.com/wailsapp/wails/lib/ipc"
 	"github.com/wailsapp/wails/lib/event"
 	"github.com/wailsapp/wails/lib/interfaces"
+	"github.com/wailsapp/wails/lib/ipc"
+	"github.com/wailsapp/wails/lib/logger"
+	"github.com/wailsapp/wails/lib/renderer"
 )
 
 // -------------------------------- Compile time Flags ------------------------------
@@ -20,15 +19,15 @@ var BuildMode = cmd.BuildModeProd
 
 // App defines the main application struct
 type App struct {
-	config         *AppConfig              // The Application configuration object
-	cli            *cmd.Cli             // In debug mode, we have a cli
-	renderer       interfaces.Renderer    // The renderer is what we will render the app to
-	logLevel       string               // The log level of the app
-	ipc            interfaces.IPCManager          // Handles the IPC calls
-	log            *logger.CustomLogger // Logger
-	bindingManager interfaces.BindingManager     // Handles binding of Go code to renderer
-	eventManager   interfaces.EventManager        // Handles all the events
-	runtime        interfaces.Runtime     // The runtime object for registered structs
+	config         *AppConfig                // The Application configuration object
+	cli            *cmd.Cli                  // In debug mode, we have a cli
+	renderer       interfaces.Renderer       // The renderer is what we will render the app to
+	logLevel       string                    // The log level of the app
+	ipc            interfaces.IPCManager     // Handles the IPC calls
+	log            *logger.CustomLogger      // Logger
+	bindingManager interfaces.BindingManager // Handles binding of Go code to renderer
+	eventManager   interfaces.EventManager   // Handles all the events
+	runtime        interfaces.Runtime        // The runtime object for registered structs
 }
 
 // CreateApp creates the application window with the given configuration
@@ -87,9 +86,9 @@ func (a *App) start() error {
 	// Log starup
 	a.log.Info("Starting")
 
-	// Check if we are to run in headless mode
+	// Check if we are to run in bridge mode
 	if BuildMode == cmd.BuildModeBridge {
-		a.renderer = &renderer.Headless{}
+		a.renderer = &renderer.Bridge{}
 	}
 
 	// Initialise the renderer
@@ -105,7 +104,7 @@ func (a *App) start() error {
 	a.ipc.Start(a.eventManager, a.bindingManager)
 
 	// Create the runtime
-	a.runtime = runtime.NewRuntime(a.eventManager, a.renderer)
+	a.runtime = NewRuntime(a.eventManager, a.renderer)
 
 	// Start binding manager and give it our renderer
 	err = a.bindingManager.Start(a.renderer, a.runtime)

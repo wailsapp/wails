@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 
-import Bridge from "./wailsbridge";
+import Wails from '@wailsapp/runtime';
 
-Bridge.Start(() => {
+Wails.Init(() => {
   ReactDOM.render(<App />, document.getElementById('app'));
 });

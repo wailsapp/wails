@@ -21,6 +21,7 @@
     "@angular/platform-browser": "~8.0.1",
     "@angular/platform-browser-dynamic": "~8.0.1",
     "@angular/router": "~8.0.1",
+    "@wailsapp/runtime": "^1.0.0",
     "ngx-build-plus": "^8.0.3",
     "rxjs": "~6.4.0",
     "tslib": "^1.9.0",

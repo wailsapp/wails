@@ -9,12 +9,15 @@ The lightweight framework for web-like apps
 */
 /* jshint esversion: 6 */
 
-import { SystemCall } from './calls';
-
-export function OpenURL(url) {
-	return SystemCall('Browser.OpenURL', url);
+/**
+ * Initialises the Wails runtime
+ *
+ * @param {function} callback
+ */
+function Init(callback) {
+	window.wails._.Init(callback);
 }
 
-export function OpenFile(filename) {
-	return SystemCall('Browser.OpenFile', filename);
-}
+module.exports = {
+	Init
+};

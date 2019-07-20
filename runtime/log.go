@@ -5,8 +5,8 @@ import "github.com/wailsapp/wails/lib/logger"
 // Log exposes the logging interface to the runtime
 type Log struct{}
 
-// newLog creates a new Log struct
-func newLog() *Log {
+// NewLog creates a new Log struct
+func NewLog() *Log {
 	return &Log{}
 }
 

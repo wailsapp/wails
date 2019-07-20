@@ -9,6 +9,7 @@ The lightweight framework for web-like apps
 */
 /* jshint esversion: 6 */
 import * as Log from './log';
+import * as Browser from './browser';
 import { On, Emit, Notify, Heartbeat, Acknowledge } from './events';
 import { NewBinding } from './bindings';
 import { Callback } from './calls';
@@ -24,12 +25,14 @@ var internal = {
 	Callback,
 	Notify,
 	AddScript,
-	InjectCSS
+	InjectCSS,
+	Init,
 };
 
 // Setup runtime structure
 var runtime = {
 	Log,
+	Browser,
 	Events: {
 		On,
 		Emit,
@@ -44,3 +47,8 @@ Object.assign(window.wails, runtime);
 
 // Emit loaded event
 Emit('wails:loaded');
+
+// Nothing to init in production
+export function Init(callback) {
+	callback();
+}

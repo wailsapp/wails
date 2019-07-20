@@ -11,10 +11,9 @@ func (app *App) setupCli() *cmd.Cli {
 	result := cmd.NewCli(app.config.Title, "Debug build")
 	result.Version(cmd.Version)
 
-	// Setup cli to handle loglevel and headless flags
+	// Setup cli to handle loglevel
 	result.
 		StringFlag("loglevel", "Sets the log level [debug|info|error|panic|fatal]. Default debug", &app.logLevel).
-		// BoolFlag("headless", "Runs the app in headless mode", &app.headless).
 		Action(app.start)
 
 	// Banner

@@ -13,7 +13,12 @@ import { Call } from './calls';
 
 window.backend = {};
 
-// Determines if the given identifier is valid Javascript
+/**
+ * Determines if the given identifier is valid Javascript
+ *
+ * @param {boolean} name
+ * @returns
+ */
 function isValidIdentifier(name) {
 	// Don't xss yourself :-)
 	try {
@@ -24,6 +29,13 @@ function isValidIdentifier(name) {
 	}
 }
 
+/**
+ * NewBinding creates a new binding from the given binding name
+ *
+ * @export
+ * @param {string} bindingName
+ * @returns
+ */
 // eslint-disable-next-line max-lines-per-function
 export function NewBinding(bindingName) {
 

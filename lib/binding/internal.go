@@ -6,7 +6,7 @@ import (
 
 	"github.com/wailsapp/wails/lib/logger"
 	"github.com/wailsapp/wails/lib/messages"
-	"github.com/wailsapp/wails/runtime/go/runtime"
+	"github.com/wailsapp/wails/runtime"
 )
 
 type internalMethods struct {

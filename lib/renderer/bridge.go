@@ -31,9 +31,9 @@ func (m messageType) toString() string {
 	return [...]string{"j", "s", "h", "n", "b", "c", "w"}[m]
 }
 
-// Headless is a backend that opens a local web server
+// Bridge is a backend that opens a local web server
 // and renders the files over a websocket
-type Headless struct {
+type Bridge struct {
 	// Common
 	log          *logger.CustomLogger
 	ipcManager   interfaces.IPCManager
@@ -41,7 +41,7 @@ type Headless struct {
 	eventManager interfaces.EventManager
 	bindingCache []string
 
-	// Headless specific
+	// Bridge specific
 	initialisationJS []string
 	server           *http.Server
 	theConnection    *websocket.Conn
@@ -50,8 +50,8 @@ type Headless struct {
 	lock sync.Mutex
 }
 
-// Initialise the Headless Renderer
-func (h *Headless) Initialise(appConfig interfaces.AppConfig, ipcManager interfaces.IPCManager, eventManager interfaces.EventManager) error {
+// Initialise the Bridge Renderer
+func (h *Bridge) Initialise(appConfig interfaces.AppConfig, ipcManager interfaces.IPCManager, eventManager interfaces.EventManager) error {
 	h.ipcManager = ipcManager
 	h.appConfig = appConfig
 	h.eventManager = eventManager
@@ -60,7 +60,7 @@ func (h *Headless) Initialise(appConfig interfaces.AppConfig, ipcManager interfa
 	return nil
 }
 
-func (h *Headless) evalJS(js string, mtype messageType) error {
+func (h *Bridge) evalJS(js string, mtype messageType) error {
 
 	message := mtype.toString() + js
 
@@ -74,7 +74,7 @@ func (h *Headless) evalJS(js string, mtype messageType) error {
 	return nil
 }
 
-func (h *Headless) injectCSS(css string) {
+func (h *Bridge) injectCSS(css string) {
 	// Minify css to overcome issues in the browser with carriage returns
 	minified, err := htmlmin.Minify([]byte(css), &htmlmin.Options{
 		MinifyStyles: true,
@@ -90,7 +90,7 @@ func (h *Headless) injectCSS(css string) {
 	h.evalJS(inject, cssMessage)
 }
 
-func (h *Headless) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Bridge) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
 	if err != nil {
 		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
@@ -105,7 +105,7 @@ func (h *Headless) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
 	go h.start(conn)
 }
 
-func (h *Headless) sendMessage(conn *websocket.Conn, msg string) {
+func (h *Bridge) sendMessage(conn *websocket.Conn, msg string) {
 
 	h.lock.Lock()
 	defer h.lock.Unlock()
@@ -115,12 +115,12 @@ func (h *Headless) sendMessage(conn *websocket.Conn, msg string) {
 	}
 }
 
-func (h *Headless) start(conn *websocket.Conn) {
+func (h *Bridge) start(conn *websocket.Conn) {
 
 	// set external.invoke
 	h.log.Infof("Connected to frontend.")
 
-	wailsRuntime := mewn.String("../../runtime/js/dist/wails.js")
+	wailsRuntime := mewn.String("../../runtime/assets/wails.js")
 	h.evalJS(wailsRuntime, wailsRuntimeMessage)
 
 	// Inject bindings
@@ -147,8 +147,8 @@ func (h *Headless) start(conn *websocket.Conn) {
 	}
 }
 
-// Run the app in headless mode!
-func (h *Headless) Run() error {
+// Run the app in Bridge mode!
+func (h *Bridge) Run() error {
 	h.server = &http.Server{Addr: ":34115"}
 	http.HandleFunc("/bridge", h.wsBridgeHandler)
 
@@ -163,39 +163,39 @@ func (h *Headless) Run() error {
 }
 
 // NewBinding creates a new binding with the frontend
-func (h *Headless) NewBinding(methodName string) error {
+func (h *Bridge) NewBinding(methodName string) error {
 	h.bindingCache = append(h.bindingCache, methodName)
 	return nil
 }
 
-// SelectFile is unsupported for Headless but required
+// SelectFile is unsupported for Bridge but required
 // for the Renderer interface
-func (h *Headless) SelectFile() string {
+func (h *Bridge) SelectFile() string {
 	h.log.Warn("SelectFile() unsupported in bridge mode")
 	return ""
 }
 
-// SelectDirectory is unsupported for Headless but required
+// SelectDirectory is unsupported for Bridge but required
 // for the Renderer interface
-func (h *Headless) SelectDirectory() string {
+func (h *Bridge) SelectDirectory() string {
 	h.log.Warn("SelectDirectory() unsupported in bridge mode")
 	return ""
 }
 
-// SelectSaveFile is unsupported for Headless but required
+// SelectSaveFile is unsupported for Bridge but required
 // for the Renderer interface
-func (h *Headless) SelectSaveFile() string {
+func (h *Bridge) SelectSaveFile() string {
 	h.log.Warn("SelectSaveFile() unsupported in bridge mode")
 	return ""
 }
 
 // Callback sends a callback to the frontend
-func (h *Headless) Callback(data string) error {
+func (h *Bridge) Callback(data string) error {
 	return h.evalJS(data, callbackMessage)
 }
 
 // NotifyEvent notifies the frontend of an event
-func (h *Headless) NotifyEvent(event *messages.EventData) error {
+func (h *Bridge) NotifyEvent(event *messages.EventData) error {
 
 	// Look out! Nils about!
 	var err error
@@ -222,33 +222,33 @@ func (h *Headless) NotifyEvent(event *messages.EventData) error {
 	return h.evalJS(message, notifyMessage)
 }
 
-// SetColour is unsupported for Headless but required
+// SetColour is unsupported for Bridge but required
 // for the Renderer interface
-func (h *Headless) SetColour(colour string) error {
-	h.log.WarnFields("SetColour ignored for headless more", logger.Fields{"col": colour})
+func (h *Bridge) SetColour(colour string) error {
+	h.log.WarnFields("SetColour ignored for Bridge more", logger.Fields{"col": colour})
 	return nil
 }
 
-// Fullscreen is unsupported for Headless but required
+// Fullscreen is unsupported for Bridge but required
 // for the Renderer interface
-func (h *Headless) Fullscreen() {
+func (h *Bridge) Fullscreen() {
 	h.log.Warn("Fullscreen() unsupported in bridge mode")
 }
 
-// UnFullscreen is unsupported for Headless but required
+// UnFullscreen is unsupported for Bridge but required
 // for the Renderer interface
-func (h *Headless) UnFullscreen() {
+func (h *Bridge) UnFullscreen() {
 	h.log.Warn("UnFullscreen() unsupported in bridge mode")
 }
 
-// SetTitle is currently unsupported for Headless but required
+// SetTitle is currently unsupported for Bridge but required
 // for the Renderer interface
-func (h *Headless) SetTitle(title string) {
+func (h *Bridge) SetTitle(title string) {
 	h.log.WarnFields("SetTitle() unsupported in bridge mode", logger.Fields{"title": title})
 }
 
-// Close is unsupported for Headless but required
+// Close is unsupported for Bridge but required
 // for the Renderer interface
-func (h *Headless) Close() {
+func (h *Bridge) Close() {
 	h.log.Warn("Close() unsupported in bridge mode")
 }

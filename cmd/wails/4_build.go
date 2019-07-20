@@ -72,7 +72,16 @@ func init() {
 			if err != nil {
 				return err
 			}
+
+				// Ensure that runtime init.js is the production version
+				err = cmd.InstallProdRuntime(projectDir, projectOptions)
+				if err != nil {
+					return err
+				}
 		}
+
+	
+
 
 		// Move to project directory
 		err = os.Chdir(projectDir)
