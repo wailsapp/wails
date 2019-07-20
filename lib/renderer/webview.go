@@ -10,9 +10,9 @@ import (
 
 	"github.com/go-playground/colors"
 	"github.com/leaanthony/mewn"
+	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
 	"github.com/wailsapp/wails/lib/messages"
-	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/webview"
 )
 
@@ -29,7 +29,7 @@ type WebView struct {
 
 // NewWebView returns a new WebView struct
 func NewWebView() *WebView {
-	return &WebView{};
+	return &WebView{}
 }
 
 // Initialise sets up the WebView
@@ -173,8 +173,12 @@ func (w *WebView) Run() error {
 	w.log.Info("Run()")
 
 	// Runtime assets
-	wailsRuntime := mewn.String("../../runtime/js/dist/wails.js")
+	wailsRuntime := mewn.String("../../runtime/assets/wails.js")
+	w.log.Info("1")
+
 	w.evalJS(wailsRuntime)
+
+	w.log.Info("2")
 
 	// Ping the wait channel when the wails runtime is loaded
 	w.eventManager.On("wails:loaded", func(...interface{}) {

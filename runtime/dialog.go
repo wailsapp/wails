@@ -7,8 +7,8 @@ type Dialog struct {
 	renderer interfaces.Renderer
 }
 
-// newDialog creates a new Dialog struct
-func newDialog(renderer interfaces.Renderer) *Dialog {
+// NewDialog creates a new Dialog struct
+func NewDialog(renderer interfaces.Renderer) *Dialog {
 	return &Dialog{
 		renderer: renderer,
 	}

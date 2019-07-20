@@ -7,7 +7,8 @@ type Events struct {
 	eventManager interfaces.EventManager
 }
 
-func newEvents(eventManager interfaces.EventManager) *Events {
+// NewEvents creates a new Events struct
+func NewEvents(eventManager interfaces.EventManager) *Events {
 	return &Events{
 		eventManager: eventManager,
 	}

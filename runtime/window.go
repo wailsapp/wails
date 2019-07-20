@@ -7,7 +7,8 @@ type Window struct {
 	renderer interfaces.Renderer
 }
 
-func newWindow(renderer interfaces.Renderer) *Window {
+// NewWindow creates a new Window struct
+func NewWindow(renderer interfaces.Renderer) *Window {
 	return &Window{
 		renderer: renderer,
 	}

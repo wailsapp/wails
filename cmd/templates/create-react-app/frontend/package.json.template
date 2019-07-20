@@ -8,7 +8,8 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "wails-react-scripts": "3.0.1-2",
-    "react-modal": "3.8.1"
+    "react-modal": "3.8.1",
+    "@wailsapp/runtime": "^1.0.0"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -1,5 +1,6 @@
 package wails
 
+import "github.com/leaanthony/mewn"
 
 // AppConfig is the configuration structure used when creating a Wails App object
 type AppConfig struct {
@@ -29,7 +30,7 @@ func (a *AppConfig) GetTitle() string {
 	return a.Title
 }
 
-// GetDefaultHTML returns the desired window title
+// GetDefaultHTML returns the default HTML
 func (a *AppConfig) GetDefaultHTML() string {
 	return a.defaultHTML
 }
@@ -95,6 +96,7 @@ func newConfig(userConfig *AppConfig) (*AppConfig, error) {
 		Resizable: true,
 		Title:     "My Wails App",
 		Colour:    "#FFF", // White by default
+		HTML:      mewn.String("./runtime/assets/default.html"),
 	}
 
 	if userConfig != nil {

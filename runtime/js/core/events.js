@@ -13,7 +13,18 @@ import { Error } from './log';
 import { SendMessage } from './ipc';
 
 // Defines a single listener with a maximum number of times to callback
+/**
+ * The Listener class defines a listener! :-)
+ *
+ * @class Listener
+ */
 class Listener {
+	/**
+	 * Creates an instance of Listener.
+	 * @param {function} callback
+	 * @param {number} maxCallbacks
+	 * @memberof Listener
+	 */
 	constructor(callback, maxCallbacks) {
 		// Default of -1 means infinite
 		maxCallbacks = maxCallbacks || -1;
@@ -34,24 +45,49 @@ class Listener {
 
 var eventListeners = {};
 
-// Registers an event listener that will be invoked `maxCallbacks` times before being destroyed
+/**
+ * Registers an event listener that will be invoked `maxCallbacks` times before being destroyed
+ *
+ * @export
+ * @param {string} eventName
+ * @param {function} callback
+ * @param {number} maxCallbacks
+ */
 export function OnMultiple(eventName, callback, maxCallbacks) {
 	eventListeners[eventName] = eventListeners[eventName] || [];
 	const thisListener = new Listener(callback, maxCallbacks);
 	eventListeners[eventName].push(thisListener);
 }
 
-// Registers an event listener that will be invoked every time the event is emitted
+/**
+ * Registers an event listener that will be invoked every time the event is emitted
+ *
+ * @export
+ * @param {string} eventName
+ * @param {function} callback
+ */
 export function On(eventName, callback) {
 	OnMultiple(eventName, callback);
 }
 
-// Registers an event listener that will be invoked once then destroyed
+/**
+ * Registers an event listener that will be invoked once then destroyed
+ *
+ * @export
+ * @param {string} eventName
+ * @param {function} callback
+ */
 export function Once(eventName, callback) {
 	OnMultiple(eventName, callback, 1);
 }
 
-// Notify informs frontend listeners that an event was emitted with the given data
+/**
+ * Notify informs frontend listeners that an event was emitted with the given data
+ *
+ * @export
+ * @param {string} eventName
+ * @param {string} data
+ */
 export function Notify(eventName, data) {
 
 	// Check if we have any listeners for this event
@@ -88,7 +124,12 @@ export function Notify(eventName, data) {
 	}
 }
 
-// Emit an event with the given name and data
+/**
+ * Emit an event with the given name and data
+ *
+ * @export
+ * @param {string} eventName
+ */
 export function Emit(eventName) {
 
 	// Calculate the data
@@ -102,10 +143,18 @@ export function Emit(eventName) {
 	SendMessage('event', payload);
 }
 
+// Callbacks for the heartbeat calls
 const heartbeatCallbacks = {};
 
-// Heartbeat emits the event `eventName`, every `timeInMilliseconds` milliseconds until 
-// the event is acknowledged via `Event.Acknowledge`. Once this happens, `callback` is invoked ONCE
+/**
+ * Heartbeat emits the event `eventName`, every `timeInMilliseconds` milliseconds until 
+ * the event is acknowledged via `Event.Acknowledge`. Once this happens, `callback` is invoked ONCE
+ *
+ * @export
+ * @param {string} eventName
+ * @param {number} timeInMilliseconds
+ * @param {function} callback
+ */
 export function Heartbeat(eventName, timeInMilliseconds, callback) {
 
 	// Declare interval variable
@@ -128,6 +177,12 @@ export function Heartbeat(eventName, timeInMilliseconds, callback) {
 	}, timeInMilliseconds);
 }
 
+/**
+ * Acknowledges a heartbeat event by name
+ *
+ * @export
+ * @param {string} eventName
+ */
 export function Acknowledge(eventName) {
 	// If we are waiting for acknowledgement for this event type
 	if (heartbeatCallbacks[eventName]) {

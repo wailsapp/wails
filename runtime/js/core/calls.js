@@ -14,18 +14,27 @@ import { SendMessage } from './ipc';
 
 var callbacks = {};
 
-// AwesomeRandom
+/**
+ * Returns a number from the native browser random function
+ *
+ * @returns number
+ */
 function cryptoRandom() {
 	var array = new Uint32Array(1);
 	return window.crypto.getRandomValues(array)[0];
 }
 
-// LOLRandom
+/**
+ * Returns a number using da old-skool Math.Random
+ * I likes to call it LOLRandom
+ *
+ * @returns number
+ */
 function basicRandom() {
 	return Math.random() * 9007199254740991;
 }
 
-// Pick one based on browser capability
+// Pick a random number function based on browser capability
 var randomFunc;
 if (window.crypto) {
 	randomFunc = cryptoRandom;
@@ -34,13 +43,22 @@ if (window.crypto) {
 }
 
 
-// Call sends a message to the backend to call the binding with the
-// given data. A promise is returned and will be completed when the
-// backend responds. This will be resolved when the call was successful
-// or rejected if an error is passed back.
-// There is a timeout mechanism. If the call doesn't respond in the given
-// time (in milliseconds) then the promise is rejected.
 
+
+/**
+ * Call sends a message to the backend to call the binding with the
+ * given data. A promise is returned and will be completed when the
+ * backend responds. This will be resolved when the call was successful
+ * or rejected if an error is passed back.
+ * There is a timeout mechanism. If the call doesn't respond in the given
+ * time (in milliseconds) then the promise is rejected.
+ *
+ * @export
+ * @param {string} bindingName
+ * @param {string} data
+ * @param {number=} timeout
+ * @returns
+ */
 export function Call(bindingName, data, timeout) {
 
 	// Timeout infinite by default
@@ -87,8 +105,14 @@ export function Call(bindingName, data, timeout) {
 }
 
 
-// Called by the backend to return data to a previously called
-// binding invocation
+
+/**
+ * Called by the backend to return data to a previously called
+ * binding invocation
+ *
+ * @export
+ * @param {string} incomingMessage
+ */
 export function Callback(incomingMessage) {
 
 	// Decode the message - Credit: https://stackoverflow.com/a/13865680
@@ -115,12 +139,20 @@ export function Callback(incomingMessage) {
 	delete callbacks[callbackID];
 
 	if (message.error) {
-		return callbackData.reject(message.error);
+		callbackData.reject(message.error);
+	} else {
+		callbackData.resolve(message.data);
 	}
-	return callbackData.resolve(message.data);
 }
 
-// systemCall is used to call wails methods from the frontend
+/**
+ * SystemCall is used to call wails methods from the frontend
+ *
+ * @export
+ * @param {string} method
+ * @param {any[]=} data
+ * @returns
+ */
 export function SystemCall(method, data) {
 	return Call('.wails.' + method, data);
 }
