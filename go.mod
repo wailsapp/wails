@@ -1,7 +1,7 @@
 module github.com/wailsapp/wails
 
 require (
-	github.com/Masterminds/semver v1.4.2 // indirect
+	github.com/Masterminds/semver v1.4.2
 	github.com/dchest/cssmin v0.0.0-20151210170030-fb8d9b44afdc // indirect
 	github.com/dchest/htmlmin v0.0.0-20150526090704-e254725e81ac
 	github.com/dchest/jsmin v0.0.0-20160823214000-faeced883947 // indirect
@@ -12,9 +12,8 @@ require (
 	github.com/kennygrant/sanitize v1.2.4
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/leaanthony/mewn v0.10.7
-	github.com/leaanthony/slicer v1.3.1
+	github.com/leaanthony/slicer v1.3.2
 	github.com/leaanthony/spinner v0.5.3
-	github.com/masterminds/semver v1.4.2
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
 	github.com/mitchellh/go-homedir v1.1.0

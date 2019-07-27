@@ -25,6 +25,10 @@ const (
 	RedHat
 	// Debian distribution
 	Debian
+	// Gentoo distribution
+	Gentoo
+	// Zorin distribution
+	Zorin
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -66,6 +70,12 @@ func GetLinuxDistroInfo() *DistroInfo {
 						result.Distribution = Arch
 					case "Debian":
 						result.Distribution = Debian
+					case "Gentoo":
+						result.Distribution = Gentoo
+					case "Zorin":
+						result.Distribution = Zorin
+					case "Fedora":
+						result.Distribution = RedHat
 					}
 				case "Description":
 					result.Description = value
@@ -113,12 +123,25 @@ func GetLinuxDistroInfo() *DistroInfo {
 			result.Distribution = Arch
 		case "Debian GNU/Linux":
 			result.Distribution = Debian
+		case "Gentoo/Linux":
+			result.Distribution = Gentoo
 		default:
 			result.Distribution = Unknown
 			result.DistributorID = osName
 		}
 	}
 	return result
+}
+
+// EqueryInstalled uses equery to see if a package is installed
+func EqueryInstalled(packageName string) (bool, error) {
+	program := NewProgramHelper()
+	equery := program.FindProgram("equery")
+	if equery == nil {
+		return false, fmt.Errorf("cannont check dependencies: equery not found")
+	}
+	_, _, exitCode, _ := equery.Run("l", packageName)
+	return exitCode == 0, nil
 }
 
 // DpkgInstalled uses dpkg to see if a package is installed
