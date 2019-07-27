@@ -49,6 +49,7 @@ func GetLinuxDistroInfo() *DistroInfo {
 	if !os.IsNotExist(err) {
 		// Default value
 		osID := "unknown"
+		osNAME := "Unknown"
 		version := ""
 		// read /etc/os-release
 		osRelease, _ := ioutil.ReadFile("/etc/os-release")
@@ -65,6 +66,8 @@ func GetLinuxDistroInfo() *DistroInfo {
 			switch splitLine[0] {
 			case "ID":
 				osID = strings.Trim(splitLine[1], "\"")
+			case "NAME":
+				osNAME = strings.Trim(splitLine[1], "\"")
 			case "VERSION_ID":
 				version = strings.Trim(splitLine[1], "\"")
 			}
@@ -88,7 +91,7 @@ func GetLinuxDistroInfo() *DistroInfo {
 			result.Distribution = Unknown
 		}
 
-		result.DistributorID = osID
+		result.DistributorID = osNAME
 	}
 	return result
 }
