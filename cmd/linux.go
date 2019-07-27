@@ -44,52 +44,11 @@ type DistroInfo struct {
 // GetLinuxDistroInfo returns information about the running linux distribution
 func GetLinuxDistroInfo() *DistroInfo {
 	result := &DistroInfo{Distribution: Unknown}
-	program := NewProgramHelper()
-	// Does lsb_release exist?
 
-	lsbRelease := program.FindProgram("lsb_release")
-	if lsbRelease != nil {
-		stdout, _, _, err := lsbRelease.Run("-a")
-		if err != nil {
-			return result
-		}
-		result.DiscoveredBy = "lsb"
-		for _, line := range strings.Split(stdout, "\n") {
-			if strings.Contains(line, ":") {
-				// Iterate lines a
-				details := strings.Split(line, ":")
-				key := strings.TrimSpace(details[0])
-				value := strings.TrimSpace(details[1])
-				switch key {
-				case "Distributor ID":
-					result.DistributorID = value
-					switch value {
-					case "Ubuntu":
-						result.Distribution = Ubuntu
-					case "Arch", "ManjaroLinux":
-						result.Distribution = Arch
-					case "Debian":
-						result.Distribution = Debian
-					case "Gentoo":
-						result.Distribution = Gentoo
-					case "Zorin":
-						result.Distribution = Zorin
-					case "Fedora":
-						result.Distribution = RedHat
-					}
-				case "Description":
-					result.Description = value
-				case "Release":
-					result.Release = value
-				case "Codename":
-					result.Codename = value
-				}
-			}
-		}
-		// check if /etc/os-release exists
-	} else if _, err := os.Stat("/etc/os-release"); !os.IsNotExist(err) {
+	_, err := os.Stat("/etc/os-release")
+	if !os.IsNotExist(err) {
 		// Default value
-		osName := "Unknown"
+		osID := "unknown"
 		version := ""
 		// read /etc/os-release
 		osRelease, _ := ioutil.ReadFile("/etc/os-release")
@@ -104,8 +63,8 @@ func GetLinuxDistroInfo() *DistroInfo {
 				continue
 			}
 			switch splitLine[0] {
-			case "NAME":
-				osName = strings.Trim(splitLine[1], "\"")
+			case "ID":
+				osID = strings.Trim(splitLine[1], "\"")
 			case "VERSION_ID":
 				version = strings.Trim(splitLine[1], "\"")
 			}
@@ -114,21 +73,22 @@ func GetLinuxDistroInfo() *DistroInfo {
 		// Check distro name against list of distros
 		result.Release = version
 		result.DiscoveredBy = "os-release"
-		switch osName {
-		case "Fedora":
+		switch osID {
+		case "fedora":
 			result.Distribution = RedHat
-		case "CentOS":
-			result.Distribution = RedHat
-		case "Arch Linux":
+		case "arch":
 			result.Distribution = Arch
-		case "Debian GNU/Linux":
+		case "debian":
 			result.Distribution = Debian
-		case "Gentoo/Linux":
+		case "gentoo":
 			result.Distribution = Gentoo
+		case "zorin":
+			result.Distribution = Zorin
 		default:
 			result.Distribution = Unknown
-			result.DistributorID = osName
 		}
+
+		result.DistributorID = osID
 	}
 	return result
 }
