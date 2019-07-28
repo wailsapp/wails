@@ -77,11 +77,11 @@ func GetLinuxDistroInfo() *DistroInfo {
 		result.Release = version
 		result.DiscoveredBy = "os-release"
 		switch osID {
-		case "fedora":
+		case "fedora", "centos":
 			result.Distribution = RedHat
 		case "arch":
 			result.Distribution = Arch
-		case "debian":
+		case "debian", "ubuntu":
 			result.Distribution = Debian
 		case "gentoo":
 			result.Distribution = Gentoo
