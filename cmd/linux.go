@@ -33,12 +33,12 @@ const (
 
 // DistroInfo contains all the information relating to a linux distribution
 type DistroInfo struct {
-	Distribution  LinuxDistribution
-	Description   string
-	Release       string
-	Codename      string
-	DistributorID string
-	DiscoveredBy  string
+	Distribution LinuxDistribution
+	Name         string
+	ID           string
+	Description  string
+	Release      string
+	DiscoveredBy string
 }
 
 // GetLinuxDistroInfo returns information about the running linux distribution
@@ -91,7 +91,8 @@ func GetLinuxDistroInfo() *DistroInfo {
 			result.Distribution = Unknown
 		}
 
-		result.DistributorID = osNAME
+		result.ID = osID
+		result.Name = osNAME
 	}
 	return result
 }
@@ -144,16 +145,16 @@ func RpmInstalled(packageName string) (bool, error) {
 // currently unsupported distribution
 func RequestSupportForDistribution(distroInfo *DistroInfo, libraryName string) error {
 	var logger = NewLogger()
-	defaultError := fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.DistributorID, libraryName)
+	defaultError := fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.Name, libraryName)
 
-	logger.Yellow("Distribution '%s' is not currently supported, but we would love to!", distroInfo.DistributorID)
-	q := fmt.Sprintf("Would you like to submit a request to support distribution '%s'?", distroInfo.DistributorID)
+	logger.Yellow("Distribution '%s' is not currently supported, but we would love to!", distroInfo.Name)
+	q := fmt.Sprintf("Would you like to submit a request to support distribution '%s'?", distroInfo.Name)
 	result := Prompt(q, "yes")
 	if strings.ToLower(result) != "yes" {
 		return defaultError
 	}
 
-	title := fmt.Sprintf("Support Distribution '%s'", distroInfo.DistributorID)
+	title := fmt.Sprintf("Support Distribution '%s'", distroInfo.Name)
 
 	var str strings.Builder
 
@@ -168,16 +169,16 @@ func RequestSupportForDistribution(distroInfo *DistroInfo, libraryName string) e
 	str.WriteString(fmt.Sprintf("| Platform      | %s |\n", runtime.GOOS))
 	str.WriteString(fmt.Sprintf("| Arch          | %s |\n", runtime.GOARCH))
 	str.WriteString(fmt.Sprintf("| GO111MODULE   | %s |\n", gomodule))
-	str.WriteString(fmt.Sprintf("| Distribution ID   | %s |\n", distroInfo.DistributorID))
+	str.WriteString(fmt.Sprintf("| Distribution ID   | %s |\n", distroInfo.ID))
+	str.WriteString(fmt.Sprintf("| Distribution Name   | %s |\n", distroInfo.Name))
 	str.WriteString(fmt.Sprintf("| Distribution Version   | %s |\n", distroInfo.Release))
 	str.WriteString(fmt.Sprintf("| Discovered by   | %s |\n", distroInfo.DiscoveredBy))
 
-	body := fmt.Sprintf("**Description**\nDistribution '%s' is currently unsupported.\n\n**Further Information**\n\n%s\n\n*Please add any extra information here, EG: libraries that are needed to make the distribution work, or commands to install them*", distroInfo.DistributorID, str.String())
+	body := fmt.Sprintf("**Description**\nDistribution '%s' is currently unsupported.\n\n**Further Information**\n\n%s\n\n*Please add any extra information here, EG: libraries that are needed to make the distribution work, or commands to install them*", distroInfo.ID, str.String())
 	fullURL := "https://github.com/wailsapp/wails/issues/new?"
 	params := "title=" + title + "&body=" + body
 
 	fmt.Println("Opening browser to file request.")
 	browser.OpenURL(fullURL + url.PathEscape(params))
 	return nil
-
 }
