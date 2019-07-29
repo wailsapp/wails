@@ -15,3 +15,4 @@ Wails is what it is because of the time and effort given by these great people. 
 * [iceleo-com](https://github.com/iceleo-com)
 * [fallendusk](https://github.com/fallendusk)
 * [Florian Didran](https://github.com/fdidron)
+* [Nikolai Zimmermann](https://github.com/Chronophylos)
