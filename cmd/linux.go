@@ -79,10 +79,8 @@ func GetLinuxDistroInfo() *DistroInfo {
 		}
 		// Check distro name against list of distros
 		result.Release = version
-		result.DiscoveredBy = "os-release"
+		result.DiscoveredBy = "/etc/os-release"
 		switch osID {
-		case "rhel":
-			result.Distribution = RedHat
 		case "fedora":
 			result.Distribution = Fedora
 		case "centos":
