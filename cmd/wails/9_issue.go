@@ -42,12 +42,37 @@ To help you in this process, we will ask for some information, add Go/Wails deta
 			gomodule = "(Not Set)"
 		}
 
+		// Get versions for GCC, node & npm
+		program := cmd.NewProgramHelper()
+		var gccVersion, nodeVersion, npmVersion string
+
+		gcc := program.FindProgram("gcc")
+		if gcc != nil {
+			stdout, _, _, _ := gcc.Run("--version")
+			gccVersion = stdout
+		}
+
+		npm := program.FindProgram("npm")
+		if npm != nil {
+			stdout, _, _, _ := npm.Run("--version")
+			nodeVersion = stdout
+		}
+
+		node := program.FindProgram("node")
+		if node != nil {
+			stdout, _, _, _ := node.Run("--version")
+			npmVersion = stdout
+		}
+
 		str.WriteString("\n| Name   | Value |\n| ----- | ----- |\n")
 		str.WriteString(fmt.Sprintf("| Wails Version | %s |\n", cmd.Version))
 		str.WriteString(fmt.Sprintf("| Go Version    | %s |\n", runtime.Version()))
 		str.WriteString(fmt.Sprintf("| Platform      | %s |\n", runtime.GOOS))
 		str.WriteString(fmt.Sprintf("| Arch          | %s |\n", runtime.GOARCH))
 		str.WriteString(fmt.Sprintf("| GO111MODULE   | %s |\n", gomodule))
+		str.WriteString(fmt.Sprintf("| Gcc      | %s |\n", gccVersion))
+		str.WriteString(fmt.Sprintf("| Npm          | %s |\n", npmVersion))
+		str.WriteString(fmt.Sprintf("| Node   | %s |\n", nodeVersion))
 
 		fmt.Println()
 		fmt.Println("Processing template and preparing for upload.")
