@@ -53,10 +53,18 @@ To help you in this process, we will ask for some information, add Go/Wails deta
 		//	gccVersion = stdout
 		//}
 
-		gccCmd := "gcc --version | sed 's/[^0-9.]*\\([0-9.]*\\).*/\\1/' | grep -m1 ''"
-		gcc, _ := exec.Command("bash", "-c", gccCmd).Output()
-		gccVersion = string(gcc)
-		gccVersion = gccVersion[:len(gccVersion)-1]
+		switch runtime.GOOS {
+		case "darwin":
+			gccCmd := "gcc -dumpversion | cut -f1,2,3 -d."
+			gcc, _ := exec.Command("bash", "-c", gccCmd).Output()
+			gccVersion = string(gcc)
+			//gccVersion = gccVersion[:len(gccVersion)-1]
+		case "linux":
+			gccCmd := "gcc --version | sed 's/[^0-9.]*\\([0-9.]*\\).*/\\1/' | grep -m1 ''"
+			gcc, _ := exec.Command("bash", "-c", gccCmd).Output()
+			gccVersion = string(gcc)
+			gccVersion = gccVersion[:len(gccVersion)-1]
+		}
 
 		npm := program.FindProgram("npm")
 		if npm != nil {
