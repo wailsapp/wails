@@ -23,6 +23,10 @@ const (
 	Arch
 	// RedHat linux distribution
 	RedHat
+	// CentOS linux distribution
+	CentOS
+	// Fedora linux distribution
+	Fedora
 	// Debian distribution
 	Debian
 	// Gentoo distribution
@@ -77,12 +81,18 @@ func GetLinuxDistroInfo() *DistroInfo {
 		result.Release = version
 		result.DiscoveredBy = "os-release"
 		switch osID {
-		case "fedora", "centos":
+		case "rhel":
 			result.Distribution = RedHat
+		case "fedora":
+			result.Distribution = Fedora
+		case "centos":
+			result.Distribution = CentOS
 		case "arch":
 			result.Distribution = Arch
-		case "debian", "ubuntu":
+		case "debian":
 			result.Distribution = Debian
+		case "ubuntu":
+			result.Distribution = Ubuntu
 		case "gentoo":
 			result.Distribution = Gentoo
 		case "zorin":

@@ -102,7 +102,7 @@ func getRequiredLibrariesLinux() (*Prerequisites, error) {
 	case Arch:
 		result.Add(newPrerequisite("gtk3", "Please install with `sudo pacman -S gtk3` and try again"))
 		result.Add(newPrerequisite("webkit2gtk", "Please install with `sudo pacman -S webkit2gtk` and try again"))
-	case RedHat:
+	case RedHat, Fedora, CentOS:
 		result.Add(newPrerequisite("gtk3-devel", "Please install with `sudo yum install gtk3-devel` and try again"))
 		result.Add(newPrerequisite("webkit2gtk3-devel", "Please install with `sudo yum install webkit2gtk3-devel` and try again"))
 	default:
