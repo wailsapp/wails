@@ -42,12 +42,51 @@ To help you in this process, we will ask for some information, add Go/Wails deta
 			gomodule = "(Not Set)"
 		}
 
+		// Get versions for GCC, node & npm
+		program := cmd.NewProgramHelper()
+		var gccVersion, nodeVersion, npmVersion string
+
+		switch runtime.GOOS {
+		case "darwin":
+			gcc := program.FindProgram("gcc")
+			if gcc != nil {
+				stdout, _, _, _ := gcc.Run("-dumpversion")
+				gccVersion = strings.TrimSpace(stdout)
+			}
+		case "linux":
+			gcc := program.FindProgram("gcc")
+			if gcc != nil {
+				gccVersion, _, _, _ := gcc.Run("-dumpfullversion")
+				gccVersion = gccVersion[:len(gccVersion)-1]
+				gccVersion = strings.TrimSpace(gccVersion)
+			}
+
+			// TODO: windows support
+		}
+
+		npm := program.FindProgram("npm")
+		if npm != nil {
+			stdout, _, _, _ := npm.Run("--version")
+			nodeVersion = stdout
+			nodeVersion = nodeVersion[:len(nodeVersion)-1]
+		}
+
+		node := program.FindProgram("node")
+		if node != nil {
+			stdout, _, _, _ := node.Run("--version")
+			npmVersion = stdout
+			npmVersion = npmVersion[:len(npmVersion)-1]
+		}
+
 		str.WriteString("\n| Name   | Value |\n| ----- | ----- |\n")
 		str.WriteString(fmt.Sprintf("| Wails Version | %s |\n", cmd.Version))
 		str.WriteString(fmt.Sprintf("| Go Version    | %s |\n", runtime.Version()))
 		str.WriteString(fmt.Sprintf("| Platform      | %s |\n", runtime.GOOS))
 		str.WriteString(fmt.Sprintf("| Arch          | %s |\n", runtime.GOARCH))
 		str.WriteString(fmt.Sprintf("| GO111MODULE   | %s |\n", gomodule))
+		str.WriteString(fmt.Sprintf("| GCC           | %s |\n", gccVersion))
+		str.WriteString(fmt.Sprintf("| Npm           | %s |\n", npmVersion))
+		str.WriteString(fmt.Sprintf("| Node          | %s |\n", nodeVersion))
 
 		fmt.Println()
 		fmt.Println("Processing template and preparing for upload.")
