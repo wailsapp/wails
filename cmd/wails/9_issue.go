@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
 	"runtime"
 	"strings"
 
@@ -47,23 +46,24 @@ To help you in this process, we will ask for some information, add Go/Wails deta
 		program := cmd.NewProgramHelper()
 		var gccVersion, nodeVersion, npmVersion string
 
-		//gcc := program.FindProgram("gcc")
-		//if gcc != nil {
-		//	stdout, _, _, _ := gcc.Run("--version", "|", "sed", "'s/[^0-9.]*\\([0-9.]*\\).*/\\1/'", "|", "grep", "-m1", "''")
-		//	gccVersion = stdout
-		//}
-
 		switch runtime.GOOS {
 		case "darwin":
-			gccCmd := "gcc -dumpversion | cut -f1,2,3 -d."
-			gcc, _ := exec.Command("bash", "-c", gccCmd).Output()
-			gccVersion = string(gcc)
-			//gccVersion = gccVersion[:len(gccVersion)-1]
+			gcc := program.FindProgram("gcc")
+			if gcc != nil {
+				stdout, _, _, _ := gcc.Run("-dumpversion")
+				gccVersion = stdout
+				// TODO: check if linefeed needs stripping or what kind
+				// gccVersion = gccVersion[:len(nodeVersion)-1]
+			}
 		case "linux":
-			gccCmd := "gcc --version | sed 's/[^0-9.]*\\([0-9.]*\\).*/\\1/' | grep -m1 ''"
-			gcc, _ := exec.Command("bash", "-c", gccCmd).Output()
-			gccVersion = string(gcc)
-			gccVersion = gccVersion[:len(gccVersion)-1]
+			gcc := program.FindProgram("gcc")
+			if gcc != nil {
+				stdout, _, _, _ := gcc.Run("-dumpfullversion")
+				gccVersion = stdout
+				gccVersion = gccVersion[:len(nodeVersion)-1]
+			}
+
+			// TODO: windows support
 		}
 
 		npm := program.FindProgram("npm")
