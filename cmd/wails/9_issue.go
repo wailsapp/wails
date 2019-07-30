@@ -53,14 +53,14 @@ To help you in this process, we will ask for some information, add Go/Wails deta
 				stdout, _, _, _ := gcc.Run("-dumpversion")
 				gccVersion = stdout
 				// TODO: check if linefeed needs stripping or what kind
-				// gccVersion = gccVersion[:len(nodeVersion)-1]
+				// gccVersion = gccVersion[:len(gccVersion)-1]
 			}
 		case "linux":
 			gcc := program.FindProgram("gcc")
 			if gcc != nil {
 				stdout, _, _, _ := gcc.Run("-dumpfullversion")
 				gccVersion = stdout
-				gccVersion = gccVersion[:len(nodeVersion)-1]
+				gccVersion = gccVersion[:len(gccVersion)-1]
 			}
 
 			// TODO: windows support
