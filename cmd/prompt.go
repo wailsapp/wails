@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 )
@@ -20,11 +19,7 @@ func Prompt(question string, defaultValue ...string) string {
 	fmt.Printf(question + ": ")
 	reader := bufio.NewReader(os.Stdin)
 	input, _ := reader.ReadString('\n')
-	EOL := "\n"
-	if runtime.GOOS == "windows" {
-		EOL = "\r\n"
-	}
-	input = strings.Replace(input, EOL, "", -1)
+	input = strings.TrimSpace(input)
 
 	if input != "" {
 		answer = input
