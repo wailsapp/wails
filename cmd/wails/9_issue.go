@@ -56,10 +56,10 @@ To help you in this process, we will ask for some information, add Go/Wails deta
 				gccVersion = strings.TrimSpace(stdout)
 			}
 		case "linux":
-			// for linux we have to
-			// collect distribution name
+			// for linux we have to collect
+			// the distribution name
 			distro := cmd.GetLinuxDistroInfo()
-			// and use it as a nested switch
+			// and use it as nested switch
 			switch distro.ID {
 			default: // most supported distros are printing the right result with just 'gcc -dumpversion'
 				gcc := program.FindProgram("gcc")
