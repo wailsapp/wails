@@ -42,10 +42,12 @@ To help you in this process, we will ask for some information, add Go/Wails deta
 			gomodule = "(Not Set)"
 		}
 
-		// Get versions for GCC, node & npm
+		// get version numbers for GCC, node & npm
 		program := cmd.NewProgramHelper()
+		// string helpers
 		var gccVersion, nodeVersion, npmVersion string
 
+		// choose between OS (mac,linux,win)
 		switch runtime.GOOS {
 		case "darwin":
 			gcc := program.FindProgram("gcc")
@@ -54,11 +56,23 @@ To help you in this process, we will ask for some information, add Go/Wails deta
 				gccVersion = strings.TrimSpace(stdout)
 			}
 		case "linux":
-			gcc := program.FindProgram("gcc")
-			if gcc != nil {
-				gccVersion, _, _, _ := gcc.Run("-dumpfullversion")
-				gccVersion = gccVersion[:len(gccVersion)-1]
-				gccVersion = strings.TrimSpace(gccVersion)
+			// for linux we have to collect
+			// the distribution name
+			distro := cmd.GetLinuxDistroInfo()
+			// and use it as nested switch
+			switch distro.ID {
+			default: // most supported distros are printing the right result with just 'gcc -dumpversion'
+				gcc := program.FindProgram("gcc")
+				if gcc != nil {
+					stdout, _, _, _ := gcc.Run("-dumpversion")
+					gccVersion = strings.TrimSpace(stdout)
+				}
+			case "fedora", "ubuntu": // except fedora & ubuntu that require 'gcc -dumpfullversion'
+				gcc := program.FindProgram("gcc")
+				if gcc != nil {
+					stdout, _, _, _ := gcc.Run("-dumpfullversion")
+					gccVersion = strings.TrimSpace(stdout)
+				}
 			}
 
 			// TODO: windows support
