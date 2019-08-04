@@ -272,7 +272,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 		distroInfo := GetLinuxDistroInfo()
 		for _, library := range *requiredLibraries {
 			switch distroInfo.Distribution {
-			case Ubuntu, Zorin, Debian:
+			case Ubuntu, Debian, Zorin, Parrot:
 				installed, err := DpkgInstalled(library.Name)
 				if err != nil {
 					return false, err
@@ -294,7 +294,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 				} else {
 					logger.Green("Library '%s' installed.", library.Name)
 				}
-			case RedHat, Fedora, CentOS:
+			case CentOS, Fedora:
 				installed, err := RpmInstalled(library.Name)
 				if err != nil {
 					return false, err
