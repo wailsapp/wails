@@ -17,22 +17,22 @@ type LinuxDistribution int
 const (
 	// Unknown is the catch-all distro
 	Unknown LinuxDistribution = iota
+	// Debian distribution
+	Debian
 	// Ubuntu distribution
 	Ubuntu
 	// Arch linux distribution
 	Arch
-	// RedHat linux distribution
-	RedHat
 	// CentOS linux distribution
 	CentOS
 	// Fedora linux distribution
 	Fedora
-	// Debian distribution
-	Debian
 	// Gentoo distribution
 	Gentoo
 	// Zorin distribution
 	Zorin
+	// Parrot distribution
+	Parrot
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -81,20 +81,22 @@ func GetLinuxDistroInfo() *DistroInfo {
 		result.Release = version
 		result.DiscoveredBy = "/etc/os-release"
 		switch osID {
-		case "fedora":
-			result.Distribution = Fedora
-		case "centos":
-			result.Distribution = CentOS
-		case "arch":
-			result.Distribution = Arch
 		case "debian":
 			result.Distribution = Debian
 		case "ubuntu":
 			result.Distribution = Ubuntu
+		case "arch":
+			result.Distribution = Arch
+		case "fedora":
+			result.Distribution = Fedora
+		case "centos":
+			result.Distribution = CentOS
 		case "gentoo":
 			result.Distribution = Gentoo
 		case "zorin":
 			result.Distribution = Zorin
+		case "parrot":
+			result.Distribution = Parrot
 		default:
 			result.Distribution = Unknown
 		}
