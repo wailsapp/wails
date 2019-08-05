@@ -46,7 +46,7 @@ Make sure you have the xcode command line tools installed. This can be done by r
 
 ### Linux
 
-#### Ubuntu 18.04, Debian 9, Zorin 15
+#### Debian 9, Ubuntu 18.04, Zorin 15, Parrot 4.7
 
 `sudo apt install libgtk-3-dev libwebkit2gtk-4.0-dev`
 
@@ -61,6 +61,10 @@ Make sure you have the xcode command line tools installed. This can be done by r
 #### Centos 7
 
 `sudo yum install webkitgtk3-devel gtk3-devel`
+
+#### Gentoo
+
+`sudo emerge gtk+:3 webkit-gtk`
 
 ### Windows
 
