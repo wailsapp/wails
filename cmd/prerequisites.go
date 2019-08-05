@@ -69,11 +69,10 @@ func getRequiredProgramsLinux() *Prerequisites {
 		result.Add(newPrerequisite("gcc", "Please install with `sudo yum install gcc-c++ make` and try again"))
 		result.Add(newPrerequisite("pkg-config", "Please install with `sudo yum install pkgconf-pkg-config` and try again"))
 		result.Add(newPrerequisite("npm", "Please install with `curl -sL https://rpm.nodesource.com/setup_12.x |  sudo bash - && sudo yum install -y nodejs` and try again"))
-	// TODO: finish checking
 	case Gentoo:
-		result.Add(newPrerequisite("gcc", "Please install with `sudo apt install build-essentials` and try again"))
-		result.Add(newPrerequisite("pkg-config", "Please install with `sudo apt install pkg-config` and try again"))
-		result.Add(newPrerequisite("npm", "Please install with `sudo snap install node --channel=12/stable --classic` and try again"))
+		result.Add(newPrerequisite("gcc", "Please install with `sudo emerge gcc make` and try again"))
+		result.Add(newPrerequisite("pkg-config", "Please install with `sudo emerge pkg-config` and try again"))
+		result.Add(newPrerequisite("npm", "Please install with `sudo emerge nodejs` and try again"))
 	case Zorin:
 		result.Add(newPrerequisite("gcc", "Please install with `sudo apt install build-essentials` and try again"))
 		result.Add(newPrerequisite("pkg-config", "Please install with `sudo apt install pkg-config` and try again"))
@@ -136,7 +135,6 @@ func getRequiredLibrariesLinux() (*Prerequisites, error) {
 	case Fedora:
 		result.Add(newPrerequisite("gtk3-devel", "Please install with `sudo yum install gtk3-devel` and try again"))
 		result.Add(newPrerequisite("webkit2gtk3-devel", "Please install with `sudo yum install webkit2gtk3-devel` and try again"))
-	// TODO: finish checking
 	case Gentoo:
 		result.Add(newPrerequisite("gtk+:3", "Please install with `sudo emerge gtk+:3` and try again"))
 		result.Add(newPrerequisite("webkit-gtk", "Please install with `sudo emerge webkit-gtk` and try again"))
