@@ -54,13 +54,13 @@ Make sure you have the xcode command line tools installed. This can be done by r
 
 `sudo pacman -S webkit2gtk gtk3`
 
-#### Fedora 30
-
-`sudo yum install webkit2gtk3-devel gtk3-devel`
-
 #### Centos 7
 
 `sudo yum install webkitgtk3-devel gtk3-devel`
+
+#### Fedora 30
+
+`sudo yum install webkit2gtk3-devel gtk3-devel`
 
 #### Gentoo
 
