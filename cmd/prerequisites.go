@@ -5,16 +5,12 @@ import (
 	"runtime"
 )
 
-// Prerequisite defines a Prerequisite!
-type Prerequisite struct {
-	Name string
-	Help string
-	Path string
-}
-
 func newPrerequisite(name, help string) *Prerequisite {
 	return &Prerequisite{Name: name, Help: help}
 }
+
+// The Linux Distribution DB
+var linuxDB = NewLinuxDB()
 
 // Prerequisites is a list of things required to use Wails
 type Prerequisites []*Prerequisite
@@ -48,31 +44,10 @@ func getRequiredProgramsOSX() *Prerequisites {
 func getRequiredProgramsLinux() *Prerequisites {
 	result := &Prerequisites{}
 	distroInfo := GetLinuxDistroInfo()
-	switch distroInfo.Distribution {
-	case Debian:
-		result.Add(newPrerequisite("gcc", "Please install with `sudo apt install build-essentials` and try again"))
-		result.Add(newPrerequisite("pkg-config", "Please install with `sudo apt install pkg-config` and try again"))
-		result.Add(newPrerequisite("npm", "Please install with `curl -sL https://deb.nodesource.com/setup_12.x | sudo bash - && sudo apt-get install -y nodejs` and try again"))
-	case Ubuntu:
-		result.Add(newPrerequisite("gcc", "Please install with `sudo apt install build-essentials` and try again"))
-		result.Add(newPrerequisite("pkg-config", "Please install with `sudo apt install pkg-config` and try again"))
-		result.Add(newPrerequisite("npm", "Please install with `curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - && sudo apt-get install -y nodejs` and try again"))
-	case Zorin:
-		result.Add(newPrerequisite("gcc", "Please install with `sudo apt install build-essentials` and try again"))
-		result.Add(newPrerequisite("pkg-config", "Please install with `sudo apt install pkg-config` and try again"))
-		result.Add(newPrerequisite("npm", "Please install with `sudo snap install node --channel=12/stable --classic` and try again"))
-	case Fedora:
-		result.Add(newPrerequisite("gcc", "Please install with `sudo yum install gcc-c++ make` and try again"))
-		result.Add(newPrerequisite("pkg-config", "Please install with `sudo yum install pkgconf-pkg-config` and try again"))
-		result.Add(newPrerequisite("npm", "Please install with `curl -sL https://rpm.nodesource.com/setup_12.x | sudo bash - && sudo yum install -y nodejs` and try again"))
-	case CentOS:
-		result.Add(newPrerequisite("gcc", "Please install with `sudo yum install gcc gcc-c++ make` and try again"))
-		result.Add(newPrerequisite("pkg-config", "Please install with `sudo yum install pkgconfig` and try again"))
-		result.Add(newPrerequisite("npm", "Please install with `curl -sL https://rpm.nodesource.com/setup_12.x | sudo bash - && sudo yum install -y nodejs` and try again"))
-	default:
-		result.Add(newPrerequisite("gcc", "Please install with your system package manager and try again"))
-		result.Add(newPrerequisite("pkg-config", "Please install with your system package manager and try again"))
-		result.Add(newPrerequisite("npm", "Please install from https://nodejs.org/en/download/ and try again"))
+	distro := linuxDB.GetDistro(distroInfo.Name)
+	release := distro.GetRelease(distroInfo.Release)
+	for _, program := range release.Programs {
+		result.Add(program)
 	}
 	return result
 }
@@ -107,31 +82,10 @@ func getRequiredLibrariesOSX() (*Prerequisites, error) {
 func getRequiredLibrariesLinux() (*Prerequisites, error) {
 	result := &Prerequisites{}
 	distroInfo := GetLinuxDistroInfo()
-	switch distroInfo.Distribution {
-	case Debian:
-		result.Add(newPrerequisite("libgtk-3-dev", "Please install with `sudo apt install libgtk-3-dev` and try again"))
-		result.Add(newPrerequisite("libwebkit2gtk-4.0-dev", "Please install with `sudo apt install libwebkit2gtk-4.0-dev` and try again"))
-	case Ubuntu:
-		result.Add(newPrerequisite("libgtk-3-dev", "Please install with `sudo apt install libgtk-3-dev` and try again"))
-		result.Add(newPrerequisite("libwebkit2gtk-4.0-dev", "Please install with `sudo apt install libwebkit2gtk-4.0-dev` and try again"))
-	case Zorin:
-		result.Add(newPrerequisite("libgtk-3-dev", "Please install with `sudo apt install libgtk-3-dev` and try again"))
-		result.Add(newPrerequisite("libwebkit2gtk-4.0-dev", "Please install with `sudo apt install libwebkit2gtk-4.0-dev` and try again"))
-	case Gentoo:
-		result.Add(newPrerequisite("gtk+:3", "Please install with `sudo emerge gtk+:3` and try again"))
-		result.Add(newPrerequisite("webkit-gtk", "Please install with `sudo emerge webkit-gtk` and try again"))
-	case Arch:
-		result.Add(newPrerequisite("gtk3", "Please install with `sudo pacman -S gtk3` and try again"))
-		result.Add(newPrerequisite("webkit2gtk", "Please install with `sudo pacman -S webkit2gtk` and try again"))
-	case Fedora:
-		result.Add(newPrerequisite("gtk3-devel", "Please install with `sudo yum install gtk3-devel` and try again"))
-		result.Add(newPrerequisite("webkit2gtk3-devel", "Please install with `sudo yum install webkit2gtk3-devel` and try again"))
-	case CentOS:
-		result.Add(newPrerequisite("gtk3-devel", "Please install with `sudo yum install gtk3-devel` and try again"))
-		result.Add(newPrerequisite("webkitgtk3-devel", "Please install with `sudo yum install webkitgtk3-devel` and try again"))
-	default:
-		result.Add(newPrerequisite("libgtk-3-dev", "Please install with your system package manager and try again"))
-		result.Add(newPrerequisite("libwebkit2gtk-4.0-dev", "Please install with your system package manager and try again"))
+	distro := linuxDB.GetDistro(distroInfo.Name)
+	release := distro.GetRelease(distroInfo.Release)
+	for _, library := range release.Libraries {
+		result.Add(library)
 	}
 	return result, nil
 }

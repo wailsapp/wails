@@ -1,0 +1,116 @@
+---
+distributions:
+  ubuntu:
+    id: ubuntu
+    releases:
+      default:
+        name: Ubuntu
+        version: default
+        programs: &ubuntudefaultprograms
+          - name: gcc
+            help: Please install with `sudo apt install build-essentials` and try again
+          - name: pkg-config
+            help: Please install with `sudo apt install pkg-config` and try again
+          - name: npm
+            help: Please install with `curl -sL https://deb.nodesource.com/setup_12.x | sudo bash - && sudo apt-get install -y nodejs` and try again
+        libraries: &ubuntudefaultlibraries
+          - name: libgtk-3-dev
+            help: Please install with `sudo apt install libgtk-3-dev` and try again
+          - name: libwebkit2gtk-4.0-dev
+            help: Please install with `sudo apt install libwebkit2gtk-4.0-dev` and try again
+  debian:
+    id: debian
+    releases:
+      default:
+        version: default
+        name: Debian
+        programs: *ubuntudefaultprograms
+        libraries: *ubuntudefaultlibraries
+  parrot:
+    id: parrot
+    releases:
+      default:
+        version: default
+        name: Parrot
+        programs: *ubuntudefaultprograms
+        libraries: *ubuntudefaultlibraries
+  zorin:
+    id: zorin
+    releases:
+      default:
+        version: default
+        name: Zorin
+        programs:
+          - name: gcc
+            help: Please install with `sudo apt install build-essentials` and try again
+          - name: pkg-config
+            help: Please install with `sudo apt install pkg-config` and try again
+          - name: npm
+            help: Please install with `sudo snap install node --channel=12/stable --classic` and try again
+        libraries: *ubuntudefaultlibraries
+  centos:
+    id: centos
+    releases:
+      default:
+        version: default
+        name: CentOS
+        programs:
+          - name: gcc
+            help: Please install with `sudo yum install gcc-c++ make` and try again
+          - name: pkg-config
+            help: Please install with `sudo yum install pkgconf-pkg-config` and try again
+          - name: npm
+            help: Please install with `curl -sL https://rpm.nodesource.com/setup_12.x | sudo bash - && sudo yum install -y nodejs` and try again
+        libraries: &centosdefaultlibraries
+          - name: gtk3-devel
+            help: Please install with `sudo yum install gtk3-devel` and try again
+          - name: webkit2gtk3-devel
+            help: Please install with `sudo yum install webkit2gtk3-devel` and try again
+  fedora:
+    id: fedora
+    releases:
+      default:
+        version: default
+        name: Fedora
+        programs:
+          - name: gcc
+            help: Please install with `sudo yum install gcc-c++ make` and try again
+          - name: pkg-config
+            help: Please install with `sudo yum install pkgconf-pkg-config` and try again
+          - name: npm
+            help: Please install `sudo yum install -y nodejs` and try again
+        libraries: *centosdefaultlibraries
+  arch:
+    id: arch
+    releases:
+      default:
+        version: default
+        name: Arch Linux
+        prerequisites:
+        - name: gtk3
+          help: Please install with `sudo pacman -S gtk3` and try again
+        - name: webkit2gtk
+          help: Please install with `sudo pacman -S webkit2gtk` and try again
+        - name: gcc
+          help: Please install with `sudo pacman -S gcc` and try again
+        - name: pkgconf
+          help: Please install with `sudo pacman -S pkgconf` and try again
+        - name: npm
+          help: Please install with `sudo pacman -S npm` and try again
+  gentoo:
+    id: gentoo
+    releases:
+      default:
+        version: default
+        name: Gentoo
+        prerequisites:
+        - name: gtk+:3
+          help: Please install with `sudo emerge gtk+:3` and try again
+        - name: webkit-gtk
+          help: Please install with `sudo emerge webkit-gtk` and try again
+        - name: gcc
+          help: Please install using your system's package manager
+        - name: pkg-config
+          help: Please install using your system's package manager
+        - name: npm
+          help: Please install using your system's package manager
