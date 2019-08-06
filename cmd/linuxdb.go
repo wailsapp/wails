@@ -2,16 +2,13 @@ package cmd
 
 import (
 	"log"
-	"path"
-	"path/filepath"
-	"runtime"
 
+	"github.com/leaanthony/mewn"
 	"gopkg.in/yaml.v3"
 )
 
 type LinuxDB struct {
 	Distributions map[string]*Distribution `yaml:"distributions"`
-	filename      string
 }
 
 type Distribution struct {
@@ -45,9 +42,13 @@ func (l *LinuxDB) Load(filename string) error {
 		if err != nil {
 			return err
 		}
-		return yaml.Unmarshal([]byte(data), l)
+		return l.ImportData(data)
 	}
 	return nil
+}
+
+func (l *LinuxDB) ImportData(data []byte) error {
+	return yaml.Unmarshal(data, l)
 }
 
 func (l *LinuxDB) GetDistro(name string) *Distribution {
@@ -82,16 +83,11 @@ func (l *LinuxDB) GetDistro(name string) *Distribution {
 // }
 
 func NewLinuxDB() *LinuxDB {
-	_, filename, _, _ := runtime.Caller(1)
-	fullPath, err := filepath.Abs(filepath.Join(path.Dir(filename), "linuxdb.yaml"))
-	if err != nil {
-		log.Fatal("Unable to open linuxdb: " + fullPath)
-	}
+	data := mewn.Bytes("./linuxdb.yaml")
 	result := LinuxDB{
-		filename:      fullPath,
 		Distributions: make(map[string]*Distribution),
 	}
-	err = result.Load(fullPath)
+	err := result.ImportData(data)
 	if err != nil {
 		log.Fatal(err)
 	}

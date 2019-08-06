@@ -9,9 +9,6 @@ func newPrerequisite(name, help string) *Prerequisite {
 	return &Prerequisite{Name: name, Help: help}
 }
 
-// The Linux Distribution DB
-var linuxDB = NewLinuxDB()
-
 // Prerequisites is a list of things required to use Wails
 type Prerequisites []*Prerequisite
 
@@ -44,10 +41,13 @@ func getRequiredProgramsOSX() *Prerequisites {
 func getRequiredProgramsLinux() *Prerequisites {
 	result := &Prerequisites{}
 	distroInfo := GetLinuxDistroInfo()
-	distro := linuxDB.GetDistro(distroInfo.Name)
-	release := distro.GetRelease(distroInfo.Release)
-	for _, program := range release.Programs {
-		result.Add(program)
+	if distroInfo.Distribution != Unknown {
+		var linuxDB = NewLinuxDB()
+		distro := linuxDB.GetDistro(distroInfo.ID)
+		release := distro.GetRelease(distroInfo.Release)
+		for _, program := range release.Programs {
+			result.Add(program)
+		}
 	}
 	return result
 }
@@ -81,11 +81,15 @@ func getRequiredLibrariesOSX() (*Prerequisites, error) {
 
 func getRequiredLibrariesLinux() (*Prerequisites, error) {
 	result := &Prerequisites{}
+	// The Linux Distribution DB
 	distroInfo := GetLinuxDistroInfo()
-	distro := linuxDB.GetDistro(distroInfo.Name)
-	release := distro.GetRelease(distroInfo.Release)
-	for _, library := range release.Libraries {
-		result.Add(library)
+	if distroInfo.Distribution != Unknown {
+		var linuxDB = NewLinuxDB()
+		distro := linuxDB.GetDistro(distroInfo.ID)
+		release := distro.GetRelease(distroInfo.Release)
+		for _, library := range release.Libraries {
+			result.Add(library)
+		}
 	}
 	return result, nil
 }
