@@ -58,24 +58,23 @@ To help you in this process, we will ask for some information, add Go/Wails deta
 		case "linux":
 			// for linux we have to collect
 			// the distribution name
-			distro := cmd.GetLinuxDistroInfo()
-			// and use it as nested switch
-			switch distro.ID {
-			default: // most supported distros are printing the right result with just 'gcc -dumpversion'
-				gcc := program.FindProgram("gcc")
-				if gcc != nil {
-					stdout, _, _, _ := gcc.Run("-dumpversion")
-					gccVersion = strings.TrimSpace(stdout)
-				}
-			case "fedora", "ubuntu": // except fedora & ubuntu that require 'gcc -dumpfullversion'
-				gcc := program.FindProgram("gcc")
-				if gcc != nil {
-					stdout, _, _, _ := gcc.Run("-dumpfullversion")
-					gccVersion = strings.TrimSpace(stdout)
-				}
-			}
+			distroInfo := cmd.GetLinuxDistroInfo()
+			linuxDB := cmd.NewLinuxDB()
+			distro := linuxDB.GetDistro(distroInfo.ID)
+			release := distro.GetRelease(distroInfo.Release)
+			gccVersionCommand := release.GccVersionCommand
 
-			// TODO: windows support
+			gcc := program.FindProgram("gcc")
+			if gcc != nil {
+				stdout, _, _, _ := gcc.Run(gccVersionCommand)
+				gccVersion = strings.TrimSpace(stdout)
+			}
+		case "windows":
+			gcc := program.FindProgram("gcc")
+			if gcc != nil {
+				stdout, _, _, _ := gcc.Run("-dumpversion")
+				gccVersion = strings.TrimSpace(stdout)
+			}
 		}
 
 		npm := program.FindProgram("npm")

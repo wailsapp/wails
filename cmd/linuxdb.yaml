@@ -6,6 +6,7 @@ distributions:
       default:
         name: Ubuntu
         version: default
+        gccversioncommand: &gccdumpfullversion -dumpfullversion
         programs: &ubuntudefaultprograms
           - name: gcc
             help: Please install with `sudo apt install build-essentials` and try again
@@ -24,6 +25,7 @@ distributions:
       default:
         version: default
         name: Debian
+        gccversioncommand: &gccdumpversion -dumpversion
         programs: *ubuntudefaultprograms
         libraries: *ubuntudefaultlibraries
   parrot:
@@ -32,6 +34,7 @@ distributions:
       default:
         version: default
         name: Parrot
+        gccversioncommand: *gccdumpversion
         programs: *ubuntudefaultprograms
         libraries: *ubuntudefaultlibraries
   zorin:
@@ -40,6 +43,7 @@ distributions:
       default:
         version: default
         name: Zorin
+        gccversioncommand: *gccdumpversion
         programs:
           - name: gcc
             help: Please install with `sudo apt install build-essentials` and try again
@@ -54,6 +58,7 @@ distributions:
       default:
         version: default
         name: CentOS
+        gccversioncommand: *gccdumpversion
         programs:
           - name: gcc
             help: Please install with `sudo yum install gcc-c++ make` and try again
@@ -72,6 +77,7 @@ distributions:
       default:
         version: default
         name: Fedora
+        gccversioncommand: *gccdumpfullversion
         programs:
           - name: gcc
             help: Please install with `sudo yum install gcc-c++ make` and try again
@@ -86,6 +92,7 @@ distributions:
       default:
         version: default
         name: Arch Linux
+        gccversioncommand: *gccdumpversion
         prerequisites:
         - name: gtk3
           help: Please install with `sudo pacman -S gtk3` and try again
@@ -103,6 +110,7 @@ distributions:
       default:
         version: default
         name: Gentoo
+        gccversioncommand: *gccdumpversion
         prerequisites:
         - name: gtk+:3
           help: Please install with `sudo emerge gtk+:3` and try again
