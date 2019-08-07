@@ -9,7 +9,7 @@ distributions:
         gccversioncommand: &gccdumpfullversion -dumpfullversion
         programs: &ubuntudefaultprograms
           - name: gcc
-            help: Please install with `sudo apt install build-essentials` and try again
+            help: Please install with `sudo apt install build-essential` and try again
           - name: pkg-config
             help: Please install with `sudo apt install pkg-config` and try again
           - name: npm
@@ -46,7 +46,7 @@ distributions:
         gccversioncommand: *gccdumpversion
         programs:
           - name: gcc
-            help: Please install with `sudo apt install build-essentials` and try again
+            help: Please install with `sudo apt install build-essential` and try again
           - name: pkg-config
             help: Please install with `sudo apt install pkg-config` and try again
           - name: npm
