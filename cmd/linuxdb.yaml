@@ -81,9 +81,9 @@ distributions:
             help: Please install `sudo yum install nodejs` and try again
         libraries:
           - name: gtk3-devel
-             help: Please install with `sudo yum install gtk3-devel` and try again
-           - name: webkit2gtk3-devel
-             help: Please install with `sudo yum install webkit2gtk3-devel` and try again
+            help: Please install with `sudo yum install gtk3-devel` and try again
+          - name: webkit2gtk3-devel
+            help: Please install with `sudo yum install webkit2gtk3-devel` and try again
   arch:
     id: arch
     releases:
