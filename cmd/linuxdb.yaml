@@ -1,6 +1,6 @@
 ---
 distributions:
-  ubuntu:
+  debian:
     id: debian
     releases:
       default:
@@ -19,7 +19,7 @@ distributions:
             help: Please install with `sudo apt-get install libgtk-3-dev` and try again
           - name: libwebkit2gtk-4.0-dev
             help: Please install with `sudo apt-get install libwebkit2gtk-4.0-dev` and try again
-  debian:
+  ubuntu:
     id: ubuntu
     releases:
       default:
@@ -81,9 +81,9 @@ distributions:
             help: Please install `sudo yum install nodejs` and try again
         libraries:
           - name: gtk3-devel
-             help: Please install with `sudo yum install gtk3-devel` and try again
-           - name: webkit2gtk3-devel
-             help: Please install with `sudo yum install webkit2gtk3-devel` and try again
+            help: Please install with `sudo yum install gtk3-devel` and try again
+          - name: webkit2gtk3-devel
+            help: Please install with `sudo yum install webkit2gtk3-devel` and try again
   arch:
     id: arch
     releases:
