@@ -120,3 +120,21 @@ distributions:
           help: Please install using your system's package manager
         - name: npm
           help: Please install using your system's package manager
+  alpine:
+    id: alpine
+    releases:
+      default:
+        version: default
+        name: Alpine Linux
+        gccversioncommand: *gccdumpversion
+        prerequisites:
+        - name: gtk+3.0
+          help: Please install with `sudo apk add gtk+3.0` and try again
+        - name: webkit2gtk-dev
+          help: Please install with `sudo apk add webkit2gtk-dev` and try again
+        - name: gcc
+          help: Please install with `sudo apk add build-base` and try again
+        - name: pkgconfig
+          help: Please install with `sudo apk add pkgconfig` and try again
+        - name: npm
+          help: Please install with `sudo apk add npm` and try again

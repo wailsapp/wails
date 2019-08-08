@@ -33,6 +33,8 @@ const (
 	Zorin
 	// Parrot distribution
 	Parrot
+	// Alpine distribution
+	Alpine
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -107,8 +109,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Zorin
 	case "parrot":
 		result.Distribution = Parrot
-	case "parrot":
-		result.Distribution = Parrot
+	case "alpine":
+		result.Distribution = Alpine
 	default:
 		result.Distribution = Unknown
 	}
@@ -162,7 +164,7 @@ func RpmInstalled(packageName string) (bool, error) {
 	return exitCode == 0, nil
 }
 
-// ApkInstalled uses rpm to see if a package is installed
+// ApkInstalled uses apk to see if a package is installed
 func ApkInstalled(packageName string) (bool, error) {
 	program := NewProgramHelper()
 	apk := program.FindProgram("apk")
