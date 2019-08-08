@@ -42,68 +42,77 @@ type DistroInfo struct {
 	ID           string
 	Description  string
 	Release      string
-	DiscoveredBy string
 }
 
 // GetLinuxDistroInfo returns information about the running linux distribution
 func GetLinuxDistroInfo() *DistroInfo {
-	result := &DistroInfo{Distribution: Unknown}
-
+	result := &DistroInfo{
+		Distribution: Unknown,
+		ID:           "unknown",
+		Name:         "Unknown",
+	}
 	_, err := os.Stat("/etc/os-release")
 	if !os.IsNotExist(err) {
-		// Default value
-		osID := "unknown"
-		osNAME := "Unknown"
-		version := ""
-		// read /etc/os-release
 		osRelease, _ := ioutil.ReadFile("/etc/os-release")
-		// Split into lines
-		lines := strings.Split(string(osRelease), "\n")
-		// Iterate lines
-		for _, line := range lines {
-			// Split each line by the equals char
-			splitLine := strings.SplitN(line, "=", 2)
-			// Check we have
-			if len(splitLine) != 2 {
-				continue
-			}
-			switch splitLine[0] {
-			case "ID":
-				osID = strings.Trim(splitLine[1], "\"")
-			case "NAME":
-				osNAME = strings.Trim(splitLine[1], "\"")
-			case "VERSION_ID":
-				version = strings.Trim(splitLine[1], "\"")
-			}
-
-		}
-		// Check distro name against list of distros
-		result.Release = version
-		result.DiscoveredBy = "/etc/os-release"
-		switch osID {
-		case "debian":
-			result.Distribution = Debian
-		case "ubuntu":
-			result.Distribution = Ubuntu
-		case "arch":
-			result.Distribution = Arch
-		case "fedora":
-			result.Distribution = Fedora
-		case "centos":
-			result.Distribution = CentOS
-		case "gentoo":
-			result.Distribution = Gentoo
-		case "zorin":
-			result.Distribution = Zorin
-		case "parrot":
-			result.Distribution = Parrot
-		default:
-			result.Distribution = Unknown
-		}
-
-		result.ID = osID
-		result.Name = osNAME
+		result = parseOsRelease(string(osRelease))
 	}
+	return result
+}
+
+// parseOsRelease parses the given os-release data and returns
+// a DistroInfo struct with the details
+func parseOsRelease(osRelease string) *DistroInfo {
+	result := &DistroInfo{Distribution: Unknown}
+
+	// Default value
+	osID := "unknown"
+	osNAME := "Unknown"
+	version := ""
+
+	// Split into lines
+	lines := strings.Split(osRelease, "\n")
+	// Iterate lines
+	for _, line := range lines {
+		// Split each line by the equals char
+		splitLine := strings.SplitN(line, "=", 2)
+		// Check we have
+		if len(splitLine) != 2 {
+			continue
+		}
+		switch splitLine[0] {
+		case "ID":
+			osID = strings.Trim(splitLine[1], "\"")
+		case "NAME":
+			osNAME = strings.Trim(splitLine[1], "\"")
+		case "VERSION_ID":
+			version = strings.Trim(splitLine[1], "\"")
+		}
+	}
+	// Check distro name against list of distros
+	result.Release = version
+	switch osID {
+	case "fedora":
+		result.Distribution = Fedora
+	case "centos":
+		result.Distribution = CentOS
+	case "arch":
+		result.Distribution = Arch
+	case "debian":
+		result.Distribution = Debian
+	case "ubuntu":
+		result.Distribution = Ubuntu
+	case "gentoo":
+		result.Distribution = Gentoo
+	case "zorin":
+		result.Distribution = Zorin
+	case "parrot":
+		result.Distribution = Parrot
+	default:
+		result.Distribution = Unknown
+	}
+
+	result.ID = osID
+	result.Name = osNAME
 	return result
 }
 
@@ -182,7 +191,6 @@ func RequestSupportForDistribution(distroInfo *DistroInfo, libraryName string) e
 	str.WriteString(fmt.Sprintf("| Distribution ID   | %s |\n", distroInfo.ID))
 	str.WriteString(fmt.Sprintf("| Distribution Name   | %s |\n", distroInfo.Name))
 	str.WriteString(fmt.Sprintf("| Distribution Version   | %s |\n", distroInfo.Release))
-	str.WriteString(fmt.Sprintf("| Discovered by   | %s |\n", distroInfo.DiscoveredBy))
 
 	body := fmt.Sprintf("**Description**\nDistribution '%s' is currently unsupported.\n\n**Further Information**\n\n%s\n\n*Please add any extra information here, EG: libraries that are needed to make the distribution work, or commands to install them*", distroInfo.ID, str.String())
 	fullURL := "https://github.com/wailsapp/wails/issues/new?"
