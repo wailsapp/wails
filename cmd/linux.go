@@ -1,5 +1,5 @@
 package cmd
-//
+
 import (
 	"fmt"
 	"io/ioutil"
