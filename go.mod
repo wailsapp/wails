@@ -27,4 +27,5 @@ require (
 	golang.org/x/net v0.0.0-20190509222800-a4d6f7feada5 // indirect
 	golang.org/x/sys v0.0.0-20190509141414-a5b02f93d862
 	gopkg.in/AlecAivazis/survey.v1 v1.8.4
+	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
 )
