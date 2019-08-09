@@ -35,6 +35,8 @@ const (
 	Parrot
 	// Alpine distribution
 	Alpine
+	// Linuxmint distribution
+	Linuxmint
 )
 
 // DistroInfo contains all the information relating to a linux distribution
