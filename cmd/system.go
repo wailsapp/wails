@@ -316,17 +316,6 @@ func CheckDependencies(logger *Logger) (bool, error) {
 				} else {
 					logger.Green("Library '%s' installed.", library.Name)
 				}
-			case Alpine:
-				installed, err := ApkInstalled(library.Name)
-				if err != nil {
-					return false, err
-				}
-				if !installed {
-					errors = true
-					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
-				} else {
-					logger.Green("Library '%s' installed.", library.Name)
-				}
 			default:
 				return false, RequestSupportForDistribution(distroInfo, library.Name)
 			}

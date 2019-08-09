@@ -111,8 +111,6 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Zorin
 	case "parrot":
 		result.Distribution = Parrot
-	case "alpine":
-		result.Distribution = Alpine
 	case "linuxmint":
 		result.Distribution = Linuxmint
 	default:
@@ -165,17 +163,6 @@ func RpmInstalled(packageName string) (bool, error) {
 		return false, fmt.Errorf("cannot check dependencies: rpm not found")
 	}
 	_, _, exitCode, _ := rpm.Run("--query", packageName)
-	return exitCode == 0, nil
-}
-
-// ApkInstalled uses apk to see if a package is installed
-func ApkInstalled(packageName string) (bool, error) {
-	program := NewProgramHelper()
-	apk := program.FindProgram("apk")
-	if apk == nil {
-		return false, fmt.Errorf("cannot check dependencies: apk not found")
-	}
-	_, _, exitCode, _ := apk.Run("list", packageName)
 	return exitCode == 0, nil
 }
 
