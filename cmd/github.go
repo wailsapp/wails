@@ -18,7 +18,7 @@ func NewGitHubHelper() *GitHubHelper {
 }
 
 // GetVersionTags gets the list of tags on the Wails repo
-// It retuns a list of sorted tags in descending order
+// It returns a list of sorted tags in descending order
 func (g *GitHubHelper) GetVersionTags() ([]*SemanticVersion, error) {
 
 	result := []*SemanticVersion{}
