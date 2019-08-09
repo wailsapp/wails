@@ -111,6 +111,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Parrot
 	case "alpine":
 		result.Distribution = Alpine
+	case "linuxmint":
+		result.Distribution = Linuxmint
 	default:
 		result.Distribution = Unknown
 	}
