@@ -1,0 +1,55 @@
+# Go
+# Build your Go project.
+# Add steps that test, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/go
+
+trigger:
+- develop
+
+strategy:
+  matrix:
+    linux:
+      imageName: 'ubuntu-16.04'
+    # mac:
+    #   imageName: 'macos-10.13'
+    # windows:
+    #   imageName: 'vs2017-win2016'
+
+pool:
+  vmImage: $(imageName)
+
+variables:
+  GOBIN:  '$(GOPATH)/bin' # Go binaries path
+  GOROOT: '/usr/local/go1.12' # Go installation path
+  GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
+  GOMODULE: 'on'
+  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
+
+steps:
+
+# Linux
+- bash: |
+    mkdir -p '$(GOBIN)'
+    mkdir -p '$(GOPATH)/pkg'
+    mkdir -p '$(modulePath)'
+    shopt -s extglob
+    shopt -s dotglob
+    mv !(gopath) '$(modulePath)'
+    echo '##vso[task.prependpath]$(GOBIN)'
+    echo '##vso[task.prependpath]$(GOROOT)/bin'
+  displayName: 'Set up the Go workspace'
+
+- bash: |
+    go version
+    go get -v -t -d ./...
+    cd cmd/wails
+    go install
+  workingDirectory: '$(modulePath)'
+  displayName: 'Get dependencies, then build'
+
+- bash: |
+    wails version
+  workingDirectory: '$(modulePath)'
+  displayName: 'Check we have output'
+
+# Windows TBD
