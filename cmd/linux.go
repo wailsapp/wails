@@ -33,8 +33,6 @@ const (
 	Zorin
 	// Parrot distribution
 	Parrot
-	// Alpine distribution
-	Alpine
 	// Linuxmint distribution
 	Linuxmint
 )
