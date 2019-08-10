@@ -66,10 +66,6 @@ Make sure you have the xcode command line tools installed. This can be done by r
 
 `sudo emerge gtk+:3 webkit-gtk`
 
-#### Alpine 
-
-`sudo apk add gtk+3.0 webkit2gtk-dev`
-
 ### Windows
 
 Windows requires gcc and related tooling. The recommended download is from [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download). Once this is installed, you are good to go.
