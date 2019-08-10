@@ -46,6 +46,15 @@ distributions:
         gccversioncommand: *gccdumpversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
+  linuxmint:
+    id: linuxmint
+    releases:
+      default:
+        version: default
+        name: Linuxmint
+        gccversioncommand: *gccdumpversion
+        programs: *debiandefaultprograms
+        libraries: *debiandefaultlibraries
   centos:
     id: centos
     releases:
