@@ -33,6 +33,8 @@ const (
 	Zorin
 	// Parrot distribution
 	Parrot
+	// Linuxmint distribution
+	Linuxmint
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -107,6 +109,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Zorin
 	case "parrot":
 		result.Distribution = Parrot
+	case "linuxmint":
+		result.Distribution = Linuxmint
 	default:
 		result.Distribution = Unknown
 	}
