@@ -1,4 +1,7 @@
 trigger:
+- master
+
+pr:
 - develop
 
 pool:
