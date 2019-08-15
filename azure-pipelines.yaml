@@ -1,37 +1,26 @@
-# Go
-# Build your Go project.
-# Add steps that test, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/go
-
 trigger:
 - develop
 
-strategy:
-  matrix:
-    linux:
-      imageName: 'ubuntu-16.04'
-    # mac:
-    #   imageName: 'macos-10.13'
-    # windows:
-    #   imageName: 'vs2017-win2016'
-
 pool:
-  vmImage: $(imageName)
+  vmImage: 'Ubuntu-16.04'
 
 variables:
+  GOPATH: '$(Agent.BuildDirectory)/gopath' # Go workspace path
+  GOROOT: '$(Agent.BuildDirectory)/go' # Go installation path
   GOBIN:  '$(GOPATH)/bin' # Go binaries path
-  GOROOT: '/usr/local/go1.12' # Go installation path
-  GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
-  GOMODULE: 'on'
   modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
 
 steps:
+- script: |
+    wget "https://storage.googleapis.com/golang/go1.12.linux-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.tar.gz"
+    tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.tar.gz"
+  displayName: 'Install Go 1.12'
 
-# Linux
-- bash: |
+- script: |
     mkdir -p '$(GOBIN)'
     mkdir -p '$(GOPATH)/pkg'
     mkdir -p '$(modulePath)'
+    mkdir -p '$(GOROOT)'
     shopt -s extglob
     shopt -s dotglob
     mv !(gopath) '$(modulePath)'
@@ -51,5 +40,3 @@ steps:
     wails version
   workingDirectory: '$(modulePath)'
   displayName: 'Check we have output'
-
-# Windows TBD
