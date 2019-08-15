@@ -13,7 +13,7 @@ import (
 	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
 	"github.com/wailsapp/wails/lib/messages"
-	"github.com/wailsapp/webview"
+	"github.com/wailsapp/wails/lib/renderer/webview"
 )
 
 // WebView defines the main webview application window
