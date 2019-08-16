@@ -13,13 +13,13 @@ import (
 	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
 	"github.com/wailsapp/wails/lib/messages"
-	"github.com/wailsapp/wails/lib/renderer/webview"
+	wv "github.com/wailsapp/wails/lib/renderer/webview"
 )
 
 // WebView defines the main webview application window
 // Default values in []
 type WebView struct {
-	window       webview.WebView // The webview object
+	window       wv.WebView // The webview object
 	ipc          interfaces.IPCManager
 	log          *logger.CustomLogger
 	config       interfaces.AppConfig
@@ -49,7 +49,7 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	w.config = config
 
 	// Create the WebView instance
-	w.window = webview.NewWebview(webview.Settings{
+	w.window = wv.NewWebview(webview.Settings{
 		Width:     config.GetWidth(),
 		Height:    config.GetHeight(),
 		Title:     config.GetTitle(),
@@ -246,7 +246,7 @@ func (w *WebView) SelectFile() string {
 	wg.Add(1)
 	go func() {
 		w.window.Dispatch(func() {
-			result = w.window.Dialog(webview.DialogTypeOpen, 0, "Select File", "")
+			result = w.window.Dialog(wv.DialogTypeOpen, 0, "Select File", "")
 			wg.Done()
 		})
 	}()
@@ -264,7 +264,7 @@ func (w *WebView) SelectDirectory() string {
 	wg.Add(1)
 	go func() {
 		w.window.Dispatch(func() {
-			result = w.window.Dialog(webview.DialogTypeOpen, webview.DialogFlagDirectory, "Select Directory", "")
+			result = w.window.Dialog(wv.DialogTypeOpen, wv.DialogFlagDirectory, "Select Directory", "")
 			wg.Done()
 		})
 	}()
@@ -282,7 +282,7 @@ func (w *WebView) SelectSaveFile() string {
 	wg.Add(1)
 	go func() {
 		w.window.Dispatch(func() {
-			result = w.window.Dialog(webview.DialogTypeSave, 0, "Save file", "")
+			result = w.window.Dialog(wv.DialogTypeSave, 0, "Save file", "")
 			wg.Done()
 		})
 	}()
