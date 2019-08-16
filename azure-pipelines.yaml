@@ -19,6 +19,7 @@ stages:
     displayName: Linux build
     pool:
       vmImage: 'Ubuntu-16.04'
+    environment: 'linux-dev'
     strategy:
       runOnce:
         deploy:
@@ -55,6 +56,7 @@ stages:
     displayName: Macos build
     pool:
       vmImage: 'macos-10.13'
+    environment: 'mac-dev'
     strategy:
       runOnce:
         deploy:
