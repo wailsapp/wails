@@ -88,3 +88,40 @@ stages:
               wails version
             workingDirectory: '$(modulePath)'
             displayName: 'Check we have output'
+
+  - deployment: Win
+    displayName: Windows
+    pool:
+      vmImage: 'vs2017-win2016'
+    environment: 'win-dev'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
+            clean: true  # whether to fetch clean each time
+            path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
+          - script: |
+              wget "https://storage.googleapis.com/golang/go1.12.7.darwin-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
+              tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
+            displayName: 'Install Go 1.12.7 Linux'
+          - script: |
+              mkdir -p '$(GOBIN)'
+              mkdir -p '$(GOPATH)/pkg'
+              mkdir -p '$(GOROOT)'
+              shopt -s extglob
+              shopt -s dotglob
+              echo '##vso[task.prependpath]$(GOBIN)'
+              echo '##vso[task.prependpath]$(GOROOT)/bin'
+            displayName: 'Set up the Go workspace'
+          - script: |
+              go version
+              go get -v -d ./...
+              cd cmd/wails
+              go install
+            workingDirectory: '$(modulePath)'
+            displayName: 'Get dependencies, then build'
+          - script: |
+              wails version
+            workingDirectory: '$(modulePath)'
+            displayName: 'Check we have output'
