@@ -30,7 +30,7 @@ stages:
           - script: |
               wget "https://storage.googleapis.com/golang/go1.12.7.linux-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
               tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
-              displayName: 'Install Go 1.12.7 Linux'
+            displayName: 'Install Go 1.12.7 Linux'
           - script: |
               mkdir -p '$(GOBIN)'
               mkdir -p '$(GOPATH)/pkg'
@@ -39,18 +39,18 @@ stages:
               shopt -s dotglob
               echo '##vso[task.prependpath]$(GOBIN)'
               echo '##vso[task.prependpath]$(GOROOT)/bin'
-              displayName: 'Set up the Go workspace'
+            displayName: 'Set up the Go workspace'
           - script: |
               go version
               go get -v -d ./...
               cd cmd/wails
               go install
-              workingDirectory: '$(modulePath)'
-              displayName: 'Get dependencies, then build'
+            workingDirectory: '$(modulePath)'
+            displayName: 'Get dependencies, then build'
           - script: |
               wails version
-              workingDirectory: '$(modulePath)'
-              displayName: 'Check we have output'
+            workingDirectory: '$(modulePath)'
+            displayName: 'Check we have output'
 
   - deployment: Mac
     displayName: Macos build
@@ -67,7 +67,7 @@ stages:
           - script: |
               wget "https://storage.googleapis.com/golang/go1.12.7.linux-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
               tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
-              displayName: 'Install Go 1.12.7 Linux'
+            displayName: 'Install Go 1.12.7 Linux'
           - script: |
               mkdir -p '$(GOBIN)'
               mkdir -p '$(GOPATH)/pkg'
@@ -76,15 +76,15 @@ stages:
               shopt -s dotglob
               echo '##vso[task.prependpath]$(GOBIN)'
               echo '##vso[task.prependpath]$(GOROOT)/bin'
-              displayName: 'Set up the Go workspace'
+            displayName: 'Set up the Go workspace'
           - script: |
               go version
               go get -v -d ./...
               cd cmd/wails
               go install
-              workingDirectory: '$(modulePath)'
-              displayName: 'Get dependencies, then build'
+            workingDirectory: '$(modulePath)'
+            displayName: 'Get dependencies, then build'
           - script: |
               wails version
-              workingDirectory: '$(modulePath)'
-              displayName: 'Check we have output'
+            workingDirectory: '$(modulePath)'
+            displayName: 'Check we have output'
