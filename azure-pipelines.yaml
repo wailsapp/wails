@@ -99,6 +99,7 @@ stages:
     variables:  # win-level
       GOBIN:  '$(GOPATH)/bin' # Go binaries path
       GOMODULE: 'on'
+      modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
     pool:
       vmImage: 'windows-2019'
     environment: 'win-dev'
