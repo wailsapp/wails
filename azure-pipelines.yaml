@@ -1,46 +1,128 @@
-#trigger:
-#- master
+# avoid double trigger by applying some rules
+# start a pipeline when push to 'master' branch 
+trigger:
+- master
+# or when pull request on 'develop' branch
+pr:
+- develop
 
-#pr:
-#- develop
+# for now there is only one stage 'Build'
+# in the future we could use multistage strategy for releases
+stages:
+- stage: Build
 
-pool:
-  vmImage: 'Ubuntu-16.04'
-
-variables:
-  GOPATH: '$(Agent.BuildDirectory)/gopath' # Go workspace path
-  GOROOT: '$(Agent.BuildDirectory)/go' # Go installation path
-  GOBIN:  '$(GOPATH)/bin' # Go binaries path
-  GOMODULE: 'on'
-  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
-
-steps:
-- script: |
-    wget "https://storage.googleapis.com/golang/go1.12.linux-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.tar.gz"
-    tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.tar.gz"
-  displayName: 'Install Go 1.12'
-
-- script: |
-    mkdir -p '$(GOBIN)'
-    mkdir -p '$(GOPATH)/pkg'
-    mkdir -p '$(modulePath)'
-    mkdir -p '$(GOROOT)'
-    shopt -s extglob
-    shopt -s dotglob
-    mv !(gopath) '$(modulePath)'
-    echo '##vso[task.prependpath]$(GOBIN)'
-    echo '##vso[task.prependpath]$(GOROOT)/bin'
-  displayName: 'Set up the Go workspace'
-
-- script: |
-    go version
-    go get -v -t -d ./...
-    cd cmd/wails
-    go install
-  workingDirectory: '$(modulePath)'
-  displayName: 'Get dependencies, then build'
-
-- script: |
-    wails version
-  workingDirectory: '$(modulePath)'
-  displayName: 'Check we have output'
+  # there are 3 jobs
+  # one for each os
+  jobs:
+  - deployment: Linux
+    displayName: Lin
+    variables:
+      GOPATH: '$(Agent.BuildDirectory)/gopath' # Go workspace path
+      GOROOT: '$(Agent.BuildDirectory)/go' # Go installation path
+      GOBIN:  '$(GOPATH)/bin' # Go binaries path
+      GOMODULE: 'on'
+      modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
+    pool:
+      vmImage: 'Ubuntu-16.04'
+    environment: 'linux-dev'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
+            clean: true  # whether to fetch clean each time
+            path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
+            # go version 1.12.7
+          - script: |
+              wget "https://storage.googleapis.com/golang/go1.12.7.linux-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
+              tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
+            displayName: 'Install Go 1.12.7 Linux'
+          - script: |
+              mkdir -p '$(GOBIN)'
+              mkdir -p '$(GOPATH)/pkg'
+              mkdir -p '$(GOROOT)'
+              shopt -s extglob
+              shopt -s dotglob
+              echo '##vso[task.prependpath]$(GOBIN)'
+              echo '##vso[task.prependpath]$(GOROOT)/bin'
+            displayName: 'Set up the Go workspace'
+          - script: |
+              go version
+              go get -v -d ./...
+              cd cmd/wails
+              go install
+            workingDirectory: '$(modulePath)'
+            displayName: 'Get dependencies, then build'
+          - script: |
+              wails version
+            workingDirectory: '$(modulePath)'
+            displayName: 'Check we have output'
+  - deployment: Mac
+    displayName: Mac
+    variables:
+      GOPATH: '$(Agent.BuildDirectory)/gopath' # Go workspace path
+      GOROOT: '$(Agent.BuildDirectory)/go' # Go installation path
+      GOBIN:  '$(GOPATH)/bin' # Go binaries path
+      GOMODULE: 'on'
+      modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
+    pool:
+      vmImage: 'macOS-10.14'
+    environment: 'mac-dev'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
+            clean: true  # whether to fetch clean each time
+            path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
+          # go version 1.12.7
+          - script: |
+              wget "https://storage.googleapis.com/golang/go1.12.7.darwin-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
+              tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
+            displayName: 'Install Go 1.12.7 Linux'
+          - script: |
+              mkdir -p '$(GOBIN)'
+              mkdir -p '$(GOPATH)/pkg'
+              mkdir -p '$(GOROOT)'
+              shopt -s extglob
+              shopt -s dotglob
+              echo '##vso[task.prependpath]$(GOBIN)'
+              echo '##vso[task.prependpath]$(GOROOT)/bin'
+            displayName: 'Set up the Go workspace'
+          - script: |
+              go version
+              go get -v -d ./...
+              cd cmd/wails
+              go install
+            workingDirectory: '$(modulePath)'
+            displayName: 'Get dependencies, then build'
+          - script: |
+              wails version
+            workingDirectory: '$(modulePath)'
+            displayName: 'Check we have output'
+  - deployment: Win
+    displayName: Win
+    variables:  # win-level
+      GOMODULE: 'on'
+      modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
+    pool:
+      vmImage: 'windows-2019'
+    environment: 'win-dev'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
+            clean: true  # whether to fetch clean each time
+            path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
+          - script: |
+              go version
+              go get -v -d ./...
+              cd cmd/wails
+              go install
+            workingDirectory: '$(modulePath)'
+            displayName: 'Get dependencies, then build'
+          - script: |
+              wails version
+            workingDirectory: '$(modulePath)'
+            displayName: 'Check we have output'
