@@ -16,7 +16,7 @@ stages:
 
   jobs:
   - deployment: Linux
-    displayName: Linux
+    displayName: Lin
     pool:
       vmImage: 'Ubuntu-16.04'
     environment: 'linux-dev'
@@ -53,9 +53,9 @@ stages:
             displayName: 'Check we have output'
 
   - deployment: Mac
-    displayName: Macos
+    displayName: Mac
     pool:
-      vmImage: 'macos-10.13'
+      vmImage: 'macOS-10.14'
     environment: 'mac-dev'
     strategy:
       runOnce:
@@ -90,9 +90,11 @@ stages:
             displayName: 'Check we have output'
 
   - deployment: Win
-    displayName: Windows
+    displayName: Win
+    #variables:  # win-level
+    #  GOROOT: '/usr/local/go1.12.4'
     pool:
-      vmImage: 'vs2017-win2016'
+      vmImage: 'windows-2019'
     environment: 'win-dev'
     strategy:
       runOnce:
@@ -102,8 +104,8 @@ stages:
             clean: true  # whether to fetch clean each time
             path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
           - script: |
-              wget "https://storage.googleapis.com/golang/go1.12.7.darwin-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
-              tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
+              wget "https://storage.googleapis.com/golang/go1.12.7.windows-amd64.zip" --output-document "$(Agent.BuildDirectory)/go1.12.7.zip"
+              jar '$(Agent.BuildDirectory)' -xf "$(Agent.BuildDirectory)/go1.12.7.zip"
             displayName: 'Install Go 1.12.7 Linux'
           - script: |
               mkdir -p '$(GOBIN)'
