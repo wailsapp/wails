@@ -18,26 +18,28 @@ pool:
   vmImage: $(imageName)
 
 variables:
-  GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
-  GOROOT: '$(system.defaultWorkingDirectory)/go' # Go installation path
+  GOPATH: '$(Agent.BuildDirectory)/gopath' # Go workspace path
+  GOROOT: '$(Agent.BuildDirectory)/go' # Go installation path
   GOBIN:  '$(GOPATH)/bin' # Go binaries path
   GOMODULE: 'on'
-  modulePath: '$(system.defaultWorkingDirectory)/$(build.repository.name)' # Path to the module's code
+  modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
 
 steps:
+- checkout: self  # self represents the repo where the initial Pipelines YAML file was found
+  clean: true  # whether to fetch clean each time
+  path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
+
 - script: |
-    wget "https://storage.googleapis.com/golang/go1.12.7.linux-amd64.tar.gz" --output-document "$(system.defaultWorkingDirectory)/go1.12.7.tar.gz"
-    tar -C '$(system.defaultWorkingDirectory)' -xzf "$(system.defaultWorkingDirectory)/go1.12.7.tar.gz"
+    wget "https://storage.googleapis.com/golang/go1.12.7.linux-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
+    tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
   displayName: 'Install Go 1.12.7'
 
 - script: |
     mkdir -p '$(GOBIN)'
     mkdir -p '$(GOPATH)/pkg'
-    mkdir -p '$(modulePath)'
     mkdir -p '$(GOROOT)'
     shopt -s extglob
     shopt -s dotglob
-
     echo '##vso[task.prependpath]$(GOBIN)'
     echo '##vso[task.prependpath]$(GOROOT)/bin'
   displayName: 'Set up the Go workspace'
