@@ -4,19 +4,6 @@ trigger:
 pr:
 - develop
 
-strategy:
-  matrix:
-    linux:
-      imageName: "ubuntu-16.04"
-    mac:
-      imageName: "macos-10.13"
-    windows:
-      imageName: "vs2017-win2016"
-  maxParallel: 3
-
-pool:
-  vmImage: $(imageName)
-
 variables:
   GOPATH: '$(Agent.BuildDirectory)/gopath' # Go workspace path
   GOROOT: '$(Agent.BuildDirectory)/go' # Go installation path
@@ -32,19 +19,7 @@ steps:
 - script: |
     wget "https://storage.googleapis.com/golang/go1.12.7.linux-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
     tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
-    condition: eq( variables['Agent.OS'], 'Linux' )
     displayName: 'Install Go 1.12.7 Linux'
-
-- script: |
-    wget "https://storage.googleapis.com/golang/go1.12.7.linux-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
-    tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
-    condition: eq( variables['Agent.OS'], 'Darwin' )
-    displayName: 'Install Go 1.12.7 Mac'
-
-- script: |
-    echo stop
-    condition: eq( variables['Agent.OS'], 'Windows_NT' )
-    displayName: 'Install Go 1.12.7 Win'
 
 - script: |
     mkdir -p '$(GOBIN)'
