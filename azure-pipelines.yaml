@@ -1,12 +1,18 @@
+# avoid double trigger by applying some rules
+# start a pipeline when push to 'master' branch 
 trigger:
 - master
-
+# or when pull request on 'develop' branch
 pr:
 - develop
 
+# for now there is only one stage 'Build'
+# in the future we could use multistage strategy for releases
 stages:
 - stage: Build
 
+  # there are 3 jobs
+  # one for each os
   jobs:
   - deployment: Linux
     displayName: Lin
@@ -26,6 +32,7 @@ stages:
           - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
             clean: true  # whether to fetch clean each time
             path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
+            # go version 1.12.7
           - script: |
               wget "https://storage.googleapis.com/golang/go1.12.7.linux-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
               tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
@@ -69,6 +76,7 @@ stages:
           - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
             clean: true  # whether to fetch clean each time
             path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
+          # go version 1.12.7
           - script: |
               wget "https://storage.googleapis.com/golang/go1.12.7.darwin-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
               tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.7.tar.gz"
@@ -98,6 +106,7 @@ stages:
     displayName: Win
     variables:  # win-level
       GOMODULE: 'on'
+      GOBIN: '/usr/local/go/bin'
       modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
     pool:
       vmImage: 'windows-2019'
