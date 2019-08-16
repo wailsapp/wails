@@ -91,8 +91,6 @@ stages:
 
   - deployment: Win
     displayName: Win
-    variables:  # win-level
-      GOROOT: '/usr/local/go1.12.4'
     pool:
       vmImage: 'windows-2019'
     environment: 'win-dev'
