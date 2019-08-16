@@ -91,8 +91,8 @@ stages:
 
   - deployment: Win
     displayName: Win
-    #variables:  # win-level
-    #  GOROOT: '/usr/local/go1.12.4'
+    variables:  # win-level
+      GOROOT: '/usr/local/go1.12.4'
     pool:
       vmImage: 'windows-2019'
     environment: 'win-dev'
@@ -103,14 +103,8 @@ stages:
           - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
             clean: true  # whether to fetch clean each time
             path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
+
           - script: |
-              wget "https://storage.googleapis.com/golang/go1.12.7.windows-amd64.zip" --output-document "$(Agent.BuildDirectory)/go1.12.7.zip"
-              jar '$(Agent.BuildDirectory)' -xf "$(Agent.BuildDirectory)/go1.12.7.zip"
-            displayName: 'Install Go 1.12.7 Linux'
-          - script: |
-              mkdir -p '$(GOBIN)'
-              mkdir -p '$(GOPATH)/pkg'
-              mkdir -p '$(GOROOT)'
               shopt -s extglob
               shopt -s dotglob
               echo '##vso[task.prependpath]$(GOBIN)'
