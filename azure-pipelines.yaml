@@ -27,7 +27,7 @@ steps:
     mkdir -p '$(GOROOT)'
     shopt -s extglob
     shopt -s dotglob
-    # mv !(gopath) '$(modulePath)'
+    mv '$(system.defaultWorkingDirectory)' '$(build.repository.name)'
     echo '##vso[task.prependpath]$(GOBIN)'
     echo '##vso[task.prependpath]$(GOROOT)/bin'
   displayName: 'Set up the Go workspace'
