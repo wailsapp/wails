@@ -8,17 +8,17 @@ pool:
   vmImage: 'Ubuntu-16.04'
 
 variables:
-  GOPATH: '$(Agent.BuildDirectory)/gopath' # Go workspace path
-  GOROOT: '$(Agent.BuildDirectory)/go' # Go installation path
+  GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
+  GOROOT: '$(system.defaultWorkingDirectory)/go' # Go installation path
   GOBIN:  '$(GOPATH)/bin' # Go binaries path
   GOMODULE: 'on'
-  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
+  modulePath: '$(system.defaultWorkingDirectory)/$(build.repository.name)' # Path to the module's code
 
 steps:
 - script: |
-    wget "https://storage.googleapis.com/golang/go1.12.linux-amd64.tar.gz" --output-document "$(Agent.BuildDirectory)/go1.12.tar.gz"
-    tar -C '$(Agent.BuildDirectory)' -xzf "$(Agent.BuildDirectory)/go1.12.tar.gz"
-  displayName: 'Install Go 1.12'
+    wget "https://storage.googleapis.com/golang/go1.12.7.linux-amd64.tar.gz" --output-document "$(system.defaultWorkingDirectory)/go1.12.7.tar.gz"
+    tar -C '$(system.defaultWorkingDirectory)' -xzf "$(system.defaultWorkingDirectory)/go1.12.7.tar.gz"
+  displayName: 'Install Go 1.12.7'
 
 - script: |
     mkdir -p '$(GOBIN)'
@@ -34,7 +34,7 @@ steps:
 
 - script: |
     go version
-    go get -v -t -d ./...
+    go get -v -d ./...
     cd cmd/wails
     go install
   workingDirectory: '$(modulePath)'
