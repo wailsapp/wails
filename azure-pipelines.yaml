@@ -106,7 +106,6 @@ stages:
     displayName: Win
     variables:  # win-level
       GOMODULE: 'on'
-      GOBIN: '/usr/local/go/bin'
       modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
     pool:
       vmImage: 'windows-2019'
@@ -126,6 +125,6 @@ stages:
             workingDirectory: '$(modulePath)'
             displayName: 'Get dependencies, then build'
           - script: |
-              wails version
+              '$(Agent.BuildDirectory)'/go/bin/wails version
             workingDirectory: '$(modulePath)'
             displayName: 'Check we have output'
