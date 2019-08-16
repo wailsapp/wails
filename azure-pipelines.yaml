@@ -106,6 +106,7 @@ stages:
           - script: |
               echo '##vso[task.prependpath]$(GOBIN)'
               echo '##vso[task.prependpath]$(GOROOT)/bin'
+              echo '##vso[task.prependpath]$(PATH)
               go version
               go get -v -d ./...
               cd cmd/wails
