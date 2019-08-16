@@ -1,8 +1,8 @@
-#trigger:
-#- master
+trigger:
+- master
 
-#pr:
-#- develop
+pr:
+- develop
 
 pool:
   vmImage: 'Ubuntu-16.04'
