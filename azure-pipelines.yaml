@@ -54,7 +54,7 @@ stages:
   - deployment: Mac
     displayName: Macos build
     pool:
-      vmImage: 'Darwin'
+      vmImage: 'macos-10.13'
     strategy:
       runOnce:
         deploy:
