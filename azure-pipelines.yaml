@@ -106,7 +106,7 @@ stages:
     displayName: Win
     variables:  # win-level
       variables:
-      #GOBIN:  '$(GOPATH)/bin' # Go binaries path
+      GOBIN:  '$(GOPATH)/bin' # Go binaries path
       GOMODULE: 'on'
       modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
     pool:
@@ -127,7 +127,7 @@ stages:
             workingDirectory: '$(modulePath)'
             displayName: 'Get dependencies, then build'
           - script: |
-              setx path "%path%;'$(Agent.BuildDirectory)'/go/bin"
+              #setx path "%path%;'$(Agent.BuildDirectory)'/go/bin"
               wails version
             workingDirectory: '$(modulePath)'
             displayName: 'Check we have output'
