@@ -118,6 +118,7 @@ stages:
             clean: true  # whether to fetch clean each time
             path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
           - script: |
+              set PATH=%PATH%;D:\go\bin
               go version
               go get -v -d ./...
               cd cmd/wails
