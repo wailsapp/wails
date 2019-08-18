@@ -126,7 +126,7 @@ stages:
             workingDirectory: '$(modulePath)'
             displayName: 'Get dependencies, then build'
           - script: |
-              setx path "%path%;'$(GOPATH)/bin'"
+              #setx path "%path%;'$(GOPATH)/bin'"
               '$(GOPATH)'/bin/wails version
             workingDirectory: '$(modulePath)'
             displayName: 'Check we have output'
