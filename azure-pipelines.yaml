@@ -121,8 +121,6 @@ stages:
           - script: |
               mkdir -p '$(GOBIN)'
               mkdir -p '$(GOPATH)/pkg'
-              mkdir -p '$(modulePath)'
-              shopt -s extglob
               
               echo '##vso[task.prependpath]$(GOBIN)'
               echo '##vso[task.prependpath]$(GOROOT)/bin'
@@ -138,7 +136,7 @@ stages:
             workingDirectory: '$(modulePath)'
             displayName: 'Get dependencies, then build'
           - script: |
-              #setx path "%path%;'$(Agent.BuildDirectory)'/go/bin"
+              #setx path "%path%;'##vso[task.prependpath]$(GOROOT)/bin'"
               wails version
             workingDirectory: '$(modulePath)'
             displayName: 'Check we have output'
