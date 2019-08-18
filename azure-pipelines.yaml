@@ -106,9 +106,6 @@ stages:
     displayName: Win
     variables:  # win-level
       variables:
-      GOBIN:  '$(GOPATH)/bin' # Go binaries path
-      GOROOT: '/usr/local/go' # Go installation path
-      GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
       GOMODULE: 'on'
       modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
     pool:
@@ -118,13 +115,6 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: |
-              mkdir -p '$(GOBIN)'
-              mkdir -p '$(GOPATH)/pkg'
-              
-              echo '##vso[task.prependpath]$(GOBIN)'
-              echo '##vso[task.prependpath]$(GOROOT)/bin'
-            displayName: 'Set up the Go workspace'
           - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
             clean: true  # whether to fetch clean each time
             path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
@@ -136,7 +126,7 @@ stages:
             workingDirectory: '$(modulePath)'
             displayName: 'Get dependencies, then build'
           - script: |
-              #setx path "%path%;'##vso[task.prependpath]$(GOROOT)/bin'"
+              setx path "%path%;'$(GOROOT)/bin'"
               wails version
             workingDirectory: '$(modulePath)'
             displayName: 'Check we have output'
