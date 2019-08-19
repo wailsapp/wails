@@ -102,7 +102,7 @@ stages:
             displayName: 'Check we have output'
   - deployment: Win
     displayName: Win
-    variables:  # win-level
+    variables:
       GOMODULE: 'on'
       modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
     pool:
@@ -115,6 +115,14 @@ stages:
           - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
             clean: true  # whether to fetch clean each time
             path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
+          # Go tool installer
+          # Find in cache or download a specific version of Go and add it to the PATH
+          - task: GoTool@0
+            inputs:
+              version: '1.12.7' 
+              goPath: '$(Agent.BuildDirectory)/go'
+              goBin: '$(Agent.BuildDirectory)/go/bin'
+            displayName: 'Set up the Go workspace'
           - script: |
               go version
               go get -v -d ./...
@@ -124,5 +132,5 @@ stages:
             displayName: 'Get dependencies, then build'
           - script: |
               wails version
-            workingDirectory: '$(modulePath)'
+            workingDirectory: '$(Agent.BuildDirectory)/go/bin'
             displayName: 'Check we have output'
