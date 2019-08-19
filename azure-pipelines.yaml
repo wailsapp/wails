@@ -127,8 +127,6 @@ stages:
           - script: |
               mkdir -p '$(GOBIN)'
               mkdir -p '$(GOPATH)/pkg'
-              shopt -s extglob
-              shopt -s dotglob
               echo '##vso[task.prependpath]$(GOBIN)'
               echo '##vso[task.prependpath]$(GOROOT)/bin'
             displayName: 'Set up the Go workspace'
