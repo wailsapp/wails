@@ -104,7 +104,10 @@ stages:
 
   - deployment: Win
     displayName: Win
-    variables:  # win-level
+    variables:
+      GOPATH: '$(Agent.BuildDirectory)/gopath' # Go workspace path
+      GOROOT: '$(Agent.BuildDirectory)/go' # Go installation path
+      GOBIN:  '$(GOPATH)/bin' # Go binaries path
       GOMODULE: 'on'
       modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
     pool:
@@ -118,19 +121,26 @@ stages:
             clean: true  # whether to fetch clean each time
             path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
           - script: |
-              $env:GOPATH
-              setx PATH "$($env:path);$GOPATH\bin"
-            displayName: 'set paths'
+              wget "https://storage.googleapis.com/golang/go1.12.7.windows-amd64.zip" --output-document "$(Agent.BuildDirectory)/go1.12.7.zip"
+              jar xf "$(Agent.BuildDirectory)/go1.12.7.zip"
+            displayName: 'Install Go 1.12.7 Linux'
+          - script: |
+              mkdir -p '$(GOBIN)'
+              mkdir -p '$(GOPATH)/pkg'
+              mkdir -p '$(GOROOT)'
+              shopt -s extglob
+              shopt -s dotglob
+              echo '##vso[task.prependpath]$(GOBIN)'
+              echo '##vso[task.prependpath]$(GOROOT)/bin'
+            displayName: 'Set up the Go workspace'
           - script: |
               go version
-              
               go get -v -d ./...
               cd cmd/wails
               go install
             workingDirectory: '$(modulePath)'
             displayName: 'Get dependencies, then build'
           - script: |
-              
               wails version
             workingDirectory: '$(modulePath)'
             displayName: 'Check we have output'
