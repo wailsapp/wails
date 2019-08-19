@@ -121,7 +121,7 @@ stages:
             clean: true  # whether to fetch clean each time
             path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
           - script: |
-              Invoke-WebRequest -Uri https://storage.googleapis.com/golang/go1.12.7.windows-amd64.zip -OutFile "$(Agent.BuildDirectory)/go1.12.7.zip"
+              (New-Object System.Net.WebClient).DownloadString("https://storage.googleapis.com/golang/go1.12.7.windows-amd64.zip")
               jar xf "$(Agent.BuildDirectory)/go1.12.7.zip"
             displayName: 'Install Go 1.12.7 Windows'
           - script: |
