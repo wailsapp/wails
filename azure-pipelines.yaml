@@ -105,8 +105,8 @@ stages:
   - deployment: Win
     displayName: Win
     variables:  # win-level
-      variables:
       GOMODULE: 'on'
+      GOBIN: '$(PATH)'
       modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
     pool:
       vmImage: 'windows-2019'
@@ -119,14 +119,19 @@ stages:
             clean: true  # whether to fetch clean each time
             path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
           - script: |
+              $env:GOPATH
+              setx PATH "$($env:path);$GOPATH\bin"
+            displayName: 'set paths'
+          - script: |
               go version
+              
               go get -v -d ./...
               cd cmd/wails
               go install
             workingDirectory: '$(modulePath)'
             displayName: 'Get dependencies, then build'
           - script: |
-              setx path %path%;'$(GOPATH)/bin'
+              
               wails version
             workingDirectory: '$(modulePath)'
             displayName: 'Check we have output'
