@@ -111,7 +111,7 @@ stages:
       GOMODULE: 'on'
       modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
     pool:
-      vmImage: 'win1803'
+      vmImage: 'windows-latest'
     environment: 'win-dev'
     strategy:
       runOnce:
