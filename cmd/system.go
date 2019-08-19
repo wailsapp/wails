@@ -272,7 +272,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 		distroInfo := GetLinuxDistroInfo()
 		for _, library := range *requiredLibraries {
 			switch distroInfo.Distribution {
-			case Ubuntu:
+			case Ubuntu, Debian:
 				installed, err := DpkgInstalled(library.Name)
 				if err != nil {
 					return false, err
@@ -295,7 +295,6 @@ func CheckDependencies(logger *Logger) (bool, error) {
 					logger.Green("Library '%s' installed.", library.Name)
 				}
 			case RedHat:
-
 				installed, err := RpmInstalled(library.Name)
 				if err != nil {
 					return false, err
@@ -307,7 +306,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 					logger.Green("Library '%s' installed.", library.Name)
 				}
 			default:
-				return false, fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.DistributorID, library.Name)
+				return false, RequestSupportForDistribution(distroInfo, library.Name)
 			}
 		}
 	}

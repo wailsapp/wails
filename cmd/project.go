@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/leaanthony/slicer"
@@ -143,11 +144,13 @@ type ProjectOptions struct {
 	log              *Logger
 	templates        *TemplateHelper
 	selectedTemplate *TemplateDetails
+	WailsVersion     string
 }
 
 // Defaults sets the default project template
 func (po *ProjectOptions) Defaults() {
 	po.Template = "vuebasic"
+	po.WailsVersion = Version
 }
 
 // PromptForInputs asks the user to input project details
@@ -182,7 +185,13 @@ func (po *ProjectOptions) PromptForInputs() error {
 		po.selectedTemplate = templateDetails[po.Template]
 	} else {
 
-		for _, templateDetail := range templateDetails {
+		keys := make([]string, 0)
+		for k := range templateDetails {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			templateDetail := templateDetails[k]
 			templateList.Add(templateDetail)
 			options.Add(fmt.Sprintf("%s - %s", templateDetail.Metadata.Name, templateDetail.Metadata.ShortDescription))
 		}
