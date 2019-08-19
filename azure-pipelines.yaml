@@ -111,7 +111,7 @@ stages:
       GOMODULE: 'on'
       modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
     pool:
-      vmImage: 'vs2017-win2016'
+      vmImage: 'windows-2019'
     environment: 'win-dev'
     strategy:
       runOnce:
@@ -122,11 +122,7 @@ stages:
             path: wails  # path to check out source code, relative to the agent's build directory (e.g. \_work\1)
           # PowerShell
 # Run a PowerShell script on Linux, macOS, or Windows
-          - task: AzurePowerShell@4
-            inputs:
-              azureSubscription:
-              scriptType: inlineScript
-              inline:
+          - script: AzurePowerShell
                 Invoke-WebRequest -Uri https://storage.googleapis.com/golang/go1.12.7.windows-amd64.zip -OutFile "$(Agent.BuildDirectory)/go1.12.7.zip"
 
           - script: |
