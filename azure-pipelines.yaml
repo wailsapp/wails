@@ -106,7 +106,6 @@ stages:
     displayName: Win
     variables:  # win-level
       GOMODULE: 'on'
-      GOBIN: '$(PATH)'
       modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
     pool:
       vmImage: 'windows-2019'
