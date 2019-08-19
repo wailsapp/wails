@@ -67,7 +67,7 @@ func NewTemplateHelper() *TemplateHelper {
 	}
 }
 
-// IsValidTemplate returns true if the given tempalte name resides on disk
+// IsValidTemplate returns true if the given template name resides on disk
 func (t *TemplateHelper) IsValidTemplate(templateName string) bool {
 	pathToTemplate := filepath.Join(t.templateDir.fullPath, templateName)
 	return t.fs.DirExists(pathToTemplate)

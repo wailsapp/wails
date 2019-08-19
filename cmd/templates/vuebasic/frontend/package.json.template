@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "core-js": "^2.6.4",
-    "vue": "^2.5.22"
+    "vue": "^2.5.22",
+    "@wailsapp/runtime": "^1.0.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.4.0",

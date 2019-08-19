@@ -5,6 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Test cmd package",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}/cmd/"
+    },
+    {
       "name": "Wails Init",
       "type": "go",
       "request": "launch",

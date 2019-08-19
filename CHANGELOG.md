@@ -1,3 +1,9 @@
+
+2019-07-20 **v0.17.6-pre**
+* Significant refactor of runtime 
+* Removed wailsbridge file - now a unified approach taken
+* Fixed React on Windows - Thanks [Florian Didran](https://github.com/fdidron)!
+
 2019-06-18 **v0.16.0**
 * React template FTW! - Thanks [admin_3.exe](https://github.com/bh90210)!
 * Updated contributors
