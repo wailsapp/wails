@@ -133,6 +133,6 @@ stages:
             workingDirectory: '$(modulePath)'
             displayName: 'Get dependencies, then build'
           - script: |
-              ./wails version
+              wails version
             workingDirectory: '$(Agent.BuildDirectory)/go/bin'
             displayName: 'Check we have output'
