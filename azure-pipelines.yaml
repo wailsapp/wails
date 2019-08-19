@@ -111,7 +111,7 @@ stages:
       GOMODULE: 'on'
       modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
     pool:
-      vmImage: 'windows-2019'
+      vmImage: 'win1803'
     environment: 'win-dev'
     strategy:
       runOnce:
@@ -123,7 +123,7 @@ stages:
           - script: |
               Invoke-WebRequest -Uri https://storage.googleapis.com/golang/go1.12.7.windows-amd64.zip -OutFile "$(Agent.BuildDirectory)/go1.12.7.zip"
               jar xf "$(Agent.BuildDirectory)/go1.12.7.zip"
-            displayName: 'Install Go 1.12.7 Linux'
+            displayName: 'Install Go 1.12.7 Windows'
           - script: |
               mkdir -p '$(GOBIN)'
               mkdir -p '$(GOPATH)/pkg'
