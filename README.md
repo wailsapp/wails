@@ -15,7 +15,7 @@
 
 The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
 
-## Features
+## Features 
 
 - Use standard Go libraries/frameworks for the backend
 - Use any frontend technology to build your UI
