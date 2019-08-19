@@ -105,8 +105,6 @@ stages:
   - deployment: Win
     displayName: Win
     variables:
-      GOPATH: '$(Agent.BuildDirectory)/gopath' # Go workspace path
-      GOBIN:  '$(GOPATH)/bin' # Go binaries path
       GOMODULE: 'on'
       modulePath: '$(Agent.BuildDirectory)/wails' # Path to the module's code
     pool:
@@ -124,11 +122,8 @@ stages:
           - task: GoTool@0
             inputs:
               version: '1.12.7' 
-          - script: |
-              mkdir -p '$(GOBIN)'
-              mkdir -p '$(GOPATH)/pkg'
-              echo '##vso[task.prependpath]$(GOBIN)'
-              echo '##vso[task.prependpath]$(GOROOT)/bin'
+              goPath: '$(Agent.BuildDirectory)/go'
+              goBin: '$(Agent.BuildDirectory)/go/bin'
             displayName: 'Set up the Go workspace'
           - script: |
               go version
@@ -138,6 +133,6 @@ stages:
             workingDirectory: '$(modulePath)'
             displayName: 'Get dependencies, then build'
           - script: |
-              wails version
-            workingDirectory: '$(modulePath)'
+              ./wails version
+            workingDirectory: '$(Agent.BuildDirectory)/go/bin'
             displayName: 'Check we have output'
