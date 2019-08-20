@@ -138,7 +138,7 @@ distributions:
           help: Please install using your system's package manager
         - name: npm
           help: Please install using your system's package manager
-  opensuseleap:
+  opensuse:
     id: opensuse-leap
     releases:
       default:
