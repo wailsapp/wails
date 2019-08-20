@@ -60,7 +60,7 @@ distributions:
     releases:
       default:
         version: default
-        name: elementary
+        name: Elementary
         gccversioncommand: *gccdumpfullversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
@@ -138,3 +138,21 @@ distributions:
           help: Please install using your system's package manager
         - name: npm
           help: Please install using your system's package manager
+  opensuse-leap:
+    id: opensuse-leap
+    releases:
+      default:
+        version: default
+        name: OpenSUSE
+        gccversioncommand: *gccdumpfullversion
+        prerequisites:
+        - name: libgtk-3-0
+          help: Please install with `sudo zypper install gtk+:3` and try again
+        - name: libwebkit2gtk-4_0-37
+          help: Please install with `sudo zypper install libwebkit2gtk-4_0-37` and try again
+        - name: gcc
+          help: Please install with `sudo zypper install --type pattern devel_basis` and try again
+        - name: pkg-config
+          help: Please install with `sudo zypper install --type pattern devel_basis` and try again
+        - name: npm
+          help: Please install with `sudo zypper install nodejs10` and try again

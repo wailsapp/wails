@@ -37,6 +37,8 @@ const (
 	Linuxmint
 	// Elementary distribution
 	Elementary
+	// OpenSUSE distribution
+	OpenSUSE
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -115,6 +117,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Linuxmint
 	case "elementary":
 		result.Distribution = Elementary
+	case "opensuse-leap":
+		result.Distribution = OpenSUSE
 	default:
 		result.Distribution = Unknown
 	}
