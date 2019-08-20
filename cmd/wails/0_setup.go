@@ -24,7 +24,7 @@ func init() {
 
 		system := cmd.NewSystemHelper()
 		err = system.Initialise()
-		if err == nil {
+		if err != nil {
 			return err
 		}
 
