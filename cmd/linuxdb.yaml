@@ -55,6 +55,15 @@ distributions:
         gccversioncommand: *gccdumpversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
+  elementary:
+    id: elementary
+    releases:
+      default:
+        version: default
+        name: elementary
+        gccversioncommand: *gccdumpfullversion
+        programs: *debiandefaultprograms
+        libraries: *debiandefaultlibraries
   centos:
     id: centos
     releases:
