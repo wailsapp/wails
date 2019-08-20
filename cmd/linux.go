@@ -117,7 +117,7 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Linuxmint
 	case "elementary":
 		result.Distribution = Elementary
-	case "opensuse-leap":
+	case "opensuse-tumbleweed":
 		result.Distribution = OpenSUSE
 	default:
 		result.Distribution = Unknown
