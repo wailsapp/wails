@@ -138,12 +138,12 @@ distributions:
           help: Please install using your system's package manager
         - name: npm
           help: Please install using your system's package manager
-  opensuseleap:
-    id: opensuseleap
+  opensuse-leap:
+    id: opensuse-leap
     releases:
       default:
         version: default
-        name: openSUSE Leap
+        name: OpenSUSE Leap
         gccversioncommand: *gccdumpfullversion
         prerequisites:
         - name: libgtk-3-0
