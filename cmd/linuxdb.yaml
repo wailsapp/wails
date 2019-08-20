@@ -141,7 +141,7 @@ distributions:
           - name: webkit-gtk
             help: Please install with `sudo emerge webkit-gtk` and try again
   opensuse:
-    id: "opensuse-tumbleweed"
+    id: opensuse-tumbleweed
     releases:
       default:
         version: default
