@@ -96,14 +96,47 @@ func checkLibraries() (errors bool, err error) {
 		distroInfo := cmd.GetLinuxDistroInfo()
 		for _, library := range *requiredLibraries {
 			switch distroInfo.Distribution {
-			case cmd.Ubuntu, cmd.Zorin, cmd.Debian:
+			case cmd.Ubuntu, cmd.Debian, cmd.Zorin, cmd.Parrot, cmd.Linuxmint, cmd.Elementary:
 				installed, err := cmd.DpkgInstalled(library.Name)
 				if err != nil {
 					return false, err
 				}
 				if !installed {
 					errors = true
-					logger.Red("Library '%s' not found. %s", library.Name, library.Help)
+					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
+				} else {
+					logger.Green("Library '%s' installed.", library.Name)
+				}
+			case cmd.Arch:
+				installed, err := cmd.PacmanInstalled(library.Name)
+				if err != nil {
+					return false, err
+				}
+				if !installed {
+					errors = true
+					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
+				} else {
+					logger.Green("Library '%s' installed.", library.Name)
+				}
+			case cmd.CentOS, cmd.Fedora, cmd.OpenSUSE:
+				installed, err := cmd.RpmInstalled(library.Name)
+				if err != nil {
+					return false, err
+				}
+				if !installed {
+					errors = true
+					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
+				} else {
+					logger.Green("Library '%s' installed.", library.Name)
+				}
+			case cmd.Gentoo:
+				installed, err := cmd.EqueryInstalled(library.Name)
+				if err != nil {
+					return false, err
+				}
+				if !installed {
+					errors = true
+					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
 				} else {
 					logger.Green("Library '%s' installed.", library.Name)
 				}
