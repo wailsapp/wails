@@ -150,14 +150,18 @@ func checkLibraries() (errors bool, err error) {
 }
 
 func checkRequiredPrograms() (errors bool, err error) {
+	// TODO: remove
 	log.Println("pre-required programs")
 	requiredPrograms, err := cmd.GetRequiredPrograms()
 	if err != nil {
 		return false, err
 	}
+	// TODO: remove
 	log.Println("post-required programs")
 	errors = false
 	programHelper := cmd.NewProgramHelper()
+	// TODO: remove
+	log.Println("post-programhelper programs")
 	for _, program := range *requiredPrograms {
 		bin := programHelper.FindProgram(program.Name)
 		if bin == nil {
@@ -167,5 +171,7 @@ func checkRequiredPrograms() (errors bool, err error) {
 			logger.Green("Program '%s' found: %s", program.Name, bin.Path)
 		}
 	}
+	// TODO: remove
+	log.Println("end-functio programs")
 	return
 }
