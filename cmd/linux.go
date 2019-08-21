@@ -95,11 +95,11 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		case "NAME":
 			osNAME = strings.Trim(splitLine[1], "\"")
 		case "VERSION_ID":
-			version = strings.Trim(splitLine[1], "\"")
+			//version = strings.Trim(splitLine[1], "\"")
 		}
 	}
 	// Check distro name against list of distros
-	// result.Release = version
+	result.Release = version
 	switch osID {
 	case "fedora":
 		result.Distribution = Fedora
