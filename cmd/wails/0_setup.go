@@ -164,5 +164,5 @@ func checkRequiredPrograms() (errors bool, err error) {
 			logger.Green("Program '%s' found: %s", program.Name, bin.Path)
 		}
 	}
-	return false, nil
+	return
 }
