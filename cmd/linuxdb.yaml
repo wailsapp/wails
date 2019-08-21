@@ -58,8 +58,8 @@ distributions:
   elementary:
     id: elementary
     releases:
-      5.0:
-        version: 5.0
+      "5.0":
+        version: "5.0"
         name: elementary OS
         gccversioncommand: *gccdumpfullversion
         programs: *debiandefaultprograms
