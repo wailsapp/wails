@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"runtime"
 
 	"github.com/wailsapp/wails/cmd"
@@ -97,7 +96,7 @@ func checkLibraries() (errors bool, err error) {
 		distroInfo := cmd.GetLinuxDistroInfo()
 		for _, library := range *requiredLibraries {
 			switch distroInfo.Distribution {
-			case cmd.Ubuntu, cmd.Debian, cmd.Zorin, cmd.Parrot, cmd.Linuxmint, cmd.Elementary:
+			case cmd.Ubuntu, cmd.Debian, cmd.Zorin, cmd.Parrot, cmd.Linuxmint:
 				installed, err := cmd.DpkgInstalled(library.Name)
 				if err != nil {
 					return false, err
@@ -150,34 +149,20 @@ func checkLibraries() (errors bool, err error) {
 }
 
 func checkRequiredPrograms() (errors bool, err error) {
-	// TODO: remove
-	log.Println("pre-required programs")
 	requiredPrograms, err := cmd.GetRequiredPrograms()
 	if err != nil {
 		return false, err
 	}
-	// TODO: remove
-	log.Println("post-required programs")
 	errors = false
 	programHelper := cmd.NewProgramHelper()
-	// TODO: remove
-	log.Println("post-programhelper programs")
 	for _, program := range *requiredPrograms {
-		// TODO: remove
-		log.Println("above findprogram")
 		bin := programHelper.FindProgram(program.Name)
 		if bin == nil {
-			// TODO: remove
-			log.Println("aaa")
 			errors = true
 			logger.Red("Program '%s' not found. %s", program.Name, program.Help)
 		} else {
-			// TODO: remove
-			log.Println("bbb")
 			logger.Green("Program '%s' found: %s", program.Name, bin.Path)
 		}
 	}
-	// TODO: remove
-	log.Println("end-functio programs")
 	return
 }

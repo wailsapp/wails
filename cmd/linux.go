@@ -35,8 +35,6 @@ const (
 	Parrot
 	// Linuxmint distribution
 	Linuxmint
-	// Elementary distribution
-	Elementary
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -112,8 +110,6 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Parrot
 	case "linuxmint":
 		result.Distribution = Linuxmint
-	case "elementary":
-		result.Distribution = Elementary
 	default:
 		result.Distribution = Unknown
 	}

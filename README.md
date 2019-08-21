@@ -46,9 +46,11 @@ Make sure you have the xcode command line tools installed. This can be done by r
 
 ### Linux
 
-#### Debian 9, Ubuntu 18.04 (Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5)
+#### Debian 9, Ubuntu 18.04
 
 `sudo apt install libgtk-3-dev libwebkit2gtk-4.0-dev`
+
+_Also Zorin 15, Parrot 4.7, Linuxmint 19_
 
 #### Arch Linux
 
