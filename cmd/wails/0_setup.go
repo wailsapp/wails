@@ -163,12 +163,16 @@ func checkRequiredPrograms() (errors bool, err error) {
 	// TODO: remove
 	log.Println("post-programhelper programs")
 	for _, program := range *requiredPrograms {
+		// TODO: remove
+		log.Println("above findprogram")
 		bin := programHelper.FindProgram(program.Name)
 		if bin == nil {
+			// TODO: remove
 			log.Println("aaa")
 			errors = true
 			logger.Red("Program '%s' not found. %s", program.Name, program.Help)
 		} else {
+			// TODO: remove
 			log.Println("bbb")
 			logger.Green("Program '%s' found: %s", program.Name, bin.Path)
 		}
