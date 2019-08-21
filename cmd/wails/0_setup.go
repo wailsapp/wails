@@ -33,37 +33,46 @@ Create your first project by running 'wails init'.`
 		if runtime.GOOS != "windows" {
 			successMessage = "🚀 " + successMessage
 		}
-		// Platform check
-		err = platformCheck()
-		if err != nil {
-			return err
-		}
+		// // Platform check
+		// err = platformCheck()
+		// if err != nil {
+		// 	return err
+		// }
 
-		// Check we have a cgo capable environment
-		logger.Yellow("Checking for prerequisites...")
-		var requiredProgramErrors bool
-		requiredProgramErrors, err = checkRequiredPrograms()
-		if err != nil {
-			return err
-		}
+		// // Check we have a cgo capable environment
+		// logger.Yellow("Checking for prerequisites...")
+		// var requiredProgramErrors bool
+		// requiredProgramErrors, err = checkRequiredPrograms()
+		// if err != nil {
+		// 	return err
+		// }
 
-		// Linux has library deps
-		var libraryErrors bool
-		libraryErrors, err = checkLibraries()
-		if err != nil {
-			return err
-		}
+		// // Linux has library deps
+		// var libraryErrors bool
+		// libraryErrors, err = checkLibraries()
+		// if err != nil {
+		// 	return err
+		// }
 
-		// Check Mewn
-		err = cmd.CheckMewn()
-		if err != nil {
-			return err
-		}
+		// // Check Mewn
+		// err = cmd.CheckMewn()
+		// if err != nil {
+		// 	return err
+		// }
+
+		var boo bool
+		boo, _ = cmd.CheckDependencies(logger)
 
 		logger.White("")
 
+		// // Check for errors
+		// var errors = libraryErrors || requiredProgramErrors
+		// if !errors {
+		// 	logger.Yellow(successMessage)
+		// }
+
 		// Check for errors
-		var errors = libraryErrors || requiredProgramErrors
+		var errors = boo
 		if !errors {
 			logger.Yellow(successMessage)
 		}
