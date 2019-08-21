@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"runtime"
 
 	"github.com/wailsapp/wails/cmd"
@@ -149,10 +150,12 @@ func checkLibraries() (errors bool, err error) {
 }
 
 func checkRequiredPrograms() (errors bool, err error) {
+	log.Println("pre-required programs")
 	requiredPrograms, err := cmd.GetRequiredPrograms()
 	if err != nil {
 		return false, err
 	}
+	log.Println("post-required programs")
 	errors = false
 	programHelper := cmd.NewProgramHelper()
 	for _, program := range *requiredPrograms {
