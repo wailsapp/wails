@@ -33,7 +33,7 @@ distributions:
     releases:
       default:
         version: default
-        name: Parrot
+        name: Parrot GNU/Linux
         gccversioncommand: *gccdumpversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
