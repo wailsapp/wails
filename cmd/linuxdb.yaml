@@ -60,7 +60,7 @@ distributions:
     releases:
       default:
         version: default
-        name: elementary OS
+        name: Elementary OS
         gccversioncommand: *gccdumpfullversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
@@ -145,7 +145,7 @@ distributions:
     releases:
       default:
         version: default
-        name: openSUSE Tumbleweed
+        name: OpenSUSE Tumbleweed
         gccversioncommand: *gccdumpfullversion
         programs:
           - name: gcc

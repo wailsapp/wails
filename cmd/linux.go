@@ -29,16 +29,16 @@ const (
 	Linuxmint
 	// Elementary distribution
 	Elementary
-	// CentOS linux distribution
-	CentOS
+	// Centos linux distribution
+	Centos
 	// Fedora linux distribution
 	Fedora
 	// Arch linux distribution
 	Arch
 	// Gentoo distribution
 	Gentoo
-	// OpenSUSE distribution
-	OpenSUSE
+	// Opensuse distribution
+	Opensuse
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -94,17 +94,20 @@ func parseOsRelease(osRelease string) *DistroInfo {
 			osID = strings.Trim(splitLine[1], "\"")
 		case "NAME":
 			osNAME = strings.Trim(splitLine[1], "\"")
+		// for debian, ubuntu, based distros
 		case "VERSION_ID":
+			version = strings.Trim(splitLine[1], "\"")
+		// for arch
+		case "BUILD_ID":
 			version = strings.Trim(splitLine[1], "\"")
 		}
 	}
 	// Check distro name against list of distros
-	result.Release = version
 	switch osID {
 	case "fedora":
 		result.Distribution = Fedora
 	case "centos":
-		result.Distribution = CentOS
+		result.Distribution = Centos
 	case "arch":
 		result.Distribution = Arch
 	case "debian":
@@ -122,11 +125,12 @@ func parseOsRelease(osRelease string) *DistroInfo {
 	case "elementary":
 		result.Distribution = Elementary
 	case "opensuse-tumbleweed":
-		result.Distribution = OpenSUSE
+		result.Distribution = Opensuse
 	default:
 		result.Distribution = Unknown
 	}
 
+	result.Release = version
 	result.ID = osID
 	result.Name = osNAME
 	return result
