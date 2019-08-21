@@ -51,7 +51,7 @@ distributions:
     releases:
       default:
         version: default
-        name: Linuxmint
+        name: Linux Mint
         gccversioncommand: *gccdumpversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
