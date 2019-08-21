@@ -81,14 +81,18 @@ func parseOsRelease(osRelease string) *DistroInfo {
 	for _, line := range lines {
 		// Split each line by the equals char
 		splitLine := strings.SplitN(line, "=", 2)
+		// Check we have
+		if len(splitLine) != 2 {
+			continue
+		}
 
 		switch splitLine[0] {
 		case "ID":
 			osID = strings.Replace(splitLine[1], "\"", "", -1)
 		case "NAME":
-			osNAME = strings.Trim(splitLine[1], "\"")
+			osNAME = strings.Replace(splitLine[1], "\"", "", -1)
 		case "VERSION_ID":
-			version = strings.Trim(splitLine[1], "\"")
+			version = strings.Replace(splitLine[1], "\"", "", -1)
 		}
 	}
 	// Check distro name against list of distros
@@ -114,7 +118,7 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Linuxmint
 	case "elementary":
 		result.Distribution = Elementary
-	case "opensuse-tumbleweed":
+	case "\"opensuse-tumbleweed\"":
 		result.Distribution = OpenSUSE
 	default:
 		result.Distribution = Unknown
