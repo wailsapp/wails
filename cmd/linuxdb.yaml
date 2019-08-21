@@ -60,7 +60,7 @@ distributions:
     releases:
       default:
         version: default
-        name: Elementary OS
+        name: elementary OS
         gccversioncommand: *gccdumpfullversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
@@ -140,12 +140,12 @@ distributions:
             help: Please install with `sudo emerge gtk+:3` and try again
           - name: webkit-gtk
             help: Please install with `sudo emerge webkit-gtk` and try again
-  opensuse-tumbleweed:
+  opensuse:
     id: opensuse-tumbleweed
     releases:
       default:
         version: default
-        name: OpenSUSE Tumbleweed
+        name: openSUSE Tumbleweed
         gccversioncommand: *gccdumpfullversion
         programs:
           - name: gcc

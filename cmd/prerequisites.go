@@ -85,6 +85,7 @@ func getRequiredLibrariesLinux() (*Prerequisites, error) {
 	distroInfo := GetLinuxDistroInfo()
 	if distroInfo.Distribution != Unknown {
 		var linuxDB = NewLinuxDB()
+		// distro := linuxDB.GetDistro(distroInfo.ID)
 		distro := linuxDB.GetDistro(distroInfo.ID)
 		release := distro.GetRelease(distroInfo.Release)
 		for _, library := range release.Libraries {
