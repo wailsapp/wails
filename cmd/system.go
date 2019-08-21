@@ -294,7 +294,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 				} else {
 					logger.Green("Library '%s' installed.", library.Name)
 				}
-			case CentOS, Fedora, OpenSUSE:
+			case Centos, Fedora, Opensuse:
 				installed, err := RpmInstalled(library.Name)
 				if err != nil {
 					return false, err
