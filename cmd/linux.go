@@ -76,7 +76,7 @@ func parseOsRelease(osRelease string) *DistroInfo {
 	// Default value
 	osID := "unknown"
 	osNAME := "Unknown"
-	version := "default"
+	version := ""
 
 	// Split into lines
 	lines := strings.Split(osRelease, "\n")
@@ -91,11 +91,11 @@ func parseOsRelease(osRelease string) *DistroInfo {
 
 		switch splitLine[0] {
 		case "ID":
-			osID = strings.Replace(splitLine[1], "\"", "", -1)
+			osID = strings.Trim(splitLine[1], "\"")
 		case "NAME":
 			osNAME = strings.Trim(splitLine[1], "\"")
 		case "VERSION_ID":
-			//version = strings.Trim(splitLine[1], "\"")
+			version = strings.Trim(splitLine[1], "\"")
 		}
 	}
 	// Check distro name against list of distros
