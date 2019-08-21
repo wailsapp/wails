@@ -44,10 +44,13 @@ const (
 // DistroInfo contains all the information relating to a linux distribution
 type DistroInfo struct {
 	Distribution LinuxDistribution
-	Name         string
-	ID           string
-	Description  string
-	Release      string
+	// ie. NAME="Ubuntu"
+	Name string
+	// ie. ID=ubuntu
+	ID          string
+	Description string
+	// ie. VERSION_ID="18.04"
+	Release string
 }
 
 // GetLinuxDistroInfo returns information about the running linux distribution
@@ -73,7 +76,7 @@ func parseOsRelease(osRelease string) *DistroInfo {
 	// Default value
 	osID := "unknown"
 	osNAME := "Unknown"
-	version := ""
+	version := "default"
 
 	// Split into lines
 	lines := strings.Split(osRelease, "\n")
@@ -90,13 +93,13 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		case "ID":
 			osID = strings.Replace(splitLine[1], "\"", "", -1)
 		case "NAME":
-			osNAME = strings.Replace(splitLine[1], "\"", "", -1)
+			osNAME = strings.Trim(splitLine[1], "\"")
 		case "VERSION_ID":
-			version = strings.Replace(splitLine[1], "\"", "", -1)
+			version = strings.Trim(splitLine[1], "\"")
 		}
 	}
 	// Check distro name against list of distros
-	result.Release = version
+	// result.Release = version
 	switch osID {
 	case "fedora":
 		result.Distribution = Fedora
