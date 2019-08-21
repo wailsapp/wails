@@ -151,7 +151,7 @@ func checkLibraries() (errors bool, err error) {
 func checkRequiredPrograms() (errors bool, err error) {
 	requiredPrograms, err := cmd.GetRequiredPrograms()
 	if err != nil {
-		return true, err
+		return false, err
 	}
 	errors = false
 	programHelper := cmd.NewProgramHelper()
