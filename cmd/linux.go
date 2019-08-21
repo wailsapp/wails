@@ -89,7 +89,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		case "ID":
 			osID = strings.Trim(splitLine[1], "\"")
 		case "NAME":
-			osNAME = strings.Trim(splitLine[1], "\"")
+			osNAME = strings.Replace(splitLine[1], " ", "", -1)
+			osNAME = strings.Trim(osNAME, "\"")
 		case "VERSION_ID":
 			version = strings.Trim(splitLine[1], "\"")
 		}

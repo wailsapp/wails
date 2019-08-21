@@ -107,7 +107,7 @@ distributions:
     releases:
       default:
         version: default
-        name: Arch Linux
+        name: ArchLinux
         gccversioncommand: *gccdumpversion
         programs:
           - name: gcc
@@ -145,7 +145,7 @@ distributions:
     releases:
       default:
         version: default
-        name: openSUSE Tumbleweed
+        name: openSUSETumbleweed
         gccversioncommand: *gccdumpfullversion
         programs:
           - name: gcc
