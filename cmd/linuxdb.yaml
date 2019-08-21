@@ -60,7 +60,7 @@ distributions:
     releases:
       default:
         version: default
-        name: Elementary
+        name: elementary OS
         gccversioncommand: *gccdumpfullversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
