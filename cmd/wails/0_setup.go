@@ -118,7 +118,7 @@ func checkLibraries() (errors bool, err error) {
 				} else {
 					logger.Green("Library '%s' installed.", library.Name)
 				}
-			case cmd.Centos, cmd.Fedora, cmd.Opensuse:
+			case cmd.CentOS, cmd.Fedora:
 				installed, err := cmd.RpmInstalled(library.Name)
 				if err != nil {
 					return false, err

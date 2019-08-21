@@ -21,36 +21,31 @@ const (
 	Debian
 	// Ubuntu distribution
 	Ubuntu
-	// Parrot distribution
-	Parrot
+	// Arch linux distribution
+	Arch
+	// CentOS linux distribution
+	CentOS
+	// Fedora linux distribution
+	Fedora
+	// Gentoo distribution
+	Gentoo
 	// Zorin distribution
 	Zorin
+	// Parrot distribution
+	Parrot
 	// Linuxmint distribution
 	Linuxmint
 	// Elementary distribution
 	Elementary
-	// Centos linux distribution
-	Centos
-	// Fedora linux distribution
-	Fedora
-	// Arch linux distribution
-	Arch
-	// Gentoo distribution
-	Gentoo
-	// Opensuse distribution
-	Opensuse
 )
 
 // DistroInfo contains all the information relating to a linux distribution
 type DistroInfo struct {
 	Distribution LinuxDistribution
-	// ie. NAME="Ubuntu"
-	Name string
-	// ie. ID=ubuntu
-	ID          string
-	Description string
-	// ie. VERSION_ID="18.04"
-	Release string
+	Name         string
+	ID           string
+	Description  string
+	Release      string
 }
 
 // GetLinuxDistroInfo returns information about the running linux distribution
@@ -88,7 +83,6 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		if len(splitLine) != 2 {
 			continue
 		}
-
 		switch splitLine[0] {
 		case "ID":
 			osID = strings.Trim(splitLine[1], "\"")
@@ -96,14 +90,15 @@ func parseOsRelease(osRelease string) *DistroInfo {
 			osNAME = strings.Trim(splitLine[1], "\"")
 		case "VERSION_ID":
 			version = strings.Trim(splitLine[1], "\"")
+		}
 	}
-
 	// Check distro name against list of distros
+	result.Release = version
 	switch osID {
 	case "fedora":
 		result.Distribution = Fedora
 	case "centos":
-		result.Distribution = Centos
+		result.Distribution = CentOS
 	case "arch":
 		result.Distribution = Arch
 	case "debian":
@@ -120,13 +115,10 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Linuxmint
 	case "elementary":
 		result.Distribution = Elementary
-	case "opensuse-tumbleweed":
-		result.Distribution = Opensuse
 	default:
 		result.Distribution = Unknown
 	}
 
-	result.Release = version
 	result.ID = osID
 	result.Name = osNAME
 	return result

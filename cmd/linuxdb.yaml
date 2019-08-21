@@ -140,22 +140,3 @@ distributions:
             help: Please install with `sudo emerge gtk+:3` and try again
           - name: webkit-gtk
             help: Please install with `sudo emerge webkit-gtk` and try again
-  opensuse-tumbleweed:
-    id: opensuse-tumbleweed
-    releases:
-      default:
-        version: default
-        name: openSUSE Tumbleweed
-        gccversioncommand: *gccdumpfullversion
-        programs:
-          - name: gcc
-            help: Please install with `sudo zypper install --type pattern devel_basis` and try again
-          - name: pkg-config
-            help: Please install with `sudo zypper install --type pattern devel_basis` and try again
-          - name: npm
-            help: Please install with `sudo zypper install nodejs8 npm` and try again
-        libraries:
-          - name: libgtk-3-0
-            help: Please install with `sudo zypper install libgtk-3-0` and try again
-          - name: libwebkit2gtk-4_0-37
-            help: Please install with `sudo zypper install libwebkit2gtk-4_0-37` and try again
