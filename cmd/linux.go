@@ -21,22 +21,22 @@ const (
 	Debian
 	// Ubuntu distribution
 	Ubuntu
-	// Arch linux distribution
-	Arch
-	// CentOS linux distribution
-	CentOS
-	// Fedora linux distribution
-	Fedora
-	// Gentoo distribution
-	Gentoo
-	// Zorin distribution
-	Zorin
 	// Parrot distribution
 	Parrot
+	// Zorin distribution
+	Zorin
 	// Linuxmint distribution
 	Linuxmint
 	// Elementary distribution
 	Elementary
+	// CentOS linux distribution
+	CentOS
+	// Fedora linux distribution
+	Fedora
+	// Arch linux distribution
+	Arch
+	// Gentoo distribution
+	Gentoo
 	// OpenSUSE distribution
 	OpenSUSE
 )
