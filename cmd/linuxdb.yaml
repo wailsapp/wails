@@ -69,7 +69,7 @@ distributions:
     releases:
       default:
         version: default
-        name: CentOS
+        name: CentOS Linux
         gccversioncommand: *gccdumpversion
         programs:
           - name: gcc

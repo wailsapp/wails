@@ -94,7 +94,7 @@ func parseOsRelease(osRelease string) *DistroInfo {
 			osID = strings.Trim(splitLine[1], "\"")
 		case "NAME":
 			osNAME = strings.Trim(splitLine[1], "\"")
-		// for debian, ubuntu, based distros
+		// for debian, ubuntu, centos, fedora based distros
 		case "VERSION_ID":
 			version = strings.Trim(splitLine[1], "\"")
 		// for arch
