@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"log"
 
 	"github.com/pkg/browser"
 )
@@ -102,6 +103,9 @@ func parseOsRelease(osRelease string) *DistroInfo {
 			version = strings.Trim(splitLine[1], "\"")
 		}
 	}
+	//
+	log.Println(osID)
+
 	// Check distro name against list of distros
 	switch osID {
 	case "fedora":
