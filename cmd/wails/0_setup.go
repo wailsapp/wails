@@ -91,7 +91,7 @@ func checkLibraries() (errors bool, err error) {
 		// Check library prerequisites
 		requiredLibraries, err := cmd.GetRequiredLibraries()
 		if err != nil {
-			return false, err
+			return true, err
 		}
 		distroInfo := cmd.GetLinuxDistroInfo()
 		for _, library := range *requiredLibraries {
@@ -151,7 +151,7 @@ func checkLibraries() (errors bool, err error) {
 func checkRequiredPrograms() (errors bool, err error) {
 	requiredPrograms, err := cmd.GetRequiredPrograms()
 	if err != nil {
-		return false, err
+		return true, err
 	}
 	errors = false
 	programHelper := cmd.NewProgramHelper()
