@@ -21,8 +21,8 @@ type Distribution struct {
 // GetRelease attempts to return the specific Release information
 // for the given release name. If there is no specific match, the
 // default release data is returned.
-func (d *Distribution) GetRelease(name string) *Release {
-	result := d.Releases[name]
+func (d *Distribution) GetRelease(version string) *Release {
+	result := d.Releases[version]
 	if result == nil {
 		result = d.Releases["default"]
 	}
@@ -72,8 +72,8 @@ func (l *LinuxDB) ImportData(data []byte) error {
 // GetDistro returns the Distribution information for the
 // given distribution name. If the distribution is not supported,
 // nil is returned.
-func (l *LinuxDB) GetDistro(name string) *Distribution {
-	return l.Distributions[name]
+func (l *LinuxDB) GetDistro(distro string) *Distribution {
+	return l.Distributions[distro]
 }
 
 // NewLinuxDB creates a new LinuxDB instance from the bundled

@@ -93,7 +93,6 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		}
 	}
 	// Check distro name against list of distros
-	result.Release = version
 	switch osID {
 	case "fedora":
 		result.Distribution = Fedora
@@ -119,8 +118,10 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Unknown
 	}
 
-	result.ID = osID
 	result.Name = osNAME
+	result.ID = osID
+	result.Release = version
+
 	return result
 }
 
