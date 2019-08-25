@@ -33,7 +33,7 @@ distributions:
     releases:
       default:
         version: default
-        name: Parrot
+        name: Parrot GNU/Linux
         gccversioncommand: *gccdumpversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
@@ -51,16 +51,35 @@ distributions:
     releases:
       default:
         version: default
-        name: Linuxmint
+        name: Linux Mint
         gccversioncommand: *gccdumpversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
+  void:
+    id: void
+    releases:
+      default:
+        version: default
+        name: VoidLinux
+        gccversioncommand: *gccdumpversion
+        programs:
+          - name: gcc
+            help: Please install with `xbps-install base-devel` and try again
+          - name: pkg-config
+            help: Please install with `xbps-install pkg-config` and try again
+          - name: npm
+            help: Please install with `xbps-install nodejs` and try again
+        libraries:
+          - name: gtk+3-devel
+            help: Please install with `xbps-install gtk+3-devel` and try again
+          - name: webkit2gtk-devel
+            help: Please install with `xbps-install webkit2gtk-devel` and try again
   centos:
     id: centos
     releases:
       default:
         version: default
-        name: CentOS
+        name: CentOS Linux
         gccversioncommand: *gccdumpversion
         programs:
           - name: gcc
@@ -68,7 +87,7 @@ distributions:
           - name: pkg-config
             help: Please install with `sudo yum install pkgconf-pkg-config` and try again
           - name: npm
-            help: Please install with `sudo yum install nodejs` and try again
+            help: Please install with `sudo yum install epel-release && sudo yum install nodejs` and try again
         libraries:
           - name: gtk3-devel
             help: Please install with `sudo yum install gtk3-devel` and try again
@@ -100,17 +119,18 @@ distributions:
         version: default
         name: Arch Linux
         gccversioncommand: *gccdumpversion
-        prerequisites:
-        - name: gtk3
-          help: Please install with `sudo pacman -S gtk3` and try again
-        - name: webkit2gtk
-          help: Please install with `sudo pacman -S webkit2gtk` and try again
-        - name: gcc
-          help: Please install with `sudo pacman -S gcc` and try again
-        - name: pkgconf
-          help: Please install with `sudo pacman -S pkgconf` and try again
-        - name: npm
-          help: Please install with `sudo pacman -S npm` and try again
+        programs:
+          - name: gcc
+            help: Please install with `sudo pacman -S gcc` and try again
+          - name: pkgconf
+            help: Please install with `sudo pacman -S pkgconf` and try again
+          - name: npm
+            help: Please install with `sudo pacman -S npm` and try again
+        libraries:
+          - name: gtk3
+            help: Please install with `sudo pacman -S gtk3` and try again
+          - name: webkit2gtk
+            help: Please install with `sudo pacman -S webkit2gtk` and try again
   gentoo:
     id: gentoo
     releases:
@@ -118,14 +138,16 @@ distributions:
         version: default
         name: Gentoo
         gccversioncommand: *gccdumpversion
-        prerequisites:
-        - name: gtk+:3
-          help: Please install with `sudo emerge gtk+:3` and try again
-        - name: webkit-gtk
-          help: Please install with `sudo emerge webkit-gtk` and try again
-        - name: gcc
-          help: Please install using your system's package manager
-        - name: pkg-config
-          help: Please install using your system's package manager
-        - name: npm
-          help: Please install using your system's package manager
+        programs:
+          - name: gcc
+            help: Please install using your system's package manager
+          - name: pkg-config
+            help: Please install using your system's package manager
+          - name: npm
+            help: Please install using your system's package manager
+        libraries:
+          - name: gtk+:3
+            help: Please install with `sudo emerge gtk+:3` and try again
+          - name: webkit-gtk
+            help: Please install with `sudo emerge webkit-gtk` and try again
+
