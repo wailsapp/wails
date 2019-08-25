@@ -33,7 +33,7 @@ distributions:
     releases:
       default:
         version: default
-        name: Parrot GNU/Linux
+        name: Parrot
         gccversioncommand: *gccdumpversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
@@ -51,7 +51,7 @@ distributions:
     releases:
       default:
         version: default
-        name: Linux Mint
+        name: Linuxmint
         gccversioncommand: *gccdumpversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
@@ -60,7 +60,7 @@ distributions:
     releases:
       default:
         version: default
-        name: CentOS Linux
+        name: CentOS
         gccversioncommand: *gccdumpversion
         programs:
           - name: gcc
@@ -68,7 +68,7 @@ distributions:
           - name: pkg-config
             help: Please install with `sudo yum install pkgconf-pkg-config` and try again
           - name: npm
-            help: Please install with `sudo yum install epel-release && sudo yum install nodejs` and try again
+            help: Please install with `sudo yum install nodejs` and try again
         libraries:
           - name: gtk3-devel
             help: Please install with `sudo yum install gtk3-devel` and try again
@@ -100,18 +100,17 @@ distributions:
         version: default
         name: Arch Linux
         gccversioncommand: *gccdumpversion
-        programs:
-          - name: gcc
-            help: Please install with `sudo pacman -S gcc` and try again
-          - name: pkgconf
-            help: Please install with `sudo pacman -S pkgconf` and try again
-          - name: npm
-            help: Please install with `sudo pacman -S npm` and try again
-        libraries:
-          - name: gtk3
-            help: Please install with `sudo pacman -S gtk3` and try again
-          - name: webkit2gtk
-            help: Please install with `sudo pacman -S webkit2gtk` and try again
+        prerequisites:
+        - name: gtk3
+          help: Please install with `sudo pacman -S gtk3` and try again
+        - name: webkit2gtk
+          help: Please install with `sudo pacman -S webkit2gtk` and try again
+        - name: gcc
+          help: Please install with `sudo pacman -S gcc` and try again
+        - name: pkgconf
+          help: Please install with `sudo pacman -S pkgconf` and try again
+        - name: npm
+          help: Please install with `sudo pacman -S npm` and try again
   gentoo:
     id: gentoo
     releases:
@@ -119,15 +118,14 @@ distributions:
         version: default
         name: Gentoo
         gccversioncommand: *gccdumpversion
-        programs:
-          - name: gcc
-            help: Please install using your system's package manager
-          - name: pkg-config
-            help: Please install using your system's package manager
-          - name: npm
-            help: Please install using your system's package manager
-        libraries:
-          - name: gtk+:3
-            help: Please install with `sudo emerge gtk+:3` and try again
-          - name: webkit-gtk
-            help: Please install with `sudo emerge webkit-gtk` and try again
+        prerequisites:
+        - name: gtk+:3
+          help: Please install with `sudo emerge gtk+:3` and try again
+        - name: webkit-gtk
+          help: Please install with `sudo emerge webkit-gtk` and try again
+        - name: gcc
+          help: Please install using your system's package manager
+        - name: pkg-config
+          help: Please install using your system's package manager
+        - name: npm
+          help: Please install using your system's package manager

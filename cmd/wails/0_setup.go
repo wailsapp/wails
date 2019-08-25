@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"runtime"
 
 	"github.com/wailsapp/wails/cmd"
@@ -33,23 +32,9 @@ Create your first project by running 'wails init'.`
 		if runtime.GOOS != "windows" {
 			successMessage = "🚀 " + successMessage
 		}
-		// Platform check
-		err = platformCheck()
-		if err != nil {
-			return err
-		}
 
-		// Check we have a cgo capable environment
-		logger.Yellow("Checking for prerequisites...")
-		var requiredProgramErrors bool
-		requiredProgramErrors, err = checkRequiredPrograms()
-		if err != nil {
-			return err
-		}
-
-		// Linux has library deps
-		var libraryErrors bool
-		libraryErrors, err = checkLibraries()
+		// Chrck for programs and libraries dependencies
+		errors, err := cmd.CheckDependencies(logger)
 		if err != nil {
 			return err
 		}
@@ -60,109 +45,14 @@ Create your first project by running 'wails init'.`
 			return err
 		}
 
-		logger.White("")
-
 		// Check for errors
-		var errors = libraryErrors || requiredProgramErrors
-		if !errors {
+		// CheckDependencies() returns !errors
+		// so to get the right message in this
+		// check we have to do it in reversed
+		if errors {
 			logger.Yellow(successMessage)
 		}
 
 		return err
 	})
-}
-
-func platformCheck() error {
-	switch runtime.GOOS {
-	case "darwin":
-		logger.Yellow("Detected Platform: OSX")
-	case "windows":
-		logger.Yellow("Detected Platform: Windows")
-	case "linux":
-		logger.Yellow("Detected Platform: Linux")
-	default:
-		return fmt.Errorf("Platform %s is currently not supported", runtime.GOOS)
-	}
-	return nil
-}
-
-func checkLibraries() (errors bool, err error) {
-	if runtime.GOOS == "linux" {
-		// Check library prerequisites
-		requiredLibraries, err := cmd.GetRequiredLibraries()
-		if err != nil {
-			return true, err
-		}
-		distroInfo := cmd.GetLinuxDistroInfo()
-		for _, library := range *requiredLibraries {
-			switch distroInfo.Distribution {
-			case cmd.Ubuntu, cmd.Debian, cmd.Zorin, cmd.Parrot, cmd.Linuxmint:
-				installed, err := cmd.DpkgInstalled(library.Name)
-				if err != nil {
-					return false, err
-				}
-				if !installed {
-					errors = true
-					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
-				} else {
-					logger.Green("Library '%s' installed.", library.Name)
-				}
-			case cmd.Arch:
-				installed, err := cmd.PacmanInstalled(library.Name)
-				if err != nil {
-					return false, err
-				}
-				if !installed {
-					errors = true
-					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
-				} else {
-					logger.Green("Library '%s' installed.", library.Name)
-				}
-			case cmd.CentOS, cmd.Fedora:
-				installed, err := cmd.RpmInstalled(library.Name)
-				if err != nil {
-					return false, err
-				}
-				if !installed {
-					errors = true
-					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
-				} else {
-					logger.Green("Library '%s' installed.", library.Name)
-				}
-			case cmd.Gentoo:
-				installed, err := cmd.EqueryInstalled(library.Name)
-				if err != nil {
-					return false, err
-				}
-				if !installed {
-					errors = true
-					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
-				} else {
-					logger.Green("Library '%s' installed.", library.Name)
-				}
-			default:
-				return false, cmd.RequestSupportForDistribution(distroInfo)
-			}
-		}
-	}
-	return false, nil
-}
-
-func checkRequiredPrograms() (errors bool, err error) {
-	requiredPrograms, err := cmd.GetRequiredPrograms()
-	if err != nil {
-		return true, err
-	}
-	errors = false
-	programHelper := cmd.NewProgramHelper()
-	for _, program := range *requiredPrograms {
-		bin := programHelper.FindProgram(program.Name)
-		if bin == nil {
-			errors = true
-			logger.Red("Program '%s' not found. %s", program.Name, program.Help)
-		} else {
-			logger.Green("Program '%s' found: %s", program.Name, bin.Path)
-		}
-	}
-	return
 }
