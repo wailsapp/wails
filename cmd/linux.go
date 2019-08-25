@@ -35,6 +35,8 @@ const (
 	Parrot
 	// Linuxmint distribution
 	Linuxmint
+	// VoidLinux distribution
+	VoidLinux
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -111,6 +113,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Parrot
 	case "linuxmint":
 		result.Distribution = Linuxmint
+	case "void":
+		result.Distribution = VoidLinux
 	default:
 		result.Distribution = Unknown
 	}
@@ -119,6 +123,9 @@ func parseOsRelease(osRelease string) *DistroInfo {
 	result.Name = osNAME
 	return result
 }
+
+// CheckPkgInstalled is all functions that use local programs to see if a package is installed
+type CheckPkgInstalled func(string) (bool, error)
 
 // EqueryInstalled uses equery to see if a package is installed
 func EqueryInstalled(packageName string) (bool, error) {
@@ -153,6 +160,17 @@ func PacmanInstalled(packageName string) (bool, error) {
 	return exitCode == 0, nil
 }
 
+// XbpsInstalled uses pacman to see if a package is installed.
+func XbpsInstalled(packageName string) (bool, error) {
+	program := NewProgramHelper()
+	xbpsQuery := program.FindProgram("xbps-query")
+	if xbpsQuery == nil {
+		return false, fmt.Errorf("cannot check dependencies: xbps-query not found")
+	}
+	_, _, exitCode, _ := xbpsQuery.Run("-S", packageName)
+	return exitCode == 0, nil
+}
+
 // RpmInstalled uses rpm to see if a package is installed
 func RpmInstalled(packageName string) (bool, error) {
 	program := NewProgramHelper()
@@ -166,9 +184,9 @@ func RpmInstalled(packageName string) (bool, error) {
 
 // RequestSupportForDistribution promts the user to submit a request to support their
 // currently unsupported distribution
-func RequestSupportForDistribution(distroInfo *DistroInfo, libraryName string) error {
+func RequestSupportForDistribution(distroInfo *DistroInfo) error {
 	var logger = NewLogger()
-	defaultError := fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.Name, libraryName)
+	defaultError := fmt.Errorf("unable to check libraries on distribution '%s'", distroInfo.Name)
 
 	logger.Yellow("Distribution '%s' is not currently supported, but we would love to!", distroInfo.Name)
 	q := fmt.Sprintf("Would you like to submit a request to support distribution '%s'?", distroInfo.Name)

@@ -108,7 +108,7 @@ func checkLibraries() (errors bool, err error) {
 					logger.Green("Library '%s' installed.", library.Name)
 				}
 			default:
-				return false, cmd.RequestSupportForDistribution(distroInfo, library.Name)
+				return false, cmd.RequestSupportForDistribution(distroInfo)
 			}
 		}
 	}
