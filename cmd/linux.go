@@ -35,6 +35,8 @@ const (
 	Parrot
 	// Linuxmint distribution
 	Linuxmint
+	// VoidLinux distribution
+	VoidLinux
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -110,6 +112,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Parrot
 	case "linuxmint":
 		result.Distribution = Linuxmint
+	case "void":
+		result.Distribution = VoidLinux
 	default:
 		result.Distribution = Unknown
 	}
@@ -154,6 +158,17 @@ func PacmanInstalled(packageName string) (bool, error) {
 		return false, fmt.Errorf("cannot check dependencies: pacman not found")
 	}
 	_, _, exitCode, _ := pacman.Run("-Qs", packageName)
+	return exitCode == 0, nil
+}
+
+// XbpsInstalled uses pacman to see if a package is installed.
+func XbpsInstalled(packageName string) (bool, error) {
+	program := NewProgramHelper()
+	xbpsQuery := program.FindProgram("xbps-query")
+	if xbpsQuery == nil {
+		return false, fmt.Errorf("cannot check dependencies: xbps-query not found")
+	}
+	_, _, exitCode, _ := xbpsQuery.Run("-S", packageName)
 	return exitCode == 0, nil
 }
 

@@ -49,14 +49,14 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	w.config = config
 
 	// Create the WebView instance
-	w.window = wv.NewWebview(webview.Settings{
+	w.window = wv.NewWebview(wv.Settings{
 		Width:     config.GetWidth(),
 		Height:    config.GetHeight(),
 		Title:     config.GetTitle(),
 		Resizable: config.GetResizable(),
 		URL:       config.GetDefaultHTML(),
 		Debug:     !config.GetDisableInspector(),
-		ExternalInvokeCallback: func(_ webview.WebView, message string) {
+		ExternalInvokeCallback: func(_ wv.WebView, message string) {
 			w.ipc.Dispatch(message)
 		},
 	})
