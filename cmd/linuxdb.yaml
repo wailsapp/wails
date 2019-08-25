@@ -55,6 +55,25 @@ distributions:
         gccversioncommand: *gccdumpversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
+  void:
+    id: void
+    releases:
+      default:
+        version: default
+        name: VoidLinux
+        gccversioncommand: *gccdumpversion
+        programs:
+          - name: gcc
+            help: Please install with `xbps-install base-devel` and try again
+          - name: pkg-config
+            help: Please install with `xbps-install pkg-config` and try again
+          - name: npm
+            help: Please install with `xbps-install nodejs` and try again
+        libraries:
+          - name: gtk+3-devel
+            help: Please install with `xbps-install gtk+3-devel` and try again
+          - name: webkit2gtk-devel
+            help: Please install with `xbps-install webkit2gtk-devel` and try again
   centos:
     id: centos
     releases:
@@ -131,3 +150,4 @@ distributions:
             help: Please install with `sudo emerge gtk+:3` and try again
           - name: webkit-gtk
             help: Please install with `sudo emerge webkit-gtk` and try again
+
