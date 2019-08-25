@@ -121,6 +121,9 @@ func parseOsRelease(osRelease string) *DistroInfo {
 	return result
 }
 
+// CheckPkgInstalled is all functions that use local programs to see if a package is installed
+type CheckPkgInstalled func(string) (bool, error)
+
 // EqueryInstalled uses equery to see if a package is installed
 func EqueryInstalled(packageName string) (bool, error) {
 	program := NewProgramHelper()
@@ -167,9 +170,9 @@ func RpmInstalled(packageName string) (bool, error) {
 
 // RequestSupportForDistribution promts the user to submit a request to support their
 // currently unsupported distribution
-func RequestSupportForDistribution(distroInfo *DistroInfo, libraryName string) error {
+func RequestSupportForDistribution(distroInfo *DistroInfo) error {
 	var logger = NewLogger()
-	defaultError := fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.Name, libraryName)
+	defaultError := fmt.Errorf("unable to check libraries on distribution '%s'", distroInfo.Name)
 
 	logger.Yellow("Distribution '%s' is not currently supported, but we would love to!", distroInfo.Name)
 	q := fmt.Sprintf("Would you like to submit a request to support distribution '%s'?", distroInfo.Name)
