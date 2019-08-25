@@ -282,6 +282,8 @@ func CheckDependencies(logger *Logger) (bool, error) {
 			libraryChecker = RpmInstalled
 		case Gentoo:
 			libraryChecker = EqueryInstalled
+		case VoidLinux:
+			libraryChecker = XbpsInstalled
 		default:
 			return false, RequestSupportForDistribution(distroInfo)
 		}
