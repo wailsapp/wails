@@ -269,55 +269,33 @@ func CheckDependencies(logger *Logger) (bool, error) {
 		if err != nil {
 			return false, err
 		}
+
+		var libraryChecker CheckPkgInstalled
 		distroInfo := GetLinuxDistroInfo()
+
+		switch distroInfo.Distribution {
+		case Ubuntu, Debian, Zorin, Parrot, Linuxmint:
+			libraryChecker = DpkgInstalled
+		case Arch:
+			libraryChecker = PacmanInstalled
+		case CentOS, Fedora:
+			libraryChecker = RpmInstalled
+		case Gentoo:
+			libraryChecker = EqueryInstalled
+		default:
+			return false, RequestSupportForDistribution(distroInfo)
+		}
+
 		for _, library := range *requiredLibraries {
-			switch distroInfo.Distribution {
-			case Ubuntu, Debian, Zorin, Parrot, Linuxmint:
-				installed, err := DpkgInstalled(library.Name)
-				if err != nil {
-					return false, err
-				}
-				if !installed {
-					errors = true
-					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
-				} else {
-					logger.Green("Library '%s' installed.", library.Name)
-				}
-			case Arch:
-				installed, err := PacmanInstalled(library.Name)
-				if err != nil {
-					return false, err
-				}
-				if !installed {
-					errors = true
-					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
-				} else {
-					logger.Green("Library '%s' installed.", library.Name)
-				}
-			case CentOS, Fedora:
-				installed, err := RpmInstalled(library.Name)
-				if err != nil {
-					return false, err
-				}
-				if !installed {
-					errors = true
-					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
-				} else {
-					logger.Green("Library '%s' installed.", library.Name)
-				}
-			case Gentoo:
-				installed, err := EqueryInstalled(library.Name)
-				if err != nil {
-					return false, err
-				}
-				if !installed {
-					errors = true
-					logger.Error("Library '%s' not found. %s", library.Name, library.Help)
-				} else {
-					logger.Green("Library '%s' installed.", library.Name)
-				}
-			default:
-				return false, RequestSupportForDistribution(distroInfo, library.Name)
+			installed, err := libraryChecker(library.Name)
+			if err != nil {
+				return false, err
+			}
+			if !installed {
+				errors = true
+				logger.Error("Library '%s' not found. %s", library.Name, library.Help)
+			} else {
+				logger.Green("Library '%s' installed.", library.Name)
 			}
 		}
 	}
