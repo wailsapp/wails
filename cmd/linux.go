@@ -26,6 +26,7 @@ const (
 	// Debian distribution
 	Debian
     // LinuxMint
+    LinuxMint
 )
 
 // DistroInfo contains all the information relating to a linux distribution
