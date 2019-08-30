@@ -28,6 +28,15 @@ distributions:
         gccversioncommand: &gccdumpfullversion -dumpfullversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
+  kali:
+    id: kali
+    releases:
+      default:
+        version: default
+        name: Kali GNU/Linux
+        gccversioncommand: *gccdumpfullversion
+        programs: *debiandefaultprograms
+        libraries: *debiandefaultlibraries
   parrot:
     id: parrot
     releases:
