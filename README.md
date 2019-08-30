@@ -46,23 +46,36 @@ Make sure you have the xcode command line tools installed. This can be done by r
 
 ### Linux
 
-#### Debian 9, Ubuntu 18.04
+#### Debian/Ubuntu
 
 `sudo apt install libgtk-3-dev libwebkit2gtk-4.0-dev`
 
-_Also Zorin 15, Parrot 4.7, Linuxmint 19_
+_Debian: 8, 9, 10_
+_Ubuntu: 16.04, 18.04, 19.04_
+
+_Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5_
 
 #### Arch Linux
 
 `sudo pacman -S webkit2gtk gtk3`
 
-#### Centos 7
+_Also succesfully test on: ArcoLinuxB_
+
+#### Centos
 
 `sudo yum install webkitgtk3-devel gtk3-devel`
 
-#### Fedora 30
+_CentOS 6, 7_
+
+#### Fedora
 
 `sudo yum install webkit2gtk3-devel gtk3-devel`
+
+_Fedora 29, 30_
+
+#### VoidLinux & VoidLinux-musl
+
+`xbps-install gtk+3-devel webkit2gtk-devel`
 
 #### Gentoo
 

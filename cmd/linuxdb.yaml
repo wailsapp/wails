@@ -55,6 +55,15 @@ distributions:
         gccversioncommand: *gccdumpversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
+  elementary:
+    id: elementary
+    releases:
+      default:
+        version: default
+        name: elementary OS
+        gccversioncommand: *gccdumpfullversion
+        programs: *debiandefaultprograms
+        libraries: *debiandefaultlibraries
   void:
     id: void
     releases:
@@ -150,4 +159,3 @@ distributions:
             help: Please install with `sudo emerge gtk+:3` and try again
           - name: webkit-gtk
             help: Please install with `sudo emerge webkit-gtk` and try again
-

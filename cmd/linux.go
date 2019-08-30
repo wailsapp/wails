@@ -37,6 +37,8 @@ const (
 	Linuxmint
 	// VoidLinux distribution
 	VoidLinux
+	// Elementary distribution
+	Elementary
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -114,6 +116,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Linuxmint
 	case "void":
 		result.Distribution = VoidLinux
+	case "elementary":
+		result.Distribution = Elementary
 	default:
 		result.Distribution = Unknown
 	}
