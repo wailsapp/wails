@@ -53,7 +53,7 @@ Make sure you have the xcode command line tools installed. This can be done by r
 _Debian: 8, 9, 10_
 _Ubuntu: 16.04, 18.04, 19.04_
 
-_Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5_
+_Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, Kali-Rolling_
 
 #### Arch Linux
 
