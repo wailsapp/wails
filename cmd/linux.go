@@ -39,6 +39,8 @@ const (
 	VoidLinux
 	// Elementary distribution
 	Elementary
+	// Kali distribution
+	Kali
 )
 
 // DistroInfo contains all the information relating to a linux distribution
