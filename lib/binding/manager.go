@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"unicode"
 
+	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
 	"github.com/wailsapp/wails/lib/messages"
-	"github.com/wailsapp/wails/lib/interfaces"
 )
 
 // Manager handles method binding
@@ -195,7 +195,11 @@ func (b *Manager) processFunctionCall(callData *messages.CallData) (interface{},
 			return nil, errorResult.Interface().(error)
 		}
 	}
-	return result[0].Interface(), nil
+	fmt.Printf("result = '%+v'\n", result)
+	if len(result) > 0 {
+		return result[0].Interface(), nil
+	}
+	return nil, nil
 }
 
 func (b *Manager) processMethodCall(callData *messages.CallData) (interface{}, error) {
