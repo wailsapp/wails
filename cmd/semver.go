@@ -8,7 +8,7 @@ import (
 
 // SemanticVersion is a struct containing a semantic version
 type SemanticVersion struct {
-	Version *semver.Version
+	Version semver.Version
 }
 
 // NewSemanticVersion creates a new SemanticVersion object with the given version string
@@ -18,7 +18,7 @@ func NewSemanticVersion(version string) (*SemanticVersion, error) {
 		return nil, err
 	}
 	return &SemanticVersion{
-		Version: &semverVersion,
+		Version: semverVersion,
 	}, nil
 }
 
