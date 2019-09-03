@@ -112,9 +112,9 @@ func (ph *ProjectHelper) NewProjectOptions() *ProjectOptions {
 		Description: "Enter your project description",
 		Version:     "0.1.0",
 		BinaryName:  "",
-		system:      NewSystemHelper(),
-		log:         NewLogger(),
-		templates:   NewTemplateHelper(),
+		system:      ph.system,
+		log:         ph.log,
+		templates:   ph.templates,
 		Author:      &author{},
 	}
 
