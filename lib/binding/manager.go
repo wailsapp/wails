@@ -195,7 +195,7 @@ func (b *Manager) processFunctionCall(callData *messages.CallData) (interface{},
 			return nil, errorResult.Interface().(error)
 		}
 	}
-	fmt.Printf("result = '%+v'\n", result)
+	// fmt.Printf("result = '%+v'\n", result)
 	if len(result) > 0 {
 		return result[0].Interface(), nil
 	}
