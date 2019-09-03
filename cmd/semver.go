@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/masterminds/semver"
+	"github.com/Masterminds/semver"
 )
 
 // SemanticVersion is a struct containing a semantic version
@@ -18,7 +18,7 @@ func NewSemanticVersion(version string) (*SemanticVersion, error) {
 		return nil, err
 	}
 	return &SemanticVersion{
-		Version: semverVersion,
+		Version: &semverVersion,
 	}, nil
 }
 
