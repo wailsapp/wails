@@ -120,6 +120,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = VoidLinux
 	case "elementary":
 		result.Distribution = Elementary
+	case "kali":
+		result.Distribution = Kali
 	default:
 		result.Distribution = Unknown
 	}
