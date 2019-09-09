@@ -8,7 +8,7 @@
           </v-layout>
           <v-card-actions>
             <v-layout justify-center align-center class="px-0">
-              <v-btn color="blue" dark @click="getMessage">Press Me</v-btn>
+              <v-btn color="blue" @click="getMessage">Press Me</v-btn>
             </v-layout>
           </v-card-actions>
         </v-card>
@@ -22,7 +22,7 @@
           <v-divider></v-divider>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="primary" flat @click="dialog = false">Awesome</v-btn>
+            <v-btn color="primary" text @click="dialog = false">Awesome</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -31,53 +31,55 @@
 </template>
 
 <script>
-export default {
-  data() {
-    return {
-      message: " ",
-      raised: true,
-      dialog: false
-    };
-  },
-  methods: {
-    getMessage: function() {
-      var self = this;
-      window.backend.basic().then(result => {
-        self.message = result;
-        self.dialog = true;
-      });
+  export default {
+    data () {
+      return {
+        message: " ",
+        raised: true,
+        dialog: false
+      }
+    },
+    methods: {
+      getMessage: function () {
+        var self = this
+        window.backend.basic().then(result => {
+          self.message = result
+          self.dialog = true
+        })
+      }
     }
   }
-};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h1 {
-  margin-top: 2em;
-  position: relative;
-  min-height: 5rem;
-  width: 100%;
-}
-a:hover {
-  font-size: 1.7em;
-  border-color: blue;
-  background-color: blue;
-  color: white;
-  border: 3px solid white;
-  border-radius: 10px;
-  padding: 9px;
-  cursor: pointer;
-  transition: 500ms;
-}
-a {
-  font-size: 1.7em;
-  border-color: white;
-  background-color: #121212;
-  color: white;
-  border: 3px solid white;
-  border-radius: 10px;
-  padding: 9px;
-  cursor: pointer;
-}
+  h1 {
+    margin-top: 2em;
+    position: relative;
+    min-height: 5rem;
+    width: 100%;
+  }
+
+  a:hover {
+    font-size: 1.7em;
+    border-color: blue;
+    background-color: blue;
+    color: white;
+    border: 3px solid white;
+    border-radius: 10px;
+    padding: 9px;
+    cursor: pointer;
+    transition: 500ms;
+  }
+
+  a {
+    font-size: 1.7em;
+    border-color: white;
+    background-color: #121212;
+    color: white;
+    border: 3px solid white;
+    border-radius: 10px;
+    padding: 9px;
+    cursor: pointer;
+  }
 </style>
