@@ -8,14 +8,13 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "babel-polyfill": "^6.26.0",
     "core-js": "^2.6.4",
-    "material-design-icons-iconfont": "^5.0.1",
     "vue": "^2.5.22",
     "vuetify": "^2.0.15",
     "@wailsapp/runtime": "^1.0.0"
   },
   "devDependencies": {
+    "@mdi/font": "^4.3.95",
     "@vue/cli-plugin-babel": "^3.4.0",
     "@vue/cli-plugin-eslint": "^3.4.0",
     "@vue/cli-service": "^3.4.0",
