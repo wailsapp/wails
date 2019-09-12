@@ -6,6 +6,7 @@ Wails is what it is because of the time and effort given by these great people. 
 * [Qais Patankar](https://github.com/qaisjp)
 * [Anthony Lee](https://github.com/alee792)
 * [Adrian Lanzafame](https://github.com/lanzafame)
+* [Mattn](https://github.com/mattn)
 * [0xflotus](https://github.com/0xflotus)
 * [Michael D Henderson](https://github.com/mdhender)
 * [fred2104](https://github.com/fishfishfish2104)
