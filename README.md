@@ -51,9 +51,10 @@ Make sure you have the xcode command line tools installed. This can be done by r
 `sudo apt install libgtk-3-dev libwebkit2gtk-4.0-dev`
 
 _Debian: 8, 9, 10_
+
 _Ubuntu: 16.04, 18.04, 19.04_
 
-_Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, Kali-Rolling_
+_Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, Kali, Neon_
 
 #### Arch Linux
 
