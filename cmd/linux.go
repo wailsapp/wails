@@ -41,6 +41,8 @@ const (
 	Elementary
 	// Kali distribution
 	Kali
+	// Neon distribution
+	Neon
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -122,6 +124,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Elementary
 	case "kali":
 		result.Distribution = Kali
+	case "neon":
+		result.Distribution = Neon
 	default:
 		result.Distribution = Unknown
 	}
