@@ -73,6 +73,15 @@ distributions:
         gccversioncommand: *gccdumpfullversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
+  neon:
+    id: neon
+    releases:
+      default:
+        version: default
+        name: KDE neon
+        gccversioncommand: *gccdumpfullversion
+        programs: *debiandefaultprograms
+        libraries: *debiandefaultlibraries
   void:
     id: void
     releases:
