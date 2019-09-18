@@ -170,15 +170,11 @@ func (w *WebView) Exit() {
 // Run the window main loop
 func (w *WebView) Run() error {
 
-	w.log.Info("Run()")
+	w.log.Info("Running...")
 
 	// Runtime assets
 	wailsRuntime := mewn.String("../../runtime/assets/wails.js")
-	w.log.Info("1")
-
 	w.evalJS(wailsRuntime)
-
-	w.log.Info("2")
 
 	// Ping the wait channel when the wails runtime is loaded
 	w.eventManager.On("wails:loaded", func(...interface{}) {
