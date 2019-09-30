@@ -46,13 +46,15 @@ export function NewBinding(bindingName) {
 	// Check if we have a path (IE Struct)
 	if (bindingSections.length > 1) {
 		// Iterate over binding sections, adding them to the window.backend object
-		for (let index = 0; index < bindingSections.length - 1; index += 1) {
+		for (let index = 0; index < bindingSections.length-1; index += 1) {
 			const name = bindingSections[index];
 			// Is name a valid javascript identifier?
 			if (!isValidIdentifier(name)) {
 				return new Error(`${name} is not a valid javascript identifier.`);
 			}
-			pathToBinding[name] = {};
+			if (!pathToBinding[name]) {
+				pathToBinding[name] = {};
+			}
 			pathToBinding = pathToBinding[name];
 		}
 	}
