@@ -146,18 +146,27 @@ distributions:
         version: default
         name: Arch Linux
         gccversioncommand: *gccdumpversion
-        programs:
+        programs: &archdefaultprograms
           - name: gcc
             help: Please install with `sudo pacman -S gcc` and try again
           - name: pkgconf
             help: Please install with `sudo pacman -S pkgconf` and try again
           - name: npm
             help: Please install with `sudo pacman -S npm` and try again
-        libraries:
+        libraries: &archdefaultlibraries
           - name: gtk3
             help: Please install with `sudo pacman -S gtk3` and try again
           - name: webkit2gtk
             help: Please install with `sudo pacman -S webkit2gtk` and try again
+  manjaro:
+    id: manjaro
+    releases:
+      default:
+        version: default
+        name: Manjaro Linux
+        gccversioncommand: *gccdumpversion
+        programs: *archdefaultprograms
+        libraries: *archdefaultlibraries
   gentoo:
     id: gentoo
     releases:
