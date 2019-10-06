@@ -18,6 +18,4 @@ function Init(callback) {
 	window.wails._.Init(callback);
 }
 
-module.exports = {
-	Init
-};
+module.exports = Init;

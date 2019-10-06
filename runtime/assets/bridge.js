@@ -214,4 +214,4 @@ function Init(callback) {
 	start(callback);
 }
 
-module.exports = { Init };
+module.exports = Init;

@@ -10,7 +10,7 @@ The lightweight framework for web-like apps
 /* jshint esversion: 6 */
 import * as Log from './log';
 import * as Browser from './browser';
-import { On, Emit, Notify, Heartbeat, Acknowledge } from './events';
+import { On, OnMultiple, Emit, Notify, Heartbeat, Acknowledge } from './events';
 import { NewBinding } from './bindings';
 import { Callback } from './calls';
 import { AddScript, InjectCSS } from './utils';
@@ -35,6 +35,7 @@ var runtime = {
 	Browser,
 	Events: {
 		On,
+		OnMultiple,
 		Emit,
 		Heartbeat,
 		Acknowledge,
