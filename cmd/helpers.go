@@ -275,7 +275,7 @@ func InstallRuntime(caller string, projectDir string, projectOptions *ProjectOpt
 // InstallBridge installs the relevant bridge javascript library
 func InstallBridge(projectDir string, projectOptions *ProjectOptions) error {
 	bridgeFileData := mewn.String("../runtime/assets/bridge.js")
-	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "main.js")
+	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
 	err := fs.CreateFile(bridgeFileTarget, []byte(bridgeFileData))
 	return err
 }
@@ -283,7 +283,7 @@ func InstallBridge(projectDir string, projectOptions *ProjectOptions) error {
 // InstallProdRuntime installs the production runtime
 func InstallProdRuntime(projectDir string, projectOptions *ProjectOptions) error {
 	prodInit := mewn.String("../runtime/js/runtime/init.js")
-	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "main.js")
+	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
 	err := fs.CreateFile(bridgeFileTarget, []byte(prodInit))
 	return err
 }

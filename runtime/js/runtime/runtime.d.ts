@@ -13,9 +13,7 @@ declare const wailsapp__runtime: {
         OnMultiple(eventName: string, callback: () => void, maxCallbacks: number): void;
         Once(eventName: string, callback: () => void): void;
     };
-    Init: {
-        Init(callback: () => void): void;
-    };
+    Init(callback: () => void): void;
     Log: {
         Debug(message: string): void;
         Error(message: string): void;
