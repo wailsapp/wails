@@ -60,7 +60,7 @@ _Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, K
 
 `sudo pacman -S webkit2gtk gtk3`
 
-_Also succesfully test on: ArcoLinuxB_
+_Also succesfully test on: Manjaro & ArcoLinux_
 
 #### Centos
 
