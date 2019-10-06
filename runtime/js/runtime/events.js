@@ -61,9 +61,9 @@ function Emit(eventName) {
  * the event is acknowledged via `Event.Acknowledge`. Once this happens, `callback` is invoked ONCE
  *
  * @export
- * @param {*} eventName
- * @param {*} timeInMilliseconds
- * @param {*} callback
+ * @param {string} eventName
+ * @param {number} timeInMilliseconds
+ * @param {function} callback
  */
 function Heartbeat(eventName, timeInMilliseconds, callback) {
 	window.wails.Events.Heartbeat(eventName, timeInMilliseconds, callback);
