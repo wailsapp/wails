@@ -3,6 +3,7 @@
 # Build runtime
 echo "**** Building Runtime ****"
 cd runtime/js
+npm install
 npm run build
 cd ../..
 
