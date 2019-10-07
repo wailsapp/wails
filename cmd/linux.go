@@ -17,108 +17,142 @@ type LinuxDistribution int
 const (
 	// Unknown is the catch-all distro
 	Unknown LinuxDistribution = iota
+	// Debian distribution
+	Debian
 	// Ubuntu distribution
 	Ubuntu
 	// Arch linux distribution
 	Arch
-	// RedHat linux distribution
-	RedHat
-	// Debian distribution
-	Debian
+	// CentOS linux distribution
+	CentOS
+	// Fedora linux distribution
+	Fedora
+	// Gentoo distribution
+	Gentoo
+	// Zorin distribution
+	Zorin
+	// Parrot distribution
+	Parrot
+	// Linuxmint distribution
+	Linuxmint
+	// VoidLinux distribution
+	VoidLinux
+	// Elementary distribution
+	Elementary
+	// Kali distribution
+	Kali
+	// Neon distribution
+	Neon
+	// Manjaro distribution
+	Manjaro
 )
 
 // DistroInfo contains all the information relating to a linux distribution
 type DistroInfo struct {
-	Distribution  LinuxDistribution
-	Description   string
-	Release       string
-	Codename      string
-	DistributorID string
-	DiscoveredBy  string
+	Distribution LinuxDistribution
+	Name         string
+	ID           string
+	Description  string
+	Release      string
 }
 
 // GetLinuxDistroInfo returns information about the running linux distribution
 func GetLinuxDistroInfo() *DistroInfo {
-	result := &DistroInfo{Distribution: Unknown}
-	program := NewProgramHelper()
-	// Does lsb_release exist?
-
-	lsbRelease := program.FindProgram("lsb_release")
-	if lsbRelease != nil {
-		stdout, _, _, err := lsbRelease.Run("-a")
-		if err != nil {
-			return result
-		}
-		result.DiscoveredBy = "lsb"
-		for _, line := range strings.Split(stdout, "\n") {
-			if strings.Contains(line, ":") {
-				// Iterate lines a
-				details := strings.Split(line, ":")
-				key := strings.TrimSpace(details[0])
-				value := strings.TrimSpace(details[1])
-				switch key {
-				case "Distributor ID":
-					result.DistributorID = value
-					switch value {
-					case "Ubuntu":
-						result.Distribution = Ubuntu
-					case "Arch", "ManjaroLinux":
-						result.Distribution = Arch
-					case "Debian":
-						result.Distribution = Debian
-					}
-				case "Description":
-					result.Description = value
-				case "Release":
-					result.Release = value
-				case "Codename":
-					result.Codename = value
-				}
-			}
-		}
-		// check if /etc/os-release exists
-	} else if _, err := os.Stat("/etc/os-release"); !os.IsNotExist(err) {
-		// Default value
-		osName := "Unknown"
-		version := ""
-		// read /etc/os-release
+	result := &DistroInfo{
+		Distribution: Unknown,
+		ID:           "unknown",
+		Name:         "Unknown",
+	}
+	_, err := os.Stat("/etc/os-release")
+	if !os.IsNotExist(err) {
 		osRelease, _ := ioutil.ReadFile("/etc/os-release")
-		// Split into lines
-		lines := strings.Split(string(osRelease), "\n")
-		// Iterate lines
-		for _, line := range lines {
-			// Split each line by the equals char
-			splitLine := strings.SplitN(line, "=", 2)
-			// Check we have
-			if len(splitLine) != 2 {
-				continue
-			}
-			switch splitLine[0] {
-			case "NAME":
-				osName = strings.Trim(splitLine[1], "\"")
-			case "VERSION_ID":
-				version = strings.Trim(splitLine[1], "\"")
-			}
-
-		}
-		// Check distro name against list of distros
-		result.Release = version
-		result.DiscoveredBy = "os-release"
-		switch osName {
-		case "Fedora":
-			result.Distribution = RedHat
-		case "CentOS":
-			result.Distribution = RedHat
-		case "Arch Linux":
-			result.Distribution = Arch
-		case "Debian GNU/Linux":
-			result.Distribution = Debian
-		default:
-			result.Distribution = Unknown
-			result.DistributorID = osName
-		}
+		result = parseOsRelease(string(osRelease))
 	}
 	return result
+}
+
+// parseOsRelease parses the given os-release data and returns
+// a DistroInfo struct with the details
+func parseOsRelease(osRelease string) *DistroInfo {
+	result := &DistroInfo{Distribution: Unknown}
+
+	// Default value
+	osID := "unknown"
+	osNAME := "Unknown"
+	version := ""
+
+	// Split into lines
+	lines := strings.Split(osRelease, "\n")
+	// Iterate lines
+	for _, line := range lines {
+		// Split each line by the equals char
+		splitLine := strings.SplitN(line, "=", 2)
+		// Check we have
+		if len(splitLine) != 2 {
+			continue
+		}
+		switch splitLine[0] {
+		case "ID":
+			osID = strings.Trim(splitLine[1], "\"")
+		case "NAME":
+			osNAME = strings.Trim(splitLine[1], "\"")
+		case "VERSION_ID":
+			version = strings.Trim(splitLine[1], "\"")
+		}
+	}
+	// Check distro name against list of distros
+	switch osID {
+	case "fedora":
+		result.Distribution = Fedora
+	case "centos":
+		result.Distribution = CentOS
+	case "arch":
+		result.Distribution = Arch
+	case "debian":
+		result.Distribution = Debian
+	case "ubuntu":
+		result.Distribution = Ubuntu
+	case "gentoo":
+		result.Distribution = Gentoo
+	case "zorin":
+		result.Distribution = Zorin
+	case "parrot":
+		result.Distribution = Parrot
+	case "linuxmint":
+		result.Distribution = Linuxmint
+	case "void":
+		result.Distribution = VoidLinux
+	case "elementary":
+		result.Distribution = Elementary
+	case "kali":
+		result.Distribution = Kali
+	case "neon":
+		result.Distribution = Neon
+	case "manjaro":
+		result.Distribution = Manjaro
+	default:
+		result.Distribution = Unknown
+	}
+
+	result.Name = osNAME
+	result.ID = osID
+	result.Release = version
+
+	return result
+}
+
+// CheckPkgInstalled is all functions that use local programs to see if a package is installed
+type CheckPkgInstalled func(string) (bool, error)
+
+// EqueryInstalled uses equery to see if a package is installed
+func EqueryInstalled(packageName string) (bool, error) {
+	program := NewProgramHelper()
+	equery := program.FindProgram("equery")
+	if equery == nil {
+		return false, fmt.Errorf("cannont check dependencies: equery not found")
+	}
+	_, _, exitCode, _ := equery.Run("l", packageName)
+	return exitCode == 0, nil
 }
 
 // DpkgInstalled uses dpkg to see if a package is installed
@@ -143,6 +177,17 @@ func PacmanInstalled(packageName string) (bool, error) {
 	return exitCode == 0, nil
 }
 
+// XbpsInstalled uses pacman to see if a package is installed.
+func XbpsInstalled(packageName string) (bool, error) {
+	program := NewProgramHelper()
+	xbpsQuery := program.FindProgram("xbps-query")
+	if xbpsQuery == nil {
+		return false, fmt.Errorf("cannot check dependencies: xbps-query not found")
+	}
+	_, _, exitCode, _ := xbpsQuery.Run("-S", packageName)
+	return exitCode == 0, nil
+}
+
 // RpmInstalled uses rpm to see if a package is installed
 func RpmInstalled(packageName string) (bool, error) {
 	program := NewProgramHelper()
@@ -156,18 +201,18 @@ func RpmInstalled(packageName string) (bool, error) {
 
 // RequestSupportForDistribution promts the user to submit a request to support their
 // currently unsupported distribution
-func RequestSupportForDistribution(distroInfo *DistroInfo, libraryName string) error {
+func RequestSupportForDistribution(distroInfo *DistroInfo) error {
 	var logger = NewLogger()
-	defaultError := fmt.Errorf("unable to check libraries on distribution '%s'. Please ensure that the '%s' equivalent is installed", distroInfo.DistributorID, libraryName)
+	defaultError := fmt.Errorf("unable to check libraries on distribution '%s'", distroInfo.Name)
 
-	logger.Yellow("Distribution '%s' is not currently supported, but we would love to!", distroInfo.DistributorID)
-	q := fmt.Sprintf("Would you like to submit a request to support distribution '%s'?", distroInfo.DistributorID)
+	logger.Yellow("Distribution '%s' is not currently supported, but we would love to!", distroInfo.Name)
+	q := fmt.Sprintf("Would you like to submit a request to support distribution '%s'?", distroInfo.Name)
 	result := Prompt(q, "yes")
 	if strings.ToLower(result) != "yes" {
 		return defaultError
 	}
 
-	title := fmt.Sprintf("Support Distribution '%s'", distroInfo.DistributorID)
+	title := fmt.Sprintf("Support Distribution '%s'", distroInfo.Name)
 
 	var str strings.Builder
 
@@ -182,16 +227,15 @@ func RequestSupportForDistribution(distroInfo *DistroInfo, libraryName string) e
 	str.WriteString(fmt.Sprintf("| Platform      | %s |\n", runtime.GOOS))
 	str.WriteString(fmt.Sprintf("| Arch          | %s |\n", runtime.GOARCH))
 	str.WriteString(fmt.Sprintf("| GO111MODULE   | %s |\n", gomodule))
-	str.WriteString(fmt.Sprintf("| Distribution ID   | %s |\n", distroInfo.DistributorID))
+	str.WriteString(fmt.Sprintf("| Distribution ID   | %s |\n", distroInfo.ID))
+	str.WriteString(fmt.Sprintf("| Distribution Name   | %s |\n", distroInfo.Name))
 	str.WriteString(fmt.Sprintf("| Distribution Version   | %s |\n", distroInfo.Release))
-	str.WriteString(fmt.Sprintf("| Discovered by   | %s |\n", distroInfo.DiscoveredBy))
 
-	body := fmt.Sprintf("**Description**\nDistribution '%s' is currently unsupported.\n\n**Further Information**\n\n%s\n\n*Please add any extra information here, EG: libraries that are needed to make the distribution work, or commands to install them*", distroInfo.DistributorID, str.String())
+	body := fmt.Sprintf("**Description**\nDistribution '%s' is currently unsupported.\n\n**Further Information**\n\n%s\n\n*Please add any extra information here, EG: libraries that are needed to make the distribution work, or commands to install them*", distroInfo.ID, str.String())
 	fullURL := "https://github.com/wailsapp/wails/issues/new?"
 	params := "title=" + title + "&body=" + body
 
 	fmt.Println("Opening browser to file request.")
 	browser.OpenURL(fullURL + url.PathEscape(params))
 	return nil
-
 }

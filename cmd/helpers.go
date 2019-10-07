@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"time"
 
-	mewn "github.com/leaanthony/mewn"
+	"github.com/leaanthony/mewn"
 	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
 )
@@ -249,8 +249,8 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 		ioutil.WriteFile(md5sumFile, []byte(packageJSONMD5), 0644)
 	}
 
-	// Install the bridge library
-	err = InstallBridge(caller, projectDir, projectOptions)
+	// Install the runtime
+	err = InstallRuntime(caller, projectDir, projectOptions)
 	if err != nil {
 		return err
 	}
@@ -263,22 +263,29 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	return nil
 }
 
-// InstallBridge installs the relevant bridge javascript library
-func InstallBridge(caller string, projectDir string, projectOptions *ProjectOptions) error {
-	bridgeFile := "wailsbridge.prod.js"
-	if caller == "serve" {
-		bridgeFile = "wailsbridge.js"
+// InstallRuntime installs the correct runtime for the type of build
+func InstallRuntime(caller string, projectDir string, projectOptions *ProjectOptions) error {
+	if caller == "build" {
+		return InstallProdRuntime(projectDir, projectOptions)
 	}
 
-	// Copy bridge to project
-	bridgeAssets := mewn.Group("../wailsruntimeassets/bridge/")
-	bridgeFileData := bridgeAssets.Bytes(bridgeFile)
-	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, projectOptions.FrontEnd.Bridge, "wailsbridge.js")
-	err := fs.CreateFile(bridgeFileTarget, bridgeFileData)
-	if err != nil {
-		return err
-	}
-	return nil
+	return InstallBridge(projectDir, projectOptions)
+}
+
+// InstallBridge installs the relevant bridge javascript library
+func InstallBridge(projectDir string, projectOptions *ProjectOptions) error {
+	bridgeFileData := mewn.String("../runtime/assets/bridge.js")
+	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
+	err := fs.CreateFile(bridgeFileTarget, []byte(bridgeFileData))
+	return err
+}
+
+// InstallProdRuntime installs the production runtime
+func InstallProdRuntime(projectDir string, projectOptions *ProjectOptions) error {
+	prodInit := mewn.String("../runtime/js/runtime/init.js")
+	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
+	err := fs.CreateFile(bridgeFileTarget, []byte(prodInit))
+	return err
 }
 
 // ServeProject attempts to serve up the current project so that it may be connected to

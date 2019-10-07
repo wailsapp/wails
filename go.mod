@@ -22,9 +22,9 @@ require (
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/sirupsen/logrus v1.4.1
 	github.com/stretchr/testify v1.3.0 // indirect
-	github.com/wailsapp/webview v0.2.7
 	golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529 // indirect
 	golang.org/x/net v0.0.0-20190509222800-a4d6f7feada5 // indirect
 	golang.org/x/sys v0.0.0-20190509141414-a5b02f93d862
 	gopkg.in/AlecAivazis/survey.v1 v1.8.4
+	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
 )

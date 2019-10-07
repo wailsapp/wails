@@ -12,7 +12,8 @@
     "core-js": "^2.6.4",
     "material-design-icons-iconfont": "^5.0.1",
     "vue": "^2.5.22",
-    "vuetify": "^1.5.14"
+    "vuetify": "^1.5.14",
+    "@wailsapp/runtime": "^1.0.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.4.0",

@@ -1,22 +1,32 @@
 package wails
 
+import (
+	"github.com/wailsapp/wails/lib/interfaces"
+	"github.com/wailsapp/wails/lib/logger"
+	"github.com/wailsapp/wails/runtime"
+)
+
+// CustomLogger type alias
+type CustomLogger = logger.CustomLogger
+
 // Runtime is the Wails Runtime Interface, given to a user who has defined the WailsInit method
 type Runtime struct {
-	Events     *RuntimeEvents
-	Log        *RuntimeLog
-	Dialog     *RuntimeDialog
-	Window     *RuntimeWindow
-	Browser    *RuntimeBrowser
-	FileSystem *RuntimeFileSystem
+	Events     *runtime.Events
+	Log        *runtime.Log
+	Dialog     *runtime.Dialog
+	Window     *runtime.Window
+	Browser    *runtime.Browser
+	FileSystem *runtime.FileSystem
 }
 
-func newRuntime(eventManager *eventManager, renderer Renderer) *Runtime {
+// NewRuntime creates a new Runtime struct
+func NewRuntime(eventManager interfaces.EventManager, renderer interfaces.Renderer) *Runtime {
 	return &Runtime{
-		Events:     newRuntimeEvents(eventManager),
-		Log:        newRuntimeLog(),
-		Dialog:     newRuntimeDialog(renderer),
-		Window:     newRuntimeWindow(renderer),
-		Browser:    newRuntimeBrowser(),
-		FileSystem: newRuntimeFileSystem(),
+		Events:     runtime.NewEvents(eventManager),
+		Log:        runtime.NewLog(),
+		Dialog:     runtime.NewDialog(renderer),
+		Window:     runtime.NewWindow(renderer),
+		Browser:    runtime.NewBrowser(),
+		FileSystem: runtime.NewFileSystem(),
 	}
 }

@@ -1,0 +1,43 @@
+{
+  "name": "wails-runtime",
+  "version": "1.0.0",
+  "description": "The Javascript Wails Runtime",
+  "main": "index.js",
+  "scripts": {
+    "build": "eslint core/ && npm run build:prod",
+    "build:prod": "webpack --env prod --colors",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wailsapp/runtime.git"
+  },
+  "keywords": [
+    "Wails",
+    "Go",
+    "Javascript",
+    "Runtime"
+  ],
+  "browserslist": [
+    "> 5%",
+    "IE 9"
+  ],
+  "author": "Lea Anthony <lea.anthony@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wailsapp/runtime/issues"
+  },
+  "homepage": "https://github.com/wailsapp/runtime#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.5.0",
+    "@babel/core": "^7.5.4",
+    "@babel/plugin-transform-object-assign": "^7.2.0",
+    "@babel/preset-env": "^7.5.4",
+    "babel-loader": "^8.0.6",
+    "babel-preset-minify": "^0.5.0",
+    "core-js": "^3.1.4",
+    "eslint": "^6.2.2",
+    "webpack": "^4.35.3",
+    "webpack-cli": "^3.3.5"
+  }
+}
