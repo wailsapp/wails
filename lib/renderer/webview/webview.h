@@ -86,7 +86,7 @@ struct webview_priv
   NSAutoreleasePool *pool;
   NSWindow *window;
   WebView *webview;
-  id windowDelegate;
+  id delegate;
   int should_exit;
 };
 #else
@@ -1894,6 +1894,22 @@ struct webview_priv
     [script setValue:self forKey:@"external"];
   }
 
+static void webview_run_input_open_panel(id self, SEL cmd, id webview,
+                                           id listener, BOOL allowMultiple) {
+    char filename[256] = "";
+    struct webview *w =
+        (struct webview *)objc_getAssociatedObject(self, "webview");
+
+    webview_dialog(w, WEBVIEW_DIALOG_TYPE_OPEN, WEBVIEW_DIALOG_FLAG_FILE, "", "",
+                   filename, 255);
+    if (strlen(filename)) {
+      [listener chooseFilename:[NSString stringWithUTF8String:filename]];
+    } else {
+      [listener cancel];
+    }
+  }
+
+
   static void webview_external_invoke(id self, SEL cmd, id arg)
   {
     struct webview *w =
@@ -1927,12 +1943,17 @@ struct webview_priv
     class_addMethod(webViewDelegateClass,
                     sel_registerName("webView:didClearWindowObject:forFrame:"),
                     (IMP)webview_did_clear_window_object, "v@:@@@");
+    class_addMethod(
+        webViewDelegateClass,
+        sel_registerName("webView:runOpenPanelForFileButtonWithResultListener:"
+                         "allowMultipleFiles:"),
+        (IMP)webview_run_input_open_panel, "v@:@@c");
     class_addMethod(webViewDelegateClass, sel_registerName("invoke:"),
                     (IMP)webview_external_invoke, "v@:@");
     objc_registerClassPair(webViewDelegateClass);
 
-    w->priv.windowDelegate = [[webViewDelegateClass alloc] init];
-    objc_setAssociatedObject(w->priv.windowDelegate, "webview", (id)(w),
+    w->priv.delegate = [[webViewDelegateClass alloc] init];
+    objc_setAssociatedObject(w->priv.delegate, "webview", (id)(w),
                              OBJC_ASSOCIATION_ASSIGN);
 
     NSRect r = NSMakeRect(0, 0, w->width, w->height);
@@ -1960,7 +1981,7 @@ struct webview_priv
     NSString *nsTitle = [NSString stringWithUTF8String:w->title];
     [w->priv.window setTitle:nsTitle];
 
-    [w->priv.window setDelegate:w->priv.windowDelegate];
+    [w->priv.window setDelegate:w->priv.delegate];
     [w->priv.window center];
 
     //  NSToolbar *toolbar = [[NSToolbar alloc] initWithIdentifier:@"wat"];
@@ -1989,7 +2010,8 @@ struct webview_priv
     [w->priv.webview setAutoresizesSubviews:YES];
     [w->priv.webview
         setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-    w->priv.webview.frameLoadDelegate = w->priv.windowDelegate;
+    w->priv.webview.frameLoadDelegate = w->priv.delegate;
+    w->priv.webview.UIDelegate = w->priv.delegate;
     [[w->priv.window contentView] addSubview:w->priv.webview];
     [w->priv.window orderFrontRegardless];
 
