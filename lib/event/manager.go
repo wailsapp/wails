@@ -3,18 +3,21 @@ package event
 import (
 	"fmt"
 	"sync"
+	"time"
+
+	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
 	"github.com/wailsapp/wails/lib/messages"
-	"github.com/wailsapp/wails/lib/interfaces"
 )
 
 // Manager handles and processes events
 type Manager struct {
 	incomingEvents chan *messages.EventData
 	listeners      map[string][]*eventListener
-	exit           bool
+	running        bool
 	log            *logger.CustomLogger
 	renderer       interfaces.Renderer // Messages will be dispatched to the frontend
+	wg             sync.WaitGroup
 }
 
 // NewManager creates a new event manager with a 100 event buffer
@@ -22,7 +25,7 @@ func NewManager() interfaces.EventManager {
 	return &Manager{
 		incomingEvents: make(chan *messages.EventData, 100),
 		listeners:      make(map[string][]*eventListener),
-		exit:           false,
+		running:        false,
 		log:            logger.NewCustomLogger("Events"),
 	}
 }
@@ -87,15 +90,14 @@ func (e *Manager) Start(renderer interfaces.Renderer) {
 	// Store renderer
 	e.renderer = renderer
 
-	// Set up waitgroup so we can wait for goroutine to start
-	var wg sync.WaitGroup
-	wg.Add(1)
+	// Set up waitgroup so we can wait for goroutine to quit
+	e.running = true
+	e.wg.Add(1)
 
 	// Run main loop in separate goroutine
 	go func() {
-		wg.Done()
 		e.log.Info("Listening")
-		for e.exit == false {
+		for e.running {
 			// TODO: Listen for application exit
 			select {
 			case event := <-e.incomingEvents:
@@ -139,14 +141,18 @@ func (e *Manager) Start(renderer interfaces.Renderer) {
 						}
 					}
 				}
+			default:
+				time.Sleep(1 * time.Millisecond)
 			}
 		}
+		e.wg.Done()
 	}()
-
-	// Wait for goroutine to start
-	wg.Wait()
 }
 
-func (e *Manager) stop() {
-	e.exit = true
+// Shutdown is called when exiting the Application
+func (e *Manager) Shutdown() {
+	e.log.Debug("Shutting Down")
+	e.running = false
+	e.log.Debug("Waiting for main loop to exit")
+	e.wg.Wait()
 }

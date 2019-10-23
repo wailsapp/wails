@@ -7,4 +7,5 @@ type BindingManager interface {
 	Bind(object interface{})
 	Start(renderer Renderer, runtime Runtime) error
 	ProcessCall(callData *messages.CallData) (result interface{}, err error)
+	Shutdown()
 }
