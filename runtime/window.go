@@ -29,6 +29,7 @@ func detectEncoding(text string) (encoding.Encoding, string) {
 	return enc, info.Lang.String()
 }
 
+// ProcessEncoding attempts to convert CKJ strings to UTF-8
 func ProcessEncoding(text string) string {
 	if runtime.GOOS != "windows" {
 		return text
