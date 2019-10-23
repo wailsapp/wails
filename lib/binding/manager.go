@@ -16,6 +16,7 @@ type Manager struct {
 	functions        map[string]*boundFunction
 	internalMethods  *internalMethods
 	initMethods      []*boundMethod
+	shutdownMethods  []*boundMethod
 	log              *logger.CustomLogger
 	renderer         interfaces.Renderer
 	runtime          interfaces.Runtime // The runtime object to pass to bound structs
@@ -127,6 +128,9 @@ func (b *Manager) bindMethod(object interface{}) error {
 		if newMethod.isWailsInit {
 			b.log.Debugf("Detected WailsInit function: %s", fullMethodName)
 			b.initMethods = append(b.initMethods, newMethod)
+		} else if newMethod.isWailsShutdown {
+			b.log.Debugf("Detected WailsShutdown function: %s", fullMethodName)
+			b.shutdownMethods = append(b.shutdownMethods, newMethod)
 		} else {
 			// Save boundMethod
 			b.log.Infof("Bound Method: %s()", fullMethodName)
@@ -291,4 +295,14 @@ func (b *Manager) callWailsInitMethods() error {
 		}
 	}
 	return nil
+}
+
+// Shutdown the binding manager
+func (b *Manager) Shutdown() {
+	b.log.Debug("Shutdown called")
+	for _, method := range b.shutdownMethods {
+		b.log.Debugf("Calling Shutdown for method: %s", method.fullName)
+		method.call("[]")
+	}
+	b.log.Debug("Shutdown complete")
 }

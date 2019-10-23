@@ -8,4 +8,5 @@ type EventManager interface {
 	Emit(eventName string, optionalData ...interface{})
 	On(eventName string, callback func(...interface{}))
 	Start(Renderer)
+	Shutdown()
 }
