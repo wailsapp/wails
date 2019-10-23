@@ -5,4 +5,5 @@ type IPCManager interface {
 	BindRenderer(Renderer)
 	Dispatch(message string)
 	Start(eventManager EventManager, bindingManager BindingManager)
+	Shutdown()
 }
