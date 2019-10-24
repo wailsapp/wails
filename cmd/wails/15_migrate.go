@@ -20,6 +20,7 @@ var checkSpinner = spinner.NewSpinner()
 var migrateProjectOptions = &cmd.ProjectOptions{}
 var migrateFS = cmd.NewFSHelper()
 var migrateGithub = cmd.NewGitHubHelper()
+var programHelper = cmd.NewProgramHelper()
 var lessThanV1 *semver.Constraints
 
 // The user's go.mod
@@ -29,6 +30,9 @@ var goModFile string
 // The user's main.js
 var mainJSFile string
 var mainJSContents string
+
+// Frontend directory
+var frontEndDir string
 
 func init() {
 
@@ -147,6 +151,12 @@ func init() {
 			}
 		}
 
+		// Install runtime
+		err = installWailsRuntime()
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 }
@@ -230,7 +240,7 @@ func checkWailsBridge() (string, error) {
 		return "", fmt.Errorf("Unable to determine frontend directory")
 	}
 
-	frontEndDir := migrateProjectOptions.FrontEnd.Dir
+	frontEndDir = migrateProjectOptions.FrontEnd.Dir
 
 	wailsBridgePath, err := filepath.Abs(filepath.Join(".", frontEndDir, "src", "wailsbridge.js"))
 	if err != nil {
@@ -263,7 +273,7 @@ func checkMainJS() (bool, error) {
 		return false, fmt.Errorf("Unable to determine frontend directory")
 	}
 
-	frontEndDir := migrateProjectOptions.FrontEnd.Dir
+	frontEndDir = migrateProjectOptions.FrontEnd.Dir
 
 	mainJSFile, err = filepath.Abs(filepath.Join(".", frontEndDir, "src", "main.js"))
 	if err != nil {
@@ -355,6 +365,37 @@ func patchMainJS() error {
 	if err != nil {
 		checkSpinner.Error()
 		return err
+	}
+
+	checkSpinner.Success()
+	return nil
+}
+
+func installWailsRuntime() error {
+
+	checkSpinner.Start("Installing @wailsapp/runtime module")
+
+	// Change to the frontend directory
+	err := os.Chdir(frontEndDir)
+	if err != nil {
+		checkSpinner.Error()
+		return nil
+	}
+
+	// Determine package manager
+	packageManager, err := migrateProjectOptions.GetNPMBinaryName()
+	if err != nil {
+		checkSpinner.Error()
+		return nil
+	}
+
+	switch packageManager {
+	case cmd.NPM:
+		// npm install --save @wailsapp/runtime
+		programHelper.InstallNPMPackage("@wailsapp/runtime", true)
+	default:
+		checkSpinner.Error()
+		return fmt.Errorf("Unknown package manager")
 	}
 
 	checkSpinner.Success()

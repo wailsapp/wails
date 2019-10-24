@@ -13,12 +13,16 @@ import (
 	"github.com/leaanthony/slicer"
 )
 
+// PackageManager indicates different package managers
 type PackageManager int
 
 const (
-	unknown PackageManager = iota
-	npm
-	yarn
+	// UNKNOWN package manager
+	UNKNOWN PackageManager = iota
+	// NPM package manager
+	NPM
+	// YARN package manager
+	YARN
 )
 
 type author struct {
@@ -161,20 +165,21 @@ func (po *ProjectOptions) Defaults() {
 	po.WailsVersion = Version
 }
 
+// GetNPMBinaryName returns the type of package manager used by the project
 func (po *ProjectOptions) GetNPMBinaryName() (PackageManager, error) {
 	if po.FrontEnd == nil {
-		return unknown, fmt.Errorf("No frontend specified in project options")
+		return UNKNOWN, fmt.Errorf("No frontend specified in project options")
 	}
 
 	if strings.Index(po.FrontEnd.Install, "npm") > -1 {
-		return npm, nil
+		return NPM, nil
 	}
 
 	if strings.Index(po.FrontEnd.Install, "yarn") > -1 {
-		return yarn, nil
+		return YARN, nil
 	}
 
-	return unknown, nil
+	return UNKNOWN, nil
 }
 
 // PromptForInputs asks the user to input project details
