@@ -13,6 +13,14 @@ import (
 	"github.com/leaanthony/slicer"
 )
 
+type PackageManager int
+
+const (
+	unknown PackageManager = iota
+	npm
+	yarn
+)
+
 type author struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
@@ -151,6 +159,22 @@ type ProjectOptions struct {
 func (po *ProjectOptions) Defaults() {
 	po.Template = "vuebasic"
 	po.WailsVersion = Version
+}
+
+func (po *ProjectOptions) GetNPMBinaryName() (PackageManager, error) {
+	if po.FrontEnd == nil {
+		return unknown, fmt.Errorf("No frontend specified in project options")
+	}
+
+	if strings.Index(po.FrontEnd.Install, "npm") > -1 {
+		return npm, nil
+	}
+
+	if strings.Index(po.FrontEnd.Install, "yarn") > -1 {
+		return yarn, nil
+	}
+
+	return unknown, nil
 }
 
 // PromptForInputs asks the user to input project details
