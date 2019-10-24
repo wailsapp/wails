@@ -57,6 +57,7 @@ func init() {
 		message := "Migrate Project"
 		logger.PrintSmallBanner(message)
 		logger.Red("WARNING: This is an experimental command. Ensure you have backups of your project!")
+		logger.Red("It currently only supports npm based projects.")
 		fmt.Println()
 
 		// Check project directory
@@ -99,6 +100,8 @@ func init() {
 		if err != nil {
 			return err
 		}
+
+		// TODO: Check if we are using legacy js runtime
 
 		// Operations
 		logger.Yellow("Operations to perform:")
@@ -157,6 +160,8 @@ func init() {
 			return err
 		}
 
+		fmt.Println()
+		logger.Yellow("Migration complete! Check project by running `wails build`.")
 		return nil
 	})
 }
