@@ -191,8 +191,15 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 
 	// Build syso
 	sysofile := filepath.Join(b.fs.Cwd(), basename+"-res.syso")
-	windresCommand := []string{"windres", "-o", sysofile, tgtRCFile}
-	err := NewProgramHelper().RunCommandArray(windresCommand)
+
+	batfile, err := fs.LocalDir(".")
+	if err != nil {
+		return err
+	}
+
+	windresBatFile := filepath.Join(batfile.fullPath, "windres.bat")
+	windresCommand := []string{windresBatFile, sysofile, tgtRCFile}
+	err = NewProgramHelper().RunCommandArray(windresCommand)
 	if err != nil {
 		return err
 	}

@@ -128,6 +128,7 @@ func (p *ProgramHelper) RunCommandArray(args []string, dir ...string) error {
 		fmt.Printf("ERROR: Looks like '%s' isn't installed. Please install and try again.", program)
 		return err
 	}
+
 	args = args[1:]
 	var stderr string
 	var stdout string
