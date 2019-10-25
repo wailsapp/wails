@@ -1,6 +1,5 @@
-// Package wails implements Go bindings to https://github.com/zserge/webview C library.
+// Package webview implements Go bindings to https://github.com/zserge/webview C library.
 // It is a modified version of webview.go from that repository
-
 // Bindings closely repeat the C APIs and include both, a simplified
 // single-function API to just open a full-screen webview window, and a more
 // advanced and featureful set of APIs, including Go-to-JavaScript bindings.
