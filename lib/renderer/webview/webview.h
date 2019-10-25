@@ -217,6 +217,21 @@ struct webview_priv
     va_end(ap);
   }
 
+  WEBVIEW_API void webview_set_title(struct webview *w, const char *title)
+  {
+  #ifdef UNICODE
+    wchar_t *u16title = webview_to_utf16(title);
+    if (u16title == NULL)
+    {
+      return;
+    }
+    SetWindowText(w->priv.hwnd, u16title);
+    GlobalFree(u16title);
+  #else
+    SetWindowText(w->priv.hwnd, title);
+  #endif
+  }
+
   static int webview_js_encode(const char *s, char *esc, size_t n)
   {
     int r = 1; /* At least one byte for trailing zero */
