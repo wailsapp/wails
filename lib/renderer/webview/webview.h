@@ -1038,7 +1038,7 @@ struct webview_priv
     return S_FALSE;
   }
 
-  static const TCHAR *classname = "WebView";
+  static const TCHAR *classname = TEXT("WebView");
   static const SAFEARRAYBOUND ArrayBound = {1, 0};
 
   static IOleClientSiteVtbl MyIOleClientSiteTable = {
@@ -1227,7 +1227,7 @@ struct webview_priv
       }
       VariantInit(&myURL);
       myURL.vt = VT_BSTR;
-#ifndef UNICODE
+// #ifndef UNICODE
       {
         wchar_t *buffer = webview_to_utf16(webPageName);
         if (buffer == NULL)
@@ -1237,9 +1237,9 @@ struct webview_priv
         myURL.bstrVal = SysAllocString(buffer);
         GlobalFree(buffer);
       }
-#else
-      myURL.bstrVal = SysAllocString(webPageName);
-#endif
+// #else
+//       myURL.bstrVal = SysAllocString(webPageName);
+// #endif
       if (!myURL.bstrVal)
       {
       badalloc:
@@ -1277,7 +1277,7 @@ struct webview_priv
             if (!SafeArrayAccessData(sfArray, (void **)&pVar))
             {
               pVar->vt = VT_BSTR;
-#ifndef UNICODE
+// #ifndef UNICODE
               {
                 wchar_t *buffer = webview_to_utf16(url);
                 if (buffer == NULL)
@@ -1287,9 +1287,9 @@ struct webview_priv
                 bstr = SysAllocString(buffer);
                 GlobalFree(buffer);
               }
-#else
-              bstr = SysAllocString(string);
-#endif
+// #else
+//               bstr = SysAllocString(url);
+// #endif
               if ((pVar->bstrVal = bstr))
               {
                 htmlDoc2->lpVtbl->write(htmlDoc2, sfArray);
@@ -1404,6 +1404,7 @@ struct webview_priv
     {
       return -1;
     }
+
     ZeroMemory(&wc, sizeof(WNDCLASSEX));
     wc.cbSize = sizeof(WNDCLASSEX);
     wc.hInstance = hInstance;
@@ -1431,10 +1432,24 @@ struct webview_priv
     rect.bottom = rect.bottom - rect.top + top;
     rect.top = top;
 
+#ifdef UNICODE
+    wchar_t *u16title = webview_to_utf16(w->title);
+    if (u16title == NULL)
+    {
+      return -1;
+    }
+
     w->priv.hwnd =
+        CreateWindowEx(0, classname, u16title, style, rect.left, rect.top,
+                       rect.right - rect.left, rect.bottom - rect.top,
+                       HWND_DESKTOP, NULL, hInstance, (void *)w);
+#else
+  w->priv.hwnd =
         CreateWindowEx(0, classname, w->title, style, rect.left, rect.top,
                        rect.right - rect.left, rect.bottom - rect.top,
                        HWND_DESKTOP, NULL, hInstance, (void *)w);
+#endif
+    
     if (w->priv.hwnd == 0)
     {
       OleUninitialize();
@@ -1445,7 +1460,14 @@ struct webview_priv
 
     DisplayHTMLPage(w);
 
+#ifdef UNICODE
+    SetWindowText(w->priv.hwnd, u16title);
+    GlobalFree(u16title);
+#else
     SetWindowText(w->priv.hwnd, w->title);
+#endif
+    
+    
     ShowWindow(w->priv.hwnd, SW_SHOWDEFAULT);
     UpdateWindow(w->priv.hwnd);
     SetFocus(w->priv.hwnd);
