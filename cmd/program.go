@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"syscall"
 )
@@ -128,10 +127,6 @@ func (p *ProgramHelper) RunCommandArray(args []string, dir ...string) error {
 	if err != nil {
 		fmt.Printf("ERROR: Looks like '%s' isn't installed. Please install and try again.", program)
 		return err
-	}
-
-	if runtime.GOOS == "windows" {
-		program = strings.ReplaceAll(program, ` `, `\ `)
 	}
 
 	args = args[1:]
