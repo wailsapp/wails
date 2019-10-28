@@ -103,7 +103,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	}
 
 	// Add windows flags
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" && buildMode == BuildModeProd {
 		ldflags += "-H windowsgui "
 	}
 
