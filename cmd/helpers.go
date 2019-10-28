@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/leaanthony/mewn"
@@ -87,6 +88,17 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	buildCommand.Add("build")
 
 	if binaryName != "" {
+		// Alter binary name based on OS
+		switch runtime.GOOS {
+		case "windows":
+			if !strings.HasSuffix(binaryName, ".exe") {
+				binaryName += ".exe"
+			}
+		default:
+			if strings.HasSuffix(binaryName, ".exe") {
+				binaryName = strings.TrimSuffix(binaryName, ".exe")
+			}
+		}
 		buildCommand.Add("-o")
 		buildCommand.Add(binaryName)
 	}
