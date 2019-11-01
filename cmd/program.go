@@ -100,6 +100,19 @@ func (p *ProgramHelper) InstallGoPackage(packageName string) error {
 	return err
 }
 
+// InstallNPMPackage installs the given npm package
+func (p *ProgramHelper) InstallNPMPackage(packageName string, save bool) error {
+	args := strings.Split("install "+packageName, " ")
+	if save {
+		args = append(args, "--save")
+	}
+	_, stderr, err := p.shell.Run("npm", args...)
+	if err != nil {
+		fmt.Println(stderr)
+	}
+	return err
+}
+
 // RunCommand runs the given command
 func (p *ProgramHelper) RunCommand(command string) error {
 	args := strings.Split(command, " ")
@@ -115,6 +128,7 @@ func (p *ProgramHelper) RunCommandArray(args []string, dir ...string) error {
 		fmt.Printf("ERROR: Looks like '%s' isn't installed. Please install and try again.", program)
 		return err
 	}
+
 	args = args[1:]
 	var stderr string
 	var stdout string
