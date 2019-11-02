@@ -80,10 +80,10 @@ function Acknowledge(eventName) {
 }
 
 module.exports = {
-	OnMultiple,
-	On,
-	Once,
-	Emit,
-	Heartbeat,
-	Acknowledge
+	OnMultiple: OnMultiple,
+	On: On,
+	Once: Once,
+	Emit: Emit,
+	Heartbeat: Heartbeat,
+	Acknowledge: Acknowledge
 };

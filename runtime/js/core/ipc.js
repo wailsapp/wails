@@ -15,7 +15,11 @@ The lightweight framework for web-like apps
  * @param {string} message
  */
 function Invoke(message) {
-	window.external.invoke(message);
+	if ( window.wailsbridge ) {
+		window.wailsbridge.websocket.send(message);
+	} else {
+		window.external.invoke(message);
+	}
 }
 
 /**
