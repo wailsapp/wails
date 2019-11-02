@@ -1,6 +1,5 @@
-// Package wails implements Go bindings to https://github.com/zserge/webview C library.
+// Package webview implements Go bindings to https://github.com/zserge/webview C library.
 // It is a modified version of webview.go from that repository
-
 // Bindings closely repeat the C APIs and include both, a simplified
 // single-function API to just open a full-screen webview window, and a more
 // advanced and featureful set of APIs, including Go-to-JavaScript bindings.
@@ -14,7 +13,7 @@ package webview
 #cgo linux openbsd freebsd CFLAGS: -DWEBVIEW_GTK=1 -Wno-deprecated-declarations
 #cgo linux openbsd freebsd pkg-config: gtk+-3.0 webkit2gtk-4.0
 
-#cgo windows CFLAGS: -DWEBVIEW_WINAPI=1
+#cgo windows CFLAGS: -DWEBVIEW_WINAPI=1 -std=c99 -DUNICODE=1
 #cgo windows LDFLAGS: -lole32 -lcomctl32 -loleaut32 -luuid -lgdi32
 
 #cgo darwin CFLAGS: -DWEBVIEW_COCOA=1 -x objective-c
