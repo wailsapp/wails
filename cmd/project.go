@@ -13,6 +13,18 @@ import (
 	"github.com/leaanthony/slicer"
 )
 
+// PackageManager indicates different package managers
+type PackageManager int
+
+const (
+	// UNKNOWN package manager
+	UNKNOWN PackageManager = iota
+	// NPM package manager
+	NPM
+	// YARN package manager
+	YARN
+)
+
 type author struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
@@ -151,6 +163,23 @@ type ProjectOptions struct {
 func (po *ProjectOptions) Defaults() {
 	po.Template = "vuebasic"
 	po.WailsVersion = Version
+}
+
+// GetNPMBinaryName returns the type of package manager used by the project
+func (po *ProjectOptions) GetNPMBinaryName() (PackageManager, error) {
+	if po.FrontEnd == nil {
+		return UNKNOWN, fmt.Errorf("No frontend specified in project options")
+	}
+
+	if strings.Index(po.FrontEnd.Install, "npm") > -1 {
+		return NPM, nil
+	}
+
+	if strings.Index(po.FrontEnd.Install, "yarn") > -1 {
+		return YARN, nil
+	}
+
+	return UNKNOWN, nil
 }
 
 // PromptForInputs asks the user to input project details

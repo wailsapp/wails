@@ -1,0 +1,1 @@
+windres.exe -o %1 %2

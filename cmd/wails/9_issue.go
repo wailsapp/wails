@@ -80,15 +80,16 @@ To help you in this process, we will ask for some information, add Go/Wails deta
 		npm := program.FindProgram("npm")
 		if npm != nil {
 			stdout, _, _, _ := npm.Run("--version")
-			nodeVersion = stdout
-			nodeVersion = nodeVersion[:len(nodeVersion)-1]
+			npmVersion = stdout
+			npmVersion = npmVersion[:len(npmVersion)-1]
+			npmVersion = strings.TrimSpace(npmVersion)
 		}
 
 		node := program.FindProgram("node")
 		if node != nil {
 			stdout, _, _, _ := node.Run("--version")
-			npmVersion = stdout
-			npmVersion = npmVersion[:len(npmVersion)-1]
+			nodeVersion = stdout
+			nodeVersion = nodeVersion[:len(nodeVersion)-1]
 		}
 
 		str.WriteString("\n| Name   | Value |\n| ----- | ----- |\n")

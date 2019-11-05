@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/leaanthony/mewn"
@@ -87,6 +88,17 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	buildCommand.Add("build")
 
 	if binaryName != "" {
+		// Alter binary name based on OS
+		switch runtime.GOOS {
+		case "windows":
+			if !strings.HasSuffix(binaryName, ".exe") {
+				binaryName += ".exe"
+			}
+		default:
+			if strings.HasSuffix(binaryName, ".exe") {
+				binaryName = strings.TrimSuffix(binaryName, ".exe")
+			}
+		}
 		buildCommand.Add("-o")
 		buildCommand.Add(binaryName)
 	}
@@ -103,7 +115,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	}
 
 	// Add windows flags
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" && buildMode == BuildModeProd {
 		ldflags += "-H windowsgui "
 	}
 
@@ -218,6 +230,15 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	}
 
 	const md5sumFile = "package.json.md5"
+
+	// If node_modules does not exist, force a rebuild.
+	nodeModulesPath, err := filepath.Abs(filepath.Join(".", "node_modules"))
+	if err != nil {
+		return err
+	}
+	if !fs.DirExists(nodeModulesPath) {
+		forceRebuild = true
+	}
 
 	// If we aren't forcing the install and the md5sum file exists
 	if !forceRebuild && fs.FileExists(md5sumFile) {

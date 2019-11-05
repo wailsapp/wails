@@ -62,9 +62,9 @@ function Fatal(message) {
 }
 
 module.exports = {
-	Debug,
-	Info,
-	Warning,
-	Error,
-	Fatal
+	Debug: Debug,
+	Info: Info,
+	Warning: Warning,
+	Error: Error,
+	Fatal: Fatal
 };
