@@ -46,7 +46,7 @@
 
     function logKey(e) {
         var conin = document.getElementById('conin');
-        if (e.which == 27) {
+        if (e.which == 27 && e.shiftKey) {
             toggleConsole(conin);
         }
         if (e.which == 13 && consoleVisible()) {
