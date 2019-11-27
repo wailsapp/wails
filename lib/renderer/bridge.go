@@ -74,6 +74,10 @@ func (h *Bridge) evalJS(js string, mtype messageType) error {
 	return nil
 }
 
+// EnableConsole not needed for bridge!
+func (h *Bridge) EnableConsole() {
+}
+
 func (h *Bridge) injectCSS(css string) {
 	// Minify css to overcome issues in the browser with carriage returns
 	minified, err := htmlmin.Minify([]byte(css), &htmlmin.Options{

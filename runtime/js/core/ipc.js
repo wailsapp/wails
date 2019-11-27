@@ -9,16 +9,34 @@ The lightweight framework for web-like apps
 */
 /* jshint esversion: 6 */
 
+// IPC Listeners
+var listeners = [];
+
+/**
+ * Adds a listener to IPC messages
+ * @param {function} callback 
+ */
+export function AddIPCListener(callback) {
+	listeners.push(callback);
+}
+
 /**
  * Invoke sends the given message to the backend
  *
  * @param {string} message
  */
 function Invoke(message) {
-	if ( window.wailsbridge ) {
+	if (window.wailsbridge) {
 		window.wailsbridge.websocket.send(message);
 	} else {
 		window.external.invoke(message);
+	}
+
+	// Also send to listeners
+	if (listeners.length > 0) {
+		for (var i = 0; i < listeners.length; i++) {
+			listeners[i](message);
+		}
 	}
 }
 

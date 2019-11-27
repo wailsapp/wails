@@ -14,6 +14,7 @@ import { On, OnMultiple, Emit, Notify, Heartbeat, Acknowledge } from './events';
 import { NewBinding } from './bindings';
 import { Callback } from './calls';
 import { AddScript, InjectCSS } from './utils';
+import { AddIPCListener } from './ipc';
 
 // Initialise global if not already
 window.wails = window.wails || {};
@@ -27,6 +28,7 @@ var internal = {
 	AddScript,
 	InjectCSS,
 	Init,
+	AddIPCListener,
 };
 
 // Setup runtime structure
