@@ -44,6 +44,7 @@ func runCommand(command string, args ...string) {
 	cmd := exec.Command(command, args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		log.Println(string(output))
 		log.Fatal(err)
 	}
 	cmd.Run()
