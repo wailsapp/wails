@@ -11,7 +11,7 @@ func basic() string {
 
 func main() {
 
-	js := mewn.String("./frontend/dist/my-app/main-es2015.js")
+	js := mewn.String("./frontend/dist/my-app/main.js")
 	css := mewn.String("./frontend/dist/my-app/styles.css")
 
 	app := wails.CreateApp(&wails.AppConfig{
