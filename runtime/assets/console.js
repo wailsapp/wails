@@ -10,6 +10,7 @@
     document.addEventListener('keyup', logKey);
 
     debugconsole.id = "wailsdebug";
+    debugconsole.style.fontSize = "18px";
     debugconsole.style.width = "100%";
     debugconsole.style.height = "35%";
     debugconsole.style.maxHeight = "35%";
@@ -21,7 +22,7 @@
     debugconsole.style.display = "none";
 
     header.style.width = "100%";
-    header.style.height = "25px";
+    header.style.height = "30px";
     header.style.display = "block";
     // header.style.paddingTop = "3px";
     header.style.verticalAlign = "middle";
@@ -32,7 +33,7 @@
     consoleOut.style.position = "absolute";
     consoleOut.style.width = "100%";
     consoleOut.style.height = "auto";
-    consoleOut.style.top = "25px";
+    consoleOut.style.top = "30px";
     // consoleOut.style.paddingLeft = "10px";
     consoleOut.style.bottom = "0px";
     consoleOut.style.backgroundColor = "rgba(200,200,200,1)";
