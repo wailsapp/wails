@@ -48,6 +48,16 @@ var runtime = {
 // Augment global
 Object.assign(window.wails, runtime);
 
+// Setup global error handler
+window.onerror = function (msg, url, lineNo, columnNo, error) {
+	window.wails.Log.Error('**** Caught Unhandled Error ****');
+	window.wails.Log.Error('Message: ' + msg);
+	window.wails.Log.Error('URL: ' + url);
+	window.wails.Log.Error('Line No: ' + lineNo);
+	window.wails.Log.Error('Column No: ' + columnNo);
+	window.wails.Log.Error('error: ' + error);
+};
+
 // Emit loaded event
 Emit('wails:loaded');
 
