@@ -1,7 +1,6 @@
 package wails
 
 import (
-	"fmt"
 	"os"
 	"runtime"
 	"syscall"
@@ -67,26 +66,10 @@ func CreateApp(optionalConfig ...*AppConfig) *App {
 		result.config.DisableInspector = true
 	}
 
-	// If running windows, do a hidpi fix
-	if runtime.GOOS == "windows" {
-		err := SetProcessDPIAware()
-		if err != nil {
-			result.log.Fatalf(err.Error())
-		}
-	}
+	// Platform specific init
+	platformInit()
 
 	return result
-}
-
-// SetProcessDPIAware via user32.dll
-// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setprocessdpiaware
-// Also, thanks Jack Mordaunt! https://github.com/wailsapp/wails/issues/293
-func SetProcessDPIAware() error {
-	status, r, err := syscall.NewLazyDLL("user32.dll").NewProc("SetProcessDPIAware").Call()
-	if status == 0 {
-		return fmt.Errorf("exit status %d: %v %v", status, r, err)
-	}
-	return nil
 }
 
 // Run the app
