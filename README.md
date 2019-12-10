@@ -1,5 +1,5 @@
 <p align="center" style="text-align: center">
-   <img src="https://github.com/wailsapp/docs/raw/master/.vuepress/public/media/logo_cropped.png" width="40%"><br/>
+   <img src="logo_cropped.png" width="40%"><br/>
 </p>
 <p align="center">
    A framework for building desktop applications using Go & Web Technologies.<br/><br/>
@@ -16,6 +16,8 @@
 
 The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
 
+The official docs can be found at [https://wails.app](https://wails.app).
+
 ## Features
 
 - Use standard Go libraries/frameworks for the backend
@@ -28,9 +30,6 @@ The traditional method of providing web interfaces to Go programs is via a built
 - Powerful cli tool
 - Multiplatform
 
-## Project Status
-
-Wails is currently in Beta. Please make sure you read the [Project Status](https://wails.app/project_status.html) if you are interested in using this project.
 
 ## Installation
 
@@ -126,8 +125,7 @@ And without [these people](CONTRIBUTORS.md), it wouldn't be what it is today. A 
 
 Special Mentions:
 
-  * [Bill Kennedy](https://twitter.com/goinggodotnet) - Go guru, encourager and all-round nice guy, whose infectious energy and inspiration powered me on when I had none left.
-  * [Mark Bates](https://github.com/markbates) - Creator of [Packr](https://github.com/gobuffalo/packr), inspiration for packing strategies which fed into some of the tooling.
+  * [Byron](https://github.com/bh90210) - At times, Byron has single handedly kept this project alive. Without his incredible input, we never would have got to v1.
 
 This project was mainly coded to the following albums:
 

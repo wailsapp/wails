@@ -3,10 +3,12 @@ package interfaces
 import (
 	"github.com/wailsapp/wails/lib/messages"
 )
+
 // Renderer is an interface describing a Wails target to render the app to
 type Renderer interface {
 	Initialise(AppConfig, IPCManager, EventManager) error
 	Run() error
+	EnableConsole()
 
 	// Binding
 	NewBinding(bindingName string) error

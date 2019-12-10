@@ -14,6 +14,7 @@ import { On, OnMultiple, Emit, Notify, Heartbeat, Acknowledge } from './events';
 import { NewBinding } from './bindings';
 import { Callback } from './calls';
 import { AddScript, InjectCSS } from './utils';
+import { AddIPCListener } from './ipc';
 
 // Initialise global if not already
 window.wails = window.wails || {};
@@ -27,6 +28,7 @@ var internal = {
 	AddScript,
 	InjectCSS,
 	Init,
+	AddIPCListener,
 };
 
 // Setup runtime structure
@@ -45,6 +47,16 @@ var runtime = {
 
 // Augment global
 Object.assign(window.wails, runtime);
+
+// Setup global error handler
+window.onerror = function (msg, url, lineNo, columnNo, error) {
+	window.wails.Log.Error('**** Caught Unhandled Error ****');
+	window.wails.Log.Error('Message: ' + msg);
+	window.wails.Log.Error('URL: ' + url);
+	window.wails.Log.Error('Line No: ' + lineNo);
+	window.wails.Log.Error('Column No: ' + columnNo);
+	window.wails.Log.Error('error: ' + error);
+};
 
 // Emit loaded event
 Emit('wails:loaded');

@@ -19,12 +19,13 @@ import (
 // WebView defines the main webview application window
 // Default values in []
 type WebView struct {
-	window       wv.WebView // The webview object
-	ipc          interfaces.IPCManager
-	log          *logger.CustomLogger
-	config       interfaces.AppConfig
-	eventManager interfaces.EventManager
-	bindingCache []string
+	window        wv.WebView // The webview object
+	ipc           interfaces.IPCManager
+	log           *logger.CustomLogger
+	config        interfaces.AppConfig
+	eventManager  interfaces.EventManager
+	bindingCache  []string
+	enableConsole bool
 }
 
 // NewWebView returns a new WebView struct
@@ -103,6 +104,11 @@ func (w *WebView) evalJS(js string) error {
 	return nil
 }
 
+// EnableConsole enables the console!
+func (w *WebView) EnableConsole() {
+	w.enableConsole = true
+}
+
 // Escape the Javascripts!
 func escapeJS(js string) (string, error) {
 	result := strings.Replace(js, "\\", "\\\\", -1)
@@ -171,6 +177,13 @@ func (w *WebView) Exit() {
 func (w *WebView) Run() error {
 
 	w.log.Info("Running...")
+
+	// Inject firebug in debug mode on Windows
+	if w.enableConsole {
+		w.log.Debug("Enabling Wails console")
+		console := mewn.String("../../runtime/assets/console.js")
+		w.evalJS(console)
+	}
 
 	// Runtime assets
 	wailsRuntime := mewn.String("../../runtime/assets/wails.js")
