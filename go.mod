@@ -28,3 +28,5 @@ require (
 	gopkg.in/AlecAivazis/survey.v1 v1.8.4
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
 )
+
+go 1.13

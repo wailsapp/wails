@@ -43,6 +43,8 @@ const (
 	Kali
 	// Neon distribution
 	Neon
+	// ArcoLinux distribution
+	ArcoLinux
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -126,6 +128,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Kali
 	case "neon":
 		result.Distribution = Neon
+	case "arcolinux":
+		result.Distribution = ArcoLinux
 	default:
 		result.Distribution = Unknown
 	}

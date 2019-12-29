@@ -1,5 +1,5 @@
 <p align="center" style="text-align: center">
-   <img src="https://github.com/wailsapp/docs/raw/master/.vuepress/public/media/logo_cropped.png" width="40%"><br/>
+   <img src="logo_cropped.png" width="40%"><br/>
 </p>
 <p align="center">
    A framework for building desktop applications using Go & Web Technologies.<br/><br/>
@@ -8,12 +8,15 @@
    <a href="http://godoc.org/github.com/wailsapp/wails"><img src="https://img.shields.io/badge/godoc-reference-blue.svg"/></a>
    <a href="https://www.codefactor.io/repository/github/wailsapp/wails"><img src="https://www.codefactor.io/repository/github/wailsapp/wails/badge" alt="CodeFactor" /></a>
    <a href="https://github.com/wailsapp/wails/issues"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="CodeFactor" /></a>
+   <a href="https://app.fossa.io/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=shield"/></a>
    <a href="https://houndci.com"><img src="https://img.shields.io/badge/Reviewed_by-Hound-8E64B0.svg"/></a>
    <a href="https://github.com/avelino/awesome-go" rel="nofollow"><img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome"></a>
-   <a href="https://dashboard.guardrails.io/default/gh/wailsapp/wails"><img src="https://badges.guardrails.io/wailsapp/wails.svg?token=53657bc22ec360d7673c894fdd70568e918ec581d10d84427ed4de5fe1eeff1a"></a>
+   <a href="https://dev.azure.com/leaanthony/Wails/_build/latest?definitionId=1&branchName=master" rel="nofollow"><img src="https://dev.azure.com/leaanthony/Wails/_apis/build/status/wailsapp.wails?branchName=master" alt="Pipelines"></a>
 </p>
 
 The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
+
+The official docs can be found at [https://wails.app](https://wails.app).
 
 ## Features
 
@@ -27,9 +30,6 @@ The traditional method of providing web interfaces to Go programs is via a built
 - Powerful cli tool
 - Multiplatform
 
-## Project Status
-
-Wails is currently in Beta. Please make sure you read the [Project Status](https://wails.app/project_status.html) if you are interested in using this project.
 
 ## Installation
 
@@ -60,7 +60,7 @@ _Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, K
 
 `sudo pacman -S webkit2gtk gtk3`
 
-_Also succesfully test on: ArcoLinuxB_
+_Also succesfully test on: Manjaro & ArcoLinux_
 
 #### Centos
 
@@ -93,7 +93,7 @@ Windows requires gcc and related tooling. The recommended download is from [http
 Installation is as simple as running the following command:
 
 <pre style='color:white'>
-go get github.com/wailsapp/wails/cmd/wails
+go get -u github.com/wailsapp/wails/cmd/wails
 </pre>
 
 ## Next Steps
@@ -125,8 +125,7 @@ And without [these people](CONTRIBUTORS.md), it wouldn't be what it is today. A 
 
 Special Mentions:
 
-  * [Bill Kennedy](https://twitter.com/goinggodotnet) - Go guru, encourager and all-round nice guy, whose infectious energy and inspiration powered me on when I had none left.
-  * [Mark Bates](https://github.com/markbates) - Creator of [Packr](https://github.com/gobuffalo/packr), inspiration for packing strategies which fed into some of the tooling.
+  * [Byron](https://github.com/bh90210) - At times, Byron has single handedly kept this project alive. Without his incredible input, we never would have got to v1.
 
 This project was mainly coded to the following albums:
 
@@ -143,3 +142,7 @@ This project was mainly coded to the following albums:
   * [Bloc Party - Silent Alarm](https://open.spotify.com/album/6SsIdN05HQg2GwYLfXuzLB)
   * [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
   * [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
+
+## Licensing
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
