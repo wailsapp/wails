@@ -158,6 +158,15 @@ distributions:
             help: Please install with `sudo pacman -S gtk3` and try again
           - name: webkit2gtk
             help: Please install with `sudo pacman -S webkit2gtk` and try again
+  manjaro:
+    id: manjaro
+    releases:
+      default:
+        version: default
+        name: Manjaro Linux
+        gccversioncommand: *gccdumpversion
+        programs: *archdefaultprograms
+        libraries: *archdefaultlibraries
   arcolinux:
     id: arcolinux
     releases:
