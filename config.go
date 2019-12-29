@@ -1,6 +1,9 @@
 package wails
 
-import "github.com/leaanthony/mewn"
+import (
+	"github.com/leaanthony/mewn"
+	"github.com/wailsapp/wails/runtime"
+)
 
 // AppConfig is the configuration structure used when creating a Wails App object
 type AppConfig struct {
@@ -65,7 +68,7 @@ func (a *AppConfig) merge(in *AppConfig) error {
 		a.CSS = in.CSS
 	}
 	if in.Title != "" {
-		a.Title = in.Title
+		a.Title = runtime.ProcessEncoding(in.Title)
 	}
 
 	if in.Colour != "" {

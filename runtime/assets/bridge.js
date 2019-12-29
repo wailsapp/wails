@@ -95,13 +95,6 @@ function startBridge() {
 		window.wailsbridge.reconnectOverlay.style.display = 'none';
 	}
 
-	// Bridge external.invoke
-	window.external = {
-		invoke: function (msg) {
-			window.wailsbridge.websocket.send(msg);
-		}
-	};
-
 	// Adds a script to the Dom.
 	// Removes it if second parameter is true.
 	function addScript(script, remove) {
@@ -214,4 +207,4 @@ function Init(callback) {
 	start(callback);
 }
 
-module.exports = { Init };
+module.exports = Init;

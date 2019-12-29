@@ -15,8 +15,8 @@ const Events = require('./events');
 const Init = require('./init');
 
 module.exports = {
-	Log,
-	Browser,
-	Events,
-	Init
+	Log: Log,
+	Browser: Browser,
+	Events: Events,
+	Init: Init
 };

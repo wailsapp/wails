@@ -18,6 +18,7 @@ type boundMethod struct {
 	log                *logger.CustomLogger
 	hasErrorReturnType bool // Indicates if there is an error return type
 	isWailsInit        bool
+	isWailsShutdown    bool
 }
 
 // Creates a new bound method based on the given method + type
@@ -37,6 +38,11 @@ func newBoundMethod(name string, fullName string, method reflect.Value, objectTy
 	// Are we a WailsInit method?
 	if result.Name == "WailsInit" {
 		err = result.processWailsInit()
+	}
+
+	// Are we a WailsShutdown method?
+	if result.Name == "WailsShutdown" {
+		err = result.processWailsShutdown()
 	}
 
 	return result, err
@@ -208,6 +214,23 @@ func (b *boundMethod) processWailsInit() error {
 
 	// We are indeed a wails Init method
 	b.isWailsInit = true
+
+	return nil
+}
+
+func (b *boundMethod) processWailsShutdown() error {
+	// We must have only 1 input, it must be *wails.Runtime
+	if len(b.inputs) != 0 {
+		return fmt.Errorf("Invalid WailsShutdown() definition. Expected 0 inputs, but got %d", len(b.inputs))
+	}
+
+	// We must have only 1 output, it must be error
+	if len(b.returnTypes) != 0 {
+		return fmt.Errorf("Invalid WailsShutdown() definition. Expected 0 return types, but got %d", len(b.returnTypes))
+	}
+
+	// We are indeed a wails Shutdown method
+	b.isWailsShutdown = true
 
 	return nil
 }

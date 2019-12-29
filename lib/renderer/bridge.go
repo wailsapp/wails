@@ -74,6 +74,10 @@ func (h *Bridge) evalJS(js string, mtype messageType) error {
 	return nil
 }
 
+// EnableConsole not needed for bridge!
+func (h *Bridge) EnableConsole() {
+}
+
 func (h *Bridge) injectCSS(css string) {
 	// Minify css to overcome issues in the browser with carriage returns
 	minified, err := htmlmin.Minify([]byte(css), &htmlmin.Options{
@@ -156,7 +160,7 @@ func (h *Bridge) Run() error {
 	h.log.Info("The frontend will connect automatically.")
 
 	err := h.server.ListenAndServe()
-	if err != nil {
+	if err != nil && err != http.ErrServerClosed {
 		h.log.Fatal(err.Error())
 	}
 	return err
@@ -250,5 +254,9 @@ func (h *Bridge) SetTitle(title string) {
 // Close is unsupported for Bridge but required
 // for the Renderer interface
 func (h *Bridge) Close() {
-	h.log.Warn("Close() unsupported in bridge mode")
+	h.log.Debug("Shutting down")
+	err := h.server.Close()
+	if err != nil {
+		h.log.Errorf(err.Error())
+	}
 }

@@ -2,6 +2,8 @@ package ipc
 
 import (
 	"fmt"
+	"sync"
+	"time"
 
 	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
@@ -12,18 +14,20 @@ import (
 type Manager struct {
 	renderer     interfaces.Renderer // The renderer
 	messageQueue chan *ipcMessage
-	// quitChannel  chan struct{}
+	quitChannel  chan struct{}
 	// signals      chan os.Signal
 	log            *logger.CustomLogger
 	eventManager   interfaces.EventManager
 	bindingManager interfaces.BindingManager
+	running        bool
+	wg             sync.WaitGroup
 }
 
 // NewManager creates a new IPC Manager
 func NewManager() interfaces.IPCManager {
 	result := &Manager{
 		messageQueue: make(chan *ipcMessage, 100),
-		// 		quitChannel:  make(chan struct{}),
+		quitChannel:  make(chan struct{}),
 		// 		signals:      make(chan os.Signal, 1),
 		log: logger.NewCustomLogger("IPC"),
 	}
@@ -44,9 +48,12 @@ func (i *Manager) Start(eventManager interfaces.EventManager, bindingManager int
 
 	i.log.Info("Starting")
 	// signal.Notify(manager.signals, os.Interrupt)
+	i.running = true
+
+	// Keep track of this goroutine
+	i.wg.Add(1)
 	go func() {
-		running := true
-		for running {
+		for i.running {
 			select {
 			case incomingMessage := <-i.messageQueue:
 				i.log.DebugFields("Processing message", logger.Fields{
@@ -117,15 +124,12 @@ func (i *Manager) Start(eventManager interfaces.EventManager, bindingManager int
 				i.log.DebugFields("Finished processing message", logger.Fields{
 					"1D": &incomingMessage,
 				})
-				// 			case <-manager.quitChannel:
-				// 				Debug("[MessageQueue] Quit caught")
-				// 				running = false
-				// 			case <-manager.signals:
-				// 				Debug("[MessageQueue] Signal caught")
-				// 				running = false
+			default:
+				time.Sleep(1 * time.Millisecond)
 			}
 		}
 		i.log.Debug("Stopping")
+		i.wg.Done()
 	}()
 }
 
@@ -166,4 +170,12 @@ func (i *Manager) SendResponse(response *ipcResponse) error {
 
 	// Call back to the front end
 	return i.renderer.Callback(data)
+}
+
+// Shutdown is called when exiting the Application
+func (i *Manager) Shutdown() {
+	i.log.Debug("Shutdown called")
+	i.running = false
+	i.log.Debug("Waiting of main loop shutdown")
+	i.wg.Wait()
 }

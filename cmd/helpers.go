@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/leaanthony/mewn"
@@ -87,6 +88,17 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	buildCommand.Add("build")
 
 	if binaryName != "" {
+		// Alter binary name based on OS
+		switch runtime.GOOS {
+		case "windows":
+			if !strings.HasSuffix(binaryName, ".exe") {
+				binaryName += ".exe"
+			}
+		default:
+			if strings.HasSuffix(binaryName, ".exe") {
+				binaryName = strings.TrimSuffix(binaryName, ".exe")
+			}
+		}
 		buildCommand.Add("-o")
 		buildCommand.Add(binaryName)
 	}
@@ -103,7 +115,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	}
 
 	// Add windows flags
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == "windows" && buildMode == BuildModeProd {
 		ldflags += "-H windowsgui "
 	}
 
@@ -219,6 +231,15 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 
 	const md5sumFile = "package.json.md5"
 
+	// If node_modules does not exist, force a rebuild.
+	nodeModulesPath, err := filepath.Abs(filepath.Join(".", "node_modules"))
+	if err != nil {
+		return err
+	}
+	if !fs.DirExists(nodeModulesPath) {
+		forceRebuild = true
+	}
+
 	// If we aren't forcing the install and the md5sum file exists
 	if !forceRebuild && fs.FileExists(md5sumFile) {
 		// Yes - read contents
@@ -275,7 +296,7 @@ func InstallRuntime(caller string, projectDir string, projectOptions *ProjectOpt
 // InstallBridge installs the relevant bridge javascript library
 func InstallBridge(projectDir string, projectOptions *ProjectOptions) error {
 	bridgeFileData := mewn.String("../runtime/assets/bridge.js")
-	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "main.js")
+	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
 	err := fs.CreateFile(bridgeFileTarget, []byte(bridgeFileData))
 	return err
 }
@@ -283,7 +304,7 @@ func InstallBridge(projectDir string, projectOptions *ProjectOptions) error {
 // InstallProdRuntime installs the production runtime
 func InstallProdRuntime(projectDir string, projectOptions *ProjectOptions) error {
 	prodInit := mewn.String("../runtime/js/runtime/init.js")
-	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "main.js")
+	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
 	err := fs.CreateFile(bridgeFileTarget, []byte(prodInit))
 	return err
 }

@@ -4,8 +4,8 @@
   "description": "The Javascript Wails Runtime",
   "main": "index.js",
   "scripts": {
-    "build": "eslint core/ && npm run build:prod",
-    "build:prod": "webpack --env prod --colors",
+    "build": "./node_modules/.bin/eslint core/ && npm run build:prod",
+    "build:prod": "./node_modules/.bin/webpack --env prod --colors",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -36,7 +36,7 @@
     "babel-loader": "^8.0.6",
     "babel-preset-minify": "^0.5.0",
     "core-js": "^3.1.4",
-    "eslint": "^6.2.2",
+    "eslint": "^6.5.1",
     "webpack": "^4.35.3",
     "webpack-cli": "^3.3.5"
   }
