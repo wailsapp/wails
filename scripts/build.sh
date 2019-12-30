@@ -3,11 +3,17 @@
 # Build runtime
 echo "**** Building Runtime ****"
 cd runtime/js
+npm install
 npm run build
 cd ../..
 
 echo "**** Packing Assets ****"
+cd cmd
 mewn
+cd ..
+cd lib/renderer
+mewn
+cd ../..
 
 echo "**** Installing Wails locally ****"
 cd cmd/wails

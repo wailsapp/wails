@@ -45,6 +45,8 @@ const (
 	Neon
 	// ArcoLinux distribution
 	ArcoLinux
+	// Manjaro distribution
+	Manjaro
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -130,6 +132,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Neon
 	case "arcolinux":
 		result.Distribution = ArcoLinux
+	case "manjaro":
+		result.Distribution = Manjaro
 	default:
 		result.Distribution = Unknown
 	}

@@ -32,6 +32,6 @@ function OpenFile(filename) {
 }
 
 module.exports = {
-	OpenURL,
-	OpenFile
+	OpenURL: OpenURL,
+	OpenFile: OpenFile
 };

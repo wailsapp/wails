@@ -18,4 +18,8 @@ function Init(callback) {
 	window.wails._.Init(callback);
 }
 
+<<<<<<< HEAD
 module.exports = Init;
+=======
+module.exports = Init;
+>>>>>>> 81fe321e936e2614ae9837a8c3644389b9b40c48

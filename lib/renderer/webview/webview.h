@@ -86,7 +86,7 @@ struct webview_priv
   NSAutoreleasePool *pool;
   NSWindow *window;
   WebView *webview;
-  id windowDelegate;
+  id delegate;
   int should_exit;
 };
 #else
@@ -1038,7 +1038,7 @@ struct webview_priv
     return S_FALSE;
   }
 
-  static const TCHAR *classname = "WebView";
+  static const TCHAR *classname = TEXT("WebView");
   static const SAFEARRAYBOUND ArrayBound = {1, 0};
 
   static IOleClientSiteVtbl MyIOleClientSiteTable = {
@@ -1227,7 +1227,7 @@ struct webview_priv
       }
       VariantInit(&myURL);
       myURL.vt = VT_BSTR;
-#ifndef UNICODE
+// #ifndef UNICODE
       {
         wchar_t *buffer = webview_to_utf16(webPageName);
         if (buffer == NULL)
@@ -1237,9 +1237,9 @@ struct webview_priv
         myURL.bstrVal = SysAllocString(buffer);
         GlobalFree(buffer);
       }
-#else
-      myURL.bstrVal = SysAllocString(webPageName);
-#endif
+// #else
+//       myURL.bstrVal = SysAllocString(webPageName);
+// #endif
       if (!myURL.bstrVal)
       {
       badalloc:
@@ -1277,7 +1277,7 @@ struct webview_priv
             if (!SafeArrayAccessData(sfArray, (void **)&pVar))
             {
               pVar->vt = VT_BSTR;
-#ifndef UNICODE
+// #ifndef UNICODE
               {
                 wchar_t *buffer = webview_to_utf16(url);
                 if (buffer == NULL)
@@ -1287,9 +1287,9 @@ struct webview_priv
                 bstr = SysAllocString(buffer);
                 GlobalFree(buffer);
               }
-#else
-              bstr = SysAllocString(string);
-#endif
+// #else
+//               bstr = SysAllocString(url);
+// #endif
               if ((pVar->bstrVal = bstr))
               {
                 htmlDoc2->lpVtbl->write(htmlDoc2, sfArray);
@@ -1404,6 +1404,7 @@ struct webview_priv
     {
       return -1;
     }
+
     ZeroMemory(&wc, sizeof(WNDCLASSEX));
     wc.cbSize = sizeof(WNDCLASSEX);
     wc.hInstance = hInstance;
@@ -1431,10 +1432,24 @@ struct webview_priv
     rect.bottom = rect.bottom - rect.top + top;
     rect.top = top;
 
+#ifdef UNICODE
+    wchar_t *u16title = webview_to_utf16(w->title);
+    if (u16title == NULL)
+    {
+      return -1;
+    }
+
     w->priv.hwnd =
+        CreateWindowEx(0, classname, u16title, style, rect.left, rect.top,
+                       rect.right - rect.left, rect.bottom - rect.top,
+                       HWND_DESKTOP, NULL, hInstance, (void *)w);
+#else
+  w->priv.hwnd =
         CreateWindowEx(0, classname, w->title, style, rect.left, rect.top,
                        rect.right - rect.left, rect.bottom - rect.top,
                        HWND_DESKTOP, NULL, hInstance, (void *)w);
+#endif
+    
     if (w->priv.hwnd == 0)
     {
       OleUninitialize();
@@ -1445,7 +1460,14 @@ struct webview_priv
 
     DisplayHTMLPage(w);
 
+#ifdef UNICODE
+    SetWindowText(w->priv.hwnd, u16title);
+    GlobalFree(u16title);
+#else
     SetWindowText(w->priv.hwnd, w->title);
+#endif
+    
+    
     ShowWindow(w->priv.hwnd, SW_SHOWDEFAULT);
     UpdateWindow(w->priv.hwnd);
     SetFocus(w->priv.hwnd);
@@ -1581,8 +1603,19 @@ struct webview_priv
 
   WEBVIEW_API void webview_set_title(struct webview *w, const char *title)
   {
+  #ifdef UNICODE
+    wchar_t *u16title = webview_to_utf16(title);
+    if (u16title == NULL)
+    {
+      return;
+    }
+    SetWindowText(w->priv.hwnd, u16title);
+    GlobalFree(u16title);
+  #else
     SetWindowText(w->priv.hwnd, title);
+  #endif
   }
+
 
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen)
   {
@@ -1894,6 +1927,22 @@ struct webview_priv
     [script setValue:self forKey:@"external"];
   }
 
+static void webview_run_input_open_panel(id self, SEL cmd, id webview,
+                                           id listener, BOOL allowMultiple) {
+    char filename[256] = "";
+    struct webview *w =
+        (struct webview *)objc_getAssociatedObject(self, "webview");
+
+    webview_dialog(w, WEBVIEW_DIALOG_TYPE_OPEN, WEBVIEW_DIALOG_FLAG_FILE, "", "",
+                   filename, 255);
+    if (strlen(filename)) {
+      [listener chooseFilename:[NSString stringWithUTF8String:filename]];
+    } else {
+      [listener cancel];
+    }
+  }
+
+
   static void webview_external_invoke(id self, SEL cmd, id arg)
   {
     struct webview *w =
@@ -1927,12 +1976,17 @@ struct webview_priv
     class_addMethod(webViewDelegateClass,
                     sel_registerName("webView:didClearWindowObject:forFrame:"),
                     (IMP)webview_did_clear_window_object, "v@:@@@");
+    class_addMethod(
+        webViewDelegateClass,
+        sel_registerName("webView:runOpenPanelForFileButtonWithResultListener:"
+                         "allowMultipleFiles:"),
+        (IMP)webview_run_input_open_panel, "v@:@@c");
     class_addMethod(webViewDelegateClass, sel_registerName("invoke:"),
                     (IMP)webview_external_invoke, "v@:@");
     objc_registerClassPair(webViewDelegateClass);
 
-    w->priv.windowDelegate = [[webViewDelegateClass alloc] init];
-    objc_setAssociatedObject(w->priv.windowDelegate, "webview", (id)(w),
+    w->priv.delegate = [[webViewDelegateClass alloc] init];
+    objc_setAssociatedObject(w->priv.delegate, "webview", (id)(w),
                              OBJC_ASSOCIATION_ASSIGN);
 
     NSRect r = NSMakeRect(0, 0, w->width, w->height);
@@ -1960,7 +2014,7 @@ struct webview_priv
     NSString *nsTitle = [NSString stringWithUTF8String:w->title];
     [w->priv.window setTitle:nsTitle];
 
-    [w->priv.window setDelegate:w->priv.windowDelegate];
+    [w->priv.window setDelegate:w->priv.delegate];
     [w->priv.window center];
 
     //  NSToolbar *toolbar = [[NSToolbar alloc] initWithIdentifier:@"wat"];
@@ -1989,7 +2043,8 @@ struct webview_priv
     [w->priv.webview setAutoresizesSubviews:YES];
     [w->priv.webview
         setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-    w->priv.webview.frameLoadDelegate = w->priv.windowDelegate;
+    w->priv.webview.frameLoadDelegate = w->priv.delegate;
+    w->priv.webview.UIDelegate = w->priv.delegate;
     [[w->priv.window contentView] addSubview:w->priv.webview];
     [w->priv.window orderFrontRegardless];
 

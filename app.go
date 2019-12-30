@@ -1,6 +1,11 @@
 package wails
 
 import (
+	"os"
+	"runtime"
+	"syscall"
+
+	"github.com/syossan27/tebata"
 	"github.com/wailsapp/wails/cmd"
 	"github.com/wailsapp/wails/lib/binding"
 	"github.com/wailsapp/wails/lib/event"
@@ -39,7 +44,7 @@ func CreateApp(optionalConfig ...*AppConfig) *App {
 	}
 
 	result := &App{
-		logLevel:       "info",
+		logLevel:       "debug",
 		renderer:       renderer.NewWebView(),
 		ipc:            ipc.NewManager(),
 		bindingManager: binding.NewManager(),
@@ -61,11 +66,15 @@ func CreateApp(optionalConfig ...*AppConfig) *App {
 		result.config.DisableInspector = true
 	}
 
+	// Platform specific init
+	platformInit()
+
 	return result
 }
 
 // Run the app
 func (a *App) Run() error {
+
 	if BuildMode != cmd.BuildModeProd {
 		return a.cli.Run()
 	}
@@ -97,6 +106,18 @@ func (a *App) start() error {
 		return err
 	}
 
+	// Enable console for Windows debug builds
+	if runtime.GOOS == "windows" && BuildMode == cmd.BuildModeDebug {
+		a.renderer.EnableConsole()
+	}
+
+	// Start signal handler
+	t := tebata.New(os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL)
+	t.Reserve(func() {
+		a.log.Debug("SIGNAL CAUGHT! Starting Shutdown")
+		a.renderer.Close()
+	})
+
 	// Start event manager and give it our renderer
 	a.eventManager.Start(a.renderer)
 
@@ -112,8 +133,33 @@ func (a *App) start() error {
 		return err
 	}
 
+	// Defer the shutdown
+	defer a.shutdown()
+
 	// Run the renderer
-	return a.renderer.Run()
+	err = a.renderer.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// shutdown the app
+func (a *App) shutdown() {
+	// Make sure this is only called once
+	a.log.Debug("Shutting down")
+
+	// Shutdown Binding Manager
+	a.bindingManager.Shutdown()
+
+	// Shutdown IPC Manager
+	a.ipc.Shutdown()
+
+	// Shutdown Event Manager
+	a.eventManager.Shutdown()
+
+	a.log.Debug("Cleanly Shutdown")
 }
 
 // Bind allows the user to bind the given object
