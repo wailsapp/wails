@@ -43,6 +43,8 @@ const (
 	Kali
 	// Neon distribution
 	Neon
+	// ArcoLinux distribution
+	ArcoLinux
 	// Manjaro distribution
 	Manjaro
 )
@@ -128,6 +130,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Kali
 	case "neon":
 		result.Distribution = Neon
+	case "arcolinux":
+		result.Distribution = ArcoLinux
 	case "manjaro":
 		result.Distribution = Manjaro
 	default:

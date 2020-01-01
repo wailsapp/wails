@@ -167,6 +167,15 @@ distributions:
         gccversioncommand: *gccdumpversion
         programs: *archdefaultprograms
         libraries: *archdefaultlibraries
+  arcolinux:
+    id: arcolinux
+    releases:
+      default:
+        version: default
+        name: ArcoLinux
+        gccversioncommand: *gccdumpversion
+        programs: *archdefaultprograms
+        libraries: *archdefaultlibraries
   gentoo:
     id: gentoo
     releases:
