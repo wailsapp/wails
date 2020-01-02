@@ -58,7 +58,7 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 		URL:       config.GetDefaultHTML(),
 		Debug:     !config.GetDisableInspector(),
 		ExternalInvokeCallback: func(_ wv.WebView, message string) {
-			w.ipc.Dispatch(message)
+			w.ipc.Dispatch(message, w.Callback)
 		},
 	})
 

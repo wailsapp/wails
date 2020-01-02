@@ -147,7 +147,7 @@ func (h *Bridge) start(conn *websocket.Conn) {
 
 		h.log.Debugf("Got message: %#v\n", string(buffer))
 
-		h.ipcManager.Dispatch(string(buffer))
+		h.ipcManager.Dispatch(string(buffer), h.Callback)
 	}
 }
 
