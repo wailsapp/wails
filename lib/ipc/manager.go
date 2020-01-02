@@ -3,7 +3,6 @@ package ipc
 import (
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
@@ -124,8 +123,8 @@ func (i *Manager) Start(eventManager interfaces.EventManager, bindingManager int
 				i.log.DebugFields("Finished processing message", logger.Fields{
 					"1D": &incomingMessage,
 				})
-			default:
-				time.Sleep(1 * time.Millisecond)
+			case <-i.quitChannel:
+				i.running = false
 			}
 		}
 		i.log.Debug("Stopping")
@@ -175,7 +174,7 @@ func (i *Manager) SendResponse(response *ipcResponse) error {
 // Shutdown is called when exiting the Application
 func (i *Manager) Shutdown() {
 	i.log.Debug("Shutdown called")
-	i.running = false
+	i.quitChannel <- struct{}{}
 	i.log.Debug("Waiting of main loop shutdown")
 	i.wg.Wait()
 }
