@@ -1,8 +1,8 @@
 {
-  "name": "Vuetify Basic",
+  "name": "Vuetify1.5/Webpack Basic",
   "version": "1.0.0",
-  "shortdescription": "Vuetify + Webpack",
-  "description": "Basic template using Vuetify and bundled using Webpack",
+  "shortdescription": "A basic Vuetify1.5/Webpack4 template",
+  "description": "Basic template using Vuetify v1.5 and bundled using Webpack",
   "install": "npm install",
   "build": "npm run build",
   "author": "lea <lea.anthony@gmail.com>",
