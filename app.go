@@ -97,7 +97,7 @@ func (a *App) start() error {
 
 	// Check if we are to run in bridge mode
 	if BuildMode == cmd.BuildModeBridge {
-		a.renderer = &renderer.Bridge{}
+		a.renderer = renderer.NewBridge()
 	}
 
 	// Initialise the renderer
