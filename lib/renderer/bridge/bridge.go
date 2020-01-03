@@ -152,12 +152,6 @@ func (h *Bridge) SelectSaveFile() string {
 	return ""
 }
 
-// Callback sends a callback to the frontend
-func (h *Bridge) Callback(data string) error {
-	h.log.Warn("Bridge.Callback is not implemented any longer")
-	return nil
-}
-
 // NotifyEvent notifies the frontend of an event
 func (h *Bridge) NotifyEvent(event *messages.EventData) error {
 

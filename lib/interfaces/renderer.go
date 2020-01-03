@@ -12,7 +12,6 @@ type Renderer interface {
 
 	// Binding
 	NewBinding(bindingName string) error
-	Callback(data string) error
 
 	// Events
 	NotifyEvent(eventData *messages.EventData) error
