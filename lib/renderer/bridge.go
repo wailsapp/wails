@@ -4,12 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 
-	"github.com/dchest/htmlmin"
 	"github.com/gorilla/websocket"
-	"github.com/leaanthony/mewn"
 	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
 	"github.com/wailsapp/wails/lib/messages"
@@ -46,12 +43,13 @@ type Bridge struct {
 	server           *http.Server
 	theConnection    *websocket.Conn
 
-	// Mutex for writing to the socket
-	lock sync.Mutex
+	lock     sync.Mutex
+	sessions map[string]session
 }
 
 // Initialise the Bridge Renderer
 func (h *Bridge) Initialise(appConfig interfaces.AppConfig, ipcManager interfaces.IPCManager, eventManager interfaces.EventManager) error {
+	h.sessions = make(map[string]session, 10)
 	h.ipcManager = ipcManager
 	h.appConfig = appConfig
 	h.eventManager = eventManager
@@ -60,24 +58,11 @@ func (h *Bridge) Initialise(appConfig interfaces.AppConfig, ipcManager interface
 	return nil
 }
 
-func (h *Bridge) evalJS(js string, mtype messageType) error {
-
-	message := mtype.toString() + js
-
-	if h.theConnection == nil {
-		h.initialisationJS = append(h.initialisationJS, message)
-	} else {
-		// Prepend message type to message
-		h.sendMessage(h.theConnection, message)
-	}
-
-	return nil
-}
-
 // EnableConsole not needed for bridge!
 func (h *Bridge) EnableConsole() {
 }
 
+/*
 func (h *Bridge) injectCSS(css string) {
 	// Minify css to overcome issues in the browser with carriage returns
 	minified, err := htmlmin.Minify([]byte(css), &htmlmin.Options{
@@ -93,62 +78,38 @@ func (h *Bridge) injectCSS(css string) {
 	inject := fmt.Sprintf("wails._.InjectCSS('%s')", minifiedCSS)
 	h.evalJS(inject, cssMessage)
 }
+*/
 
 func (h *Bridge) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
 	if err != nil {
 		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
 	}
-	h.theConnection = conn
-	h.log.Infof("Connection from frontend accepted [%p].", h.theConnection)
-	conn.SetCloseHandler(func(int, string) error {
-		h.log.Infof("Connection dropped [%p].", h.theConnection)
-		h.theConnection = nil
-		return nil
-	})
-	go h.start(conn)
+	h.log.Infof("Connection from frontend accepted [%s].", conn.RemoteAddr().String())
+	h.startSession(conn)
 }
 
-func (h *Bridge) sendMessage(conn *websocket.Conn, msg string) {
-
+func (h *Bridge) startSession(conn *websocket.Conn) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
-	if err := conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
-		h.log.Error(err.Error())
-	}
-}
-
-func (h *Bridge) start(conn *websocket.Conn) {
-
-	// set external.invoke
-	h.log.Infof("Connected to frontend.")
-
-	wailsRuntime := mewn.String("../../runtime/assets/wails.js")
-	h.evalJS(wailsRuntime, wailsRuntimeMessage)
-
-	// Inject bindings
-	for _, binding := range h.bindingCache {
-		h.evalJS(binding, bindingMessage)
+	s := session{
+		log:          h.log,
+		conn:         conn,
+		bindingCache: h.bindingCache,
+		ipcManager:   h.ipcManager,
 	}
 
-	// Emit that everything is loaded and ready
-	h.eventManager.Emit("wails:ready")
+	conn.SetCloseHandler(func(int, string) error {
+		h.log.Infof("Connection dropped [%s].", s.Identifier())
+		h.lock.Lock()
+		defer h.lock.Unlock()
+		delete(h.sessions, s.Identifier())
+		return nil
+	})
 
-	for {
-		messageType, buffer, err := conn.ReadMessage()
-		if messageType == -1 {
-			return
-		}
-		if err != nil {
-			h.log.Errorf("Error reading message: ", err)
-			continue
-		}
-
-		h.log.Debugf("Got message: %#v\n", string(buffer))
-
-		h.ipcManager.Dispatch(string(buffer), h.Callback)
-	}
+	h.sessions[s.Identifier()] = s
+	go s.start()
 }
 
 // Run the app in Bridge mode!
@@ -195,7 +156,8 @@ func (h *Bridge) SelectSaveFile() string {
 
 // Callback sends a callback to the frontend
 func (h *Bridge) Callback(data string) error {
-	return h.evalJS(data, callbackMessage)
+	h.log.Warn("Bridge.Callback is not implemented any longer")
+	return nil
 }
 
 // NotifyEvent notifies the frontend of an event
@@ -223,7 +185,17 @@ func (h *Bridge) NotifyEvent(event *messages.EventData) error {
 	}
 
 	message := fmt.Sprintf("window.wails._.Notify('%s','%s')", event.Name, data)
-	return h.evalJS(message, notifyMessage)
+	for _, session := range h.sessions {
+		err := session.evalJS(message, notifyMessage)
+		if err != nil {
+			h.log.Debugf("Failed to send message to %s - Removing listener", session.Identifier())
+			h.lock.Lock()
+			defer h.lock.Unlock()
+			delete(h.sessions, session.Identifier())
+			return err
+		}
+	}
+	return nil
 }
 
 // SetColour is unsupported for Bridge but required
