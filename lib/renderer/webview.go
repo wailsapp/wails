@@ -58,7 +58,7 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 		URL:       config.GetDefaultHTML(),
 		Debug:     !config.GetDisableInspector(),
 		ExternalInvokeCallback: func(_ wv.WebView, message string) {
-			w.ipc.Dispatch(message, w.Callback)
+			w.ipc.Dispatch(message, w.callback)
 		},
 	})
 
@@ -299,8 +299,8 @@ func (w *WebView) SelectSaveFile() string {
 	return result
 }
 
-// Callback sends a callback to the frontend
-func (w *WebView) Callback(data string) error {
+// callback sends a callback to the frontend
+func (w *WebView) callback(data string) error {
 	callbackCMD := fmt.Sprintf("window.wails._.Callback('%s');", data)
 	return w.evalJS(callbackCMD)
 }
