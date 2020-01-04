@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 
-	"github.com/dchest/htmlmin"
 	"github.com/gorilla/websocket"
 	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
@@ -60,22 +58,6 @@ func (h *Bridge) Initialise(appConfig interfaces.AppConfig, ipcManager interface
 
 // EnableConsole not needed for bridge!
 func (h *Bridge) EnableConsole() {
-}
-
-func (h *Bridge) injectCSS(css string) {
-	// Minify css to overcome issues in the browser with carriage returns
-	minified, err := htmlmin.Minify([]byte(css), &htmlmin.Options{
-		MinifyStyles: true,
-	})
-	if err != nil {
-		h.log.Fatal("Unable to minify CSS: " + css)
-	}
-	minifiedCSS := string(minified)
-	minifiedCSS = strings.Replace(minifiedCSS, "\\", "\\\\", -1)
-	minifiedCSS = strings.Replace(minifiedCSS, "'", "\\'", -1)
-	minifiedCSS = strings.Replace(minifiedCSS, "\n", " ", -1)
-	inject := fmt.Sprintf("wails._.InjectCSS('%s')", minifiedCSS)
-	h.evalJS(inject, cssMessage)
 }
 
 func (h *Bridge) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
