@@ -83,6 +83,7 @@ func (h *Bridge) startSession(conn *websocket.Conn) {
 
 	conn.SetCloseHandler(func(int, string) error {
 		h.log.Infof("Connection dropped [%s].", s.Identifier())
+		h.eventManager.Emit("wails:bridge:session:closed", s.Identifier())
 		h.lock.Lock()
 		defer h.lock.Unlock()
 		delete(h.sessions, s.Identifier())
@@ -90,6 +91,7 @@ func (h *Bridge) startSession(conn *websocket.Conn) {
 	})
 	go s.start(len(h.sessions) == 0)
 	h.sessions[s.Identifier()] = s
+	h.eventManager.Emit("wails:bridge:session:started", s.Identifier())
 }
 
 // Run the app in Bridge mode!
