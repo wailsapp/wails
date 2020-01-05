@@ -74,10 +74,11 @@ func (h *Bridge) startSession(conn *websocket.Conn) {
 	defer h.lock.Unlock()
 
 	s := session{
-		log:          h.log,
 		conn:         conn,
 		bindingCache: h.bindingCache,
 		ipc:          h.ipcManager,
+		log:          h.log,
+		eventManager: h.eventManager,
 	}
 
 	conn.SetCloseHandler(func(int, string) error {
@@ -87,9 +88,8 @@ func (h *Bridge) startSession(conn *websocket.Conn) {
 		delete(h.sessions, s.Identifier())
 		return nil
 	})
-
+	go s.start(len(h.sessions) == 0)
 	h.sessions[s.Identifier()] = s
-	go s.start()
 }
 
 // Run the app in Bridge mode!

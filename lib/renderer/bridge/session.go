@@ -15,6 +15,7 @@ import (
 type session struct {
 	bindingCache []string
 	conn         *websocket.Conn
+	eventManager interfaces.EventManager
 	log          *logger.CustomLogger
 	ipc          interfaces.IPCManager
 
@@ -40,7 +41,7 @@ func (s *session) sendMessage(msg string) error {
 	return nil
 }
 
-func (s *session) start() {
+func (s *session) start(firstSession bool) {
 	s.log.Infof("Connected to frontend.")
 
 	wailsRuntime := mewn.String("../../runtime/assets/wails.js")
@@ -51,10 +52,10 @@ func (s *session) start() {
 		s.evalJS(binding, bindingMessage)
 	}
 
-	// FIXME: What should happen here? With multiple sessions occurring this event
-	//        seems less useful.
 	// Emit that everything is loaded and ready
-	//s.eventManager.Emit("wails:ready")
+	if firstSession {
+		s.eventManager.Emit("wails:ready")
+	}
 
 	for {
 		messageType, buffer, err := s.conn.ReadMessage()
