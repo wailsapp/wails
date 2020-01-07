@@ -47,6 +47,10 @@ const (
 	ArcoLinux
 	// Manjaro distribution
 	Manjaro
+	// ManjaroARM distribution
+	ManjaroARM
+	// Deepin distribution
+	Deepin
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -134,6 +138,10 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = ArcoLinux
 	case "manjaro":
 		result.Distribution = Manjaro
+	case "manjaro-arm":
+		result.Distribution = ManjaroARM
+	case "deepin":
+		result.Distribution = Deepin
 	default:
 		result.Distribution = Unknown
 	}
