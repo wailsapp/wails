@@ -47,7 +47,7 @@ type Bridge struct {
 
 // Initialise the Bridge Renderer
 func (h *Bridge) Initialise(appConfig interfaces.AppConfig, ipcManager interfaces.IPCManager, eventManager interfaces.EventManager) error {
-	h.sessions = make(map[string]session, 10)
+	h.sessions = map[string]session{}
 	h.ipcManager = ipcManager
 	h.appConfig = appConfig
 	h.eventManager = eventManager
@@ -70,9 +70,6 @@ func (h *Bridge) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Bridge) startSession(conn *websocket.Conn) {
-	h.lock.Lock()
-	defer h.lock.Unlock()
-
 	s := session{
 		conn:         conn,
 		bindingCache: h.bindingCache,
@@ -89,9 +86,11 @@ func (h *Bridge) startSession(conn *websocket.Conn) {
 		delete(h.sessions, s.Identifier())
 		return nil
 	})
+
+	h.lock.Lock()
+	defer h.lock.Unlock()
 	go s.start(len(h.sessions) == 0)
 	h.sessions[s.Identifier()] = s
-	h.eventManager.Emit("wails:bridge:session:started", s.Identifier())
 }
 
 // Run the app in Bridge mode!
@@ -161,16 +160,21 @@ func (h *Bridge) NotifyEvent(event *messages.EventData) error {
 	}
 
 	message := fmt.Sprintf("window.wails._.Notify('%s','%s')", event.Name, data)
+	dead := []session{}
 	for _, session := range h.sessions {
 		err := session.evalJS(message, notifyMessage)
 		if err != nil {
-			h.log.Debugf("Failed to send message to %s - Removing listener", session.Identifier())
-			h.lock.Lock()
-			defer h.lock.Unlock()
-			delete(h.sessions, session.Identifier())
-			return err
+			h.log.Debugf("Failed to send message to %s - Removing listener : %v", session.Identifier(), err)
+			h.log.Infof("Connection from [%v] unresponsive - dropping", session.Identifier())
+			dead = append(dead, session)
 		}
 	}
+	h.lock.Lock()
+	defer h.lock.Unlock()
+	for _, session := range dead {
+		delete(h.sessions, session.Identifier())
+	}
+
 	return nil
 }
 

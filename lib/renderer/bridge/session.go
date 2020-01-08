@@ -26,7 +26,10 @@ type session struct {
 // Identifier returns a string identifier for the remote connection.
 // Taking the form of the client's <ip address>:<port>.
 func (s *session) Identifier() string {
-	return s.conn.RemoteAddr().String()
+	if s.conn != nil {
+		return s.conn.RemoteAddr().String()
+	}
+	return ""
 }
 
 func (s *session) sendMessage(msg string) error {
@@ -34,7 +37,7 @@ func (s *session) sendMessage(msg string) error {
 	defer s.lock.Unlock()
 
 	if err := s.conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
-		s.log.Error(err.Error())
+		s.log.Debug(err.Error())
 		return err
 	}
 
@@ -51,6 +54,7 @@ func (s *session) start(firstSession bool) {
 	for _, binding := range s.bindingCache {
 		s.evalJS(binding, bindingMessage)
 	}
+	s.eventManager.Emit("wails:bridge:session:started", s.Identifier())
 
 	// Emit that everything is loaded and ready
 	if firstSession {
