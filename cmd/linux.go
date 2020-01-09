@@ -51,6 +51,8 @@ const (
 	ManjaroARM
 	// Deepin distribution
 	Deepin
+	// Raspbian distribution
+	Raspbian
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -106,6 +108,7 @@ func parseOsRelease(osRelease string) *DistroInfo {
 			version = strings.Trim(splitLine[1], "\"")
 		}
 	}
+
 	// Check distro name against list of distros
 	switch osID {
 	case "fedora":
@@ -142,6 +145,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = ManjaroARM
 	case "deepin":
 		result.Distribution = Deepin
+	case "raspbian":
+		result.Distribution = Raspbian
 	default:
 		result.Distribution = Unknown
 	}
