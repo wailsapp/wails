@@ -132,6 +132,16 @@ func (fs *FSHelper) LocalDir(dir string) (*Dir, error) {
 	}, err
 }
 
+// LoadRelativeFile loads the given file relative to the caller's directory
+func (fs *FSHelper) LoadRelativeFile(relativePath string) ([]byte, error) {
+	_, filename, _, _ := runtime.Caller(0)
+	fullPath, err := filepath.Abs(filepath.Join(path.Dir(filename), relativePath))
+	if err != nil {
+		return nil, err
+	}
+	return ioutil.ReadFile(fullPath)
+}
+
 // GetSubdirs will return a list of FQPs to subdirectories in the given directory
 func (d *Dir) GetSubdirs() (map[string]string, error) {
 

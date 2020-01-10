@@ -14,7 +14,7 @@ function init() {
 	window.wailsbridge = {
 		reconnectOverlay: null,
 		reconnectTimer: 300,
-		wsURL: 'ws://localhost:34115/bridge',
+		wsURL: 'ws://' + window.location.hostname + ':34115/bridge',
 		connectionState: null,
 		config: {},
 		websocket: null,

@@ -3,7 +3,6 @@ package cmd
 import (
 	"log"
 
-	"github.com/leaanthony/mewn"
 	"gopkg.in/yaml.v3"
 )
 
@@ -79,11 +78,14 @@ func (l *LinuxDB) GetDistro(distro string) *Distribution {
 // NewLinuxDB creates a new LinuxDB instance from the bundled
 // linuxdb.yaml file.
 func NewLinuxDB() *LinuxDB {
-	data := mewn.Bytes("./linuxdb.yaml")
+	data, err := fs.LoadRelativeFile("./linuxdb.yaml")
+	if err != nil {
+		log.Fatal("Could not load linuxdb.yaml")
+	}
 	result := LinuxDB{
 		Distributions: make(map[string]*Distribution),
 	}
-	err := result.ImportData(data)
+	err = result.ImportData(data)
 	if err != nil {
 		log.Fatal(err)
 	}
