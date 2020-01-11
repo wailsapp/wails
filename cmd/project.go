@@ -142,27 +142,33 @@ func (ph *ProjectHelper) NewProjectOptions() *ProjectOptions {
 
 // ProjectOptions holds all the options available for a project
 type ProjectOptions struct {
-	Name             string    `json:"name"`
-	Description      string    `json:"description"`
-	Author           *author   `json:"author,omitempty"`
-	Version          string    `json:"version"`
-	OutputDirectory  string    `json:"-"`
-	UseDefaults      bool      `json:"-"`
-	Template         string    `json:"-"`
-	BinaryName       string    `json:"binaryname"`
-	FrontEnd         *frontend `json:"frontend,omitempty"`
-	NPMProjectName   string    `json:"-"`
-	system           *SystemHelper
-	log              *Logger
-	templates        *TemplateHelper
-	selectedTemplate *TemplateDetails
-	WailsVersion     string
+	Name                   string    `json:"name"`
+	Description            string    `json:"description"`
+	Author                 *author   `json:"author,omitempty"`
+	Version                string    `json:"version"`
+	OutputDirectory        string    `json:"-"`
+	UseDefaults            bool      `json:"-"`
+	Template               string    `json:"-"`
+	BinaryName             string    `json:"binaryname"`
+	FrontEnd               *frontend `json:"frontend,omitempty"`
+	NPMProjectName         string    `json:"-"`
+	system                 *SystemHelper
+	log                    *Logger
+	templates              *TemplateHelper
+	selectedTemplate       *TemplateDetails
+	WailsVersion           string
+	typescriptDefsFilename string
 }
 
 // Defaults sets the default project template
 func (po *ProjectOptions) Defaults() {
 	po.Template = "vuebasic"
 	po.WailsVersion = Version
+}
+
+// SetTypescriptDefsFilename indicates that we want to generate typescript bindings to the given file
+func (po *ProjectOptions) SetTypescriptDefsFilename(filename string) {
+	po.typescriptDefsFilename = filename
 }
 
 // GetNPMBinaryName returns the type of package manager used by the project

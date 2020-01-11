@@ -2,13 +2,19 @@ package binding
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"reflect"
+	"strings"
 	"unicode"
 
 	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
 	"github.com/wailsapp/wails/lib/messages"
 )
+
+var typescriptDefinitionFilename = ""
 
 // Manager handles method binding
 type Manager struct {
@@ -21,16 +27,19 @@ type Manager struct {
 	renderer         interfaces.Renderer
 	runtime          interfaces.Runtime // The runtime object to pass to bound structs
 	objectsToBind    []interface{}
-	bindPackageNames bool // Package name should be considered when binding
+	bindPackageNames bool                // Package name should be considered when binding
+	structList       map[string][]string // structList["mystruct"] = []string{"Method1", "Method2"}
 }
 
 // NewManager creates a new Manager struct
 func NewManager() interfaces.BindingManager {
+
 	result := &Manager{
 		methods:         make(map[string]*boundMethod),
 		functions:       make(map[string]*boundFunction),
 		log:             logger.NewCustomLogger("Bind"),
 		internalMethods: newInternalMethods(),
+		structList:      make(map[string][]string),
 	}
 	return result
 }
@@ -88,7 +97,51 @@ func (b *Manager) initialise() error {
 			return err
 		}
 	}
+
+	// If we wish to generate a typescript definition file...
+	if typescriptDefinitionFilename != "" {
+		err := b.generateTypescriptDefinitions()
+		if err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+// Generate typescript
+func (b *Manager) generateTypescriptDefinitions() error {
+
+	var output strings.Builder
+
+	for structname, methodList := range b.structList {
+		output.WriteString(fmt.Sprintf("Interface %s {\n", structname))
+		for _, method := range methodList {
+			output.WriteString(fmt.Sprintf("\t%s: (...args : any[]) => Promise\n", method))
+		}
+		output.WriteString("}\n")
+	}
+
+	output.WriteString("\n")
+	output.WriteString("Interface Backend {\n")
+
+	for structname := range b.structList {
+		output.WriteString(fmt.Sprintf("\t%[1]s: %[1]s\n", structname))
+	}
+	output.WriteString("}\n")
+
+	globals := `
+declare global {
+	interface Window {
+		backend: Backend;
+	}
+}`
+	output.WriteString(globals)
+
+	b.log.Info("Written Typescript file: " + typescriptDefinitionFilename)
+
+	dir := filepath.Dir(typescriptDefinitionFilename)
+	os.MkdirAll(dir, 0755)
+	return ioutil.WriteFile(typescriptDefinitionFilename, []byte(output.String()), 0755)
 }
 
 // bind the given struct method
@@ -104,6 +157,12 @@ func (b *Manager) bindMethod(object interface{}) error {
 
 	b.log.Debugf("Processing struct: %s", baseName)
 
+	// Calc actual name
+	actualName := strings.TrimPrefix(baseName, "main.")
+	if b.structList[actualName] == nil {
+		b.structList[actualName] = []string{}
+	}
+
 	// Iterate over method definitions
 	for i := 0; i < objectType.NumMethod(); i++ {
 
@@ -112,6 +171,8 @@ func (b *Manager) bindMethod(object interface{}) error {
 		methodName := methodDef.Name
 		fullMethodName := baseName + "." + methodName
 		method := reflect.ValueOf(object).MethodByName(methodName)
+
+		b.structList[actualName] = append(b.structList[actualName], methodName)
 
 		// Skip unexported methods
 		if !unicode.IsUpper([]rune(methodName)[0]) {
