@@ -99,8 +99,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 				binaryName = strings.TrimSuffix(binaryName, ".exe")
 			}
 		}
-		buildCommand.Add("-o")
-		buildCommand.Add(binaryName)
+		buildCommand.Add("-o", binaryName)
 	}
 
 	// If we are forcing a rebuild
@@ -120,6 +119,16 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	}
 
 	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
+
+	// If we wish to generate typescript
+	if projectOptions.typescriptDefsFilename != "" {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		filename := filepath.Join(cwd, projectOptions.FrontEnd.Dir, projectOptions.typescriptDefsFilename)
+		ldflags += " -X github.com/wailsapp/wails/lib/binding.typescriptDefinitionFilename=" + filename
+	}
 
 	buildCommand.AddSlice([]string{"-ldflags", ldflags})
 	err = NewProgramHelper().RunCommandArray(buildCommand.AsSlice())

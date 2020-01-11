@@ -36,6 +36,8 @@ github.com/leaanthony/mewn v0.10.7 h1:jCcNJyIUOpwj+I5SuATvCugDjHkoo+j6ubEOxxrxmP
 github.com/leaanthony/mewn v0.10.7/go.mod h1:CRkTx8unLiSSilu/Sd7i1LwrdaAL+3eQ3ses99qGMEQ=
 github.com/leaanthony/slicer v1.3.2 h1:kGWWFoyaY5WzwGrUsHXMmGbssuYthP4qYBNlkNpNAB8=
 github.com/leaanthony/slicer v1.3.2/go.mod h1:VMB/HGvr3uR3MRpFWHWAm0w+DHQLzPHYe2pKfpFlQIQ=
+github.com/leaanthony/slicer v1.4.0 h1:Q9u4w+UBU4WHjXnEDdz+eRLMKF/rnyosRBiqULnc1J8=
+github.com/leaanthony/slicer v1.4.0/go.mod h1:FwrApmf8gOrpzEWM2J/9Lh79tyq8KTX5AzRtwV7m4AY=
 github.com/leaanthony/spinner v0.5.3 h1:IMTvgdQCec5QA4qRy0wil4XsRP+QcG1OwLWVK/LPZ5Y=
 github.com/leaanthony/spinner v0.5.3/go.mod h1:oHlrvWicr++CVV7ALWYi+qHk/XNA91D9IJ48IqmpVUo=
 github.com/leaanthony/synx v0.1.0 h1:R0lmg2w6VMb8XcotOwAe5DLyzwjLrskNkwU7LLWsyL8=

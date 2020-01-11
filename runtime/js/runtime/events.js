@@ -52,7 +52,8 @@ function Once(eventName, callback) {
  * @param {string} eventName
  */
 function Emit(eventName) {
-	return window.wails.Events.Emit(eventName);
+	var args = [eventName].slice.call(arguments);
+	return window.wails.Events.Emit.apply(null, args);
 }
 
 

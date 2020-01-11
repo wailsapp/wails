@@ -82,6 +82,15 @@ distributions:
         gccversioncommand: *gccdumpfullversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
+  deepin:
+    id: deepin
+    releases:
+      default:
+        version: default
+        name: Deepin
+        gccversioncommand: *gccdumpfullversion
+        programs: *debiandefaultprograms
+        libraries: *debiandefaultlibraries
   void:
     id: void
     releases:
@@ -158,6 +167,15 @@ distributions:
             help: Please install with `sudo pacman -S gtk3` and try again
           - name: webkit2gtk
             help: Please install with `sudo pacman -S webkit2gtk` and try again
+  arcolinux:
+    id: arcolinux
+    releases:
+      default:
+        version: default
+        name: ArcoLinux
+        gccversioncommand: *gccdumpversion
+        programs: *archdefaultprograms
+        libraries: *archdefaultlibraries
   manjaro:
     id: manjaro
     releases:
@@ -167,12 +185,12 @@ distributions:
         gccversioncommand: *gccdumpversion
         programs: *archdefaultprograms
         libraries: *archdefaultlibraries
-  arcolinux:
-    id: arcolinux
+  manjaro-arm:
+    id: manjaro-arm
     releases:
       default:
         version: default
-        name: ArcoLinux
+        name: Manjaro-ARM
         gccversioncommand: *gccdumpversion
         programs: *archdefaultprograms
         libraries: *archdefaultlibraries
@@ -195,3 +213,13 @@ distributions:
             help: Please install with `sudo emerge gtk+:3` and try again
           - name: webkit-gtk
             help: Please install with `sudo emerge webkit-gtk` and try again
+
+  raspbian:
+    id: raspbian
+    releases:
+      default:
+        version: default
+        name: Raspbian
+        gccversioncommand: *gccdumpfullversion
+        programs: *debiandefaultprograms
+        libraries: *debiandefaultlibraries
