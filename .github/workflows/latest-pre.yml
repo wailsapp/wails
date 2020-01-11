@@ -6,7 +6,7 @@ on:
 jobs:
 
   build:
-    name: Test Build Latest Release
+    name: Test Build Latest Pre-Release
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
