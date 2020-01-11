@@ -13,7 +13,7 @@ require (
 	github.com/kennygrant/sanitize v1.2.4
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/leaanthony/mewn v0.10.7
-	github.com/leaanthony/slicer v1.3.2
+	github.com/leaanthony/slicer v1.4.0
 	github.com/leaanthony/spinner v0.5.3
 	github.com/mattn/go-colorable v0.1.1 // indirect
 	github.com/mattn/go-isatty v0.0.7 // indirect
@@ -31,3 +31,5 @@ require (
 	gopkg.in/AlecAivazis/survey.v1 v1.8.4
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
 )
+
+go 1.13
