@@ -106,6 +106,27 @@ func init() {
 			projectOptions.SetTypescriptDefsFilename(typescriptFilename)
 		}
 
+		// Update go.mod if it is out of sync with current version
+		outofsync, err := cmd.GoModOutOfSync()
+		if err != nil {
+			return err
+		}
+		gomodVersion, err := cmd.GetWailsVersion()
+		if err != nil {
+			return err
+		}
+		if outofsync {
+			syncMessage := fmt.Sprintf("Updating go.mod (Wails version %s => %s)", gomodVersion, cmd.Version)
+			buildSpinner := spinner.NewSpinner(syncMessage)
+			buildSpinner.Start()
+			err := cmd.UpdateGoModVersion()
+			if err != nil {
+				buildSpinner.Error(err.Error())
+				return err
+			}
+			buildSpinner.Success()
+		}
+
 		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode, packageApp, projectOptions)
 		if err != nil {
 			return err

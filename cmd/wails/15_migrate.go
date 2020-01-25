@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/Masterminds/semver"
@@ -183,35 +182,13 @@ func checkProjectDirectory() error {
 
 func getWailsVersion() (*semver.Version, error) {
 	checkSpinner.Start("Get Wails Version")
-	var result *semver.Version
 
-	// Load file
-	var err error
-	goModFile, err = filepath.Abs(filepath.Join(".", "go.mod"))
+	result, err := cmd.GetWailsVersion()
+
 	if err != nil {
-		checkSpinner.Error()
-		return nil, fmt.Errorf("Unable to load go.mod at %s", goModFile)
+		checkSpinner.Error(err.Error())
+		return nil, err
 	}
-	goMod, err = migrateFS.LoadAsString(goModFile)
-	if err != nil {
-		checkSpinner.Error()
-		return nil, fmt.Errorf("Unable to load go.mod")
-	}
-
-	// Find wails version
-	versionRegexp := regexp.MustCompile(`.*github.com/wailsapp/wails.*(v\d+.\d+.\d+)`)
-	versions := versionRegexp.FindStringSubmatch(goMod)
-
-	if len(versions) != 2 {
-		return nil, fmt.Errorf("Unable to determine Wails version")
-	}
-
-	version := versions[1]
-	result, err = semver.NewVersion(version)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to parse Wails version: %s", version)
-	}
-	checkSpinner.Success("Found Wails Version: " + version)
 	return result, nil
 
 }
