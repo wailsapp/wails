@@ -135,10 +135,10 @@ func (i *Manager) Start(eventManager interfaces.EventManager, bindingManager int
 // Dispatch receives JSON encoded messages from the renderer.
 // It processes the message to ensure that it is valid and places
 // the processed message on the message queue
-func (i *Manager) Dispatch(message string) {
+func (i *Manager) Dispatch(message string, cb interfaces.CallbackFunc) {
 
 	// Create a new IPC Message
-	incomingMessage, err := newIPCMessage(message, i.SendResponse)
+	incomingMessage, err := newIPCMessage(message, i.SendResponse(cb))
 	if err != nil {
 		i.log.ErrorFields("Could not understand incoming message! ", map[string]interface{}{
 			"message": message,
@@ -158,17 +158,19 @@ func (i *Manager) Dispatch(message string) {
 }
 
 // SendResponse sends the given response back to the frontend
-func (i *Manager) SendResponse(response *ipcResponse) error {
+// It sends the data back to the correct renderer by way of the provided callback function
+func (i *Manager) SendResponse(cb interfaces.CallbackFunc) func(i *ipcResponse) error {
 
-	// Serialise the Message
-	data, err := response.Serialise()
-	if err != nil {
-		fmt.Printf(err.Error())
-		return err
+	return func(response *ipcResponse) error {
+		// Serialise the Message
+		data, err := response.Serialise()
+		if err != nil {
+			fmt.Printf(err.Error())
+			return err
+		}
+		return cb(data)
 	}
 
-	// Call back to the front end
-	return i.renderer.Callback(data)
 }
 
 // Shutdown is called when exiting the Application
