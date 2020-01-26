@@ -114,6 +114,7 @@ func (b *Manager) generateTypescriptDefinitions() error {
 	var output strings.Builder
 
 	for structname, methodList := range b.structList {
+		structname = strings.SplitN(structname, ".", 2)[1]
 		output.WriteString(fmt.Sprintf("Interface %s {\n", structname))
 		for _, method := range methodList {
 			output.WriteString(fmt.Sprintf("\t%s: (...args : any[]) => Promise\n", method))
@@ -125,6 +126,7 @@ func (b *Manager) generateTypescriptDefinitions() error {
 	output.WriteString("Interface Backend {\n")
 
 	for structname := range b.structList {
+		structname = strings.SplitN(structname, ".", 2)[1]
 		output.WriteString(fmt.Sprintf("\t%[1]s: %[1]s\n", structname))
 	}
 	output.WriteString("}\n")
