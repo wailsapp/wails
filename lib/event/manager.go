@@ -3,7 +3,6 @@ package event
 import (
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
@@ -13,6 +12,7 @@ import (
 // Manager handles and processes events
 type Manager struct {
 	incomingEvents chan *messages.EventData
+	quitChannel    chan struct{}
 	listeners      map[string][]*eventListener
 	running        bool
 	log            *logger.CustomLogger
@@ -24,6 +24,7 @@ type Manager struct {
 func NewManager() interfaces.EventManager {
 	return &Manager{
 		incomingEvents: make(chan *messages.EventData, 100),
+		quitChannel:    make(chan struct{}, 1),
 		listeners:      make(map[string][]*eventListener),
 		running:        false,
 		log:            logger.NewCustomLogger("Events"),
@@ -141,8 +142,8 @@ func (e *Manager) Start(renderer interfaces.Renderer) {
 						}
 					}
 				}
-			default:
-				time.Sleep(1 * time.Millisecond)
+			case <-e.quitChannel:
+				e.running = false
 			}
 		}
 		e.wg.Done()
@@ -152,7 +153,7 @@ func (e *Manager) Start(renderer interfaces.Renderer) {
 // Shutdown is called when exiting the Application
 func (e *Manager) Shutdown() {
 	e.log.Debug("Shutting Down")
-	e.running = false
+	e.quitChannel <- struct{}{}
 	e.log.Debug("Waiting for main loop to exit")
 	e.wg.Wait()
 }

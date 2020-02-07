@@ -43,8 +43,16 @@ const (
 	Kali
 	// Neon distribution
 	Neon
+	// ArcoLinux distribution
+	ArcoLinux
 	// Manjaro distribution
 	Manjaro
+	// ManjaroARM distribution
+	ManjaroARM
+	// Deepin distribution
+	Deepin
+	// Raspbian distribution
+	Raspbian
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -100,6 +108,7 @@ func parseOsRelease(osRelease string) *DistroInfo {
 			version = strings.Trim(splitLine[1], "\"")
 		}
 	}
+
 	// Check distro name against list of distros
 	switch osID {
 	case "fedora":
@@ -128,8 +137,16 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Kali
 	case "neon":
 		result.Distribution = Neon
+	case "arcolinux":
+		result.Distribution = ArcoLinux
 	case "manjaro":
 		result.Distribution = Manjaro
+	case "manjaro-arm":
+		result.Distribution = ManjaroARM
+	case "deepin":
+		result.Distribution = Deepin
+	case "raspbian":
+		result.Distribution = Raspbian
 	default:
 		result.Distribution = Unknown
 	}

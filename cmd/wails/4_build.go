@@ -13,6 +13,8 @@ func init() {
 	var packageApp = false
 	var forceRebuild = false
 	var debugMode = false
+	var typescriptFilename = ""
+
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
 
@@ -21,7 +23,8 @@ func init() {
 		LongDescription(commandDescription).
 		BoolFlag("p", "Package application on successful build", &packageApp).
 		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
-		BoolFlag("d", "Build in Debug mode", &debugMode)
+		BoolFlag("d", "Build in Debug mode", &debugMode).
+		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename)
 
 	initCmd.Action(func() error {
 
@@ -73,15 +76,12 @@ func init() {
 				return err
 			}
 
-				// Ensure that runtime init.js is the production version
-				err = cmd.InstallProdRuntime(projectDir, projectOptions)
-				if err != nil {
-					return err
-				}
+			// Ensure that runtime init.js is the production version
+			err = cmd.InstallProdRuntime(projectDir, projectOptions)
+			if err != nil {
+				return err
+			}
 		}
-
-	
-
 
 		// Move to project directory
 		err = os.Chdir(projectDir)
@@ -99,6 +99,32 @@ func init() {
 		buildMode := cmd.BuildModeProd
 		if debugMode {
 			buildMode = cmd.BuildModeDebug
+		}
+
+		// Save if we wish to dump typescript or not
+		if typescriptFilename != "" {
+			projectOptions.SetTypescriptDefsFilename(typescriptFilename)
+		}
+
+		// Update go.mod if it is out of sync with current version
+		outofsync, err := cmd.GoModOutOfSync()
+		if err != nil {
+			return err
+		}
+		gomodVersion, err := cmd.GetWailsVersion()
+		if err != nil {
+			return err
+		}
+		if outofsync {
+			syncMessage := fmt.Sprintf("Updating go.mod (Wails version %s => %s)", gomodVersion, cmd.Version)
+			buildSpinner := spinner.NewSpinner(syncMessage)
+			buildSpinner.Start()
+			err := cmd.UpdateGoModVersion()
+			if err != nil {
+				buildSpinner.Error(err.Error())
+				return err
+			}
+			buildSpinner.Success()
 		}
 
 		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode, packageApp, projectOptions)

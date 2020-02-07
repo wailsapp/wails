@@ -1,0 +1,5 @@
+module {{.BinaryName}}
+
+require (
+	github.com/wailsapp/wails {{.WailsVersion}}
+)

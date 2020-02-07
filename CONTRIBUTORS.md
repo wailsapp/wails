@@ -21,3 +21,5 @@ Wails is what it is because of the time and effort given by these great people. 
   * [Robin Eklind](https://github.com/mewmew)
   * [Kris Raney](https://github.com/kraney)
   * [Jack Mordaunt](https://github.com/JackMordaunt)
+  * [Michael Hipp](https://github.com/MichaelHipp)
+  * [Travis McLane](https://github.com/tmclane)
