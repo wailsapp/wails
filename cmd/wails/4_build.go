@@ -14,6 +14,7 @@ func init() {
 	var forceRebuild = false
 	var debugMode = false
 	var typescriptFilename = ""
+	var platform = ""
 
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
@@ -24,7 +25,8 @@ func init() {
 		BoolFlag("p", "Package application on successful build", &packageApp).
 		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
 		BoolFlag("d", "Build in Debug mode", &debugMode).
-		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename)
+		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename).
+		StringFlag("x", "Cross-compile application to specified platform via xgo", &platform)
 
 	initCmd.Action(func() error {
 
@@ -126,6 +128,9 @@ func init() {
 			}
 			buildSpinner.Success()
 		}
+
+		// Set cross-compile
+		projectOptions.Platform = platform
 
 		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode, packageApp, projectOptions)
 		if err != nil {
