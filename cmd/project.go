@@ -159,6 +159,7 @@ type ProjectOptions struct {
 	WailsVersion           string
 	typescriptDefsFilename string
 	Verbose                bool `json:"-"`
+	Platform               string
 }
 
 // Defaults sets the default project template
