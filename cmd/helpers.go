@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/leaanthony/mewn"
+	"github.com/leaanthony/mewn/lib"
 	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
 )
@@ -49,6 +50,30 @@ func InstallGoDependencies() error {
 	return nil
 }
 
+// EmbedAssets will embed the built frontend assets via mewn.
+func EmbedAssets() ([]string, error) {
+	mewnFiles := lib.GetMewnFiles([]string{}, false)
+
+	referencedAssets, err := lib.GetReferencedAssets(mewnFiles)
+	if err != nil {
+		return []string{}, err
+	}
+
+	targetFiles := []string{}
+
+	for _, referencedAsset := range referencedAssets {
+		packfileData, err := lib.GeneratePackFileString(referencedAsset, false)
+		if err != nil {
+			return []string{}, err
+		}
+		targetFile := filepath.Join(referencedAsset.BaseDir, referencedAsset.PackageName+"-mewn.go")
+		targetFiles = append(targetFiles, targetFile)
+		ioutil.WriteFile(targetFile, []byte(packfileData), 0644)
+	}
+
+	return targetFiles, nil
+}
+
 // BuildApplication will attempt to build the project based on the given inputs
 func BuildApplication(binaryName string, forceRebuild bool, buildMode string, packageApp bool, projectOptions *ProjectOptions) error {
 
@@ -77,8 +102,23 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	packSpinner.SetSpinSpeed(50)
 	packSpinner.Start()
 
+	// embed resources
+	targetFiles, err := EmbedAssets()
+	if err != nil {
+		return err
+	}
+
+	// cleanup temporary embedded assets
+	defer func() {
+		for _, filename := range targetFiles {
+			if err := os.Remove(filename); err != nil {
+				fmt.Println(err)
+			}
+		}
+	}()
+
 	buildCommand := slicer.String()
-	buildCommand.Add("mewn")
+	buildCommand.Add("go")
 
 	if buildMode == BuildModeBridge {
 		// Ignore errors
