@@ -84,10 +84,14 @@ func EmbedAssets() ([]string, error) {
 // BuildApplication will attempt to build the project based on the given inputs
 func BuildApplication(binaryName string, forceRebuild bool, buildMode string, packageApp bool, projectOptions *ProjectOptions) error {
 
+	if buildMode == BuildModeBridge && projectOptions.CrossCompile {
+		return fmt.Errorf("you cant serve the application in cross-compilation")
+	}
+
 	// Generate Windows assets if needed
-	if runtime.GOOS == "windows" {
+	if projectOptions.Platform == "windows" {
 		cleanUp := !packageApp
-		err := NewPackageHelper().PackageWindows(projectOptions, cleanUp)
+		err := NewPackageHelper(projectOptions.Platform).PackageWindows(projectOptions, cleanUp)
 		if err != nil {
 			return err
 		}
@@ -130,16 +134,22 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	}()
 
 	buildCommand := slicer.String()
-	buildCommand.Add("go")
+	if projectOptions.CrossCompile {
+		buildCommand.Add("xgo")
+	} else {
+		buildCommand.Add("mewn")
+	}
 
 	if buildMode == BuildModeBridge {
 		// Ignore errors
 		buildCommand.Add("-i")
 	}
 
-	buildCommand.Add("build")
+	if !projectOptions.CrossCompile {
+		buildCommand.Add("build")
+	}
 
-	if binaryName != "" {
+	if binaryName != "" && !projectOptions.CrossCompile {
 		// Alter binary name based on OS
 		switch runtime.GOOS {
 		case "windows":
@@ -155,7 +165,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	}
 
 	// If we are forcing a rebuild
-	if forceRebuild {
+	if forceRebuild && !projectOptions.CrossCompile {
 		buildCommand.Add("-a")
 	}
 
@@ -166,7 +176,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	}
 
 	// Add windows flags
-	if runtime.GOOS == "windows" && buildMode == BuildModeProd {
+	if projectOptions.Platform == "windows" && buildMode == BuildModeProd {
 		ldflags += "-H windowsgui "
 	}
 
@@ -183,6 +193,13 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	}
 
 	buildCommand.AddSlice([]string{"-ldflags", ldflags})
+
+	if projectOptions.CrossCompile {
+		buildCommand.Add("-targets", projectOptions.Platform+"/"+projectOptions.Architecture)
+		buildCommand.Add("-out", "build/"+binaryName)
+		buildCommand.Add("./")
+	}
+
 	err = NewProgramHelper(projectOptions.Verbose).RunCommandArray(buildCommand.AsSlice())
 	if err != nil {
 		if packSpinner != nil {
@@ -209,20 +226,21 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 func PackageApplication(projectOptions *ProjectOptions) error {
 	// Package app
 	message := "Generating .app"
-	if runtime.GOOS == "windows" {
+	if projectOptions.Platform == "windows" {
 		err := CheckWindres()
 		if err != nil {
 			return err
 		}
 		message = "Generating resource bundle"
 	}
+
 	var packageSpinner *spinner.Spinner
 	if projectOptions.Verbose {
 		packageSpinner = spinner.New(message)
 		packageSpinner.SetSpinSpeed(50)
 		packageSpinner.Start()
 	}
-	err := NewPackageHelper().Package(projectOptions)
+	err := NewPackageHelper(projectOptions.Platform).Package(projectOptions)
 	if err != nil {
 		if packageSpinner != nil {
 			packageSpinner.Error()
