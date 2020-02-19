@@ -158,7 +158,9 @@ type ProjectOptions struct {
 	selectedTemplate       *TemplateDetails
 	WailsVersion           string
 	typescriptDefsFilename string
+	CrossCompile           bool
 	Platform               string
+	Architecture           string
 }
 
 // Defaults sets the default project template
