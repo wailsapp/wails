@@ -18,17 +18,19 @@ import (
 
 // PackageHelper helps with the 'wails package' command
 type PackageHelper struct {
-	fs     *FSHelper
-	log    *Logger
-	system *SystemHelper
+	platform string
+	fs       *FSHelper
+	log      *Logger
+	system   *SystemHelper
 }
 
 // NewPackageHelper creates a new PackageHelper!
-func NewPackageHelper() *PackageHelper {
+func NewPackageHelper(platform string) *PackageHelper {
 	return &PackageHelper{
-		fs:     NewFSHelper(),
-		log:    NewLogger(),
-		system: NewSystemHelper(),
+		platform: platform,
+		fs:       NewFSHelper(),
+		log:      NewLogger(),
+		system:   NewSystemHelper(),
 	}
 }
 
@@ -63,16 +65,23 @@ func defaultString(val string, defaultVal string) string {
 func (b *PackageHelper) getPackageFileBaseDir() string {
 	// Calculate template base dir
 	_, filename, _, _ := runtime.Caller(1)
-	return filepath.Join(path.Dir(filename), "packages", runtime.GOOS)
+	return filepath.Join(path.Dir(filename), "packages", b.platform)
 }
 
 // Package the application into a platform specific package
 func (b *PackageHelper) Package(po *ProjectOptions) error {
-	switch runtime.GOOS {
+	switch b.platform {
 	case "darwin":
 		// Check we have the exe
 		if !b.fs.FileExists(po.BinaryName) {
-			return fmt.Errorf("cannot bundle non-existent binary file '%s'. Please build with 'wails build' first", po.BinaryName)
+			// Check cross-compiled application
+			if b.platform == runtime.GOOS {
+				return fmt.Errorf("cannot bundle non-existent binary file '%s'. Please build with 'wails build' first", po.BinaryName)
+			}
+
+			if _, err := b.fs.FindFile(path.Join(b.fs.Cwd(), "build"), "darwin"); err != nil {
+				return fmt.Errorf("cannot bundle non-existent cross-compiled binary file '%s'. Please build with 'wails build -x darwin' first", po.BinaryName)
+			}
 		}
 		return b.packageOSX(po)
 	case "windows":
@@ -80,7 +89,7 @@ func (b *PackageHelper) Package(po *ProjectOptions) error {
 	case "linux":
 		return fmt.Errorf("linux is not supported at this time. Please see https://github.com/wailsapp/wails/issues/2")
 	default:
-		return fmt.Errorf("platform '%s' not supported for bundling yet", runtime.GOOS)
+		return fmt.Errorf("platform '%s' not supported for bundling yet", b.platform)
 	}
 }
 
@@ -103,6 +112,22 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 
 	// Check binary exists
 	source := path.Join(b.fs.Cwd(), exe)
+
+	if b.platform != runtime.GOOS {
+
+		file, err := b.fs.FindFile(path.Join(b.fs.Cwd(), "build"), "darwin")
+		if err != nil {
+			return err
+		}
+
+		// rename to exe
+		if err := os.Rename(path.Join(b.fs.Cwd(), "build", file), path.Join(b.fs.Cwd(), "build", exe)); err != nil {
+			return err
+		}
+
+		source = path.Join(b.fs.Cwd(), "build", exe)
+	}
+
 	if !b.fs.FileExists(source) {
 		// We need to build!
 		return fmt.Errorf("Target '%s' not available. Has it been compiled yet?", exe)
@@ -192,16 +217,36 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	// Build syso
 	sysofile := filepath.Join(b.fs.Cwd(), basename+"-res.syso")
 
-	batfile, err := fs.LocalDir(".")
-	if err != nil {
-		return err
-	}
+	// cross-compile
+	if b.platform != runtime.GOOS {
+		folder, err := os.Getwd()
+		if err != nil {
+			return err
+		}
 
-	windresBatFile := filepath.Join(batfile.fullPath, "windres.bat")
-	windresCommand := []string{windresBatFile, sysofile, tgtRCFile}
-	err = NewProgramHelper().RunCommandArray(windresCommand)
-	if err != nil {
-		return err
+		args := []string{
+			"docker", "run", "--rm",
+			"-v", folder + ":/build",
+			"--entrypoint", "/bin/sh",
+			"techknowlogick/xgo",
+			"-c", "/usr/bin/x86_64-w64-mingw32-windres -o /build/" + basename + "-res.syso /build/" + basename + ".rc",
+		}
+
+		if err := NewProgramHelper().RunCommandArray(args); err != nil {
+			return err
+		}
+	} else {
+		batfile, err := fs.LocalDir(".")
+		if err != nil {
+			return err
+		}
+
+		windresBatFile := filepath.Join(batfile.fullPath, "windres.bat")
+		windresCommand := []string{windresBatFile, sysofile, tgtRCFile}
+		err = NewProgramHelper().RunCommandArray(windresCommand)
+		if err != nil {
+			return err
+		}
 	}
 
 	// clean up

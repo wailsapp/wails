@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
+	"strings"
 
 	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
@@ -130,7 +132,19 @@ func init() {
 		}
 
 		// Set cross-compile
-		projectOptions.Platform = platform
+		projectOptions.Platform = runtime.GOOS
+		if len(platform) > 0 {
+			projectOptions.CrossCompile = true
+			projectOptions.Platform = platform
+			projectOptions.Architecture = "amd64"
+
+			// check build architecture
+			if strings.Contains(platform, "/") {
+				p := strings.Split(platform, "/")
+				projectOptions.Platform = p[0]
+				projectOptions.Architecture = p[1]
+			}
+		}
 
 		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode, packageApp, projectOptions)
 		if err != nil {
