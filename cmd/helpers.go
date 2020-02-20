@@ -97,10 +97,18 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		}
 	}
 
-	// Check Mewn is installed
-	err := CheckMewn(projectOptions.Verbose)
-	if err != nil {
-		return err
+	if projectOptions.CrossCompile {
+		// Check build directory
+		buildDirectory := filepath.Join(fs.Cwd(), "build")
+		if !fs.DirExists(buildDirectory) {
+			fs.MkDir(buildDirectory)
+		}
+	} else {
+		// Check Mewn is installed
+		err := CheckMewn(projectOptions.Verbose)
+		if err != nil {
+			return err
+		}
 	}
 
 	compileMessage := "Packing + Compiling project"
