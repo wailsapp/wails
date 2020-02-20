@@ -103,6 +103,16 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		if !fs.DirExists(buildDirectory) {
 			fs.MkDir(buildDirectory)
 		}
+
+		// Check Docker
+		if err := CheckIfInstalled("docker"); err != nil {
+			return err
+		}
+
+		// Check xgo
+		if err := CheckIfInstalled("xgo"); err != nil {
+			return err
+		}
 	} else {
 		// Check Mewn is installed
 		err := CheckMewn(projectOptions.Verbose)
@@ -316,6 +326,15 @@ func CheckWindres() (err error) {
 	programHelper := NewProgramHelper()
 	if !programHelper.IsInstalled("windres") {
 		return fmt.Errorf("windres not installed. It comes by default with mingw. Ensure you have installed mingw correctly")
+	}
+	return nil
+}
+
+// CheckIfInstalled returns if application is installed
+func CheckIfInstalled(application string) (err error) {
+	programHelper := NewProgramHelper()
+	if !programHelper.IsInstalled(application) {
+		return fmt.Errorf("%s not installed. Ensure you have installed %s correctly", application, application)
 	}
 	return nil
 }
