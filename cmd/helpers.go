@@ -36,16 +36,23 @@ func ValidateFrontendConfig(projectOptions *ProjectOptions) error {
 }
 
 // InstallGoDependencies will run go get in the current directory
-func InstallGoDependencies() error {
-	depSpinner := spinner.New("Ensuring Dependencies are up to date...")
-	depSpinner.SetSpinSpeed(50)
-	depSpinner.Start()
-	err := NewProgramHelper().RunCommand("go get")
+func InstallGoDependencies(verbose bool) error {
+	var depSpinner *spinner.Spinner
+	if !verbose {
+		depSpinner = spinner.New("Ensuring Dependencies are up to date...")
+		depSpinner.SetSpinSpeed(50)
+		depSpinner.Start()
+	}
+	err := NewProgramHelper(verbose).RunCommand("go get")
 	if err != nil {
-		depSpinner.Error()
+		if !verbose {
+			depSpinner.Error()
+		}
 		return err
 	}
-	depSpinner.Success()
+	if !verbose {
+		depSpinner.Success()
+	}
 	return nil
 }
 
@@ -62,7 +69,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	}
 
 	// Check Mewn is installed
-	err := CheckMewn()
+	err := CheckMewn(projectOptions.Verbose)
 	if err != nil {
 		return err
 	}
@@ -73,9 +80,14 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		compileMessage += " (Debug Mode)"
 	}
 
-	packSpinner := spinner.New(compileMessage + "...")
-	packSpinner.SetSpinSpeed(50)
-	packSpinner.Start()
+	var packSpinner *spinner.Spinner
+	if !projectOptions.Verbose {
+		packSpinner = spinner.New(compileMessage + "...")
+		packSpinner.SetSpinSpeed(50)
+		packSpinner.Start()
+	} else {
+		println(compileMessage)
+	}
 
 	buildCommand := slicer.String()
 	buildCommand.Add("mewn")
@@ -131,12 +143,16 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	}
 
 	buildCommand.AddSlice([]string{"-ldflags", ldflags})
-	err = NewProgramHelper().RunCommandArray(buildCommand.AsSlice())
+	err = NewProgramHelper(projectOptions.Verbose).RunCommandArray(buildCommand.AsSlice())
 	if err != nil {
-		packSpinner.Error()
+		if packSpinner != nil {
+			packSpinner.Error()
+		}
 		return err
 	}
-	packSpinner.Success()
+	if packSpinner != nil {
+		packSpinner.Success()
+	}
 
 	// packageApp
 	if packageApp {
@@ -160,45 +176,68 @@ func PackageApplication(projectOptions *ProjectOptions) error {
 		}
 		message = "Generating resource bundle"
 	}
-	packageSpinner := spinner.New(message)
-	packageSpinner.SetSpinSpeed(50)
-	packageSpinner.Start()
+	var packageSpinner *spinner.Spinner
+	if projectOptions.Verbose {
+		packageSpinner = spinner.New(message)
+		packageSpinner.SetSpinSpeed(50)
+		packageSpinner.Start()
+	}
 	err := NewPackageHelper().Package(projectOptions)
 	if err != nil {
-		packageSpinner.Error()
+		if packageSpinner != nil {
+			packageSpinner.Error()
+		}
 		return err
 	}
-	packageSpinner.Success()
+	if packageSpinner != nil {
+		packageSpinner.Success()
+	}
 	return nil
 }
 
 // BuildFrontend runs the given build command
-func BuildFrontend(buildCommand string) error {
-	buildFESpinner := spinner.New("Building frontend...")
-	buildFESpinner.SetSpinSpeed(50)
-	buildFESpinner.Start()
-	err := NewProgramHelper().RunCommand(buildCommand)
+func BuildFrontend(projectOptions *ProjectOptions) error {
+	var buildFESpinner *spinner.Spinner
+	if !projectOptions.Verbose {
+		buildFESpinner = spinner.New("Building frontend...")
+		buildFESpinner.SetSpinSpeed(50)
+		buildFESpinner.Start()
+	} else {
+		println("Building frontend...")
+	}
+	err := NewProgramHelper(projectOptions.Verbose).RunCommand(projectOptions.FrontEnd.Build)
 	if err != nil {
-		buildFESpinner.Error()
+		if buildFESpinner != nil {
+			buildFESpinner.Error()
+		}
 		return err
 	}
-	buildFESpinner.Success()
+	if buildFESpinner != nil {
+		buildFESpinner.Success()
+	}
 	return nil
 }
 
 // CheckMewn checks if mewn is installed and if not, attempts to fetch it
-func CheckMewn() (err error) {
-	programHelper := NewProgramHelper()
+func CheckMewn(verbose bool) (err error) {
+	programHelper := NewProgramHelper(verbose)
 	if !programHelper.IsInstalled("mewn") {
-		buildSpinner := spinner.New()
-		buildSpinner.SetSpinSpeed(50)
-		buildSpinner.Start("Installing Mewn asset packer...")
+		var buildSpinner *spinner.Spinner
+		if !verbose {
+			buildSpinner = spinner.New()
+			buildSpinner.SetSpinSpeed(50)
+			buildSpinner.Start("Installing Mewn asset packer...")
+		}
 		err := programHelper.InstallGoPackage("github.com/leaanthony/mewn/cmd/mewn")
 		if err != nil {
-			buildSpinner.Error()
+			if buildSpinner != nil {
+				buildSpinner.Error()
+			}
 			return err
 		}
-		buildSpinner.Success()
+		if buildSpinner != nil {
+			buildSpinner.Success()
+		}
 	}
 	return nil
 }
@@ -225,9 +264,14 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	}
 
 	// Check if frontend deps have been updated
-	feSpinner := spinner.New("Ensuring frontend dependencies are up to date (This may take a while)")
-	feSpinner.SetSpinSpeed(50)
-	feSpinner.Start()
+	var feSpinner *spinner.Spinner
+	if !projectOptions.Verbose {
+		feSpinner = spinner.New("Ensuring frontend dependencies are up to date (This may take a while)")
+		feSpinner.SetSpinSpeed(50)
+		feSpinner.Start()
+	} else {
+		println("Ensuring frontend dependencies are up to date (This may take a while)")
+	}
 
 	requiresNPMInstall := true
 
@@ -259,7 +303,11 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 			if savedMD5sum == packageJSONMD5 {
 				// Same - no need for reinstall
 				requiresNPMInstall = false
-				feSpinner.Success("Skipped frontend dependencies (-f to force rebuild)")
+				if feSpinner != nil {
+					feSpinner.Success("Skipped frontend dependencies (-f to force rebuild)")
+				} else {
+					println("Skipped frontend dependencies (-f to force rebuild)")
+				}
 			}
 		}
 	}
@@ -268,12 +316,16 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	// Different? Build
 	if requiresNPMInstall || forceRebuild {
 		// Install dependencies
-		err = NewProgramHelper().RunCommand(projectOptions.FrontEnd.Install)
+		err = NewProgramHelper(projectOptions.Verbose).RunCommand(projectOptions.FrontEnd.Install)
 		if err != nil {
-			feSpinner.Error()
+			if feSpinner != nil {
+				feSpinner.Error()
+			}
 			return err
 		}
-		feSpinner.Success()
+		if feSpinner != nil {
+			feSpinner.Success()
+		}
 
 		// Update md5sum file
 		ioutil.WriteFile(md5sumFile, []byte(packageJSONMD5), 0644)
@@ -286,7 +338,7 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	}
 
 	// Build frontend
-	err = BuildFrontend(projectOptions.FrontEnd.Build)
+	err = BuildFrontend(projectOptions)
 	if err != nil {
 		return err
 	}
