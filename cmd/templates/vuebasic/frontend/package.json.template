@@ -8,21 +8,21 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "core-js": "^3.6.1",
+    "core-js": "^3.6.4",
     "regenerator-runtime": "^0.13.3",
-    "vue": "^2.5.22",
-    "@wailsapp/runtime": "^1.0.0"
+    "vue": "^2.6.11",
+    "@wailsapp/runtime": "^1.0.10"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.4.0",
-    "@vue/cli-plugin-eslint": "^3.4.0",
-    "@vue/cli-service": "^3.4.0",
-    "babel-eslint": "^10.0.1",
+    "@vue/cli-plugin-babel": "^4.2.3",
+    "@vue/cli-plugin-eslint": "^4.2.3",
+    "@vue/cli-service": "^4.2.3",
+    "babel-eslint": "^10.1.0",
     "eslint": "^6.8.0",
     "eslint-plugin-vue": "^6.2.1",
     "eventsource-polyfill": "^0.9.6",
-    "vue-template-compiler": "^2.5.21",
-    "webpack-hot-middleware": "^2.24.3"
+    "vue-template-compiler": "^2.6.11",
+    "webpack-hot-middleware": "^2.25.0"
   },
   "eslintConfig": {
     "root": true,
