@@ -14,6 +14,7 @@ func init() {
 	var forceRebuild = false
 	var debugMode = false
 	var typescriptFilename = ""
+	var verbose = false
 
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
@@ -24,6 +25,7 @@ func init() {
 		BoolFlag("p", "Package application on successful build", &packageApp).
 		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
 		BoolFlag("d", "Build in Debug mode", &debugMode).
+		BoolFlag("verbose", "Verbose output", &verbose).
 		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename)
 
 	initCmd.Action(func() error {
@@ -40,6 +42,7 @@ func init() {
 
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}
+		projectOptions.Verbose = verbose
 
 		// Check we are in project directory
 		// Check project.json loads correctly
@@ -90,7 +93,7 @@ func init() {
 		}
 
 		// Install dependencies
-		err = cmd.InstallGoDependencies()
+		err = cmd.InstallGoDependencies(projectOptions.Verbose)
 		if err != nil {
 			return err
 		}

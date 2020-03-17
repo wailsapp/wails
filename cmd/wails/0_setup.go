@@ -40,7 +40,7 @@ Create your first project by running 'wails init'.`
 		}
 
 		// Check Mewn
-		err = cmd.CheckMewn()
+		err = cmd.CheckMewn(false)
 		if err != nil {
 			return err
 		}

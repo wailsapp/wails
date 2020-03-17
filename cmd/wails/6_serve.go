@@ -10,12 +10,14 @@ import (
 func init() {
 
 	var forceRebuild = false
+	var verbose = false
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
 
 	commandDescription := `This command builds then serves your application in bridge mode. Useful for developing your app in a browser.`
 	initCmd := app.Command("serve", "Run your Wails project in bridge mode").
 		LongDescription(commandDescription).
+		BoolFlag("verbose", "Verbose output", &verbose).
 		BoolFlag("f", "Force rebuild of application components", &forceRebuild)
 
 	initCmd.Action(func() error {
@@ -25,13 +27,14 @@ func init() {
 		fmt.Println()
 
 		// Check Mewn is installed
-		err := cmd.CheckMewn()
+		err := cmd.CheckMewn(verbose)
 		if err != nil {
 			return err
 		}
 
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}
+		projectOptions.Verbose = verbose
 
 		// Check we are in project directory
 		// Check project.json loads correctly
@@ -51,7 +54,7 @@ func init() {
 		}
 
 		// Install dependencies
-		err = cmd.InstallGoDependencies()
+		err = cmd.InstallGoDependencies(projectOptions.Verbose)
 		if err != nil {
 			return err
 		}

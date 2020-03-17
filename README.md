@@ -147,3 +147,11 @@ This project was mainly coded to the following albums:
 ## Licensing
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
+
+## Special Thank You
+
+<p align="center" style="text-align: center">
+   A special thank you to JetBrains for donating licenses to us!<br/><br/>
+   Please click the logo to let them know your appreciation!<br/><br/>
+   <a href="https://www.jetbrains.com?from=Wails"><img src="jetbrains-grayscale.png" width="30%"></a>
+</p>
