@@ -121,11 +121,11 @@ func (p *ProgramHelper) RunCommand(command string) error {
 
 // RunCommandArray runs the command specified in the array
 func (p *ProgramHelper) RunCommandArray(args []string, dir ...string) error {
-	program := args[0]
+	programCommand := args[0]
 	// TODO: Run FindProgram here and get the full path to the exe
-	program, err := exec.LookPath(program)
+	program, err := exec.LookPath(programCommand)
 	if err != nil {
-		fmt.Printf("ERROR: Looks like '%s' isn't installed. Please install and try again.", program)
+		fmt.Printf("ERROR: Looks like '%s' isn't installed. Please install and try again.", programCommand)
 		return err
 	}
 
