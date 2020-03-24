@@ -1,4 +1,4 @@
-FROM techknowlogick/xgo
+FROM techknowlogick/xgo:go-1.14.x
 
 RUN \
   apt-get update && \
