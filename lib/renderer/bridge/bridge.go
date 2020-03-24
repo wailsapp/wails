@@ -74,7 +74,7 @@ func (h *Bridge) startSession(conn *websocket.Conn) {
 		conn:         conn,
 		bindingCache: h.bindingCache,
 		ipc:          h.ipcManager,
-		log:          h.log,
+		log:          logger.NewCustomLogger("BridgeSession"),
 		eventManager: h.eventManager,
 	}
 
