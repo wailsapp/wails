@@ -35,7 +35,7 @@ func newSession(conn *websocket.Conn, bindingCache []string, ipc interfaces.IPCM
 		log:          logger,
 		eventManager: eventMgr,
 		shutdown:     make(chan bool),
-		writeChan:    make(chan []byte),
+		writeChan:    make(chan []byte, 100),
 	}
 }
 
