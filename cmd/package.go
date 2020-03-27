@@ -87,10 +87,14 @@ func (b *PackageHelper) Package(po *ProjectOptions) error {
 	case "windows":
 		return b.PackageWindows(po, false)
 	case "linux":
-		return fmt.Errorf("linux is not supported at this time. Please see https://github.com/wailsapp/wails/issues/2")
+		return b.packageLinux(po)
 	default:
 		return fmt.Errorf("platform '%s' not supported for bundling yet", b.platform)
 	}
+}
+
+func (b *PackageHelper) packageLinux(po *ProjectOptions) error {
+	return nil
 }
 
 // Package the application for OSX

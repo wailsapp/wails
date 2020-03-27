@@ -30,7 +30,13 @@ func init() {
 		BoolFlag("d", "Build in Debug mode", &debugMode).
 		BoolFlag("verbose", "Verbose output", &verbose).
 		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename).
-		StringFlag("x", "Cross-compile application to specified platform via xgo", &platform)
+		StringFlag("x", `Cross-compile application to specified platform via xgo\n
+
+Supported platforms:
+ - darwin
+ - windows
+ - linux/arm
+`, &platform)
 
 	initCmd.Action(func() error {
 
