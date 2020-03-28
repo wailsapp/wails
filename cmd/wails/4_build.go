@@ -15,7 +15,6 @@ import (
 func getSupportedPlatforms() []string {
 	return []string{
 		"darwin/amd64",
-		"linux/i386",
 		"linux/amd64",
 		"linux/arm-7",
 		"windows/amd64",
