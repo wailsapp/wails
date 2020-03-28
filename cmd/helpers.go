@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -108,11 +109,6 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		if err := CheckIfInstalled("docker"); err != nil {
 			return err
 		}
-
-		// Check xgo
-		if err := CheckIfInstalled("xgo"); err != nil {
-			return err
-		}
 	} else {
 		// Check Mewn is installed
 		err := CheckMewn(projectOptions.Verbose)
@@ -151,9 +147,57 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		}
 	}()
 
+	// Setup ld flags
+	ldflags := "'-w -s "
+	if buildMode == BuildModeDebug {
+		ldflags = ""
+	}
+
+	// Add windows flags
+	if projectOptions.Platform == "windows" && buildMode == BuildModeProd {
+		ldflags += "-H windowsgui "
+	}
+
+	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
+
+	// If we wish to generate typescript
+	if projectOptions.typescriptDefsFilename != "" {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		filename := filepath.Join(cwd, projectOptions.FrontEnd.Dir, projectOptions.typescriptDefsFilename)
+		ldflags += " -X github.com/wailsapp/wails/lib/binding.typescriptDefinitionFilename=" + filename
+	}
+	ldflags += "'"
+
 	buildCommand := slicer.String()
 	if projectOptions.CrossCompile {
-		buildCommand.Add("xgo")
+		user, err := user.Current()
+		if err != nil {
+			return err
+		}
+		for _, arg := range []string{
+			"docker",
+			"run",
+			"--rm",
+			"-v", fmt.Sprintf("%s/build:/build", fs.Cwd()),
+			"-v", fmt.Sprintf("%s:/source", fs.Cwd()),
+			"-e", fmt.Sprintf("LOCAL_USER_ID=%v", user.Uid),
+			"-e", fmt.Sprintf("FLAG_LDFLAGS=%s", ldflags),
+			"-e", "FLAG_V=false",
+			"-e", "FLAG_X=false",
+			"-e", "FLAG_RACE=false",
+			"-e", "FLAG_BUILDMODE=default",
+			"-e", "FLAG_TRIMPATH=false",
+			"-e", fmt.Sprintf("TARGETS=%s", projectOptions.Platform+"/"+projectOptions.Architecture),
+			"-e", "GOPROXY=",
+			"-e", "GO111MODULE=on",
+			"wailsapp/xgo:latest",
+			".",
+		} {
+			buildCommand.Add(arg)
+		}
 	} else {
 		buildCommand.Add("mewn")
 	}
@@ -187,35 +231,12 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		buildCommand.Add("-a")
 	}
 
-	// Setup ld flags
-	ldflags := "-w -s "
-	if buildMode == BuildModeDebug {
-		ldflags = ""
+	if !projectOptions.CrossCompile {
+		buildCommand.AddSlice([]string{"-ldflags", ldflags})
 	}
 
-	// Add windows flags
-	if projectOptions.Platform == "windows" && buildMode == BuildModeProd {
-		ldflags += "-H windowsgui "
-	}
-
-	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
-
-	// If we wish to generate typescript
-	if projectOptions.typescriptDefsFilename != "" {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		filename := filepath.Join(cwd, projectOptions.FrontEnd.Dir, projectOptions.typescriptDefsFilename)
-		ldflags += " -X github.com/wailsapp/wails/lib/binding.typescriptDefinitionFilename=" + filename
-	}
-
-	buildCommand.AddSlice([]string{"-ldflags", ldflags})
-
-	if projectOptions.CrossCompile {
-		buildCommand.Add("-targets", projectOptions.Platform+"/"+projectOptions.Architecture)
-		buildCommand.Add("-out", "build/"+binaryName)
-		buildCommand.Add("./")
+	if projectOptions.Verbose {
+		fmt.Printf("Command: %v\n", buildCommand.AsSlice())
 	}
 
 	err = NewProgramHelper(projectOptions.Verbose).RunCommandArray(buildCommand.AsSlice())
