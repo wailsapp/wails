@@ -232,10 +232,9 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 			"docker", "run", "--rm",
 			"-v", folder + ":/build",
 			"--entrypoint", "/bin/sh",
-			"techknowlogick/xgo",
+			"wailsapp/xgo:latest",
 			"-c", "/usr/bin/x86_64-w64-mingw32-windres -o /build/" + basename + "-res.syso /build/" + basename + ".rc",
 		}
-
 		if err := NewProgramHelper().RunCommandArray(args); err != nil {
 			return err
 		}
