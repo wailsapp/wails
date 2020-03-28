@@ -10,6 +10,18 @@ import (
 	"github.com/wailsapp/wails/cmd"
 )
 
+// getSupportedPlatforms returns a slice of platform/architecture
+// targets that are buildable using the cross-platform 'x' option.
+func getSupportedPlatforms() []string {
+	return []string{
+		"darwin/amd64",
+		"linux/i386",
+		"linux/amd64",
+		"linux/arm-7",
+		"windows/amd64",
+	}
+}
+
 func init() {
 
 	var packageApp = false
@@ -29,14 +41,15 @@ func init() {
 		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
 		BoolFlag("d", "Build in Debug mode", &debugMode).
 		BoolFlag("verbose", "Verbose output", &verbose).
-		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename).
-		StringFlag("x", `Cross-compile application to specified platform via xgo\n
+		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename)
 
-Supported platforms:
- - darwin
- - windows
- - linux/arm
-`, &platform)
+	var b strings.Builder
+	for _, plat := range getSupportedPlatforms() {
+		fmt.Fprintf(&b, " - %s\n", plat)
+	}
+	initCmd.StringFlag("x",
+		fmt.Sprintf("Cross-compile application to specified platform via xgo\n%s", b.String()),
+		&platform)
 
 	initCmd.Action(func() error {
 
@@ -60,6 +73,25 @@ Supported platforms:
 		err := projectOptions.LoadConfig(fs.Cwd())
 		if err != nil {
 			return fmt.Errorf("Unable to find 'project.json'. Please check you are in a Wails project directory")
+		}
+
+		// Set cross-compile
+		projectOptions.Platform = runtime.GOOS
+		if len(platform) > 0 {
+			supported := false
+			for _, plat := range getSupportedPlatforms() {
+				if plat == platform {
+					supported = true
+				}
+			}
+			if !supported {
+				return fmt.Errorf("Unsupported platform '%s' specified.\nPlease run `wails build -h` to see the supported platform/architecture options.", platform)
+			}
+
+			projectOptions.CrossCompile = true
+			plat := strings.Split(platform, "/")
+			projectOptions.Platform = plat[0]
+			projectOptions.Architecture = plat[1]
 		}
 
 		// Validate config
@@ -138,21 +170,6 @@ Supported platforms:
 				return err
 			}
 			buildSpinner.Success()
-		}
-
-		// Set cross-compile
-		projectOptions.Platform = runtime.GOOS
-		if len(platform) > 0 {
-			projectOptions.CrossCompile = true
-			projectOptions.Platform = platform
-			projectOptions.Architecture = "amd64"
-
-			// check build architecture
-			if strings.Contains(platform, "/") {
-				p := strings.Split(platform, "/")
-				projectOptions.Platform = p[0]
-				projectOptions.Architecture = p[1]
-			}
 		}
 
 		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode, packageApp, projectOptions)
