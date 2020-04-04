@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+echo "**** Checking if Wails passes unit tests ****"
+if ! go test ./...
+then
+    echo ""
+    echo "ERROR: Unit tests failed!"
+    exit 1;
+fi
+
 # Build runtime
 echo "**** Building Runtime ****"
 cd runtime/js
@@ -15,13 +23,6 @@ cd lib/renderer
 mewn
 cd ../..
 
-echo "**** Checking if Wails passes unit tests ****"
-if ! go test ./...
-then
-    echo ""
-    echo "ERROR: Unit tests failed!"
-    exit 1;
-fi
 
 cd cmd/wails
 echo "**** Checking if Wails compiles ****"
