@@ -83,39 +83,89 @@ func EmbedAssets() ([]string, error) {
 	return targetFiles, nil
 }
 
-// BuildApplication will attempt to build the project based on the given inputs
-func BuildApplication(binaryName string, forceRebuild bool, buildMode string, packageApp bool, projectOptions *ProjectOptions) error {
-
-	if buildMode == BuildModeBridge && projectOptions.CrossCompile {
+// BuildDocker builds the project using the cross compiling wailsapp/xgo:latest container
+func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOptions) error {
+	if buildMode == BuildModeBridge {
 		return fmt.Errorf("you cant serve the application in cross-compilation")
 	}
 
-	// Generate Windows assets if needed
-	if projectOptions.Platform == "windows" {
-		cleanUp := !packageApp
-		err := NewPackageHelper(projectOptions.Platform).PackageWindows(projectOptions, cleanUp)
-		if err != nil {
-			return err
-		}
+	// Check build directory
+	buildDirectory := filepath.Join(fs.Cwd(), "build")
+	if !fs.DirExists(buildDirectory) {
+		fs.MkDir(buildDirectory)
 	}
 
-	if projectOptions.CrossCompile {
-		// Check build directory
-		buildDirectory := filepath.Join(fs.Cwd(), "build")
-		if !fs.DirExists(buildDirectory) {
-			fs.MkDir(buildDirectory)
-		}
+	// Check Docker
+	if err := CheckIfInstalled("docker"); err != nil {
+		return err
+	}
 
-		// Check Docker
-		if err := CheckIfInstalled("docker"); err != nil {
-			return err
-		}
+	buildCommand := slicer.String()
+	userid := 1000
+	user, _ := user.Current()
+	if i, err := strconv.Atoi(user.Uid); err == nil {
+		userid = i
 	} else {
-		// Check Mewn is installed
-		err := CheckMewn(projectOptions.Verbose)
-		if err != nil {
-			return err
+		userid = 1000
+	}
+	for _, arg := range []string{
+		"docker",
+		"run",
+		"--rm",
+		"-v", fmt.Sprintf("%s/build:/build", fs.Cwd()),
+		"-v", fmt.Sprintf("%s:/source", fs.Cwd()),
+		"-e", fmt.Sprintf("LOCAL_USER_ID=%v", userid),
+		"-e", fmt.Sprintf("FLAG_LDFLAGS=%s", ldFlags(projectOptions, buildMode)),
+		"-e", "FLAG_V=false",
+		"-e", "FLAG_X=false",
+		"-e", "FLAG_RACE=false",
+		"-e", "FLAG_BUILDMODE=default",
+		"-e", "FLAG_TRIMPATH=false",
+		"-e", fmt.Sprintf("TARGETS=%s", projectOptions.Platform+"/"+projectOptions.Architecture),
+		"-e", "GOPROXY=",
+		"-e", "GO111MODULE=on",
+		"wailsapp/xgo:latest",
+		".",
+	} {
+		buildCommand.Add(arg)
+	}
+
+	compileMessage := "Packing + Compiling project"
+
+	if buildMode == BuildModeDebug {
+		compileMessage += " (Debug Mode)"
+	}
+
+	var packSpinner *spinner.Spinner
+	if !projectOptions.Verbose {
+		packSpinner = spinner.New(compileMessage + "...")
+		packSpinner.SetSpinSpeed(50)
+		packSpinner.Start()
+	} else {
+		println(compileMessage)
+	}
+
+	fmt.Printf("Command Line: %s\n", buildCommand.AsSlice())
+	err := NewProgramHelper(projectOptions.Verbose).RunCommandArray(buildCommand.AsSlice())
+	if err != nil {
+		if packSpinner != nil {
+			packSpinner.Error()
 		}
+		return err
+	}
+	if packSpinner != nil {
+		packSpinner.Success()
+	}
+
+	return nil
+}
+
+// BuildNative builds on the target platform itself.
+func BuildNative(binaryName string, forceRebuild bool, buildMode string, projectOptions *ProjectOptions) error {
+
+	// Check Mewn is installed
+	if err := CheckMewn(projectOptions.Verbose); err != nil {
+		return err
 	}
 
 	compileMessage := "Packing + Compiling project"
@@ -148,73 +198,17 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		}
 	}()
 
-	// Setup ld flags
-	ldflags := "-w -s "
-	if buildMode == BuildModeDebug {
-		ldflags = ""
-	}
-
-	// Add windows flags
-	if projectOptions.Platform == "windows" && buildMode == BuildModeProd {
-		ldflags += "-H windowsgui "
-	}
-
-	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
-
-	// If we wish to generate typescript
-	if projectOptions.typescriptDefsFilename != "" {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		filename := filepath.Join(cwd, projectOptions.FrontEnd.Dir, projectOptions.typescriptDefsFilename)
-		ldflags += " -X github.com/wailsapp/wails/lib/binding.typescriptDefinitionFilename=" + filename
-	}
-
 	buildCommand := slicer.String()
-	if projectOptions.CrossCompile {
-		userid := 1000
-		user, _ := user.Current()
-		if i, err := strconv.Atoi(user.Uid); err == nil {
-			userid = i
-		} else {
-			userid = 1000
-		}
-		for _, arg := range []string{
-			"docker",
-			"run",
-			"--rm",
-			"-v", fmt.Sprintf("%s/build:/build", fs.Cwd()),
-			"-v", fmt.Sprintf("%s:/source", fs.Cwd()),
-			"-e", fmt.Sprintf("LOCAL_USER_ID=%v", userid),
-			"-e", fmt.Sprintf("FLAG_LDFLAGS=%s", ldflags),
-			"-e", "FLAG_V=false",
-			"-e", "FLAG_X=false",
-			"-e", "FLAG_RACE=false",
-			"-e", "FLAG_BUILDMODE=default",
-			"-e", "FLAG_TRIMPATH=false",
-			"-e", fmt.Sprintf("TARGETS=%s", projectOptions.Platform+"/"+projectOptions.Architecture),
-			"-e", "GOPROXY=",
-			"-e", "GO111MODULE=on",
-			"wailsapp/xgo:latest",
-			".",
-		} {
-			buildCommand.Add(arg)
-		}
-	} else {
-		buildCommand.Add("mewn")
-	}
+	buildCommand.Add("go")
 
 	if buildMode == BuildModeBridge {
 		// Ignore errors
 		buildCommand.Add("-i")
 	}
 
-	if !projectOptions.CrossCompile {
-		buildCommand.Add("build")
-	}
+	buildCommand.Add("build")
 
-	if binaryName != "" && !projectOptions.CrossCompile {
+	if binaryName != "" {
 		// Alter binary name based on OS
 		switch runtime.GOOS {
 		case "windows":
@@ -226,17 +220,15 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 				binaryName = strings.TrimSuffix(binaryName, ".exe")
 			}
 		}
-		buildCommand.Add("-o", binaryName)
+		buildCommand.Add("-o", filepath.Join("build", binaryName))
 	}
 
 	// If we are forcing a rebuild
-	if forceRebuild && !projectOptions.CrossCompile {
+	if forceRebuild {
 		buildCommand.Add("-a")
 	}
 
-	if !projectOptions.CrossCompile {
-		buildCommand.AddSlice([]string{"-ldflags", ldflags})
-	}
+	buildCommand.AddSlice([]string{"-ldflags", ldFlags(projectOptions, buildMode)})
 
 	if projectOptions.Verbose {
 		fmt.Printf("Command: %v\n", buildCommand.AsSlice())
@@ -253,7 +245,21 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		packSpinner.Success()
 	}
 
-	// packageApp
+	return nil
+}
+
+// BuildApplication will attempt to build the project based on the given inputs
+func BuildApplication(binaryName string, forceRebuild bool, buildMode string, packageApp bool, projectOptions *ProjectOptions) error {
+	var err error
+	if projectOptions.CrossCompile {
+		err = BuildDocker(binaryName, buildMode, projectOptions)
+	} else {
+		err = BuildNative(binaryName, forceRebuild, buildMode, projectOptions)
+	}
+	if err != nil {
+		return err
+	}
+
 	if packageApp {
 		err = PackageApplication(projectOptions)
 		if err != nil {
@@ -266,22 +272,22 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 
 // PackageApplication will attempt to package the application in a platform dependent way
 func PackageApplication(projectOptions *ProjectOptions) error {
-	// Package app
-	message := "Generating .app"
-	if projectOptions.Platform == "windows" {
-		err := CheckWindres()
-		if err != nil {
-			return err
-		}
-		message = "Generating resource bundle"
-	}
-
 	var packageSpinner *spinner.Spinner
 	if projectOptions.Verbose {
-		packageSpinner = spinner.New(message)
+		packageSpinner = spinner.New("Packaging application...")
 		packageSpinner.SetSpinSpeed(50)
 		packageSpinner.Start()
 	}
+
+	if projectOptions.Platform == "windows" {
+		if err := NewPackageHelper(projectOptions.Platform).PackageWindows(projectOptions, true); err != nil {
+			return err
+		}
+		if err := CheckWindres(); err != nil {
+			return err
+		}
+	}
+
 	err := NewPackageHelper(projectOptions.Platform).Package(projectOptions)
 	if err != nil {
 		if packageSpinner != nil {
@@ -501,4 +507,29 @@ func ServeProject(projectOptions *ProjectOptions, logger *Logger) error {
 	}
 
 	return nil
+}
+
+func ldFlags(po *ProjectOptions, buildMode string) string {
+	// Setup ld flags
+	ldflags := "-w -s "
+	if buildMode == BuildModeDebug {
+		ldflags = ""
+	}
+
+	// Add windows flags
+	if po.Platform == "windows" && buildMode == BuildModeProd {
+		ldflags += "-H windowsgui "
+	}
+
+	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
+
+	// If we wish to generate typescript
+	if po.typescriptDefsFilename != "" {
+		cwd, err := os.Getwd()
+		if err == nil {
+			filename := filepath.Join(cwd, po.FrontEnd.Dir, po.typescriptDefsFilename)
+			ldflags += " -X github.com/wailsapp/wails/lib/binding.typescriptDefinitionFilename=" + filename
+		}
+	}
+	return ldflags
 }
