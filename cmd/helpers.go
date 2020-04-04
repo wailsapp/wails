@@ -149,7 +149,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	}()
 
 	// Setup ld flags
-	ldflags := "'-w -s "
+	ldflags := "-w -s "
 	if buildMode == BuildModeDebug {
 		ldflags = ""
 	}
@@ -170,7 +170,6 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		filename := filepath.Join(cwd, projectOptions.FrontEnd.Dir, projectOptions.typescriptDefsFilename)
 		ldflags += " -X github.com/wailsapp/wails/lib/binding.typescriptDefinitionFilename=" + filename
 	}
-	ldflags += "'"
 
 	buildCommand := slicer.String()
 	if projectOptions.CrossCompile {
