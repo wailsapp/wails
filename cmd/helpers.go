@@ -183,21 +183,6 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 		println(compileMessage)
 	}
 
-	// embed resources
-	targetFiles, err := EmbedAssets()
-	if err != nil {
-		return err
-	}
-
-	// cleanup temporary embedded assets
-	defer func() {
-		for _, filename := range targetFiles {
-			if err := os.Remove(filename); err != nil {
-				fmt.Println(err)
-			}
-		}
-	}()
-
 	buildCommand := slicer.String()
 	buildCommand.Add("go")
 
@@ -234,7 +219,7 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 		fmt.Printf("Command: %v\n", buildCommand.AsSlice())
 	}
 
-	err = NewProgramHelper(projectOptions.Verbose).RunCommandArray(buildCommand.AsSlice())
+	err := NewProgramHelper(projectOptions.Verbose).RunCommandArray(buildCommand.AsSlice())
 	if err != nil {
 		if packSpinner != nil {
 			packSpinner.Error()
@@ -251,6 +236,22 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 // BuildApplication will attempt to build the project based on the given inputs
 func BuildApplication(binaryName string, forceRebuild bool, buildMode string, packageApp bool, projectOptions *ProjectOptions) error {
 	var err error
+
+	// embed resources
+	targetFiles, err := EmbedAssets()
+	if err != nil {
+		return err
+	}
+
+	// cleanup temporary embedded assets
+	defer func() {
+		for _, filename := range targetFiles {
+			if err := os.Remove(filename); err != nil {
+				fmt.Println(err)
+			}
+		}
+	}()
+
 	if projectOptions.CrossCompile {
 		err = BuildDocker(binaryName, buildMode, projectOptions)
 	} else {
