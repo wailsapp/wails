@@ -85,7 +85,7 @@ func (b *PackageHelper) Package(po *ProjectOptions) error {
 		}
 		return b.packageOSX(po)
 	case "windows":
-		return b.PackageWindows(po, false)
+		return b.PackageWindows(po, true)
 	case "linux":
 		return b.packageLinux(po)
 	default:
@@ -175,10 +175,11 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 
 // PackageWindows packages the application for windows platforms
 func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
+	build := path.Join(b.fs.Cwd(), "build")
 	basename := strings.TrimSuffix(po.BinaryName, ".exe")
 
 	// Copy icon
-	tgtIconFile := filepath.Join(b.fs.Cwd(), basename+".ico")
+	tgtIconFile := filepath.Join(build, basename+".ico")
 	if !b.fs.FileExists(tgtIconFile) {
 		srcIconfile := filepath.Join(b.getPackageFileBaseDir(), "wails.ico")
 		err := b.fs.CopyFile(srcIconfile, tgtIconFile)
@@ -188,7 +189,7 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	}
 
 	// Copy manifest
-	tgtManifestFile := filepath.Join(b.fs.Cwd(), basename+".exe.manifest")
+	tgtManifestFile := filepath.Join(build, basename+".exe.manifest")
 	if !b.fs.FileExists(tgtManifestFile) {
 		srcManifestfile := filepath.Join(b.getPackageFileBaseDir(), "wails.exe.manifest")
 		err := b.fs.CopyFile(srcManifestfile, tgtManifestFile)
@@ -198,7 +199,7 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	}
 
 	// Copy rc file
-	tgtRCFile := filepath.Join(b.fs.Cwd(), basename+".rc")
+	tgtRCFile := filepath.Join(build, basename+".rc")
 	if !b.fs.FileExists(tgtRCFile) {
 		srcRCfile := filepath.Join(b.getPackageFileBaseDir(), "wails.rc")
 		rcfilebytes, err := ioutil.ReadFile(srcRCfile)
@@ -213,18 +214,13 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	}
 
 	// Build syso
-	sysofile := filepath.Join(b.fs.Cwd(), basename+"-res.syso")
+	sysofile := filepath.Join(build, basename+"-res.syso")
 
 	// cross-compile
 	if b.platform != runtime.GOOS {
-		folder, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-
 		args := []string{
 			"docker", "run", "--rm",
-			"-v", folder + ":/build",
+			"-v", build + ":/build",
 			"--entrypoint", "/bin/sh",
 			"wailsapp/xgo:latest",
 			"-c", "/usr/bin/x86_64-w64-mingw32-windres -o /build/" + basename + "-res.syso /build/" + basename + ".rc",
