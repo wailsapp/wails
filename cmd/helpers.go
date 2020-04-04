@@ -100,6 +100,28 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		return err
 	}
 
+	var packSpinner *spinner.Spinner
+	if !projectOptions.Verbose {
+		packSpinner = spinner.New("Pulling wailsapp/xgo:latest docker image... (may take a while)")
+		packSpinner.SetSpinSpeed(50)
+		packSpinner.Start()
+	} else {
+		println("Pulling wailsapp/xgo:latest docker image... (may take a while)")
+	}
+
+	err := NewProgramHelper(projectOptions.Verbose).RunCommandArray([]string{"docker",
+		"pull", "wailsapp/xgo:latest"})
+
+	if err != nil {
+		if packSpinner != nil {
+			packSpinner.Error()
+		}
+		return err
+	}
+	if packSpinner != nil {
+		packSpinner.Success()
+	}
+
 	buildCommand := slicer.String()
 	userid := 1000
 	user, _ := user.Current()
@@ -130,13 +152,14 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		buildCommand.Add(arg)
 	}
 
-	compileMessage := "Packing + Compiling project"
+	compileMessage := fmt.Sprintf(
+		"Packing + Compiling project for %s/%s using docker image wailsapp/xgo:latest",
+		projectOptions.Platform, projectOptions.Architecture)
 
 	if buildMode == BuildModeDebug {
 		compileMessage += " (Debug Mode)"
 	}
 
-	var packSpinner *spinner.Spinner
 	if !projectOptions.Verbose {
 		packSpinner = spinner.New(compileMessage + "...")
 		packSpinner.SetSpinSpeed(50)
@@ -145,8 +168,7 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		println(compileMessage)
 	}
 
-	fmt.Printf("Command Line: %s\n", buildCommand.AsSlice())
-	err := NewProgramHelper(projectOptions.Verbose).RunCommandArray(buildCommand.AsSlice())
+	err = NewProgramHelper(projectOptions.Verbose).RunCommandArray(buildCommand.AsSlice())
 	if err != nil {
 		if packSpinner != nil {
 			packSpinner.Error()
