@@ -8,6 +8,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -173,9 +174,12 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 
 	buildCommand := slicer.String()
 	if projectOptions.CrossCompile {
-		user, err := user.Current()
-		if err != nil {
-			return err
+		userid := 1000
+		user, _ := user.Current()
+		if i, err := strconv.Atoi(user.Uid); err == nil {
+			userid = i
+		} else {
+			userid = 1000
 		}
 		for _, arg := range []string{
 			"docker",
@@ -183,7 +187,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 			"--rm",
 			"-v", fmt.Sprintf("%s/build:/build", fs.Cwd()),
 			"-v", fmt.Sprintf("%s:/source", fs.Cwd()),
-			"-e", fmt.Sprintf("LOCAL_USER_ID=%v", user.Uid),
+			"-e", fmt.Sprintf("LOCAL_USER_ID=%v", userid),
 			"-e", fmt.Sprintf("FLAG_LDFLAGS=%s", ldflags),
 			"-e", "FLAG_V=false",
 			"-e", "FLAG_X=false",
