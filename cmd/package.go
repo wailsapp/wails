@@ -80,7 +80,7 @@ func (b *PackageHelper) Package(po *ProjectOptions) error {
 			}
 
 			if _, err := b.fs.FindFile(path.Join(b.fs.Cwd(), "build"), "darwin"); err != nil {
-				return fmt.Errorf("cannot bundle non-existent cross-compiled binary file '%s'. Please build with 'wails build -x darwin' first", po.BinaryName)
+				return fmt.Errorf("cannot bundle non-existent cross-compiled binary file '%s'. Please build with 'wails build -x darwin/amd64' first", po.BinaryName)
 			}
 		}
 		return b.packageOSX(po)
@@ -99,6 +99,7 @@ func (b *PackageHelper) packageLinux(po *ProjectOptions) error {
 
 // Package the application for OSX
 func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
+	build := path.Join(b.fs.Cwd(), "build")
 
 	system := NewSystemHelper()
 	config, err := system.LoadConfig()
@@ -115,34 +116,27 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 	appname := po.Name + ".app"
 
 	// Check binary exists
-	source := path.Join(b.fs.Cwd(), exe)
-
+	source := path.Join(build, exe)
 	if b.platform != runtime.GOOS {
-
-		file, err := b.fs.FindFile(path.Join(b.fs.Cwd(), "build"), "darwin")
+		file, err := b.fs.FindFile(build, "darwin")
 		if err != nil {
 			return err
 		}
-
-		// rename to exe
-		if err := os.Rename(path.Join(b.fs.Cwd(), "build", file), path.Join(b.fs.Cwd(), "build", exe)); err != nil {
-			return err
-		}
-
-		source = path.Join(b.fs.Cwd(), "build", exe)
+		source = path.Join(build, file)
 	}
 
 	if !b.fs.FileExists(source) {
 		// We need to build!
 		return fmt.Errorf("Target '%s' not available. Has it been compiled yet?", exe)
 	}
+	fmt.Printf("Executable: %s\n", source)
 
 	// Remove the existing package
 	os.RemoveAll(appname)
 
-	exeDir := path.Join(b.fs.Cwd(), appname, "/Contents/MacOS")
+	exeDir := path.Join(build, appname, "/Contents/MacOS")
 	b.fs.MkDirs(exeDir, 0755)
-	resourceDir := path.Join(b.fs.Cwd(), appname, "/Contents/Resources")
+	resourceDir := path.Join(build, appname, "/Contents/Resources")
 	b.fs.MkDirs(resourceDir, 0755)
 	tmpl := template.New("infoPlist")
 	plistFile := filepath.Join(b.getPackageFileBaseDir(), "info.plist")
@@ -158,7 +152,7 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 	if err != nil {
 		return err
 	}
-	filename := path.Join(b.fs.Cwd(), appname, "Contents", "Info.plist")
+	filename := path.Join(build, appname, "Contents", "Info.plist")
 	err = ioutil.WriteFile(filename, tpl.Bytes(), 0644)
 	if err != nil {
 		return err
