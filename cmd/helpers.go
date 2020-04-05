@@ -83,25 +83,14 @@ func EmbedAssets() ([]string, error) {
 	return targetFiles, nil
 }
 
-// BuildDocker builds the project using the cross compiling wailsapp/xgo:latest container
-func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOptions) error {
-	if buildMode == BuildModeBridge {
-		return fmt.Errorf("you cant serve the application in cross-compilation")
-	}
-
-	// Check build directory
-	buildDirectory := filepath.Join(fs.Cwd(), "build")
-	if !fs.DirExists(buildDirectory) {
-		fs.MkDir(buildDirectory)
-	}
-
+func InitializeCrossCompilation(verbose bool) error {
 	// Check Docker
 	if err := CheckIfInstalled("docker"); err != nil {
 		return err
 	}
 
 	var packSpinner *spinner.Spinner
-	if !projectOptions.Verbose {
+	if !verbose {
 		packSpinner = spinner.New("Pulling wailsapp/xgo:latest docker image... (may take a while)")
 		packSpinner.SetSpinSpeed(50)
 		packSpinner.Start()
@@ -109,7 +98,7 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		println("Pulling wailsapp/xgo:latest docker image... (may take a while)")
 	}
 
-	err := NewProgramHelper(projectOptions.Verbose).RunCommandArray([]string{"docker",
+	err := NewProgramHelper(verbose).RunCommandArray([]string{"docker",
 		"pull", "wailsapp/xgo:latest"})
 
 	if err != nil {
@@ -120,6 +109,22 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 	}
 	if packSpinner != nil {
 		packSpinner.Success()
+	}
+
+	return nil
+}
+
+// BuildDocker builds the project using the cross compiling wailsapp/xgo:latest container
+func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOptions) error {
+	var packSpinner *spinner.Spinner
+	if buildMode == BuildModeBridge {
+		return fmt.Errorf("you cant serve the application in cross-compilation")
+	}
+
+	// Check build directory
+	buildDirectory := filepath.Join(fs.Cwd(), "build")
+	if !fs.DirExists(buildDirectory) {
+		fs.MkDir(buildDirectory)
 	}
 
 	buildCommand := slicer.String()
@@ -168,7 +173,7 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		println(compileMessage)
 	}
 
-	err = NewProgramHelper(projectOptions.Verbose).RunCommandArray(buildCommand.AsSlice())
+	err := NewProgramHelper(projectOptions.Verbose).RunCommandArray(buildCommand.AsSlice())
 	if err != nil {
 		if packSpinner != nil {
 			packSpinner.Error()
@@ -187,6 +192,10 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 
 	// Check Mewn is installed
 	if err := CheckMewn(projectOptions.Verbose); err != nil {
+		return err
+	}
+
+	if err := CheckWindres(); err != nil {
 		return err
 	}
 
@@ -265,12 +274,30 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		return err
 	}
 
+	if projectOptions.CrossCompile {
+		if err := InitializeCrossCompilation(projectOptions.Verbose); err != nil {
+			return err
+		}
+	}
+
+	helper := NewPackageHelper(projectOptions.Platform)
+
+	// Generate windows resources
+	if projectOptions.Platform == "windows" {
+		if err := helper.PackageWindows(projectOptions, false); err != nil {
+			return err
+		}
+	}
+
 	// cleanup temporary embedded assets
 	defer func() {
 		for _, filename := range targetFiles {
 			if err := os.Remove(filename); err != nil {
 				fmt.Println(err)
 			}
+		}
+		if projectOptions.Platform == "windows" {
+			helper.CleanWindows(projectOptions)
 		}
 	}()
 
@@ -300,15 +327,6 @@ func PackageApplication(projectOptions *ProjectOptions) error {
 		packageSpinner = spinner.New("Packaging application...")
 		packageSpinner.SetSpinSpeed(50)
 		packageSpinner.Start()
-	}
-
-	if projectOptions.Platform == "windows" {
-		if err := NewPackageHelper(projectOptions.Platform).PackageWindows(projectOptions, true); err != nil {
-			return err
-		}
-		if err := CheckWindres(); err != nil {
-			return err
-		}
 	}
 
 	err := NewPackageHelper(projectOptions.Platform).Package(projectOptions)
@@ -373,7 +391,7 @@ func CheckMewn(verbose bool) (err error) {
 
 // CheckWindres checks if Windres is installed and if not, aborts
 func CheckWindres() (err error) {
-	if runtime.GOOS != "windows" {
+	if runtime.GOOS != "windows" { // FIXME: Handle windows cross-compile for windows!
 		return nil
 	}
 	programHelper := NewProgramHelper()

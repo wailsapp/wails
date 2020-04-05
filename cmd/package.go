@@ -173,13 +173,25 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 	return err
 }
 
+// CleanWindows removes any windows related files found in the directory
+func (b *PackageHelper) CleanWindows(po *ProjectOptions) {
+	pdir := b.fs.Cwd()
+	basename := strings.TrimSuffix(po.BinaryName, ".exe")
+	exts := []string{".ico", ".exe.manifest", ".rc", "-res.syso"}
+	rsrcs := []string{}
+	for _, ext := range exts {
+		rsrcs = append(rsrcs, filepath.Join(pdir, basename+ext))
+	}
+	b.fs.RemoveFiles(rsrcs, true)
+}
+
 // PackageWindows packages the application for windows platforms
 func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
-	build := path.Join(b.fs.Cwd(), "build")
+	outputDir := b.fs.Cwd()
 	basename := strings.TrimSuffix(po.BinaryName, ".exe")
 
 	// Copy icon
-	tgtIconFile := filepath.Join(build, basename+".ico")
+	tgtIconFile := filepath.Join(outputDir, basename+".ico")
 	if !b.fs.FileExists(tgtIconFile) {
 		srcIconfile := filepath.Join(b.getPackageFileBaseDir(), "wails.ico")
 		err := b.fs.CopyFile(srcIconfile, tgtIconFile)
@@ -189,7 +201,7 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	}
 
 	// Copy manifest
-	tgtManifestFile := filepath.Join(build, basename+".exe.manifest")
+	tgtManifestFile := filepath.Join(outputDir, basename+".exe.manifest")
 	if !b.fs.FileExists(tgtManifestFile) {
 		srcManifestfile := filepath.Join(b.getPackageFileBaseDir(), "wails.exe.manifest")
 		err := b.fs.CopyFile(srcManifestfile, tgtManifestFile)
@@ -199,7 +211,7 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	}
 
 	// Copy rc file
-	tgtRCFile := filepath.Join(build, basename+".rc")
+	tgtRCFile := filepath.Join(outputDir, basename+".rc")
 	if !b.fs.FileExists(tgtRCFile) {
 		srcRCfile := filepath.Join(b.getPackageFileBaseDir(), "wails.rc")
 		rcfilebytes, err := ioutil.ReadFile(srcRCfile)
@@ -214,17 +226,18 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	}
 
 	// Build syso
-	sysofile := filepath.Join(build, basename+"-res.syso")
+	sysofile := filepath.Join(outputDir, basename+"-res.syso")
 
 	// cross-compile
 	if b.platform != runtime.GOOS {
 		args := []string{
 			"docker", "run", "--rm",
-			"-v", build + ":/build",
+			"-v", outputDir + ":/build",
 			"--entrypoint", "/bin/sh",
 			"wailsapp/xgo:latest",
 			"-c", "/usr/bin/x86_64-w64-mingw32-windres -o /build/" + basename + "-res.syso /build/" + basename + ".rc",
 		}
+		fmt.Println(args)
 		if err := NewProgramHelper().RunCommandArray(args); err != nil {
 			return err
 		}
@@ -241,16 +254,6 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 			return err
 		}
 	}
-
-	// clean up
-	if cleanUp {
-		filesToDelete := []string{tgtIconFile, tgtManifestFile, tgtRCFile, sysofile}
-		err := b.fs.RemoveFiles(filesToDelete)
-		if err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
