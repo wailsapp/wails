@@ -117,10 +117,10 @@ func (fs *FSHelper) RemoveFile(filename string) error {
 }
 
 // RemoveFiles removes the given filenames
-func (fs *FSHelper) RemoveFiles(files []string) error {
+func (fs *FSHelper) RemoveFiles(files []string, continueOnError bool) error {
 	for _, filename := range files {
 		err := os.Remove(filename)
-		if err != nil {
+		if err != nil && !continueOnError {
 			return err
 		}
 	}
