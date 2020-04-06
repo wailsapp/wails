@@ -223,7 +223,7 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 
 	if binaryName != "" {
 		// Alter binary name based on OS
-		switch runtime.GOOS {
+		switch projectOptions.Platform {
 		case "windows":
 			if !strings.HasSuffix(binaryName, ".exe") {
 				binaryName += ".exe"
