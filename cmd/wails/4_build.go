@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
@@ -14,6 +15,8 @@ func init() {
 	var forceRebuild = false
 	var debugMode = false
 	var typescriptFilename = ""
+	var outputDirectory = "build"
+	var binaryName = ""
 
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
@@ -24,6 +27,8 @@ func init() {
 		BoolFlag("p", "Package application on successful build", &packageApp).
 		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
 		BoolFlag("d", "Build in Debug mode", &debugMode).
+		StringFlag("o", "output directory", &outputDirectory).
+		StringFlag("b", "binary name", &binaryName).
 		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename)
 
 	initCmd.Action(func() error {
@@ -47,6 +52,12 @@ func init() {
 		err := projectOptions.LoadConfig(fs.Cwd())
 		if err != nil {
 			return fmt.Errorf("Unable to find 'project.json'. Please check you are in a Wails project directory")
+		}
+		if binaryName != "" {
+			projectOptions.BinaryName = binaryName
+		}
+		if outputDirectory != "" {
+			projectOptions.BinaryName = path.Join(outputDirectory, projectOptions.BinaryName)
 		}
 
 		// Validate config
