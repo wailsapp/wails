@@ -132,8 +132,6 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 	user, _ := user.Current()
 	if i, err := strconv.Atoi(user.Uid); err == nil {
 		userid = i
-	} else {
-		userid = 1000
 	}
 	for _, arg := range []string{
 		"docker",
@@ -217,12 +215,11 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 	buildCommand := slicer.String()
 	buildCommand.Add("go")
 
+	buildCommand.Add("build")
 	if buildMode == BuildModeBridge {
 		// Ignore errors
 		buildCommand.Add("-i")
 	}
-
-	buildCommand.Add("build")
 
 	if binaryName != "" {
 		// Alter binary name based on OS
@@ -533,7 +530,7 @@ func ServeProject(projectOptions *ProjectOptions, logger *Logger) error {
 		time.Sleep(2 * time.Second)
 		logger.Green(">>>>> To connect, you will need to run '" + projectOptions.FrontEnd.Serve + "' in the '" + projectOptions.FrontEnd.Dir + "' directory <<<<<")
 	}()
-	location, err := filepath.Abs(projectOptions.BinaryName)
+	location, err := filepath.Abs(filepath.Join("build", projectOptions.BinaryName))
 	if err != nil {
 		return err
 	}
