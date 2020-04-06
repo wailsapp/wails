@@ -129,8 +129,6 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 		// We need to build!
 		return fmt.Errorf("Target '%s' not available. Has it been compiled yet?", exe)
 	}
-	fmt.Printf("Executable: %s\n", source)
-
 	// Remove the existing package
 	os.RemoveAll(appname)
 
