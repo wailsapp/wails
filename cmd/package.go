@@ -237,7 +237,6 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 			"wailsapp/xgo:latest",
 			"-c", "/usr/bin/x86_64-w64-mingw32-windres -o /build/" + basename + "-res.syso /build/" + basename + ".rc",
 		}
-		fmt.Println(args)
 		if err := NewProgramHelper().RunCommandArray(args); err != nil {
 			return err
 		}
