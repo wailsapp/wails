@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 
@@ -188,7 +187,7 @@ func (po *ProjectOptions) GetNPMBinaryName() (PackageManager, error) {
 	if strings.Index(po.FrontEnd.Install, "yarn") > -1 {
 		return YARN, nil
 	}
-
+	helper
 	return UNKNOWN, nil
 }
 
@@ -336,11 +335,6 @@ func processBinaryName(po *ProjectOptions) {
 	if po.BinaryName == "" {
 		var binaryNameComputed = computeBinaryName(po.Name)
 		po.BinaryName = Prompt("The output binary name", binaryNameComputed)
-		if runtime.GOOS == "windows" {
-			if !strings.HasSuffix(po.BinaryName, ".exe") {
-				po.BinaryName += ".exe"
-			}
-		}
 	}
 	fmt.Println("Output binary Name: " + po.BinaryName)
 }

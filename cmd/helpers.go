@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/leaanthony/mewn"
@@ -137,7 +136,7 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		"docker",
 		"run",
 		"--rm",
-		"-v", fmt.Sprintf("%s/build:/build", fs.Cwd()),
+		"-v", fmt.Sprintf("%s:/build", filepath.Join(fs.Cwd(), "build")),
 		"-v", fmt.Sprintf("%s:/source", fs.Cwd()),
 		"-e", fmt.Sprintf("LOCAL_USER_ID=%v", userid),
 		"-e", fmt.Sprintf("FLAG_LDFLAGS=%s", ldFlags(projectOptions, buildMode)),
@@ -222,17 +221,6 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 	}
 
 	if binaryName != "" {
-		// Alter binary name based on OS
-		switch projectOptions.Platform {
-		case "windows":
-			if !strings.HasSuffix(binaryName, ".exe") {
-				binaryName += ".exe"
-			}
-		default:
-			if strings.HasSuffix(binaryName, ".exe") {
-				binaryName = strings.TrimSuffix(binaryName, ".exe")
-			}
-		}
 		buildCommand.Add("-o", filepath.Join("build", binaryName))
 	}
 
