@@ -187,7 +187,7 @@ func (po *ProjectOptions) GetNPMBinaryName() (PackageManager, error) {
 	if strings.Index(po.FrontEnd.Install, "yarn") > -1 {
 		return YARN, nil
 	}
-	helper
+
 	return UNKNOWN, nil
 }
 
