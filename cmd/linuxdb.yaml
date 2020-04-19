@@ -223,3 +223,32 @@ distributions:
         gccversioncommand: *gccdumpfullversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
+        
+  opensuse-tumbleweed:
+    id: opensuse-tumbleweed
+    releases:
+      default:
+        version: default
+        name: openSUSE Tumbleweed
+        gccversioncommand: *gccdumpfullversion
+        programs: &opensusedefaultprograms
+          - name: gcc
+            help: Please install with `sudo zypper in gcc-c++` and try again
+          - name: pkg-config
+            help: Please install with `sudo zypper in pkgconf-pkg-config` and try again
+          - name: npm
+            help: Please install `sudo zypper in nodejs` and try again
+        libraries: &opensusedefaultlibraries
+          - name: gtk3-devel
+            help: Please install with `sudo zypper in gtk3-devel` and try again
+          - name: webkit2gtk3-devel
+            help: Please install with `sudo zypper in webkit2gtk3-devel` and try again
+  opensuse-leap:
+      id: opensuse-leap
+      releases:
+        default:
+          version: default
+          name: openSUSE Leap
+          gccversioncommand: *gccdumpfullversion
+          programs: *opensusedefaultprograms
+          libraries: *opensusedefaultlibraries
