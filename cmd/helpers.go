@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/leaanthony/mewn"
@@ -221,6 +222,17 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 	}
 
 	if binaryName != "" {
+		// Alter binary name based on OS
+		switch projectOptions.Platform {
+		case "windows":
+			if !strings.HasSuffix(binaryName, ".exe") {
+				binaryName += ".exe"
+			}
+		default:
+			if strings.HasSuffix(binaryName, ".exe") {
+				binaryName = strings.TrimSuffix(binaryName, ".exe")
+			}
+		}
 		buildCommand.Add("-o", filepath.Join("build", binaryName))
 	}
 
