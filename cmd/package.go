@@ -72,17 +72,6 @@ func (b *PackageHelper) getPackageFileBaseDir() string {
 func (b *PackageHelper) Package(po *ProjectOptions) error {
 	switch b.platform {
 	case "darwin":
-		// Check we have the exe
-		if !b.fs.FileExists(po.BinaryName) {
-			// Check cross-compiled application
-			if b.platform == runtime.GOOS {
-				return fmt.Errorf("cannot bundle non-existent binary file '%s'. Please build with 'wails build' first", po.BinaryName)
-			}
-
-			if _, err := b.fs.FindFile(path.Join(b.fs.Cwd(), "build"), "darwin"); err != nil {
-				return fmt.Errorf("cannot bundle non-existent cross-compiled binary file '%s'. Please build with 'wails build -x darwin/amd64' first", po.BinaryName)
-			}
-		}
 		return b.packageOSX(po)
 	case "windows":
 		return b.PackageWindows(po, true)
@@ -117,7 +106,7 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 
 	// Check binary exists
 	source := path.Join(build, exe)
-	if b.platform != runtime.GOOS {
+	if po.CrossCompile == true {
 		file, err := b.fs.FindFile(build, "darwin")
 		if err != nil {
 			return err
@@ -127,7 +116,7 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 
 	if !b.fs.FileExists(source) {
 		// We need to build!
-		return fmt.Errorf("Target '%s' not available. Has it been compiled yet?", exe)
+		return fmt.Errorf("Target '%s' not available. Has it been compiled yet?", source)
 	}
 	// Remove the existing package
 	os.RemoveAll(appname)
