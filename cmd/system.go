@@ -278,7 +278,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 			libraryChecker = DpkgInstalled
 		case Arch, ArcoLinux, Manjaro, ManjaroARM:
 			libraryChecker = PacmanInstalled
-		case CentOS, Fedora:
+		case CentOS, Fedora, Tumbleweed, Leap:
 			libraryChecker = RpmInstalled
 		case Gentoo:
 			libraryChecker = EqueryInstalled

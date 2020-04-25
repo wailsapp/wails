@@ -53,6 +53,10 @@ const (
 	Deepin
 	// Raspbian distribution
 	Raspbian
+	// openSUSE Tumbleweed distribution
+	Tumbleweed
+	// openSUSE Leap distribution
+	Leap
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -147,6 +151,10 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Deepin
 	case "raspbian":
 		result.Distribution = Raspbian
+	case "opensuse-tumbleweed":
+		result.Distribution = Tumbleweed
+	case "opensuse-leap":
+		result.Distribution = Leap
 	default:
 		result.Distribution = Unknown
 	}
