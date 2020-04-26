@@ -18,17 +18,19 @@ import (
 
 // PackageHelper helps with the 'wails package' command
 type PackageHelper struct {
-	fs     *FSHelper
-	log    *Logger
-	system *SystemHelper
+	platform string
+	fs       *FSHelper
+	log      *Logger
+	system   *SystemHelper
 }
 
 // NewPackageHelper creates a new PackageHelper!
-func NewPackageHelper() *PackageHelper {
+func NewPackageHelper(platform string) *PackageHelper {
 	return &PackageHelper{
-		fs:     NewFSHelper(),
-		log:    NewLogger(),
-		system: NewSystemHelper(),
+		platform: platform,
+		fs:       NewFSHelper(),
+		log:      NewLogger(),
+		system:   NewSystemHelper(),
 	}
 }
 
@@ -63,29 +65,30 @@ func defaultString(val string, defaultVal string) string {
 func (b *PackageHelper) getPackageFileBaseDir() string {
 	// Calculate template base dir
 	_, filename, _, _ := runtime.Caller(1)
-	return filepath.Join(path.Dir(filename), "packages", runtime.GOOS)
+	return filepath.Join(path.Dir(filename), "packages", b.platform)
 }
 
 // Package the application into a platform specific package
 func (b *PackageHelper) Package(po *ProjectOptions) error {
-	switch runtime.GOOS {
+	switch b.platform {
 	case "darwin":
-		// Check we have the exe
-		if !b.fs.FileExists(po.BinaryName) {
-			return fmt.Errorf("cannot bundle non-existent binary file '%s'. Please build with 'wails build' first", po.BinaryName)
-		}
 		return b.packageOSX(po)
 	case "windows":
-		return b.PackageWindows(po, false)
+		return b.PackageWindows(po, true)
 	case "linux":
-		return fmt.Errorf("linux is not supported at this time. Please see https://github.com/wailsapp/wails/issues/2")
+		return b.packageLinux(po)
 	default:
-		return fmt.Errorf("platform '%s' not supported for bundling yet", runtime.GOOS)
+		return fmt.Errorf("platform '%s' not supported for bundling yet", b.platform)
 	}
+}
+
+func (b *PackageHelper) packageLinux(po *ProjectOptions) error {
+	return nil
 }
 
 // Package the application for OSX
 func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
+	build := path.Join(b.fs.Cwd(), "build")
 
 	system := NewSystemHelper()
 	config, err := system.LoadConfig()
@@ -102,18 +105,25 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 	appname := po.Name + ".app"
 
 	// Check binary exists
-	source := path.Join(b.fs.Cwd(), exe)
-	if !b.fs.FileExists(source) {
-		// We need to build!
-		return fmt.Errorf("Target '%s' not available. Has it been compiled yet?", exe)
+	source := path.Join(build, exe)
+	if po.CrossCompile == true {
+		file, err := b.fs.FindFile(build, "darwin")
+		if err != nil {
+			return err
+		}
+		source = path.Join(build, file)
 	}
 
+	if !b.fs.FileExists(source) {
+		// We need to build!
+		return fmt.Errorf("Target '%s' not available. Has it been compiled yet?", source)
+	}
 	// Remove the existing package
 	os.RemoveAll(appname)
 
-	exeDir := path.Join(b.fs.Cwd(), appname, "/Contents/MacOS")
+	exeDir := path.Join(build, appname, "/Contents/MacOS")
 	b.fs.MkDirs(exeDir, 0755)
-	resourceDir := path.Join(b.fs.Cwd(), appname, "/Contents/Resources")
+	resourceDir := path.Join(build, appname, "/Contents/Resources")
 	b.fs.MkDirs(resourceDir, 0755)
 	tmpl := template.New("infoPlist")
 	plistFile := filepath.Join(b.getPackageFileBaseDir(), "info.plist")
@@ -129,7 +139,7 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 	if err != nil {
 		return err
 	}
-	filename := path.Join(b.fs.Cwd(), appname, "Contents", "Info.plist")
+	filename := path.Join(build, appname, "Contents", "Info.plist")
 	err = ioutil.WriteFile(filename, tpl.Bytes(), 0644)
 	if err != nil {
 		return err
@@ -150,12 +160,25 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 	return err
 }
 
+// CleanWindows removes any windows related files found in the directory
+func (b *PackageHelper) CleanWindows(po *ProjectOptions) {
+	pdir := b.fs.Cwd()
+	basename := strings.TrimSuffix(po.BinaryName, ".exe")
+	exts := []string{".ico", ".exe.manifest", ".rc", "-res.syso"}
+	rsrcs := []string{}
+	for _, ext := range exts {
+		rsrcs = append(rsrcs, filepath.Join(pdir, basename+ext))
+	}
+	b.fs.RemoveFiles(rsrcs, true)
+}
+
 // PackageWindows packages the application for windows platforms
 func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
+	outputDir := b.fs.Cwd()
 	basename := strings.TrimSuffix(po.BinaryName, ".exe")
 
 	// Copy icon
-	tgtIconFile := filepath.Join(b.fs.Cwd(), basename+".ico")
+	tgtIconFile := filepath.Join(outputDir, basename+".ico")
 	if !b.fs.FileExists(tgtIconFile) {
 		srcIconfile := filepath.Join(b.getPackageFileBaseDir(), "wails.ico")
 		err := b.fs.CopyFile(srcIconfile, tgtIconFile)
@@ -165,7 +188,7 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	}
 
 	// Copy manifest
-	tgtManifestFile := filepath.Join(b.fs.Cwd(), basename+".exe.manifest")
+	tgtManifestFile := filepath.Join(outputDir, basename+".exe.manifest")
 	if !b.fs.FileExists(tgtManifestFile) {
 		srcManifestfile := filepath.Join(b.getPackageFileBaseDir(), "wails.exe.manifest")
 		err := b.fs.CopyFile(srcManifestfile, tgtManifestFile)
@@ -175,7 +198,7 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	}
 
 	// Copy rc file
-	tgtRCFile := filepath.Join(b.fs.Cwd(), basename+".rc")
+	tgtRCFile := filepath.Join(outputDir, basename+".rc")
 	if !b.fs.FileExists(tgtRCFile) {
 		srcRCfile := filepath.Join(b.getPackageFileBaseDir(), "wails.rc")
 		rcfilebytes, err := ioutil.ReadFile(srcRCfile)
@@ -190,29 +213,33 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	}
 
 	// Build syso
-	sysofile := filepath.Join(b.fs.Cwd(), basename+"-res.syso")
+	sysofile := filepath.Join(outputDir, basename+"-res.syso")
 
-	batfile, err := fs.LocalDir(".")
-	if err != nil {
-		return err
-	}
+	// cross-compile
+	if b.platform != runtime.GOOS {
+		args := []string{
+			"docker", "run", "--rm",
+			"-v", outputDir + ":/build",
+			"--entrypoint", "/bin/sh",
+			"wailsapp/xgo:latest",
+			"-c", "/usr/bin/x86_64-w64-mingw32-windres -o /build/" + basename + "-res.syso /build/" + basename + ".rc",
+		}
+		if err := NewProgramHelper().RunCommandArray(args); err != nil {
+			return err
+		}
+	} else {
+		batfile, err := fs.LocalDir(".")
+		if err != nil {
+			return err
+		}
 
-	windresBatFile := filepath.Join(batfile.fullPath, "windres.bat")
-	windresCommand := []string{windresBatFile, sysofile, tgtRCFile}
-	err = NewProgramHelper().RunCommandArray(windresCommand)
-	if err != nil {
-		return err
-	}
-
-	// clean up
-	if cleanUp {
-		filesToDelete := []string{tgtIconFile, tgtManifestFile, tgtRCFile, sysofile}
-		err := b.fs.RemoveFiles(filesToDelete)
+		windresBatFile := filepath.Join(batfile.fullPath, "windres.bat")
+		windresCommand := []string{windresBatFile, sysofile, tgtRCFile}
+		err = NewProgramHelper().RunCommandArray(windresCommand)
 		if err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 

@@ -12,6 +12,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/leaanthony/slicer"
 )
@@ -45,6 +46,22 @@ func (fs *FSHelper) FileExists(path string) bool {
 	}
 
 	return fi.Mode().IsRegular()
+}
+
+// FindFile returns the first occurrence of match inside path.
+func (fs *FSHelper) FindFile(path, match string) (string, error) {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return "", err
+	}
+
+	for _, f := range files {
+		if !f.IsDir() && strings.Contains(f.Name(), match) {
+			return f.Name(), nil
+		}
+	}
+
+	return "", fmt.Errorf("file not found")
 }
 
 // CreateFile creates a file at the given filename location with the contents
@@ -100,10 +117,10 @@ func (fs *FSHelper) RemoveFile(filename string) error {
 }
 
 // RemoveFiles removes the given filenames
-func (fs *FSHelper) RemoveFiles(files []string) error {
+func (fs *FSHelper) RemoveFiles(files []string, continueOnError bool) error {
 	for _, filename := range files {
 		err := os.Remove(filename)
-		if err != nil {
+		if err != nil && !continueOnError {
 			return err
 		}
 	}

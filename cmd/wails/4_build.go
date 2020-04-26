@@ -3,10 +3,23 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
+	"strings"
 
 	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
 )
+
+// getSupportedPlatforms returns a slice of platform/architecture
+// targets that are buildable using the cross-platform 'x' option.
+func getSupportedPlatforms() []string {
+	return []string{
+		"darwin/amd64",
+		"linux/amd64",
+		"linux/arm-7",
+		"windows/amd64",
+	}
+}
 
 func init() {
 
@@ -14,6 +27,8 @@ func init() {
 	var forceRebuild = false
 	var debugMode = false
 	var typescriptFilename = ""
+	var verbose = false
+	var platform = ""
 
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
@@ -24,7 +39,16 @@ func init() {
 		BoolFlag("p", "Package application on successful build", &packageApp).
 		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
 		BoolFlag("d", "Build in Debug mode", &debugMode).
+		BoolFlag("verbose", "Verbose output", &verbose).
 		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename)
+
+	var b strings.Builder
+	for _, plat := range getSupportedPlatforms() {
+		fmt.Fprintf(&b, " - %s\n", plat)
+	}
+	initCmd.StringFlag("x",
+		fmt.Sprintf("Cross-compile application to specified platform via xgo\n%s", b.String()),
+		&platform)
 
 	initCmd.Action(func() error {
 
@@ -40,6 +64,7 @@ func init() {
 
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}
+		projectOptions.Verbose = verbose
 
 		// Check we are in project directory
 		// Check project.json loads correctly
@@ -47,6 +72,25 @@ func init() {
 		err := projectOptions.LoadConfig(fs.Cwd())
 		if err != nil {
 			return fmt.Errorf("Unable to find 'project.json'. Please check you are in a Wails project directory")
+		}
+
+		// Set cross-compile
+		projectOptions.Platform = runtime.GOOS
+		if len(platform) > 0 {
+			supported := false
+			for _, plat := range getSupportedPlatforms() {
+				if plat == platform {
+					supported = true
+				}
+			}
+			if !supported {
+				return fmt.Errorf("Unsupported platform '%s' specified.\nPlease run `wails build -h` to see the supported platform/architecture options.", platform)
+			}
+
+			projectOptions.CrossCompile = true
+			plat := strings.Split(platform, "/")
+			projectOptions.Platform = plat[0]
+			projectOptions.Architecture = plat[1]
 		}
 
 		// Validate config
@@ -90,7 +134,7 @@ func init() {
 		}
 
 		// Install dependencies
-		err = cmd.InstallGoDependencies()
+		err = cmd.InstallGoDependencies(projectOptions.Verbose)
 		if err != nil {
 			return err
 		}

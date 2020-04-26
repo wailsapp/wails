@@ -1,7 +1,8 @@
 package renderer
 
 import (
-	"sync"
+	"time"
+	"unsafe"
 
 	"github.com/gorilla/websocket"
 	"github.com/leaanthony/mewn"
@@ -20,7 +21,22 @@ type session struct {
 	ipc          interfaces.IPCManager
 
 	// Mutex for writing to the socket
-	lock sync.Mutex
+	shutdown  chan bool
+	writeChan chan []byte
+
+	done bool
+}
+
+func newSession(conn *websocket.Conn, bindingCache []string, ipc interfaces.IPCManager, logger *logger.CustomLogger, eventMgr interfaces.EventManager) *session {
+	return &session{
+		conn:         conn,
+		bindingCache: bindingCache,
+		ipc:          ipc,
+		log:          logger,
+		eventManager: eventMgr,
+		shutdown:     make(chan bool),
+		writeChan:    make(chan []byte, 100),
+	}
 }
 
 // Identifier returns a string identifier for the remote connection.
@@ -33,19 +49,15 @@ func (s *session) Identifier() string {
 }
 
 func (s *session) sendMessage(msg string) error {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	if err := s.conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
-		s.log.Debug(err.Error())
-		return err
+	if !s.done {
+		s.writeChan <- *(*[]byte)(unsafe.Pointer(&msg))
 	}
-
 	return nil
 }
 
 func (s *session) start(firstSession bool) {
 	s.log.Infof("Connected to frontend.")
+	go s.writePump()
 
 	wailsRuntime := mewn.String("../../runtime/assets/wails.js")
 	s.evalJS(wailsRuntime, wailsRuntimeMessage)
@@ -74,6 +86,10 @@ func (s *session) start(firstSession bool) {
 		s.log.Debugf("Got message: %#v\n", string(buffer))
 
 		s.ipc.Dispatch(string(buffer), s.Callback)
+
+		if s.done {
+			break
+		}
 	}
 }
 
@@ -83,8 +99,38 @@ func (s *session) Callback(data string) error {
 }
 
 func (s *session) evalJS(js string, mtype messageType) error {
-
 	// Prepend message type to message
 	return s.sendMessage(mtype.toString() + js)
+}
 
+// Shutdown
+func (s *session) Shutdown() {
+	s.done = true
+	s.shutdown <- true
+	s.log.Debugf("session %v exit", s.Identifier())
+}
+
+// writePump pulls messages from the writeChan and sends them to the client
+// since it uses a channel to read the messages the socket is protected without locks
+func (s *session) writePump() {
+	s.log.Debugf("Session %v - writePump start", s.Identifier())
+	for {
+		select {
+		case msg, ok := <-s.writeChan:
+			s.conn.SetWriteDeadline(time.Now().Add(1 * time.Second))
+			if !ok {
+				s.log.Debug("writeChan was closed!")
+				s.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
+
+			if err := s.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+				s.log.Debug(err.Error())
+				return
+			}
+		case <-s.shutdown:
+			break
+		}
+	}
+	s.log.Debug("writePump exiting...")
 }

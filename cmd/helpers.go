@@ -5,12 +5,15 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/leaanthony/mewn"
+	"github.com/leaanthony/mewn/lib"
 	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
 )
@@ -36,34 +39,161 @@ func ValidateFrontendConfig(projectOptions *ProjectOptions) error {
 }
 
 // InstallGoDependencies will run go get in the current directory
-func InstallGoDependencies() error {
-	depSpinner := spinner.New("Ensuring Dependencies are up to date...")
-	depSpinner.SetSpinSpeed(50)
-	depSpinner.Start()
-	err := NewProgramHelper().RunCommand("go get")
+func InstallGoDependencies(verbose bool) error {
+	var depSpinner *spinner.Spinner
+	if !verbose {
+		depSpinner = spinner.New("Ensuring Dependencies are up to date...")
+		depSpinner.SetSpinSpeed(50)
+		depSpinner.Start()
+	}
+	err := NewProgramHelper(verbose).RunCommand("go get")
 	if err != nil {
-		depSpinner.Error()
+		if !verbose {
+			depSpinner.Error()
+		}
 		return err
 	}
-	depSpinner.Success()
+	if !verbose {
+		depSpinner.Success()
+	}
 	return nil
 }
 
-// BuildApplication will attempt to build the project based on the given inputs
-func BuildApplication(binaryName string, forceRebuild bool, buildMode string, packageApp bool, projectOptions *ProjectOptions) error {
+// EmbedAssets will embed the built frontend assets via mewn.
+func EmbedAssets() ([]string, error) {
+	mewnFiles := lib.GetMewnFiles([]string{}, false)
 
-	// Generate Windows assets if needed
-	if runtime.GOOS == "windows" {
-		cleanUp := !packageApp
-		err := NewPackageHelper().PackageWindows(projectOptions, cleanUp)
-		if err != nil {
-			return err
-		}
+	referencedAssets, err := lib.GetReferencedAssets(mewnFiles)
+	if err != nil {
+		return []string{}, err
 	}
 
-	// Check Mewn is installed
-	err := CheckMewn()
+	targetFiles := []string{}
+
+	for _, referencedAsset := range referencedAssets {
+		packfileData, err := lib.GeneratePackFileString(referencedAsset, false)
+		if err != nil {
+			return []string{}, err
+		}
+		targetFile := filepath.Join(referencedAsset.BaseDir, referencedAsset.PackageName+"-mewn.go")
+		targetFiles = append(targetFiles, targetFile)
+		ioutil.WriteFile(targetFile, []byte(packfileData), 0644)
+	}
+
+	return targetFiles, nil
+}
+
+func InitializeCrossCompilation(verbose bool) error {
+	// Check Docker
+	if err := CheckIfInstalled("docker"); err != nil {
+		return err
+	}
+
+	var packSpinner *spinner.Spinner
+	if !verbose {
+		packSpinner = spinner.New("Pulling wailsapp/xgo:latest docker image... (may take a while)")
+		packSpinner.SetSpinSpeed(50)
+		packSpinner.Start()
+	} else {
+		println("Pulling wailsapp/xgo:latest docker image... (may take a while)")
+	}
+
+	err := NewProgramHelper(verbose).RunCommandArray([]string{"docker",
+		"pull", "wailsapp/xgo:latest"})
+
 	if err != nil {
+		if packSpinner != nil {
+			packSpinner.Error()
+		}
+		return err
+	}
+	if packSpinner != nil {
+		packSpinner.Success()
+	}
+
+	return nil
+}
+
+// BuildDocker builds the project using the cross compiling wailsapp/xgo:latest container
+func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOptions) error {
+	var packSpinner *spinner.Spinner
+	if buildMode == BuildModeBridge {
+		return fmt.Errorf("you cant serve the application in cross-compilation")
+	}
+
+	// Check build directory
+	buildDirectory := filepath.Join(fs.Cwd(), "build")
+	if !fs.DirExists(buildDirectory) {
+		fs.MkDir(buildDirectory)
+	}
+
+	buildCommand := slicer.String()
+	userid := 1000
+	user, _ := user.Current()
+	if i, err := strconv.Atoi(user.Uid); err == nil {
+		userid = i
+	}
+	for _, arg := range []string{
+		"docker",
+		"run",
+		"--rm",
+		"-v", fmt.Sprintf("%s:/build", filepath.Join(fs.Cwd(), "build")),
+		"-v", fmt.Sprintf("%s:/source", fs.Cwd()),
+		"-e", fmt.Sprintf("LOCAL_USER_ID=%v", userid),
+		"-e", fmt.Sprintf("FLAG_LDFLAGS=%s", ldFlags(projectOptions, buildMode)),
+		"-e", "FLAG_V=false",
+		"-e", "FLAG_X=false",
+		"-e", "FLAG_RACE=false",
+		"-e", "FLAG_BUILDMODE=default",
+		"-e", "FLAG_TRIMPATH=false",
+		"-e", fmt.Sprintf("TARGETS=%s", projectOptions.Platform+"/"+projectOptions.Architecture),
+		"-e", "GOPROXY=",
+		"-e", "GO111MODULE=on",
+		"wailsapp/xgo:latest",
+		".",
+	} {
+		buildCommand.Add(arg)
+	}
+
+	compileMessage := fmt.Sprintf(
+		"Packing + Compiling project for %s/%s using docker image wailsapp/xgo:latest",
+		projectOptions.Platform, projectOptions.Architecture)
+
+	if buildMode == BuildModeDebug {
+		compileMessage += " (Debug Mode)"
+	}
+
+	if !projectOptions.Verbose {
+		packSpinner = spinner.New(compileMessage + "...")
+		packSpinner.SetSpinSpeed(50)
+		packSpinner.Start()
+	} else {
+		println(compileMessage)
+	}
+
+	err := NewProgramHelper(projectOptions.Verbose).RunCommandArray(buildCommand.AsSlice())
+	if err != nil {
+		if packSpinner != nil {
+			packSpinner.Error()
+		}
+		return err
+	}
+	if packSpinner != nil {
+		packSpinner.Success()
+	}
+
+	return nil
+}
+
+// BuildNative builds on the target platform itself.
+func BuildNative(binaryName string, forceRebuild bool, buildMode string, projectOptions *ProjectOptions) error {
+
+	// Check Mewn is installed
+	if err := CheckMewn(projectOptions.Verbose); err != nil {
+		return err
+	}
+
+	if err := CheckWindres(); err != nil {
 		return err
 	}
 
@@ -73,23 +203,27 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		compileMessage += " (Debug Mode)"
 	}
 
-	packSpinner := spinner.New(compileMessage + "...")
-	packSpinner.SetSpinSpeed(50)
-	packSpinner.Start()
+	var packSpinner *spinner.Spinner
+	if !projectOptions.Verbose {
+		packSpinner = spinner.New(compileMessage + "...")
+		packSpinner.SetSpinSpeed(50)
+		packSpinner.Start()
+	} else {
+		println(compileMessage)
+	}
 
 	buildCommand := slicer.String()
-	buildCommand.Add("mewn")
+	buildCommand.Add("go")
 
+	buildCommand.Add("build")
 	if buildMode == BuildModeBridge {
 		// Ignore errors
 		buildCommand.Add("-i")
 	}
 
-	buildCommand.Add("build")
-
 	if binaryName != "" {
 		// Alter binary name based on OS
-		switch runtime.GOOS {
+		switch projectOptions.Platform {
 		case "windows":
 			if !strings.HasSuffix(binaryName, ".exe") {
 				binaryName += ".exe"
@@ -99,7 +233,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 				binaryName = strings.TrimSuffix(binaryName, ".exe")
 			}
 		}
-		buildCommand.Add("-o", binaryName)
+		buildCommand.Add("-o", filepath.Join("build", binaryName))
 	}
 
 	// If we are forcing a rebuild
@@ -107,38 +241,72 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		buildCommand.Add("-a")
 	}
 
-	// Setup ld flags
-	ldflags := "-w -s "
-	if buildMode == BuildModeDebug {
-		ldflags = ""
+	buildCommand.AddSlice([]string{"-ldflags", ldFlags(projectOptions, buildMode)})
+
+	if projectOptions.Verbose {
+		fmt.Printf("Command: %v\n", buildCommand.AsSlice())
 	}
 
-	// Add windows flags
-	if runtime.GOOS == "windows" && buildMode == BuildModeProd {
-		ldflags += "-H windowsgui "
-	}
-
-	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
-
-	// If we wish to generate typescript
-	if projectOptions.typescriptDefsFilename != "" {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		filename := filepath.Join(cwd, projectOptions.FrontEnd.Dir, projectOptions.typescriptDefsFilename)
-		ldflags += " -X github.com/wailsapp/wails/lib/binding.typescriptDefinitionFilename=" + filename
-	}
-
-	buildCommand.AddSlice([]string{"-ldflags", ldflags})
-	err = NewProgramHelper().RunCommandArray(buildCommand.AsSlice())
+	err := NewProgramHelper(projectOptions.Verbose).RunCommandArray(buildCommand.AsSlice())
 	if err != nil {
-		packSpinner.Error()
+		if packSpinner != nil {
+			packSpinner.Error()
+		}
 		return err
 	}
-	packSpinner.Success()
+	if packSpinner != nil {
+		packSpinner.Success()
+	}
 
-	// packageApp
+	return nil
+}
+
+// BuildApplication will attempt to build the project based on the given inputs
+func BuildApplication(binaryName string, forceRebuild bool, buildMode string, packageApp bool, projectOptions *ProjectOptions) error {
+	var err error
+
+	// embed resources
+	targetFiles, err := EmbedAssets()
+	if err != nil {
+		return err
+	}
+
+	if projectOptions.CrossCompile {
+		if err := InitializeCrossCompilation(projectOptions.Verbose); err != nil {
+			return err
+		}
+	}
+
+	helper := NewPackageHelper(projectOptions.Platform)
+
+	// Generate windows resources
+	if projectOptions.Platform == "windows" {
+		if err := helper.PackageWindows(projectOptions, false); err != nil {
+			return err
+		}
+	}
+
+	// cleanup temporary embedded assets
+	defer func() {
+		for _, filename := range targetFiles {
+			if err := os.Remove(filename); err != nil {
+				fmt.Println(err)
+			}
+		}
+		if projectOptions.Platform == "windows" {
+			helper.CleanWindows(projectOptions)
+		}
+	}()
+
+	if projectOptions.CrossCompile {
+		err = BuildDocker(binaryName, buildMode, projectOptions)
+	} else {
+		err = BuildNative(binaryName, forceRebuild, buildMode, projectOptions)
+	}
+	if err != nil {
+		return err
+	}
+
 	if packageApp {
 		err = PackageApplication(projectOptions)
 		if err != nil {
@@ -151,66 +319,90 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 
 // PackageApplication will attempt to package the application in a platform dependent way
 func PackageApplication(projectOptions *ProjectOptions) error {
-	// Package app
-	message := "Generating .app"
-	if runtime.GOOS == "windows" {
-		err := CheckWindres()
-		if err != nil {
-			return err
-		}
-		message = "Generating resource bundle"
+	var packageSpinner *spinner.Spinner
+	if projectOptions.Verbose {
+		packageSpinner = spinner.New("Packaging application...")
+		packageSpinner.SetSpinSpeed(50)
+		packageSpinner.Start()
 	}
-	packageSpinner := spinner.New(message)
-	packageSpinner.SetSpinSpeed(50)
-	packageSpinner.Start()
-	err := NewPackageHelper().Package(projectOptions)
+
+	err := NewPackageHelper(projectOptions.Platform).Package(projectOptions)
 	if err != nil {
-		packageSpinner.Error()
+		if packageSpinner != nil {
+			packageSpinner.Error()
+		}
 		return err
 	}
-	packageSpinner.Success()
+	if packageSpinner != nil {
+		packageSpinner.Success()
+	}
 	return nil
 }
 
 // BuildFrontend runs the given build command
-func BuildFrontend(buildCommand string) error {
-	buildFESpinner := spinner.New("Building frontend...")
-	buildFESpinner.SetSpinSpeed(50)
-	buildFESpinner.Start()
-	err := NewProgramHelper().RunCommand(buildCommand)
+func BuildFrontend(projectOptions *ProjectOptions) error {
+	var buildFESpinner *spinner.Spinner
+	if !projectOptions.Verbose {
+		buildFESpinner = spinner.New("Building frontend...")
+		buildFESpinner.SetSpinSpeed(50)
+		buildFESpinner.Start()
+	} else {
+		println("Building frontend...")
+	}
+	err := NewProgramHelper(projectOptions.Verbose).RunCommand(projectOptions.FrontEnd.Build)
 	if err != nil {
-		buildFESpinner.Error()
+		if buildFESpinner != nil {
+			buildFESpinner.Error()
+		}
 		return err
 	}
-	buildFESpinner.Success()
+	if buildFESpinner != nil {
+		buildFESpinner.Success()
+	}
 	return nil
 }
 
 // CheckMewn checks if mewn is installed and if not, attempts to fetch it
-func CheckMewn() (err error) {
-	programHelper := NewProgramHelper()
+func CheckMewn(verbose bool) (err error) {
+	programHelper := NewProgramHelper(verbose)
 	if !programHelper.IsInstalled("mewn") {
-		buildSpinner := spinner.New()
-		buildSpinner.SetSpinSpeed(50)
-		buildSpinner.Start("Installing Mewn asset packer...")
+		var buildSpinner *spinner.Spinner
+		if !verbose {
+			buildSpinner = spinner.New()
+			buildSpinner.SetSpinSpeed(50)
+			buildSpinner.Start("Installing Mewn asset packer...")
+		}
 		err := programHelper.InstallGoPackage("github.com/leaanthony/mewn/cmd/mewn")
 		if err != nil {
-			buildSpinner.Error()
+			if buildSpinner != nil {
+				buildSpinner.Error()
+			}
 			return err
 		}
-		buildSpinner.Success()
+		if buildSpinner != nil {
+			buildSpinner.Success()
+		}
 	}
 	return nil
 }
 
 // CheckWindres checks if Windres is installed and if not, aborts
 func CheckWindres() (err error) {
-	if runtime.GOOS != "windows" {
+	if runtime.GOOS != "windows" { // FIXME: Handle windows cross-compile for windows!
 		return nil
 	}
 	programHelper := NewProgramHelper()
 	if !programHelper.IsInstalled("windres") {
 		return fmt.Errorf("windres not installed. It comes by default with mingw. Ensure you have installed mingw correctly")
+	}
+	return nil
+}
+
+// CheckIfInstalled returns if application is installed
+func CheckIfInstalled(application string) (err error) {
+	programHelper := NewProgramHelper()
+	if !programHelper.IsInstalled(application) {
+		return fmt.Errorf("%s not installed. Ensure you have installed %s correctly", application, application)
 	}
 	return nil
 }
@@ -225,9 +417,14 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	}
 
 	// Check if frontend deps have been updated
-	feSpinner := spinner.New("Ensuring frontend dependencies are up to date (This may take a while)")
-	feSpinner.SetSpinSpeed(50)
-	feSpinner.Start()
+	var feSpinner *spinner.Spinner
+	if !projectOptions.Verbose {
+		feSpinner = spinner.New("Ensuring frontend dependencies are up to date (This may take a while)")
+		feSpinner.SetSpinSpeed(50)
+		feSpinner.Start()
+	} else {
+		println("Ensuring frontend dependencies are up to date (This may take a while)")
+	}
 
 	requiresNPMInstall := true
 
@@ -259,7 +456,11 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 			if savedMD5sum == packageJSONMD5 {
 				// Same - no need for reinstall
 				requiresNPMInstall = false
-				feSpinner.Success("Skipped frontend dependencies (-f to force rebuild)")
+				if feSpinner != nil {
+					feSpinner.Success("Skipped frontend dependencies (-f to force rebuild)")
+				} else {
+					println("Skipped frontend dependencies (-f to force rebuild)")
+				}
 			}
 		}
 	}
@@ -268,12 +469,16 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	// Different? Build
 	if requiresNPMInstall || forceRebuild {
 		// Install dependencies
-		err = NewProgramHelper().RunCommand(projectOptions.FrontEnd.Install)
+		err = NewProgramHelper(projectOptions.Verbose).RunCommand(projectOptions.FrontEnd.Install)
 		if err != nil {
-			feSpinner.Error()
+			if feSpinner != nil {
+				feSpinner.Error()
+			}
 			return err
 		}
-		feSpinner.Success()
+		if feSpinner != nil {
+			feSpinner.Success()
+		}
 
 		// Update md5sum file
 		ioutil.WriteFile(md5sumFile, []byte(packageJSONMD5), 0644)
@@ -286,7 +491,7 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	}
 
 	// Build frontend
-	err = BuildFrontend(projectOptions.FrontEnd.Build)
+	err = BuildFrontend(projectOptions)
 	if err != nil {
 		return err
 	}
@@ -325,7 +530,7 @@ func ServeProject(projectOptions *ProjectOptions, logger *Logger) error {
 		time.Sleep(2 * time.Second)
 		logger.Green(">>>>> To connect, you will need to run '" + projectOptions.FrontEnd.Serve + "' in the '" + projectOptions.FrontEnd.Dir + "' directory <<<<<")
 	}()
-	location, err := filepath.Abs(projectOptions.BinaryName)
+	location, err := filepath.Abs(filepath.Join("build", projectOptions.BinaryName))
 	if err != nil {
 		return err
 	}
@@ -340,4 +545,29 @@ func ServeProject(projectOptions *ProjectOptions, logger *Logger) error {
 	}
 
 	return nil
+}
+
+func ldFlags(po *ProjectOptions, buildMode string) string {
+	// Setup ld flags
+	ldflags := "-w -s "
+	if buildMode == BuildModeDebug {
+		ldflags = ""
+	}
+
+	// Add windows flags
+	if po.Platform == "windows" && buildMode == BuildModeProd {
+		ldflags += "-H windowsgui "
+	}
+
+	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
+
+	// If we wish to generate typescript
+	if po.typescriptDefsFilename != "" {
+		cwd, err := os.Getwd()
+		if err == nil {
+			filename := filepath.Join(cwd, po.FrontEnd.Dir, po.typescriptDefsFilename)
+			ldflags += " -X github.com/wailsapp/wails/lib/binding.typescriptDefinitionFilename=" + filename
+		}
+	}
+	return ldflags
 }

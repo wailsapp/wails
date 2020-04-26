@@ -42,12 +42,12 @@ type Bridge struct {
 	server *http.Server
 
 	lock     sync.Mutex
-	sessions map[string]session
+	sessions map[string]*session
 }
 
 // Initialise the Bridge Renderer
 func (h *Bridge) Initialise(appConfig interfaces.AppConfig, ipcManager interfaces.IPCManager, eventManager interfaces.EventManager) error {
-	h.sessions = map[string]session{}
+	h.sessions = map[string]*session{}
 	h.ipcManager = ipcManager
 	h.appConfig = appConfig
 	h.eventManager = eventManager
@@ -70,13 +70,11 @@ func (h *Bridge) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Bridge) startSession(conn *websocket.Conn) {
-	s := session{
-		conn:         conn,
-		bindingCache: h.bindingCache,
-		ipc:          h.ipcManager,
-		log:          h.log,
-		eventManager: h.eventManager,
-	}
+	s := newSession(conn,
+		h.bindingCache,
+		h.ipcManager,
+		logger.NewCustomLogger("BridgeSession"),
+		h.eventManager)
 
 	conn.SetCloseHandler(func(int, string) error {
 		h.log.Infof("Connection dropped [%s].", s.Identifier())
@@ -160,7 +158,7 @@ func (h *Bridge) NotifyEvent(event *messages.EventData) error {
 	}
 
 	message := fmt.Sprintf("window.wails._.Notify('%s','%s')", event.Name, data)
-	dead := []session{}
+	dead := []*session{}
 	for _, session := range h.sessions {
 		err := session.evalJS(message, notifyMessage)
 		if err != nil {
@@ -207,6 +205,9 @@ func (h *Bridge) SetTitle(title string) {
 // for the Renderer interface
 func (h *Bridge) Close() {
 	h.log.Debug("Shutting down")
+	for _, session := range h.sessions {
+		session.Shutdown()
+	}
 	err := h.server.Close()
 	if err != nil {
 		h.log.Errorf(err.Error())

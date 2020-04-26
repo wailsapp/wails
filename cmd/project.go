@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 
@@ -158,6 +157,10 @@ type ProjectOptions struct {
 	selectedTemplate       *TemplateDetails
 	WailsVersion           string
 	typescriptDefsFilename string
+	Verbose                bool `json:"-"`
+	CrossCompile           bool
+	Platform               string
+	Architecture           string
 }
 
 // Defaults sets the default project template
@@ -332,11 +335,6 @@ func processBinaryName(po *ProjectOptions) {
 	if po.BinaryName == "" {
 		var binaryNameComputed = computeBinaryName(po.Name)
 		po.BinaryName = Prompt("The output binary name", binaryNameComputed)
-		if runtime.GOOS == "windows" {
-			if !strings.HasSuffix(po.BinaryName, ".exe") {
-				po.BinaryName += ".exe"
-			}
-		}
 	}
 	fmt.Println("Output binary Name: " + po.BinaryName)
 }
