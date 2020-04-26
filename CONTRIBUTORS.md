@@ -25,3 +25,4 @@ Wails is what it is because of the time and effort given by these great people. 
   * [Travis McLane](https://github.com/tmclane)
   * [Reuben Thomas-Davis](https://github.com/Rested)
   * [Jarek](https://github.com/Jarek-SRT)
+  * [Konez2k](https://github.com/konez2k)
