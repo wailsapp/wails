@@ -1939,6 +1939,7 @@ struct webview_priv
 
     webview_dialog(w, WEBVIEW_DIALOG_TYPE_OPEN, WEBVIEW_DIALOG_FLAG_FILE, "", "",
                    filename, 255);
+    filename[255] = '\0';
     if (strlen(filename) > 0)
     {
       [listener chooseFilename:[NSString stringWithUTF8String:filename]];
