@@ -176,6 +176,15 @@ distributions:
         gccversioncommand: *gccdumpversion
         programs: *archdefaultprograms
         libraries: *archdefaultlibraries
+  archlabs:
+    id: archlabs
+    releases:
+      default:
+        version: default
+        name: ArchLabs
+        gccversioncommand: *gccdumpversion
+        programs: *archdefaultprograms
+        libraries: *archdefaultlibraries        
   manjaro:
     id: manjaro
     releases:
