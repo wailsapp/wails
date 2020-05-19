@@ -22,6 +22,7 @@ require (
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/syossan27/tebata v0.0.0-20180602121909-b283fe4bc5ba
 	golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529 // indirect
+	golang.org/x/image v0.0.0-20200430140353-33d19683fad8
 	golang.org/x/net v0.0.0-20190509222800-a4d6f7feada5 // indirect
 	golang.org/x/sys v0.0.0-20190509141414-a5b02f93d862
 	golang.org/x/text v0.3.0
