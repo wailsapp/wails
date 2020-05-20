@@ -1,4 +1,4 @@
-package cmd
+0package cmd
 
 import (
 	"bufio"
@@ -81,8 +81,8 @@ func generateWindowsIcon(pngFilename string, iconfile string) error {
 		bpp:        32,
 		planes:     1,
 		offset:     22,
-		width:      255,
-		height:     255,
+		width:      0,
+		height:     0,
 	}
 
 	// Load png
