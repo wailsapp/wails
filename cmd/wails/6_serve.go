@@ -35,6 +35,7 @@ func init() {
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}
 		projectOptions.Verbose = verbose
+		projectOptions.Platform = runtime.GOOS
 
 		// Check we are in project directory
 		// Check project.json loads correctly
