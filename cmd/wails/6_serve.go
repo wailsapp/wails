@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
