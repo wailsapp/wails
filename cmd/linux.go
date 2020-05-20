@@ -53,10 +53,12 @@ const (
 	Deepin
 	// Raspbian distribution
 	Raspbian
-	// openSUSE Tumbleweed distribution
+	// Tumbleweed (OpenSUSE) distribution
 	Tumbleweed
-	// openSUSE Leap distribution
+	// Leap (OpenSUSE) distribution
 	Leap
+	// ArchLabs distribution
+	ArchLabs
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -114,13 +116,15 @@ func parseOsRelease(osRelease string) *DistroInfo {
 	}
 
 	// Check distro name against list of distros
-	switch osID {
+	switch strings.ToLower(osID) {
 	case "fedora":
 		result.Distribution = Fedora
 	case "centos":
 		result.Distribution = CentOS
 	case "arch":
 		result.Distribution = Arch
+	case "archlabs":
+		result.Distribution = ArchLabs
 	case "debian":
 		result.Distribution = Debian
 	case "ubuntu":

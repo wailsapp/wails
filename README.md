@@ -57,7 +57,7 @@ _Ubuntu: 16.04, 18.04, 19.04_
 
 _Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, Kali, Neon_
 
-#### Arch Linux
+#### Arch Linux / ArchLabs
 
 `sudo pacman -S webkit2gtk gtk3`
 
