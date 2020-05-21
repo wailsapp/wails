@@ -16,9 +16,8 @@ import (
 	"text/template"
 	"time"
 
-	"golang.org/x/image/draw"
-
 	"github.com/jackmordaunt/icns"
+	"golang.org/x/image/draw"
 )
 
 // PackageHelper helps with the 'wails package' command
@@ -60,83 +59,107 @@ func newPlistData(title, exe, packageID, version, author string) *plistData {
 	}
 }
 
-type windowsIconHeader struct {
+type windowsIcoHeader struct {
 	_          uint16
 	imageType  uint16
 	imageCount uint16
-	width      uint8
-	height     uint8
-	colours    uint8
-	_          uint8
-	planes     uint16
-	bpp        uint16
-	size       uint32
-	offset     uint32
+}
+
+type windowsIcoDescriptor struct {
+	width   uint8
+	height  uint8
+	colours uint8
+	_       uint8
+	planes  uint16
+	bpp     uint16
+	size    uint32
+	offset  uint32
+}
+
+type windowsIcoContainer struct {
+	Header windowsIcoDescriptor
+	Data   []byte
 }
 
 func generateWindowsIcon(pngFilename string, iconfile string) error {
-	header := &windowsIconHeader{
-		imageType:  1,
-		imageCount: 1,
-		bpp:        32,
-		planes:     1,
-		offset:     22,
-		width:      0,
-		height:     0,
-	}
+	sizes := []int{256, 128, 64, 48, 32, 16}
 
-	// Load png
 	pngfile, err := os.Open(pngFilename)
 	if err != nil {
 		return err
 	}
 	defer pngfile.Close()
 
-	// Decode to internal image
 	pngdata, err := png.Decode(pngfile)
 	if err != nil {
 		return err
 	}
 
-	// Scale to 256*256
-	rect := image.Rect(0, 0, 255, 255)
-	rawdata := image.NewRGBA(rect)
-	scale := draw.ApproxBiLinear
-	scale.Scale(rawdata, rect, pngdata, pngdata.Bounds(), draw.Over, nil)
-
-	// Convert back to PNG
-	icondata := new(bytes.Buffer)
-	writer := bufio.NewWriter(icondata)
-	err = png.Encode(writer, rawdata)
-	if err != nil {
-		return err
-	}
-	err = writer.Flush()
-	if err != nil {
-		return err
-	}
-
-	// Save size of PNG data
-	header.size = uint32(len(icondata.Bytes()))
-
-	// Open icon file for writing
-	outfilename := filepath.Join(filepath.Dir(pngFilename), iconfile)
-	outfile, err := os.Create(outfilename)
+	outfile, err := os.Create(iconfile)
 	if err != nil {
 		return err
 	}
 	defer outfile.Close()
 
-	// Write out the header
-	err = binary.Write(outfile, binary.LittleEndian, header)
+	ico := windowsIcoHeader{
+		imageType:  1,
+		imageCount: uint16(len(sizes)),
+	}
+	err = binary.Write(outfile, binary.LittleEndian, ico)
 	if err != nil {
 		return err
 	}
 
-	// Write out the image data
-	_, err = outfile.Write(icondata.Bytes())
-	if err != nil {
-		return err
+	icons := []windowsIcoContainer{}
+
+	for _, size := range sizes {
+		rect := image.Rect(0, 0, int(size), int(size))
+		rawdata := image.NewRGBA(rect)
+		scale := draw.ApproxBiLinear
+		scale.Scale(rawdata, rect, pngdata, pngdata.Bounds(), draw.Over, nil)
+
+		icondata := new(bytes.Buffer)
+		writer := bufio.NewWriter(icondata)
+		err = png.Encode(writer, rawdata)
+		if err != nil {
+			return err
+		}
+		writer.Flush()
+
+		imgSize := size
+		if imgSize >= 256 {
+			imgSize = 0
+		}
+
+		data := icondata.Bytes()
+
+		icn := windowsIcoContainer{
+			Header: windowsIcoDescriptor{
+				width:  uint8(imgSize),
+				height: uint8(imgSize),
+				planes: 1,
+				bpp:    32,
+				size:   uint32(len(data)),
+			},
+			Data: data,
+		}
+		icons = append(icons, icn)
+	}
+
+	offset := uint32(6 + 16*len(sizes))
+	for _, icon := range icons {
+		icon.Header.offset = offset
+		err = binary.Write(outfile, binary.LittleEndian, icon.Header)
+		if err != nil {
+			return err
+		}
+		offset += icon.Header.size
+	}
+	for _, icon := range icons {
+		_, err = outfile.Write(icon.Data)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
