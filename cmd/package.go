@@ -95,21 +95,6 @@ func generateWindowsIcon(pngFilename string, iconfile string) error {
 		return err
 	}
 
-	outfile, err := os.Create(iconfile)
-	if err != nil {
-		return err
-	}
-	defer outfile.Close()
-
-	ico := windowsIcoHeader{
-		imageType:  1,
-		imageCount: uint16(len(sizes)),
-	}
-	err = binary.Write(outfile, binary.LittleEndian, ico)
-	if err != nil {
-		return err
-	}
-
 	icons := []windowsIcoContainer{}
 
 	for _, size := range sizes {
@@ -144,6 +129,21 @@ func generateWindowsIcon(pngFilename string, iconfile string) error {
 			Data: data,
 		}
 		icons = append(icons, icn)
+	}
+
+	outfile, err := os.Create(iconfile)
+	if err != nil {
+		return err
+	}
+	defer outfile.Close()
+
+	ico := windowsIcoHeader{
+		imageType:  1,
+		imageCount: uint16(len(sizes)),
+	}
+	err = binary.Write(outfile, binary.LittleEndian, ico)
+	if err != nil {
+		return err
 	}
 
 	offset := uint32(6 + 16*len(sizes))
