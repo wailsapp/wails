@@ -100,7 +100,7 @@ func generateWindowsIcon(pngFilename string, iconfile string) error {
 	for _, size := range sizes {
 		rect := image.Rect(0, 0, int(size), int(size))
 		rawdata := image.NewRGBA(rect)
-		scale := draw.ApproxBiLinear
+		scale := draw.CatmullRom
 		scale.Scale(rawdata, rect, pngdata, pngdata.Bounds(), draw.Over, nil)
 
 		icondata := new(bytes.Buffer)
