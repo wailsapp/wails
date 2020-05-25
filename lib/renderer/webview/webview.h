@@ -1410,6 +1410,8 @@ struct webview_priv
     wc.hInstance = hInstance;
     wc.lpfnWndProc = wndproc;
     wc.lpszClassName = classname;
+    wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(100));
+    wc.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(100));
     RegisterClassEx(&wc);
 
     style = WS_OVERLAPPEDWINDOW;
