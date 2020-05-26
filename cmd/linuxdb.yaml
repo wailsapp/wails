@@ -28,8 +28,8 @@ distributions:
         gccversioncommand: &gccdumpfullversion -dumpfullversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
-  popos:
-    id: popos
+  pop:
+    id: pop
     releases:
       default:
         version: default
