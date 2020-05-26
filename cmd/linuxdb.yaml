@@ -28,6 +28,15 @@ distributions:
         gccversioncommand: &gccdumpfullversion -dumpfullversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
+  popos:
+    id: popos
+    releases:
+      default:
+        version: default
+        name: Pop!_OS
+        gccversioncommand: &gccdumpfullversion -dumpfullversion
+        programs: *debiandefaultprograms
+        libraries: *debiandefaultlibraries
   kali:
     id: kali
     releases:
