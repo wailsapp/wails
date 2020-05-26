@@ -274,7 +274,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 		distroInfo := GetLinuxDistroInfo()
 
 		switch distroInfo.Distribution {
-		case Ubuntu, Debian, Zorin, Parrot, Linuxmint, Elementary, Kali, Neon, Deepin, Raspbian:
+		case Ubuntu, Debian, Zorin, Parrot, Linuxmint, Elementary, Kali, Neon, Deepin, Raspbian, PopOS:
 			libraryChecker = DpkgInstalled
 		case Arch, ArcoLinux, ArchLabs, Manjaro, ManjaroARM:
 			libraryChecker = PacmanInstalled

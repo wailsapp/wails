@@ -59,6 +59,8 @@ const (
 	Leap
 	// ArchLabs distribution
 	ArchLabs
+	// PopOS distribution
+	PopOS
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -159,6 +161,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Tumbleweed
 	case "opensuse-leap":
 		result.Distribution = Leap
+	case "pop":
+		result.Distribution = PopOS
 	default:
 		result.Distribution = Unknown
 	}
@@ -266,5 +270,9 @@ func RequestSupportForDistribution(distroInfo *DistroInfo) error {
 
 	fmt.Println("Opening browser to file request.")
 	browser.OpenURL(fullURL + url.PathEscape(params))
+	result = Prompt("We have a guide for adding support for your distribution. Would you like to view it?", "yes")
+	if strings.ToLower(result) == "yes" {
+		browser.OpenURL("https://wails.app/guides/distro/")
+	}
 	return nil
 }
