@@ -61,6 +61,8 @@ const (
 	ArchLabs
 	// PopOS distribution
 	PopOS
+	// Solus distribution
+	Solus
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -163,6 +165,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Leap
 	case "pop":
 		result.Distribution = PopOS
+	case "solus":
+		result.Distribution = Solus
 	default:
 		result.Distribution = Unknown
 	}
@@ -196,6 +200,17 @@ func DpkgInstalled(packageName string) (bool, error) {
 		return false, fmt.Errorf("cannot check dependencies: dpkg not found")
 	}
 	_, _, exitCode, _ := dpkg.Run("-L", packageName)
+	return exitCode == 0, nil
+}
+
+// EOpkgInstalled uses dpkg to see if a package is installed
+func EOpkgInstalled(packageName string) (bool, error) {
+	program := NewProgramHelper()
+	eopkg := program.FindProgram("eopkg")
+	if eopkg == nil {
+		return false, fmt.Errorf("cannot check dependencies: eopkg not found")
+	}
+	_, _, exitCode, _ := eopkg.Run("li", "|", "grep", "-w", packageName)
 	return exitCode == 0, nil
 }
 
