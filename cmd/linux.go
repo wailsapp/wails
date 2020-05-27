@@ -210,8 +210,8 @@ func EOpkgInstalled(packageName string) (bool, error) {
 	if eopkg == nil {
 		return false, fmt.Errorf("cannot check dependencies: eopkg not found")
 	}
-	_, _, exitCode, _ := eopkg.Run("li", "|", "grep", "-w", packageName)
-	return exitCode == 0, nil
+	stdout, _, _, _ := eopkg.Run("info", packageName)
+	return strings.HasPrefix(stdout, "Installed"), nil
 }
 
 // PacmanInstalled uses pacman to see if a package is installed.
