@@ -255,7 +255,7 @@ distributions:
             help: Please install with `sudo eopkg it -c system.devel` and try again
           - name: npm
             help: Please install with `sudo eopkg it nodejs` and try again
-        libraries: &opensusedefaultlibraries
+        libraries: &solusdefaultlibraries
           - name: libgtk-3-devel
             help: Please install with `sudo eopkg it libgtk-3-devel` and try again
           - name: libwebkit-gtk-devel
