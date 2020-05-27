@@ -284,6 +284,8 @@ func CheckDependencies(logger *Logger) (bool, error) {
 			libraryChecker = EqueryInstalled
 		case VoidLinux:
 			libraryChecker = XbpsInstalled
+		case Solus:
+			libraryChecker = EOpkgInstalled
 		default:
 			return false, RequestSupportForDistribution(distroInfo)
 		}

@@ -241,6 +241,25 @@ distributions:
         gccversioncommand: *gccdumpfullversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
+  solus:
+    id: solus
+    releases:
+      default:
+        version: default
+        name: Solus
+        gccversioncommand: *gccdumpfullversion
+        programs: &solusdefaultprograms
+          - name: gcc
+            help: Please install with `sudo eopkg it -c system.devel` and try again
+          - name: pkg-config
+            help: Please install with `sudo eopkg it -c system.devel` and try again
+          - name: npm
+            help: Please install with `sudo eopkg it nodejs` and try again
+        libraries: &opensusedefaultlibraries
+          - name: gtk3-devel
+            help: Please install with `sudo eopkg it libgtk-3-devel` and try again
+          - name: webkit2gtk3-devel
+            help: Please install with `sudo eopkg it libwebkit-gtk-devel` and try again
         
   opensuse-tumbleweed:
     id: opensuse-tumbleweed
