@@ -256,9 +256,9 @@ distributions:
           - name: npm
             help: Please install with `sudo eopkg it nodejs` and try again
         libraries: &opensusedefaultlibraries
-          - name: gtk3-devel
+          - name: libgtk-3-devel
             help: Please install with `sudo eopkg it libgtk-3-devel` and try again
-          - name: webkit2gtk3-devel
+          - name: libwebkit-gtk-devel
             help: Please install with `sudo eopkg it libwebkit-gtk-devel` and try again
         
   opensuse-tumbleweed:
