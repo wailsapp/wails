@@ -114,7 +114,7 @@ func (h *Bridge) NewBinding(methodName string) error {
 
 // SelectFile is unsupported for Bridge but required
 // for the Renderer interface
-func (h *Bridge) SelectFile() string {
+func (h *Bridge) SelectFile(filter string) string {
 	h.log.Warn("SelectFile() unsupported in bridge mode")
 	return ""
 }
@@ -128,7 +128,7 @@ func (h *Bridge) SelectDirectory() string {
 
 // SelectSaveFile is unsupported for Bridge but required
 // for the Renderer interface
-func (h *Bridge) SelectSaveFile() string {
+func (h *Bridge) SelectSaveFile(filter string) string {
 	h.log.Warn("SelectSaveFile() unsupported in bridge mode")
 	return ""
 }

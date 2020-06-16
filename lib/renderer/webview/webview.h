@@ -174,7 +174,7 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char *result, size_t resultsz);
+                                  char *result, size_t resultsz, char *filter);
   WEBVIEW_API void webview_dispatch(struct webview *w, webview_dispatch_fn fn,
                                     void *arg);
   WEBVIEW_API void webview_terminate(struct webview *w);
@@ -418,7 +418,7 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char *result, size_t resultsz)
+                                  char *result, size_t resultsz, char *filter)
   {
     GtkWidget *dlg;
     if (result != NULL)
@@ -438,6 +438,16 @@ struct webview_priv
           "_Cancel", GTK_RESPONSE_CANCEL,
           (dlgtype == WEBVIEW_DIALOG_TYPE_OPEN ? "_Open" : "_Save"),
           GTK_RESPONSE_ACCEPT, NULL);
+      if (filter[0] != '\0') {
+          GtkFileFilter *file_filter = gtk_file_filter_new();
+          gchar **filters  = g_strsplit(filter, ",", -1);
+          gint i;
+          for(i = 0; filters && filters[i]; i++) {
+              gtk_file_filter_add_pattern(file_filter, filters[i]);
+          }
+          gtk_file_filter_set_name(file_filter, filter);
+          gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dlg), file_filter);
+      }
       gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dlg), FALSE);
       gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dlg), FALSE);
       gtk_file_chooser_set_show_hidden(GTK_FILE_CHOOSER(dlg), TRUE);
