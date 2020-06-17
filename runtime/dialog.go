@@ -16,11 +16,15 @@ func NewDialog(renderer interfaces.Renderer) *Dialog {
 
 // SelectFile prompts the user to select a file
 func (r *Dialog) SelectFile(params ...string) string {
+	title := "Select File"
 	filter := ""
 	if len(params) > 0 {
-		filter = params[0]
+		title = params[0]
 	}
-	return r.renderer.SelectFile(filter)
+	if len(params) > 1 {
+		filter = params[1]
+	}
+	return r.renderer.SelectFile(title, filter)
 }
 
 // SelectDirectory prompts the user to select a directory
@@ -30,9 +34,13 @@ func (r *Dialog) SelectDirectory() string {
 
 // SelectSaveFile prompts the user to select a file for saving
 func (r *Dialog) SelectSaveFile(params ...string) string {
+	title := "Select Save"
 	filter := ""
 	if len(params) > 0 {
-		filter = params[0]
+		title = params[0]
 	}
-	return r.renderer.SelectSaveFile(filter)
+	if len(params) > 1 {
+		filter = params[1]
+	}
+	return r.renderer.SelectSaveFile(title, filter)
 }

@@ -245,7 +245,7 @@ func (w *WebView) NewBinding(methodName string) error {
 }
 
 // SelectFile opens a dialog that allows the user to select a file
-func (w *WebView) SelectFile(filter string) string {
+func (w *WebView) SelectFile(title string, filter string) string {
 	var result string
 
 	// We need to run this on the main thread, however Dispatch is
@@ -255,7 +255,7 @@ func (w *WebView) SelectFile(filter string) string {
 	wg.Add(1)
 	go func() {
 		w.window.Dispatch(func() {
-			result = w.window.Dialog(wv.DialogTypeOpen, 0, "Select File", "", filter)
+			result = w.window.Dialog(wv.DialogTypeOpen, 0, title, "", filter)
 			wg.Done()
 		})
 	}()
@@ -282,7 +282,7 @@ func (w *WebView) SelectDirectory() string {
 }
 
 // SelectSaveFile opens a dialog that allows the user to select a file to save
-func (w *WebView) SelectSaveFile(filter string) string {
+func (w *WebView) SelectSaveFile(title string, filter string) string {
 	var result string
 	// We need to run this on the main thread, however Dispatch is
 	// non-blocking so we launch this in a goroutine and wait for
@@ -291,7 +291,7 @@ func (w *WebView) SelectSaveFile(filter string) string {
 	wg.Add(1)
 	go func() {
 		w.window.Dispatch(func() {
-			result = w.window.Dialog(wv.DialogTypeSave, 0, "Save file", "", filter)
+			result = w.window.Dialog(wv.DialogTypeSave, 0, title, "", filter)
 			wg.Done()
 		})
 	}()

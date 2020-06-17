@@ -1838,7 +1838,7 @@ struct webview_priv
         int i=0;
         char* token;
         char* filter_dup = strdup(filter);
-        for (count=1; filter[count]; filter[count]==',' ? count++ : *filter++); 
+        for (count=1; filter[count]; filter[count]==',' ? count++ : *filter++);
         COMDLG_FILTERSPEC rgSpec[count];
         char* filters[count];
         token = strtok(filter_dup, ",");
@@ -1976,7 +1976,7 @@ struct webview_priv
         (struct webview *)objc_getAssociatedObject(self, "webview");
 
     webview_dialog(w, WEBVIEW_DIALOG_TYPE_OPEN, WEBVIEW_DIALOG_FLAG_FILE, "", "",
-                   filename, 255);
+                   filename, 255, "");
     filename[255] = '\0';
     if (strlen(filename) > 0)
     {
@@ -2239,12 +2239,16 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char *result, size_t resultsz)
+                                  char *result, size_t resultsz, char *filter)
   {
     if (dlgtype == WEBVIEW_DIALOG_TYPE_OPEN ||
         dlgtype == WEBVIEW_DIALOG_TYPE_SAVE)
     {
       NSSavePanel *panel;
+      NSString *filter_str = [NSString stringWithUTF8String:filter];
+      filter_str = [filter_str stringByReplacingOccurrencesOfString:@"*."
+                                     withString:@""];
+      NSArray *fileTypes = [filter_str componentsSeparatedByString:@","];
       if (dlgtype == WEBVIEW_DIALOG_TYPE_OPEN)
       {
         NSOpenPanel *openPanel = [NSOpenPanel openPanel];
@@ -2257,6 +2261,10 @@ struct webview_priv
         {
           [openPanel setCanChooseFiles:YES];
           [openPanel setCanChooseDirectories:NO];
+          if(filter[0] != NULL)
+          {
+            [openPanel setAllowedFileTypes:fileTypes];
+          }
         }
         [openPanel setResolvesAliases:NO];
         [openPanel setAllowsMultipleSelection:NO];
@@ -2270,6 +2278,10 @@ struct webview_priv
       [panel setShowsHiddenFiles:YES];
       [panel setExtensionHidden:NO];
       [panel setCanSelectHiddenExtension:NO];
+      if(filter[0] != NULL)
+      {
+        [panel setAllowedFileTypes:fileTypes];
+      }
       [panel setTreatsFilePackagesAsDirectories:YES];
       [panel beginSheetModalForWindow:w->priv.window
                     completionHandler:^(NSInteger result) {
