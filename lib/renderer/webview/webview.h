@@ -1792,7 +1792,7 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char *result, size_t resultsz)
+                                  char *result, size_t resultsz, char *filter)
   {
     if (dlgtype == WEBVIEW_DIALOG_TYPE_OPEN ||
         dlgtype == WEBVIEW_DIALOG_TYPE_SAVE)
@@ -1831,6 +1831,32 @@ struct webview_priv
                     FOS_ALLNONSTORAGEITEMS | FOS_NOVALIDATE | FOS_SHAREAWARE |
                     FOS_NOTESTFILECREATE | FOS_NODEREFERENCELINKS |
                     FOS_FORCESHOWHIDDEN | FOS_DEFAULTNOMINIMODE;
+      }
+      if (filter[0] != '\0')
+      {
+        int count;
+        int i=0;
+        char* token;
+        char* filter_dup = strdup(filter);
+        for (count=1; filter[count]; filter[count]==',' ? count++ : *filter++); 
+        COMDLG_FILTERSPEC rgSpec[count];
+        char* filters[count];
+        token = strtok(filter_dup, ",");
+        while(token != NULL)
+        {
+          filters[i] = token;
+          token = strtok(NULL, ",");
+          i++;
+        }
+        for (int i=0; i < count; i++) {
+          wchar_t *wFilter = (wchar_t *)malloc(4096);
+          MultiByteToWideChar(CP_ACP, 0, filters[i], -1, wFilter, 4096);
+          rgSpec[i].pszName = wFilter;
+          rgSpec[i].pszSpec = wFilter;
+        }
+        if (dlg->lpVtbl->SetFileTypes(dlg, count, rgSpec) != S_OK) {
+          goto error_dlg;
+        }
       }
       if (dlg->lpVtbl->GetOptions(dlg, &opts) != S_OK)
       {
