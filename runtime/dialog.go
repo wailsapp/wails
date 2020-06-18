@@ -1,6 +1,7 @@
 package runtime
 
 import "github.com/wailsapp/wails/lib/interfaces"
+import "strings"
 
 // Dialog exposes an interface to native dialogs
 type Dialog struct {
@@ -22,7 +23,7 @@ func (r *Dialog) SelectFile(params ...string) string {
 		title = params[0]
 	}
 	if len(params) > 1 {
-		filter = params[1]
+		filter = strings.Replace(params[1], " ", "", -1)
 	}
 	return r.renderer.SelectFile(title, filter)
 }
@@ -40,7 +41,7 @@ func (r *Dialog) SelectSaveFile(params ...string) string {
 		title = params[0]
 	}
 	if len(params) > 1 {
-		filter = params[1]
+		filter = strings.Replace(params[1], " ", "", -1)
 	}
 	return r.renderer.SelectSaveFile(title, filter)
 }
