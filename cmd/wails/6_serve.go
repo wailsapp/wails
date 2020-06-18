@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/leaanthony/spinner"
 	"github.com/wailsapp/wails/cmd"
@@ -34,7 +35,6 @@ func init() {
 
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}
-		projectOptions.Verbose = verbose
 
 		// Check we are in project directory
 		// Check project.json loads correctly
@@ -43,6 +43,10 @@ func init() {
 		if err != nil {
 			return err
 		}
+
+		// Set project options
+		projectOptions.Verbose = verbose
+		projectOptions.Platform = runtime.GOOS
 
 		// Save project directory
 		projectDir := fs.Cwd()

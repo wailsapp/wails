@@ -1,2 +1,2 @@
 100 ICON    "$NAME$.ico"
-100 24      "$NAME$.exe.manifest"
+110 24      "$NAME$.exe.manifest"

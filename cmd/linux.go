@@ -53,10 +53,16 @@ const (
 	Deepin
 	// Raspbian distribution
 	Raspbian
-	// openSUSE Tumbleweed distribution
+	// Tumbleweed (OpenSUSE) distribution
 	Tumbleweed
-	// openSUSE Leap distribution
+	// Leap (OpenSUSE) distribution
 	Leap
+	// ArchLabs distribution
+	ArchLabs
+	// PopOS distribution
+	PopOS
+	// Solus distribution
+	Solus
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -105,7 +111,7 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		}
 		switch splitLine[0] {
 		case "ID":
-			osID = strings.Trim(splitLine[1], "\"")
+			osID = strings.ToLower(strings.Trim(splitLine[1], "\""))
 		case "NAME":
 			osNAME = strings.Trim(splitLine[1], "\"")
 		case "VERSION_ID":
@@ -121,6 +127,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = CentOS
 	case "arch":
 		result.Distribution = Arch
+	case "archlabs":
+		result.Distribution = ArchLabs
 	case "debian":
 		result.Distribution = Debian
 	case "ubuntu":
@@ -155,6 +163,10 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Tumbleweed
 	case "opensuse-leap":
 		result.Distribution = Leap
+	case "pop":
+		result.Distribution = PopOS
+	case "solus":
+		result.Distribution = Solus
 	default:
 		result.Distribution = Unknown
 	}
@@ -189,6 +201,17 @@ func DpkgInstalled(packageName string) (bool, error) {
 	}
 	_, _, exitCode, _ := dpkg.Run("-L", packageName)
 	return exitCode == 0, nil
+}
+
+// EOpkgInstalled uses dpkg to see if a package is installed
+func EOpkgInstalled(packageName string) (bool, error) {
+	program := NewProgramHelper()
+	eopkg := program.FindProgram("eopkg")
+	if eopkg == nil {
+		return false, fmt.Errorf("cannot check dependencies: eopkg not found")
+	}
+	stdout, _, _, _ := eopkg.Run("info", packageName)
+	return strings.HasPrefix(stdout, "Installed"), nil
 }
 
 // PacmanInstalled uses pacman to see if a package is installed.
@@ -262,5 +285,9 @@ func RequestSupportForDistribution(distroInfo *DistroInfo) error {
 
 	fmt.Println("Opening browser to file request.")
 	browser.OpenURL(fullURL + url.PathEscape(params))
+	result = Prompt("We have a guide for adding support for your distribution. Would you like to view it?", "yes")
+	if strings.ToLower(result) == "yes" {
+		browser.OpenURL("https://wails.app/guides/distro/")
+	}
 	return nil
 }

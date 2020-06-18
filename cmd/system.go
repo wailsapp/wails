@@ -274,9 +274,9 @@ func CheckDependencies(logger *Logger) (bool, error) {
 		distroInfo := GetLinuxDistroInfo()
 
 		switch distroInfo.Distribution {
-		case Ubuntu, Debian, Zorin, Parrot, Linuxmint, Elementary, Kali, Neon, Deepin, Raspbian:
+		case Ubuntu, Debian, Zorin, Parrot, Linuxmint, Elementary, Kali, Neon, Deepin, Raspbian, PopOS:
 			libraryChecker = DpkgInstalled
-		case Arch, ArcoLinux, Manjaro, ManjaroARM:
+		case Arch, ArcoLinux, ArchLabs, Manjaro, ManjaroARM:
 			libraryChecker = PacmanInstalled
 		case CentOS, Fedora, Tumbleweed, Leap:
 			libraryChecker = RpmInstalled
@@ -284,6 +284,8 @@ func CheckDependencies(logger *Logger) (bool, error) {
 			libraryChecker = EqueryInstalled
 		case VoidLinux:
 			libraryChecker = XbpsInstalled
+		case Solus:
+			libraryChecker = EOpkgInstalled
 		default:
 			return false, RequestSupportForDistribution(distroInfo)
 		}

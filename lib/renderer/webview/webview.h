@@ -139,7 +139,7 @@ struct webview_priv
 #define DEFAULT_URL                                                            \
   "data:text/"                                                                 \
   "html,%3C%21DOCTYPE%20html%3E%0A%3Chtml%20lang=%22en%22%3E%0A%3Chead%3E%"    \
-  "3Cmeta%20charset=%22utf-8%22%3E%3Cmeta%20http-equiv=%22IE=edge%22%" \
+  "3Cmeta%20charset=%22utf-8%22%3E%3Cmeta%20http-equiv=%22IE=edge%22%"         \
   "20content=%22IE=edge%22%3E%3C%2Fhead%3E%0A%3Cbody%3E%3Cdiv%20id=%22app%22%" \
   "3E%3C%2Fdiv%3E%3Cscript%20type=%22text%2Fjavascript%22%3E%3C%2Fscript%3E%"  \
   "3C%2Fbody%3E%0A%3C%2Fhtml%3E"
@@ -174,7 +174,7 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char *result, size_t resultsz);
+                                  char *result, size_t resultsz, char *filter);
   WEBVIEW_API void webview_dispatch(struct webview *w, webview_dispatch_fn fn,
                                     void *arg);
   WEBVIEW_API void webview_terminate(struct webview *w);
@@ -418,7 +418,7 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char *result, size_t resultsz)
+                                  char *result, size_t resultsz, char *filter)
   {
     GtkWidget *dlg;
     if (result != NULL)
@@ -438,6 +438,16 @@ struct webview_priv
           "_Cancel", GTK_RESPONSE_CANCEL,
           (dlgtype == WEBVIEW_DIALOG_TYPE_OPEN ? "_Open" : "_Save"),
           GTK_RESPONSE_ACCEPT, NULL);
+      if (filter[0] != '\0') {
+          GtkFileFilter *file_filter = gtk_file_filter_new();
+          gchar **filters  = g_strsplit(filter, ",", -1);
+          gint i;
+          for(i = 0; filters && filters[i]; i++) {
+              gtk_file_filter_add_pattern(file_filter, filters[i]);
+          }
+          gtk_file_filter_set_name(file_filter, filter);
+          gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dlg), file_filter);
+      }
       gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dlg), FALSE);
       gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dlg), FALSE);
       gtk_file_chooser_set_show_hidden(GTK_FILE_CHOOSER(dlg), TRUE);
@@ -1227,7 +1237,7 @@ struct webview_priv
       }
       VariantInit(&myURL);
       myURL.vt = VT_BSTR;
-// #ifndef UNICODE
+      // #ifndef UNICODE
       {
         wchar_t *buffer = webview_to_utf16(webPageName);
         if (buffer == NULL)
@@ -1237,9 +1247,9 @@ struct webview_priv
         myURL.bstrVal = SysAllocString(buffer);
         GlobalFree(buffer);
       }
-// #else
-//       myURL.bstrVal = SysAllocString(webPageName);
-// #endif
+      // #else
+      //       myURL.bstrVal = SysAllocString(webPageName);
+      // #endif
       if (!myURL.bstrVal)
       {
       badalloc:
@@ -1277,7 +1287,7 @@ struct webview_priv
             if (!SafeArrayAccessData(sfArray, (void **)&pVar))
             {
               pVar->vt = VT_BSTR;
-// #ifndef UNICODE
+              // #ifndef UNICODE
               {
                 wchar_t *buffer = webview_to_utf16(url);
                 if (buffer == NULL)
@@ -1287,9 +1297,9 @@ struct webview_priv
                 bstr = SysAllocString(buffer);
                 GlobalFree(buffer);
               }
-// #else
-//               bstr = SysAllocString(url);
-// #endif
+              // #else
+              //               bstr = SysAllocString(url);
+              // #endif
               if ((pVar->bstrVal = bstr))
               {
                 htmlDoc2->lpVtbl->write(htmlDoc2, sfArray);
@@ -1410,6 +1420,8 @@ struct webview_priv
     wc.hInstance = hInstance;
     wc.lpfnWndProc = wndproc;
     wc.lpszClassName = classname;
+    wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(100));
+    wc.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(100));
     RegisterClassEx(&wc);
 
     style = WS_OVERLAPPEDWINDOW;
@@ -1444,12 +1456,12 @@ struct webview_priv
                        rect.right - rect.left, rect.bottom - rect.top,
                        HWND_DESKTOP, NULL, hInstance, (void *)w);
 #else
-  w->priv.hwnd =
+    w->priv.hwnd =
         CreateWindowEx(0, classname, w->title, style, rect.left, rect.top,
                        rect.right - rect.left, rect.bottom - rect.top,
                        HWND_DESKTOP, NULL, hInstance, (void *)w);
 #endif
-    
+
     if (w->priv.hwnd == 0)
     {
       OleUninitialize();
@@ -1466,8 +1478,7 @@ struct webview_priv
 #else
     SetWindowText(w->priv.hwnd, w->title);
 #endif
-    
-    
+
     ShowWindow(w->priv.hwnd, SW_SHOWDEFAULT);
     UpdateWindow(w->priv.hwnd);
     SetFocus(w->priv.hwnd);
@@ -1494,6 +1505,11 @@ struct webview_priv
     case WM_KEYDOWN:
     case WM_KEYUP:
     {
+      // Disable refresh when pressing F5 on windows
+      if (msg.wParam == VK_F5)
+      {
+        break;
+      }
       HRESULT r = S_OK;
       IWebBrowser2 *webBrowser2;
       IOleObject *browser = *w->priv.browser;
@@ -1603,7 +1619,7 @@ struct webview_priv
 
   WEBVIEW_API void webview_set_title(struct webview *w, const char *title)
   {
-  #ifdef UNICODE
+#ifdef UNICODE
     wchar_t *u16title = webview_to_utf16(title);
     if (u16title == NULL)
     {
@@ -1611,11 +1627,10 @@ struct webview_priv
     }
     SetWindowText(w->priv.hwnd, u16title);
     GlobalFree(u16title);
-  #else
+#else
     SetWindowText(w->priv.hwnd, title);
-  #endif
+#endif
   }
-
 
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen)
   {
@@ -1777,7 +1792,7 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char *result, size_t resultsz)
+                                  char *result, size_t resultsz, char *filter)
   {
     if (dlgtype == WEBVIEW_DIALOG_TYPE_OPEN ||
         dlgtype == WEBVIEW_DIALOG_TYPE_SAVE)
@@ -1816,6 +1831,32 @@ struct webview_priv
                     FOS_ALLNONSTORAGEITEMS | FOS_NOVALIDATE | FOS_SHAREAWARE |
                     FOS_NOTESTFILECREATE | FOS_NODEREFERENCELINKS |
                     FOS_FORCESHOWHIDDEN | FOS_DEFAULTNOMINIMODE;
+      }
+      if (filter[0] != '\0')
+      {
+        int count;
+        int i=0;
+        char* token;
+        char* filter_dup = strdup(filter);
+        for (count=1; filter[count]; filter[count]==',' ? count++ : *filter++);
+        COMDLG_FILTERSPEC rgSpec[count];
+        char* filters[count];
+        token = strtok(filter_dup, ",");
+        while(token != NULL)
+        {
+          filters[i] = token;
+          token = strtok(NULL, ",");
+          i++;
+        }
+        for (int i=0; i < count; i++) {
+          wchar_t *wFilter = (wchar_t *)malloc(4096);
+          MultiByteToWideChar(CP_ACP, 0, filters[i], -1, wFilter, 4096);
+          rgSpec[i].pszName = wFilter;
+          rgSpec[i].pszSpec = wFilter;
+        }
+        if (dlg->lpVtbl->SetFileTypes(dlg, count, rgSpec) != S_OK) {
+          goto error_dlg;
+        }
       }
       if (dlg->lpVtbl->GetOptions(dlg, &opts) != S_OK)
       {
@@ -1927,21 +1968,25 @@ struct webview_priv
     [script setValue:self forKey:@"external"];
   }
 
-static void webview_run_input_open_panel(id self, SEL cmd, id webview,
-                                           id listener, BOOL allowMultiple) {
+  static void webview_run_input_open_panel(id self, SEL cmd, id webview,
+                                           id listener, BOOL allowMultiple)
+  {
     char filename[256] = "";
     struct webview *w =
         (struct webview *)objc_getAssociatedObject(self, "webview");
 
     webview_dialog(w, WEBVIEW_DIALOG_TYPE_OPEN, WEBVIEW_DIALOG_FLAG_FILE, "", "",
-                   filename, 255);
-    if (strlen(filename)) {
+                   filename, 255, "");
+    filename[255] = '\0';
+    if (strlen(filename) > 0)
+    {
       [listener chooseFilename:[NSString stringWithUTF8String:filename]];
-    } else {
+    }
+    else
+    {
       [listener cancel];
     }
   }
-
 
   static void webview_external_invoke(id self, SEL cmd, id arg)
   {
@@ -1955,7 +2000,7 @@ static void webview_run_input_open_panel(id self, SEL cmd, id webview,
     {
       return;
     }
-    w->external_invoke_cb(w, [(NSString *)(arg)UTF8String]);
+    w->external_invoke_cb(w, [(NSString *)(arg) UTF8String]);
   }
 
   WEBVIEW_API int webview_init(struct webview *w)
@@ -2194,12 +2239,16 @@ static void webview_run_input_open_panel(id self, SEL cmd, id webview,
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char *result, size_t resultsz)
+                                  char *result, size_t resultsz, char *filter)
   {
     if (dlgtype == WEBVIEW_DIALOG_TYPE_OPEN ||
         dlgtype == WEBVIEW_DIALOG_TYPE_SAVE)
     {
       NSSavePanel *panel;
+      NSString *filter_str = [NSString stringWithUTF8String:filter];
+      filter_str = [filter_str stringByReplacingOccurrencesOfString:@"*."
+                                     withString:@""];
+      NSArray *fileTypes = [filter_str componentsSeparatedByString:@","];
       if (dlgtype == WEBVIEW_DIALOG_TYPE_OPEN)
       {
         NSOpenPanel *openPanel = [NSOpenPanel openPanel];
@@ -2212,6 +2261,10 @@ static void webview_run_input_open_panel(id self, SEL cmd, id webview,
         {
           [openPanel setCanChooseFiles:YES];
           [openPanel setCanChooseDirectories:NO];
+          if(filter[0] != NULL)
+          {
+            [openPanel setAllowedFileTypes:fileTypes];
+          }
         }
         [openPanel setResolvesAliases:NO];
         [openPanel setAllowsMultipleSelection:NO];
@@ -2225,6 +2278,10 @@ static void webview_run_input_open_panel(id self, SEL cmd, id webview,
       [panel setShowsHiddenFiles:YES];
       [panel setExtensionHidden:NO];
       [panel setCanSelectHiddenExtension:NO];
+      if(filter[0] != NULL)
+      {
+        [panel setAllowedFileTypes:fileTypes];
+      }
       [panel setTreatsFilePackagesAsDirectories:YES];
       [panel beginSheetModalForWindow:w->priv.window
                     completionHandler:^(NSInteger result) {

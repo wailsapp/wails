@@ -74,9 +74,9 @@ static inline void CgoWebViewSetColor(void *w, uint8_t r, uint8_t g, uint8_t b, 
 }
 
 static inline void CgoDialog(void *w, int dlgtype, int flags,
-		char *title, char *arg, char *res, size_t ressz) {
+char *title, char *arg, char *res, size_t ressz, char *filter) {
 	webview_dialog(w, dlgtype, flags,
-		(const char*)title, (const char*) arg, res, ressz);
+	(const char*)title, (const char*) arg, res, ressz, filter);
 }
 
 static inline int CgoWebViewEval(void *w, char *js) {
@@ -186,7 +186,7 @@ type WebView interface {
 	// Dialog() opens a system dialog of the given type and title. String
 	// argument can be provided for certain dialogs, such as alert boxes. For
 	// alert boxes argument is a message inside the dialog box.
-	Dialog(dlgType DialogType, flags int, title string, arg string) string
+	Dialog(dlgType DialogType, flags int, title string, arg string, filter string) string
 	// Terminate() breaks the main UI loop. This method must be called from the main thread
 	// only. See Dispatch() for more details.
 	Terminate()
@@ -311,7 +311,7 @@ func (w *webview) SetFullscreen(fullscreen bool) {
 	C.CgoWebViewSetFullscreen(w.w, C.int(boolToInt(fullscreen)))
 }
 
-func (w *webview) Dialog(dlgType DialogType, flags int, title string, arg string) string {
+func (w *webview) Dialog(dlgType DialogType, flags int, title string, arg string, filter string) string {
 	const maxPath = 4096
 	titlePtr := C.CString(title)
 	defer C.free(unsafe.Pointer(titlePtr))
@@ -319,8 +319,10 @@ func (w *webview) Dialog(dlgType DialogType, flags int, title string, arg string
 	defer C.free(unsafe.Pointer(argPtr))
 	resultPtr := (*C.char)(C.calloc((C.size_t)(unsafe.Sizeof((*C.char)(nil))), (C.size_t)(maxPath)))
 	defer C.free(unsafe.Pointer(resultPtr))
+	filterPtr := C.CString(filter)
+	defer C.free(unsafe.Pointer(filterPtr))
 	C.CgoDialog(w.w, C.int(dlgType), C.int(flags), titlePtr,
-		argPtr, resultPtr, C.size_t(maxPath))
+		argPtr, resultPtr, C.size_t(maxPath), filterPtr)
 	return C.GoString(resultPtr)
 }
 

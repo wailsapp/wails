@@ -28,6 +28,15 @@ distributions:
         gccversioncommand: &gccdumpfullversion -dumpfullversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
+  pop:
+    id: pop
+    releases:
+      default:
+        version: default
+        name: Pop!_OS
+        gccversioncommand: &gccdumpfullversion -dumpfullversion
+        programs: *debiandefaultprograms
+        libraries: *debiandefaultlibraries
   kali:
     id: kali
     releases:
@@ -176,6 +185,15 @@ distributions:
         gccversioncommand: *gccdumpversion
         programs: *archdefaultprograms
         libraries: *archdefaultlibraries
+  archlabs:
+    id: archlabs
+    releases:
+      default:
+        version: default
+        name: ArchLabs
+        gccversioncommand: *gccdumpversion
+        programs: *archdefaultprograms
+        libraries: *archdefaultlibraries        
   manjaro:
     id: manjaro
     releases:
@@ -223,6 +241,25 @@ distributions:
         gccversioncommand: *gccdumpfullversion
         programs: *debiandefaultprograms
         libraries: *debiandefaultlibraries
+  solus:
+    id: solus
+    releases:
+      default:
+        version: default
+        name: Solus
+        gccversioncommand: *gccdumpfullversion
+        programs: &solusdefaultprograms
+          - name: gcc
+            help: Please install with `sudo eopkg it -c system.devel` and try again
+          - name: pkg-config
+            help: Please install with `sudo eopkg it -c system.devel` and try again
+          - name: npm
+            help: Please install with `sudo eopkg it nodejs` and try again
+        libraries: &solusdefaultlibraries
+          - name: libgtk-3-devel
+            help: Please install with `sudo eopkg it libgtk-3-devel` and try again
+          - name: libwebkit-gtk-devel
+            help: Please install with `sudo eopkg it libwebkit-gtk-devel` and try again
         
   opensuse-tumbleweed:
     id: opensuse-tumbleweed

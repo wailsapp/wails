@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"bufio"
 	"bytes"
+	"encoding/binary"
 	"fmt"
 	"image"
+	"image/png"
 	"io/ioutil"
 	"os"
 	"path"
@@ -14,6 +17,7 @@ import (
 	"time"
 
 	"github.com/jackmordaunt/icns"
+	"golang.org/x/image/draw"
 )
 
 // PackageHelper helps with the 'wails package' command
@@ -53,6 +57,111 @@ func newPlistData(title, exe, packageID, version, author string) *plistData {
 		Author:    author,
 		Date:      now,
 	}
+}
+
+type windowsIcoHeader struct {
+	_          uint16
+	imageType  uint16
+	imageCount uint16
+}
+
+type windowsIcoDescriptor struct {
+	width   uint8
+	height  uint8
+	colours uint8
+	_       uint8
+	planes  uint16
+	bpp     uint16
+	size    uint32
+	offset  uint32
+}
+
+type windowsIcoContainer struct {
+	Header windowsIcoDescriptor
+	Data   []byte
+}
+
+func generateWindowsIcon(pngFilename string, iconfile string) error {
+	sizes := []int{256, 128, 64, 48, 32, 16}
+
+	pngfile, err := os.Open(pngFilename)
+	if err != nil {
+		return err
+	}
+	defer pngfile.Close()
+
+	pngdata, err := png.Decode(pngfile)
+	if err != nil {
+		return err
+	}
+
+	icons := []windowsIcoContainer{}
+
+	for _, size := range sizes {
+		rect := image.Rect(0, 0, int(size), int(size))
+		rawdata := image.NewRGBA(rect)
+		scale := draw.CatmullRom
+		scale.Scale(rawdata, rect, pngdata, pngdata.Bounds(), draw.Over, nil)
+
+		icondata := new(bytes.Buffer)
+		writer := bufio.NewWriter(icondata)
+		err = png.Encode(writer, rawdata)
+		if err != nil {
+			return err
+		}
+		writer.Flush()
+
+		imgSize := size
+		if imgSize >= 256 {
+			imgSize = 0
+		}
+
+		data := icondata.Bytes()
+
+		icn := windowsIcoContainer{
+			Header: windowsIcoDescriptor{
+				width:  uint8(imgSize),
+				height: uint8(imgSize),
+				planes: 1,
+				bpp:    32,
+				size:   uint32(len(data)),
+			},
+			Data: data,
+		}
+		icons = append(icons, icn)
+	}
+
+	outfile, err := os.Create(iconfile)
+	if err != nil {
+		return err
+	}
+	defer outfile.Close()
+
+	ico := windowsIcoHeader{
+		imageType:  1,
+		imageCount: uint16(len(sizes)),
+	}
+	err = binary.Write(outfile, binary.LittleEndian, ico)
+	if err != nil {
+		return err
+	}
+
+	offset := uint32(6 + 16*len(sizes))
+	for _, icon := range icons {
+		icon.Header.offset = offset
+		err = binary.Write(outfile, binary.LittleEndian, icon.Header)
+		if err != nil {
+			return err
+		}
+		offset += icon.Header.size
+	}
+	for _, icon := range icons {
+		_, err = outfile.Write(icon.Data)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func defaultString(val string, defaultVal string) string {
@@ -177,14 +286,16 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	outputDir := b.fs.Cwd()
 	basename := strings.TrimSuffix(po.BinaryName, ".exe")
 
-	// Copy icon
-	tgtIconFile := filepath.Join(outputDir, basename+".ico")
-	if !b.fs.FileExists(tgtIconFile) {
-		srcIconfile := filepath.Join(b.getPackageFileBaseDir(), "wails.ico")
-		err := b.fs.CopyFile(srcIconfile, tgtIconFile)
-		if err != nil {
-			return err
-		}
+	// Copy default icon if needed
+	icon, err := b.copyIcon()
+	if err != nil {
+		return err
+	}
+
+	// Generate icon from PNG
+	err = generateWindowsIcon(icon, po.BinaryName+".ico")
+	if err != nil {
+		return err
 	}
 
 	// Copy manifest
@@ -243,7 +354,7 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	return nil
 }
 
-func (b *PackageHelper) copyIcon(resourceDir string) (string, error) {
+func (b *PackageHelper) copyIcon() (string, error) {
 
 	// TODO: Read this from project.json
 	const appIconFilename = "appicon.png"
@@ -268,7 +379,7 @@ func (b *PackageHelper) copyIcon(resourceDir string) (string, error) {
 
 func (b *PackageHelper) packageIconOSX(resourceDir string) error {
 
-	srcIcon, err := b.copyIcon(resourceDir)
+	srcIcon, err := b.copyIcon()
 	if err != nil {
 		return err
 	}

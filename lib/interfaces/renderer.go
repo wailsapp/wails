@@ -17,9 +17,9 @@ type Renderer interface {
 	NotifyEvent(eventData *messages.EventData) error
 
 	// Dialog Runtime
-	SelectFile() string
+	SelectFile(title string, filter string) string
 	SelectDirectory() string
-	SelectSaveFile() string
+	SelectSaveFile(title string, filter string) string
 
 	// Window Runtime
 	SetColour(string) error
