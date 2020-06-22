@@ -561,6 +561,11 @@ func ldFlags(po *ProjectOptions, buildMode string) string {
 
 	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
 
+	// Add additional ldflags passed in via the `ldflags` cli flag
+	if len(po.LdFlags) > 0 {
+		ldflags += " " + po.LdFlags
+	}
+
 	// If we wish to generate typescript
 	if po.typescriptDefsFilename != "" {
 		cwd, err := os.Getwd()
