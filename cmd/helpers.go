@@ -569,5 +569,8 @@ func ldFlags(po *ProjectOptions, buildMode string) string {
 			ldflags += " -X github.com/wailsapp/wails/lib/binding.typescriptDefinitionFilename=" + filename
 		}
 	}
+	if len(os.Getenv("GOLDFLAGS")) > 0 {
+		ldflags += " " + strings.ReplaceAll(os.Getenv("GOLDFLAGS"), "\"", "")
+	}
 	return ldflags
 }
