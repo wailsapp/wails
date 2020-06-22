@@ -29,6 +29,7 @@ func init() {
 	var typescriptFilename = ""
 	var verbose = false
 	var platform = ""
+	var ldflags = ""
 
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
@@ -40,7 +41,8 @@ func init() {
 		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
 		BoolFlag("d", "Build in Debug mode", &debugMode).
 		BoolFlag("verbose", "Verbose output", &verbose).
-		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename)
+		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename).
+		StringFlag("ldflags", "Extra options for -ldflags", &ldflags)
 
 	var b strings.Builder
 	for _, plat := range getSupportedPlatforms() {
@@ -84,7 +86,7 @@ func init() {
 				}
 			}
 			if !supported {
-				return fmt.Errorf("Unsupported platform '%s' specified.\nPlease run `wails build -h` to see the supported platform/architecture options.", platform)
+				return fmt.Errorf("unsupported platform '%s' specified.\nPlease run `wails build -h` to see the supported platform/architecture options", platform)
 			}
 
 			projectOptions.CrossCompile = true
@@ -92,6 +94,9 @@ func init() {
 			projectOptions.Platform = plat[0]
 			projectOptions.Architecture = plat[1]
 		}
+
+		// Add ldflags
+		projectOptions.LdFlags = ldflags
 
 		// Validate config
 		// Check if we have a frontend
