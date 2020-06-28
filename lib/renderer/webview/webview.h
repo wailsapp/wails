@@ -447,6 +447,7 @@ struct webview_priv
           }
           gtk_file_filter_set_name(file_filter, filter);
           gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dlg), file_filter);
+          g_strfreev(filters);
       }
       gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dlg), FALSE);
       gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dlg), FALSE);
