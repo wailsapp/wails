@@ -293,7 +293,7 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	}
 
 	// Generate icon from PNG
-	err = generateWindowsIcon(icon, po.BinaryName+".ico")
+	err = generateWindowsIcon(icon, basename+".ico")
 	if err != nil {
 		return err
 	}
