@@ -21,10 +21,9 @@ require (
 	github.com/sirupsen/logrus v1.4.1
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/syossan27/tebata v0.0.0-20180602121909-b283fe4bc5ba
-	golang.org/x/crypto v0.0.0-20190510104115-cbcb75029529 // indirect
 	golang.org/x/image v0.0.0-20200430140353-33d19683fad8
-	golang.org/x/net v0.0.0-20190509222800-a4d6f7feada5 // indirect
-	golang.org/x/sys v0.0.0-20190509141414-a5b02f93d862
+	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
+	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
 	golang.org/x/text v0.3.0
 	gopkg.in/AlecAivazis/survey.v1 v1.8.4
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
