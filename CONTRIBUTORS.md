@@ -15,7 +15,6 @@ Wails is what it is because of the time and effort given by these great people. 
   * [admin_3.exe](https://github.com/bh90210)
   * [iceleo-com](https://github.com/iceleo-com)
   * [fallendusk](https://github.com/fallendusk)
-  * [Florian Didran](https://github.com/fdidron)
   * [Nikolai Zimmermann](https://github.com/Chronophylos)
   * [Toyam Cox](https://github.com/Vaelatern)
   * [Robin Eklind](https://github.com/mewmew)
