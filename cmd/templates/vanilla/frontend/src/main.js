@@ -1,9 +1,8 @@
-
+import 'core-js/stable';
 const runtime = require('@wailsapp/runtime');
 
-// We need to wait for runtime.Init to complete before 
-// running our JS
-runtime.Init(() => {
+// Main entry point
+function start() {
 
 	// Ensure the default app div is 100% wide/high
 	var app = document.getElementById('app');
@@ -20,9 +19,12 @@ runtime.Init(() => {
 	`;
 
 	// Connect button to Go method
-	document.getElementById('button').onclick = () => {
-		window.backend.basic().then((result) => {
+	document.getElementById('button').onclick = function() {
+		window.backend.basic().then( function(result) {
 			document.getElementById('result').innerText = result;
-		})
-	} 
-});
+		});
+	};
+};
+
+// We provide our entrypoint as a callback for runtime.Init
+runtime.Init(start);
