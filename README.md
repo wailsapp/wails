@@ -36,7 +36,7 @@ The official docs can be found at [https://wails.app](https://wails.app).
 
 Wails uses cgo to bind to the native rendering engines so a number of platform dependent libraries are needed as well as an installation of Go. The basic requirements are:
 
-- Go 1.12
+- Go 1.13
 - npm
 
 ### MacOS
