@@ -37,12 +37,13 @@ func NewSystemHelper() *SystemHelper {
 // setSystemDirs calculates the system directories it is interested in
 func (s *SystemHelper) setSystemDirs() {
 	var err error
-	s.homeDir, err = os.UserHomeDir()
+	s.homeDir, err = os.UserConfigDir()
 	if err != nil {
 		log.Fatal("Cannot find home directory! Please file a bug report!")
 	}
+
 	// TODO: A better config system
-	s.wailsSystemDir = filepath.Join(s.homeDir, ".wails")
+	s.wailsSystemDir = filepath.Join(s.homeDir, "wails")
 	s.wailsSystemConfig = filepath.Join(s.wailsSystemDir, s.configFilename)
 }
 
