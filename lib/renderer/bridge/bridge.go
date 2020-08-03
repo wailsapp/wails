@@ -157,7 +157,7 @@ func (h *Bridge) NotifyEvent(event *messages.EventData) error {
 		}
 	}
 
-	message := fmt.Sprintf("window.wails._.Notify('%s','%s')", event.Name, data)
+	message := "window.wails._.Notify('" + event.Name + "','" + string(data) + "')"
 	dead := []*session{}
 	for _, session := range h.sessions {
 		err := session.evalJS(message, notifyMessage)
