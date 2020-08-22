@@ -212,6 +212,8 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 	packageID := strings.Join([]string{"wails", name, version}, ".")
 	plistData := newPlistData(name, exe, packageID, version, author)
 	appname := po.Name + ".app"
+	plistFilename := path.Join(build, appname, "Contents", "Info.plist")
+	customPlist := path.Join(b.fs.Cwd(), "info.plist")
 
 	// Check binary exists
 	source := path.Join(build, exe)
@@ -230,28 +232,48 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 	// Remove the existing package
 	os.RemoveAll(appname)
 
+	// Create directories
 	exeDir := path.Join(build, appname, "/Contents/MacOS")
 	b.fs.MkDirs(exeDir, 0755)
 	resourceDir := path.Join(build, appname, "/Contents/Resources")
 	b.fs.MkDirs(resourceDir, 0755)
-	tmpl := template.New("infoPlist")
-	plistFile := filepath.Join(b.getPackageFileBaseDir(), "info.plist")
-	infoPlist, err := ioutil.ReadFile(plistFile)
-	if err != nil {
-		return err
-	}
-	tmpl.Parse(string(infoPlist))
 
-	// Write the template to a buffer
-	var tpl bytes.Buffer
-	err = tmpl.Execute(&tpl, plistData)
-	if err != nil {
-		return err
-	}
-	filename := path.Join(build, appname, "Contents", "Info.plist")
-	err = ioutil.WriteFile(filename, tpl.Bytes(), 0644)
-	if err != nil {
-		return err
+	// Do we have a custom plist in the project directory?
+	if !fs.FileExists(customPlist) {
+
+		// No - create a new plist from our defaults
+		tmpl := template.New("infoPlist")
+		plistFile := filepath.Join(b.getPackageFileBaseDir(), "info.plist")
+		infoPlist, err := ioutil.ReadFile(plistFile)
+		if err != nil {
+			return err
+		}
+		tmpl.Parse(string(infoPlist))
+
+		// Write the template to a buffer
+		var tpl bytes.Buffer
+		err = tmpl.Execute(&tpl, plistData)
+		if err != nil {
+			return err
+		}
+
+		// Save to the package
+		err = ioutil.WriteFile(plistFilename, tpl.Bytes(), 0644)
+		if err != nil {
+			return err
+		}
+
+		// Also write to project directory for customisation
+		err = ioutil.WriteFile(customPlist, tpl.Bytes(), 0644)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Yes - we have a plist. Copy it to the package verbatim
+		err = fs.CopyFile(customPlist, plistFilename)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Copy executable
