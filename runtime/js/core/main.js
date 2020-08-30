@@ -15,6 +15,7 @@ import { NewBinding } from './bindings';
 import { Callback } from './calls';
 import { AddScript, InjectCSS } from './utils';
 import { AddIPCListener } from './ipc';
+import * as Store from './store';
 
 // Initialise global if not already
 window.wails = window.wails || {};
@@ -42,6 +43,7 @@ var runtime = {
 		Heartbeat,
 		Acknowledge,
 	},
+	Store,
 	_: internal,
 };
 
