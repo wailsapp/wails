@@ -21,6 +21,9 @@ declare const wailsapp__runtime: {
         Info(message: string): void;
         Warning(message: string): void;
     };
+    Store: {
+        New(name: string, optionalDefault?: any): any;
+    };
 };
 
 
