@@ -1,48 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Modal from 'react-modal';
 
-class HelloWorld extends React.Component {
-  constructor(props, context) {
-    super();
-    this.state = {
-      showModal: false
-    };
+function HelloWorld() {
+  const [showModal, setShowModal] = useState(false);
+  const [result, setResult] = useState(null);
 
-    this.handleOpenModal = this.handleOpenModal.bind(this);
-    this.handleCloseModal = this.handleCloseModal.bind(this);
-  }
+  const handleOpenModal = () => {
+    setShowModal(true);
 
-  handleOpenModal () {
-    this.setState({ showModal: true });
+    window.backend.basic().then((result) => setResult(result));
+  };
 
-    window.backend.basic().then(result =>
-      this.setState({
-        result
-      })
-    );
-  }
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
 
-  handleCloseModal () {
-    this.setState({ showModal: false });
-  }
-
-  render() {
-    const { result } = this.state;
-    return (
-      <div className="App">
-        <button onClick={this.handleOpenModal} type="button">
-          Hello
-        </button>
-        <Modal
-          isOpen={this.state.showModal}
-          contentLabel="Minimal Modal Example"
-        >
+  return (
+    <div className="App">
+      <button onClick={() => handleOpenModal()} type="button">
+        Hello
+      </button>
+      <Modal
+        appElement={document.getElementById("app")}
+        isOpen={showModal}
+        contentLabel="Minimal Modal Example"
+      >
         <p>{result}</p>
-        <button onClick={this.handleCloseModal}>Close Modal</button>
-        </Modal>
-      </div>
-    );
-  }
+        <button onClick={() => handleCloseModal()}>Close Modal</button>
+      </Modal>
+    </div>
+  );
 }
 
 export default HelloWorld;
