@@ -13,12 +13,18 @@ import (
 	"github.com/wailsapp/wails/lib/ipc"
 	"github.com/wailsapp/wails/lib/logger"
 	"github.com/wailsapp/wails/lib/renderer"
+	wailsruntime "github.com/wailsapp/wails/runtime"
 )
 
 // -------------------------------- Compile time Flags ------------------------------
 
 // BuildMode indicates what mode we are in
 var BuildMode = cmd.BuildModeProd
+
+type Runtime = wailsruntime.Runtime
+type Store = wailsruntime.Store
+
+type CustomLogger = logger.CustomLogger
 
 // ----------------------------------------------------------------------------------
 
@@ -125,7 +131,7 @@ func (a *App) start() error {
 	a.ipc.Start(a.eventManager, a.bindingManager)
 
 	// Create the runtime
-	a.runtime = NewRuntime(a.eventManager, a.renderer)
+	a.runtime = wailsruntime.NewRuntime(a.eventManager, a.renderer)
 
 	// Start binding manager and give it our renderer
 	err = a.bindingManager.Start(a.renderer, a.runtime)
