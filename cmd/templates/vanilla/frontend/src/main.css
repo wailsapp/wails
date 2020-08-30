@@ -2,8 +2,9 @@
 html, 
 body {
   background-color: white;
-  width: 1024px;
-  height: 768px;
+  width: 100%;
+  height: 100%;
+  margin: 0;
 }
 
 .container {
@@ -16,6 +17,16 @@ body {
 
 button {
   font-size: 1rem;
+}
+
+#newCounter {
+  color: white;
+}
+
+.result {
+  margin-top: 3rem;
+  text-align: center;
+  font-size: 2rem;
 }
 
 .logo {
