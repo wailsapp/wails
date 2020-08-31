@@ -24,24 +24,11 @@ func (c *Counter) RandomValue() {
 	c.store.Set(rand.Intn(1000))
 }
 
-func (c *Counter) getInt(data interface{}) int {
-
-	switch value := data.(type) {
-	case float64:
-		// All numbers sent by the frontend are float64
-		// so we need to convert it back to an int
-		return int(value)
-	default:
-		return value.(int)
-	}
-}
-
 // Increment will increment the counter
 func (c *Counter) Increment() {
 
-	increment := func(data interface{}) interface{} {
-		currentValue := c.getInt(data)
-		return currentValue + 1
+	increment := func(data int) int {
+		return data + 1
 	}
 
 	// Update the store using the increment function
@@ -51,9 +38,8 @@ func (c *Counter) Increment() {
 // Decrement will decrement the counter
 func (c *Counter) Decrement() {
 
-	decrement := func(data interface{}) interface{} {
-		currentValue := c.getInt(data)
-		return currentValue - 1
+	decrement := func(data int) int {
+		return data - 1
 	}
 	// Update the store using the decrement function
 	c.store.Update(decrement)
