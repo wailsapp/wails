@@ -15,8 +15,7 @@ type Counter struct {
 // WailsInit is called when the component is being initialised
 func (c *Counter) WailsInit(runtime *wails.Runtime) error {
 	c.r = runtime
-	c.store = runtime.Store.New("Counter")
-	c.store.Set(0)
+	c.store = runtime.Store.New("Counter", 0)
 	return nil
 }
 

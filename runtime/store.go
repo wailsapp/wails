@@ -1,4 +1,12 @@
+// Package runtime contains all the methods and data structures related to the
+// runtime library of Wails. This includes both Go and JS runtimes.
 package runtime
+
+import (
+	"bytes"
+	"encoding/json"
+	"reflect"
+)
 
 // Options defines the optional data that may be used
 // when creating a Store
@@ -16,10 +24,12 @@ type Options struct {
 	NotifySynchronously bool
 }
 
+// StoreProvider is a struct that creates Stores
 type StoreProvider struct {
 	runtime *Runtime
 }
 
+// NewStoreProvider creates new stores using the provided Runtime reference.
 func NewStoreProvider(runtime *Runtime) *StoreProvider {
 	return &StoreProvider{
 		runtime: runtime,
@@ -30,21 +40,28 @@ func NewStoreProvider(runtime *Runtime) *StoreProvider {
 type Store struct {
 	name                string
 	data                interface{}
+	dataType            reflect.Type
+	structType          bool
 	eventPrefix         string
 	callbacks           []func(interface{})
 	runtime             *Runtime
 	notifySynchronously bool
+
+	// Error handler
+	errorHandler func(error)
 }
 
 // New creates a new store
-func (p *StoreProvider) New(name string) *Store {
+func (p *StoreProvider) New(name string, defaultValue interface{}) *Store {
 
 	result := Store{
 		name:    name,
 		runtime: p.runtime,
+		data:    defaultValue,
 	}
 
-	result.setupListner()
+	// initialise the store
+	result.init()
 
 	return &result
 }
@@ -60,12 +77,90 @@ func (p *StoreProvider) NewWithOptions(options Options) *Store {
 	return &result
 }
 
-func (s *Store) setupListner() {
-	// Setup listener
-	s.runtime.Events.On("wails:sync:store:updated:"+s.name, func(data ...interface{}) {
+// OnError takes a function that will be called
+// whenever an error occurs
+func (s *Store) OnError(callback func(error)) {
+	s.errorHandler = callback
+}
 
-		// store the data
-		s.data = data[0]
+// init the store
+func (s *Store) init() {
+
+	// Get the type of the data
+	s.dataType = reflect.TypeOf(s.data)
+
+	// Determine if this is a struct type
+	s.structType = s.dataType.Kind() == reflect.Ptr
+
+	// Setup the sync listener
+	s.setupListener()
+}
+
+// processUpdatedScalar will process the given scalar json
+func (s *Store) processUpdatedScalar(data json.RawMessage) error {
+
+	// Unmarshall the value
+	var decodedVal interface{}
+	err := json.Unmarshal(data, &decodedVal)
+	if err != nil {
+		return err
+	}
+
+	// Convert to correct type
+	if decodedVal == nil {
+		s.data = reflect.Zero(s.dataType).Interface()
+	} else {
+		s.data = reflect.ValueOf(decodedVal).Convert(s.dataType).Interface()
+	}
+
+	return nil
+}
+
+// processUpdatedStruct will process the given struct json
+func (s *Store) processUpdatedStruct(data json.RawMessage) error {
+
+	newData := reflect.New(s.dataType.Elem()).Interface()
+	err := json.Unmarshal(data, &newData)
+	if err != nil {
+		return err
+	}
+	s.data = newData
+	return nil
+}
+
+// Processes the updates sent by the front end
+func (s *Store) processUpdatedData(data string) error {
+
+	var rawdata json.RawMessage
+	d := json.NewDecoder(bytes.NewBufferString(data))
+	err := d.Decode(&rawdata)
+	if err != nil {
+		return err
+	}
+
+	// If it's a struct process it differently
+	if s.structType {
+		return s.processUpdatedStruct(rawdata)
+	}
+
+	return s.processUpdatedScalar(rawdata)
+
+}
+
+// Setup listener for front end changes
+func (s *Store) setupListener() {
+
+	// Listen for updates from the front end
+	s.runtime.Events.On("wails:sync:store:updatedbyfrontend:"+s.name, func(data ...interface{}) {
+
+		// Process the incoming data
+		err := s.processUpdatedData(data[0].(string))
+
+		if err != nil {
+			if s.errorHandler != nil {
+				s.errorHandler(err)
+			}
+		}
 
 		// Notify listeners
 		s.notify()
@@ -94,10 +189,18 @@ func (s *Store) Set(data interface{}) {
 	// Save data
 	s.data = data
 
-	// Emit event
-	s.runtime.Events.Emit("wails:sync:store:updated:"+s.name, s.data)
+	// Stringify data
+	newdata, err := json.Marshal(s.data)
+	if err != nil {
+		if s.errorHandler != nil {
+			s.errorHandler(err)
+		}
+	}
 
-	// Notify listeners
+	// Emit event to front end
+	s.runtime.Events.Emit("wails:sync:store:updatedbybackend:"+s.name, string(newdata))
+
+	// Notify subscribers
 	s.notify()
 }
 
