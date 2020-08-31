@@ -21,9 +21,14 @@ import (
 // BuildMode indicates what mode we are in
 var BuildMode = cmd.BuildModeProd
 
+// Runtime is the Go Runtime struct
 type Runtime = wailsruntime.Runtime
+
+// Store is a state store used for syncing with
+// the front end
 type Store = wailsruntime.Store
 
+// CustomLogger is a specialised logger
 type CustomLogger = logger.CustomLogger
 
 // ----------------------------------------------------------------------------------
