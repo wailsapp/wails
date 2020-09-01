@@ -43,7 +43,6 @@ type Store struct {
 	name                string
 	data                reflect.Value
 	dataType            reflect.Type
-	structType          bool
 	eventPrefix         string
 	callbacks           []func(interface{})
 	runtime             *Runtime
@@ -59,11 +58,10 @@ func (p *StoreProvider) New(name string, defaultValue interface{}) *Store {
 	dataType := reflect.TypeOf(defaultValue)
 
 	result := Store{
-		name:       name,
-		runtime:    p.runtime,
-		data:       reflect.ValueOf(defaultValue),
-		dataType:   dataType,
-		structType: dataType.Kind() == reflect.Ptr,
+		name:     name,
+		runtime:  p.runtime,
+		data:     reflect.ValueOf(defaultValue),
+		dataType: dataType,
 	}
 
 	// Setup the sync listener
@@ -78,41 +76,10 @@ func (s *Store) OnError(callback func(error)) {
 	s.errorHandler = callback
 }
 
-// processUpdatedScalar will process the given scalar json
-func (s *Store) processUpdatedScalar(data json.RawMessage) error {
-
-	// Unmarshall the value
-	var decodedVal interface{}
-	err := json.Unmarshal(data, &decodedVal)
-	if err != nil {
-		return err
-	}
-
-	// Convert to correct type
-	if decodedVal == nil {
-		s.data = reflect.Zero(s.dataType)
-	} else {
-		s.data = reflect.ValueOf(decodedVal).Convert(s.dataType)
-	}
-
-	return nil
-}
-
-// processUpdatedStruct will process the given struct json
-func (s *Store) processUpdatedStruct(data json.RawMessage) error {
-
-	newData := reflect.New(s.dataType.Elem()).Interface()
-	err := json.Unmarshal(data, &newData)
-	if err != nil {
-		return err
-	}
-	s.data = reflect.ValueOf(newData)
-	return nil
-}
-
 // Processes the updates sent by the front end
 func (s *Store) processUpdatedData(data string) error {
 
+	// Decode incoming data
 	var rawdata json.RawMessage
 	d := json.NewDecoder(bytes.NewBufferString(data))
 	err := d.Decode(&rawdata)
@@ -120,13 +87,23 @@ func (s *Store) processUpdatedData(data string) error {
 		return err
 	}
 
-	// If it's a struct process it differently
-	if s.structType {
-		return s.processUpdatedStruct(rawdata)
+	// Create a new instance of our data and unmarshal
+	// the received value into it
+	newData := reflect.New(s.dataType).Interface()
+	err = json.Unmarshal(rawdata, &newData)
+	if err != nil {
+		return err
 	}
 
-	return s.processUpdatedScalar(rawdata)
+	// Handle nulls
+	if newData == nil {
+		s.data = reflect.Zero(s.dataType)
+	} else {
+		// Store the resultant value in the data store
+		s.data = reflect.ValueOf(newData).Elem()
+	}
 
+	return nil
 }
 
 // Setup listener for front end changes
@@ -153,7 +130,7 @@ func (s *Store) setupListener() {
 // notify the listeners of the current data state
 func (s *Store) notify() {
 
-	// Notify callbacks
+	// Execute callbacks
 	for _, callback := range s.callbacks {
 
 		if s.notifySynchronously {
@@ -202,6 +179,9 @@ func (s *Store) Subscribe(callback func(interface{})) {
 	s.callbacks = append(s.callbacks, callback)
 }
 
+// updaterCheck ensures the given function to Update() is
+// of the correct signature. Absolutely cannot wait for
+// generics to land rather than writing this nonsense.
 func (s *Store) updaterCheck(updater interface{}) error {
 
 	// Get type
