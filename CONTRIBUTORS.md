@@ -32,3 +32,4 @@ Wails is what it is because of the time and effort given by these great people. 
   * [Zámbó, Levente](https://github.com/Lyimmi)
   * [artem](https://github.com/Unix4ever)
   * [Tim Kipp](https://github.com/timkippdev)
+  * [Dmitry Gomzyakov](https://github.com/kyoto44)
