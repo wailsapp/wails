@@ -4,7 +4,7 @@ const runtime = require('@wailsapp/runtime');
 // Main entry point
 function start() {
 
-	var mystore = runtime.Store.New('Counter');
+	var mystore = wails.Store.New('Counter');
 
 	// Ensure the default app div is 100% wide/high
 	var app = document.getElementById('app');
@@ -39,7 +39,7 @@ function start() {
 	mystore.subscribe( (state) => {
 		document.getElementById('counter').innerText = state;
 	});
-	
+
 	mystore.set(0);
 };
 
