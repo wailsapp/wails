@@ -196,7 +196,7 @@ func (b *boundMethod) processWailsInit() error {
 	// It must be *wails.Runtime
 	inputName := b.inputs[0].String()
 	b.log.Debugf("WailsInit input type: %s", inputName)
-	if inputName != "*wails.Runtime" {
+	if inputName != "*runtime.Runtime" {
 		return fmt.Errorf("Invalid WailsInit() definition. Expected input to be wails.Runtime, but got %s", inputName)
 	}
 
@@ -219,7 +219,7 @@ func (b *boundMethod) processWailsInit() error {
 }
 
 func (b *boundMethod) processWailsShutdown() error {
-	// We must have only 1 input, it must be *wails.Runtime
+	// We must not have any inputs
 	if len(b.inputs) != 0 {
 		return fmt.Errorf("Invalid WailsShutdown() definition. Expected 0 inputs, but got %d", len(b.inputs))
 	}

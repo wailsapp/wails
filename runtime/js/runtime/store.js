@@ -7,18 +7,21 @@
 The lightweight framework for web-like apps
 (c) Lea Anthony 2019-present
 */
+
 /* jshint esversion: 6 */
 
-const Log = require('./log');
-const Browser = require('./browser');
-const Events = require('./events');
-const Init = require('./init');
-const Store = require('./store');
+
+/**
+ * Create a new Store with the given name and optional default value
+ *
+ * @export
+ * @param {string} name
+ * @param {*} optionalDefault
+ */
+function New(name, optionalDefault) {
+	return window.wails.Store.New(name, optionalDefault);
+}
 
 module.exports = {
-	Log: Log,
-	Browser: Browser,
-	Events: Events,
-	Init: Init,
-	Store: Store,
+	New: New,
 };
