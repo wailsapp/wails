@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"sync"
 )
 
 // Options defines the optional data that may be used
@@ -47,6 +48,9 @@ type Store struct {
 	callbacks           []func(interface{})
 	runtime             *Runtime
 	notifySynchronously bool
+
+	// Lock
+	mux sync.Mutex
 
 	// Error handler
 	errorHandler func(error)
@@ -95,6 +99,9 @@ func (s *Store) processUpdatedData(data string) error {
 		return err
 	}
 
+	// Lock mutex for writing
+	s.mux.Lock()
+
 	// Handle nulls
 	if newData == nil {
 		s.data = reflect.Zero(s.dataType)
@@ -102,6 +109,9 @@ func (s *Store) processUpdatedData(data string) error {
 		// Store the resultant value in the data store
 		s.data = reflect.ValueOf(newData).Elem()
 	}
+
+	// Unlock mutex
+	s.mux.Unlock()
 
 	return nil
 }
@@ -153,7 +163,9 @@ func (s *Store) Set(data interface{}) error {
 	}
 
 	// Save data
+	s.mux.Lock()
 	s.data = reflect.ValueOf(data)
+	s.mux.Unlock()
 
 	// Stringify data
 	newdata, err := json.Marshal(data)
