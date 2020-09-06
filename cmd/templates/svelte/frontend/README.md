@@ -57,20 +57,6 @@ If you're building a single-page app (SPA) with multiple routes, sirv needs to b
 "start": "sirv public --single"
 ```
 
-## Using TypeScript
-
-This template comes with a script to set up a TypeScript development environment, you can run it immediately after cloning the template with:
-
-```bash
-node scripts/setupTypeScript.js
-```
-
-Or remove the script via:
-
-```bash
-rm scripts/setupTypeScript.js
-```
-
 ## Deploying to the web
 
 ### With [Vercel](https://vercel.com)
