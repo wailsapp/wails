@@ -12,8 +12,6 @@
 			<Modal>
 				<img src={logo} class="App-logo" alt="logo" />
 				<p>Welcome to your new <code>wails/svelte</code> project.</p>
-				<p>Visit the <a href="https://svelte.dev/tutorial" class="App-link">Svelte tutorial</a> to learn how to build Svelte apps.</p>
-				
 				<HelloWorld/>
 			</Modal>
 		</header>
@@ -58,10 +56,6 @@
 		justify-content: center;
 		font-size: calc(10px + 2vmin);
 		color: white;
-	}
-
-	.App-link {
-		color: #61dafb;
 	}
 
 	@keyframes App-logo-spin {
