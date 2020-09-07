@@ -4,6 +4,8 @@ import commonjs from '@rollup/plugin-commonjs';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import image from '@rollup/plugin-image';
+import babel from 'rollup-plugin-babel';
+import polyfill from 'rollup-plugin-polyfill';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -66,6 +68,37 @@ export default {
 		// Watch the `public` directory and refresh the
 		// browser on changes when not in production
 		!production && livereload('public'),
+
+		// Credit: https://blog.az.sg/posts/svelte-and-ie11/
+		babel({
+			extensions: [ '.js', '.jsx', '.es6', '.es', '.mjs', '.svelte', '.html' ],
+			runtimeHelpers: true,
+			exclude: [ 'node_modules/@babel/**', 'node_modules/core-js/**' ],
+			presets: [
+			  [
+				'@babel/preset-env',
+				{
+				  targets: '> 0.25%, not dead, IE 11',
+				  modules: false,
+				  spec: true, 
+				  useBuiltIns: 'usage',
+				  forceAllTransforms: true,
+				  corejs: 3,
+				},
+
+			  ]
+			],
+			plugins: [
+			  '@babel/plugin-syntax-dynamic-import',
+			  [
+				'@babel/plugin-transform-runtime',
+				{
+				  useESModules: true
+				}
+			  ]
+			]
+		  }),
+		  polyfill(['@webcomponents/webcomponentsjs']),
 
 		// If we're building for production (npm run build
 		// instead of npm run dev), minify
