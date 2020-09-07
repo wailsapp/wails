@@ -36,7 +36,7 @@ function start() {
 		mystore.set(newValue);
 	};
 
-	mystore.subscribe( (state) => {
+	mystore.subscribe( function(state) {
 		document.getElementById('counter').innerText = state;
 	});
 	
