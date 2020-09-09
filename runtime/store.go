@@ -45,7 +45,7 @@ type Store struct {
 	data                reflect.Value
 	dataType            reflect.Type
 	eventPrefix         string
-	callbacks           []func(interface{})
+	callbacks           []reflect.Value
 	runtime             *Runtime
 	notifySynchronously bool
 
@@ -143,10 +143,13 @@ func (s *Store) notify() {
 	// Execute callbacks
 	for _, callback := range s.callbacks {
 
+		// Build args
+		args := []reflect.Value{s.data}
+
 		if s.notifySynchronously {
-			callback(s.data)
+			callback.Call(args)
 		} else {
-			go callback(s.data)
+			go callback.Call(args)
 		}
 
 	}
@@ -184,11 +187,50 @@ func (s *Store) Set(data interface{}) error {
 	return nil
 }
 
+// callbackCheck ensures the given function to Subscribe() is
+// of the correct signature. Absolutely cannot wait for
+// generics to land rather than writing this nonsense.
+func (s *Store) callbackCheck(callback interface{}) error {
+
+	// Get type
+	callbackType := reflect.TypeOf(callback)
+
+	// Check callback is a function
+	if callbackType.Kind() != reflect.Func {
+		return fmt.Errorf("invalid value given to store.Subscribe(). Expected 'func(%s)'", s.dataType.String())
+	}
+
+	// Check input param
+	if callbackType.NumIn() != 1 {
+		return fmt.Errorf("invalid number of parameters given in callback function. Expected 1")
+	}
+
+	// Check input data type
+	if callbackType.In(0) != s.dataType {
+		return fmt.Errorf("invalid type for input parameter given in callback function. Expected %s, got %s", s.dataType.String(), callbackType.In(0))
+	}
+
+	// Check output param
+	if callbackType.NumOut() != 0 {
+		return fmt.Errorf("invalid number of return parameters given in callback function. Expected 0")
+	}
+
+	return nil
+}
+
 // Subscribe will subscribe to updates to the store by
 // providing a callback. Any updates to the store are sent
 // to the callback
-func (s *Store) Subscribe(callback func(interface{})) {
-	s.callbacks = append(s.callbacks, callback)
+func (s *Store) Subscribe(callback interface{}) {
+
+	err := s.callbackCheck(callback)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	callbackFunc := reflect.ValueOf(callback)
+
+	s.callbacks = append(s.callbacks, callbackFunc)
 }
 
 // updaterCheck ensures the given function to Update() is
