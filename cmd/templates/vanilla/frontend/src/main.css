@@ -2,9 +2,15 @@
 html, 
 body {
   background-color: white;
+  color: black;
   width: 100%;
   height: 100%;
   margin: 0;
+}
+
+input {
+  background-color: rgb(254,254,254);
+  color: black;
 }
 
 .container {
@@ -17,10 +23,8 @@ body {
 
 button {
   font-size: 1rem;
-}
-
-#newCounter {
-  color: white;
+  background-color: white;
+  color: black;
 }
 
 .result {
