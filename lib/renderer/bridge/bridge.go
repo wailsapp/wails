@@ -152,12 +152,19 @@ func (h *Bridge) NotifyEvent(event *messages.EventData) error {
 		// Marshall the data
 		data, err = json.Marshal(event.Data)
 		if err != nil {
-			h.log.Errorf("Cannot unmarshall JSON data in event: %s ", err.Error())
+			h.log.Errorf("Cannot marshal JSON data in event: %s ", err.Error())
 			return err
 		}
 	}
 
-	message := fmt.Sprintf("window.wails._.Notify('%s','%s')", event.Name, data)
+	// Double encode data to ensure everything is escaped correctly.
+	data, err = json.Marshal(string(data))
+	if err != nil {
+		h.log.Errorf("Cannot marshal JSON data in event: %s ", err.Error())
+		return err
+	}
+
+	message := "window.wails._.Notify('" + event.Name + "'," + string(data) + ")"
 	dead := []*session{}
 	for _, session := range h.sessions {
 		err := session.evalJS(message, notifyMessage)

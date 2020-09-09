@@ -1431,6 +1431,13 @@ struct webview_priv
       style = WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
     }
 
+    // Scale
+    // Credit: https://github.com/webview/webview/issues/54#issuecomment-379528243
+    HDC hDC = GetDC(NULL);
+    w->width = GetDeviceCaps(hDC, 88)*w->width/96.0;
+    w->height = GetDeviceCaps(hDC, 90)*w->height/96.0;
+    ReleaseDC(NULL, hDC);
+
     rect.left = 0;
     rect.top = 0;
     rect.right = w->width;

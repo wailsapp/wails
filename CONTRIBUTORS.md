@@ -28,3 +28,8 @@ Wails is what it is because of the time and effort given by these great people. 
   * [msms](https://github.com/sayuthisobri)
   * [dedo1911](https://github.com/dedo1911)
   * [Florian Didron](https://github.com/fdidron)
+  * [Christopher Murphy](https://github.com/Splode)
+  * [Zámbó, Levente](https://github.com/Lyimmi)
+  * [artem](https://github.com/Unix4ever)
+  * [Tim Kipp](https://github.com/timkippdev)
+  * [Dmitry Gomzyakov](https://github.com/kyoto44)

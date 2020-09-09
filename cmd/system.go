@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
 	"time"
-
-	homedir "github.com/mitchellh/go-homedir"
 )
 
 // SystemHelper - Defines everything related to the system
@@ -38,10 +37,11 @@ func NewSystemHelper() *SystemHelper {
 // setSystemDirs calculates the system directories it is interested in
 func (s *SystemHelper) setSystemDirs() {
 	var err error
-	s.homeDir, err = homedir.Dir()
+	s.homeDir, err = os.UserHomeDir()
 	if err != nil {
 		log.Fatal("Cannot find home directory! Please file a bug report!")
 	}
+
 	// TODO: A better config system
 	s.wailsSystemDir = filepath.Join(s.homeDir, ".wails")
 	s.wailsSystemConfig = filepath.Join(s.wailsSystemDir, s.configFilename)
@@ -132,7 +132,7 @@ func (s *SystemHelper) setup() error {
 }
 
 const introText = `
-Wails is a lightweight framework for creating web-like desktop apps in Go. 
+Wails is a lightweight framework for creating web-like desktop apps in Go.
 I'll need to ask you a few questions so I can fill in your project templates and then I will try and see if you have the correct dependencies installed. If you don't have the right tools installed, I'll try and suggest how to install them.
 `
 
@@ -276,7 +276,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 		switch distroInfo.Distribution {
 		case Ubuntu, Debian, Zorin, Parrot, Linuxmint, Elementary, Kali, Neon, Deepin, Raspbian, PopOS:
 			libraryChecker = DpkgInstalled
-		case Arch, ArcoLinux, ArchLabs, Manjaro, ManjaroARM:
+		case Arch, ArcoLinux, ArchLabs, Ctlos, Manjaro, ManjaroARM:
 			libraryChecker = PacmanInstalled
 		case CentOS, Fedora, Tumbleweed, Leap:
 			libraryChecker = RpmInstalled

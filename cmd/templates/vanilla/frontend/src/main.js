@@ -4,6 +4,8 @@ const runtime = require('@wailsapp/runtime');
 // Main entry point
 function start() {
 
+	var mystore = runtime.Store.New('Counter');
+
 	// Ensure the default app div is 100% wide/high
 	var app = document.getElementById('app');
 	app.style.width = '100%';
@@ -13,17 +15,32 @@ function start() {
 	app.innerHTML = `
 	<div class='logo'></div>
 	<div class='container'>
-			<button id='button'>Click Me!</button>
-			<div id='result'/>
+	<button onClick='window.backend.Counter.Increment()'>
+		Increment Counter
+	</button>
+	<button onClick='window.backend.Counter.Decrement()'>
+		Decrement Counter
+		</button>
+	</div>
+	<div class='result'>Counter: <span id='counter'></span></div>
+	<div class='container'>
+		<input id='newCounter' type="number" value="0"/>
+		<button id='setvalue'>Set Counter Value</button>
+		<button onclick='window.backend.Counter.RandomValue()'>Set to Random Value</button>
 	</div>
 	`;
 
-	// Connect button to Go method
-	document.getElementById('button').onclick = function() {
-		window.backend.basic().then( function(result) {
-			document.getElementById('result').innerText = result;
-		});
+	// Connect counter value button to Go method
+	document.getElementById('setvalue').onclick = function() {
+		let newValue = parseInt(document.getElementById('newCounter').value,10);
+		mystore.set(newValue);
 	};
+
+	mystore.subscribe( function(state) {
+		document.getElementById('counter').innerText = state;
+	});
+	
+	mystore.set(0);
 };
 
 // We provide our entrypoint as a callback for runtime.Init

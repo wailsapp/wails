@@ -1,8 +1,8 @@
 {
   "name": "React JS",
   "version": "1.0.0",
-  "shortdescription": "Create React App v3 template",
-  "description": "Create React App v3 standar tooling",
+  "shortdescription": "Create React App v4 template",
+  "description": "Create React App v4 standard tooling",
   "install": "npm install",
   "build": "npm run build",
   "author": "bh90210 <ktc@pm.me>",

@@ -1,9 +1,9 @@
 package runtime
 
-import homedir "github.com/mitchellh/go-homedir"
+import "os"
 
 // FileSystem exposes file system utilities to the runtime
-type FileSystem struct {}
+type FileSystem struct{}
 
 // NewFileSystem creates a new FileSystem struct
 func NewFileSystem() *FileSystem {
@@ -12,5 +12,5 @@ func NewFileSystem() *FileSystem {
 
 // HomeDir returns the user's home directory
 func (r *FileSystem) HomeDir() (string, error) {
-	return homedir.Dir()
+	return os.UserHomeDir()
 }

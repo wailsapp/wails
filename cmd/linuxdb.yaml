@@ -193,7 +193,16 @@ distributions:
         name: ArchLabs
         gccversioncommand: *gccdumpversion
         programs: *archdefaultprograms
-        libraries: *archdefaultlibraries        
+        libraries: *archdefaultlibraries
+  ctlos:
+    id: ctlos
+    releases:
+      default:
+        version: default
+        name: Ctlos Linux
+        gccversioncommand: *gccdumpversion
+        programs: *archdefaultprograms
+        libraries: *archdefaultlibraries                
   manjaro:
     id: manjaro
     releases:

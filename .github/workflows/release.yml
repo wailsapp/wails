@@ -4,7 +4,7 @@ on:
     branches:
     - master
     tags:
-    - '!**pre**' 
+    - '!**pre**'
 jobs:
 
   build:
@@ -15,10 +15,10 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
 
-    - name: Set up Go 1.12
+    - name: Set up Go 1.13
       uses: actions/setup-go@v1
       with:
-        go-version: 1.12
+        go-version: 1.13
       id: go
 
     - name: Check out code into the Go module directory
@@ -29,6 +29,6 @@ jobs:
         go get -v -d ./...
     - name: Build
       run: go build -v ./cmd/wails
-    
+
     - name: Test
       run: ./wails version

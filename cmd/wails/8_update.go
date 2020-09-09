@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/leaanthony/spinner"
-	"github.com/mitchellh/go-homedir"
 	"github.com/wailsapp/wails/cmd"
 )
 
@@ -146,7 +146,7 @@ func updateToVersion(targetVersion *cmd.SemanticVersion, force bool) error {
 	updateSpinner.Start("Installing Wails " + desiredVersion)
 
 	// Run command in non module directory
-	homeDir, err := homedir.Dir()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal("Cannot find home directory! Please file a bug report!")
 	}

@@ -293,9 +293,11 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 				fmt.Println(err)
 			}
 		}
-		if projectOptions.Platform == "windows" {
-			helper.CleanWindows(projectOptions)
-		}
+		// Removed by popular demand
+		// TODO: Potentially add a flag to cleanup
+		// if projectOptions.Platform == "windows" {
+		// 	helper.CleanWindows(projectOptions)
+		// }
 	}()
 
 	if projectOptions.CrossCompile {

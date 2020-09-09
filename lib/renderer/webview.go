@@ -329,7 +329,14 @@ func (w *WebView) NotifyEvent(event *messages.EventData) error {
 		}
 	}
 
-	message := fmt.Sprintf("wails._.Notify('%s','%s')", event.Name, data)
+	// Double encode data to ensure everything is escaped correctly.
+	data, err = json.Marshal(string(data))
+	if err != nil {
+		w.log.Errorf("Cannot marshal JSON data in event: %s ", err.Error())
+		return err
+	}
+
+	message := "window.wails._.Notify('" + event.Name + "'," + string(data) + ")"
 	return w.evalJS(message)
 }
 
