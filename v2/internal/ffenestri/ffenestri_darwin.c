@@ -51,6 +51,7 @@ BOOL yes(id self, SEL cmd)
     return YES;
 }
 
+
 // Debug works like sprintf but mutes if the global debug flag is true
 // Credit: https://stackoverflow.com/a/20639708
 void Debug(char *message, ... ) {
@@ -64,6 +65,12 @@ void Debug(char *message, ... ) {
     free(message);
     va_end(args);
     }
+}
+
+
+void messageHandler(id self, SEL cmd, id contentController, id msg) {
+    // TODO: Pass message to callback in application object
+    Debug("TODO: Process message");
 }
 
 extern void messageFromWindowCallback(const char *);
@@ -684,12 +691,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
     class_addProtocol(delegateClass, objc_getProtocol("NSTouchBarProvider"));
     class_addMethod(delegateClass, s("applicationShouldTerminateAfterLastWindowClosed:"), (IMP) yes, "c@:@");
     // TODO: add userContentController:didReceiveScriptMessage
-    class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"),
-                    (IMP)(^(id self, SEL cmd, id contentController, id msg) {
-                    //   const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
-                    //   Debug("*** didReceiveScriptMessage: %p", message);
-                      Debug("Hi!");
-                    }),
+    class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler,
                     "v@:@@");
     objc_registerClassPair(delegateClass);
 
@@ -736,38 +738,49 @@ void Run(void *applicationPointer, int argc, char **argv) {
     // We want to evaluate the internal code plus runtime before the assets
     const char *temp = concat(invoke, app->bindings);
     const char *internalCode = concat(temp, (const char*)&runtime);
-    Debug("Internal code: %s", internalCode);
+    // Debug("Internal code: %s", internalCode);
     free((void*)temp);
 
-    // Evaluate internal code
-    msg(wkwebview, s("evaluateJavaScript:completionHandler:"),
-        msg(c("NSString"), s("stringWithUTF8String:"), (char*)internalCode), ^(id result, void *error) {
+    // Loop over assets
+    int index = 1;
+    while(1) {
+        // Get next asset pointer
+        const unsigned char *asset = assets[index];
 
-            Debug("Result: %p", result);
-            Debug("Error: %p", error);
+        // If we have no more assets, break
+        if (asset == 0x00) {
+            break;
+        }
+
+        temp = concat(internalCode, asset);
+        free((void*)internalCode);
+        internalCode = temp;
+        index++;
+    };
+
+    Debug("MOAE: %s", internalCode);
+
+    // Evaluate internal code
+    // ---------------------------------------------------------------
+    // TODO: WORK OUT WHY EXECUTING THE INTERNAL CODE BLOWS THE APP UP
+    // ---------------------------------------------------------------
+    msg(wkwebview, 
+        s("evaluateJavaScript:completionHandler:"),
+        msg(c("NSString"), s("stringWithUTF8String:"), (char*)internalCode), 
+        ^() {
+
+            // Debug("Result: %p", result);
+            // Debug("Error: %p", error);
             // Free internalCode memory
-            free((void*)internalCode);
+            // free((void*)internalCode);
 /*
             if( error != NULL) {
                 Debug("Error message: %s", error);
                 return;
             }
 */
-            // Loop over assets
-            int index = 0;
-            while(1) {
-                // Get next asset pointer
-                const unsigned char *asset = assets[index];
-
-                // If we have no more assets, break
-                if (asset == 0x00) {
-                    break;
-                }
-
-                // sync eval the asset
-                ExecJS(app, (char*)asset);
-                index++;
-            };
+        Debug("DO I CARE?");
+ 
 
         }
     );
