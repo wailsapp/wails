@@ -17,7 +17,7 @@ func deleteLinuxPackFiles(appDirBase string) {
 	os.RemoveAll(appDir)
 }
 
-func packageLinuxApplication(options *Options) error {
+func packageApplication(options *Options) error {
 
 	// Check we have AppImage tools
 

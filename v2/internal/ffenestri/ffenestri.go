@@ -15,6 +15,9 @@ import (
 #cgo linux CFLAGS: -DFFENESTRI_LINUX=1
 #cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
 
+#cgo darwin CFLAGS: -DFFENESTRI_DARWIN=1
+#cgo darwin LDFLAGS: -framework WebKit -lobjc
+
 #include <stdlib.h>
 #include "ffenestri.h"
 

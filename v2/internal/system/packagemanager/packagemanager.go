@@ -9,24 +9,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/shell"
 )
 
-// PackageManager is a common interface across all package managers
-type PackageManager interface {
-	Name() string
-	Packages() packagemap
-	PackageInstalled(*Package) (bool, error)
-	PackageAvailable(*Package) (bool, error)
-	InstallCommand(*Package) string
-}
-
-// Package contains information about a system package
-type Package struct {
-	Name           string
-	Version        string
-	InstallCommand map[string]string
-	SystemPackage  bool
-	Library        bool
-	Optional       bool
-}
 
 // A list of package manager commands
 var pmcommands = []string{
@@ -37,8 +19,6 @@ var pmcommands = []string{
 	"emerge",
 	"zypper",
 }
-
-type packagemap = map[string][]*Package
 
 // Find will attempt to find the system package manager
 func Find(osid string) PackageManager {
@@ -68,58 +48,6 @@ func newPackageManager(pmname string, osid string) PackageManager {
 		return NewZypper(osid)
 	}
 	return nil
-}
-
-// Dependancy represents a system package that we require
-type Dependancy struct {
-	Name           string
-	PackageName    string
-	Installed      bool
-	InstallCommand string
-	Version        string
-	Optional       bool
-	External       bool
-}
-
-// DependencyList is a list of Dependency instances
-type DependencyList []*Dependancy
-
-// InstallAllRequiredCommand returns the command you need to use to install all required dependencies
-func (d DependencyList) InstallAllRequiredCommand() string {
-
-	result := ""
-	for _, dependency := range d {
-		if dependency.PackageName != "" {
-			if !dependency.Installed && !dependency.Optional {
-				if result == "" {
-					result = dependency.InstallCommand
-				} else {
-					result += " " + dependency.PackageName
-				}
-			}
-		}
-	}
-
-	return result
-}
-
-// InstallAllOptionalCommand returns the command you need to use to install all optional dependencies
-func (d DependencyList) InstallAllOptionalCommand() string {
-
-	result := ""
-	for _, dependency := range d {
-		if dependency.PackageName != "" {
-			if !dependency.Installed && dependency.Optional {
-				if result == "" {
-					result = dependency.InstallCommand
-				} else {
-					result += " " + dependency.PackageName
-				}
-			}
-		}
-	}
-
-	return result
 }
 
 // Dependancies scans the system for required dependancies
