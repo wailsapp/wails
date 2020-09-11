@@ -21,7 +21,6 @@
 #define NSResizableWindowMask 8
 
 // References to assets
-extern const unsigned char userhtml;
 extern const unsigned char *assets[];
 extern const unsigned char runtime;
 extern const char *icon[];
@@ -370,6 +369,22 @@ gboolean executeMethod(gpointer data) {
 }
 */
 
+// DisableFrame disables the window frame
+void DisableFrame(void *appPointer)
+{
+   // TBD
+}
+
+void SetMinWindowSize(void *appPointer, int minWidth, int minHeight)
+{
+    // TBD
+}
+
+void SetMaxWindowSize(void *appPointer, int maxWidth, int maxHeight)
+{
+    // TBD
+}
+
 void ExecJS(void *appPointer, char *js) {
     Debug("ExecJS Called: %s", js);
     struct Application *app = (struct Application*) appPointer;
@@ -711,7 +726,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
     msg(mainWindow, s("makeKeyAndOrderFront:"), NULL);
 
     // Load HTML
-    id html = msg(c("NSURL"), s("URLWithString:"), msg(c("NSString"), s("stringWithUTF8String:"), &userhtml));
+    id html = msg(c("NSURL"), s("URLWithString:"), msg(c("NSString"), s("stringWithUTF8String:"), assets[0]));
     Debug("HTML: %p", html);
     msg(wkwebview, s("loadRequest:"), msg(c("NSURLRequest"), s("requestWithURL:"), html));
 
@@ -720,7 +735,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
     Debug("Loading Internal Code");
     // We want to evaluate the internal code plus runtime before the assets
     const char *temp = concat(invoke, app->bindings);
-    const char *internalCode = concat(temp, &runtime);
+    const char *internalCode = concat(temp, (const char*)&runtime);
     Debug("Internal code: %s", internalCode);
     free((void*)temp);
 

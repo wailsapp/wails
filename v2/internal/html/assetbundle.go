@@ -160,9 +160,9 @@ func (a *AssetBundle) WriteToCFile(targetDir string) (string, error) {
 	}
 
 	if assetVariables.Length() > 0 {
-		cdata.WriteString(fmt.Sprintf("\nconst char *assets[] = { %s, 0x00 };", assetVariables.Join(", ")))
+		cdata.WriteString(fmt.Sprintf("\nconst unsigned char *assets[] = { %s, 0x00 };", assetVariables.Join(", ")))
 	} else {
-		cdata.WriteString("\nconst char *assets[] = { 0x00 };")
+		cdata.WriteString("\nconst unsigned char *assets[] = { 0x00 };")
 	}
 
 	// Save file

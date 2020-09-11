@@ -1,5 +1,10 @@
 package features
 
-// Linux holds linux specific feature flags
-type Linux struct {
+type Features struct {
+}
+
+// New creates a new Features object
+func New() *Features {
+	return &Features{
+	}
 }
