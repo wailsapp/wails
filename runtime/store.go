@@ -286,5 +286,8 @@ func (s *Store) Update(updater interface{}) {
 	results := reflect.ValueOf(updater).Call(args)
 
 	// We will only have 1 result. Set the store to it
-	s.Set(results[0].Interface())
+	err = s.Set(results[0].Interface())
+	if err != nil && s.errorHandler != nil {
+		s.errorHandler(err)
+	}
 }
