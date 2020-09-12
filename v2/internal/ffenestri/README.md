@@ -36,6 +36,14 @@ There's an error message thrown when devtools is opened:
 )
 ```
 
+Found this related info: https://bugs.chromium.org/p/chromium/issues/detail?id=605219
+
+```
+NSWindow has never supported clients adding subviews to anything other than the contentView. Some applications would add subviews to the contentView.superview (also known as the border view of the window). NSWindow will now log when it detects this scenario: "NSWindow warning: adding an unknown subview:". Applications doing this will need to fix this problem, as it prevents new features on 10.10 from working properly. See titlebarAccessoryViewControllers for official API.
+
+NSWindow now has the ability to add officially known subviews to the titlebar/toolbar area. The views are to be wrapped with a new NSViewController subclass called NSTitlebarAccessoryViewController and added to the window with the "titlebarAccessoryViewControllers" API. There are a set of methods to add and insert the titlebarAccessoryViewControllers, such as addTitlebarAccessoryViewController: and removeTitlebarAccessoryViewControllerAtIndex:. However, one can also utilize "removeFromParentViewController" to easily remove a given child view controller. NSTitlebarAccessoryViewController has a property to tell NSWindow where to place the view (layoutAttribute) and a property to determine how it behaves in full screen (fullScreenMinHeight). The NSToolbar fullScreenAccessoryView API is now deprecated, and clients should utilize this new API.
+```
+
 It doesn't appear to cause an issue, but needs resolving.
 
 ## Startup timing issue
@@ -47,3 +55,8 @@ window.wails._.InjectCSS("html{text-align:center;}#input{margin:3rem;}#logo{widt
 var nameElement = document.getElementById("name");
 nameElement.focus();
 ```
+
+## FIX NEEDED
+
+We currently expect the text `</body>` to appear in the html.
+We should find the location of this text using case insensitive regex.

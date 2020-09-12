@@ -63,6 +63,10 @@ func (a *Asset) AsCHexData() string {
 		result = strings.ReplaceAll(result, "\n", "")
 		result = strings.ReplaceAll(result, "\r\n", "")
 		result = strings.ReplaceAll(result, "\n", "")
+
+		// Inject wailsloader code
+		result = strings.Replace(result, `</body>`, `<script id='wailsloader'>window.wailsloader = { html: true, runtime: false, userjs: false, usercss: false };var self=document.querySelector('#wailsloader');self.parentNode.removeChild(self);</script></body>`, 1)
+
 		url := url.URL{Path: result}
 		urlString := strings.ReplaceAll(url.String(), "/", "%2f")
 

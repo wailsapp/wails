@@ -69,8 +69,9 @@ void Debug(char *message, ... ) {
 
 
 void messageHandler(id self, SEL cmd, id contentController, id msg) {
-    // TODO: Pass message to callback in application object
-    Debug("TODO: Process message");
+//   const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
+//   Debug("*** didReceiveScriptMessage: %p", message);
+    Debug("GOT: %s", msg);
 }
 
 extern void messageFromWindowCallback(const char *);
@@ -393,12 +394,18 @@ void SetMaxWindowSize(void *appPointer, int maxWidth, int maxHeight)
 }
 
 void ExecJS(void *appPointer, char *js) {
-    Debug("ExecJS Called: %s", js);
     struct Application *app = (struct Application*) appPointer;
-    Debug("App: %p", app);
-    Debug("wkwebview: %p", app->wkwebview);
     msg(app->wkwebview, s("evaluateJavaScript:completionHandler:"),
-        msg(c("NSString"), s("stringWithUTF8String:"), js), NULL);
+        msg(c("NSString"), s("stringWithUTF8String:"), js), ^(id result, CGError *error) {
+        
+            Debug("Result: %p", result);
+            Debug("Error: %p", error);
+            // if( error != NULL ) {
+            //     // How to get the right error?!!?
+            //     Debug("Error: %s", msg(c("NSString"), s("stringWithFormat:"), error));
+            // }
+            Debug("ExecJS Completed.");
+        });
 }
 
 // typedef char* (*dialogMethod)(void *app, void *);
@@ -741,7 +748,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
     // Debug("Internal code: %s", internalCode);
     free((void*)temp);
 
-    // Loop over assets
+      // Loop over assets and build up one giant Mother Of All Evals
     int index = 1;
     while(1) {
         // Get next asset pointer
@@ -758,37 +765,25 @@ void Run(void *applicationPointer, int argc, char **argv) {
         index++;
     };
 
-    Debug("MOAE: %s", internalCode);
+    // TODO: Check if we can split out the User JS/CSS from the MOAE
 
-    // Evaluate internal code
-    // ---------------------------------------------------------------
-    // TODO: WORK OUT WHY EXECUTING THE INTERNAL CODE BLOWS THE APP UP
-    // ---------------------------------------------------------------
-    msg(wkwebview, 
-        s("evaluateJavaScript:completionHandler:"),
-        msg(c("NSString"), s("stringWithUTF8String:"), (char*)internalCode), 
-        ^() {
+    // Debug("MOAE: %s", internalCode);
 
-            // Debug("Result: %p", result);
-            // Debug("Error: %p", error);
-            // Free internalCode memory
-            // free((void*)internalCode);
-/*
-            if( error != NULL) {
-                Debug("Error message: %s", error);
-                return;
-            }
-*/
-        Debug("DO I CARE?");
- 
-
-        }
-    );
+    // This evaluates the MOAE once the Dom has finished loading
+    msg(manager, 
+        s("addUserScript:"),
+        msg(msg(c("WKUserScript"), s("alloc")),
+                    s("initWithSource:injectionTime:forMainFrameOnly:"),
+                    msg(c("NSString"), s("stringWithUTF8String:"),
+                    internalCode),
+                    1, 
+                    1));
 
     // Finally call run
     msg(application, s("run"));
 
     Debug("Run called");
+    free((void*)internalCode);
 }
 
 
