@@ -34,3 +34,4 @@ Wails is what it is because of the time and effort given by these great people. 
   * [Tim Kipp](https://github.com/timkippdev)
   * [Dmitry Gomzyakov](https://github.com/kyoto44)
   * [Arthur Wiebe](https://github.com/artooro)
+  * [Ilgıt Yıldırım](https://github.com/ilgityildirim)
