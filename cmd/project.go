@@ -162,6 +162,7 @@ type ProjectOptions struct {
 	Platform               string
 	Architecture           string
 	LdFlags                string
+	GoPath                 string
 }
 
 // Defaults sets the default project template
