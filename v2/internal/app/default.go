@@ -9,8 +9,6 @@ package app
 
 import (
 	"os"
-
-	"github.com/wailsapp/wails/v2/internal/features"
 )
 
 // App defines a Wails application structure
@@ -22,8 +20,6 @@ type App struct {
 
 	// Indicates if the app is running in debug mode
 	debug bool
-
-	Features *features.Features
 }
 
 // CreateApp returns a null application

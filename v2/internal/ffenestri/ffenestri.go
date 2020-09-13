@@ -5,7 +5,6 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v2/internal/features"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
 )
@@ -127,7 +126,7 @@ type DispatchClient interface {
 }
 
 // Run the application
-func (a *Application) Run(incomingDispatcher Dispatcher, bindings string, features *features.Features) error {
+func (a *Application) Run(incomingDispatcher Dispatcher, bindings string) error {
 	title := a.string2CString(a.config.Title)
 	width := C.int(a.config.Width)
 	height := C.int(a.config.Height)

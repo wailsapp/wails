@@ -8,7 +8,6 @@ import (
 
 	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v2/internal/binding"
-	"github.com/wailsapp/wails/v2/internal/features"
 	"github.com/wailsapp/wails/v2/internal/ffenestri"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
@@ -44,9 +43,6 @@ type App struct {
 	servicebus *servicebus.ServiceBus
 
 	debug bool
-
-	// Feature flags
-	Features *features.Features
 }
 
 // Create App
@@ -191,7 +187,7 @@ func (a *App) Run() error {
 			}
 		}()
 
-		result := a.window.Run(dispatcher, bindingDump, a.Features)
+		result := a.window.Run(dispatcher, bindingDump)
 		a.servicebus.Stop()
 
 		return result
