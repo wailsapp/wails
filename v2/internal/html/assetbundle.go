@@ -153,6 +153,10 @@ func (a *AssetBundle) WriteToCFile(targetDir string) (string, error) {
 	assetVariables := slicer.String()
 	var variableName string
 	for index, asset := range a.assets {
+		// For desktop we ignore the favicon
+		if asset.Type == AssetTypes.FAVICON {
+			continue
+		}
 		variableName = fmt.Sprintf("%s%d", asset.Type, index)
 		assetCdata := fmt.Sprintf("const unsigned char %s[]={ %s0x00 };\n", variableName, asset.AsCHexData())
 		cdata.WriteString(assetCdata)
