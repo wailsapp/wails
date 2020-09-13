@@ -164,9 +164,6 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string, featur
 	// Set bindings
 	C.SetBindings(app, a.string2CString(bindings))
 
-	// Process feature flags
-	a.processFeatureFlags(features)
-
 	// save the dispatcher in a package variable so that the C callbacks
 	// can access it
 	dispatcher = incomingDispatcher.RegisterClient(newClient(a))
@@ -191,12 +188,4 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string, featur
 //export messageFromWindowCallback
 func messageFromWindowCallback(data *C.char) {
 	dispatcher.DispatchMessage(C.GoString(data))
-}
-
-func (a *Application) processFeatureFlags(features *features.Features) {
-
-	// Process generic features
-
-	// Process OS Specific flags
-	a.processOSFeatureFlags(features)
 }
