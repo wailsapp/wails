@@ -18,6 +18,8 @@ import (
 	"github.com/leaanthony/spinner"
 )
 
+const XGO_VERSION = "latest"
+
 var fs = NewFSHelper()
 
 // ValidateFrontendConfig checks if the frontend config is valid
@@ -146,14 +148,20 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		"-e", "FLAG_RACE=false",
 		"-e", "FLAG_BUILDMODE=default",
 		"-e", "FLAG_TRIMPATH=false",
-		"-e", fmt.Sprintf("TARGETS=%s", projectOptions.Platform+"/"+projectOptions.Architecture),
+		"-e", fmt.Sprintf("TARGETS=%s/%s", projectOptions.Platform, projectOptions.Architecture),
 		"-e", "GOPROXY=",
 		"-e", "GO111MODULE=on",
-		"wailsapp/xgo:latest",
-		".",
 	} {
 		buildCommand.Add(arg)
 	}
+
+	if projectOptions.GoPath != "" {
+		buildCommand.Add("-v")
+		buildCommand.Add(fmt.Sprintf("%s:/go", projectOptions.GoPath))
+	}
+
+	buildCommand.Add(fmt.Sprintf("wailsapp/xgo:%s", XGO_VERSION))
+	buildCommand.Add(".")
 
 	compileMessage := fmt.Sprintf(
 		"Packing + Compiling project for %s/%s using docker image wailsapp/xgo:latest",

@@ -26,6 +26,7 @@ func init() {
 	var packageApp = false
 	var forceRebuild = false
 	var debugMode = false
+	var gopath = ""
 	var typescriptFilename = ""
 	var verbose = false
 	var platform = ""
@@ -42,7 +43,8 @@ func init() {
 		BoolFlag("d", "Build in Debug mode", &debugMode).
 		BoolFlag("verbose", "Verbose output", &verbose).
 		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename).
-		StringFlag("ldflags", "Extra options for -ldflags", &ldflags)
+		StringFlag("ldflags", "Extra options for -ldflags", &ldflags).
+		StringFlag("gopath", "Specify your GOPATH location. Mounted to /go during cross-compilation.", &gopath)
 
 	var b strings.Builder
 	for _, plat := range getSupportedPlatforms() {
@@ -97,6 +99,7 @@ func init() {
 
 		// Add ldflags
 		projectOptions.LdFlags = ldflags
+		projectOptions.GoPath = gopath
 
 		// Validate config
 		// Check if we have a frontend
