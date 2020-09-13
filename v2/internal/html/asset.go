@@ -107,6 +107,7 @@ func (a *Asset) AsCHexData() string {
 	return cdata.String()
 }
 
+// Dump will output the asset to the terminal
 func (a *Asset) Dump() {
 	fmt.Printf("{ Type: %s, Path: %s, Data: %+v }\n", a.Type, a.Path, a.Data[:10])
 }

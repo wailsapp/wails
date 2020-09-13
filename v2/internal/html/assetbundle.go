@@ -191,6 +191,7 @@ func (a *AssetBundle) ConvertToAssetDB() (*assetdb.AssetDB, error) {
 	return assetdb, nil
 }
 
+// Dump will output the assets to the terminal
 func (a *AssetBundle) Dump() {
 	println("Assets:")
 	for _, asset := range a.assets {
