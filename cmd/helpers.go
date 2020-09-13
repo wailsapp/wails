@@ -18,7 +18,7 @@ import (
 	"github.com/leaanthony/spinner"
 )
 
-const XGO_VERSION = "latest"
+const xgoVersion = "latest"
 
 var fs = NewFSHelper()
 
@@ -92,16 +92,17 @@ func InitializeCrossCompilation(verbose bool) error {
 	}
 
 	var packSpinner *spinner.Spinner
+	msg := fmt.Sprintf("Pulling wailsapp/xgo:%s docker image... (may take a while)", xgoVersion)
 	if !verbose {
-		packSpinner = spinner.New("Pulling wailsapp/xgo:latest docker image... (may take a while)")
+		packSpinner = spinner.New(msg)
 		packSpinner.SetSpinSpeed(50)
 		packSpinner.Start()
 	} else {
-		println("Pulling wailsapp/xgo:latest docker image... (may take a while)")
+		println(msg)
 	}
 
 	err := NewProgramHelper(verbose).RunCommandArray([]string{"docker",
-		"pull", "wailsapp/xgo:latest"})
+		"pull", fmt.Sprintf("wailsapp/xgo:%s", xgoVersion)})
 
 	if err != nil {
 		if packSpinner != nil {
@@ -116,7 +117,7 @@ func InitializeCrossCompilation(verbose bool) error {
 	return nil
 }
 
-// BuildDocker builds the project using the cross compiling wailsapp/xgo:latest container
+// BuildDocker builds the project using the cross compiling wailsapp/xgo:<xgoVersion> container
 func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOptions) error {
 	var packSpinner *spinner.Spinner
 	if buildMode == BuildModeBridge {
@@ -160,12 +161,12 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		buildCommand.Add(fmt.Sprintf("%s:/go", projectOptions.GoPath))
 	}
 
-	buildCommand.Add(fmt.Sprintf("wailsapp/xgo:%s", XGO_VERSION))
+	buildCommand.Add(fmt.Sprintf("wailsapp/xgo:%s", xgoVersion))
 	buildCommand.Add(".")
 
 	compileMessage := fmt.Sprintf(
-		"Packing + Compiling project for %s/%s using docker image wailsapp/xgo:latest",
-		projectOptions.Platform, projectOptions.Architecture)
+		"Packing + Compiling project for %s/%s using docker image wailsapp/xgo:%s",
+		projectOptions.Platform, projectOptions.Architecture, xgoVersion)
 
 	if buildMode == BuildModeDebug {
 		compileMessage += " (Debug Mode)"
