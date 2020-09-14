@@ -62,7 +62,6 @@ BOOL yes(id self, SEL cmd)
     return YES;
 }
 
-
 // Debug works like sprintf but mutes if the global debug flag is true
 // Credit: https://stackoverflow.com/a/20639708
 void Debug(char *message, ... ) {
@@ -122,6 +121,11 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
     app->sendMessageToBackend(m);
 }
 
+// closeWindow is called when the close button is pressed
+void closeWindow(id self, SEL cmd, id sender) {
+    struct Application *app = (struct Application *) objc_getAssociatedObject(self, "application");
+    app->sendMessageToBackend("WC");
+}
 
 void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen) {
     // Setup main application struct
@@ -163,9 +167,6 @@ void DestroyApplication(void *appPointer) {
 // used by the application
 void Quit(void *appPointer) {
     Debug("Quit Called");
-    // struct Application *app = (struct Application*) appPointer;
-    // gtk_window_close((GtkWindow*)app->mainWindow);
-    // g_application_quit((GApplication*)app->application);
     DestroyApplication(appPointer);
 }
 
@@ -192,8 +193,8 @@ void UnFullscreen(void *appPointer) {
 
 void Center(void *appPointer) {
     Debug("Center Called");
-    // struct Application *app = (struct Application*) appPointer;
-    // gtk_window_set_position(app->mainWindow, GTK_WIN_POS_CENTER);
+    struct Application *app = (struct Application *)appPointer;
+    objc_msgSend(app->mainWindow, s("center"));
 }
 
 void SetMaximumSize(void *appPointer, int width, int height) {
@@ -639,20 +640,9 @@ void SetBindings(void* applicationPointer, const char *bindings) {
 
 // }
 
-
-// static void
-// activate (GtkApplication* app,
-//           gpointer        user_data)
-// {
-//     struct Application *mainApp = (struct Application*) user_data;
-
-//     // Main Window
-//     setupWindow(mainApp);
-
-// }
-
-
-
+void enableBoolConfig(id config, const char *setting) {
+    msg(msg(config, s("preferences")), s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 1), str(setting));
+}
 
 void Run(void *applicationPointer, int argc, char **argv) {
     struct Application *app = (struct Application*) applicationPointer;
@@ -688,6 +678,9 @@ void Run(void *applicationPointer, int argc, char **argv) {
     // Set the main window title
     SetTitle(app, app->title);
 
+    // Center Window
+    Center(app);
+
     // Setup webview
     id config = msg(c("WKWebViewConfiguration"), s("new"));
     id manager = msg(config, s("userContentController"));
@@ -697,7 +690,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
     // TODO: Fix "NSWindow warning: adding an unknown subview: <WKInspectorWKWebView: 0x465ed90>. Break on NSLog to debug." error
     if (app->devtools) {
       Debug("Enabling devtools");
-      msg(msg(config, s("preferences")), s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 1), str("developerExtrasEnabled"));
+      enableBoolConfig(config, "developerExtrasEnabled");
     }
     // TODO: Understand why this shouldn't be CGRectMake(0, 0, app->width, app->height)
     msg(wkwebview, s("initWithFrame:configuration:"), CGRectMake(0, 0, 0, 0), config);
@@ -705,6 +698,8 @@ void Run(void *applicationPointer, int argc, char **argv) {
     msg(manager, s("addScriptMessageHandler:name:"), delegate, str("external"));
     msg(mainWindow, s("setContentView:"), wkwebview);
     msg(mainWindow, s("makeKeyAndOrderFront:"), NULL);
+    // msg(mainWindow, s("setHidden:"), true);
+    
 
     // Load HTML
     id html = msg(c("NSURL"), s("URLWithString:"), msg(c("NSString"), s("stringWithUTF8String:"), assets[0]));
@@ -737,6 +732,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
         index++;
     };
 
+    class_addMethod(delegateClass, s("closeWindow"), closeWindow, "v@:@");
     // TODO: Check if we can split out the User JS/CSS from the MOAE
 
     // Debug("MOAE: %s", internalCode);
@@ -753,6 +749,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
 
     // Finally call run
     Debug("Run called");
+    msg(application, s("activateIgnoringOtherApps:"), true);
     msg(application, s("run"));
 
     free((void*)internalCode);
