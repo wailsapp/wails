@@ -28,6 +28,17 @@ extern const char *icon[];
 // MAIN DEBUG FLAG
 int debug;
 
+// Dispatch Method
+typedef void (*dispatchMethod)(void *app, void *);
+
+// execOnMainThread will execute the given `func` pointer,
+// passing app as the first argument and args as the second
+void execOnMainThread(void *app, void *func, void *args) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        ((dispatchMethod)func)(app, args);
+    });
+}
+
 // App Delegate
 typedef struct AppDel {
 	Class isa;
@@ -35,13 +46,13 @@ typedef struct AppDel {
 } AppDelegate;
 
 // Credit: https://stackoverflow.com/a/8465083
-char* concat(const char *s1, const char *s2)
+char* concat(const char *string1, const char *string2)
 {
-    const size_t len1 = strlen(s1);
-    const size_t len2 = strlen(s2);
+    const size_t len1 = strlen(string1);
+    const size_t len2 = strlen(string2);
     char *result = malloc(len1 + len2 + 1);
-    memcpy(result, s1, len1);
-    memcpy(result + len1, s2, len2 + 1);
+    memcpy(result, string1, len1);
+    memcpy(result + len1, string2, len2 + 1);
     return result;
 }
 
@@ -356,28 +367,8 @@ void asyncEval(  WebKitWebView  *webView, const gchar *script ) {
             script,
             NULL, NULL, NULL);
 }
-
-typedef void (*dispatchMethod)(void *app, void *);
-
-struct dispatchData {
-    struct Application *app;
-    dispatchMethod method;
-    void *args;
-};
-
-
-gboolean executeMethod(gpointer data) {
-    struct dispatchData *d = (struct dispatchData *)data;
-    struct Application *app = (struct Application *)(d->app);
-    // Debug("Webview %p\n", app->webView);
-    // Debug("Args %s\n", d->args);
-    // Debug("Method %p\n", (d->method));
-    (d->method)(app, d->args);
-    // Debug("Method Execute Complete. Freeing memory");
-    g_free(d);
-    return FALSE;
-}
 */
+
 
 // DisableFrame disables the window frame
 void DisableFrame(void *appPointer)
@@ -395,8 +386,8 @@ void SetMaxWindowSize(void *appPointer, int maxWidth, int maxHeight)
     // TBD
 }
 
-void ExecJS(void *appPointer, char *js) {
-    struct Application *app = (struct Application*) appPointer;
+void execJSInternal(struct Application *app, const char *js) {
+    Debug("execJSInternal called with: App %p, js: %s", app, js);
     msg(app->wkwebview, s("evaluateJavaScript:completionHandler:"),
         msg(c("NSString"), s("stringWithUTF8String:"), js), ^(id result, CGError *error) {
         
@@ -408,6 +399,10 @@ void ExecJS(void *appPointer, char *js) {
             // }
             Debug("ExecJS Completed.");
         });
+}
+
+void ExecJS(void *app, char *js) {
+    execOnMainThread(app, execJSInternal, js);
 }
 
 // typedef char* (*dialogMethod)(void *app, void *);
@@ -573,25 +568,6 @@ char* OpenDirectoryDialogOnMainThread(void *app, char *title) {
 //   return TRUE;
 // }
 
-// static void sendMessageToBackend(   WebKitUserContentManager *contentManager,
-//                                          WebKitJavascriptResult *result,
-//                                          gpointer arg) {
-//   struct Application *app = (struct Application *)arg;
-// #if WEBKIT_MAJOR_VERSION >= 2 && WEBKIT_MINOR_VERSION >= 22
-//   JSCValue *value = webkit_javascript_result_get_js_value(result);
-//   char *message = jsc_value_to_string(value);
-// #else
-//   JSGlobalContextRef context = webkit_javascript_result_get_global_context(result);
-//   JSValueRef value = webkit_javascript_result_get_value(result);
-//   JSStringRef js = JSValueToStringCopy(context, value, NULL);
-//   size_t messageSize = JSStringGetMaximumUTF8CStringSize(js);
-//   char *message = g_new(char, messageSize);
-//   JSStringGetUTF8CString(js, message, messageSize);
-//   JSStringRelease(js);
-// #endif
-//   app->sendMessageToBackend(message);
-//   g_free(message);
-// }
 
 void SetDebug(void *applicationPointer, int flag) {
     struct Application *app = (struct Application*) applicationPointer;
@@ -675,13 +651,7 @@ void SetBindings(void* applicationPointer, const char *bindings) {
 
 // }
 
-// void dispatch(void *func) {
-//     dispatch_fn_t *f = malloc()
-// dispatch_async_f(dispatch_get_main_queue(), new dispatch_fn_t(func),
-//                     (dispatch_function_t)((void *arg) {
-//                     (*arg)();
-//                     }));
-// }
+
 
 
 void Run(void *applicationPointer, int argc, char **argv) {
@@ -738,7 +708,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
 
     // Load HTML
     id html = msg(c("NSURL"), s("URLWithString:"), msg(c("NSString"), s("stringWithUTF8String:"), assets[0]));
-    Debug("HTML: %p", html);
+    // Debug("HTML: %p", html);
     msg(wkwebview, s("loadRequest:"), msg(c("NSURLRequest"), s("requestWithURL:"), html));
 
     // Load assets
@@ -761,7 +731,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
             break;
         }
 
-        temp = concat(internalCode, asset);
+        temp = concat(internalCode, (const char *)asset);
         free((void*)internalCode);
         internalCode = temp;
         index++;
@@ -782,7 +752,6 @@ void Run(void *applicationPointer, int argc, char **argv) {
                     1));
 
     // Finally call run
-    Debug("Application: %p", app);
     Debug("Run called");
     msg(application, s("run"));
 
