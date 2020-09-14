@@ -68,11 +68,6 @@ void Debug(char *message, ... ) {
 }
 
 
-void messageHandler(id self, SEL cmd, id contentController, id msg) {
-//   const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
-//   Debug("*** didReceiveScriptMessage: %p", message);
-    Debug("GOT: %s", msg);
-}
 
 extern void messageFromWindowCallback(const char *);
 typedef void (*ffenestriCallback)(const char *);
@@ -108,6 +103,13 @@ struct Application {
 
 };
 
+// Sends messages to the backend
+void messageHandler(id self, SEL cmd, id contentController, id message) {
+    struct Application *app = (struct Application *)objc_getAssociatedObject(
+                              self, "application");
+    const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
+    app->sendMessageToBackend(m);
+}
 
 
 void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen) {
@@ -780,9 +782,10 @@ void Run(void *applicationPointer, int argc, char **argv) {
                     1));
 
     // Finally call run
+    Debug("Application: %p", app);
+    Debug("Run called");
     msg(application, s("run"));
 
-    Debug("Run called");
     free((void*)internalCode);
 }
 
