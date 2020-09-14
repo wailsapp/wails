@@ -291,3 +291,8 @@ func (s *Store) Update(updater interface{}) {
 		s.errorHandler(err)
 	}
 }
+
+// Get returns the value of the data that's kept in the current state / Store
+func (s *Store) Get() interface{} {
+	return s.data
+}
