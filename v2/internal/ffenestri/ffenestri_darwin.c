@@ -117,8 +117,15 @@ struct Application {
 void messageHandler(id self, SEL cmd, id contentController, id message) {
     struct Application *app = (struct Application *)objc_getAssociatedObject(
                               self, "application");
-    const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
-    app->sendMessageToBackend(m);
+    const char *name = (const char *)msg(msg(message, s("name")), s("UTF8String"));
+    if( strcmp(name, "completed") == 0) {
+        // Delete handler
+        // Show window
+        Debug("Show window!!!!");
+    } else {
+        const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
+        app->sendMessageToBackend(m);
+    }
 }
 
 // closeWindow is called when the close button is pressed
@@ -177,11 +184,15 @@ void SetTitle(void *appPointer, const char *title) {
     msg(app->mainWindow, s("setTitle:"), msg(c("NSString"), s("stringWithUTF8String:"), title));
 }
 
+// fullscreenInternal sets the main window to be fullscreen
+void fullscreenInternal(void *appPointer) {
+    Debug("Fullscreen Called");
+    struct Application *app = (struct Application*) appPointer;
+    msg(app->mainWindow, s("toggleFullScreen:"));
+}
 // Fullscreen sets the main window to be fullscreen
 void Fullscreen(void *appPointer) {
-    Debug("Fullscreen Called");
-    // struct Application *app = (struct Application*) appPointer;
-    // gtk_window_fullscreen (app->mainWindow);
+    execOnMainThread(appPointer, fullscreenInternal, NULL);
 }
 
 // UnFullscreen resets the main window after a fullscreen
@@ -696,6 +707,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
     msg(wkwebview, s("initWithFrame:configuration:"), CGRectMake(0, 0, 0, 0), config);
     
     msg(manager, s("addScriptMessageHandler:name:"), delegate, str("external"));
+    msg(manager, s("addScriptMessageHandler:name:"), delegate, str("completed"));
     msg(mainWindow, s("setContentView:"), wkwebview);
     msg(mainWindow, s("makeKeyAndOrderFront:"), NULL);
     // msg(mainWindow, s("setHidden:"), true);
@@ -736,6 +748,11 @@ void Run(void *applicationPointer, int argc, char **argv) {
     // TODO: Check if we can split out the User JS/CSS from the MOAE
 
     // Debug("MOAE: %s", internalCode);
+
+    // Include callback after evaluation
+    temp = concat(internalCode, "webkit.messageHandlers.completed.postMessage(true);");
+    free((void*)internalCode);
+    internalCode = temp;
 
     // This evaluates the MOAE once the Dom has finished loading
     msg(manager, 
