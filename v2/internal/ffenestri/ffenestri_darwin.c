@@ -188,18 +188,24 @@ void SetTitle(void *appPointer, const char *title) {
 void fullscreenInternal(void *appPointer) {
     Debug("Fullscreen Called");
     struct Application *app = (struct Application*) appPointer;
+    app->fullscreen = !app->fullscreen;
     msg(app->mainWindow, s("toggleFullScreen:"));
 }
 // Fullscreen sets the main window to be fullscreen
 void Fullscreen(void *appPointer) {
-    execOnMainThread(appPointer, fullscreenInternal, NULL);
+    struct Application *app = (struct Application*) appPointer;
+    if( app->fullscreen == 0) {
+        execOnMainThread(appPointer, fullscreenInternal, NULL);
+    }
 }
 
 // UnFullscreen resets the main window after a fullscreen
 void UnFullscreen(void *appPointer) {
     Debug("UnFullscreen Called");
-    // struct Application *app = (struct Application*) appPointer;
-    // gtk_window_unfullscreen (app->mainWindow);
+    struct Application *app = (struct Application*) appPointer;
+    if( app->fullscreen == 1) {
+        execOnMainThread(appPointer, fullscreenInternal, NULL);
+    }
 }
 
 void Center(void *appPointer) {
