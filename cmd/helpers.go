@@ -216,10 +216,6 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 	buildCommand.Add("go")
 
 	buildCommand.Add("build")
-	if buildMode == BuildModeBridge {
-		// Ignore errors
-		buildCommand.Add("-i")
-	}
 
 	if binaryName != "" {
 		// Alter binary name based on OS
