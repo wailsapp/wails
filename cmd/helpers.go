@@ -557,7 +557,7 @@ func ldFlags(po *ProjectOptions, buildMode string) string {
 	}
 
 	// Add windows flags
-	if po.Platform == "windows" && buildMode == BuildModeProd {
+	if po.Platform == "windows" {
 		ldflags += "-H windowsgui "
 	}
 
