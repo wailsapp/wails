@@ -87,6 +87,7 @@ struct Application {
     // Cocoa data
     id mainWindow;
     id wkwebview;
+    id manager;
 
     // Window Data
     const char *title;
@@ -120,8 +121,9 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
     const char *name = (const char *)msg(msg(message, s("name")), s("UTF8String"));
     if( strcmp(name, "completed") == 0) {
         // Delete handler
+        msg(app->manager, s("removeScriptMessageHandlerForName:"), str("completed"));
         // Show window
-        Debug("Show window!!!!");
+        msg(app->mainWindow, s("makeKeyAndOrderFront:"), NULL);
     } else {
         const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
         app->sendMessageToBackend(m);
@@ -165,6 +167,7 @@ void DestroyApplication(void *appPointer) {
         Debug("Almost a double free for app->bindings");
     }
 
+    msg(app->manager, s("removeScriptMessageHandlerForName:"), str("external"));
     msg(app->mainWindow, s("close"));
     msg(c("NSApp"), s("terminate:"), NULL);
     Debug("Finished Destroying Application");
@@ -181,7 +184,7 @@ void Quit(void *appPointer) {
 void SetTitle(void *appPointer, const char *title) {
     Debug("SetTitle Called");
     struct Application *app = (struct Application*) appPointer;
-    msg(app->mainWindow, s("setTitle:"), msg(c("NSString"), s("stringWithUTF8String:"), title));
+    msg(app->mainWindow, s("setTitle:"), str(title));
 }
 
 // fullscreenInternal sets the main window to be fullscreen
@@ -405,18 +408,10 @@ void SetMaxWindowSize(void *appPointer, int maxWidth, int maxHeight)
 }
 
 void execJSInternal(struct Application *app, const char *js) {
-    Debug("execJSInternal called with: App %p, js: %s", app, js);
-    msg(app->wkwebview, s("evaluateJavaScript:completionHandler:"),
-        msg(c("NSString"), s("stringWithUTF8String:"), js), ^(id result, CGError *error) {
-        
-            Debug("Result: %p", result);
-            Debug("Error: %p", error);
-            // if( error != NULL ) {
-            //     // How to get the right error?!!?
-            //     Debug("Error: %s", msg(c("NSString"), s("stringWithFormat:"), error));
-            // }
-            Debug("ExecJS Completed.");
-        });
+    msg(app->wkwebview, 
+        s("evaluateJavaScript:completionHandler:"),
+        str(js), 
+        NULL);
 }
 
 void ExecJS(void *app, char *js) {
@@ -701,9 +696,13 @@ void Run(void *applicationPointer, int argc, char **argv) {
     // Setup webview
     id config = msg(c("WKWebViewConfiguration"), s("new"));
     id manager = msg(config, s("userContentController"));
+    app->manager = manager;
     id wkwebview = msg(c("WKWebView"), s("alloc"));
     app->wkwebview = wkwebview;
 
+    // Only show content when fully rendered
+    msg(config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 1), str("suppressesIncrementalRendering"));
+    
     // TODO: Fix "NSWindow warning: adding an unknown subview: <WKInspectorWKWebView: 0x465ed90>. Break on NSLog to debug." error
     if (app->devtools) {
       Debug("Enabling devtools");
@@ -715,12 +714,10 @@ void Run(void *applicationPointer, int argc, char **argv) {
     msg(manager, s("addScriptMessageHandler:name:"), delegate, str("external"));
     msg(manager, s("addScriptMessageHandler:name:"), delegate, str("completed"));
     msg(mainWindow, s("setContentView:"), wkwebview);
-    msg(mainWindow, s("makeKeyAndOrderFront:"), NULL);
-    // msg(mainWindow, s("setHidden:"), true);
     
 
     // Load HTML
-    id html = msg(c("NSURL"), s("URLWithString:"), msg(c("NSString"), s("stringWithUTF8String:"), assets[0]));
+    id html = msg(c("NSURL"), s("URLWithString:"), str(assets[0]));
     // Debug("HTML: %p", html);
     msg(wkwebview, s("loadRequest:"), msg(c("NSURLRequest"), s("requestWithURL:"), html));
 
@@ -750,7 +747,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
         index++;
     };
 
-    class_addMethod(delegateClass, s("closeWindow"), closeWindow, "v@:@");
+    class_addMethod(delegateClass, s("closeWindow"), (IMP) closeWindow, "v@:@");
     // TODO: Check if we can split out the User JS/CSS from the MOAE
 
     // Debug("MOAE: %s", internalCode);
@@ -765,8 +762,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
         s("addUserScript:"),
         msg(msg(c("WKUserScript"), s("alloc")),
                     s("initWithSource:injectionTime:forMainFrameOnly:"),
-                    msg(c("NSString"), s("stringWithUTF8String:"),
-                    internalCode),
+                    str(internalCode),
                     1, 
                     1));
 
