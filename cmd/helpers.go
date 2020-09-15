@@ -18,7 +18,7 @@ import (
 	"github.com/leaanthony/spinner"
 )
 
-const xgoVersion = "latest"
+const xgoVersion = "1.0.1"
 
 var fs = NewFSHelper()
 
