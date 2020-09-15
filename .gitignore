@@ -19,3 +19,4 @@ tmp
 node_modules/
 package.json.md5
 v2/test/**/frontend/dist
+v2/test/**/build/
