@@ -12,6 +12,8 @@
 #define s(str) sel_registerName(str)
 #define str(input) msg(c("NSString"), s("stringWithUTF8String:"), input)
 
+#define ON_MAIN_THREAD(str) dispatch( ^{ str; } );
+
 #define NSBackingStoreBuffered 2
 
 #define NSBorderlessWindowMask 0
@@ -32,6 +34,7 @@ int debug;
 
 // Dispatch Method
 typedef void (*dispatchMethod)(void *app, void *);
+typedef void (^inlineDispatchMethod)(void);
 
 // execOnMainThread will execute the given `func` pointer,
 // passing app as the first argument and args as the second
@@ -40,6 +43,12 @@ void execOnMainThread(void *app, void *func, void *args) {
         ((dispatchMethod)func)(app, args);
     });
 }
+
+// dispatch will execute the given `func` pointer
+void dispatch(inlineDispatchMethod func) {
+    dispatch_async(dispatch_get_main_queue(), func);
+}
+
 
 // App Delegate
 typedef struct AppDel {
@@ -87,6 +96,7 @@ typedef void (*ffenestriCallback)(const char *);
 struct Application {
 
     // Cocoa data
+    id application;
     id mainWindow;
     id wkwebview;
     id manager;
@@ -101,6 +111,7 @@ struct Application {
 
     // Features
     int borderless;
+    int maximised;
 
     // User Data
     char *HTML;
@@ -116,6 +127,21 @@ struct Application {
 
 };
 
+void Hide(void *appPointer) { 
+    struct Application *app = (struct Application*) appPointer;
+    ON_MAIN_THREAD( 
+        msg(app->application, s("hide:")) 
+    )
+}
+
+void Show(void *appPointer) { 
+    struct Application *app = (struct Application*) appPointer;
+    ON_MAIN_THREAD(
+        msg(app->mainWindow, s("makeKeyAndOrderFront:"), NULL);
+        msg(app->application, s("activateIgnoringOtherApps:"), YES);
+    )
+}
+
 // Sends messages to the backend
 void messageHandler(id self, SEL cmd, id contentController, id message) {
     struct Application *app = (struct Application *)objc_getAssociatedObject(
@@ -124,8 +150,11 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
     if( strcmp(name, "completed") == 0) {
         // Delete handler
         msg(app->manager, s("removeScriptMessageHandlerForName:"), str("completed"));
-        // Show window
-        msg(app->mainWindow, s("makeKeyAndOrderFront:"), NULL);
+        // Show window after a short delay so rendering can catch up
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 10000000), dispatch_get_main_queue(), ^{
+            Show(app); 
+        });
+        
     } else {
         const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
         app->sendMessageToBackend(m);
@@ -148,6 +177,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->devtools = devtools;
     result->fullscreen = fullscreen;
     result->lock = 0;
+    result->maximised = 0;
 
     // Features
     result->borderless = 0;
@@ -182,46 +212,44 @@ void Quit(void *appPointer) {
     DestroyApplication(appPointer);
 }
 
-// setTitleInternal sets the main window title to the given string
-void setTitleInternal(void *appPointer, const char *title) {
-    struct Application *app = (struct Application*) appPointer;
-    msg(app->mainWindow, s("setTitle:"), str(title));
-}
-
 // SetTitle sets the main window title to the given string
 void SetTitle(void *appPointer, const char *title) {
     Debug("SetTitle Called");
-    execOnMainThread(appPointer, setTitleInternal, (void*)title);
+    struct Application *app = (struct Application*) appPointer;
+    ON_MAIN_THREAD(
+        msg(app->mainWindow, s("setTitle:"), str(title));
+    )
 }
 
-// fullscreenInternal sets the main window to be fullscreen
-void fullscreenInternal(void *appPointer) {
-    Debug("Fullscreen Called");
+void toggleFullscreen(void *appPointer) {
     struct Application *app = (struct Application*) appPointer;
-    app->fullscreen = !app->fullscreen;
-    msg(app->mainWindow, s("toggleFullScreen:"));
+    ON_MAIN_THREAD(
+        app->fullscreen = !app->fullscreen;
+        msg(app->mainWindow, s("toggleFullScreen:"));
+    )
 }
+
 // Fullscreen sets the main window to be fullscreen
-void Fullscreen(void *appPointer) {
-    struct Application *app = (struct Application*) appPointer;
+void Fullscreen(struct Application *app) {
+    Debug("Fullscreen Called");
     if( app->fullscreen == 0) {
-        execOnMainThread(appPointer, fullscreenInternal, NULL);
+        toggleFullscreen(app);
     }
 }
 
 // UnFullscreen resets the main window after a fullscreen
-void UnFullscreen(void *appPointer) {
+void UnFullscreen(struct Application *app) {
     Debug("UnFullscreen Called");
-    struct Application *app = (struct Application*) appPointer;
     if( app->fullscreen == 1) {
-        execOnMainThread(appPointer, fullscreenInternal, NULL);
+        toggleFullscreen(app);
     }
 }
 
-void Center(void *appPointer) {
+void Center(struct Application *app) {
     Debug("Center Called");
-    struct Application *app = (struct Application *)appPointer;
-    objc_msgSend(app->mainWindow, s("center"));
+    ON_MAIN_THREAD(
+        msg(app->mainWindow, s("center"));
+    )
 }
 
 void SetMaximumSize(void *appPointer, int width, int height) {
@@ -242,12 +270,34 @@ void SetMinimumSize(void *appPointer, int width, int height) {
     // gtk_window_set_geometry_hints(app->mainWindow, NULL, &size, GDK_HINT_MIN_SIZE);
 }
 
-void Hide(void *app) { }
-void Show(void *app) { }
-void Maximise(void *app) { }
-void Unmaximise(void *app) { }
-void Minimise(void *app) { }
-void Unminimise(void *app) { }
+void Maximise(struct Application *app) { 
+    if( app->maximised == 0) {
+        ON_MAIN_THREAD(
+            app->maximised = 1;
+            msg(app->mainWindow, s("zoom:"));
+        )
+    }
+}
+
+void Unmaximise(struct Application *app) { 
+    if( app->maximised == 1) {
+        ON_MAIN_THREAD(
+            app->maximised = 0;
+            msg(app->mainWindow, s("zoom:"));
+        )
+    }
+}
+
+void Minimise(struct Application *app) {
+    ON_MAIN_THREAD(
+        msg(app->mainWindow, s("miniaturize:"));
+    )
+ }
+void Unminimise(struct Application *app) {
+    ON_MAIN_THREAD(
+        msg(app->mainWindow, s("deminiaturize:"));
+    )
+ }
 void SetSize(void *app, int width, int height) { }
 void SetPosition(void *app, int x, int y) { }
 
@@ -356,10 +406,8 @@ int SetColour(void *appPointer, const char *colourString) {
 
 // WindowBorderless will ensure that the main window gets created
 // without a border
-void WindowBorderless(void *appPointer) {
+void WindowBorderless(struct Application *app) {
     Debug("WindowBoderless Called");
-    
-    struct Application *app = (struct Application*) appPointer;
     app->borderless = 1;
 }
 const char *invoke = "window.external={invoke:function(x){window.webkit.messageHandlers.external.postMessage(x);}};";
@@ -425,15 +473,13 @@ void SetMaxWindowSize(void *appPointer, int maxWidth, int maxHeight)
     // TBD
 }
 
-void execJSInternal(struct Application *app, const char *js) {
-    msg(app->wkwebview, 
-        s("evaluateJavaScript:completionHandler:"),
-        str(js), 
-        NULL);
-}
-
-void ExecJS(void *app, char *js) {
-    execOnMainThread(app, execJSInternal, js);
+void ExecJS(struct Application *app, const char *js) {
+    ON_MAIN_THREAD(
+        msg(app->wkwebview, 
+            s("evaluateJavaScript:completionHandler:"),
+            str(js), 
+            NULL);
+    )
 }
 
 // typedef char* (*dialogMethod)(void *app, void *);
@@ -691,6 +737,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
     }
 
     id application = msg(c("NSApplication"), s("sharedApplication"));
+    app->application = application;
     msg(application, s("setActivationPolicy:"), 0);
 
     // Define delegate
