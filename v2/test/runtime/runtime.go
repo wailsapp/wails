@@ -51,6 +51,11 @@ func (r *RuntimeTest) Fullscreen() {
 	r.runtime.Window.Fullscreen()
 }
 
+// SetTitle will call the SetTitle method
+func (r *RuntimeTest) SetTitle(title string) {
+	r.runtime.Window.SetTitle(title)
+}
+
 // UnFullscreen will call the Runtime.UnFullscreen method
 func (r *RuntimeTest) UnFullscreen() {
 	r.runtime.Window.UnFullscreen()

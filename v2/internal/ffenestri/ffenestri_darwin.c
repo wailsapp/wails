@@ -15,10 +15,12 @@
 #define NSBackingStoreBuffered 2
 
 #define NSBorderlessWindowMask 0
-#define NSTitledWindowMask 1
-#define NSClosableWindowMask 2
-#define NSMiniaturizableWindowMask 4
-#define NSResizableWindowMask 8
+
+#define NSWindowStyleMaskTitled 1
+#define NSWindowStyleMaskClosable 2
+#define NSWindowStyleMaskMiniaturizable 4
+#define NSWindowStyleMaskResizable 8
+#define NSWindowStyleMaskFullscreen 1 << 14
 
 // References to assets
 extern const unsigned char *assets[];
@@ -180,11 +182,16 @@ void Quit(void *appPointer) {
     DestroyApplication(appPointer);
 }
 
+// setTitleInternal sets the main window title to the given string
+void setTitleInternal(void *appPointer, const char *title) {
+    struct Application *app = (struct Application*) appPointer;
+    msg(app->mainWindow, s("setTitle:"), str(title));
+}
+
 // SetTitle sets the main window title to the given string
 void SetTitle(void *appPointer, const char *title) {
     Debug("SetTitle Called");
-    struct Application *app = (struct Application*) appPointer;
-    msg(app->mainWindow, s("setTitle:"), str(title));
+    execOnMainThread(appPointer, setTitleInternal, (void*)title);
 }
 
 // fullscreenInternal sets the main window to be fullscreen
@@ -234,6 +241,15 @@ void SetMinimumSize(void *appPointer, int width, int height) {
     // size.max_width = width;
     // gtk_window_set_geometry_hints(app->mainWindow, NULL, &size, GDK_HINT_MIN_SIZE);
 }
+
+void Hide(void *app) { }
+void Show(void *app) { }
+void Maximise(void *app) { }
+void Unmaximise(void *app) { }
+void Minimise(void *app) { }
+void Unminimise(void *app) { }
+void SetSize(void *app, int width, int height) { }
+void SetPosition(void *app, int x, int y) { }
 
 // OpenFileDialog opens a dialog to select a file
 // NOTE: The result is a string that will need to be freed!
@@ -323,7 +339,7 @@ char* OpenDirectoryDialog(void *appPointer, char *title) {
 
   // SetColour sets the colour of the webview to the given colour string
 int SetColour(void *appPointer, const char *colourString) {
-    Debug("SetColour Called");
+    Debug("SetColour Called with: %s", colourString);
 
     // struct Application *app = (struct Application*) appPointer;
     // GdkRGBA rgba;
@@ -333,6 +349,8 @@ int SetColour(void *appPointer, const char *colourString) {
     // }
     // Debug("Setting webview colour to: %s", colourString);
     // webkit_web_view_get_background_color((WebKitWebView*)(app->webView), &rgba);
+    // int c = NS_RGBA(1, 0, 0, 0.5);
+
     return 1;
 }
 
@@ -656,12 +674,20 @@ void enableBoolConfig(id config, const char *setting) {
     msg(msg(config, s("preferences")), s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 1), str(setting));
 }
 
+void disableBoolConfig(id config, const char *setting) {
+    msg(msg(config, s("preferences")), s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str(setting));
+}
+
 void Run(void *applicationPointer, int argc, char **argv) {
     struct Application *app = (struct Application*) applicationPointer;
 
-    int decorations = NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask;
+    int decorations = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
     if (app->resizable) {
-        decorations |= NSResizableWindowMask;
+        decorations |= NSWindowStyleMaskResizable;
+    }
+
+    if (app->fullscreen) {
+        decorations |= NSWindowStyleMaskFullscreen;
     }
 
     id application = msg(c("NSApplication"), s("sharedApplication"));
@@ -693,6 +719,10 @@ void Run(void *applicationPointer, int argc, char **argv) {
     // Center Window
     Center(app);
 
+    // Set Style Mask
+    msg(mainWindow, s("setStyleMask:"), decorations);
+    
+
     // Setup webview
     id config = msg(c("WKWebViewConfiguration"), s("new"));
     id manager = msg(config, s("userContentController"));
@@ -714,7 +744,6 @@ void Run(void *applicationPointer, int argc, char **argv) {
     msg(manager, s("addScriptMessageHandler:name:"), delegate, str("external"));
     msg(manager, s("addScriptMessageHandler:name:"), delegate, str("completed"));
     msg(mainWindow, s("setContentView:"), wkwebview);
-    
 
     // Load HTML
     id html = msg(c("NSURL"), s("URLWithString:"), str(assets[0]));

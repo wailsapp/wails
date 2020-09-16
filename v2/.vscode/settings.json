@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "ios": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "sstream": "c"
     }
 }
