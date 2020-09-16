@@ -33,22 +33,12 @@ extern const char *icon[];
 int debug;
 
 // Dispatch Method
-typedef void (*dispatchMethod)(void *app, void *);
-typedef void (^inlineDispatchMethod)(void);
-
-// execOnMainThread will execute the given `func` pointer,
-// passing app as the first argument and args as the second
-void execOnMainThread(void *app, void *func, void *args) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        ((dispatchMethod)func)(app, args);
-    });
-}
+typedef void (^dispatchMethod)(void);
 
 // dispatch will execute the given `func` pointer
-void dispatch(inlineDispatchMethod func) {
+void dispatch(dispatchMethod func) {
     dispatch_async(dispatch_get_main_queue(), func);
 }
-
 
 // App Delegate
 typedef struct AppDel {
@@ -87,8 +77,6 @@ void Debug(char *message, ... ) {
     va_end(args);
     }
 }
-
-
 
 extern void messageFromWindowCallback(const char *);
 typedef void (*ffenestriCallback)(const char *);
@@ -213,16 +201,14 @@ void Quit(void *appPointer) {
 }
 
 // SetTitle sets the main window title to the given string
-void SetTitle(void *appPointer, const char *title) {
+void SetTitle(struct Application *app, const char *title) {
     Debug("SetTitle Called");
-    struct Application *app = (struct Application*) appPointer;
     ON_MAIN_THREAD(
         msg(app->mainWindow, s("setTitle:"), str(title));
     )
 }
 
-void toggleFullscreen(void *appPointer) {
-    struct Application *app = (struct Application*) appPointer;
+void toggleFullscreen(struct Application *app) {
     ON_MAIN_THREAD(
         app->fullscreen = !app->fullscreen;
         msg(app->mainWindow, s("toggleFullScreen:"));
