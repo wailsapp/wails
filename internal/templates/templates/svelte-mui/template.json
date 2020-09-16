@@ -1,0 +1,7 @@
+{
+  "name": "Svelte + MUI3",
+  "shortname": "svelte-mui",
+  "author": "Travis McLane <travis.mclane@gmail.com>",
+  "description": "A simple template using Svelte + Mui3",
+  "helpurl": "https://wails.app/help/templates/svelte-mui3"
+}

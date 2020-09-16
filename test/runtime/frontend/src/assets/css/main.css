@@ -1,0 +1,25 @@
+/* Show it is fixed to the top */
+body {
+  font-family: 'Roboto';
+  min-height: 75rem;
+  padding-top: 4.5rem;
+}
+
+.form-check-label {
+  margin-left: 10px;
+}
+
+#logging, #events, #dialog, #browser, #calls, #filesystem {
+  padding-top: 4.5rem;
+ }
+
+ form {
+   padding: 2rem;
+ }
+
+ .center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}

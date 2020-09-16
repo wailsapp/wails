@@ -1,0 +1,9 @@
+{
+    "name": "Runtime Tester",
+    "outputfilename": "runtimetest",
+    "html": "frontend/dist/index.html",
+    "js": "frontend/dist/main.js",
+    "css": "frontend/dist/main.css",
+    "frontend:build": "npm run build",
+    "frontend:install": "npm install"
+}

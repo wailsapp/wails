@@ -1,0 +1,6 @@
+{
+  "name": "Vue2/Webpack Basic",
+  "shortname": "vue",
+  "author": "Lea Anthony<lea.anthony@gmail.com>",
+  "description": "A basic template using Vue 2 and bundled using Webpack 4"
+}
