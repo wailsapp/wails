@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Exec={{.Name}}
+Name={{.Name}}
+Icon={{.Name}}
+Categories=Utility;

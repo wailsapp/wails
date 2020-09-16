@@ -1,0 +1,5 @@
+{
+    "name": "disable-resize",
+    "outputfilename": "disable-resize",
+    "html": "frontend/index.html"
+}

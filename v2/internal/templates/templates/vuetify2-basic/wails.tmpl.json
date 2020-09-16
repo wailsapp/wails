@@ -1,0 +1,9 @@
+{
+    "name": "{{.ProjectName}}",
+    "outputfilename": "{{.BinaryName}}",
+    "html": "frontend/dist/index.html",
+    "js": "frontend/dist/app.js",
+    "css": "frontend/dist/app.css",
+    "frontend:build": "npm run build",
+    "frontend:install": "npm install"
+}

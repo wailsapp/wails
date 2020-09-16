@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Wails Runtime Tester</title>
+    <link rel="stylesheet" href="/main.css">
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <a class="navbar-brand">Wails Runtime Tester</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
+            aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" onclick="window.scripts.setActive(this)" href="#logging">Logging</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="window.scripts.setActive(this)" href="#events">Events</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="window.scripts.setActive(this)" href="#calls">Calls</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="window.scripts.setActive(this)" href="#dialog">Dialog</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="window.scripts.setActive(this)" href="#browser">Browser</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="window.scripts.setActive(this)" href="#filesystem">Filesystem</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="window.scripts.setActive(this)" href="#window">Window</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main role="main" class="container">
+        <div class="center">
+            <img id="logo" style="width:100%" src="">
+        </div>
+        <div id="logging">
+            <h1>Logging</h1>
+            <form>
+                <fieldset class="form-group">
+                    <div class="row">
+                        <legend class="col-form-label col-sm-2 pt-0">Log Level</legend>
+                        <div class="col-sm-10">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="logRadio" id="gridRadios1"
+                                    value="Debug" checked>
+                                <label class="form-check-label" for="gridRadios1">
+                                    Debug
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="logRadio" id="gridRadios2"
+                                    value="Info">
+                                <label class="form-check-label" for="gridRadios2">
+                                    Info
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="logRadio" id="gridRadios3"
+                                    value="Warning">
+                                <label class="form-check-label" for="gridRadios3">
+                                    Warning
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="logRadio" id="gridRadios4"
+                                    value="Error">
+                                <label class="form-check-label" for="gridRadios4">
+                                    Error
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                <div class="form-group row">
+                    <label for="message" class="col-sm-2 col-form-label">Message</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="message" placeholder="Message">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <button type="button" onclick="window.scripts.doLogging()" class="btn btn-primary">Log
+                            Message</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="events">
+            <h1>Events</h1>
+            <form>
+                <div class="form-group row">
+                    <label for="message" class="col-sm-2 col-form-label">Event Name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="eventname" placeholder="">
+                    </div>
+                    <label for="message" class="col-sm-2 col-form-label">Parameters</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="eventparameters" placeholder="1, 2, 'Hello', true">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <button type="button" onclick="window.scripts.sendEvent()" class="btn btn-primary">Emit
+                            Event</button>
+                    </div>
+                </div>
+            </form>
+            <form>
+                <div class="form-group row">
+                    <label for="message" class="col-sm-2 col-form-label">Listening to Event 'oneoffevent'</label>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <div class="col-sm-10">
+                            <div id="oneoffeventoutput"></div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="calls">
+            <h1>Calls</h1>
+            <div id="calls-info"></div>
+        </div>
+        <div id="browser">
+            <h1>Browser</h1>
+            <form>
+                <div class="form-group row">
+                    <label for="url" class="col-sm-2 col-form-label">URL</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="url" placeholder="http://www.google.com">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <button type="button" onclick="window.scripts.openURL()" class="btn btn-primary">Open
+                            URL</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="dialog">
+            <h1>Dialog</h1>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ut justo eget turpis condimentum suscipit id
+            sed nisl. Fusce placerat bibendum posuere. Aenean sed nunc metus. Vestibulum a velit a arcu semper luctus ac
+            vitae sem. Pellentesque eget purus sem. Sed vitae nibh quam. Nullam rhoncus eros ac accumsan finibus. Ut
+            justo nisi, consequat ut velit at, scelerisque venenatis ex. Duis ornare sapien tempor massa commodo, vel
+            laoreet nisl fermentum. Praesent leo lorem, cursus ut augue id, congue consequat neque. In rutrum felis eu
+            nisl molestie pellentesque. Sed lacinia quam ut pharetra semper. Pellentesque habitant morbi tristique
+            senectus et netus et malesuada fames ac turpis egestas. In lorem turpis, imperdiet in auctor vel, gravida in
+            sem. Mauris aliquam imperdiet nisi nec dapibus. Fusce ornare urna ut arcu tempor, id pretium ipsum
+            tincidunt.
+
+            Etiam ligula nunc, fermentum non euismod a, molestie ac lorem. Donec nibh mi, auctor at est quis, semper
+            auctor dui. Maecenas sit amet lorem dictum, volutpat libero vel, posuere enim. Donec laoreet diam vitae urna
+            lacinia, sed molestie sapien blandit. Donec eget nunc ac massa vehicula convallis non sed diam. Proin et
+            condimentum elit, eu cursus justo. Cras id dapibus neque. Praesent vel ipsum aliquam, pulvinar ipsum id,
+            pulvinar urna. Praesent faucibus nec velit et tincidunt. Vestibulum ex arcu, vestibulum sed ex sit amet,
+            vulputate mollis est. Integer ante velit, pulvinar in purus eu, interdum rhoncus augue. Sed pretium ligula
+            quis elit mattis, congue pellentesque dui laoreet. Cras malesuada velit massa, sed vulputate tellus molestie
+            pretium. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris vitae placerat turpis. Vivamus
+            rhoncus lacus nec pulvinar maximus.
+
+            Fusce odio erat, aliquet eget sodales id, ullamcorper vitae nisi. Nam in vestibulum neque, fringilla iaculis
+            massa. Praesent ut ante nibh. Curabitur vel enim ac neque finibus laoreet. Vivamus sit amet libero sed augue
+            vulputate posuere et ac sapien. In hac habitasse platea dictumst. Nam tincidunt ante nunc, sit amet
+            venenatis orci rutrum ut. Morbi fermentum elit ut convallis rhoncus. Aenean aliquet ultricies nibh at
+            pellentesque. Fusce vulputate a nisl aliquam bibendum.
+        </div>
+        <div id="filesystem">
+            <h1>Filesystem</h1>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ut justo eget turpis condimentum suscipit id
+            sed nisl. Fusce placerat bibendum posuere. Aenean sed nunc metus. Vestibulum a velit a arcu semper luctus ac
+            vitae sem. Pellentesque eget purus sem. Sed vitae nibh quam. Nullam rhoncus eros ac accumsan finibus. Ut
+            justo nisi, consequat ut velit at, scelerisque venenatis ex. Duis ornare sapien tempor massa commodo, vel
+            laoreet nisl fermentum. Praesent leo lorem, cursus ut augue id, congue consequat neque. In rutrum felis eu
+            nisl molestie pellentesque. Sed lacinia quam ut pharetra semper. Pellentesque habitant morbi tristique
+            senectus et netus et malesuada fames ac turpis egestas. In lorem turpis, imperdiet in auctor vel, gravida in
+            sem. Mauris aliquam imperdiet nisi nec dapibus. Fusce ornare urna ut arcu tempor, id pretium ipsum
+            tincidunt.
+
+            Etiam ligula nunc, fermentum non euismod a, molestie ac lorem. Donec nibh mi, auctor at est quis, semper
+            auctor dui. Maecenas sit amet lorem dictum, volutpat libero vel, posuere enim. Donec laoreet diam vitae urna
+            lacinia, sed molestie sapien blandit. Donec eget nunc ac massa vehicula convallis non sed diam. Proin et
+            condimentum elit, eu cursus justo. Cras id dapibus neque. Praesent vel ipsum aliquam, pulvinar ipsum id,
+            pulvinar urna. Praesent faucibus nec velit et tincidunt. Vestibulum ex arcu, vestibulum sed ex sit amet,
+            vulputate mollis est. Integer ante velit, pulvinar in purus eu, interdum rhoncus augue. Sed pretium ligula
+            quis elit mattis, congue pellentesque dui laoreet. Cras malesuada velit massa, sed vulputate tellus molestie
+            pretium. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris vitae placerat turpis. Vivamus
+            rhoncus lacus nec pulvinar maximus.
+
+            Fusce odio erat, aliquet eget sodales id, ullamcorper vitae nisi. Nam in vestibulum neque, fringilla iaculis
+            massa. Praesent ut ante nibh. Curabitur vel enim ac neque finibus laoreet. Vivamus sit amet libero sed augue
+            vulputate posuere et ac sapien. In hac habitasse platea dictumst. Nam tincidunt ante nunc, sit amet
+            venenatis orci rutrum ut. Morbi fermentum elit ut convallis rhoncus. Aenean aliquet ultricies nibh at
+            pellentesque. Fusce vulputate a nisl aliquam bibendum.
+        </div>
+        <div id="window">
+            <h1>Window</h1>
+            <form>
+                <h2>Hide</h2>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <p>Hide Window for 3 seconds. Uses <code>wails.Window.Show()</code> to reshow window.</p>
+                        <button type="button" onclick="window.scripts.hideWindow()" class="btn btn-primary">Hide Window</button>
+                    </div>
+                </div>  
+                <h2>Maximise</h2>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <p>Maximise Window</p>
+                        <button type="button" onclick="window.scripts.maximiseWindow()" class="btn btn-primary">Maximise Window</button>
+                    </div>
+                </div>   
+                <h2>Unmaximise</h2>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <p>Unmaximise Window</p>
+                        <button type="button" onclick="window.scripts.unmaximiseWindow()" class="btn btn-primary">Unmaximise Window</button>
+                    </div>
+                </div> 
+                <h2>Minimise</h2>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <p>Minimise Window for 3 seconds. Uses <code>wails.Window.Unminimise()</code> to reshow window.</p></p>
+                        <button type="button" onclick="window.scripts.minimiseWindow()" class="btn btn-primary">Minimise Window</button>
+                    </div>
+                </div>                
+                <h2>Center</h2>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <p>Center the window.</p>
+                        <button type="button" onclick="window.scripts.center()" class="btn btn-primary">Center Window</button>
+                    </div>
+                </div>                
+                <h2>Set Position</h2>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <p>Sets the position of the window.</p>
+                        <div class="form-group row">
+                            <label for="message" class="col-sm-2 col-form-label">X</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="windowx">
+                            </div>
+                            <label for="message" class="col-sm-2 col-form-label">Y</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="windowy">
+                            </div>
+                        </div>
+                        <button type="button" onclick="window.scripts.setposition()" class="btn btn-primary">Position Window</button>
+                    </div>
+                </div>                
+                <h2>Set Size</h2>
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <p>Sets the size of the window.</p>
+                        <div class="form-group row">
+                            <label for="message" class="col-sm-2 col-form-label">X</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="windowwidth">
+                            </div>
+                            <label for="message" class="col-sm-2 col-form-label">Y</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="windowheight">
+                            </div>
+                        </div>
+                        <button type="button" onclick="window.scripts.setsize()" class="btn btn-primary">Resize Window</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+    <script src="/main.js"></script>
+</body>
+
+</html>
