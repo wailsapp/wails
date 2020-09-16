@@ -13,6 +13,7 @@
 #define str(input) msg(c("NSString"), s("stringWithUTF8String:"), input)
 
 #define ON_MAIN_THREAD(str) dispatch( ^{ str; } );
+#define MAIN_WINDOW_CALL(str) msg(app->mainWindow, s((str)));
 
 #define NSBackingStoreBuffered 2
 
@@ -211,7 +212,7 @@ void SetTitle(struct Application *app, const char *title) {
 void toggleFullscreen(struct Application *app) {
     ON_MAIN_THREAD(
         app->fullscreen = !app->fullscreen;
-        msg(app->mainWindow, s("toggleFullScreen:"));
+        MAIN_WINDOW_CALL("toggleFullScreen:")
     )
 }
 
@@ -234,7 +235,7 @@ void UnFullscreen(struct Application *app) {
 void Center(struct Application *app) {
     Debug("Center Called");
     ON_MAIN_THREAD(
-        msg(app->mainWindow, s("center"));
+        MAIN_WINDOW_CALL("center")
     )
 }
 
@@ -260,7 +261,7 @@ void Maximise(struct Application *app) {
     if( app->maximised == 0) {
         ON_MAIN_THREAD(
             app->maximised = 1;
-            msg(app->mainWindow, s("zoom:"));
+            MAIN_WINDOW_CALL("zoom:")
         )
     }
 }
@@ -269,19 +270,19 @@ void Unmaximise(struct Application *app) {
     if( app->maximised == 1) {
         ON_MAIN_THREAD(
             app->maximised = 0;
-            msg(app->mainWindow, s("zoom:"));
+            MAIN_WINDOW_CALL("zoom:")
         )
     }
 }
 
 void Minimise(struct Application *app) {
     ON_MAIN_THREAD(
-        msg(app->mainWindow, s("miniaturize:"));
+        MAIN_WINDOW_CALL("miniaturize:")
     )
  }
 void Unminimise(struct Application *app) {
     ON_MAIN_THREAD(
-        msg(app->mainWindow, s("deminiaturize:"));
+        MAIN_WINDOW_CALL("deminiaturize:")
     )
  }
 void SetSize(void *app, int width, int height) { }
