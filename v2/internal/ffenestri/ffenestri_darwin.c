@@ -14,6 +14,8 @@
 #define u(str) sel_getUid(str)
 #define str(input) msg(c("NSString"), s("stringWithUTF8String:"), input)
 
+#define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("frame"));
+
 #define ON_MAIN_THREAD(str) dispatch( ^{ str; } );
 #define MAIN_WINDOW_CALL(str) msg(app->mainWindow, s((str)));
 
@@ -310,38 +312,55 @@ void Unminimise(struct Application *app) {
     }
  }
 
+id getCurrentScreen(struct Application *app) {
+    id screen = NULL;
+    screen = msg(app->mainWindow, s("screen"));
+    if( screen == NULL ) {
+        screen = msg(c("NSScreen"), u("mainScreen"));
+    }
+    return screen;
+}
+
+void dumpFrame(const char *message, CGRect frame) {
+    Debug(message);
+    Debug("origin.x %f", frame.origin.x);
+    Debug("origin.y %f", frame.origin.y);        
+    Debug("size.width %f", frame.size.width);
+    Debug("size.height %f", frame.size.height);
+}
+
 void SetSize(struct Application *app, int width, int height) { 
     ON_MAIN_THREAD(
-        id screen = NULL;
-        screen = msg(app->mainWindow, s("screen"));
-        if( screen == NULL ) {
-            screen = msg(c("NSScreen"), u("mainScreen"));
-        }
+        id screen = getCurrentScreen(app);
 
-        // Get the rect for the mainWindow
-        CGRect* frame = (CGRect*) msg(app->mainWindow, s("valueForKey:"), str("frame"));
-
+        // Get the rect for the window
+        CGRect frame = GET_FRAME(app->mainWindow);
         // Get the rect for the current screen
-        CGRect *visibleFrame = (CGRect*) msg(screen, s("valueForKey:"), str("visibleFrame"));
+        CGRect visibleFrame = GET_FRAME(screen);
 
         // Credit: https://github.com/patr0nus/DeskGap/blob/73c0ac9f2c73f55b6e81f64f6673a7962b5719cd/lib/src/platform/mac/util/NSScreen%2BGeometry.m
-        Debug("visibleFrame->origin.x %4.1f", visibleFrame->origin.x);
-        Debug("visibleFrame->origin.y %4.1f", visibleFrame->origin.y);            
-        Debug("visibleFrame->size.width %4.1f", visibleFrame->size.width);
-        Debug("visibleFrame->size.height %4.1f", visibleFrame->size.height);        
-        Debug("frame->origin.x %4.1f", frame->origin.x);
-        Debug("frame->origin.y %4.1f", frame->origin.y);        
-        Debug("frame->size.width %4.1f", frame->size.width);
-        Debug("frame->size.height %4.1f", frame->size.height);
-
-        // Move the window
-        // msg(app->mainWindow, s("setFrame:display:animate:"), *frame, 1, 0);
+        dumpFrame("visibleFrame", visibleFrame);   
+        dumpFrame("frame", frame);
+        frame.size.width = (float)width;
+        frame.size.height = (float)height;
+        msg(app->mainWindow, s("setFrame:display:animate:"), frame, 1, 0);
     )
 }
 
 
 void SetPosition(struct Application *app, int x, int y) { 
-    msg(app->mainWindow, s("cascadeTopLeftFromPoint:"), CGPointMake(x, y));
+    ON_MAIN_THREAD(
+        id screen = getCurrentScreen(app);
+        CGRect screenFrame = GET_FRAME(screen);
+        CGRect windowFrame = GET_FRAME(app->mainWindow);
+
+        dumpFrame("screenFrame", screenFrame);
+        dumpFrame("windowFrame before", windowFrame);
+        windowFrame.origin.x = screenFrame.origin.x + (float)x;
+        windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - (float)y;
+        dumpFrame("windowFrame after", windowFrame);
+        msg(app->mainWindow, s("setFrame:display:animate:"), windowFrame, 1, 0);
+    )
 }
 
 // OpenFileDialog opens a dialog to select a file
