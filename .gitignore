@@ -20,3 +20,5 @@ node_modules/
 package.json.md5
 v2/test/**/frontend/dist
 v2/test/**/build/
+v2/test/frameless/icon.png
+v2/test/hidden/icon.png

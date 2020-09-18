@@ -7,9 +7,11 @@
 
 // Macros to make it slightly more sane
 #define msg objc_msgSend
+#define msg_stret objc_msgSend_stret
 
 #define c(str) (id)objc_getClass(str)
 #define s(str) sel_registerName(str)
+#define u(str) sel_getUid(str)
 #define str(input) msg(c("NSString"), s("stringWithUTF8String:"), input)
 
 #define ON_MAIN_THREAD(str) dispatch( ^{ str; } );
@@ -17,13 +19,15 @@
 
 #define NSBackingStoreBuffered 2
 
-#define NSBorderlessWindowMask 0
-
+#define NSWindowStyleMaskBorderless 0
 #define NSWindowStyleMaskTitled 1
 #define NSWindowStyleMaskClosable 2
 #define NSWindowStyleMaskMiniaturizable 4
 #define NSWindowStyleMaskResizable 8
 #define NSWindowStyleMaskFullscreen 1 << 14
+
+#define NSWindowTitleHidden 1
+#define NSWindowStyleMaskFullSizeContentView 1 << 15
 
 // References to assets
 extern const unsigned char *assets[];
@@ -89,18 +93,24 @@ struct Application {
     id mainWindow;
     id wkwebview;
     id manager;
+    id config;
 
     // Window Data
     const char *title;
     int width;
     int height;
+    int minWidth;
+    int minHeight;
+    int maxWidth;
+    int maxHeight;
     int resizable;
     int devtools;
     int fullscreen;
 
     // Features
-    int borderless;
+    int frame;
     int maximised;
+    int minimised;
 
     // User Data
     char *HTML;
@@ -142,6 +152,7 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
         // Show window after a short delay so rendering can catch up
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 10000000), dispatch_get_main_queue(), ^{
             Show(app); 
+            msg(app->config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("suppressesIncrementalRendering"));
         });
         
     } else {
@@ -162,14 +173,19 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->title = title;
     result->width = width;
     result->height = height;
+    result->minWidth = 0;
+    result->minHeight = 0;
+    result->maxWidth = 0;
+    result->maxHeight = 0;
     result->resizable = resizable;
     result->devtools = devtools;
     result->fullscreen = fullscreen;
     result->lock = 0;
     result->maximised = 0;
+    result->minimised = 0;
 
     // Features
-    result->borderless = 0;
+    result->frame = 1;
 
     result->sendMessageToBackend = (ffenestriCallback) messageFromWindowCallback;
 
@@ -209,7 +225,7 @@ void SetTitle(struct Application *app, const char *title) {
     )
 }
 
-void toggleFullscreen(struct Application *app) {
+void ToggleFullscreen(struct Application *app) {
     ON_MAIN_THREAD(
         app->fullscreen = !app->fullscreen;
         MAIN_WINDOW_CALL("toggleFullScreen:")
@@ -220,7 +236,7 @@ void toggleFullscreen(struct Application *app) {
 void Fullscreen(struct Application *app) {
     Debug("Fullscreen Called");
     if( app->fullscreen == 0) {
-        toggleFullscreen(app);
+        ToggleFullscreen(app);
     }
 }
 
@@ -228,7 +244,7 @@ void Fullscreen(struct Application *app) {
 void UnFullscreen(struct Application *app) {
     Debug("UnFullscreen Called");
     if( app->fullscreen == 1) {
-        toggleFullscreen(app);
+        ToggleFullscreen(app);
     }
 }
 
@@ -257,36 +273,76 @@ void SetMinimumSize(void *appPointer, int width, int height) {
     // gtk_window_set_geometry_hints(app->mainWindow, NULL, &size, GDK_HINT_MIN_SIZE);
 }
 
+void ToggleMaximise(struct Application *app) {
+    ON_MAIN_THREAD(
+        app->maximised = !app->maximised;
+        MAIN_WINDOW_CALL("zoom:")
+    )
+}
+
 void Maximise(struct Application *app) { 
     if( app->maximised == 0) {
-        ON_MAIN_THREAD(
-            app->maximised = 1;
-            MAIN_WINDOW_CALL("zoom:")
-        )
+        ToggleMaximise(app);
     }
 }
 
 void Unmaximise(struct Application *app) { 
     if( app->maximised == 1) {
-        ON_MAIN_THREAD(
-            app->maximised = 0;
-            MAIN_WINDOW_CALL("zoom:")
-        )
+        ToggleMaximise(app);
     }
 }
 
-void Minimise(struct Application *app) {
+void ToggleMinimise(struct Application *app) {
     ON_MAIN_THREAD(
-        MAIN_WINDOW_CALL("miniaturize:")
+        MAIN_WINDOW_CALL(app->minimised ? "deminiaturize:" : "miniaturize:" );
+        app->minimised = !app->minimised;
     )
+}
+
+void Minimise(struct Application *app) {
+    if( app->minimised == 0) {
+        ToggleMinimise(app);
+    }
  }
 void Unminimise(struct Application *app) {
-    ON_MAIN_THREAD(
-        MAIN_WINDOW_CALL("deminiaturize:")
-    )
+    if( app->minimised == 1) {
+        ToggleMinimise(app);
+    }
  }
-void SetSize(void *app, int width, int height) { }
-void SetPosition(void *app, int x, int y) { }
+
+void SetSize(struct Application *app, int width, int height) { 
+    ON_MAIN_THREAD(
+        id screen = NULL;
+        screen = msg(app->mainWindow, s("screen"));
+        if( screen == NULL ) {
+            screen = msg(c("NSScreen"), u("mainScreen"));
+        }
+
+        // Get the rect for the mainWindow
+        CGRect* frame = (CGRect*) msg(app->mainWindow, s("valueForKey:"), str("frame"));
+
+        // Get the rect for the current screen
+        CGRect *visibleFrame = (CGRect*) msg(screen, s("valueForKey:"), str("visibleFrame"));
+
+        // Credit: https://github.com/patr0nus/DeskGap/blob/73c0ac9f2c73f55b6e81f64f6673a7962b5719cd/lib/src/platform/mac/util/NSScreen%2BGeometry.m
+        Debug("visibleFrame->origin.x %4.1f", visibleFrame->origin.x);
+        Debug("visibleFrame->origin.y %4.1f", visibleFrame->origin.y);            
+        Debug("visibleFrame->size.width %4.1f", visibleFrame->size.width);
+        Debug("visibleFrame->size.height %4.1f", visibleFrame->size.height);        
+        Debug("frame->origin.x %4.1f", frame->origin.x);
+        Debug("frame->origin.y %4.1f", frame->origin.y);        
+        Debug("frame->size.width %4.1f", frame->size.width);
+        Debug("frame->size.height %4.1f", frame->size.height);
+
+        // Move the window
+        // msg(app->mainWindow, s("setFrame:display:animate:"), *frame, 1, 0);
+    )
+}
+
+
+void SetPosition(struct Application *app, int x, int y) { 
+    msg(app->mainWindow, s("cascadeTopLeftFromPoint:"), CGPointMake(x, y));
+}
 
 // OpenFileDialog opens a dialog to select a file
 // NOTE: The result is a string that will need to be freed!
@@ -391,73 +447,24 @@ int SetColour(void *appPointer, const char *colourString) {
     return 1;
 }
 
-// WindowBorderless will ensure that the main window gets created
-// without a border
-void WindowBorderless(struct Application *app) {
-    Debug("WindowBoderless Called");
-    app->borderless = 1;
-}
 const char *invoke = "window.external={invoke:function(x){window.webkit.messageHandlers.external.postMessage(x);}};";
 
-// void syncCallback(id self, NSError cmd ) {
-//     Debug("In syncCallback");
-//     struct Application *app = (struct Application *)objc_getAssociatedObject(self, "application");
-//     Debug("app: %p", app);
-//     app->lock = 0;
-// }
-/*
-void syncEval( struct Application *app, const char *script) {
-
-    id wkwebview = app->wkwebview;
-    Debug("[%p] wkwebview", wkwebview);
-    Debug("[%p] Running sync", script);
-
-    // wait for lock to free
-    while (app->lock == 1) {
-        Debug("Waiting for current lock to free");
-        usleep(100000);
-    }
-    // Set lock
-    app->lock = 1;
-
-    Debug("Executing JS");
-
-    msg(wkwebview, s("evaluateJavaScript:completionHandler:"),
-    msg(c("NSString"), s("stringWithUTF8String:"), script), ^(id result, int *error) {
-        Debug("Here");
-        app->lock = 0;
-    });
-
-    while (app->lock == 1) {
-        Debug("[%p] Waiting for callback", script);
-        usleep(100000);
-	}
-    // Debug("[%p] Finished\n", script);
-}
-
-void asyncEval(  WebKitWebView  *webView, const gchar *script ) {
-        webkit_web_view_run_javascript(
-            webView,
-            script,
-            NULL, NULL, NULL);
-}
-*/
-
-
 // DisableFrame disables the window frame
-void DisableFrame(void *appPointer)
+void DisableFrame(struct Application *app)
 {
-   // TBD
+   app->frame = 0;
 }
 
-void SetMinWindowSize(void *appPointer, int minWidth, int minHeight)
+void SetMinWindowSize(struct Application *app, int minWidth, int minHeight)
 {
-    // TBD
+    app->minWidth = minWidth;
+    app->minHeight = minHeight;
 }
 
-void SetMaxWindowSize(void *appPointer, int maxWidth, int maxHeight)
+void SetMaxWindowSize(struct Application *app, int maxWidth, int maxHeight)
 {
-    // TBD
+    app->maxWidth = maxWidth;
+    app->maxHeight = maxHeight;
 }
 
 void ExecJS(struct Application *app, const char *js) {
@@ -532,104 +539,6 @@ char* OpenDirectoryDialogOnMainThread(void *app, char *title) {
 // void setIcon( struct Application *app) {
 //     GdkPixbuf *appIcon = gdk_pixbuf_new_from_xpm_data ((const char**)icon);
 //     gtk_window_set_icon (app->mainWindow, appIcon);
-// }
-
-
-// static void load_finished_cb (  WebKitWebView  *webView,
-//                                 WebKitLoadEvent load_event,
-//                                 gpointer        userData)
-// {
-//     struct Application* app;
-
-//     switch (load_event) {
-//     // case WEBKIT_LOAD_STARTED:
-//     //     /* New load, we have now a provisional URI */
-//     //     // printf("Start downloading %s\n", webkit_web_view_get_uri(web_view));
-//     //     /* Here we could start a spinner or update the
-//     //      * location bar with the provisional URI */
-//     //     break;
-//     // case WEBKIT_LOAD_REDIRECTED:
-//     //     // printf("Redirected to: %s\n", webkit_web_view_get_uri(web_view));
-//     //     break;
-//     // case WEBKIT_LOAD_COMMITTED:
-//     //     /* The load is being performed. Current URI is
-//     //      * the final one and it won't change unless a new
-//     //      * load is requested or a navigation within the
-//     //      * same page is performed */
-//     //     // printf("Loading: %s\n", webkit_web_view_get_uri(web_view));
-//     //     break;
-//     case WEBKIT_LOAD_FINISHED:
-//         /* Load finished, we can now stop the spinner */
-//         // printf("Finished loading: %s\n", webkit_web_view_get_uri(web_view));
-//         app = (struct Application*) userData;
-
-//         Debug("Initialising Wails Window");
-//         syncEval(app, invoke);
-
-//         // Bindings
-//         Debug("Binding Methods");
-//         syncEval(app, app->bindings);
-
-//         // Runtime
-//         Debug("Setting up Wails runtime");
-//         syncEval(app, &runtime);
-
-//         // Loop over assets
-//         int index = 0;
-//         while(1) {
-//             // Get next asset pointer
-//             const char *asset = assets[index];
-
-//             // If we have no more assets, break
-//             if (asset == 0x00) {
-//                 break;
-//             }
-
-//             // sync eval the asset
-//             syncEval(app, asset);
-//             index++;
-//         };
-
-//         // Set the icon
-//         setIcon(app);
-
-//         // Setup fullscreen
-//         if( app->fullscreen ) {
-//             Debug("Going fullscreen");
-//             Fullscreen(app);
-//         }
-
-//         // Setup resize
-//         gtk_window_resize(GTK_WINDOW (app->mainWindow), app->width, app->height);
-
-//         if( app->resizable ) {
-//             gtk_window_set_default_size(GTK_WINDOW (app->mainWindow), app->width, app->height);
-//         } else {
-//             gtk_widget_set_size_request(GTK_WIDGET (app->mainWindow), app->width, app->height);
-//             SetMaximumSize(app, app->width, app->height);
-//             SetMinimumSize(app, app->width, app->height);
-//             gtk_window_resize(GTK_WINDOW (app->mainWindow), app->width, app->height);
-//         }
-//         gtk_window_set_resizable(GTK_WINDOW(app->mainWindow), app->resizable ? TRUE : FALSE );
-
-//         // Centre by default
-//         Center(app);
-
-//         // Show window and focus
-//         gtk_widget_show_all(GTK_WIDGET(app->mainWindow));
-//         gtk_widget_grab_focus(app->webView);
-//         break;
-//     }
-// }
-
-// static
-// gboolean
-// disable_context_menu_cb(WebKitWebView       *web_view,
-//                         WebKitContextMenu   *context_menu,
-//                         GdkEvent            *event,
-//                         WebKitHitTestResult *hit_test_result,
-//                         gpointer             user_data) {
-//   return TRUE;
 // }
 
 
@@ -714,13 +623,22 @@ void disableBoolConfig(id config, const char *setting) {
 void Run(void *applicationPointer, int argc, char **argv) {
     struct Application *app = (struct Application*) applicationPointer;
 
-    int decorations = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
+    int decorations;
+
+    if (app->frame == 1 ) { 
+        decorations = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
+    }
+
     if (app->resizable) {
         decorations |= NSWindowStyleMaskResizable;
     }
 
     if (app->fullscreen) {
         decorations |= NSWindowStyleMaskFullscreen;
+    }
+
+    if( app->frame == 0) {
+        decorations |= NSWindowStyleMaskFullSizeContentView;
     }
 
     id application = msg(c("NSApplication"), s("sharedApplication"));
@@ -739,12 +657,14 @@ void Run(void *applicationPointer, int argc, char **argv) {
     // Create delegate
     id delegate = msg((id)delegateClass, s("new"));
     objc_setAssociatedObject(delegate, "application", (id)app, OBJC_ASSOCIATION_ASSIGN);
-    msg(application, sel_registerName("setDelegate:"), delegate);
+    msg(application, s("setDelegate:"), delegate);
 
     // Create main window
     id mainWindow = msg(c("NSWindow"),s("alloc"));
     mainWindow = msg(mainWindow, s("initWithContentRect:styleMask:backing:defer:"),
           CGRectMake(0, 0, app->width, app->height), decorations, NSBackingStoreBuffered, 0);
+    msg(mainWindow, s("autorelease"));
+
     app->mainWindow = mainWindow;
 
     // Set the main window title
@@ -752,6 +672,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
 
     // Center Window
     Center(app);
+    // msg(app->mainWindow, s("cascadeTopLeftFromPoint:"), CGPointMake(100, 100));
 
     // Set Style Mask
     msg(mainWindow, s("setStyleMask:"), decorations);
@@ -759,6 +680,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
 
     // Setup webview
     id config = msg(c("WKWebViewConfiguration"), s("new"));
+    app->config = config;
     id manager = msg(config, s("userContentController"));
     app->manager = manager;
     id wkwebview = msg(c("WKWebView"), s("alloc"));
@@ -774,10 +696,41 @@ void Run(void *applicationPointer, int argc, char **argv) {
     }
     // TODO: Understand why this shouldn't be CGRectMake(0, 0, app->width, app->height)
     msg(wkwebview, s("initWithFrame:configuration:"), CGRectMake(0, 0, 0, 0), config);
+
     
     msg(manager, s("addScriptMessageHandler:name:"), delegate, str("external"));
     msg(manager, s("addScriptMessageHandler:name:"), delegate, str("completed"));
     msg(mainWindow, s("setContentView:"), wkwebview);
+
+    if( app->frame == 0) {
+        msg(mainWindow, s("setTitlebarAppearsTransparent:"), YES);
+        msg(mainWindow, s("setTitleVisibility:"), NSWindowTitleHidden);
+        // msg( msg( mainWindow, ("standardWindowButton"), str("NSWindowZoomButton")), s("setHidden"), YES);
+    //           [[window standardWindowButton:NSWindowZoomButton] setHidden:YES];
+    //   [[window standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
+    //   [[window standardWindowButton:NSWindowCloseButton] setHidden:YES];
+    }
+
+
+
+
+    // msg(mainWindow, s("setFrame:display:animate:"), CGRectMake(0, 0, 0, 0), YES, YES);
+//         // Set the icon
+//         setIcon(app);
+
+//         // Setup resize
+//         gtk_window_resize(GTK_WINDOW (app->mainWindow), app->width, app->height);
+
+//         if( app->resizable ) {
+//             gtk_window_set_default_size(GTK_WINDOW (app->mainWindow), app->width, app->height);
+//         } else {
+//             gtk_widget_set_size_request(GTK_WIDGET (app->mainWindow), app->width, app->height);
+//             SetMaximumSize(app, app->width, app->height);
+//             SetMinimumSize(app, app->width, app->height);
+//             gtk_window_resize(GTK_WINDOW (app->mainWindow), app->width, app->height);
+//         }
+//         gtk_window_set_resizable(GTK_WINDOW(app->mainWindow), app->resizable ? TRUE : FALSE );
+
 
     // Load HTML
     id html = msg(c("NSURL"), s("URLWithString:"), str(assets[0]));
@@ -819,6 +772,10 @@ void Run(void *applicationPointer, int argc, char **argv) {
     temp = concat(internalCode, "webkit.messageHandlers.completed.postMessage(true);");
     free((void*)internalCode);
     internalCode = temp;
+
+    // const char *viewportScriptString = "var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'width=device-width'); meta.setAttribute('initial-scale', '1.0'); meta.setAttribute('maximum-scale', '1.0'); meta.setAttribute('minimum-scale', '1.0'); meta.setAttribute('user-scalable', 'no'); document.getElementsByTagName('head')[0].appendChild(meta);";
+    // ExecJS(app, viewportScriptString);
+    
 
     // This evaluates the MOAE once the Dom has finished loading
     msg(manager, 
