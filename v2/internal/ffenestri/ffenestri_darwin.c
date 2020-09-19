@@ -336,13 +336,16 @@ void SetSize(struct Application *app, int width, int height) {
         // Get the rect for the window
         CGRect frame = GET_FRAME(app->mainWindow);
         // Get the rect for the current screen
-        CGRect visibleFrame = GET_FRAME(screen);
+        // CGRect visibleFrame = GET_FRAME(screen);
 
         // Credit: https://github.com/patr0nus/DeskGap/blob/73c0ac9f2c73f55b6e81f64f6673a7962b5719cd/lib/src/platform/mac/util/NSScreen%2BGeometry.m
-        dumpFrame("visibleFrame", visibleFrame);   
-        dumpFrame("frame", frame);
+        // dumpFrame("visibleFrame", visibleFrame);   
+        dumpFrame("before", frame);
+        frame.origin.y = (frame.origin.y + frame.size.height) - (float)height;
         frame.size.width = (float)width;
         frame.size.height = (float)height;
+        dumpFrame("after", frame);
+
         msg(app->mainWindow, s("setFrame:display:animate:"), frame, 1, 0);
     )
 }
@@ -357,7 +360,7 @@ void SetPosition(struct Application *app, int x, int y) {
         dumpFrame("screenFrame", screenFrame);
         dumpFrame("windowFrame before", windowFrame);
         windowFrame.origin.x = screenFrame.origin.x + (float)x;
-        windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - (float)y;
+        windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
         dumpFrame("windowFrame after", windowFrame);
         msg(app->mainWindow, s("setFrame:display:animate:"), windowFrame, 1, 0);
     )
