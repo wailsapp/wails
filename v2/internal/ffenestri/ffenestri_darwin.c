@@ -72,16 +72,16 @@ BOOL yes(id self, SEL cmd)
 
 // Debug works like sprintf but mutes if the global debug flag is true
 // Credit: https://stackoverflow.com/a/20639708
-void Debug(char *message, ... ) {
+void Debug(const char *message, ... ) {
     if ( debug ) {
-    char *temp = concat("TRACE | Ffenestri (C) | ", message);
-    message = concat(temp, "\n");
-    free(temp);
-    va_list args;
-    va_start(args, message);
-    vprintf(message, args);
-    free(message);
-    va_end(args);
+        char *temp = concat("TRACE | Ffenestri (C) | ", message);
+        message = concat(temp, "\n");
+        free(temp);
+        va_list args;
+        va_start(args, message);
+        vprintf(message, args);
+        free((void*)message);
+        va_end(args);
     }
 }
 
@@ -113,6 +113,8 @@ struct Application {
     int frame;
     int maximised;
     int minimised;
+    int titlebarAppearsTransparent;
+    int hideTitle;
 
     // User Data
     char *HTML;
@@ -128,15 +130,22 @@ struct Application {
 
 };
 
-void Hide(void *appPointer) { 
-    struct Application *app = (struct Application*) appPointer;
+void TitlebarAppearsTransparent(struct Application* app) {
+    app->titlebarAppearsTransparent = 1;
+    Debug("[x] setTitlebarAppearsTransparent %d", app->titlebarAppearsTransparent? YES:NO);
+}
+
+void HideTitle(struct Application *app) {
+    app->hideTitle = 1;
+}
+
+void Hide(struct Application *app) { 
     ON_MAIN_THREAD( 
         msg(app->application, s("hide:")) 
     )
 }
 
-void Show(void *appPointer) { 
-    struct Application *app = (struct Application*) appPointer;
+void Show(struct Application *app) { 
     ON_MAIN_THREAD(
         msg(app->mainWindow, s("makeKeyAndOrderFront:"), NULL);
         msg(app->application, s("activateIgnoringOtherApps:"), YES);
@@ -188,6 +197,10 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 
     // Features
     result->frame = 1;
+    result->hideTitle = 0;
+
+    result->titlebarAppearsTransparent = 0;
+    printf("[l] setTitlebarAppearsTransparent %d\n", result->titlebarAppearsTransparent);
 
     result->sendMessageToBackend = (ffenestriCallback) messageFromWindowCallback;
 
@@ -335,12 +348,8 @@ void SetSize(struct Application *app, int width, int height) {
 
         // Get the rect for the window
         CGRect frame = GET_FRAME(app->mainWindow);
-        // Get the rect for the current screen
-        // CGRect visibleFrame = GET_FRAME(screen);
 
         // Credit: https://github.com/patr0nus/DeskGap/blob/73c0ac9f2c73f55b6e81f64f6673a7962b5719cd/lib/src/platform/mac/util/NSScreen%2BGeometry.m
-        // dumpFrame("visibleFrame", visibleFrame);   
-        dumpFrame("before", frame);
         frame.origin.y = (frame.origin.y + frame.size.height) - (float)height;
         frame.size.width = (float)width;
         frame.size.height = (float)height;
@@ -357,11 +366,8 @@ void SetPosition(struct Application *app, int x, int y) {
         CGRect screenFrame = GET_FRAME(screen);
         CGRect windowFrame = GET_FRAME(app->mainWindow);
 
-        dumpFrame("screenFrame", screenFrame);
-        dumpFrame("windowFrame before", windowFrame);
         windowFrame.origin.x = screenFrame.origin.x + (float)x;
         windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
-        dumpFrame("windowFrame after", windowFrame);
         msg(app->mainWindow, s("setFrame:display:animate:"), windowFrame, 1, 0);
     )
 }
@@ -731,6 +737,11 @@ void Run(void *applicationPointer, int argc, char **argv) {
     //           [[window standardWindowButton:NSWindowZoomButton] setHidden:YES];
     //   [[window standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
     //   [[window standardWindowButton:NSWindowCloseButton] setHidden:YES];
+    } else {
+        Debug("setTitlebarAppearsTransparent %d", app->titlebarAppearsTransparent ? YES :NO);
+        // msg(mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
+        msg(app->mainWindow, s("setTitleVisibility:"), app->hideTitle);
+
     }
 
 

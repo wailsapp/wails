@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v2/internal/appoptions"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
 )
@@ -28,36 +29,36 @@ import "C"
 // TODO: move to compile time.
 var DEBUG bool = true
 
-// Config defines how our application should be configured
-type Config struct {
-	Title       string
-	Width       int
-	Height      int
-	MinWidth    int
-	MinHeight   int
-	MaxWidth    int
-	MaxHeight   int
-	DevTools    bool
-	Resizable   bool
-	Fullscreen  bool
-	Frameless   bool
-	StartHidden bool
-}
+// // Config defines how our application should be configured
+// type Config struct {
+// 	Title       string
+// 	Width       int
+// 	Height      int
+// 	MinWidth    int
+// 	MinHeight   int
+// 	MaxWidth    int
+// 	MaxHeight   int
+// 	DevTools    bool
+// 	Resizable   bool
+// 	Fullscreen  bool
+// 	Frameless   bool
+// 	StartHidden bool
+// }
 
-var defaultConfig = &Config{
-	Title:       "My Wails App",
-	Width:       800,
-	Height:      600,
-	DevTools:    true,
-	Resizable:   true,
-	Fullscreen:  false,
-	Frameless:   false,
-	StartHidden: false,
-}
+// var defaultConfig = &Config{
+// 	Title:       "My Wails App",
+// 	Width:       800,
+// 	Height:      600,
+// 	DevTools:    true,
+// 	Resizable:   true,
+// 	Fullscreen:  false,
+// 	Frameless:   false,
+// 	StartHidden: false,
+// }
 
 // Application is our main application object
 type Application struct {
-	config *Config
+	config *appoptions.Options
 	memory []unsafe.Pointer
 
 	// This is the main app pointer
@@ -82,7 +83,7 @@ func init() {
 }
 
 // NewApplicationWithConfig creates a new application based on the given config
-func NewApplicationWithConfig(config *Config, logger *logger.Logger) *Application {
+func NewApplicationWithConfig(config *appoptions.Options, logger *logger.Logger) *Application {
 	return &Application{
 		config: config,
 		logger: logger.CustomLogger("Ffenestri"),
@@ -92,7 +93,7 @@ func NewApplicationWithConfig(config *Config, logger *logger.Logger) *Applicatio
 // NewApplication creates a new Application with the default config
 func NewApplication(logger *logger.Logger) *Application {
 	return &Application{
-		config: defaultConfig,
+		config: appoptions.Default,
 		logger: logger.CustomLogger("Ffenestri"),
 	}
 }
@@ -130,7 +131,7 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string) error 
 	title := a.string2CString(a.config.Title)
 	width := C.int(a.config.Width)
 	height := C.int(a.config.Height)
-	resizable := a.bool2Cint(a.config.Resizable)
+	resizable := a.bool2Cint(!a.config.DisableResize)
 	devtools := a.bool2Cint(a.config.DevTools)
 	fullscreen := a.bool2Cint(a.config.Fullscreen)
 	startHidden := a.bool2Cint(a.config.StartHidden)
@@ -166,6 +167,9 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string) error 
 	// save the dispatcher in a package variable so that the C callbacks
 	// can access it
 	dispatcher = incomingDispatcher.RegisterClient(newClient(a))
+
+	// Process platform settings
+	a.processPlatformSettings()
 
 	// Check we could initialise the application
 	if app != nil {

@@ -5,6 +5,7 @@ package app
 import (
 	"os"
 
+	"github.com/wailsapp/wails/v2/internal/appoptions"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/ffenestri"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -37,32 +38,16 @@ type App struct {
 }
 
 // Create App
-func CreateApp(options *Options) *App {
+func CreateApp(options *appoptions.Options) *App {
 
 	// Merge default options
-	options.mergeDefaults()
+	options.MergeDefaults()
 
 	// Set up logger
 	myLogger := logger.New(os.Stdout)
 	myLogger.SetLogLevel(logger.TRACE)
 
-	window := ffenestri.NewApplicationWithConfig(&ffenestri.Config{
-		Title:       options.Title,
-		Width:       options.Width,
-		Height:      options.Height,
-		MinWidth:    options.MinWidth,
-		MinHeight:   options.MinHeight,
-		MaxWidth:    options.MaxWidth,
-		MaxHeight:   options.MaxHeight,
-		Frameless:   options.Frameless,
-		StartHidden: options.StartHidden,
-
-		// This should be controlled by the compile time flags...
-		DevTools: true,
-
-		Resizable:  !options.DisableResize,
-		Fullscreen: options.Fullscreen,
-	}, myLogger)
+	window := ffenestri.NewApplicationWithConfig(options, myLogger)
 
 	result := &App{
 		window:     window,

@@ -1,4 +1,4 @@
-package app
+package appoptions
 
 // Options for creating the App
 type Options struct {
@@ -13,10 +13,12 @@ type Options struct {
 	MaxWidth      int
 	MaxHeight     int
 	StartHidden   bool
+	DevTools      bool
+	Mac           MacOptions
 }
 
-// mergeDefaults will set the minimum default values for an application
-func (o *Options) mergeDefaults() {
+// MergeDefaults will set the minimum default values for an application
+func (o *Options) MergeDefaults() {
 
 	// Create a default title
 	if len(o.Title) == 0 {

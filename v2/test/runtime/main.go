@@ -20,6 +20,9 @@ func main() {
 		Height:        620,
 		DisableResize: false,
 		Fullscreen:    false,
+		Mac: wails.MacOptions{
+			HideTitle: true,
+		},
 	})
 
 	// You can also use the simplified call:

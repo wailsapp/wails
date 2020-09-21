@@ -2,6 +2,10 @@
     "files.associations": {
         "ios": "c",
         "typeinfo": "c",
-        "sstream": "c"
+        "sstream": "c",
+        "__functional_03": "c",
+        "functional": "c",
+        "__locale": "c",
+        "locale": "c"
     }
 }
