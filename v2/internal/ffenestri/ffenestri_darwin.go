@@ -6,6 +6,7 @@ package ffenestri
 
 extern void TitlebarAppearsTransparent(void *);
 extern void HideTitle(void *);
+extern void HideTitleBar(void *);
 */
 import "C"
 
@@ -14,6 +15,11 @@ func (a *Application) processPlatformSettings() {
 	// HideTitle
 	if a.config.Mac.HideTitle {
 		C.HideTitle(a.app)
+	}
+
+	// HideTitleBar
+	if a.config.Mac.HideTitleBar {
+		C.HideTitleBar(a.app)
 	}
 
 	// if a.config.Mac.TitlebarAppearsTransparent {

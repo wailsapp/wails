@@ -4,4 +4,5 @@ package appoptions
 type MacOptions struct {
 	TitlebarAppearsTransparent bool
 	HideTitle                  bool
+	HideTitleBar               bool
 }

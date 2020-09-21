@@ -115,6 +115,7 @@ struct Application {
     int minimised;
     int titlebarAppearsTransparent;
     int hideTitle;
+    int hideTitleBar;
 
     // User Data
     char *HTML;
@@ -137,6 +138,10 @@ void TitlebarAppearsTransparent(struct Application* app) {
 
 void HideTitle(struct Application *app) {
     app->hideTitle = 1;
+}
+
+void HideTitleBar(struct Application *app) {
+    app->hideTitleBar = 1;
 }
 
 void Hide(struct Application *app) { 
@@ -198,6 +203,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     // Features
     result->frame = 1;
     result->hideTitle = 0;
+    result->hideTitleBar = 0;
 
     result->titlebarAppearsTransparent = 0;
     printf("[l] setTitlebarAppearsTransparent %d\n", result->titlebarAppearsTransparent);
@@ -651,10 +657,13 @@ void disableBoolConfig(id config, const char *setting) {
 void Run(void *applicationPointer, int argc, char **argv) {
     struct Application *app = (struct Application*) applicationPointer;
 
-    int decorations;
+    int decorations = 0;
 
     if (app->frame == 1 ) { 
-        decorations = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
+        if( app->hideTitleBar == 0) {
+            decorations |= NSWindowStyleMaskTitled;
+        }
+        decorations |= NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
     }
 
     if (app->resizable) {
