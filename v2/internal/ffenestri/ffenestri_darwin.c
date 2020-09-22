@@ -117,6 +117,8 @@ struct Application {
     int hideTitle;
     int hideTitleBar;
     int fullSizeContent;
+    int useToolBar;
+    int hideToolbarSeparator;
 
     // User Data
     char *HTML;
@@ -143,6 +145,14 @@ void HideTitle(struct Application *app) {
 
 void HideTitleBar(struct Application *app) {
     app->hideTitleBar = 1;
+}
+
+void HideToolbarSeparator(struct Application *app) {
+    app->hideToolbarSeparator = 1;
+}
+
+void UseToolbar(struct Application *app) {
+    app->useToolBar = 1;
 }
 
 void FullSizeContent(struct Application *app) {
@@ -210,6 +220,8 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->hideTitle = 0;
     result->hideTitleBar = 0;
     result->fullSizeContent = 0;
+    result->useToolBar = 0;
+    result->hideToolbarSeparator = 0;
 
     result->titlebarAppearsTransparent = 0;
     printf("[l] setTitlebarAppearsTransparent %d\n", result->titlebarAppearsTransparent);
@@ -685,6 +697,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
         decorations |= NSWindowStyleMaskFullSizeContentView;
     }
 
+
     id application = msg(c("NSApplication"), s("sharedApplication"));
     app->application = application;
     msg(application, s("setActivationPolicy:"), 0);
@@ -758,6 +771,20 @@ void Run(void *applicationPointer, int argc, char **argv) {
         msg(mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
         msg(app->mainWindow, s("setTitleVisibility:"), app->hideTitle);
 
+        // Toolbar
+        if( app->useToolBar ) {
+            Debug("Setting Toolbar");
+            id toolbar = msg(c("NSToolbar"),s("alloc"));
+            msg(toolbar, s("initWithIdentifier:"), str("wails.toolbar"));
+            msg(toolbar, s("autorelease"));
+
+            // Separator
+            if( app->hideToolbarSeparator ) {
+                msg(toolbar, s("setShowsBaselineSeparator:"), NO);
+            }
+
+            msg(mainWindow, s("setToolbar:"), toolbar);
+        }
     }
 
 

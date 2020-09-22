@@ -8,6 +8,8 @@ extern void TitlebarAppearsTransparent(void *);
 extern void HideTitle(void *);
 extern void HideTitleBar(void *);
 extern void FullSizeContent(void *);
+extern void UseToolbar(void *);
+extern void HideToolbarSeparator(void *);
 */
 import "C"
 
@@ -28,7 +30,17 @@ func (a *Application) processPlatformSettings() {
 		C.FullSizeContent(a.app)
 	}
 
+	// Toolbar
+	if a.config.Mac.UseToolbar {
+		C.UseToolbar(a.app)
+	}
+
+	if a.config.Mac.HideToolbarSeparator {
+		C.HideToolbarSeparator(a.app)
+	}
+
 	if a.config.Mac.TitlebarAppearsTransparent {
 		C.TitlebarAppearsTransparent(a.app)
 	}
+
 }

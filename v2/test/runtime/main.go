@@ -23,8 +23,10 @@ func main() {
 		Mac: wails.MacOptions{
 			HideTitle:                  true,
 			HideTitleBar:               false,
-			TitlebarAppearsTransparent: true,
+			TitlebarAppearsTransparent: false,
 			FullSizeContent:            true,
+			UseToolbar:                 true,
+			HideToolbarSeparator:       true,
 		},
 	})
 

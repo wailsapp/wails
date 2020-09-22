@@ -6,4 +6,6 @@ type MacOptions struct {
 	HideTitle                  bool
 	HideTitleBar               bool
 	FullSizeContent            bool
+	UseToolbar                 bool
+	HideToolbarSeparator       bool
 }
