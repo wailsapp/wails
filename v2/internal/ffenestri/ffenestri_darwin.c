@@ -7,7 +7,6 @@
 
 // Macros to make it slightly more sane
 #define msg objc_msgSend
-#define msg_stret objc_msgSend_stret
 
 #define c(str) (id)objc_getClass(str)
 #define s(str) sel_registerName(str)
@@ -108,6 +107,10 @@ struct Application {
     int resizable;
     int devtools;
     int fullscreen;
+    int red;
+    int green;
+    int blue;
+    int alpha;
 
     // Features
     int frame;
@@ -153,6 +156,13 @@ void HideToolbarSeparator(struct Application *app) {
 
 void UseToolbar(struct Application *app) {
     app->useToolBar = 1;
+}
+
+void SetColour(struct Application *app, int red, int green, int blue, int alpha) {
+    app->red = red;
+    app->green = green;
+    app->blue = blue;
+    app->alpha = alpha;
 }
 
 void FullSizeContent(struct Application *app) {
@@ -482,23 +492,6 @@ char* OpenDirectoryDialog(void *appPointer, char *title) {
     return foldername;
 }
 
-  // SetColour sets the colour of the webview to the given colour string
-int SetColour(void *appPointer, const char *colourString) {
-    Debug("SetColour Called with: %s", colourString);
-
-    // struct Application *app = (struct Application*) appPointer;
-    // GdkRGBA rgba;
-    // gboolean result = gdk_rgba_parse(&rgba, colourString);
-    // if (result == FALSE) {
-    //     return 0;
-    // }
-    // Debug("Setting webview colour to: %s", colourString);
-    // webkit_web_view_get_background_color((WebKitWebView*)(app->webView), &rgba);
-    // int c = NS_RGBA(1, 0, 0, 0.5);
-
-    return 1;
-}
-
 const char *invoke = "window.external={invoke:function(x){window.webkit.messageHandlers.external.postMessage(x);}};";
 
 // DisableFrame disables the window frame
@@ -693,7 +686,6 @@ void Run(void *applicationPointer, int argc, char **argv) {
     }
 
     if( app->fullSizeContent || app->frame == 0) {
-        Debug("FULLSIZECONTENTT!!!!!!");
         decorations |= NSWindowStyleMaskFullSizeContentView;
     }
 
@@ -733,6 +725,14 @@ void Run(void *applicationPointer, int argc, char **argv) {
 
     // Set Style Mask
     msg(mainWindow, s("setStyleMask:"), decorations);
+
+    // Set Colour
+    id colour = msg(c("NSColor"), s("colorWithCalibratedRed:green:blue:alpha:"),
+                          (float)app->red / 255.0, 
+                          (float)app->green / 255.0, 
+                          (float)app->blue / 255.0,
+                          (float)app->alpha / 255.0);
+    msg(mainWindow, s("setBackgroundColor:"), colour);
     
 
     // Setup webview

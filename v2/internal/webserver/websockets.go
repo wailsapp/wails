@@ -59,8 +59,7 @@ func (wc *WebClient) WindowFullscreen() {}
 func (wc *WebClient) WindowUnFullscreen() {}
 
 // WindowSetColour is a noop in the webclient
-func (wc *WebClient) WindowSetColour(colour string) bool {
-	return false
+func (wc *WebClient) WindowSetColour(colour int) {
 }
 
 // Run processes messages from the remote webclient

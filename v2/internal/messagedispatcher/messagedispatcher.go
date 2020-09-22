@@ -231,7 +231,7 @@ func (d *Dispatcher) processWindowMessage(result *servicebus.Message) {
 			client.frontend.WindowUnFullscreen()
 		}
 	case "setcolour":
-		colour, ok := result.Data().(string)
+		colour, ok := result.Data().(int)
 		if !ok {
 			d.logger.Error("Invalid colour for 'window:setcolour' : %#v", result.Data())
 			return

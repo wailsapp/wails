@@ -14,6 +14,7 @@ type Options struct {
 	MaxHeight     int
 	StartHidden   bool
 	DevTools      bool
+	Colour        int
 	Mac           MacOptions
 }
 

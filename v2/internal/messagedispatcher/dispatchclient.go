@@ -28,7 +28,7 @@ type Client interface {
 	WindowSize(width int, height int)
 	WindowFullscreen()
 	WindowUnFullscreen()
-	WindowSetColour(colour string) bool
+	WindowSetColour(colour int)
 }
 
 // DispatchClient is what the frontends use to interface with the

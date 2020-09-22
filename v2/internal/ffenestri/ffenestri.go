@@ -126,6 +126,14 @@ type DispatchClient interface {
 	SendMessage(string)
 }
 
+func intToColour(colour int) (C.int, C.int, C.int, C.int) {
+	var alpha = C.int(colour & 0xFF)
+	var blue = C.int((colour >> 8) & 0xFF)
+	var green = C.int((colour >> 16) & 0xFF)
+	var red = C.int((colour >> 24) & 0xFF)
+	return red, green, blue, alpha
+}
+
 // Run the application
 func (a *Application) Run(incomingDispatcher Dispatcher, bindings string) error {
 	title := a.string2CString(a.config.Title)
@@ -156,6 +164,11 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string) error 
 	// Set Frameless
 	if a.config.Frameless {
 		C.DisableFrame(a.app)
+	}
+
+	if a.config.Colour != 0 {
+		r, b, g, alpha := intToColour(a.config.Colour)
+		C.SetColour(a.app, r, g, b, alpha)
 	}
 
 	// Escape bindings so C doesn't freak out

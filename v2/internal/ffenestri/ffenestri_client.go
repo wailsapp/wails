@@ -114,9 +114,9 @@ func (c *Client) WindowSize(width int, height int) {
 }
 
 // WindowSetColour sets the window colour
-func (c *Client) WindowSetColour(colour string) bool {
-	result := C.SetColour(c.app.app, c.app.string2CString(colour))
-	return result == 1
+func (c *Client) WindowSetColour(colour int) {
+	r, b, g, a := intToColour(colour)
+	C.SetColour(c.app.app, r, g, b, a)
 }
 
 // OpenFileDialog will open a file dialog with the given title

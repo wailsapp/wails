@@ -6,4 +6,5 @@ var Default = &Options{
 	Width:    1024,
 	Height:   768,
 	DevTools: true,
+	Colour:   0xFFFFFFFF,
 }
