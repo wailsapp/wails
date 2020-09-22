@@ -5,4 +5,5 @@ type MacOptions struct {
 	TitlebarAppearsTransparent bool
 	HideTitle                  bool
 	HideTitleBar               bool
+	FullSizeContent            bool
 }

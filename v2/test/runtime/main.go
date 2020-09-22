@@ -21,8 +21,10 @@ func main() {
 		DisableResize: false,
 		Fullscreen:    false,
 		Mac: wails.MacOptions{
-			HideTitle:    true,
-			HideTitleBar: true,
+			HideTitle:                  true,
+			HideTitleBar:               false,
+			TitlebarAppearsTransparent: true,
+			FullSizeContent:            true,
 		},
 	})
 

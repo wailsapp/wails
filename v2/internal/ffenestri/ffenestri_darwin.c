@@ -116,6 +116,7 @@ struct Application {
     int titlebarAppearsTransparent;
     int hideTitle;
     int hideTitleBar;
+    int fullSizeContent;
 
     // User Data
     char *HTML;
@@ -142,6 +143,10 @@ void HideTitle(struct Application *app) {
 
 void HideTitleBar(struct Application *app) {
     app->hideTitleBar = 1;
+}
+
+void FullSizeContent(struct Application *app) {
+    app->fullSizeContent = 1;
 }
 
 void Hide(struct Application *app) { 
@@ -204,6 +209,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->frame = 1;
     result->hideTitle = 0;
     result->hideTitleBar = 0;
+    result->fullSizeContent = 0;
 
     result->titlebarAppearsTransparent = 0;
     printf("[l] setTitlebarAppearsTransparent %d\n", result->titlebarAppearsTransparent);
@@ -674,7 +680,8 @@ void Run(void *applicationPointer, int argc, char **argv) {
         decorations |= NSWindowStyleMaskFullscreen;
     }
 
-    if( app->frame == 0) {
+    if( app->fullSizeContent || app->frame == 0) {
+        Debug("FULLSIZECONTENTT!!!!!!");
         decorations |= NSWindowStyleMaskFullSizeContentView;
     }
 
@@ -748,7 +755,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
     //   [[window standardWindowButton:NSWindowCloseButton] setHidden:YES];
     } else {
         Debug("setTitlebarAppearsTransparent %d", app->titlebarAppearsTransparent ? YES :NO);
-        // msg(mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
+        msg(mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
         msg(app->mainWindow, s("setTitleVisibility:"), app->hideTitle);
 
     }
