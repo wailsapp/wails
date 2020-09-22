@@ -16,7 +16,7 @@ type Window interface {
 	SetTitle(title string)
 	Fullscreen()
 	UnFullscreen()
-	SetColour(colour string)
+	SetColour(colour int)
 }
 
 // Window exposes the Windows interface
@@ -54,8 +54,8 @@ func (w *window) UnFullscreen() {
 	w.bus.Publish("window:unfullscreen", "")
 }
 
-// SetColour sets the window colour to the given string
-func (w *window) SetColour(colour string) {
+// SetColour sets the window colour to the given int
+func (w *window) SetColour(colour int) {
 	w.bus.Publish("window:setcolour", colour)
 }
 

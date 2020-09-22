@@ -115,7 +115,7 @@ func (c *Client) WindowSize(width int, height int) {
 
 // WindowSetColour sets the window colour
 func (c *Client) WindowSetColour(colour int) {
-	r, b, g, a := intToColour(colour)
+	r, g, b, a := intToColour(colour)
 	C.SetColour(c.app.app, r, g, b, a)
 }
 

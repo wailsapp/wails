@@ -167,7 +167,7 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string) error 
 	}
 
 	if a.config.Colour != 0 {
-		r, b, g, alpha := intToColour(a.config.Colour)
+		r, g, b, alpha := intToColour(a.config.Colour)
 		C.SetColour(a.app, r, g, b, alpha)
 	}
 

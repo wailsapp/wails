@@ -62,7 +62,7 @@ func (r *RuntimeTest) UnFullscreen() {
 }
 
 // SetColour will call the Runtime.UnFullscreen method
-func (r *RuntimeTest) SetColour(colour string) {
+func (r *RuntimeTest) SetColour(colour int) {
 	r.runtime.Window.SetColour(colour)
 }
 

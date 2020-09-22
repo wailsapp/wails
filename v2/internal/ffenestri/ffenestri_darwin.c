@@ -158,11 +158,27 @@ void UseToolbar(struct Application *app) {
     app->useToolBar = 1;
 }
 
+void applyWindowColour(struct Application *app) {
+    // Apply the colour only if the window has been created
+    if( app->mainWindow != NULL ) {
+        ON_MAIN_THREAD(
+            id colour = msg(c("NSColor"), s("colorWithCalibratedRed:green:blue:alpha:"),
+                                (float)app->red / 255.0, 
+                                (float)app->green / 255.0, 
+                                (float)app->blue / 255.0,
+                                (float)app->alpha / 255.0);
+            msg(app->mainWindow, s("setBackgroundColor:"), colour);
+        )
+    } 
+} 
+
 void SetColour(struct Application *app, int red, int green, int blue, int alpha) {
     app->red = red;
     app->green = green;
     app->blue = blue;
     app->alpha = alpha;
+
+    applyWindowColour(app);
 }
 
 void FullSizeContent(struct Application *app) {
@@ -225,6 +241,8 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->maximised = 0;
     result->minimised = 0;
 
+    result->mainWindow = NULL;
+
     // Features
     result->frame = 1;
     result->hideTitle = 0;
@@ -234,7 +252,6 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->hideToolbarSeparator = 0;
 
     result->titlebarAppearsTransparent = 0;
-    printf("[l] setTitlebarAppearsTransparent %d\n", result->titlebarAppearsTransparent);
 
     result->sendMessageToBackend = (ffenestriCallback) messageFromWindowCallback;
 
@@ -727,12 +744,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
     msg(mainWindow, s("setStyleMask:"), decorations);
 
     // Set Colour
-    id colour = msg(c("NSColor"), s("colorWithCalibratedRed:green:blue:alpha:"),
-                          (float)app->red / 255.0, 
-                          (float)app->green / 255.0, 
-                          (float)app->blue / 255.0,
-                          (float)app->alpha / 255.0);
-    msg(mainWindow, s("setBackgroundColor:"), colour);
+    applyWindowColour(app);
     
 
     // Setup webview
