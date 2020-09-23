@@ -24,14 +24,7 @@ func main() {
 		Fullscreen:    false,
 		Colour:        0xFF000088,
 		Mac: &mac.Options{
-			TitleBar: &mac.TitleBar{
-				HideTitle:                  false,
-				HideTitleBar:               false,
-				TitlebarAppearsTransparent: true,
-				FullSizeContent:            false,
-				UseToolbar:                 true,
-				HideToolbarSeparator:       true,
-			},
+			TitleBar: mac.TitleBarHidden(),
 		},
 	})
 
