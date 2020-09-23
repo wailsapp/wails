@@ -24,7 +24,7 @@ func main() {
 		Fullscreen:    false,
 		Colour:        0xFF000088,
 		Mac: &mac.Options{
-			TitleBar: mac.TitleBarHidden(),
+			TitleBar: mac.TitleBarHiddenInset(),
 		},
 	})
 

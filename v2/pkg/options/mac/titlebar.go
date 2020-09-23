@@ -25,3 +25,18 @@ func TitleBarHidden() *TitleBar {
 		HideToolbarSeparator:       false,
 	}
 }
+
+// TitleBarHiddenInset results in a hidden title bar with an alternative look where
+// the traffic light buttons are slightly more inset from the window edge.
+func TitleBarHiddenInset() *TitleBar {
+
+	return &TitleBar{
+		TitlebarAppearsTransparent: true,
+		HideTitle:                  true,
+		HideTitleBar:               false,
+		FullSizeContent:            true,
+		UseToolbar:                 true,
+		HideToolbarSeparator:       true,
+	}
+
+}
