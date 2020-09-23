@@ -15,31 +15,34 @@ import "C"
 
 func (a *Application) processPlatformSettings() {
 
+	mac := a.config.Mac
+	titlebar := mac.TitleBar
+
 	// HideTitle
-	if a.config.Mac.HideTitle {
+	if titlebar.HideTitle {
 		C.HideTitle(a.app)
 	}
 
 	// HideTitleBar
-	if a.config.Mac.HideTitleBar {
+	if titlebar.HideTitleBar {
 		C.HideTitleBar(a.app)
 	}
 
 	// Full Size Content
-	if a.config.Mac.FullSizeContent {
+	if titlebar.FullSizeContent {
 		C.FullSizeContent(a.app)
 	}
 
 	// Toolbar
-	if a.config.Mac.UseToolbar {
+	if titlebar.UseToolbar {
 		C.UseToolbar(a.app)
 	}
 
-	if a.config.Mac.HideToolbarSeparator {
+	if titlebar.HideToolbarSeparator {
 		C.HideToolbarSeparator(a.app)
 	}
 
-	if a.config.Mac.TitlebarAppearsTransparent {
+	if titlebar.TitlebarAppearsTransparent {
 		C.TitlebarAppearsTransparent(a.app)
 	}
 

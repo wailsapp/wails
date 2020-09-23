@@ -3,6 +3,7 @@ package main
 import (
 	wails "github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
 
 type Echo struct {
@@ -22,13 +23,15 @@ func main() {
 		DisableResize: false,
 		Fullscreen:    false,
 		Colour:        0xFF000088,
-		Mac: options.Mac{
-			HideTitle:                  false,
-			HideTitleBar:               false,
-			TitlebarAppearsTransparent: true,
-			FullSizeContent:            false,
-			UseToolbar:                 true,
-			HideToolbarSeparator:       true,
+		Mac: &mac.Options{
+			TitleBar: &mac.TitleBar{
+				HideTitle:                  false,
+				HideTitleBar:               false,
+				TitlebarAppearsTransparent: true,
+				FullSizeContent:            false,
+				UseToolbar:                 true,
+				HideToolbarSeparator:       true,
+			},
 		},
 	})
 

@@ -1,5 +1,7 @@
 package options
 
+import "github.com/wailsapp/wails/v2/pkg/options/mac"
+
 // App contains options for creating the App
 type App struct {
 	Title         string
@@ -15,7 +17,7 @@ type App struct {
 	StartHidden   bool
 	DevTools      bool
 	Colour        int
-	Mac           Mac
+	Mac           *mac.Options
 }
 
 // MergeDefaults will set the minimum default values for an application
