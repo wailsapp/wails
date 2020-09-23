@@ -10,6 +10,18 @@ type TitleBar struct {
 	HideToolbarSeparator       bool
 }
 
+// TitleBarDefault results in the default Mac Titlebar
+func TitleBarDefault() *TitleBar {
+	return &TitleBar{
+		TitlebarAppearsTransparent: false,
+		HideTitle:                  false,
+		HideTitleBar:               false,
+		FullSizeContent:            false,
+		UseToolbar:                 false,
+		HideToolbarSeparator:       false,
+	}
+}
+
 // Credit: Comments from Electron site
 
 // TitleBarHidden results in a hidden title bar and a full size content window,

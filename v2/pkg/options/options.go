@@ -1,6 +1,11 @@
 package options
 
-import "github.com/wailsapp/wails/v2/pkg/options/mac"
+import (
+	"log"
+
+	"github.com/imdario/mergo"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
+)
 
 // App contains options for creating the App
 type App struct {
@@ -22,19 +27,8 @@ type App struct {
 
 // MergeDefaults will set the minimum default values for an application
 func (a *App) MergeDefaults() {
-
-	// Create a default title
-	if len(a.Title) == 0 {
-		a.Title = "My Wails App"
-	}
-
-	// Default width
-	if a.Width == 0 {
-		a.Width = 1024
-	}
-
-	// Default height
-	if a.Height == 0 {
-		a.Height = 768
+	err := mergo.Merge(a, Default)
+	if err != nil {
+		log.Fatal(err)
 	}
 }

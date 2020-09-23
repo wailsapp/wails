@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/fsnotify/fsnotify v1.4.9
+	github.com/imdario/mergo v0.3.11
 	github.com/leaanthony/clir v1.0.4
 	github.com/leaanthony/gosod v0.0.4
 	github.com/leaanthony/slicer v1.4.1
