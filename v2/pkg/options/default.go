@@ -1,7 +1,7 @@
-package appoptions
+package options
 
 // Default options for creating the App
-var Default = &Options{
+var Default = &App{
 	Title:    "My Wails App",
 	Width:    1024,
 	Height:   768,

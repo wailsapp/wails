@@ -10,7 +10,7 @@ package app
 import (
 	"os"
 
-	"github.com/wailsapp/wails/v2/internal/appoptions"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 // App defines a Wails application structure
@@ -25,7 +25,7 @@ type App struct {
 }
 
 // CreateApp returns a null application
-func CreateApp(options *appoptions.Options) *App {
+func CreateApp(options *options.App) *App {
 	return &App{}
 }
 

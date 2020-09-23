@@ -1,7 +1,7 @@
-package appoptions
+package options
 
-// Options for creating the App
-type Options struct {
+// App contains options for creating the App
+type App struct {
 	Title         string
 	Width         int
 	Height        int
@@ -15,24 +15,24 @@ type Options struct {
 	StartHidden   bool
 	DevTools      bool
 	Colour        int
-	Mac           MacOptions
+	Mac           Mac
 }
 
 // MergeDefaults will set the minimum default values for an application
-func (o *Options) MergeDefaults() {
+func (a *App) MergeDefaults() {
 
 	// Create a default title
-	if len(o.Title) == 0 {
-		o.Title = "My Wails App"
+	if len(a.Title) == 0 {
+		a.Title = "My Wails App"
 	}
 
 	// Default width
-	if o.Width == 0 {
-		o.Width = 1024
+	if a.Width == 0 {
+		a.Width = 1024
 	}
 
 	// Default height
-	if o.Height == 0 {
-		o.Height = 768
+	if a.Height == 0 {
+		a.Height = 768
 	}
 }

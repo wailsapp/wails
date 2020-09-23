@@ -5,9 +5,9 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v2/internal/appoptions"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 /*
@@ -58,7 +58,7 @@ var DEBUG bool = true
 
 // Application is our main application object
 type Application struct {
-	config *appoptions.Options
+	config *options.App
 	memory []unsafe.Pointer
 
 	// This is the main app pointer
@@ -83,7 +83,7 @@ func init() {
 }
 
 // NewApplicationWithConfig creates a new application based on the given config
-func NewApplicationWithConfig(config *appoptions.Options, logger *logger.Logger) *Application {
+func NewApplicationWithConfig(config *options.App, logger *logger.Logger) *Application {
 	return &Application{
 		config: config,
 		logger: logger.CustomLogger("Ffenestri"),
@@ -93,7 +93,7 @@ func NewApplicationWithConfig(config *appoptions.Options, logger *logger.Logger)
 // NewApplication creates a new Application with the default config
 func NewApplication(logger *logger.Logger) *Application {
 	return &Application{
-		config: appoptions.Default,
+		config: options.Default,
 		logger: logger.CustomLogger("Ffenestri"),
 	}
 }

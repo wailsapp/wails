@@ -5,7 +5,6 @@ package app
 import (
 	"os"
 
-	"github.com/wailsapp/wails/v2/internal/appoptions"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/ffenestri"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -13,6 +12,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/servicebus"
 	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/internal/subsystem"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 // App defines a Wails application structure
@@ -38,7 +38,7 @@ type App struct {
 }
 
 // Create App
-func CreateApp(options *appoptions.Options) *App {
+func CreateApp(options *options.App) *App {
 
 	// Merge default options
 	options.MergeDefaults()

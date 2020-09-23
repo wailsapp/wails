@@ -1,7 +1,7 @@
-package appoptions
+package options
 
-// MacOptions ae options speific to Mas
-type MacOptions struct {
+// Mac ae options speific to Mas
+type Mac struct {
 	TitlebarAppearsTransparent bool
 	HideTitle                  bool
 	HideTitleBar               bool
