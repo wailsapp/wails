@@ -321,24 +321,6 @@ void Center(struct Application *app) {
     )
 }
 
-void SetMaximumSize(void *appPointer, int width, int height) {
-    Debug("SetMaximumSize Called");
-    // struct Application *app = (struct Application*) appPointer;
-    // GdkGeometry size;
-    // size.max_height = (height == 0 ? INT_MAX: height);
-    // size.max_width = (width == 0 ? INT_MAX: width);
-    // gtk_window_set_geometry_hints(app->mainWindow, NULL, &size, GDK_HINT_MAX_SIZE);
-}
-
-void SetMinimumSize(void *appPointer, int width, int height) {
-    Debug("SetMinimumSize Called");
-    // struct Application *app = (struct Application*) appPointer;
-    // GdkGeometry size;
-    // size.max_height = height;
-    // size.max_width = width;
-    // gtk_window_set_geometry_hints(app->mainWindow, NULL, &size, GDK_HINT_MIN_SIZE);
-}
-
 void ToggleMaximise(struct Application *app) {
     ON_MAIN_THREAD(
         app->maximised = !app->maximised;
@@ -682,6 +664,18 @@ void disableBoolConfig(id config, const char *setting) {
     msg(msg(config, s("preferences")), s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str(setting));
 }
 
+void setMinMaxSize(struct Application *app)
+{
+    if (app->maxHeight > 0 && app->maxWidth > 0)
+    {
+        msg(app->mainWindow, s("setMaxSize:"), CGSizeMake(app->maxWidth, app->maxHeight));
+    }
+    if (app->minHeight > 0 && app->minWidth > 0)
+    {
+        msg(app->mainWindow, s("setMinSize:"), CGSizeMake(app->minWidth, app->minHeight));
+    }
+}
+
 void Run(void *applicationPointer, int argc, char **argv) {
     struct Application *app = (struct Application*) applicationPointer;
 
@@ -800,7 +794,12 @@ void Run(void *applicationPointer, int argc, char **argv) {
     }
 
 
-
+    // Fix up resizing
+    if (app->resizable == 0) {
+        app->minHeight = app->maxHeight = app->height;
+        app->minWidth = app->maxWidth = app->width;
+    }
+    setMinMaxSize(app);
 
     // msg(mainWindow, s("setFrame:display:animate:"), CGRectMake(0, 0, 0, 0), YES, YES);
 //         // Set the icon
