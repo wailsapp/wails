@@ -30,7 +30,7 @@ extern void UnFullscreen(void *app);
 extern void ToggleFullscreen(void *app);
 extern void DisableFrame(void *app);
 extern char *SaveFileDialog(void *appPointer, char *title, char *filter);
-extern char *OpenFileDialog(void *appPointer, char *title, char *filter);
+extern char *OpenDialog(void *appPointer, char *title, char *filter);
 extern char *OpenDirectoryDialog(void *appPointer, char *title, char *filter);
 
 #endif

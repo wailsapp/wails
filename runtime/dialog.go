@@ -1,7 +1,10 @@
 package runtime
 
-import "github.com/wailsapp/wails/lib/interfaces"
-import "strings"
+import (
+	"strings"
+
+	"github.com/wailsapp/wails/lib/interfaces"
+)
 
 // Dialog exposes an interface to native dialogs
 type Dialog struct {
@@ -29,7 +32,7 @@ func (r *Dialog) SelectFile(params ...string) string {
 }
 
 // SelectDirectory prompts the user to select a directory
-func (r *Dialog) SelectDirectory() string {
+func (r *Dialog) SelectDirectory() []string {
 	return r.renderer.SelectDirectory()
 }
 

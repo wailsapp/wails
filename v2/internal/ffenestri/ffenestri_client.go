@@ -12,6 +12,9 @@ package ffenestri
 import "C"
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
 	"strconv"
 	"unsafe"
 
@@ -119,41 +122,66 @@ func (c *Client) WindowSetColour(colour int) {
 	C.SetColour(c.app.app, r, g, b, a)
 }
 
-// OpenFileDialog will open a file dialog with the given title
-func (c *Client) OpenFileDialog(title string, filter string) string {
+// // OpenFileDialog will open a file dialog with the given title
+// func (c *Client) OpenFileDialog(title string, filter string) []string {
+// 	var result []string
 
-	cstring := C.OpenFileDialog(c.app.app, c.app.string2CString(title), c.app.string2CString(filter))
-	var result string
-	if cstring != nil {
-		result = C.GoString(cstring)
-		// Free the C string that was allocated by the dialog
-		C.free(unsafe.Pointer(cstring))
+// 	cstring := C.OpenFileDialog(c.app.app, c.app.string2CString(title), c.app.string2CString(filter))
+// 	if cstring == nil {
+// 		return result
+// 	}
+
+// 	json := C.GoString(cstring)
+// 	// Free the C string that was allocated by the dialog
+// 	C.free(unsafe.Pointer(cstring))
+
+// 	// Unmarshal the json
+// 	err := json.Unmarshal([]byte(json), &result)
+// 	if err != nil {
+// 		// ???
+// 		log.Fatal(err)
+// 	}
+
+// 	fmt.Printf("result = %+v\n", result)
+
+// 	return result
+// }
+
+// // SaveFileDialog will open a save file dialog with the given title
+// func (c *Client) SaveFileDialog(title string, filter string) string {
+
+// 	cstring := C.SaveFileDialog(c.app.app, c.app.string2CString(title), c.app.string2CString(filter))
+// 	var result string
+// 	if cstring != nil {
+// 		result = C.GoString(cstring)
+// 		// Free the C string that was allocated by the dialog
+// 		C.free(unsafe.Pointer(cstring))
+// 	}
+// 	return result
+// }
+
+// OpenDialog will open a dialog with the given title and filter
+func (c *Client) OpenDialog(title string, filter string) []string {
+
+	var result []string
+
+	cstring := C.OpenDialog(c.app.app, c.app.string2CString(title), c.app.string2CString(filter))
+	if cstring == nil {
+		return result
 	}
-	return result
-}
 
-// SaveFileDialog will open a save file dialog with the given title
-func (c *Client) SaveFileDialog(title string, filter string) string {
+	jsondata := C.GoString(cstring)
+	// Free the C string that was allocated by the dialog
+	C.free(unsafe.Pointer(cstring))
 
-	cstring := C.SaveFileDialog(c.app.app, c.app.string2CString(title), c.app.string2CString(filter))
-	var result string
-	if cstring != nil {
-		result = C.GoString(cstring)
-		// Free the C string that was allocated by the dialog
-		C.free(unsafe.Pointer(cstring))
+	// Unmarshal the json
+	err := json.Unmarshal([]byte(jsondata), &result)
+	if err != nil {
+		// ???
+		log.Fatal(err)
 	}
-	return result
-}
 
-// OpenDirectoryDialog will open a directory dialog with the given title
-func (c *Client) OpenDirectoryDialog(title string, filter string) string {
+	fmt.Printf("result = %+v\n", result)
 
-	cstring := C.OpenDirectoryDialog(c.app.app, c.app.string2CString(title), c.app.string2CString(filter))
-	var result string
-	if cstring != nil {
-		result = C.GoString(cstring)
-		// Free the C string that was allocated by the dialog
-		C.free(unsafe.Pointer(cstring))
-	}
 	return result
 }

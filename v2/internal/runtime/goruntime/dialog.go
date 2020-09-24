@@ -11,7 +11,7 @@ import (
 type Dialog interface {
 	SaveFile(params ...string) string
 	SelectFile(params ...string) string
-	SelectDirectory(params ...string) string
+	SelectDirectory(params ...string) []string
 }
 
 // dialog exposes the Dialog interface
@@ -108,7 +108,7 @@ func (r *dialog) SaveFile(params ...string) string {
 }
 
 // SelectDirectory prompts the user to select a file
-func (r *dialog) SelectDirectory(params ...string) string {
+func (r *dialog) SelectDirectory(params ...string) []string {
 
 	// Extract title + filter
 	title, filter := r.processTitleAndFilter(params...)
@@ -136,5 +136,5 @@ func (r *dialog) SelectDirectory(params ...string) string {
 	// Delete subscription to response topic
 	r.bus.UnSubscribe(responseTopic)
 
-	return result.Data().(string)
+	return result.Data().([]string)
 }

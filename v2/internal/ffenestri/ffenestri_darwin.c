@@ -4,6 +4,7 @@
 #define OBJC_OLD_DISPATCH_PROTOTYPES 1
 #include <objc/objc-runtime.h>
 #include <CoreGraphics/CoreGraphics.h>
+#include "json.h"
 
 // Macros to make it slightly more sane
 #define msg objc_msgSend
@@ -407,88 +408,30 @@ void SetPosition(struct Application *app, int x, int y) {
 
 // OpenFileDialog opens a dialog to select a file
 // NOTE: The result is a string that will need to be freed!
-char* OpenFileDialog(void *appPointer, char *title) {
+char* OpenFileDialog(struct Application *app, char *title, char *filter) {
     Debug("OpenFileDialog Called");
-
-    // struct Application *app = (struct Application*) appPointer;
-    // GtkFileChooserNative *native;
-    // GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
-    // gint res;
-    char *filename = "BogusFilename";
-
-    // native = gtk_file_chooser_native_new (title,
-    //                                     app->mainWindow,
-    //                                     action,
-    //                                     "_Open",
-    //                                     "_Cancel");
-
-    // res = gtk_native_dialog_run (GTK_NATIVE_DIALOG (native));
-    // if (res == GTK_RESPONSE_ACCEPT)
-    // {
-    //     GtkFileChooser *chooser = GTK_FILE_CHOOSER (native);
-    //     filename = gtk_file_chooser_get_filename (chooser);
-    // }
-
-    // g_object_unref (native);
-
+    char *filename = concat("","BogusOpenFilename");
     return filename;
 }
 
 // SaveFileDialog opens a dialog to select a file
 // NOTE: The result is a string that will need to be freed!
-char* SaveFileDialog(void *appPointer, char *title) {
+char* SaveFileDialog(void *appPointer, char *title, char *filter) {
     Debug("SaveFileDialog Called");
-    char *filename = "BogusSaveFilename";
-/*    struct Application *app = (struct Application*) appPointer;
-    GtkFileChooserNative *native;
-    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SAVE;
-    gint res;
-
-    native = gtk_file_chooser_native_new (title,
-                                        app->mainWindow,
-                                        action,
-                                        "_Save",
-                                        "_Cancel");
-
-    res = gtk_native_dialog_run (GTK_NATIVE_DIALOG (native));
-    if (res == GTK_RESPONSE_ACCEPT)
-    {
-        GtkFileChooser *chooser = GTK_FILE_CHOOSER (native);
-        filename = gtk_file_chooser_get_filename (chooser);
-    }
-
-    g_object_unref (native);
-*/
+    char *filename = concat("","BogusSaveFilename");
     return filename;
 }
 
-// OpenDirectoryDialog opens a dialog to select a directory
+// OpenDialog opens a dialog to select files/directories
 // NOTE: The result is a string that will need to be freed!
-char* OpenDirectoryDialog(void *appPointer, char *title) {
+char* OpenDialog(void *appPointer, char *title, char *filter) {
     Debug("OpenDirectoryDialog Called");
-    char *foldername = "BogusDirectory";
-/*
-    struct Application *app = (struct Application*) appPointer;
-    GtkFileChooserNative *native;
-    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
-    gint res;
-
-    native = gtk_file_chooser_native_new (title,
-                                        app->mainWindow,
-                                        action,
-                                        "_Open",
-                                        "_Cancel");
-
-    res = gtk_native_dialog_run (GTK_NATIVE_DIALOG (native));
-    if (res == GTK_RESPONSE_ACCEPT)
-    {
-        GtkFileChooser *chooser = GTK_FILE_CHOOSER (native);
-        foldername = gtk_file_chooser_get_filename (chooser);
-    }
-
-    g_object_unref (native);
-*/
-    return foldername;
+    JsonNode *result = json_mkarray();
+    json_append_element(result, json_mkstring("BogusDirectory 1"));
+    json_append_element(result, json_mkstring("BogusDirectory 2"));
+    char *encoded = json_stringify(result, "");
+    json_delete(result);
+    return encoded;
 }
 
 const char *invoke = "window.external={invoke:function(x){window.webkit.messageHandlers.external.postMessage(x);}};";

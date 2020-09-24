@@ -13,9 +13,9 @@ type Client interface {
 	Quit()
 	NotifyEvent(message string)
 	CallResult(message string)
-	SaveFileDialog(title string, filter string) string
-	OpenFileDialog(title string, filter string) string
-	OpenDirectoryDialog(title string, filter string) string
+	// SaveFileDialog(title string, filter string) []string
+	OpenDialog(title string, filter string) []string
+	// OpenDirectoryDialog(title string, filter string) string
 	WindowSetTitle(title string)
 	WindowShow()
 	WindowHide()

@@ -343,9 +343,9 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 
 			// TODO: Work out what we mean in a multi window environment...
 			// For now we will just pick the first one
-			var result string
+			var result []string
 			for _, client := range d.clients {
-				result = client.frontend.OpenFileDialog(title, filter)
+				result = client.frontend.OpenDialog(title, filter)
 			}
 
 			// Send dummy response
@@ -360,9 +360,9 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 
 			// TODO: Work out what we mean in a multi window environment...
 			// For now we will just pick the first one
-			var result string
+			var result []string
 			for _, client := range d.clients {
-				result = client.frontend.SaveFileDialog(title, filter)
+				result = client.frontend.OpenDialog(title, filter)
 			}
 
 			// Send dummy response
@@ -377,9 +377,9 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 
 			// TODO: Work out what we mean in a multi window environment...
 			// For now we will just pick the first one
-			var result string
+			var result []string
 			for _, client := range d.clients {
-				result = client.frontend.OpenDirectoryDialog(title, filter)
+				result = client.frontend.OpenDialog(title, filter)
 			}
 			// Send dummy response
 			d.servicebus.Publish(responseTopic, result)
