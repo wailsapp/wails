@@ -11,6 +11,9 @@ require (
 	github.com/matryer/is v1.4.0
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/olekukonko/tablewriter v0.0.4
+	github.com/tdewolff/minify v2.3.6+incompatible
+	github.com/tdewolff/minify/v2 v2.9.5
+	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/xyproto/xpm v1.2.1
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
 	golang.org/x/tools v0.0.0-20200902012652-d1954cc86c82

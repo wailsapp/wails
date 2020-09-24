@@ -3,11 +3,15 @@ package html
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/url"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"unsafe"
+
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/js"
 )
 
 type assetTypes struct {
@@ -88,6 +92,16 @@ func (a *Asset) AsCHexData() string {
 		result = strings.ReplaceAll(result, ` {`, `{`)
 		result = strings.ReplaceAll(result, `: `, `:`)
 		dataString = fmt.Sprintf("window.wails._.InjectCSS(\"%s\");", result)
+
+	case AssetTypes.JS:
+		m := minify.New()
+		m.AddFunc("application/javascript", js.Minify)
+		var err error
+		dataString, err = m.String("application/javascript", a.Data+";")
+		if err != nil {
+			log.Fatal(err)
+		}
+		a.Data = dataString
 	}
 
 	// Get byte data of the string
