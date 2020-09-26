@@ -333,10 +333,10 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 			filter = splitTopic[4]
 		}
 		switch dialogType {
-		case "file":
+		case "open":
 			responseTopic, ok := result.Data().(string)
 			if !ok {
-				d.logger.Error("Invalid responseTopic for 'dialog:select:file' : %#v", result.Data())
+				d.logger.Error("Invalid responseTopic for 'dialog:select:open' : %#v", result.Data())
 				return
 			}
 			d.logger.Info("Opening File dialog! responseTopic = %s", responseTopic)
@@ -348,39 +348,6 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 				result = client.frontend.OpenDialog(title, filter)
 			}
 
-			// Send dummy response
-			d.servicebus.Publish(responseTopic, result)
-		case "filesave":
-			responseTopic, ok := result.Data().(string)
-			if !ok {
-				d.logger.Error("Invalid responseTopic for 'dialog:select:filesave' : %#v", result.Data())
-				return
-			}
-			d.logger.Info("Opening Save File dialog! responseTopic = %s", responseTopic)
-
-			// TODO: Work out what we mean in a multi window environment...
-			// For now we will just pick the first one
-			var result []string
-			for _, client := range d.clients {
-				result = client.frontend.OpenDialog(title, filter)
-			}
-
-			// Send dummy response
-			d.servicebus.Publish(responseTopic, result)
-		case "directory":
-			responseTopic, ok := result.Data().(string)
-			if !ok {
-				d.logger.Error("Invalid responseTopic for 'dialog:select:directory' : %#v", result.Data())
-				return
-			}
-			d.logger.Info("Opening Directory dialog! responseTopic = %s", responseTopic)
-
-			// TODO: Work out what we mean in a multi window environment...
-			// For now we will just pick the first one
-			var result []string
-			for _, client := range d.clients {
-				result = client.frontend.OpenDialog(title, filter)
-			}
 			// Send dummy response
 			d.servicebus.Publish(responseTopic, result)
 

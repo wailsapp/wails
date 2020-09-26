@@ -51,14 +51,14 @@ func (r *dialog) OpenDialog(params ...string) []string {
 	uniqueCallback := crypto.RandomID()
 
 	// Subscribe to the respose channel
-	responseTopic := "dialog:directoryselected:" + uniqueCallback
+	responseTopic := "dialog:openselected:" + uniqueCallback
 	dialogResponseChannel, err := r.bus.Subscribe(responseTopic)
 	if err != nil {
 		fmt.Printf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
 	}
 
 	// Publish dialog request
-	message := "dialog:select:directory:" + title
+	message := "dialog:select:open:" + title
 	if filter != "" {
 		message += ":" + filter
 	}
