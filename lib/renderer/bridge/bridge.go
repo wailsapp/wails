@@ -119,10 +119,10 @@ func (h *Bridge) SelectFile(title string, filter string) string {
 	return ""
 }
 
-// OpenDialog is unsupported for Bridge but required
+// SelectDirectory is unsupported for Bridge but required
 // for the Renderer interface
-func (h *Bridge) OpenDialog() string {
-	h.log.Warn("OpenDialog() unsupported in bridge mode")
+func (h *Bridge) SelectDirectory() string {
+	h.log.Warn("SelectDirectory() unsupported in bridge mode")
 	return ""
 }
 

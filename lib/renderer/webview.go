@@ -263,9 +263,9 @@ func (w *WebView) SelectFile(title string, filter string) string {
 	return result
 }
 
-// OpenDialog opens a dialog that allows the user to select a directory
-func (w *WebView) OpenDialog() []string {
-	var result []string
+// SelectDirectory opens a dialog that allows the user to select a directory
+func (w *WebView) SelectDirectory() string {
+	var result string
 	// We need to run this on the main thread, however Dispatch is
 	// non-blocking so we launch this in a goroutine and wait for
 	// dispatch to finish before returning the result
@@ -274,6 +274,24 @@ func (w *WebView) OpenDialog() []string {
 	go func() {
 		w.window.Dispatch(func() {
 			result = w.window.Dialog(wv.DialogTypeOpen, wv.DialogFlagDirectory, "Select Directory", "", "")
+			wg.Done()
+		})
+	}()
+	wg.Wait()
+	return result
+}
+
+// SelectSaveFile opens a dialog that allows the user to select a file to save
+func (w *WebView) SelectSaveFile(title string, filter string) string {
+	var result string
+	// We need to run this on the main thread, however Dispatch is
+	// non-blocking so we launch this in a goroutine and wait for
+	// dispatch to finish before returning the result
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		w.window.Dispatch(func() {
+			result = w.window.Dialog(wv.DialogTypeSave, 0, title, "", filter)
 			wg.Done()
 		})
 	}()
