@@ -186,7 +186,7 @@ type WebView interface {
 	// Dialog() opens a system dialog of the given type and title. String
 	// argument can be provided for certain dialogs, such as alert boxes. For
 	// alert boxes argument is a message inside the dialog box.
-	Dialog(dlgType DialogType, flags int, title string, arg string, filter string) string
+	Dialog(dlgType DialogType, flags int, title string, arg string, filter string) []string
 	// Terminate() breaks the main UI loop. This method must be called from the main thread
 	// only. See Dispatch() for more details.
 	Terminate()

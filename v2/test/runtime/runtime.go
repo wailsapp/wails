@@ -66,16 +66,6 @@ func (r *RuntimeTest) SetColour(colour int) {
 	r.runtime.Window.SetColour(colour)
 }
 
-// SelectFile will call the Runtime.Dialog.OpenFile method
-func (r *RuntimeTest) SelectFile(title string, filter string) string {
-	return r.runtime.Dialog.SelectFile(title, filter)
-}
-
-// SaveFile will call the Runtime.Dialog.SaveFile method
-func (r *RuntimeTest) SaveFile(title string, filter string) string {
-	return r.runtime.Dialog.SaveFile(title, filter)
-}
-
 // OpenDialog will call the Runtime.Dialog.OpenDirectory method
 func (r *RuntimeTest) OpenDialog(title string, filter string) []string {
 	return r.runtime.Dialog.OpenDialog(title, filter)

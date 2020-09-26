@@ -34,18 +34,8 @@ func (wc *WebClient) CallResult(message string) {
 	wc.SendMessage("R" + message)
 }
 
-// SaveFileDialog is a noop in the webclient
-func (wc *WebClient) SaveFileDialog(title string) string {
-	return ""
-}
-
-// OpenFileDialog is a noop in the webclient
-func (wc *WebClient) OpenFileDialog(title string) string {
-	return ""
-}
-
-// OpenDirectoryDialog is a noop in the webclient
-func (wc *WebClient) OpenDirectoryDialog(title string) string {
+// OpenDialog is a noop in the webclient
+func (wc *WebClient) OpenDialog(title string) string {
 	return ""
 }
 

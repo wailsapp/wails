@@ -9,8 +9,6 @@ import (
 
 // Dialog defines all Dialog related operations
 type Dialog interface {
-	SaveFile(params ...string) string
-	SelectFile(params ...string) string
 	OpenDialog(params ...string) []string
 }
 
@@ -41,70 +39,6 @@ func (r *dialog) processTitleAndFilter(params ...string) (string, string) {
 	}
 
 	return title, filter
-}
-
-// SelectFile prompts the user to select a file
-func (r *dialog) SelectFile(params ...string) string {
-
-	// Extract title + filter
-	title, filter := r.processTitleAndFilter(params...)
-
-	// Create unique dialog callback
-	uniqueCallback := crypto.RandomID()
-
-	// Subscribe to the respose channel
-	responseTopic := "dialog:fileselected:" + uniqueCallback
-	dialogResponseChannel, err := r.bus.Subscribe(responseTopic)
-	if err != nil {
-		fmt.Printf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
-	}
-
-	// Publish dialog request
-	message := "dialog:select:file:" + title
-	if filter != "" {
-		message += ":" + filter
-	}
-	r.bus.Publish(message, responseTopic)
-
-	// Wait for result
-	result := <-dialogResponseChannel
-
-	// Delete subscription to response topic
-	r.bus.UnSubscribe(responseTopic)
-
-	return result.Data().(string)
-}
-
-// SaveFile prompts the user to select a file to save to
-func (r *dialog) SaveFile(params ...string) string {
-
-	// Extract title + filter
-	title, filter := r.processTitleAndFilter(params...)
-
-	// Create unique dialog callback
-	uniqueCallback := crypto.RandomID()
-
-	// Subscribe to the respose channel
-	responseTopic := "dialog:filesaveselected:" + uniqueCallback
-	dialogResponseChannel, err := r.bus.Subscribe(responseTopic)
-	if err != nil {
-		fmt.Printf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
-	}
-
-	// Publish dialog request
-	message := "dialog:select:filesave:" + title
-	if filter != "" {
-		message += ":" + filter
-	}
-	r.bus.Publish(message, responseTopic)
-
-	// Wait for result
-	result := <-dialogResponseChannel
-
-	// Delete subscription to response topic
-	r.bus.UnSubscribe(responseTopic)
-
-	return result.Data().(string)
 }
 
 // OpenDialog prompts the user to select a file

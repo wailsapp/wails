@@ -32,13 +32,8 @@ func (r *Dialog) SelectFile(params ...string) string {
 }
 
 // OpenDialog prompts the user to select a directory
-func (r *Dialog) OpenDialog() []string {
-	return r.renderer.OpenDialog()
-}
-
-// SelectSaveFile prompts the user to select a file for saving
-func (r *Dialog) SelectSaveFile(params ...string) string {
-	title := "Select Save"
+func (r *Dialog) OpenDialog(params ...string) []string {
+	title := "Select File"
 	filter := ""
 	if len(params) > 0 {
 		title = params[0]
@@ -46,5 +41,5 @@ func (r *Dialog) SelectSaveFile(params ...string) string {
 	if len(params) > 1 {
 		filter = strings.Replace(params[1], " ", "", -1)
 	}
-	return r.renderer.SelectSaveFile(title, filter)
+	return r.renderer.OpenDialog(title, filter)
 }

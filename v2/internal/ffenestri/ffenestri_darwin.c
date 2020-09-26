@@ -414,14 +414,6 @@ char* OpenFileDialog(struct Application *app, char *title, char *filter) {
     return filename;
 }
 
-// SaveFileDialog opens a dialog to select a file
-// NOTE: The result is a string that will need to be freed!
-char* SaveFileDialog(void *appPointer, char *title, char *filter) {
-    Debug("SaveFileDialog Called");
-    char *filename = concat("","BogusSaveFilename");
-    return filename;
-}
-
 // OpenDialog opens a dialog to select files/directories
 // NOTE: The result is a string that will need to be freed!
 char* OpenDialog(void *appPointer, char *title, char *filter) {
@@ -510,16 +502,6 @@ char* OpenFileDialogOnMainThread(void *app, char *title) {
     // // Fingers crossed this wasn't freed by g_free above
     // return data->result;
     return "OpenFileDialogOnMainThread result";
-}
-
-char* SaveFileDialogOnMainThread(void *app, char *title) {
-    Debug("SaveFileDialogOnMainThread Called");
-    return "SaveFileDialogOnMainThread result";
-}
-
-char* OpenDirectoryDialogOnMainThread(void *app, char *title) {
-    Debug("OpenDirectoryDialogOnMainThread Called");
-    return "OpenDirectoryDialogOnMainThread result";
 }
 
 // // Sets the icon to the XPM stored in icon
