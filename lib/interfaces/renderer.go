@@ -18,7 +18,7 @@ type Renderer interface {
 
 	// Dialog Runtime
 	SelectFile(title string, filter string) string
-	SelectDirectory() []string
+	OpenDialog() []string
 	SelectSaveFile(title string, filter string) string
 
 	// Window Runtime

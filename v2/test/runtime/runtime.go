@@ -76,9 +76,9 @@ func (r *RuntimeTest) SaveFile(title string, filter string) string {
 	return r.runtime.Dialog.SaveFile(title, filter)
 }
 
-// SelectDirectory will call the Runtime.Dialog.OpenDirectory method
-func (r *RuntimeTest) SelectDirectory(title string, filter string) []string {
-	return r.runtime.Dialog.SelectDirectory(title, filter)
+// OpenDialog will call the Runtime.Dialog.OpenDirectory method
+func (r *RuntimeTest) OpenDialog(title string, filter string) []string {
+	return r.runtime.Dialog.OpenDialog(title, filter)
 }
 
 // HideWindow will call the Runtime.Window.Hide method and then call

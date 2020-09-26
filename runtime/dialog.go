@@ -31,9 +31,9 @@ func (r *Dialog) SelectFile(params ...string) string {
 	return r.renderer.SelectFile(title, filter)
 }
 
-// SelectDirectory prompts the user to select a directory
-func (r *Dialog) SelectDirectory() []string {
-	return r.renderer.SelectDirectory()
+// OpenDialog prompts the user to select a directory
+func (r *Dialog) OpenDialog() []string {
+	return r.renderer.OpenDialog()
 }
 
 // SelectSaveFile prompts the user to select a file for saving

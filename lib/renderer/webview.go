@@ -263,8 +263,8 @@ func (w *WebView) SelectFile(title string, filter string) string {
 	return result
 }
 
-// SelectDirectory opens a dialog that allows the user to select a directory
-func (w *WebView) SelectDirectory() []string {
+// OpenDialog opens a dialog that allows the user to select a directory
+func (w *WebView) OpenDialog() []string {
 	var result string
 	// We need to run this on the main thread, however Dispatch is
 	// non-blocking so we launch this in a goroutine and wait for

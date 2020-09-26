@@ -11,7 +11,7 @@ import (
 type Dialog interface {
 	SaveFile(params ...string) string
 	SelectFile(params ...string) string
-	SelectDirectory(params ...string) []string
+	OpenDialog(params ...string) []string
 }
 
 // dialog exposes the Dialog interface
@@ -107,8 +107,8 @@ func (r *dialog) SaveFile(params ...string) string {
 	return result.Data().(string)
 }
 
-// SelectDirectory prompts the user to select a file
-func (r *dialog) SelectDirectory(params ...string) []string {
+// OpenDialog prompts the user to select a file
+func (r *dialog) OpenDialog(params ...string) []string {
 
 	// Extract title + filter
 	title, filter := r.processTitleAndFilter(params...)
