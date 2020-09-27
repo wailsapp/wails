@@ -1,8 +1,9 @@
 package message
 
-import "fmt"
-
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type EventMessage struct {
 	Name string        `json:"name"`

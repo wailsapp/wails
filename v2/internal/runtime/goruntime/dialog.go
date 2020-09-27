@@ -1,8 +1,6 @@
 package goruntime
 
 import (
-	b64 "encoding/base64"
-	"encoding/json"
 	"fmt"
 
 	"github.com/wailsapp/wails/v2/internal/crypto"
@@ -67,14 +65,4 @@ func (r *dialog) Open(dialogOptions *options.OpenDialog) []string {
 	r.bus.UnSubscribe(responseTopic)
 
 	return result.Data().([]string)
-}
-
-func optionsToBase64(dialogOptions *options.OpenDialog) (string, error) {
-
-	encoded, err := json.Marshal(dialogOptions)
-	if err != nil {
-		return "", err
-	}
-
-	return b64.StdEncoding.EncodeToString(encoded), nil
 }

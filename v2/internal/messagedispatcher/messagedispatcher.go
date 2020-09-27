@@ -335,19 +335,13 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 				return
 			}
 			// This is hardcoded in the sender too
-			responseTopic := "dialog:openselected:" + splitTopic[3]
-
-			d.logger.Info("Opening File dialog! responseTopic = %s", responseTopic)
+			callbackID := splitTopic[3]
 
 			// TODO: Work out what we mean in a multi window environment...
 			// For now we will just pick the first one
-			var result []string
 			for _, client := range d.clients {
-				result = client.frontend.OpenDialog(dialogOptions)
+				client.frontend.OpenDialog(dialogOptions, callbackID)
 			}
-
-			// Send dummy response
-			d.servicebus.Publish(responseTopic, result)
 
 		default:
 			d.logger.Error("Unknown dialog command: %s", command)

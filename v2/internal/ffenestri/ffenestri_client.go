@@ -12,11 +12,7 @@ package ffenestri
 import "C"
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
 	"strconv"
-	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -124,27 +120,6 @@ func (c *Client) WindowSetColour(colour int) {
 }
 
 // OpenDialog will open a dialog with the given title and filter
-func (c *Client) OpenDialog(dialogOptions *options.OpenDialog) []string {
-
-	var result []string
-
-	cstring := C.OpenDialog(c.app.app, c.app.string2CString(dialogOptions.Title), c.app.string2CString(dialogOptions.Filter))
-	if cstring == nil {
-		return result
-	}
-
-	jsondata := C.GoString(cstring)
-	// Free the C string that was allocated by the dialog
-	C.free(unsafe.Pointer(cstring))
-
-	// Unmarshal the json
-	err := json.Unmarshal([]byte(jsondata), &result)
-	if err != nil {
-		// ???
-		log.Fatal(err)
-	}
-
-	fmt.Printf("result = %+v\n", result)
-
-	return result
+func (c *Client) OpenDialog(dialogOptions *options.OpenDialog, callbackID string) {
+	C.OpenDialog(c.app.app, c.app.string2CString(callbackID), c.app.string2CString(dialogOptions.Title), c.app.string2CString(dialogOptions.Filter))
 }

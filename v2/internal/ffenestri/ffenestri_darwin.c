@@ -416,14 +416,46 @@ char* OpenFileDialog(struct Application *app, char *title, char *filter) {
 
 // OpenDialog opens a dialog to select files/directories
 // NOTE: The result is a string that will need to be freed!
-char* OpenDialog(void *appPointer, char *title, char *filter) {
-    Debug("OpenDirectoryDialog Called");
-    JsonNode *result = json_mkarray();
-    json_append_element(result, json_mkstring("BogusDirectory 1"));
-    json_append_element(result, json_mkstring("BogusDirectory 2"));
-    char *encoded = json_stringify(result, "");
-    json_delete(result);
-    return encoded;
+void OpenDialog(struct Application *app, char* callbackID, char *title, char *filter) {
+    Debug("OpenDialog Called with callback id: %s", callbackID);
+
+    // Create an open panel
+    ON_MAIN_THREAD(
+        id dialog = msg(c("NSOpenPanel"), s("openPanel"));
+        msg(dialog, s("setTitle:"), str(title));
+
+        // TODO: Filters
+        // No filters: [dialog setAllowsOtherFileTypes:YES];
+
+        // TODO: Other options
+        msg(dialog, s("beginSheetModalForWindow:completionHandler:"), app->mainWindow, ^(id result) {
+        
+            JsonNode *response = json_mkarray();
+
+            // If success
+            if( result == (id)1 ) {
+                id urls = msg(dialog, s("URLs"));
+                int noOfResults = (int)msg(urls, s("count"));
+                for( int index = 0; index < noOfResults; index++ ) {
+                    id url = msg(urls, s("objectAtIndex:"), index);
+                    const char *filename = (const char *)msg(msg(url, s("path")), s("UTF8String"));
+                    json_append_element(response, json_mkstring(filename));
+                }
+            }
+
+            char *encoded = json_stringify(response, "");
+            json_delete(response);
+            const char *callback = concat("D", callbackID);
+            const char *header = concat(callback, "|");
+            const char *responseMessage = concat(header, encoded);
+            free((void*)callback);
+            free((void*)header);
+            app->sendMessageToBackend(responseMessage); 
+            free(responseMessage);
+        });
+
+        msg( c("NSApp"), s("runModalForWindow:"), app->mainWindow);
+    )
 }
 
 const char *invoke = "window.external={invoke:function(x){window.webkit.messageHandlers.external.postMessage(x);}};";
