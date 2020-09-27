@@ -4,6 +4,7 @@ import (
 	"time"
 
 	wails "github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 // RuntimeTest to test the runtimes
@@ -68,7 +69,11 @@ func (r *RuntimeTest) SetColour(colour int) {
 
 // OpenDialog will call the Runtime.Dialog.OpenDirectory method
 func (r *RuntimeTest) OpenDialog(title string, filter string) []string {
-	return r.runtime.Dialog.OpenDialog(title, filter)
+	dialogOptions := &options.OpenDialog{
+		Title:  title,
+		Filter: filter,
+	}
+	return r.runtime.Dialog.Open(dialogOptions)
 }
 
 // HideWindow will call the Runtime.Window.Hide method and then call

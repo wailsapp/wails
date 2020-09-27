@@ -10,6 +10,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher/message"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 // Dispatcher translates messages received from the frontend
@@ -317,7 +318,6 @@ func (d *Dispatcher) processWindowMessage(result *servicebus.Message) {
 // processDialogMessage processes dialog messages
 func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 	splitTopic := strings.Split(result.Topic(), ":")
-
 	if len(splitTopic) < 4 {
 		d.logger.Error("Invalid dialog message : %#v", result.Data())
 		return
@@ -327,25 +327,23 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 	switch command {
 	case "select":
 		dialogType := splitTopic[2]
-		title := splitTopic[3]
-		filter := ""
-		if len(splitTopic) > 4 {
-			filter = splitTopic[4]
-		}
 		switch dialogType {
 		case "open":
-			responseTopic, ok := result.Data().(string)
+			dialogOptions, ok := result.Data().(*options.OpenDialog)
 			if !ok {
-				d.logger.Error("Invalid responseTopic for 'dialog:select:open' : %#v", result.Data())
+				d.logger.Error("Invalid data for 'dialog:select:open' : %#v", result.Data())
 				return
 			}
+			// This is hardcoded in the sender too
+			responseTopic := "dialog:openselected:" + splitTopic[3]
+
 			d.logger.Info("Opening File dialog! responseTopic = %s", responseTopic)
 
 			// TODO: Work out what we mean in a multi window environment...
 			// For now we will just pick the first one
 			var result []string
 			for _, client := range d.clients {
-				result = client.frontend.OpenDialog(title, filter)
+				result = client.frontend.OpenDialog(dialogOptions)
 			}
 
 			// Send dummy response

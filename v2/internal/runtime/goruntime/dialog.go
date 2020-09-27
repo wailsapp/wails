@@ -1,15 +1,18 @@
 package goruntime
 
 import (
+	b64 "encoding/base64"
+	"encoding/json"
 	"fmt"
 
 	"github.com/wailsapp/wails/v2/internal/crypto"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 // Dialog defines all Dialog related operations
 type Dialog interface {
-	OpenDialog(params ...string) []string
+	Open(dialogOptions *options.OpenDialog) []string
 }
 
 // dialog exposes the Dialog interface
@@ -41,11 +44,8 @@ func (r *dialog) processTitleAndFilter(params ...string) (string, string) {
 	return title, filter
 }
 
-// OpenDialog prompts the user to select a file
-func (r *dialog) OpenDialog(params ...string) []string {
-
-	// Extract title + filter
-	title, filter := r.processTitleAndFilter(params...)
+// Open prompts the user to select a file
+func (r *dialog) Open(dialogOptions *options.OpenDialog) []string {
 
 	// Create unique dialog callback
 	uniqueCallback := crypto.RandomID()
@@ -57,12 +57,8 @@ func (r *dialog) OpenDialog(params ...string) []string {
 		fmt.Printf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
 	}
 
-	// Publish dialog request
-	message := "dialog:select:open:" + title
-	if filter != "" {
-		message += ":" + filter
-	}
-	r.bus.Publish(message, responseTopic)
+	message := "dialog:select:open:" + uniqueCallback
+	r.bus.Publish(message, dialogOptions)
 
 	// Wait for result
 	var result *servicebus.Message = <-dialogResponseChannel
@@ -71,4 +67,14 @@ func (r *dialog) OpenDialog(params ...string) []string {
 	r.bus.UnSubscribe(responseTopic)
 
 	return result.Data().([]string)
+}
+
+func optionsToBase64(dialogOptions *options.OpenDialog) (string, error) {
+
+	encoded, err := json.Marshal(dialogOptions)
+	if err != nil {
+		return "", err
+	}
+
+	return b64.StdEncoding.EncodeToString(encoded), nil
 }

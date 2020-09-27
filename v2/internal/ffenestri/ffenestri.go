@@ -29,33 +29,6 @@ import "C"
 // TODO: move to compile time.
 var DEBUG bool = true
 
-// // Config defines how our application should be configured
-// type Config struct {
-// 	Title       string
-// 	Width       int
-// 	Height      int
-// 	MinWidth    int
-// 	MinHeight   int
-// 	MaxWidth    int
-// 	MaxHeight   int
-// 	DevTools    bool
-// 	Resizable   bool
-// 	Fullscreen  bool
-// 	Frameless   bool
-// 	StartHidden bool
-// }
-
-// var defaultConfig = &Config{
-// 	Title:       "My Wails App",
-// 	Width:       800,
-// 	Height:      600,
-// 	DevTools:    true,
-// 	Resizable:   true,
-// 	Fullscreen:  false,
-// 	Frameless:   false,
-// 	StartHidden: false,
-// }
-
 // Application is our main application object
 type Application struct {
 	config *options.App
