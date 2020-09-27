@@ -428,8 +428,16 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
         // Valid but appears to do nothing.... :/
         msg(dialog, s("setTitle:"), str(title));
 
-        // TODO: Filters
-        // No filters: [dialog setAllowsOtherFileTypes:YES];
+        // Filters
+        if( filter != NULL && strlen(filter) > 0) {
+            Debug("Using filter: %s", filter);
+            id filterString = msg(str(filter), s("stringByReplacingOccurrencesOfString:withString:"), str("*."), str(""));
+            filterString = msg(filterString, s("stringByReplacingOccurrencesOfString:withString:"), str(" "), str(""));
+            id filterList = msg(filterString, s("componentsSeparatedByString:"), str(","));
+            msg(dialog, s("setAllowedFileTypes:"), filterList);
+        } else {
+            msg(dialog, s("setAllowsOtherFileTypes:"), YES);
+        }
 
         // Setup Options
         msg(dialog, s("setCanChooseFiles:"), allowFiles);
