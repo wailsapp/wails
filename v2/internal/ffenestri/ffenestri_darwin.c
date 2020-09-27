@@ -421,12 +421,17 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
 
     // Create an open panel
     ON_MAIN_THREAD(
+
+        // Create the dialog
         id dialog = msg(c("NSOpenPanel"), s("openPanel"));
+
+        // Valid but appears to do nothing.... :/
         msg(dialog, s("setTitle:"), str(title));
 
         // TODO: Filters
         // No filters: [dialog setAllowsOtherFileTypes:YES];
 
+        // Setup Options
         msg(dialog, s("setCanChooseFiles:"), allowFiles);
         msg(dialog, s("setCanChooseDirectories:"), allowDirs);
         msg(dialog, s("setAllowsMultipleSelection:"), allowMultiple);
@@ -438,27 +443,42 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
         // Setup callback handler
         msg(dialog, s("beginSheetModalForWindow:completionHandler:"), app->mainWindow, ^(id result) {
         
+            // Create the response JSON object
             JsonNode *response = json_mkarray();
 
-            // If success
+            // If the user selected some files
             if( result == (id)1 ) {
+                // Grab the URLs returned
                 id urls = msg(dialog, s("URLs"));
+
+                // Iterate over all the selected files
                 int noOfResults = (int)msg(urls, s("count"));
                 for( int index = 0; index < noOfResults; index++ ) {
+
+                    // Extract the filename
                     id url = msg(urls, s("objectAtIndex:"), index);
                     const char *filename = (const char *)msg(msg(url, s("path")), s("UTF8String"));
+
+                    // Add the the response array
                     json_append_element(response, json_mkstring(filename));
                 }
             }
 
+            // Create JSON string and free json memory
             char *encoded = json_stringify(response, "");
             json_delete(response);
+
+            // Construct callback message. Format "D<callbackID>|<json array of strings>"
             const char *callback = concat("D", callbackID);
             const char *header = concat(callback, "|");
             const char *responseMessage = concat(header, encoded);
-            free((void*)callback);
-            free((void*)header);
+
+            // Send message to backend
             app->sendMessageToBackend(responseMessage); 
+
+            // Free memory
+            free((void*)header);
+            free((void*)callback);
             free((void*)responseMessage);
         });
 
