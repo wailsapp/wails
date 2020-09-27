@@ -416,7 +416,7 @@ char* OpenFileDialog(struct Application *app, char *title, char *filter) {
 
 // OpenDialog opens a dialog to select files/directories
 // NOTE: The result is a string that will need to be freed!
-void OpenDialog(struct Application *app, char* callbackID, char *title, char *filter, int allowFiles, int allowDirs, int allowMultiple) {
+void OpenDialog(struct Application *app, char *callbackID, char *title, char *filter, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolveAliases, int treatPackagesAsDirectories) {
     Debug("OpenDialog Called with callback id: %s", callbackID);
 
     // Create an open panel
@@ -427,11 +427,15 @@ void OpenDialog(struct Application *app, char* callbackID, char *title, char *fi
         // TODO: Filters
         // No filters: [dialog setAllowsOtherFileTypes:YES];
 
-        // TODO: Other options
         msg(dialog, s("setCanChooseFiles:"), allowFiles);
         msg(dialog, s("setCanChooseDirectories:"), allowDirs);
         msg(dialog, s("setAllowsMultipleSelection:"), allowMultiple);
+        msg(dialog, s("setShowsHiddenFiles:"), showHiddenFiles);
+        msg(dialog, s("setCanCreateDirectories:"), canCreateDirectories);
+        msg(dialog, s("setResolvesAliases:"), resolveAliases);
+        msg(dialog, s("setTreatsFilePackagesAsDirectories:"), treatPackagesAsDirectories);
 
+        // Setup callback handler
         msg(dialog, s("beginSheetModalForWindow:completionHandler:"), app->mainWindow, ^(id result) {
         
             JsonNode *response = json_mkarray();

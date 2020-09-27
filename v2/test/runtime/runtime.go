@@ -110,6 +110,19 @@ func (r *RuntimeTest) OpenDialogMultiple(title string, filter string) []string {
 	return r.runtime.Dialog.Open(dialogOptions)
 }
 
+// OpenDialogAllOptions will call the Runtime.Dialog.OpenDialog method allowing multiple selection
+func (r *RuntimeTest) OpenDialogAllOptions() []string {
+	dialogOptions := &options.OpenDialog{
+		AllowFiles:                 true,
+		AllowDirectories:           true,
+		ShowHiddenFiles:            true,
+		CanCreateDirectories:       true,
+		TreatPackagesAsDirectories: true,
+		ResolveAliases:             true,
+	}
+	return r.runtime.Dialog.Open(dialogOptions)
+}
+
 // HideWindow will call the Runtime.Window.Hide method and then call
 // Runtime.Window.Show 3 seconds later.
 func (r *RuntimeTest) HideWindow() {
