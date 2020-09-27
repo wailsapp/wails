@@ -416,7 +416,7 @@ char* OpenFileDialog(struct Application *app, char *title, char *filter) {
 
 // OpenDialog opens a dialog to select files/directories
 // NOTE: The result is a string that will need to be freed!
-void OpenDialog(struct Application *app, char* callbackID, char *title, char *filter) {
+void OpenDialog(struct Application *app, char* callbackID, char *title, char *filter, int allowFiles, int allowDirs) {
     Debug("OpenDialog Called with callback id: %s", callbackID);
 
     // Create an open panel
@@ -428,6 +428,9 @@ void OpenDialog(struct Application *app, char* callbackID, char *title, char *fi
         // No filters: [dialog setAllowsOtherFileTypes:YES];
 
         // TODO: Other options
+        msg(dialog, s("setCanChooseFiles:"), allowFiles);
+        msg(dialog, s("setCanChooseDirectories:"), allowDirs);
+
         msg(dialog, s("beginSheetModalForWindow:completionHandler:"), app->mainWindow, ^(id result) {
         
             JsonNode *response = json_mkarray();
@@ -451,7 +454,7 @@ void OpenDialog(struct Application *app, char* callbackID, char *title, char *fi
             free((void*)callback);
             free((void*)header);
             app->sendMessageToBackend(responseMessage); 
-            free(responseMessage);
+            free((void*)responseMessage);
         });
 
         msg( c("NSApp"), s("runModalForWindow:"), app->mainWindow);

@@ -29,6 +29,6 @@ extern void Fullscreen(void *app);
 extern void UnFullscreen(void *app);
 extern void ToggleFullscreen(void *app);
 extern void DisableFrame(void *app);
-extern void OpenDialog(void *appPointer, char *callbackID, char *title, char *filter);
+extern void OpenDialog(void *appPointer, char *callbackID, char *title, char *filter, int allowFiles, int allowDirs );
 
 #endif

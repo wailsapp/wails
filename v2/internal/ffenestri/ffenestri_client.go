@@ -121,5 +121,11 @@ func (c *Client) WindowSetColour(colour int) {
 
 // OpenDialog will open a dialog with the given title and filter
 func (c *Client) OpenDialog(dialogOptions *options.OpenDialog, callbackID string) {
-	C.OpenDialog(c.app.app, c.app.string2CString(callbackID), c.app.string2CString(dialogOptions.Title), c.app.string2CString(dialogOptions.Filter))
+	C.OpenDialog(c.app.app,
+		c.app.string2CString(callbackID),
+		c.app.string2CString(dialogOptions.Title),
+		c.app.string2CString(dialogOptions.Filter),
+		c.app.bool2Cint(dialogOptions.AllowFiles),
+		c.app.bool2Cint(dialogOptions.AllowDirectories),
+	)
 }

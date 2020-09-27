@@ -67,11 +67,33 @@ func (r *RuntimeTest) SetColour(colour int) {
 	r.runtime.Window.SetColour(colour)
 }
 
-// OpenDialog will call the Runtime.Dialog.OpenDirectory method
+// OpenFileDialog will call the Runtime.Dialog.OpenDialog method requesting File selection
+func (r *RuntimeTest) OpenFileDialog(title string, filter string) []string {
+	dialogOptions := &options.OpenDialog{
+		Title:      title,
+		Filter:     filter,
+		AllowFiles: true,
+	}
+	return r.runtime.Dialog.Open(dialogOptions)
+}
+
+// OpenDirectoryDialog will call the Runtime.Dialog.OpenDialog method requesting File selection
+func (r *RuntimeTest) OpenDirectoryDialog(title string, filter string) []string {
+	dialogOptions := &options.OpenDialog{
+		Title:            title,
+		Filter:           filter,
+		AllowDirectories: true,
+	}
+	return r.runtime.Dialog.Open(dialogOptions)
+}
+
+// OpenDialog will call the Runtime.Dialog.OpenDialog method requesting both Files and Directories
 func (r *RuntimeTest) OpenDialog(title string, filter string) []string {
 	dialogOptions := &options.OpenDialog{
-		Title:  title,
-		Filter: filter,
+		Title:            title,
+		Filter:           filter,
+		AllowDirectories: true,
+		AllowFiles:       true,
 	}
 	return r.runtime.Dialog.Open(dialogOptions)
 }
