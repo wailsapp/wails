@@ -6,4 +6,5 @@ type OpenDialog struct {
 	Filter           string
 	AllowFiles       bool
 	AllowDirectories bool
+	AllowMultiple    bool
 }
