@@ -125,6 +125,7 @@ func (c *Client) OpenDialog(dialogOptions *options.OpenDialog, callbackID string
 		c.app.string2CString(callbackID),
 		c.app.string2CString(dialogOptions.Title),
 		c.app.string2CString(dialogOptions.Filter),
+		c.app.string2CString(dialogOptions.DefaultDirectory),
 		c.app.bool2Cint(dialogOptions.AllowFiles),
 		c.app.bool2Cint(dialogOptions.AllowDirectories),
 		c.app.bool2Cint(dialogOptions.AllowMultiple),

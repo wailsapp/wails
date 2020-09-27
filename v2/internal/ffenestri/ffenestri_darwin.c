@@ -13,6 +13,7 @@
 #define s(str) sel_registerName(str)
 #define u(str) sel_getUid(str)
 #define str(input) msg(c("NSString"), s("stringWithUTF8String:"), input)
+#define url(input) msg(c("NSURL"), s("fileURLWithPath:"), str(input))
 
 #define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("frame"));
 
@@ -416,7 +417,7 @@ char* OpenFileDialog(struct Application *app, char *title, char *filter) {
 
 // OpenDialog opens a dialog to select files/directories
 // NOTE: The result is a string that will need to be freed!
-void OpenDialog(struct Application *app, char *callbackID, char *title, char *filter, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolveAliases, int treatPackagesAsDirectories) {
+void OpenDialog(struct Application *app, char *callbackID, char *title, char *filter, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolveAliases, int treatPackagesAsDirectories) {
     Debug("OpenDialog Called with callback id: %s", callbackID);
 
     // Create an open panel
@@ -438,6 +439,16 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
         } else {
             msg(dialog, s("setAllowsOtherFileTypes:"), YES);
         }
+
+        // Default Directory
+        if( defaultDir != NULL && strlen(defaultDir) > 0 ) {
+            msg(dialog, s("setDirectoryURL:"), url(defaultDir));
+        }
+
+        // Default Filename
+        // if( defaultFilename != NULL && strlen(defaultFilename) > 0 ) {
+        //     msg(dialog, s("setNameFieldStringValue:"), str(defaultFilename));
+        // }
 
         // Setup Options
         msg(dialog, s("setCanChooseFiles:"), allowFiles);

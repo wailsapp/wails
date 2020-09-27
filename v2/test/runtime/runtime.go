@@ -111,8 +111,10 @@ func (r *RuntimeTest) OpenDialogMultiple(title string, filter string) []string {
 }
 
 // OpenDialogAllOptions will call the Runtime.Dialog.OpenDialog method allowing multiple selection
-func (r *RuntimeTest) OpenDialogAllOptions(filter string) []string {
+func (r *RuntimeTest) OpenDialogAllOptions(filter string, defaultDir string, defaultFilename string) []string {
 	dialogOptions := &options.OpenDialog{
+		DefaultDirectory:           defaultDir,
+		DefaultFilename:            defaultFilename,
 		Filter:                     filter,
 		AllowFiles:                 true,
 		AllowDirectories:           true,
