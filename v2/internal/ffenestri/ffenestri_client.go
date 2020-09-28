@@ -124,7 +124,8 @@ func (c *Client) OpenDialog(dialogOptions *options.OpenDialog, callbackID string
 	C.OpenDialog(c.app.app,
 		c.app.string2CString(callbackID),
 		c.app.string2CString(dialogOptions.Title),
-		c.app.string2CString(dialogOptions.Filter),
+		c.app.string2CString(dialogOptions.Filters),
+		c.app.string2CString(dialogOptions.DefaultFilename),
 		c.app.string2CString(dialogOptions.DefaultDirectory),
 		c.app.bool2Cint(dialogOptions.AllowFiles),
 		c.app.bool2Cint(dialogOptions.AllowDirectories),
@@ -132,6 +133,20 @@ func (c *Client) OpenDialog(dialogOptions *options.OpenDialog, callbackID string
 		c.app.bool2Cint(dialogOptions.ShowHiddenFiles),
 		c.app.bool2Cint(dialogOptions.CanCreateDirectories),
 		c.app.bool2Cint(dialogOptions.ResolveAliases),
+		c.app.bool2Cint(dialogOptions.TreatPackagesAsDirectories),
+	)
+}
+
+// SaveDialog will open a dialog with the given title and filter
+func (c *Client) SaveDialog(dialogOptions *options.SaveDialog, callbackID string) {
+	C.SaveDialog(c.app.app,
+		c.app.string2CString(callbackID),
+		c.app.string2CString(dialogOptions.Title),
+		c.app.string2CString(dialogOptions.Filters),
+		c.app.string2CString(dialogOptions.DefaultFilename),
+		c.app.string2CString(dialogOptions.DefaultDirectory),
+		c.app.bool2Cint(dialogOptions.ShowHiddenFiles),
+		c.app.bool2Cint(dialogOptions.CanCreateDirectories),
 		c.app.bool2Cint(dialogOptions.TreatPackagesAsDirectories),
 	)
 }

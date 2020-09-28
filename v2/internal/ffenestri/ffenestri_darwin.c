@@ -407,17 +407,8 @@ void SetPosition(struct Application *app, int x, int y) {
     )
 }
 
-// OpenFileDialog opens a dialog to select a file
-// NOTE: The result is a string that will need to be freed!
-char* OpenFileDialog(struct Application *app, char *title, char *filter) {
-    Debug("OpenFileDialog Called");
-    char *filename = concat("","BogusOpenFilename");
-    return filename;
-}
-
 // OpenDialog opens a dialog to select files/directories
-// NOTE: The result is a string that will need to be freed!
-void OpenDialog(struct Application *app, char *callbackID, char *title, char *filter, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolveAliases, int treatPackagesAsDirectories) {
+void OpenDialog(struct Application *app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolveAliases, int treatPackagesAsDirectories) {
     Debug("OpenDialog Called with callback id: %s", callbackID);
 
     // Create an open panel
@@ -430,9 +421,8 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
         msg(dialog, s("setTitle:"), str(title));
 
         // Filters
-        if( filter != NULL && strlen(filter) > 0) {
-            Debug("Using filter: %s", filter);
-            id filterString = msg(str(filter), s("stringByReplacingOccurrencesOfString:withString:"), str("*."), str(""));
+        if( filters != NULL && strlen(filters) > 0) {
+            id filterString = msg(str(filters), s("stringByReplacingOccurrencesOfString:withString:"), str("*."), str(""));
             filterString = msg(filterString, s("stringByReplacingOccurrencesOfString:withString:"), str(" "), str(""));
             id filterList = msg(filterString, s("componentsSeparatedByString:"), str(","));
             msg(dialog, s("setAllowedFileTypes:"), filterList);
@@ -446,9 +436,9 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
         }
 
         // Default Filename
-        // if( defaultFilename != NULL && strlen(defaultFilename) > 0 ) {
-        //     msg(dialog, s("setNameFieldStringValue:"), str(defaultFilename));
-        // }
+        if( defaultFilename != NULL && strlen(defaultFilename) > 0 ) {
+            msg(dialog, s("setNameFieldStringValue:"), str(defaultFilename));
+        }
 
         // Setup Options
         msg(dialog, s("setCanChooseFiles:"), allowFiles);
@@ -488,9 +478,78 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
             json_delete(response);
 
             // Construct callback message. Format "D<callbackID>|<json array of strings>"
-            const char *callback = concat("D", callbackID);
+            const char *callback = concat("DO", callbackID);
             const char *header = concat(callback, "|");
             const char *responseMessage = concat(header, encoded);
+
+            // Send message to backend
+            app->sendMessageToBackend(responseMessage); 
+
+            // Free memory
+            free((void*)header);
+            free((void*)callback);
+            free((void*)responseMessage);
+        });
+
+        msg( c("NSApp"), s("runModalForWindow:"), app->mainWindow);
+    )
+}
+
+// SaveDialog opens a dialog to select files/directories
+void SaveDialog(struct Application *app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int showHiddenFiles, int canCreateDirectories, int treatPackagesAsDirectories) {
+    Debug("SaveDialog Called with callback id: %s", callbackID);
+
+    // Create an open panel
+    ON_MAIN_THREAD(
+
+        // Create the dialog
+        id dialog = msg(c("NSSavePanel"), s("savePanel"));
+
+        // Valid but appears to do nothing.... :/
+        msg(dialog, s("setTitle:"), str(title));
+
+        // Filters
+        if( filters != NULL && strlen(filters) > 0) {
+            id filterString = msg(str(filters), s("stringByReplacingOccurrencesOfString:withString:"), str("*."), str(""));
+            filterString = msg(filterString, s("stringByReplacingOccurrencesOfString:withString:"), str(" "), str(""));
+            id filterList = msg(filterString, s("componentsSeparatedByString:"), str(","));
+            msg(dialog, s("setAllowedFileTypes:"), filterList);
+        } else {
+            msg(dialog, s("setAllowsOtherFileTypes:"), YES);
+        }
+
+        // Default Directory
+        if( defaultDir != NULL && strlen(defaultDir) > 0 ) {
+            msg(dialog, s("setDirectoryURL:"), url(defaultDir));
+        }
+
+        // Default Filename
+        if( defaultFilename != NULL && strlen(defaultFilename) > 0 ) {
+            msg(dialog, s("setNameFieldStringValue:"), str(defaultFilename));
+        }
+
+        // Setup Options
+        msg(dialog, s("setShowsHiddenFiles:"), showHiddenFiles);
+        msg(dialog, s("setCanCreateDirectories:"), canCreateDirectories);
+        msg(dialog, s("setTreatsFilePackagesAsDirectories:"), treatPackagesAsDirectories);
+
+        // Setup callback handler
+        msg(dialog, s("beginSheetModalForWindow:completionHandler:"), app->mainWindow, ^(id result) {
+        
+            // Default is blank
+            const char *filename = "";
+
+            // If the user selected some files
+            if( result == (id)1 ) {
+                // Grab the URL returned
+                id url = msg(dialog, s("URL"));
+                filename = (const char *)msg(msg(url, s("path")), s("UTF8String"));
+            }
+
+            // Construct callback message. Format "DS<callbackID>|<json array of strings>"
+            const char *callback = concat("DS", callbackID);
+            const char *header = concat(callback, "|");
+            const char *responseMessage = concat(header, filename);
 
             // Send message to backend
             app->sendMessageToBackend(responseMessage); 

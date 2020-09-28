@@ -11,6 +11,7 @@ import (
 // Dialog defines all Dialog related operations
 type Dialog interface {
 	Open(dialogOptions *options.OpenDialog) []string
+	Save(dialogOptions *options.SaveDialog) string
 }
 
 // dialog exposes the Dialog interface
@@ -65,4 +66,29 @@ func (r *dialog) Open(dialogOptions *options.OpenDialog) []string {
 	r.bus.UnSubscribe(responseTopic)
 
 	return result.Data().([]string)
+}
+
+// Save prompts the user to select a file
+func (r *dialog) Save(dialogOptions *options.SaveDialog) string {
+
+	// Create unique dialog callback
+	uniqueCallback := crypto.RandomID()
+
+	// Subscribe to the respose channel
+	responseTopic := "dialog:saveselected:" + uniqueCallback
+	dialogResponseChannel, err := r.bus.Subscribe(responseTopic)
+	if err != nil {
+		fmt.Printf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
+	}
+
+	message := "dialog:select:save:" + uniqueCallback
+	r.bus.Publish(message, dialogOptions)
+
+	// Wait for result
+	var result *servicebus.Message = <-dialogResponseChannel
+
+	// Delete subscription to response topic
+	r.bus.UnSubscribe(responseTopic)
+
+	return result.Data().(string)
 }

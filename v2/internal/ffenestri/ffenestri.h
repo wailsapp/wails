@@ -29,5 +29,6 @@ extern void Fullscreen(void *app);
 extern void UnFullscreen(void *app);
 extern void ToggleFullscreen(void *app);
 extern void DisableFrame(void *app);
-extern void OpenDialog(void *appPointer, char *callbackID, char *title, char *filter, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolveAliases, int treatPackagesAsDirectories);
+extern void OpenDialog(void *appPointer, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolveAliases, int treatPackagesAsDirectories);
+extern void SaveDialog(void *appPointer, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int showHiddenFiles, int canCreateDirectories, int treatPackagesAsDirectories);
 #endif

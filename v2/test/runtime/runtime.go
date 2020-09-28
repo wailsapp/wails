@@ -71,7 +71,7 @@ func (r *RuntimeTest) SetColour(colour int) {
 func (r *RuntimeTest) OpenFileDialog(title string, filter string) []string {
 	dialogOptions := &options.OpenDialog{
 		Title:      title,
-		Filter:     filter,
+		Filters:    filter,
 		AllowFiles: true,
 	}
 	return r.runtime.Dialog.Open(dialogOptions)
@@ -81,7 +81,7 @@ func (r *RuntimeTest) OpenFileDialog(title string, filter string) []string {
 func (r *RuntimeTest) OpenDirectoryDialog(title string, filter string) []string {
 	dialogOptions := &options.OpenDialog{
 		Title:            title,
-		Filter:           filter,
+		Filters:          filter,
 		AllowDirectories: true,
 	}
 	return r.runtime.Dialog.Open(dialogOptions)
@@ -91,7 +91,7 @@ func (r *RuntimeTest) OpenDirectoryDialog(title string, filter string) []string 
 func (r *RuntimeTest) OpenDialog(title string, filter string) []string {
 	dialogOptions := &options.OpenDialog{
 		Title:            title,
-		Filter:           filter,
+		Filters:          filter,
 		AllowDirectories: true,
 		AllowFiles:       true,
 	}
@@ -102,7 +102,7 @@ func (r *RuntimeTest) OpenDialog(title string, filter string) []string {
 func (r *RuntimeTest) OpenDialogMultiple(title string, filter string) []string {
 	dialogOptions := &options.OpenDialog{
 		Title:            title,
-		Filter:           filter,
+		Filters:          filter,
 		AllowDirectories: true,
 		AllowFiles:       true,
 		AllowMultiple:    true,
@@ -115,7 +115,7 @@ func (r *RuntimeTest) OpenDialogAllOptions(filter string, defaultDir string, def
 	dialogOptions := &options.OpenDialog{
 		DefaultDirectory:           defaultDir,
 		DefaultFilename:            defaultFilename,
-		Filter:                     filter,
+		Filters:                    filter,
 		AllowFiles:                 true,
 		AllowDirectories:           true,
 		ShowHiddenFiles:            true,
@@ -124,6 +124,28 @@ func (r *RuntimeTest) OpenDialogAllOptions(filter string, defaultDir string, def
 		ResolveAliases:             true,
 	}
 	return r.runtime.Dialog.Open(dialogOptions)
+}
+
+// SaveFileDialog will call the Runtime.Dialog.SaveDialog method requesting a File selection
+func (r *RuntimeTest) SaveFileDialog(title string, filter string) string {
+	dialogOptions := &options.SaveDialog{
+		Title:   title,
+		Filters: filter,
+	}
+	return r.runtime.Dialog.Save(dialogOptions)
+}
+
+// SaveDialogAllOptions will call the Runtime.Dialog.SaveDialog method allowing multiple selection
+func (r *RuntimeTest) SaveDialogAllOptions(filter string, defaultDir string, defaultFilename string) string {
+	dialogOptions := &options.SaveDialog{
+		DefaultDirectory:           defaultDir,
+		DefaultFilename:            defaultFilename,
+		Filters:                    filter,
+		ShowHiddenFiles:            true,
+		CanCreateDirectories:       true,
+		TreatPackagesAsDirectories: true,
+	}
+	return r.runtime.Dialog.Save(dialogOptions)
 }
 
 // HideWindow will call the Runtime.Window.Hide method and then call

@@ -6,6 +6,7 @@
         "__functional_03": "c",
         "functional": "c",
         "__locale": "c",
-        "locale": "c"
+        "locale": "c",
+        "chrono": "c"
     }
 }

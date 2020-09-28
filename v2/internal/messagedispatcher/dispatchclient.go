@@ -15,6 +15,7 @@ type Client interface {
 	NotifyEvent(message string)
 	CallResult(message string)
 	OpenDialog(dialogOptions *options.OpenDialog, callbackID string)
+	SaveDialog(dialogOptions *options.SaveDialog, callbackID string)
 	WindowSetTitle(title string)
 	WindowShow()
 	WindowHide()

@@ -15,31 +15,38 @@ func dialogMessageParser(message string) (*parsedMessage, error) {
 	}
 
 	var topic = "bad topic from dialogMessageParser"
-	var data []string
+	var responseMessage *parsedMessage
 
 	// Switch the event type (with or without data)
 	switch message[0] {
 	// Format of Dialog response messages: D<callbackID>|<[]string as json encoded string>
 	case 'D':
-		idx := strings.IndexByte(message[1:], '|')
+		dialogType := message[1]
+		message = message[2:]
+		idx := strings.IndexByte(message, '|')
 		if idx < 0 {
 			return nil, fmt.Errorf("Invalid dialog response message format")
 		}
-		callbackID := message[1 : idx+1]
-		jsonData := message[idx+2:]
-		topic = "dialog:openselected:" + callbackID
+		callbackID := message[:idx+1]
+		payloadData := message[idx+1:]
 
-		err := json.Unmarshal([]byte(jsonData), &data)
-		if err != nil {
-			return nil, err
+		switch dialogType {
+		case 'O':
+			var data []string
+			topic = "dialog:openselected:" + callbackID
+			err := json.Unmarshal([]byte(payloadData), &data)
+			if err != nil {
+				return nil, err
+			}
+			responseMessage = &parsedMessage{Topic: topic, Data: data}
+		case 'S':
+			topic = "dialog:saveselected:" + callbackID
+			responseMessage = &parsedMessage{Topic: topic, Data: payloadData}
 		}
 
 	default:
 		return nil, fmt.Errorf("Invalid message to dialogMessageParser()")
 	}
 
-	// Create a new parsed message struct
-	parsedMessage := &parsedMessage{Topic: topic, Data: data}
-
-	return parsedMessage, nil
+	return responseMessage, nil
 }
