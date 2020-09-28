@@ -394,7 +394,6 @@ void SetSize(struct Application *app, int width, int height) {
     )
 }
 
-
 void SetPosition(struct Application *app, int x, int y) { 
     ON_MAIN_THREAD(
         id screen = getCurrentScreen(app);
@@ -576,12 +575,26 @@ void SetMinWindowSize(struct Application *app, int minWidth, int minHeight)
 {
     app->minWidth = minWidth;
     app->minHeight = minHeight;
+
+    // Apply if the window is created
+    if( app->mainWindow != NULL ) {
+        ON_MAIN_THREAD(
+            setMinMaxSize(app);
+        )
+    }
 }
 
 void SetMaxWindowSize(struct Application *app, int maxWidth, int maxHeight)
 {
     app->maxWidth = maxWidth;
     app->maxHeight = maxHeight;
+    
+    // Apply if the window is created
+    if( app->mainWindow != NULL ) {
+        ON_MAIN_THREAD(
+            setMinMaxSize(app);
+        )
+    }
 }
 
 void ExecJS(struct Application *app, const char *js) {
@@ -592,62 +605,6 @@ void ExecJS(struct Application *app, const char *js) {
             NULL);
     )
 }
-
-// typedef char* (*dialogMethod)(void *app, void *);
-
-// struct dialogCall {
-//     struct Application *app;
-//     dialogMethod method;
-//     void *args;
-//     char *result;
-//     int done;
-// };
-
-
-// gboolean executeMethodWithReturn(gpointer data) {
-//     struct dialogCall *d = (struct dialogCall *)data;
-//     struct Application *app = (struct Application *)(d->app);
-//     Debug("Webview %p\n", app->webView);
-//     Debug("Args %s\n", d->args);
-//     Debug("Method %p\n", (d->method));
-//     d->result = (d->method)(app, d->args);
-//     d->done = 1;
-//     // Debug("Method Execute Complete. Freeing memory");
-//     return FALSE;
-// }
-
-
-char* OpenFileDialogOnMainThread(void *app, char *title) {
-    Debug("OpenFileDialogOnMainThread Called");
-
-    //   struct dialogCall *data =
-    //   (struct dialogCall *)g_new(struct dialogCall, 1);
-    //   data->result = NULL;
-    //   data->done = 0;
-    //   data->method = (dialogMethod)OpenFileDialog;
-    //   data->args = title;
-    //   data->app = app;
-
-    // gdk_threads_add_idle(executeMethodWithReturn, data);
-
-    // while( data->done == 0 ) {
-    //     // Debug("Waiting for dialog");
-    //     usleep(100000);
-    // }
-    // Debug("Dialog done");
-    // Debug("Result = %s\n", data->result);
-    // g_free(data);
-    // // Fingers crossed this wasn't freed by g_free above
-    // return data->result;
-    return "OpenFileDialogOnMainThread result";
-}
-
-// // Sets the icon to the XPM stored in icon
-// void setIcon( struct Application *app) {
-//     GdkPixbuf *appIcon = gdk_pixbuf_new_from_xpm_data ((const char**)icon);
-//     gtk_window_set_icon (app->mainWindow, appIcon);
-// }
-
 
 void SetDebug(void *applicationPointer, int flag) {
     struct Application *app = (struct Application*) applicationPointer;
@@ -662,62 +619,6 @@ void SetBindings(void* applicationPointer, const char *bindings) {
     free((void*)temp);
     app->bindings = jscall;
 }
-
-// This is called when the close button on the window is pressed
-// void close_button_pressed () {
-//     struct Application *app = (struct Application*) user_data;
-//     app->sendMessageToBackend("WC"); // Window Close
-//     return TRUE;
-// }
-
-// static void setupWindow(void *applicationPointer) {
-
-//     struct Application *app = (struct Application*) applicationPointer;
-
-//     // Create the window
-//     GtkWidget *mainWindow = gtk_application_window_new (app->application);
-//     // Save reference
-//     app->mainWindow = GTK_WINDOW(mainWindow);
-
-//     // Setup borderless
-//     if (app->borderless) {
-//         gtk_window_set_decorated((GtkWindow*)mainWindow, FALSE);
-//     }
-
-//     // Setup title
-//     printf("Setting title to: %s\n", app->title);
-//     gtk_window_set_title(GTK_WINDOW(mainWindow), app->title);
-
-//     // Setup script handler
-//     WebKitUserContentManager *contentManager = webkit_user_content_manager_new();
-//     webkit_user_content_manager_register_script_message_handler(contentManager, "external");
-//     g_signal_connect(contentManager, "script-message-received::external", G_CALLBACK(sendMessageToBackend), app);
-//     GtkWidget *webView = webkit_web_view_new_with_user_content_manager(contentManager);
-//     // Save reference
-//     app->webView = webView;
-
-//     // Add the webview to the window
-//     gtk_container_add(GTK_CONTAINER(mainWindow), webView);
-
-//     // Load default HTML
-//     g_signal_connect(G_OBJECT(webView), "load-changed", G_CALLBACK(load_finished_cb), app);
-
-//     // Load the user's HTML
-//     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webView), &userhtml);
-
-//     // Check if we want to enable the dev tools
-//     if( app->devtools ) {
-//         WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webView));
-//         // webkit_settings_set_enable_write_console_messages_to_stdout(settings, true);
-//         webkit_settings_set_enable_developer_extras(settings, true);
-//     } else {
-//         g_signal_connect(G_OBJECT(webView), "context-menu", G_CALLBACK(disable_context_menu_cb), app);
-//     }
-
-//     // Listen for close button signal
-//     g_signal_connect (GTK_WIDGET(mainWindow), "delete-event", G_CALLBACK (close_button_pressed), app);
-
-// }
 
 void enableBoolConfig(id config, const char *setting) {
     msg(msg(config, s("preferences")), s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 1), str(setting));
@@ -772,7 +673,8 @@ void Run(void *applicationPointer, int argc, char **argv) {
     Class delegateClass = objc_allocateClassPair((Class) c("NSResponder"), "AppDelegate", 0);
     class_addProtocol(delegateClass, objc_getProtocol("NSTouchBarProvider"));
     class_addMethod(delegateClass, s("applicationShouldTerminateAfterLastWindowClosed:"), (IMP) yes, "c@:@");
-    // TODO: add userContentController:didReceiveScriptMessage
+
+    // Script handler
     class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler,
                     "v@:@@");
     objc_registerClassPair(delegateClass);
@@ -795,7 +697,6 @@ void Run(void *applicationPointer, int argc, char **argv) {
 
     // Center Window
     Center(app);
-    // msg(app->mainWindow, s("cascadeTopLeftFromPoint:"), CGPointMake(100, 100));
 
     // Set Style Mask
     msg(mainWindow, s("setStyleMask:"), decorations);
@@ -803,7 +704,6 @@ void Run(void *applicationPointer, int argc, char **argv) {
     // Set Colour
     applyWindowColour(app);
     
-
     // Setup webview
     id config = msg(c("WKWebViewConfiguration"), s("new"));
     app->config = config;
@@ -820,7 +720,6 @@ void Run(void *applicationPointer, int argc, char **argv) {
       Debug("Enabling devtools");
       enableBoolConfig(config, "developerExtrasEnabled");
     }
-    // TODO: Understand why this shouldn't be CGRectMake(0, 0, app->width, app->height)
     msg(wkwebview, s("initWithFrame:configuration:"), CGRectMake(0, 0, 0, 0), config);
 
     
@@ -831,10 +730,6 @@ void Run(void *applicationPointer, int argc, char **argv) {
     if( app->frame == 0) {
         msg(mainWindow, s("setTitlebarAppearsTransparent:"), YES);
         msg(mainWindow, s("setTitleVisibility:"), NSWindowTitleHidden);
-        // msg( msg( mainWindow, ("standardWindowButton"), str("NSWindowZoomButton")), s("setHidden"), YES);
-    //           [[window standardWindowButton:NSWindowZoomButton] setHidden:YES];
-    //   [[window standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
-    //   [[window standardWindowButton:NSWindowCloseButton] setHidden:YES];
     } else {
         Debug("setTitlebarAppearsTransparent %d", app->titlebarAppearsTransparent ? YES :NO);
         msg(mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
@@ -856,7 +751,6 @@ void Run(void *applicationPointer, int argc, char **argv) {
         }
     }
 
-
     // Fix up resizing
     if (app->resizable == 0) {
         app->minHeight = app->maxHeight = app->height;
@@ -864,36 +758,14 @@ void Run(void *applicationPointer, int argc, char **argv) {
     }
     setMinMaxSize(app);
 
-    // msg(mainWindow, s("setFrame:display:animate:"), CGRectMake(0, 0, 0, 0), YES, YES);
-//         // Set the icon
-//         setIcon(app);
-
-//         // Setup resize
-//         gtk_window_resize(GTK_WINDOW (app->mainWindow), app->width, app->height);
-
-//         if( app->resizable ) {
-//             gtk_window_set_default_size(GTK_WINDOW (app->mainWindow), app->width, app->height);
-//         } else {
-//             gtk_widget_set_size_request(GTK_WIDGET (app->mainWindow), app->width, app->height);
-//             SetMaximumSize(app, app->width, app->height);
-//             SetMinimumSize(app, app->width, app->height);
-//             gtk_window_resize(GTK_WINDOW (app->mainWindow), app->width, app->height);
-//         }
-//         gtk_window_set_resizable(GTK_WINDOW(app->mainWindow), app->resizable ? TRUE : FALSE );
-
-
     // Load HTML
     id html = msg(c("NSURL"), s("URLWithString:"), str(assets[0]));
-    // Debug("HTML: %p", html);
     msg(wkwebview, s("loadRequest:"), msg(c("NSURLRequest"), s("requestWithURL:"), html));
-
-    // Load assets
     
     Debug("Loading Internal Code");
     // We want to evaluate the internal code plus runtime before the assets
     const char *temp = concat(invoke, app->bindings);
     const char *internalCode = concat(temp, (const char*)&runtime);
-    // Debug("Internal code: %s", internalCode);
     free((void*)temp);
 
       // Loop over assets and build up one giant Mother Of All Evals
@@ -914,9 +786,6 @@ void Run(void *applicationPointer, int argc, char **argv) {
     };
 
     class_addMethod(delegateClass, s("closeWindow"), (IMP) closeWindow, "v@:@");
-    // TODO: Check if we can split out the User JS/CSS from the MOAE
-
-    // Debug("MOAE: %s", internalCode);
 
     // Include callback after evaluation
     temp = concat(internalCode, "webkit.messageHandlers.completed.postMessage(true);");
