@@ -97,6 +97,7 @@ struct Application {
     id wkwebview;
     id manager;
     id config;
+    id mouseEvent;
 
     // Window Data
     const char *title;
@@ -213,7 +214,9 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
             Show(app); 
             msg(app->config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("suppressesIncrementalRendering"));
         });
-        
+    } else if( strcmp(name, "windowDrag") == 0 ) {
+        Debug("DRAGGING!!!!!");
+        msg(app->mainWindow, s("performWindowDragWithEvent:"), app->mouseEvent);
     } else {
         const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
         app->sendMessageToBackend(m);
@@ -571,6 +574,18 @@ void DisableFrame(struct Application *app)
    app->frame = 0;
 }
 
+void setMinMaxSize(struct Application *app)
+{
+    if (app->maxHeight > 0 && app->maxWidth > 0)
+    {
+        msg(app->mainWindow, s("setMaxSize:"), CGSizeMake(app->maxWidth, app->maxHeight));
+    }
+    if (app->minHeight > 0 && app->minWidth > 0)
+    {
+        msg(app->mainWindow, s("setMinSize:"), CGSizeMake(app->minWidth, app->minHeight));
+    }
+}
+
 void SetMinWindowSize(struct Application *app, int minWidth, int minHeight)
 {
     app->minWidth = minWidth;
@@ -626,18 +641,6 @@ void enableBoolConfig(id config, const char *setting) {
 
 void disableBoolConfig(id config, const char *setting) {
     msg(msg(config, s("preferences")), s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str(setting));
-}
-
-void setMinMaxSize(struct Application *app)
-{
-    if (app->maxHeight > 0 && app->maxWidth > 0)
-    {
-        msg(app->mainWindow, s("setMaxSize:"), CGSizeMake(app->maxWidth, app->maxHeight));
-    }
-    if (app->minHeight > 0 && app->minWidth > 0)
-    {
-        msg(app->mainWindow, s("setMinSize:"), CGSizeMake(app->minWidth, app->minHeight));
-    }
 }
 
 void Run(void *applicationPointer, int argc, char **argv) {
@@ -730,6 +733,15 @@ void Run(void *applicationPointer, int argc, char **argv) {
     if( app->frame == 0) {
         msg(mainWindow, s("setTitlebarAppearsTransparent:"), YES);
         msg(mainWindow, s("setTitleVisibility:"), NSWindowTitleHidden);
+
+        // Setup drag message handler
+        msg(manager, s("addScriptMessageHandler:name:"), delegate, str("windowDrag"));
+        // Add mouse event hooks
+        // msg(mainWindow, s("mouseDown:"), ^(id event) {
+        //     Debug("Got mouse down event!!!!");
+        //     app->mouseEvent = event;
+        // });
+
     } else {
         Debug("setTitlebarAppearsTransparent %d", app->titlebarAppearsTransparent ? YES :NO);
         msg(mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
@@ -812,7 +824,5 @@ void Run(void *applicationPointer, int argc, char **argv) {
 
     free((void*)internalCode);
 }
-
-
 
 #endif
