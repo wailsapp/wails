@@ -32,6 +32,10 @@
 #define NSWindowTitleHidden 1
 #define NSWindowStyleMaskFullSizeContentView 1 << 15
 
+// Unbelievably, if the user swaps their button preference
+// then right buttons are reported as left buttons
+#define NSEventMaskLeftMouseDown 1 << 1
+
 // References to assets
 extern const unsigned char *assets[];
 extern const unsigned char runtime;
@@ -98,6 +102,7 @@ struct Application {
     id manager;
     id config;
     id mouseEvent;
+    id eventMonitor;
 
     // Window Data
     const char *title;
@@ -215,8 +220,10 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
             msg(app->config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("suppressesIncrementalRendering"));
         });
     } else if( strcmp(name, "windowDrag") == 0 ) {
-        Debug("DRAGGING!!!!!");
-        msg(app->mainWindow, s("performWindowDragWithEvent:"), app->mouseEvent);
+        // Guard against null events
+        if( app->mouseEvent != NULL ) {
+            msg(app->mainWindow, s("performWindowDragWithEvent:"), app->mouseEvent);
+        }
     } else {
         const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
         app->sendMessageToBackend(m);
@@ -247,6 +254,8 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->minimised = 0;
 
     result->mainWindow = NULL;
+    result->mouseEvent = NULL;
+    result->eventMonitor = NULL;
 
     // Features
     result->frame = 1;
@@ -273,6 +282,12 @@ void DestroyApplication(void *appPointer) {
         app->bindings = NULL;
     } else {
         Debug("Almost a double free for app->bindings");
+    }
+
+    // For frameless apps, remove the event monitor and drag message handler
+    if( app->frame == 0 ) {
+        msg( c("NSEvent"), s("removeMonitor:"), app->eventMonitor);
+        msg(app->manager, s("removeScriptMessageHandlerForName:"), str("windowDrag"));
     }
 
     msg(app->manager, s("removeScriptMessageHandlerForName:"), str("external"));
@@ -737,11 +752,10 @@ void Run(void *applicationPointer, int argc, char **argv) {
         // Setup drag message handler
         msg(manager, s("addScriptMessageHandler:name:"), delegate, str("windowDrag"));
         // Add mouse event hooks
-        // msg(mainWindow, s("mouseDown:"), ^(id event) {
-        //     Debug("Got mouse down event!!!!");
-        //     app->mouseEvent = event;
-        // });
-
+        app->eventMonitor = msg(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseDown, ^(id incomingEvent) {
+            app->mouseEvent = incomingEvent;
+            return incomingEvent;
+        });
     } else {
         Debug("setTitlebarAppearsTransparent %d", app->titlebarAppearsTransparent ? YES :NO);
         msg(mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
