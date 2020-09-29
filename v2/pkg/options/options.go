@@ -14,7 +14,6 @@ type App struct {
 	Height        int
 	DisableResize bool
 	Fullscreen    bool
-	Frameless     bool
 	MinWidth      int
 	MinHeight     int
 	MaxWidth      int

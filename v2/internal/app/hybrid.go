@@ -63,7 +63,6 @@ func CreateApp(options *Options) *App {
 		MinHeight:   options.MinHeight,
 		MaxWidth:    options.MaxWidth,
 		MaxHeight:   options.MaxHeight,
-		Frameless:   options.Frameless,
 		StartHidden: options.StartHidden,
 
 		// This should be controlled by the compile time flags...

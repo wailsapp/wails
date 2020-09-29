@@ -13,7 +13,6 @@ func main() {
 		Width:       1024,
 		Height:      768,
 		StartHidden: true,
-		Frameless:   true,
 	})
 
 	app.Bind(newBasic())
