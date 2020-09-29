@@ -134,10 +134,10 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string) error 
 	// Set debug if needed
 	C.SetDebug(app, a.bool2Cint(DEBUG))
 
-	// Set Frameless
-	if a.config.Frameless {
-		C.DisableFrame(a.app)
-	}
+	// TODO: Move frameless to Linux options
+	// if a.config.Frameless {
+	// 	C.DisableFrame(a.app)
+	// }
 
 	if a.config.Colour != 0 {
 		r, g, b, alpha := intToColour(a.config.Colour)

@@ -3,6 +3,7 @@ package main
 import (
 	wails "github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
 
 func main() {
@@ -16,7 +17,9 @@ func main() {
 		MinHeight: 600,
 		MaxWidth:  1280,
 		MaxHeight: 1024,
-		Frameless: true,
+		Mac: &mac.Options{
+			TitleBar: mac.TitleBarHidden(),
+		},
 	})
 
 	app.Bind(newBasic())

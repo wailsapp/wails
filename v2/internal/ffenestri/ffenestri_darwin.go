@@ -10,6 +10,7 @@ extern void HideTitleBar(void *);
 extern void FullSizeContent(void *);
 extern void UseToolbar(void *);
 extern void HideToolbarSeparator(void *);
+extern void DisableFrame(void *);
 */
 import "C"
 
@@ -46,4 +47,8 @@ func (a *Application) processPlatformSettings() {
 		C.TitlebarAppearsTransparent(a.app)
 	}
 
+	// For macs we consider "frameless" to mean a combination of options
+	if titlebar.TitlebarAppearsTransparent && titlebar.HideTitle {
+		C.DisableFrame(a.app)
+	}
 }

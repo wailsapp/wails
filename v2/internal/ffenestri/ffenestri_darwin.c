@@ -122,6 +122,7 @@ struct Application {
 
     // Features
     int frame;
+    int startHidden;
     int maximised;
     int minimised;
     int titlebarAppearsTransparent;
@@ -236,7 +237,12 @@ void closeWindow(id self, SEL cmd, id sender) {
     app->sendMessageToBackend("WC");
 }
 
-void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen) {
+// void willFinishLaunching(id self) {
+//     struct Application *app = (struct Application *) objc_getAssociatedObject(self, "application");
+//     Debug("willFinishLaunching called!");
+// }
+
+void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden) {
     // Setup main application struct
     struct Application *result = malloc(sizeof(struct Application));
     result->title = title;
@@ -252,6 +258,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->lock = 0;
     result->maximised = 0;
     result->minimised = 0;
+    result->startHidden = startHidden;
 
     result->mainWindow = NULL;
     result->mouseEvent = NULL;
@@ -693,8 +700,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
     class_addMethod(delegateClass, s("applicationShouldTerminateAfterLastWindowClosed:"), (IMP) yes, "c@:@");
 
     // Script handler
-    class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler,
-                    "v@:@@");
+    class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler, "v@:@@");
     objc_registerClassPair(delegateClass);
 
     // Create delegate
@@ -740,7 +746,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
     }
     msg(wkwebview, s("initWithFrame:configuration:"), CGRectMake(0, 0, 0, 0), config);
 
-    
+    // Andd message handlers
     msg(manager, s("addScriptMessageHandler:name:"), delegate, str("external"));
     msg(manager, s("addScriptMessageHandler:name:"), delegate, str("completed"));
     msg(mainWindow, s("setContentView:"), wkwebview);
@@ -812,7 +818,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
     };
 
     class_addMethod(delegateClass, s("closeWindow"), (IMP) closeWindow, "v@:@");
-
+    // class_addMethod(delegateClass, s("applicationWillFinishLaunching:"), (IMP) willFinishLaunching, "@@:@");
     // Include callback after evaluation
     temp = concat(internalCode, "webkit.messageHandlers.completed.postMessage(true);");
     free((void*)internalCode);
@@ -833,7 +839,6 @@ void Run(void *applicationPointer, int argc, char **argv) {
 
     // Finally call run
     Debug("Run called");
-    msg(application, s("activateIgnoringOtherApps:"), true);
     msg(application, s("run"));
 
     free((void*)internalCode);
