@@ -22,11 +22,12 @@ func main() {
 		Height:        620,
 		DisableResize: false,
 		Fullscreen:    false,
-		Colour:        0xFF000088,
+		RGBA:          0xFF0000FF,
 		Mac: &mac.Options{
 			// TitleBar: mac.TitleBarHidden(),
 			// TitleBar: mac.TitleBarHiddenInset(),
 			TitleBar: mac.TitleBarDefault(),
+			Vibrancy: mac.NSAppearanceNameDarkAqua,
 		},
 	})
 

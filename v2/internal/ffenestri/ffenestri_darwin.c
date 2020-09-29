@@ -119,6 +119,8 @@ struct Application {
     int green;
     int blue;
     int alpha;
+    int webviewIsTranparent;
+    const char *vibrancy;
 
     // Features
     int frame;
@@ -148,7 +150,6 @@ struct Application {
 
 void TitlebarAppearsTransparent(struct Application* app) {
     app->titlebarAppearsTransparent = 1;
-    Debug("[x] setTitlebarAppearsTransparent %d", app->titlebarAppearsTransparent? YES:NO);
 }
 
 void HideTitle(struct Application *app) {
@@ -166,6 +167,19 @@ void HideToolbarSeparator(struct Application *app) {
 void UseToolbar(struct Application *app) {
     app->useToolBar = 1;
 }
+
+// WebviewIsTransparent will make the webview transparent
+// revealing the Cocoa window underneath
+void WebviewIsTransparent(struct Application *app) {
+    app->webviewIsTranparent = 1;
+}
+
+// SetVibrancy will set the window's vibrancy to the
+// given value
+void SetVibrancy(struct Application *app, const char *vibrancy) {
+    app->vibrancy = vibrancy;
+}
+
 
 void applyWindowColour(struct Application *app) {
     // Apply the colour only if the window has been created
@@ -271,8 +285,10 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->fullSizeContent = 0;
     result->useToolBar = 0;
     result->hideToolbarSeparator = 0;
+    result->vibrancy = "NSAppearanceNameAqua";
 
     result->titlebarAppearsTransparent = 0;
+    result->webviewIsTranparent = 0;
 
     result->sendMessageToBackend = (ffenestriCallback) messageFromWindowCallback;
 
@@ -413,7 +429,6 @@ void SetSize(struct Application *app, int width, int height) {
         frame.origin.y = (frame.origin.y + frame.size.height) - (float)height;
         frame.size.width = (float)width;
         frame.size.height = (float)height;
-        dumpFrame("after", frame);
 
         msg(app->mainWindow, s("setFrame:display:animate:"), frame, 1, 0);
     )
@@ -836,6 +851,16 @@ void Run(void *applicationPointer, int argc, char **argv) {
                     str(internalCode),
                     1, 
                     1));
+
+    if( app->webviewIsTranparent == 1 ) {
+        msg(wkwebview, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 1), str("drawsTransparentBackground"));
+    }
+
+    // Set Vibrancy
+    msg(mainWindow, s("setAppearance:"),
+        msg(c("NSAppearance"), s("appearanceNamed:"), str(app->vibrancy))
+    );
+
 
     // Finally call run
     Debug("Run called");

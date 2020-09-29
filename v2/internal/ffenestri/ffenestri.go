@@ -139,8 +139,8 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string) error 
 	// 	C.DisableFrame(a.app)
 	// }
 
-	if a.config.Colour != 0 {
-		r, g, b, alpha := intToColour(a.config.Colour)
+	if a.config.RGBA != 0 {
+		r, g, b, alpha := intToColour(a.config.RGBA)
 		C.SetColour(a.app, r, g, b, alpha)
 	}
 

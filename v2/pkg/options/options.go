@@ -20,7 +20,7 @@ type App struct {
 	MaxHeight     int
 	StartHidden   bool
 	DevTools      bool
-	Colour        int
+	RGBA          int
 	Mac           *mac.Options
 }
 

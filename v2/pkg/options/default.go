@@ -8,8 +8,10 @@ var Default = &App{
 	Width:    1024,
 	Height:   768,
 	DevTools: true,
-	Colour:   0xFFFFFFFF,
+	RGBA:     0xFFFFFFFF,
 	Mac: &mac.Options{
-		TitleBar: mac.TitleBarDefault(),
+		TitleBar:             mac.TitleBarDefault(),
+		Vibrancy:             mac.NSAppearanceNameAqua,
+		WebviewIsTransparent: false,
 	},
 }

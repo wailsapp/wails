@@ -3,6 +3,7 @@ body {
   font-family: 'Roboto';
   min-height: 75rem;
   padding-top: 4.5rem;
+  background-color: #0000;
 }
 
 .form-check-label {

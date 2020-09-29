@@ -11,6 +11,8 @@ extern void FullSizeContent(void *);
 extern void UseToolbar(void *);
 extern void HideToolbarSeparator(void *);
 extern void DisableFrame(void *);
+extern void SetVibrancy(void *, const char *);
+extern void WebviewIsTransparent(void *);
 */
 import "C"
 
@@ -50,5 +52,15 @@ func (a *Application) processPlatformSettings() {
 	// For macs we consider "frameless" to mean a combination of options
 	if titlebar.TitlebarAppearsTransparent && titlebar.HideTitle {
 		C.DisableFrame(a.app)
+	}
+
+	// Process window vibrancy
+	if mac.Vibrancy != "" {
+		C.SetVibrancy(a.app, a.string2CString(string(mac.Vibrancy)))
+	}
+
+	// Check if the webview should be transparent
+	if mac.WebviewIsTransparent {
+		C.WebviewIsTransparent(a.app)
 	}
 }
