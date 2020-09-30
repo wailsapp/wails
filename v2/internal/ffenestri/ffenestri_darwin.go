@@ -11,7 +11,7 @@ extern void FullSizeContent(void *);
 extern void UseToolbar(void *);
 extern void HideToolbarSeparator(void *);
 extern void DisableFrame(void *);
-extern void SetVibrancy(void *, const char *);
+extern void SetAppearance(void *, const char *);
 extern void WebviewIsTransparent(void *);
 */
 import "C"
@@ -54,9 +54,9 @@ func (a *Application) processPlatformSettings() {
 		C.DisableFrame(a.app)
 	}
 
-	// Process window vibrancy
-	if mac.Vibrancy != "" {
-		C.SetVibrancy(a.app, a.string2CString(string(mac.Vibrancy)))
+	// Process window Appearance
+	if mac.Appearance != "" {
+		C.SetAppearance(a.app, a.string2CString(string(mac.Appearance)))
 	}
 
 	// Check if the webview should be transparent

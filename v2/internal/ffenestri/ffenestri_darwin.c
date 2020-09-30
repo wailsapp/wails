@@ -120,7 +120,7 @@ struct Application {
     int blue;
     int alpha;
     int webviewIsTranparent;
-    const char *vibrancy;
+    const char *appearance;
 
     // Features
     int frame;
@@ -174,10 +174,10 @@ void WebviewIsTransparent(struct Application *app) {
     app->webviewIsTranparent = 1;
 }
 
-// SetVibrancy will set the window's vibrancy to the
+// SetAppearance will set the window's Appearance to the
 // given value
-void SetVibrancy(struct Application *app, const char *vibrancy) {
-    app->vibrancy = vibrancy;
+void SetAppearance(struct Application *app, const char *appearance) {
+    app->appearance = appearance;
 }
 
 
@@ -285,7 +285,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->fullSizeContent = 0;
     result->useToolBar = 0;
     result->hideToolbarSeparator = 0;
-    result->vibrancy = "NSAppearanceNameAqua";
+    result->appearance = "NSAppearanceNameAqua";
 
     result->titlebarAppearsTransparent = 0;
     result->webviewIsTranparent = 0;
@@ -856,9 +856,9 @@ void Run(void *applicationPointer, int argc, char **argv) {
         msg(wkwebview, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 1), str("drawsTransparentBackground"));
     }
 
-    // Set Vibrancy
+    // Set Appearance
     msg(mainWindow, s("setAppearance:"),
-        msg(c("NSAppearance"), s("appearanceNamed:"), str(app->vibrancy))
+        msg(c("NSAppearance"), s("appearanceNamed:"), str(app->appearance))
     );
 
 
