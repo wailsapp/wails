@@ -11,7 +11,7 @@ var Default = &App{
 	RGBA:     0xFFFFFFFF,
 	Mac: &mac.Options{
 		TitleBar:             mac.TitleBarDefault(),
-		Appearance:           mac.NSAppearanceNameAqua,
+		Appearance:           mac.DefaultAppearance,
 		WebviewIsTransparent: false,
 	},
 }

@@ -285,7 +285,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->fullSizeContent = 0;
     result->useToolBar = 0;
     result->hideToolbarSeparator = 0;
-    result->appearance = "NSAppearanceNameAqua";
+    result->appearance = NULL;
 
     result->titlebarAppearsTransparent = 0;
     result->webviewIsTranparent = 0;
@@ -857,9 +857,11 @@ void Run(void *applicationPointer, int argc, char **argv) {
     }
 
     // Set Appearance
-    msg(mainWindow, s("setAppearance:"),
-        msg(c("NSAppearance"), s("appearanceNamed:"), str(app->appearance))
-    );
+    if( app->appearance != NULL ) {
+        msg(mainWindow, s("setAppearance:"),
+            msg(c("NSAppearance"), s("appearanceNamed:"), str(app->appearance))
+        );
+    }
 
 
     // Finally call run

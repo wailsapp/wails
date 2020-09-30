@@ -4,6 +4,8 @@ package mac
 type AppearanceType string
 
 const (
+	// DefaultAppearance uses the default system value
+	DefaultAppearance AppearanceType = ""
 	// NSAppearanceNameAqua - The standard light system appearance.
 	NSAppearanceNameAqua AppearanceType = "NSAppearanceNameAqua"
 	// NSAppearanceNameDarkAqua - The standard dark system appearance.
