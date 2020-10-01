@@ -15,7 +15,9 @@
 #define str(input) msg(c("NSString"), s("stringWithUTF8String:"), input)
 #define url(input) msg(c("NSURL"), s("fileURLWithPath:"), str(input))
 
+#define ALLOC(classname) msg(c(classname), s("alloc"))
 #define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("frame"));
+#define GET_BOUNDS(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("bounds"));
 
 #define ON_MAIN_THREAD(str) dispatch( ^{ str; } );
 #define MAIN_WINDOW_CALL(str) msg(app->mainWindow, s((str)));
@@ -29,8 +31,22 @@
 #define NSWindowStyleMaskResizable 8
 #define NSWindowStyleMaskFullscreen 1 << 14
 
+#define NSVisualEffectMaterialWindowBackground 12
+#define NSVisualEffectBlendingModeBehindWindow 0
+#define NSVisualEffectStateFollowsWindowActiveState 0
+#define NSVisualEffectStateActive 1
+#define NSVisualEffectStateInactive 2
+
+#define NSViewWidthSizable 2
+#define NSViewHeightSizable 16
+
+#define NSWindowBelow -1
+#define NSWindowAbove 1
+
 #define NSWindowTitleHidden 1
 #define NSWindowStyleMaskFullSizeContentView 1 << 15
+
+
 
 // Unbelievably, if the user swaps their button preference
 // then right buttons are reported as left buttons
@@ -97,12 +113,15 @@ struct Application {
 
     // Cocoa data
     id application;
+    id delegate;
     id mainWindow;
     id wkwebview;
     id manager;
     id config;
     id mouseEvent;
     id eventMonitor;
+    id vibrancyLayer;
+
 
     // Window Data
     const char *title;
@@ -121,6 +140,7 @@ struct Application {
     int alpha;
     int webviewIsTranparent;
     const char *appearance;
+    int decorations;
 
     // Features
     int frame;
@@ -273,6 +293,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->maximised = 0;
     result->minimised = 0;
     result->startHidden = startHidden;
+    result->decorations = 0;
 
     result->mainWindow = NULL;
     result->mouseEvent = NULL;
@@ -286,6 +307,11 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->useToolBar = 0;
     result->hideToolbarSeparator = 0;
     result->appearance = NULL;
+    
+    // Window data
+    result->vibrancyLayer = NULL;
+    result->delegate = NULL;
+
 
     result->titlebarAppearsTransparent = 0;
     result->webviewIsTranparent = 0;
@@ -659,17 +685,31 @@ void ExecJS(struct Application *app, const char *js) {
 }
 
 void SetDebug(void *applicationPointer, int flag) {
-    struct Application *app = (struct Application*) applicationPointer;
     debug = flag;
 }
 
-void SetBindings(void* applicationPointer, const char *bindings) {
-    struct Application *app = (struct Application*) applicationPointer;
-
+void SetBindings(struct Application *app, const char *bindings) {
     const char* temp = concat("window.wailsbindings = \"", bindings);
     const char* jscall = concat(temp, "\";");
     free((void*)temp);
     app->bindings = jscall;
+}
+
+void applyVibrancy(struct Application *app) {
+    id contentView = msg(app->mainWindow, s("contentView"));
+    id effectView = msg(c("NSVisualEffectView"), s("alloc"));
+    CGRect bounds = GET_BOUNDS(contentView);
+    effectView = msg(effectView, s("initWithFrame:"), bounds);
+    // msg(effectView, s("setAutoresizingMask:"), NSViewWidthSizable | NSViewHeightSizable);
+    msg(effectView, s("setTranslatesAutoresizingMaskIntoConstraints:"), NO);
+    msg(effectView, s("setBlendingMode:"), NSVisualEffectBlendingModeBehindWindow);
+    msg(effectView, s("setState:"), NSVisualEffectStateFollowsWindowActiveState);
+    // id blendingMode = msg(effectView, s("blendingMode"));
+    // int positioned = blendingMode == NSVisualEffectBlendingModeBehindWindow ? NSWindowBelow : NSWindowAbove;
+    msg(effectView, s("setMaterial:"), NSVisualEffectMaterialWindowBackground);
+    msg(contentView, s("addSubview:positioned:relativeTo:"), effectView, NSWindowBelow, NULL);
+    app->vibrancyLayer = effectView;
+    Debug("effectView: %p", effectView);
 }
 
 void enableBoolConfig(id config, const char *setting) {
@@ -680,9 +720,8 @@ void disableBoolConfig(id config, const char *setting) {
     msg(msg(config, s("preferences")), s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str(setting));
 }
 
-void Run(void *applicationPointer, int argc, char **argv) {
-    struct Application *app = (struct Application*) applicationPointer;
-
+void processDecorations(struct Application *app) {
+    
     int decorations = 0;
 
     if (app->frame == 1 ) { 
@@ -704,15 +743,21 @@ void Run(void *applicationPointer, int argc, char **argv) {
         decorations |= NSWindowStyleMaskFullSizeContentView;
     }
 
+    app->decorations = decorations;
+}
 
+void createApplication(struct Application *app) {
     id application = msg(c("NSApplication"), s("sharedApplication"));
     app->application = application;
     msg(application, s("setActivationPolicy:"), 0);
+}
 
-    // Define delegate
+void createDelegate(struct Application *app) {
+        // Define delegate
     Class delegateClass = objc_allocateClassPair((Class) c("NSResponder"), "AppDelegate", 0);
     class_addProtocol(delegateClass, objc_getProtocol("NSTouchBarProvider"));
     class_addMethod(delegateClass, s("applicationShouldTerminateAfterLastWindowClosed:"), (IMP) yes, "c@:@");
+    class_addMethod(delegateClass, s("closeWindow"), (IMP) closeWindow, "v@:@");
 
     // Script handler
     class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler, "v@:@@");
@@ -721,13 +766,30 @@ void Run(void *applicationPointer, int argc, char **argv) {
     // Create delegate
     id delegate = msg((id)delegateClass, s("new"));
     objc_setAssociatedObject(delegate, "application", (id)app, OBJC_ASSOCIATION_ASSIGN);
-    msg(application, s("setDelegate:"), delegate);
+
+    app->delegate = delegate;
+
+    msg(app->application, s("setDelegate:"), delegate);
+}
+
+void Run(struct Application *app, int argc, char **argv) {
+
+    processDecorations(app);
+
+    createApplication(app);
+
+    // Define delegate
+    createDelegate(app);
+
 
     // Create main window
-    id mainWindow = msg(c("NSWindow"),s("alloc"));
+    id mainWindow = ALLOC("NSWindow");
     mainWindow = msg(mainWindow, s("initWithContentRect:styleMask:backing:defer:"),
-          CGRectMake(0, 0, app->width, app->height), decorations, NSBackingStoreBuffered, 0);
+          CGRectMake(0, 0, app->width, app->height), app->decorations, NSBackingStoreBuffered, NO);
     msg(mainWindow, s("autorelease"));
+
+    id contentView = msg( ALLOC("NSView"), s("init") );
+    msg(mainWindow, s("setContentView:"), contentView);
 
     app->mainWindow = mainWindow;
 
@@ -738,11 +800,13 @@ void Run(void *applicationPointer, int argc, char **argv) {
     Center(app);
 
     // Set Style Mask
-    msg(mainWindow, s("setStyleMask:"), decorations);
+    // msg(mainWindow, s("setStyleMask:"), app->decorations);
 
     // Set Colour
     applyWindowColour(app);
-    
+
+    // applyVibrancy(app);
+
     // Setup webview
     id config = msg(c("WKWebViewConfiguration"), s("new"));
     app->config = config;
@@ -761,17 +825,28 @@ void Run(void *applicationPointer, int argc, char **argv) {
     }
     msg(wkwebview, s("initWithFrame:configuration:"), CGRectMake(0, 0, 0, 0), config);
 
+
     // Andd message handlers
-    msg(manager, s("addScriptMessageHandler:name:"), delegate, str("external"));
-    msg(manager, s("addScriptMessageHandler:name:"), delegate, str("completed"));
-    msg(mainWindow, s("setContentView:"), wkwebview);
+    msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("external"));
+    msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("completed"));
+
+    // if( app->vibrancyLayer == NULL ) {
+    //     msg(mainWindow, s("setContentView:"), wkwebview);
+    // } else {
+    //     msg(app->vibrancyLayer, s("addSubview:"), wkwebview);
+    // }
+
+    msg(contentView, s("addSubview:"), wkwebview);
+    msg(wkwebview, s("setAutoresizingMask:"), NSViewWidthSizable | NSViewHeightSizable);
+    CGRect contentViewBounds = GET_BOUNDS(contentView);
+    msg(wkwebview, s("setFrame:"), contentViewBounds );
 
     if( app->frame == 0) {
         msg(mainWindow, s("setTitlebarAppearsTransparent:"), YES);
         msg(mainWindow, s("setTitleVisibility:"), NSWindowTitleHidden);
 
         // Setup drag message handler
-        msg(manager, s("addScriptMessageHandler:name:"), delegate, str("windowDrag"));
+        msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("windowDrag"));
         // Add mouse event hooks
         app->eventMonitor = msg(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseDown, ^(id incomingEvent) {
             app->mouseEvent = incomingEvent;
@@ -832,7 +907,6 @@ void Run(void *applicationPointer, int argc, char **argv) {
         index++;
     };
 
-    class_addMethod(delegateClass, s("closeWindow"), (IMP) closeWindow, "v@:@");
     // class_addMethod(delegateClass, s("applicationWillFinishLaunching:"), (IMP) willFinishLaunching, "@@:@");
     // Include callback after evaluation
     temp = concat(internalCode, "webkit.messageHandlers.completed.postMessage(true);");
@@ -853,8 +927,9 @@ void Run(void *applicationPointer, int argc, char **argv) {
                     1));
 
     if( app->webviewIsTranparent == 1 ) {
-        msg(wkwebview, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 1), str("drawsTransparentBackground"));
+        msg(wkwebview, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("drawsBackground"));
     }
+
 
     // Set Appearance
     if( app->appearance != NULL ) {
@@ -866,7 +941,7 @@ void Run(void *applicationPointer, int argc, char **argv) {
 
     // Finally call run
     Debug("Run called");
-    msg(application, s("run"));
+    msg(app->application, s("run"));
 
     free((void*)internalCode);
 }
