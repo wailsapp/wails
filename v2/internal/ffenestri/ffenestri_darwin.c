@@ -153,6 +153,7 @@ struct Application {
     int fullSizeContent;
     int useToolBar;
     int hideToolbarSeparator;
+    int windowBackgroundIsTranslucent;
 
     // User Data
     char *HTML;
@@ -241,6 +242,10 @@ void Show(struct Application *app) {
     )
 }
 
+void SetWindowBackgroundIsTranslucent(struct Application *app) {
+    app->windowBackgroundIsTranslucent = 1;
+}
+
 // Sends messages to the backend
 void messageHandler(id self, SEL cmd, id contentController, id message) {
     struct Application *app = (struct Application *)objc_getAssociatedObject(
@@ -307,6 +312,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->useToolBar = 0;
     result->hideToolbarSeparator = 0;
     result->appearance = NULL;
+    result->windowBackgroundIsTranslucent = 0;
     
     // Window data
     result->vibrancyLayer = NULL;
@@ -695,19 +701,17 @@ void SetBindings(struct Application *app, const char *bindings) {
     app->bindings = jscall;
 }
 
-void applyVibrancy(struct Application *app) {
+void makeWindowBackgroundTranslucent(struct Application *app) {
     id contentView = msg(app->mainWindow, s("contentView"));
     id effectView = msg(c("NSVisualEffectView"), s("alloc"));
     CGRect bounds = GET_BOUNDS(contentView);
     effectView = msg(effectView, s("initWithFrame:"), bounds);
-    // msg(effectView, s("setAutoresizingMask:"), NSViewWidthSizable | NSViewHeightSizable);
-    msg(effectView, s("setTranslatesAutoresizingMaskIntoConstraints:"), NO);
+
+    msg(effectView, s("setAutoresizingMask:"), NSViewWidthSizable | NSViewHeightSizable);
     msg(effectView, s("setBlendingMode:"), NSVisualEffectBlendingModeBehindWindow);
-    msg(effectView, s("setState:"), NSVisualEffectStateFollowsWindowActiveState);
-    // id blendingMode = msg(effectView, s("blendingMode"));
-    // int positioned = blendingMode == NSVisualEffectBlendingModeBehindWindow ? NSWindowBelow : NSWindowAbove;
-    msg(effectView, s("setMaterial:"), NSVisualEffectMaterialWindowBackground);
+    msg(effectView, s("setState:"), NSVisualEffectStateActive);
     msg(contentView, s("addSubview:positioned:relativeTo:"), effectView, NSWindowBelow, NULL);
+    
     app->vibrancyLayer = effectView;
     Debug("effectView: %p", effectView);
 }
@@ -778,6 +782,14 @@ void createMainWindow(struct Application *app) {
     mainWindow = msg(mainWindow, s("initWithContentRect:styleMask:backing:defer:"),
           CGRectMake(0, 0, app->width, app->height), app->decorations, NSBackingStoreBuffered, NO);
     msg(mainWindow, s("autorelease"));
+
+    // Set Appearance
+    if( app->appearance != NULL ) {
+        msg(mainWindow, s("setAppearance:"),
+            msg(c("NSAppearance"), s("appearanceNamed:"), str(app->appearance))
+        );
+    }
+
     app->mainWindow = mainWindow;
 }
 
@@ -803,42 +815,35 @@ void Run(struct Application *app, int argc, char **argv) {
     // Center Window
     Center(app);
 
-    // Set Style Mask
-    // msg(mainWindow, s("setStyleMask:"), app->decorations);
-
     // Set Colour
     applyWindowColour(app);
 
-    // applyVibrancy(app);
+    if (app->windowBackgroundIsTranslucent) {
+        makeWindowBackgroundTranslucent(app);
+    }
 
     // Setup webview
     id config = msg(c("WKWebViewConfiguration"), s("new"));
-    app->config = config;
-    id manager = msg(config, s("userContentController"));
-    app->manager = manager;
-    id wkwebview = msg(c("WKWebView"), s("alloc"));
-    app->wkwebview = wkwebview;
-
-    // Only show content when fully rendered
     msg(config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 1), str("suppressesIncrementalRendering"));
-    
-    // TODO: Fix "NSWindow warning: adding an unknown subview: <WKInspectorWKWebView: 0x465ed90>. Break on NSLog to debug." error
     if (app->devtools) {
       Debug("Enabling devtools");
       enableBoolConfig(config, "developerExtrasEnabled");
     }
-    msg(wkwebview, s("initWithFrame:configuration:"), CGRectMake(0, 0, 0, 0), config);
+    app->config = config;
 
-
-    // Andd message handlers
+    id manager = msg(config, s("userContentController"));
     msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("external"));
-    msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("completed"));
+    msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("completed"));    
+    app->manager = manager;
 
-    // if( app->vibrancyLayer == NULL ) {
-    //     msg(mainWindow, s("setContentView:"), wkwebview);
-    // } else {
-    //     msg(app->vibrancyLayer, s("addSubview:"), wkwebview);
-    // }
+    id wkwebview = msg(c("WKWebView"), s("alloc"));
+    app->wkwebview = wkwebview;
+
+    // Only show content when fully rendered
+    
+    // TODO: Fix "NSWindow warning: adding an unknown subview: <WKInspectorWKWebView: 0x465ed90>. Break on NSLog to debug." error
+
+    msg(wkwebview, s("initWithFrame:configuration:"), CGRectMake(0, 0, 0, 0), config);
 
     msg(contentView, s("addSubview:"), wkwebview);
     msg(wkwebview, s("setAutoresizingMask:"), NSViewWidthSizable | NSViewHeightSizable);
@@ -933,15 +938,6 @@ void Run(struct Application *app, int argc, char **argv) {
     if( app->webviewIsTranparent == 1 ) {
         msg(wkwebview, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("drawsBackground"));
     }
-
-
-    // Set Appearance
-    if( app->appearance != NULL ) {
-        msg(app->mainWindow, s("setAppearance:"),
-            msg(c("NSAppearance"), s("appearanceNamed:"), str(app->appearance))
-        );
-    }
-
 
     // Finally call run
     Debug("Run called");

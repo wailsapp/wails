@@ -10,8 +10,9 @@ var Default = &App{
 	DevTools: true,
 	RGBA:     0xFFFFFFFF,
 	Mac: &mac.Options{
-		TitleBar:             mac.TitleBarDefault(),
-		Appearance:           mac.DefaultAppearance,
-		WebviewIsTransparent: false,
+		TitleBar:                      mac.TitleBarDefault(),
+		Appearance:                    mac.DefaultAppearance,
+		WebviewIsTransparent:          false,
+		WindowBackgroundIsTranslucent: false,
 	},
 }

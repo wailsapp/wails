@@ -13,6 +13,7 @@ extern void HideToolbarSeparator(void *);
 extern void DisableFrame(void *);
 extern void SetAppearance(void *, const char *);
 extern void WebviewIsTransparent(void *);
+extern void SetWindowBackgroundIsTranslucent(void *);
 */
 import "C"
 
@@ -62,5 +63,10 @@ func (a *Application) processPlatformSettings() {
 	// Check if the webview should be transparent
 	if mac.WebviewIsTransparent {
 		C.WebviewIsTransparent(a.app)
+	}
+
+	// Check if window should be translucent
+	if mac.WindowBackgroundIsTranslucent {
+		C.SetWindowBackgroundIsTranslucent(a.app)
 	}
 }

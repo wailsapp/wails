@@ -1,8 +1,9 @@
 package mac
 
-// Options ae options speific to Mac
+// Options are options speific to Mac
 type Options struct {
-	TitleBar             *TitleBar
-	Appearance           AppearanceType
-	WebviewIsTransparent bool
+	TitleBar                      *TitleBar
+	Appearance                    AppearanceType
+	WebviewIsTransparent          bool
+	WindowBackgroundIsTranslucent bool
 }
