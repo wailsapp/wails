@@ -772,6 +772,15 @@ void createDelegate(struct Application *app) {
     msg(app->application, s("setDelegate:"), delegate);
 }
 
+void createMainWindow(struct Application *app) {
+    // Create main window
+    id mainWindow = ALLOC("NSWindow");
+    mainWindow = msg(mainWindow, s("initWithContentRect:styleMask:backing:defer:"),
+          CGRectMake(0, 0, app->width, app->height), app->decorations, NSBackingStoreBuffered, NO);
+    msg(mainWindow, s("autorelease"));
+    app->mainWindow = mainWindow;
+}
+
 void Run(struct Application *app, int argc, char **argv) {
 
     processDecorations(app);
@@ -781,17 +790,12 @@ void Run(struct Application *app, int argc, char **argv) {
     // Define delegate
     createDelegate(app);
 
+    createMainWindow(app);
 
-    // Create main window
-    id mainWindow = ALLOC("NSWindow");
-    mainWindow = msg(mainWindow, s("initWithContentRect:styleMask:backing:defer:"),
-          CGRectMake(0, 0, app->width, app->height), app->decorations, NSBackingStoreBuffered, NO);
-    msg(mainWindow, s("autorelease"));
 
+    // Create Content View
     id contentView = msg( ALLOC("NSView"), s("init") );
-    msg(mainWindow, s("setContentView:"), contentView);
-
-    app->mainWindow = mainWindow;
+    msg(app->mainWindow, s("setContentView:"), contentView);
 
     // Set the main window title
     SetTitle(app, app->title);
@@ -842,8 +846,8 @@ void Run(struct Application *app, int argc, char **argv) {
     msg(wkwebview, s("setFrame:"), contentViewBounds );
 
     if( app->frame == 0) {
-        msg(mainWindow, s("setTitlebarAppearsTransparent:"), YES);
-        msg(mainWindow, s("setTitleVisibility:"), NSWindowTitleHidden);
+        msg(app->mainWindow, s("setTitlebarAppearsTransparent:"), YES);
+        msg(app->mainWindow, s("setTitleVisibility:"), NSWindowTitleHidden);
 
         // Setup drag message handler
         msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("windowDrag"));
@@ -854,7 +858,7 @@ void Run(struct Application *app, int argc, char **argv) {
         });
     } else {
         Debug("setTitlebarAppearsTransparent %d", app->titlebarAppearsTransparent ? YES :NO);
-        msg(mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
+        msg(app->mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
         msg(app->mainWindow, s("setTitleVisibility:"), app->hideTitle);
 
         // Toolbar
@@ -869,7 +873,7 @@ void Run(struct Application *app, int argc, char **argv) {
                 msg(toolbar, s("setShowsBaselineSeparator:"), NO);
             }
 
-            msg(mainWindow, s("setToolbar:"), toolbar);
+            msg(app->mainWindow, s("setToolbar:"), toolbar);
         }
     }
 
@@ -933,7 +937,7 @@ void Run(struct Application *app, int argc, char **argv) {
 
     // Set Appearance
     if( app->appearance != NULL ) {
-        msg(mainWindow, s("setAppearance:"),
+        msg(app->mainWindow, s("setAppearance:"),
             msg(c("NSAppearance"), s("appearanceNamed:"), str(app->appearance))
         );
     }
