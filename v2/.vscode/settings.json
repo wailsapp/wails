@@ -7,6 +7,7 @@
         "functional": "c",
         "__locale": "c",
         "locale": "c",
-        "chrono": "c"
+        "chrono": "c",
+        "system_error": "c"
     }
 }

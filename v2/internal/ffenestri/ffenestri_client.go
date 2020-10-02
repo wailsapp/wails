@@ -150,3 +150,7 @@ func (c *Client) SaveDialog(dialogOptions *options.SaveDialog, callbackID string
 		c.app.bool2Cint(dialogOptions.TreatPackagesAsDirectories),
 	)
 }
+
+func (c *Client) DarkModeEnabled(callbackID string) {
+	C.DarkModeEnabled(c.app.app, c.app.string2CString(callbackID))
+}

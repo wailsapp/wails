@@ -29,6 +29,7 @@ type Client interface {
 	WindowFullscreen()
 	WindowUnFullscreen()
 	WindowSetColour(colour int)
+	DarkModeEnabled(callbackID string)
 }
 
 // DispatchClient is what the frontends use to interface with the

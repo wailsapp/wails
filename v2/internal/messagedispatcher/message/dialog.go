@@ -19,7 +19,7 @@ func dialogMessageParser(message string) (*parsedMessage, error) {
 
 	// Switch the event type (with or without data)
 	switch message[0] {
-	// Format of Dialog response messages: D<callbackID>|<[]string as json encoded string>
+	// Format of Dialog response messages: D<dialog type><callbackID>|<[]string as json encoded string>
 	case 'D':
 		dialogType := message[1]
 		message = message[2:]

@@ -13,14 +13,15 @@
 #define s(str) sel_registerName(str)
 #define u(str) sel_getUid(str)
 #define str(input) msg(c("NSString"), s("stringWithUTF8String:"), input)
+#define cstr(input) (const char *)msg(input, s("UTF8String"))
 #define url(input) msg(c("NSURL"), s("fileURLWithPath:"), str(input))
 
 #define ALLOC(classname) msg(c(classname), s("alloc"))
-#define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("frame"));
-#define GET_BOUNDS(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("bounds"));
+#define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("frame"))
+#define GET_BOUNDS(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("bounds"))
 
-#define ON_MAIN_THREAD(str) dispatch( ^{ str; } );
-#define MAIN_WINDOW_CALL(str) msg(app->mainWindow, s((str)));
+#define ON_MAIN_THREAD(str) dispatch( ^{ str; } )
+#define MAIN_WINDOW_CALL(str) msg(app->mainWindow, s((str)))
 
 #define NSBackingStoreBuffered 2
 
@@ -212,7 +213,7 @@ void applyWindowColour(struct Application *app) {
                                 (float)app->blue / 255.0,
                                 (float)app->alpha / 255.0);
             msg(app->mainWindow, s("setBackgroundColor:"), colour);
-        )
+        );
     } 
 } 
 
@@ -232,14 +233,14 @@ void FullSizeContent(struct Application *app) {
 void Hide(struct Application *app) { 
     ON_MAIN_THREAD( 
         msg(app->application, s("hide:")) 
-    )
+    );
 }
 
 void Show(struct Application *app) { 
     ON_MAIN_THREAD(
         msg(app->mainWindow, s("makeKeyAndOrderFront:"), NULL);
         msg(app->application, s("activateIgnoringOtherApps:"), YES);
-    )
+    );
 }
 
 void SetWindowBackgroundIsTranslucent(struct Application *app) {
@@ -265,7 +266,8 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
             msg(app->mainWindow, s("performWindowDragWithEvent:"), app->mouseEvent);
         }
     } else {
-        const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
+        // const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
+        const char *m = cstr(msg(message, s("body")));
         app->sendMessageToBackend(m);
     }
 }
@@ -363,14 +365,14 @@ void SetTitle(struct Application *app, const char *title) {
     Debug("SetTitle Called");
     ON_MAIN_THREAD(
         msg(app->mainWindow, s("setTitle:"), str(title));
-    )
+    );
 }
 
 void ToggleFullscreen(struct Application *app) {
     ON_MAIN_THREAD(
         app->fullscreen = !app->fullscreen;
-        MAIN_WINDOW_CALL("toggleFullScreen:")
-    )
+        MAIN_WINDOW_CALL("toggleFullScreen:");
+    );
 }
 
 // Fullscreen sets the main window to be fullscreen
@@ -392,15 +394,15 @@ void UnFullscreen(struct Application *app) {
 void Center(struct Application *app) {
     Debug("Center Called");
     ON_MAIN_THREAD(
-        MAIN_WINDOW_CALL("center")
-    )
+        MAIN_WINDOW_CALL("center");
+    );
 }
 
 void ToggleMaximise(struct Application *app) {
     ON_MAIN_THREAD(
         app->maximised = !app->maximised;
-        MAIN_WINDOW_CALL("zoom:")
-    )
+        MAIN_WINDOW_CALL("zoom:");
+    );
 }
 
 void Maximise(struct Application *app) { 
@@ -419,7 +421,7 @@ void ToggleMinimise(struct Application *app) {
     ON_MAIN_THREAD(
         MAIN_WINDOW_CALL(app->minimised ? "deminiaturize:" : "miniaturize:" );
         app->minimised = !app->minimised;
-    )
+    );
 }
 
 void Minimise(struct Application *app) {
@@ -463,7 +465,7 @@ void SetSize(struct Application *app, int width, int height) {
         frame.size.height = (float)height;
 
         msg(app->mainWindow, s("setFrame:display:animate:"), frame, 1, 0);
-    )
+    );
 }
 
 void SetPosition(struct Application *app, int x, int y) { 
@@ -475,7 +477,7 @@ void SetPosition(struct Application *app, int x, int y) {
         windowFrame.origin.x = screenFrame.origin.x + (float)x;
         windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
         msg(app->mainWindow, s("setFrame:display:animate:"), windowFrame, 1, 0);
-    )
+    );
 }
 
 // OpenDialog opens a dialog to select files/directories
@@ -563,7 +565,7 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
         });
 
         msg( c("NSApp"), s("runModalForWindow:"), app->mainWindow);
-    )
+    );
 }
 
 // SaveDialog opens a dialog to select files/directories
@@ -632,7 +634,7 @@ void SaveDialog(struct Application *app, char *callbackID, char *title, char *fi
         });
 
         msg( c("NSApp"), s("runModalForWindow:"), app->mainWindow);
-    )
+    );
 }
 
 const char *invoke = "window.external={invoke:function(x){window.webkit.messageHandlers.external.postMessage(x);}};";
@@ -664,7 +666,7 @@ void SetMinWindowSize(struct Application *app, int minWidth, int minHeight)
     if( app->mainWindow != NULL ) {
         ON_MAIN_THREAD(
             setMinMaxSize(app);
-        )
+        );
     }
 }
 
@@ -677,7 +679,7 @@ void SetMaxWindowSize(struct Application *app, int maxWidth, int maxHeight)
     if( app->mainWindow != NULL ) {
         ON_MAIN_THREAD(
             setMinMaxSize(app);
-        )
+        );
     }
 }
 
@@ -687,7 +689,7 @@ void ExecJS(struct Application *app, const char *js) {
             s("evaluateJavaScript:completionHandler:"),
             str(js), 
             NULL);
-    )
+    );
 }
 
 void SetDebug(void *applicationPointer, int flag) {
@@ -754,6 +756,28 @@ void createApplication(struct Application *app) {
     id application = msg(c("NSApplication"), s("sharedApplication"));
     app->application = application;
     msg(application, s("setActivationPolicy:"), 0);
+}
+
+void DarkModeEnabled(struct Application *app, const char *callbackID) {
+    ON_MAIN_THREAD(
+        id userDefaults = msg(c("NSUserDefaults"), s("standardUserDefaults"));
+        const char *mode = cstr(msg(userDefaults,  s("stringForKey:"), str("AppleInterfaceStyle")));
+        const char *result = "F";
+        if ( mode != NULL && strcmp(mode, "Dark") == 0 ) {
+            result = "T";
+        }
+        // Construct callback message. Format "SD<callbackID>|<json array of strings>"
+        const char *callback = concat("SD", callbackID);
+        const char *header = concat(callback, "|");
+        const char *responseMessage = concat(header, result);
+        // Send message to backend
+        app->sendMessageToBackend(responseMessage); 
+
+        // Free memory
+        free((void*)header);
+        free((void*)callback);
+        free((void*)responseMessage);
+    );
 }
 
 void createDelegate(struct Application *app) {

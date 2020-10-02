@@ -21,6 +21,7 @@ type Dispatcher struct {
 	eventChannel  <-chan *servicebus.Message
 	windowChannel <-chan *servicebus.Message
 	dialogChannel <-chan *servicebus.Message
+	systemChannel <-chan *servicebus.Message
 	running       bool
 
 	servicebus *servicebus.ServiceBus
@@ -63,6 +64,11 @@ func New(servicebus *servicebus.ServiceBus, logger *logger.Logger) (*Dispatcher,
 		return nil, err
 	}
 
+	systemChannel, err := servicebus.Subscribe("system:")
+	if err != nil {
+		return nil, err
+	}
+
 	result := &Dispatcher{
 		servicebus:    servicebus,
 		eventChannel:  eventChannel,
@@ -72,6 +78,7 @@ func New(servicebus *servicebus.ServiceBus, logger *logger.Logger) (*Dispatcher,
 		quitChannel:   quitChannel,
 		windowChannel: windowChannel,
 		dialogChannel: dialogChannel,
+		systemChannel: systemChannel,
 	}
 
 	return result, nil
@@ -99,6 +106,8 @@ func (d *Dispatcher) Start() error {
 				d.processWindowMessage(windowMessage)
 			case dialogMessage := <-d.dialogChannel:
 				d.processDialogMessage(dialogMessage)
+			case systemMessage := <-d.systemChannel:
+				d.processSystemMessage(systemMessage)
 			}
 		}
 
@@ -172,6 +181,28 @@ func (d *Dispatcher) processCallResult(result *servicebus.Message) {
 
 	d.logger.Trace("Sending message to client %s: R%s", target, result.Data().(string))
 	client.frontend.CallResult(result.Data().(string))
+}
+
+// processSystem
+func (d *Dispatcher) processSystemMessage(result *servicebus.Message) {
+
+	d.logger.Trace("Got system in message dispatcher: %+v", result)
+
+	splitTopic := strings.Split(result.Topic(), ":")
+	command := splitTopic[1]
+	callbackID := splitTopic[2]
+	switch command {
+	case "isdarkmode":
+		d.lock.RLock()
+		for _, client := range d.clients {
+			client.frontend.DarkModeEnabled(callbackID)
+			break
+		}
+		d.lock.RUnlock()
+
+	default:
+		d.logger.Error("Unknown system command: %s", command)
+	}
 }
 
 // processEvent will

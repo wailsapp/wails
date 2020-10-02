@@ -174,3 +174,8 @@ func (r *RuntimeTest) Minimise() {
 func (r *RuntimeTest) Unminimise() {
 	r.runtime.Window.Unminimise()
 }
+
+// Check is system is running in dark mode
+func (r *RuntimeTest) IsDarkMode() bool {
+	return r.runtime.System.IsDarkMode()
+}

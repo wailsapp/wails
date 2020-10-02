@@ -8,6 +8,7 @@ type Runtime struct {
 	Events  Events
 	Window  Window
 	Dialog  Dialog
+	System  System
 	bus     *servicebus.ServiceBus
 }
 
@@ -18,6 +19,7 @@ func New(serviceBus *servicebus.ServiceBus) *Runtime {
 		Events:  newEvents(serviceBus),
 		Window:  newWindow(serviceBus),
 		Dialog:  newDialog(serviceBus),
+		System:  newSystem(serviceBus),
 		bus:     serviceBus,
 	}
 }
