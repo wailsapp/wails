@@ -278,6 +278,32 @@ void closeWindow(id self, SEL cmd, id sender) {
     app->sendMessageToBackend("WC");
 }
 
+bool isDarkMode(struct Application *app) {
+    id userDefaults = msg(c("NSUserDefaults"), s("standardUserDefaults"));
+    const char *mode = cstr(msg(userDefaults,  s("stringForKey:"), str("AppleInterfaceStyle")));
+    return ( mode != NULL && strcmp(mode, "Dark") == 0 );
+}
+
+void ExecJS(struct Application *app, const char *js) {
+    ON_MAIN_THREAD(
+        msg(app->wkwebview, 
+            s("evaluateJavaScript:completionHandler:"),
+            str(js), 
+            NULL);
+    );
+}
+
+void themeChanged(id self, SEL cmd, id sender) {
+    struct Application *app = (struct Application *)objc_getAssociatedObject(
+                              self, "application");
+    bool currentThemeIsDark = isDarkMode(app);
+    if ( currentThemeIsDark ) {
+        ExecJS(app, "window.wails.Events.Emit( 'wails:system:themechange', true );");
+    } else {
+        ExecJS(app, "window.wails.Events.Emit( 'wails:system:themechange', false );");
+    }
+}
+
 // void willFinishLaunching(id self) {
 //     struct Application *app = (struct Application *) objc_getAssociatedObject(self, "application");
 //     Debug("willFinishLaunching called!");
@@ -683,14 +709,6 @@ void SetMaxWindowSize(struct Application *app, int maxWidth, int maxHeight)
     }
 }
 
-void ExecJS(struct Application *app, const char *js) {
-    ON_MAIN_THREAD(
-        msg(app->wkwebview, 
-            s("evaluateJavaScript:completionHandler:"),
-            str(js), 
-            NULL);
-    );
-}
 
 void SetDebug(void *applicationPointer, int flag) {
     debug = flag;
@@ -760,12 +778,8 @@ void createApplication(struct Application *app) {
 
 void DarkModeEnabled(struct Application *app, const char *callbackID) {
     ON_MAIN_THREAD(
-        id userDefaults = msg(c("NSUserDefaults"), s("standardUserDefaults"));
-        const char *mode = cstr(msg(userDefaults,  s("stringForKey:"), str("AppleInterfaceStyle")));
-        const char *result = "F";
-        if ( mode != NULL && strcmp(mode, "Dark") == 0 ) {
-            result = "T";
-        }
+        const char *result = isDarkMode(app) ? "T" : "F";
+
         // Construct callback message. Format "SD<callbackID>|<json array of strings>"
         const char *callback = concat("SD", callbackID);
         const char *header = concat(callback, "|");
@@ -794,6 +808,13 @@ void createDelegate(struct Application *app) {
     // Create delegate
     id delegate = msg((id)delegateClass, s("new"));
     objc_setAssociatedObject(delegate, "application", (id)app, OBJC_ASSOCIATION_ASSIGN);
+
+    // Theme change listener
+    class_addMethod(delegateClass, s("themeChanged:"), (IMP) themeChanged, "v@:@@");
+
+    // Get defaultCenter
+    id defaultCenter = msg(c("NSDistributedNotificationCenter"), s("defaultCenter"));
+    msg(defaultCenter, s("addObserver:selector:name:object:"), delegate, s("themeChanged:"), str("AppleInterfaceThemeChangedNotification"), NULL);
 
     app->delegate = delegate;
 
