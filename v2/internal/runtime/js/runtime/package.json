@@ -1,7 +1,7 @@
 {
-  "name": "@wailsapp/runtime",
-  "version": "1.0.10",
-  "description": "Wails Javascript runtime library",
+  "name": "@wailsapp/runtime2",
+  "version": "1.0.2",
+  "description": "Wails V2 Javascript runtime library",
   "main": "main.js",
   "types": "runtime.d.ts",
   "scripts": {

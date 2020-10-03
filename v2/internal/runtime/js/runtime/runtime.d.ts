@@ -21,6 +21,10 @@ declare const wailsapp__runtime: {
         Info(message: string): void;
         Warning(message: string): void;
     };
+    System: {
+        DarkModeEnabled(): Promise<boolean>;
+        OnThemeChange(callback: (darkModeEnabled: boolean) => void): void;
+    }
 };
 
 
