@@ -14,6 +14,7 @@ const Browser = require('./browser');
 const Events = require('./events');
 const Init = require('./init');
 const System = require('./system');
+const Store = require('./store');
 
 module.exports = {
 	Log: Log,
@@ -21,4 +22,5 @@ module.exports = {
 	Events: Events,
 	Init: Init,
 	System: System,
+	Store: Store,
 };

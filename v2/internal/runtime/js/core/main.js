@@ -16,6 +16,7 @@ import { Callback, SystemCall } from './calls';
 import { AddScript, InjectCSS } from './utils';
 import { AddIPCListener } from 'ipc';
 import * as Platform from 'platform';
+import * as Store from './store';
 
 export function Init() {
 	// Backend is where the Go struct wrappers get bound to
@@ -42,7 +43,8 @@ export function Init() {
 			Init,
 			AddIPCListener,
 			SystemCall,
-		}
+		},
+		Store,
 	};
 
 	// Do platform specific Init
