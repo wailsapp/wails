@@ -82,6 +82,38 @@ export function Once(eventName, callback) {
 	OnMultiple(eventName, callback, 1);
 }
 
+function notifyListeners(eventData) {
+
+	// Get the event name
+	var eventName = eventData.name;
+
+	// Check if we have any listeners for this event
+	if (eventListeners[eventName]) {
+
+		// Keep a list of listener indexes to destroy
+		const newEventListenerList = eventListeners[eventName].slice();
+
+		// Iterate listeners
+		for (let count = 0; count < eventListeners[eventName].length; count += 1) {
+
+			// Get next listener
+			const listener = eventListeners[eventName][count];
+
+			var data = eventData.data;
+
+			// Do the callback
+			const destroy = listener.Callback(data);
+			if (destroy) {
+				// if the listener indicated to destroy itself, add it to the destroy list
+				newEventListenerList.splice(count, 1);
+			}
+		}
+
+		// Update callbacks with new list of listners
+		eventListeners[eventName] = newEventListenerList;
+	}
+}
+
 /**
  * Notify informs frontend listeners that an event was emitted with the given data
  *
@@ -100,33 +132,7 @@ export function Notify(notifyMessage) {
 		throw new Error(error);
 	}
 
-	var eventName = message.name;
-
-	// Check if we have any listeners for this event
-	if (eventListeners[eventName]) {
-
-		// Keep a list of listener indexes to destroy
-		const newEventListenerList = eventListeners[eventName].slice();
-
-		// Iterate listeners
-		for (let count = 0; count < eventListeners[eventName].length; count += 1) {
-
-			// Get next listener
-			const listener = eventListeners[eventName][count];
-
-			var data = message.data;
-
-			// Do the callback
-			const destroy = listener.Callback(data);
-			if (destroy) {
-				// if the listener indicated to destroy itself, add it to the destroy list
-				newEventListenerList.splice(count, 1);
-			}
-		}
-
-		// Update callbacks with new list of listners
-		eventListeners[eventName] = newEventListenerList;
-	}
+	notifyListeners(message);
 }
 
 /**
@@ -141,6 +147,11 @@ export function Emit(eventName) {
 		name: eventName,
 		data: [].slice.apply(arguments).slice(1),
 	};
+
+	// Notify JS listeners
+	notifyListeners(payload);
+
+	// Notify Go listeners
 	SendMessage('Ej' + JSON.stringify(payload));
 
 }
