@@ -119,7 +119,7 @@ func (a *App) Run() error {
 	a.event.Start()
 
 	// Start the call subsystem
-	call, err := subsystem.NewCall(a.servicebus, a.logger, a.bindings.DB())
+	call, err := subsystem.NewCall(a.servicebus, a.logger, a.bindings.DB(), a.runtime.GoRuntime())
 	if err != nil {
 		return err
 	}
