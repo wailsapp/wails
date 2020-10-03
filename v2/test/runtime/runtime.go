@@ -26,6 +26,9 @@ func (r *RuntimeTest) WailsInit(runtime *wails.Runtime) error {
 	r.runtime.Events.Once("testeventonce", func(optionalParams ...interface{}) {
 		println("I only get called once!")
 	})
+	r.runtime.Events.OnMultiple("testeventmultiple", func(optionalParams ...interface{}) {
+		println("I only get called 3 times!")
+	}, 3)
 	return nil
 }
 
