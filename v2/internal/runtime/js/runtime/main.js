@@ -13,10 +13,12 @@ const Log = require('./log');
 const Browser = require('./browser');
 const Events = require('./events');
 const Init = require('./init');
+const System = require('./system');
 
 module.exports = {
 	Log: Log,
 	Browser: Browser,
 	Events: Events,
-	Init: Init
+	Init: Init,
+	System: System,
 };

@@ -12,7 +12,7 @@ import * as Log from './log';
 import * as Browser from './browser';
 import * as Window from './window';
 import { On, OnMultiple, Emit, Notify, Heartbeat, Acknowledge } from './events';
-import { Callback } from './calls';
+import { Callback, SystemCall } from './calls';
 import { AddScript, InjectCSS } from './utils';
 import { AddIPCListener } from 'ipc';
 import * as Platform from 'platform';
@@ -40,7 +40,8 @@ export function Init() {
 			AddScript,
 			InjectCSS,
 			Init,
-			AddIPCListener
+			AddIPCListener,
+			SystemCall,
 		}
 	};
 
