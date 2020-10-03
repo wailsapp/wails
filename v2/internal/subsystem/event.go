@@ -15,7 +15,7 @@ import (
 // means it does not expire (default).
 type eventListener struct {
 	callback func(...interface{}) // Function to call with emitted event data
-	counter  int64                // The number of times this callback may be called. -1 = infinite
+	counter  int                  // The number of times this callback may be called. -1 = infinite
 	delete   bool                 // Flag to indicate that this listener should be deleted
 }
 
@@ -60,12 +60,12 @@ func NewEvent(bus *servicebus.ServiceBus, logger *logger.Logger) (*Event, error)
 }
 
 // RegisterListener provides a means of subscribing to events of type "eventName"
-func (e *Event) RegisterListener(eventName string, callback func(...interface{})) {
+func (e *Event) RegisterListener(eventName string, callback func(...interface{}), counter int) {
 
 	// Create new eventListener
 	thisListener := &eventListener{
 		callback: callback,
-		counter:  0,
+		counter:  counter,
 		delete:   false,
 	}
 
@@ -120,7 +120,7 @@ func (e *Event) Start() error {
 					var message *message.OnEventMessage = eventMessage.Data().(*message.OnEventMessage)
 					eventName := message.Name
 					callback := message.Callback
-					e.RegisterListener(eventName, callback)
+					e.RegisterListener(eventName, callback, message.Counter)
 					e.logger.Trace("Registered listener for event '%s' with callback %p", eventName, callback)
 				default:
 					e.logger.Error("unknown event message: %+v", eventMessage)
@@ -179,13 +179,16 @@ func (e *Event) notifyListeners(eventName string, message *message.EventMessage)
 			}
 		}
 
-		// Save new listeners
-		e.listeners[eventName] = newListeners
+		// Save new listeners or remove entry
+		if len(newListeners) > 0 {
+			e.listeners[eventName] = newListeners
+		} else {
+			delete(e.listeners, eventName)
+		}
 	}
 
 	// Unlock
 	e.notifyLock.Unlock()
-
 }
 
 func (e *Event) shutdown() {

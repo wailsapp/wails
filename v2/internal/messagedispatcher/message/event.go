@@ -13,6 +13,7 @@ type EventMessage struct {
 type OnEventMessage struct {
 	Name     string
 	Callback func(optionalData ...interface{})
+	Counter  int
 }
 
 // eventMessageParser does what it says on the tin!
@@ -28,8 +29,6 @@ func eventMessageParser(message string) (*parsedMessage, error) {
 
 	// Switch the event type (with or without data)
 	switch message[0] {
-	case 'e':
-		eventMessage.Name = message[2:]
 	case 'E':
 		m := message[2:]
 		err := json.Unmarshal([]byte(m), eventMessage)

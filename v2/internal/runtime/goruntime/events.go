@@ -8,6 +8,7 @@ import (
 // Events defines all events related operations
 type Events interface {
 	On(eventName string, callback func(optionalData ...interface{}))
+	Once(eventName string, callback func(optionalData ...interface{}))
 	Emit(eventName string, optionalData ...interface{})
 }
 
@@ -28,6 +29,17 @@ func (r *event) On(eventName string, callback func(optionalData ...interface{}))
 	eventMessage := &message.OnEventMessage{
 		Name:     eventName,
 		Callback: callback,
+		Counter:  -1,
+	}
+	r.bus.Publish("event:on", eventMessage)
+}
+
+// On pass through
+func (r *event) Once(eventName string, callback func(optionalData ...interface{})) {
+	eventMessage := &message.OnEventMessage{
+		Name:     eventName,
+		Callback: callback,
+		Counter:  1,
 	}
 	r.bus.Publish("event:on", eventMessage)
 }

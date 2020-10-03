@@ -137,17 +137,11 @@ export function Notify(notifyMessage) {
  */
 export function Emit(eventName) {
 
-	// Calculate the data
-	if (arguments.length > 1) {
-		// Notify backend
-		const payload = {
-			name: eventName,
-			data: [].slice.apply(arguments).slice(1),
-		};
-		SendMessage('Ej' + JSON.stringify(payload));
-	} else {
-		SendMessage('ej' + eventName);
-	}
+	const payload = {
+		name: eventName,
+		data: [].slice.apply(arguments).slice(1),
+	};
+	SendMessage('Ej' + JSON.stringify(payload));
 
 }
 
