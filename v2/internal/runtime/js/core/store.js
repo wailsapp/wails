@@ -18,7 +18,8 @@ The lightweight framework for web-like apps
  */
 export function New(name, optionalDefault) {
 
-	var data;
+	// This is the store state
+	var state;
 
 	// Check we are initialised
 	if( !window.wails) {
@@ -29,46 +30,51 @@ export function New(name, optionalDefault) {
 	let callbacks = [];
 	
 	// Subscribe to updates by providing a callback
-	this.subscribe = (callback) => {
+	let subscribe = function(callback) {
 		callbacks.push(callback);
 	};
 
-	// sets the store data to the provided `newdata` value
-	this.set = (newdata) => {
+	// sets the store state to the provided `newstate` value
+	let set = function(newstate) {
 		
-		data = newdata;
+		state = newstate;
 
 		// Emit a notification to back end
-		window.wails.Events.Emit('wails:sync:store:updatedbyfrontend:'+name, JSON.stringify(data));
+		window.wails.Events.Emit('wails:sync:store:updatedbyfrontend:'+name, JSON.stringify(state));
 
 		// Notify callbacks
 		callbacks.forEach( function(callback) {
-			callback(data);
+			callback(state);
 		});
 	};
 
 	// update mutates the value in the store by calling the
 	// provided method with the current value. The value returned 
 	// by the updater function will be set as the new store value
-	this.update = (updater) => {
-		var newValue = updater(data);
+	let update = function(updater) {
+		var newValue = updater(state);
 		this.set(newValue);
 	};
 
-	// Setup event callback
-	window.wails.Events.On('wails:sync:store:updatedbybackend:'+name, function(result) {
+	// get returns the current value of the store
+	let get = function() {
+		return state;
+	};
 
-		// Parse data
-		result = JSON.parse(result);
+	// Setup event callback
+	window.wails.Events.On('wails:sync:store:updatedbybackend:'+name, function(jsonEncodedState) {
+
+		// Parse state
+		let newState = JSON.parse(jsonEncodedState);
 
 		// Todo: Potential preprocessing?
 
-		// Save data
-		data = result;
+		// Save state
+		state = newState;
 
 		// Notify callbacks
 		callbacks.forEach( function(callback) {
-			callback(data);
+			callback(state);
 		});
 
 	});
@@ -78,5 +84,10 @@ export function New(name, optionalDefault) {
 		this.set(optionalDefault);
 	}
 
-	return this;
+	return {
+		subscribe,
+		get,
+		set,
+		update,
+	};
 }
