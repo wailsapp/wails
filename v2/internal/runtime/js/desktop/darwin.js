@@ -13,9 +13,12 @@ The lightweight framework for web-like apps
  * Initialises platform specific code
  */
 
+// import * as common from './common';
+const common = require('./common');
+
 export const System = {
+    ...common,
     Platform: "darwin",
-    AppType: "desktop"
 }
 
 export function SendMessage(message) {

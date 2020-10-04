@@ -47,6 +47,9 @@ export function Init() {
 		Store,
 	};
 
+	// Setup system
+	window.wails.System.IsDarkMode = Store.New('isdarkmode');
+
 	// Do platform specific Init
 	Platform.Init();
 
