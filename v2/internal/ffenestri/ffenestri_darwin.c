@@ -838,6 +838,14 @@ void createMainWindow(struct Application *app) {
     app->mainWindow = mainWindow;
 }
 
+const char* getInitialState(struct Application *app) {
+    if( isDarkMode(app) ) {
+        return "window.wails.System.IsDarkMode.set(true);";
+    } else {
+        return "window.wails.System.IsDarkMode.set(false);";
+    }
+}
+
 void Run(struct Application *app, int argc, char **argv) {
 
     processDecorations(app);
@@ -943,6 +951,11 @@ void Run(struct Application *app, int argc, char **argv) {
     const char *temp = concat(invoke, app->bindings);
     const char *internalCode = concat(temp, (const char*)&runtime);
     free((void*)temp);
+
+    // Add code that sets up the initial state, EG: State Stores.
+    temp = concat(internalCode, getInitialState(app));
+    free((void*)internalCode);
+    internalCode = temp;
 
       // Loop over assets and build up one giant Mother Of All Evals
     int index = 1;
