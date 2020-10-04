@@ -30,7 +30,7 @@ function OnThemeChange(callback) {
  * @returns {Promise}
  */
 function DarkModeEnabled() {
-	return window.wails._.SystemCall("IsDarkMode");
+	return window.wails.System.IsDarkMode.get();
 }
 
 module.exports = {
