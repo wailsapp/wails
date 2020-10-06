@@ -111,6 +111,14 @@ void Debug(const char *message, ... ) {
 extern void messageFromWindowCallback(const char *);
 typedef void (*ffenestriCallback)(const char *);
 
+void HideMouse() {
+    msg(c("NSCursor"), s("hide"));
+}
+
+void ShowMouse() {
+    msg(c("NSCursor"), s("unhide"));
+}
+
 struct Application {
 
     // Cocoa data
@@ -144,6 +152,7 @@ struct Application {
     int webviewIsTranparent;
     const char *appearance;
     int decorations;
+    bool dragging;
 
     // Features
     int frame;
@@ -262,6 +271,8 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
     } else if( strcmp(name, "windowDrag") == 0 ) {
         // Guard against null events
         if( app->mouseEvent != NULL ) {
+            HideMouse();
+            app->dragging = true;
             ON_MAIN_THREAD(
                 msg(app->mainWindow, s("performWindowDragWithEvent:"), app->mouseEvent);
             );
@@ -333,6 +344,8 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->mouseEvent = NULL;
     result->mouseDownMonitor = NULL;
     result->mouseUpMonitor = NULL;
+
+    result->dragging = false;
 
     // Features
     result->frame = 1;
@@ -926,6 +939,10 @@ void Run(struct Application *app, int argc, char **argv) {
     });      
     app->mouseUpMonitor = msg(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseUp, ^(id incomingEvent) {
         app->mouseEvent = NULL;
+        if ( app->dragging ) {
+            ShowMouse();
+            app->dragging = false;
+        }
         return incomingEvent;
     });    
 
