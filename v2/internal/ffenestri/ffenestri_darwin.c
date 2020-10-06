@@ -263,6 +263,10 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
     } else if( strcmp(name, "windowDrag") == 0 ) {
         // Guard against null events
         if( app->mouseEvent != NULL ) {
+            id defaultCenter = msg(c("NSNotificationCenter"), s("defaultCenter"));
+            msg(defaultCenter, s("postNotificationName:object:"), 
+                str("NSWindowWillMoveNotification"),
+                app->mainWindow);
             msg(app->mainWindow, s("performWindowDragWithEvent:"), app->mouseEvent);
         }
     } else {
@@ -368,10 +372,10 @@ void DestroyApplication(void *appPointer) {
     }
 
     // For frameless apps, remove the event monitor and drag message handler
-    if( app->frame == 0 ) {
+    // if( app->frame == 0 ) {
         msg( c("NSEvent"), s("removeMonitor:"), app->eventMonitor);
         msg(app->manager, s("removeScriptMessageHandlerForName:"), str("windowDrag"));
-    }
+    // }
 
     msg(app->manager, s("removeScriptMessageHandlerForName:"), str("external"));
     msg(app->mainWindow, s("close"));
@@ -903,36 +907,36 @@ void Run(struct Application *app, int argc, char **argv) {
     CGRect contentViewBounds = GET_BOUNDS(contentView);
     msg(wkwebview, s("setFrame:"), contentViewBounds );
 
+    // Setup drag message handler
+    msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("windowDrag"));
+    // Add mouse event hooks
+    app->eventMonitor = msg(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseDown, ^(id incomingEvent) {
+        app->mouseEvent = incomingEvent;
+        return incomingEvent;
+    });
+    
     if( app->frame == 0) {
         msg(app->mainWindow, s("setTitlebarAppearsTransparent:"), YES);
         msg(app->mainWindow, s("setTitleVisibility:"), NSWindowTitleHidden);
 
-        // Setup drag message handler
-        msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("windowDrag"));
-        // Add mouse event hooks
-        app->eventMonitor = msg(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseDown, ^(id incomingEvent) {
-            app->mouseEvent = incomingEvent;
-            return incomingEvent;
-        });
     } else {
-        Debug("setTitlebarAppearsTransparent %d", app->titlebarAppearsTransparent ? YES :NO);
         msg(app->mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
         msg(app->mainWindow, s("setTitleVisibility:"), app->hideTitle);
 
         // Toolbar
-        if( app->useToolBar ) {
-            Debug("Setting Toolbar");
-            id toolbar = msg(c("NSToolbar"),s("alloc"));
-            msg(toolbar, s("initWithIdentifier:"), str("wails.toolbar"));
-            msg(toolbar, s("autorelease"));
+    }
+    if( app->useToolBar ) {
+        Debug("Setting Toolbar");
+        id toolbar = msg(c("NSToolbar"),s("alloc"));
+        msg(toolbar, s("initWithIdentifier:"), str("wails.toolbar"));
+        msg(toolbar, s("autorelease"));
 
-            // Separator
-            if( app->hideToolbarSeparator ) {
-                msg(toolbar, s("setShowsBaselineSeparator:"), NO);
-            }
-
-            msg(app->mainWindow, s("setToolbar:"), toolbar);
+        // Separator
+        if( app->hideToolbarSeparator ) {
+            msg(toolbar, s("setShowsBaselineSeparator:"), NO);
         }
+
+        msg(app->mainWindow, s("setToolbar:"), toolbar);
     }
 
     // Fix up resizing

@@ -50,11 +50,6 @@ func (a *Application) processPlatformSettings() {
 		C.TitlebarAppearsTransparent(a.app)
 	}
 
-	// For macs we consider "frameless" to mean a combination of options
-	if titlebar.TitlebarAppearsTransparent && titlebar.HideTitle {
-		C.DisableFrame(a.app)
-	}
-
 	// Process window Appearance
 	if mac.Appearance != "" {
 		C.SetAppearance(a.app, a.string2CString(string(mac.Appearance)))
