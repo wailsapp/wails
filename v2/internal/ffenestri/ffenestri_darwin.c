@@ -52,6 +52,7 @@
 // Unbelievably, if the user swaps their button preference
 // then right buttons are reported as left buttons
 #define NSEventMaskLeftMouseDown 1 << 1
+#define NSEventMaskLeftMouseUp 1 << 2
 
 // References to assets
 extern const unsigned char *assets[];
@@ -120,7 +121,8 @@ struct Application {
     id manager;
     id config;
     id mouseEvent;
-    id eventMonitor;
+    id mouseDownMonitor;
+    id mouseUpMonitor;
     id vibrancyLayer;
 
 
@@ -255,19 +257,14 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
     if( strcmp(name, "completed") == 0) {
         // Delete handler
         msg(app->manager, s("removeScriptMessageHandlerForName:"), str("completed"));
-        // Show window after a short delay so rendering can catch up
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 10000000), dispatch_get_main_queue(), ^{
-            Show(app); 
-            msg(app->config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("suppressesIncrementalRendering"));
-        });
+        Show(app); 
+        msg(app->config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("suppressesIncrementalRendering"));
     } else if( strcmp(name, "windowDrag") == 0 ) {
         // Guard against null events
         if( app->mouseEvent != NULL ) {
-            id defaultCenter = msg(c("NSNotificationCenter"), s("defaultCenter"));
-            msg(defaultCenter, s("postNotificationName:object:"), 
-                str("NSWindowWillMoveNotification"),
-                app->mainWindow);
-            msg(app->mainWindow, s("performWindowDragWithEvent:"), app->mouseEvent);
+            ON_MAIN_THREAD(
+                msg(app->mainWindow, s("performWindowDragWithEvent:"), app->mouseEvent);
+            );
         }
     } else {
         // const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
@@ -334,7 +331,8 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 
     result->mainWindow = NULL;
     result->mouseEvent = NULL;
-    result->eventMonitor = NULL;
+    result->mouseDownMonitor = NULL;
+    result->mouseUpMonitor = NULL;
 
     // Features
     result->frame = 1;
@@ -371,14 +369,22 @@ void DestroyApplication(void *appPointer) {
         Debug("Almost a double free for app->bindings");
     }
 
-    // For frameless apps, remove the event monitor and drag message handler
-    // if( app->frame == 0 ) {
-        msg( c("NSEvent"), s("removeMonitor:"), app->eventMonitor);
-        msg(app->manager, s("removeScriptMessageHandlerForName:"), str("windowDrag"));
-    // }
+    // Remove mouse monitors
+    if( app->mouseDownMonitor != NULL ) {
+        msg( c("NSEvent"), s("removeMonitor:"), app->mouseDownMonitor);
+    }
+    if( app->mouseUpMonitor != NULL ) {
+        msg( c("NSEvent"), s("removeMonitor:"), app->mouseUpMonitor);
+    }
 
+    // Remove script handlers
+    msg(app->manager, s("removeScriptMessageHandlerForName:"), str("windowDrag"));
     msg(app->manager, s("removeScriptMessageHandlerForName:"), str("external"));
+
+    // Close main window
     msg(app->mainWindow, s("close"));
+
+    // Terminate app
     msg(c("NSApp"), s("terminate:"), NULL);
     Debug("Finished Destroying Application");
 }
@@ -839,6 +845,10 @@ void createMainWindow(struct Application *app) {
         );
     }
 
+    // Set Title appearance
+    msg(mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
+    msg(mainWindow, s("setTitleVisibility:"), app->hideTitle);
+
     app->mainWindow = mainWindow;
 }
 
@@ -910,21 +920,16 @@ void Run(struct Application *app, int argc, char **argv) {
     // Setup drag message handler
     msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("windowDrag"));
     // Add mouse event hooks
-    app->eventMonitor = msg(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseDown, ^(id incomingEvent) {
+    app->mouseDownMonitor = msg(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseDown, ^(id incomingEvent) {
         app->mouseEvent = incomingEvent;
         return incomingEvent;
-    });
-    
-    if( app->frame == 0) {
-        msg(app->mainWindow, s("setTitlebarAppearsTransparent:"), YES);
-        msg(app->mainWindow, s("setTitleVisibility:"), NSWindowTitleHidden);
+    });      
+    app->mouseUpMonitor = msg(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseUp, ^(id incomingEvent) {
+        app->mouseEvent = NULL;
+        return incomingEvent;
+    });    
 
-    } else {
-        msg(app->mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
-        msg(app->mainWindow, s("setTitleVisibility:"), app->hideTitle);
-
-        // Toolbar
-    }
+    // Toolbar
     if( app->useToolBar ) {
         Debug("Setting Toolbar");
         id toolbar = msg(c("NSToolbar"),s("alloc"));
