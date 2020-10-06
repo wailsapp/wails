@@ -1,0 +1,9 @@
+{
+    "name": "kitchensink",
+    "outputfilename": "kitchensink",
+    "html": "frontend/public/index.html",
+    "js": "frontend/public/bundle.js",
+    "css": "frontend/public/bundle.css",
+    "frontend:build": "npm run build",
+    "frontend:install": "npm install"
+}
