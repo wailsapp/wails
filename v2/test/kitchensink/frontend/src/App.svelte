@@ -4,13 +4,16 @@
   import runtime from '@wailsapp/runtime2';
   import { selectedPage } from './Store';
   import MainPage from './MainPage.svelte';
-  import Events from './Events.svelte';
-
+ 
   // Handle Dark/Light themes automatically
   var darkMode = runtime.System.DarkModeEnabled();
   runtime.System.OnThemeChange( (isDarkMode) => {
     darkMode = isDarkMode;
   });
+
+  // Hightlight CSS
+  import { atomOneDark, atomOneLight } from "svelte-highlight/styles";
+  $: css = darkMode ? atomOneDark : atomOneLight;
 
   function linkClicked(event) {
     let linkText = event.target.innerText;
@@ -33,6 +36,10 @@
   ];
 
 </script>
+
+<svelte:head>
+  {@html css}
+</svelte:head>
 
 <div data-wails-drag class="page-wrapper with-sidebar" class:dark-mode="{darkMode}" data-sidebar-type="full-height" >
   <!-- Sticky alerts (toasts), empty container -->
@@ -58,7 +65,7 @@
     </div>
   </div>
   <!-- Content wrapper -->
-  <div class="content-wrapper" class:dark-content-wrapper="{darkMode}">
+  <div class="content-wrapper noselect" class:dark-content-wrapper="{darkMode}">
     <MainPage></MainPage>
   </div>
 </div>
@@ -82,6 +89,14 @@
 
     --sidebar-title-font-size: 1.75rem;
     --sidebar-brand-font-size: 2.3rem;
+
+    /* Switch */
+    --dm-switch-bg-color: rgb(28,173,213);
+    --lm-switch-bg-color: rgb(28,173,213);
+    --dm-switch-bg-color-checked: rgb(239,218,91);
+    --lm-switch-bg-color-checked: rgb(239,218,91);
+    --lm-switch-slider-bg-color: #FFF;
+    --dm-switch-slider-bg-color: #FFF;
   }
 
   .sidebar-link {

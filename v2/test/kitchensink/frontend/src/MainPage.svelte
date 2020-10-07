@@ -1,9 +1,9 @@
 <script>
 
     import {selectedPage} from './Store';
-    import TitlePage from './TitlePage.svelte';
-    import Logging from './Logging.svelte';
-    import Events from './Events.svelte';
+    import TitlePage from './pages/TitlePage.svelte';
+    import Logging from './pages/Logging.svelte';
+    import Events from './pages/Events.svelte';
 
 </script>
 
@@ -15,10 +15,8 @@
 
 <style>
     .mainpage {
-        margin-top: 55px;
-        margin-left: 25px;
-    }
-    h3 {
-        margin-left: 20px;
+        margin-top: 60px;
+        margin-left: 45px;
+        margin-right: 45px;
     }
 </style>

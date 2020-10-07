@@ -14,7 +14,7 @@
     }
 
 </script>
-<div class="page">
+<div>
     <h4>Logging</h4>
 
     Logging is part of the Wails Runtime and is accessed through the <code>runtime.Log</code> object. There are 5 methods available:
@@ -55,10 +55,6 @@
 </div>
 
 <style>
-    .page {
-        margin-left: 50px;
-        margin-top: 10px;
-    }
     .logging-form {
         margin-top: 2rem;
     }
