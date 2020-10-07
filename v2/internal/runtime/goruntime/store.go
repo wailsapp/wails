@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
+	"os"
 	"reflect"
 	"sync"
 )
@@ -54,6 +54,11 @@ type Store struct {
 
 	// Error handler
 	errorHandler func(error)
+}
+
+func fatal(err error) {
+	println(err.Error())
+	os.Exit(1)
 }
 
 // New creates a new store
@@ -225,7 +230,7 @@ func (s *Store) Subscribe(callback interface{}) {
 
 	err := s.callbackCheck(callback)
 	if err != nil {
-		log.Fatal(err)
+		fatal(err)
 	}
 
 	callbackFunc := reflect.ValueOf(callback)
@@ -276,7 +281,7 @@ func (s *Store) Update(updater interface{}) {
 
 	err := s.updaterCheck(updater)
 	if err != nil {
-		log.Fatal(err)
+		fatal(err)
 	}
 
 	// Build args
