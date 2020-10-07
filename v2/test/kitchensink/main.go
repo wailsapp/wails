@@ -24,7 +24,7 @@ func main() {
 		},
 	})
 
-	app.Bind(newBasic())
+	app.Bind(&Logger{})
 
 	app.Run()
 }

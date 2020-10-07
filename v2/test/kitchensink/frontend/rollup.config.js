@@ -5,6 +5,7 @@ import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
 import autoPreprocess from 'svelte-preprocess';
+import { string } from "rollup-plugin-string";
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -18,6 +19,9 @@ export default {
 	},
 	onwarn: handleRollupWarning,
 	plugins: [
+		string({
+			include: ["**/*.jsx","**/*.go"],
+		}),
 		svelte({
 			preprocess: autoPreprocess(),
 			// enable run-time checks when not in production

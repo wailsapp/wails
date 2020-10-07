@@ -93,8 +93,8 @@
     /* Switch */
     --dm-switch-bg-color: rgb(28,173,213);
     --lm-switch-bg-color: rgb(28,173,213);
-    --dm-switch-bg-color-checked: rgb(239,218,91);
-    --lm-switch-bg-color-checked: rgb(239,218,91);
+    --dm-switch-bg-color-checked: rgb(186,167,49);
+    --lm-switch-bg-color-checked: rgb(186,167,49);
     --lm-switch-slider-bg-color: #FFF;
     --dm-switch-slider-bg-color: #FFF;
   }

@@ -2,17 +2,29 @@
 <script>
     import { Highlight } from "svelte-highlight";
     import { go, javascript } from "svelte-highlight/languages";
-    let isJs = false;
+    
+    // Default to Go
+    export let isJs = false;
+    
+    // Calculate CSS to use
     $: lang = isJs ? javascript : go;
-    export let jsCode = "Hi form JS!";
-    export let goCode = "Hi form Go!";
 
+    // Calculate Code for code block
+    export let jsCode = "Hi from JS!";
+    export let goCode = "Hi from Go!";
     $: code = isJs ? jsCode : goCode;
+
+    // Handle hiding example
+    let hidden = false;
+
+    function toggleExample() {
+        hidden = !hidden;
+    }
 </script>
 
-<div data-wails-no-drag class="code">
+<div data-wails-no-drag class="codeblock">
     <div class="header">
-        <span>Title</span>
+        <span on:click="{toggleExample}">Title</span>
         <span class="toggle">
             <span>Go</span>
             <span class="custom-switch">
@@ -21,13 +33,17 @@
             </span>
         </span>
     </div>
+    {#if !hidden}
     <Highlight language="{lang}" {code} />
+    {/if}
 </div>
 
 <style>
 
     .header {
-        margin: 5px;
+        display: flex;
+        justify-content: space-between;
+        padding: 15px 15px 0 15px;
     }
 
     .toggle {
@@ -36,6 +52,13 @@
 
     .custom-switch {
         display: inline-block;
+        margin-left: 5px;
+    }
+
+    .codeblock {
+        background-color: #3F3F4B;
+        border-radius: 5px;
+        padding-bottom: 15px;
     }
 
 </style>

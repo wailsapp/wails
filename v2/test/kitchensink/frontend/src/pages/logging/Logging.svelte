@@ -1,15 +1,27 @@
 <script>
 
     import { Log } from '@wailsapp/runtime2';
+    import CodeBlock from '../../components/CodeBlock.svelte';
+    import jsCode from './code.jsx';
+    import goCode from './code.go';
 
     var loglevel = 'Debug';
     var message = '';
+    var isJs = false;
 
     var options = ["Debug", "Info", "Warning", "Error", "Fatal"];
 
+    $: lang = isJs ? 'Javascript' : 'Go';
+
     function sendLogMessage() {
         if( message.length > 0 ) {
-            Log[loglevel](message);
+            if( isJs ) {
+                // Call JS runtime
+                Log[loglevel](message);
+            } else {
+                // Call Go method which calls Go Runtime
+                backend.main.Logger[loglevel](message);              
+            }
         }
     }
 
@@ -30,6 +42,7 @@
 
     <h5>Try Me</h5>
     <hr>
+    <CodeBlock bind:isJs={isJs} {jsCode} {goCode}></CodeBlock>
     <div class="logging-form">
         <form data-wails-no-drag class="w-400 mw-full"> <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% -->
             <!-- Radio -->
@@ -49,7 +62,7 @@
                 <input type="text" class="form-control" id="message" placeholder="Hello World!" bind:value="{message}" required="required">
             </div>
 
-            <input class="btn btn-primary" type="submit" on:click="{sendLogMessage}" value="Run!">
+            <input class="btn btn-primary" type="button" on:click="{sendLogMessage}" value="Call {lang} method">
         </form>
     </div>
 </div>
