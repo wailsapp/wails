@@ -67,16 +67,3 @@
         </div>
     </CodeBlock>
 </div>
-
-<style>
-
-    .list {
-        margin-top: 2rem;
-        margin-left: 2rem;
-    }
-
-    .list li {
-        margin-bottom: 0.5rem;
-    }
-
-</style>

@@ -3,7 +3,7 @@
     import {selectedPage} from './Store';
     import TitlePage from './pages/TitlePage.svelte';
     import Logging from './pages/logging/Logging.svelte';
-    import Events from './pages/Events.svelte';
+    import Events from './pages/events/Events.svelte';
 
 </script>
 

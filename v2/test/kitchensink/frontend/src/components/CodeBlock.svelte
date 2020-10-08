@@ -154,7 +154,7 @@
         border-top: 1px solid #5555;
         margin-top: 10px;
         padding-top: 5px;
-        /* margin-bottom: 15px; */
+        width: 100%;
     }
 
 </style>
