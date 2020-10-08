@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/wailsapp/wails/v2/pkg/logger"
+	"github.com/wailsapp/wails/v2/internal/logger"
 	ws "nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
 )

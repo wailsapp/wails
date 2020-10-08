@@ -13,7 +13,7 @@ import (
 	"github.com/leaanthony/clir"
 	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/internal/fs"
-	"github.com/wailsapp/wails/v2/pkg/logger"
+	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/process"
 	"github.com/wailsapp/wails/v2/pkg/commands/build"
 )

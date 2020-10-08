@@ -12,7 +12,7 @@ import (
 	"github.com/leaanthony/slicer"
 	"github.com/olekukonko/tablewriter"
 	"github.com/wailsapp/wails/v2/internal/fs"
-	"github.com/wailsapp/wails/v2/pkg/logger"
+	"github.com/wailsapp/wails/v2/internal/logger"
 )
 
 // Cahce for the templates

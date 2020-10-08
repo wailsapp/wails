@@ -7,7 +7,7 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/html"
-	"github.com/wailsapp/wails/v2/pkg/logger"
+	"github.com/wailsapp/wails/v2/internal/logger"
 )
 
 // DesktopBuilder builds applications for the desktop
