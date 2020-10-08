@@ -3,7 +3,7 @@ package process
 import (
 	"os/exec"
 
-	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/pkg/logger"
 )
 
 // Process defines a process that can be executed

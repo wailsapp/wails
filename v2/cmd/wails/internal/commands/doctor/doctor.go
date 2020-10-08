@@ -8,7 +8,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/leaanthony/clir"
-	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/internal/system"
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 )
