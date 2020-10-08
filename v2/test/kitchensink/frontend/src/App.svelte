@@ -1,19 +1,12 @@
 
 <script>
 
-  import runtime from '@wailsapp/runtime2';
-  import { selectedPage } from './Store';
+  import { darkMode, selectedPage } from './Store';
   import MainPage from './MainPage.svelte';
  
-  // Handle Dark/Light themes automatically
-  var darkMode = runtime.System.DarkModeEnabled();
-  runtime.System.OnThemeChange( (isDarkMode) => {
-    darkMode = isDarkMode;
-  });
-
   // Hightlight CSS
   import { atomOneDark, atomOneLight } from "svelte-highlight/styles";
-  $: css = darkMode ? atomOneDark : atomOneLight;
+  $: css = $darkMode ? atomOneDark : atomOneLight;
 
   function linkClicked(event) {
     let linkText = event.target.innerText;
@@ -41,7 +34,7 @@
   {@html css}
 </svelte:head>
 
-<div data-wails-drag class="page-wrapper with-sidebar" class:dark-mode="{darkMode}" data-sidebar-type="full-height" >
+<div data-wails-drag class="page-wrapper with-sidebar" class:dark-mode="{$darkMode}" data-sidebar-type="full-height" >
   <!-- Sticky alerts (toasts), empty container -->
   <div class="sticky-alerts"></div>
   <!-- Sidebar -->
@@ -65,9 +58,11 @@
     </div>
   </div>
   <!-- Content wrapper -->
-  <div class="content-wrapper noselect" class:dark-content-wrapper="{darkMode}">
-    <MainPage></MainPage>
-  </div>
+    <div class="content-wrapper noselect" class:dark-content-wrapper="{$darkMode}">
+      <div class="inner-content">
+        <MainPage></MainPage>
+      </div>
+    </div>
 </div>
 
 
@@ -99,13 +94,45 @@
     --dm-switch-slider-bg-color: #FFF;
   }
 
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(128,128,128,.25);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background-clip: padding-box;
+  }
+
+  &:hover {
+    background-color: rgba(128,128,128,.5);
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: rgba(128,128,128,.05);
+  }
+
   .sidebar-link {
     font-weight: bold;
     cursor: pointer;
   }
 
+  .rhs {
+    background-color: #333;
+  }
+
+  .inner-content {
+    position: absolute;
+    top: 40px;
+    bottom: 40px;
+    width: 99%;
+    overflow-y: auto;
+  }
+
   .content-wrapper {
-    background-color: #eee;
+    overflow: hidden;
   }
 
   .dark-content-wrapper {
@@ -135,6 +162,15 @@
          -moz-user-select: none; /* Old versions of Firefox */
           -ms-user-select: none; /* Internet Explorer/Edge */
               user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
+  }
+  .allow-select {
+    -webkit-touch-callout: initial; /* iOS Safari */
+      -webkit-user-select: initial; /* Safari */
+       -khtml-user-select: initial; /* Konqueror HTML */
+         -moz-user-select: initial; /* Old versions of Firefox */
+          -ms-user-select: initial; /* Internet Explorer/Edge */
+              user-select: initial; /* Non-prefixed version, currently
                                     supported by Chrome, Edge, Opera and Firefox */
   }
 </style>

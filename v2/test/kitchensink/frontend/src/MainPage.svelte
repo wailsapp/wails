@@ -15,9 +15,9 @@
 
 <style>
     .mainpage {
-        margin-top: 60px;
         margin-left: 45px;
         margin-right: 45px;
-        margin-bottom: 60px;
+        margin-top: 20px;
+        margin-bottom: 20px;
     }
 </style>

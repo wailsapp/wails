@@ -7,11 +7,16 @@
 <div>
     <h4>Events</h4>
 
-    Events are......
+    Wails includes a unified events system which allows you to do the following in either Go or Javascript:
 
-    <h5>Try Me</h5>
-    <hr>
-    <CodeBlock></CodeBlock>
+    <ul>
+        <li>On</li>
+        <li>Once</li>
+        <li>OnMultiple</li>
+        <li>Emit</li>
+    </ul>
+
+    <CodeBlock title="Events.On(eventName, callback)" description="etc etc etc "></CodeBlock>
 </div>
 
 <style>
