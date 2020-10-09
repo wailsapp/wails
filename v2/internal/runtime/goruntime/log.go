@@ -6,6 +6,7 @@ import (
 
 // Log defines all Log related operations
 type Log interface {
+	Print(message string)
 	Trace(message string)
 	Debug(message string)
 	Info(message string)
@@ -23,6 +24,11 @@ func newLog(bus *servicebus.ServiceBus) Log {
 	return &log{
 		bus: bus,
 	}
+}
+
+// Print prints a Print level message
+func (r *log) Print(message string) {
+	r.bus.Publish("log:print", message)
 }
 
 // Trace prints a Trace level message

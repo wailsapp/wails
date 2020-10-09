@@ -2,6 +2,7 @@ package main
 
 import (
 	wails "github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
@@ -22,6 +23,7 @@ func main() {
 			WindowBackgroundIsTranslucent: true,
 			TitleBar:                      mac.TitleBarHiddenInset(),
 		},
+		LogLevel: logger.INFO,
 	})
 
 	app.Bind(&Logger{})

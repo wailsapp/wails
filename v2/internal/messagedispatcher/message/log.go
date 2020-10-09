@@ -3,6 +3,7 @@ package message
 import "fmt"
 
 var logMessageMap = map[byte]string{
+	'P': "log:print",
 	'T': "log:trace",
 	'D': "log:debug",
 	'I': "log:info",
@@ -13,7 +14,7 @@ var logMessageMap = map[byte]string{
 
 // logMessageParser does what it says on the tin!
 func logMessageParser(message string) (*parsedMessage, error) {
-	
+
 	// Sanity check: Log messages must be at least 2 bytes
 	if len(message) < 2 {
 		return nil, fmt.Errorf("log message was an invalid length")

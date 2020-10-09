@@ -57,6 +57,8 @@ func (l *Log) Start() error {
 			case logMessage := <-l.logChannel:
 				logType := strings.TrimPrefix(logMessage.Topic(), "log:")
 				switch logType {
+				case "print":
+					l.logger.Print(logMessage.Data().(string))
 				case "trace":
 					l.logger.Trace(logMessage.Data().(string))
 				case "debug":

@@ -5,11 +5,11 @@
     import jsCode from './code.jsx';
     import goCode from './code.go';
 
-    var loglevel = 'Trace';
     var message = '';
     var isJs = false;
 
-    var options = ["Trace", "Debug", "Info", "Warning", "Error", "Fatal"];
+    var options = ["Print", "Trace", "Debug", "Info", "Warning", "Error", "Fatal"];
+    var loglevel = options[0];
 
     $: lang = isJs ? 'Javascript' : 'Go';
 
@@ -33,7 +33,7 @@
     
     <ul class="list">
         {#each options as option}
-        <li>{options}</li>
+        <li>{option}</li>
         {/each}
     </ul>
     All methods will log to the console and <code>Fatal</code> will also exit the program.

@@ -3,6 +3,7 @@ import { Log } from '@wails/runtime';
 function doSomeOperation() {
   // Do things
   let value = doSomething();
+  Log.Print("A raw message");
   Log.Trace("I got: " + value);
   Log.Debug("A debug message");
   Log.Info("An Info message");

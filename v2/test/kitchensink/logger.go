@@ -16,6 +16,11 @@ func (l *Logger) WailsInit(runtime *wails.Runtime) error {
 	return nil
 }
 
+// Print will log the given message
+func (l *Logger) Print(message string) {
+	l.runtime.Log.Print(message)
+}
+
 // Trace will log the given message
 func (l *Logger) Trace(message string) {
 	l.runtime.Log.Trace(message)

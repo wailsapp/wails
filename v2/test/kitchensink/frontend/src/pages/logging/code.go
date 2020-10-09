@@ -8,6 +8,8 @@ type MyStruct struct {
 
 func (l *MyStruct) WailsInit(runtime *wails.Runtime) error {
 
+	runtime.Log.Print(message)
+	runtime.Log.Trace(message)
 	runtime.Log.Debug(message)
 	runtime.Log.Info(message)
 	runtime.Log.Warning(message)
