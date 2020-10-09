@@ -2,7 +2,6 @@ package logger
 
 import (
 	"fmt"
-	"os"
 )
 
 // CustomLogger defines what a user can do with a logger
@@ -62,37 +61,36 @@ func (l *customLogger) Write(message string) error {
 // Trace level logging. Works like Sprintf.
 func (l *customLogger) Trace(format string, args ...interface{}) error {
 	format = fmt.Sprintf("%s | %s", l.name, format)
-	return l.logger.processLogMessage(TRACE, format, args...)
+	return l.logger.Trace(format, args...)
 }
 
 // Debug level logging. Works like Sprintf.
 func (l *customLogger) Debug(format string, args ...interface{}) error {
 	format = fmt.Sprintf("%s | %s", l.name, format)
-	return l.logger.processLogMessage(DEBUG, format, args...)
+	return l.logger.Debug(format, args...)
 }
 
 // Info level logging. Works like Sprintf.
 func (l *customLogger) Info(format string, args ...interface{}) error {
 	format = fmt.Sprintf("%s | %s", l.name, format)
-	return l.logger.processLogMessage(INFO, format, args...)
+	return l.logger.Info(format, args...)
 }
 
 // Warning level logging. Works like Sprintf.
 func (l *customLogger) Warning(format string, args ...interface{}) error {
 	format = fmt.Sprintf("%s | %s", l.name, format)
-	return l.logger.processLogMessage(WARNING, format, args...)
+	return l.logger.Warning(format, args...)
 }
 
 // Error level logging. Works like Sprintf.
 func (l *customLogger) Error(format string, args ...interface{}) error {
 	format = fmt.Sprintf("%s | %s", l.name, format)
-	return l.logger.processLogMessage(ERROR, format, args...)
+	return l.logger.Error(format, args...)
 
 }
 
 // Fatal level logging. Works like Sprintf.
 func (l *customLogger) Fatal(format string, args ...interface{}) {
 	format = fmt.Sprintf("%s | %s", l.name, format)
-	l.logger.processLogMessage(FATAL, format, args...)
-	os.Exit(1)
+	l.logger.Fatal(format, args...)
 }

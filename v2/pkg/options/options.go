@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/imdario/mergo"
+	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
 
@@ -22,6 +23,7 @@ type App struct {
 	DevTools      bool
 	RGBA          int
 	Mac           *mac.Options
+	Logger logger.Logger
 }
 
 // MergeDefaults will set the minimum default values for an application

@@ -3,8 +3,6 @@
 package app
 
 import (
-	"os"
-
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/ffenestri"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -44,7 +42,7 @@ func CreateApp(options *options.App) *App {
 	options.MergeDefaults()
 
 	// Set up logger
-	myLogger := logger.New(os.Stdout)
+	myLogger := logger.New(options.Logger)
 	myLogger.SetLogLevel(logger.TRACE)
 
 	window := ffenestri.NewApplicationWithConfig(options, myLogger)
