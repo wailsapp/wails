@@ -43,7 +43,7 @@ func CreateApp(options *options.App) *App {
 
 	// Set up logger
 	myLogger := logger.New(options.Logger)
-	myLogger.SetLogLevel(logger.TRACE)
+	myLogger.SetLogLevel(uint8(options.LogLevel))
 
 	window := ffenestri.NewApplicationWithConfig(options, myLogger)
 

@@ -10,7 +10,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.0",
     "@rollup/plugin-node-resolve": "^7.0.0",
-    "@wailsapp/runtime2": "^1.0.3",
+    "@wails/runtime": "^1.0.0",
     "focus-visible": "^5.0.2",
     "halfmoon": "^1.1.0",
     "postcss": "^8.1.1",

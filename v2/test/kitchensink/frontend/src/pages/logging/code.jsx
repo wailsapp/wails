@@ -1,9 +1,10 @@
-import { Log } from '@wailsapp/runtime2';
+import { Log } from '@wails/runtime';
 
 function doSomeOperation() {
   // Do things
   let value = doSomething();
-  Log.Debug("I got: " + value);
+  Log.Trace("I got: " + value);
+  Log.Debug("A debug message");
   Log.Info("An Info message");
   Log.Warning("A Warning message");
   Log.Error("An Error message");

@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import runtime from '@wailsapp/runtime2';
+import runtime from '@wails/runtime';
 
 export let selectedPage = writable();
 

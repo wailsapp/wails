@@ -1,15 +1,15 @@
 <script>
 
-    import { Log } from '@wailsapp/runtime2';
+    import { Log } from '@wails/runtime';
     import CodeBlock from '../../components/CodeBlock.svelte';
     import jsCode from './code.jsx';
     import goCode from './code.go';
 
-    var loglevel = 'Debug';
+    var loglevel = 'Trace';
     var message = '';
     var isJs = false;
 
-    var options = ["Debug", "Info", "Warning", "Error", "Fatal"];
+    var options = ["Trace", "Debug", "Info", "Warning", "Error", "Fatal"];
 
     $: lang = isJs ? 'Javascript' : 'Go';
 
@@ -32,11 +32,9 @@
     Logging is part of the Wails Runtime and is accessed through the <code>runtime.Log</code> object. There are 5 methods available:
     
     <ul class="list">
-        <li>Debug</li>
-        <li>Info</li>
-        <li>Warning</li>
-        <li>Error</li>
-        <li>Fatal</li>
+        {#each options as option}
+        <li>{options}</li>
+        {/each}
     </ul>
     All methods will log to the console and <code>Fatal</code> will also exit the program.
     
