@@ -1,6 +1,6 @@
 {
   "name": "@wails/runtime",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Wails V2 Javascript runtime library",
   "main": "main.js",
   "types": "runtime.d.ts",
