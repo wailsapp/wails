@@ -36,6 +36,16 @@ export function Trace(message) {
 }
 
 /**
+ * Log the given message with the backend
+ *
+ * @export
+ * @param {string} message
+ */
+export function Print(message) {
+	sendLogMessage('P', message);
+}
+
+/**
  * Log the given debug message with the backend
  *
  * @export

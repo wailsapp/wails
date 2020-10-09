@@ -12,6 +12,16 @@ The lightweight framework for web-like apps
 
 
 /**
+ * Log the given message with the backend
+ *
+ * @export
+ * @param {string} message
+ */
+function Print(message) {
+	window.wails.Log.Print(message);
+}
+
+/**
  * Log the given trace message with the backend
  *
  * @export
@@ -72,6 +82,8 @@ function Fatal(message) {
 }
 
 module.exports = {
+	Print: Print,
+	Trace: Trace,
 	Debug: Debug,
 	Info: Info,
 	Warning: Warning,
