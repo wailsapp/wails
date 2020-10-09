@@ -141,7 +141,7 @@ func (e *Event) notifyListeners(eventName string, message *message.EventMessage)
 	// Get list of event listeners
 	listeners := e.listeners[eventName]
 	if listeners == nil {
-		e.logger.Info("No listeners for %s", eventName)
+		e.logger.Trace("No listeners for %s", eventName)
 		return
 	}
 
