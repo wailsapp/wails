@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/wailsapp/wails/v2/pkg/logger"
@@ -43,7 +44,7 @@ func (l *Logger) SetLogLevel(level uint8) {
 // Writeln writes directly to the output with no log level
 // Appends a carriage return to the message
 func (l *Logger) Writeln(message string) error {
-	return l.output.Print(message + "\n")
+	return l.output.Print(message)
 }
 
 // Write writes directly to the output with no log level
@@ -60,7 +61,7 @@ func (l *Logger) Print(message string) error {
 // Trace level logging. Works like Sprintf.
 func (l *Logger) Trace(format string, args ...interface{}) error {
 	if l.logLevel <= TRACE {
-		return l.output.Trace(format, args...)
+		return l.output.Trace(fmt.Sprintf(format, args...))
 	}
 	return nil
 }
@@ -69,14 +70,14 @@ func (l *Logger) Trace(format string, args ...interface{}) error {
 // func (l *Logger) CustomTrace(name string) func(format string, args ...interface{}) {
 // 	return func(format string, args ...interface{}) {
 // 		format = name + " | " + format
-// 		l.processLogMessage(format, args...)
+// 		l.processLogMessage(fmt.Sprintf(format, args...))
 // 	}
 // }
 
 // Debug level logging. Works like Sprintf.
 func (l *Logger) Debug(format string, args ...interface{}) error {
 	if l.logLevel <= DEBUG {
-		return l.output.Debug(format, args...)
+		return l.output.Debug(fmt.Sprintf(format, args...))
 	}
 	return nil
 }
@@ -84,7 +85,7 @@ func (l *Logger) Debug(format string, args ...interface{}) error {
 // Info level logging. Works like Sprintf.
 func (l *Logger) Info(format string, args ...interface{}) error {
 	if l.logLevel <= INFO {
-		return l.output.Info(format, args...)
+		return l.output.Info(fmt.Sprintf(format, args...))
 	}
 	return nil
 }
@@ -92,7 +93,7 @@ func (l *Logger) Info(format string, args ...interface{}) error {
 // Warning level logging. Works like Sprintf.
 func (l *Logger) Warning(format string, args ...interface{}) error {
 	if l.logLevel <= WARNING {
-		return l.output.Warning(format, args...)
+		return l.output.Warning(fmt.Sprintf(format, args...))
 	}
 	return nil
 }
@@ -100,14 +101,14 @@ func (l *Logger) Warning(format string, args ...interface{}) error {
 // Error level logging. Works like Sprintf.
 func (l *Logger) Error(format string, args ...interface{}) error {
 	if l.logLevel <= ERROR {
-		return l.output.Error(format, args...)
+		return l.output.Error(fmt.Sprintf(format, args...))
 	}
 	return nil
 }
 
 // Fatal level logging. Works like Sprintf.
 func (l *Logger) Fatal(format string, args ...interface{}) {
-	err := l.output.Fatal(format, args...)
+	err := l.output.Fatal(fmt.Sprintf(format, args...))
 	// Not much we can do but print it out before exiting
 	if err != nil {
 		println(err.Error())

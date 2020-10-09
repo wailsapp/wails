@@ -185,21 +185,6 @@ void Debug(struct Application *app, const char *message, ... ) {
     }
 }
 
-// // Debug works like sprintf but mutes if the global debug flag is true
-// // Credit: https://stackoverflow.com/a/20639708
-// void Debug(const char *message, ... ) {
-//     if ( debug ) {
-//         char *temp = concat("TRACE | Ffenestri (C) | ", message);
-//         message = concat(temp, "\n");
-//         free(temp);
-//         va_list args;
-//         va_start(args, message);
-//         vprintf(message, args);
-//         free((void*)message);
-//         va_end(args);
-//     }
-// }
-
 void TitlebarAppearsTransparent(struct Application* app) {
     app->titlebarAppearsTransparent = 1;
 }
