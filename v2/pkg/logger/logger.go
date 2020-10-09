@@ -14,13 +14,13 @@ const (
 	INFO LogLevel = 2
 
 	// WARNING level logging
-	WARNING LogLevel = 4
+	WARNING LogLevel = 3
 
 	// ERROR level logging
-	ERROR LogLevel = 8
+	ERROR LogLevel = 4
 
 	// FATAL level logging
-	FATAL LogLevel = 16
+	FATAL LogLevel = 5
 )
 
 // Logger specifies the methods required to attach

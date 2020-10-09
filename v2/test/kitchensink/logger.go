@@ -2,6 +2,7 @@ package main
 
 import (
 	wails "github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/logger"
 )
 
 // Logger struct
@@ -49,4 +50,9 @@ func (l *Logger) Error(message string) {
 // Fatal will log the given message
 func (l *Logger) Fatal(message string) {
 	l.runtime.Log.Fatal(message)
+}
+
+// SetLogLevel will set the given loglevel
+func (l *Logger) SetLogLevel(loglevel logger.LogLevel) {
+	l.runtime.Log.SetLogLevel(loglevel)
 }

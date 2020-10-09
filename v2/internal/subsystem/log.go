@@ -1,6 +1,7 @@
 package subsystem
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -71,6 +72,19 @@ func (l *Log) Start() error {
 					l.logger.Error(logMessage.Data().(string))
 				case "fatal":
 					l.logger.Fatal(logMessage.Data().(string))
+				case "setlevel":
+					switch inLevel := logMessage.Data().(type) {
+					case logger.LogLevel:
+						l.logger.SetLogLevel(inLevel)
+					case string:
+						uint64level, err := strconv.ParseUint(inLevel, 10, 8)
+						if err != nil {
+							l.logger.Error("Error parsing log level: %+v", inLevel)
+							continue
+						}
+						l.logger.SetLogLevel(logger.LogLevel(uint64level))
+					}
+
 				default:
 					l.logger.Error("unknown log message: %+v", logMessage)
 				}

@@ -75,7 +75,7 @@ func (r *Runtime) Start() error {
 				case "browser":
 					err = r.processBrowserMessage(method, runtimeMessage.Data())
 				default:
-					fmt.Errorf("unknown log message: %+v", runtimeMessage)
+					fmt.Errorf("unknown runtime message: %+v", runtimeMessage)
 				}
 
 				// If we had an error, log it

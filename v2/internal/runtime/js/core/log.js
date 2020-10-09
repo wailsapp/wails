@@ -94,3 +94,22 @@ export function Error(message) {
 export function Fatal(message) {
 	sendLogMessage('F', message);
 }
+
+/**
+ * Sets the Log level to the given log level
+ *
+ * @export
+ * @param {number} loglevel
+ */
+export function SetLogLevel(loglevel) {
+	sendLogMessage('S', loglevel);
+}
+
+// Log levels
+export const Level = {
+	TRACE: 0,
+	DEBUG: 1,
+	INFO: 2,
+	WARNING: 3,
+	ERROR: 4,
+};

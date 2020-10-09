@@ -23,7 +23,7 @@ func main() {
 			WindowBackgroundIsTranslucent: true,
 			TitleBar:                      mac.TitleBarHiddenInset(),
 		},
-		LogLevel: logger.INFO,
+		LogLevel: logger.TRACE,
 	})
 
 	app.Bind(&Logger{})

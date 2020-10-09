@@ -2,6 +2,7 @@ package goruntime
 
 import (
 	"github.com/wailsapp/wails/v2/internal/servicebus"
+	"github.com/wailsapp/wails/v2/pkg/logger"
 )
 
 // Log defines all Log related operations
@@ -13,6 +14,7 @@ type Log interface {
 	Warning(message string)
 	Error(message string)
 	Fatal(message string)
+	SetLogLevel(level logger.LogLevel)
 }
 
 type log struct {
@@ -59,4 +61,9 @@ func (r *log) Error(message string) {
 // Fatal prints a Fatal level message
 func (r *log) Fatal(message string) {
 	r.bus.Publish("log:fatal", message)
+}
+
+// Sets the log level
+func (r *log) SetLogLevel(level logger.LogLevel) {
+	r.bus.Publish("log:setlevel", level)
 }

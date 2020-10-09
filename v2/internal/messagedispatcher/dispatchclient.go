@@ -64,7 +64,7 @@ func (d *DispatchClient) DispatchMessage(incomingMessage string) {
 	d.logger.Trace(fmt.Sprintf("Received message: %+v", incomingMessage))
 	parsedMessage, err := message.Parse(incomingMessage)
 	if err != nil {
-		d.logger.Trace("Error: " + err.Error())
+		d.logger.Error(err.Error())
 		return
 	}
 
@@ -75,7 +75,7 @@ func (d *DispatchClient) DispatchMessage(incomingMessage string) {
 
 	// Check error
 	if err != nil {
-		d.logger.Trace("Error: " + err.Error())
+		d.logger.Error(err.Error())
 		// Hrm... what do we do with this?
 		d.bus.PublishForTarget("generic:message", incomingMessage, d.id)
 		return

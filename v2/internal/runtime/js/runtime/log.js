@@ -74,12 +74,31 @@ function Error(message) {
 /**
  * Log the given fatal message with the backend
  *
- * @export
  * @param {string} message
  */
 function Fatal(message) {
 	window.wails.Log.Fatal(message);
 }
+
+
+/**
+ * Sets the Log level to the given log level
+ *
+ * @param {number} loglevel
+ */
+function SetLogLevel(loglevel) {
+	window.wails.Log.SetLogLevel(loglevel);
+}
+
+// Log levels
+const Level = {
+	TRACE: 0,
+	DEBUG: 1,
+	INFO: 2,
+	WARNING: 3,
+	ERROR: 4,
+};
+
 
 module.exports = {
 	Print: Print,
@@ -88,5 +107,7 @@ module.exports = {
 	Info: Info,
 	Warning: Warning,
 	Error: Error,
-	Fatal: Fatal
+	Fatal: Fatal,
+	SetLogLevel: SetLogLevel,
+	Level: Level,
 };
