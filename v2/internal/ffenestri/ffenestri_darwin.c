@@ -169,22 +169,36 @@ struct Application {
 
 // Debug works like sprintf but mutes if the global debug flag is true
 // Credit: https://stackoverflow.com/a/20639708
-#define MAXMESSAGE 10240     
+
+// 5k is more than enough for a log message
+#define MAXMESSAGE 1024*5     
 char logbuffer[MAXMESSAGE];
-void Debug(struct Application *app, const char *input, ... ) {
+void Debug(struct Application *app, const char *message, ... ) {
     if ( debug ) {
-        // 10k is more than enough for a log message
-        char *message = concat("LTFfenestri (C) | ", input);
+        const char *temp = concat("LTFfenestri (C) | ", message);
         va_list args;
         va_start(args, message);
-        vsnprintf(logbuffer, MAXMESSAGE, message, args);
-        // printf("%s", logbuffer);
-        app->sendMessageToBackend(&logbuffer);
-        // 
-        free((void*)message);
+        vsnprintf(logbuffer, MAXMESSAGE, temp, args);
+        app->sendMessageToBackend(&logbuffer[0]);
+        free((void*)temp);
         va_end(args);
     }
 }
+
+// // Debug works like sprintf but mutes if the global debug flag is true
+// // Credit: https://stackoverflow.com/a/20639708
+// void Debug(const char *message, ... ) {
+//     if ( debug ) {
+//         char *temp = concat("TRACE | Ffenestri (C) | ", message);
+//         message = concat(temp, "\n");
+//         free(temp);
+//         va_list args;
+//         va_start(args, message);
+//         vprintf(message, args);
+//         free((void*)message);
+//         va_end(args);
+//     }
+// }
 
 void TitlebarAppearsTransparent(struct Application* app) {
     app->titlebarAppearsTransparent = 1;
