@@ -29,7 +29,7 @@
 <div>
     <h4>Logging</h4>
 
-    Logging is part of the Wails Runtime and is accessed through the <code>runtime.Log</code> object. There are 5 methods available:
+    Logging is part of the Wails Runtime and is accessed through the <code>runtime.Log</code> object. There are {options.length} methods available:
     
     <ul class="list">
         {#each options as option}
