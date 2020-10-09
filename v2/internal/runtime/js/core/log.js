@@ -26,6 +26,16 @@ function sendLogMessage(level, message) {
 }
 
 /**
+ * Log the given trace message with the backend
+ *
+ * @export
+ * @param {string} message
+ */
+export function Trace(message) {
+	sendLogMessage('T', message);
+}
+
+/**
  * Log the given debug message with the backend
  *
  * @export

@@ -12,6 +12,16 @@ The lightweight framework for web-like apps
 
 
 /**
+ * Log the given trace message with the backend
+ *
+ * @export
+ * @param {string} message
+ */
+function Trace(message) {
+	window.wails.Log.Trace(message);
+}
+
+/**
  * Log the given debug message with the backend
  *
  * @export
