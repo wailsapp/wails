@@ -23,7 +23,8 @@ type App struct {
 	DevTools      bool
 	RGBA          int
 	Mac           *mac.Options
-	Logger logger.Logger
+	Logger        logger.Logger
+	LogLevel      logger.LogLevel
 }
 
 // MergeDefaults will set the minimum default values for an application
