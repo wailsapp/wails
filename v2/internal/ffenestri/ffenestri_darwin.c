@@ -93,20 +93,6 @@ BOOL yes(id self, SEL cmd)
     return YES;
 }
 
-// Debug works like sprintf but mutes if the global debug flag is true
-// Credit: https://stackoverflow.com/a/20639708
-void Debug(const char *message, ... ) {
-    if ( debug ) {
-        char *temp = concat("TRACE | Ffenestri (C) | ", message);
-        message = concat(temp, "\n");
-        free(temp);
-        va_list args;
-        va_start(args, message);
-        vprintf(message, args);
-        free((void*)message);
-        va_end(args);
-    }
-}
 
 extern void messageFromWindowCallback(const char *);
 typedef void (*ffenestriCallback)(const char *);
@@ -180,6 +166,25 @@ struct Application {
     int lock;
 
 };
+
+// Debug works like sprintf but mutes if the global debug flag is true
+// Credit: https://stackoverflow.com/a/20639708
+#define MAXMESSAGE 10240     
+char logbuffer[MAXMESSAGE];
+void Debug(struct Application *app, const char *input, ... ) {
+    if ( debug ) {
+        // 10k is more than enough for a log message
+        char *message = concat("LTFfenestri (C) | ", input);
+        va_list args;
+        va_start(args, message);
+        vsnprintf(logbuffer, MAXMESSAGE, message, args);
+        // printf("%s", logbuffer);
+        app->sendMessageToBackend(&logbuffer);
+        // 
+        free((void*)message);
+        va_end(args);
+    }
+}
 
 void TitlebarAppearsTransparent(struct Application* app) {
     app->titlebarAppearsTransparent = 1;
@@ -318,7 +323,7 @@ void themeChanged(id self, SEL cmd, id sender) {
 
 // void willFinishLaunching(id self) {
 //     struct Application *app = (struct Application *) objc_getAssociatedObject(self, "application");
-//     Debug("willFinishLaunching called!");
+//     Debug(app, "willFinishLaunching called!");
 // }
 
 void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden) {
@@ -370,16 +375,15 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     return (void*) result;
 }
 
-void DestroyApplication(void *appPointer) {
-    Debug("Destroying Application");
-    struct Application *app = (struct Application*) appPointer;
+void DestroyApplication(struct Application *app) {
+    Debug(app, "Destroying Application");
 
     // Free the bindings
     if (app->bindings != NULL) {
         free((void*)app->bindings);
         app->bindings = NULL;
     } else {
-        Debug("Almost a double free for app->bindings");
+        Debug(app, "Almost a double free for app->bindings");
     }
 
     // Remove mouse monitors
@@ -399,19 +403,19 @@ void DestroyApplication(void *appPointer) {
 
     // Terminate app
     msg(c("NSApp"), s("terminate:"), NULL);
-    Debug("Finished Destroying Application");
+    Debug(app, "Finished Destroying Application");
 }
 
-// Quit will stop the gtk application and free up all the memory
+// Quit will stop the cocoa application and free up all the memory
 // used by the application
-void Quit(void *appPointer) {
-    Debug("Quit Called");
-    DestroyApplication(appPointer);
+void Quit(struct Application *app) {
+    Debug(app, "Quit Called");
+    DestroyApplication(app);
 }
 
 // SetTitle sets the main window title to the given string
 void SetTitle(struct Application *app, const char *title) {
-    Debug("SetTitle Called");
+    Debug(app, "SetTitle Called");
     ON_MAIN_THREAD(
         msg(app->mainWindow, s("setTitle:"), str(title));
     );
@@ -426,7 +430,7 @@ void ToggleFullscreen(struct Application *app) {
 
 // Fullscreen sets the main window to be fullscreen
 void Fullscreen(struct Application *app) {
-    Debug("Fullscreen Called");
+    Debug(app, "Fullscreen Called");
     if( app->fullscreen == 0) {
         ToggleFullscreen(app);
     }
@@ -434,14 +438,14 @@ void Fullscreen(struct Application *app) {
 
 // UnFullscreen resets the main window after a fullscreen
 void UnFullscreen(struct Application *app) {
-    Debug("UnFullscreen Called");
+    Debug(app, "UnFullscreen Called");
     if( app->fullscreen == 1) {
         ToggleFullscreen(app);
     }
 }
 
 void Center(struct Application *app) {
-    Debug("Center Called");
+    Debug(app, "Center Called");
     ON_MAIN_THREAD(
         MAIN_WINDOW_CALL("center");
     );
@@ -493,12 +497,12 @@ id getCurrentScreen(struct Application *app) {
     return screen;
 }
 
-void dumpFrame(const char *message, CGRect frame) {
-    Debug(message);
-    Debug("origin.x %f", frame.origin.x);
-    Debug("origin.y %f", frame.origin.y);        
-    Debug("size.width %f", frame.size.width);
-    Debug("size.height %f", frame.size.height);
+void dumpFrame(struct Application *app, const char *message, CGRect frame) {
+    Debug(app, message);
+    Debug(app, "origin.x %f", frame.origin.x);
+    Debug(app, "origin.y %f", frame.origin.y);        
+    Debug(app, "size.width %f", frame.size.width);
+    Debug(app, "size.height %f", frame.size.height);
 }
 
 void SetSize(struct Application *app, int width, int height) { 
@@ -531,7 +535,7 @@ void SetPosition(struct Application *app, int x, int y) {
 
 // OpenDialog opens a dialog to select files/directories
 void OpenDialog(struct Application *app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolveAliases, int treatPackagesAsDirectories) {
-    Debug("OpenDialog Called with callback id: %s", callbackID);
+    Debug(app, "OpenDialog Called with callback id: %s", callbackID);
 
     // Create an open panel
     ON_MAIN_THREAD(
@@ -619,7 +623,7 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
 
 // SaveDialog opens a dialog to select files/directories
 void SaveDialog(struct Application *app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int showHiddenFiles, int canCreateDirectories, int treatPackagesAsDirectories) {
-    Debug("SaveDialog Called with callback id: %s", callbackID);
+    Debug(app, "SaveDialog Called with callback id: %s", callbackID);
 
     // Create an open panel
     ON_MAIN_THREAD(
@@ -756,7 +760,7 @@ void makeWindowBackgroundTranslucent(struct Application *app) {
     msg(contentView, s("addSubview:positioned:relativeTo:"), effectView, NSWindowBelow, NULL);
     
     app->vibrancyLayer = effectView;
-    Debug("effectView: %p", effectView);
+    Debug(app, "effectView: %p", effectView);
 }
 
 void enableBoolConfig(id config, const char *setting) {
@@ -906,7 +910,7 @@ void Run(struct Application *app, int argc, char **argv) {
     id config = msg(c("WKWebViewConfiguration"), s("new"));
     msg(config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 1), str("suppressesIncrementalRendering"));
     if (app->devtools) {
-      Debug("Enabling devtools");
+      Debug(app, "Enabling devtools");
       enableBoolConfig(config, "developerExtrasEnabled");
     }
     app->config = config;
@@ -948,7 +952,7 @@ void Run(struct Application *app, int argc, char **argv) {
 
     // Toolbar
     if( app->useToolBar ) {
-        Debug("Setting Toolbar");
+        Debug(app, "Setting Toolbar");
         id toolbar = msg(c("NSToolbar"),s("alloc"));
         msg(toolbar, s("initWithIdentifier:"), str("wails.toolbar"));
         msg(toolbar, s("autorelease"));
@@ -972,7 +976,7 @@ void Run(struct Application *app, int argc, char **argv) {
     id html = msg(c("NSURL"), s("URLWithString:"), str(assets[0]));
     msg(wkwebview, s("loadRequest:"), msg(c("NSURLRequest"), s("requestWithURL:"), html));
     
-    Debug("Loading Internal Code");
+    Debug(app, "Loading Internal Code");
     // We want to evaluate the internal code plus runtime before the assets
     const char *temp = concat(invoke, app->bindings);
     const char *internalCode = concat(temp, (const char*)&runtime);
@@ -1024,7 +1028,7 @@ void Run(struct Application *app, int argc, char **argv) {
     }
 
     // Finally call run
-    Debug("Run called");
+    Debug(app, "Run called");
     msg(app->application, s("run"));
 
     free((void*)internalCode);

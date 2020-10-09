@@ -3,6 +3,7 @@ package message
 import "fmt"
 
 var logMessageMap = map[byte]string{
+	'T': "log:trace",
 	'D': "log:debug",
 	'I': "log:info",
 	'W': "log:warning",
