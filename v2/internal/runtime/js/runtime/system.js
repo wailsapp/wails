@@ -36,4 +36,5 @@ function DarkModeEnabled() {
 module.exports = {
 	OnThemeChange: OnThemeChange,
 	DarkModeEnabled: DarkModeEnabled,
+	LogLevel: window.wails.System.LogLevel,
 };

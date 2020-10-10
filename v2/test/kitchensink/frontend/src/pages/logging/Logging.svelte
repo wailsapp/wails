@@ -5,11 +5,17 @@
     import jsCode from './code.jsx';
     import goCode from './code.go';
 
+    import { logLevel } from '../../Store';
+
     var message = '';
     var isJs = false;
 
-    var options = ["Print", "Trace", "Debug", "Info", "Warning", "Error", "Fatal"];
+    var options = ["Trace", "Debug", "Info", "Warning", "Error", "Fatal", "Print"];
     var loglevel = options[0];
+
+
+    // This is the current log level in text form
+    $: currentLoglevelText = options[$logLevel];
 
     $: lang = isJs ? 'Javascript' : 'Go';
 
@@ -42,11 +48,14 @@
     
     <CodeBlock bind:isJs={isJs} {jsCode} {goCode} title="Logging" >
         <div class="logging-form">
-            <form data-wails-no-drag class="w-400 mw-full"> <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% -->
+            <form data-wails-no-drag class="w-500 mw-full"> <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% -->
                 <!-- Radio -->
                 <div class="form-group">
-                    <label for="Debug">Log Level</label>
-                    {#each options as option}
+                    <label for="Debug">Select Logging Level</label>
+                    {#each options as option, index}
+                    {#if index === $logLevel}
+                    <span style="margin-top: 5px; height: 20px; display: inline-block;"><hr style="width: 270px;display: inline-block; vertical-align: middle; margin-right: 10px"/> Current Log Level </span>
+                    {/if}
                     <div class="custom-radio">
                         <input type="radio" name="logging" bind:group="{loglevel}" id="{option}" value="{option}">
                         <label for="{option}">{option}</label>
@@ -64,4 +73,5 @@
             </form>
         </div>
     </CodeBlock>
+
 </div>
