@@ -139,6 +139,7 @@ struct Application {
     const char *appearance;
     int decorations;
     bool dragging;
+    int logLevel;
 
     // Features
     int frame;
@@ -325,7 +326,7 @@ void themeChanged(id self, SEL cmd, id sender) {
 //     Debug(app, "willFinishLaunching called!");
 // }
 
-void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden) {
+void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel) {
     // Setup main application struct
     struct Application *result = malloc(sizeof(struct Application));
     result->title = title;
@@ -343,6 +344,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->minimised = 0;
     result->startHidden = startHidden;
     result->decorations = 0;
+    result->logLevel = logLevel;
 
     result->mainWindow = NULL;
     result->mouseEvent = NULL;
@@ -869,11 +871,17 @@ void createMainWindow(struct Application *app) {
 }
 
 const char* getInitialState(struct Application *app) {
+    const char *result = "";
     if( isDarkMode(app) ) {
-        return "window.wails.System.IsDarkMode.set(true);";
+        result = "window.wails.System.IsDarkMode.set(true);";
     } else {
-        return "window.wails.System.IsDarkMode.set(false);";
+        result = "window.wails.System.IsDarkMode.set(false);";
     }
+    char buffer[999];
+    snprintf(&buffer[0], sizeof(buffer), "window.wails.System.LogLevel.set(%d);", app->logLevel);
+    result = concat(result, &buffer[0]);
+    Debug(app, "initialstate = %s", result);
+    return result;
 }
 
 void Run(struct Application *app, int argc, char **argv) {

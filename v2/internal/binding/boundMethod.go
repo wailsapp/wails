@@ -34,7 +34,7 @@ func (b *BoundMethod) VerifyWailsInit() error {
 	}
 
 	// Check input type
-	if !b.Inputs[0].IsType("*goruntime.Runtime") {
+	if !b.Inputs[0].IsType("*runtime.Runtime") {
 		return fmt.Errorf("invalid method signature for %s: expected `WailsInit(*wails.Runtime) error`", b.Name)
 	}
 

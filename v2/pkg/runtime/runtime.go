@@ -1,4 +1,4 @@
-package goruntime
+package runtime
 
 import "github.com/wailsapp/wails/v2/internal/servicebus"
 
@@ -9,13 +9,14 @@ type Runtime struct {
 	Window  Window
 	Dialog  Dialog
 	System  System
+	Store   *StoreProvider
 	Log     Log
 	bus     *servicebus.ServiceBus
 }
 
 // New creates a new runtime
 func New(serviceBus *servicebus.ServiceBus) *Runtime {
-	return &Runtime{
+	result := &Runtime{
 		Browser: newBrowser(),
 		Events:  newEvents(serviceBus),
 		Window:  newWindow(serviceBus),
@@ -24,6 +25,8 @@ func New(serviceBus *servicebus.ServiceBus) *Runtime {
 		Log:     newLog(serviceBus),
 		bus:     serviceBus,
 	}
+	result.Store = newStore(result)
+	return result
 }
 
 // Quit the application

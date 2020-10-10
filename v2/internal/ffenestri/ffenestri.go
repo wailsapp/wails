@@ -116,7 +116,8 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string) error 
 	devtools := a.bool2Cint(a.config.DevTools)
 	fullscreen := a.bool2Cint(a.config.Fullscreen)
 	startHidden := a.bool2Cint(a.config.StartHidden)
-	app := C.NewApplication(title, width, height, resizable, devtools, fullscreen, startHidden)
+	logLevel := C.int(a.config.LogLevel)
+	app := C.NewApplication(title, width, height, resizable, devtools, fullscreen, startHidden, logLevel)
 
 	// Save app reference
 	a.app = unsafe.Pointer(app)

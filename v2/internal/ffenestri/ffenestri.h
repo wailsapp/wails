@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-extern void *NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden);
+extern void *NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel);
 extern void SetMinWindowSize(void *app, int minWidth, int minHeight);
 extern void SetMaxWindowSize(void *app, int maxWidth, int maxHeight);
 extern void Run(void *app, int argc, char **argv);

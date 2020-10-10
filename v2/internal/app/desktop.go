@@ -11,6 +11,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/internal/subsystem"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App defines a Wails application structure
@@ -19,6 +20,7 @@ type App struct {
 	servicebus *servicebus.ServiceBus
 	logger     *logger.Logger
 	signal     *signal.Manager
+	options    *options.App
 
 	// Subsystems
 	log        *subsystem.Log
@@ -33,6 +35,9 @@ type App struct {
 
 	// This is our binding DB
 	bindings *binding.Bindings
+
+	// LogLevel Store
+	loglevelStore *runtime.Store
 }
 
 // Create App
@@ -53,6 +58,8 @@ func CreateApp(options *options.App) *App {
 		logger:     myLogger,
 		bindings:   binding.NewBindings(myLogger),
 	}
+
+	result.options = options
 
 	// Initialise the app
 	result.Init()
@@ -84,6 +91,9 @@ func (a *App) Run() error {
 	a.runtime = runtime
 	a.runtime.Start()
 
+	// Application Stores
+	a.loglevelStore = a.runtime.GoRuntime().Store.New("loglevel", a.options.LogLevel)
+
 	// Start the binding subsystem
 	binding, err := subsystem.NewBinding(a.servicebus, a.logger, a.bindings, a.runtime.GoRuntime())
 	if err != nil {
@@ -93,7 +103,7 @@ func (a *App) Run() error {
 	a.binding.Start()
 
 	// Start the logging subsystem
-	log, err := subsystem.NewLog(a.servicebus, a.logger)
+	log, err := subsystem.NewLog(a.servicebus, a.logger, a.loglevelStore)
 	if err != nil {
 		return err
 	}

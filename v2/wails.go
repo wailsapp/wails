@@ -4,12 +4,12 @@ package wails
 
 import (
 	"github.com/wailsapp/wails/v2/internal/app"
-	"github.com/wailsapp/wails/v2/internal/runtime/goruntime"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-// Runtime is an alias for the goruntime.Runtime struct
-type Runtime = goruntime.Runtime
+// Runtime is an alias for the runtime.Runtime struct
+type Runtime = runtime.Runtime
 
 // CreateAppWithOptions creates an application based on the given config
 func CreateAppWithOptions(options *options.App) *app.App {

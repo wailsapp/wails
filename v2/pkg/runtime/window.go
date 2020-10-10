@@ -1,4 +1,4 @@
-package goruntime
+package runtime
 
 import (
 	"github.com/wailsapp/wails/v2/internal/servicebus"

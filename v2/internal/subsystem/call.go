@@ -9,8 +9,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher/message"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
-	"github.com/wailsapp/wails/v2/internal/runtime/goruntime"
-
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // Call is the Call subsystem. It manages all service bus messages
@@ -30,11 +29,11 @@ type Call struct {
 	logger logger.CustomLogger
 
 	// runtime
-	runtime *goruntime.Runtime 
+	runtime *runtime.Runtime
 }
 
 // NewCall creates a new call subsystem
-func NewCall(bus *servicebus.ServiceBus, logger *logger.Logger, DB *binding.DB, runtime *goruntime.Runtime) (*Call, error) {
+func NewCall(bus *servicebus.ServiceBus, logger *logger.Logger, DB *binding.DB, runtime *runtime.Runtime) (*Call, error) {
 
 	// Register quit channel
 	quitChannel, err := bus.Subscribe("quit")
@@ -54,7 +53,7 @@ func NewCall(bus *servicebus.ServiceBus, logger *logger.Logger, DB *binding.DB, 
 		logger:      logger.CustomLogger("Call Subsystem"),
 		DB:          DB,
 		bus:         bus,
-		runtime: runtime,
+		runtime:     runtime,
 	}
 
 	return result, nil
@@ -122,7 +121,7 @@ func (c *Call) processSystemCall(payload *message.CallMessage, clientID string) 
 	c.logger.Trace("Got internal System call: %+v", payload)
 	callName := strings.TrimPrefix(payload.Name, ".wails.")
 	switch callName {
-	case "IsDarkMode": 
+	case "IsDarkMode":
 		darkModeEnabled := c.runtime.System.IsDarkMode()
 		c.sendResult(darkModeEnabled, payload, clientID)
 	}

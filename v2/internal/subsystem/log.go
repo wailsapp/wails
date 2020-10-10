@@ -6,6 +6,7 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // Log is the Logging subsystem. It handles messages with topics starting
@@ -17,10 +18,13 @@ type Log struct {
 
 	// Logger!
 	logger *logger.Logger
+
+	// Loglevel store
+	logLevelStore *runtime.Store
 }
 
 // NewLog creates a new log subsystem
-func NewLog(bus *servicebus.ServiceBus, logger *logger.Logger) (*Log, error) {
+func NewLog(bus *servicebus.ServiceBus, logger *logger.Logger, logLevelStore *runtime.Store) (*Log, error) {
 
 	// Subscribe to log messages
 	logChannel, err := bus.Subscribe("log")
@@ -35,9 +39,10 @@ func NewLog(bus *servicebus.ServiceBus, logger *logger.Logger) (*Log, error) {
 	}
 
 	result := &Log{
-		logChannel:  logChannel,
-		quitChannel: quitChannel,
-		logger:      logger,
+		logChannel:    logChannel,
+		quitChannel:   quitChannel,
+		logger:        logger,
+		logLevelStore: logLevelStore,
 	}
 
 	return result, nil
@@ -76,13 +81,16 @@ func (l *Log) Start() error {
 					switch inLevel := logMessage.Data().(type) {
 					case logger.LogLevel:
 						l.logger.SetLogLevel(inLevel)
+						l.logLevelStore.Set(inLevel)
 					case string:
 						uint64level, err := strconv.ParseUint(inLevel, 10, 8)
 						if err != nil {
 							l.logger.Error("Error parsing log level: %+v", inLevel)
 							continue
 						}
-						l.logger.SetLogLevel(logger.LogLevel(uint64level))
+						level := logger.LogLevel(uint64level)
+						l.logLevelStore.Set(level)
+						l.logger.SetLogLevel(level)
 					}
 
 				default:

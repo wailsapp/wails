@@ -1,6 +1,6 @@
-// Package goruntime contains all the methods and data structures related to the
+// package runtime contains all the methods and data structures related to the
 // runtime library of Wails. This includes both Go and JS runtimes.
-package goruntime
+package runtime
 
 import (
 	"bytes"
@@ -32,8 +32,8 @@ type StoreProvider struct {
 	runtime *Runtime
 }
 
-// NewStoreProvider creates new stores using the provided Runtime reference.
-func NewStoreProvider(runtime *Runtime) *StoreProvider {
+// newStore creates new stores using the provided Runtime reference.
+func newStore(runtime *Runtime) *StoreProvider {
 	return &StoreProvider{
 		runtime: runtime,
 	}

@@ -1,9 +1,10 @@
 package options
 
-import ( 
-	"github.com/wailsapp/wails/v2/pkg/options/mac"
+import (
 	"github.com/wailsapp/wails/v2/pkg/logger"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
+
 // Default options for creating the App
 var Default = &App{
 	Title:    "My Wails App",
@@ -17,5 +18,6 @@ var Default = &App{
 		WebviewIsTransparent:          false,
 		WindowBackgroundIsTranslucent: false,
 	},
-	Logger: logger.NewDefaultLogger(),
+	Logger:   logger.NewDefaultLogger(),
+	LogLevel: logger.INFO,
 }

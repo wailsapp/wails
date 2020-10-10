@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
-	"github.com/wailsapp/wails/v2/internal/runtime/goruntime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // Runtime is the Runtime subsystem. It handles messages with topics starting
@@ -19,7 +19,7 @@ type Runtime struct {
 	logger logger.CustomLogger
 
 	// Runtime library
-	runtime *goruntime.Runtime
+	runtime *runtime.Runtime
 }
 
 // NewRuntime creates a new runtime subsystem
@@ -41,7 +41,7 @@ func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger) (*Runtime, er
 		quitChannel:    quitChannel,
 		runtimeChannel: runtimeChannel,
 		logger:         logger.CustomLogger("Runtime Subsystem"),
-		runtime:        goruntime.New(bus),
+		runtime:        runtime.New(bus),
 	}
 
 	return result, nil
@@ -93,7 +93,7 @@ func (r *Runtime) Start() error {
 }
 
 // GoRuntime returns the Go Runtime object
-func (r *Runtime) GoRuntime() *goruntime.Runtime {
+func (r *Runtime) GoRuntime() *runtime.Runtime {
 	return r.runtime
 }
 

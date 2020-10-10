@@ -1,4 +1,4 @@
-package goruntime
+package runtime
 
 import (
 	"fmt"
