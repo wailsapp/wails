@@ -20,11 +20,13 @@
     $: code = isJs ? jsCode : goCode;
 
     // Handle hiding example
-    let showCode = true;
+    let showCode = false;
 
     function toggleExample() {
         showCode = !showCode;
     }   
+
+    export let id;
     
     // Handle hiding example
     let showRun = true;
@@ -40,8 +42,8 @@
             <span class="toggle">
                 <span>Go</span>
                 <span class="custom-switch">
-                    <input type="checkbox" id="languageToggle" value="" bind:checked={isJs}>
-                    <label for="languageToggle">Javascript</label>
+                    <input type="checkbox" {id} value="" bind:checked={isJs}>
+                    <label for={id}>Javascript</label>
                 </span>
             </span>
         {#if description}

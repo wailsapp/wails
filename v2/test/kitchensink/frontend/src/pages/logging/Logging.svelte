@@ -1,77 +1,36 @@
 <script>
-
-    import { Log } from '@wails/runtime';
-    import CodeBlock from '../../components/CodeBlock.svelte';
-    import jsCode from './code.jsx';
-    import goCode from './code.go';
-
-    import { logLevel } from '../../Store';
-
-    var message = '';
-    var isJs = false;
-
-    var options = ["Trace", "Debug", "Info", "Warning", "Error", "Fatal", "Print"];
-    var loglevel = options[0];
-
-
-    // This is the current log level in text form
-    $: currentLoglevelText = options[$logLevel];
-
-    $: lang = isJs ? 'Javascript' : 'Go';
-
-    function sendLogMessage() {
-        if( message.length > 0 ) {
-            if( isJs ) {
-                // Call JS runtime
-                Log[loglevel](message);
-            } else {
-                // Call Go method which calls Go Runtime
-                backend.main.Logger[loglevel](message);              
-            }
-        }
-    }
-
+    import Log from './Log/Log.svelte';
+    import SetLogLevel from './SetLogLevel/SetLogLevel.svelte';
+    
+    const loglevels = ["Trace", "Debug", "Info", "Warning", "Error", "Fatal", "Print"];
+    
 </script>
 <div>
     <h4>Logging</h4>
 
-    Logging is part of the Wails Runtime and is accessed through the <code>runtime.Log</code> object. There are {options.length} methods available:
+    Logging is part of the Wails Runtime and is accessed through the <code>runtime.Log</code> object. There are {loglevels.length} methods available:
     
     <ul class="list">
-        {#each options as option}
+        {#each loglevels as option}
         <li>{option}</li>
         {/each}
     </ul>
-    All methods will log to the console and <code>Fatal</code> will also exit the program.
+    <br/>
+
+    The default logger will log all messages to the console EG:<br/>
+    <pre>
+INFO  | I am an Info message
+ERROR | I am an Error message
+WARN  | I am a Warning message
+    </pre>
+
+    <code>Fatal</code> will print the message and then immediately exit the program.
     
     <div style="padding: 15px"></div>
     
-    <CodeBlock bind:isJs={isJs} {jsCode} {goCode} title="Logging" >
-        <div class="logging-form">
-            <form data-wails-no-drag class="w-500 mw-full"> <!-- w-400 = width: 40rem (400px), mw-full = max-width: 100% -->
-                <!-- Radio -->
-                <div class="form-group">
-                    <label for="Debug">Select Logging Level</label>
-                    {#each options as option, index}
-                    {#if index === $logLevel}
-                    <span style="margin-top: 5px; height: 20px; display: inline-block;"><hr style="width: 270px;display: inline-block; vertical-align: middle; margin-right: 10px"/> Current Log Level </span>
-                    {/if}
-                    <div class="custom-radio">
-                        <input type="radio" name="logging" bind:group="{loglevel}" id="{option}" value="{option}">
-                        <label for="{option}">{option}</label>
-                    </div>   
-                    {/each}
-                </div>
+    <Log></Log>
+    <br/>
+    <SetLogLevel></SetLogLevel>
 
-                <!-- Input -->
-                <div class="form-group">
-                    <label for="message" class="required">Message</label>
-                    <input type="text" class="form-control" id="message" placeholder="Hello World!" bind:value="{message}" required="required">
-                </div>
-
-                <input class="btn btn-primary" type="button" on:click="{sendLogMessage}" value="Call {lang} method">
-            </form>
-        </div>
-    </CodeBlock>
 
 </div>
