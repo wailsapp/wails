@@ -111,7 +111,7 @@
   }
 
   ::-webkit-scrollbar-track {
-    background-color: rgba(128,128,128,.05);
+    background-color: rgba(128,128,128,0);
   }
 
   .sidebar-link {
