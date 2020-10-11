@@ -11,7 +11,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/internal/subsystem"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v2/internal/runtime"
 )
 
 // App defines a Wails application structure

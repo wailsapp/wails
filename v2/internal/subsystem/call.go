@@ -8,8 +8,8 @@ import (
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher/message"
+	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // Call is the Call subsystem. It manages all service bus messages

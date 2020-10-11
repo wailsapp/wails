@@ -3,8 +3,8 @@ package subsystem
 import (
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // Binding is the Binding subsystem. It manages all service bus messages

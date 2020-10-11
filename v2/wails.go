@@ -4,8 +4,8 @@ package wails
 
 import (
 	"github.com/wailsapp/wails/v2/internal/app"
+	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // Runtime is an alias for the runtime.Runtime struct

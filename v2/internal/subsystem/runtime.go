@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // Runtime is the Runtime subsystem. It handles messages with topics starting
