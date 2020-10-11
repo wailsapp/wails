@@ -16,10 +16,6 @@
 
     var id = "Logging";
 
-    $: () => {
-        console.log("Loglevel:", $logLevel)
-    }
-
     function sendLogMessage() {
         if( message.length > 0 ) {
             if( isJs ) {
@@ -55,7 +51,7 @@
                 <input type="text" class="form-control" id="{id}-message" placeholder="Hello World!" bind:value="{message}" required="required">
             </div>
 
-            <input class="btn btn-primary" type="button" on:click="{sendLogMessage}" value="Call {lang} method">
+            <input class="btn btn-primary" type="button" on:click="{sendLogMessage}" value="Log using {lang} runtime">
         </form>
     </div>
 </CodeBlock>
