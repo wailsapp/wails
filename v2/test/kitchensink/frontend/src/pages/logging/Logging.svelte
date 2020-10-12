@@ -33,7 +33,7 @@ ERROR | I am an Error message
 WARN  | I am a Warning message
     </FakeTerm>
     <br/>
-    Custom loggers may be given to your Wails application. More details <Link href="https://www.google.com">here</Link>.
+    Custom loggers may be given to your Wails application. More details <Link href="https://wails.app">here</Link>.
     
     <br/><br/>
     

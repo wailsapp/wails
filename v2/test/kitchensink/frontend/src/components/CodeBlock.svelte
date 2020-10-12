@@ -67,7 +67,7 @@
             Example Code
         </div>
         {#if showCode}
-        <Highlight class="allow-select" language="{lang}" {code} style="max-height: 500px;"/>
+        <Highlight class="allow-select" language="{lang}" {code}/>
         {/if}
     </div>
 </div>

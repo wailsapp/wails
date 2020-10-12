@@ -19,11 +19,11 @@
         let logLevelUpper = loglevelText.toUpperCase();
         let logLevelNumber = Log.Level[logLevelUpper];
         setLogLevelMethod(logLevelNumber);
+        logLevel.set(logLevelNumber);
     };
     $: lang = isJs ? 'Javascript' : 'Go';
 
-    let description = `You can set the log level using Log.SetLogLevel(). It accepts a log level (number) but the log levels supported have been added to Log: Log.TRACE
-`;    
+    let description = `You can set the log level using Log.SetLogLevel(). It accepts a log level (number) but there are consts available which may be used. See example code for more details.`;    
     $: testcodeJs = "import { Log } from '@wails/runtime';\nLog.SetLogLevel(Log.Level." + loglevelText.toUpperCase() + ");";
     $: testcodeGo = 'import "github.com/wailsapp/wails/v2/pkg/logger"\n\n// runtime is given through WailsInit()\nruntime.Log.SetLogLevel(logger.' + loglevelText.toUpperCase() + ')'; 
 </script>
@@ -33,7 +33,7 @@
         <form data-wails-no-drag class="mw-full">
             <!-- Radio -->
             <div class="form-group">
-                <label for="Debug">Select Logging Level</label>
+                <div>Select Logging Level</div>
                 {#each options as option}
                 <div class="custom-radio">
                     <input type="radio" name="logging" bind:group="{loglevelText}" id="{id}-{option}" value="{option}">

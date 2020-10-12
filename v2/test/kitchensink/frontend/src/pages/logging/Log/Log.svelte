@@ -39,7 +39,7 @@
     <div class="logging-form">
         <form data-wails-no-drag class="mw-full"> 
             <div class="form-group">
-                <label for="Debug">Select Log Method</label>
+                <div>Select Log Method</div>
                 {#each loglevels as option, index}
                 {#if index === $logLevel}
                 <span style="margin-top: 5px; height: 20px; display: inline-block;"><hr style="width: 270px;display: inline-block; vertical-align: middle; margin-right: 10px"/> Current Log Level </span>
