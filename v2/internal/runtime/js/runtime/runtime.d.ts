@@ -8,11 +8,11 @@ interface Store {
 }
 
 interface Level {
-	TRACE: 0,
-	DEBUG: 1,
-	INFO: 2,
-	WARNING: 3,
-	ERROR: 4,
+	TRACE: 1,
+	DEBUG: 2,
+	INFO: 3,
+	WARNING: 4,
+	ERROR: 5,
 };
 
 declare const wailsapp__runtime: {

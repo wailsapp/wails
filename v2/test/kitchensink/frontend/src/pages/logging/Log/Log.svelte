@@ -41,7 +41,7 @@
             <div class="form-group">
                 <div>Select Log Method</div>
                 {#each loglevels as option, index}
-                {#if index === $logLevel}
+                {#if (index + 1) === $logLevel}
                 <span style="margin-top: 5px; height: 20px; display: inline-block;"><hr style="width: 270px;display: inline-block; vertical-align: middle; margin-right: 10px"/> Current Log Level </span>
                 {/if}
                 <div class="custom-radio">

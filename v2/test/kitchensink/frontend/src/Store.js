@@ -13,7 +13,8 @@ runtime.System.OnThemeChange( (isDarkMode) => {
 // LogLevel
 // Create a svelte store for the logLevel and initialise with 
 // the loglevel stored in the Wails runtime
-export let logLevel = writable(runtime.System.LogLevel.get());
+const defaultLogLevel = runtime.System.LogLevel.get();
+export let logLevel = writable(defaultLogLevel);
 
 // Bind updates to the Wails store to the Svelte Store
 runtime.System.LogLevel.subscribe( (newValue) => {

@@ -11,15 +11,14 @@
     var options = ["Trace", "Debug", "Info", "Warning", "Error"];
     let isJs = false;
     var id = "SetLogLevel";
-    let loglevelText = options[$logLevel];
+    let loglevelText = options[$logLevel-1];
 
     $: setLogLevelMethod = isJs ? Log.SetLogLevel : backend.main.Logger.SetLogLevel;
 
     function setLogLevel() {
         let logLevelUpper = loglevelText.toUpperCase();
-        let logLevelNumber = Log.Level[logLevelUpper];
-        setLogLevelMethod(logLevelNumber);
-        logLevel.set(logLevelNumber);
+        let logLevelMethod = Log.Level[logLevelUpper];
+        setLogLevelMethod(logLevelMethod);
     };
     $: lang = isJs ? 'Javascript' : 'Go';
 
