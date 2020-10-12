@@ -47,9 +47,11 @@ export function Init() {
 		Store,
 	};
 
-	// Setup system
-	window.wails.System.IsDarkMode = Store.New('isdarkmode');
-	window.wails.System.LogLevel = Store.New('loglevel');
+	// Setup system. Store uses window.wails so needs to be setup after that
+	window.wails.System = {
+		IsDarkMode: Store.New('isdarkmode'),
+		LogLevel: Store.New('loglevel'),
+	};
 
 	// Do platform specific Init
 	Platform.Init();

@@ -7,6 +7,14 @@ interface Store {
     update(callback: (currentvalue: any) => any): void;
 }
 
+interface Level {
+	TRACE: 0,
+	DEBUG: 1,
+	INFO: 2,
+	WARNING: 3,
+	ERROR: 4,
+};
+
 declare const wailsapp__runtime: {
     Browser: {
         OpenFile(filename: string): Promise<any>;
@@ -27,6 +35,7 @@ declare const wailsapp__runtime: {
         Fatal(message: string): void;
         Info(message: string): void;
         Warning(message: string): void;
+        Level: Level;
     };
     System: {
         DarkModeEnabled(): Promise<boolean>;
