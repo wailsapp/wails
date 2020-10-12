@@ -41,8 +41,8 @@
                 </div>   
                 {/each}
             </div>
-            <CodeSnippet bind:isJs={isJs} jsCode={testcodeJs} goCode={testcodeGo}></CodeSnippet>
             <input class="btn btn-primary" type="button" on:click="{setLogLevel}" value="SetLogLevel using {lang} runtime">
+            <CodeSnippet bind:isJs={isJs} jsCode={testcodeJs} goCode={testcodeGo}></CodeSnippet>
         </form>
     </div>
 </CodeBlock>
