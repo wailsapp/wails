@@ -1,5 +1,6 @@
 <script>
     import CodeBlock from '../../../components/CodeBlock.svelte';
+    import CodeSnippet from '../../../components/CodeSnippet.svelte';
     import { logLevel } from '../../../Store';
 
     import { Log } from '@wails/runtime';
@@ -23,11 +24,13 @@
 
     let description = `You can set the log level using Log.SetLogLevel(). It accepts a log level (number) but the log levels supported have been added to Log: Log.TRACE
 `;    
+    $: testcodeJs = "import { Log } from '@wails/runtime';\nLog.SetLogLevel(Log.Level." + loglevelText.toUpperCase() + ");";
+    $: testcodeGo = 'import "github.com/wailsapp/wails/v2/pkg/logger"\n\n// runtime is given through WailsInit()\nruntime.Log.SetLogLevel(logger.' + loglevelText.toUpperCase() + ')'; 
 </script>
 
 <CodeBlock bind:isJs={isJs} {jsCode} {goCode} title="SetLogLevel" {id} {description}>
     <div class="logging-form">
-        <form data-wails-no-drag class="w-500 mw-full">
+        <form data-wails-no-drag class="mw-full">
             <!-- Radio -->
             <div class="form-group">
                 <label for="Debug">Select Logging Level</label>
@@ -38,6 +41,7 @@
                 </div>   
                 {/each}
             </div>
+            <CodeSnippet bind:isJs={isJs} jsCode={testcodeJs} goCode={testcodeGo}></CodeSnippet>
             <input class="btn btn-primary" type="button" on:click="{setLogLevel}" value="SetLogLevel using {lang} runtime">
         </form>
     </div>

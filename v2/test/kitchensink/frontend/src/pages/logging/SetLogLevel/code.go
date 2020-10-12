@@ -1,22 +1,22 @@
 package main
 
-// SET LOG LEVEL
+import (
+	wails "github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/logger"
+)
 
-import wails "github.com/wailsapp/wails/v2"
-
-type MyStruct struct {
+// Logger struct
+type Logger struct {
 	runtime *wails.Runtime
 }
 
-func (l *MyStruct) WailsInit(runtime *wails.Runtime) error {
+func (l *Logger) WailsInit(runtime *wails.Runtime) error {
 
-	runtime.Log.Print(message)
-	runtime.Log.Trace(message)
-	runtime.Log.Debug(message)
-	runtime.Log.Info(message)
-	runtime.Log.Warning(message)
-	runtime.Log.Error(message)
-	runtime.Log.Fatal(message)
+	runtime.Log.SetLogLevel(logger.TRACE)
+	// runtime.Log.SetLogLevel(logger.DEBUG)
+	// runtime.Log.SetLogLevel(logger.INFO)
+	// runtime.Log.SetLogLevel(logger.WARNING)
+	// runtime.Log.SetLogLevel(logger.ERROR)
 
 	l.runtime = runtime
 	return nil

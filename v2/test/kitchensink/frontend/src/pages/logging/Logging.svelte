@@ -22,23 +22,23 @@
     <br/>
 
     Logs are only output if they are above or equal to the current log level. Example: If the current log level is 
-    <code>Info</code>, then <code>Trace</code> and <code>Debug</code> messages will be surpressed. <br/>
-    <code>Fatal</code> will log the message and then immediately exit the program.<br/>
-    <code>Print</code> will send a raw message to the log. You can use <code>Print</code> at any log level.<br/>
-    
+    <code>Info</code>, then <code>Trace</code> and <code>Debug</code> messages will be surpressed. <br/><br/>
+    <code>Fatal</code> will log the message and then immediately exit the program.<br/><br/>
+    <code>Print</code> will send a raw message to the log regardless of log level.<br/><br/>
+
     The default logger will log messages to the console in the following format:<br/>
     <FakeTerm>
 INFO  | I am an Info message
 ERROR | I am an Error message
 WARN  | I am a Warning message
     </FakeTerm>
+    <br/>
     Custom loggers may be given to your Wails application. More details <Link href="https://www.google.com">here</Link>.
     
-    <div style="padding: 15px"></div>
+    <br/><br/>
     
     <Log></Log>
-    <br/>
+    <br/><br/>
     <SetLogLevel></SetLogLevel>
-
 
 </div>

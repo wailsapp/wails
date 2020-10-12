@@ -16,8 +16,6 @@ func main() {
 		Height:    768,
 		MinWidth:  800,
 		MinHeight: 600,
-		MaxWidth:  1400,
-		MaxHeight: 800,
 		Mac: &mac.Options{
 			WebviewIsTransparent:          true,
 			WindowBackgroundIsTranslucent: true,

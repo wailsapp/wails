@@ -50,25 +50,24 @@
         <div class="description">{description}</div>
         {/if}
     </div>
-    <div class="example"> 
-        <div class="{showCode ? 'code-title-open' : 'code-title-closed'}" on:click="{toggleExample}" >
-            <span style="display: inline-block; width: 15px;">{showCode?'▼':'▶'}</span>
-            Example Code
-        </div>
-        {#if showCode}
-        <Highlight class="allow-select" language="{lang}" {code} style="max-height: 500px;"/>
-        {/if}
-    </div>
-
     <div class="run"> 
         <div class="{showRun ? 'run-title-open' : 'run-title-closed'}" on:click="{toggleRun}">
-            <span style="display: inline-block; width: 15px;">{showRun?'▼':'▶'}</span>
+            <span style="display: inline-block; width: 10px; font-size: 11px">{showRun?'▼':'▶'}</span>
             Try Me!
         </div>
         {#if showRun}
         <div class={$darkMode ? "run-content-dark" : "run-content-light"}>
             <slot></slot>
         </div>
+        {/if}
+    </div>
+    <div class="example"> 
+        <div class="{showCode ? 'code-title-open' : 'code-title-closed'}" on:click="{toggleExample}" >
+            <span style="display: inline-block; width: 10px; font-size: 11px">{showCode?'▼':'▶'}</span>
+            Example Code
+        </div>
+        {#if showCode}
+        <Highlight class="allow-select" language="{lang}" {code} style="max-height: 500px;"/>
         {/if}
     </div>
 </div>
@@ -80,23 +79,29 @@
         justify-content: space-between;
         border-bottom: 1px solid #5555;
         flex-wrap: wrap;
-        padding-bottom: 10px;
+        align-items: center;
+        padding-bottom: 5px;
+        padding-left: 5px;
+        padding-right: 5px;
     }
 
     .title {
-        font-size: 1.75rem;
+        font-size: 2rem;
     }
 
     .code-title-open {
-        padding-top: 15px;
-        padding-bottom: 0;
+        margin-top: 5px;
+        margin-bottom: -5px;
+        padding-left: 5px;
         cursor: pointer;
+        font-size: 1.5rem;
     }
 
     .code-title-closed {
-        padding-top: 15px;
-        padding-bottom: 5px;
+        margin-top: 5px;
+        padding-left: 5px;
         cursor: pointer;
+        font-size: 1.5rem;
     }
 
     .run-content-dark {
@@ -110,16 +115,20 @@
     }
 
     .run-title-open {
-        margin-top: 15px;
-        margin-bottom: 15px;
+        margin-top: 5px;
+        margin-bottom: 5px;
         padding-bottom: 0;
+        padding-left: 5px;
         cursor: pointer;
+        font-size: 1.5rem;
     }
 
     .run-title-closed {
-        margin-top: 15px;
-        margin-bottom: 15px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        padding-left: 5px;
         cursor: pointer;
+        font-size: 1.5rem;
     }
 
     .toggle {
@@ -129,8 +138,7 @@
 
     .example {
         padding-right: 5px;
-        border-bottom: 1px solid #5555;
-        padding-bottom: 10px;
+        border-top: 1px solid #5555;
     }
     
     .custom-switch {
@@ -142,7 +150,9 @@
         background-color: #3F3F4B;
         border-radius: 5px;
         border: 1px solid #555;
-        padding: 15px;
+        padding: 5px;
+        margin-top: 20px;
+        margin-bottom: 10px;
     }
 
     .codeblock-light {
@@ -150,6 +160,8 @@
         border-radius: 5px;
         border: 1px solid #ccc;
         padding: 15px;
+        margin-top: 20px;
+        margin-bottom: 10px;
     }
 
     .description {

@@ -6,6 +6,7 @@ import { terser } from 'rollup-plugin-terser';
 import postcss from 'rollup-plugin-postcss';
 import autoPreprocess from 'svelte-preprocess';
 import { string } from "rollup-plugin-string";
+import url from '@rollup/plugin-url';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -19,9 +20,18 @@ export default {
 	},
 	onwarn: handleRollupWarning,
 	plugins: [
+		
+		// Embed binary files
+		url({	
+			include: ['**/*.woff', '**/*.woff2'],
+			limit: Infinity,			
+		}),
+
+		// Embed text files
 		string({
 			include: ["**/*.jsx","**/*.go"],
 		}),
+		
 		svelte({
 			preprocess: autoPreprocess(),
 			// enable run-time checks when not in production
