@@ -28,9 +28,13 @@
 
     The default logger will log messages to the console in the following format:<br/>
     <FakeTerm>
+TRACE | I am a Trace message
+DEBUG | I am a Debug message
 INFO  | I am an Info message
-ERROR | I am an Error message
 WARN  | I am a Warning message
+ERROR | I am an Error message
+FATAL | I am a Fatal message
+I am a Print message
     </FakeTerm>
     <br/>
     Custom loggers may be given to your Wails application. More details <Link href="https://wails.app">here</Link>.
@@ -38,7 +42,7 @@ WARN  | I am a Warning message
     <br/><br/>
     
     <Log></Log>
-    <br/><br/>
+    <br/>
     <SetLogLevel></SetLogLevel>
 
 </div>

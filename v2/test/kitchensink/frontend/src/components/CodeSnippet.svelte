@@ -19,7 +19,7 @@
 </script>
 
 <div data-wails-no-drag class={$darkMode ? "codeblock" : "codeblock-light"}>
-    <Highlight class="allow-select" language="{lang}" {code} style="margin: -5px; font-size: 13px"/>
+    <Highlight language="{lang}" {code} style="margin: -5px;"/>
 </div>
 
 <style>

@@ -38,21 +38,21 @@
 
 <div data-wails-no-drag class={$darkMode ? "codeblock" : "codeblock-light"}>
     <div class="header">
-            <span class="title">{title}</span>
-            <span class="toggle">
-                <span>Go</span>
-                <span class="custom-switch">
-                    <input type="checkbox" {id} value="" bind:checked={isJs}>
-                    <label for={id}>Javascript</label>
-                </span>
+        <span class="title">{title}</span>
+        <span class="toggle">
+            <span>Go</span>
+            <span class="custom-switch">
+                <input type="checkbox" {id} value="" bind:checked={isJs}>
+                <label for={id}>Javascript</label>
             </span>
+        </span>
         {#if description}
         <div class="description">{description}</div>
         {/if}
     </div>
     <div class="run"> 
         <div class="{showRun ? 'run-title-open' : 'run-title-closed'}" on:click="{toggleRun}">
-            <span style="display: inline-block; width: 10px; font-size: 11px">{showRun?'▼':'▶'}</span>
+            <span class="arrow">{showRun?'▼':'▶'}</span>
             Try Me!
         </div>
         {#if showRun}
@@ -63,16 +63,22 @@
     </div>
     <div class="example"> 
         <div class="{showCode ? 'code-title-open' : 'code-title-closed'}" on:click="{toggleExample}" >
-            <span style="display: inline-block; width: 10px; font-size: 11px">{showCode?'▼':'▶'}</span>
+            <span class="arrow">{showCode?'▼':'▶'}</span>
             Example Code
         </div>
         {#if showCode}
-        <Highlight class="allow-select" language="{lang}" {code}/>
+        <Highlight style="margin-bottom: 0" language="{lang}" {code}/>
         {/if}
     </div>
 </div>
 
 <style>
+
+    .arrow {
+        display: inline-block; 
+        width: calc(var(--base-font-size));
+        padding: 2px;
+    }
 
     .header {
         display: flex;
@@ -86,7 +92,7 @@
     }
 
     .title {
-        font-size: 2rem;
+        font-size: calc(var(--base-font-size) * 1.1);
     }
 
     .code-title-open {
@@ -94,14 +100,13 @@
         margin-bottom: -5px;
         padding-left: 5px;
         cursor: pointer;
-        font-size: 1.5rem;
     }
 
     .code-title-closed {
         margin-top: 5px;
         padding-left: 5px;
+        padding-bottom: 5px;
         cursor: pointer;
-        font-size: 1.5rem;
     }
 
     .run-content-dark {
@@ -120,7 +125,6 @@
         padding-bottom: 0;
         padding-left: 5px;
         cursor: pointer;
-        font-size: 1.5rem;
     }
 
     .run-title-closed {
@@ -128,16 +132,15 @@
         margin-bottom: 5px;
         padding-left: 5px;
         cursor: pointer;
-        font-size: 1.5rem;
     }
 
     .toggle {
         float: right;
         margin-top: 2px;
+        font-size: calc(var(--base-font-size) * 0.9);
     }
 
     .example {
-        padding-right: 5px;
         border-top: 1px solid #5555;
     }
     
