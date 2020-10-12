@@ -5,22 +5,19 @@ type LogLevel uint8
 
 const (
 	// TRACE level
-	TRACE LogLevel = 0
+	TRACE LogLevel = 1
 
 	// DEBUG level logging
-	DEBUG LogLevel = 1
+	DEBUG LogLevel = 2
 
 	// INFO level logging
-	INFO LogLevel = 2
+	INFO LogLevel = 3
 
 	// WARNING level logging
-	WARNING LogLevel = 3
+	WARNING LogLevel = 4
 
 	// ERROR level logging
-	ERROR LogLevel = 4
-
-	// FATAL level logging
-	FATAL LogLevel = 5
+	ERROR LogLevel = 5
 )
 
 // Logger specifies the methods required to attach
