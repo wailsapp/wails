@@ -78,6 +78,11 @@ func init() {
 			return fmt.Errorf("Unable to find 'project.json'. Please check you are in a Wails project directory")
 		}
 
+		// Check that this platform is supported
+		if !projectOptions.PlatformSupported() {
+			logger.Yellow("WARNING: This project is unsupported on %s - it probably won't work!\n         Valid platforms: %s\n", runtime.GOOS, strings.Join(projectOptions.Platforms, ", "))
+		}
+
 		// Set cross-compile
 		projectOptions.Platform = runtime.GOOS
 		if len(platform) > 0 {
