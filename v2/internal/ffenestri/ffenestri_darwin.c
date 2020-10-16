@@ -291,8 +291,9 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 
 // closeWindow is called when the close button is pressed
 void closeWindow(id self, SEL cmd, id sender) {
-    struct Application *app = (struct Application *) objc_getAssociatedObject(self, "application");
-    app->sendMessageToBackend("WC");
+    printf("\n\n\ncloseWindow called!!!!\n\n\n");
+    // struct Application *app = (struct Application *) objc_getAssociatedObject(self, "application");
+    // app->sendMessageToBackend("WC");
 }
 
 bool isDarkMode(struct Application *app) {
@@ -827,7 +828,7 @@ void createDelegate(struct Application *app) {
     Class delegateClass = objc_allocateClassPair((Class) c("NSResponder"), "AppDelegate", 0);
     class_addProtocol(delegateClass, objc_getProtocol("NSTouchBarProvider"));
     class_addMethod(delegateClass, s("applicationShouldTerminateAfterLastWindowClosed:"), (IMP) yes, "c@:@");
-    class_addMethod(delegateClass, s("closeWindow"), (IMP) closeWindow, "v@:@");
+    class_addMethod(delegateClass, s("windowWillClose:"), (IMP) closeWindow, "v@:@");
 
     // Script handler
     class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler, "v@:@@");
