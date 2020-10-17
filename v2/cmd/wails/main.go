@@ -22,17 +22,17 @@ func main() {
 
 	app := clir.NewCli("Wails", "Go/HTML Application Framework", version)
 
-	build.AddBuildSubcommand(app)
-	err = initialise.AddSubcommand(app)
+	build.AddBuildSubcommand(app, os.Stdout)
+	err = initialise.AddSubcommand(app, os.Stdout)
 	if err != nil {
 		fatal(err.Error())
 	}
-	err = doctor.AddSubcommand(app)
+	err = doctor.AddSubcommand(app, os.Stdout)
 	if err != nil {
 		fatal(err.Error())
 	}
 
-	err = dev.AddSubcommand(app)
+	err = dev.AddSubcommand(app, os.Stdout)
 	if err != nil {
 		fatal(err.Error())
 	}

@@ -2,37 +2,37 @@ package doctor
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"os"
 	"runtime"
 	"strings"
 	"text/tabwriter"
 
 	"github.com/leaanthony/clir"
-	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/system"
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
+	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
 
 // AddSubcommand adds the `doctor` command for the Wails application
-func AddSubcommand(app *clir.Cli) error {
+func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 	command := app.NewSubCommand("doctor", "Diagnose your environment")
 
 	command.Action(func() error {
 
-		// Create logger
-		logger := logger.New()
-		logger.AddOutput(os.Stdout)
+		logger := clilogger.New(w)
 
 		app.PrintBanner()
-		print("Scanning system - please wait...")
+		logger.Print("Scanning system - please wait...")
 
 		// Get system info
 		info, err := system.GetInfo()
 		if err != nil {
 			return err
 		}
-		println("Done.")
+		logger.Println("Done.")
 
 		// Start a new tabwriter
 		w := new(tabwriter.Writer)
@@ -112,22 +112,22 @@ func AddSubcommand(app *clir.Cli) error {
 		fmt.Fprintf(w, "\n")
 		fmt.Fprintf(w, "* - Optional Dependency\n")
 		w.Flush()
-		println()
-		println("Diagnosis")
-		println("---------\n")
+		logger.Println("")
+		logger.Println("Diagnosis")
+		logger.Println("---------\n")
 
 		// Generate an appropriate diagnosis
 
 		if len(dependenciesMissing) == 0 && dependenciesAvailableRequired == 0 {
-			println("Your system is ready for Wails development!")
+			logger.Println("Your system is ready for Wails development!")
 		}
 
 		if dependenciesAvailableRequired != 0 {
-			println("Install required packages using: " + info.Dependencies.InstallAllRequiredCommand())
+			log.Println("Install required packages using: " + info.Dependencies.InstallAllRequiredCommand())
 		}
 
 		if dependenciesAvailableOptional != 0 {
-			println("Install optional packages using: " + info.Dependencies.InstallAllOptionalCommand())
+			log.Println("Install optional packages using: " + info.Dependencies.InstallAllOptionalCommand())
 		}
 
 		if len(externalPackages) > 0 {
@@ -135,18 +135,18 @@ func AddSubcommand(app *clir.Cli) error {
 				if p.Optional {
 					print("[Optional] ")
 				}
-				println("Install " + p.Name + ": " + p.InstallCommand)
+				log.Println("Install " + p.Name + ": " + p.InstallCommand)
 			}
 		}
 
 		if len(dependenciesMissing) != 0 {
 			// TODO: Check if apps are available locally and if so, adjust the diagnosis
-			println("Fatal:")
-			println("Required dependencies missing: " + strings.Join(dependenciesMissing, " "))
-			println("Please read this article on how to resolve this: https://wails.app/guides/resolving-missing-packages")
+			log.Println("Fatal:")
+			log.Println("Required dependencies missing: " + strings.Join(dependenciesMissing, " "))
+			log.Println("Please read this article on how to resolve this: https://wails.app/guides/resolving-missing-packages")
 		}
 
-		println()
+		log.Println("")
 		return nil
 	})
 

@@ -99,13 +99,13 @@ func (s *ServerBuilder) BuildRuntime(options *Options) error {
 		return err
 	}
 
-	options.Logger.Write("    - Embedding Runtime...")
+	options.Logger.Print("    - Embedding Runtime...")
 	envvars := []string{"WAILSPLATFORM=" + options.Platform}
 	var err error
 	if err = s.NpmRunWithEnvironment(sourceDir, "build:server", false, envvars); err != nil {
 		return err
 	}
 
-	options.Logger.Writeln("done.")
+	options.Logger.Println("done.")
 	return nil
 }

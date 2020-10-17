@@ -3,19 +3,19 @@ package process
 import (
 	"os/exec"
 
-	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
 
 // Process defines a process that can be executed
 type Process struct {
-	logger      *logger.Logger
+	logger      *clilogger.CLILogger
 	cmd         *exec.Cmd
 	exitChannel chan bool
 	Running     bool
 }
 
 // NewProcess creates a new process struct
-func NewProcess(logger *logger.Logger, cmd string, args ...string) *Process {
+func NewProcess(logger *clilogger.CLILogger, cmd string, args ...string) *Process {
 	return &Process{
 		logger:      logger,
 		cmd:         exec.Command(cmd, args...),
@@ -33,10 +33,10 @@ func (p *Process) Start() error {
 
 	p.Running = true
 
-	go func(cmd *exec.Cmd, running *bool, logger *logger.Logger, exitChannel chan bool) {
-		logger.Info("Starting process (PID: %d)", cmd.Process.Pid)
+	go func(cmd *exec.Cmd, running *bool, logger *clilogger.CLILogger, exitChannel chan bool) {
+		logger.Println("Starting process (PID: %d)", cmd.Process.Pid)
 		cmd.Wait()
-		logger.Info("Exiting process (PID: %d)", cmd.Process.Pid)
+		logger.Println("Exiting process (PID: %d)", cmd.Process.Pid)
 		*running = false
 		exitChannel <- true
 	}(p.cmd, &p.Running, p.logger, p.exitChannel)

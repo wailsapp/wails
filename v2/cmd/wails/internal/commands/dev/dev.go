@@ -2,6 +2,7 @@ package dev
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"runtime"
@@ -13,13 +14,13 @@ import (
 	"github.com/leaanthony/clir"
 	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/internal/fs"
-	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/process"
+	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/commands/build"
 )
 
 // AddSubcommand adds the `dev` command for the Wails application
-func AddSubcommand(app *clir.Cli) error {
+func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 	command := app.NewSubCommand("dev", "Development mode")
 
@@ -51,8 +52,7 @@ func AddSubcommand(app *clir.Cli) error {
 		}
 
 		// Create logger
-		logger := logger.New()
-		logger.AddOutput(os.Stdout)
+		logger := clilogger.New(w)
 		app.PrintBanner()
 
 		// TODO: Check you are in a project directory
@@ -74,11 +74,11 @@ func AddSubcommand(app *clir.Cli) error {
 		debounceQuit := make(chan bool, 1)
 
 		// Do initial build
-		logger.Info("Building application for development...")
+		logger.Println("Building application for development...")
 		debugBinaryProcess = restartApp(logger, outputType, ldflags, compilerCommand, buildFrontend, debugBinaryProcess)
 
 		go debounce(100*time.Millisecond, watcher.Events, debounceQuit, func(event fsnotify.Event) {
-			// logger.Info("event: %+v", event)
+			// logger.Println("event: %+v", event)
 
 			// Check for new directories
 			if event.Op&fsnotify.Create == fsnotify.Create {
@@ -86,7 +86,7 @@ func AddSubcommand(app *clir.Cli) error {
 				if fs.DirExists(event.Name) {
 					if !strings.Contains(event.Name, "node_modules") {
 						watcher.Add(event.Name)
-						logger.Info("Watching directory: %s", event.Name)
+						logger.Println("Watching directory: %s", event.Name)
 					}
 				}
 				return
@@ -95,7 +95,7 @@ func AddSubcommand(app *clir.Cli) error {
 			// Check for file writes
 			if event.Op&fsnotify.Write == fsnotify.Write {
 
-				// logger.Info("modified file: %s", event.Name)
+				// logger.Println("modified file: %s", event.Name)
 				var rebuild bool = false
 
 				// Iterate all file patterns
@@ -112,14 +112,14 @@ func AddSubcommand(app *clir.Cli) error {
 				}
 
 				if !rebuild {
-					logger.Info("Filename change: %s did not match extension list %s", event.Name, extensions)
+					logger.Println("Filename change: %s did not match extension list %s", event.Name, extensions)
 					return
 				}
 
 				if buildFrontend {
-					logger.Info("Full rebuild triggered: %s updated", event.Name)
+					logger.Println("Full rebuild triggered: %s updated", event.Name)
 				} else {
-					logger.Info("Partial build triggered: %s updated", event.Name)
+					logger.Println("Partial build triggered: %s updated", event.Name)
 				}
 
 				// Do a rebuild
@@ -152,7 +152,7 @@ func AddSubcommand(app *clir.Cli) error {
 			if strings.Contains(dir, "node_modules") {
 				return
 			}
-			logger.Info("Watching directory: %s", dir)
+			logger.Println("Watching directory: %s", dir)
 			err = watcher.Add(dir)
 			if err != nil {
 				logger.Fatal(err.Error())
@@ -176,7 +176,7 @@ func AddSubcommand(app *clir.Cli) error {
 			debugBinaryProcess.Kill()
 		}
 
-		logger.Info("Development mode exited")
+		logger.Println("Development mode exited")
 
 		return nil
 	})
@@ -203,15 +203,15 @@ exit:
 	}
 }
 
-func restartApp(logger *logger.Logger, outputType string, ldflags string, compilerCommand string, buildFrontend bool, debugBinaryProcess *process.Process) *process.Process {
+func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, compilerCommand string, buildFrontend bool, debugBinaryProcess *process.Process) *process.Process {
 
 	appBinary, err := buildApp(logger, outputType, ldflags, compilerCommand, buildFrontend)
 	println()
 	if err != nil {
-		logger.Error("Build Failed: %s", err.Error())
+		logger.Println("[ERROR] Build Failed: %s", err.Error())
 		return nil
 	}
-	logger.Info("Build new binary: %s", appBinary)
+	logger.Println("Build new binary: %s", appBinary)
 
 	// Kill existing binary if need be
 	if debugBinaryProcess != nil {
@@ -238,7 +238,7 @@ func restartApp(logger *logger.Logger, outputType string, ldflags string, compil
 	return newProcess
 }
 
-func buildApp(logger *logger.Logger, outputType string, ldflags string, compilerCommand string, buildFrontend bool) (string, error) {
+func buildApp(logger *clilogger.CLILogger, outputType string, ldflags string, compilerCommand string, buildFrontend bool) (string, error) {
 
 	// Create random output file
 	outputFile := fmt.Sprintf("debug-%d", time.Now().Unix())

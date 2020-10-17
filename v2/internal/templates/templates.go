@@ -12,7 +12,7 @@ import (
 	"github.com/leaanthony/slicer"
 	"github.com/olekukonko/tablewriter"
 	"github.com/wailsapp/wails/v2/internal/fs"
-	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
 
 // Cahce for the templates
@@ -35,7 +35,7 @@ type Options struct {
 	TemplateName string
 	BinaryName   string
 	TargetDir    string
-	Logger       *logger.Logger
+	Logger       *clilogger.CLILogger
 }
 
 // Template holds data relating to a template
@@ -218,30 +218,28 @@ func Install(options *Options) error {
 }
 
 // OutputList prints the list of available tempaltes to the given logger
-func OutputList(logger *logger.Logger) error {
+func OutputList(logger *clilogger.CLILogger) error {
 	templates, err := List()
 	if err != nil {
 		return err
 	}
 
-	for _, writer := range logger.Writers() {
-		table := tablewriter.NewWriter(writer)
-		table.SetHeader([]string{"Template", "Short Name", "Description"})
-		table.SetAutoWrapText(false)
-		table.SetAutoFormatHeaders(true)
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetAlignment(tablewriter.ALIGN_LEFT)
-		table.SetCenterSeparator("")
-		table.SetColumnSeparator("")
-		table.SetRowSeparator("")
-		table.SetHeaderLine(false)
-		table.SetBorder(false)
-		table.SetTablePadding("\t") // pad with tabs
-		table.SetNoWhiteSpace(true)
-		for _, template := range templates {
-			table.Append([]string{template.Name, template.ShortName, template.Description})
-		}
-		table.Render()
+	table := tablewriter.NewWriter(logger.Writer)
+	table.SetHeader([]string{"Template", "Short Name", "Description"})
+	table.SetAutoWrapText(false)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeaderLine(false)
+	table.SetBorder(false)
+	table.SetTablePadding("\t") // pad with tabs
+	table.SetNoWhiteSpace(true)
+	for _, template := range templates {
+		table.Append([]string{template.Name, template.ShortName, template.Description})
 	}
+	table.Render()
 	return nil
 }

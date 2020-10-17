@@ -2,19 +2,19 @@ package build
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"runtime"
 	"strings"
 	"time"
 
 	"github.com/leaanthony/clir"
 	"github.com/leaanthony/slicer"
-	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/commands/build"
 )
 
 // AddBuildSubcommand adds the `build` command for the Wails application
-func AddBuildSubcommand(app *clir.Cli) {
+func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	outputType := "desktop"
 
@@ -56,11 +56,8 @@ func AddBuildSubcommand(app *clir.Cli) {
 	command.Action(func() error {
 
 		// Create logger
-		logger := logger.New()
-
-		if !quiet {
-			logger.AddOutput(os.Stdout)
-		}
+		logger := clilogger.New(w)
+		logger.Mute(quiet)
 
 		// Validate output type
 		if !validTargetTypes.Contains(outputType) {
@@ -72,8 +69,8 @@ func AddBuildSubcommand(app *clir.Cli) {
 		}
 
 		task := fmt.Sprintf("Building %s Application", strings.Title(outputType))
-		logger.Writeln(task)
-		logger.Writeln(strings.Repeat("-", len(task)))
+		logger.Println(task)
+		logger.Println(strings.Repeat("-", len(task)))
 
 		// Setup mode
 		mode := build.Debug
@@ -108,9 +105,9 @@ func doBuild(buildOptions *build.Options) error {
 	}
 	// Output stats
 	elapsed := time.Since(start)
-	buildOptions.Logger.Writeln("")
-	buildOptions.Logger.Writeln(fmt.Sprintf("Built '%s' in %s.", outputFilename, elapsed.Round(time.Millisecond).String()))
-	buildOptions.Logger.Writeln("")
+	buildOptions.Logger.Println("")
+	buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.", outputFilename, elapsed.Round(time.Millisecond).String()))
+	buildOptions.Logger.Println("")
 
 	return nil
 }

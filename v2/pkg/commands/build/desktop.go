@@ -7,7 +7,7 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/html"
-	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
 
 // DesktopBuilder builds applications for the desktop
@@ -47,10 +47,10 @@ func (d *DesktopBuilder) BuildAssets(options *Options) error {
 }
 
 // BuildBaseAssets builds the assets for the desktop application
-func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, outputLogger *logger.Logger) error {
+func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, outputLogger *clilogger.CLILogger) error {
 	var err error
 
-	outputLogger.Write("    - Embedding Assets...")
+	outputLogger.Print("    - Embedding Assets...")
 
 	// Get target asset directory
 	assetDir := fs.RelativePath("../../../internal/ffenestri")
@@ -68,7 +68,7 @@ func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, outputLogger 
 		return err
 	}
 
-	outputLogger.Writeln("done.")
+	outputLogger.Println("done.")
 
 	return nil
 }
@@ -101,7 +101,7 @@ func (d *DesktopBuilder) BuildRuntime(options *Options) error {
 		return err
 	}
 
-	outputLogger.Write("    - Embedding Runtime...")
+	outputLogger.Print("    - Embedding Runtime...")
 	envvars := []string{"WAILSPLATFORM=" + options.Platform}
 	if err := d.NpmRunWithEnvironment(sourceDir, "build:desktop", false, envvars); err != nil {
 		return err
@@ -112,7 +112,7 @@ func (d *DesktopBuilder) BuildRuntime(options *Options) error {
 	if err != nil {
 		return err
 	}
-	outputLogger.Writeln("done.")
+	outputLogger.Println("done.")
 
 	// Convert to C structure
 	runtimeC := `

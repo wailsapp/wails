@@ -14,9 +14,9 @@ import (
 	"github.com/wailsapp/wails/v2/internal/assetdb"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/html"
-	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/internal/shell"
+	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
 
 // BaseBuilder is the common builder struct
@@ -305,7 +305,7 @@ func (b *BaseBuilder) NpmRunWithEnvironment(projectDir, buildTarget string, verb
 }
 
 // BuildFrontend executes the `npm build` command for the frontend directory
-func (b *BaseBuilder) BuildFrontend(outputLogger *logger.Logger) error {
+func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 	verbose := false
 
 	frontendDir := filepath.Join(b.projectData.Path, "frontend")
@@ -313,10 +313,10 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *logger.Logger) error {
 	// Check there is an 'InstallCommand' provided in wails.json
 	if b.projectData.InstallCommand == "" {
 		// No - don't install
-		outputLogger.Writeln("    - No Install command. Skipping.")
+		outputLogger.Println("    - No Install command. Skipping.")
 	} else {
 		// Do install if needed
-		outputLogger.Writeln("    - Installing dependencies...")
+		outputLogger.Println("    - Installing dependencies...")
 		if err := b.NpmInstallUsingCommand(frontendDir, b.projectData.InstallCommand); err != nil {
 			return err
 		}
@@ -324,12 +324,12 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *logger.Logger) error {
 
 	// Check if there is a build command
 	if b.projectData.BuildCommand == "" {
-		outputLogger.Writeln("    - No Build command. Skipping.")
+		outputLogger.Println("    - No Build command. Skipping.")
 		// No - ignore
 		return nil
 	}
 
-	outputLogger.Writeln("    - Compiling Frontend Project")
+	outputLogger.Println("    - Compiling Frontend Project")
 	cmd := strings.Split(b.projectData.BuildCommand, " ")
 	stdout, stderr, err := shell.RunCommand(frontendDir, cmd[0], cmd[1:]...)
 	if verbose || err != nil {
