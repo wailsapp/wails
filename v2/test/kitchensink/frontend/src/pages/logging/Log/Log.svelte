@@ -29,7 +29,7 @@
         }
     }
 
-    $: encodedMessage = message.replace(`"`, `“`);
+    $: encodedMessage = message.replace(`"`, `\"`);
     $: testcodeJs = "import { runtime } from '@wails/runtime';\nruntime.Log." + loglevel + "(`" + encodedMessage + "`);";
     $: testcodeGo = '// runtime is given through WailsInit()\nruntime.Log.' + loglevel + '("' + encodedMessage + '")'; 
 

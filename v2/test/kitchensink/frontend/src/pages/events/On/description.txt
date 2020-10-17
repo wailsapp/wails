@@ -1,1 +1,2 @@
-Events.On is used to subscribe to events. The given callback will be called whenever an event matching the given event name is received.
+<code>Events.On()</code> is used to subscribe to events. 
+The given callback will be called whenever an event matching the given event name is received.

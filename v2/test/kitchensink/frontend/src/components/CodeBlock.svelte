@@ -162,7 +162,7 @@
         background-color: #e5e5e5;
         border-radius: 5px;
         border: 1px solid #ccc;
-        padding: 15px;
+        padding: 5px;
         margin-top: 20px;
         margin-bottom: 10px;
     }

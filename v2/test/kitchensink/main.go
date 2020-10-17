@@ -24,6 +24,7 @@ func main() {
 		LogLevel: logger.TRACE,
 	})
 
+	app.Bind(&Events{})
 	app.Bind(&Logger{})
 
 	app.Run()

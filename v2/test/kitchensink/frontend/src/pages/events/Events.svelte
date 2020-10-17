@@ -1,5 +1,6 @@
 <script>
     import On from './On/On.svelte';
+    import Emit from './Emit/Emit.svelte';
 </script>
 
 <div>
@@ -19,7 +20,8 @@
     <div style="padding: 15px"></div>
      
     <On></On>
-
+    <br/>
+    <Emit></Emit>
 </div>
 
 <style>

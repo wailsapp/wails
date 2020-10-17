@@ -38,7 +38,9 @@ import { afterUpdate } from 'svelte';
         margin-top: 10px;
         margin-bottom: 10px;
         border: 1px solid #5555;
-        overflow: auto;
+        overflow-y: auto;
+        overflow-wrap: break-word;
+
     }
 
     .faketerm-dark {
