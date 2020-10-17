@@ -29,7 +29,7 @@ export default {
 
 		// Embed text files
 		string({
-			include: ["**/*.jsx","**/*.go"],
+			include: ["**/*.jsx","**/*.go", "**/*.txt"],
 		}),
 		
 		svelte({

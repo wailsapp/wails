@@ -1,7 +1,5 @@
 <script>
-
-    import CodeBlock from '../../components/CodeBlock.svelte';
-
+    import On from './On/On.svelte';
 </script>
 
 <div>
@@ -20,7 +18,8 @@
 
     <div style="padding: 15px"></div>
      
-    <CodeBlock title="Events.On(eventName, callback)" description="etc etc etc "></CodeBlock>
+    <On></On>
+
 </div>
 
 <style>

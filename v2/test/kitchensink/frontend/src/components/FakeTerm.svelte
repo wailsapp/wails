@@ -1,12 +1,27 @@
 <script>
+import { afterUpdate } from 'svelte';
+
     import { darkMode } from '../Store';
 
     $: termClass = $darkMode ? 'faketerm-dark' : 'faketerm-light';
+
+    let termElement;
+
+    afterUpdate( () => {
+        termElement.scrollTop = termElement.scrollHeight;
+    });
+
+    export let text = "";
+    export let style = null;
 </script>
 
-<div class="common {termClass}">
+<div bind:this={termElement} class="common {termClass}" {style}>
 <pre>
+{#if text && text.length > 0}
+{text}
+{:else}
 <slot></slot>
+{/if}
 </pre>
 </div>
 
@@ -23,6 +38,7 @@
         margin-top: 10px;
         margin-bottom: 10px;
         border: 1px solid #5555;
+        overflow: auto;
     }
 
     .faketerm-dark {

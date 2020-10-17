@@ -26,7 +26,7 @@
         showCode = !showCode;
     }   
 
-    export let id;
+    export let id = "toggle-" + Date.now().toString() + Math.random().toString();
     
     // Handle hiding example
     let showRun = true;
@@ -47,7 +47,7 @@
             </span>
         </span>
         {#if description}
-        <div class="description">{description}</div>
+        <div class="description">{@html description}</div>
         {/if}
     </div>
     <div class="run"> 
