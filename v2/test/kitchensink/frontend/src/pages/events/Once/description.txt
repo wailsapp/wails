@@ -1,0 +1,2 @@
+<code>Events.Once()</code> is used to subscribe to events. 
+The given callback will be called when an event matching the given event name is received, but only once.

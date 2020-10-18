@@ -1,11 +1,10 @@
 <script>
     import On from './On/On.svelte';
     import Emit from './Emit/Emit.svelte';
+    import Once from './Once/Once.svelte';
 </script>
 
 <div>
-    <h4>Events</h4>
-
     Wails includes a unified events system which allows you to send events in either Go or Javascript and receive them in either Go or Javascript. The events methods may be accessed through the <code>runtime.Events</code> object. Available methods are:
 
     <ul class="list">
@@ -20,6 +19,8 @@
     <div style="padding: 15px"></div>
      
     <On></On>
+    <br/>     
+    <Once></Once>
     <br/>
     <Emit></Emit>
 </div>

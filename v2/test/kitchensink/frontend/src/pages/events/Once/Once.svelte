@@ -8,7 +8,7 @@
     import FakeTerm from '../../../components/FakeTerm.svelte';
     import jsCode from './code.jsx';
     import goCode from './code.go';
-    import { loggingOutput } from './store';
+    import { loggingOutput } from '../On/store';
 
     let isJs = false;
     $: lang = isJs ? 'Javascript' : 'Go';
@@ -19,15 +19,30 @@
 
     let eventName = "";
 
+    function removeSubscriber(eventName, source) {
+        listeners.update( (current) => {
+            let name = '"' + eventName + '" (' + source + ')';
+            console.log(name);
+            const index = current.indexOf(name);
+            console.log("index = ", index);
+            if (index > -1) { 
+                current.splice(index, 1); 
+            }
+            console.log(current);
+            return current;
+        });
+    }
+
     function updateLog(eventName, data, source) {
+        removeSubscriber(eventName, source);
         loggingOutput.update( (log) => {
             let datatext = (data ? JSON.stringify(data) : "(No data given)");
-            return log + "[" + eventName + " (" + source + ")] data: " + datatext + "\n";
+            return log + "[" + eventName + " (" + source + ")] data: " + datatext + " (Listener now destroyed)\n";
         });
     }
 
     // Subscribe to the Go event calls
-    Events.On("event fired by go subscriber", (input) => {
+    Events.On("once event fired by go subscriber", (input) => {
         // Format the data for printing
         updateLog(input.Name, input.Data, "Go");
     });
@@ -48,22 +63,22 @@
         });
 
         if( isJs ) {
-            Events.On(eventName, (...data) => {
+            Events.Once(eventName, (...data) => {
                 updateLog(eventName, data, "JS");
             })
         } else {
             // We call a function in Go to register a subscriber
             // for us
-            backend.main.Events.On(eventName);
+            backend.main.Events.Once(eventName);
         }
     }
 
-    $: testcodeJs = "import { Events } from '@wails/runtime';\nEvents.On('" + eventName + "', callback);";
-    $: testcodeGo = '// runtime is given through WailsInit()\nruntime.Events.On("' + eventName + '", func(optionalData ...interface{} {\n // Process data\n}))'; 
+    $: testcodeJs = "import { Events } from '@wails/runtime';\nEvents.Once('" + eventName + "', callback);";
+    $: testcodeGo = '// runtime is given through WailsInit()\nruntime.Events.Once("' + eventName + '", func(optionalData ...interface{} {\n // Process data\n}))'; 
 
 </script>
 
-<CodeBlock bind:isJs={isJs} {jsCode} {goCode} {id} title="Events.On(eventName, callback)" {description}>
+<CodeBlock bind:isJs={isJs} {jsCode} {goCode} {id} title="Events.Once(eventName, callback)" {description}>
     <div class="logging-form">
         <form data-wails-no-drag class="mw-full"> 
             <div class="form-group">

@@ -29,7 +29,7 @@
     export let id = "toggle-" + Date.now().toString() + Math.random().toString();
     
     // Handle hiding example
-    let showRun = true;
+    let showRun = false;
 
     function toggleRun() {
         showRun = !showRun;
@@ -150,7 +150,7 @@
     }
 
     .codeblock {
-        background-color: #3F3F4B;
+        /* background-color: #3F3F4B; */
         border-radius: 5px;
         border: 1px solid #555;
         padding: 5px;
@@ -159,7 +159,7 @@
     }
 
     .codeblock-light {
-        background-color: #e5e5e5;
+        /* background-color: #e5e5e5; */
         border-radius: 5px;
         border: 1px solid #ccc;
         padding: 5px;

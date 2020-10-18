@@ -8,8 +8,6 @@
     
 </script>
 <div>
-    <h4>Logging</h4>
-
     Logging is part of the Wails Runtime and is accessed through the <code>runtime.Log</code> object. 
     
     There are {loglevels.length} methods available:
@@ -44,5 +42,5 @@ I am a Print message
     <Log></Log>
     <br/>
     <SetLogLevel></SetLogLevel>
-
 </div>
+

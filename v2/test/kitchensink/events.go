@@ -16,8 +16,8 @@ func (e *Events) WailsInit(runtime *wails.Runtime) error {
 	return nil
 }
 
-// Subscribe will subscribe
-func (e *Events) Subscribe(eventName string) {
+// On will subscribe to the given event name
+func (e *Events) On(eventName string) {
 	e.runtime.Events.On(eventName, func(args ...interface{}) {
 		type callbackData struct {
 			Name string
@@ -26,4 +26,21 @@ func (e *Events) Subscribe(eventName string) {
 		result := callbackData{Name: eventName, Data: args}
 		e.runtime.Events.Emit("event fired by go subscriber", result)
 	})
+}
+
+// Once will subscribe to the given event name
+func (e *Events) Once(eventName string) {
+	e.runtime.Events.Once(eventName, func(args ...interface{}) {
+		type callbackData struct {
+			Name string
+			Data []interface{}
+		}
+		result := callbackData{Name: eventName, Data: args}
+		e.runtime.Events.Emit("once event fired by go subscriber", result)
+	})
+}
+
+// Emit will emit
+func (e *Events) Emit(eventName string, data []interface{}) {
+	e.runtime.Events.Emit(eventName, data...)
 }

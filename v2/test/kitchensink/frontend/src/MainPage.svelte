@@ -7,6 +7,7 @@
 
 </script>
 
+<h4 class="title">{$selectedPage || "" }</h4>
 <div class="mainpage">
     {#if $selectedPage == undefined} <TitlePage></TitlePage> {/if}
     {#if $selectedPage == "Logging"} <Logging></Logging> {/if}
@@ -14,10 +15,19 @@
 </div>
 
 <style>
+    .title {
+        position: fixed;
+        top: 50px;
+        margin-left: 20px;
+    }
     .mainpage {
-        margin-left: 45px;
-        margin-right: 45px;
+        position: absolute;
+        top: 70px;
+        margin-left: 20px;
+        padding-right: 10px;
         margin-top: 20px;
-        margin-bottom: 20px;
+        overflow-y: auto;
+        height: calc(100% - 100px);
+        width: calc(100% - 20px);
     }
 </style>

@@ -56,10 +56,10 @@
 
   .inner-content {
     position: absolute;
-    top: 40px;
-    bottom: 40px;
+    top: 20px;
+    bottom: 20px;
     width: 99%;
-    overflow-y: auto;
+    overflow-y: hidden;
   }
 
   .content-wrapper {
@@ -106,12 +106,17 @@
   }
 
   .list {
-      margin-top: 2rem;
-      margin-left: 2rem;
+      margin-top: 1.5rem;
+      margin-left: 1.5rem;
   }
 
   .list li {
       margin-bottom: 0.5rem;
+  }
+
+  .page-header {
+    position: fixed;
+    top: 50px;
   }
 
   /* * {
