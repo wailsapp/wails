@@ -942,6 +942,11 @@ void Run(struct Application *app, int argc, char **argv) {
     CGRect contentViewBounds = GET_BOUNDS(contentView);
     msg(wkwebview, s("setFrame:"), contentViewBounds );
 
+    // Disable damn smart quotes
+    // Credit: https://stackoverflow.com/a/31640511
+    id userDefaults = msg(c("NSUserDefaults"), s("standardUserDefaults"));
+    msg(userDefaults, s("setBool:forKey:"), NO, str("NSAutomaticQuoteSubstitutionEnabled"));
+
     // Setup drag message handler
     msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("windowDrag"));
     // Add mouse event hooks
