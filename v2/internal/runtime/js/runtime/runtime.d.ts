@@ -21,9 +21,7 @@ declare const wailsapp__runtime: {
         OpenURL(url: string): Promise<any>;
     };
     Events: {
-        Acknowledge(eventName: string): void; 
         Emit(eventName: string, data?: any): void;
-        Heartbeat(eventName: string, timeInMilliseconds: number, callback: () => void): void;
         On(eventName: string, callback: (data?: any) => void): void;
         OnMultiple(eventName: string, callback: (data?: any) => void, maxCallbacks: number): void;
         Once(eventName: string, callback: (data?: any) => void): void;
