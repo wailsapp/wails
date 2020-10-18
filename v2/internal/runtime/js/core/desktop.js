@@ -12,14 +12,16 @@ import { SetBindings } from './bindings';
 import { Init } from './main';
 
 // Setup global error handler
-window.onerror = function (/*msg, url, lineNo, columnNo, error*/) {
-	// window.wails.Log.Error('**** Caught Unhandled Error ****');
-	// window.wails.Log.Error('Message: ' + msg);
-	// window.wails.Log.Error('URL: ' + url);
-	// window.wails.Log.Error('Line No: ' + lineNo);
-	// window.wails.Log.Error('Column No: ' + columnNo);
-	// window.wails.Log.Error('error: ' + error);
-	(function () { window.wails.Log.Error(new Error().stack); })();
+window.onerror = function (msg, url, lineNo, columnNo, error) {
+	const errorMessage = {
+		message: msg,
+		url: url,
+		line: lineNo,
+		column: columnNo,
+		error: JSON.stringify(error),
+		stack: function() { return JSON.stringify(new Error().stack); }(),
+	};
+	window.wails.Log.Fatal(JSON.stringify(errorMessage));
 };
 
 // Initialise the Runtime
