@@ -56,35 +56,9 @@ function Emit(eventName) {
 	return window.wails.Events.Emit.apply(null, args);
 }
 
-
-/**
- * Heartbeat emits the event `eventName`, every `timeInMilliseconds` milliseconds until 
- * the event is acknowledged via `Event.Acknowledge`. Once this happens, `callback` is invoked ONCE
- *
- * @export
- * @param {string} eventName
- * @param {number} timeInMilliseconds
- * @param {function} callback
- */
-function Heartbeat(eventName, timeInMilliseconds, callback) {
-	window.wails.Events.Heartbeat(eventName, timeInMilliseconds, callback);
-}
-
-/**
- * Acknowledges a heartbeat event by name
- *
- * @export
- * @param {string} eventName 
- */
-function Acknowledge(eventName) {
-	return window.wails.Events.Acknowledge(eventName);
-}
-
 module.exports = {
 	OnMultiple: OnMultiple,
 	On: On,
 	Once: Once,
 	Emit: Emit,
-	Heartbeat: Heartbeat,
-	Acknowledge: Acknowledge
 };
