@@ -1,8 +1,5 @@
 import { Events } from '@wails/runtime';
 
-let notes = [];
-
-// Do some things
-Events.On("notes loaded", (newNotes) => {
-  notes = newNotes;
+Events.Once("initialised", () => {
+  // Do something once  
 });

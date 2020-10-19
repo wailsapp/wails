@@ -8,9 +8,10 @@ type MyStruct struct {
 
 func (m *MyStruct) WailsInit(runtime *wails.Runtime) error {
 
-	runtime.Events.Once("initialised", func(optionalData ...interface{}) {
-		// Do something once
-	})
+	maxAttempts := 3
+	runtime.Events.OnMultiple("unlock attempts", func(optionalData ...interface{}) {
+		// Do something (at most) maxAttempts times
+	}, maxAttempts)
 
 	m.runtime = runtime
 	return nil

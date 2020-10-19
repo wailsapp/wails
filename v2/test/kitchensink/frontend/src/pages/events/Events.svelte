@@ -2,6 +2,7 @@
     import On from './On/On.svelte';
     import Emit from './Emit/Emit.svelte';
     import Once from './Once/Once.svelte';
+    import OnMultiple from './OnMultiple/OnMultiple.svelte';
 </script>
 
 <div>
@@ -21,6 +22,8 @@
     <On></On>
     <br/>     
     <Once></Once>
+    <br/>
+    <OnMultiple></OnMultiple>
     <br/>
     <Emit></Emit>
 </div>
