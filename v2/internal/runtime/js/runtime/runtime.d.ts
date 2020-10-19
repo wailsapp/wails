@@ -17,8 +17,7 @@ interface Level {
 
 declare const wailsapp__runtime: {
     Browser: {
-        OpenFile(filename: string): Promise<any>;
-        OpenURL(url: string): Promise<any>;
+        Open(target: string): Promise<any>;
     };
     Events: {
         Emit(eventName: string, data?: any): void;

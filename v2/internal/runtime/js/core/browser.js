@@ -12,23 +12,13 @@ The lightweight framework for web-like apps
 import { SendMessage } from 'ipc';
 
 /**
- * Opens the given URL in the system browser
+ * Opens the given URL / filename in the system browser
  *
  * @export
- * @param {string} url
+ * @param {string} target
  * @returns
  */
-export function OpenURL(url) {
-	return SendMessage('RBU' + url);
+export function Open(target) {
+	return SendMessage('RBO' + target);
 }
 
-/**
- * Opens the given filename using the system's default file handler
- *
- * @export
- * @param {sting} filename
- * @returns
- */
-export function OpenFile(filename) {
-	return SendMessage('runtime:browser:openfile', filename);
-}

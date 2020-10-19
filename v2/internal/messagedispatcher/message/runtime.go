@@ -22,13 +22,14 @@ func runtimeMessageParser(message string) (*parsedMessage, error) {
 
 // processBrowserMessage expects messages of the following format:
 // RB<METHOD><DATA>
+// O = Open
 func processBrowserMessage(message string) (*parsedMessage, error) {
 	method := message[2]
 	switch method {
-	case 'U':
+	case 'O':
 		// Open URL
-		url := message[3:]
-		return &parsedMessage{Topic: "runtime:browser:openurl", Data: url}, nil
+		target := message[3:]
+		return &parsedMessage{Topic: "runtime:browser:open", Data: target}, nil
 	}
 
 	return nil, fmt.Errorf("unknown browser message: %s", message)

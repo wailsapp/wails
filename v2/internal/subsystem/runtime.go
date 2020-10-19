@@ -32,7 +32,7 @@ func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger) (*Runtime, er
 	}
 
 	// Subscribe to log messages
-	runtimeChannel, err := bus.Subscribe("runtime")
+	runtimeChannel, err := bus.Subscribe("runtime:")
 	if err != nil {
 		return nil, err
 	}
@@ -103,12 +103,12 @@ func (r *Runtime) shutdown() {
 
 func (r *Runtime) processBrowserMessage(method string, data interface{}) error {
 	switch method {
-	case "openurl":
-		url, ok := data.(string)
+	case "open":
+		target, ok := data.(string)
 		if !ok {
-			return fmt.Errorf("expected 1 string parameter for runtime:browser:openurl")
+			return fmt.Errorf("expected 1 string parameter for runtime:browser:open")
 		}
-		go r.runtime.Browser.Open(url)
+		go r.runtime.Browser.Open(target)
 	default:
 		return fmt.Errorf("unknown method runtime:browser:%s", method)
 	}
