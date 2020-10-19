@@ -10,28 +10,16 @@ The lightweight framework for web-like apps
 /* jshint esversion: 6 */
 
 /**
- * Opens the given URL in the system browser
+ * Opens the given URL or Filename in the system browser
  *
  * @export
- * @param {string} url
+ * @param {string} target
  * @returns
  */
-function OpenURL(url) {
-	return window.wails.Browser.OpenURL(url);
-}
-
-/**
- * Opens the given filename using the system's default file handler
- *
- * @export
- * @param {sting} filename
- * @returns
- */
-function OpenFile(filename) {
-	return window.wails.Browser.OpenFile(filename);
+export function Open(target) {
+	return window.wails.Browser.Open(target);
 }
 
 module.exports = {
-	OpenURL: OpenURL,
-	OpenFile: OpenFile
+	Open: Open,
 };
