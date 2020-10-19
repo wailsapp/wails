@@ -21,7 +21,7 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 		error: JSON.stringify(error),
 		stack: function() { return JSON.stringify(new Error().stack); }(),
 	};
-	window.wails.Log.Fatal(JSON.stringify(errorMessage));
+	window.wails.Log.Error(JSON.stringify(errorMessage));
 };
 
 // Initialise the Runtime
