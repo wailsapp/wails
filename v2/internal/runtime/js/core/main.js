@@ -11,7 +11,7 @@ The lightweight framework for web-like apps
 import * as Log from './log';
 import * as Browser from './browser';
 import * as Window from './window';
-import { On, OnMultiple, Emit, Notify, Heartbeat, Acknowledge } from './events';
+import { On, Once, OnMultiple, Emit, Notify } from './events';
 import { Callback, SystemCall } from './calls';
 import { AddScript, InjectCSS } from './utils';
 import { AddIPCListener } from 'ipc';
@@ -30,17 +30,16 @@ export function Init() {
 		Window,
 		Events: {
 			On,
+			Once,
 			OnMultiple,
 			Emit,
-			Heartbeat,
-			Acknowledge,
 		},
 		_: {
 			Callback,
 			Notify,
 			AddScript,
 			InjectCSS,
-			Init,
+			// Init,
 			AddIPCListener,
 			SystemCall,
 		},
