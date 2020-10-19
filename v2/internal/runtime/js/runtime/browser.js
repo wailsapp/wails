@@ -19,7 +19,3 @@ The lightweight framework for web-like apps
 export function Open(target) {
 	return window.wails.Browser.Open(target);
 }
-
-module.exports = {
-	Open: Open,
-};
