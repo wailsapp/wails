@@ -216,6 +216,11 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 	buildCommand.Add("go")
 
 	buildCommand.Add("build")
+
+	if projectOptions.Tags != "" {
+		buildCommand.Add(fmt.Sprintf("--tags \"%s\"", projectOptions.Tags))
+	}
+
 	if buildMode == BuildModeBridge {
 		// Ignore errors
 		buildCommand.Add("-i")
