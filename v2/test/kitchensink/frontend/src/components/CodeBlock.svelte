@@ -29,7 +29,7 @@
     export let id = "toggle-" + Date.now().toString() + Math.random().toString();
     
     // Handle hiding example
-    let showRun = false;
+    export let showRun = false;
 
     function toggleRun() {
         showRun = !showRun;

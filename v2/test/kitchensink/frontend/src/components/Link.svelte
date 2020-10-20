@@ -7,7 +7,7 @@
     $: linkclass = darkMode ? 'dark' : 'light';
 
     function openLink() {
-        runtime.Browser.OpenURL(href);
+        runtime.Browser.Open(href);
     }
 </script>
 

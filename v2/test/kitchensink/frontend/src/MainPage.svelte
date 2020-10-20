@@ -4,6 +4,8 @@
     import TitlePage from './pages/TitlePage.svelte';
     import Logging from './pages/logging/Logging.svelte';
     import Events from './pages/events/Events.svelte';
+    import Browser from './pages/browser/Browser.svelte';
+
 
 </script>
 
@@ -12,6 +14,7 @@
     {#if $selectedPage == undefined} <TitlePage></TitlePage> {/if}
     {#if $selectedPage == "Logging"} <Logging></Logging> {/if}
     {#if $selectedPage == "Events"} <Events></Events> {/if}
+    {#if $selectedPage == "Browser"} <Browser></Browser> {/if}
 </div>
 
 <style>

@@ -26,6 +26,7 @@ func main() {
 
 	app.Bind(&Events{})
 	app.Bind(&Logger{})
+	app.Bind(&Browser{})
 
 	app.Run()
 }

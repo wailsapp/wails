@@ -21,7 +21,6 @@
   let runtimePages = [
     'Logging',
     'Events',
-    'Calls',
     'Dialog',
     'Browser',
     'File System',
