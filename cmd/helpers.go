@@ -218,10 +218,6 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 
 	buildCommand.Add("build")
 
-	if projectOptions.Tags != "" {
-		buildCommand.Add(fmt.Sprintf("--tags \"%s\"", projectOptions.Tags))
-	}
-
 	if buildMode == BuildModeBridge {
 		// Ignore errors
 		buildCommand.Add("-i")
@@ -248,6 +244,10 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 	}
 
 	buildCommand.AddSlice([]string{"-ldflags", ldFlags(projectOptions, buildMode)})
+
+	if projectOptions.Tags != "" {
+		buildCommand.AddSlice([]string{"--tags", projectOptions.Tags})
+	}
 
 	if projectOptions.Verbose {
 		fmt.Printf("Command: %v\n", buildCommand.AsSlice())
