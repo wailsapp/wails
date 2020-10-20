@@ -27,7 +27,7 @@
 
 </script>
 
-<CodeBlock bind:isJs={isJs} {jsCode} {goCode} title="Browser" {id} showRun=true>
+<CodeBlock bind:isJs={isJs} {jsCode} {goCode} title="Open" {id} showRun=true>
     <div class="browser-form">
         <form data-wails-no-drag class="mw-full"> 
             <div class="form-group">
