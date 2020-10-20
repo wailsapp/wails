@@ -151,6 +151,7 @@ type ProjectOptions struct {
 	Template               string    `json:"-"`
 	BinaryName             string    `json:"binaryname"`
 	FrontEnd               *frontend `json:"frontend,omitempty"`
+	Tags                   string    `json:"tags"`
 	NPMProjectName         string    `json:"-"`
 	system                 *SystemHelper
 	log                    *Logger
