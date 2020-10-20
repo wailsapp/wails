@@ -33,8 +33,6 @@
     let dataValid = true;
 
     $: {
-        console.log("REactive function triggered!");
-
         if ( dataText.length === 0 ) {
             dataValid = true;
             formattedData = "";
