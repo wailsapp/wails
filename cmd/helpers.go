@@ -141,6 +141,7 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		"-v", fmt.Sprintf("%s:/source", fs.Cwd()),
 		"-e", fmt.Sprintf("LOCAL_USER_ID=%v", userid),
 		"-e", fmt.Sprintf("FLAG_LDFLAGS=%s", ldFlags(projectOptions, buildMode)),
+		"-e", fmt.Sprintf("FLAG_TAGS=\"%s\"", projectOptions.Tags),
 		"-e", "FLAG_V=false",
 		"-e", "FLAG_X=false",
 		"-e", "FLAG_RACE=false",
