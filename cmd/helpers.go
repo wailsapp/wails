@@ -248,6 +248,10 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 
 	buildCommand.AddSlice([]string{"-ldflags", ldFlags(projectOptions, buildMode)})
 
+	if projectOptions.Tags != "" {
+		buildCommand.AddSlice([]string{"--tags", projectOptions.Tags})
+	}
+
 	if projectOptions.Verbose {
 		fmt.Printf("Command: %v\n", buildCommand.AsSlice())
 	}
