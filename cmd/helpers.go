@@ -18,8 +18,6 @@ import (
 	"github.com/leaanthony/spinner"
 )
 
-const xgoVersion = "1.0.1"
-
 var fs = NewFSHelper()
 
 // ValidateFrontendConfig checks if the frontend config is valid
@@ -92,17 +90,16 @@ func InitializeCrossCompilation(verbose bool) error {
 	}
 
 	var packSpinner *spinner.Spinner
-	msg := fmt.Sprintf("Pulling wailsapp/xgo:%s docker image... (may take a while)", xgoVersion)
 	if !verbose {
-		packSpinner = spinner.New(msg)
+		packSpinner = spinner.New("Pulling wailsapp/xgo:latest docker image... (may take a while)")
 		packSpinner.SetSpinSpeed(50)
 		packSpinner.Start()
 	} else {
-		println(msg)
+		println("Pulling wailsapp/xgo:latest docker image... (may take a while)")
 	}
 
 	err := NewProgramHelper(verbose).RunCommandArray([]string{"docker",
-		"pull", fmt.Sprintf("wailsapp/xgo:%s", xgoVersion)})
+		"pull", "wailsapp/xgo:latest"})
 
 	if err != nil {
 		if packSpinner != nil {
@@ -117,7 +114,7 @@ func InitializeCrossCompilation(verbose bool) error {
 	return nil
 }
 
-// BuildDocker builds the project using the cross compiling wailsapp/xgo:<xgoVersion> container
+// BuildDocker builds the project using the cross compiling wailsapp/xgo:latest container
 func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOptions) error {
 	var packSpinner *spinner.Spinner
 	if buildMode == BuildModeBridge {
@@ -144,30 +141,23 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		"-v", fmt.Sprintf("%s:/source", fs.Cwd()),
 		"-e", fmt.Sprintf("LOCAL_USER_ID=%v", userid),
 		"-e", fmt.Sprintf("FLAG_LDFLAGS=%s", ldFlags(projectOptions, buildMode)),
-		"-e", fmt.Sprintf("FLAG_TAGS=\"%s\"", projectOptions.Tags),
 		"-e", "FLAG_V=false",
 		"-e", "FLAG_X=false",
 		"-e", "FLAG_RACE=false",
 		"-e", "FLAG_BUILDMODE=default",
 		"-e", "FLAG_TRIMPATH=false",
-		"-e", fmt.Sprintf("TARGETS=%s/%s", projectOptions.Platform, projectOptions.Architecture),
+		"-e", fmt.Sprintf("TARGETS=%s", projectOptions.Platform+"/"+projectOptions.Architecture),
 		"-e", "GOPROXY=",
 		"-e", "GO111MODULE=on",
+		"wailsapp/xgo:latest",
+		".",
 	} {
 		buildCommand.Add(arg)
 	}
 
-	if projectOptions.GoPath != "" {
-		buildCommand.Add("-v")
-		buildCommand.Add(fmt.Sprintf("%s:/go", projectOptions.GoPath))
-	}
-
-	buildCommand.Add(fmt.Sprintf("wailsapp/xgo:%s", xgoVersion))
-	buildCommand.Add(".")
-
 	compileMessage := fmt.Sprintf(
-		"Packing + Compiling project for %s/%s using docker image wailsapp/xgo:%s",
-		projectOptions.Platform, projectOptions.Architecture, xgoVersion)
+		"Packing + Compiling project for %s/%s using docker image wailsapp/xgo:latest",
+		projectOptions.Platform, projectOptions.Architecture)
 
 	if buildMode == BuildModeDebug {
 		compileMessage += " (Debug Mode)"
@@ -227,6 +217,10 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 
 	buildCommand.Add("build")
 
+	if projectOptions.Tags != "" {
+		buildCommand.Add(fmt.Sprintf("--tags \"%s\"", projectOptions.Tags))
+	}
+
 	if buildMode == BuildModeBridge {
 		// Ignore errors
 		buildCommand.Add("-i")
@@ -253,10 +247,6 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 	}
 
 	buildCommand.AddSlice([]string{"-ldflags", ldFlags(projectOptions, buildMode)})
-
-	if projectOptions.Tags != "" {
-		buildCommand.AddSlice([]string{"--tags", projectOptions.Tags})
-	}
 
 	if projectOptions.Verbose {
 		fmt.Printf("Command: %v\n", buildCommand.AsSlice())
