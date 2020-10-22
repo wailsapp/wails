@@ -37,4 +37,6 @@ module.exports = {
 	OnThemeChange: OnThemeChange,
 	DarkModeEnabled: DarkModeEnabled,
 	LogLevel: window.wails.System.LogLevel,
+	Platform: window.wails.System.Platform,
+	AppType: window.wails.System.AppType
 };

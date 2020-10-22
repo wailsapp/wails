@@ -51,6 +51,8 @@ export function Init() {
 		IsDarkMode: Store.New('isdarkmode'),
 		LogLevel: Store.New('loglevel'),
 	};
+	// Copy platform specific information into it
+	Object.assign(window.wails.System, Platform.System);
 
 	// Do platform specific Init
 	Platform.Init();
