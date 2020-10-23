@@ -11,16 +11,18 @@ The lightweight framework for web-like apps
 
 const Log = require('./log');
 const Browser = require('./browser');
+const Dialog = require('./dialog');
 const Events = require('./events');
 const Init = require('./init');
 const System = require('./system');
 const Store = require('./store');
 
 module.exports = {
-	Log: Log,
 	Browser: Browser,
+	Dialog: Dialog,
 	Events: Events,
 	Init: Init,
+	Log: Log,
 	System: System,
 	Store: Store,
 };

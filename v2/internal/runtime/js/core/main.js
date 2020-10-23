@@ -11,6 +11,7 @@ The lightweight framework for web-like apps
 import * as Log from './log';
 import * as Browser from './browser';
 import * as Window from './window';
+import * as Dialog from './dialog';
 import { On, Once, OnMultiple, Emit, Notify } from './events';
 import { Callback, SystemCall } from './calls';
 import { AddScript, InjectCSS } from './utils';
@@ -28,6 +29,7 @@ export function Init() {
 		Log,
 		Browser,
 		Window,
+		Dialog,
 		Events: {
 			On,
 			Once,
