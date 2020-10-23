@@ -38,8 +38,8 @@ declare const wailsapp__runtime: {
         DarkModeEnabled(): Promise<boolean>;
         OnThemeChange(callback: (darkModeEnabled: boolean) => void): void;
         LogLevel(): Store;
-        Platform: string;
-        AppType: string
+        Platform(): string;
+        AppType(): string
     };
     Store: {
         New(name: string, defaultValue?: any): Store;

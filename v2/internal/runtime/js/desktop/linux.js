@@ -14,8 +14,8 @@ The lightweight framework for web-like apps
  */
 
 export const System = {
-    Platform: "linux",
-    AppType: "desktop"
+    ...common,
+    Platform: () => "linux",
 }
 
 export function SendMessage(message) {

@@ -18,7 +18,7 @@ const common = require('./common');
 
 export const System = {
     ...common,
-    Platform: "darwin",
+    Platform: () => "darwin",
 }
 
 export function SendMessage(message) {

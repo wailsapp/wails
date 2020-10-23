@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/wailsapp/wails/v2/internal/crypto"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
@@ -22,6 +23,12 @@ func newSystem(bus *servicebus.ServiceBus) System {
 	return &system{
 		bus: bus,
 	}
+}
+
+// Platform returns the platform name the application
+// is running on
+func (r *system) Platform() string {
+	return runtime.GOOS
 }
 
 // On pass through
