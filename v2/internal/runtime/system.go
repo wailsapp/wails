@@ -11,6 +11,8 @@ import (
 // System defines all System related operations
 type System interface {
 	IsDarkMode() bool
+	Platform() string
+	AppType() string
 }
 
 // system exposes the System interface
