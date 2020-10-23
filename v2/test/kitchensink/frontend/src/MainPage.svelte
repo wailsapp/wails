@@ -2,11 +2,12 @@
 
     import {selectedPage} from './Store';
     import TitlePage from './pages/TitlePage.svelte';
-    import Logging from './pages/logging/Logging.svelte';
-    import Events from './pages/events/Events.svelte';
-    import Browser from './pages/browser/Browser.svelte';
-
-
+    import Logging from './pages/Logging/Logging.svelte';
+    import Events from './pages/Events/Events.svelte';
+    import Browser from './pages/Browser/Browser.svelte';
+    import Dialog from './pages/Dialog/Dialog.svelte';
+    import System from './pages/System/System.svelte';
+    
 </script>
 
 <h4 class="title">{$selectedPage || "" }</h4>
@@ -15,6 +16,8 @@
     {#if $selectedPage == "Logging"} <Logging></Logging> {/if}
     {#if $selectedPage == "Events"} <Events></Events> {/if}
     {#if $selectedPage == "Browser"} <Browser></Browser> {/if}
+    {#if $selectedPage == "Dialog"} <Dialog></Dialog> {/if}
+    {#if $selectedPage == "System"} <System></System> {/if}
 </div>
 
 <style>
