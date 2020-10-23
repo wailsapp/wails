@@ -6,9 +6,9 @@ import (
 )
 
 type CallMessage struct {
-	Name       string        `json:"name"`
-	Args       []interface{} `json:"args"`
-	CallbackID string        `json:"callbackID,omitempty"`
+	Name       string            `json:"name"`
+	Args       []json.RawMessage `json:"args"`
+	CallbackID string            `json:"callbackID,omitempty"`
 }
 
 // callMessageParser does what it says on the tin!
@@ -22,6 +22,7 @@ func callMessageParser(message string) (*parsedMessage, error) {
 	callMessage := new(CallMessage)
 
 	m := message[1:]
+
 	err := json.Unmarshal([]byte(m), callMessage)
 	if err != nil {
 		println(err.Error())

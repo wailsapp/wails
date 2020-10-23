@@ -1,6 +1,7 @@
 package binding
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 )
@@ -84,7 +85,7 @@ func getMethods(value interface{}) ([]*BoundMethod, error) {
 }
 
 // convertArgToValue
-func convertArgToValue(input interface{}, target *Parameter) (result reflect.Value, err error) {
+func convertArgToValue(input json.RawMessage, target *Parameter) (result reflect.Value, err error) {
 
 	// Catch type conversion panics thrown by convert
 	defer func() {

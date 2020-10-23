@@ -1,6 +1,7 @@
 package binding
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -78,6 +79,26 @@ func (b *BoundMethod) OutputCount() int {
 	return len(b.Outputs)
 }
 
+// ParseArgs method converts the input json into the types expected by the method
+func (b *BoundMethod) ParseArgs(args []json.RawMessage) ([]interface{}, error) {
+
+	result := make([]interface{}, b.InputCount())
+	for index, arg := range args {
+		typ := b.Inputs[index].reflectType
+		inputValue := reflect.New(typ).Interface()
+		err := json.Unmarshal(arg, inputValue)
+		if err != nil {
+			return nil, err
+		}
+		if inputValue == nil {
+			result[index] = reflect.Zero(typ).Interface()
+		} else {
+			result[index] = reflect.ValueOf(inputValue).Elem().Interface()
+		}
+	}
+	return result, nil
+}
+
 // Call will attempt to call this bound method with the given args
 func (b *BoundMethod) Call(args []interface{}) (interface{}, error) {
 	// Check inputs
@@ -94,17 +115,8 @@ func (b *BoundMethod) Call(args []interface{}) (interface{}, error) {
 
 	// Iterate over given arguments
 	for index, arg := range args {
-
-		// Attempt to convert the argument to the type expected by the method
-		value, err := convertArgToValue(arg, b.Inputs[index])
-
-		// If it fails, return a suitable error
-		if err != nil {
-			return nil, fmt.Errorf("%s (parameter %d): %s", b.Name, index+1, err.Error())
-		}
-
 		// Save the converted argument
-		callArgs[index] = value
+		callArgs[index] = reflect.ValueOf(arg)
 	}
 
 	// Do the call

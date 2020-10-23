@@ -106,7 +106,12 @@ func (c *Call) processCall(callMessage *servicebus.Message) {
 	}
 	c.logger.Trace("Got registered method: %+v", registeredMethod)
 
-	result, err := registeredMethod.Call(payload.Args)
+	args, err := registeredMethod.ParseArgs(payload.Args)
+	if err != nil {
+		c.sendError(fmt.Errorf("Error parsing arguments: %s", err.Error()), payload, callMessage.Target())
+	}
+
+	result, err := registeredMethod.Call(args)
 	if err != nil {
 		c.sendError(err, payload, callMessage.Target())
 		return
