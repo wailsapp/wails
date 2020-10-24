@@ -28,6 +28,7 @@ func main() {
 	app.Bind(&Logger{})
 	app.Bind(&Browser{})
 	app.Bind(&System{})
+	app.Bind(&Dialog{})
 
 	app.Run()
 }

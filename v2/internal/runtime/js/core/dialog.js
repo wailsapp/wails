@@ -12,7 +12,6 @@ The lightweight framework for web-like apps
 
 import { SendMessage } from 'ipc';
 
-
 /**
  * Open a dialog with the given parameters
  *
@@ -20,5 +19,5 @@ import { SendMessage } from 'ipc';
  * @param {object} options
  */
 export function Open(options) {
-	SendMessage('DO', JSON.stringify(options));
+	SendMessage('DO'+JSON.stringify(options));
 }
