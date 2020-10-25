@@ -70,6 +70,7 @@ func init() {
 		}
 
 		logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
+
 		return cmd.ServeProject(projectOptions, logger)
 	})
 }
