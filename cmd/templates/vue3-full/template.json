@@ -10,5 +10,6 @@
   "frontenddir": "frontend",
   "serve": "npm run serve",
   "bridge": "src",
-  "wailsdir": ""
+  "wailsdir": "",
+  "platforms": ["linux", "darwin"]
 }
