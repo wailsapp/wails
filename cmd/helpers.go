@@ -143,6 +143,7 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		"-v", fmt.Sprintf("%s:/build", filepath.Join(fs.Cwd(), "build")),
 		"-v", fmt.Sprintf("%s:/source", fs.Cwd()),
 		"-e", fmt.Sprintf("LOCAL_USER_ID=%v", userid),
+		"-e", fmt.Sprintf("FLAG_TAGS=%s", projectOptions.Tags),
 		"-e", fmt.Sprintf("FLAG_LDFLAGS=%s", ldFlags(projectOptions, buildMode)),
 		"-e", "FLAG_V=false",
 		"-e", "FLAG_X=false",
@@ -247,6 +248,10 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 	}
 
 	buildCommand.AddSlice([]string{"-ldflags", ldFlags(projectOptions, buildMode)})
+
+	if projectOptions.Tags != "" {
+		buildCommand.AddSlice([]string{"--tags", projectOptions.Tags})
+	}
 
 	if projectOptions.Verbose {
 		fmt.Printf("Command: %v\n", buildCommand.AsSlice())
@@ -535,6 +540,9 @@ func InstallProdRuntime(projectDir string, projectOptions *ProjectOptions) error
 func ServeProject(projectOptions *ProjectOptions, logger *Logger) error {
 	go func() {
 		time.Sleep(2 * time.Second)
+		if projectOptions.Platform == "windows" {
+			logger.Yellow("*** Please note: Windows builds use mshtml which is only compatible with IE11. We strongly recommend only using IE11 when running 'wails serve'! For more information, please read https://wails.app/guides/windows/ ***")
+		}
 		logger.Green(">>>>> To connect, you will need to run '" + projectOptions.FrontEnd.Serve + "' in the '" + projectOptions.FrontEnd.Dir + "' directory <<<<<")
 	}()
 	location, err := filepath.Abs(filepath.Join("build", projectOptions.BinaryName))

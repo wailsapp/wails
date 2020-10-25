@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 
@@ -150,6 +151,7 @@ type ProjectOptions struct {
 	Template               string    `json:"-"`
 	BinaryName             string    `json:"binaryname"`
 	FrontEnd               *frontend `json:"frontend,omitempty"`
+	Tags                   string    `json:"tags"`
 	NPMProjectName         string    `json:"-"`
 	system                 *SystemHelper
 	log                    *Logger
@@ -163,6 +165,23 @@ type ProjectOptions struct {
 	Architecture           string
 	LdFlags                string
 	GoPath                 string
+
+	// Supported platforms
+	Platforms []string `json:"platforms,omitempty"`
+}
+
+// PlatformSupported returns true if the template is supported
+// on the current platform
+func (po *ProjectOptions) PlatformSupported() bool {
+
+	// Default is all platforms supported
+	if len(po.Platforms) == 0 {
+		return true
+	}
+
+	// Check that the platform is in the list
+	platformsSupported := slicer.String(po.Platforms)
+	return platformsSupported.Contains(runtime.GOOS)
 }
 
 // Defaults sets the default project template
@@ -233,13 +252,16 @@ func (po *ProjectOptions) PromptForInputs() error {
 		for _, k := range keys {
 			templateDetail := templateDetails[k]
 			templateList.Add(templateDetail)
+			if !templateDetail.Metadata.PlatformSupported() {
+				templateDetail.Metadata.Name = "* " + templateDetail.Metadata.Name
+			}
 			options.Add(fmt.Sprintf("%s - %s", templateDetail.Metadata.Name, templateDetail.Metadata.ShortDescription))
 		}
 
 		templateIndex := 0
 
 		if len(options.AsSlice()) > 1 {
-			templateIndex = PromptSelection("Please select a template", options.AsSlice(), 0)
+			templateIndex = PromptSelection("Please select a template (* means unsupported on current platform)", options.AsSlice(), 0)
 		}
 
 		if len(templateList.AsSlice()) == 0 {
@@ -250,6 +272,10 @@ func (po *ProjectOptions) PromptForInputs() error {
 		po.selectedTemplate = templateList.AsSlice()[templateIndex].(*TemplateDetails)
 	}
 
+	po.selectedTemplate.Metadata.Name = strings.TrimPrefix(po.selectedTemplate.Metadata.Name, "* ")
+	if !po.selectedTemplate.Metadata.PlatformSupported() {
+		println("WARNING: This template is unsupported on this platform!")
+	}
 	fmt.Println("Template: " + po.selectedTemplate.Metadata.Name)
 
 	// Setup NPM Project name
@@ -372,5 +398,9 @@ func processTemplateMetadata(templateMetadata *TemplateMetadata, po *ProjectOpti
 		}
 		po.FrontEnd.Serve = templateMetadata.Serve
 	}
+
+	// Save platforms
+	po.Platforms = templateMetadata.Platforms
+
 	return nil
 }
