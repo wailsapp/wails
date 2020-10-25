@@ -189,6 +189,10 @@ func init() {
 			return err
 		}
 
+		if projectOptions.Platform == "windows" {
+			logger.Yellow("*** Please note: Windows builds use mshtml which is only compatible with IE11. For more information, please read https://wails.app/guides/windows/ ***")
+		}
+
 		logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
 
 		return nil
