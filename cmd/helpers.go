@@ -18,6 +18,8 @@ import (
 	"github.com/leaanthony/spinner"
 )
 
+const xgoVersion = "1.0.1"
+
 var fs = NewFSHelper()
 
 // ValidateFrontendConfig checks if the frontend config is valid
@@ -90,16 +92,17 @@ func InitializeCrossCompilation(verbose bool) error {
 	}
 
 	var packSpinner *spinner.Spinner
+	msg := fmt.Sprintf("Pulling wailsapp/xgo:%s docker image... (may take a while)", xgoVersion)
 	if !verbose {
-		packSpinner = spinner.New("Pulling wailsapp/xgo:latest docker image... (may take a while)")
+		packSpinner = spinner.New(msg)
 		packSpinner.SetSpinSpeed(50)
 		packSpinner.Start()
 	} else {
-		println("Pulling wailsapp/xgo:latest docker image... (may take a while)")
+		println(msg)
 	}
 
 	err := NewProgramHelper(verbose).RunCommandArray([]string{"docker",
-		"pull", "wailsapp/xgo:latest"})
+		"pull", fmt.Sprintf("wailsapp/xgo:%s", xgoVersion)})
 
 	if err != nil {
 		if packSpinner != nil {
@@ -114,7 +117,7 @@ func InitializeCrossCompilation(verbose bool) error {
 	return nil
 }
 
-// BuildDocker builds the project using the cross compiling wailsapp/xgo:latest container
+// BuildDocker builds the project using the cross compiling wailsapp/xgo:<xgoVersion> container
 func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOptions) error {
 	var packSpinner *spinner.Spinner
 	if buildMode == BuildModeBridge {
@@ -140,24 +143,31 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		"-v", fmt.Sprintf("%s:/build", filepath.Join(fs.Cwd(), "build")),
 		"-v", fmt.Sprintf("%s:/source", fs.Cwd()),
 		"-e", fmt.Sprintf("LOCAL_USER_ID=%v", userid),
+		"-e", fmt.Sprintf("FLAG_TAGS=%s", projectOptions.Tags),
 		"-e", fmt.Sprintf("FLAG_LDFLAGS=%s", ldFlags(projectOptions, buildMode)),
 		"-e", "FLAG_V=false",
 		"-e", "FLAG_X=false",
 		"-e", "FLAG_RACE=false",
 		"-e", "FLAG_BUILDMODE=default",
 		"-e", "FLAG_TRIMPATH=false",
-		"-e", fmt.Sprintf("TARGETS=%s", projectOptions.Platform+"/"+projectOptions.Architecture),
+		"-e", fmt.Sprintf("TARGETS=%s/%s", projectOptions.Platform, projectOptions.Architecture),
 		"-e", "GOPROXY=",
 		"-e", "GO111MODULE=on",
-		"wailsapp/xgo:latest",
-		".",
 	} {
 		buildCommand.Add(arg)
 	}
 
+	if projectOptions.GoPath != "" {
+		buildCommand.Add("-v")
+		buildCommand.Add(fmt.Sprintf("%s:/go", projectOptions.GoPath))
+	}
+
+	buildCommand.Add(fmt.Sprintf("wailsapp/xgo:%s", xgoVersion))
+	buildCommand.Add(".")
+
 	compileMessage := fmt.Sprintf(
-		"Packing + Compiling project for %s/%s using docker image wailsapp/xgo:latest",
-		projectOptions.Platform, projectOptions.Architecture)
+		"Packing + Compiling project for %s/%s using docker image wailsapp/xgo:%s",
+		projectOptions.Platform, projectOptions.Architecture, xgoVersion)
 
 	if buildMode == BuildModeDebug {
 		compileMessage += " (Debug Mode)"
@@ -216,10 +226,6 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 	buildCommand.Add("go")
 
 	buildCommand.Add("build")
-	if buildMode == BuildModeBridge {
-		// Ignore errors
-		buildCommand.Add("-i")
-	}
 
 	if binaryName != "" {
 		// Alter binary name based on OS
@@ -242,6 +248,10 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 	}
 
 	buildCommand.AddSlice([]string{"-ldflags", ldFlags(projectOptions, buildMode)})
+
+	if projectOptions.Tags != "" {
+		buildCommand.AddSlice([]string{"--tags", projectOptions.Tags})
+	}
 
 	if projectOptions.Verbose {
 		fmt.Printf("Command: %v\n", buildCommand.AsSlice())
@@ -530,6 +540,9 @@ func InstallProdRuntime(projectDir string, projectOptions *ProjectOptions) error
 func ServeProject(projectOptions *ProjectOptions, logger *Logger) error {
 	go func() {
 		time.Sleep(2 * time.Second)
+		if projectOptions.Platform == "windows" {
+			logger.Yellow("*** Please note: Windows builds use mshtml which is only compatible with IE11. We strongly recommend only using IE11 when running 'wails serve'! For more information, please read https://wails.app/guides/windows/ ***")
+		}
 		logger.Green(">>>>> To connect, you will need to run '" + projectOptions.FrontEnd.Serve + "' in the '" + projectOptions.FrontEnd.Dir + "' directory <<<<<")
 	}()
 	location, err := filepath.Abs(filepath.Join("build", projectOptions.BinaryName))

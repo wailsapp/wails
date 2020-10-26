@@ -17,3 +17,8 @@ cmd/wails/wails
 .DS_Store
 tmp
 node_modules/
+v2/test/kitchensink/frontend/public
+v2/internal/ffenestri/runtime.c
+v2/internal/runtime/assets/desktop.js
+v2/test/kitchensink/build/darwin/desktop/kitchensink
+v2/test/kitchensink/frontend/package.json.md5
