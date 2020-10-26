@@ -31,6 +31,7 @@ func init() {
 	var verbose = false
 	var platform = ""
 	var ldflags = ""
+	var tags = ""
 
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
@@ -44,7 +45,8 @@ func init() {
 		BoolFlag("verbose", "Verbose output", &verbose).
 		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename).
 		StringFlag("ldflags", "Extra options for -ldflags", &ldflags).
-		StringFlag("gopath", "Specify your GOPATH location. Mounted to /go during cross-compilation.", &gopath)
+		StringFlag("gopath", "Specify your GOPATH location. Mounted to /go during cross-compilation.", &gopath).
+		StringFlag("tags", "Build tags to pass to the go compiler (quoted and space separated)", &tags)
 
 	var b strings.Builder
 	for _, plat := range getSupportedPlatforms() {
@@ -105,6 +107,9 @@ func init() {
 		// Add ldflags
 		projectOptions.LdFlags = ldflags
 		projectOptions.GoPath = gopath
+
+		// Add tags
+		projectOptions.Tags = tags
 
 		// Validate config
 		// Check if we have a frontend
