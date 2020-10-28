@@ -56,10 +56,6 @@ func (h *Bridge) Initialise(appConfig interfaces.AppConfig, ipcManager interface
 	return nil
 }
 
-// EnableConsole not needed for bridge!
-func (h *Bridge) EnableConsole() {
-}
-
 func (h *Bridge) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := websocket.Upgrade(w, r, w.Header(), 1024, 1024)
 	if err != nil {
