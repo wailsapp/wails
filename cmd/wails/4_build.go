@@ -43,7 +43,7 @@ func init() {
 		BoolFlag("p", "Package application on successful build", &packageApp).
 		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
 		BoolFlag("d", "Build in Debug mode", &debugMode).
-		BoolFlag("firebug", "[windows only] Enable firebug console for debug builds", &usefirebug).
+		BoolFlag("firebug", "Enable firebug console for debug builds", &usefirebug).
 		BoolFlag("verbose", "Verbose output", &verbose).
 		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename).
 		StringFlag("ldflags", "Extra options for -ldflags", &ldflags).
