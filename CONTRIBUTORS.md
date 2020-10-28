@@ -39,3 +39,4 @@ Wails is what it is because of the time and effort given by these great people. 
   * [Kyle](https://github.com/kmuchmore)
   * [Balakrishna Prasad Ganne](https://github.com/aayush420)
   * [Charaf Rezrazi](https://github.com/Rezrazi)
+  * [misitebao](https://github.com/misitebao)
