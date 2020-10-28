@@ -165,6 +165,7 @@ type ProjectOptions struct {
 	Architecture           string
 	LdFlags                string
 	GoPath                 string
+	UseFirebug             bool
 
 	// Supported platforms
 	Platforms []string `json:"platforms,omitempty"`

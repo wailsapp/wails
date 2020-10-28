@@ -8,7 +8,6 @@ import (
 type Renderer interface {
 	Initialise(AppConfig, IPCManager, EventManager) error
 	Run() error
-	EnableConsole()
 
 	// Binding
 	NewBinding(bindingName string) error

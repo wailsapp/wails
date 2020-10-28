@@ -20,6 +20,18 @@ export function AddScript(js, callbackID) {
 	}
 }
 
+export function InjectFirebug() {
+	// set the debug attribute on HTML
+	var html = document.getElementsByTagName('html')[0];
+	html.setAttribute('debug', 'true');
+	var firebugURL = 'https://wails.app/assets/js/firebug-lite.js#startOpened=true,disableWhenFirebugActive=false';
+	var script = document.createElement('script');
+	script.src = firebugURL;
+	script.type = 'application/javascript';
+	document.head.appendChild(script);
+	window.wails.Log.Info('Injected firebug');
+}
+
 // Adapted from webview - thanks zserge!
 export function InjectCSS(css) {
 	var elem = document.createElement('style');

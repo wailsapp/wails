@@ -26,6 +26,7 @@ func init() {
 	var packageApp = false
 	var forceRebuild = false
 	var debugMode = false
+	var usefirebug = false
 	var gopath = ""
 	var typescriptFilename = ""
 	var verbose = false
@@ -42,6 +43,7 @@ func init() {
 		BoolFlag("p", "Package application on successful build", &packageApp).
 		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
 		BoolFlag("d", "Build in Debug mode", &debugMode).
+		BoolFlag("firebug", "Enable firebug console for debug builds", &usefirebug).
 		BoolFlag("verbose", "Verbose output", &verbose).
 		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename).
 		StringFlag("ldflags", "Extra options for -ldflags", &ldflags).
@@ -71,6 +73,7 @@ func init() {
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}
 		projectOptions.Verbose = verbose
+		projectOptions.UseFirebug = usefirebug
 
 		// Check we are in project directory
 		// Check project.json loads correctly
