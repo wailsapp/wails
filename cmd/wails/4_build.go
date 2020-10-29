@@ -26,10 +26,13 @@ func init() {
 	var packageApp = false
 	var forceRebuild = false
 	var debugMode = false
+	var usefirebug = false
+	var gopath = ""
 	var typescriptFilename = ""
 	var verbose = false
 	var platform = ""
 	var ldflags = ""
+	var tags = ""
 
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
@@ -40,9 +43,12 @@ func init() {
 		BoolFlag("p", "Package application on successful build", &packageApp).
 		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
 		BoolFlag("d", "Build in Debug mode", &debugMode).
+		BoolFlag("firebug", "Enable firebug console for debug builds", &usefirebug).
 		BoolFlag("verbose", "Verbose output", &verbose).
 		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename).
-		StringFlag("ldflags", "Extra options for -ldflags", &ldflags)
+		StringFlag("ldflags", "Extra options for -ldflags", &ldflags).
+		StringFlag("gopath", "Specify your GOPATH location. Mounted to /go during cross-compilation.", &gopath).
+		StringFlag("tags", "Build tags to pass to the go compiler (quoted and space separated)", &tags)
 
 	var b strings.Builder
 	for _, plat := range getSupportedPlatforms() {
@@ -67,6 +73,7 @@ func init() {
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}
 		projectOptions.Verbose = verbose
+		projectOptions.UseFirebug = usefirebug
 
 		// Check we are in project directory
 		// Check project.json loads correctly
@@ -74,6 +81,11 @@ func init() {
 		err := projectOptions.LoadConfig(fs.Cwd())
 		if err != nil {
 			return fmt.Errorf("Unable to find 'project.json'. Please check you are in a Wails project directory")
+		}
+
+		// Check that this platform is supported
+		if !projectOptions.PlatformSupported() {
+			logger.Yellow("WARNING: This project is unsupported on %s - it probably won't work!\n         Valid platforms: %s\n", runtime.GOOS, strings.Join(projectOptions.Platforms, ", "))
 		}
 
 		// Set cross-compile
@@ -97,6 +109,10 @@ func init() {
 
 		// Add ldflags
 		projectOptions.LdFlags = ldflags
+		projectOptions.GoPath = gopath
+
+		// Add tags
+		projectOptions.Tags = tags
 
 		// Validate config
 		// Check if we have a frontend
@@ -179,6 +195,10 @@ func init() {
 		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode, packageApp, projectOptions)
 		if err != nil {
 			return err
+		}
+
+		if projectOptions.Platform == "windows" {
+			logger.Yellow("*** Please note: Windows builds use mshtml which is only compatible with IE11. For more information, please read https://wails.app/guides/windows/ ***")
 		}
 
 		logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)

@@ -13,7 +13,7 @@ import * as Browser from './browser';
 import { On, OnMultiple, Emit, Notify, Heartbeat, Acknowledge } from './events';
 import { NewBinding } from './bindings';
 import { Callback } from './calls';
-import { AddScript, InjectCSS } from './utils';
+import { AddScript, InjectCSS, InjectFirebug } from './utils';
 import { AddIPCListener } from './ipc';
 import * as Store from './store';
 
@@ -59,6 +59,11 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 	window.wails.Log.Error('Column No: ' + columnNo);
 	window.wails.Log.Error('error: ' + error);
 };
+
+// Use firebug?
+if( window.usefirebug ) { 
+	InjectFirebug();
+}
 
 // Emit loaded event
 Emit('wails:loaded');
