@@ -1,7 +1,8 @@
 package wails
 
 import (
-	"github.com/leaanthony/mewn"
+	b64 "encoding/base64"
+
 	"github.com/wailsapp/wails/runtime"
 )
 
@@ -9,7 +10,6 @@ import (
 type AppConfig struct {
 	Width, Height    int
 	Title            string
-	defaultHTML      string
 	HTML             string
 	JS               string
 	CSS              string
@@ -33,9 +33,9 @@ func (a *AppConfig) GetTitle() string {
 	return a.Title
 }
 
-// GetDefaultHTML returns the default HTML
-func (a *AppConfig) GetDefaultHTML() string {
-	return a.defaultHTML
+// GetHTML returns the HTML for the app
+func (a *AppConfig) GetHTML() string {
+	return "data:text/html;base64," + b64.URLEncoding.EncodeToString([]byte(a.HTML))
 }
 
 // GetResizable returns true if the window should be resizable
@@ -75,6 +75,10 @@ func (a *AppConfig) merge(in *AppConfig) error {
 		a.Colour = in.Colour
 	}
 
+	if in.HTML != "" {
+		a.HTML = in.HTML
+	}
+
 	if in.JS != "" {
 		a.JS = in.JS
 	}
@@ -99,7 +103,7 @@ func newConfig(userConfig *AppConfig) (*AppConfig, error) {
 		Resizable: true,
 		Title:     "My Wails App",
 		Colour:    "#FFF", // White by default
-		HTML:      mewn.String("./runtime/assets/default.html"),
+		HTML:      defaultHTML,
 	}
 
 	if userConfig != nil {
@@ -111,3 +115,17 @@ func newConfig(userConfig *AppConfig) (*AppConfig, error) {
 
 	return result, nil
 }
+
+var defaultHTML = `<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+</head>
+
+<body>
+  <div id="app"></div>
+</body>
+
+</html>`
