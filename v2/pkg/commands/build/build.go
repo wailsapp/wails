@@ -89,6 +89,14 @@ func Build(options *Options) (string, error) {
 	// Initialise Builder
 	builder.SetProjectData(projectData)
 
+	// Generate Frontend JS Package
+	outputLogger.Print("  - Generating Backend JS Package")
+	err = GenerateBackendJSPackage(options)
+	if err != nil {
+		return "", err
+	}
+	outputLogger.Println("done.")
+
 	if !options.IgnoreFrontend {
 		outputLogger.Println("  - Building Wails Frontend")
 		err = builder.BuildFrontend(outputLogger)
@@ -115,6 +123,7 @@ func Build(options *Options) (string, error) {
 		return "", err
 	}
 	outputLogger.Println("done.")
+
 	// Do we need to pack the app?
 	if options.Pack {
 
