@@ -102,8 +102,8 @@ func generateIndexJS(packages []*Package) error {
 	templateFile := fs.RelativePath("./index.template")
 
 	// Load template
-	templateData := fs.MustLoadString(templateFile)
-	packagesTemplate, err := template.New("index").Parse(templateData)
+	javascriptTemplateData := fs.MustLoadString(templateFile)
+	packagesTemplate, err := template.New("index").Parse(javascriptTemplateData)
 	if err != nil {
 		return errors.Wrap(err, "Error creating template")
 	}
@@ -132,11 +132,21 @@ func generateIndexJS(packages []*Package) error {
 func generatePackageFiles(packages []*Package) error {
 
 	// Get path to local file
-	templateFile := fs.RelativePath("./package.template")
+	javascriptTemplateFile := fs.RelativePath("./package.template")
 
-	// Load template
-	templateData := fs.MustLoadString(templateFile)
-	packagesTemplate, err := template.New("package").Parse(templateData)
+	// Load javascript template
+	javascriptTemplateData := fs.MustLoadString(javascriptTemplateFile)
+	javascriptTemplate, err := template.New("javascript").Parse(javascriptTemplateData)
+	if err != nil {
+		return errors.Wrap(err, "Error creating template")
+	}
+
+	// Get path to local file
+	typescriptTemplateFile := fs.RelativePath("./package.d.template")
+
+	// Load typescript template
+	typescriptTemplateData := fs.MustLoadString(typescriptTemplateFile)
+	typescriptTemplate, err := template.New("typescript").Parse(typescriptTemplateData)
 	if err != nil {
 		return errors.Wrap(err, "Error creating template")
 	}
@@ -153,14 +163,30 @@ func generatePackageFiles(packages []*Package) error {
 		// Make the dir but ignore if it already exists
 		fs.Mkdir(packageDir)
 
-		// Execute template
+		// Execute javascript template
 		var buffer bytes.Buffer
-		err = packagesTemplate.Execute(&buffer, thisPackage)
+		err = javascriptTemplate.Execute(&buffer, thisPackage)
 		if err != nil {
 			return errors.Wrap(err, "Error generating code")
 		}
 
+		// Save javascript file
 		err = ioutil.WriteFile(filepath.Join(packageDir, "index.js"), buffer.Bytes(), 0755)
+		if err != nil {
+			return errors.Wrap(err, "Error writing backend package file")
+		}
+
+		// Clear buffer
+		buffer.Reset()
+
+		// Execute typescript template
+		err = typescriptTemplate.Execute(&buffer, thisPackage)
+		if err != nil {
+			return errors.Wrap(err, "Error generating code")
+		}
+
+		// Save typescript file
+		err = ioutil.WriteFile(filepath.Join(packageDir, "index.d.ts"), buffer.Bytes(), 0755)
 		if err != nil {
 			return errors.Wrap(err, "Error writing backend package file")
 		}

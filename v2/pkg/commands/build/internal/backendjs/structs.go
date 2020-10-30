@@ -1,6 +1,7 @@
 package backendjs
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 )
@@ -35,6 +36,38 @@ func (m *Method) InputsAsJSText() string {
 	}
 
 	return strings.Join(inputs, ", ")
+}
+
+// InputsAsTSText generates a string with the method inputs
+// formatted in a way acceptable to Typescript
+func (m *Method) InputsAsTSText() string {
+	var inputs []string
+
+	for _, input := range m.Inputs {
+		inputText := fmt.Sprintf("%s: %s", input.Name, goTypeToJS(input.Type))
+		inputs = append(inputs, inputText)
+	}
+
+	return strings.Join(inputs, ", ")
+}
+
+// OutputsAsTSText generates a string with the method inputs
+// formatted in a way acceptable to Javascript
+func (m *Method) OutputsAsTSText() string {
+
+	if len(m.Outputs) != 2 {
+		return "any"
+	}
+
+	jsType := goTypeToJS(m.Outputs[1].Type)
+	switch jsType {
+	case JsArray:
+		return "Array<any>"
+	case JsObject:
+		return "any"
+	default:
+		return string(jsType)
+	}
 }
 
 // func generateStructFile() {
