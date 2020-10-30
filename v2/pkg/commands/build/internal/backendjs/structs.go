@@ -8,8 +8,9 @@ import (
 
 // Parameter defines a parameter used by a struct method
 type Parameter struct {
-	Name string
-	Type reflect.Kind
+	Name       string
+	Type       reflect.Kind
+	StructName string
 }
 
 // JSType returns the Javascript equivalent of the
@@ -55,19 +56,24 @@ func (m *Method) InputsAsTSText() string {
 // formatted in a way acceptable to Javascript
 func (m *Method) OutputsAsTSText() string {
 
-	if len(m.Outputs) != 2 {
-		return "any"
+	if len(m.Outputs) == 0 {
+		return "void"
 	}
 
-	jsType := goTypeToJS(m.Outputs[1].Type)
-	switch jsType {
-	case JsArray:
-		return "Array<any>"
-	case JsObject:
-		return "any"
-	default:
-		return string(jsType)
+	var result []string
+
+	for _, output := range m.Outputs {
+		jsType := goTypeToJS(output.Type)
+		switch jsType {
+		case JsArray:
+			result = append(result, "Array<any>")
+		case JsObject:
+			result = append(result, "any")
+		default:
+			result = append(result, string(jsType))
+		}
 	}
+	return strings.Join(result, ", ")
 }
 
 // func generateStructFile() {

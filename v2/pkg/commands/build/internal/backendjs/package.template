@@ -12,6 +12,6 @@
   * @returns {Promise} 
   */
 export function {{.Name}}({{.InputsAsJSText}}) {
-    return window.backend.{{$.Name}}.{{.Name}}();
+    return window.backend.{{$.Name}}.{{.Name}}({{.InputsAsJSText}});
 }
 {{end}}

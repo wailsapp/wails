@@ -75,6 +75,25 @@ func parsePackages() ([]*Package, error) {
 					},
 				},
 			},
+			{
+				Name: "TwoInputsAndOutput",
+				Inputs: []*Parameter{
+					{
+						Name: "name",
+						Type: reflect.String,
+					},
+					{
+						Name: "age",
+						Type: reflect.Uint8,
+					},
+				},
+				Outputs: []*Parameter{
+					{
+						Name: "result",
+						Type: reflect.Bool,
+					},
+				},
+			},
 		},
 	})
 
