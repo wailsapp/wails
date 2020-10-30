@@ -3,6 +3,7 @@ package backendjs
 import (
 	"bytes"
 	"io/ioutil"
+	"path/filepath"
 	"reflect"
 	"text/template"
 
@@ -143,6 +144,15 @@ func generatePackageFiles(packages []*Package) error {
 	// Iterate over each package
 	for _, thisPackage := range packages {
 
+		// Calculate target directory
+		packageDir, err := fs.RelativeToCwd("./frontend/backend/" + thisPackage.Name)
+		if err != nil {
+			return errors.Wrap(err, "Error calculating package path")
+		}
+
+		// Make the dir but ignore if it already exists
+		fs.Mkdir(packageDir)
+
 		// Execute template
 		var buffer bytes.Buffer
 		err = packagesTemplate.Execute(&buffer, thisPackage)
@@ -150,13 +160,7 @@ func generatePackageFiles(packages []*Package) error {
 			return errors.Wrap(err, "Error generating code")
 		}
 
-		// Calculate target filename
-		packageFile, err := fs.RelativeToCwd("./frontend/backend/" + thisPackage.Name + ".js")
-		if err != nil {
-			return errors.Wrap(err, "Error calculating package path")
-		}
-
-		err = ioutil.WriteFile(packageFile, buffer.Bytes(), 0755)
+		err = ioutil.WriteFile(filepath.Join(packageDir, "index.js"), buffer.Bytes(), 0755)
 		if err != nil {
 			return errors.Wrap(err, "Error writing backend package file")
 		}
