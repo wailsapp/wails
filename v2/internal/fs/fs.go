@@ -20,6 +20,17 @@ func LocalDirectory() string {
 	return filepath.Dir(thisFile)
 }
 
+// RelativeToCwd returns an absolute path based on the cwd
+// and the given relative path
+func RelativeToCwd(relativePath string) (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(cwd, relativePath), nil
+}
+
 // Mkdir will create the given directory
 func Mkdir(dirname string) error {
 	return os.Mkdir(dirname, 0755)
