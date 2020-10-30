@@ -75,22 +75,3 @@ func (m *Method) OutputsAsTSText() string {
 	}
 	return strings.Join(result, ", ")
 }
-
-// func generateStructFile() {
-// 	// Create string buffer
-// 	var result bytes.Buffer
-
-// 	// Add some standard comments
-// 	_, err := result.WriteString(structJSHeader + )
-// 	if err != nil {
-// 		return errors.Wrap(err, "Error writing string")
-// 	}
-
-// 	// Loop over the methods
-// 	for _, method := range methods {
-// 		generatedCode := generateMethodWrapper(method) {
-
-// 		}
-// 	}
-// 	return nil
-// }
