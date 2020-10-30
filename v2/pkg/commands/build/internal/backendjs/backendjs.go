@@ -1,3 +1,5 @@
+// Package backendjs deals with generating the `backend` Javascript module
+// used by the frontend to interact with Go
 package backendjs
 
 import (

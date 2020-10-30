@@ -2,12 +2,19 @@ package backendjs
 
 import (
 	"reflect"
+	"strings"
 )
 
 // Parameter defines a parameter used by a struct method
 type Parameter struct {
 	Name string
-	Type reflect.Type
+	Type reflect.Kind
+}
+
+// JSType returns the Javascript equivalent of the
+// parameter type
+func (p *Parameter) JSType() string {
+	return string(goTypeToJS(p.Type))
 }
 
 // Method defines a struct method
@@ -16,6 +23,18 @@ type Method struct {
 	Inputs   []*Parameter
 	Outputs  []*Parameter
 	Comments []string
+}
+
+// InputsAsJSText generates a string with the method inputs
+// formatted in a way acceptable to Javascript
+func (m *Method) InputsAsJSText() string {
+	var inputs []string
+
+	for _, input := range m.Inputs {
+		inputs = append(inputs, input.Name)
+	}
+
+	return strings.Join(inputs, ", ")
 }
 
 // func generateStructFile() {
