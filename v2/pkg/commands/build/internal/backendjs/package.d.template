@@ -9,7 +9,7 @@
   * @function {{.Name}}
 {{range .Inputs}}  * @param {{"{"}}{{.JSType}}{{"}"}} {{.Name}}
 {{end}}  *
-  * @returns {Promise} 
+  * @returns {Promise<{{.OutputsAsTSText}}>} 
   */
 export function {{.Name}}({{.InputsAsTSText}}): Promise<{{.OutputsAsTSText}}>;
 {{end}}
