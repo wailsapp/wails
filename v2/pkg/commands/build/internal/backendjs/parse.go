@@ -3,6 +3,7 @@ package backendjs
 import (
 	"fmt"
 	"go/ast"
+	"os"
 	"strings"
 
 	"github.com/leaanthony/slicer"
@@ -16,19 +17,24 @@ type Parser struct {
 
 	boundStructLiterals        slicer.StringSlicer
 	boundMethods               []string
+	boundStructs               map[string]*ParsedStruct
 	boundStructPointerLiterals []string
 	boundVariables             slicer.StringSlicer
-	variableFunctionDecls      map[string]string
-	variableStructDecls        map[string]string
-	internalMethods            slicer.StringSlicer
+
+	variableFunctionDecls map[string]string
+	variableStructDecls   map[string]string
+
+	internalMethods slicer.StringSlicer
+
 	structCache                map[string]*ParsedStruct
 	structPointerFunctionDecls map[string]string
 	structFunctionDecls        map[string]string
 }
 
 type ParsedParameter struct {
-	Name string
-	Type string
+	Name    string
+	Type    string
+	IsArray bool
 }
 
 func (p *ParsedParameter) JSType() string {
@@ -49,7 +55,7 @@ func (m *ParsedMethod) InputsAsTSText() string {
 	var inputs []string
 
 	for _, input := range m.Inputs {
-		inputText := fmt.Sprintf("%s: %s", input.Name, goTypeToTS(input.Type))
+		inputText := fmt.Sprintf("%s: %s", input.Name, goTypeToTS(input))
 		inputs = append(inputs, inputText)
 	}
 
@@ -79,15 +85,7 @@ func (m *ParsedMethod) OutputsAsTSText() string {
 	var result []string
 
 	for _, output := range m.Returns {
-		jsType := goTypeToJS(output.Type)
-		switch jsType {
-		case JsArray:
-			result = append(result, "Array<any>")
-		case JsObject:
-			result = append(result, "any")
-		default:
-			result = append(result, string(jsType))
-		}
+		result = append(result, goTypeToTS(output))
 	}
 	return strings.Join(result, ", ")
 }
@@ -105,6 +103,7 @@ func NewParser() *Parser {
 		structCache:                make(map[string]*ParsedStruct),
 		structPointerFunctionDecls: make(map[string]string),
 		structFunctionDecls:        make(map[string]string),
+		boundStructs:               make(map[string]*ParsedStruct),
 	}
 }
 
@@ -126,10 +125,10 @@ func parseProject(projectPath string) ([]*Package, error) {
 
 	var result []*Package
 
+	p := NewParser()
+
 	// Iterate the packages
 	for _, pkg := range pkgs {
-
-		p := NewParser()
 
 		thisPackage, err := p.parsePackage(pkg)
 		if err != nil {
@@ -142,6 +141,12 @@ func parseProject(projectPath string) ([]*Package, error) {
 
 		result = append(result, thisPackage)
 
+	}
+
+	// Resolve links between data
+	err = p.Resolve()
+	if err != nil {
+		return nil, err
 	}
 
 	return result, nil
@@ -344,15 +349,31 @@ func (p *Parser) parseFile(file *ast.File) error {
 								if x.Type.Results != nil {
 
 									for _, outputField := range x.Type.Results.List {
+										// Check for basic types
 										t, ok := outputField.Type.(*ast.Ident)
 										if !ok {
-											continue
-										}
-										if len(outputField.Names) == 0 {
-											structMethod.Returns = append(structMethod.Returns, &ParsedParameter{Type: t.Name})
+											// Check for arrays
+											a, ok := outputField.Type.(*ast.ArrayType)
+											if ok {
+												// spew.Dump(a)
+												ident := a.Elt.(*ast.Ident)
+												if len(outputField.Names) == 0 {
+													structMethod.Returns = append(structMethod.Returns, &ParsedParameter{Type: ident.Name, IsArray: true})
+												} else {
+													for _, name := range outputField.Names {
+														structMethod.Returns = append(structMethod.Returns, &ParsedParameter{Name: name.Name, Type: ident.Name, IsArray: true})
+													}
+												}
+
+											}
+
 										} else {
-											for _, name := range outputField.Names {
-												structMethod.Returns = append(structMethod.Returns, &ParsedParameter{Name: name.Name, Type: t.Name})
+											if len(outputField.Names) == 0 {
+												structMethod.Returns = append(structMethod.Returns, &ParsedParameter{Type: t.Name})
+											} else {
+												for _, name := range outputField.Names {
+													structMethod.Returns = append(structMethod.Returns, &ParsedParameter{Name: name.Name, Type: t.Name})
+												}
 											}
 										}
 									}
@@ -399,5 +420,82 @@ func (p *Parser) parseFile(file *ast.File) error {
 	})
 	// spew.Dump(file)
 
+	return nil
+}
+
+func (p *Parser) Resolve() error {
+	// Resolve bound Methods
+	for _, method := range p.boundMethods {
+		s, ok := p.structPointerFunctionDecls[method]
+		if !ok {
+			s, ok = p.structFunctionDecls[method]
+			if !ok {
+				return fmt.Errorf("bind statement using " + method + " but cannot find " + method + " declaration")
+			} else {
+				return fmt.Errorf("cannot bind struct using method `" + method + "` because it returns a struct (" + s + "). Return a pointer to " + s + " instead.")
+			}
+		}
+		structDefinition := p.structCache[s]
+		if structDefinition == nil {
+			return fmt.Errorf("Fatal: Bind statement using `" + method + "` but cannot find struct " + s + " definition")
+		}
+		p.boundStructs[s] = structDefinition
+	}
+
+	// Resolve bound vars
+	for _, structLiteral := range p.boundStructPointerLiterals {
+		s, ok := p.structCache[structLiteral]
+		if !ok {
+			return fmt.Errorf("bind statement using " + structLiteral + " but cannot find " + structLiteral + " declaration")
+		}
+		p.boundStructs[structLiteral] = s
+	}
+
+	var err error
+
+	// Resolve bound variables
+	p.boundVariables.Each(func(variable string) {
+		v, ok := p.variableStructDecls[variable]
+		if !ok {
+			method, ok := p.variableFunctionDecls[variable]
+			if !ok {
+				if err == nil {
+					err = fmt.Errorf("bind statement using variable `" + variable + "` which does not resolve to a struct pointer")
+				}
+			}
+
+			// Resolve function name
+			v, ok = p.structPointerFunctionDecls[method]
+			if !ok {
+				v, ok = p.structFunctionDecls[method]
+				if !ok {
+					if err == nil {
+						err = fmt.Errorf("bind statement using " + method + " but cannot find " + method + " declaration")
+					}
+				} else {
+					if err == nil {
+						err = fmt.Errorf("cannot bind variable `" + variable + "` because it resolves to a struct (" + v + "). Return a pointer to " + v + " instead.")
+					}
+				}
+			}
+		}
+
+		s, ok := p.structCache[v]
+		if !ok {
+			println("Fatal: Bind statement using variable `" + variable + "` which resolves to a `" + v + "` but cannot find its declaration")
+			os.Exit(1)
+		}
+		p.boundStructs[v] = s
+	})
+
+	// Return first error when resolving bound variables
+	if err != nil {
+		return err
+	}
+
+	// Check for struct literals
+	if p.boundStructLiterals.Length() > 0 {
+		return fmt.Errorf("cannot bind structs using struct literals. Create a pointer to the struct instead: %s", p.boundStructLiterals.Join(", "))
+	}
 	return nil
 }

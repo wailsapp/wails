@@ -40,16 +40,17 @@ func goTypeToJS(input string) JSType {
 	}
 }
 
-func goTypeToTS(input string) string {
-	switch input {
+func goTypeToTS(input *ParsedParameter) string {
+	var result string
+	switch input.Type {
 	case "string":
-		return "string"
+		result = "string"
 	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64":
-		return "number"
+		result = "number"
 	case "float32", "float64":
-		return "number"
+		result = "number"
 	case "bool":
-		return "boolean"
+		result = "boolean"
 	// case reflect.Array, reflect.Slice:
 	// 	return string(JsArray)
 	// case reflect.Ptr, reflect.Struct:
@@ -61,4 +62,10 @@ func goTypeToTS(input string) string {
 		println("UNSUPPORTED: ", input)
 		return JsUnsupported
 	}
+
+	if input.IsArray {
+		result = "Array<" + result + ">"
+	}
+
+	return result
 }
