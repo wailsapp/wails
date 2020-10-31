@@ -73,7 +73,6 @@ func init() {
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}
 		projectOptions.Verbose = verbose
-		projectOptions.UseFirebug = usefirebug
 
 		// Check we are in project directory
 		// Check project.json loads correctly
@@ -82,6 +81,9 @@ func init() {
 		if err != nil {
 			return fmt.Errorf("Unable to find 'project.json'. Please check you are in a Wails project directory")
 		}
+
+		// Set firebug flag
+		projectOptions.UseFirebug = usefirebug
 
 		// Check that this platform is supported
 		if !projectOptions.PlatformSupported() {
