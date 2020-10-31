@@ -1,6 +1,10 @@
 package wails
 
 import (
+	"fmt"
+	"net/url"
+	"strings"
+
 	"github.com/leaanthony/mewn"
 	"github.com/wailsapp/wails/runtime"
 )
@@ -9,7 +13,6 @@ import (
 type AppConfig struct {
 	Width, Height    int
 	Title            string
-	defaultHTML      string
 	HTML             string
 	JS               string
 	CSS              string
@@ -33,9 +36,13 @@ func (a *AppConfig) GetTitle() string {
 	return a.Title
 }
 
-// GetDefaultHTML returns the default HTML
-func (a *AppConfig) GetDefaultHTML() string {
-	return a.defaultHTML
+// GetHTML returns the default HTML
+func (a *AppConfig) GetHTML() string {
+	if len(a.HTML) > 0 {
+		var temp = url.QueryEscape(a.HTML)
+		a.HTML = "data:text/html," + strings.ReplaceAll(temp, "+", "%20")
+	}
+	return a.HTML
 }
 
 // GetResizable returns true if the window should be resizable
@@ -79,6 +86,10 @@ func (a *AppConfig) merge(in *AppConfig) error {
 		a.JS = in.JS
 	}
 
+	if in.HTML != "" {
+		a.HTML = in.HTML
+	}
+
 	if in.Width != 0 {
 		a.Width = in.Width
 	}
@@ -108,6 +119,10 @@ func newConfig(userConfig *AppConfig) (*AppConfig, error) {
 			return nil, err
 		}
 	}
+
+	println("****************************************************")
+	fmt.Printf("%+v\n", result)
+	println("****************************************************")
 
 	return result, nil
 }
