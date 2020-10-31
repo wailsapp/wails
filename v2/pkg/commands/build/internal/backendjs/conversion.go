@@ -1,7 +1,5 @@
 package backendjs
 
-import "reflect"
-
 // JSType represents a javascript type
 type JSType string
 
@@ -22,22 +20,45 @@ const (
 	JsUnsupported = "*"
 )
 
-func goTypeToJS(input reflect.Kind) JSType {
+func goTypeToJS(input string) JSType {
 	switch input {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return JsInt
-	case reflect.String:
+	case "string":
 		return JsString
-	case reflect.Float32, reflect.Float64, reflect.Complex64:
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64":
+		return JsInt
+	case "float32", "float64":
 		return JsFloat
-	case reflect.Bool:
+	case "bool":
 		return JsBoolean
-	case reflect.Array, reflect.Slice:
-		return JsArray
-	case reflect.Ptr, reflect.Struct, reflect.Map, reflect.Interface:
-		return JsObject
+	// case reflect.Array, reflect.Slice:
+	// 	return JsArray
+	// case reflect.Ptr, reflect.Struct, reflect.Map, reflect.Interface:
+	// 	return JsObject
 	default:
+		println("UNSUPPORTED: ", input)
+		return JsUnsupported
+	}
+}
+
+func goTypeToTS(input string) string {
+	switch input {
+	case "string":
+		return "string"
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64":
+		return "number"
+	case "float32", "float64":
+		return "number"
+	case "bool":
+		return "boolean"
+	// case reflect.Array, reflect.Slice:
+	// 	return string(JsArray)
+	// case reflect.Ptr, reflect.Struct:
+	// 	fqt := input.Type().String()
+	// 	return strings.Split(fqt, ".")[1]
+	// case reflect.Map, reflect.Interface:
+	// 	return string(JsObject)
+	default:
+		println("UNSUPPORTED: ", input)
 		return JsUnsupported
 	}
 }

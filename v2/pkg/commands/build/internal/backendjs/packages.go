@@ -3,8 +3,8 @@ package backendjs
 import (
 	"bytes"
 	"io/ioutil"
+	"os"
 	"path/filepath"
-	"reflect"
 	"text/template"
 
 	"github.com/pkg/errors"
@@ -15,7 +15,7 @@ import (
 type Package struct {
 	Name     string
 	Comments []string
-	Methods  []*Method
+	Structs  []*ParsedStruct
 }
 
 func generatePackages() error {
@@ -35,67 +35,83 @@ func generatePackages() error {
 
 func parsePackages() ([]*Package, error) {
 
-	// STUB!
-	var result []*Package
+	cwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	result, err := parseProject(cwd)
+	if err != nil {
+		return nil, err
+	}
 
-	result = append(result, &Package{
-		Name:     "mypackage",
-		Comments: []string{"mypackage is awesome"},
-		Methods: []*Method{
-			{
-				Name:     "Naked",
-				Comments: []string{"Naked is a method that does nothing"},
-			},
-		},
-	})
-	result = append(result, &Package{
-		Name:     "otherpackage",
-		Comments: []string{"otherpackage is awesome"},
-		Methods: []*Method{
-			{
-				Name:     "OneInput",
-				Comments: []string{"OneInput does stuff"},
-				Inputs: []*Parameter{
-					{
-						Name: "name",
-						Type: reflect.String,
-					},
-				},
-			},
-			{
-				Name: "TwoInputs",
-				Inputs: []*Parameter{
-					{
-						Name: "name",
-						Type: reflect.String,
-					},
-					{
-						Name: "age",
-						Type: reflect.Uint8,
-					},
-				},
-			},
-			{
-				Name: "TwoInputsAndOutput",
-				Inputs: []*Parameter{
-					{
-						Name: "name",
-						Type: reflect.String,
-					},
-					{
-						Name: "age",
-						Type: reflect.Uint8,
-					},
-				},
-				Outputs: []*Parameter{
-					{
-						Name: "result",
-						Type: reflect.Bool,
-					},
-				},
-			},
-		},
-	})
+	// result = append(result, &Package{
+	// 	Name:     "mypackage",
+	// 	Comments: []string{"mypackage is awesome"},
+	// 	Methods: []*Method{
+	// 		{
+	// 			Name:     "Naked",
+	// 			Comments: []string{"Naked is a method that does nothing"},
+	// 		},
+	// 	},
+	// })
+	// result = append(result, &Package{
+	// 	Name:     "otherpackage",
+	// 	Comments: []string{"otherpackage is awesome"},
+	// 	Methods: []*Method{
+	// 		{
+	// 			Name:     "OneInput",
+	// 			Comments: []string{"OneInput does stuff"},
+	// 			Inputs: []*Parameter{
+	// 				{
+	// 					Name:  "name",
+	// 					Value: String,
+	// 				},
+	// 			},
+	// 		},
+	// 		{
+	// 			Name: "TwoInputs",
+	// 			Inputs: []*Parameter{
+	// 				{
+	// 					Name:  "name",
+	// 					Value: String,
+	// 				},
+	// 				{
+	// 					Name:  "age",
+	// 					Value: Uint8,
+	// 				},
+	// 			},
+	// 		},
+	// 		{
+	// 			Name: "TwoInputsAndOutput",
+	// 			Inputs: []*Parameter{
+	// 				{
+	// 					Name:  "name",
+	// 					Value: String,
+	// 				},
+	// 				{
+	// 					Name:  "age",
+	// 					Value: Uint8,
+	// 				},
+	// 			},
+	// 			Outputs: []*Parameter{
+	// 				{
+	// 					Name:  "result",
+	// 					Value: Bool,
+	// 				},
+	// 			},
+	// 		},
+	// 		{
+	// 			Name:     "StructInput",
+	// 			Comments: []string{"StructInput takes a person"},
+	// 			Inputs: []*Parameter{
+	// 				{
+	// 					Name:  "person",
+	// 					Value: NewPerson("John Thomas", 46),
+	// 				},
+	// 			},
+	// 		},
+	// 	},
+	// })
 
 	return result, nil
 }
@@ -172,25 +188,48 @@ func generatePackageFiles(packages []*Package) error {
 
 	// Iterate over each package
 	for _, thisPackage := range packages {
-
-		// Calculate target directory
-		packageDir, err := fs.RelativeToCwd("./frontend/backend/" + thisPackage.Name)
+		err := generatePackage(thisPackage, typescriptTemplate, javascriptTemplate)
 		if err != nil {
-			return errors.Wrap(err, "Error calculating package path")
+			return err
 		}
+	}
 
-		// Make the dir but ignore if it already exists
-		fs.Mkdir(packageDir)
+	return nil
+}
+
+func generatePackage(thisPackage *Package, typescriptTemplate *template.Template, javascriptTemplate *template.Template) error {
+
+	// Calculate target directory
+	packageDir, err := fs.RelativeToCwd("./frontend/backend/" + thisPackage.Name)
+	if err != nil {
+		return errors.Wrap(err, "Error calculating package path")
+	}
+
+	// Make the dir but ignore if it already exists
+	fs.Mkdir(packageDir)
+
+	type TemplateData struct {
+		PackageName string
+		Struct      *ParsedStruct
+	}
+
+	// Loop over structs
+	for _, strct := range thisPackage.Structs {
+
+		var data = &TemplateData{
+			PackageName: thisPackage.Name,
+			Struct:      strct,
+		}
 
 		// Execute javascript template
 		var buffer bytes.Buffer
-		err = javascriptTemplate.Execute(&buffer, thisPackage)
+		err = javascriptTemplate.Execute(&buffer, data)
 		if err != nil {
 			return errors.Wrap(err, "Error generating code")
 		}
 
 		// Save javascript file
-		err = ioutil.WriteFile(filepath.Join(packageDir, "index.js"), buffer.Bytes(), 0755)
+		err = ioutil.WriteFile(filepath.Join(packageDir, strct.Name+".js"), buffer.Bytes(), 0755)
 		if err != nil {
 			return errors.Wrap(err, "Error writing backend package file")
 		}
@@ -199,13 +238,13 @@ func generatePackageFiles(packages []*Package) error {
 		buffer.Reset()
 
 		// Execute typescript template
-		err = typescriptTemplate.Execute(&buffer, thisPackage)
+		err = typescriptTemplate.Execute(&buffer, data)
 		if err != nil {
 			return errors.Wrap(err, "Error generating code")
 		}
 
 		// Save typescript file
-		err = ioutil.WriteFile(filepath.Join(packageDir, "index.d.ts"), buffer.Bytes(), 0755)
+		err = ioutil.WriteFile(filepath.Join(packageDir, strct.Name+".d.ts"), buffer.Bytes(), 0755)
 		if err != nil {
 			return errors.Wrap(err, "Error writing backend package file")
 		}

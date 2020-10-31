@@ -3,6 +3,7 @@ module github.com/wailsapp/wails/v2
 go 1.13
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/imdario/mergo v0.3.11
 	github.com/leaanthony/clir v1.0.4
