@@ -58,7 +58,7 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 		Height:    config.GetHeight(),
 		Title:     config.GetTitle(),
 		Resizable: config.GetResizable(),
-		URL:       config.GetHTML(),
+		URL:       config.GetDefaultHTML(),
 		Debug:     !config.GetDisableInspector(),
 		ExternalInvokeCallback: func(_ wv.WebView, message string) {
 			w.ipc.Dispatch(message, w.callback)
