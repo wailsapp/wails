@@ -39,8 +39,9 @@ func (a *AppConfig) GetTitle() string {
 // GetHTML returns the default HTML
 func (a *AppConfig) GetHTML() string {
 	if len(a.HTML) > 0 {
-		var temp = url.QueryEscape(a.HTML)
-		a.HTML = "data:text/html," + strings.ReplaceAll(temp, "+", "%20")
+		a.HTML = url.QueryEscape(a.HTML)
+		a.HTML = "data:text/html," + strings.ReplaceAll(a.HTML, "+", "%20")
+		a.HTML = strings.ReplaceAll(a.HTML, "%3D", "=")
 	}
 	return a.HTML
 }
