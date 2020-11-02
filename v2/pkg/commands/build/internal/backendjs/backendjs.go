@@ -16,17 +16,20 @@ func GenerateBackendJSPackage() error {
 	if err != nil {
 		return err
 	}
-	packages, err := parseProject(dir)
+
+	p := NewParser()
+
+	err = p.ParseProject(dir)
 	if err != nil {
 		return err
 	}
 
-	err = generateModule(packages)
+	err = p.GenerateModule()
 
 	return err
 }
 
-func parseProject(projectPath string) ([]*Package, error) {
+func (p *Parser) ParseProject(projectPath string) error {
 	mode := packages.NeedName |
 		packages.NeedFiles |
 		packages.NeedSyntax |
@@ -38,33 +41,31 @@ func parseProject(projectPath string) ([]*Package, error) {
 	cfg := &packages.Config{Fset: fset, Mode: mode, Dir: projectPath}
 	pkgs, err := packages.Load(cfg, "./...")
 	if err != nil {
-		return nil, errors.Wrap(err, "Problem loading packages")
+		return errors.Wrap(err, "Problem loading packages")
 	}
 	if packages.PrintErrors(pkgs) > 0 {
-		return nil, errors.Wrap(err, "Errors during parsing")
+		return errors.Wrap(err, "Errors during parsing")
 	}
-
-	var result []*Package
 
 	for _, pkg := range pkgs {
-		parsedPackage, err := parsePackage(pkg, fset)
+		parsedPackage, err := p.ParsePackage(pkg, fset)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		result = append(result, parsedPackage)
+		p.Packages[parsedPackage.Name] = parsedPackage
 	}
 
-	return result, nil
+	return nil
 }
 
-func generateModule(pkgs []*Package) error {
+func (p *Parser) GenerateModule() error {
 
 	moduleDir, err := createBackendJSDirectory()
 	if err != nil {
 		return err
 	}
 
-	for _, pkg := range pkgs {
+	for _, pkg := range p.Packages {
 
 		// Calculate directory
 		dir := filepath.Join(moduleDir, pkg.Name)

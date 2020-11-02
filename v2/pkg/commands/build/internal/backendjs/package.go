@@ -19,7 +19,7 @@ type Package struct {
 	Structs map[string]*Struct
 }
 
-func parsePackage(pkg *packages.Package, fset *token.FileSet) (*Package, error) {
+func (p *Parser) ParsePackage(pkg *packages.Package, fset *token.FileSet) (*Package, error) {
 	result := &Package{
 		Name:    pkg.Name,
 		Structs: make(map[string]*Struct),
@@ -33,7 +33,7 @@ func parsePackage(pkg *packages.Package, fset *token.FileSet) (*Package, error) 
 					// spew.Dump(structType)
 					structName := typeDecl.Name.Name
 					// findInFields(structTy.Fields, n, pkg.TypesInfo, fset)
-					structDef, err := parseStruct(structType, structName)
+					structDef, err := p.ParseStruct(structType, structName)
 					if err != nil {
 						parseError = err
 						return false

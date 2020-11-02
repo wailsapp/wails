@@ -51,16 +51,16 @@ func (f *Field) TypeAsTSType() string {
 	return result
 }
 
-func parseStruct(structType *ast.StructType, name string) (*Struct, error) {
+func (p *Parser) ParseStruct(structType *ast.StructType, name string) (*Struct, error) {
 	result := &Struct{Name: name}
 
 	for _, field := range structType.Fields.List {
-		result.Fields = append(result.Fields, parseField(field)...)
+		result.Fields = append(result.Fields, p.ParseField(field)...)
 	}
 	return result, nil
 }
 
-func parseField(field *ast.Field) []*Field {
+func (p *Parser) ParseField(field *ast.Field) []*Field {
 	var result []*Field
 
 	var fieldType string
