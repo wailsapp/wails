@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func parseComments(comments *ast.CommentGroup) []string {
+func (p *Parser) parseComments(comments *ast.CommentGroup) []string {
 	var result []string
 
 	if comments == nil {

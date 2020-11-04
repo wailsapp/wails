@@ -1,8 +1,10 @@
 package backendjs
 
 import (
+	"fmt"
 	"go/ast"
 	"os"
+	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 )
@@ -12,8 +14,16 @@ type Struct struct {
 	Name     string
 	Comments []string
 	Fields   []*Field
+	Methods  []*Method
+	IsBound  bool
+
+	// This indicates that the struct is passed as data
+	// between the frontend and backend
+	IsUsedAsData bool
 }
 
+// StructName is used to define a fully qualified struct name
+// EG: mypackage.Person
 type StructName struct {
 	Name    string
 	Package string
@@ -51,16 +61,60 @@ func (f *Field) TypeAsTSType() string {
 	return result
 }
 
-func (p *Parser) ParseStruct(structType *ast.StructType, name string) (*Struct, error) {
-	result := &Struct{Name: name}
+func (p *Parser) ParseStruct(structType *ast.StructType, name string, pkg *Package) (*Struct, error) {
+
+	// Check if we've seen this struct before
+	result := pkg.Structs[name]
+
+	// If we haven't create a new one
+	if result == nil {
+		result = &Struct{Name: name}
+	}
 
 	for _, field := range structType.Fields.List {
-		result.Fields = append(result.Fields, p.ParseField(field)...)
+		result.Fields = append(result.Fields, p.ParseField(field, pkg)...)
 	}
 	return result, nil
 }
 
-func (p *Parser) ParseField(field *ast.Field) []*Field {
+func (p *Parser) parseStructNameFromStarExpr(starExpr *ast.StarExpr) *StructName {
+	pkg := ""
+	name := ""
+	// Determine the FQN
+	switch x := starExpr.X.(type) {
+	case *ast.SelectorExpr:
+		switch i := x.X.(type) {
+		case *ast.Ident:
+			pkg = i.Name
+		default:
+			println("one")
+			fieldNotSupported(x)
+		}
+
+		name = x.Sel.Name
+
+	case *ast.StarExpr:
+		switch s := x.X.(type) {
+		case *ast.Ident:
+			name = s.Name
+		default:
+			println("two")
+			fieldNotSupported(x)
+		}
+	case *ast.Ident:
+		name = x.Name
+	default:
+		println("three")
+
+		fieldNotSupported(x)
+	}
+	return &StructName{
+		Name:    name,
+		Package: pkg,
+	}
+}
+
+func (p *Parser) ParseField(field *ast.Field, pkg *Package) []*Field {
 	var result []*Field
 
 	var fieldType string
@@ -70,44 +124,24 @@ func (p *Parser) ParseField(field *ast.Field) []*Field {
 	case *ast.Ident:
 		fieldType = t.Name
 	case *ast.StarExpr:
-		pkg := ""
-		name := ""
-		// Determine the FQN
-		switch x := t.X.(type) {
-		case *ast.SelectorExpr:
-			switch i := x.X.(type) {
-			case *ast.Ident:
-				pkg = i.Name
-			default:
-				println("one")
-				FieldNotSupported(x)
-			}
-
-			name = x.Sel.Name
-
-		case *ast.StarExpr:
-			switch s := x.X.(type) {
-			case *ast.Ident:
-				name = s.Name
-			default:
-				println("two")
-				FieldNotSupported(x)
-			}
-		case *ast.Ident:
-			name = x.Name
-		default:
-			println("three")
-
-			FieldNotSupported(x)
-		}
 		fieldType = "struct"
-		structName = &StructName{
-			Name:    name,
-			Package: pkg,
-		}
+		structName = p.parseStructNameFromStarExpr(t)
+		// Save external reference if we have it
+		if structName.Package == "" {
+			pkg.structsUsedAsData.AddUnique(structName.Name)
+		} else {
+			// Save this reference to the external struct
+			referencedPackage := p.Packages[structName.Package]
+			if referencedPackage == nil {
+				// Should we be ignoring this?
+			} else {
+				pkg.packageReferences.AddUnique(structName.Package)
+				referencedPackage.structsUsedAsData.AddUnique(structName.Name)
+			}
 
+		}
 	default:
-		FieldNotSupported(t)
+		fieldNotSupported(t)
 	}
 
 	// Loop over names
@@ -115,7 +149,7 @@ func (p *Parser) ParseField(field *ast.Field) []*Field {
 
 		// Create a field per name
 		thisField := &Field{
-			Comments: parseComments(field.Doc),
+			Comments: p.parseComments(field.Doc),
 		}
 		thisField.Name = name.Name
 		thisField.Type = fieldType
@@ -128,8 +162,45 @@ func (p *Parser) ParseField(field *ast.Field) []*Field {
 	return result
 }
 
-func FieldNotSupported(t interface{}) {
+func fieldNotSupported(t interface{}) {
 	println("Field type not supported:")
 	spew.Dump(t)
 	os.Exit(1)
+}
+
+// Method defines a struct method
+type Method struct {
+	Name     string
+	Comments []string
+	Inputs   []*Field
+	Returns  []*Field
+}
+
+// InputsAsTSText generates a string with the method inputs
+// formatted in a way acceptable to Typescript
+func (m *Method) InputsAsTSText() string {
+	var inputs []string
+
+	for _, input := range m.Inputs {
+		inputText := fmt.Sprintf("%s: %s", input.Name, goTypeToTS(input))
+		inputs = append(inputs, inputText)
+	}
+
+	return strings.Join(inputs, ", ")
+}
+
+// OutputsAsTSText generates a string with the method inputs
+// formatted in a way acceptable to Javascript
+func (m *Method) OutputsAsTSText() string {
+
+	if len(m.Returns) == 0 {
+		return "void"
+	}
+
+	var result []string
+
+	for _, output := range m.Returns {
+		result = append(result, goTypeToTS(output))
+	}
+	return strings.Join(result, ", ")
 }

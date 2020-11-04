@@ -10,6 +10,9 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+// GenerateBackendJSPackage will generate a Javascript/Typescript
+// package in `<project>/frontend/backend` that defines which methods
+// and structs are bound to your frontend
 func GenerateBackendJSPackage() error {
 
 	dir, err := os.Getwd()
@@ -19,17 +22,17 @@ func GenerateBackendJSPackage() error {
 
 	p := NewParser()
 
-	err = p.ParseProject(dir)
+	err = p.parseProject(dir)
 	if err != nil {
 		return err
 	}
 
-	err = p.GenerateModule()
+	err = p.generateModule()
 
 	return err
 }
 
-func (p *Parser) ParseProject(projectPath string) error {
+func (p *Parser) parseProject(projectPath string) error {
 	mode := packages.NeedName |
 		packages.NeedFiles |
 		packages.NeedSyntax |
@@ -46,19 +49,24 @@ func (p *Parser) ParseProject(projectPath string) error {
 	if packages.PrintErrors(pkgs) > 0 {
 		return errors.Wrap(err, "Errors during parsing")
 	}
-
 	for _, pkg := range pkgs {
-		parsedPackage, err := p.ParsePackage(pkg, fset)
+		parsedPackage, err := p.parsePackage(pkg, fset)
 		if err != nil {
 			return err
 		}
 		p.Packages[parsedPackage.Name] = parsedPackage
 	}
 
+	// Resolve all the loose ends from parsing
+	err = p.resolve()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (p *Parser) GenerateModule() error {
+func (p *Parser) generateModule() error {
 
 	moduleDir, err := createBackendJSDirectory()
 	if err != nil {
