@@ -120,6 +120,31 @@ func generatePackage(pkg *Package, moduledir string) error {
 	if err != nil {
 		return errors.Wrap(err, "Error writing backend package file")
 	}
+
+	// Get path to local file
+	javascriptTemplateFile := fs.RelativePath("./package.template")
+
+	// Load javascript template
+	javascriptTemplateData := fs.MustLoadString(javascriptTemplateFile)
+	javascriptTemplate, err := template.New("javascript").Parse(javascriptTemplateData)
+	if err != nil {
+		return errors.Wrap(err, "Error creating template")
+	}
+
+	// Reset the buffer
+	buffer.Reset()
+
+	err = javascriptTemplate.Execute(&buffer, pkg)
+	if err != nil {
+		return errors.Wrap(err, "Error generating code")
+	}
+
+	// Save javascript file
+	err = ioutil.WriteFile(filepath.Join(moduledir, "index.js"), buffer.Bytes(), 0755)
+	if err != nil {
+		return errors.Wrap(err, "Error writing backend package file")
+	}
+
 	return nil
 }
 

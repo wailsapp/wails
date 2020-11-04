@@ -20,23 +20,25 @@ const (
 	JsUnsupported = "*"
 )
 
-func goTypeToJS(input string) JSType {
-	switch input {
+func goTypeToJS(input *Field) string {
+	switch input.Type {
 	case "string":
-		return JsString
+		return "string"
 	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64":
-		return JsInt
+		return "number"
 	case "float32", "float64":
-		return JsFloat
+		return "number"
 	case "bool":
-		return JsBoolean
+		return "boolean"
 	// case reflect.Array, reflect.Slice:
 	// 	return JsArray
 	// case reflect.Ptr, reflect.Struct, reflect.Map, reflect.Interface:
 	// 	return JsObject
+	case "struct":
+		return input.Struct.ToString()
 	default:
 		println("UNSUPPORTED: ", input)
-		return JsUnsupported
+		return "*"
 	}
 }
 

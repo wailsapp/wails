@@ -29,12 +29,26 @@ type StructName struct {
 	Package string
 }
 
+// ToString returns a text representation of the struct name
+func (s *StructName) ToString() string {
+	result := ""
+	if s.Package != "" {
+		result = s.Package + "."
+	}
+	return result + s.Name
+}
+
 // Field defines a parsed struct field
 type Field struct {
 	Name     string
 	Type     string
 	Struct   *StructName
 	Comments []string
+}
+
+// JSType returns the Javascript type for this field
+func (f *Field) JSType() string {
+	return goTypeToJS(f)
 }
 
 // TypeAsTSType converts the Field type to something TS wants
@@ -203,4 +217,16 @@ func (m *Method) OutputsAsTSText() string {
 		result = append(result, goTypeToTS(output))
 	}
 	return strings.Join(result, ", ")
+}
+
+// InputsAsJSText generates a string with the method inputs
+// formatted in a way acceptable to Javascript
+func (m *Method) InputsAsJSText() string {
+	var inputs []string
+
+	for _, input := range m.Inputs {
+		inputs = append(inputs, input.Name)
+	}
+
+	return strings.Join(inputs, ", ")
 }
