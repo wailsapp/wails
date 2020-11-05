@@ -1,6 +1,7 @@
 package backendjs
 
 import (
+	"github.com/davecgh/go-spew/spew"
 	"github.com/leaanthony/slicer"
 )
 
@@ -17,52 +18,154 @@ type Parser struct {
 	// import mywails "github.com/wailsapp/wails/v2" -> mywails
 	wailsPackageVariable string
 
-	// A list of methods that returns structs to the Bind method
-	// EG: app.Bind( newMyStruct() )
-	structMethodsThatWereBound slicer.StringSlicer
-
-	// A list of struct literals that were bound to the application
-	// EG: app.Bind( &mystruct{} )
-	structLiteralsThatWereBound slicer.StringSlicer
-
-	// A list of struct pointer literals that were bound to the application
-	// EG: app.Bind( &mystruct{} )
-	structPointerLiteralsThatWereBound slicer.StringSlicer
-
-	// A list of variables that were used for binding
-	// Eg: myVar := &mystruct{}; app.Bind( myVar )
-	variablesThatWereBound slicer.StringSlicer
-
-	// A list of variables that were assigned using a function call
-	// EG: myVar := newStruct()
-	variablesThatWereAssignedByFunctions map[string]string
-
-	// A map of variables that were assigned using a struct literal
-	// EG: myVar := MyStruct{}
-	variablesThatWereAssignedByStructLiterals map[string]string
-
 	// Internal methods (WailsInit/WailsShutdown)
 	internalMethods *slicer.StringSlicer
-
-	// A list of functions that return struct pointers
-	functionsThatReturnStructPointers map[string]string
-
-	// A list of functions that return structs
-	functionsThatReturnStructs map[string]string
 }
 
 // NewParser creates a new Wails Project parser
 func NewParser() *Parser {
 	return &Parser{
-		Packages:                                  make(map[string]*Package),
-		variablesThatWereAssignedByFunctions:      make(map[string]string),
-		variablesThatWereAssignedByStructLiterals: make(map[string]string),
-		functionsThatReturnStructPointers:         make(map[string]string),
-		functionsThatReturnStructs:                make(map[string]string),
-		internalMethods:                           slicer.String([]string{"WailsInit", "WailsShutdown"}),
+		Packages:        make(map[string]*Package),
+		internalMethods: slicer.String([]string{"WailsInit", "WailsShutdown"}),
 	}
 }
 
 func (p *Parser) resolve() error {
+
+	// Resolve bound structs
+	err := p.resolveBoundStructs()
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+func (p *Parser) resolveBoundStructs() error {
+
+	// Resolve Struct Literals
+	p.resolveBoundStructLiterals()
+
+	// Resolve Struct Pointer Literals
+	p.resolveBoundStructPointerLiterals()
+
+	// Resolve functions that were bound
+	// EG: app.Bind( newBasic() )
+	p.resolveBoundFunctions()
+
+	// Resolve variables that were bound
+	p.resolveBoundVariables()
+
+	return nil
+}
+func (p *Parser) resolveBoundStructLiterals() {
+
+	// Resolve struct literals in each package
+	for _, pkg := range p.Packages {
+		pkg.resolveBoundStructLiterals()
+	}
+}
+
+func (p *Parser) resolveBoundStructPointerLiterals() {
+
+	// Resolve struct pointer literals
+	for _, pkg := range p.Packages {
+		pkg.resolveBoundStructPointerLiterals()
+	}
+}
+
+func (p *Parser) resolveBoundFunctions() {
+
+	// Loop over packages
+	for _, pkg := range p.Packages {
+
+		// Iterate over the method names
+		pkg.structMethodsThatWereBound.Each(func(functionName string) {
+			println("Resolving: ", functionName)
+			// Resolve each method name
+			structName := p.resolveFunctionReturnType(pkg, functionName)
+
+			strct := pkg.Structs[structName]
+			if strct == nil {
+				println("WARNING: Unable to find definition for struct", structName)
+			}
+			strct.IsBound = true
+		})
+
+	}
+}
+
+// resolveFunctionReturnType gets the return type for the given package/function name combination
+func (p *Parser) resolveFunctionReturnType(pkg *Package, functionName string) string {
+	structName := pkg.functionsThatReturnStructPointers[functionName]
+	if structName == "" {
+		spew.Dump(pkg.functionsThatReturnStructs)
+		structName = pkg.functionsThatReturnStructs[functionName]
+	}
+	if structName == "" {
+		println("WARNING: Unable to resolve bound function", functionName, "in package", pkg.Name)
+	}
+	return structName
+}
+
+func (p *Parser) markStructAsBound(pkg *Package, structName string) {
+	strct := pkg.Structs[structName]
+	if strct == nil {
+		println("WARNING: Unable to find definition for struct", structName)
+	}
+	println("Found bound struct:", strct.Name)
+	strct.IsBound = true
+}
+
+func (p *Parser) resolveBoundVariables() {
+
+	for _, pkg := range p.Packages {
+
+		// Iterate over the method names
+		pkg.variablesThatWereBound.Each(func(variableName string) {
+			println("Resolving variable: ", variableName)
+
+			var structName string
+
+			// Resolve each method name
+			funcName := pkg.variablesThatWereAssignedByFunctions[variableName]
+			if funcName != "" {
+				// Found function name - resolve Function return type
+				structName = p.resolveFunctionReturnType(pkg, funcName)
+			}
+
+			// If we couldn't resolve to a function, then let's try struct literals
+			if structName == "" {
+				funcName = pkg.variablesThatWereAssignedByStructLiterals[variableName]
+				if funcName != "" {
+					// Found function name - resolve Function return type
+					structName = p.resolveFunctionReturnType(pkg, funcName)
+				}
+			}
+
+			if structName == "" {
+				println("WARNING: Unable to resolve bound variable", variableName, "in package", pkg.Name)
+				return
+			}
+
+			p.markStructAsBound(pkg, structName)
+		})
+	}
+}
+
+func (p *Parser) bindStructByStructName(sn *StructName) {
+	// Get package
+	pkg := p.Packages[sn.Package]
+	if pkg == nil {
+		// Ignore, it will get picked up by the compiler
+		return
+	}
+
+	strct := pkg.Structs[sn.Name]
+	if strct == nil {
+		// Ignore, it will get picked up by the compiler
+		return
+	}
+
+	println("Found bound Struct:", sn.ToString())
+	strct.IsBound = true
 }

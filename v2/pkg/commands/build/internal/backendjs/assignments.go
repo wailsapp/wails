@@ -1,8 +1,10 @@
 package backendjs
 
-import "go/ast"
+import (
+	"go/ast"
+)
 
-func (p *Parser) parseAssignment(assignStmt *ast.AssignStmt) {
+func (p *Parser) parseAssignment(assignStmt *ast.AssignStmt, pkg *Package) {
 	for _, rhs := range assignStmt.Rhs {
 		ce, ok := rhs.(*ast.CallExpr)
 		if ok {
@@ -34,7 +36,7 @@ func (p *Parser) parseAssignment(assignStmt *ast.AssignStmt) {
 						if ok {
 							// Store the variable -> Function mapping
 							// so we can later resolve the type
-							p.variablesThatWereAssignedByFunctions[i.Name] = fe.Name
+							pkg.variablesThatWereAssignedByFunctions[i.Name] = fe.Name
 						}
 					}
 				}
@@ -51,7 +53,20 @@ func (p *Parser) parseAssignment(assignStmt *ast.AssignStmt) {
 						if len(assignStmt.Lhs) == 1 {
 							i, ok := assignStmt.Lhs[0].(*ast.Ident)
 							if ok {
-								p.variablesThatWereAssignedByStructLiterals[i.Name] = t.Name
+								pkg.variablesThatWereAssignedByStructLiterals[i.Name] = t.Name
+							}
+						}
+					}
+				}
+			} else {
+				cl, ok := rhs.(*ast.CompositeLit)
+				if ok {
+					t, ok := cl.Type.(*ast.Ident)
+					if ok {
+						if len(assignStmt.Lhs) == 1 {
+							i, ok := assignStmt.Lhs[0].(*ast.Ident)
+							if ok {
+								pkg.variablesThatWereAssignedByStructLiterals[i.Name] = t.Name
 							}
 						}
 					}

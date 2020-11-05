@@ -2,7 +2,7 @@ package backendjs
 
 import "go/ast"
 
-func (p *Parser) parseCallExpressions(x *ast.CallExpr) {
+func (p *Parser) parseCallExpressions(x *ast.CallExpr, pkg *Package) {
 	f, ok := x.Fun.(*ast.SelectorExpr)
 	if ok {
 		n, ok := f.X.(*ast.Ident)
@@ -14,9 +14,7 @@ func (p *Parser) parseCallExpressions(x *ast.CallExpr) {
 					if ok {
 						fn, ok := ce.Fun.(*ast.Ident)
 						if ok {
-							// We found a bind method using a function call
-							// EG: app.Bind( newMyStruct() )
-							p.structMethodsThatWereBound.Add(fn.Name)
+							pkg.structMethodsThatWereBound.Add(fn.Name)
 						}
 					} else {
 						// We also want to check for Bind( &MyStruct{} )
@@ -27,8 +25,7 @@ func (p *Parser) parseCallExpressions(x *ast.CallExpr) {
 								if ok {
 									t, ok := cl.Type.(*ast.Ident)
 									if ok {
-										// We have found Bind( &MyStruct{} )
-										p.structPointerLiteralsThatWereBound.Add(t.Name)
+										pkg.structPointerLiteralsThatWereBound.Add(t.Name)
 									}
 								}
 							}
@@ -40,7 +37,8 @@ func (p *Parser) parseCallExpressions(x *ast.CallExpr) {
 							if ok {
 								t, ok := cl.Type.(*ast.Ident)
 								if ok {
-									p.structLiteralsThatWereBound.Add(t.Name)
+									pkg.structLiteralsThatWereBound.Add(t.Name)
+
 								}
 							} else {
 								// Also check for when we bind a variable
@@ -48,7 +46,7 @@ func (p *Parser) parseCallExpressions(x *ast.CallExpr) {
 								// app.Bind( myVariable )
 								i, ok := x.Args[0].(*ast.Ident)
 								if ok {
-									p.variablesThatWereBound.Add(i.Name)
+									pkg.variablesThatWereBound.Add(i.Name)
 								}
 							}
 						}

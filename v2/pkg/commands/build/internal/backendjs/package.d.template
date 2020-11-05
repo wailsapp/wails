@@ -4,17 +4,22 @@
 {{- range .DeclarationReferences}}
 /// <reference types="../{{.}}" />{{- end}}
 
-declare module {{.Name}} { {{range .Structs}}
-  {{if .Comments }}{{range .Comments}}// {{ . }}{{end}}{{end}}
-  interface {{.Name}} { {{ if $.StructIsUsedAsData .Name }}
+declare module {{.Name}} { {{- range .Structs}}
+  {{- $usedAsData := $.StructIsUsedAsData .Name }}
+  {{- if or .IsBound $usedAsData}}
+  {{- if .Comments }}{{range .Comments}}// {{ . }}{{end}}{{- end}}
+
+  interface {{.Name}} { {{ if $usedAsData }}
     {{- range .Fields}}{{if .Comments }}
-    {{range .Comments}}//{{ . }}{{end}}{{end}}
+    {{range .Comments}}//{{ . }}{{end}}{{- end}}
     {{.Name}}: {{.TypeAsTSType}};  {{- end}} {{ end }}
+    {{- if .IsBound }}
     {{- range .Methods}}
     {{- range .Comments}}
     // {{ . }}{{- end}}
     {{.Name}}({{.InputsAsTSText}}): Promise<{{.OutputsAsTSText}}>;
-    {{- end}}
-  }{{end}}
+    {{- end}}{{end}}
+  }{{- end}}
+  {{- end}}
 
 }

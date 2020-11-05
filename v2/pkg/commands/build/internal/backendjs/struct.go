@@ -29,7 +29,7 @@ type StructName struct {
 	Package string
 }
 
-// ToString returns a text representation of the struct name
+// ToString returns a text representation of the struct anme
 func (s *StructName) ToString() string {
 	result := ""
 	if s.Package != "" {
@@ -48,7 +48,7 @@ type Field struct {
 
 // JSType returns the Javascript type for this field
 func (f *Field) JSType() string {
-	return goTypeToJS(f)
+	return string(goTypeToJS(f))
 }
 
 // TypeAsTSType converts the Field type to something TS wants

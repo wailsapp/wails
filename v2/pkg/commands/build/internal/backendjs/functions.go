@@ -132,7 +132,7 @@ func (p *Parser) parseFunctionDeclaration(funcDecl *ast.FuncDecl, pkg *Package) 
 					s, ok := t.X.(*ast.Ident)
 					if ok {
 						// println("*** Function", functionName, "found which returns: *"+s.Name)
-						p.functionsThatReturnStructPointers[functionName] = s.Name
+						pkg.functionsThatReturnStructPointers[functionName] = s.Name
 					}
 				} else {
 					// Check for functions that return a struct
@@ -140,7 +140,7 @@ func (p *Parser) parseFunctionDeclaration(funcDecl *ast.FuncDecl, pkg *Package) 
 					t, ok := funcDecl.Type.Results.List[0].Type.(*ast.Ident)
 					if ok {
 						// println("*** Function", functionName, "found which returns: "+t.Name)
-						p.functionsThatReturnStructs[functionName] = t.Name
+						pkg.functionsThatReturnStructs[functionName] = t.Name
 					}
 				}
 			}

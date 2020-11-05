@@ -25,12 +25,46 @@ type Package struct {
 	// These are the structs declared in this package
 	// that are used as data by either this or other packages
 	structsUsedAsData slicer.StringSlicer
+
+	// A list of functions that return struct pointers
+	functionsThatReturnStructPointers map[string]string
+
+	// A list of functions that return structs
+	functionsThatReturnStructs map[string]string
+
+	// A list of struct literals that were bound to the application
+	// EG: app.Bind( &mystruct{} )
+	structLiteralsThatWereBound slicer.StringSlicer
+
+	// A list of struct pointer literals that were bound to the application
+	// EG: app.Bind( &mystruct{} )
+	structPointerLiteralsThatWereBound slicer.StringSlicer
+
+	// A list of methods that returns structs to the Bind method
+	// EG: app.Bind( newMyStruct() )
+	structMethodsThatWereBound slicer.StringSlicer
+
+	// A list of variables that were used for binding
+	// Eg: myVar := &mystruct{}; app.Bind( myVar )
+	variablesThatWereBound slicer.StringSlicer
+
+	// A list of variables that were assigned using a function call
+	// EG: myVar := newStruct()
+	variablesThatWereAssignedByFunctions map[string]string
+
+	// A map of variables that were assigned using a struct literal
+	// EG: myVar := MyStruct{}
+	variablesThatWereAssignedByStructLiterals map[string]string
 }
 
 func (p *Parser) parsePackage(pkg *packages.Package, fset *token.FileSet) (*Package, error) {
 	result := &Package{
-		Name:    pkg.Name,
-		Structs: make(map[string]*Struct),
+		Name:                                 pkg.Name,
+		Structs:                              make(map[string]*Struct),
+		functionsThatReturnStructPointers:    make(map[string]string),
+		functionsThatReturnStructs:           make(map[string]string),
+		variablesThatWereAssignedByFunctions: make(map[string]string),
+		variablesThatWereAssignedByStructLiterals: make(map[string]string),
 	}
 
 	// Get the absolute path to the project's main.go file
@@ -74,12 +108,12 @@ func (p *Parser) parsePackage(pkg *packages.Package, fset *token.FileSet) (*Pack
 
 			// Capture call expressions
 			if callExpr, ok := n.(*ast.CallExpr); ok {
-				p.parseCallExpressions(callExpr)
+				p.parseCallExpressions(callExpr, result)
 			}
 
 			// Parse Assignments
 			if assignStmt, ok := n.(*ast.AssignStmt); ok {
-				p.parseAssignment(assignStmt)
+				p.parseAssignment(assignStmt, result)
 			}
 
 			// Parse Function declarations
@@ -157,4 +191,28 @@ func (p *Package) DeclarationReferences() []string {
 // been used in structs, inputs or outputs by other packages
 func (p *Package) StructIsUsedAsData(structName string) bool {
 	return p.structsUsedAsData.Contains(structName)
+}
+
+func (p *Package) resolveBoundStructLiterals() {
+	p.structLiteralsThatWereBound.Each(func(structName string) {
+		strct := p.Structs[structName]
+		if strct == nil {
+			println("Warning: Cannot find bound struct", structName, "in package", p.Name)
+			return
+		}
+		println("Bound struct", strct.Name, "in package", p.Name)
+		strct.IsBound = true
+	})
+}
+
+func (p *Package) resolveBoundStructPointerLiterals() {
+	p.structPointerLiteralsThatWereBound.Each(func(structName string) {
+		strct := p.Structs[structName]
+		if strct == nil {
+			println("Warning: Cannot find bound struct", structName, "in package", p.Name)
+			return
+		}
+		println("Bound struct pointer", strct.Name, "in package", p.Name)
+		strct.IsBound = true
+	})
 }
