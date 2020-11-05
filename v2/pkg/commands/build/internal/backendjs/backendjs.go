@@ -75,6 +75,11 @@ func (p *Parser) generateModule() error {
 
 	for _, pkg := range p.Packages {
 
+		// We should only output packages that need generating
+		if !pkg.ShouldBeGenerated() {
+			continue
+		}
+
 		// Calculate directory
 		dir := filepath.Join(moduleDir, pkg.Name)
 

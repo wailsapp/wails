@@ -1,7 +1,6 @@
 package backendjs
 
 import (
-	"github.com/davecgh/go-spew/spew"
 	"github.com/leaanthony/slicer"
 )
 
@@ -80,13 +79,13 @@ func (p *Parser) resolveBoundFunctions() {
 
 		// Iterate over the method names
 		pkg.structMethodsThatWereBound.Each(func(functionName string) {
-			println("Resolving: ", functionName)
 			// Resolve each method name
 			structName := p.resolveFunctionReturnType(pkg, functionName)
 
 			strct := pkg.Structs[structName]
 			if strct == nil {
 				println("WARNING: Unable to find definition for struct", structName)
+				return
 			}
 			strct.IsBound = true
 		})
@@ -98,7 +97,6 @@ func (p *Parser) resolveBoundFunctions() {
 func (p *Parser) resolveFunctionReturnType(pkg *Package, functionName string) string {
 	structName := pkg.functionsThatReturnStructPointers[functionName]
 	if structName == "" {
-		spew.Dump(pkg.functionsThatReturnStructs)
 		structName = pkg.functionsThatReturnStructs[functionName]
 	}
 	if structName == "" {
@@ -142,6 +140,19 @@ func (p *Parser) resolveBoundVariables() {
 				}
 			}
 
+			// Look for the variable as an external literal reference
+			if structName == "" {
+				sn := pkg.variablesThatWereAssignedByExternalStructLiterals[variableName]
+				if sn != nil {
+					pkg := p.Packages[sn.Package]
+					if pkg != nil {
+						p.markStructAsBound(pkg, sn.Name)
+						return
+					}
+
+				}
+			}
+
 			if structName == "" {
 				println("WARNING: Unable to resolve bound variable", variableName, "in package", pkg.Name)
 				return
@@ -168,4 +179,13 @@ func (p *Parser) bindStructByStructName(sn *StructName) {
 
 	println("Found bound Struct:", sn.ToString())
 	strct.IsBound = true
+}
+
+func (p *Parser) getOrCreatePackage(name string) *Package {
+	result := p.Packages[name]
+	if result == nil {
+		result = newPackage(name)
+		p.Packages[name] = result
+	}
+	return result
 }

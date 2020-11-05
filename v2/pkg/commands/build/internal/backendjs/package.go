@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/leaanthony/slicer"
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/internal/fs"
@@ -18,9 +19,6 @@ import (
 type Package struct {
 	Name    string
 	Structs map[string]*Struct
-
-	// These are references to other packages
-	packageReferences slicer.StringSlicer
 
 	// These are the structs declared in this package
 	// that are used as data by either this or other packages
@@ -55,16 +53,29 @@ type Package struct {
 	// A map of variables that were assigned using a struct literal
 	// EG: myVar := MyStruct{}
 	variablesThatWereAssignedByStructLiterals map[string]string
+
+	// A map of variables that were assigned using a struct literal
+	// in a different package
+	// EG: myVar := mypackage.MyStruct{}
+	variablesThatWereAssignedByExternalStructLiterals map[string]*StructName
 }
 
-func (p *Parser) parsePackage(pkg *packages.Package, fset *token.FileSet) (*Package, error) {
-	result := &Package{
-		Name:                                 pkg.Name,
+func newPackage(name string) *Package {
+	return &Package{
+		Name:                                 name,
 		Structs:                              make(map[string]*Struct),
 		functionsThatReturnStructPointers:    make(map[string]string),
 		functionsThatReturnStructs:           make(map[string]string),
 		variablesThatWereAssignedByFunctions: make(map[string]string),
-		variablesThatWereAssignedByStructLiterals: make(map[string]string),
+		variablesThatWereAssignedByStructLiterals:         make(map[string]string),
+		variablesThatWereAssignedByExternalStructLiterals: make(map[string]*StructName),
+	}
+}
+
+func (p *Parser) parsePackage(pkg *packages.Package, fset *token.FileSet) (*Package, error) {
+	result := p.Packages[pkg.Name]
+	if result == nil {
+		result = newPackage(pkg.Name)
 	}
 
 	// Get the absolute path to the project's main.go file
@@ -88,22 +99,44 @@ func (p *Parser) parsePackage(pkg *packages.Package, fset *token.FileSet) (*Pack
 	for _, fileAst := range pkg.Syntax {
 		var parseError error
 		ast.Inspect(fileAst, func(n ast.Node) bool {
-			if typeDecl, ok := n.(*ast.TypeSpec); ok {
-				// Parse struct definitions
-				if structType, ok := typeDecl.Type.(*ast.StructType); ok {
-					structName := typeDecl.Name.Name
-					// findInFields(structTy.Fields, n, pkg.TypesInfo, fset)
-					structDef, err := p.ParseStruct(structType, structName, result)
-					if err != nil {
-						parseError = err
-						return false
+			// if typeDecl, ok := n.(*ast.TypeSpec); ok {
+			// 	// Parse struct definitions
+			// 	if structType, ok := typeDecl.Type.(*ast.StructType); ok {
+			// 		structName := typeDecl.Name.Name
+			// 		// findInFields(structTy.Fields, n, pkg.TypesInfo, fset)
+			// 		structDef, err := p.ParseStruct(structType, structName, result)
+			// 		if err != nil {
+			// 			parseError = err
+			// 			return false
+			// 		}
+
+			// 		// Parse comments
+			// 		structDef.Comments = p.parseComments(typeDecl.Doc)
+
+			// 		result.Structs[structName] = structDef
+			// 	}
+			// }
+
+			if genDecl, ok := n.(*ast.GenDecl); ok {
+				println("GenDecl:")
+				for _, spec := range genDecl.Specs {
+					if typeSpec, ok := spec.(*ast.TypeSpec); ok {
+						if structType, ok := typeSpec.Type.(*ast.StructType); ok {
+							structName := typeSpec.Name.Name
+							structDef, err := p.ParseStruct(structType, structName, result)
+							if err != nil {
+								parseError = err
+								return false
+							}
+
+							// Parse comments
+							structDef.Comments = p.parseComments(genDecl.Doc)
+
+							result.Structs[structName] = structDef
+						}
 					}
-
-					// Parse comments
-					structDef.Comments = p.parseComments(typeDecl.Doc)
-
-					result.Structs[structName] = structDef
 				}
+				spew.Dump(genDecl)
 			}
 
 			// Capture call expressions
@@ -184,7 +217,14 @@ func generatePackage(pkg *Package, moduledir string) error {
 
 // DeclarationReferences returns the typescript declaration references for the package
 func (p *Package) DeclarationReferences() []string {
-	return p.packageReferences.AsSlice()
+	var result []string
+	for _, strct := range p.Structs {
+		if strct.IsBound {
+			refs := strct.packageReferences.AsSlice()
+			result = append(result, refs...)
+		}
+	}
+	return result
 }
 
 // StructIsUsedAsData returns true if the given struct name has
@@ -215,4 +255,16 @@ func (p *Package) resolveBoundStructPointerLiterals() {
 		println("Bound struct pointer", strct.Name, "in package", p.Name)
 		strct.IsBound = true
 	})
+}
+
+// ShouldBeGenerated indicates if the package should be generated
+// The package should be generated only if we have structs that are
+// bound or structs that are used as data
+func (p *Package) ShouldBeGenerated() bool {
+	for _, strct := range p.Structs {
+		if strct.IsBound || strct.IsUsedAsData {
+			return true
+		}
+	}
+	return false
 }

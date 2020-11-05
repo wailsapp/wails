@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/leaanthony/slicer"
 )
 
 // Struct defines a parsed struct
@@ -20,6 +21,9 @@ type Struct struct {
 	// This indicates that the struct is passed as data
 	// between the frontend and backend
 	IsUsedAsData bool
+
+	// These are references to other packages
+	packageReferences slicer.StringSlicer
 }
 
 // StructName is used to define a fully qualified struct name
@@ -86,7 +90,7 @@ func (p *Parser) ParseStruct(structType *ast.StructType, name string, pkg *Packa
 	}
 
 	for _, field := range structType.Fields.List {
-		result.Fields = append(result.Fields, p.ParseField(field, pkg)...)
+		result.Fields = append(result.Fields, p.ParseField(field, result, pkg)...)
 	}
 	return result, nil
 }
@@ -128,7 +132,7 @@ func (p *Parser) parseStructNameFromStarExpr(starExpr *ast.StarExpr) *StructName
 	}
 }
 
-func (p *Parser) ParseField(field *ast.Field, pkg *Package) []*Field {
+func (p *Parser) ParseField(field *ast.Field, strct *Struct, pkg *Package) []*Field {
 	var result []*Field
 
 	var fieldType string
@@ -149,7 +153,7 @@ func (p *Parser) ParseField(field *ast.Field, pkg *Package) []*Field {
 			if referencedPackage == nil {
 				// Should we be ignoring this?
 			} else {
-				pkg.packageReferences.AddUnique(structName.Package)
+				strct.packageReferences.AddUnique(structName.Package)
 				referencedPackage.structsUsedAsData.AddUnique(structName.Name)
 			}
 

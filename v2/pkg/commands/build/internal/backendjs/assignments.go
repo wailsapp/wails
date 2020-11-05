@@ -2,6 +2,8 @@ package backendjs
 
 import (
 	"go/ast"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 func (p *Parser) parseAssignment(assignStmt *ast.AssignStmt, pkg *Package) {
@@ -56,6 +58,27 @@ func (p *Parser) parseAssignment(assignStmt *ast.AssignStmt, pkg *Package) {
 								pkg.variablesThatWereAssignedByStructLiterals[i.Name] = t.Name
 							}
 						}
+					} else {
+						e, ok := cl.Type.(*ast.SelectorExpr)
+						if ok {
+							var thisType = ""
+							var thisPackage = ""
+							switch x := e.X.(type) {
+							case *ast.Ident:
+								thisPackage = x.Name
+							}
+							thisType = e.Sel.Name
+							if len(assignStmt.Lhs) == 1 {
+								i, ok := assignStmt.Lhs[0].(*ast.Ident)
+								if ok {
+									sn := &StructName{
+										Name:    thisType,
+										Package: thisPackage,
+									}
+									pkg.variablesThatWereAssignedByExternalStructLiterals[i.Name] = sn
+								}
+							}
+						}
 					}
 				}
 			} else {
@@ -67,9 +90,16 @@ func (p *Parser) parseAssignment(assignStmt *ast.AssignStmt, pkg *Package) {
 							i, ok := assignStmt.Lhs[0].(*ast.Ident)
 							if ok {
 								pkg.variablesThatWereAssignedByStructLiterals[i.Name] = t.Name
+							} else {
+								println("herer")
 							}
 						}
+					} else {
+						println("herer")
 					}
+				} else {
+					println("herer")
+					spew.Dump(rhs)
 				}
 			}
 		}

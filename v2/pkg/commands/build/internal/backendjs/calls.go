@@ -1,6 +1,10 @@
 package backendjs
 
-import "go/ast"
+import (
+	"go/ast"
+
+	"github.com/davecgh/go-spew/spew"
+)
 
 func (p *Parser) parseCallExpressions(x *ast.CallExpr, pkg *Package) {
 	f, ok := x.Fun.(*ast.SelectorExpr)
@@ -26,6 +30,27 @@ func (p *Parser) parseCallExpressions(x *ast.CallExpr, pkg *Package) {
 									t, ok := cl.Type.(*ast.Ident)
 									if ok {
 										pkg.structPointerLiteralsThatWereBound.Add(t.Name)
+									} else {
+										e, ok := cl.Type.(*ast.SelectorExpr)
+										if ok {
+											var thisType = ""
+											var thisPackage = ""
+											switch x := e.X.(type) {
+											case *ast.Ident:
+												thisPackage = x.Name
+											default:
+												println("Identifier in binding not supported:")
+												spew.Dump(ue.X)
+												return
+											}
+											thisType = e.Sel.Name
+											// Save this reference in the package
+											pkg := p.getOrCreatePackage(thisPackage)
+											pkg.structPointerLiteralsThatWereBound.Add(thisType)
+										} else {
+											println("Binding not supported:")
+											spew.Dump(ue.X)
+										}
 									}
 								}
 							}
@@ -47,6 +72,8 @@ func (p *Parser) parseCallExpressions(x *ast.CallExpr, pkg *Package) {
 								i, ok := x.Args[0].(*ast.Ident)
 								if ok {
 									pkg.variablesThatWereBound.Add(i.Name)
+								} else {
+
 								}
 							}
 						}

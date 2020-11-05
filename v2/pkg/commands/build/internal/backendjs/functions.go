@@ -8,7 +8,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-func (p *Parser) parseField(field *ast.Field, pkg *Package) (string, *StructName) {
+func (p *Parser) parseField(field *ast.Field, strct *Struct, pkg *Package) (string, *StructName) {
 	var structName *StructName
 	var fieldType string
 	switch t := field.Type.(type) {
@@ -20,7 +20,7 @@ func (p *Parser) parseField(field *ast.Field, pkg *Package) (string, *StructName
 
 		// Save external reference if we have it
 		if structName.Package == "" {
-			pkg.packageReferences.AddUnique(structName.Package)
+			// pkg.packageReferences.AddUnique(structName.Package)
 			pkg.structsUsedAsData.AddUnique(structName.Name)
 		} else {
 			// Save this reference to the external struct
@@ -30,7 +30,7 @@ func (p *Parser) parseField(field *ast.Field, pkg *Package) (string, *StructName
 				println("WARNING: Unknown package referenced by field:", structName.Package)
 			}
 			referencedPackage.structsUsedAsData.AddUnique(structName.Name)
-			pkg.packageReferences.AddUnique(structName.Package)
+			strct.packageReferences.AddUnique(structName.Package)
 		}
 
 	default:
@@ -78,7 +78,7 @@ func (p *Parser) parseFunctionDeclaration(funcDecl *ast.FuncDecl, pkg *Package) 
 						// Save the input parameters
 						if funcDecl.Type.Params != nil {
 							for _, inputField := range funcDecl.Type.Params.List {
-								fieldType, structName := p.parseField(inputField, pkg)
+								fieldType, structName := p.parseField(inputField, parsedStruct, pkg)
 								for _, name := range inputField.Names {
 									structMethod.Inputs = append(structMethod.Inputs, &Field{
 										Name:   name.Name,
@@ -92,7 +92,7 @@ func (p *Parser) parseFunctionDeclaration(funcDecl *ast.FuncDecl, pkg *Package) 
 						// Save the output parameters
 						if funcDecl.Type.Results != nil {
 							for _, outputField := range funcDecl.Type.Results.List {
-								fieldType, structName := p.parseField(outputField, pkg)
+								fieldType, structName := p.parseField(outputField, parsedStruct, pkg)
 								if len(outputField.Names) == 0 {
 									structMethod.Returns = append(structMethod.Returns, &Field{
 										Type:   fieldType,
