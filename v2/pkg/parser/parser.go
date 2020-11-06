@@ -1,10 +1,8 @@
 package parser
 
 import (
-	"fmt"
 	"go/token"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/leaanthony/slicer"
 	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
@@ -55,10 +53,6 @@ func (p *Parser) ParseProject(dir string) error {
 	if err != nil {
 		return err
 	}
-
-	spew.Dump(p.BoundStructs)
-	println("******* Parsed Structs *******")
-	fmt.Printf("%+v\n", p.parsedStructs)
 
 	return err
 }
