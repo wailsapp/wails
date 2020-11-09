@@ -1,4 +1,4 @@
-package backendjs
+package parser
 
 // JSType represents a javascript type
 type JSType string
@@ -35,14 +35,17 @@ func goTypeToJS(input *Field) string {
 	// case reflect.Ptr, reflect.Struct, reflect.Map, reflect.Interface:
 	// 	return JsObject
 	case "struct":
-		return input.Struct.ToString()
+		return input.Struct.Name
 	default:
 		println("UNSUPPORTED: ", input)
 		return "*"
 	}
 }
 
-func goTypeToTS(input *Field) string {
+// goTypeToTS converts the given field into a Typescript type
+// The pkgName is the package that the field is being output in.
+// This is used to ensure we don't qualify local structs.
+func goTypeToTS(input *Field, pkgName string) string {
 	var result string
 	switch input.Type {
 	case "string":
@@ -54,8 +57,10 @@ func goTypeToTS(input *Field) string {
 	case "bool":
 		result = "boolean"
 	case "struct":
-		if input.Struct.Package != "" {
-			result = input.Struct.Package + "."
+		if input.Struct.Package.Name != "" {
+			if input.Struct.Package.Name != pkgName {
+				result = input.Struct.Package.Name + "."
+			}
 		}
 		result += input.Struct.Name
 	// case reflect.Array, reflect.Slice:
@@ -70,9 +75,9 @@ func goTypeToTS(input *Field) string {
 		return JsUnsupported
 	}
 
-	// if input.IsArray {
-	// 	result = "Array<" + result + ">"
-	// }
+	if input.IsArray {
+		result = "Array<" + result + ">"
+	}
 
 	return result
 }

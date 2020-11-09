@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"testproject/mypackage"
+
 	wails "github.com/wailsapp/wails/v2"
 )
 
@@ -43,17 +45,22 @@ func (b *Basic) WailsShutdown() {
 	// Perform your teardown here
 }
 
-// // NewPerson creates a new person
-// func (b *Basic) NewPerson(name string, age int) *mypackage.Person {
-// 	return &mypackage.Person{Name: name, Age: age}
-// }
+// NewPerson creates a new person
+func (b *Basic) NewPerson(name string, age int) *mypackage.Person {
+	return &mypackage.Person{Name: name, Age: age}
+}
 
 // Greet returns a greeting for the given name
 func (b *Basic) Greet(name string) string {
 	return fmt.Sprintf("Hello %s!", name)
 }
 
-// // RemovePerson Removes the given person
-// func (b *Basic) RemovePerson(p *mypackage.Person) {
-// 	// dummy
-// }
+// MultipleGreets returns greetings for the given name
+func (b *Basic) MultipleGreets(name string) []string {
+	return []string{"hi", "hello", "croeso!"}
+}
+
+// RemovePerson Removes the given person
+func (b *Basic) RemovePerson(p *mypackage.Person) {
+	// dummy
+}

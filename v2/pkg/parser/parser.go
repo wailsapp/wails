@@ -3,34 +3,27 @@ package parser
 import (
 	"go/token"
 
-	"github.com/leaanthony/slicer"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
 )
 
+// Parser is the Wails project parser
 type Parser struct {
 
 	// Placeholders for Go's parser
-	goPackages      []*packages.Package
-	fileSet         *token.FileSet
-	internalMethods *slicer.StringSlicer
+	fileSet *token.FileSet
 
-	// This is a map of structs that have been parsed
-	// The key is <package>.<structname>
-	parsedStructs map[string]*Struct
-
-	// The list of struct names that are bound
-	BoundStructReferences []*StructReference
-
-	// The list of structs that are bound
-	BoundStructs []*Struct
+	// The packages we parse
+	// The map key is the package ID
+	packages map[string]*Package
 }
 
+// NewParser creates a new Wails project parser
 func NewParser() *Parser {
 	return &Parser{
-		fileSet:         token.NewFileSet(),
-		internalMethods: slicer.String([]string{"WailsInit", "WailsShutdown"}),
-		parsedStructs:   make(map[string]*Struct),
+		fileSet:  token.NewFileSet(),
+		packages: make(map[string]*Package),
 	}
 }
 
@@ -44,17 +37,29 @@ func (p *Parser) ParseProject(dir string) error {
 		return err
 	}
 
-	err = p.findBoundStructs()
-	if err != nil {
-		return err
+	// Find all the bound structs
+	for _, pkg := range p.packages {
+		err = p.findBoundStructs(pkg)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = p.parseBoundStructs()
-	if err != nil {
-		return err
+	// Parse the structs
+	for _, pkg := range p.packages {
+		err = p.parseBoundStructs(pkg)
+		if err != nil {
+			return err
+		}
 	}
 
-	return err
+	// Resolve package names
+	// We do this because some packages may have the same name
+	p.resolvePackageNames()
+
+	spew.Dump(p.packages)
+
+	return nil
 }
 
 func (p *Parser) loadPackages(projectPath string) error {
@@ -63,7 +68,8 @@ func (p *Parser) loadPackages(projectPath string) error {
 		packages.NeedSyntax |
 		packages.NeedTypes |
 		packages.NeedImports |
-		packages.NeedTypesInfo
+		packages.NeedTypesInfo |
+		packages.NeedModule
 
 	cfg := &packages.Config{Fset: p.fileSet, Mode: mode, Dir: projectPath}
 	pkgs, err := packages.Load(cfg, "./...")
@@ -86,77 +92,14 @@ func (p *Parser) loadPackages(projectPath string) error {
 		return parseError
 	}
 
-	p.goPackages = pkgs
-
-	return nil
-}
-
-func (p *Parser) getPackageByName(packageName string) *packages.Package {
-	for _, pkg := range p.goPackages {
-		if pkg.Name == packageName {
-			return pkg
-		}
-	}
-	return nil
-}
-
-func (p *Parser) getWailsImportName(pkg *packages.Package) (string, bool) {
-	// Scan the imports for the wails v2 import
-	for key, details := range pkg.Imports {
-		if key == "github.com/wailsapp/wails/v2" {
-			return details.Name, true
-		}
-	}
-	return "", false
-}
-
-// findBoundStructs will search through the Wails project looking
-// for which structs have been bound using the `Bind()` method
-func (p *Parser) findBoundStructs() error {
-
-	// Try each of the packages to find the Bind() calls
-	for _, pkg := range p.goPackages {
-
-		// Does this package import Wails?
-		wailsImportName, imported := p.getWailsImportName(pkg)
-		if !imported {
-			continue
-		}
-
-		// Do we create an app using CreateApp?
-		appVariableName, created := p.getApplicationVariableName(pkg, wailsImportName)
-		if !created {
-			continue
-		}
-
-		boundStructReferences := p.findBoundStructsInPackage(pkg, appVariableName)
-		p.BoundStructReferences = append(p.BoundStructReferences, boundStructReferences...)
+	// Create a map of packages
+	for _, pkg := range pkgs {
+		p.packages[pkg.ID] = newPackage(pkg)
 	}
 
 	return nil
 }
 
-func (p *Parser) parseBoundStructs() error {
-
-	// Iterate the structs
-	for _, boundStructReference := range p.BoundStructReferences {
-		// Parse the struct
-		boundStruct, err := p.ParseStruct(boundStructReference.Package, boundStructReference.Name)
-		if err != nil {
-			return err
-		}
-
-		p.BoundStructs = append(p.BoundStructs, boundStruct)
-	}
-
-	// Resolve the references between the structs
-	// This is when a field of one struct is a struct type
-	for _, boundStruct := range p.BoundStructs {
-		err := p.resolveStructReferences(boundStruct)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+func (p *Parser) getPackageByID(id string) *Package {
+	return p.packages[id]
 }

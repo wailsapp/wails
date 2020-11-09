@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"go/ast"
 	"strings"
 )
@@ -14,7 +15,8 @@ type Method struct {
 }
 
 func (p *Parser) parseStructMethods(boundStruct *Struct) error {
-	for _, fileAst := range boundStruct.Package.Syntax {
+
+	for _, fileAst := range boundStruct.Package.gopackage.Syntax {
 
 		// Track errors
 		var parseError error
@@ -43,7 +45,7 @@ func (p *Parser) parseStructMethods(boundStruct *Struct) error {
 						}
 
 						// We want to ignore Internal functions
-						if p.internalMethods.Contains(funcDecl.Name.Name) {
+						if funcDecl.Name.Name == "WailsInit" || funcDecl.Name.Name == "WailsShutdown" {
 							continue
 						}
 
@@ -55,13 +57,13 @@ func (p *Parser) parseStructMethods(boundStruct *Struct) error {
 						// Create our struct
 						structMethod := &Method{
 							Name:     funcDecl.Name.Name,
-							Comments: p.parseComments(funcDecl.Doc),
+							Comments: parseComments(funcDecl.Doc),
 						}
 
 						// Save the input parameters
 						if funcDecl.Type.Params != nil {
 							for _, inputField := range funcDecl.Type.Params.List {
-								fields, err := p.parseField(inputField, boundStruct.Package.Name)
+								fields, err := p.parseField(fileAst, inputField, boundStruct.Package)
 								if err != nil {
 									parseError = err
 									return false
@@ -74,7 +76,7 @@ func (p *Parser) parseStructMethods(boundStruct *Struct) error {
 						// Save the output parameters
 						if funcDecl.Type.Results != nil {
 							for _, outputField := range funcDecl.Type.Results.List {
-								fields, err := p.parseField(outputField, boundStruct.Package.Name)
+								fields, err := p.parseField(fileAst, outputField, boundStruct.Package)
 								if err != nil {
 									parseError = err
 									return false
@@ -103,4 +105,45 @@ func (p *Parser) parseStructMethods(boundStruct *Struct) error {
 	}
 
 	return nil
+}
+
+// InputsAsTSText generates a string with the method inputs
+// formatted in a way acceptable to Typescript
+func (m *Method) InputsAsTSText(pkgName string) string {
+	var inputs []string
+
+	for _, input := range m.Inputs {
+		inputText := fmt.Sprintf("%s: %s", input.Name, goTypeToTS(input, pkgName))
+		inputs = append(inputs, inputText)
+	}
+
+	return strings.Join(inputs, ", ")
+}
+
+// OutputsAsTSText generates a string with the method inputs
+// formatted in a way acceptable to Javascript
+func (m *Method) OutputsAsTSText(pkgName string) string {
+
+	if len(m.Returns) == 0 {
+		return "void"
+	}
+
+	var result []string
+
+	for _, output := range m.Returns {
+		result = append(result, goTypeToTS(output, pkgName))
+	}
+	return strings.Join(result, ", ")
+}
+
+// InputsAsJSText generates a string with the method inputs
+// formatted in a way acceptable to Javascript
+func (m *Method) InputsAsJSText() string {
+	var inputs []string
+
+	for _, input := range m.Inputs {
+		inputs = append(inputs, input.Name)
+	}
+
+	return strings.Join(inputs, ", ")
 }

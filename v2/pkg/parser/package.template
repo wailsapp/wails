@@ -13,7 +13,7 @@ export const {{.Name}} = {
     * @function {{.Name}}
 {{range .Inputs}}    * @param {{"{"}}{{.JSType}}{{"}"}} {{.Name}}
 {{end}}    *
-    * @returns {Promise<{{.OutputsAsTSText}}>} 
+    * @returns {Promise<{{.OutputsAsTSText $.Name}}>} 
     */
   {{.Name}}: function({{.InputsAsJSText}}) {
     return window.backend.{{$.Name}}.{{$struct.Name}}.{{.Name}}({{.InputsAsJSText}});

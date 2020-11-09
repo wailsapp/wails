@@ -1,27 +1,29 @@
 package parser
 
-import (
-	"go/ast"
+import "go/ast"
 
-	"golang.org/x/tools/go/packages"
-)
+// findBoundStructs will search through the Wails project looking
+// for which structs have been bound using the `Bind()` method
+func (p *Parser) findBoundStructs(pkg *Package) error {
 
-func (p *Parser) getImportByName(pkg *packages.Package, importName string) *packages.Package {
-	// Find package path
-	for _, imp := range pkg.Imports {
-		if imp.Name == importName {
-			return imp
+	// Iterate through the files in the package looking for the bound structs
+	for _, fileAst := range pkg.gopackage.Syntax {
+
+		// Find the wails import name
+		wailsImportName := pkg.getWailsImportName(fileAst)
+
+		// If this file doesn't import wails, continue
+		if wailsImportName == "" {
+			continue
 		}
-	}
-	return nil
-}
 
-func (p *Parser) findBoundStructsInPackage(pkg *packages.Package, applicationVariableName string) []*StructReference {
+		applicationVariableName := pkg.getApplicationVariableName(fileAst, wailsImportName)
+		if applicationVariableName == "" {
+			continue
+		}
 
-	var boundStructs []*StructReference
+		var parseError error
 
-	// Iterate through the whole package looking for the bound structs
-	for _, fileAst := range pkg.Syntax {
 		ast.Inspect(fileAst, func(n ast.Node) bool {
 			// Parse Call expressions looking for bind calls
 			callExpr, ok := n.(*ast.CallExpr)
@@ -92,8 +94,7 @@ func (p *Parser) findBoundStructsInPackage(pkg *packages.Package, applicationVar
 
 				// app.Bind( &myStruct{} )
 				case *ast.Ident:
-					boundStruct := newStructReference(pkg.Name, boundStructExp.Name)
-					boundStructs = append(boundStructs, boundStruct)
+					pkg.boundStructs.Add(boundStructExp.Name)
 
 				// app.Bind( &mypackage.myStruct{} )
 				case *ast.SelectorExpr:
@@ -108,39 +109,39 @@ func (p *Parser) findBoundStructsInPackage(pkg *packages.Package, applicationVar
 						return true
 					}
 					structName = boundStructExp.Sel.Name
-					referencedPackage := p.getImportByName(pkg, packageName)
-					boundStruct := newStructReference(referencedPackage.Name, structName)
-					boundStructs = append(boundStructs, boundStruct)
+					referencedPackage := pkg.getImportByName(packageName, fileAst)
+					packageWrapper := p.getPackageByID(referencedPackage.ID)
+					packageWrapper.boundStructs.Add(structName)
 				}
 
-			// Binding struct literals
-			case *ast.CompositeLit:
-				switch literal := boundItem.Type.(type) {
+			// // Binding struct literals
+			// case *ast.CompositeLit:
+			// 	switch literal := boundItem.Type.(type) {
 
-				// app.Bind( myStruct{} )
-				case *ast.Ident:
-					structName := literal.Name
-					boundStruct := newStructReference(pkg.Name, structName)
-					boundStructs = append(boundStructs, boundStruct)
+			// 	// app.Bind( myStruct{} )
+			// 	case *ast.Ident:
+			// 		structName := literal.Name
+			// 		boundStructReference := newStructReference(p.GoPackage, structName)
+			// 		p.addBoundStructReference(boundStructReference)
 
-				// app.Bind( mypackage.myStruct{} )
-				case *ast.SelectorExpr:
-					var structName = ""
-					var packageName = ""
-					switch x := literal.X.(type) {
-					case *ast.Ident:
-						packageName = x.Name
-					default:
-						// TODO: Save these warnings
-						// println("Identifier in binding not supported:")
-						return true
-					}
-					structName = literal.Sel.Name
+			// 	// app.Bind( mypackage.myStruct{} )
+			// 	case *ast.SelectorExpr:
+			// 		var structName = ""
+			// 		var packageName = ""
+			// 		switch x := literal.X.(type) {
+			// 		case *ast.Ident:
+			// 			packageName = x.Name
+			// 		default:
+			// 			// TODO: Save these warnings
+			// 			// println("Identifier in binding not supported:")
+			// 			return true
+			// 		}
+			// 		structName = literal.Sel.Name
 
-					referencedPackage := p.getImportByName(pkg, packageName)
-					boundStruct := newStructReference(referencedPackage.Name, structName)
-					boundStructs = append(boundStructs, boundStruct)
-				}
+			// 		referencedPackage := p.getImportByName(pkg, packageName)
+			// 		boundStructReference := newStructReference(referencedPackage, structName)
+			// 		p.addBoundStructReference(boundStructReference)
+			// 	}
 
 			default:
 				// TODO: Save these warnings
@@ -150,6 +151,11 @@ func (p *Parser) findBoundStructsInPackage(pkg *packages.Package, applicationVar
 
 			return true
 		})
+
+		if parseError != nil {
+			return parseError
+		}
 	}
-	return boundStructs
+
+	return nil
 }
