@@ -40,7 +40,9 @@ func (p *Parser) generateModule() error {
 		return err
 	}
 
-	for _, pkg := range p.packages {
+	packagesToGenerate := p.packagesToGenerate()
+
+	for _, pkg := range packagesToGenerate {
 
 		// Calculate directory
 		dir := filepath.Join(moduleDir, pkg.gopackage.Name)
@@ -53,6 +55,21 @@ func (p *Parser) generateModule() error {
 			return err
 		}
 	}
+
+	// Copy the package file
+	srcFile := fs.RelativePath("./package.json")
+	tgtFile := filepath.Join(moduleDir, "package.json")
+	err = fs.CopyFile(srcFile, tgtFile)
+	if err != nil {
+		return err
+	}
+
+	// Generate the index.js file
+	err = generateIndexJS(moduleDir, packagesToGenerate)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -61,9 +78,9 @@ func createBackendJSDirectory() (string, error) {
 	// Calculate the package directory
 	// Note this is *always* called from the project directory
 	// so using paths relative to CWD is fine
-	dir, err := fs.RelativeToCwd("./frontend/wails")
+	dir, err := fs.RelativeToCwd("./frontend/backend")
 	if err != nil {
-		return "", errors.Wrap(err, "Error creating wails js directory")
+		return "", errors.Wrap(err, "Error creating backend module directory")
 	}
 
 	// Remove directory if it exists - REGENERATION!
@@ -125,6 +142,36 @@ func generatePackage(pkg *Package, moduledir string) error {
 	err = ioutil.WriteFile(filepath.Join(moduledir, "index.js"), buffer.Bytes(), 0755)
 	if err != nil {
 		return errors.Wrap(err, "Error writing backend package file")
+	}
+
+	return nil
+}
+
+func generateIndexJS(dir string, packages []*Package) error {
+
+	// Get path to local file
+	templateFile := fs.RelativePath("./index.template")
+
+	// Load template
+	templateData := fs.MustLoadString(templateFile)
+	packagesTemplate, err := template.New("index").Parse(templateData)
+	if err != nil {
+		return errors.Wrap(err, "Error creating template")
+	}
+
+	// Execute template
+	var buffer bytes.Buffer
+	err = packagesTemplate.Execute(&buffer, packages)
+	if err != nil {
+		return errors.Wrap(err, "Error generating code")
+	}
+
+	// Calculate target filename
+	indexJS := filepath.Join(dir, "index.js")
+
+	err = ioutil.WriteFile(indexJS, buffer.Bytes(), 0755)
+	if err != nil {
+		return errors.Wrap(err, "Error writing backend package index.js file")
 	}
 
 	return nil

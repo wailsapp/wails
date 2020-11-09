@@ -100,3 +100,16 @@ func (p *Parser) loadPackages(projectPath string) error {
 func (p *Parser) getPackageByID(id string) *Package {
 	return p.packages[id]
 }
+
+func (p *Parser) packagesToGenerate() []*Package {
+
+	var result []*Package
+
+	for _, pkg := range p.packages {
+		if pkg.ShouldGenerate() {
+			result = append(result, pkg)
+		}
+	}
+
+	return result
+}

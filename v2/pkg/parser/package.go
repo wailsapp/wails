@@ -90,6 +90,36 @@ func (p *Package) addStruct(strct *Struct) {
 	p.parsedStructs[strct.Name] = strct
 }
 
+// HasBoundStructs returns true if any of its structs
+// are bound
+func (p *Package) HasBoundStructs() bool {
+
+	for _, strct := range p.parsedStructs {
+		if strct.IsBound {
+			return true
+		}
+	}
+
+	return false
+}
+
+// HasDataStructs returns true if any of its structs
+// are used as data
+func (p *Package) HasDataStructs() bool {
+	for _, strct := range p.parsedStructs {
+		if strct.IsUsedAsData {
+			return true
+		}
+	}
+
+	return false
+}
+
+// ShouldGenerate returns true when this package should be generated
+func (p *Package) ShouldGenerate() bool {
+	return p.HasBoundStructs() || p.HasDataStructs()
+}
+
 // DeclarationReferences returns a list of external packages
 // we reference from this package
 func (p *Package) DeclarationReferences() []string {
