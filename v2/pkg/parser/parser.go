@@ -3,7 +3,6 @@ package parser
 import (
 	"go/token"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
 )
@@ -56,8 +55,6 @@ func (p *Parser) ParseProject(dir string) error {
 	// Resolve package names
 	// We do this because some packages may have the same name
 	p.resolvePackageNames()
-
-	spew.Dump(p.packages)
 
 	return nil
 }
