@@ -69,26 +69,33 @@ func (p *Parser) findBoundStructs(pkg *Package) error {
 						return false
 					}
 					if strct == nil {
-						parseError = fmt.Errorf("Unable to resolve function returntype: %s", fn.Name)
+						parseError = fmt.Errorf("unable to resolve function returntype: %s", fn.Name)
 						return false
 					}
-					println("Found bound function return type:", strct.Name)
 					strct.Package.boundStructs.Add(strct.Name)
-					// case *ast.SelectorExpr:
-					// 	ident, ok := fn.X.(*ast.Ident)
-					// 	if !ok {
-					// 		return true
-					// 	}
-					// 	packageName := ident.Name
-					// 	functionName := fn.Sel.Name
-					// 	println("Found bound function:", packageName+"."+functionName)
+				case *ast.SelectorExpr:
+					ident, ok := fn.X.(*ast.Ident)
+					if !ok {
+						return true
+					}
+					packageName := ident.Name
+					functionName := fn.Sel.Name
+					println("Found bound function:", packageName+"."+functionName)
 
-					// 	strct := p.getFunctionReturnType(packageName, functionName)
-					// 	if strct == nil {
-					// 		// Unable to resolve function
-					// 		return true
-					// 	}
-					// 	boundStructs = append(boundStructs, strct)
+					// Get package for package name
+					externalPackageName := pkg.getImportByName(packageName, fileAst)
+					externalPackage := p.getPackageByID(externalPackageName.ID)
+
+					strct, err := p.getFunctionReturnType(externalPackage, functionName)
+					if err != nil {
+						parseError = err
+						return false
+					}
+					if strct == nil {
+						// Unable to resolve function
+						return true
+					}
+					externalPackage.boundStructs.Add(strct.Name)
 				}
 
 			// Binding struct pointer literals

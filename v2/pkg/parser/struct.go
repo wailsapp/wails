@@ -44,7 +44,7 @@ func parseStructNameFromStarExpr(starExpr *ast.StarExpr) (string, string, error)
 			pkg = i.Name
 		default:
 			// TODO: Store warnings?
-			return "", "", errors.WithStack(fmt.Errorf("Unknown type in selector for *ast.SelectorExpr: ", i))
+			return "", "", errors.WithStack(fmt.Errorf("unknown type in selector for *ast.SelectorExpr: %+v", i))
 		}
 
 		name = x.Sel.Name
@@ -56,13 +56,13 @@ func parseStructNameFromStarExpr(starExpr *ast.StarExpr) (string, string, error)
 			name = s.Name
 		default:
 			// TODO: Store warnings?
-			return "", "", errors.WithStack(fmt.Errorf("Unknown type in selector for *ast.StarExpr: ", s))
+			return "", "", errors.WithStack(fmt.Errorf("unknown type in selector for *ast.StarExpr: %+v", s))
 		}
 	case *ast.Ident:
 		name = x.Name
 	default:
 		// TODO: Store warnings?
-		return "", "", errors.WithStack(fmt.Errorf("Unknown type in selector for *ast.StarExpr: ", starExpr))
+		return "", "", errors.WithStack(fmt.Errorf("unknown type in selector for *ast.StarExpr: %+v", starExpr))
 	}
 	return pkg, name, nil
 }

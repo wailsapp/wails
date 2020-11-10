@@ -44,21 +44,23 @@ func (p *Parser) generateModule() error {
 
 	for _, pkg := range packagesToGenerate {
 
-		// Calculate directory
-		dir := filepath.Join(moduleDir, pkg.gopackage.Name)
-
-		// Create the directory if it doesn't exist
-		fs.Mkdir(dir)
-
-		err := generatePackage(pkg, dir)
+		err := generatePackage(pkg, moduleDir)
 		if err != nil {
 			return err
 		}
 	}
 
-	// Copy the package file
+	// Copy the standard files
 	srcFile := fs.RelativePath("./package.json")
 	tgtFile := filepath.Join(moduleDir, "package.json")
+	err = fs.CopyFile(srcFile, tgtFile)
+	if err != nil {
+		return err
+	}
+
+	// Copy the globals.d.ts file
+	srcFile = fs.RelativePath("./globals.d.ts")
+	tgtFile = filepath.Join(moduleDir, "globals.d.ts")
 	err = fs.CopyFile(srcFile, tgtFile)
 	if err != nil {
 		return err
@@ -97,28 +99,28 @@ func createBackendJSDirectory() (string, error) {
 
 func generatePackage(pkg *Package, moduledir string) error {
 
-	// Get path to local file
-	typescriptTemplateFile := fs.RelativePath("./package.d.template")
+	// // Get path to local file
+	// typescriptTemplateFile := fs.RelativePath("./package.d.template")
 
-	// Load typescript template
-	typescriptTemplateData := fs.MustLoadString(typescriptTemplateFile)
-	typescriptTemplate, err := template.New("typescript").Parse(typescriptTemplateData)
-	if err != nil {
-		return errors.Wrap(err, "Error creating template")
-	}
+	// // Load typescript template
+	// typescriptTemplateData := fs.MustLoadString(typescriptTemplateFile)
+	// typescriptTemplate, err := template.New("typescript").Parse(typescriptTemplateData)
+	// if err != nil {
+	// 	return errors.Wrap(err, "Error creating template")
+	// }
 
 	// Execute javascript template
 	var buffer bytes.Buffer
-	err = typescriptTemplate.Execute(&buffer, pkg)
-	if err != nil {
-		return errors.Wrap(err, "Error generating code")
-	}
+	// err = typescriptTemplate.Execute(&buffer, pkg)
+	// if err != nil {
+	// 	return errors.Wrap(err, "Error generating code")
+	// }
 
-	// Save typescript file
-	err = ioutil.WriteFile(filepath.Join(moduledir, "index.d.ts"), buffer.Bytes(), 0755)
-	if err != nil {
-		return errors.Wrap(err, "Error writing backend package file")
-	}
+	// // Save typescript file
+	// err = ioutil.WriteFile(filepath.Join(moduledir, "index.d.ts"), buffer.Bytes(), 0755)
+	// if err != nil {
+	// 	return errors.Wrap(err, "Error writing backend package file")
+	// }
 
 	// Get path to local file
 	javascriptTemplateFile := fs.RelativePath("./package.template")
@@ -139,7 +141,7 @@ func generatePackage(pkg *Package, moduledir string) error {
 	}
 
 	// Save javascript file
-	err = ioutil.WriteFile(filepath.Join(moduledir, "index.js"), buffer.Bytes(), 0755)
+	err = ioutil.WriteFile(filepath.Join(moduledir, "_"+pkg.Name+".js"), buffer.Bytes(), 0755)
 	if err != nil {
 		return errors.Wrap(err, "Error writing backend package file")
 	}

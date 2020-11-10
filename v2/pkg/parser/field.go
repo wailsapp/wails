@@ -147,7 +147,7 @@ func (p *Parser) parseField(file *ast.File, field *ast.Field, pkg *Package) ([]*
 
 	default:
 		spew.Dump(t)
-		return nil, fmt.Errorf("Unsupported field found in struct: %+v", t)
+		return nil, fmt.Errorf("unsupported field found in struct: %+v", t)
 	}
 
 	// Loop over names if we have

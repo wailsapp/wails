@@ -1,3 +1,6 @@
+// Package parser provides the ability to parse the data that is bound in Wails projects.
+// Using this, it can also generate a Javascript module that represents the DTOs used, as
+// well as providing wrappers for bound methods.
 package parser
 
 import (
