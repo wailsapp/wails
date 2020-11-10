@@ -100,8 +100,6 @@ func (p *Parser) parseField(file *ast.File, field *ast.Field, pkg *Package) ([]*
 				return nil, err
 			}
 
-			// Save the fact this struct is used as a data type
-			strct.IsUsedAsData = true
 		}
 
 	case *ast.ArrayType:
@@ -141,8 +139,6 @@ func (p *Parser) parseField(file *ast.File, field *ast.Field, pkg *Package) ([]*
 					return nil, err
 				}
 
-				// Save the fact this struct is used as a data type
-				strct.IsUsedAsData = true
 			}
 		default:
 			// We will default to "Array<any>" for eg nested arrays

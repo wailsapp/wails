@@ -1,6 +1,9 @@
 package parser
 
-import "go/ast"
+import (
+	"fmt"
+	"go/ast"
+)
 
 // findBoundStructs will search through the Wails project looking
 // for which structs have been bound using the `Bind()` method
@@ -55,28 +58,38 @@ func (p *Parser) findBoundStructs(pkg *Package) error {
 			// Work out what was bound
 			switch boundItem := callExpr.Args[0].(type) {
 
-			// // app.Bind( someFunction() )
-			// case *ast.CallExpr:
-			// 	switch fn := boundItem.Fun.(type) {
-			// 	case *ast.Ident:
-			// 		boundStructs = append(boundStructs, newStruct(pkg.Name, fn.Name))
-			// 		println("Found bound function:", fn.Name)
-			// 	case *ast.SelectorExpr:
-			// 		ident, ok := fn.X.(*ast.Ident)
-			// 		if !ok {
-			// 			return true
-			// 		}
-			// 		packageName := ident.Name
-			// 		functionName := fn.Sel.Name
-			// 		println("Found bound function:", packageName+"."+functionName)
+			// app.Bind( someFunction() )
+			case *ast.CallExpr:
+				switch fn := boundItem.Fun.(type) {
+				case *ast.Ident:
+					// boundStructs = append(boundStructs, newStruct(pkg.Name, fn.Name))
+					strct, err := p.getFunctionReturnType(pkg, fn.Name)
+					if err != nil {
+						parseError = err
+						return false
+					}
+					if strct == nil {
+						parseError = fmt.Errorf("Unable to resolve function returntype: %s", fn.Name)
+						return false
+					}
+					println("Found bound function return type:", strct.Name)
+					strct.Package.boundStructs.Add(strct.Name)
+					// case *ast.SelectorExpr:
+					// 	ident, ok := fn.X.(*ast.Ident)
+					// 	if !ok {
+					// 		return true
+					// 	}
+					// 	packageName := ident.Name
+					// 	functionName := fn.Sel.Name
+					// 	println("Found bound function:", packageName+"."+functionName)
 
-			// 		strct := p.getFunctionReturnType(packageName, functionName)
-			// 		if strct == nil {
-			// 			// Unable to resolve function
-			// 			return true
-			// 		}
-			// 		boundStructs = append(boundStructs, strct)
-			// 	}
+					// 	strct := p.getFunctionReturnType(packageName, functionName)
+					// 	if strct == nil {
+					// 		// Unable to resolve function
+					// 		return true
+					// 	}
+					// 	boundStructs = append(boundStructs, strct)
+				}
 
 			// Binding struct pointer literals
 			case *ast.UnaryExpr:
@@ -113,35 +126,6 @@ func (p *Parser) findBoundStructs(pkg *Package) error {
 					packageWrapper := p.getPackageByID(referencedPackage.ID)
 					packageWrapper.boundStructs.Add(structName)
 				}
-
-			// // Binding struct literals
-			// case *ast.CompositeLit:
-			// 	switch literal := boundItem.Type.(type) {
-
-			// 	// app.Bind( myStruct{} )
-			// 	case *ast.Ident:
-			// 		structName := literal.Name
-			// 		boundStructReference := newStructReference(p.GoPackage, structName)
-			// 		p.addBoundStructReference(boundStructReference)
-
-			// 	// app.Bind( mypackage.myStruct{} )
-			// 	case *ast.SelectorExpr:
-			// 		var structName = ""
-			// 		var packageName = ""
-			// 		switch x := literal.X.(type) {
-			// 		case *ast.Ident:
-			// 			packageName = x.Name
-			// 		default:
-			// 			// TODO: Save these warnings
-			// 			// println("Identifier in binding not supported:")
-			// 			return true
-			// 		}
-			// 		structName = literal.Sel.Name
-
-			// 		referencedPackage := p.getImportByName(pkg, packageName)
-			// 		boundStructReference := newStructReference(referencedPackage, structName)
-			// 		p.addBoundStructReference(boundStructReference)
-			// 	}
 
 			default:
 				// TODO: Save these warnings

@@ -69,6 +69,13 @@ func (p *Parser) parseStructMethods(boundStruct *Struct) error {
 									return false
 								}
 
+								// If this field was a struct, flag that it is used as data
+								if len(fields) > 0 {
+									if fields[0].Struct != nil {
+										fields[0].Struct.IsUsedAsData = true
+									}
+								}
+
 								structMethod.Inputs = append(structMethod.Inputs, fields...)
 							}
 						}
@@ -80,6 +87,13 @@ func (p *Parser) parseStructMethods(boundStruct *Struct) error {
 								if err != nil {
 									parseError = err
 									return false
+								}
+
+								// If this field was a struct, flag that it is used as data
+								if len(fields) > 0 {
+									if fields[0].Struct != nil {
+										fields[0].Struct.IsUsedAsData = true
+									}
 								}
 
 								structMethod.Returns = append(structMethod.Returns, fields...)

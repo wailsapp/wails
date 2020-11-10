@@ -10,6 +10,14 @@ func (p *Parser) parseStructFields(fileAst *ast.File, structType *ast.StructType
 		if err != nil {
 			return err
 		}
+
+		// If this field was a struct, flag that it is used as data
+		if len(fields) > 0 {
+			if fields[0].Struct != nil {
+				fields[0].Struct.IsUsedAsData = true
+			}
+		}
+
 		boundStruct.Fields = append(boundStruct.Fields, fields...)
 	}
 
