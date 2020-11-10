@@ -162,9 +162,24 @@ func Install(options *Options) error {
 	}
 
 	// Did the user want to install in current directory?
-	if options.TargetDir == "." {
-		// Yes - use cwd
-		options.TargetDir = cwd
+	if options.TargetDir == "" {
+
+		// If the current directory is empty, use it
+		isEmpty, err := fs.DirIsEmpty(cwd)
+		if err != nil {
+			return err
+		}
+
+		if isEmpty {
+			// Yes - use cwd
+			options.TargetDir = cwd
+		} else {
+			options.TargetDir = filepath.Join(cwd, options.ProjectName)
+			if fs.DirExists(options.TargetDir) {
+				return fmt.Errorf("cannot create project directory. Dir exists: %s", options.TargetDir)
+			}
+		}
+
 	} else {
 		// Get the absolute path of the given directory
 		targetDir, err := filepath.Abs(filepath.Join(cwd, options.TargetDir))

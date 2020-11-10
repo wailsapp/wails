@@ -32,7 +32,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("n", "Name of project", &projectName)
 
 	// Setup project directory
-	projectDirectory := "."
+	projectDirectory := ""
 	command.StringFlag("d", "Project directory", &projectDirectory)
 
 	// Quiet Init
@@ -109,6 +109,10 @@ func initProject(options *templates.Options) error {
 
 	// Output stats
 	elapsed := time.Since(start)
+	options.Logger.Println("")
+	options.Logger.Println("Project Name:      " + options.ProjectName)
+	options.Logger.Println("Project Directory: " + options.TargetDir)
+	options.Logger.Println("Project Template:  " + options.TemplateName)
 	options.Logger.Println("")
 	options.Logger.Println(fmt.Sprintf("Initialised project '%s' in %s.", options.ProjectName, elapsed.Round(time.Millisecond).String()))
 	options.Logger.Println("")
