@@ -69,6 +69,11 @@ func (p *Parser) generateModule() error {
 	if err != nil {
 		return err
 	}
+	// Generate the index.d.ts file
+	err = generateIndexTS(moduleDir, packagesToGenerate)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -97,28 +102,28 @@ func createBackendJSDirectory() (string, error) {
 
 func generatePackage(pkg *Package, moduledir string) error {
 
-	// // Get path to local file
-	// typescriptTemplateFile := fs.RelativePath("./package.d.template")
+	// Get path to local file
+	typescriptTemplateFile := fs.RelativePath("./package.d.template")
 
-	// // Load typescript template
-	// typescriptTemplateData := fs.MustLoadString(typescriptTemplateFile)
-	// typescriptTemplate, err := template.New("typescript").Parse(typescriptTemplateData)
-	// if err != nil {
-	// 	return errors.Wrap(err, "Error creating template")
-	// }
+	// Load typescript template
+	typescriptTemplateData := fs.MustLoadString(typescriptTemplateFile)
+	typescriptTemplate, err := template.New("typescript").Parse(typescriptTemplateData)
+	if err != nil {
+		return errors.Wrap(err, "Error creating template")
+	}
 
 	// Execute javascript template
 	var buffer bytes.Buffer
-	// err = typescriptTemplate.Execute(&buffer, pkg)
-	// if err != nil {
-	// 	return errors.Wrap(err, "Error generating code")
-	// }
+	err = typescriptTemplate.Execute(&buffer, pkg)
+	if err != nil {
+		return errors.Wrap(err, "Error generating code")
+	}
 
-	// // Save typescript file
-	// err = ioutil.WriteFile(filepath.Join(moduledir, "index.d.ts"), buffer.Bytes(), 0755)
-	// if err != nil {
-	// 	return errors.Wrap(err, "Error writing backend package file")
-	// }
+	// Save typescript file
+	err = ioutil.WriteFile(filepath.Join(moduledir, "_"+pkg.Name+".d.ts"), buffer.Bytes(), 0755)
+	if err != nil {
+		return errors.Wrap(err, "Error writing backend package file")
+	}
 
 	// Get path to local file
 	javascriptTemplateFile := fs.RelativePath("./package.template")
@@ -172,6 +177,35 @@ func generateIndexJS(dir string, packages []*Package) error {
 	err = ioutil.WriteFile(indexJS, buffer.Bytes(), 0755)
 	if err != nil {
 		return errors.Wrap(err, "Error writing backend package index.js file")
+	}
+
+	return nil
+}
+func generateIndexTS(dir string, packages []*Package) error {
+
+	// Get path to local file
+	templateFile := fs.RelativePath("./index.d.template")
+
+	// Load template
+	templateData := fs.MustLoadString(templateFile)
+	indexTSTemplate, err := template.New("index.d").Parse(templateData)
+	if err != nil {
+		return errors.Wrap(err, "Error creating template")
+	}
+
+	// Execute template
+	var buffer bytes.Buffer
+	err = indexTSTemplate.Execute(&buffer, packages)
+	if err != nil {
+		return errors.Wrap(err, "Error generating code")
+	}
+
+	// Calculate target filename
+	indexJS := filepath.Join(dir, "index.d.ts")
+
+	err = ioutil.WriteFile(indexJS, buffer.Bytes(), 0755)
+	if err != nil {
+		return errors.Wrap(err, "Error writing backend package index.d.ts file")
 	}
 
 	return nil

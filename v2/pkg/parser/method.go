@@ -150,6 +150,22 @@ func (m *Method) OutputsAsTSText(pkgName string) string {
 	return strings.Join(result, ", ")
 }
 
+// OutputsAsTSDeclarationText generates a string with the method inputs
+// formatted in a way acceptable to Javascript
+func (m *Method) OutputsAsTSDeclarationText(pkgName string) string {
+
+	if len(m.Returns) == 0 {
+		return "void"
+	}
+
+	var result []string
+
+	for _, output := range m.Returns {
+		result = append(result, goTypeToTSDeclaration(output, pkgName))
+	}
+	return strings.Join(result, ", ")
+}
+
 // InputsAsJSText generates a string with the method inputs
 // formatted in a way acceptable to Javascript
 func (m *Method) InputsAsJSText() string {

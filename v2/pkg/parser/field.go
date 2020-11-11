@@ -51,6 +51,23 @@ func (f *Field) JSName() string {
 	return f.Name
 }
 
+// TSName returns the Typescript name for this field
+func (f *Field) TSName() string {
+	result := f.Name
+	if f.JSONOptions.Name != "" {
+		result = f.JSONOptions.Name
+	}
+	if f.IsOptional {
+		result += "?"
+	}
+	return result
+}
+
+// AsTSDeclaration returns a TS definition of a single type field
+func (f *Field) AsTSDeclaration(pkgName string) string {
+	return f.TSName() + ": " + f.TypeAsTSType(pkgName)
+}
+
 // NameForPropertyDoc returns a formatted name for the jsdoc @property declaration
 func (f *Field) NameForPropertyDoc() string {
 	if f.IsOptional {

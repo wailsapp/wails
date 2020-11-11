@@ -83,7 +83,44 @@ func goTypeToTS(input *Field, pkgName string) string {
 	}
 
 	if input.IsArray {
-		result = "Array<" + result + ">"
+		result = result + "[]"
+	}
+
+	return result
+}
+
+func goTypeToTSDeclaration(input *Field, pkgName string) string {
+	var result string
+	switch input.Type {
+	case "string":
+		result = "string"
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64":
+		result = "number"
+	case "float32", "float64":
+		result = "number"
+	case "bool":
+		result = "boolean"
+	case "struct":
+		if input.Struct.Package.Name != "" {
+			if input.Struct.Package.Name != pkgName {
+				result = `import("./_` + input.Struct.Package.Name + `").`
+			}
+		}
+		result += input.Struct.Name
+	// case reflect.Array, reflect.Slice:
+	// 	return string(JsArray)
+	// case reflect.Ptr, reflect.Struct:
+	// 	fqt := input.Type().String()
+	// 	return strings.Split(fqt, ".")[1]
+	// case reflect.Map, reflect.Interface:
+	// 	return string(JsObject)
+	default:
+		fmt.Printf("Unsupported input to goTypeToTS: %+v", input)
+		return JsUnsupported
+	}
+
+	if input.IsArray {
+		result = result + "[]"
 	}
 
 	return result
