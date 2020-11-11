@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/leaanthony/gosod"
@@ -31,11 +32,14 @@ type Data struct {
 
 // Options for installing a template
 type Options struct {
-	ProjectName  string
-	TemplateName string
-	BinaryName   string
-	TargetDir    string
-	Logger       *clilogger.CLILogger
+	ProjectName         string
+	TemplateName        string
+	BinaryName          string
+	TargetDir           string
+	Logger              *clilogger.CLILogger
+	GenerateVSCode      bool
+	PathToDesktopBinary string
+	PathToServerBinary  string
 }
 
 // Template holds data relating to a template
@@ -228,7 +232,11 @@ func Install(options *Options) error {
 		return err
 	}
 
-	// Calculate the directory name
+	err = generateIDEFiles(options)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -256,5 +264,42 @@ func OutputList(logger *clilogger.CLILogger) error {
 		table.Append([]string{template.Name, template.ShortName, template.Description})
 	}
 	table.Render()
+	return nil
+}
+
+func generateIDEFiles(options *Options) error {
+
+	if options.GenerateVSCode {
+		return generateVSCodeFiles(options)
+	}
+
+	return nil
+}
+
+func generateVSCodeFiles(options *Options) error {
+
+	targetDir := filepath.Join(options.TargetDir, ".vscode")
+	sourceDir := fs.RelativePath(filepath.Join("./ides/vscode"))
+
+	// Use Gosod to install the template
+	installer, err := gosod.TemplateDir(sourceDir)
+	if err != nil {
+		return err
+	}
+
+	binaryName := filepath.Base(options.TargetDir)
+	if runtime.GOOS == "windows" {
+		// yay windows
+		binaryName += ".exe"
+	}
+
+	options.PathToDesktopBinary = filepath.Join("build", runtime.GOOS, "desktop", binaryName)
+	options.PathToServerBinary = filepath.Join("build", runtime.GOOS, "server", binaryName)
+
+	err = installer.Extract(targetDir, options)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

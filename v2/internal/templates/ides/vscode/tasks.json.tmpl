@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "build_desktop",
+        "type": "shell",
+        "options": {
+            "cwd": "{{.TargetDir}}"
+        },
+        "command": "wails build"
+      },
+      {
+        "label": "build_server",
+        "type": "shell",
+        "options": {
+            "cwd": "{{.TargetDir}}"
+        },
+        "command": "wails build -t server"
+      },
+
+    ]
+  }
+  

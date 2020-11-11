@@ -39,6 +39,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	quiet := false
 	command.BoolFlag("q", "Supress output to console", &quiet)
 
+	// VSCode project files
+	vscode := false
+	command.BoolFlag("vscode", "Generate VSCode project files", &vscode)
+
 	// List templates
 	list := false
 	command.BoolFlag("l", "List templates", &list)
@@ -83,10 +87,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Create Template Options
 		options := &templates.Options{
-			ProjectName:  projectName,
-			TargetDir:    projectDirectory,
-			TemplateName: templateName,
-			Logger:       logger,
+			ProjectName:    projectName,
+			TargetDir:      projectDirectory,
+			TemplateName:   templateName,
+			Logger:         logger,
+			GenerateVSCode: vscode,
 		}
 
 		return initProject(options)
@@ -113,6 +118,10 @@ func initProject(options *templates.Options) error {
 	options.Logger.Println("Project Name:      " + options.ProjectName)
 	options.Logger.Println("Project Directory: " + options.TargetDir)
 	options.Logger.Println("Project Template:  " + options.TemplateName)
+	options.Logger.Println("")
+	if options.GenerateVSCode {
+		options.Logger.Println("VSCode config files generated.")
+	}
 	options.Logger.Println("")
 	options.Logger.Println(fmt.Sprintf("Initialised project '%s' in %s.", options.ProjectName, elapsed.Round(time.Millisecond).String()))
 	options.Logger.Println("")
