@@ -58,10 +58,8 @@ func (p *Parser) generateModule() error {
 		return err
 	}
 
-	// Copy the globals.d.ts file
-	srcFile = fs.RelativePath("./globals.d.ts")
-	tgtFile = filepath.Join(moduleDir, "globals.d.ts")
-	err = fs.CopyFile(srcFile, tgtFile)
+	// Generate the globals.d.ts file
+	err = generateGlobalsTS(moduleDir, packagesToGenerate)
 	if err != nil {
 		return err
 	}
@@ -174,6 +172,36 @@ func generateIndexJS(dir string, packages []*Package) error {
 	err = ioutil.WriteFile(indexJS, buffer.Bytes(), 0755)
 	if err != nil {
 		return errors.Wrap(err, "Error writing backend package index.js file")
+	}
+
+	return nil
+}
+
+func generateGlobalsTS(dir string, packages []*Package) error {
+
+	// Get path to local file
+	templateFile := fs.RelativePath("./globals.d.template")
+
+	// Load template
+	templateData := fs.MustLoadString(templateFile)
+	packagesTemplate, err := template.New("globals").Parse(templateData)
+	if err != nil {
+		return errors.Wrap(err, "Error creating template")
+	}
+
+	// Execute template
+	var buffer bytes.Buffer
+	err = packagesTemplate.Execute(&buffer, packages)
+	if err != nil {
+		return errors.Wrap(err, "Error generating code")
+	}
+
+	// Calculate target filename
+	indexJS := filepath.Join(dir, "globals.d.ts")
+
+	err = ioutil.WriteFile(indexJS, buffer.Bytes(), 0755)
+	if err != nil {
+		return errors.Wrap(err, "Error writing backend package globals.d.ts file")
 	}
 
 	return nil
