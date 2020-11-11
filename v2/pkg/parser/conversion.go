@@ -1,5 +1,12 @@
 package parser
 
+import (
+	"fmt"
+	"strings"
+
+	"github.com/leaanthony/slicer"
+)
+
 // JSType represents a javascript type
 type JSType string
 
@@ -37,7 +44,7 @@ func goTypeToJS(input *Field) string {
 	case "struct":
 		return input.Struct.Name
 	default:
-		println("UNSUPPORTED: ", input)
+		fmt.Printf("Unsupported input to goTypeToJS: %+v", input)
 		return "*"
 	}
 }
@@ -71,7 +78,7 @@ func goTypeToTS(input *Field, pkgName string) string {
 	// case reflect.Map, reflect.Interface:
 	// 	return string(JsObject)
 	default:
-		println("UNSUPPORTED: ", input)
+		fmt.Printf("Unsupported input to goTypeToTS: %+v", input)
 		return JsUnsupported
 	}
 
@@ -80,4 +87,33 @@ func goTypeToTS(input *Field, pkgName string) string {
 	}
 
 	return result
+}
+
+func isUnresolvedType(typeName string) bool {
+	switch typeName {
+	case "string":
+		return false
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64":
+		return false
+	case "float32", "float64":
+		return false
+	case "bool":
+		return false
+	case "struct":
+		return false
+	default:
+		return true
+	}
+}
+
+var reservedJSWords []string = []string{"abstract", "arguments", "await", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue", "debugger", "default", "delete", "do", "double", "else", "enum", "eval", "export", "extends", "false", "final", "finally", "float", "for", "function", "goto", "if", "implements", "import", "in", "instanceof", "int", "interface", "let", "long", "native", "new", "null", "package", "private", "protected", "public", "return", "short", "static", "super", "switch", "synchronized", "this", "throw", "throws", "transient", "true", "try", "typeof", "var", "void", "volatile", "while", "with", "yield", "Array", "Date", "eval", "function", "hasOwnProperty", "Infinity", "isFinite", "isNaN", "isPrototypeOf", "length", "Math", "NaN", "Number", "Object", "prototype", "String", "toString", "undefined", "valueOf"}
+var jsReservedWords *slicer.StringSlicer = slicer.String(reservedJSWords)
+
+func isJSReservedWord(input string) bool {
+	return jsReservedWords.Contains(input)
+}
+
+func startsWithLowerCaseLetter(input string) bool {
+	firstLetter := string(input[0])
+	return strings.ToLower(firstLetter) == firstLetter
 }

@@ -3,8 +3,10 @@ package parser
 import (
 	"fmt"
 	"go/ast"
+	"strings"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/fatih/structtag"
 )
 
 // Field defines a parsed struct field
@@ -25,11 +27,45 @@ type Field struct {
 
 	// Indicates if the Field is an array of type "Type"
 	IsArray bool
+
+	// JSON field name defined by a json tag
+	JSONOptions
+}
+
+type JSONOptions struct {
+	Name       string
+	IsOptional bool
+	Ignored    bool
 }
 
 // JSType returns the Javascript type for this field
 func (f *Field) JSType() string {
 	return string(goTypeToJS(f))
+}
+
+// JSName returns the Javascript name for this field
+func (f *Field) JSName() string {
+	if f.JSONOptions.Name != "" {
+		return f.JSONOptions.Name
+	}
+	return f.Name
+}
+
+// NameForPropertyDoc returns a formatted name for the jsdoc @property declaration
+func (f *Field) NameForPropertyDoc() string {
+	if f.IsOptional {
+		return "[" + f.JSName() + "]"
+	}
+	return f.JSName()
+}
+
+// TypeForPropertyDoc returns a formatted name for the jsdoc @property declaration
+func (f *Field) TypeForPropertyDoc() string {
+	result := goTypeToJS(f)
+	if f.IsArray {
+		result += "[]"
+	}
+	return result
 }
 
 // TypeAsTSType converts the Field type to something TS wants
@@ -65,10 +101,36 @@ func (p *Parser) parseField(file *ast.File, field *ast.Field, pkg *Package) ([]*
 	var strct *Struct
 	var isArray bool
 
+	var jsonOptions JSONOptions
+
 	// Determine type
 	switch t := field.Type.(type) {
 	case *ast.Ident:
 		fieldType = t.Name
+
+		unresolved := isUnresolvedType(fieldType)
+
+		// Check if this type is actually a struct
+		if unresolved {
+			// Assume it is a struct
+			// Parse the struct
+			var err error
+			strct, err = p.parseStruct(pkg, t.Name)
+			if err != nil {
+				return nil, err
+			}
+
+			if strct == nil {
+				fieldName := "<anonymous>"
+				if len(field.Names) > 0 {
+					fieldName = field.Names[0].Name
+				}
+				return nil, fmt.Errorf("unresolved type in field %s: %s", fieldName, fieldType)
+			}
+
+			fieldType = "struct"
+
+		}
 	case *ast.StarExpr:
 		fieldType = "struct"
 		packageName, structName, err := parseStructNameFromStarExpr(t)
@@ -150,9 +212,23 @@ func (p *Parser) parseField(file *ast.File, field *ast.Field, pkg *Package) ([]*
 		return nil, fmt.Errorf("unsupported field found in struct: %+v", t)
 	}
 
+	// Parse json tag if available
+	if field.Tag != nil {
+		err := parseJSONOptions(field.Tag.Value, &jsonOptions)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// Loop over names if we have
 	if len(field.Names) > 0 {
+
 		for _, name := range field.Names {
+
+			// TODO: Check field names are valid in JS
+			if isJSReservedWord(name.Name) {
+				return nil, fmt.Errorf("unable to use field name %s - reserved word in Javascript", name.Name)
+			}
 
 			// Create a field per name
 			thisField := &Field{
@@ -162,6 +238,7 @@ func (p *Parser) parseField(file *ast.File, field *ast.Field, pkg *Package) ([]*
 			thisField.Type = fieldType
 			thisField.Struct = strct
 			thisField.IsArray = isArray
+			thisField.JSONOptions = jsonOptions
 
 			result = append(result, thisField)
 		}
@@ -178,4 +255,40 @@ func (p *Parser) parseField(file *ast.File, field *ast.Field, pkg *Package) ([]*
 	result = append(result, thisField)
 
 	return result, nil
+}
+
+func parseJSONOptions(fieldTag string, jsonOptions *JSONOptions) error {
+
+	// Remove backticks
+	fieldTag = strings.Trim(fieldTag, "`")
+
+	// Parse the tag
+	tags, err := structtag.Parse(fieldTag)
+	if err != nil {
+		return err
+	}
+
+	jsonTag, err := tags.Get("json")
+	if err != nil {
+		return err
+	}
+
+	if jsonTag == nil {
+		return nil
+	}
+
+	// Save the name
+	jsonOptions.Name = jsonTag.Name
+
+	// Check if this field is ignored
+	if jsonTag.Name == "-" {
+		jsonOptions.Ignored = true
+	}
+
+	// Check if this field is optional
+	if jsonTag.HasOption("omitempty") {
+		jsonOptions.IsOptional = true
+	}
+
+	return nil
 }

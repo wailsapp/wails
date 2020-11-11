@@ -1,6 +1,10 @@
 package parser
 
-import "go/ast"
+import (
+	"go/ast"
+
+	"github.com/pkg/errors"
+)
 
 func (p *Parser) parseStructFields(fileAst *ast.File, structType *ast.StructType, boundStruct *Struct) error {
 
@@ -8,7 +12,7 @@ func (p *Parser) parseStructFields(fileAst *ast.File, structType *ast.StructType
 	for _, field := range structType.Fields.List {
 		fields, err := p.parseField(fileAst, field, boundStruct.Package)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "error parsing struct "+boundStruct.Name)
 		}
 
 		// If this field was a struct, flag that it is used as data
@@ -18,7 +22,13 @@ func (p *Parser) parseStructFields(fileAst *ast.File, structType *ast.StructType
 			}
 		}
 
-		boundStruct.Fields = append(boundStruct.Fields, fields...)
+		// If this field name is lowercase, it won't be exported
+		for _, field := range fields {
+			if !startsWithLowerCaseLetter(field.Name) {
+				boundStruct.Fields = append(boundStruct.Fields, field)
+			}
+		}
+
 	}
 
 	return nil
