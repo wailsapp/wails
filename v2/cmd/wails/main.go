@@ -7,6 +7,7 @@ import (
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/build"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/dev"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/doctor"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/generate"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/initialise"
 )
 
@@ -33,6 +34,11 @@ func main() {
 	}
 
 	err = dev.AddSubcommand(app, os.Stdout)
+	if err != nil {
+		fatal(err.Error())
+	}
+
+	err = generate.AddSubcommand(app, os.Stdout)
 	if err != nil {
 		fatal(err.Error())
 	}

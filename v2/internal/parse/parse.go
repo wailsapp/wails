@@ -65,7 +65,6 @@ func ParseProject(projectPath string) (BoundStructs, error) {
 			var wailsPkgVar = ""
 
 			ast.Inspect(file, func(n ast.Node) bool {
-				var s string
 				switch x := n.(type) {
 				// Parse import declarations
 				case *ast.ImportSpec:

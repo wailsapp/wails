@@ -68,6 +68,8 @@ func getMethods(value interface{}) ([]*BoundMethod, error) {
 		boundMethod.Inputs = inputs
 
 		// Iterate outputs
+		// TODO: Determine what to do about limiting return types
+		//       especially around errors.
 		outputParamCount := methodType.NumOut()
 		var outputs []*Parameter
 		for outputIndex := 0; outputIndex < outputParamCount; outputIndex++ {

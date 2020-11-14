@@ -20,6 +20,17 @@ func LocalDirectory() string {
 	return filepath.Dir(thisFile)
 }
 
+// RelativeToCwd returns an absolute path based on the cwd
+// and the given relative path
+func RelativeToCwd(relativePath string) (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(cwd, relativePath), nil
+}
+
 // Mkdir will create the given directory
 func Mkdir(dirname string) error {
 	return os.Mkdir(dirname, 0755)
@@ -168,4 +179,24 @@ func GetSubdirectories(rootDir string) (*slicer.StringSlicer, error) {
 		return nil
 	})
 	return &result, err
+}
+
+func DirIsEmpty(dir string) (bool, error) {
+
+	if !DirExists(dir) {
+		return false, fmt.Errorf("DirIsEmpty called with a non-existant directory: %s", dir)
+	}
+
+	// CREDIT: https://stackoverflow.com/a/30708914/8325411
+	f, err := os.Open(dir)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	_, err = f.Readdirnames(1) // Or f.Readdir(1)
+	if err == io.EOF {
+		return true, nil
+	}
+	return false, err // Either not empty or error, suits both cases
 }
