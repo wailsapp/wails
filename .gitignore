@@ -25,3 +25,4 @@ v2/test/hidden/icon.png
 v2/internal/ffenestri/runtime.c
 v2/internal/runtime/assets/desktop.js
 v2/test/kitchensink/frontend/public/bundle.*
+v2/pkg/parser/testproject/frontend/wails
