@@ -17,7 +17,7 @@ type Package struct {
 	Name string
 
 	// the package we are wrapping
-	gopackage *packages.Package
+	Gopackage *packages.Package
 
 	// a list of struct names that are bound in this package
 	boundStructs slicer.StringSlicer
@@ -31,7 +31,7 @@ type Package struct {
 
 func newPackage(pkg *packages.Package) *Package {
 	return &Package{
-		gopackage:     pkg,
+		Gopackage:     pkg,
 		parsedStructs: make(map[string]*Struct),
 	}
 }
@@ -67,7 +67,7 @@ func (p *Package) getImportByName(importName string, file *ast.File) *packages.P
 	}
 
 	// We need to find which package import has this name
-	for _, imp := range p.gopackage.Imports {
+	for _, imp := range p.Gopackage.Imports {
 		if imp.Name == importName {
 			return imp
 		}
@@ -79,7 +79,7 @@ func (p *Package) getImportByName(importName string, file *ast.File) *packages.P
 
 func (p *Package) getImportByPath(packagePath string) *packages.Package {
 	packagePath = strings.Trim(packagePath, "\"")
-	return p.gopackage.Imports[packagePath]
+	return p.Gopackage.Imports[packagePath]
 }
 
 func (p *Package) getStruct(structName string) *Struct {

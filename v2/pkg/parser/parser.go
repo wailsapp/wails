@@ -116,3 +116,7 @@ func (p *Parser) packagesToGenerate() []*Package {
 
 	return result
 }
+
+type ParserReport struct {
+	Packages []*Package
+}

@@ -10,7 +10,7 @@ func (p *Parser) getFunctionReturnType(pkg *Package, functionName string) (*Stru
 	var result *Struct
 
 	// Iterate through the files in the package looking for the bound structs
-	for _, fileAst := range pkg.gopackage.Syntax {
+	for _, fileAst := range pkg.Gopackage.Syntax {
 
 		var parseError error
 

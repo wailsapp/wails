@@ -15,7 +15,7 @@ func (p *Parser) resolvePackageNames() {
 
 	// Process each package
 	for _, pkg := range p.packages {
-		pkgName := pkg.gopackage.Name
+		pkgName := pkg.Gopackage.Name
 
 		// Check for collision
 		if packageNameCache.Contains(pkgName) {
@@ -24,7 +24,7 @@ func (p *Parser) resolvePackageNames() {
 			// We start at 2 because having both "pkg" and "pkg1" is 🙄
 			count := 2
 			for ok := true; ok; ok = packageNameCache.Contains(pkgName) {
-				pkgName = fmt.Sprintf("%s%d", pkg.gopackage.Name, count)
+				pkgName = fmt.Sprintf("%s%d", pkg.Gopackage.Name, count)
 			}
 		}
 

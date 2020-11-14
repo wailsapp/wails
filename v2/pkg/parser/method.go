@@ -16,7 +16,7 @@ type Method struct {
 
 func (p *Parser) parseStructMethods(boundStruct *Struct) error {
 
-	for _, fileAst := range boundStruct.Package.gopackage.Syntax {
+	for _, fileAst := range boundStruct.Package.Gopackage.Syntax {
 
 		// Track errors
 		var parseError error

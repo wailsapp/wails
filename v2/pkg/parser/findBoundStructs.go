@@ -10,7 +10,7 @@ import (
 func (p *Parser) findBoundStructs(pkg *Package) error {
 
 	// Iterate through the files in the package looking for the bound structs
-	for _, fileAst := range pkg.gopackage.Syntax {
+	for _, fileAst := range pkg.Gopackage.Syntax {
 
 		// Find the wails import name
 		wailsImportName := pkg.getWailsImportName(fileAst)

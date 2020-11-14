@@ -92,7 +92,8 @@ func Build(options *Options) (string, error) {
 
 	// Generate Frontend JS Package
 	outputLogger.Println("  - Generating Backend JS Package")
-	err = parser.GenerateWailsFrontendPackage()
+	// Ignore the parser report coming back
+	_, err = parser.GenerateWailsFrontendPackage()
 	if err != nil {
 		return "", err
 	}

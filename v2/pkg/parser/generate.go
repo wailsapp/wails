@@ -14,23 +14,23 @@ import (
 // GenerateWailsFrontendPackage will generate a Javascript/Typescript
 // package in `<project>/frontend/wails` that defines which methods
 // and structs are bound to your frontend
-func GenerateWailsFrontendPackage() error {
+func GenerateWailsFrontendPackage() (*ParserReport, error) {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	p := NewParser()
 
 	err = p.ParseProject(dir)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = p.generateModule()
 
-	return err
+	return p.parserReport(), err
 }
 
 func (p *Parser) generateModule() error {
@@ -239,4 +239,10 @@ func generateGlobalsTS(dir string, packages []*Package) error {
 	}
 
 	return nil
+}
+
+func (p *Parser) parserReport() *ParserReport {
+	return &ParserReport{
+		Packages: p.packagesToGenerate(),
+	}
 }

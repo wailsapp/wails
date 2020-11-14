@@ -27,7 +27,7 @@ func (p *Parser) parseStruct(pkg *Package, structName string) (*Struct, error) {
 	}
 
 	// Iterate through the whole package looking for the bound structs
-	for _, fileAst := range pkg.gopackage.Syntax {
+	for _, fileAst := range pkg.Gopackage.Syntax {
 
 		// Track errors
 		var parseError error
