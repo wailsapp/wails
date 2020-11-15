@@ -430,10 +430,16 @@ void ToggleFullscreen(struct Application *app) {
     );
 }
 
+bool isFullScreen(struct Application *app) {
+    int mask = (int)msg(app->mainWindow, s("styleMask"));
+    bool result = (mask & NSWindowStyleMaskFullscreen) == NSWindowStyleMaskFullscreen;
+    return result;
+}
+
 // Fullscreen sets the main window to be fullscreen
 void Fullscreen(struct Application *app) {
     Debug(app, "Fullscreen Called");
-    if( app->fullscreen == 0) {
+    if( ! isFullScreen(app) ) {
         ToggleFullscreen(app);
     }
 }
@@ -441,7 +447,7 @@ void Fullscreen(struct Application *app) {
 // UnFullscreen resets the main window after a fullscreen
 void UnFullscreen(struct Application *app) {
     Debug(app, "UnFullscreen Called");
-    if( app->fullscreen == 1) {
+    if( isFullScreen(app) ) {
         ToggleFullscreen(app);
     }
 }
