@@ -102,3 +102,30 @@ export function Unminimise() {
 export function Close() {
 	window.wails.Window.Close();
 }
+
+/**
+ * Sets the window title
+ *
+ * @export
+ */
+export function SetTitle(title) {
+	window.wails.Window.SetTitle(title);
+}
+
+/**
+ * Makes the window go fullscreen
+ *
+ * @export
+ */
+export function Fullscreen() {
+	window.wails.Window.Fullscreen();
+}
+
+/**
+ * Reverts the window from fullscreen
+ *
+ * @export
+ */
+export function Unfullscreen() {
+	window.wails.Window.Unfullscreen();
+}
