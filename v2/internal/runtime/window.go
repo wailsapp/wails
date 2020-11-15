@@ -1,12 +1,15 @@
 package runtime
 
 import (
+	"fmt"
+
 	"github.com/wailsapp/wails/v2/internal/servicebus"
 )
 
 // Window defines all Window related operations
 type Window interface {
 	Close()
+	Center()
 	Show()
 	Hide()
 	Maximise()
@@ -14,6 +17,8 @@ type Window interface {
 	Minimise()
 	Unminimise()
 	SetTitle(title string)
+	SetSize(width int, height int)
+	SetPosition(x int, y int)
 	Fullscreen()
 	UnFullscreen()
 	SetColour(colour int)
@@ -54,6 +59,11 @@ func (w *window) UnFullscreen() {
 	w.bus.Publish("window:unfullscreen", "")
 }
 
+// Center the window on the current screen
+func (w *window) Center() {
+	w.bus.Publish("window:center", "")
+}
+
 // SetColour sets the window colour to the given int
 func (w *window) SetColour(colour int) {
 	w.bus.Publish("window:setcolour", colour)
@@ -71,14 +81,14 @@ func (w *window) Hide() {
 
 // SetSize sets the size of the window
 func (w *window) SetSize(width int, height int) {
-	size := []int{width, height}
-	w.bus.Publish("window:setsize", size)
+	message := fmt.Sprintf("window:size:%d:%d", width, height)
+	w.bus.Publish(message, "")
 }
 
 // SetPosition sets the position of the window
 func (w *window) SetPosition(x int, y int) {
-	position := []int{x, y}
-	w.bus.Publish("window:position", position)
+	message := fmt.Sprintf("window:position:%d:%d", x, y)
+	w.bus.Publish(message, "")
 }
 
 // Maximise the window
