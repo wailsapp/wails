@@ -126,6 +126,6 @@ export function Fullscreen() {
  *
  * @export
  */
-export function Unfullscreen() {
-	window.wails.Window.Unfullscreen();
+export function UnFullscreen() {
+	window.wails.Window.UnFullscreen();
 }
