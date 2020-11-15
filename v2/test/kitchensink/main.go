@@ -29,6 +29,7 @@ func main() {
 	app.Bind(&Browser{})
 	app.Bind(&System{})
 	app.Bind(&Dialog{})
+	app.Bind(&Window{})
 
 	app.Run()
 }

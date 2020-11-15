@@ -7,6 +7,7 @@
     import Browser from './pages/Browser/Browser.svelte';
     import Dialog from './pages/Dialog/Dialog.svelte';
     import System from './pages/System/System.svelte';
+    import Window from './pages/Window/Window.svelte';
     
 </script>
 
@@ -18,6 +19,7 @@
     {#if $selectedPage == "Browser"} <Browser></Browser> {/if}
     {#if $selectedPage == "Dialog"} <Dialog></Dialog> {/if}
     {#if $selectedPage == "System"} <System></System> {/if}
+    {#if $selectedPage == "Window"} <Window></Window> {/if}
 </div>
 
 <style>
