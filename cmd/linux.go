@@ -63,6 +63,8 @@ const (
 	PopOS
 	// Solus distribution
 	Solus
+	// Ctlos Linux distribution
+	Ctlos
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -129,6 +131,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Arch
 	case "archlabs":
 		result.Distribution = ArchLabs
+	case "ctlos":
+		result.Distribution = Ctlos	
 	case "debian":
 		result.Distribution = Debian
 	case "ubuntu":

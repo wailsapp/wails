@@ -26,3 +26,6 @@ v2/internal/ffenestri/runtime.c
 v2/internal/runtime/assets/desktop.js
 v2/test/kitchensink/frontend/public/bundle.*
 v2/pkg/parser/testproject/frontend/wails
+v2/test/kitchensink/frontend/public
+v2/test/kitchensink/build/darwin/desktop/kitchensink
+v2/test/kitchensink/frontend/package.json.md5

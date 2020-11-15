@@ -2,20 +2,35 @@
 html, 
 body {
   background-color: white;
-  width: 1024px;
-  height: 768px;
+  color: black;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+input {
+  background-color: rgb(254,254,254);
+  color: black;
 }
 
 .container {
   display: block;
   width:100%;
   text-align: center;
-  margin-top: 3rem;
+  margin-top: 1rem;
   font-size: 2rem;
 }
 
 button {
   font-size: 1rem;
+  background-color: white;
+  color: black;
+}
+
+.result {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 2rem;
 }
 
 .logo {
