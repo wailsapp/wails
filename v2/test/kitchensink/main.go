@@ -19,7 +19,8 @@ func main() {
 		Mac: &mac.Options{
 			WebviewIsTransparent:          true,
 			WindowBackgroundIsTranslucent: true,
-			// TitleBar:                      mac.TitleBarHiddenInset(),
+			// Comment out line below to see Window.SetTitle() work
+			TitleBar: mac.TitleBarHiddenInset(),
 		},
 		LogLevel: logger.TRACE,
 	})
