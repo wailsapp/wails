@@ -472,23 +472,16 @@ void Unmaximise(struct Application *app) {
     }
 }
 
-void ToggleMinimise(struct Application *app) {
-    ON_MAIN_THREAD(
-        MAIN_WINDOW_CALL(app->minimised ? "deminiaturize:" : "miniaturize:" );
-        app->minimised = !app->minimised;
-    );
-}
-
 void Minimise(struct Application *app) {
-    if( app->minimised == 0) {
-        ToggleMinimise(app);
-    }
+    ON_MAIN_THREAD(
+        MAIN_WINDOW_CALL("miniaturize:");
+    );
  }
 void Unminimise(struct Application *app) {
-    if( app->minimised == 1) {
-        ToggleMinimise(app);
-    }
- }
+    ON_MAIN_THREAD(
+        MAIN_WINDOW_CALL("deminiaturize:");
+    );
+}
 
 id getCurrentScreen(struct Application *app) {
     id screen = NULL;
