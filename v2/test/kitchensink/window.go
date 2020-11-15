@@ -16,6 +16,19 @@ func (w *Window) WailsInit(runtime *wails.Runtime) error {
 	return nil
 }
 
+func (w *Window) SetTitle(title string) {
+	println("In SetTitle:", title)
+	w.runtime.Window.SetTitle(title)
+}
+
+func (w *Window) Fullscreen() {
+	w.runtime.Window.Fullscreen()
+}
+
+func (w *Window) UnFullscreen() {
+	w.runtime.Window.UnFullscreen()
+}
+
 func (w *Window) Maximise() {
 	w.runtime.Window.Maximise()
 }

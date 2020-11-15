@@ -7,51 +7,37 @@
 
     var message = '';
     var isJs = false;
+    var title = '';
 
-    let windowActions = ["Maximise", "Unmaximise", "Minimise", "Unminimise", "Center", "Show", "Hide", "SetSize", "SetPosition", "Close"]
-
+    let windowActions = ["SetTitle", "Fullscreen", "UnFullscreen", "Maximise", "Unmaximise", "Minimise", "Unminimise", "Center", "Show", "Hide", "SetSize", "SetPosition", "Close"]
+    var disabledActions = ['Show', 'Unminimise'];
     var windowAction = windowActions[0];
 
+    $: windowRuntime = lang == 'Javascript' ? Window : backend.main.Window;
     $: lang = isJs ? 'Javascript' : 'Go';
 
     var id = "Window";
 
     function processAction() {
-        if ( lang == 'Javascript' ) {
-            switch( windowAction ) {
-                case 'SetSize':
-                    Window.SetSize(sizeWidth, sizeHeight);
-                    break;
-                case 'SetPosition':
-                    Window.SetPosition(positionX, positionY);
-                    break;
-                case 'Hide':
-                    Window.Hide();
-                    setTimeout( Window.Show, 3000 );
-                case 'Minimise':
-                    Window.Hide();
-                    setTimeout( Window.Unminimise, 3000 );
-                default:
-                    Window[windowAction]();
-            }
-        } else {
-            switch( windowAction ) {
-                case 'SetSize':
-                    backend.main.Window.SetSize(sizeWidth, sizeHeight);
-                    break;
-                case 'SetPosition':
-                    backend.main.Window.SetPosition(positionX, positionY);
-                    break;
-                case 'Hide':
-                    backend.main.Window.Hide();
-                    setTimeout( backend.main.Window.Show, 3000 );
-                case 'Minimise':
-                    backend.main.Window.Minimise();
-                    setTimeout( backend.main.Window.Unminimise, 3000 );
-                default:
-                    backend.main.Window[windowAction]();
-                    break;
-            }
+
+        switch( windowAction ) {
+            case 'SetSize':
+                windowRuntime.SetSize(sizeWidth, sizeHeight);
+                break;
+            case 'SetPosition':
+                windowRuntime.SetPosition(positionX, positionY);
+                break;
+            case 'SetTitle':
+                windowRuntime.SetTitle(title);
+                break;
+            case 'Hide':
+                windowRuntime.Hide();
+                setTimeout( windowRuntime.Show, 3000 );
+            case 'Minimise':
+                windowRuntime.Hide();
+                setTimeout( windowRuntime.Unminimise, 3000 );
+            default:
+                windowRuntime[windowAction]();
         }
     }
 
@@ -69,6 +55,9 @@
             case 'SetPosition':
                 params = positionX + ", " + positionY;
                 break;
+            case 'SetTitle':
+                params = `'` + title.replace(`"`, `\"`) + `'`;
+                break;
             default:
                 params = '';
                 break;
@@ -76,7 +65,7 @@
         }
         
     }
-    $: testcodeJs = "import { Window } from '@wails/runtime';\Window." + windowAction + "(" + params + ");";
+    $: testcodeJs = "import { Window } from '@wails/runtime';\nWindow." + windowAction + "(" + params + ");";
     $: testcodeGo = '// runtime is given through WailsInit()\nruntime.Window.' + windowAction + '(' + params + ')'; 
 
 </script>
@@ -88,7 +77,7 @@
                 <div>Select Window Method</div>
                 {#each windowActions as option, index}
                 <div class="custom-radio">
-                    <input type="radio" name="window" bind:group="{windowAction}" id="{id}-{option}" value="{option}" disabled={['Show', 'Unminimise'].includes(option)}>
+                    <input type="radio" name="window" bind:group="{windowAction}" id="{id}-{option}" value="{option}" disabled={disabledActions.includes(option)}>
                     <label for="{id}-{option}">{option}
                         {#if option == 'Hide' } - Show() will be called after 3 seconds {/if}
                         {#if option == 'Minimise' } - Unminimise() will be called after 3 seconds {/if}
@@ -103,6 +92,12 @@
                     {#if option == "SetPosition"}
                     {#if windowAction == "SetPosition" }
                     <div class="form-inline form-group numberInputGroup">X: <input type="number" class="form-control numberInput" bind:value={positionX}> Y: <input type="number" class="form-control numberInput" bind:value={positionY}></div>
+                    {/if}
+                    {/if}
+
+                    {#if option == "SetTitle"}
+                    {#if windowAction == "SetTitle" }
+                    <div class="form-inline form-group numberInputGroup">Title: <input type="text" class="form-control" bind:value={title}></div>
                     {/if}
                     {/if}
 
