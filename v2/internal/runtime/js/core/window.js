@@ -22,6 +22,34 @@ export function Center() {
 }
 
 /**
+ * Sets the window title
+ *
+ * @param {string} title
+ * @export
+ */
+export function SetTitle(title) {
+	SendMessage('WT' + title);
+}
+
+/**
+ * Makes the window go fullscreen
+ *
+ * @export
+ */
+export function Fullscreen() {
+	SendMessage('WF');
+}
+
+/**
+ * Reverts the window from fullscreen
+ *
+ * @export
+ */
+export function UnFullscreen() {
+	SendMessage('Wf');
+}
+
+/**
  * Set the Size of the window
  *
  * @export

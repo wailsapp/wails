@@ -67,6 +67,21 @@ func windowMessageParser(message string) (*parsedMessage, error) {
 		parsedMessage.Topic = "window:unminimise"
 		parsedMessage.Data = ""
 
+	// Fullscreen window
+	case 'F':
+		parsedMessage.Topic = "window:fullscreen"
+		parsedMessage.Data = ""
+
+		// UnFullscreen window
+	case 'f':
+		parsedMessage.Topic = "window:unfullscreen"
+		parsedMessage.Data = ""
+
+		// Set Title
+	case 'T':
+		parsedMessage.Topic = "window:settitle"
+		parsedMessage.Data = message[2:]
+
 	// Unknown event type
 	default:
 		return nil, fmt.Errorf("unknown message: %s", message)
