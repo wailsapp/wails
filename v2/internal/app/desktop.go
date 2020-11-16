@@ -7,11 +7,11 @@ import (
 	"github.com/wailsapp/wails/v2/internal/ffenestri"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
+	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
 	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/internal/subsystem"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/internal/runtime"
 )
 
 // App defines a Wails application structure
@@ -36,8 +36,9 @@ type App struct {
 	// This is our binding DB
 	bindings *binding.Bindings
 
-	// LogLevel Store
-	loglevelStore *runtime.Store
+	// Application Stores
+	loglevelStore  *runtime.Store
+	appconfigStore *runtime.Store
 }
 
 // Create App
@@ -92,7 +93,8 @@ func (a *App) Run() error {
 	a.runtime.Start()
 
 	// Application Stores
-	a.loglevelStore = a.runtime.GoRuntime().Store.New("loglevel", a.options.LogLevel)
+	a.loglevelStore = a.runtime.GoRuntime().Store.New("wails:loglevel", a.options.LogLevel)
+	a.appconfigStore = a.runtime.GoRuntime().Store.New("wails:appconfig", a.options)
 
 	// Start the binding subsystem
 	binding, err := subsystem.NewBinding(a.servicebus, a.logger, a.bindings, a.runtime.GoRuntime())
