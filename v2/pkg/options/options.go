@@ -23,7 +23,7 @@ type App struct {
 	DevTools      bool
 	RGBA          int
 	Mac           *mac.Options
-	Logger        logger.Logger
+	Logger        logger.Logger `json:"-"`
 	LogLevel      logger.LogLevel
 }
 
