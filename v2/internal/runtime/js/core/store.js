@@ -84,6 +84,9 @@ export function New(name, optionalDefault) {
 		this.set(optionalDefault);
 	}
 
+	// Trigger an update to the store
+	window.wails.Events.Emit('wails:sync:store:resync:'+name);
+
 	return {
 		subscribe,
 		get,

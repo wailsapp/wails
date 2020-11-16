@@ -50,8 +50,9 @@ export function Init() {
 
 	// Setup system. Store uses window.wails so needs to be setup after that
 	window.wails.System = {
-		IsDarkMode: Store.New('isdarkmode'),
-		LogLevel: Store.New('loglevel'),
+		IsDarkMode: Store.New('wails:isdarkmode'),
+		LogLevel: Store.New('wails:loglevel'),
+		AppConfig: Store.New('wails:appconfig'),
 	};
 	// Copy platform specific information into it
 	Object.assign(window.wails.System, Platform.System);
