@@ -140,6 +140,29 @@ func (s *Store) setupListener() {
 		// Notify listeners
 		s.notify()
 	})
+
+	// Listen for resync events
+	s.runtime.Events.On("wails:sync:store:resync:"+s.name, func(data ...interface{}) {
+		// Resetting the curent data will resync
+		s.resync()
+	})
+}
+
+func (s *Store) resync() {
+	// Stringify data
+	newdata, err := json.Marshal(s.data.Interface())
+	if err != nil {
+		if s.errorHandler != nil {
+			s.errorHandler(err)
+			return
+		}
+	}
+
+	// Emit event to front end
+	s.runtime.Events.Emit("wails:sync:store:updatedbybackend:"+s.name, string(newdata))
+
+	// Notify subscribers
+	s.notify()
 }
 
 // notify the listeners of the current data state
@@ -175,19 +198,8 @@ func (s *Store) Set(data interface{}) error {
 	s.data = reflect.ValueOf(data)
 	s.mux.Unlock()
 
-	// Stringify data
-	newdata, err := json.Marshal(data)
-	if err != nil {
-		if s.errorHandler != nil {
-			return err
-		}
-	}
-
-	// Emit event to front end
-	s.runtime.Events.Emit("wails:sync:store:updatedbybackend:"+s.name, string(newdata))
-
-	// Notify subscribers
-	s.notify()
+	// Resync with subscribers
+	s.resync()
 
 	return nil
 }
@@ -292,4 +304,9 @@ func (s *Store) Update(updater interface{}) {
 
 	// We will only have 1 result. Set the store to it
 	s.Set(results[0].Interface())
+}
+
+// Get returns the value of the data that's kept in the current state / Store
+func (s *Store) Get() interface{} {
+	return s.data.Interface()
 }
