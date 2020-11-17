@@ -1,5 +1,5 @@
 <script>
-    import { Window } from '@wails/runtime';
+    import { Window, System } from '@wails/runtime';
     import CodeBlock from '../../../components/CodeBlock.svelte';
     import CodeSnippet from '../../../components/CodeSnippet.svelte';
     import jsCode from './code.jsx';
@@ -8,6 +8,9 @@
     var message = '';
     var isJs = false;
     var title = '';
+
+    let appConfig = System.AppConfig();
+    console.log(appConfig);
 
     let windowActions = ["SetTitle", "Fullscreen", "UnFullscreen", "Maximise", "Unmaximise", "Minimise", "Unminimise", "Center", "Show", "Hide", "SetSize", "SetPosition", "Close"]
     var disabledActions = ['Show', 'Unminimise'];
@@ -47,6 +50,16 @@
     var positionX = 100;
     var positionY = 100;
 
+    var setTitleEnabled = true;
+    if( System.Platform() == 'darwin' ) {
+        let titlebar = appConfig.Mac.TitleBar;
+        if( titlebar.HideTitle || titlebar.HideTitleBar ) {
+            setTitleEnabled = false;
+            disabledActions.push("SetTitle");
+            windowAction = windowActions[1];
+        }
+    }
+
     $: {
         switch (windowAction) {
             case 'SetSize':
@@ -81,6 +94,7 @@
                     <label for="{id}-{option}">{option}
                         {#if option == 'Hide' } - Show() will be called after 3 seconds {/if}
                         {#if option == 'Minimise' } - Unminimise() will be called after 3 seconds {/if}
+                        {#if option == 'SetTitle' && !setTitleEnabled} - disabled as there is no title displayed {/if}
                     </label>
 
                     {#if option == "SetSize"}
@@ -95,7 +109,7 @@
                     {/if}
                     {/if}
 
-                    {#if option == "SetTitle"}
+                    {#if option == "SetTitle" && setTitleEnabled}
                     {#if windowAction == "SetTitle" }
                     <div class="form-inline form-group numberInputGroup">Title: <input type="text" class="form-control" bind:value={title}></div>
                     {/if}
