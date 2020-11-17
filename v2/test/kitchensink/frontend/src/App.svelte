@@ -3,6 +3,7 @@
 
   import { darkMode, selectedPage } from './Store';
   import MainPage from './MainPage.svelte';
+  import { Browser } from '@wails/runtime';
  
   // Hightlight CSS
   import { atomOneDark, atomOneLight } from "svelte-highlight/styles";
@@ -16,6 +17,10 @@
 
   function homepageClicked() {
     selectedPage.set(null); 
+  }
+
+  function openSite(url) {
+    Browser.Open(url)
   }
 
   let runtimePages = [
@@ -53,8 +58,8 @@
       <br />
       <h5 class="sidebar-title">Links</h5>
       <div class="sidebar-divider"></div>
-      <span on:click="{linkClicked}" class="sidebar-link">Github</span>
-      <span on:click="{linkClicked}" class="sidebar-link">Website</span>
+      <span on:click="{() => openSite('https://github.com/wailsapp/wails')}" class="sidebar-link">Github</span>
+      <span on:click="{() => openSite('https://wails.app')}" class="sidebar-link">Website</span>
     </div>
   </div>
   <!-- Content wrapper -->
