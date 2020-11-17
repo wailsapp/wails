@@ -7,4 +7,4 @@ require (
 	github.com/wailsapp/wails/v2 v2.0.0-alpha
 )
 
-replace github.com/wailsapp/wails/v2 v2.0.0-alpha => /Users/lea/projects/wails/v2
+replace github.com/wailsapp/wails/v2 v2.0.0-alpha => ../../../v2
