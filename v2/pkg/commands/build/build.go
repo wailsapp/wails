@@ -8,7 +8,6 @@ import (
 	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
-	"github.com/wailsapp/wails/v2/pkg/parser"
 )
 
 // Mode is the type used to indicate the build modes
@@ -91,12 +90,12 @@ func Build(options *Options) (string, error) {
 	builder.SetProjectData(projectData)
 
 	// Generate Frontend JS Package
-	outputLogger.Println("  - Generating Backend JS Package")
-	// Ignore the parser report coming back
-	_, err = parser.GenerateWailsFrontendPackage()
-	if err != nil {
-		return "", err
-	}
+	// outputLogger.Println("  - Generating Backend JS Package")
+	// // Ignore the parser report coming back
+	// _, err = parser.GenerateWailsFrontendPackage()
+	// if err != nil {
+	// 	return "", err
+	// }
 	if !options.IgnoreFrontend {
 		outputLogger.Println("  - Building Wails Frontend")
 		err = builder.BuildFrontend(outputLogger)
