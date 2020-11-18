@@ -1,11 +1,42 @@
 package main
 
-import wails "github.com/wailsapp/wails/v2"
+import (
+	"io/ioutil"
 
-type MyStruct struct {
+	wails "github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+)
+
+type Notepad struct {
 	runtime *wails.Runtime
 }
 
-func (l *MyStruct) ShowHelp() {
-	l.runtime.Browser.Open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+func (n *Notepad) WailsInit(runtime *wails.Runtime) error {
+	n.runtime = runtime
+	return nil
+}
+
+// SaveNotes attempts to save the given notes to disk.
+// Returns false if the user cancelled the save, true on
+// successful save.
+func (n *Notepad) SaveNotes(notes string) (bool, error) {
+
+	selectedFile := n.runtime.Dialog.Save(&options.SaveDialog{
+		DefaultFilename: "notes.md",
+		Filters:         "*.md",
+	})
+
+	// Check if the user pressed cancel
+	if selectedFile == "" {
+		// Cancelled
+		return false, nil
+	}
+
+	// Save notes
+	err := ioutil.WriteFile(selectedFile, []byte(notes), 0700)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
