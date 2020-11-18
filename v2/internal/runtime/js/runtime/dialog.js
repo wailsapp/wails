@@ -10,13 +10,53 @@ The lightweight framework for web-like apps
 
 /* jshint esversion: 6 */
 
+/**
+ * @type {Object} OpenDialog
+ * @param {string} [DefaultDirectory=""]           
+ * @param {string} [DefaultFilename=""]            
+ * @param {string} [Title=""]                      
+ * @param {string} [Filters=""]                    
+ * @param {bool} [AllowFiles=false]                 
+ * @param {bool} [AllowDirectories=false]           
+ * @param {bool} [AllowMultiple=false]              
+ * @param {bool} [ShowHiddenFiles=false]            
+ * @param {bool} [CanCreateDirectories=false]       
+ * @param {bool} [ResolvesAliases=false] - Mac Only: Resolves aliases (symlinks)            
+ * @param {bool} [TreatPackagesAsDirectories=false] - Mac Only: Show packages (EG Applications) as folders
+ */
 
 /**
- * Open a dialog with the given parameters
+ * Opens a dialog using the given paramaters, prompting the user to 
+ * select files/folders.
  *
  * @export
- * @param {object} options
+ * @param {OpenDialogOptions} options
+ * @returns {Promise<Array<string>>} - List of files/folders selected
  */
 export function Open(options) {
-	window.wails.Dialog.Open(options);
+	return window.wails.Dialog.Open(options);
+}
+
+/**
+ * 
+ * @type {Object} SaveDialogOptions 
+ * @param {string} [DefaultDirectory=""]           
+ * @param {string} [DefaultFilename=""]            
+ * @param {string} [Title=""]                      
+ * @param {string} [Filters=""]                    
+ * @param {bool} [ShowHiddenFiles=false]            
+ * @param {bool} [CanCreateDirectories=false]       
+ * @param {bool} [TreatPackagesAsDirectories=false] 
+ */
+
+/**
+ * Opens a dialog using the given paramaters, prompting the user to 
+ * select a single file/folder.
+ * 
+ * @export
+ * @param {SaveDialogOptions} options
+ * @returns {Promise<string>} 
+ */
+export function Save(options) {
+	return window.wails.Dialog.Save(options);
 }

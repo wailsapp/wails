@@ -11,7 +11,7 @@ type OpenDialog struct {
 	AllowMultiple              bool
 	ShowHiddenFiles            bool
 	CanCreateDirectories       bool
-	ResolveAliases             bool
+	ResolvesAliases            bool
 	TreatPackagesAsDirectories bool
 }
 

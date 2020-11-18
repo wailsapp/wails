@@ -53,6 +53,30 @@ interface Level {
 	ERROR: 5,
 }
 
+interface OpenDialogOptions {
+	DefaultDirectory:           string;
+	DefaultFilename:            string;
+	Title:                      string;
+	Filters:                    string;
+	AllowFiles:                 boolean;
+	AllowDirectories:           boolean;
+	AllowMultiple:              boolean;
+	ShowHiddenFiles:            boolean;
+	CanCreateDirectories:       boolean;
+	ResolvesAliases:            boolean;
+	TreatPackagesAsDirectories: boolean;
+}
+
+interface SaveDialogOptions {
+    DefaultDirectory:           string;
+    DefaultFilename:            string;
+    Title:                      string;
+    Filters:                    string;
+    ShowHiddenFiles:            boolean;
+    CanCreateDirectories:       boolean;
+    TreatPackagesAsDirectories: boolean;
+}
+
 declare const wailsapp__runtime: {
     Browser: {
         Open(target: string): Promise<any>;
@@ -82,7 +106,11 @@ declare const wailsapp__runtime: {
     };
     Store: {
         New(name: string, defaultValue?: any): Store;
-    }
+    };
+    Dialog: {
+        Open(options: OpenDialogOptions): Promise<Array<string>>;
+        Save(options: SaveDialogOptions): Promise<Array<string>>;
+    };
 };
 
 

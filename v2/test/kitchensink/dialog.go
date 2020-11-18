@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	wails "github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
@@ -21,7 +19,10 @@ func (l *Dialog) WailsInit(runtime *wails.Runtime) error {
 
 // Open Dialog
 func (l *Dialog) Open(options *options.OpenDialog) []string {
-	fmt.Printf("%#v\n", options)
-	// Perform your setup here
 	return l.runtime.Dialog.Open(options)
+}
+
+// Save Dialog
+func (l *Dialog) Save(options *options.SaveDialog) string {
+	return l.runtime.Dialog.Save(options)
 }

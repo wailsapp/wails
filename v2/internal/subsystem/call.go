@@ -10,6 +10,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher/message"
 	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 // Call is the Call subsystem. It manages all service bus messages
@@ -129,6 +130,24 @@ func (c *Call) processSystemCall(payload *message.CallMessage, clientID string) 
 	case "IsDarkMode":
 		darkModeEnabled := c.runtime.System.IsDarkMode()
 		c.sendResult(darkModeEnabled, payload, clientID)
+	case "Dialog.Open":
+		dialogOptions := new(options.OpenDialog)
+		err := json.Unmarshal(payload.Args[0], dialogOptions)
+		if err != nil {
+			c.logger.Error("Error decoding: %s", err)
+		}
+		result := c.runtime.Dialog.Open(dialogOptions)
+		c.sendResult(result, payload, clientID)
+	case "Dialog.Save":
+		dialogOptions := new(options.SaveDialog)
+		err := json.Unmarshal(payload.Args[0], dialogOptions)
+		if err != nil {
+			c.logger.Error("Error decoding: %s", err)
+		}
+		result := c.runtime.Dialog.Save(dialogOptions)
+		c.sendResult(result, payload, clientID)
+	default:
+		c.logger.Error("Unknown system call: %+v", callName)
 	}
 }
 
