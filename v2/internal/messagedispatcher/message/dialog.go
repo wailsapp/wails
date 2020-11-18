@@ -25,7 +25,7 @@ func dialogMessageParser(message string) (*parsedMessage, error) {
 		message = message[2:]
 		idx := strings.IndexByte(message, '|')
 		if idx < 0 {
-			return nil, fmt.Errorf("Invalid dialog response message format")
+			return nil, fmt.Errorf("Invalid dialog response message format: %+v", message)
 		}
 		callbackID := message[:idx+1]
 		payloadData := message[idx+1:]

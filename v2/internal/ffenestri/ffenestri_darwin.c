@@ -535,7 +535,7 @@ void SetPosition(struct Application *app, int x, int y) {
 }
 
 // OpenDialog opens a dialog to select files/directories
-void OpenDialog(struct Application *app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolveAliases, int treatPackagesAsDirectories) {
+void OpenDialog(struct Application *app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolvesAliases, int treatPackagesAsDirectories) {
     Debug(app, "OpenDialog Called with callback id: %s", callbackID);
 
     // Create an open panel
@@ -573,7 +573,7 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
         msg(dialog, s("setAllowsMultipleSelection:"), allowMultiple);
         msg(dialog, s("setShowsHiddenFiles:"), showHiddenFiles);
         msg(dialog, s("setCanCreateDirectories:"), canCreateDirectories);
-        msg(dialog, s("setResolvesAliases:"), resolveAliases);
+        msg(dialog, s("setResolvesAliases:"), resolvesAliases);
         msg(dialog, s("setTreatsFilePackagesAsDirectories:"), treatPackagesAsDirectories);
 
         // Setup callback handler

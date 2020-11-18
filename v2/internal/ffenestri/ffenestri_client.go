@@ -132,7 +132,7 @@ func (c *Client) OpenDialog(dialogOptions *options.OpenDialog, callbackID string
 		c.app.bool2Cint(dialogOptions.AllowMultiple),
 		c.app.bool2Cint(dialogOptions.ShowHiddenFiles),
 		c.app.bool2Cint(dialogOptions.CanCreateDirectories),
-		c.app.bool2Cint(dialogOptions.ResolveAliases),
+		c.app.bool2Cint(dialogOptions.ResolvesAliases),
 		c.app.bool2Cint(dialogOptions.TreatPackagesAsDirectories),
 	)
 }
