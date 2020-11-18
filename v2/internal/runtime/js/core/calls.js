@@ -151,6 +151,7 @@ export function Callback(incomingMessage) {
  * @param {any[]=} data
  * @returns
  */
-export function SystemCall(method, data) {
+export function SystemCall(method) {
+	var data = [].slice.apply(arguments).slice(1);
 	return Call('.wails.' + method, data);
 }
