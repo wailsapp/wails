@@ -11,12 +11,12 @@
     "@rollup/plugin-commonjs": "^11.0.0",
     "@rollup/plugin-node-resolve": "^7.0.0",
     "@rollup/plugin-url": "^5.0.1",
-    "@wails/runtime": "^1.2.11",
+    "@wails/runtime": "^1.2.12",
     "focus-visible": "^5.2.0",
     "halfmoon": "^1.1.1",
     "postcss": "^8.1.7",
     "postcss-import": "^12.0.1",
-    "rollup": "^2.33.2",
+    "rollup": "^2.33.3",
     "rollup-plugin-livereload": "^1.0.0",
     "rollup-plugin-postcss": "^3.1.8",
     "rollup-plugin-string": "^3.0.0",
@@ -25,7 +25,7 @@
     "sirv-cli": "^0.4.4",
     "svelte": "^3.29.7",
     "svelte-highlight": "^0.6.2",
-    "svelte-preprocess": "^4.5.2"
+    "svelte-preprocess": "^4.6.0"
   },
   "dependencies": {}
 }
