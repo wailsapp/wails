@@ -1,8 +1,6 @@
 import { Events } from '@wails/runtime';
 
-let notes = [];
-
-// Do some things
-Events.On("notes loaded", (newNotes) => {
-  notes = newNotes;
-});
+// Respond to the unlock event 3 times
+Events.OnMultiple("unlock", (password) => {
+  // Check password
+}, 3);

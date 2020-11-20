@@ -31,8 +31,8 @@
         }
     }
 
-    $: testcodeJs = "import { runtime } from '@wails/runtime';\nruntime.Log.Info('Platform from JS runtime: ' + runtime.System.Platform);";
-    $: testcodeGo = '// runtime is given through WailsInit()\nruntime.Log.Info("Platform from Go runtime: " + runtime.System.Platform)'; 
+    $: testcodeJs = "import { runtime } from '@wails/runtime';\nruntime.Log.Info('Platform from JS runtime: ' + runtime.System.Platform());";
+    $: testcodeGo = '// runtime is given through WailsInit()\nruntime.Log.Info("Platform from Go runtime: " + runtime.System.Platform())'; 
 
 </script>
 

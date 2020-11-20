@@ -61,7 +61,7 @@
         </div>
         {/if}
     </div>
-    <div class="example"> 
+    <div class="example allow-select"> 
         <div class="{showCode ? 'code-title-open' : 'code-title-closed'}" on:click="{toggleExample}" >
             <span class="arrow">{showCode?'▼':'▶'}</span>
             Example Code
