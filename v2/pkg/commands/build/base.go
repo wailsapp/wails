@@ -165,7 +165,8 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	}
 
 	// Get application build directory
-	appDir, err := getApplicationBuildDirectory(options, options.Platform)
+	appDir := options.BuildDirectory
+	err := cleanBuildDirectory(options, options.Platform)
 	if err != nil {
 		return err
 	}
@@ -180,11 +181,12 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	if outputFile == "" {
 		outputFile = b.projectData.OutputFilename
 	}
-	outputFilePath := filepath.Join(appDir, outputFile)
+	compiledBinary := filepath.Join(appDir, outputFile)
 	commands.Add("-o")
-	commands.Add(outputFilePath)
+	commands.Add(compiledBinary)
 
-	b.projectData.OutputFilename = strings.TrimPrefix(outputFilePath, options.ProjectData.Path)
+	b.projectData.OutputFilename = strings.TrimPrefix(compiledBinary, options.ProjectData.Path)
+	options.CompiledBinary = compiledBinary
 
 	// Create the command
 	cmd := exec.Command(options.Compiler, commands.AsSlice()...)

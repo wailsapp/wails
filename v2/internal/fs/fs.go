@@ -36,6 +36,24 @@ func Mkdir(dirname string) error {
 	return os.Mkdir(dirname, 0755)
 }
 
+// MkDirs creates the given nested directories.
+// Returns error on failure
+func MkDirs(fullPath string, mode ...os.FileMode) error {
+	var perms os.FileMode
+	perms = 0700
+	if len(mode) == 1 {
+		perms = mode[0]
+	}
+	return os.MkdirAll(fullPath, perms)
+}
+
+// MoveFile attempts to move the source file to the target
+// Target is a fully qualified path to a file *name*, not a
+// directory
+func MoveFile(source string, target string) error {
+	return os.Rename(source, target)
+}
+
 // DeleteFile will delete the given file
 func DeleteFile(filename string) error {
 	return os.Remove(filename)

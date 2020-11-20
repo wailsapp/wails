@@ -7,10 +7,12 @@ require (
 	github.com/fatih/structtag v1.2.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/imdario/mergo v0.3.11
+	github.com/jackmordaunt/icns v1.0.0
 	github.com/leaanthony/clir v1.0.4
 	github.com/leaanthony/gosod v0.0.4
 	github.com/leaanthony/slicer v1.5.0
 	github.com/matryer/is v1.4.0
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/pkg/errors v0.9.1

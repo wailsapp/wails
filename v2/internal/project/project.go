@@ -33,6 +33,15 @@ type Project struct {
 
 	// The platform to target
 	Platform string
+
+	// The application author
+	Author Author
+}
+
+// Author stores details about the application author
+type Author struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 // Load the project from the current working directory

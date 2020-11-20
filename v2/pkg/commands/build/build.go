@@ -3,6 +3,7 @@ package build
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/leaanthony/slicer"
@@ -34,6 +35,8 @@ type Options struct {
 	Compiler       string               // The compiler command to use
 	IgnoreFrontend bool                 // Indicates if the frontend does not need building
 	OutputFile     string               // Override the output filename
+	BuildDirectory string               // Directory to use for building the application
+	CompiledBinary string               // Fully qualified path to the compiled binary
 }
 
 // GetModeAsString returns the current mode as a string
@@ -65,6 +68,9 @@ func Build(options *Options) (string, error) {
 		return "", err
 	}
 	options.ProjectData = projectData
+
+	// Calculate build dir
+	options.BuildDirectory = filepath.Join(options.ProjectData.Path, "build", options.Platform, options.OutputType)
 
 	// Save the project type
 	projectData.OutputType = options.OutputType

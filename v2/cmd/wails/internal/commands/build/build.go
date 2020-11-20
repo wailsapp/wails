@@ -32,7 +32,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	// Setup pack flag
 	pack := false
-	command.BoolFlag("pack", "Create a platform specific package", &pack)
+	command.BoolFlag("package", "Create a platform specific package", &pack)
 
 	compilerCommand := "go"
 	command.StringFlag("compiler", "Use a different go compiler to build, eg go1.15beta1", &compilerCommand)
@@ -103,6 +103,7 @@ func doBuild(buildOptions *build.Options) error {
 	if err != nil {
 		return err
 	}
+
 	// Output stats
 	elapsed := time.Since(start)
 	buildOptions.Logger.Println("")
