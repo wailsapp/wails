@@ -2,8 +2,10 @@
 
 package app
 
+import "github.com/wailsapp/wails/v2/pkg/logger"
+
 // Init initialises the application for a production environment
 func (a *App) Init() error {
-	println("Processing production cli options")
+	a.logger.SetLogLevel(logger.ERROR)
 	return nil
 }
