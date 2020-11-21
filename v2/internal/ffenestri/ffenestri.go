@@ -113,8 +113,6 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string, debug 
 	fullscreen := a.bool2Cint(a.config.Fullscreen)
 	startHidden := a.bool2Cint(a.config.StartHidden)
 	logLevel := C.int(a.config.LogLevel)
-	println("debug = ", debug)
-	println("devtools = ", a.config.DevTools)
 	app := C.NewApplication(title, width, height, resizable, devtools, fullscreen, startHidden, logLevel)
 
 	// Save app reference

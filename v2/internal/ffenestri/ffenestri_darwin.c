@@ -1016,6 +1016,13 @@ void Run(struct Application *app, int argc, char **argv) {
         index++;
     };
 
+    // Disable context menu if not in debug mode
+    if( debug != 1 ) {
+        temp = concat(internalCode, "wails._.DisableContextMenu();");
+        free((void*)internalCode);
+        internalCode = temp;
+    }
+
     // class_addMethod(delegateClass, s("applicationWillFinishLaunching:"), (IMP) willFinishLaunching, "@@:@");
     // Include callback after evaluation
     temp = concat(internalCode, "webkit.messageHandlers.completed.postMessage(true);");
@@ -1024,7 +1031,7 @@ void Run(struct Application *app, int argc, char **argv) {
 
     // const char *viewportScriptString = "var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'width=device-width'); meta.setAttribute('initial-scale', '1.0'); meta.setAttribute('maximum-scale', '1.0'); meta.setAttribute('minimum-scale', '1.0'); meta.setAttribute('user-scalable', 'no'); document.getElementsByTagName('head')[0].appendChild(meta);";
     // ExecJS(app, viewportScriptString);
-    
+
 
     // This evaluates the MOAE once the Dom has finished loading
     msg(manager, 
@@ -1034,6 +1041,8 @@ void Run(struct Application *app, int argc, char **argv) {
                     str(internalCode),
                     1, 
                     1));
+
+
 
     if( app->webviewIsTranparent == 1 ) {
         msg(wkwebview, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("drawsBackground"));

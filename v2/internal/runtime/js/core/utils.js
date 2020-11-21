@@ -36,3 +36,9 @@ export function InjectCSS(css) {
 		console.log(e);
 	}
 }
+
+export function DisableContextMenu() {
+	AddScript('function contextMenu(event) { event.preventDefault(); }');
+	var body = document.getElementsByTagName('body')[0];
+	body.setAttribute('oncontextmenu', 'contextMenu(event)');
+}
