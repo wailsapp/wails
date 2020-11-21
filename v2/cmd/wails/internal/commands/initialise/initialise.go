@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/leaanthony/clir"
+	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/internal/templates"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
+	"github.com/wailsapp/wails/v2/pkg/git"
 )
 
 // AddSubcommand adds the `init` command for the Wails application
@@ -38,6 +40,13 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	// Quiet Init
 	quiet := false
 	command.BoolFlag("q", "Supress output to console", &quiet)
+
+	initGit := false
+	gitInstalled := git.IsInstalled()
+	if gitInstalled {
+		// Git Init
+		command.BoolFlag("g", "Initialise git repository", &initGit)
+	}
 
 	// VSCode project files
 	vscode := false
@@ -92,6 +101,13 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			TemplateName:   templateName,
 			Logger:         logger,
 			GenerateVSCode: vscode,
+			InitGit:        initGit,
+		}
+
+		// Try to discover author details from git config
+		err := findAuthorDetails(options)
+		if err != nil {
+			return err
 		}
 
 		return initProject(options)
@@ -112,6 +128,13 @@ func initProject(options *templates.Options) error {
 		return err
 	}
 
+	if options.InitGit {
+		err = initGit(options)
+		if err != nil {
+			return err
+		}
+	}
+
 	// Output stats
 	elapsed := time.Since(start)
 	options.Logger.Println("")
@@ -122,9 +145,41 @@ func initProject(options *templates.Options) error {
 	if options.GenerateVSCode {
 		options.Logger.Println("VSCode config files generated.")
 	}
+	if options.InitGit {
+		options.Logger.Println("Git repository initialised.")
+	}
 	options.Logger.Println("")
 	options.Logger.Println(fmt.Sprintf("Initialised project '%s' in %s.", options.ProjectName, elapsed.Round(time.Millisecond).String()))
 	options.Logger.Println("")
+
+	return nil
+}
+
+func initGit(options *templates.Options) error {
+	err := git.InitRepo(options.TargetDir)
+	if err != nil {
+		return errors.Wrap(err, "Unable to initialise git repository:")
+	}
+
+	return nil
+}
+
+func findAuthorDetails(options *templates.Options) error {
+	if git.IsInstalled() {
+		name, err := git.Name()
+		if err != nil {
+			return err
+		}
+		options.AuthorName = strings.TrimSpace(name)
+
+		email, err := git.Email()
+		if err != nil {
+			return err
+		}
+		options.AuthorEmail = strings.TrimSpace(email)
+
+		println("Name", name, "Email", email)
+	}
 
 	return nil
 }

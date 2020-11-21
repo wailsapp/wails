@@ -1,5 +1,9 @@
 {
     "name": "{{.ProjectName}}",
     "outputfilename": "{{.BinaryName}}",
-    "html": "frontend/index.html"
+    "html": "frontend/index.html",
+    "author": {
+        "name": "{{.AuthorName}}",
+        "email": "{{.AuthorEmail}}"
+    }
 }

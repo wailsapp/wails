@@ -26,7 +26,8 @@ type Data struct {
 	BinaryName     string
 	WailsVersion   string
 	NPMProjectName string
-	Author         string
+	AuthorName     string
+	AuthorEmail    string
 	WailsDirectory string
 }
 
@@ -40,6 +41,9 @@ type Options struct {
 	GenerateVSCode      bool
 	PathToDesktopBinary string
 	PathToServerBinary  string
+	InitGit             bool
+	AuthorName          string
+	AuthorEmail         string
 }
 
 // Template holds data relating to a template
@@ -224,6 +228,8 @@ func Install(options *Options) error {
 		BinaryName:     filepath.Base(options.TargetDir),
 		NPMProjectName: NPMProjectName,
 		WailsDirectory: localWailsDirectory,
+		AuthorEmail:    options.AuthorEmail,
+		AuthorName:     options.AuthorName,
 	}
 
 	// Extract the template
