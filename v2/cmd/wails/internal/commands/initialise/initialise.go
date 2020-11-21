@@ -141,7 +141,6 @@ func initProject(options *templates.Options) error {
 	options.Logger.Println("Project Name:      " + options.ProjectName)
 	options.Logger.Println("Project Directory: " + options.TargetDir)
 	options.Logger.Println("Project Template:  " + options.TemplateName)
-	options.Logger.Println("")
 	if options.GenerateVSCode {
 		options.Logger.Println("VSCode config files generated.")
 	}
