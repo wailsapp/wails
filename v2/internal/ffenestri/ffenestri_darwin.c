@@ -47,6 +47,9 @@
 #define NSWindowTitleHidden 1
 #define NSWindowStyleMaskFullSizeContentView 1 << 15
 
+#define NSEventModifierFlagCommand 1 << 20
+#define NSEventModifierFlagOption 1 << 19
+
 
 
 // Unbelievably, if the user swaps their button preference
@@ -72,8 +75,8 @@ void dispatch(dispatchMethod func) {
 
 // App Delegate
 typedef struct AppDel {
-	Class isa;
-	id window;
+    Class isa;
+    id window;
 } AppDelegate;
 
 // Credit: https://stackoverflow.com/a/8465083
@@ -884,6 +887,84 @@ const char* getInitialState(struct Application *app) {
     return result;
 }
 
+id createMenuItem(id title, const char *action, const char *key) {
+  id item = ALLOC("NSMenuItem");
+  msg(item, s("initWithTitle:action:keyEquivalent:"), title, s(action), str(key));
+  msg(item, s("autorelease"));
+  return item;
+}
+
+id createMenuItemNoAutorelease( id title, const char *action, const char *key) {
+  id item = ALLOC("NSMenuItem");
+  msg(item, s("initWithTitle:action:keyEquivalent:"), title, s(action), str(key));
+  return item;
+}
+
+id createMenu(id title) {
+    id menu = ALLOC("NSMenu");
+    msg(menu, s("initWithTitle:"), title);
+    msg(menu, s("autorelease"));
+    return menu;
+}
+
+id addMenuItem(id menu, const char *title, const char *action, const char *key) {
+    id item = createMenuItem(str(title), action, key);
+    msg(menu, s("addItem:"), item);
+    return item;
+}
+
+void addSeparator(id menu) {
+  id item = msg(c("NSMenuItem"), s("separatorItem"));
+  msg(menu, s("addItem:"), item);
+}
+
+void addDefaultMenu() {
+
+  id menubar = createMenu(str(""));
+
+  id appName = msg(msg(c("NSProcessInfo"), s("processInfo")), s("processName"));
+
+  id appMenuItem = createMenuItemNoAutorelease(appName, NULL, "");
+
+// App Menu
+  id appMenu = createMenu(appName);
+
+  msg(appMenuItem, s("setSubmenu:"), appMenu);
+  msg(menubar, s("addItem:"), appMenuItem);
+
+  id title = msg(str("Hide "), s("stringByAppendingString:"), appName);
+  id item = createMenuItem(title, "hide:", "h");
+  msg(appMenu, s("addItem:"), item);
+
+  id hideOthers = addMenuItem(appMenu, "Hide Others", "hideOtherApplications:", "h");
+  msg(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
+
+  addMenuItem(appMenu, "Show All", "unhideAllApplications:", "");
+
+  addSeparator(appMenu);
+
+  title = msg(str("Quit "), s("stringByAppendingString:"), appName);
+  item = createMenuItem(title, "terminate:", "q");
+  msg(appMenu, s("addItem:"), item);
+
+  // Edit Menu
+  id editMenuItem = createMenuItemNoAutorelease(str("Edit"), NULL, "");
+  id editMenu = createMenu(str("Edit"));
+
+  msg(editMenuItem, s("setSubmenu:"), editMenu);
+  msg(menubar, s("addItem:"), editMenuItem);
+
+  addMenuItem(editMenu, "Undo", "undo:", "z");
+  addMenuItem(editMenu, "Redo", "redo:", "y");
+  addSeparator(editMenu);
+  addMenuItem(editMenu, "Cut", "cut:", "x");
+  addMenuItem(editMenu, "Copy", "copy:", "c");
+  addMenuItem(editMenu, "Paste", "paste:", "v");
+  addMenuItem(editMenu, "Select All", "selectAll:", "a");
+
+  msg(msg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menubar);
+}
+
 void Run(struct Application *app, int argc, char **argv) {
 
     processDecorations(app);
@@ -1047,6 +1128,8 @@ void Run(struct Application *app, int argc, char **argv) {
     if( app->webviewIsTranparent == 1 ) {
         msg(wkwebview, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("drawsBackground"));
     }
+
+    addDefaultMenu(app);
 
     // Finally call run
     Debug(app, "Run called");
