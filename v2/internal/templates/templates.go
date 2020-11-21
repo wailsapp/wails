@@ -22,13 +22,14 @@ var templateCache []Template = nil
 
 // Data contains the data we wish to embed during template installation
 type Data struct {
-	ProjectName    string
-	BinaryName     string
-	WailsVersion   string
-	NPMProjectName string
-	AuthorName     string
-	AuthorEmail    string
-	WailsDirectory string
+	ProjectName        string
+	BinaryName         string
+	WailsVersion       string
+	NPMProjectName     string
+	AuthorName         string
+	AuthorEmail        string
+	AuthorNameAndEmail string
+	WailsDirectory     string
 }
 
 // Options for installing a template
@@ -231,6 +232,15 @@ func Install(options *Options) error {
 		AuthorEmail:    options.AuthorEmail,
 		AuthorName:     options.AuthorName,
 	}
+
+	// Create a formatted name and email combo.
+	if options.AuthorName != "" {
+		templateData.AuthorNameAndEmail = options.AuthorName + " "
+	}
+	if options.AuthorEmail != "" {
+		templateData.AuthorNameAndEmail += "<" + options.AuthorEmail + ">"
+	}
+	templateData.AuthorNameAndEmail = strings.TrimSpace(templateData.AuthorNameAndEmail)
 
 	// Extract the template
 	err = installer.Extract(options.TargetDir, templateData)

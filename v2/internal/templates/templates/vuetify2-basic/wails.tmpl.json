@@ -5,5 +5,9 @@
     "js": "frontend/dist/app.js",
     "css": "frontend/dist/app.css",
     "frontend:build": "npm run build",
-    "frontend:install": "npm install"
+    "frontend:install": "npm install",
+    "author": {
+        "name": "{{.AuthorName}}",
+        "email": "{{.AuthorEmail}}"
+    }
 }

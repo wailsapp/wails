@@ -1,6 +1,6 @@
 {
   "name": "vuetify2",
-  "author": "Travis McLane<tmclane@gmail.com>",
+  "author": "{{.AuthorNameAndEmail}}",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",

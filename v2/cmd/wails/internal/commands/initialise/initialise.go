@@ -177,8 +177,6 @@ func findAuthorDetails(options *templates.Options) error {
 			return err
 		}
 		options.AuthorEmail = strings.TrimSpace(email)
-
-		println("Name", name, "Email", email)
 	}
 
 	return nil
