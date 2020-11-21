@@ -64,9 +64,7 @@ func CreateApp(options *Options) *App {
 		MaxWidth:    options.MaxWidth,
 		MaxHeight:   options.MaxHeight,
 		StartHidden: options.StartHidden,
-
-		// This should be controlled by the compile time flags...
-		DevTools: true,
+		DevTools:    options.DevTools,
 
 		Resizable:  !options.DisableResize,
 		Fullscreen: options.Fullscreen,

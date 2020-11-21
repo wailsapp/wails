@@ -10,7 +10,7 @@ var Default = &App{
 	Title:    "My Wails App",
 	Width:    1024,
 	Height:   768,
-	DevTools: true,
+	DevTools: false,
 	RGBA:     0xFFFFFFFF,
 	Mac: &mac.Options{
 		TitleBar:                      mac.TitleBarDefault(),

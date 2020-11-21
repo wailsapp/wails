@@ -142,7 +142,7 @@ func (a *App) Run() error {
 		return err
 	}
 
-	result := a.window.Run(dispatcher, bindingDump)
+	result := a.window.Run(dispatcher, bindingDump, a.debug)
 	a.logger.Trace("Ffenestri.Run() exited")
 	a.servicebus.Stop()
 

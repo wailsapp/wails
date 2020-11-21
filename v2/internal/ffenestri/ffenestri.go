@@ -25,10 +25,6 @@ import (
 */
 import "C"
 
-// DEBUG is the global Ffenestri debug flag.
-// TODO: move to compile time.
-var DEBUG bool = true
-
 // Application is our main application object
 type Application struct {
 	config *options.App
@@ -108,7 +104,7 @@ func intToColour(colour int) (C.int, C.int, C.int, C.int) {
 }
 
 // Run the application
-func (a *Application) Run(incomingDispatcher Dispatcher, bindings string) error {
+func (a *Application) Run(incomingDispatcher Dispatcher, bindings string, debug bool) error {
 	title := a.string2CString(a.config.Title)
 	width := C.int(a.config.Width)
 	height := C.int(a.config.Height)
@@ -117,6 +113,8 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string) error 
 	fullscreen := a.bool2Cint(a.config.Fullscreen)
 	startHidden := a.bool2Cint(a.config.StartHidden)
 	logLevel := C.int(a.config.LogLevel)
+	println("debug = ", debug)
+	println("devtools = ", a.config.DevTools)
 	app := C.NewApplication(title, width, height, resizable, devtools, fullscreen, startHidden, logLevel)
 
 	// Save app reference
@@ -133,7 +131,7 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string) error 
 	C.SetMaxWindowSize(a.app, maxWidth, maxHeight)
 
 	// Set debug if needed
-	C.SetDebug(app, a.bool2Cint(DEBUG))
+	C.SetDebug(app, a.bool2Cint(debug))
 
 	// TODO: Move frameless to Linux options
 	// if a.config.Frameless {
