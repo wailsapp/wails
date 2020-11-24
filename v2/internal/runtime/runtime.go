@@ -9,6 +9,7 @@ type Runtime struct {
 	Window  Window
 	Dialog  Dialog
 	System  System
+	Menu    Menu
 	Store   *StoreProvider
 	Log     Log
 	bus     *servicebus.ServiceBus
@@ -22,6 +23,7 @@ func New(serviceBus *servicebus.ServiceBus) *Runtime {
 		Window:  newWindow(serviceBus),
 		Dialog:  newDialog(serviceBus),
 		System:  newSystem(serviceBus),
+		Menu:    newMenu(serviceBus),
 		Log:     newLog(serviceBus),
 		bus:     serviceBus,
 	}

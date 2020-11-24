@@ -18,6 +18,7 @@ var messageParsers = map[byte]func(string) (*parsedMessage, error){
 	'W': windowMessageParser,
 	'D': dialogMessageParser,
 	'S': systemMessageParser,
+	'M': menuMessageParser,
 }
 
 // Parse will attempt to parse the given message

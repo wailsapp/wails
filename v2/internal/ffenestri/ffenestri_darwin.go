@@ -14,10 +14,12 @@ extern void DisableFrame(void *);
 extern void SetAppearance(void *, const char *);
 extern void WebviewIsTransparent(void *);
 extern void SetWindowBackgroundIsTranslucent(void *);
+extern void SetMenu(void *, const char *);
 */
 import "C"
+import "encoding/json"
 
-func (a *Application) processPlatformSettings() {
+func (a *Application) processPlatformSettings() error {
 
 	mac := a.config.Mac
 	titlebar := mac.TitleBar
@@ -64,4 +66,15 @@ func (a *Application) processPlatformSettings() {
 	if mac.WindowBackgroundIsTranslucent {
 		C.SetWindowBackgroundIsTranslucent(a.app)
 	}
+
+	// Process menu
+	if mac.Menu != nil {
+		menuJson, err := json.Marshal(mac.Menu)
+		if err != nil {
+			return err
+		}
+		C.SetMenu(a.app, a.string2CString(string(menuJson)))
+	}
+
+	return nil
 }

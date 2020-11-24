@@ -17,7 +17,6 @@ func (w *Window) WailsInit(runtime *wails.Runtime) error {
 }
 
 func (w *Window) SetTitle(title string) {
-	println("In SetTitle:", title)
 	w.runtime.Window.SetTitle(title)
 }
 

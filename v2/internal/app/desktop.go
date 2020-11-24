@@ -3,6 +3,9 @@
 package app
 
 import (
+	"fmt"
+	goruntime "runtime"
+
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/ffenestri"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -11,6 +14,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/servicebus"
 	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/internal/subsystem"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -28,6 +32,7 @@ type App struct {
 	event      *subsystem.Event
 	binding    *subsystem.Binding
 	call       *subsystem.Call
+	menu       *subsystem.Menu
 	dispatcher *messagedispatcher.Dispatcher
 
 	// Indicates if the app is in debug mode
@@ -127,6 +132,25 @@ func (a *App) Run() error {
 	}
 	a.event = event
 	a.event.Start()
+
+	// Start the menu subsystem
+	var platformMenu *menu.Menu
+	switch goruntime.GOOS {
+	case "darwin":
+		platformMenu = a.options.Mac.Menu
+	// case "linux":
+	// 	platformMenu = a.options.Linux.Menu
+	// case "windows":
+	// 	platformMenu = a.options.Windows.Menu
+	default:
+		return fmt.Errorf("unsupported OS: %s", goruntime.GOOS)
+	}
+	menu, err := subsystem.NewMenu(platformMenu, a.servicebus, a.logger)
+	if err != nil {
+		return err
+	}
+	a.menu = menu
+	a.menu.Start()
 
 	// Start the call subsystem
 	call, err := subsystem.NewCall(a.servicebus, a.logger, a.bindings.DB(), a.runtime.GoRuntime())

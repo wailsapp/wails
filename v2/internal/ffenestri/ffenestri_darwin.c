@@ -20,6 +20,8 @@
 #define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("frame"))
 #define GET_BOUNDS(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("bounds"))
 
+#define STREQ(a,b) strncmp(a, b, strlen(b)) == 0
+
 #define ON_MAIN_THREAD(str) dispatch( ^{ str; } )
 #define MAIN_WINDOW_CALL(str) msg(app->mainWindow, s((str)))
 
@@ -49,7 +51,7 @@
 
 #define NSEventModifierFlagCommand 1 << 20
 #define NSEventModifierFlagOption 1 << 19
-
+#define NSEventModifierFlagShift 1 << 17
 
 
 // Unbelievably, if the user swaps their button preference
@@ -156,6 +158,10 @@ struct Application {
     int useToolBar;
     int hideToolbarSeparator;
     int windowBackgroundIsTranslucent;
+    
+    // Menu
+    const char *menuAsJSON;
+    id menubar;
 
     // User Data
     char *HTML;
@@ -187,6 +193,16 @@ void Debug(struct Application *app, const char *message, ... ) {
         free((void*)temp);
         va_end(args);
     }
+}
+
+void Fatal(struct Application *app, const char *message, ... ) {
+  const char *temp = concat("LFFfenestri (C) | ", message);
+  va_list args;
+  va_start(args, message);
+  vsnprintf(logbuffer, MAXMESSAGE, temp, args);
+  app->sendMessageToBackend(&logbuffer[0]);
+  free((void*)temp);
+  va_end(args);
 }
 
 void TitlebarAppearsTransparent(struct Application* app) {
@@ -292,6 +308,15 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
     }
 }
 
+// Callback for menu items
+void menuItemPressed(id self, SEL cmd, id sender) {
+  const char *callbackID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
+  printf("Got callback ID: %s\n", callbackID);
+  const char *message = concat("MC", callbackID);
+  messageFromWindowCallback(message);
+  free((void*)message);
+}
+
 // closeWindow is called when the close button is pressed
 void closeWindow(id self, SEL cmd, id sender) {
     printf("\n\n\ncloseWindow called!!!!\n\n\n");
@@ -371,6 +396,8 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
     result->vibrancyLayer = NULL;
     result->delegate = NULL;
 
+    // Menu
+    result->menuAsJSON = NULL;
 
     result->titlebarAppearsTransparent = 0;
     result->webviewIsTranparent = 0;
@@ -745,6 +772,11 @@ void SetDebug(void *applicationPointer, int flag) {
     debug = flag;
 }
 
+// SetMenu sets the initial menu for the application
+void SetMenu(struct Application *app, const char *menuAsJSON) {
+    app->menuAsJSON = menuAsJSON;
+}
+
 void SetBindings(struct Application *app, const char *bindings) {
     const char* temp = concat("window.wailsbindings = \"", bindings);
     const char* jscall = concat(temp, "\";");
@@ -832,6 +864,9 @@ void createDelegate(struct Application *app) {
     class_addMethod(delegateClass, s("applicationShouldTerminateAfterLastWindowClosed:"), (IMP) yes, "c@:@");
     class_addMethod(delegateClass, s("windowWillClose:"), (IMP) closeWindow, "v@:@");
 
+    // Menu Callbacks
+    class_addMethod(delegateClass, s("menuCallback:"), (IMP)menuItemPressed, "v@:@");
+
     // Script handler
     class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler, "v@:@@");
     objc_registerClassPair(delegateClass);
@@ -901,16 +936,29 @@ id createMenuItemNoAutorelease( id title, const char *action, const char *key) {
 }
 
 id createMenu(id title) {
-    id menu = ALLOC("NSMenu");
-    msg(menu, s("initWithTitle:"), title);
-    msg(menu, s("autorelease"));
-    return menu;
+  id menu = ALLOC("NSMenu");
+  msg(menu, s("initWithTitle:"), title);
+  msg(menu, s("autorelease"));
+  return menu;
 }
 
-id addMenuItem(id menu, const char *title, const char *action, const char *key) {
+id addMenuItem(id menu, const char *title, const char *action, const char *key, bool enabled) {
     id item = createMenuItem(str(title), action, key);
+    msg(item, s("setEnabled:"), enabled);
     msg(menu, s("addItem:"), item);
     return item;
+}
+
+
+id addCallbackMenuItem(id menu, const char *title, const char *menuid, const char *key, bool enabled) {
+  id item = ALLOC("NSMenuItem");
+  id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
+  msg(item, s("setRepresentedObject:"), wrappedId);
+  msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuCallback:"), str(key));
+  msg(item, s("setEnabled:"), enabled);
+  msg(item, s("autorelease"));
+  msg(menu, s("addItem:"), item);
+  return item;
 }
 
 void addSeparator(id menu) {
@@ -918,52 +966,261 @@ void addSeparator(id menu) {
   msg(menu, s("addItem:"), item);
 }
 
-void addDefaultMenu() {
-
-  id menubar = createMenu(str(""));
-
-  id appName = msg(msg(c("NSProcessInfo"), s("processInfo")), s("processName"));
-
-  id appMenuItem = createMenuItemNoAutorelease(appName, NULL, "");
-
+void createDefaultAppMenu(id parentMenu) {
 // App Menu
+  id appName = msg(msg(c("NSProcessInfo"), s("processInfo")), s("processName"));
+  id appMenuItem = createMenuItemNoAutorelease(appName, NULL, "");
   id appMenu = createMenu(appName);
 
   msg(appMenuItem, s("setSubmenu:"), appMenu);
-  msg(menubar, s("addItem:"), appMenuItem);
+  msg(parentMenu, s("addItem:"), appMenuItem);
 
   id title = msg(str("Hide "), s("stringByAppendingString:"), appName);
   id item = createMenuItem(title, "hide:", "h");
   msg(appMenu, s("addItem:"), item);
 
-  id hideOthers = addMenuItem(appMenu, "Hide Others", "hideOtherApplications:", "h");
+  id hideOthers = addMenuItem(appMenu, "Hide Others", "hideOtherApplications:", "h", TRUE);
   msg(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
 
-  addMenuItem(appMenu, "Show All", "unhideAllApplications:", "");
+  addMenuItem(appMenu, "Show All", "unhideAllApplications:", "", TRUE);
 
   addSeparator(appMenu);
 
   title = msg(str("Quit "), s("stringByAppendingString:"), appName);
   item = createMenuItem(title, "terminate:", "q");
   msg(appMenu, s("addItem:"), item);
+}
 
+
+void createDefaultEditMenu(id parentMenu) {
   // Edit Menu
   id editMenuItem = createMenuItemNoAutorelease(str("Edit"), NULL, "");
   id editMenu = createMenu(str("Edit"));
 
   msg(editMenuItem, s("setSubmenu:"), editMenu);
-  msg(menubar, s("addItem:"), editMenuItem);
+  msg(parentMenu, s("addItem:"), editMenuItem);
 
-  addMenuItem(editMenu, "Undo", "undo:", "z");
-  addMenuItem(editMenu, "Redo", "redo:", "y");
+  addMenuItem(editMenu, "Undo", "undo:", "z", TRUE);
+  addMenuItem(editMenu, "Redo", "redo:", "y", TRUE);
   addSeparator(editMenu);
-  addMenuItem(editMenu, "Cut", "cut:", "x");
-  addMenuItem(editMenu, "Copy", "copy:", "c");
-  addMenuItem(editMenu, "Paste", "paste:", "v");
-  addMenuItem(editMenu, "Select All", "selectAll:", "a");
+  addMenuItem(editMenu, "Cut", "cut:", "x", TRUE);
+  addMenuItem(editMenu, "Copy", "copy:", "c", TRUE);
+  addMenuItem(editMenu, "Paste", "paste:", "v", TRUE);
+  addMenuItem(editMenu, "Select All", "selectAll:", "a", TRUE);
+}
 
+void parseMenuRole(struct Application *app, id parentMenu, JsonNode *item) {
+  const char *roleName = item->string_;
+
+  if ( STREQ(roleName, "appMenu") ) {
+    createDefaultAppMenu(parentMenu);
+    return;
+  }
+  if ( STREQ(roleName, "editMenu")) {
+    createDefaultEditMenu(parentMenu);
+    return;
+  }
+  if ( STREQ(roleName, "hide")) {
+    addMenuItem(parentMenu, "Hide Window", "hide:", "h", TRUE);
+    return;
+  }
+  if ( STREQ(roleName, "hideothers")) {
+    id hideOthers = addMenuItem(parentMenu, "Hide Others", "hideOtherApplications:", "h", TRUE);
+    msg(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
+    return;
+  }
+  if ( STREQ(roleName, "unhide")) {
+    addMenuItem(parentMenu, "Show All", "unhideAllApplications:", "", TRUE);
+    return;
+  }
+  if ( STREQ(roleName, "front")) {
+    addMenuItem(parentMenu, "Bring All to Front", "arrangeInFront:", "", TRUE);
+    return;
+  }
+  if ( STREQ(roleName, "undo")) {
+    addMenuItem(parentMenu, "Undo", "undo:", "z", TRUE);
+    return;
+  }
+  if ( STREQ(roleName, "redo")) {
+    addMenuItem(parentMenu, "Redo", "redo:", "y", TRUE);
+    return;
+  }
+  if ( STREQ(roleName, "cut")) {
+    addMenuItem(parentMenu, "Cut", "cut:", "x", TRUE);
+    return;
+  }
+  if ( STREQ(roleName, "copy")) {
+    addMenuItem(parentMenu, "Copy", "copy:", "c", TRUE);
+    return;
+  }
+  if ( STREQ(roleName, "paste")) {
+    addMenuItem(parentMenu, "Paste", "paste:", "v", TRUE);
+    return;
+  }
+  if ( STREQ(roleName, "delete")) {
+    addMenuItem(parentMenu, "Delete", "delete:", "", TRUE);
+    return;
+  }
+  if( STREQ(roleName, "pasteandmatchstyle")) {
+    id pasteandmatchstyle = addMenuItem(parentMenu, "Paste and Match Style", "pasteandmatchstyle:", "v", TRUE);
+    msg(pasteandmatchstyle, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagShift | NSEventModifierFlagCommand));
+  }
+  if ( STREQ(roleName, "selectall")) {
+    addMenuItem(parentMenu, "Select All", "selectAll:", "a", TRUE);
+    return;
+  }
+  if ( STREQ(roleName, "minimize")) {
+    addMenuItem(parentMenu, "Minimize", "miniaturize:", "m", TRUE);
+    return;
+  }
+  if ( STREQ(roleName, "zoom")) {
+    addMenuItem(parentMenu, "Zoom", "performZoom:", "", TRUE);
+    return;
+  }
+  if ( STREQ(roleName, "quit")) {
+    addMenuItem(parentMenu, "Quit (More work TBD)", "terminate:", "q", TRUE);
+    return;
+  }
+  if ( STREQ(roleName, "togglefullscreen")) {
+    addMenuItem(parentMenu, "Toggle Full Screen", "toggleFullScreen:", "f", TRUE);
+    return;
+  }
+
+}
+
+const char* getJSONString(JsonNode *item, const char* key) {
+  // Get key
+  JsonNode *node = json_find_member(item, key);
+  const char *result = "";
+  if ( node != NULL && node->tag == JSON_STRING) {
+    result = node->string_;
+  } 
+  return result;
+}
+
+bool getJSONBool(JsonNode *item, const char* key, bool *result) {
+  JsonNode *node = json_find_member(item, key);
+  if ( node != NULL && node->tag == JSON_BOOL) {
+    *result = node->bool_;
+    return true;
+  } 
+  return false;
+}
+
+void parseNormalMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
+
+  // Get the label
+  const char *label = getJSONString(item, "Label");
+  if ( label == NULL) {
+    label = "(empty)";
+  }
+  
+  const char *menuid = getJSONString(item, "Id");
+  if ( menuid == NULL) {
+    menuid = "";
+  }
+  
+  bool enabled = true;
+  getJSONBool(item, "Enabled", &enabled);
+
+  const char *accelerator = "";
+  
+  printf("Parsing Normal Menu Item %s!!!\n", label);
+
+
+  addCallbackMenuItem(parentMenu, label, menuid, accelerator, enabled);
+}
+
+void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
+  // Get the role
+  JsonNode *role = json_find_member(item, "Role");
+  if( role != NULL ) {
+    printf("Parsing MENU ROLE %s!!!\n", role->string_);
+    parseMenuRole(app, parentMenu, role);
+    return;
+  }
+
+  // Check if this is a submenu
+  JsonNode *submenu = json_find_member(item, "SubMenu");
+  if( submenu != NULL ) {
+    printf("Parsing SUBMENU!!!\n");
+
+    // Get the label
+    JsonNode *menuNameNode = json_find_member(item, "Label");
+    const char *name = "";
+    if ( menuNameNode != NULL) {
+      name = menuNameNode->string_;
+    }
+    
+    id thisMenuItem = createMenuItemNoAutorelease(str(name), NULL, "");
+    id thisMenu = createMenu(str(name));
+
+    msg(thisMenuItem, s("setSubmenu:"), thisMenu);
+    msg(parentMenu, s("addItem:"), thisMenuItem);
+
+    // Loop over submenu items
+    JsonNode *item;
+    json_foreach(item, submenu) {
+      // Get item label
+      parseMenuItem(app, thisMenu, item);
+      printf("Parsing submenu item for '%s'!!!\n", name);
+    }
+
+    return;
+  }
+
+  // Get the Type
+  JsonNode *type = json_find_member(item, "Type");
+  if( type != NULL ) {
+    if( STREQ(type->string_, "Normal")) {
+      parseNormalMenuItem(app, parentMenu, item);
+      return;
+    }
+
+    if ( STREQ(type->string_, "Separator")) {
+      addSeparator(parentMenu);
+      return;
+    }
+    return;
+  }
+}
+
+void parseMenu(struct Application *app, id parentMenu, JsonNode *menu) {
+  JsonNode *items = json_find_member(menu, "Items");
+  if( items == NULL ) {
+    // Parse error!
+    Fatal(app, "Unable to find Items:", app->menuAsJSON);
+    return;
+  }
+
+  // Iterate items
+  JsonNode *item;
+  json_foreach(item, items) {
+    // Get item label
+    parseMenuItem(app, parentMenu, item);
+  }
+}
+
+void parseMenuData(struct Application *app) {
+
+  // Create a new menu bar
+  id menubar = createMenu(str(""));
+
+  // Parse the menu json
+  JsonNode *menuData = json_decode(app->menuAsJSON);
+  
+  if( menuData == NULL ) {
+    // Parse error!
+    Fatal(app, "Unable to parse Menu JSON:", app->menuAsJSON);
+    return;
+  }
+
+  parseMenu(app, menubar, menuData);
+
+  // Apply the menu bar
   msg(msg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menubar);
 }
+
 
 void Run(struct Application *app, int argc, char **argv) {
 
@@ -1129,7 +1386,9 @@ void Run(struct Application *app, int argc, char **argv) {
         msg(wkwebview, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("drawsBackground"));
     }
 
-    addDefaultMenu(app);
+    if( app->menuAsJSON != NULL ) {
+      parseMenuData(app);
+    }
 
     // Finally call run
     Debug(app, "Run called");
