@@ -89,8 +89,23 @@ func (m *Menu) Start() error {
 						continue
 					}
 					m.logger.Trace("Got Menu clicked Message: %s %+v", menuMessage.Topic(), menuMessage.Data())
-					callbackID := menuMessage.Data().(string)
-					m.notifyListeners(callbackID)
+					menuid := menuMessage.Data().(string)
+
+					// Get the menu item
+					menuItem := m.menuItems[menuid]
+					if menuItem == nil {
+						m.logger.Trace("Cannot process menuid %s - unknown", menuid)
+						return
+					}
+
+					// Is the menu item a checkbox?
+					if menuItem.Type == menu.CheckboxType {
+						// Toggle state
+						menuItem.Checked = !menuItem.Checked
+					}
+
+					// Notify listeners
+					m.notifyListeners(menuid, menuItem)
 				case "on":
 					listenerDetails := menuMessage.Data().(*message.MenuOnMessage)
 					id := listenerDetails.MenuID
@@ -139,14 +154,8 @@ func (m *Menu) processMenuItem(item *menu.MenuItem) {
 }
 
 // Notifies listeners that the given menu was clicked
-func (m *Menu) notifyListeners(menuid string) {
+func (m *Menu) notifyListeners(menuid string, menuItem *menu.MenuItem) {
 
-	// Get the menu item
-	menuItem := m.menuItems[menuid]
-	if menuItem == nil {
-		m.logger.Trace("Cannot process menuid %s - unknown", menuid)
-		return
-	}
 	// Get list of menu listeners
 	listeners := m.listeners[menuid]
 	if listeners == nil {

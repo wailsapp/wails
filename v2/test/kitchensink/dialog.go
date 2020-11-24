@@ -22,6 +22,13 @@ func (l *Dialog) WailsInit(runtime *wails.Runtime) error {
 	l.runtime.Menu.On("hello", func(m *menu.MenuItem) {
 		fmt.Printf("The '%s' menu was clicked\n", m.Label)
 	})
+	l.runtime.Menu.On("checkbox-menu", func(m *menu.MenuItem) {
+		fmt.Printf("The '%s' menu was clicked\n", m.Label)
+		fmt.Printf("It is now %v\n", m.Checked)
+		// m.Checked = false
+		// runtime.Menu.Update()
+	})
+
 	return nil
 }
 

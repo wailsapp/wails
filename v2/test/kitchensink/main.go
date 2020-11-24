@@ -40,6 +40,12 @@ func main() {
 				Type:   menu.TextType,
 				Hidden: true,
 			},
+			&menu.MenuItem{
+				Id:      "checkbox-menu",
+				Label:   "Checkbox Menu",
+				Type:    menu.CheckboxType,
+				Checked: true,
+			},
 		}),
 	})
 

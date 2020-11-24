@@ -5,6 +5,7 @@
 #include <objc/objc-runtime.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include "json.h"
+#include "hashmap.h"
 
 // Macros to make it slightly more sane
 #define msg objc_msgSend
@@ -21,6 +22,7 @@
 #define GET_BOUNDS(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("bounds"))
 
 #define STREQ(a,b) strncmp(a, b, strlen(b)) == 0
+#define STRCOPY(a) concat(a, "")
 
 #define ON_MAIN_THREAD(str) dispatch( ^{ str; } )
 #define MAIN_WINDOW_CALL(str) msg(app->mainWindow, s((str)))
@@ -53,6 +55,9 @@
 #define NSEventModifierFlagOption 1 << 19
 #define NSEventModifierFlagShift 1 << 17
 
+#define NSControlStateValueMixed -1
+#define NSControlStateValueOff 0
+#define NSControlStateValueOn 1
 
 // Unbelievably, if the user swaps their button preference
 // then right buttons are reported as left buttons
@@ -66,6 +71,9 @@ extern const char *icon[];
 
 // MAIN DEBUG FLAG
 int debug;
+
+// MenuItem map
+map_t menuItemMap;
 
 // Dispatch Method
 typedef void (^dispatchMethod)(void);
@@ -310,9 +318,29 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 
 // Callback for menu items
 void menuItemPressed(id self, SEL cmd, id sender) {
-  const char *callbackID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
-  printf("Got callback ID: %s\n", callbackID);
-  const char *message = concat("MC", callbackID);
+  const char *menuID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
+  // Notify the backend
+  const char *message = concat("MC", menuID);
+  messageFromWindowCallback(message);
+  free((void*)message);
+}
+
+// Callback for menu items
+void checkboxMenuItemPressed(id self, SEL cmd, id sender) {
+  const char *menuID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
+
+  // Get the menu item from the menu item map
+  id menuItem;
+  hashmap_get(menuItemMap, (char*)menuID, (void**)&menuItem);
+
+  // Get the current state
+  bool state = msg(menuItem, s("state"));
+
+  // Toggle the state
+  msg(menuItem, s("setState:"), (state? NSControlStateValueOff : NSControlStateValueOn));
+
+  // Notify the backend
+  const char *message = concat("MC", menuID);
   messageFromWindowCallback(message);
   free((void*)message);
 }
@@ -425,6 +453,9 @@ void DestroyApplication(struct Application *app) {
     if( app->mouseUpMonitor != NULL ) {
         msg( c("NSEvent"), s("removeMonitor:"), app->mouseUpMonitor);
     }
+
+    // Free menu item hashmap
+    hashmap_free(menuItemMap);
 
     // Remove script handlers
     msg(app->manager, s("removeScriptMessageHandlerForName:"), str("windowDrag"));
@@ -866,6 +897,7 @@ void createDelegate(struct Application *app) {
 
     // Menu Callbacks
     class_addMethod(delegateClass, s("menuCallback:"), (IMP)menuItemPressed, "v@:@");
+    class_addMethod(delegateClass, s("checkboxMenuCallback:"), (IMP)checkboxMenuItemPressed, "v@:@");
 
     // Script handler
     class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler, "v@:@@");
@@ -1108,10 +1140,28 @@ bool getJSONBool(JsonNode *item, const char* key, bool *result) {
   return false;
 }
 
-void parseTextMenuItem(struct Application *app, id parentMenu, JsonNode *item, const char *label, const char *id, bool disabled) {
+id parseTextMenuItem(struct Application *app, id parentMenu, JsonNode *item, const char *label, const char *id, bool disabled) {
 
   const char *accelerator = "";
-  addCallbackMenuItem(parentMenu, label, id, accelerator, disabled);
+  return addCallbackMenuItem(parentMenu, label, id, accelerator, disabled);
+}
+
+id parseCheckboxMenuItem(struct Application *app, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *key) {
+  id item = ALLOC("NSMenuItem");
+
+  // Store the item in the menu item map
+  hashmap_put(menuItemMap, (char*)menuid, item);
+
+  id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
+  msg(item, s("setRepresentedObject:"), wrappedId);
+  msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("checkboxMenuCallback:"), str(key));
+  msg(item, s("setEnabled:"), !disabled);
+  msg(item, s("autorelease"));
+  printf("\n\nSetting checked on menu: %s to %s\n\n", title, (checked? "true" : "false"));
+  msg(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
+  msg(parentmenu, s("addItem:"), item);
+  return item;
+
 }
 
 void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
@@ -1188,6 +1238,16 @@ void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
       addSeparator(parentMenu);
       return;
     }
+    if ( STREQ(type->string_, "Checkbox")) {
+      printf("PARSING CHECKBOX!!!!!!!!!!!");
+      // Get checked state
+      bool checked = false;
+      getJSONBool(item, "Checked", &checked);
+
+      parseCheckboxMenuItem(app, parentMenu, label, menuid, disabled, checked, "");
+      return;
+    }
+
     return;
   }
 }
@@ -1230,6 +1290,9 @@ void parseMenuData(struct Application *app) {
 
 
 void Run(struct Application *app, int argc, char **argv) {
+
+    // Allocate new hashmap
+    menuItemMap = hashmap_new();
 
     processDecorations(app);
 
