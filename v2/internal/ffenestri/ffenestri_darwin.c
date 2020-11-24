@@ -938,24 +938,25 @@ id createMenuItemNoAutorelease( id title, const char *action, const char *key) {
 id createMenu(id title) {
   id menu = ALLOC("NSMenu");
   msg(menu, s("initWithTitle:"), title);
+  msg(menu, s("setAutoenablesItems:"), NO);
   msg(menu, s("autorelease"));
   return menu;
 }
 
-id addMenuItem(id menu, const char *title, const char *action, const char *key, bool enabled) {
+id addMenuItem(id menu, const char *title, const char *action, const char *key, bool disabled) {
     id item = createMenuItem(str(title), action, key);
-    msg(item, s("setEnabled:"), enabled);
+    msg(item, s("setEnabled:"), !disabled);
     msg(menu, s("addItem:"), item);
     return item;
 }
 
 
-id addCallbackMenuItem(id menu, const char *title, const char *menuid, const char *key, bool enabled) {
+id addCallbackMenuItem(id menu, const char *title, const char *menuid, const char *key, bool disabled) {
   id item = ALLOC("NSMenuItem");
   id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
   msg(item, s("setRepresentedObject:"), wrappedId);
   msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuCallback:"), str(key));
-  msg(item, s("setEnabled:"), enabled);
+  msg(item, s("setEnabled:"), !disabled);
   msg(item, s("autorelease"));
   msg(menu, s("addItem:"), item);
   return item;
@@ -979,10 +980,10 @@ void createDefaultAppMenu(id parentMenu) {
   id item = createMenuItem(title, "hide:", "h");
   msg(appMenu, s("addItem:"), item);
 
-  id hideOthers = addMenuItem(appMenu, "Hide Others", "hideOtherApplications:", "h", TRUE);
+  id hideOthers = addMenuItem(appMenu, "Hide Others", "hideOtherApplications:", "h", FALSE);
   msg(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
 
-  addMenuItem(appMenu, "Show All", "unhideAllApplications:", "", TRUE);
+  addMenuItem(appMenu, "Show All", "unhideAllApplications:", "", FALSE);
 
   addSeparator(appMenu);
 
@@ -1000,13 +1001,13 @@ void createDefaultEditMenu(id parentMenu) {
   msg(editMenuItem, s("setSubmenu:"), editMenu);
   msg(parentMenu, s("addItem:"), editMenuItem);
 
-  addMenuItem(editMenu, "Undo", "undo:", "z", TRUE);
-  addMenuItem(editMenu, "Redo", "redo:", "y", TRUE);
+  addMenuItem(editMenu, "Undo", "undo:", "z", FALSE);
+  addMenuItem(editMenu, "Redo", "redo:", "y", FALSE);
   addSeparator(editMenu);
-  addMenuItem(editMenu, "Cut", "cut:", "x", TRUE);
-  addMenuItem(editMenu, "Copy", "copy:", "c", TRUE);
-  addMenuItem(editMenu, "Paste", "paste:", "v", TRUE);
-  addMenuItem(editMenu, "Select All", "selectAll:", "a", TRUE);
+  addMenuItem(editMenu, "Cut", "cut:", "x", FALSE);
+  addMenuItem(editMenu, "Copy", "copy:", "c", FALSE);
+  addMenuItem(editMenu, "Paste", "paste:", "v", FALSE);
+  addMenuItem(editMenu, "Select All", "selectAll:", "a", FALSE);
 }
 
 void parseMenuRole(struct Application *app, id parentMenu, JsonNode *item) {
@@ -1021,68 +1022,68 @@ void parseMenuRole(struct Application *app, id parentMenu, JsonNode *item) {
     return;
   }
   if ( STREQ(roleName, "hide")) {
-    addMenuItem(parentMenu, "Hide Window", "hide:", "h", TRUE);
+    addMenuItem(parentMenu, "Hide Window", "hide:", "h", FALSE);
     return;
   }
   if ( STREQ(roleName, "hideothers")) {
-    id hideOthers = addMenuItem(parentMenu, "Hide Others", "hideOtherApplications:", "h", TRUE);
+    id hideOthers = addMenuItem(parentMenu, "Hide Others", "hideOtherApplications:", "h", FALSE);
     msg(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
     return;
   }
   if ( STREQ(roleName, "unhide")) {
-    addMenuItem(parentMenu, "Show All", "unhideAllApplications:", "", TRUE);
+    addMenuItem(parentMenu, "Show All", "unhideAllApplications:", "", FALSE);
     return;
   }
   if ( STREQ(roleName, "front")) {
-    addMenuItem(parentMenu, "Bring All to Front", "arrangeInFront:", "", TRUE);
+    addMenuItem(parentMenu, "Bring All to Front", "arrangeInFront:", "", FALSE);
     return;
   }
   if ( STREQ(roleName, "undo")) {
-    addMenuItem(parentMenu, "Undo", "undo:", "z", TRUE);
+    addMenuItem(parentMenu, "Undo", "undo:", "z", FALSE);
     return;
   }
   if ( STREQ(roleName, "redo")) {
-    addMenuItem(parentMenu, "Redo", "redo:", "y", TRUE);
+    addMenuItem(parentMenu, "Redo", "redo:", "y", FALSE);
     return;
   }
   if ( STREQ(roleName, "cut")) {
-    addMenuItem(parentMenu, "Cut", "cut:", "x", TRUE);
+    addMenuItem(parentMenu, "Cut", "cut:", "x", FALSE);
     return;
   }
   if ( STREQ(roleName, "copy")) {
-    addMenuItem(parentMenu, "Copy", "copy:", "c", TRUE);
+    addMenuItem(parentMenu, "Copy", "copy:", "c", FALSE);
     return;
   }
   if ( STREQ(roleName, "paste")) {
-    addMenuItem(parentMenu, "Paste", "paste:", "v", TRUE);
+    addMenuItem(parentMenu, "Paste", "paste:", "v", FALSE);
     return;
   }
   if ( STREQ(roleName, "delete")) {
-    addMenuItem(parentMenu, "Delete", "delete:", "", TRUE);
+    addMenuItem(parentMenu, "Delete", "delete:", "", FALSE);
     return;
   }
   if( STREQ(roleName, "pasteandmatchstyle")) {
-    id pasteandmatchstyle = addMenuItem(parentMenu, "Paste and Match Style", "pasteandmatchstyle:", "v", TRUE);
+    id pasteandmatchstyle = addMenuItem(parentMenu, "Paste and Match Style", "pasteandmatchstyle:", "v", FALSE);
     msg(pasteandmatchstyle, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagShift | NSEventModifierFlagCommand));
   }
   if ( STREQ(roleName, "selectall")) {
-    addMenuItem(parentMenu, "Select All", "selectAll:", "a", TRUE);
+    addMenuItem(parentMenu, "Select All", "selectAll:", "a", FALSE);
     return;
   }
   if ( STREQ(roleName, "minimize")) {
-    addMenuItem(parentMenu, "Minimize", "miniaturize:", "m", TRUE);
+    addMenuItem(parentMenu, "Minimize", "miniaturize:", "m", FALSE);
     return;
   }
   if ( STREQ(roleName, "zoom")) {
-    addMenuItem(parentMenu, "Zoom", "performZoom:", "", TRUE);
+    addMenuItem(parentMenu, "Zoom", "performZoom:", "", FALSE);
     return;
   }
   if ( STREQ(roleName, "quit")) {
-    addMenuItem(parentMenu, "Quit (More work TBD)", "terminate:", "q", TRUE);
+    addMenuItem(parentMenu, "Quit (More work TBD)", "terminate:", "q", FALSE);
     return;
   }
   if ( STREQ(roleName, "togglefullscreen")) {
-    addMenuItem(parentMenu, "Toggle Full Screen", "toggleFullScreen:", "f", TRUE);
+    addMenuItem(parentMenu, "Toggle Full Screen", "toggleFullScreen:", "f", FALSE);
     return;
   }
 
@@ -1107,31 +1108,21 @@ bool getJSONBool(JsonNode *item, const char* key, bool *result) {
   return false;
 }
 
-void parseNormalMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
-
-  // Get the label
-  const char *label = getJSONString(item, "Label");
-  if ( label == NULL) {
-    label = "(empty)";
-  }
-  
-  const char *menuid = getJSONString(item, "Id");
-  if ( menuid == NULL) {
-    menuid = "";
-  }
-  
-  bool enabled = true;
-  getJSONBool(item, "Enabled", &enabled);
+void parseTextMenuItem(struct Application *app, id parentMenu, JsonNode *item, const char *label, const char *id, bool disabled) {
 
   const char *accelerator = "";
-  
-  printf("Parsing Normal Menu Item %s!!!\n", label);
-
-
-  addCallbackMenuItem(parentMenu, label, menuid, accelerator, enabled);
+  addCallbackMenuItem(parentMenu, label, id, accelerator, disabled);
 }
 
 void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
+
+  // Check if this item is hidden and if so, exit early!
+  bool hidden = false;
+  getJSONBool(item, "Hidden", &hidden);
+  if( hidden ) {
+    return;
+  }
+
   // Get the role
   JsonNode *role = json_find_member(item, "Role");
   if( role != NULL ) {
@@ -1169,11 +1160,27 @@ void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
     return;
   }
 
+  // This is a user menu. Get the common data
+  // Get the label
+  const char *label = getJSONString(item, "Label");
+  if ( label == NULL) {
+    label = "(empty)";
+  }
+  
+  const char *menuid = getJSONString(item, "Id");
+  if ( menuid == NULL) {
+    menuid = "";
+  }
+  
+  bool disabled = false;
+  getJSONBool(item, "Disabled", &disabled);
+
   // Get the Type
   JsonNode *type = json_find_member(item, "Type");
   if( type != NULL ) {
-    if( STREQ(type->string_, "Normal")) {
-      parseNormalMenuItem(app, parentMenu, item);
+
+    if( STREQ(type->string_, "Text")) {
+      parseTextMenuItem(app, parentMenu, item, label, menuid, disabled);
       return;
     }
 

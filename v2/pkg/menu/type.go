@@ -4,8 +4,8 @@ package menu
 type Type string
 
 const (
-	// NormalType is the Normal menuitem type
-	NormalType Type = "Normal"
+	// TextType is the text menuitem type
+	TextType Type = "Text"
 	// SeparatorType is the Separator menuitem type
 	SeparatorType Type = "Separator"
 	// SubmenuType is the Submenu menuitem type

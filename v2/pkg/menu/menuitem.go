@@ -6,19 +6,17 @@ type MenuItem struct {
 	Role        Role   `json:"Role,omitempty"`
 	Accelerator string `json:"Accelerator,omitempty"`
 	Type        Type
-	Enabled     bool
-	Visible     bool
+	Disabled    bool
+	Hidden      bool
 	Checked     bool
 	SubMenu     []*MenuItem `json:"SubMenu,omitempty"`
 }
 
 func Text(label string, id string) *MenuItem {
 	return &MenuItem{
-		Id:      id,
-		Label:   label,
-		Type:    NormalType,
-		Enabled: true,
-		Visible: true,
+		Id:    id,
+		Label: label,
+		Type:  TextType,
 	}
 }
 

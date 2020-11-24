@@ -30,6 +30,16 @@ func main() {
 
 		menu.SubMenu("Test Submenu", []*menu.MenuItem{
 			menu.Text("Hi!", "hello"), // Label = "Hi!", ID= "hello"
+			&menu.MenuItem{
+				Label:    "Disabled Menu",
+				Type:     menu.TextType,
+				Disabled: true,
+			},
+			&menu.MenuItem{
+				Label:  "Hidden Menu",
+				Type:   menu.TextType,
+				Hidden: true,
+			},
 		}),
 	})
 
