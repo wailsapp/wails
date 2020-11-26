@@ -202,7 +202,16 @@ distributions:
         name: Ctlos Linux
         gccversioncommand: *gccdumpversion
         programs: *archdefaultprograms
-        libraries: *archdefaultlibraries                
+        libraries: *archdefaultlibraries   
+  endeavouros:
+    id: endeavouros
+    releases:
+      default:
+        version: default
+        name: EndeavourOS
+        gccversioncommand: *gccdumpversion
+        programs: *archdefaultprograms
+        libraries: *archdefaultlibraries             
   manjaro:
     id: manjaro
     releases:
