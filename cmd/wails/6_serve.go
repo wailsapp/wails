@@ -48,7 +48,7 @@ func init() {
 		var cfgPath = fs.Cwd()
 
 		if configPath != "" {
-			if ok := fs.FileExists(configPath); !ok {
+			if ok := fs.DirExists(configPath); !ok {
 				return fmt.Errorf("Unable to find 'project.json'. Please make sure the specified path is valid")
 			}
 			cfgPath = configPath
@@ -73,7 +73,7 @@ func init() {
 		}
 
 		// Install dependencies
-		err = cmd.InstallGoDependencies(projectOptions.Verbose)
+		err = cmd.InstallGoDependencies(projectOptions.Verbose, projectOptions.MainPackage)
 		if err != nil {
 			return err
 		}

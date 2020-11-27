@@ -40,15 +40,15 @@ func ValidateFrontendConfig(projectOptions *ProjectOptions) error {
 	return nil
 }
 
-// InstallGoDependencies will run go get in the current directory
-func InstallGoDependencies(verbose bool) error {
+// InstallGoDependencies will run go get on the provided package, on in the current directory if not specified otherwise
+func InstallGoDependencies(verbose bool, mainPkg string) error {
 	var depSpinner *spinner.Spinner
 	if !verbose {
 		depSpinner = spinner.New("Ensuring Dependencies are up to date...")
 		depSpinner.SetSpinSpeed(50)
 		depSpinner.Start()
 	}
-	err := NewProgramHelper(verbose).RunCommand("go get")
+	err := NewProgramHelper(verbose).RunCommand("go get " + mainPkg)
 	if err != nil {
 		if !verbose {
 			depSpinner.Error()
