@@ -144,12 +144,12 @@ func (m *Menu) processMenuItem(item *menu.MenuItem) {
 		return
 	}
 
-	if item.Id != "" {
-		if m.menuItems[item.Id] != nil {
-			m.logger.Error("Menu id '%s' is used by multiple menu items: %s %s", m.menuItems[item.Id].Label, item.Label)
+	if item.ID != "" {
+		if m.menuItems[item.ID] != nil {
+			m.logger.Error("Menu id '%s' is used by multiple menu items: %s %s", m.menuItems[item.ID].Label, item.Label)
 			return
 		}
-		m.menuItems[item.Id] = item
+		m.menuItems[item.ID] = item
 	}
 }
 
@@ -159,7 +159,7 @@ func (m *Menu) notifyListeners(menuid string, menuItem *menu.MenuItem) {
 	// Get list of menu listeners
 	listeners := m.listeners[menuid]
 	if listeners == nil {
-		m.logger.Trace("No listeners for %s", menuid)
+		m.logger.Trace("No listeners for MenuItem with ID '%s'", menuid)
 		return
 	}
 

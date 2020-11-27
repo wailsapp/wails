@@ -73,7 +73,10 @@ extern const char *icon[];
 int debug;
 
 // MenuItem map
-map_t menuItemMap;
+struct hashmap_s menuItemMap;
+
+// RadioGroup map. Maps a menuitem id with its associated radio group items
+struct hashmap_s radioGroupMap;
 
 // Dispatch Method
 typedef void (^dispatchMethod)(void);
@@ -106,6 +109,20 @@ BOOL yes(id self, SEL cmd)
     return YES;
 }
 
+// Prints a hashmap entry
+int hashmap_log(void const *context, struct hashmap_element_s const *e) {
+  printf("%s: %p ", (char*)e->key, e->data);
+  return 0;
+}
+
+// Utility function to visualise a hashmap
+void dumpHashmap(const char *name, struct hashmap_s *hashmap) {
+  printf("%s = { ", name);
+  if (0!=hashmap_iterate_pairs(hashmap, hashmap_log, NULL)) {
+    fprintf(stderr, "Failed to dump hashmap entries\n");
+  }
+  printf("}\n");
+}
 
 extern void messageFromWindowCallback(const char *);
 typedef void (*ffenestriCallback)(const char *);
@@ -330,14 +347,49 @@ void checkboxMenuItemPressed(id self, SEL cmd, id sender) {
   const char *menuID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
 
   // Get the menu item from the menu item map
-  id menuItem;
-  hashmap_get(menuItemMap, (char*)menuID, (void**)&menuItem);
+  id menuItem = (id)hashmap_get(&menuItemMap, (char*)menuID, strlen(menuID));
 
   // Get the current state
   bool state = msg(menuItem, s("state"));
 
   // Toggle the state
   msg(menuItem, s("setState:"), (state? NSControlStateValueOff : NSControlStateValueOn));
+
+  // Notify the backend
+  const char *message = concat("MC", menuID);
+  messageFromWindowCallback(message);
+  free((void*)message);
+}
+
+// radioMenuItemPressed
+void radioMenuItemPressed(id self, SEL cmd, id sender) {
+  const char *menuID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
+
+  // Get the menu item from the menu item map
+  id menuItem = (id)hashmap_get(&menuItemMap, (char*)menuID, strlen(menuID));
+
+  // Check the menu items' current state
+  bool selected = msg(menuItem, s("state"));
+
+  // If it's already selected, exit early
+  if (selected) {
+    return;
+  }
+
+  // Get this item's radio group members and turn them off
+  id *members = (id*)hashmap_get(&radioGroupMap, (char*)menuID, strlen(menuID));
+
+  // Uncheck all members of the group
+  id thisMember = members[0];
+  int count = 0;
+  while(thisMember != NULL) {
+    msg(thisMember, s("setState:"), NSControlStateValueOff);
+    count = count + 1;
+    thisMember = members[count];
+  }
+
+  // check the selected menu item
+  msg(menuItem, s("setState:"), NSControlStateValueOn);
 
   // Notify the backend
   const char *message = concat("MC", menuID);
@@ -432,8 +484,29 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 
     result->sendMessageToBackend = (ffenestriCallback) messageFromWindowCallback;
 
+
+    // Allocate new menuItem map
+    if( 0 != hashmap_create((const unsigned)16, &menuItemMap)) {
+       // Couldn't allocate map
+       Fatal(result, "Not enough memory to allocate menuItemMap!");
+       return NULL;
+    }
+
+    // Allocate the Radio Group Cache
+    if( 0 != hashmap_create((const unsigned)4, &radioGroupMap)) {
+       // Couldn't allocate map
+       Fatal(result, "Not enough memory to allocate radioGroupMap!");
+       return NULL;
+    }
+
     return (void*) result;
 }
+
+int freeHashmapItem(void *context, struct hashmap_element_s const *e) {
+  free(e->data);
+  return -1;
+}
+
 
 void DestroyApplication(struct Application *app) {
     Debug(app, "Destroying Application");
@@ -455,7 +528,15 @@ void DestroyApplication(struct Application *app) {
     }
 
     // Free menu item hashmap
-    hashmap_free(menuItemMap);
+    hashmap_destroy(&menuItemMap);
+
+    // Free radio group members
+    if (0!=hashmap_iterate_pairs(&radioGroupMap, freeHashmapItem, NULL)) {
+      Error(app, "failed to deallocate hashmap entries!");
+    }
+
+    //Free radio groups hashmap
+    hashmap_destroy(&radioGroupMap);
 
     // Remove script handlers
     msg(app->manager, s("removeScriptMessageHandlerForName:"), str("windowDrag"));
@@ -898,6 +979,8 @@ void createDelegate(struct Application *app) {
     // Menu Callbacks
     class_addMethod(delegateClass, s("menuCallback:"), (IMP)menuItemPressed, "v@:@");
     class_addMethod(delegateClass, s("checkboxMenuCallback:"), (IMP)checkboxMenuItemPressed, "v@:@");
+    class_addMethod(delegateClass, s("radioMenuCallback:"), (IMP)radioMenuItemPressed, "v@:@");
+
 
     // Script handler
     class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler, "v@:@@");
@@ -1140,6 +1223,15 @@ bool getJSONBool(JsonNode *item, const char* key, bool *result) {
   return false;
 }
 
+bool getJSONInt(JsonNode *item, const char* key, int *result) {
+  JsonNode *node = json_find_member(item, key);
+  if ( node != NULL && node->tag == JSON_NUMBER) {
+    *result = (int) node->number_;
+    return true;
+  } 
+  return false;
+}
+
 id parseTextMenuItem(struct Application *app, id parentMenu, JsonNode *item, const char *label, const char *id, bool disabled) {
 
   const char *accelerator = "";
@@ -1150,14 +1242,30 @@ id parseCheckboxMenuItem(struct Application *app, id parentmenu, const char *tit
   id item = ALLOC("NSMenuItem");
 
   // Store the item in the menu item map
-  hashmap_put(menuItemMap, (char*)menuid, item);
+  hashmap_put(&menuItemMap, (char*)menuid, strlen(menuid), item);
 
   id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
   msg(item, s("setRepresentedObject:"), wrappedId);
   msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("checkboxMenuCallback:"), str(key));
   msg(item, s("setEnabled:"), !disabled);
   msg(item, s("autorelease"));
-  printf("\n\nSetting checked on menu: %s to %s\n\n", title, (checked? "true" : "false"));
+  msg(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
+  msg(parentmenu, s("addItem:"), item);
+  return item;
+
+}
+
+id parseRadioMenuItem(struct Application *app, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *key) {
+  id item = ALLOC("NSMenuItem");
+
+  // Store the item in the menu item map
+  hashmap_put(&menuItemMap, (char*)menuid, strlen(menuid), item);
+
+  id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
+  msg(item, s("setRepresentedObject:"), wrappedId);
+  msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("radioMenuCallback:"), str(key));
+  msg(item, s("setEnabled:"), !disabled);
+  msg(item, s("autorelease"));
   msg(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
   msg(parentmenu, s("addItem:"), item);
   return item;
@@ -1176,7 +1284,6 @@ void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
   // Get the role
   JsonNode *role = json_find_member(item, "Role");
   if( role != NULL ) {
-    printf("Parsing MENU ROLE %s!!!\n", role->string_);
     parseMenuRole(app, parentMenu, role);
     return;
   }
@@ -1184,8 +1291,6 @@ void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
   // Check if this is a submenu
   JsonNode *submenu = json_find_member(item, "SubMenu");
   if( submenu != NULL ) {
-    printf("Parsing SUBMENU!!!\n");
-
     // Get the label
     JsonNode *menuNameNode = json_find_member(item, "Label");
     const char *name = "";
@@ -1204,7 +1309,6 @@ void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
     json_foreach(item, submenu) {
       // Get item label
       parseMenuItem(app, thisMenu, item);
-      printf("Parsing submenu item for '%s'!!!\n", name);
     }
 
     return;
@@ -1217,7 +1321,7 @@ void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
     label = "(empty)";
   }
   
-  const char *menuid = getJSONString(item, "Id");
+  const char *menuid = getJSONString(item, "ID");
   if ( menuid == NULL) {
     menuid = "";
   }
@@ -1239,12 +1343,19 @@ void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
       return;
     }
     if ( STREQ(type->string_, "Checkbox")) {
-      printf("PARSING CHECKBOX!!!!!!!!!!!");
       // Get checked state
       bool checked = false;
       getJSONBool(item, "Checked", &checked);
 
       parseCheckboxMenuItem(app, parentMenu, label, menuid, disabled, checked, "");
+      return;
+    }
+    if ( STREQ(type->string_, "Radio")) {
+      // Get checked state
+      bool checked = false;
+      getJSONBool(item, "Checked", &checked);
+
+      parseRadioMenuItem(app, parentMenu, label, menuid, disabled, checked, "");
       return;
     }
 
@@ -1268,21 +1379,97 @@ void parseMenu(struct Application *app, id parentMenu, JsonNode *menu) {
   }
 }
 
+void dumpMemberList(const char *name, id *memberList) {
+  void *member = memberList[0];
+  int count = 0;
+  printf("%s = %p -> [ ", name, memberList);
+  while( member != NULL ) {
+    printf("%p ", member);
+    count = count + 1;
+    member = memberList[count];
+  }
+  printf("]\n");
+}
+
+void processRadioGroup(JsonNode *radioGroup) {
+
+  int groupLength;
+  getJSONInt(radioGroup, "Length", &groupLength);
+  JsonNode *members = json_find_member(radioGroup, "Members");
+  JsonNode *member;
+
+  // Allocate array
+  size_t arrayLength = sizeof(id)*(groupLength+1);
+  id memberList[arrayLength];
+
+  // Build the radio group items
+  int count=0;
+  json_foreach(member, members) {
+    // Get menu by id
+    id menuItem = (id)hashmap_get(&menuItemMap, (char*)member->string_, strlen(member->string_));
+    // Save Member
+    memberList[count] = menuItem;
+    count = count + 1;
+  }
+  // Null terminate array
+  memberList[groupLength] = 0;
+
+  // dumpMemberList("memberList", memberList);
+
+  // Store the members
+  json_foreach(member, members) {
+    // Copy the memberList
+    char *newMemberList = (char *)malloc(arrayLength);
+    memcpy(newMemberList, memberList, arrayLength);
+    // dumpMemberList("newMemberList", newMemberList);
+    // printf("Address of newMemberList = %p\n", newMemberList);
+
+    // add group to each member of group
+    hashmap_put(&radioGroupMap, member->string_, strlen(member->string_), newMemberList);
+  }
+
+  // dumpHashmap("radioGroupMap", &radioGroupMap);
+
+}
+
 void parseMenuData(struct Application *app) {
 
   // Create a new menu bar
   id menubar = createMenu(str(""));
 
-  // Parse the menu json
-  JsonNode *menuData = json_decode(app->menuAsJSON);
+  // Parse the processed menu json
+  JsonNode *processedMenu = json_decode(app->menuAsJSON);
   
+  if( processedMenu == NULL ) {
+    // Parse error!
+    Fatal(app, "Unable to parse Menu JSON: %s", app->menuAsJSON);
+    return;
+  }
+
+  // Pull out the Menu
+  JsonNode *menuData = json_find_member(processedMenu, "Menu");
   if( menuData == NULL ) {
     // Parse error!
-    Fatal(app, "Unable to parse Menu JSON:", app->menuAsJSON);
+    Fatal(app, "Unable to find Menu data: %s", processedMenu);
     return;
   }
 
   parseMenu(app, menubar, menuData);
+
+  // Create the radiogroup cache
+  JsonNode *radioGroups = json_find_member(processedMenu, "RadioGroups");
+  if( radioGroups == NULL ) {
+    // Parse error!
+    Fatal(app, "Unable to find RadioGroups data: %s", processedMenu);
+    return;
+  }
+
+   // Iterate radio groups
+  JsonNode *radioGroup;
+  json_foreach(radioGroup, radioGroups) {
+    // Get item label
+    processRadioGroup(radioGroup);
+  }
 
   // Apply the menu bar
   msg(msg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menubar);
@@ -1290,9 +1477,6 @@ void parseMenuData(struct Application *app) {
 
 
 void Run(struct Application *app, int argc, char **argv) {
-
-    // Allocate new hashmap
-    menuItemMap = hashmap_new();
 
     processDecorations(app);
 
@@ -1337,10 +1521,6 @@ void Run(struct Application *app, int argc, char **argv) {
 
     id wkwebview = msg(c("WKWebView"), s("alloc"));
     app->wkwebview = wkwebview;
-
-    // Only show content when fully rendered
-    
-    // TODO: Fix "NSWindow warning: adding an unknown subview: <WKInspectorWKWebView: 0x465ed90>. Break on NSLog to debug." error
 
     msg(wkwebview, s("initWithFrame:configuration:"), CGRectMake(0, 0, 0, 0), config);
 

@@ -41,11 +41,15 @@ func main() {
 				Hidden: true,
 			},
 			&menu.MenuItem{
-				Id:      "checkbox-menu",
+				ID:      "checkbox-menu",
 				Label:   "Checkbox Menu",
 				Type:    menu.CheckboxType,
 				Checked: true,
 			},
+			menu.Separator(),
+			menu.Radio("Option 1", "option-1", true),
+			menu.Radio("Option 2", "option-2", false),
+			menu.Radio("Option 3", "option-3", false),
 		}),
 	})
 
