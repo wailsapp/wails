@@ -196,7 +196,7 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 }
 
 // BuildNative builds on the target platform itself.
-func BuildNative(binaryName string, forceRebuild bool, buildMode string, projectOptions *ProjectOptions) error {
+func BuildNative(binaryName string, outputDir string, forceRebuild bool, buildMode string, projectOptions *ProjectOptions) error {
 
 	// Check Mewn is installed
 	if err := CheckMewn(projectOptions.Verbose); err != nil {
@@ -239,7 +239,7 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 				binaryName = strings.TrimSuffix(binaryName, ".exe")
 			}
 		}
-		buildCommand.Add("-o", filepath.Join("build", binaryName))
+		buildCommand.Add("-o", filepath.Join(outputDir, projectOptions.BinaryName))
 	}
 
 	// If we are forcing a rebuild
@@ -257,6 +257,10 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 		fmt.Printf("Command: %v\n", buildCommand.AsSlice())
 	}
 
+	if projectOptions.MainPackage != "" {
+		buildCommand.Add(projectOptions.MainPackage)
+	}
+
 	err := NewProgramHelper(projectOptions.Verbose).RunCommandArray(buildCommand.AsSlice())
 	if err != nil {
 		if packSpinner != nil {
@@ -272,7 +276,7 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 }
 
 // BuildApplication will attempt to build the project based on the given inputs
-func BuildApplication(binaryName string, forceRebuild bool, buildMode string, packageApp bool, projectOptions *ProjectOptions) error {
+func BuildApplication(binaryName string, output string, forceRebuild bool, buildMode string, packageApp bool, projectOptions *ProjectOptions) error {
 	var err error
 
 	// embed resources
@@ -287,7 +291,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 		}
 	}
 
-	helper := NewPackageHelper(projectOptions.Platform)
+	helper := NewPackageHelper(projectOptions.Platform, output)
 
 	// Generate windows resources
 	if projectOptions.Platform == "windows" {
@@ -313,14 +317,14 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 	if projectOptions.CrossCompile {
 		err = BuildDocker(binaryName, buildMode, projectOptions)
 	} else {
-		err = BuildNative(binaryName, forceRebuild, buildMode, projectOptions)
+		err = BuildNative(binaryName, output, forceRebuild, buildMode, projectOptions)
 	}
 	if err != nil {
 		return err
 	}
 
 	if packageApp {
-		err = PackageApplication(projectOptions)
+		err = PackageApplication(projectOptions, output)
 		if err != nil {
 			return err
 		}
@@ -330,7 +334,7 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 }
 
 // PackageApplication will attempt to package the application in a platform dependent way
-func PackageApplication(projectOptions *ProjectOptions) error {
+func PackageApplication(projectOptions *ProjectOptions, out string) error {
 	var packageSpinner *spinner.Spinner
 	if projectOptions.Verbose {
 		packageSpinner = spinner.New("Packaging application...")
@@ -338,7 +342,7 @@ func PackageApplication(projectOptions *ProjectOptions) error {
 		packageSpinner.Start()
 	}
 
-	err := NewPackageHelper(projectOptions.Platform).Package(projectOptions)
+	err := NewPackageHelper(projectOptions.Platform, out).Package(projectOptions)
 	if err != nil {
 		if packageSpinner != nil {
 			packageSpinner.Error()

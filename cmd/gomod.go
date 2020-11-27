@@ -8,13 +8,19 @@ import (
 	"github.com/Masterminds/semver"
 )
 
-func GetWailsVersion() (*semver.Version, error) {
+func GetWailsVersion(dir string) (*semver.Version, error) {
 	var FS = NewFSHelper()
 	var result *semver.Version
 
+	var goModDir = "."
+
+	if dir != "" {
+		goModDir = dir
+	}
+
 	// Load file
 	var err error
-	goModFile, err := filepath.Abs(filepath.Join(".", "go.mod"))
+	goModFile, err := filepath.Abs(filepath.Join(goModDir, "go.mod"))
 	if err != nil {
 		return nil, fmt.Errorf("Unable to load go.mod at %s", goModFile)
 	}
@@ -48,8 +54,8 @@ func GetCurrentVersion() (*semver.Version, error) {
 	return result, nil
 }
 
-func GoModOutOfSync() (bool, error) {
-	gomodversion, err := GetWailsVersion()
+func GoModOutOfSync(opts *ProjectOptions) (bool, error) {
+	gomodversion, err := GetWailsVersion(opts.ModuleRoot)
 	if err != nil {
 		return true, err
 	}

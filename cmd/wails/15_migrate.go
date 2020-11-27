@@ -65,8 +65,11 @@ func init() {
 			return err
 		}
 
+		//For migrate assume that wails is being run from module root
+		fs := cmd.NewFSHelper()
+
 		// Find Wails version from go.mod
-		wailsVersion, err := getWailsVersion()
+		wailsVersion, err := getWailsVersion(fs.Cwd())
 		if err != nil {
 			return err
 		}
@@ -180,10 +183,10 @@ func checkProjectDirectory() error {
 	return nil
 }
 
-func getWailsVersion() (*semver.Version, error) {
+func getWailsVersion(dir string) (*semver.Version, error) {
 	checkSpinner.Start("Get Wails Version")
 
-	result, err := cmd.GetWailsVersion()
+	result, err := cmd.GetWailsVersion(dir)
 
 	if err != nil {
 		checkSpinner.Error(err.Error())

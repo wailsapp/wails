@@ -165,6 +165,8 @@ type ProjectOptions struct {
 	Architecture           string
 	LdFlags                string
 	GoPath                 string
+	ModuleRoot             string
+	MainPackage            string
 	UseFirebug             bool
 
 	// Supported platforms

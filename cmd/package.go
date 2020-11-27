@@ -26,15 +26,17 @@ type PackageHelper struct {
 	fs       *FSHelper
 	log      *Logger
 	system   *SystemHelper
+	outDir   string
 }
 
 // NewPackageHelper creates a new PackageHelper!
-func NewPackageHelper(platform string) *PackageHelper {
+func NewPackageHelper(platform string, out string) *PackageHelper {
 	return &PackageHelper{
 		platform: platform,
 		fs:       NewFSHelper(),
 		log:      NewLogger(),
 		system:   NewSystemHelper(),
+		outDir:   out,
 	}
 }
 
@@ -197,7 +199,7 @@ func (b *PackageHelper) packageLinux(po *ProjectOptions) error {
 
 // Package the application for OSX
 func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
-	build := path.Join(b.fs.Cwd(), "build")
+	build := b.outDir
 
 	system := NewSystemHelper()
 	config, err := system.LoadConfig()
@@ -305,7 +307,7 @@ func (b *PackageHelper) CleanWindows(po *ProjectOptions) {
 
 // PackageWindows packages the application for windows platforms
 func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
-	outputDir := b.fs.Cwd()
+	outputDir := b.outDir
 	basename := strings.TrimSuffix(po.BinaryName, ".exe")
 
 	// Copy default icon if needed

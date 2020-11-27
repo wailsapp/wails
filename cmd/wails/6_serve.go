@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 	"runtime"
 
 	"github.com/leaanthony/spinner"
@@ -12,6 +13,8 @@ func init() {
 
 	var forceRebuild = false
 	var verbose = false
+	var configPath = ""
+	var outPath = ""
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
 
@@ -19,7 +22,9 @@ func init() {
 	initCmd := app.Command("serve", "Run your Wails project in bridge mode").
 		LongDescription(commandDescription).
 		BoolFlag("verbose", "Verbose output", &verbose).
-		BoolFlag("f", "Force rebuild of application components", &forceRebuild)
+		BoolFlag("f", "Force rebuild of application components", &forceRebuild).
+		StringFlag("c", "Specify location of project.json", &configPath).
+		StringFlag("o", "Specify where the built executable should be placed", &outPath)
 
 	initCmd.Action(func() error {
 
@@ -39,7 +44,17 @@ func init() {
 		// Check we are in project directory
 		// Check project.json loads correctly
 		fs := cmd.NewFSHelper()
-		err = projectOptions.LoadConfig(fs.Cwd())
+
+		var cfgPath = fs.Cwd()
+
+		if configPath != "" {
+			if ok := fs.FileExists(configPath); !ok {
+				return fmt.Errorf("Unable to find 'project.json'. Please make sure the specified path is valid")
+			}
+			cfgPath = configPath
+		}
+
+		err = projectOptions.LoadConfig(cfgPath)
 		if err != nil {
 			return err
 		}
@@ -64,7 +79,14 @@ func init() {
 		}
 
 		buildMode := cmd.BuildModeBridge
-		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode, false, projectOptions)
+
+		var out = filepath.Join(fs.Cwd(), "build")
+
+		if outPath != "" {
+			out = outPath
+		}
+
+		err = cmd.BuildApplication(projectOptions.BinaryName, out, forceRebuild, buildMode, false, projectOptions)
 		if err != nil {
 			return err
 		}

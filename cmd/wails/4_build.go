@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -28,6 +29,8 @@ func init() {
 	var debugMode = false
 	var usefirebug = false
 	var gopath = ""
+	var configPath = ""
+	var outPath = ""
 	var typescriptFilename = ""
 	var verbose = false
 	var platform = ""
@@ -45,6 +48,8 @@ func init() {
 		BoolFlag("d", "Build in Debug mode", &debugMode).
 		BoolFlag("firebug", "Enable firebug console for debug builds", &usefirebug).
 		BoolFlag("verbose", "Verbose output", &verbose).
+		StringFlag("c", "Specify location of project.json", &configPath).
+		StringFlag("o", "Specify where the built executable should be placed", &outPath).
 		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename).
 		StringFlag("ldflags", "Extra options for -ldflags", &ldflags).
 		StringFlag("gopath", "Specify your GOPATH location. Mounted to /go during cross-compilation.", &gopath).
@@ -77,7 +82,17 @@ func init() {
 		// Check we are in project directory
 		// Check project.json loads correctly
 		fs := cmd.NewFSHelper()
-		err := projectOptions.LoadConfig(fs.Cwd())
+
+		var cfgPath = fs.Cwd()
+
+		if configPath != "" {
+			if ok := fs.FileExists(configPath); !ok {
+				return fmt.Errorf("Unable to find 'project.json'. Please make sure the specified path is valid")
+			}
+			cfgPath = configPath
+		}
+
+		err := projectOptions.LoadConfig(cfgPath)
 		if err != nil {
 			return fmt.Errorf("Unable to find 'project.json'. Please check you are in a Wails project directory")
 		}
@@ -174,11 +189,11 @@ func init() {
 		}
 
 		// Update go.mod if it is out of sync with current version
-		outofsync, err := cmd.GoModOutOfSync()
+		outofsync, err := cmd.GoModOutOfSync(projectOptions)
 		if err != nil {
 			return err
 		}
-		gomodVersion, err := cmd.GetWailsVersion()
+		gomodVersion, err := cmd.GetWailsVersion(projectOptions.ModuleRoot)
 		if err != nil {
 			return err
 		}
@@ -194,7 +209,13 @@ func init() {
 			buildSpinner.Success()
 		}
 
-		err = cmd.BuildApplication(projectOptions.BinaryName, forceRebuild, buildMode, packageApp, projectOptions)
+		var out = filepath.Join(fs.Cwd(), "build")
+
+		if outPath != "" {
+			out = outPath
+		}
+
+		err = cmd.BuildApplication(projectOptions.BinaryName, out, forceRebuild, buildMode, packageApp, projectOptions)
 		if err != nil {
 			return err
 		}
