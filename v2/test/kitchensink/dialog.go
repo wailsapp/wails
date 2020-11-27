@@ -28,7 +28,9 @@ func (l *Dialog) WailsInit(runtime *wails.Runtime) error {
 		// m.Checked = false
 		// runtime.Menu.Update()
 	})
-
+	l.runtime.Menu.On("😀option-1", func(m *menu.MenuItem) {
+		fmt.Printf("We can use UTF-8 IDs: %s\n", m.Label)
+	})
 	return nil
 }
 
