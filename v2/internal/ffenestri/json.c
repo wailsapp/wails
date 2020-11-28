@@ -447,6 +447,24 @@ bool json_validate(const char *json)
 	return true;
 }
 
+// We return the number of elements or -1 if there was a problem
+int json_array_length(JsonNode *array) {
+
+	int result = 0;
+	
+	// The node should not be null and it should be an array
+	if (array == NULL || array->tag != JSON_ARRAY)
+		return -1;
+	
+	// Loop and count!
+	JsonNode *element;
+	json_foreach(element, array) {
+		result++;
+	}
+	
+	return result;
+}
+
 JsonNode *json_find_element(JsonNode *array, int index)
 {
 	JsonNode *element;

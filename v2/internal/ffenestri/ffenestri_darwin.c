@@ -53,6 +53,7 @@
 
 #define NSEventModifierFlagCommand 1 << 20
 #define NSEventModifierFlagOption 1 << 19
+#define NSEventModifierFlagControl 1 << 18
 #define NSEventModifierFlagShift 1 << 17
 
 #define NSControlStateValueMixed -1
@@ -187,6 +188,7 @@ struct Application {
     // Menu
     const char *menuAsJSON;
     id menubar;
+    JsonNode *processedMenu;
 
     // User Data
     char *HTML;
@@ -478,6 +480,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 
     // Menu
     result->menuAsJSON = NULL;
+    result->processedMenu = NULL;
 
     result->titlebarAppearsTransparent = 0;
     result->webviewIsTranparent = 0;
@@ -532,11 +535,21 @@ void DestroyApplication(struct Application *app) {
 
     // Free radio group members
     if (0!=hashmap_iterate_pairs(&radioGroupMap, freeHashmapItem, NULL)) {
-      Error(app, "failed to deallocate hashmap entries!");
+      Fatal(app, "failed to deallocate hashmap entries!");
     }
 
     //Free radio groups hashmap
     hashmap_destroy(&radioGroupMap);
+
+    // Release the menu json if we have it
+    if ( app->menuAsJSON != NULL ) {
+      free(app->menuAsJSON);
+    }
+
+    // Release processed menu
+    if( app->processedMenu != NULL) {
+      json_delete(app->processedMenu);
+    }
 
     // Remove script handlers
     msg(app->manager, s("removeScriptMessageHandlerForName:"), str("windowDrag"));
@@ -1065,18 +1078,6 @@ id addMenuItem(id menu, const char *title, const char *action, const char *key, 
     return item;
 }
 
-
-id addCallbackMenuItem(id menu, const char *title, const char *menuid, const char *key, bool disabled) {
-  id item = ALLOC("NSMenuItem");
-  id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
-  msg(item, s("setRepresentedObject:"), wrappedId);
-  msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuCallback:"), str(key));
-  msg(item, s("setEnabled:"), !disabled);
-  msg(item, s("autorelease"));
-  msg(menu, s("addItem:"), item);
-  return item;
-}
-
 void addSeparator(id menu) {
   id item = msg(c("NSMenuItem"), s("separatorItem"));
   msg(menu, s("addItem:"), item);
@@ -1232,10 +1233,55 @@ bool getJSONInt(JsonNode *item, const char* key, int *result) {
   return false;
 }
 
-id parseTextMenuItem(struct Application *app, id parentMenu, JsonNode *item, const char *label, const char *id, bool disabled) {
+// This converts a string array of modifiers into the
+// equivalent MacOS Modifier Flags
+unsigned long parseModifiers(const char **modifiers) {
 
-  const char *accelerator = "";
-  return addCallbackMenuItem(parentMenu, label, id, accelerator, disabled);
+  // Our result is a modifier flag list
+  unsigned long result = 0;
+
+  const char *thisModifier = modifiers[0];
+  int count = 0;
+  while( thisModifier != NULL ) {
+    // Determine flags
+    if( STREQ(thisModifier, "CmdOrCtrl") ) {
+      result |= NSEventModifierFlagCommand;
+    }
+    if( STREQ(thisModifier, "OptionOrAlt") ) {
+      result |= NSEventModifierFlagOption;
+    }
+    if( STREQ(thisModifier, "Shift") ) {
+      result |= NSEventModifierFlagShift;
+    }
+    if( STREQ(thisModifier, "Super") ) {
+      result |= NSEventModifierFlagCommand;
+    }
+    if( STREQ(thisModifier, "Control") ) {
+      result |= NSEventModifierFlagControl;
+    }
+    count++;
+    thisModifier = modifiers[count];
+  }
+  return result;
+}
+
+id parseTextMenuItem(struct Application *app, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers) {
+  id item = ALLOC("NSMenuItem");
+  id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
+  msg(item, s("setRepresentedObject:"), wrappedId);
+  msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuCallback:"), str(acceleratorkey));
+  msg(item, s("setEnabled:"), !disabled);
+  msg(item, s("autorelease"));
+
+  // Process modifiers
+  if( modifiers != NULL ) {
+    unsigned long modifierFlags = parseModifiers(modifiers);
+    msg(item, s("setKeyEquivalentModifierMask:"), modifierFlags);
+  }
+
+  msg(parentMenu, s("addItem:"), item);
+
+  return item;
 }
 
 id parseCheckboxMenuItem(struct Application *app, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *key) {
@@ -1329,34 +1375,62 @@ void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
   bool disabled = false;
   getJSONBool(item, "Disabled", &disabled);
 
+  // Get the Accelerator
+  JsonNode *accelerator = json_find_member(item, "Accelerator");
+  const char *acceleratorkey = NULL;
+  const char **modifiers = NULL;
+
+  // If we have an accelerator
+  if( accelerator != NULL ) {
+    // Get the key
+      acceleratorkey = getJSONString(accelerator, "Key");
+      // Check if there are modifiers
+      JsonNode *modifiersList = json_find_member(accelerator, "Modifiers");
+      if ( modifiersList != NULL ) {
+        // Allocate an array of strings
+        int noOfModifiers = json_array_length(modifiersList);
+        modifiers = malloc(sizeof(const char *) * (noOfModifiers + 1));
+        JsonNode *modifier;
+        int count = 0;
+        // Iterate the modifiers and save a reference to them in our new array
+        json_foreach(modifier, modifiersList) {
+          // Get modifier name
+          modifiers[count] = modifier->string_;
+          count++;
+        }
+        // Null terminate the modifier list
+        modifiers[count] = NULL;
+      }
+  }
+
+
   // Get the Type
   JsonNode *type = json_find_member(item, "Type");
   if( type != NULL ) {
 
     if( STREQ(type->string_, "Text")) {
-      parseTextMenuItem(app, parentMenu, item, label, menuid, disabled);
-      return;
+      parseTextMenuItem(app, parentMenu, label, menuid, disabled, acceleratorkey, modifiers);
     }
-
-    if ( STREQ(type->string_, "Separator")) {
+    else if ( STREQ(type->string_, "Separator")) {
       addSeparator(parentMenu);
-      return;
     }
-    if ( STREQ(type->string_, "Checkbox")) {
+    else if ( STREQ(type->string_, "Checkbox")) {
       // Get checked state
       bool checked = false;
       getJSONBool(item, "Checked", &checked);
 
       parseCheckboxMenuItem(app, parentMenu, label, menuid, disabled, checked, "");
-      return;
     }
-    if ( STREQ(type->string_, "Radio")) {
+    else if ( STREQ(type->string_, "Radio")) {
       // Get checked state
       bool checked = false;
       getJSONBool(item, "Checked", &checked);
 
       parseRadioMenuItem(app, parentMenu, label, menuid, disabled, checked, "");
-      return;
+    }
+
+    if ( modifiers != NULL ) {
+      free(modifiers);
     }
 
     return;
@@ -1438,29 +1512,29 @@ void parseMenuData(struct Application *app) {
   id menubar = createMenu(str(""));
 
   // Parse the processed menu json
-  JsonNode *processedMenu = json_decode(app->menuAsJSON);
+  app->processedMenu = json_decode(app->menuAsJSON);
   
-  if( processedMenu == NULL ) {
+  if( app->processedMenu == NULL ) {
     // Parse error!
     Fatal(app, "Unable to parse Menu JSON: %s", app->menuAsJSON);
     return;
   }
 
   // Pull out the Menu
-  JsonNode *menuData = json_find_member(processedMenu, "Menu");
+  JsonNode *menuData = json_find_member(app->processedMenu, "Menu");
   if( menuData == NULL ) {
     // Parse error!
-    Fatal(app, "Unable to find Menu data: %s", processedMenu);
+    Fatal(app, "Unable to find Menu data: %s", app->processedMenu);
     return;
   }
 
   parseMenu(app, menubar, menuData);
 
   // Create the radiogroup cache
-  JsonNode *radioGroups = json_find_member(processedMenu, "RadioGroups");
+  JsonNode *radioGroups = json_find_member(app->processedMenu, "RadioGroups");
   if( radioGroups == NULL ) {
     // Parse error!
-    Fatal(app, "Unable to find RadioGroups data: %s", processedMenu);
+    Fatal(app, "Unable to find RadioGroups data: %s", app->processedMenu);
     return;
   }
 
@@ -1473,6 +1547,7 @@ void parseMenuData(struct Application *app) {
 
   // Apply the menu bar
   msg(msg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menubar);
+
 }
 
 

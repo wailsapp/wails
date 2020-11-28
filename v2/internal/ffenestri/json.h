@@ -116,4 +116,7 @@ void json_remove_from_parent(JsonNode *node);
  */
 bool json_check(const JsonNode *node, char errmsg[256]);
 
+// Added by Lea Anthony 28/11/2020
+int json_array_length(JsonNode *array);
+
 #endif

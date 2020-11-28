@@ -29,11 +29,15 @@ func main() {
 		menu.Front(),
 
 		menu.SubMenu("Test Submenu", []*menu.MenuItem{
-			menu.Text("Hi!", "hello"), // Label = "Hi!", ID= "hello"
+			menu.TextWithAccelerator("Shift accelerator", "Shift", menu.ShiftAccel("o")),         // Label = "Hi!", ID= "hello"
+			menu.TextWithAccelerator("Control accelerator", "Control", menu.ControlAccel("o")),   // Label = "Hi!", ID= "hello"
+			menu.TextWithAccelerator("Command accelerator", "Command", menu.CmdOrCtrlAccel("o")), // Label = "Hi!", ID= "hello"
+			menu.TextWithAccelerator("Option accelerator", "Option", menu.OptionOrAltAccel("o")), // Label = "Hi!", ID= "hello"
 			&menu.MenuItem{
-				Label:    "Disabled Menu",
-				Type:     menu.TextType,
-				Disabled: true,
+				Label:       "Disabled Menu",
+				Type:        menu.TextType,
+				Accelerator: menu.ComboAccel("p", menu.CmdOrCtrl, menu.Shift),
+				Disabled:    true,
 			},
 			&menu.MenuItem{
 				Label:  "Hidden Menu",
@@ -41,10 +45,11 @@ func main() {
 				Hidden: true,
 			},
 			&menu.MenuItem{
-				ID:      "checkbox-menu",
-				Label:   "Checkbox Menu",
-				Type:    menu.CheckboxType,
-				Checked: true,
+				ID:          "checkbox-menu",
+				Label:       "Checkbox Menu",
+				Type:        menu.CheckboxType,
+				Accelerator: menu.CmdOrCtrlAccel("l"),
+				Checked:     true,
 			},
 			menu.Separator(),
 			menu.Radio("😀 Option 1", "😀option-1", true),
