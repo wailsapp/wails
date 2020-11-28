@@ -323,7 +323,19 @@ func (po *ProjectOptions) LoadConfig(projectDir string) error {
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(rawBytes, po)
+
+	err = json.Unmarshal(rawBytes, po)
+
+	cfgDir, err := filepath.Abs(projectDir)
+	if err != nil {
+		return err
+	}
+
+	po.FrontEnd.Dir = filepath.Join(cfgDir, po.FrontEnd.Dir)
+	po.MainPackage = filepath.Join(cfgDir, po.MainPackage)
+	po.ModuleRoot = filepath.Join(cfgDir, po.ModuleRoot)
+
+	return nil
 }
 
 func computeBinaryName(projectName string) string {

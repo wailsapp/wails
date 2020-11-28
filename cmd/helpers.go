@@ -62,8 +62,18 @@ func InstallGoDependencies(verbose bool, mainPkg string) error {
 }
 
 // EmbedAssets will embed the built frontend assets via mewn.
-func EmbedAssets() ([]string, error) {
+func EmbedAssets(mainPath string) ([]string, error) {
 	mewnFiles := lib.GetMewnFiles([]string{}, false)
+
+	//Save current dir
+	wd := fs.Cwd()
+
+	//If package main is not in the current directory, embedded assets via mewn with relative paths will not resolve correctly
+	//bandaid fix is to chdir to main package directory while embedding assets
+	err := os.Chdir(mainPath)
+	if err != nil {
+		return []string{}, err
+	}
 
 	referencedAssets, err := lib.GetReferencedAssets(mewnFiles)
 	if err != nil {
@@ -77,9 +87,15 @@ func EmbedAssets() ([]string, error) {
 		if err != nil {
 			return []string{}, err
 		}
+
 		targetFile := filepath.Join(referencedAsset.BaseDir, referencedAsset.PackageName+"-mewn.go")
 		targetFiles = append(targetFiles, targetFile)
 		ioutil.WriteFile(targetFile, []byte(packfileData), 0644)
+	}
+
+	err = os.Chdir(wd)
+	if err != nil {
+		return []string{}, err
 	}
 
 	return targetFiles, nil
@@ -280,7 +296,7 @@ func BuildApplication(binaryName string, output string, forceRebuild bool, build
 	var err error
 
 	// embed resources
-	targetFiles, err := EmbedAssets()
+	targetFiles, err := EmbedAssets(projectOptions.MainPackage)
 	if err != nil {
 		return err
 	}
@@ -541,7 +557,7 @@ func InstallProdRuntime(projectDir string, projectOptions *ProjectOptions) error
 
 // ServeProject attempts to serve up the current project so that it may be connected to
 // via the Wails bridge
-func ServeProject(projectOptions *ProjectOptions, logger *Logger) error {
+func ServeProject(output string, projectOptions *ProjectOptions, logger *Logger) error {
 	go func() {
 		time.Sleep(2 * time.Second)
 		if projectOptions.Platform == "windows" {
@@ -549,7 +565,7 @@ func ServeProject(projectOptions *ProjectOptions, logger *Logger) error {
 		}
 		logger.Green(">>>>> To connect, you will need to run '" + projectOptions.FrontEnd.Serve + "' in the '" + projectOptions.FrontEnd.Dir + "' directory <<<<<")
 	}()
-	location, err := filepath.Abs(filepath.Join("build", projectOptions.BinaryName))
+	location, err := filepath.Abs(filepath.Join(output, projectOptions.BinaryName))
 	if err != nil {
 		return err
 	}

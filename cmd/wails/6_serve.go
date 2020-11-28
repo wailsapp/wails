@@ -11,10 +11,12 @@ import (
 
 func init() {
 
+	fs := cmd.NewFSHelper()
+
 	var forceRebuild = false
 	var verbose = false
-	var configPath = ""
-	var outPath = ""
+	var configPath = fs.Cwd()
+	var outPath = filepath.Join(fs.Cwd(), "build")
 	buildSpinner := spinner.NewSpinner()
 	buildSpinner.SetSpinSpeed(50)
 
@@ -41,20 +43,12 @@ func init() {
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}
 
-		// Check we are in project directory
-		// Check project.json loads correctly
-		fs := cmd.NewFSHelper()
-
-		var cfgPath = fs.Cwd()
-
-		if configPath != "" {
-			if ok := fs.DirExists(configPath); !ok {
-				return fmt.Errorf("Unable to find 'project.json'. Please make sure the specified path is valid")
-			}
-			cfgPath = configPath
+		// Check if configPath exists
+		if ok := fs.DirExists(configPath); !ok {
+			return fmt.Errorf("Unable to find 'project.json'. Please make sure the specified path is valid")
 		}
 
-		err = projectOptions.LoadConfig(cfgPath)
+		err = projectOptions.LoadConfig(configPath)
 		if err != nil {
 			return err
 		}
@@ -80,19 +74,13 @@ func init() {
 
 		buildMode := cmd.BuildModeBridge
 
-		var out = filepath.Join(fs.Cwd(), "build")
-
-		if outPath != "" {
-			out = outPath
-		}
-
-		err = cmd.BuildApplication(projectOptions.BinaryName, out, forceRebuild, buildMode, false, projectOptions)
+		err = cmd.BuildApplication(projectOptions.BinaryName, outPath, forceRebuild, buildMode, false, projectOptions)
 		if err != nil {
 			return err
 		}
 
 		logger.Yellow("Awesome! Project '%s' built!", projectOptions.Name)
 
-		return cmd.ServeProject(projectOptions, logger)
+		return cmd.ServeProject(outPath, projectOptions, logger)
 	})
 }

@@ -24,13 +24,15 @@ func getSupportedPlatforms() []string {
 
 func init() {
 
+	fs := cmd.NewFSHelper()
+
 	var packageApp = false
 	var forceRebuild = false
 	var debugMode = false
 	var usefirebug = false
 	var gopath = ""
-	var configPath = ""
-	var outPath = ""
+	var configDir = fs.Cwd()
+	var outDir = filepath.Join(fs.Cwd(), "build")
 	var typescriptFilename = ""
 	var verbose = false
 	var platform = ""
@@ -48,8 +50,8 @@ func init() {
 		BoolFlag("d", "Build in Debug mode", &debugMode).
 		BoolFlag("firebug", "Enable firebug console for debug builds", &usefirebug).
 		BoolFlag("verbose", "Verbose output", &verbose).
-		StringFlag("c", "Specify location of project.json", &configPath).
-		StringFlag("o", "Specify where the built executable should be placed", &outPath).
+		StringFlag("c", "Specify location of project.json", &configDir).
+		StringFlag("o", "Specify where the built executable should be placed", &outDir).
 		StringFlag("t", "Generate Typescript definitions to given file (at runtime)", &typescriptFilename).
 		StringFlag("ldflags", "Extra options for -ldflags", &ldflags).
 		StringFlag("gopath", "Specify your GOPATH location. Mounted to /go during cross-compilation.", &gopath).
@@ -79,20 +81,12 @@ func init() {
 		projectOptions := &cmd.ProjectOptions{}
 		projectOptions.Verbose = verbose
 
-		// Check we are in project directory
-		// Check project.json loads correctly
-		fs := cmd.NewFSHelper()
-
-		var cfgPath = fs.Cwd()
-
-		if configPath != "" {
-			if ok := fs.DirExists(configPath); !ok {
-				return fmt.Errorf("Unable to find 'project.json'. Please make sure the specified path is valid")
-			}
-			cfgPath = configPath
+		// Check if configDir exists
+		if ok := fs.DirExists(configDir); !ok {
+			return fmt.Errorf("Unable to find 'project.json'. Please make sure the specified path is valid")
 		}
 
-		err := projectOptions.LoadConfig(cfgPath)
+		err := projectOptions.LoadConfig(configDir)
 		if err != nil {
 			return fmt.Errorf("Unable to find 'project.json'. Please check you are in a Wails project directory")
 		}
@@ -209,13 +203,7 @@ func init() {
 			buildSpinner.Success()
 		}
 
-		var out = filepath.Join(fs.Cwd(), "build")
-
-		if outPath != "" {
-			out = outPath
-		}
-
-		err = cmd.BuildApplication(projectOptions.BinaryName, out, forceRebuild, buildMode, packageApp, projectOptions)
+		err = cmd.BuildApplication(projectOptions.BinaryName, outDir, forceRebuild, buildMode, packageApp, projectOptions)
 		if err != nil {
 			return err
 		}
