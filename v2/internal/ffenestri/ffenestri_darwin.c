@@ -14,6 +14,7 @@
 #define s(str) sel_registerName(str)
 #define u(str) sel_getUid(str)
 #define str(input) msg(c("NSString"), s("stringWithUTF8String:"), input)
+#define strunicode(input) msg(c("NSString"), s("stringWithFormat:"), str("%C"), input)
 #define cstr(input) (const char *)msg(input, s("UTF8String"))
 #define url(input) msg(c("NSURL"), s("fileURLWithPath:"), str(input))
 
@@ -1265,11 +1266,60 @@ unsigned long parseModifiers(const char **modifiers) {
   return result;
 }
 
+id processAcceleratorKey(const char *key) {
+  if( STREQ(key, "Backspace") ) {
+    return strunicode(0x0008);
+  }
+  if( STREQ(key, "Tab") ) {
+    return strunicode(0x0009);
+  }
+  if( STREQ(key, "Return") ) {
+    return strunicode(0x000d);
+  }
+  if( STREQ(key, "Escape") ) {
+    return strunicode(0x001b);
+  }
+  if( STREQ(key, "Left") ) {
+    return strunicode(0x001c);
+  }
+  if( STREQ(key, "Right") ) {
+    return strunicode(0x001d);
+  }
+  if( STREQ(key, "Up") ) {
+    return strunicode(0x001e);
+  }
+  if( STREQ(key, "Down") ) {
+    return strunicode(0x001f);
+  }
+  if( STREQ(key, "Space") ) {
+    return strunicode(0x0020);
+  }
+  if( STREQ(key, "Delete") ) {
+    return strunicode(0x007f);
+  }
+  if( STREQ(key, "Home") ) {
+    return strunicode(0x2196);
+  }
+  if( STREQ(key, "End") ) {
+    return strunicode(0x2198);
+  }
+  if( STREQ(key, "Page Up") ) {
+    return strunicode(0x21de);
+  }
+  if( STREQ(key, "Page Down") ) {
+    return strunicode(0x21df);
+  }
+  return str(key);
+}
+
+
 id parseTextMenuItem(struct Application *app, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers) {
   id item = ALLOC("NSMenuItem");
   id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
   msg(item, s("setRepresentedObject:"), wrappedId);
-  msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuCallback:"), str(acceleratorkey));
+
+  id key = processAcceleratorKey(acceleratorkey);
+  msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuCallback:"), key);
   msg(item, s("setEnabled:"), !disabled);
   msg(item, s("autorelease"));
 
@@ -1301,7 +1351,7 @@ id parseCheckboxMenuItem(struct Application *app, id parentmenu, const char *tit
 
 }
 
-id parseRadioMenuItem(struct Application *app, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *key) {
+id parseRadioMenuItem(struct Application *app, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *acceleratorkey) {
   id item = ALLOC("NSMenuItem");
 
   // Store the item in the menu item map
@@ -1309,7 +1359,8 @@ id parseRadioMenuItem(struct Application *app, id parentmenu, const char *title,
 
   id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
   msg(item, s("setRepresentedObject:"), wrappedId);
-  msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("radioMenuCallback:"), str(key));
+  id key = processAcceleratorKey(acceleratorkey);
+  msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("radioMenuCallback:"), key);
   msg(item, s("setEnabled:"), !disabled);
   msg(item, s("autorelease"));
   msg(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));

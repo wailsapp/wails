@@ -22,6 +22,13 @@ type Accelerator struct {
 	Modifiers []Modifier
 }
 
+// Accel creates a standard key Accelerator
+func Accel(key string) *Accelerator {
+	return &Accelerator{
+		Key: key,
+	}
+}
+
 // CmdOrCtrlAccel creates a 'CmdOrCtrl' Accelerator
 func CmdOrCtrlAccel(key string) *Accelerator {
 	return &Accelerator{

@@ -29,10 +29,26 @@ func main() {
 		menu.Front(),
 
 		menu.SubMenu("Test Submenu", []*menu.MenuItem{
-			menu.TextWithAccelerator("Shift accelerator", "Shift", menu.ShiftAccel("o")),         // Label = "Hi!", ID= "hello"
-			menu.TextWithAccelerator("Control accelerator", "Control", menu.ControlAccel("o")),   // Label = "Hi!", ID= "hello"
-			menu.TextWithAccelerator("Command accelerator", "Command", menu.CmdOrCtrlAccel("o")), // Label = "Hi!", ID= "hello"
-			menu.TextWithAccelerator("Option accelerator", "Option", menu.OptionOrAltAccel("o")), // Label = "Hi!", ID= "hello"
+			menu.SubMenu("Accelerators", []*menu.MenuItem{
+				menu.TextWithAccelerator("Shift accelerator", "Shift", menu.ShiftAccel("o")),
+				menu.TextWithAccelerator("Control accelerator", "Control", menu.ControlAccel("o")),
+				menu.TextWithAccelerator("Command accelerator", "Command", menu.CmdOrCtrlAccel("o")),
+				menu.TextWithAccelerator("Option accelerator", "Option", menu.OptionOrAltAccel("o")),
+				menu.TextWithAccelerator("Backspace", "Backspace", menu.Accel("Backspace")),
+				menu.TextWithAccelerator("Tab", "Tab", menu.Accel("Tab")),
+				menu.TextWithAccelerator("Return", "Return", menu.Accel("Return")),
+				menu.TextWithAccelerator("Escape", "Escape", menu.Accel("Escape")),
+				menu.TextWithAccelerator("Left", "Left", menu.Accel("Left")),
+				menu.TextWithAccelerator("Right", "Right", menu.Accel("Right")),
+				menu.TextWithAccelerator("Up", "Up", menu.Accel("Up")),
+				menu.TextWithAccelerator("Down", "Down", menu.Accel("Down")),
+				menu.TextWithAccelerator("Space", "Space", menu.Accel("Space")),
+				menu.TextWithAccelerator("Delete", "Delete", menu.Accel("Delete")),
+				menu.TextWithAccelerator("Home", "Home", menu.Accel("Home")),
+				menu.TextWithAccelerator("End", "End", menu.Accel("End")),
+				menu.TextWithAccelerator("Page Up", "Page Up", menu.Accel("Page Up")),
+				menu.TextWithAccelerator("Page Down", "Page Down", menu.Accel("Page Down")),
+			}),
 			&menu.MenuItem{
 				Label:       "Disabled Menu",
 				Type:        menu.TextType,
