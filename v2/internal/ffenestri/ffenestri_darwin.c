@@ -1309,6 +1309,124 @@ id processAcceleratorKey(const char *key) {
   if( STREQ(key, "Page Down") ) {
     return strunicode(0x21df);
   }
+  if( STREQ(key, "F1") ) {
+    return strunicode(0xf704);
+  }
+  if( STREQ(key, "F2") ) {
+    return strunicode(0xf705);
+  }
+  if( STREQ(key, "F3") ) {
+    return strunicode(0xf706);
+  }
+  if( STREQ(key, "F4") ) {
+    return strunicode(0xf707);
+  }
+  if( STREQ(key, "F5") ) {
+    return strunicode(0xf708);
+  }
+  if( STREQ(key, "F6") ) {
+    return strunicode(0xf709);
+  }
+  if( STREQ(key, "F7") ) {
+    return strunicode(0xf70a);
+  }
+  if( STREQ(key, "F8") ) {
+    return strunicode(0xf70b);
+  }
+  if( STREQ(key, "F9") ) {
+    return strunicode(0xf70c);
+  }
+  if( STREQ(key, "F10") ) {
+    return strunicode(0xf70d);
+  }
+  if( STREQ(key, "F11") ) {
+    return strunicode(0xf70e);
+  }
+  if( STREQ(key, "F12") ) {
+    return strunicode(0xf70f);
+  }
+  if( STREQ(key, "F13") ) {
+    return strunicode(0xf710);
+  }
+  if( STREQ(key, "F14") ) {
+    return strunicode(0xf711);
+  }
+  if( STREQ(key, "F15") ) {
+    return strunicode(0xf712);
+  }
+  if( STREQ(key, "F16") ) {
+    return strunicode(0xf713);
+  }
+  if( STREQ(key, "F17") ) {
+    return strunicode(0xf714);
+  }
+  if( STREQ(key, "F18") ) {
+    return strunicode(0xf715);
+  }
+  if( STREQ(key, "F19") ) {
+    return strunicode(0xf716);
+  }
+  if( STREQ(key, "F20") ) {
+    return strunicode(0xf717);
+  }
+  if( STREQ(key, "F21") ) {
+    return strunicode(0xf718);
+  }
+  if( STREQ(key, "F22") ) {
+    return strunicode(0xf719);
+  }
+  if( STREQ(key, "F23") ) {
+    return strunicode(0xf71a);
+  }
+  if( STREQ(key, "F24") ) {
+    return strunicode(0xf71b);
+  }
+  if( STREQ(key, "F25") ) {
+    return strunicode(0xf71c);
+  }
+  if( STREQ(key, "F26") ) {
+    return strunicode(0xf71d);
+  }
+  if( STREQ(key, "F27") ) {
+    return strunicode(0xf71e);
+  }
+  if( STREQ(key, "F28") ) {
+    return strunicode(0xf71f);
+  }
+  if( STREQ(key, "F29") ) {
+    return strunicode(0xf720);
+  }
+  if( STREQ(key, "F30") ) {
+    return strunicode(0xf721);
+  }
+  if( STREQ(key, "F31") ) {
+    return strunicode(0xf722);
+  }
+  if( STREQ(key, "F32") ) {
+    return strunicode(0xf723);
+  }
+  if( STREQ(key, "F33") ) {
+    return strunicode(0xf724);
+  }
+  if( STREQ(key, "F34") ) {
+    return strunicode(0xf725);
+  }
+  if( STREQ(key, "F35") ) {
+    return strunicode(0xf726);
+  }
+  if( STREQ(key, "Insert") ) {
+    return strunicode(0xf727);
+  }
+  if( STREQ(key, "PrintScreen") ) {
+    return strunicode(0xf72e);
+  }
+  if( STREQ(key, "ScrollLock") ) {
+    return strunicode(0xf72f);
+  }
+  if( STREQ(key, "NumLock") ) {
+    return strunicode(0xf739);
+  }
+
   return str(key);
 }
 
