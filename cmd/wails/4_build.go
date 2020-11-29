@@ -147,13 +147,13 @@ func init() {
 
 		// Install deps
 		if projectOptions.FrontEnd != nil {
-			err = cmd.InstallFrontendDeps(projectDir, projectOptions, forceRebuild, "build")
+			err = cmd.InstallFrontendDeps(projectOptions, forceRebuild, "build")
 			if err != nil {
 				return err
 			}
 
 			// Ensure that runtime init.js is the production version
-			err = cmd.InstallProdRuntime(projectDir, projectOptions)
+			err = cmd.InstallProdRuntime(projectOptions)
 			if err != nil {
 				return err
 			}

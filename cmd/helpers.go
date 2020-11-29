@@ -440,7 +440,7 @@ func CheckIfInstalled(application string) (err error) {
 }
 
 // InstallFrontendDeps attempts to install the frontend dependencies based on the given options
-func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forceRebuild bool, caller string) error {
+func InstallFrontendDeps(projectOptions *ProjectOptions, forceRebuild bool, caller string) error {
 
 	// Install frontend deps
 	err := os.Chdir(projectOptions.FrontEnd.Dir)
@@ -517,7 +517,7 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	}
 
 	// Install the runtime
-	err = InstallRuntime(caller, projectDir, projectOptions)
+	err = InstallRuntime(caller, projectOptions)
 	if err != nil {
 		return err
 	}
@@ -531,16 +531,16 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 }
 
 // InstallRuntime installs the correct runtime for the type of build
-func InstallRuntime(caller string, projectDir string, projectOptions *ProjectOptions) error {
+func InstallRuntime(caller string, projectOptions *ProjectOptions) error {
 	if caller == "build" {
-		return InstallProdRuntime(projectDir, projectOptions)
+		return InstallProdRuntime(projectOptions)
 	}
 
-	return InstallBridge(projectDir, projectOptions)
+	return InstallBridge(projectOptions)
 }
 
 // InstallBridge installs the relevant bridge javascript library
-func InstallBridge(projectDir string, projectOptions *ProjectOptions) error {
+func InstallBridge(projectOptions *ProjectOptions) error {
 	bridgeFileData := mewn.String("../runtime/assets/bridge.js")
 	bridgeFileTarget := filepath.Join(projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
 	err := fs.CreateFile(bridgeFileTarget, []byte(bridgeFileData))
@@ -548,7 +548,7 @@ func InstallBridge(projectDir string, projectOptions *ProjectOptions) error {
 }
 
 // InstallProdRuntime installs the production runtime
-func InstallProdRuntime(projectDir string, projectOptions *ProjectOptions) error {
+func InstallProdRuntime(projectOptions *ProjectOptions) error {
 	prodInit := mewn.String("../runtime/js/runtime/init.js")
 	bridgeFileTarget := filepath.Join(projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
 	err := fs.CreateFile(bridgeFileTarget, []byte(prodInit))

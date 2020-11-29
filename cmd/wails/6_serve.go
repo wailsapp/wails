@@ -57,11 +57,8 @@ func init() {
 		projectOptions.Verbose = verbose
 		projectOptions.Platform = runtime.GOOS
 
-		// Save project directory
-		projectDir := fs.Cwd()
-
 		// Install the bridge library
-		err = cmd.InstallBridge(projectDir, projectOptions)
+		err = cmd.InstallBridge(projectOptions)
 		if err != nil {
 			return err
 		}
