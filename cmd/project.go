@@ -31,7 +31,7 @@ type author struct {
 }
 
 type frontend struct {
-	Dir     string `json:"dir"`
+	Dir     string `json:"dir"` //Absolute path
 	Install string `json:"install"`
 	Build   string `json:"build"`
 	Bridge  string `json:"bridge"`
@@ -165,8 +165,8 @@ type ProjectOptions struct {
 	Architecture           string
 	LdFlags                string
 	GoPath                 string
-	ModuleRoot             string
-	MainPackage            string
+	ModuleRoot             string //Absolute path
+	MainPackage            string //Absolute path
 	UseFirebug             bool
 
 	// Supported platforms
