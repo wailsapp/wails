@@ -14,7 +14,7 @@
 #define s(str) sel_registerName(str)
 #define u(str) sel_getUid(str)
 #define str(input) msg(c("NSString"), s("stringWithUTF8String:"), input)
-#define strunicode(input) msg(c("NSString"), s("stringWithFormat:"), str("%C"), input)
+#define strunicode(input) msg(c("NSString"), s("stringWithFormat:"), str("%C"), (unsigned short)input)
 #define cstr(input) (const char *)msg(input, s("UTF8String"))
 #define url(input) msg(c("NSURL"), s("fileURLWithPath:"), str(input))
 
@@ -22,7 +22,7 @@
 #define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("frame"))
 #define GET_BOUNDS(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("bounds"))
 
-#define STREQ(a,b) strncmp(a, b, strlen(b)) == 0
+#define STREQ(a,b) strcmp(a, b) == 0
 #define STRCOPY(a) concat(a, "")
 
 #define ON_MAIN_THREAD(str) dispatch( ^{ str; } )
