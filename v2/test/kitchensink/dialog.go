@@ -1,10 +1,7 @@
 package main
 
 import (
-	"fmt"
-
 	wails "github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -17,20 +14,6 @@ type Dialog struct {
 func (l *Dialog) WailsInit(runtime *wails.Runtime) error {
 	// Perform your setup here
 	l.runtime = runtime
-
-	// Setup Menu Listeners
-	l.runtime.Menu.On("hello", func(m *menu.MenuItem) {
-		fmt.Printf("The '%s' menu was clicked\n", m.Label)
-	})
-	l.runtime.Menu.On("checkbox-menu", func(m *menu.MenuItem) {
-		fmt.Printf("The '%s' menu was clicked\n", m.Label)
-		fmt.Printf("It is now %v\n", m.Checked)
-		// m.Checked = false
-		// runtime.Menu.Update()
-	})
-	l.runtime.Menu.On("😀option-1", func(m *menu.MenuItem) {
-		fmt.Printf("We can use UTF-8 IDs: %s\n", m.Label)
-	})
 	return nil
 }
 

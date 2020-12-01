@@ -32,6 +32,7 @@ func main() {
 	app.Bind(&System{})
 	app.Bind(&Dialog{})
 	app.Bind(&Window{})
+	app.Bind(&Menu{})
 
 	app.Run()
 }
