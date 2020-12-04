@@ -9,16 +9,19 @@ import (
 // Menu defines all Menu related operations
 type Menu interface {
 	On(menuID string, callback func(*menu.MenuItem))
+	Update()
 }
 
 type menuRuntime struct {
-	bus *servicebus.ServiceBus
+	bus  *servicebus.ServiceBus
+	menu *menu.Menu
 }
 
 // newMenu creates a new Menu struct
-func newMenu(bus *servicebus.ServiceBus) Menu {
+func newMenu(bus *servicebus.ServiceBus, menu *menu.Menu) Menu {
 	return &menuRuntime{
-		bus: bus,
+		bus:  bus,
+		menu: menu,
 	}
 }
 
@@ -28,4 +31,8 @@ func (m *menuRuntime) On(menuID string, callback func(*menu.MenuItem)) {
 		MenuID:   menuID,
 		Callback: callback,
 	})
+}
+
+func (m *menuRuntime) Update() {
+	m.bus.Publish("menu:update", m.menu)
 }

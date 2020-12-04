@@ -1,6 +1,9 @@
 package runtime
 
-import "github.com/wailsapp/wails/v2/internal/servicebus"
+import (
+	"github.com/wailsapp/wails/v2/internal/servicebus"
+	"github.com/wailsapp/wails/v2/pkg/menu"
+)
 
 // Runtime is a means for the user to interact with the application at runtime
 type Runtime struct {
@@ -16,14 +19,14 @@ type Runtime struct {
 }
 
 // New creates a new runtime
-func New(serviceBus *servicebus.ServiceBus) *Runtime {
+func New(serviceBus *servicebus.ServiceBus, menu *menu.Menu) *Runtime {
 	result := &Runtime{
 		Browser: newBrowser(),
 		Events:  newEvents(serviceBus),
 		Window:  newWindow(serviceBus),
 		Dialog:  newDialog(serviceBus),
 		System:  newSystem(serviceBus),
-		Menu:    newMenu(serviceBus),
+		Menu:    newMenu(serviceBus, menu),
 		Log:     newLog(serviceBus),
 		bus:     serviceBus,
 	}

@@ -2,6 +2,7 @@ package messagedispatcher
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher/message"
@@ -30,6 +31,7 @@ type Client interface {
 	WindowUnFullscreen()
 	WindowSetColour(colour int)
 	DarkModeEnabled(callbackID string)
+	UpdateMenu(menu *menu.Menu)
 }
 
 // DispatchClient is what the frontends use to interface with the
@@ -72,14 +74,6 @@ func (d *DispatchClient) DispatchMessage(incomingMessage string) {
 	parsedMessage.ClientID = d.id
 
 	d.logger.Trace("I got a parsedMessage: %+v", parsedMessage)
-
-	// Check error
-	if err != nil {
-		d.logger.Error(err.Error())
-		// Hrm... what do we do with this?
-		d.bus.PublishForTarget("generic:message", incomingMessage, d.id)
-		return
-	}
 
 	// Publish the parsed message
 	d.bus.PublishForTarget(parsedMessage.Topic, parsedMessage.Data, d.id)

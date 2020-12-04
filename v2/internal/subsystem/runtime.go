@@ -2,6 +2,7 @@ package subsystem
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -23,7 +24,7 @@ type Runtime struct {
 }
 
 // NewRuntime creates a new runtime subsystem
-func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger) (*Runtime, error) {
+func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger, menu *menu.Menu) (*Runtime, error) {
 
 	// Register quit channel
 	quitChannel, err := bus.Subscribe("quit")
@@ -41,7 +42,7 @@ func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger) (*Runtime, er
 		quitChannel:    quitChannel,
 		runtimeChannel: runtimeChannel,
 		logger:         logger.CustomLogger("Runtime Subsystem"),
-		runtime:        runtime.New(bus),
+		runtime:        runtime.New(bus, menu),
 	}
 
 	return result, nil
@@ -75,7 +76,8 @@ func (r *Runtime) Start() error {
 				case "browser":
 					err = r.processBrowserMessage(method, runtimeMessage.Data())
 				default:
-					fmt.Errorf("unknown runtime message: %+v", runtimeMessage)
+					err = fmt.Errorf("unknown runtime message: %+v",
+						runtimeMessage)
 				}
 
 				// If we had an error, log it

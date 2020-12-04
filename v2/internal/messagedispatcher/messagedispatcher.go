@@ -2,6 +2,7 @@ package messagedispatcher
 
 import (
 	"encoding/json"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 	"strconv"
 	"strings"
 	"sync"
@@ -22,6 +23,7 @@ type Dispatcher struct {
 	windowChannel <-chan *servicebus.Message
 	dialogChannel <-chan *servicebus.Message
 	systemChannel <-chan *servicebus.Message
+	menuChannel   <-chan *servicebus.Message
 	running       bool
 
 	servicebus *servicebus.ServiceBus
@@ -69,6 +71,11 @@ func New(servicebus *servicebus.ServiceBus, logger *logger.Logger) (*Dispatcher,
 		return nil, err
 	}
 
+	menuChannel, err := servicebus.Subscribe("menu:")
+	if err != nil {
+		return nil, err
+	}
+
 	result := &Dispatcher{
 		servicebus:    servicebus,
 		eventChannel:  eventChannel,
@@ -79,6 +86,7 @@ func New(servicebus *servicebus.ServiceBus, logger *logger.Logger) (*Dispatcher,
 		windowChannel: windowChannel,
 		dialogChannel: dialogChannel,
 		systemChannel: systemChannel,
+		menuChannel:   menuChannel,
 	}
 
 	return result, nil
@@ -108,6 +116,8 @@ func (d *Dispatcher) Start() error {
 				d.processDialogMessage(dialogMessage)
 			case systemMessage := <-d.systemChannel:
 				d.processSystemMessage(systemMessage)
+			case menuMessage := <-d.menuChannel:
+				d.processMenuMessage(menuMessage)
 			}
 		}
 
@@ -177,6 +187,7 @@ func (d *Dispatcher) processCallResult(result *servicebus.Message) {
 	if client == nil {
 		// This is fatal - unknown target!
 		d.logger.Fatal("Unknown target for call result: %+v", result)
+		return
 	}
 
 	d.logger.Trace("Sending message to client %s: R%s", target, result.Data().(string))
@@ -396,4 +407,32 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 		d.logger.Error("Unknown dialog command: %s", command)
 	}
 
+}
+
+func (d *Dispatcher) processMenuMessage(result *servicebus.Message) {
+	splitTopic := strings.Split(result.Topic(), ":")
+	if len(splitTopic) < 2 {
+		d.logger.Error("Invalid menu message : %#v", result.Data())
+		return
+	}
+
+	command := splitTopic[1]
+	switch command {
+	case "update":
+
+		updatedMenu, ok := result.Data().(*menu.Menu)
+		if !ok {
+			d.logger.Error("Invalid data for 'dialog:select:open' : %#v", result.Data())
+			return
+		}
+
+		// TODO: Work out what we mean in a multi window environment...
+		// For now we will just pick the first one
+		for _, client := range d.clients {
+			client.frontend.UpdateMenu(updatedMenu)
+		}
+
+	default:
+		d.logger.Error("Unknown dialog command: %s", command)
+	}
 }

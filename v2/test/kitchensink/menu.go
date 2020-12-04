@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 
 	wails "github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/menu"
@@ -10,6 +11,8 @@ import (
 // Menu struct
 type Menu struct {
 	runtime *wails.Runtime
+
+	dynamicMenuCounter int
 }
 
 // WailsInit is called at application startup
@@ -18,19 +21,30 @@ func (m *Menu) WailsInit(runtime *wails.Runtime) error {
 	m.runtime = runtime
 
 	// Setup Menu Listeners
-	m.runtime.Menu.On("hello", func(m *menu.MenuItem) {
-		fmt.Printf("The '%s' menu was clicked\n", m.Label)
+	m.runtime.Menu.On("hello", func(mi *menu.MenuItem) {
+		fmt.Printf("The '%s' menu was clicked\n", mi.Label)
 	})
-	m.runtime.Menu.On("checkbox-menu", func(m *menu.MenuItem) {
-		fmt.Printf("The '%s' menu was clicked\n", m.Label)
-		fmt.Printf("It is now %v\n", m.Checked)
-		// m.Checked = false
-		// runtime.Menu.Update()
+	m.runtime.Menu.On("checkbox-menu", func(mi *menu.MenuItem) {
+		fmt.Printf("The '%s' menu was clicked\n", mi.Label)
+		fmt.Printf("It is now %v\n", mi.Checked)
 	})
-	m.runtime.Menu.On("😀option-1", func(m *menu.MenuItem) {
-		fmt.Printf("We can use UTF-8 IDs: %s\n", m.Label)
+	m.runtime.Menu.On("😀option-1", func(mi *menu.MenuItem) {
+		fmt.Printf("We can use UTF-8 IDs: %s\n", mi.Label)
 	})
+
+	// Setup dynamic menus
+	m.runtime.Menu.On("Add Menu Item", m.addMenu)
 	return nil
+}
+
+func (m *Menu) addMenu(mi *menu.MenuItem) {
+	// Get this menu's parent
+	parent := mi.Parent()
+	m.dynamicMenuCounter++
+	menuText := "Dynamic Menu Item " + strconv.Itoa(m.dynamicMenuCounter)
+	parent.Append(menu.Text(menuText, menuText))
+	// 	parent.Append(menu.TextWithAccelerator(menuText, menuText, menu.Accel("[")))
+	m.runtime.Menu.Update()
 }
 
 func createApplicationMenu() *menu.Menu {
@@ -54,6 +68,7 @@ func createApplicationMenu() *menu.Menu {
 		menu.Front(),
 
 		menu.SubMenu("Test Submenu", []*menu.MenuItem{
+			menu.Text("Plain text", "plain text"),
 			menu.SubMenu("Accelerators", []*menu.MenuItem{
 				menu.SubMenu("Modifiers", []*menu.MenuItem{
 					menu.TextWithAccelerator("Shift accelerator", "Shift", menu.ShiftAccel("o")),
@@ -76,9 +91,6 @@ func createApplicationMenu() *menu.Menu {
 					menu.TextWithAccelerator("End", "End", menu.Accel("End")),
 					menu.TextWithAccelerator("Page Up", "Page Up", menu.Accel("Page Up")),
 					menu.TextWithAccelerator("Page Down", "Page Down", menu.Accel("Page Down")),
-					menu.TextWithAccelerator("Insert", "Insert", menu.Accel("Insert")),
-					menu.TextWithAccelerator("PrintScreen", "PrintScreen", menu.Accel("PrintScreen")),
-					menu.TextWithAccelerator("ScrollLock", "ScrollLock", menu.Accel("ScrollLock")),
 					menu.TextWithAccelerator("NumLock", "NumLock", menu.Accel("NumLock")),
 				}),
 				menu.SubMenu("Function Keys", []*menu.MenuItem{
@@ -102,39 +114,28 @@ func createApplicationMenu() *menu.Menu {
 					menu.TextWithAccelerator("F18", "F18", menu.Accel("F18")),
 					menu.TextWithAccelerator("F19", "F19", menu.Accel("F19")),
 					menu.TextWithAccelerator("F20", "F20", menu.Accel("F20")),
-					menu.TextWithAccelerator("F21", "F21", menu.Accel("F21")),
-					menu.TextWithAccelerator("F22", "F22", menu.Accel("F22")),
-					menu.TextWithAccelerator("F23", "F23", menu.Accel("F23")),
-					menu.TextWithAccelerator("F24", "F24", menu.Accel("F24")),
-					menu.TextWithAccelerator("F25", "F25", menu.Accel("F25")),
-					menu.TextWithAccelerator("F26", "F26", menu.Accel("F26")),
-					menu.TextWithAccelerator("F27", "F27", menu.Accel("F27")),
-					menu.TextWithAccelerator("F28", "F28", menu.Accel("F28")),
-					menu.TextWithAccelerator("F29", "F29", menu.Accel("F29")),
-					menu.TextWithAccelerator("F30", "F30", menu.Accel("F30")),
-					menu.TextWithAccelerator("F31", "F31", menu.Accel("F31")),
-					menu.TextWithAccelerator("F32", "F32", menu.Accel("F32")),
-					menu.TextWithAccelerator("F33", "F33", menu.Accel("F33")),
-					menu.TextWithAccelerator("F34", "F34", menu.Accel("F34")),
-					menu.TextWithAccelerator("F35", "F35", menu.Accel("F35")),
 				}),
 				menu.SubMenu("Standard Keys", []*menu.MenuItem{
 					menu.TextWithAccelerator("Backtick", "Backtick", menu.Accel("`")),
 					menu.TextWithAccelerator("Plus", "Plus", menu.Accel("+")),
 				}),
+				menu.SubMenu("Dynamic Menus", []*menu.MenuItem{
+					menu.TextWithAccelerator("Add Menu Item", "Add Menu Item", menu.CmdOrCtrlAccel("+")),
+					menu.Separator(),
+				}),
 			}),
-			&menu.MenuItem{
+			{
 				Label:       "Disabled Menu",
 				Type:        menu.TextType,
 				Accelerator: menu.ComboAccel("p", menu.CmdOrCtrl, menu.Shift),
 				Disabled:    true,
 			},
-			&menu.MenuItem{
+			{
 				Label:  "Hidden Menu",
 				Type:   menu.TextType,
 				Hidden: true,
 			},
-			&menu.MenuItem{
+			{
 				ID:          "checkbox-menu",
 				Label:       "Checkbox Menu",
 				Type:        menu.CheckboxType,

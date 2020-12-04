@@ -78,11 +78,11 @@ func CreateApp(options *options.App) *App {
 func (a *App) Run() error {
 
 	// Setup signal handler
-	signal, err := signal.NewManager(a.servicebus, a.logger)
+	signalsubsystem, err := signal.NewManager(a.servicebus, a.logger)
 	if err != nil {
 		return err
 	}
-	a.signal = signal
+	a.signal = signalsubsystem
 	a.signal.Start()
 
 	// Start the service bus
@@ -90,11 +90,12 @@ func (a *App) Run() error {
 	a.servicebus.Start()
 
 	// Start the runtime
-	runtime, err := subsystem.NewRuntime(a.servicebus, a.logger)
+	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger,
+		a.options.Mac.Menu)
 	if err != nil {
 		return err
 	}
-	a.runtime = runtime
+	a.runtime = runtimesubsystem
 	a.runtime.Start()
 
 	// Application Stores
@@ -102,11 +103,12 @@ func (a *App) Run() error {
 	a.appconfigStore = a.runtime.GoRuntime().Store.New("wails:appconfig", a.options)
 
 	// Start the binding subsystem
-	binding, err := subsystem.NewBinding(a.servicebus, a.logger, a.bindings, a.runtime.GoRuntime())
+	bindingsubsystem, err := subsystem.NewBinding(a.servicebus, a.logger,
+		a.bindings, a.runtime.GoRuntime())
 	if err != nil {
 		return err
 	}
-	a.binding = binding
+	a.binding = bindingsubsystem
 	a.binding.Start()
 
 	// Start the logging subsystem
@@ -145,11 +147,11 @@ func (a *App) Run() error {
 	default:
 		return fmt.Errorf("unsupported OS: %s", goruntime.GOOS)
 	}
-	menu, err := subsystem.NewMenu(platformMenu, a.servicebus, a.logger)
+	menusubsystem, err := subsystem.NewMenu(platformMenu, a.servicebus, a.logger)
 	if err != nil {
 		return err
 	}
-	a.menu = menu
+	a.menu = menusubsystem
 	a.menu.Start()
 
 	// Start the call subsystem

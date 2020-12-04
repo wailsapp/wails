@@ -34,10 +34,13 @@ type Menu struct {
 
 	// logger
 	logger logger.CustomLogger
+
+	// The application menu
+	applicationMenu *menu.Menu
 }
 
 // NewMenu creates a new menu subsystem
-func NewMenu(initialMenu *menu.Menu, bus *servicebus.ServiceBus, logger *logger.Logger) (*Menu, error) {
+func NewMenu(applicationMenu *menu.Menu, bus *servicebus.ServiceBus, logger *logger.Logger) (*Menu, error) {
 
 	// Register quit channel
 	quitChannel, err := bus.Subscribe("quit")
@@ -52,15 +55,16 @@ func NewMenu(initialMenu *menu.Menu, bus *servicebus.ServiceBus, logger *logger.
 	}
 
 	result := &Menu{
-		quitChannel: quitChannel,
-		menuChannel: menuChannel,
-		logger:      logger.CustomLogger("Menu Subsystem"),
-		listeners:   make(map[string][]func(*menu.MenuItem)),
-		menuItems:   make(map[string]*menu.MenuItem),
+		quitChannel:     quitChannel,
+		menuChannel:     menuChannel,
+		logger:          logger.CustomLogger("Menu Subsystem"),
+		listeners:       make(map[string][]func(*menu.MenuItem)),
+		menuItems:       make(map[string]*menu.MenuItem),
+		applicationMenu: applicationMenu,
 	}
 
 	// Build up list of item/id pairs
-	result.processMenu(initialMenu)
+	result.processMenu(applicationMenu)
 
 	return result, nil
 }

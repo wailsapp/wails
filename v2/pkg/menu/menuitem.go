@@ -20,6 +20,27 @@ type MenuItem struct {
 	Checked bool
 	// Submenu contains a list of menu items that will be shown as a submenu
 	SubMenu []*MenuItem `json:"SubMenu,omitempty"`
+
+	// This holds the menu item's parent.
+	parent *MenuItem
+}
+
+// Parent returns the parent of the menu item.
+// If it is a top level menu then it returns nil.
+func (m *MenuItem) Parent() *MenuItem {
+	return m.parent
+}
+
+// Append will attempt to append the given menu item to
+// this item's submenu items. If this menu item is not a
+// submenu, then this method will not add the item and
+// simply return false.
+func (m *MenuItem) Append(item *MenuItem) bool {
+	if m.Type != SubmenuType {
+		return false
+	}
+	m.SubMenu = append(m.SubMenu, item)
+	return true
 }
 
 // Text is a helper to create basic Text menu items
@@ -78,9 +99,16 @@ func CheckboxWithAccelerator(label string, id string, checked bool, accelerator 
 
 // SubMenu is a helper to create Submenus
 func SubMenu(label string, items []*MenuItem) *MenuItem {
-	return &MenuItem{
+	result := &MenuItem{
 		Label:   label,
 		SubMenu: items,
 		Type:    SubmenuType,
 	}
+
+	// Fix up parent pointers
+	for _, item := range items {
+		item.parent = result
+	}
+
+	return result
 }
