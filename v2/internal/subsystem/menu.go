@@ -37,6 +37,9 @@ type Menu struct {
 
 	// The application menu
 	applicationMenu *menu.Menu
+
+	// Service Bus
+	bus *servicebus.ServiceBus
 }
 
 // NewMenu creates a new menu subsystem
@@ -49,7 +52,7 @@ func NewMenu(applicationMenu *menu.Menu, bus *servicebus.ServiceBus, logger *log
 	}
 
 	// Subscribe to menu messages
-	menuChannel, err := bus.Subscribe("menu")
+	menuChannel, err := bus.Subscribe("menu:")
 	if err != nil {
 		return nil, err
 	}
@@ -61,6 +64,7 @@ func NewMenu(applicationMenu *menu.Menu, bus *servicebus.ServiceBus, logger *log
 		listeners:       make(map[string][]func(*menu.MenuItem)),
 		menuItems:       make(map[string]*menu.MenuItem),
 		applicationMenu: applicationMenu,
+		bus:             bus,
 	}
 
 	// Build up list of item/id pairs
@@ -113,13 +117,16 @@ func (m *Menu) Start() error {
 				case "on":
 					listenerDetails := menuMessage.Data().(*message.MenuOnMessage)
 					id := listenerDetails.MenuID
-					// Check we have a menu with that id
-					if m.menuItems[id] == nil {
-						m.logger.Error("cannot register listener for unknown menu id '%s'", id)
-						continue
-					}
-					// We do! Append the callback
 					m.listeners[id] = append(m.listeners[id], listenerDetails.Callback)
+
+				// Make sure we catch any menu updates
+				case "update":
+					updatedMenu := menuMessage.Data().(*menu.Menu)
+					m.processMenu(updatedMenu)
+
+					// Notify frontend of menu change
+					m.bus.Publish("menufrontend:update", updatedMenu)
+
 				default:
 					m.logger.Error("unknown menu message: %+v", menuMessage)
 				}
@@ -133,8 +140,12 @@ func (m *Menu) Start() error {
 	return nil
 }
 
-func (m *Menu) processMenu(menu *menu.Menu) {
-	for _, item := range menu.Items {
+func (m *Menu) processMenu(applicationMenu *menu.Menu) {
+	// Initialise the variables
+	m.menuItems = make(map[string]*menu.MenuItem)
+	m.applicationMenu = applicationMenu
+
+	for _, item := range applicationMenu.Items {
 		m.processMenuItem(item)
 	}
 }

@@ -43,6 +43,53 @@ func (m *MenuItem) Append(item *MenuItem) bool {
 	return true
 }
 
+// Prepend will attempt to prepend the given menu item to
+// this item's submenu items. If this menu item is not a
+// submenu, then this method will not add the item and
+// simply return false.
+func (m *MenuItem) Prepend(item *MenuItem) bool {
+	if m.Type != SubmenuType {
+		return false
+	}
+	m.SubMenu = append([]*MenuItem{item}, m.SubMenu...)
+	return true
+}
+
+func (m *MenuItem) getByID(id string) *MenuItem {
+
+	// If I have the ID return me!
+	if m.ID == id {
+		return m
+	}
+
+	// Check submenus
+	for _, submenu := range m.SubMenu {
+		result := submenu.getByID(id)
+		if result != nil {
+			return result
+		}
+	}
+
+	return nil
+}
+
+func (m *MenuItem) removeByID(id string) bool {
+
+	for index, item := range m.SubMenu {
+		if item.ID == id {
+			m.SubMenu = append(m.SubMenu[:index], m.SubMenu[index+1:]...)
+			return true
+		}
+		if item.Type == SubmenuType {
+			result := item.removeByID(id)
+			if result == true {
+				return result
+			}
+		}
+	}
+	return false
+}
+
 // Text is a helper to create basic Text menu items
 func Text(label string, id string) *MenuItem {
 	return TextWithAccelerator(label, id, nil)

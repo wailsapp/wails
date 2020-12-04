@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"sync"
 
 	wails "github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/menu"
@@ -13,6 +14,7 @@ type Menu struct {
 	runtime *wails.Runtime
 
 	dynamicMenuCounter int
+	lock               sync.Mutex
 }
 
 // WailsInit is called at application startup
@@ -37,12 +39,74 @@ func (m *Menu) WailsInit(runtime *wails.Runtime) error {
 	return nil
 }
 
+func (m *Menu) incrementcounter() int {
+	m.dynamicMenuCounter++
+	return m.dynamicMenuCounter
+}
+
+func (m *Menu) decrementcounter() int {
+	m.dynamicMenuCounter--
+	return m.dynamicMenuCounter
+}
+
 func (m *Menu) addMenu(mi *menu.MenuItem) {
+
+	// Lock because this method will be called in a gorouting
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
 	// Get this menu's parent
 	parent := mi.Parent()
-	m.dynamicMenuCounter++
-	menuText := "Dynamic Menu Item " + strconv.Itoa(m.dynamicMenuCounter)
+	counter := m.incrementcounter()
+	menuText := "Dynamic Menu Item " + strconv.Itoa(counter)
 	parent.Append(menu.Text(menuText, menuText))
+	// 	parent.Append(menu.TextWithAccelerator(menuText, menuText, menu.Accel("[")))
+
+	// If this is the first dynamic menu added, let's add a remove menu item
+	if counter == 1 {
+		removeMenu := menu.TextWithAccelerator("Remove "+menuText,
+			"Remove Last Item", menu.CmdOrCtrlAccel("-"))
+		parent.Prepend(removeMenu)
+		m.runtime.Menu.On("Remove Last Item", m.removeMenu)
+	} else {
+		removeMenu := m.runtime.Menu.GetByID("Remove Last Item")
+		// Test if the remove menu hasn't already been removed in another thread
+		if removeMenu != nil {
+			removeMenu.Label = "Remove " + menuText
+		}
+	}
+	m.runtime.Menu.Update()
+}
+
+func (m *Menu) removeMenu(_ *menu.MenuItem) {
+
+	// Lock because this method will be called in a goroutine
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	// Get the id of the last dynamic menu
+	menuID := "Dynamic Menu Item " + strconv.Itoa(m.dynamicMenuCounter)
+
+	// Remove the last menu item by ID
+	m.runtime.Menu.RemoveByID(menuID)
+
+	// Update the counter
+	counter := m.decrementcounter()
+
+	// If we deleted the last dynamic menu, remove the "Remove Last Item" menu
+	if counter == 0 {
+		m.runtime.Menu.RemoveByID("Remove Last Item")
+	} else {
+		// Update label
+		menuText := "Dynamic Menu Item " + strconv.Itoa(counter)
+		removeMenu := m.runtime.Menu.GetByID("Remove Last Item")
+		// Test if the remove menu hasn't already been removed in another thread
+		if removeMenu == nil {
+			return
+		}
+		removeMenu.Label = "Remove " + menuText
+	}
+
 	// 	parent.Append(menu.TextWithAccelerator(menuText, menuText, menu.Accel("[")))
 	m.runtime.Menu.Update()
 }
@@ -119,10 +183,10 @@ func createApplicationMenu() *menu.Menu {
 					menu.TextWithAccelerator("Backtick", "Backtick", menu.Accel("`")),
 					menu.TextWithAccelerator("Plus", "Plus", menu.Accel("+")),
 				}),
-				menu.SubMenu("Dynamic Menus", []*menu.MenuItem{
-					menu.TextWithAccelerator("Add Menu Item", "Add Menu Item", menu.CmdOrCtrlAccel("+")),
-					menu.Separator(),
-				}),
+			}),
+			menu.SubMenu("Dynamic Menus", []*menu.MenuItem{
+				menu.TextWithAccelerator("Add Menu Item", "Add Menu Item", menu.CmdOrCtrlAccel("+")),
+				menu.Separator(),
 			}),
 			{
 				Label:       "Disabled Menu",
@@ -136,12 +200,13 @@ func createApplicationMenu() *menu.Menu {
 				Hidden: true,
 			},
 			{
-				ID:          "checkbox-menu",
-				Label:       "Checkbox Menu",
+				ID:          "checkbox-menu 1",
+				Label:       "Checkbox Menu 1",
 				Type:        menu.CheckboxType,
 				Accelerator: menu.CmdOrCtrlAccel("l"),
 				Checked:     true,
 			},
+			menu.Checkbox("Checkbox Menu 2", "checkbox-menu 2", false),
 			menu.Separator(),
 			menu.Radio("😀 Option 1", "😀option-1", true),
 			menu.Radio("😺 Option 2", "option-2", false),

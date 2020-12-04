@@ -10,6 +10,8 @@ import (
 type Menu interface {
 	On(menuID string, callback func(*menu.MenuItem))
 	Update()
+	GetByID(menuID string) *menu.MenuItem
+	RemoveByID(id string) bool
 }
 
 type menuRuntime struct {
@@ -35,4 +37,12 @@ func (m *menuRuntime) On(menuID string, callback func(*menu.MenuItem)) {
 
 func (m *menuRuntime) Update() {
 	m.bus.Publish("menu:update", m.menu)
+}
+
+func (m *menuRuntime) GetByID(menuID string) *menu.MenuItem {
+	return m.menu.GetByID(menuID)
+}
+
+func (m *menuRuntime) RemoveByID(id string) bool {
+	return m.menu.RemoveByID(id)
 }

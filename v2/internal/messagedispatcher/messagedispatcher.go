@@ -71,7 +71,7 @@ func New(servicebus *servicebus.ServiceBus, logger *logger.Logger) (*Dispatcher,
 		return nil, err
 	}
 
-	menuChannel, err := servicebus.Subscribe("menu:")
+	menuChannel, err := servicebus.Subscribe("menufrontend:")
 	if err != nil {
 		return nil, err
 	}
@@ -422,7 +422,8 @@ func (d *Dispatcher) processMenuMessage(result *servicebus.Message) {
 
 		updatedMenu, ok := result.Data().(*menu.Menu)
 		if !ok {
-			d.logger.Error("Invalid data for 'dialog:select:open' : %#v", result.Data())
+			d.logger.Error("Invalid data for 'menufrontend:update' : %#v",
+				result.Data())
 			return
 		}
 
@@ -433,6 +434,6 @@ func (d *Dispatcher) processMenuMessage(result *servicebus.Message) {
 		}
 
 	default:
-		d.logger.Error("Unknown dialog command: %s", command)
+		d.logger.Error("Unknown menufrontend command: %s", command)
 	}
 }
