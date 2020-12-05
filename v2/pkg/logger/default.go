@@ -13,44 +13,37 @@ func NewDefaultLogger() Logger {
 }
 
 // Print works like Sprintf.
-func (l *DefaultLogger) Print(message string) error {
+func (l *DefaultLogger) Print(message string) {
 	println(message)
-	return nil
 }
 
 // Trace level logging. Works like Sprintf.
-func (l *DefaultLogger) Trace(message string) error {
+func (l *DefaultLogger) Trace(message string) {
 	println("TRACE | " + message)
-	return nil
 }
 
 // Debug level logging. Works like Sprintf.
-func (l *DefaultLogger) Debug(message string) error {
+func (l *DefaultLogger) Debug(message string) {
 	println("DEBUG | " + message)
-	return nil
 }
 
 // Info level logging. Works like Sprintf.
-func (l *DefaultLogger) Info(message string) error {
+func (l *DefaultLogger) Info(message string) {
 	println("INFO  | " + message)
-	return nil
 }
 
 // Warning level logging. Works like Sprintf.
-func (l *DefaultLogger) Warning(message string) error {
+func (l *DefaultLogger) Warning(message string) {
 	println("WARN  | " + message)
-	return nil
 }
 
 // Error level logging. Works like Sprintf.
-func (l *DefaultLogger) Error(message string) error {
+func (l *DefaultLogger) Error(message string) {
 	println("ERROR | " + message)
-	return nil
 }
 
 // Fatal level logging. Works like Sprintf.
-func (l *DefaultLogger) Fatal(message string) error {
+func (l *DefaultLogger) Fatal(message string) {
 	println("FATAL | " + message)
 	os.Exit(1)
-	return nil
 }
