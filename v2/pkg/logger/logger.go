@@ -23,11 +23,11 @@ const (
 // Logger specifies the methods required to attach
 // a logger to a Wails application
 type Logger interface {
-	Print(message string) error
-	Trace(message string) error
-	Debug(message string) error
-	Info(message string) error
-	Warning(message string) error
-	Error(message string) error
-	Fatal(message string) error
+	Print(message string)
+	Trace(message string)
+	Debug(message string)
+	Info(message string)
+	Warning(message string)
+	Error(message string)
+	Fatal(message string)
 }
