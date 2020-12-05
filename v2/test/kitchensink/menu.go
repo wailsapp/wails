@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"strconv"
 	"sync"
 
@@ -13,8 +14,10 @@ import (
 type Menu struct {
 	runtime *wails.Runtime
 
-	dynamicMenuCounter int
-	lock               sync.Mutex
+	dynamicMenuCounter        int
+	lock                      sync.Mutex
+	dynamicMenuItems          map[string]*menu.MenuItem
+	anotherDynamicMenuCounter int
 }
 
 // WailsInit is called at application startup
@@ -33,6 +36,9 @@ func (m *Menu) WailsInit(runtime *wails.Runtime) error {
 	m.runtime.Menu.On("😀option-1", func(mi *menu.MenuItem) {
 		fmt.Printf("We can use UTF-8 IDs: %s\n", mi.Label)
 	})
+
+	// Create dynamic menu items 2 submenu
+	m.createDynamicMenuTwo()
 
 	// Setup dynamic menus
 	m.runtime.Menu.On("Add Menu Item", m.addMenu)
@@ -111,6 +117,102 @@ func (m *Menu) removeMenu(_ *menu.MenuItem) {
 	m.runtime.Menu.Update()
 }
 
+func (m *Menu) createDynamicMenuTwo() {
+
+	// Create our submenu
+	dm2 := menu.SubMenu("Dynamic Menus 2", []*menu.MenuItem{
+		menu.TextWithAccelerator("Insert Before Random Menu Item",
+			"Insert Before Random", menu.CmdOrCtrlAccel("]")),
+		menu.TextWithAccelerator("Insert After Random Menu Item",
+			"Insert After Random", menu.CmdOrCtrlAccel("[")),
+		menu.Separator(),
+	})
+
+	m.runtime.Menu.On("Insert Before Random", m.insertBeforeRandom)
+	m.runtime.Menu.On("Insert After Random", m.insertAfterRandom)
+
+	// Initialise out map
+	m.dynamicMenuItems = make(map[string]*menu.MenuItem)
+
+	// Create some random menu items
+	m.anotherDynamicMenuCounter = 5
+	for index := 0; index < m.anotherDynamicMenuCounter; index++ {
+		text := "Other Dynamic Menu Item " + strconv.Itoa(index+1)
+		item := menu.Text(text, text)
+		m.dynamicMenuItems[text] = item
+		dm2.Append(item)
+	}
+
+	// Insert this menu after Dynamic Menu Item 1
+	dm1 := m.runtime.Menu.GetByID("Dynamic Menus 1")
+	dm1.InsertAfter(dm2)
+	m.runtime.Menu.Update()
+}
+
+func (m *Menu) insertBeforeRandom(_ *menu.MenuItem) {
+
+	// Lock because this method will be called in a goroutine
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	// Pick a random menu
+	var randomItemID string
+	var count int
+	var random = rand.Intn(len(m.dynamicMenuItems))
+	for randomItemID = range m.dynamicMenuItems {
+		if count == random {
+			break
+		}
+		count++
+	}
+	m.anotherDynamicMenuCounter++
+	text := "Other Dynamic Menu Item " + strconv.Itoa(
+		m.anotherDynamicMenuCounter+1)
+	newItem := menu.Text(text, text)
+	m.dynamicMenuItems[text] = newItem
+
+	item := m.runtime.Menu.GetByID(randomItemID)
+
+	m.runtime.Log.Info(fmt.Sprintf(
+		"Inserting menu item '%s' before menu item '%s'", newItem.Label,
+		item.Label))
+
+	item.InsertBefore(newItem)
+	m.runtime.Menu.Update()
+}
+
+func (m *Menu) insertAfterRandom(_ *menu.MenuItem) {
+
+	// Lock because this method will be called in a goroutine
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	// Pick a random menu
+	var randomItemID string
+	var count int
+	var random = rand.Intn(len(m.dynamicMenuItems))
+	for randomItemID = range m.dynamicMenuItems {
+		if count == random {
+			break
+		}
+		count++
+	}
+	m.anotherDynamicMenuCounter++
+	text := "Other Dynamic Menu Item " + strconv.Itoa(
+		m.anotherDynamicMenuCounter+1)
+	newItem := menu.Text(text, text)
+
+	item := m.runtime.Menu.GetByID(randomItemID)
+	m.dynamicMenuItems[text] = newItem
+
+	m.runtime.Log.Info(fmt.Sprintf(
+		"Inserting menu item '%s' after menu item '%s'", newItem.Label,
+		item.Label))
+
+	item.InsertAfter(newItem)
+	m.runtime.Menu.Update()
+}
+
 func createApplicationMenu() *menu.Menu {
 
 	// Create menu
@@ -184,7 +286,7 @@ func createApplicationMenu() *menu.Menu {
 					menu.TextWithAccelerator("Plus", "Plus", menu.Accel("+")),
 				}),
 			}),
-			menu.SubMenu("Dynamic Menus", []*menu.MenuItem{
+			menu.SubMenuWithID("Dynamic Menus 1", "Dynamic Menus 1", []*menu.MenuItem{
 				menu.TextWithAccelerator("Add Menu Item", "Add Menu Item", menu.CmdOrCtrlAccel("+")),
 				menu.Separator(),
 			}),

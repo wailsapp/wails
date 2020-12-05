@@ -46,67 +46,60 @@ func (l *Logger) SetLogLevel(level LogLevel) {
 
 // Writeln writes directly to the output with no log level
 // Appends a carriage return to the message
-func (l *Logger) Writeln(message string) error {
-	return l.output.Print(message)
+func (l *Logger) Writeln(message string) {
+	l.output.Print(message)
 }
 
 // Write writes directly to the output with no log level
-func (l *Logger) Write(message string) error {
-	return l.output.Print(message)
+func (l *Logger) Write(message string) {
+	l.output.Print(message)
 }
 
 // Print writes directly to the output with no log level
 // Appends a carriage return to the message
-func (l *Logger) Print(message string) error {
-	return l.Write(message)
+func (l *Logger) Print(message string) {
+	l.Write(message)
 }
 
 // Trace level logging. Works like Sprintf.
-func (l *Logger) Trace(format string, args ...interface{}) error {
+func (l *Logger) Trace(format string, args ...interface{}) {
 	if l.logLevel <= logger.TRACE {
-		return l.output.Trace(fmt.Sprintf(format, args...))
+		l.output.Trace(fmt.Sprintf(format, args...))
 	}
-	return nil
 }
 
 // Debug level logging. Works like Sprintf.
-func (l *Logger) Debug(format string, args ...interface{}) error {
+func (l *Logger) Debug(format string, args ...interface{}) {
 	if l.logLevel <= logger.DEBUG {
-		return l.output.Debug(fmt.Sprintf(format, args...))
+		l.output.Debug(fmt.Sprintf(format, args...))
 	}
-	return nil
 }
 
 // Info level logging. Works like Sprintf.
-func (l *Logger) Info(format string, args ...interface{}) error {
+func (l *Logger) Info(format string, args ...interface{}) {
 	if l.logLevel <= logger.INFO {
-		return l.output.Info(fmt.Sprintf(format, args...))
+		l.output.Info(fmt.Sprintf(format, args...))
 	}
-	return nil
+
 }
 
 // Warning level logging. Works like Sprintf.
-func (l *Logger) Warning(format string, args ...interface{}) error {
+func (l *Logger) Warning(format string, args ...interface{}) {
 	if l.logLevel <= logger.WARNING {
-		return l.output.Warning(fmt.Sprintf(format, args...))
+		l.output.Warning(fmt.Sprintf(format, args...))
 	}
-	return nil
 }
 
 // Error level logging. Works like Sprintf.
-func (l *Logger) Error(format string, args ...interface{}) error {
+func (l *Logger) Error(format string, args ...interface{}) {
 	if l.logLevel <= logger.ERROR {
-		return l.output.Error(fmt.Sprintf(format, args...))
+		l.output.Error(fmt.Sprintf(format, args...))
 	}
-	return nil
+
 }
 
 // Fatal level logging. Works like Sprintf.
 func (l *Logger) Fatal(format string, args ...interface{}) {
-	err := l.output.Fatal(fmt.Sprintf(format, args...))
-	// Not much we can do but print it out before exiting
-	if err != nil {
-		println(err.Error())
-	}
+	l.output.Fatal(fmt.Sprintf(format, args...))
 	os.Exit(1)
 }

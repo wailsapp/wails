@@ -7,25 +7,25 @@ import (
 // CustomLogger defines what a user can do with a logger
 type CustomLogger interface {
 	// Writeln writes directly to the output with no log level plus line ending
-	Writeln(message string) error
+	Writeln(message string)
 
 	// Write writes directly to the output with no log level
-	Write(message string) error
+	Write(message string)
 
 	// Trace level logging. Works like Sprintf.
-	Trace(format string, args ...interface{}) error
+	Trace(format string, args ...interface{})
 
 	// Debug level logging. Works like Sprintf.
-	Debug(format string, args ...interface{}) error
+	Debug(format string, args ...interface{})
 
 	// Info level logging. Works like Sprintf.
-	Info(format string, args ...interface{}) error
+	Info(format string, args ...interface{})
 
 	// Warning level logging. Works like Sprintf.
-	Warning(format string, args ...interface{}) error
+	Warning(format string, args ...interface{})
 
 	// Error level logging. Works like Sprintf.
-	Error(format string, args ...interface{}) error
+	Error(format string, args ...interface{})
 
 	// Fatal level logging. Works like Sprintf.
 	Fatal(format string, args ...interface{})
@@ -49,43 +49,43 @@ func newcustomLogger(logger *Logger, name string) *customLogger {
 
 // Writeln writes directly to the output with no log level
 // Appends a carriage return to the message
-func (l *customLogger) Writeln(message string) error {
-	return l.logger.Writeln(message)
+func (l *customLogger) Writeln(message string) {
+	l.logger.Writeln(message)
 }
 
 // Write writes directly to the output with no log level
-func (l *customLogger) Write(message string) error {
-	return l.logger.Write(message)
+func (l *customLogger) Write(message string) {
+	l.logger.Write(message)
 }
 
 // Trace level logging. Works like Sprintf.
-func (l *customLogger) Trace(format string, args ...interface{}) error {
+func (l *customLogger) Trace(format string, args ...interface{}) {
 	format = fmt.Sprintf("%s | %s", l.name, format)
-	return l.logger.Trace(format, args...)
+	l.logger.Trace(format, args...)
 }
 
 // Debug level logging. Works like Sprintf.
-func (l *customLogger) Debug(format string, args ...interface{}) error {
+func (l *customLogger) Debug(format string, args ...interface{}) {
 	format = fmt.Sprintf("%s | %s", l.name, format)
-	return l.logger.Debug(format, args...)
+	l.logger.Debug(format, args...)
 }
 
 // Info level logging. Works like Sprintf.
-func (l *customLogger) Info(format string, args ...interface{}) error {
+func (l *customLogger) Info(format string, args ...interface{}) {
 	format = fmt.Sprintf("%s | %s", l.name, format)
-	return l.logger.Info(format, args...)
+	l.logger.Info(format, args...)
 }
 
 // Warning level logging. Works like Sprintf.
-func (l *customLogger) Warning(format string, args ...interface{}) error {
+func (l *customLogger) Warning(format string, args ...interface{}) {
 	format = fmt.Sprintf("%s | %s", l.name, format)
-	return l.logger.Warning(format, args...)
+	l.logger.Warning(format, args...)
 }
 
 // Error level logging. Works like Sprintf.
-func (l *customLogger) Error(format string, args ...interface{}) error {
+func (l *customLogger) Error(format string, args ...interface{}) {
 	format = fmt.Sprintf("%s | %s", l.name, format)
-	return l.logger.Error(format, args...)
+	l.logger.Error(format, args...)
 
 }
 

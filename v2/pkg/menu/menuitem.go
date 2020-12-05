@@ -36,9 +36,10 @@ func (m *MenuItem) Parent() *MenuItem {
 // submenu, then this method will not add the item and
 // simply return false.
 func (m *MenuItem) Append(item *MenuItem) bool {
-	if m.Type != SubmenuType {
+	if !m.isSubMenu() {
 		return false
 	}
+	item.parent = m
 	m.SubMenu = append(m.SubMenu, item)
 	return true
 }
@@ -48,9 +49,10 @@ func (m *MenuItem) Append(item *MenuItem) bool {
 // submenu, then this method will not add the item and
 // simply return false.
 func (m *MenuItem) Prepend(item *MenuItem) bool {
-	if m.Type != SubmenuType {
+	if !m.isSubMenu() {
 		return false
 	}
+	item.parent = m
 	m.SubMenu = append([]*MenuItem{item}, m.SubMenu...)
 	return true
 }
@@ -80,7 +82,7 @@ func (m *MenuItem) removeByID(id string) bool {
 			m.SubMenu = append(m.SubMenu[:index], m.SubMenu[index+1:]...)
 			return true
 		}
-		if item.Type == SubmenuType {
+		if item.isSubMenu() {
 			result := item.removeByID(id)
 			if result == true {
 				return result
@@ -88,6 +90,120 @@ func (m *MenuItem) removeByID(id string) bool {
 		}
 	}
 	return false
+}
+
+// InsertAfter attempts to add the given item after this item in the parent
+// menu. If there is no parent menu (we are a top level menu) then false is
+// returned
+func (m *MenuItem) InsertAfter(item *MenuItem) bool {
+
+	// We need to find my parent
+	if m.parent == nil {
+		return false
+	}
+
+	// Get my parent to insert the item
+	return m.parent.insertNewItemAfterGivenItem(m, item)
+}
+
+// InsertBefore attempts to add the given item before this item in the parent
+// menu. If there is no parent menu (we are a top level menu) then false is
+// returned
+func (m *MenuItem) InsertBefore(item *MenuItem) bool {
+
+	// We need to find my parent
+	if m.parent == nil {
+		return false
+	}
+
+	// Get my parent to insert the item
+	return m.parent.insertNewItemBeforeGivenItem(m, item)
+}
+
+// insertNewItemAfterGivenItem will insert the given item after the given target
+// in this item's submenu. If we are not a submenu,
+// then something bad has happened :/
+func (m *MenuItem) insertNewItemAfterGivenItem(target *MenuItem,
+	newItem *MenuItem) bool {
+
+	if !m.isSubMenu() {
+		return false
+	}
+
+	// Find the index of the target
+	targetIndex := m.getItemIndex(target)
+	if targetIndex == -1 {
+		return false
+	}
+
+	// Insert element into slice
+	return m.insertItemAtIndex(targetIndex+1, newItem)
+}
+
+// insertNewItemBeforeGivenItem will insert the given item before the given
+// target in this item's submenu. If we are not a submenu, then something bad
+// has happened :/
+func (m *MenuItem) insertNewItemBeforeGivenItem(target *MenuItem,
+	newItem *MenuItem) bool {
+
+	if !m.isSubMenu() {
+		return false
+	}
+
+	// Find the index of the target
+	targetIndex := m.getItemIndex(target)
+	if targetIndex == -1 {
+		return false
+	}
+
+	// Insert element into slice
+	return m.insertItemAtIndex(targetIndex, newItem)
+}
+
+func (m *MenuItem) isSubMenu() bool {
+	return m.Type == SubmenuType
+}
+
+// getItemIndex returns the index of the given target relative to this menu
+func (m *MenuItem) getItemIndex(target *MenuItem) int {
+
+	// This should only be called on submenus
+	if !m.isSubMenu() {
+		return -1
+	}
+
+	// hunt down that bad boy
+	for index, item := range m.SubMenu {
+		if item == target {
+			return index
+		}
+	}
+
+	return -1
+}
+
+// insertItemAtIndex attempts to insert the given item into the submenu at
+// the given index
+// Credit: https://stackoverflow.com/a/61822301
+func (m *MenuItem) insertItemAtIndex(index int, target *MenuItem) bool {
+
+	// If index is OOB, return false
+	if index > len(m.SubMenu) {
+		return false
+	}
+
+	// Save parent reference
+	target.parent = m
+
+	// If index is last item, then just regular append
+	if index == len(m.SubMenu) {
+		m.SubMenu = append(m.SubMenu, target)
+		return true
+	}
+
+	m.SubMenu = append(m.SubMenu[:index+1], m.SubMenu[index:]...)
+	m.SubMenu[index] = target
+	return true
 }
 
 // Text is a helper to create basic Text menu items
@@ -149,6 +265,23 @@ func SubMenu(label string, items []*MenuItem) *MenuItem {
 	result := &MenuItem{
 		Label:   label,
 		SubMenu: items,
+		Type:    SubmenuType,
+	}
+
+	// Fix up parent pointers
+	for _, item := range items {
+		item.parent = result
+	}
+
+	return result
+}
+
+// SubMenuWithID is a helper to create Submenus with an ID
+func SubMenuWithID(label string, id string, items []*MenuItem) *MenuItem {
+	result := &MenuItem{
+		Label:   label,
+		SubMenu: items,
+		ID:      id,
 		Type:    SubmenuType,
 	}
 

@@ -168,25 +168,24 @@ func (s *ServiceBus) Subscribe(topic string) (<-chan *Message, error) {
 }
 
 // Publish sends the given message on the service bus
-func (s *ServiceBus) Publish(topic string, data interface{}) error {
+func (s *ServiceBus) Publish(topic string, data interface{}) {
 	// Prevent publish when closed
 	if s.closed {
-		return fmt.Errorf("cannot call publish on closed servicebus")
+		s.logger.Fatal("cannot call publish on closed servicebus")
+		return
 	}
 
 	message := NewMessage(topic, data)
 	s.messageQueue <- message
-	return nil
 }
 
 // PublishForTarget sends the given message on the service bus for the given target
-func (s *ServiceBus) PublishForTarget(topic string, data interface{}, target string) error {
+func (s *ServiceBus) PublishForTarget(topic string, data interface{}, target string) {
 	// Prevent publish when closed
 	if s.closed {
-		return fmt.Errorf("cannot call publish on closed servicebus")
+		s.logger.Fatal("cannot call publish on closed servicebus")
+		return
 	}
-
 	message := NewMessageForTarget(topic, data, target)
 	s.messageQueue <- message
-	return nil
 }
