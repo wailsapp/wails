@@ -56,11 +56,11 @@ func (s *ServerBuilder) BuildBaseAssets(assets *html.AssetBundle) error {
 	// Fetch, update, and reinject index.html
 	index, err := db.Read("index.html")
 	if err != nil {
-		return fmt.Errorf(`Failed to locate "index.html"`)
+		return fmt.Errorf(`failed to locate "index.html"`)
 	}
 	splits := strings.Split(string(index), "</body>")
 	if len(splits) != 2 {
-		return fmt.Errorf("Unable to locate a </body> tag in your frontend/index.html")
+		return fmt.Errorf("unable to locate a </body> tag in your frontend/index.html")
 	}
 	injectScript := `<script defer src="/wails.js"></script><script defer src="/bindings.js"></script>`
 	result := []string{}

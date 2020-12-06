@@ -1,6 +1,6 @@
 package main
 
-import wails "github.com/wailsapp/wails/v2"
+import "github.com/wailsapp/wails/v2"
 
 type MyStruct struct {
 	runtime *wails.Runtime

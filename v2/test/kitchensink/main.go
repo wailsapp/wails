@@ -11,7 +11,7 @@ import (
 func main() {
 
 	// Create application with options
-	app := wails.CreateAppWithOptions(&options.App{
+	app, err := wails.CreateAppWithOptions(&options.App{
 		Title:     "Kitchen Sink",
 		Width:     1024,
 		Height:    768,
@@ -28,6 +28,10 @@ func main() {
 		LogLevel: logger.TRACE,
 	})
 
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	app.Bind(&Events{})
 	app.Bind(&Logger{})
 	app.Bind(&Browser{})
@@ -36,7 +40,7 @@ func main() {
 	app.Bind(&Window{})
 	app.Bind(&Menu{})
 
-	err := app.Run()
+	err = app.Run()
 	if err != nil {
 		log.Fatal(err)
 	}

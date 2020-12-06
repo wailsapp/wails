@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	wails "github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2"
 )
 
 // Basic application struct

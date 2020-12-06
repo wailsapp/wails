@@ -1,15 +1,22 @@
 package main
 
 import (
-	wails "github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2"
+	"log"
 )
 
 func main() {
 
 	// Create application with options
-	app := wails.CreateApp("{{.ProjectName}}", 1024, 768)
+	app, err := wails.CreateApp("{{.ProjectName}}", 1024, 768)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	app.Bind(newBasic())
 
-	app.Run()
+	err = app.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

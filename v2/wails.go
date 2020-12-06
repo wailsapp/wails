@@ -12,12 +12,12 @@ import (
 type Runtime = runtime.Runtime
 
 // CreateAppWithOptions creates an application based on the given config
-func CreateAppWithOptions(options *options.App) *app.App {
+func CreateAppWithOptions(options *options.App) (*app.App, error) {
 	return app.CreateApp(options)
 }
 
 // CreateApp creates an application based on the given title, width and height
-func CreateApp(title string, width int, height int) *app.App {
+func CreateApp(title string, width int, height int) (*app.App, error) {
 
 	options := &options.App{
 		Title:  title,

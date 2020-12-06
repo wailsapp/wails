@@ -1,7 +1,7 @@
 package main
 
 import (
-	wails "github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2"
 )
 
 type MyStruct struct {

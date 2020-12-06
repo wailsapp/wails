@@ -91,7 +91,7 @@ func (a *App) Run() error {
 	// Start the service bus
 	a.servicebus.Debug()
 	err = a.servicebus.Start()
-	if err == nil {
+	if err != nil {
 		return err
 	}
 
@@ -103,7 +103,7 @@ func (a *App) Run() error {
 	}
 	a.runtime = runtimesubsystem
 	err = a.runtime.Start()
-	if err == nil {
+	if err != nil {
 		return err
 	}
 
@@ -119,7 +119,7 @@ func (a *App) Run() error {
 	}
 	a.binding = bindingsubsystem
 	err = a.binding.Start()
-	if err == nil {
+	if err != nil {
 		return err
 	}
 
@@ -130,7 +130,7 @@ func (a *App) Run() error {
 	}
 	a.log = log
 	err = a.log.Start()
-	if err == nil {
+	if err != nil {
 		return err
 	}
 
@@ -141,7 +141,7 @@ func (a *App) Run() error {
 	}
 	a.dispatcher = dispatcher
 	err = dispatcher.Start()
-	if err == nil {
+	if err != nil {
 		return err
 	}
 
@@ -152,7 +152,7 @@ func (a *App) Run() error {
 	}
 	a.event = event
 	err = a.event.Start()
-	if err == nil {
+	if err != nil {
 		return err
 	}
 
@@ -180,7 +180,7 @@ func (a *App) Run() error {
 		}
 		a.menu = menusubsystem
 		err = a.menu.Start()
-		if err == nil {
+		if err != nil {
 			return err
 		}
 	}
@@ -194,7 +194,7 @@ func (a *App) Run() error {
 		}
 		a.tray = traysubsystem
 		err = a.tray.Start()
-		if err == nil {
+		if err != nil {
 			return err
 		}
 	}
@@ -206,7 +206,7 @@ func (a *App) Run() error {
 	}
 	a.call = call
 	err = a.call.Start()
-	if err == nil {
+	if err != nil {
 		return err
 	}
 
@@ -219,7 +219,7 @@ func (a *App) Run() error {
 	result := a.window.Run(dispatcher, bindingDump, a.debug)
 	a.logger.Trace("Ffenestri.Run() exited")
 	err = a.servicebus.Stop()
-	if err == nil {
+	if err != nil {
 		return err
 	}
 

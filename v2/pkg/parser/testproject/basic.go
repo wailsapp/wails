@@ -5,7 +5,7 @@ import (
 
 	"testproject/mypackage"
 
-	wails "github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2"
 )
 
 // Basic application struct
@@ -56,11 +56,11 @@ func (b *Basic) Greet(name string) string {
 }
 
 // MultipleGreets returns greetings for the given name
-func (b *Basic) MultipleGreets(name string) []string {
+func (b *Basic) MultipleGreets(_ string) []string {
 	return []string{"hi", "hello", "croeso!"}
 }
 
 // RemovePerson Removes the given person
-func (b *Basic) RemovePerson(p *mypackage.Person) {
+func (b *Basic) RemovePerson(_ *mypackage.Person) {
 	// dummy
 }
