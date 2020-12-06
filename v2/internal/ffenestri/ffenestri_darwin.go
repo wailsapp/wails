@@ -15,6 +15,7 @@ extern void SetAppearance(void *, const char *);
 extern void WebviewIsTransparent(void *);
 extern void SetWindowBackgroundIsTranslucent(void *);
 extern void SetMenu(void *, const char *);
+extern void SetTray(void *, const char *);
 */
 import "C"
 import (
@@ -79,27 +80,33 @@ func (a *Application) processPlatformSettings() error {
 			We keep a record of every radio group member we discover by saving
 			a list of all members of the group and the number of members
 			in the group (this last one is for optimisation at the C layer).
-
-			Example:
-			{
-				"RadioGroups": [
-					{
-						"Members": [
-							"option-1",
-							"option-2",
-							"option-3"
-						],
-						"Length": 3
-					}
-				]
-			}
 		*/
 		processedMenu := NewProcessedMenu(mac.Menu)
-		menuJSON, err := json.Marshal(processedMenu)
+		applicationMenuJSON, err := json.Marshal(processedMenu)
 		if err != nil {
 			return err
 		}
-		C.SetMenu(a.app, a.string2CString(string(menuJSON)))
+		C.SetMenu(a.app, a.string2CString(string(applicationMenuJSON)))
+	}
+
+	// Process tray
+	if mac.Tray != nil {
+
+		/*
+			As radio groups need to be manually managed on OSX,
+			we preprocess the menu to determine the radio groups.
+			This is defined as any adjacent menu item of type "RadioType".
+			We keep a record of every radio group member we discover by saving
+			a list of all members of the group and the number of members
+			in the group (this last one is for optimisation at the C layer).
+		*/
+		processedMenu := NewProcessedMenu(mac.Tray)
+		trayMenuJSON, err := json.Marshal(processedMenu)
+		if err != nil {
+			return err
+		}
+		C.SetTray(a.app, a.string2CString(string(trayMenuJSON)))
+		println("******************** SET TRAY!!!!! &&&&&&&&&&&&&&&&&&&&&&&&&&")
 	}
 
 	return nil

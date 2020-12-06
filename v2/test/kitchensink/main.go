@@ -1,10 +1,11 @@
 package main
 
 import (
-	wails "github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
+	"log"
 )
 
 func main() {
@@ -22,6 +23,7 @@ func main() {
 			// Comment out line below to see Window.SetTitle() work
 			TitleBar: mac.TitleBarHiddenInset(),
 			Menu:     createApplicationMenu(),
+			Tray:     createApplicationTray(),
 		},
 		LogLevel: logger.TRACE,
 	})
@@ -34,5 +36,8 @@ func main() {
 	app.Bind(&Window{})
 	app.Bind(&Menu{})
 
-	app.Run()
+	err := app.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

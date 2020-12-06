@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"sync"
 
-	wails "github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
@@ -211,6 +211,12 @@ func (m *Menu) insertAfterRandom(_ *menu.MenuItem) {
 
 	item.InsertAfter(newItem)
 	m.runtime.Menu.Update()
+}
+
+func createApplicationTray() *menu.Menu {
+	trayMenu := &menu.Menu{}
+	trayMenu.Append(menu.Text("Hello from the tray!", "hi"))
+	return trayMenu
 }
 
 func createApplicationMenu() *menu.Menu {

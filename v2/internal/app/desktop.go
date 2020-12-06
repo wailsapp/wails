@@ -33,6 +33,7 @@ type App struct {
 	binding    *subsystem.Binding
 	call       *subsystem.Call
 	menu       *subsystem.Menu
+	tray       *subsystem.Tray
 	dispatcher *messagedispatcher.Dispatcher
 
 	// Indicates if the app is in debug mode
@@ -47,7 +48,7 @@ type App struct {
 }
 
 // Create App
-func CreateApp(options *options.App) *App {
+func CreateApp(options *options.App) (*App, error) {
 
 	// Merge default options
 	options.MergeDefaults()
@@ -68,14 +69,16 @@ func CreateApp(options *options.App) *App {
 	result.options = options
 
 	// Initialise the app
-	result.Init()
+	err := result.Init()
 
-	return result
+	return result, err
 
 }
 
 // Run the application
 func (a *App) Run() error {
+
+	var err error
 
 	// Setup signal handler
 	signalsubsystem, err := signal.NewManager(a.servicebus, a.logger)
@@ -87,7 +90,10 @@ func (a *App) Run() error {
 
 	// Start the service bus
 	a.servicebus.Debug()
-	a.servicebus.Start()
+	err = a.servicebus.Start()
+	if err == nil {
+		return err
+	}
 
 	// Start the runtime
 	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger,
@@ -96,7 +102,10 @@ func (a *App) Run() error {
 		return err
 	}
 	a.runtime = runtimesubsystem
-	a.runtime.Start()
+	err = a.runtime.Start()
+	if err == nil {
+		return err
+	}
 
 	// Application Stores
 	a.loglevelStore = a.runtime.GoRuntime().Store.New("wails:loglevel", a.options.LogLevel)
@@ -109,7 +118,10 @@ func (a *App) Run() error {
 		return err
 	}
 	a.binding = bindingsubsystem
-	a.binding.Start()
+	err = a.binding.Start()
+	if err == nil {
+		return err
+	}
 
 	// Start the logging subsystem
 	log, err := subsystem.NewLog(a.servicebus, a.logger, a.loglevelStore)
@@ -117,7 +129,10 @@ func (a *App) Run() error {
 		return err
 	}
 	a.log = log
-	a.log.Start()
+	err = a.log.Start()
+	if err == nil {
+		return err
+	}
 
 	// create the dispatcher
 	dispatcher, err := messagedispatcher.New(a.servicebus, a.logger)
@@ -125,7 +140,10 @@ func (a *App) Run() error {
 		return err
 	}
 	a.dispatcher = dispatcher
-	dispatcher.Start()
+	err = dispatcher.Start()
+	if err == nil {
+		return err
+	}
 
 	// Start the eventing subsystem
 	event, err := subsystem.NewEvent(a.servicebus, a.logger)
@@ -133,26 +151,53 @@ func (a *App) Run() error {
 		return err
 	}
 	a.event = event
-	a.event.Start()
+	err = a.event.Start()
+	if err == nil {
+		return err
+	}
 
 	// Start the menu subsystem
-	var platformMenu *menu.Menu
+	var applicationMenu *menu.Menu
+	var trayMenu *menu.Menu
 	switch goruntime.GOOS {
 	case "darwin":
-		platformMenu = a.options.Mac.Menu
+		applicationMenu = a.options.Mac.Menu
+		trayMenu = a.options.Mac.Tray
 	// case "linux":
-	// 	platformMenu = a.options.Linux.Menu
+	// 	applicationMenu = a.options.Linux.Menu
 	// case "windows":
-	// 	platformMenu = a.options.Windows.Menu
+	// 	applicationMenu = a.options.Windows.Menu
 	default:
 		return fmt.Errorf("unsupported OS: %s", goruntime.GOOS)
 	}
-	menusubsystem, err := subsystem.NewMenu(platformMenu, a.servicebus, a.logger)
-	if err != nil {
-		return err
+
+	// Optionally start the menu subsystem
+	if applicationMenu != nil {
+		menusubsystem, err := subsystem.NewMenu(applicationMenu, a.servicebus,
+			a.logger)
+		if err != nil {
+			return err
+		}
+		a.menu = menusubsystem
+		err = a.menu.Start()
+		if err == nil {
+			return err
+		}
 	}
-	a.menu = menusubsystem
-	a.menu.Start()
+
+	// Optionally start the tray subsystem
+	if trayMenu != nil {
+		traysubsystem, err := subsystem.NewTray(trayMenu, a.servicebus,
+			a.logger)
+		if err != nil {
+			return err
+		}
+		a.tray = traysubsystem
+		err = a.tray.Start()
+		if err == nil {
+			return err
+		}
+	}
 
 	// Start the call subsystem
 	call, err := subsystem.NewCall(a.servicebus, a.logger, a.bindings.DB(), a.runtime.GoRuntime())
@@ -160,7 +205,10 @@ func (a *App) Run() error {
 		return err
 	}
 	a.call = call
-	a.call.Start()
+	err = a.call.Start()
+	if err == nil {
+		return err
+	}
 
 	// Dump bindings as a debug
 	bindingDump, err := a.bindings.ToJSON()
@@ -170,7 +218,10 @@ func (a *App) Run() error {
 
 	result := a.window.Run(dispatcher, bindingDump, a.debug)
 	a.logger.Trace("Ffenestri.Run() exited")
-	a.servicebus.Stop()
+	err = a.servicebus.Stop()
+	if err == nil {
+		return err
+	}
 
 	return result
 }
