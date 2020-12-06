@@ -1518,7 +1518,7 @@ struct hashmap_s *menuItemMap, const char *checkboxCallbackFunction) {
 
 id parseRadioMenuItem(struct Application *app, id parentmenu, const char *title,
  const char *menuid, bool disabled, bool checked, const char *acceleratorkey,
- struct hashmap_s *menuItemMap) {
+ struct hashmap_s *menuItemMap, const char *radioCallbackFunction) {
 	id item = ALLOC("NSMenuItem");
 
 	// Store the item in the menu item map
@@ -1528,7 +1528,8 @@ id parseRadioMenuItem(struct Application *app, id parentmenu, const char *title,
 	msg(item, s("setRepresentedObject:"), wrappedId);
 
 	id key = processAcceleratorKey(acceleratorkey);
-	msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("radioMenuCallback:"), key);
+
+	msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s(radioCallbackFunction), key);
 
 	msg(item, s("setEnabled:"), !disabled);
 	msg(item, s("autorelease"));
@@ -1540,7 +1541,8 @@ id parseRadioMenuItem(struct Application *app, id parentmenu, const char *title,
 }
 
 void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item,
-struct hashmap_s *menuItemMap, const char *checkboxCallbackFunction) {
+struct hashmap_s *menuItemMap, const char *checkboxCallbackFunction, const char
+*radioCallbackFunction) {
 
   // Check if this item is hidden and if so, exit early!
   bool hidden = false;
@@ -1576,7 +1578,8 @@ struct hashmap_s *menuItemMap, const char *checkboxCallbackFunction) {
 	JsonNode *item;
 	json_foreach(item, submenu) {
 	  // Get item label
-	  parseMenuItem(app, thisMenu, item, menuItemMap, checkboxCallbackFunction);
+	  parseMenuItem(app, thisMenu, item, menuItemMap, checkboxCallbackFunction, radioCallbackFunction
+	  );
 	}
 
 	return;
@@ -1650,8 +1653,7 @@ struct hashmap_s *menuItemMap, const char *checkboxCallbackFunction) {
 	  getJSONBool(item, "Checked", &checked);
 
 	  parseRadioMenuItem(app, parentMenu, label, menuid, disabled, checked, "",
-	  menuItemMap
-	  );
+	  menuItemMap, radioCallbackFunction);
 	}
 
 	if ( modifiers != NULL ) {
@@ -1663,7 +1665,7 @@ struct hashmap_s *menuItemMap, const char *checkboxCallbackFunction) {
 }
 
 void parseMenu(struct Application *app, id parentMenu, JsonNode *menu, struct
-hashmap_s *menuItemMap, const char *checkboxCallbackFunction) {
+hashmap_s *menuItemMap, const char *checkboxCallbackFunction, const char *radioCallbackFunction) {
   JsonNode *items = json_find_member(menu, "Items");
   if( items == NULL ) {
 	// Parse error!
@@ -1675,7 +1677,8 @@ hashmap_s *menuItemMap, const char *checkboxCallbackFunction) {
   JsonNode *item;
   json_foreach(item, items) {
 	// Get item label
-	parseMenuItem(app, parentMenu, item, menuItemMap, checkboxCallbackFunction);
+	parseMenuItem(app, parentMenu, item, menuItemMap, checkboxCallbackFunction, radioCallbackFunction
+	);
   }
 }
 
@@ -1761,7 +1764,7 @@ void parseMenuData(struct Application *app) {
 
 
 	parseMenu(app, menubar, menuData, &menuItemMapForApplicationMenu,
-	"checkboxMenuCallbackForApplicationMenu:");
+	"checkboxMenuCallbackForApplicationMenu:", "radioMenuCallbackForApplicationMenu:");
 
 	// Create the radiogroup cache
 	JsonNode *radioGroups = json_find_member(app->processedMenu, "RadioGroups");
