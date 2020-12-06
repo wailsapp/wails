@@ -75,7 +75,7 @@ extern const char *icon[];
 int debug;
 
 // MenuItem map
-struct hashmap_s menuItemMap;
+struct hashmap_s menuItemMapForApplicationMenu;
 
 // RadioGroup map. Maps a menuitem id with its associated radio group items
 struct hashmap_s radioGroupMap;
@@ -190,6 +190,10 @@ struct Application {
 	const char *menuAsJSON;
 	id menubar;
 	JsonNode *processedMenu;
+
+	// Tray
+	const char *trayMenuAsJSON;
+	JsonNode *processedTrayMenu;
 
 	// User Data
 	char *HTML;
@@ -346,11 +350,12 @@ void menuItemPressed(id self, SEL cmd, id sender) {
 }
 
 // Callback for menu items
-void checkboxMenuItemPressed(id self, SEL cmd, id sender) {
+void checkboxMenuItemPressed(id self, SEL cmd, id sender, struct hashmap_s
+*menuItemMap) {
   const char *menuID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
 
   // Get the menu item from the menu item map
-  id menuItem = (id)hashmap_get(&menuItemMap, (char*)menuID, strlen(menuID));
+  id menuItem = (id)hashmap_get(menuItemMap, (char*)menuID, strlen(menuID));
 
   // Get the current state
   bool state = msg(menuItem, s("state"));
@@ -365,11 +370,12 @@ void checkboxMenuItemPressed(id self, SEL cmd, id sender) {
 }
 
 // radioMenuItemPressed
-void radioMenuItemPressed(id self, SEL cmd, id sender) {
+void radioMenuItemPressed(id self, SEL cmd, id sender, struct hashmap_s
+*menuItemMap) {
   const char *menuID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
 
   // Get the menu item from the menu item map
-  id menuItem = (id)hashmap_get(&menuItemMap, (char*)menuID, strlen(menuID));
+  id menuItem = (id)hashmap_get(menuItemMap, (char*)menuID, strlen(menuID));
 
   // Check the menu items' current state
   bool selected = msg(menuItem, s("state"));
@@ -437,11 +443,11 @@ void themeChanged(id self, SEL cmd, id sender) {
 //     Debug(app, "willFinishLaunching called!");
 // }
 
-void allocateHashMaps(struct Application *app) {
+void allocateMenuHashMaps(struct Application *app) {
 	// Allocate new menuItem map
-	if( 0 != hashmap_create((const unsigned)16, &menuItemMap)) {
+	if( 0 != hashmap_create((const unsigned)16, &menuItemMapForApplicationMenu)) {
 	   // Couldn't allocate map
-	   Fatal(app, "Not enough memory to allocate menuItemMap!");
+	   Fatal(app, "Not enough memory to allocate menuItemMapForApplicationMenu!");
 	   return;
 	}
 
@@ -491,13 +497,18 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->windowBackgroundIsTranslucent = 0;
 
 	// Window data
-	result->vibrancyLayer = NULL;
 	result->delegate = NULL;
 
 	// Menu
 	result->menuAsJSON = NULL;
 	result->processedMenu = NULL;
 
+	// Tray
+	result->trayMenuAsJSON = NULL;
+    result->processedTrayMenu = NULL;
+
+	// Window Appearance
+	result->vibrancyLayer = NULL;
 	result->titlebarAppearsTransparent = 0;
 	result->webviewIsTranparent = 0;
 
@@ -514,7 +525,7 @@ int freeHashmapItem(void *const context, struct hashmap_element_s *const e) {
 void destroyMenu(struct Application *app) {
 
 	// Free menu item hashmap
-	hashmap_destroy(&menuItemMap);
+	hashmap_destroy(&menuItemMapForApplicationMenu);
 
 	// Free radio group members
 	if( hashmap_num_entries(&radioGroupMap) > 0 ) {
@@ -537,6 +548,18 @@ void destroyMenu(struct Application *app) {
 		json_delete(app->processedMenu);
 		app->processedMenu = NULL;
 	}
+
+	// Release the tray menu json if we have it
+    if ( app->trayMenuAsJSON != NULL ) {
+        free((void*)app->trayMenuAsJSON);
+        app->trayMenuAsJSON = NULL;
+    }
+
+    // Release processed menu
+    if( app->processedTrayMenu != NULL) {
+        json_delete(app->processedTrayMenu);
+        app->processedTrayMenu = NULL;
+    }
 }
 
 
@@ -910,6 +933,11 @@ void SetDebug(void *applicationPointer, int flag) {
 // SetMenu sets the initial menu for the application
 void SetMenu(struct Application *app, const char *menuAsJSON) {
 	app->menuAsJSON = menuAsJSON;
+}
+
+// SetTray sets the initial tray menu for the application
+void SetTray(struct Application *app, const char *trayMenuAsJSON) {
+	app->trayMenuAsJSON = trayMenuAsJSON;
 }
 
 void SetBindings(struct Application *app, const char *bindings) {
@@ -1468,11 +1496,13 @@ id parseTextMenuItem(struct Application *app, id parentMenu, const char *title, 
 	return item;
 }
 
-id parseCheckboxMenuItem(struct Application *app, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *key) {
+id parseCheckboxMenuItem(struct Application *app, id parentmenu, const char
+*title, const char *menuid, bool disabled, bool checked, const char *key,
+struct hashmap_s *menuItemMap) {
 	id item = ALLOC("NSMenuItem");
 
 	// Store the item in the menu item map
-	hashmap_put(&menuItemMap, (char*)menuid, strlen(menuid), item);
+	hashmap_put(menuItemMap, (char*)menuid, strlen(menuid), item);
 
 	id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
 	msg(item, s("setRepresentedObject:"), wrappedId);
@@ -1484,11 +1514,13 @@ id parseCheckboxMenuItem(struct Application *app, id parentmenu, const char *tit
 	return item;
 }
 
-id parseRadioMenuItem(struct Application *app, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *acceleratorkey) {
+id parseRadioMenuItem(struct Application *app, id parentmenu, const char *title,
+ const char *menuid, bool disabled, bool checked, const char *acceleratorkey,
+ struct hashmap_s *menuItemMap) {
 	id item = ALLOC("NSMenuItem");
 
 	// Store the item in the menu item map
-	hashmap_put(&menuItemMap, (char*)menuid, strlen(menuid), item);
+	hashmap_put(menuItemMap, (char*)menuid, strlen(menuid), item);
 
 	id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
 	msg(item, s("setRepresentedObject:"), wrappedId);
@@ -1505,7 +1537,8 @@ id parseRadioMenuItem(struct Application *app, id parentmenu, const char *title,
 
 }
 
-void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
+void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item,
+struct hashmap_s *menuItemMap) {
 
   // Check if this item is hidden and if so, exit early!
   bool hidden = false;
@@ -1541,7 +1574,7 @@ void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
 	JsonNode *item;
 	json_foreach(item, submenu) {
 	  // Get item label
-	  parseMenuItem(app, thisMenu, item);
+	  parseMenuItem(app, thisMenu, item, menuItemMap);
 	}
 
 	return;
@@ -1606,14 +1639,17 @@ void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
 	  bool checked = false;
 	  getJSONBool(item, "Checked", &checked);
 
-	  parseCheckboxMenuItem(app, parentMenu, label, menuid, disabled, checked, "");
+	  parseCheckboxMenuItem(app, parentMenu, label, menuid, disabled, checked,
+	  "", menuItemMap);
 	}
 	else if ( STREQ(type->string_, "Radio")) {
 	  // Get checked state
 	  bool checked = false;
 	  getJSONBool(item, "Checked", &checked);
 
-	  parseRadioMenuItem(app, parentMenu, label, menuid, disabled, checked, "");
+	  parseRadioMenuItem(app, parentMenu, label, menuid, disabled, checked, "",
+	  menuItemMap
+	  );
 	}
 
 	if ( modifiers != NULL ) {
@@ -1624,7 +1660,8 @@ void parseMenuItem(struct Application *app, id parentMenu, JsonNode *item) {
   }
 }
 
-void parseMenu(struct Application *app, id parentMenu, JsonNode *menu) {
+void parseMenu(struct Application *app, id parentMenu, JsonNode *menu, struct
+hashmap_s *menuItemMap) {
   JsonNode *items = json_find_member(menu, "Items");
   if( items == NULL ) {
 	// Parse error!
@@ -1636,7 +1673,7 @@ void parseMenu(struct Application *app, id parentMenu, JsonNode *menu) {
   JsonNode *item;
   json_foreach(item, items) {
 	// Get item label
-	parseMenuItem(app, parentMenu, item);
+	parseMenuItem(app, parentMenu, item, menuItemMap);
   }
 }
 
@@ -1652,7 +1689,7 @@ void dumpMemberList(const char *name, id *memberList) {
   printf("]\n");
 }
 
-void processRadioGroup(JsonNode *radioGroup) {
+void processRadioGroup(JsonNode *radioGroup, struct hashmap_s *menuItemMap) {
 
   int groupLength;
   getJSONInt(radioGroup, "Length", &groupLength);
@@ -1667,7 +1704,7 @@ void processRadioGroup(JsonNode *radioGroup) {
   int count=0;
   json_foreach(member, members) {
 	// Get menu by id
-	id menuItem = (id)hashmap_get(&menuItemMap, (char*)member->string_, strlen(member->string_));
+	id menuItem = (id)hashmap_get(menuItemMap, (char*)member->string_, strlen(member->string_));
 	// Save Member
 	memberList[count] = menuItem;
 	count = count + 1;
@@ -1696,7 +1733,7 @@ void processRadioGroup(JsonNode *radioGroup) {
 void parseMenuData(struct Application *app) {
 
 	// Allocate the hashmaps we need
-	allocateHashMaps(app);
+	allocateMenuHashMaps(app);
 
 	// Create a new menu bar
 	id menubar = createMenu(str(""));
@@ -1720,7 +1757,7 @@ void parseMenuData(struct Application *app) {
 	}
 
 
-	parseMenu(app, menubar, menuData);
+	parseMenu(app, menubar, menuData, &menuItemMapForApplicationMenu);
 
 	// Create the radiogroup cache
 	JsonNode *radioGroups = json_find_member(app->processedMenu, "RadioGroups");
@@ -1734,7 +1771,7 @@ void parseMenuData(struct Application *app) {
 	JsonNode *radioGroup;
 	json_foreach(radioGroup, radioGroups) {
 		// Get item label
-		processRadioGroup(radioGroup);
+		processRadioGroup(radioGroup, &menuItemMapForApplicationMenu);
 	}
 
 	// Apply the menu bar
@@ -1761,6 +1798,20 @@ void UpdateMenu(struct Application *app, const char *menuAsJSON) {
 		parseMenuData(app);
 	);
 }
+
+void parseTrayData(struct Application *app) {
+    id statusBar = msg( c("NSStatusBar"), s("systemStatusBar") );
+    id statusItem = msg(statusBar, s("statusItemWithLength:"), -1.0);
+    msg(statusItem, s("retain"));
+    id statusBarButton = msg(statusItem, s("button"));
+
+//     msg(statusBarButton, s("setImage:"),
+//        msg(c("NSImage"), s("imageNamed:"),
+//          msg(c("NSString"), s("stringWithUTF8String:"), tray->icon)));
+
+
+    msg(statusItem, s("setMenu:"), NULL);
+  }
 
 
 void Run(struct Application *app, int argc, char **argv) {
@@ -1923,8 +1974,14 @@ void Run(struct Application *app, int argc, char **argv) {
 		msg(wkwebview, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("drawsBackground"));
 	}
 
+	// If we have a menu, process it
 	if( app->menuAsJSON != NULL ) {
 	  parseMenuData(app);
+	}
+
+	// If we have a tray menu, process it
+	if( app->trayMenuAsJSON != NULL ) {
+	  parseTrayData(app);
 	}
 
 	// Finally call run
