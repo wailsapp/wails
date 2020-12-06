@@ -87,7 +87,7 @@ func (t *Tray) Start() error {
 						t.logger.Error("Received clicked message with invalid topic format. Expected 2 sections in topic, got %s", splitTopic)
 						continue
 					}
-					t.logger.Trace("Got Menu clicked Message: %s %+v", menuMessage.Topic(), menuMessage.Data())
+					t.logger.Trace("Got Tray Menu clicked Message: %s %+v", menuMessage.Topic(), menuMessage.Data())
 					menuid := menuMessage.Data().(string)
 
 					// Get the menu item
@@ -106,7 +106,7 @@ func (t *Tray) Start() error {
 					// Notify listeners
 					t.notifyListeners(menuid, menuItem)
 				case "on":
-					listenerDetails := menuMessage.Data().(*message.MenuOnMessage)
+					listenerDetails := menuMessage.Data().(*message.TrayOnMessage)
 					id := listenerDetails.MenuID
 					t.listeners[id] = append(t.listeners[id], listenerDetails.Callback)
 

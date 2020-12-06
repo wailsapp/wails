@@ -213,12 +213,6 @@ func (m *Menu) insertAfterRandom(_ *menu.MenuItem) {
 	m.runtime.Menu.Update()
 }
 
-func createApplicationTray() *menu.Menu {
-	trayMenu := &menu.Menu{}
-	trayMenu.Append(menu.Text("Hello from the tray!", "hi"))
-	return trayMenu
-}
-
 func createApplicationMenu() *menu.Menu {
 
 	// Create menu

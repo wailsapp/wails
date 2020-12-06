@@ -13,6 +13,7 @@ type Runtime struct {
 	Dialog  Dialog
 	System  System
 	Menu    Menu
+	Tray    Tray
 	Store   *StoreProvider
 	Log     Log
 	bus     *servicebus.ServiceBus
@@ -27,6 +28,7 @@ func New(serviceBus *servicebus.ServiceBus, menu *menu.Menu) *Runtime {
 		Dialog:  newDialog(serviceBus),
 		System:  newSystem(serviceBus),
 		Menu:    newMenu(serviceBus, menu),
+		Tray:    newTray(serviceBus, menu),
 		Log:     newLog(serviceBus),
 		bus:     serviceBus,
 	}
