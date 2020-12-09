@@ -46,7 +46,7 @@ func (b *HybridBuilder) BuildBaseAssets(options *Options) error {
 		return err
 	}
 
-	err = b.desktop.BuildBaseAssets(assets, options.Logger)
+	err = b.desktop.BuildBaseAssets(assets, options)
 	if err != nil {
 		return err
 	}

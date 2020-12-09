@@ -3,9 +3,6 @@
 package app
 
 import (
-	"fmt"
-	goruntime "runtime"
-
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/ffenestri"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -14,7 +11,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/servicebus"
 	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/internal/subsystem"
-	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -48,16 +44,16 @@ type App struct {
 }
 
 // Create App
-func CreateApp(options *options.App) (*App, error) {
+func CreateApp(appoptions *options.App) (*App, error) {
 
 	// Merge default options
-	options.MergeDefaults()
+	options.MergeDefaults(appoptions)
 
 	// Set up logger
-	myLogger := logger.New(options.Logger)
-	myLogger.SetLogLevel(options.LogLevel)
+	myLogger := logger.New(appoptions.Logger)
+	myLogger.SetLogLevel(appoptions.LogLevel)
 
-	window := ffenestri.NewApplicationWithConfig(options, myLogger)
+	window := ffenestri.NewApplicationWithConfig(appoptions, myLogger)
 
 	result := &App{
 		window:     window,
@@ -66,7 +62,7 @@ func CreateApp(options *options.App) (*App, error) {
 		bindings:   binding.NewBindings(myLogger),
 	}
 
-	result.options = options
+	result.options = appoptions
 
 	// Initialise the app
 	err := result.Init()
@@ -96,8 +92,10 @@ func (a *App) Run() error {
 	}
 
 	// Start the runtime
-	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger,
-		a.options.Mac.Menu)
+	applicationMenu := options.GetApplicationMenu(a.options)
+	trayMenu := options.GetTrayMenu(a.options)
+
+	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger, applicationMenu, trayMenu)
 	if err != nil {
 		return err
 	}
@@ -112,8 +110,7 @@ func (a *App) Run() error {
 	a.appconfigStore = a.runtime.GoRuntime().Store.New("wails:appconfig", a.options)
 
 	// Start the binding subsystem
-	bindingsubsystem, err := subsystem.NewBinding(a.servicebus, a.logger,
-		a.bindings, a.runtime.GoRuntime())
+	bindingsubsystem, err := subsystem.NewBinding(a.servicebus, a.logger, a.bindings, a.runtime.GoRuntime())
 	if err != nil {
 		return err
 	}
@@ -156,25 +153,9 @@ func (a *App) Run() error {
 		return err
 	}
 
-	// Start the menu subsystem
-	var applicationMenu *menu.Menu
-	var trayMenu *menu.Menu
-	switch goruntime.GOOS {
-	case "darwin":
-		applicationMenu = a.options.Mac.Menu
-		trayMenu = a.options.Mac.Tray
-	// case "linux":
-	// 	applicationMenu = a.options.Linux.Menu
-	// case "windows":
-	// 	applicationMenu = a.options.Windows.Menu
-	default:
-		return fmt.Errorf("unsupported OS: %s", goruntime.GOOS)
-	}
-
 	// Optionally start the menu subsystem
 	if applicationMenu != nil {
-		menusubsystem, err := subsystem.NewMenu(applicationMenu, a.servicebus,
-			a.logger)
+		menusubsystem, err := subsystem.NewMenu(applicationMenu, a.servicebus, a.logger)
 		if err != nil {
 			return err
 		}
@@ -187,8 +168,7 @@ func (a *App) Run() error {
 
 	// Optionally start the tray subsystem
 	if trayMenu != nil {
-		traysubsystem, err := subsystem.NewTray(trayMenu, a.servicebus,
-			a.logger)
+		traysubsystem, err := subsystem.NewTray(trayMenu, a.servicebus, a.logger)
 		if err != nil {
 			return err
 		}

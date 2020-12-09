@@ -20,6 +20,7 @@ extern void SetTray(void *, const char *);
 import "C"
 import (
 	"encoding/json"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 func (a *Application) processPlatformSettings() error {
@@ -71,7 +72,8 @@ func (a *Application) processPlatformSettings() error {
 	}
 
 	// Process menu
-	if mac.Menu != nil {
+	applicationMenu := options.GetApplicationMenu(a.config)
+	if applicationMenu != nil {
 
 		/*
 			As radio groups need to be manually managed on OSX,
@@ -81,7 +83,7 @@ func (a *Application) processPlatformSettings() error {
 			a list of all members of the group and the number of members
 			in the group (this last one is for optimisation at the C layer).
 		*/
-		processedMenu := NewProcessedMenu(mac.Menu)
+		processedMenu := NewProcessedMenu(applicationMenu)
 		applicationMenuJSON, err := json.Marshal(processedMenu)
 		if err != nil {
 			return err
@@ -90,7 +92,8 @@ func (a *Application) processPlatformSettings() error {
 	}
 
 	// Process tray
-	if mac.Tray != nil {
+	tray := options.GetTrayMenu(a.config)
+	if tray != nil {
 
 		/*
 			As radio groups need to be manually managed on OSX,
@@ -100,13 +103,12 @@ func (a *Application) processPlatformSettings() error {
 			a list of all members of the group and the number of members
 			in the group (this last one is for optimisation at the C layer).
 		*/
-		processedMenu := NewProcessedMenu(mac.Tray)
+		processedMenu := NewProcessedMenu(tray)
 		trayMenuJSON, err := json.Marshal(processedMenu)
 		if err != nil {
 			return err
 		}
 		C.SetTray(a.app, a.string2CString(string(trayMenuJSON)))
-		println("******************** SET TRAY!!!!! &&&&&&&&&&&&&&&&&&&&&&&&&&")
 	}
 
 	return nil

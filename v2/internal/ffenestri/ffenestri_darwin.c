@@ -71,6 +71,10 @@ extern const unsigned char *assets[];
 extern const unsigned char runtime;
 extern const char *icon[];
 
+// Tray icon
+extern const unsigned int trayIconLength;
+extern const unsigned char *trayIcon[];
+
 // MAIN DEBUG FLAG
 int debug;
 
@@ -176,7 +180,6 @@ struct Application {
 	int webviewIsTranparent;
 	const char *appearance;
 	int decorations;
-	bool dragging;
 	int logLevel;
 
 	// Features
@@ -200,6 +203,7 @@ struct Application {
 	// Tray
 	const char *trayMenuAsJSON;
 	JsonNode *processedTrayMenu;
+	id statusItem;
 
 	// User Data
 	char *HTML;
@@ -334,7 +338,6 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 		// Guard against null events
 		if( app->mouseEvent != NULL ) {
 			HideMouse();
-			app->dragging = true;
 			ON_MAIN_THREAD(
 				msg(app->mainWindow, s("performWindowDragWithEvent:"), app->mouseEvent);
 			);
@@ -569,8 +572,6 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->mouseDownMonitor = NULL;
 	result->mouseUpMonitor = NULL;
 
-	result->dragging = false;
-
 	// Features
 	result->frame = 1;
 	result->hideTitle = 0;
@@ -591,6 +592,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	// Tray
 	result->trayMenuAsJSON = NULL;
     result->processedTrayMenu = NULL;
+    result->statusItem = NULL;
 
 	// Window Appearance
 	result->vibrancyLayer = NULL;
@@ -1917,22 +1919,30 @@ void UpdateMenu(struct Application *app, const char *menuAsJSON) {
 
 void parseTrayData(struct Application *app) {
 
-//     msg(statusBarButton, s("setImage:"),
-//        msg(c("NSImage"), s("imageNamed:"),
-//          msg(c("NSString"), s("stringWithUTF8String:"), tray->icon)));
-
-
 	// Allocate the hashmaps we need
 	allocateTrayHashMaps(app);
 
 	// Create a new menu
     id traymenu = createMenu(str(""));
 
-	// Create a new menu bar
-    id statusBar = msg( c("NSStatusBar"), s("systemStatusBar") );
-    id statusItem = msg(statusBar, s("statusItemWithLength:"), -1.0);
-    msg(statusItem, s("retain"));
-    id statusBarButton = msg(statusItem, s("button"));
+	id statusItem = app->statusItem;
+
+	// Create a new menu bar if we need to
+	if ( statusItem == NULL ) {
+	    id statusBar = msg( c("NSStatusBar"), s("systemStatusBar") );
+	    statusItem = msg(statusBar, s("statusItemWithLength:"), -1.0);
+	    app->statusItem = statusItem;
+	    msg(statusItem, s("retain"));
+	    id statusBarButton = msg(statusItem, s("button"));
+
+        // If we have a tray icon
+        if ( trayIconLength > 0 ) {
+            id imageData = msg(c("NSData"), s("dataWithBytes:length:"), trayIcon, trayIconLength);
+            id trayImage = ALLOC("NSImage");
+            msg(trayImage, s("initWithData:"), imageData);
+            msg(statusBarButton, s("setImage:"), trayImage);
+        }
+    }
 
     Debug(app, ">>>>>>>>>>> TRAY MENU: %s", app->trayMenuAsJSON);
 
@@ -1973,8 +1983,29 @@ void parseTrayData(struct Application *app) {
 		processRadioGroup(radioGroup, &menuItemMapForTrayMenu, &radioGroupMapForTrayMenu);
 	}
 
+
+//     msg(statusBarButton, s("setImage:"),
+//        msg(c("NSImage"), s("imageNamed:"),
+//          msg(c("NSString"), s("stringWithUTF8String:"), tray->icon)));
+
+
     msg(statusItem, s("setMenu:"), traymenu);
-  }
+ }
+
+
+// UpdateTray replaces the current tray menu with the given one
+void UpdateTray(struct Application *app, const char *trayMenuAsJSON) {
+	Debug(app, "tray is now: %s", trayMenuAsJSON);
+	ON_MAIN_THREAD (
+
+		// Free up memory
+		destroyTray(app);
+
+		// Set the menu JSON
+		app->trayMenuAsJSON = trayMenuAsJSON;
+		parseTrayData(app);
+	);
+}
 
 
 void Run(struct Application *app, int argc, char **argv) {
@@ -2039,15 +2070,16 @@ void Run(struct Application *app, int argc, char **argv) {
 	msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("windowDrag"));
 	// Add mouse event hooks
 	app->mouseDownMonitor = msg(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseDown, ^(id incomingEvent) {
-		app->mouseEvent = incomingEvent;
+		// Make sure the mouse click was in the window, not the tray
+		id window = msg(incomingEvent, s("window"));
+		if (window == app->mainWindow) {
+			app->mouseEvent = incomingEvent;
+		}
 		return incomingEvent;
 	});
 	app->mouseUpMonitor = msg(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseUp, ^(id incomingEvent) {
 		app->mouseEvent = NULL;
-		if ( app->dragging ) {
-			ShowMouse();
-			app->dragging = false;
-		}
+		ShowMouse();
 		return incomingEvent;
 	});
 
@@ -2143,13 +2175,9 @@ void Run(struct Application *app, int argc, char **argv) {
 	}
 
 	// If we have a tray menu, process it
-	printf
-	("\n\n\n*****************************************************************************************************************************************************************************************************************\n\n\n");
 	if( app->trayMenuAsJSON != NULL ) {
 	  parseTrayData(app);
 	}
-printf
-	("\n\n\n*****************************************************************************************************************************************************************************************************************\n\n\n");
 
 	// Finally call run
 	Debug(app, "Run called");

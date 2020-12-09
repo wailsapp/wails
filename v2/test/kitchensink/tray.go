@@ -26,9 +26,20 @@ func (t *Tray) WailsInit(runtime *wails.Runtime) error {
 	// Setup Menu Listeners
 	t.runtime.Tray.On("Show Window", func(mi *menu.MenuItem) {
 		t.runtime.Window.Show()
+		showWindow := t.runtime.Tray.GetByID("Show Window")
+		hideWindow := t.runtime.Tray.GetByID("Hide Window")
+		showWindow.Hidden = true
+		hideWindow.Hidden = false
+		t.runtime.Tray.Update()
 	})
 	t.runtime.Tray.On("Hide Window", func(mi *menu.MenuItem) {
 		t.runtime.Window.Hide()
+		showWindow := t.runtime.Tray.GetByID("Show Window")
+		hideWindow := t.runtime.Tray.GetByID("Hide Window")
+		showWindow.Hidden = false
+		hideWindow.Hidden = true
+		t.runtime.Tray.Update()
+
 	})
 
 	return nil
@@ -108,7 +119,12 @@ func (t *Tray) removeMenu(_ *menu.MenuItem) {
 
 func createApplicationTray() *menu.Menu {
 	trayMenu := &menu.Menu{}
-	trayMenu.Append(menu.Text("Show Window", "Show Window"))
+	trayMenu.Append(&menu.MenuItem{
+		ID:     "Show Window",
+		Label:  "Show Window",
+		Type:   menu.TextType,
+		Hidden: true,
+	})
 	trayMenu.Append(menu.Text("Hide Window", "Hide Window"))
 	return trayMenu
 }

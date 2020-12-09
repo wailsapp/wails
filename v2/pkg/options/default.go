@@ -2,7 +2,6 @@ package options
 
 import (
 	"github.com/wailsapp/wails/v2/pkg/logger"
-	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
 
@@ -18,7 +17,7 @@ var Default = &App{
 		Appearance:                    mac.DefaultAppearance,
 		WebviewIsTransparent:          false,
 		WindowBackgroundIsTranslucent: false,
-		Menu:                          menu.DefaultMacMenu(),
+		//Menu:                          menu.DefaultMacMenu(),
 	},
 	Logger:   logger.NewDefaultLogger(),
 	LogLevel: logger.INFO,

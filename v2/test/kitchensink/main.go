@@ -17,6 +17,8 @@ func main() {
 		Height:    768,
 		MinWidth:  800,
 		MinHeight: 600,
+		//Tray:      menu.NewMenuFromItems(menu.AppMenu()),
+		//Menu:      menu.NewMenuFromItems(menu.AppMenu()),
 		Mac: &mac.Options{
 			WebviewIsTransparent:          true,
 			WindowBackgroundIsTranslucent: true,

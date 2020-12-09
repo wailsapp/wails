@@ -24,6 +24,7 @@ type Dispatcher struct {
 	dialogChannel <-chan *servicebus.Message
 	systemChannel <-chan *servicebus.Message
 	menuChannel   <-chan *servicebus.Message
+	trayChannel   <-chan *servicebus.Message
 	running       bool
 
 	servicebus *servicebus.ServiceBus
@@ -76,6 +77,11 @@ func New(servicebus *servicebus.ServiceBus, logger *logger.Logger) (*Dispatcher,
 		return nil, err
 	}
 
+	trayChannel, err := servicebus.Subscribe("trayfrontend:")
+	if err != nil {
+		return nil, err
+	}
+
 	result := &Dispatcher{
 		servicebus:    servicebus,
 		eventChannel:  eventChannel,
@@ -87,6 +93,7 @@ func New(servicebus *servicebus.ServiceBus, logger *logger.Logger) (*Dispatcher,
 		dialogChannel: dialogChannel,
 		systemChannel: systemChannel,
 		menuChannel:   menuChannel,
+		trayChannel:   trayChannel,
 	}
 
 	return result, nil
@@ -118,6 +125,8 @@ func (d *Dispatcher) Start() error {
 				d.processSystemMessage(systemMessage)
 			case menuMessage := <-d.menuChannel:
 				d.processMenuMessage(menuMessage)
+			case trayMessage := <-d.trayChannel:
+				d.processTrayMessage(trayMessage)
 			}
 		}
 
@@ -431,6 +440,35 @@ func (d *Dispatcher) processMenuMessage(result *servicebus.Message) {
 		// For now we will just pick the first one
 		for _, client := range d.clients {
 			client.frontend.UpdateMenu(updatedMenu)
+		}
+
+	default:
+		d.logger.Error("Unknown menufrontend command: %s", command)
+	}
+}
+
+func (d *Dispatcher) processTrayMessage(result *servicebus.Message) {
+	splitTopic := strings.Split(result.Topic(), ":")
+	if len(splitTopic) < 2 {
+		d.logger.Error("Invalid tray message : %#v", result.Data())
+		return
+	}
+
+	command := splitTopic[1]
+	switch command {
+	case "update":
+
+		updatedMenu, ok := result.Data().(*menu.Menu)
+		if !ok {
+			d.logger.Error("Invalid data for 'trayfrontend:update' : %#v",
+				result.Data())
+			return
+		}
+
+		// TODO: Work out what we mean in a multi window environment...
+		// For now we will just pick the first one
+		for _, client := range d.clients {
+			client.frontend.UpdateTray(updatedMenu)
 		}
 
 	default:

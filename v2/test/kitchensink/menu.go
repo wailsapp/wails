@@ -145,6 +145,10 @@ func (m *Menu) createDynamicMenuTwo() {
 
 	// Insert this menu after Dynamic Menu Item 1
 	dm1 := m.runtime.Menu.GetByID("Dynamic Menus 1")
+	if dm1 == nil {
+		return
+	}
+
 	dm1.InsertAfter(dm2)
 	m.runtime.Menu.Update()
 }
@@ -172,6 +176,9 @@ func (m *Menu) insertBeforeRandom(_ *menu.MenuItem) {
 	m.dynamicMenuItems[text] = newItem
 
 	item := m.runtime.Menu.GetByID(randomItemID)
+	if item == nil {
+		return
+	}
 
 	m.runtime.Log.Info(fmt.Sprintf(
 		"Inserting menu item '%s' before menu item '%s'", newItem.Label,

@@ -33,4 +33,5 @@ extern void OpenDialog(void *appPointer, char *callbackID, char *title, char *fi
 extern void SaveDialog(void *appPointer, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int showHiddenFiles, int canCreateDirectories, int treatPackagesAsDirectories);
 extern void DarkModeEnabled(void *appPointer, char *callbackID);
 extern void UpdateMenu(void *app, char *menuAsJSON);
+extern void UpdateTray(void *app, char *menuAsJSON);
 #endif

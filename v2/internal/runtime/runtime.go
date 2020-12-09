@@ -20,7 +20,7 @@ type Runtime struct {
 }
 
 // New creates a new runtime
-func New(serviceBus *servicebus.ServiceBus, menu *menu.Menu) *Runtime {
+func New(serviceBus *servicebus.ServiceBus, menu *menu.Menu, trayMenu *menu.Menu) *Runtime {
 	result := &Runtime{
 		Browser: newBrowser(),
 		Events:  newEvents(serviceBus),
@@ -28,7 +28,7 @@ func New(serviceBus *servicebus.ServiceBus, menu *menu.Menu) *Runtime {
 		Dialog:  newDialog(serviceBus),
 		System:  newSystem(serviceBus),
 		Menu:    newMenu(serviceBus, menu),
-		Tray:    newTray(serviceBus, menu),
+		Tray:    newTray(serviceBus, trayMenu),
 		Log:     newLog(serviceBus),
 		bus:     serviceBus,
 	}

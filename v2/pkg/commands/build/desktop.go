@@ -7,7 +7,6 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/html"
-	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
 
 // DesktopBuilder builds applications for the desktop
@@ -32,7 +31,7 @@ func (d *DesktopBuilder) BuildAssets(options *Options) error {
 	}
 
 	// Build base assets (HTML/JS/CSS/etc)
-	err = d.BuildBaseAssets(assets, options.Logger)
+	err = d.BuildBaseAssets(assets, options)
 	if err != nil {
 		return err
 	}
@@ -47,9 +46,10 @@ func (d *DesktopBuilder) BuildAssets(options *Options) error {
 }
 
 // BuildBaseAssets builds the assets for the desktop application
-func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, outputLogger *clilogger.CLILogger) error {
+func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, options *Options) error {
 	var err error
 
+	outputLogger := options.Logger
 	outputLogger.Print("    - Embedding Assets...")
 
 	// Get target asset directory
@@ -63,7 +63,13 @@ func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, outputLogger 
 	d.addFileToDelete(assetsFile)
 
 	// Process Icon
-	err = d.processIcon(assetDir)
+	err = d.processApplicationIcon(assetDir)
+	if err != nil {
+		return err
+	}
+
+	// Process Tray Icons
+	err = d.processTrayIcons(assetDir, options)
 	if err != nil {
 		return err
 	}
@@ -73,9 +79,9 @@ func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, outputLogger 
 	return nil
 }
 
-// processIcon will copy a default icon if one doesn't exist, then, if
+// processApplicationIcon will copy a default icon if one doesn't exist, then, if
 // needed, will compile the icon
-func (d *DesktopBuilder) processIcon(assetDir string) error {
+func (d *DesktopBuilder) processApplicationIcon(assetDir string) error {
 
 	// Copy default icon if one doesn't exist
 	iconFile := filepath.Join(d.projectData.Path, "icon.png")

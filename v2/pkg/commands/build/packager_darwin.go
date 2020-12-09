@@ -24,10 +24,15 @@ func packageApplication(options *Options) error {
 
 	contentsDirectory := filepath.Join(options.BuildDirectory, bundlename, "/Contents")
 	exeDir := filepath.Join(contentsDirectory, "/MacOS")
-	fs.MkDirs(exeDir, 0755)
+	err = fs.MkDirs(exeDir, 0755)
+	if err != nil {
+		return err
+	}
 	resourceDir := filepath.Join(contentsDirectory, "/Resources")
-	fs.MkDirs(resourceDir, 0755)
-
+	err = fs.MkDirs(resourceDir, 0755)
+	if err != nil {
+		return err
+	}
 	// Copy binary
 	packedBinaryPath := filepath.Join(exeDir, options.ProjectData.Name)
 	err = fs.MoveFile(options.CompiledBinary, packedBinaryPath)
@@ -42,7 +47,7 @@ func packageApplication(options *Options) error {
 	}
 
 	// Generate Icons
-	err = processIcon(resourceDir)
+	err = processApplicationIcon(resourceDir)
 	if err != nil {
 		return err
 	}
@@ -84,8 +89,10 @@ func generateDefaultPlist(options *Options, targetPlistFile string) error {
 	if err != nil {
 		return errors.Wrap(err, "Cannot open plist template")
 	}
-	tmpl.Parse(string(infoPlist))
-
+	_, err = tmpl.Parse(string(infoPlist))
+	if err != nil {
+		return err
+	}
 	// Write the template to a buffer
 	var tpl bytes.Buffer
 	err = tmpl.Execute(&tpl, plistData)
@@ -122,7 +129,7 @@ func newPlistData(title, exe, packageID, version, author string) *plistData {
 	}
 }
 
-func processIcon(resourceDir string) error {
+func processApplicationIcon(resourceDir string) error {
 
 	appIcon, err := fs.RelativeToCwd("appicon.png")
 	if err != nil {
