@@ -110,7 +110,12 @@ func (r *Runtime) processBrowserMessage(method string, data interface{}) error {
 		if !ok {
 			return fmt.Errorf("expected 1 string parameter for runtime:browser:open")
 		}
-		go r.runtime.Browser.Open(target)
+		go func() {
+			err := r.runtime.Browser.Open(target)
+			if err != nil {
+				r.logger.Error(err.Error())
+			}
+		}()
 	default:
 		return fmt.Errorf("unknown method runtime:browser:%s", method)
 	}

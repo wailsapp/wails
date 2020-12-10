@@ -129,7 +129,7 @@ func newPlistData(title, exe, packageID, version, author string) *plistData {
 	}
 }
 
-func processApplicationIcon(resourceDir string) error {
+func processApplicationIcon(resourceDir string) (err error) {
 
 	appIcon, err := fs.RelativeToCwd("appicon.png")
 	if err != nil {
@@ -140,9 +140,9 @@ func processApplicationIcon(resourceDir string) error {
 	if !fs.FileExists(appIcon) {
 		// No - Install default icon
 		defaultIcon := fs.RelativePath("./internal/packager/icon1024.png")
-		err := fs.CopyFile(defaultIcon, appIcon)
+		err = fs.CopyFile(defaultIcon, appIcon)
 		if err != nil {
-			return err
+			return
 		}
 	}
 
@@ -151,7 +151,13 @@ func processApplicationIcon(resourceDir string) error {
 	if err != nil {
 		return err
 	}
-	defer imageFile.Close()
+
+	defer func() {
+		err = imageFile.Close()
+		if err == nil {
+			return
+		}
+	}()
 	srcImg, _, err := image.Decode(imageFile)
 	if err != nil {
 		return err
@@ -162,6 +168,11 @@ func processApplicationIcon(resourceDir string) error {
 		return err
 
 	}
-	defer dest.Close()
+	defer func() {
+		err = dest.Close()
+		if err == nil {
+			return
+		}
+	}()
 	return icns.Encode(dest, srcImg)
 }
