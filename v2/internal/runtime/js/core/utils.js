@@ -37,8 +37,6 @@ export function InjectCSS(css) {
 	}
 }
 
-export function DisableContextMenu() {
-	AddScript('function contextMenu(event) { event.preventDefault(); }');
-	var body = document.getElementsByTagName('body')[0];
-	body.setAttribute('oncontextmenu', 'contextMenu(event)');
+export function DisableDefaultContextMenu() {
+	window.disableWailsDefaultContextMenu = true;
 }

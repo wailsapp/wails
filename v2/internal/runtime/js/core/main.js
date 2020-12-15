@@ -14,7 +14,7 @@ import * as Window from './window';
 import * as Dialog from './dialog';
 import { On, Once, OnMultiple, Emit, Notify } from './events';
 import { Callback, SystemCall } from './calls';
-import { AddScript, InjectCSS, DisableContextMenu } from './utils';
+import { AddScript, InjectCSS, DisableDefaultContextMenu } from './utils';
 import { AddIPCListener } from 'ipc';
 import * as Platform from 'platform';
 import * as Store from './store';
@@ -41,7 +41,7 @@ export function Init() {
 			Notify,
 			AddScript,
 			InjectCSS,
-			DisableContextMenu,
+			DisableDefaultContextMenu,
 			// Init,
 			AddIPCListener,
 			SystemCall,

@@ -30,7 +30,7 @@ export function Init() {
     // Setup drag handler
     // Based on code from: https://github.com/patr0nus/DeskGap
     window.addEventListener('mousedown', function (e) {
-        var currentElement = e.target;
+        let currentElement = e.target;
         while (currentElement != null) {
             if (currentElement.hasAttribute('data-wails-no-drag')) {
                 break;
@@ -39,6 +39,30 @@ export function Init() {
                 break;
             }
             currentElement = currentElement.parentElement;
+        }
+    });
+
+    // Setup context menu hook
+    window.addEventListener('contextmenu', function (e) {
+        let currentElement = e.target;
+        let contextMenuId;
+        while (currentElement != null) {
+            contextMenuId = currentElement.dataset['wails-context-menu-id'];
+            if (contextMenuId != null) {
+                break;
+            }
+            currentElement = currentElement.parentElement;
+        }
+        if (contextMenuId != null || window.disableWailsDefaultContextMenu) {
+            e.preventDefault();
+        }
+        if( contextMenuId != null ) {
+            let message = {
+                id: contextMenuId,
+                x: e.clientX,
+                y: e.clientY,
+            };
+            window.webkit.messageHandlers.contextMenu.postMessage(JSON.stringify(message));
         }
     });
 }
