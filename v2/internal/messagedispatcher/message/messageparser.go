@@ -27,7 +27,7 @@ func Parse(message string) (*parsedMessage, error) {
 
 	parseMethod := messageParsers[message[0]]
 	if parseMethod == nil {
-		return nil, fmt.Errorf("message type '%b' invalid", message[0])
+		return nil, fmt.Errorf("message type '%c' invalid", message[0])
 	}
 
 	return parseMethod(message)
