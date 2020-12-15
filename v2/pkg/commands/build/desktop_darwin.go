@@ -21,7 +21,7 @@ func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) err
 	// Setup target
 	targetFilename := "trayicon"
 	targetFile := filepath.Join(assetDir, targetFilename+".c")
-	//d.addFileToDelete(targetFile)
+	d.addFileToDelete(targetFile)
 
 	var dataBytes []byte
 

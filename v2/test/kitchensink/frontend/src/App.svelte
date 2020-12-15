@@ -43,7 +43,7 @@
   <!-- Sticky alerts (toasts), empty container -->
   <div class="sticky-alerts"></div>
   <!-- Sidebar -->
-  <div class="sidebar noselect">
+  <div class="sidebar noselect" data-wails-context-menu-id="test">
     <div data-wails-no-drag class="sidebar-menu">
       <!-- Sidebar brand -->
       <div on:click="{ homepageClicked }" class="sidebar-brand">        
@@ -53,7 +53,7 @@
       <h5 class="sidebar-title">Runtime</h5>
       <div class="sidebar-divider"></div>
       {#each runtimePages as link}
-        <span on:click="{linkClicked}" class="sidebar-link" class:active="{$selectedPage == link}">{link}</span> 
+        <span on:click="{linkClicked}" class="sidebar-link" class:active="{$selectedPage === link}">{link}</span>
       {/each}
       <br />
       <h5 class="sidebar-title">Links</h5>
@@ -65,7 +65,7 @@
   <!-- Content wrapper -->
     <div class="content-wrapper noselect" class:dark-content-wrapper="{$darkMode}">
       <div class="inner-content">
-        <MainPage></MainPage>
+        <MainPage/>
       </div>
     </div>
 </div>

@@ -24,6 +24,7 @@ type App struct {
 	StartHidden   bool
 	DevTools      bool
 	RGBA          int
+	ContextMenus  map[string]*menu.Menu
 	Tray          *menu.Menu
 	Menu          *menu.Menu
 	Mac           *mac.Options
@@ -91,6 +92,34 @@ func GetApplicationMenu(appoptions *App) *menu.Menu {
 
 	if result == nil {
 		result = appoptions.Menu
+	}
+
+	return result
+}
+
+func GetContextMenus(appoptions *App) map[string]*menu.Menu {
+	var result map[string]*menu.Menu
+
+	result = appoptions.ContextMenus
+	var contextMenuOverrides map[string]*menu.Menu
+	switch runtime.GOOS {
+	case "darwin":
+		if appoptions.Mac != nil {
+			contextMenuOverrides = appoptions.Mac.ContextMenus
+		}
+		//case "linux":
+		//	if appoptions.Linux != nil {
+		//		result = appoptions.Linux.Tray
+		//	}
+		//case "windows":
+		//	if appoptions.Windows != nil {
+		//		result = appoptions.Windows.Tray
+		//	}
+	}
+
+	// Overwrite defaults with OS Specific context menus
+	for id, contextMenu := range contextMenuOverrides {
+		result[id] = contextMenu
 	}
 
 	return result

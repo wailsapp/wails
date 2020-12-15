@@ -16,6 +16,7 @@ extern void WebviewIsTransparent(void *);
 extern void SetWindowBackgroundIsTranslucent(void *);
 extern void SetMenu(void *, const char *);
 extern void SetTray(void *, const char *);
+extern void SetContextMenus(void *, const char *);
 */
 import "C"
 import (
@@ -109,6 +110,16 @@ func (a *Application) processPlatformSettings() error {
 			return err
 		}
 		C.SetTray(a.app, a.string2CString(string(trayMenuJSON)))
+	}
+
+	// Process context menus
+	contextMenus := options.GetContextMenus(a.config)
+	if contextMenus != nil {
+		contextMenusJSON, err := json.Marshal(contextMenus)
+		if err != nil {
+			return err
+		}
+		C.SetContextMenus(a.app, a.string2CString(string(contextMenusJSON)))
 	}
 
 	return nil
