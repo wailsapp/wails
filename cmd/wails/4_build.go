@@ -73,6 +73,7 @@ func init() {
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}
 		projectOptions.Verbose = verbose
+		projectOptions.UseFirebug = usefirebug
 
 		// Check we are in project directory
 		// Check project.json loads correctly
