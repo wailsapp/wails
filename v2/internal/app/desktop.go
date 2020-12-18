@@ -23,14 +23,15 @@ type App struct {
 	options    *options.App
 
 	// Subsystems
-	log        *subsystem.Log
-	runtime    *subsystem.Runtime
-	event      *subsystem.Event
-	binding    *subsystem.Binding
-	call       *subsystem.Call
-	menu       *subsystem.Menu
-	tray       *subsystem.Tray
-	dispatcher *messagedispatcher.Dispatcher
+	log          *subsystem.Log
+	runtime      *subsystem.Runtime
+	event        *subsystem.Event
+	binding      *subsystem.Binding
+	call         *subsystem.Call
+	menu         *subsystem.Menu
+	tray         *subsystem.Tray
+	contextmenus *subsystem.ContextMenus
+	dispatcher   *messagedispatcher.Dispatcher
 
 	// Indicates if the app is in debug mode
 	debug bool
@@ -94,8 +95,9 @@ func (a *App) Run() error {
 	// Start the runtime
 	applicationMenu := options.GetApplicationMenu(a.options)
 	trayMenu := options.GetTrayMenu(a.options)
+	contextMenus := options.GetContextMenus(a.options)
 
-	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger, applicationMenu, trayMenu)
+	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger, applicationMenu, trayMenu, contextMenus)
 	if err != nil {
 		return err
 	}
@@ -174,6 +176,19 @@ func (a *App) Run() error {
 		}
 		a.tray = traysubsystem
 		err = a.tray.Start()
+		if err != nil {
+			return err
+		}
+	}
+
+	// Optionally start the context menu subsystem
+	if contextMenus != nil {
+		contextmenussubsystem, err := subsystem.NewContextMenus(contextMenus, a.servicebus, a.logger)
+		if err != nil {
+			return err
+		}
+		a.contextmenus = contextmenussubsystem
+		err = a.contextmenus.Start()
 		if err != nil {
 			return err
 		}

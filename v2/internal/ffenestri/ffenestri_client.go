@@ -13,6 +13,7 @@ import "C"
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"strconv"
 
@@ -187,4 +188,20 @@ func (c *Client) UpdateTray(menu *menu.Menu) {
 		return
 	}
 	C.UpdateTray(c.app.app, c.app.string2CString(string(trayMenuJSON)))
+}
+
+func (c *Client) UpdateContextMenus(contextMenus *menu.ContextMenus) {
+
+	// Guard against nil contextMenus
+	if contextMenus == nil {
+		return
+	}
+	// Process the menu
+	contextMenusJSON, err := json.Marshal(contextMenus)
+	fmt.Printf("\n\nUPDATED CONTEXT MENUS:\n %+v\n\n", string(contextMenusJSON))
+	if err != nil {
+		c.app.logger.Error("Error processing updated Context Menus: %s", err.Error())
+		return
+	}
+	C.UpdateContextMenus(c.app.app, c.app.string2CString(string(contextMenusJSON)))
 }

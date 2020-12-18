@@ -57,10 +57,10 @@ export function Init() {
             e.preventDefault();
         }
         if( contextMenuId != null ) {
+            let contextData = currentElement.dataset['wails-context-menu-data'];
             let message = {
                 id: contextMenuId,
-                x: e.clientX,
-                y: e.clientY,
+                data: contextData || "",
             };
             window.webkit.messageHandlers.contextMenu.postMessage(JSON.stringify(message));
         }

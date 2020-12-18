@@ -21,6 +21,7 @@ extern void SetContextMenus(void *, const char *);
 import "C"
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -116,6 +117,7 @@ func (a *Application) processPlatformSettings() error {
 	contextMenus := options.GetContextMenus(a.config)
 	if contextMenus != nil {
 		contextMenusJSON, err := json.Marshal(contextMenus)
+		fmt.Printf("\n\nCONTEXT MENUS:\n %+v\n\n", string(contextMenusJSON))
 		if err != nil {
 			return err
 		}

@@ -20,7 +20,7 @@ type trayRuntime struct {
 }
 
 // newTray creates a new Menu struct
-func newTray(bus *servicebus.ServiceBus, menu *menu.Menu) Menu {
+func newTray(bus *servicebus.ServiceBus, menu *menu.Menu) Tray {
 	return &trayRuntime{
 		bus:      bus,
 		trayMenu: menu,

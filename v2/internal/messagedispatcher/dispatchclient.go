@@ -33,6 +33,7 @@ type Client interface {
 	DarkModeEnabled(callbackID string)
 	UpdateMenu(menu *menu.Menu)
 	UpdateTray(menu *menu.Menu)
+	UpdateContextMenus(contextMenus *menu.ContextMenus)
 }
 
 // DispatchClient is what the frontends use to interface with the

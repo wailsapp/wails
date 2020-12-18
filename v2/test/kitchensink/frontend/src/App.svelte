@@ -43,7 +43,7 @@
   <!-- Sticky alerts (toasts), empty container -->
   <div class="sticky-alerts"></div>
   <!-- Sidebar -->
-  <div class="sidebar noselect" data-wails-context-menu-id="test">
+  <div class="sidebar noselect" data-wails-context-menu-id="test" data-wails-context-menu-data="hello!">
     <div data-wails-no-drag class="sidebar-menu">
       <!-- Sidebar brand -->
       <div on:click="{ homepageClicked }" class="sidebar-brand">        

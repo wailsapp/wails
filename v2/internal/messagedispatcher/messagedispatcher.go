@@ -17,15 +17,16 @@ import (
 // Dispatcher translates messages received from the frontend
 // and publishes them onto the service bus
 type Dispatcher struct {
-	quitChannel   <-chan *servicebus.Message
-	resultChannel <-chan *servicebus.Message
-	eventChannel  <-chan *servicebus.Message
-	windowChannel <-chan *servicebus.Message
-	dialogChannel <-chan *servicebus.Message
-	systemChannel <-chan *servicebus.Message
-	menuChannel   <-chan *servicebus.Message
-	trayChannel   <-chan *servicebus.Message
-	running       bool
+	quitChannel        <-chan *servicebus.Message
+	resultChannel      <-chan *servicebus.Message
+	eventChannel       <-chan *servicebus.Message
+	windowChannel      <-chan *servicebus.Message
+	dialogChannel      <-chan *servicebus.Message
+	systemChannel      <-chan *servicebus.Message
+	menuChannel        <-chan *servicebus.Message
+	contextMenuChannel <-chan *servicebus.Message
+	trayChannel        <-chan *servicebus.Message
+	running            bool
 
 	servicebus *servicebus.ServiceBus
 	logger     logger.CustomLogger
@@ -77,23 +78,29 @@ func New(servicebus *servicebus.ServiceBus, logger *logger.Logger) (*Dispatcher,
 		return nil, err
 	}
 
+	contextMenuChannel, err := servicebus.Subscribe("contextmenufrontend:")
+	if err != nil {
+		return nil, err
+	}
+
 	trayChannel, err := servicebus.Subscribe("trayfrontend:")
 	if err != nil {
 		return nil, err
 	}
 
 	result := &Dispatcher{
-		servicebus:    servicebus,
-		eventChannel:  eventChannel,
-		logger:        logger.CustomLogger("Message Dispatcher"),
-		clients:       make(map[string]*DispatchClient),
-		resultChannel: resultChannel,
-		quitChannel:   quitChannel,
-		windowChannel: windowChannel,
-		dialogChannel: dialogChannel,
-		systemChannel: systemChannel,
-		menuChannel:   menuChannel,
-		trayChannel:   trayChannel,
+		servicebus:         servicebus,
+		eventChannel:       eventChannel,
+		logger:             logger.CustomLogger("Message Dispatcher"),
+		clients:            make(map[string]*DispatchClient),
+		resultChannel:      resultChannel,
+		quitChannel:        quitChannel,
+		windowChannel:      windowChannel,
+		dialogChannel:      dialogChannel,
+		systemChannel:      systemChannel,
+		menuChannel:        menuChannel,
+		trayChannel:        trayChannel,
+		contextMenuChannel: contextMenuChannel,
 	}
 
 	return result, nil
@@ -125,6 +132,8 @@ func (d *Dispatcher) Start() error {
 				d.processSystemMessage(systemMessage)
 			case menuMessage := <-d.menuChannel:
 				d.processMenuMessage(menuMessage)
+			case contextMenuMessage := <-d.contextMenuChannel:
+				d.processContextMenuMessage(contextMenuMessage)
 			case trayMessage := <-d.trayChannel:
 				d.processTrayMessage(trayMessage)
 			}
@@ -444,6 +453,34 @@ func (d *Dispatcher) processMenuMessage(result *servicebus.Message) {
 
 	default:
 		d.logger.Error("Unknown menufrontend command: %s", command)
+	}
+}
+func (d *Dispatcher) processContextMenuMessage(result *servicebus.Message) {
+	splitTopic := strings.Split(result.Topic(), ":")
+	if len(splitTopic) < 2 {
+		d.logger.Error("Invalid contextmenu message : %#v", result.Data())
+		return
+	}
+
+	command := splitTopic[1]
+	switch command {
+	case "update":
+
+		updatedContextMenus, ok := result.Data().(*menu.ContextMenus)
+		if !ok {
+			d.logger.Error("Invalid data for 'contextmenufrontend:update' : %#v",
+				result.Data())
+			return
+		}
+
+		// TODO: Work out what we mean in a multi window environment...
+		// For now we will just pick the first one
+		for _, client := range d.clients {
+			client.frontend.UpdateContextMenus(updatedContextMenus)
+		}
+
+	default:
+		d.logger.Error("Unknown contextmenufrontend command: %s", command)
 	}
 }
 

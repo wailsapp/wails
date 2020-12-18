@@ -25,7 +25,7 @@ type App struct {
 }
 
 // CreateApp returns a null application
-func CreateApp(options *options.App) *App {
+func CreateApp(_ *options.App) *App {
 	return &App{}
 }
 
@@ -37,6 +37,5 @@ func (a *App) Run() error {
 }
 
 // Bind the dummy interface
-func (a *App) Bind(dummy interface{}) error {
-	return nil
+func (a *App) Bind(_ interface{}) {
 }

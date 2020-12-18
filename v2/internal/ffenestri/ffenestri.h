@@ -34,4 +34,6 @@ extern void SaveDialog(void *appPointer, char *callbackID, char *title, char *fi
 extern void DarkModeEnabled(void *appPointer, char *callbackID);
 extern void UpdateMenu(void *app, char *menuAsJSON);
 extern void UpdateTray(void *app, char *menuAsJSON);
+extern void UpdateContextMenus(void *app, char *contextMenusAsJSON);
+
 #endif
