@@ -134,16 +134,22 @@ func InitializeCrossCompilation(verbose bool) error {
 }
 
 // BuildDocker builds the project using the cross compiling wailsapp/xgo:<xgoVersion> container
-func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOptions) error {
+func BuildDocker(binaryName string, buildDirectory string, buildMode string, projectOptions *ProjectOptions) error {
 	var packSpinner *spinner.Spinner
 	if buildMode == BuildModeBridge {
 		return fmt.Errorf("you cant serve the application in cross-compilation")
 	}
 
 	// Check build directory
-	buildDirectory := filepath.Join(fs.Cwd(), "build")
 	if !fs.DirExists(buildDirectory) {
-		fs.MkDir(buildDirectory)
+		_ = fs.MkDir(buildDirectory)
+	}
+
+	var outDir string
+	if filepath.IsAbs(buildDirectory) {
+		outDir = buildDirectory
+	} else {
+		outDir = filepath.Join(fs.Cwd(), buildDirectory)
 	}
 
 	buildCommand := slicer.String()
@@ -156,8 +162,8 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		"docker",
 		"run",
 		"--rm",
-		"-v", fmt.Sprintf("%s:/build", filepath.Join(fs.Cwd(), "build")),
-		"-v", fmt.Sprintf("%s:/source", fs.Cwd()),
+		"-v", fmt.Sprintf("%s:/build", outDir),
+		"-v", fmt.Sprintf("%s:/source", projectOptions.ModuleRoot),
 		"-e", fmt.Sprintf("LOCAL_USER_ID=%v", userid),
 		"-e", fmt.Sprintf("FLAG_TAGS=%s", projectOptions.Tags),
 		"-e", fmt.Sprintf("FLAG_LDFLAGS=%s", ldFlags(projectOptions, buildMode)),
@@ -331,7 +337,7 @@ func BuildApplication(binaryName string, output string, forceRebuild bool, build
 	}()
 
 	if projectOptions.CrossCompile {
-		err = BuildDocker(binaryName, buildMode, projectOptions)
+		err = BuildDocker(binaryName, output, buildMode, projectOptions)
 	} else {
 		err = BuildNative(binaryName, output, forceRebuild, buildMode, projectOptions)
 	}
