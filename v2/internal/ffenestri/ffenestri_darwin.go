@@ -4,19 +4,8 @@ package ffenestri
 #cgo darwin CFLAGS: -DFFENESTRI_DARWIN=1
 #cgo darwin LDFLAGS: -framework WebKit -lobjc
 
-extern void TitlebarAppearsTransparent(void *);
-extern void HideTitle(void *);
-extern void HideTitleBar(void *);
-extern void FullSizeContent(void *);
-extern void UseToolbar(void *);
-extern void HideToolbarSeparator(void *);
-extern void DisableFrame(void *);
-extern void SetAppearance(void *, const char *);
-extern void WebviewIsTransparent(void *);
-extern void SetWindowBackgroundIsTranslucent(void *);
-extern void SetMenu(void *, const char *);
-extern void SetTray(void *, const char *);
-extern void SetContextMenus(void *, const char *);
+#include "ffenestri_darwin.h"
+
 */
 import "C"
 import (
@@ -70,7 +59,7 @@ func (a *Application) processPlatformSettings() error {
 
 	// Check if window should be translucent
 	if mac.WindowBackgroundIsTranslucent {
-		C.SetWindowBackgroundIsTranslucent(a.app)
+		C.WindowBackgroundIsTranslucent(a.app)
 	}
 
 	// Process menu

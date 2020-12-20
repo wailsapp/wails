@@ -19,7 +19,7 @@ func main() {
 		MinHeight: 600,
 		//Tray:      menu.NewMenuFromItems(menu.AppMenu()),
 		//Menu:      menu.NewMenuFromItems(menu.AppMenu()),
-		StartHidden:  true,
+		//StartHidden:  true,
 		ContextMenus: createContextMenus(),
 		Mac: &mac.Options{
 			WebviewIsTransparent:          true,
