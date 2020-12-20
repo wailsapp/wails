@@ -816,7 +816,7 @@ int freeHashmapItem(void *const context, struct hashmap_element_s *const e) {
 }
 
 int freeNSMenu(void *const context, struct hashmap_element_s *const e) {
-    msg(e->data, s("dealloc"));
+    msg(e->data, s("release"));
     return -1;
 }
 
@@ -828,7 +828,7 @@ void destroyMenu(struct Application *app) {
 	// Free radio group members
 	if( hashmap_num_entries(&radioGroupMapForApplicationMenu) > 0 ) {
 		if (0!=hashmap_iterate_pairs(&radioGroupMapForApplicationMenu, freeHashmapItem, NULL)) {
-			Fatal(app, "failed to deallocate hashmap entries!");
+			Fatal(app, "failed to release hashmap entries!");
 		}
 	}
 
@@ -844,7 +844,7 @@ void destroyMenu(struct Application *app) {
     // Remove the current Menu
     id menubar = msg(msg(c("NSApplication"), s("sharedApplication")), s("mainMenu"));
     Debug(app, "Destroying menubar: %p", menubar);
-    msg(menubar, s("dealloc"));
+    msg(menubar, s("release"));
 }
 
 void destroyContextMenus(struct Application *app) {
@@ -913,7 +913,7 @@ void destroyTray(struct Application *app) {
 	}
 
 	// Destroy app status item
-    msg(app->statusItem, s("dealloc"));
+    msg(app->statusItem, s("release"));
 
 }
 
