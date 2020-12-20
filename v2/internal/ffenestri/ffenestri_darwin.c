@@ -2001,20 +2001,22 @@ struct hashmap_s *menuItemMap, const char *checkboxCallbackFunction, const char
 	  // Check if there are modifiers
 	  JsonNode *modifiersList = json_find_member(accelerator, "Modifiers");
 	  if ( modifiersList != NULL ) {
-		// Allocate an array of strings
-		int noOfModifiers = json_array_length(modifiersList);
-		modifiers = malloc(sizeof(const char *) * (noOfModifiers + 1));
-		JsonNode *modifier;
-		int count = 0;
-		// Iterate the modifiers and save a reference to them in our new array
-		json_foreach(modifier, modifiersList) {
-		  // Get modifier name
-		  modifiers[count] = modifier->string_;
-		  count++;
-		}
-		// Null terminate the modifier list
-		modifiers[count] = NULL;
-	  }
+          // Allocate an array of strings
+          int noOfModifiers = json_array_length(modifiersList);
+          if (noOfModifiers > 0) {
+              modifiers = malloc(sizeof(const char *) * (noOfModifiers + 1));
+              JsonNode *modifier;
+              int count = 0;
+              // Iterate the modifiers and save a reference to them in our new array
+              json_foreach(modifier, modifiersList) {
+                  // Get modifier name
+                  modifiers[count] = modifier->string_;
+                  count++;
+              }
+              // Null terminate the modifier list
+              modifiers[count] = NULL;
+          }
+      }
   }
 
 
@@ -2125,6 +2127,8 @@ void parseMenuData(struct Application *app) {
 	// Create a new menu bar
 	id menubar = createMenu(str(""));
 
+	printf("\n\nmenubar = %p\n\n", menubar);
+
 	// Parse the processed menu json
 	app->processedMenu = json_decode(app->menuAsJSON);
 
@@ -2147,6 +2151,7 @@ void parseMenuData(struct Application *app) {
 	parseMenu(app, menubar, menuData, &menuItemMapForApplicationMenu,
 	"checkboxMenuCallbackForApplicationMenu:", "radioMenuCallbackForApplicationMenu:", "menuCallbackForApplicationMenu:");
 
+	printf("\n\nmenubar = %p\n\n", menubar);
 	// Create the radiogroup cache
 	JsonNode *radioGroups = json_find_member(app->processedMenu, "RadioGroups");
 	if( radioGroups == NULL ) {
@@ -2154,6 +2159,7 @@ void parseMenuData(struct Application *app) {
 		Fatal(app, "Unable to find RadioGroups data: %s", app->processedMenu);
 		return;
 	}
+	printf("\n\nmenubar = %p\n\n", menubar);
 
 	// Iterate radio groups
 	JsonNode *radioGroup;
@@ -2161,6 +2167,7 @@ void parseMenuData(struct Application *app) {
 		// Get item label
 		processRadioGroup(radioGroup, &menuItemMapForApplicationMenu, &radioGroupMapForApplicationMenu);
 	}
+	printf("\n\nmenubar = %p\n\n", menubar);
 
 	// Apply the menu bar
 	msg(msg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menubar);
