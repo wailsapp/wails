@@ -4,7 +4,7 @@ package ffenestri
 #cgo darwin CFLAGS: -DFFENESTRI_DARWIN=1
 #cgo darwin LDFLAGS: -framework WebKit -lobjc
 
-#include "./ffenestri_darwin.h"
+#include "ffenestri_darwin.h"
 
 */
 import "C"

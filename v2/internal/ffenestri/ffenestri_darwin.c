@@ -25,7 +25,6 @@
 #define STREQ(a,b) strcmp(a, b) == 0
 #define STRCOPY(a) concat(a, "")
 #define MEMFREE(input) free((void*)input); input = NULL;
-#define FREE_IF_NOT_NULL(input) if( input != NULL ) { MEMFREE(input); }
 
 #define ON_MAIN_THREAD(str) dispatch( ^{ str; } )
 #define MAIN_WINDOW_CALL(str) msg(app->mainWindow, s((str)))
@@ -79,7 +78,6 @@
 // References to assets
 extern const unsigned char *assets[];
 extern const unsigned char runtime;
-extern const char *icon[];
 
 // Tray icon
 extern const unsigned int trayIconLength;
@@ -121,19 +119,13 @@ void dispatch(dispatchMethod func) {
 	dispatch_async(dispatch_get_main_queue(), func);
 }
 
-// App Delegate
-typedef struct AppDel {
-	Class isa;
-	id window;
-} AppDelegate;
-
 // Credit: https://stackoverflow.com/a/8465083
 char* concat(const char *string1, const char *string2)
 {
 	const size_t len1 = strlen(string1);
 	const size_t len2 = strlen(string2);
 	char *result = malloc(len1 + len2 + 1);
-	memcpy(result, string1, len1);
+	strcpy(result, string1);
 	memcpy(result + len1, string2, len2 + 1);
 	return result;
 }
@@ -182,8 +174,6 @@ struct Application {
 	id mouseEvent;
 	id mouseDownMonitor;
 	id mouseUpMonitor;
-	id vibrancyLayer;
-
 
 	// Window Data
 	const char *title;
@@ -209,7 +199,6 @@ struct Application {
 	int frame;
 	int startHidden;
 	int maximised;
-	int minimised;
 	int titlebarAppearsTransparent;
 	int hideTitle;
 	int hideTitleBar;
@@ -220,7 +209,6 @@ struct Application {
 
 	// Menu
 	const char *menuAsJSON;
-	id menubar;
 	JsonNode *processedMenu;
 
 	// Tray
@@ -232,17 +220,11 @@ struct Application {
 	const char *contextMenusAsJSON;
 	JsonNode *processedContextMenus;
 
-	// User Data
-	char *HTML;
-
 	// Callback
 	ffenestriCallback sendMessageToBackend;
 
 	// Bindings
 	const char *bindings;
-
-	// Lock - used for sync operations (Should we be using g_mutex?)
-	int lock;
 
 };
 
@@ -333,14 +315,17 @@ void showContextMenu(struct Application *app, const char *contextMenuID) {
 	id contextMenu = (id)hashmap_get(&contextMenuMap, (char*)contextMenuID, strlen(contextMenuID));
 
 	if( contextMenu == NULL ) {
-	    Debug(app, "Context menu id '%s' does not exist! Available menu ids:", contextMenuID);
-        MEMFREE(contextMenuID);
+		printf("No context menu called '%s'. Available:", contextMenuID);
 		dumpHashmap("contextMenuMap", &contextMenuMap);
+
+        // Free menu id
+        MEMFREE(contextMenuID);
 		return;
 	}
+
     // Free menu id
     MEMFREE(contextMenuID);
-
+	
 	// Grab the content view and show the menu
 	id contentView = msg(app->mainWindow, s("contentView"));
 
@@ -412,7 +397,7 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 		const char *contextMenuMessage = cstr(msg(message, s("body")));
 
 		if( contextMenuMessage == NULL ) {
-			printf("EMPTY CONTEXT MENU MESSAGE!!\n");
+			Debug(app, "EMPTY CONTEXT MENU MESSAGE!!\n");
 			return;
 		}
 
@@ -463,10 +448,10 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 }
 
 // Creates a JSON message for the given menuItemID and data
-const char* createContextMenuMessage(const char *menuItemID, const char *contextMenuData) {
+const char* createContextMenuMessage(const char *menuItemID, const char *givenContextMenuData) {
 	JsonNode *jsonObject = json_mkobject();
 	json_append_member(jsonObject, "menuItemID", json_mkstring(menuItemID));
-	json_append_member(jsonObject, "data", json_mkstring(contextMenuData));
+	json_append_member(jsonObject, "data", json_mkstring(givenContextMenuData));
 	const char *result = json_encode(jsonObject);
 	json_delete(jsonObject);
 	return result;
@@ -780,9 +765,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->resizable = resizable;
 	result->devtools = devtools;
 	result->fullscreen = fullscreen;
-	result->lock = 0;
 	result->maximised = 0;
-	result->minimised = 0;
 	result->startHidden = startHidden;
 	result->decorations = 0;
 	result->logLevel = logLevel;
@@ -819,7 +802,6 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	contextMenuData = NULL;
 
 	// Window Appearance
-	result->vibrancyLayer = NULL;
 	result->titlebarAppearsTransparent = 0;
 	result->webviewIsTranparent = 0;
 
@@ -829,8 +811,8 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 }
 
 int freeHashmapItem(void *const context, struct hashmap_element_s *const e) {
-  free(e->data);
-  return -1;
+    free(e->data);
+    return -1;
 }
 
 int freeNSMenu(void *const context, struct hashmap_element_s *const e) {
@@ -839,10 +821,6 @@ int freeNSMenu(void *const context, struct hashmap_element_s *const e) {
 }
 
 void destroyMenu(struct Application *app) {
-
-    if( app->menuAsJSON == NULL ) {
-        return;
-    }
 
 	// Free menu item hashmap
 	hashmap_destroy(&menuItemMapForApplicationMenu);
@@ -857,15 +835,16 @@ void destroyMenu(struct Application *app) {
 	//Free radio groups hashmap
 	hashmap_destroy(&radioGroupMapForApplicationMenu);
 
-    // Remove the Application Menu
-    id menubar = msg(msg(c("NSApplication"), s("sharedApplication")), s("mainMenu"));
-    msg(menubar, s("dealloc"));
-
-    // Release processed menu
+	// Release processed menu
 	if( app->processedMenu != NULL) {
 		json_delete(app->processedMenu);
 		app->processedMenu = NULL;
 	}
+
+    // Remove the current Menu
+    id menubar = msg(msg(c("NSApplication"), s("sharedApplication")), s("mainMenu"));
+    Debug(app, "Destroying menubar: %p", menubar);
+    msg(menubar, s("dealloc"));
 }
 
 void destroyContextMenus(struct Application *app) {
@@ -888,14 +867,14 @@ void destroyContextMenus(struct Application *app) {
 	//Free radio groups hashmap
 	hashmap_destroy(&radioGroupMapForContextMenus);
 
-	// Free context menus
+    // Free context menus
     if( hashmap_num_entries(&contextMenuMap) > 0 ) {
         if (0!=hashmap_iterate_pairs(&contextMenuMap, freeNSMenu, NULL)) {
             Fatal(app, "failed to deallocate hashmap entries!");
         }
     }
 
-	//Free context menu map
+    //Free context menu map
 	hashmap_destroy(&contextMenuMap);
 
     // Destroy processed Context Menus
@@ -927,14 +906,15 @@ void destroyTray(struct Application *app) {
 	//Free radio groups hashmap
 	hashmap_destroy(&radioGroupMapForTrayMenu);
 
-	// Free the menu
-    msg(app->statusItem, s("dealloc"));
-	
 	// Release processed tray
 	if( app->processedTrayMenu != NULL) {
 		json_delete(app->processedTrayMenu);
 		app->processedTrayMenu = NULL;
 	}
+
+	// Destroy app status item
+    msg(app->statusItem, s("dealloc"));
+
 }
 
 void DestroyApplication(struct Application *app) {
@@ -1162,7 +1142,7 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
 				id urls = msg(dialog, s("URLs"));
 
 				// Iterate over all the selected files
-				int noOfResults = (int)msg(urls, s("count"));
+				long noOfResults = (long)msg(urls, s("count"));
 				for( int index = 0; index < noOfResults; index++ ) {
 
 					// Extract the filename
@@ -1348,9 +1328,6 @@ void makeWindowBackgroundTranslucent(struct Application *app) {
 	msg(effectView, s("setBlendingMode:"), NSVisualEffectBlendingModeBehindWindow);
 	msg(effectView, s("setState:"), NSVisualEffectStateActive);
 	msg(contentView, s("addSubview:positioned:relativeTo:"), effectView, NSWindowBelow, NULL);
-
-	app->vibrancyLayer = effectView;
-	Debug(app, "effectView: %p", effectView);
 }
 
 void enableBoolConfig(id config, const char *setting) {
@@ -1455,8 +1432,7 @@ void createMainWindow(struct Application *app) {
 	id mainWindow = ALLOC("NSWindow");
 	mainWindow = msg(mainWindow, s("initWithContentRect:styleMask:backing:defer:"),
 		  CGRectMake(0, 0, app->width, app->height), app->decorations, NSBackingStoreBuffered, NO);
-	msg(mainWindow, s(""
-                   "autorelease"));
+	msg(mainWindow, s("autorelease"));
 
 	// Set Appearance
 	if( app->appearance != NULL ) {
@@ -1493,6 +1469,12 @@ id createMenuItem(id title, const char *action, const char *key) {
   return item;
 }
 
+id createMenuItemNoAutorelease( id title, const char *action, const char *key) {
+  id item = ALLOC("NSMenuItem");
+  msg(item, s("initWithTitle:action:keyEquivalent:"), title, s(action), str(key));
+  return item;
+}
+
 id createMenu(id title) {
   id menu = ALLOC("NSMenu");
   msg(menu, s("initWithTitle:"), title);
@@ -1516,7 +1498,7 @@ void addSeparator(id menu) {
 void createDefaultAppMenu(id parentMenu) {
 // App Menu
   id appName = msg(msg(c("NSProcessInfo"), s("processInfo")), s("processName"));
-  id appMenuItem = createMenuItem(appName, NULL, "");
+  id appMenuItem = createMenuItemNoAutorelease(appName, NULL, "");
   id appMenu = createMenu(appName);
 
   msg(appMenuItem, s("setSubmenu:"), appMenu);
@@ -1541,7 +1523,7 @@ void createDefaultAppMenu(id parentMenu) {
 
 void createDefaultEditMenu(id parentMenu) {
   // Edit Menu
-  id editMenuItem = createMenuItem(str("Edit"), NULL, "");
+  id editMenuItem = createMenuItemNoAutorelease(str("Edit"), NULL, "");
   id editMenu = createMenu(str("Edit"));
 
   msg(editMenuItem, s("setSubmenu:"), editMenu);
@@ -1958,7 +1940,7 @@ struct hashmap_s *menuItemMap, const char *checkboxCallbackFunction, const char
 	  name = menuNameNode->string_;
 	}
 
-	id thisMenuItem = createMenuItem(str(name), NULL, "");
+	id thisMenuItem = createMenuItemNoAutorelease(str(name), NULL, "");
 	id thisMenu = createMenu(str(name));
 
 	msg(thisMenuItem, s("setSubmenu:"), thisMenu);
@@ -2001,22 +1983,24 @@ struct hashmap_s *menuItemMap, const char *checkboxCallbackFunction, const char
 	  // Check if there are modifiers
 	  JsonNode *modifiersList = json_find_member(accelerator, "Modifiers");
 	  if ( modifiersList != NULL ) {
-          // Allocate an array of strings
-          int noOfModifiers = json_array_length(modifiersList);
-          if (noOfModifiers > 0) {
-              modifiers = malloc(sizeof(const char *) * (noOfModifiers + 1));
-              JsonNode *modifier;
-              int count = 0;
-              // Iterate the modifiers and save a reference to them in our new array
-              json_foreach(modifier, modifiersList) {
-                  // Get modifier name
-                  modifiers[count] = modifier->string_;
-                  count++;
-              }
-              // Null terminate the modifier list
-              modifiers[count] = NULL;
-          }
-      }
+		// Allocate an array of strings
+		int noOfModifiers = json_array_length(modifiersList);
+
+		// Do we have any?
+		if (noOfModifiers > 0) {
+			modifiers = malloc(sizeof(const char *) * (noOfModifiers + 1));
+			JsonNode *modifier;
+			int count = 0;
+			// Iterate the modifiers and save a reference to them in our new array
+			json_foreach(modifier, modifiersList) {
+			  // Get modifier name
+			  modifiers[count] = modifier->string_;
+			  count++;
+			}
+			// Null terminate the modifier list
+			modifiers[count] = NULL;
+		  }
+	  }
   }
 
 
@@ -2112,7 +2096,6 @@ struct hashmap_s *radioGroupMap) {
 	// Copy the memberList
 	char *newMemberList = (char *)malloc(arrayLength);
 	memcpy(newMemberList, memberList, arrayLength);
-
 	// add group to each member of group
 	hashmap_put(radioGroupMap, member->string_, strlen(member->string_), newMemberList);
   }
@@ -2126,8 +2109,6 @@ void parseMenuData(struct Application *app) {
 
 	// Create a new menu bar
 	id menubar = createMenu(str(""));
-
-	printf("\n\nmenubar = %p\n\n", menubar);
 
 	// Parse the processed menu json
 	app->processedMenu = json_decode(app->menuAsJSON);
@@ -2151,7 +2132,6 @@ void parseMenuData(struct Application *app) {
 	parseMenu(app, menubar, menuData, &menuItemMapForApplicationMenu,
 	"checkboxMenuCallbackForApplicationMenu:", "radioMenuCallbackForApplicationMenu:", "menuCallbackForApplicationMenu:");
 
-	printf("\n\nmenubar = %p\n\n", menubar);
 	// Create the radiogroup cache
 	JsonNode *radioGroups = json_find_member(app->processedMenu, "RadioGroups");
 	if( radioGroups == NULL ) {
@@ -2159,7 +2139,6 @@ void parseMenuData(struct Application *app) {
 		Fatal(app, "Unable to find RadioGroups data: %s", app->processedMenu);
 		return;
 	}
-	printf("\n\nmenubar = %p\n\n", menubar);
 
 	// Iterate radio groups
 	JsonNode *radioGroup;
@@ -2167,7 +2146,6 @@ void parseMenuData(struct Application *app) {
 		// Get item label
 		processRadioGroup(radioGroup, &menuItemMapForApplicationMenu, &radioGroupMapForApplicationMenu);
 	}
-	printf("\n\nmenubar = %p\n\n", menubar);
 
 	// Apply the menu bar
 	msg(msg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menubar);
@@ -2236,6 +2214,7 @@ void parseContextMenus(struct Application *app) {
 		hashmap_put(&contextMenuMap, (char*)contextMenu->key, strlen(contextMenu->key), menu);
 	}
 
+	dumpContextMenus(app);
 }
 
 void parseTrayData(struct Application *app) {
@@ -2302,6 +2281,12 @@ void parseTrayData(struct Application *app) {
 		processRadioGroup(radioGroup, &menuItemMapForTrayMenu, &radioGroupMapForTrayMenu);
 	}
 
+
+//     msg(statusBarButton, s("setImage:"),
+//        msg(c("NSImage"), s("imageNamed:"),
+//          msg(c("NSString"), s("stringWithUTF8String:"), tray->icon)));
+
+
 	msg(statusItem, s("setMenu:"), traymenu);
  }
 
@@ -2320,6 +2305,8 @@ void UpdateTray(struct Application *app, const char *trayMenuAsJSON) {
 
 void UpdateContextMenus(struct Application *app, const char *contextMenusAsJSON) {
 	ON_MAIN_THREAD (
+
+		dumpContextMenus(app);
 
 		// Free up memory
 		destroyContextMenus(app);
