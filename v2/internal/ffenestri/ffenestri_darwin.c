@@ -2214,7 +2214,7 @@ void parseContextMenus(struct Application *app) {
 		hashmap_put(&contextMenuMap, (char*)contextMenu->key, strlen(contextMenu->key), menu);
 	}
 
-	dumpContextMenus(app);
+//	dumpContextMenus(app);
 }
 
 void parseTrayData(struct Application *app) {
