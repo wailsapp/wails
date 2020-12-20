@@ -37,8 +37,11 @@ func (m *Menu) WailsInit(runtime *wails.Runtime) error {
 		fmt.Printf("We can use UTF-8 IDs: %s\n", mi.Label)
 	})
 
-	// Create dynamic menu items 2 submenu
-	m.createDynamicMenuTwo()
+	m.runtime.Menu.On("show-dynamic-menus-2", func(mi *menu.MenuItem) {
+		mi.Hidden = true
+		// Create dynamic menu items 2 submenu
+		m.createDynamicMenuTwo()
+	})
 
 	// Setup dynamic menus
 	m.runtime.Menu.On("Add Menu Item", m.addMenu)
@@ -242,6 +245,7 @@ func createApplicationMenu() *menu.Menu {
 
 		menu.SubMenu("Test Submenu", []*menu.MenuItem{
 			menu.Text("Plain text", "plain text"),
+			menu.Text("Show Dynamic Menus 2 Submenu", "show-dynamic-menus-2"),
 			menu.SubMenu("Accelerators", []*menu.MenuItem{
 				menu.SubMenu("Modifiers", []*menu.MenuItem{
 					menu.TextWithAccelerator("Shift accelerator", "Shift", menu.ShiftAccel("o")),
