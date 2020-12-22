@@ -99,7 +99,7 @@ func (a *Application) processPlatformSettings() error {
 		if err != nil {
 			return err
 		}
-		C.SetTray(a.app, a.string2CString(string(trayMenuJSON)), a.string2CString(string(tray.Type)), a.string2CString(tray.Label))
+		C.SetTray(a.app, a.string2CString(string(trayMenuJSON)), a.string2CString(string(tray.Type)), a.string2CString(tray.Label), a.string2CString(tray.Icon))
 	}
 
 	// Process context menus

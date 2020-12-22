@@ -13,7 +13,7 @@ extern void SetAppearance(void *, const char *);
 extern void WebviewIsTransparent(void *);
 extern void WindowBackgroundIsTranslucent(void *);
 extern void SetMenu(void *, const char *);
-extern void SetTray(void *, const char *, const char *, const char *);
+extern void SetTray(void *, const char *, const char *, const char *, const char *);
 extern void SetContextMenus(void *, const char *);
 
 #endif

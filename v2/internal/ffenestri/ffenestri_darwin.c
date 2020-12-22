@@ -6,6 +6,7 @@
 #include <CoreGraphics/CoreGraphics.h>
 #include "json.h"
 #include "hashmap.h"
+#include "stdlib.h"
 
 // Macros to make it slightly more sane
 #define msg objc_msgSend
@@ -80,8 +81,7 @@ extern const unsigned char *assets[];
 extern const unsigned char runtime;
 
 // Tray icon
-extern const unsigned int trayIconLength;
-extern const unsigned char *trayIcon[];
+extern const unsigned char *trayIcons[];
 
 // MAIN DEBUG FLAG
 int debug;
@@ -97,6 +97,9 @@ struct hashmap_s menuItemMapForTrayMenu;
 
 // RadioGroup map for the tray menu. Maps a menuitem id with its associated radio group items
 struct hashmap_s radioGroupMapForTrayMenu;
+
+// A cache for all our tray icons
+struct hashmap_s trayIconCache;
 
 // contextMenuMap is a hashmap of context menus keyed on a string ID
 struct hashmap_s contextMenuMap;
@@ -215,6 +218,7 @@ struct Application {
 	const char *trayMenuAsJSON;
 	const char *trayType;
 	const char *trayLabel;
+	const char *trayIconName;
 	JsonNode *processedTrayMenu;
 	id statusItem;
 
@@ -730,6 +734,13 @@ void allocateTrayHashMaps(struct Application *app) {
 	   Fatal(app, "Not enough memory to allocate radioGroupMapForTrayMenu!");
 	   return;
 	}
+
+	// Allocate the Tray Icons
+	if( 0 != hashmap_create((const unsigned)4, &trayIconCache)) {
+	   // Couldn't allocate map
+	   Fatal(app, "Not enough memory to allocate radioGroupMapForTrayMenu!");
+	   return;
+	}
 }
 
 void allocateContextMenuHashMaps(struct Application *app) {
@@ -798,6 +809,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->trayMenuAsJSON = NULL;
 	result->trayType = NULL;
 	result->trayLabel = NULL;
+	result->trayIconName = NULL;
 	result->processedTrayMenu = NULL;
 	result->statusItem = NULL;
 
@@ -819,7 +831,7 @@ int freeHashmapItem(void *const context, struct hashmap_element_s *const e) {
     return -1;
 }
 
-int freeNSMenu(void *const context, struct hashmap_element_s *const e) {
+int releaseNSObject(void *const context, struct hashmap_element_s *const e) {
     msg(e->data, s("release"));
     return -1;
 }
@@ -873,7 +885,7 @@ void destroyContextMenus(struct Application *app) {
 
     // Free context menus
     if( hashmap_num_entries(&contextMenuMap) > 0 ) {
-        if (0!=hashmap_iterate_pairs(&contextMenuMap, freeNSMenu, NULL)) {
+        if (0!=hashmap_iterate_pairs(&contextMenuMap, releaseNSObject, NULL)) {
             Fatal(app, "failed to deallocate hashmap entries!");
         }
     }
@@ -891,6 +903,16 @@ void destroyContextMenus(struct Application *app) {
 
 
 void destroyTray(struct Application *app) {
+
+	// Release the tray cache images
+    if( hashmap_num_entries(&trayIconCache) > 0 ) {
+        if (0!=hashmap_iterate_pairs(&radioGroupMapForApplicationMenu, releaseNSObject, NULL)) {
+            Fatal(app, "failed to release hashmap entries!");
+        }
+    }
+
+    //Free radio groups hashmap
+    hashmap_destroy(&trayIconCache);
 
 	// If we don't have a tray, exit!
 	if( app->trayMenuAsJSON == NULL ) {
@@ -1306,10 +1328,11 @@ void SetMenu(struct Application *app, const char *menuAsJSON) {
 }
 
 // SetTray sets the initial tray menu for the application
-void SetTray(struct Application *app, const char *trayMenuAsJSON, const char *trayType, const char *trayLabel) {
+void SetTray(struct Application *app, const char *trayMenuAsJSON, const char *trayType, const char *trayLabel, const char *trayIconName) {
 	app->trayMenuAsJSON = trayMenuAsJSON;
 	app->trayType = trayType;
 	app->trayLabel = trayLabel;
+	app->trayIconName = trayIconName;
 }
 
 // SetContextMenus sets the context menu map for this application
@@ -2228,10 +2251,41 @@ void UpdateTrayLabel(struct Application *app, const char *label) {
 	msg(statusBarButton, s("setTitle:"), str(label));
 }
 
+void processTrayIconData(struct Application *app) {
+
+    unsigned int count = 0;
+    while( 1 ) {
+        const unsigned char *name = trayIcons[count++];
+        if( name == 0x00 ) {
+            break;
+        }
+        const unsigned char *lengthAsString = trayIcons[count++];
+        if( name == 0x00 ) {
+            break;
+        }
+        const unsigned char *data = trayIcons[count++];
+        if( data == 0x00 ) {
+            break;
+        }
+        int length = atoi((const char *)lengthAsString);
+        printf("Got tray name: %s with data %p\n", name, data);
+        printf("Length = %d\n", length);
+
+        // Create the icon and add to the hashmap
+        id imageData = msg(c("NSData"), s("dataWithBytes:length:"), data, length);
+        id trayImage = ALLOC("NSImage");
+        msg(trayImage, s("initWithData:"), imageData);
+        hashmap_put(&trayIconCache, (const char *)name, strlen((const char *)name), trayImage);
+    }
+}
+
 void parseTrayData(struct Application *app) {
 
 	// Allocate the hashmaps we need
 	allocateTrayHashMaps(app);
+
+	// Process Tray icon data
+	processTrayIconData(app);
 
 	// Create a new menu
 	id traymenu = createMenu(str(""));
@@ -2247,11 +2301,9 @@ void parseTrayData(struct Application *app) {
 		id statusBarButton = msg(statusItem, s("button"));
 
 		if( STREQ(app->trayType, "icon") ) {
-			// If we have a tray icon
-			if ( trayIconLength > 0 ) {
-				id imageData = msg(c("NSData"), s("dataWithBytes:length:"), trayIcon, trayIconLength);
-				id trayImage = ALLOC("NSImage");
-				msg(trayImage, s("initWithData:"), imageData);
+			// Get the icon
+			if ( app->trayIconName != NULL ) {
+				id trayImage = hashmap_get(&trayIconCache, app->trayIconName, strlen(app->trayIconName));
 				msg(statusBarButton, s("setImage:"), trayImage);
 			}
 		}
