@@ -508,6 +508,21 @@ func (d *Dispatcher) processTrayMessage(result *servicebus.Message) {
 			client.frontend.UpdateTray(updatedMenu)
 		}
 
+	case "setlabel":
+
+		updatedLabel, ok := result.Data().(string)
+		if !ok {
+			d.logger.Error("Invalid data for 'trayfrontend:setlabel' : %#v",
+				result.Data())
+			return
+		}
+
+		// TODO: Work out what we mean in a multi window environment...
+		// For now we will just pick the first one
+		for _, client := range d.clients {
+			client.frontend.UpdateTrayLabel(updatedLabel)
+		}
+
 	default:
 		d.logger.Error("Unknown menufrontend command: %s", command)
 	}

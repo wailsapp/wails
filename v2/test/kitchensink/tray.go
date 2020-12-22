@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"math/rand"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/menu"
@@ -16,6 +19,8 @@ type Tray struct {
 	lock                      sync.Mutex
 	dynamicMenuItems          map[string]*menu.MenuItem
 	anotherDynamicMenuCounter int
+
+	done bool
 }
 
 // WailsInit is called at application startup
@@ -26,23 +31,40 @@ func (t *Tray) WailsInit(runtime *wails.Runtime) error {
 	// Setup Menu Listeners
 	t.runtime.Tray.On("Show Window", func(mi *menu.MenuItem) {
 		t.runtime.Window.Show()
-		showWindow := t.runtime.Tray.GetByID("Show Window")
-		hideWindow := t.runtime.Tray.GetByID("Hide Window")
-		showWindow.Hidden = true
-		hideWindow.Hidden = false
-		t.runtime.Tray.Update()
 	})
 	t.runtime.Tray.On("Hide Window", func(mi *menu.MenuItem) {
 		t.runtime.Window.Hide()
-		showWindow := t.runtime.Tray.GetByID("Show Window")
-		hideWindow := t.runtime.Tray.GetByID("Hide Window")
-		showWindow.Hidden = false
-		hideWindow.Hidden = true
-		t.runtime.Tray.Update()
-
 	})
 
+	t.runtime.Tray.On("Minimise Window", func(mi *menu.MenuItem) {
+		t.runtime.Window.Minimise()
+	})
+
+	t.runtime.Tray.On("Unminimise Window", func(mi *menu.MenuItem) {
+		t.runtime.Window.Unminimise()
+	})
+
+	// Start ticker
+	//go t.startTicker()
+
 	return nil
+}
+
+func (t *Tray) WailsShutdown() {
+	t.done = true
+}
+
+func (t *Tray) startTicker() {
+	time.Sleep(1 * time.Second)
+	ticker := time.NewTicker(1 * time.Second)
+	for t.done == false {
+		select {
+		case <-ticker.C:
+			r := rand.Intn(100)
+			t.runtime.Tray.SetLabel(fmt.Sprintf("CPU: %d", r))
+		}
+	}
+	ticker.Stop()
 }
 
 func (t *Tray) incrementcounter() int {
@@ -119,12 +141,9 @@ func (t *Tray) removeMenu(_ *menu.MenuItem) {
 
 func createApplicationTray() *menu.Menu {
 	trayMenu := &menu.Menu{}
-	trayMenu.Append(&menu.MenuItem{
-		ID:     "Show Window",
-		Label:  "Show Window",
-		Type:   menu.TextType,
-		Hidden: true,
-	})
+	trayMenu.Append(menu.Text("Show Window", "Show Window"))
 	trayMenu.Append(menu.Text("Hide Window", "Hide Window"))
+	trayMenu.Append(menu.Text("Minimise Window", "Minimise Window"))
+	trayMenu.Append(menu.Text("Unminimise Window", "Unminimise Window"))
 	return trayMenu
 }

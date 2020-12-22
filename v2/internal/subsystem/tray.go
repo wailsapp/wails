@@ -26,14 +26,14 @@ type Tray struct {
 	logger logger.CustomLogger
 
 	// The tray menu
-	trayMenu *menu.Menu
+	trayMenu *menu.TrayOptions
 
 	// Service Bus
 	bus *servicebus.ServiceBus
 }
 
 // NewTray creates a new menu subsystem
-func NewTray(trayMenu *menu.Menu, bus *servicebus.ServiceBus,
+func NewTray(trayMenu *menu.TrayOptions, bus *servicebus.ServiceBus,
 	logger *logger.Logger) (*Tray, error) {
 
 	// Register quit channel
@@ -59,7 +59,7 @@ func NewTray(trayMenu *menu.Menu, bus *servicebus.ServiceBus,
 	}
 
 	// Build up list of item/id pairs
-	result.processMenu(trayMenu)
+	result.processMenu(trayMenu.Menu)
 
 	return result, nil
 }
@@ -118,6 +118,14 @@ func (t *Tray) Start() error {
 					// Notify frontend of menu change
 					t.bus.Publish("trayfrontend:update", updatedMenu)
 
+				// Make sure we catch any menu updates
+				case "setlabel":
+					updatedLabel := menuMessage.Data().(string)
+					t.trayMenu.Label = updatedLabel
+
+					// Notify frontend of menu change
+					t.bus.Publish("trayfrontend:setlabel", updatedLabel)
+
 				default:
 					t.logger.Error("unknown tray message: %+v", menuMessage)
 				}
@@ -134,7 +142,7 @@ func (t *Tray) Start() error {
 func (t *Tray) processMenu(trayMenu *menu.Menu) {
 	// Initialise the variables
 	t.menuItems = make(map[string]*menu.MenuItem)
-	t.trayMenu = trayMenu
+	t.trayMenu.Menu = trayMenu
 
 	for _, item := range trayMenu.Items {
 		t.processMenuItem(item)

@@ -188,6 +188,9 @@ func (c *Client) UpdateTray(menu *menu.Menu) {
 	}
 	C.UpdateTray(c.app.app, c.app.string2CString(string(trayMenuJSON)))
 }
+func (c *Client) UpdateTrayLabel(label string) {
+	C.UpdateTrayLabel(c.app.app, c.app.string2CString(label))
+}
 
 func (c *Client) UpdateContextMenus(contextMenus *menu.ContextMenus) {
 

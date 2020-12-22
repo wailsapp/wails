@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"log"
@@ -27,7 +28,12 @@ func main() {
 			// Comment out line below to see Window.SetTitle() work
 			TitleBar: mac.TitleBarHiddenInset(),
 			Menu:     createApplicationMenu(),
-			Tray:     createApplicationTray(),
+			Tray: &menu.TrayOptions{
+				//Type:  menu.TrayLabel,
+				Type:  menu.TrayIcon,
+				Label: "Hi Go BitBar!",
+				Menu:  createApplicationTray(),
+			},
 		},
 		LogLevel: logger.TRACE,
 	})

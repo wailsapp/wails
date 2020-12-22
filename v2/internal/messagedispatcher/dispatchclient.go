@@ -33,6 +33,7 @@ type Client interface {
 	DarkModeEnabled(callbackID string)
 	UpdateMenu(menu *menu.Menu)
 	UpdateTray(menu *menu.Menu)
+	UpdateTrayLabel(label string)
 	UpdateContextMenus(contextMenus *menu.ContextMenus)
 }
 

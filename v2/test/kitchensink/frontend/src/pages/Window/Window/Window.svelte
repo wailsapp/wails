@@ -35,10 +35,8 @@
                 break;
             case 'Hide':
                 windowRuntime.Hide();
-                setTimeout( windowRuntime.Show, 3000 );
             case 'Minimise':
-                windowRuntime.Hide();
-                setTimeout( windowRuntime.Unminimise, 3000 );
+                windowRuntime.Minimise();
             default:
                 windowRuntime[windowAction]();
         }
@@ -92,8 +90,6 @@
                 <div class="custom-radio">
                     <input type="radio" name="window" bind:group="{windowAction}" id="{id}-{option}" value="{option}" disabled={disabledActions.includes(option)}>
                     <label for="{id}-{option}">{option}
-                        {#if option == 'Hide' } - Show() will be called after 3 seconds {/if}
-                        {#if option == 'Minimise' } - Unminimise() will be called after 3 seconds {/if}
                         {#if option == 'SetTitle' && !setTitleEnabled} - disabled as there is no title displayed {/if}
                     </label>
 

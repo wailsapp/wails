@@ -94,7 +94,7 @@ func (a *App) Run() error {
 
 	// Start the runtime
 	applicationMenu := options.GetApplicationMenu(a.options)
-	trayMenu := options.GetTrayMenu(a.options)
+	trayMenu := options.GetTray(a.options)
 	contextMenus := options.GetContextMenus(a.options)
 
 	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger, applicationMenu, trayMenu, contextMenus)

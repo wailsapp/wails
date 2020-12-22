@@ -213,6 +213,8 @@ struct Application {
 
 	// Tray
 	const char *trayMenuAsJSON;
+	const char *trayType;
+	const char *trayLabel;
 	JsonNode *processedTrayMenu;
 	id statusItem;
 
@@ -794,6 +796,8 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 
 	// Tray
 	result->trayMenuAsJSON = NULL;
+	result->trayType = NULL;
+	result->trayLabel = NULL;
 	result->processedTrayMenu = NULL;
 	result->statusItem = NULL;
 
@@ -1302,8 +1306,10 @@ void SetMenu(struct Application *app, const char *menuAsJSON) {
 }
 
 // SetTray sets the initial tray menu for the application
-void SetTray(struct Application *app, const char *trayMenuAsJSON) {
+void SetTray(struct Application *app, const char *trayMenuAsJSON, const char *trayType, const char *trayLabel) {
 	app->trayMenuAsJSON = trayMenuAsJSON;
+	app->trayType = trayType;
+	app->trayLabel = trayLabel;
 }
 
 // SetContextMenus sets the context menu map for this application
@@ -2217,6 +2223,11 @@ void parseContextMenus(struct Application *app) {
 //	dumpContextMenus(app);
 }
 
+void UpdateTrayLabel(struct Application *app, const char *label) {
+	id statusBarButton = msg(app->statusItem, s("button"));
+	msg(statusBarButton, s("setTitle:"), str(label));
+}
+
 void parseTrayData(struct Application *app) {
 
 	// Allocate the hashmaps we need
@@ -2235,13 +2246,20 @@ void parseTrayData(struct Application *app) {
 		msg(statusItem, s("retain"));
 		id statusBarButton = msg(statusItem, s("button"));
 
-		// If we have a tray icon
-		if ( trayIconLength > 0 ) {
-			id imageData = msg(c("NSData"), s("dataWithBytes:length:"), trayIcon, trayIconLength);
-			id trayImage = ALLOC("NSImage");
-			msg(trayImage, s("initWithData:"), imageData);
-			msg(statusBarButton, s("setImage:"), trayImage);
+		if( STREQ(app->trayType, "icon") ) {
+			// If we have a tray icon
+			if ( trayIconLength > 0 ) {
+				id imageData = msg(c("NSData"), s("dataWithBytes:length:"), trayIcon, trayIconLength);
+				id trayImage = ALLOC("NSImage");
+				msg(trayImage, s("initWithData:"), imageData);
+				msg(statusBarButton, s("setImage:"), trayImage);
+			}
 		}
+		if( STREQ(app->trayType, "label") ) {
+			// If we have a tray icon
+				msg(statusBarButton, s("setTitle:"), str(app->trayLabel));
+		}
+
 	}
 
 	// Parse the processed menu json

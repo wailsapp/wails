@@ -21,7 +21,7 @@ type Runtime struct {
 }
 
 // New creates a new runtime
-func New(serviceBus *servicebus.ServiceBus, menu *menu.Menu, trayMenu *menu.Menu, contextMenus *menu.ContextMenus) *Runtime {
+func New(serviceBus *servicebus.ServiceBus, menu *menu.Menu, trayMenu *menu.TrayOptions, contextMenus *menu.ContextMenus) *Runtime {
 	result := &Runtime{
 		Browser:     newBrowser(),
 		Events:      newEvents(serviceBus),

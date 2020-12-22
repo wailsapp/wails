@@ -35,5 +35,6 @@ extern void DarkModeEnabled(void *appPointer, char *callbackID);
 extern void UpdateMenu(void *app, char *menuAsJSON);
 extern void UpdateTray(void *app, char *menuAsJSON);
 extern void UpdateContextMenus(void *app, char *contextMenusAsJSON);
+extern void UpdateTrayLabel(void *app, const char *label);
 
 #endif

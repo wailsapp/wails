@@ -12,15 +12,16 @@ type Tray interface {
 	Update()
 	GetByID(menuID string) *menu.MenuItem
 	RemoveByID(id string) bool
+	SetLabel(label string)
 }
 
 type trayRuntime struct {
 	bus      *servicebus.ServiceBus
-	trayMenu *menu.Menu
+	trayMenu *menu.TrayOptions
 }
 
 // newTray creates a new Menu struct
-func newTray(bus *servicebus.ServiceBus, menu *menu.Menu) Tray {
+func newTray(bus *servicebus.ServiceBus, menu *menu.TrayOptions) Tray {
 	return &trayRuntime{
 		bus:      bus,
 		trayMenu: menu,
@@ -39,10 +40,14 @@ func (t *trayRuntime) Update() {
 	t.bus.Publish("tray:update", t.trayMenu)
 }
 
+func (t *trayRuntime) SetLabel(label string) {
+	t.bus.Publish("tray:setlabel", label)
+}
+
 func (t *trayRuntime) GetByID(menuID string) *menu.MenuItem {
-	return t.trayMenu.GetByID(menuID)
+	return t.trayMenu.Menu.GetByID(menuID)
 }
 
 func (t *trayRuntime) RemoveByID(id string) bool {
-	return t.trayMenu.RemoveByID(id)
+	return t.trayMenu.Menu.RemoveByID(id)
 }

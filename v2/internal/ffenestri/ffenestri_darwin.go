@@ -83,7 +83,7 @@ func (a *Application) processPlatformSettings() error {
 	}
 
 	// Process tray
-	tray := options.GetTrayMenu(a.config)
+	tray := options.GetTray(a.config)
 	if tray != nil {
 
 		/*
@@ -94,12 +94,12 @@ func (a *Application) processPlatformSettings() error {
 			a list of all members of the group and the number of members
 			in the group (this last one is for optimisation at the C layer).
 		*/
-		processedMenu := NewProcessedMenu(tray)
+		processedMenu := NewProcessedMenu(tray.Menu)
 		trayMenuJSON, err := json.Marshal(processedMenu)
 		if err != nil {
 			return err
 		}
-		C.SetTray(a.app, a.string2CString(string(trayMenuJSON)))
+		C.SetTray(a.app, a.string2CString(string(trayMenuJSON)), a.string2CString(string(tray.Type)), a.string2CString(tray.Label))
 	}
 
 	// Process context menus
