@@ -78,6 +78,14 @@
 #define NSEventTypeRightMouseDown 3
 #define NSEventTypeRightMouseUp 4
 
+#define NSNoImage       0
+#define NSImageOnly     1
+#define NSImageLeft     2
+#define NSImageRight    3
+#define NSImageBelow    4
+#define NSImageAbove    5
+#define NSImageOverlaps 6
+
 
 // References to assets
 extern const unsigned char *assets[];
@@ -219,9 +227,9 @@ struct Application {
 
 	// Tray
 	const char *trayMenuAsJSON;
-	const char *trayType;
 	const char *trayLabel;
 	const char *trayIconName;
+	int trayIconPosition;
 	JsonNode *processedTrayMenu;
 	id statusItem;
 
@@ -823,9 +831,9 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 
 	// Tray
 	result->trayMenuAsJSON = NULL;
-	result->trayType = NULL;
 	result->trayLabel = NULL;
 	result->trayIconName = NULL;
+	result->trayIconPosition = NSImageLeft; // Left of the text by default
 	result->processedTrayMenu = NULL;
 	result->statusItem = NULL;
 
@@ -1344,9 +1352,8 @@ void SetMenu(struct Application *app, const char *menuAsJSON) {
 }
 
 // SetTray sets the initial tray menu for the application
-void SetTray(struct Application *app, const char *trayMenuAsJSON, const char *trayType, const char *trayLabel, const char *trayIconName) {
+void SetTray(struct Application *app, const char *trayMenuAsJSON, const char *trayLabel, const char *trayIconName) {
 	app->trayMenuAsJSON = trayMenuAsJSON;
-	app->trayType = trayType;
 	app->trayLabel = trayLabel;
 	app->trayIconName = trayIconName;
 }
@@ -2267,6 +2274,13 @@ void UpdateTrayLabel(struct Application *app, const char *label) {
 	msg(statusBarButton, s("setTitle:"), str(label));
 }
 
+void UpdateTrayIcon(struct Application *app, const char *name) {
+	id trayImage = hashmap_get(&trayIconCache, name, strlen(name));
+	id statusBarButton = msg(app->statusItem, s("button"));
+	msg(statusBarButton, s("setImagePosition:"), 2);
+	msg(statusBarButton, s("setImage:"), trayImage);
+}
+
 void processTrayIconData(struct Application *app) {
 
     unsigned int count = 0;
@@ -2312,18 +2326,16 @@ void parseTrayData(struct Application *app) {
 		statusItem = msg(statusBar, s("statusItemWithLength:"), NSVariableStatusItemLength);
 		app->statusItem = statusItem;
 		msg(statusItem, s("retain"));
-		id statusBarButton = msg(statusItem, s("button"));
+		id statusBarButton = msg(app->statusItem, s("button"));
+        msg(statusBarButton, s("setImagePosition:"), app->trayIconPosition);
 
-		if( STREQ(app->trayType, "icon") ) {
-			// Get the icon
-			if ( app->trayIconName != NULL ) {
-				id trayImage = hashmap_get(&trayIconCache, app->trayIconName, strlen(app->trayIconName));
-				msg(statusBarButton, s("setImage:"), trayImage);
-			}
+		// Get the icon
+		if ( app->trayIconName != NULL ) {
+			UpdateTrayIcon(app, app->trayIconName);
 		}
-		if( STREQ(app->trayType, "label") ) {
-			// If we have a tray icon
-				msg(statusBarButton, s("setTitle:"), str(app->trayLabel));
+
+		if( app->trayLabel != NULL ) {
+			UpdateTrayLabel(app, app->trayLabel);
 		}
 
 	}
@@ -2364,12 +2376,6 @@ void parseTrayData(struct Application *app) {
 		// Get item label
 		processRadioGroup(radioGroup, &menuItemMapForTrayMenu, &radioGroupMapForTrayMenu);
 	}
-
-
-//     msg(statusBarButton, s("setImage:"),
-//        msg(c("NSImage"), s("imageNamed:"),
-//          msg(c("NSString"), s("stringWithUTF8String:"), tray->icon)));
-
 
 	msg(statusItem, s("setMenu:"), traymenu);
  }

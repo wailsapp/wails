@@ -1,18 +1,8 @@
 package menu
 
-type TrayType string
-
-const (
-	TrayIcon  TrayType = "icon"
-	TrayLabel TrayType = "label"
-)
-
 // TrayOptions are the options
 type TrayOptions struct {
-	// Type is the type of tray item we want
-	Type TrayType
-
-	// Label is what is displayed initially when the type is TrayLabel
+	// Label is the text we wish to display in the tray
 	Label string
 
 	// Icon is the name of the tray icon we wish to display.

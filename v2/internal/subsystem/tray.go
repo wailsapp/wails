@@ -126,6 +126,14 @@ func (t *Tray) Start() error {
 					// Notify frontend of menu change
 					t.bus.Publish("trayfrontend:setlabel", updatedLabel)
 
+				// Make sure we catch any icon updates
+				case "seticon":
+					iconname := menuMessage.Data().(string)
+					t.trayMenu.Label = iconname
+
+					// Notify frontend of menu change
+					t.bus.Publish("trayfrontend:seticon", iconname)
+
 				default:
 					t.logger.Error("unknown tray message: %+v", menuMessage)
 				}

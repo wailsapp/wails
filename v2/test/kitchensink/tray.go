@@ -44,19 +44,18 @@ func (t *Tray) WailsInit(runtime *wails.Runtime) error {
 		t.runtime.Window.Unminimise()
 	})
 
+	// Auto switch between light / dark tray icons
 	t.runtime.Events.OnThemeChange(func(darkMode bool) {
 		if darkMode {
-			//t.runtime.Tray.SetIcon("light")
-			println("\n\n\n\n\n\nSET ICON TO LIGHT\n\n\n\n")
+			t.runtime.Tray.SetIcon("light")
 			return
 		}
 
-		//t.runtime.SetIcon("dark")
-		println("\n\n\n\n\n\nSET ICON TO DARK\n\n\n\n\n")
+		t.runtime.Tray.SetIcon("dark")
 	})
 
 	// Start ticker
-	//go t.startTicker()
+	go t.startTicker()
 
 	return nil
 }

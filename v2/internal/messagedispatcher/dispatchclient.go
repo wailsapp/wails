@@ -34,6 +34,7 @@ type Client interface {
 	UpdateMenu(menu *menu.Menu)
 	UpdateTray(menu *menu.Menu)
 	UpdateTrayLabel(label string)
+	UpdateTrayIcon(name string)
 	UpdateContextMenus(contextMenus *menu.ContextMenus)
 }
 

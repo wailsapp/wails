@@ -13,6 +13,7 @@ type Tray interface {
 	GetByID(menuID string) *menu.MenuItem
 	RemoveByID(id string) bool
 	SetLabel(label string)
+	SetIcon(name string)
 }
 
 type trayRuntime struct {
@@ -42,6 +43,9 @@ func (t *trayRuntime) Update() {
 
 func (t *trayRuntime) SetLabel(label string) {
 	t.bus.Publish("tray:setlabel", label)
+}
+func (t *trayRuntime) SetIcon(name string) {
+	t.bus.Publish("tray:seticon", name)
 }
 
 func (t *trayRuntime) GetByID(menuID string) *menu.MenuItem {

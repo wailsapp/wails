@@ -36,5 +36,6 @@ extern void UpdateMenu(void *app, char *menuAsJSON);
 extern void UpdateTray(void *app, char *menuAsJSON);
 extern void UpdateContextMenus(void *app, char *contextMenusAsJSON);
 extern void UpdateTrayLabel(void *app, const char *label);
+extern void UpdateTrayIcon(void *app, const char *label);
 
 #endif

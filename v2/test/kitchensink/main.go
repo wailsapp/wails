@@ -29,8 +29,6 @@ func main() {
 			TitleBar: mac.TitleBarHiddenInset(),
 			Menu:     createApplicationMenu(),
 			Tray: &menu.TrayOptions{
-				//Type:  menu.TrayLabel,
-				Type:  menu.TrayIcon,
 				Label: "Hi Go BitBar!",
 				Icon:  "light",
 				Menu:  createApplicationTray(),
