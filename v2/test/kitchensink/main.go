@@ -32,7 +32,7 @@ func main() {
 				//Type:  menu.TrayLabel,
 				Type:  menu.TrayIcon,
 				Label: "Hi Go BitBar!",
-				Icon:  "main",
+				Icon:  "light",
 				Menu:  createApplicationTray(),
 			},
 		},

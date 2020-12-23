@@ -56,9 +56,20 @@ function Emit(eventName) {
 	return window.wails.Events.Emit.apply(null, args);
 }
 
+/**
+ * Registers listeners for when the system theme changes
+ *
+ * @export
+ * @param {function} callback
+ */
+function OnThemeChange(callback) {
+	On('wails:system:themechange', callback);
+}
+
 module.exports = {
 	OnMultiple: OnMultiple,
 	On: On,
 	Once: Once,
 	Emit: Emit,
+	OnThemeChange: OnThemeChange,
 };

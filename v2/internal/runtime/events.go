@@ -11,6 +11,7 @@ type Events interface {
 	Once(eventName string, callback func(optionalData ...interface{}))
 	OnMultiple(eventName string, callback func(optionalData ...interface{}), maxCallbacks int)
 	Emit(eventName string, optionalData ...interface{})
+	OnThemeChange(callback func(darkMode bool))
 }
 
 // event exposes the events interface
@@ -65,4 +66,21 @@ func (r *event) Emit(eventName string, optionalData ...interface{}) {
 	}
 
 	r.bus.Publish("event:emit:from:g", eventMessage)
+}
+
+// OnThemeChange allows you to register callbacks when the system theme changes
+// from light or dark.
+func (r *event) OnThemeChange(callback func(darkMode bool)) {
+	r.On("wails:system:themechange", func(data ...interface{}) {
+		if len(data) != 1 {
+			// TODO: Log error
+			return
+		}
+		darkMode, ok := data[0].(bool)
+		if !ok {
+			// TODO: Log error
+			return
+		}
+		callback(darkMode)
+	})
 }

@@ -44,6 +44,17 @@ func (t *Tray) WailsInit(runtime *wails.Runtime) error {
 		t.runtime.Window.Unminimise()
 	})
 
+	t.runtime.Events.OnThemeChange(func(darkMode bool) {
+		if darkMode {
+			//t.runtime.Tray.SetIcon("light")
+			println("\n\n\n\n\n\nSET ICON TO LIGHT\n\n\n\n")
+			return
+		}
+
+		//t.runtime.SetIcon("dark")
+		println("\n\n\n\n\n\nSET ICON TO DARK\n\n\n\n\n")
+	})
+
 	// Start ticker
 	//go t.startTicker()
 

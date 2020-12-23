@@ -72,6 +72,17 @@ export function On(eventName, callback) {
 }
 
 /**
+ * Registers listeners for when the system theme changes from light/dark. A bool is
+ * sent to the listener, true if it is dark mode.
+ *
+ * @export
+ * @param {function} callback
+ */
+export function OnThemeChange(callback) {
+	On('wails:system:themechange', callback);
+}
+
+/**
  * Registers an event listener that will be invoked once then destroyed
  *
  * @export
@@ -118,7 +129,7 @@ function notifyListeners(eventData) {
  * Notify informs frontend listeners that an event was emitted with the given data
  *
  * @export
- * @param {string} encoded notification message
+ * @param {string} notifyMessage - encoded notification message
 
  */
 export function Notify(notifyMessage) {

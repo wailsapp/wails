@@ -51,6 +51,9 @@
 #define NSWindowBelow -1
 #define NSWindowAbove 1
 
+#define NSSquareStatusItemLength   -2.0
+#define NSVariableStatusItemLength -1.0
+
 #define NSWindowTitleHidden 1
 #define NSWindowStyleMaskFullSizeContentView 1 << 15
 
@@ -381,9 +384,13 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 	if( strcmp(name, "completed") == 0) {
 		// Delete handler
 		msg(app->manager, s("removeScriptMessageHandlerForName:"), str("completed"));
+
+		// TODO: Notify backend we're ready and get them to call back for the Show()
 		if (app->startHidden == 0) {
 			Show(app);
 		}
+
+		// TODO: Check this actually does reduce flicker
 		msg(app->config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("suppressesIncrementalRendering"));
 	} else if( strcmp(name, "windowDrag") == 0 ) {
 		// Guard against null events
@@ -686,6 +693,15 @@ void ExecJS(struct Application *app, const char *js) {
 			str(js),
 			NULL);
 	);
+}
+
+void emitThemeChange(struct Application *app) {
+	bool currentThemeIsDark = isDarkMode(app);
+	if (currentThemeIsDark) {
+		messageFromWindowCallback("ETT");
+	} else {
+		messageFromWindowCallback("ETF");
+	}
 }
 
 void themeChanged(id self, SEL cmd, id sender) {
@@ -2268,8 +2284,6 @@ void processTrayIconData(struct Application *app) {
             break;
         }
         int length = atoi((const char *)lengthAsString);
-        printf("Got tray name: %s with data %p\n", name, data);
-        printf("Length = %d\n", length);
 
         // Create the icon and add to the hashmap
         id imageData = msg(c("NSData"), s("dataWithBytes:length:"), data, length);
@@ -2295,7 +2309,7 @@ void parseTrayData(struct Application *app) {
 	// Create a new menu bar if we need to
 	if ( statusItem == NULL ) {
 		id statusBar = msg( c("NSStatusBar"), s("systemStatusBar") );
-		statusItem = msg(statusBar, s("statusItemWithLength:"), -1.0);
+		statusItem = msg(statusBar, s("statusItemWithLength:"), NSVariableStatusItemLength);
 		app->statusItem = statusItem;
 		msg(statusItem, s("retain"));
 		id statusBarButton = msg(statusItem, s("button"));
@@ -2550,7 +2564,10 @@ void Run(struct Application *app, int argc, char **argv) {
 					1));
 
 
+	// Emit theme change event to notify of current system them
+//	emitThemeChange(app);
 
+	// If we want the webview to be transparent...
 	if( app->webviewIsTranparent == 1 ) {
 		msg(wkwebview, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("drawsBackground"));
 	}
