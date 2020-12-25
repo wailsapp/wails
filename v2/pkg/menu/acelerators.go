@@ -4,16 +4,16 @@ package menu
 type Modifier string
 
 const (
-	// CmdOrCtrl represents Command on Mac and Control on other platforms
-	CmdOrCtrl Modifier = "CmdOrCtrl"
-	// OptionOrAlt represents Option on Mac and Alt on other platforms
-	OptionOrAlt Modifier = "OptionOrAlt"
-	// Shift represents the shift key on all systems
-	Shift Modifier = "Shift"
-	// Super represents Command on Mac and the Windows key on the other platforms
-	Super Modifier = "Super"
-	// Control represents the control key on all systems
-	Control Modifier = "Control"
+	// CmdOrCtrlKey represents Command on Mac and Control on other platforms
+	CmdOrCtrlKey Modifier = "CmdOrCtrl"
+	// OptionOrAltKey represents Option on Mac and Alt on other platforms
+	OptionOrAltKey Modifier = "OptionOrAlt"
+	// ShiftKey represents the shift key on all systems
+	ShiftKey Modifier = "Shift"
+	// SuperKey represents Command on Mac and the Windows key on the other platforms
+	SuperKey Modifier = "Super"
+	// ControlKey represents the control key on all systems
+	ControlKey Modifier = "Control"
 )
 
 // Accelerator holds the keyboard shortcut for a menu item
@@ -29,48 +29,48 @@ func Accel(key string) *Accelerator {
 	}
 }
 
-// CmdOrCtrlAccel creates a 'CmdOrCtrl' Accelerator
-func CmdOrCtrlAccel(key string) *Accelerator {
+// CmdOrCtrl creates a 'CmdOrCtrl' Accelerator
+func CmdOrCtrl(key string) *Accelerator {
 	return &Accelerator{
 		Key:       key,
-		Modifiers: []Modifier{CmdOrCtrl},
+		Modifiers: []Modifier{CmdOrCtrlKey},
 	}
 }
 
-// OptionOrAltAccel creates a 'OptionOrAlt' Accelerator
-func OptionOrAltAccel(key string) *Accelerator {
+// OptionOrAlt creates a 'OptionOrAlt' Accelerator
+func OptionOrAlt(key string) *Accelerator {
 	return &Accelerator{
 		Key:       key,
-		Modifiers: []Modifier{OptionOrAlt},
+		Modifiers: []Modifier{OptionOrAltKey},
 	}
 }
 
-// ShiftAccel creates a 'Shift' Accelerator
-func ShiftAccel(key string) *Accelerator {
+// Shift creates a 'Shift' Accelerator
+func Shift(key string) *Accelerator {
 	return &Accelerator{
 		Key:       key,
-		Modifiers: []Modifier{Shift},
+		Modifiers: []Modifier{ShiftKey},
 	}
 }
 
-// ControlAccel creates a 'Control' Accelerator
-func ControlAccel(key string) *Accelerator {
+// Control creates a 'Control' Accelerator
+func Control(key string) *Accelerator {
 	return &Accelerator{
 		Key:       key,
-		Modifiers: []Modifier{Control},
+		Modifiers: []Modifier{ControlKey},
 	}
 }
 
-// SuperAccel creates a 'Super' Accelerator
-func SuperAccel(key string) *Accelerator {
+// Super creates a 'Super' Accelerator
+func Super(key string) *Accelerator {
 	return &Accelerator{
 		Key:       key,
-		Modifiers: []Modifier{Super},
+		Modifiers: []Modifier{SuperKey},
 	}
 }
 
-// ComboAccel creates an Accelerator with multiple Modifiers
-func ComboAccel(key string, modifier1 Modifier, modifier2 Modifier, rest ...Modifier) *Accelerator {
+// Combo creates an Accelerator with multiple Modifiers
+func Combo(key string, modifier1 Modifier, modifier2 Modifier, rest ...Modifier) *Accelerator {
 	result := &Accelerator{
 		Key:       key,
 		Modifiers: []Modifier{modifier1, modifier2},

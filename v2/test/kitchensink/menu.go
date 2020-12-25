@@ -74,7 +74,7 @@ func (m *Menu) addMenu(mi *menu.MenuItem) {
 	// If this is the first dynamic menu added, let's add a remove menu item
 	if counter == 1 {
 		removeMenu := menu.Text("Remove "+menuText,
-			"Remove Last Item", menu.CmdOrCtrlAccel("-"))
+			"Remove Last Item", menu.CmdOrCtrl("-"))
 		parent.Prepend(removeMenu)
 		m.runtime.Menu.On("Remove Last Item", m.removeMenu)
 	} else {
@@ -125,9 +125,9 @@ func (m *Menu) createDynamicMenuTwo() {
 	// Create our submenu
 	dm2 := menu.SubMenu("Dynamic Menus 2", []*menu.MenuItem{
 		menu.Text("Insert Before Random Menu Item",
-			"Insert Before Random", menu.CmdOrCtrlAccel("]")),
+			"Insert Before Random", menu.CmdOrCtrl("]")),
 		menu.Text("Insert After Random Menu Item",
-			"Insert After Random", menu.CmdOrCtrlAccel("[")),
+			"Insert After Random", menu.CmdOrCtrl("[")),
 		menu.Separator(),
 	})
 
@@ -248,10 +248,10 @@ func createApplicationMenu() *menu.Menu {
 			menu.Text("Show Dynamic Menus 2 Submenu", "show-dynamic-menus-2", nil),
 			menu.SubMenu("Accelerators", []*menu.MenuItem{
 				menu.SubMenu("Modifiers", []*menu.MenuItem{
-					menu.Text("Shift accelerator", "Shift", menu.ShiftAccel("o")),
-					menu.Text("Control accelerator", "Control", menu.ControlAccel("o")),
-					menu.Text("Command accelerator", "Command", menu.CmdOrCtrlAccel("o")),
-					menu.Text("Option accelerator", "Option", menu.OptionOrAltAccel("o")),
+					menu.Text("Shift accelerator", "Shift", menu.Shift("o")),
+					menu.Text("Control accelerator", "Control", menu.Control("o")),
+					menu.Text("Command accelerator", "Command", menu.CmdOrCtrl("o")),
+					menu.Text("Option accelerator", "Option", menu.OptionOrAlt("o")),
 				}),
 				menu.SubMenu("System Keys", []*menu.MenuItem{
 					menu.Text("Backspace", "Backspace", menu.Accel("Backspace")),
@@ -298,13 +298,13 @@ func createApplicationMenu() *menu.Menu {
 				}),
 			}),
 			menu.SubMenuWithID("Dynamic Menus 1", "Dynamic Menus 1", []*menu.MenuItem{
-				menu.Text("Add Menu Item", "Add Menu Item", menu.CmdOrCtrlAccel("+")),
+				menu.Text("Add Menu Item", "Add Menu Item", menu.CmdOrCtrl("+")),
 				menu.Separator(),
 			}),
 			{
 				Label:       "Disabled Menu",
 				Type:        menu.TextType,
-				Accelerator: menu.ComboAccel("p", menu.CmdOrCtrl, menu.Shift),
+				Accelerator: menu.Combo("p", menu.CmdOrCtrlKey, menu.ShiftKey),
 				Disabled:    true,
 			},
 			{
@@ -316,7 +316,7 @@ func createApplicationMenu() *menu.Menu {
 				ID:          "checkbox-menu 1",
 				Label:       "Checkbox Menu 1",
 				Type:        menu.CheckboxType,
-				Accelerator: menu.CmdOrCtrlAccel("l"),
+				Accelerator: menu.CmdOrCtrl("l"),
 				Checked:     true,
 			},
 			menu.Checkbox("Checkbox Menu 2", "checkbox-menu 2", false, nil),

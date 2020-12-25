@@ -103,7 +103,7 @@ func (t *Tray) addMenu(mi *menu.MenuItem) {
 	// If this is the first dynamic menu added, let's add a remove menu item
 	if counter == 1 {
 		removeMenu := menu.Text("Remove "+menuText,
-			"Remove Last Item", menu.CmdOrCtrlAccel("-"))
+			"Remove Last Item", menu.CmdOrCtrl("-"))
 		parent.Prepend(removeMenu)
 		t.runtime.Tray.On("Remove Last Item", t.removeMenu)
 	} else {
