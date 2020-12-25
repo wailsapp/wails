@@ -207,12 +207,7 @@ func (m *MenuItem) insertItemAtIndex(index int, target *MenuItem) bool {
 }
 
 // Text is a helper to create basic Text menu items
-func Text(label string, id string) *MenuItem {
-	return TextWithAccelerator(label, id, nil)
-}
-
-// TextWithAccelerator is a helper to create basic Text menu items with an accelerator
-func TextWithAccelerator(label string, id string, accelerator *Accelerator) *MenuItem {
+func Text(label string, id string, accelerator *Accelerator) *MenuItem {
 	return &MenuItem{
 		ID:          id,
 		Label:       label,
@@ -228,13 +223,8 @@ func Separator() *MenuItem {
 	}
 }
 
-// Radio is a helper to create basic Radio menu items
-func Radio(label string, id string, selected bool) *MenuItem {
-	return RadioWithAccelerator(label, id, selected, nil)
-}
-
-// RadioWithAccelerator is a helper to create basic Radio menu items with an accelerator
-func RadioWithAccelerator(label string, id string, selected bool, accelerator *Accelerator) *MenuItem {
+// Radio is a helper to create basic Radio menu items with an accelerator
+func Radio(label string, id string, selected bool, accelerator *Accelerator) *MenuItem {
 	return &MenuItem{
 		ID:          id,
 		Label:       label,
@@ -245,12 +235,7 @@ func RadioWithAccelerator(label string, id string, selected bool, accelerator *A
 }
 
 // Checkbox is a helper to create basic Checkbox menu items
-func Checkbox(label string, id string, checked bool) *MenuItem {
-	return CheckboxWithAccelerator(label, id, checked, nil)
-}
-
-// CheckboxWithAccelerator is a helper to create basic Checkbox menu items with an accelerator
-func CheckboxWithAccelerator(label string, id string, checked bool, accelerator *Accelerator) *MenuItem {
+func Checkbox(label string, id string, checked bool, accelerator *Accelerator) *MenuItem {
 	return &MenuItem{
 		ID:          id,
 		Label:       label,

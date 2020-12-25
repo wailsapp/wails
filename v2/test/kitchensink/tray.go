@@ -97,12 +97,12 @@ func (t *Tray) addMenu(mi *menu.MenuItem) {
 	parent := mi.Parent()
 	counter := t.incrementcounter()
 	menuText := "Dynamic Menu Item " + strconv.Itoa(counter)
-	parent.Append(menu.Text(menuText, menuText))
-	// 	parent.Append(menu.TextWithAccelerator(menuText, menuText, menu.Accel("[")))
+	parent.Append(menu.Text(menuText, menuText, nil))
+	// 	parent.Append(menu.Text(menuText, menuText, menu.Accel("[")))
 
 	// If this is the first dynamic menu added, let's add a remove menu item
 	if counter == 1 {
-		removeMenu := menu.TextWithAccelerator("Remove "+menuText,
+		removeMenu := menu.Text("Remove "+menuText,
 			"Remove Last Item", menu.CmdOrCtrlAccel("-"))
 		parent.Prepend(removeMenu)
 		t.runtime.Tray.On("Remove Last Item", t.removeMenu)
@@ -145,15 +145,15 @@ func (t *Tray) removeMenu(_ *menu.MenuItem) {
 		removeMenu.Label = "Remove " + menuText
 	}
 
-	// 	parent.Append(menu.TextWithAccelerator(menuText, menuText, menu.Accel("[")))
+	// 	parent.Append(menu.Text(menuText, menuText, menu.Accel("[")))
 	t.runtime.Tray.Update()
 }
 
 func createApplicationTray() *menu.Menu {
 	trayMenu := &menu.Menu{}
-	trayMenu.Append(menu.Text("Show Window", "Show Window"))
-	trayMenu.Append(menu.Text("Hide Window", "Hide Window"))
-	trayMenu.Append(menu.Text("Minimise Window", "Minimise Window"))
-	trayMenu.Append(menu.Text("Unminimise Window", "Unminimise Window"))
+	trayMenu.Append(menu.Text("Show Window", "Show Window", nil))
+	trayMenu.Append(menu.Text("Hide Window", "Hide Window", nil))
+	trayMenu.Append(menu.Text("Minimise Window", "Minimise Window", nil))
+	trayMenu.Append(menu.Text("Unminimise Window", "Unminimise Window", nil))
 	return trayMenu
 }

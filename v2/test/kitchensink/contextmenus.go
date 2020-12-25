@@ -35,6 +35,6 @@ func (c *ContextMenu) WailsInit(runtime *wails.Runtime) error {
 
 func createContextMenus() *menu.ContextMenus {
 	result := menu.NewContextMenus()
-	result.AddMenu("test", menu.NewMenuFromItems(menu.Text("Clicked 0 times", "Test Context Menu")))
+	result.AddMenu("test", menu.NewMenuFromItems(menu.Text("Clicked 0 times", "Test Context Menu", nil)))
 	return result
 }
