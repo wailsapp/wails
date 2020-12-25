@@ -2,6 +2,8 @@ package webserver
 
 import (
 	"context"
+	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/wailsapp/wails/v2/pkg/options"
 	"net/http"
 	"strings"
 
@@ -18,6 +20,74 @@ type WebClient struct {
 	running    bool
 }
 
+func (wc *WebClient) OpenDialog(dialogOptions *options.OpenDialog, callbackID string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) SaveDialog(dialogOptions *options.SaveDialog, callbackID string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) WindowShow() {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) WindowHide() {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) WindowCenter() {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) WindowMaximise() {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) WindowUnmaximise() {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) WindowMinimise() {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) WindowUnminimise() {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) WindowPosition(x int, y int) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) WindowSize(width int, height int) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) DarkModeEnabled(callbackID string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) UpdateMenu(menu *menu.Menu) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) UpdateTray(menu *menu.Menu) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) UpdateTrayLabel(label string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) UpdateTrayIcon(name string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) UpdateContextMenus(contextMenus *menu.ContextMenus) {
+	wc.logger.Info("Not implemented in server build")
+}
+
 // Quit terminates the webclient session
 func (wc *WebClient) Quit() {
 	wc.running = false
@@ -32,11 +102,6 @@ func (wc *WebClient) NotifyEvent(message string) {
 // originator in the frontend
 func (wc *WebClient) CallResult(message string) {
 	wc.SendMessage("R" + message)
-}
-
-// OpenDialog is a noop in the webclient
-func (wc *WebClient) OpenDialog(title string) string {
-	return ""
 }
 
 // WindowSetTitle is a noop in the webclient
@@ -80,7 +145,11 @@ func (wc *WebClient) Run(w *WebServer) {
 		dispatcher.DispatchMessage(v.(string))
 	}
 
-	wc.conn.Close(ws.StatusNormalClosure, "Goodbye")
+	err := wc.conn.Close(ws.StatusNormalClosure, "Goodbye")
+	if err != nil {
+		w.logger.Error("Error encountered on socket: %v", err)
+		return
+	}
 	w.logger.Debug("Connection closed: %v", wc.identifier)
 }
 
@@ -91,7 +160,10 @@ func (wc *WebClient) SendMessage(message string) {
 	wc.logger.Debug("WebClient.SendMessage() - %s", message)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	wc.conn.Write(ctx, ws.MessageText, []byte(message))
+	err := wc.conn.Write(ctx, ws.MessageText, []byte(message))
+	if err != nil {
+		wc.logger.Error("Error encountered writing to webclient: %v", err)
+	}
 }
 
 // unregisterClient is called automatically by a WebClient session during termination
