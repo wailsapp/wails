@@ -1,5 +1,7 @@
 package menu
 
+import "github.com/wailsapp/wails/v2/pkg/menu/keys"
+
 // MenuItem represents a menuitem contained in a menu
 type MenuItem struct {
 	// The unique identifier of this menu item
@@ -9,7 +11,7 @@ type MenuItem struct {
 	// Role is a predefined menu type
 	Role Role `json:"Role,omitempty"`
 	// Accelerator holds a representation of a key binding
-	Accelerator *Accelerator `json:"Accelerator,omitempty"`
+	Accelerator *keys.Accelerator `json:"Accelerator,omitempty"`
 	// Type of MenuItem, EG: Checkbox, Text, Separator, Radio, Submenu
 	Type Type
 	// Disabled makes the item unselectable
@@ -207,7 +209,7 @@ func (m *MenuItem) insertItemAtIndex(index int, target *MenuItem) bool {
 }
 
 // Text is a helper to create basic Text menu items
-func Text(label string, id string, accelerator *Accelerator) *MenuItem {
+func Text(label string, id string, accelerator *keys.Accelerator) *MenuItem {
 	return &MenuItem{
 		ID:          id,
 		Label:       label,
@@ -224,7 +226,7 @@ func Separator() *MenuItem {
 }
 
 // Radio is a helper to create basic Radio menu items with an accelerator
-func Radio(label string, id string, selected bool, accelerator *Accelerator) *MenuItem {
+func Radio(label string, id string, selected bool, accelerator *keys.Accelerator) *MenuItem {
 	return &MenuItem{
 		ID:          id,
 		Label:       label,
@@ -235,7 +237,7 @@ func Radio(label string, id string, selected bool, accelerator *Accelerator) *Me
 }
 
 // Checkbox is a helper to create basic Checkbox menu items
-func Checkbox(label string, id string, checked bool, accelerator *Accelerator) *MenuItem {
+func Checkbox(label string, id string, checked bool, accelerator *keys.Accelerator) *MenuItem {
 	return &MenuItem{
 		ID:          id,
 		Label:       label,

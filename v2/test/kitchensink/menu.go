@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -69,12 +70,12 @@ func (m *Menu) addMenu(mi *menu.MenuItem) {
 	counter := m.incrementcounter()
 	menuText := "Dynamic Menu Item " + strconv.Itoa(counter)
 	parent.Append(menu.Text(menuText, menuText, nil))
-	// 	parent.Append(menu.Text(menuText, menuText, menu.Accel("[")))
+	// 	parent.Append(menu.Text(menuText, menuText, menu.Key("[")))
 
 	// If this is the first dynamic menu added, let's add a remove menu item
 	if counter == 1 {
 		removeMenu := menu.Text("Remove "+menuText,
-			"Remove Last Item", menu.CmdOrCtrl("-"))
+			"Remove Last Item", keys.CmdOrCtrl("-"))
 		parent.Prepend(removeMenu)
 		m.runtime.Menu.On("Remove Last Item", m.removeMenu)
 	} else {
@@ -116,7 +117,7 @@ func (m *Menu) removeMenu(_ *menu.MenuItem) {
 		removeMenu.Label = "Remove " + menuText
 	}
 
-	// 	parent.Append(menu.Text(menuText, menuText, menu.Accel("[")))
+	// 	parent.Append(menu.Text(menuText, menuText, menu.Key("[")))
 	m.runtime.Menu.Update()
 }
 
@@ -125,9 +126,9 @@ func (m *Menu) createDynamicMenuTwo() {
 	// Create our submenu
 	dm2 := menu.SubMenu("Dynamic Menus 2", []*menu.MenuItem{
 		menu.Text("Insert Before Random Menu Item",
-			"Insert Before Random", menu.CmdOrCtrl("]")),
+			"Insert Before Random", keys.CmdOrCtrl("]")),
 		menu.Text("Insert After Random Menu Item",
-			"Insert After Random", menu.CmdOrCtrl("[")),
+			"Insert After Random", keys.CmdOrCtrl("[")),
 		menu.Separator(),
 	})
 
@@ -248,63 +249,63 @@ func createApplicationMenu() *menu.Menu {
 			menu.Text("Show Dynamic Menus 2 Submenu", "show-dynamic-menus-2", nil),
 			menu.SubMenu("Accelerators", []*menu.MenuItem{
 				menu.SubMenu("Modifiers", []*menu.MenuItem{
-					menu.Text("Shift accelerator", "Shift", menu.Shift("o")),
-					menu.Text("Control accelerator", "Control", menu.Control("o")),
-					menu.Text("Command accelerator", "Command", menu.CmdOrCtrl("o")),
-					menu.Text("Option accelerator", "Option", menu.OptionOrAlt("o")),
+					menu.Text("Shift accelerator", "Shift", keys.Shift("o")),
+					menu.Text("Control accelerator", "Control", keys.Control("o")),
+					menu.Text("Command accelerator", "Command", keys.CmdOrCtrl("o")),
+					menu.Text("Option accelerator", "Option", keys.OptionOrAlt("o")),
 				}),
 				menu.SubMenu("System Keys", []*menu.MenuItem{
-					menu.Text("Backspace", "Backspace", menu.Accel("Backspace")),
-					menu.Text("Tab", "Tab", menu.Accel("Tab")),
-					menu.Text("Return", "Return", menu.Accel("Return")),
-					menu.Text("Escape", "Escape", menu.Accel("Escape")),
-					menu.Text("Left", "Left", menu.Accel("Left")),
-					menu.Text("Right", "Right", menu.Accel("Right")),
-					menu.Text("Up", "Up", menu.Accel("Up")),
-					menu.Text("Down", "Down", menu.Accel("Down")),
-					menu.Text("Space", "Space", menu.Accel("Space")),
-					menu.Text("Delete", "Delete", menu.Accel("Delete")),
-					menu.Text("Home", "Home", menu.Accel("Home")),
-					menu.Text("End", "End", menu.Accel("End")),
-					menu.Text("Page Up", "Page Up", menu.Accel("Page Up")),
-					menu.Text("Page Down", "Page Down", menu.Accel("Page Down")),
-					menu.Text("NumLock", "NumLock", menu.Accel("NumLock")),
+					menu.Text("Backspace", "Backspace", keys.Key("Backspace")),
+					menu.Text("Tab", "Tab", keys.Key("Tab")),
+					menu.Text("Return", "Return", keys.Key("Return")),
+					menu.Text("Escape", "Escape", keys.Key("Escape")),
+					menu.Text("Left", "Left", keys.Key("Left")),
+					menu.Text("Right", "Right", keys.Key("Right")),
+					menu.Text("Up", "Up", keys.Key("Up")),
+					menu.Text("Down", "Down", keys.Key("Down")),
+					menu.Text("Space", "Space", keys.Key("Space")),
+					menu.Text("Delete", "Delete", keys.Key("Delete")),
+					menu.Text("Home", "Home", keys.Key("Home")),
+					menu.Text("End", "End", keys.Key("End")),
+					menu.Text("Page Up", "Page Up", keys.Key("Page Up")),
+					menu.Text("Page Down", "Page Down", keys.Key("Page Down")),
+					menu.Text("NumLock", "NumLock", keys.Key("NumLock")),
 				}),
 				menu.SubMenu("Function Keys", []*menu.MenuItem{
-					menu.Text("F1", "F1", menu.Accel("F1")),
-					menu.Text("F2", "F2", menu.Accel("F2")),
-					menu.Text("F3", "F3", menu.Accel("F3")),
-					menu.Text("F4", "F4", menu.Accel("F4")),
-					menu.Text("F5", "F5", menu.Accel("F5")),
-					menu.Text("F6", "F6", menu.Accel("F6")),
-					menu.Text("F7", "F7", menu.Accel("F7")),
-					menu.Text("F8", "F8", menu.Accel("F8")),
-					menu.Text("F9", "F9", menu.Accel("F9")),
-					menu.Text("F10", "F10", menu.Accel("F10")),
-					menu.Text("F11", "F11", menu.Accel("F11")),
-					menu.Text("F12", "F12", menu.Accel("F12")),
-					menu.Text("F13", "F13", menu.Accel("F13")),
-					menu.Text("F14", "F14", menu.Accel("F14")),
-					menu.Text("F15", "F15", menu.Accel("F15")),
-					menu.Text("F16", "F16", menu.Accel("F16")),
-					menu.Text("F17", "F17", menu.Accel("F17")),
-					menu.Text("F18", "F18", menu.Accel("F18")),
-					menu.Text("F19", "F19", menu.Accel("F19")),
-					menu.Text("F20", "F20", menu.Accel("F20")),
+					menu.Text("F1", "F1", keys.Key("F1")),
+					menu.Text("F2", "F2", keys.Key("F2")),
+					menu.Text("F3", "F3", keys.Key("F3")),
+					menu.Text("F4", "F4", keys.Key("F4")),
+					menu.Text("F5", "F5", keys.Key("F5")),
+					menu.Text("F6", "F6", keys.Key("F6")),
+					menu.Text("F7", "F7", keys.Key("F7")),
+					menu.Text("F8", "F8", keys.Key("F8")),
+					menu.Text("F9", "F9", keys.Key("F9")),
+					menu.Text("F10", "F10", keys.Key("F10")),
+					menu.Text("F11", "F11", keys.Key("F11")),
+					menu.Text("F12", "F12", keys.Key("F12")),
+					menu.Text("F13", "F13", keys.Key("F13")),
+					menu.Text("F14", "F14", keys.Key("F14")),
+					menu.Text("F15", "F15", keys.Key("F15")),
+					menu.Text("F16", "F16", keys.Key("F16")),
+					menu.Text("F17", "F17", keys.Key("F17")),
+					menu.Text("F18", "F18", keys.Key("F18")),
+					menu.Text("F19", "F19", keys.Key("F19")),
+					menu.Text("F20", "F20", keys.Key("F20")),
 				}),
 				menu.SubMenu("Standard Keys", []*menu.MenuItem{
-					menu.Text("Backtick", "Backtick", menu.Accel("`")),
-					menu.Text("Plus", "Plus", menu.Accel("+")),
+					menu.Text("Backtick", "Backtick", keys.Key("`")),
+					menu.Text("Plus", "Plus", keys.Key("+")),
 				}),
 			}),
 			menu.SubMenuWithID("Dynamic Menus 1", "Dynamic Menus 1", []*menu.MenuItem{
-				menu.Text("Add Menu Item", "Add Menu Item", menu.CmdOrCtrl("+")),
+				menu.Text("Add Menu Item", "Add Menu Item", keys.CmdOrCtrl("+")),
 				menu.Separator(),
 			}),
 			{
 				Label:       "Disabled Menu",
 				Type:        menu.TextType,
-				Accelerator: menu.Combo("p", menu.CmdOrCtrlKey, menu.ShiftKey),
+				Accelerator: keys.Combo("p", keys.CmdOrCtrlKey, keys.ShiftKey),
 				Disabled:    true,
 			},
 			{
@@ -316,7 +317,7 @@ func createApplicationMenu() *menu.Menu {
 				ID:          "checkbox-menu 1",
 				Label:       "Checkbox Menu 1",
 				Type:        menu.CheckboxType,
-				Accelerator: menu.CmdOrCtrl("l"),
+				Accelerator: keys.CmdOrCtrl("l"),
 				Checked:     true,
 			},
 			menu.Checkbox("Checkbox Menu 2", "checkbox-menu 2", false, nil),

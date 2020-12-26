@@ -1,4 +1,4 @@
-package menu
+package keys
 
 // Modifier is actually a string
 type Modifier string
@@ -22,8 +22,8 @@ type Accelerator struct {
 	Modifiers []Modifier
 }
 
-// Accel creates a standard key Accelerator
-func Accel(key string) *Accelerator {
+// Key creates a standard key Accelerator
+func Key(key string) *Accelerator {
 	return &Accelerator{
 		Key: key,
 	}

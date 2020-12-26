@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -98,12 +99,12 @@ func (t *Tray) addMenu(mi *menu.MenuItem) {
 	counter := t.incrementcounter()
 	menuText := "Dynamic Menu Item " + strconv.Itoa(counter)
 	parent.Append(menu.Text(menuText, menuText, nil))
-	// 	parent.Append(menu.Text(menuText, menuText, menu.Accel("[")))
+	// 	parent.Append(menu.Text(menuText, menuText, menu.Key("[")))
 
 	// If this is the first dynamic menu added, let's add a remove menu item
 	if counter == 1 {
 		removeMenu := menu.Text("Remove "+menuText,
-			"Remove Last Item", menu.CmdOrCtrl("-"))
+			"Remove Last Item", keys.CmdOrCtrl("-"))
 		parent.Prepend(removeMenu)
 		t.runtime.Tray.On("Remove Last Item", t.removeMenu)
 	} else {
@@ -145,7 +146,7 @@ func (t *Tray) removeMenu(_ *menu.MenuItem) {
 		removeMenu.Label = "Remove " + menuText
 	}
 
-	// 	parent.Append(menu.Text(menuText, menuText, menu.Accel("[")))
+	// 	parent.Append(menu.Text(menuText, menuText, menu.Key("[")))
 	t.runtime.Tray.Update()
 }
 
