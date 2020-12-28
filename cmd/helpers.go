@@ -574,6 +574,10 @@ func ldFlags(po *ProjectOptions, buildMode string) string {
 		ldflags += "-H windowsgui "
 	}
 
+	if po.UseFirebug {
+		ldflags += "-X github.com/wailsapp/wails/lib/renderer.UseFirebug=true "
+	}
+
 	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
 
 	// Add additional ldflags passed in via the `ldflags` cli flag
