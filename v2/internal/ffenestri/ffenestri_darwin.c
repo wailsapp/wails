@@ -684,10 +684,6 @@ void closeWindow(id self, SEL cmd, id sender) {
 	app->sendMessageToBackend("WC");
 }
 
-void willFinishLaunching(id self, SEL cmd, id sender) {
-	struct Application *app = (struct Application *) objc_getAssociatedObject(self, "application");
-}
-
 bool isDarkMode(struct Application *app) {
 	id userDefaults = msg(c("NSUserDefaults"), s("standardUserDefaults"));
 	const char *mode = cstr(msg(userDefaults,  s("stringForKey:"), str("AppleInterfaceStyle")));
@@ -703,19 +699,25 @@ void ExecJS(struct Application *app, const char *js) {
 	);
 }
 
+void willFinishLaunching(id self, SEL cmd, id sender) {
+	struct Application *app = (struct Application *) objc_getAssociatedObject(self, "application");
+	messageFromWindowCallback("Ej{\"name\":\"wails:launched\",\"data\":[]}");
+}
+
 void emitThemeChange(struct Application *app) {
 	bool currentThemeIsDark = isDarkMode(app);
 	if (currentThemeIsDark) {
-		messageFromWindowCallback("ETT");
+		messageFromWindowCallback("Ej{\"name\":\"wails:system:themechange\",\"data\":[true]}");
 	} else {
-		messageFromWindowCallback("ETF");
+		messageFromWindowCallback("Ej{\"name\":\"wails:system:themechange\",\"data\":[false]}");
 	}
 }
 
 void themeChanged(id self, SEL cmd, id sender) {
 	struct Application *app = (struct Application *)objc_getAssociatedObject(
 							  self, "application");
-	bool currentThemeIsDark = isDarkMode(app);
+//    emitThemeChange(app);
+    bool currentThemeIsDark = isDarkMode(app);
 	if ( currentThemeIsDark ) {
 		ExecJS(app, "window.wails.Events.Emit( 'wails:system:themechange', true );");
 	} else {
@@ -2571,7 +2573,7 @@ void Run(struct Application *app, int argc, char **argv) {
 
 
 	// Emit theme change event to notify of current system them
-//	emitThemeChange(app);
+	emitThemeChange(app);
 
 	// If we want the webview to be transparent...
 	if( app->webviewIsTranparent == 1 ) {

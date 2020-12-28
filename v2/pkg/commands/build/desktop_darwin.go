@@ -5,6 +5,7 @@ package build
 import (
 	"fmt"
 	"github.com/leaanthony/slicer"
+	"github.com/wailsapp/wails/v2/internal/fs"
 	"io/ioutil"
 	"log"
 	"path/filepath"
@@ -27,13 +28,14 @@ func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) err
 
 	// Get all the tray icon filenames
 	trayIconDirectory := filepath.Join(options.ProjectData.Path, "trayicons")
-	trayIconFilenames, err := filepath.Glob(trayIconDirectory + "/*.png")
-
-	if err != nil {
-		log.Fatal(err)
-		return err
+	var trayIconFilenames []string
+	if fs.DirExists(trayIconDirectory) {
+		trayIconFilenames, err = filepath.Glob(trayIconDirectory + "/*.png")
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
 	}
-
 	// Setup target
 	targetFilename := "trayicons"
 	targetFile := filepath.Join(assetDir, targetFilename+".c")
@@ -88,7 +90,10 @@ func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) err
 	// Write out main trayIcons data
 	cdata.WriteString("const unsigned char *trayIcons[] = { ")
 	cdata.WriteString(variableList.Join(", "))
-	cdata.WriteString(", 0x00 };\n")
+	if len(trayIconFilenames) > 0 {
+		cdata.WriteString(", ")
+	}
+	cdata.WriteString("0x00 };\n")
 
 	err = ioutil.WriteFile(targetFile, []byte(cdata.String()), 0600)
 	if err != nil {
