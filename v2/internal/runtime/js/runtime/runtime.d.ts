@@ -111,6 +111,9 @@ declare const wailsapp__runtime: {
         Open(options: OpenDialogOptions): Promise<Array<string>>;
         Save(options: SaveDialogOptions): Promise<Array<string>>;
     };
+    Tray: {
+        SetIcon(trayIconID: string): void;
+    }
 };
 
 

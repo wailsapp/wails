@@ -17,6 +17,7 @@ const Init = require('./init');
 const System = require('./system');
 const Store = require('./store');
 const Window = require('./window');
+const Tray = require('./tray');
 
 module.exports = {
 	Browser: Browser,
@@ -27,4 +28,5 @@ module.exports = {
 	System: System,
 	Store: Store,
 	Window: Window,
+	Tray: Tray,
 };

@@ -18,6 +18,7 @@ import { AddScript, InjectCSS, DisableDefaultContextMenu } from './utils';
 import { AddIPCListener } from 'ipc';
 import * as Platform from 'platform';
 import * as Store from './store';
+import * as Tray from './tray';
 
 export function Init() {
 	// Backend is where the Go struct wrappers get bound to
@@ -29,6 +30,7 @@ export function Init() {
 		Log,
 		Browser,
 		Window,
+		Tray,
 		Dialog,
 		Events: {
 			On,

@@ -32,8 +32,11 @@ func trayMessageParser(message string) (*parsedMessage, error) {
 		callbackid := message[2:]
 		topic = "tray:clicked"
 		data = callbackid
+	case 'I':
+		topic = "trayfrontend:seticon"
+		data = message[2:]
 	default:
-		return nil, fmt.Errorf("invalid menu message: %s", message)
+		return nil, fmt.Errorf("invalid tray message: %s", message)
 	}
 
 	// Create a new parsed message struct
