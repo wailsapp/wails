@@ -1,15 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/menu/keys"
-	"math/rand"
-	"strconv"
-	"sync"
-	"time"
-
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/wailsapp/wails/v2/pkg/menu/keys"
+	"strconv"
+	"sync"
 )
 
 // Tray struct
@@ -55,27 +51,11 @@ func (t *Tray) WailsInit(runtime *wails.Runtime) error {
 		t.runtime.Tray.SetIcon("dark")
 	})
 
-	// Start ticker
-	go t.startTicker()
-
 	return nil
 }
 
 func (t *Tray) WailsShutdown() {
 	t.done = true
-}
-
-func (t *Tray) startTicker() {
-	time.Sleep(1 * time.Second)
-	ticker := time.NewTicker(1 * time.Second)
-	for t.done == false {
-		select {
-		case <-ticker.C:
-			r := rand.Intn(100)
-			t.runtime.Tray.SetLabel(fmt.Sprintf("CPU: %d", r))
-		}
-	}
-	ticker.Stop()
 }
 
 func (t *Tray) incrementcounter() int {
@@ -148,6 +128,10 @@ func (t *Tray) removeMenu(_ *menu.MenuItem) {
 
 	// 	parent.Append(menu.Text(menuText, menuText, menu.Key("[")))
 	t.runtime.Tray.Update()
+}
+
+func (t *Tray) SetIcon(trayIconID string) {
+	t.runtime.Tray.SetIcon(trayIconID)
 }
 
 func createApplicationTray() *menu.Menu {

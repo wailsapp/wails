@@ -30,6 +30,7 @@
     'Browser',
     'File System',
     'Window',
+    'Tray',
     'System'
   ];
 

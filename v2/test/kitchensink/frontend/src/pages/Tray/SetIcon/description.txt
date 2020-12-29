@@ -1,0 +1,1 @@
+<code>SetIcon(trayIconID)</code> is used to set the tray icon.
