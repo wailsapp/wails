@@ -20,6 +20,7 @@
 #define url(input) msg(c("NSURL"), s("fileURLWithPath:"), str(input))
 
 #define ALLOC(classname) msg(c(classname), s("alloc"))
+#define ALLOC_INIT(classname) msg(msg(c(classname), s("alloc")), s("init"))
 #define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("frame"))
 #define GET_BOUNDS(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("bounds"))
 
@@ -86,13 +87,23 @@
 #define NSImageAbove    5
 #define NSImageOverlaps 6
 
+#define NSAlertStyleWarning 0
+#define NSAlertStyleInformational 1
+#define NSAlertStyleCritical 2
+
+#define NSAlertFirstButtonReturn   1000
+#define NSAlertSecondButtonReturn  1001
+#define NSAlertThirdButtonReturn   1002
 
 // References to assets
 extern const unsigned char *assets[];
 extern const unsigned char runtime;
 
-// Tray icon
+// Tray icons
 extern const unsigned char *trayIcons[];
+
+// Dialog icons
+extern const unsigned char *dialogIcons[];
 
 // MAIN DEBUG FLAG
 int debug;
@@ -120,6 +131,9 @@ struct hashmap_s menuItemMapForContextMenus;
 
 // RadioGroup map for the context menus. Maps a menuitem id with its associated radio group items
 struct hashmap_s radioGroupMapForContextMenus;
+
+// A cache for all our dialog icons
+struct hashmap_s dialogIconCache;
 
 // Context menu data is given by the frontend when clicking a context menu.
 // We send this to the backend when an item is selected;
@@ -927,12 +941,23 @@ void destroyContextMenus(struct Application *app) {
 
 }
 
+void freeDialogIconCache(struct Application *app) {
+	// Release the tray cache images
+    if( hashmap_num_entries(&dialogIconCache) > 0 ) {
+        if (0!=hashmap_iterate_pairs(&dialogIconCache, releaseNSObject, NULL)) {
+            Fatal(app, "failed to release hashmap entries!");
+        }
+    }
+
+    //Free radio groups hashmap
+    hashmap_destroy(&dialogIconCache);
+}
 
 void destroyTray(struct Application *app) {
 
 	// Release the tray cache images
     if( hashmap_num_entries(&trayIconCache) > 0 ) {
-        if (0!=hashmap_iterate_pairs(&radioGroupMapForApplicationMenu, releaseNSObject, NULL)) {
+        if (0!=hashmap_iterate_pairs(&trayIconCache, releaseNSObject, NULL)) {
             Fatal(app, "failed to release hashmap entries!");
         }
     }
@@ -995,6 +1020,9 @@ void DestroyApplication(struct Application *app) {
 
 	// Destroy the context menus
 	destroyContextMenus(app);
+
+	// Free dialog icon cache
+	freeDialogIconCache(app);
 
 	// Clear context menu data if we have it
 	if( contextMenuData != NULL ) {
@@ -1138,6 +1166,35 @@ void SetPosition(struct Application *app, int x, int y) {
 		windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
 		msg(app->mainWindow, s("setFrame:display:animate:"), windowFrame, 1, 0);
 	);
+}
+
+
+void showDialog(struct Application *app) {
+	ON_MAIN_THREAD(
+	    id alert = ALLOC_INIT("NSAlert");
+	    msg(alert, s("setAlertStyle:"), NSAlertStyleInformational);
+	    msg(alert, s("setMessageText:"), str("Hello World!"));
+	    msg(alert, s("setInformativeText:"), str("Hello again World!"));
+	    msg(alert, s("addButtonWithTitle:"), str("One"));
+	    msg(alert, s("addButtonWithTitle:"), str("Two"));
+	    msg(alert, s("addButtonWithTitle:"), str("Three"));
+	    msg(alert, s("addButtonWithTitle:"), str("Four"));
+	    id dialogImage = hashmap_get(&dialogIconCache, "info", strlen("info"));
+        msg(alert, s("setIcon:"), dialogImage);
+	    int response = (int)msg(alert, s("runModal"));
+	    if( response == NSAlertFirstButtonReturn ) {
+	        printf("FIRST BUTTON PRESSED");
+	    }
+	    else if( response == NSAlertSecondButtonReturn ) {
+	        printf("SECOND BUTTON PRESSED");
+	    }
+	    else if( response == NSAlertThirdButtonReturn ) {
+	        printf("THIRD BUTTON PRESSED");
+	    }
+	    else {
+	        printf("FORTH BUTTON PRESSED");
+	    }
+    );
 }
 
 // OpenDialog opens a dialog to select files/directories
@@ -1364,6 +1421,7 @@ void SetTray(struct Application *app, const char *trayMenuAsJSON, const char *tr
 void SetContextMenus(struct Application *app, const char *contextMenusAsJSON) {
 	app->contextMenusAsJSON = contextMenusAsJSON;
 }
+
 
 void SetBindings(struct Application *app, const char *bindings) {
 	const char* temp = concat("window.wailsbindings = \"", bindings);
@@ -2409,6 +2467,40 @@ void UpdateContextMenus(struct Application *app, const char *contextMenusAsJSON)
 	);
 }
 
+void processDialogIcons(struct Application *app) {
+
+	// Allocate the Dialog icon hashmap
+	if( 0 != hashmap_create((const unsigned)4, &dialogIconCache)) {
+	   // Couldn't allocate map
+	   Fatal(app, "Not enough memory to allocate dialogIconCache!");
+	   return;
+	}
+
+	unsigned int count = 0;
+    while( 1 ) {
+        const unsigned char *name = dialogIcons[count++];
+        if( name == 0x00 ) {
+            break;
+        }
+        const unsigned char *lengthAsString = dialogIcons[count++];
+        if( name == 0x00 ) {
+            break;
+        }
+        const unsigned char *data = dialogIcons[count++];
+        if( data == 0x00 ) {
+            break;
+        }
+        int length = atoi((const char *)lengthAsString);
+
+        // Create the icon and add to the hashmap
+        id imageData = msg(c("NSData"), s("dataWithBytes:length:"), data, length);
+        id dialogImage = ALLOC("NSImage");
+        msg(dialogImage, s("initWithData:"), imageData);
+        hashmap_put(&dialogIconCache, (const char *)name, strlen((const char *)name), dialogImage);
+    }
+
+}
+
 
 void Run(struct Application *app, int argc, char **argv) {
 
@@ -2594,6 +2686,9 @@ void Run(struct Application *app, int argc, char **argv) {
 	if( app->contextMenusAsJSON != NULL ) {
 		parseContextMenus(app);
 	}
+
+	// Process dialog icons
+	processDialogIcons(app);
 
 	// We set it to be invisible by default. It will become visible when everything has initialised
 	msg(app->mainWindow, s("setIsVisible:"), NO);

@@ -21,13 +21,13 @@ func (d *DesktopBuilder) convertToHexLiteral(bytes []byte) string {
 	return result
 }
 
-// desktop_linux.go will compile the tray icon found at <projectdir>/trayicon.png into the application
+// We will compile all tray icons found at <projectdir>/icons/tray/*.png into the application
 func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) error {
 
 	var err error
 
 	// Get all the tray icon filenames
-	trayIconDirectory := filepath.Join(options.ProjectData.Path, "trayicons")
+	trayIconDirectory := filepath.Join(options.ProjectData.IconsDir, "tray")
 	var trayIconFilenames []string
 	if fs.DirExists(trayIconDirectory) {
 		trayIconFilenames, err = filepath.Glob(trayIconDirectory + "/*.png")
@@ -91,6 +91,96 @@ func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) err
 	cdata.WriteString("const unsigned char *trayIcons[] = { ")
 	cdata.WriteString(variableList.Join(", "))
 	if len(trayIconFilenames) > 0 {
+		cdata.WriteString(", ")
+	}
+	cdata.WriteString("0x00 };\n")
+
+	err = ioutil.WriteFile(targetFile, []byte(cdata.String()), 0600)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// We will compile all dialog icons found at <projectdir>/icons/dialog/*.png into the application
+func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) error {
+
+	var err error
+
+	// Get all the dialog icon filenames
+	dialogIconDirectory := filepath.Join(options.ProjectData.IconsDir, "dialog")
+	var dialogIconFilenames []string
+
+	// If the user has no custom dialog icons, copy the defaults
+	if !fs.DirExists(dialogIconDirectory) {
+		defaultDialogIconsDirectory := fs.RelativePath("./internal/packager/icons/dialog")
+		err := fs.CopyDir(defaultDialogIconsDirectory, dialogIconDirectory)
+		if err != nil {
+			return err
+		}
+	}
+
+	dialogIconFilenames, err = filepath.Glob(dialogIconDirectory + "/*.png")
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
+	// Setup target
+	targetFilename := "dialogicons"
+	targetFile := filepath.Join(assetDir, targetFilename+".c")
+	//d.addFileToDelete(targetFile)
+
+	var dataBytes []byte
+
+	// Use a strings builder
+	var cdata strings.Builder
+
+	// Write header
+	header := `// dialogicons.c
+// Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL.
+// This file was auto-generated. DO NOT MODIFY.
+
+`
+	cdata.WriteString(header)
+
+	var variableList slicer.StringSlicer
+
+	// Loop over icons
+	for count, filename := range dialogIconFilenames {
+
+		// Load the tray icon
+		dataBytes, err = ioutil.ReadFile(filename)
+		if err != nil {
+			return err
+		}
+
+		iconname := strings.TrimSuffix(filepath.Base(filename), ".png")
+		dialogIconName := fmt.Sprintf("dialogIcon%dName", count)
+		variableList.Add(dialogIconName)
+		cdata.WriteString(fmt.Sprintf("const unsigned char %s[] = { %s0x00 };\n", dialogIconName, d.convertToHexLiteral([]byte(iconname))))
+
+		dialogIconLength := fmt.Sprintf("dialogIcon%dLength", count)
+		variableList.Add(dialogIconLength)
+		lengthAsString := strconv.Itoa(len(dataBytes))
+		cdata.WriteString(fmt.Sprintf("const unsigned char %s[] = { %s0x00 };\n", dialogIconLength, d.convertToHexLiteral([]byte(lengthAsString))))
+
+		dialogIconData := fmt.Sprintf("dialogIcon%dData", count)
+		variableList.Add(dialogIconData)
+		cdata.WriteString(fmt.Sprintf("const unsigned char %s[] = { ", dialogIconData))
+
+		// Convert each byte to hex
+		for _, b := range dataBytes {
+			cdata.WriteString(fmt.Sprintf("0x%x, ", b))
+		}
+
+		cdata.WriteString("0x00 };\n")
+	}
+
+	// Write out main dialogIcons data
+	cdata.WriteString("const unsigned char *dialogIcons[] = { ")
+	cdata.WriteString(variableList.Join(", "))
+	if len(dialogIconFilenames) > 0 {
 		cdata.WriteString(", ")
 	}
 	cdata.WriteString("0x00 };\n")

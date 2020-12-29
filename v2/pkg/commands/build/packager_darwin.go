@@ -47,7 +47,7 @@ func packageApplication(options *Options) error {
 	}
 
 	// Generate Icons
-	err = processApplicationIcon(resourceDir)
+	err = processApplicationIcon(resourceDir, options.ProjectData.IconsDir)
 	if err != nil {
 		return err
 	}
@@ -129,12 +129,9 @@ func newPlistData(title, exe, packageID, version, author string) *plistData {
 	}
 }
 
-func processApplicationIcon(resourceDir string) (err error) {
+func processApplicationIcon(resourceDir string, iconsDir string) (err error) {
 
-	appIcon, err := fs.RelativeToCwd("appicon.png")
-	if err != nil {
-		return err
-	}
+	appIcon := filepath.Join(iconsDir, "appicon.png")
 
 	// Install default icon if one doesn't exist
 	if !fs.FileExists(appIcon) {
