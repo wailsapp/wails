@@ -290,7 +290,7 @@ distributions:
           - name: gcc
             help: Please install with `sudo zypper in gcc-c++` and try again
           - name: pkg-config
-            help: Please install with `sudo zypper in pkgconf-pkg-config` and try again
+            help: Please install with `sudo zypper in pkg-config` and try again
           - name: npm
             help: Please install `sudo zypper in nodejs` and try again
         libraries: &opensusedefaultlibraries
