@@ -153,6 +153,39 @@ func (c *Client) SaveDialog(dialogOptions *options.SaveDialog, callbackID string
 	)
 }
 
+// MessageDialog will open a message dialog with the given options
+func (c *Client) MessageDialog(dialogOptions *options.MessageDialog, callbackID string) {
+
+	// Sanity check button length
+	if len(dialogOptions.Buttons) > 4 {
+		c.app.logger.Error("Given %d message dialog buttons. Maximum is 4", len(dialogOptions.Buttons))
+		return
+	}
+
+	// Reverse
+
+	// Process buttons
+	buttons := []string{"", "", "", ""}
+	count := 0
+	for i := len(dialogOptions.Buttons) - 1; i >= 0; i-- {
+		buttons[count] = dialogOptions.Buttons[i]
+		count++
+	}
+
+	C.MessageDialog(c.app.app,
+		c.app.string2CString(callbackID),
+		c.app.string2CString(string(dialogOptions.Type)),
+		c.app.string2CString(dialogOptions.Title),
+		c.app.string2CString(dialogOptions.Message),
+		c.app.string2CString(dialogOptions.Icon),
+		c.app.string2CString(buttons[0]),
+		c.app.string2CString(buttons[1]),
+		c.app.string2CString(buttons[2]),
+		c.app.string2CString(buttons[3]),
+		c.app.string2CString(dialogOptions.DefaultButton),
+		c.app.string2CString(dialogOptions.CancelButton))
+}
+
 func (c *Client) DarkModeEnabled(callbackID string) {
 	C.DarkModeEnabled(c.app.app, c.app.string2CString(callbackID))
 }

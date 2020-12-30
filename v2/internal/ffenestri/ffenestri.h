@@ -31,6 +31,7 @@ extern void ToggleFullscreen(void *app);
 extern void DisableFrame(void *app);
 extern void OpenDialog(void *appPointer, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolvesAliases, int treatPackagesAsDirectories);
 extern void SaveDialog(void *appPointer, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int showHiddenFiles, int canCreateDirectories, int treatPackagesAsDirectories);
+extern void MessageDialog(void *appPointer, char *callbackID, char *type, char *title, char *message, char *icon, char *button1, char *button2, char *button3, char *button4, char *defaultButton, char *cancelButton);
 extern void DarkModeEnabled(void *appPointer, char *callbackID);
 extern void UpdateMenu(void *app, char *menuAsJSON);
 extern void UpdateTray(void *app, char *menuAsJSON);

@@ -42,6 +42,9 @@ func dialogMessageParser(message string) (*parsedMessage, error) {
 		case 'S':
 			topic = "dialog:saveselected:" + callbackID
 			responseMessage = &parsedMessage{Topic: topic, Data: payloadData}
+		case 'M':
+			topic = "dialog:messageselected:" + callbackID
+			responseMessage = &parsedMessage{Topic: topic, Data: payloadData}
 		}
 
 	default:

@@ -25,3 +25,23 @@ type SaveDialog struct {
 	CanCreateDirectories       bool
 	TreatPackagesAsDirectories bool
 }
+
+type DialogType string
+
+const (
+	InfoDialog     DialogType = "info"
+	WarningDialog  DialogType = "warning"
+	ErrorDialog    DialogType = "error"
+	QuestionDialog DialogType = "question"
+)
+
+// MessageDialog contains the options for the Message dialogs, EG Info, Warning, etc runtime methods
+type MessageDialog struct {
+	Type          DialogType
+	Title         string
+	Message       string
+	Buttons       []string
+	DefaultButton string
+	CancelButton  string
+	Icon          string
+}

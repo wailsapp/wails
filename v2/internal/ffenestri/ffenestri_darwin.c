@@ -23,9 +23,11 @@
 #define ALLOC_INIT(classname) msg(msg(c(classname), s("alloc")), s("init"))
 #define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("frame"))
 #define GET_BOUNDS(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("bounds"))
+#define GET_BACKINGSCALEFACTOR(receiver) ((CGFloat(*)(id, SEL))msg)(receiver, s("backingScaleFactor"))
 
 #define STREQ(a,b) strcmp(a, b) == 0
 #define STRCOPY(a) concat(a, "")
+#define STR_HAS_CHARS(input) input != NULL && strlen(input) > 0
 #define MEMFREE(input) free((void*)input); input = NULL;
 
 #define ON_MAIN_THREAD(str) dispatch( ^{ str; } )
@@ -103,7 +105,8 @@ extern const unsigned char runtime;
 extern const unsigned char *trayIcons[];
 
 // Dialog icons
-extern const unsigned char *dialogIcons[];
+extern const unsigned char *defaultDialogIcons[];
+extern const unsigned char *userDialogIcons[];
 
 // MAIN DEBUG FLAG
 int debug;
@@ -285,6 +288,14 @@ void Fatal(struct Application *app, const char *message, ... ) {
   app->sendMessageToBackend(&logbuffer[0]);
   MEMFREE(temp);
   va_end(args);
+}
+
+bool isRetina(struct Application *app) {
+	CGFloat scale = GET_BACKINGSCALEFACTOR(app->mainWindow);
+	if( (int)scale == 1 ) {
+		return false;
+	}
+	return true;
 }
 
 void TitlebarAppearsTransparent(struct Application* app) {
@@ -1168,32 +1179,124 @@ void SetPosition(struct Application *app, int x, int y) {
 	);
 }
 
+void processDialogButton(id alert, char *buttonTitle, char *cancelButton, char *defaultButton) {
+	// If this button is set
+	if( STR_HAS_CHARS(buttonTitle) ) {
+        id button = msg(alert, s("addButtonWithTitle:"), str(buttonTitle));
+        if ( STREQ( buttonTitle, defaultButton) ) {
+            msg(button, s("setKeyEquivalent:"), str("\r"));
+        }
+        if ( STREQ( buttonTitle, cancelButton) ) {
+            msg(button, s("setKeyEquivalent:"), str("\033"));
+        }
+    }
+}
 
-void showDialog(struct Application *app) {
+extern void MessageDialog(struct Application *app, char *callbackID, char *type, char *title, char *message, char *icon, char *button1, char *button2, char *button3, char *button4, char *defaultButton, char *cancelButton) {
 	ON_MAIN_THREAD(
 	    id alert = ALLOC_INIT("NSAlert");
-	    msg(alert, s("setAlertStyle:"), NSAlertStyleInformational);
-	    msg(alert, s("setMessageText:"), str("Hello World!"));
-	    msg(alert, s("setInformativeText:"), str("Hello again World!"));
-	    msg(alert, s("addButtonWithTitle:"), str("One"));
-	    msg(alert, s("addButtonWithTitle:"), str("Two"));
-	    msg(alert, s("addButtonWithTitle:"), str("Three"));
-	    msg(alert, s("addButtonWithTitle:"), str("Four"));
-	    id dialogImage = hashmap_get(&dialogIconCache, "info", strlen("info"));
+	    char *dialogType = type;
+	    char *dialogIcon = type;
+
+	    // Default to info type
+	    if( dialogType == NULL ) {
+	        dialogType = "info";
+	    }
+
+	    // Set the dialog style
+	    if( STREQ(dialogType, "info") || STREQ(dialogType, "question") ) {
+	        msg(alert, s("setAlertStyle:"), NSAlertStyleInformational);
+	    } else if( STREQ(dialogType, "warning") ) {
+            msg(alert, s("setAlertStyle:"), NSAlertStyleWarning);
+        } else if( STREQ(dialogType, "error") ) {
+            msg(alert, s("setAlertStyle:"), NSAlertStyleCritical);
+        }
+
+		// Set title if given
+		if( strlen(title) > 0 ) {
+		    msg(alert, s("setMessageText:"), str(title));
+		}
+
+		// Set message if given
+		if( strlen(message) > 0) {
+		    msg(alert, s("setInformativeText:"), str(message));
+		}
+
+		// Process buttons
+		processDialogButton(alert, button1, cancelButton, defaultButton);
+		processDialogButton(alert, button2, cancelButton, defaultButton);
+		processDialogButton(alert, button3, cancelButton, defaultButton);
+		processDialogButton(alert, button4, cancelButton, defaultButton);
+
+	    // Check for custom dialog icon
+	    if( strlen(icon) > 0 ) {
+	        dialogIcon = icon;
+	    }
+
+	    // Determine what dialog icon we are looking for
+	    id dialogImage;
+	    // Look for `name-theme2x` first
+	    char *themeIcon = concat(dialogIcon, (isDarkMode(app) ? "-dark" : "-light") );
+	    if( isRetina(app) ) {
+	        char *dialogIcon2x = concat(themeIcon, "2x");
+	        dialogImage = hashmap_get(&dialogIconCache, dialogIcon2x, strlen(dialogIcon2x));
+//	        if (dialogImage != NULL ) printf("Using %s\n", dialogIcon2x);
+	        MEMFREE(dialogIcon2x);
+
+			// Now look for non-themed icon `name2x`
+			if ( dialogImage == NULL ) {
+	            dialogIcon2x = concat(dialogIcon, "2x");
+	            dialogImage = hashmap_get(&dialogIconCache, dialogIcon2x, strlen(dialogIcon2x));
+//		        if (dialogImage != NULL ) printf("Using %s\n", dialogIcon2x);
+	            MEMFREE(dialogIcon2x);
+            }
+	    }
+
+	    // If we don't have a retina icon, try the 1x name-theme icon
+	    if( dialogImage == NULL ) {
+	        dialogImage = hashmap_get(&dialogIconCache, themeIcon, strlen(themeIcon));
+//            if (dialogImage != NULL ) printf("Using %s\n", themeIcon);
+	    }
+
+	    // Free the theme icon memory
+	    MEMFREE(themeIcon);
+
+	    // Finally try the name itself
+	    if( dialogImage == NULL ) {
+	        dialogImage = hashmap_get(&dialogIconCache, dialogIcon, strlen(dialogIcon));
+//            if (dialogImage != NULL ) printf("Using %s\n", dialogIcon);
+	    }
+
         msg(alert, s("setIcon:"), dialogImage);
+
+		// Run modal
+		char *buttonPressed;
 	    int response = (int)msg(alert, s("runModal"));
 	    if( response == NSAlertFirstButtonReturn ) {
-	        printf("FIRST BUTTON PRESSED");
+	        buttonPressed = button1;
 	    }
 	    else if( response == NSAlertSecondButtonReturn ) {
-	        printf("SECOND BUTTON PRESSED");
+	        buttonPressed = button2;
 	    }
 	    else if( response == NSAlertThirdButtonReturn ) {
-	        printf("THIRD BUTTON PRESSED");
+	        buttonPressed = button3;
 	    }
 	    else {
-	        printf("FORTH BUTTON PRESSED");
+	        buttonPressed = button4;
 	    }
+
+        // Construct callback message. Format "DS<callbackID>|<selected button index>"
+        const char *callback = concat("DM", callbackID);
+        const char *header = concat(callback, "|");
+        const char *responseMessage = concat(header, buttonPressed);
+
+        // Send message to backend
+        app->sendMessageToBackend(responseMessage);
+
+        // Free memory
+        MEMFREE(header);
+        MEMFREE(callback);
+        MEMFREE(responseMessage);
     );
 }
 
@@ -2467,14 +2570,7 @@ void UpdateContextMenus(struct Application *app, const char *contextMenusAsJSON)
 	);
 }
 
-void processDialogIcons(struct Application *app) {
-
-	// Allocate the Dialog icon hashmap
-	if( 0 != hashmap_create((const unsigned)4, &dialogIconCache)) {
-	   // Couldn't allocate map
-	   Fatal(app, "Not enough memory to allocate dialogIconCache!");
-	   return;
-	}
+void processDialogIcons(struct hashmap_s *hashmap, const unsigned char *dialogIcons[]) {
 
 	unsigned int count = 0;
     while( 1 ) {
@@ -2496,8 +2592,22 @@ void processDialogIcons(struct Application *app) {
         id imageData = msg(c("NSData"), s("dataWithBytes:length:"), data, length);
         id dialogImage = ALLOC("NSImage");
         msg(dialogImage, s("initWithData:"), imageData);
-        hashmap_put(&dialogIconCache, (const char *)name, strlen((const char *)name), dialogImage);
+        hashmap_put(hashmap, (const char *)name, strlen((const char *)name), dialogImage);
     }
+
+}
+
+void processUserDialogIcons(struct Application *app) {
+
+	// Allocate the Dialog icon hashmap
+	if( 0 != hashmap_create((const unsigned)4, &dialogIconCache)) {
+	   // Couldn't allocate map
+	   Fatal(app, "Not enough memory to allocate dialogIconCache!");
+	   return;
+	}
+
+	processDialogIcons(&dialogIconCache, defaultDialogIcons);
+	processDialogIcons(&dialogIconCache, userDialogIcons);
 
 }
 
@@ -2688,7 +2798,7 @@ void Run(struct Application *app, int argc, char **argv) {
 	}
 
 	// Process dialog icons
-	processDialogIcons(app);
+	processUserDialogIcons(app);
 
 	// We set it to be invisible by default. It will become visible when everything has initialised
 	msg(app->mainWindow, s("setIsVisible:"), NO);

@@ -127,9 +127,9 @@ func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) e
 	}
 
 	// Setup target
-	targetFilename := "dialogicons"
+	targetFilename := "userdialogicons"
 	targetFile := filepath.Join(assetDir, targetFilename+".c")
-	//d.addFileToDelete(targetFile)
+	d.addFileToDelete(targetFile)
 
 	var dataBytes []byte
 
@@ -137,7 +137,7 @@ func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) e
 	var cdata strings.Builder
 
 	// Write header
-	header := `// dialogicons.c
+	header := `// userdialogicons.c
 // Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL.
 // This file was auto-generated. DO NOT MODIFY.
 
@@ -156,16 +156,16 @@ func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) e
 		}
 
 		iconname := strings.TrimSuffix(filepath.Base(filename), ".png")
-		dialogIconName := fmt.Sprintf("dialogIcon%dName", count)
+		dialogIconName := fmt.Sprintf("userDialogIcon%dName", count)
 		variableList.Add(dialogIconName)
 		cdata.WriteString(fmt.Sprintf("const unsigned char %s[] = { %s0x00 };\n", dialogIconName, d.convertToHexLiteral([]byte(iconname))))
 
-		dialogIconLength := fmt.Sprintf("dialogIcon%dLength", count)
+		dialogIconLength := fmt.Sprintf("userDialogIcon%dLength", count)
 		variableList.Add(dialogIconLength)
 		lengthAsString := strconv.Itoa(len(dataBytes))
 		cdata.WriteString(fmt.Sprintf("const unsigned char %s[] = { %s0x00 };\n", dialogIconLength, d.convertToHexLiteral([]byte(lengthAsString))))
 
-		dialogIconData := fmt.Sprintf("dialogIcon%dData", count)
+		dialogIconData := fmt.Sprintf("userDialogIcon%dData", count)
 		variableList.Add(dialogIconData)
 		cdata.WriteString(fmt.Sprintf("const unsigned char %s[] = { ", dialogIconData))
 
@@ -178,7 +178,7 @@ func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) e
 	}
 
 	// Write out main dialogIcons data
-	cdata.WriteString("const unsigned char *dialogIcons[] = { ")
+	cdata.WriteString("const unsigned char *userDialogIcons[] = { ")
 	cdata.WriteString(variableList.Join(", "))
 	if len(dialogIconFilenames) > 0 {
 		cdata.WriteString(", ")

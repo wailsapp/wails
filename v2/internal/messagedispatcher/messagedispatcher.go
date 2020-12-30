@@ -416,7 +416,20 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 			for _, client := range d.clients {
 				client.frontend.SaveDialog(dialogOptions, callbackID)
 			}
+		case "message":
+			dialogOptions, ok := result.Data().(*options.MessageDialog)
+			if !ok {
+				d.logger.Error("Invalid data for 'dialog:select:message' : %#v", result.Data())
+				return
+			}
+			// This is hardcoded in the sender too
+			callbackID := splitTopic[3]
 
+			// TODO: Work out what we mean in a multi window environment...
+			// For now we will just pick the first one
+			for _, client := range d.clients {
+				client.frontend.MessageDialog(dialogOptions, callbackID)
+			}
 		default:
 			d.logger.Error("Unknown dialog type: %s", dialogType)
 		}
