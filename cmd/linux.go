@@ -259,7 +259,7 @@ func RpmInstalled(packageName string) (bool, error) {
 	return exitCode == 0, nil
 }
 
-// PrtGet Installed uses prt-get to see if a package is installed
+// PrtGetInstalled uses prt-get to see if a package is installed
 func PrtGetInstalled(packageName string) (bool, error) {
 	program := NewProgramHelper()
 	prtget := program.FindProgram("prt-get")
