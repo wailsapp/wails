@@ -31,17 +31,3 @@ func (l *Dialog) Save(options *options.SaveDialog) string {
 func (l *Dialog) Message(options *options.MessageDialog) string {
 	return l.runtime.Dialog.Message(options)
 }
-
-// Message Dialog
-func (l *Dialog) Test() string {
-	return l.runtime.Dialog.Message(&options.MessageDialog{
-		Type:    options.InfoDialog,
-		Title:   " ",
-		Message: "I am a longer message but these days, can't be too long!",
-		// Buttons are declared in the order they should be appear in
-		Buttons:       []string{"test", "Cancel", "OK"},
-		DefaultButton: "OK",
-		CancelButton:  "Cancel",
-		//Icon:          "wails",
-	})
-}

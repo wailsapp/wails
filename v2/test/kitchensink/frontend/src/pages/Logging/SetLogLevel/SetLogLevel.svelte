@@ -19,7 +19,8 @@
         let logLevelUpper = loglevelText.toUpperCase();
         let logLevelMethod = Log.Level[logLevelUpper];
         setLogLevelMethod(logLevelMethod);
-    };
+    }
+
     $: lang = isJs ? 'Javascript' : 'Go';
 
     let description = `You can set the log level using Log.SetLogLevel(). It accepts a log level (number) but there are consts available which may be used. See example code for more details.`;    
@@ -41,7 +42,7 @@
                 {/each}
             </div>
             <input class="btn btn-primary" type="button" on:click="{setLogLevel}" value="SetLogLevel using {lang} runtime">
-            <CodeSnippet bind:isJs={isJs} jsCode={testcodeJs} goCode={testcodeGo}></CodeSnippet>
+            <CodeSnippet bind:isJs={isJs} jsCode={testcodeJs} goCode={testcodeGo}/>
         </form>
     </div>
 </CodeBlock>

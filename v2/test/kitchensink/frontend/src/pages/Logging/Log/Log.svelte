@@ -58,7 +58,7 @@
 
             <input class="btn btn-primary" type="button" on:click="{sendLogMessage}" value="Log using {lang} runtime">
 
-            <CodeSnippet bind:isJs={isJs} jsCode={testcodeJs} goCode={testcodeGo}></CodeSnippet>
+            <CodeSnippet bind:isJs={isJs} jsCode={testcodeJs} goCode={testcodeGo}/>
 
         </form>
     </div>

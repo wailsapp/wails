@@ -38,9 +38,9 @@ I am a Print message
     Custom loggers may be given to your Wails application. More details <Link href="https://wails.app">here</Link>.
     
     <br/><br/>
-    
-    <Log></Log>
+
+    <Log/>
     <br/>
-    <SetLogLevel></SetLogLevel>
+    <SetLogLevel/>
 </div>
 

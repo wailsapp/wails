@@ -162,14 +162,10 @@ func (c *Client) MessageDialog(dialogOptions *options.MessageDialog, callbackID 
 		return
 	}
 
-	// Reverse
-
 	// Process buttons
 	buttons := []string{"", "", "", ""}
-	count := 0
-	for i := len(dialogOptions.Buttons) - 1; i >= 0; i-- {
-		buttons[count] = dialogOptions.Buttons[i]
-		count++
+	for i, button := range dialogOptions.Buttons {
+		buttons[i] = button
 	}
 
 	C.MessageDialog(c.app.app,

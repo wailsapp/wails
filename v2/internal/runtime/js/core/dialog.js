@@ -72,7 +72,7 @@ export function Save(options) {
  * @param {DialogType} [Type=InfoDialog] - The type of the dialog
  * @param {string} [Title=""] - The dialog title
  * @param {string} [Message=""] - The dialog message
- * @param {string[]} [Buttons=[]] - The button titles in the order they should appear
+ * @param {string[]} [Buttons=[]] - The button titles
  * @param {string} [DefaultButton=""] - The button that should be used as the default button
  * @param {string} [CancelButton=""] - The button that should be used as the cancel button
  * @param {string} [Icon=""] - The name of the icon to use in the dialog
@@ -83,6 +83,7 @@ export function Save(options) {
  * or prompt the user to select an option
  *
  * @export
+ * @name Message
  * @param {MessageDialogOptions} options
  * @returns {Promise<string>} - The button text that was selected
  */

@@ -11,7 +11,7 @@
     <Link href="https://wails.app">Here</Link> is an example.
     
     <br/><br/>
-    
-    <Browser></Browser>
+
+    <Browser/>
 </div>
 

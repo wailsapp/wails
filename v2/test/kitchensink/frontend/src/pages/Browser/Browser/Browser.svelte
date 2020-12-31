@@ -37,7 +37,7 @@
 
             <input class="btn btn-primary" type="button" on:click="{processOpen}" value="Open using {lang} runtime">
 
-            <CodeSnippet bind:isJs={isJs} jsCode={testcodeJs} goCode={testcodeGo}></CodeSnippet>
+            <CodeSnippet bind:isJs={isJs} jsCode={testcodeJs} goCode={testcodeGo}/>
 
         </form>
     </div>
