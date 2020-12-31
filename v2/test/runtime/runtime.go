@@ -127,7 +127,7 @@ func (r *RuntimeTest) OpenDialogAllOptions(filter string, defaultDir string, def
 		ShowHiddenFiles:            true,
 		CanCreateDirectories:       true,
 		TreatPackagesAsDirectories: true,
-		ResolveAliases:             true,
+		ResolvesAliases:            true,
 	}
 	return r.runtime.Dialog.Open(dialogOptions)
 }
