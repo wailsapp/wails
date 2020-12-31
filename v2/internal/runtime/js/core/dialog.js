@@ -13,24 +13,24 @@ The lightweight framework for web-like apps
 import { SystemCall } from './calls';
 
 /**
- * @type {Object} OpenDialog
+ * @type {Object} OpenDialogOptions
  * @param {string} [DefaultDirectory=""]           
  * @param {string} [DefaultFilename=""]            
  * @param {string} [Title=""]                      
  * @param {string} [Filters=""]                    
- * @param {bool} [AllowFiles=false]                 
- * @param {bool} [AllowDirectories=false]           
- * @param {bool} [AllowMultiple=false]              
- * @param {bool} [ShowHiddenFiles=false]            
- * @param {bool} [CanCreateDirectories=false]       
- * @param {bool} [ResolvesAliases=false] - Mac Only: Resolves aliases (symlinks)            
- * @param {bool} [TreatPackagesAsDirectories=false] - Mac Only: Show packages (EG Applications) as folders
+ * @param {boolean} [AllowFiles=false]
+ * @param {boolean} [AllowDirectories=false]
+ * @param {boolean} [AllowMultiple=false]
+ * @param {boolean} [ShowHiddenFiles=false]
+ * @param {boolean} [CanCreateDirectories=false]
+ * @param {boolean} [ResolvesAliases=false] - Mac Only: Resolves aliases (symlinks)
+ * @param {boolean} [TreatPackagesAsDirectories=false] - Mac Only: Show packages (EG Applications) as folders
  */
 
 
 
 /**
- * Opens a dialog using the given paramaters, prompting the user to 
+ * Opens a dialog using the given parameters, prompting the user to
  * select files/folders.
  *
  * @export
@@ -42,25 +42,50 @@ export function Open(options) {
 }
 
 /**
- * 
- * @type {Object} SaveDialogOptions 
- * @param {string} [DefaultDirectory=""]           
- * @param {string} [DefaultFilename=""]            
- * @param {string} [Title=""]                      
- * @param {string} [Filters=""]                    
- * @param {bool} [ShowHiddenFiles=false]            
- * @param {bool} [CanCreateDirectories=false]       
- * @param {bool} [TreatPackagesAsDirectories=false] 
+ *
+ * @type {Object} SaveDialogOptions
+ * @param {string} [DefaultDirectory=""]
+ * @param {string} [DefaultFilename=""]
+ * @param {string} [Title=""]
+ * @param {string} [Filters=""]
+ * @param {boolean} [ShowHiddenFiles=false]
+ * @param {boolean} [CanCreateDirectories=false]
+ * @param {boolean} [TreatPackagesAsDirectories=false]
  */
 
 /**
- * Opens a dialog using the given paramaters, prompting the user to 
+ * Opens a dialog using the given parameters, prompting the user to
  * select a single file/folder.
- * 
+ *
  * @export
  * @param {SaveDialogOptions} options
- * @returns {Promise<string>} 
+ * @returns {Promise<string>}
  */
 export function Save(options) {
 	return SystemCall('Dialog.Save', options);
+}
+
+
+/**
+ *
+ * @type {Object} MessageDialogOptions
+ * @param {DialogType} [Type=InfoDialog] - The type of the dialog
+ * @param {string} [Title=""] - The dialog title
+ * @param {string} [Message=""] - The dialog message
+ * @param {string[]} [Buttons=[]] - The button titles in the order they should appear
+ * @param {string} [DefaultButton=""] - The button that should be used as the default button
+ * @param {string} [CancelButton=""] - The button that should be used as the cancel button
+ * @param {string} [Icon=""] - The name of the icon to use in the dialog
+ */
+
+/**
+ * Opens a dialog using the given parameters, to display a message
+ * or prompt the user to select an option
+ *
+ * @export
+ * @param {MessageDialogOptions} options
+ * @returns {Promise<string>} - The button text that was selected
+ */
+export function Message(options) {
+	return SystemCall('Dialog.Message', options);
 }

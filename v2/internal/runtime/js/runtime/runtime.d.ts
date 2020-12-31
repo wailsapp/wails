@@ -77,6 +77,23 @@ interface SaveDialogOptions {
     TreatPackagesAsDirectories: boolean;
 }
 
+interface DialogType {
+    InfoDialog: 'info',
+    WarningDialog: 'warning',
+    ErrorDialog: 'error',
+    QuestionDialog: 'question',
+}
+
+interface MessageDialogOptions {
+    Type: DialogType;
+    Title: string;
+    Message: string;
+    Buttons: string[];
+    DefaultButton: string;
+    CancelButton: string;
+    Icon: string;
+}
+
 declare const wailsapp__runtime: {
     Browser: {
         Open(target: string): Promise<any>;
@@ -109,7 +126,8 @@ declare const wailsapp__runtime: {
     };
     Dialog: {
         Open(options: OpenDialogOptions): Promise<Array<string>>;
-        Save(options: SaveDialogOptions): Promise<Array<string>>;
+        Save(options: SaveDialogOptions): Promise<string>;
+        Message(options: MessageDialogOptions): Promise<string>;
     };
     Tray: {
         SetIcon(trayIconID: string): void;

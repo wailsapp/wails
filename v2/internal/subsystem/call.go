@@ -146,6 +146,14 @@ func (c *Call) processSystemCall(payload *message.CallMessage, clientID string) 
 		}
 		result := c.runtime.Dialog.Save(dialogOptions)
 		c.sendResult(result, payload, clientID)
+	case "Dialog.Message":
+		dialogOptions := new(options.MessageDialog)
+		err := json.Unmarshal(payload.Args[0], dialogOptions)
+		if err != nil {
+			c.logger.Error("Error decoding: %s", err)
+		}
+		result := c.runtime.Dialog.Message(dialogOptions)
+		c.sendResult(result, payload, clientID)
 	default:
 		c.logger.Error("Unknown system call: %+v", callName)
 	}
@@ -153,12 +161,12 @@ func (c *Call) processSystemCall(payload *message.CallMessage, clientID string) 
 
 func (c *Call) sendResult(result interface{}, payload *message.CallMessage, clientID string) {
 	c.logger.Trace("Sending success result with CallbackID '%s' : %+v\n", payload.CallbackID, result)
-	message := &CallbackMessage{
+	incomingMessage := &CallbackMessage{
 		Result:     result,
 		CallbackID: payload.CallbackID,
 	}
-	messageData, err := json.Marshal(message)
-	c.logger.Trace("json message data: %+v\n", string(messageData))
+	messageData, err := json.Marshal(incomingMessage)
+	c.logger.Trace("json incomingMessage data: %+v\n", string(messageData))
 	if err != nil {
 		// what now?
 		c.logger.Fatal(err.Error())
@@ -168,13 +176,13 @@ func (c *Call) sendResult(result interface{}, payload *message.CallMessage, clie
 
 func (c *Call) sendError(err error, payload *message.CallMessage, clientID string) {
 	c.logger.Trace("Sending error result with CallbackID '%s' : %+v\n", payload.CallbackID, err.Error())
-	message := &CallbackMessage{
+	incomingMessage := &CallbackMessage{
 		Err:        err.Error(),
 		CallbackID: payload.CallbackID,
 	}
 
-	messageData, err := json.Marshal(message)
-	c.logger.Trace("json message data: %+v\n", string(messageData))
+	messageData, err := json.Marshal(incomingMessage)
+	c.logger.Trace("json incomingMessage data: %+v\n", string(messageData))
 	if err != nil {
 		// what now?
 		c.logger.Fatal(err.Error())

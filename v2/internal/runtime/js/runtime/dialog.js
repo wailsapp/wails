@@ -16,17 +16,17 @@ The lightweight framework for web-like apps
  * @param {string} [DefaultFilename=""]            
  * @param {string} [Title=""]                      
  * @param {string} [Filters=""]                    
- * @param {bool} [AllowFiles=false]                 
- * @param {bool} [AllowDirectories=false]           
- * @param {bool} [AllowMultiple=false]              
- * @param {bool} [ShowHiddenFiles=false]            
- * @param {bool} [CanCreateDirectories=false]       
- * @param {bool} [ResolvesAliases=false] - Mac Only: Resolves aliases (symlinks)            
- * @param {bool} [TreatPackagesAsDirectories=false] - Mac Only: Show packages (EG Applications) as folders
+ * @param {boolean} [AllowFiles=false]
+ * @param {boolean} [AllowDirectories=false]
+ * @param {boolean} [AllowMultiple=false]
+ * @param {boolean} [ShowHiddenFiles=false]
+ * @param {boolean} [CanCreateDirectories=false]
+ * @param {boolean} [ResolvesAliases=false] - Mac Only: Resolves aliases (symlinks)
+ * @param {boolean} [TreatPackagesAsDirectories=false] - Mac Only: Show packages (EG Applications) as folders
  */
 
 /**
- * Opens a dialog using the given paramaters, prompting the user to 
+ * Opens a dialog using the given parameters, prompting the user to
  * select files/folders.
  *
  * @export
@@ -44,13 +44,13 @@ export function Open(options) {
  * @param {string} [DefaultFilename=""]            
  * @param {string} [Title=""]                      
  * @param {string} [Filters=""]                    
- * @param {bool} [ShowHiddenFiles=false]            
- * @param {bool} [CanCreateDirectories=false]       
- * @param {bool} [TreatPackagesAsDirectories=false] 
+ * @param {boolean} [ShowHiddenFiles=false]
+ * @param {boolean} [CanCreateDirectories=false]
+ * @param {boolean} [TreatPackagesAsDirectories=false]
  */
 
 /**
- * Opens a dialog using the given paramaters, prompting the user to 
+ * Opens a dialog using the given parameters, prompting the user to
  * select a single file/folder.
  * 
  * @export
@@ -59,4 +59,28 @@ export function Open(options) {
  */
 export function Save(options) {
 	return window.wails.Dialog.Save(options);
+}
+
+/**
+ *
+ * @type {Object} MessageDialogOptions
+ * @param {DialogType} [Type=InfoDialog] - The type of the dialog
+ * @param {string} [Title=""] - The dialog title
+ * @param {string} [Message=""] - The dialog message
+ * @param {string[]} [Buttons=[]] - The button titles in the order they should appear
+ * @param {string} [DefaultButton=""] - The button that should be used as the default button
+ * @param {string} [CancelButton=""] - The button that should be used as the cancel button
+ * @param {string} [Icon=""] - The name of the icon to use in the dialog
+ */
+
+/**
+ * Opens a dialog using the given parameters, to display a message
+ * or prompt the user to select an option
+ *
+ * @export
+ * @param {MessageDialogOptions} options
+ * @returns {Promise<string>} - The button text that was selected
+ */
+export function Message(options) {
+	return window.wails.Dialog.Message(options);
 }
