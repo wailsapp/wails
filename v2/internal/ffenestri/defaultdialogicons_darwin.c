@@ -1,4 +1,4 @@
-// defaultdialogicons.c
+// defaultdialogicons_darwin.c
 // Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL.
 // This file was auto-generated. DO NOT MODIFY.
 

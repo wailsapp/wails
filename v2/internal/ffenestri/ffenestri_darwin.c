@@ -889,6 +889,10 @@ int releaseNSObject(void *const context, struct hashmap_element_s *const e) {
 
 void destroyMenu(struct Application *app) {
 
+	if( app->menuAsJSON == NULL ) {
+		return;
+	}
+
 	// Free menu item hashmap
 	hashmap_destroy(&menuItemMapForApplicationMenu);
 
@@ -908,7 +912,7 @@ void destroyMenu(struct Application *app) {
 		app->processedMenu = NULL;
 	}
 
-    // Remove the current Menu
+    // Remove the menu if we have one
     id menubar = msg(msg(c("NSApplication"), s("sharedApplication")), s("mainMenu"));
     Debug(app, "Destroying menubar: %p", menubar);
     msg(menubar, s("release"));
@@ -965,6 +969,10 @@ void freeDialogIconCache(struct Application *app) {
 }
 
 void destroyTray(struct Application *app) {
+
+	if( app->trayMenuAsJSON == NULL ) {
+		return;
+	}
 
 	// Release the tray cache images
     if( hashmap_num_entries(&trayIconCache) > 0 ) {
