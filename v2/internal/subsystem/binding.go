@@ -5,6 +5,8 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
+	"os"
+	"time"
 )
 
 // Binding is the Binding subsystem. It manages all service bus messages
@@ -22,6 +24,13 @@ type Binding struct {
 
 	// runtime
 	runtime *runtime.Runtime
+}
+
+func showError(err error) {
+	// Add a slight delay so log buffer clears
+	time.Sleep(1 * time.Second)
+	println("\n\n\n\n\n\n")
+	println("Fatal Error in WailsInit(): " + err.Error())
 }
 
 // NewBinding creates a new binding subsystem. Uses the given bindings db for reference.
@@ -48,11 +57,13 @@ func NewBinding(bus *servicebus.ServiceBus, logger *logger.Logger, bindings *bin
 	}
 
 	// Call WailsInit methods once the frontend is loaded
-	// TODO: Double check that this is actually being emitted
-	// when we want it to be
 	runtime.Events.On("wails:loaded", func(...interface{}) {
 		result.logger.Trace("Calling WailsInit() methods")
-		result.CallWailsInit()
+		err := result.CallWailsInit()
+		if err != nil {
+			showError(err)
+			os.Exit(1)
+		}
 	})
 
 	return result, nil
@@ -108,6 +119,9 @@ func (b *Binding) CallWailsShutdown() error {
 }
 
 func (b *Binding) shutdown() {
-	b.CallWailsShutdown()
+	err := b.CallWailsShutdown()
+	if err != nil {
+		showError(err)
+	}
 	b.logger.Trace("Shutdown")
 }
