@@ -25,8 +25,8 @@ type App struct {
 }
 
 // CreateApp returns a null application
-func CreateApp(_ *options.App) *App {
-	return &App{}
+func CreateApp(_ *options.App) (*App, error) {
+	return &App{}, nil
 }
 
 // Run the application
