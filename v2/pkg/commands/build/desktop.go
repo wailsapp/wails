@@ -24,9 +24,15 @@ func newDesktopBuilder() *DesktopBuilder {
 func (d *DesktopBuilder) BuildAssets(options *Options) error {
 	var err error
 
-	// Check icon directory exists
-	if !fs.DirExists(options.ProjectData.IconsDir) {
-		return fmt.Errorf("icon directory %s does not exist", options.ProjectData.IconsDir)
+	// Check assets directory exists
+	if !fs.DirExists(options.ProjectData.AssetsDir) {
+		// Path to default assets
+		defaultAssets := fs.RelativePath("./internal/assets")
+		// Copy the default assets directory
+		err := fs.CopyDir(defaultAssets, options.ProjectData.AssetsDir)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Get a list of assets from the HTML
@@ -42,7 +48,7 @@ func (d *DesktopBuilder) BuildAssets(options *Options) error {
 	}
 
 	// Build static assets
-	err = d.buildStaticAssets(d.projectData)
+	err = d.buildCustomAssets(d.projectData)
 	if err != nil {
 		return err
 	}
@@ -95,7 +101,7 @@ func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, options *Opti
 func (d *DesktopBuilder) processApplicationIcon(assetDir string) error {
 
 	// Copy default icon if one doesn't exist
-	iconFile := filepath.Join(d.projectData.IconsDir, "appicon.png")
+	iconFile := filepath.Join(d.projectData.AssetsDir, "appicon.png")
 	if !fs.FileExists(iconFile) {
 		err := fs.CopyFile(defaultIconPath(), iconFile)
 		if err != nil {

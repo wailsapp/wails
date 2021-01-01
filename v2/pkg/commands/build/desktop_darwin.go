@@ -21,21 +21,29 @@ func (d *DesktopBuilder) convertToHexLiteral(bytes []byte) string {
 	return result
 }
 
-// We will compile all tray icons found at <projectdir>/icons/tray/*.png into the application
+// We will compile all tray icons found at <projectdir>/assets/trayicons/*.png into the application
 func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) error {
 
 	var err error
 
 	// Get all the tray icon filenames
-	trayIconDirectory := filepath.Join(options.ProjectData.IconsDir, "tray")
-	var trayIconFilenames []string
-	if fs.DirExists(trayIconDirectory) {
-		trayIconFilenames, err = filepath.Glob(trayIconDirectory + "/*.png")
+	trayIconDirectory := filepath.Join(options.ProjectData.AssetsDir, "tray")
+
+	// If the directory doesn't exist, create it
+	if !fs.DirExists(trayIconDirectory) {
+		err = fs.MkDirs(trayIconDirectory)
 		if err != nil {
-			log.Fatal(err)
 			return err
 		}
 	}
+
+	var trayIconFilenames []string
+	trayIconFilenames, err = filepath.Glob(trayIconDirectory + "/*.png")
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+
 	// Setup target
 	targetFilename := "trayicons"
 	targetFile := filepath.Join(assetDir, targetFilename+".c")
@@ -108,12 +116,12 @@ func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) e
 	var err error
 
 	// Get all the dialog icon filenames
-	dialogIconDirectory := filepath.Join(options.ProjectData.IconsDir, "dialog")
+	dialogIconDirectory := filepath.Join(options.ProjectData.AssetsDir, "dialog")
 	var dialogIconFilenames []string
 
-	// If the user has no custom dialog icons, copy the defaults
+	// If the directory does not exist, create it
 	if !fs.DirExists(dialogIconDirectory) {
-		defaultDialogIconsDirectory := fs.RelativePath("./internal/packager/icons/dialog")
+		defaultDialogIconsDirectory := fs.RelativePath("./internal/packager/icons/default/dialog")
 		err := fs.CopyDir(defaultDialogIconsDirectory, dialogIconDirectory)
 		if err != nil {
 			return err

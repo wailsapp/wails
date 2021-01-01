@@ -49,39 +49,43 @@ func (b *BaseBuilder) fileExists(path string) bool {
 	return true
 }
 
-// buildStaticAssets will iterate through the projects static directory and add all files
+// buildCustomAssets will iterate through the projects static directory and add all files
 // to the application wide asset database.
-func (b *BaseBuilder) buildStaticAssets(projectData *project.Project) error {
+func (b *BaseBuilder) buildCustomAssets(projectData *project.Project) error {
 
 	// Add trailing slash to Asset directory
-	assetsDir := filepath.Join(projectData.Path, "assets") + "/"
-
-	assets := assetdb.NewAssetDB()
-	if b.fileExists(assetsDir) {
-		err := filepath.Walk(assetsDir, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			normalisedPath := filepath.ToSlash(path)
-			localPath := strings.TrimPrefix(normalisedPath, assetsDir)
-			if len(localPath) == 0 {
-				return nil
-			}
-			if data, err := ioutil.ReadFile(filepath.Join(assetsDir, localPath)); err == nil {
-				assets.AddAsset(localPath, data)
-			}
-
-			return nil
-		})
+	customAssetsDir := filepath.Join(projectData.Path, "assets", "custom") + "/"
+	if !b.fileExists(customAssetsDir) {
+		err := fs.MkDirs(customAssetsDir)
 		if err != nil {
 			return err
 		}
 	}
 
+	assets := assetdb.NewAssetDB()
+	err := filepath.Walk(customAssetsDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		normalisedPath := filepath.ToSlash(path)
+		localPath := strings.TrimPrefix(normalisedPath, customAssetsDir)
+		if len(localPath) == 0 {
+			return nil
+		}
+		if data, err := ioutil.ReadFile(filepath.Join(customAssetsDir, localPath)); err == nil {
+			assets.AddAsset(localPath, data)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
 	// Write assetdb out to root directory
 	assetsDbFilename := fs.RelativePath("../../../assetsdb.go")
 	b.addFileToDelete(assetsDbFilename)
-	err := ioutil.WriteFile(assetsDbFilename, []byte(assets.Serialize("assets", "wails")), 0644)
+	err = ioutil.WriteFile(assetsDbFilename, []byte(assets.Serialize("assets", "wails")), 0644)
 	if err != nil {
 		return err
 	}
@@ -128,7 +132,7 @@ func (b *BaseBuilder) CleanUp() {
 
 		// Delete file. We ignore errors because these files will be overwritten
 		// by the next build anyway.
-		os.Remove(filename)
+		_ = os.Remove(filename)
 
 	})
 }
@@ -166,7 +170,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	// Get application build directory
 	appDir := options.BuildDirectory
-	err := cleanBuildDirectory(options, options.Platform)
+	err := cleanBuildDirectory(options)
 	if err != nil {
 		return err
 	}
@@ -307,8 +311,7 @@ func (b *BaseBuilder) NpmRunWithEnvironment(projectDir, buildTarget string, verb
 }
 
 // BuildFrontend executes the `npm build` command for the frontend directory
-func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
-	verbose := false
+func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger, verbose bool) error {
 
 	frontendDir := filepath.Join(b.projectData.Path, "frontend")
 

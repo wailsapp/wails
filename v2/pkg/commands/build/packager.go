@@ -28,7 +28,7 @@ func packageProject(options *Options, platform string) error {
 }
 
 // cleanBuildDirectory will remove an existing build directory and recreate it
-func cleanBuildDirectory(options *Options, platform string) error {
+func cleanBuildDirectory(options *Options) error {
 
 	buildDirectory := options.BuildDirectory
 
@@ -49,8 +49,6 @@ func cleanBuildDirectory(options *Options, platform string) error {
 	return nil
 }
 
-func copyFileToBuildDirectory() {}
-
 // Gets (and creates) the build base directory
 func getBuildBaseDirectory(options *Options) (string, error) {
 	buildDirectory := filepath.Join(options.ProjectData.Path, "build")
@@ -65,7 +63,7 @@ func getBuildBaseDirectory(options *Options) (string, error) {
 
 // Gets the path to the default icon
 func defaultIconPath() string {
-	return fs.RelativePath("internal/packager/icon64.png")
+	return fs.RelativePath("internal/packager/icon1024.png")
 }
 
 // Gets the platform dependent package assets directory

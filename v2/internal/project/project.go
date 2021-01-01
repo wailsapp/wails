@@ -25,8 +25,8 @@ type Project struct {
 	// The path to the project directory
 	Path string
 
-	// Icons directory
-	IconsDir string `json:"icons_dir"`
+	// Assets directory
+	AssetsDir string `json:"assetsdir"`
 
 	// The output filename
 	OutputFilename string `json:"outputfilename"`
@@ -75,9 +75,9 @@ func Load(projectPath string) (*Project, error) {
 		result.Name = "wailsapp"
 	}
 
-	// Set default icons directory if none given
-	if result.IconsDir == "" {
-		result.IconsDir = filepath.Join(result.Path, "icons")
+	// Set default assets directory if none given
+	if result.AssetsDir == "" {
+		result.AssetsDir = filepath.Join(result.Path, "assets")
 	}
 
 	// Fix up OutputFilename

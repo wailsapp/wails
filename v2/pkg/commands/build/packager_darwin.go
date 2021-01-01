@@ -47,7 +47,7 @@ func packageApplication(options *Options) error {
 	}
 
 	// Generate Icons
-	err = processApplicationIcon(resourceDir, options.ProjectData.IconsDir)
+	err = processApplicationIcon(resourceDir, options.ProjectData.AssetsDir)
 	if err != nil {
 		return err
 	}
@@ -56,15 +56,13 @@ func packageApplication(options *Options) error {
 }
 
 func processPList(options *Options, contentsDirectory string) error {
+
 	// Check if plist already exists in project dir
-	plistFile, err := fs.RelativeToCwd("info.plist")
-	if err != nil {
-		return err
-	}
+	plistFile := filepath.Join(options.ProjectData.AssetsDir, "mac", "info.plist")
 
 	// If the file doesn't exist, generate it
 	if !fs.FileExists(plistFile) {
-		err = generateDefaultPlist(options, plistFile)
+		err := generateDefaultPlist(options, plistFile)
 		if err != nil {
 			return err
 		}
@@ -100,6 +98,11 @@ func generateDefaultPlist(options *Options, targetPlistFile string) error {
 		return err
 	}
 
+	// Create the directory if it doesn't exist
+	err = fs.MkDirs(filepath.Dir(targetPlistFile))
+	if err != nil {
+		return err
+	}
 	// Save the file
 	return ioutil.WriteFile(targetPlistFile, tpl.Bytes(), 0644)
 }
