@@ -311,7 +311,10 @@ func (b *BaseBuilder) NpmRunWithEnvironment(projectDir, buildTarget string, verb
 }
 
 // BuildFrontend executes the `npm build` command for the frontend directory
-func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger, verbose bool) error {
+func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
+
+	// TODO: Fix this up from the CLI
+	verbose := false
 
 	frontendDir := filepath.Join(b.projectData.Path, "frontend")
 

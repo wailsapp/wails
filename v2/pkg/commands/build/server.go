@@ -23,7 +23,7 @@ func newServerBuilder() *ServerBuilder {
 }
 
 // BuildAssets builds the assets for the desktop application
-func (s *ServerBuilder) BuildAssets(options *Options) error {
+func (s *ServerBuilder) BuildAssets(_ *Options) error {
 	var err error
 
 	assets, err := s.BaseBuilder.ExtractAssets()
@@ -38,7 +38,7 @@ func (s *ServerBuilder) BuildAssets(options *Options) error {
 	}
 
 	// Build static assets
-	err = s.buildStaticAssets(s.projectData)
+	err = s.buildCustomAssets(s.projectData)
 	if err != nil {
 		return err
 	}
@@ -84,11 +84,14 @@ func (s *ServerBuilder) BuildBaseAssets(assets *html.AssetBundle) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
-	f.WriteString(db.Serialize("db", "webserver"))
-
-	return nil
+	_, err = f.WriteString(db.Serialize("db", "webserver"))
+	if err != nil {
+		// Ignore error - we already have one!
+		_ = f.Close()
+		return err
+	}
+	return f.Close()
 }
 
 // BuildRuntime builds the javascript runtime used by the HTML client to connect to the websocket

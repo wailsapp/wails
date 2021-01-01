@@ -2,6 +2,7 @@ package build
 
 import (
 	"github.com/wailsapp/wails/v2/internal/project"
+	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
 
 // HybridBuilder builds applications as a server
@@ -30,11 +31,17 @@ func (b *HybridBuilder) BuildAssets(options *Options) error {
 		return err
 	}
 	// Build static assets
-	err = b.buildStaticAssets(b.projectData)
+	err = b.buildCustomAssets(b.projectData)
 	if err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// BuildFrontend builds the assets for the desktop application
+func (b *HybridBuilder) BuildFrontend(_ *clilogger.CLILogger) error {
+	panic("To be implemented")
 	return nil
 }
 
@@ -57,13 +64,13 @@ func (b *HybridBuilder) BuildBaseAssets(options *Options) error {
 	}
 
 	// Build desktop static assets
-	err = b.desktop.buildStaticAssets(b.projectData)
+	err = b.desktop.buildCustomAssets(b.projectData)
 	if err != nil {
 		return err
 	}
 
 	// Build server static assets
-	err = b.server.buildStaticAssets(b.projectData)
+	err = b.server.buildCustomAssets(b.projectData)
 	if err != nil {
 		return err
 	}

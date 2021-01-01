@@ -43,7 +43,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	// Quiet Build
 	quiet := false
-	command.BoolFlag("q", "Supress output to console", &quiet)
+	command.BoolFlag("q", "Suppress output to console", &quiet)
 
 	// ldflags to pass to `go`
 	ldflags := ""
