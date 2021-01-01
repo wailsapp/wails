@@ -24,16 +24,26 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Build icons for Mac
+	err = buildMacIcons(dialogIconFilenames)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func buildMacIcons(dialogIconFilenames []string) error {
+
 	// Setup target
-	targetFile := "../../../../../../../internal/ffenestri/defaultdialogicons.c"
+	targetFile := "../../../../../../../internal/ffenestri/defaultdialogicons_darwin.c"
 
 	var dataBytes []byte
+	var err error
 
 	// Use a strings builder
 	var cdata strings.Builder
 
 	// Write header
-	header := `// defaultdialogicons.c
+	header := `// defaultdialogicons_darwin.c
 // Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL.
 // This file was auto-generated. DO NOT MODIFY.
 
@@ -85,5 +95,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	return nil
 }
