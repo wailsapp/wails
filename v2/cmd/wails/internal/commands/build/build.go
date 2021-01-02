@@ -55,7 +55,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	// Retain assets
 	keepAssets := false
-	command.BoolFlag("k", "Kep generated assets", &keepAssets)
+	command.BoolFlag("k", "Keep generated assets", &keepAssets)
 
 	command.Action(func() error {
 
