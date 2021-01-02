@@ -12,11 +12,11 @@ type HybridBuilder struct {
 	server  *ServerBuilder
 }
 
-func newHybridBuilder() Builder {
+func newHybridBuilder(options *Options) Builder {
 	result := &HybridBuilder{
-		BaseBuilder: NewBaseBuilder(),
-		desktop:     newDesktopBuilder(),
-		server:      newServerBuilder(),
+		BaseBuilder: NewBaseBuilder(options),
+		desktop:     newDesktopBuilder(options),
+		server:      newServerBuilder(options),
 	}
 	return result
 }

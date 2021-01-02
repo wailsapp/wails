@@ -15,9 +15,9 @@ type ServerBuilder struct {
 	*BaseBuilder
 }
 
-func newServerBuilder() *ServerBuilder {
+func newServerBuilder(options *Options) *ServerBuilder {
 	result := &ServerBuilder{
-		BaseBuilder: NewBaseBuilder(),
+		BaseBuilder: NewBaseBuilder(options),
 	}
 	return result
 }

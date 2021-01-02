@@ -23,11 +23,14 @@ import (
 type BaseBuilder struct {
 	filesToDelete slicer.StringSlicer
 	projectData   *project.Project
+	options       *Options
 }
 
 // NewBaseBuilder creates a new BaseBuilder
-func NewBaseBuilder() *BaseBuilder {
-	result := &BaseBuilder{}
+func NewBaseBuilder(options *Options) *BaseBuilder {
+	result := &BaseBuilder{
+		options: options,
+	}
 	return result
 }
 
@@ -37,7 +40,9 @@ func (b *BaseBuilder) SetProjectData(projectData *project.Project) {
 }
 
 func (b *BaseBuilder) addFileToDelete(filename string) {
-	b.filesToDelete.Add(filename)
+	if !b.options.KeepAssets {
+		b.filesToDelete.Add(filename)
+	}
 }
 
 func (b *BaseBuilder) fileExists(path string) bool {

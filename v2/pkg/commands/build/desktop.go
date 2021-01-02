@@ -14,9 +14,9 @@ type DesktopBuilder struct {
 	*BaseBuilder
 }
 
-func newDesktopBuilder() *DesktopBuilder {
+func newDesktopBuilder(options *Options) *DesktopBuilder {
 	return &DesktopBuilder{
-		BaseBuilder: NewBaseBuilder(),
+		BaseBuilder: NewBaseBuilder(options),
 	}
 }
 

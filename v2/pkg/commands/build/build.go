@@ -37,6 +37,7 @@ type Options struct {
 	OutputFile     string               // Override the output filename
 	BuildDirectory string               // Directory to use for building the application
 	CompiledBinary string               // Fully qualified path to the compiled binary
+	KeepAssets     bool                 // /Keep the generated assets/files
 }
 
 // GetModeAsString returns the current mode as a string
@@ -80,11 +81,11 @@ func Build(options *Options) (string, error) {
 
 	switch projectData.OutputType {
 	case "desktop":
-		builder = newDesktopBuilder()
+		builder = newDesktopBuilder(options)
 	case "hybrid":
-		builder = newHybridBuilder()
+		builder = newHybridBuilder(options)
 	case "server":
-		builder = newServerBuilder()
+		builder = newServerBuilder(options)
 	default:
 		return "", fmt.Errorf("cannot build assets for output type %s", projectData.OutputType)
 	}
