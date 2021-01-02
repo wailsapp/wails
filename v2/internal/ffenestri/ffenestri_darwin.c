@@ -357,8 +357,8 @@ void showContextMenu(struct Application *app, const char *contextMenuID) {
 	id contextMenu = (id)hashmap_get(&contextMenuMap, (char*)contextMenuID, strlen(contextMenuID));
 
 	if( contextMenu == NULL ) {
-		printf("No context menu called '%s'. Available:", contextMenuID);
-		dumpHashmap("contextMenuMap", &contextMenuMap);
+//		printf("No context menu called '%s'. Available:", contextMenuID);
+//		dumpHashmap("contextMenuMap", &contextMenuMap);
 
         // Free menu id
         MEMFREE(contextMenuID);
@@ -919,11 +919,6 @@ void destroyMenu(struct Application *app) {
 }
 
 void destroyContextMenus(struct Application *app) {
-
-	// If we don't have a context menu, return
-	if( app->contextMenusAsJSON == NULL ) {
-		return;
-	}
 
 	// Free menu item hashmap
 	hashmap_destroy(&menuItemMapForContextMenus);
@@ -2405,9 +2400,6 @@ void dumpContextMenus(struct Application *app) {
 
 void parseContextMenus(struct Application *app) {
 
-	// Allocation the hashmaps we need
-	allocateContextMenuHashMaps(app);
-
 	// Parse the context menu json
 	app->processedContextMenus = json_decode(app->contextMenusAsJSON);
 
@@ -2799,6 +2791,9 @@ void Run(struct Application *app, int argc, char **argv) {
 	if( app->trayMenuAsJSON != NULL ) {
 	  parseTrayData(app);
 	}
+
+	// Allocation the hashmaps we need
+	allocateContextMenuHashMaps(app);
 
 	// If we have context menus, process them
 	if( app->contextMenusAsJSON != NULL ) {
