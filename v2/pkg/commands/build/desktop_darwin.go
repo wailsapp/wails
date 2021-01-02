@@ -121,8 +121,7 @@ func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) e
 
 	// If the directory does not exist, create it
 	if !fs.DirExists(dialogIconDirectory) {
-		defaultDialogIconsDirectory := fs.RelativePath("./internal/packager/icons/default/dialog")
-		err := fs.CopyDir(defaultDialogIconsDirectory, dialogIconDirectory)
+		err = fs.MkDirs(dialogIconDirectory)
 		if err != nil {
 			return err
 		}
