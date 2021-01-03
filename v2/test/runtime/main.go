@@ -4,6 +4,7 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
+	"log"
 )
 
 type Echo struct {
@@ -16,7 +17,7 @@ func (e *Echo) Echo(message string) string {
 func main() {
 
 	// Create application with options
-	app := wails.CreateAppWithOptions(&options.App{
+	app, err := wails.CreateAppWithOptions(&options.App{
 		Title:         "Runtime Tester!",
 		Width:         850,
 		Height:        620,
@@ -32,6 +33,10 @@ func main() {
 			WindowBackgroundIsTranslucent: true,
 		},
 	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// You can also use the simplified call:
 	// app := wails.CreateApp("Tester!", 1024, 768)
@@ -50,5 +55,8 @@ func main() {
 	app.Bind(&Echo{})
 	app.Bind(&RuntimeTest{})
 
-	app.Run()
+	err = app.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

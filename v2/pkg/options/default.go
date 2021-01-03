@@ -17,7 +17,6 @@ var Default = &App{
 		Appearance:                    mac.DefaultAppearance,
 		WebviewIsTransparent:          false,
 		WindowBackgroundIsTranslucent: false,
-		//Menu:                          menu.DefaultMacMenu(),
 	},
 	Logger:   logger.NewDefaultLogger(),
 	LogLevel: logger.INFO,

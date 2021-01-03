@@ -23,6 +23,12 @@ type MenuItem struct {
 	// Submenu contains a list of menu items that will be shown as a submenu
 	SubMenu []*MenuItem `json:"SubMenu,omitempty"`
 
+	// Foreground colour in hex RGBA format EG: 0xFF0000FF = #FF0000FF = red
+	Foreground int
+
+	// Background colour
+	Background int
+
 	// This holds the menu item's parent.
 	parent *MenuItem
 }

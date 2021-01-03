@@ -25,7 +25,7 @@ func (b *Bindings) Add(structPtr interface{}) error {
 
 	methods, err := getMethods(structPtr)
 	if err != nil {
-		return fmt.Errorf("cannout bind value to app: %s", err.Error())
+		return fmt.Errorf("cannot bind value to app: %s", err.Error())
 	}
 
 	for _, method := range methods {

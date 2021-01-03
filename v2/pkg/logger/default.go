@@ -4,7 +4,7 @@ import (
 	"os"
 )
 
-// DefaultLogger is a utlility to log messages to a number of destinations
+// DefaultLogger is a utility to log messages to a number of destinations
 type DefaultLogger struct{}
 
 // NewDefaultLogger creates a new Logger.

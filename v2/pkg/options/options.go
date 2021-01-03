@@ -39,14 +39,6 @@ func MergeDefaults(appoptions *App) {
 		log.Fatal(err)
 	}
 
-	// We need to ensure there's a default menu on Mac
-	switch runtime.GOOS {
-	case "darwin":
-		if GetApplicationMenu(appoptions) == nil {
-			appoptions.Menu = menu.NewMenuFromItems(menu.AppMenu())
-		}
-	}
-
 }
 
 func GetTray(appoptions *App) *menu.TrayOptions {
