@@ -95,39 +95,3 @@ func getMethods(value interface{}) ([]*BoundMethod, error) {
 	}
 	return result, nil
 }
-
-//// convertArgToValue
-//func convertArgToValue(input json.RawMessage, target *Parameter) (result reflect.Value, err error) {
-//
-//	// Catch type conversion panics thrown by convert
-//	defer func() {
-//		if r := recover(); r != nil {
-//			// Modify error
-//			err = fmt.Errorf("%s", r.(string)[23:])
-//		}
-//	}()
-//
-//	// Do the conversion
-//
-//	// Handle nil values
-//	if input == nil {
-//		switch target.reflectType.Kind() {
-//		case reflect.Chan,
-//			reflect.Func,
-//			reflect.Interface,
-//			reflect.Map,
-//			reflect.Ptr,
-//			reflect.Slice:
-//			result = reflect.ValueOf(input).Convert(target.reflectType)
-//		default:
-//			return reflect.Zero(target.reflectType), fmt.Errorf("Unable to use null value")
-//		}
-//	} else {
-//		result = reflect.ValueOf(input).Convert(target.reflectType)
-//	}
-//
-//	// We don't like doing this but it's the only way to
-//	// handle recover() correctly
-//	return
-//
-//}
