@@ -102,24 +102,29 @@ func (a *AssetBundle) processHTML(htmldata string) error {
 					if attr.Key == "href" {
 						asset.Path = attr.Val
 					}
-					// stylesheet
+					// standard stylesheet
 					if attr.Key == "rel" && attr.Val == "stylesheet" {
 						asset.Type = AssetTypes.CSS
 					}
-				}
-				err := asset.Load(a.basedirectory)
-				if err != nil {
-					return err
+					if attr.Key == "as" && attr.Val == "style" {
+						asset.Type = AssetTypes.CSS
+					}
+					if attr.Key == "as" && attr.Val == "script" {
+						asset.Type = AssetTypes.JS
+					}
 				}
 
 				// Ensure we don't include duplicates
 				if !paths.Contains(asset.Path) {
+					err := asset.Load(a.basedirectory)
+					if err != nil {
+						return err
+					}
 					a.assets = append(a.assets, asset)
 					paths.Add(asset.Path)
 				}
 			}
 			if "script" == token.Data {
-
 				tokenType = tokenizer.Next()
 				//just make sure it's actually a text token
 				asset := &Asset{Type: AssetTypes.JS}
@@ -129,11 +134,14 @@ func (a *AssetBundle) processHTML(htmldata string) error {
 						break
 					}
 				}
-				err := asset.Load(a.basedirectory)
-				if err != nil {
-					return err
+				if !paths.Contains(asset.Path) {
+					err := asset.Load(a.basedirectory)
+					if err != nil {
+						return err
+					}
+					a.assets = append(a.assets, asset)
+					paths.Add(asset.Path)
 				}
-				a.assets = append(a.assets, asset)
 			}
 		}
 	}
@@ -188,14 +196,14 @@ func (a *AssetBundle) WriteToCFile(targetDir string) (string, error) {
 // ConvertToAssetDB returns an assetdb.AssetDB initialized with
 // the items in the AssetBundle
 func (a *AssetBundle) ConvertToAssetDB() (*assetdb.AssetDB, error) {
-	assetdb := assetdb.NewAssetDB()
+	theassetdb := assetdb.NewAssetDB()
 
 	// Loop over the Assets
 	for _, asset := range a.assets {
-		assetdb.AddAsset(asset.Path, []byte(asset.Data))
+		theassetdb.AddAsset(asset.Path, []byte(asset.Data))
 	}
 
-	return assetdb, nil
+	return theassetdb, nil
 }
 
 // Dump will output the assets to the terminal
