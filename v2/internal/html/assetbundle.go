@@ -61,6 +61,8 @@ func (a *AssetBundle) processHTML(htmldata string) error {
 	buf := bytes.NewBufferString(htmldata)
 	tokenizer := html.NewTokenizer(buf)
 
+	paths := slicer.String()
+
 	for {
 		//get the next token type
 		tokenType := tokenizer.Next()
@@ -109,7 +111,12 @@ func (a *AssetBundle) processHTML(htmldata string) error {
 				if err != nil {
 					return err
 				}
-				a.assets = append(a.assets, asset)
+
+				// Ensure we don't include duplicates
+				if !paths.Contains(asset.Path) {
+					a.assets = append(a.assets, asset)
+					paths.Add(asset.Path)
+				}
 			}
 			if "script" == token.Data {
 
