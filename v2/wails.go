@@ -11,6 +11,9 @@ import (
 // Runtime is an alias for the runtime.Runtime struct
 type Runtime = runtime.Runtime
 
+// Store is an alias for the Store object
+type Store = runtime.Store
+
 // CreateAppWithOptions creates an application based on the given config
 func CreateAppWithOptions(options *options.App) (*app.App, error) {
 	return app.CreateApp(options)
