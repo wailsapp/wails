@@ -1,9 +1,9 @@
 package binding
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
+	"runtime"
 )
 
 // isStructPtr returns true if the value given is a
@@ -11,6 +11,11 @@ import (
 func isStructPtr(value interface{}) bool {
 	return reflect.ValueOf(value).Kind() == reflect.Ptr &&
 		reflect.ValueOf(value).Elem().Kind() == reflect.Struct
+}
+
+// isFunction returns true if the given value is a function
+func isFunction(value interface{}) bool {
+	return reflect.ValueOf(value).Kind() == reflect.Func
 }
 
 // isStructPtr returns true if the value given is a struct
@@ -31,7 +36,12 @@ func getMethods(value interface{}) ([]*BoundMethod, error) {
 			return nil, fmt.Errorf("%s is a struct, not a pointer to a struct", name)
 		}
 
-		return nil, fmt.Errorf("not a pointer to a struct")
+		if isFunction(value) {
+			name := runtime.FuncForPC(reflect.ValueOf(value).Pointer()).Name()
+			return nil, fmt.Errorf("%s is a function, not a pointer to a struct. Wails v2 has deprecated the binding of functions. Please wrap your functions up in a struct and bind a pointer to that struct.", name)
+		}
+
+		return nil, fmt.Errorf("not a pointer to a struct.")
 	}
 
 	// Process Struct
@@ -86,38 +96,38 @@ func getMethods(value interface{}) ([]*BoundMethod, error) {
 	return result, nil
 }
 
-// convertArgToValue
-func convertArgToValue(input json.RawMessage, target *Parameter) (result reflect.Value, err error) {
-
-	// Catch type conversion panics thrown by convert
-	defer func() {
-		if r := recover(); r != nil {
-			// Modify error
-			err = fmt.Errorf("%s", r.(string)[23:])
-		}
-	}()
-
-	// Do the conversion
-
-	// Handle nil values
-	if input == nil {
-		switch target.reflectType.Kind() {
-		case reflect.Chan,
-			reflect.Func,
-			reflect.Interface,
-			reflect.Map,
-			reflect.Ptr,
-			reflect.Slice:
-			result = reflect.ValueOf(input).Convert(target.reflectType)
-		default:
-			return reflect.Zero(target.reflectType), fmt.Errorf("Unable to use null value")
-		}
-	} else {
-		result = reflect.ValueOf(input).Convert(target.reflectType)
-	}
-
-	// We don't like doing this but it's the only way to
-	// handle recover() correctly
-	return
-
-}
+//// convertArgToValue
+//func convertArgToValue(input json.RawMessage, target *Parameter) (result reflect.Value, err error) {
+//
+//	// Catch type conversion panics thrown by convert
+//	defer func() {
+//		if r := recover(); r != nil {
+//			// Modify error
+//			err = fmt.Errorf("%s", r.(string)[23:])
+//		}
+//	}()
+//
+//	// Do the conversion
+//
+//	// Handle nil values
+//	if input == nil {
+//		switch target.reflectType.Kind() {
+//		case reflect.Chan,
+//			reflect.Func,
+//			reflect.Interface,
+//			reflect.Map,
+//			reflect.Ptr,
+//			reflect.Slice:
+//			result = reflect.ValueOf(input).Convert(target.reflectType)
+//		default:
+//			return reflect.Zero(target.reflectType), fmt.Errorf("Unable to use null value")
+//		}
+//	} else {
+//		result = reflect.ValueOf(input).Convert(target.reflectType)
+//	}
+//
+//	// We don't like doing this but it's the only way to
+//	// handle recover() correctly
+//	return
+//
+//}
