@@ -150,7 +150,8 @@ This project was mainly coded to the following albums:
 ## Special Thanks
 
 <p align="center" style="text-align: center">
-   A *huge* thanks to <a href="https://pace.dev"><img src="pace.jpeg"/> Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
+   <a href="https://pace.dev"><img src="pace.jpeg"/></a><br/>
+   A *huge* thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
    If you are looking for a Project Management tool that's powerful but quick and easy to use, check them out!<br/><br/>
 </p>
 
