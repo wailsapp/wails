@@ -2,7 +2,6 @@ package renderer
 
 import (
 	"time"
-	"unsafe"
 
 	"github.com/gorilla/websocket"
 	"github.com/leaanthony/mewn"
@@ -50,7 +49,7 @@ func (s *session) Identifier() string {
 
 func (s *session) sendMessage(msg string) error {
 	if !s.done {
-		s.writeChan <- *(*[]byte)(unsafe.Pointer(&msg))
+		s.writeChan <- []byte(msg)
 	}
 	return nil
 }

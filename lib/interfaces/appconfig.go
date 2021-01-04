@@ -6,7 +6,7 @@ type AppConfig interface {
 	GetHeight() int
 	GetTitle() string
 	GetResizable() bool
-	GetDefaultHTML() string
+	GetHTML() string
 	GetDisableInspector() bool
 	GetColour() string
 	GetCSS() string

@@ -8,8 +8,12 @@ assignees: ''
 ---
 
 #####################################################
-     If you have a technical issue, please do not open a bug this way! 
-                      Please use the `wails issue` command!                          
+     **If you have a technical issue, please do not open a bug this way!** 
+                      Please use the `wails issue` command!
+          If you do not do this then the issue may be closed automatically.                      
+
+ NOTE: If your bug is related to Windows, make sure you read 
+ the [Windows Developer Guide](https://wails.app/guides/windows/)
 #####################################################
 
 **Description**
@@ -33,3 +37,5 @@ Please provide your platform, GO version and variables, etc
 
 **Additional context**
 Add any other context about the problem here.
+
+- [ ] This issue is for Windows and I have read the [Windows Developer Guide](https://wails.app/guides/windows/)
