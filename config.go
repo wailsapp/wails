@@ -1,7 +1,6 @@
 package wails
 
 import (
-	"fmt"
 	"net/url"
 	"strings"
 
@@ -139,10 +138,6 @@ func newConfig(userConfig *AppConfig) (*AppConfig, error) {
 			return nil, err
 		}
 	}
-
-	println("****************************************************")
-	fmt.Printf("%+v\n", result)
-	println("****************************************************")
 
 	return result, nil
 }
