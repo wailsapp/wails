@@ -28,7 +28,7 @@ func main() {
 			// Comment out line below to see Window.SetTitle() work
 			TitleBar: mac.TitleBarHiddenInset(),
 			Menu:     createApplicationMenu(),
-			Tray: &menu.TrayOptions{
+			Tray: &menu.Tray{
 				Icon: "light",
 				Menu: createApplicationTray(),
 			},

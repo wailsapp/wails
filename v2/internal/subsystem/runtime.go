@@ -24,7 +24,7 @@ type Runtime struct {
 }
 
 // NewRuntime creates a new runtime subsystem
-func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger, menu *menu.Menu, trayMenu *menu.TrayOptions, contextMenus *menu.ContextMenus) (*Runtime, error) {
+func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger, menu *menu.Menu, trayMenu *menu.Tray, contextMenus *menu.ContextMenus) (*Runtime, error) {
 
 	// Register quit channel
 	quitChannel, err := bus.Subscribe("quit")

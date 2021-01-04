@@ -25,7 +25,7 @@ type App struct {
 	DevTools      bool
 	RGBA          int
 	ContextMenus  *menu.ContextMenus
-	Tray          *menu.TrayOptions
+	Tray          *menu.Tray
 	Menu          *menu.Menu
 	Mac           *mac.Options
 	Logger        logger.Logger `json:"-"`
@@ -41,8 +41,8 @@ func MergeDefaults(appoptions *App) {
 
 }
 
-func GetTray(appoptions *App) *menu.TrayOptions {
-	var result *menu.TrayOptions
+func GetTray(appoptions *App) *menu.Tray {
+	var result *menu.Tray
 	switch runtime.GOOS {
 	case "darwin":
 		if appoptions.Mac != nil {

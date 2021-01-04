@@ -26,14 +26,14 @@ type Tray struct {
 	logger logger.CustomLogger
 
 	// The tray menu
-	trayMenu *menu.TrayOptions
+	trayMenu *menu.Tray
 
 	// Service Bus
 	bus *servicebus.ServiceBus
 }
 
 // NewTray creates a new menu subsystem
-func NewTray(trayMenu *menu.TrayOptions, bus *servicebus.ServiceBus,
+func NewTray(trayMenu *menu.Tray, bus *servicebus.ServiceBus,
 	logger *logger.Logger) (*Tray, error) {
 
 	// Register quit channel

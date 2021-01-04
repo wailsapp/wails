@@ -9,6 +9,6 @@ type Options struct {
 	WebviewIsTransparent          bool
 	WindowBackgroundIsTranslucent bool
 	Menu                          *menu.Menu
-	Tray                          *menu.TrayOptions
+	Tray                          *menu.Tray
 	ContextMenus                  *menu.ContextMenus
 }
