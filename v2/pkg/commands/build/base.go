@@ -148,6 +148,13 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	// Default go build command
 	commands := slicer.String([]string{"build"})
 
+	// TODO: Work out if we can make this more efficient
+	// We need to do a full build as CGO doesn't detect updates
+	// to .h files, and we package assets into .h file. We could
+	// potentially try and see if the assets have changed but will
+	// this take as much time as a `-a` build?
+	commands.Add("-a")
+
 	var tags slicer.StringSlicer
 	tags.Add(options.OutputType)
 
