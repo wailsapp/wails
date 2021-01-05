@@ -19,7 +19,6 @@ func fatal(message string) {
 func main() {
 
 	var err error
-	version := "v2.0.0-alpha"
 
 	app := clir.NewCli("Wails", "Go/HTML Application Framework", version)
 
