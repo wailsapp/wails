@@ -113,10 +113,6 @@ func Build(options *Options) (string, error) {
 
 	// Build the base assets
 	outputLogger.Println("  - Compiling Assets")
-	err = builder.BuildRuntime(options)
-	if err != nil {
-		return "", err
-	}
 	err = builder.BuildAssets(options)
 	if err != nil {
 		return "", err

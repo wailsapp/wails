@@ -156,7 +156,7 @@ func (a *AssetBundle) WriteToCFile(targetDir string) (string, error) {
 	var cdata strings.Builder
 
 	// Write header
-	header := `// assets.c
+	header := `// assets.h
 // Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL.
 // This file was auto-generated. DO NOT MODIFY.
 
@@ -185,7 +185,7 @@ func (a *AssetBundle) WriteToCFile(targetDir string) (string, error) {
 	}
 
 	// Save file
-	assetsFile := filepath.Join(targetDir, "assets.c")
+	assetsFile := filepath.Join(targetDir, "assets.h")
 	err = ioutil.WriteFile(assetsFile, []byte(cdata.String()), 0600)
 	if err != nil {
 		return "", err

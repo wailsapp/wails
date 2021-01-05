@@ -64,7 +64,10 @@ func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, options *Opti
 	outputLogger.Print("    - Embedding Assets...")
 
 	// Get target asset directory
-	assetDir := fs.RelativePath("../../../internal/ffenestri")
+	assetDir, err := fs.RelativeToCwd("build")
+	if err != nil {
+		return err
+	}
 
 	// Dump assets as C
 	assetsFile, err := assets.WriteToCFile(assetDir)

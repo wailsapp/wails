@@ -98,15 +98,15 @@
 #define NSAlertThirdButtonReturn   1002
 
 // References to assets
-extern const unsigned char *assets[];
+#include "assets.h"
 extern const unsigned char runtime;
 
 // Tray icons
-extern const unsigned char *trayIcons[];
+#include "trayicons.h"
 
 // Dialog icons
 extern const unsigned char *defaultDialogIcons[];
-extern const unsigned char *userDialogIcons[];
+#include "userdialogicons.h"
 
 // MAIN DEBUG FLAG
 int debug;

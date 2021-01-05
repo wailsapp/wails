@@ -46,7 +46,7 @@ func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) err
 
 	// Setup target
 	targetFilename := "trayicons"
-	targetFile := filepath.Join(assetDir, targetFilename+".c")
+	targetFile := filepath.Join(assetDir, targetFilename+".h")
 	d.addFileToDelete(targetFile)
 
 	var dataBytes []byte
@@ -55,7 +55,7 @@ func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) err
 	var cdata strings.Builder
 
 	// Write header
-	header := `// trayicons.c
+	header := `// trayicons.h
 // Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL.
 // This file was auto-generated. DO NOT MODIFY.
 
@@ -135,7 +135,7 @@ func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) e
 
 	// Setup target
 	targetFilename := "userdialogicons"
-	targetFile := filepath.Join(assetDir, targetFilename+".c")
+	targetFile := filepath.Join(assetDir, targetFilename+".h")
 	d.addFileToDelete(targetFile)
 
 	var dataBytes []byte
@@ -144,7 +144,7 @@ func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) e
 	var cdata strings.Builder
 
 	// Write header
-	header := `// userdialogicons.c
+	header := `// userdialogicons.h
 // Cynhyrchwyd y ffeil hon yn awtomatig. PEIDIWCH Â MODIWL.
 // This file was auto-generated. DO NOT MODIFY.
 

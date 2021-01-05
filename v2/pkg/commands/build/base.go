@@ -206,6 +206,15 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	// Set GO111MODULE environment variable
 	cmd.Env = append(os.Environ(), "GO111MODULE=on")
 
+	// Add CGO flags
+	// We use the project/build dir as a temporary place for our generated c headers
+	buildBaseDir, err := fs.RelativeToCwd("build")
+	if err != nil {
+		return err
+	}
+
+	cmd.Env = append(os.Environ(), fmt.Sprintf("CGO_CFLAGS=-I%s", buildBaseDir))
+
 	// Setup buffers
 	var stdo, stde bytes.Buffer
 	cmd.Stdout = &stdo
