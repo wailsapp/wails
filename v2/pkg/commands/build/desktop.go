@@ -47,12 +47,6 @@ func (d *DesktopBuilder) BuildAssets(options *Options) error {
 		return err
 	}
 
-	// Build static assets
-	err = d.buildCustomAssets(d.projectData)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
