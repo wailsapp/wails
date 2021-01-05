@@ -8,6 +8,7 @@ package app
 // will be unknown and the application will not work as expected.
 
 import (
+	"github.com/wailsapp/wails/v2/internal/logger"
 	"os"
 
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -22,6 +23,8 @@ type App struct {
 
 	// Indicates if the app is running in debug mode
 	debug bool
+
+	logger *logger.Logger
 }
 
 // CreateApp returns a null application
