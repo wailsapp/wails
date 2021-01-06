@@ -57,18 +57,6 @@ typedef void (^dispatchMethod)(void);
 void dispatch(dispatchMethod func) {
 	dispatch_async(dispatch_get_main_queue(), func);
 }
-
-// Credit: https://stackoverflow.com/a/8465083
-char* concat(const char *string1, const char *string2)
-{
-	const size_t len1 = strlen(string1);
-	const size_t len2 = strlen(string2);
-	char *result = malloc(len1 + len2 + 1);
-	strcpy(result, string1);
-	memcpy(result + len1, string2, len2 + 1);
-	return result;
-}
-
 // yes command simply returns YES!
 BOOL yes(id self, SEL cmd)
 {
@@ -174,9 +162,7 @@ struct Application {
 // Debug works like sprintf but mutes if the global debug flag is true
 // Credit: https://stackoverflow.com/a/20639708
 
-// 5k is more than enough for a log message
-#define MAXMESSAGE 1024*10
-char logbuffer[MAXMESSAGE];
+
 void Debug(struct Application *app, const char *message, ... ) {
 	if ( debug ) {
 		const char *temp = concat("LTFfenestri (C) | ", message);
@@ -1426,7 +1412,7 @@ void SetDebug(void *applicationPointer, int flag) {
 // SetMenu sets the initial menu for the application
 void SetMenu(struct Application *app, const char *menuAsJSON) {
 	app->menuAsJSON = menuAsJSON;
-	app->applicationMenu = NewMenu(menuAsJSON);
+	app->applicationMenu = NewApplicationMenu(menuAsJSON);
 }
 
 // SetTray sets the initial tray menu for the application
@@ -1538,6 +1524,10 @@ void createDelegate(struct Application *app) {
 	class_addMethod(delegateClass, s("checkboxMenuCallbackForContextMenus:"), (IMP) checkboxMenuItemPressedForContextMenus, "v@:@");
 	class_addMethod(delegateClass, s("radioMenuCallbackForContextMenus:"), (IMP) radioMenuItemPressedForContextMenus, "v@:@");
 
+	// Refactoring menu handling
+    class_addMethod(delegateClass, s("textMenuItemCallback:"), (IMP)textMenuItemCallback, "v@:@");
+
+
 	// Script handler
 	class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler, "v@:@@");
 	objc_registerClassPair(delegateClass);
@@ -1591,82 +1581,6 @@ const char* getInitialState(struct Application *app) {
 	result = concat(result, &buffer[0]);
 	Debug(app, "initialstate = %s", result);
 	return result;
-}
-
-id createMenuItem(id title, const char *action, const char *key) {
-  id item = ALLOC("NSMenuItem");
-  msg(item, s("initWithTitle:action:keyEquivalent:"), title, s(action), str(key));
-  msg(item, s("autorelease"));
-  return item;
-}
-
-id createMenuItemNoAutorelease( id title, const char *action, const char *key) {
-  id item = ALLOC("NSMenuItem");
-  msg(item, s("initWithTitle:action:keyEquivalent:"), title, s(action), str(key));
-  return item;
-}
-
-id createMenu(id title) {
-  id menu = ALLOC("NSMenu");
-  msg(menu, s("initWithTitle:"), title);
-  msg(menu, s("setAutoenablesItems:"), NO);
-//  msg(menu, s("autorelease"));
-  return menu;
-}
-
-id addMenuItem(id menu, const char *title, const char *action, const char *key, bool disabled) {
-	id item = createMenuItem(str(title), action, key);
-	msg(item, s("setEnabled:"), !disabled);
-	msg(menu, s("addItem:"), item);
-	return item;
-}
-
-void addSeparator(id menu) {
-  id item = msg(c("NSMenuItem"), s("separatorItem"));
-  msg(menu, s("addItem:"), item);
-}
-
-void createDefaultAppMenu(id parentMenu) {
-// App Menu
-  id appName = msg(msg(c("NSProcessInfo"), s("processInfo")), s("processName"));
-  id appMenuItem = createMenuItemNoAutorelease(appName, NULL, "");
-  id appMenu = createMenu(appName);
-
-  msg(appMenuItem, s("setSubmenu:"), appMenu);
-  msg(parentMenu, s("addItem:"), appMenuItem);
-
-  id title = msg(str("Hide "), s("stringByAppendingString:"), appName);
-  id item = createMenuItem(title, "hide:", "h");
-  msg(appMenu, s("addItem:"), item);
-
-  id hideOthers = addMenuItem(appMenu, "Hide Others", "hideOtherApplications:", "h", FALSE);
-  msg(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
-
-  addMenuItem(appMenu, "Show All", "unhideAllApplications:", "", FALSE);
-
-  addSeparator(appMenu);
-
-  title = msg(str("Quit "), s("stringByAppendingString:"), appName);
-  item = createMenuItem(title, "terminate:", "q");
-  msg(appMenu, s("addItem:"), item);
-}
-
-
-void createDefaultEditMenu(id parentMenu) {
-  // Edit Menu
-  id editMenuItem = createMenuItemNoAutorelease(str("Edit"), NULL, "");
-  id editMenu = createMenu(str("Edit"));
-
-  msg(editMenuItem, s("setSubmenu:"), editMenu);
-  msg(parentMenu, s("addItem:"), editMenuItem);
-
-  addMenuItem(editMenu, "Undo", "undo:", "z", FALSE);
-  addMenuItem(editMenu, "Redo", "redo:", "y", FALSE);
-  addSeparator(editMenu);
-  addMenuItem(editMenu, "Cut", "cut:", "x", FALSE);
-  addMenuItem(editMenu, "Copy", "copy:", "c", FALSE);
-  addMenuItem(editMenu, "Paste", "paste:", "v", FALSE);
-  addMenuItem(editMenu, "Select All", "selectAll:", "a", FALSE);
 }
 
 void parseMenuRole(struct Application *app, id parentMenu, JsonNode *item) {
@@ -1747,237 +1661,6 @@ void parseMenuRole(struct Application *app, id parentMenu, JsonNode *item) {
   }
 
 }
-
-const char* getJSONString(JsonNode *item, const char* key) {
-  // Get key
-  JsonNode *node = json_find_member(item, key);
-  const char *result = "";
-  if ( node != NULL && node->tag == JSON_STRING) {
-	result = node->string_;
-  }
-  return result;
-}
-
-bool getJSONBool(JsonNode *item, const char* key, bool *result) {
-  JsonNode *node = json_find_member(item, key);
-  if ( node != NULL && node->tag == JSON_BOOL) {
-	*result = node->bool_;
-	return true;
-  }
-  return false;
-}
-
-bool getJSONInt(JsonNode *item, const char* key, int *result) {
-  JsonNode *node = json_find_member(item, key);
-  if ( node != NULL && node->tag == JSON_NUMBER) {
-	*result = (int) node->number_;
-	return true;
-  }
-  return false;
-}
-
-// This converts a string array of modifiers into the
-// equivalent MacOS Modifier Flags
-unsigned long parseModifiers(const char **modifiers) {
-
-  // Our result is a modifier flag list
-  unsigned long result = 0;
-
-  const char *thisModifier = modifiers[0];
-  int count = 0;
-  while( thisModifier != NULL ) {
-	// Determine flags
-	if( STREQ(thisModifier, "CmdOrCtrl") ) {
-	  result |= NSEventModifierFlagCommand;
-	}
-	if( STREQ(thisModifier, "OptionOrAlt") ) {
-	  result |= NSEventModifierFlagOption;
-	}
-	if( STREQ(thisModifier, "Shift") ) {
-	  result |= NSEventModifierFlagShift;
-	}
-	if( STREQ(thisModifier, "Super") ) {
-	  result |= NSEventModifierFlagCommand;
-	}
-	if( STREQ(thisModifier, "Control") ) {
-	  result |= NSEventModifierFlagControl;
-	}
-	count++;
-	thisModifier = modifiers[count];
-  }
-  return result;
-}
-
-id processAcceleratorKey(const char *key) {
-
-	// Guard against no accelerator key
-	if( key == NULL ) {
-		return str("");
-	}
-
-  if( STREQ(key, "Backspace") ) {
-	return strunicode(0x0008);
-  }
-  if( STREQ(key, "Tab") ) {
-	return strunicode(0x0009);
-  }
-  if( STREQ(key, "Return") ) {
-	return strunicode(0x000d);
-  }
-  if( STREQ(key, "Escape") ) {
-	return strunicode(0x001b);
-  }
-  if( STREQ(key, "Left") ) {
-	return strunicode(0x001c);
-  }
-  if( STREQ(key, "Right") ) {
-	return strunicode(0x001d);
-  }
-  if( STREQ(key, "Up") ) {
-	return strunicode(0x001e);
-  }
-  if( STREQ(key, "Down") ) {
-	return strunicode(0x001f);
-  }
-  if( STREQ(key, "Space") ) {
-	return strunicode(0x0020);
-  }
-  if( STREQ(key, "Delete") ) {
-	return strunicode(0x007f);
-  }
-  if( STREQ(key, "Home") ) {
-	return strunicode(0x2196);
-  }
-  if( STREQ(key, "End") ) {
-	return strunicode(0x2198);
-  }
-  if( STREQ(key, "Page Up") ) {
-	return strunicode(0x21de);
-  }
-  if( STREQ(key, "Page Down") ) {
-	return strunicode(0x21df);
-  }
-  if( STREQ(key, "F1") ) {
-	return strunicode(0xf704);
-  }
-  if( STREQ(key, "F2") ) {
-	return strunicode(0xf705);
-  }
-  if( STREQ(key, "F3") ) {
-	return strunicode(0xf706);
-  }
-  if( STREQ(key, "F4") ) {
-	return strunicode(0xf707);
-  }
-  if( STREQ(key, "F5") ) {
-	return strunicode(0xf708);
-  }
-  if( STREQ(key, "F6") ) {
-	return strunicode(0xf709);
-  }
-  if( STREQ(key, "F7") ) {
-	return strunicode(0xf70a);
-  }
-  if( STREQ(key, "F8") ) {
-	return strunicode(0xf70b);
-  }
-  if( STREQ(key, "F9") ) {
-	return strunicode(0xf70c);
-  }
-  if( STREQ(key, "F10") ) {
-	return strunicode(0xf70d);
-  }
-  if( STREQ(key, "F11") ) {
-	return strunicode(0xf70e);
-  }
-  if( STREQ(key, "F12") ) {
-	return strunicode(0xf70f);
-  }
-  if( STREQ(key, "F13") ) {
-	return strunicode(0xf710);
-  }
-  if( STREQ(key, "F14") ) {
-	return strunicode(0xf711);
-  }
-  if( STREQ(key, "F15") ) {
-	return strunicode(0xf712);
-  }
-  if( STREQ(key, "F16") ) {
-	return strunicode(0xf713);
-  }
-  if( STREQ(key, "F17") ) {
-	return strunicode(0xf714);
-  }
-  if( STREQ(key, "F18") ) {
-	return strunicode(0xf715);
-  }
-  if( STREQ(key, "F19") ) {
-	return strunicode(0xf716);
-  }
-  if( STREQ(key, "F20") ) {
-	return strunicode(0xf717);
-  }
-  if( STREQ(key, "F21") ) {
-	return strunicode(0xf718);
-  }
-  if( STREQ(key, "F22") ) {
-	return strunicode(0xf719);
-  }
-  if( STREQ(key, "F23") ) {
-	return strunicode(0xf71a);
-  }
-  if( STREQ(key, "F24") ) {
-	return strunicode(0xf71b);
-  }
-  if( STREQ(key, "F25") ) {
-	return strunicode(0xf71c);
-  }
-  if( STREQ(key, "F26") ) {
-	return strunicode(0xf71d);
-  }
-  if( STREQ(key, "F27") ) {
-	return strunicode(0xf71e);
-  }
-  if( STREQ(key, "F28") ) {
-	return strunicode(0xf71f);
-  }
-  if( STREQ(key, "F29") ) {
-	return strunicode(0xf720);
-  }
-  if( STREQ(key, "F30") ) {
-	return strunicode(0xf721);
-  }
-  if( STREQ(key, "F31") ) {
-	return strunicode(0xf722);
-  }
-  if( STREQ(key, "F32") ) {
-	return strunicode(0xf723);
-  }
-  if( STREQ(key, "F33") ) {
-	return strunicode(0xf724);
-  }
-  if( STREQ(key, "F34") ) {
-	return strunicode(0xf725);
-  }
-  if( STREQ(key, "F35") ) {
-	return strunicode(0xf726);
-  }
-//  if( STREQ(key, "Insert") ) {
-//	return strunicode(0xf727);
-//  }
-//  if( STREQ(key, "PrintScreen") ) {
-//	return strunicode(0xf72e);
-//  }
-//  if( STREQ(key, "ScrollLock") ) {
-//	return strunicode(0xf72f);
-//  }
-  if( STREQ(key, "NumLock") ) {
-	return strunicode(0xf739);
-  }
-
-  return str(key);
-}
-
 
 id parseTextMenuItem(struct Application *app, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char *menuCallback) {
 	id item = ALLOC("NSMenuItem");
@@ -2696,8 +2379,14 @@ void Run(struct Application *app, int argc, char **argv) {
 	}
 
 	// If we have a menu, process it
-	if( app->menuAsJSON != NULL ) {
-	  parseMenuData(app);
+//	if( app->menuAsJSON != NULL ) {
+//	  parseMenuData(app);
+//	}
+
+	// If we have an application menu, process it
+	if( app->applicationMenu != NULL ) {
+	    id menu = GetMenu(app->applicationMenu);
+	    msg(msg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menu);
 	}
 
 	// If we have a tray menu, process it

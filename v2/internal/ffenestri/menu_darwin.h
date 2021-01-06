@@ -7,14 +7,33 @@
 
 #include "common.h"
 
+extern void messageFromWindowCallback(const char *);
+
 typedef struct {
+
+    const char *title;
 
     /*** Internal ***/
 
     const char *menuAsJSON;
+    JsonNode *processedMenu;
 
     struct hashmap_s menuItemMap;
     struct hashmap_s radioGroupMap;
+
+    // Vector to keep track of callback data memory
+    vec_void_t callbackDataCache;
+
+    // The NSMenu for this menu
+    id menu;
+
+    // The names of the menu callbacks
+    SEL textMenuCallbackName;
+    SEL checkboxMenuCallbackName;
+    SEL radioMenuCallbackName;
+
+    // The commands for the menu callbacks
+    const char *callbackCommand;
 
 } Menu;
 
@@ -26,6 +45,20 @@ Menu* NewMenu(const char *menuAsJSON) {
     // menuAsJSON is allocated and freed by Go
     result->menuAsJSON = menuAsJSON;
 
+    // No title by default
+    result->title = "";
+
+    // No callbacks by default
+    result->textMenuCallbackName = NULL;
+    result->checkboxMenuCallbackName = NULL;
+    result->radioMenuCallbackName = NULL;
+
+    // Callback Commands
+    result->callbackCommand = "";
+
+    // Initialise menuCallbackDataCache
+    vec_init(&result->callbackDataCache);
+
     // Allocate MenuItem Map
     if( 0 != hashmap_create((const unsigned)16, &result->menuItemMap)) {
         ABORT("[NewMenu] Not enough memory to allocate menuItemMap!");
@@ -34,6 +67,35 @@ Menu* NewMenu(const char *menuAsJSON) {
     if( 0 != hashmap_create((const unsigned)4, &result->radioGroupMap)) {
         ABORT("[NewMenu] Not enough memory to allocate radioGroupMap!");
     }
+
+    return result;
+}
+
+Menu* NewApplicationMenu(const char *menuAsJSON) {
+    Menu *result = NewMenu(menuAsJSON);
+    result->textMenuCallbackName = s("textMenuItemCallback:");
+    result->checkboxMenuCallbackName = s("checkboxMenuCallbackForApplicationMenu:");
+    result->radioMenuCallbackName = s("radioMenuCallbackForApplicationMenu:");
+    result->callbackCommand = "MC";
+    return result;
+}
+
+typedef struct {
+    id menuItem;
+    Menu *menu;
+    const char *menuID;
+} MenuItemCallbackData;
+
+
+MenuItemCallbackData* CreateMenuItemCallbackData(Menu *menu, id menuItem, const char *menuID) {
+    MenuItemCallbackData* result = malloc(sizeof(MenuItemCallbackData));
+
+    result->menu = menu;
+    result->menuID = menuID;
+    result->menuItem = menuItem;
+
+    // Store reference to this so we can destroy later
+    vec_push(&menu->callbackDataCache, result);
 
     return result;
 }
@@ -53,59 +115,612 @@ void DeleteMenu(Menu *menu) {
     // Free radio groups hashmap
     hashmap_destroy(&menu->radioGroupMap);
 
+    // Free up the processed menu memory
+    json_delete(menu->processedMenu);
+
+    // Release the vector memory
+    vec_deinit(&menu->callbackDataCache);
+
     free(menu);
 }
 
 
-void Create() {
+// Callback for text menu items
+void textMenuItemCallback(id self, SEL cmd, id sender) {
+    MenuItemCallbackData *callbackData = (MenuItemCallbackData *)msg(msg(sender, s("representedObject")), s("pointerValue"));
+    // Notify the backend
+    const char *message = concat(callbackData->menu->callbackCommand, callbackData->menuID);
+    messageFromWindowCallback(message);
+    MEMFREE(message);
+}
 
-//
-//    // Allocate the hashmaps we need
-//    allocateMenuHashMaps(app);
-//
-//    // Create a new menu bar
-//    id menubar = createMenu(str(""));
-//
-//    // Parse the processed menu json
-//    app->processedMenu = json_decode(app->menuAsJSON);
-//
-//    if( app->processedMenu == NULL ) {
-//        // Parse error!
-//        Fatal(app, "Unable to parse Menu JSON: %s", app->menuAsJSON);
-//        return;
-//    }
-//
-//
-//    // Pull out the Menu
-//    JsonNode *menuData = json_find_member(app->processedMenu, "Menu");
-//    if( menuData == NULL ) {
-//        // Parse error!
-//        Fatal(app, "Unable to find Menu data: %s", app->processedMenu);
-//        return;
-//    }
-//
-//
-//    parseMenu(app, menubar, menuData, &menuItemMapForApplicationMenu,
-//              "checkboxMenuCallbackForApplicationMenu:", "radioMenuCallbackForApplicationMenu:", "menuCallbackForApplicationMenu:");
-//
-//    // Create the radiogroup cache
-//    JsonNode *radioGroups = json_find_member(app->processedMenu, "RadioGroups");
-//    if( radioGroups == NULL ) {
-//        // Parse error!
-//        Fatal(app, "Unable to find RadioGroups data: %s", app->processedMenu);
-//        return;
-//    }
-//
-//    // Iterate radio groups
-//    JsonNode *radioGroup;
-//    json_foreach(radioGroup, radioGroups) {
-//        // Get item label
-//        processRadioGroup(radioGroup, &menuItemMapForApplicationMenu, &radioGroupMapForApplicationMenu);
-//    }
-//
-//    // Apply the menu bar
-//    msg(msg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menubar);
+id processAcceleratorKey(const char *key) {
 
+    // Guard against no accelerator key
+    if( key == NULL ) {
+        return str("");
+    }
+
+    if( STREQ(key, "Backspace") ) {
+        return strunicode(0x0008);
+    }
+    if( STREQ(key, "Tab") ) {
+        return strunicode(0x0009);
+    }
+    if( STREQ(key, "Return") ) {
+        return strunicode(0x000d);
+    }
+    if( STREQ(key, "Escape") ) {
+        return strunicode(0x001b);
+    }
+    if( STREQ(key, "Left") ) {
+        return strunicode(0x001c);
+    }
+    if( STREQ(key, "Right") ) {
+        return strunicode(0x001d);
+    }
+    if( STREQ(key, "Up") ) {
+        return strunicode(0x001e);
+    }
+    if( STREQ(key, "Down") ) {
+        return strunicode(0x001f);
+    }
+    if( STREQ(key, "Space") ) {
+        return strunicode(0x0020);
+    }
+    if( STREQ(key, "Delete") ) {
+        return strunicode(0x007f);
+    }
+    if( STREQ(key, "Home") ) {
+        return strunicode(0x2196);
+    }
+    if( STREQ(key, "End") ) {
+        return strunicode(0x2198);
+    }
+    if( STREQ(key, "Page Up") ) {
+        return strunicode(0x21de);
+    }
+    if( STREQ(key, "Page Down") ) {
+        return strunicode(0x21df);
+    }
+    if( STREQ(key, "F1") ) {
+        return strunicode(0xf704);
+    }
+    if( STREQ(key, "F2") ) {
+        return strunicode(0xf705);
+    }
+    if( STREQ(key, "F3") ) {
+        return strunicode(0xf706);
+    }
+    if( STREQ(key, "F4") ) {
+        return strunicode(0xf707);
+    }
+    if( STREQ(key, "F5") ) {
+        return strunicode(0xf708);
+    }
+    if( STREQ(key, "F6") ) {
+        return strunicode(0xf709);
+    }
+    if( STREQ(key, "F7") ) {
+        return strunicode(0xf70a);
+    }
+    if( STREQ(key, "F8") ) {
+        return strunicode(0xf70b);
+    }
+    if( STREQ(key, "F9") ) {
+        return strunicode(0xf70c);
+    }
+    if( STREQ(key, "F10") ) {
+        return strunicode(0xf70d);
+    }
+    if( STREQ(key, "F11") ) {
+        return strunicode(0xf70e);
+    }
+    if( STREQ(key, "F12") ) {
+        return strunicode(0xf70f);
+    }
+    if( STREQ(key, "F13") ) {
+        return strunicode(0xf710);
+    }
+    if( STREQ(key, "F14") ) {
+        return strunicode(0xf711);
+    }
+    if( STREQ(key, "F15") ) {
+        return strunicode(0xf712);
+    }
+    if( STREQ(key, "F16") ) {
+        return strunicode(0xf713);
+    }
+    if( STREQ(key, "F17") ) {
+        return strunicode(0xf714);
+    }
+    if( STREQ(key, "F18") ) {
+        return strunicode(0xf715);
+    }
+    if( STREQ(key, "F19") ) {
+        return strunicode(0xf716);
+    }
+    if( STREQ(key, "F20") ) {
+        return strunicode(0xf717);
+    }
+    if( STREQ(key, "F21") ) {
+        return strunicode(0xf718);
+    }
+    if( STREQ(key, "F22") ) {
+        return strunicode(0xf719);
+    }
+    if( STREQ(key, "F23") ) {
+        return strunicode(0xf71a);
+    }
+    if( STREQ(key, "F24") ) {
+        return strunicode(0xf71b);
+    }
+    if( STREQ(key, "F25") ) {
+        return strunicode(0xf71c);
+    }
+    if( STREQ(key, "F26") ) {
+        return strunicode(0xf71d);
+    }
+    if( STREQ(key, "F27") ) {
+        return strunicode(0xf71e);
+    }
+    if( STREQ(key, "F28") ) {
+        return strunicode(0xf71f);
+    }
+    if( STREQ(key, "F29") ) {
+        return strunicode(0xf720);
+    }
+    if( STREQ(key, "F30") ) {
+        return strunicode(0xf721);
+    }
+    if( STREQ(key, "F31") ) {
+        return strunicode(0xf722);
+    }
+    if( STREQ(key, "F32") ) {
+        return strunicode(0xf723);
+    }
+    if( STREQ(key, "F33") ) {
+        return strunicode(0xf724);
+    }
+    if( STREQ(key, "F34") ) {
+        return strunicode(0xf725);
+    }
+    if( STREQ(key, "F35") ) {
+        return strunicode(0xf726);
+    }
+//  if( STREQ(key, "Insert") ) {
+//	return strunicode(0xf727);
+//  }
+//  if( STREQ(key, "PrintScreen") ) {
+//	return strunicode(0xf72e);
+//  }
+//  if( STREQ(key, "ScrollLock") ) {
+//	return strunicode(0xf72f);
+//  }
+    if( STREQ(key, "NumLock") ) {
+        return strunicode(0xf739);
+    }
+
+    return str(key);
+}
+
+
+void addSeparator(id menu) {
+    id item = msg(c("NSMenuItem"), s("separatorItem"));
+    msg(menu, s("addItem:"), item);
+}
+
+id createMenuItemNoAutorelease( id title, const char *action, const char *key) {
+    id item = ALLOC("NSMenuItem");
+    msg(item, s("initWithTitle:action:keyEquivalent:"), title, s(action), str(key));
+    return item;
+}
+
+id createMenuItem(id title, const char *action, const char *key) {
+    id item = ALLOC("NSMenuItem");
+    msg(item, s("initWithTitle:action:keyEquivalent:"), title, s(action), str(key));
+    msg(item, s("autorelease"));
+    return item;
+}
+
+id addMenuItem(id menu, const char *title, const char *action, const char *key, bool disabled) {
+    id item = createMenuItem(str(title), action, key);
+    msg(item, s("setEnabled:"), !disabled);
+    msg(menu, s("addItem:"), item);
+    return item;
+}
+
+id createMenu(id title) {
+    id menu = ALLOC("NSMenu");
+    msg(menu, s("initWithTitle:"), title);
+    msg(menu, s("setAutoenablesItems:"), NO);
+//  msg(menu, s("autorelease"));
+    return menu;
+}
+
+void createDefaultAppMenu(id parentMenu) {
+// App Menu
+    id appName = msg(msg(c("NSProcessInfo"), s("processInfo")), s("processName"));
+    id appMenuItem = createMenuItemNoAutorelease(appName, NULL, "");
+    id appMenu = createMenu(appName);
+
+    msg(appMenuItem, s("setSubmenu:"), appMenu);
+    msg(parentMenu, s("addItem:"), appMenuItem);
+
+    id title = msg(str("Hide "), s("stringByAppendingString:"), appName);
+    id item = createMenuItem(title, "hide:", "h");
+    msg(appMenu, s("addItem:"), item);
+
+    id hideOthers = addMenuItem(appMenu, "Hide Others", "hideOtherApplications:", "h", FALSE);
+    msg(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
+
+    addMenuItem(appMenu, "Show All", "unhideAllApplications:", "", FALSE);
+
+    addSeparator(appMenu);
+
+    title = msg(str("Quit "), s("stringByAppendingString:"), appName);
+    item = createMenuItem(title, "terminate:", "q");
+    msg(appMenu, s("addItem:"), item);
+}
+
+void createDefaultEditMenu(id parentMenu) {
+    // Edit Menu
+    id editMenuItem = createMenuItemNoAutorelease(str("Edit"), NULL, "");
+    id editMenu = createMenu(str("Edit"));
+
+    msg(editMenuItem, s("setSubmenu:"), editMenu);
+    msg(parentMenu, s("addItem:"), editMenuItem);
+
+    addMenuItem(editMenu, "Undo", "undo:", "z", FALSE);
+    addMenuItem(editMenu, "Redo", "redo:", "y", FALSE);
+    addSeparator(editMenu);
+    addMenuItem(editMenu, "Cut", "cut:", "x", FALSE);
+    addMenuItem(editMenu, "Copy", "copy:", "c", FALSE);
+    addMenuItem(editMenu, "Paste", "paste:", "v", FALSE);
+    addMenuItem(editMenu, "Select All", "selectAll:", "a", FALSE);
+}
+
+void processMenuRole(Menu *menu, id parentMenu, JsonNode *item) {
+    const char *roleName = item->string_;
+
+    if ( STREQ(roleName, "appMenu") ) {
+        createDefaultAppMenu(parentMenu);
+        return;
+    }
+    if ( STREQ(roleName, "editMenu")) {
+        createDefaultEditMenu(parentMenu);
+        return;
+    }
+    if ( STREQ(roleName, "hide")) {
+        addMenuItem(parentMenu, "Hide Window", "hide:", "h", FALSE);
+        return;
+    }
+    if ( STREQ(roleName, "hideothers")) {
+        id hideOthers = addMenuItem(parentMenu, "Hide Others", "hideOtherApplications:", "h", FALSE);
+        msg(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
+        return;
+    }
+    if ( STREQ(roleName, "unhide")) {
+        addMenuItem(parentMenu, "Show All", "unhideAllApplications:", "", FALSE);
+        return;
+    }
+    if ( STREQ(roleName, "front")) {
+        addMenuItem(parentMenu, "Bring All to Front", "arrangeInFront:", "", FALSE);
+        return;
+    }
+    if ( STREQ(roleName, "undo")) {
+        addMenuItem(parentMenu, "Undo", "undo:", "z", FALSE);
+        return;
+    }
+    if ( STREQ(roleName, "redo")) {
+        addMenuItem(parentMenu, "Redo", "redo:", "y", FALSE);
+        return;
+    }
+    if ( STREQ(roleName, "cut")) {
+        addMenuItem(parentMenu, "Cut", "cut:", "x", FALSE);
+        return;
+    }
+    if ( STREQ(roleName, "copy")) {
+        addMenuItem(parentMenu, "Copy", "copy:", "c", FALSE);
+        return;
+    }
+    if ( STREQ(roleName, "paste")) {
+        addMenuItem(parentMenu, "Paste", "paste:", "v", FALSE);
+        return;
+    }
+    if ( STREQ(roleName, "delete")) {
+        addMenuItem(parentMenu, "Delete", "delete:", "", FALSE);
+        return;
+    }
+    if( STREQ(roleName, "pasteandmatchstyle")) {
+        id pasteandmatchstyle = addMenuItem(parentMenu, "Paste and Match Style", "pasteandmatchstyle:", "v", FALSE);
+        msg(pasteandmatchstyle, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagShift | NSEventModifierFlagCommand));
+    }
+    if ( STREQ(roleName, "selectall")) {
+        addMenuItem(parentMenu, "Select All", "selectAll:", "a", FALSE);
+        return;
+    }
+    if ( STREQ(roleName, "minimize")) {
+        addMenuItem(parentMenu, "Minimize", "miniaturize:", "m", FALSE);
+        return;
+    }
+    if ( STREQ(roleName, "zoom")) {
+        addMenuItem(parentMenu, "Zoom", "performZoom:", "", FALSE);
+        return;
+    }
+    if ( STREQ(roleName, "quit")) {
+        addMenuItem(parentMenu, "Quit (More work TBD)", "terminate:", "q", FALSE);
+        return;
+    }
+    if ( STREQ(roleName, "togglefullscreen")) {
+        addMenuItem(parentMenu, "Toggle Full Screen", "toggleFullScreen:", "f", FALSE);
+        return;
+    }
+
+}
+
+// This converts a string array of modifiers into the
+// equivalent MacOS Modifier Flags
+unsigned long parseModifiers(const char **modifiers) {
+
+    // Our result is a modifier flag list
+    unsigned long result = 0;
+
+    const char *thisModifier = modifiers[0];
+    int count = 0;
+    while( thisModifier != NULL ) {
+        // Determine flags
+        if( STREQ(thisModifier, "CmdOrCtrl") ) {
+            result |= NSEventModifierFlagCommand;
+        }
+        if( STREQ(thisModifier, "OptionOrAlt") ) {
+            result |= NSEventModifierFlagOption;
+        }
+        if( STREQ(thisModifier, "Shift") ) {
+            result |= NSEventModifierFlagShift;
+        }
+        if( STREQ(thisModifier, "Super") ) {
+            result |= NSEventModifierFlagCommand;
+        }
+        if( STREQ(thisModifier, "Control") ) {
+            result |= NSEventModifierFlagControl;
+        }
+        count++;
+        thisModifier = modifiers[count];
+    }
+    return result;
+}
+
+id processRadioMenuItem(Menu *menu, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *acceleratorkey) {
+    id item = ALLOC("NSMenuItem");
+
+    // Store the item in the menu item map
+    hashmap_put(&menu->menuItemMap, (char*)menuid, strlen(menuid), item);
+
+    id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
+    msg(item, s("setRepresentedObject:"), wrappedId);
+
+    id key = processAcceleratorKey(acceleratorkey);
+
+    msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), menu->radioMenuCallbackName, key);
+
+    msg(item, s("setEnabled:"), !disabled);
+    msg(item, s("autorelease"));
+    msg(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
+
+    msg(parentmenu, s("addItem:"), item);
+    return item;
+
+}
+
+id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *key) {
+    id item = ALLOC("NSMenuItem");
+
+    // Store the item in the menu item map
+    hashmap_put(&menu->menuItemMap, (char*)menuid, strlen(menuid), item);
+
+    id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
+    msg(item, s("setRepresentedObject:"), wrappedId);
+    msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), menu->checkboxMenuCallbackName, str(key));
+    msg(item, s("setEnabled:"), !disabled);
+    msg(item, s("autorelease"));
+    msg(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
+    msg(parentmenu, s("addItem:"), item);
+    return item;
+}
+
+id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers) {
+    id item = ALLOC("NSMenuItem");
+
+    // Create a MenuItemCallbackData
+    MenuItemCallbackData *callback = CreateMenuItemCallbackData(menu, item, menuid);
+
+    id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), callback);
+    msg(item, s("setRepresentedObject:"), wrappedId);
+
+    id key = processAcceleratorKey(acceleratorkey);
+    msg(item, s("initWithTitle:action:keyEquivalent:"), str(title),
+        menu->textMenuCallbackName, key);
+
+    msg(item, s("setEnabled:"), !disabled);
+    msg(item, s("autorelease"));
+
+    // Process modifiers
+    if( modifiers != NULL ) {
+        unsigned long modifierFlags = parseModifiers(modifiers);
+        msg(item, s("setKeyEquivalentModifierMask:"), modifierFlags);
+    }
+    msg(parentMenu, s("addItem:"), item);
+
+    return item;
+}
+
+void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
+
+    printf("Processing Menu Item! menu = %p, parentMenu = %p, item = %p\n", menu, parentMenu, item);
+
+    // Check if this item is hidden and if so, exit early!
+    bool hidden = false;
+    getJSONBool(item, "Hidden", &hidden);
+    if( hidden ) {
+        return;
+    }
+
+    // Get the role
+    JsonNode *role = json_find_member(item, "Role");
+    if( role != NULL ) {
+        processMenuRole(menu, parentMenu, role);
+        return;
+    }
+
+    // Check if this is a submenu
+    JsonNode *submenu = json_find_member(item, "SubMenu");
+    if( submenu != NULL ) {
+        // Get the label
+        JsonNode *menuNameNode = json_find_member(item, "Label");
+        const char *name = "";
+        if ( menuNameNode != NULL) {
+            name = menuNameNode->string_;
+        }
+
+        printf("\n\nProcessing submenu %s!!!\n\n", name);
+
+        id thisMenuItem = createMenuItemNoAutorelease(str(name), NULL, "");
+        id thisMenu = createMenu(str(name));
+
+        msg(thisMenuItem, s("setSubmenu:"), thisMenu);
+        msg(parentMenu, s("addItem:"), thisMenuItem);
+
+        // Loop over submenu items
+        JsonNode *item;
+        json_foreach(item, submenu) {
+            // Get item label
+            processMenuItem(menu, thisMenu, item);
+        }
+
+        return;
+    }
+
+    // This is a user menu. Get the common data
+    // Get the label
+    const char *label = getJSONString(item, "Label");
+    if ( label == NULL) {
+        label = "(empty)";
+    }
+
+    const char *menuid = getJSONString(item, "ID");
+    if ( menuid == NULL) {
+        menuid = "";
+    }
+
+    bool disabled = false;
+    getJSONBool(item, "Disabled", &disabled);
+
+    // Get the Accelerator
+    JsonNode *accelerator = json_find_member(item, "Accelerator");
+    const char *acceleratorkey = NULL;
+    const char **modifiers = NULL;
+
+    // If we have an accelerator
+    if( accelerator != NULL ) {
+        // Get the key
+        acceleratorkey = getJSONString(accelerator, "Key");
+        // Check if there are modifiers
+        JsonNode *modifiersList = json_find_member(accelerator, "Modifiers");
+        if ( modifiersList != NULL ) {
+            // Allocate an array of strings
+            int noOfModifiers = json_array_length(modifiersList);
+
+            // Do we have any?
+            if (noOfModifiers > 0) {
+                modifiers = malloc(sizeof(const char *) * (noOfModifiers + 1));
+                JsonNode *modifier;
+                int count = 0;
+                // Iterate the modifiers and save a reference to them in our new array
+                json_foreach(modifier, modifiersList) {
+                    // Get modifier name
+                    modifiers[count] = modifier->string_;
+                    count++;
+                }
+                // Null terminate the modifier list
+                modifiers[count] = NULL;
+            }
+        }
+    }
+
+    // Get the Type
+    JsonNode *type = json_find_member(item, "Type");
+    if( type != NULL ) {
+
+        if( STREQ(type->string_, "Text")) {
+            processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers);
+        }
+        else if ( STREQ(type->string_, "Separator")) {
+            addSeparator(parentMenu);
+        }
+        else if ( STREQ(type->string_, "Checkbox")) {
+            // Get checked state
+            bool checked = false;
+            getJSONBool(item, "Checked", &checked);
+
+            processCheckboxMenuItem(menu, parentMenu, label, menuid, disabled, checked, "");
+        }
+        else if ( STREQ(type->string_, "Radio")) {
+            // Get checked state
+            bool checked = false;
+            getJSONBool(item, "Checked", &checked);
+
+            processRadioMenuItem(menu, parentMenu, label, menuid, disabled, checked, "");
+        }
+
+    }
+
+    if ( modifiers != NULL ) {
+        free(modifiers);
+    }
+
+    return;
+}
+
+void processMenuData(Menu *menu, JsonNode *menuData) {
+    JsonNode *items = json_find_member(menuData, "Items");
+    if( items == NULL ) {
+        // Parse error!
+        ABORT("Unable to find 'Items' in menu JSON:", menu->menuAsJSON);
+    }
+
+    // Iterate items
+    JsonNode *item;
+    json_foreach(item, items) {
+        // Process each menu item
+        processMenuItem(menu, menu->menu, item);
+    }
+}
+
+id GetMenu(Menu *menu) {
+
+    menu->menu = createMenu(str(""));
+
+    // Parse the menu json
+    JsonNode *processedMenu = json_decode(menu->menuAsJSON);
+    if( processedMenu == NULL ) {
+        // Parse error!
+        ABORT("Unable to parse Menu JSON: %s", menu->menuAsJSON);
+    }
+
+    // Pull out the menu data
+    JsonNode *menuData = json_find_member(processedMenu, "Menu");
+    if( menuData == NULL ) {
+        ABORT("Unable to find Menu data: %s", processedMenu);
+    }
+
+    // Process the menu data
+    processMenuData(menu, menuData);
+
+    // Save the reference so we can delete it later
+    menu->processedMenu = processedMenu;
+
+    return menu->menu;
 }
 
 #endif //ASSETS_C_MENU_DARWIN_H
