@@ -7,6 +7,9 @@
 
 #include "common.h"
 
+enum MenuItemType {Text = 0, Checkbox = 1, Radio = 2};
+enum MenuType {ApplicationMenu = 0};
+
 extern void messageFromWindowCallback(const char *);
 
 typedef struct {
@@ -27,13 +30,12 @@ typedef struct {
     // The NSMenu for this menu
     id menu;
 
-    // The names of the menu callbacks
-    SEL textMenuCallbackName;
-    SEL checkboxMenuCallbackName;
-    SEL radioMenuCallbackName;
-
     // The commands for the menu callbacks
     const char *callbackCommand;
+
+    // This indicates if we are an Application Menu, tray menu or context menu
+    enum MenuType menuType;
+
 
 } Menu;
 
@@ -47,14 +49,6 @@ Menu* NewMenu(const char *menuAsJSON) {
 
     // No title by default
     result->title = "";
-
-    // No callbacks by default
-    result->textMenuCallbackName = NULL;
-    result->checkboxMenuCallbackName = NULL;
-    result->radioMenuCallbackName = NULL;
-
-    // Callback Commands
-    result->callbackCommand = "";
 
     // Initialise menuCallbackDataCache
     vec_init(&result->callbackDataCache);
@@ -73,10 +67,7 @@ Menu* NewMenu(const char *menuAsJSON) {
 
 Menu* NewApplicationMenu(const char *menuAsJSON) {
     Menu *result = NewMenu(menuAsJSON);
-    result->textMenuCallbackName = s("textMenuItemCallback:");
-    result->checkboxMenuCallbackName = s("checkboxMenuCallbackForApplicationMenu:");
-    result->radioMenuCallbackName = s("radioMenuCallbackForApplicationMenu:");
-    result->callbackCommand = "MC";
+    result->menuType = ApplicationMenu;
     return result;
 }
 
@@ -84,21 +75,25 @@ typedef struct {
     id menuItem;
     Menu *menu;
     const char *menuID;
+    enum MenuItemType menuItemType;
 } MenuItemCallbackData;
 
 
-MenuItemCallbackData* CreateMenuItemCallbackData(Menu *menu, id menuItem, const char *menuID) {
+MenuItemCallbackData* CreateMenuItemCallbackData(Menu *menu, id menuItem, const char *menuID, enum MenuItemType menuItemType) {
     MenuItemCallbackData* result = malloc(sizeof(MenuItemCallbackData));
 
     result->menu = menu;
     result->menuID = menuID;
     result->menuItem = menuItem;
+    result->menuItemType = menuItemType;
 
     // Store reference to this so we can destroy later
     vec_push(&menu->callbackDataCache, result);
 
     return result;
 }
+
+
 
 void DeleteMenu(Menu *menu) {
 
@@ -121,15 +116,79 @@ void DeleteMenu(Menu *menu) {
     // Release the vector memory
     vec_deinit(&menu->callbackDataCache);
 
+    msg(menu->menu, s("release"));
+
     free(menu);
 }
 
+const char* createTextMenuMessage(MenuItemCallbackData *callbackData) {
+
+    switch( callbackData->menu->menuType ) {
+        case ApplicationMenu:
+            return concat("MC", callbackData->menuID);
+    }
+    return NULL;
+}
+
+const char* createCheckBoxMenuMessage(MenuItemCallbackData *callbackData) {
+
+    switch( callbackData->menu->menuType ) {
+        case ApplicationMenu:
+            return concat("MC", callbackData->menuID);
+    }
+    return NULL;
+}
+
+const char* createRadioMenuMessage(MenuItemCallbackData *callbackData) {
+
+    switch( callbackData->menu->menuType ) {
+        case ApplicationMenu:
+            return concat("MC", callbackData->menuID);
+    }
+    return NULL;
+}
 
 // Callback for text menu items
-void textMenuItemCallback(id self, SEL cmd, id sender) {
+void menuItemCallback(id self, SEL cmd, id sender) {
     MenuItemCallbackData *callbackData = (MenuItemCallbackData *)msg(msg(sender, s("representedObject")), s("pointerValue"));
+    const char *message;
+
+    // Update checkbox / radio item
+    if( callbackData->menuItemType == Checkbox) {
+        // Toggle state
+        bool state = msg(callbackData->menuItem, s("state"));
+        msg(callbackData->menuItem, s("setState:"), (state? NSControlStateValueOff : NSControlStateValueOn));
+    } else if( callbackData->menuItemType == Radio ) {
+        // Check the menu items' current state
+        bool selected = msg(callbackData->menuItem, s("state"));
+
+        // If it's already selected, exit early
+        if (selected) return;
+
+        // Get this item's radio group members and turn them off
+        id *members = (id*)hashmap_get(&(callbackData->menu->radioGroupMap), (char*)callbackData->menuID, strlen(callbackData->menuID));
+
+        // Uncheck all members of the group
+        id thisMember = members[0];
+        int count = 0;
+        while(thisMember != NULL) {
+            msg(thisMember, s("setState:"), NSControlStateValueOff);
+            count = count + 1;
+            thisMember = members[count];
+        }
+
+        // check the selected menu item
+        msg(callbackData->menuItem, s("setState:"), NSControlStateValueOn);
+    }
+
+    // Generate message to send to backend
+    if( callbackData->menu->menuType == ApplicationMenu ) {
+        message = concat("MC", callbackData->menuID);
+    }
+
+    // TODO: Add other menu types here!
+
     // Notify the backend
-    const char *message = concat(callbackData->menu->callbackCommand, callbackData->menuID);
     messageFromWindowCallback(message);
     MEMFREE(message);
 }
@@ -497,12 +556,15 @@ id processRadioMenuItem(Menu *menu, id parentmenu, const char *title, const char
     // Store the item in the menu item map
     hashmap_put(&menu->menuItemMap, (char*)menuid, strlen(menuid), item);
 
-    id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
+    // Create a MenuItemCallbackData
+    MenuItemCallbackData *callback = CreateMenuItemCallbackData(menu, item, menuid, Radio);
+
+    id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), callback);
     msg(item, s("setRepresentedObject:"), wrappedId);
 
     id key = processAcceleratorKey(acceleratorkey);
 
-    msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), menu->radioMenuCallbackName, key);
+    msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuItemCallback:"), key);
 
     msg(item, s("setEnabled:"), !disabled);
     msg(item, s("autorelease"));
@@ -514,14 +576,18 @@ id processRadioMenuItem(Menu *menu, id parentmenu, const char *title, const char
 }
 
 id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *key) {
+
     id item = ALLOC("NSMenuItem");
 
     // Store the item in the menu item map
     hashmap_put(&menu->menuItemMap, (char*)menuid, strlen(menuid), item);
 
-    id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
+    // Create a MenuItemCallbackData
+    MenuItemCallbackData *callback = CreateMenuItemCallbackData(menu, item, menuid, Checkbox);
+
+    id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), callback);
     msg(item, s("setRepresentedObject:"), wrappedId);
-    msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), menu->checkboxMenuCallbackName, str(key));
+    msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuItemCallback:"), str(key));
     msg(item, s("setEnabled:"), !disabled);
     msg(item, s("autorelease"));
     msg(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
@@ -533,14 +599,14 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
     id item = ALLOC("NSMenuItem");
 
     // Create a MenuItemCallbackData
-    MenuItemCallbackData *callback = CreateMenuItemCallbackData(menu, item, menuid);
+    MenuItemCallbackData *callback = CreateMenuItemCallbackData(menu, item, menuid, Text);
 
     id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), callback);
     msg(item, s("setRepresentedObject:"), wrappedId);
 
     id key = processAcceleratorKey(acceleratorkey);
     msg(item, s("initWithTitle:action:keyEquivalent:"), str(title),
-        menu->textMenuCallbackName, key);
+        s("menuItemCallback:"), key);
 
     msg(item, s("setEnabled:"), !disabled);
     msg(item, s("autorelease"));
@@ -556,8 +622,6 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
 }
 
 void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
-
-    printf("Processing Menu Item! menu = %p, parentMenu = %p, item = %p\n", menu, parentMenu, item);
 
     // Check if this item is hidden and if so, exit early!
     bool hidden = false;
@@ -697,6 +761,40 @@ void processMenuData(Menu *menu, JsonNode *menuData) {
     }
 }
 
+void processRadioGroupJSON(Menu *menu, JsonNode *radioGroup) {
+
+    int groupLength;
+    getJSONInt(radioGroup, "Length", &groupLength);
+    JsonNode *members = json_find_member(radioGroup, "Members");
+    JsonNode *member;
+
+    // Allocate array
+    size_t arrayLength = sizeof(id)*(groupLength+1);
+    id memberList[arrayLength];
+
+    // Build the radio group items
+    int count=0;
+    json_foreach(member, members) {
+        // Get menu by id
+        id menuItem = (id)hashmap_get(&menu->menuItemMap, (char*)member->string_, strlen(member->string_));
+        // Save Member
+        memberList[count] = menuItem;
+        count = count + 1;
+    }
+    // Null terminate array
+    memberList[groupLength] = 0;
+
+    // Store the members
+    json_foreach(member, members) {
+        // Copy the memberList
+        char *newMemberList = (char *)malloc(arrayLength);
+        memcpy(newMemberList, memberList, arrayLength);
+        // add group to each member of group
+        hashmap_put(&menu->radioGroupMap, member->string_, strlen(member->string_), newMemberList);
+    }
+
+}
+
 id GetMenu(Menu *menu) {
 
     menu->menu = createMenu(str(""));
@@ -719,6 +817,20 @@ id GetMenu(Menu *menu) {
 
     // Save the reference so we can delete it later
     menu->processedMenu = processedMenu;
+
+    // Create the radiogroup cache
+    JsonNode *radioGroups = json_find_member(menu->processedMenu, "RadioGroups");
+    if( radioGroups == NULL ) {
+        // Parse error!
+        ABORT("Unable to find RadioGroups data: %s", menu->processedMenu);
+    }
+
+    // Iterate radio groups
+    JsonNode *radioGroup;
+    json_foreach(radioGroup, radioGroups) {
+        // Get item label
+        processRadioGroupJSON(menu, radioGroup);
+    }
 
     return menu->menu;
 }
