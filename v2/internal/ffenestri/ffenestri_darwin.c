@@ -2,6 +2,8 @@
 #ifdef FFENESTRI_DARWIN
 
 #include "ffenestri_darwin.h"
+#include "menu_darwin.h"
+
 
 // References to assets
 #include "assets.h"
@@ -145,6 +147,7 @@ struct Application {
 	int windowBackgroundIsTranslucent;
 
 	// Menu
+	Menu *applicationMenu;
 	const char *menuAsJSON;
 	JsonNode *processedMenu;
 
@@ -759,6 +762,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->delegate = NULL;
 
 	// Menu
+	result->applicationMenu = NULL;
 	result->menuAsJSON = NULL;
 	result->processedMenu = NULL;
 
@@ -772,6 +776,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 
 	// Context Menus
 	result->contextMenusAsJSON = NULL;
+	result->processedContextMenus = NULL;
 	contextMenuData = NULL;
 
 	// Window Appearance
@@ -783,10 +788,6 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	return (void*) result;
 }
 
-int freeHashmapItem(void *const context, struct hashmap_element_s *const e) {
-    free(e->data);
-    return -1;
-}
 
 int releaseNSObject(void *const context, struct hashmap_element_s *const e) {
     msg(e->data, s("release"));
@@ -934,6 +935,11 @@ void DestroyApplication(struct Application *app) {
 
 	// Destroy the menu
 	destroyMenu(app);
+
+	// Delete the application menu if we have one
+	if( app->applicationMenu != NULL ) {
+	    DeleteMenu(app->applicationMenu);
+	}
 
 	// Destroy the tray
 	destroyTray(app);
@@ -1420,6 +1426,7 @@ void SetDebug(void *applicationPointer, int flag) {
 // SetMenu sets the initial menu for the application
 void SetMenu(struct Application *app, const char *menuAsJSON) {
 	app->menuAsJSON = menuAsJSON;
+	app->applicationMenu = NewMenu(menuAsJSON);
 }
 
 // SetTray sets the initial tray menu for the application
