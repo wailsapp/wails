@@ -8,6 +8,12 @@
 #include "hashmap.h"
 #include "vec.h"
 
+#define STREQ(a,b) strcmp(a, b) == 0
+#define STRCOPY(a) concat(a, "")
+#define STR_HAS_CHARS(input) input != NULL && strlen(input) > 0
+#define MEMFREE(input) free((void*)input); input = NULL;
+#define FREE_AND_SET(variable, value) if( variable != NULL ) { MEMFREE(variable); } variable = value
+
 // Credit: https://stackoverflow.com/a/8465083
 char* concat(const char *string1, const char *string2)
 {

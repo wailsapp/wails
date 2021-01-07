@@ -119,7 +119,24 @@ func (a *Application) processPlatformSettings() error {
 	// Process context menus
 	contextMenus := options.GetContextMenus(a.config)
 	if contextMenus != nil {
-		contextMenusJSON, err := json.Marshal(contextMenus)
+
+		type ProcessedContextMenu struct {
+			ID string
+			ProcessedMenu *ProcessedMenu
+		}
+
+		var processedContextMenus []*ProcessedContextMenu
+
+		// We need to iterate each context menu and pre-process it
+		for contextMenuID, contextMenu := range contextMenus.Items {
+			thisContextMenu := &ProcessedContextMenu{
+                ID: contextMenuID,
+                ProcessedMenu: NewProcessedMenu(contextMenu),
+            }
+			processedContextMenus = append(processedContextMenus, thisContextMenu )
+		}
+
+		contextMenusJSON, err := json.Marshal(processedContextMenus)
 		fmt.Printf("\n\nCONTEXT MENUS:\n %+v\n\n", string(contextMenusJSON))
 		if err != nil {
 			return err

@@ -27,11 +27,6 @@
 #define GET_BOUNDS(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("bounds"))
 #define GET_BACKINGSCALEFACTOR(receiver) ((CGFloat(*)(id, SEL))msg)(receiver, s("backingScaleFactor"))
 
-#define STREQ(a,b) strcmp(a, b) == 0
-#define STRCOPY(a) concat(a, "")
-#define STR_HAS_CHARS(input) input != NULL && strlen(input) > 0
-#define MEMFREE(input) free((void*)input); input = NULL;
-
 #define ON_MAIN_THREAD(str) dispatch( ^{ str; } )
 #define MAIN_WINDOW_CALL(str) msg(app->mainWindow, s((str)))
 

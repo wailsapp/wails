@@ -26,6 +26,10 @@ var messageParsers = map[byte]func(string) (*parsedMessage, error){
 // Parse will attempt to parse the given message
 func Parse(message string) (*parsedMessage, error) {
 
+	if len(message) == 0 {
+		return nil, fmt.Errorf("MessageParser received blank message");
+	}
+
 	parseMethod := messageParsers[message[0]]
 	if parseMethod == nil {
 		return nil, fmt.Errorf("message type '%c' invalid", message[0])

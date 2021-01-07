@@ -6,9 +6,10 @@
 #define MENU_DARWIN_H
 
 #include "common.h"
+#include "contextmenustore_darwin.h"
 
 enum MenuItemType {Text = 0, Checkbox = 1, Radio = 2};
-enum MenuType {ApplicationMenu = 0};
+enum MenuType {ApplicationMenuType = 0, ContextMenuType = 1};
 
 extern void messageFromWindowCallback(const char *);
 
@@ -18,7 +19,7 @@ typedef struct {
 
     /*** Internal ***/
 
-    const char *menuAsJSON;
+    // The decoded version of the Menu JSON
     JsonNode *processedMenu;
 
     struct hashmap_s menuItemMap;
@@ -30,6 +31,9 @@ typedef struct {
     // The NSMenu for this menu
     id menu;
 
+    // The parent data, eg ContextMenuStore or Tray
+    void *parentData;
+
     // The commands for the menu callbacks
     const char *callbackCommand;
 
@@ -40,12 +44,11 @@ typedef struct {
 } Menu;
 
 // NewMenu creates a new Menu struct, saving the given menu structure as JSON
-Menu* NewMenu(const char *menuAsJSON) {
+Menu* NewMenu(JsonNode *menuData) {
 
     Menu *result = malloc(sizeof(Menu));
 
-    // menuAsJSON is allocated and freed by Go
-    result->menuAsJSON = menuAsJSON;
+    result->processedMenu = menuData;
 
     // No title by default
     result->title = "";
@@ -66,8 +69,16 @@ Menu* NewMenu(const char *menuAsJSON) {
 }
 
 Menu* NewApplicationMenu(const char *menuAsJSON) {
-    Menu *result = NewMenu(menuAsJSON);
-    result->menuType = ApplicationMenu;
+
+    // Parse the menu json
+    JsonNode *processedMenu = json_decode(menuAsJSON);
+    if( processedMenu == NULL ) {
+        // Parse error!
+        ABORT("Unable to parse Menu JSON: %s", menuAsJSON);
+    }
+
+    Menu *result = NewMenu(processedMenu);
+    result->menuType = ApplicationMenuType;
     return result;
 }
 
@@ -121,31 +132,14 @@ void DeleteMenu(Menu *menu) {
     free(menu);
 }
 
-const char* createTextMenuMessage(MenuItemCallbackData *callbackData) {
-
-    switch( callbackData->menu->menuType ) {
-        case ApplicationMenu:
-            return concat("MC", callbackData->menuID);
-    }
-    return NULL;
-}
-
-const char* createCheckBoxMenuMessage(MenuItemCallbackData *callbackData) {
-
-    switch( callbackData->menu->menuType ) {
-        case ApplicationMenu:
-            return concat("MC", callbackData->menuID);
-    }
-    return NULL;
-}
-
-const char* createRadioMenuMessage(MenuItemCallbackData *callbackData) {
-
-    switch( callbackData->menu->menuType ) {
-        case ApplicationMenu:
-            return concat("MC", callbackData->menuID);
-    }
-    return NULL;
+// Creates a JSON message for the given menuItemID and data
+const char* createContextMenuMessage(const char *menuItemID, const char *givenContextMenuData) {
+    JsonNode *jsonObject = json_mkobject();
+    json_append_member(jsonObject, "menuItemID", json_mkstring(menuItemID));
+    json_append_member(jsonObject, "data", json_mkstring(givenContextMenuData));
+    const char *result = json_encode(jsonObject);
+    json_delete(jsonObject);
+    return result;
 }
 
 // Callback for text menu items
@@ -182,8 +176,13 @@ void menuItemCallback(id self, SEL cmd, id sender) {
     }
 
     // Generate message to send to backend
-    if( callbackData->menu->menuType == ApplicationMenu ) {
+    if( callbackData->menu->menuType == ApplicationMenuType ) {
         message = concat("MC", callbackData->menuID);
+    } else if( callbackData->menu->menuType == ContextMenuType ) {
+        // Get the context menu data from the menu
+        ContextMenuStore* store = (ContextMenuStore*) callbackData->menu->parentData;
+        const char *contextMenuMessage = createContextMenuMessage(callbackData->menuID, store->contextMenuData);
+        message = concat("XC", contextMenuMessage);
     }
 
     // TODO: Add other menu types here!
@@ -647,8 +646,6 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
             name = menuNameNode->string_;
         }
 
-        printf("\n\nProcessing submenu %s!!!\n\n", name);
-
         id thisMenuItem = createMenuItemNoAutorelease(str(name), NULL, "");
         id thisMenu = createMenu(str(name));
 
@@ -750,7 +747,7 @@ void processMenuData(Menu *menu, JsonNode *menuData) {
     JsonNode *items = json_find_member(menuData, "Items");
     if( items == NULL ) {
         // Parse error!
-        ABORT("Unable to find 'Items' in menu JSON:", menu->menuAsJSON);
+        ABORT("Unable to find 'Items' in menu JSON!");
     }
 
     // Iterate items
@@ -797,26 +794,16 @@ void processRadioGroupJSON(Menu *menu, JsonNode *radioGroup) {
 
 id GetMenu(Menu *menu) {
 
-    menu->menu = createMenu(str(""));
-
-    // Parse the menu json
-    JsonNode *processedMenu = json_decode(menu->menuAsJSON);
-    if( processedMenu == NULL ) {
-        // Parse error!
-        ABORT("Unable to parse Menu JSON: %s", menu->menuAsJSON);
-    }
-
     // Pull out the menu data
-    JsonNode *menuData = json_find_member(processedMenu, "Menu");
+    JsonNode *menuData = json_find_member(menu->processedMenu, "Menu");
     if( menuData == NULL ) {
-        ABORT("Unable to find Menu data: %s", processedMenu);
+        ABORT("Unable to find Menu data: %s", menu->processedMenu);
     }
+
+    menu->menu = createMenu(str(""));
 
     // Process the menu data
     processMenuData(menu, menuData);
-
-    // Save the reference so we can delete it later
-    menu->processedMenu = processedMenu;
 
     // Create the radiogroup cache
     JsonNode *radioGroups = json_find_member(menu->processedMenu, "RadioGroups");

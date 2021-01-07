@@ -3,6 +3,7 @@
 
 #include "ffenestri_darwin.h"
 #include "menu_darwin.h"
+#include "contextmenus_darwin.h"
 
 
 // References to assets
@@ -27,15 +28,6 @@ struct hashmap_s radioGroupMapForTrayMenu;
 
 // A cache for all our tray icons
 struct hashmap_s trayIconCache;
-
-// contextMenuMap is a hashmap of context menus keyed on a string ID
-struct hashmap_s contextMenuMap;
-
-// MenuItem map for the context menus
-struct hashmap_s menuItemMapForContextMenus;
-
-// RadioGroup map for the context menus. Maps a menuitem id with its associated radio group items
-struct hashmap_s radioGroupMapForContextMenus;
 
 // A cache for all our dialog icons
 struct hashmap_s dialogIconCache;
@@ -140,6 +132,7 @@ struct Application {
 	id statusItem;
 
 	// Context Menus
+	ContextMenuStore *contextMenuStore;
 	const char *contextMenusAsJSON;
 	JsonNode *processedContextMenus;
 
@@ -232,40 +225,6 @@ void applyWindowColour(struct Application *app) {
 	}
 }
 
-void showContextMenu(struct Application *app, const char *contextMenuID) {
-
-	// If no context menu ID was given
-	if( contextMenuID == NULL ) {
-		// Show default context menu if we have one
-		return;
-	}
-
-	// Look for the context menu for this ID
-	id contextMenu = (id)hashmap_get(&contextMenuMap, (char*)contextMenuID, strlen(contextMenuID));
-
-	if( contextMenu == NULL ) {
-//		printf("No context menu called '%s'. Available:", contextMenuID);
-//		dumpHashmap("contextMenuMap", &contextMenuMap);
-
-        // Free menu id
-        MEMFREE(contextMenuID);
-		return;
-	}
-
-    // Free menu id
-    MEMFREE(contextMenuID);
-	
-	// Grab the content view and show the menu
-	id contentView = msg(app->mainWindow, s("contentView"));
-
-	// Get the triggering event
-	id menuEvent = msg(app->mainWindow, s("currentEvent"));
-
-	// Show popup
-	msg(c("NSMenu"), s("popUpContextMenu:withEvent:forView:"), contextMenu, menuEvent, contentView);
-
-}
-
 void SetColour(struct Application *app, int red, int green, int blue, int alpha) {
 	app->red = red;
 	app->green = green;
@@ -345,10 +304,12 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 		JsonNode *contextMenuIDNode = json_find_member(contextMenuMessageJSON, "id");
 		if( contextMenuIDNode == NULL ) {
 			Debug(app, "Error decoding context menu ID: %s", contextMenuMessage);
+			json_delete(contextMenuMessageJSON);
 			return;
 		}
 		if( contextMenuIDNode->tag != JSON_STRING ) {
 			Debug(app, "Error decoding context menu ID (Not a string): %s", contextMenuMessage);
+			json_delete(contextMenuMessageJSON);
 			return;
 		}
 
@@ -356,22 +317,25 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 		JsonNode *contextMenuDataNode = json_find_member(contextMenuMessageJSON, "data");
 		if( contextMenuDataNode == NULL ) {
 			Debug(app, "Error decoding context menu data: %s", contextMenuMessage);
+			json_delete(contextMenuMessageJSON);
 			return;
 		}
 		if( contextMenuDataNode->tag != JSON_STRING ) {
 			Debug(app, "Error decoding context menu data (Not a string): %s", contextMenuMessage);
+			json_delete(contextMenuMessageJSON);
 			return;
 		}
 
-		// Save a copy of the context menu data
-		if ( contextMenuData != NULL ) {
-			MEMFREE(contextMenuData);
-		}
-		contextMenuData = STRCOPY(contextMenuDataNode->string_);
+		// We need to copy these as the JSON node will be destroyed on this thread and the
+		// string data will become corrupt. These need to be freed by the context menu code.
+		const char* contextMenuID = STRCOPY(contextMenuIDNode->string_);
+		const char* contextMenuData = STRCOPY(contextMenuDataNode->string_);
 
 		ON_MAIN_THREAD(
-			showContextMenu(app, contextMenuIDNode->string_);
+			ShowContextMenu(app->contextMenuStore, app->mainWindow, contextMenuID, contextMenuData);
 		);
+
+		json_delete(contextMenuMessageJSON);
 
 	} else {
 		// const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
@@ -380,15 +344,7 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 	}
 }
 
-// Creates a JSON message for the given menuItemID and data
-const char* createContextMenuMessage(const char *menuItemID, const char *givenContextMenuData) {
-	JsonNode *jsonObject = json_mkobject();
-	json_append_member(jsonObject, "menuItemID", json_mkstring(menuItemID));
-	json_append_member(jsonObject, "data", json_mkstring(givenContextMenuData));
-	const char *result = json_encode(jsonObject);
-	json_delete(jsonObject);
-	return result;
-}
+
 
 // Callback for tray items
 void menuItemPressedForTrayMenu(id self, SEL cmd, id sender) {
@@ -400,16 +356,16 @@ void menuItemPressedForTrayMenu(id self, SEL cmd, id sender) {
 }
 
 
-// Callback for context menu items
-void menuItemPressedForContextMenus(id self, SEL cmd, id sender) {
-  const char *menuItemID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
-  // Notify the backend
-  const char *contextMenuMessage = createContextMenuMessage(menuItemID, contextMenuData);
-  const char *message = concat("XC", contextMenuMessage);
-  messageFromWindowCallback(message);
-  MEMFREE(message);
-  MEMFREE(contextMenuMessage);
-}
+//// Callback for context menu items
+//void menuItemPressedForContextMenus(id self, SEL cmd, id sender) {
+//  const char *menuItemID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
+//  // Notify the backend
+//  const char *contextMenuMessage = createContextMenuMessage(menuItemID, contextMenuData);
+//  const char *message = concat("XC", contextMenuMessage);
+//  messageFromWindowCallback(message);
+//  MEMFREE(message);
+//  MEMFREE(contextMenuMessage);
+//}
 
 // Callback for tray menu items
 void checkboxMenuItemPressedForTrayMenu(id self, SEL cmd, id sender, struct hashmap_s *menuItemMap) {
@@ -431,25 +387,25 @@ void checkboxMenuItemPressedForTrayMenu(id self, SEL cmd, id sender, struct hash
 }
 
 // Callback for context menu items
-void checkboxMenuItemPressedForContextMenus(id self, SEL cmd, id sender, struct hashmap_s *menuItemMap) {
-  const char *menuItemID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
-
-  // Get the menu item from the menu item map
-  id menuItem = (id)hashmap_get(&menuItemMapForContextMenus, (char*)menuItemID, strlen(menuItemID));
-
-  // Get the current state
-  bool state = msg(menuItem, s("state"));
-
-  // Toggle the state
-  msg(menuItem, s("setState:"), (state? NSControlStateValueOff : NSControlStateValueOn));
-
-  // Notify the backend
-  const char *contextMenuMessage = createContextMenuMessage(menuItemID, contextMenuData);
-  const char *message = concat("XC", contextMenuMessage);
-  messageFromWindowCallback(message);
-  MEMFREE(message);
-  MEMFREE(contextMenuMessage);
-}
+//void checkboxMenuItemPressedForContextMenus(id self, SEL cmd, id sender, struct hashmap_s *menuItemMap) {
+//  const char *menuItemID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
+//
+//  // Get the menu item from the menu item map
+//  id menuItem = (id)hashmap_get(&menuItemMapForContextMenus, (char*)menuItemID, strlen(menuItemID));
+//
+//  // Get the current state
+//  bool state = msg(menuItem, s("state"));
+//
+//  // Toggle the state
+//  msg(menuItem, s("setState:"), (state? NSControlStateValueOff : NSControlStateValueOn));
+//
+//  // Notify the backend
+//  const char *contextMenuMessage = createContextMenuMessage(menuItemID, contextMenuData);
+//  const char *message = concat("XC", contextMenuMessage);
+//  messageFromWindowCallback(message);
+//  MEMFREE(message);
+//  MEMFREE(contextMenuMessage);
+//}
 
 // radioMenuItemPressedForTrayMenu
 void radioMenuItemPressedForTrayMenu(id self, SEL cmd, id sender) {
@@ -488,42 +444,42 @@ void radioMenuItemPressedForTrayMenu(id self, SEL cmd, id sender) {
 }
 
 // radioMenuItemPressedForContextMenus
-void radioMenuItemPressedForContextMenus(id self, SEL cmd, id sender) {
-  const char *menuItemID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
-
-  // Get the menu item from the menu item map
-  id menuItem = (id)hashmap_get(&menuItemMapForContextMenus, (char*)menuItemID, strlen(menuItemID));
-
-  // Check the menu items' current state
-  bool selected = msg(menuItem, s("state"));
-
-  // If it's already selected, exit early
-  if (selected) {
-	return;
-  }
-
-  // Get this item's radio group members and turn them off
-  id *members = (id*)hashmap_get(&radioGroupMapForContextMenus, (char*)menuItemID, strlen(menuItemID));
-
-  // Uncheck all members of the group
-  id thisMember = members[0];
-  int count = 0;
-  while(thisMember != NULL) {
-	msg(thisMember, s("setState:"), NSControlStateValueOff);
-	count = count + 1;
-	thisMember = members[count];
-  }
-
-  // check the selected menu item
-  msg(menuItem, s("setState:"), NSControlStateValueOn);
-
-    // Notify the backend
-    const char *contextMenuMessage = createContextMenuMessage(menuItemID, contextMenuData);
-    const char *message = concat("XC", contextMenuMessage);
-    messageFromWindowCallback(message);
-    MEMFREE(message);
-    MEMFREE(contextMenuMessage);
-}
+//void radioMenuItemPressedForContextMenus(id self, SEL cmd, id sender) {
+//  const char *menuItemID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
+//
+//  // Get the menu item from the menu item map
+//  id menuItem = (id)hashmap_get(&menuItemMapForContextMenus, (char*)menuItemID, strlen(menuItemID));
+//
+//  // Check the menu items' current state
+//  bool selected = msg(menuItem, s("state"));
+//
+//  // If it's already selected, exit early
+//  if (selected) {
+//	return;
+//  }
+//
+//  // Get this item's radio group members and turn them off
+//  id *members = (id*)hashmap_get(&radioGroupMapForContextMenus, (char*)menuItemID, strlen(menuItemID));
+//
+//  // Uncheck all members of the group
+//  id thisMember = members[0];
+//  int count = 0;
+//  while(thisMember != NULL) {
+//	msg(thisMember, s("setState:"), NSControlStateValueOff);
+//	count = count + 1;
+//	thisMember = members[count];
+//  }
+//
+//  // check the selected menu item
+//  msg(menuItem, s("setState:"), NSControlStateValueOn);
+//
+//    // Notify the backend
+//    const char *contextMenuMessage = createContextMenuMessage(menuItemID, contextMenuData);
+//    const char *message = concat("XC", contextMenuMessage);
+//    messageFromWindowCallback(message);
+//    MEMFREE(message);
+//    MEMFREE(contextMenuMessage);
+//}
 
 // closeWindow is called when the close button is pressed
 void closeWindow(id self, SEL cmd, id sender) {
@@ -600,28 +556,6 @@ void allocateTrayHashMaps(struct Application *app) {
 	}
 }
 
-void allocateContextMenuHashMaps(struct Application *app) {
-
-	// Allocate new context menu map
-	if( 0 != hashmap_create((const unsigned)4, &contextMenuMap)) {
-	   // Couldn't allocate map
-	   Fatal(app, "Not enough memory to allocate contextMenuMap!");
-	}
-
-	// Allocate new menuItem map
-	if( 0 != hashmap_create((const unsigned)16, &menuItemMapForContextMenus)) {
-	   // Couldn't allocate map
-	   Fatal(app, "Not enough memory to allocate menuItemMapForContextMenus!");
-	}
-
-	// Allocate the Radio Group Cache
-	if( 0 != hashmap_create((const unsigned)4, &radioGroupMapForContextMenus)) {
-	   // Couldn't allocate map
-	   Fatal(app, "Not enough memory to allocate radioGroupMapForContextMenus!");
-	   return;
-	}
-}
-
 void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel) {
 	// Setup main application struct
 	struct Application *result = malloc(sizeof(struct Application));
@@ -670,6 +604,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->statusItem = NULL;
 
 	// Context Menus
+	result->contextMenuStore = NULL;
 	result->contextMenusAsJSON = NULL;
 	result->processedContextMenus = NULL;
 	contextMenuData = NULL;
@@ -690,36 +625,7 @@ int releaseNSObject(void *const context, struct hashmap_element_s *const e) {
 }
 
 void destroyContextMenus(struct Application *app) {
-
-	// Free menu item hashmap
-	hashmap_destroy(&menuItemMapForContextMenus);
-
-	// Free radio group members
-	if( hashmap_num_entries(&radioGroupMapForContextMenus) > 0 ) {
-		if (0!=hashmap_iterate_pairs(&radioGroupMapForContextMenus, freeHashmapItem, NULL)) {
-			Fatal(app, "failed to deallocate hashmap entries!");
-		}
-	}
-
-	//Free radio groups hashmap
-	hashmap_destroy(&radioGroupMapForContextMenus);
-
-    // Free context menus
-    if( hashmap_num_entries(&contextMenuMap) > 0 ) {
-        if (0!=hashmap_iterate_pairs(&contextMenuMap, releaseNSObject, NULL)) {
-            Fatal(app, "failed to deallocate hashmap entries!");
-        }
-    }
-
-    //Free context menu map
-	hashmap_destroy(&contextMenuMap);
-
-    // Destroy processed Context Menus
-	if( app->processedContextMenus != NULL) {
-		json_delete(app->processedContextMenus);
-		app->processedContextMenus = NULL;
-	}
-
+    DeleteContextMenuStore(app->contextMenuStore);
 }
 
 void freeDialogIconCache(struct Application *app) {
@@ -1298,9 +1204,8 @@ void SetTray(struct Application *app, const char *trayMenuAsJSON, const char *tr
 
 // SetContextMenus sets the context menu map for this application
 void SetContextMenus(struct Application *app, const char *contextMenusAsJSON) {
-	app->contextMenusAsJSON = contextMenusAsJSON;
+	app->contextMenuStore = NewContextMenuStore(contextMenusAsJSON);
 }
-
 
 void SetBindings(struct Application *app, const char *bindings) {
 	const char* temp = concat("window.wailsbindings = \"", bindings);
@@ -1391,9 +1296,9 @@ void createDelegate(struct Application *app) {
 	class_addMethod(delegateClass, s("menuCallbackForTrayMenu:"), (IMP)menuItemPressedForTrayMenu, "v@:@");
 	class_addMethod(delegateClass, s("checkboxMenuCallbackForTrayMenu:"), (IMP) checkboxMenuItemPressedForTrayMenu, "v@:@");
 	class_addMethod(delegateClass, s("radioMenuCallbackForTrayMenu:"), (IMP) radioMenuItemPressedForTrayMenu, "v@:@");
-	class_addMethod(delegateClass, s("menuCallbackForContextMenus:"), (IMP)menuItemPressedForContextMenus, "v@:@");
-	class_addMethod(delegateClass, s("checkboxMenuCallbackForContextMenus:"), (IMP) checkboxMenuItemPressedForContextMenus, "v@:@");
-	class_addMethod(delegateClass, s("radioMenuCallbackForContextMenus:"), (IMP) radioMenuItemPressedForContextMenus, "v@:@");
+//	class_addMethod(delegateClass, s("menuCallbackForContextMenus:"), (IMP)menuItemPressedForContextMenus, "v@:@");
+//	class_addMethod(delegateClass, s("checkboxMenuCallbackForContextMenus:"), (IMP) checkboxMenuItemPressedForContextMenus, "v@:@");
+//	class_addMethod(delegateClass, s("radioMenuCallbackForContextMenus:"), (IMP) radioMenuItemPressedForContextMenus, "v@:@");
 
 	// Refactoring menu handling
     class_addMethod(delegateClass, s("menuItemCallback:"), (IMP)menuItemCallback, "v@:@");
@@ -1799,52 +1704,52 @@ void UpdateMenu(struct Application *app, const char *menuAsJSON) {
 	);
 }
 
-void dumpContextMenus(struct Application *app) {
-	dumpHashmap("menuItemMapForContextMenus", &menuItemMapForContextMenus);
-	printf("&menuItemMapForContextMenus = %p\n", &menuItemMapForContextMenus);
+//void dumpContextMenus(struct Application *app) {
+//	dumpHashmap("menuItemMapForContextMenus", &menuItemMapForContextMenus);
+//	printf("&menuItemMapForContextMenus = %p\n", &menuItemMapForContextMenus);
+//
+//	//Free radio groups hashmap
+//	dumpHashmap("radioGroupMapForContextMenus", &radioGroupMapForContextMenus);
+//	printf("&radioGroupMapForContextMenus = %p\n", &radioGroupMapForContextMenus);
+//
+//	//Free context menu map
+//	dumpHashmap("contextMenuMap", &contextMenuMap);
+//	printf("&contextMenuMap = %p\n", &contextMenuMap);
+//}
 
-	//Free radio groups hashmap
-	dumpHashmap("radioGroupMapForContextMenus", &radioGroupMapForContextMenus);
-	printf("&radioGroupMapForContextMenus = %p\n", &radioGroupMapForContextMenus);
-
-	//Free context menu map
-	dumpHashmap("contextMenuMap", &contextMenuMap);
-	printf("&contextMenuMap = %p\n", &contextMenuMap);
-}
-
-void parseContextMenus(struct Application *app) {
-
-	// Parse the context menu json
-	app->processedContextMenus = json_decode(app->contextMenusAsJSON);
-
-	if( app->processedContextMenus == NULL ) {
-		// Parse error!
-		Fatal(app, "Unable to parse Context Menus JSON: %s", app->contextMenusAsJSON);
-		return;
-	}
-
-	JsonNode *contextMenuItems = json_find_member(app->processedContextMenus, "Items");
-	if( contextMenuItems == NULL ) {
-		// Parse error!
-		Fatal(app, "Unable to find Items:", app->processedContextMenus);
-		return;
-	}
-	// Iterate context menus
-	JsonNode *contextMenu;
-	json_foreach(contextMenu, contextMenuItems) {
-		// Create a new menu
-		id menu = createMenu(str(""));
-
-		// parse the menu
-		parseMenu(app, menu, contextMenu, &menuItemMapForContextMenus,
-			"checkboxMenuCallbackForContextMenus:", "radioMenuCallbackForContextMenus:", "menuCallbackForContextMenus:");
-
-		// Store the item in the context menu map
-		hashmap_put(&contextMenuMap, (char*)contextMenu->key, strlen(contextMenu->key), menu);
-	}
-
-//	dumpContextMenus(app);
-}
+//void parseContextMenus(struct Application *app) {
+//
+//	// Parse the context menu json
+//	app->processedContextMenus = json_decode(app->contextMenusAsJSON);
+//
+//	if( app->processedContextMenus == NULL ) {
+//		// Parse error!
+//		Fatal(app, "Unable to parse Context Menus JSON: %s", app->contextMenusAsJSON);
+//		return;
+//	}
+//
+//	JsonNode *contextMenuItems = json_find_member(app->processedContextMenus, "Items");
+//	if( contextMenuItems == NULL ) {
+//		// Parse error!
+//		Fatal(app, "Unable to find Items:", app->processedContextMenus);
+//		return;
+//	}
+//	// Iterate context menus
+//	JsonNode *contextMenu;
+//	json_foreach(contextMenu, contextMenuItems) {
+//		// Create a new menu
+//		id menu = createMenu(str(""));
+//
+//		// parse the menu
+//		parseMenu(app, menu, contextMenu, &menuItemMapForContextMenus,
+//			"checkboxMenuCallbackForContextMenus:", "radioMenuCallbackForContextMenus:", "menuCallbackForContextMenus:");
+//
+//		// Store the item in the context menu map
+//		hashmap_put(&contextMenuMap, (char*)contextMenu->key, strlen(contextMenu->key), menu);
+//	}
+//
+////	dumpContextMenus(app);
+//}
 
 void UpdateTrayLabel(struct Application *app, const char *label) {
 	id statusBarButton = msg(app->statusItem, s("button"));
@@ -1971,17 +1876,17 @@ void UpdateTray(struct Application *app, const char *trayMenuAsJSON) {
 }
 
 void UpdateContextMenus(struct Application *app, const char *contextMenusAsJSON) {
-	ON_MAIN_THREAD (
-
-		dumpContextMenus(app);
-
-		// Free up memory
-		destroyContextMenus(app);
-
-		// Set the context menu JSON
-		app->contextMenusAsJSON = contextMenusAsJSON;
-		parseContextMenus(app);
-	);
+//	ON_MAIN_THREAD (
+//
+//		dumpContextMenus(app);
+//
+//		// Free up memory
+//		destroyContextMenus(app);
+//
+//		// Set the context menu JSON
+//		app->contextMenusAsJSON = contextMenusAsJSON;
+//		parseContextMenus(app);
+//	);
 }
 
 void processDialogIcons(struct hashmap_s *hashmap, const unsigned char *dialogIcons[]) {
@@ -2207,12 +2112,9 @@ void Run(struct Application *app, int argc, char **argv) {
 	  parseTrayData(app);
 	}
 
-	// Allocation the hashmaps we need
-	allocateContextMenuHashMaps(app);
-
 	// If we have context menus, process them
-	if( app->contextMenusAsJSON != NULL ) {
-		parseContextMenus(app);
+	if( app->contextMenuStore != NULL ) {
+        ProcessContextMenus(app->contextMenuStore);
 	}
 
 	// Process dialog icons
