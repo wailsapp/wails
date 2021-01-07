@@ -24,7 +24,6 @@ extern void SetContextMenus(void *, const char *);
 import "C"
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -119,29 +118,11 @@ func (a *Application) processPlatformSettings() error {
 	// Process context menus
 	contextMenus := options.GetContextMenus(a.config)
 	if contextMenus != nil {
-
-		type ProcessedContextMenu struct {
-			ID string
-			ProcessedMenu *ProcessedMenu
-		}
-
-		var processedContextMenus []*ProcessedContextMenu
-
-		// We need to iterate each context menu and pre-process it
-		for contextMenuID, contextMenu := range contextMenus.Items {
-			thisContextMenu := &ProcessedContextMenu{
-                ID: contextMenuID,
-                ProcessedMenu: NewProcessedMenu(contextMenu),
-            }
-			processedContextMenus = append(processedContextMenus, thisContextMenu )
-		}
-
-		contextMenusJSON, err := json.Marshal(processedContextMenus)
-		fmt.Printf("\n\nCONTEXT MENUS:\n %+v\n\n", string(contextMenusJSON))
+		contextMenusJSON, err := processContextMenus(contextMenus)
 		if err != nil {
 			return err
 		}
-		C.SetContextMenus(a.app, a.string2CString(string(contextMenusJSON)))
+		C.SetContextMenus(a.app, a.string2CString(contextMenusJSON))
 	}
 
 	return nil

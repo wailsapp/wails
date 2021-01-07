@@ -158,7 +158,7 @@ func (c *ContextMenus) processContextMenus(contextMenus *menu.ContextMenus) {
 func (c *ContextMenus) processMenuItem(item *menu.MenuItem) {
 
 	if item.SubMenu != nil {
-		for _, submenuitem := range item.SubMenu {
+		for _, submenuitem := range item.SubMenu.Items {
 			c.processMenuItem(submenuitem)
 		}
 		return

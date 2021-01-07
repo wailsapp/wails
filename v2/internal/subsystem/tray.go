@@ -160,7 +160,7 @@ func (t *Tray) processMenu(trayMenu *menu.Menu) {
 func (t *Tray) processMenuItem(item *menu.MenuItem) {
 
 	if item.SubMenu != nil {
-		for _, submenuitem := range item.SubMenu {
+		for _, submenuitem := range item.SubMenu.Items {
 			t.processMenuItem(submenuitem)
 		}
 		return

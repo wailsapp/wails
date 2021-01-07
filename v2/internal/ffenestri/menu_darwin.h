@@ -652,9 +652,15 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
         msg(thisMenuItem, s("setSubmenu:"), thisMenu);
         msg(parentMenu, s("addItem:"), thisMenuItem);
 
+        JsonNode *submenuItems = json_find_member(submenu, "Items");
+        // If we have no items, just return
+        if ( submenuItems == NULL ) {
+            return;
+        }
+
         // Loop over submenu items
         JsonNode *item;
-        json_foreach(item, submenu) {
+        json_foreach(item, submenuItems) {
             // Get item label
             processMenuItem(menu, thisMenu, item);
         }

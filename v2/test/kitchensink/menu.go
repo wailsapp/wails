@@ -124,13 +124,13 @@ func (m *Menu) removeMenu(_ *menu.MenuItem) {
 func (m *Menu) createDynamicMenuTwo() {
 
 	// Create our submenu
-	dm2 := menu.SubMenu("Dynamic Menus 2", []*menu.MenuItem{
+	dm2 := menu.SubMenu("Dynamic Menus 2", menu.NewMenuFromItems(
 		menu.Text("Insert Before Random Menu Item",
 			"Insert Before Random", keys.CmdOrCtrl("]")),
 		menu.Text("Insert After Random Menu Item",
 			"Insert After Random", keys.CmdOrCtrl("[")),
 		menu.Separator(),
-	})
+	))
 
 	m.runtime.Menu.On("Insert Before Random", m.insertBeforeRandom)
 	m.runtime.Menu.On("Insert After Random", m.insertAfterRandom)
@@ -229,7 +229,7 @@ func createApplicationMenu() *menu.Menu {
 	// Create menu
 	myMenu := menu.DefaultMacMenu()
 
-	windowMenu := menu.SubMenu("Test", []*menu.MenuItem{
+	windowMenu := menu.SubMenu("Test", menu.NewMenuFromItems(
 		menu.Togglefullscreen(),
 		menu.Minimize(),
 		menu.Zoom(),
@@ -244,17 +244,17 @@ func createApplicationMenu() *menu.Menu {
 
 		menu.Front(),
 
-		menu.SubMenu("Test Submenu", []*menu.MenuItem{
+		menu.SubMenu("Test Submenu", menu.NewMenuFromItems(
 			menu.Text("Plain text", "plain text", nil),
 			menu.Text("Show Dynamic Menus 2 Submenu", "show-dynamic-menus-2", nil),
-			menu.SubMenu("Accelerators", []*menu.MenuItem{
-				menu.SubMenu("Modifiers", []*menu.MenuItem{
+			menu.SubMenu("Accelerators", menu.NewMenuFromItems(
+				menu.SubMenu("Modifiers", menu.NewMenuFromItems(
 					menu.Text("Shift accelerator", "Shift", keys.Shift("o")),
 					menu.Text("Control accelerator", "Control", keys.Control("o")),
 					menu.Text("Command accelerator", "Command", keys.CmdOrCtrl("o")),
 					menu.Text("Option accelerator", "Option", keys.OptionOrAlt("o")),
-				}),
-				menu.SubMenu("System Keys", []*menu.MenuItem{
+				)),
+				menu.SubMenu("System Keys", menu.NewMenuFromItems(
 					menu.Text("Backspace", "Backspace", keys.Key("Backspace")),
 					menu.Text("Tab", "Tab", keys.Key("Tab")),
 					menu.Text("Return", "Return", keys.Key("Return")),
@@ -270,8 +270,8 @@ func createApplicationMenu() *menu.Menu {
 					menu.Text("Page Up", "Page Up", keys.Key("Page Up")),
 					menu.Text("Page Down", "Page Down", keys.Key("Page Down")),
 					menu.Text("NumLock", "NumLock", keys.Key("NumLock")),
-				}),
-				menu.SubMenu("Function Keys", []*menu.MenuItem{
+				)),
+				menu.SubMenu("Function Keys", menu.NewMenuFromItems(
 					menu.Text("F1", "F1", keys.Key("F1")),
 					menu.Text("F2", "F2", keys.Key("F2")),
 					menu.Text("F3", "F3", keys.Key("F3")),
@@ -292,28 +292,28 @@ func createApplicationMenu() *menu.Menu {
 					menu.Text("F18", "F18", keys.Key("F18")),
 					menu.Text("F19", "F19", keys.Key("F19")),
 					menu.Text("F20", "F20", keys.Key("F20")),
-				}),
-				menu.SubMenu("Standard Keys", []*menu.MenuItem{
+				)),
+				menu.SubMenu("Standard Keys", menu.NewMenuFromItems(
 					menu.Text("Backtick", "Backtick", keys.Key("`")),
 					menu.Text("Plus", "Plus", keys.Key("+")),
-				}),
-			}),
-			menu.SubMenuWithID("Dynamic Menus 1", "Dynamic Menus 1", []*menu.MenuItem{
+				)),
+			)),
+			menu.SubMenuWithID("Dynamic Menus 1", "Dynamic Menus 1", menu.NewMenuFromItems(
 				menu.Text("Add Menu Item", "Add Menu Item", keys.CmdOrCtrl("+")),
 				menu.Separator(),
-			}),
-			{
+			)),
+			&menu.MenuItem{
 				Label:       "Disabled Menu",
 				Type:        menu.TextType,
 				Accelerator: keys.Combo("p", keys.CmdOrCtrlKey, keys.ShiftKey),
 				Disabled:    true,
 			},
-			{
+			&menu.MenuItem{
 				Label:  "Hidden Menu",
 				Type:   menu.TextType,
 				Hidden: true,
 			},
-			{
+			&menu.MenuItem{
 				ID:          "checkbox-menu 1",
 				Label:       "Checkbox Menu 1",
 				Type:        menu.CheckboxType,
@@ -325,8 +325,8 @@ func createApplicationMenu() *menu.Menu {
 			menu.Radio("😀 Option 1", "😀option-1", true, nil),
 			menu.Radio("😺 Option 2", "option-2", false, nil),
 			menu.Radio("❤️ Option 3", "option-3", false, nil),
-		}),
-	})
+		)),
+	))
 
 	myMenu.Append(windowMenu)
 	return myMenu

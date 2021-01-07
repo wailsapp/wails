@@ -12,6 +12,10 @@ func (m *Menu) Append(item *MenuItem) {
 	m.Items = append(m.Items, item)
 }
 
+func (m *Menu) Prepend(item *MenuItem) {
+	m.Items = append([]*MenuItem{item}, m.Items...)
+}
+
 func NewMenuFromItems(first *MenuItem, rest ...*MenuItem) *Menu {
 
 	var result = NewMenu()
@@ -48,4 +52,10 @@ func (m *Menu) RemoveByID(id string) bool {
 		}
 	}
 	return false
+}
+
+func (m *Menu) setParent(menuItem *MenuItem) {
+	for _, item := range m.Items {
+		item.parent = menuItem
+	}
 }

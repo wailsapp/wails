@@ -1805,17 +1805,19 @@ void UpdateTray(struct Application *app, const char *trayMenuAsJSON) {
 }
 
 void UpdateContextMenus(struct Application *app, const char *contextMenusAsJSON) {
-//	ON_MAIN_THREAD (
-//
-//		dumpContextMenus(app);
-//
-//		// Free up memory
-//		destroyContextMenus(app);
-//
-//		// Set the context menu JSON
-//		app->contextMenusAsJSON = contextMenusAsJSON;
-//		parseContextMenus(app);
-//	);
+
+	ON_MAIN_THREAD (
+
+		// Free up memory
+		DeleteContextMenuStore(app->contextMenuStore);
+
+        // Recreate Context Menus
+        app->contextMenuStore = NewContextMenuStore(contextMenusAsJSON);
+
+        // Process them
+        ProcessContextMenus(app->contextMenuStore);
+	);
+
 }
 
 void processDialogIcons(struct hashmap_s *hashmap, const unsigned char *dialogIcons[]) {

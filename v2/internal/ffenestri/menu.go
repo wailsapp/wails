@@ -51,7 +51,7 @@ func (p *ProcessedMenu) processMenuItem(item *menu.MenuItem) {
 		p.finaliseRadioGroup()
 
 		// Process each submenu item
-		for _, subitem := range item.SubMenu {
+		for _, subitem := range item.SubMenu.Items {
 			p.processMenuItem(subitem)
 		}
 	case menu.RadioType:

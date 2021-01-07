@@ -153,7 +153,7 @@ func (m *Menu) processMenu(applicationMenu *menu.Menu) {
 func (m *Menu) processMenuItem(item *menu.MenuItem) {
 
 	if item.SubMenu != nil {
-		for _, submenuitem := range item.SubMenu {
+		for _, submenuitem := range item.SubMenu.Items {
 			m.processMenuItem(submenuitem)
 		}
 		return

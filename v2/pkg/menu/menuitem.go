@@ -21,7 +21,8 @@ type MenuItem struct {
 	// Checked indicates if the item is selected (used by Checkbox and Radio types only)
 	Checked bool
 	// Submenu contains a list of menu items that will be shown as a submenu
-	SubMenu []*MenuItem `json:"SubMenu,omitempty"`
+	//SubMenu []*MenuItem `json:"SubMenu,omitempty"`
+	SubMenu *Menu `json:"SubMenu,omitempty"`
 
 	// Foreground colour in hex RGBA format EG: 0xFF0000FF = #FF0000FF = red
 	Foreground int
@@ -48,7 +49,7 @@ func (m *MenuItem) Append(item *MenuItem) bool {
 		return false
 	}
 	item.parent = m
-	m.SubMenu = append(m.SubMenu, item)
+	m.SubMenu.Append(item)
 	return true
 }
 
@@ -61,7 +62,7 @@ func (m *MenuItem) Prepend(item *MenuItem) bool {
 		return false
 	}
 	item.parent = m
-	m.SubMenu = append([]*MenuItem{item}, m.SubMenu...)
+	m.SubMenu.Prepend(item)
 	return true
 }
 
@@ -72,8 +73,13 @@ func (m *MenuItem) getByID(id string) *MenuItem {
 		return m
 	}
 
+	// If we have no submenu then exit early
+	if m.SubMenu == nil {
+		return nil
+	}
+
 	// Check submenus
-	for _, submenu := range m.SubMenu {
+	for _, submenu := range m.SubMenu.Items {
 		result := submenu.getByID(id)
 		if result != nil {
 			return result
@@ -85,9 +91,14 @@ func (m *MenuItem) getByID(id string) *MenuItem {
 
 func (m *MenuItem) removeByID(id string) bool {
 
-	for index, item := range m.SubMenu {
+	// If we have no submenu, return
+	if m.SubMenu == nil {
+		return false
+	}
+
+	for index, item := range m.SubMenu.Items {
 		if item.ID == id {
-			m.SubMenu = append(m.SubMenu[:index], m.SubMenu[index+1:]...)
+			m.SubMenu.Items = append(m.SubMenu.Items[:index], m.SubMenu.Items[index+1:]...)
 			return true
 		}
 		if item.isSubMenu() {
@@ -181,7 +192,7 @@ func (m *MenuItem) getItemIndex(target *MenuItem) int {
 	}
 
 	// hunt down that bad boy
-	for index, item := range m.SubMenu {
+	for index, item := range m.SubMenu.Items {
 		if item == target {
 			return index
 		}
@@ -196,7 +207,7 @@ func (m *MenuItem) getItemIndex(target *MenuItem) int {
 func (m *MenuItem) insertItemAtIndex(index int, target *MenuItem) bool {
 
 	// If index is OOB, return false
-	if index > len(m.SubMenu) {
+	if index > len(m.SubMenu.Items) {
 		return false
 	}
 
@@ -204,13 +215,13 @@ func (m *MenuItem) insertItemAtIndex(index int, target *MenuItem) bool {
 	target.parent = m
 
 	// If index is last item, then just regular append
-	if index == len(m.SubMenu) {
-		m.SubMenu = append(m.SubMenu, target)
+	if index == len(m.SubMenu.Items) {
+		m.SubMenu.Items = append(m.SubMenu.Items, target)
 		return true
 	}
 
-	m.SubMenu = append(m.SubMenu[:index+1], m.SubMenu[index:]...)
-	m.SubMenu[index] = target
+	m.SubMenu.Items = append(m.SubMenu.Items[:index+1], m.SubMenu.Items[index:]...)
+	m.SubMenu.Items[index] = target
 	return true
 }
 
@@ -254,34 +265,28 @@ func Checkbox(label string, id string, checked bool, accelerator *keys.Accelerat
 }
 
 // SubMenu is a helper to create Submenus
-func SubMenu(label string, items []*MenuItem) *MenuItem {
+func SubMenu(label string, menu *Menu) *MenuItem {
 	result := &MenuItem{
 		Label:   label,
-		SubMenu: items,
+		SubMenu: menu,
 		Type:    SubmenuType,
 	}
 
-	// Fix up parent pointers
-	for _, item := range items {
-		item.parent = result
-	}
+	menu.setParent(result)
 
 	return result
 }
 
 // SubMenuWithID is a helper to create Submenus with an ID
-func SubMenuWithID(label string, id string, items []*MenuItem) *MenuItem {
+func SubMenuWithID(label string, id string, menu *Menu) *MenuItem {
 	result := &MenuItem{
 		Label:   label,
-		SubMenu: items,
+		SubMenu: menu,
 		ID:      id,
 		Type:    SubmenuType,
 	}
 
-	// Fix up parent pointers
-	for _, item := range items {
-		item.parent = result
-	}
+	menu.setParent(result)
 
 	return result
 }

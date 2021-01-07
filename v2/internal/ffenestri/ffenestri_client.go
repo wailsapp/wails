@@ -233,10 +233,10 @@ func (c *Client) UpdateContextMenus(contextMenus *menu.ContextMenus) {
 		return
 	}
 	// Process the menu
-	contextMenusJSON, err := json.Marshal(contextMenus)
+	contextMenusJSON, err := processContextMenus(contextMenus)
 	if err != nil {
-		c.app.logger.Error("Error processing updated Context Menus: %s", err.Error())
+		c.app.logger.Error("Error processing updated Context Menu: %s", err.Error())
 		return
 	}
-	C.UpdateContextMenus(c.app.app, c.app.string2CString(string(contextMenusJSON)))
+	C.UpdateContextMenus(c.app.app, c.app.string2CString(contextMenusJSON))
 }

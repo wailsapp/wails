@@ -207,8 +207,6 @@ void ProcessContextMenus(ContextMenuStore* store) {
 
 void ShowContextMenu(ContextMenuStore* store, id mainWindow, const char *contextMenuID, const char *contextMenuData) {
 
-    printf("Show context menu '%s'. Also got data '%s'.\n\n", contextMenuID, contextMenuData);
-
 	// If no context menu ID was given, abort
 	if( contextMenuID == NULL ) {
 		return;
@@ -240,8 +238,6 @@ void ShowContextMenu(ContextMenuStore* store, id mainWindow, const char *context
         // GetMenu creates the NSMenu
         contextMenu->nsmenu = GetMenu(contextMenu->menu);
 	}
-
-	printf("\n\nContext menu NSMenu = %p\n\n", contextMenu->menu->menu);
 
 	// Show popup
 	msg(c("NSMenu"), s("popUpContextMenu:withEvent:forView:"), contextMenu->nsmenu, menuEvent, contentView);
