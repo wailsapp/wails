@@ -355,18 +355,6 @@ void menuItemPressedForTrayMenu(id self, SEL cmd, id sender) {
   MEMFREE(message);
 }
 
-
-//// Callback for context menu items
-//void menuItemPressedForContextMenus(id self, SEL cmd, id sender) {
-//  const char *menuItemID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
-//  // Notify the backend
-//  const char *contextMenuMessage = createContextMenuMessage(menuItemID, contextMenuData);
-//  const char *message = concat("XC", contextMenuMessage);
-//  messageFromWindowCallback(message);
-//  MEMFREE(message);
-//  MEMFREE(contextMenuMessage);
-//}
-
 // Callback for tray menu items
 void checkboxMenuItemPressedForTrayMenu(id self, SEL cmd, id sender, struct hashmap_s *menuItemMap) {
   const char *menuItemID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
@@ -385,27 +373,6 @@ void checkboxMenuItemPressedForTrayMenu(id self, SEL cmd, id sender, struct hash
   messageFromWindowCallback(message);
   MEMFREE(message);
 }
-
-// Callback for context menu items
-//void checkboxMenuItemPressedForContextMenus(id self, SEL cmd, id sender, struct hashmap_s *menuItemMap) {
-//  const char *menuItemID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
-//
-//  // Get the menu item from the menu item map
-//  id menuItem = (id)hashmap_get(&menuItemMapForContextMenus, (char*)menuItemID, strlen(menuItemID));
-//
-//  // Get the current state
-//  bool state = msg(menuItem, s("state"));
-//
-//  // Toggle the state
-//  msg(menuItem, s("setState:"), (state? NSControlStateValueOff : NSControlStateValueOn));
-//
-//  // Notify the backend
-//  const char *contextMenuMessage = createContextMenuMessage(menuItemID, contextMenuData);
-//  const char *message = concat("XC", contextMenuMessage);
-//  messageFromWindowCallback(message);
-//  MEMFREE(message);
-//  MEMFREE(contextMenuMessage);
-//}
 
 // radioMenuItemPressedForTrayMenu
 void radioMenuItemPressedForTrayMenu(id self, SEL cmd, id sender) {
@@ -442,44 +409,6 @@ void radioMenuItemPressedForTrayMenu(id self, SEL cmd, id sender) {
   messageFromWindowCallback(message);
   MEMFREE(message);
 }
-
-// radioMenuItemPressedForContextMenus
-//void radioMenuItemPressedForContextMenus(id self, SEL cmd, id sender) {
-//  const char *menuItemID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
-//
-//  // Get the menu item from the menu item map
-//  id menuItem = (id)hashmap_get(&menuItemMapForContextMenus, (char*)menuItemID, strlen(menuItemID));
-//
-//  // Check the menu items' current state
-//  bool selected = msg(menuItem, s("state"));
-//
-//  // If it's already selected, exit early
-//  if (selected) {
-//	return;
-//  }
-//
-//  // Get this item's radio group members and turn them off
-//  id *members = (id*)hashmap_get(&radioGroupMapForContextMenus, (char*)menuItemID, strlen(menuItemID));
-//
-//  // Uncheck all members of the group
-//  id thisMember = members[0];
-//  int count = 0;
-//  while(thisMember != NULL) {
-//	msg(thisMember, s("setState:"), NSControlStateValueOff);
-//	count = count + 1;
-//	thisMember = members[count];
-//  }
-//
-//  // check the selected menu item
-//  msg(menuItem, s("setState:"), NSControlStateValueOn);
-//
-//    // Notify the backend
-//    const char *contextMenuMessage = createContextMenuMessage(menuItemID, contextMenuData);
-//    const char *message = concat("XC", contextMenuMessage);
-//    messageFromWindowCallback(message);
-//    MEMFREE(message);
-//    MEMFREE(contextMenuMessage);
-//}
 
 // closeWindow is called when the close button is pressed
 void closeWindow(id self, SEL cmd, id sender) {
