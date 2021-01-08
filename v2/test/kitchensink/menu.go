@@ -253,6 +253,7 @@ func createApplicationMenu() *menu.Menu {
 					menu.Text("Control accelerator", "Control", keys.Control("o")),
 					menu.Text("Command accelerator", "Command", keys.CmdOrCtrl("o")),
 					menu.Text("Option accelerator", "Option", keys.OptionOrAlt("o")),
+					menu.Text("Combo accelerator", "Combo", keys.Combo("o", keys.CmdOrCtrlKey, keys.ShiftKey)),
 				)),
 				menu.SubMenu("System Keys", menu.NewMenuFromItems(
 					menu.Text("Backspace", "Backspace", keys.Key("Backspace")),
