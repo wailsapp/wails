@@ -260,7 +260,7 @@ func (w *WebView) SelectFile(title string, filter string) string {
 	return result
 }
 
-// SelectFile opens a dialog that allows the user to select a file
+// SelectFiles opens a dialog that allows the user to select a file
 func (w *WebView) SelectFiles(title string, filter string) []string {
 	var result []string
 
