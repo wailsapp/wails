@@ -186,7 +186,11 @@ type WebView interface {
 	// Dialog() opens a system dialog of the given type and title. String
 	// argument can be provided for certain dialogs, such as alert boxes. For
 	// alert boxes argument is a message inside the dialog box.
-	Dialog(dlgType DialogType, flags int, title string, arg string, filter string) string
+	Dialog(dlgType DialogType, flags int, title string, arg string, filter string) interface{}
+
+	DialogOpen(flags int, title string, arg string, filter string) string
+	DialogOpenMultiple(flags int, title string, arg string, filter string) []string
+	DialogSave(title string, arg string, filter string) string
 	// Terminate() breaks the main UI loop. This method must be called from the main thread
 	// only. See Dispatch() for more details.
 	Terminate()
@@ -216,6 +220,8 @@ const (
 	DialogFlagFile = C.WEBVIEW_DIALOG_FLAG_FILE
 	// DialogFlagDirectory is an open directory dialog
 	DialogFlagDirectory = C.WEBVIEW_DIALOG_FLAG_DIRECTORY
+	// DialogFlagMultiple is an open directory dialog
+	DialogFlagMultiple = C.WEBVIEW_DIALOG_FLAG_MULTIPLE
 	// DialogFlagInfo is an info alert dialog
 	DialogFlagInfo = C.WEBVIEW_DIALOG_FLAG_INFO
 	// DialogFlagWarning is a warning alert dialog
@@ -311,7 +317,7 @@ func (w *webview) SetFullscreen(fullscreen bool) {
 	C.CgoWebViewSetFullscreen(w.w, C.int(boolToInt(fullscreen)))
 }
 
-func (w *webview) Dialog(dlgType DialogType, flags int, title string, arg string, filter string) string {
+func (w *webview) Dialog(dlgType DialogType, flags int, title string, arg string, filter string) interface{} {
 	const maxPath = 4096
 	titlePtr := C.CString(title)
 	defer C.free(unsafe.Pointer(titlePtr))
@@ -324,6 +330,19 @@ func (w *webview) Dialog(dlgType DialogType, flags int, title string, arg string
 	C.CgoDialog(w.w, C.int(dlgType), C.int(flags), titlePtr,
 		argPtr, resultPtr, C.size_t(maxPath), filterPtr)
 	return C.GoString(resultPtr)
+}
+
+func (w *webview) DialogOpen(flags int, title string, arg string, filter string) string {
+	return w.Dialog(DialogTypeOpen, flags, title, arg, filter).(string)
+}
+
+func (w *webview) DialogOpenMultiple(flags int, title string, arg string, filter string) []string {
+	return w.Dialog(DialogTypeOpen, flags|DialogFlagMultiple, title, arg, filter).([]string)
+}
+
+func (w *webview) DialogSave(title string, arg string, filter string) string {
+	// flag is 0 cuz only single file can be saved
+	return w.Dialog(DialogTypeSave, 0, title, arg, filter).(string)
 }
 
 func (w *webview) Eval(js string) error {

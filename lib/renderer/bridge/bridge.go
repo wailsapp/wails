@@ -115,11 +115,25 @@ func (h *Bridge) SelectFile(title string, filter string) string {
 	return ""
 }
 
+// SelectFiles is unsupported for Bridge but required
+// for the Renderer interface
+func (h *Bridge) SelectFiles(title string, filter string) []string {
+	h.log.Warn("SelectFile() unsupported in bridge mode")
+	return []string{}
+}
+
 // SelectDirectory is unsupported for Bridge but required
 // for the Renderer interface
 func (h *Bridge) SelectDirectory() string {
 	h.log.Warn("SelectDirectory() unsupported in bridge mode")
 	return ""
+}
+
+// SelectDirectories is unsupported for Bridge but required
+// for the Renderer interface
+func (h *Bridge) SelectDirectories() []string {
+	h.log.Warn("SelectDirectory() unsupported in bridge mode")
+	return []string{}
 }
 
 // SelectSaveFile is unsupported for Bridge but required
