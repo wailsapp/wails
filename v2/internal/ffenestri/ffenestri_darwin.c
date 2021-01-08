@@ -845,7 +845,7 @@ extern void MessageDialog(struct Application *app, char *callbackID, char *type,
 	    }
 
 	    // Determine what dialog icon we are looking for
-	    id dialogImage;
+	    id dialogImage = NULL;
 	    // Look for `name-theme2x` first
 	    char *themeIcon = concat(dialogIcon, (isDarkMode(app) ? "-dark" : "-light") );
 	    if( isRetina(app) ) {
@@ -878,7 +878,9 @@ extern void MessageDialog(struct Application *app, char *callbackID, char *type,
 //            if (dialogImage != NULL ) printf("Using %s\n", dialogIcon);
 	    }
 
-        msg(alert, s("setIcon:"), dialogImage);
+	    if (dialogImage != NULL ) {
+	        msg(alert, s("setIcon:"), dialogImage);
+	    }
 
 		// Run modal
 		char *buttonPressed;
