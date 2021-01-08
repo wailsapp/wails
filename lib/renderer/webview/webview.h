@@ -121,6 +121,7 @@ struct webview_priv
 
 #define WEBVIEW_DIALOG_FLAG_FILE (0 << 0)
 #define WEBVIEW_DIALOG_FLAG_DIRECTORY (1 << 0)
+#define WEBVIEW_DIALOG_FLAG_MULTIPLE (2 << 0)
 
 #define WEBVIEW_DIALOG_FLAG_INFO (1 << 1)
 #define WEBVIEW_DIALOG_FLAG_WARNING (2 << 1)
@@ -451,7 +452,9 @@ struct webview_priv
           g_strfreev(filters);
       }
       gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dlg), FALSE);
-      gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dlg), FALSE);
+      if (flags & WEBVIEW_DIALOG_FLAG_MULTIPLE) {
+        gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dlg), TRUE);
+      }
       gtk_file_chooser_set_show_hidden(GTK_FILE_CHOOSER(dlg), TRUE);
       gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dlg), TRUE);
       gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(dlg), TRUE);
@@ -1823,6 +1826,9 @@ struct webview_priv
         {
           add_opts |= FOS_PICKFOLDERS;
         }
+        if (flags & WEBVIEW_DIALOG_FLAG_MULTIPLE) {
+          add_opts |= FOS_ALLOWMULTISELECT;
+        }
         add_opts |= FOS_NOCHANGEDIR | FOS_ALLNONSTORAGEITEMS | FOS_NOVALIDATE |
                     FOS_PATHMUSTEXIST | FOS_FILEMUSTEXIST | FOS_SHAREAWARE |
                     FOS_NOTESTFILECREATE | FOS_NODEREFERENCELINKS |
@@ -2276,7 +2282,11 @@ struct webview_priv
           }
         }
         [openPanel setResolvesAliases:NO];
-        [openPanel setAllowsMultipleSelection:NO];
+        if (flags & WEBVIEW_DIALOG_FLAG_MULTIPLE) {
+          [openPanel setAllowsMultipleSelection:YES];
+        } else {
+          [openPanel setAllowsMultipleSelection:NO];
+        }
         panel = openPanel;
       }
       else
