@@ -175,7 +175,7 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char *result, size_t resultsz, char *filter);
+                                  char **result, size_t resultsz, char *filter, char *resultlen);
   WEBVIEW_API void webview_dispatch(struct webview *w, webview_dispatch_fn fn,
                                     void *arg);
   WEBVIEW_API void webview_terminate(struct webview *w);
@@ -420,7 +420,7 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char *result, size_t resultsz, char *filter)
+                                  char **result, size_t resultsz, char *filter, char *resultlen)
   {
     GtkWidget *dlg;
     if (result != NULL)
@@ -1804,7 +1804,7 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char *result, size_t resultsz, char *filter)
+                                  char **result, size_t resultsz, char *filter, char *resultlen)
   {
     if (dlgtype == WEBVIEW_DIALOG_TYPE_OPEN ||
         dlgtype == WEBVIEW_DIALOG_TYPE_SAVE)
@@ -1991,7 +1991,7 @@ struct webview_priv
         (struct webview *)objc_getAssociatedObject(self, "webview");
 
     webview_dialog(w, WEBVIEW_DIALOG_TYPE_OPEN, WEBVIEW_DIALOG_FLAG_FILE, "", "",
-                   filename, 255, "");
+                   filename, 255, "", NULL); // ?????
     filename[255] = '\0';
     if (strlen(filename) > 0)
     {
@@ -2254,7 +2254,7 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char *result, size_t resultsz, char *filter)
+                                  char **result, size_t resultsz, char *filter, char *resultlen)
   {
     if (dlgtype == WEBVIEW_DIALOG_TYPE_OPEN ||
         dlgtype == WEBVIEW_DIALOG_TYPE_SAVE)
@@ -2308,8 +2308,22 @@ struct webview_priv
                     }];
       if ([NSApp runModalForWindow:panel] == NSModalResponseOK)
       {
-        const char *filename = [[[panel URL] path] UTF8String];
-        strlcpy(result, filename, resultsz);
+        int filepathCount = [[panel URLs] count];
+        char **paths = (char **)malloc(sizeof(char *) * (filepathCount + 1));
+        int i;
+        for (id url in [panel URLs]) {
+          const char *cstr =
+              [[url path] cStringUsingEncoding:NSUTF8StringEncoding];
+          int len = strlen(cstr);
+          char *cstr_copy = (char *)malloc(sizeof(char) * (len + 1));
+          strcpy(cstr_copy, cstr);
+          paths[i] = cstr_copy;
+          i++;
+        }
+        paths[i] = NULL;
+
+        memcpy(result, paths, resultsz);
+        memcpy(resultlen, &filepathCount, sizeof(filepathCount));
       }
     }
     else if (dlgtype == WEBVIEW_DIALOG_TYPE_ALERT)

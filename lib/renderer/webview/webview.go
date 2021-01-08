@@ -74,9 +74,9 @@ static inline void CgoWebViewSetColor(void *w, uint8_t r, uint8_t g, uint8_t b, 
 }
 
 static inline void CgoDialog(void *w, int dlgtype, int flags,
-char *title, char *arg, char *res, size_t ressz, char *filter) {
+char *title, char *arg, char **res, size_t ressz, char *filter, char *rl) {
 	webview_dialog(w, dlgtype, flags,
-	(const char*)title, (const char*) arg, res, ressz, filter);
+	(const char*)title, (const char*) arg, res, ressz, filter, rl);
 }
 
 static inline int CgoWebViewEval(void *w, char *js) {
@@ -98,6 +98,7 @@ static inline void CgoWebViewDispatch(void *w, uintptr_t arg) {
 import "C"
 import (
 	"errors"
+	"fmt"
 	"runtime"
 	"sync"
 	"unsafe"
@@ -321,15 +322,26 @@ func (w *webview) Dialog(dlgType DialogType, flags int, title string, arg string
 	const maxPath = 4096
 	titlePtr := C.CString(title)
 	defer C.free(unsafe.Pointer(titlePtr))
+
 	argPtr := C.CString(arg)
 	defer C.free(unsafe.Pointer(argPtr))
-	resultPtr := (*C.char)(C.calloc((C.size_t)(unsafe.Sizeof((*C.char)(nil))), (C.size_t)(maxPath)))
+
+	resultPtr := (**C.char)(C.calloc((C.size_t)(unsafe.Sizeof((*C.char)(nil))), (C.size_t)(maxPath)))
 	defer C.free(unsafe.Pointer(resultPtr))
+
+	fileLen := 0
+	fileLenPtr := (*C.char)(unsafe.Pointer(&fileLen))
+
 	filterPtr := C.CString(filter)
 	defer C.free(unsafe.Pointer(filterPtr))
-	C.CgoDialog(w.w, C.int(dlgType), C.int(flags), titlePtr,
-		argPtr, resultPtr, C.size_t(maxPath), filterPtr)
-	return C.GoString(resultPtr)
+	C.CgoDialog(w.w, C.int(dlgType), C.int(flags), titlePtr, argPtr, resultPtr, C.size_t(maxPath), filterPtr, fileLenPtr)
+
+	teamSlice := (*[1 << 30]*C.char)(unsafe.Pointer(resultPtr))[:fileLen:maxPath]
+	for _, s := range teamSlice {
+		fmt.Println(C.GoString((*C.char)(s)))
+	}
+
+	return nil
 }
 
 func (w *webview) DialogOpen(flags int, title string, arg string, filter string) string {
