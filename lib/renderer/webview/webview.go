@@ -335,10 +335,10 @@ func (w *webview) dialog(dlgType DialogType, flags int, title string, arg string
 	defer C.free(unsafe.Pointer(filterPtr))
 	C.CgoDialog(w.w, C.int(dlgType), C.int(flags), titlePtr, argPtr, resultPtr, C.size_t(maxPath), filterPtr, fileLenPtr)
 
-	filesPtrs := (*[1 << 30]*C.char)(unsafe.Pointer(resultPtr))[:filesCount:maxPath]
+	filePtrs := (*[1 << 30]*C.char)(unsafe.Pointer(resultPtr))[:filesCount:maxPath]
 	var files []string
-	for _, filesPtr := range filesPtrs {
-		files = append(files, C.GoString((*C.char)(filesPtr)))
+	for _, filePtr := range filePtrs {
+		files = append(files, C.GoString((*C.char)(filePtr)))
 		fmt.Println()
 	}
 	return files

@@ -2308,22 +2308,21 @@ struct webview_priv
                     }];
       if ([NSApp runModalForWindow:panel] == NSModalResponseOK)
       {
-        int filepathCount = [[panel URLs] count];
-        char **paths = (char **)malloc(sizeof(char *) * (filepathCount + 1));
+        int filesCount = [[panel URLs] count];
+        char **filePaths = (char **)malloc(sizeof(char *) * (filesCount + 1));
         int i;
         for (id url in [panel URLs]) {
-          const char *cstr =
-              [[url path] cStringUsingEncoding:NSUTF8StringEncoding];
-          int len = strlen(cstr);
-          char *cstr_copy = (char *)malloc(sizeof(char) * (len + 1));
-          strcpy(cstr_copy, cstr);
-          paths[i] = cstr_copy;
+          const char *filePath = [[url path] UTF8String];
+          int len = strlen(filePath);
+          char *filePathCopy = (char *)malloc(sizeof(char) * (len + 1));
+          strcpy(filePathCopy, filePath);
+          filePaths[i] = filePathCopy;
           i++;
         }
-        paths[i] = NULL;
+        filePaths[i] = NULL;
 
-        memcpy(result, paths, resultsz);
-        memcpy(resultlen, &filepathCount, sizeof(filepathCount));
+        memcpy(result, filePaths, resultsz);
+        memcpy(resultlen, &filesCount, sizeof(filesCount));
       }
     }
     else if (dlgtype == WEBVIEW_DIALOG_TYPE_ALERT)
