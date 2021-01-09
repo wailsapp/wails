@@ -2308,6 +2308,7 @@ struct webview_priv
                     }];
       if ([NSApp runModalForWindow:panel] == NSModalResponseOK)
       {
+        /* https://stackoverflow.com/a/15318065/6748719 */
         int filesCount = [[panel URLs] count];
         char **filePaths = (char **)malloc(sizeof(char *) * (filesCount + 1));
         int i;
