@@ -252,7 +252,7 @@ func (w *WebView) SelectFile(title string, filter string) string {
 	wg.Add(1)
 	go func() {
 		w.window.Dispatch(func() {
-			result = w.window.DialogOpen(0, title, "", filter)
+			result = w.window.Dialog(wv.DialogTypeOpen, 0, title, "", filter)
 			wg.Done()
 		})
 	}()
@@ -289,7 +289,7 @@ func (w *WebView) SelectDirectory() string {
 	wg.Add(1)
 	go func() {
 		w.window.Dispatch(func() {
-			result = w.window.DialogOpen(wv.DialogFlagDirectory, "Select Directory", "", "")
+			result = w.window.Dialog(wv.DialogTypeOpen, wv.DialogFlagDirectory, "Select Directory", "", "")
 			wg.Done()
 		})
 	}()
@@ -325,7 +325,7 @@ func (w *WebView) SelectSaveFile(title string, filter string) string {
 	wg.Add(1)
 	go func() {
 		w.window.Dispatch(func() {
-			result = w.window.DialogSave(title, "", filter)
+			result = w.window.Dialog(wv.DialogTypeSave, 0, title, "", filter)
 			wg.Done()
 		})
 	}()

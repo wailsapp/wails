@@ -187,11 +187,10 @@ type WebView interface {
 	// Dialog() opens a system dialog of the given type and title. String
 	// argument can be provided for certain dialogs, such as alert boxes. For
 	// alert boxes argument is a message inside the dialog box.
-	Dialog(dlgType DialogType, flags int, title string, arg string, filter string) interface{}
+	Dialog(dlgType DialogType, flags int, title string, arg string, filter string) string
 
-	DialogOpen(flags int, title string, arg string, filter string) string
 	DialogOpenMultiple(flags int, title string, arg string, filter string) []string
-	DialogSave(title string, arg string, filter string) string
+
 	// Terminate() breaks the main UI loop. This method must be called from the main thread
 	// only. See Dispatch() for more details.
 	Terminate()
@@ -318,7 +317,7 @@ func (w *webview) SetFullscreen(fullscreen bool) {
 	C.CgoWebViewSetFullscreen(w.w, C.int(boolToInt(fullscreen)))
 }
 
-func (w *webview) Dialog(dlgType DialogType, flags int, title string, arg string, filter string) interface{} {
+func (w *webview) dialog(dlgType DialogType, flags int, title string, arg string, filter string) []string {
 	const maxPath = 4096
 	titlePtr := C.CString(title)
 	defer C.free(unsafe.Pointer(titlePtr))
@@ -329,32 +328,32 @@ func (w *webview) Dialog(dlgType DialogType, flags int, title string, arg string
 	resultPtr := (**C.char)(C.calloc((C.size_t)(unsafe.Sizeof((*C.char)(nil))), (C.size_t)(maxPath)))
 	defer C.free(unsafe.Pointer(resultPtr))
 
-	fileLen := 0
-	fileLenPtr := (*C.char)(unsafe.Pointer(&fileLen))
+	filesCount := 0
+	fileLenPtr := (*C.char)(unsafe.Pointer(&filesCount))
 
 	filterPtr := C.CString(filter)
 	defer C.free(unsafe.Pointer(filterPtr))
 	C.CgoDialog(w.w, C.int(dlgType), C.int(flags), titlePtr, argPtr, resultPtr, C.size_t(maxPath), filterPtr, fileLenPtr)
 
-	teamSlice := (*[1 << 30]*C.char)(unsafe.Pointer(resultPtr))[:fileLen:maxPath]
-	for _, s := range teamSlice {
-		fmt.Println(C.GoString((*C.char)(s)))
+	filesPtrs := (*[1 << 30]*C.char)(unsafe.Pointer(resultPtr))[:filesCount:maxPath]
+	var files []string
+	for _, filesPtr := range filesPtrs {
+		files = append(files, C.GoString((*C.char)(filesPtr)))
+		fmt.Println()
 	}
-
-	return nil
+	return files
 }
 
-func (w *webview) DialogOpen(flags int, title string, arg string, filter string) string {
-	return w.Dialog(DialogTypeOpen, flags, title, arg, filter).(string)
+func (w *webview) Dialog(dlgType DialogType, flags int, title string, arg string, filter string) string {
+	files := w.dialog(dlgType, flags, title, arg, filter)
+	if len(files) == 0 {
+		return ""
+	}
+	return files[0]
 }
 
 func (w *webview) DialogOpenMultiple(flags int, title string, arg string, filter string) []string {
-	return w.Dialog(DialogTypeOpen, flags|DialogFlagMultiple, title, arg, filter).([]string)
-}
-
-func (w *webview) DialogSave(title string, arg string, filter string) string {
-	// flag is 0 cuz only single file can be saved
-	return w.Dialog(DialogTypeSave, 0, title, arg, filter).(string)
+	return w.dialog(DialogTypeOpen, flags|DialogFlagMultiple, title, arg, filter)
 }
 
 func (w *webview) Eval(js string) error {
