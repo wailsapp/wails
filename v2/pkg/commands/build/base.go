@@ -180,6 +180,11 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		}
 	}
 
+	// Add better debugging flags
+	if options.Mode == Debug {
+		commands.Add(`-gcflags=all="-N -l"`)
+	}
+
 	// Get application build directory
 	appDir := options.BuildDirectory
 	err := cleanBuildDirectory(options)
