@@ -1,6 +1,7 @@
 package subsystem
 
 import (
+	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"strings"
 	"sync"
 
@@ -35,15 +36,15 @@ type Menu struct {
 	// logger
 	logger logger.CustomLogger
 
-	// The application menu
-	applicationMenu *menu.Menu
-
 	// Service Bus
 	bus *servicebus.ServiceBus
+
+	// Menu Manager
+	menuManager *menumanager.Manager
 }
 
 // NewMenu creates a new menu subsystem
-func NewMenu(applicationMenu *menu.Menu, bus *servicebus.ServiceBus, logger *logger.Logger) (*Menu, error) {
+func NewMenu(bus *servicebus.ServiceBus, logger *logger.Logger, menuManager *menumanager.Manager) (*Menu, error) {
 
 	// Register quit channel
 	quitChannel, err := bus.Subscribe("quit")
@@ -58,17 +59,14 @@ func NewMenu(applicationMenu *menu.Menu, bus *servicebus.ServiceBus, logger *log
 	}
 
 	result := &Menu{
-		quitChannel:     quitChannel,
-		menuChannel:     menuChannel,
-		logger:          logger.CustomLogger("Menu Subsystem"),
-		listeners:       make(map[string][]func(*menu.MenuItem)),
-		menuItems:       make(map[string]*menu.MenuItem),
-		applicationMenu: applicationMenu,
-		bus:             bus,
+		quitChannel: quitChannel,
+		menuChannel: menuChannel,
+		logger:      logger.CustomLogger("Menu Subsystem"),
+		listeners:   make(map[string][]func(*menu.MenuItem)),
+		menuItems:   make(map[string]*menu.MenuItem),
+		bus:         bus,
+		menuManager: menuManager,
 	}
-
-	// Build up list of item/id pairs
-	result.processMenu(applicationMenu)
 
 	return result, nil
 }
@@ -99,21 +97,11 @@ func (m *Menu) Start() error {
 					m.logger.Trace("Got Menu clicked Message: %s %+v", menuMessage.Topic(), menuMessage.Data())
 					menuid := menuMessage.Data().(string)
 
-					// Get the menu item
-					menuItem := m.menuItems[menuid]
-					if menuItem == nil {
-						m.logger.Trace("Cannot process menuid %s - unknown", menuid)
-						return
+					err := m.menuManager.ProcessClick(menuid)
+					if err != nil {
+						m.logger.Trace("%s", err.Error())
 					}
 
-					// Is the menu item a checkbox?
-					if menuItem.Type == menu.CheckboxType {
-						// Toggle state
-						menuItem.Checked = !menuItem.Checked
-					}
-
-					// Notify listeners
-					m.notifyListeners(menuid, menuItem)
 				case "on":
 					listenerDetails := menuMessage.Data().(*message.MenuOnMessage)
 					id := listenerDetails.MenuID
@@ -121,11 +109,11 @@ func (m *Menu) Start() error {
 
 				// Make sure we catch any menu updates
 				case "update":
-					updatedMenu := menuMessage.Data().(*menu.Menu)
-					m.processMenu(updatedMenu)
-
-					// Notify frontend of menu change
-					m.bus.Publish("menufrontend:update", updatedMenu)
+					//updatedMenu := menuMessage.Data().(*menu.Menu)
+					//m.processMenu(updatedMenu)
+					//
+					//// Notify frontend of menu change
+					//m.bus.Publish("menufrontend:update", updatedMenu)
 
 				default:
 					m.logger.Error("unknown menu message: %+v", menuMessage)
@@ -138,56 +126,6 @@ func (m *Menu) Start() error {
 	}()
 
 	return nil
-}
-
-func (m *Menu) processMenu(applicationMenu *menu.Menu) {
-	// Initialise the variables
-	m.menuItems = make(map[string]*menu.MenuItem)
-	m.applicationMenu = applicationMenu
-
-	for _, item := range applicationMenu.Items {
-		m.processMenuItem(item)
-	}
-}
-
-func (m *Menu) processMenuItem(item *menu.MenuItem) {
-
-	if item.SubMenu != nil {
-		for _, submenuitem := range item.SubMenu.Items {
-			m.processMenuItem(submenuitem)
-		}
-		return
-	}
-
-	if item.ID != "" {
-		if m.menuItems[item.ID] != nil {
-			m.logger.Error("Menu id '%s' is used by multiple menu items: %s %s", m.menuItems[item.ID].Label, item.Label)
-			return
-		}
-		m.menuItems[item.ID] = item
-	}
-}
-
-// Notifies listeners that the given menu was clicked
-func (m *Menu) notifyListeners(menuid string, menuItem *menu.MenuItem) {
-
-	// Get list of menu listeners
-	listeners := m.listeners[menuid]
-	if listeners == nil {
-		m.logger.Trace("No listeners for MenuItem with ID '%s'", menuid)
-		return
-	}
-
-	// Lock the listeners
-	m.notifyLock.Lock()
-
-	// Callback in goroutine
-	for _, listener := range listeners {
-		go listener(menuItem)
-	}
-
-	// Unlock
-	m.notifyLock.Unlock()
 }
 
 func (m *Menu) shutdown() {

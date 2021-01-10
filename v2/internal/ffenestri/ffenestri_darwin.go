@@ -76,23 +76,10 @@ func (a *Application) processPlatformSettings() error {
 	}
 
 	// Process menu
-	applicationMenu := options.GetApplicationMenu(a.config)
-	if applicationMenu != nil {
-
-		/*
-			As radio groups need to be manually managed on OSX,
-			we preprocess the menu to determine the radio groups.
-			This is defined as any adjacent menu item of type "RadioType".
-			We keep a record of every radio group member we discover by saving
-			a list of all members of the group and the number of members
-			in the group (this last one is for optimisation at the C layer).
-		*/
-		processedMenu := NewProcessedMenu(applicationMenu)
-		applicationMenuJSON, err := json.Marshal(processedMenu)
-		if err != nil {
-			return err
-		}
-		C.SetMenu(a.app, a.string2CString(string(applicationMenuJSON)))
+	//applicationMenu := options.GetApplicationMenu(a.config)
+	applicationMenu := a.menuManager.GetApplicationMenuJSON()
+	if applicationMenu != "" {
+		C.SetMenu(a.app, a.string2CString(applicationMenu))
 	}
 
 	// Process tray

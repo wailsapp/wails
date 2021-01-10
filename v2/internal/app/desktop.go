@@ -6,6 +6,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/ffenestri"
 	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
 	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
@@ -33,6 +34,8 @@ type App struct {
 	contextmenus *subsystem.ContextMenus
 	dispatcher   *messagedispatcher.Dispatcher
 
+	menuManager *menumanager.Manager
+
 	// Indicates if the app is in debug mode
 	debug bool
 
@@ -54,13 +57,18 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	myLogger := logger.New(appoptions.Logger)
 	myLogger.SetLogLevel(appoptions.LogLevel)
 
-	window := ffenestri.NewApplicationWithConfig(appoptions, myLogger)
+	// Create the menu manager
+	menuManager := menumanager.NewManager()
+	menuManager.SetApplicationMenu(options.GetApplicationMenu(appoptions))
+
+	window := ffenestri.NewApplicationWithConfig(appoptions, myLogger, menuManager)
 
 	result := &App{
-		window:     window,
-		servicebus: servicebus.New(myLogger),
-		logger:     myLogger,
-		bindings:   binding.NewBindings(myLogger),
+		window:      window,
+		servicebus:  servicebus.New(myLogger),
+		logger:      myLogger,
+		bindings:    binding.NewBindings(myLogger),
+		menuManager: menuManager,
 	}
 
 	result.options = appoptions
@@ -157,7 +165,7 @@ func (a *App) Run() error {
 
 	// Optionally start the menu subsystem
 	if applicationMenu != nil {
-		menusubsystem, err := subsystem.NewMenu(applicationMenu, a.servicebus, a.logger)
+		menusubsystem, err := subsystem.NewMenu(a.servicebus, a.logger, a.menuManager)
 		if err != nil {
 			return err
 		}

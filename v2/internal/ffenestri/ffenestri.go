@@ -2,6 +2,7 @@ package ffenestri
 
 import (
 	"encoding/json"
+	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"runtime"
 	"strings"
@@ -35,6 +36,9 @@ type Application struct {
 	// This is the main app pointer
 	app unsafe.Pointer
 
+	// Manages menus
+	menuManager *menumanager.Manager
+
 	// Logger
 	logger logger.CustomLogger
 }
@@ -54,10 +58,11 @@ func init() {
 }
 
 // NewApplicationWithConfig creates a new application based on the given config
-func NewApplicationWithConfig(config *options.App, logger *logger.Logger) *Application {
+func NewApplicationWithConfig(config *options.App, logger *logger.Logger, menuManager *menumanager.Manager) *Application {
 	return &Application{
-		config: config,
-		logger: logger.CustomLogger("Ffenestri"),
+		config:      config,
+		logger:      logger.CustomLogger("Ffenestri"),
+		menuManager: menuManager,
 	}
 }
 

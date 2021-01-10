@@ -78,13 +78,13 @@ func (t *Tray) addMenu(mi *menu.MenuItem) {
 	parent := mi.Parent()
 	counter := t.incrementcounter()
 	menuText := "Dynamic Menu Item " + strconv.Itoa(counter)
-	parent.Append(menu.Text(menuText, menuText, nil))
+	parent.Append(menu.Text(menuText, menuText, nil, nil))
 	// 	parent.Append(menu.Text(menuText, menuText, menu.Key("[")))
 
 	// If this is the first dynamic menu added, let's add a remove menu item
 	if counter == 1 {
 		removeMenu := menu.Text("Remove "+menuText,
-			"Remove Last Item", keys.CmdOrCtrl("-"))
+			"Remove Last Item", keys.CmdOrCtrl("-"), nil)
 		parent.Prepend(removeMenu)
 		t.runtime.Tray.On("Remove Last Item", t.removeMenu)
 	} else {
@@ -136,9 +136,9 @@ func (t *Tray) SetIcon(trayIconID string) {
 
 func createApplicationTray() *menu.Menu {
 	trayMenu := &menu.Menu{}
-	trayMenu.Append(menu.Text("Show Window", "Show Window", nil))
-	trayMenu.Append(menu.Text("Hide Window", "Hide Window", nil))
-	trayMenu.Append(menu.Text("Minimise Window", "Minimise Window", nil))
-	trayMenu.Append(menu.Text("Unminimise Window", "Unminimise Window", nil))
+	trayMenu.Append(menu.Text("Show Window", "Show Window", nil, nil))
+	trayMenu.Append(menu.Text("Hide Window", "Hide Window", nil, nil))
+	trayMenu.Append(menu.Text("Minimise Window", "Minimise Window", nil, nil))
+	trayMenu.Append(menu.Text("Unminimise Window", "Unminimise Window", nil, nil))
 	return trayMenu
 }

@@ -24,6 +24,9 @@ type MenuItem struct {
 	//SubMenu []*MenuItem `json:"SubMenu,omitempty"`
 	SubMenu *Menu `json:"SubMenu,omitempty"`
 
+	// Callback function when menu clicked
+	Click Callback `json:"-"`
+
 	// Foreground colour in hex RGBA format EG: 0xFF0000FF = #FF0000FF = red
 	Foreground int
 
@@ -226,12 +229,13 @@ func (m *MenuItem) insertItemAtIndex(index int, target *MenuItem) bool {
 }
 
 // Text is a helper to create basic Text menu items
-func Text(label string, id string, accelerator *keys.Accelerator) *MenuItem {
+func Text(label string, id string, accelerator *keys.Accelerator, click Callback) *MenuItem {
 	return &MenuItem{
 		ID:          id,
 		Label:       label,
 		Type:        TextType,
 		Accelerator: accelerator,
+		Click:       click,
 	}
 }
 
@@ -243,24 +247,26 @@ func Separator() *MenuItem {
 }
 
 // Radio is a helper to create basic Radio menu items with an accelerator
-func Radio(label string, id string, selected bool, accelerator *keys.Accelerator) *MenuItem {
+func Radio(label string, id string, selected bool, accelerator *keys.Accelerator, click Callback) *MenuItem {
 	return &MenuItem{
 		ID:          id,
 		Label:       label,
 		Type:        RadioType,
 		Checked:     selected,
 		Accelerator: accelerator,
+		Click:       click,
 	}
 }
 
 // Checkbox is a helper to create basic Checkbox menu items
-func Checkbox(label string, id string, checked bool, accelerator *keys.Accelerator) *MenuItem {
+func Checkbox(label string, id string, checked bool, accelerator *keys.Accelerator, click Callback) *MenuItem {
 	return &MenuItem{
 		ID:          id,
 		Label:       label,
 		Type:        CheckboxType,
 		Checked:     checked,
 		Accelerator: accelerator,
+		Click:       click,
 	}
 }
 
