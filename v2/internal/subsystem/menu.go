@@ -1,6 +1,7 @@
 package subsystem
 
 import (
+	"encoding/json"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"strings"
 	"sync"
@@ -95,9 +96,21 @@ func (m *Menu) Start() error {
 						continue
 					}
 					m.logger.Trace("Got Menu clicked Message: %s %+v", menuMessage.Topic(), menuMessage.Data())
-					menuid := menuMessage.Data().(string)
 
-					err := m.menuManager.ProcessClick(menuid)
+					type ClickCallbackMessage struct {
+						MenuItemID string `json:"menuItemID"`
+						Data       string `json:"data"`
+					}
+
+					var callbackData ClickCallbackMessage
+					message := []byte(menuMessage.Data().(string))
+					err := json.Unmarshal(message, &callbackData)
+					if err != nil {
+						m.logger.Error("%s", err.Error())
+						return
+					}
+
+					err = m.menuManager.ProcessClick(callbackData.MenuItemID, callbackData.Data)
 					if err != nil {
 						m.logger.Trace("%s", err.Error())
 					}

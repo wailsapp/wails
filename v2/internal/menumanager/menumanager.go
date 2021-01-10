@@ -50,7 +50,7 @@ func (m *Manager) getMenuItemByID(menuId string) *menu.MenuItem {
 	return m.menuItemMap.idToMenuItemMap[menuId]
 }
 
-func (m *Manager) ProcessClick(menuID string) error {
+func (m *Manager) ProcessClick(menuID string, data string) error {
 
 	// Get the menu item
 	menuItem := m.getMenuItemByID(menuID)
@@ -72,7 +72,7 @@ func (m *Manager) ProcessClick(menuID string) error {
 	// Create new Callback struct
 	callbackData := &menu.CallbackData{
 		MenuItem:    menuItem,
-		ContextData: "",
+		ContextData: data,
 	}
 
 	// Call back!

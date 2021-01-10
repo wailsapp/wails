@@ -225,7 +225,8 @@ func (m *Menu) insertAfterRandom(_ *menu.MenuItem) {
 }
 
 func (m *Menu) processPlainText(callbackData *menu.CallbackData) {
-	println("\n\n\n\n\n\n\nCallback successful\n\n\n\n\n")
+	label := callbackData.MenuItem.Label
+	fmt.Printf("\n\n\n\n\n\n\nMenu Item label = `%s`\n\n\n\n\n", label)
 }
 
 func (m *Menu) createApplicationMenu() *menu.Menu {

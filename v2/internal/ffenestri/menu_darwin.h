@@ -133,10 +133,12 @@ void DeleteMenu(Menu *menu) {
 }
 
 // Creates a JSON message for the given menuItemID and data
-const char* createContextMenuMessage(const char *menuItemID, const char *givenContextMenuData) {
+const char* createMenuClickedMessage(const char *menuItemID, const char *data) {
     JsonNode *jsonObject = json_mkobject();
     json_append_member(jsonObject, "menuItemID", json_mkstring(menuItemID));
-    json_append_member(jsonObject, "data", json_mkstring(givenContextMenuData));
+    if (data != NULL) {
+        json_append_member(jsonObject, "data", json_mkstring(data));
+    }
     const char *result = json_encode(jsonObject);
     json_delete(jsonObject);
     return result;
@@ -177,12 +179,15 @@ void menuItemCallback(id self, SEL cmd, id sender) {
 
     // Generate message to send to backend
     if( callbackData->menu->menuType == ApplicationMenuType ) {
-        message = concat("MC", callbackData->menuID);
+        const char *clickMessage = createMenuClickedMessage(callbackData->menuID, NULL);
+        message = concat("MC", clickMessage);
+        MEMFREE(clickMessage);
     } else if( callbackData->menu->menuType == ContextMenuType ) {
         // Get the context menu data from the menu
         ContextMenuStore* store = (ContextMenuStore*) callbackData->menu->parentData;
-        const char *contextMenuMessage = createContextMenuMessage(callbackData->menuID, store->contextMenuData);
-        message = concat("XC", contextMenuMessage);
+        const char *clickMessage = createMenuClickedMessage(callbackData->menuID, store->contextMenuData);
+        message = concat("XC", clickMessage);
+        MEMFREE(clickMessage);
     }
 
     // TODO: Add other menu types here!
