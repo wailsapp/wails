@@ -62,6 +62,11 @@ int freeContextMenu(void *const context, struct hashmap_element_s *const e) {
 
 void DeleteContextMenuStore(ContextMenuStore* store) {
 
+    // Guard against NULLs
+    if( store == NULL ) {
+        return;
+    }
+
     // Delete context menus
     if( hashmap_num_entries(&store->contextMenuStore) > 0 ) {
         if (0 != hashmap_iterate_pairs(&store->contextMenuStore, freeContextMenu, NULL)) {
