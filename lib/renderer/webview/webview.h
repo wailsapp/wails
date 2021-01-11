@@ -1790,6 +1790,8 @@ struct webview_priv
     (IFileDialog *This, LPCWSTR pszLabel);
     HRESULT(STDMETHODCALLTYPE *GetResult)
     (IFileDialog *This, IShellItem **ppsi);
+    HRESULT(STDMETHODCALLTYPE *GetResults)
+    (IFileDialog *This, IShellItemArray **ppsi);
     HRESULT(STDMETHODCALLTYPE *AddPlace)
     (IFileDialog *This, IShellItem *psi, FDAP fdap);
     HRESULT(STDMETHODCALLTYPE *SetDefaultExtension)
@@ -1824,6 +1826,8 @@ struct webview_priv
     {
       IFileDialog *dlg = NULL;
       WCHAR *ws = NULL;
+      IShellItem *res = NULL;
+      IShellItemArray *multires = NULL;
       char *s = NULL;
       FILEOPENDIALOGOPTIONS opts, add_opts;
       if (dlgtype == WEBVIEW_DIALOG_TYPE_OPEN)
@@ -1875,6 +1879,7 @@ struct webview_priv
           token = strtok(NULL, ",");
           i++;
         }
+        printf("ls\n");
         for (int i=0; i < count; i++) {
           wchar_t *wFilter = (wchar_t *)malloc(4096);
           MultiByteToWideChar(CP_ACP, 0, filters[i], -1, wFilter, 4096);
@@ -1899,24 +1904,22 @@ struct webview_priv
       {
         goto error_dlg;
       }
+      printf("ls\n");
       if (flags & WEBVIEW_DIALOG_FLAG_MULTIPLE) {
-        IShellItemArray **multires = NULL;
         if (dlg->lpVtbl->GetResults(dlg, &multires) != S_OK) {
           goto error_dlg;
         }
         DWORD count;
-        multires->lpVtbl->GetCount(&count);
+        multires->lpVtbl->GetCount(multires,&count);
         for (DWORD i = 0; i < count; i++) {
           IShellItem *shellitem;
-          string filepath;
-          multires->GetItemAt(i, &shellitem);
-          shellitem->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &filepath);
-          ws.append(filepath);
-          shellitem->Release();
+          WCHAR *filepath = NULL;
+          multires->lpVtbl->GetItemAt(multires,i, &shellitem);
+          shellitem->lpVtbl->GetDisplayName(shellitem, SIGDN_FILESYSPATH, &filepath);
+          wcscat(ws, filepath);
           CoTaskMemFree(filepath);
         }
       } else {
-        IShellItem *res = NULL;
         if (dlg->lpVtbl->GetResult(dlg, &res) != S_OK) {
           goto error_dlg;
         }
@@ -1930,6 +1933,7 @@ struct webview_priv
       CoTaskMemFree(ws);
     error_result:
       res->lpVtbl->Release(res);
+      multires->lpVtbl->Release(multires);
     error_dlg:
       dlg->lpVtbl->Release(dlg);
       return;
