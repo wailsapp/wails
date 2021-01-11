@@ -8,8 +8,6 @@ import (
 // Menu defines all Menu related operations
 type Menu interface {
 	UpdateApplicationMenu()
-	GetByID(menuID string) *menu.MenuItem
-	RemoveByID(id string) bool
 }
 
 type menuRuntime struct {
@@ -27,12 +25,4 @@ func newMenu(bus *servicebus.ServiceBus, menu *menu.Menu) Menu {
 
 func (m *menuRuntime) UpdateApplicationMenu() {
 	m.bus.Publish("menu:updateappmenu", nil)
-}
-
-func (m *menuRuntime) GetByID(menuID string) *menu.MenuItem {
-	return m.menu.GetByID(menuID)
-}
-
-func (m *menuRuntime) RemoveByID(id string) bool {
-	return m.menu.RemoveByID(id)
 }
