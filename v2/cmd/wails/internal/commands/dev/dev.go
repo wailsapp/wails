@@ -85,7 +85,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				// If this is a folder, add it to our watch list
 				if fs.DirExists(event.Name) {
 					if !strings.Contains(event.Name, "node_modules") {
-						watcher.Add(event.Name)
+						err := watcher.Add(event.Name)
+						if err != nil {
+							logger.Fatal("%s", err.Error())
+						}
 						logger.Println("Watching directory: %s", event.Name)
 					}
 				}
@@ -173,7 +176,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Kill the current program if running
 		if debugBinaryProcess != nil {
-			debugBinaryProcess.Kill()
+			err := debugBinaryProcess.Kill()
+			if err != nil {
+				return err
+			}
 		}
 
 		logger.Println("Development mode exited")
@@ -231,7 +237,10 @@ func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, 
 	err = newProcess.Start()
 	if err != nil {
 		// Remove binary
-		fs.DeleteFile(appBinary)
+		deleteError := fs.DeleteFile(appBinary)
+		if deleteError != nil {
+			logger.Fatal("Unable to delete app binary: " + appBinary)
+		}
 		logger.Fatal("Unable to start application: %s", err.Error())
 	}
 

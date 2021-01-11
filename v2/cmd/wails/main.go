@@ -5,6 +5,7 @@ import (
 
 	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/build"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/debug"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/dev"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/doctor"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/generate"
@@ -24,6 +25,11 @@ func main() {
 
 	build.AddBuildSubcommand(app, os.Stdout)
 	err = initialise.AddSubcommand(app, os.Stdout)
+	if err != nil {
+		fatal(err.Error())
+	}
+
+	err = debug.AddSubcommand(app, os.Stdout)
 	if err != nil {
 		fatal(err.Error())
 	}
