@@ -449,11 +449,11 @@ func (d *Dispatcher) processMenuMessage(result *servicebus.Message) {
 
 	command := splitTopic[1]
 	switch command {
-	case "update":
+	case "updateappmenu":
 
-		updatedMenu, ok := result.Data().(*menu.Menu)
+		updatedMenu, ok := result.Data().(string)
 		if !ok {
-			d.logger.Error("Invalid data for 'menufrontend:update' : %#v",
+			d.logger.Error("Invalid data for 'menufrontend:updateappmenu' : %#v",
 				result.Data())
 			return
 		}

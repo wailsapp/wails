@@ -148,6 +148,12 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	// Default go build command
 	commands := slicer.String([]string{"build"})
 
+	// Add better debugging flags
+	if options.Mode == Debug {
+		commands.Add("-gcflags")
+		commands.Add(`"all=-N -l"`)
+	}
+
 	// TODO: Work out if we can make this more efficient
 	// We need to do a full build as CGO doesn't detect updates
 	// to .h files, and we package assets into .h file. We could
@@ -180,11 +186,6 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		}
 	}
 
-	// Add better debugging flags
-	if options.Mode == Debug {
-		commands.Add(`-gcflags=all="-N -l"`)
-	}
-
 	// Get application build directory
 	appDir := options.BuildDirectory
 	err := cleanBuildDirectory(options)
@@ -210,6 +211,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	options.CompiledBinary = compiledBinary
 
 	// Create the command
+	fmt.Printf("Compile command: %+v", commands.AsSlice())
 	cmd := exec.Command(options.Compiler, commands.AsSlice()...)
 
 	// Set the directory

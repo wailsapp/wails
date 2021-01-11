@@ -3,12 +3,17 @@ package menumanager
 import (
 	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/menu"
+	"sync"
 )
 
 // MenuItemMap holds a mapping between menuIDs and menu items
 type MenuItemMap struct {
 	idToMenuItemMap map[string]*menu.MenuItem
 	menuItemToIDMap map[*menu.MenuItem]string
+
+	// We use a simple counter to keep track of unique menu IDs
+	menuIDCounter      int64
+	menuIDCounterMutex sync.Mutex
 }
 
 func NewMenuItemMap() *MenuItemMap {
@@ -37,6 +42,15 @@ func (m *MenuItemMap) Dump() {
 	}
 }
 
+// GenerateMenuID returns a unique string ID for a menu item
+func (m *MenuItemMap) generateMenuID() string {
+	m.menuIDCounterMutex.Lock()
+	result := fmt.Sprintf("%d", m.menuIDCounter)
+	m.menuIDCounter++
+	m.menuIDCounterMutex.Unlock()
+	return result
+}
+
 func (m *MenuItemMap) processMenuItem(item *menu.MenuItem) {
 
 	if item.SubMenu != nil {
@@ -46,9 +60,13 @@ func (m *MenuItemMap) processMenuItem(item *menu.MenuItem) {
 	}
 
 	// Create a unique ID for this menu item
-	menuID := fmt.Sprintf("%d", len(m.idToMenuItemMap))
+	menuID := m.generateMenuID()
 
 	// Store references
 	m.idToMenuItemMap[menuID] = item
 	m.menuItemToIDMap[item] = menuID
+}
+
+func (m *MenuItemMap) getMenuItemByID(menuId string) *menu.MenuItem {
+	return m.idToMenuItemMap[menuId]
 }

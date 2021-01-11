@@ -36,7 +36,7 @@ func (m *menuRuntime) On(menuID string, callback func(*menu.MenuItem)) {
 }
 
 func (m *menuRuntime) Update() {
-	m.bus.Publish("menu:update", m.menu)
+	m.bus.Publish("menu:updateappmenu", nil)
 }
 
 func (m *menuRuntime) GetByID(menuID string) *menu.MenuItem {

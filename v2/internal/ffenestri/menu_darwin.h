@@ -9,7 +9,10 @@
 #include "contextmenustore_darwin.h"
 
 enum MenuItemType {Text = 0, Checkbox = 1, Radio = 2};
-enum MenuType {ApplicationMenuType = 0, ContextMenuType = 1};
+enum MenuType {ApplicationMenuType = 0, ContextMenuType = 1, TrayMenuType = 2};
+static const char *MenuTypeAsString[] = {
+        "ApplicationMenu", "ContextMenu", "TrayMenu",
+};
 
 extern void messageFromWindowCallback(const char *);
 
@@ -133,14 +136,17 @@ void DeleteMenu(Menu *menu) {
 }
 
 // Creates a JSON message for the given menuItemID and data
-const char* createMenuClickedMessage(const char *menuItemID, const char *data) {
+const char* createMenuClickedMessage(const char *menuItemID, const char *data, enum MenuType menuType) {
     JsonNode *jsonObject = json_mkobject();
     json_append_member(jsonObject, "menuItemID", json_mkstring(menuItemID));
+    json_append_member(jsonObject, "menuType", json_mkstring(MenuTypeAsString[(int)menuType]));
     if (data != NULL) {
         json_append_member(jsonObject, "data", json_mkstring(data));
     }
-    const char *result = json_encode(jsonObject);
+    const char *payload = json_encode(jsonObject);
     json_delete(jsonObject);
+    const char *result = concat("MC", payload);
+    MEMFREE(payload);
     return result;
 }
 
@@ -177,18 +183,18 @@ void menuItemCallback(id self, SEL cmd, id sender) {
         msg(callbackData->menuItem, s("setState:"), NSControlStateValueOn);
     }
 
+    const char *menuID = callbackData->menuID;
+    const char *data = NULL;
+    enum MenuType menuType = callbackData->menu->menuType;
+
     // Generate message to send to backend
-    if( callbackData->menu->menuType == ApplicationMenuType ) {
-        const char *clickMessage = createMenuClickedMessage(callbackData->menuID, NULL);
-        message = concat("MC", clickMessage);
-        MEMFREE(clickMessage);
-    } else if( callbackData->menu->menuType == ContextMenuType ) {
+    if( menuType == ContextMenuType ) {
         // Get the context menu data from the menu
         ContextMenuStore* store = (ContextMenuStore*) callbackData->menu->parentData;
-        const char *clickMessage = createMenuClickedMessage(callbackData->menuID, store->contextMenuData);
-        message = concat("XC", clickMessage);
-        MEMFREE(clickMessage);
+        data = store->contextMenuData;
     }
+
+    message = createMenuClickedMessage(menuID, data, menuType);
 
     // TODO: Add other menu types here!
 

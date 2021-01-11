@@ -99,18 +99,19 @@ func (m *Menu) Start() error {
 
 					type ClickCallbackMessage struct {
 						MenuItemID string `json:"menuItemID"`
+						MenuType   string `json:"menuType"`
 						Data       string `json:"data"`
 					}
 
 					var callbackData ClickCallbackMessage
-					message := []byte(menuMessage.Data().(string))
-					err := json.Unmarshal(message, &callbackData)
+					payload := []byte(menuMessage.Data().(string))
+					err := json.Unmarshal(payload, &callbackData)
 					if err != nil {
 						m.logger.Error("%s", err.Error())
 						return
 					}
 
-					err = m.menuManager.ProcessClick(callbackData.MenuItemID, callbackData.Data)
+					err = m.menuManager.ProcessClick(callbackData.MenuItemID, callbackData.Data, callbackData.MenuType)
 					if err != nil {
 						m.logger.Trace("%s", err.Error())
 					}
@@ -121,12 +122,17 @@ func (m *Menu) Start() error {
 					m.listeners[id] = append(m.listeners[id], listenerDetails.Callback)
 
 				// Make sure we catch any menu updates
-				case "update":
+				case "updateappmenu":
+					updatedMenu, err := m.menuManager.UpdateApplicationMenu()
+					if err != nil {
+						m.logger.Trace("%s", err.Error())
+						return
+					}
 					//updatedMenu := menuMessage.Data().(*menu.Menu)
 					//m.processMenu(updatedMenu)
 					//
 					//// Notify frontend of menu change
-					//m.bus.Publish("menufrontend:update", updatedMenu)
+					m.bus.Publish("menufrontend:updateappmenu", updatedMenu)
 
 				default:
 					m.logger.Error("unknown menu message: %+v", menuMessage)

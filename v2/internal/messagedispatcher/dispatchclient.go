@@ -32,7 +32,7 @@ type Client interface {
 	WindowUnFullscreen()
 	WindowSetColour(colour int)
 	DarkModeEnabled(callbackID string)
-	UpdateMenu(menu *menu.Menu)
+	UpdateMenu(menuJSON string)
 	UpdateTray(menu *menu.Menu)
 	UpdateTrayLabel(label string)
 	UpdateTrayIcon(name string)

@@ -186,20 +186,8 @@ func (c *Client) DarkModeEnabled(callbackID string) {
 	C.DarkModeEnabled(c.app.app, c.app.string2CString(callbackID))
 }
 
-func (c *Client) UpdateMenu(menu *menu.Menu) {
-
-	// Guard against nil menus
-	if menu == nil {
-		return
-	}
-	// Process the menu
-	processedMenu := NewProcessedMenu(menu)
-	menuJSON, err := json.Marshal(processedMenu)
-	if err != nil {
-		c.app.logger.Error("Error processing updated Menu: %s", err.Error())
-		return
-	}
-	C.UpdateMenu(c.app.app, c.app.string2CString(string(menuJSON)))
+func (c *Client) UpdateMenu(menuJSON string) {
+	C.SetApplicationMenu(c.app.app, c.app.string2CString(menuJSON))
 }
 
 func (c *Client) UpdateTray(menu *menu.Menu) {

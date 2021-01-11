@@ -485,68 +485,6 @@ void allocateTrayHashMaps(struct Application *app) {
 	}
 }
 
-void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel) {
-	// Setup main application struct
-	struct Application *result = malloc(sizeof(struct Application));
-	result->title = title;
-	result->width = width;
-	result->height = height;
-	result->minWidth = 0;
-	result->minHeight = 0;
-	result->maxWidth = 0;
-	result->maxHeight = 0;
-	result->resizable = resizable;
-	result->devtools = devtools;
-	result->fullscreen = fullscreen;
-	result->maximised = 0;
-	result->startHidden = startHidden;
-	result->decorations = 0;
-	result->logLevel = logLevel;
-
-	result->mainWindow = NULL;
-	result->mouseEvent = NULL;
-	result->mouseDownMonitor = NULL;
-	result->mouseUpMonitor = NULL;
-
-	// Features
-	result->frame = 1;
-	result->hideTitle = 0;
-	result->hideTitleBar = 0;
-	result->fullSizeContent = 0;
-	result->useToolBar = 0;
-	result->hideToolbarSeparator = 0;
-	result->appearance = NULL;
-	result->windowBackgroundIsTranslucent = 0;
-
-	// Window data
-	result->delegate = NULL;
-
-	// Menu
-	result->applicationMenu = NULL;
-
-	// Tray
-	result->trayMenuAsJSON = NULL;
-	result->trayLabel = NULL;
-	result->trayIconName = NULL;
-	result->trayIconPosition = NSImageLeft; // Left of the text by default
-	result->processedTrayMenu = NULL;
-	result->statusItem = NULL;
-
-	// Context Menus
-	result->contextMenuStore = NULL;
-	result->contextMenusAsJSON = NULL;
-	result->processedContextMenus = NULL;
-	contextMenuData = NULL;
-
-	// Window Appearance
-	result->titlebarAppearsTransparent = 0;
-	result->webviewIsTranparent = 0;
-
-	result->sendMessageToBackend = (ffenestriCallback) messageFromWindowCallback;
-
-	return (void*) result;
-}
-
 
 int releaseNSObject(void *const context, struct hashmap_element_s *const e) {
     msg(e->data, s("release"));
@@ -1121,10 +1059,7 @@ void SetDebug(void *applicationPointer, int flag) {
 	debug = flag;
 }
 
-// SetMenu sets the initial menu for the application
-void SetMenu(struct Application *app, const char *menuAsJSON) {
-	app->applicationMenu = NewApplicationMenu(menuAsJSON);
-}
+
 
 // SetTray sets the initial tray menu for the application
 void SetTray(struct Application *app, const char *trayMenuAsJSON, const char *trayLabel, const char *trayIconName) {
@@ -1623,8 +1558,8 @@ struct hashmap_s *radioGroupMap) {
 
 }
 
-// UpdateMenu replaces the current menu with the given one
-void UpdateMenu(struct Application *app, const char *menuAsJSON) {
+// updateMenu replaces the current menu with the given one
+void updateMenu(struct Application *app, const char *menuAsJSON) {
 	Debug(app, "Menu is now: %s", menuAsJSON);
 	ON_MAIN_THREAD (
 		DeleteMenu(app->applicationMenu);
@@ -1633,6 +1568,17 @@ void UpdateMenu(struct Application *app, const char *menuAsJSON) {
         app->applicationMenu = newMenu;
 	    msg(msg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menu);
 	);
+}
+
+// SetApplicationMenu sets the initial menu for the application
+void SetApplicationMenu(struct Application *app, const char *menuAsJSON) {
+    if ( app->applicationMenu == NULL ) {
+	    app->applicationMenu = NewApplicationMenu(menuAsJSON);
+	    return;
+	}
+
+    // Update menu
+    updateMenu(app, menuAsJSON);
 }
 
 //void dumpContextMenus(struct Application *app) {
@@ -2062,5 +2008,69 @@ void Run(struct Application *app, int argc, char **argv) {
 
 	MEMFREE(internalCode);
 }
+
+
+void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel) {
+	// Setup main application struct
+	struct Application *result = malloc(sizeof(struct Application));
+	result->title = title;
+	result->width = width;
+	result->height = height;
+	result->minWidth = 0;
+	result->minHeight = 0;
+	result->maxWidth = 0;
+	result->maxHeight = 0;
+	result->resizable = resizable;
+	result->devtools = devtools;
+	result->fullscreen = fullscreen;
+	result->maximised = 0;
+	result->startHidden = startHidden;
+	result->decorations = 0;
+	result->logLevel = logLevel;
+
+	result->mainWindow = NULL;
+	result->mouseEvent = NULL;
+	result->mouseDownMonitor = NULL;
+	result->mouseUpMonitor = NULL;
+
+	// Features
+	result->frame = 1;
+	result->hideTitle = 0;
+	result->hideTitleBar = 0;
+	result->fullSizeContent = 0;
+	result->useToolBar = 0;
+	result->hideToolbarSeparator = 0;
+	result->appearance = NULL;
+	result->windowBackgroundIsTranslucent = 0;
+
+	// Window data
+	result->delegate = NULL;
+
+	// Menu
+	result->applicationMenu = NULL;
+
+	// Tray
+	result->trayMenuAsJSON = NULL;
+	result->trayLabel = NULL;
+	result->trayIconName = NULL;
+	result->trayIconPosition = NSImageLeft; // Left of the text by default
+	result->processedTrayMenu = NULL;
+	result->statusItem = NULL;
+
+	// Context Menus
+	result->contextMenuStore = NULL;
+	result->contextMenusAsJSON = NULL;
+	result->processedContextMenus = NULL;
+	contextMenuData = NULL;
+
+	// Window Appearance
+	result->titlebarAppearsTransparent = 0;
+	result->webviewIsTranparent = 0;
+
+	result->sendMessageToBackend = (ffenestriCallback) messageFromWindowCallback;
+
+	return (void*) result;
+}
+
 
 #endif

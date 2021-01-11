@@ -19,6 +19,9 @@ type Menu struct {
 	lock                      sync.Mutex
 	dynamicMenuItems          map[string]*menu.MenuItem
 	anotherDynamicMenuCounter int
+
+	// Menus
+	removeMenuItem *menu.MenuItem
 }
 
 // WailsInit is called at application startup
@@ -26,26 +29,6 @@ func (m *Menu) WailsInit(runtime *wails.Runtime) error {
 	// Perform your setup here
 	m.runtime = runtime
 
-	// Setup Menu Listeners
-	m.runtime.Menu.On("hello", func(mi *menu.MenuItem) {
-		fmt.Printf("The '%s' menu was clicked\n", mi.Label)
-	})
-	m.runtime.Menu.On("checkbox-menu", func(mi *menu.MenuItem) {
-		fmt.Printf("The '%s' menu was clicked\n", mi.Label)
-		fmt.Printf("It is now %v\n", mi.Checked)
-	})
-	m.runtime.Menu.On("😀option-1", func(mi *menu.MenuItem) {
-		fmt.Printf("We can use UTF-8 IDs: %s\n", mi.Label)
-	})
-
-	m.runtime.Menu.On("show-dynamic-menus-2", func(mi *menu.MenuItem) {
-		mi.Hidden = true
-		// Create dynamic menu items 2 submenu
-		m.createDynamicMenuTwo()
-	})
-
-	// Setup dynamic menus
-	m.runtime.Menu.On("Add Menu Item", m.addMenu)
 	return nil
 }
 
@@ -59,13 +42,14 @@ func (m *Menu) decrementcounter() int {
 	return m.dynamicMenuCounter
 }
 
-func (m *Menu) addMenu(mi *menu.MenuItem) {
+func (m *Menu) addMenu(data *menu.CallbackData) {
 
 	// Lock because this method will be called in a gorouting
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	// Get this menu's parent
+	mi := data.MenuItem
 	parent := mi.Parent()
 	counter := m.incrementcounter()
 	menuText := "Dynamic Menu Item " + strconv.Itoa(counter)
@@ -74,10 +58,8 @@ func (m *Menu) addMenu(mi *menu.MenuItem) {
 
 	// If this is the first dynamic menu added, let's add a remove menu item
 	if counter == 1 {
-		removeMenu := menu.Text("Remove "+menuText,
-			"Remove Last Item", keys.CmdOrCtrl("-"), nil)
-		parent.Prepend(removeMenu)
-		m.runtime.Menu.On("Remove Last Item", m.removeMenu)
+		m.removeMenuItem = menu.Text("Remove "+menuText, "Remove Last Item", keys.CmdOrCtrl("-"), m.removeMenu)
+		parent.Prepend(m.removeMenuItem)
 	} else {
 		removeMenu := m.runtime.Menu.GetByID("Remove Last Item")
 		// Test if the remove menu hasn't already been removed in another thread
@@ -88,40 +70,41 @@ func (m *Menu) addMenu(mi *menu.MenuItem) {
 	m.runtime.Menu.Update()
 }
 
-func (m *Menu) removeMenu(_ *menu.MenuItem) {
-
-	// Lock because this method will be called in a goroutine
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
-	// Get the id of the last dynamic menu
-	menuID := "Dynamic Menu Item " + strconv.Itoa(m.dynamicMenuCounter)
-
-	// Remove the last menu item by ID
-	m.runtime.Menu.RemoveByID(menuID)
-
-	// Update the counter
-	counter := m.decrementcounter()
-
-	// If we deleted the last dynamic menu, remove the "Remove Last Item" menu
-	if counter == 0 {
-		m.runtime.Menu.RemoveByID("Remove Last Item")
-	} else {
-		// Update label
-		menuText := "Dynamic Menu Item " + strconv.Itoa(counter)
-		removeMenu := m.runtime.Menu.GetByID("Remove Last Item")
-		// Test if the remove menu hasn't already been removed in another thread
-		if removeMenu == nil {
-			return
-		}
-		removeMenu.Label = "Remove " + menuText
-	}
-
-	// 	parent.Append(menu.Text(menuText, menuText, menu.Key("[")))
-	m.runtime.Menu.Update()
+func (m *Menu) removeMenu(_ *menu.CallbackData) {
+	//
+	//// Lock because this method will be called in a goroutine
+	//m.lock.Lock()
+	//defer m.lock.Unlock()
+	//
+	//// Remove the last menu item by ID
+	//m.runtime.Menu.RemoveMenuItem(menuID)
+	//
+	//// Update the counter
+	//counter := m.decrementcounter()
+	//
+	//// If we deleted the last dynamic menu, remove the "Remove Last Item" menu
+	//if counter == 0 {
+	//	m.runtime.Menu.RemoveByID("Remove Last Item")
+	//} else {
+	//	// Update label
+	//	menuText := "Dynamic Menu Item " + strconv.Itoa(counter)
+	//	removeMenu := m.runtime.Menu.GetByID("Remove Last Item")
+	//	// Test if the remove menu hasn't already been removed in another thread
+	//	if removeMenu == nil {
+	//		return
+	//	}
+	//	removeMenu.Label = "Remove " + menuText
+	//}
+	//
+	//// 	parent.Append(menu.Text(menuText, menuText, menu.Key("[")))
+	//m.runtime.Menu.Update()
 }
 
-func (m *Menu) createDynamicMenuTwo() {
+func (m *Menu) createDynamicMenuTwo(data *menu.CallbackData) {
+
+	println("\n\n\n\n\n\n\nCreating dynamic menu two\n\n\n\n\n\n")
+	// Hide this menu
+	data.MenuItem.Hidden = true
 
 	// Create our submenu
 	dm2 := menu.SubMenu("Dynamic Menus 2", menu.NewMenuFromItems(
@@ -251,7 +234,7 @@ func (m *Menu) createApplicationMenu() *menu.Menu {
 
 		menu.SubMenu("Test Submenu", menu.NewMenuFromItems(
 			menu.Text("Plain text", "plain text", nil, m.processPlainText),
-			menu.Text("Show Dynamic Menus 2 Submenu", "show-dynamic-menus-2", nil, nil),
+			menu.Text("Show Dynamic Menus 2 Submenu", "show-dynamic-menus-2", nil, m.createDynamicMenuTwo),
 			menu.SubMenu("Accelerators", menu.NewMenuFromItems(
 				menu.SubMenu("Modifiers", menu.NewMenuFromItems(
 					menu.Text("Shift accelerator", "Shift", keys.Shift("o"), nil),
@@ -305,7 +288,7 @@ func (m *Menu) createApplicationMenu() *menu.Menu {
 				)),
 			)),
 			menu.SubMenuWithID("Dynamic Menus 1", "Dynamic Menus 1", menu.NewMenuFromItems(
-				menu.Text("Add Menu Item", "Add Menu Item", keys.CmdOrCtrl("+"), nil),
+				menu.Text("Add Menu Item", "Add Menu Item", keys.CmdOrCtrl("+"), m.addMenu),
 				menu.Separator(),
 			)),
 			&menu.MenuItem{
@@ -325,6 +308,10 @@ func (m *Menu) createApplicationMenu() *menu.Menu {
 				Type:        menu.CheckboxType,
 				Accelerator: keys.CmdOrCtrl("l"),
 				Checked:     true,
+				Click: func(data *menu.CallbackData) {
+					fmt.Printf("The '%s' menu was clicked\n", data.MenuItem.Label)
+					fmt.Printf("It is now %v\n", data.MenuItem.Checked)
+				},
 			},
 			menu.Checkbox("Checkbox Menu 2", "checkbox-menu 2", false, nil, nil),
 			menu.Separator(),

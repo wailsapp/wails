@@ -4,6 +4,7 @@ package ffenestri
 #cgo darwin CFLAGS: -DFFENESTRI_DARWIN=1
 #cgo darwin LDFLAGS: -framework WebKit -lobjc
 
+#include "ffenestri.h"
 #include "ffenestri_darwin.h"
 
 extern void TitlebarAppearsTransparent(void *);
@@ -16,7 +17,6 @@ extern void DisableFrame(void *);
 extern void SetAppearance(void *, const char *);
 extern void WebviewIsTransparent(void *);
 extern void WindowBackgroundIsTranslucent(void *);
-extern void SetMenu(void *, const char *);
 extern void SetTray(void *, const char *, const char *, const char *);
 extern void SetContextMenus(void *, const char *);
 
@@ -79,7 +79,7 @@ func (a *Application) processPlatformSettings() error {
 	//applicationMenu := options.GetApplicationMenu(a.config)
 	applicationMenu := a.menuManager.GetApplicationMenuJSON()
 	if applicationMenu != "" {
-		C.SetMenu(a.app, a.string2CString(applicationMenu))
+		C.SetApplicationMenu(a.app, a.string2CString(applicationMenu))
 	}
 
 	// Process tray
