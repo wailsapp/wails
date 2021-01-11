@@ -1,6 +1,9 @@
 package menu
 
-import "github.com/wailsapp/wails/v2/pkg/menu/keys"
+import (
+	"github.com/wailsapp/wails/v2/pkg/menu/keys"
+	"sync"
+)
 
 // MenuItem represents a menuitem contained in a menu
 type MenuItem struct {
@@ -35,6 +38,9 @@ type MenuItem struct {
 
 	// This holds the menu item's parent.
 	parent *MenuItem
+
+	// Used for locking when removing elements
+	removeLock sync.Mutex
 }
 
 // Parent returns the parent of the menu item.
@@ -90,6 +96,21 @@ func (m *MenuItem) getByID(id string) *MenuItem {
 	}
 
 	return nil
+}
+
+func (m *MenuItem) Remove() {
+	// Iterate my parent's children
+	m.Parent().removeChild(m)
+}
+
+func (m *MenuItem) removeChild(item *MenuItem) {
+	m.removeLock.Lock()
+	for index, child := range m.SubMenu.Items {
+		if item == child {
+			m.SubMenu.Items = append(m.SubMenu.Items[:index], m.SubMenu.Items[index+1:]...)
+		}
+	}
+	m.removeLock.Unlock()
 }
 
 func (m *MenuItem) removeByID(id string) bool {

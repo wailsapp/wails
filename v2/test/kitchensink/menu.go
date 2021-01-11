@@ -16,6 +16,7 @@ type Menu struct {
 	runtime *wails.Runtime
 
 	dynamicMenuCounter        int
+	dynamicMenuOneItems       []*menu.MenuItem
 	lock                      sync.Mutex
 	dynamicMenuItems          map[string]*menu.MenuItem
 	anotherDynamicMenuCounter int
@@ -42,7 +43,7 @@ func (m *Menu) decrementcounter() int {
 	return m.dynamicMenuCounter
 }
 
-func (m *Menu) addMenu(data *menu.CallbackData) {
+func (m *Menu) addDynamicMenusOneMenu(data *menu.CallbackData) {
 
 	// Lock because this method will be called in a gorouting
 	m.lock.Lock()
@@ -53,51 +54,53 @@ func (m *Menu) addMenu(data *menu.CallbackData) {
 	parent := mi.Parent()
 	counter := m.incrementcounter()
 	menuText := "Dynamic Menu Item " + strconv.Itoa(counter)
-	parent.Append(menu.Text(menuText, menuText, nil, nil))
-	// 	parent.Append(menu.Text(menuText, menuText, menu.Key("[")))
+	newDynamicMenu := menu.Text(menuText, menuText, nil, nil)
+	m.dynamicMenuOneItems = append(m.dynamicMenuOneItems, newDynamicMenu)
+	parent.Append(newDynamicMenu)
 
 	// If this is the first dynamic menu added, let's add a remove menu item
 	if counter == 1 {
-		m.removeMenuItem = menu.Text("Remove "+menuText, "Remove Last Item", keys.CmdOrCtrl("-"), m.removeMenu)
+		m.removeMenuItem = menu.Text("Remove "+menuText, "Remove Last Item", keys.CmdOrCtrl("-"), m.removeDynamicMenuOneMenu)
 		parent.Prepend(m.removeMenuItem)
 	} else {
-		removeMenu := m.runtime.Menu.GetByID("Remove Last Item")
 		// Test if the remove menu hasn't already been removed in another thread
-		if removeMenu != nil {
-			removeMenu.Label = "Remove " + menuText
+		if m.removeMenuItem != nil {
+			m.removeMenuItem.Label = "Remove " + menuText
 		}
 	}
 	m.runtime.Menu.UpdateApplicationMenu()
 }
 
-func (m *Menu) removeMenu(_ *menu.CallbackData) {
+func (m *Menu) removeDynamicMenuOneMenu(callbackData *menu.CallbackData) {
 	//
-	//// Lock because this method will be called in a goroutine
-	//m.lock.Lock()
-	//defer m.lock.Unlock()
-	//
-	//// Remove the last menu item by ID
-	//m.runtime.Menu.RemoveMenuItem(menuID)
-	//
-	//// Update the counter
-	//counter := m.decrementcounter()
-	//
-	//// If we deleted the last dynamic menu, remove the "Remove Last Item" menu
-	//if counter == 0 {
-	//	m.runtime.Menu.RemoveByID("Remove Last Item")
-	//} else {
-	//	// Update label
-	//	menuText := "Dynamic Menu Item " + strconv.Itoa(counter)
-	//	removeMenu := m.runtime.Menu.GetByID("Remove Last Item")
-	//	// Test if the remove menu hasn't already been removed in another thread
-	//	if removeMenu == nil {
-	//		return
-	//	}
-	//	removeMenu.Label = "Remove " + menuText
-	//}
-	//
-	//// 	parent.Append(menu.Text(menuText, menuText, menu.Key("[")))
-	//m.runtime.Menu.UpdateApplicationMenu()
+	// Lock because this method will be called in a goroutine
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	// Get the last menu we added
+	lastItemIndex := len(m.dynamicMenuOneItems) - 1
+	lastMenuAdded := m.dynamicMenuOneItems[lastItemIndex]
+	// Remove from slice
+	m.dynamicMenuOneItems = m.dynamicMenuOneItems[:lastItemIndex]
+
+	// Remove the item from the
+	lastMenuAdded.Remove()
+
+	// Update the counter
+	counter := m.decrementcounter()
+
+	// If we deleted the last dynamic menu, remove the "Remove Last Item" menu
+	if counter == 0 {
+		// Remove it!
+		m.removeMenuItem.Remove()
+	} else {
+		// Update label
+		menuText := "Dynamic Menu Item " + strconv.Itoa(counter)
+		m.removeMenuItem.Label = "Remove " + menuText
+	}
+
+	// 	parent.Append(menu.Text(menuText, menuText, menu.Key("[")))
+	m.runtime.Menu.UpdateApplicationMenu()
 }
 
 func (m *Menu) createDynamicMenuTwo(data *menu.CallbackData) {
@@ -288,7 +291,7 @@ func (m *Menu) createApplicationMenu() *menu.Menu {
 				)),
 			)),
 			menu.SubMenuWithID("Dynamic Menus 1", "Dynamic Menus 1", menu.NewMenuFromItems(
-				menu.Text("Add Menu Item", "Add Menu Item", keys.CmdOrCtrl("+"), m.addMenu),
+				menu.Text("Add Menu Item", "Add Menu Item", keys.CmdOrCtrl("+"), m.addDynamicMenusOneMenu),
 				menu.Separator(),
 			)),
 			&menu.MenuItem{
