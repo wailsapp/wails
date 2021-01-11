@@ -74,7 +74,7 @@ static inline void CgoWebViewSetColor(void *w, uint8_t r, uint8_t g, uint8_t b, 
 }
 
 static inline void CgoDialog(void *w, int dlgtype, int flags,
-char *title, char *arg, char **res, size_t ressz, char *filter, char *rl) {
+char *title, char *arg, char *res, size_t ressz, char *filter, char *rl) {
 	webview_dialog(w, dlgtype, flags,
 	(const char*)title, (const char*) arg, res, ressz, filter, rl);
 }
@@ -98,8 +98,8 @@ static inline void CgoWebViewDispatch(void *w, uintptr_t arg) {
 import "C"
 import (
 	"errors"
-	"fmt"
 	"runtime"
+	"strings"
 	"sync"
 	"unsafe"
 )
@@ -325,7 +325,7 @@ func (w *webview) dialog(dlgType DialogType, flags int, title string, arg string
 	argPtr := C.CString(arg)
 	defer C.free(unsafe.Pointer(argPtr))
 
-	resultPtr := (**C.char)(C.calloc((C.size_t)(unsafe.Sizeof((*C.char)(nil))), (C.size_t)(maxPath)))
+	resultPtr := (*C.char)(C.calloc((C.size_t)(unsafe.Sizeof((*C.char)(nil))), (C.size_t)(maxPath)))
 	defer C.free(unsafe.Pointer(resultPtr))
 
 	filesCount := 0
@@ -335,12 +335,9 @@ func (w *webview) dialog(dlgType DialogType, flags int, title string, arg string
 	defer C.free(unsafe.Pointer(filterPtr))
 	C.CgoDialog(w.w, C.int(dlgType), C.int(flags), titlePtr, argPtr, resultPtr, C.size_t(maxPath), filterPtr, fileLenPtr)
 
-	filePtrs := (*[1 << 30]*C.char)(unsafe.Pointer(resultPtr))[:filesCount:maxPath]
-	var files []string
-	for _, filePtr := range filePtrs {
-		files = append(files, C.GoString((*C.char)(filePtr)))
-		fmt.Println()
-	}
+	filesStr := strings.TrimSpace(C.GoString(resultPtr))
+	files := strings.Split(filesStr, "\n")
+
 	return files
 }
 

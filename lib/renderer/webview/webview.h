@@ -175,7 +175,7 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char **result, size_t resultsz, char *filter, char *resultlen);
+                                  char *result, size_t resultsz, char *filter, char *resultlen);
   WEBVIEW_API void webview_dispatch(struct webview *w, webview_dispatch_fn fn,
                                     void *arg);
   WEBVIEW_API void webview_terminate(struct webview *w);
@@ -420,7 +420,7 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char **result, size_t resultsz, char *filter, char *resultlen)
+                                  char *result, size_t resultsz, char *filter, char *resultlen)
   {
     GtkWidget *dlg;
     if (result != NULL)
@@ -461,9 +461,22 @@ struct webview_priv
       gint response = gtk_dialog_run(GTK_DIALOG(dlg));
       if (response == GTK_RESPONSE_ACCEPT)
       {
-        gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dlg));
-        g_strlcpy(result, filename, resultsz);
-        g_free(filename);
+        if (flags & WEBVIEW_DIALOG_FLAG_MULTIPLE) {
+          GSList *filepath_list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(dlg));
+          gchar *filepaths;
+          while(filepath_list) {
+            filepaths = g_strconcat(filepaths, filepath_list->data, "\n", NULL);
+            filepath_list = filepath_list->next;
+          }
+
+          g_strlcpy(result, filepaths, resultsz);
+          g_free(filepaths);
+          g_slist_free(filepath_list);
+        } else {
+          gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dlg));
+          g_strlcpy(result, filename, resultsz);
+          g_free(filename);
+        }
       }
       gtk_widget_destroy(dlg);
     }
@@ -1804,13 +1817,12 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char **result, size_t resultsz, char *filter, char *resultlen)
+                                  char *result, size_t resultsz, char *filter, char *resultlen)
   {
     if (dlgtype == WEBVIEW_DIALOG_TYPE_OPEN ||
         dlgtype == WEBVIEW_DIALOG_TYPE_SAVE)
     {
       IFileDialog *dlg = NULL;
-      IShellItem *res = NULL;
       WCHAR *ws = NULL;
       char *s = NULL;
       FILEOPENDIALOGOPTIONS opts, add_opts;
@@ -1887,13 +1899,30 @@ struct webview_priv
       {
         goto error_dlg;
       }
-      if (dlg->lpVtbl->GetResult(dlg, &res) != S_OK)
-      {
-        goto error_dlg;
-      }
-      if (res->lpVtbl->GetDisplayName(res, SIGDN_FILESYSPATH, &ws) != S_OK)
-      {
-        goto error_result;
+      if (flags & WEBVIEW_DIALOG_FLAG_MULTIPLE) {
+        IShellItemArray **multires = NULL;
+        if (dlg->lpVtbl->GetResults(dlg, &multires) != S_OK) {
+          goto error_dlg;
+        }
+        DWORD count;
+        multires->lpVtbl->GetCount(&count);
+        for (DWORD i = 0; i < count; i++) {
+          IShellItem *shellitem;
+          string filepath;
+          multires->GetItemAt(i, &shellitem);
+          shellitem->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &filepath);
+          ws.append(filepath);
+          shellitem->Release();
+          CoTaskMemFree(filepath);
+        }
+      } else {
+        IShellItem *res = NULL;
+        if (dlg->lpVtbl->GetResult(dlg, &res) != S_OK) {
+          goto error_dlg;
+        }
+        if (res->lpVtbl->GetDisplayName(res, SIGDN_FILESYSPATH, &ws) != S_OK) {
+          goto error_result;
+        }
       }
       s = webview_from_utf16(ws);
       strncpy(result, s, resultsz);
@@ -2254,7 +2283,7 @@ struct webview_priv
   WEBVIEW_API void webview_dialog(struct webview *w,
                                   enum webview_dialog_type dlgtype, int flags,
                                   const char *title, const char *arg,
-                                  char **result, size_t resultsz, char *filter, char *resultlen)
+                                  char *result, size_t resultsz, char *filter, char *resultlen)
   {
     if (dlgtype == WEBVIEW_DIALOG_TYPE_OPEN ||
         dlgtype == WEBVIEW_DIALOG_TYPE_SAVE)
@@ -2308,22 +2337,14 @@ struct webview_priv
                     }];
       if ([NSApp runModalForWindow:panel] == NSModalResponseOK)
       {
-        /* https://stackoverflow.com/a/15318065/6748719 */
-        int filesCount = [[panel URLs] count];
-        char **filePaths = (char **)malloc(sizeof(char *) * (filesCount + 1));
-        int i;
-        for (id url in [panel URLs]) {
-          const char *filePath = [[url path] UTF8String];
-          int len = strlen(filePath);
-          char *filePathCopy = (char *)malloc(sizeof(char) * (len + 1));
-          strcpy(filePathCopy, filePath);
-          filePaths[i] = filePathCopy;
-          i++;
-        }
-        filePaths[i] = NULL;
 
-        memcpy(result, filePaths, resultsz);
-        memcpy(resultlen, &filesCount, sizeof(filesCount));
+        NSMutableString *filePaths = [NSMutableString string];
+        for (id url in [panel URLs]) {
+          [filePaths appendString:[url path]];
+          [filePaths appendString: @"\n"];
+        }
+         const char *filePathsChar = [filePaths UTF8String];
+         strlcpy(result, filePathsChar, resultsz);
       }
     }
     else if (dlgtype == WEBVIEW_DIALOG_TYPE_ALERT)
