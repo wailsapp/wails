@@ -80,10 +80,11 @@ func (m *Menu) removeDynamicMenuOneMenu(_ *menu.CallbackData) {
 	// Get the last menu we added
 	lastItemIndex := len(m.dynamicMenuOneItems) - 1
 	lastMenuAdded := m.dynamicMenuOneItems[lastItemIndex]
+
 	// Remove from slice
 	m.dynamicMenuOneItems = m.dynamicMenuOneItems[:lastItemIndex]
 
-	// Remove the item from the
+	// Remove the item from the menu
 	lastMenuAdded.Remove()
 
 	// Update the counter

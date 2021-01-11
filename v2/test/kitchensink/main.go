@@ -22,7 +22,7 @@ func main() {
 		//Tray:      menu.NewMenuFromItems(menu.AppMenu()),
 		//Menu:      menu.NewMenuFromItems(menu.AppMenu()),
 		//StartHidden:  true,
-		//ContextMenus: createContextMenus(),
+		ContextMenus: createContextMenus(),
 		Mac: &mac.Options{
 			WebviewIsTransparent:          true,
 			WindowBackgroundIsTranslucent: true,

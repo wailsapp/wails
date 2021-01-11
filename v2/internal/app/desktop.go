@@ -59,7 +59,17 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	// Create the menu manager
 	menuManager := menumanager.NewManager()
+
+	// Process the application menu
 	menuManager.SetApplicationMenu(options.GetApplicationMenu(appoptions))
+
+	// Process context menus
+	contextMenus := options.GetContextMenus(appoptions)
+	if contextMenus != nil {
+		for contextMenuID, contextMenu := range contextMenus.Items {
+			menuManager.AddContextMenu(contextMenuID, contextMenu)
+		}
+	}
 
 	window := ffenestri.NewApplicationWithConfig(appoptions, myLogger, menuManager)
 

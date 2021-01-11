@@ -11,16 +11,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
-// eventListener holds a callback function which is invoked when
-// the event listened for is emitted. It has a counter which indicates
-// how the total number of events it is interested in. A value of zero
-// means it does not expire (default).
-// type eventListener struct {
-// 	callback func(...interface{}) // Function to call with emitted event data
-// 	counter  int                  // The number of times this callback may be called. -1 = infinite
-// 	delete   bool                 // Flag to indicate that this listener should be deleted
-// }
-
 // Menu is the subsystem that handles the operation of menus. It manages all service bus messages
 // starting with "menu".
 type Menu struct {

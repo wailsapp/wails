@@ -33,7 +33,7 @@ type ProcessedMenuItem struct {
 	Background int
 }
 
-func (m *Manager) NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *ProcessedMenuItem {
+func NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *ProcessedMenuItem {
 
 	ID := menuItemMap.menuItemToIDMap[menuItem]
 	result := &ProcessedMenuItem{
@@ -50,7 +50,7 @@ func (m *Manager) NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.
 	}
 
 	if menuItem.SubMenu != nil {
-		result.SubMenu = m.NewProcessedMenu(menuItemMap, menuItem.SubMenu)
+		result.SubMenu = NewProcessedMenu(menuItemMap, menuItem.SubMenu)
 	}
 
 	return result
@@ -60,11 +60,11 @@ type ProcessedMenu struct {
 	Items []*ProcessedMenuItem
 }
 
-func (m *Manager) NewProcessedMenu(menuItemMap *MenuItemMap, menu *menu.Menu) *ProcessedMenu {
+func NewProcessedMenu(menuItemMap *MenuItemMap, menu *menu.Menu) *ProcessedMenu {
 
 	result := &ProcessedMenu{}
 	for _, item := range menu.Items {
-		processedMenuItem := m.NewProcessedMenuItem(menuItemMap, item)
+		processedMenuItem := NewProcessedMenuItem(menuItemMap, item)
 		result.Items = append(result.Items, processedMenuItem)
 	}
 
@@ -85,11 +85,11 @@ type RadioGroup struct {
 	Length  int
 }
 
-func (m *Manager) NewWailsMenu(menuItemMap *MenuItemMap, menu *menu.Menu) *WailsMenu {
+func NewWailsMenu(menuItemMap *MenuItemMap, menu *menu.Menu) *WailsMenu {
 	result := &WailsMenu{}
 
 	// Process the menus
-	result.Menu = m.NewProcessedMenu(menuItemMap, menu)
+	result.Menu = NewProcessedMenu(menuItemMap, menu)
 
 	// Process the radio groups
 	result.processRadioGroups()
