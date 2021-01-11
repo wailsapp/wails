@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
-	"github.com/wailsapp/wails/v2/internal/messagedispatcher/message"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
@@ -116,11 +115,6 @@ func (m *Menu) Start() error {
 						m.logger.Trace("%s", err.Error())
 					}
 
-				case "on":
-					listenerDetails := menuMessage.Data().(*message.MenuOnMessage)
-					id := listenerDetails.MenuID
-					m.listeners[id] = append(m.listeners[id], listenerDetails.Callback)
-
 				// Make sure we catch any menu updates
 				case "updateappmenu":
 					updatedMenu, err := m.menuManager.UpdateApplicationMenu()
@@ -128,10 +122,8 @@ func (m *Menu) Start() error {
 						m.logger.Trace("%s", err.Error())
 						return
 					}
-					//updatedMenu := menuMessage.Data().(*menu.Menu)
-					//m.processMenu(updatedMenu)
-					//
-					//// Notify frontend of menu change
+
+					// Notify frontend of menu change
 					m.bus.Publish("menufrontend:updateappmenu", updatedMenu)
 
 				default:

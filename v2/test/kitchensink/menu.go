@@ -67,7 +67,7 @@ func (m *Menu) addMenu(data *menu.CallbackData) {
 			removeMenu.Label = "Remove " + menuText
 		}
 	}
-	m.runtime.Menu.Update()
+	m.runtime.Menu.UpdateApplicationMenu()
 }
 
 func (m *Menu) removeMenu(_ *menu.CallbackData) {
@@ -97,7 +97,7 @@ func (m *Menu) removeMenu(_ *menu.CallbackData) {
 	//}
 	//
 	//// 	parent.Append(menu.Text(menuText, menuText, menu.Key("[")))
-	//m.runtime.Menu.Update()
+	//m.runtime.Menu.UpdateApplicationMenu()
 }
 
 func (m *Menu) createDynamicMenuTwo(data *menu.CallbackData) {
@@ -115,8 +115,8 @@ func (m *Menu) createDynamicMenuTwo(data *menu.CallbackData) {
 		menu.Separator(),
 	))
 
-	m.runtime.Menu.On("Insert Before Random", m.insertBeforeRandom)
-	m.runtime.Menu.On("Insert After Random", m.insertAfterRandom)
+	//m.runtime.Menu.On("Insert Before Random", m.insertBeforeRandom)
+	//m.runtime.Menu.On("Insert After Random", m.insertAfterRandom)
 
 	// Initialise out map
 	m.dynamicMenuItems = make(map[string]*menu.MenuItem)
@@ -137,7 +137,7 @@ func (m *Menu) createDynamicMenuTwo(data *menu.CallbackData) {
 	}
 
 	dm1.InsertAfter(dm2)
-	m.runtime.Menu.Update()
+	m.runtime.Menu.UpdateApplicationMenu()
 }
 
 func (m *Menu) insertBeforeRandom(_ *menu.MenuItem) {
@@ -172,7 +172,7 @@ func (m *Menu) insertBeforeRandom(_ *menu.MenuItem) {
 		item.Label))
 
 	item.InsertBefore(newItem)
-	m.runtime.Menu.Update()
+	m.runtime.Menu.UpdateApplicationMenu()
 }
 
 func (m *Menu) insertAfterRandom(_ *menu.MenuItem) {
@@ -204,7 +204,7 @@ func (m *Menu) insertAfterRandom(_ *menu.MenuItem) {
 		item.Label))
 
 	item.InsertAfter(newItem)
-	m.runtime.Menu.Update()
+	m.runtime.Menu.UpdateApplicationMenu()
 }
 
 func (m *Menu) processPlainText(callbackData *menu.CallbackData) {
