@@ -9,7 +9,6 @@ ContextMenuStore* NewContextMenuStore(const char* contextMenusAsJSON) {
     // Init members
     result->contextMenusAsJSON = contextMenusAsJSON;
     result->processedContextMenus = NULL;
-    result->contextMenuData = NULL;
 
     // Allocate Context Menu Store
     if( 0 != hashmap_create((const unsigned)4, &result->contextMenuStore)) {
@@ -43,8 +42,4 @@ void DeleteContextMenuStore(ContextMenuStore* store) {
         store->processedContextMenus = NULL;
     }
 
-    // Delete any context menu data we may have stored
-    if( store->contextMenuData != NULL ) {
-        MEMFREE(store->contextMenuData);
-    }
 }

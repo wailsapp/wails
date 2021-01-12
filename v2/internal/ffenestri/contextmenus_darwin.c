@@ -13,7 +13,8 @@ ContextMenu* NewContextMenu(JsonNode* menuData, ContextMenuStore *store) {
     result->menu = NewMenu(menuData);
     result->nsmenu = NULL;
     result->menu->menuType = ContextMenuType;
-    result->menu->parentData = store;
+    result->menu->parentData = result;
+    result->contextMenuData = NULL;
     return result;
 }
 
@@ -25,6 +26,11 @@ ContextMenu* GetContextMenuByID(ContextMenuStore* store, const char *contextMenu
 void DeleteContextMenu(ContextMenu* contextMenu) {
     // Free Menu
     DeleteMenu(contextMenu->menu);
+
+    // Delete any context menu data we may have stored
+    if( contextMenu->contextMenuData != NULL ) {
+        MEMFREE(contextMenu->contextMenuData);
+    }
 
     // Free context menu
     free(contextMenu);
@@ -64,6 +70,7 @@ void ProcessContextMenus(ContextMenuStore* store) {
         }
         // Create a new context menu instance
         ContextMenu *thisContextMenu = NewContextMenu(processedMenu, store);
+        thisContextMenu->ID = ID;
 
 		// Store the item in the context menu map
 		hashmap_put(&store->contextMenuStore, (char*)ID, strlen(ID), thisContextMenu);
@@ -85,14 +92,15 @@ void ShowContextMenu(ContextMenuStore* store, id mainWindow, const char *context
 
     if( contextMenu == NULL ) {
         // Free context menu data
-        if( contextMenuData != NULL ) {}
-        MEMFREE(contextMenuData);
-		return;
+        if( contextMenuData != NULL ) {
+	        MEMFREE(contextMenuData);
+			return;
+		}
 	}
 
     // We need to store the context menu data. Free existing data if we have it
     // and set to the new value.
-    FREE_AND_SET(store->contextMenuData, contextMenuData);
+    FREE_AND_SET(contextMenu->contextMenuData, contextMenuData);
 
 	// Grab the content view and show the menu
 	id contentView = msg(mainWindow, s("contentView"));

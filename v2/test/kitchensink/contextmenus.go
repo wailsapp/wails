@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/wailsapp/wails/v2"
@@ -19,15 +18,6 @@ type ContextMenu struct {
 func (c *ContextMenu) WailsInit(runtime *wails.Runtime) error {
 	// Perform your setup here
 	c.runtime = runtime
-
-	// Setup Menu Listeners
-	c.runtime.ContextMenu.On("Test Context Menu", func(mi *menu.MenuItem, contextData string) {
-		c.lock.Lock()
-		c.counter++
-		mi.Label = fmt.Sprintf("Clicked %d times", c.counter)
-		c.lock.Unlock()
-		c.runtime.ContextMenu.Update()
-	})
 
 	return nil
 }

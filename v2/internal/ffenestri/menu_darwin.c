@@ -88,12 +88,15 @@ void DeleteMenu(Menu *menu) {
 }
 
 // Creates a JSON message for the given menuItemID and data
-const char* createMenuClickedMessage(const char *menuItemID, const char *data, enum MenuType menuType) {
+const char* createMenuClickedMessage(const char *menuItemID, const char *data, enum MenuType menuType, const char *parentID) {
     JsonNode *jsonObject = json_mkobject();
     json_append_member(jsonObject, "menuItemID", json_mkstring(menuItemID));
     json_append_member(jsonObject, "menuType", json_mkstring(MenuTypeAsString[(int)menuType]));
     if (data != NULL) {
         json_append_member(jsonObject, "data", json_mkstring(data));
+    }
+    if (parentID != NULL) {
+        json_append_member(jsonObject, "parentID", json_mkstring(parentID));
     }
     const char *payload = json_encode(jsonObject);
     json_delete(jsonObject);
@@ -138,15 +141,17 @@ void menuItemCallback(id self, SEL cmd, id sender) {
     const char *menuID = callbackData->menuID;
     const char *data = NULL;
     enum MenuType menuType = callbackData->menu->menuType;
+    const char *parentID = NULL;
 
     // Generate message to send to backend
     if( menuType == ContextMenuType ) {
         // Get the context menu data from the menu
-        ContextMenuStore* store = (ContextMenuStore*) callbackData->menu->parentData;
-        data = store->contextMenuData;
+        ContextMenu* contextMenu = (ContextMenu*) callbackData->menu->parentData;
+        data = contextMenu->contextMenuData;
+        parentID = contextMenu->ID;
     }
 
-    message = createMenuClickedMessage(menuID, data, menuType);
+    message = createMenuClickedMessage(menuID, data, menuType, parentID);
 
     // TODO: Add other menu types here!
 

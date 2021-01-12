@@ -9,6 +9,9 @@
 TrayMenu* NewTrayMenu(const char* menuJSON) {
     TrayMenu* result = malloc(sizeof(TrayMenu));
 
+
+
+
     return result;
 }
 

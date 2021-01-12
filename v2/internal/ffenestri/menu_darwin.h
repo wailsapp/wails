@@ -65,7 +65,7 @@ MenuItemCallbackData* CreateMenuItemCallbackData(Menu *menu, id menuItem, const 
 void DeleteMenu(Menu *menu);
 
 // Creates a JSON message for the given menuItemID and data
-const char* createMenuClickedMessage(const char *menuItemID, const char *data, enum MenuType menuType);
+const char* createMenuClickedMessage(const char *menuItemID, const char *data, enum MenuType menuType, const char *parentID);
 // Callback for text menu items
 void menuItemCallback(id self, SEL cmd, id sender);
 id processAcceleratorKey(const char *key);

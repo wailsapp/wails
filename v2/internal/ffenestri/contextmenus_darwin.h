@@ -13,6 +13,9 @@ typedef struct {
     const char* ID;
     id nsmenu;
     Menu* menu;
+
+	// The optional data that may be passed with a context menu selection
+	const char* contextMenuData;
 } ContextMenu;
 
 

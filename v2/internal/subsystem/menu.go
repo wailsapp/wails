@@ -2,10 +2,11 @@ package subsystem
 
 import (
 	"encoding/json"
+	"strings"
+
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
-	"strings"
 )
 
 // Menu is the subsystem that handles the operation of menus. It manages all service bus messages
@@ -80,6 +81,7 @@ func (m *Menu) Start() error {
 						MenuItemID string `json:"menuItemID"`
 						MenuType   string `json:"menuType"`
 						Data       string `json:"data"`
+						ParentID   string `json:"parentID"`
 					}
 
 					var callbackData ClickCallbackMessage
@@ -90,7 +92,7 @@ func (m *Menu) Start() error {
 						return
 					}
 
-					err = m.menuManager.ProcessClick(callbackData.MenuItemID, callbackData.Data, callbackData.MenuType)
+					err = m.menuManager.ProcessClick(callbackData.MenuItemID, callbackData.Data, callbackData.MenuType, callbackData.ParentID)
 					if err != nil {
 						m.logger.Trace("%s", err.Error())
 					}
@@ -105,6 +107,18 @@ func (m *Menu) Start() error {
 
 					// Notify frontend of menu change
 					m.bus.Publish("menufrontend:updateappmenu", updatedMenu)
+
+				case "updatecontextmenu":
+					m.logger.Info("Update Context Menu TBD")
+					//contextMenu := menuMessage.Data().(*menu.ContextMenu)
+					//updatedMenu, err := m.menuManager.UpdateContextMenu(contextMenu)
+					//if err != nil {
+					//	m.logger.Trace("%s", err.Error())
+					//	return
+					//}
+					//
+					//// Notify frontend of menu change
+					//m.bus.Publish("menufrontend:updatecontextmenu", updatedMenu)
 
 				default:
 					m.logger.Error("unknown menu message: %+v", menuMessage)

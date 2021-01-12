@@ -33,15 +33,20 @@ func (m *Manager) getMenuItemByID(menuMap *MenuItemMap, menuId string) *menu.Men
 	return menuMap.idToMenuItemMap[menuId]
 }
 
-func (m *Manager) ProcessClick(menuID string, data string, menuType string) error {
+func (m *Manager) ProcessClick(menuID string, data string, menuType string, parentID string) error {
 
 	var menuItemMap *MenuItemMap
 
 	switch menuType {
 	case "ApplicationMenu":
 		menuItemMap = m.applicationMenuItemMap
-	//case "ContextMenu":
-	//	// TBD
+	case "ContextMenu":
+		// TBD
+		contextMenu := m.contextMenus[parentID]
+		if contextMenu == nil {
+			return fmt.Errorf("unknown context menu: %s", parentID)
+		}
+		menuItemMap = contextMenu.menuItemMap
 	//case "TrayMenu":
 	//	// TBD
 	default:

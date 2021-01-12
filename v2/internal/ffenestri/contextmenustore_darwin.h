@@ -15,9 +15,6 @@ typedef struct {
     // The raw JSON defining the context menus
     const char* contextMenusAsJSON;
 
-    // The optional data that may be passed with a context menu selection
-    const char* contextMenuData;
-
     // The processed context menus
     JsonNode* processedContextMenus;
 
