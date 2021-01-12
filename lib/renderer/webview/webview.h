@@ -1879,7 +1879,7 @@ struct webview_priv
           token = strtok(NULL, ",");
           i++;
         }
-        printf("ls\n");
+
         for (int i=0; i < count; i++) {
           wchar_t *wFilter = (wchar_t *)malloc(4096);
           MultiByteToWideChar(CP_ACP, 0, filters[i], -1, wFilter, 4096);
@@ -1904,12 +1904,11 @@ struct webview_priv
       {
         goto error_dlg;
       }
-      printf("ls\n");
       if (flags & WEBVIEW_DIALOG_FLAG_MULTIPLE) {
         if (dlg->lpVtbl->GetResults(dlg, &multires) != S_OK) {
           goto error_dlg;
         }
-        DWORD count;
+        /* DWORD count;
         multires->lpVtbl->GetCount(multires,&count);
         for (DWORD i = 0; i < count; i++) {
           IShellItem *shellitem;
@@ -1918,7 +1917,7 @@ struct webview_priv
           shellitem->lpVtbl->GetDisplayName(shellitem, SIGDN_FILESYSPATH, &filepath);
           wcscat(ws, filepath);
           CoTaskMemFree(filepath);
-        }
+        } */
       } else {
         if (dlg->lpVtbl->GetResult(dlg, &res) != S_OK) {
           goto error_dlg;
@@ -1931,6 +1930,7 @@ struct webview_priv
       strncpy(result, s, resultsz);
       result[resultsz - 1] = '\0';
       CoTaskMemFree(ws);
+      return;
     error_result:
       res->lpVtbl->Release(res);
       multires->lpVtbl->Release(multires);
