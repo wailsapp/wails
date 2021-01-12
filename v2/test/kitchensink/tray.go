@@ -14,7 +14,8 @@ type Tray struct {
 	//dynamicMenuItems          map[string]*menu.MenuItem
 	//anotherDynamicMenuCounter int
 
-	trayMenu *menu.TrayMenu
+	trayMenu       *menu.TrayMenu
+	secondTrayMenu *menu.TrayMenu
 
 	done bool
 }
@@ -51,6 +52,22 @@ func (t *Tray) WailsInit(runtime *wails.Runtime) error {
 	//})
 
 	return nil
+}
+
+func (t *Tray) showWindow(_ *menu.CallbackData) {
+	t.runtime.Window.Show()
+}
+
+func (t *Tray) hideWindow(_ *menu.CallbackData) {
+	t.runtime.Window.Hide()
+}
+
+func (t *Tray) unminimiseWindow(_ *menu.CallbackData) {
+	t.runtime.Window.Unminimise()
+}
+
+func (t *Tray) minimiseWindow(_ *menu.CallbackData) {
+	t.runtime.Window.Minimise()
 }
 
 func (t *Tray) WailsShutdown() {
@@ -137,14 +154,24 @@ func (t *Tray) createTrayMenus() []*menu.TrayMenu {
 	trayMenu := &menu.TrayMenu{}
 	trayMenu.Label = "Test Tray Label"
 	trayMenu.Menu = menu.NewMenuFromItems(
-		menu.Text("Show Window", "Show Window", nil, nil),
-		menu.Text("Hide Window", "Hide Window", nil, nil),
-		menu.Text("Minimise Window", "Minimise Window", nil, nil),
-		menu.Text("Unminimise Window", "Unminimise Window", nil, nil),
+		menu.Text("Show Window", "Show Window", nil, t.showWindow),
+		menu.Text("Hide Window", "Hide Window", nil, t.hideWindow),
+		menu.Text("Minimise Window", "Minimise Window", nil, t.minimiseWindow),
+		menu.Text("Unminimise Window", "Unminimise Window", nil, t.unminimiseWindow),
 	)
 	t.trayMenu = trayMenu
 
+	secondTrayMenu := &menu.TrayMenu{}
+	secondTrayMenu.Label = "Another tray label"
+	secondTrayMenu.Menu = menu.NewMenuFromItems(
+		menu.Text("Show Window", "Show Window", nil, t.showWindow),
+		menu.Text("Hide Window", "Hide Window", nil, t.hideWindow),
+		menu.Text("Minimise Window", "Minimise Window", nil, t.minimiseWindow),
+		menu.Text("Unminimise Window", "Unminimise Window", nil, t.unminimiseWindow),
+	)
+	t.secondTrayMenu = secondTrayMenu
 	return []*menu.TrayMenu{
 		trayMenu,
+		secondTrayMenu,
 	}
 }

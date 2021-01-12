@@ -45,6 +45,29 @@ const char* getJSONString(JsonNode *item, const char* key) {
     return result;
 }
 
+void ABORT_JSON(JsonNode *node, const char* key) {
+    ABORT("Unable to read required key '%s' from JSON: %s\n", key, json_encode(node));
+}
+
+const char* mustJSONString(JsonNode *node, const char* key) {
+    const char* result = getJSONString(node, key);
+    if ( result == NULL ) {
+        ABORT_JSON(node, key);
+    }
+    return result;
+}
+JsonNode* mustJSONObject(JsonNode *node, const char* key) {
+    struct JsonNode* result = getJSONObject(node, key);
+    if ( result == NULL ) {
+        ABORT_JSON(node, key);
+    }
+    return result;
+}
+
+JsonNode* getJSONObject(JsonNode* node, const char* key) {
+    return json_find_member(node, key);
+}
+
 bool getJSONBool(JsonNode *item, const char* key, bool *result) {
     JsonNode *node = json_find_member(item, key);
     if ( node != NULL && node->tag == JSON_BOOL) {

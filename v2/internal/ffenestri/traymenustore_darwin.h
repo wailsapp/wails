@@ -19,6 +19,7 @@ typedef struct {
 TrayMenuStore* NewTrayMenuStore();
 
 void AddTrayMenuToStore(TrayMenuStore* store, const char* menuJSON);
+void ShowTrayMenusInStore(TrayMenuStore* store);
 void DeleteTrayMenuStore(TrayMenuStore* store);
 
 #endif //TRAYMENUSTORE_DARWIN_H

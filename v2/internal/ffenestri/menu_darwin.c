@@ -149,11 +149,11 @@ void menuItemCallback(id self, SEL cmd, id sender) {
         ContextMenu* contextMenu = (ContextMenu*) callbackData->menu->parentData;
         data = contextMenu->contextMenuData;
         parentID = contextMenu->ID;
+    } else if ( menuType == TrayMenuType ) {
+        parentID = (const char*) callbackData->menu->parentData;
     }
 
     message = createMenuClickedMessage(menuID, data, menuType, parentID);
-
-    // TODO: Add other menu types here!
 
     // Notify the backend
     messageFromWindowCallback(message);

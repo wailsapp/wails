@@ -21,11 +21,21 @@ TrayMenuStore* NewTrayMenuStore() {
 void AddTrayMenuToStore(TrayMenuStore* store, const char* menuJSON) {
     TrayMenu* newMenu = NewTrayMenu(menuJSON);
 
-    const char *ID = "TEST";
-
-    hashmap_put(&store->trayMenuMap, ID, strlen(ID), newMenu);
+    hashmap_put(&store->trayMenuMap, newMenu->ID, strlen(newMenu->ID), newMenu);
 
 }
+
+int showTrayMenu(void *const context, struct hashmap_element_s *const e) {
+    ShowTrayMenu(e->data);
+    return -1;
+}
+
+void ShowTrayMenusInStore(TrayMenuStore* store) {
+    if( hashmap_num_entries(&store->trayMenuMap) > 0 ) {
+        hashmap_iterate_pairs(&store->trayMenuMap, showTrayMenu, NULL);
+    }
+}
+
 
 int freeTrayMenu(void *const context, struct hashmap_element_s *const e) {
     DeleteTrayMenu(e->data);

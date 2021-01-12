@@ -1999,6 +1999,9 @@ void Run(struct Application *app, int argc, char **argv) {
 	    msg(msg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menu);
 	}
 
+	// Setup initial trays
+    ShowTrayMenusInStore(app->trayMenuStore);
+
 	// If we have a tray menu, process it
 	if( app->trayMenuAsJSON != NULL ) {
 	  parseTrayData(app);

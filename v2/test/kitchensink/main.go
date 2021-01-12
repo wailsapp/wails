@@ -46,6 +46,7 @@ func main() {
 	app.Bind(&Dialog{})
 	app.Bind(&Window{})
 	app.Bind(Menu)
+	app.Bind(Tray)
 	app.Bind(&ContextMenu{})
 
 	err = app.Run()

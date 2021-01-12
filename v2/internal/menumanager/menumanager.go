@@ -41,14 +41,17 @@ func (m *Manager) ProcessClick(menuID string, data string, menuType string, pare
 	case "ApplicationMenu":
 		menuItemMap = m.applicationMenuItemMap
 	case "ContextMenu":
-		// TBD
 		contextMenu := m.contextMenus[parentID]
 		if contextMenu == nil {
 			return fmt.Errorf("unknown context menu: %s", parentID)
 		}
 		menuItemMap = contextMenu.menuItemMap
-	//case "TrayMenu":
-	//	// TBD
+	case "TrayMenu":
+		trayMenu := m.trayMenus[parentID]
+		if trayMenu == nil {
+			return fmt.Errorf("unknown tray menu: %s", parentID)
+		}
+		menuItemMap = trayMenu.menuItemMap
 	default:
 		return fmt.Errorf("unknown menutype: %s", menuType)
 	}
