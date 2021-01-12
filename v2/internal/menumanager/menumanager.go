@@ -16,12 +16,16 @@ type Manager struct {
 
 	// Context menus
 	contextMenus map[string]*ContextMenu
+
+	// Tray menus
+	trayMenus map[string]*TrayMenu
 }
 
 func NewManager() *Manager {
 	return &Manager{
 		applicationMenuItemMap: NewMenuItemMap(),
 		contextMenus:           make(map[string]*ContextMenu),
+		trayMenus:              make(map[string]*TrayMenu),
 	}
 }
 

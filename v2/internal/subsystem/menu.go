@@ -2,13 +2,10 @@ package subsystem
 
 import (
 	"encoding/json"
-	"github.com/wailsapp/wails/v2/internal/menumanager"
-	"strings"
-	"sync"
-
 	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
-	"github.com/wailsapp/wails/v2/pkg/menu"
+	"strings"
 )
 
 // Menu is the subsystem that handles the operation of menus. It manages all service bus messages
@@ -17,11 +14,6 @@ type Menu struct {
 	quitChannel <-chan *servicebus.Message
 	menuChannel <-chan *servicebus.Message
 	running     bool
-
-	// Event listeners
-	listeners  map[string][]func(*menu.MenuItem)
-	menuItems  map[string]*menu.MenuItem
-	notifyLock sync.RWMutex
 
 	// logger
 	logger logger.CustomLogger
@@ -52,8 +44,6 @@ func NewMenu(bus *servicebus.ServiceBus, logger *logger.Logger, menuManager *men
 		quitChannel: quitChannel,
 		menuChannel: menuChannel,
 		logger:      logger.CustomLogger("Menu Subsystem"),
-		listeners:   make(map[string][]func(*menu.MenuItem)),
-		menuItems:   make(map[string]*menu.MenuItem),
 		bus:         bus,
 		menuManager: menuManager,
 	}

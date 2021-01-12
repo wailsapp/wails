@@ -23,8 +23,8 @@ extern void SetContextMenus(void *, const char *);
 */
 import "C"
 import (
-	"encoding/json"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"os"
 )
 
 func (a *Application) processPlatformSettings() error {
@@ -83,24 +83,17 @@ func (a *Application) processPlatformSettings() error {
 	}
 
 	// Process tray
-	tray := options.GetTray(a.config)
-	if tray != nil {
-
-		/*
-			As radio groups need to be manually managed on OSX,
-			we preprocess the menu to determine the radio groups.
-			This is defined as any adjacent menu item of type "RadioType".
-			We keep a record of every radio group member we discover by saving
-			a list of all members of the group and the number of members
-			in the group (this last one is for optimisation at the C layer).
-		*/
-		processedMenu := NewProcessedMenu(tray.Menu)
-		trayMenuJSON, err := json.Marshal(processedMenu)
-		if err != nil {
-			return err
-		}
-		C.SetTray(a.app, a.string2CString(string(trayMenuJSON)), a.string2CString(tray.Label), a.string2CString(tray.Icon))
+	trays, err := a.menuManager.GetTrayMenus()
+	if err != nil {
+		return err
 	}
+	if trays != nil {
+		for _, tray := range trays {
+			println("Adding tray menu: " + tray)
+			//C.AddTray(a.app, a.string2CString(tray))
+		}
+	}
+	os.Exit(1)
 
 	// Process context menus
 	contextMenus := options.GetContextMenus(a.config)

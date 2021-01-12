@@ -11,6 +11,7 @@ import (
 func main() {
 
 	Menu := &Menu{}
+	Tray := &Tray{}
 
 	// Create application with options
 	app, err := wails.CreateAppWithOptions(&options.App{
@@ -27,12 +28,9 @@ func main() {
 			WebviewIsTransparent:          true,
 			WindowBackgroundIsTranslucent: true,
 			// Comment out line below to see Window.SetTitle() work
-			TitleBar: mac.TitleBarHiddenInset(),
-			Menu:     Menu.createApplicationMenu(),
-			//Tray: &menu.Tray{
-			//	Icon: "light",
-			//	Menu: createApplicationTray(),
-			//},
+			TitleBar:  mac.TitleBarHiddenInset(),
+			Menu:      Menu.createApplicationMenu(),
+			TrayMenus: Tray.createTrayMenus(),
 		},
 		LogLevel: logger.TRACE,
 	})
@@ -48,7 +46,6 @@ func main() {
 	app.Bind(&Dialog{})
 	app.Bind(&Window{})
 	app.Bind(Menu)
-	app.Bind(&Tray{})
 	app.Bind(&ContextMenu{})
 
 	err = app.Run()

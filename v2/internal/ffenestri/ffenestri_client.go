@@ -200,7 +200,7 @@ func (c *Client) UpdateTray(menu *menu.Menu) {
 	processedMenu := NewProcessedMenu(menu)
 	trayMenuJSON, err := json.Marshal(processedMenu)
 	if err != nil {
-		c.app.logger.Error("Error processing updated Tray: %s", err.Error())
+		c.app.logger.Error("Error processing updated TrayMenu: %s", err.Error())
 		return
 	}
 	C.UpdateTray(c.app.app, c.app.string2CString(string(trayMenuJSON)))

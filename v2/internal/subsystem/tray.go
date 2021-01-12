@@ -26,14 +26,14 @@ type Tray struct {
 	logger logger.CustomLogger
 
 	// The tray menu
-	trayMenu *menu.Tray
+	trayMenu *menu.TrayMenu
 
 	// Service Bus
 	bus *servicebus.ServiceBus
 }
 
 // NewTray creates a new menu subsystem
-func NewTray(trayMenu *menu.Tray, bus *servicebus.ServiceBus,
+func NewTray(trayMenu *menu.TrayMenu, bus *servicebus.ServiceBus,
 	logger *logger.Logger) (*Tray, error) {
 
 	// Register quit channel
@@ -51,7 +51,7 @@ func NewTray(trayMenu *menu.Tray, bus *servicebus.ServiceBus,
 	result := &Tray{
 		quitChannel: quitChannel,
 		trayChannel: trayChannel,
-		logger:      logger.CustomLogger("Tray Subsystem"),
+		logger:      logger.CustomLogger("TrayMenu Subsystem"),
 		listeners:   make(map[string][]func(*menu.MenuItem)),
 		menuItems:   make(map[string]*menu.MenuItem),
 		trayMenu:    trayMenu,
@@ -87,7 +87,7 @@ func (t *Tray) Start() error {
 						t.logger.Error("Received clicked message with invalid topic format. Expected 2 sections in topic, got %s", splitTopic)
 						continue
 					}
-					t.logger.Trace("Got Tray Menu clicked Message: %s %+v", menuMessage.Topic(), menuMessage.Data())
+					t.logger.Trace("Got TrayMenu Menu clicked Message: %s %+v", menuMessage.Topic(), menuMessage.Data())
 					menuid := menuMessage.Data().(string)
 
 					// Get the menu item

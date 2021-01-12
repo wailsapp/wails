@@ -14,22 +14,20 @@ type Runtime struct {
 	System      System
 	Menu        Menu
 	ContextMenu ContextMenus
-	Tray        Tray
 	Store       *StoreProvider
 	Log         Log
 	bus         *servicebus.ServiceBus
 }
 
 // New creates a new runtime
-func New(serviceBus *servicebus.ServiceBus, menu *menu.Menu, trayMenu *menu.Tray, contextMenus *menu.ContextMenus) *Runtime {
+func New(serviceBus *servicebus.ServiceBus, contextMenus *menu.ContextMenus) *Runtime {
 	result := &Runtime{
 		Browser:     newBrowser(),
 		Events:      newEvents(serviceBus),
 		Window:      newWindow(serviceBus),
 		Dialog:      newDialog(serviceBus),
 		System:      newSystem(serviceBus),
-		Menu:        newMenu(serviceBus, menu),
-		Tray:        newTray(serviceBus, trayMenu),
+		Menu:        newMenu(serviceBus),
 		ContextMenu: newContextMenus(serviceBus, contextMenus),
 		Log:         newLog(serviceBus),
 		bus:         serviceBus,

@@ -8,9 +8,8 @@ import (
 
 // Tray defines all Tray related operations
 type Tray interface {
-	NewTray(id string) *menu.Tray
 	On(menuID string, callback func(*menu.MenuItem))
-	Update(tray ...*menu.Tray)
+	Update(tray ...*menu.TrayMenu)
 	GetByID(menuID string) *menu.MenuItem
 	RemoveByID(id string) bool
 	SetLabel(label string)
@@ -19,11 +18,11 @@ type Tray interface {
 
 type trayRuntime struct {
 	bus      *servicebus.ServiceBus
-	trayMenu *menu.Tray
+	trayMenu *menu.TrayMenu
 }
 
 // newTray creates a new Menu struct
-func newTray(bus *servicebus.ServiceBus, menu *menu.Tray) Tray {
+func newTray(bus *servicebus.ServiceBus, menu *menu.TrayMenu) Tray {
 	return &trayRuntime{
 		bus:      bus,
 		trayMenu: menu,
@@ -38,14 +37,7 @@ func (t *trayRuntime) On(menuID string, callback func(*menu.MenuItem)) {
 	})
 }
 
-// NewTray creates a new Tray item
-func (t *trayRuntime) NewTray(trayID string) *menu.Tray {
-	return &menu.Tray{
-		ID: trayID,
-	}
-}
-
-func (t *trayRuntime) Update(tray ...*menu.Tray) {
+func (t *trayRuntime) Update(tray ...*menu.TrayMenu) {
 
 	//trayToUpdate := t.trayMenu
 	t.bus.Publish("tray:update", t.trayMenu)

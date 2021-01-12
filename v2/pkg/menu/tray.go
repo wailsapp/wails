@@ -1,10 +1,7 @@
 package menu
 
-// Tray are the options
-type Tray struct {
-
-	// The ID of this tray
-	ID string
+// TrayMenu are the options
+type TrayMenu struct {
 
 	// Label is the text we wish to display in the tray
 	Label string

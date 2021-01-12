@@ -25,7 +25,7 @@ type App struct {
 	DevTools      bool
 	RGBA          int
 	ContextMenus  *menu.ContextMenus
-	Tray          *menu.Tray
+	TrayMenus     []*menu.TrayMenu
 	Menu          *menu.Menu
 	Mac           *mac.Options
 	Logger        logger.Logger `json:"-"`
@@ -41,25 +41,25 @@ func MergeDefaults(appoptions *App) {
 
 }
 
-func GetTray(appoptions *App) *menu.Tray {
-	var result *menu.Tray
+func GetTrayMenus(appoptions *App) []*menu.TrayMenu {
+	var result []*menu.TrayMenu
 	switch runtime.GOOS {
 	case "darwin":
 		if appoptions.Mac != nil {
-			result = appoptions.Mac.Tray
+			result = appoptions.Mac.TrayMenus
 		}
 		//case "linux":
 		//	if appoptions.Linux != nil {
-		//		result = appoptions.Linux.Tray
+		//		result = appoptions.Linux.TrayMenu
 		//	}
 		//case "windows":
 		//	if appoptions.Windows != nil {
-		//		result = appoptions.Windows.Tray
+		//		result = appoptions.Windows.TrayMenu
 		//	}
 	}
 
 	if result == nil {
-		result = appoptions.Tray
+		result = appoptions.TrayMenus
 	}
 
 	return result
@@ -74,11 +74,11 @@ func GetApplicationMenu(appoptions *App) *menu.Menu {
 		}
 		//case "linux":
 		//	if appoptions.Linux != nil {
-		//		result = appoptions.Linux.Tray
+		//		result = appoptions.Linux.TrayMenu
 		//	}
 		//case "windows":
 		//	if appoptions.Windows != nil {
-		//		result = appoptions.Windows.Tray
+		//		result = appoptions.Windows.TrayMenu
 		//	}
 	}
 
@@ -101,11 +101,11 @@ func GetContextMenus(appoptions *App) *menu.ContextMenus {
 		}
 		//case "linux":
 		//	if appoptions.Linux != nil {
-		//		result = appoptions.Linux.Tray
+		//		result = appoptions.Linux.TrayMenu
 		//	}
 		//case "windows":
 		//	if appoptions.Windows != nil {
-		//		result = appoptions.Windows.Tray
+		//		result = appoptions.Windows.TrayMenu
 		//	}
 	}
 

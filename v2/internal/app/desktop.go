@@ -71,6 +71,12 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		}
 	}
 
+	// Process tray menus
+	trayMenus := options.GetTrayMenus(appoptions)
+	for _, trayMenu := range trayMenus {
+		menuManager.AddTrayMenu(trayMenu)
+	}
+
 	window := ffenestri.NewApplicationWithConfig(appoptions, myLogger, menuManager)
 
 	result := &App{
@@ -112,10 +118,9 @@ func (a *App) Run() error {
 
 	// Start the runtime
 	applicationMenu := options.GetApplicationMenu(a.options)
-	trayMenu := options.GetTray(a.options)
 	contextMenus := options.GetContextMenus(a.options)
 
-	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger, applicationMenu, trayMenu, contextMenus)
+	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger, contextMenus)
 	if err != nil {
 		return err
 	}
@@ -186,18 +191,18 @@ func (a *App) Run() error {
 		}
 	}
 
-	// Optionally start the tray subsystem
-	if trayMenu != nil {
-		traysubsystem, err := subsystem.NewTray(trayMenu, a.servicebus, a.logger)
-		if err != nil {
-			return err
-		}
-		a.tray = traysubsystem
-		err = a.tray.Start()
-		if err != nil {
-			return err
-		}
-	}
+	//// Optionally start the tray subsystem
+	//if trayMenu != nil {
+	//	traysubsystem, err := subsystem.NewTray(trayMenu, a.servicebus, a.logger)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	a.tray = traysubsystem
+	//	err = a.tray.Start()
+	//	if err != nil {
+	//		return err
+	//	}
+	//}
 
 	// Optionally start the context menu subsystem
 	if contextMenus != nil {
