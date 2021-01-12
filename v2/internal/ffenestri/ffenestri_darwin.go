@@ -19,12 +19,12 @@ extern void WebviewIsTransparent(void *);
 extern void WindowBackgroundIsTranslucent(void *);
 extern void SetTray(void *, const char *, const char *, const char *);
 extern void SetContextMenus(void *, const char *);
+extern void AddTrayMenu(void *, const char *);
 
 */
 import "C"
 import (
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"os"
 )
 
 func (a *Application) processPlatformSettings() error {
@@ -90,10 +90,9 @@ func (a *Application) processPlatformSettings() error {
 	if trays != nil {
 		for _, tray := range trays {
 			println("Adding tray menu: " + tray)
-			//C.AddTray(a.app, a.string2CString(tray))
+			C.AddTrayMenu(a.app, a.string2CString(tray))
 		}
 	}
-	os.Exit(1)
 
 	// Process context menus
 	contextMenus := options.GetContextMenus(a.config)

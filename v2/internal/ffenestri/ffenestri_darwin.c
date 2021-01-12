@@ -4,6 +4,7 @@
 #include "ffenestri_darwin.h"
 #include "menu_darwin.h"
 #include "contextmenus_darwin.h"
+#include "traymenustore_darwin.h"
 
 
 // References to assets
@@ -124,6 +125,8 @@ struct Application {
 	Menu *applicationMenu;
 
 	// Tray
+    TrayMenuStore* trayMenuStore;
+
 	const char *trayMenuAsJSON;
 	const char *trayLabel;
 	const char *trayIconName;
@@ -147,6 +150,8 @@ struct Application {
 // Debug works like sprintf but mutes if the global debug flag is true
 // Credit: https://stackoverflow.com/a/20639708
 
+#define MAXMESSAGE 1024*10
+char logbuffer[MAXMESSAGE];
 
 void Debug(struct Application *app, const char *message, ... ) {
 	if ( debug ) {
@@ -577,6 +582,8 @@ void DestroyApplication(struct Application *app) {
 
 	// Destroy the tray
 	destroyTray(app);
+
+    DeleteTrayMenuStore(app->trayMenuStore);
 
 	// Destroy the context menus
 	destroyContextMenus(app);
@@ -1071,6 +1078,11 @@ void SetTray(struct Application *app, const char *trayMenuAsJSON, const char *tr
 // SetContextMenus sets the context menu map for this application
 void SetContextMenus(struct Application *app, const char *contextMenusAsJSON) {
 	app->contextMenuStore = NewContextMenuStore(contextMenusAsJSON);
+}
+
+
+void AddTrayMenu(struct Application *app, const char *trayJSON) {
+	AddTrayMenuToStore(app->trayMenuStore, trayJSON);
 }
 
 void SetBindings(struct Application *app, const char *bindings) {
@@ -1666,6 +1678,7 @@ void processTrayIconData(struct Application *app) {
     }
 }
 
+
 void parseTrayData(struct Application *app) {
 
 	// Allocate the hashmaps we need
@@ -2050,6 +2063,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->applicationMenu = NULL;
 
 	// Tray
+	result->trayMenuStore = NewTrayMenuStore();
 	result->trayMenuAsJSON = NULL;
 	result->trayLabel = NULL;
 	result->trayIconName = NULL;
