@@ -5,6 +5,8 @@
 #ifndef CONTEXTMENUSTORE_DARWIN_H
 #define CONTEXTMENUSTORE_DARWIN_H
 
+#include "common.h"
+
 typedef struct {
     // This is our context menu store which keeps track
     // of all instances of ContextMenus
@@ -21,4 +23,7 @@ typedef struct {
 
 } ContextMenuStore;
 
-#endif //ASSETS_C_CONTEXTMENUSTORE_DARWIN_H
+ContextMenuStore* NewContextMenuStore(const char* contextMenusAsJSON);
+void DeleteContextMenuStore(ContextMenuStore* store);
+
+#endif //CONTEXTMENUSTORE_DARWIN_H

@@ -17,4 +17,7 @@ typedef struct {
 
 } TrayMenu;
 
+TrayMenu* NewTrayMenu(const char *trayJSON);
+void DeleteTrayMenu(TrayMenu* trayMenu);
+
 #endif //TRAYMENU_DARWIN_H
