@@ -9,6 +9,7 @@ import (
 type Menu interface {
 	UpdateApplicationMenu()
 	UpdateContextMenu(contextMenu *menu.ContextMenu)
+	UpdateTrayMenu(trayMenu *menu.TrayMenu)
 }
 
 type menuRuntime struct {
@@ -28,4 +29,8 @@ func (m *menuRuntime) UpdateApplicationMenu() {
 
 func (m *menuRuntime) UpdateContextMenu(contextMenu *menu.ContextMenu) {
 	m.bus.Publish("menu:updatecontextmenu", contextMenu)
+}
+
+func (m *menuRuntime) UpdateTrayMenu(trayMenu *menu.TrayMenu) {
+	m.bus.Publish("menu:updatetraymenu", trayMenu)
 }

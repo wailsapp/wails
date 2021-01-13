@@ -2,6 +2,7 @@ package subsystem
 
 import (
 	"encoding/json"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -119,6 +120,16 @@ func (m *Menu) Start() error {
 					//
 					//// Notify frontend of menu change
 					//m.bus.Publish("menufrontend:updatecontextmenu", updatedMenu)
+				case "updatetraymenu":
+					trayMenu := menuMessage.Data().(*menu.TrayMenu)
+					updatedMenu, err := m.menuManager.UpdateTrayMenu(trayMenu)
+					if err != nil {
+						m.logger.Trace("%s", err.Error())
+						return
+					}
+
+					// Notify frontend of menu change
+					m.bus.Publish("menufrontend:updatetraymenu", updatedMenu)
 
 				default:
 					m.logger.Error("unknown menu message: %+v", menuMessage)

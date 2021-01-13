@@ -27,10 +27,17 @@ type TrayMenu struct {
 	ProcessedMenu *WailsMenu
 }
 
+func (t *TrayMenu) AsJSON() (string, error) {
+	data, err := json.Marshal(t)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
 func NewTrayMenu(trayMenu *menu.TrayMenu) *TrayMenu {
 
 	result := &TrayMenu{
-		ID:          generateTrayID(),
 		Label:       trayMenu.Label,
 		Icon:        trayMenu.Icon,
 		menu:        trayMenu.Menu,
@@ -45,17 +52,40 @@ func NewTrayMenu(trayMenu *menu.TrayMenu) *TrayMenu {
 
 func (m *Manager) AddTrayMenu(trayMenu *menu.TrayMenu) {
 	newTrayMenu := NewTrayMenu(trayMenu)
-	m.trayMenus[newTrayMenu.ID] = newTrayMenu
+
+	// Hook up a new ID
+	trayID := generateTrayID()
+	newTrayMenu.ID = trayID
+
+	// Save the references
+	m.trayMenus[trayID] = newTrayMenu
+	m.trayMenuPointers[trayMenu] = trayID
+}
+
+func (m *Manager) UpdateTrayMenu(trayMenu *menu.TrayMenu) (string, error) {
+	trayID, trayMenuKnown := m.trayMenuPointers[trayMenu]
+	if !trayMenuKnown {
+		return "", fmt.Errorf("unknown Tray Menu '%s'. Please add the tray menu using AddTrayMenu()", trayMenu.Label)
+	}
+
+	// Create the updated tray menu
+	updatedTrayMenu := NewTrayMenu(trayMenu)
+	updatedTrayMenu.ID = trayID
+
+	// Save the reference
+	m.trayMenus[trayID] = updatedTrayMenu
+
+	return updatedTrayMenu.AsJSON()
 }
 
 func (m *Manager) GetTrayMenus() ([]string, error) {
 	result := []string{}
 	for _, trayMenu := range m.trayMenus {
-		data, err := json.Marshal(trayMenu)
+		JSON, err := trayMenu.AsJSON()
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, string(data))
+		result = append(result, JSON)
 	}
 
 	return result, nil

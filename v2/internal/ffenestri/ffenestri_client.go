@@ -206,6 +206,10 @@ func (c *Client) UpdateTray(menu *menu.Menu) {
 	C.UpdateTray(c.app.app, c.app.string2CString(string(trayMenuJSON)))
 }
 
+func (c *Client) UpdateTrayMenu(trayMenuJSON string) {
+	C.UpdateTrayMenu(c.app.app, c.app.string2CString(trayMenuJSON))
+}
+
 func (c *Client) UpdateTrayLabel(label string) {
 	C.UpdateTrayLabel(c.app.app, c.app.string2CString(label))
 }

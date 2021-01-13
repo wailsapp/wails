@@ -464,6 +464,20 @@ func (d *Dispatcher) processMenuMessage(result *servicebus.Message) {
 			client.frontend.UpdateMenu(updatedMenu)
 		}
 
+	case "updatetraymenu":
+		updatedTrayMenu, ok := result.Data().(string)
+		if !ok {
+			d.logger.Error("Invalid data for 'menufrontend:updatetraymenu' : %#v",
+				result.Data())
+			return
+		}
+
+		// TODO: Work out what we mean in a multi window environment...
+		// For now we will just pick the first one
+		for _, client := range d.clients {
+			client.frontend.UpdateTrayMenu(updatedTrayMenu)
+		}
+
 	default:
 		d.logger.Error("Unknown menufrontend command: %s", command)
 	}

@@ -94,7 +94,20 @@
 #define NSAlertSecondButtonReturn  1001
 #define NSAlertThirdButtonReturn   1002
 
+struct Application;
 int releaseNSObject(void *const context, struct hashmap_element_s *const e);
-
+void TitlebarAppearsTransparent(struct Application* app);
+void HideTitle(struct Application* app);
+void HideTitleBar(struct Application* app);
+void FullSizeContent(struct Application* app);
+void UseToolbar(struct Application* app);
+void HideToolbarSeparator(struct Application* app);
+void DisableFrame(struct Application* app);
+void SetAppearance(struct Application* app, const char *);
+void WebviewIsTransparent(struct Application* app);
+void WindowBackgroundIsTranslucent(struct Application* app);
+void SetTray(struct Application* app, const char *, const char *, const char *);
+void SetContextMenus(struct Application* app, const char *);
+void AddTrayMenu(struct Application* app, const char *);
 
 #endif

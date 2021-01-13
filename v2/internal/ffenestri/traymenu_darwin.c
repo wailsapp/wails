@@ -21,6 +21,9 @@ TrayMenu* NewTrayMenu(const char* menuJSON) {
         ABORT("[NewTrayMenu] Unable to parse TrayMenu JSON: %s", menuJSON);
     }
 
+    // Save reference to this json
+    result->processedJSON = processedJSON;
+
     // TODO: Make this configurable
     result->trayIconPosition = NSImageLeft;
 
@@ -43,7 +46,7 @@ TrayMenu* NewTrayMenu(const char* menuJSON) {
 }
 
 void DumpTrayMenu(TrayMenu* trayMenu) {
-    printf("    ['%s':%p] = { label: '%s', icon: '%s', menu: %p }\n", trayMenu->ID, trayMenu, trayMenu->label, trayMenu->icon, trayMenu->menu );
+    printf("    ['%s':%p] = { label: '%s', icon: '%s', menu: %p, statusbar: %p  }\n", trayMenu->ID, trayMenu, trayMenu->label, trayMenu->icon, trayMenu->menu, trayMenu->statusbaritem );
 }
 
 void ShowTrayMenu(TrayMenu* trayMenu) {
@@ -53,16 +56,19 @@ void ShowTrayMenu(TrayMenu* trayMenu) {
         id statusBar = msg( c("NSStatusBar"), s("systemStatusBar") );
         trayMenu->statusbaritem = msg(statusBar, s("statusItemWithLength:"), NSVariableStatusItemLength);
         msg(trayMenu->statusbaritem, s("retain"));
-        id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
-        msg(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);
 
-        // Update the icon if needed
-        UpdateTrayMenuIcon(trayMenu);
-
-        // Update the label if needed
-        UpdateTrayMenuLabel(trayMenu);
     }
 
+    id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
+    msg(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);
+
+    // Update the icon if needed
+    UpdateTrayMenuIcon(trayMenu);
+
+    // Update the label if needed
+    UpdateTrayMenuLabel(trayMenu);
+
+	// Update the menu
     id menu = GetMenu(trayMenu->menu);
     msg(trayMenu->statusbaritem, s("setMenu:"), menu);
 }
@@ -80,7 +86,7 @@ void UpdateTrayMenuLabel(TrayMenu *trayMenu) {
 
 void UpdateTrayMenuIcon(TrayMenu *trayMenu) {
 
-    // Exit early if NULL or emptystring
+    // Exit early if NULL or empty string
     if( trayMenu->icon == NULL || STREMPTY(trayMenu->icon ) ) {
         return;
     }
@@ -88,6 +94,30 @@ void UpdateTrayMenuIcon(TrayMenu *trayMenu) {
     id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
     msg(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);
     msg(statusBarButton, s("setImage:"), trayImage);
+}
+
+// UpdateTrayMenuInPlace receives 2 menus. The current menu gets
+// updated with the data from the new menu.
+void UpdateTrayMenuInPlace(TrayMenu* currentMenu, TrayMenu* newMenu) {
+
+    // Delete the old menu
+    DeleteMenu(currentMenu->menu);
+
+    // Set the new one
+    currentMenu->menu = newMenu->menu;
+
+    // Delete the old JSON
+    json_delete(currentMenu->processedJSON);
+
+    // Set the new JSON
+    currentMenu->processedJSON = newMenu->processedJSON;
+
+    // Copy the other data
+    currentMenu->ID = newMenu->ID;
+    currentMenu->label = newMenu->label;
+    currentMenu->trayIconPosition = newMenu->trayIconPosition;
+    currentMenu->icon = newMenu->icon;
+
 }
 
 void DeleteTrayMenu(TrayMenu* trayMenu) {
@@ -99,10 +129,17 @@ void DeleteTrayMenu(TrayMenu* trayMenu) {
     DeleteMenu(trayMenu->menu);
 
     // Free JSON
-    json_delete(trayMenu->processedJSON);
+    if (trayMenu->processedJSON != NULL ) {
+        json_delete(trayMenu->processedJSON);
+    }
 
     // Free the status item
-    msg(trayMenu->statusbaritem, s("release"));
+    if ( trayMenu->statusbaritem != NULL ) {
+        id statusBar = msg( c("NSStatusBar"), s("systemStatusBar") );
+        msg(statusBar, s("removeStatusItem:"), trayMenu->statusbaritem);
+        msg(trayMenu->statusbaritem, s("release"));
+        trayMenu->statusbaritem = NULL;
+    }
 
     // Free the tray menu memory
     MEMFREE(trayMenu);

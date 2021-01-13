@@ -26,6 +26,7 @@ typedef struct {
 TrayMenu* NewTrayMenu(const char *trayJSON);
 void DumpTrayMenu(TrayMenu* trayMenu);
 void ShowTrayMenu(TrayMenu* trayMenu);
+void UpdateTrayMenuInPlace(TrayMenu* currentMenu, TrayMenu* newMenu);
 void UpdateTrayMenuIcon(TrayMenu *trayMenu);
 void UpdateTrayMenuLabel(TrayMenu *trayMenu);
 

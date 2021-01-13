@@ -925,6 +925,10 @@ void AddTrayMenu(struct Application *app, const char *trayJSON) {
 	AddTrayMenuToStore(app->trayMenuStore, trayJSON);
 }
 
+void UpdateTrayMenu(struct Application *app, const char* trayJSON) {
+    UpdateTrayMenuInStore(app->trayMenuStore, trayJSON);
+}
+
 void SetBindings(struct Application *app, const char *bindings) {
 	const char* temp = concat("window.wailsbindings = \"", bindings);
 	const char* jscall = concat(temp, "\";");

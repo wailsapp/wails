@@ -28,6 +28,10 @@ Menu* NewMenu(JsonNode *menuData) {
         ABORT("[NewMenu] Not enough memory to allocate radioGroupMap!");
     }
 
+    // Init other members
+    result->menu = NULL;
+    result->parentData = NULL;
+
     return result;
 }
 
@@ -77,12 +81,18 @@ void DeleteMenu(Menu *menu) {
     hashmap_destroy(&menu->radioGroupMap);
 
     // Free up the processed menu memory
-    json_delete(menu->processedMenu);
+    if (menu->processedMenu != NULL) {
+        json_delete(menu->processedMenu);
+        menu->processedMenu = NULL;
+    }
 
     // Release the vector memory
     vec_deinit(&menu->callbackDataCache);
 
-    msg(menu->menu, s("release"));
+    // Free nsmenu if we have it
+    if ( menu->menu != NULL ) {
+        msg(menu->menu, s("release"));
+    }
 
     free(menu);
 }

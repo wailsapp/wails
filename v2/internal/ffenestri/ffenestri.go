@@ -34,7 +34,7 @@ type Application struct {
 	memory []unsafe.Pointer
 
 	// This is the main app pointer
-	app unsafe.Pointer
+	app *C.struct_Application
 
 	// Manages menus
 	menuManager *menumanager.Manager
@@ -123,7 +123,7 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string, debug 
 	app := C.NewApplication(title, width, height, resizable, devtools, fullscreen, startHidden, logLevel)
 
 	// Save app reference
-	a.app = unsafe.Pointer(app)
+	a.app = (*C.struct_Application)(app)
 
 	// Set Min Window Size
 	minWidth := C.int(a.config.MinWidth)
