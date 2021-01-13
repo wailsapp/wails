@@ -12,7 +12,6 @@ package ffenestri
 import "C"
 
 import (
-	"encoding/json"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"strconv"
 
@@ -190,22 +189,6 @@ func (c *Client) UpdateMenu(menuJSON string) {
 	C.SetApplicationMenu(c.app.app, c.app.string2CString(menuJSON))
 }
 
-func (c *Client) UpdateTray(menu *menu.Menu) {
-
-	// Guard against nil menus
-	if menu == nil {
-		return
-	}
-	// Process the menu
-	processedMenu := NewProcessedMenu(menu)
-	trayMenuJSON, err := json.Marshal(processedMenu)
-	if err != nil {
-		c.app.logger.Error("Error processing updated TrayMenu: %s", err.Error())
-		return
-	}
-	C.UpdateTray(c.app.app, c.app.string2CString(string(trayMenuJSON)))
-}
-
 func (c *Client) UpdateTrayMenu(trayMenuJSON string) {
 	C.UpdateTrayMenu(c.app.app, c.app.string2CString(trayMenuJSON))
 }
@@ -219,16 +202,16 @@ func (c *Client) UpdateTrayIcon(name string) {
 }
 
 func (c *Client) UpdateContextMenus(contextMenus *menu.ContextMenus) {
-
-	// Guard against nil contextMenus
-	if contextMenus == nil {
-		return
-	}
-	// Process the menu
-	contextMenusJSON, err := processContextMenus(contextMenus)
-	if err != nil {
-		c.app.logger.Error("Error processing updated Context Menu: %s", err.Error())
-		return
-	}
-	C.UpdateContextMenus(c.app.app, c.app.string2CString(contextMenusJSON))
+	//
+	//	// Guard against nil contextMenus
+	//	if contextMenus == nil {
+	//		return
+	//	}
+	//	// Process the menu
+	//	contextMenusJSON, err := processContextMenus(contextMenus)
+	//	if err != nil {
+	//		c.app.logger.Error("Error processing updated Context Menu: %s", err.Error())
+	//		return
+	//	}
+	//	C.UpdateContextMenus(c.app.app, c.app.string2CString(contextMenusJSON))
 }

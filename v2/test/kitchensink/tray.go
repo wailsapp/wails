@@ -127,10 +127,10 @@ func (t *Tray) createTrayMenus() []*menu.TrayMenu {
 	trayMenu := &menu.TrayMenu{}
 	trayMenu.Label = "Test Tray Label"
 	trayMenu.Menu = menu.NewMenuFromItems(
-		menu.Text("Show Window", "Show Window", nil, t.showWindow),
-		menu.Text("Hide Window", "Hide Window", nil, t.hideWindow),
-		menu.Text("Minimise Window", "Minimise Window", nil, t.minimiseWindow),
-		menu.Text("Unminimise Window", "Unminimise Window", nil, t.unminimiseWindow),
+		menu.Text("Show Window", nil, t.showWindow),
+		menu.Text("Hide Window", nil, t.hideWindow),
+		menu.Text("Minimise Window", nil, t.minimiseWindow),
+		menu.Text("Unminimise Window", nil, t.unminimiseWindow),
 	)
 	t.trayMenu = trayMenu
 
@@ -138,7 +138,7 @@ func (t *Tray) createTrayMenus() []*menu.TrayMenu {
 	secondTrayMenu.Label = "Another tray label"
 	secondTrayMenu.Icon = "svelte"
 	secondTrayMenu.Menu = menu.NewMenuFromItems(
-		menu.Text("Update Label", "Update Label", nil, func(_ *menu.CallbackData) {
+		menu.Text("Update Label", nil, func(_ *menu.CallbackData) {
 			// Lock because this method will be called in a goroutine
 			t.lock.Lock()
 			defer t.lock.Unlock()
@@ -149,10 +149,10 @@ func (t *Tray) createTrayMenus() []*menu.TrayMenu {
 			t.runtime.Menu.UpdateTrayMenu(t.secondTrayMenu)
 		}),
 		menu.SubMenu("Select Icon", menu.NewMenuFromItems(
-			menu.Text("Svelte", "Svelte", nil, t.SvelteIcon),
-			menu.Text("Light", "Light", nil, t.LightIcon),
-			menu.Text("Dark", "Dark", nil, t.DarkIcon),
-			menu.Text("None", "None", nil, t.NoIcon),
+			menu.Text("Svelte", nil, t.SvelteIcon),
+			menu.Text("Light", nil, t.LightIcon),
+			menu.Text("Dark", nil, t.DarkIcon),
+			menu.Text("None", nil, t.NoIcon),
 		)),
 	)
 	t.secondTrayMenu = secondTrayMenu

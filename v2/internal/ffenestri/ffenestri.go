@@ -1,9 +1,7 @@
 package ffenestri
 
 import (
-	"encoding/json"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
-	"github.com/wailsapp/wails/v2/pkg/menu"
 	"runtime"
 	"strings"
 	"unsafe"
@@ -184,29 +182,4 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string, debug 
 //export messageFromWindowCallback
 func messageFromWindowCallback(data *C.char) {
 	dispatcher.DispatchMessage(C.GoString(data))
-}
-
-type ProcessedContextMenu struct {
-	ID            string
-	ProcessedMenu *ProcessedMenu
-}
-
-func processContextMenus(contextMenus *menu.ContextMenus) (string, error) {
-	var processedContextMenus []*ProcessedContextMenu
-
-	// We need to iterate each context menu and pre-process it
-	for contextMenuID, contextMenu := range contextMenus.Items {
-		thisContextMenu := &ProcessedContextMenu{
-			ID:            contextMenuID,
-			ProcessedMenu: NewProcessedMenu(contextMenu),
-		}
-		processedContextMenus = append(processedContextMenus, thisContextMenu)
-	}
-
-	contextMenusJSON, err := json.Marshal(processedContextMenus)
-	if err != nil {
-		return "", err
-	}
-
-	return string(contextMenusJSON), nil
 }

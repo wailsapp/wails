@@ -24,15 +24,13 @@ type App struct {
 	options    *options.App
 
 	// Subsystems
-	log          *subsystem.Log
-	runtime      *subsystem.Runtime
-	event        *subsystem.Event
-	binding      *subsystem.Binding
-	call         *subsystem.Call
-	menu         *subsystem.Menu
-	tray         *subsystem.Tray
-	contextmenus *subsystem.ContextMenus
-	dispatcher   *messagedispatcher.Dispatcher
+	log        *subsystem.Log
+	runtime    *subsystem.Runtime
+	event      *subsystem.Event
+	binding    *subsystem.Binding
+	call       *subsystem.Call
+	menu       *subsystem.Menu
+	dispatcher *messagedispatcher.Dispatcher
 
 	menuManager *menumanager.Manager
 
@@ -186,32 +184,6 @@ func (a *App) Run() error {
 		}
 		a.menu = menusubsystem
 		err = a.menu.Start()
-		if err != nil {
-			return err
-		}
-	}
-
-	//// Optionally start the tray subsystem
-	//if trayMenu != nil {
-	//	traysubsystem, err := subsystem.NewTray(trayMenu, a.servicebus, a.logger)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	a.tray = traysubsystem
-	//	err = a.tray.Start()
-	//	if err != nil {
-	//		return err
-	//	}
-	//}
-
-	// Optionally start the context menu subsystem
-	if contextMenus != nil {
-		contextmenussubsystem, err := subsystem.NewContextMenus(contextMenus, a.servicebus, a.logger)
-		if err != nil {
-			return err
-		}
-		a.contextmenus = contextmenussubsystem
-		err = a.contextmenus.Start()
 		if err != nil {
 			return err
 		}

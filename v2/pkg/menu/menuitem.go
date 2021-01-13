@@ -7,8 +7,6 @@ import (
 
 // MenuItem represents a menuitem contained in a menu
 type MenuItem struct {
-	// The unique identifier of this menu item
-	ID string `json:"ID,omitempty"`
 	// Label is what appears as the menu text
 	Label string
 	// Role is a predefined menu type
@@ -75,29 +73,6 @@ func (m *MenuItem) Prepend(item *MenuItem) bool {
 	return true
 }
 
-func (m *MenuItem) getByID(id string) *MenuItem {
-
-	// If I have the ID return me!
-	if m.ID == id {
-		return m
-	}
-
-	// If we have no submenu then exit early
-	if m.SubMenu == nil {
-		return nil
-	}
-
-	// Check submenus
-	for _, submenu := range m.SubMenu.Items {
-		result := submenu.getByID(id)
-		if result != nil {
-			return result
-		}
-	}
-
-	return nil
-}
-
 func (m *MenuItem) Remove() {
 	// Iterate my parent's children
 	m.Parent().removeChild(m)
@@ -111,28 +86,6 @@ func (m *MenuItem) removeChild(item *MenuItem) {
 		}
 	}
 	m.removeLock.Unlock()
-}
-
-func (m *MenuItem) removeByID(id string) bool {
-
-	// If we have no submenu, return
-	if m.SubMenu == nil {
-		return false
-	}
-
-	for index, item := range m.SubMenu.Items {
-		if item.ID == id {
-			m.SubMenu.Items = append(m.SubMenu.Items[:index], m.SubMenu.Items[index+1:]...)
-			return true
-		}
-		if item.isSubMenu() {
-			result := item.removeByID(id)
-			if result == true {
-				return result
-			}
-		}
-	}
-	return false
 }
 
 // InsertAfter attempts to add the given item after this item in the parent
@@ -250,9 +203,8 @@ func (m *MenuItem) insertItemAtIndex(index int, target *MenuItem) bool {
 }
 
 // Text is a helper to create basic Text menu items
-func Text(label string, id string, accelerator *keys.Accelerator, click Callback) *MenuItem {
+func Text(label string, accelerator *keys.Accelerator, click Callback) *MenuItem {
 	return &MenuItem{
-		ID:          id,
 		Label:       label,
 		Type:        TextType,
 		Accelerator: accelerator,
@@ -268,9 +220,8 @@ func Separator() *MenuItem {
 }
 
 // Radio is a helper to create basic Radio menu items with an accelerator
-func Radio(label string, id string, selected bool, accelerator *keys.Accelerator, click Callback) *MenuItem {
+func Radio(label string, selected bool, accelerator *keys.Accelerator, click Callback) *MenuItem {
 	return &MenuItem{
-		ID:          id,
 		Label:       label,
 		Type:        RadioType,
 		Checked:     selected,
@@ -280,9 +231,8 @@ func Radio(label string, id string, selected bool, accelerator *keys.Accelerator
 }
 
 // Checkbox is a helper to create basic Checkbox menu items
-func Checkbox(label string, id string, checked bool, accelerator *keys.Accelerator, click Callback) *MenuItem {
+func Checkbox(label string, checked bool, accelerator *keys.Accelerator, click Callback) *MenuItem {
 	return &MenuItem{
-		ID:          id,
 		Label:       label,
 		Type:        CheckboxType,
 		Checked:     checked,
@@ -305,11 +255,10 @@ func SubMenu(label string, menu *Menu) *MenuItem {
 }
 
 // SubMenuWithID is a helper to create Submenus with an ID
-func SubMenuWithID(label string, id string, menu *Menu) *MenuItem {
+func SubMenuWithID(label string, menu *Menu) *MenuItem {
 	result := &MenuItem{
 		Label:   label,
 		SubMenu: menu,
-		ID:      id,
 		Type:    SubmenuType,
 	}
 

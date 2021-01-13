@@ -7,13 +7,8 @@ package ffenestri
 #include "ffenestri.h"
 #include "ffenestri_darwin.h"
 
-
-
 */
 import "C"
-import (
-	"github.com/wailsapp/wails/v2/pkg/options"
-)
 
 func (a *Application) processPlatformSettings() error {
 
@@ -83,14 +78,14 @@ func (a *Application) processPlatformSettings() error {
 	}
 
 	// Process context menus
-	contextMenus := options.GetContextMenus(a.config)
-	if contextMenus != nil {
-		contextMenusJSON, err := processContextMenus(contextMenus)
-		if err != nil {
-			return err
-		}
-		C.SetContextMenus(a.app, a.string2CString(contextMenusJSON))
-	}
+	//contextMenus := options.GetContextMenus(a.config)
+	//if contextMenus != nil {
+	//	contextMenusJSON, err := processContextMenus(contextMenus)
+	//	if err != nil {
+	//		return err
+	//	}
+	//	C.SetContextMenus(a.app, a.string2CString(contextMenusJSON))
+	//}
 
 	return nil
 }

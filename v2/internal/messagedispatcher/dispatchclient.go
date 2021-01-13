@@ -33,7 +33,6 @@ type Client interface {
 	WindowSetColour(colour int)
 	DarkModeEnabled(callbackID string)
 	UpdateMenu(menuJSON string)
-	UpdateTray(menu *menu.Menu)
 	UpdateTrayLabel(label string)
 	UpdateTrayIcon(name string)
 	UpdateTrayMenu(menuJSON string)
