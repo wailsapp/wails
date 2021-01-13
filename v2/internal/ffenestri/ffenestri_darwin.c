@@ -5,14 +5,11 @@
 #include "menu_darwin.h"
 #include "contextmenus_darwin.h"
 #include "traymenustore_darwin.h"
-
+#include "traymenu_darwin.h"
 
 // References to assets
 #include "assets.h"
 extern const unsigned char runtime;
-
-// Tray icons
-#include "trayicons.h"
 
 // Dialog icons
 extern const unsigned char *defaultDialogIcons[];
@@ -20,15 +17,6 @@ extern const unsigned char *defaultDialogIcons[];
 
 // MAIN DEBUG FLAG
 int debug;
-
-// MenuItem map for the tray menu
-struct hashmap_s menuItemMapForTrayMenu;
-
-// RadioGroup map for the tray menu. Maps a menuitem id with its associated radio group items
-struct hashmap_s radioGroupMapForTrayMenu;
-
-// A cache for all our tray icons
-struct hashmap_s trayIconCache;
 
 // A cache for all our dialog icons
 struct hashmap_s dialogIconCache;
@@ -126,13 +114,6 @@ struct Application {
 
 	// Tray
     TrayMenuStore* trayMenuStore;
-
-	const char *trayMenuAsJSON;
-	const char *trayLabel;
-	const char *trayIconName;
-	int trayIconPosition;
-	JsonNode *processedTrayMenu;
-	id statusItem;
 
 	// Context Menus
 	ContextMenuStore *contextMenuStore;
@@ -349,72 +330,6 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 	}
 }
 
-
-
-// Callback for tray items
-void menuItemPressedForTrayMenu(id self, SEL cmd, id sender) {
-  const char *menuItemID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
-  // Notify the backend
-  const char *message = concat("TC", menuItemID);
-  messageFromWindowCallback(message);
-  MEMFREE(message);
-}
-
-// Callback for tray menu items
-void checkboxMenuItemPressedForTrayMenu(id self, SEL cmd, id sender, struct hashmap_s *menuItemMap) {
-  const char *menuItemID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
-
-  // Get the menu item from the menu item map
-  id menuItem = (id)hashmap_get(&menuItemMapForTrayMenu, (char*)menuItemID, strlen(menuItemID));
-
-  // Get the current state
-  bool state = msg(menuItem, s("state"));
-
-  // Toggle the state
-  msg(menuItem, s("setState:"), (state? NSControlStateValueOff : NSControlStateValueOn));
-
-  // Notify the backend
-  const char *message = concat("TC", menuItemID);
-  messageFromWindowCallback(message);
-  MEMFREE(message);
-}
-
-// radioMenuItemPressedForTrayMenu
-void radioMenuItemPressedForTrayMenu(id self, SEL cmd, id sender) {
-  const char *menuItemID = (const char *)msg(msg(sender, s("representedObject")), s("pointerValue"));
-
-  // Get the menu item from the menu item map
-  id menuItem = (id)hashmap_get(&menuItemMapForTrayMenu, (char*)menuItemID, strlen(menuItemID));
-
-  // Check the menu items' current state
-  bool selected = msg(menuItem, s("state"));
-
-  // If it's already selected, exit early
-  if (selected) {
-	return;
-  }
-
-  // Get this item's radio group members and turn them off
-  id *members = (id*)hashmap_get(&radioGroupMapForTrayMenu, (char*)menuItemID, strlen(menuItemID));
-
-  // Uncheck all members of the group
-  id thisMember = members[0];
-  int count = 0;
-  while(thisMember != NULL) {
-	msg(thisMember, s("setState:"), NSControlStateValueOff);
-	count = count + 1;
-	thisMember = members[count];
-  }
-
-  // check the selected menu item
-  msg(menuItem, s("setState:"), NSControlStateValueOn);
-
-  // Notify the backend
-  const char *message = concat("TC", menuItemID);
-  messageFromWindowCallback(message);
-  MEMFREE(message);
-}
-
 // closeWindow is called when the close button is pressed
 void closeWindow(id self, SEL cmd, id sender) {
 	struct Application *app = (struct Application *) objc_getAssociatedObject(self, "application");
@@ -467,29 +382,6 @@ void themeChanged(id self, SEL cmd, id sender) {
 //     Debug(app, "willFinishLaunching called!");
 // }
 
-void allocateTrayHashMaps(struct Application *app) {
-	// Allocate new menuItem map
-	if( 0 != hashmap_create((const unsigned)16, &menuItemMapForTrayMenu)) {
-	   // Couldn't allocate map
-	   Fatal(app, "Not enough memory to allocate menuItemMapForTrayMenu!");
-	   return;
-	}
-
-	// Allocate the Radio Group Cache
-	if( 0 != hashmap_create((const unsigned)4, &radioGroupMapForTrayMenu)) {
-	   // Couldn't allocate map
-	   Fatal(app, "Not enough memory to allocate radioGroupMapForTrayMenu!");
-	   return;
-	}
-
-	// Allocate the Tray Icons
-	if( 0 != hashmap_create((const unsigned)4, &trayIconCache)) {
-	   // Couldn't allocate map
-	   Fatal(app, "Not enough memory to allocate radioGroupMapForTrayMenu!");
-	   return;
-	}
-}
-
 
 int releaseNSObject(void *const context, struct hashmap_element_s *const e) {
     msg(e->data, s("release"));
@@ -501,7 +393,7 @@ void destroyContextMenus(struct Application *app) {
 }
 
 void freeDialogIconCache(struct Application *app) {
-	// Release the tray cache images
+	// Release the dialog cache images
     if( hashmap_num_entries(&dialogIconCache) > 0 ) {
         if (0!=hashmap_iterate_pairs(&dialogIconCache, releaseNSObject, NULL)) {
             Fatal(app, "failed to release hashmap entries!");
@@ -510,51 +402,6 @@ void freeDialogIconCache(struct Application *app) {
 
     //Free radio groups hashmap
     hashmap_destroy(&dialogIconCache);
-}
-
-void destroyTray(struct Application *app) {
-
-	if( app->trayMenuAsJSON == NULL ) {
-		return;
-	}
-
-	// Release the tray cache images
-    if( hashmap_num_entries(&trayIconCache) > 0 ) {
-        if (0!=hashmap_iterate_pairs(&trayIconCache, releaseNSObject, NULL)) {
-            Fatal(app, "failed to release hashmap entries!");
-        }
-    }
-
-    //Free radio groups hashmap
-    hashmap_destroy(&trayIconCache);
-
-	// If we don't have a tray, exit!
-	if( app->trayMenuAsJSON == NULL ) {
-		return;
-	}
-
-	// Free menu item hashmap
-	hashmap_destroy(&menuItemMapForTrayMenu);
-
-	// Free radio group members
-	if( hashmap_num_entries(&radioGroupMapForTrayMenu) > 0 ) {
-		if (0!=hashmap_iterate_pairs(&radioGroupMapForTrayMenu, freeHashmapItem, NULL)) {
-			Fatal(app, "failed to deallocate hashmap entries!");
-		}
-	}
-
-	//Free radio groups hashmap
-	hashmap_destroy(&radioGroupMapForTrayMenu);
-
-	// Release processed tray
-	if( app->processedTrayMenu != NULL) {
-		json_delete(app->processedTrayMenu);
-		app->processedTrayMenu = NULL;
-	}
-
-	// Destroy app status item
-    msg(app->statusItem, s("release"));
-
 }
 
 void DestroyApplication(struct Application *app) {
@@ -580,9 +427,7 @@ void DestroyApplication(struct Application *app) {
 	    DeleteMenu(app->applicationMenu);
 	}
 
-	// Destroy the tray
-	destroyTray(app);
-
+	// Delete the tray menu store
     DeleteTrayMenuStore(app->trayMenuStore);
 
 	// Destroy the context menus
@@ -590,6 +435,9 @@ void DestroyApplication(struct Application *app) {
 
 	// Free dialog icon cache
 	freeDialogIconCache(app);
+
+    // Unload the tray Icons
+    UnloadTrayIcons();
 
 	// Clear context menu data if we have it
 	if( contextMenuData != NULL ) {
@@ -1067,14 +915,6 @@ void SetDebug(void *applicationPointer, int flag) {
 }
 
 
-
-// SetTray sets the initial tray menu for the application
-void SetTray(struct Application *app, const char *trayMenuAsJSON, const char *trayLabel, const char *trayIconName) {
-	app->trayMenuAsJSON = trayMenuAsJSON;
-	app->trayLabel = trayLabel;
-	app->trayIconName = trayIconName;
-}
-
 // SetContextMenus sets the context menu map for this application
 void SetContextMenus(struct Application *app, const char *contextMenusAsJSON) {
 	app->contextMenuStore = NewContextMenuStore(contextMenusAsJSON);
@@ -1170,17 +1010,8 @@ void createDelegate(struct Application *app) {
 	class_addMethod(delegateClass, s("applicationWillTerminate:"), (IMP) closeWindow, "v@:@");
 	class_addMethod(delegateClass, s("applicationWillFinishLaunching:"), (IMP) willFinishLaunching, "v@:@");
 
-	// Menu Callbacks
-	class_addMethod(delegateClass, s("menuCallbackForTrayMenu:"), (IMP)menuItemPressedForTrayMenu, "v@:@");
-	class_addMethod(delegateClass, s("checkboxMenuCallbackForTrayMenu:"), (IMP) checkboxMenuItemPressedForTrayMenu, "v@:@");
-	class_addMethod(delegateClass, s("radioMenuCallbackForTrayMenu:"), (IMP) radioMenuItemPressedForTrayMenu, "v@:@");
-//	class_addMethod(delegateClass, s("menuCallbackForContextMenus:"), (IMP)menuItemPressedForContextMenus, "v@:@");
-//	class_addMethod(delegateClass, s("checkboxMenuCallbackForContextMenus:"), (IMP) checkboxMenuItemPressedForContextMenus, "v@:@");
-//	class_addMethod(delegateClass, s("radioMenuCallbackForContextMenus:"), (IMP) radioMenuItemPressedForContextMenus, "v@:@");
-
-	// Refactoring menu handling
+	// All Menu Items use a common callback
     class_addMethod(delegateClass, s("menuItemCallback:"), (IMP)menuItemCallback, "v@:@");
-
 
 	// Script handler
 	class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler, "v@:@@");
@@ -1641,127 +1472,17 @@ void SetApplicationMenu(struct Application *app, const char *menuAsJSON) {
 //}
 
 void UpdateTrayLabel(struct Application *app, const char *label) {
-	id statusBarButton = msg(app->statusItem, s("button"));
-	msg(statusBarButton, s("setTitle:"), str(label));
+    // TBD
 }
 
 void UpdateTrayIcon(struct Application *app, const char *name) {
-	id trayImage = hashmap_get(&trayIconCache, name, strlen(name));
-	id statusBarButton = msg(app->statusItem, s("button"));
-	msg(statusBarButton, s("setImagePosition:"), 2);
-	msg(statusBarButton, s("setImage:"), trayImage);
+    // TBD
 }
-
-void processTrayIconData(struct Application *app) {
-
-    unsigned int count = 0;
-    while( 1 ) {
-        const unsigned char *name = trayIcons[count++];
-        if( name == 0x00 ) {
-            break;
-        }
-        const unsigned char *lengthAsString = trayIcons[count++];
-        if( name == 0x00 ) {
-            break;
-        }
-        const unsigned char *data = trayIcons[count++];
-        if( data == 0x00 ) {
-            break;
-        }
-        int length = atoi((const char *)lengthAsString);
-
-        // Create the icon and add to the hashmap
-        id imageData = msg(c("NSData"), s("dataWithBytes:length:"), data, length);
-        id trayImage = ALLOC("NSImage");
-        msg(trayImage, s("initWithData:"), imageData);
-        hashmap_put(&trayIconCache, (const char *)name, strlen((const char *)name), trayImage);
-    }
-}
-
-
-void parseTrayData(struct Application *app) {
-
-	// Allocate the hashmaps we need
-	allocateTrayHashMaps(app);
-
-	// Process Tray icon data
-	processTrayIconData(app);
-
-	// Create a new menu
-	id traymenu = createMenu(str(""));
-
-	id statusItem = app->statusItem;
-
-	// Create a new menu bar if we need to
-	if ( statusItem == NULL ) {
-		id statusBar = msg( c("NSStatusBar"), s("systemStatusBar") );
-		statusItem = msg(statusBar, s("statusItemWithLength:"), NSVariableStatusItemLength);
-		app->statusItem = statusItem;
-		msg(statusItem, s("retain"));
-		id statusBarButton = msg(app->statusItem, s("button"));
-        msg(statusBarButton, s("setImagePosition:"), app->trayIconPosition);
-
-		// Get the icon
-		if ( app->trayIconName != NULL ) {
-			UpdateTrayIcon(app, app->trayIconName);
-		}
-
-		if( app->trayLabel != NULL ) {
-			UpdateTrayLabel(app, app->trayLabel);
-		}
-
-	}
-
-	// Parse the processed menu json
-	app->processedTrayMenu = json_decode(app->trayMenuAsJSON);
-
-	if( app->processedTrayMenu == NULL ) {
-		// Parse error!
-		Fatal(app, "Unable to parse Tray JSON: %s", app->trayMenuAsJSON);
-		return;
-	}
-
-
-	// Pull out the Menu
-	JsonNode *trayMenuData = json_find_member(app->processedTrayMenu, "Menu");
-	if( trayMenuData == NULL ) {
-		// Parse error!
-		Fatal(app, "Unable to find Menu data: %s", app->processedTrayMenu);
-		return;
-	}
-
-
-	parseMenu(app, traymenu, trayMenuData, &menuItemMapForTrayMenu,
-	"checkboxMenuCallbackForTrayMenu:", "radioMenuCallbackForTrayMenu:", "menuCallbackForTrayMenu:");
-
-	// Create the radiogroup cache
-	JsonNode *radioGroups = json_find_member(app->processedTrayMenu, "RadioGroups");
-	if( radioGroups == NULL ) {
-		// Parse error!
-		Fatal(app, "Unable to find RadioGroups data: %s", app->processedTrayMenu);
-		return;
-	}
-
-	// Iterate radio groups
-	JsonNode *radioGroup;
-	json_foreach(radioGroup, radioGroups) {
-		// Get item label
-		processRadioGroup(radioGroup, &menuItemMapForTrayMenu, &radioGroupMapForTrayMenu);
-	}
-
-	msg(statusItem, s("setMenu:"), traymenu);
- }
-
 
 // UpdateTray replaces the current tray menu with the given one
 void UpdateTray(struct Application *app, const char *trayMenuAsJSON) {
 	ON_MAIN_THREAD (
-		// Free up memory
-		destroyTray(app);
-
-		// Set the menu JSON
-		app->trayMenuAsJSON = trayMenuAsJSON;
-		parseTrayData(app);
+        // TBD
 	);
 }
 
@@ -2002,11 +1723,6 @@ void Run(struct Application *app, int argc, char **argv) {
 	// Setup initial trays
     ShowTrayMenusInStore(app->trayMenuStore);
 
-	// If we have a tray menu, process it
-	if( app->trayMenuAsJSON != NULL ) {
-	  parseTrayData(app);
-	}
-
 	// If we have context menus, process them
 	if( app->contextMenuStore != NULL ) {
         ProcessContextMenus(app->contextMenuStore);
@@ -2027,6 +1743,10 @@ void Run(struct Application *app, int argc, char **argv) {
 
 
 void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel) {
+
+    // Load the tray icons
+    LoadTrayIcons();
+
 	// Setup main application struct
 	struct Application *result = malloc(sizeof(struct Application));
 	result->title = title;
@@ -2067,12 +1787,6 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 
 	// Tray
 	result->trayMenuStore = NewTrayMenuStore();
-	result->trayMenuAsJSON = NULL;
-	result->trayLabel = NULL;
-	result->trayIconName = NULL;
-	result->trayIconPosition = NSImageLeft; // Left of the text by default
-	result->processedTrayMenu = NULL;
-	result->statusItem = NULL;
 
 	// Context Menus
 	result->contextMenuStore = NULL;
@@ -2086,7 +1800,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 
 	result->sendMessageToBackend = (ffenestriCallback) messageFromWindowCallback;
 
-	return (void*) result;
+    return (void*) result;
 }
 
 

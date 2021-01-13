@@ -29,6 +29,9 @@ void ShowTrayMenu(TrayMenu* trayMenu);
 void UpdateTrayMenuIcon(TrayMenu *trayMenu);
 void UpdateTrayMenuLabel(TrayMenu *trayMenu);
 
+void LoadTrayIcons();
+void UnloadTrayIcons();
+
 void DeleteTrayMenu(TrayMenu* trayMenu);
 
 #endif //TRAYMENU_DARWIN_H

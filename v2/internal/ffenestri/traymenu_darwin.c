@@ -4,8 +4,11 @@
 
 #include "common.h"
 #include "traymenu_darwin.h"
+#include "trayicons.h"
 
-extern struct hashmap_s trayIconCache;
+// A cache for all our tray menu icons
+// Global because it's a singleton
+struct hashmap_s trayIconCache;
 
 TrayMenu* NewTrayMenu(const char* menuJSON) {
     TrayMenu* result = malloc(sizeof(TrayMenu));
@@ -28,6 +31,9 @@ TrayMenu* NewTrayMenu(const char* menuJSON) {
 
     // Create the menu
     result->menu = NewMenu(processedMenu);
+
+    // Init tray status bar item
+    result->statusbaritem = NULL;
 
     // Set the menu type and store the tray ID in the parent data
     result->menu->menuType = TrayMenuType;
@@ -95,6 +101,53 @@ void DeleteTrayMenu(TrayMenu* trayMenu) {
     // Free JSON
     json_delete(trayMenu->processedJSON);
 
+    // Free the status item
+    msg(trayMenu->statusbaritem, s("release"));
+
     // Free the tray menu memory
     MEMFREE(trayMenu);
+}
+
+void LoadTrayIcons() {
+
+    // Allocate the Tray Icons
+    if( 0 != hashmap_create((const unsigned)4, &trayIconCache)) {
+        // Couldn't allocate map
+        ABORT("Not enough memory to allocate trayIconCache!");
+    }
+
+    unsigned int count = 0;
+    while( 1 ) {
+        const unsigned char *name = trayIcons[count++];
+        if( name == 0x00 ) {
+            break;
+        }
+        const unsigned char *lengthAsString = trayIcons[count++];
+        if( name == 0x00 ) {
+            break;
+        }
+        const unsigned char *data = trayIcons[count++];
+        if( data == 0x00 ) {
+            break;
+        }
+        int length = atoi((const char *)lengthAsString);
+
+        // Create the icon and add to the hashmap
+        id imageData = msg(c("NSData"), s("dataWithBytes:length:"), data, length);
+        id trayImage = ALLOC("NSImage");
+        msg(trayImage, s("initWithData:"), imageData);
+        hashmap_put(&trayIconCache, (const char *)name, strlen((const char *)name), trayImage);
+    }
+}
+
+void UnloadTrayIcons() {
+    // Release the tray cache images
+    if( hashmap_num_entries(&trayIconCache) > 0 ) {
+        if (0!=hashmap_iterate_pairs(&trayIconCache, releaseNSObject, NULL)) {
+            ABORT("failed to release hashmap entries!");
+        }
+    }
+
+    //Free radio groups hashmap
+    hashmap_destroy(&trayIconCache);
 }

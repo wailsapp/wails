@@ -94,5 +94,7 @@
 #define NSAlertSecondButtonReturn  1001
 #define NSAlertThirdButtonReturn   1002
 
+int releaseNSObject(void *const context, struct hashmap_element_s *const e);
+
 
 #endif

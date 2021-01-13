@@ -5,6 +5,7 @@
 #include "common.h"
 #include "traymenustore_darwin.h"
 #include "traymenu_darwin.h"
+#include <stdlib.h>
 
 TrayMenuStore* NewTrayMenuStore() {
 
@@ -45,7 +46,7 @@ int freeTrayMenu(void *const context, struct hashmap_element_s *const e) {
 void DeleteTrayMenuStore(TrayMenuStore *trayMenuStore) {
 
     // Delete context menus
-    if( hashmap_num_entries(&trayMenuStore->trayMenuMap) > 0 ) {
+    if (hashmap_num_entries(&trayMenuStore->trayMenuMap) > 0) {
         if (0 != hashmap_iterate_pairs(&trayMenuStore->trayMenuMap, freeTrayMenu, NULL)) {
             ABORT("[DeleteContextMenuStore] Failed to release contextMenuStore entries!");
         }

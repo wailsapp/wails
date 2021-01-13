@@ -5,7 +5,6 @@
 #ifndef TRAYMENUSTORE_DARWIN_H
 #define TRAYMENUSTORE_DARWIN_H
 
-
 typedef struct {
 
 	int dummy;
