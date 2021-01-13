@@ -86,10 +86,11 @@ void UpdateTrayMenuLabel(TrayMenu *trayMenu) {
 
 void UpdateTrayMenuIcon(TrayMenu *trayMenu) {
 
-    // Exit early if NULL or empty string
-    if( trayMenu->icon == NULL || STREMPTY(trayMenu->icon ) ) {
+    // Exit early if NULL
+    if( trayMenu->icon == NULL ) {
         return;
     }
+
     id trayImage = hashmap_get(&trayIconCache, trayMenu->icon, strlen(trayMenu->icon));
     id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
     msg(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);

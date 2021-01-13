@@ -69,6 +69,23 @@ func (t *Tray) decrementcounter() int {
 	return t.dynamicMenuCounter
 }
 
+func (t *Tray) SvelteIcon(_ *menu.CallbackData) {
+	t.secondTrayMenu.Icon = "svelte"
+	t.runtime.Menu.UpdateTrayMenu(t.secondTrayMenu)
+}
+func (t *Tray) NoIcon(_ *menu.CallbackData) {
+	t.secondTrayMenu.Icon = ""
+	t.runtime.Menu.UpdateTrayMenu(t.secondTrayMenu)
+}
+func (t *Tray) LightIcon(_ *menu.CallbackData) {
+	t.secondTrayMenu.Icon = "light"
+	t.runtime.Menu.UpdateTrayMenu(t.secondTrayMenu)
+}
+func (t *Tray) DarkIcon(_ *menu.CallbackData) {
+	t.secondTrayMenu.Icon = "dark"
+	t.runtime.Menu.UpdateTrayMenu(t.secondTrayMenu)
+}
+
 //func (t *Tray) removeMenu(_ *menu.MenuItem) {
 //
 //	// Lock because this method will be called in a goroutine
@@ -119,6 +136,7 @@ func (t *Tray) createTrayMenus() []*menu.TrayMenu {
 
 	secondTrayMenu := &menu.TrayMenu{}
 	secondTrayMenu.Label = "Another tray label"
+	secondTrayMenu.Icon = "svelte"
 	secondTrayMenu.Menu = menu.NewMenuFromItems(
 		menu.Text("Update Label", "Update Label", nil, func(_ *menu.CallbackData) {
 			// Lock because this method will be called in a goroutine
@@ -130,6 +148,12 @@ func (t *Tray) createTrayMenus() []*menu.TrayMenu {
 			secondTrayMenu.Label = trayLabel
 			t.runtime.Menu.UpdateTrayMenu(t.secondTrayMenu)
 		}),
+		menu.SubMenu("Select Icon", menu.NewMenuFromItems(
+			menu.Text("Svelte", "Svelte", nil, t.SvelteIcon),
+			menu.Text("Light", "Light", nil, t.LightIcon),
+			menu.Text("Dark", "Dark", nil, t.DarkIcon),
+			menu.Text("None", "None", nil, t.NoIcon),
+		)),
 	)
 	t.secondTrayMenu = secondTrayMenu
 	return []*menu.TrayMenu{
