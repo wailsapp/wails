@@ -91,8 +91,16 @@ void UpdateTrayMenuIcon(TrayMenu *trayMenu) {
         return;
     }
 
-    id trayImage = hashmap_get(&trayIconCache, trayMenu->icon, strlen(trayMenu->icon));
     id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
+
+    // Empty icon means remove it
+    if( STREMPTY(trayMenu->icon) ) {
+        // Remove image
+        msg(statusBarButton, s("setImage:"), NULL);
+        return;
+    }
+
+    id trayImage = hashmap_get(&trayIconCache, trayMenu->icon, strlen(trayMenu->icon));
     msg(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);
     msg(statusBarButton, s("setImage:"), trayImage);
 }
