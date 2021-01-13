@@ -110,16 +110,16 @@ func (m *Menu) Start() error {
 					m.bus.Publish("menufrontend:updateappmenu", updatedMenu)
 
 				case "updatecontextmenu":
-					m.logger.Info("Update Context Menu TBD")
-					//contextMenu := menuMessage.Data().(*menu.ContextMenu)
-					//updatedMenu, err := m.menuManager.UpdateContextMenu(contextMenu)
-					//if err != nil {
-					//	m.logger.Trace("%s", err.Error())
-					//	return
-					//}
-					//
-					//// Notify frontend of menu change
-					//m.bus.Publish("menufrontend:updatecontextmenu", updatedMenu)
+					contextMenu := menuMessage.Data().(*menu.ContextMenu)
+					updatedMenu, err := m.menuManager.UpdateContextMenu(contextMenu)
+					if err != nil {
+						m.logger.Trace("%s", err.Error())
+						return
+					}
+
+					// Notify frontend of menu change
+					m.bus.Publish("menufrontend:updatecontextmenu", updatedMenu)
+
 				case "updatetraymenu":
 					trayMenu := menuMessage.Data().(*menu.TrayMenu)
 					updatedMenu, err := m.menuManager.UpdateTrayMenu(trayMenu)

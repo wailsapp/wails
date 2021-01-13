@@ -2,8 +2,6 @@ package messagedispatcher
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/menu"
-
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher/message"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
@@ -33,8 +31,8 @@ type Client interface {
 	WindowSetColour(colour int)
 	DarkModeEnabled(callbackID string)
 	SetApplicationMenu(menuJSON string)
-	UpdateTrayMenu(menuJSON string)
-	UpdateContextMenus(contextMenus *menu.ContextMenus)
+	UpdateTrayMenu(trayMenuJSON string)
+	UpdateContextMenu(contextMenuJSON string)
 }
 
 // DispatchClient is what the frontends use to interface with the

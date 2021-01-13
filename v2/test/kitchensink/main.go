@@ -12,6 +12,7 @@ func main() {
 
 	Menu := &Menu{}
 	Tray := &Tray{}
+	ContextMenu := &ContextMenu{}
 
 	// Create application with options
 	app, err := wails.CreateAppWithOptions(&options.App{
@@ -23,7 +24,7 @@ func main() {
 		//Tray:      menu.NewMenuFromItems(menu.AppMenu()),
 		//Menu:      menu.NewMenuFromItems(menu.AppMenu()),
 		//StartHidden:  true,
-		ContextMenus: createContextMenus(),
+		ContextMenus: ContextMenu.createContextMenus(),
 		Mac: &mac.Options{
 			WebviewIsTransparent:          true,
 			WindowBackgroundIsTranslucent: true,
@@ -47,7 +48,7 @@ func main() {
 	app.Bind(&Window{})
 	app.Bind(Menu)
 	app.Bind(Tray)
-	app.Bind(&ContextMenu{})
+	app.Bind(ContextMenu)
 
 	err = app.Run()
 	if err != nil {

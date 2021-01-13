@@ -10,5 +10,5 @@ type Options struct {
 	WindowBackgroundIsTranslucent bool
 	Menu                          *menu.Menu
 	TrayMenus                     []*menu.TrayMenu
-	ContextMenus                  *menu.ContextMenus
+	ContextMenus                  []*menu.ContextMenu
 }

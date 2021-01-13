@@ -117,8 +117,6 @@ struct Application {
 
 	// Context Menus
 	ContextMenuStore *contextMenuStore;
-	const char *contextMenusAsJSON;
-	JsonNode *processedContextMenus;
 
 	// Callback
 	ffenestriCallback sendMessageToBackend;
@@ -427,8 +425,11 @@ void DestroyApplication(struct Application *app) {
 	    DeleteMenu(app->applicationMenu);
 	}
 
-	// Delete the tray menu store
+    // Delete the tray menu store
     DeleteTrayMenuStore(app->trayMenuStore);
+
+    // Delete the context menu store
+    DeleteContextMenuStore(app->contextMenuStore);
 
 	// Destroy the context menus
 	destroyContextMenus(app);
@@ -438,11 +439,6 @@ void DestroyApplication(struct Application *app) {
 
     // Unload the tray Icons
     UnloadTrayIcons();
-
-	// Clear context menu data if we have it
-	if( contextMenuData != NULL ) {
-		MEMFREE(contextMenuData);
-	}
 
 	// Remove script handlers
 	msg(app->manager, s("removeScriptMessageHandlerForName:"), str("contextMenu"));
@@ -916,17 +912,20 @@ void SetDebug(void *applicationPointer, int flag) {
 
 
 // SetContextMenus sets the context menu map for this application
-void SetContextMenus(struct Application *app, const char *contextMenusAsJSON) {
-	app->contextMenuStore = NewContextMenuStore(contextMenusAsJSON);
+void AddContextMenu(struct Application *app, const char *contextMenuJSON) {
+	AddContextMenuToStore(app->contextMenuStore, contextMenuJSON);
 }
 
-
-void AddTrayMenu(struct Application *app, const char *trayJSON) {
-	AddTrayMenuToStore(app->trayMenuStore, trayJSON);
+void UpdateContextMenu(struct Application *app, const char* contextMenuJSON) {
+    UpdateContextMenuInStore(app->contextMenuStore, contextMenuJSON);
 }
 
-void UpdateTrayMenu(struct Application *app, const char* trayJSON) {
-    UpdateTrayMenuInStore(app->trayMenuStore, trayJSON);
+void AddTrayMenu(struct Application *app, const char *trayMenuJSON) {
+	AddTrayMenuToStore(app->trayMenuStore, trayMenuJSON);
+}
+
+void UpdateTrayMenu(struct Application *app, const char* trayMenuJSON) {
+    UpdateTrayMenuInStore(app->trayMenuStore, trayMenuJSON);
 }
 
 void SetBindings(struct Application *app, const char *bindings) {
@@ -1428,84 +1427,6 @@ void SetApplicationMenu(struct Application *app, const char *menuAsJSON) {
     updateMenu(app, menuAsJSON);
 }
 
-//void dumpContextMenus(struct Application *app) {
-//	dumpHashmap("menuItemMapForContextMenus", &menuItemMapForContextMenus);
-//	printf("&menuItemMapForContextMenus = %p\n", &menuItemMapForContextMenus);
-//
-//	//Free radio groups hashmap
-//	dumpHashmap("radioGroupMapForContextMenus", &radioGroupMapForContextMenus);
-//	printf("&radioGroupMapForContextMenus = %p\n", &radioGroupMapForContextMenus);
-//
-//	//Free context menu map
-//	dumpHashmap("contextMenuMap", &contextMenuMap);
-//	printf("&contextMenuMap = %p\n", &contextMenuMap);
-//}
-
-//void parseContextMenus(struct Application *app) {
-//
-//	// Parse the context menu json
-//	app->processedContextMenus = json_decode(app->contextMenusAsJSON);
-//
-//	if( app->processedContextMenus == NULL ) {
-//		// Parse error!
-//		Fatal(app, "Unable to parse Context Menus JSON: %s", app->contextMenusAsJSON);
-//		return;
-//	}
-//
-//	JsonNode *contextMenuItems = json_find_member(app->processedContextMenus, "Items");
-//	if( contextMenuItems == NULL ) {
-//		// Parse error!
-//		Fatal(app, "Unable to find Items:", app->processedContextMenus);
-//		return;
-//	}
-//	// Iterate context menus
-//	JsonNode *contextMenu;
-//	json_foreach(contextMenu, contextMenuItems) {
-//		// Create a new menu
-//		id menu = createMenu(str(""));
-//
-//		// parse the menu
-//		parseMenu(app, menu, contextMenu, &menuItemMapForContextMenus,
-//			"checkboxMenuCallbackForContextMenus:", "radioMenuCallbackForContextMenus:", "menuCallbackForContextMenus:");
-//
-//		// Store the item in the context menu map
-//		hashmap_put(&contextMenuMap, (char*)contextMenu->key, strlen(contextMenu->key), menu);
-//	}
-//
-////	dumpContextMenus(app);
-//}
-
-void UpdateTrayLabel(struct Application *app, const char *label) {
-    // TBD
-}
-
-void UpdateTrayIcon(struct Application *app, const char *name) {
-    // TBD
-}
-
-// UpdateTray replaces the current tray menu with the given one
-void UpdateTray(struct Application *app, const char *trayMenuAsJSON) {
-	ON_MAIN_THREAD (
-        // TBD
-	);
-}
-
-void UpdateContextMenus(struct Application *app, const char *contextMenusAsJSON) {
-
-	ON_MAIN_THREAD (
-
-		// Free up memory
-		DeleteContextMenuStore(app->contextMenuStore);
-
-        // Recreate Context Menus
-        app->contextMenuStore = NewContextMenuStore(contextMenusAsJSON);
-
-        // Process them
-        ProcessContextMenus(app->contextMenuStore);
-	);
-
-}
-
 void processDialogIcons(struct hashmap_s *hashmap, const unsigned char *dialogIcons[]) {
 
 	unsigned int count = 0;
@@ -1727,11 +1648,6 @@ void Run(struct Application *app, int argc, char **argv) {
 	// Setup initial trays
     ShowTrayMenusInStore(app->trayMenuStore);
 
-	// If we have context menus, process them
-	if( app->contextMenuStore != NULL ) {
-        ProcessContextMenus(app->contextMenuStore);
-	}
-
 	// Process dialog icons
 	processUserDialogIcons(app);
 
@@ -1793,10 +1709,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->trayMenuStore = NewTrayMenuStore();
 
 	// Context Menus
-	result->contextMenuStore = NULL;
-	result->contextMenusAsJSON = NULL;
-	result->processedContextMenus = NULL;
-	contextMenuData = NULL;
+	result->contextMenuStore = NewContextMenuStore();
 
 	// Window Appearance
 	result->titlebarAppearsTransparent = 0;

@@ -35,11 +35,9 @@ extern void SaveDialog(struct Application*, char *callbackID, char *title, char 
 extern void MessageDialog(struct Application*, char *callbackID, char *type, char *title, char *message, char *icon, char *button1, char *button2, char *button3, char *button4, char *defaultButton, char *cancelButton);
 extern void DarkModeEnabled(struct Application*, char *callbackID);
 extern void SetApplicationMenu(struct Application*, const char *);
-extern void UpdateTray(struct Application*, char *menuAsJSON);
-extern void UpdateContextMenus(struct Application*, char *contextMenusAsJSON);
-extern void UpdateTrayLabel(struct Application*, const char *label);
-extern void UpdateTrayIcon(struct Application*, const char *label);
-extern void AddTrayMenu(struct Application*, const char *trayAsJSON);
-extern void UpdateTrayMenu(struct Application*, const char *trayAsJSON);
+extern void AddTrayMenu(struct Application*, const char *menuTrayJSON);
+extern void UpdateTrayMenu(struct Application*, const char *menuTrayJSON);
+extern void AddContextMenu(struct Application*, char *contextMenuJSON);
+extern void UpdateContextMenu(struct Application*, char *contextMenuJSON);
 
 #endif

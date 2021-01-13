@@ -1,47 +1,60 @@
 package menumanager
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
 type ContextMenu struct {
-	ID          string
-	JSON        string
-	menuItemMap *MenuItemMap
-	menu        *menu.Menu
+	ID            string
+	ProcessedMenu *WailsMenu
+	menuItemMap   *MenuItemMap
+	menu          *menu.Menu
 }
 
-func NewContextMenu(ID string, menu *menu.Menu) *ContextMenu {
+func (t *ContextMenu) AsJSON() (string, error) {
+	data, err := json.Marshal(t)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+func NewContextMenu(contextMenu *menu.ContextMenu) *ContextMenu {
 
 	result := &ContextMenu{
-		ID:          ID,
-		JSON:        "",
-		menu:        menu,
+		ID:          contextMenu.ID,
+		menu:        contextMenu.Menu,
 		menuItemMap: NewMenuItemMap(),
 	}
 
-	result.menuItemMap.AddMenu(menu)
+	result.menuItemMap.AddMenu(contextMenu.Menu)
+	result.ProcessedMenu = NewWailsMenu(result.menuItemMap, result.menu)
 
 	return result
 }
 
-func (m *Manager) AddContextMenu(menuID string, menu *menu.Menu) error {
-	contextMenu := NewContextMenu(menuID, menu)
-	m.contextMenus[menuID] = contextMenu
-	return contextMenu.process()
+func (m *Manager) AddContextMenu(contextMenu *menu.ContextMenu) {
+
+	newContextMenu := NewContextMenu(contextMenu)
+
+	// Save the references
+	m.contextMenus[contextMenu.ID] = newContextMenu
+	m.contextMenuPointers[contextMenu] = contextMenu.ID
 }
 
-func (c *ContextMenu) process() error {
-
-	// Process the menu
-	processedApplicationMenu := NewWailsMenu(c.menuItemMap, c.menu)
-	JSON, err := processedApplicationMenu.AsJSON()
-	if err != nil {
-		return err
+func (m *Manager) UpdateContextMenu(contextMenu *menu.ContextMenu) (string, error) {
+	contextMenuID, contextMenuKnown := m.contextMenuPointers[contextMenu]
+	if !contextMenuKnown {
+		return "", fmt.Errorf("unknown Context Menu '%s'. Please add the context menu using AddContextMenu()", contextMenu.ID)
 	}
-	c.JSON = JSON
-	fmt.Printf("Processed context menu '%s':", c.ID)
-	println(JSON)
-	return nil
+
+	// Create the updated context menu
+	updatedContextMenu := NewContextMenu(contextMenu)
+
+	// Save the reference
+	m.contextMenus[contextMenuID] = updatedContextMenu
+
+	return updatedContextMenu.AsJSON()
 }

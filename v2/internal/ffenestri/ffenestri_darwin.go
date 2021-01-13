@@ -72,20 +72,20 @@ func (a *Application) processPlatformSettings() error {
 	}
 	if trays != nil {
 		for _, tray := range trays {
-			println("Adding tray menu: " + tray)
 			C.AddTrayMenu(a.app, a.string2CString(tray))
 		}
 	}
 
 	// Process context menus
-	//contextMenus := options.GetContextMenus(a.config)
-	//if contextMenus != nil {
-	//	contextMenusJSON, err := processContextMenus(contextMenus)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	C.SetContextMenus(a.app, a.string2CString(contextMenusJSON))
-	//}
+	contextMenus, err := a.menuManager.GetContextMenus()
+	if err != nil {
+		return err
+	}
+	if contextMenus != nil {
+		for _, contextMenu := range contextMenus {
+			C.AddContextMenu(a.app, a.string2CString(contextMenu))
+		}
+	}
 
 	return nil
 }

@@ -8,9 +8,20 @@
 #include "contextmenus_darwin.h"
 #include "menu_darwin.h"
 
-ContextMenu* NewContextMenu(JsonNode* menuData, ContextMenuStore *store) {
+ContextMenu* NewContextMenu(const char* contextMenuJSON) {
     ContextMenu* result = malloc(sizeof(ContextMenu));
-    result->menu = NewMenu(menuData);
+
+    JsonNode* processedJSON = json_decode(contextMenuJSON);
+    if( processedJSON == NULL ) {
+        ABORT("[NewTrayMenu] Unable to parse TrayMenu JSON: %s", contextMenuJSON);
+    }
+    // Save reference to this json
+    result->processedJSON = processedJSON;
+
+    result->ID = mustJSONString(processedJSON, "ID");
+    JsonNode* processedMenu = mustJSONObject(processedJSON, "ProcessedMenu");
+
+    result->menu = NewMenu(processedMenu);
     result->nsmenu = NULL;
     result->menu->menuType = ContextMenuType;
     result->menu->parentData = result;
@@ -18,9 +29,8 @@ ContextMenu* NewContextMenu(JsonNode* menuData, ContextMenuStore *store) {
     return result;
 }
 
-
 ContextMenu* GetContextMenuByID(ContextMenuStore* store, const char *contextMenuID) {
-    return (ContextMenu*)hashmap_get(&store->contextMenuStore, (char*)contextMenuID, strlen(contextMenuID));
+    return (ContextMenu*)hashmap_get(&store->contextMenuMap, (char*)contextMenuID, strlen(contextMenuID));
 }
 
 void DeleteContextMenu(ContextMenu* contextMenu) {
@@ -32,6 +42,12 @@ void DeleteContextMenu(ContextMenu* contextMenu) {
         MEMFREE(contextMenu->contextMenuData);
     }
 
+    // Free JSON
+    if (contextMenu->processedJSON != NULL ) {
+        json_delete(contextMenu->processedJSON);
+        contextMenu->processedJSON = NULL;
+    }
+
     // Free context menu
     free(contextMenu);
 }
@@ -39,43 +55,6 @@ void DeleteContextMenu(ContextMenu* contextMenu) {
 int freeContextMenu(void *const context, struct hashmap_element_s *const e) {
     DeleteContextMenu(e->data);
     return -1;
-}
-
-void ProcessContextMenus(ContextMenuStore* store) {
-
-    // Decode the context menus JSON
-    store->processedContextMenus = json_decode(store->contextMenusAsJSON);
-	if( store->processedContextMenus == NULL ) {
-		ABORT("[ProcessContextMenus] Unable to parse Context Menus JSON: %s", store->contextMenusAsJSON);
-	}
-
-//	// Get the context menu items
-//	JsonNode *contextMenuItems = json_find_member(store->processedContextMenus, "Items");
-//	if( contextMenuItems == NULL ) {
-//		ABORT("[ProcessContextMenus] Unable to find Items in processedContextMenus!");
-//	}
-
-	// Iterate context menus
-	JsonNode *contextMenu;
-	json_foreach(contextMenu, store->processedContextMenus) {
-
-	    const char* ID = getJSONString(contextMenu, "ID");
-	    if ( ID == NULL ) {
-	        ABORT("Unable to read ID of contextMenu\n");
-	    }
-
-	    JsonNode* processedMenu = json_find_member(contextMenu, "ProcessedMenu");
-        if ( processedMenu == NULL ) {
-            ABORT("Unable to read ProcessedMenu of contextMenu\n");
-        }
-        // Create a new context menu instance
-        ContextMenu *thisContextMenu = NewContextMenu(processedMenu, store);
-        thisContextMenu->ID = ID;
-
-		// Store the item in the context menu map
-		hashmap_put(&store->contextMenuStore, (char*)ID, strlen(ID), thisContextMenu);
-	}
-
 }
 
 void ShowContextMenu(ContextMenuStore* store, id mainWindow, const char *contextMenuID, const char *contextMenuData) {

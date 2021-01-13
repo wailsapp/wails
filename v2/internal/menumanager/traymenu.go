@@ -90,3 +90,16 @@ func (m *Manager) GetTrayMenus() ([]string, error) {
 
 	return result, nil
 }
+
+func (m *Manager) GetContextMenus() ([]string, error) {
+	result := []string{}
+	for _, contextMenu := range m.contextMenus {
+		JSON, err := contextMenu.AsJSON()
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, JSON)
+	}
+
+	return result, nil
+}

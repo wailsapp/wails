@@ -63,10 +63,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	// Process context menus
 	contextMenus := options.GetContextMenus(appoptions)
-	if contextMenus != nil {
-		for contextMenuID, contextMenu := range contextMenus.Items {
-			menuManager.AddContextMenu(contextMenuID, contextMenu)
-		}
+	for _, contextMenu := range contextMenus {
+		menuManager.AddContextMenu(contextMenu)
 	}
 
 	// Process tray menus

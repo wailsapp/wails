@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/wailsapp/wails/v2"
@@ -9,9 +10,11 @@ import (
 
 // ContextMenu struct
 type ContextMenu struct {
-	runtime *wails.Runtime
-	counter int
-	lock    sync.Mutex
+	runtime         *wails.Runtime
+	counter         int
+	lock            sync.Mutex
+	testContextMenu *menu.ContextMenu
+	clickedMenu     *menu.MenuItem
 }
 
 // WailsInit is called at application startup
@@ -22,10 +25,19 @@ func (c *ContextMenu) WailsInit(runtime *wails.Runtime) error {
 	return nil
 }
 
-func createContextMenus() *menu.ContextMenus {
-	result := menu.NewContextMenus()
-	result.AddMenu("test", menu.NewMenuFromItems(
-		menu.Text("Clicked 0 times", nil, nil),
+// Setup Menu Listeners
+func (c *ContextMenu) updateContextMenu(_ *menu.CallbackData) {
+	c.lock.Lock()
+	c.counter++
+	c.clickedMenu.Label = fmt.Sprintf("Clicked %d times", c.counter)
+	c.lock.Unlock()
+	c.runtime.Menu.UpdateContextMenu(c.testContextMenu)
+}
+
+func (c *ContextMenu) createContextMenus() []*menu.ContextMenu {
+	c.clickedMenu = menu.Text("Clicked 0 times", nil, c.updateContextMenu)
+	c.testContextMenu = menu.NewContextMenu("test", menu.NewMenuFromItems(
+		c.clickedMenu,
 		menu.Separator(),
 		menu.Checkbox("I am a checkbox", false, nil, nil),
 		menu.Separator(),
@@ -37,5 +49,7 @@ func createContextMenus() *menu.ContextMenus {
 			menu.Text("Hello", nil, nil),
 		)),
 	))
-	return result
+	return []*menu.ContextMenu{
+		c.testContextMenu,
+	}
 }

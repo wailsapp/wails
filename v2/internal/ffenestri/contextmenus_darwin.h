@@ -14,17 +14,19 @@ typedef struct {
     id nsmenu;
     Menu* menu;
 
-	// The optional data that may be passed with a context menu selection
+    JsonNode* processedJSON;
+
+    // Context menu data is given by the frontend when clicking a context menu.
+    // We send this to the backend when an item is selected
 	const char* contextMenuData;
 } ContextMenu;
 
 
-ContextMenu* NewContextMenu(JsonNode* menuData, ContextMenuStore* store);
+ContextMenu* NewContextMenu(const char* contextMenuJSON);
 
 ContextMenu* GetContextMenuByID( ContextMenuStore* store, const char *contextMenuID);
 void DeleteContextMenu(ContextMenu* contextMenu);
 int freeContextMenu(void *const context, struct hashmap_element_s *const e);
-void ProcessContextMenus( ContextMenuStore* store);
 
 void ShowContextMenu(ContextMenuStore* store, id mainWindow, const char *contextMenuID, const char *contextMenuData);
 

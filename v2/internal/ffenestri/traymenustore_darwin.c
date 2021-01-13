@@ -30,6 +30,8 @@ void DumpTrayMenuStore(TrayMenuStore* store) {
 
 void AddTrayMenuToStore(TrayMenuStore* store, const char* menuJSON) {
     TrayMenu* newMenu = NewTrayMenu(menuJSON);
+
+    //TODO: check if there is already an entry for this menu
     hashmap_put(&store->trayMenuMap, newMenu->ID, strlen(newMenu->ID), newMenu);
 
 }
