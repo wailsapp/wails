@@ -63,6 +63,14 @@ func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, options *Opti
 		return err
 	}
 
+	// Make dir if it doesn't exist
+	if !fs.DirExists(assetDir) {
+		err := fs.Mkdir(assetDir)
+		if err != nil {
+			return err
+		}
+	}
+
 	// Dump assets as C
 	assetsFile, err := assets.WriteToCFile(assetDir)
 	if err != nil {
