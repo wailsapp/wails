@@ -114,11 +114,7 @@ func (a *App) Run() error {
 		return err
 	}
 
-	// Start the runtime
-	applicationMenu := options.GetApplicationMenu(a.options)
-	contextMenus := options.GetContextMenus(a.options)
-
-	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger, contextMenus)
+	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger)
 	if err != nil {
 		return err
 	}
@@ -176,17 +172,15 @@ func (a *App) Run() error {
 		return err
 	}
 
-	// Optionally start the menu subsystem
-	if applicationMenu != nil {
-		menusubsystem, err := subsystem.NewMenu(a.servicebus, a.logger, a.menuManager)
-		if err != nil {
-			return err
-		}
-		a.menu = menusubsystem
-		err = a.menu.Start()
-		if err != nil {
-			return err
-		}
+	// Start the menu subsystem
+	menusubsystem, err := subsystem.NewMenu(a.servicebus, a.logger, a.menuManager)
+	if err != nil {
+		return err
+	}
+	a.menu = menusubsystem
+	err = a.menu.Start()
+	if err != nil {
+		return err
 	}
 
 	// Start the call subsystem

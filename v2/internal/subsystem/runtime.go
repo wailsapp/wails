@@ -2,7 +2,6 @@ package subsystem
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/menu"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -24,7 +23,7 @@ type Runtime struct {
 }
 
 // NewRuntime creates a new runtime subsystem
-func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger, contextMenus *menu.ContextMenus) (*Runtime, error) {
+func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger) (*Runtime, error) {
 
 	// Register quit channel
 	quitChannel, err := bus.Subscribe("quit")
@@ -42,7 +41,7 @@ func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger, contextMenus 
 		quitChannel:    quitChannel,
 		runtimeChannel: runtimeChannel,
 		logger:         logger.CustomLogger("Runtime Subsystem"),
-		runtime:        runtime.New(bus, contextMenus),
+		runtime:        runtime.New(bus),
 	}
 
 	return result, nil

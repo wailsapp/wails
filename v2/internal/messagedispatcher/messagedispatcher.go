@@ -452,7 +452,7 @@ func (d *Dispatcher) processMenuMessage(result *servicebus.Message) {
 		// TODO: Work out what we mean in a multi window environment...
 		// For now we will just pick the first one
 		for _, client := range d.clients {
-			client.frontend.UpdateMenu(updatedMenu)
+			client.frontend.SetApplicationMenu(updatedMenu)
 		}
 
 	case "updatetraymenu":

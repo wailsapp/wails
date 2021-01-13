@@ -185,20 +185,12 @@ func (c *Client) DarkModeEnabled(callbackID string) {
 	C.DarkModeEnabled(c.app.app, c.app.string2CString(callbackID))
 }
 
-func (c *Client) UpdateMenu(menuJSON string) {
-	C.SetApplicationMenu(c.app.app, c.app.string2CString(menuJSON))
+func (c *Client) SetApplicationMenu(applicationMenuJSON string) {
+	C.SetApplicationMenu(c.app.app, c.app.string2CString(applicationMenuJSON))
 }
 
 func (c *Client) UpdateTrayMenu(trayMenuJSON string) {
 	C.UpdateTrayMenu(c.app.app, c.app.string2CString(trayMenuJSON))
-}
-
-func (c *Client) UpdateTrayLabel(label string) {
-	C.UpdateTrayLabel(c.app.app, c.app.string2CString(label))
-}
-
-func (c *Client) UpdateTrayIcon(name string) {
-	C.UpdateTrayIcon(c.app.app, c.app.string2CString(name))
 }
 
 func (c *Client) UpdateContextMenus(contextMenus *menu.ContextMenus) {
