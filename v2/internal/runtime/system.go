@@ -44,6 +44,7 @@ func (r *system) IsDarkMode() bool {
 	systemResponseChannel, err := r.bus.Subscribe(responseTopic)
 	if err != nil {
 		fmt.Printf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
+		return false
 	}
 
 	message := "system:isdarkmode:" + uniqueCallback

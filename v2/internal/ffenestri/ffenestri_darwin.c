@@ -21,10 +21,6 @@ int debug;
 // A cache for all our dialog icons
 struct hashmap_s dialogIconCache;
 
-// Context menu data is given by the frontend when clicking a context menu.
-// We send this to the backend when an item is selected;
-const char *contextMenuData;
-
 // Dispatch Method
 typedef void (^dispatchMethod)(void);
 
@@ -255,6 +251,10 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 
 		// TODO: Check this actually does reduce flicker
 		msg(app->config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("suppressesIncrementalRendering"));
+
+		// Notify backend we are ready (system startup)
+        app->sendMessageToBackend("SS");
+
 	} else if( strcmp(name, "windowDrag") == 0 ) {
 		// Guard against null events
 		if( app->mouseEvent != NULL ) {
@@ -632,6 +632,8 @@ extern void MessageDialog(struct Application *app, char *callbackID, char *type,
 	    if( strlen(icon) > 0 ) {
 	        dialogIcon = icon;
 	    }
+
+	    // TODO: move dialog icons + methods to own file
 
 	    // Determine what dialog icon we are looking for
 	    id dialogImage = NULL;
@@ -1501,6 +1503,9 @@ void Run(struct Application *app, int argc, char **argv) {
 		makeWindowBackgroundTranslucent(app);
 	}
 
+    // We set it to be invisible by default. It will become visible when everything has initialised
+    msg(app->mainWindow, s("setIsVisible:"), NO);
+
 	// Setup webview
 	id config = msg(c("WKWebViewConfiguration"), s("new"));
 	msg(config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 1), str("suppressesIncrementalRendering"));
@@ -1650,9 +1655,6 @@ void Run(struct Application *app, int argc, char **argv) {
 
 	// Process dialog icons
 	processUserDialogIcons(app);
-
-	// We set it to be invisible by default. It will become visible when everything has initialised
-	msg(app->mainWindow, s("setIsVisible:"), NO);
 
 	// Finally call run
 	Debug(app, "Run called");

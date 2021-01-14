@@ -14,7 +14,13 @@ import (
 type Runtime struct {
 	quitChannel    <-chan *servicebus.Message
 	runtimeChannel <-chan *servicebus.Message
-	running        bool
+
+	// The hooks channel allows us to hook into frontend startup
+	hooksChannel     <-chan *servicebus.Message
+	startupCallback  func(*runtime.Runtime)
+	shutdownCallback func()
+
+	running bool
 
 	logger logger.CustomLogger
 
@@ -23,7 +29,7 @@ type Runtime struct {
 }
 
 // NewRuntime creates a new runtime subsystem
-func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger) (*Runtime, error) {
+func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger, startupCallback func(*runtime.Runtime), shutdownCallback func()) (*Runtime, error) {
 
 	// Register quit channel
 	quitChannel, err := bus.Subscribe("quit")
@@ -37,11 +43,20 @@ func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger) (*Runtime, er
 		return nil, err
 	}
 
+	// Subscribe to log messages
+	hooksChannel, err := bus.Subscribe("hooks:")
+	if err != nil {
+		return nil, err
+	}
+
 	result := &Runtime{
-		quitChannel:    quitChannel,
-		runtimeChannel: runtimeChannel,
-		logger:         logger.CustomLogger("Runtime Subsystem"),
-		runtime:        runtime.New(bus),
+		quitChannel:      quitChannel,
+		runtimeChannel:   runtimeChannel,
+		hooksChannel:     hooksChannel,
+		logger:           logger.CustomLogger("Runtime Subsystem"),
+		runtime:          runtime.New(bus),
+		startupCallback:  startupCallback,
+		shutdownCallback: shutdownCallback,
 	}
 
 	return result, nil
@@ -59,6 +74,21 @@ func (r *Runtime) Start() error {
 			case <-r.quitChannel:
 				r.running = false
 				break
+			case hooksMessage := <-r.hooksChannel:
+				r.logger.Trace(fmt.Sprintf("Received hooksmessage: %+v", hooksMessage))
+				messageSlice := strings.Split(hooksMessage.Topic(), ":")
+				hook := messageSlice[1]
+				switch hook {
+				case "startup":
+					if r.startupCallback != nil {
+						go r.startupCallback(r.runtime)
+					} else {
+						r.logger.Error("no startup callback registered!")
+					}
+				default:
+					r.logger.Error("unknown hook message: %+v", hooksMessage)
+					continue
+				}
 			case runtimeMessage := <-r.runtimeChannel:
 				r.logger.Trace(fmt.Sprintf("Received message: %+v", runtimeMessage))
 				// Topics have the format: "runtime:category:call"
@@ -99,6 +129,9 @@ func (r *Runtime) GoRuntime() *runtime.Runtime {
 }
 
 func (r *Runtime) shutdown() {
+	if r.shutdownCallback != nil {
+		go r.shutdownCallback()
+	}
 	r.logger.Trace("Shutdown")
 }
 

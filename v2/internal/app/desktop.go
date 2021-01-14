@@ -45,8 +45,8 @@ type App struct {
 	appconfigStore *runtime.Store
 
 	// Startup/Shutdown
-	startup  func(*runtime.Runtime)
-	shutdown func()
+	startupCallback  func(*runtime.Runtime)
+	shutdownCallback func()
 }
 
 // Create App
@@ -80,13 +80,13 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	window := ffenestri.NewApplicationWithConfig(appoptions, myLogger, menuManager)
 
 	result := &App{
-		window:      window,
-		servicebus:  servicebus.New(myLogger),
-		logger:      myLogger,
-		bindings:    binding.NewBindings(myLogger),
-		menuManager: menuManager,
-		startup:     appoptions.Startup,
-		shutdown:    appoptions.Shutdown,
+		window:           window,
+		servicebus:       servicebus.New(myLogger),
+		logger:           myLogger,
+		bindings:         binding.NewBindings(myLogger),
+		menuManager:      menuManager,
+		startupCallback:  appoptions.Startup,
+		shutdownCallback: appoptions.Shutdown,
 	}
 
 	result.options = appoptions
@@ -118,7 +118,7 @@ func (a *App) Run() error {
 		return err
 	}
 
-	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger)
+	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger, a.startupCallback, a.shutdownCallback)
 	if err != nil {
 		return err
 	}
