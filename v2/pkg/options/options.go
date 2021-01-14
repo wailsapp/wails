@@ -1,6 +1,7 @@
 package options
 
 import (
+	wailsruntime "github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"log"
 	"runtime"
@@ -30,6 +31,8 @@ type App struct {
 	Mac           *mac.Options
 	Logger        logger.Logger `json:"-"`
 	LogLevel      logger.LogLevel
+	Startup       func(*wailsruntime.Runtime) `json:"-"`
+	Shutdown      func()                      `json:"-"`
 }
 
 // MergeDefaults will set the minimum default values for an application

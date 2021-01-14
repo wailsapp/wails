@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"strings"
 )
 
 // BoundMethod defines all the data related to a Go method that is
@@ -15,58 +14,6 @@ type BoundMethod struct {
 	Outputs  []*Parameter  `json:"outputs,omitempty"`
 	Comments string        `json:"comments,omitempty"`
 	Method   reflect.Value `json:"-"`
-}
-
-// IsWailsInit returns true if the method name is "WailsInit"
-func (b *BoundMethod) IsWailsInit() bool {
-	return strings.HasSuffix(b.Name, "WailsInit")
-}
-
-// IsWailsShutdown returns true if the method name is "WailsShutdown"
-func (b *BoundMethod) IsWailsShutdown() bool {
-	return strings.HasSuffix(b.Name, "WailsShutdown")
-}
-
-// VerifyWailsInit checks if the WailsInit signature is correct
-func (b *BoundMethod) VerifyWailsInit() error {
-	// Must only have 1 input
-	if b.InputCount() != 1 {
-		return fmt.Errorf("invalid method signature for %s: expected `WailsInit(*wails.Runtime) error`", b.Name)
-	}
-
-	// Check input type
-	if !b.Inputs[0].IsType("*runtime.Runtime") {
-		return fmt.Errorf("invalid method signature for %s: expected `WailsInit(*wails.Runtime) error`", b.Name)
-	}
-
-	// Must only have 1 output
-	if b.OutputCount() != 1 {
-		return fmt.Errorf("invalid method signature for %s: expected `WailsInit(*wails.Runtime) error`", b.Name)
-	}
-
-	// Check output type
-	if !b.Outputs[0].IsError() {
-		return fmt.Errorf("invalid method signature for %s: expected `WailsInit(*wails.Runtime) error`", b.Name)
-	}
-
-	// Input must be of type Runtime
-	return nil
-}
-
-// VerifyWailsShutdown checks if the WailsShutdown signature is correct
-func (b *BoundMethod) VerifyWailsShutdown() error {
-	// Must have no inputs
-	if b.InputCount() != 0 {
-		return fmt.Errorf("invalid method signature for WailsShutdown: expected `WailsShutdown()`")
-	}
-
-	// Must have no outputs
-	if b.OutputCount() != 0 {
-		return fmt.Errorf("invalid method signature for WailsShutdown: expected `WailsShutdown()`")
-	}
-
-	// Input must be of type Runtime
-	return nil
 }
 
 // InputCount returns the number of inputs this bound method has

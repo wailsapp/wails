@@ -3,7 +3,7 @@ package webserver
 import (
 	"context"
 	"github.com/wailsapp/wails/v2/pkg/menu"
-	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 	"net/http"
 	"strings"
 
@@ -20,11 +20,27 @@ type WebClient struct {
 	running    bool
 }
 
-func (wc *WebClient) OpenDialog(dialogOptions *options.OpenDialog, callbackID string) {
+func (wc *WebClient) MessageDialog(dialogOptions *dialog.MessageDialog, callbackID string) {
 	wc.logger.Info("Not implemented in server build")
 }
 
-func (wc *WebClient) SaveDialog(dialogOptions *options.SaveDialog, callbackID string) {
+func (wc *WebClient) SetApplicationMenu(menuJSON string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) UpdateTrayMenu(trayMenuJSON string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) UpdateContextMenu(contextMenuJSON string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) OpenDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string) {
 	wc.logger.Info("Not implemented in server build")
 }
 
@@ -81,10 +97,6 @@ func (wc *WebClient) UpdateTrayLabel(label string) {
 }
 
 func (wc *WebClient) UpdateTrayIcon(name string) {
-	wc.logger.Info("Not implemented in server build")
-}
-
-func (wc *WebClient) UpdateContextMenus(contextMenus *menu.ContextMenus) {
 	wc.logger.Info("Not implemented in server build")
 }
 

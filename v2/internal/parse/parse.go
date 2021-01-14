@@ -10,8 +10,6 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-var internalMethods = slicer.String([]string{"WailsInit", "Wails Shutdown"})
-
 var structCache = make(map[string]*ParsedStruct)
 var boundStructs = make(map[string]*ParsedStruct)
 var boundMethods = []string{}
@@ -49,7 +47,7 @@ func ParseProject(projectPath string) (BoundStructs, error) {
 	cfg := &packages.Config{Mode: packages.NeedFiles | packages.NeedSyntax | packages.NeedTypesInfo}
 	pkgs, err := packages.Load(cfg, projectPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "load: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "load: %v\n", err)
 		os.Exit(1)
 	}
 	if packages.PrintErrors(pkgs) > 0 {
@@ -203,10 +201,6 @@ func ParseProject(projectPath string) (BoundStructs, error) {
 								// This is a struct pointer method
 								i, ok := se.X.(*ast.Ident)
 								if ok {
-									// We want to ignore Internal functions
-									if internalMethods.Contains(x.Name.Name) {
-										continue
-									}
 									// If we haven't already found this struct,
 									// Create a placeholder in the cache
 									parsedStruct := structCache[i.Name]
@@ -437,4 +431,6 @@ func ParseProject(projectPath string) (BoundStructs, error) {
 	println()
 	println("}")
 	println()
+
+	return nil, nil
 }

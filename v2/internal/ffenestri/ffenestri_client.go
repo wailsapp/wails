@@ -12,10 +12,10 @@ package ffenestri
 import "C"
 
 import (
+	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 	"strconv"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
-	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 // Client is our implentation of messageDispatcher.Client
@@ -120,7 +120,7 @@ func (c *Client) WindowSetColour(colour int) {
 }
 
 // OpenDialog will open a dialog with the given title and filter
-func (c *Client) OpenDialog(dialogOptions *options.OpenDialog, callbackID string) {
+func (c *Client) OpenDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
 	C.OpenDialog(c.app.app,
 		c.app.string2CString(callbackID),
 		c.app.string2CString(dialogOptions.Title),
@@ -138,7 +138,7 @@ func (c *Client) OpenDialog(dialogOptions *options.OpenDialog, callbackID string
 }
 
 // SaveDialog will open a dialog with the given title and filter
-func (c *Client) SaveDialog(dialogOptions *options.SaveDialog, callbackID string) {
+func (c *Client) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string) {
 	C.SaveDialog(c.app.app,
 		c.app.string2CString(callbackID),
 		c.app.string2CString(dialogOptions.Title),
@@ -152,7 +152,7 @@ func (c *Client) SaveDialog(dialogOptions *options.SaveDialog, callbackID string
 }
 
 // MessageDialog will open a message dialog with the given options
-func (c *Client) MessageDialog(dialogOptions *options.MessageDialog, callbackID string) {
+func (c *Client) MessageDialog(dialogOptions *dialog.MessageDialog, callbackID string) {
 
 	// Sanity check button length
 	if len(dialogOptions.Buttons) > 4 {

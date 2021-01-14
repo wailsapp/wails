@@ -1,4 +1,4 @@
-package options
+package dialog
 
 // OpenDialog contains the options for the OpenDialog runtime method
 type OpenDialog struct {

@@ -43,6 +43,10 @@ type App struct {
 	// Application Stores
 	loglevelStore  *runtime.Store
 	appconfigStore *runtime.Store
+
+	// Startup/Shutdown
+	startup  func(*runtime.Runtime)
+	shutdown func()
 }
 
 // Create App
@@ -81,6 +85,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		logger:      myLogger,
 		bindings:    binding.NewBindings(myLogger),
 		menuManager: menuManager,
+		startup:     appoptions.Startup,
+		shutdown:    appoptions.Shutdown,
 	}
 
 	result.options = appoptions

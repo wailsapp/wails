@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 )
 
 // Dialog struct
@@ -18,16 +18,16 @@ func (l *Dialog) WailsInit(runtime *wails.Runtime) error {
 }
 
 // Open Dialog
-func (l *Dialog) Open(options *options.OpenDialog) []string {
+func (l *Dialog) Open(options *dialog.OpenDialog) []string {
 	return l.runtime.Dialog.Open(options)
 }
 
 // Save Dialog
-func (l *Dialog) Save(options *options.SaveDialog) string {
+func (l *Dialog) Save(options *dialog.SaveDialog) string {
 	return l.runtime.Dialog.Save(options)
 }
 
 // Message Dialog
-func (l *Dialog) Message(options *options.MessageDialog) string {
+func (l *Dialog) Message(options *dialog.MessageDialog) string {
 	return l.runtime.Dialog.Message(options)
 }

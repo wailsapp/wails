@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 	"io/ioutil"
 
 	"github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 type Notepad struct {
@@ -18,7 +18,7 @@ func (n *Notepad) WailsInit(runtime *wails.Runtime) error {
 
 func (n *Notepad) LoadNotes() (string, error) {
 
-	selectedFiles := n.runtime.Dialog.Open(&options.OpenDialog{
+	selectedFiles := n.runtime.Dialog.Open(&dialog.OpenDialog{
 		DefaultFilename: "notes.md",
 		Filters:         "*.md",
 		AllowFiles:      true,

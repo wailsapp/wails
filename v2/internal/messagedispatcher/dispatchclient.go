@@ -5,7 +5,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher/message"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
-	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 )
 
 // Client defines what a frontend client can do
@@ -13,9 +13,9 @@ type Client interface {
 	Quit()
 	NotifyEvent(message string)
 	CallResult(message string)
-	OpenDialog(dialogOptions *options.OpenDialog, callbackID string)
-	SaveDialog(dialogOptions *options.SaveDialog, callbackID string)
-	MessageDialog(dialogOptions *options.MessageDialog, callbackID string)
+	OpenDialog(dialogOptions *dialog.OpenDialog, callbackID string)
+	SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string)
+	MessageDialog(dialogOptions *dialog.MessageDialog, callbackID string)
 	WindowSetTitle(title string)
 	WindowShow()
 	WindowHide()

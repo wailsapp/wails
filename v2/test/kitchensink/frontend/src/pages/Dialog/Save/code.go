@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 	"io/ioutil"
 
 	"github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 type Notepad struct {
@@ -21,7 +21,7 @@ func (n *Notepad) WailsInit(runtime *wails.Runtime) error {
 // successful save.
 func (n *Notepad) SaveNotes(notes string) (bool, error) {
 
-	selectedFile := n.runtime.Dialog.Save(&options.SaveDialog{
+	selectedFile := n.runtime.Dialog.Save(&dialog.SaveDialog{
 		DefaultFilename: "notes.md",
 		Filters:         "*.md",
 	})

@@ -44,11 +44,6 @@ func (p *Parser) parseStructMethods(boundStruct *Struct) error {
 							continue
 						}
 
-						// We want to ignore Internal functions
-						if funcDecl.Name.Name == "WailsInit" || funcDecl.Name.Name == "WailsShutdown" {
-							continue
-						}
-
 						// If this method is not Public, ignore
 						if string(funcDecl.Name.Name[0]) != strings.ToUpper((string(funcDecl.Name.Name[0]))) {
 							continue

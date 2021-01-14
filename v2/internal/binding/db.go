@@ -15,10 +15,6 @@ type DB struct {
 	// It used for performance gains at runtime
 	methodMap map[string]*BoundMethod
 
-	// These are slices of methods registered using WailsInit and WailsShutdown
-	wailsInitMethods     []*BoundMethod
-	wailsShutdownMethods []*BoundMethod
-
 	// Lock to ensure sync access to the data
 	lock sync.RWMutex
 }
@@ -94,38 +90,6 @@ func (d *DB) AddMethod(packageName string, structName string, methodName string,
 
 }
 
-// AddWailsInit checks the given method is a WailsInit method and if it
-// is, adds it to the list of WailsInit methods
-func (d *DB) AddWailsInit(method *BoundMethod) error {
-	err := method.VerifyWailsInit()
-	if err != nil {
-		return err
-	}
-
-	// Lock the db whilst processing and unlock on return
-	d.lock.Lock()
-	defer d.lock.Unlock()
-
-	d.wailsInitMethods = append(d.wailsInitMethods, method)
-	return nil
-}
-
-// AddWailsShutdown checks the given method is a WailsInit method and if it
-// is, adds it to the list of WailsShutdown methods
-func (d *DB) AddWailsShutdown(method *BoundMethod) error {
-	err := method.VerifyWailsShutdown()
-	if err != nil {
-		return err
-	}
-
-	// Lock the db whilst processing and unlock on return
-	d.lock.Lock()
-	defer d.lock.Unlock()
-
-	d.wailsShutdownMethods = append(d.wailsShutdownMethods, method)
-	return nil
-}
-
 // ToJSON converts the method map to JSON
 func (d *DB) ToJSON() (string, error) {
 
@@ -137,14 +101,4 @@ func (d *DB) ToJSON() (string, error) {
 
 	// Return zero copy string as this string will be read only
 	return *(*string)(unsafe.Pointer(&bytes)), err
-}
-
-// WailsInitMethods returns the list of registered WailsInit methods
-func (d *DB) WailsInitMethods() []*BoundMethod {
-	return d.wailsInitMethods
-}
-
-// WailsShutdownMethods returns the list of registered WailsInit methods
-func (d *DB) WailsShutdownMethods() []*BoundMethod {
-	return d.wailsShutdownMethods
 }

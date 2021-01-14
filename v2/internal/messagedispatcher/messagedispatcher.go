@@ -2,6 +2,7 @@ package messagedispatcher
 
 import (
 	"encoding/json"
+	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 	"strconv"
 	"strings"
 	"sync"
@@ -10,7 +11,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher/message"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
-	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 // Dispatcher translates messages received from the frontend
@@ -370,7 +370,7 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 		dialogType := splitTopic[2]
 		switch dialogType {
 		case "open":
-			dialogOptions, ok := result.Data().(*options.OpenDialog)
+			dialogOptions, ok := result.Data().(*dialog.OpenDialog)
 			if !ok {
 				d.logger.Error("Invalid data for 'dialog:select:open' : %#v", result.Data())
 				return
@@ -384,7 +384,7 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 				client.frontend.OpenDialog(dialogOptions, callbackID)
 			}
 		case "save":
-			dialogOptions, ok := result.Data().(*options.SaveDialog)
+			dialogOptions, ok := result.Data().(*dialog.SaveDialog)
 			if !ok {
 				d.logger.Error("Invalid data for 'dialog:select:save' : %#v", result.Data())
 				return
@@ -398,7 +398,7 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 				client.frontend.SaveDialog(dialogOptions, callbackID)
 			}
 		case "message":
-			dialogOptions, ok := result.Data().(*options.MessageDialog)
+			dialogOptions, ok := result.Data().(*dialog.MessageDialog)
 			if !ok {
 				d.logger.Error("Invalid data for 'dialog:select:message' : %#v", result.Data())
 				return

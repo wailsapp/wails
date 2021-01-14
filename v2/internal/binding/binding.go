@@ -34,26 +34,6 @@ func (b *Bindings) Add(structPtr interface{}) error {
 		structName := splitName[1]
 		methodName := splitName[2]
 
-		// Is this WailsInit?
-		if method.IsWailsInit() {
-			err := b.db.AddWailsInit(method)
-			if err != nil {
-				return err
-			}
-			b.logger.Trace("Registered WailsInit method: %s", method.Name)
-			continue
-		}
-
-		// Is this WailsShutdown?
-		if method.IsWailsShutdown() {
-			err := b.db.AddWailsShutdown(method)
-			if err != nil {
-				return err
-			}
-			b.logger.Trace("Registered WailsShutdown method: %s", method.Name)
-			continue
-		}
-
 		// Add it as a regular method
 		b.db.AddMethod(packageName, structName, methodName, method)
 

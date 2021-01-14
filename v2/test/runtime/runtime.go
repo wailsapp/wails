@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 	"time"
 
 	"github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 // RuntimeTest to test the runtimes
@@ -75,7 +75,7 @@ func (r *RuntimeTest) SetColour(colour int) {
 
 // OpenFileDialog will call the Runtime.Dialog.OpenDialog method requesting File selection
 func (r *RuntimeTest) OpenFileDialog(title string, filter string) []string {
-	dialogOptions := &options.OpenDialog{
+	dialogOptions := &dialog.OpenDialog{
 		Title:      title,
 		Filters:    filter,
 		AllowFiles: true,
@@ -85,7 +85,7 @@ func (r *RuntimeTest) OpenFileDialog(title string, filter string) []string {
 
 // OpenDirectoryDialog will call the Runtime.Dialog.OpenDialog method requesting File selection
 func (r *RuntimeTest) OpenDirectoryDialog(title string, filter string) []string {
-	dialogOptions := &options.OpenDialog{
+	dialogOptions := &dialog.OpenDialog{
 		Title:            title,
 		Filters:          filter,
 		AllowDirectories: true,
@@ -95,7 +95,7 @@ func (r *RuntimeTest) OpenDirectoryDialog(title string, filter string) []string 
 
 // OpenDialog will call the Runtime.Dialog.OpenDialog method requesting both Files and Directories
 func (r *RuntimeTest) OpenDialog(title string, filter string) []string {
-	dialogOptions := &options.OpenDialog{
+	dialogOptions := &dialog.OpenDialog{
 		Title:            title,
 		Filters:          filter,
 		AllowDirectories: true,
@@ -106,7 +106,7 @@ func (r *RuntimeTest) OpenDialog(title string, filter string) []string {
 
 // OpenDialogMultiple will call the Runtime.Dialog.OpenDialog method allowing multiple selection
 func (r *RuntimeTest) OpenDialogMultiple(title string, filter string) []string {
-	dialogOptions := &options.OpenDialog{
+	dialogOptions := &dialog.OpenDialog{
 		Title:            title,
 		Filters:          filter,
 		AllowDirectories: true,
@@ -118,7 +118,7 @@ func (r *RuntimeTest) OpenDialogMultiple(title string, filter string) []string {
 
 // OpenDialogAllOptions will call the Runtime.Dialog.OpenDialog method allowing multiple selection
 func (r *RuntimeTest) OpenDialogAllOptions(filter string, defaultDir string, defaultFilename string) []string {
-	dialogOptions := &options.OpenDialog{
+	dialogOptions := &dialog.OpenDialog{
 		DefaultDirectory:           defaultDir,
 		DefaultFilename:            defaultFilename,
 		Filters:                    filter,
@@ -134,7 +134,7 @@ func (r *RuntimeTest) OpenDialogAllOptions(filter string, defaultDir string, def
 
 // SaveFileDialog will call the Runtime.Dialog.SaveDialog method requesting a File selection
 func (r *RuntimeTest) SaveFileDialog(title string, filter string) string {
-	dialogOptions := &options.SaveDialog{
+	dialogOptions := &dialog.SaveDialog{
 		Title:   title,
 		Filters: filter,
 	}
@@ -143,7 +143,7 @@ func (r *RuntimeTest) SaveFileDialog(title string, filter string) string {
 
 // SaveDialogAllOptions will call the Runtime.Dialog.SaveDialog method allowing multiple selection
 func (r *RuntimeTest) SaveDialogAllOptions(filter string, defaultDir string, defaultFilename string) string {
-	dialogOptions := &options.SaveDialog{
+	dialogOptions := &dialog.SaveDialog{
 		DefaultDirectory:           defaultDir,
 		DefaultFilename:            defaultFilename,
 		Filters:                    filter,

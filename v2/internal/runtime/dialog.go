@@ -5,14 +5,14 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/crypto"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
-	"github.com/wailsapp/wails/v2/pkg/options"
+	dialogoptions "github.com/wailsapp/wails/v2/pkg/options/dialog"
 )
 
 // Dialog defines all Dialog related operations
 type Dialog interface {
-	Open(dialogOptions *options.OpenDialog) []string
-	Save(dialogOptions *options.SaveDialog) string
-	Message(dialogOptions *options.MessageDialog) string
+	Open(dialogOptions *dialogoptions.OpenDialog) []string
+	Save(dialogOptions *dialogoptions.SaveDialog) string
+	Message(dialogOptions *dialogoptions.MessageDialog) string
 }
 
 // dialog exposes the Dialog interface
@@ -45,7 +45,7 @@ func (r *dialog) processTitleAndFilter(params ...string) (string, string) {
 }
 
 // Open prompts the user to select a file
-func (r *dialog) Open(dialogOptions *options.OpenDialog) []string {
+func (r *dialog) Open(dialogOptions *dialogoptions.OpenDialog) []string {
 
 	// Create unique dialog callback
 	uniqueCallback := crypto.RandomID()
@@ -70,7 +70,7 @@ func (r *dialog) Open(dialogOptions *options.OpenDialog) []string {
 }
 
 // Save prompts the user to select a file
-func (r *dialog) Save(dialogOptions *options.SaveDialog) string {
+func (r *dialog) Save(dialogOptions *dialogoptions.SaveDialog) string {
 
 	// Create unique dialog callback
 	uniqueCallback := crypto.RandomID()
@@ -95,7 +95,7 @@ func (r *dialog) Save(dialogOptions *options.SaveDialog) string {
 }
 
 // Message show a message to the user
-func (r *dialog) Message(dialogOptions *options.MessageDialog) string {
+func (r *dialog) Message(dialogOptions *dialogoptions.MessageDialog) string {
 
 	// Create unique dialog callback
 	uniqueCallback := crypto.RandomID()
