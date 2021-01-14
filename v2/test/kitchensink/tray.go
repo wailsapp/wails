@@ -21,8 +21,8 @@ type Tray struct {
 	done bool
 }
 
-// WailsInit is called at application startup
-func (t *Tray) WailsInit(runtime *wails.Runtime) error {
+// This is called at application startup
+func (t *Tray) start(runtime *wails.Runtime) {
 	// Perform your setup here
 	t.runtime = runtime
 
@@ -36,7 +36,6 @@ func (t *Tray) WailsInit(runtime *wails.Runtime) error {
 	//	t.runtime.Tray.SetIcon("dark")
 	//})
 
-	return nil
 }
 
 func (t *Tray) showWindow(_ *menu.CallbackData) {
@@ -55,7 +54,7 @@ func (t *Tray) minimiseWindow(_ *menu.CallbackData) {
 	t.runtime.Window.Minimise()
 }
 
-func (t *Tray) WailsShutdown() {
+func (t *Tray) shutdown() {
 	t.done = true
 }
 
@@ -71,19 +70,19 @@ func (t *Tray) decrementcounter() int {
 
 func (t *Tray) SvelteIcon(_ *menu.CallbackData) {
 	t.secondTrayMenu.Icon = "svelte"
-	t.runtime.Menu.UpdateTrayMenu(t.secondTrayMenu)
+	t.runtime.Menu.SetTrayMenu(t.secondTrayMenu)
 }
 func (t *Tray) NoIcon(_ *menu.CallbackData) {
 	t.secondTrayMenu.Icon = ""
-	t.runtime.Menu.UpdateTrayMenu(t.secondTrayMenu)
+	t.runtime.Menu.SetTrayMenu(t.secondTrayMenu)
 }
 func (t *Tray) LightIcon(_ *menu.CallbackData) {
 	t.secondTrayMenu.Icon = "light"
-	t.runtime.Menu.UpdateTrayMenu(t.secondTrayMenu)
+	t.runtime.Menu.SetTrayMenu(t.secondTrayMenu)
 }
 func (t *Tray) DarkIcon(_ *menu.CallbackData) {
 	t.secondTrayMenu.Icon = "dark"
-	t.runtime.Menu.UpdateTrayMenu(t.secondTrayMenu)
+	t.runtime.Menu.SetTrayMenu(t.secondTrayMenu)
 }
 
 //func (t *Tray) removeMenu(_ *menu.MenuItem) {
@@ -146,7 +145,7 @@ func (t *Tray) createTrayMenus() []*menu.TrayMenu {
 			counter := t.incrementcounter()
 			trayLabel := "Updated Label " + strconv.Itoa(counter)
 			secondTrayMenu.Label = trayLabel
-			t.runtime.Menu.UpdateTrayMenu(t.secondTrayMenu)
+			t.runtime.Menu.SetTrayMenu(t.secondTrayMenu)
 		}),
 		menu.SubMenu("Select Icon", menu.NewMenuFromItems(
 			menu.Text("Svelte", nil, t.SvelteIcon),

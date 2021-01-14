@@ -445,10 +445,10 @@ func (d *Dispatcher) processMenuMessage(result *servicebus.Message) {
 			client.frontend.SetApplicationMenu(updatedMenu)
 		}
 
-	case "updatetraymenu":
-		updatedTrayMenu, ok := result.Data().(string)
+	case "settraymenu":
+		trayMenuJSON, ok := result.Data().(string)
 		if !ok {
-			d.logger.Error("Invalid data for 'menufrontend:updatetraymenu' : %#v",
+			d.logger.Error("Invalid data for 'menufrontend:settraymenu' : %#v",
 				result.Data())
 			return
 		}
@@ -456,8 +456,9 @@ func (d *Dispatcher) processMenuMessage(result *servicebus.Message) {
 		// TODO: Work out what we mean in a multi window environment...
 		// For now we will just pick the first one
 		for _, client := range d.clients {
-			client.frontend.UpdateTrayMenu(updatedTrayMenu)
+			client.frontend.SetTrayMenu(trayMenuJSON)
 		}
+
 	case "updatecontextmenu":
 		updatedContextMenu, ok := result.Data().(string)
 		if !ok {

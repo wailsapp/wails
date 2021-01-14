@@ -63,9 +63,11 @@ type ProcessedMenu struct {
 func NewProcessedMenu(menuItemMap *MenuItemMap, menu *menu.Menu) *ProcessedMenu {
 
 	result := &ProcessedMenu{}
-	for _, item := range menu.Items {
-		processedMenuItem := NewProcessedMenuItem(menuItemMap, item)
-		result.Items = append(result.Items, processedMenuItem)
+	if menu != nil {
+		for _, item := range menu.Items {
+			processedMenuItem := NewProcessedMenuItem(menuItemMap, item)
+			result.Items = append(result.Items, processedMenuItem)
+		}
 	}
 
 	return result

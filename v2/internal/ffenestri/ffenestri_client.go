@@ -188,8 +188,8 @@ func (c *Client) SetApplicationMenu(applicationMenuJSON string) {
 	C.SetApplicationMenu(c.app.app, c.app.string2CString(applicationMenuJSON))
 }
 
-func (c *Client) UpdateTrayMenu(trayMenuJSON string) {
-	C.UpdateTrayMenu(c.app.app, c.app.string2CString(trayMenuJSON))
+func (c *Client) SetTrayMenu(trayMenuJSON string) {
+	C.SetTrayMenu(c.app.app, c.app.string2CString(trayMenuJSON))
 }
 
 func (c *Client) UpdateContextMenu(contextMenuJSON string) {

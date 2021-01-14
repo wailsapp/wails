@@ -77,8 +77,16 @@ void UpdateTrayMenuInStore(TrayMenuStore* store, const char* menuJSON) {
 
     // Get the current menu
     TrayMenu *currentMenu = GetTrayMenuFromStore(store, newMenu->ID);
+
+    // If we don't have a menu, we create one
     if ( currentMenu == NULL ) {
-        ABORT("Attempted to update unknown tray menu with ID '%s'.", newMenu->ID);
+
+        // Store the new menu
+        hashmap_put(&store->trayMenuMap, newMenu->ID, strlen(newMenu->ID), newMenu);
+
+        // Show it
+        ShowTrayMenu(newMenu);
+        return;
     }
 
     // Save the status bar reference

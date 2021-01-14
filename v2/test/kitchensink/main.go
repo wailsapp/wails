@@ -34,6 +34,8 @@ func main() {
 			TrayMenus: Tray.createTrayMenus(),
 		},
 		LogLevel: logger.TRACE,
+		Startup:  Tray.start,
+		Shutdown: Tray.shutdown,
 	})
 
 	if err != nil {

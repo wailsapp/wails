@@ -26,6 +26,9 @@ func NewMenuItemMap() *MenuItemMap {
 }
 
 func (m *MenuItemMap) AddMenu(menu *menu.Menu) {
+	if menu == nil {
+		return
+	}
 	for _, item := range menu.Items {
 		m.processMenuItem(item)
 	}

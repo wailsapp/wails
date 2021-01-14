@@ -50,7 +50,7 @@ func NewTrayMenu(trayMenu *menu.TrayMenu) *TrayMenu {
 	return result
 }
 
-func (m *Manager) AddTrayMenu(trayMenu *menu.TrayMenu) {
+func (m *Manager) AddTrayMenu(trayMenu *menu.TrayMenu) (string, error) {
 	newTrayMenu := NewTrayMenu(trayMenu)
 
 	// Hook up a new ID
@@ -60,12 +60,15 @@ func (m *Manager) AddTrayMenu(trayMenu *menu.TrayMenu) {
 	// Save the references
 	m.trayMenus[trayID] = newTrayMenu
 	m.trayMenuPointers[trayMenu] = trayID
+
+	return newTrayMenu.AsJSON()
 }
 
-func (m *Manager) UpdateTrayMenu(trayMenu *menu.TrayMenu) (string, error) {
+// SetTrayMenu updates or creates a menu
+func (m *Manager) SetTrayMenu(trayMenu *menu.TrayMenu) (string, error) {
 	trayID, trayMenuKnown := m.trayMenuPointers[trayMenu]
 	if !trayMenuKnown {
-		return "", fmt.Errorf("unknown Tray Menu '%s'. Please add the tray menu using AddTrayMenu()", trayMenu.Label)
+		return m.AddTrayMenu(trayMenu)
 	}
 
 	// Create the updated tray menu

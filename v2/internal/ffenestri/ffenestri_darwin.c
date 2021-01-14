@@ -926,8 +926,10 @@ void AddTrayMenu(struct Application *app, const char *trayMenuJSON) {
 	AddTrayMenuToStore(app->trayMenuStore, trayMenuJSON);
 }
 
-void UpdateTrayMenu(struct Application *app, const char* trayMenuJSON) {
-    UpdateTrayMenuInStore(app->trayMenuStore, trayMenuJSON);
+void SetTrayMenu(struct Application *app, const char* trayMenuJSON) {
+    ON_MAIN_THREAD(
+        UpdateTrayMenuInStore(app->trayMenuStore, trayMenuJSON);
+    );
 }
 
 void SetBindings(struct Application *app, const char *bindings) {
