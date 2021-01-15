@@ -12,6 +12,14 @@ func (m *Menu) Append(item *MenuItem) {
 	m.Items = append(m.Items, item)
 }
 
+// Merge will append the items in the given menu
+// into this menu
+func (m *Menu) Merge(menu *Menu) {
+	for _, item := range menu.Items {
+		m.Items = append(m.Items, item)
+	}
+}
+
 func (m *Menu) Prepend(item *MenuItem) {
 	m.Items = append([]*MenuItem{item}, m.Items...)
 }
