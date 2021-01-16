@@ -3,6 +3,7 @@ package menumanager
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"sync"
 )
@@ -92,6 +93,31 @@ func (m *Manager) GetTrayMenus() ([]string, error) {
 	}
 
 	return result, nil
+}
+
+func (m *Manager) UpdateTrayMenuLabel(trayMenu *menu.TrayMenu) (string, error) {
+	trayID, trayMenuKnown := m.trayMenuPointers[trayMenu]
+	if !trayMenuKnown {
+		return "", fmt.Errorf("[UpdateTrayMenuLabel] unknown tray id for tray %s", trayMenu.Label)
+	}
+
+	type LabelUpdate struct {
+		ID    string
+		Label string
+	}
+
+	update := &LabelUpdate{
+		ID:    trayID,
+		Label: trayMenu.Label,
+	}
+
+	data, err := json.Marshal(update)
+	if err != nil {
+		return "", errors.Wrap(err, "[UpdateTrayMenuLabel] ")
+	}
+
+	return string(data), nil
+
 }
 
 func (m *Manager) GetContextMenus() ([]string, error) {

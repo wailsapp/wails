@@ -86,3 +86,10 @@ bool getJSONInt(JsonNode *item, const char* key, int *result) {
     return false;
 }
 
+JsonNode* mustParseJSON(const char* JSON) {
+    JsonNode* parsedUpdate = json_decode(JSON);
+    if ( parsedUpdate == NULL ) {
+        ABORT("Unable to decode JSON: %s\n", JSON);
+    }
+    return parsedUpdate;
+}

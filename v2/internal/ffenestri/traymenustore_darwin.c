@@ -72,15 +72,39 @@ TrayMenu* GetTrayMenuFromStore(TrayMenuStore* store, const char* menuID) {
     return hashmap_get(&store->trayMenuMap, menuID, strlen(menuID));
 }
 
+TrayMenu* MustGetTrayMenuFromStore(TrayMenuStore* store, const char* menuID) {
+    // Get the current menu
+    TrayMenu* result = hashmap_get(&store->trayMenuMap, menuID, strlen(menuID));
+    if (result == NULL ) {
+        ABORT("Unable to find TrayMenu with ID '%s' in the TrayMenuStore!", menuID);
+    }
+    return result;
+}
+
+void UpdateTrayMenuLabelInStore(TrayMenuStore* store, const char* JSON) {
+    // Parse the JSON
+    JsonNode *parsedUpdate = mustParseJSON(JSON);
+
+    // Get the data out
+    const char* ID = mustJSONString(parsedUpdate, "ID");
+    const char* Label = mustJSONString(parsedUpdate, "Label");
+
+    // Check we have this menu
+    TrayMenu *menu = MustGetTrayMenuFromStore(store, ID);
+    UpdateTrayLabel(menu, Label);
+
+}
+
 void UpdateTrayMenuInStore(TrayMenuStore* store, const char* menuJSON) {
     TrayMenu* newMenu = NewTrayMenu(menuJSON);
+    DumpTrayMenu(newMenu);
 
     // Get the current menu
     TrayMenu *currentMenu = GetTrayMenuFromStore(store, newMenu->ID);
 
     // If we don't have a menu, we create one
     if ( currentMenu == NULL ) {
-
+        printf("  currentMenu = NULL\n");
         // Store the new menu
         hashmap_put(&store->trayMenuMap, newMenu->ID, strlen(newMenu->ID), newMenu);
 
@@ -88,6 +112,7 @@ void UpdateTrayMenuInStore(TrayMenuStore* store, const char* menuJSON) {
         ShowTrayMenu(newMenu);
         return;
     }
+    DumpTrayMenu(currentMenu);
 
     // Save the status bar reference
     newMenu->statusbaritem = currentMenu->statusbaritem;
@@ -97,12 +122,6 @@ void UpdateTrayMenuInStore(TrayMenuStore* store, const char* menuJSON) {
     // Delete the current menu
     DeleteMenu(currentMenu->menu);
     currentMenu->menu = NULL;
-
-    // Free JSON
-    if (currentMenu->processedJSON != NULL ) {
-        json_delete(currentMenu->processedJSON);
-        currentMenu->processedJSON = NULL;
-    }
 
     // Free the tray menu memory
     MEMFREE(currentMenu);

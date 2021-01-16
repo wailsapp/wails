@@ -192,6 +192,10 @@ func (c *Client) SetTrayMenu(trayMenuJSON string) {
 	C.SetTrayMenu(c.app.app, c.app.string2CString(trayMenuJSON))
 }
 
+func (c *Client) UpdateTrayMenuLabel(JSON string) {
+	C.UpdateTrayMenuLabel(c.app.app, c.app.string2CString(JSON))
+}
+
 func (c *Client) UpdateContextMenu(contextMenuJSON string) {
 	C.UpdateContextMenu(c.app.app, c.app.string2CString(contextMenuJSON))
 }

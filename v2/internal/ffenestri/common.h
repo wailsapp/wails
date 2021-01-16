@@ -35,4 +35,6 @@ JsonNode* mustJSONObject(JsonNode *node, const char* key);
 bool getJSONBool(JsonNode *item, const char* key, bool *result);
 bool getJSONInt(JsonNode *item, const char* key, int *result);
 
+JsonNode* mustParseJSON(const char* JSON);
+
 #endif //ASSETS_C_COMMON_H

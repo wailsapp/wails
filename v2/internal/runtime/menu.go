@@ -10,6 +10,7 @@ type Menu interface {
 	UpdateApplicationMenu()
 	UpdateContextMenu(contextMenu *menu.ContextMenu)
 	SetTrayMenu(trayMenu *menu.TrayMenu)
+	UpdateTrayMenuLabel(trayMenu *menu.TrayMenu)
 }
 
 type menuRuntime struct {
@@ -33,4 +34,8 @@ func (m *menuRuntime) UpdateContextMenu(contextMenu *menu.ContextMenu) {
 
 func (m *menuRuntime) SetTrayMenu(trayMenu *menu.TrayMenu) {
 	m.bus.Publish("menu:settraymenu", trayMenu)
+}
+
+func (m *menuRuntime) UpdateTrayMenuLabel(trayMenu *menu.TrayMenu) {
+	m.bus.Publish("menu:updatetraymenulabel", trayMenu)
 }

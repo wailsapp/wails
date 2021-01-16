@@ -32,6 +32,7 @@ type Client interface {
 	DarkModeEnabled(callbackID string)
 	SetApplicationMenu(menuJSON string)
 	SetTrayMenu(trayMenuJSON string)
+	UpdateTrayMenuLabel(JSON string)
 	UpdateContextMenu(contextMenuJSON string)
 }
 

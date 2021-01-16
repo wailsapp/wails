@@ -131,6 +131,17 @@ func (m *Menu) Start() error {
 					// Notify frontend of menu change
 					m.bus.Publish("menufrontend:settraymenu", updatedMenu)
 
+				case "updatetraymenulabel":
+					trayMenu := menuMessage.Data().(*menu.TrayMenu)
+					updatedLabel, err := m.menuManager.UpdateTrayMenuLabel(trayMenu)
+					if err != nil {
+						m.logger.Trace("%s", err.Error())
+						return
+					}
+
+					// Notify frontend of menu change
+					m.bus.Publish("menufrontend:updatetraymenulabel", updatedLabel)
+
 				default:
 					m.logger.Error("unknown menu message: %+v", menuMessage)
 				}

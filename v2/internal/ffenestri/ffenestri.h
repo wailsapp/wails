@@ -37,6 +37,7 @@ extern void DarkModeEnabled(struct Application*, char *callbackID);
 extern void SetApplicationMenu(struct Application*, const char *);
 extern void AddTrayMenu(struct Application*, const char *menuTrayJSON);
 extern void SetTrayMenu(struct Application*, const char *menuTrayJSON);
+extern void UpdateTrayMenuLabel(struct Application*, const char* JSON);
 extern void AddContextMenu(struct Application*, char *contextMenuJSON);
 extern void UpdateContextMenu(struct Application*, char *contextMenuJSON);
 

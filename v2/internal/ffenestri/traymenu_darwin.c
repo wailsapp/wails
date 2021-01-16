@@ -49,42 +49,19 @@ void DumpTrayMenu(TrayMenu* trayMenu) {
     printf("    ['%s':%p] = { label: '%s', icon: '%s', menu: %p, statusbar: %p  }\n", trayMenu->ID, trayMenu, trayMenu->label, trayMenu->icon, trayMenu->menu, trayMenu->statusbaritem );
 }
 
-void ShowTrayMenu(TrayMenu* trayMenu) {
 
-    // Create a status bar item if we don't have one
-    if( trayMenu->statusbaritem == NULL ) {
-        id statusBar = msg( c("NSStatusBar"), s("systemStatusBar") );
-        trayMenu->statusbaritem = msg(statusBar, s("statusItemWithLength:"), NSVariableStatusItemLength);
-        msg(trayMenu->statusbaritem, s("retain"));
-
-    }
-
-    id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
-    msg(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);
-
-    // Update the icon if needed
-    UpdateTrayMenuIcon(trayMenu);
-
-    // Update the label if needed
-    UpdateTrayMenuLabel(trayMenu);
-
-	// Update the menu
-    id menu = GetMenu(trayMenu->menu);
-    msg(trayMenu->statusbaritem, s("setMenu:"), menu);
-}
-
-void UpdateTrayMenuLabel(TrayMenu *trayMenu) {
+void UpdateTrayLabel(TrayMenu *trayMenu, const char *label) {
 
     // Exit early if NULL
     if( trayMenu->label == NULL ) {
         return;
     }
-    // We don't check for a
+    // Update button label
     id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
-    msg(statusBarButton, s("setTitle:"), str(trayMenu->label));
+    msg(statusBarButton, s("setTitle:"), str(label));
 }
 
-void UpdateTrayMenuIcon(TrayMenu *trayMenu) {
+void UpdateTrayIcon(TrayMenu *trayMenu) {
 
     // Exit early if NULL
     if( trayMenu->icon == NULL ) {
@@ -103,6 +80,32 @@ void UpdateTrayMenuIcon(TrayMenu *trayMenu) {
     id trayImage = hashmap_get(&trayIconCache, trayMenu->icon, strlen(trayMenu->icon));
     msg(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);
     msg(statusBarButton, s("setImage:"), trayImage);
+}
+
+
+
+void ShowTrayMenu(TrayMenu* trayMenu) {
+
+    // Create a status bar item if we don't have one
+    if( trayMenu->statusbaritem == NULL ) {
+        id statusBar = msg( c("NSStatusBar"), s("systemStatusBar") );
+        trayMenu->statusbaritem = msg(statusBar, s("statusItemWithLength:"), NSVariableStatusItemLength);
+        msg(trayMenu->statusbaritem, s("retain"));
+
+    }
+
+    id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
+    msg(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);
+
+    // Update the icon if needed
+    UpdateTrayIcon(trayMenu);
+
+    // Update the label if needed
+    UpdateTrayLabel(trayMenu, trayMenu->label);
+
+    // Update the menu
+    id menu = GetMenu(trayMenu->menu);
+    msg(trayMenu->statusbaritem, s("setMenu:"), menu);
 }
 
 // UpdateTrayMenuInPlace receives 2 menus. The current menu gets

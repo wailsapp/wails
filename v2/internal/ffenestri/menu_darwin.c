@@ -99,7 +99,11 @@ void DeleteMenu(Menu *menu) {
 
 // Creates a JSON message for the given menuItemID and data
 const char* createMenuClickedMessage(const char *menuItemID, const char *data, enum MenuType menuType, const char *parentID) {
+
     JsonNode *jsonObject = json_mkobject();
+    if (menuItemID == NULL ) {
+        ABORT("Item ID NULL for menu!!\n");
+    }
     json_append_member(jsonObject, "menuItemID", json_mkstring(menuItemID));
     json_append_member(jsonObject, "menuType", json_mkstring(MenuTypeAsString[(int)menuType]));
     if (data != NULL) {

@@ -913,7 +913,8 @@ void SetDebug(void *applicationPointer, int flag) {
 }
 
 
-// SetContextMenus sets the context menu map for this application
+
+// AddContextMenu sets the context menu map for this application
 void AddContextMenu(struct Application *app, const char *contextMenuJSON) {
 	AddContextMenuToStore(app->contextMenuStore, contextMenuJSON);
 }
@@ -931,6 +932,13 @@ void SetTrayMenu(struct Application *app, const char* trayMenuJSON) {
         UpdateTrayMenuInStore(app->trayMenuStore, trayMenuJSON);
     );
 }
+
+void UpdateTrayMenuLabel(struct Application* app, const char* JSON) {
+    ON_MAIN_THREAD(
+        UpdateTrayMenuLabelInStore(app->trayMenuStore, JSON);
+    );
+}
+
 
 void SetBindings(struct Application *app, const char *bindings) {
 	const char* temp = concat("window.wailsbindings = \"", bindings);
