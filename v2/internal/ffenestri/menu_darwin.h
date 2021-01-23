@@ -90,7 +90,7 @@ id processRadioMenuItem(Menu *menu, id parentmenu, const char *title, const char
 
 id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *key);
 
-id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers);
+id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip);
 
 void processMenuItem(Menu *menu, id parentMenu, JsonNode *item);
 void processMenuData(Menu *menu, JsonNode *menuData);

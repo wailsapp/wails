@@ -211,7 +211,6 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	options.CompiledBinary = compiledBinary
 
 	// Create the command
-	fmt.Printf("Compile command: %+v", commands.AsSlice())
 	cmd := exec.Command(options.Compiler, commands.AsSlice()...)
 
 	// Set the directory

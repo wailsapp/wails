@@ -63,8 +63,6 @@ MenuItemCallbackData* CreateMenuItemCallbackData(Menu *menu, id menuItem, const 
     return result;
 }
 
-
-
 void DeleteMenu(Menu *menu) {
 
     // Free menu item hashmap
@@ -576,7 +574,7 @@ id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const c
     return item;
 }
 
-id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers) {
+id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip) {
     id item = ALLOC("NSMenuItem");
 
     // Create a MenuItemCallbackData
@@ -588,6 +586,10 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
     id key = processAcceleratorKey(acceleratorkey);
     msg(item, s("initWithTitle:action:keyEquivalent:"), str(title),
         s("menuItemCallback:"), key);
+
+    if( tooltip != NULL ) {
+        msg(item, s("setToolTip:"), str(tooltip));
+    }
 
     msg(item, s("setEnabled:"), !disabled);
     msg(item, s("autorelease"));
@@ -670,6 +672,8 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     const char *acceleratorkey = NULL;
     const char **modifiers = NULL;
 
+    const char *tooltip = getJSONString(item, "Tooltip");
+
     // If we have an accelerator
     if( accelerator != NULL ) {
         // Get the key
@@ -702,7 +706,7 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     if( type != NULL ) {
 
         if( STREQ(type->string_, "Text")) {
-            processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers);
+            processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers, tooltip);
         }
         else if ( STREQ(type->string_, "Separator")) {
             addSeparator(parentMenu);

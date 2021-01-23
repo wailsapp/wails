@@ -9,28 +9,35 @@ import (
 type ProcessedMenuItem struct {
 	ID string
 	// Label is what appears as the menu text
-	Label string
+	Label string `json:",omitempty"`
 	// Role is a predefined menu type
-	Role menu.Role `json:"Role,omitempty"`
+	Role menu.Role `json:",omitempty"`
 	// Accelerator holds a representation of a key binding
-	Accelerator *keys.Accelerator `json:"Accelerator,omitempty"`
+	Accelerator *keys.Accelerator `json:",omitempty"`
 	// Type of MenuItem, EG: Checkbox, Text, Separator, Radio, Submenu
 	Type menu.Type
 	// Disabled makes the item unselectable
-	Disabled bool
+	Disabled bool `json:",omitempty"`
 	// Hidden ensures that the item is not shown in the menu
-	Hidden bool
+	Hidden bool `json:",omitempty"`
 	// Checked indicates if the item is selected (used by Checkbox and Radio types only)
-	Checked bool
+	Checked bool `json:",omitempty"`
 	// Submenu contains a list of menu items that will be shown as a submenu
 	//SubMenu []*MenuItem `json:"SubMenu,omitempty"`
-	SubMenu *ProcessedMenu `json:"SubMenu,omitempty"`
+	SubMenu *ProcessedMenu `json:",omitempty"`
 
-	// Foreground colour in hex RGBA format EG: 0xFF0000FF = #FF0000FF = red
-	Foreground int
+	// Colour
+	RGBA string `json:",omitempty"`
 
-	// Background colour
-	Background int
+	// Font
+	FontSize int    `json:",omitempty"`
+	FontName string `json:",omitempty"`
+
+	// Image - base64 image data
+	Image string `json:",omitempty"`
+
+	// Tooltip
+	Tooltip string `json:",omitempty"`
 }
 
 func NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *ProcessedMenuItem {
@@ -45,8 +52,12 @@ func NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *Pr
 		Disabled:    menuItem.Disabled,
 		Hidden:      menuItem.Hidden,
 		Checked:     menuItem.Checked,
-		Foreground:  menuItem.Foreground,
-		Background:  menuItem.Background,
+		SubMenu:     nil,
+		RGBA:        menuItem.RGBA,
+		FontSize:    menuItem.FontSize,
+		FontName:    menuItem.FontName,
+		Image:       menuItem.Image,
+		Tooltip:     menuItem.Tooltip,
 	}
 
 	if menuItem.SubMenu != nil {

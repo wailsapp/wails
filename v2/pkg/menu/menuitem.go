@@ -28,11 +28,18 @@ type MenuItem struct {
 	// Callback function when menu clicked
 	Click Callback `json:"-"`
 
-	// Foreground colour in hex RGBA format EG: 0xFF0000FF = #FF0000FF = red
-	Foreground int
+	// Colour
+	RGBA string
 
-	// Background colour
-	Background int
+	// Font
+	FontSize int
+	FontName string
+
+	// Image - base64 image data
+	Image string
+
+	// Tooltip
+	Tooltip string
 
 	// This holds the menu item's parent.
 	parent *MenuItem
