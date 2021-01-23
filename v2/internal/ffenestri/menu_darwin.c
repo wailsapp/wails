@@ -587,10 +587,6 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
     msg(item, s("initWithTitle:action:keyEquivalent:"), str(title),
         s("menuItemCallback:"), key);
 
-    if( tooltip != NULL ) {
-        msg(item, s("setToolTip:"), str(tooltip));
-    }
-
     msg(item, s("setEnabled:"), !disabled);
     msg(item, s("autorelease"));
 
@@ -672,8 +668,6 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     const char *acceleratorkey = NULL;
     const char **modifiers = NULL;
 
-    const char *tooltip = getJSONString(item, "Tooltip");
-
     // If we have an accelerator
     if( accelerator != NULL ) {
         // Get the key
@@ -706,7 +700,7 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     if( type != NULL ) {
 
         if( STREQ(type->string_, "Text")) {
-            processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers, tooltip);
+            processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers, tooltip, image);
         }
         else if ( STREQ(type->string_, "Separator")) {
             addSeparator(parentMenu);
