@@ -574,7 +574,7 @@ id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const c
     return item;
 }
 
-id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip) {
+id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image) {
     id item = ALLOC("NSMenuItem");
 
     // Create a MenuItemCallbackData
@@ -586,6 +586,18 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
     id key = processAcceleratorKey(acceleratorkey);
     msg(item, s("initWithTitle:action:keyEquivalent:"), str(title),
         s("menuItemCallback:"), key);
+
+    if( tooltip != NULL ) {
+        msg(item, s("setToolTip:"), str(tooltip));
+    }
+
+    if( image != NULL && strlen(image) > 0) {
+        id data = ALLOC("NSData");
+        id imageData = msg(data, s("initWithBase64EncodedString:options:"), str(image), 0);
+        id nsimage = ALLOC("NSImage");
+        msg(nsimage, s("initWithData:"), imageData);
+        msg(item, s("setImage:"), nsimage);
+    }
 
     msg(item, s("setEnabled:"), !disabled);
     msg(item, s("autorelease"));
@@ -667,6 +679,9 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     JsonNode *accelerator = json_find_member(item, "Accelerator");
     const char *acceleratorkey = NULL;
     const char **modifiers = NULL;
+
+    const char *tooltip = getJSONString(item, "Tooltip");
+    const char *image = getJSONString(item, "Image");
 
     // If we have an accelerator
     if( accelerator != NULL ) {
