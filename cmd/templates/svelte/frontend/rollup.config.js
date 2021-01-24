@@ -80,7 +80,6 @@ export default {
 				{
 				  targets: '> 0.25%, not dead, IE 11',
 				  modules: false,
-				  spec: true, 
 				  useBuiltIns: 'usage',
 				  forceAllTransforms: true,
 				  corejs: 3,
