@@ -1,10 +1,11 @@
 package options
 
 import (
-	wailsruntime "github.com/wailsapp/wails/v2/internal/runtime"
-	"github.com/wailsapp/wails/v2/pkg/menu"
 	"log"
 	"runtime"
+
+	wailsruntime "github.com/wailsapp/wails/v2/internal/runtime"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 
 	"github.com/imdario/mergo"
 	"github.com/wailsapp/wails/v2/pkg/logger"
@@ -33,6 +34,7 @@ type App struct {
 	LogLevel      logger.LogLevel
 	Startup       func(*wailsruntime.Runtime) `json:"-"`
 	Shutdown      func()                      `json:"-"`
+	Bind          []interface{}
 }
 
 // MergeDefaults will set the minimum default values for an application

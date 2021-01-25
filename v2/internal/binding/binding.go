@@ -13,11 +13,21 @@ type Bindings struct {
 }
 
 // NewBindings returns a new Bindings object
-func NewBindings(logger *logger.Logger) *Bindings {
-	return &Bindings{
+func NewBindings(logger *logger.Logger, structPointersToBind []interface{}) *Bindings {
+	result := &Bindings{
 		db:     newDB(),
 		logger: logger.CustomLogger("Bindings"),
 	}
+
+	// Add the structs to bind
+	for _, ptr := range structPointersToBind {
+		err := result.Add(ptr)
+		if err != nil {
+			logger.Fatal("Error during binding: " + err.Error())
+		}
+	}
+
+	return result
 }
 
 // Add the given struct methods to the Bindings

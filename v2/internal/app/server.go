@@ -3,9 +3,10 @@
 package app
 
 import (
-	"github.com/wailsapp/wails/v2/pkg/options"
 	"os"
 	"path/filepath"
+
+	"github.com/wailsapp/wails/v2/pkg/options"
 
 	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v2/internal/binding"
@@ -58,7 +59,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	result := &App{
 		appType:          "server",
-		bindings:         binding.NewBindings(myLogger),
+		bindings:         binding.NewBindings(myLogger, options.Bind),
 		logger:           myLogger,
 		servicebus:       servicebus.New(myLogger),
 		webserver:        webserver.NewWebServer(myLogger),
@@ -169,15 +170,4 @@ func (a *App) Run() error {
 	})
 
 	return cli.Run()
-}
-
-// Bind a struct to the application by passing in
-// a pointer to it
-func (a *App) Bind(structPtr interface{}) {
-
-	// Add the struct to the bindings
-	err := a.bindings.Add(structPtr)
-	if err != nil {
-		a.logger.Fatal("Error during binding: " + err.Error())
-	}
 }

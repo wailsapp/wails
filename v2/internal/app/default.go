@@ -8,8 +8,9 @@ package app
 // will be unknown and the application will not work as expected.
 
 import (
-	"github.com/wailsapp/wails/v2/internal/logger"
 	"os"
+
+	"github.com/wailsapp/wails/v2/internal/logger"
 
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
@@ -37,8 +38,4 @@ func (a *App) Run() error {
 	println(`FATAL: This application was built using "go build". This is unsupported. Please compile using "wails build".`)
 	os.Exit(1)
 	return nil
-}
-
-// Bind the dummy interface
-func (a *App) Bind(_ interface{}) {
 }

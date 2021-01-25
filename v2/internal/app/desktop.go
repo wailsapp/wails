@@ -86,7 +86,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		window:           window,
 		servicebus:       servicebus.New(myLogger),
 		logger:           myLogger,
-		bindings:         binding.NewBindings(myLogger),
+		bindings:         binding.NewBindings(myLogger, appoptions.Bind),
 		menuManager:      menuManager,
 		startupCallback:  appoptions.Startup,
 		shutdownCallback: appoptions.Shutdown,
@@ -215,15 +215,4 @@ func (a *App) Run() error {
 	}
 
 	return result
-}
-
-// Bind a struct to the application by passing in
-// a pointer to it
-func (a *App) Bind(structPtr interface{}) {
-
-	// Add the struct to the bindings
-	err := a.bindings.Add(structPtr)
-	if err != nil {
-		a.logger.Fatal("Error during binding: " + err.Error())
-	}
 }
