@@ -152,7 +152,7 @@ void Fatal(struct Application *app, const char *message, ... ) {
 
 // Requires NSString input EG lookupStringConstant(str("NSFontAttributeName"))
 void* lookupStringConstant(id constantName) {
-    void ** dataPtr = CFBundleGetDataPointerForName(CFBundleGetBundleWithIdentifier(str("com.apple.AppKit")), (CFStringRef) constantName);
+    void ** dataPtr = CFBundleGetDataPointerForName(CFBundleGetBundleWithIdentifier((CFStringRef)str("com.apple.AppKit")), (CFStringRef) constantName);
     return (dataPtr ? *dataPtr : nil);
 }
 
