@@ -12,8 +12,11 @@ import (
 func (a *App) Init() error {
 	// Indicate debug mode
 	a.debug = true
-	// Enable dev tools
-	a.options.DevTools = true
+
+	if a.appType == "desktop" {
+		// Enable dev tools
+		a.options.DevTools = true
+	}
 
 	// Set log levels
 	greeting := flag.String("loglevel", "debug", "Loglevel to use - Trace, Debug, Info, Warning, Error")

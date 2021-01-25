@@ -17,6 +17,8 @@ import (
 
 // App defines a Wails application structure
 type App struct {
+	appType string
+
 	window     *ffenestri.Application
 	servicebus *servicebus.ServiceBus
 	logger     *logger.Logger
@@ -80,6 +82,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	window := ffenestri.NewApplicationWithConfig(appoptions, myLogger, menuManager)
 
 	result := &App{
+		appType:          "desktop",
 		window:           window,
 		servicebus:       servicebus.New(myLogger),
 		logger:           myLogger,

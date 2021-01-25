@@ -20,6 +20,14 @@ type WebClient struct {
 	running    bool
 }
 
+func (wc *WebClient) SetTrayMenu(trayMenuJSON string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) UpdateTrayMenuLabel(trayMenuJSON string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
 func (wc *WebClient) MessageDialog(dialogOptions *dialog.MessageDialog, callbackID string) {
 	wc.logger.Info("Not implemented in server build")
 }
