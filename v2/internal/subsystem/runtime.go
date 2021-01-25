@@ -83,7 +83,7 @@ func (r *Runtime) Start() error {
 					if r.startupCallback != nil {
 						go r.startupCallback(r.runtime)
 					} else {
-						r.logger.Error("no startup callback registered!")
+						r.logger.Warning("no startup callback registered!")
 					}
 				default:
 					r.logger.Error("unknown hook message: %+v", hooksMessage)
@@ -131,6 +131,8 @@ func (r *Runtime) GoRuntime() *runtime.Runtime {
 func (r *Runtime) shutdown() {
 	if r.shutdownCallback != nil {
 		go r.shutdownCallback()
+	} else {
+		r.logger.Warning("no shutdown callback registered!")
 	}
 	r.logger.Trace("Shutdown")
 }
