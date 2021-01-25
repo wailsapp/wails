@@ -14,6 +14,21 @@ static const char *MenuTypeAsString[] = {
         "ApplicationMenu", "ContextMenu", "TrayMenu",
 };
 
+typedef struct _NSRange {
+    unsigned long location;
+    unsigned long length;
+} NSRange;
+
+#define NSFontWeightUltraLight -0.8
+#define NSFontWeightThin -0.6
+#define NSFontWeightLight -0.4
+#define NSFontWeightRegular 0
+#define NSFontWeightMedium 0.23
+#define NSFontWeightSemibold 0.3
+#define NSFontWeightBold 0.4
+#define NSFontWeightHeavy 0.56
+#define NSFontWeightBlack 0.62
+
 extern void messageFromWindowCallback(const char *);
 
 typedef struct {
@@ -90,8 +105,7 @@ id processRadioMenuItem(Menu *menu, id parentmenu, const char *title, const char
 
 id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *key);
 
-id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image);
-
+id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image, const char* fontName, int fontSize, const char* RGBA);
 void processMenuItem(Menu *menu, id parentMenu, JsonNode *item);
 void processMenuData(Menu *menu, JsonNode *menuData);
 

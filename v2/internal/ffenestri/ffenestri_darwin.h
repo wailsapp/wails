@@ -6,6 +6,7 @@
 #define OBJC_OLD_DISPATCH_PROTOTYPES 1
 #include <objc/objc-runtime.h>
 #include <CoreGraphics/CoreGraphics.h>
+#include <CoreFoundation/CoreFoundation.h>
 #include "json.h"
 #include "hashmap.h"
 #include "stdlib.h"
@@ -20,7 +21,6 @@
 #define strunicode(input) msg(c("NSString"), s("stringWithFormat:"), str("%C"), (unsigned short)input)
 #define cstr(input) (const char *)msg(input, s("UTF8String"))
 #define url(input) msg(c("NSURL"), s("fileURLWithPath:"), str(input))
-
 #define ALLOC(classname) msg(c(classname), s("alloc"))
 #define ALLOC_INIT(classname) msg(msg(c(classname), s("alloc")), s("init"))
 #define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("frame"))
@@ -109,5 +109,7 @@ void WindowBackgroundIsTranslucent(struct Application* app);
 void SetTray(struct Application* app, const char *, const char *, const char *);
 //void SetContextMenus(struct Application* app, const char *);
 void AddTrayMenu(struct Application* app, const char *);
+
+void* lookupStringConstant(id constantName);
 
 #endif

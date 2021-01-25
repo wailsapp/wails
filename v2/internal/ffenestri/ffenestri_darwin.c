@@ -150,6 +150,12 @@ void Fatal(struct Application *app, const char *message, ... ) {
   va_end(args);
 }
 
+// Requires NSString input EG lookupStringConstant(str("NSFontAttributeName"))
+void* lookupStringConstant(id constantName) {
+    void ** dataPtr = CFBundleGetDataPointerForName(CFBundleGetBundleWithIdentifier(str("com.apple.AppKit")), (CFStringRef) constantName);
+    return (dataPtr ? *dataPtr : nil);
+}
+
 bool isRetina(struct Application *app) {
 	CGFloat scale = GET_BACKINGSCALEFACTOR(app->mainWindow);
 	if( (int)scale == 1 ) {

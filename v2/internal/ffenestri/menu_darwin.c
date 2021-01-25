@@ -5,6 +5,7 @@
 #include "ffenestri_darwin.h"
 #include "menu_darwin.h"
 #include "contextmenus_darwin.h"
+#include "common.h"
 
 // NewMenu creates a new Menu struct, saving the given menu structure as JSON
 Menu* NewMenu(JsonNode *menuData) {
@@ -574,7 +575,7 @@ id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const c
     return item;
 }
 
-id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image) {
+id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image, const char* fontName, int fontSize, const char* RGBA) {
     id item = ALLOC("NSMenuItem");
 
     // Create a MenuItemCallbackData
@@ -591,6 +592,7 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
         msg(item, s("setToolTip:"), str(tooltip));
     }
 
+    // Process image
     if( image != NULL && strlen(image) > 0) {
         id data = ALLOC("NSData");
         id imageData = msg(data, s("initWithBase64EncodedString:options:"), str(image), 0);
@@ -598,6 +600,60 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
         msg(nsimage, s("initWithData:"), imageData);
         msg(item, s("setImage:"), nsimage);
     }
+
+    // Process Menu Item attributes
+    id dictionary = ALLOC_INIT("NSMutableDictionary");
+
+    // Process font
+    id font;
+    CGFloat fontSizeFloat = (CGFloat)fontSize;
+
+    // Check if valid
+    id fontNameAsNSString = str(fontName);
+    id fontsOnSystem = msg(msg(c("NSFontManager"), s("sharedFontManager")), s("availableFonts"));
+    bool valid = msg(fontsOnSystem, s("containsObject:"), fontNameAsNSString);
+    if( valid ) {
+        font = msg(c("NSFont"), s("fontWithName:size:"), fontNameAsNSString, fontSizeFloat);
+    } else {
+        bool supportsMonospacedDigitSystemFont = (bool) msg(c("NSFont"), s("respondsToSelector:"), s("monospacedDigitSystemFontOfSize:weight:"));
+        if( supportsMonospacedDigitSystemFont ) {
+            font = msg(c("NSFont"), s("monospacedDigitSystemFontOfSize:weight:"), fontSizeFloat, NSFontWeightRegular);
+        } else {
+            font = msg(c("NSFont"), s("menuFontOfSize:"), fontSizeFloat);
+        }
+    }
+
+    // Add font to dictionary
+    msg(dictionary, s("setObject:forKey:"), font, lookupStringConstant(str("NSFontAttributeName")));
+
+    // Add offset to dictionary
+    id offset = msg(c("NSNumber"), s("numberWithFloat:"), 0.0);
+    msg(dictionary, s("setObject:forKey:"), offset, lookupStringConstant(str("NSBaselineOffsetAttributeName")));
+
+    // RGBA
+    if( RGBA != NULL && strlen(RGBA) > 0) {
+        unsigned short r, g, b, a;
+
+        // white by default
+        r = g = b = a = 255;
+        int count = sscanf(RGBA, "#%02hx%02hx%02hx%02hx", &r, &g, &b, &a);
+        if (count > 0) {
+			id colour = msg(c("NSColor"), s("colorWithCalibratedRed:green:blue:alpha:"),
+								(float)r / 255.0,
+								(float)g / 255.0,
+								(float)b / 255.0,
+								(float)a / 255.0);
+            msg(dictionary, s("setObject:forKey:"), colour, lookupStringConstant(str("NSForegroundColorAttributeName")));
+            msg(colour, s("release"));
+        }
+    }
+
+    id attributedString = ALLOC("NSMutableAttributedString");
+    msg(attributedString, s("initWithString:attributes:"), str(title), dictionary);
+    msg(dictionary, s("release"));
+
+    msg(item, s("setAttributedTitle:"), attributedString);
+    msg(attributedString, s("autorelease"));
 
     msg(item, s("setEnabled:"), !disabled);
     msg(item, s("autorelease"));
@@ -682,6 +738,10 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
 
     const char *tooltip = getJSONString(item, "Tooltip");
     const char *image = getJSONString(item, "Image");
+    const char *fontName = getJSONString(item, "FontName");
+    const char *RGBA = getJSONString(item, "RGBA");
+    int fontSize = 0;
+    getJSONInt(item, "FontSize", &fontSize);
 
     // If we have an accelerator
     if( accelerator != NULL ) {
@@ -715,7 +775,7 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     if( type != NULL ) {
 
         if( STREQ(type->string_, "Text")) {
-            processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers, tooltip, image);
+            processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers, tooltip, image, fontName, fontSize, RGBA);
         }
         else if ( STREQ(type->string_, "Separator")) {
             addSeparator(parentMenu);

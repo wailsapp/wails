@@ -97,14 +97,13 @@ void UpdateTrayMenuLabelInStore(TrayMenuStore* store, const char* JSON) {
 
 void UpdateTrayMenuInStore(TrayMenuStore* store, const char* menuJSON) {
     TrayMenu* newMenu = NewTrayMenu(menuJSON);
-    DumpTrayMenu(newMenu);
+//    DumpTrayMenu(newMenu);
 
     // Get the current menu
     TrayMenu *currentMenu = GetTrayMenuFromStore(store, newMenu->ID);
 
     // If we don't have a menu, we create one
     if ( currentMenu == NULL ) {
-        printf("  currentMenu = NULL\n");
         // Store the new menu
         hashmap_put(&store->trayMenuMap, newMenu->ID, strlen(newMenu->ID), newMenu);
 
@@ -112,7 +111,7 @@ void UpdateTrayMenuInStore(TrayMenuStore* store, const char* menuJSON) {
         ShowTrayMenu(newMenu);
         return;
     }
-    DumpTrayMenu(currentMenu);
+//    DumpTrayMenu(currentMenu);
 
     // Save the status bar reference
     newMenu->statusbaritem = currentMenu->statusbaritem;

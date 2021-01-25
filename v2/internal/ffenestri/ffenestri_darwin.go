@@ -2,7 +2,7 @@ package ffenestri
 
 /*
 #cgo darwin CFLAGS: -DFFENESTRI_DARWIN=1
-#cgo darwin LDFLAGS: -framework WebKit -lobjc
+#cgo darwin LDFLAGS: -framework WebKit -framework CoreFoundation -lobjc
 
 #include "ffenestri.h"
 #include "ffenestri_darwin.h"
