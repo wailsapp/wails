@@ -104,7 +104,7 @@ func Build(options *Options) (string, error) {
 	// 	return "", err
 	// }
 	if !options.IgnoreFrontend {
-		outputLogger.Println("  - Building Wails Frontend")
+		outputLogger.Println("  - Building Project Frontend")
 		err = builder.BuildFrontend(outputLogger)
 		if err != nil {
 			return "", err
