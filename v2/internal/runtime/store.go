@@ -146,9 +146,13 @@ func (s *Store) setupListener() {
 		// Resetting the curent data will resync
 		s.resync()
 	})
+
+	// Do initial resync
+	s.resync()
 }
 
 func (s *Store) resync() {
+
 	// Stringify data
 	newdata, err := json.Marshal(s.data.Interface())
 	if err != nil {
