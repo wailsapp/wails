@@ -3,6 +3,8 @@ package main
 import (
 	"os"
 
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/update"
+
 	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/build"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/debug"
@@ -44,6 +46,11 @@ func main() {
 	}
 
 	err = generate.AddSubcommand(app, os.Stdout)
+	if err != nil {
+		fatal(err.Error())
+	}
+
+	err = update.AddSubcommand(app, os.Stdout, version)
 	if err != nil {
 		fatal(err.Error())
 	}

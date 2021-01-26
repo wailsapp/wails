@@ -3,6 +3,7 @@ module github.com/wailsapp/wails/v2
 go 1.15
 
 require (
+	github.com/Masterminds/semver v1.5.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fatih/structtag v1.2.0
 	github.com/fsnotify/fsnotify v1.4.9
