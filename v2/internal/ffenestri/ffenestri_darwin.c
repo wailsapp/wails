@@ -140,6 +140,16 @@ void Debug(struct Application *app, const char *message, ... ) {
 	}
 }
 
+void Error(struct Application *app, const char *message, ... ) {
+    const char *temp = concat("LEFfenestri (C) | ", message);
+    va_list args;
+    va_start(args, message);
+    vsnprintf(logbuffer, MAXMESSAGE, temp, args);
+    app->sendMessageToBackend(&logbuffer[0]);
+    MEMFREE(temp);
+    va_end(args);
+}
+
 void Fatal(struct Application *app, const char *message, ... ) {
   const char *temp = concat("LFFfenestri (C) | ", message);
   va_list args;
@@ -246,7 +256,10 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 	struct Application *app = (struct Application *)objc_getAssociatedObject(
 							  self, "application");
 	const char *name = (const char *)msg(msg(message, s("name")), s("UTF8String"));
-	if( strcmp(name, "completed") == 0) {
+	if( strcmp(name, "error") == 0 ) {
+	    printf("There was a Javascript error. Please open the devtools for more information.\n");
+	    Show(app);
+	} else if( strcmp(name, "completed") == 0) {
 		// Delete handler
 		msg(app->manager, s("removeScriptMessageHandlerForName:"), str("completed"));
 
@@ -450,6 +463,7 @@ void DestroyApplication(struct Application *app) {
 	msg(app->manager, s("removeScriptMessageHandlerForName:"), str("contextMenu"));
 	msg(app->manager, s("removeScriptMessageHandlerForName:"), str("windowDrag"));
 	msg(app->manager, s("removeScriptMessageHandlerForName:"), str("external"));
+	msg(app->manager, s("removeScriptMessageHandlerForName:"), str("error"));
 
 	// Close main window
 	msg(app->mainWindow, s("close"));
@@ -1534,6 +1548,7 @@ void Run(struct Application *app, int argc, char **argv) {
 	id manager = msg(config, s("userContentController"));
 	msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("external"));
 	msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("completed"));
+	msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("error"));
 	app->manager = manager;
 
 	id wkwebview = msg(c("WKWebView"), s("alloc"));

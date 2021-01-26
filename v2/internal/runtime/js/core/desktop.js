@@ -10,6 +10,7 @@ The lightweight framework for web-like apps
 /* jshint esversion: 6 */
 import { SetBindings } from './bindings';
 import { Init } from './main';
+import {RaiseError} from '../desktop/darwin';
 
 // Setup global error handler
 window.onerror = function (msg, url, lineNo, columnNo, error) {
@@ -21,7 +22,7 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 		error: JSON.stringify(error),
 		stack: function() { return JSON.stringify(new Error().stack); }(),
 	};
-	window.wails.Log.Error(JSON.stringify(errorMessage));
+	RaiseError(errorMessage);
 };
 
 // Initialise the Runtime

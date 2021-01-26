@@ -3,12 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/fs"
-	"github.com/wailsapp/wails/v2/internal/shell"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/internal/fs"
+	"github.com/wailsapp/wails/v2/internal/shell"
 )
 
 func main() {
@@ -49,7 +50,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		wailsJS := fs.RelativePath("../../../internal/runtime/assets/desktop.js")
+		wailsJS := fs.RelativePath("../../../internal/runtime/assets/desktop_" + platform + ".js")
 		runtimeData, err := ioutil.ReadFile(wailsJS)
 		if err != nil {
 			log.Fatal(err)

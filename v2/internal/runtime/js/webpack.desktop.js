@@ -13,7 +13,7 @@ module.exports = {
   mode: 'production',
   output: {
     path: path.resolve(__dirname, '..', 'assets'),
-    filename: 'desktop.js',
+    filename: 'desktop_'+platform+'.js',
     library: 'Wails'
   },
   resolve: {
