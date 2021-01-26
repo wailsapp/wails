@@ -153,6 +153,9 @@ func (s *Store) setupListener() {
 
 func (s *Store) resync() {
 
+	// Lock
+	s.mux.Lock()
+
 	// Stringify data
 	newdata, err := json.Marshal(s.data.Interface())
 	if err != nil {
@@ -161,6 +164,9 @@ func (s *Store) resync() {
 			return
 		}
 	}
+
+	// Lock
+	s.mux.Unlock()
 
 	// Emit event to front end
 	s.runtime.Events.Emit("wails:sync:store:updatedbybackend:"+s.name, string(newdata))
