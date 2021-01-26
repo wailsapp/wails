@@ -14,7 +14,12 @@ type Runtime = runtime.Runtime
 // Store is an alias for the Store object
 type Store = runtime.Store
 
-// CreateApp creates an application based on the given config
-func CreateApp(options *options.App) (*app.App, error) {
-	return app.CreateApp(options)
+// Run creates an application based on the given config and executes it
+func Run(options *options.App) error {
+	app, err := app.CreateApp(options)
+	if err != nil {
+		return err
+	}
+
+	return app.Run()
 }
