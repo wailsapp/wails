@@ -23,7 +23,7 @@ func isStruct(value interface{}) bool {
 	return reflect.ValueOf(value).Kind() == reflect.Struct
 }
 
-func getMethods(value interface{}) ([]*BoundMethod, error) {
+func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 
 	// Create result placeholder
 	var result []*BoundMethod
@@ -55,6 +55,11 @@ func getMethods(value interface{}) ([]*BoundMethod, error) {
 		methodName := methodDef.Name
 		fullMethodName := baseName + "." + methodName
 		method := structValue.MethodByName(methodName)
+
+		methodReflectName := runtime.FuncForPC(methodDef.Func.Pointer()).Name()
+		if b.exemptions.Contains(methodReflectName) {
+			continue
+		}
 
 		// Create new method
 		boundMethod := &BoundMethod{

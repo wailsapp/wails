@@ -2,21 +2,33 @@ package binding
 
 import (
 	"fmt"
+	"reflect"
+	"runtime"
 	"strings"
+
+	"github.com/leaanthony/slicer"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
 
 type Bindings struct {
-	db     *DB
-	logger logger.CustomLogger
+	db         *DB
+	logger     logger.CustomLogger
+	exemptions slicer.StringSlicer
 }
 
 // NewBindings returns a new Bindings object
-func NewBindings(logger *logger.Logger, structPointersToBind []interface{}) *Bindings {
+func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exemptions []interface{}) *Bindings {
 	result := &Bindings{
 		db:     newDB(),
 		logger: logger.CustomLogger("Bindings"),
+	}
+
+	for _, exemption := range exemptions {
+		name := runtime.FuncForPC(reflect.ValueOf(exemption).Pointer()).Name()
+		// Yuk yuk yuk! Is there a better way?
+		name = strings.TrimSuffix(name, "-fm")
+		result.exemptions.Add(name)
 	}
 
 	// Add the structs to bind
@@ -33,7 +45,7 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}) *Bin
 // Add the given struct methods to the Bindings
 func (b *Bindings) Add(structPtr interface{}) error {
 
-	methods, err := getMethods(structPtr)
+	methods, err := b.getMethods(structPtr)
 	if err != nil {
 		return fmt.Errorf("cannot bind value to app: %s", err.Error())
 	}
@@ -46,7 +58,6 @@ func (b *Bindings) Add(structPtr interface{}) error {
 
 		// Add it as a regular method
 		b.db.AddMethod(packageName, structName, methodName, method)
-
 	}
 	return nil
 }

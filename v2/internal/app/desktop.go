@@ -81,12 +81,15 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	window := ffenestri.NewApplicationWithConfig(appoptions, myLogger, menuManager)
 
+	// Create binding exemptions - Ugly hack. There must be a better way
+	bindingExemptions := []interface{}{appoptions.Startup, appoptions.Shutdown}
+
 	result := &App{
 		appType:          "desktop",
 		window:           window,
 		servicebus:       servicebus.New(myLogger),
 		logger:           myLogger,
-		bindings:         binding.NewBindings(myLogger, appoptions.Bind),
+		bindings:         binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions),
 		menuManager:      menuManager,
 		startupCallback:  appoptions.Startup,
 		shutdownCallback: appoptions.Shutdown,
