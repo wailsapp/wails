@@ -156,20 +156,26 @@ func (s *Store) resync() {
 	// Lock
 	s.mux.Lock()
 
-	// Stringify data
-	newdata, err := json.Marshal(s.data.Interface())
-	if err != nil {
-		if s.errorHandler != nil {
-			s.errorHandler(err)
-			return
+	var result string
+
+	if s.data.IsValid() {
+		rawdata, err := json.Marshal(s.data.Interface())
+		if err != nil {
+			if s.errorHandler != nil {
+				s.errorHandler(err)
+				return
+			}
 		}
+		result = string(rawdata)
+	} else {
+		result = "{}"
 	}
 
 	// Lock
 	s.mux.Unlock()
 
 	// Emit event to front end
-	s.runtime.Events.Emit("wails:sync:store:updatedbybackend:"+s.name, string(newdata))
+	s.runtime.Events.Emit("wails:sync:store:updatedbybackend:"+s.name, result)
 
 	// Notify subscribers
 	s.notify()
@@ -197,10 +203,16 @@ func (s *Store) notify() {
 // and notify listeners of the change
 func (s *Store) Set(data interface{}) error {
 
-	inType := reflect.TypeOf(data)
+	if data != nil {
+		inType := reflect.TypeOf(data)
 
-	if inType != s.dataType {
-		return fmt.Errorf("invalid data given in Store.Set(). Expected %s, got %s", s.dataType.String(), inType.String())
+		if inType != s.dataType && s.data.IsValid() {
+			return fmt.Errorf("invalid data given in Store.Set(). Expected %s, got %s", s.dataType.String(), inType.String())
+		}
+	}
+
+	if s.dataType == nil {
+		s.dataType = reflect.TypeOf(data)
 	}
 
 	// Save data
@@ -318,5 +330,12 @@ func (s *Store) Update(updater interface{}) {
 
 // Get returns the value of the data that's kept in the current state / Store
 func (s *Store) Get() interface{} {
+	s.mux.Lock()
+	defer s.mux.Unlock()
+
+	if !s.data.IsValid() {
+		return nil
+	}
+
 	return s.data.Interface()
 }
