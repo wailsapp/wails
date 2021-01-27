@@ -71,10 +71,11 @@ func (s *ServiceBus) Start() error {
 	}
 
 	// We run in a different thread
+	s.wg.Add(1)
+
 	go func() {
 
 		quit := false
-		s.wg.Add(1)
 
 		// Loop until we get a quit message
 		for !quit {
