@@ -899,6 +899,19 @@ void setMinMaxSize(struct Application *app)
 	{
 		msg(app->mainWindow, s("setMinSize:"), CGSizeMake(app->minWidth, app->minHeight));
 	}
+
+	// Calculate if window needs resizing
+	int newWidth = app->width;
+	int newHeight = app->height;
+	if (app->width > app->maxWidth) newWidth = app->maxWidth;
+	if (app->width < app->minWidth) newWidth = app->minWidth;
+	if (app->height > app->maxHeight ) newHeight = app->maxHeight;
+	if (app->height < app->minHeight ) newHeight = app->minHeight;
+
+    // If we have any change, resize window
+	if ( newWidth != app->width || newHeight != app->height ) {
+	    SetSize(app, newWidth, newHeight);
+	}
 }
 
 void SetMinWindowSize(struct Application *app, int minWidth, int minHeight)

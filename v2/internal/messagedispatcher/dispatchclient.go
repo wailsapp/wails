@@ -2,6 +2,7 @@ package messagedispatcher
 
 import (
 	"fmt"
+
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher/message"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
@@ -26,6 +27,8 @@ type Client interface {
 	WindowUnminimise()
 	WindowPosition(x int, y int)
 	WindowSize(width int, height int)
+	WindowSetMinSize(width int, height int)
+	WindowSetMaxSize(width int, height int)
 	WindowFullscreen()
 	WindowUnFullscreen()
 	WindowSetColour(colour int)

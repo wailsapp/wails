@@ -2,10 +2,11 @@ package messagedispatcher
 
 import (
 	"encoding/json"
-	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 
 	"github.com/wailsapp/wails/v2/internal/crypto"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -348,6 +349,38 @@ func (d *Dispatcher) processWindowMessage(result *servicebus.Message) {
 		// Notifh clients
 		for _, client := range d.clients {
 			client.frontend.WindowSize(w, h)
+		}
+	case "minsize":
+		// We need 2 arguments
+		if len(splitTopic) != 4 {
+			d.logger.Error("Invalid number of parameters for 'window:minsize' : %#v", result.Data())
+			return
+		}
+		w, err1 := strconv.Atoi(splitTopic[2])
+		h, err2 := strconv.Atoi(splitTopic[3])
+		if err1 != nil || err2 != nil {
+			d.logger.Error("Invalid integer parameters for 'window:minsize' : %#v", result.Data())
+			return
+		}
+		// Notifh clients
+		for _, client := range d.clients {
+			client.frontend.WindowSetMinSize(w, h)
+		}
+	case "maxsize":
+		// We need 2 arguments
+		if len(splitTopic) != 4 {
+			d.logger.Error("Invalid number of parameters for 'window:maxsize' : %#v", result.Data())
+			return
+		}
+		w, err1 := strconv.Atoi(splitTopic[2])
+		h, err2 := strconv.Atoi(splitTopic[3])
+		if err1 != nil || err2 != nil {
+			d.logger.Error("Invalid integer parameters for 'window:maxsize' : %#v", result.Data())
+			return
+		}
+		// Notifh clients
+		for _, client := range d.clients {
+			client.frontend.WindowSetMaxSize(w, h)
 		}
 	default:
 		d.logger.Error("Unknown window command: %s", command)

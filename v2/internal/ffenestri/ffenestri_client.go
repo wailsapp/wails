@@ -12,8 +12,9 @@ package ffenestri
 import "C"
 
 import (
-	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 	"strconv"
+
+	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
@@ -111,6 +112,14 @@ func (c *Client) WindowPosition(x int, y int) {
 // width and height
 func (c *Client) WindowSize(width int, height int) {
 	C.SetSize(c.app.app, C.int(width), C.int(height))
+}
+
+func (c *Client) WindowSetMinSize(width int, height int) {
+	C.SetMinWindowSize(c.app.app, C.int(width), C.int(height))
+}
+
+func (c *Client) WindowSetMaxSize(width int, height int) {
+	C.SetMaxWindowSize(c.app.app, C.int(width), C.int(height))
 }
 
 // WindowSetColour sets the window colour

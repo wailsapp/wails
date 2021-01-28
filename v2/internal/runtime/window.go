@@ -18,6 +18,8 @@ type Window interface {
 	Unminimise()
 	SetTitle(title string)
 	SetSize(width int, height int)
+	SetMinSize(width int, height int)
+	SetMaxSize(width int, height int)
 	SetPosition(x int, y int)
 	Fullscreen()
 	UnFullscreen()
@@ -82,6 +84,18 @@ func (w *window) Hide() {
 // SetSize sets the size of the window
 func (w *window) SetSize(width int, height int) {
 	message := fmt.Sprintf("window:size:%d:%d", width, height)
+	w.bus.Publish(message, "")
+}
+
+// SetSize sets the size of the window
+func (w *window) SetMinSize(width int, height int) {
+	message := fmt.Sprintf("window:minsize:%d:%d", width, height)
+	w.bus.Publish(message, "")
+}
+
+// SetSize sets the size of the window
+func (w *window) SetMaxSize(width int, height int) {
+	message := fmt.Sprintf("window:maxsize:%d:%d", width, height)
 	w.bus.Publish(message, "")
 }
 
