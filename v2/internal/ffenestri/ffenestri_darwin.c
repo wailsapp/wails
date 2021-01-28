@@ -903,10 +903,11 @@ void setMinMaxSize(struct Application *app)
 	// Calculate if window needs resizing
 	int newWidth = app->width;
 	int newHeight = app->height;
-	if (app->width > app->maxWidth) newWidth = app->maxWidth;
-	if (app->width < app->minWidth) newWidth = app->minWidth;
-	if (app->height > app->maxHeight ) newHeight = app->maxHeight;
-	if (app->height < app->minHeight ) newHeight = app->minHeight;
+
+	if (app->maxWidth > 0 && app->width > app->maxWidth) newWidth = app->maxWidth;
+	if (app->minWidth > 0 && app->width < app->minWidth) newWidth = app->minWidth;
+	if (app->maxHeight > 0 && app->height > app->maxHeight ) newHeight = app->maxHeight;
+	if (app->minHeight > 0 && app->height < app->minHeight ) newHeight = app->minHeight;
 
     // If we have any change, resize window
 	if ( newWidth != app->width || newHeight != app->height ) {
