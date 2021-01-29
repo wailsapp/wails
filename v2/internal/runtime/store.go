@@ -155,6 +155,7 @@ func (s *Store) resync() {
 
 	// Lock
 	s.mux.Lock()
+	defer s.mux.Unlock()
 
 	var result string
 
@@ -163,6 +164,7 @@ func (s *Store) resync() {
 		if err != nil {
 			if s.errorHandler != nil {
 				s.errorHandler(err)
+				s.mux.Unlock()
 				return
 			}
 		}
@@ -170,9 +172,6 @@ func (s *Store) resync() {
 	} else {
 		result = "{}"
 	}
-
-	// Lock
-	s.mux.Unlock()
 
 	// Emit event to front end
 	s.runtime.Events.Emit("wails:sync:store:updatedbybackend:"+s.name, result)
@@ -202,11 +201,13 @@ func (s *Store) notify() {
 // Set will update the data held by the store
 // and notify listeners of the change
 func (s *Store) Set(data interface{}) error {
+	s.mux.Lock()
 
 	if data != nil {
 		inType := reflect.TypeOf(data)
 
 		if inType != s.dataType && s.data.IsValid() {
+			s.mux.Unlock()
 			return fmt.Errorf("invalid data given in Store.Set(). Expected %s, got %s", s.dataType.String(), inType.String())
 		}
 	}
@@ -216,8 +217,8 @@ func (s *Store) Set(data interface{}) error {
 	}
 
 	// Save data
-	s.mux.Lock()
 	s.data = reflect.ValueOf(data)
+
 	s.mux.Unlock()
 
 	// Resync with subscribers
@@ -269,7 +270,9 @@ func (s *Store) Subscribe(callback interface{}) {
 
 	callbackFunc := reflect.ValueOf(callback)
 
+	s.mux.Lock()
 	s.callbacks = append(s.callbacks, callbackFunc)
+	s.mux.Unlock()
 }
 
 // updaterCheck ensures the given function to Update() is
@@ -319,7 +322,9 @@ func (s *Store) Update(updater interface{}) {
 	}
 
 	// Build args
+	s.mux.Lock()
 	args := []reflect.Value{s.data}
+	s.mux.Unlock()
 
 	// Make call
 	results := reflect.ValueOf(updater).Call(args)
