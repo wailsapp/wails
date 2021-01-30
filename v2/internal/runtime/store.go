@@ -79,6 +79,14 @@ func (p *StoreProvider) New(name string, defaultValue interface{}) *Store {
 	return &result
 }
 
+func (s *Store) lock() {
+	s.mux.Lock()
+}
+
+func (s *Store) unlock() {
+	s.mux.Unlock()
+}
+
 // OnError takes a function that will be called
 // whenever an error occurs
 func (s *Store) OnError(callback func(error)) {
@@ -105,7 +113,7 @@ func (s *Store) processUpdatedData(data string) error {
 	}
 
 	// Lock mutex for writing
-	s.mux.Lock()
+	s.lock()
 
 	// Handle nulls
 	if newData == nil {
@@ -116,7 +124,7 @@ func (s *Store) processUpdatedData(data string) error {
 	}
 
 	// Unlock mutex
-	s.mux.Unlock()
+	s.unlock()
 
 	return nil
 }
@@ -154,8 +162,8 @@ func (s *Store) setupListener() {
 func (s *Store) resync() {
 
 	// Lock
-	s.mux.Lock()
-	defer s.mux.Unlock()
+	s.lock()
+	defer s.unlock()
 
 	var result string
 
@@ -164,7 +172,6 @@ func (s *Store) resync() {
 		if err != nil {
 			if s.errorHandler != nil {
 				s.errorHandler(err)
-				s.mux.Unlock()
 				return
 			}
 		}
@@ -187,7 +194,9 @@ func (s *Store) notify() {
 	for _, callback := range s.callbacks {
 
 		// Build args
+		s.lock()
 		args := []reflect.Value{s.data}
+		s.unlock()
 
 		if s.notifySynchronously {
 			callback.Call(args)
@@ -198,16 +207,16 @@ func (s *Store) notify() {
 	}
 }
 
-// Set will update the data held by the store
+// set will update the data held by the store
 // and notify listeners of the change
-func (s *Store) Set(data interface{}) error {
-	s.mux.Lock()
+func (s *Store) set(data interface{}) error {
+	s.lock()
 
 	if data != nil {
 		inType := reflect.TypeOf(data)
 
 		if inType != s.dataType && s.data.IsValid() {
-			s.mux.Unlock()
+			s.unlock()
 			return fmt.Errorf("invalid data given in Store.Set(). Expected %s, got %s", s.dataType.String(), inType.String())
 		}
 	}
@@ -219,7 +228,7 @@ func (s *Store) Set(data interface{}) error {
 	// Save data
 	s.data = reflect.ValueOf(data)
 
-	s.mux.Unlock()
+	s.unlock()
 
 	// Resync with subscribers
 	s.resync()
@@ -270,9 +279,9 @@ func (s *Store) Subscribe(callback interface{}) {
 
 	callbackFunc := reflect.ValueOf(callback)
 
-	s.mux.Lock()
+	s.lock()
 	s.callbacks = append(s.callbacks, callbackFunc)
-	s.mux.Unlock()
+	s.unlock()
 }
 
 // updaterCheck ensures the given function to Update() is
@@ -322,21 +331,21 @@ func (s *Store) Update(updater interface{}) {
 	}
 
 	// Build args
-	s.mux.Lock()
+	s.lock()
 	args := []reflect.Value{s.data}
-	s.mux.Unlock()
+	s.unlock()
 
 	// Make call
 	results := reflect.ValueOf(updater).Call(args)
 
 	// We will only have 1 result. Set the store to it
-	s.Set(results[0].Interface())
+	s.set(results[0].Interface())
 }
 
 // Get returns the value of the data that's kept in the current state / Store
 func (s *Store) Get() interface{} {
-	s.mux.Lock()
-	defer s.mux.Unlock()
+	s.lock()
+	defer s.unlock()
 
 	if !s.data.IsValid() {
 		return nil
