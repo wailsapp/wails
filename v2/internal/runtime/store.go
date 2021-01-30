@@ -71,18 +71,15 @@ func (p *StoreProvider) New(name string, defaultValue interface{}) *Store {
 		golog.Fatal("Cannot initialise a store with nil")
 	}
 
-	dataCopy := deepcopy.Copy(defaultValue)
-	dataType := reflect.TypeOf(dataCopy)
-
 	result := Store{
-		name:     name,
-		runtime:  p.runtime,
-		data:     reflect.ValueOf(dataCopy),
-		dataType: dataType,
+		name:    name,
+		runtime: p.runtime,
 	}
 
 	// Setup the sync listener
 	result.setupListener()
+
+	result.Set(defaultValue)
 
 	return &result
 }
@@ -215,13 +212,20 @@ func (s *Store) notify() {
 	}
 }
 
-// set will update the data held by the store
+// Set will update the data held by the store
 // and notify listeners of the change
-func (s *Store) set(data interface{}) error {
+func (s *Store) Set(data interface{}) error {
+
+	if data == nil {
+		return fmt.Errorf("cannot set store to nil")
+	}
+
 	s.lock()
 
-	if data != nil {
-		inType := reflect.TypeOf(data)
+	dataCopy := deepcopy.Copy(data)
+
+	if dataCopy != nil {
+		inType := reflect.TypeOf(dataCopy)
 
 		if inType != s.dataType && s.data.IsValid() {
 			s.unlock()
@@ -230,11 +234,11 @@ func (s *Store) set(data interface{}) error {
 	}
 
 	if s.dataType == nil {
-		s.dataType = reflect.TypeOf(data)
+		s.dataType = reflect.TypeOf(dataCopy)
 	}
 
 	// Save data
-	s.data = reflect.ValueOf(data)
+	s.data = reflect.ValueOf(dataCopy)
 
 	s.unlock()
 
@@ -347,7 +351,7 @@ func (s *Store) Update(updater interface{}) {
 	results := reflect.ValueOf(updater).Call(args)
 
 	// We will only have 1 result. Set the store to it
-	s.set(results[0].Interface())
+	s.Set(results[0].Interface())
 }
 
 // Get returns the value of the data that's kept in the current state / Store

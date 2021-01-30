@@ -14,6 +14,33 @@ import (
 	is2 "github.com/matryer/is"
 )
 
+func TestStoreProvider_NewWithNilDefault(t *testing.T) {
+	is := is2.New(t)
+
+	defaultLogger := logger.NewDefaultLogger()
+	testLogger := internallogger.New(defaultLogger)
+	//testLogger.SetLogLevel(logger.TRACE)
+	serviceBus := servicebus.New(testLogger)
+	err := serviceBus.Start()
+	is.NoErr(err)
+	defer serviceBus.Stop()
+
+	testRuntime := New(serviceBus)
+	storeProvider := newStore(testRuntime)
+
+	testStore := storeProvider.New("test", 0)
+
+	// You should be able to write a new value into a
+	// store initialised with nil
+	err = testStore.Set(100)
+	is.NoErr(err)
+
+	// You shouldn't be able to write different types to the
+	// store
+	err = testStore.Set(false)
+	is.True(err != nil)
+}
+
 func TestStoreProvider_NewWithScalarDefault(t *testing.T) {
 	is := is2.New(t)
 
@@ -58,9 +85,8 @@ func TestStoreProvider_NewWithStructDefault(t *testing.T) {
 
 	testStore := storeProvider.New("test", testValue)
 
-	testStore.Update(func(current *TestValue) *TestValue {
-		return testValue
-	})
+	err = testStore.Set(testValue)
+	is.NoErr(err)
 	testStore.resync()
 	value := testStore.Get()
 	is.Equal(value, testValue)
@@ -69,9 +95,8 @@ func TestStoreProvider_NewWithStructDefault(t *testing.T) {
 	testValue = &TestValue{
 		Name: "there",
 	}
-	testStore.Update(func(current *TestValue) *TestValue {
-		return testValue
-	})
+	err = testStore.Set(testValue)
+	is.NoErr(err)
 	testStore.resync()
 	value = testStore.Get()
 	is.Equal(value, testValue)
@@ -128,9 +153,8 @@ func TestStoreProvider_RapidReadWrite(t *testing.T) {
 						wg.Done()
 						return
 					default:
-						store.Update(func(current int) int {
-							return rand.Int()
-						})
+						err := store.Set(rand.Int())
+						is.NoErr(err)
 					}
 				}
 			}(testStore, ctx, writerCount)
