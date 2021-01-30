@@ -6,9 +6,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	golog "log"
 	"os"
 	"reflect"
 	"sync"
+
+	"github.com/wailsapp/wails/v2/internal/deepcopy"
 )
 
 // Options defines the optional data that may be used
@@ -64,12 +67,17 @@ func fatal(err error) {
 // New creates a new store
 func (p *StoreProvider) New(name string, defaultValue interface{}) *Store {
 
-	dataType := reflect.TypeOf(defaultValue)
+	if defaultValue == nil {
+		golog.Fatal("Cannot initialise a store with nil")
+	}
+
+	dataCopy := deepcopy.Copy(defaultValue)
+	dataType := reflect.TypeOf(dataCopy)
 
 	result := Store{
 		name:     name,
 		runtime:  p.runtime,
-		data:     reflect.ValueOf(defaultValue),
+		data:     reflect.ValueOf(dataCopy),
 		dataType: dataType,
 	}
 
