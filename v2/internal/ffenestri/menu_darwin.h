@@ -22,7 +22,7 @@ typedef struct _NSRange {
 #define NSFontWeightUltraLight -0.8
 #define NSFontWeightThin -0.6
 #define NSFontWeightLight -0.4
-#define NSFontWeightRegular 0
+#define NSFontWeightRegular 0.0
 #define NSFontWeightMedium 0.23
 #define NSFontWeightSemibold 0.3
 #define NSFontWeightBold 0.4
