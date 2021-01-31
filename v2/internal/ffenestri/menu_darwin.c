@@ -740,7 +740,7 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     const char *image = getJSONString(item, "Image");
     const char *fontName = getJSONString(item, "FontName");
     const char *RGBA = getJSONString(item, "RGBA");
-    int fontSize = 0;
+    int fontSize = 12;
     getJSONInt(item, "FontSize", &fontSize);
 
     // If we have an accelerator
