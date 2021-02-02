@@ -488,9 +488,7 @@ void DestroyApplication(struct Application *app) {
 
 	// Close main window
     if( app->windowDelegate != NULL ) {
-    printf("\n\n\n\nReleasing window delegate\n\n\n\n\n");
         msg(app->windowDelegate, s("release"));
-    printf("\n\n\n\n\nRemoving window delegate\n\n\n\n\n\n\n");
         msg(app->mainWindow, s("setDelegate:"), NULL);
     }
 
