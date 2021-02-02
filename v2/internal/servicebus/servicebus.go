@@ -1,6 +1,7 @@
 package servicebus
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -12,23 +13,26 @@ import (
 type ServiceBus struct {
 	listeners    map[string][]chan *Message
 	messageQueue chan *Message
-	quitChannel  chan struct{}
-	wg           sync.WaitGroup
 	lock         sync.RWMutex
 	closed       bool
 	debug        bool
 	logger       logger.CustomLogger
+	ctx          context.Context
+	cancel       context.CancelFunc
 }
 
 // New creates a new ServiceBus
 // The internal message queue is set to 100 messages
 // Listener queues are set to 10
 func New(logger *logger.Logger) *ServiceBus {
+
+	ctx, cancel := context.WithCancel(context.Background())
 	return &ServiceBus{
 		listeners:    make(map[string][]chan *Message),
 		messageQueue: make(chan *Message, 100),
-		quitChannel:  make(chan struct{}, 1),
 		logger:       logger.CustomLogger("Service Bus"),
+		ctx:          ctx,
+		cancel:       cancel,
 	}
 }
 
@@ -63,24 +67,22 @@ func (s *ServiceBus) Debug() {
 // Start the service bus
 func (s *ServiceBus) Start() error {
 
-	s.logger.Trace("Starting")
-
 	// Prevent starting when closed
 	if s.closed {
 		return fmt.Errorf("cannot call start on closed servicebus")
 	}
 
-	// We run in a different thread
-	s.wg.Add(1)
+	s.logger.Trace("Starting")
 
 	go func() {
-
-		quit := false
+		defer s.logger.Trace("Stopped")
 
 		// Loop until we get a quit message
-		for !quit {
+		for {
 
 			select {
+			case <-s.ctx.Done():
+				return
 
 			// Listen for messages
 			case message := <-s.messageQueue:
@@ -91,15 +93,8 @@ func (s *ServiceBus) Start() error {
 				}
 				// Dispatch message
 				s.dispatchMessage(message)
-
-			// Listen for quit messages
-			case <-s.quitChannel:
-				quit = true
 			}
 		}
-
-		// Indicate we have shut down
-		s.wg.Done()
 
 	}()
 
@@ -117,10 +112,7 @@ func (s *ServiceBus) Stop() error {
 	s.closed = true
 
 	// Send quit message
-	s.quitChannel <- struct{}{}
-
-	// Wait for dispatcher to stop
-	s.wg.Wait()
+	s.cancel()
 
 	// Close down subscriber channels
 	s.lock.Lock()
@@ -135,7 +127,6 @@ func (s *ServiceBus) Stop() error {
 	// Close message queue
 	close(s.messageQueue)
 
-	s.logger.Trace("Stopped")
 	return nil
 }
 
@@ -172,7 +163,6 @@ func (s *ServiceBus) Subscribe(topic string) (<-chan *Message, error) {
 func (s *ServiceBus) Publish(topic string, data interface{}) {
 	// Prevent publish when closed
 	if s.closed {
-		s.logger.Fatal("cannot call publish on closed servicebus")
 		return
 	}
 
@@ -184,7 +174,6 @@ func (s *ServiceBus) Publish(topic string, data interface{}) {
 func (s *ServiceBus) PublishForTarget(topic string, data interface{}, target string) {
 	// Prevent publish when closed
 	if s.closed {
-		s.logger.Fatal("cannot call publish on closed servicebus")
 		return
 	}
 	message := NewMessageForTarget(topic, data, target)

@@ -4,7 +4,7 @@
 #include <stdio.h>
 struct Application;
 
-extern struct Application *NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel);
+extern struct Application *NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel, int hideWindowOnClose);
 extern void SetMinWindowSize(struct Application*, int minWidth, int minHeight);
 extern void SetMaxWindowSize(struct Application*, int maxWidth, int maxHeight);
 extern void Run(struct Application*, int argc, char **argv);

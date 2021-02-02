@@ -1,8 +1,10 @@
 package subsystem
 
 import (
+	"context"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/runtime"
@@ -12,15 +14,23 @@ import (
 // Log is the Logging subsystem. It handles messages with topics starting
 // with "log:"
 type Log struct {
-	logChannel  <-chan *servicebus.Message
-	quitChannel <-chan *servicebus.Message
-	running     bool
+	logChannel <-chan *servicebus.Message
+
+	// quit flag
+	shouldQuit bool
 
 	// Logger!
 	logger *logger.Logger
 
 	// Loglevel store
 	logLevelStore *runtime.Store
+
+	// Context for shutdown
+	ctx    context.Context
+	cancel context.CancelFunc
+
+	// internal waitgroup
+	wg sync.WaitGroup
 }
 
 // NewLog creates a new log subsystem
@@ -32,17 +42,14 @@ func NewLog(bus *servicebus.ServiceBus, logger *logger.Logger, logLevelStore *ru
 		return nil, err
 	}
 
-	// Subscribe to quit messages
-	quitChannel, err := bus.Subscribe("quit")
-	if err != nil {
-		return nil, err
-	}
+	ctx, cancel := context.WithCancel(context.Background())
 
 	result := &Log{
 		logChannel:    logChannel,
-		quitChannel:   quitChannel,
 		logger:        logger,
 		logLevelStore: logLevelStore,
+		ctx:           ctx,
+		cancel:        cancel,
 	}
 
 	return result, nil
@@ -51,15 +58,17 @@ func NewLog(bus *servicebus.ServiceBus, logger *logger.Logger, logLevelStore *ru
 // Start the subsystem
 func (l *Log) Start() error {
 
-	l.running = true
+	l.wg.Add(1)
 
 	// Spin off a go routine
 	go func() {
-		for l.running {
+		defer l.logger.Trace("Logger Shutdown")
+
+		for l.shouldQuit == false {
 			select {
-			case <-l.quitChannel:
-				l.running = false
-				break
+			case <-l.ctx.Done():
+				l.wg.Done()
+				return
 			case logMessage := <-l.logChannel:
 				logType := strings.TrimPrefix(logMessage.Topic(), "log:")
 				switch logType {
@@ -98,8 +107,12 @@ func (l *Log) Start() error {
 				}
 			}
 		}
-		l.logger.Trace("Logger Shutdown")
 	}()
 
 	return nil
+}
+
+func (l *Log) Close() {
+	l.cancel()
+	l.wg.Wait()
 }

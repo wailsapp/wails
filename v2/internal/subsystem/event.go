@@ -1,6 +1,7 @@
 package subsystem
 
 import (
+	"context"
 	"strings"
 	"sync"
 
@@ -22,9 +23,7 @@ type eventListener struct {
 // Event is the Eventing subsystem. It manages all service bus messages
 // starting with "event".
 type Event struct {
-	quitChannel  <-chan *servicebus.Message
 	eventChannel <-chan *servicebus.Message
-	running      bool
 
 	// Event listeners
 	listeners  map[string][]*eventListener
@@ -32,16 +31,16 @@ type Event struct {
 
 	// logger
 	logger logger.CustomLogger
+
+	// ctx
+	ctx context.Context
+
+	// parent waitgroup
+	wg *sync.WaitGroup
 }
 
 // NewEvent creates a new log subsystem
-func NewEvent(bus *servicebus.ServiceBus, logger *logger.Logger) (*Event, error) {
-
-	// Register quit channel
-	quitChannel, err := bus.Subscribe("quit")
-	if err != nil {
-		return nil, err
-	}
+func NewEvent(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.Logger) (*Event, error) {
 
 	// Subscribe to event messages
 	eventChannel, err := bus.Subscribe("event")
@@ -50,10 +49,11 @@ func NewEvent(bus *servicebus.ServiceBus, logger *logger.Logger) (*Event, error)
 	}
 
 	result := &Event{
-		quitChannel:  quitChannel,
 		eventChannel: eventChannel,
 		logger:       logger.CustomLogger("Event Subsystem"),
 		listeners:    make(map[string][]*eventListener),
+		ctx:          ctx,
+		wg:           ctx.Value("waitgroup").(*sync.WaitGroup),
 	}
 
 	return result, nil
@@ -80,15 +80,16 @@ func (e *Event) Start() error {
 
 	e.logger.Trace("Starting")
 
-	e.running = true
+	e.wg.Add(1)
 
 	// Spin off a go routine
 	go func() {
-		for e.running {
+		defer e.logger.Trace("Shutdown")
+		for {
 			select {
-			case <-e.quitChannel:
-				e.running = false
-				break
+			case <-e.ctx.Done():
+				e.wg.Done()
+				return
 			case eventMessage := <-e.eventChannel:
 				splitTopic := strings.Split(eventMessage.Topic(), ":")
 				eventType := splitTopic[1]
@@ -128,8 +129,6 @@ func (e *Event) Start() error {
 			}
 		}
 
-		// Call shutdown
-		e.shutdown()
 	}()
 
 	return nil
@@ -189,8 +188,4 @@ func (e *Event) notifyListeners(eventName string, message *message.EventMessage)
 
 	// Unlock
 	e.notifyLock.Unlock()
-}
-
-func (e *Event) shutdown() {
-	e.logger.Trace("Shutdown")
 }

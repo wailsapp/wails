@@ -1,6 +1,7 @@
 package messagedispatcher
 
 import (
+	"context"
 	"encoding/json"
 	"strconv"
 	"strings"
@@ -24,7 +25,6 @@ type Dispatcher struct {
 	dialogChannel <-chan *servicebus.Message
 	systemChannel <-chan *servicebus.Message
 	menuChannel   <-chan *servicebus.Message
-	running       bool
 
 	servicebus *servicebus.ServiceBus
 	logger     logger.CustomLogger
@@ -32,6 +32,13 @@ type Dispatcher struct {
 	// Clients
 	clients map[string]*DispatchClient
 	lock    sync.RWMutex
+
+	// Context for cancellation
+	ctx    context.Context
+	cancel context.CancelFunc
+
+	// internal wait group
+	wg sync.WaitGroup
 }
 
 // New dispatcher. Needs a service bus to send to.
@@ -76,6 +83,9 @@ func New(servicebus *servicebus.ServiceBus, logger *logger.Logger) (*Dispatcher,
 		return nil, err
 	}
 
+	// Create context
+	ctx, cancel := context.WithCancel(context.Background())
+
 	result := &Dispatcher{
 		servicebus:    servicebus,
 		eventChannel:  eventChannel,
@@ -87,6 +97,8 @@ func New(servicebus *servicebus.ServiceBus, logger *logger.Logger) (*Dispatcher,
 		dialogChannel: dialogChannel,
 		systemChannel: systemChannel,
 		menuChannel:   menuChannel,
+		ctx:           ctx,
+		cancel:        cancel,
 	}
 
 	return result, nil
@@ -97,15 +109,18 @@ func (d *Dispatcher) Start() error {
 
 	d.logger.Trace("Starting")
 
-	d.running = true
+	d.wg.Add(1)
 
 	// Spin off a go routine
 	go func() {
-		for d.running {
+		defer d.logger.Trace("Shutdown")
+		for {
 			select {
+			case <-d.ctx.Done():
+				d.wg.Done()
+				return
 			case <-d.quitChannel:
 				d.processQuit()
-				d.running = false
 			case resultMessage := <-d.resultChannel:
 				d.processCallResult(resultMessage)
 			case eventMessage := <-d.eventChannel:
@@ -120,9 +135,6 @@ func (d *Dispatcher) Start() error {
 				d.processMenuMessage(menuMessage)
 			}
 		}
-
-		// Call shutdown
-		d.shutdown()
 	}()
 
 	return nil
@@ -134,10 +146,6 @@ func (d *Dispatcher) processQuit() {
 	for _, client := range d.clients {
 		client.frontend.Quit()
 	}
-}
-
-func (d *Dispatcher) shutdown() {
-	d.logger.Trace("Shutdown")
 }
 
 // RegisterClient will register the given callback with the dispatcher
@@ -523,4 +531,9 @@ func (d *Dispatcher) processMenuMessage(result *servicebus.Message) {
 	default:
 		d.logger.Error("Unknown menufrontend command: %s", command)
 	}
+}
+
+func (d *Dispatcher) Close() {
+	d.cancel()
+	d.wg.Wait()
 }

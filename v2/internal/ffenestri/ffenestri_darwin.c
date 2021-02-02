@@ -34,6 +34,12 @@ BOOL yes(id self, SEL cmd)
 	return YES;
 }
 
+// no command simply returns NO!
+BOOL no(id self, SEL cmd)
+{
+	return NO;
+}
+
 // Prints a hashmap entry
 int hashmap_log(void *const context, struct hashmap_element_s *const e) {
   printf("%s: %p ", (char*)e->key, e->data);
@@ -65,6 +71,7 @@ struct Application {
 	// Cocoa data
 	id application;
 	id delegate;
+	id windowDelegate;
 	id mainWindow;
 	id wkwebview;
 	id manager;
@@ -92,6 +99,7 @@ struct Application {
 	const char *appearance;
 	int decorations;
 	int logLevel;
+	int hideWindowOnClose;
 
 	// Features
 	int frame;
@@ -119,6 +127,9 @@ struct Application {
 
 	// Bindings
 	const char *bindings;
+
+	// shutting down flag
+	bool shuttingDown;
 
 };
 
@@ -222,6 +233,9 @@ void applyWindowColour(struct Application *app) {
 }
 
 void SetColour(struct Application *app, int red, int green, int blue, int alpha) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	app->red = red;
 	app->green = green;
 	app->blue = blue;
@@ -235,12 +249,18 @@ void FullSizeContent(struct Application *app) {
 }
 
 void Hide(struct Application *app) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	ON_MAIN_THREAD(
 		msg(app->application, s("hide:"))
 	);
 }
 
 void Show(struct Application *app) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	ON_MAIN_THREAD(
 		msg(app->mainWindow, s("makeKeyAndOrderFront:"), NULL);
 		msg(app->application, s("activateIgnoringOtherApps:"), YES);
@@ -422,6 +442,7 @@ void freeDialogIconCache(struct Application *app) {
 }
 
 void DestroyApplication(struct Application *app) {
+    app->shuttingDown = true;
 	Debug(app, "Destroying Application");
 
 	// Free the bindings
@@ -466,10 +487,16 @@ void DestroyApplication(struct Application *app) {
 	msg(app->manager, s("removeScriptMessageHandlerForName:"), str("error"));
 
 	// Close main window
-	msg(app->mainWindow, s("close"));
+    if( app->windowDelegate != NULL ) {
+    printf("\n\n\n\nReleasing window delegate\n\n\n\n\n");
+        msg(app->windowDelegate, s("release"));
+    printf("\n\n\n\n\nRemoving window delegate\n\n\n\n\n\n\n");
+        msg(app->mainWindow, s("setDelegate:"), NULL);
+    }
 
-	// Terminate app
-	msg(c("NSApp"), s("terminate:"), NULL);
+//	msg(app->mainWindow, s("close"));
+
+
 	Debug(app, "Finished Destroying Application");
 }
 
@@ -477,11 +504,32 @@ void DestroyApplication(struct Application *app) {
 // used by the application
 void Quit(struct Application *app) {
 	Debug(app, "Quit Called");
-	DestroyApplication(app);
+	ON_MAIN_THREAD (
+		// Terminate app
+    	msg(app->application, s("stop:"), NULL);
+    	id fakeevent = msg(c("NSEvent"),
+                s("otherEventWithType:location:modifierFlags:timestamp:windowNumber:context:subtype:data1:data2:"),
+                15, // Type
+                msg(c("CGPoint"), s("init:x:y:"), 0, 0), // location
+                0, // flags
+                0, // timestamp
+                0, // window
+                NULL, // context
+                0, // subtype
+                0, // data1
+                0 // data2
+            );
+        msg(c("NSApp"), s("postEvent:atStart:"), fakeevent, true);
+//        msg(c(app->mainWindow), s("performClose:"))
+
+	);
 }
 
 // SetTitle sets the main window title to the given string
 void SetTitle(struct Application *app, const char *title) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	Debug(app, "SetTitle Called");
 	ON_MAIN_THREAD(
 		msg(app->mainWindow, s("setTitle:"), str(title));
@@ -503,6 +551,9 @@ bool isFullScreen(struct Application *app) {
 
 // Fullscreen sets the main window to be fullscreen
 void Fullscreen(struct Application *app) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	Debug(app, "Fullscreen Called");
 	if( ! isFullScreen(app) ) {
 		ToggleFullscreen(app);
@@ -511,6 +562,9 @@ void Fullscreen(struct Application *app) {
 
 // UnFullscreen resets the main window after a fullscreen
 void UnFullscreen(struct Application *app) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	Debug(app, "UnFullscreen Called");
 	if( isFullScreen(app) ) {
 		ToggleFullscreen(app);
@@ -518,6 +572,9 @@ void UnFullscreen(struct Application *app) {
 }
 
 void Center(struct Application *app) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	Debug(app, "Center Called");
 	ON_MAIN_THREAD(
 		MAIN_WINDOW_CALL("center");
@@ -532,23 +589,35 @@ void ToggleMaximise(struct Application *app) {
 }
 
 void Maximise(struct Application *app) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	if( app->maximised == 0) {
 		ToggleMaximise(app);
 	}
 }
 
 void Unmaximise(struct Application *app) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	if( app->maximised == 1) {
 		ToggleMaximise(app);
 	}
 }
 
 void Minimise(struct Application *app) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	ON_MAIN_THREAD(
 		MAIN_WINDOW_CALL("miniaturize:");
 	);
  }
 void Unminimise(struct Application *app) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	ON_MAIN_THREAD(
 		MAIN_WINDOW_CALL("deminiaturize:");
 	);
@@ -572,6 +641,9 @@ void dumpFrame(struct Application *app, const char *message, CGRect frame) {
 }
 
 void SetSize(struct Application *app, int width, int height) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	ON_MAIN_THREAD(
 		id screen = getCurrentScreen(app);
 
@@ -588,6 +660,9 @@ void SetSize(struct Application *app, int width, int height) {
 }
 
 void SetPosition(struct Application *app, int x, int y) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	ON_MAIN_THREAD(
 		id screen = getCurrentScreen(app);
 		CGRect screenFrame = GET_FRAME(screen);
@@ -613,6 +688,9 @@ void processDialogButton(id alert, char *buttonTitle, char *cancelButton, char *
 }
 
 extern void MessageDialog(struct Application *app, char *callbackID, char *type, char *title, char *message, char *icon, char *button1, char *button2, char *button3, char *button4, char *defaultButton, char *cancelButton) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	ON_MAIN_THREAD(
 	    id alert = ALLOC_INIT("NSAlert");
 	    char *dialogType = type;
@@ -726,6 +804,9 @@ extern void MessageDialog(struct Application *app, char *callbackID, char *type,
 
 // OpenDialog opens a dialog to select files/directories
 void OpenDialog(struct Application *app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolvesAliases, int treatPackagesAsDirectories) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	Debug(app, "OpenDialog Called with callback id: %s", callbackID);
 
 	// Create an open panel
@@ -814,6 +895,9 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
 
 // SaveDialog opens a dialog to select files/directories
 void SaveDialog(struct Application *app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int showHiddenFiles, int canCreateDirectories, int treatPackagesAsDirectories) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	Debug(app, "SaveDialog Called with callback id: %s", callbackID);
 
 	// Create an open panel
@@ -891,6 +975,9 @@ void DisableFrame(struct Application *app)
 
 void setMinMaxSize(struct Application *app)
 {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	if (app->maxHeight > 0 && app->maxWidth > 0)
 	{
 		msg(app->mainWindow, s("setMaxSize:"), CGSizeMake(app->maxWidth, app->maxHeight));
@@ -917,6 +1004,9 @@ void setMinMaxSize(struct Application *app)
 
 void SetMinWindowSize(struct Application *app, int minWidth, int minHeight)
 {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	app->minWidth = minWidth;
 	app->minHeight = minHeight;
 
@@ -930,6 +1020,9 @@ void SetMinWindowSize(struct Application *app, int minWidth, int minHeight)
 
 void SetMaxWindowSize(struct Application *app, int maxWidth, int maxHeight)
 {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	app->maxWidth = maxWidth;
 	app->maxHeight = maxHeight;
 
@@ -950,24 +1043,40 @@ void SetDebug(void *applicationPointer, int flag) {
 
 // AddContextMenu sets the context menu map for this application
 void AddContextMenu(struct Application *app, const char *contextMenuJSON) {
-	AddContextMenuToStore(app->contextMenuStore, contextMenuJSON);
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
+    AddContextMenuToStore(app->contextMenuStore, contextMenuJSON);
 }
 
 void UpdateContextMenu(struct Application *app, const char* contextMenuJSON) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
     UpdateContextMenuInStore(app->contextMenuStore, contextMenuJSON);
 }
 
 void AddTrayMenu(struct Application *app, const char *trayMenuJSON) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	AddTrayMenuToStore(app->trayMenuStore, trayMenuJSON);
 }
 
 void SetTrayMenu(struct Application *app, const char* trayMenuJSON) {
+
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
     ON_MAIN_THREAD(
         UpdateTrayMenuInStore(app->trayMenuStore, trayMenuJSON);
     );
 }
 
 void UpdateTrayMenuLabel(struct Application* app, const char* JSON) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
     ON_MAIN_THREAD(
         UpdateTrayMenuLabelInStore(app->trayMenuStore, JSON);
     );
@@ -1034,6 +1143,9 @@ void createApplication(struct Application *app) {
 }
 
 void DarkModeEnabled(struct Application *app, const char *callbackID) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
 	ON_MAIN_THREAD(
 		const char *result = isDarkMode(app) ? "T" : "F";
 
@@ -1054,9 +1166,9 @@ void DarkModeEnabled(struct Application *app, const char *callbackID) {
 void createDelegate(struct Application *app) {
 		// Define delegate
 	Class delegateClass = objc_allocateClassPair((Class) c("NSObject"), "AppDelegate", 0);
-	  bool resultAddProtoc = class_addProtocol(delegateClass, objc_getProtocol("NSApplicationDelegate"));
-	class_addMethod(delegateClass, s("applicationShouldTerminateAfterLastWindowClosed:"), (IMP) yes, "c@:@");
-	class_addMethod(delegateClass, s("applicationWillTerminate:"), (IMP) closeWindow, "v@:@");
+	bool resultAddProtoc = class_addProtocol(delegateClass, objc_getProtocol("NSApplicationDelegate"));
+    class_addMethod(delegateClass, s("applicationShouldTerminateAfterLastWindowClosed:"), (IMP) no, "c@:@");
+//	class_addMethod(delegateClass, s("applicationWillTerminate:"), (IMP) closeWindow, "v@:@");
 	class_addMethod(delegateClass, s("applicationWillFinishLaunching:"), (IMP) willFinishLaunching, "v@:@");
 
 	// All Menu Items use a common callback
@@ -1082,6 +1194,11 @@ void createDelegate(struct Application *app) {
 	msg(app->application, s("setDelegate:"), delegate);
 }
 
+bool windowShouldClose(id self, SEL cmd, id sender) {
+    msg(sender, s("orderBack:"));
+    return false;
+  }
+
 void createMainWindow(struct Application *app) {
 	// Create main window
 	id mainWindow = ALLOC("NSWindow");
@@ -1099,6 +1216,15 @@ void createMainWindow(struct Application *app) {
 	// Set Title appearance
 	msg(mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
 	msg(mainWindow, s("setTitleVisibility:"), app->hideTitle);
+
+	if( app->hideWindowOnClose ) {
+	    // Create window delegate to override windowShouldClose
+        Class delegateClass = objc_allocateClassPair((Class) c("NSObject"), "WindowDelegate", 0);
+        bool resultAddProtoc = class_addProtocol(delegateClass, objc_getProtocol("NSWindowDelegate"));
+        class_replaceMethod(delegateClass, s("windowShouldClose:"), (IMP) windowShouldClose, "v@:@");
+        app->windowDelegate = msg((id)delegateClass, s("new"));
+        msg(mainWindow, s("setDelegate:"), app->windowDelegate);
+	}
 
 	app->mainWindow = mainWindow;
 }
@@ -1186,7 +1312,7 @@ void parseMenuRole(struct Application *app, id parentMenu, JsonNode *item) {
 	return;
   }
   if ( STREQ(roleName, "quit")) {
-	addMenuItem(parentMenu, "Quit (More work TBD)", "terminate:", "q", FALSE);
+	addMenuItem(parentMenu, "Quit", "terminate:", "q", FALSE);
 	return;
   }
   if ( STREQ(roleName, "togglefullscreen")) {
@@ -1464,6 +1590,9 @@ void updateMenu(struct Application *app, const char *menuAsJSON) {
 
 // SetApplicationMenu sets the initial menu for the application
 void SetApplicationMenu(struct Application *app, const char *menuAsJSON) {
+    // Guard against calling during shutdown
+    if( app->shuttingDown ) return;
+
     if ( app->applicationMenu == NULL ) {
 	    app->applicationMenu = NewApplicationMenu(menuAsJSON);
 	    return;
@@ -1705,11 +1834,13 @@ void Run(struct Application *app, int argc, char **argv) {
 	Debug(app, "Run called");
 	msg(app->application, s("run"));
 
+	DestroyApplication(app);
+
 	MEMFREE(internalCode);
 }
 
 
-void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel) {
+void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel, int hideWindowOnClose) {
 
     // Load the tray icons
     LoadTrayIcons();
@@ -1730,6 +1861,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->startHidden = startHidden;
 	result->decorations = 0;
 	result->logLevel = logLevel;
+	result->hideWindowOnClose = hideWindowOnClose;
 
 	result->mainWindow = NULL;
 	result->mouseEvent = NULL;
@@ -1758,11 +1890,16 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	// Context Menus
 	result->contextMenuStore = NewContextMenuStore();
 
+	// Window delegate
+	result->windowDelegate = NULL;
+
 	// Window Appearance
 	result->titlebarAppearsTransparent = 0;
 	result->webviewIsTranparent = 0;
 
 	result->sendMessageToBackend = (ffenestriCallback) messageFromWindowCallback;
+
+	result->shuttingDown = false;
 
     return (void*) result;
 }

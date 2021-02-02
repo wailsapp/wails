@@ -10,9 +10,9 @@ import (
 // Binding is the Binding subsystem. It manages all service bus messages
 // starting with "binding".
 type Binding struct {
-	quitChannel    <-chan *servicebus.Message
 	bindingChannel <-chan *servicebus.Message
-	running        bool
+
+	running bool
 
 	// Binding db
 	bindings *binding.Bindings
@@ -27,12 +27,6 @@ type Binding struct {
 // NewBinding creates a new binding subsystem. Uses the given bindings db for reference.
 func NewBinding(bus *servicebus.ServiceBus, logger *logger.Logger, bindings *binding.Bindings, runtime *runtime.Runtime) (*Binding, error) {
 
-	// Register quit channel
-	quitChannel, err := bus.Subscribe("quit")
-	if err != nil {
-		return nil, err
-	}
-
 	// Subscribe to event messages
 	bindingChannel, err := bus.Subscribe("binding")
 	if err != nil {
@@ -40,7 +34,6 @@ func NewBinding(bus *servicebus.ServiceBus, logger *logger.Logger, bindings *bin
 	}
 
 	result := &Binding{
-		quitChannel:    quitChannel,
 		bindingChannel: bindingChannel,
 		logger:         logger.CustomLogger("Binding Subsystem"),
 		bindings:       bindings,
@@ -61,20 +54,16 @@ func (b *Binding) Start() error {
 	go func() {
 		for b.running {
 			select {
-			case <-b.quitChannel:
-				b.running = false
 			case bindingMessage := <-b.bindingChannel:
 				b.logger.Trace("Got binding message: %+v", bindingMessage)
 			}
 		}
-
-		// Call shutdown
-		b.shutdown()
+		b.logger.Trace("Shutdown")
 	}()
 
 	return nil
 }
 
-func (b *Binding) shutdown() {
-	b.logger.Trace("Shutdown")
+func (b *Binding) Close() {
+	b.running = false
 }

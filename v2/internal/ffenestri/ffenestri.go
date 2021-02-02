@@ -1,10 +1,11 @@
 package ffenestri
 
 import (
-	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"runtime"
 	"strings"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v2/internal/menumanager"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
@@ -118,7 +119,8 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string, debug 
 	fullscreen := a.bool2Cint(a.config.Fullscreen)
 	startHidden := a.bool2Cint(a.config.StartHidden)
 	logLevel := C.int(a.config.LogLevel)
-	app := C.NewApplication(title, width, height, resizable, devtools, fullscreen, startHidden, logLevel)
+	hideWindowOnClose := a.bool2Cint(a.config.HideWindowOnClose)
+	app := C.NewApplication(title, width, height, resizable, devtools, fullscreen, startHidden, logLevel, hideWindowOnClose)
 
 	// Save app reference
 	a.app = (*C.struct_Application)(app)
@@ -167,6 +169,7 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string, debug 
 		// Yes - Save memory reference and run app, cleaning up afterwards
 		a.saveMemoryReference(unsafe.Pointer(app))
 		C.Run(app, 0, nil)
+		println("Back in ffenestri.go")
 	} else {
 		// Oh no! We couldn't initialise the application
 		a.logger.Fatal("Cannot initialise Application.")

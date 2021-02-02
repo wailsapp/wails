@@ -14,27 +14,28 @@ import (
 
 // App contains options for creating the App
 type App struct {
-	Title         string
-	Width         int
-	Height        int
-	DisableResize bool
-	Fullscreen    bool
-	MinWidth      int
-	MinHeight     int
-	MaxWidth      int
-	MaxHeight     int
-	StartHidden   bool
-	DevTools      bool
-	RGBA          int
-	ContextMenus  []*menu.ContextMenu
-	TrayMenus     []*menu.TrayMenu
-	Menu          *menu.Menu
-	Mac           *mac.Options
-	Logger        logger.Logger `json:"-"`
-	LogLevel      logger.LogLevel
-	Startup       func(*wailsruntime.Runtime) `json:"-"`
-	Shutdown      func()                      `json:"-"`
-	Bind          []interface{}
+	Title             string
+	Width             int
+	Height            int
+	DisableResize     bool
+	Fullscreen        bool
+	MinWidth          int
+	MinHeight         int
+	MaxWidth          int
+	MaxHeight         int
+	StartHidden       bool
+	HideWindowOnClose bool
+	DevTools          bool
+	RGBA              int
+	ContextMenus      []*menu.ContextMenu
+	TrayMenus         []*menu.TrayMenu
+	Menu              *menu.Menu
+	Mac               *mac.Options
+	Logger            logger.Logger `json:"-"`
+	LogLevel          logger.LogLevel
+	Startup           func(*wailsruntime.Runtime) `json:"-"`
+	Shutdown          func()                      `json:"-"`
+	Bind              []interface{}
 }
 
 // MergeDefaults will set the minimum default values for an application

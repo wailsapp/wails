@@ -1,6 +1,7 @@
 package subsystem
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -12,7 +13,6 @@ import (
 // Runtime is the Runtime subsystem. It handles messages with topics starting
 // with "runtime:"
 type Runtime struct {
-	quitChannel    <-chan *servicebus.Message
 	runtimeChannel <-chan *servicebus.Message
 
 	// The hooks channel allows us to hook into frontend startup
@@ -20,22 +20,20 @@ type Runtime struct {
 	startupCallback  func(*runtime.Runtime)
 	shutdownCallback func()
 
-	running bool
+	// quit flag
+	shouldQuit bool
 
 	logger logger.CustomLogger
 
 	// Runtime library
 	runtime *runtime.Runtime
+
+	//ctx
+	ctx context.Context
 }
 
 // NewRuntime creates a new runtime subsystem
-func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger, startupCallback func(*runtime.Runtime), shutdownCallback func()) (*Runtime, error) {
-
-	// Register quit channel
-	quitChannel, err := bus.Subscribe("quit")
-	if err != nil {
-		return nil, err
-	}
+func NewRuntime(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.Logger, startupCallback func(*runtime.Runtime), shutdownCallback func()) (*Runtime, error) {
 
 	// Subscribe to log messages
 	runtimeChannel, err := bus.Subscribe("runtime:")
@@ -50,13 +48,13 @@ func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger, startupCallba
 	}
 
 	result := &Runtime{
-		quitChannel:      quitChannel,
 		runtimeChannel:   runtimeChannel,
 		hooksChannel:     hooksChannel,
 		logger:           logger.CustomLogger("Runtime Subsystem"),
-		runtime:          runtime.New(bus),
+		runtime:          runtime.New(bus, shutdownCallback),
 		startupCallback:  startupCallback,
 		shutdownCallback: shutdownCallback,
+		ctx:              ctx,
 	}
 
 	return result, nil
@@ -65,15 +63,11 @@ func NewRuntime(bus *servicebus.ServiceBus, logger *logger.Logger, startupCallba
 // Start the subsystem
 func (r *Runtime) Start() error {
 
-	r.running = true
-
 	// Spin off a go routine
 	go func() {
-		for r.running {
+		defer r.logger.Trace("Shutdown")
+		for {
 			select {
-			case <-r.quitChannel:
-				r.running = false
-				break
 			case hooksMessage := <-r.hooksChannel:
 				r.logger.Trace(fmt.Sprintf("Received hooksmessage: %+v", hooksMessage))
 				messageSlice := strings.Split(hooksMessage.Topic(), ":")
@@ -113,11 +107,10 @@ func (r *Runtime) Start() error {
 				if err != nil {
 					r.logger.Error(err.Error())
 				}
+			case <-r.ctx.Done():
+				return
 			}
 		}
-
-		// Call shutdown
-		r.shutdown()
 	}()
 
 	return nil
@@ -126,15 +119,6 @@ func (r *Runtime) Start() error {
 // GoRuntime returns the Go Runtime object
 func (r *Runtime) GoRuntime() *runtime.Runtime {
 	return r.runtime
-}
-
-func (r *Runtime) shutdown() {
-	if r.shutdownCallback != nil {
-		go r.shutdownCallback()
-	} else {
-		r.logger.Warning("no shutdown callback registered!")
-	}
-	r.logger.Trace("Shutdown")
 }
 
 func (r *Runtime) processBrowserMessage(method string, data interface{}) error {

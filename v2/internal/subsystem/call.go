@@ -1,10 +1,13 @@
 package subsystem
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 	"strings"
+	"sync"
+
+	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -16,9 +19,10 @@ import (
 // Call is the Call subsystem. It manages all service bus messages
 // starting with "call".
 type Call struct {
-	quitChannel <-chan *servicebus.Message
 	callChannel <-chan *servicebus.Message
-	running     bool
+
+	// quit flag
+	shouldQuit bool
 
 	// bindings DB
 	DB *binding.DB
@@ -31,16 +35,16 @@ type Call struct {
 
 	// runtime
 	runtime *runtime.Runtime
+
+	// context
+	ctx context.Context
+
+	// parent waitgroup
+	wg *sync.WaitGroup
 }
 
 // NewCall creates a new call subsystem
-func NewCall(bus *servicebus.ServiceBus, logger *logger.Logger, DB *binding.DB, runtime *runtime.Runtime) (*Call, error) {
-
-	// Register quit channel
-	quitChannel, err := bus.Subscribe("quit")
-	if err != nil {
-		return nil, err
-	}
+func NewCall(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.Logger, DB *binding.DB, runtime *runtime.Runtime) (*Call, error) {
 
 	// Subscribe to event messages
 	callChannel, err := bus.Subscribe("call:invoke")
@@ -49,12 +53,13 @@ func NewCall(bus *servicebus.ServiceBus, logger *logger.Logger, DB *binding.DB, 
 	}
 
 	result := &Call{
-		quitChannel: quitChannel,
 		callChannel: callChannel,
 		logger:      logger.CustomLogger("Call Subsystem"),
 		DB:          DB,
 		bus:         bus,
 		runtime:     runtime,
+		ctx:         ctx,
+		wg:          ctx.Value("waitgroup").(*sync.WaitGroup),
 	}
 
 	return result, nil
@@ -63,22 +68,21 @@ func NewCall(bus *servicebus.ServiceBus, logger *logger.Logger, DB *binding.DB, 
 // Start the subsystem
 func (c *Call) Start() error {
 
-	c.running = true
+	c.wg.Add(1)
 
 	// Spin off a go routine
 	go func() {
-		for c.running {
+		defer c.logger.Trace("Shutdown")
+		for {
 			select {
-			case <-c.quitChannel:
-				c.running = false
+			case <-c.ctx.Done():
+				c.wg.Done()
+				return
 			case callMessage := <-c.callChannel:
-				// TODO: Check if this works ok in a goroutine
 				c.processCall(callMessage)
 			}
 		}
 
-		// Call shutdown
-		c.shutdown()
 	}()
 
 	return nil
@@ -188,10 +192,6 @@ func (c *Call) sendError(err error, payload *message.CallMessage, clientID strin
 		c.logger.Fatal(err.Error())
 	}
 	c.bus.PublishForTarget("call:result", string(messageData), clientID)
-}
-
-func (c *Call) shutdown() {
-	c.logger.Trace("Shutdown")
 }
 
 // CallbackMessage defines a message that contains the result of a call

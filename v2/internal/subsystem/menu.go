@@ -1,9 +1,12 @@
 package subsystem
 
 import (
+	"context"
 	"encoding/json"
-	"github.com/wailsapp/wails/v2/pkg/menu"
 	"strings"
+	"sync"
+
+	"github.com/wailsapp/wails/v2/pkg/menu"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
@@ -13,9 +16,10 @@ import (
 // Menu is the subsystem that handles the operation of menus. It manages all service bus messages
 // starting with "menu".
 type Menu struct {
-	quitChannel <-chan *servicebus.Message
 	menuChannel <-chan *servicebus.Message
-	running     bool
+
+	// shutdown flag
+	shouldQuit bool
 
 	// logger
 	logger logger.CustomLogger
@@ -25,16 +29,16 @@ type Menu struct {
 
 	// Menu Manager
 	menuManager *menumanager.Manager
+
+	// ctx
+	ctx context.Context
+
+	// parent waitgroup
+	wg *sync.WaitGroup
 }
 
 // NewMenu creates a new menu subsystem
-func NewMenu(bus *servicebus.ServiceBus, logger *logger.Logger, menuManager *menumanager.Manager) (*Menu, error) {
-
-	// Register quit channel
-	quitChannel, err := bus.Subscribe("quit")
-	if err != nil {
-		return nil, err
-	}
+func NewMenu(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.Logger, menuManager *menumanager.Manager) (*Menu, error) {
 
 	// Subscribe to menu messages
 	menuChannel, err := bus.Subscribe("menu:")
@@ -43,11 +47,12 @@ func NewMenu(bus *servicebus.ServiceBus, logger *logger.Logger, menuManager *men
 	}
 
 	result := &Menu{
-		quitChannel: quitChannel,
 		menuChannel: menuChannel,
 		logger:      logger.CustomLogger("Menu Subsystem"),
 		bus:         bus,
 		menuManager: menuManager,
+		ctx:         ctx,
+		wg:          ctx.Value("waitgroup").(*sync.WaitGroup),
 	}
 
 	return result, nil
@@ -58,15 +63,16 @@ func (m *Menu) Start() error {
 
 	m.logger.Trace("Starting")
 
-	m.running = true
+	m.wg.Add(1)
 
 	// Spin off a go routine
 	go func() {
-		for m.running {
+		defer m.logger.Trace("Shutdown")
+		for {
 			select {
-			case <-m.quitChannel:
-				m.running = false
-				break
+			case <-m.ctx.Done():
+				m.wg.Done()
+				return
 			case menuMessage := <-m.menuChannel:
 				splitTopic := strings.Split(menuMessage.Topic(), ":")
 				menuMessageType := splitTopic[1]
@@ -147,14 +153,7 @@ func (m *Menu) Start() error {
 				}
 			}
 		}
-
-		// Call shutdown
-		m.shutdown()
 	}()
 
 	return nil
-}
-
-func (m *Menu) shutdown() {
-	m.logger.Trace("Shutdown")
 }

@@ -1,8 +1,10 @@
 package signal
 
 import (
+	"context"
 	"os"
 	gosignal "os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -20,24 +22,29 @@ type Manager struct {
 	// signalChannel
 	signalchannel chan os.Signal
 
-	// Quit channel
-	quitChannel <-chan *servicebus.Message
+	// ctx
+	ctx    context.Context
+	cancel context.CancelFunc
+
+	// The shutdown callback to notify the user's app that a shutdown
+	// has started
+	shutdownCallback func()
+
+	// Parent waitgroup
+	wg *sync.WaitGroup
 }
 
 // NewManager creates a new signal manager
-func NewManager(bus *servicebus.ServiceBus, logger *logger.Logger) (*Manager, error) {
-
-	// Register quit channel
-	quitChannel, err := bus.Subscribe("quit")
-	if err != nil {
-		return nil, err
-	}
+func NewManager(ctx context.Context, cancel context.CancelFunc, bus *servicebus.ServiceBus, logger *logger.Logger, shutdownCallback func()) (*Manager, error) {
 
 	result := &Manager{
-		bus:           bus,
-		logger:        logger.CustomLogger("Event Manager"),
-		signalchannel: make(chan os.Signal, 2),
-		quitChannel:   quitChannel,
+		bus:              bus,
+		logger:           logger.CustomLogger("Event Manager"),
+		signalchannel:    make(chan os.Signal, 2),
+		ctx:              ctx,
+		cancel:           cancel,
+		shutdownCallback: shutdownCallback,
+		wg:               ctx.Value("waitgroup").(*sync.WaitGroup),
 	}
 
 	return result, nil
@@ -49,20 +56,28 @@ func (m *Manager) Start() {
 	// Hook into interrupts
 	gosignal.Notify(m.signalchannel, os.Interrupt, syscall.SIGTERM)
 
-	// Spin off signal listener
+	m.wg.Add(1)
+
+	// Spin off signal listener and wait for either a cancellation
+	// or signal
 	go func() {
-		running := true
-		for running {
-			select {
-			case <-m.signalchannel:
-				println()
-				m.logger.Trace("Ctrl+C detected. Shutting down...")
-				m.bus.Publish("quit", "ctrl-c pressed")
-			case <-m.quitChannel:
-				running = false
-				break
+		select {
+		case <-m.signalchannel:
+			println()
+			m.logger.Trace("Ctrl+C detected. Shutting down...")
+			m.bus.Publish("quit", "ctrl-c pressed")
+
+			// Shutdown app first
+			if m.shutdownCallback != nil {
+				m.shutdownCallback()
 			}
+
+			// Start shutdown of Wails
+			m.cancel()
+
+		case <-m.ctx.Done():
 		}
 		m.logger.Trace("Shutdown")
+		m.wg.Done()
 	}()
 }

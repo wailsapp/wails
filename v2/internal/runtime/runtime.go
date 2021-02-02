@@ -6,19 +6,20 @@ import (
 
 // Runtime is a means for the user to interact with the application at runtime
 type Runtime struct {
-	Browser Browser
-	Events  Events
-	Window  Window
-	Dialog  Dialog
-	System  System
-	Menu    Menu
-	Store   *StoreProvider
-	Log     Log
-	bus     *servicebus.ServiceBus
+	Browser          Browser
+	Events           Events
+	Window           Window
+	Dialog           Dialog
+	System           System
+	Menu             Menu
+	Store            *StoreProvider
+	Log              Log
+	bus              *servicebus.ServiceBus
+	shutdownCallback func()
 }
 
 // New creates a new runtime
-func New(serviceBus *servicebus.ServiceBus) *Runtime {
+func New(serviceBus *servicebus.ServiceBus, shutdownCallback func()) *Runtime {
 	result := &Runtime{
 		Browser: newBrowser(),
 		Events:  newEvents(serviceBus),
@@ -35,5 +36,11 @@ func New(serviceBus *servicebus.ServiceBus) *Runtime {
 
 // Quit the application
 func (r *Runtime) Quit() {
+	// Call back to user's shutdown method if defined
+	if r.shutdownCallback != nil {
+		r.shutdownCallback()
+	}
+
+	// Start shutdown of Wails
 	r.bus.Publish("quit", "runtime.Quit()")
 }

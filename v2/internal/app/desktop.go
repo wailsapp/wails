@@ -3,6 +3,9 @@
 package app
 
 import (
+	"context"
+	"sync"
+
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/ffenestri"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -26,10 +29,10 @@ type App struct {
 	options    *options.App
 
 	// Subsystems
-	log        *subsystem.Log
-	runtime    *subsystem.Runtime
-	event      *subsystem.Event
-	binding    *subsystem.Binding
+	log     *subsystem.Log
+	runtime *subsystem.Runtime
+	event   *subsystem.Event
+	//binding    *subsystem.Binding
 	call       *subsystem.Call
 	menu       *subsystem.Menu
 	dispatcher *messagedispatcher.Dispatcher
@@ -109,8 +112,13 @@ func (a *App) Run() error {
 
 	var err error
 
+	// Setup a context
+	var subsystemWaitGroup sync.WaitGroup
+	parentContext := context.WithValue(context.Background(), "waitgroup", &subsystemWaitGroup)
+	ctx, cancel := context.WithCancel(parentContext)
+
 	// Setup signal handler
-	signalsubsystem, err := signal.NewManager(a.servicebus, a.logger)
+	signalsubsystem, err := signal.NewManager(ctx, cancel, a.servicebus, a.logger, a.shutdownCallback)
 	if err != nil {
 		return err
 	}
@@ -124,7 +132,7 @@ func (a *App) Run() error {
 		return err
 	}
 
-	runtimesubsystem, err := subsystem.NewRuntime(a.servicebus, a.logger, a.startupCallback, a.shutdownCallback)
+	runtimesubsystem, err := subsystem.NewRuntime(ctx, a.servicebus, a.logger, a.startupCallback, a.shutdownCallback)
 	if err != nil {
 		return err
 	}
@@ -137,17 +145,6 @@ func (a *App) Run() error {
 	// Application Stores
 	a.loglevelStore = a.runtime.GoRuntime().Store.New("wails:loglevel", a.options.LogLevel)
 	a.appconfigStore = a.runtime.GoRuntime().Store.New("wails:appconfig", a.options)
-
-	// Start the binding subsystem
-	bindingsubsystem, err := subsystem.NewBinding(a.servicebus, a.logger, a.bindings, a.runtime.GoRuntime())
-	if err != nil {
-		return err
-	}
-	a.binding = bindingsubsystem
-	err = a.binding.Start()
-	if err != nil {
-		return err
-	}
 
 	// Start the logging subsystem
 	log, err := subsystem.NewLog(a.servicebus, a.logger, a.loglevelStore)
@@ -172,18 +169,18 @@ func (a *App) Run() error {
 	}
 
 	// Start the eventing subsystem
-	event, err := subsystem.NewEvent(a.servicebus, a.logger)
+	eventsubsystem, err := subsystem.NewEvent(ctx, a.servicebus, a.logger)
 	if err != nil {
 		return err
 	}
-	a.event = event
+	a.event = eventsubsystem
 	err = a.event.Start()
 	if err != nil {
 		return err
 	}
 
 	// Start the menu subsystem
-	menusubsystem, err := subsystem.NewMenu(a.servicebus, a.logger, a.menuManager)
+	menusubsystem, err := subsystem.NewMenu(ctx, a.servicebus, a.logger, a.menuManager)
 	if err != nil {
 		return err
 	}
@@ -194,11 +191,11 @@ func (a *App) Run() error {
 	}
 
 	// Start the call subsystem
-	call, err := subsystem.NewCall(a.servicebus, a.logger, a.bindings.DB(), a.runtime.GoRuntime())
+	callSubsystem, err := subsystem.NewCall(ctx, a.servicebus, a.logger, a.bindings.DB(), a.runtime.GoRuntime())
 	if err != nil {
 		return err
 	}
-	a.call = call
+	a.call = callSubsystem
 	err = a.call.Start()
 	if err != nil {
 		return err
@@ -210,12 +207,31 @@ func (a *App) Run() error {
 		return err
 	}
 
-	result := a.window.Run(dispatcher, bindingDump, a.debug)
+	err = a.window.Run(dispatcher, bindingDump, a.debug)
 	a.logger.Trace("Ffenestri.Run() exited")
+	if err != nil {
+		return err
+	}
+
+	// Close down all the subsystems
+	a.logger.Trace("Cancelling subsystems")
+	cancel()
+	subsystemWaitGroup.Wait()
+
+	a.logger.Trace("Cancelling dispatcher")
+	dispatcher.Close()
+
+	// Close log
+	a.logger.Trace("Stopping log")
+	log.Close()
+
+	a.logger.Trace("Stopping Service bus")
 	err = a.servicebus.Stop()
 	if err != nil {
 		return err
 	}
 
-	return result
+	println("Desktop.Run() finished")
+
+	return nil
 }
