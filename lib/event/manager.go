@@ -42,12 +42,12 @@ func (e *Manager) PushEvent(eventData *messages.EventData) {
 // means it does not expire (default).
 type eventListener struct {
 	callback func(...interface{}) // Function to call with emitted event data
-	counter  int                  // Expire after counter callbacks. 0 = infinite
+	counter  uint                 // Expire after counter callbacks. 0 = infinite
 	expired  bool                 // Indicates if the listener has expired
 }
 
 // Creates a new event listener from the given callback function
-func (e *Manager) addEventListener(eventName string, callback func(...interface{}), counter int) error {
+func (e *Manager) addEventListener(eventName string, callback func(...interface{}), counter uint) error {
 
 	// Sanity check inputs
 	if callback == nil {
@@ -75,7 +75,30 @@ func (e *Manager) addEventListener(eventName string, callback func(...interface{
 // On adds a listener for the given event
 func (e *Manager) On(eventName string, callback func(...interface{})) {
 	// Add a persistent eventListener (counter = 0)
-	e.addEventListener(eventName, callback, 0)
+	err := e.addEventListener(eventName, callback, 0)
+	if err != nil {
+		e.log.Error(err.Error())
+	}
+}
+
+// Once adds a listener for the given event that will auto remove
+// after one callback
+func (e *Manager) Once(eventName string, callback func(...interface{})) {
+	// Add a persistent eventListener (counter = 0)
+	err := e.addEventListener(eventName, callback, 1)
+	if err != nil {
+		e.log.Error(err.Error())
+	}
+}
+
+// OnMultiple adds a listener for the given event that will trigger
+// at most <counter> times.
+func (e *Manager) OnMultiple(eventName string, callback func(...interface{}), counter uint) {
+	// Add a persistent eventListener (counter = 0)
+	err := e.addEventListener(eventName, callback, counter)
+	if err != nil {
+		e.log.Error(err.Error())
+	}
 }
 
 // Emit broadcasts the given event to the subscribed listeners
@@ -108,10 +131,13 @@ func (e *Manager) Start(renderer interfaces.Renderer) {
 				})
 
 				// Notify renderer
-				e.renderer.NotifyEvent(event)
+				err := e.renderer.NotifyEvent(event)
+				if err != nil {
+					e.log.Error(err.Error())
+				}
 
 				// Notify Go listeners
-				var listenersToRemove []*eventListener
+				var listenersToRemove int
 
 				// Iterate listeners
 				for _, listener := range e.listeners[event.Name] {
@@ -129,12 +155,13 @@ func (e *Manager) Start(renderer interfaces.Renderer) {
 						listener.counter = listener.counter - 1
 						if listener.counter == 0 {
 							listener.expired = true
+							listenersToRemove++
 						}
 					}
 				}
 
 				// Remove expired listeners in place
-				if len(listenersToRemove) > 0 {
+				if listenersToRemove > 0 {
 					listeners := e.listeners[event.Name][:0]
 					for _, listener := range listeners {
 						if !listener.expired {
