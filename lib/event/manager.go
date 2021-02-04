@@ -116,12 +116,15 @@ func (e *Manager) Start(renderer interfaces.Renderer) {
 				// Iterate listeners
 				for _, listener := range e.listeners[event.Name] {
 
-					// Call listener, perhaps with data
-					if event.Data == nil {
-						go listener.callback()
-					} else {
-						unpacked := event.Data.([]interface{})
-						go listener.callback(unpacked...)
+					// Only call listener if it is not expired
+					if !listener.expired {
+						// Call listener, perhaps with data
+						if event.Data == nil {
+							go listener.callback()
+						} else {
+							unpacked := event.Data.([]interface{})
+							go listener.callback(unpacked...)
+						}
 					}
 
 					// Update listen counter
