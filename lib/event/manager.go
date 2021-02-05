@@ -12,11 +12,11 @@ import (
 // Manager handles and processes events
 type Manager struct {
 	incomingEvents chan *messages.EventData
-	quitChannel    chan struct{}
 	listeners      map[string][]*eventListener
-	running        bool
 	log            *logger.CustomLogger
+	quitChannel    chan struct{}
 	renderer       interfaces.Renderer // Messages will be dispatched to the frontend
+	running        bool
 	wg             sync.WaitGroup
 }
 
@@ -24,10 +24,10 @@ type Manager struct {
 func NewManager() interfaces.EventManager {
 	return &Manager{
 		incomingEvents: make(chan *messages.EventData, 100),
-		quitChannel:    make(chan struct{}, 1),
 		listeners:      make(map[string][]*eventListener),
-		running:        false,
 		log:            logger.NewCustomLogger("Events"),
+		quitChannel:    make(chan struct{}, 1),
+		running:        false,
 	}
 }
 
