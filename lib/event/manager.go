@@ -139,18 +139,17 @@ func (e *Manager) Start(renderer interfaces.Renderer) {
 
 				e.mu.Lock()
 
-				// Notify Go listeners
-				var listenersToRemove int
-
 				// Iterate listeners
 				for _, listener := range e.listeners[event.Name] {
 
-					// Call listener, perhaps with data
-					if event.Data == nil {
-						go listener.callback()
-					} else {
-						unpacked := event.Data.([]interface{})
-						go listener.callback(unpacked...)
+					if !listener.expired {
+						// Call listener, perhaps with data
+						if event.Data == nil {
+							go listener.callback()
+						} else {
+							unpacked := event.Data.([]interface{})
+							go listener.callback(unpacked...)
+						}
 					}
 
 					// Update listen counter
@@ -158,22 +157,10 @@ func (e *Manager) Start(renderer interfaces.Renderer) {
 						listener.counter = listener.counter - 1
 						if listener.counter == 0 {
 							listener.expired = true
-							listenersToRemove++
 						}
 					}
 				}
 
-				// Remove expired listeners in place
-				if listenersToRemove > 0 {
-					listeners := e.listeners[event.Name]
-					for index, listener := range listeners {
-						if listener.expired {
-							listeners[index] = listeners[len(listeners)-1]
-							listeners[len(listeners)-1] = nil
-							e.listeners[event.Name] = listeners[:len(listeners)-1]
-						}
-					}
-				}
 				e.mu.Unlock()
 
 			case <-e.quitChannel:
