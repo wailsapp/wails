@@ -353,7 +353,9 @@ func _webviewDispatchGoCallback(index unsafe.Pointer) {
 	f = fns[uintptr(index)]
 	delete(fns, uintptr(index))
 	m.Unlock()
-	f()
+	if f != nil {
+		f()
+	}
 }
 
 //export _webviewExternalInvokeCallback
@@ -369,5 +371,7 @@ func _webviewExternalInvokeCallback(w unsafe.Pointer, data unsafe.Pointer) {
 		}
 	}
 	m.Unlock()
-	cb(wv, C.GoString((*C.char)(data)))
+	if cb != nil {
+		cb(wv, C.GoString((*C.char)(data)))
+	}
 }
