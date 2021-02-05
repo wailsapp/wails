@@ -14,11 +14,11 @@ type Manager struct {
 	incomingEvents chan *messages.EventData
 	listeners      map[string][]*eventListener
 	log            *logger.CustomLogger
+	mu             sync.Mutex
 	quitChannel    chan struct{}
 	renderer       interfaces.Renderer // Messages will be dispatched to the frontend
 	running        bool
 	wg             sync.WaitGroup
-	mu             sync.Mutex
 }
 
 // NewManager creates a new event manager with a 100 event buffer
@@ -32,19 +32,13 @@ func NewManager() interfaces.EventManager {
 	}
 }
 
-// PushEvent places the given event on to the event queue
-func (e *Manager) PushEvent(eventData *messages.EventData) {
-	e.incomingEvents <- eventData
-}
-
 // eventListener holds a callback function which is invoked when
-// the event listened for is emitted. It has a counter which indicates
-// how the total number of events it is interested in. A value of zero
+// the event being listened for is emitted. It has a counter which
+// indicates the total number of events to allow. A value of zero
 // means it does not expire (default).
 type eventListener struct {
 	callback func(...interface{}) // Function to call with emitted event data
 	counter  uint                 // Expire after counter callbacks. 0 = infinite
-	expired  bool                 // Indicates if the listener has expired
 }
 
 // Creates a new event listener from the given callback function
@@ -73,6 +67,11 @@ func (e *Manager) addEventListener(eventName string, callback func(...interface{
 	return nil
 }
 
+// Emit broadcasts the given event to the subscribed listeners
+func (e *Manager) Emit(eventName string, optionalData ...interface{}) {
+	e.incomingEvents <- &messages.EventData{Name: eventName, Data: optionalData}
+}
+
 // On adds a listener for the given event
 func (e *Manager) On(eventName string, callback func(...interface{})) {
 	// Add a persistent eventListener (counter = 0)
@@ -82,8 +81,7 @@ func (e *Manager) On(eventName string, callback func(...interface{})) {
 	}
 }
 
-// Once adds a listener for the given event that will auto remove
-// after one callback
+// Once adds a listener that will remove after one callback
 func (e *Manager) Once(eventName string, callback func(...interface{})) {
 	// Add a persistent eventListener (counter = 0)
 	err := e.addEventListener(eventName, callback, 1)
@@ -92,19 +90,25 @@ func (e *Manager) Once(eventName string, callback func(...interface{})) {
 	}
 }
 
-// OnMultiple adds a listener for the given event that will trigger
-// at most <counter> times.
+// OnMultiple adds a listener that will trigger at most <counter> times.
 func (e *Manager) OnMultiple(eventName string, callback func(...interface{}), counter uint) {
-	// Add a persistent eventListener (counter = 0)
 	err := e.addEventListener(eventName, callback, counter)
 	if err != nil {
 		e.log.Error(err.Error())
 	}
 }
 
-// Emit broadcasts the given event to the subscribed listeners
-func (e *Manager) Emit(eventName string, optionalData ...interface{}) {
-	e.incomingEvents <- &messages.EventData{Name: eventName, Data: optionalData}
+// PushEvent places the given event on to the event queue
+func (e *Manager) PushEvent(eventData *messages.EventData) {
+	e.incomingEvents <- eventData
+}
+
+// Shutdown is called when exiting the Application
+func (e *Manager) Shutdown() {
+	e.log.Debug("Shutting Down")
+	e.quitChannel <- struct{}{}
+	e.log.Debug("Waiting for main loop to exit")
+	e.wg.Wait()
 }
 
 // Start the event manager's queue processing
@@ -137,31 +141,39 @@ func (e *Manager) Start(renderer interfaces.Renderer) {
 					e.log.Error(err.Error())
 				}
 
-				e.mu.Lock()
-
 				// Iterate listeners
-				for _, listener := range e.listeners[event.Name] {
+				for currentIndex, listener := range e.listeners[event.Name] {
 
-					if !listener.expired {
-						// Call listener, perhaps with data
-						if event.Data == nil {
-							go listener.callback()
-						} else {
-							unpacked := event.Data.([]interface{})
-							go listener.callback(unpacked...)
-						}
+					// Call listener, perhaps with data
+					if event.Data == nil {
+						go listener.callback()
+					} else {
+						unpacked := event.Data.([]interface{})
+						go listener.callback(unpacked...)
 					}
 
-					// Update listen counter
+					// Decrement counter if its a non-persistent listener
 					if listener.counter > 0 {
-						listener.counter = listener.counter - 1
+						// fields about to change; enter Mutex
+						e.mu.Lock()
+						listener.counter--
+
+						// expiration condition == counter WAS 1 but is NOW 0
 						if listener.counter == 0 {
-							listener.expired = true
+							// this listener has just expired; remove it NOW
+							// see fast method: https://yourbasic.org/golang/delete-element-slice/
+							// https://play.golang.org/p/j0YjKUN0NL1
+							lastIndex := len(e.listeners[event.Name]) - 1
+
+							// overwrite expired currentIndex listener with lastIndex listener
+							e.listeners[event.Name][currentIndex] = e.listeners[event.Name][lastIndex]
+
+							// remove the (now cloned) lastIndex listener from slice
+							e.listeners[event.Name] = e.listeners[event.Name][:lastIndex]
 						}
+						e.mu.Unlock()
 					}
 				}
-
-				e.mu.Unlock()
 
 			case <-e.quitChannel:
 				e.running = false
@@ -169,12 +181,4 @@ func (e *Manager) Start(renderer interfaces.Renderer) {
 		}
 		e.wg.Done()
 	}()
-}
-
-// Shutdown is called when exiting the Application
-func (e *Manager) Shutdown() {
-	e.log.Debug("Shutting Down")
-	e.quitChannel <- struct{}{}
-	e.log.Debug("Waiting for main loop to exit")
-	e.wg.Wait()
 }
