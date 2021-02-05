@@ -18,6 +18,7 @@ type Manager struct {
 	log            *logger.CustomLogger
 	renderer       interfaces.Renderer // Messages will be dispatched to the frontend
 	wg             sync.WaitGroup
+	mu             sync.Mutex
 }
 
 // NewManager creates a new event manager with a 100 event buffer
@@ -136,6 +137,8 @@ func (e *Manager) Start(renderer interfaces.Renderer) {
 					e.log.Error(err.Error())
 				}
 
+				e.mu.Lock()
+
 				// Notify Go listeners
 				var listenersToRemove int
 
@@ -162,13 +165,17 @@ func (e *Manager) Start(renderer interfaces.Renderer) {
 
 				// Remove expired listeners in place
 				if listenersToRemove > 0 {
-					listeners := e.listeners[event.Name][:0]
-					for _, listener := range listeners {
-						if !listener.expired {
-							listeners = append(listeners, listener)
+					listeners := e.listeners[event.Name]
+					for index, listener := range listeners {
+						if listener.expired {
+							listeners[index] = listeners[len(listeners)-1]
+							listeners[len(listeners)-1] = nil
+							e.listeners[event.Name] = listeners[:len(listeners)-1]
 						}
 					}
 				}
+				e.mu.Unlock()
+
 			case <-e.quitChannel:
 				e.running = false
 			}
