@@ -286,6 +286,8 @@ func CheckDependencies(logger *Logger) (bool, error) {
 			libraryChecker = XbpsInstalled
 		case Solus:
 			libraryChecker = EOpkgInstalled
+		case Crux:
+			libraryChecker = PrtGetInstalled
 		default:
 			return false, RequestSupportForDistribution(distroInfo)
 		}
