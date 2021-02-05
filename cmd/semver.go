@@ -24,11 +24,19 @@ func NewSemanticVersion(version string) (*SemanticVersion, error) {
 
 // IsRelease returns true if it's a release version
 func (s *SemanticVersion) IsRelease() bool {
+	// Limit to v1
+	if s.Version.Major() != 1 {
+		return false
+	}
 	return len(s.Version.Prerelease()) == 0 && len(s.Version.Metadata()) == 0
 }
 
 // IsPreRelease returns true if it's a prerelease version
 func (s *SemanticVersion) IsPreRelease() bool {
+	// Limit to v1
+	if s.Version.Major() != 1 {
+		return false
+	}
 	return len(s.Version.Prerelease()) > 0
 }
 
