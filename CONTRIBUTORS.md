@@ -42,3 +42,4 @@ Wails is what it is because of the time and effort given by these great people. 
   * [misitebao](https://github.com/misitebao)
   * [Elie Grenon](https://github.com/DrunkenPoney)
   * [SophieAu](https://github.com/SophieAu)
+  * [Alexander Matviychuk](https://github.com/alexmat)
