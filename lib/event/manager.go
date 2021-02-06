@@ -49,6 +49,9 @@ func (e *Manager) addEventListener(eventName string, callback func(...interface{
 		return fmt.Errorf("nil callback bassed to addEventListener")
 	}
 
+	// synchronize with other Goroutines before adding an element
+	e.mu.Lock()
+
 	// Check event has been registered before
 	if e.listeners[eventName] == nil {
 		e.listeners[eventName] = []*eventListener{}
@@ -60,8 +63,9 @@ func (e *Manager) addEventListener(eventName string, callback func(...interface{
 		counter:  counter,
 	}
 
-	// Register listener
+	// Register listener and unlock
 	e.listeners[eventName] = append(e.listeners[eventName], listener)
+	e.mu.Unlock()
 
 	// All good mate
 	return nil
