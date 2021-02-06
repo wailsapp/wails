@@ -13,7 +13,7 @@ const Events = require('./events');
 
 /**
  * Registers an event listener that will be invoked when the user changes the
- * desktop theme (light mode / dark mode). The callback receives a boolean which
+ * desktop theme (light mode / dark mode). The callback receives a booleanean which
  * indicates if dark mode is enabled.
  *
  * @export
@@ -43,12 +43,12 @@ function DarkModeEnabled() {
  * Mac Title Bar Config
  * Check out https://github.com/lukakerr/NSWindowStyles for some examples of these settings
  * @typedef {Object} MacTitleBar
- * @param {bool} TitleBarAppearsTransparent - NSWindow.titleBarAppearsTransparent
- * @param {bool} HideTitle - NSWindow.hideTitle
- * @param {bool} HideTitleBar - NSWindow.hideTitleBar
- * @param {bool} FullSizeContent - Makes the webview portion of the window the full size of the window, even over the titlebar
- * @param {bool} UseToolbar - Set true to add a blank toolbar to the window (makes the title bar larger)
- * @param {bool} HideToolbarSeparator - Set true to remove the separator between the toolbar and the main content area
+ * @param {boolean} TitleBarAppearsTransparent - NSWindow.titleBarAppearsTransparent
+ * @param {boolean} HideTitle - NSWindow.hideTitle
+ * @param {boolean} HideTitleBar - NSWindow.hideTitleBar
+ * @param {boolean} FullSizeContent - Makes the webview portion of the window the full size of the window, even over the titlebar
+ * @param {boolean} UseToolbar - Set true to add a blank toolbar to the window (makes the title bar larger)
+ * @param {boolean} HideToolbarSeparator - Set true to remove the separator between the toolbar and the main content area
  * 
  */
 
@@ -65,8 +65,8 @@ function DarkModeEnabled() {
  * @param {number} MinHeight - Window Minimum Height
  * @param {number} MaxWidth - Window Maximum Width
  * @param {number} MaxHeight - Window Maximum Height
- * @param {bool} StartHidden - Start with window hidden
- * @param {bool} DevTools - Enables the window devtools
+ * @param {boolean} StartHidden - Start with window hidden
+ * @param {boolean} DevTools - Enables the window devtools
  * @param {number} RBGA - The initial window colour. Convert to hex then it'll mean 0xRRGGBBAA
  * @param {MacAppConfig} [Mac] - Configuration when running on Mac
  * @param {LinuxAppConfig} [Linux] - Configuration when running on Linux
@@ -88,11 +88,23 @@ function AppConfig() {
 	return window.wails.System.AppConfig.get();
 }
 
+function LogLevel() {
+	return window.wails.System.LogLevel();
+}
+
+function Platform() {
+	return window.wails.System.Platform();
+}
+
+function AppType() {
+	return window.wails.System.AppType();
+}
+
 module.exports = {
 	OnThemeChange: OnThemeChange,
 	DarkModeEnabled: DarkModeEnabled,
-	LogLevel: window.wails.System.LogLevel,
-	Platform: window.wails.System.Platform,
-	AppType: window.wails.System.AppType,
+	LogLevel: LogLevel,
+	Platform: Platform,
+	AppType: AppType,
 	AppConfig: AppConfig,
 };

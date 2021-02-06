@@ -23,7 +23,7 @@ module.exports = {
 	Browser: Browser,
 	Dialog: Dialog,
 	Events: Events,
-	Init: Init,
+	ready: Init.ready,
 	Log: Log,
 	System: System,
 	Store: Store,

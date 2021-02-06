@@ -9,13 +9,25 @@ The lightweight framework for web-like apps
 */
 /* jshint esversion: 6 */
 
+import { InitBridge } from './bridge';
+
 /**
- * Initialises the Wails runtime
+ * ready will execute the callback when Wails has loaded
+ * and initialised.
  *
  * @param {function} callback
  */
-function Init(callback) {
-	window.wails._.Init(callback);
+function ready(callback) {
+
+	// If window.wails exists, we are ready
+	if( window.wails ) {
+		return callback;
+	}
+
+	// If not we need to setup the bridge
+	InitBridge(callback);
 }
 
-module.exports = Init;
+module.exports = {
+	ready: ready,
+};
