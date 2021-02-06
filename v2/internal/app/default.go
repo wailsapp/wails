@@ -1,4 +1,4 @@
-// +build !desktop,!hybrid,!server
+// +build !desktop,!hybrid,!server,!dev
 
 package app
 

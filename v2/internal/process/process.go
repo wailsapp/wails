@@ -1,6 +1,7 @@
 package process
 
 import (
+	"os"
 	"os/exec"
 
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
@@ -16,11 +17,14 @@ type Process struct {
 
 // NewProcess creates a new process struct
 func NewProcess(logger *clilogger.CLILogger, cmd string, args ...string) *Process {
-	return &Process{
+	result := &Process{
 		logger:      logger,
 		cmd:         exec.Command(cmd, args...),
 		exitChannel: make(chan bool, 1),
 	}
+	result.cmd.Stdout = os.Stdout
+	result.cmd.Stderr = os.Stderr
+	return result
 }
 
 // Start the process

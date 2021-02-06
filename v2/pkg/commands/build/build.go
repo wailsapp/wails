@@ -86,6 +86,8 @@ func Build(options *Options) (string, error) {
 		builder = newHybridBuilder(options)
 	case "server":
 		builder = newServerBuilder(options)
+	case "dev":
+		builder = newDesktopBuilder(options)
 	default:
 		return "", fmt.Errorf("cannot build assets for output type %s", projectData.OutputType)
 	}

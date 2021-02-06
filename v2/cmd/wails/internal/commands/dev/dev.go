@@ -10,9 +10,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/leaanthony/clir"
-	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/process"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
@@ -24,14 +25,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 	command := app.NewSubCommand("dev", "Development mode")
 
-	outputType := "desktop"
-
-	validTargetTypes := slicer.String([]string{"desktop", "hybrid", "server"})
-
-	// Setup target type flag
-	description := "Type of application to develop. Valid types: " + validTargetTypes.Join(",")
-	command.StringFlag("t", description, &outputType)
-
 	// Passthrough ldflags
 	ldflags := ""
 	command.StringFlag("ldflags", "optional ldflags", &ldflags)
@@ -42,14 +35,9 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 	// extensions to trigger rebuilds
 	extensions := "go"
-	command.StringFlag("m", "Extensions to trigger rebuilds (comma separated) eg go,js,css,html", &extensions)
+	command.StringFlag("e", "Extensions to trigger rebuilds (comma separated) eg go,js,css,html", &extensions)
 
 	command.Action(func() error {
-
-		// Validate inputs
-		if !validTargetTypes.Contains(outputType) {
-			return fmt.Errorf("output type '%s' is not valid", outputType)
-		}
 
 		// Create logger
 		logger := clilogger.New(w)
@@ -64,8 +52,9 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		defer watcher.Close()
 
 		var debugBinaryProcess *process.Process = nil
-		var buildFrontend bool = true
+		var buildFrontend bool = false
 		var extensionsThatTriggerARebuild = strings.Split(extensions, ",")
+		println(extensionsThatTriggerARebuild)
 
 		// Setup signal handler
 		quitChannel := make(chan os.Signal, 1)
@@ -75,8 +64,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Do initial build
 		logger.Println("Building application for development...")
-		debugBinaryProcess = restartApp(logger, outputType, ldflags, compilerCommand, buildFrontend, debugBinaryProcess)
-
+		debugBinaryProcess, err = restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess)
+		if err != nil {
+			return err
+		}
 		go debounce(100*time.Millisecond, watcher.Events, debounceQuit, func(event fsnotify.Event) {
 			// logger.Println("event: %+v", event)
 
@@ -98,7 +89,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			// Check for file writes
 			if event.Op&fsnotify.Write == fsnotify.Write {
 
-				// logger.Println("modified file: %s", event.Name)
+				logger.Println("modified file: %s", event.Name)
 				var rebuild bool = false
 
 				// Iterate all file patterns
@@ -119,17 +110,16 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 					return
 				}
 
-				if buildFrontend {
-					logger.Println("Full rebuild triggered: %s updated", event.Name)
-				} else {
-					logger.Println("Partial build triggered: %s updated", event.Name)
-				}
+				logger.Println("Partial build triggered: %s updated", event.Name)
 
 				// Do a rebuild
 
 				// Try and build the app
-				newBinaryProcess := restartApp(logger, outputType, ldflags, compilerCommand, buildFrontend, debugBinaryProcess)
-
+				newBinaryProcess, err := restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess)
+				if err != nil {
+					fmt.Printf("Error during build: %s", err.Error())
+					return
+				}
 				// If we have a new process, save it
 				if newBinaryProcess != nil {
 					debugBinaryProcess = newBinaryProcess
@@ -167,7 +157,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		for quit == false {
 			select {
 			case <-quitChannel:
-				println()
+				println("Caught quit")
 				// Notify debouncer to quit
 				debounceQuit <- true
 				quit = true
@@ -209,13 +199,13 @@ exit:
 	}
 }
 
-func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, compilerCommand string, buildFrontend bool, debugBinaryProcess *process.Process) *process.Process {
+func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, compilerCommand string, debugBinaryProcess *process.Process) (*process.Process, error) {
 
-	appBinary, err := buildApp(logger, outputType, ldflags, compilerCommand, buildFrontend)
+	appBinary, err := buildApp(logger, outputType, ldflags, compilerCommand)
 	println()
 	if err != nil {
-		logger.Println("[ERROR] Build Failed: %s", err.Error())
-		return nil
+		logger.Fatal(err.Error())
+		return nil, errors.Wrap(err, "Build Failed:")
 	}
 	logger.Println("Build new binary: %s", appBinary)
 
@@ -244,10 +234,10 @@ func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, 
 		logger.Fatal("Unable to start application: %s", err.Error())
 	}
 
-	return newProcess
+	return newProcess, nil
 }
 
-func buildApp(logger *clilogger.CLILogger, outputType string, ldflags string, compilerCommand string, buildFrontend bool) (string, error) {
+func buildApp(logger *clilogger.CLILogger, outputType string, ldflags string, compilerCommand string) (string, error) {
 
 	// Create random output file
 	outputFile := fmt.Sprintf("debug-%d", time.Now().Unix())
@@ -262,7 +252,7 @@ func buildApp(logger *clilogger.CLILogger, outputType string, ldflags string, co
 		LDFlags:        ldflags,
 		Compiler:       compilerCommand,
 		OutputFile:     outputFile,
-		IgnoreFrontend: !buildFrontend,
+		IgnoreFrontend: true,
 	}
 
 	return build.Build(buildOptions)
