@@ -65,7 +65,7 @@ export function SetBindings(bindingsMap) {
 				window.backend[packageName][structName][methodName] = function () {
 
 					// No timeout by default
-					var timeout = 0;
+					let timeout = 0;
 
 					// Actual function
 					function dynamic() {
@@ -89,19 +89,3 @@ export function SetBindings(bindingsMap) {
 		});
 	});
 }
-// /**
-//  * Determines if the given identifier is valid Javascript
-//  *
-//  * @param {boolean} name
-//  * @returns
-//  */
-// function isValidIdentifier(name) {
-// 	// Don't xss yourself :-)
-// 	try {
-// 		new Function('var ' + name);
-// 		return true;
-// 	} catch (e) {
-// 		return false;
-// 	}
-// }
-

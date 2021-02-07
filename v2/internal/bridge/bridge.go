@@ -1,32 +1,56 @@
 package bridge
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"sync"
+
+	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
 
 	"github.com/gorilla/websocket"
 	"github.com/wailsapp/wails/v2/internal/logger"
-	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
 )
 
 type Bridge struct {
 	upgrader websocket.Upgrader
 	server   *http.Server
 	myLogger *logger.Logger
+
+	bindings   string
+	dispatcher *messagedispatcher.Dispatcher
+
+	mu       sync.Mutex
+	sessions map[string]*session
+
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 func NewBridge(myLogger *logger.Logger) *Bridge {
 	result := &Bridge{
 		myLogger: myLogger,
 		upgrader: websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
+		sessions: make(map[string]*session),
 	}
 
+	myLogger.SetLogLevel(1)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	result.ctx = ctx
+	result.cancel = cancel
 	result.server = &http.Server{Addr: ":34115"}
 	http.HandleFunc("/bridge", result.wsBridgeHandler)
 	return result
 }
 
-func (b *Bridge) Run(dispatcher *messagedispatcher.Dispatcher, bindingDump string, debug bool) error {
+func (b *Bridge) Run(dispatcher *messagedispatcher.Dispatcher, bindings string, debug bool) error {
+
+	// Ensure we cancel the context when we shutdown
+	defer b.cancel()
+
+	b.bindings = bindings
+	b.dispatcher = dispatcher
 
 	b.myLogger.Info("Bridge mode started.")
 
@@ -44,18 +68,32 @@ func (b *Bridge) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
 		log.Print("upgrade:", err)
 		return
 	}
-	defer c.Close()
-	for {
-		mt, message, err := c.ReadMessage()
-		if err != nil {
-			log.Println("read:", err)
-			break
-		}
-		log.Printf("recv: %s", message)
-		err = c.WriteMessage(mt, message)
-		if err != nil {
-			log.Println("write:", err)
-			break
-		}
+
+	if err != nil {
+		http.Error(w, "Could not open websocket connection", http.StatusBadRequest)
 	}
+	b.myLogger.Info("Connection from frontend accepted [%s].", c.RemoteAddr().String())
+	b.startSession(c)
+
+}
+
+func (b *Bridge) startSession(conn *websocket.Conn) {
+
+	// Create a new session for this connection
+	s := newSession(conn, b.bindings, b.dispatcher, b.myLogger, b.ctx)
+
+	// Setup the close handler
+	conn.SetCloseHandler(func(int, string) error {
+		b.myLogger.Info("Connection dropped [%s].", s.Identifier())
+
+		b.mu.Lock()
+		delete(b.sessions, s.Identifier())
+		b.mu.Unlock()
+		return nil
+	})
+
+	b.mu.Lock()
+	go s.start(len(b.sessions) == 0)
+	b.sessions[s.Identifier()] = s
+	b.mu.Unlock()
 }

@@ -169,7 +169,6 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string, debug 
 		// Yes - Save memory reference and run app, cleaning up afterwards
 		a.saveMemoryReference(unsafe.Pointer(app))
 		C.Run(app, 0, nil)
-		println("Back in ffenestri.go")
 	} else {
 		// Oh no! We couldn't initialise the application
 		a.logger.Fatal("Cannot initialise Application.")

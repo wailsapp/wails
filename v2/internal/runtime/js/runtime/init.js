@@ -21,7 +21,7 @@ function ready(callback) {
 
 	// If window.wails exists, we are ready
 	if( window.wails ) {
-		return callback;
+		return callback();
 	}
 
 	// If not we need to setup the bridge

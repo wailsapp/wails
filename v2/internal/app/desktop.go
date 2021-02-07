@@ -231,7 +231,5 @@ func (a *App) Run() error {
 		return err
 	}
 
-	println("Desktop.Run() finished")
-
 	return nil
 }

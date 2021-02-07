@@ -13,6 +13,7 @@ import { Error } from './log';
 import { SendMessage } from 'ipc';
 
 // Defines a single listener with a maximum number of times to callback
+
 /**
  * The Listener class defines a listener! :-)
  *
@@ -43,7 +44,7 @@ class Listener {
 	}
 }
 
-var eventListeners = {};
+let eventListeners = {};
 
 /**
  * Registers an event listener that will be invoked `maxCallbacks` times before being destroyed
@@ -96,7 +97,7 @@ export function Once(eventName, callback) {
 function notifyListeners(eventData) {
 
 	// Get the event name
-	var eventName = eventData.name;
+	let eventName = eventData.name;
 
 	// Check if we have any listeners for this event
 	if (eventListeners[eventName]) {
@@ -110,7 +111,7 @@ function notifyListeners(eventData) {
 			// Get next listener
 			const listener = eventListeners[eventName][count];
 
-			var data = eventData.data;
+			let data = eventData.data;
 
 			// Do the callback
 			const destroy = listener.Callback(data);
@@ -120,7 +121,7 @@ function notifyListeners(eventData) {
 			}
 		}
 
-		// Update callbacks with new list of listners
+		// Update callbacks with new list of listeners
 		eventListeners[eventName] = newEventListenerList;
 	}
 }

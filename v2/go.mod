@@ -7,6 +7,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/fatih/structtag v1.2.0
 	github.com/fsnotify/fsnotify v1.4.9
+	github.com/gorilla/websocket v1.4.1
 	github.com/imdario/mergo v0.3.11
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/leaanthony/clir v1.0.4

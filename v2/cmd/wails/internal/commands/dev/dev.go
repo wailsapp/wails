@@ -54,7 +54,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		var debugBinaryProcess *process.Process = nil
 		var buildFrontend bool = false
 		var extensionsThatTriggerARebuild = strings.Split(extensions, ",")
-		println(extensionsThatTriggerARebuild)
 
 		// Setup signal handler
 		quitChannel := make(chan os.Signal, 1)

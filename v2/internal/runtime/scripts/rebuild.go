@@ -50,8 +50,16 @@ func main() {
 			log.Fatal(err)
 		}
 
-		wailsJS := fs.RelativePath("../../../internal/runtime/assets/desktop_" + platform + ".js")
+		wailsJS := fs.RelativePath("../assets/desktop_" + platform + ".js")
 		runtimeData, err := ioutil.ReadFile(wailsJS)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Copy this file to bridge directory for embedding
+		bridgeDir := fs.RelativePath("../../bridge/" + platform + ".js")
+		println("Copying", wailsJS, "to", bridgeDir)
+		err = fs.CopyFile(wailsJS, bridgeDir)
 		if err != nil {
 			log.Fatal(err)
 		}
