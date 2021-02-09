@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
+	"golang.org/x/sync/semaphore"
 
 	"github.com/gorilla/websocket"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -37,7 +38,7 @@ type session struct {
 	client *messagedispatcher.DispatchClient
 }
 
-func newSession(conn *websocket.Conn, bindings string, dispatcher *messagedispatcher.Dispatcher, logger *logger.Logger, ctx context.Context) *session {
+func newSession(conn *websocket.Conn, bindings string, dispatcher *messagedispatcher.Dispatcher, logger *logger.Logger, ctx context.Context, dialogSemaphore *semaphore.Weighted) *session {
 	result := &session{
 		conn:      conn,
 		bindings:  bindings,
@@ -47,7 +48,7 @@ func newSession(conn *websocket.Conn, bindings string, dispatcher *messagedispat
 		ctx:       ctx,
 	}
 
-	result.client = dispatcher.RegisterClient(newBridgeClient(result))
+	result.client = dispatcher.RegisterClient(newBridgeClient(result, dialogSemaphore))
 
 	return result
 
@@ -95,7 +96,8 @@ func (s *session) start(firstSession bool) {
 		}
 		if err != nil {
 			s.log.Error("Error reading message: %v", err)
-			continue
+			err = s.conn.Close()
+			return
 		}
 
 		message := string(buffer)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/runtime"
@@ -30,6 +31,9 @@ type Runtime struct {
 
 	//ctx
 	ctx context.Context
+
+	// Startup Hook
+	startupOnce sync.Once
 }
 
 // NewRuntime creates a new runtime subsystem
@@ -75,7 +79,9 @@ func (r *Runtime) Start() error {
 				switch hook {
 				case "startup":
 					if r.startupCallback != nil {
-						go r.startupCallback(r.runtime)
+						r.startupOnce.Do(func() {
+							go r.startupCallback(r.runtime)
+						})
 					} else {
 						r.logger.Warning("no startup callback registered!")
 					}

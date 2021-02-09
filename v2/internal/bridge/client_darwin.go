@@ -1,11 +1,19 @@
 package bridge
 
 import (
+	"fmt"
+	"os/exec"
+	"strconv"
+	"strings"
+
+	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/pkg/options/dialog"
+	"golang.org/x/sync/semaphore"
 )
 
 type BridgeClient struct {
-	session *session
+	session         *session
+	dialogSemaphore *semaphore.Weighted
 }
 
 func (b BridgeClient) Quit() {
@@ -31,7 +39,42 @@ func (b BridgeClient) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID st
 }
 
 func (b BridgeClient) MessageDialog(dialogOptions *dialog.MessageDialog, callbackID string) {
-	b.session.log.Info("MessageDialog unsupported in Bridge mode")
+
+	// Check there aren't other dialogs going on
+	if !b.dialogSemaphore.TryAcquire(1) {
+		return
+	}
+	defer b.dialogSemaphore.Release(1)
+
+	osa, err := exec.LookPath("osascript")
+	if err != nil {
+		b.session.log.Info("MessageDialog unavailable (osascript not found)")
+		return
+	}
+
+	var btns slicer.StringSlicer
+	defaultButton := ""
+	for index, btn := range dialogOptions.Buttons {
+		btns.Add(strconv.Quote(btn))
+		if btn == dialogOptions.DefaultButton {
+			defaultButton = fmt.Sprintf("default button %d", index+1)
+		}
+	}
+	buttons := "{" + btns.Join(",") + "}"
+	script := fmt.Sprintf("display dialog \"%s\" buttons %s %s with title \"%s\"", dialogOptions.Message, buttons, defaultButton, dialogOptions.Title)
+
+	b.session.log.Info("OSASCRIPT: %s", script)
+	go func() {
+		out, err := exec.Command(osa, "-e", script).Output()
+		if err != nil {
+			b.session.log.Error(err.Error())
+			return
+		}
+
+		b.session.log.Info(string(out))
+		buttonPressed := strings.TrimSpace(strings.TrimPrefix(string(out), "button returned:"))
+		b.session.client.DispatchMessage("DM" + callbackID + "|" + buttonPressed)
+	}()
 }
 
 func (b BridgeClient) WindowSetTitle(title string) {
@@ -114,8 +157,9 @@ func (b BridgeClient) UpdateContextMenu(contextMenuJSON string) {
 	b.session.log.Info("UpdateContextMenu unsupported in Bridge mode")
 }
 
-func newBridgeClient(session *session) *BridgeClient {
+func newBridgeClient(session *session, dialogSemaphore *semaphore.Weighted) *BridgeClient {
 	return &BridgeClient{
-		session: session,
+		session:         session,
+		dialogSemaphore: dialogSemaphore,
 	}
 }

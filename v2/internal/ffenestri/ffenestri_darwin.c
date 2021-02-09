@@ -785,7 +785,7 @@ extern void MessageDialog(struct Application *app, char *callbackID, char *type,
 	        buttonPressed = button4;
 	    }
 
-        // Construct callback message. Format "DS<callbackID>|<selected button index>"
+        // Construct callback message. Format "DM<callbackID>|<selected button index>"
         const char *callback = concat("DM", callbackID);
         const char *header = concat(callback, "|");
         const char *responseMessage = concat(header, buttonPressed);

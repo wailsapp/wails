@@ -105,7 +105,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				}
 
 				if !rebuild {
-					logger.Println("Filename change: %s did not match extension list %s", event.Name, extensions)
+					logger.Println("Filename change: %s did not match extension list (%s)", event.Name, extensions)
 					return
 				}
 

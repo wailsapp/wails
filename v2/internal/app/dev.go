@@ -97,6 +97,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		startupCallback:  appoptions.Startup,
 		shutdownCallback: appoptions.Shutdown,
 		bridge:           bridge.NewBridge(myLogger),
+		menuManager:      menuManager,
 	}
 
 	result.options = appoptions
@@ -207,6 +208,9 @@ func (a *App) Run() error {
 	if err != nil {
 		return err
 	}
+
+	// Generate backend.js
+	a.bindings.GenerateBackendJS()
 
 	err = a.bridge.Run(dispatcher, bindingDump, a.debug)
 	a.logger.Trace("Bridge.Run() exited")

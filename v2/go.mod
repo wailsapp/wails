@@ -22,6 +22,7 @@ require (
 	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/xyproto/xpm v1.2.1
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
+	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
 	golang.org/x/sys v0.0.0-20200724161237-0e2f3a69832c
 	golang.org/x/tools v0.0.0-20200902012652-d1954cc86c82
 	nhooyr.io/websocket v1.8.6

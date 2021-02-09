@@ -27,7 +27,7 @@ func dialogMessageParser(message string) (*parsedMessage, error) {
 		if idx < 0 {
 			return nil, fmt.Errorf("Invalid dialog response message format: %+v", message)
 		}
-		callbackID := message[:idx+1]
+		callbackID := message[:idx]
 		payloadData := message[idx+1:]
 
 		switch dialogType {

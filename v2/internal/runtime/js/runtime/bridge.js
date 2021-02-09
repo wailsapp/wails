@@ -10,6 +10,7 @@ The lightweight framework for web-like apps
 /* jshint esversion: 6 */
 
 function init() {
+
 	// Bridge object
 	window.wailsbridge = {
 		reconnectOverlay: null,
@@ -32,6 +33,15 @@ function init() {
 			);
 		}
 	};
+
+	window.onbeforeunload = function() {
+		if( window.wails.websocket ) {
+			window.wails.websocket.onclose = function () { };
+			window.wails.websocket.close();
+			window.wails.websocket = null;
+		}
+	}
+
 }
 
 function setupIPCBridge() {
@@ -172,6 +182,10 @@ function startBridge() {
 			message = message.data.slice(1)
 			addScript(message);
 			window.wailsbridge.log('Loaded Wails Runtime');
+
+			// We need to now send a message to the backend telling it
+			// we have loaded (System Start)
+			window.webkit.messageHandlers.external.postMessage("SS");
 
 			// Now wails runtime is loaded, wails for the ready event
 			// and callback to the main app
