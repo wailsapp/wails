@@ -40,12 +40,6 @@ func (b BridgeClient) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID st
 
 func (b BridgeClient) MessageDialog(dialogOptions *dialog.MessageDialog, callbackID string) {
 
-	// Check there aren't other dialogs going on
-	if !b.dialogSemaphore.TryAcquire(1) {
-		return
-	}
-	defer b.dialogSemaphore.Release(1)
-
 	osa, err := exec.LookPath("osascript")
 	if err != nil {
 		b.session.log.Info("MessageDialog unavailable (osascript not found)")
@@ -157,9 +151,8 @@ func (b BridgeClient) UpdateContextMenu(contextMenuJSON string) {
 	b.session.log.Info("UpdateContextMenu unsupported in Bridge mode")
 }
 
-func newBridgeClient(session *session, dialogSemaphore *semaphore.Weighted) *BridgeClient {
+func newBridgeClient(session *session) *BridgeClient {
 	return &BridgeClient{
-		session:         session,
-		dialogSemaphore: dialogSemaphore,
+		session: session,
 	}
 }

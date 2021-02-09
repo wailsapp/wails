@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
-	"golang.org/x/sync/semaphore"
 
 	"github.com/gorilla/websocket"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -38,7 +37,7 @@ type session struct {
 	client *messagedispatcher.DispatchClient
 }
 
-func newSession(conn *websocket.Conn, bindings string, dispatcher *messagedispatcher.Dispatcher, logger *logger.Logger, ctx context.Context, dialogSemaphore *semaphore.Weighted) *session {
+func newSession(conn *websocket.Conn, bindings string, dispatcher *messagedispatcher.Dispatcher, logger *logger.Logger, ctx context.Context) *session {
 	result := &session{
 		conn:      conn,
 		bindings:  bindings,
@@ -48,7 +47,7 @@ func newSession(conn *websocket.Conn, bindings string, dispatcher *messagedispat
 		ctx:       ctx,
 	}
 
-	result.client = dispatcher.RegisterClient(newBridgeClient(result, dialogSemaphore))
+	result.client = dispatcher.RegisterClient(newBridgeClient(result))
 
 	return result
 

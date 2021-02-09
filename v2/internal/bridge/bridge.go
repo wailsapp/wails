@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"sync"
 
-	"golang.org/x/sync/semaphore"
-
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
 
 	"github.com/gorilla/websocket"
@@ -27,16 +25,13 @@ type Bridge struct {
 
 	ctx    context.Context
 	cancel context.CancelFunc
-
-	dialogSemaphore *semaphore.Weighted
 }
 
 func NewBridge(myLogger *logger.Logger) *Bridge {
 	result := &Bridge{
-		myLogger:        myLogger,
-		upgrader:        websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
-		sessions:        make(map[string]*session),
-		dialogSemaphore: semaphore.NewWeighted(1),
+		myLogger: myLogger,
+		upgrader: websocket.Upgrader{CheckOrigin: func(r *http.Request) bool { return true }},
+		sessions: make(map[string]*session),
 	}
 
 	myLogger.SetLogLevel(1)
@@ -85,7 +80,7 @@ func (b *Bridge) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
 func (b *Bridge) startSession(conn *websocket.Conn) {
 
 	// Create a new session for this connection
-	s := newSession(conn, b.bindings, b.dispatcher, b.myLogger, b.ctx, b.dialogSemaphore)
+	s := newSession(conn, b.bindings, b.dispatcher, b.myLogger, b.ctx)
 
 	// Setup the close handler
 	conn.SetCloseHandler(func(int, string) error {
