@@ -9,7 +9,7 @@ The lightweight framework for web-like apps
 */
 /* jshint esversion: 6 */
 
-import { InitBridge } from './bridge';
+import bridge from './bridge';
 
 /**
  * ready will execute the callback when Wails has loaded
@@ -25,7 +25,7 @@ function ready(callback) {
 	}
 
 	// If not we need to setup the bridge
-	InitBridge(callback);
+	bridge.InitBridge(callback);
 }
 
 module.exports = {

@@ -1,0 +1,39 @@
+
+import { writable } from 'svelte/store';
+
+/** Overlay */
+export const overlayVisible = writable(false);
+
+export function showOverlay() {
+    overlayVisible.set(true);
+}
+export function hideOverlay() {
+    overlayVisible.set(false);
+}
+
+/** Menubar **/
+export const menuVisible = writable(true);
+
+export function showMenuBar() {
+    menuVisible.set(true);
+}
+export function hideMenuBar() {
+    menuVisible.set(false);
+}
+
+/** Trays **/
+
+export const trays = writable([]);
+export function setTray(tray) {
+    trays.update((current) => {
+        // Remove existing if it exists, else add
+        const index = current.findIndex(item => item.ID === tray.ID);
+        if ( index === -1 ) {
+            current.push(tray);
+        } else {
+            current[index] = tray;
+        }
+        return current;
+    })
+}
+

@@ -140,11 +140,11 @@ func (b BridgeClient) SetApplicationMenu(menuJSON string) {
 }
 
 func (b BridgeClient) SetTrayMenu(trayMenuJSON string) {
-	b.session.log.Info("SetTrayMenu unsupported in Bridge mode")
+	b.session.sendMessage("TS" + trayMenuJSON)
 }
 
-func (b BridgeClient) UpdateTrayMenuLabel(JSON string) {
-	b.session.log.Info("UpdateTrayMenuLabel unsupported in Bridge mode")
+func (b BridgeClient) UpdateTrayMenuLabel(trayMenuJSON string) {
+	b.session.sendMessage("TS" + trayMenuJSON)
 }
 
 func (b BridgeClient) UpdateContextMenu(contextMenuJSON string) {
