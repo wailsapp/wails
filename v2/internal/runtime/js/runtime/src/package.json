@@ -1,0 +1,19 @@
+{
+  "name": "bridge",
+  "version": "1.0.0",
+  "description": "Wails bridge",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx rollup -c"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-node-resolve": "^11.1.1",
+    "rollup": "^2.38.5",
+    "rollup-plugin-svelte": "^7.1.0",
+    "svelte": "^3.32.2"
+  }
+}
