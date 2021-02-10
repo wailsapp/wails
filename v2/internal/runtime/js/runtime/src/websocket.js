@@ -50,6 +50,11 @@ function setupIPCBridge() {
                 postMessage: (message) => {
                     websocket.send(message);
                 }
+            },
+            windowDrag: {
+                postMessage: () => {
+                    // Ignore window drag events
+                }
             }
         }
     };
