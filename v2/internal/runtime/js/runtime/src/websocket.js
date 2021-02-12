@@ -10,20 +10,15 @@ The lightweight framework for web-like apps
 /* jshint esversion: 6 */
 
 
-import {setTray, hideOverlay, showOverlay} from "./store";
+import {setTray, hideOverlay, showOverlay, updateTrayLabel} from "./store";
+import {log} from "./log";
 
 let websocket = null;
 let callback = null;
 let connectTimer;
 
-function log(message) {
-    // eslint-disable-next-line
-    console.log(
-        '%c wails bridge %c ' + message + ' ',
-        'background: #aa0000; color: #fff; border-radius: 3px 0px 0px 3px; padding: 1px; font-size: 0.7rem',
-        'background: #009900; color: #fff; border-radius: 0px 3px 3px 0px; padding: 1px; font-size: 0.7rem'
-    );
-}
+let firstConnect = true;
+
 
 export function StartWebsocket(userCallback) {
 
@@ -62,8 +57,26 @@ function setupIPCBridge() {
 
 // Handles incoming websocket connections
 function handleConnect() {
+    if( firstConnect ) return initialConnection();
+    return reconnect();
+}
+
+// Handles initial websocket connection
+function initialConnection() {
     log('Connected to backend');
     setupIPCBridge();
+    hideOverlay();
+    clearInterval(connectTimer);
+    websocket.onclose = handleDisconnect;
+    websocket.onmessage = handleMessage;
+    firstConnect = false;
+
+    // TODO: Ask to be bootstrapped
+}
+
+// Handles reconnect
+function reconnect() {
+    log('Reconnected to backend');
     hideOverlay();
     clearInterval(connectTimer);
     websocket.onclose = handleDisconnect;
@@ -155,6 +168,12 @@ function handleMessage(message) {
                     const trayJSON = trayMessage.slice(1);
                     let tray = JSON.parse(trayJSON)
                     setTray(tray)
+                    break
+                case 'U':
+                    // Update label
+                    const updateTrayLabelJSON = trayMessage.slice(1);
+                    let trayLabelData = JSON.parse(updateTrayLabelJSON)
+                    updateTrayLabel(trayLabelData)
                     break
                 default:
                     log('Unknown tray message: ' + message.data);
