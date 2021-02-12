@@ -17,9 +17,6 @@ let websocket = null;
 let callback = null;
 let connectTimer;
 
-let firstConnect = true;
-
-
 export function StartWebsocket(userCallback) {
 
     callback = userCallback;
@@ -57,26 +54,8 @@ function setupIPCBridge() {
 
 // Handles incoming websocket connections
 function handleConnect() {
-    if( firstConnect ) return initialConnection();
-    return reconnect();
-}
-
-// Handles initial websocket connection
-function initialConnection() {
     log('Connected to backend');
     setupIPCBridge();
-    hideOverlay();
-    clearInterval(connectTimer);
-    websocket.onclose = handleDisconnect;
-    websocket.onmessage = handleMessage;
-    firstConnect = false;
-
-    // TODO: Ask to be bootstrapped
-}
-
-// Handles reconnect
-function reconnect() {
-    log('Reconnected to backend');
     hideOverlay();
     clearInterval(connectTimer);
     websocket.onclose = handleDisconnect;
