@@ -1,19 +1,20 @@
 package bridge
 
 import (
-	"fmt"
-	"os/exec"
-	"strconv"
-	"strings"
-
-	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/pkg/options/dialog"
-	"golang.org/x/sync/semaphore"
 )
 
 type BridgeClient struct {
-	session         *session
-	dialogSemaphore *semaphore.Weighted
+	session *session
+
+	// Tray menu cache to send to reconnecting clients
+	messageCache chan string
+}
+
+func NewBridgeClient() *BridgeClient {
+	return &BridgeClient{
+		messageCache: make(chan string, 100),
+	}
 }
 
 func (b BridgeClient) Quit() {
@@ -31,44 +32,15 @@ func (b BridgeClient) CallResult(message string) {
 }
 
 func (b BridgeClient) OpenDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
-	b.session.log.Info("OpenDialog unsupported in Bridge mode")
+	// Handled by dialog_client
 }
 
 func (b BridgeClient) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string) {
-	b.session.log.Info("SaveDialog unsupported in Bridge mode")
+	// Handled by dialog_client
 }
 
 func (b BridgeClient) MessageDialog(dialogOptions *dialog.MessageDialog, callbackID string) {
-
-	osa, err := exec.LookPath("osascript")
-	if err != nil {
-		b.session.log.Info("MessageDialog unavailable (osascript not found)")
-		return
-	}
-
-	var btns slicer.StringSlicer
-	defaultButton := ""
-	for index, btn := range dialogOptions.Buttons {
-		btns.Add(strconv.Quote(btn))
-		if btn == dialogOptions.DefaultButton {
-			defaultButton = fmt.Sprintf("default button %d", index+1)
-		}
-	}
-	buttons := "{" + btns.Join(",") + "}"
-	script := fmt.Sprintf("display dialog \"%s\" buttons %s %s with title \"%s\"", dialogOptions.Message, buttons, defaultButton, dialogOptions.Title)
-
-	b.session.log.Info("OSASCRIPT: %s", script)
-	go func() {
-		out, err := exec.Command(osa, "-e", script).Output()
-		if err != nil {
-			b.session.log.Error(err.Error())
-			return
-		}
-
-		b.session.log.Info(string(out))
-		buttonPressed := strings.TrimSpace(strings.TrimPrefix(string(out), "button returned:"))
-		b.session.client.DispatchMessage("DM" + callbackID + "|" + buttonPressed)
-	}()
+	// Handled by dialog_client
 }
 
 func (b BridgeClient) WindowSetTitle(title string) {
@@ -144,7 +116,7 @@ func (b BridgeClient) SetTrayMenu(trayMenuJSON string) {
 }
 
 func (b BridgeClient) UpdateTrayMenuLabel(trayMenuJSON string) {
-	b.session.sendMessage("TS" + trayMenuJSON)
+	b.session.sendMessage("TU" + trayMenuJSON)
 }
 
 func (b BridgeClient) UpdateContextMenu(contextMenuJSON string) {

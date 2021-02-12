@@ -25,6 +25,9 @@ type Bridge struct {
 
 	ctx    context.Context
 	cancel context.CancelFunc
+
+	// Dialog client
+	dialog *messagedispatcher.DispatchClient
 }
 
 func NewBridge(myLogger *logger.Logger) *Bridge {
@@ -51,6 +54,11 @@ func (b *Bridge) Run(dispatcher *messagedispatcher.Dispatcher, bindings string, 
 
 	b.bindings = bindings
 	b.dispatcher = dispatcher
+
+	// Setup dialog handler
+	dialogClient := NewDialogClient(b.myLogger)
+	b.dialog = dispatcher.RegisterClient(dialogClient)
+	dialogClient.dispatcher = b.dialog
 
 	b.myLogger.Info("Bridge mode started.")
 
