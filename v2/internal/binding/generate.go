@@ -53,13 +53,33 @@ func (b *Bindings) GenerateBackendJS() {
 const backend = {`)
 	output.WriteString("\n")
 
-	for packageName, packages := range store {
+	var sortedPackageNames slicer.StringSlicer
+	for packageName := range store {
+		sortedPackageNames.Add(packageName)
+	}
+	sortedPackageNames.Sort()
+	for _, packageName := range sortedPackageNames.AsSlice() {
+		packages := store[packageName]
 		output.WriteString(fmt.Sprintf("  \"%s\": {", packageName))
 		output.WriteString("\n")
-		for structName, structs := range packages {
+		var sortedStructNames slicer.StringSlicer
+		for structName := range packages {
+			sortedStructNames.Add(structName)
+		}
+		sortedStructNames.Sort()
+		for _, structName := range sortedStructNames.AsSlice() {
+			structs := packages[structName]
 			output.WriteString(fmt.Sprintf("    \"%s\": {", structName))
 			output.WriteString("\n")
-			for methodName, methodDetails := range structs {
+
+			var sortedMethodNames slicer.StringSlicer
+			for methodName := range structs {
+				sortedMethodNames.Add(methodName)
+			}
+			sortedMethodNames.Sort()
+
+			for _, methodName := range sortedMethodNames.AsSlice() {
+				methodDetails := structs[methodName]
 				output.WriteString("      /**\n")
 				output.WriteString("       * " + methodName + "\n")
 				var args slicer.StringSlicer
