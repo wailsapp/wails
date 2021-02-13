@@ -29,7 +29,7 @@ export default [
             }),
             resolve({browser: true}), // so Rollup can find `ms`
             // commonjs() // so Rollup can convert `ms` to an ES module
-            terser(),
+            // terser(),
         ]
     },
 

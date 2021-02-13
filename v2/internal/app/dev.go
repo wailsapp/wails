@@ -212,7 +212,7 @@ func (a *App) Run() error {
 	// Generate backend.js
 	a.bindings.GenerateBackendJS()
 
-	err = a.bridge.Run(dispatcher, bindingDump, a.debug)
+	err = a.bridge.Run(dispatcher, a.menuManager, bindingDump, a.debug)
 	a.logger.Trace("Bridge.Run() exited")
 	if err != nil {
 		return err

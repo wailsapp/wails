@@ -26,7 +26,6 @@ export function hideMenuBar() {
 
 export const trays = writable([]);
 export function setTray(tray) {
-    log("Set Tray:" + JSON.stringify(tray))
     trays.update((current) => {
         // Remove existing if it exists, else add
         const index = current.findIndex(item => item.ID === tray.ID);
@@ -39,7 +38,6 @@ export function setTray(tray) {
     })
 }
 export function updateTrayLabel(tray) {
-    log("Update Tray Label:" + JSON.stringify(tray))
     trays.update((current) => {
         // Remove existing if it exists, else add
         const index = current.findIndex(item => item.ID === tray.ID);
@@ -50,3 +48,5 @@ export function updateTrayLabel(tray) {
         return current;
     })
 }
+
+export let selectedMenu = writable(null);

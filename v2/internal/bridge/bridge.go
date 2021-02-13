@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/wailsapp/wails/v2/internal/menumanager"
+
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
 
 	"github.com/gorilla/websocket"
@@ -28,6 +30,9 @@ type Bridge struct {
 
 	// Dialog client
 	dialog *messagedispatcher.DispatchClient
+
+	// Menus
+	menumanager *menumanager.Manager
 }
 
 func NewBridge(myLogger *logger.Logger) *Bridge {
@@ -47,13 +52,14 @@ func NewBridge(myLogger *logger.Logger) *Bridge {
 	return result
 }
 
-func (b *Bridge) Run(dispatcher *messagedispatcher.Dispatcher, bindings string, debug bool) error {
+func (b *Bridge) Run(dispatcher *messagedispatcher.Dispatcher, menumanager *menumanager.Manager, bindings string, debug bool) error {
 
 	// Ensure we cancel the context when we shutdown
 	defer b.cancel()
 
 	b.bindings = bindings
 	b.dispatcher = dispatcher
+	b.menumanager = menumanager
 
 	// Setup dialog handler
 	dialogClient := NewDialogClient(b.myLogger)
@@ -88,7 +94,7 @@ func (b *Bridge) wsBridgeHandler(w http.ResponseWriter, r *http.Request) {
 func (b *Bridge) startSession(conn *websocket.Conn) {
 
 	// Create a new session for this connection
-	s := newSession(conn, b.bindings, b.dispatcher, b.myLogger, b.ctx)
+	s := newSession(conn, b.menumanager, b.bindings, b.dispatcher, b.myLogger, b.ctx)
 
 	// Setup the close handler
 	conn.SetCloseHandler(func(int, string) error {

@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/wailsapp/wails/v2/internal/menumanager"
+
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
 
 	"github.com/gorilla/websocket"
@@ -35,16 +37,20 @@ type session struct {
 
 	// client
 	client *messagedispatcher.DispatchClient
+
+	// Menus
+	menumanager *menumanager.Manager
 }
 
-func newSession(conn *websocket.Conn, bindings string, dispatcher *messagedispatcher.Dispatcher, logger *logger.Logger, ctx context.Context) *session {
+func newSession(conn *websocket.Conn, menumanager *menumanager.Manager, bindings string, dispatcher *messagedispatcher.Dispatcher, logger *logger.Logger, ctx context.Context) *session {
 	result := &session{
-		conn:      conn,
-		bindings:  bindings,
-		log:       logger,
-		shutdown:  make(chan bool),
-		writeChan: make(chan []byte, 100),
-		ctx:       ctx,
+		conn:        conn,
+		bindings:    bindings,
+		log:         logger,
+		shutdown:    make(chan bool),
+		writeChan:   make(chan []byte, 100),
+		ctx:         ctx,
+		menumanager: menumanager,
 	}
 
 	result.client = dispatcher.RegisterClient(newBridgeClient(result))
@@ -87,6 +93,16 @@ func (s *session) start(firstSession bool) {
 	bootstrapMessage := bindingsMessage + wailsRuntime
 
 	s.sendMessage("b" + bootstrapMessage)
+
+	// Send menus
+	traymenus, err := s.menumanager.GetTrayMenus()
+	if err != nil {
+		s.log.Error(err.Error())
+	}
+
+	for _, trayMenu := range traymenus {
+		s.sendMessage("TS" + trayMenu)
+	}
 
 	for {
 		messageType, buffer, err := s.conn.ReadMessage()
