@@ -2,6 +2,7 @@ package menumanager
 
 import (
 	"encoding/json"
+
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 )
@@ -34,7 +35,8 @@ type ProcessedMenuItem struct {
 	FontName string `json:",omitempty"`
 
 	// Image - base64 image data
-	Image string `json:",omitempty"`
+	Image            string `json:",omitempty"`
+	MacTemplateImage bool   `json:", omitempty"`
 
 	// Tooltip
 	Tooltip string `json:",omitempty"`
@@ -44,20 +46,21 @@ func NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *Pr
 
 	ID := menuItemMap.menuItemToIDMap[menuItem]
 	result := &ProcessedMenuItem{
-		ID:          ID,
-		Label:       menuItem.Label,
-		Role:        menuItem.Role,
-		Accelerator: menuItem.Accelerator,
-		Type:        menuItem.Type,
-		Disabled:    menuItem.Disabled,
-		Hidden:      menuItem.Hidden,
-		Checked:     menuItem.Checked,
-		SubMenu:     nil,
-		RGBA:        menuItem.RGBA,
-		FontSize:    menuItem.FontSize,
-		FontName:    menuItem.FontName,
-		Image:       menuItem.Image,
-		Tooltip:     menuItem.Tooltip,
+		ID:               ID,
+		Label:            menuItem.Label,
+		Role:             menuItem.Role,
+		Accelerator:      menuItem.Accelerator,
+		Type:             menuItem.Type,
+		Disabled:         menuItem.Disabled,
+		Hidden:           menuItem.Hidden,
+		Checked:          menuItem.Checked,
+		SubMenu:          nil,
+		RGBA:             menuItem.RGBA,
+		FontSize:         menuItem.FontSize,
+		FontName:         menuItem.FontName,
+		Image:            menuItem.Image,
+		MacTemplateImage: menuItem.MacTemplateImage,
+		Tooltip:          menuItem.Tooltip,
 	}
 
 	if menuItem.SubMenu != nil {

@@ -1,8 +1,9 @@
 package menu
 
 import (
-	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 	"sync"
+
+	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 )
 
 // MenuItem represents a menuitem contained in a menu
@@ -37,6 +38,9 @@ type MenuItem struct {
 
 	// Image - base64 image data
 	Image string
+
+	// MacTemplateImage indicates that on a mac, this image is a template image
+	MacTemplateImage bool
 
 	// Tooltip
 	Tooltip string

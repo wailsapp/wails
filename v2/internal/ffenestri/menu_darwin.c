@@ -575,7 +575,7 @@ id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const c
     return item;
 }
 
-id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image, const char* fontName, int fontSize, const char* RGBA) {
+id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image, const char* fontName, int fontSize, const char* RGBA, bool templateImage) {
     id item = ALLOC("NSMenuItem");
 
     // Create a MenuItemCallbackData
@@ -598,6 +598,9 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
         id imageData = msg(data, s("initWithBase64EncodedString:options:"), str(image), 0);
         id nsimage = ALLOC("NSImage");
         msg(nsimage, s("initWithData:"), imageData);
+        if( templateImage ) {
+            msg(nsimage, s("template"), YES);
+        }
         msg(item, s("setImage:"), nsimage);
     }
 
@@ -740,6 +743,9 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     const char *image = getJSONString(item, "Image");
     const char *fontName = getJSONString(item, "FontName");
     const char *RGBA = getJSONString(item, "RGBA");
+    bool templateImage = false;
+    getJSONBool(item, "MacTemplateImage", &templateImage);
+
     int fontSize = 12;
     getJSONInt(item, "FontSize", &fontSize);
 
@@ -775,7 +781,7 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     if( type != NULL ) {
 
         if( STREQ(type->string_, "Text")) {
-            processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers, tooltip, image, fontName, fontSize, RGBA);
+            processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers, tooltip, image, fontName, fontSize, RGBA, templateImage);
         }
         else if ( STREQ(type->string_, "Separator")) {
             addSeparator(parentMenu);
