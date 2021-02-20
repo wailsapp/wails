@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
+
+	"github.com/wailsapp/wails/v2/internal/colour"
 
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/update"
 
@@ -19,11 +22,17 @@ func fatal(message string) {
 	os.Exit(1)
 }
 
+func banner(_ *clir.Cli) string {
+	return fmt.Sprintf("%s %s - Go/HTML Application Framework", colour.Yellow("Wails"), colour.DarkRed(version))
+}
+
 func main() {
 
 	var err error
 
 	app := clir.NewCli("Wails", "Go/HTML Application Framework", version)
+
+	app.SetBannerFunction(banner)
 
 	build.AddBuildSubcommand(app, os.Stdout)
 	err = initialise.AddSubcommand(app, os.Stdout)
