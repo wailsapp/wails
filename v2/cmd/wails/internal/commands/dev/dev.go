@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/wailsapp/wails/v2/internal/colour"
+
 	"github.com/pkg/errors"
 
 	"github.com/fsnotify/fsnotify"
@@ -19,6 +21,16 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/commands/build"
 )
+
+func LogGreen(message string, args ...interface{}) {
+	text := fmt.Sprintf(message, args...)
+	println(colour.Green(text))
+}
+
+func LogDarkYellow(message string, args ...interface{}) {
+	text := fmt.Sprintf(message, args...)
+	println(colour.DarkYellow(text))
+}
 
 // AddSubcommand adds the `dev` command for the Wails application
 func AddSubcommand(app *clir.Cli, w io.Writer) error {
@@ -79,7 +91,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 						if err != nil {
 							logger.Fatal("%s", err.Error())
 						}
-						logger.Println("Watching directory: %s", event.Name)
+						LogGreen("[Change] Watching new directory: %s", event.Name)
 					}
 				}
 				return
@@ -88,7 +100,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			// Check for file writes
 			if event.Op&fsnotify.Write == fsnotify.Write {
 
-				logger.Println("modified file: %s", event.Name)
 				var rebuild bool = false
 
 				// Iterate all file patterns
@@ -105,11 +116,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				}
 
 				if !rebuild {
-					logger.Println("Filename change: %s did not match extension list (%s)", event.Name, extensions)
+					LogDarkYellow("Filename change: %s did not match extension list (%s)", event.Name, extensions)
 					return
 				}
 
-				logger.Println("Partial build triggered: %s updated", event.Name)
+				LogGreen("[Rebuild] %s updated", event.Name)
 
 				// Do a rebuild
 
@@ -139,12 +150,13 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
+		LogGreen("Watching (sub)/directory: %s", dir)
+
 		// Setup a watcher for non-node_modules directories
 		dirs.Each(func(dir string) {
 			if strings.Contains(dir, "node_modules") {
 				return
 			}
-			logger.Println("Watching directory: %s", dir)
 			err = watcher.Add(dir)
 			if err != nil {
 				logger.Fatal(err.Error())
@@ -156,7 +168,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		for quit == false {
 			select {
 			case <-quitChannel:
-				println("Caught quit")
+				LogGreen("Caught quit")
 				// Notify debouncer to quit
 				debounceQuit <- true
 				quit = true
@@ -171,7 +183,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			}
 		}
 
-		logger.Println("Development mode exited")
+		LogGreen("Development mode exited")
 
 		return nil
 	})
@@ -206,7 +218,6 @@ func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, 
 		logger.Fatal(err.Error())
 		return nil, errors.Wrap(err, "Build Failed:")
 	}
-	logger.Println("Build new binary: %s", appBinary)
 
 	// Kill existing binary if need be
 	if debugBinaryProcess != nil {
