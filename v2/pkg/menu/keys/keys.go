@@ -1,5 +1,10 @@
 package keys
 
+import (
+	"fmt"
+	"strings"
+)
+
 // Modifier is actually a string
 type Modifier string
 
@@ -16,6 +21,23 @@ const (
 	ControlKey Modifier = "Control"
 )
 
+var modifierMap = map[string]Modifier{
+	"cmdorctrl":   CmdOrCtrlKey,
+	"optionoralt": OptionOrAltKey,
+	"shift":       ShiftKey,
+	"super":       SuperKey,
+	"ctrl":        ControlKey,
+}
+
+func parseModifier(text string) (*Modifier, error) {
+	result, valid := modifierMap[text]
+	if !valid {
+		return nil, fmt.Errorf("'%s' is not a valid modifier", text)
+	}
+
+	return &result, nil
+}
+
 // Accelerator holds the keyboard shortcut for a menu item
 type Accelerator struct {
 	Key       string
@@ -25,14 +47,14 @@ type Accelerator struct {
 // Key creates a standard key Accelerator
 func Key(key string) *Accelerator {
 	return &Accelerator{
-		Key: key,
+		Key: strings.ToLower(key),
 	}
 }
 
 // CmdOrCtrl creates a 'CmdOrCtrl' Accelerator
 func CmdOrCtrl(key string) *Accelerator {
 	return &Accelerator{
-		Key:       key,
+		Key:       strings.ToLower(key),
 		Modifiers: []Modifier{CmdOrCtrlKey},
 	}
 }
@@ -40,7 +62,7 @@ func CmdOrCtrl(key string) *Accelerator {
 // OptionOrAlt creates a 'OptionOrAlt' Accelerator
 func OptionOrAlt(key string) *Accelerator {
 	return &Accelerator{
-		Key:       key,
+		Key:       strings.ToLower(key),
 		Modifiers: []Modifier{OptionOrAltKey},
 	}
 }
@@ -48,7 +70,7 @@ func OptionOrAlt(key string) *Accelerator {
 // Shift creates a 'Shift' Accelerator
 func Shift(key string) *Accelerator {
 	return &Accelerator{
-		Key:       key,
+		Key:       strings.ToLower(key),
 		Modifiers: []Modifier{ShiftKey},
 	}
 }
@@ -56,7 +78,7 @@ func Shift(key string) *Accelerator {
 // Control creates a 'Control' Accelerator
 func Control(key string) *Accelerator {
 	return &Accelerator{
-		Key:       key,
+		Key:       strings.ToLower(key),
 		Modifiers: []Modifier{ControlKey},
 	}
 }
@@ -64,7 +86,7 @@ func Control(key string) *Accelerator {
 // Super creates a 'Super' Accelerator
 func Super(key string) *Accelerator {
 	return &Accelerator{
-		Key:       key,
+		Key:       strings.ToLower(key),
 		Modifiers: []Modifier{SuperKey},
 	}
 }

@@ -180,151 +180,151 @@ id processAcceleratorKey(const char *key) {
         return str("");
     }
 
-    if( STREQ(key, "Backspace") ) {
+    if( STREQ(key, "backspace") ) {
         return strunicode(0x0008);
     }
-    if( STREQ(key, "Tab") ) {
+    if( STREQ(key, "tab") ) {
         return strunicode(0x0009);
     }
-    if( STREQ(key, "Return") ) {
+    if( STREQ(key, "return") ) {
         return strunicode(0x000d);
     }
-    if( STREQ(key, "Escape") ) {
+    if( STREQ(key, "escape") ) {
         return strunicode(0x001b);
     }
-    if( STREQ(key, "Left") ) {
+    if( STREQ(key, "left") ) {
         return strunicode(0x001c);
     }
-    if( STREQ(key, "Right") ) {
+    if( STREQ(key, "right") ) {
         return strunicode(0x001d);
     }
-    if( STREQ(key, "Up") ) {
+    if( STREQ(key, "up") ) {
         return strunicode(0x001e);
     }
-    if( STREQ(key, "Down") ) {
+    if( STREQ(key, "down") ) {
         return strunicode(0x001f);
     }
-    if( STREQ(key, "Space") ) {
+    if( STREQ(key, "space") ) {
         return strunicode(0x0020);
     }
-    if( STREQ(key, "Delete") ) {
+    if( STREQ(key, "delete") ) {
         return strunicode(0x007f);
     }
-    if( STREQ(key, "Home") ) {
+    if( STREQ(key, "home") ) {
         return strunicode(0x2196);
     }
-    if( STREQ(key, "End") ) {
+    if( STREQ(key, "end") ) {
         return strunicode(0x2198);
     }
-    if( STREQ(key, "Page Up") ) {
+    if( STREQ(key, "page up") ) {
         return strunicode(0x21de);
     }
-    if( STREQ(key, "Page Down") ) {
+    if( STREQ(key, "page down") ) {
         return strunicode(0x21df);
     }
-    if( STREQ(key, "F1") ) {
+    if( STREQ(key, "f1") ) {
         return strunicode(0xf704);
     }
-    if( STREQ(key, "F2") ) {
+    if( STREQ(key, "f2") ) {
         return strunicode(0xf705);
     }
-    if( STREQ(key, "F3") ) {
+    if( STREQ(key, "f3") ) {
         return strunicode(0xf706);
     }
-    if( STREQ(key, "F4") ) {
+    if( STREQ(key, "f4") ) {
         return strunicode(0xf707);
     }
-    if( STREQ(key, "F5") ) {
+    if( STREQ(key, "f5") ) {
         return strunicode(0xf708);
     }
-    if( STREQ(key, "F6") ) {
+    if( STREQ(key, "f6") ) {
         return strunicode(0xf709);
     }
-    if( STREQ(key, "F7") ) {
+    if( STREQ(key, "f7") ) {
         return strunicode(0xf70a);
     }
-    if( STREQ(key, "F8") ) {
+    if( STREQ(key, "f8") ) {
         return strunicode(0xf70b);
     }
-    if( STREQ(key, "F9") ) {
+    if( STREQ(key, "f9") ) {
         return strunicode(0xf70c);
     }
-    if( STREQ(key, "F10") ) {
+    if( STREQ(key, "f10") ) {
         return strunicode(0xf70d);
     }
-    if( STREQ(key, "F11") ) {
+    if( STREQ(key, "f11") ) {
         return strunicode(0xf70e);
     }
-    if( STREQ(key, "F12") ) {
+    if( STREQ(key, "f12") ) {
         return strunicode(0xf70f);
     }
-    if( STREQ(key, "F13") ) {
+    if( STREQ(key, "f13") ) {
         return strunicode(0xf710);
     }
-    if( STREQ(key, "F14") ) {
+    if( STREQ(key, "f14") ) {
         return strunicode(0xf711);
     }
-    if( STREQ(key, "F15") ) {
+    if( STREQ(key, "f15") ) {
         return strunicode(0xf712);
     }
-    if( STREQ(key, "F16") ) {
+    if( STREQ(key, "f16") ) {
         return strunicode(0xf713);
     }
-    if( STREQ(key, "F17") ) {
+    if( STREQ(key, "f17") ) {
         return strunicode(0xf714);
     }
-    if( STREQ(key, "F18") ) {
+    if( STREQ(key, "f18") ) {
         return strunicode(0xf715);
     }
-    if( STREQ(key, "F19") ) {
+    if( STREQ(key, "f19") ) {
         return strunicode(0xf716);
     }
-    if( STREQ(key, "F20") ) {
+    if( STREQ(key, "f20") ) {
         return strunicode(0xf717);
     }
-    if( STREQ(key, "F21") ) {
+    if( STREQ(key, "f21") ) {
         return strunicode(0xf718);
     }
-    if( STREQ(key, "F22") ) {
+    if( STREQ(key, "f22") ) {
         return strunicode(0xf719);
     }
-    if( STREQ(key, "F23") ) {
+    if( STREQ(key, "f23") ) {
         return strunicode(0xf71a);
     }
-    if( STREQ(key, "F24") ) {
+    if( STREQ(key, "f24") ) {
         return strunicode(0xf71b);
     }
-    if( STREQ(key, "F25") ) {
+    if( STREQ(key, "f25") ) {
         return strunicode(0xf71c);
     }
-    if( STREQ(key, "F26") ) {
+    if( STREQ(key, "f26") ) {
         return strunicode(0xf71d);
     }
-    if( STREQ(key, "F27") ) {
+    if( STREQ(key, "f27") ) {
         return strunicode(0xf71e);
     }
-    if( STREQ(key, "F28") ) {
+    if( STREQ(key, "f28") ) {
         return strunicode(0xf71f);
     }
-    if( STREQ(key, "F29") ) {
+    if( STREQ(key, "f29") ) {
         return strunicode(0xf720);
     }
-    if( STREQ(key, "F30") ) {
+    if( STREQ(key, "f30") ) {
         return strunicode(0xf721);
     }
-    if( STREQ(key, "F31") ) {
+    if( STREQ(key, "f31") ) {
         return strunicode(0xf722);
     }
-    if( STREQ(key, "F32") ) {
+    if( STREQ(key, "f32") ) {
         return strunicode(0xf723);
     }
-    if( STREQ(key, "F33") ) {
+    if( STREQ(key, "f33") ) {
         return strunicode(0xf724);
     }
-    if( STREQ(key, "F34") ) {
+    if( STREQ(key, "f34") ) {
         return strunicode(0xf725);
     }
-    if( STREQ(key, "F35") ) {
+    if( STREQ(key, "f35") ) {
         return strunicode(0xf726);
     }
 //  if( STREQ(key, "Insert") ) {
@@ -336,7 +336,7 @@ id processAcceleratorKey(const char *key) {
 //  if( STREQ(key, "ScrollLock") ) {
 //	return strunicode(0xf72f);
 //  }
-    if( STREQ(key, "NumLock") ) {
+    if( STREQ(key, "numLock") ) {
         return strunicode(0xf739);
     }
 
@@ -509,19 +509,19 @@ unsigned long parseModifiers(const char **modifiers) {
     int count = 0;
     while( thisModifier != NULL ) {
         // Determine flags
-        if( STREQ(thisModifier, "CmdOrCtrl") ) {
+        if( STREQ(thisModifier, "cmdorctrl") ) {
             result |= NSEventModifierFlagCommand;
         }
-        if( STREQ(thisModifier, "OptionOrAlt") ) {
+        if( STREQ(thisModifier, "optionoralt") ) {
             result |= NSEventModifierFlagOption;
         }
-        if( STREQ(thisModifier, "Shift") ) {
+        if( STREQ(thisModifier, "shift") ) {
             result |= NSEventModifierFlagShift;
         }
-        if( STREQ(thisModifier, "Super") ) {
+        if( STREQ(thisModifier, "super") ) {
             result |= NSEventModifierFlagCommand;
         }
-        if( STREQ(thisModifier, "Control") ) {
+        if( STREQ(thisModifier, "control") ) {
             result |= NSEventModifierFlagControl;
         }
         count++;
