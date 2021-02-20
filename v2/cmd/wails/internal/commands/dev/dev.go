@@ -5,14 +5,13 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/wailsapp/wails/v2/internal/colour"
-
-	"github.com/pkg/errors"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/leaanthony/clir"
@@ -25,6 +24,11 @@ import (
 func LogGreen(message string, args ...interface{}) {
 	text := fmt.Sprintf(message, args...)
 	println(colour.Green(text))
+}
+
+func LogRed(message string, args ...interface{}) {
+	text := fmt.Sprintf(message, args...)
+	println(colour.Red(text))
 }
 
 func LogDarkYellow(message string, args ...interface{}) {
@@ -64,7 +68,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		defer watcher.Close()
 
 		var debugBinaryProcess *process.Process = nil
-		var buildFrontend bool = false
 		var extensionsThatTriggerARebuild = strings.Split(extensions, ",")
 
 		// Setup signal handler
@@ -75,7 +78,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Do initial build
 		logger.Println("Building application for development...")
-		debugBinaryProcess, err = restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess)
+		newProcess, err := restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess)
+		if newProcess != nil {
+			debugBinaryProcess = newProcess
+		}
 		if err != nil {
 			return err
 		}
@@ -91,7 +97,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 						if err != nil {
 							logger.Fatal("%s", err.Error())
 						}
-						LogGreen("[Change] Watching new directory: %s", event.Name)
+						LogGreen("[New Directory] Watching new directory: %s", event.Name)
 					}
 				}
 				return
@@ -104,23 +110,18 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 				// Iterate all file patterns
 				for _, pattern := range extensionsThatTriggerARebuild {
-					rebuild = strings.HasSuffix(event.Name, pattern)
-					if err != nil {
-						logger.Fatal(err.Error())
-					}
-					if rebuild {
-						// Only build frontend when the file isn't a Go file
-						buildFrontend = !strings.HasSuffix(event.Name, "go")
+					if strings.HasSuffix(event.Name, pattern) {
+						rebuild = true
 						break
 					}
 				}
 
 				if !rebuild {
-					LogDarkYellow("Filename change: %s did not match extension list (%s)", event.Name, extensions)
+					LogDarkYellow("[File change] %s did not match extension list (%s)", event.Name, extensions)
 					return
 				}
 
-				LogGreen("[Rebuild] %s updated", event.Name)
+				LogGreen("[Attempting rebuild] %s updated", event.Name)
 
 				// Do a rebuild
 
@@ -139,22 +140,26 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		})
 
 		// Get project dir
-		dir, err := os.Getwd()
+		projectDir, err := os.Getwd()
 		if err != nil {
 			return err
 		}
 
 		// Get all subdirectories
-		dirs, err := fs.GetSubdirectories(dir)
+		dirs, err := fs.GetSubdirectories(projectDir)
 		if err != nil {
 			return err
 		}
 
-		LogGreen("Watching (sub)/directory: %s", dir)
+		LogGreen("Watching (sub)/directory: %s", projectDir)
 
 		// Setup a watcher for non-node_modules directories
 		dirs.Each(func(dir string) {
 			if strings.Contains(dir, "node_modules") {
+				return
+			}
+			// Ignore build directory
+			if strings.HasPrefix(dir, filepath.Join(projectDir, "build")) {
 				return
 			}
 			err = watcher.Add(dir)
@@ -168,7 +173,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		for quit == false {
 			select {
 			case <-quitChannel:
-				LogGreen("Caught quit")
+				LogGreen("\nCaught quit")
 				// Notify debouncer to quit
 				debounceQuit <- true
 				quit = true
@@ -215,8 +220,9 @@ func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, 
 	appBinary, err := buildApp(logger, outputType, ldflags, compilerCommand)
 	println()
 	if err != nil {
-		logger.Fatal(err.Error())
-		return nil, errors.Wrap(err, "Build Failed:")
+		LogRed("Build error - continuing to run current version")
+		LogDarkYellow(err.Error())
+		return nil, nil
 	}
 
 	// Kill existing binary if need be
@@ -250,7 +256,7 @@ func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, 
 func buildApp(logger *clilogger.CLILogger, outputType string, ldflags string, compilerCommand string) (string, error) {
 
 	// Create random output file
-	outputFile := fmt.Sprintf("debug-%d", time.Now().Unix())
+	outputFile := fmt.Sprintf("dev-%d", time.Now().Unix())
 
 	// Create BuildOptions
 	buildOptions := &build.Options{
