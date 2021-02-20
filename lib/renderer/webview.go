@@ -256,6 +256,9 @@ func (w *WebView) SelectFile(title string, filter string) string {
 			wg.Done()
 		})
 	}()
+
+	defer w.focus() // Ensure the main window is put back into focus afterwards
+
 	wg.Wait()
 	return result
 }
@@ -274,6 +277,9 @@ func (w *WebView) SelectDirectory() string {
 			wg.Done()
 		})
 	}()
+
+	defer w.focus() // Ensure the main window is put back into focus afterwards
+
 	wg.Wait()
 	return result
 }
@@ -292,8 +298,18 @@ func (w *WebView) SelectSaveFile(title string, filter string) string {
 			wg.Done()
 		})
 	}()
+
+	defer w.focus() // Ensure the main window is put back into focus afterwards
+
 	wg.Wait()
 	return result
+}
+
+// focus puts the main window into focus
+func (w *WebView) focus() {
+	w.window.Dispatch(func() {
+		w.window.Focus()
+	})
 }
 
 // callback sends a callback to the frontend
