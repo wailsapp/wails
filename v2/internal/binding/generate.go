@@ -58,7 +58,7 @@ const backend = {`)
 		sortedPackageNames.Add(packageName)
 	}
 	sortedPackageNames.Sort()
-	for _, packageName := range sortedPackageNames.AsSlice() {
+	sortedPackageNames.Each(func(packageName string) {
 		packages := store[packageName]
 		output.WriteString(fmt.Sprintf("  \"%s\": {", packageName))
 		output.WriteString("\n")
@@ -67,7 +67,8 @@ const backend = {`)
 			sortedStructNames.Add(structName)
 		}
 		sortedStructNames.Sort()
-		for _, structName := range sortedStructNames.AsSlice() {
+
+		sortedStructNames.Each(func(structName string) {
 			structs := packages[structName]
 			output.WriteString(fmt.Sprintf("    \"%s\": {", structName))
 			output.WriteString("\n")
@@ -78,7 +79,7 @@ const backend = {`)
 			}
 			sortedMethodNames.Sort()
 
-			for _, methodName := range sortedMethodNames.AsSlice() {
+			sortedMethodNames.Each(func(methodName string) {
 				methodDetails := structs[methodName]
 				output.WriteString("      /**\n")
 				output.WriteString("       * " + methodName + "\n")
@@ -109,13 +110,16 @@ const backend = {`)
 				output.WriteString("\n")
 				output.WriteString(fmt.Sprintf("      },"))
 				output.WriteString("\n")
-			}
+
+			})
+
 			output.WriteString(fmt.Sprintf("    }"))
 			output.WriteString("\n")
-		}
+		})
+
 		output.WriteString(fmt.Sprintf("  }\n"))
 		output.WriteString("\n")
-	}
+	})
 
 	output.WriteString(`};
 export default backend;`)
