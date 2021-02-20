@@ -18,14 +18,14 @@ import (
 func AddSubcommand(app *clir.Cli, w io.Writer, currentVersion string) error {
 
 	command := app.NewSubCommand("update", "Update the Wails CLI")
-	command.LongDescription(`This command allows you to update your version of Wails.`)
+	command.LongDescription(`This command allows you to update your version of the Wails CLI.`)
 
 	// Setup flags
 	var prereleaseRequired bool
-	command.BoolFlag("pre", "Update to latest Prerelease", &prereleaseRequired)
+	command.BoolFlag("pre", "Update CLI to latest Prerelease", &prereleaseRequired)
 
 	var specificVersion string
-	command.StringFlag("version", "Install a specific version (Overrides other flags)", &specificVersion)
+	command.StringFlag("version", "Install a specific version (Overrides other flags) of the CLI", &specificVersion)
 
 	command.Action(func() error {
 
@@ -143,7 +143,7 @@ func updateToVersion(logger *clilogger.CLILogger, targetVersion *github.Semantic
 	}
 
 	fmt.Println()
-	logger.Print("Installing Wails " + desiredVersion + "...")
+	logger.Print("Installing Wails CLI " + desiredVersion + "...")
 
 	// Run command in non module directory
 	homeDir, err := os.UserHomeDir()
@@ -158,7 +158,7 @@ func updateToVersion(logger *clilogger.CLILogger, targetVersion *github.Semantic
 		return err
 	}
 	fmt.Println()
-	logger.Println("Wails updated to " + desiredVersion)
+	logger.Println("Wails CLI updated to " + desiredVersion)
 
 	return nil
 }
