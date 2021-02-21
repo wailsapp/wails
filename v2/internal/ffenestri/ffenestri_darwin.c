@@ -498,31 +498,6 @@ void DestroyApplication(struct Application *app) {
 	Debug(app, "Finished Destroying Application");
 }
 
-// Quit will stop the cocoa application and free up all the memory
-// used by the application
-void Quit(struct Application *app) {
-	Debug(app, "Quit Called");
-	ON_MAIN_THREAD (
-		// Terminate app
-    	msg(app->application, s("stop:"), NULL);
-    	id fakeevent = msg(c("NSEvent"),
-                s("otherEventWithType:location:modifierFlags:timestamp:windowNumber:context:subtype:data1:data2:"),
-                15, // Type
-                msg(c("CGPoint"), s("init:x:y:"), 0, 0), // location
-                0, // flags
-                0, // timestamp
-                0, // window
-                NULL, // context
-                0, // subtype
-                0, // data1
-                0 // data2
-            );
-        msg(c("NSApp"), s("postEvent:atStart:"), fakeevent, true);
-//        msg(c(app->mainWindow), s("performClose:"))
-
-	);
-}
-
 // SetTitle sets the main window title to the given string
 void SetTitle(struct Application *app, const char *title) {
     // Guard against calling during shutdown
@@ -1837,6 +1812,16 @@ void Run(struct Application *app, int argc, char **argv) {
 	MEMFREE(internalCode);
 }
 
+// Quit will stop the cocoa application and free up all the memory
+// used by the application
+void Quit(struct Application *app) {
+	Debug(app, "Quit Called");
+    msg(app->application, s("stop:"), NULL);
+	ON_MAIN_THREAD (
+		// Terminate app by triggering a UI event
+    	SetSize(app, 0, 0);
+	);
+}
 
 void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel, int hideWindowOnClose) {
 
