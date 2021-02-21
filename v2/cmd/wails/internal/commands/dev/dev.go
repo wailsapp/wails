@@ -53,6 +53,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	extensions := "go"
 	command.StringFlag("e", "Extensions to trigger rebuilds (comma separated) eg go,js,css,html", &extensions)
 
+	// extensions to trigger rebuilds
+	showWarnings := false
+	command.BoolFlag("w", "Show warnings", &showWarnings)
+
 	command.Action(func() error {
 
 		// Create logger
@@ -117,7 +121,9 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				}
 
 				if !rebuild {
-					LogDarkYellow("[File change] %s did not match extension list (%s)", event.Name, extensions)
+					if showWarnings {
+						LogDarkYellow("[File change] %s did not match extension list (%s)", event.Name, extensions)
+					}
 					return
 				}
 
