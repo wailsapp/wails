@@ -4,8 +4,9 @@ package app
 
 import (
 	"flag"
-	"github.com/wailsapp/wails/v2/pkg/logger"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/pkg/logger"
 )
 
 // Init initialises the application for a debug environment
@@ -19,10 +20,10 @@ func (a *App) Init() error {
 	}
 
 	// Set log levels
-	greeting := flag.String("loglevel", "debug", "Loglevel to use - Trace, Debug, Info, Warning, Error")
+	loglevel := flag.String("loglevel", "debug", "Loglevel to use - Trace, Debug, Info, Warning, Error")
 	flag.Parse()
-	if len(*greeting) > 0 {
-		switch strings.ToLower(*greeting) {
+	if len(*loglevel) > 0 {
+		switch strings.ToLower(*loglevel) {
 		case "trace":
 			a.logger.SetLogLevel(logger.TRACE)
 		case "info":

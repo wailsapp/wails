@@ -57,6 +57,9 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	showWarnings := false
 	command.BoolFlag("w", "Show warnings", &showWarnings)
 
+	loglevel := ""
+	command.StringFlag("loglevel", "Loglevel to use - Trace, Debug, Info, Warning, Error", &loglevel)
+
 	command.Action(func() error {
 
 		// Create logger
@@ -82,7 +85,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Do initial build
 		logger.Println("Building application for development...")
-		newProcess, err := restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess)
+		newProcess, err := restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess, loglevel)
 		if newProcess != nil {
 			debugBinaryProcess = newProcess
 		}
@@ -132,7 +135,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				// Do a rebuild
 
 				// Try and build the app
-				newBinaryProcess, err := restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess)
+				newBinaryProcess, err := restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess, loglevel)
 				if err != nil {
 					fmt.Printf("Error during build: %s", err.Error())
 					return
@@ -221,7 +224,7 @@ exit:
 	}
 }
 
-func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, compilerCommand string, debugBinaryProcess *process.Process) (*process.Process, error) {
+func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, compilerCommand string, debugBinaryProcess *process.Process, loglevel string) (*process.Process, error) {
 
 	appBinary, err := buildApp(logger, outputType, ldflags, compilerCommand)
 	println()
@@ -245,7 +248,7 @@ func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, 
 	// TODO: Generate `backend.js`
 
 	// Start up new binary
-	newProcess := process.NewProcess(logger, appBinary)
+	newProcess := process.NewProcess(logger, appBinary, "-loglevel", loglevel)
 	err = newProcess.Start()
 	if err != nil {
 		// Remove binary

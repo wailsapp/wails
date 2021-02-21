@@ -4,11 +4,14 @@ package app
 
 import (
 	"context"
+	"flag"
+	"strings"
 	"sync"
 
 	"github.com/wailsapp/wails/v2/internal/bridge"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 
+	clilogger "github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
@@ -66,7 +69,23 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	// Set up logger
 	myLogger := logger.New(appoptions.Logger)
-	myLogger.SetLogLevel(appoptions.LogLevel)
+
+	loglevel := flag.String("loglevel", "debug", "Loglevel to use - Trace, Debug, Info, Warning, Error")
+	flag.Parse()
+	if len(*loglevel) > 0 {
+		switch strings.ToLower(*loglevel) {
+		case "trace":
+			myLogger.SetLogLevel(clilogger.TRACE)
+		case "info":
+			myLogger.SetLogLevel(clilogger.INFO)
+		case "warning":
+			myLogger.SetLogLevel(clilogger.WARNING)
+		case "error":
+			myLogger.SetLogLevel(clilogger.ERROR)
+		default:
+			myLogger.SetLogLevel(appoptions.LogLevel)
+		}
+	}
 
 	// Create the menu manager
 	menuManager := menumanager.NewManager()
