@@ -79,6 +79,7 @@ struct Application {
 	id mouseEvent;
 	id mouseDownMonitor;
 	id mouseUpMonitor;
+	int activationPolicy;
 
 	// Window Data
 	const char *title;
@@ -253,7 +254,7 @@ void Hide(struct Application *app) {
     if( app->shuttingDown ) return;
 
 	ON_MAIN_THREAD(
-		msg(app->application, s("hide:"))
+		msg(app->application, s("hide:"));
 	);
 }
 
@@ -1112,7 +1113,7 @@ void processDecorations(struct Application *app) {
 void createApplication(struct Application *app) {
 	id application = msg(c("NSApplication"), s("sharedApplication"));
 	app->application = application;
-	msg(application, s("setActivationPolicy:"), 0);
+	msg(application, s("setActivationPolicy:"), app->activationPolicy);
 }
 
 void DarkModeEnabled(struct Application *app, const char *callbackID) {
@@ -1812,6 +1813,10 @@ void Run(struct Application *app, int argc, char **argv) {
 	MEMFREE(internalCode);
 }
 
+void SetActivationPolicy(struct Application* app, int policy) {
+    app->activationPolicy = policy;
+}
+
 // Quit will stop the cocoa application and free up all the memory
 // used by the application
 void Quit(struct Application *app) {
@@ -1882,6 +1887,8 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->sendMessageToBackend = (ffenestriCallback) messageFromWindowCallback;
 
 	result->shuttingDown = false;
+
+	result->activationPolicy = NSApplicationActivationPolicyRegular;
 
     return (void*) result;
 }

@@ -48,6 +48,9 @@ func (a *Application) processPlatformSettings() error {
 		C.SetAppearance(a.app, a.string2CString(string(mac.Appearance)))
 	}
 
+	// Set activation policy
+	C.SetActivationPolicy(a.app, C.int(mac.ActivationPolicy))
+
 	// Check if the webview should be transparent
 	if mac.WebviewIsTransparent {
 		C.WebviewIsTransparent(a.app)

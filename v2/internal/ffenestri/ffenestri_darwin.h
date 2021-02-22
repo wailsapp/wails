@@ -66,6 +66,10 @@
 #define NSControlStateValueOff 0
 #define NSControlStateValueOn 1
 
+#define NSApplicationActivationPolicyRegular    0
+#define NSApplicationActivationPolicyAccessory  1
+#define NSApplicationActivationPolicyProhibited 2
+
 // Unbelievably, if the user swaps their button preference
 // then right buttons are reported as left buttons
 #define NSEventMaskLeftMouseDown 1 << 1
@@ -109,6 +113,8 @@ void WindowBackgroundIsTranslucent(struct Application* app);
 void SetTray(struct Application* app, const char *, const char *, const char *);
 //void SetContextMenus(struct Application* app, const char *);
 void AddTrayMenu(struct Application* app, const char *);
+
+void SetActivationPolicy(struct Application* app, int policy);
 
 void* lookupStringConstant(id constantName);
 
