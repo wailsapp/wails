@@ -117,14 +117,6 @@ func (a *App) Run() error {
 	parentContext := context.WithValue(context.Background(), "waitgroup", &subsystemWaitGroup)
 	ctx, cancel := context.WithCancel(parentContext)
 
-	// Setup signal handler
-	signalsubsystem, err := signal.NewManager(ctx, cancel, a.servicebus, a.logger)
-	if err != nil {
-		return err
-	}
-	a.signal = signalsubsystem
-	a.signal.Start()
-
 	// Start the service bus
 	a.servicebus.Debug()
 	err = a.servicebus.Start()
@@ -206,6 +198,14 @@ func (a *App) Run() error {
 	if err != nil {
 		return err
 	}
+
+	// Setup signal handler
+	signalsubsystem, err := signal.NewManager(ctx, cancel, a.servicebus, a.logger)
+	if err != nil {
+		return err
+	}
+	a.signal = signalsubsystem
+	a.signal.Start()
 
 	err = a.window.Run(dispatcher, bindingDump, a.debug)
 	a.logger.Trace("Ffenestri.Run() exited")

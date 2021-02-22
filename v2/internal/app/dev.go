@@ -118,14 +118,6 @@ func (a *App) Run() error {
 	parentContext := context.WithValue(context.Background(), "waitgroup", &subsystemWaitGroup)
 	ctx, cancel := context.WithCancel(parentContext)
 
-	// Setup signal handler
-	signalsubsystem, err := signal.NewManager(ctx, cancel, a.servicebus, a.logger)
-	if err != nil {
-		return err
-	}
-	a.signal = signalsubsystem
-	a.signal.Start()
-
 	// Start the service bus
 	a.servicebus.Debug()
 	err = a.servicebus.Start()
@@ -210,6 +202,14 @@ func (a *App) Run() error {
 
 	// Generate backend.js
 	a.bindings.GenerateBackendJS()
+
+	// Setup signal handler
+	signalsubsystem, err := signal.NewManager(ctx, cancel, a.servicebus, a.logger)
+	if err != nil {
+		return err
+	}
+	a.signal = signalsubsystem
+	a.signal.Start()
 
 	err = a.bridge.Run(dispatcher, a.menuManager, bindingDump, a.debug)
 	a.logger.Trace("Bridge.Run() exited")
