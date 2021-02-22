@@ -620,7 +620,7 @@
     }
 
     /** Menubar **/
-    const menuVisible = writable(true);
+    const menuVisible = writable(false);
 
     /** Trays **/
 
@@ -1220,11 +1220,11 @@
 
     function get_each_context$1(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[8] = list[i];
+    	child_ctx[9] = list[i];
     	return child_ctx;
     }
 
-    // (29:0) {#if $menuVisible }
+    // (38:0) {#if $menuVisible }
     function create_if_block$3(ctx) {
     	let div;
     	let span1;
@@ -1336,11 +1336,11 @@
     	};
     }
 
-    // (32:4) {#each $trays as tray}
+    // (41:4) {#each $trays as tray}
     function create_each_block$1(ctx) {
     	let traymenu;
     	let current;
-    	traymenu = new TrayMenu({ props: { tray: /*tray*/ ctx[8] } });
+    	traymenu = new TrayMenu({ props: { tray: /*tray*/ ctx[9] } });
 
     	return {
     		c() {
@@ -1352,7 +1352,7 @@
     		},
     		p(ctx, dirty) {
     			const traymenu_changes = {};
-    			if (dirty & /*$trays*/ 4) traymenu_changes.tray = /*tray*/ ctx[8];
+    			if (dirty & /*$trays*/ 4) traymenu_changes.tray = /*tray*/ ctx[9];
     			traymenu.$set(traymenu_changes);
     		},
     		i(local) {
@@ -1373,6 +1373,8 @@
     function create_fragment$3(ctx) {
     	let if_block_anchor;
     	let current;
+    	let mounted;
+    	let dispose;
     	let if_block = /*$menuVisible*/ ctx[1] && create_if_block$3(ctx);
 
     	return {
@@ -1384,6 +1386,11 @@
     			if (if_block) if_block.m(target, anchor);
     			insert(target, if_block_anchor, anchor);
     			current = true;
+
+    			if (!mounted) {
+    				dispose = listen(window, "keydown", /*handleKeydown*/ ctx[3]);
+    				mounted = true;
+    			}
     		},
     		p(ctx, [dirty]) {
     			if (/*$menuVisible*/ ctx[1]) {
@@ -1421,6 +1428,8 @@
     		d(detaching) {
     			if (if_block) if_block.d(detaching);
     			if (detaching) detach(if_block_anchor);
+    			mounted = false;
+    			dispose();
     		}
     	};
     }
@@ -1440,7 +1449,7 @@
     	onMount(() => {
     		const interval = setInterval(
     			() => {
-    				$$invalidate(3, time = new Date());
+    				$$invalidate(4, time = new Date());
     			},
     			1000
     		);
@@ -1450,33 +1459,52 @@
     		};
     	});
 
+    	function handleKeydown(e) {
+    		// Backtick toggle
+    		if (e.keyCode == 192) {
+    			menuVisible.update(current => {
+    				return !current;
+    			});
+    		}
+    	}
+
     	$$self.$$.update = () => {
-    		if ($$self.$$.dirty & /*time*/ 8) {
-    			$$invalidate(4, day = time.toLocaleString("default", { weekday: "short" }));
+    		if ($$self.$$.dirty & /*time*/ 16) {
+    			$$invalidate(5, day = time.toLocaleString("default", { weekday: "short" }));
     		}
 
-    		if ($$self.$$.dirty & /*time*/ 8) {
-    			$$invalidate(5, dom = time.getDate());
+    		if ($$self.$$.dirty & /*time*/ 16) {
+    			$$invalidate(6, dom = time.getDate());
     		}
 
-    		if ($$self.$$.dirty & /*time*/ 8) {
-    			$$invalidate(6, mon = time.toLocaleString("default", { month: "short" }));
+    		if ($$self.$$.dirty & /*time*/ 16) {
+    			$$invalidate(7, mon = time.toLocaleString("default", { month: "short" }));
     		}
 
-    		if ($$self.$$.dirty & /*time*/ 8) {
-    			$$invalidate(7, currentTime = time.toLocaleString("en-US", {
+    		if ($$self.$$.dirty & /*time*/ 16) {
+    			$$invalidate(8, currentTime = time.toLocaleString("en-US", {
     				hour: "numeric",
     				minute: "numeric",
     				hour12: true
     			}).toLowerCase());
     		}
 
-    		if ($$self.$$.dirty & /*day, dom, mon, currentTime*/ 240) {
+    		if ($$self.$$.dirty & /*day, dom, mon, currentTime*/ 480) {
     			$$invalidate(0, dateTimeString = `${day} ${dom} ${mon} ${currentTime}`);
     		}
     	};
 
-    	return [dateTimeString, $menuVisible, $trays, time, day, dom, mon, currentTime];
+    	return [
+    		dateTimeString,
+    		$menuVisible,
+    		$trays,
+    		handleKeydown,
+    		time,
+    		day,
+    		dom,
+    		mon,
+    		currentTime
+    	];
     }
 
     class Menubar extends SvelteComponent {

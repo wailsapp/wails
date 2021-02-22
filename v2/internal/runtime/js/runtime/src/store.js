@@ -13,7 +13,7 @@ export function hideOverlay() {
 }
 
 /** Menubar **/
-export const menuVisible = writable(true);
+export const menuVisible = writable(false);
 
 export function showMenuBar() {
     menuVisible.set(true);

@@ -24,6 +24,15 @@
         };
     });
 
+    function handleKeydown(e) {
+        // Backtick toggle
+        if( e.keyCode == 192 ) {
+            menuVisible.update( (current) => {
+                return !current;
+            });
+        }
+    }
+
 </script>
 
 {#if $menuVisible }
@@ -36,6 +45,8 @@
     </span>
     </div>
 {/if}
+
+<svelte:window on:keydown={handleKeydown}/>
 
 <style>
 
