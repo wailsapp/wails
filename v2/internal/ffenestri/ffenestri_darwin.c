@@ -1817,10 +1817,9 @@ void Run(struct Application *app, int argc, char **argv) {
 void Quit(struct Application *app) {
 	Debug(app, "Quit Called");
     msg(app->application, s("stop:"), NULL);
-	ON_MAIN_THREAD (
-		// Terminate app by triggering a UI event
-    	SetSize(app, 0, 0);
-	);
+    SetSize(app, 0, 0);
+    Show(app);
+    Hide(app);
 }
 
 void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel, int hideWindowOnClose) {

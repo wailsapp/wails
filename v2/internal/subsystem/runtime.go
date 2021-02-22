@@ -37,7 +37,7 @@ type Runtime struct {
 }
 
 // NewRuntime creates a new runtime subsystem
-func NewRuntime(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.Logger, startupCallback func(*runtime.Runtime), shutdownCallback func()) (*Runtime, error) {
+func NewRuntime(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.Logger, startupCallback func(*runtime.Runtime)) (*Runtime, error) {
 
 	// Subscribe to log messages
 	runtimeChannel, err := bus.Subscribe("runtime:")
@@ -52,13 +52,12 @@ func NewRuntime(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.
 	}
 
 	result := &Runtime{
-		runtimeChannel:   runtimeChannel,
-		hooksChannel:     hooksChannel,
-		logger:           logger.CustomLogger("Runtime Subsystem"),
-		runtime:          runtime.New(bus, shutdownCallback),
-		startupCallback:  startupCallback,
-		shutdownCallback: shutdownCallback,
-		ctx:              ctx,
+		runtimeChannel:  runtimeChannel,
+		hooksChannel:    hooksChannel,
+		logger:          logger.CustomLogger("Runtime Subsystem"),
+		runtime:         runtime.New(bus),
+		startupCallback: startupCallback,
+		ctx:             ctx,
 	}
 
 	return result, nil

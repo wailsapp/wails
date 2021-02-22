@@ -118,7 +118,7 @@ func (a *App) Run() error {
 	ctx, cancel := context.WithCancel(parentContext)
 
 	// Setup signal handler
-	signalsubsystem, err := signal.NewManager(ctx, cancel, a.servicebus, a.logger, a.shutdownCallback)
+	signalsubsystem, err := signal.NewManager(ctx, cancel, a.servicebus, a.logger)
 	if err != nil {
 		return err
 	}
@@ -132,7 +132,7 @@ func (a *App) Run() error {
 		return err
 	}
 
-	runtimesubsystem, err := subsystem.NewRuntime(ctx, a.servicebus, a.logger, a.startupCallback, a.shutdownCallback)
+	runtimesubsystem, err := subsystem.NewRuntime(ctx, a.servicebus, a.logger, a.startupCallback)
 	if err != nil {
 		return err
 	}
@@ -229,6 +229,11 @@ func (a *App) Run() error {
 	err = a.servicebus.Stop()
 	if err != nil {
 		return err
+	}
+
+	// Shutdown callback
+	if a.shutdownCallback != nil {
+		a.shutdownCallback()
 	}
 
 	return nil

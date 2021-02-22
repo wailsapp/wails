@@ -26,25 +26,20 @@ type Manager struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	// The shutdown callback to notify the user's app that a shutdown
-	// has started
-	shutdownCallback func()
-
 	// Parent waitgroup
 	wg *sync.WaitGroup
 }
 
 // NewManager creates a new signal manager
-func NewManager(ctx context.Context, cancel context.CancelFunc, bus *servicebus.ServiceBus, logger *logger.Logger, shutdownCallback func()) (*Manager, error) {
+func NewManager(ctx context.Context, cancel context.CancelFunc, bus *servicebus.ServiceBus, logger *logger.Logger) (*Manager, error) {
 
 	result := &Manager{
-		bus:              bus,
-		logger:           logger.CustomLogger("Event Manager"),
-		signalchannel:    make(chan os.Signal, 2),
-		ctx:              ctx,
-		cancel:           cancel,
-		shutdownCallback: shutdownCallback,
-		wg:               ctx.Value("waitgroup").(*sync.WaitGroup),
+		bus:           bus,
+		logger:        logger.CustomLogger("Event Manager"),
+		signalchannel: make(chan os.Signal, 2),
+		ctx:           ctx,
+		cancel:        cancel,
+		wg:            ctx.Value("waitgroup").(*sync.WaitGroup),
 	}
 
 	return result, nil
@@ -66,11 +61,6 @@ func (m *Manager) Start() {
 			println()
 			m.logger.Trace("Ctrl+C detected. Shutting down...")
 			m.bus.Publish("quit", "ctrl-c pressed")
-
-			// Shutdown app first
-			if m.shutdownCallback != nil {
-				m.shutdownCallback()
-			}
 
 			// Start shutdown of Wails
 			m.cancel()
