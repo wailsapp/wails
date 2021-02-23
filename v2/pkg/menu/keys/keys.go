@@ -10,15 +10,15 @@ type Modifier string
 
 const (
 	// CmdOrCtrlKey represents Command on Mac and Control on other platforms
-	CmdOrCtrlKey Modifier = "CmdOrCtrl"
+	CmdOrCtrlKey Modifier = "cmdorctrl"
 	// OptionOrAltKey represents Option on Mac and Alt on other platforms
-	OptionOrAltKey Modifier = "OptionOrAlt"
+	OptionOrAltKey Modifier = "optionoralt"
 	// ShiftKey represents the shift key on all systems
-	ShiftKey Modifier = "Shift"
+	ShiftKey Modifier = "shift"
 	// SuperKey represents Command on Mac and the Windows key on the other platforms
-	SuperKey Modifier = "Super"
+	SuperKey Modifier = "super"
 	// ControlKey represents the control key on all systems
-	ControlKey Modifier = "Control"
+	ControlKey Modifier = "ctrl"
 )
 
 var modifierMap = map[string]Modifier{

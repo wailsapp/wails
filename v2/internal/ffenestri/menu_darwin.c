@@ -508,6 +508,7 @@ unsigned long parseModifiers(const char **modifiers) {
     const char *thisModifier = modifiers[0];
     int count = 0;
     while( thisModifier != NULL ) {
+
         // Determine flags
         if( STREQ(thisModifier, "cmdorctrl") ) {
             result |= NSEventModifierFlagCommand;
@@ -521,7 +522,7 @@ unsigned long parseModifiers(const char **modifiers) {
         if( STREQ(thisModifier, "super") ) {
             result |= NSEventModifierFlagCommand;
         }
-        if( STREQ(thisModifier, "control") ) {
+        if( STREQ(thisModifier, "ctrl") ) {
             result |= NSEventModifierFlagControl;
         }
         count++;
