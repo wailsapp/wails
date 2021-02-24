@@ -3,9 +3,10 @@ package menumanager
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
+
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/pkg/menu"
-	"sync"
 )
 
 var trayMenuID int
@@ -63,6 +64,14 @@ func (m *Manager) AddTrayMenu(trayMenu *menu.TrayMenu) (string, error) {
 	m.trayMenuPointers[trayMenu] = trayID
 
 	return newTrayMenu.AsJSON()
+}
+
+func (m *Manager) GetTrayID(trayMenu *menu.TrayMenu) (string, error) {
+	trayID, exists := m.trayMenuPointers[trayMenu]
+	if !exists {
+		return "", fmt.Errorf("Unable to find menu ID for tray menu!")
+	}
+	return trayID, nil
 }
 
 // SetTrayMenu updates or creates a menu

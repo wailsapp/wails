@@ -1047,6 +1047,12 @@ void SetTrayMenu(struct Application *app, const char* trayMenuJSON) {
     );
 }
 
+void DeleteTrayMenuByID(struct Application *app, const char *id) {
+    ON_MAIN_THREAD(
+        DeleteTrayMenuInStore(app->trayMenuStore, id);
+    );
+}
+
 void UpdateTrayMenuLabel(struct Application* app, const char* JSON) {
     // Guard against calling during shutdown
     if( app->shuttingDown ) return;

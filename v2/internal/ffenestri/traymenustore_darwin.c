@@ -48,7 +48,6 @@ void ShowTrayMenusInStore(TrayMenuStore* store) {
     }
 }
 
-
 int freeTrayMenu(void *const context, struct hashmap_element_s *const e) {
     DeleteTrayMenu(e->data);
     return -1;
@@ -79,6 +78,12 @@ TrayMenu* MustGetTrayMenuFromStore(TrayMenuStore* store, const char* menuID) {
         ABORT("Unable to find TrayMenu with ID '%s' in the TrayMenuStore!", menuID);
     }
     return result;
+}
+
+void DeleteTrayMenuInStore(TrayMenuStore* store, const char* ID) {
+    TrayMenu *menu = MustGetTrayMenuFromStore(store, ID);
+    hashmap_remove(&store->trayMenuMap, ID, strlen(ID));
+    DeleteTrayMenu(menu);
 }
 
 void UpdateTrayMenuLabelInStore(TrayMenuStore* store, const char* JSON) {

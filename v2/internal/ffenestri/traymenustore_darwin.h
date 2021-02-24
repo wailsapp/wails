@@ -23,5 +23,6 @@ void ShowTrayMenusInStore(TrayMenuStore* store);
 void DeleteTrayMenuStore(TrayMenuStore* store);
 
 void UpdateTrayMenuLabelInStore(TrayMenuStore* store, const char* JSON);
+void DeleteTrayMenuInStore(TrayMenuStore* store, const char* id);
 
 #endif //TRAYMENUSTORE_DARWIN_H

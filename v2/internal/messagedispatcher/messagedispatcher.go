@@ -527,6 +527,17 @@ func (d *Dispatcher) processMenuMessage(result *servicebus.Message) {
 		for _, client := range d.clients {
 			client.frontend.UpdateTrayMenuLabel(updatedTrayMenuLabel)
 		}
+	case "deletetraymenu":
+		traymenuid, ok := result.Data().(string)
+		if !ok {
+			d.logger.Error("Invalid data for 'menufrontend:updatetraymenulabel' : %#v",
+				result.Data())
+			return
+		}
+
+		for _, client := range d.clients {
+			client.frontend.DeleteTrayMenuByID(traymenuid)
+		}
 
 	default:
 		d.logger.Error("Unknown menufrontend command: %s", command)

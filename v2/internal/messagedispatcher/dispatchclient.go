@@ -37,6 +37,7 @@ type Client interface {
 	SetTrayMenu(trayMenuJSON string)
 	UpdateTrayMenuLabel(JSON string)
 	UpdateContextMenu(contextMenuJSON string)
+	DeleteTrayMenuByID(id string)
 }
 
 // DispatchClient is what the frontends use to interface with the

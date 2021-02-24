@@ -10,6 +10,7 @@ type Menu interface {
 	UpdateApplicationMenu()
 	UpdateContextMenu(contextMenu *menu.ContextMenu)
 	SetTrayMenu(trayMenu *menu.TrayMenu)
+	DeleteTrayMenu(trayMenu *menu.TrayMenu)
 	UpdateTrayMenuLabel(trayMenu *menu.TrayMenu)
 }
 
@@ -38,4 +39,8 @@ func (m *menuRuntime) SetTrayMenu(trayMenu *menu.TrayMenu) {
 
 func (m *menuRuntime) UpdateTrayMenuLabel(trayMenu *menu.TrayMenu) {
 	m.bus.Publish("menu:updatetraymenulabel", trayMenu)
+}
+
+func (m *menuRuntime) DeleteTrayMenu(trayMenu *menu.TrayMenu) {
+	m.bus.Publish("menu:deletetraymenu", trayMenu)
 }

@@ -208,3 +208,7 @@ func (c *Client) UpdateTrayMenuLabel(JSON string) {
 func (c *Client) UpdateContextMenu(contextMenuJSON string) {
 	C.UpdateContextMenu(c.app.app, c.app.string2CString(contextMenuJSON))
 }
+
+func (c *Client) DeleteTrayMenuByID(id string) {
+	C.DeleteTrayMenuByID(c.app.app, c.app.string2CString(id))
+}

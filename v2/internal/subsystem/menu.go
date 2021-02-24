@@ -137,6 +137,17 @@ func (m *Menu) Start() error {
 					// Notify frontend of menu change
 					m.bus.Publish("menufrontend:settraymenu", updatedMenu)
 
+				case "deletetraymenu":
+					trayMenu := menuMessage.Data().(*menu.TrayMenu)
+					trayID, err := m.menuManager.GetTrayID(trayMenu)
+					if err != nil {
+						m.logger.Trace("%s", err.Error())
+						return
+					}
+
+					// Notify frontend of menu change
+					m.bus.Publish("menufrontend:deletetraymenu", trayID)
+
 				case "updatetraymenulabel":
 					trayMenu := menuMessage.Data().(*menu.TrayMenu)
 					updatedLabel, err := m.menuManager.UpdateTrayMenuLabel(trayMenu)
