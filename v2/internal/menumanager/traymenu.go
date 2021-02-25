@@ -3,6 +3,7 @@ package menumanager
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -13,11 +14,12 @@ var trayMenuID int
 var trayMenuIDMutex sync.Mutex
 
 func generateTrayID() string {
+	var idStr string
 	trayMenuIDMutex.Lock()
-	result := fmt.Sprintf("%d", trayMenuID)
+	idStr = strconv.Itoa(trayMenuID)
 	trayMenuID++
 	trayMenuIDMutex.Unlock()
-	return result
+	return idStr
 }
 
 type TrayMenu struct {
