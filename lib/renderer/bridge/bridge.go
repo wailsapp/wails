@@ -186,6 +186,18 @@ func (h *Bridge) SetColour(colour string) error {
 	return nil
 }
 
+// SetMinSize is unsupported for Bridge but required
+// for the Renderer interface
+func (h *Bridge) SetMinSize(width, height int) {
+	h.log.Warn("SetMinSize() unsupported in bridge mode")
+}
+
+// SetMaxSize is unsupported for Bridge but required
+// for the Renderer interface
+func (h *Bridge) SetMaxSize(width, height int) {
+	h.log.Warn("SetMaxSize() unsupported in bridge mode")
+}
+
 // Fullscreen is unsupported for Bridge but required
 // for the Renderer interface
 func (h *Bridge) Fullscreen() {

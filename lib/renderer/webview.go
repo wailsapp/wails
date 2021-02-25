@@ -74,6 +74,7 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	}
 
 	w.log.Info("Initialised")
+	
 	return nil
 }
 
@@ -351,6 +352,29 @@ func (w *WebView) NotifyEvent(event *messages.EventData) error {
 
 	message := "window.wails._.Notify('" + event.Name + "'," + string(data) + ")"
 	return w.evalJS(message)
+}
+
+// SetMinSize sets the minimum size of a resizable window
+func (w *WebView) SetMinSize(width, height int) {
+	if w.config.GetResizable() == false {
+		w.log.Warn("Cannot call SetMinSize() - App.Resizable = false")
+		return
+	}
+	w.window.Dispatch(func() {
+		w.window.SetMinSize(width, height)
+	})
+}
+
+// SetMaxSize sets the maximum size of a resizable window
+func (w *WebView) SetMaxSize(width, height int) {
+	if w.config.GetResizable() == false {
+		w.log.Warn("Cannot call SetMaxSize() - App.Resizable = false")
+		return
+	}
+
+	w.window.Dispatch(func() {
+		w.window.SetMaxSize(width, height)
+	})
 }
 
 // Fullscreen makes the main window go fullscreen

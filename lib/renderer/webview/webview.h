@@ -75,6 +75,11 @@ struct webview_priv
   DWORD saved_style;
   DWORD saved_ex_style;
   RECT saved_rect;
+
+  int min_width
+  int min_height
+  int max_width
+  int max_height
 };
 #elif defined(WEBVIEW_COCOA)
 #import <Cocoa/Cocoa.h>
@@ -169,6 +174,7 @@ struct webview_priv
   WEBVIEW_API int webview_inject_css(struct webview *w, const char *css);
   WEBVIEW_API void webview_set_title(struct webview *w, const char *title);
   WEBVIEW_API void webview_focus(struct webview *w);
+  WEBVIEW_API void webview_minsize(struct webview *w, int width, int height);  WEBVIEW_API void webview_maxsize(struct webview *w, int width, int height);
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen);
   WEBVIEW_API void webview_set_color(struct webview *w, uint8_t r, uint8_t g,
                                      uint8_t b, uint8_t a);
@@ -400,6 +406,20 @@ struct webview_priv
   WEBVIEW_API void webview_focus(struct webview *w)
   {
     gtk_window_present(GTK_WINDOW(w->priv.window))
+  }
+
+  WEBVIEW_API void webview_minsize(struct webview *w, int width, int height) {
+    GdkGeometry hints;
+    hints.min_width = width;
+    hints.min_height = height;
+    gtk_window_set_geometry_hints(GTK_WINDOW(w->priv.window), w->priv.window, &hints, (GdkWindowHints)(GDK_HINT_MIN_SIZE));
+  }
+
+  WEBVIEW_API void webview_maxsize(struct webview *w, int width, int height) {
+    GdkGeometry hints;
+    hints.max_width = width;
+    hints.max_height = height;
+    gtk_window_set_geometry_hints(GTK_WINDOW(w->priv.window), w->priv.window, &hints, (GdkWindowHints)(GDK_HINT_MAX_SIZE));
   }
 
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen)
@@ -1546,6 +1566,15 @@ struct webview_priv
         break;
       }
     }
+    case WM_GETMINMAXINFO:
+    {
+        LPMINMAXINFO lpMMI = (LPMINMAXINFO)msg.lParam;
+        lpMMI->ptMinTrackSize.x = w->priv.min_width;
+        lpMMI->ptMinTrackSize.y = w->priv.min_height;
+
+        lpMMI->ptMaxTrackSize.x = w->priv.max_width;
+        lpMMI->ptMaxTrackSize.y = w->priv.max_height;
+    }
     default:
       TranslateMessage(&msg);
       DispatchMessage(&msg);
@@ -1650,6 +1679,16 @@ struct webview_priv
   WEBVIEW_API void webview_focus(struct webview *w)
   {
     SetFocus(w->priv.hwnd);
+  }
+
+  WEBVIEW_API void webview_minsize(struct webview *w, int width, int height) {
+    w->priv.min_width = width;
+    w->priv.min_height = height;
+  }
+
+  WEBVIEW_API void webview_maxsize(struct webview *w, int width, int height) {
+    w->priv.max_width = width;
+    w->priv.max_height = height;
   }
 
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen)
@@ -2223,7 +2262,21 @@ struct webview_priv
   {
     [w->priv.window makeKeyWindow];
   }
-
+  
+  WEBVIEW_API void webview_minsize(struct webview *w, int width, int height) {
+    NSSize size;
+    size.width = width;
+    size.height = height;
+    [w->priv.window setMinSize:size];
+  }
+  
+  WEBVIEW_API void webview_maxsize(struct webview *w, int width, int height) {
+    NSSize size;
+    size.width = width;
+    size.height = height;
+    [w->priv.window setMaxSize:size];
+  }
+  
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen)
   {
     int b = ((([w->priv.window styleMask] & NSWindowStyleMaskFullScreen) ==

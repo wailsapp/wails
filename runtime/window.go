@@ -67,6 +67,17 @@ func (r *Window) SetColour(colour string) error {
 	return r.renderer.SetColour(colour)
 }
 
+// SetMinSize sets the minimum size of a resizable window
+func (r *Window) SetMinSize(width int, height int) {
+	r.renderer.SetMinSize(width, height)
+}
+
+// SetMaxSize sets the maximum size of a resizable window
+func (r *Window) SetMaxSize(width int, height int) {
+	r.renderer.SetMaxSize(width, height)
+}
+
+
 // Fullscreen makes the window fullscreen
 func (r *Window) Fullscreen() {
 	r.renderer.Fullscreen()
