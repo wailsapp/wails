@@ -649,6 +649,18 @@
         });
     }
 
+    function deleteTrayMenu(id) {
+        trays.update((current) => {
+            // Remove existing if it exists, else add
+            const index = current.findIndex(item => item.ID === id);
+            if ( index === -1 ) {
+                return log("ERROR: Attempted to delete tray index ")
+            }
+            current.splice(index, 1);
+            return current;
+        });
+    }
+
     let selectedMenu = writable(null);
 
     function fade(node, { delay = 0, duration = 400, easing = identity } = {}) {
@@ -1665,6 +1677,11 @@
                         const updateTrayLabelJSON = trayMessage.slice(1);
                         let trayLabelData = JSON.parse(updateTrayLabelJSON);
                         updateTrayLabel(trayLabelData);
+                        break
+                    case 'D':
+                        // Delete Tray Menu
+                        const id = trayMessage.slice(1);
+                        deleteTrayMenu(id);
                         break
                     default:
                         log('Unknown tray message: ' + message.data);

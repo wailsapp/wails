@@ -49,4 +49,16 @@ export function updateTrayLabel(tray) {
     })
 }
 
+export function deleteTrayMenu(id) {
+    trays.update((current) => {
+        // Remove existing if it exists, else add
+        const index = current.findIndex(item => item.ID === id);
+        if ( index === -1 ) {
+            return log("ERROR: Attempted to delete tray index ", id, "but it doesn't exist")
+        }
+        current.splice(index, 1);
+        return current;
+    })
+}
+
 export let selectedMenu = writable(null);

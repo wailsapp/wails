@@ -11,6 +11,10 @@ type BridgeClient struct {
 	messageCache chan string
 }
 
+func (b BridgeClient) DeleteTrayMenuByID(id string) {
+	b.session.sendMessage("TD" + id)
+}
+
 func NewBridgeClient() *BridgeClient {
 	return &BridgeClient{
 		messageCache: make(chan string, 100),

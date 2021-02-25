@@ -10,7 +10,7 @@ The lightweight framework for web-like apps
 /* jshint esversion: 6 */
 
 
-import {setTray, hideOverlay, showOverlay, updateTrayLabel} from "./store";
+import {setTray, hideOverlay, showOverlay, updateTrayLabel, deleteTrayMenu} from "./store";
 import {log} from "./log";
 
 let websocket = null;
@@ -153,6 +153,11 @@ function handleMessage(message) {
                     const updateTrayLabelJSON = trayMessage.slice(1);
                     let trayLabelData = JSON.parse(updateTrayLabelJSON)
                     updateTrayLabel(trayLabelData)
+                    break
+                case 'D':
+                    // Delete Tray Menu
+                    const id = trayMessage.slice(1);
+                    deleteTrayMenu(id)
                     break
                 default:
                     log('Unknown tray message: ' + message.data);

@@ -19,6 +19,9 @@ type DialogClient struct {
 	log        *logger.Logger
 }
 
+func (d *DialogClient) DeleteTrayMenuByID(id string) {
+}
+
 func NewDialogClient(log *logger.Logger) *DialogClient {
 	return &DialogClient{
 		log: log,
