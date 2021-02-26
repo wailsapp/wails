@@ -1433,8 +1433,8 @@ struct webview_priv
   {
     w->priv.min_width = 0;
     w->priv.min_height = 0;
-    w->priv.max_width = INT_MAX;
-    w->priv.max_height = INT_MAX;
+    w->priv.max_width = 100000000;
+    w->priv.max_height = 100000000;
     WNDCLASSEX wc;
     HINSTANCE hInstance;
     DWORD style;
