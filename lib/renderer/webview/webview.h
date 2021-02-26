@@ -76,10 +76,10 @@ struct webview_priv
   DWORD saved_ex_style;
   RECT saved_rect;
 
-  int min_width
-  int min_height
-  int max_width
-  int max_height
+  int min_width;
+  int min_height;
+  int max_width;
+  int max_height;
 };
 #elif defined(WEBVIEW_COCOA)
 #import <Cocoa/Cocoa.h>
@@ -1383,6 +1383,15 @@ struct webview_priv
       (*f)(w, arg);
       return TRUE;
     }
+    case WM_GETMINMAXINFO:
+    {
+        LPMINMAXINFO lpMMI = (LPMINMAXINFO) lParam;
+        lpMMI->ptMinTrackSize.x = w->priv.min_width;
+        lpMMI->ptMinTrackSize.y = w->priv.min_height;
+
+        lpMMI->ptMaxTrackSize.x = w->priv.max_width;
+        lpMMI->ptMaxTrackSize.y = w->priv.max_height;
+    }
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
   }
@@ -1422,6 +1431,10 @@ struct webview_priv
 
   WEBVIEW_API int webview_init(struct webview *w)
   {
+    w->priv.min_width = 0;
+    w->priv.min_height = 0;
+    w->priv.max_width = INT_MAX;
+    w->priv.max_height = INT_MAX;
     WNDCLASSEX wc;
     HINSTANCE hInstance;
     DWORD style;
@@ -1565,15 +1578,6 @@ struct webview_priv
       {
         break;
       }
-    }
-    case WM_GETMINMAXINFO:
-    {
-        LPMINMAXINFO lpMMI = (LPMINMAXINFO)msg.lParam;
-        lpMMI->ptMinTrackSize.x = w->priv.min_width;
-        lpMMI->ptMinTrackSize.y = w->priv.min_height;
-
-        lpMMI->ptMaxTrackSize.x = w->priv.max_width;
-        lpMMI->ptMaxTrackSize.y = w->priv.max_height;
     }
     default:
       TranslateMessage(&msg);
