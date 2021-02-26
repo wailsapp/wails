@@ -5,6 +5,8 @@
 #ifndef TRAYMENUSTORE_DARWIN_H
 #define TRAYMENUSTORE_DARWIN_H
 
+#include <pthread.h>
+
 typedef struct {
 
 	int dummy;
@@ -12,6 +14,8 @@ typedef struct {
     // This is our tray menu map
     // It maps tray IDs to TrayMenu*
     struct hashmap_s trayMenuMap;
+
+    pthread_mutex_t lock;
 
 } TrayMenuStore;
 
