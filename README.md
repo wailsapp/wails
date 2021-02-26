@@ -2,7 +2,7 @@
    <img src="logo_cropped.png" width="40%"><br/>
 </p>
 <p align="center">
-   A framework for building desktop applications using Go & Web Technologies.<br/><br/>
+   Build desktop applications using Go & Web Technologies.<br/><br/>
    <a href="https://github.com/wailsapp/wails/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
    <a href="https://goreportcard.com/report/github.com/wailsapp/wails"><img src="https://goreportcard.com/badge/github.com/wailsapp/wails"/></a>
    <a href="http://godoc.org/github.com/wailsapp/wails"><img src="https://img.shields.io/badge/godoc-reference-blue.svg"/></a>
@@ -20,7 +20,7 @@ The official docs can be found at [https://wails.app](https://wails.app).
 
 ## Features
 
-- Use standard Go libraries/frameworks for the backend
+- Use standard Go for the backend
 - Use any frontend technology to build your UI
 - Quickly create Vue, Vuetify or React frontends for your Go programs
 - Expose Go methods/functions to the frontend via a single bind command
