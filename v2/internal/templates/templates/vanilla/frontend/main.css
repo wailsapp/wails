@@ -4,6 +4,11 @@ html {
   color: white;
 }
 
+body {
+  color: white;
+  margin: 0;
+}
+
 #input {  
   margin: 3rem;
 }
