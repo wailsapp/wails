@@ -30,6 +30,18 @@ type AppConfig struct {
 
 	// Indicates whether your app should be resizable
 	Resizable bool
+	
+	// Minimum width of a resizable window
+	MinWidth int
+	
+	// Minimum height of a resizable window
+	MinHeight int
+	
+	// Maximum width of a resizable window
+	MaxWidth int
+	
+	// Maximum height of a resizable window
+	MaxHeight int
 
 	// Indicated if the devtools should be disabled
 	DisableInspector bool
@@ -63,6 +75,26 @@ func (a *AppConfig) GetHTML() string {
 // GetResizable returns true if the window should be resizable
 func (a *AppConfig) GetResizable() bool {
 	return a.Resizable
+}
+
+// GetMinWidth returns the minimum width of the window
+func (a *AppConfig) GetMinWidth() int {
+	return a.MinWidth
+}
+
+// GetMinHeight returns the minimum height of the window
+func (a *AppConfig) GetMinHeight() int {
+	return a.MinHeight
+}
+
+// GetMaxWidth returns the maximum width of the window
+func (a *AppConfig) GetMaxWidth() int {
+	return a.MaxWidth
+}
+
+// GetMaxHeight returns the maximum height of the window
+func (a *AppConfig) GetMaxHeight() int {
+	return a.MaxHeight
 }
 
 // GetDisableInspector returns true if the inspector should be disabled
@@ -115,6 +147,23 @@ func (a *AppConfig) merge(in *AppConfig) error {
 	if in.Height != 0 {
 		a.Height = in.Height
 	}
+	
+	if in.MinWidth != 0 {
+		a.MinWidth = in.MinWidth
+	}
+	
+	if in.MinHeight != 0 {
+		a.MinHeight = in.MinHeight
+	}
+	
+	if in.MaxWidth != 0 {
+		a.MaxWidth = in.MaxWidth
+	}
+	
+	if in.MaxHeight != 0 {
+		a.MaxHeight = in.MaxHeight
+	}
+	
 	a.Resizable = in.Resizable
 	a.DisableInspector = in.DisableInspector
 
@@ -127,6 +176,10 @@ func newConfig(userConfig *AppConfig) (*AppConfig, error) {
 		Width:     800,
 		Height:    600,
 		Resizable: true,
+		MinWidth: -1,
+		MinHeight: -1,
+		MaxWidth: -1,
+		MaxHeight: -1,
 		Title:     "My Wails App",
 		Colour:    "#FFF", // White by default
 		HTML:      defaultHTML,

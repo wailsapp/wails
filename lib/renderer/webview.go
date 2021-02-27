@@ -72,6 +72,15 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	if err != nil {
 		return err
 	}
+	
+	// Set minimum and maximum sizes 
+	if config.GetMinWidth() != -1 && config.GetMinHeight() != -1  {
+		w.SetMinSize(config.GetMinWidth(), config.GetMinHeight());
+	}	
+	
+	if config.GetMaxWidth() != -1 && config.GetMaxHeight() != -1  {
+		w.SetMaxSize(config.GetMaxWidth(), config.GetMaxHeight());
+	}
 
 	w.log.Info("Initialised")
 	
