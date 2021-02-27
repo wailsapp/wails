@@ -16,11 +16,10 @@ func main() {
 	app := NewBasic()
 
 	err := wails.Run(&options.App{
-		Title:     "{{.ProjectName}}",
-		Width:     800,
-		Height:    600,
-		MinWidth:  800,
-		MinHeight: 600,
+		Title:         "{{.ProjectName}}",
+		Width:         800,
+		Height:        600,
+		DisableResize: true,
 		Mac: &mac.Options{
 			WebviewIsTransparent:          true,
 			WindowBackgroundIsTranslucent: true,
