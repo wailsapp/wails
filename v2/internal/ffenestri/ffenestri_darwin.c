@@ -1177,13 +1177,19 @@ void createDelegate(struct Application *app) {
 bool windowShouldClose(id self, SEL cmd, id sender) {
     msg(sender, s("orderBack:"));
     return false;
-  }
+}
+
+bool windowShouldExit(id self, SEL cmd, id sender) {
+    msg(sender, s("orderBack:"));
+    messageFromWindowCallback("WC");
+    return false;
+}
 
 void createMainWindow(struct Application *app) {
 	// Create main window
 	id mainWindow = ALLOC("NSWindow");
 	mainWindow = msg(mainWindow, s("initWithContentRect:styleMask:backing:defer:"),
-		  CGRectMake(0, 0, app->width, app->height), app->decorations, NSBackingStoreBuffered, NO);
+    CGRectMake(0, 0, app->width, app->height), app->decorations, NSBackingStoreBuffered, NO);
 	msg(mainWindow, s("autorelease"));
 
 	// Set Appearance
@@ -1197,14 +1203,16 @@ void createMainWindow(struct Application *app) {
 	msg(mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
 	msg(mainWindow, s("setTitleVisibility:"), app->hideTitle);
 
-	if( app->hideWindowOnClose ) {
-	    // Create window delegate to override windowShouldClose
-        Class delegateClass = objc_allocateClassPair((Class) c("NSObject"), "WindowDelegate", 0);
-        bool resultAddProtoc = class_addProtocol(delegateClass, objc_getProtocol("NSWindowDelegate"));
+    // Create window delegate to override windowShouldClose
+    Class delegateClass = objc_allocateClassPair((Class) c("NSObject"), "WindowDelegate", 0);
+    bool resultAddProtoc = class_addProtocol(delegateClass, objc_getProtocol("NSWindowDelegate"));
+    if( app->hideWindowOnClose ) {
         class_replaceMethod(delegateClass, s("windowShouldClose:"), (IMP) windowShouldClose, "v@:@");
-        app->windowDelegate = msg((id)delegateClass, s("new"));
-        msg(mainWindow, s("setDelegate:"), app->windowDelegate);
-	}
+    } else {
+        class_replaceMethod(delegateClass, s("windowShouldClose:"), (IMP) windowShouldExit, "v@:@");
+    }
+    app->windowDelegate = msg((id)delegateClass, s("new"));
+    msg(mainWindow, s("setDelegate:"), app->windowDelegate);
 
 	app->mainWindow = mainWindow;
 }
