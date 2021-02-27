@@ -31,16 +31,16 @@ type AppConfig struct {
 	// Indicates whether your app should be resizable
 	Resizable bool
 	
-	// Minimum width of a resizable window
+	// Minimum width of a resizable window. If set, MinHeight should also be set.
 	MinWidth int
 	
-	// Minimum height of a resizable window
+	// Minimum height of a resizable window. If set, MinWidth should also be set. 
 	MinHeight int
 	
-	// Maximum width of a resizable window
+	// Maximum width of a resizable window. If set, MaxHeight should also be set.
 	MaxWidth int
 	
-	// Maximum height of a resizable window
+	// Maximum height of a resizable window. If set, MaxWidth should also be set.
 	MaxHeight int
 
 	// Indicated if the devtools should be disabled

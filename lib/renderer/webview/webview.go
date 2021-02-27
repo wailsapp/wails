@@ -187,10 +187,10 @@ type WebView interface {
 	Focus()
 	
 	// SetMinSize() sets the minimum size of the window
-	SetMinSize(width int, height int)
+	SetMinSize(width, height int)
 	
 	// SetMaxSize() sets the maximum size of the window
-	SetMaxSize(width int, height int)
+	SetMaxSize(width, height int)
 
 	// SetFullscreen() controls window full-screen mode. This method must be
 	// called from the main thread only. See Dispatch() for more details.

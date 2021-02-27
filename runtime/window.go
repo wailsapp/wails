@@ -68,12 +68,12 @@ func (r *Window) SetColour(colour string) error {
 }
 
 // SetMinSize sets the minimum size of a resizable window
-func (r *Window) SetMinSize(width int, height int) {
+func (r *Window) SetMinSize(width, height int) {
 	r.renderer.SetMinSize(width, height)
 }
 
 // SetMaxSize sets the maximum size of a resizable window
-func (r *Window) SetMaxSize(width int, height int) {
+func (r *Window) SetMaxSize(width, height int) {
 	r.renderer.SetMaxSize(width, height)
 }
 
