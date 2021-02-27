@@ -2,9 +2,11 @@ package build
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -48,6 +50,12 @@ func packageApplication(options *Options) error {
 
 	// Generate Icons
 	err = processApplicationIcon(resourceDir, options.ProjectData.AssetsDir)
+	if err != nil {
+		return err
+	}
+
+	// Sign app if needed
+	err = signApplication(options)
 	if err != nil {
 		return err
 	}
@@ -175,4 +183,22 @@ func processApplicationIcon(resourceDir string, iconsDir string) (err error) {
 		}
 	}()
 	return icns.Encode(dest, srcImg)
+}
+
+func signApplication(options *Options) error {
+	bundlename := filepath.Join(options.BuildDirectory, options.ProjectData.Name+".app")
+	identity := fmt.Sprintf(`"%s"`, options.AppleIdentity)
+	cmd := exec.Command("codesign", "--deep", "--force", "--verbose", "--sign", identity, bundlename)
+	var stdo, stde bytes.Buffer
+	cmd.Stdout = &stdo
+	cmd.Stderr = &stde
+
+	// Run command
+	err := cmd.Run()
+
+	// Format error if we have one
+	if err != nil {
+		return fmt.Errorf("%s\n%s", err, string(stde.Bytes()))
+	}
+	return nil
 }

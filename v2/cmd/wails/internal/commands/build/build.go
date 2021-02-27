@@ -57,6 +57,11 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	keepAssets := false
 	command.BoolFlag("k", "Keep generated assets", &keepAssets)
 
+	appleIdentity := ""
+	if runtime.GOOS == "darwin" {
+		command.StringFlag("sign", "Signs your app with the given identity.", &appleIdentity)
+	}
+
 	command.Action(func() error {
 
 		// Create logger
@@ -72,6 +77,11 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			app.PrintBanner()
 		}
 
+		// Ensure package is used with apple identity
+		if appleIdentity != "" && pack == false {
+			return fmt.Errorf("must use `-package` flag when using `-sign`")
+		}
+
 		task := fmt.Sprintf("Building %s Application", strings.Title(outputType))
 		logger.Println(task)
 		logger.Println(strings.Repeat("-", len(task)))
@@ -84,14 +94,15 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 		// Create BuildOptions
 		buildOptions := &build.Options{
-			Logger:     logger,
-			OutputType: outputType,
-			Mode:       mode,
-			Pack:       pack,
-			Platform:   platform,
-			LDFlags:    ldflags,
-			Compiler:   compilerCommand,
-			KeepAssets: keepAssets,
+			Logger:        logger,
+			OutputType:    outputType,
+			Mode:          mode,
+			Pack:          pack,
+			Platform:      platform,
+			LDFlags:       ldflags,
+			Compiler:      compilerCommand,
+			KeepAssets:    keepAssets,
+			AppleIdentity: appleIdentity,
 		}
 
 		return doBuild(buildOptions)

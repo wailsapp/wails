@@ -38,6 +38,7 @@ type Options struct {
 	BuildDirectory string               // Directory to use for building the application
 	CompiledBinary string               // Fully qualified path to the compiled binary
 	KeepAssets     bool                 // /Keep the generated assets/files
+	AppleIdentity  string
 }
 
 // GetModeAsString returns the current mode as a string
