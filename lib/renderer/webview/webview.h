@@ -425,13 +425,17 @@ struct webview_priv
     w->priv.min_height = height;
 
     GdkGeometry hints;
+    GdkWindowHints usedHints = (GdkWindowHints) GDK_HINT_MIN_SIZE;
     
     hints.min_width = w->priv.min_width;
     hints.min_height = w->priv.min_height;
-    hints.max_width = w->priv.max_width;
-    hints.max_height = w->priv.max_height;
+    if (w->priv.max_width != -1) {
+      hints.max_width = w->priv.max_width;
+      hints.max_height = w->priv.max_height;
+      usedHints = (GdkWindowHints)(GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE);
+    }
     
-    gtk_window_set_geometry_hints(GTK_WINDOW(w->priv.window), w->priv.window, &hints, (GdkWindowHints)(GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE));
+    gtk_window_set_geometry_hints(GTK_WINDOW(w->priv.window), w->priv.window, &hints, usedHints);
   }
 
   WEBVIEW_API void webview_maxsize(struct webview *w, int width, int height) {
@@ -440,13 +444,17 @@ struct webview_priv
     w->priv.max_height = height;
   
     GdkGeometry hints;
+    GdkWindowHints usedHints = (GdkWindowHints) GDK_HINT_MAX_SIZE;
     
-    hints.min_width = w->priv.min_width;
-    hints.min_height = w->priv.min_height;
+    if (w->priv.min_width != -1) {
+      hints.min_width = w->priv.min_width;
+      hints.min_height = w->priv.min_height;
+      usedHints = (GdkWindowHints)(GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE);
+    }
     hints.max_width = w->priv.max_width;
     hints.max_height = w->priv.max_height;
     
-    gtk_window_set_geometry_hints(GTK_WINDOW(w->priv.window), w->priv.window, &hints, (GdkWindowHints)(GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE));
+    gtk_window_set_geometry_hints(GTK_WINDOW(w->priv.window), w->priv.window, &hints, usedHints);
   }
 
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen)
