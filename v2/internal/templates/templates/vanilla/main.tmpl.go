@@ -17,8 +17,8 @@ func main() {
 
 	err := wails.Run(&options.App{
 		Title:     "{{.ProjectName}}",
-		Width:     1280,
-		Height:    1024,
+		Width:     800,
+		Height:    600,
 		MinWidth:  800,
 		MinHeight: 600,
 		Mac: &mac.Options{
