@@ -1,21 +1,39 @@
 package main
 
 import (
-	"github.com/wailsapp/wails/v2"
 	"log"
+
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/logger"
+	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
 
 func main() {
 
 	// Create application with options
-	app, err := wails.CreateApp("{{.ProjectName}}", 1024, 768)
-	if err != nil {
-		log.Fatal(err)
-	}
+	app := NewBasic()
 
-	app.Bind(newBasic())
-
-	err = app.Run()
+	err := wails.Run(&options.App{
+		Title:     "{{.ProjectName}}",
+		Width:     1280,
+		Height:    1024,
+		MinWidth:  800,
+		MinHeight: 600,
+		Mac: &mac.Options{
+			WebviewIsTransparent:          true,
+			WindowBackgroundIsTranslucent: true,
+			TitleBar:                      mac.TitleBarHiddenInset(),
+			Menu:                          menu.DefaultMacMenu(),
+		},
+		LogLevel: logger.DEBUG,
+		Startup:  app.startup,
+		Shutdown: app.shutdown,
+		Bind: []interface{}{
+			app,
+		},
+	})
 	if err != nil {
 		log.Fatal(err)
 	}

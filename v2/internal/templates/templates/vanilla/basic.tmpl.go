@@ -12,20 +12,19 @@ type Basic struct {
 }
 
 // newBasic creates a new Basic application struct
-func newBasic() *Basic {
+func NewBasic() *Basic {
 	return &Basic{}
 }
 
-// WailsInit is called at application startup
-func (b *Basic) WailsInit(runtime *wails.Runtime) error {
+// startup is called at application startup
+func (b *Basic) startup(runtime *wails.Runtime) {
 	// Perform your setup here
 	b.runtime = runtime
 	runtime.Window.SetTitle("{{.ProjectName}}")
-	return nil
 }
 
-// WailsShutdown is called at application termination
-func (b *Basic) WailsShutdown() {
+// shutdown is called at application termination
+func (b *Basic) shutdown() {
 	// Perform your teardown here
 }
 
