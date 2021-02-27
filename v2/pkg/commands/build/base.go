@@ -145,6 +145,13 @@ func (b *BaseBuilder) CleanUp() {
 // CompileProject compiles the project
 func (b *BaseBuilder) CompileProject(options *Options) error {
 
+	// Run go mod tidy first
+	cmd := exec.Command(options.Compiler, "mod", "tidy")
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+
 	// Default go build command
 	commands := slicer.String([]string{"build"})
 
@@ -188,7 +195,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	// Get application build directory
 	appDir := options.BuildDirectory
-	err := cleanBuildDirectory(options)
+	err = cleanBuildDirectory(options)
 	if err != nil {
 		return err
 	}
@@ -211,7 +218,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	options.CompiledBinary = compiledBinary
 
 	// Create the command
-	cmd := exec.Command(options.Compiler, commands.AsSlice()...)
+	cmd = exec.Command(options.Compiler, commands.AsSlice()...)
 
 	// Set the directory
 	cmd.Dir = b.projectData.Path
