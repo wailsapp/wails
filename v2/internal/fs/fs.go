@@ -40,7 +40,7 @@ func Mkdir(dirname string) error {
 // Returns error on failure
 func MkDirs(fullPath string, mode ...os.FileMode) error {
 	var perms os.FileMode
-	perms = 0700
+	perms = 0755
 	if len(mode) == 1 {
 		perms = mode[0]
 	}
@@ -243,7 +243,7 @@ func CopyDir(src string, dst string) (err error) {
 		return fmt.Errorf("destination already exists")
 	}
 
-	err = os.MkdirAll(dst, si.Mode())
+	err = MkDirs(dst)
 	if err != nil {
 		return
 	}
