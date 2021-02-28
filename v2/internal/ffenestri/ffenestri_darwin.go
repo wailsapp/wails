@@ -90,5 +90,10 @@ func (a *Application) processPlatformSettings() error {
 		}
 	}
 
+	// Process URL Handlers
+	if a.config.Mac.URLHandlers != nil {
+		C.HasURLHandlers(a.app)
+	}
+
 	return nil
 }

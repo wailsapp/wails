@@ -14,6 +14,10 @@
 // Macros to make it slightly more sane
 #define msg objc_msgSend
 
+#define kInternetEventClass 'GURL'
+#define kAEGetURL 'GURL'
+#define keyDirectObject '----'
+
 #define c(str) (id)objc_getClass(str)
 #define s(str) sel_registerName(str)
 #define u(str) sel_getUid(str)
@@ -117,5 +121,7 @@ void AddTrayMenu(struct Application* app, const char *);
 void SetActivationPolicy(struct Application* app, int policy);
 
 void* lookupStringConstant(id constantName);
+
+void HasURLHandlers(struct Application* app);
 
 #endif

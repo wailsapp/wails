@@ -46,6 +46,15 @@ int hashmap_log(void *const context, struct hashmap_element_s *const e) {
   return 0;
 }
 
+void filelog(const char *message) {
+    FILE *fp = fopen("/tmp/wailslog.txt", "ab");
+    if (fp != NULL)
+    {
+        fputs(message, fp);
+        fclose(fp);
+    }
+}
+
 // Utility function to visualise a hashmap
 void dumpHashmap(const char *name, struct hashmap_s *hashmap) {
   printf("%s = { ", name);
@@ -113,6 +122,7 @@ struct Application {
 	int useToolBar;
 	int hideToolbarSeparator;
 	int windowBackgroundIsTranslucent;
+	int hasURLHandlers;
 
 	// Menu
 	Menu *applicationMenu;
@@ -1143,16 +1153,30 @@ void DarkModeEnabled(struct Application *app, const char *callbackID) {
 	);
 }
 
+void getURL(id self, SEL selector, id event, id replyEvent) {
+    id desc = msg(event, s("paramDescriptorForKeyword:"), keyDirectObject);
+    id url = msg(desc, s("stringValue"));
+    const char* curl = cstr(url);
+    const char* message = concat("UC", curl);
+    messageFromWindowCallback(message);
+    MEMFREE(message);
+}
+
+
 void createDelegate(struct Application *app) {
 		// Define delegate
 	Class delegateClass = objc_allocateClassPair((Class) c("NSObject"), "AppDelegate", 0);
 	bool resultAddProtoc = class_addProtocol(delegateClass, objc_getProtocol("NSApplicationDelegate"));
     class_addMethod(delegateClass, s("applicationShouldTerminateAfterLastWindowClosed:"), (IMP) no, "c@:@");
-//	class_addMethod(delegateClass, s("applicationWillTerminate:"), (IMP) closeWindow, "v@:@");
 	class_addMethod(delegateClass, s("applicationWillFinishLaunching:"), (IMP) willFinishLaunching, "v@:@");
 
 	// All Menu Items use a common callback
     class_addMethod(delegateClass, s("menuItemCallback:"), (IMP)menuItemCallback, "v@:@");
+
+    // If there are URL Handlers, register the callback method
+    if( app->hasURLHandlers ) {
+    	class_addMethod(delegateClass, s("getUrl:withReplyEvent:"), (IMP) getURL, "i@:@@");
+    }
 
 	// Script handler
 	class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler, "v@:@@");
@@ -1161,6 +1185,12 @@ void createDelegate(struct Application *app) {
 	// Create delegate
 	id delegate = msg((id)delegateClass, s("new"));
 	objc_setAssociatedObject(delegate, "application", (id)app, OBJC_ASSOCIATION_ASSIGN);
+
+    // If there are URL Handlers, register a listener for them
+    if( app->hasURLHandlers ) {
+        id eventManager = msg(c("NSAppleEventManager"), s("sharedAppleEventManager"));
+        msg(eventManager, s("setEventHandler:andSelector:forEventClass:andEventID:"), delegate, s("getUrl:withReplyEvent:"), kInternetEventClass, kAEGetURL);
+    }
 
 	// Theme change listener
 	class_addMethod(delegateClass, s("themeChanged:"), (IMP) themeChanged, "v@:@@");
@@ -1831,6 +1861,10 @@ void SetActivationPolicy(struct Application* app, int policy) {
     app->activationPolicy = policy;
 }
 
+void HasURLHandlers(struct Application* app) {
+    app->hasURLHandlers = 1;
+}
+
 // Quit will stop the cocoa application and free up all the memory
 // used by the application
 void Quit(struct Application *app) {
@@ -1903,6 +1937,8 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->shuttingDown = false;
 
 	result->activationPolicy = NSApplicationActivationPolicyRegular;
+
+	result->hasURLHandlers = 0;
 
     return (void*) result;
 }

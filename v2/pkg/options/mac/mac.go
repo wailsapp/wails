@@ -20,4 +20,5 @@ type Options struct {
 	TrayMenus                     []*menu.TrayMenu
 	ContextMenus                  []*menu.ContextMenu
 	ActivationPolicy              ActivationPolicy
+	URLHandlers                   map[string]func(string)
 }

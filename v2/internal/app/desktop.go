@@ -35,6 +35,7 @@ type App struct {
 	//binding    *subsystem.Binding
 	call       *subsystem.Call
 	menu       *subsystem.Menu
+	url        *subsystem.URL
 	dispatcher *messagedispatcher.Dispatcher
 
 	menuManager *menumanager.Manager
@@ -158,6 +159,19 @@ func (a *App) Run() error {
 	err = dispatcher.Start()
 	if err != nil {
 		return err
+	}
+
+	if a.options.Mac.URLHandlers != nil {
+		// Start the url handler subsystem
+		url, err := subsystem.NewURL(a.servicebus, a.logger, a.options.Mac.URLHandlers)
+		if err != nil {
+			return err
+		}
+		a.url = url
+		err = a.url.Start()
+		if err != nil {
+			return err
+		}
 	}
 
 	// Start the eventing subsystem

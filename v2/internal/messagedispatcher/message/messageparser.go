@@ -21,13 +21,14 @@ var messageParsers = map[byte]func(string) (*parsedMessage, error){
 	'M': menuMessageParser,
 	'T': trayMessageParser,
 	'X': contextMenusMessageParser,
+	'U': urlMessageParser,
 }
 
 // Parse will attempt to parse the given message
 func Parse(message string) (*parsedMessage, error) {
 
 	if len(message) == 0 {
-		return nil, fmt.Errorf("MessageParser received blank message");
+		return nil, fmt.Errorf("MessageParser received blank message")
 	}
 
 	parseMethod := messageParsers[message[0]]
