@@ -55,9 +55,11 @@ func packageApplication(options *Options) error {
 	}
 
 	// Sign app if needed
-	err = signApplication(options)
-	if err != nil {
-		return err
+	if options.AppleIdentity != "" {
+		err = signApplication(options)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -188,7 +190,7 @@ func processApplicationIcon(resourceDir string, iconsDir string) (err error) {
 func signApplication(options *Options) error {
 	bundlename := filepath.Join(options.BuildDirectory, options.ProjectData.Name+".app")
 	identity := fmt.Sprintf(`"%s"`, options.AppleIdentity)
-	cmd := exec.Command("codesign", "--deep", "--force", "--verbose", "--sign", identity, bundlename)
+	cmd := exec.Command("codesign", "--sign", identity, "--deep", "--force", "--verbose", "--timestamp", "--options", "runtime", bundlename)
 	var stdo, stde bytes.Buffer
 	cmd.Stdout = &stdo
 	cmd.Stderr = &stde
