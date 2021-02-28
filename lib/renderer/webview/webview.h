@@ -179,7 +179,8 @@ struct webview_priv
   WEBVIEW_API int webview_inject_css(struct webview *w, const char *css);
   WEBVIEW_API void webview_set_title(struct webview *w, const char *title);
   WEBVIEW_API void webview_focus(struct webview *w);
-  WEBVIEW_API void webview_minsize(struct webview *w, int width, int height);  WEBVIEW_API void webview_maxsize(struct webview *w, int width, int height);
+  WEBVIEW_API void webview_minsize(struct webview *w, int width, int height);  
+  WEBVIEW_API void webview_maxsize(struct webview *w, int width, int height);
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen);
   WEBVIEW_API void webview_set_color(struct webview *w, uint8_t r, uint8_t g,
                                      uint8_t b, uint8_t a);
@@ -1398,20 +1399,28 @@ struct webview_priv
     {
       if (w != NULL) {
         // get pixel density 
-        HDC hDC = GetDC(hwnd);
-        int g_DPIScaleX = GetDeviceCaps(hDC, LOGPIXELSX) / 96.0;
-        int g_DPIScaleY = GetDeviceCaps(hDC, LOGPIXELSY) / 96.0;
-        ReleaseDC(hwnd, hDC);
-      
+        HDC hDC = GetDC(NULL);
+        double DPIScaleX = GetDeviceCaps(hDC, 88)/96.0;
+        double DPIScaleY = GetDeviceCaps(hDC, 90)/96.0;
+        ReleaseDC(NULL, hDC);
+      	
+        RECT rcClient, rcWind;
+        POINT ptDiff;
+        GetClientRect(hwnd, &rcClient);
+        GetWindowRect(hwnd, &rcWind);
+
+        int widthExtra = (rcWind.right - rcWind.left) - rcClient.right;
+        int heightExtra = (rcWind.bottom - rcWind.top) - rcClient.bottom;
+
         LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
       
         if (w->priv.min_width != -1) {
-          lpMMI->ptMinTrackSize.x = w->priv.min_width * g_DPIScaleX;
-          lpMMI->ptMinTrackSize.y = w->priv.min_height * g_DPIScaleY;
+          lpMMI->ptMinTrackSize.x = w->priv.min_width * DPIScaleX + widthExtra;
+          lpMMI->ptMinTrackSize.y = w->priv.min_height * DPIScaleY + heightExtra;
         }
         if (w->priv.max_width != -1) {
-          lpMMI->ptMaxTrackSize.x = w->priv.max_width * g_DPIScaleX;
-          lpMMI->ptMaxTrackSize.y = w->priv.max_height * g_DPIScaleY;
+          lpMMI->ptMaxTrackSize.x = w->priv.max_width * DPIScaleX + widthExtra;
+          lpMMI->ptMaxTrackSize.y = w->priv.max_height * DPIScaleY + heightExtra;
         }
       }
       

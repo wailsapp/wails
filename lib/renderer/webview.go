@@ -52,10 +52,37 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	// Save the config
 	w.config = config
 
+	width := config.GetWidth()
+	height := config.GetHeight()
+
+	// Clamp width and height
+	minWidth, minHeight := config.GetMinWidth(), config.GetMinHeight()
+	maxWidth, maxHeight := config.GetMaxWidth(), config.GetMaxHeight()
+	setMinSize := minWidth != -1 && minHeight != -1
+	setMaxSize := maxWidth != -1 && maxHeight != -1
+
+	if setMinSize {
+		if width < minWidth {
+			width = minWidth
+		}
+		if height < minHeight {
+			height = minHeight
+		}
+	}
+
+	if setMaxSize {
+		if width > maxWidth {
+			width = maxWidth
+		}
+		if height > maxHeight {
+			height = maxHeight
+		}
+	}
+
 	// Create the WebView instance
 	w.window = wv.NewWebview(wv.Settings{
-		Width:     config.GetWidth(),
-		Height:    config.GetHeight(),
+		Width:     width,
+		Height:    height,
 		Title:     config.GetTitle(),
 		Resizable: config.GetResizable(),
 		URL:       config.GetHTML(),
@@ -65,6 +92,14 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 		},
 	})
 
+	// Set minimum and maximum sizes
+	if setMinSize {
+		w.SetMinSize(minWidth, minHeight)
+	}
+	if setMaxSize {
+		w.SetMaxSize(maxWidth, maxHeight)
+	}
+
 	// SignalManager.OnExit(w.Exit)
 
 	// Set colour
@@ -72,18 +107,9 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	if err != nil {
 		return err
 	}
-	
-	// Set minimum and maximum sizes 
-	if config.GetMinWidth() != -1 && config.GetMinHeight() != -1  {
-		w.SetMinSize(config.GetMinWidth(), config.GetMinHeight());
-	}	
-	
-	if config.GetMaxWidth() != -1 && config.GetMaxHeight() != -1  {
-		w.SetMaxSize(config.GetMaxWidth(), config.GetMaxHeight());
-	}
 
 	w.log.Info("Initialised")
-	
+
 	return nil
 }
 

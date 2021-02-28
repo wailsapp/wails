@@ -77,7 +77,6 @@ func (r *Window) SetMaxSize(width, height int) {
 	r.renderer.SetMaxSize(width, height)
 }
 
-
 // Fullscreen makes the window fullscreen
 func (r *Window) Fullscreen() {
 	r.renderer.Fullscreen()

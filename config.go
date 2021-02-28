@@ -30,16 +30,16 @@ type AppConfig struct {
 
 	// Indicates whether your app should be resizable
 	Resizable bool
-	
+
 	// Minimum width of a resizable window. If set, MinHeight should also be set.
 	MinWidth int
-	
-	// Minimum height of a resizable window. If set, MinWidth should also be set. 
+
+	// Minimum height of a resizable window. If set, MinWidth should also be set.
 	MinHeight int
-	
+
 	// Maximum width of a resizable window. If set, MaxHeight should also be set.
 	MaxWidth int
-	
+
 	// Maximum height of a resizable window. If set, MaxWidth should also be set.
 	MaxHeight int
 
@@ -147,23 +147,23 @@ func (a *AppConfig) merge(in *AppConfig) error {
 	if in.Height != 0 {
 		a.Height = in.Height
 	}
-	
+
 	if in.MinWidth != 0 {
 		a.MinWidth = in.MinWidth
 	}
-	
+
 	if in.MinHeight != 0 {
 		a.MinHeight = in.MinHeight
 	}
-	
+
 	if in.MaxWidth != 0 {
 		a.MaxWidth = in.MaxWidth
 	}
-	
+
 	if in.MaxHeight != 0 {
 		a.MaxHeight = in.MaxHeight
 	}
-	
+
 	a.Resizable = in.Resizable
 	a.DisableInspector = in.DisableInspector
 
@@ -176,9 +176,9 @@ func newConfig(userConfig *AppConfig) (*AppConfig, error) {
 		Width:     800,
 		Height:    600,
 		Resizable: true,
-		MinWidth: -1,
+		MinWidth:  -1,
 		MinHeight: -1,
-		MaxWidth: -1,
+		MaxWidth:  -1,
 		MaxHeight: -1,
 		Title:     "My Wails App",
 		Colour:    "#FFF", // White by default

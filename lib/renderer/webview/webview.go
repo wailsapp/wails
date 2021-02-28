@@ -185,10 +185,10 @@ type WebView interface {
 
 	// Focus() puts the main window into focus
 	Focus()
-	
+
 	// SetMinSize() sets the minimum size of the window
 	SetMinSize(width, height int)
-	
+
 	// SetMaxSize() sets the maximum size of the window
 	SetMaxSize(width, height int)
 
@@ -334,11 +334,11 @@ func (w *webview) Focus() {
 }
 
 func (w *webview) SetMinSize(width, height int) {
-    C.CgoWebViewMinSize(w.w, C.int(width), C.int(height))
+	C.CgoWebViewMinSize(w.w, C.int(width), C.int(height))
 }
 
 func (w *webview) SetMaxSize(width, height int) {
-    C.CgoWebViewMaxSize(w.w, C.int(width), C.int(height))
+	C.CgoWebViewMaxSize(w.w, C.int(width), C.int(height))
 }
 
 func (w *webview) SetFullscreen(fullscreen bool) {
