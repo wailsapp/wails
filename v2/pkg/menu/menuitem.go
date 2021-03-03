@@ -39,8 +39,11 @@ type MenuItem struct {
 	// Image - base64 image data
 	Image string
 
-	// MacTemplateImage indicates that on a mac, this image is a template image
+	// MacTemplateImage indicates that on a Mac, this image is a template image
 	MacTemplateImage bool
+
+	// MacAlternate indicates that this item is an alternative to the previous menu item
+	MacAlternate bool
 
 	// Tooltip
 	Tooltip string

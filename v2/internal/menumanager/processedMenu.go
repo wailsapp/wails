@@ -37,6 +37,7 @@ type ProcessedMenuItem struct {
 	// Image - base64 image data
 	Image            string `json:",omitempty"`
 	MacTemplateImage bool   `json:", omitempty"`
+	MacAlternate     bool   `json:", omitempty"`
 
 	// Tooltip
 	Tooltip string `json:",omitempty"`
@@ -60,6 +61,7 @@ func NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *Pr
 		FontName:         menuItem.FontName,
 		Image:            menuItem.Image,
 		MacTemplateImage: menuItem.MacTemplateImage,
+		MacAlternate:     menuItem.MacAlternate,
 		Tooltip:          menuItem.Tooltip,
 	}
 

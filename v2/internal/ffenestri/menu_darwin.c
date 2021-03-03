@@ -576,7 +576,7 @@ id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const c
     return item;
 }
 
-id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image, const char* fontName, int fontSize, const char* RGBA, bool templateImage) {
+id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image, const char* fontName, int fontSize, const char* RGBA, bool templateImage, bool alternate) {
     id item = ALLOC("NSMenuItem");
 
     // Create a MenuItemCallbackData
@@ -585,9 +585,15 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
     id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), callback);
     msg(item, s("setRepresentedObject:"), wrappedId);
 
-    id key = processAcceleratorKey(acceleratorkey);
-    msg(item, s("initWithTitle:action:keyEquivalent:"), str(title),
-        s("menuItemCallback:"), key);
+    if( !alternate ) {
+        id key = processAcceleratorKey(acceleratorkey);
+        msg(item, s("initWithTitle:action:keyEquivalent:"), str(title),
+            s("menuItemCallback:"), key);
+            printf("Menuitem title: %s\n", title);
+    } else {
+        msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuItemCallback:"), str(""));
+            printf("ALT Menuitem title: %s\n", title);
+    }
 
     if( tooltip != NULL ) {
         msg(item, s("setToolTip:"), str(tooltip));
@@ -663,9 +669,15 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
     msg(item, s("autorelease"));
 
     // Process modifiers
-    if( modifiers != NULL ) {
+    if( modifiers != NULL && !alternate) {
         unsigned long modifierFlags = parseModifiers(modifiers);
         msg(item, s("setKeyEquivalentModifierMask:"), modifierFlags);
+    }
+
+    // alternate
+    if( alternate ) {
+        msg(item, s("setAlternate:"), true);
+        msg(item, s("setKeyEquivalentModifierMask:"), NSEventModifierFlagOption);
     }
     msg(parentMenu, s("addItem:"), item);
 
@@ -727,6 +739,11 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
         label = "(empty)";
     }
 
+
+    // Is this an alternate menu item?
+    bool alternate = false;
+    getJSONBool(item, "MacAlternate", &alternate);
+
     const char *menuid = getJSONString(item, "ID");
     if ( menuid == NULL) {
         menuid = "";
@@ -782,7 +799,7 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     if( type != NULL ) {
 
         if( STREQ(type->string_, "Text")) {
-            processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers, tooltip, image, fontName, fontSize, RGBA, templateImage);
+            processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers, tooltip, image, fontName, fontSize, RGBA, templateImage, alternate);
         }
         else if ( STREQ(type->string_, "Separator")) {
             addSeparator(parentMenu);
