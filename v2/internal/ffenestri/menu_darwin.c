@@ -589,10 +589,8 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
         id key = processAcceleratorKey(acceleratorkey);
         msg(item, s("initWithTitle:action:keyEquivalent:"), str(title),
             s("menuItemCallback:"), key);
-            printf("Menuitem title: %s\n", title);
     } else {
         msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuItemCallback:"), str(""));
-            printf("ALT Menuitem title: %s\n", title);
     }
 
     if( tooltip != NULL ) {
