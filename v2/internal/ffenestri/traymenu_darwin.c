@@ -6,6 +6,8 @@
 #include "traymenu_darwin.h"
 #include "trayicons.h"
 
+extern Class trayMenuDelegateClass;
+
 // A cache for all our tray menu icons
 // Global because it's a singleton
 struct hashmap_s trayIconCache;
@@ -34,6 +36,8 @@ TrayMenu* NewTrayMenu(const char* menuJSON) {
 
     // Create the menu
     result->menu = NewMenu(processedMenu);
+
+    result->delegate = NULL;
 
     // Init tray status bar item
     result->statusbaritem = NULL;
@@ -82,8 +86,6 @@ void UpdateTrayIcon(TrayMenu *trayMenu) {
     msg(statusBarButton, s("setImage:"), trayImage);
 }
 
-
-
 void ShowTrayMenu(TrayMenu* trayMenu) {
 
     // Create a status bar item if we don't have one
@@ -91,7 +93,6 @@ void ShowTrayMenu(TrayMenu* trayMenu) {
         id statusBar = msg( c("NSStatusBar"), s("systemStatusBar") );
         trayMenu->statusbaritem = msg(statusBar, s("statusItemWithLength:"), NSVariableStatusItemLength);
         msg(trayMenu->statusbaritem, s("retain"));
-
     }
 
     id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
@@ -105,6 +106,16 @@ void ShowTrayMenu(TrayMenu* trayMenu) {
 
     // Update the menu
     id menu = GetMenu(trayMenu->menu);
+    objc_setAssociatedObject(menu, "trayMenuID", str(trayMenu->ID), OBJC_ASSOCIATION_ASSIGN);
+
+	// Create delegate
+	id trayMenuDelegate = msg((id)trayMenuDelegateClass, s("new"));
+	msg(menu, s("setDelegate:"), trayMenuDelegate);
+	objc_setAssociatedObject(trayMenuDelegate, "menu", menu, OBJC_ASSOCIATION_ASSIGN);
+
+    // Create menu delegate
+    trayMenu->delegate = trayMenuDelegate;
+
     msg(trayMenu->statusbaritem, s("setMenu:"), menu);
 }
 
@@ -151,6 +162,10 @@ void DeleteTrayMenu(TrayMenu* trayMenu) {
         msg(statusBar, s("removeStatusItem:"), trayMenu->statusbaritem);
         msg(trayMenu->statusbaritem, s("release"));
         trayMenu->statusbaritem = NULL;
+    }
+
+    if ( trayMenu->delegate != NULL ) {
+        msg(trayMenu->delegate, s("release"));
     }
 
     // Free the tray menu memory

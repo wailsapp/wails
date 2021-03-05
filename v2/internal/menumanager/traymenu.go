@@ -29,6 +29,7 @@ type TrayMenu struct {
 	menuItemMap   *MenuItemMap
 	menu          *menu.Menu
 	ProcessedMenu *WailsMenu
+	trayMenu      *menu.TrayMenu
 }
 
 func (t *TrayMenu) AsJSON() (string, error) {
@@ -46,12 +47,35 @@ func NewTrayMenu(trayMenu *menu.TrayMenu) *TrayMenu {
 		Icon:        trayMenu.Icon,
 		menu:        trayMenu.Menu,
 		menuItemMap: NewMenuItemMap(),
+		trayMenu:    trayMenu,
 	}
 
 	result.menuItemMap.AddMenu(trayMenu.Menu)
 	result.ProcessedMenu = NewWailsMenu(result.menuItemMap, result.menu)
 
 	return result
+}
+
+func (m *Manager) OnTrayMenuOpen(id string) {
+	trayMenu, ok := m.trayMenus[id]
+	if !ok {
+		return
+	}
+	if trayMenu.trayMenu.OnOpen == nil {
+		return
+	}
+	go trayMenu.trayMenu.OnOpen()
+}
+
+func (m *Manager) OnTrayMenuClose(id string) {
+	trayMenu, ok := m.trayMenus[id]
+	if !ok {
+		return
+	}
+	if trayMenu.trayMenu.OnClose == nil {
+		return
+	}
+	go trayMenu.trayMenu.OnClose()
 }
 
 func (m *Manager) AddTrayMenu(trayMenu *menu.TrayMenu) (string, error) {

@@ -14,4 +14,10 @@ type TrayMenu struct {
 
 	// Menu is the initial menu we wish to use for the tray
 	Menu *Menu
+
+	// OnOpen is called when the Menu is opened
+	OnOpen func()
+
+	// OnClose is called when the Menu is closed
+	OnClose func()
 }

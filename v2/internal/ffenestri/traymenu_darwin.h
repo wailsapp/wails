@@ -21,6 +21,8 @@ typedef struct {
 
     JsonNode* processedJSON;
 
+    id delegate;
+
 } TrayMenu;
 
 TrayMenu* NewTrayMenu(const char *trayJSON);

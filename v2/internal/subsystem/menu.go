@@ -77,6 +77,12 @@ func (m *Menu) Start() error {
 				splitTopic := strings.Split(menuMessage.Topic(), ":")
 				menuMessageType := splitTopic[1]
 				switch menuMessageType {
+				case "ontrayopen":
+					trayID := menuMessage.Data().(string)
+					m.menuManager.OnTrayMenuOpen(trayID)
+				case "ontrayclose":
+					trayID := menuMessage.Data().(string)
+					m.menuManager.OnTrayMenuClose(trayID)
 				case "clicked":
 					if len(splitTopic) != 2 {
 						m.logger.Error("Received clicked message with invalid topic format. Expected 2 sections in topic, got %s", splitTopic)

@@ -24,6 +24,8 @@ struct hashmap_s dialogIconCache;
 // Dispatch Method
 typedef void (^dispatchMethod)(void);
 
+TrayMenuStore *TrayMenuStoreSingleton;
+
 // dispatch will execute the given `func` pointer
 void dispatch(dispatchMethod func) {
 	dispatch_async(dispatch_get_main_queue(), func);
@@ -54,6 +56,9 @@ void filelog(const char *message) {
         fclose(fp);
     }
 }
+
+// The delegate class for tray menus
+Class trayMenuDelegateClass;
 
 // Utility function to visualise a hashmap
 void dumpHashmap(const char *name, struct hashmap_s *hashmap) {
@@ -126,9 +131,6 @@ struct Application {
 
 	// Menu
 	Menu *applicationMenu;
-
-	// Tray
-    TrayMenuStore* trayMenuStore;
 
 	// Context Menus
 	ContextMenuStore *contextMenuStore;
@@ -477,7 +479,7 @@ void DestroyApplication(struct Application *app) {
 	}
 
     // Delete the tray menu store
-    DeleteTrayMenuStore(app->trayMenuStore);
+    DeleteTrayMenuStore(TrayMenuStoreSingleton);
 
     // Delete the context menu store
     DeleteContextMenuStore(app->contextMenuStore);
@@ -1044,7 +1046,7 @@ void AddTrayMenu(struct Application *app, const char *trayMenuJSON) {
     // Guard against calling during shutdown
     if( app->shuttingDown ) return;
 
-	AddTrayMenuToStore(app->trayMenuStore, trayMenuJSON);
+	AddTrayMenuToStore(TrayMenuStoreSingleton, trayMenuJSON);
 }
 
 void SetTrayMenu(struct Application *app, const char* trayMenuJSON) {
@@ -1053,13 +1055,13 @@ void SetTrayMenu(struct Application *app, const char* trayMenuJSON) {
     if( app->shuttingDown ) return;
 
     ON_MAIN_THREAD(
-        UpdateTrayMenuInStore(app->trayMenuStore, trayMenuJSON);
+        UpdateTrayMenuInStore(TrayMenuStoreSingleton, trayMenuJSON);
     );
 }
 
 void DeleteTrayMenuByID(struct Application *app, const char *id) {
     ON_MAIN_THREAD(
-        DeleteTrayMenuInStore(app->trayMenuStore, id);
+        DeleteTrayMenuInStore(TrayMenuStoreSingleton, id);
     );
 }
 
@@ -1068,7 +1070,7 @@ void UpdateTrayMenuLabel(struct Application* app, const char* JSON) {
     if( app->shuttingDown ) return;
 
     ON_MAIN_THREAD(
-        UpdateTrayMenuLabelInStore(app->trayMenuStore, JSON);
+        UpdateTrayMenuLabelInStore(TrayMenuStoreSingleton, JSON);
     );
 }
 
@@ -1164,7 +1166,7 @@ void getURL(id self, SEL selector, id event, id replyEvent) {
 
 
 void createDelegate(struct Application *app) {
-		// Define delegate
+    // Define delegate
 	Class delegateClass = objc_allocateClassPair((Class) c("NSObject"), "AppDelegate", 0);
 	bool resultAddProtoc = class_addProtocol(delegateClass, objc_getProtocol("NSApplicationDelegate"));
     class_addMethod(delegateClass, s("applicationShouldTerminateAfterLastWindowClosed:"), (IMP) no, "c@:@");
@@ -1661,6 +1663,35 @@ void processUserDialogIcons(struct Application *app) {
 
 }
 
+void TrayMenuWillOpen(id self, SEL selector, id menu) {
+    // Extract tray menu id from menu
+    id trayMenuIDStr = objc_getAssociatedObject(menu, "trayMenuID");
+    const char* trayMenuID = cstr(trayMenuIDStr);
+    const char *message = concat("Mo", trayMenuID);
+    messageFromWindowCallback(message);
+    MEMFREE(message);
+}
+
+void TrayMenuDidClose(id self, SEL selector, id menu) {
+    // Extract tray menu id from menu
+    id trayMenuIDStr = objc_getAssociatedObject(menu, "trayMenuID");
+    const char* trayMenuID = cstr(trayMenuIDStr);
+    const char *message = concat("Mc", trayMenuID);
+    messageFromWindowCallback(message);
+    MEMFREE(message);
+}
+
+void createTrayMenuDelegate() {
+    // Define delegate
+	trayMenuDelegateClass = objc_allocateClassPair((Class) c("NSObject"), "MenuDelegate", 0);
+	class_addProtocol(trayMenuDelegateClass, objc_getProtocol("NSMenuDelegate"));
+    class_addMethod(trayMenuDelegateClass, s("menuWillOpen:"), (IMP) TrayMenuWillOpen, "v@:@");
+	class_addMethod(trayMenuDelegateClass, s("menuDidClose:"), (IMP) TrayMenuDidClose, "v@:@");
+
+	// Script handler
+	objc_registerClassPair(trayMenuDelegateClass);
+}
+
 
 void Run(struct Application *app, int argc, char **argv) {
 
@@ -1672,6 +1703,9 @@ void Run(struct Application *app, int argc, char **argv) {
 
 	// Define delegate
 	createDelegate(app);
+
+	// Define tray delegate
+	createTrayMenuDelegate();
 
 	// Create the main window
 	createMainWindow(app);
@@ -1843,7 +1877,7 @@ void Run(struct Application *app, int argc, char **argv) {
 	}
 
 	// Setup initial trays
-    ShowTrayMenusInStore(app->trayMenuStore);
+    ShowTrayMenusInStore(TrayMenuStoreSingleton);
 
 	// Process dialog icons
 	processUserDialogIcons(app);
@@ -1920,7 +1954,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->applicationMenu = NULL;
 
 	// Tray
-	result->trayMenuStore = NewTrayMenuStore();
+	TrayMenuStoreSingleton = NewTrayMenuStore();
 
 	// Context Menus
 	result->contextMenuStore = NewContextMenuStore();

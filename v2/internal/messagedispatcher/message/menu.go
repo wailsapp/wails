@@ -32,6 +32,14 @@ func menuMessageParser(message string) (*parsedMessage, error) {
 		callbackid := message[2:]
 		topic = "menu:clicked"
 		data = callbackid
+	case 'o':
+		callbackid := message[2:]
+		topic = "menu:ontrayopen"
+		data = callbackid
+	case 'c':
+		callbackid := message[2:]
+		topic = "menu:ontrayclose"
+		data = callbackid
 	default:
 		return nil, fmt.Errorf("invalid menu message: %s", message)
 	}
