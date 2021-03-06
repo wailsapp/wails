@@ -68,6 +68,10 @@ func (u *URL) Start() error {
 				u.wg.Done()
 				return
 			case urlMessage := <-u.urlChannel:
+				// Guard against nil messages
+				if urlMessage == nil {
+					continue
+				}
 				messageType := strings.TrimPrefix(urlMessage.Topic(), "url:")
 				switch messageType {
 				case "handler":
