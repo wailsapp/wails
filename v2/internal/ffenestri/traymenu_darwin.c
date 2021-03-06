@@ -82,8 +82,18 @@ void UpdateTrayIcon(TrayMenu *trayMenu) {
     }
 
     id trayImage = hashmap_get(&trayIconCache, trayMenu->icon, strlen(trayMenu->icon));
+
+    // If we don't have the image in the icon cache then assume it's base64 encoded image data
+    if (trayImage == NULL) {
+        id data = ALLOC("NSData");
+        id imageData = msg(data, s("initWithBase64EncodedString:options:"), str(trayMenu->icon), 0);
+        trayImage = ALLOC("NSImage");
+        msg(trayImage, s("initWithData:"), imageData);
+    }
+
     msg(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);
     msg(statusBarButton, s("setImage:"), trayImage);
+
 }
 
 void ShowTrayMenu(TrayMenu* trayMenu) {
