@@ -30,7 +30,8 @@ var modifierMap = map[string]Modifier{
 }
 
 func parseModifier(text string) (*Modifier, error) {
-	result, valid := modifierMap[text]
+	lowertext := strings.ToLower(text)
+	result, valid := modifierMap[lowertext]
 	if !valid {
 		return nil, fmt.Errorf("'%s' is not a valid modifier", text)
 	}
