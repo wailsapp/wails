@@ -1166,26 +1166,28 @@ void getURL(id self, SEL selector, id event, id replyEvent) {
 
 
 void createDelegate(struct Application *app) {
+
     // Define delegate
-	Class delegateClass = objc_allocateClassPair((Class) c("NSObject"), "AppDelegate", 0);
-	bool resultAddProtoc = class_addProtocol(delegateClass, objc_getProtocol("NSApplicationDelegate"));
-    class_addMethod(delegateClass, s("applicationShouldTerminateAfterLastWindowClosed:"), (IMP) no, "c@:@");
-	class_addMethod(delegateClass, s("applicationWillFinishLaunching:"), (IMP) willFinishLaunching, "v@:@");
+	Class appDelegate = objc_allocateClassPair((Class) c("NSResponder"), "AppDelegate", 0);
+	class_addProtocol(appDelegate, objc_getProtocol("NSTouchBarProvider"));
+
+	class_addMethod(appDelegate, s("applicationShouldTerminateAfterLastWindowClosed:"), (IMP) no, "c@:@");
+	class_addMethod(appDelegate, s("applicationWillFinishLaunching:"), (IMP) willFinishLaunching, "v@:@");
 
 	// All Menu Items use a common callback
-    class_addMethod(delegateClass, s("menuItemCallback:"), (IMP)menuItemCallback, "v@:@");
+    class_addMethod(appDelegate, s("menuItemCallback:"), (IMP)menuItemCallback, "v@:@");
 
     // If there are URL Handlers, register the callback method
     if( app->hasURLHandlers ) {
-    	class_addMethod(delegateClass, s("getUrl:withReplyEvent:"), (IMP) getURL, "i@:@@");
+    	class_addMethod(appDelegate, s("getUrl:withReplyEvent:"), (IMP) getURL, "i@:@@");
     }
 
 	// Script handler
-	class_addMethod(delegateClass, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler, "v@:@@");
-	objc_registerClassPair(delegateClass);
+	class_addMethod(appDelegate, s("userContentController:didReceiveScriptMessage:"), (IMP) messageHandler, "v@:@@");
+	objc_registerClassPair(appDelegate);
 
 	// Create delegate
-	id delegate = msg((id)delegateClass, s("new"));
+	id delegate = msg((id)appDelegate, s("new"));
 	objc_setAssociatedObject(delegate, "application", (id)app, OBJC_ASSOCIATION_ASSIGN);
 
     // If there are URL Handlers, register a listener for them
@@ -1195,7 +1197,7 @@ void createDelegate(struct Application *app) {
     }
 
 	// Theme change listener
-	class_addMethod(delegateClass, s("themeChanged:"), (IMP) themeChanged, "v@:@@");
+	class_addMethod(appDelegate, s("themeChanged:"), (IMP) themeChanged, "v@:@@");
 
 	// Get defaultCenter
 	id defaultCenter = msg(c("NSDistributedNotificationCenter"), s("defaultCenter"));
