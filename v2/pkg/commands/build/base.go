@@ -223,9 +223,6 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	// Set the directory
 	cmd.Dir = b.projectData.Path
 
-	// Set GO111MODULE environment variable
-	cmd.Env = append(os.Environ(), "GO111MODULE=on")
-
 	// Add CGO flags
 	// We use the project/build dir as a temporary place for our generated c headers
 	buildBaseDir, err := fs.RelativeToCwd("build")
@@ -233,7 +230,16 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		return err
 	}
 
-	cmd.Env = append(os.Environ(), fmt.Sprintf("CGO_CFLAGS=-I%s", buildBaseDir))
+	cmd.Env = os.Environ() // inherit env
+
+	// Use upsertEnv so we don't overwrite user's CGO_CFLAGS
+	cmd.Env = upsertEnv(cmd.Env, "CGO_CFLAGS", func(v string) string {
+		if v != "" {
+			v += " "
+		}
+		v += "-I" + buildBaseDir
+		return v
+	})
 
 	// Setup buffers
 	var stdo, stde bytes.Buffer
@@ -390,4 +396,23 @@ func (b *BaseBuilder) ExtractAssets() (*html.AssetBundle, error) {
 
 	// Read in html
 	return html.NewAssetBundle(b.projectData.HTML)
+}
+
+func upsertEnv(env []string, key string, update func(v string) string) []string {
+	newEnv := make([]string, len(env), len(env)+1)
+	found := false
+	for i := range env {
+		if strings.HasPrefix(env[i], key+"=") {
+			eqIndex := strings.Index(env[i], "=")
+			val := env[i][eqIndex+1:]
+			newEnv[i] = fmt.Sprintf("%s=%v", key, update(val))
+			found = true
+			continue
+		}
+		newEnv[i] = env[i]
+	}
+	if !found {
+		newEnv = append(newEnv, fmt.Sprintf("%s=%v", key, update("")))
+	}
+	return newEnv
 }
