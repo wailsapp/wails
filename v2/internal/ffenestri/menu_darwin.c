@@ -604,7 +604,7 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
         id nsimage = ALLOC("NSImage");
         msg(nsimage, s("initWithData:"), imageData);
         if( templateImage ) {
-            msg(nsimage, s("template"), YES);
+            msg(nsimage, s("setTemplate:"), YES);
         }
         msg(item, s("setImage:"), nsimage);
     }
