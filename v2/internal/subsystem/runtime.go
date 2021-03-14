@@ -34,6 +34,9 @@ type Runtime struct {
 
 	// Startup Hook
 	startupOnce sync.Once
+
+	// Service bus
+	bus *servicebus.ServiceBus
 }
 
 // NewRuntime creates a new runtime subsystem
@@ -58,6 +61,7 @@ func NewRuntime(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.
 		runtime:         runtime.New(bus),
 		startupCallback: startupCallback,
 		ctx:             ctx,
+		bus:             bus,
 	}
 
 	return result, nil
@@ -79,7 +83,15 @@ func (r *Runtime) Start() error {
 				case "startup":
 					if r.startupCallback != nil {
 						r.startupOnce.Do(func() {
-							go r.startupCallback(r.runtime)
+							go func() {
+								r.startupCallback(r.runtime)
+
+								// If we got a url, publish it now startup completed
+								url, ok := hooksMessage.Data().(string)
+								if ok && len(url) > 0 {
+									r.bus.Publish("url:handler", url)
+								}
+							}()
 						})
 					} else {
 						r.logger.Warning("no startup callback registered!")

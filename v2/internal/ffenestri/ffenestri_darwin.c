@@ -128,6 +128,7 @@ struct Application {
 	int hideToolbarSeparator;
 	int windowBackgroundIsTranslucent;
 	int hasURLHandlers;
+	const char *startupURL;
 
 	// Menu
 	Menu *applicationMenu;
@@ -143,6 +144,9 @@ struct Application {
 
 	// shutting down flag
 	bool shuttingDown;
+
+	// Running flag
+	bool running;
 
 };
 
@@ -304,8 +308,19 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 		// TODO: Check this actually does reduce flicker
 		msg(app->config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("suppressesIncrementalRendering"));
 
+       // We are now running!
+        app->running = true;
+
+
 		// Notify backend we are ready (system startup)
-        app->sendMessageToBackend("SS");
+		const char *readyMessage = "SS";
+		if( app->startupURL == NULL ) {
+		    app->sendMessageToBackend("SS");
+		    return;
+		}
+		readyMessage = concat("SS", app->startupURL);
+        app->sendMessageToBackend(readyMessage);
+        MEMFREE(readyMessage);
 
 	} else if( strcmp(name, "windowDrag") == 0 ) {
 		// Guard against null events
@@ -403,6 +418,11 @@ void ExecJS(struct Application *app, const char *js) {
 
 void willFinishLaunching(id self, SEL cmd, id sender) {
 	struct Application *app = (struct Application *) objc_getAssociatedObject(self, "application");
+    // If there are URL Handlers, register a listener for them
+    if( app->hasURLHandlers ) {
+        id eventManager = msg(c("NSAppleEventManager"), s("sharedAppleEventManager"));
+        msg(eventManager, s("setEventHandler:andSelector:forEventClass:andEventID:"), self, s("getUrl:withReplyEvent:"), kInternetEventClass, kAEGetURL);
+    }
 	messageFromWindowCallback("Ej{\"name\":\"wails:launched\",\"data\":[]}");
 }
 
@@ -426,12 +446,6 @@ void themeChanged(id self, SEL cmd, id sender) {
 		ExecJS(app, "window.wails.Events.Emit( 'wails:system:themechange', false );");
 	}
 }
-
-// void willFinishLaunching(id self) {
-//     struct Application *app = (struct Application *) objc_getAssociatedObject(self, "application");
-//     Debug(app, "willFinishLaunching called!");
-// }
-
 
 int releaseNSObject(void *const context, struct hashmap_element_s *const e) {
     msg(e->data, s("release"));
@@ -463,6 +477,10 @@ void DestroyApplication(struct Application *app) {
 		MEMFREE(app->bindings);
 	} else {
 		Debug(app, "Almost a double free for app->bindings");
+	}
+
+	if( app->startupURL != NULL ) {
+	    MEMFREE(app->startupURL);
 	}
 
 	// Remove mouse monitors
@@ -1156,12 +1174,28 @@ void DarkModeEnabled(struct Application *app, const char *callbackID) {
 }
 
 void getURL(id self, SEL selector, id event, id replyEvent) {
-    id desc = msg(event, s("paramDescriptorForKeyword:"), keyDirectObject);
-    id url = msg(desc, s("stringValue"));
-    const char* curl = cstr(url);
-    const char* message = concat("UC", curl);
-    messageFromWindowCallback(message);
-    MEMFREE(message);
+        struct Application *app = (struct Application *)objc_getAssociatedObject(self, "application");
+        id desc = msg(event, s("paramDescriptorForKeyword:"), keyDirectObject);
+        id url = msg(desc, s("stringValue"));
+        const char* curl = cstr(url);
+        if( curl == NULL ) {
+            return;
+        }
+
+        // If this was an incoming URL, but we aren't running yet
+        // save it to return when we complete
+        if( app->running != true ) {
+            app->startupURL = STRCOPY(curl);
+            return;
+        }
+
+        const char* message = concat("UC", curl);
+        messageFromWindowCallback(message);
+        MEMFREE(message);
+}
+
+void openURLs(id self, SEL selector, id event) {
+    filelog("\n\nI AM HERE!!!!!\n\n");
 }
 
 
@@ -1189,12 +1223,6 @@ void createDelegate(struct Application *app) {
 	// Create delegate
 	id delegate = msg((id)appDelegate, s("new"));
 	objc_setAssociatedObject(delegate, "application", (id)app, OBJC_ASSOCIATION_ASSIGN);
-
-    // If there are URL Handlers, register a listener for them
-    if( app->hasURLHandlers ) {
-        id eventManager = msg(c("NSAppleEventManager"), s("sharedAppleEventManager"));
-        msg(eventManager, s("setEventHandler:andSelector:forEventClass:andEventID:"), delegate, s("getUrl:withReplyEvent:"), kInternetEventClass, kAEGetURL);
-    }
 
 	// Theme change listener
 	class_addMethod(appDelegate, s("themeChanged:"), (IMP) themeChanged, "v@:@@");
@@ -1975,6 +2003,10 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->activationPolicy = NSApplicationActivationPolicyRegular;
 
 	result->hasURLHandlers = 0;
+
+	result->startupURL = NULL;
+
+	result->running = false;
 
     return (void*) result;
 }

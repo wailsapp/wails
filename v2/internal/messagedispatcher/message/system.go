@@ -40,7 +40,8 @@ func systemMessageParser(message string) (*parsedMessage, error) {
 		// This is our startup hook - the frontend is now ready
 	case 'S':
 		topic := "hooks:startup"
-		responseMessage = &parsedMessage{Topic: topic, Data: nil}
+		startupURL := message[1:]
+		responseMessage = &parsedMessage{Topic: topic, Data: startupURL}
 	default:
 		return nil, fmt.Errorf("Invalid message to systemMessageParser()")
 	}
