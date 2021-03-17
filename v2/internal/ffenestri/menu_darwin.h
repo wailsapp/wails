@@ -109,6 +109,8 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
 void processMenuItem(Menu *menu, id parentMenu, JsonNode *item);
 void processMenuData(Menu *menu, JsonNode *menuData);
 
-void processRadioGroupJSON(Menu *menu, JsonNode *radioGroup) ;
+void processRadioGroupJSON(Menu *menu, JsonNode *radioGroup);
 id GetMenu(Menu *menu);
+id createAttributedString(const char* title, const char* fontName, int fontSize, const char* RGBA);
+
 #endif //ASSETS_C_MENU_DARWIN_H

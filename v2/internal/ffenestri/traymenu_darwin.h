@@ -15,6 +15,9 @@ typedef struct {
     const char *ID;
 
     bool templateImage;
+    const char *fontName;
+    int fontSize;
+    const char *RGBA;
 
     Menu* menu;
 
@@ -32,7 +35,7 @@ void DumpTrayMenu(TrayMenu* trayMenu);
 void ShowTrayMenu(TrayMenu* trayMenu);
 void UpdateTrayMenuInPlace(TrayMenu* currentMenu, TrayMenu* newMenu);
 void UpdateTrayIcon(TrayMenu *trayMenu);
-void UpdateTrayLabel(TrayMenu *trayMenu, const char*);
+void UpdateTrayLabel(TrayMenu *trayMenu, const char *label, const char *fontName, int fontSize, const char *RGBA);
 
 void LoadTrayIcons();
 void UnloadTrayIcons();

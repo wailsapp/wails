@@ -32,10 +32,14 @@ TrayMenu* NewTrayMenu(const char* menuJSON) {
     result->ID = mustJSONString(processedJSON, "ID");
     result->label = mustJSONString(processedJSON, "Label");
     result->icon = mustJSONString(processedJSON, "Image");
+    result->fontName = getJSONString(processedJSON, "FontName");
+    result->RGBA = getJSONString(processedJSON, "RGBA");
     getJSONBool(processedJSON, "MacTemplateImage", &result->templateImage);
-    JsonNode* processedMenu = mustJSONObject(processedJSON, "ProcessedMenu");
+    result->fontSize = 13;
+    getJSONInt(processedJSON, "FontSize", &result->fontSize);
 
     // Create the menu
+    JsonNode* processedMenu = mustJSONObject(processedJSON, "ProcessedMenu");
     result->menu = NewMenu(processedMenu);
 
     result->delegate = NULL;
@@ -55,7 +59,7 @@ void DumpTrayMenu(TrayMenu* trayMenu) {
 }
 
 
-void UpdateTrayLabel(TrayMenu *trayMenu, const char *label) {
+void UpdateTrayLabel(TrayMenu *trayMenu, const char *label, const char *fontName, int fontSize, const char *RGBA) {
 
     // Exit early if NULL
     if( trayMenu->label == NULL ) {
@@ -63,7 +67,8 @@ void UpdateTrayLabel(TrayMenu *trayMenu, const char *label) {
     }
     // Update button label
     id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
-    msg(statusBarButton, s("setTitle:"), str(label));
+    id attributedString = createAttributedString(label, fontName, fontSize, RGBA);
+    msg(statusBarButton, s("setAttributedTitle:"), attributedString);
 }
 
 void UpdateTrayIcon(TrayMenu *trayMenu) {
@@ -117,7 +122,7 @@ void ShowTrayMenu(TrayMenu* trayMenu) {
     UpdateTrayIcon(trayMenu);
 
     // Update the label if needed
-    UpdateTrayLabel(trayMenu, trayMenu->label);
+    UpdateTrayLabel(trayMenu, trayMenu->label, trayMenu->fontName, trayMenu->fontSize, trayMenu->RGBA);
 
     // Update the menu
     id menu = GetMenu(trayMenu->menu);

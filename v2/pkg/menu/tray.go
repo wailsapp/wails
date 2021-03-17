@@ -16,6 +16,13 @@ type TrayMenu struct {
 	// MacTemplateImage indicates that on a Mac, this image is a template image
 	MacTemplateImage bool
 
+	// Text Colour
+	RGBA string
+
+	// Font
+	FontSize int
+	FontName string
+
 	// Menu is the initial menu we wish to use for the tray
 	Menu *Menu
 

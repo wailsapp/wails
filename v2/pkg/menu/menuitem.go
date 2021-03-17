@@ -29,7 +29,7 @@ type MenuItem struct {
 	// Callback function when menu clicked
 	Click Callback `json:"-"`
 
-	// Colour
+	// Text Colour
 	RGBA string
 
 	// Font

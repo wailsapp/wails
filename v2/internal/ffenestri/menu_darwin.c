@@ -576,38 +576,7 @@ id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const c
     return item;
 }
 
-id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image, const char* fontName, int fontSize, const char* RGBA, bool templateImage, bool alternate) {
-    id item = ALLOC("NSMenuItem");
-
-    // Create a MenuItemCallbackData
-    MenuItemCallbackData *callback = CreateMenuItemCallbackData(menu, item, menuid, Text);
-
-    id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), callback);
-    msg(item, s("setRepresentedObject:"), wrappedId);
-
-    if( !alternate ) {
-        id key = processAcceleratorKey(acceleratorkey);
-        msg(item, s("initWithTitle:action:keyEquivalent:"), str(title),
-            s("menuItemCallback:"), key);
-    } else {
-        msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuItemCallback:"), str(""));
-    }
-
-    if( tooltip != NULL ) {
-        msg(item, s("setToolTip:"), str(tooltip));
-    }
-
-    // Process image
-    if( image != NULL && strlen(image) > 0) {
-        id data = ALLOC("NSData");
-        id imageData = msg(data, s("initWithBase64EncodedString:options:"), str(image), 0);
-        id nsimage = ALLOC("NSImage");
-        msg(nsimage, s("initWithData:"), imageData);
-        if( templateImage ) {
-            msg(nsimage, s("setTemplate:"), YES);
-        }
-        msg(item, s("setImage:"), nsimage);
-    }
+id createAttributedString(const char* title, const char* fontName, int fontSize, const char* RGBA) {
 
     // Process Menu Item attributes
     id dictionary = ALLOC_INIT("NSMutableDictionary");
@@ -658,10 +627,46 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
 
     id attributedString = ALLOC("NSMutableAttributedString");
     msg(attributedString, s("initWithString:attributes:"), str(title), dictionary);
-    msg(dictionary, s("release"));
-
-    msg(item, s("setAttributedTitle:"), attributedString);
     msg(attributedString, s("autorelease"));
+    msg(dictionary, s("release"));
+    return attributedString;
+}
+
+id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image, const char* fontName, int fontSize, const char* RGBA, bool templateImage, bool alternate) {
+    id item = ALLOC("NSMenuItem");
+
+    // Create a MenuItemCallbackData
+    MenuItemCallbackData *callback = CreateMenuItemCallbackData(menu, item, menuid, Text);
+
+    id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), callback);
+    msg(item, s("setRepresentedObject:"), wrappedId);
+
+    if( !alternate ) {
+        id key = processAcceleratorKey(acceleratorkey);
+        msg(item, s("initWithTitle:action:keyEquivalent:"), str(title),
+            s("menuItemCallback:"), key);
+    } else {
+        msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuItemCallback:"), str(""));
+    }
+
+    if( tooltip != NULL ) {
+        msg(item, s("setToolTip:"), str(tooltip));
+    }
+
+    // Process image
+    if( image != NULL && strlen(image) > 0) {
+        id data = ALLOC("NSData");
+        id imageData = msg(data, s("initWithBase64EncodedString:options:"), str(image), 0);
+        id nsimage = ALLOC("NSImage");
+        msg(nsimage, s("initWithData:"), imageData);
+        if( templateImage ) {
+            msg(nsimage, s("setTemplate:"), YES);
+        }
+        msg(item, s("setImage:"), nsimage);
+    }
+
+    id attributedString = createAttributedString(title, fontName, fontSize, RGBA);
+    msg(item, s("setAttributedTitle:"), attributedString);
 
     msg(item, s("setEnabled:"), !disabled);
     msg(item, s("autorelease"));
@@ -762,7 +767,7 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     bool templateImage = false;
     getJSONBool(item, "MacTemplateImage", &templateImage);
 
-    int fontSize = 12;
+    int fontSize = 13;
     getJSONInt(item, "FontSize", &fontSize);
 
     // If we have an accelerator

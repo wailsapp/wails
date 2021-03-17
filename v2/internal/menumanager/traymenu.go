@@ -25,8 +25,11 @@ func generateTrayID() string {
 type TrayMenu struct {
 	ID               string
 	Label            string
+	FontSize         int
+	FontName         string
 	Image            string
 	MacTemplateImage bool
+	RGBA             string
 	menuItemMap      *MenuItemMap
 	menu             *menu.Menu
 	ProcessedMenu    *WailsMenu
@@ -45,9 +48,12 @@ func NewTrayMenu(trayMenu *menu.TrayMenu) *TrayMenu {
 
 	result := &TrayMenu{
 		Label:            trayMenu.Label,
+		FontName:         trayMenu.FontName,
+		FontSize:         trayMenu.FontSize,
 		Image:            trayMenu.Image,
 		MacTemplateImage: trayMenu.MacTemplateImage,
 		menu:             trayMenu.Menu,
+		RGBA:             trayMenu.RGBA,
 		menuItemMap:      NewMenuItemMap(),
 		trayMenu:         trayMenu,
 	}

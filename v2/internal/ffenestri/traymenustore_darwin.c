@@ -118,7 +118,13 @@ void UpdateTrayMenuLabelInStore(TrayMenuStore* store, const char* JSON) {
 
     // Check we have this menu
     TrayMenu *menu = MustGetTrayMenuFromStore(store, ID);
-    UpdateTrayLabel(menu, Label);
+
+    const char *fontName = getJSONString(parsedUpdate, "FontName");
+    const char *RGBA = getJSONString(parsedUpdate, "RGBA");
+    int fontSize = 13;
+    getJSONInt(parsedUpdate, "FontSize", &fontSize);
+
+    UpdateTrayLabel(menu, Label, fontName, fontSize, RGBA);
 
 }
 
