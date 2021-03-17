@@ -6,11 +6,15 @@ type TrayMenu struct {
 	// Label is the text we wish to display in the tray
 	Label string
 
-	// Icon is the name of the tray icon we wish to display.
+	// Image is the name of the tray icon we wish to display.
 	// These are read up during build from <projectdir>/trayicons and
 	// the filenames are used as IDs, minus the extension
 	// EG: <projectdir>/trayicons/main.png can be referenced here with "main"
-	Icon string
+	// If the image is not a filename, it will be treated as base64 image data
+	Image string
+
+	// MacTemplateImage indicates that on a Mac, this image is a template image
+	MacTemplateImage bool
 
 	// Menu is the initial menu we wish to use for the tray
 	Menu *Menu

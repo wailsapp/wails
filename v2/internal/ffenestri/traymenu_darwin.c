@@ -31,7 +31,8 @@ TrayMenu* NewTrayMenu(const char* menuJSON) {
 
     result->ID = mustJSONString(processedJSON, "ID");
     result->label = mustJSONString(processedJSON, "Label");
-    result->icon = mustJSONString(processedJSON, "Icon");
+    result->icon = mustJSONString(processedJSON, "Image");
+    getJSONBool(processedJSON, "MacTemplateImage", &result->templateImage);
     JsonNode* processedMenu = mustJSONObject(processedJSON, "ProcessedMenu");
 
     // Create the menu
@@ -89,6 +90,10 @@ void UpdateTrayIcon(TrayMenu *trayMenu) {
         id imageData = msg(data, s("initWithBase64EncodedString:options:"), str(trayMenu->icon), 0);
         trayImage = ALLOC("NSImage");
         msg(trayImage, s("initWithData:"), imageData);
+
+        if( trayMenu->templateImage ) {
+            msg(trayImage, s("setTemplate:"), YES);
+        }
     }
 
     msg(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);

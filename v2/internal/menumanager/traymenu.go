@@ -23,13 +23,14 @@ func generateTrayID() string {
 }
 
 type TrayMenu struct {
-	ID            string
-	Label         string
-	Icon          string
-	menuItemMap   *MenuItemMap
-	menu          *menu.Menu
-	ProcessedMenu *WailsMenu
-	trayMenu      *menu.TrayMenu
+	ID               string
+	Label            string
+	Image            string
+	MacTemplateImage bool
+	menuItemMap      *MenuItemMap
+	menu             *menu.Menu
+	ProcessedMenu    *WailsMenu
+	trayMenu         *menu.TrayMenu
 }
 
 func (t *TrayMenu) AsJSON() (string, error) {
@@ -43,11 +44,12 @@ func (t *TrayMenu) AsJSON() (string, error) {
 func NewTrayMenu(trayMenu *menu.TrayMenu) *TrayMenu {
 
 	result := &TrayMenu{
-		Label:       trayMenu.Label,
-		Icon:        trayMenu.Icon,
-		menu:        trayMenu.Menu,
-		menuItemMap: NewMenuItemMap(),
-		trayMenu:    trayMenu,
+		Label:            trayMenu.Label,
+		Image:            trayMenu.Image,
+		MacTemplateImage: trayMenu.MacTemplateImage,
+		menu:             trayMenu.Menu,
+		menuItemMap:      NewMenuItemMap(),
+		trayMenu:         trayMenu,
 	}
 
 	result.menuItemMap.AddMenu(trayMenu.Menu)

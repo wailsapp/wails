@@ -14,6 +14,8 @@ typedef struct {
     const char *icon;
     const char *ID;
 
+    bool templateImage;
+
     Menu* menu;
 
     id statusbaritem;
