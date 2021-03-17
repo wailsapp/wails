@@ -23,14 +23,14 @@ func fatal(message string) {
 }
 
 func banner(_ *clir.Cli) string {
-	return fmt.Sprintf("%s %s - Go/HTML Application Framework", colour.Yellow("Wails"), colour.DarkRed(version))
+	return fmt.Sprintf("%s %s", colour.Yellow("Wails CLI"), colour.DarkRed(version))
 }
 
 func main() {
 
 	var err error
 
-	app := clir.NewCli("Wails", "Go/HTML Application Framework", version)
+	app := clir.NewCli("Wails", "Go/HTML Appkit", version)
 
 	app.SetBannerFunction(banner)
 
