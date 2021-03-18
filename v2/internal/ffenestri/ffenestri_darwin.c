@@ -270,7 +270,7 @@ void Hide(struct Application *app) {
     if( app->shuttingDown ) return;
 
 	ON_MAIN_THREAD(
-		msg(app->application, s("hide:"));
+		msg(app->mainWindow, s("orderOut:"));
 	);
 }
 
@@ -1237,12 +1237,12 @@ void createDelegate(struct Application *app) {
 }
 
 bool windowShouldClose(id self, SEL cmd, id sender) {
-    msg(sender, s("orderBack:"));
+    msg(sender, s("orderOut:"));
     return false;
 }
 
 bool windowShouldExit(id self, SEL cmd, id sender) {
-    msg(sender, s("orderBack:"));
+    msg(sender, s("orderOut:"));
     messageFromWindowCallback("WC");
     return false;
 }
