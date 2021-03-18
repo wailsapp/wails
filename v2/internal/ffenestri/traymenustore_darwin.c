@@ -121,10 +121,14 @@ void UpdateTrayMenuLabelInStore(TrayMenuStore* store, const char* JSON) {
 
     const char *fontName = getJSONString(parsedUpdate, "FontName");
     const char *RGBA = getJSONString(parsedUpdate, "RGBA");
-    int fontSize = 13;
+    int fontSize = 0;
     getJSONInt(parsedUpdate, "FontSize", &fontSize);
+    const char *tooltip = getJSONString(parsedUpdate, "Tooltip");
+    bool disabled = false;
+    getJSONBool(parsedUpdate, "Disabled", &disabled);
 
-    UpdateTrayLabel(menu, Label, fontName, fontSize, RGBA);
+    UpdateTrayLabel(menu, Label, fontName, fontSize, RGBA, tooltip, disabled);
+
 
 }
 

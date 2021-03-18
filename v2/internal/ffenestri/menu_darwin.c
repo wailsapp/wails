@@ -767,7 +767,7 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     bool templateImage = false;
     getJSONBool(item, "MacTemplateImage", &templateImage);
 
-    int fontSize = 13;
+    int fontSize = 0;
     getJSONInt(item, "FontSize", &fontSize);
 
     // If we have an accelerator

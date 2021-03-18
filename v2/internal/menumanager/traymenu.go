@@ -27,6 +27,8 @@ type TrayMenu struct {
 	Label            string
 	FontSize         int
 	FontName         string
+	Disabled         bool
+	Tooltip          string `json:",omitempty"`
 	Image            string
 	MacTemplateImage bool
 	RGBA             string
@@ -50,6 +52,8 @@ func NewTrayMenu(trayMenu *menu.TrayMenu) *TrayMenu {
 		Label:            trayMenu.Label,
 		FontName:         trayMenu.FontName,
 		FontSize:         trayMenu.FontSize,
+		Disabled:         trayMenu.Disabled,
+		Tooltip:          trayMenu.Tooltip,
 		Image:            trayMenu.Image,
 		MacTemplateImage: trayMenu.MacTemplateImage,
 		menu:             trayMenu.Menu,
@@ -145,13 +149,27 @@ func (m *Manager) UpdateTrayMenuLabel(trayMenu *menu.TrayMenu) (string, error) {
 	}
 
 	type LabelUpdate struct {
-		ID    string
-		Label string
+		ID               string
+		Label            string
+		FontName         string
+		FontSize         int
+		RGBA             string
+		Disabled         bool
+		Tooltip          string
+		Image            string
+		MacTemplateImage bool
 	}
 
 	update := &LabelUpdate{
-		ID:    trayID,
-		Label: trayMenu.Label,
+		ID:               trayID,
+		Label:            trayMenu.Label,
+		FontName:         trayMenu.FontName,
+		FontSize:         trayMenu.FontSize,
+		Disabled:         trayMenu.Disabled,
+		Tooltip:          trayMenu.Tooltip,
+		Image:            trayMenu.Image,
+		MacTemplateImage: trayMenu.MacTemplateImage,
+		RGBA:             trayMenu.RGBA,
 	}
 
 	data, err := json.Marshal(update)

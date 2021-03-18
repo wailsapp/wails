@@ -23,6 +23,15 @@ type TrayMenu struct {
 	FontSize int
 	FontName string
 
+	// Tooltip
+	Tooltip string
+
+	// Callback function when menu clicked
+	//Click Callback `json:"-"`
+
+	// Disabled makes the item unselectable
+	Disabled bool
+
 	// Menu is the initial menu we wish to use for the tray
 	Menu *Menu
 

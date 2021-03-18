@@ -35,8 +35,12 @@ TrayMenu* NewTrayMenu(const char* menuJSON) {
     result->fontName = getJSONString(processedJSON, "FontName");
     result->RGBA = getJSONString(processedJSON, "RGBA");
     getJSONBool(processedJSON, "MacTemplateImage", &result->templateImage);
-    result->fontSize = 13;
+    result->fontSize = 0;
     getJSONInt(processedJSON, "FontSize", &result->fontSize);
+    result->tooltip = NULL;
+    result->tooltip = getJSONString(processedJSON, "Tooltip");
+    result->disabled = false;
+    getJSONBool(processedJSON, "Disabled", &result->disabled);
 
     // Create the menu
     JsonNode* processedMenu = mustJSONObject(processedJSON, "ProcessedMenu");
@@ -59,7 +63,7 @@ void DumpTrayMenu(TrayMenu* trayMenu) {
 }
 
 
-void UpdateTrayLabel(TrayMenu *trayMenu, const char *label, const char *fontName, int fontSize, const char *RGBA) {
+void UpdateTrayLabel(TrayMenu *trayMenu, const char *label, const char *fontName, int fontSize, const char *RGBA, const char *tooltip, bool disabled) {
 
     // Exit early if NULL
     if( trayMenu->label == NULL ) {
@@ -68,6 +72,13 @@ void UpdateTrayLabel(TrayMenu *trayMenu, const char *label, const char *fontName
     // Update button label
     id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
     id attributedString = createAttributedString(label, fontName, fontSize, RGBA);
+
+    if( tooltip != NULL ) {
+        msg(statusBarButton, s("setToolTip:"), str(tooltip));
+    }
+
+    msg(statusBarButton, s("setEnabled:"), !disabled);
+
     msg(statusBarButton, s("setAttributedTitle:"), attributedString);
 }
 
@@ -122,7 +133,7 @@ void ShowTrayMenu(TrayMenu* trayMenu) {
     UpdateTrayIcon(trayMenu);
 
     // Update the label if needed
-    UpdateTrayLabel(trayMenu, trayMenu->label, trayMenu->fontName, trayMenu->fontSize, trayMenu->RGBA);
+    UpdateTrayLabel(trayMenu, trayMenu->label, trayMenu->fontName, trayMenu->fontSize, trayMenu->RGBA, trayMenu->tooltip, trayMenu->disabled);
 
     // Update the menu
     id menu = GetMenu(trayMenu->menu);

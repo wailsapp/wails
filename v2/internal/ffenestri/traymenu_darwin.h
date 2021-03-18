@@ -13,11 +13,14 @@ typedef struct {
     const char *label;
     const char *icon;
     const char *ID;
+    const char *tooltip;
 
     bool templateImage;
     const char *fontName;
     int fontSize;
     const char *RGBA;
+
+    bool disabled;
 
     Menu* menu;
 
@@ -35,7 +38,7 @@ void DumpTrayMenu(TrayMenu* trayMenu);
 void ShowTrayMenu(TrayMenu* trayMenu);
 void UpdateTrayMenuInPlace(TrayMenu* currentMenu, TrayMenu* newMenu);
 void UpdateTrayIcon(TrayMenu *trayMenu);
-void UpdateTrayLabel(TrayMenu *trayMenu, const char *label, const char *fontName, int fontSize, const char *RGBA);
+void UpdateTrayLabel(TrayMenu *trayMenu, const char *label, const char *fontName, int fontSize, const char *RGBA, const char *tooltip, bool disabled);
 
 void LoadTrayIcons();
 void UnloadTrayIcons();
