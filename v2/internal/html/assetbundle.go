@@ -112,6 +112,9 @@ func (a *AssetBundle) processHTML(htmldata string) error {
 					if attr.Key == "as" && attr.Val == "script" {
 						asset.Type = AssetTypes.JS
 					}
+					if attr.Key == "rel" && attr.Val == "modulepreload" {
+						asset.Type = AssetTypes.JS
+					}
 				}
 
 				// Ensure we don't include duplicates
