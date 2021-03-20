@@ -19,11 +19,15 @@ func platformInfo() (*OS, error) {
 
 	defer key.Close()
 
-	fmt.Printf("%+v\n", key)
-
 	// Ignore errors as it isn't a showstopper
 	productName, _, _ := key.GetStringValue("ProductName")
-	fmt.Println(productName)
+	currentBuild, _, _ := key.GetStringValue("CurrentBuildNumber")
+	displayVersion, _, _ := key.GetStringValue("DisplayVersion")
+	releaseId, _, _ := key.GetStringValue("ReleaseId")
 
-	return nil, nil
+	result.Name = productName
+	result.Version = fmt.Sprintf("%s (Build: %s)", releaseId, currentBuild)
+	result.ID = displayVersion
+
+	return &result, nil
 }
