@@ -59,9 +59,9 @@ func Build(options *Options) (string, error) {
 	}
 
 	// Check platform
-	validPlatforms := slicer.String([]string{"linux", "darwin"})
+	validPlatforms := slicer.String([]string{"linux", "darwin", "windows"})
 	if !validPlatforms.Contains(options.Platform) {
-		return "", fmt.Errorf("platform %s not supported", options.Platform)
+		return "", fmt.Errorf("platform %s is not supported", options.Platform)
 	}
 
 	// Load project

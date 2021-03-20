@@ -5,10 +5,6 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define OBJC_OLD_DISPATCH_PROTOTYPES 1
-#include <objc/objc-runtime.h>
-#include <CoreGraphics/CoreGraphics.h>
-
 #include <stdio.h>
 #include <stdarg.h>
 #include "string.h"
