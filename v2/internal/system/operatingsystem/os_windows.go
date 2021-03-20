@@ -17,9 +17,6 @@ func platformInfo() (*OS, error) {
 	// Ignore errors as it isn't a showstopper
 	key, _ := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Windows NT\CurrentVersion`, registry.QUERY_VALUE)
 
-	defer key.Close()
-
-	// Ignore errors as it isn't a showstopper
 	productName, _, _ := key.GetStringValue("ProductName")
 	currentBuild, _, _ := key.GetStringValue("CurrentBuildNumber")
 	displayVersion, _, _ := key.GetStringValue("DisplayVersion")
@@ -29,5 +26,5 @@ func platformInfo() (*OS, error) {
 	result.Version = fmt.Sprintf("%s (Build: %s)", releaseId, currentBuild)
 	result.ID = displayVersion
 
-	return &result, nil
+	return &result, key.Close()
 }
