@@ -587,11 +587,8 @@ id createAttributedString(const char* title, const char* fontName, int fontSize,
 
     // Check if valid
     id fontNameAsNSString = str(fontName);
-    id fontsOnSystem = msg(msg(c("NSFontManager"), s("sharedFontManager")), s("availableFonts"));
-    bool valid = msg(fontsOnSystem, s("containsObject:"), fontNameAsNSString);
-    if( valid ) {
-        font = msg(c("NSFont"), s("fontWithName:size:"), fontNameAsNSString, fontSizeFloat);
-    } else {
+    font = msg(c("NSFont"), s("fontWithName:size:"), fontNameAsNSString, fontSizeFloat);
+    if( font == NULL ) {
         bool supportsMonospacedDigitSystemFont = (bool) msg(c("NSFont"), s("respondsToSelector:"), s("monospacedDigitSystemFontOfSize:weight:"));
         if( supportsMonospacedDigitSystemFont ) {
             font = msg(c("NSFont"), s("monospacedDigitSystemFontOfSize:weight:"), fontSizeFloat, NSFontWeightRegular);
@@ -603,7 +600,6 @@ id createAttributedString(const char* title, const char* fontName, int fontSize,
     // Add font to dictionary
     msg(dictionary, s("setObject:forKey:"), font, lookupStringConstant(str("NSFontAttributeName")));
 
-    // Add offset to dictionary
     id offset = msg(c("NSNumber"), s("numberWithFloat:"), 0.0);
     msg(dictionary, s("setObject:forKey:"), offset, lookupStringConstant(str("NSBaselineOffsetAttributeName")));
 
