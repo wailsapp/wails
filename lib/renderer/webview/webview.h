@@ -2337,6 +2337,11 @@ struct webview_priv
     size.width = width;
     size.height = height;
     [w->priv.window setMaxSize:size];
+    
+    [w->priv.window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary|NSWindowCollectionBehaviorFullScreenNone|NSWindowCollectionBehaviorFullScreenDisallowsTiling];
+       
+    NSButton *button = [w->priv.window standardWindowButton:NSWindowZoomButton];
+    [button setEnabled: NO];
   }
   
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen)

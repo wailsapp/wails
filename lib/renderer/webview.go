@@ -29,6 +29,8 @@ type WebView struct {
 	config       interfaces.AppConfig
 	eventManager interfaces.EventManager
 	bindingCache []string
+	
+	maximumSizeSet bool
 }
 
 // NewWebView returns a new WebView struct
@@ -91,6 +93,7 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 			w.ipc.Dispatch(message, w.callback)
 		},
 	})
+		fmt.Println("Control")
 
 	// Set minimum and maximum sizes
 	if setMinSize {
@@ -98,6 +101,7 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	}
 	if setMaxSize {
 		w.SetMaxSize(maxWidth, maxHeight)
+		fmt.Println("Max")
 	}
 
 	// SignalManager.OnExit(w.Exit)
@@ -406,7 +410,7 @@ func (w *WebView) SetMaxSize(width, height int) {
 		w.log.Warn("Cannot call SetMaxSize() - App.Resizable = false")
 		return
 	}
-
+	w.maximumSizeSet = true
 	w.window.Dispatch(func() {
 		w.window.SetMaxSize(width, height)
 	})
@@ -416,6 +420,9 @@ func (w *WebView) SetMaxSize(width, height int) {
 func (w *WebView) Fullscreen() {
 	if w.config.GetResizable() == false {
 		w.log.Warn("Cannot call Fullscreen() - App.Resizable = false")
+		return
+	} else if w.maximumSizeSet {
+		w.log.Warn("Cannot call Fullscreen() - Maximum size of window set")
 		return
 	}
 	w.window.Dispatch(func() {
