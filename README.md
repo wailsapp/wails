@@ -34,7 +34,7 @@ The official docs can be found at [https://wails.app](https://wails.app).
 
 This project is supported by these kind people:
 
-<a href="https://github.com/tc-hib" style="width:50px"><img src="https://github.com/tc-hib.png?size=50" style="width:50px"/></a>
+<a href="https://github.com/tc-hib" style="width:50px"><img src="https://github.com/tc-hib.png?size=50" width="50"/></a>
 
 ## Installation
 
