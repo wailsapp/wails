@@ -1,5 +1,5 @@
-import { Init } from "../generated/wails";
+import { Init } from '../generated/wails';
 
 Init(() => {
-  console.log("Hey!");
+	alert('Hey');
 });
