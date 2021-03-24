@@ -180,7 +180,7 @@ func (s *SystemHelper) Initialise() error {
 	return s.setup()
 }
 
-// SystemConfig - Defines system wode configuration data
+// SystemConfig - Defines system wide configuration data
 type SystemConfig struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
