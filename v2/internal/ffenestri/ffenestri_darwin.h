@@ -13,7 +13,13 @@
 
 // Macros to make it slightly more sane
 #define msg objc_msgSend
-
+#define msg_reg ((id(*)(id, SEL))objc_msgSend)
+#define msg_id ((id(*)(id, SEL, id))objc_msgSend)
+#define msg_id_id ((id(*)(id, SEL, id, id))objc_msgSend)
+#define msg_bool ((id(*)(id, SEL, BOOL))objc_msgSend)
+#define msg_int ((id(*)(id, SEL, int))objc_msgSend)
+#define msg_uint ((id(*)(id, SEL, unsigned int))objc_msgSend)
+#define msg_float ((id(*)(id, SEL, float))objc_msgSend)
 #define kInternetEventClass 'GURL'
 #define kAEGetURL 'GURL'
 #define keyDirectObject '----'
@@ -21,18 +27,27 @@
 #define c(str) (id)objc_getClass(str)
 #define s(str) sel_registerName(str)
 #define u(str) sel_getUid(str)
-#define str(input) msg(c("NSString"), s("stringWithUTF8String:"), input)
-#define strunicode(input) msg(c("NSString"), s("stringWithFormat:"), str("%C"), (unsigned short)input)
-#define cstr(input) (const char *)msg(input, s("UTF8String"))
-#define url(input) msg(c("NSURL"), s("fileURLWithPath:"), str(input))
-#define ALLOC(classname) msg(c(classname), s("alloc"))
-#define ALLOC_INIT(classname) msg(msg(c(classname), s("alloc")), s("init"))
+#define str(input) ((id(*)(id, SEL, const char *))objc_msgSend)(c("NSString"), s("stringWithUTF8String:"), input)
+#define strunicode(input) ((id(*)(id, SEL, id, unsigned short))objc_msgSend)(c("NSString"), s("stringWithFormat:"), str("%C"), (unsigned short)input)
+#define cstr(input) (const char *)msg_reg(input, s("UTF8String"))
+#define url(input) msg_id(c("NSURL"), s("fileURLWithPath:"), str(input))
+#define ALLOC(classname) msg_reg(c(classname), s("alloc"))
+#define ALLOC_INIT(classname) msg_reg(msg_reg(c(classname), s("alloc")), s("init"))
+
+#if defined (__aarch64__)
+#define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend)(receiver, s("frame"))
+#define GET_BOUNDS(receiver) ((CGRect(*)(id, SEL))objc_msgSend)(receiver, s("bounds"))
+#endif
+
+#if defined (__x86_64__)
 #define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("frame"))
 #define GET_BOUNDS(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("bounds"))
-#define GET_BACKINGSCALEFACTOR(receiver) ((CGFloat(*)(id, SEL))msg)(receiver, s("backingScaleFactor"))
+#endif
+
+#define GET_BACKINGSCALEFACTOR(receiver) ((CGFloat(*)(id, SEL))objc_msgSend)(receiver, s("backingScaleFactor"))
 
 #define ON_MAIN_THREAD(str) dispatch( ^{ str; } )
-#define MAIN_WINDOW_CALL(str) msg(app->mainWindow, s((str)))
+#define MAIN_WINDOW_CALL(str) msg_reg(app->mainWindow, s((str)))
 
 #define NSBackingStoreBuffered 2
 

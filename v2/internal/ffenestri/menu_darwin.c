@@ -90,7 +90,7 @@ void DeleteMenu(Menu *menu) {
 
     // Free nsmenu if we have it
     if ( menu->menu != NULL ) {
-        msg(menu->menu, s("release"));
+        msg_reg(menu->menu, s("release"));
     }
 
     free(menu);
@@ -120,17 +120,17 @@ const char* createMenuClickedMessage(const char *menuItemID, const char *data, e
 
 // Callback for text menu items
 void menuItemCallback(id self, SEL cmd, id sender) {
-    MenuItemCallbackData *callbackData = (MenuItemCallbackData *)msg(msg(sender, s("representedObject")), s("pointerValue"));
+    MenuItemCallbackData *callbackData = (MenuItemCallbackData *)msg_reg(msg_reg(sender, s("representedObject")), s("pointerValue"));
     const char *message;
 
     // Update checkbox / radio item
     if( callbackData->menuItemType == Checkbox) {
         // Toggle state
-        bool state = msg(callbackData->menuItem, s("state"));
-        msg(callbackData->menuItem, s("setState:"), (state? NSControlStateValueOff : NSControlStateValueOn));
+        bool state = msg_reg(callbackData->menuItem, s("state"));
+        msg_int(callbackData->menuItem, s("setState:"), (state? NSControlStateValueOff : NSControlStateValueOn));
     } else if( callbackData->menuItemType == Radio ) {
         // Check the menu items' current state
-        bool selected = msg(callbackData->menuItem, s("state"));
+        bool selected = (bool)msg_reg(callbackData->menuItem, s("state"));
 
         // If it's already selected, exit early
         if (selected) return;
@@ -142,13 +142,13 @@ void menuItemCallback(id self, SEL cmd, id sender) {
         id thisMember = members[0];
         int count = 0;
         while(thisMember != NULL) {
-            msg(thisMember, s("setState:"), NSControlStateValueOff);
+            msg_int(thisMember, s("setState:"), NSControlStateValueOff);
             count = count + 1;
             thisMember = members[count];
         }
 
         // check the selected menu item
-        msg(callbackData->menuItem, s("setState:"), NSControlStateValueOn);
+        msg_int(callbackData->menuItem, s("setState:"), NSControlStateValueOn);
     }
 
     const char *menuID = callbackData->menuID;
@@ -345,61 +345,61 @@ id processAcceleratorKey(const char *key) {
 
 
 void addSeparator(id menu) {
-    id item = msg(c("NSMenuItem"), s("separatorItem"));
-    msg(menu, s("addItem:"), item);
+    id item = msg_reg(c("NSMenuItem"), s("separatorItem"));
+    msg_id(menu, s("addItem:"), item);
 }
 
 id createMenuItemNoAutorelease( id title, const char *action, const char *key) {
     id item = ALLOC("NSMenuItem");
-    msg(item, s("initWithTitle:action:keyEquivalent:"), title, s(action), str(key));
+    ((id(*)(id, SEL, id, SEL, id))objc_msgSend)(item, s("initWithTitle:action:keyEquivalent:"), title, s(action), str(key));
     return item;
 }
 
 id createMenuItem(id title, const char *action, const char *key) {
     id item = ALLOC("NSMenuItem");
-    msg(item, s("initWithTitle:action:keyEquivalent:"), title, s(action), str(key));
-    msg(item, s("autorelease"));
+    ((id(*)(id, SEL, id, SEL, id))objc_msgSend)(item, s("initWithTitle:action:keyEquivalent:"), title, s(action), str(key));
+    msg_reg(item, s("autorelease"));
     return item;
 }
 
 id addMenuItem(id menu, const char *title, const char *action, const char *key, bool disabled) {
     id item = createMenuItem(str(title), action, key);
-    msg(item, s("setEnabled:"), !disabled);
-    msg(menu, s("addItem:"), item);
+    msg_bool(item, s("setEnabled:"), !disabled);
+    msg_id(menu, s("addItem:"), item);
     return item;
 }
 
 id createMenu(id title) {
     id menu = ALLOC("NSMenu");
-    msg(menu, s("initWithTitle:"), title);
-    msg(menu, s("setAutoenablesItems:"), NO);
+    msg_id(menu, s("initWithTitle:"), title);
+    msg_bool(menu, s("setAutoenablesItems:"), NO);
 //  msg(menu, s("autorelease"));
     return menu;
 }
 
 void createDefaultAppMenu(id parentMenu) {
 // App Menu
-    id appName = msg(msg(c("NSProcessInfo"), s("processInfo")), s("processName"));
+    id appName = msg_reg(msg_reg(c("NSProcessInfo"), s("processInfo")), s("processName"));
     id appMenuItem = createMenuItemNoAutorelease(appName, NULL, "");
     id appMenu = createMenu(appName);
 
-    msg(appMenuItem, s("setSubmenu:"), appMenu);
-    msg(parentMenu, s("addItem:"), appMenuItem);
+    msg_id(appMenuItem, s("setSubmenu:"), appMenu);
+    msg_id(parentMenu, s("addItem:"), appMenuItem);
 
-    id title = msg(str("Hide "), s("stringByAppendingString:"), appName);
+    id title = msg_id(str("Hide "), s("stringByAppendingString:"), appName);
     id item = createMenuItem(title, "hide:", "h");
-    msg(appMenu, s("addItem:"), item);
+    msg_id(appMenu, s("addItem:"), item);
 
     id hideOthers = addMenuItem(appMenu, "Hide Others", "hideOtherApplications:", "h", FALSE);
-    msg(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
+    msg_int(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
 
     addMenuItem(appMenu, "Show All", "unhideAllApplications:", "", FALSE);
 
     addSeparator(appMenu);
 
-    title = msg(str("Quit "), s("stringByAppendingString:"), appName);
+    title = msg_id(str("Quit "), s("stringByAppendingString:"), appName);
     item = createMenuItem(title, "terminate:", "q");
-    msg(appMenu, s("addItem:"), item);
+    msg_id(appMenu, s("addItem:"), item);
 }
 
 void createDefaultEditMenu(id parentMenu) {
@@ -407,8 +407,8 @@ void createDefaultEditMenu(id parentMenu) {
     id editMenuItem = createMenuItemNoAutorelease(str("Edit"), NULL, "");
     id editMenu = createMenu(str("Edit"));
 
-    msg(editMenuItem, s("setSubmenu:"), editMenu);
-    msg(parentMenu, s("addItem:"), editMenuItem);
+    msg_id(editMenuItem, s("setSubmenu:"), editMenu);
+    msg_id(parentMenu, s("addItem:"), editMenuItem);
 
     addMenuItem(editMenu, "Undo", "undo:", "z", FALSE);
     addMenuItem(editMenu, "Redo", "redo:", "y", FALSE);
@@ -436,7 +436,7 @@ void processMenuRole(Menu *menu, id parentMenu, JsonNode *item) {
     }
     if ( STREQ(roleName, "hideothers")) {
         id hideOthers = addMenuItem(parentMenu, "Hide Others", "hideOtherApplications:", "h", FALSE);
-        msg(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
+        msg_int(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
         return;
     }
     if ( STREQ(roleName, "unhide")) {
@@ -473,7 +473,7 @@ void processMenuRole(Menu *menu, id parentMenu, JsonNode *item) {
     }
     if( STREQ(roleName, "pasteandmatchstyle")) {
         id pasteandmatchstyle = addMenuItem(parentMenu, "Paste and Match Style", "pasteandmatchstyle:", "v", FALSE);
-        msg(pasteandmatchstyle, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagShift | NSEventModifierFlagCommand));
+        msg_int(pasteandmatchstyle, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagShift | NSEventModifierFlagCommand));
     }
     if ( STREQ(roleName, "selectall")) {
         addMenuItem(parentMenu, "Select All", "selectAll:", "a", FALSE);
@@ -540,18 +540,18 @@ id processRadioMenuItem(Menu *menu, id parentmenu, const char *title, const char
     // Create a MenuItemCallbackData
     MenuItemCallbackData *callback = CreateMenuItemCallbackData(menu, item, menuid, Radio);
 
-    id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), callback);
-    msg(item, s("setRepresentedObject:"), wrappedId);
+    id wrappedId = msg_id(c("NSValue"), s("valueWithPointer:"), (id)callback);
+    msg_id(item, s("setRepresentedObject:"), wrappedId);
 
     id key = processAcceleratorKey(acceleratorkey);
 
-    msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuItemCallback:"), key);
+    ((id(*)(id, SEL, id, SEL, id))objc_msgSend)(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuItemCallback:"), key);
 
-    msg(item, s("setEnabled:"), !disabled);
-    msg(item, s("autorelease"));
-    msg(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
+    msg_bool(item, s("setEnabled:"), !disabled);
+    msg_reg(item, s("autorelease"));
+    msg_int(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
 
-    msg(parentmenu, s("addItem:"), item);
+    msg_id(parentmenu, s("addItem:"), item);
     return item;
 
 }
@@ -566,13 +566,13 @@ id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const c
     // Create a MenuItemCallbackData
     MenuItemCallbackData *callback = CreateMenuItemCallbackData(menu, item, menuid, Checkbox);
 
-    id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), callback);
-    msg(item, s("setRepresentedObject:"), wrappedId);
-    msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuItemCallback:"), str(key));
-    msg(item, s("setEnabled:"), !disabled);
-    msg(item, s("autorelease"));
-    msg(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
-    msg(parentmenu, s("addItem:"), item);
+    id wrappedId = msg_id(c("NSValue"), s("valueWithPointer:"), (id)callback);
+    msg_id(item, s("setRepresentedObject:"), wrappedId);
+    ((id(*)(id, SEL, id, SEL, id))objc_msgSend)(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuItemCallback:"), str(key));
+    msg_bool(item, s("setEnabled:"), !disabled);
+    msg_reg(item, s("autorelease"));
+    msg_int(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
+    msg_id(parentmenu, s("addItem:"), item);
     return item;
 }
 
@@ -582,27 +582,26 @@ id createAttributedString(const char* title, const char* fontName, int fontSize,
     id dictionary = ALLOC_INIT("NSMutableDictionary");
 
     // Process font
-    id font;
     CGFloat fontSizeFloat = (CGFloat)fontSize;
 
     // Check if valid
     id fontNameAsNSString = str(fontName);
-    font = msg(c("NSFont"), s("fontWithName:size:"), fontNameAsNSString, fontSizeFloat);
+    id font = ((id(*)(id, SEL, id, CGFloat))objc_msgSend)(c("NSFont"), s("fontWithName:size:"), fontNameAsNSString, fontSizeFloat);
     if( font == NULL ) {
-        bool supportsMonospacedDigitSystemFont = (bool) msg(c("NSFont"), s("respondsToSelector:"), s("monospacedDigitSystemFontOfSize:weight:"));
+        bool supportsMonospacedDigitSystemFont = (bool) ((id(*)(id, SEL, SEL))objc_msgSend)(c("NSFont"), s("respondsToSelector:"), s("monospacedDigitSystemFontOfSize:weight:"));
         if( supportsMonospacedDigitSystemFont ) {
-            font = msg(c("NSFont"), s("monospacedDigitSystemFontOfSize:weight:"), fontSizeFloat, NSFontWeightRegular);
+            font = ((id(*)(id, SEL, CGFloat, CGFloat))objc_msgSend)(c("NSFont"), s("monospacedDigitSystemFontOfSize:weight:"), fontSizeFloat, (CGFloat)NSFontWeightRegular);
         } else {
-            font = msg(c("NSFont"), s("menuFontOfSize:"), fontSizeFloat);
+            font = ((id(*)(id, SEL, CGFloat))objc_msgSend)(c("NSFont"), s("menuFontOfSize:"), fontSizeFloat);
         }
     }
 
     // Add font to dictionary
-    msg(dictionary, s("setObject:forKey:"), font, lookupStringConstant(str("NSFontAttributeName")));
-
-    id offset = msg(c("NSNumber"), s("numberWithFloat:"), 0.0);
-    msg(dictionary, s("setObject:forKey:"), offset, lookupStringConstant(str("NSBaselineOffsetAttributeName")));
-
+    id fan = lookupStringConstant(str("NSFontAttributeName"));
+    msg_id_id(dictionary, s("setObject:forKey:"), font, fan);
+    id offset = msg_float(c("NSNumber"), s("numberWithFloat:"), (float)0.0);
+    id offsetAttrName = lookupStringConstant(str("NSBaselineOffsetAttributeName"));
+    msg_id_id(dictionary, s("setObject:forKey:"), offset, offsetAttrName);
     // RGBA
     if( RGBA != NULL && strlen(RGBA) > 0) {
         unsigned short r, g, b, a;
@@ -611,20 +610,21 @@ id createAttributedString(const char* title, const char* fontName, int fontSize,
         r = g = b = a = 255;
         int count = sscanf(RGBA, "#%02hx%02hx%02hx%02hx", &r, &g, &b, &a);
         if (count > 0) {
-			id colour = msg(c("NSColor"), s("colorWithCalibratedRed:green:blue:alpha:"),
-								(float)r / 255.0,
-								(float)g / 255.0,
-								(float)b / 255.0,
-								(float)a / 255.0);
-            msg(dictionary, s("setObject:forKey:"), colour, lookupStringConstant(str("NSForegroundColorAttributeName")));
-            msg(colour, s("release"));
+			id colour = ((id(*)(id, SEL, CGFloat, CGFloat, CGFloat, CGFloat))objc_msgSend)(c("NSColor"), s("colorWithCalibratedRed:green:blue:alpha:"),
+								(CGFloat)r / (CGFloat)255.0,
+								(CGFloat)g / (CGFloat)255.0,
+								(CGFloat)b / (CGFloat)255.0,
+								(CGFloat)a / (CGFloat)255.0);
+			id NSForegroundColorAttributeName = lookupStringConstant(str("NSForegroundColorAttributeName"));
+            msg_id_id(dictionary, s("setObject:forKey:"), colour, NSForegroundColorAttributeName);
+            msg_reg(colour, s("autorelease"));
         }
     }
 
     id attributedString = ALLOC("NSMutableAttributedString");
-    msg(attributedString, s("initWithString:attributes:"), str(title), dictionary);
-    msg(attributedString, s("autorelease"));
-    msg(dictionary, s("release"));
+    msg_id_id(attributedString, s("initWithString:attributes:"), str(title), dictionary);
+    msg_reg(attributedString, s("autorelease"));
+    msg_reg(dictionary, s("release"));
     return attributedString;
 }
 
@@ -634,51 +634,53 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
     // Create a MenuItemCallbackData
     MenuItemCallbackData *callback = CreateMenuItemCallbackData(menu, item, menuid, Text);
 
-    id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), callback);
-    msg(item, s("setRepresentedObject:"), wrappedId);
+    id wrappedId = msg_id(c("NSValue"), s("valueWithPointer:"), (id)callback);
+    msg_id(item, s("setRepresentedObject:"), wrappedId);
 
     if( !alternate ) {
         id key = processAcceleratorKey(acceleratorkey);
-        msg(item, s("initWithTitle:action:keyEquivalent:"), str(title),
+        ((id(*)(id, SEL, id, SEL, id))objc_msgSend)(item, s("initWithTitle:action:keyEquivalent:"), str(title),
             s("menuItemCallback:"), key);
     } else {
-        msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuItemCallback:"), str(""));
+        ((id(*)(id, SEL, id, SEL, id))objc_msgSend)(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuItemCallback:"), str(""));
     }
 
     if( tooltip != NULL ) {
-        msg(item, s("setToolTip:"), str(tooltip));
+        msg_id(item, s("setToolTip:"), str(tooltip));
     }
 
     // Process image
     if( image != NULL && strlen(image) > 0) {
         id data = ALLOC("NSData");
-        id imageData = msg(data, s("initWithBase64EncodedString:options:"), str(image), 0);
+        id imageData = ((id(*)(id, SEL, id, int))objc_msgSend)(data, s("initWithBase64EncodedString:options:"), str(image), 0);
         id nsimage = ALLOC("NSImage");
-        msg(nsimage, s("initWithData:"), imageData);
+        msg_id(nsimage, s("initWithData:"), imageData);
         if( templateImage ) {
-            msg(nsimage, s("setTemplate:"), YES);
+            msg_bool(nsimage, s("setTemplate:"), YES);
         }
-        msg(item, s("setImage:"), nsimage);
+        msg_id(item, s("setImage:"), nsimage);
     }
 
     id attributedString = createAttributedString(title, fontName, fontSize, RGBA);
-    msg(item, s("setAttributedTitle:"), attributedString);
+    msg_id(item, s("setAttributedTitle:"), attributedString);
 
-    msg(item, s("setEnabled:"), !disabled);
-    msg(item, s("autorelease"));
+//msg_id(item, s("setTitle:"), str(title));
+
+    msg_bool(item, s("setEnabled:"), !disabled);
+    msg_reg(item, s("autorelease"));
 
     // Process modifiers
     if( modifiers != NULL && !alternate) {
         unsigned long modifierFlags = parseModifiers(modifiers);
-        msg(item, s("setKeyEquivalentModifierMask:"), modifierFlags);
+        ((id(*)(id, SEL, unsigned long))objc_msgSend)(item, s("setKeyEquivalentModifierMask:"), modifierFlags);
     }
 
     // alternate
     if( alternate ) {
-        msg(item, s("setAlternate:"), true);
-        msg(item, s("setKeyEquivalentModifierMask:"), NSEventModifierFlagOption);
+        msg_bool(item, s("setAlternate:"), true);
+        msg_int(item, s("setKeyEquivalentModifierMask:"), NSEventModifierFlagOption);
     }
-    msg(parentMenu, s("addItem:"), item);
+    msg_id(parentMenu, s("addItem:"), item);
 
     return item;
 }
@@ -712,8 +714,8 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
         id thisMenuItem = createMenuItemNoAutorelease(str(name), NULL, "");
         id thisMenu = createMenu(str(name));
 
-        msg(thisMenuItem, s("setSubmenu:"), thisMenu);
-        msg(parentMenu, s("addItem:"), thisMenuItem);
+        msg_id(thisMenuItem, s("setSubmenu:"), thisMenu);
+        msg_id(parentMenu, s("addItem:"), thisMenuItem);
 
         JsonNode *submenuItems = json_find_member(submenu, "Items");
         // If we have no items, just return
