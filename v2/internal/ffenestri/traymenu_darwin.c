@@ -70,16 +70,16 @@ void UpdateTrayLabel(TrayMenu *trayMenu, const char *label, const char *fontName
         return;
     }
     // Update button label
-    id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
+    id statusBarButton = msg_reg(trayMenu->statusbaritem, s("button"));
     id attributedString = createAttributedString(label, fontName, fontSize, RGBA);
 
     if( tooltip != NULL ) {
-        msg(statusBarButton, s("setToolTip:"), str(tooltip));
+        msg_id(statusBarButton, s("setToolTip:"), str(tooltip));
     }
 
-    msg(statusBarButton, s("setEnabled:"), !disabled);
+    msg_bool(statusBarButton, s("setEnabled:"), !disabled);
 
-    msg(statusBarButton, s("setAttributedTitle:"), attributedString);
+    msg_id(statusBarButton, s("setAttributedTitle:"), attributedString);
 }
 
 void UpdateTrayIcon(TrayMenu *trayMenu) {
@@ -89,12 +89,12 @@ void UpdateTrayIcon(TrayMenu *trayMenu) {
         return;
     }
 
-    id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
+    id statusBarButton = msg_reg(trayMenu->statusbaritem, s("button"));
 
     // Empty icon means remove it
     if( STREMPTY(trayMenu->icon) ) {
         // Remove image
-        msg(statusBarButton, s("setImage:"), NULL);
+        msg_id(statusBarButton, s("setImage:"), NULL);
         return;
     }
 
@@ -103,17 +103,17 @@ void UpdateTrayIcon(TrayMenu *trayMenu) {
     // If we don't have the image in the icon cache then assume it's base64 encoded image data
     if (trayImage == NULL) {
         id data = ALLOC("NSData");
-        id imageData = msg(data, s("initWithBase64EncodedString:options:"), str(trayMenu->icon), 0);
+        id imageData = ((id(*)(id, SEL, id, int))objc_msgSend)(data, s("initWithBase64EncodedString:options:"), str(trayMenu->icon), 0);
         trayImage = ALLOC("NSImage");
-        msg(trayImage, s("initWithData:"), imageData);
+        msg_id(trayImage, s("initWithData:"), imageData);
 
         if( trayMenu->templateImage ) {
-            msg(trayImage, s("setTemplate:"), YES);
+            msg_bool(trayImage, s("setTemplate:"), YES);
         }
     }
 
-    msg(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);
-    msg(statusBarButton, s("setImage:"), trayImage);
+    msg_int(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);
+    msg_id(statusBarButton, s("setImage:"), trayImage);
 
 }
 
@@ -121,14 +121,13 @@ void ShowTrayMenu(TrayMenu* trayMenu) {
 
     // Create a status bar item if we don't have one
     if( trayMenu->statusbaritem == NULL ) {
-        id statusBar = msg( c("NSStatusBar"), s("systemStatusBar") );
-        trayMenu->statusbaritem = msg(statusBar, s("statusItemWithLength:"), NSVariableStatusItemLength);
-        msg(trayMenu->statusbaritem, s("retain"));
+        id statusBar = msg_reg( c("NSStatusBar"), s("systemStatusBar") );
+        trayMenu->statusbaritem = ((id(*)(id, SEL, CGFloat))objc_msgSend)(statusBar, s("statusItemWithLength:"), NSVariableStatusItemLength);
+        msg_reg(trayMenu->statusbaritem, s("retain"));
     }
 
-    id statusBarButton = msg(trayMenu->statusbaritem, s("button"));
-    msg(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);
-
+    id statusBarButton = msg_reg(trayMenu->statusbaritem, s("button"));
+    msg_uint(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);
     // Update the icon if needed
     UpdateTrayIcon(trayMenu);
 
@@ -140,14 +139,14 @@ void ShowTrayMenu(TrayMenu* trayMenu) {
     objc_setAssociatedObject(menu, "trayMenuID", str(trayMenu->ID), OBJC_ASSOCIATION_ASSIGN);
 
 	// Create delegate
-	id trayMenuDelegate = msg((id)trayMenuDelegateClass, s("new"));
-	msg(menu, s("setDelegate:"), trayMenuDelegate);
-	objc_setAssociatedObject(trayMenuDelegate, "menu", menu, OBJC_ASSOCIATION_ASSIGN);
+	id trayMenuDelegate = msg_reg((id)trayMenuDelegateClass, s("new"));
+	msg_id(menu, s("setDelegate:"), trayMenuDelegate);
+    objc_setAssociatedObject(trayMenuDelegate, "menu", menu, OBJC_ASSOCIATION_ASSIGN);
 
     // Create menu delegate
     trayMenu->delegate = trayMenuDelegate;
 
-    msg(trayMenu->statusbaritem, s("setMenu:"), menu);
+    msg_id(trayMenu->statusbaritem, s("setMenu:"), menu);
 }
 
 // UpdateTrayMenuInPlace receives 2 menus. The current menu gets
@@ -189,14 +188,14 @@ void DeleteTrayMenu(TrayMenu* trayMenu) {
 
     // Free the status item
     if ( trayMenu->statusbaritem != NULL ) {
-        id statusBar = msg( c("NSStatusBar"), s("systemStatusBar") );
-        msg(statusBar, s("removeStatusItem:"), trayMenu->statusbaritem);
-        msg(trayMenu->statusbaritem, s("release"));
+        id statusBar = msg_reg( c("NSStatusBar"), s("systemStatusBar") );
+        msg_id(statusBar, s("removeStatusItem:"), trayMenu->statusbaritem);
+        msg_reg(trayMenu->statusbaritem, s("release"));
         trayMenu->statusbaritem = NULL;
     }
 
     if ( trayMenu->delegate != NULL ) {
-        msg(trayMenu->delegate, s("release"));
+        msg_reg(trayMenu->delegate, s("release"));
     }
 
     // Free the tray menu memory
@@ -228,9 +227,9 @@ void LoadTrayIcons() {
         int length = atoi((const char *)lengthAsString);
 
         // Create the icon and add to the hashmap
-        id imageData = msg(c("NSData"), s("dataWithBytes:length:"), data, length);
+        id imageData = ((id(*)(id, SEL, id, int))objc_msgSend)(c("NSData"), s("dataWithBytes:length:"), data, length);
         id trayImage = ALLOC("NSImage");
-        msg(trayImage, s("initWithData:"), imageData);
+        msg_id(trayImage, s("initWithData:"), imageData);
         hashmap_put(&trayIconCache, (const char *)name, strlen((const char *)name), trayImage);
     }
 }

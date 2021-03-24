@@ -82,10 +82,10 @@ void ShowContextMenu(ContextMenuStore* store, id mainWindow, const char *context
     FREE_AND_SET(contextMenu->contextMenuData, contextMenuData);
 
 	// Grab the content view and show the menu
-	id contentView = msg(mainWindow, s("contentView"));
+	id contentView = msg_reg(mainWindow, s("contentView"));
 
 	// Get the triggering event
-	id menuEvent = msg(mainWindow, s("currentEvent"));
+	id menuEvent = msg_reg(mainWindow, s("currentEvent"));
 
 	if( contextMenu->nsmenu == NULL ) {
         // GetMenu creates the NSMenu
@@ -93,7 +93,7 @@ void ShowContextMenu(ContextMenuStore* store, id mainWindow, const char *context
 	}
 
 	// Show popup
-	msg(c("NSMenu"), s("popUpContextMenu:withEvent:forView:"), contextMenu->nsmenu, menuEvent, contentView);
+	((id(*)(id, SEL, id, id, id))objc_msgSend)(c("NSMenu"), s("popUpContextMenu:withEvent:forView:"), contextMenu->nsmenu, menuEvent, contentView);
 
 }
 

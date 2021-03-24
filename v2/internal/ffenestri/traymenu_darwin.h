@@ -25,7 +25,7 @@ typedef struct {
     Menu* menu;
 
     id statusbaritem;
-    int trayIconPosition;
+    unsigned int trayIconPosition;
 
     JsonNode* processedJSON;
 

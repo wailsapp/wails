@@ -73,11 +73,11 @@ extern void messageFromWindowCallback(const char *);
 typedef void (*ffenestriCallback)(const char *);
 
 void HideMouse() {
-	msg(c("NSCursor"), s("hide"));
+	msg_reg(c("NSCursor"), s("hide"));
 }
 
 void ShowMouse() {
-	msg(c("NSCursor"), s("unhide"));
+	msg_reg(c("NSCursor"), s("unhide"));
 }
 
 struct Application {
@@ -106,10 +106,10 @@ struct Application {
 	int resizable;
 	int devtools;
 	int fullscreen;
-	int red;
-	int green;
-	int blue;
-	int alpha;
+	CGFloat red;
+	CGFloat green;
+	CGFloat blue;
+	CGFloat alpha;
 	int webviewIsTranparent;
 	const char *appearance;
 	int decorations;
@@ -239,12 +239,12 @@ void applyWindowColour(struct Application *app) {
 	// Apply the colour only if the window has been created
 	if( app->mainWindow != NULL ) {
 		ON_MAIN_THREAD(
-			id colour = msg(c("NSColor"), s("colorWithCalibratedRed:green:blue:alpha:"),
-								(float)app->red / 255.0,
-								(float)app->green / 255.0,
-								(float)app->blue / 255.0,
-								(float)app->alpha / 255.0);
-			msg(app->mainWindow, s("setBackgroundColor:"), colour);
+			id colour = ((id(*)(id, SEL, CGFloat, CGFloat, CGFloat, CGFloat))objc_msgSend)(c("NSColor"), s("colorWithCalibratedRed:green:blue:alpha:"),
+								(CGFloat)app->red / (CGFloat)255.0,
+								(CGFloat)app->green / (CGFloat)255.0,
+								(CGFloat)app->blue / (CGFloat)255.0,
+								(CGFloat)app->alpha / (CGFloat)255.0);
+			msg_id(app->mainWindow, s("setBackgroundColor:"), colour);
 		);
 	}
 }
@@ -253,10 +253,10 @@ void SetColour(struct Application *app, int red, int green, int blue, int alpha)
     // Guard against calling during shutdown
     if( app->shuttingDown ) return;
 
-	app->red = red;
-	app->green = green;
-	app->blue = blue;
-	app->alpha = alpha;
+	app->red = (CGFloat)red;
+	app->green = (CGFloat)green;
+	app->blue = (CGFloat)blue;
+	app->alpha = (CGFloat)alpha;
 
 	applyWindowColour(app);
 }
@@ -270,7 +270,7 @@ void Hide(struct Application *app) {
     if( app->shuttingDown ) return;
 
 	ON_MAIN_THREAD(
-		msg(app->mainWindow, s("orderOut:"));
+		msg_reg(app->mainWindow, s("orderOut:"));
 	);
 }
 
@@ -279,8 +279,8 @@ void Show(struct Application *app) {
     if( app->shuttingDown ) return;
 
 	ON_MAIN_THREAD(
-		msg(app->mainWindow, s("makeKeyAndOrderFront:"), NULL);
-		msg(app->application, s("activateIgnoringOtherApps:"), YES);
+		msg_id(app->mainWindow, s("makeKeyAndOrderFront:"), NULL);
+		msg_bool(app->application, s("activateIgnoringOtherApps:"), YES);
 	);
 }
 
@@ -292,13 +292,13 @@ void WindowBackgroundIsTranslucent(struct Application *app) {
 void messageHandler(id self, SEL cmd, id contentController, id message) {
 	struct Application *app = (struct Application *)objc_getAssociatedObject(
 							  self, "application");
-	const char *name = (const char *)msg(msg(message, s("name")), s("UTF8String"));
+	const char *name = (const char *)msg_reg(msg_reg(message, s("name")), s("UTF8String"));
 	if( strcmp(name, "error") == 0 ) {
 	    printf("There was a Javascript error. Please open the devtools for more information.\n");
 	    Show(app);
 	} else if( strcmp(name, "completed") == 0) {
 		// Delete handler
-		msg(app->manager, s("removeScriptMessageHandlerForName:"), str("completed"));
+		msg_id(app->manager, s("removeScriptMessageHandlerForName:"), str("completed"));
 
 		// TODO: Notify backend we're ready and get them to call back for the Show()
 		if (app->startHidden == 0) {
@@ -306,7 +306,7 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 		}
 
 		// TODO: Check this actually does reduce flicker
-		msg(app->config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("suppressesIncrementalRendering"));
+		((id(*)(id, SEL, id, id))objc_msgSend)(app->config, s("setValue:forKey:"), msg_bool(c("NSNumber"), s("numberWithBool:"), 0), str("suppressesIncrementalRendering"));
 
        // We are now running!
         app->running = true;
@@ -327,7 +327,7 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 		if( app->mouseEvent != NULL ) {
 			HideMouse();
 			ON_MAIN_THREAD(
-				msg(app->mainWindow, s("performWindowDragWithEvent:"), app->mouseEvent);
+				msg_id(app->mainWindow, s("performWindowDragWithEvent:"), app->mouseEvent);
 			);
 		}
 	} else if( strcmp(name, "contextMenu") == 0 ) {
@@ -337,7 +337,7 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 			return;
 		}
 
-		const char *contextMenuMessage = cstr(msg(message, s("body")));
+		const char *contextMenuMessage = cstr(msg_reg(message, s("body")));
 
 		if( contextMenuMessage == NULL ) {
 			Debug(app, "EMPTY CONTEXT MENU MESSAGE!!\n");
@@ -390,7 +390,7 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 
 	} else {
 		// const char *m = (const char *)msg(msg(message, s("body")), s("UTF8String"));
-		const char *m = cstr(msg(message, s("body")));
+		const char *m = cstr(msg_reg(message, s("body")));
 		app->sendMessageToBackend(m);
 	}
 }
@@ -402,14 +402,14 @@ void closeWindow(id self, SEL cmd, id sender) {
 }
 
 bool isDarkMode(struct Application *app) {
-	id userDefaults = msg(c("NSUserDefaults"), s("standardUserDefaults"));
-	const char *mode = cstr(msg(userDefaults,  s("stringForKey:"), str("AppleInterfaceStyle")));
+	id userDefaults = msg_reg(c("NSUserDefaults"), s("standardUserDefaults"));
+	const char *mode = cstr(msg_id(userDefaults,  s("stringForKey:"), str("AppleInterfaceStyle")));
 	return ( mode != NULL && strcmp(mode, "Dark") == 0 );
 }
 
 void ExecJS(struct Application *app, const char *js) {
 	ON_MAIN_THREAD(
-		msg(app->wkwebview,
+		((id(*)(id, SEL, id, id))objc_msgSend)(app->wkwebview,
 			s("evaluateJavaScript:completionHandler:"),
 			str(js),
 			NULL);
@@ -420,8 +420,8 @@ void willFinishLaunching(id self, SEL cmd, id sender) {
 	struct Application *app = (struct Application *) objc_getAssociatedObject(self, "application");
     // If there are URL Handlers, register a listener for them
     if( app->hasURLHandlers ) {
-        id eventManager = msg(c("NSAppleEventManager"), s("sharedAppleEventManager"));
-        msg(eventManager, s("setEventHandler:andSelector:forEventClass:andEventID:"), self, s("getUrl:withReplyEvent:"), kInternetEventClass, kAEGetURL);
+        id eventManager = msg_reg(c("NSAppleEventManager"), s("sharedAppleEventManager"));
+        ((id(*)(id, SEL, id, SEL, int, int))objc_msgSend)(eventManager, s("setEventHandler:andSelector:forEventClass:andEventID:"), self, s("getUrl:withReplyEvent:"), kInternetEventClass, kAEGetURL);
     }
 	messageFromWindowCallback("Ej{\"name\":\"wails:launched\",\"data\":[]}");
 }
@@ -448,7 +448,7 @@ void themeChanged(id self, SEL cmd, id sender) {
 }
 
 int releaseNSObject(void *const context, struct hashmap_element_s *const e) {
-    msg(e->data, s("release"));
+    msg_reg(e->data, s("release"));
     return -1;
 }
 
@@ -485,10 +485,10 @@ void DestroyApplication(struct Application *app) {
 
 	// Remove mouse monitors
 	if( app->mouseDownMonitor != NULL ) {
-		msg( c("NSEvent"), s("removeMonitor:"), app->mouseDownMonitor);
+		msg_id( c("NSEvent"), s("removeMonitor:"), app->mouseDownMonitor);
 	}
 	if( app->mouseUpMonitor != NULL ) {
-		msg( c("NSEvent"), s("removeMonitor:"), app->mouseUpMonitor);
+		msg_id( c("NSEvent"), s("removeMonitor:"), app->mouseUpMonitor);
 	}
 
 	// Delete the application menu if we have one
@@ -512,15 +512,15 @@ void DestroyApplication(struct Application *app) {
     UnloadTrayIcons();
 
 	// Remove script handlers
-	msg(app->manager, s("removeScriptMessageHandlerForName:"), str("contextMenu"));
-	msg(app->manager, s("removeScriptMessageHandlerForName:"), str("windowDrag"));
-	msg(app->manager, s("removeScriptMessageHandlerForName:"), str("external"));
-	msg(app->manager, s("removeScriptMessageHandlerForName:"), str("error"));
+	msg_id(app->manager, s("removeScriptMessageHandlerForName:"), str("contextMenu"));
+	msg_id(app->manager, s("removeScriptMessageHandlerForName:"), str("windowDrag"));
+	msg_id(app->manager, s("removeScriptMessageHandlerForName:"), str("external"));
+	msg_id(app->manager, s("removeScriptMessageHandlerForName:"), str("error"));
 
 	// Close main window
     if( app->windowDelegate != NULL ) {
-        msg(app->windowDelegate, s("release"));
-        msg(app->mainWindow, s("setDelegate:"), NULL);
+        msg_reg(app->windowDelegate, s("release"));
+        msg_id(app->mainWindow, s("setDelegate:"), NULL);
     }
 
 //	msg(app->mainWindow, s("close"));
@@ -536,7 +536,7 @@ void SetTitle(struct Application *app, const char *title) {
 
 	Debug(app, "SetTitle Called");
 	ON_MAIN_THREAD(
-		msg(app->mainWindow, s("setTitle:"), str(title));
+		msg_id(app->mainWindow, s("setTitle:"), str(title));
 	);
 }
 
@@ -548,7 +548,7 @@ void ToggleFullscreen(struct Application *app) {
 }
 
 bool isFullScreen(struct Application *app) {
-	int mask = (int)msg(app->mainWindow, s("styleMask"));
+	int mask = (int)msg_reg(app->mainWindow, s("styleMask"));
 	bool result = (mask & NSWindowStyleMaskFullscreen) == NSWindowStyleMaskFullscreen;
 	return result;
 }
@@ -629,9 +629,9 @@ void Unminimise(struct Application *app) {
 
 id getCurrentScreen(struct Application *app) {
 	id screen = NULL;
-	screen = msg(app->mainWindow, s("screen"));
+	screen = msg_reg(app->mainWindow, s("screen"));
 	if( screen == NULL ) {
-		screen = msg(c("NSScreen"), u("mainScreen"));
+		screen = msg_reg(c("NSScreen"), u("mainScreen"));
 	}
 	return screen;
 }
@@ -659,7 +659,7 @@ void SetSize(struct Application *app, int width, int height) {
 		frame.size.width = (float)width;
 		frame.size.height = (float)height;
 
-		msg(app->mainWindow, s("setFrame:display:animate:"), frame, 1, 0);
+		((id(*)(id, SEL, CGRect, BOOL, BOOL))objc_msgSend)(app->mainWindow, s("setFrame:display:animate:"), frame, 1, 0);
 	);
 }
 
@@ -674,19 +674,19 @@ void SetPosition(struct Application *app, int x, int y) {
 
 		windowFrame.origin.x = screenFrame.origin.x + (float)x;
 		windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
-		msg(app->mainWindow, s("setFrame:display:animate:"), windowFrame, 1, 0);
+		((id(*)(id, SEL, CGRect, BOOL, BOOL))objc_msgSend)(app->mainWindow, s("setFrame:display:animate:"), windowFrame, 1, 0);
 	);
 }
 
 void processDialogButton(id alert, char *buttonTitle, char *cancelButton, char *defaultButton) {
 	// If this button is set
 	if( STR_HAS_CHARS(buttonTitle) ) {
-        id button = msg(alert, s("addButtonWithTitle:"), str(buttonTitle));
+        id button = msg_id(alert, s("addButtonWithTitle:"), str(buttonTitle));
         if ( STREQ( buttonTitle, defaultButton) ) {
-            msg(button, s("setKeyEquivalent:"), str("\r"));
+            msg_id(button, s("setKeyEquivalent:"), str("\r"));
         }
         if ( STREQ( buttonTitle, cancelButton) ) {
-            msg(button, s("setKeyEquivalent:"), str("\033"));
+            msg_id(button, s("setKeyEquivalent:"), str("\033"));
         }
     }
 }
@@ -707,21 +707,21 @@ extern void MessageDialog(struct Application *app, char *callbackID, char *type,
 
 	    // Set the dialog style
 	    if( STREQ(dialogType, "info") || STREQ(dialogType, "question") ) {
-	        msg(alert, s("setAlertStyle:"), NSAlertStyleInformational);
+	        msg_uint(alert, s("setAlertStyle:"), NSAlertStyleInformational);
 	    } else if( STREQ(dialogType, "warning") ) {
-            msg(alert, s("setAlertStyle:"), NSAlertStyleWarning);
+            msg_uint(alert, s("setAlertStyle:"), NSAlertStyleWarning);
         } else if( STREQ(dialogType, "error") ) {
-            msg(alert, s("setAlertStyle:"), NSAlertStyleCritical);
+            msg_uint(alert, s("setAlertStyle:"), NSAlertStyleCritical);
         }
 
 		// Set title if given
 		if( strlen(title) > 0 ) {
-		    msg(alert, s("setMessageText:"), str(title));
+		    msg_id(alert, s("setMessageText:"), str(title));
 		}
 
 		// Set message if given
 		if( strlen(message) > 0) {
-		    msg(alert, s("setInformativeText:"), str(message));
+		    msg_id(alert, s("setInformativeText:"), str(message));
 		}
 
 		// Process buttons
@@ -772,12 +772,12 @@ extern void MessageDialog(struct Application *app, char *callbackID, char *type,
 	    }
 
 	    if (dialogImage != NULL ) {
-	        msg(alert, s("setIcon:"), dialogImage);
+	        msg_id(alert, s("setIcon:"), dialogImage);
 	    }
 
 		// Run modal
 		char *buttonPressed;
-	    int response = (int)msg(alert, s("runModal"));
+	    int response = (int)msg_reg(alert, s("runModal"));
 	    if( response == NSAlertFirstButtonReturn ) {
 	        buttonPressed = button1;
 	    }
@@ -817,42 +817,42 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
 	ON_MAIN_THREAD(
 
 		// Create the dialog
-		id dialog = msg(c("NSOpenPanel"), s("openPanel"));
+		id dialog = msg_reg(c("NSOpenPanel"), s("openPanel"));
 
 		// Valid but appears to do nothing.... :/
-		msg(dialog, s("setTitle:"), str(title));
+		msg_id(dialog, s("setTitle:"), str(title));
 
 		// Filters
 		if( filters != NULL && strlen(filters) > 0) {
-			id filterString = msg(str(filters), s("stringByReplacingOccurrencesOfString:withString:"), str("*."), str(""));
-			filterString = msg(filterString, s("stringByReplacingOccurrencesOfString:withString:"), str(" "), str(""));
-			id filterList = msg(filterString, s("componentsSeparatedByString:"), str(","));
-			msg(dialog, s("setAllowedFileTypes:"), filterList);
+			id filterString = msg_id_id(str(filters), s("stringByReplacingOccurrencesOfString:withString:"), str("*."), str(""));
+			filterString = msg_id_id(filterString, s("stringByReplacingOccurrencesOfString:withString:"), str(" "), str(""));
+			id filterList = msg_id(filterString, s("componentsSeparatedByString:"), str(","));
+			msg_id(dialog, s("setAllowedFileTypes:"), filterList);
 		} else {
-			msg(dialog, s("setAllowsOtherFileTypes:"), YES);
+			msg_bool(dialog, s("setAllowsOtherFileTypes:"), YES);
 		}
 
 		// Default Directory
 		if( defaultDir != NULL && strlen(defaultDir) > 0 ) {
-			msg(dialog, s("setDirectoryURL:"), url(defaultDir));
+			msg_id(dialog, s("setDirectoryURL:"), url(defaultDir));
 		}
 
 		// Default Filename
 		if( defaultFilename != NULL && strlen(defaultFilename) > 0 ) {
-			msg(dialog, s("setNameFieldStringValue:"), str(defaultFilename));
+			msg_id(dialog, s("setNameFieldStringValue:"), str(defaultFilename));
 		}
 
 		// Setup Options
-		msg(dialog, s("setCanChooseFiles:"), allowFiles);
-		msg(dialog, s("setCanChooseDirectories:"), allowDirs);
-		msg(dialog, s("setAllowsMultipleSelection:"), allowMultiple);
-		msg(dialog, s("setShowsHiddenFiles:"), showHiddenFiles);
-		msg(dialog, s("setCanCreateDirectories:"), canCreateDirectories);
-		msg(dialog, s("setResolvesAliases:"), resolvesAliases);
-		msg(dialog, s("setTreatsFilePackagesAsDirectories:"), treatPackagesAsDirectories);
+		msg_bool(dialog, s("setCanChooseFiles:"), allowFiles);
+		msg_bool(dialog, s("setCanChooseDirectories:"), allowDirs);
+		msg_bool(dialog, s("setAllowsMultipleSelection:"), allowMultiple);
+		msg_bool(dialog, s("setShowsHiddenFiles:"), showHiddenFiles);
+		msg_bool(dialog, s("setCanCreateDirectories:"), canCreateDirectories);
+		msg_bool(dialog, s("setResolvesAliases:"), resolvesAliases);
+		msg_bool(dialog, s("setTreatsFilePackagesAsDirectories:"), treatPackagesAsDirectories);
 
 		// Setup callback handler
-		msg(dialog, s("beginSheetModalForWindow:completionHandler:"), app->mainWindow, ^(id result) {
+		((id(*)(id, SEL, id, void (^)(id)))objc_msgSend)(dialog, s("beginSheetModalForWindow:completionHandler:"), app->mainWindow, ^(id result) {
 
 			// Create the response JSON object
 			JsonNode *response = json_mkarray();
@@ -860,15 +860,15 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
 			// If the user selected some files
 			if( result == (id)1 ) {
 				// Grab the URLs returned
-				id urls = msg(dialog, s("URLs"));
+				id urls = msg_reg(dialog, s("URLs"));
 
 				// Iterate over all the selected files
-				long noOfResults = (long)msg(urls, s("count"));
+				long noOfResults = (long)msg_reg(urls, s("count"));
 				for( int index = 0; index < noOfResults; index++ ) {
 
 					// Extract the filename
-					id url = msg(urls, s("objectAtIndex:"), index);
-					const char *filename = (const char *)msg(msg(url, s("path")), s("UTF8String"));
+					id url = msg_int(urls, s("objectAtIndex:"), index);
+					const char *filename = (const char *)msg_reg(msg_reg(url, s("path")), s("UTF8String"));
 
 					// Add the the response array
 					json_append_element(response, json_mkstring(filename));
@@ -893,7 +893,7 @@ void OpenDialog(struct Application *app, char *callbackID, char *title, char *fi
 			MEMFREE(responseMessage);
 		});
 
-		msg( c("NSApp"), s("runModalForWindow:"), app->mainWindow);
+		msg_id( c("NSApp"), s("runModalForWindow:"), app->mainWindow);
 	);
 }
 
@@ -908,38 +908,38 @@ void SaveDialog(struct Application *app, char *callbackID, char *title, char *fi
 	ON_MAIN_THREAD(
 
 		// Create the dialog
-		id dialog = msg(c("NSSavePanel"), s("savePanel"));
+		id dialog = msg_reg(c("NSSavePanel"), s("savePanel"));
 
 		// Valid but appears to do nothing.... :/
-		msg(dialog, s("setTitle:"), str(title));
+		msg_id(dialog, s("setTitle:"), str(title));
 
 		// Filters
 		if( filters != NULL && strlen(filters) > 0) {
-			id filterString = msg(str(filters), s("stringByReplacingOccurrencesOfString:withString:"), str("*."), str(""));
-			filterString = msg(filterString, s("stringByReplacingOccurrencesOfString:withString:"), str(" "), str(""));
-			id filterList = msg(filterString, s("componentsSeparatedByString:"), str(","));
-			msg(dialog, s("setAllowedFileTypes:"), filterList);
+			id filterString = msg_id_id(str(filters), s("stringByReplacingOccurrencesOfString:withString:"), str("*."), str(""));
+			filterString = msg_id_id(filterString, s("stringByReplacingOccurrencesOfString:withString:"), str(" "), str(""));
+			id filterList = msg_id(filterString, s("componentsSeparatedByString:"), str(","));
+			msg_id(dialog, s("setAllowedFileTypes:"), filterList);
 		} else {
-			msg(dialog, s("setAllowsOtherFileTypes:"), YES);
+			msg_bool(dialog, s("setAllowsOtherFileTypes:"), YES);
 		}
 
 		// Default Directory
 		if( defaultDir != NULL && strlen(defaultDir) > 0 ) {
-			msg(dialog, s("setDirectoryURL:"), url(defaultDir));
+			msg_id(dialog, s("setDirectoryURL:"), url(defaultDir));
 		}
 
 		// Default Filename
 		if( defaultFilename != NULL && strlen(defaultFilename) > 0 ) {
-			msg(dialog, s("setNameFieldStringValue:"), str(defaultFilename));
+			msg_id(dialog, s("setNameFieldStringValue:"), str(defaultFilename));
 		}
 
 		// Setup Options
-		msg(dialog, s("setShowsHiddenFiles:"), showHiddenFiles);
-		msg(dialog, s("setCanCreateDirectories:"), canCreateDirectories);
-		msg(dialog, s("setTreatsFilePackagesAsDirectories:"), treatPackagesAsDirectories);
+		msg_bool(dialog, s("setShowsHiddenFiles:"), showHiddenFiles);
+		msg_bool(dialog, s("setCanCreateDirectories:"), canCreateDirectories);
+		msg_bool(dialog, s("setTreatsFilePackagesAsDirectories:"), treatPackagesAsDirectories);
 
 		// Setup callback handler
-		msg(dialog, s("beginSheetModalForWindow:completionHandler:"), app->mainWindow, ^(id result) {
+		((id(*)(id, SEL, id, void (^)(id)))objc_msgSend)(dialog, s("beginSheetModalForWindow:completionHandler:"), app->mainWindow, ^(id result) {
 
 			// Default is blank
 			const char *filename = "";
@@ -947,8 +947,8 @@ void SaveDialog(struct Application *app, char *callbackID, char *title, char *fi
 			// If the user selected some files
 			if( result == (id)1 ) {
 				// Grab the URL returned
-				id url = msg(dialog, s("URL"));
-				filename = (const char *)msg(msg(url, s("path")), s("UTF8String"));
+				id url = msg_reg(dialog, s("URL"));
+				filename = (const char *)msg_reg(msg_reg(url, s("path")), s("UTF8String"));
 			}
 
 			// Construct callback message. Format "DS<callbackID>|<json array of strings>"
@@ -965,7 +965,7 @@ void SaveDialog(struct Application *app, char *callbackID, char *title, char *fi
 			MEMFREE(responseMessage);
 		});
 
-		msg( c("NSApp"), s("runModalForWindow:"), app->mainWindow);
+		msg_id( c("NSApp"), s("runModalForWindow:"), app->mainWindow);
 	);
 }
 
@@ -984,11 +984,11 @@ void setMinMaxSize(struct Application *app)
 
 	if (app->maxHeight > 0 && app->maxWidth > 0)
 	{
-		msg(app->mainWindow, s("setMaxSize:"), CGSizeMake(app->maxWidth, app->maxHeight));
+		((id(*)(id, SEL, CGSize))objc_msgSend)(app->mainWindow, s("setMaxSize:"), CGSizeMake(app->maxWidth, app->maxHeight));
 	}
 	if (app->minHeight > 0 && app->minWidth > 0)
 	{
-		msg(app->mainWindow, s("setMinSize:"), CGSizeMake(app->minWidth, app->minHeight));
+		((id(*)(id, SEL, CGSize))objc_msgSend)(app->mainWindow, s("setMinSize:"), CGSizeMake(app->minWidth, app->minHeight));
 	}
 
 	// Calculate if window needs resizing
@@ -1101,23 +1101,23 @@ void SetBindings(struct Application *app, const char *bindings) {
 }
 
 void makeWindowBackgroundTranslucent(struct Application *app) {
-	id contentView = msg(app->mainWindow, s("contentView"));
-	id effectView = msg(c("NSVisualEffectView"), s("alloc"));
+	id contentView = msg_reg(app->mainWindow, s("contentView"));
+	id effectView = msg_reg(c("NSVisualEffectView"), s("alloc"));
 	CGRect bounds = GET_BOUNDS(contentView);
-	effectView = msg(effectView, s("initWithFrame:"), bounds);
+	effectView = ((id(*)(id, SEL, CGRect))objc_msgSend)(effectView, s("initWithFrame:"), bounds);
 
-	msg(effectView, s("setAutoresizingMask:"), NSViewWidthSizable | NSViewHeightSizable);
-	msg(effectView, s("setBlendingMode:"), NSVisualEffectBlendingModeBehindWindow);
-	msg(effectView, s("setState:"), NSVisualEffectStateActive);
-	msg(contentView, s("addSubview:positioned:relativeTo:"), effectView, NSWindowBelow, NULL);
+	msg_int(effectView, s("setAutoresizingMask:"), NSViewWidthSizable | NSViewHeightSizable);
+	msg_int(effectView, s("setBlendingMode:"), NSVisualEffectBlendingModeBehindWindow);
+	msg_int(effectView, s("setState:"), NSVisualEffectStateActive);
+	((id(*)(id, SEL, id, int, id))objc_msgSend)(contentView, s("addSubview:positioned:relativeTo:"), effectView, NSWindowBelow, NULL);
 }
 
 void enableBoolConfig(id config, const char *setting) {
-	msg(msg(config, s("preferences")), s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 1), str(setting));
+	((id(*)(id, SEL, id, id))objc_msgSend)(msg_reg(config, s("preferences")), s("setValue:forKey:"), msg_bool(c("NSNumber"), s("numberWithBool:"), 1), str(setting));
 }
 
 void disableBoolConfig(id config, const char *setting) {
-	msg(msg(config, s("preferences")), s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str(setting));
+	((id(*)(id, SEL, id, id))objc_msgSend)(msg_reg(config, s("preferences")), s("setValue:forKey:"), msg_bool(c("NSNumber"), s("numberWithBool:"), 0), str(setting));
 }
 
 void processDecorations(struct Application *app) {
@@ -1147,9 +1147,9 @@ void processDecorations(struct Application *app) {
 }
 
 void createApplication(struct Application *app) {
-	id application = msg(c("NSApplication"), s("sharedApplication"));
+	id application = msg_reg(c("NSApplication"), s("sharedApplication"));
 	app->application = application;
-	msg(application, s("setActivationPolicy:"), app->activationPolicy);
+	msg_int(application, s("setActivationPolicy:"), app->activationPolicy);
 }
 
 void DarkModeEnabled(struct Application *app, const char *callbackID) {
@@ -1175,8 +1175,8 @@ void DarkModeEnabled(struct Application *app, const char *callbackID) {
 
 void getURL(id self, SEL selector, id event, id replyEvent) {
         struct Application *app = (struct Application *)objc_getAssociatedObject(self, "application");
-        id desc = msg(event, s("paramDescriptorForKeyword:"), keyDirectObject);
-        id url = msg(desc, s("stringValue"));
+        id desc = msg_int(event, s("paramDescriptorForKeyword:"), keyDirectObject);
+        id url = msg_reg(desc, s("stringValue"));
         const char* curl = cstr(url);
         if( curl == NULL ) {
             return;
@@ -1221,28 +1221,28 @@ void createDelegate(struct Application *app) {
 	objc_registerClassPair(appDelegate);
 
 	// Create delegate
-	id delegate = msg((id)appDelegate, s("new"));
+	id delegate = msg_reg((id)appDelegate, s("new"));
 	objc_setAssociatedObject(delegate, "application", (id)app, OBJC_ASSOCIATION_ASSIGN);
 
 	// Theme change listener
 	class_addMethod(appDelegate, s("themeChanged:"), (IMP) themeChanged, "v@:@@");
 
 	// Get defaultCenter
-	id defaultCenter = msg(c("NSDistributedNotificationCenter"), s("defaultCenter"));
-	msg(defaultCenter, s("addObserver:selector:name:object:"), delegate, s("themeChanged:"), str("AppleInterfaceThemeChangedNotification"), NULL);
+	id defaultCenter = msg_reg(c("NSDistributedNotificationCenter"), s("defaultCenter"));
+	((id(*)(id, SEL, id, SEL, id, id))objc_msgSend)(defaultCenter, s("addObserver:selector:name:object:"), delegate, s("themeChanged:"), str("AppleInterfaceThemeChangedNotification"), NULL);
 
 	app->delegate = delegate;
 
-	msg(app->application, s("setDelegate:"), delegate);
+	msg_id(app->application, s("setDelegate:"), delegate);
 }
 
 bool windowShouldClose(id self, SEL cmd, id sender) {
-    msg(sender, s("orderOut:"));
+    msg_reg(sender, s("orderOut:"));
     return false;
 }
 
 bool windowShouldExit(id self, SEL cmd, id sender) {
-    msg(sender, s("orderOut:"));
+    msg_reg(sender, s("orderOut:"));
     messageFromWindowCallback("WC");
     return false;
 }
@@ -1250,20 +1250,20 @@ bool windowShouldExit(id self, SEL cmd, id sender) {
 void createMainWindow(struct Application *app) {
 	// Create main window
 	id mainWindow = ALLOC("NSWindow");
-	mainWindow = msg(mainWindow, s("initWithContentRect:styleMask:backing:defer:"),
+	mainWindow = ((id(*)(id, SEL, CGRect, int, int, BOOL))objc_msgSend)(mainWindow, s("initWithContentRect:styleMask:backing:defer:"),
     CGRectMake(0, 0, app->width, app->height), app->decorations, NSBackingStoreBuffered, NO);
-	msg(mainWindow, s("autorelease"));
+	msg_reg(mainWindow, s("autorelease"));
 
 	// Set Appearance
 	if( app->appearance != NULL ) {
-		msg(mainWindow, s("setAppearance:"),
-			msg(c("NSAppearance"), s("appearanceNamed:"), str(app->appearance))
+		msg_id(mainWindow, s("setAppearance:"),
+			msg_id(c("NSAppearance"), s("appearanceNamed:"), str(app->appearance))
 		);
 	}
 
 	// Set Title appearance
-	msg(mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
-	msg(mainWindow, s("setTitleVisibility:"), app->hideTitle);
+	msg_bool(mainWindow, s("setTitlebarAppearsTransparent:"), app->titlebarAppearsTransparent ? YES : NO);
+	msg_int(mainWindow, s("setTitleVisibility:"), app->hideTitle);
 
     // Create window delegate to override windowShouldClose
     Class delegateClass = objc_allocateClassPair((Class) c("NSObject"), "WindowDelegate", 0);
@@ -1273,8 +1273,8 @@ void createMainWindow(struct Application *app) {
     } else {
         class_replaceMethod(delegateClass, s("windowShouldClose:"), (IMP) windowShouldExit, "v@:@");
     }
-    app->windowDelegate = msg((id)delegateClass, s("new"));
-    msg(mainWindow, s("setDelegate:"), app->windowDelegate);
+    app->windowDelegate = msg_reg((id)delegateClass, s("new"));
+    msg_id(mainWindow, s("setDelegate:"), app->windowDelegate);
 
 	app->mainWindow = mainWindow;
 }
@@ -1310,7 +1310,7 @@ void parseMenuRole(struct Application *app, id parentMenu, JsonNode *item) {
   }
   if ( STREQ(roleName, "hideothers")) {
 	id hideOthers = addMenuItem(parentMenu, "Hide Others", "hideOtherApplications:", "h", FALSE);
-	msg(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
+	msg_int(hideOthers, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagCommand));
 	return;
   }
   if ( STREQ(roleName, "unhide")) {
@@ -1347,7 +1347,7 @@ void parseMenuRole(struct Application *app, id parentMenu, JsonNode *item) {
   }
   if( STREQ(roleName, "pasteandmatchstyle")) {
 	id pasteandmatchstyle = addMenuItem(parentMenu, "Paste and Match Style", "pasteandmatchstyle:", "v", FALSE);
-	msg(pasteandmatchstyle, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagShift | NSEventModifierFlagCommand));
+	msg_int(pasteandmatchstyle, s("setKeyEquivalentModifierMask:"), (NSEventModifierFlagOption | NSEventModifierFlagShift | NSEventModifierFlagCommand));
   }
   if ( STREQ(roleName, "selectall")) {
 	addMenuItem(parentMenu, "Select All", "selectAll:", "a", FALSE);
@@ -1374,22 +1374,22 @@ void parseMenuRole(struct Application *app, id parentMenu, JsonNode *item) {
 
 id parseTextMenuItem(struct Application *app, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char *menuCallback) {
 	id item = ALLOC("NSMenuItem");
-	id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
-	msg(item, s("setRepresentedObject:"), wrappedId);
+	id wrappedId = ((id(*)(id, SEL, const char*))objc_msgSend)(c("NSValue"), s("valueWithPointer:"), menuid);
+	msg_id(item, s("setRepresentedObject:"), wrappedId);
 
 	id key = processAcceleratorKey(acceleratorkey);
-	msg(item, s("initWithTitle:action:keyEquivalent:"), str(title),
+	((id(*)(id, SEL, id, SEL, id))objc_msgSend)(item, s("initWithTitle:action:keyEquivalent:"), str(title),
 			  s(menuCallback), key);
 
-	msg(item, s("setEnabled:"), !disabled);
-	msg(item, s("autorelease"));
+	msg_bool(item, s("setEnabled:"), !disabled);
+	msg_reg(item, s("autorelease"));
 
 	// Process modifiers
 	if( modifiers != NULL ) {
 		unsigned long modifierFlags = parseModifiers(modifiers);
-		msg(item, s("setKeyEquivalentModifierMask:"), modifierFlags);
+		msg_int(item, s("setKeyEquivalentModifierMask:"), modifierFlags);
 	}
-	msg(parentMenu, s("addItem:"), item);
+	msg_id(parentMenu, s("addItem:"), item);
 
 	return item;
 }
@@ -1402,13 +1402,13 @@ struct hashmap_s *menuItemMap, const char *checkboxCallbackFunction) {
 	// Store the item in the menu item map
 	hashmap_put(menuItemMap, (char*)menuid, strlen(menuid), item);
 
-	id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
-	msg(item, s("setRepresentedObject:"), wrappedId);
-	msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s(checkboxCallbackFunction), str(key));
-	msg(item, s("setEnabled:"), !disabled);
-	msg(item, s("autorelease"));
-	msg(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
-	msg(parentmenu, s("addItem:"), item);
+	id wrappedId = msg_id(c("NSValue"), s("valueWithPointer:"), (id)menuid);
+	msg_id(item, s("setRepresentedObject:"), wrappedId);
+	((id(*)(id, SEL, id, SEL, id))objc_msgSend)(item, s("initWithTitle:action:keyEquivalent:"), str(title), s(checkboxCallbackFunction), str(key));
+	msg_bool(item, s("setEnabled:"), !disabled);
+	msg_reg(item, s("autorelease"));
+	msg_int(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
+	msg_id(parentmenu, s("addItem:"), item);
 	return item;
 }
 
@@ -1420,18 +1420,18 @@ id parseRadioMenuItem(struct Application *app, id parentmenu, const char *title,
 	// Store the item in the menu item map
 	hashmap_put(menuItemMap, (char*)menuid, strlen(menuid), item);
 
-	id wrappedId = msg(c("NSValue"), s("valueWithPointer:"), menuid);
-	msg(item, s("setRepresentedObject:"), wrappedId);
+	id wrappedId = msg_id(c("NSValue"), s("valueWithPointer:"), (id)menuid);
+	msg_id(item, s("setRepresentedObject:"), wrappedId);
 
 	id key = processAcceleratorKey(acceleratorkey);
 
-	msg(item, s("initWithTitle:action:keyEquivalent:"), str(title), s(radioCallbackFunction), key);
+	((id(*)(id, SEL, id, SEL, id))objc_msgSend)(item, s("initWithTitle:action:keyEquivalent:"), str(title), s(radioCallbackFunction), key);
 
-	msg(item, s("setEnabled:"), !disabled);
-	msg(item, s("autorelease"));
-	msg(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
+	msg_bool(item, s("setEnabled:"), !disabled);
+	msg_reg(item, s("autorelease"));
+	msg_int(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
 
-	msg(parentmenu, s("addItem:"), item);
+	msg_id(parentmenu, s("addItem:"), item);
 	return item;
 
 }
@@ -1467,8 +1467,8 @@ struct hashmap_s *menuItemMap, const char *checkboxCallbackFunction, const char
 	id thisMenuItem = createMenuItemNoAutorelease(str(name), NULL, "");
 	id thisMenu = createMenu(str(name));
 
-	msg(thisMenuItem, s("setSubmenu:"), thisMenu);
-	msg(parentMenu, s("addItem:"), thisMenuItem);
+	msg_id(thisMenuItem, s("setSubmenu:"), thisMenu);
+	msg_id(parentMenu, s("addItem:"), thisMenuItem);
 
 	// Loop over submenu items
 	JsonNode *item;
@@ -1634,7 +1634,7 @@ void updateMenu(struct Application *app, const char *menuAsJSON) {
 		Menu* newMenu = NewApplicationMenu(menuAsJSON);
         id menu = GetMenu(newMenu);
         app->applicationMenu = newMenu;
-	    msg(msg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menu);
+	    msg_id(msg_reg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menu);
 	);
 }
 
@@ -1671,9 +1671,9 @@ void processDialogIcons(struct hashmap_s *hashmap, const unsigned char *dialogIc
         int length = atoi((const char *)lengthAsString);
 
         // Create the icon and add to the hashmap
-        id imageData = msg(c("NSData"), s("dataWithBytes:length:"), data, length);
+        id imageData = ((id(*)(id, SEL, const unsigned char *, int))objc_msgSend)(c("NSData"), s("dataWithBytes:length:"), data, length);
         id dialogImage = ALLOC("NSImage");
-        msg(dialogImage, s("initWithData:"), imageData);
+        msg_id(dialogImage, s("initWithData:"), imageData);
         hashmap_put(hashmap, (const char *)name, strlen((const char *)name), dialogImage);
     }
 
@@ -1741,8 +1741,8 @@ void Run(struct Application *app, int argc, char **argv) {
 	createMainWindow(app);
 
 	// Create Content View
-	id contentView = msg( ALLOC("NSView"), s("init") );
-	msg(app->mainWindow, s("setContentView:"), contentView);
+	id contentView = msg_reg( ALLOC("NSView"), s("init") );
+	msg_id(app->mainWindow, s("setContentView:"), contentView);
 
 	// Set the main window title
 	SetTitle(app, app->title);
@@ -1759,71 +1759,71 @@ void Run(struct Application *app, int argc, char **argv) {
 	}
 
     // We set it to be invisible by default. It will become visible when everything has initialised
-    msg(app->mainWindow, s("setIsVisible:"), NO);
+    msg_bool(app->mainWindow, s("setIsVisible:"), NO);
 
 	// Setup webview
-	id config = msg(c("WKWebViewConfiguration"), s("new"));
-	msg(config, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 1), str("suppressesIncrementalRendering"));
+	id config = msg_reg(c("WKWebViewConfiguration"), s("new"));
+	((id(*)(id, SEL, id, id))objc_msgSend)(config, s("setValue:forKey:"), msg_bool(c("NSNumber"), s("numberWithBool:"), 1), str("suppressesIncrementalRendering"));
 	if (app->devtools) {
 	  Debug(app, "Enabling devtools");
 	  enableBoolConfig(config, "developerExtrasEnabled");
 	}
 	app->config = config;
 
-	id manager = msg(config, s("userContentController"));
-	msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("external"));
-	msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("completed"));
-	msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("error"));
+	id manager = msg_reg(config, s("userContentController"));
+	msg_id_id(manager, s("addScriptMessageHandler:name:"), app->delegate, str("external"));
+	msg_id_id(manager, s("addScriptMessageHandler:name:"), app->delegate, str("completed"));
+	msg_id_id(manager, s("addScriptMessageHandler:name:"), app->delegate, str("error"));
 	app->manager = manager;
 
-	id wkwebview = msg(c("WKWebView"), s("alloc"));
+	id wkwebview = msg_reg(c("WKWebView"), s("alloc"));
 	app->wkwebview = wkwebview;
 
-	msg(wkwebview, s("initWithFrame:configuration:"), CGRectMake(0, 0, 0, 0), config);
+	((id(*)(id, SEL, CGRect, id))objc_msgSend)(wkwebview, s("initWithFrame:configuration:"), CGRectMake(0, 0, 0, 0), config);
 
-	msg(contentView, s("addSubview:"), wkwebview);
-	msg(wkwebview, s("setAutoresizingMask:"), NSViewWidthSizable | NSViewHeightSizable);
+	msg_id(contentView, s("addSubview:"), wkwebview);
+	msg_int(wkwebview, s("setAutoresizingMask:"), NSViewWidthSizable | NSViewHeightSizable);
 	CGRect contentViewBounds = GET_BOUNDS(contentView);
-	msg(wkwebview, s("setFrame:"), contentViewBounds );
+	((id(*)(id, SEL, CGRect))objc_msgSend)(wkwebview, s("setFrame:"), contentViewBounds );
 
 	// Disable damn smart quotes
 	// Credit: https://stackoverflow.com/a/31640511
-	id userDefaults = msg(c("NSUserDefaults"), s("standardUserDefaults"));
-	msg(userDefaults, s("setBool:forKey:"), NO, str("NSAutomaticQuoteSubstitutionEnabled"));
+	id userDefaults = msg_reg(c("NSUserDefaults"), s("standardUserDefaults"));
+	((id(*)(id, SEL, id, id))objc_msgSend)(userDefaults, s("setBool:forKey:"), NO, str("NSAutomaticQuoteSubstitutionEnabled"));
 
 	// Setup drag message handler
-	msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("windowDrag"));
+	msg_id_id(manager, s("addScriptMessageHandler:name:"), app->delegate, str("windowDrag"));
 	// Add mouse event hooks
-	app->mouseDownMonitor = msg(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseDown, ^(id incomingEvent) {
+	app->mouseDownMonitor = ((id(*)(id, SEL, int, id (^)(id)))objc_msgSend)(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseDown, ^(id incomingEvent) {
 		// Make sure the mouse click was in the window, not the tray
-		id window = msg(incomingEvent, s("window"));
+		id window = msg_reg(incomingEvent, s("window"));
 		if (window == app->mainWindow) {
 			app->mouseEvent = incomingEvent;
 		}
 		return incomingEvent;
 	});
-	app->mouseUpMonitor = msg(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseUp, ^(id incomingEvent) {
+	app->mouseUpMonitor = ((id(*)(id, SEL, int, id (^)(id)))objc_msgSend)(c("NSEvent"), u("addLocalMonitorForEventsMatchingMask:handler:"), NSEventMaskLeftMouseUp, ^(id incomingEvent) {
 		app->mouseEvent = NULL;
 		ShowMouse();
 		return incomingEvent;
 	});
 
 	// Setup context menu message handler
-	msg(manager, s("addScriptMessageHandler:name:"), app->delegate, str("contextMenu"));
+	msg_id_id(manager, s("addScriptMessageHandler:name:"), app->delegate, str("contextMenu"));
 
 	// Toolbar
 	if( app->useToolBar ) {
 		Debug(app, "Setting Toolbar");
-		id toolbar = msg(c("NSToolbar"),s("alloc"));
-		msg(toolbar, s("initWithIdentifier:"), str("wails.toolbar"));
-		msg(toolbar, s("autorelease"));
+		id toolbar = msg_reg(c("NSToolbar"),s("alloc"));
+		msg_id(toolbar, s("initWithIdentifier:"), str("wails.toolbar"));
+		msg_reg(toolbar, s("autorelease"));
 
 		// Separator
 		if( app->hideToolbarSeparator ) {
-			msg(toolbar, s("setShowsBaselineSeparator:"), NO);
+			msg_bool(toolbar, s("setShowsBaselineSeparator:"), NO);
 		}
 
-		msg(app->mainWindow, s("setToolbar:"), toolbar);
+		msg_id(app->mainWindow, s("setToolbar:"), toolbar);
 	}
 
 	// Fix up resizing
@@ -1834,8 +1834,8 @@ void Run(struct Application *app, int argc, char **argv) {
 	setMinMaxSize(app);
 
 	// Load HTML
-	id html = msg(c("NSURL"), s("URLWithString:"), str(assets[0]));
-	msg(wkwebview, s("loadRequest:"), msg(c("NSURLRequest"), s("requestWithURL:"), html));
+	id html = msg_id(c("NSURL"), s("URLWithString:"), str((const char*)assets[0]));
+	msg_id(wkwebview, s("loadRequest:"), msg_id(c("NSURLRequest"), s("requestWithURL:"), html));
 
 	Debug(app, "Loading Internal Code");
 	// We want to evaluate the internal code plus runtime before the assets
@@ -1883,9 +1883,9 @@ void Run(struct Application *app, int argc, char **argv) {
 
 
 	// This evaluates the MOAE once the Dom has finished loading
-	msg(manager,
+	msg_id(manager,
 		s("addUserScript:"),
-		msg(msg(c("WKUserScript"), s("alloc")),
+		((id(*)(id, SEL, id, int, int))objc_msgSend)(msg_reg(c("WKUserScript"), s("alloc")),
 					s("initWithSource:injectionTime:forMainFrameOnly:"),
 					str(internalCode),
 					1,
@@ -1897,13 +1897,13 @@ void Run(struct Application *app, int argc, char **argv) {
 
 	// If we want the webview to be transparent...
 	if( app->webviewIsTranparent == 1 ) {
-		msg(wkwebview, s("setValue:forKey:"), msg(c("NSNumber"), s("numberWithBool:"), 0), str("drawsBackground"));
+		((id(*)(id, SEL, id, id))objc_msgSend)(wkwebview, s("setValue:forKey:"), msg_bool(c("NSNumber"), s("numberWithBool:"), 0), str("drawsBackground"));
 	}
 
 	// If we have an application menu, process it
 	if( app->applicationMenu != NULL ) {
 	    id menu = GetMenu(app->applicationMenu);
-	    msg(msg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menu);
+	    msg_id(msg_reg(c("NSApplication"), s("sharedApplication")), s("setMainMenu:"), menu);
 	}
 
 	// Setup initial trays
@@ -1914,7 +1914,7 @@ void Run(struct Application *app, int argc, char **argv) {
 
 	// Finally call run
 	Debug(app, "Run called");
-	msg(app->application, s("run"));
+	msg_reg(app->application, s("run"));
 
 	DestroyApplication(app);
 
@@ -1933,7 +1933,7 @@ void HasURLHandlers(struct Application* app) {
 // used by the application
 void Quit(struct Application *app) {
 	Debug(app, "Quit Called");
-    msg(app->application, s("stop:"), NULL);
+    msg_id(app->application, s("stop:"), NULL);
     SetSize(app, 0, 0);
     Show(app);
     Hide(app);
