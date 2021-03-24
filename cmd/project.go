@@ -31,11 +31,12 @@ type author struct {
 }
 
 type frontend struct {
-	Dir     string `json:"dir"`
-	Install string `json:"install"`
-	Build   string `json:"build"`
-	Bridge  string `json:"bridge"`
-	Serve   string `json:"serve"`
+	Dir        string `json:"dir"`
+	Install    string `json:"install"`
+	Build      string `json:"build"`
+	Bridge     string `json:"bridge"`
+	Serve      string `json:"serve"`
+	BridgeFile string `json:"bridgeFile"`
 }
 
 type framework struct {
@@ -398,6 +399,13 @@ func processTemplateMetadata(templateMetadata *TemplateMetadata, po *ProjectOpti
 			return fmt.Errorf("serve set in template metadata but not frontenddir")
 		}
 		po.FrontEnd.Serve = templateMetadata.Serve
+	}
+
+	if templateMetadata.BridgeFile != "" {
+		if po.FrontEnd == nil {
+			return fmt.Errorf("bridgeFile set in template metadata but not frontenddir")
+		}
+		po.FrontEnd.BridgeFile = templateMetadata.BridgeFile
 	}
 
 	// Save platforms

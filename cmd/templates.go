@@ -28,6 +28,7 @@ type TemplateMetadata struct {
 	FrontendDir          string                `json:"frontenddir"`
 	Serve                string                `json:"serve"`
 	Bridge               string                `json:"bridge"`
+	BridgeFile           string                `json:"bridgeFile"`
 	WailsDir             string                `json:"wailsdir"`
 	TemplateDependencies []*TemplateDependency `json:"dependencies,omitempty"`
 

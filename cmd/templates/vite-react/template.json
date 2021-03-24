@@ -1,0 +1,15 @@
+{
+  "name": "Vite React JS",
+  "version": "1.0.0",
+  "shortdescription": "Vite React template",
+  "description": "React template built using Vite.js",
+  "install": "npm install",
+  "build": "npm run build",
+  "author": "",
+  "created": "",
+  "frontenddir": "frontend",
+  "serve": "npm run start",
+  "bridge": "src",
+  "bridgeFile": "generated/wails.js",
+  "wailsdir": ""
+}

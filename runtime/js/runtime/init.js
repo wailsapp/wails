@@ -14,8 +14,6 @@ The lightweight framework for web-like apps
  *
  * @param {function} callback
  */
-function Init(callback) {
-	window.wails._.Init(callback);
+export function Init(callback) {
+  window.wails._.Init(callback);
 }
-
-module.exports = Init;

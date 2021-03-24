@@ -450,7 +450,11 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	const md5sumFile = "package.json.md5"
 
 	// If node_modules does not exist, force a rebuild.
-	nodeModulesPath, err := filepath.Abs(filepath.Join(".", "node_modules"))
+	bridgeFilePath := filepath.Join(".", "node_modules")
+	if projectOptions.FrontEnd.BridgeFile != "" {
+		bridgeFilePath = filepath.Dir(projectOptions.FrontEnd.BridgeFile);
+	}
+	nodeModulesPath, err := filepath.Abs(bridgeFilePath)
 	if err != nil {
 		return err
 	}
@@ -523,6 +527,9 @@ func InstallRuntime(caller string, projectDir string, projectOptions *ProjectOpt
 func InstallBridge(projectDir string, projectOptions *ProjectOptions) error {
 	bridgeFileData := mewn.String("../runtime/assets/bridge.js")
 	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
+	if projectOptions.FrontEnd.BridgeFile != "" {
+		bridgeFileTarget = filepath.Join(projectDir, projectOptions.FrontEnd.Dir, projectOptions.FrontEnd.BridgeFile)
+	}
 	err := fs.CreateFile(bridgeFileTarget, []byte(bridgeFileData))
 	return err
 }
@@ -531,6 +538,9 @@ func InstallBridge(projectDir string, projectOptions *ProjectOptions) error {
 func InstallProdRuntime(projectDir string, projectOptions *ProjectOptions) error {
 	prodInit := mewn.String("../runtime/js/runtime/init.js")
 	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
+	if projectOptions.FrontEnd.BridgeFile != "" {
+		bridgeFileTarget = filepath.Join(projectDir, projectOptions.FrontEnd.Dir, projectOptions.FrontEnd.BridgeFile)
+	}
 	err := fs.CreateFile(bridgeFileTarget, []byte(prodInit))
 	return err
 }
