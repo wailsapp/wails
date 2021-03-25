@@ -149,6 +149,7 @@ func Build(options *Options) (string, error) {
 		fs.DeleteFile(filepath.Join(options.BuildDirectory, amd64Filename))
 		fs.DeleteFile(filepath.Join(options.BuildDirectory, arm64Filename))
 		projectData.OutputFilename = outputFile
+		options.CompiledBinary = filepath.Join(options.BuildDirectory, outputFile)
 	} else {
 		err = builder.CompileProject(options)
 		if err != nil {
