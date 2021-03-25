@@ -12,5 +12,6 @@ type Builder interface {
 	BuildFrontend(*clilogger.CLILogger) error
 	BuildRuntime(*Options) error
 	CompileProject(*Options) error
+	OutputFilename(*Options) string
 	CleanUp()
 }

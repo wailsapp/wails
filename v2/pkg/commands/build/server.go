@@ -98,7 +98,7 @@ func (s *ServerBuilder) BuildBaseAssets(assets *html.AssetBundle) error {
 func (s *ServerBuilder) BuildRuntime(options *Options) error {
 
 	sourceDir := fs.RelativePath("../../../internal/runtime/js")
-	if err := s.NpmInstall(sourceDir); err != nil {
+	if err := s.NpmInstall(sourceDir, options.Verbosity == VERBOSE); err != nil {
 		return err
 	}
 

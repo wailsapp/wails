@@ -6,7 +6,10 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/leaanthony/slicer"
+	"github.com/wailsapp/wails/v2/internal/fs"
+
+	"github.com/wailsapp/wails/v2/internal/shell"
+
 	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
@@ -32,12 +35,14 @@ type Options struct {
 	ProjectData    *project.Project     // The project data
 	Pack           bool                 // Create a package for the app after building
 	Platform       string               // The platform to build for
+	Arch           string               // The architecture to build for
 	Compiler       string               // The compiler command to use
 	IgnoreFrontend bool                 // Indicates if the frontend does not need building
 	OutputFile     string               // Override the output filename
 	BuildDirectory string               // Directory to use for building the application
 	CompiledBinary string               // Fully qualified path to the compiled binary
 	KeepAssets     bool                 // /Keep the generated assets/files
+	Verbosity      int                  // Verbosity level (0 - silent, 1 - default, 2 - verbose)
 	AppleIdentity  string
 }
 
@@ -58,12 +63,6 @@ func Build(options *Options) (string, error) {
 		return "", err
 	}
 
-	// Check platform
-	validPlatforms := slicer.String([]string{"linux", "darwin", "windows"})
-	if !validPlatforms.Contains(options.Platform) {
-		return "", fmt.Errorf("platform %s is not supported", options.Platform)
-	}
-
 	// Load project
 	projectData, err := project.Load(cwd)
 	if err != nil {
@@ -71,7 +70,7 @@ func Build(options *Options) (string, error) {
 	}
 	options.ProjectData = projectData
 
-	// Calculate build dir
+	// Set build directory
 	options.BuildDirectory = filepath.Join(options.ProjectData.Path, "build", options.Platform, options.OutputType)
 
 	// Save the project type
@@ -107,7 +106,6 @@ func Build(options *Options) (string, error) {
 	// 	return "", err
 	// }
 	if !options.IgnoreFrontend {
-		outputLogger.Println("  - Building Project Frontend")
 		err = builder.BuildFrontend(outputLogger)
 		if err != nil {
 			return "", err
@@ -115,30 +113,61 @@ func Build(options *Options) (string, error) {
 	}
 
 	// Build the base assets
-	outputLogger.Println("  - Compiling Assets")
 	err = builder.BuildAssets(options)
 	if err != nil {
 		return "", err
 	}
 
 	// Compile the application
-	outputLogger.Print("  - Compiling Application in " + GetModeAsString(options.Mode) + " mode...")
-	err = builder.CompileProject(options)
-	if err != nil {
-		return "", err
+	outputLogger.Print("Compiling application: ")
+
+	if options.Platform == "darwin" && options.Arch == "universal" {
+		outputFile := builder.OutputFilename(options)
+		amd64Filename := outputFile + "-amd64"
+		arm64Filename := outputFile + "-arm64"
+
+		// Build amd64 first
+		options.Arch = "amd64"
+		options.OutputFile = amd64Filename
+		err = builder.CompileProject(options)
+		if err != nil {
+			return "", err
+		}
+		// Build arm64
+		options.Arch = "arm64"
+		options.OutputFile = arm64Filename
+		err = builder.CompileProject(options)
+		if err != nil {
+			return "", err
+		}
+		// Run lipo
+		_, stderr, err := shell.RunCommand(options.BuildDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
+		if err != nil {
+			return "", fmt.Errorf("%s - %s", err.Error(), stderr)
+		}
+		// Remove temp binaries
+		fs.DeleteFile(filepath.Join(options.BuildDirectory, amd64Filename))
+		fs.DeleteFile(filepath.Join(options.BuildDirectory, arm64Filename))
+		projectData.OutputFilename = outputFile
+	} else {
+		err = builder.CompileProject(options)
+		if err != nil {
+			return "", err
+		}
 	}
-	outputLogger.Println("done.")
+	outputLogger.Println("Done.")
 
 	// Do we need to pack the app?
 	if options.Pack {
 
-		outputLogger.Println("  - Packaging Application")
+		outputLogger.Print("Packaging application: ")
 
 		// TODO: Allow cross platform build
 		err = packageProject(options, runtime.GOOS)
 		if err != nil {
 			return "", err
 		}
+		outputLogger.Println("Done.")
 	}
 
 	return projectData.OutputFilename, nil
