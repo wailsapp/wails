@@ -3,8 +3,10 @@ package build
 import (
 	"fmt"
 	"io"
+	"os"
 	"runtime"
 	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/leaanthony/clir"
@@ -23,8 +25,8 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	command := app.NewSubCommand("build", "Builds the application")
 
 	// Setup target type flag
-	description := "Type of application to build. Valid types: " + validTargetTypes.Join(",")
-	command.StringFlag("t", description, &outputType)
+	//description := "Type of application to build. Valid types: " + validTargetTypes.Join(",")
+	//command.StringFlag("t", description, &outputType)
 
 	// Setup production flag
 	production := false
@@ -41,21 +43,25 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	platform := runtime.GOOS
 	command.StringFlag("platform", "Platform to target", &platform)
 
-	// Quiet Build
-	quiet := false
-	command.BoolFlag("q", "Suppress output to console", &quiet)
+	// Verbosity
+	verbosity := 1
+	command.IntFlag("v", "Verbosity level (0 - silent, 1 - default, 2 - verbose)", &verbosity)
 
 	// ldflags to pass to `go`
 	ldflags := ""
 	command.StringFlag("ldflags", "optional ldflags", &ldflags)
 
 	// Log to file
-	logFile := ""
-	command.StringFlag("l", "Log to file", &logFile)
+	//logFile := ""
+	//command.StringFlag("l", "Log to file", &logFile)
 
 	// Retain assets
 	keepAssets := false
 	command.BoolFlag("k", "Keep generated assets", &keepAssets)
+
+	// Retain assets
+	outputFilename := ""
+	command.StringFlag("o", "Output filename", &outputFilename)
 
 	appleIdentity := ""
 	if runtime.GOOS == "darwin" {
@@ -63,6 +69,8 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	}
 
 	command.Action(func() error {
+
+		quiet := verbosity == 0
 
 		// Create logger
 		logger := clilogger.New(w)
@@ -82,28 +90,71 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			return fmt.Errorf("must use `-package` flag when using `-sign`")
 		}
 
-		task := fmt.Sprintf("Building %s Application", strings.Title(outputType))
-		logger.Println(task)
-		logger.Println(strings.Repeat("-", len(task)))
-
 		// Setup mode
 		mode := build.Debug
 		if production {
 			mode = build.Production
 		}
 
+		// Check platform
+		validPlatformArch := slicer.String([]string{
+			"darwin",
+			"darwin/amd64",
+			"darwin/arm64",
+			"darwin/universal",
+			//"linux/amd64",
+			//"linux/arm-7",
+			//"windows/amd64",
+		})
+		if !validPlatformArch.Contains(platform) {
+			return fmt.Errorf("platform %s is not supported", platform)
+		}
+
 		// Create BuildOptions
 		buildOptions := &build.Options{
 			Logger:        logger,
 			OutputType:    outputType,
+			OutputFile:    outputFilename,
 			Mode:          mode,
 			Pack:          pack,
-			Platform:      platform,
 			LDFlags:       ldflags,
 			Compiler:      compilerCommand,
 			KeepAssets:    keepAssets,
 			AppleIdentity: appleIdentity,
+			Verbosity:     verbosity,
 		}
+
+		// Calculate platform and arch
+		platformSplit := strings.Split(platform, "/")
+		buildOptions.Platform = platformSplit[0]
+		buildOptions.Arch = runtime.GOARCH
+		if len(platformSplit) == 2 {
+			buildOptions.Arch = platformSplit[1]
+		}
+
+		// Start a new tabwriter
+		w := new(tabwriter.Writer)
+		w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+
+		buildModeText := "debug"
+		if production {
+			buildModeText = "production"
+		}
+
+		// Write out the system information
+		fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
+		fmt.Fprintf(w, "Platform: \t%s\n", buildOptions.Platform)
+		fmt.Fprintf(w, "Arch: \t%s\n", buildOptions.Arch)
+		fmt.Fprintf(w, "Compiler: \t%s\n", buildOptions.Compiler)
+		fmt.Fprintf(w, "Build Mode: \t%s\n", buildModeText)
+		fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
+		fmt.Fprintf(w, "KeepAssets: \t%t\n", buildOptions.KeepAssets)
+		fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
+		if len(buildOptions.OutputFile) > 0 {
+			fmt.Fprintf(w, "Output File: \t%s\n", buildOptions.OutputFile)
+		}
+		fmt.Fprintf(w, "\n")
+		w.Flush()
 
 		return doBuild(buildOptions)
 	})

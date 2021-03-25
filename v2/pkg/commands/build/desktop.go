@@ -55,7 +55,7 @@ func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, options *Opti
 	var err error
 
 	outputLogger := options.Logger
-	outputLogger.Print("    - Embedding Assets...")
+	outputLogger.Print("Building assets: ")
 
 	// Get target asset directory
 	assetDir, err := fs.RelativeToCwd("build")
@@ -96,7 +96,7 @@ func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, options *Opti
 		return err
 	}
 
-	outputLogger.Println("done.")
+	outputLogger.Println("Done.")
 
 	return nil
 }
@@ -125,11 +125,11 @@ func (d *DesktopBuilder) BuildRuntime(options *Options) error {
 
 	sourceDir := fs.RelativePath("../../../internal/runtime/js")
 
-	if err := d.NpmInstall(sourceDir); err != nil {
+	if err := d.NpmInstall(sourceDir, options.Verbosity == VERBOSE); err != nil {
 		return err
 	}
 
-	outputLogger.Print("    - Embedding Runtime...")
+	outputLogger.Print("Embedding Runtime: ")
 	envvars := []string{"WAILSPLATFORM=" + options.Platform}
 	if err := d.NpmRunWithEnvironment(sourceDir, "build:desktop", false, envvars); err != nil {
 		return err

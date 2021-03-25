@@ -19,6 +19,10 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
 
+const (
+	VERBOSE int = 2
+)
+
 // BaseBuilder is the common builder struct
 type BaseBuilder struct {
 	filesToDelete slicer.StringSlicer
@@ -142,11 +146,23 @@ func (b *BaseBuilder) CleanUp() {
 	})
 }
 
+func (b *BaseBuilder) OutputFilename(options *Options) string {
+	outputFile := options.OutputFile
+	if outputFile == "" {
+		outputFile = b.projectData.OutputFilename
+	}
+	return outputFile
+}
+
 // CompileProject compiles the project
 func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	// Run go mod tidy first
 	cmd := exec.Command(options.Compiler, "mod", "tidy")
+	if options.Verbosity == VERBOSE {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
 	err := cmd.Run()
 	if err != nil {
 		return err
@@ -167,6 +183,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	// potentially try and see if the assets have changed but will
 	// this take as much time as a `-a` build?
 	commands.Add("-a")
+	commands.Add("-x")
 
 	var tags slicer.StringSlicer
 	tags.Add(options.OutputType)
@@ -195,10 +212,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	// Get application build directory
 	appDir := options.BuildDirectory
-	err = cleanBuildDirectory(options)
-	if err != nil {
-		return err
-	}
+	//err = cleanBuildDirectory(options)
+	//if err != nil {
+	//	return err
+	//}
 
 	if options.LDFlags != "" {
 		commands.Add("-ldflags")
@@ -206,10 +223,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	}
 
 	// Set up output filename
-	outputFile := options.OutputFile
-	if outputFile == "" {
-		outputFile = b.projectData.OutputFilename
-	}
+	outputFile := b.OutputFilename(options)
 	compiledBinary := filepath.Join(appDir, outputFile)
 	commands.Add("-o")
 	commands.Add(compiledBinary)
@@ -219,7 +233,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	// Create the command
 	cmd = exec.Command(options.Compiler, commands.AsSlice()...)
-
+	if options.Verbosity == VERBOSE {
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+	}
 	// Set the directory
 	cmd.Dir = b.projectData.Path
 
@@ -241,29 +258,36 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		return v
 	})
 
-	// Setup buffers
-	var stdo, stde bytes.Buffer
-	cmd.Stdout = &stdo
-	cmd.Stderr = &stde
+	cmd.Env = upsertEnv(cmd.Env, "GOOS", func(v string) string {
+		return options.Platform
+	})
+
+	cmd.Env = upsertEnv(cmd.Env, "GOARCH", func(v string) string {
+		return options.Arch
+	})
+
+	cmd.Env = upsertEnv(cmd.Env, "CGO_ENABLED", func(v string) string {
+		return "1"
+	})
 
 	// Run command
 	err = cmd.Run()
 
 	// Format error if we have one
 	if err != nil {
-		return fmt.Errorf("%s\n%s", err, string(stde.Bytes()))
+		return err
 	}
 
 	return nil
 }
 
 // NpmInstall runs "npm install" in the given directory
-func (b *BaseBuilder) NpmInstall(sourceDir string) error {
-	return b.NpmInstallUsingCommand(sourceDir, "npm install")
+func (b *BaseBuilder) NpmInstall(sourceDir string, verbose bool) error {
+	return b.NpmInstallUsingCommand(sourceDir, "npm install", verbose)
 }
 
 // NpmInstallUsingCommand runs the given install command in the specified npm project directory
-func (b *BaseBuilder) NpmInstallUsingCommand(sourceDir string, installCommand string) error {
+func (b *BaseBuilder) NpmInstallUsingCommand(sourceDir string, installCommand string, verbose bool) error {
 
 	packageJSON := filepath.Join(sourceDir, "package.json")
 
@@ -305,7 +329,7 @@ func (b *BaseBuilder) NpmInstallUsingCommand(sourceDir string, installCommand st
 	// Split up the InstallCommand and execute it
 	cmd := strings.Split(installCommand, " ")
 	stdout, stderr, err := shell.RunCommand(sourceDir, cmd[0], cmd[1:]...)
-	if err != nil {
+	if verbose || err != nil {
 		for _, l := range strings.Split(stdout, "\n") {
 			fmt.Printf("    %s\n", l)
 		}
@@ -354,31 +378,40 @@ func (b *BaseBuilder) NpmRunWithEnvironment(projectDir, buildTarget string, verb
 func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 
 	// TODO: Fix this up from the CLI
-	verbose := false
+	verbose := b.options.Verbosity == VERBOSE
 
 	frontendDir := filepath.Join(b.projectData.Path, "frontend")
 
 	// Check there is an 'InstallCommand' provided in wails.json
 	if b.projectData.InstallCommand == "" {
 		// No - don't install
-		outputLogger.Println("    - No Install command. Skipping.")
+		outputLogger.Println("No Install command. Skipping.")
 	} else {
 		// Do install if needed
-		outputLogger.Println("    - Installing dependencies...")
-		if err := b.NpmInstallUsingCommand(frontendDir, b.projectData.InstallCommand); err != nil {
+		outputLogger.Print("Installing frontend dependencies: ")
+		if verbose {
+			outputLogger.Println("")
+			outputLogger.Println("\tCommand: " + b.projectData.InstallCommand)
+		}
+		if err := b.NpmInstallUsingCommand(frontendDir, b.projectData.InstallCommand, verbose); err != nil {
 			return err
 		}
+		outputLogger.Println("Done.")
 	}
 
 	// Check if there is a build command
 	if b.projectData.BuildCommand == "" {
-		outputLogger.Println("    - No Build command. Skipping.")
+		outputLogger.Println("No Build command. Skipping.")
 		// No - ignore
 		return nil
 	}
 
-	outputLogger.Println("    - Compiling Frontend Project")
+	outputLogger.Print("Compiling frontend: ")
 	cmd := strings.Split(b.projectData.BuildCommand, " ")
+	if verbose {
+		outputLogger.Println("")
+		outputLogger.Println("\tCommand: '" + strings.Join(cmd, " ") + "'")
+	}
 	stdout, stderr, err := shell.RunCommand(frontendDir, cmd[0], cmd[1:]...)
 	if verbose || err != nil {
 		for _, l := range strings.Split(stdout, "\n") {
@@ -388,7 +421,12 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 			fmt.Printf("    %s\n", l)
 		}
 	}
-	return err
+	if err != nil {
+		return err
+	}
+
+	outputLogger.Println("Done.")
+	return nil
 }
 
 // ExtractAssets gets the assets from the index.html file
