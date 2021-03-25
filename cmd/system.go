@@ -99,11 +99,16 @@ func (s *SystemHelper) setup() error {
 
 	if config.Name != "" {
 		systemConfig["name"] = PromptRequired("What is your name", config.Name)
+	} else if n, err := getGitConfigValue("user.name"); err == nil && n != "" {
+		systemConfig["name"] = PromptRequired("What is your name", n)
 	} else {
 		systemConfig["name"] = PromptRequired("What is your name")
 	}
+
 	if config.Email != "" {
 		systemConfig["email"] = PromptRequired("What is your email address", config.Email)
+	} else if e, err := getGitConfigValue("user.email"); err == nil && e != "" {
+		systemConfig["email"] = PromptRequired("What is your email address", e)
 	} else {
 		systemConfig["email"] = PromptRequired("What is your email address")
 	}
