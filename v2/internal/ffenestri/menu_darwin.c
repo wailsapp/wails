@@ -651,13 +651,7 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
 
     // Process image
     if( image != NULL && strlen(image) > 0) {
-        id data = ALLOC("NSData");
-        id imageData = ((id(*)(id, SEL, id, int))objc_msgSend)(data, s("initWithBase64EncodedString:options:"), str(image), 0);
-        id nsimage = ALLOC("NSImage");
-        msg_id(nsimage, s("initWithData:"), imageData);
-        if( templateImage ) {
-            msg_bool(nsimage, s("setTemplate:"), YES);
-        }
+        id nsimage = createImageFromBase64Data(image, templateImage);
         msg_id(item, s("setImage:"), nsimage);
     }
 

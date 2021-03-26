@@ -1789,7 +1789,7 @@ void Run(struct Application *app, int argc, char **argv) {
 	// Disable damn smart quotes
 	// Credit: https://stackoverflow.com/a/31640511
 	id userDefaults = msg_reg(c("NSUserDefaults"), s("standardUserDefaults"));
-	((id(*)(id, SEL, id, id))objc_msgSend)(userDefaults, s("setBool:forKey:"), NO, str("NSAutomaticQuoteSubstitutionEnabled"));
+	((id(*)(id, SEL, BOOL, id))objc_msgSend)(userDefaults, s("setBool:forKey:"), false, str("NSAutomaticQuoteSubstitutionEnabled"));
 
 	// Setup drag message handler
 	msg_id_id(manager, s("addScriptMessageHandler:name:"), app->delegate, str("windowDrag"));
@@ -1937,6 +1937,24 @@ void Quit(struct Application *app) {
     SetSize(app, 0, 0);
     Show(app);
     Hide(app);
+}
+
+id createImageFromBase64Data(const char *data, bool isTemplateImage) {
+    id nsdata = ALLOC("NSData");
+    id imageData = ((id(*)(id, SEL, id, int))objc_msgSend)(nsdata, s("initWithBase64EncodedString:options:"), str(data), 0);
+
+    // If it's not valid base64 data, use the broken image
+    if ( imageData == NULL ) {
+        imageData = ((id(*)(id, SEL, id, int))objc_msgSend)(nsdata, s("initWithBase64EncodedString:options:"), str(BrokenImage), 0);
+    }
+    id result = ALLOC("NSImage");
+    msg_id(result, s("initWithData:"), imageData);
+
+    if( isTemplateImage ) {
+        msg_bool(result, s("setTemplate:"), YES);
+    }
+
+    return result;
 }
 
 void* NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel, int hideWindowOnClose) {

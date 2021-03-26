@@ -117,6 +117,8 @@
 #define NSAlertSecondButtonReturn  1001
 #define NSAlertThirdButtonReturn   1002
 
+#define BrokenImage "iVBORw0KGgoAAAANSUhEUgAAABAAAAASCAMAAABl5a5YAAABj1BMVEWopan///+koqSWk5P9/v3///////////+AgACMiovz8/PB0fG9z+3i4+WysbGBfX1Erh80rACLiYqBxolEsDhHlDEbqQDDx+CNho7W1tj4+/bw+O3P5Mn4/f/W1tbK6sX////b2dn////////////8/Pz6+vro6Ojj4+P////G1PL////EzNydmp2cmZnd3eDF1PHs8v/o8P/Q3vrS3vfE0vCdmpqZkpr19/3N2vXI1vPH1fOgnqDg6frP3PbCytvHx8irqq6HhIZtuGtjnlZetU1Xs0NWskBNsi7w9v/d6P7w9P3S4Pzr8Pvl7PrY5PrU4PjQ3fjD1Ozo6Om30NjGzNi7ubm34K+UxKmbnaWXlJeUjpSPi4tppF1TtjxSsTf2+f7L2PTr7e3H2+3V7+q+0uXg4OPg4eLR1uG7z+Hg4ODGzODV2N7V1trP5dmxzs65vcfFxMWq0cKxxr+/vr+0s7apxbWaxrCv2qao05+dlp2Uuo2Dn4F8vIB6xnyAoHmAym9zqGpctENLryNFsgoblJpnAAAAKnRSTlP+hP7+5ZRmYgL+/f39/f39/f38/Pz8/Pv69+7j083My8GocnBPTTMWEgjxeITOAAABEklEQVQY0y3KZXuCYBiG4ceYuu7u3nyVAaKOMBBQ7O5Yd3f3fvheDnd9u8/jBkGwNxP6sjOWVQvY/ftrzfT6bd3yEhCnYZqiaYoKiwX/gXkFiHySTcUTLJMsZ9v8nQvgssWYOEKedKpcOO6CUXD5IlGEY5hLUbyDAAZ6HRf1bnkoavOsFQibg+Q4nuNYL+ON5PHD5nBaraRVyxnzGf6BJzUi2QQCQgMyk8tleL7dg1owpJ17D5IkvV100EingeOopPyo6vfAuXF+9hbDTknZCIaUoeK4efKwG4iT6xDewd7imGlid7gGwv37b6Oh9jwaTdOf/Tc1qH7UZVmuP6G5qZfBr9cAGNy4KiDd4tXIs7tS+QO9aUKvPAIKuQAAAABJRU5ErkJggg=="
+
 struct Application;
 int releaseNSObject(void *const context, struct hashmap_element_s *const e);
 void TitlebarAppearsTransparent(struct Application* app);
@@ -138,5 +140,7 @@ void SetActivationPolicy(struct Application* app, int policy);
 void* lookupStringConstant(id constantName);
 
 void HasURLHandlers(struct Application* app);
+
+id createImageFromBase64Data(const char *data, bool isTemplateImage);
 
 #endif

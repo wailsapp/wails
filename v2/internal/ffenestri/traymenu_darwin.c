@@ -102,14 +102,7 @@ void UpdateTrayIcon(TrayMenu *trayMenu) {
 
     // If we don't have the image in the icon cache then assume it's base64 encoded image data
     if (trayImage == NULL) {
-        id data = ALLOC("NSData");
-        id imageData = ((id(*)(id, SEL, id, int))objc_msgSend)(data, s("initWithBase64EncodedString:options:"), str(trayMenu->icon), 0);
-        trayImage = ALLOC("NSImage");
-        msg_id(trayImage, s("initWithData:"), imageData);
-
-        if( trayMenu->templateImage ) {
-            msg_bool(trayImage, s("setTemplate:"), YES);
-        }
+        trayImage = createImageFromBase64Data(trayMenu->icon, trayMenu->templateImage);
     }
 
     msg_int(statusBarButton, s("setImagePosition:"), trayMenu->trayIconPosition);
