@@ -157,9 +157,11 @@ func (b *BaseBuilder) OutputFilename(options *Options) string {
 // CompileProject compiles the project
 func (b *BaseBuilder) CompileProject(options *Options) error {
 
+	verbose := options.Verbosity == VERBOSE
 	// Run go mod tidy first
 	cmd := exec.Command(options.Compiler, "mod", "tidy")
-	if options.Verbosity == VERBOSE {
+	if verbose {
+		println("")
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
@@ -183,7 +185,6 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	// potentially try and see if the assets have changed but will
 	// this take as much time as a `-a` build?
 	commands.Add("-a")
-	commands.Add("-x")
 
 	var tags slicer.StringSlicer
 	tags.Add(options.OutputType)
@@ -235,7 +236,8 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	// Create the command
 	cmd = exec.Command(options.Compiler, commands.AsSlice()...)
-	if options.Verbosity == VERBOSE {
+	if verbose {
+		println("  Build command:", commands.Join(" "))
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
@@ -272,12 +274,21 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		return "1"
 	})
 
+	if verbose {
+		println("  Environment:", strings.Join(cmd.Env, " "))
+	}
+
+	// Setup buffers
+	var stdo, stde bytes.Buffer
+	cmd.Stdout = &stdo
+	cmd.Stderr = &stde
+
 	// Run command
 	err = cmd.Run()
 
 	// Format error if we have one
 	if err != nil {
-		return err
+		return fmt.Errorf("%s\n%s", err, string(stde.Bytes()))
 	}
 
 	return nil
@@ -393,7 +404,7 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 		outputLogger.Print("Installing frontend dependencies: ")
 		if verbose {
 			outputLogger.Println("")
-			outputLogger.Println("\tCommand: " + b.projectData.InstallCommand)
+			outputLogger.Println("  Install command: '" + b.projectData.InstallCommand + "'")
 		}
 		if err := b.NpmInstallUsingCommand(frontendDir, b.projectData.InstallCommand, verbose); err != nil {
 			return err
@@ -412,7 +423,7 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 	cmd := strings.Split(b.projectData.BuildCommand, " ")
 	if verbose {
 		outputLogger.Println("")
-		outputLogger.Println("\tCommand: '" + strings.Join(cmd, " ") + "'")
+		outputLogger.Println("  Build command: '" + strings.Join(cmd, " ") + "'")
 	}
 	stdout, stderr, err := shell.RunCommand(frontendDir, cmd[0], cmd[1:]...)
 	if verbose || err != nil {

@@ -130,6 +130,10 @@ func Build(options *Options) (string, error) {
 		// Build amd64 first
 		options.Arch = "amd64"
 		options.OutputFile = amd64Filename
+		if options.Verbosity == VERBOSE {
+			println()
+			println("  Building AMD64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
+		}
 		err = builder.CompileProject(options)
 		if err != nil {
 			return "", err
@@ -137,11 +141,17 @@ func Build(options *Options) (string, error) {
 		// Build arm64
 		options.Arch = "arm64"
 		options.OutputFile = arm64Filename
+		if options.Verbosity == VERBOSE {
+			println("  Building ARM64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
+		}
 		err = builder.CompileProject(options)
 		if err != nil {
 			return "", err
 		}
 		// Run lipo
+		if options.Verbosity == VERBOSE {
+			println("  Running lipo: ", "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
+		}
 		_, stderr, err := shell.RunCommand(options.BuildDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
 		if err != nil {
 			return "", fmt.Errorf("%s - %s", err.Error(), stderr)
