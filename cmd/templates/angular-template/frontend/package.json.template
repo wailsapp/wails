@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "npx ng",
-    "start": "npx ng serve --poll=2000 --host=0.0.0.0",
+    "serve": "npx ng serve --poll=2000 --host=0.0.0.0",
     "build": "npx ng build --single-bundle true --output-hashing none --prod --bundle-styles false",
     "test": "npx ng test",
     "lint": "npx ng lint",
