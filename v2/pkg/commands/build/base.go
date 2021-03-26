@@ -212,10 +212,12 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	// Get application build directory
 	appDir := options.BuildDirectory
-	//err = cleanBuildDirectory(options)
-	//if err != nil {
-	//	return err
-	//}
+	if options.CleanBuildDirectory {
+		err = cleanBuildDirectory(options)
+		if err != nil {
+			return err
+		}
+	}
 
 	if options.LDFlags != "" {
 		commands.Add("-ldflags")

@@ -63,6 +63,10 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	outputFilename := ""
 	command.StringFlag("o", "Output filename", &outputFilename)
 
+	// Clean build directory
+	cleanBuildDirectory := false
+	command.BoolFlag("clean", "Clean the build directory before building", &cleanBuildDirectory)
+
 	appleIdentity := ""
 	if runtime.GOOS == "darwin" {
 		command.StringFlag("sign", "Signs your app with the given identity.", &appleIdentity)
@@ -112,16 +116,17 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 		// Create BuildOptions
 		buildOptions := &build.Options{
-			Logger:        logger,
-			OutputType:    outputType,
-			OutputFile:    outputFilename,
-			Mode:          mode,
-			Pack:          pack,
-			LDFlags:       ldflags,
-			Compiler:      compilerCommand,
-			KeepAssets:    keepAssets,
-			AppleIdentity: appleIdentity,
-			Verbosity:     verbosity,
+			Logger:              logger,
+			OutputType:          outputType,
+			OutputFile:          outputFilename,
+			CleanBuildDirectory: cleanBuildDirectory,
+			Mode:                mode,
+			Pack:                pack,
+			LDFlags:             ldflags,
+			Compiler:            compilerCommand,
+			KeepAssets:          keepAssets,
+			AppleIdentity:       appleIdentity,
+			Verbosity:           verbosity,
 		}
 
 		// Calculate platform and arch
@@ -148,6 +153,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		fmt.Fprintf(w, "Compiler: \t%s\n", buildOptions.Compiler)
 		fmt.Fprintf(w, "Build Mode: \t%s\n", buildModeText)
 		fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
+		fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
 		fmt.Fprintf(w, "KeepAssets: \t%t\n", buildOptions.KeepAssets)
 		fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
 		if len(buildOptions.OutputFile) > 0 {

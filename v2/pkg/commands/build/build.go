@@ -28,22 +28,23 @@ var modeMap = []string{"Debug", "Production"}
 
 // Options contains all the build options as well as the project data
 type Options struct {
-	LDFlags        string               // Optional flags to pass to linker
-	Logger         *clilogger.CLILogger // All output to the logger
-	OutputType     string               // EG: desktop, server....
-	Mode           Mode                 // release or debug
-	ProjectData    *project.Project     // The project data
-	Pack           bool                 // Create a package for the app after building
-	Platform       string               // The platform to build for
-	Arch           string               // The architecture to build for
-	Compiler       string               // The compiler command to use
-	IgnoreFrontend bool                 // Indicates if the frontend does not need building
-	OutputFile     string               // Override the output filename
-	BuildDirectory string               // Directory to use for building the application
-	CompiledBinary string               // Fully qualified path to the compiled binary
-	KeepAssets     bool                 // /Keep the generated assets/files
-	Verbosity      int                  // Verbosity level (0 - silent, 1 - default, 2 - verbose)
-	AppleIdentity  string
+	LDFlags             string               // Optional flags to pass to linker
+	Logger              *clilogger.CLILogger // All output to the logger
+	OutputType          string               // EG: desktop, server....
+	Mode                Mode                 // release or debug
+	ProjectData         *project.Project     // The project data
+	Pack                bool                 // Create a package for the app after building
+	Platform            string               // The platform to build for
+	Arch                string               // The architecture to build for
+	Compiler            string               // The compiler command to use
+	IgnoreFrontend      bool                 // Indicates if the frontend does not need building
+	OutputFile          string               // Override the output filename
+	BuildDirectory      string               // Directory to use for building the application
+	CleanBuildDirectory bool                 // Indicates if the build directory should be cleaned before building
+	CompiledBinary      string               // Fully qualified path to the compiled binary
+	KeepAssets          bool                 // /Keep the generated assets/files
+	Verbosity           int                  // Verbosity level (0 - silent, 1 - default, 2 - verbose)
+	AppleIdentity       string
 }
 
 // GetModeAsString returns the current mode as a string
