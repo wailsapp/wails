@@ -1,4 +1,4 @@
-// build
+// Package mac provides MacOS related utility functions for Wails applications
 package mac
 
 import (
@@ -12,6 +12,9 @@ import (
 	"github.com/wailsapp/wails/v2/internal/shell"
 )
 
+// StartAtLogin will either add or remove this application to/from the login
+// items, depending on the given boolean flag. The limitation is that the
+// currently running app must be in an app bundle.
 func StartAtLogin(enabled bool) error {
 	exe, err := os.Executable()
 	if err != nil {
@@ -19,7 +22,7 @@ func StartAtLogin(enabled bool) error {
 	}
 	binName := filepath.Base(exe)
 	if !strings.HasSuffix(exe, "/Contents/MacOS/"+binName) {
-		return fmt.Errorf("app needs to be running as package.app file to start at startup")
+		return fmt.Errorf("app needs to be running as package.app file to start at login")
 	}
 	appPath := strings.TrimSuffix(exe, "/Contents/MacOS/"+binName)
 	var command string
@@ -35,12 +38,18 @@ func StartAtLogin(enabled bool) error {
 	return nil
 }
 
+// StartsAtLogin will indicate if this application is in the login
+// items. The limitation is that the currently running app must be
+// in an app bundle.
 func StartsAtLogin() (bool, error) {
 	exe, err := os.Executable()
 	if err != nil {
 		return false, err
 	}
 	binName := filepath.Base(exe)
+	if !strings.HasSuffix(exe, "/Contents/MacOS/"+binName) {
+		return false, fmt.Errorf("app needs to be running as package.app file to start at login")
+	}
 	results, stde, err := shell.RunCommand("/tmp", "osascript", "-e", `tell application "System Events" to get the name of every login item`)
 	if err != nil {
 		return false, errors.Wrap(err, stde)
