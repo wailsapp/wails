@@ -130,6 +130,7 @@ func Build(options *Options) (string, error) {
 		// Build amd64 first
 		options.Arch = "amd64"
 		options.OutputFile = amd64Filename
+		options.CleanBuildDirectory = false
 		if options.Verbosity == VERBOSE {
 			println()
 			println("  Building AMD64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
@@ -141,6 +142,7 @@ func Build(options *Options) (string, error) {
 		// Build arm64
 		options.Arch = "arm64"
 		options.OutputFile = arm64Filename
+		options.CleanBuildDirectory = false
 		if options.Verbosity == VERBOSE {
 			println("  Building ARM64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
 		}
