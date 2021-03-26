@@ -695,38 +695,6 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
         return;
     }
 
-    // Check if this is a submenu
-    JsonNode *submenu = json_find_member(item, "SubMenu");
-    if( submenu != NULL ) {
-        // Get the label
-        JsonNode *menuNameNode = json_find_member(item, "Label");
-        const char *name = "";
-        if ( menuNameNode != NULL) {
-            name = menuNameNode->string_;
-        }
-
-        id thisMenuItem = createMenuItemNoAutorelease(str(name), NULL, "");
-        id thisMenu = createMenu(str(name));
-
-        msg_id(thisMenuItem, s("setSubmenu:"), thisMenu);
-        msg_id(parentMenu, s("addItem:"), thisMenuItem);
-
-        JsonNode *submenuItems = json_find_member(submenu, "Items");
-        // If we have no items, just return
-        if ( submenuItems == NULL ) {
-            return;
-        }
-
-        // Loop over submenu items
-        JsonNode *item;
-        json_foreach(item, submenuItems) {
-            // Get item label
-            processMenuItem(menu, thisMenu, item);
-        }
-
-        return;
-    }
-
     // This is a user menu. Get the common data
     // Get the label
     const char *label = getJSONString(item, "Label");
@@ -792,9 +760,36 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     // Get the Type
     JsonNode *type = json_find_member(item, "Type");
     if( type != NULL ) {
+        if( STREQ(type->string_, "Text") || STREQ(type->string_, "Submenu")) {
+            id thisMenuItem = processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers, tooltip, image, fontName, fontSize, RGBA, templateImage, alternate);
 
-        if( STREQ(type->string_, "Text")) {
-            processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers, tooltip, image, fontName, fontSize, RGBA, templateImage, alternate);
+            // Check if this node has a submenu
+            JsonNode *submenu = json_find_member(item, "SubMenu");
+            if( submenu != NULL ) {
+                // Get the label
+                JsonNode *menuNameNode = json_find_member(item, "Label");
+                const char *name = "";
+                if ( menuNameNode != NULL) {
+                    name = menuNameNode->string_;
+                }
+
+                id thisMenu = createMenu(str(name));
+
+                msg_id(thisMenuItem, s("setSubmenu:"), thisMenu);
+
+                JsonNode *submenuItems = json_find_member(submenu, "Items");
+                // If we have no items, just return
+                if ( submenuItems == NULL ) {
+                    return;
+                }
+
+                // Loop over submenu items
+                JsonNode *item;
+                json_foreach(item, submenuItems) {
+                    // Get item label
+                    processMenuItem(menu, thisMenu, item);
+                }
+            }
         }
         else if ( STREQ(type->string_, "Separator")) {
             addSeparator(parentMenu);
@@ -813,7 +808,6 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
 
             processRadioMenuItem(menu, parentMenu, label, menuid, disabled, checked, "");
         }
-
     }
 
     if ( modifiers != NULL ) {
