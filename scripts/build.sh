@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 echo "**** Checking if Wails passes unit tests ****"
-if ! go test ./...
+if ! go test ./lib/... ./runtime/... ./cmd/...
 then
     echo ""
     echo "ERROR: Unit tests failed!"
