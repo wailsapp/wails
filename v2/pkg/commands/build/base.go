@@ -10,6 +10,8 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/internal/assetdb"
 	"github.com/wailsapp/wails/v2/internal/fs"
@@ -291,6 +293,27 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		return fmt.Errorf("%s\n%s", err, string(stde.Bytes()))
 	}
 
+	if !options.Compress {
+		return nil
+	}
+
+	// Do we have upx installed?
+	if !shell.CommandExists("upx") {
+		println("Warning: Cannot compress binary: upx not found")
+		return nil
+	}
+
+	if verbose {
+		println("  Compressing with:", "upx", "--best", "--no-color", "--no-progress", options.CompiledBinary)
+	}
+
+	output, err := exec.Command(options.BuildDirectory, "upx", "--best", "--no-color", "--no-progress", options.CompiledBinary).Output()
+	if err != nil {
+		return errors.Wrap(err, "Error during compression:")
+	}
+	if verbose {
+		println(output)
+	}
 	return nil
 }
 

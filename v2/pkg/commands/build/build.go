@@ -42,8 +42,9 @@ type Options struct {
 	BuildDirectory      string               // Directory to use for building the application
 	CleanBuildDirectory bool                 // Indicates if the build directory should be cleaned before building
 	CompiledBinary      string               // Fully qualified path to the compiled binary
-	KeepAssets          bool                 // /Keep the generated assets/files
+	KeepAssets          bool                 // Keep the generated assets/files
 	Verbosity           int                  // Verbosity level (0 - silent, 1 - default, 2 - verbose)
+	Compress            bool                 // Compress the final binary
 	AppleIdentity       string
 }
 

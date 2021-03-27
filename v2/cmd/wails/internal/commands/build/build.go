@@ -39,6 +39,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	compilerCommand := "go"
 	command.StringFlag("compiler", "Use a different go compiler to build, eg go1.15beta1", &compilerCommand)
 
+	compress := false
+	command.BoolFlag("compress", "Compress final binary", &compress)
+
 	// Setup Platform flag
 	platform := runtime.GOOS
 	command.StringFlag("platform", "Platform to target", &platform)
@@ -114,6 +117,10 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			return fmt.Errorf("platform %s is not supported", platform)
 		}
 
+		if compress && platform == "darwin/universal" {
+			println("Warning: compress flag unsupported for universal binaries. Ignoring.")
+			compress = false
+		}
 		// Create BuildOptions
 		buildOptions := &build.Options{
 			Logger:              logger,
@@ -127,6 +134,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			KeepAssets:          keepAssets,
 			AppleIdentity:       appleIdentity,
 			Verbosity:           verbosity,
+			Compress:            compress,
 		}
 
 		// Calculate platform and arch
@@ -147,10 +155,12 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		}
 
 		// Write out the system information
+		fmt.Fprintf(w, "\n")
 		fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
 		fmt.Fprintf(w, "Platform: \t%s\n", buildOptions.Platform)
 		fmt.Fprintf(w, "Arch: \t%s\n", buildOptions.Arch)
 		fmt.Fprintf(w, "Compiler: \t%s\n", buildOptions.Compiler)
+		fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
 		fmt.Fprintf(w, "Build Mode: \t%s\n", buildModeText)
 		fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
 		fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
