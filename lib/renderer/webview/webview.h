@@ -399,7 +399,7 @@ struct webview_priv
 
   WEBVIEW_API void webview_focus(struct webview *w)
   {
-    gtk_window_present(GTK_WINDOW(w->priv.window))
+    gtk_window_present(GTK_WINDOW(w->priv.window));
   }
 
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen)
