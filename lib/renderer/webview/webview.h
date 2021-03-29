@@ -298,21 +298,7 @@ struct webview_priv
     JSStringRelease(js);
     g_free(s);
   }
-  
-  static void webview_size_allocate_cb(GtkWindow *window,
-               GdkRectangle *allocation, gpointer arg)
-  {
-    struct webview *w = (struct webview *)arg;
-    if (allocation->width > w->priv.max_width || allocation->height > w->priv.max_height) {
-      if (gtk_window_is_maximized(window)) {
-        gint x,y;
-        gtk_window_get_position(window,&x,&y);
-        gtk_window_unmaximize(window);
-        gtk_window_move(window, x, y);
-      }
-    }
-  }
-  
+
   static void webview_load_changed_cb(WebKitWebView *webview,
                                       WebKitLoadEvent event, gpointer arg)
   {
@@ -363,9 +349,6 @@ struct webview_priv
     w->priv.max_height = -1;
     
     gtk_window_set_title(GTK_WINDOW(w->priv.window), w->title);
-    
-    g_signal_connect(G_OBJECT(w->priv.window), "size-allocate",
-                     G_CALLBACK(webview_size_allocate_cb), w);
 
     if (w->resizable)
     {
