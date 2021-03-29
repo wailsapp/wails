@@ -1049,22 +1049,26 @@ void SetDebug(void *applicationPointer, int flag) {
 void AddContextMenu(struct Application *app, const char *contextMenuJSON) {
     // Guard against calling during shutdown
     if( app->shuttingDown ) return;
-
-    AddContextMenuToStore(app->contextMenuStore, contextMenuJSON);
+    ON_MAIN_THREAD (
+        AddContextMenuToStore(app->contextMenuStore, contextMenuJSON);
+    );
 }
 
 void UpdateContextMenu(struct Application *app, const char* contextMenuJSON) {
     // Guard against calling during shutdown
     if( app->shuttingDown ) return;
-
-    UpdateContextMenuInStore(app->contextMenuStore, contextMenuJSON);
+    ON_MAIN_THREAD(
+        UpdateContextMenuInStore(app->contextMenuStore, contextMenuJSON);
+    );
 }
 
 void AddTrayMenu(struct Application *app, const char *trayMenuJSON) {
     // Guard against calling during shutdown
     if( app->shuttingDown ) return;
 
-	AddTrayMenuToStore(TrayMenuStoreSingleton, trayMenuJSON);
+    ON_MAIN_THREAD(
+        AddTrayMenuToStore(TrayMenuStoreSingleton, trayMenuJSON);
+    );
 }
 
 void SetTrayMenu(struct Application *app, const char* trayMenuJSON) {
@@ -1407,7 +1411,9 @@ void SetApplicationMenu(struct Application *app, const char *menuAsJSON) {
 	}
 
     // Update menu
-    updateMenu(app, menuAsJSON);
+    ON_MAIN_THREAD (
+        updateMenu(app, menuAsJSON);
+    );
 }
 
 void processDialogIcons(struct hashmap_s *hashmap, const unsigned char *dialogIcons[]) {

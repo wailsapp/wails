@@ -624,7 +624,7 @@ id createAttributedString(const char* title, const char* fontName, int fontSize,
     id attributedString = ALLOC("NSMutableAttributedString");
     msg_id_id(attributedString, s("initWithString:attributes:"), str(title), dictionary);
     msg_reg(attributedString, s("autorelease"));
-    msg_reg(dictionary, s("release"));
+    msg_reg(dictionary, s("autorelease"));
     return attributedString;
 }
 
