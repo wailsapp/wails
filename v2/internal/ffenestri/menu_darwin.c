@@ -617,7 +617,6 @@ id createAttributedString(const char* title, const char* fontName, int fontSize,
 								(CGFloat)a / (CGFloat)255.0);
 			id NSForegroundColorAttributeName = lookupStringConstant(str("NSForegroundColorAttributeName"));
             msg_id_id(dictionary, s("setObject:forKey:"), colour, NSForegroundColorAttributeName);
-            msg_reg(colour, s("autorelease"));
         }
     }
 
