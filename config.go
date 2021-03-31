@@ -1,11 +1,9 @@
 package wails
 
 import (
-	"fmt"
 	"net/url"
 	"strings"
 
-	"github.com/leaanthony/mewn"
 	"github.com/wailsapp/wails/runtime"
 )
 
@@ -99,6 +97,10 @@ func (a *AppConfig) merge(in *AppConfig) error {
 		a.Colour = in.Colour
 	}
 
+	if in.HTML != "" {
+		a.HTML = in.HTML
+	}
+
 	if in.JS != "" {
 		a.JS = in.JS
 	}
@@ -127,7 +129,7 @@ func newConfig(userConfig *AppConfig) (*AppConfig, error) {
 		Resizable: true,
 		Title:     "My Wails App",
 		Colour:    "#FFF", // White by default
-		HTML:      mewn.String("./runtime/assets/default.html"),
+		HTML:      defaultHTML,
 	}
 
 	if userConfig != nil {
@@ -137,9 +139,19 @@ func newConfig(userConfig *AppConfig) (*AppConfig, error) {
 		}
 	}
 
-	println("****************************************************")
-	fmt.Printf("%+v\n", result)
-	println("****************************************************")
-
 	return result, nil
 }
+
+var defaultHTML = `<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+</head>
+
+<body>
+  <div id="app"></div>
+</body>
+
+</html>`

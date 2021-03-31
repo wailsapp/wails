@@ -80,6 +80,7 @@ func init() {
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}
 		projectOptions.Verbose = verbose
+		projectOptions.UseFirebug = usefirebug
 
 		// Check if configDir exists
 		if ok := fs.DirExists(configDir); !ok {

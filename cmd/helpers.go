@@ -621,3 +621,9 @@ func ldFlags(po *ProjectOptions, buildMode string) string {
 	}
 	return ldflags
 }
+
+func getGitConfigValue(key string) (string, error) {
+	output, err := exec.Command("git", "config", "--get", "--null", key).Output()
+	// When using --null git appends a null character (\u0000) to the command output
+	return strings.TrimRight(string(output), "\u0000"), err
+}

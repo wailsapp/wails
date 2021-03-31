@@ -99,11 +99,16 @@ func (s *SystemHelper) setup() error {
 
 	if config.Name != "" {
 		systemConfig["name"] = PromptRequired("What is your name", config.Name)
+	} else if n, err := getGitConfigValue("user.name"); err == nil && n != "" {
+		systemConfig["name"] = PromptRequired("What is your name", n)
 	} else {
 		systemConfig["name"] = PromptRequired("What is your name")
 	}
+
 	if config.Email != "" {
 		systemConfig["email"] = PromptRequired("What is your email address", config.Email)
+	} else if e, err := getGitConfigValue("user.email"); err == nil && e != "" {
+		systemConfig["email"] = PromptRequired("What is your email address", e)
 	} else {
 		systemConfig["email"] = PromptRequired("What is your email address")
 	}
@@ -180,7 +185,7 @@ func (s *SystemHelper) Initialise() error {
 	return s.setup()
 }
 
-// SystemConfig - Defines system wode configuration data
+// SystemConfig - Defines system wide configuration data
 type SystemConfig struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
@@ -286,6 +291,8 @@ func CheckDependencies(logger *Logger) (bool, error) {
 			libraryChecker = XbpsInstalled
 		case Solus:
 			libraryChecker = EOpkgInstalled
+		case Crux:
+			libraryChecker = PrtGetInstalled
 		default:
 			return false, RequestSupportForDistribution(distroInfo)
 		}

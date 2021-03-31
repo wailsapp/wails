@@ -65,6 +65,10 @@ static inline void CgoWebViewSetTitle(void *w, char *title) {
 	webview_set_title((struct webview *)w, title);
 }
 
+static inline void CgoWebViewFocus(void *w) {
+	webview_focus((struct webview *)w);
+}
+
 static inline void CgoWebViewSetFullscreen(void *w, int fullscreen) {
 	webview_set_fullscreen((struct webview *)w, fullscreen);
 }
@@ -170,6 +174,10 @@ type WebView interface {
 	// SetTitle() changes window title. This method must be called from the main
 	// thread only. See Dispatch() for more details.
 	SetTitle(title string)
+
+	// Focus() puts the main window into focus
+	Focus()
+
 	// SetFullscreen() controls window full-screen mode. This method must be
 	// called from the main thread only. See Dispatch() for more details.
 	SetFullscreen(fullscreen bool)
@@ -307,6 +315,10 @@ func (w *webview) SetColor(r, g, b, a uint8) {
 	C.CgoWebViewSetColor(w.w, C.uint8_t(r), C.uint8_t(g), C.uint8_t(b), C.uint8_t(a))
 }
 
+func (w *webview) Focus() {
+	C.CgoWebViewFocus(w.w)
+}
+
 func (w *webview) SetFullscreen(fullscreen bool) {
 	C.CgoWebViewSetFullscreen(w.w, C.int(boolToInt(fullscreen)))
 }
@@ -353,7 +365,9 @@ func _webviewDispatchGoCallback(index unsafe.Pointer) {
 	f = fns[uintptr(index)]
 	delete(fns, uintptr(index))
 	m.Unlock()
-	f()
+	if f != nil {
+		f()
+	}
 }
 
 //export _webviewExternalInvokeCallback
@@ -369,5 +383,7 @@ func _webviewExternalInvokeCallback(w unsafe.Pointer, data unsafe.Pointer) {
 		}
 	}
 	m.Unlock()
-	cb(wv, C.GoString((*C.char)(data)))
+	if cb != nil {
+		cb(wv, C.GoString((*C.char)(data)))
+	}
 }
