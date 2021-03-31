@@ -578,30 +578,26 @@ id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const c
 
 id createAttributedString(const char* title, const char* fontName, int fontSize, const char* RGBA) {
 
-    // Process Menu Item attributes
+    // Create new Dictionary
     id dictionary = ALLOC_INIT("NSMutableDictionary");
-
-    // Process font
     CGFloat fontSizeFloat = (CGFloat)fontSize;
 
-    // Check if valid
-    id fontNameAsNSString = str(fontName);
-    id font = ((id(*)(id, SEL, id, CGFloat))objc_msgSend)(c("NSFont"), s("fontWithName:size:"), fontNameAsNSString, fontSizeFloat);
-    if( font == NULL ) {
-        bool supportsMonospacedDigitSystemFont = (bool) ((id(*)(id, SEL, SEL))objc_msgSend)(c("NSFont"), s("respondsToSelector:"), s("monospacedDigitSystemFontOfSize:weight:"));
-        if( supportsMonospacedDigitSystemFont ) {
-            font = ((id(*)(id, SEL, CGFloat, CGFloat))objc_msgSend)(c("NSFont"), s("monospacedDigitSystemFontOfSize:weight:"), fontSizeFloat, (CGFloat)NSFontWeightRegular);
-        } else {
-            font = ((id(*)(id, SEL, CGFloat))objc_msgSend)(c("NSFont"), s("menuFontOfSize:"), fontSizeFloat);
+    // Use default font
+    id font = ((id(*)(id, SEL, CGFloat))objc_msgSend)(c("NSFont"), s("menuBarFontOfSize:"), fontSizeFloat);
+
+    // Check user supplied font
+    if( STR_HAS_CHARS(fontName) ) {
+        id fontNameAsNSString = str(fontName);
+        id userFont = ((id(*)(id, SEL, id, CGFloat))objc_msgSend)(c("NSFont"), s("fontWithName:size:"), fontNameAsNSString, fontSizeFloat);
+        if( userFont != NULL ) {
+            font = userFont;
         }
     }
 
     // Add font to dictionary
     id fan = lookupStringConstant(str("NSFontAttributeName"));
     msg_id_id(dictionary, s("setObject:forKey:"), font, fan);
-    id offset = msg_float(c("NSNumber"), s("numberWithFloat:"), (float)0.0);
-    id offsetAttrName = lookupStringConstant(str("NSBaselineOffsetAttributeName"));
-    msg_id_id(dictionary, s("setObject:forKey:"), offset, offsetAttrName);
+
     // RGBA
     if( RGBA != NULL && strlen(RGBA) > 0) {
         unsigned short r, g, b, a;
