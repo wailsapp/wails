@@ -32,8 +32,9 @@ The official docs can be found at [https://wails.app](https://wails.app).
 
 ## Sponsors
 
-This project is supported by these kind people:
+This project is supported by these kind people / companies:
 
+<a href="https://www.jetbrains.com?from=Wails" style="width:100px"><img src="jetbrains-grayscale.png" width="100"/></a>
 <a href="https://pace.dev" style="width:100px"><img src="pace.jpeg" width="100"/></a>
 <a href="https://github.com/tc-hib" style="width:50px;border-radius: 50%">
   <img src="https://github.com/tc-hib.png?size=50" width="50" style="border-radius: 50%"/>
@@ -128,18 +129,22 @@ It is recommended at this stage to read the comprehensive documentation at [http
 
    When I saw WebView, I thought "What I really want is tooling around building a WebView app, a bit like Rails is to Ruby". So initially it was a play on words (Webview on Rails). It just so happened to also be a homophone of the English name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it stuck.
 
-## Shoulders of Giants
+## Contributors
+
+<a href="https://github.com/bashfulrobot" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/bashfulrobot.png?size=50"/>
+</a>
+
+
+## Special Mentions
 
 Without the following people, this project would never have existed:
 
   * [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been immense. More patience than you can throw a stick at (Not long now Dustin!).
   * [Serge Zaitsev](https://github.com/zserge) - Creator of [Webview](https://github.com/zserge/webview) which Wails uses for the windowing.
+  * [Byron](https://github.com/bh90210) - At times, Byron has single handedly kept this project alive. Without his incredible input, we never would have got to v1.
 
 And without [these people](CONTRIBUTORS.md), it wouldn't be what it is today. A huge thank you to each and every one of you!
-
-Special Mentions:
-
-  * [Byron](https://github.com/bh90210) - At times, Byron has single handedly kept this project alive. Without his incredible input, we never would have got to v1.
 
 This project was mainly coded to the following albums:
 
