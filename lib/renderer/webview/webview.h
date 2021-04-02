@@ -168,6 +168,7 @@ struct webview_priv
   WEBVIEW_API int webview_eval(struct webview *w, const char *js);
   WEBVIEW_API int webview_inject_css(struct webview *w, const char *css);
   WEBVIEW_API void webview_set_title(struct webview *w, const char *title);
+  WEBVIEW_API void webview_focus(struct webview *w);
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen);
   WEBVIEW_API void webview_set_color(struct webview *w, uint8_t r, uint8_t g,
                                      uint8_t b, uint8_t a);
@@ -394,6 +395,11 @@ struct webview_priv
   WEBVIEW_API void webview_set_title(struct webview *w, const char *title)
   {
     gtk_window_set_title(GTK_WINDOW(w->priv.window), title);
+  }
+
+  WEBVIEW_API void webview_focus(struct webview *w)
+  {
+    gtk_window_present(GTK_WINDOW(w->priv.window));
   }
 
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen)
@@ -1641,6 +1647,11 @@ struct webview_priv
 #endif
   }
 
+  WEBVIEW_API void webview_focus(struct webview *w)
+  {
+    SetFocus(w->priv.hwnd);
+  }
+
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen)
   {
     if (w->priv.is_fullscreen == !!fullscreen)
@@ -2206,6 +2217,11 @@ struct webview_priv
   {
     NSString *nsTitle = [NSString stringWithUTF8String:title];
     [w->priv.window setTitle:nsTitle];
+  }
+
+  WEBVIEW_API void webview_focus(struct webview *w)
+  {
+    [w->priv.window makeKeyWindow];
   }
 
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen)

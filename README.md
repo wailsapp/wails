@@ -2,7 +2,7 @@
    <img src="logo_cropped.png" width="40%"><br/>
 </p>
 <p align="center">
-   A framework for building desktop applications using Go & Web Technologies.<br/><br/>
+   Build desktop applications using Go & Web Technologies.<br/><br/>
    <a href="https://github.com/wailsapp/wails/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
    <a href="https://goreportcard.com/report/github.com/wailsapp/wails"><img src="https://goreportcard.com/badge/github.com/wailsapp/wails"/></a>
    <a href="http://godoc.org/github.com/wailsapp/wails"><img src="https://img.shields.io/badge/godoc-reference-blue.svg"/></a>
@@ -20,7 +20,7 @@ The official docs can be found at [https://wails.app](https://wails.app).
 
 ## Features
 
-- Use standard Go libraries/frameworks for the backend
+- Use standard Go for the backend
 - Use any frontend technology to build your UI
 - Quickly create Vue, Vuetify or React frontends for your Go programs
 - Expose Go methods/functions to the frontend via a single bind command
@@ -30,6 +30,23 @@ The official docs can be found at [https://wails.app](https://wails.app).
 - Powerful cli tool
 - Multiplatform
 
+## Sponsors
+
+This project is supported by these kind people:
+
+<a href="https://pace.dev" style="width:100px"><img src="pace.jpeg" width="100"/></a>
+<a href="https://github.com/tc-hib" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/tc-hib.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/picatz" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/picatz.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/tylertravisty" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/tylertravisty.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/picatz" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/picatz.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
 
 ## Installation
 
@@ -150,7 +167,8 @@ This project was mainly coded to the following albums:
 ## Special Thanks
 
 <p align="center" style="text-align: center">
-   A *huge* thanks to <a href="https://pace.dev"><img src="pace.jpeg"/> Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
+   <a href="https://pace.dev"><img src="pace.jpeg"/></a><br/>
+   A *huge* thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
    If you are looking for a Project Management tool that's powerful but quick and easy to use, check them out!<br/><br/>
 </p>
 
