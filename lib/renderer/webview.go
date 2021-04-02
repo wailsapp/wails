@@ -30,7 +30,6 @@ type WebView struct {
 	config       interfaces.AppConfig
 	eventManager interfaces.EventManager
 	bindingCache []string
-
 	maximumSizeSet bool
 }
 
@@ -94,6 +93,16 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 			w.ipc.Dispatch(message, w.callback)
 		},
 	})
+		fmt.Println("Control")
+
+	// Set minimum and maximum sizes
+	if setMinSize {
+		w.SetMinSize(minWidth, minHeight)
+	}
+	if setMaxSize {
+		w.SetMaxSize(maxWidth, maxHeight)
+		fmt.Println("Max")
+	}
 
 	// Set minimum and maximum sizes
 	if setMinSize {
