@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leaanthony/mewn/lib"
 	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
 	wailsruntime "github.com/wailsapp/wails/runtime"
@@ -58,33 +57,6 @@ func InstallGoDependencies(verbose bool) error {
 		depSpinner.Success()
 	}
 	return nil
-}
-
-// EmbedAssets will embed the built frontend assets via mewn.
-func EmbedAssets() ([]string, error) {
-	mewnFiles := lib.GetMewnFiles([]string{}, false)
-
-	referencedAssets, err := lib.GetReferencedAssets(mewnFiles)
-	if err != nil {
-		return []string{}, err
-	}
-
-	targetFiles := []string{}
-
-	for _, referencedAsset := range referencedAssets {
-		packfileData, err := lib.GeneratePackFileString(referencedAsset, false)
-		if err != nil {
-			return []string{}, err
-		}
-		targetFile := filepath.Join(referencedAsset.BaseDir, referencedAsset.PackageName+"-mewn.go")
-		targetFiles = append(targetFiles, targetFile)
-		err = os.WriteFile(targetFile, []byte(packfileData), 0644)
-		if err != nil {
-			return []string{}, err
-		}
-	}
-
-	return targetFiles, nil
 }
 
 func InitializeCrossCompilation(verbose bool) error {
@@ -203,11 +175,6 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 // BuildNative builds on the target platform itself.
 func BuildNative(binaryName string, forceRebuild bool, buildMode string, projectOptions *ProjectOptions) error {
 
-	// Check Mewn is installed
-	if err := CheckMewn(projectOptions.Verbose); err != nil {
-		return err
-	}
-
 	if err := CheckWindres(); err != nil {
 		return err
 	}
@@ -280,12 +247,6 @@ func BuildNative(binaryName string, forceRebuild bool, buildMode string, project
 func BuildApplication(binaryName string, forceRebuild bool, buildMode string, packageApp bool, projectOptions *ProjectOptions) error {
 	var err error
 
-	// embed resources
-	targetFiles, err := EmbedAssets()
-	if err != nil {
-		return err
-	}
-
 	if projectOptions.CrossCompile {
 		if err := InitializeCrossCompilation(projectOptions.Verbose); err != nil {
 			return err
@@ -300,20 +261,6 @@ func BuildApplication(binaryName string, forceRebuild bool, buildMode string, pa
 			return err
 		}
 	}
-
-	// cleanup temporary embedded assets
-	defer func() {
-		for _, filename := range targetFiles {
-			if err := os.Remove(filename); err != nil {
-				fmt.Println(err)
-			}
-		}
-		// Removed by popular demand
-		// TODO: Potentially add a flag to cleanup
-		// if projectOptions.Platform == "windows" {
-		// 	helper.CleanWindows(projectOptions)
-		// }
-	}()
 
 	if projectOptions.CrossCompile {
 		err = BuildDocker(binaryName, buildMode, projectOptions)
@@ -375,30 +322,6 @@ func BuildFrontend(projectOptions *ProjectOptions) error {
 	}
 	if buildFESpinner != nil {
 		buildFESpinner.Success()
-	}
-	return nil
-}
-
-// CheckMewn checks if mewn is installed and if not, attempts to fetch it
-func CheckMewn(verbose bool) (err error) {
-	programHelper := NewProgramHelper(verbose)
-	if !programHelper.IsInstalled("mewn") {
-		var buildSpinner *spinner.Spinner
-		if !verbose {
-			buildSpinner = spinner.New()
-			buildSpinner.SetSpinSpeed(50)
-			buildSpinner.Start("Installing Mewn asset packer...")
-		}
-		err := programHelper.InstallGoPackage("github.com/leaanthony/mewn/cmd/mewn")
-		if err != nil {
-			if buildSpinner != nil {
-				buildSpinner.Error()
-			}
-			return err
-		}
-		if buildSpinner != nil {
-			buildSpinner.Success()
-		}
 	}
 	return nil
 }

@@ -8,38 +8,6 @@ import (
 	"path/filepath"
 )
 
-// Default target to run when none is specified
-// If not set, running mage will list available targets
-// var Default = Build
-
-/*
-# Build runtime
-echo "**** Building Runtime ****"
-cd runtime/js
-npm install
-npm run build
-cd ../..
-
-echo "**** Packing Assets ****"
-cd cmd
-mewn
-cd ..
-cd lib/renderer
-mewn
-cd ../..
-
-echo "**** Installing Wails locally ****"
-cd cmd/wails
-go install
-cd ../..
-
-echo "**** Tidying the mods! ****"
-go mod tidy
-
-echo "**** WE ARE DONE! ****"
-
-*/
-
 func runCommand(command string, args ...string) {
 	cmd := exec.Command(command, args...)
 	output, err := cmd.CombinedOutput()

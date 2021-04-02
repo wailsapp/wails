@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/leaanthony/mewn"
 	"github.com/wailsapp/wails"
 )
 
@@ -9,9 +8,13 @@ func basic() string {
 	return "World!"
 }
 
+//go:embed frontend/public/build/bundle.js
+var js string
+
+//go:embed frontend/public/build/bundle.css
+var css string
+
 func main() {
-	js := mewn.String("./frontend/public/build/bundle.js")
-	css := mewn.String("./frontend/public/build/bundle.css")
 
 	app := wails.CreateApp(&wails.AppConfig{
 		Width:  1024,

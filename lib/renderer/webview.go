@@ -30,7 +30,7 @@ type WebView struct {
 	config       interfaces.AppConfig
 	eventManager interfaces.EventManager
 	bindingCache []string
-	
+
 	maximumSizeSet bool
 }
 
@@ -94,7 +94,6 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 			w.ipc.Dispatch(message, w.callback)
 		},
 	})
-		fmt.Println("Control")
 
 	// Set minimum and maximum sizes
 	if setMinSize {
@@ -102,7 +101,6 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	}
 	if setMaxSize {
 		w.SetMaxSize(maxWidth, maxHeight)
-		fmt.Println("Max")
 	}
 
 	// SignalManager.OnExit(w.Exit)
@@ -224,6 +222,7 @@ func (w *WebView) Run() error {
 	}
 
 	// Runtime assets
+	w.log.DebugFields("Injecting wails JS runtime", logger.Fields{"js": runtime.WailsJS})
 	w.evalJS(runtime.WailsJS)
 
 	// Ping the wait channel when the wails runtime is loaded
@@ -247,7 +246,8 @@ func (w *WebView) Run() error {
 				w.injectCSS(w.config.GetCSS())
 			} else {
 				// Use default wails css
-				w.log.Debug("Injecting Default Wails CSS: " + string(runtime.WailsCSS))
+
+				w.log.Debug("Injecting Default Wails CSS: " + runtime.WailsCSS)
 				w.injectCSS(runtime.WailsCSS)
 			}
 
