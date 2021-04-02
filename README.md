@@ -38,6 +38,9 @@ This project is supported by these kind people:
 <a href="https://github.com/tc-hib" style="width:50px">
   <img src="https://github.com/tc-hib.png?size=50" width="50"/>
 </a>
+<a href="https://github.com/picatz" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/picatz.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
 
 ## Installation
 
