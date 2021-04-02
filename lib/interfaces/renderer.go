@@ -22,6 +22,10 @@ type Renderer interface {
 
 	// Window Runtime
 	SetColour(string) error
+
+	SetMinSize(width, height int)
+	SetMaxSize(width, height int)
+
 	Fullscreen()
 	UnFullscreen()
 	SetTitle(title string)
