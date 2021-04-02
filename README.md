@@ -34,7 +34,8 @@ The official docs can be found at [https://wails.app](https://wails.app).
 
 This project is supported by these kind people:
 
-<a href="https://pace.dev" style="width:100px"><img src="pace.jpeg" width="100"/></a>
+<a href="https://github.com/matryer" style="width:100px"><img src="https://github.com/matryer.png" width="100"/></a>
+<a href="https://www.jetbrains.com?from=Wails" style="width:100px"><img src="jetbrains-grayscale.png" width="100"/></a>
 <a href="https://github.com/tc-hib" style="width:50px;border-radius: 50%">
   <img src="https://github.com/tc-hib.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
@@ -44,6 +45,7 @@ This project is supported by these kind people:
 <a href="https://github.com/tylertravisty" style="width:50px;border-radius: 50%">
   <img src="https://github.com/tylertravisty.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
+
 
 ## Installation
 
