@@ -115,15 +115,15 @@ func (b *Manager) generateTypescriptDefinitions() error {
 
 	for structname, methodList := range b.structList {
 		structname = strings.SplitN(structname, ".", 2)[1]
-		output.WriteString(fmt.Sprintf("Interface %s {\n", structname))
+		output.WriteString(fmt.Sprintf("interface %s {\n", structname))
 		for _, method := range methodList {
-			output.WriteString(fmt.Sprintf("\t%s: (...args : any[]) => Promise\n", method))
+			output.WriteString(fmt.Sprintf("\t%s(...args : any[]):Promise<any>\n", method))
 		}
 		output.WriteString("}\n")
 	}
 
 	output.WriteString("\n")
-	output.WriteString("Interface Backend {\n")
+	output.WriteString("interface Backend {\n")
 
 	for structname := range b.structList {
 		structname = strings.SplitN(structname, ".", 2)[1]
@@ -136,7 +136,8 @@ declare global {
 	interface Window {
 		backend: Backend;
 	}
-}`
+}
+export {};`
 	output.WriteString(globals)
 
 	b.log.Info("Written Typescript file: " + typescriptDefinitionFilename)
