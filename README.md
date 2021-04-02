@@ -41,6 +41,9 @@ This project is supported by these kind people:
 <a href="https://github.com/picatz" style="width:50px;border-radius: 50%">
   <img src="https://github.com/picatz.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
+<a href="https://github.com/tylertravisty" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/tylertravisty.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
 
 ## Installation
 
