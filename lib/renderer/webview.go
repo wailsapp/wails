@@ -29,6 +29,8 @@ type WebView struct {
 	config       interfaces.AppConfig
 	eventManager interfaces.EventManager
 	bindingCache []string
+	
+	maximumSizeSet bool
 }
 
 // NewWebView returns a new WebView struct
@@ -52,10 +54,37 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	// Save the config
 	w.config = config
 
+	width := config.GetWidth()
+	height := config.GetHeight()
+
+	// Clamp width and height
+	minWidth, minHeight := config.GetMinWidth(), config.GetMinHeight()
+	maxWidth, maxHeight := config.GetMaxWidth(), config.GetMaxHeight()
+	setMinSize := minWidth != -1 && minHeight != -1
+	setMaxSize := maxWidth != -1 && maxHeight != -1
+
+	if setMinSize {
+		if width < minWidth {
+			width = minWidth
+		}
+		if height < minHeight {
+			height = minHeight
+		}
+	}
+
+	if setMaxSize {
+		if width > maxWidth {
+			width = maxWidth
+		}
+		if height > maxHeight {
+			height = maxHeight
+		}
+	}
+
 	// Create the WebView instance
 	w.window = wv.NewWebview(wv.Settings{
-		Width:     config.GetWidth(),
-		Height:    config.GetHeight(),
+		Width:     width,
+		Height:    height,
 		Title:     config.GetTitle(),
 		Resizable: config.GetResizable(),
 		URL:       config.GetHTML(),
@@ -64,6 +93,16 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 			w.ipc.Dispatch(message, w.callback)
 		},
 	})
+		fmt.Println("Control")
+
+	// Set minimum and maximum sizes
+	if setMinSize {
+		w.SetMinSize(minWidth, minHeight)
+	}
+	if setMaxSize {
+		w.SetMaxSize(maxWidth, maxHeight)
+		fmt.Println("Max")
+	}
 
 	// SignalManager.OnExit(w.Exit)
 
@@ -74,6 +113,7 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	}
 
 	w.log.Info("Initialised")
+
 	return nil
 }
 
@@ -353,10 +393,36 @@ func (w *WebView) NotifyEvent(event *messages.EventData) error {
 	return w.evalJS(message)
 }
 
+// SetMinSize sets the minimum size of a resizable window
+func (w *WebView) SetMinSize(width, height int) {
+	if w.config.GetResizable() == false {
+		w.log.Warn("Cannot call SetMinSize() - App.Resizable = false")
+		return
+	}
+	w.window.Dispatch(func() {
+		w.window.SetMinSize(width, height)
+	})
+}
+
+// SetMaxSize sets the maximum size of a resizable window
+func (w *WebView) SetMaxSize(width, height int) {
+	if w.config.GetResizable() == false {
+		w.log.Warn("Cannot call SetMaxSize() - App.Resizable = false")
+		return
+	}
+	w.maximumSizeSet = true
+	w.window.Dispatch(func() {
+		w.window.SetMaxSize(width, height)
+	})
+}
+
 // Fullscreen makes the main window go fullscreen
 func (w *WebView) Fullscreen() {
 	if w.config.GetResizable() == false {
 		w.log.Warn("Cannot call Fullscreen() - App.Resizable = false")
+		return
+	} else if w.maximumSizeSet {
+		w.log.Warn("Cannot call Fullscreen() - Maximum size of window set")
 		return
 	}
 	w.window.Dispatch(func() {
