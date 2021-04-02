@@ -48,7 +48,6 @@ func runCommand(command string, args ...string) {
 		log.Println(string(output))
 		log.Fatal(err)
 	}
-	cmd.Run()
 	fmt.Println(string(output))
 }
 
@@ -60,26 +59,26 @@ func main() {
 	// Build Runtime
 	fmt.Println("**** Building Runtime ****")
 	runtimeDir, _ := filepath.Abs(filepath.Join(dir, "..", "runtime", "js"))
-	os.Chdir(runtimeDir)
+	err := os.Chdir(runtimeDir)
+	if err != nil {
+		log.Fatal(err)
+	}
 	runCommand("npm", "install")
 	runCommand("npm", "run", "build")
-
-	// Pack assets
-	fmt.Println("**** Packing Assets ****")
-	rendererDir, _ := filepath.Abs(filepath.Join(dir, "..", "lib", "renderer"))
-	os.Chdir(rendererDir)
-	runCommand("mewn")
-	cmdDir, _ := filepath.Abs(filepath.Join(dir, "..", "cmd"))
-	os.Chdir(cmdDir)
-	runCommand("mewn")
 
 	// Install Wails
 	fmt.Println("**** Installing Wails locally ****")
 	execDir, _ := filepath.Abs(filepath.Join(dir, "..", "cmd", "wails"))
-	os.Chdir(execDir)
+	err = os.Chdir(execDir)
+	if err != nil {
+		log.Fatal(err)
+	}
 	runCommand("go", "install")
 
 	baseDir, _ := filepath.Abs(filepath.Join(dir, ".."))
-	os.Chdir(baseDir)
+	err = os.Chdir(baseDir)
+	if err != nil {
+		log.Fatal(err)
+	}
 	runCommand("go", "mod", "tidy")
 }

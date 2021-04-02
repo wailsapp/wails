@@ -3,8 +3,9 @@ package renderer
 import (
 	"time"
 
+	"github.com/wailsapp/wails/runtime"
+
 	"github.com/gorilla/websocket"
-	"github.com/leaanthony/mewn"
 	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
 )
@@ -58,8 +59,7 @@ func (s *session) start(firstSession bool) {
 	s.log.Infof("Connected to frontend.")
 	go s.writePump()
 
-	wailsRuntime := mewn.String("../../runtime/assets/wails.js")
-	s.evalJS(wailsRuntime, wailsRuntimeMessage)
+	s.evalJS(runtime.WailsJS, wailsRuntimeMessage)
 
 	// Inject bindings
 	for _, binding := range s.bindingCache {

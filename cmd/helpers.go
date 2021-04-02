@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
@@ -12,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/leaanthony/mewn"
 	"github.com/leaanthony/mewn/lib"
 	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
+	wailsruntime "github.com/wailsapp/wails/runtime"
 )
 
 const xgoVersion = "1.0.1"
@@ -79,7 +78,10 @@ func EmbedAssets() ([]string, error) {
 		}
 		targetFile := filepath.Join(referencedAsset.BaseDir, referencedAsset.PackageName+"-mewn.go")
 		targetFiles = append(targetFiles, targetFile)
-		ioutil.WriteFile(targetFile, []byte(packfileData), 0644)
+		err = os.WriteFile(targetFile, []byte(packfileData), 0644)
+		if err != nil {
+			return []string{}, err
+		}
 	}
 
 	return targetFiles, nil
@@ -127,7 +129,10 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 	// Check build directory
 	buildDirectory := filepath.Join(fs.Cwd(), "build")
 	if !fs.DirExists(buildDirectory) {
-		fs.MkDir(buildDirectory)
+		err := fs.MkDir(buildDirectory)
+		if err != nil {
+			return err
+		}
 	}
 
 	buildCommand := slicer.String()
@@ -493,11 +498,18 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 		}
 
 		// Update md5sum file
-		ioutil.WriteFile(md5sumFile, []byte(packageJSONMD5), 0644)
+		err := os.WriteFile(md5sumFile, []byte(packageJSONMD5), 0644)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Install the runtime
-	err = InstallRuntime(caller, projectDir, projectOptions)
+	if caller == "build" {
+		err = InstallProdRuntime(projectDir, projectOptions)
+	} else {
+		err = InstallBridge(projectDir, projectOptions)
+	}
 	if err != nil {
 		return err
 	}
@@ -510,28 +522,17 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 	return nil
 }
 
-// InstallRuntime installs the correct runtime for the type of build
-func InstallRuntime(caller string, projectDir string, projectOptions *ProjectOptions) error {
-	if caller == "build" {
-		return InstallProdRuntime(projectDir, projectOptions)
-	}
-
-	return InstallBridge(projectDir, projectOptions)
-}
-
 // InstallBridge installs the relevant bridge javascript library
 func InstallBridge(projectDir string, projectOptions *ProjectOptions) error {
-	bridgeFileData := mewn.String("../runtime/assets/bridge.js")
 	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
-	err := fs.CreateFile(bridgeFileTarget, []byte(bridgeFileData))
+	err := fs.CreateFile(bridgeFileTarget, wailsruntime.BridgeJS)
 	return err
 }
 
 // InstallProdRuntime installs the production runtime
 func InstallProdRuntime(projectDir string, projectOptions *ProjectOptions) error {
-	prodInit := mewn.String("../runtime/js/runtime/init.js")
 	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
-	err := fs.CreateFile(bridgeFileTarget, []byte(prodInit))
+	err := fs.CreateFile(bridgeFileTarget, wailsruntime.InitJS)
 	return err
 }
 

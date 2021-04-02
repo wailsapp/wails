@@ -8,8 +8,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/wailsapp/wails/runtime"
+
 	"github.com/go-playground/colors"
-	"github.com/leaanthony/mewn"
 	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
 	"github.com/wailsapp/wails/lib/messages"
@@ -183,8 +184,7 @@ func (w *WebView) Run() error {
 	}
 
 	// Runtime assets
-	wailsRuntime := mewn.String("../../runtime/assets/wails.js")
-	w.evalJS(wailsRuntime)
+	w.evalJS(runtime.WailsJS)
 
 	// Ping the wait channel when the wails runtime is loaded
 	w.eventManager.On("wails:loaded", func(...interface{}) {
@@ -207,10 +207,8 @@ func (w *WebView) Run() error {
 				w.injectCSS(w.config.GetCSS())
 			} else {
 				// Use default wails css
-				w.log.Debug("Injecting Default Wails CSS")
-				defaultCSS := mewn.String("../../runtime/assets/wails.css")
-
-				w.injectCSS(defaultCSS)
+				w.log.Debug("Injecting Default Wails CSS: " + string(runtime.WailsCSS))
+				w.injectCSS(runtime.WailsCSS)
 			}
 
 			// Inject user JS
