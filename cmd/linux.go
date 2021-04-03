@@ -69,6 +69,8 @@ const (
 	EndeavourOS
 	// Crux linux distribution
 	Crux
+	// RHEL distribution
+	RHEL
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -131,6 +133,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Fedora
 	case "centos":
 		result.Distribution = CentOS
+	case "rhel":
+		result.Distribution = RHEL
 	case "arch":
 		result.Distribution = Arch
 	case "archlabs":
