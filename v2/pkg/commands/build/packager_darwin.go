@@ -42,7 +42,7 @@ func packageApplication(options *Options) error {
 		return errors.Wrap(err, "Cannot move file: "+options.ProjectData.OutputFilename)
 	}
 
-	// Generate info.plist
+	// Generate Info.plist
 	err = processPList(options, contentsDirectory)
 	if err != nil {
 		return err
@@ -68,7 +68,7 @@ func packageApplication(options *Options) error {
 func processPList(options *Options, contentsDirectory string) error {
 
 	// Check if plist already exists in project dir
-	plistFile := filepath.Join(options.ProjectData.AssetsDir, "mac", "info.plist")
+	plistFile := filepath.Join(options.ProjectData.AssetsDir, "mac", "Info.plist")
 
 	// If the file doesn't exist, generate it
 	if !fs.FileExists(plistFile) {
@@ -79,7 +79,7 @@ func processPList(options *Options, contentsDirectory string) error {
 	}
 
 	// Copy it to the contents directory
-	targetFile := filepath.Join(contentsDirectory, "info.plist")
+	targetFile := filepath.Join(contentsDirectory, "Info.plist")
 	return fs.CopyFile(plistFile, targetFile)
 }
 
@@ -88,11 +88,11 @@ func generateDefaultPlist(options *Options, targetPlistFile string) error {
 	exe := defaultString(options.OutputFile, name)
 	version := "1.0.0"
 	author := defaultString(options.ProjectData.Author.Name, "Anonymous")
-	packageID := strings.Join([]string{"wails", name, version}, ".")
+	packageID := strings.Join([]string{"wails", name}, ".")
 	plistData := newPlistData(name, exe, packageID, version, author)
 
 	tmpl := template.New("infoPlist")
-	plistTemplate := fs.RelativePath("./internal/packager/darwin/info.plist")
+	plistTemplate := fs.RelativePath("./internal/packager/darwin/Info.plist")
 	infoPlist, err := ioutil.ReadFile(plistTemplate)
 	if err != nil {
 		return errors.Wrap(err, "Cannot open plist template")

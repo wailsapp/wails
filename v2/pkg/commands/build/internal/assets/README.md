@@ -49,4 +49,4 @@ Example:
 
 ## Mac
 
-The `mac` directory holds files specific to Mac builds, such as `info.plist`. These may be edited and used as part of the build.
+The `mac` directory holds files specific to Mac builds, such as `Info.plist`. These may be edited and used as part of the build.
