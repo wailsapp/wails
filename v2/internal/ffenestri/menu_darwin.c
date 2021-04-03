@@ -189,6 +189,9 @@ id processAcceleratorKey(const char *key) {
     if( STREQ(key, "return") ) {
         return strunicode(0x000d);
     }
+    if( STREQ(key, "enter") ) {
+        return strunicode(0x000d);
+    }
     if( STREQ(key, "escape") ) {
         return strunicode(0x001b);
     }
