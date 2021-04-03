@@ -8,8 +8,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/wailsapp/wails/runtime"
+
 	"github.com/go-playground/colors"
-	"github.com/leaanthony/mewn"
 	"github.com/wailsapp/wails/lib/interfaces"
 	"github.com/wailsapp/wails/lib/logger"
 	"github.com/wailsapp/wails/lib/messages"
@@ -29,7 +30,6 @@ type WebView struct {
 	config       interfaces.AppConfig
 	eventManager interfaces.EventManager
 	bindingCache []string
-	
 	maximumSizeSet bool
 }
 
@@ -93,7 +93,6 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 			w.ipc.Dispatch(message, w.callback)
 		},
 	})
-		fmt.Println("Control")
 
 	// Set minimum and maximum sizes
 	if setMinSize {
@@ -101,7 +100,14 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	}
 	if setMaxSize {
 		w.SetMaxSize(maxWidth, maxHeight)
-		fmt.Println("Max")
+	}
+
+	// Set minimum and maximum sizes
+	if setMinSize {
+		w.SetMinSize(minWidth, minHeight)
+	}
+	if setMaxSize {
+		w.SetMaxSize(maxWidth, maxHeight)
 	}
 
 	// SignalManager.OnExit(w.Exit)
@@ -113,7 +119,6 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	}
 
 	w.log.Info("Initialised")
-
 	return nil
 }
 
@@ -223,8 +228,8 @@ func (w *WebView) Run() error {
 	}
 
 	// Runtime assets
-	wailsRuntime := mewn.String("../../runtime/assets/wails.js")
-	w.evalJS(wailsRuntime)
+	w.log.DebugFields("Injecting wails JS runtime", logger.Fields{"js": runtime.WailsJS})
+	w.evalJS(runtime.WailsJS)
 
 	// Ping the wait channel when the wails runtime is loaded
 	w.eventManager.On("wails:loaded", func(...interface{}) {
@@ -247,10 +252,9 @@ func (w *WebView) Run() error {
 				w.injectCSS(w.config.GetCSS())
 			} else {
 				// Use default wails css
-				w.log.Debug("Injecting Default Wails CSS")
-				defaultCSS := mewn.String("../../runtime/assets/wails.css")
 
-				w.injectCSS(defaultCSS)
+				w.log.Debug("Injecting Default Wails CSS: " + runtime.WailsCSS)
+				w.injectCSS(runtime.WailsCSS)
 			}
 
 			// Inject user JS

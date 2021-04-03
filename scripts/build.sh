@@ -15,15 +15,6 @@ npm install
 npm run build
 cd ../..
 
-echo "**** Packing Assets ****"
-cd cmd
-mewn
-cd ..
-cd lib/renderer
-mewn
-cd ../..
-
-
 cd cmd/wails
 echo "**** Checking if Wails compiles ****"
 if ! go build .

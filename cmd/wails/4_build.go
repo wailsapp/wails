@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"strings"
@@ -52,7 +53,10 @@ func init() {
 
 	var b strings.Builder
 	for _, plat := range getSupportedPlatforms() {
-		fmt.Fprintf(&b, " - %s\n", plat)
+		_, err := fmt.Fprintf(&b, " - %s\n", plat)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	initCmd.StringFlag("x",
 		fmt.Sprintf("Cross-compile application to specified platform via xgo\n%s", b.String()),
@@ -80,7 +84,7 @@ func init() {
 		fs := cmd.NewFSHelper()
 		err := projectOptions.LoadConfig(fs.Cwd())
 		if err != nil {
-			return fmt.Errorf("Unable to find 'project.json'. Please check you are in a Wails project directory")
+			return fmt.Errorf("unable to find 'project.json'. Please check you are in a Wails project directory")
 		}
 
 		// Set firebug flag
@@ -140,12 +144,6 @@ func init() {
 		// Install deps
 		if projectOptions.FrontEnd != nil {
 			err = cmd.InstallFrontendDeps(projectDir, projectOptions, forceRebuild, "build")
-			if err != nil {
-				return err
-			}
-
-			// Ensure that runtime init.js is the production version
-			err = cmd.InstallProdRuntime(projectDir, projectOptions)
 			if err != nil {
 				return err
 			}
