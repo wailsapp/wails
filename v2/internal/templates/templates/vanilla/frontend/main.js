@@ -1,12 +1,12 @@
 // Get input + focus
-var nameElement = document.getElementById("name");
+let nameElement = document.getElementById("name");
 nameElement.focus();
 
-// Stup the greet function
+// Setup the greet function
 window.greet = function () {
 
   // Get name
-  var name = nameElement.value;
+  let name = nameElement.value;
 
   // Call Basic.Greet(name)
   window.backend.main.Basic.Greet(name).then((result) => {
