@@ -190,10 +190,11 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	var tags slicer.StringSlicer
 	tags.Add(options.OutputType)
-
+	tags.AddSlice(options.UserTags)
 	if options.Mode == Debug {
 		tags.Add("debug")
 	}
+	tags.Deduplicate()
 
 	// Add the output type build tag
 	commands.Add("-tags")

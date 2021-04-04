@@ -54,6 +54,10 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	ldflags := ""
 	command.StringFlag("ldflags", "optional ldflags", &ldflags)
 
+	// tags to pass to `go`
+	tags := ""
+	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &tags)
+
 	// Log to file
 	//logFile := ""
 	//command.StringFlag("l", "Log to file", &logFile)
@@ -121,6 +125,16 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			println("Warning: compress flag unsupported for universal binaries. Ignoring.")
 			compress = false
 		}
+
+		// Tags
+		userTags := []string{}
+		for _, tag := range strings.Split(tags, " ") {
+			thisTag := strings.TrimSpace(tag)
+			if thisTag != "" {
+				userTags = append(userTags, thisTag)
+			}
+		}
+
 		// Create BuildOptions
 		buildOptions := &build.Options{
 			Logger:              logger,
@@ -135,6 +149,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			AppleIdentity:       appleIdentity,
 			Verbosity:           verbosity,
 			Compress:            compress,
+			UserTags:            userTags,
 		}
 
 		// Calculate platform and arch
@@ -166,6 +181,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
 		fmt.Fprintf(w, "KeepAssets: \t%t\n", buildOptions.KeepAssets)
 		fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
+		fmt.Fprintf(w, "Tags: \t[%s]\n", strings.Join(buildOptions.UserTags, ","))
 		if len(buildOptions.OutputFile) > 0 {
 			fmt.Fprintf(w, "Output File: \t%s\n", buildOptions.OutputFile)
 		}

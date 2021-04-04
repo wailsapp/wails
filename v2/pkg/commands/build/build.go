@@ -29,6 +29,7 @@ var modeMap = []string{"Debug", "Production"}
 // Options contains all the build options as well as the project data
 type Options struct {
 	LDFlags             string               // Optional flags to pass to linker
+	UserTags            []string             // Tags to pass to the Go compiler
 	Logger              *clilogger.CLILogger // All output to the logger
 	OutputType          string               // EG: desktop, server....
 	Mode                Mode                 // release or debug
