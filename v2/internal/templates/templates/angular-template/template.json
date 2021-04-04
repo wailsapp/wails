@@ -1,6 +1,0 @@
-{
-  "name": "Angular",
-  "shortname": "angular",
-  "author": "bh90210 <ktc@pm.me>",
-  "description": "Angular projects w/ @angular/cli - Note: in order to reach the cli use npx like this: npx ng"
-}
