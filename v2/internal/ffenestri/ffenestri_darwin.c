@@ -24,6 +24,9 @@ struct hashmap_s dialogIconCache;
 // Dispatch Method
 typedef void (^dispatchMethod)(void);
 
+// Message Dialog
+void MessageDialog(struct Application *app, char *callbackID, char *type, char *title, char *message, char *icon, char *button1, char *button2, char *button3, char *button4, char *defaultButton, char *cancelButton);
+
 TrayMenuStore *TrayMenuStoreSingleton;
 
 // dispatch will execute the given `func` pointer
@@ -295,7 +298,11 @@ void messageHandler(id self, SEL cmd, id contentController, id message) {
 	const char *name = (const char *)msg_reg(msg_reg(message, s("name")), s("UTF8String"));
 	if( strcmp(name, "error") == 0 ) {
 	    printf("There was a Javascript error. Please open the devtools for more information.\n");
-	    Show(app);
+	    // Show app if we are in debug mode
+	    if( debug ) {
+	        Show(app);
+	        MessageDialog(app, "", "error", "Javascript Error", "There was a Javascript error. Please open the devtools for more information.", "", "", "", "","","","");
+	    }
 	} else if( strcmp(name, "completed") == 0) {
 		// Delete handler
 		msg_id(app->manager, s("removeScriptMessageHandlerForName:"), str("completed"));
@@ -691,7 +698,7 @@ void processDialogButton(id alert, char *buttonTitle, char *cancelButton, char *
     }
 }
 
-extern void MessageDialog(struct Application *app, char *callbackID, char *type, char *title, char *message, char *icon, char *button1, char *button2, char *button3, char *button4, char *defaultButton, char *cancelButton) {
+void MessageDialog(struct Application *app, char *callbackID, char *type, char *title, char *message, char *icon, char *button1, char *button2, char *button3, char *button4, char *defaultButton, char *cancelButton) {
     // Guard against calling during shutdown
     if( app->shuttingDown ) return;
 
@@ -791,18 +798,20 @@ extern void MessageDialog(struct Application *app, char *callbackID, char *type,
 	        buttonPressed = button4;
 	    }
 
-        // Construct callback message. Format "DM<callbackID>|<selected button index>"
-        const char *callback = concat("DM", callbackID);
-        const char *header = concat(callback, "|");
-        const char *responseMessage = concat(header, buttonPressed);
+	    if ( STR_HAS_CHARS(callbackID) ) {
+            // Construct callback message. Format "DM<callbackID>|<selected button index>"
+            const char *callback = concat("DM", callbackID);
+            const char *header = concat(callback, "|");
+            const char *responseMessage = concat(header, buttonPressed);
 
-        // Send message to backend
-        app->sendMessageToBackend(responseMessage);
+            // Send message to backend
+            app->sendMessageToBackend(responseMessage);
 
-        // Free memory
-        MEMFREE(header);
-        MEMFREE(callback);
-        MEMFREE(responseMessage);
+            // Free memory
+            MEMFREE(header);
+            MEMFREE(callback);
+            MEMFREE(responseMessage);
+        }
     );
 }
 
@@ -1698,9 +1707,6 @@ void HasURLHandlers(struct Application* app) {
 void Quit(struct Application *app) {
 	Debug(app, "Quit Called");
     msg_id(app->application, s("stop:"), NULL);
-    SetSize(app, 0, 0);
-    Show(app);
-    Hide(app);
 }
 
 id createImageFromBase64Data(const char *data, bool isTemplateImage) {
