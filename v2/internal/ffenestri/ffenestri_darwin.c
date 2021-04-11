@@ -83,6 +83,11 @@ void ShowMouse() {
 	msg_reg(c("NSCursor"), s("unhide"));
 }
 
+OSVersion getOSVersion() {
+    id processInfo = msg_reg(c("NSProcessInfo"), s("processInfo"));
+    return GET_OSVERSION(processInfo);
+}
+
 struct Application {
 
 	// Cocoa data

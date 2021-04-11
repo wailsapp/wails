@@ -11,6 +11,12 @@
 #include "hashmap.h"
 #include "stdlib.h"
 
+typedef struct {
+    long maj;
+    long min;
+    long patch;
+} OSVersion;
+
 // Macros to make it slightly more sane
 #define msg objc_msgSend
 #define msg_reg ((id(*)(id, SEL))objc_msgSend)
@@ -37,11 +43,13 @@
 #if defined (__aarch64__)
 #define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend)(receiver, s("frame"))
 #define GET_BOUNDS(receiver) ((CGRect(*)(id, SEL))objc_msgSend)(receiver, s("bounds"))
+#define GET_OSVERSION(receiver) ((OSVersion(*)(id, SEL))objc_msgSend)(processInfo, s("operatingSystemVersion"));
 #endif
 
 #if defined (__x86_64__)
 #define GET_FRAME(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("frame"))
 #define GET_BOUNDS(receiver) ((CGRect(*)(id, SEL))objc_msgSend_stret)(receiver, s("bounds"))
+#define GET_OSVERSION(receiver) ((OSVersion(*)(id, SEL))objc_msgSend_stret)(processInfo, s("operatingSystemVersion"));
 #endif
 
 #define GET_BACKINGSCALEFACTOR(receiver) ((CGFloat(*)(id, SEL))objc_msgSend)(receiver, s("backingScaleFactor"))
