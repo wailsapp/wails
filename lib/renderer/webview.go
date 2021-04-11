@@ -113,11 +113,14 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	}
 
 	// SignalManager.OnExit(w.Exit)
-
+	
 	// Set colour
-	err := w.SetColour(config.GetColour())
-	if err != nil {
-		return err
+	color := config.GetColour()
+	if color != "" {
+		err := w.SetColour(color)
+		if err != nil {
+			return err
+		}
 	}
 
 	w.log.Info("Initialised")
