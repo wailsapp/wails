@@ -579,6 +579,105 @@ id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const c
     return item;
 }
 
+// getColour returns the colour from a styledLabel based on the key
+const char* getColour(JsonNode *styledLabelEntry, const char* key) {
+    JsonNode* colEntry = getJSONObject(styledLabelEntry, key);
+    if( colEntry == NULL ) {
+        return NULL;
+    }
+    return getJSONString(colEntry, "hex");
+}
+
+id createAttributedStringFromStyledLabel(JsonNode *styledLabel, const char* fontName, int fontSize) {
+
+    // Create result
+    id attributedString = ALLOC_INIT("NSMutableAttributedString");
+    msg_reg(attributedString, s("autorelease"));
+
+    // Create new Dictionary
+    id dictionary = ALLOC_INIT("NSMutableDictionary");
+    msg_reg(dictionary, s("autorelease"));
+
+    // Use default font
+    CGFloat fontSizeFloat = (CGFloat)fontSize;
+    id font = ((id(*)(id, SEL, CGFloat))objc_msgSend)(c("NSFont"), s("menuBarFontOfSize:"), fontSizeFloat);
+
+    // Check user supplied font
+    if( STR_HAS_CHARS(fontName) ) {
+        id fontNameAsNSString = str(fontName);
+        id userFont = ((id(*)(id, SEL, id, CGFloat))objc_msgSend)(c("NSFont"), s("fontWithName:size:"), fontNameAsNSString, fontSizeFloat);
+        if( userFont != NULL ) {
+            font = userFont;
+        }
+    }
+
+    id fan = lookupStringConstant(str("NSFontAttributeName"));
+    id NSForegroundColorAttributeName = lookupStringConstant(str("NSForegroundColorAttributeName"));
+    id NSBackgroundColorAttributeName = lookupStringConstant(str("NSBackgroundColorAttributeName"));
+
+    // Loop over styled text creating NSAttributedText and appending to result
+    JsonNode *styledLabelEntry;
+    json_foreach(styledLabelEntry, styledLabel) {
+
+        // Clear dictionary
+        msg_reg(dictionary, s("removeAllObjects"));
+
+        // Add font to dictionary
+        msg_id_id(dictionary, s("setObject:forKey:"), font, fan);
+
+        // Get Text
+        const char* thisLabel = mustJSONString(styledLabelEntry, "Label");
+
+        // Get foreground colour
+        const char *hexColour = getColour(styledLabelEntry, "FgCol");
+        if( hexColour != NULL) {
+            unsigned short r, g, b, a;
+
+            // white by default
+            r = g = b = a = 255;
+            int count = sscanf(hexColour, "#%02hx%02hx%02hx%02hx", &r, &g, &b, &a);
+            if (count > 0) {
+                id colour = ((id(*)(id, SEL, CGFloat, CGFloat, CGFloat, CGFloat))objc_msgSend)(c("NSColor"), s("colorWithCalibratedRed:green:blue:alpha:"),
+                                    (CGFloat)r / (CGFloat)255.0,
+                                    (CGFloat)g / (CGFloat)255.0,
+                                    (CGFloat)b / (CGFloat)255.0,
+                                    (CGFloat)a / (CGFloat)255.0);
+                msg_id_id(dictionary, s("setObject:forKey:"), colour, NSForegroundColorAttributeName);
+            }
+        }
+
+        // Get background colour
+        hexColour = getColour(styledLabelEntry, "BgCol");
+        if( hexColour != NULL) {
+            unsigned short r, g, b, a;
+
+            // white by default
+            r = g = b = a = 255;
+            int count = sscanf(hexColour, "#%02hx%02hx%02hx%02hx", &r, &g, &b, &a);
+            if (count > 0) {
+                id colour = ((id(*)(id, SEL, CGFloat, CGFloat, CGFloat, CGFloat))objc_msgSend)(c("NSColor"), s("colorWithCalibratedRed:green:blue:alpha:"),
+                                    (CGFloat)r / (CGFloat)255.0,
+                                    (CGFloat)g / (CGFloat)255.0,
+                                    (CGFloat)b / (CGFloat)255.0,
+                                    (CGFloat)a / (CGFloat)255.0);
+                msg_id_id(dictionary, s("setObject:forKey:"), colour, NSForegroundColorAttributeName);
+            }
+        }
+
+        // Create AttributedText
+        id thisString = ALLOC("NSMutableAttributedString");
+        msg_reg(thisString, s("autorelease"));
+        msg_id_id(thisString, s("initWithString:attributes:"), str(thisLabel), dictionary);
+
+        // Append text to result
+        msg_id(attributedString, s("appendAttributedString:"), thisString);
+    }
+
+    return attributedString;
+
+}
+
+
 id createAttributedString(const char* title, const char* fontName, int fontSize, const char* RGBA) {
 
     // Create new Dictionary

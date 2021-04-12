@@ -2,6 +2,9 @@ package menumanager
 
 import (
 	"encoding/json"
+	"strings"
+
+	"github.com/leaanthony/go-ansi-parser"
 
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
@@ -41,11 +44,25 @@ type ProcessedMenuItem struct {
 
 	// Tooltip
 	Tooltip string `json:",omitempty"`
+
+	// Styled label
+	StyledLabel []*ansi.StyledText
 }
 
 func NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *ProcessedMenuItem {
 
 	ID := menuItemMap.menuItemToIDMap[menuItem]
+
+	// Parse ANSI text
+	var styledLabel []*ansi.StyledText
+	tempLabel := menuItem.Label
+	if strings.Contains(tempLabel, "\033[") {
+		parsedLabel, err := ansi.Parse(menuItem.Label)
+		if err == nil {
+			styledLabel = parsedLabel
+		}
+	}
+
 	result := &ProcessedMenuItem{
 		ID:               ID,
 		Label:            menuItem.Label,
@@ -63,6 +80,7 @@ func NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *Pr
 		MacTemplateImage: menuItem.MacTemplateImage,
 		MacAlternate:     menuItem.MacAlternate,
 		Tooltip:          menuItem.Tooltip,
+		StyledLabel:      styledLabel,
 	}
 
 	if menuItem.SubMenu != nil {

@@ -112,5 +112,6 @@ void processMenuData(Menu *menu, JsonNode *menuData);
 void processRadioGroupJSON(Menu *menu, JsonNode *radioGroup);
 id GetMenu(Menu *menu);
 id createAttributedString(const char* title, const char* fontName, int fontSize, const char* RGBA);
+id createAttributedStringFromStyledLabel(JsonNode *styledLabel, const char* fontName, int fontSize);
 
 #endif //ASSETS_C_MENU_DARWIN_H

@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
+
+	"github.com/leaanthony/go-ansi-parser"
 
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/pkg/menu"
@@ -36,6 +39,7 @@ type TrayMenu struct {
 	menu             *menu.Menu
 	ProcessedMenu    *WailsMenu
 	trayMenu         *menu.TrayMenu
+	StyledLabel      []*ansi.StyledText
 }
 
 func (t *TrayMenu) AsJSON() (string, error) {
@@ -47,6 +51,16 @@ func (t *TrayMenu) AsJSON() (string, error) {
 }
 
 func NewTrayMenu(trayMenu *menu.TrayMenu) *TrayMenu {
+
+	// Parse ANSI text
+	var styledLabel []*ansi.StyledText
+	tempLabel := trayMenu.Label
+	if strings.Contains(tempLabel, "\033[") {
+		parsedLabel, err := ansi.Parse(tempLabel)
+		if err == nil {
+			styledLabel = parsedLabel
+		}
+	}
 
 	result := &TrayMenu{
 		Label:            trayMenu.Label,
@@ -60,6 +74,7 @@ func NewTrayMenu(trayMenu *menu.TrayMenu) *TrayMenu {
 		RGBA:             trayMenu.RGBA,
 		menuItemMap:      NewMenuItemMap(),
 		trayMenu:         trayMenu,
+		StyledLabel:      styledLabel,
 	}
 
 	result.menuItemMap.AddMenu(trayMenu.Menu)
@@ -158,6 +173,17 @@ func (m *Manager) UpdateTrayMenuLabel(trayMenu *menu.TrayMenu) (string, error) {
 		Tooltip          string
 		Image            string
 		MacTemplateImage bool
+		StyledLabel      []*ansi.StyledText
+	}
+
+	// Parse ANSI text
+	var styledLabel []*ansi.StyledText
+	tempLabel := trayMenu.Label
+	if strings.Contains(tempLabel, "\033[") {
+		parsedLabel, err := ansi.Parse(tempLabel)
+		if err == nil {
+			styledLabel = parsedLabel
+		}
 	}
 
 	update := &LabelUpdate{
@@ -170,6 +196,7 @@ func (m *Manager) UpdateTrayMenuLabel(trayMenu *menu.TrayMenu) (string, error) {
 		Image:            trayMenu.Image,
 		MacTemplateImage: trayMenu.MacTemplateImage,
 		RGBA:             trayMenu.RGBA,
+		StyledLabel:      styledLabel,
 	}
 
 	data, err := json.Marshal(update)

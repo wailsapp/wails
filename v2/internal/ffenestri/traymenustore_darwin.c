@@ -127,7 +127,9 @@ void UpdateTrayMenuLabelInStore(TrayMenuStore* store, const char* JSON) {
     bool disabled = false;
     getJSONBool(parsedUpdate, "Disabled", &disabled);
 
-    UpdateTrayLabel(menu, Label, fontName, fontSize, RGBA, tooltip, disabled);
+    JsonNode *styledLabel = getJSONObject(parsedUpdate, "StyledLabel");
+
+    UpdateTrayLabel(menu, Label, fontName, fontSize, RGBA, tooltip, disabled, styledLabel);
 
 
 }

@@ -67,5 +67,6 @@ func main() {
 	err = app.Run()
 	if err != nil {
 		println("\n\nERROR: " + err.Error())
+		os.Exit(1)
 	}
 }

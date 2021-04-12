@@ -42,6 +42,8 @@ TrayMenu* NewTrayMenu(const char* menuJSON) {
     result->disabled = false;
     getJSONBool(processedJSON, "Disabled", &result->disabled);
 
+    result->styledLabel = getJSONObject(processedJSON, "StyledLabel");
+
     // Create the menu
     JsonNode* processedMenu = mustJSONObject(processedJSON, "ProcessedMenu");
     result->menu = NewMenu(processedMenu);
@@ -63,7 +65,7 @@ void DumpTrayMenu(TrayMenu* trayMenu) {
 }
 
 
-void UpdateTrayLabel(TrayMenu *trayMenu, const char *label, const char *fontName, int fontSize, const char *RGBA, const char *tooltip, bool disabled) {
+void UpdateTrayLabel(TrayMenu *trayMenu, const char *label, const char *fontName, int fontSize, const char *RGBA, const char *tooltip, bool disabled, JsonNode *styledLabel) {
 
     // Exit early if NULL
     if( trayMenu->label == NULL ) {
@@ -71,7 +73,12 @@ void UpdateTrayLabel(TrayMenu *trayMenu, const char *label, const char *fontName
     }
     // Update button label
     id statusBarButton = msg_reg(trayMenu->statusbaritem, s("button"));
-    id attributedString = createAttributedString(label, fontName, fontSize, RGBA);
+    id attributedString = NULL;
+    if( styledLabel != NULL) {
+        attributedString = createAttributedStringFromStyledLabel(styledLabel, fontName, fontSize);
+    } else {
+        attributedString = createAttributedString(label, fontName, fontSize, RGBA);
+    }
 
     if( tooltip != NULL ) {
         msg_id(statusBarButton, s("setToolTip:"), str(tooltip));
@@ -125,7 +132,7 @@ void ShowTrayMenu(TrayMenu* trayMenu) {
     UpdateTrayIcon(trayMenu);
 
     // Update the label if needed
-    UpdateTrayLabel(trayMenu, trayMenu->label, trayMenu->fontName, trayMenu->fontSize, trayMenu->RGBA, trayMenu->tooltip, trayMenu->disabled);
+    UpdateTrayLabel(trayMenu, trayMenu->label, trayMenu->fontName, trayMenu->fontSize, trayMenu->RGBA, trayMenu->tooltip, trayMenu->disabled, trayMenu->styledLabel);
 
     // Update the menu
     id menu = GetMenu(trayMenu->menu);
@@ -161,6 +168,7 @@ void UpdateTrayMenuInPlace(TrayMenu* currentMenu, TrayMenu* newMenu) {
     // Copy the other data
     currentMenu->ID = newMenu->ID;
     currentMenu->label = newMenu->label;
+    currentMenu->styledLabel = newMenu->styledLabel;
     currentMenu->trayIconPosition = newMenu->trayIconPosition;
     currentMenu->icon = newMenu->icon;
 
@@ -220,7 +228,7 @@ void LoadTrayIcons() {
         int length = atoi((const char *)lengthAsString);
 
         // Create the icon and add to the hashmap
-        id imageData = ((id(*)(id, SEL, id, int))objc_msgSend)(c("NSData"), s("dataWithBytes:length:"), data, length);
+        id imageData = ((id(*)(id, SEL, id, int))objc_msgSend)(c("NSData"), s("dataWithBytes:length:"), (id)data, length);
         id trayImage = ALLOC("NSImage");
         msg_id(trayImage, s("initWithData:"), imageData);
         hashmap_put(&trayIconCache, (const char *)name, strlen((const char *)name), trayImage);

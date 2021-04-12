@@ -29,6 +29,8 @@ typedef struct {
 
     JsonNode* processedJSON;
 
+    JsonNode* styledLabel;
+
     id delegate;
 
 } TrayMenu;
@@ -38,7 +40,7 @@ void DumpTrayMenu(TrayMenu* trayMenu);
 void ShowTrayMenu(TrayMenu* trayMenu);
 void UpdateTrayMenuInPlace(TrayMenu* currentMenu, TrayMenu* newMenu);
 void UpdateTrayIcon(TrayMenu *trayMenu);
-void UpdateTrayLabel(TrayMenu *trayMenu, const char *label, const char *fontName, int fontSize, const char *RGBA, const char *tooltip, bool disabled);
+void UpdateTrayLabel(TrayMenu *trayMenu, const char *label, const char *fontName, int fontSize, const char *RGBA, const char *tooltip, bool disabled, JsonNode *styledLabel);
 
 void LoadTrayIcons();
 void UnloadTrayIcons();
