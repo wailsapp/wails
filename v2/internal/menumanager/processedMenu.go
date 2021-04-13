@@ -46,7 +46,7 @@ type ProcessedMenuItem struct {
 	Tooltip string `json:",omitempty"`
 
 	// Styled label
-	StyledLabel []*ansi.StyledText
+	StyledLabel []*ansi.StyledText `json:",omitempty"`
 }
 
 func NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *ProcessedMenuItem {

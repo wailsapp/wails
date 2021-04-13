@@ -105,7 +105,7 @@ id processRadioMenuItem(Menu *menu, id parentmenu, const char *title, const char
 
 id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *key);
 
-id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image, const char* fontName, int fontSize, const char* RGBA, bool templateImage, bool alternate);
+id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image, const char* fontName, int fontSize, const char* RGBA, bool templateImage, bool alternate, JsonNode* styledLabel);
 void processMenuItem(Menu *menu, id parentMenu, JsonNode *item);
 void processMenuData(Menu *menu, JsonNode *menuData);
 

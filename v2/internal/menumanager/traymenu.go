@@ -39,7 +39,7 @@ type TrayMenu struct {
 	menu             *menu.Menu
 	ProcessedMenu    *WailsMenu
 	trayMenu         *menu.TrayMenu
-	StyledLabel      []*ansi.StyledText
+	StyledLabel      []*ansi.StyledText `json:",omitempty"`
 }
 
 func (t *TrayMenu) AsJSON() (string, error) {
@@ -165,15 +165,15 @@ func (m *Manager) UpdateTrayMenuLabel(trayMenu *menu.TrayMenu) (string, error) {
 
 	type LabelUpdate struct {
 		ID               string
-		Label            string
-		FontName         string
+		Label            string `json:",omitempty"`
+		FontName         string `json:",omitempty"`
 		FontSize         int
-		RGBA             string
+		RGBA             string `json:",omitempty"`
 		Disabled         bool
-		Tooltip          string
-		Image            string
+		Tooltip          string `json:",omitempty"`
+		Image            string `json:",omitempty"`
 		MacTemplateImage bool
-		StyledLabel      []*ansi.StyledText
+		StyledLabel      []*ansi.StyledText `json:",omitempty"`
 	}
 
 	// Parse ANSI text

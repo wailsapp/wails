@@ -725,7 +725,7 @@ id createAttributedString(const char* title, const char* fontName, int fontSize,
     return attributedString;
 }
 
-id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image, const char* fontName, int fontSize, const char* RGBA, bool templateImage, bool alternate) {
+id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image, const char* fontName, int fontSize, const char* RGBA, bool templateImage, bool alternate, JsonNode* styledLabel) {
     id item = ALLOC("NSMenuItem");
 
     // Create a MenuItemCallbackData
@@ -752,7 +752,12 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
         msg_id(item, s("setImage:"), nsimage);
     }
 
-    id attributedString = createAttributedString(title, fontName, fontSize, RGBA);
+    id attributedString = NULL;
+    if( styledLabel != NULL) {
+        attributedString = createAttributedStringFromStyledLabel(styledLabel, fontName, fontSize);
+    } else {
+        attributedString = createAttributedString(title, fontName, fontSize, RGBA);
+    }
     msg_id(item, s("setAttributedTitle:"), attributedString);
 
 //msg_id(item, s("setTitle:"), str(title));
@@ -799,6 +804,8 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
         label = "(empty)";
     }
 
+    // Check for a styled label
+    JsonNode *styledLabel = getJSONObject(item, "StyledLabel");
 
     // Is this an alternate menu item?
     bool alternate = false;
@@ -858,7 +865,7 @@ void processMenuItem(Menu *menu, id parentMenu, JsonNode *item) {
     JsonNode *type = json_find_member(item, "Type");
     if( type != NULL ) {
         if( STREQ(type->string_, "Text") || STREQ(type->string_, "Submenu")) {
-            id thisMenuItem = processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers, tooltip, image, fontName, fontSize, RGBA, templateImage, alternate);
+            id thisMenuItem = processTextMenuItem(menu, parentMenu, label, menuid, disabled, acceleratorkey, modifiers, tooltip, image, fontName, fontSize, RGBA, templateImage, alternate, styledLabel);
 
             // Check if this node has a submenu
             JsonNode *submenu = json_find_member(item, "SubMenu");
