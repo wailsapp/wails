@@ -16,7 +16,7 @@ import (
 	wailsruntime "github.com/wailsapp/wails/runtime"
 )
 
-const xgoVersion = "1.16.2"
+const xgoVersion = "1.16.3"
 
 var fs = NewFSHelper()
 
