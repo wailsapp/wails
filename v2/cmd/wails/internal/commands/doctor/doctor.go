@@ -48,9 +48,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Exit early if PM not found
 		if info.PM == nil {
-			fmt.Fprintf(w, "\n%s\t%s", "Package Manager:", "Not Found")
 			w.Flush()
-			println()
 			return nil
 		}
 		fmt.Fprintf(w, "%s\t%s\n", "Package Manager: ", info.PM.Name())
