@@ -24,10 +24,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	command := app.NewSubCommand("build", "Builds the application")
 
-	// Setup target type flag
-	//description := "Type of application to build. Valid types: " + validTargetTypes.Join(",")
-	//command.StringFlag("t", description, &outputType)
-
 	// Setup production flag
 	production := false
 	command.BoolFlag("production", "Build in production mode", &production)
@@ -58,10 +54,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	tags := ""
 	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &tags)
 
-	// Log to file
-	//logFile := ""
-	//command.StringFlag("l", "Log to file", &logFile)
-
 	// Retain assets
 	keepAssets := false
 	command.BoolFlag("k", "Keep generated assets", &keepAssets)
@@ -73,11 +65,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	// Clean build directory
 	cleanBuildDirectory := false
 	command.BoolFlag("clean", "Clean the build directory before building", &cleanBuildDirectory)
-
-	appleIdentity := ""
-	if runtime.GOOS == "darwin" {
-		command.StringFlag("sign", "Signs your app with the given identity.", &appleIdentity)
-	}
 
 	command.Action(func() error {
 
@@ -94,11 +81,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 		if !quiet {
 			app.PrintBanner()
-		}
-
-		// Ensure package is used with apple identity
-		if appleIdentity != "" && pack == false {
-			return fmt.Errorf("must use `-package` flag when using `-sign`")
 		}
 
 		// Setup mode
@@ -146,7 +128,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			LDFlags:             ldflags,
 			Compiler:            compilerCommand,
 			KeepAssets:          keepAssets,
-			AppleIdentity:       appleIdentity,
 			Verbosity:           verbosity,
 			Compress:            compress,
 			UserTags:            userTags,

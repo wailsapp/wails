@@ -9,7 +9,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/parser"
 )
 
-// AddSubcommand adds the `dev` command for the Wails application
+// AddSubcommand adds the `generate` command for the Wails application
 func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 	command := app.NewSubCommand("generate", "Code Generation Tools")
@@ -19,7 +19,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 	// Quiet Init
 	quiet := false
-	backendAPI.BoolFlag("q", "Supress output to console", &quiet)
+	backendAPI.BoolFlag("q", "Suppress output to console", &quiet)
 
 	backendAPI.Action(func() error {
 
@@ -85,7 +85,4 @@ func logPackage(pkg *parser.Package, logger *clilogger.CLILogger) {
 		}
 	}
 	logger.Println("")
-
-	// logger.Println("  Original Go Package Path:", pkg.Gopackage.PkgPath)
-	// logger.Println("  Original Go Package Path:", pkg.Gopackage.PkgPath)
 }

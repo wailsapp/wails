@@ -11,7 +11,7 @@ type Basic struct {
 	runtime *wails.Runtime
 }
 
-// newBasic creates a new Basic application struct
+// NewBasic creates a new Basic application struct
 func NewBasic() *Basic {
 	return &Basic{}
 }

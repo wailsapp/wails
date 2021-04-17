@@ -14,30 +14,6 @@ import (
 	"github.com/leaanthony/slicer"
 )
 
-const _comment = `
-
-const backend = {
-        main: {
-            "xbarApp": {
-                "GetCategories": () => {
-                    window.backend.main.xbarApp.GetCategories.call(arguments);
-                },
-
-                /**
-                 * @param {string} arg1
-                 */
-                "InstallPlugin": (arg1) => {
-                    window.backend.main.xbarApp.InstallPlugin.call(arguments);
-                },
-                "GetPlugins": () => {
-                    window.backend.main.xbarApp.GetPlugins.call(arguments);
-                }
-            }
-        }
-}
-
-export default backend;`
-
 //go:embed assets/package.json
 var packageJSON []byte
 
@@ -100,6 +76,8 @@ const backend = {`)
 					}
 					returnType += ">"
 					returnTypeDetails = " - Go Type: " + methodDetails.Outputs[0].TypeName
+				} else {
+					returnType = "Promise<void>"
 				}
 				output.WriteString("       * @returns {" + returnType + "} " + returnTypeDetails + "\n")
 				output.WriteString("       */\n")
@@ -125,13 +103,14 @@ const backend = {`)
 export default backend;`)
 	output.WriteString("\n")
 
+	// TODO: Make this configurable in wails.json
 	dirname, err := fs.RelativeToCwd("frontend/src/backend")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	if !fs.DirExists(dirname) {
-		err := fs.Mkdir(dirname)
+		err := fs.MkDirs(dirname)
 		if err != nil {
 			log.Fatal(err)
 		}
