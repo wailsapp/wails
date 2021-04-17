@@ -46,7 +46,7 @@ func InstallGoDependencies(verbose bool) error {
 		depSpinner.SetSpinSpeed(50)
 		depSpinner.Start()
 	}
-	err := NewProgramHelper(verbose).RunCommand("go get")
+	err := NewProgramHelper(verbose).RunCommand("go mod tidy")
 	if err != nil {
 		if !verbose {
 			depSpinner.Error()
