@@ -1,20 +1,28 @@
 package templates
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	gofs "io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
+	"github.com/leaanthony/debme"
 	"github.com/leaanthony/gosod"
 	"github.com/leaanthony/slicer"
 	"github.com/olekukonko/tablewriter"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
+
+//go:embed templates
+var templates embed.FS
+
+//go:embed ides/*
+var ides embed.FS
 
 // Cahce for the templates
 // We use this because we need different views of the same data
@@ -59,20 +67,21 @@ type Template struct {
 	HelpURL     string `json:"helpurl"`
 
 	// Other data
-	Directory string `json:"-"`
+	FS gofs.FS `json:"-"`
 }
 
-func parseTemplate(directory string) (Template, error) {
-	templateJSON := filepath.Join(directory, "template.json")
+func parseTemplate(template gofs.FS) (Template, error) {
 	var result Template
-	data, err := ioutil.ReadFile(templateJSON)
+	data, err := gofs.ReadFile(template, "template.json")
 	if err != nil {
 		return result, err
 	}
-
-	result.Directory = directory
 	err = json.Unmarshal(data, &result)
-	return result, err
+	if err != nil {
+		return result, err
+	}
+	result.FS = template
+	return result, nil
 }
 
 // TemplateShortNames returns a slicer of short template names
@@ -134,11 +143,13 @@ func getTemplateByShortname(shortname string) (Template, error) {
 // Loads the template cache
 func loadTemplateCache() error {
 
-	// Get local template directory
-	templateDir := fs.RelativePath("templates")
+	templatesFS, err := debme.FS(templates, "templates")
+	if err != nil {
+		return err
+	}
 
 	// Get directories
-	files, err := ioutil.ReadDir(templateDir)
+	files, err := templatesFS.ReadDir(".")
 	if err != nil {
 		return err
 	}
@@ -148,8 +159,11 @@ func loadTemplateCache() error {
 
 	for _, file := range files {
 		if file.IsDir() {
-			templateDir := filepath.Join(templateDir, file.Name())
-			template, err := parseTemplate(templateDir)
+			templateFS, err := templatesFS.FS(file.Name())
+			if err != nil {
+				return err
+			}
+			template, err := parseTemplate(templateFS)
 			if err != nil {
 				// Cannot parse this template, continue
 				continue
@@ -163,7 +177,6 @@ func loadTemplateCache() error {
 
 // Install the given template
 func Install(options *Options) error {
-
 	// Get cwd
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -211,19 +224,16 @@ func Install(options *Options) error {
 	}
 
 	// Use Gosod to install the template
-	installer, err := gosod.TemplateDir(template.Directory)
-	if err != nil {
-		return err
-	}
+	installer := gosod.New(template.FS)
 
 	// Ignore template.json files
-	installer.IgnoreFilename("template.json")
+	installer.IgnoreFile("template.json")
 
 	// Setup the data.
 	// We use the directory name for the binary name, like Go
 	BinaryName := filepath.Base(options.TargetDir)
 	NPMProjectName := strings.ToLower(strings.ReplaceAll(BinaryName, " ", ""))
-	localWailsDirectory := fs.RelativePath("../..")
+	localWailsDirectory := fs.RelativePath("../../../../../..")
 	templateData := &Data{
 		ProjectName:    options.ProjectName,
 		BinaryName:     filepath.Base(options.TargetDir),
@@ -295,13 +305,13 @@ func generateIDEFiles(options *Options) error {
 func generateVSCodeFiles(options *Options) error {
 
 	targetDir := filepath.Join(options.TargetDir, ".vscode")
-	sourceDir := fs.RelativePath(filepath.Join("./ides/vscode"))
-
-	// Use Gosod to install the template
-	installer, err := gosod.TemplateDir(sourceDir)
+	source, err := debme.FS(ides, "ides/vscode")
 	if err != nil {
 		return err
 	}
+
+	// Use gosod to install the template
+	installer := gosod.New(source)
 
 	binaryName := filepath.Base(options.TargetDir)
 	if runtime.GOOS == "windows" {

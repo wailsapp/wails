@@ -6,9 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/initialise/templates"
+
 	"github.com/leaanthony/clir"
 	"github.com/pkg/errors"
-	"github.com/wailsapp/wails/v2/internal/templates"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/git"
 )

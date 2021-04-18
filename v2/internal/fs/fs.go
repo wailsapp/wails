@@ -201,10 +201,6 @@ func GetSubdirectories(rootDir string) (*slicer.StringSlicer, error) {
 
 func DirIsEmpty(dir string) (bool, error) {
 
-	if !DirExists(dir) {
-		return false, fmt.Errorf("DirIsEmpty called with a non-existant directory: %s", dir)
-	}
-
 	// CREDIT: https://stackoverflow.com/a/30708914/8325411
 	f, err := os.Open(dir)
 	if err != nil {

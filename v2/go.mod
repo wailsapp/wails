@@ -10,8 +10,9 @@ require (
 	github.com/imdario/mergo v0.3.11
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/leaanthony/clir v1.0.4
+	github.com/leaanthony/debme v1.1.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
-	github.com/leaanthony/gosod v0.0.4
+	github.com/leaanthony/gosod v1.0.1
 	github.com/leaanthony/slicer v1.5.0
 	github.com/matryer/is v1.4.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
