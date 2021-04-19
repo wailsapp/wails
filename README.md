@@ -36,14 +36,17 @@ This project is supported by these kind people / companies:
 
 <a href="https://github.com/matryer" style="width:100px"><img src="https://github.com/matryer.png" width="100"/></a>
 <a href="https://www.jetbrains.com?from=Wails" style="width:100px"><img src="jetbrains-grayscale.png" width="100"/></a>
-<a href="https://github.com/tc-hib" style="width:50px;border-radius: 50%">
-  <img src="https://github.com/tc-hib.png?size=50" width="50" style="border-radius: 50%"/>
+<a href="https://github.com/tc-hib" style="width:55px;border-radius: 50%">
+  <img src="https://github.com/tc-hib.png?size=55" width="55" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/picatz" style="width:50px;border-radius: 50%">
   <img src="https://github.com/picatz.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/tylertravisty" style="width:50px;border-radius: 50%">
   <img src="https://github.com/tylertravisty.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
 
 ## Installation
