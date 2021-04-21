@@ -14,3 +14,8 @@ func NewFileSystem() *FileSystem {
 func (r *FileSystem) HomeDir() (string, error) {
 	return os.UserHomeDir()
 }
+
+// UserCacheDir returns the user's application cache directory
+func (r *FileSystem) UserCacheDir() (string, error) {
+	return os.UserCacheDir()
+}
