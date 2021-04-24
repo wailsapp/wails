@@ -1,14 +1,100 @@
+// Some code may be inspired by or directly used from Webview.
+#include "ffenestri_windows.h"
 
-typedef struct {
-} Application;
+struct Application{
+    // Window specific
+    HWND window;
+    const char *title;
+    int width;
+    int height;
+    int resizable;
+    int devtools;
+    int fullscreen;
+    int startHidden;
+    int logLevel;
+    int hideWindowOnClose;
+    int minWidth;
+    int minHeight;
+    int maxWidth;
+    int maxHeight;
+};
 
 struct Application *NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel, int hideWindowOnClose) {
+
+      // Create application
+      struct Application *result = malloc(sizeof(struct Application));
+
+      result->title = title;
+      result->width = width;
+      result->height = height;
+      result->resizable = resizable;
+      result->devtools = devtools;
+      result->fullscreen = fullscreen;
+      result->startHidden = startHidden;
+      result->logLevel = logLevel;
+      result->hideWindowOnClose = hideWindowOnClose;
+
+      return result;
 }
+
 void SetMinWindowSize(struct Application* app, int minWidth, int minHeight) {
+    app->minWidth = minWidth;
+    app->minHeight = minHeight;
 }
+
 void SetMaxWindowSize(struct Application* app, int maxWidth, int maxHeight) {
+    app->maxWidth = maxWidth;
+    app->maxHeight = maxHeight;
 }
+
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+
+    switch(msg) {
+
+      case WM_DESTROY:
+
+          PostQuitMessage(0);
+          break;
+    }
+
+    return DefWindowProcW(hwnd, msg, wParam, lParam);
+}
+
 void Run(struct Application* app, int argc, char **argv) {
+
+      WNDCLASSEX wc;
+      HINSTANCE hInstance = GetModuleHandle(NULL);
+      ZeroMemory(&wc, sizeof(WNDCLASSEX));
+      wc.cbSize = sizeof(WNDCLASSEX);
+      wc.hInstance = hInstance;
+      wc.lpszClassName = "ffenestri";
+      wc.lpfnWndProc   = WndProc;
+
+      // TODO: Trim title to 256 chars
+      // https://stackoverflow.com/a/20458904
+      wchar_t wchTitle[256];
+      MultiByteToWideChar(CP_ACP, 0, app->title, -1, wchTitle, 256);
+
+      RegisterClassEx(&wc);
+      app->window = CreateWindow("ffenestri", wchTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
+                                          CW_USEDEFAULT, app->width, app->height, NULL, NULL,
+                                          GetModuleHandle(NULL), NULL);
+
+    MSG  msg;
+    ShowWindow(app->window, SW_SHOWNORMAL);
+    UpdateWindow(app->window);
+    BOOL res;
+    while ((res = GetMessage(&msg, NULL, 0, 0)) != -1) {
+      if (msg.hwnd) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+        continue;
+      }
+      if (msg.message == WM_APP) {
+      } else if (msg.message == WM_QUIT) {
+        return;
+      }
+    }
 }
 void DestroyApplication(struct Application* app) {
 }

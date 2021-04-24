@@ -1,5 +1,11 @@
 # 3rd Party Licenses
 
+## Webview
+Whilst not using the library directly, there is certainly some code that is inspired by or used from the webview library.
+
+Homepage: https://github.com/webview/webview
+License: https://github.com/webview/webview/blob/master/LICENSE
+
 ## vec
 Homepage: https://github.com/rxi/vec
 License: https://github.com/rxi/vec/blob/master/LICENSE

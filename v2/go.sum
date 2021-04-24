@@ -41,8 +41,9 @@ github.com/klauspost/compress v1.10.3 h1:OP96hzwJVBIHYU52pVTI6CczrxPvrGfgqF9N5eT
 github.com/klauspost/compress v1.10.3/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/leaanthony/clir v1.0.4 h1:Dov2y9zWJmZr7CjaCe86lKa4b5CSxskGAt2yBkoDyiU=
 github.com/leaanthony/clir v1.0.4/go.mod h1:k/RBkdkFl18xkkACMCLt09bhiZnrGORoxmomeMvDpE0=
-github.com/leaanthony/debme v1.1.1 h1:2CQjJkfrjr4b2VgpDmkq2aghem5R2bNbg1Yg5cKQGBQ=
 github.com/leaanthony/debme v1.1.1/go.mod h1:3V+sCm5tYAgQymvSOfYQ5Xx2JCr+OXiD9Jkw3otUjiA=
+github.com/leaanthony/debme v1.1.2 h1:dGeQuj0+xPIlDQzGIjmAU52+yRg85u5pWaaqrdLBjD0=
+github.com/leaanthony/debme v1.1.2/go.mod h1:3V+sCm5tYAgQymvSOfYQ5Xx2JCr+OXiD9Jkw3otUjiA=
 github.com/leaanthony/go-ansi-parser v1.0.1 h1:97v6c5kYppVsbScf4r/VZdXyQ21KQIfeQOk2DgKxGG4=
 github.com/leaanthony/go-ansi-parser v1.0.1/go.mod h1:7arTzgVI47srICYhvgUV4CGd063sGEeoSlych5yeSPM=
 github.com/leaanthony/gosod v1.0.1 h1:F+4c3DmEBfigi7oAswCV2RpQ+k4DcNbhuCZUGdBHacQ=
