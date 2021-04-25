@@ -100,6 +100,7 @@ void Run(struct Application* app, int argc, char **argv) {
     wc.lpszClassName = "ffenestri";
     wc.lpfnWndProc   = WndProc;
 
+    // Process window resizable
     DWORD dwStyle = WS_OVERLAPPEDWINDOW;
     if (app->resizable == 0) {
       dwStyle = WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU;
@@ -108,19 +109,25 @@ void Run(struct Application* app, int argc, char **argv) {
     app->window = CreateWindow("ffenestri", "", dwStyle, CW_USEDEFAULT,
                                       CW_USEDEFAULT, app->width, app->height, NULL, NULL,
                                       GetModuleHandle(NULL), NULL);
+    // Set Title
     SetWindowText(app->window, app->title);
+
+    // Store application pointer in window handle
     SetWindowLongPtr(app->window, GWLP_USERDATA, (LONG_PTR)app);
 
-    MSG  msg;
-
     // Process whether window should show by default
-    int initialCmdShow = SW_SHOWNORMAL;
+    int startVisibility = SW_SHOWNORMAL;
     if ( app->startHidden == 1 ) {
-        initialCmdShow = SW_HIDE;
+        startVisibility = SW_HIDE;
     }
-    ShowWindow(app->window, initialCmdShow);
-
+    ShowWindow(app->window, startVisibility);
     UpdateWindow(app->window);
+    SetFocus(app->window);
+
+    // TODO: Add webview2
+
+    // Main event loop
+    MSG  msg;
     BOOL res;
     while ((res = GetMessage(&msg, NULL, 0, 0)) != -1) {
       if (msg.hwnd) {
@@ -141,28 +148,73 @@ void DestroyApplication(struct Application* app) {
 void SetDebug(struct Application* app, int flag) {
     debug = flag;
 }
+
 void SetBindings(struct Application* app, const char *bindings) {
 }
+
 void ExecJS(struct Application* app, const char *script) {
 }
+
 void Hide(struct Application* app) {
+    ShowWindow(app->window, SW_HIDE);
 }
+
 void Show(struct Application* app) {
+    ShowWindow(app->window, SW_SHOW);
 }
+
 void Center(struct Application* app) {
 }
+
+UINT getWindowPlacement(struct Application* app) {
+    WINDOWPLACEMENT lpwndpl;
+    lpwndpl.length = sizeof(WINDOWPLACEMENT);
+    BOOL result = GetWindowPlacement(app->window, &lpwndpl);
+    if( result == 0 ) {
+        // TODO: Work out what this call failing means
+        return -1;
+    }
+    return lpwndpl.showCmd;
+}
+
+int isMaximised(struct Application* app) {
+    return getWindowPlacement(app) == SW_SHOWMAXIMIZED;
+}
+
 void Maximise(struct Application* app) {
+    ShowWindow(app->window, SW_MAXIMIZE);
 }
+
 void Unmaximise(struct Application* app) {
+    ShowWindow(app->window, SW_RESTORE);
 }
+
 void ToggleMaximise(struct Application* app) {
+    if(isMaximised(app)) {
+        return Unmaximise(app);
+    }
+    return Maximise(app);
 }
+
+int isMinimised(struct Application* app) {
+    return getWindowPlacement(app) == SW_SHOWMINIMIZED;
+}
+
 void Minimise(struct Application* app) {
+    ShowWindow(app->window, SW_MINIMIZE);
 }
+
 void Unminimise(struct Application* app) {
+    ShowWindow(app->window, SW_RESTORE);
 }
+
 void ToggleMinimise(struct Application* app) {
+    if(isMinimised(app)) {
+        return Unminimise(app);
+    }
+    return Minimise(app);
 }
+
 void SetColour(struct Application* app, int red, int green, int blue, int alpha) {
 }
 void SetSize(struct Application* app, int width, int height) {
