@@ -6,4 +6,6 @@
 #include <windows.h>
 #include <wingdi.h>
 
+void center(struct Application*);
+
 #endif
