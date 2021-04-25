@@ -1,6 +1,8 @@
 // Some code may be inspired by or directly used from Webview.
 #include "ffenestri_windows.h"
 
+int debug = 0;
+
 struct Application{
     // Window specific
     HWND window;
@@ -90,19 +92,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 void Run(struct Application* app, int argc, char **argv) {
 
-      WNDCLASSEX wc;
-      HINSTANCE hInstance = GetModuleHandle(NULL);
-      ZeroMemory(&wc, sizeof(WNDCLASSEX));
-      wc.cbSize = sizeof(WNDCLASSEX);
-      wc.hInstance = hInstance;
-      wc.lpszClassName = "ffenestri";
-      wc.lpfnWndProc   = WndProc;
-      RegisterClassEx(&wc);
-      app->window = CreateWindow("ffenestri", "", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
-                                          CW_USEDEFAULT, app->width, app->height, NULL, NULL,
-                                          GetModuleHandle(NULL), NULL);
-      SetWindowText(app->window, app->title);
-      SetWindowLongPtr(app->window, GWLP_USERDATA, (LONG_PTR)app);
+    WNDCLASSEX wc;
+    HINSTANCE hInstance = GetModuleHandle(NULL);
+    ZeroMemory(&wc, sizeof(WNDCLASSEX));
+    wc.cbSize = sizeof(WNDCLASSEX);
+    wc.hInstance = hInstance;
+    wc.lpszClassName = "ffenestri";
+    wc.lpfnWndProc   = WndProc;
+
+    DWORD dwStyle = WS_OVERLAPPEDWINDOW;
+    if (app->resizable == 0) {
+      dwStyle = WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU;
+    }
+    RegisterClassEx(&wc);
+    app->window = CreateWindow("ffenestri", "", dwStyle, CW_USEDEFAULT,
+                                      CW_USEDEFAULT, app->width, app->height, NULL, NULL,
+                                      GetModuleHandle(NULL), NULL);
+    SetWindowText(app->window, app->title);
+    SetWindowLongPtr(app->window, GWLP_USERDATA, (LONG_PTR)app);
 
     MSG  msg;
     ShowWindow(app->window, SW_SHOWNORMAL);
@@ -125,6 +132,7 @@ void DestroyApplication(struct Application* app) {
     PostQuitMessage(0);
 }
 void SetDebug(struct Application* app, int flag) {
+    debug = flag;
 }
 void SetBindings(struct Application* app, const char *bindings) {
 }
