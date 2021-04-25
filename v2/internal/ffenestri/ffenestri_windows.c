@@ -13,51 +13,79 @@ struct Application{
     int startHidden;
     int logLevel;
     int hideWindowOnClose;
-    int minWidth;
-    int minHeight;
-    int maxWidth;
-    int maxHeight;
+    int minSizeSet;
+    LONG minWidth;
+    LONG minHeight;
+    int maxSizeSet;
+    LONG maxWidth;
+    LONG maxHeight;
 };
 
 struct Application *NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel, int hideWindowOnClose) {
 
-      // Create application
-      struct Application *result = malloc(sizeof(struct Application));
+    // Create application
+    struct Application *result = malloc(sizeof(struct Application));
 
-      result->title = title;
-      result->width = width;
-      result->height = height;
-      result->resizable = resizable;
-      result->devtools = devtools;
-      result->fullscreen = fullscreen;
-      result->startHidden = startHidden;
-      result->logLevel = logLevel;
-      result->hideWindowOnClose = hideWindowOnClose;
+    result->title = title;
+    result->width = width;
+    result->height = height;
+    result->resizable = resizable;
+    result->devtools = devtools;
+    result->fullscreen = fullscreen;
+    result->startHidden = startHidden;
+    result->logLevel = logLevel;
+    result->hideWindowOnClose = hideWindowOnClose;
 
-      return result;
+    // Min/Max Width/Height
+    result->minWidth = 0;
+    result->minHeight = 0;
+    result->maxWidth = 0;
+    result->maxHeight = 0;
+
+    return result;
 }
 
 void SetMinWindowSize(struct Application* app, int minWidth, int minHeight) {
-    app->minWidth = minWidth;
-    app->minHeight = minHeight;
+    app->minWidth = (LONG)minWidth;
+    app->minHeight = (LONG)minHeight;
 }
 
 void SetMaxWindowSize(struct Application* app, int maxWidth, int maxHeight) {
-    app->maxWidth = maxWidth;
-    app->maxHeight = maxHeight;
+    app->maxWidth = (LONG)maxWidth;
+    app->maxHeight = (LONG)maxHeight;
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
+    struct Application *app = (struct Application *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+
     switch(msg) {
 
-      case WM_DESTROY:
-
-          PostQuitMessage(0);
-          break;
+        case WM_DESTROY: {
+            DestroyApplication(app);
+            break;
+        }
+        case WM_GETMINMAXINFO: {
+            // Exit early if this is called before the window is created.
+            if ( app == NULL ) {
+                return 0;
+            }
+            LPMINMAXINFO mmi = (LPMINMAXINFO) lParam;
+            if (app->minWidth > 0 && app->minHeight > 0) {
+                mmi->ptMinTrackSize.x = app->minWidth;
+                mmi->ptMinTrackSize.y = app->minHeight;
+            }
+            if (app->maxWidth > 0 && app->maxHeight > 0) {
+                mmi->ptMaxSize.x = app->maxWidth;
+                mmi->ptMaxSize.y = app->maxHeight;
+                mmi->ptMaxTrackSize.x = app->maxWidth;
+                mmi->ptMaxTrackSize.y = app->maxHeight;
+            }
+            return 0;
+        }
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
     }
-
-    return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
 void Run(struct Application* app, int argc, char **argv) {
@@ -69,16 +97,12 @@ void Run(struct Application* app, int argc, char **argv) {
       wc.hInstance = hInstance;
       wc.lpszClassName = "ffenestri";
       wc.lpfnWndProc   = WndProc;
-
-      // TODO: Trim title to 256 chars
-      // https://stackoverflow.com/a/20458904
-      wchar_t wchTitle[256];
-      MultiByteToWideChar(CP_ACP, 0, app->title, -1, wchTitle, 256);
-
       RegisterClassEx(&wc);
-      app->window = CreateWindow("ffenestri", wchTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
+      app->window = CreateWindow("ffenestri", "", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
                                           CW_USEDEFAULT, app->width, app->height, NULL, NULL,
                                           GetModuleHandle(NULL), NULL);
+      SetWindowText(app->window, app->title);
+      SetWindowLongPtr(app->window, GWLP_USERDATA, (LONG_PTR)app);
 
     MSG  msg;
     ShowWindow(app->window, SW_SHOWNORMAL);
@@ -96,7 +120,9 @@ void Run(struct Application* app, int argc, char **argv) {
       }
     }
 }
+
 void DestroyApplication(struct Application* app) {
+    PostQuitMessage(0);
 }
 void SetDebug(struct Application* app, int flag) {
 }
@@ -131,6 +157,7 @@ void SetPosition(struct Application* app, int x, int y) {
 void Quit(struct Application* app) {
 }
 void SetTitle(struct Application* app, const char *title) {
+    SetWindowText(app->window, title);
 }
 void Fullscreen(struct Application* app) {
 }
