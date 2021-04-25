@@ -112,7 +112,14 @@ void Run(struct Application* app, int argc, char **argv) {
     SetWindowLongPtr(app->window, GWLP_USERDATA, (LONG_PTR)app);
 
     MSG  msg;
-    ShowWindow(app->window, SW_SHOWNORMAL);
+
+    // Process whether window should show by default
+    int initialCmdShow = SW_SHOWNORMAL;
+    if ( app->startHidden == 1 ) {
+        initialCmdShow = SW_HIDE;
+    }
+    ShowWindow(app->window, initialCmdShow);
+
     UpdateWindow(app->window);
     BOOL res;
     while ((res = GetMessage(&msg, NULL, 0, 0)) != -1) {
