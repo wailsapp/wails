@@ -45,6 +45,28 @@ func MergeDefaults(appoptions *App) {
 		log.Fatal(err)
 	}
 
+	// Ensure max and min are valid
+	if appoptions.MinWidth > appoptions.MaxWidth {
+		appoptions.MinWidth = appoptions.MaxWidth
+	}
+	if appoptions.MinHeight > appoptions.MaxHeight {
+		appoptions.MinHeight = appoptions.MaxHeight
+	}
+
+	// Ensure width and height are limited if max/min is set
+	if appoptions.Width < appoptions.MinWidth {
+		appoptions.Width = appoptions.MinWidth
+	}
+	if appoptions.Width > appoptions.MaxWidth {
+		appoptions.Width = appoptions.MaxWidth
+	}
+	if appoptions.Height < appoptions.MinHeight {
+		appoptions.Height = appoptions.MinHeight
+	}
+	if appoptions.Height > appoptions.MaxHeight {
+		appoptions.Height = appoptions.MaxHeight
+	}
+
 }
 
 func GetTrayMenus(appoptions *App) []*menu.TrayMenu {
