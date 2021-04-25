@@ -6,6 +6,9 @@ int debug = 0;
 struct Application{
     // Window specific
     HWND window;
+    DWORD mainThread;
+
+    // Application
     const char *title;
     int width;
     int height;
@@ -21,6 +24,7 @@ struct Application{
     int maxSizeSet;
     LONG maxWidth;
     LONG maxHeight;
+    int frame;
 };
 
 struct Application *NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel, int hideWindowOnClose) {
@@ -43,6 +47,12 @@ struct Application *NewApplication(const char *title, int width, int height, int
     result->minHeight = 0;
     result->maxWidth = 0;
     result->maxHeight = 0;
+
+    // Have a frame by default
+    result->frame = 1;
+
+    // Capture Main Thread
+    result->mainThread = GetCurrentThreadId();
 
     return result;
 }
@@ -72,16 +82,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             if ( app == NULL ) {
                 return 0;
             }
+
+            // get pixel density
+            HDC hDC = GetDC(NULL);
+            double DPIScaleX = GetDeviceCaps(hDC, 88)/96.0;
+            double DPIScaleY = GetDeviceCaps(hDC, 90)/96.0;
+            ReleaseDC(NULL, hDC);
+
+            RECT rcClient, rcWind;
+            POINT ptDiff;
+            GetClientRect(hwnd, &rcClient);
+            GetWindowRect(hwnd, &rcWind);
+
+            int widthExtra = (rcWind.right - rcWind.left) - rcClient.right;
+            int heightExtra = (rcWind.bottom - rcWind.top) - rcClient.bottom;
+
             LPMINMAXINFO mmi = (LPMINMAXINFO) lParam;
             if (app->minWidth > 0 && app->minHeight > 0) {
-                mmi->ptMinTrackSize.x = app->minWidth;
-                mmi->ptMinTrackSize.y = app->minHeight;
+                mmi->ptMinTrackSize.x = app->minWidth * DPIScaleX + widthExtra;
+                mmi->ptMinTrackSize.y = app->minHeight * DPIScaleY + heightExtra;
             }
             if (app->maxWidth > 0 && app->maxHeight > 0) {
-                mmi->ptMaxSize.x = app->maxWidth;
-                mmi->ptMaxSize.y = app->maxHeight;
-                mmi->ptMaxTrackSize.x = app->maxWidth;
-                mmi->ptMaxTrackSize.y = app->maxHeight;
+                mmi->ptMaxSize.x = app->maxWidth * DPIScaleX + widthExtra;
+                mmi->ptMaxSize.y = app->maxHeight * DPIScaleY + heightExtra;
+                mmi->ptMaxTrackSize.x = app->maxWidth * DPIScaleX + widthExtra;
+                mmi->ptMaxTrackSize.y = app->maxHeight * DPIScaleY + heightExtra;
             }
             return 0;
         }
@@ -100,10 +125,16 @@ void Run(struct Application* app, int argc, char **argv) {
     wc.lpszClassName = "ffenestri";
     wc.lpfnWndProc   = WndProc;
 
+
     // Process window resizable
-    DWORD dwStyle = WS_OVERLAPPEDWINDOW;
+    DWORD windowStyle = WS_OVERLAPPEDWINDOW;
+    if ( app->frame == 0 ) {
+        windowStyle = WS_POPUP;
+    }
+
+    DWORD dwStyle = windowStyle;
     if (app->resizable == 0) {
-      dwStyle = WS_OVERLAPPED | WS_MINIMIZEBOX | WS_SYSMENU;
+      dwStyle = windowStyle | WS_MINIMIZEBOX | WS_SYSMENU;
     }
     RegisterClassEx(&wc);
     app->window = CreateWindow("ffenestri", "", dwStyle, CW_USEDEFAULT,
@@ -120,6 +151,7 @@ void Run(struct Application* app, int argc, char **argv) {
     if ( app->startHidden == 1 ) {
         startVisibility = SW_HIDE;
     }
+    Center(app);
     ShowWindow(app->window, startVisibility);
     UpdateWindow(app->window);
     SetFocus(app->window);
@@ -141,6 +173,8 @@ void Run(struct Application* app, int argc, char **argv) {
       }
     }
 }
+
+
 
 void DestroyApplication(struct Application* app) {
     PostQuitMessage(0);
@@ -164,6 +198,27 @@ void Show(struct Application* app) {
 }
 
 void Center(struct Application* app) {
+
+    HMONITOR currentMonitor = MonitorFromWindow(app->window, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO info = {0};
+    info.cbSize = sizeof(info);
+    GetMonitorInfoA(currentMonitor, &info);
+    RECT workRect = info.rcWork;
+    LONG screenMiddleW = (workRect.right - workRect.left) / 2;
+    LONG screenMiddleH = (workRect.bottom - workRect.top) / 2;
+    RECT winRect;
+    if (app->frame == 1) {
+        GetWindowRect(app->window, &winRect);
+    } else {
+        GetClientRect(app->window, &winRect);
+    }
+    LONG winWidth = winRect.right - winRect.left;
+    LONG winHeight = winRect.bottom - winRect.top;
+
+    LONG windowX = screenMiddleW - (winWidth / 2);
+    LONG windowY = screenMiddleH - (winHeight / 2);
+
+    SetWindowPos(app->window, HWND_TOP, windowX, windowY, winWidth, winHeight, SWP_NOSIZE);
 }
 
 UINT getWindowPlacement(struct Application* app) {
@@ -232,8 +287,11 @@ void UnFullscreen(struct Application* app) {
 }
 void ToggleFullscreen(struct Application* app) {
 }
+
 void DisableFrame(struct Application* app) {
+    app->frame = 0;
 }
+
 void OpenDialog(struct Application* app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolvesAliases, int treatPackagesAsDirectories) {
 }
 void SaveDialog(struct Application* app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int showHiddenFiles, int canCreateDirectories, int treatPackagesAsDirectories) {
