@@ -15,7 +15,7 @@ typedef struct {
 } dispatchFunction;
 
 dispatchFunction* NewDispatchFunction(void *func) {
-    dispatchFunction *result = malloc(sizeof(dispatchFunction));
+    dispatchFunction *result = (dispatchFunction *)malloc(sizeof(dispatchFunction));
     result->func = func;
     result->argc = 0;
     return result;
@@ -52,7 +52,7 @@ struct Application{
 struct Application *NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel, int hideWindowOnClose) {
 
     // Create application
-    struct Application *result = malloc(sizeof(struct Application));
+    struct Application *result = (struct Application*)malloc(sizeof(struct Application));
 
     result->title = title;
     result->width = width;
@@ -97,7 +97,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         case WM_DESTROY: {
             DestroyApplication(app);
-            break;
+            return 0;
         }
         case WM_GETMINMAXINFO: {
             // Exit early if this is called before the window is created.
@@ -135,6 +135,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
     }
+
 }
 
 void Run(struct Application* app, int argc, char **argv) {
@@ -144,7 +145,7 @@ void Run(struct Application* app, int argc, char **argv) {
     ZeroMemory(&wc, sizeof(WNDCLASSEX));
     wc.cbSize = sizeof(WNDCLASSEX);
     wc.hInstance = hInstance;
-    wc.lpszClassName = "ffenestri";
+    wc.lpszClassName = (LPCWSTR)"ffenestri";
     wc.lpfnWndProc   = WndProc;
 
 
@@ -159,11 +160,12 @@ void Run(struct Application* app, int argc, char **argv) {
     }
 
     RegisterClassEx(&wc);
-    app->window = CreateWindow("ffenestri", "", windowStyle, CW_USEDEFAULT,
+    app->window = CreateWindow((LPCWSTR)"ffenestri", (LPCWSTR)"", windowStyle, CW_USEDEFAULT,
                                       CW_USEDEFAULT, app->width, app->height, NULL, NULL,
                                       GetModuleHandle(NULL), NULL);
     // Set Title
-    SetWindowText(app->window, app->title);
+    setTitle(app, app->title);
+
 
     // Store application pointer in window handle
     SetWindowLongPtr(app->window, GWLP_USERDATA, (LONG_PTR)app);
@@ -224,7 +226,7 @@ void hide(struct Application* app) {
 }
 
 void Hide(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction(hide);
+    dispatchFunction *f = NewDispatchFunction((void*)hide);
     f->args[0] = app;
     f->argc = 1;
     dispatch(f);
@@ -235,7 +237,7 @@ void show(struct Application* app) {
 }
 
 void Show(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction(show);
+    dispatchFunction *f = NewDispatchFunction((void*)show);
     f->args[0] = app;
     f->argc = 1;
     dispatch(f);
@@ -266,7 +268,7 @@ void center(struct Application* app) {
 }
 
 void Center(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction(center);
+    dispatchFunction *f = NewDispatchFunction((void*)center);
     f->args[0] = app;
     f->argc = 1;
     dispatch(f);
@@ -292,7 +294,7 @@ void maximise(struct Application* app) {
 }
 
 void Maximise(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction(maximise);
+    dispatchFunction *f = NewDispatchFunction((void*)maximise);
     f->args[0] = app;
     f->argc = 1;
     dispatch(f);
@@ -303,7 +305,7 @@ void unmaximise(struct Application* app) {
 }
 
 void Unmaximise(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction(unmaximise);
+    dispatchFunction *f = NewDispatchFunction((void*)unmaximise);
     f->args[0] = app;
     f->argc = 1;
     dispatch(f);
@@ -326,7 +328,7 @@ void minimise(struct Application* app) {
 }
 
 void Minimise(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction(minimise);
+    dispatchFunction *f = NewDispatchFunction((void*)minimise);
     f->args[0] = app;
     f->argc = 1;
     dispatch(f);
@@ -337,7 +339,7 @@ void unminimise(struct Application* app) {
 }
 
 void Unminimise(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction(unminimise);
+    dispatchFunction *f = NewDispatchFunction((void*)unminimise);
     f->args[0] = app;
     f->argc = 1;
     dispatch(f);
@@ -361,12 +363,17 @@ void SetPosition(struct Application* app, int x, int y) {
 void Quit(struct Application* app) {
 }
 
+// Credit: https://stackoverflow.com/a/6693107
 void setTitle(struct Application* app, const char *title) {
-    SetWindowText(app->window, title);
+    int wchars_num = MultiByteToWideChar( CP_UTF8 , 0 , title , -1, NULL , 0 );
+    wchar_t* wstr = new wchar_t[wchars_num];
+    MultiByteToWideChar( CP_UTF8 , 0 , title , -1, wstr , wchars_num );
+    SetWindowText(app->window, wstr);
+    delete[] wstr;
 }
 
 void SetTitle(struct Application* app, const char *title) {
-    dispatchFunction *f = NewDispatchFunction(setTitle);
+    dispatchFunction *f = NewDispatchFunction((void*)setTitle);
     f->args[0] = app;
     f->args[1] = (void*)title;
     f->argc = 2;

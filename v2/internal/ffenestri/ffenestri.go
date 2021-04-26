@@ -173,7 +173,7 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string, debug 
 		// Oh no! We couldn't initialise the application
 		a.logger.Fatal("Cannot initialise Application.")
 	}
-
+	//println("\n\n\n\n\n\nhererererer\n\n\n\n")
 	a.freeMemory()
 	return nil
 }
