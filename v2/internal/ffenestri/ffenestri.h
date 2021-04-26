@@ -1,6 +1,10 @@
 #ifndef __FFENESTRI_H__
 #define __FFENESTRI_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 struct Application;
 
@@ -41,5 +45,9 @@ extern void DeleteTrayMenuByID(struct Application*, const char *id);
 extern void UpdateTrayMenuLabel(struct Application*, const char* JSON);
 extern void AddContextMenu(struct Application*, char *contextMenuJSON);
 extern void UpdateContextMenu(struct Application*, char *contextMenuJSON);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
