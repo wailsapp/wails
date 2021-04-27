@@ -19,6 +19,7 @@ type App struct {
 	Height            int
 	DisableResize     bool
 	Fullscreen        bool
+	Frameless         bool
 	MinWidth          int
 	MinHeight         int
 	MaxWidth          int
@@ -46,13 +47,16 @@ func MergeDefaults(appoptions *App) {
 	}
 
 	// Ensure max and min are valid
-	if appoptions.MinWidth > appoptions.MaxWidth {
-		appoptions.MinWidth = appoptions.MaxWidth
+	if appoptions.MinWidth > 0 && appoptions.MaxWidth > 0 {
+		if appoptions.MinWidth > appoptions.MaxWidth {
+			appoptions.MinWidth = appoptions.MaxWidth
+		}
 	}
-	if appoptions.MinHeight > appoptions.MaxHeight {
-		appoptions.MinHeight = appoptions.MaxHeight
+	if appoptions.MinHeight > 0 && appoptions.MaxHeight > 0 {
+		if appoptions.MinHeight > appoptions.MaxHeight {
+			appoptions.MinHeight = appoptions.MaxHeight
+		}
 	}
-
 	// Ensure width and height are limited if max/min is set
 	if appoptions.Width < appoptions.MinWidth {
 		appoptions.Width = appoptions.MinWidth
