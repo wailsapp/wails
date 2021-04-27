@@ -1,13 +1,7 @@
 package ffenestri
 
 /*
-
-#cgo linux CFLAGS: -DFFENESTRI_LINUX=1
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
-
-#include <stdlib.h>
 #include "ffenestri.h"
-
 */
 import "C"
 

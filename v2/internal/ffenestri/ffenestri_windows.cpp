@@ -1,34 +1,22 @@
 // Some code may be inspired by or directly used from Webview.
 #include "ffenestri_windows.h"
+//#include "wv2ComHandler_windows.h"
+#include <functional>
 
 int debug = 0;
 DWORD mainThread;
 
-typedef void(*dispatchMethod)(void);
-typedef void(*dispatchMethod1)(void*);
-typedef void(*dispatchMethod2)(void*,void*);
-
-typedef struct {
-    void* func;
-    void* args[5];
-    int argc;
-} dispatchFunction;
-
-dispatchFunction* NewDispatchFunction(void *func) {
-    dispatchFunction *result = (dispatchFunction *)malloc(sizeof(dispatchFunction));
-    result->func = func;
-    result->argc = 0;
-    return result;
-}
-
 // dispatch will execute the given `func` pointer
-void dispatch(dispatchFunction *func) {
-    PostThreadMessage(mainThread, WM_APP, 0, (LPARAM) func);
+void dispatch(dispatchFunction func) {
+    PostThreadMessage(mainThread, WM_APP, 0, (LPARAM) new dispatchFunction(func));
 }
 
 struct Application{
     // Window specific
     HWND window;
+//    WebViewControl webview;
+//    ICoreWebView2Controller* controller;
+
 
     // Application
     const char *title;
@@ -53,6 +41,10 @@ struct Application *NewApplication(const char *title, int width, int height, int
 
     // Create application
     struct Application *result = (struct Application*)malloc(sizeof(struct Application));
+
+    result->window = nullptr;
+//    result->webview = nullptr;
+//    result->controller = nullptr;
 
     result->title = title;
     result->width = width;
@@ -138,6 +130,43 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 }
 
+//void initWebView2(struct Application *app, int debug, messageCallback cb) {
+//    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+//
+//    std::atomic_flag flag = ATOMIC_FLAG_INIT;
+//    flag.test_and_set();
+//
+//    char currentExePath[MAX_PATH];
+//    GetModuleFileNameA(NULL, currentExePath, MAX_PATH);
+//    char *currentExeName = PathFindFileNameA(currentExePath);
+//
+//    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wideCharConverter;
+//    std::wstring userDataFolder = wideCharConverter.from_bytes(std::getenv("APPDATA"));
+//    std::wstring currentExeNameW = wideCharConverter.from_bytes(currentExeName);
+//
+//    HRESULT res = CreateCoreWebView2EnvironmentWithOptions(
+//            nullptr, (userDataFolder + L"/" + currentExeNameW).c_str(), nullptr,
+//            new wv2ComHandler(app->window, cb,
+//                                     [&](ICoreWebView2Controller *controller) {
+//                                         app->controller = controller;
+//                                         app->controller->get_CoreWebView2(&(app->webview));
+//                                         app->webview->AddRef();
+//                                         flag.clear();
+//                                     }));
+//    if (res != S_OK) {
+//        CoUninitialize();
+//        return false;
+//    }
+//
+//    MSG msg = {};
+//    while (flag.test_and_set() && GetMessage(&msg, NULL, 0, 0)) {
+//        TranslateMessage(&msg);
+//        DispatchMessage(&msg);
+//    }
+//    init("window.external={invoke:s=>window.chrome.webview.postMessage(s)}");
+//    return true;
+//}
+
 void Run(struct Application* app, int argc, char **argv) {
 
     WNDCLASSEX wc;
@@ -163,9 +192,9 @@ void Run(struct Application* app, int argc, char **argv) {
     app->window = CreateWindow((LPCWSTR)"ffenestri", (LPCWSTR)"", windowStyle, CW_USEDEFAULT,
                                       CW_USEDEFAULT, app->width, app->height, NULL, NULL,
                                       GetModuleHandle(NULL), NULL);
-    // Set Title
-    setTitle(app, app->title);
 
+    // Private setTitle as we're on the main thread
+    setTitle(app, app->title);
 
     // Store application pointer in window handle
     SetWindowLongPtr(app->window, GWLP_USERDATA, (LONG_PTR)app);
@@ -175,6 +204,7 @@ void Run(struct Application* app, int argc, char **argv) {
     if ( app->startHidden == 1 ) {
         startVisibility = SW_HIDE;
     }
+
     // private center() as we are on main thread
     center(app);
     ShowWindow(app->window, startVisibility);
@@ -182,6 +212,7 @@ void Run(struct Application* app, int argc, char **argv) {
     SetFocus(app->window);
 
     // TODO: Add webview2
+//    initWebView2(app->window);
 
     // Main event loop
     MSG  msg;
@@ -193,15 +224,9 @@ void Run(struct Application* app, int argc, char **argv) {
         continue;
       }
       if (msg.message == WM_APP) {
-          dispatchFunction *m = (dispatchFunction*) msg.lParam;
-          void *method = m->func;
-          if (m->argc == 1) {
-              ((dispatchMethod1)method)(m->args[0]);
-          }
-          if (m->argc == 2) {
-              ((dispatchMethod2)method)(m->args[0], m->args[1]);
-          }
-          free(m);
+          dispatchFunction *f = (dispatchFunction*) msg.lParam;
+          (*f)();
+          delete(f);
       } else if (msg.message == WM_QUIT) {
         return;
       }
@@ -226,10 +251,9 @@ void hide(struct Application* app) {
 }
 
 void Hide(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction((void*)hide);
-    f->args[0] = app;
-    f->argc = 1;
-    dispatch(f);
+    ON_MAIN_THREAD(
+        hide(app);
+    );
 }
 
 void show(struct Application* app) {
@@ -237,10 +261,9 @@ void show(struct Application* app) {
 }
 
 void Show(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction((void*)show);
-    f->args[0] = app;
-    f->argc = 1;
-    dispatch(f);
+    ON_MAIN_THREAD(
+        show(app);
+    );
 }
 
 void center(struct Application* app) {
@@ -268,10 +291,9 @@ void center(struct Application* app) {
 }
 
 void Center(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction((void*)center);
-    f->args[0] = app;
-    f->argc = 1;
-    dispatch(f);
+    ON_MAIN_THREAD(
+        center(app);
+    );
 }
 
 UINT getWindowPlacement(struct Application* app) {
@@ -294,10 +316,9 @@ void maximise(struct Application* app) {
 }
 
 void Maximise(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction((void*)maximise);
-    f->args[0] = app;
-    f->argc = 1;
-    dispatch(f);
+    ON_MAIN_THREAD(
+        maximise(app);
+    );
 }
 
 void unmaximise(struct Application* app) {
@@ -305,10 +326,9 @@ void unmaximise(struct Application* app) {
 }
 
 void Unmaximise(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction((void*)unmaximise);
-    f->args[0] = app;
-    f->argc = 1;
-    dispatch(f);
+    ON_MAIN_THREAD(
+        unmaximise(app);
+    );
 }
 
 
@@ -328,10 +348,9 @@ void minimise(struct Application* app) {
 }
 
 void Minimise(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction((void*)minimise);
-    f->args[0] = app;
-    f->argc = 1;
-    dispatch(f);
+    ON_MAIN_THREAD(
+        minimise(app);
+    );
 }
 
 void unminimise(struct Application* app) {
@@ -339,10 +358,9 @@ void unminimise(struct Application* app) {
 }
 
 void Unminimise(struct Application* app) {
-    dispatchFunction *f = NewDispatchFunction((void*)unminimise);
-    f->args[0] = app;
-    f->argc = 1;
-    dispatch(f);
+    ON_MAIN_THREAD(
+        unminimise(app);
+    );
 }
 
 void ToggleMinimise(struct Application* app) {
@@ -353,13 +371,23 @@ void ToggleMinimise(struct Application* app) {
 }
 
 void SetColour(struct Application* app, int red, int green, int blue, int alpha) {
-
+// TBD
 }
 
 void SetSize(struct Application* app, int width, int height) {
+    // TBD
 }
+
+void setPosition(struct Application* app, int x, int y) {
+    // TBD
+}
+
 void SetPosition(struct Application* app, int x, int y) {
+    ON_MAIN_THREAD(
+        setPosition(app, x, y);
+    );
 }
+
 void Quit(struct Application* app) {
 }
 
@@ -373,11 +401,9 @@ void setTitle(struct Application* app, const char *title) {
 }
 
 void SetTitle(struct Application* app, const char *title) {
-    dispatchFunction *f = NewDispatchFunction((void*)setTitle);
-    f->args[0] = app;
-    f->args[1] = (void*)title;
-    f->argc = 2;
-    dispatch(f);
+    ON_MAIN_THREAD(
+        setTitle(app, title);
+    );
 }
 
 void Fullscreen(struct Application* app) {

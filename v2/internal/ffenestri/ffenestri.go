@@ -13,17 +13,17 @@ import (
 )
 
 /*
-
 #cgo linux CFLAGS: -DFFENESTRI_LINUX=1
 #cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
 
 #cgo darwin CFLAGS: -DFFENESTRI_DARWIN=1
 #cgo darwin LDFLAGS: -framework WebKit -lobjc
 
+#cgo windows CPPFLAGS: -std=c++11
+#cgo windows,amd64 LDFLAGS: -L./windows/x64 -lwebview -lWebView2Loader -lgdi32
+
 #include <stdlib.h>
 #include "ffenestri.h"
-
-
 */
 import "C"
 
@@ -139,9 +139,9 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string, debug 
 	C.SetDebug(app, a.bool2Cint(debug))
 
 	// TODO: Move frameless to Linux options
-	// if a.config.Frameless {
-	// 	C.DisableFrame(a.app)
-	// }
+	if a.config.Frameless {
+		C.DisableFrame(a.app)
+	}
 
 	if a.config.RGBA != 0 {
 		r, g, b, alpha := intToColour(a.config.RGBA)
