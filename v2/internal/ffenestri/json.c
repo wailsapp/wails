@@ -1,3 +1,5 @@
+// +build !windows
+
 /*
   Copyright (C) 2011 Joseph A. Adams (joeyadams3.14159@gmail.com)
   All rights reserved.
