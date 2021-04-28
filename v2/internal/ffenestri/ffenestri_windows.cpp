@@ -123,35 +123,48 @@ bool initWebView2(struct Application *app, int debug, messageCallback cb) {
     std::atomic_flag flag = ATOMIC_FLAG_INIT;
     flag.test_and_set();
 
-//    char currentExePath[MAX_PATH];
-//    GetModuleFileNameA(NULL, currentExePath, MAX_PATH);
-//    char *currentExeName = PathFindFileNameA(currentExePath);
-//
-//    printf("current exe name = %s\n", currentExeName);
+    char currentExePath[MAX_PATH];
+    GetModuleFileNameA(NULL, currentExePath, MAX_PATH);
+    char *currentExeName = PathFindFileNameA(currentExePath);
+
 
 //    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wideCharConverter;
 //    std::wstring userDataFolder = wideCharConverter.from_bytes(std::getenv("APPDATA"));
 //    std::wstring currentExeNameW = wideCharConverter.from_bytes(currentExeName);
-//
-//    HRESULT res = CreateCoreWebView2EnvironmentWithOptions(
-//            nullptr, (userDataFolder + L"/" + currentExeNameW).c_str(), nullptr,
-//            new wv2ComHandler(app, cb,
-//                                     [&](ICoreWebView2Controller *webviewController) {
-//                                         app->webviewController = webviewController;
-//                                         app->webviewController->get_CoreWebView2(&(app->webview));
-//                                         app->webview->AddRef();
-//                                         flag.clear();
-//                                     }));
-//    if (res != S_OK) {
-//        CoUninitialize();
-//        return false;
-//    }
-//
-//    MSG msg = {};
-//    while (flag.test_and_set() && GetMessage(&msg, NULL, 0, 0)) {
-//        TranslateMessage(&msg);
-//        DispatchMessage(&msg);
-//    }
+
+//    printf("userdata folder = %s\n", userDataFolder.c_str());
+
+    ICoreWebView2Controller *controller;
+    ICoreWebView2* webview;
+
+    HRESULT res = CreateCoreWebView2EnvironmentWithOptions(
+            nullptr, /*(userDataFolder + L"/" + currentExeNameW).c_str()*/ nullptr, nullptr,
+            new wv2ComHandler(app->window, cb,
+                                     [&](ICoreWebView2Controller *webviewController) {
+                                         controller = webviewController;
+                                         controller->get_CoreWebView2(&webview);
+                                         webview->AddRef();
+                                         flag.clear();
+                                     }));
+    if (res != S_OK) {
+        CoUninitialize();
+        return false;
+    }
+
+    MSG msg = {};
+    while (flag.test_and_set() && GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+    app->webviewController = controller;
+    app->webview = webview;
+    // Resize WebView to fit the bounds of the parent window
+    RECT bounds;
+    GetClientRect(app->window, &bounds);
+    app->webviewController->put_Bounds(bounds);
+
+    // Schedule an async task to navigate to Bing
+    app->webview->Navigate(L"https://wails.app/");
 ////    init("window.external={invoke:s=>window.chrome.webview.postMessage(s)}");
     return true;
 }
@@ -203,6 +216,12 @@ void Run(struct Application* app, int argc, char **argv) {
 
     // private center() as we are on main thread
     center(app);
+//    if( debug == 1 ) {
+//        BOOL supported = SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+//        if( !supported ) {
+//            SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+//        }
+//    }
     ShowWindow(app->window, startVisibility);
     UpdateWindow(app->window);
     SetFocus(app->window);

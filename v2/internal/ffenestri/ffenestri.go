@@ -20,7 +20,7 @@ import (
 #cgo darwin LDFLAGS: -framework WebKit -lobjc
 
 #cgo windows CPPFLAGS: -std=c++11
-#cgo windows,amd64 LDFLAGS: -L./windows/x64 -lwebview -lWebView2Loader -lgdi32
+#cgo windows,amd64 LDFLAGS: -L./windows/x64 -lwebview -lWebView2Loader -lgdi32 -lole32 -lShlwapi -luser32 -loleaut32
 
 #include <stdlib.h>
 #include "ffenestri.h"
@@ -62,14 +62,6 @@ func NewApplicationWithConfig(config *options.App, logger *logger.Logger, menuMa
 		config:      config,
 		logger:      logger.CustomLogger("Ffenestri"),
 		menuManager: menuManager,
-	}
-}
-
-// NewApplication creates a new Application with the default config
-func NewApplication(logger *logger.Logger) *Application {
-	return &Application{
-		config: options.Default,
-		logger: logger.CustomLogger("Ffenestri"),
 	}
 }
 

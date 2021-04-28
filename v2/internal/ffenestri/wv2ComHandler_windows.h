@@ -14,13 +14,13 @@ class wv2ComHandler
             public ICoreWebView2WebMessageReceivedEventHandler,
             public ICoreWebView2PermissionRequestedEventHandler {
 
-    struct Application *app;
+    HWND window;
     messageCallback mcb;
     comHandlerCallback cb;
 
     public:
-        wv2ComHandler(struct Application *app, messageCallback mcb, comHandlerCallback cb) {
-            this->app = app;
+        wv2ComHandler(HWND window, messageCallback mcb, comHandlerCallback cb) {
+            this->window = window;
             this->mcb = mcb;
             this->cb = cb;
         }
@@ -31,7 +31,7 @@ class wv2ComHandler
         }
         HRESULT STDMETHODCALLTYPE Invoke(HRESULT res,
                                          ICoreWebView2Environment *env) {
-          env->CreateCoreWebView2Controller(app->window, this);
+          env->CreateCoreWebView2Controller(window, this);
           return S_OK;
         }
         HRESULT STDMETHODCALLTYPE Invoke(HRESULT res,
@@ -49,6 +49,7 @@ class wv2ComHandler
         }
         HRESULT STDMETHODCALLTYPE Invoke(
             ICoreWebView2 *sender, ICoreWebView2WebMessageReceivedEventArgs *args) {
+                                         printf("CCCCCCCCCCC\n");
           LPWSTR message;
           args->TryGetWebMessageAsString(&message);
 
@@ -62,6 +63,8 @@ class wv2ComHandler
         HRESULT STDMETHODCALLTYPE
         Invoke(ICoreWebView2 *sender,
                ICoreWebView2PermissionRequestedEventArgs *args) {
+                                                        printf("DDDDDDDDDDDD\n");
+
           COREWEBVIEW2_PERMISSION_KIND kind;
           args->get_PermissionKind(&kind);
           if (kind == COREWEBVIEW2_PERMISSION_KIND_CLIPBOARD_READ) {
