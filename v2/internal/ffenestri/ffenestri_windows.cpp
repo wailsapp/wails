@@ -1,7 +1,12 @@
 // Some code may be inspired by or directly used from Webview.
 #include "ffenestri_windows.h"
-//#include "wv2ComHandler_windows.h"
+#include "wv2ComHandler_windows.h"
 #include <functional>
+#include <atomic>
+#include <Shlwapi.h>
+#include <locale>
+#include <codecvt>
+#include "windows/WebView2.h"
 
 int debug = 0;
 DWORD mainThread;
@@ -11,40 +16,14 @@ void dispatch(dispatchFunction func) {
     PostThreadMessage(mainThread, WM_APP, 0, (LPARAM) new dispatchFunction(func));
 }
 
-struct Application{
-    // Window specific
-    HWND window;
-//    WebViewControl webview;
-//    ICoreWebView2Controller* controller;
-
-
-    // Application
-    const char *title;
-    int width;
-    int height;
-    int resizable;
-    int devtools;
-    int fullscreen;
-    int startHidden;
-    int logLevel;
-    int hideWindowOnClose;
-    int minSizeSet;
-    LONG minWidth;
-    LONG minHeight;
-    int maxSizeSet;
-    LONG maxWidth;
-    LONG maxHeight;
-    int frame;
-};
-
 struct Application *NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel, int hideWindowOnClose) {
 
     // Create application
     struct Application *result = (struct Application*)malloc(sizeof(struct Application));
 
     result->window = nullptr;
-//    result->webview = nullptr;
-//    result->controller = nullptr;
+    result->webview = nullptr;
+    result->webviewController = nullptr;
 
     result->title = title;
     result->width = width;
@@ -89,8 +68,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         case WM_DESTROY: {
             DestroyApplication(app);
-            return 0;
+            break;
         }
+//        case WM_SIZE: {
+//            if( app->webviewController != nullptr) {
+//                RECT bounds;
+//                GetClientRect(app->window, &bounds);
+//                app->webviewController->put_Bounds(bounds);
+//            }
+//            break;
+//        }
         case WM_GETMINMAXINFO: {
             // Exit early if this is called before the window is created.
             if ( app == NULL ) {
@@ -127,29 +114,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
     }
-
+    return 0;
 }
+//
+bool initWebView2(struct Application *app, int debug, messageCallback cb) {
+    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
-//void initWebView2(struct Application *app, int debug, messageCallback cb) {
-//    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-//
-//    std::atomic_flag flag = ATOMIC_FLAG_INIT;
-//    flag.test_and_set();
-//
+    std::atomic_flag flag = ATOMIC_FLAG_INIT;
+    flag.test_and_set();
+
 //    char currentExePath[MAX_PATH];
 //    GetModuleFileNameA(NULL, currentExePath, MAX_PATH);
 //    char *currentExeName = PathFindFileNameA(currentExePath);
 //
+//    printf("current exe name = %s\n", currentExeName);
+
 //    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wideCharConverter;
 //    std::wstring userDataFolder = wideCharConverter.from_bytes(std::getenv("APPDATA"));
 //    std::wstring currentExeNameW = wideCharConverter.from_bytes(currentExeName);
 //
 //    HRESULT res = CreateCoreWebView2EnvironmentWithOptions(
 //            nullptr, (userDataFolder + L"/" + currentExeNameW).c_str(), nullptr,
-//            new wv2ComHandler(app->window, cb,
-//                                     [&](ICoreWebView2Controller *controller) {
-//                                         app->controller = controller;
-//                                         app->controller->get_CoreWebView2(&(app->webview));
+//            new wv2ComHandler(app, cb,
+//                                     [&](ICoreWebView2Controller *webviewController) {
+//                                         app->webviewController = webviewController;
+//                                         app->webviewController->get_CoreWebView2(&(app->webview));
 //                                         app->webview->AddRef();
 //                                         flag.clear();
 //                                     }));
@@ -163,9 +152,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 //        TranslateMessage(&msg);
 //        DispatchMessage(&msg);
 //    }
-//    init("window.external={invoke:s=>window.chrome.webview.postMessage(s)}");
-//    return true;
-//}
+////    init("window.external={invoke:s=>window.chrome.webview.postMessage(s)}");
+    return true;
+}
+
+void initialCallback(std::string message) {
+    printf("MESSAGE=%s\n", message);
+}
 
 void Run(struct Application* app, int argc, char **argv) {
 
@@ -176,6 +169,9 @@ void Run(struct Application* app, int argc, char **argv) {
     wc.hInstance = hInstance;
     wc.lpszClassName = (LPCWSTR)"ffenestri";
     wc.lpfnWndProc   = WndProc;
+
+    // TODO: Menu
+//    wc.lpszMenuName = nullptr;
 
 
     // Process window resizable
@@ -190,8 +186,8 @@ void Run(struct Application* app, int argc, char **argv) {
 
     RegisterClassEx(&wc);
     app->window = CreateWindow((LPCWSTR)"ffenestri", (LPCWSTR)"", windowStyle, CW_USEDEFAULT,
-                                      CW_USEDEFAULT, app->width, app->height, NULL, NULL,
-                                      GetModuleHandle(NULL), NULL);
+                                CW_USEDEFAULT, app->width, app->height, NULL, NULL,
+                                hInstance, NULL);
 
     // Private setTitle as we're on the main thread
     setTitle(app, app->title);
@@ -211,8 +207,8 @@ void Run(struct Application* app, int argc, char **argv) {
     UpdateWindow(app->window);
     SetFocus(app->window);
 
-    // TODO: Add webview2
-//    initWebView2(app->window);
+    // Add webview2
+    initWebView2(app, 1, initialCallback);
 
     // Main event loop
     MSG  msg;
