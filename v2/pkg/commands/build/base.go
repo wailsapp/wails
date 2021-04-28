@@ -3,6 +3,7 @@ package build
 import (
 	"bytes"
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/ffenestri/windows/x64"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -292,6 +293,18 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	// Format error if we have one
 	if err != nil {
 		return fmt.Errorf("%s\n%s", err, string(stde.Bytes()))
+	}
+
+	// If we are targeting windows, dump the DLLs
+	if options.Platform == "windows" {
+		err := os.WriteFile(filepath.Join(appDir, "webview2.dll"), x64.WebView2, 0755)
+		if err != nil {
+			return err
+		}
+		err = os.WriteFile(filepath.Join(appDir, "WebView2Loader.dll"), x64.WebView2Loader, 0755)
+		if err != nil {
+			return err
+		}
 	}
 
 	if !options.Compress {
