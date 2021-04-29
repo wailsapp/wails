@@ -295,6 +295,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		return fmt.Errorf("%s\n%s", err, string(stde.Bytes()))
 	}
 
+	println("Done.")
 	// If we are targeting windows, dump the DLLs
 	if options.Platform == "windows" {
 		err := os.WriteFile(filepath.Join(appDir, "webview2.dll"), x64.WebView2, 0755)
@@ -311,6 +312,8 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		return nil
 	}
 
+	println("Compressing application: ")
+
 	// Do we have upx installed?
 	if !shell.CommandExists("upx") {
 		println("Warning: Cannot compress binary: upx not found")
@@ -318,10 +321,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	}
 
 	if verbose {
-		println("  Compressing with:", "upx", "--best", "--no-color", "--no-progress", options.CompiledBinary)
+		println("upx", "--best", "--no-color", "--no-progress", options.CompiledBinary)
 	}
 
-	output, err := exec.Command(options.BuildDirectory, "upx", "--best", "--no-color", "--no-progress", options.CompiledBinary).Output()
+	output, err := exec.Command("upx", "--best", "--no-color", "--no-progress", options.CompiledBinary).Output()
 	if err != nil {
 		return errors.Wrap(err, "Error during compression:")
 	}
