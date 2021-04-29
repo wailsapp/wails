@@ -16,10 +16,17 @@ type Store = runtime.Store
 
 // Run creates an application based on the given config and executes it
 func Run(options *options.App) error {
-	app, err := app.CreateApp(options)
+
+	// Call an Init method manually
+	err := Init()
 	if err != nil {
 		return err
 	}
 
-	return app.Run()
+	mainapp, err := app.CreateApp(options)
+	if err != nil {
+		return err
+	}
+
+	return mainapp.Run()
 }
