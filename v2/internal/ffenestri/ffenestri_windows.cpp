@@ -70,14 +70,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             DestroyApplication(app);
             break;
         }
-//        case WM_SIZE: {
-//            if( app->webviewController != nullptr) {
-//                RECT bounds;
-//                GetClientRect(app->window, &bounds);
-//                app->webviewController->put_Bounds(bounds);
-//            }
-//            break;
-//        }
+        case WM_SIZE: {
+            if( app->webviewController != nullptr) {
+                RECT bounds;
+                GetClientRect(app->window, &bounds);
+                app->webviewController->put_Bounds(bounds);
+            }
+            break;
+        }
         case WM_GETMINMAXINFO: {
             // Exit early if this is called before the window is created.
             if ( app == NULL ) {
@@ -179,6 +179,7 @@ void Run(struct Application* app, int argc, char **argv) {
     HINSTANCE hInstance = GetModuleHandle(NULL);
     ZeroMemory(&wc, sizeof(WNDCLASSEX));
     wc.cbSize = sizeof(WNDCLASSEX);
+    wc.style = CS_HREDRAW | CS_VREDRAW;
     wc.hInstance = hInstance;
     wc.lpszClassName = (LPCWSTR)"ffenestri";
     wc.lpfnWndProc   = WndProc;
