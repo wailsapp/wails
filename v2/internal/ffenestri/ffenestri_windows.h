@@ -9,7 +9,14 @@
 #include <windows.h>
 #include <wingdi.h>
 #include <functional>
+#include <codecvt>
 #include "windows/WebView2.h"
+
+#include "assets.h"
+
+// TODO:
+//#include "userdialogicons.h"
+
 
 struct Application{
     // Window specific
@@ -34,6 +41,8 @@ struct Application{
     LONG maxWidth;
     LONG maxHeight;
     int frame;
+
+    char* bindings;
 };
 
 #define ON_MAIN_THREAD(code) dispatch( [=]{ code; } )
@@ -44,5 +53,12 @@ typedef std::function<void(ICoreWebView2Controller *)> comHandlerCallback;
 
 void center(struct Application*);
 void setTitle(struct Application* app, const char *title);
+char* LPWSTRToCstr(LPWSTR input);
+void loadAssets(struct Application* app);
+
+// Callback
+extern "C" {
+    void messageFromWindowCallback(const char *);
+}
 
 #endif

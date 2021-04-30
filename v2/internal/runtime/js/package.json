@@ -4,8 +4,8 @@
   "description": "The Javascript Wails Runtime",
   "main": "index.js",
   "scripts": {
-    "build:desktop": "./node_modules/.bin/eslint core/ && ./node_modules/.bin/webpack --env desktop --colors",
-    "build:server": "./node_modules/.bin/eslint core/ && ./node_modules/.bin/webpack --env server --colors",
+    "build:desktop": "npx eslint core/ && npx webpack --env desktop --colors",
+    "build:server": "npx eslint core/ && npx webpack --env server --colors",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

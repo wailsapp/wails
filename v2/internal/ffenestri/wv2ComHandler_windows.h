@@ -12,14 +12,17 @@ class wv2ComHandler
         :   public ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler,
             public ICoreWebView2CreateCoreWebView2ControllerCompletedHandler,
             public ICoreWebView2WebMessageReceivedEventHandler,
-            public ICoreWebView2PermissionRequestedEventHandler {
+            public ICoreWebView2PermissionRequestedEventHandler
+{
 
+    struct Application *app;
     HWND window;
     messageCallback mcb;
     comHandlerCallback cb;
 
     public:
-        wv2ComHandler(HWND window, messageCallback mcb, comHandlerCallback cb) {
+        wv2ComHandler(struct Application *app, HWND window, messageCallback mcb, comHandlerCallback cb) {
+            this->app = app;
             this->window = window;
             this->mcb = mcb;
             this->cb = cb;
@@ -47,17 +50,32 @@ class wv2ComHandler
           cb(controller);
           return S_OK;
         }
+
+        // This is called when JS posts a message back to webkit
         HRESULT STDMETHODCALLTYPE Invoke(
             ICoreWebView2 *sender, ICoreWebView2WebMessageReceivedEventArgs *args) {
-                                         printf("CCCCCCCCCCC\n");
           LPWSTR message;
           args->TryGetWebMessageAsString(&message);
+          if ( message == nullptr ) {
+            return S_OK;
+          }
+          const char *m = LPWSTRToCstr(message);
+          switch(m[0]) {
 
-          std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wideCharConverter;
-          mcb(wideCharConverter.to_bytes(message));
-          sender->PostWebMessageAsString(message);
+          // Standard message for backend
+          case 'S':
+            printf("--> Message to backend: %s\n", &m[1]);
+            messageFromWindowCallback(&m[1]);
+            break;
+          // DOM Initialised
+        case 'I':
+            loadAssets(app);
+            break;
 
-          CoTaskMemFree(message);
+          default:
+            printf("----> Unknown message type: %c\n", m[0]);
+          }
+          delete[] m;
           return S_OK;
         }
         HRESULT STDMETHODCALLTYPE

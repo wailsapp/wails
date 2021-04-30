@@ -1,4 +1,6 @@
-// Some code may be inspired by or directly used from Webview.
+// Some code may be inspired by or directly used from Webview (c) zserge.
+// License included in README.md
+
 #include "ffenestri_windows.h"
 #include "wv2ComHandler_windows.h"
 #include <functional>
@@ -7,13 +9,33 @@
 #include <locale>
 #include <codecvt>
 #include "windows/WebView2.h"
+#include <Shlobj.h>
 
 int debug = 0;
 DWORD mainThread;
 
+// --- Assets
+extern const unsigned char runtime;
+extern const unsigned char *defaultDialogIcons[];
+
 // dispatch will execute the given `func` pointer
 void dispatch(dispatchFunction func) {
     PostThreadMessage(mainThread, WM_APP, 0, (LPARAM) new dispatchFunction(func));
+}
+
+LPWSTR cstrToLPWSTR(const char *cstr) {
+    int wchars_num = MultiByteToWideChar( CP_UTF8 , 0 , cstr , -1, NULL , 0 );
+    wchar_t* wstr = new wchar_t[wchars_num+1];
+    MultiByteToWideChar( CP_UTF8 , 0 , cstr , -1, wstr , wchars_num );
+    return wstr;
+}
+
+// Credit: https://stackoverflow.com/a/9842450
+char* LPWSTRToCstr(LPWSTR input) {
+    int length = WideCharToMultiByte(CP_UTF8, 0, input, -1, 0, 0, NULL, NULL);
+    char* output = new char[length];
+    WideCharToMultiByte(CP_UTF8, 0, input, -1, output , length, NULL, NULL);
+    return output;
 }
 
 struct Application *NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel, int hideWindowOnClose) {
@@ -59,6 +81,15 @@ void SetMaxWindowSize(struct Application* app, int maxWidth, int maxHeight) {
     app->maxWidth = (LONG)maxWidth;
     app->maxHeight = (LONG)maxHeight;
 }
+
+void SetBindings(struct Application *app, const char *bindings) {
+    std::string temp = std::string("window.wailsbindings = \"") + std::string(bindings) + std::string("\";");
+    app->bindings = new char[temp.length()+1];
+	memcpy(app->bindings, temp.c_str(), temp.length()+1);
+    printf("length = %d\n", temp.length());
+    printf("app->bindings: %s\n", app->bindings);
+}
+
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
@@ -116,30 +147,77 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     }
     return 0;
 }
+
+void init(struct Application *app, const char* js) {
+    LPCWSTR wjs = cstrToLPWSTR(js);
+    app->webview->AddScriptToExecuteOnDocumentCreated(wjs, nullptr);
+    delete[] wjs;
+}
+
+void loadAssets(struct Application* app) {
+
+    // Load bindings
+    ExecJS(app, app->bindings);
+    delete[] app->bindings;
+
+    // Load runtime
+    ExecJS(app, (const char*)&runtime);
+
+    int index = 1;
+    while(1) {
+        // Get next asset pointer
+        const unsigned char *asset = assets[index];
+
+        // If we have no more assets, break
+        if (asset == 0x00) {
+            break;
+        }
+
+        ExecJS(app, (const char*)asset);
+        index++;
+    };
+
+    	// Disable context menu if not in debug mode
+    	if( debug != 1 ) {
+    		ExecJS(app, "wails._.DisableDefaultContextMenu();");
+    	}
+
+        // Show app if we need to
+    	if( app->startHidden == false ) {
+    	    Show(app);
+    	}
+}
+
+
 //
-bool initWebView2(struct Application *app, int debug, messageCallback cb) {
+bool initWebView2(struct Application *app, int debugEnabled, messageCallback cb) {
+
+    debug = debugEnabled;
+
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
     std::atomic_flag flag = ATOMIC_FLAG_INIT;
     flag.test_and_set();
 
-    char currentExePath[MAX_PATH];
-    GetModuleFileNameA(NULL, currentExePath, MAX_PATH);
-    char *currentExeName = PathFindFileNameA(currentExePath);
-
-
+//    char currentExePath[MAX_PATH];
+//    GetModuleFileNameA(NULL, currentExePath, MAX_PATH);
+//    char *currentExeName = PathFindFileNameA(currentExePath);
 //    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wideCharConverter;
-//    std::wstring userDataFolder = wideCharConverter.from_bytes(std::getenv("APPDATA"));
-//    std::wstring currentExeNameW = wideCharConverter.from_bytes(currentExeName);
-
-//    printf("userdata folder = %s\n", userDataFolder.c_str());
+//    auto exeName = wideCharConverter.from_bytes(currentExeName);
+//
+//    PWSTR path;
+//    HRESULT appDataResult = SHGetFolderPathAndSubDir(app->window, CSIDL_LOCAL_APPDATA, nullptr, SHGFP_TYPE_CURRENT, exeName.c_str(), path);
+//    if ( appDataResult == false ) {
+//        path = nullptr;
+//    }
+//
 
     ICoreWebView2Controller *controller;
     ICoreWebView2* webview;
 
     HRESULT res = CreateCoreWebView2EnvironmentWithOptions(
-            nullptr, /*(userDataFolder + L"/" + currentExeNameW).c_str()*/ nullptr, nullptr,
-            new wv2ComHandler(app->window, cb,
+            nullptr, nullptr, nullptr,
+            new wv2ComHandler(app, app->window, cb,
                                      [&](ICoreWebView2Controller *webviewController) {
                                          controller = webviewController;
                                          controller->get_CoreWebView2(&webview);
@@ -163,9 +241,13 @@ bool initWebView2(struct Application *app, int debug, messageCallback cb) {
     GetClientRect(app->window, &bounds);
     app->webviewController->put_Bounds(bounds);
 
-    // Schedule an async task to navigate to Bing
-    app->webview->Navigate(L"https://wails.app/");
-////    init("window.external={invoke:s=>window.chrome.webview.postMessage(s)}");
+    // Callback hack
+    app->webview->AddScriptToExecuteOnDocumentCreated(L"window.chrome.webview.postMessage('I');", nullptr);
+    // Load the HTML
+    LPCWSTR html = (LPCWSTR) cstrToLPWSTR((char*)assets[0]);
+    app->webview->Navigate(html);
+
+	messageFromWindowCallback("Ej{\"name\":\"wails:launched\",\"data\":[]}");
     return true;
 }
 
@@ -217,12 +299,6 @@ void Run(struct Application* app, int argc, char **argv) {
 
     // private center() as we are on main thread
     center(app);
-//    if( debug == 1 ) {
-//        BOOL supported = SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-//        if( !supported ) {
-//            SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
-//        }
-//    }
     ShowWindow(app->window, startVisibility);
     UpdateWindow(app->window);
     SetFocus(app->window);
@@ -256,10 +332,13 @@ void SetDebug(struct Application* app, int flag) {
     debug = flag;
 }
 
-void SetBindings(struct Application* app, const char *bindings) {
-}
-
 void ExecJS(struct Application* app, const char *script) {
+    printf("Exec: %s\n", script);
+    ON_MAIN_THREAD(
+        LPWSTR s = cstrToLPWSTR(script);
+        app->webview->ExecuteScript(s, nullptr);
+        delete[] s;
+    );
 }
 
 void hide(struct Application* app) {
@@ -407,13 +486,12 @@ void SetPosition(struct Application* app, int x, int y) {
 void Quit(struct Application* app) {
 }
 
+
 // Credit: https://stackoverflow.com/a/6693107
 void setTitle(struct Application* app, const char *title) {
-    int wchars_num = MultiByteToWideChar( CP_UTF8 , 0 , title , -1, NULL , 0 );
-    wchar_t* wstr = new wchar_t[wchars_num];
-    MultiByteToWideChar( CP_UTF8 , 0 , title , -1, wstr , wchars_num );
-    SetWindowText(app->window, wstr);
-    delete[] wstr;
+    LPCTSTR text = cstrToLPWSTR(title);
+    SetWindowText(app->window, text);
+    delete[] text;
 }
 
 void SetTitle(struct Application* app, const char *title) {
