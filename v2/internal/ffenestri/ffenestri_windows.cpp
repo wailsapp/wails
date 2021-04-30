@@ -86,8 +86,6 @@ void SetBindings(struct Application *app, const char *bindings) {
     std::string temp = std::string("window.wailsbindings = \"") + std::string(bindings) + std::string("\";");
     app->bindings = new char[temp.length()+1];
 	memcpy(app->bindings, temp.c_str(), temp.length()+1);
-    printf("length = %d\n", temp.length());
-    printf("app->bindings: %s\n", app->bindings);
 }
 
 
@@ -154,14 +152,23 @@ void init(struct Application *app, const char* js) {
     delete[] wjs;
 }
 
+void execJS(struct Application* app, const char *script) {
+    LPWSTR s = cstrToLPWSTR(script);
+    app->webview->ExecuteScript(s, nullptr);
+    delete[] s;
+}
+
 void loadAssets(struct Application* app) {
 
+    // patch window.external.invoke
+    execJS(app, "window.external={invoke:s=>window.chrome.webview.postMessage(s)}");
+
     // Load bindings
-    ExecJS(app, app->bindings);
+    execJS(app, app->bindings);
     delete[] app->bindings;
 
     // Load runtime
-    ExecJS(app, (const char*)&runtime);
+    execJS(app, (const char*)&runtime);
 
     int index = 1;
     while(1) {
@@ -173,13 +180,13 @@ void loadAssets(struct Application* app) {
             break;
         }
 
-        ExecJS(app, (const char*)asset);
+        execJS(app, (const char*)asset);
         index++;
     };
 
     	// Disable context menu if not in debug mode
     	if( debug != 1 ) {
-    		ExecJS(app, "wails._.DisableDefaultContextMenu();");
+    		execJS(app, "wails._.DisableDefaultContextMenu();");
     	}
 
         // Show app if we need to
@@ -333,11 +340,8 @@ void SetDebug(struct Application* app, int flag) {
 }
 
 void ExecJS(struct Application* app, const char *script) {
-    printf("Exec: %s\n", script);
     ON_MAIN_THREAD(
-        LPWSTR s = cstrToLPWSTR(script);
-        app->webview->ExecuteScript(s, nullptr);
-        delete[] s;
+        execJS(app, script);
     );
 }
 
@@ -478,9 +482,9 @@ void setPosition(struct Application* app, int x, int y) {
 }
 
 void SetPosition(struct Application* app, int x, int y) {
-    ON_MAIN_THREAD(
-        setPosition(app, x, y);
-    );
+//    ON_MAIN_THREAD(
+//        setPosition(app, x, y);
+//    );
 }
 
 void Quit(struct Application* app) {
