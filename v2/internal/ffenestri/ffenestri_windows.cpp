@@ -161,14 +161,14 @@ void execJS(struct Application* app, const char *script) {
 void loadAssets(struct Application* app) {
 
     // patch window.external.invoke
-    execJS(app, "window.external={invoke:s=>window.chrome.webview.postMessage(s)}");
+    std::string initialCode = std::string("window.external={invoke:s=>window.chrome.webview.postMessage(s)};");
 
     // Load bindings
-    execJS(app, app->bindings);
+    initialCode += std::string(app->bindings);
     delete[] app->bindings;
 
     // Load runtime
-    execJS(app, (const char*)&runtime);
+    initialCode += std::string((const char*)&runtime);
 
     int index = 1;
     while(1) {
@@ -180,19 +180,33 @@ void loadAssets(struct Application* app) {
             break;
         }
 
-        execJS(app, (const char*)asset);
+        initialCode += std::string((const char*)asset);
         index++;
     };
 
-    	// Disable context menu if not in debug mode
-    	if( debug != 1 ) {
-    		execJS(app, "wails._.DisableDefaultContextMenu();");
-    	}
+    // Disable context menu if not in debug mode
+    if( debug != 1 ) {
+        initialCode += std::string("wails._.DisableDefaultContextMenu();");
+    }
 
-        // Show app if we need to
-    	if( app->startHidden == false ) {
-    	    Show(app);
-    	}
+    initialCode += std::string("window.external.invoke('completed');");
+
+    // Keep a copy of the code
+    app->initialCode = new char[initialCode.length()+1];
+	memcpy(app->initialCode, initialCode.c_str(), initialCode.length()+1);
+
+    execJS(app, app->initialCode);
+
+    // Show app if we need to
+    if( app->startHidden == false ) {
+        Show(app);
+    }
+}
+
+// This is called when all our assets are loaded into the DOM
+void completed(struct Application* app) {
+    delete[] app->initialCode;
+    app->initialCode = nullptr;
 }
 
 
@@ -327,6 +341,7 @@ void Run(struct Application* app, int argc, char **argv) {
           (*f)();
           delete(f);
       } else if (msg.message == WM_QUIT) {
+        messageFromWindowCallback("Q");
         return;
       }
     }

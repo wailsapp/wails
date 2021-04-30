@@ -60,6 +60,13 @@ class wv2ComHandler
             return S_OK;
           }
           const char *m = LPWSTRToCstr(message);
+
+          // check for internal messages
+          if (strcmp(m, "completed") == 0) {
+            completed(app);
+            return S_OK;
+          }
+
           switch(m[0]) {
 
           // Standard message for backend

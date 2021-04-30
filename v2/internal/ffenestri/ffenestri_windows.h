@@ -42,7 +42,9 @@ struct Application{
     LONG maxHeight;
     int frame;
 
+    // placeholders
     char* bindings;
+    char* initialCode;
 };
 
 #define ON_MAIN_THREAD(code) dispatch( [=]{ code; } )
@@ -54,7 +56,12 @@ typedef std::function<void(ICoreWebView2Controller *)> comHandlerCallback;
 void center(struct Application*);
 void setTitle(struct Application* app, const char *title);
 char* LPWSTRToCstr(LPWSTR input);
+
+// called when the DOM is ready
 void loadAssets(struct Application* app);
+
+// called when the application assets have been loaded into the DOM
+void completed(struct Application* app);
 
 // Callback
 extern "C" {
