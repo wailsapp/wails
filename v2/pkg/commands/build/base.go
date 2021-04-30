@@ -265,6 +265,14 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		v += "-I" + buildBaseDir
 		return v
 	})
+	// Use upsertEnv so we don't overwrite user's CGO_CXXFLAGS
+	cmd.Env = upsertEnv(cmd.Env, "CGO_CXXFLAGS", func(v string) string {
+		if v != "" {
+			v += " "
+		}
+		v += "-I" + buildBaseDir
+		return v
+	})
 
 	cmd.Env = upsertEnv(cmd.Env, "GOOS", func(v string) string {
 		return options.Platform
@@ -430,7 +438,6 @@ func (b *BaseBuilder) NpmRunWithEnvironment(projectDir, buildTarget string, verb
 // BuildFrontend executes the `npm build` command for the frontend directory
 func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 
-	// TODO: Fix this up from the CLI
 	verbose := b.options.Verbosity == VERBOSE
 
 	frontendDir := filepath.Join(b.projectData.Path, "frontend")
