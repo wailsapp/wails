@@ -69,6 +69,9 @@ struct Application *NewApplication(const char *title, int width, int height, int
     // Capture Main Thread
     mainThread = GetCurrentThreadId();
 
+    // Startup url
+    result->startupURL = nullptr;
+
     return result;
 }
 
@@ -88,6 +91,12 @@ void SetBindings(struct Application *app, const char *bindings) {
 	memcpy(app->bindings, temp.c_str(), temp.length()+1);
 }
 
+void performShutdown(struct Application *app) {
+    if( app->startupURL != nullptr ) {
+        delete[] app->startupURL;
+    }
+    messageFromWindowCallback("WC");
+}
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
@@ -207,6 +216,13 @@ void loadAssets(struct Application* app) {
 void completed(struct Application* app) {
     delete[] app->initialCode;
     app->initialCode = nullptr;
+
+    if( app->startupURL == nullptr ) {
+        messageFromWindowCallback("SS");
+        return;
+    }
+    std::string readyMessage = std::string("SS") + std::string(app->startupURL);
+    messageFromWindowCallback(readyMessage.c_str());
 }
 
 
@@ -341,7 +357,7 @@ void Run(struct Application* app, int argc, char **argv) {
           (*f)();
           delete(f);
       } else if (msg.message == WM_QUIT) {
-        messageFromWindowCallback("Q");
+        performShutdown(app);
         return;
       }
     }

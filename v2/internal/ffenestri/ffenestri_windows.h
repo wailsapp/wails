@@ -41,6 +41,7 @@ struct Application{
     LONG maxWidth;
     LONG maxHeight;
     int frame;
+    char *startupURL;
 
     // placeholders
     char* bindings;
