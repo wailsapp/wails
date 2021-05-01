@@ -26,9 +26,8 @@ func (b BridgeClient) Quit() {
 }
 
 func (b BridgeClient) NotifyEvent(message string) {
-	//b.session.sendMessage("n" + message)
+	b.session.sendMessage("n" + message)
 	b.session.log.Info("NotifyEvent: %s", message)
-	b.session.log.Info("NotifyEvent unsupported in Bridge mode")
 }
 
 func (b BridgeClient) CallResult(message string) {

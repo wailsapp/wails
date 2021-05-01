@@ -1647,10 +1647,10 @@
                 }
                 // });
                 break;
-            // 	// Notifications
-            // case 'n':
-            // 	addScript(message.data.slice(1), true);
-            // 	break;
+            // Notifications
+            case 'n':
+            	window.wails._.Notify(message.data.slice(1));
+            	break;
             // 	// Binding
             // case 'b':
             // 	const binding = message.data.slice(1);
