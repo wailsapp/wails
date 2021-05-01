@@ -144,6 +144,8 @@ func goTypeToJSDocType(input string) string {
 		return "number"
 	case input == "bool":
 		return "boolean"
+	case input == "[]byte":
+		return "string"
 	case strings.HasPrefix(input, "[]"):
 		arrayType := goTypeToJSDocType(input[2:])
 		return "Array.<" + arrayType + ">"
