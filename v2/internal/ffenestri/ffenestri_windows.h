@@ -42,6 +42,9 @@ struct Application{
     LONG maxHeight;
     int frame;
     char *startupURL;
+    bool webviewIsTranparent;
+    bool windowBackgroundIsTranslucent;
+    COREWEBVIEW2_COLOR backgroundColour;
 
     // placeholders
     char* bindings;

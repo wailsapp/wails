@@ -45,6 +45,8 @@ extern void DeleteTrayMenuByID(struct Application*, const char *id);
 extern void UpdateTrayMenuLabel(struct Application*, const char* JSON);
 extern void AddContextMenu(struct Application*, char *contextMenuJSON);
 extern void UpdateContextMenu(struct Application*, char *contextMenuJSON);
+extern void WebviewIsTransparent(struct Application*);
+extern void WindowBackgroundIsTranslucent(struct Application*);
 
 #ifdef __cplusplus
 }

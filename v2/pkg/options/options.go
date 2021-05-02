@@ -1,6 +1,7 @@
 package options
 
 import (
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"log"
 	"runtime"
 
@@ -31,6 +32,7 @@ type App struct {
 	ContextMenus      []*menu.ContextMenu
 	TrayMenus         []*menu.TrayMenu
 	Menu              *menu.Menu
+	Windows           *windows.Options
 	Mac               *mac.Options
 	Logger            logger.Logger `json:"-"`
 	LogLevel          logger.LogLevel

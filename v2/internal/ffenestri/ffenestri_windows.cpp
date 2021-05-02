@@ -9,6 +9,7 @@
 #include <locale>
 #include <codecvt>
 #include "windows/WebView2.h"
+#include "effectstructs_windows.h"
 #include <Shlobj.h>
 
 int debug = 0;
@@ -56,12 +57,20 @@ struct Application *NewApplication(const char *title, int width, int height, int
     result->startHidden = startHidden;
     result->logLevel = logLevel;
     result->hideWindowOnClose = hideWindowOnClose;
+    result->webviewIsTranparent = false;
+    result->windowBackgroundIsTranslucent = false;
 
     // Min/Max Width/Height
     result->minWidth = 0;
     result->minHeight = 0;
     result->maxWidth = 0;
     result->maxHeight = 0;
+
+    // Default colour
+    result->backgroundColour.R = 255;
+    result->backgroundColour.G = 255;
+    result->backgroundColour.B = 255;
+    result->backgroundColour.A = 255;
 
     // Have a frame by default
     result->frame = 1;
@@ -96,6 +105,23 @@ void performShutdown(struct Application *app) {
         delete[] app->startupURL;
     }
     messageFromWindowCallback("WC");
+}
+
+void enableTranslucentBackground(struct Application *app) {
+    HMODULE hUser = GetModuleHandleA("user32.dll");
+    if (hUser)
+    {
+        pfnSetWindowCompositionAttribute setWindowCompositionAttribute = (pfnSetWindowCompositionAttribute)GetProcAddress(hUser, "SetWindowCompositionAttribute");
+        if (setWindowCompositionAttribute)
+        {
+            ACCENT_POLICY accent = { ACCENT_ENABLE_BLURBEHIND, 0, 0, 0 };
+            WINDOWCOMPOSITIONATTRIBDATA data;
+            data.Attrib = WCA_ACCENT_POLICY;
+            data.pvData = &accent;
+            data.cbData = sizeof(accent);
+            setWindowCompositionAttribute(app->window, &data);
+        }
+    }
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -334,6 +360,16 @@ void Run(struct Application* app, int argc, char **argv) {
         startVisibility = SW_HIDE;
     }
 
+    // TODO: Make configurable
+//    COREWEBVIEW2_COLOR wvColor;
+//    wvColor.A = 255;
+//    std::weak_ptr<ICoreWebView2Controller2> controller2 = app->webviewController->query<ICoreWebView2Controller2>();
+//    controller2->put_DefaultBackgroundColor(wvColor);
+
+    if( app->windowBackgroundIsTranslucent ) {
+        enableTranslucentBackground(app);
+    }
+
     // private center() as we are on main thread
     center(app);
     ShowWindow(app->window, startVisibility);
@@ -519,6 +555,7 @@ void SetPosition(struct Application* app, int x, int y) {
 }
 
 void Quit(struct Application* app) {
+    DestroyWindow(app->window);
 }
 
 
@@ -547,6 +584,17 @@ void ToggleFullscreen(struct Application* app) {
 void DisableFrame(struct Application* app) {
     app->frame = 0;
 }
+
+// WebviewIsTransparent will make the webview transparent
+// revealing the window underneath
+void WebviewIsTransparent(struct Application *app) {
+	app->webviewIsTranparent = true;
+}
+
+void WindowBackgroundIsTranslucent(struct Application *app) {
+	app->windowBackgroundIsTranslucent = true;
+}
+
 
 void OpenDialog(struct Application* app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolvesAliases, int treatPackagesAsDirectories) {
 }
