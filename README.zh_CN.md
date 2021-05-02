@@ -14,16 +14,16 @@
    <a href="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" rel="nofollow"><img src="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" alt="Release Pipelines"></a>
 </p>
 
-向 Go 程序提供 Web 接口的传统方法是通过内置 Web 服务器。Wails 提供了一种不同的方法：它提供了将 Go 代码和 Web 前端都包装成单个二进制文件的能力。通过处理项目创建、编译和打包，可为您提供工具，使您轻松做到这一点。你所要做的就是发挥创造力！
-
-官方文档可以在 [https://wails.app](https://wails.app)中找到。
-国内镜像站点 [https://wails.top](https://wails.top)
-
 <span id="nav-1"></span>
 
 ## 国际化
 
 [English](README.md) | 简体中文
+
+向 Go 程序提供 Web 接口的传统方法是通过内置 Web 服务器。Wails 提供了一种不同的方法：它提供了将 Go 代码和 Web 前端都包装成单个二进制文件的能力。通过处理项目创建、编译和打包，可为您提供工具，使您轻松做到这一点。你所要做的就是发挥创造力！
+
+官方文档可以在 [https://wails.app](https://wails.app)中找到。
+国内镜像站点 [https://wails.top](https://wails.top)
 
 <span id="nav-2"></span>
 

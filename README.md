@@ -20,6 +20,10 @@
 
 English | [简体中文](README.zh_CN.md)
 
+The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
+
+The official docs can be found at [https://wails.app](https://wails.app).
+
 <span id="nav-2"></span>
 
 ## Contents
@@ -45,10 +49,6 @@ English | [简体中文](README.zh_CN.md)
 - [10. Special Mentions](#nav-10)
 - [11. Licensing](#nav-11)
 - [12. Special Thanks](#nav-12)
-
-The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
-
-The official docs can be found at [https://wails.app](https://wails.app).
 
 <span id="nav-3"></span>
 
