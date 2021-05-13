@@ -1,9 +1,10 @@
 package options
 
 import (
-	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"log"
 	"runtime"
+
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 
 	wailsruntime "github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/pkg/menu"
@@ -63,13 +64,13 @@ func MergeDefaults(appoptions *App) {
 	if appoptions.Width < appoptions.MinWidth {
 		appoptions.Width = appoptions.MinWidth
 	}
-	if appoptions.Width > appoptions.MaxWidth {
+	if appoptions.MaxWidth > 0 && appoptions.Width > appoptions.MaxWidth {
 		appoptions.Width = appoptions.MaxWidth
 	}
 	if appoptions.Height < appoptions.MinHeight {
 		appoptions.Height = appoptions.MinHeight
 	}
-	if appoptions.Height > appoptions.MaxHeight {
+	if appoptions.MaxHeight > 0 && appoptions.Height > appoptions.MaxHeight {
 		appoptions.Height = appoptions.MaxHeight
 	}
 
