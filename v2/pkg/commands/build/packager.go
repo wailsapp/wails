@@ -14,7 +14,7 @@ func packageProject(options *Options, platform string) error {
 
 	var err error
 	switch platform {
-	case "linux", "darwin":
+	case "darwin", "windows":
 		err = packageApplication(options)
 	default:
 		err = fmt.Errorf("packing not supported for %s yet", platform)

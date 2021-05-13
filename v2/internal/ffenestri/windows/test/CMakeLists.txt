@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
-project(test C)
+project(test)
 
-set(CMAKE_C_STANDARD 99)
-set(SOURCES ../../ffenestri_windows.cpp)
+set(CMAKE_CXX_STANDARD 14)
 
-add_executable(test ${SOURCES} main.c)
+add_executable(test main.cpp)

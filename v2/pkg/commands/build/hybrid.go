@@ -30,12 +30,6 @@ func (b *HybridBuilder) BuildAssets(options *Options) error {
 	if err != nil {
 		return err
 	}
-	// Build static assets
-	err = b.buildCustomAssets(b.projectData)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -59,18 +53,6 @@ func (b *HybridBuilder) BuildBaseAssets(options *Options) error {
 	}
 
 	err = b.server.BuildBaseAssets(assets)
-	if err != nil {
-		return err
-	}
-
-	// Build desktop static assets
-	err = b.desktop.buildCustomAssets(b.projectData)
-	if err != nil {
-		return err
-	}
-
-	// Build server static assets
-	err = b.server.buildCustomAssets(b.projectData)
 	if err != nil {
 		return err
 	}

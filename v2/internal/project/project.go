@@ -25,8 +25,8 @@ type Project struct {
 	// The path to the project directory
 	Path string
 
-	// Assets directory
-	AssetsDir string `json:"assetsdir"`
+	// Build directory
+	BuildDir string `json:"builddir"`
 
 	// The output filename
 	OutputFilename string `json:"outputfilename"`
@@ -76,8 +76,8 @@ func Load(projectPath string) (*Project, error) {
 	}
 
 	// Set default assets directory if none given
-	if result.AssetsDir == "" {
-		result.AssetsDir = filepath.Join(result.Path, "assets")
+	if result.BuildDir == "" {
+		result.BuildDir = filepath.Join(result.Path, "build")
 	}
 
 	// Fix up OutputFilename

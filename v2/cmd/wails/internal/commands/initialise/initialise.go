@@ -2,6 +2,7 @@ package initialise
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/buildassets"
 	"io"
 	"strings"
 	"time"
@@ -40,7 +41,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 	// Quiet Init
 	quiet := false
-	command.BoolFlag("q", "Supress output to console", &quiet)
+	command.BoolFlag("q", "Suppress output to console", &quiet)
 
 	initGit := false
 	gitInstalled := git.IsInstalled()
@@ -125,6 +126,12 @@ func initProject(options *templates.Options) error {
 
 	// Install the template
 	err := templates.Install(options)
+	if err != nil {
+		return err
+	}
+
+	// Install the default assets
+	err = buildassets.Install(options.TargetDir, options.ProjectName)
 	if err != nil {
 		return err
 	}

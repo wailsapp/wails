@@ -74,7 +74,7 @@ func Build(options *Options) (string, error) {
 	options.ProjectData = projectData
 
 	// Set build directory
-	options.BuildDirectory = filepath.Join(options.ProjectData.Path, "build", options.Platform, options.OutputType)
+	options.BuildDirectory = filepath.Join(options.ProjectData.Path, "build", "bin")
 
 	// Save the project type
 	projectData.OutputType = options.OutputType
@@ -161,8 +161,14 @@ func Build(options *Options) (string, error) {
 			return "", fmt.Errorf("%s - %s", err.Error(), stderr)
 		}
 		// Remove temp binaries
-		fs.DeleteFile(filepath.Join(options.BuildDirectory, amd64Filename))
-		fs.DeleteFile(filepath.Join(options.BuildDirectory, arm64Filename))
+		err = fs.DeleteFile(filepath.Join(options.BuildDirectory, amd64Filename))
+		if err != nil {
+			return "", err
+		}
+		err = fs.DeleteFile(filepath.Join(options.BuildDirectory, arm64Filename))
+		if err != nil {
+			return "", err
+		}
 		projectData.OutputFilename = outputFile
 		options.CompiledBinary = filepath.Join(options.BuildDirectory, outputFile)
 	} else {
@@ -171,7 +177,6 @@ func Build(options *Options) (string, error) {
 			return "", err
 		}
 	}
-	outputLogger.Println("Done.")
 
 	// Do we need to pack the app?
 	if options.Pack {

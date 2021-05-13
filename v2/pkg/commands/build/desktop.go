@@ -25,11 +25,11 @@ func (d *DesktopBuilder) BuildAssets(options *Options) error {
 	var err error
 
 	// Check assets directory exists
-	if !fs.DirExists(options.ProjectData.AssetsDir) {
+	if !fs.DirExists(options.ProjectData.BuildDir) {
 		// Path to default assets
 		defaultAssets := fs.RelativePath("./internal/assets")
 		// Copy the default assets directory
-		err := fs.CopyDir(defaultAssets, options.ProjectData.AssetsDir)
+		err := fs.CopyDir(defaultAssets, options.ProjectData.BuildDir)
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, options *Opti
 func (d *DesktopBuilder) processApplicationIcon(assetDir string) error {
 
 	// Copy default icon if one doesn't exist
-	iconFile := filepath.Join(d.projectData.AssetsDir, "appicon.png")
+	iconFile := filepath.Join(d.projectData.BuildDir, "appicon.png")
 	if !fs.FileExists(iconFile) {
 		err := fs.CopyFile(defaultIconPath(), iconFile)
 		if err != nil {

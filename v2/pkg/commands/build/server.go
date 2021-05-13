@@ -37,12 +37,6 @@ func (s *ServerBuilder) BuildAssets(_ *Options) error {
 		return err
 	}
 
-	// Build static assets
-	err = s.buildCustomAssets(s.projectData)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 

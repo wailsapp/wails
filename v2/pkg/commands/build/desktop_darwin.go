@@ -27,7 +27,7 @@ func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) err
 	var err error
 
 	// Get all the tray icon filenames
-	trayIconDirectory := filepath.Join(options.ProjectData.AssetsDir, "tray")
+	trayIconDirectory := filepath.Join(options.ProjectData.BuildDir, "tray")
 
 	// If the directory doesn't exist, create it
 	if !fs.DirExists(trayIconDirectory) {
@@ -116,7 +116,7 @@ func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) e
 	var err error
 
 	// Get all the dialog icon filenames
-	dialogIconDirectory := filepath.Join(options.ProjectData.AssetsDir, "dialog")
+	dialogIconDirectory := filepath.Join(options.ProjectData.BuildDir, "dialog")
 	var dialogIconFilenames []string
 
 	// If the directory does not exist, create it

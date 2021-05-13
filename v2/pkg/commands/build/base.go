@@ -152,7 +152,16 @@ func (b *BaseBuilder) CleanUp() {
 func (b *BaseBuilder) OutputFilename(options *Options) string {
 	outputFile := options.OutputFile
 	if outputFile == "" {
-		outputFile = b.projectData.OutputFilename
+		target := strings.TrimSuffix(b.projectData.OutputFilename, ".exe")
+		if b.projectData.OutputType != "desktop" {
+			target += "-" + b.projectData.OutputType
+		}
+		switch b.options.Platform {
+		case "windows":
+			outputFile = b.projectData.OutputFilename
+		case "darwin", "linux":
+			outputFile = fmt.Sprintf("%s-%s-%s", target, b.options.Platform, b.options.Arch)
+		}
 	}
 	return outputFile
 }
@@ -306,7 +315,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	println("Done.")
 	// If we are targeting windows, dump the DLLs
 	if options.Platform == "windows" {
-		err := os.WriteFile(filepath.Join(appDir, "webview2.dll"), x64.WebView2, 0755)
+		err := os.WriteFile(filepath.Join(appDir, "webview.dll"), x64.WebView2, 0755)
 		if err != nil {
 			return err
 		}

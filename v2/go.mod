@@ -10,10 +10,11 @@ require (
 	github.com/imdario/mergo v0.3.11
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/leaanthony/clir v1.0.4
-	github.com/leaanthony/debme v1.1.2
+	github.com/leaanthony/debme v1.2.0
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/gosod v1.0.1
 	github.com/leaanthony/slicer v1.5.0
+	github.com/leaanthony/winicon v0.0.0-20200606125418-4419cea822a0
 	github.com/matryer/is v1.4.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/olekukonko/tablewriter v0.0.4

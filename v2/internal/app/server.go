@@ -79,7 +79,7 @@ func (a *App) Run() error {
 	// Default app options
 	var port = 8080
 	var ip = "localhost"
-	var supressLogging = false
+	var SuppressLogging = false
 	var debugMode = false
 
 	// Create CLI
@@ -89,7 +89,7 @@ func (a *App) Run() error {
 	cli.IntFlag("p", "Port to serve on", &port)
 	cli.StringFlag("i", "IP to serve on", &ip)
 	cli.BoolFlag("d", "Debug mode", &debugMode)
-	cli.BoolFlag("q", "Supress logging", &supressLogging)
+	cli.BoolFlag("q", "Suppress logging", &SuppressLogging)
 
 	// Setup main action
 	cli.Action(func() error {
@@ -98,8 +98,8 @@ func (a *App) Run() error {
 		a.webserver.SetPort(port)
 		a.webserver.SetIP(ip)
 		a.webserver.SetBindings(a.bindings)
-		// Log information (if we aren't supressing it)
-		if !supressLogging {
+		// Log information (if we aren't Suppressing it)
+		if !SuppressLogging {
 			cli.PrintBanner()
 			a.logger.Info("Running server at %s", a.webserver.URL())
 		}

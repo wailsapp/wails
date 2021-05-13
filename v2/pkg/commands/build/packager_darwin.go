@@ -49,7 +49,7 @@ func packageApplication(options *Options) error {
 	}
 
 	// Generate Icons
-	err = processApplicationIcon(resourceDir, options.ProjectData.AssetsDir)
+	err = processApplicationIcon(resourceDir, options.ProjectData.BuildDir)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func packageApplication(options *Options) error {
 func processPList(options *Options, contentsDirectory string) error {
 
 	// Check if plist already exists in project dir
-	plistFile := filepath.Join(options.ProjectData.AssetsDir, "mac", "Info.plist")
+	plistFile := filepath.Join(options.ProjectData.BuildDir, "darwin", "Info.plist")
 
 	// If the file doesn't exist, generate it
 	if !fs.FileExists(plistFile) {
