@@ -109,8 +109,8 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 
 	buildCommand := slicer.String()
 	userid := 1000
-	user, _ := user.Current()
-	if i, err := strconv.Atoi(user.Uid); err == nil {
+	currentUser, _ := user.Current()
+	if i, err := strconv.Atoi(currentUser.Uid); err == nil {
 		userid = i
 	}
 	for _, arg := range []string{
@@ -475,7 +475,12 @@ func ServeProject(projectOptions *ProjectOptions, logger *Logger) error {
 	}
 
 	logger.Yellow("Serving Application: " + location)
-	cmd := exec.Command(location)
+	var args []string
+	if len(os.Args) > 2 {
+		args = os.Args[2:]
+		logger.Yellow("Passing arguments: %+v", args)
+	}
+	cmd := exec.Command(location, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
