@@ -191,6 +191,6 @@ func Build(options *Options) (string, error) {
 		outputLogger.Println("Done.")
 	}
 
-	return projectData.OutputFilename, nil
+	return options.CompiledBinary, nil
 
 }

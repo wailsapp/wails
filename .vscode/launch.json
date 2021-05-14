@@ -43,6 +43,18 @@
         "update",
         "-pre"
       ]
+    },
+    {
+      "name": "Wails Debug Sample",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/cmd/wails/main.go",
+      "env": {},
+      "cwd": "D:\\Development\\wails\\sample2",
+      "args": [
+        "build",
+      ]
     }
   ]
 }

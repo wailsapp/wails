@@ -283,6 +283,17 @@ func buildApp(logger *clilogger.CLILogger, outputType string, ldflags string, co
 	// Create random output file
 	outputFile := fmt.Sprintf("dev-%d", time.Now().Unix())
 
+	switch runtime.GOOS {
+	case "windows":
+		if !strings.HasSuffix(outputFile, ".exe") {
+			outputFile += ".exe"
+		}
+	case "darwin", "linux":
+		if strings.HasSuffix(outputFile, ".exe") {
+			outputFile = strings.TrimSuffix(outputFile, ".exe")
+		}
+	}
+
 	// Create BuildOptions
 	buildOptions := &build.Options{
 		Logger:         logger,
