@@ -90,9 +90,6 @@ func (a *AssetBundle) processHTML(htmldata string) error {
 
 			//if the name of the element is "title"
 			if "link" == token.Data {
-				//the next token should be the page title
-				tokenType = tokenizer.Next()
-				//just make sure it's actually a text token
 				asset := &Asset{}
 				for _, attr := range token.Attr {
 					// Favicon
@@ -128,8 +125,6 @@ func (a *AssetBundle) processHTML(htmldata string) error {
 				}
 			}
 			if "script" == token.Data {
-				tokenType = tokenizer.Next()
-				//just make sure it's actually a text token
 				asset := &Asset{Type: AssetTypes.JS}
 				for _, attr := range token.Attr {
 					if attr.Key == "src" {
