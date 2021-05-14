@@ -3,6 +3,7 @@ package project
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -65,7 +66,7 @@ func Load(projectPath string) (*Project, error) {
 	}
 
 	// Fix up our project paths
-	result.Path = filepath.ToSlash(projectPath) + "/"
+	result.Path = projectPath + string(os.PathSeparator)
 	result.HTML = filepath.Join(projectPath, result.HTML)
 	result.JS = filepath.Join(projectPath, result.JS)
 	result.CSS = filepath.Join(projectPath, result.CSS)
