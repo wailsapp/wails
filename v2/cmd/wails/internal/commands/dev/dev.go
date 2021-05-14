@@ -3,6 +3,7 @@ package dev
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -72,7 +73,12 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		if err != nil {
 			return err
 		}
-		defer watcher.Close()
+		defer func(watcher *fsnotify.Watcher) {
+			err := watcher.Close()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}(watcher)
 
 		var debugBinaryProcess *process.Process = nil
 		var extensionsThatTriggerARebuild = strings.Split(extensions, ",")
@@ -83,12 +89,18 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		debounceQuit := make(chan bool, 1)
 
+		var passthruArgs []string
+		if len(os.Args) > 2 {
+			passthruArgs = os.Args[2:]
+		}
+
 		// Do initial build
 		logger.Println("Building application for development...")
-		newProcess, err := restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess, loglevel)
+		newProcess, err := restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs)
 		if newProcess != nil {
 			debugBinaryProcess = newProcess
 		}
+
 		if err != nil {
 			return err
 		}
@@ -135,7 +147,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				// Do a rebuild
 
 				// Try and build the app
-				newBinaryProcess, err := restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess, loglevel)
+				newBinaryProcess, err := restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs)
 				if err != nil {
 					fmt.Printf("Error during build: %s", err.Error())
 					return
@@ -224,7 +236,7 @@ exit:
 	}
 }
 
-func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, compilerCommand string, debugBinaryProcess *process.Process, loglevel string) (*process.Process, error) {
+func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, compilerCommand string, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string) (*process.Process, error) {
 
 	appBinary, err := buildApp(logger, outputType, ldflags, compilerCommand)
 	println()
@@ -247,8 +259,12 @@ func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, 
 
 	// TODO: Generate `backend.js`
 
-	// Start up new binary
-	newProcess := process.NewProcess(logger, appBinary, "-loglevel", loglevel)
+	// Start up new binary with correct args
+	var args = []string{"-loglevel", loglevel}
+	if len(passthruArgs) > 0 {
+		args = append(args, passthruArgs...)
+	}
+	newProcess := process.NewProcess(logger, appBinary, args...)
 	err = newProcess.Start()
 	if err != nil {
 		// Remove binary
