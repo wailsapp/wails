@@ -21,7 +21,16 @@ func TestAsset_minifiedData(t *testing.T) {
 				Path: "foo.html",
 				Data: "<link\n  rel=\"stylesheet\"\n href=\"src/foo.css\"\n>\n",
 			},
-			want: "data:text/html;charset=utf-8,%3Clink%20rel=%22stylesheet%22%20href=%22src%2ffoo.css%22%3E",
+			want: "data:text/html;charset=utf-8,%3Clink%20rel=%22stylesheet%22%20href=%22src%2ffoo.css%22%20%3E%20",
+		},
+		{
+			name: "multi-line tag no spaces",
+			fields: fields{
+				Type: AssetTypes.HTML,
+				Path: "foo.html",
+				Data: "<link\nrel=\"stylesheet\"\nhref=\"src/foo.css\"\n>\n",
+			},
+			want: "data:text/html;charset=utf-8,%3Clink%20rel=%22stylesheet%22%20href=%22src%2ffoo.css%22%20%3E%20",
 		},
 	}
 	for _, tt := range tests {

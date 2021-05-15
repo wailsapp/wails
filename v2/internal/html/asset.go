@@ -57,11 +57,8 @@ func (a *Asset) minifiedData() (string, error) {
 	case AssetTypes.HTML:
 
 		// Escape HTML
-		var re = regexp.MustCompile(`\s{2,}`)
+		var re = regexp.MustCompile(`[\s]+`)
 		result := re.ReplaceAllString(a.Data, ` `)
-		result = strings.ReplaceAll(result, "\n", "")
-		result = strings.ReplaceAll(result, "\r\n", "")
-		result = strings.ReplaceAll(result, "\n", "")
 
 		// Inject wailsloader code
 		result = strings.Replace(result, `</body>`, `<script id='wailsloader'>window.wailsloader = { html: true, runtime: false, userjs: false, usercss: false };var self=document.querySelector('#wailsloader');self.parentNode.removeChild(self);</script></body>`, 1)
