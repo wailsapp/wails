@@ -84,7 +84,7 @@ func (a *AssetBundle) processHTML(htmldata string) error {
 		}
 
 		//process the token according to the token type...
-		if tokenType == html.StartTagToken {
+		if tokenType == html.StartTagToken || tokenType == html.SelfClosingTagToken {
 			//get the token
 			token := tokenizer.Token()
 

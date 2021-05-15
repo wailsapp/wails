@@ -52,18 +52,13 @@ func (a *Asset) AsString() string {
 	return a.Data
 }
 
-// AsCHexData processes the asset data so it may be used by C
-func (a *Asset) AsCHexData() string {
-
-	// This will be our final string to hexify
-	dataString := a.Data
-
+func (a *Asset) minifiedData() (string, error) {
 	switch a.Type {
 	case AssetTypes.HTML:
 
 		// Escape HTML
 		var re = regexp.MustCompile(`\s{2,}`)
-		result := re.ReplaceAllString(a.Data, ``)
+		result := re.ReplaceAllString(a.Data, ` `)
 		result = strings.ReplaceAll(result, "\n", "")
 		result = strings.ReplaceAll(result, "\r\n", "")
 		result = strings.ReplaceAll(result, "\n", "")
@@ -75,7 +70,7 @@ func (a *Asset) AsCHexData() string {
 		urlString := strings.ReplaceAll(url.String(), "/", "%2f")
 
 		// Save Data uRI string
-		dataString = "data:text/html;charset=utf-8," + urlString
+		return "data:text/html;charset=utf-8," + urlString, nil
 
 	case AssetTypes.CSS:
 
@@ -91,19 +86,28 @@ func (a *Asset) AsCHexData() string {
 		result = strings.ReplaceAll(result, `'`, `\'`)
 		result = strings.ReplaceAll(result, ` {`, `{`)
 		result = strings.ReplaceAll(result, `: `, `:`)
-		dataString = fmt.Sprintf("window.wails._.InjectCSS(\"%s\");", result)
+		return fmt.Sprintf("window.wails._.InjectCSS(\"%s\");", result), nil
 
 	case AssetTypes.JS:
 		m := minify.New()
 		m.AddFunc("application/javascript", js.Minify)
 		var err error
-		dataString, err = m.String("application/javascript", a.Data+";")
+		result, err := m.String("application/javascript", a.Data+";")
 		if err != nil {
-			log.Fatal(err)
+			return "", err
 		}
-		a.Data = dataString
+		return result, nil
+	default:
+		return "", fmt.Errorf("minification for asset type %s not implemented", a.Type)
 	}
+}
 
+// AsCHexData processes the asset data so it may be used by C
+func (a *Asset) AsCHexData() string {
+	dataString, err := a.minifiedData()
+	if err != nil {
+		log.Fatal(err)
+	}
 	// Get byte data of the string
 	bytes := *(*[]byte)(unsafe.Pointer(&dataString))
 
