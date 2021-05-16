@@ -93,7 +93,6 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 			w.ipc.Dispatch(message, w.callback)
 		},
 	})
-		fmt.Println("Control")
 
 	// Set minimum and maximum sizes
 	if setMinSize {
@@ -101,7 +100,6 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	}
 	if setMaxSize {
 		w.SetMaxSize(maxWidth, maxHeight)
-		fmt.Println("Max")
 	}
 
 	// Set minimum and maximum sizes
@@ -124,7 +122,6 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	}
 
 	w.log.Info("Initialised")
-
 	return nil
 }
 

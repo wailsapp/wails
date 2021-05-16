@@ -34,10 +34,10 @@ The official docs can be found at [https://wails.app](https://wails.app).
 
 This project is supported by these kind people / companies:
 
+<a href="https://github.com/matryer" style="width:100px"><img src="https://github.com/matryer.png" width="100"/></a>
 <a href="https://www.jetbrains.com?from=Wails" style="width:100px"><img src="jetbrains-grayscale.png" width="100"/></a>
-<a href="https://pace.dev" style="width:100px"><img src="pace.jpeg" width="100"/></a>
-<a href="https://github.com/tc-hib" style="width:50px;border-radius: 50%">
-  <img src="https://github.com/tc-hib.png?size=50" width="50" style="border-radius: 50%"/>
+<a href="https://github.com/tc-hib" style="width:55px;border-radius: 50%">
+  <img src="https://github.com/tc-hib.png?size=55" width="55" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/picatz" style="width:50px;border-radius: 50%">
   <img src="https://github.com/picatz.png?size=50" width="50" style="border-radius: 50%"/>
@@ -45,12 +45,18 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/tylertravisty" style="width:50px;border-radius: 50%">
   <img src="https://github.com/tylertravisty.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
+<a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/trea" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/trea.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
 
 ## Installation
 
 Wails uses cgo to bind to the native rendering engines so a number of platform dependent libraries are needed as well as an installation of Go. The basic requirements are:
 
-- Go 1.13
+- Go 1.16
 - npm
 
 ### MacOS

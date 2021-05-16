@@ -45,4 +45,4 @@ Wails is what it is because of the time and effort given by these great people. 
   * [Alexander Matviychuk](https://github.com/alexmat)
   * [RH12503](https://github.com/RH12503) 
   * [hi019](https://github.com/hi019)
-  
+  * [Igor Minen](https://github.com/Igogrek)
