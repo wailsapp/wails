@@ -138,6 +138,25 @@ distributions:
             help: Please install with `sudo yum install gtk3-devel` and try again
           - name: webkitgtk3-devel
             help: Please install with `sudo yum install webkitgtk3-devel` and try again
+  rhel:
+    id: rhel
+    releases:
+      default:
+        version: default
+        name: Red Hat Enterprise Linux
+        gccversioncommand: *gccdumpversion
+        programs:
+          - name: gcc
+            help: Please install with `sudo yum install gcc-c++ make` and try again
+          - name: pkg-config
+            help: Please install with `sudo yum install pkgconf-pkg-config` and try again
+          - name: npm
+            help: Please install with `sudo yum install epel-release && sudo yum install nodejs` and try again
+        libraries:
+          - name: gtk3-devel
+            help: Please install with `sudo yum install gtk3-devel` and try again
+          - name: webkitgtk3-devel
+            help: Please install with `sudo yum install webkitgtk3-devel` and try again
   fedora:
     id: fedora
     releases:

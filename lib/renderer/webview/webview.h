@@ -2155,6 +2155,10 @@ struct webview_priv
     objc_setAssociatedObject(w->priv.delegate, "webview", (id)(w),
                              OBJC_ASSOCIATION_ASSIGN);
 
+    // Disable damn smart quotes
+    // Credit: https://stackoverflow.com/a/31640511
+    [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"NSAutomaticQuoteSubstitutionEnabled"];
+
     NSRect r = NSMakeRect(0, 0, w->width, w->height);
     NSUInteger style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
                        NSWindowStyleMaskMiniaturizable;
@@ -2337,11 +2341,10 @@ struct webview_priv
     size.width = width;
     size.height = height;
     [w->priv.window setMaxSize:size];
-    
-    [w->priv.window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary|NSWindowCollectionBehaviorFullScreenNone|NSWindowCollectionBehaviorFullScreenDisallowsTiling];
-       
+
     NSButton *button = [w->priv.window standardWindowButton:NSWindowZoomButton];
-    [button setEnabled: NO];
+    [button performSelectorOnMainThread:@selector(setEnabled:) withObject:NO
+    waitUntilDone:NO];
   }
   
   WEBVIEW_API void webview_set_fullscreen(struct webview *w, int fullscreen)
