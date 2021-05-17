@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -121,6 +122,25 @@ func Build(options *Options) (string, error) {
 		return "", err
 	}
 
+	// If we are building for windows, we will need to generate the asset bundle before
+	// compilation. This will be a .syso file in the project root
+	if options.Pack && options.Platform == "windows" {
+		outputLogger.Print("Generating bundle assets: ")
+		err := packageApplication(options)
+		if err != nil {
+			return "", err
+		}
+		outputLogger.Println("Done.")
+
+		// When we finish, we will want to remove the syso file
+		defer func() {
+			err := os.Remove(filepath.Join(options.ProjectData.Path, options.ProjectData.Name+"-res.syso"))
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
+	}
+
 	// Compile the application
 	outputLogger.Print("Compiling application: ")
 
@@ -178,8 +198,8 @@ func Build(options *Options) (string, error) {
 		}
 	}
 
-	// Do we need to pack the app?
-	if options.Pack {
+	// Do we need to pack the app for non-windows?
+	if options.Pack && options.Platform != "windows" {
 
 		outputLogger.Print("Packaging application: ")
 

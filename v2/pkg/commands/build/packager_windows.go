@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/leaanthony/winicon"
 	"github.com/wailsapp/wails/v2/internal/fs"
+	"github.com/wailsapp/wails/v2/internal/shell"
 	"github.com/wailsapp/wails/v2/pkg/buildassets"
 	"os"
 	"path/filepath"
@@ -28,7 +29,12 @@ func packageApplication(options *Options) error {
 	if err != nil {
 		return err
 	}
-	// Run
+
+	// Create syso file
+	err = compileResources(options)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -75,4 +81,12 @@ func generateIcoFile(options *Options) error {
 		}
 	}
 	return nil
+}
+
+func compileResources(options *Options) error {
+	windowsBuildDir := filepath.Join(options.ProjectData.Path, "build", "windows")
+	sourcefile := filepath.Join(options.ProjectData.BuildDir, "windows", options.ProjectData.Name+".rc")
+	targetFile := filepath.Join(options.ProjectData.Path, options.ProjectData.Name+"-res.syso")
+	_, _, err := shell.RunCommand(windowsBuildDir, "windres", "-o", targetFile, sourcefile)
+	return err
 }
