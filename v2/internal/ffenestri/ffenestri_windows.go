@@ -15,6 +15,9 @@ import "C"
 func (a *Application) processPlatformSettings() error {
 
 	config := a.config.Windows
+	if config == nil {
+		return nil
+	}
 
 	// Check if the webview should be transparent
 	if config.WebviewIsTransparent {
