@@ -150,7 +150,7 @@ func processApplicationIcon(resourceDir string, iconsDir string) (err error) {
 	// Install default icon if one doesn't exist
 	if !fs.FileExists(appIcon) {
 		// No - Install default icon
-		err := buildassets.RegenerateAppIcon(appIcon)
+		err = buildassets.RegenerateAppIcon(appIcon)
 		if err != nil {
 			return
 		}
