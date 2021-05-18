@@ -19,4 +19,4 @@ The dev command allows you to develop your application through a standard browse
 
 ## How it works
 
-The project is build
+The project is built using a special mode that starts a webserver and starts listening to port 34115. When the frontend project is run independently, so long as the JS is wrapped with the runtime method `ready`, then the frontend will connect to the backend code via websockets. The interface should be present in your browser, and you should be able to interact with the backend as you would in a desktop app.  
