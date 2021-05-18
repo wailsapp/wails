@@ -39,12 +39,7 @@ func (p *Process) Start() error {
 
 	go func(cmd *exec.Cmd, running *bool, logger *clilogger.CLILogger, exitChannel chan bool) {
 		logger.Println("Starting process (PID: %d)", cmd.Process.Pid)
-		err := cmd.Wait()
-		if err != nil {
-			if err.Error() != "signal: killed" {
-				logger.Fatal("Fatal error from app: " + err.Error())
-			}
-		}
+		_ = cmd.Wait()
 		logger.Println("Exiting process (PID: %d)", cmd.Process.Pid)
 		*running = false
 		exitChannel <- true
@@ -59,6 +54,13 @@ func (p *Process) Kill() error {
 		return nil
 	}
 	err := p.cmd.Process.Kill()
+	if err != nil {
+		return err
+	}
+	err = p.cmd.Process.Release()
+	if err != nil {
+		return err
+	}
 
 	// Wait for command to exit properly
 	<-p.exitChannel
