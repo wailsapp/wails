@@ -328,6 +328,8 @@ void Run(struct Application* app, int argc, char **argv) {
     wc.hInstance = hInstance;
     wc.lpszClassName = (LPCWSTR)"ffenestri";
     wc.lpfnWndProc   = WndProc;
+    wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(100));
+    wc.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(100));
 
     // TODO: Menu
 //    wc.lpszMenuName = nullptr;
