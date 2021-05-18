@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"strings"
 
 	"github.com/wailsapp/wails/lib/logger"
 )
@@ -27,6 +28,10 @@ func newBoundFunction(object interface{}) (*boundFunction, error) {
 	objectType := reflect.TypeOf(object)
 
 	name := runtime.FuncForPC(objectValue.Pointer()).Name()
+	if strings.Contains(name, "/") {
+		parts := strings.Split(name, "/")
+		name = parts[len(parts)-1]
+	}
 
 	result := &boundFunction{
 		fullName:     name,
