@@ -61,11 +61,6 @@ func getBuildBaseDirectory(options *Options) (string, error) {
 	return buildDirectory, nil
 }
 
-// Gets the path to the default icon
-func defaultIconPath() string {
-	return fs.RelativePath("internal/packager/icon1024.png")
-}
-
 // Gets the platform dependent package assets directory
 func getPackageAssetsDirectory() string {
 	return fs.RelativePath("internal/packager", runtime.GOOS)

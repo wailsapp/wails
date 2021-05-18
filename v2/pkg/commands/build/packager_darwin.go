@@ -3,6 +3,7 @@ package build
 import (
 	"bytes"
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/buildassets"
 	"image"
 	"io/ioutil"
 	"os"
@@ -149,8 +150,7 @@ func processApplicationIcon(resourceDir string, iconsDir string) (err error) {
 	// Install default icon if one doesn't exist
 	if !fs.FileExists(appIcon) {
 		// No - Install default icon
-		defaultIcon := fs.RelativePath("./internal/packager/icon1024.png")
-		err = fs.CopyFile(defaultIcon, appIcon)
+		err := buildassets.RegenerateAppIcon(appIcon)
 		if err != nil {
 			return
 		}

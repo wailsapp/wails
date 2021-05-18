@@ -58,6 +58,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	showWarnings := false
 	command.BoolFlag("w", "Show warnings", &showWarnings)
 
+	// Verbosity
+	verbosity := 1
+	command.IntFlag("v", "Verbosity level (0 - silent, 1 - default, 2 - verbose)", &verbosity)
+
 	loglevel := ""
 	command.StringFlag("loglevel", "Loglevel to use - Trace, Debug, Info, Warning, Error", &loglevel)
 
@@ -90,13 +94,13 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		debounceQuit := make(chan bool, 1)
 
 		var passthruArgs []string
-		if len(os.Args) > 2 {
-			passthruArgs = os.Args[2:]
-		}
+		//if len(os.Args) > 2 {
+		//	passthruArgs = os.Args[2:]
+		//}
 
 		// Do initial build
 		logger.Println("Building application for development...")
-		newProcess, err := restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs)
+		newProcess, appBinary, err := restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity)
 		if newProcess != nil {
 			debugBinaryProcess = newProcess
 		}
@@ -104,6 +108,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		if err != nil {
 			return err
 		}
+		var newBinaryProcess *process.Process
 		go debounce(100*time.Millisecond, watcher.Events, debounceQuit, func(event fsnotify.Event) {
 			// logger.Println("event: %+v", event)
 
@@ -147,7 +152,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				// Do a rebuild
 
 				// Try and build the app
-				newBinaryProcess, err := restartApp(logger, "dev", ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs)
+				newBinaryProcess, _, err = restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity)
 				if err != nil {
 					fmt.Printf("Error during build: %s", err.Error())
 					return
@@ -209,6 +214,12 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			}
 		}
 
+		// Remove dev binary
+		err = os.Remove(appBinary)
+		if err != nil {
+			return err
+		}
+
 		LogGreen("Development mode exited")
 
 		return nil
@@ -236,14 +247,14 @@ exit:
 	}
 }
 
-func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, compilerCommand string, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string) (*process.Process, error) {
+func restartApp(logger *clilogger.CLILogger, ldflags string, compilerCommand string, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string, verbosity int) (*process.Process, string, error) {
 
-	appBinary, err := buildApp(logger, outputType, ldflags, compilerCommand)
+	appBinary, err := buildApp(logger, ldflags, compilerCommand, verbosity)
 	println()
 	if err != nil {
 		LogRed("Build error - continuing to run current version")
 		LogDarkYellow(err.Error())
-		return nil, nil
+		return nil, "", nil
 	}
 
 	// Kill existing binary if need be
@@ -275,18 +286,21 @@ func restartApp(logger *clilogger.CLILogger, outputType string, ldflags string, 
 		logger.Fatal("Unable to start application: %s", err.Error())
 	}
 
-	return newProcess, nil
+	return newProcess, appBinary, nil
 }
 
-func buildApp(logger *clilogger.CLILogger, outputType string, ldflags string, compilerCommand string) (string, error) {
+func buildApp(logger *clilogger.CLILogger, ldflags string, compilerCommand string, verbosity int) (string, error) {
 
 	// Create random output file
-	outputFile := fmt.Sprintf("dev-%d", time.Now().Unix())
+	outputFile := "wailsdev"
+	if runtime.GOOS == "windows" {
+		outputFile += ".exe"
+	}
 
 	// Create BuildOptions
 	buildOptions := &build.Options{
 		Logger:         logger,
-		OutputType:     outputType,
+		OutputType:     "dev",
 		Mode:           build.Debug,
 		Pack:           false,
 		Platform:       runtime.GOOS,
@@ -294,6 +308,7 @@ func buildApp(logger *clilogger.CLILogger, outputType string, ldflags string, co
 		Compiler:       compilerCommand,
 		OutputFile:     outputFile,
 		IgnoreFrontend: true,
+		Verbosity:      verbosity,
 	}
 
 	return build.Build(buildOptions)

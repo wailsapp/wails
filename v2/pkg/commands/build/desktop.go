@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/buildassets"
 	"io/ioutil"
 	"path/filepath"
 
@@ -27,9 +28,7 @@ func (d *DesktopBuilder) BuildAssets(options *Options) error {
 	// Check assets directory exists
 	if !fs.DirExists(options.ProjectData.BuildDir) {
 		// Path to default assets
-		defaultAssets := fs.RelativePath("./internal/assets")
-		// Copy the default assets directory
-		err := fs.CopyDir(defaultAssets, options.ProjectData.BuildDir)
+		err := buildassets.Install(options.ProjectData.Path, options.ProjectData.Name)
 		if err != nil {
 			return err
 		}
@@ -108,7 +107,7 @@ func (d *DesktopBuilder) processApplicationIcon(assetDir string) error {
 	// Copy default icon if one doesn't exist
 	iconFile := filepath.Join(d.projectData.BuildDir, "appicon.png")
 	if !fs.FileExists(iconFile) {
-		err := fs.CopyFile(defaultIconPath(), iconFile)
+		err := buildassets.RegenerateAppIcon(iconFile)
 		if err != nil {
 			return err
 		}

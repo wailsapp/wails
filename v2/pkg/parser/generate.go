@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	_ "embed"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -10,6 +11,24 @@ import (
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/internal/fs"
 )
+
+//go:embed index.template
+var indexTemplate string
+
+//go:embed index.d.template
+var indexDTemplate string
+
+//go:embed package.template
+var packageTemplate string
+
+//go:embed package.d.template
+var packageDTemplate string
+
+//go:embed globals.d.template
+var globalsDTemplate string
+
+//go:embed package.json
+var packageJSON string
 
 // GenerateWailsFrontendPackage will generate a Javascript/Typescript
 // package in `<project>/frontend/wails` that defines which methods
@@ -51,9 +70,8 @@ func (p *Parser) generateModule() error {
 	}
 
 	// Copy the standard files
-	srcFile := fs.RelativePath("./package.json")
 	tgtFile := filepath.Join(moduleDir, "package.json")
-	err = fs.CopyFile(srcFile, tgtFile)
+	err = fs.CopyFile(packageJSON, tgtFile)
 	if err != nil {
 		return err
 	}
@@ -102,11 +120,8 @@ func createBackendJSDirectory() (string, error) {
 
 func generatePackage(pkg *Package, moduledir string) error {
 
-	// Get path to local file
-	typescriptTemplateFile := fs.RelativePath("./package.d.template")
-
 	// Load typescript template
-	typescriptTemplateData := fs.MustLoadString(typescriptTemplateFile)
+	typescriptTemplateData := fs.MustLoadString(packageDTemplate)
 	typescriptTemplate, err := template.New("typescript").Parse(typescriptTemplateData)
 	if err != nil {
 		return errors.Wrap(err, "Error creating template")
@@ -125,11 +140,8 @@ func generatePackage(pkg *Package, moduledir string) error {
 		return errors.Wrap(err, "Error writing backend package file")
 	}
 
-	// Get path to local file
-	javascriptTemplateFile := fs.RelativePath("./package.template")
-
 	// Load javascript template
-	javascriptTemplateData := fs.MustLoadString(javascriptTemplateFile)
+	javascriptTemplateData := fs.MustLoadString(packageTemplate)
 	javascriptTemplate, err := template.New("javascript").Parse(javascriptTemplateData)
 	if err != nil {
 		return errors.Wrap(err, "Error creating template")
@@ -154,11 +166,8 @@ func generatePackage(pkg *Package, moduledir string) error {
 
 func generateIndexJS(dir string, packages []*Package) error {
 
-	// Get path to local file
-	templateFile := fs.RelativePath("./index.template")
-
 	// Load template
-	templateData := fs.MustLoadString(templateFile)
+	templateData := fs.MustLoadString(indexTemplate)
 	packagesTemplate, err := template.New("index").Parse(templateData)
 	if err != nil {
 		return errors.Wrap(err, "Error creating template")
@@ -183,11 +192,8 @@ func generateIndexJS(dir string, packages []*Package) error {
 }
 func generateIndexTS(dir string, packages []*Package) error {
 
-	// Get path to local file
-	templateFile := fs.RelativePath("./index.d.template")
-
 	// Load template
-	templateData := fs.MustLoadString(templateFile)
+	templateData := fs.MustLoadString(indexDTemplate)
 	indexTSTemplate, err := template.New("index.d").Parse(templateData)
 	if err != nil {
 		return errors.Wrap(err, "Error creating template")
@@ -213,11 +219,8 @@ func generateIndexTS(dir string, packages []*Package) error {
 
 func generateGlobalsTS(dir string, packages []*Package) error {
 
-	// Get path to local file
-	templateFile := fs.RelativePath("./globals.d.template")
-
 	// Load template
-	templateData := fs.MustLoadString(templateFile)
+	templateData := fs.MustLoadString(globalsDTemplate)
 	packagesTemplate, err := template.New("globals").Parse(templateData)
 	if err != nil {
 		return errors.Wrap(err, "Error creating template")

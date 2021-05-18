@@ -47,6 +47,7 @@ type Options struct {
 	KeepAssets          bool                 // Keep the generated assets/files
 	Verbosity           int                  // Verbosity level (0 - silent, 1 - default, 2 - verbose)
 	Compress            bool                 // Compress the final binary
+	CompressFlags       string               // Flags to pass to UPX
 	AppleIdentity       string
 }
 

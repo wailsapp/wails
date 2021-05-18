@@ -337,16 +337,23 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		return nil
 	}
 
-	if verbose {
-		println("upx", "--best", "--no-color", "--no-progress", options.CompiledBinary)
+	var args = []string{"--best", "--no-color", "--no-progress", options.CompiledBinary}
+
+	if options.CompressFlags != "" {
+		args = strings.Split(options.CompressFlags, " ")
+		args = append(args, options.CompiledBinary)
 	}
 
-	output, err := exec.Command("upx", "--best", "--no-color", "--no-progress", options.CompiledBinary).Output()
+	if verbose {
+		println("upx", strings.Join(args, " "))
+	}
+
+	output, err := exec.Command("upx", args...).Output()
 	if err != nil {
 		return errors.Wrap(err, "Error during compression:")
 	}
 	if verbose {
-		println(output)
+		println(string(output))
 	}
 	return nil
 }

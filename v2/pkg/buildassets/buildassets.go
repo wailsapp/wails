@@ -74,3 +74,11 @@ func RegenerateManifest(target string) error {
 	}
 	return a.CopyFile("windows/wails.exe.manifest", target, 0644)
 }
+
+func RegenerateAppIcon(target string) error {
+	a, err := debme.FS(assets, "build")
+	if err != nil {
+		return err
+	}
+	return a.CopyFile("appicon.png", target, 0644)
+}

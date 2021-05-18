@@ -1,9 +1,10 @@
-# Assets Directory
+# Build Directory
 
-The assets directory is used to house all the assets of your application. 
+The build directory is used to house all the build files and assets for your application. 
 
 The structure is:
 
+  * bin - Output directory
   * dialog - Icons for dialogs
   * tray - Icons for the system tray
   * mac - MacOS specific files

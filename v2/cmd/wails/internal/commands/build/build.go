@@ -36,7 +36,10 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	command.StringFlag("compiler", "Use a different go compiler to build, eg go1.15beta1", &compilerCommand)
 
 	compress := false
-	command.BoolFlag("compress", "Compress final binary", &compress)
+	command.BoolFlag("upx", "Compress final binary with UPX (if installed)", &compress)
+
+	compressFlags := ""
+	command.StringFlag("upxflags", "Flags to pass to upx", &compressFlags)
 
 	// Setup Platform flag
 	platform := runtime.GOOS
@@ -131,6 +134,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			KeepAssets:          keepAssets,
 			Verbosity:           verbosity,
 			Compress:            compress,
+			CompressFlags:       compressFlags,
 			UserTags:            userTags,
 		}
 
