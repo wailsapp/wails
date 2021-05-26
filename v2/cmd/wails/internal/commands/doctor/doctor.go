@@ -3,7 +3,6 @@ package doctor
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"runtime"
 	"strings"
@@ -25,14 +24,12 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		logger := clilogger.New(w)
 
 		app.PrintBanner()
-		logger.Print("Scanning system - please wait...")
 
 		// Get system info
 		info, err := system.GetInfo()
 		if err != nil {
 			return err
 		}
-		logger.Println("Done.")
 
 		// Start a new tabwriter
 		w := new(tabwriter.Writer)
@@ -46,17 +43,15 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		fmt.Fprintf(w, "%s\t%s\n", "Version: ", info.OS.Version)
 		fmt.Fprintf(w, "%s\t%s\n", "ID:", info.OS.ID)
 
-		// Exit early if PM not found
-		if info.PM == nil {
-			w.Flush()
-			return nil
-		}
-		fmt.Fprintf(w, "%s\t%s\n", "Package Manager: ", info.PM.Name())
-
 		// Output Go Information
 		fmt.Fprintf(w, "%s\t%s\n", "Go Version:", runtime.Version())
 		fmt.Fprintf(w, "%s\t%s\n", "Platform:", runtime.GOOS)
 		fmt.Fprintf(w, "%s\t%s\n", "Architecture:", runtime.GOARCH)
+
+		// Exit early if PM not found
+		if info.PM != nil {
+			fmt.Fprintf(w, "%s\t%s\n", "Package Manager: ", info.PM.Name())
+		}
 
 		// Output Dependencies Status
 		var dependenciesMissing = []string{}
@@ -67,12 +62,14 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		fmt.Fprintf(w, "Dependency\tPackage Name\tStatus\tVersion\n")
 		fmt.Fprintf(w, "----------\t------------\t------\t-------\n")
 
+		hasOptionalDependencies := false
 		// Loop over dependencies
 		for _, dependency := range info.Dependencies {
 
 			name := dependency.Name
 			if dependency.Optional {
 				name += "*"
+				hasOptionalDependencies = true
 			}
 			packageName := "Unknown"
 			status := "Not Found"
@@ -107,12 +104,13 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", name, packageName, status, dependency.Version)
 		}
-		fmt.Fprintf(w, "\n")
-		fmt.Fprintf(w, "* - Optional Dependency\n")
+		if hasOptionalDependencies {
+			fmt.Fprintf(w, "\n")
+			fmt.Fprintf(w, "* - Optional Dependency\n")
+		}
 		w.Flush()
-		logger.Println("")
 		logger.Println("Diagnosis")
-		logger.Println("---------\n")
+		logger.Println("---------")
 
 		// Generate an appropriate diagnosis
 
@@ -121,11 +119,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		if dependenciesAvailableRequired != 0 {
-			log.Println("Install required packages using: " + info.Dependencies.InstallAllRequiredCommand())
+			logger.Println("Install required packages using: " + info.Dependencies.InstallAllRequiredCommand())
 		}
 
 		if dependenciesAvailableOptional != 0 {
-			log.Println("Install optional packages using: " + info.Dependencies.InstallAllOptionalCommand())
+			logger.Println("Install optional packages using: " + info.Dependencies.InstallAllOptionalCommand())
 		}
 
 		if len(externalPackages) > 0 {
@@ -133,18 +131,18 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				if p.Optional {
 					print("[Optional] ")
 				}
-				log.Println("Install " + p.Name + ": " + p.InstallCommand)
+				logger.Println("Install " + p.Name + ": " + p.InstallCommand)
 			}
 		}
 
 		if len(dependenciesMissing) != 0 {
 			// TODO: Check if apps are available locally and if so, adjust the diagnosis
-			log.Println("Fatal:")
-			log.Println("Required dependencies missing: " + strings.Join(dependenciesMissing, " "))
-			log.Println("Please read this article on how to resolve this: https://wails.app/guides/resolving-missing-packages")
+			logger.Println("Fatal:")
+			logger.Println("Required dependencies missing: " + strings.Join(dependenciesMissing, " "))
+			logger.Println("Please read this article on how to resolve this: https://wails.app/guides/resolving-missing-packages")
 		}
 
-		log.Println("")
+		logger.Println("")
 		return nil
 	})
 
