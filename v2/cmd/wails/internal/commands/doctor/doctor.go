@@ -68,7 +68,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 			name := dependency.Name
 			if dependency.Optional {
-				name += "*"
+				name = "*" + name
 				hasOptionalDependencies = true
 			}
 			packageName := "Unknown"
@@ -109,6 +109,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			fmt.Fprintf(w, "* - Optional Dependency\n")
 		}
 		w.Flush()
+		logger.Println("")
 		logger.Println("Diagnosis")
 		logger.Println("---------")
 
