@@ -36,7 +36,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		w.Init(os.Stdout, 8, 8, 0, '\t', 0)
 
 		// Write out the system information
-		fmt.Fprintf(w, "\n")
 		fmt.Fprintf(w, "System\n")
 		fmt.Fprintf(w, "------\n")
 		fmt.Fprintf(w, "%s\t%s\n", "OS:", info.OS.Name)
@@ -117,14 +116,15 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		if len(dependenciesMissing) == 0 && dependenciesAvailableRequired == 0 {
 			logger.Println("Your system is ready for Wails development!")
+			logger.Println("")
 		}
 
 		if dependenciesAvailableRequired != 0 {
-			logger.Println("Install required packages using: " + info.Dependencies.InstallAllRequiredCommand())
+			logger.Println("Required package(s) installation details: \n" + info.Dependencies.InstallAllRequiredCommand())
 		}
 
 		if dependenciesAvailableOptional != 0 {
-			logger.Println("Install optional packages using: " + info.Dependencies.InstallAllOptionalCommand())
+			logger.Println("Optional package(s) installation details: \n" + info.Dependencies.InstallAllOptionalCommand())
 		}
 
 		if len(externalPackages) > 0 {

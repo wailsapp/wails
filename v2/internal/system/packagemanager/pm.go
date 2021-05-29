@@ -21,7 +21,6 @@ type PackageManager interface {
 	InstallCommand(*Package) string
 }
 
-
 // Dependancy represents a system package that we require
 type Dependancy struct {
 	Name           string
@@ -35,7 +34,6 @@ type Dependancy struct {
 
 // DependencyList is a list of Dependency instances
 type DependencyList []*Dependancy
-
 
 // InstallAllRequiredCommand returns the command you need to use to install all required dependencies
 func (d DependencyList) InstallAllRequiredCommand() string {
@@ -64,7 +62,7 @@ func (d DependencyList) InstallAllOptionalCommand() string {
 		if dependency.PackageName != "" {
 			if !dependency.Installed && dependency.Optional {
 				if result == "" {
-					result = dependency.InstallCommand
+					result = "  - " + dependency.Name + ": " + dependency.InstallCommand + "\n"
 				} else {
 					result += " " + dependency.PackageName
 				}
@@ -74,4 +72,3 @@ func (d DependencyList) InstallAllOptionalCommand() string {
 
 	return result
 }
-
