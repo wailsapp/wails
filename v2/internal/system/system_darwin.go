@@ -41,5 +41,6 @@ func (i *Info) discover() error {
 	}
 	i.Dependencies = append(i.Dependencies, xcodeDep)
 	i.Dependencies = append(i.Dependencies, checkNPM())
+	i.Dependencies = append(i.Dependencies, checkUPX())
 	return nil
 }
