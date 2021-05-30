@@ -27,6 +27,7 @@ func (i *Info) discover() error {
 		installed = false
 	} else {
 		version = strings.TrimPrefix(string(output), "xcode-select version ")
+		version = strings.TrimSpace(version)
 		version = strings.TrimSuffix(version, ".")
 	}
 	xcodeDep := &packagemanager.Dependancy{
@@ -39,5 +40,6 @@ func (i *Info) discover() error {
 		External:       false,
 	}
 	i.Dependencies = append(i.Dependencies, xcodeDep)
+	i.Dependencies = append(i.Dependencies, checkNPM())
 	return nil
 }
