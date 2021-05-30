@@ -42,7 +42,7 @@ func checkNPM() *packagemanager.Dependancy {
 		Name:           "npm ",
 		PackageName:    "N/A",
 		Installed:      installed,
-		InstallCommand: "Install from https://nodejs.org/en/download/",
+		InstallCommand: "Available at https://nodejs.org/en/download/",
 		Version:        version,
 		Optional:       false,
 		External:       false,
@@ -64,7 +64,42 @@ func checkUPX() *packagemanager.Dependancy {
 		Name:           "upx ",
 		PackageName:    "N/A",
 		Installed:      installed,
-		InstallCommand: "Install from https://upx.github.io/",
+		InstallCommand: "Available at https://upx.github.io/",
+		Version:        version,
+		Optional:       true,
+		External:       false,
+	}
+}
+
+func checkDocker() *packagemanager.Dependancy {
+
+	// Check for npm
+	output, err := exec.Command("docker", "version").Output()
+	installed := true
+	version := ""
+
+	// Docker errors if it is not running so check for that
+	if len(output) == 0 && err != nil {
+		installed = false
+	} else {
+		// Version is in a line like: " Version:           20.10.5"
+		versionOutput := strings.Split(string(output), "\n")
+		for _, line := range versionOutput[1:] {
+			splitLine := strings.Split(line, ":")
+			if len(splitLine) > 1 {
+				key := strings.TrimSpace(splitLine[0])
+				if key == "Version" {
+					version = strings.TrimSpace(splitLine[1])
+					break
+				}
+			}
+		}
+	}
+	return &packagemanager.Dependancy{
+		Name:           "docker ",
+		PackageName:    "N/A",
+		Installed:      installed,
+		InstallCommand: "Available at https://www.docker.com/products/docker-desktop",
 		Version:        version,
 		Optional:       true,
 		External:       false,

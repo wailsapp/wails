@@ -40,14 +40,8 @@ func (d DependencyList) InstallAllRequiredCommand() string {
 
 	result := ""
 	for _, dependency := range d {
-		if dependency.PackageName != "" {
-			if !dependency.Installed && !dependency.Optional {
-				if result == "" {
-					result = dependency.InstallCommand
-				} else {
-					result += " " + dependency.PackageName
-				}
-			}
+		if !dependency.Installed && !dependency.Optional {
+			result += "  - " + dependency.Name + ": " + dependency.InstallCommand + "\n"
 		}
 	}
 
@@ -59,14 +53,8 @@ func (d DependencyList) InstallAllOptionalCommand() string {
 
 	result := ""
 	for _, dependency := range d {
-		if dependency.PackageName != "" {
-			if !dependency.Installed && dependency.Optional {
-				if result == "" {
-					result = "  - " + dependency.Name + ": " + dependency.InstallCommand + "\n"
-				} else {
-					result += " " + dependency.PackageName
-				}
-			}
+		if !dependency.Installed && dependency.Optional {
+			result += "  - " + dependency.Name + ": " + dependency.InstallCommand + "\n"
 		}
 	}
 

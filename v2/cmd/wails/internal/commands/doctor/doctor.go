@@ -116,7 +116,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		if len(dependenciesMissing) == 0 && dependenciesAvailableRequired == 0 {
 			logger.Println("Your system is ready for Wails development!")
-			logger.Println("")
 		}
 
 		if dependenciesAvailableRequired != 0 {

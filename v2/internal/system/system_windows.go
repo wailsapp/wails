@@ -31,7 +31,7 @@ func (i *Info) discover() error {
 		Name:           "gcc ",
 		PackageName:    "N/A",
 		Installed:      installed,
-		InstallCommand: "",
+		InstallCommand: "Available at https://jmeubank.github.io/tdm-gcc/",
 		Version:        version,
 		Optional:       false,
 		External:       false,
@@ -39,6 +39,7 @@ func (i *Info) discover() error {
 	i.Dependencies = append(i.Dependencies, gccDependency)
 	i.Dependencies = append(i.Dependencies, checkNPM())
 	i.Dependencies = append(i.Dependencies, checkUPX())
+	i.Dependencies = append(i.Dependencies, checkDocker())
 
 	return nil
 }
