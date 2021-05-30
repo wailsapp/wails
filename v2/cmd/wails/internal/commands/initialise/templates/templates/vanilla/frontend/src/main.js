@@ -1,16 +1,21 @@
-// Get input + focus
-let nameElement = document.getElementById("name");
-nameElement.focus();
 
-// Setup the greet function
-window.greet = function () {
+import {ready} from '@wails/runtime';
 
-  // Get name
-  let name = nameElement.value;
+ready( () => {
+  // Get input + focus
+  let nameElement = document.getElementById("name");
+  nameElement.focus();
 
-  // Call Basic.Greet(name)
-  window.backend.main.Basic.Greet(name).then((result) => {
-    // Update result with data back from Basic.Greet()
-    document.getElementById("result").innerText = result;
-  });
-}
+  // Setup the greet function
+  window.greet = function () {
+
+    // Get name
+    let name = nameElement.value;
+
+    // Call Basic.Greet(name)
+    window.backend.main.Basic.Greet(name).then((result) => {
+      // Update result with data back from Basic.Greet()
+      document.getElementById("result").innerText = result;
+    });
+  };
+});

@@ -1,7 +1,9 @@
 {
     "name": "{{.ProjectName}}",
     "outputfilename": "{{.BinaryName}}",
-    "html": "frontend/src/index.html",
+    "html": "frontend/dist/index.html",
+    "frontend:build": "npm run build",
+    "frontend:install": "npm ci",
     "author": {
         "name": "{{.AuthorName}}",
         "email": "{{.AuthorEmail}}"
