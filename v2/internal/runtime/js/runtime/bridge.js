@@ -678,7 +678,7 @@
     function add_css() {
     	var style = element("style");
     	style.id = "svelte-9nqyfr-style";
-    	style.textContent = ".wails-reconnect-overlay.svelte-9nqyfr{position:fixed;top:0;left:0;width:100%;height:100%;backdrop-filter:blur(20px) saturate(160%) contrast(45%) brightness(140%);z-index:999999\n    }.wails-reconnect-overlay-content.svelte-9nqyfr{position:relative;top:50%;transform:translateY(-50%);margin:0;background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC8AAAAuCAMAAACPpbA7AAAAflBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAAAAAAAAAAAABAQEEBAQAAAAAAAAEBAQAAAADAwMAAAABAQEAAAAAAAAAAAAAAAAAAAACAgICAgIBAQEAAAAAAAAAAAAAAAAAAAACAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAFBQWCC3waAAAAKXRSTlMALgUMIBk0+xEqJs70Xhb3lu3EjX2EZTlv5eHXvbarQj3cdmpXSqOeUDwaqNAAAAKCSURBVEjHjZTntqsgEIUPVVCwtxg1vfD+L3hHRe8K6snZf+KKn8OewvzsSSeXLruLnz+KHs0gr6DkT3xsRkU6VVn4Ha/UxLe1Z4y64i847sykPBh/AvQ7ry3eFN70oKrfcBJYvm/tQ1qxP4T3emXPeXAkvodPUvtdjbhk+Ft4c0hslTiXVOzxOJ15NWUblQhRsdu3E1AfCjj3Gdm18zSOsiH8Lk4TB480ksy62fiqNo4OpyU8O21l6+hyRtS6z8r1pHlmle5sR1/WXS6Mq2Nl+YeKt3vr+vdH/q4O68tzXuwkiZmngYb4R8Co1jh0+Ww2UTyWxBvtyxLO7QVjO3YOD/lWZpbXDGellFG2Mws58mMnjVZSn7p+XvZ6IF4nn02OJZV0aTO22arp/DgLPtrgpVoi6TPbZm4XQBjY159w02uO0BDdYsfrOEi0M2ulRXlCIPAOuN1NOVhi+riBR3dgwQplYsZRZJLXq23Mlo5njkbY0rZFu3oiNIYG2kqsbVz67OlNuZZIOlfxHDl0UpyRX86z/OYC/3qf1A1xTrMp/PWWM4ePzf8DDp1nesQRpcFk7BlwdzN08ZIALJpCaciQXO0f6k4dnuT/Ewg4l7qSTNzm2SykdHn6GJ12mWc6aCNj/g1cTXpB8YFfr0uVc96aFkkqiIiX4nO+salKwGtIkvfB+Ja8DxMeD3hIXP5mTOYPB4eVT0+32I5ykvPZjesnkGgIREgYnmLrPb0PdV3hoLup2TjcGBPM4mgsfF5BrawZR4/GpzYQzQfrUZCf0TCWYo2DqhdhTJBQ6j4xqmmLN5LjdRIY8LWExiFUsSrza/nmFBqw3I9tEZB9h0lIQSO9if8DkISDAj8CDawAAAAASUVORK5CYII=);background-repeat:no-repeat;background-position:center\n    }.wails-reconnect-overlay-loadingspinner.svelte-9nqyfr{pointer-events:none;width:2.5em;height:2.5em;border:.4em solid transparent;border-color:#f00 #eee0 #f00 #eee0;border-radius:50%;animation:svelte-9nqyfr-loadingspin 1s linear infinite;margin:auto;padding:2.5em\n    }@keyframes svelte-9nqyfr-loadingspin{100%{transform:rotate(360deg)}}";
+    	style.textContent = ".wails-reconnect-overlay.svelte-9nqyfr{position:fixed;top:0;left:0;width:100%;height:100%;backdrop-filter:blur(20px) saturate(160%) contrast(45%) brightness(140%);z-index:999999\r\n    }.wails-reconnect-overlay-content.svelte-9nqyfr{position:relative;top:50%;transform:translateY(-50%);margin:0;background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC8AAAAuCAMAAACPpbA7AAAAflBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAEBAQAAAAAAAAAAAABAQEEBAQAAAAAAAAEBAQAAAADAwMAAAABAQEAAAAAAAAAAAAAAAAAAAACAgICAgIBAQEAAAAAAAAAAAAAAAAAAAACAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAFBQWCC3waAAAAKXRSTlMALgUMIBk0+xEqJs70Xhb3lu3EjX2EZTlv5eHXvbarQj3cdmpXSqOeUDwaqNAAAAKCSURBVEjHjZTntqsgEIUPVVCwtxg1vfD+L3hHRe8K6snZf+KKn8OewvzsSSeXLruLnz+KHs0gr6DkT3xsRkU6VVn4Ha/UxLe1Z4y64i847sykPBh/AvQ7ry3eFN70oKrfcBJYvm/tQ1qxP4T3emXPeXAkvodPUvtdjbhk+Ft4c0hslTiXVOzxOJ15NWUblQhRsdu3E1AfCjj3Gdm18zSOsiH8Lk4TB480ksy62fiqNo4OpyU8O21l6+hyRtS6z8r1pHlmle5sR1/WXS6Mq2Nl+YeKt3vr+vdH/q4O68tzXuwkiZmngYb4R8Co1jh0+Ww2UTyWxBvtyxLO7QVjO3YOD/lWZpbXDGellFG2Mws58mMnjVZSn7p+XvZ6IF4nn02OJZV0aTO22arp/DgLPtrgpVoi6TPbZm4XQBjY159w02uO0BDdYsfrOEi0M2ulRXlCIPAOuN1NOVhi+riBR3dgwQplYsZRZJLXq23Mlo5njkbY0rZFu3oiNIYG2kqsbVz67OlNuZZIOlfxHDl0UpyRX86z/OYC/3qf1A1xTrMp/PWWM4ePzf8DDp1nesQRpcFk7BlwdzN08ZIALJpCaciQXO0f6k4dnuT/Ewg4l7qSTNzm2SykdHn6GJ12mWc6aCNj/g1cTXpB8YFfr0uVc96aFkkqiIiX4nO+salKwGtIkvfB+Ja8DxMeD3hIXP5mTOYPB4eVT0+32I5ykvPZjesnkGgIREgYnmLrPb0PdV3hoLup2TjcGBPM4mgsfF5BrawZR4/GpzYQzQfrUZCf0TCWYo2DqhdhTJBQ6j4xqmmLN5LjdRIY8LWExiFUsSrza/nmFBqw3I9tEZB9h0lIQSO9if8DkISDAj8CDawAAAAASUVORK5CYII=);background-repeat:no-repeat;background-position:center\r\n    }.wails-reconnect-overlay-loadingspinner.svelte-9nqyfr{pointer-events:none;width:2.5em;height:2.5em;border:.4em solid transparent;border-color:#f00 #eee0 #f00 #eee0;border-radius:50%;animation:svelte-9nqyfr-loadingspin 1s linear infinite;margin:auto;padding:2.5em\r\n    }@keyframes svelte-9nqyfr-loadingspin{100%{transform:rotate(360deg)}}";
     	append(document.head, style);
     }
 
@@ -1543,154 +1543,154 @@
 
     function StartWebsocket(userCallback) {
 
-        callback = userCallback;
+    	callback = userCallback;
 
-        window.onbeforeunload = function() {
-            if( websocket ) {
-                websocket.onclose = function () { };
-                websocket.close();
-                websocket = null;
-            }
-        };
+    	window.onbeforeunload = function() {
+    		if( websocket ) {
+    			websocket.onclose = function () { };
+    			websocket.close();
+    			websocket = null;
+    		}
+    	};
 
-        // ...and attempt to connect
-        connect();
+    	// ...and attempt to connect
+    	connect();
 
     }
 
     function setupIPCBridge() {
-        // darwin
-        window.webkit = {
-            messageHandlers: {
-                external: {
-                    postMessage: (message) => {
-                        websocket.send(message);
-                    }
-                },
-                windowDrag: {
-                    postMessage: () => {
-                        // Ignore window drag events
-                    }
-                }
-            }
-        };
+    	// darwin
+    	window.webkit = {
+    		messageHandlers: {
+    			external: {
+    				postMessage: (message) => {
+    					websocket.send(message);
+    				}
+    			},
+    			windowDrag: {
+    				postMessage: () => {
+    					// Ignore window drag events
+    				}
+    			}
+    		}
+    	};
     }
 
     // Handles incoming websocket connections
     function handleConnect() {
-        log('Connected to backend');
-        setupIPCBridge();
-        hideOverlay();
-        clearInterval(connectTimer);
-        websocket.onclose = handleDisconnect;
-        websocket.onmessage = handleMessage;
+    	log('Connected to backend');
+    	setupIPCBridge();
+    	hideOverlay();
+    	clearInterval(connectTimer);
+    	websocket.onclose = handleDisconnect;
+    	websocket.onmessage = handleMessage;
     }
 
     // Handles websocket disconnects
     function handleDisconnect() {
-        log('Disconnected from backend');
-        websocket = null;
-        showOverlay();
-        connect();
+    	log('Disconnected from backend');
+    	websocket = null;
+    	showOverlay();
+    	connect();
     }
 
     // Try to connect to the backend every 1s (default value).
     function connect() {
-        connectTimer = setInterval(function () {
-            if (websocket == null) {
-                websocket = new WebSocket('ws://' + window.location.hostname + ':34115/bridge');
-                websocket.onopen = handleConnect;
-                websocket.onerror = function (e) {
-                    e.stopImmediatePropagation();
-                    e.stopPropagation();
-                    e.preventDefault();
-                    websocket = null;
-                    return false;
-                };
-            }
-        }, 1000);
+    	connectTimer = setInterval(function () {
+    		if (websocket == null) {
+    			websocket = new WebSocket('ws://' + window.location.hostname + ':34115/bridge');
+    			websocket.onopen = handleConnect;
+    			websocket.onerror = function (e) {
+    				e.stopImmediatePropagation();
+    				e.stopPropagation();
+    				e.preventDefault();
+    				websocket = null;
+    				return false;
+    			};
+    		}
+    	}, 1000);
     }
 
     // Adds a script to the Dom.
     // Removes it if second parameter is true.
     function addScript(script, remove) {
-        const s = document.createElement('script');
-        s.setAttribute('type', 'text/javascript');
-        s.textContent = script;
-        document.head.appendChild(s);
+    	const s = document.createElement('script');
+    	s.setAttribute('type', 'text/javascript');
+    	s.textContent = script;
+    	document.head.appendChild(s);
 
-        // Remove internal messages from the DOM
-        if (remove) {
-            s.parentNode.removeChild(s);
-        }
+    	// Remove internal messages from the DOM
+    	if (remove) {
+    		s.parentNode.removeChild(s);
+    	}
     }
 
     function handleMessage(message) {
-        // As a bridge we ignore js and css injections
-        switch (message.data[0]) {
-            // Wails library - inject!
-            case 'b':
-                message = message.data.slice(1);
-                addScript(message);
-                log('Loaded Wails Runtime');
+    	// As a bridge we ignore js and css injections
+    	switch (message.data[0]) {
+    	// Wails library - inject!
+    	case 'b':
+    		message = message.data.slice(1);
+    		addScript(message);
+    		log('Loaded Wails Runtime');
 
-                // We need to now send a message to the backend telling it
-                // we have loaded (System Start)
-                window.webkit.messageHandlers.external.postMessage("SS");
+    		// We need to now send a message to the backend telling it
+    		// we have loaded (System Start)
+    		window.wails._.SendMessage('SS');
+    		
+    		// Now wails runtime is loaded, wails for the ready event
+    		// and callback to the main app
+    		// window.wails.Events.On('wails:loaded', function () {
+    		if (callback) {
+    			log('Notifying application');
+    			callback(window.wails);
+    		}
+    		// });
+    		break;
+    		// Notifications
+    	case 'n':
+    		window.wails._.Notify(message.data.slice(1));
+    		break;
+    		// 	// Binding
+    		// case 'b':
+    		// 	const binding = message.data.slice(1);
+    		// 	//log("Binding: " + binding)
+    		// 	window.wails._.NewBinding(binding);
+    		// 	break;
+    		// 	// Call back
+    	case 'c':
+    		const callbackData = message.data.slice(1);
+    		window.wails._.Callback(callbackData);
+    		break;
+    		// Tray
+    	case 'T':
+    		const trayMessage = message.data.slice(1);
+    		switch (trayMessage[0]) {
+    		case 'S':
+    			// Set tray
+    			const trayJSON = trayMessage.slice(1);
+    			let tray = JSON.parse(trayJSON);
+    			setTray(tray);
+    			break;
+    		case 'U':
+    			// Update label
+    			const updateTrayLabelJSON = trayMessage.slice(1);
+    			let trayLabelData = JSON.parse(updateTrayLabelJSON);
+    			updateTrayLabel(trayLabelData);
+    			break;
+    		case 'D':
+    			// Delete Tray Menu
+    			const id = trayMessage.slice(1);
+    			deleteTrayMenu(id);
+    			break;
+    		default:
+    			log('Unknown tray message: ' + message.data);
+    		}
+    		break;
 
-                // Now wails runtime is loaded, wails for the ready event
-                // and callback to the main app
-                // window.wails.Events.On('wails:loaded', function () {
-                if (callback) {
-                    log('Notifying application');
-                    callback(window.wails);
-                }
-                // });
-                break;
-            // Notifications
-            case 'n':
-            	window.wails._.Notify(message.data.slice(1));
-            	break;
-            // 	// Binding
-            // case 'b':
-            // 	const binding = message.data.slice(1);
-            // 	//log("Binding: " + binding)
-            // 	window.wails._.NewBinding(binding);
-            // 	break;
-            // 	// Call back
-            case 'c':
-                const callbackData = message.data.slice(1);
-                window.wails._.Callback(callbackData);
-                break;
-            // Tray
-            case 'T':
-                const trayMessage = message.data.slice(1);
-                switch (trayMessage[0]) {
-                    case 'S':
-                        // Set tray
-                        const trayJSON = trayMessage.slice(1);
-                        let tray = JSON.parse(trayJSON);
-                        setTray(tray);
-                        break
-                    case 'U':
-                        // Update label
-                        const updateTrayLabelJSON = trayMessage.slice(1);
-                        let trayLabelData = JSON.parse(updateTrayLabelJSON);
-                        updateTrayLabel(trayLabelData);
-                        break
-                    case 'D':
-                        // Delete Tray Menu
-                        const id = trayMessage.slice(1);
-                        deleteTrayMenu(id);
-                        break
-                    default:
-                        log('Unknown tray message: ' + message.data);
-                }
-                break;
-
-            default:
-                log('Unknown message: ' + message.data);
-        }
+    	default:
+    		log('Unknown message: ' + message.data);
+    	}
     }
 
     /*

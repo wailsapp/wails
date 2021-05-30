@@ -15,7 +15,7 @@ import * as Dialog from './dialog';
 import { On, Once, OnMultiple, Emit, Notify } from './events';
 import { Callback, SystemCall } from './calls';
 import { AddScript, InjectCSS, DisableDefaultContextMenu } from './utils';
-import { AddIPCListener } from 'ipc';
+import { AddIPCListener, SendMessage } from 'ipc';
 import * as Platform from 'platform';
 import * as Store from './store';
 import * as Tray from './tray';
@@ -47,6 +47,7 @@ export function Init() {
 			// Init,
 			AddIPCListener,
 			SystemCall,
+			SendMessage,
 		},
 		Store,
 	};

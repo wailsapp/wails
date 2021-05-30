@@ -18,6 +18,9 @@ import (
 //go:embed darwin.js
 var darwinRuntime string
 
+//go:embed windows.js
+var windowsRuntime string
+
 // session represents a single websocket session
 type session struct {
 	bindings string
@@ -84,6 +87,8 @@ func (s *session) start(firstSession bool) {
 	switch runtime.GOOS {
 	case "darwin":
 		wailsRuntime = darwinRuntime
+	case "windows":
+		wailsRuntime = windowsRuntime
 	default:
 		log.Fatal("platform not supported")
 	}
