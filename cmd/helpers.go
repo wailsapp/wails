@@ -477,7 +477,17 @@ func ServeProject(projectOptions *ProjectOptions, logger *Logger) error {
 	logger.Yellow("Serving Application: " + location)
 	var args []string
 	if len(os.Args) > 2 {
-		args = os.Args[2:]
+		foundArgSep := false
+		for index, arg := range os.Args[2:] {
+			if arg == "--" {
+				foundArgSep = true
+				continue
+			}
+			if foundArgSep {
+				args = os.Args[index:]
+				break
+			}
+		}
 		logger.Yellow("Passing arguments: %+v", args)
 	}
 	cmd := exec.Command(location, args...)
