@@ -9,7 +9,7 @@ The lightweight framework for web-like apps
 */
 /* jshint esversion: 6 */
 
-import bridge from './bridge';
+const bridge = require('./bridge');
 
 /**
  * ready will execute the callback when Wails has loaded
