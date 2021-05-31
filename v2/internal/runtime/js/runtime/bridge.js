@@ -1559,20 +1559,8 @@
     }
 
     function setupIPCBridge() {
-    	// darwin
-    	window.webkit = {
-    		messageHandlers: {
-    			external: {
-    				postMessage: (message) => {
-    					websocket.send(message);
-    				}
-    			},
-    			windowDrag: {
-    				postMessage: () => {
-    					// Ignore window drag events
-    				}
-    			}
-    		}
+    	window.wailsInvoke = (message) => {
+    		websocket.send(message);
     	};
     }
 
@@ -1636,7 +1624,7 @@
 
     		// We need to now send a message to the backend telling it
     		// we have loaded (System Start)
-    		window.wails._.SendMessage('SS');
+    		window.wailsInvoke('SS');
     		
     		// Now wails runtime is loaded, wails for the ready event
     		// and callback to the main app

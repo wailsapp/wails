@@ -25,10 +25,6 @@ export function SendMessage(message) {
     window.webkit.messageHandlers.external.postMessage(message);
 }
 
-export function RaiseError(message) {
-    window.webkit.messageHandlers.error.postMessage(message);
-}
-
 export function Init() {
 
     // Setup drag handler

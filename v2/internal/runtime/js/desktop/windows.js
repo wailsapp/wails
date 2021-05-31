@@ -22,11 +22,7 @@ export const System = {
 };
 
 export function SendMessage(message) {
-	window.chrome.webview.postMessage('S'+message);
-}
-
-export function RaiseError(message) {
-	window.chrome.webview.postMessage('E'+message);
+	window.wailsInvoke(message);
 }
 
 export function Init() {
@@ -39,7 +35,7 @@ export function Init() {
 			if (currentElement.hasAttribute('data-wails-no-drag')) {
 				break;
 			} else if (currentElement.hasAttribute('data-wails-drag')) {
-				window.chrome.webview.postMessage('wails-drag');
+				window.wailsInvoke('wails-drag');
 				break;
 			}
 			currentElement = currentElement.parentElement;
@@ -66,7 +62,7 @@ export function Init() {
 				id: contextMenuId,
 				data: contextData || '',
 			};
-			window.chrome.webview.postMessage('C'+JSON.stringify(message));
+			window.wailsInvoke('C'+JSON.stringify(message));
 		}
 	});
 }

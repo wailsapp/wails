@@ -10,20 +10,6 @@ The lightweight framework for web-like apps
 /* jshint esversion: 6 */
 import { SetBindings } from './bindings';
 import { Init } from './main';
-import {RaiseError} from '../desktop/darwin';
-
-// Setup global error handler
-window.onerror = function (msg, url, lineNo, columnNo, error) {
-	const errorMessage = {
-		message: msg,
-		url: url,
-		line: lineNo,
-		column: columnNo,
-		error: JSON.stringify(error),
-		stack: function() { return JSON.stringify(new Error().stack); }(),
-	};
-	RaiseError(errorMessage);
-};
 
 // Initialise the Runtime
 Init();

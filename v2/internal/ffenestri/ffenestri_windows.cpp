@@ -195,8 +195,8 @@ void execJS(struct Application* app, const char *script) {
 
 void loadAssets(struct Application* app) {
 
-    // patch window.external.invoke
-    std::string initialCode = std::string("window.external={invoke:s=>window.chrome.webview.postMessage(s)};");
+    // setup window.wailsInvoke
+    std::string initialCode = std::string("window.wailsInvoke=function(m){window.chrome.webview.postMessage(m)};");
 
     // Load bindings
     initialCode += std::string(app->bindings);
@@ -224,7 +224,7 @@ void loadAssets(struct Application* app) {
         initialCode += std::string("wails._.DisableDefaultContextMenu();");
     }
 
-    initialCode += std::string("window.external.invoke('completed');");
+    initialCode += std::string("window.wailsInvoke('completed');");
 
     // Keep a copy of the code
     app->initialCode = new char[initialCode.length()+1];
@@ -304,8 +304,8 @@ bool initWebView2(struct Application *app, int debugEnabled, messageCallback cb)
     GetClientRect(app->window, &bounds);
     app->webviewController->put_Bounds(bounds);
 
-    // Callback hack
-    app->webview->AddScriptToExecuteOnDocumentCreated(L"window.chrome.webview.postMessage('I');", nullptr);
+    // Let the backend know we have initialised
+    app->webview->AddScriptToExecuteOnDocumentCreated(L"window.chrome.webview.postMessage('initialised');", nullptr);
     // Load the HTML
     LPCWSTR html = (LPCWSTR) cstrToLPWSTR((char*)assets[0]);
     app->webview->Navigate(html);

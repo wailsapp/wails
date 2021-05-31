@@ -66,21 +66,12 @@ class wv2ComHandler
             completed(app);
             return S_OK;
           }
-
-          switch(m[0]) {
-
-          // Standard message for backend
-          case 'S':
-            printf("--> Message to backend: %s\n", &m[1]);
-            messageFromWindowCallback(&m[1]);
-            break;
-          // DOM Initialised
-        case 'I':
+          else if (strcmp(m, "initialised") == 0) {
             loadAssets(app);
-            break;
-
-          default:
-            printf("----> Unknown message type: %c\n", m[0]);
+            return S_OK;
+          }
+          else {
+            messageFromWindowCallback(m);
           }
           delete[] m;
           return S_OK;
