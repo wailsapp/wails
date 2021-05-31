@@ -2,7 +2,7 @@
    <img src="logo_cropped.png" width="40%"><br/>
 </p>
 <p align="center">
-   Build desktop applications using Go & Web Technologies.<br/><br/>
+   使用 Go 和 Web 技术构建桌面应用程序。<br/><br/>
    <a href="https://github.com/wailsapp/wails/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
    <a href="https://goreportcard.com/report/github.com/wailsapp/wails"><img src="https://goreportcard.com/badge/github.com/wailsapp/wails"/></a>
    <a href="http://godoc.org/github.com/wailsapp/wails"><img src="https://img.shields.io/badge/godoc-reference-blue.svg"/></a>
@@ -16,23 +16,24 @@
 
 <span id="nav-1"></span>
 
-## Internationalization
+## 国际化
 
-English| [简体中文](README.zh_CN.md)
+[English](README.md) | 简体中文
 
-The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
+向 Go 程序提供 Web 接口的传统方法是通过内置 Web 服务器。Wails 提供了一种不同的方法：它提供了将 Go 代码和 Web 前端都包装成单个二进制文件的能力。通过处理项目创建、编译和打包，可为您提供工具，使您轻松做到这一点。你所要做的就是发挥创造力！
 
-The official docs can be found at [https://wails.app](https://wails.app).
+官方文档可以在 [https://wails.app](https://wails.app)中找到。
+国内镜像站点 [https://wails.top](https://wails.top)
 
 <span id="nav-2"></span>
 
-## Contents
+## 内容目录
 
-- [1. Internationalization](#nav-1)
-- [2. Contents](#nav-2)
-- [3. Features](#nav-3)
-- [4. Sponsors](#nav-4)
-- [5. Installation](#nav-5)
+- [1. 国际化](#nav-1)
+- [2. 内容目录](#nav-2)
+- [3. 特征](#nav-3)
+- [4. 赞助商](#nav-4)
+- [5. 安装](#nav-5)
   - [5.1 MacOS](#nav-5-1)
   - [5.2 Linux](#nav-5-2)
     - [5.2.1 Debian/Ubuntu](#nav-5-2-1)
@@ -42,33 +43,33 @@ The official docs can be found at [https://wails.app](https://wails.app).
     - [5.2.5 VoidLinux & VoidLinux-musl](#nav-5-2-5)
     - [5.2.6 Gentoo](#nav-5-2-6)
   - [5.3 Windows](#nav-5-3)
-- [6. Installation](#nav-6)
-- [7. Next Steps](#nav-7)
-- [8. FAQ](#nav-8)
-- [9. Contributors](#nav-9)
-- [10. Special Mentions](#nav-10)
-- [11. Licensing](#nav-11)
-- [12. Special Thanks](#nav-12)
+- [6. 安装](#nav-6)
+- [7. 下一步](#nav-7)
+- [8. 常见问题](#nav-8)
+- [9. 贡献者](#nav-9)
+- [10. 特别提及](#nav-10)
+- [11. 许可协议](#nav-11)
+- [12. 特别感谢](#nav-12)
 
 <span id="nav-3"></span>
 
-## Features
+## 特征
 
-- Use standard Go for the backend
-- Use any frontend technology to build your UI
-- Quickly create Vue, Vuetify or React frontends for your Go programs
-- Expose Go methods/functions to the frontend via a single bind command
-- Uses native rendering engines - no embedded browser
-- Shared events system
-- Native file dialogs
-- Powerful cli tool
-- Multiplatform
+- 后端使用标准 Go
+- 使用任意前端技术构建 UI 界面
+- 快速为您的 Go 应用生成 Vue、Vuetify、React 前端代码
+- 通过简单的绑定命令将 Go 方法暴露到前端
+- 使用原生渲染引擎 - 无嵌入式浏览器
+- 共享事件系统
+- 原生文件系统对话框
+- 强大的命令行工具
+- 跨多个平台
 
 <span id="nav-4"></span>
 
-## Sponsors
+## 赞助商
 
-This project is supported by these kind people / companies:
+这个项目由以下这些人或者公司支持：
 
 <a href="https://github.com/matryer" style="width:100px"><img src="https://github.com/matryer.png" width="100"/></a>
 <a href="https://www.jetbrains.com?from=Wails" style="width:100px"><img src="jetbrains-grayscale.png" width="100"/></a>
@@ -90,9 +91,9 @@ This project is supported by these kind people / companies:
 
 <span id="nav-5"></span>
 
-## Installation
+## 安装
 
-Wails uses cgo to bind to the native rendering engines so a number of platform dependent libraries are needed as well as an installation of Go. The basic requirements are:
+Wails 使用 cgo 与原生渲染引擎结合，因此需要一些依赖平台的库以及 Go 的安装。基本要求是：
 
 - Go 1.16
 - npm
@@ -101,7 +102,7 @@ Wails uses cgo to bind to the native rendering engines so a number of platform d
 
 ### MacOS
 
-Make sure you have the xcode command line tools installed. This can be done by running:
+请确保已安装 xcode 命令行工具。这可以通过运行下面的命令来完成：
 
 `xcode-select --install`
 
@@ -161,15 +162,15 @@ _Fedora 29, 30_
 
 ### Windows
 
-Windows requires gcc and related tooling. The recommended download is from [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download). Once this is installed, you are good to go.
+Windows 需要 GCC 和相关工具。 建议从 [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download)下载， 安装完成，您就可以开始了。
 
 <span id="nav-6"></span>
 
-## Installation
+## 安装
 
-**Ensure Go modules are enabled: GO111MODULE=on and go/bin is in your PATH variable.**
+**确保 Go modules 是开启的: GO111MODULE=on 并且 go/bin 在您的 PATH 变量中.**
 
-Installation is as simple as running the following command:
+安装很简单，运行以下命令：
 
 <pre style='color:white'>
 go get -u github.com/wailsapp/wails/cmd/wails
@@ -177,29 +178,29 @@ go get -u github.com/wailsapp/wails/cmd/wails
 
 <span id="nav-7"></span>
 
-## Next Steps
+## 下一步
 
-It is recommended at this stage to read the comprehensive documentation at [https://wails.app](https://wails.app).
+建议在此时阅读[https://wails.app](https://wails.app)上面的文档.
 
 <span id="nav-8"></span>
 
-## FAQ
+## 常见问题
 
-- Is this an alternative to Electron?
+- 它是 Electron 的替代品吗?
 
-  Depends on your requirements. It's designed to make it easy for Go programmers to make lightweight desktop applications or add a frontend to their existing applications. Whilst Wails does not currently offer hooks into native elements such as menus, this may change in the future.
+  取决于您的要求。它旨在使 Go 程序员可以轻松制作轻量级桌面应用程序或在其现有应用程序中添加前端。尽管 Wails 当前不提供对诸如菜单之类的本机元素的钩子，但将来可能会改变。
 
-- Who is this project aimed at?
+- 这个项目针对的是谁?
 
-  Go programmers who want to bundle an HTML/JS/CSS frontend with their applications, without resorting to creating a server and opening a browser to view it.
+  希望将 HTML / JS / CSS 前端与其应用程序捆绑在一起的程序员，而无需借助创建服务并打开浏览器进行查看的方式。
 
-- What's with the name?
+- 名字怎么来的?
 
-  When I saw WebView, I thought "What I really want is tooling around building a WebView app, a bit like Rails is to Ruby". So initially it was a play on words (Webview on Rails). It just so happened to also be a homophone of the English name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it stuck.
+  当我看到 WebView 时，我想"我真正想要的是围绕构建 WebView 应用程序工作，有点像 Rails 对于 Ruby"。因此，最初它是一个文字游戏（Webview on Rails）。碰巧也是我来自的[国家](https://en.wikipedia.org/wiki/Wales)的英文名字的同音。所以就是他了。
 
 <span id="nav-9"></span>
 
-## Contributors
+## 贡献者
 
 <a href="https://github.com/qaisjp"><img src="https://github.com/qaisjp.png?size=40" width="40"/></a>
 <a href="https://github.com/alee792"><img src="https://github.com/alee792.png?size=40" width="40"/></a>
@@ -249,9 +250,9 @@ It is recommended at this stage to read the comprehensive documentation at [http
 
 <span id="nav-10"></span>
 
-## Special Mentions
+## 特别提及
 
-Without the following people, this project would never have existed:
+如果没有以下人员，此项目将永远不会存在：
 
 - [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been immense. More patience than you can throw a stick at (Not long now Dustin!).
 - [Serge Zaitsev](https://github.com/zserge) - Creator of [Webview](https://github.com/zserge/webview) which Wails uses for the windowing.
@@ -275,22 +276,22 @@ This project was mainly coded to the following albums:
 
 <span id="nav-11"></span>
 
-## Licensing
+## 许可协议
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
 
 <span id="nav-12"></span>
 
-## Special Thanks
+## 特别感谢
 
 <p align="center" style="text-align: center">
    <a href="https://pace.dev"><img src="pace.jpeg"/></a><br/>
-   A *huge* thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
-   If you are looking for a Project Management tool that's powerful but quick and easy to use, check them out!<br/><br/>
+   非常感谢<a href="https://pace.dev">Pace</a>对项目的赞助，并帮助将Wails移植到Apple Silicon<br/><br/>
+   如果您正在寻找一个强大的项目管理工具，并且快速和易于使用，可以看看他们！<br/><br/>
 </p>
 
 <p align="center" style="text-align: center">
-   A special thank you to JetBrains for donating licenses to us!<br/><br/>
-   Please click the logo to let them know your appreciation!<br/><br/>
+   特别感谢JetBrains向我们捐赠许可！<br/><br/>
+   请点击logo让他们知道你的感激之情！<br/><br/>
    <a href="https://www.jetbrains.com?from=Wails"><img src="jetbrains-grayscale.png" width="30%"></a>
 </p>
