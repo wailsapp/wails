@@ -25,8 +25,8 @@ export default {
     const getMessage = () => {
       window.backend
         .basic()
-        .then((result) => {
-          message.value = result;
+        .then((res) => {
+          message.value = res;
         })
         .catch((err) => {
           console.log(err);

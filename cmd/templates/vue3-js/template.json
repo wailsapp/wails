@@ -1,8 +1,8 @@
 {
   "name": "Vue3 JS",
   "version": "1.0.0",
-  "shortdescription": "A template based on Vue 3, Vue-router, and Webpack5",
-  "description": "A template based on Vue 3, Vue-router, and Webpack5",
+  "shortdescription": "A template based on Vue 3, Vue-router, Vuex, and Webpack5",
+  "description": "A template based on Vue 3, Vue-router, Vuex, and Webpack5",
   "install": "npm install",
   "build": "npm run build",
   "author": "Misitebao <i@misitebao.com>",
