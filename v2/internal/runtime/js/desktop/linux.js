@@ -14,28 +14,28 @@ The lightweight framework for web-like apps
  */
 
 export const System = {
-    ...common,
-    Platform: () => "linux",
-}
+	AppType: 'desktop',
+	Platform: () => 'linux',
+};
 
 export function SendMessage(message) {
-    window.webkit.messageHandlers.external.postMessage(message);
+	window.webkit.messageHandlers.external.postMessage(message);
 }
 
 export function Init() {
 
-    // Setup drag handler
-    // Based on code from: https://github.com/patr0nus/DeskGap
-    window.addEventListener('mousedown', function (e) {
-        let currentElement = e.target;
-        while (currentElement != null) {
-            if (currentElement.hasAttribute('data-wails-no-drag')) {
-                break;
-            } else if (currentElement.hasAttribute('data-wails-drag')) {
-                window.webkit.messageHandlers.windowDrag.postMessage(null);
-                break;
-            }
-            currentElement = currentElement.parentElement;
-        }
-    });
+	// Setup drag handler
+	// Based on code from: https://github.com/patr0nus/DeskGap
+	window.addEventListener('mousedown', function (e) {
+		let currentElement = e.target;
+		while (currentElement != null) {
+			if (currentElement.hasAttribute('data-wails-no-drag')) {
+				break;
+			} else if (currentElement.hasAttribute('data-wails-drag')) {
+				window.webkit.messageHandlers.windowDrag.postMessage(null);
+				break;
+			}
+			currentElement = currentElement.parentElement;
+		}
+	});
 }

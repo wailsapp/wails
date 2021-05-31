@@ -13,11 +13,8 @@ The lightweight framework for web-like apps
  * Initialises platform specific code
  */
 
-// import * as common from './common';
-const common = require('./common');
-
 export const System = {
-	...common,
+	AppType: 'desktop',
 	Platform: () => 'windows',
 };
 
