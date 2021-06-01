@@ -9,7 +9,7 @@
       "help": "This template requires 'npx'. Please install with 'npm install -g npx'"
     }
   ],
-  "install": "npm install",
+  "install": "npm install --legacy-peer-deps",
   "build": "npx ng build --single-bundle true --output-hashing none --prod --bundle-styles false",
   "author": "bh90210 <ktc@pm.me>",
   "created": "2019-06-15 18:23:48.666414555 +0300 EEST m=+223.934866008",
