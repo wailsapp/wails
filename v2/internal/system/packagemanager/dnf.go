@@ -9,23 +9,23 @@ import (
 	"github.com/wailsapp/wails/v2/internal/shell"
 )
 
-// Yum represents the Yum manager
-type Yum struct {
+// Dnf represents the Dnf manager
+type Dnf struct {
 	name string
 	osid string
 }
 
-// NewYum creates a new Yum instance
-func NewYum(osid string) *Yum {
-	return &Yum{
-		name: "yum",
+// NewDnf creates a new Dnf instance
+func NewDnf(osid string) *Dnf {
+	return &Dnf{
+		name: "dnf",
 		osid: osid,
 	}
 }
 
 // Packages returns the libraries that we need for Wails to compile
 // They will potentially differ on different distributions or versions
-func (y *Yum) Packages() packagemap {
+func (y *Dnf) Packages() packagemap {
 	return packagemap{
 		"libgtk-3": []*Package{
 			{Name: "gtk3-devel", SystemPackage: true, Library: true},
@@ -43,6 +43,9 @@ func (y *Yum) Packages() packagemap {
 		"npm": []*Package{
 			{Name: "npm", SystemPackage: true},
 		},
+		"upx": []*Package{
+			{Name: "upx", SystemPackage: true, Optional: true},
+		},
 		"docker": []*Package{
 			{
 				SystemPackage: false,
@@ -57,16 +60,16 @@ func (y *Yum) Packages() packagemap {
 }
 
 // Name returns the name of the package manager
-func (y *Yum) Name() string {
+func (y *Dnf) Name() string {
 	return y.name
 }
 
 // PackageInstalled tests if the given package name is installed
-func (y *Yum) PackageInstalled(pkg *Package) (bool, error) {
+func (y *Dnf) PackageInstalled(pkg *Package) (bool, error) {
 	if pkg.SystemPackage == false {
 		return false, nil
 	}
-	stdout, _, err := shell.RunCommand(".", "yum", "info", "installed", pkg.Name)
+	stdout, _, err := shell.RunCommand(".", "dnf", "info", "installed", pkg.Name)
 	if err != nil {
 		_, ok := err.(*exec.ExitError)
 		if ok {
@@ -87,11 +90,11 @@ func (y *Yum) PackageInstalled(pkg *Package) (bool, error) {
 }
 
 // PackageAvailable tests if the given package is available for installation
-func (y *Yum) PackageAvailable(pkg *Package) (bool, error) {
+func (y *Dnf) PackageAvailable(pkg *Package) (bool, error) {
 	if pkg.SystemPackage == false {
 		return false, nil
 	}
-	stdout, _, err := shell.RunCommand(".", "yum", "info", pkg.Name)
+	stdout, _, err := shell.RunCommand(".", "dnf", "info", pkg.Name)
 	// We add a space to ensure we get a full match, not partial match
 	if err != nil {
 		_, ok := err.(*exec.ExitError)
@@ -111,14 +114,14 @@ func (y *Yum) PackageAvailable(pkg *Package) (bool, error) {
 }
 
 // InstallCommand returns the package manager specific command to install a package
-func (y *Yum) InstallCommand(pkg *Package) string {
+func (y *Dnf) InstallCommand(pkg *Package) string {
 	if pkg.SystemPackage == false {
 		return pkg.InstallCommand[y.osid]
 	}
-	return "sudo yum install " + pkg.Name
+	return "sudo dnf install " + pkg.Name
 }
 
-func (y *Yum) getPackageVersion(pkg *Package, output string) {
+func (y *Dnf) getPackageVersion(pkg *Package, output string) {
 	splitOutput := strings.Split(output, " ")
 	if len(splitOutput) > 0 {
 		pkg.Version = splitOutput[1]

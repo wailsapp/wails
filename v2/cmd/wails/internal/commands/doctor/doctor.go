@@ -25,11 +25,15 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		app.PrintBanner()
 
+		logger.Print("Scanning system - Please wait (this may take a long time)...")
+
 		// Get system info
 		info, err := system.GetInfo()
 		if err != nil {
+			logger.Println("Failed.")
 			return err
 		}
+		logger.Println("Done.")
 
 		// Start a new tabwriter
 		w := new(tabwriter.Writer)
@@ -116,6 +120,8 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		if len(dependenciesMissing) == 0 && dependenciesAvailableRequired == 0 {
 			logger.Println("Your system is ready for Wails development!")
+		} else {
+			logger.Println("Your system has missing dependencies!\n")
 		}
 
 		if dependenciesAvailableRequired != 0 {
@@ -125,15 +131,15 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		if dependenciesAvailableOptional != 0 {
 			logger.Println("Optional package(s) installation details: \n" + info.Dependencies.InstallAllOptionalCommand())
 		}
-
-		if len(externalPackages) > 0 {
-			for _, p := range externalPackages {
-				if p.Optional {
-					print("[Optional] ")
-				}
-				logger.Println("Install " + p.Name + ": " + p.InstallCommand)
-			}
-		}
+		//
+		//if len(externalPackages) > 0 {
+		//	for _, p := range externalPackages {
+		//		if p.Optional {
+		//			print("[Optional] ")
+		//		}
+		//		logger.Println("Install " + p.Name + ": " + p.InstallCommand)
+		//	}
+		//}
 
 		if len(dependenciesMissing) != 0 {
 			// TODO: Check if apps are available locally and if so, adjust the diagnosis

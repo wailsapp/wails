@@ -9,12 +9,11 @@ import (
 	"github.com/wailsapp/wails/v2/internal/shell"
 )
 
-
 // A list of package manager commands
 var pmcommands = []string{
 	"eopkg",
 	"apt",
-	"yum",
+	"dnf",
 	"pacman",
 	"emerge",
 	"zypper",
@@ -38,8 +37,8 @@ func newPackageManager(pmname string, osid string) PackageManager {
 		return NewEopkg(osid)
 	case "apt":
 		return NewApt(osid)
-	case "yum":
-		return NewYum(osid)
+	case "dnf":
+		return NewDnf(osid)
 	case "pacman":
 		return NewPacman(osid)
 	case "emerge":
@@ -77,7 +76,7 @@ func Dependancies(p PackageManager) (DependencyList, error) {
 				if installed {
 					dependency.Installed = true
 					dependency.Version = pkg.Version
-					if !pkg.Library {
+					if !pkg.SystemPackage {
 						dependency.Version = AppVersion(name)
 					}
 				} else {
