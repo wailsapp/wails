@@ -16,7 +16,7 @@
     "@rollup/plugin-image": "^2.0.6",
     "@rollup/plugin-node-resolve": "^13.0.0",
     "@rollup/plugin-url": "^6.0.0",
-    "@wails/runtime": "^1.3.14",
+    "@wails/runtime": "^1.3.19",
     "rollup": "^2.50.4",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-livereload": "^2.0.0",
