@@ -1562,6 +1562,12 @@
     	window.wailsInvoke = (message) => {
     		websocket.send(message);
     	};
+        window.wailsDrag = (message) => {
+            websocket.send(message);
+        };
+        window.wailsContextMenuMessage = (message) => {
+            websocket.send(message);
+        };
     }
 
     // Handles incoming websocket connections

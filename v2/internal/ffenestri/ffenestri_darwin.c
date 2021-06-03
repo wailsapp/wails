@@ -983,7 +983,7 @@ void SaveDialog(struct Application *app, char *callbackID, char *title, char *fi
 	);
 }
 
-const char *invoke = "window.external={invoke:function(x){window.webkit.messageHandlers.external.postMessage(x);}};";
+const char *invoke = "window.wailsInvoke=function(message){window.webkit.messageHandlers.external.postMessage(message);};window.wailsDrag=function(message){window.webkit.messageHandlers.windowDrag.postMessage(message);};window.wailsContextMenuMessage=function(message){window.webkit.messageHandlers.contextMenu.postMessage(message);};";
 
 // DisableFrame disables the window frame
 void DisableFrame(struct Application *app)

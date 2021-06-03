@@ -19,7 +19,7 @@ export const System = {
 };
 
 export function SendMessage(message) {
-	window.webkit.messageHandlers.external.postMessage(message);
+	window.wailsInvoke(message);
 }
 
 export function Init() {
@@ -32,7 +32,7 @@ export function Init() {
 			if (currentElement.hasAttribute('data-wails-no-drag')) {
 				break;
 			} else if (currentElement.hasAttribute('data-wails-drag')) {
-				window.webkit.messageHandlers.windowDrag.postMessage(null);
+				window.wailsDrag(null);
 				break;
 			}
 			currentElement = currentElement.parentElement;
@@ -59,7 +59,7 @@ export function Init() {
 				id: contextMenuId,
 				data: contextData || '',
 			};
-			window.webkit.messageHandlers.contextMenu.postMessage(JSON.stringify(message));
+			window.wailsContextMenuMessage(JSON.stringify(message));
 		}
 	});
 }
