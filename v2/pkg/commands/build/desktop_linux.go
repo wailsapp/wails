@@ -17,7 +17,7 @@ func (d *DesktopBuilder) compileIcon(assetDir string, iconFile string) error {
 
 	// Load icon into a databuffer
 	targetFilename := "icon"
-	targetFile := filepath.Join(assetDir, targetFilename+".c")
+	targetFile := filepath.Join(assetDir, targetFilename+".h")
 
 	d.addFileToDelete(targetFile)
 

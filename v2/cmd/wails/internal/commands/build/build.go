@@ -98,6 +98,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			"darwin/amd64",
 			"darwin/arm64",
 			"darwin/universal",
+			"linux",
 			//"linux/amd64",
 			//"linux/arm-7",
 			"windows",

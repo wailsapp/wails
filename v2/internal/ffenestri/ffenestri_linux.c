@@ -2,6 +2,7 @@
 #ifndef __FFENESTRI_LINUX_H__
 #define __FFENESTRI_LINUX_H__
 
+#include "common.h"
 #include "gtk/gtk.h"
 #include "webkit2/webkit2.h"
 #include <time.h>
@@ -11,9 +12,10 @@
 #include <stdarg.h>
 
 // References to assets
-extern const unsigned char *assets[];
 extern const unsigned char runtime;
-extern const char *icon[];
+
+#include "icon.h"
+#include "assets.h"
 
 // Constants
 #define PRIMARY_MOUSE_BUTTON 1
@@ -22,17 +24,6 @@ extern const char *icon[];
 
 // MAIN DEBUG FLAG
 int debug;
-
-// Credit: https://stackoverflow.com/a/8465083
-char *concat(const char *s1, const char *s2)
-{
-    const size_t len1 = strlen(s1);
-    const size_t len2 = strlen(s2);
-    char *result = malloc(len1 + len2 + 1);
-    memcpy(result, s1, len1);
-    memcpy(result + len1, s2, len2 + 1);
-    return result;
-}
 
 // Debug works like sprintf but mutes if the global debug flag is true
 // Credit: https://stackoverflow.com/a/20639708
@@ -312,17 +303,17 @@ void SetMaxWindowSize(struct Application *app, int maxWidth, int maxHeight)
 }
 
 // SetColour sets the colour of the webview to the given colour string
-int SetColour(struct Application *app, const char *colourString)
+void SetColour(struct Application *app, int red, int green, int blue, int alpha)
 {
-    GdkRGBA rgba;
-    gboolean result = gdk_rgba_parse(&rgba, colourString);
-    if (result == FALSE)
-    {
-        return 0;
-    }
-    // Debug("Setting webview colour to: %s", colourString);
-    webkit_web_view_get_background_color((WebKitWebView *)(app->webView), &rgba);
-    return 1;
+//    GdkRGBA rgba;
+//    rgba.
+//    gboolean result = gdk_rgba_parse(&rgba, colourString);
+//    if (result == FALSE)
+//    {
+//        return 0;
+//    }
+//    // Debug("Setting webview colour to: %s", colourString);
+//    webkit_web_view_get_background_color((WebKitWebView *)(app->webView), &rgba);
 }
 
 // DisableFrame disables the window frame
@@ -522,6 +513,11 @@ static void load_finished_cb(WebKitWebView *webView,
         // Bindings
         Debug("Binding Methods");
         syncEval(app, app->bindings);
+
+        // Setup IPC commands
+        Debug("Setting up IPC methods");
+        const char *invoke = "window.wailsInvoke=function(message){window.webkit.messageHandlers.external.postMessage(message);};window.wailsDrag=function(message){window.webkit.messageHandlers.windowDrag.postMessage(message);};window.wailsContextMenuMessage=function(message){window.webkit.messageHandlers.contextMenu.postMessage(message);};";
+        syncEval(app, invoke);
 
         // Runtime
         Debug("Setting up Wails runtime");
@@ -824,7 +820,7 @@ void Show(struct Application *app) {
 
 // maximiseInternal maximises the main window
 void maximiseInternal(struct Application *app) {
-    gtk_window_maximize(GTK_WIDGET(app->mainWindow));
+    gtk_window_maximize(GTK_WINDOW(app->mainWindow));
 }
 
 // Maximise places the maximiseInternal method onto the main thread for execution
@@ -841,7 +837,7 @@ void Maximise(struct Application *app) {
 
 // unmaximiseInternal unmaximises the main window
 void unmaximiseInternal(struct Application *app) {
-    gtk_window_unmaximize(GTK_WIDGET(app->mainWindow));
+    gtk_window_unmaximize(GTK_WINDOW(app->mainWindow));
 }
 
 // Unmaximise places the unmaximiseInternal method onto the main thread for execution
@@ -855,6 +851,21 @@ void Unmaximise(struct Application *app) {
     // Add call to main thread
     gdk_threads_add_idle(executeMethod, data);  
 }
+
+
+void DarkModeEnabled(struct Application*, char *callbackID) {}
+void SetApplicationMenu(struct Application*, const char *) {}
+void AddTrayMenu(struct Application*, const char *menuTrayJSON) {}
+void SetTrayMenu(struct Application*, const char *menuTrayJSON) {}
+void DeleteTrayMenuByID(struct Application*, const char *id) {}
+void UpdateTrayMenuLabel(struct Application*, const char* JSON) {}
+void AddContextMenu(struct Application*, char *contextMenuJSON) {}
+void UpdateContextMenu(struct Application*, char *contextMenuJSON) {}
+void WebviewIsTransparent(struct Application*) {}
+void WindowBackgroundIsTranslucent(struct Application*) {}
+void OpenDialog(struct Application*, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolvesAliases, int treatPackagesAsDirectories) {}
+void SaveDialog(struct Application*, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int showHiddenFiles, int canCreateDirectories, int treatPackagesAsDirectories) {}
+void MessageDialog(struct Application*, char *callbackID, char *type, char *title, char *message, char *icon, char *button1, char *button2, char *button3, char *button4, char *defaultButton, char *cancelButton) {}
 
 
 // minimiseInternal minimises the main window
