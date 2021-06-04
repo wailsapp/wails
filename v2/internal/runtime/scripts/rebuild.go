@@ -16,7 +16,7 @@ func main() {
 
 	sourceDir := fs.RelativePath("../../../internal/runtime/js")
 
-	platforms := []string{"darwin", "windows"}
+	platforms := []string{"darwin", "windows", "linux"}
 
 	for _, platform := range platforms {
 		println("Building JS Runtime for " + platform)

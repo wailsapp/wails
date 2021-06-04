@@ -19,7 +19,7 @@ export const System = {
 };
 
 export function SendMessage(message) {
-	window.webkit.messageHandlers.external.postMessage(message);
+	window.wailsInvoke(message);
 }
 
 export function Init() {
@@ -32,10 +32,34 @@ export function Init() {
 			if (currentElement.hasAttribute('data-wails-no-drag')) {
 				break;
 			} else if (currentElement.hasAttribute('data-wails-drag')) {
-				window.webkit.messageHandlers.windowDrag.postMessage(null);
+				window.wailsDrag(null);
 				break;
 			}
 			currentElement = currentElement.parentElement;
+		}
+	});
+
+	// Setup context menu hook
+	window.addEventListener('contextmenu', function (e) {
+		let currentElement = e.target;
+		let contextMenuId;
+		while (currentElement != null) {
+			contextMenuId = currentElement.dataset['wails-context-menu-id'];
+			if (contextMenuId != null) {
+				break;
+			}
+			currentElement = currentElement.parentElement;
+		}
+		if (contextMenuId != null || window.disableWailsDefaultContextMenu) {
+			e.preventDefault();
+		}
+		if( contextMenuId != null ) {
+			let contextData = currentElement.dataset['wails-context-menu-data'];
+			let message = {
+				id: contextMenuId,
+				data: contextData || '',
+			};
+			window.wailsContextMenuMessage(JSON.stringify(message));
 		}
 	});
 }
