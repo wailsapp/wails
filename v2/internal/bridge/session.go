@@ -21,6 +21,9 @@ var darwinRuntime string
 //go:embed windows.js
 var windowsRuntime string
 
+//go:embed linux.js
+var linuxRuntime string
+
 // session represents a single websocket session
 type session struct {
 	bindings string
@@ -89,6 +92,8 @@ func (s *session) start(firstSession bool) {
 		wailsRuntime = darwinRuntime
 	case "windows":
 		wailsRuntime = windowsRuntime
+	case "linux":
+		wailsRuntime = linuxRuntime
 	default:
 		log.Fatal("platform not supported")
 	}
@@ -97,7 +102,10 @@ func (s *session) start(firstSession bool) {
 	s.log.Info(bindingsMessage)
 	bootstrapMessage := bindingsMessage + wailsRuntime
 
-	s.sendMessage("b" + bootstrapMessage)
+	err := s.sendMessage("b" + bootstrapMessage)
+	if err != nil {
+		s.log.Error(err.Error())
+	}
 
 	// Send menus
 	traymenus, err := s.menumanager.GetTrayMenus()
@@ -106,7 +114,10 @@ func (s *session) start(firstSession bool) {
 	}
 
 	for _, trayMenu := range traymenus {
-		s.sendMessage("TS" + trayMenu)
+		err := s.sendMessage("TS" + trayMenu)
+		if err != nil {
+			s.log.Error(err.Error())
+		}
 	}
 
 	for {
@@ -135,7 +146,10 @@ func (s *session) start(firstSession bool) {
 
 // Shutdown
 func (s *session) Shutdown() {
-	s.conn.Close()
+	err := s.conn.Close()
+	if err != nil {
+		s.log.Error(err.Error())
+	}
 	s.done = true
 	s.log.Info("session %v exit", s.Identifier())
 }
@@ -151,10 +165,16 @@ func (s *session) writePump() {
 			s.Shutdown()
 			return
 		case msg, ok := <-s.writeChan:
-			s.conn.SetWriteDeadline(time.Now().Add(1 * time.Second))
+			err := s.conn.SetWriteDeadline(time.Now().Add(1 * time.Second))
+			if err != nil {
+				s.log.Error(err.Error())
+			}
 			if !ok {
 				s.log.Debug("writeChan was closed!")
-				s.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				err := s.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				if err != nil {
+					s.log.Error(err.Error())
+				}
 				return
 			}
 
