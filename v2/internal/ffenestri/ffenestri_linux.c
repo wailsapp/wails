@@ -853,19 +853,19 @@ void Unmaximise(struct Application *app) {
 }
 
 
-void DarkModeEnabled(struct Application*, char *callbackID) {}
-void SetApplicationMenu(struct Application*, const char *) {}
-void AddTrayMenu(struct Application*, const char *menuTrayJSON) {}
-void SetTrayMenu(struct Application*, const char *menuTrayJSON) {}
-void DeleteTrayMenuByID(struct Application*, const char *id) {}
-void UpdateTrayMenuLabel(struct Application*, const char* JSON) {}
-void AddContextMenu(struct Application*, char *contextMenuJSON) {}
-void UpdateContextMenu(struct Application*, char *contextMenuJSON) {}
-void WebviewIsTransparent(struct Application*) {}
-void WindowBackgroundIsTranslucent(struct Application*) {}
-void OpenDialog(struct Application*, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolvesAliases, int treatPackagesAsDirectories) {}
-void SaveDialog(struct Application*, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int showHiddenFiles, int canCreateDirectories, int treatPackagesAsDirectories) {}
-void MessageDialog(struct Application*, char *callbackID, char *type, char *title, char *message, char *icon, char *button1, char *button2, char *button3, char *button4, char *defaultButton, char *cancelButton) {}
+void DarkModeEnabled(struct Application* app, char *callbackID) {}
+void SetApplicationMenu(struct Application* app, const char *menuJSON) {}
+void AddTrayMenu(struct Application* app, const char *menuTrayJSON) {}
+void SetTrayMenu(struct Application* app, const char *menuTrayJSON) {}
+void DeleteTrayMenuByID(struct Application* app, const char *id) {}
+void UpdateTrayMenuLabel(struct Application* app, const char* JSON) {}
+void AddContextMenu(struct Application* app, char *contextMenuJSON) {}
+void UpdateContextMenu(struct Application* app, char *contextMenuJSON) {}
+void WebviewIsTransparent(struct Application* app) {}
+void WindowBackgroundIsTranslucent(struct Application* app) {}
+void OpenDialog(struct Application* app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolvesAliases, int treatPackagesAsDirectories) {}
+void SaveDialog(struct Application* app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int showHiddenFiles, int canCreateDirectories, int treatPackagesAsDirectories) {}
+void MessageDialog(struct Application* app, char *callbackID, char *type, char *title, char *message, char *icon, char *button1, char *button2, char *button3, char *button4, char *defaultButton, char *cancelButton) {}
 
 
 // minimiseInternal minimises the main window
