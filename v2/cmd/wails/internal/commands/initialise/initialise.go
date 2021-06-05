@@ -107,10 +107,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		// Try to discover author details from git config
-		err := findAuthorDetails(options)
-		if err != nil {
-			return err
-		}
+		findAuthorDetails(options)
 
 		return initProject(options)
 	})
@@ -171,20 +168,18 @@ func initGit(options *templates.Options) error {
 	return nil
 }
 
-func findAuthorDetails(options *templates.Options) error {
+// findAuthorDetails tries to find the user's name and email
+// from gitconfig. If it finds them, it stores them in the project options
+func findAuthorDetails(options *templates.Options) {
 	if git.IsInstalled() {
 		name, err := git.Name()
-		if err != nil {
-			return err
+		if err == nil {
+			options.AuthorName = strings.TrimSpace(name)
 		}
-		options.AuthorName = strings.TrimSpace(name)
 
 		email, err := git.Email()
-		if err != nil {
-			return err
+		if err == nil {
+			options.AuthorEmail = strings.TrimSpace(email)
 		}
-		options.AuthorEmail = strings.TrimSpace(email)
 	}
-
-	return nil
 }
