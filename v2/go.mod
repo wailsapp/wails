@@ -10,7 +10,7 @@ require (
 	github.com/imdario/mergo v0.3.11
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/leaanthony/clir v1.0.4
-	github.com/leaanthony/debme v1.2.0
+	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/gosod v1.0.1
 	github.com/leaanthony/slicer v1.5.0
