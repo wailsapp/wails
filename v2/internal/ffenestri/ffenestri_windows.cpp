@@ -107,6 +107,7 @@ void performShutdown(struct Application *app) {
     messageFromWindowCallback("WC");
 }
 
+// Credit: https://gist.github.com/ysc3839/b08d2bff1c7dacde529bed1d37e85ccf
 void enableTranslucentBackground(struct Application *app) {
     HMODULE hUser = GetModuleHandleA("user32.dll");
     if (hUser)
@@ -287,6 +288,45 @@ bool initWebView2(struct Application *app, int debugEnabled, messageCallback cb)
                                          webview->AddRef();
                                          flag.clear();
                                      }));
+    if (!SUCCEEDED(res))
+    {
+        switch (res)
+        {
+            case HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND):
+            {
+                MessageBox(
+                    app->window,
+                    L"Couldn't find Edge installation. "
+                    "Do you have a version installed that's compatible with this "
+                    "WebView2 SDK version?",
+                    nullptr, MB_OK);
+            }
+            break;
+            case HRESULT_FROM_WIN32(ERROR_FILE_EXISTS):
+            {
+                MessageBox(
+                    app->window, L"User data folder cannot be created because a file with the same name already exists.", nullptr, MB_OK);
+            }
+            break;
+            case E_ACCESSDENIED:
+            {
+                MessageBox(
+                    app->window, L"Unable to create user data folder, Access Denied.", nullptr, MB_OK);
+            }
+            break;
+            case E_FAIL:
+            {
+                MessageBox(
+                    app->window, L"Edge runtime unable to start", nullptr, MB_OK);
+            }
+            break;
+            default:
+            {
+                 MessageBox(app->window, L"Failed to create WebView2 environment", nullptr, MB_OK);
+            }
+        }
+    }
+
     if (res != S_OK) {
         CoUninitialize();
         return false;
