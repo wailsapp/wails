@@ -13,5 +13,6 @@ type Builder interface {
 	BuildRuntime(*Options) error
 	CompileProject(*Options) error
 	OutputFilename(*Options) string
+	PostCompilation(*Options) error
 	CleanUp()
 }

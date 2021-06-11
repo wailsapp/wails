@@ -233,3 +233,8 @@ func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) e
 	//	}
 	return nil
 }
+
+// PostCompilation is called after the compilation step, if successful
+func (d *DesktopBuilder) PostCompilation(options *Options) error {
+	return nil
+}

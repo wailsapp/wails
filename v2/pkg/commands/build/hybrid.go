@@ -88,3 +88,8 @@ func (b *HybridBuilder) CleanUp() {
 	b.desktop.CleanUp()
 	b.server.CleanUp()
 }
+
+// PostCompilation is called after the compilation step, if successful
+func (s *HybridBuilder) PostCompilation(_ *Options) error {
+	return nil
+}

@@ -110,6 +110,11 @@ func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) err
 	return nil
 }
 
+// PostCompilation is called after the compilation step, if successful
+func (d *DesktopBuilder) PostCompilation(options *Options) error {
+	return nil
+}
+
 // We will compile all dialog icons found at <projectdir>/icons/dialog/*.png into the application
 func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) error {
 

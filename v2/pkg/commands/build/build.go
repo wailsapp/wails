@@ -25,8 +25,6 @@ const (
 	Production
 )
 
-var modeMap = []string{"Debug", "Production"}
-
 // Options contains all the build options as well as the project data
 type Options struct {
 	LDFlags             string               // Optional flags to pass to linker
@@ -49,11 +47,6 @@ type Options struct {
 	Compress            bool                 // Compress the final binary
 	CompressFlags       string               // Flags to pass to UPX
 	AppleIdentity       string
-}
-
-// GetModeAsString returns the current mode as a string
-func GetModeAsString(mode Mode) string {
-	return modeMap[mode]
 }
 
 // Build the project!
@@ -210,6 +203,12 @@ func Build(options *Options) (string, error) {
 			return "", err
 		}
 		outputLogger.Println("Done.")
+	}
+
+	// Post compilation tasks
+	err = builder.PostCompilation(options)
+	if err != nil {
+		return "", err
 	}
 
 	return projectData.OutputFilename, nil

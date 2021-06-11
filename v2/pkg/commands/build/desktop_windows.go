@@ -2,6 +2,22 @@
 
 package build
 
+import (
+	"github.com/wailsapp/wails/v2/internal/ffenestri/windows/x64"
+	"os"
+	"path/filepath"
+)
+
+// PostCompilation is called after the compilation step, if successful
+func (d *DesktopBuilder) PostCompilation(options *Options) error {
+	// Dump the DLLs
+	err := os.WriteFile(filepath.Join(options.BuildDirectory, "WebView2Loader.dll"), x64.WebView2Loader, 0755)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // We will compile all tray icons found at <projectdir>/assets/trayicons/*.png into the application
 func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) error {
 	//
@@ -88,6 +104,11 @@ func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) err
 	//	if err != nil {
 	//		return err
 	//	}
+	return nil
+}
+
+// compileIcon will compile the icon found at <projectdir>/icon.png into the application
+func (d *DesktopBuilder) compileIcon(assetDir string, iconFile string) error {
 	return nil
 }
 

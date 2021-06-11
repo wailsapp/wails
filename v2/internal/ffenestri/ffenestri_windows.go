@@ -5,7 +5,7 @@ import "C"
 /*
 
 #cgo windows CXXFLAGS: -std=c++11
-#cgo windows,amd64 LDFLAGS: -L./windows/x64 -lwebview -lWebView2Loader -lgdi32 -lole32 -lShlwapi -luser32 -loleaut32
+#cgo windows,amd64 LDFLAGS: -lgdi32 -lole32 -lShlwapi -luser32 -loleaut32
 
 #include "ffenestri.h"
 

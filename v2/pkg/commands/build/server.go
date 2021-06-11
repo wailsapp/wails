@@ -40,6 +40,11 @@ func (s *ServerBuilder) BuildAssets(_ *Options) error {
 	return nil
 }
 
+// PostCompilation is called after the compilation step, if successful
+func (s *ServerBuilder) PostCompilation(_ *Options) error {
+	return nil
+}
+
 // BuildBaseAssets builds the base assets
 func (s *ServerBuilder) BuildBaseAssets(assets *html.AssetBundle) error {
 	db, err := assets.ConvertToAssetDB()
