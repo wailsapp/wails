@@ -4,13 +4,14 @@ package build
 
 import (
 	"fmt"
-	"github.com/leaanthony/slicer"
-	"github.com/wailsapp/wails/v2/internal/fs"
 	"io/ioutil"
 	"log"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/leaanthony/slicer"
+	"github.com/wailsapp/wails/v2/internal/fs"
 )
 
 func (d *DesktopBuilder) convertToHexLiteral(bytes []byte) string {
@@ -19,6 +20,11 @@ func (d *DesktopBuilder) convertToHexLiteral(bytes []byte) string {
 		result += fmt.Sprintf("0x%x, ", b)
 	}
 	return result
+}
+
+// compileIcon will compile the icon found at <projectdir>/icon.png into the application
+func (d *DesktopBuilder) compileIcon(assetDir string, iconFile string) error {
+	return nil
 }
 
 // We will compile all tray icons found at <projectdir>/assets/trayicons/*.png into the application
