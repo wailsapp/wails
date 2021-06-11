@@ -156,12 +156,25 @@ func (b *BaseBuilder) OutputFilename(options *Options) string {
 		if b.projectData.OutputType != "desktop" {
 			target += "-" + b.projectData.OutputType
 		}
+		// If we aren't using the standard compiler, add it to the filename
+		if options.Compiler != "go" {
+			// Parse the `go version` output. EG: `go version go1.16 windows/amd64`
+			stdout, _, err := shell.RunCommand(".", options.Compiler, "version")
+			if err != nil {
+				return ""
+			}
+			versionSplit := strings.Split(stdout, " ")
+			if len(versionSplit) == 4 {
+				target += "-" + versionSplit[2]
+			}
+		}
 		switch b.options.Platform {
 		case "windows":
-			outputFile = b.projectData.OutputFilename
+			outputFile = target + ".exe"
 		case "darwin", "linux":
 			outputFile = fmt.Sprintf("%s-%s-%s", target, b.options.Platform, b.options.Arch)
 		}
+
 	}
 	return outputFile
 }
