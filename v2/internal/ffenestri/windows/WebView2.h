@@ -3,11 +3,11 @@
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
 
 
- /* File created by MIDL compiler version 8.01.0622 */
-/* at Tue Jan 19 14:14:07 2038
+ /* File created by MIDL compiler version 8.xx.xxxx */
+/* at a redacted point in time
  */
-/* Compiler settings for Microsoft.Web.WebView2.1.0.818.41\WebView2.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0622 
+/* Compiler settings for ../../edge_embedded_browser/client/win/current/webview2.idl:
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.xx.xxxx 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
@@ -32,8 +32,8 @@
 #endif /* __RPCNDR_H_VERSION__ */
 
 
-#ifndef __Webview3_h__
-#define __Webview3_h__
+#ifndef __webview2_h__
+#define __webview2_h__
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
@@ -496,6 +496,20 @@ typedef interface ICoreWebView2Settings ICoreWebView2Settings;
 #endif 	/* __ICoreWebView2Settings_FWD_DEFINED__ */
 
 
+#ifndef __ICoreWebView2Settings2_FWD_DEFINED__
+#define __ICoreWebView2Settings2_FWD_DEFINED__
+typedef interface ICoreWebView2Settings2 ICoreWebView2Settings2;
+
+#endif 	/* __ICoreWebView2Settings2_FWD_DEFINED__ */
+
+
+#ifndef __ICoreWebView2Settings3_FWD_DEFINED__
+#define __ICoreWebView2Settings3_FWD_DEFINED__
+typedef interface ICoreWebView2Settings3 ICoreWebView2Settings3;
+
+#endif 	/* __ICoreWebView2Settings3_FWD_DEFINED__ */
+
+
 #ifndef __ICoreWebView2SourceChangedEventArgs_FWD_DEFINED__
 #define __ICoreWebView2SourceChangedEventArgs_FWD_DEFINED__
 typedef interface ICoreWebView2SourceChangedEventArgs ICoreWebView2SourceChangedEventArgs;
@@ -638,6 +652,8 @@ extern "C"{
 
 /* library WebView2 */
 /* [version][uuid] */ 
+
+
 
 
 
@@ -944,7 +960,7 @@ EXTERN_C const IID LIBID_WebView2;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2AcceleratorKeyPressedEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2AcceleratorKeyPressedEventArgs = {0x9f760f8a,0xfb79,0x42be,{0x99,0x90,0x7b,0x56,0x90,0x0f,0xa9,0xc7}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -1074,7 +1090,7 @@ EXTERN_C const IID IID_ICoreWebView2AcceleratorKeyPressedEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2AcceleratorKeyPressedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2AcceleratorKeyPressedEventHandler = {0xb29c7e28,0xfa79,0x41a8,{0x8e,0x44,0x65,0x81,0x1c,0x76,0xdc,0xb2}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -1156,7 +1172,7 @@ EXTERN_C const IID IID_ICoreWebView2AcceleratorKeyPressedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompletedHandler = {0xb99369f3,0x9b11,0x47b5,{0xbc,0x6f,0x8e,0x78,0x95,0xfc,0xea,0x17}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -1238,7 +1254,7 @@ EXTERN_C const IID IID_ICoreWebView2AddScriptToExecuteOnDocumentCreatedCompleted
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2CallDevToolsProtocolMethodCompletedHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2CallDevToolsProtocolMethodCompletedHandler = {0x5c4889f0,0x5ef6,0x4c5a,{0x95,0x2c,0xd8,0xf1,0xb9,0x2d,0x05,0x74}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -1320,7 +1336,7 @@ EXTERN_C const IID IID_ICoreWebView2CallDevToolsProtocolMethodCompletedHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2CapturePreviewCompletedHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2CapturePreviewCompletedHandler = {0x697e05e9,0x3d8f,0x45fa,{0x96,0xf4,0x8f,0xfe,0x1e,0xde,0xda,0xf5}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -1400,7 +1416,7 @@ EXTERN_C const IID IID_ICoreWebView2CapturePreviewCompletedHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2 = {0x76eceacb,0x0462,0x4d94,{0xac,0x83,0x42,0x3a,0x67,0x93,0x77,0x5e}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -2092,7 +2108,7 @@ EXTERN_C const IID IID_ICoreWebView2;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2_2;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2_2 = {0x9E8F0CF8,0xE670,0x4B5E,{0xB2,0xBC,0x73,0xE0,0x61,0xE3,0x18,0x4C}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -2664,7 +2680,7 @@ EXTERN_C const IID IID_ICoreWebView2_2;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2_3;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2_3 = {0xA0D6DF20,0x3B92,0x416D,{0xAA,0x0C,0x43,0x7A,0x9C,0x72,0x78,0x57}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -3266,7 +3282,7 @@ EXTERN_C const IID IID_ICoreWebView2_3;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2CompositionController;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2CompositionController = {0x3df9b733,0xb9ae,0x4a15,{0x86,0xb4,0xeb,0x9e,0xe9,0x82,0x64,0x69}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -3426,7 +3442,7 @@ EXTERN_C const IID IID_ICoreWebView2CompositionController;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2CompositionController2;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2CompositionController2 = {0x0b6a3d24,0x49cb,0x4806,{0xba,0x20,0xb5,0xe0,0x73,0x4a,0x7b,0x26}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -3568,7 +3584,7 @@ EXTERN_C const IID IID_ICoreWebView2CompositionController2;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2Controller;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2Controller = {0x4d00c0d1,0x9434,0x4eb6,{0x80,0x78,0x86,0x97,0xa5,0x60,0x33,0x4f}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -3876,7 +3892,7 @@ EXTERN_C const IID IID_ICoreWebView2Controller;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2Controller2;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2Controller2 = {0xc979903e,0xd4ca,0x4228,{0x92,0xeb,0x47,0xee,0x3f,0xa9,0x6e,0xab}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -4132,7 +4148,7 @@ EXTERN_C const IID IID_ICoreWebView2Controller2;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2Controller3;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2Controller3 = {0xf9614724,0x5d2b,0x41dc,{0xae,0xf7,0x73,0xd6,0x2b,0x51,0x54,0x3b}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -4465,7 +4481,7 @@ EXTERN_C const IID IID_ICoreWebView2Controller3;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2ContentLoadingEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2ContentLoadingEventArgs = {0x0c8a1275,0x9b6b,0x4901,{0x87,0xad,0x70,0xdf,0x25,0xba,0xfa,0x6e}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -4555,7 +4571,7 @@ EXTERN_C const IID IID_ICoreWebView2ContentLoadingEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2ContentLoadingEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2ContentLoadingEventHandler = {0x364471e7,0xf2be,0x4910,{0xbd,0xba,0xd7,0x20,0x77,0xd5,0x1c,0x4b}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -4637,7 +4653,7 @@ EXTERN_C const IID IID_ICoreWebView2ContentLoadingEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2Cookie;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2Cookie = {0xAD26D6BE,0x1486,0x43E6,{0xBF,0x87,0xA2,0x03,0x40,0x06,0xCA,0x21}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -4847,7 +4863,7 @@ EXTERN_C const IID IID_ICoreWebView2Cookie;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2CookieList;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2CookieList = {0xF7F6F714,0x5D2A,0x43C6,{0x95,0x03,0x34,0x6E,0xCE,0x02,0xD1,0x86}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -4939,7 +4955,7 @@ EXTERN_C const IID IID_ICoreWebView2CookieList;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2CookieManager;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2CookieManager = {0x177CD9E7,0xB6F5,0x451A,{0x94,0xA0,0x5D,0x7A,0x3A,0x4C,0x41,0x41}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -5105,7 +5121,7 @@ EXTERN_C const IID IID_ICoreWebView2CookieManager;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler = {0x02fab84b,0x1428,0x4fb7,{0xad,0x45,0x1b,0x2e,0x64,0x73,0x61,0x84}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -5187,7 +5203,7 @@ EXTERN_C const IID IID_ICoreWebView2CreateCoreWebView2CompositionControllerCompl
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2CreateCoreWebView2ControllerCompletedHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2CreateCoreWebView2ControllerCompletedHandler = {0x6c4819f3,0xc9b7,0x4260,{0x81,0x27,0xc9,0xf5,0xbd,0xe7,0xf6,0x8c}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -5269,7 +5285,7 @@ EXTERN_C const IID IID_ICoreWebView2CreateCoreWebView2ControllerCompletedHandler
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler = {0x4e8a3389,0xc9d8,0x4bd2,{0xb6,0xb5,0x12,0x4f,0xee,0x6c,0xc1,0x4d}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -5351,7 +5367,7 @@ EXTERN_C const IID IID_ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandle
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2ContainsFullScreenElementChangedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2ContainsFullScreenElementChangedEventHandler = {0xe45d98b1,0xafef,0x45be,{0x8b,0xaf,0x6c,0x77,0x28,0x86,0x7f,0x73}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -5433,7 +5449,7 @@ EXTERN_C const IID IID_ICoreWebView2ContainsFullScreenElementChangedEventHandler
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2CursorChangedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2CursorChangedEventHandler = {0x9da43ccc,0x26e1,0x4dad,{0xb5,0x6c,0xd8,0x96,0x1c,0x94,0xc5,0x71}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -5515,7 +5531,7 @@ EXTERN_C const IID IID_ICoreWebView2CursorChangedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2DocumentTitleChangedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2DocumentTitleChangedEventHandler = {0xf5f2b923,0x953e,0x4042,{0x9f,0x95,0xf3,0xa1,0x18,0xe1,0xaf,0xd4}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -5597,7 +5613,7 @@ EXTERN_C const IID IID_ICoreWebView2DocumentTitleChangedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2DOMContentLoadedEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2DOMContentLoadedEventArgs = {0x16B1E21A,0xC503,0x44F2,{0x84,0xC9,0x70,0xAB,0xA5,0x03,0x12,0x83}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -5677,7 +5693,7 @@ EXTERN_C const IID IID_ICoreWebView2DOMContentLoadedEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2DOMContentLoadedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2DOMContentLoadedEventHandler = {0x4BAC7E9C,0x199E,0x49ED,{0x87,0xED,0x24,0x93,0x03,0xAC,0xF0,0x19}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -5759,7 +5775,7 @@ EXTERN_C const IID IID_ICoreWebView2DOMContentLoadedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2Deferral;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2Deferral = {0xc10e7f7b,0xb585,0x46f0,{0xa6,0x23,0x8b,0xef,0xbf,0x3e,0x4e,0xe0}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -5837,7 +5853,7 @@ EXTERN_C const IID IID_ICoreWebView2Deferral;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2DevToolsProtocolEventReceivedEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2DevToolsProtocolEventReceivedEventArgs = {0x653c2959,0xbb3a,0x4377,{0x86,0x32,0xb5,0x8a,0xda,0x4e,0x66,0xc4}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -5917,7 +5933,7 @@ EXTERN_C const IID IID_ICoreWebView2DevToolsProtocolEventReceivedEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2DevToolsProtocolEventReceivedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2DevToolsProtocolEventReceivedEventHandler = {0xe2fda4be,0x5456,0x406c,{0xa2,0x61,0x3d,0x45,0x21,0x38,0x36,0x2c}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -5999,7 +6015,7 @@ EXTERN_C const IID IID_ICoreWebView2DevToolsProtocolEventReceivedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2DevToolsProtocolEventReceiver;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2DevToolsProtocolEventReceiver = {0xb32ca51a,0x8371,0x45e9,{0x93,0x17,0xaf,0x02,0x1d,0x08,0x03,0x67}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -6091,7 +6107,7 @@ EXTERN_C const IID IID_ICoreWebView2DevToolsProtocolEventReceiver;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2Environment;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2Environment = {0xb96d755e,0x0319,0x4e92,{0xa2,0x96,0x23,0x43,0x6f,0x46,0xa1,0xfc}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -6223,7 +6239,7 @@ EXTERN_C const IID IID_ICoreWebView2Environment;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2Environment2;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2Environment2 = {0x41F3632B,0x5EF4,0x404F,{0xAD,0x82,0x2D,0x60,0x6C,0x5A,0x9A,0x21}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -6353,7 +6369,7 @@ EXTERN_C const IID IID_ICoreWebView2Environment2;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2Environment3;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2Environment3 = {0x80a22ae3,0xbe7c,0x4ce2,{0xaf,0xe1,0x5a,0x50,0x05,0x6c,0xde,0xeb}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -6499,7 +6515,7 @@ EXTERN_C const IID IID_ICoreWebView2Environment3;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2Environment4;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2Environment4 = {0x20944379,0x6dcf,0x41d6,{0xa0,0xa0,0xab,0xc0,0xfc,0x50,0xde,0x0d}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -6651,7 +6667,7 @@ EXTERN_C const IID IID_ICoreWebView2Environment4;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2EnvironmentOptions;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2EnvironmentOptions = {0x2fde08a8,0x1e9a,0x4766,{0x8c,0x05,0x95,0xa9,0xce,0xb9,0xd1,0xc5}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -6801,7 +6817,7 @@ EXTERN_C const IID IID_ICoreWebView2EnvironmentOptions;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2ExecuteScriptCompletedHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2ExecuteScriptCompletedHandler = {0x49511172,0xcc67,0x4bca,{0x99,0x23,0x13,0x71,0x12,0xf4,0xc4,0xcc}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -6883,7 +6899,7 @@ EXTERN_C const IID IID_ICoreWebView2ExecuteScriptCompletedHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2FrameInfo;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2FrameInfo = {0xda86b8a1,0xbdf3,0x4f11,{0x99,0x55,0x52,0x8c,0xef,0xa5,0x97,0x27}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -6973,7 +6989,7 @@ EXTERN_C const IID IID_ICoreWebView2FrameInfo;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2FrameInfoCollection;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2FrameInfoCollection = {0x8f834154,0xd38e,0x4d90,{0xaf,0xfb,0x68,0x00,0xa7,0x27,0x28,0x39}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -7053,7 +7069,7 @@ EXTERN_C const IID IID_ICoreWebView2FrameInfoCollection;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2FrameInfoCollectionIterator;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2FrameInfoCollectionIterator = {0x1bf89e2d,0x1b2b,0x4629,{0xb2,0x8f,0x05,0x09,0x9b,0x41,0xbb,0x03}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -7153,7 +7169,7 @@ EXTERN_C const IID IID_ICoreWebView2FrameInfoCollectionIterator;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2FocusChangedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2FocusChangedEventHandler = {0x05ea24bd,0x6452,0x4926,{0x90,0x14,0x4b,0x82,0xb4,0x98,0x13,0x5d}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -7235,7 +7251,7 @@ EXTERN_C const IID IID_ICoreWebView2FocusChangedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2GetCookiesCompletedHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2GetCookiesCompletedHandler = {0x5A4F5069,0x5C15,0x47C3,{0x86,0x46,0xF4,0xDE,0x1C,0x11,0x66,0x70}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -7317,7 +7333,7 @@ EXTERN_C const IID IID_ICoreWebView2GetCookiesCompletedHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2HistoryChangedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2HistoryChangedEventHandler = {0xc79a420c,0xefd9,0x4058,{0x92,0x95,0x3e,0x8b,0x4b,0xca,0xb6,0x45}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -7399,7 +7415,7 @@ EXTERN_C const IID IID_ICoreWebView2HistoryChangedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2HttpHeadersCollectionIterator;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2HttpHeadersCollectionIterator = {0x0702fc30,0xf43b,0x47bb,{0xab,0x52,0xa4,0x2c,0xb5,0x52,0xad,0x9f}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -7501,7 +7517,7 @@ EXTERN_C const IID IID_ICoreWebView2HttpHeadersCollectionIterator;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2HttpRequestHeaders;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2HttpRequestHeaders = {0xe86cac0e,0x5523,0x465c,{0xb5,0x36,0x8f,0xb9,0xfc,0x8c,0x8c,0x60}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -7639,7 +7655,7 @@ EXTERN_C const IID IID_ICoreWebView2HttpRequestHeaders;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2HttpResponseHeaders;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2HttpResponseHeaders = {0x03c5ff5a,0x9b45,0x4a88,{0x88,0x1c,0x89,0xa9,0xf3,0x28,0x61,0x9c}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -7767,7 +7783,7 @@ EXTERN_C const IID IID_ICoreWebView2HttpResponseHeaders;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2Interop;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2Interop = {0x912b34a7,0xd10b,0x49c4,{0xaf,0x18,0x7c,0xb7,0xe6,0x04,0xe0,0x1a}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -7849,7 +7865,7 @@ EXTERN_C const IID IID_ICoreWebView2Interop;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2MoveFocusRequestedEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2MoveFocusRequestedEventArgs = {0x2d6aa13b,0x3839,0x4a15,{0x92,0xfc,0xd8,0x8b,0x3c,0x0d,0x9c,0x9d}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -7949,7 +7965,7 @@ EXTERN_C const IID IID_ICoreWebView2MoveFocusRequestedEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2MoveFocusRequestedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2MoveFocusRequestedEventHandler = {0x69035451,0x6dc7,0x4cb8,{0x9b,0xce,0xb2,0xbd,0x70,0xad,0x28,0x9f}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -8031,7 +8047,7 @@ EXTERN_C const IID IID_ICoreWebView2MoveFocusRequestedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2NavigationCompletedEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2NavigationCompletedEventArgs = {0x30d68b7d,0x20d9,0x4752,{0xa9,0xca,0xec,0x84,0x48,0xfb,0xb5,0xc1}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -8131,7 +8147,7 @@ EXTERN_C const IID IID_ICoreWebView2NavigationCompletedEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2NavigationCompletedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2NavigationCompletedEventHandler = {0xd33a35bf,0x1c49,0x4f98,{0x93,0xab,0x00,0x6e,0x05,0x33,0xfe,0x1c}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -8213,7 +8229,7 @@ EXTERN_C const IID IID_ICoreWebView2NavigationCompletedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2NavigationStartingEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2NavigationStartingEventArgs = {0x5b495469,0xe119,0x438a,{0x9b,0x18,0x76,0x04,0xf2,0x5f,0x2e,0x49}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -8353,7 +8369,7 @@ EXTERN_C const IID IID_ICoreWebView2NavigationStartingEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2NavigationStartingEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2NavigationStartingEventHandler = {0x9adbe429,0xf36d,0x432b,{0x9d,0xdc,0xf8,0x88,0x1f,0xbd,0x76,0xe3}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -8435,7 +8451,7 @@ EXTERN_C const IID IID_ICoreWebView2NavigationStartingEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2NewBrowserVersionAvailableEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2NewBrowserVersionAvailableEventHandler = {0xf9a2976e,0xd34e,0x44fc,{0xad,0xee,0x81,0xb6,0xb5,0x7c,0xa9,0x14}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -8517,7 +8533,7 @@ EXTERN_C const IID IID_ICoreWebView2NewBrowserVersionAvailableEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2NewWindowRequestedEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2NewWindowRequestedEventArgs = {0x34acb11c,0xfc37,0x4418,{0x91,0x32,0xf9,0xc2,0x1d,0x1e,0xaf,0xb9}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -8667,7 +8683,7 @@ EXTERN_C const IID IID_ICoreWebView2NewWindowRequestedEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2NewWindowRequestedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2NewWindowRequestedEventHandler = {0xd4c185fe,0xc81c,0x4989,{0x97,0xaf,0x2d,0x3f,0xa7,0xab,0x56,0x51}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -8749,7 +8765,7 @@ EXTERN_C const IID IID_ICoreWebView2NewWindowRequestedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2PermissionRequestedEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2PermissionRequestedEventArgs = {0x973ae2ef,0xff18,0x4894,{0x8f,0xb2,0x3c,0x75,0x8f,0x04,0x68,0x10}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -8879,7 +8895,7 @@ EXTERN_C const IID IID_ICoreWebView2PermissionRequestedEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2PermissionRequestedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2PermissionRequestedEventHandler = {0x15e1c6a3,0xc72a,0x4df3,{0x91,0xd7,0xd0,0x97,0xfb,0xec,0x6b,0xfd}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -8961,7 +8977,7 @@ EXTERN_C const IID IID_ICoreWebView2PermissionRequestedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2PointerInfo;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2PointerInfo = {0xe6995887,0xd10d,0x4f5d,{0x93,0x59,0x4c,0xe4,0x6e,0x4f,0x96,0xb9}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -9591,7 +9607,7 @@ EXTERN_C const IID IID_ICoreWebView2PointerInfo;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2ProcessFailedEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2ProcessFailedEventArgs = {0x8155a9a4,0x1474,0x4a86,{0x8c,0xae,0x15,0x1b,0x0f,0xa6,0xb8,0xca}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -9671,7 +9687,7 @@ EXTERN_C const IID IID_ICoreWebView2ProcessFailedEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2ProcessFailedEventArgs2;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2ProcessFailedEventArgs2 = {0x4dab9422,0x46fa,0x4c3e,{0xa5,0xd2,0x41,0xd2,0x07,0x1d,0x36,0x80}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -9789,7 +9805,7 @@ EXTERN_C const IID IID_ICoreWebView2ProcessFailedEventArgs2;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2ProcessFailedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2ProcessFailedEventHandler = {0x79e0aea4,0x990b,0x42d9,{0xaa,0x1d,0x0f,0xcc,0x2e,0x5b,0xc7,0xf1}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -9871,7 +9887,7 @@ EXTERN_C const IID IID_ICoreWebView2ProcessFailedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2RasterizationScaleChangedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2RasterizationScaleChangedEventHandler = {0x9c98c8b1,0xac53,0x427e,{0xa3,0x45,0x30,0x49,0xb5,0x52,0x4b,0xbe}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -9953,7 +9969,7 @@ EXTERN_C const IID IID_ICoreWebView2RasterizationScaleChangedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2ScriptDialogOpeningEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2ScriptDialogOpeningEventArgs = {0x7390bb70,0xabe0,0x4843,{0x95,0x29,0xf1,0x43,0xb3,0x1b,0x03,0xd6}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -10101,7 +10117,7 @@ EXTERN_C const IID IID_ICoreWebView2ScriptDialogOpeningEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2ScriptDialogOpeningEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2ScriptDialogOpeningEventHandler = {0xef381bf9,0xafa8,0x4e37,{0x91,0xc4,0x8a,0xc4,0x85,0x24,0xbd,0xfb}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -10183,7 +10199,7 @@ EXTERN_C const IID IID_ICoreWebView2ScriptDialogOpeningEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2Settings;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2Settings = {0xe562e4f0,0xd7fa,0x43ac,{0x8d,0x71,0xc0,0x51,0x50,0x49,0x9f,0x00}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -10426,6 +10442,455 @@ EXTERN_C const IID IID_ICoreWebView2Settings;
 #endif 	/* __ICoreWebView2Settings_INTERFACE_DEFINED__ */
 
 
+#ifndef __ICoreWebView2Settings2_INTERFACE_DEFINED__
+#define __ICoreWebView2Settings2_INTERFACE_DEFINED__
+
+/* interface ICoreWebView2Settings2 */
+/* [unique][object][uuid] */ 
+
+
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2Settings2 = {0xee9a0f68,0xf46c,0x4e32,{0xac,0x23,0xef,0x8c,0xac,0x22,0x4d,0x2a}};
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("ee9a0f68-f46c-4e32-ac23-ef8cac224d2a")
+    ICoreWebView2Settings2 : public ICoreWebView2Settings
+    {
+    public:
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_UserAgent( 
+            /* [retval][out] */ LPWSTR *userAgent) = 0;
+        
+        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_UserAgent( 
+            /* [in] */ LPCWSTR userAgent) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct ICoreWebView2Settings2Vtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            ICoreWebView2Settings2 * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            ICoreWebView2Settings2 * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            ICoreWebView2Settings2 * This);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsScriptEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [retval][out] */ BOOL *isScriptEnabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_IsScriptEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [in] */ BOOL isScriptEnabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsWebMessageEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [retval][out] */ BOOL *isWebMessageEnabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_IsWebMessageEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [in] */ BOOL isWebMessageEnabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AreDefaultScriptDialogsEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [retval][out] */ BOOL *areDefaultScriptDialogsEnabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_AreDefaultScriptDialogsEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [in] */ BOOL areDefaultScriptDialogsEnabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsStatusBarEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [retval][out] */ BOOL *isStatusBarEnabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_IsStatusBarEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [in] */ BOOL isStatusBarEnabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AreDevToolsEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [retval][out] */ BOOL *areDevToolsEnabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_AreDevToolsEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [in] */ BOOL areDevToolsEnabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AreDefaultContextMenusEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [retval][out] */ BOOL *enabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_AreDefaultContextMenusEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [in] */ BOOL enabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AreHostObjectsAllowed )( 
+            ICoreWebView2Settings2 * This,
+            /* [retval][out] */ BOOL *allowed);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_AreHostObjectsAllowed )( 
+            ICoreWebView2Settings2 * This,
+            /* [in] */ BOOL allowed);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsZoomControlEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [retval][out] */ BOOL *enabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_IsZoomControlEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [in] */ BOOL enabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsBuiltInErrorPageEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [retval][out] */ BOOL *enabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_IsBuiltInErrorPageEnabled )( 
+            ICoreWebView2Settings2 * This,
+            /* [in] */ BOOL enabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_UserAgent )( 
+            ICoreWebView2Settings2 * This,
+            /* [retval][out] */ LPWSTR *userAgent);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_UserAgent )( 
+            ICoreWebView2Settings2 * This,
+            /* [in] */ LPCWSTR userAgent);
+        
+        END_INTERFACE
+    } ICoreWebView2Settings2Vtbl;
+
+    interface ICoreWebView2Settings2
+    {
+        CONST_VTBL struct ICoreWebView2Settings2Vtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define ICoreWebView2Settings2_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define ICoreWebView2Settings2_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define ICoreWebView2Settings2_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define ICoreWebView2Settings2_get_IsScriptEnabled(This,isScriptEnabled)	\
+    ( (This)->lpVtbl -> get_IsScriptEnabled(This,isScriptEnabled) ) 
+
+#define ICoreWebView2Settings2_put_IsScriptEnabled(This,isScriptEnabled)	\
+    ( (This)->lpVtbl -> put_IsScriptEnabled(This,isScriptEnabled) ) 
+
+#define ICoreWebView2Settings2_get_IsWebMessageEnabled(This,isWebMessageEnabled)	\
+    ( (This)->lpVtbl -> get_IsWebMessageEnabled(This,isWebMessageEnabled) ) 
+
+#define ICoreWebView2Settings2_put_IsWebMessageEnabled(This,isWebMessageEnabled)	\
+    ( (This)->lpVtbl -> put_IsWebMessageEnabled(This,isWebMessageEnabled) ) 
+
+#define ICoreWebView2Settings2_get_AreDefaultScriptDialogsEnabled(This,areDefaultScriptDialogsEnabled)	\
+    ( (This)->lpVtbl -> get_AreDefaultScriptDialogsEnabled(This,areDefaultScriptDialogsEnabled) ) 
+
+#define ICoreWebView2Settings2_put_AreDefaultScriptDialogsEnabled(This,areDefaultScriptDialogsEnabled)	\
+    ( (This)->lpVtbl -> put_AreDefaultScriptDialogsEnabled(This,areDefaultScriptDialogsEnabled) ) 
+
+#define ICoreWebView2Settings2_get_IsStatusBarEnabled(This,isStatusBarEnabled)	\
+    ( (This)->lpVtbl -> get_IsStatusBarEnabled(This,isStatusBarEnabled) ) 
+
+#define ICoreWebView2Settings2_put_IsStatusBarEnabled(This,isStatusBarEnabled)	\
+    ( (This)->lpVtbl -> put_IsStatusBarEnabled(This,isStatusBarEnabled) ) 
+
+#define ICoreWebView2Settings2_get_AreDevToolsEnabled(This,areDevToolsEnabled)	\
+    ( (This)->lpVtbl -> get_AreDevToolsEnabled(This,areDevToolsEnabled) ) 
+
+#define ICoreWebView2Settings2_put_AreDevToolsEnabled(This,areDevToolsEnabled)	\
+    ( (This)->lpVtbl -> put_AreDevToolsEnabled(This,areDevToolsEnabled) ) 
+
+#define ICoreWebView2Settings2_get_AreDefaultContextMenusEnabled(This,enabled)	\
+    ( (This)->lpVtbl -> get_AreDefaultContextMenusEnabled(This,enabled) ) 
+
+#define ICoreWebView2Settings2_put_AreDefaultContextMenusEnabled(This,enabled)	\
+    ( (This)->lpVtbl -> put_AreDefaultContextMenusEnabled(This,enabled) ) 
+
+#define ICoreWebView2Settings2_get_AreHostObjectsAllowed(This,allowed)	\
+    ( (This)->lpVtbl -> get_AreHostObjectsAllowed(This,allowed) ) 
+
+#define ICoreWebView2Settings2_put_AreHostObjectsAllowed(This,allowed)	\
+    ( (This)->lpVtbl -> put_AreHostObjectsAllowed(This,allowed) ) 
+
+#define ICoreWebView2Settings2_get_IsZoomControlEnabled(This,enabled)	\
+    ( (This)->lpVtbl -> get_IsZoomControlEnabled(This,enabled) ) 
+
+#define ICoreWebView2Settings2_put_IsZoomControlEnabled(This,enabled)	\
+    ( (This)->lpVtbl -> put_IsZoomControlEnabled(This,enabled) ) 
+
+#define ICoreWebView2Settings2_get_IsBuiltInErrorPageEnabled(This,enabled)	\
+    ( (This)->lpVtbl -> get_IsBuiltInErrorPageEnabled(This,enabled) ) 
+
+#define ICoreWebView2Settings2_put_IsBuiltInErrorPageEnabled(This,enabled)	\
+    ( (This)->lpVtbl -> put_IsBuiltInErrorPageEnabled(This,enabled) ) 
+
+
+#define ICoreWebView2Settings2_get_UserAgent(This,userAgent)	\
+    ( (This)->lpVtbl -> get_UserAgent(This,userAgent) ) 
+
+#define ICoreWebView2Settings2_put_UserAgent(This,userAgent)	\
+    ( (This)->lpVtbl -> put_UserAgent(This,userAgent) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __ICoreWebView2Settings2_INTERFACE_DEFINED__ */
+
+
+#ifndef __ICoreWebView2Settings3_INTERFACE_DEFINED__
+#define __ICoreWebView2Settings3_INTERFACE_DEFINED__
+
+/* interface ICoreWebView2Settings3 */
+/* [unique][object][uuid] */ 
+
+
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2Settings3 = {0xfdb5ab74,0xaf33,0x4854,{0x84,0xf0,0x0a,0x63,0x1d,0xeb,0x5e,0xba}};
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("fdb5ab74-af33-4854-84f0-0a631deb5eba")
+    ICoreWebView2Settings3 : public ICoreWebView2Settings2
+    {
+    public:
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_AreBrowserAcceleratorKeysEnabled( 
+            /* [retval][out] */ BOOL *areBrowserAcceleratorKeysEnabled) = 0;
+        
+        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_AreBrowserAcceleratorKeysEnabled( 
+            /* [in] */ BOOL areBrowserAcceleratorKeysEnabled) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct ICoreWebView2Settings3Vtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            ICoreWebView2Settings3 * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            ICoreWebView2Settings3 * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            ICoreWebView2Settings3 * This);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsScriptEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [retval][out] */ BOOL *isScriptEnabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_IsScriptEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [in] */ BOOL isScriptEnabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsWebMessageEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [retval][out] */ BOOL *isWebMessageEnabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_IsWebMessageEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [in] */ BOOL isWebMessageEnabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AreDefaultScriptDialogsEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [retval][out] */ BOOL *areDefaultScriptDialogsEnabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_AreDefaultScriptDialogsEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [in] */ BOOL areDefaultScriptDialogsEnabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsStatusBarEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [retval][out] */ BOOL *isStatusBarEnabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_IsStatusBarEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [in] */ BOOL isStatusBarEnabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AreDevToolsEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [retval][out] */ BOOL *areDevToolsEnabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_AreDevToolsEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [in] */ BOOL areDevToolsEnabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AreDefaultContextMenusEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [retval][out] */ BOOL *enabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_AreDefaultContextMenusEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [in] */ BOOL enabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AreHostObjectsAllowed )( 
+            ICoreWebView2Settings3 * This,
+            /* [retval][out] */ BOOL *allowed);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_AreHostObjectsAllowed )( 
+            ICoreWebView2Settings3 * This,
+            /* [in] */ BOOL allowed);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsZoomControlEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [retval][out] */ BOOL *enabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_IsZoomControlEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [in] */ BOOL enabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsBuiltInErrorPageEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [retval][out] */ BOOL *enabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_IsBuiltInErrorPageEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [in] */ BOOL enabled);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_UserAgent )( 
+            ICoreWebView2Settings3 * This,
+            /* [retval][out] */ LPWSTR *userAgent);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_UserAgent )( 
+            ICoreWebView2Settings3 * This,
+            /* [in] */ LPCWSTR userAgent);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AreBrowserAcceleratorKeysEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [retval][out] */ BOOL *areBrowserAcceleratorKeysEnabled);
+        
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_AreBrowserAcceleratorKeysEnabled )( 
+            ICoreWebView2Settings3 * This,
+            /* [in] */ BOOL areBrowserAcceleratorKeysEnabled);
+        
+        END_INTERFACE
+    } ICoreWebView2Settings3Vtbl;
+
+    interface ICoreWebView2Settings3
+    {
+        CONST_VTBL struct ICoreWebView2Settings3Vtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define ICoreWebView2Settings3_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define ICoreWebView2Settings3_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define ICoreWebView2Settings3_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define ICoreWebView2Settings3_get_IsScriptEnabled(This,isScriptEnabled)	\
+    ( (This)->lpVtbl -> get_IsScriptEnabled(This,isScriptEnabled) ) 
+
+#define ICoreWebView2Settings3_put_IsScriptEnabled(This,isScriptEnabled)	\
+    ( (This)->lpVtbl -> put_IsScriptEnabled(This,isScriptEnabled) ) 
+
+#define ICoreWebView2Settings3_get_IsWebMessageEnabled(This,isWebMessageEnabled)	\
+    ( (This)->lpVtbl -> get_IsWebMessageEnabled(This,isWebMessageEnabled) ) 
+
+#define ICoreWebView2Settings3_put_IsWebMessageEnabled(This,isWebMessageEnabled)	\
+    ( (This)->lpVtbl -> put_IsWebMessageEnabled(This,isWebMessageEnabled) ) 
+
+#define ICoreWebView2Settings3_get_AreDefaultScriptDialogsEnabled(This,areDefaultScriptDialogsEnabled)	\
+    ( (This)->lpVtbl -> get_AreDefaultScriptDialogsEnabled(This,areDefaultScriptDialogsEnabled) ) 
+
+#define ICoreWebView2Settings3_put_AreDefaultScriptDialogsEnabled(This,areDefaultScriptDialogsEnabled)	\
+    ( (This)->lpVtbl -> put_AreDefaultScriptDialogsEnabled(This,areDefaultScriptDialogsEnabled) ) 
+
+#define ICoreWebView2Settings3_get_IsStatusBarEnabled(This,isStatusBarEnabled)	\
+    ( (This)->lpVtbl -> get_IsStatusBarEnabled(This,isStatusBarEnabled) ) 
+
+#define ICoreWebView2Settings3_put_IsStatusBarEnabled(This,isStatusBarEnabled)	\
+    ( (This)->lpVtbl -> put_IsStatusBarEnabled(This,isStatusBarEnabled) ) 
+
+#define ICoreWebView2Settings3_get_AreDevToolsEnabled(This,areDevToolsEnabled)	\
+    ( (This)->lpVtbl -> get_AreDevToolsEnabled(This,areDevToolsEnabled) ) 
+
+#define ICoreWebView2Settings3_put_AreDevToolsEnabled(This,areDevToolsEnabled)	\
+    ( (This)->lpVtbl -> put_AreDevToolsEnabled(This,areDevToolsEnabled) ) 
+
+#define ICoreWebView2Settings3_get_AreDefaultContextMenusEnabled(This,enabled)	\
+    ( (This)->lpVtbl -> get_AreDefaultContextMenusEnabled(This,enabled) ) 
+
+#define ICoreWebView2Settings3_put_AreDefaultContextMenusEnabled(This,enabled)	\
+    ( (This)->lpVtbl -> put_AreDefaultContextMenusEnabled(This,enabled) ) 
+
+#define ICoreWebView2Settings3_get_AreHostObjectsAllowed(This,allowed)	\
+    ( (This)->lpVtbl -> get_AreHostObjectsAllowed(This,allowed) ) 
+
+#define ICoreWebView2Settings3_put_AreHostObjectsAllowed(This,allowed)	\
+    ( (This)->lpVtbl -> put_AreHostObjectsAllowed(This,allowed) ) 
+
+#define ICoreWebView2Settings3_get_IsZoomControlEnabled(This,enabled)	\
+    ( (This)->lpVtbl -> get_IsZoomControlEnabled(This,enabled) ) 
+
+#define ICoreWebView2Settings3_put_IsZoomControlEnabled(This,enabled)	\
+    ( (This)->lpVtbl -> put_IsZoomControlEnabled(This,enabled) ) 
+
+#define ICoreWebView2Settings3_get_IsBuiltInErrorPageEnabled(This,enabled)	\
+    ( (This)->lpVtbl -> get_IsBuiltInErrorPageEnabled(This,enabled) ) 
+
+#define ICoreWebView2Settings3_put_IsBuiltInErrorPageEnabled(This,enabled)	\
+    ( (This)->lpVtbl -> put_IsBuiltInErrorPageEnabled(This,enabled) ) 
+
+
+#define ICoreWebView2Settings3_get_UserAgent(This,userAgent)	\
+    ( (This)->lpVtbl -> get_UserAgent(This,userAgent) ) 
+
+#define ICoreWebView2Settings3_put_UserAgent(This,userAgent)	\
+    ( (This)->lpVtbl -> put_UserAgent(This,userAgent) ) 
+
+
+#define ICoreWebView2Settings3_get_AreBrowserAcceleratorKeysEnabled(This,areBrowserAcceleratorKeysEnabled)	\
+    ( (This)->lpVtbl -> get_AreBrowserAcceleratorKeysEnabled(This,areBrowserAcceleratorKeysEnabled) ) 
+
+#define ICoreWebView2Settings3_put_AreBrowserAcceleratorKeysEnabled(This,areBrowserAcceleratorKeysEnabled)	\
+    ( (This)->lpVtbl -> put_AreBrowserAcceleratorKeysEnabled(This,areBrowserAcceleratorKeysEnabled) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __ICoreWebView2Settings3_INTERFACE_DEFINED__ */
+
+
 #ifndef __ICoreWebView2SourceChangedEventArgs_INTERFACE_DEFINED__
 #define __ICoreWebView2SourceChangedEventArgs_INTERFACE_DEFINED__
 
@@ -10433,7 +10898,7 @@ EXTERN_C const IID IID_ICoreWebView2Settings;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2SourceChangedEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2SourceChangedEventArgs = {0x31e0e545,0x1dba,0x4266,{0x89,0x14,0xf6,0x38,0x48,0xa1,0xf7,0xd7}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -10513,7 +10978,7 @@ EXTERN_C const IID IID_ICoreWebView2SourceChangedEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2SourceChangedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2SourceChangedEventHandler = {0x3c067f9f,0x5388,0x4772,{0x8b,0x48,0x79,0xf7,0xef,0x1a,0xb3,0x7c}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -10595,7 +11060,7 @@ EXTERN_C const IID IID_ICoreWebView2SourceChangedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2TrySuspendCompletedHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2TrySuspendCompletedHandler = {0x00F206A7,0x9D17,0x4605,{0x91,0xF6,0x4E,0x8E,0x4D,0xE1,0x92,0xE3}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -10677,7 +11142,7 @@ EXTERN_C const IID IID_ICoreWebView2TrySuspendCompletedHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2WebMessageReceivedEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2WebMessageReceivedEventArgs = {0x0f99a40c,0xe962,0x4207,{0x9e,0x92,0xe3,0xd5,0x42,0xef,0xf8,0x49}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -10777,7 +11242,7 @@ EXTERN_C const IID IID_ICoreWebView2WebMessageReceivedEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2WebMessageReceivedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2WebMessageReceivedEventHandler = {0x57213f19,0x00e6,0x49fa,{0x8e,0x07,0x89,0x8e,0xa0,0x1e,0xcb,0xd2}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -10859,7 +11324,7 @@ EXTERN_C const IID IID_ICoreWebView2WebMessageReceivedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2WebResourceRequest;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2WebResourceRequest = {0x97055cd4,0x512c,0x4264,{0x8b,0x5f,0xe3,0xf4,0x46,0xce,0xa6,0xa5}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -10999,7 +11464,7 @@ EXTERN_C const IID IID_ICoreWebView2WebResourceRequest;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2WebResourceRequestedEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2WebResourceRequestedEventArgs = {0x453e667f,0x12c7,0x49d4,{0xbe,0x6d,0xdd,0xbe,0x79,0x56,0xf5,0x7a}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -11119,7 +11584,7 @@ EXTERN_C const IID IID_ICoreWebView2WebResourceRequestedEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2WebResourceRequestedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2WebResourceRequestedEventHandler = {0xab00b74c,0x15f1,0x4646,{0x80,0xe8,0xe7,0x63,0x41,0xd2,0x5d,0x71}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -11201,7 +11666,7 @@ EXTERN_C const IID IID_ICoreWebView2WebResourceRequestedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2WebResourceResponse;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2WebResourceResponse = {0xaafcc94f,0xfa27,0x48fd,{0x97,0xdf,0x83,0x0e,0xf7,0x5a,0xae,0xc9}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -11341,7 +11806,7 @@ EXTERN_C const IID IID_ICoreWebView2WebResourceResponse;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2WebResourceResponseReceivedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2WebResourceResponseReceivedEventHandler = {0x7DE9898A,0x24F5,0x40C3,{0xA2,0xDE,0xD4,0xF4,0x58,0xE6,0x98,0x28}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -11423,7 +11888,7 @@ EXTERN_C const IID IID_ICoreWebView2WebResourceResponseReceivedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2WebResourceResponseReceivedEventArgs;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2WebResourceResponseReceivedEventArgs = {0xD1DB483D,0x6796,0x4B8B,{0x80,0xFC,0x13,0x71,0x2B,0xB7,0x16,0xF4}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -11513,7 +11978,7 @@ EXTERN_C const IID IID_ICoreWebView2WebResourceResponseReceivedEventArgs;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2WebResourceResponseView;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2WebResourceResponseView = {0x79701053,0x7759,0x4162,{0x8F,0x7D,0xF1,0xB3,0xF0,0x84,0x92,0x8D}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -11623,7 +12088,7 @@ EXTERN_C const IID IID_ICoreWebView2WebResourceResponseView;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2WebResourceResponseViewGetContentCompletedHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2WebResourceResponseViewGetContentCompletedHandler = {0x875738E1,0x9FA2,0x40E3,{0x8B,0x74,0x2E,0x89,0x72,0xDD,0x6F,0xE7}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -11705,7 +12170,7 @@ EXTERN_C const IID IID_ICoreWebView2WebResourceResponseViewGetContentCompletedHa
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2WindowCloseRequestedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2WindowCloseRequestedEventHandler = {0x5c19e9e0,0x092f,0x486b,{0xaf,0xfa,0xca,0x82,0x31,0x91,0x30,0x39}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -11787,7 +12252,7 @@ EXTERN_C const IID IID_ICoreWebView2WindowCloseRequestedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2WindowFeatures;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2WindowFeatures = {0x5eaf559f,0xb46e,0x4397,{0x88,0x60,0xe4,0x22,0xf2,0x87,0xff,0x1e}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -11957,7 +12422,7 @@ EXTERN_C const IID IID_ICoreWebView2WindowFeatures;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2ZoomFactorChangedEventHandler;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2ZoomFactorChangedEventHandler = {0xb52d71d6,0xc4df,0x4543,{0xa9,0x0c,0x64,0xa3,0xe6,0x0f,0x38,0xcb}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -12039,7 +12504,7 @@ EXTERN_C const IID IID_ICoreWebView2ZoomFactorChangedEventHandler;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2CompositionControllerInterop;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2CompositionControllerInterop = {0x8e9922ce,0x9c80,0x42e6,{0xba,0xd7,0xfc,0xeb,0xf2,0x91,0xa4,0x95}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
@@ -12139,7 +12604,7 @@ EXTERN_C const IID IID_ICoreWebView2CompositionControllerInterop;
 /* [unique][object][uuid] */ 
 
 
-EXTERN_C const IID IID_ICoreWebView2EnvironmentInterop;
+EXTERN_C __declspec(selectany) const IID IID_ICoreWebView2EnvironmentInterop = {0xee503a63,0xc1e2,0x4fbf,{0x8a,0x4d,0x82,0x4e,0x95,0xf8,0xbb,0x13}};
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
