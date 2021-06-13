@@ -67,10 +67,10 @@ struct Application *NewApplication(const char *title, int width, int height, int
     result->maxHeight = 0;
 
     // Default colour
-    result->backgroundColour.R = 255;
-    result->backgroundColour.G = 255;
-    result->backgroundColour.B = 255;
-    result->backgroundColour.A = 255;
+//    result->backgroundColour.R = 255;
+//    result->backgroundColour.G = 255;
+//    result->backgroundColour.B = 255;
+//    result->backgroundColour.A = 255;
 
     // Have a frame by default
     result->frame = 1;
@@ -368,6 +368,8 @@ void Run(struct Application* app, int argc, char **argv) {
     wc.hInstance = hInstance;
     wc.lpszClassName = (LPCWSTR)"ffenestri";
     wc.lpfnWndProc   = WndProc;
+
+    // TODO: Make option to disable icon
     wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(100));
     wc.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(100));
 
@@ -391,6 +393,7 @@ void Run(struct Application* app, int argc, char **argv) {
                                 hInstance, NULL);
 
     // Private setTitle as we're on the main thread
+    // TODO: Make sure we check for blank title
     setTitle(app, app->title);
 
     // Store application pointer in window handle
@@ -402,11 +405,6 @@ void Run(struct Application* app, int argc, char **argv) {
         startVisibility = SW_HIDE;
     }
 
-    // TODO: Make configurable
-//    COREWEBVIEW2_COLOR wvColor;
-//    wvColor.A = 255;
-//    std::weak_ptr<ICoreWebView2Controller2> controller2 = app->webviewController->query<ICoreWebView2Controller2>();
-//    controller2->put_DefaultBackgroundColor(wvColor);
 
     if( app->windowBackgroundIsTranslucent ) {
         enableTranslucentBackground(app);
@@ -420,6 +418,59 @@ void Run(struct Application* app, int argc, char **argv) {
 
     // Add webview2
     initWebView2(app, 1, initialCallback);
+
+    if( app->webviewIsTranparent ) {
+        wchar_t szBuff[64];
+        ICoreWebView2Controller2 *wc2;
+        wc2 = nullptr;
+        app->webviewController->QueryInterface(IID_ICoreWebView2Controller2, (void**)&wc2);
+
+        COREWEBVIEW2_COLOR wvColor;
+        wvColor.R = 0;
+        wvColor.G = 0;
+        wvColor.B = 0;
+        wvColor.A = 0;
+        HRESULT result = wc2->put_DefaultBackgroundColor(wvColor);
+        if (!SUCCEEDED(result))
+        {
+            switch (result)
+            {
+                case HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND):
+                {
+                    MessageBox(
+                        app->window,
+                        L"Couldn't find Edge installation. "
+                        "Do you have a version installed that's compatible with this "
+                        "WebView2 SDK version?",
+                        nullptr, MB_OK);
+                }
+                break;
+                case HRESULT_FROM_WIN32(ERROR_FILE_EXISTS):
+                {
+                    MessageBox(
+                        app->window, L"User data folder cannot be created because a file with the same name already exists.", nullptr, MB_OK);
+                }
+                break;
+                case E_ACCESSDENIED:
+                {
+                    MessageBox(
+                        app->window, L"Unable to create user data folder, Access Denied.", nullptr, MB_OK);
+                }
+                break;
+                case E_FAIL:
+                {
+                    MessageBox(
+                        app->window, L"Edge runtime unable to start", nullptr, MB_OK);
+                }
+                break;
+                default:
+                {
+                     MessageBox(app->window, L"Failed to create WebView2 environment", nullptr, MB_OK);
+                }
+            }
+        }
+
+    }
 
     // Main event loop
     MSG  msg;
