@@ -4,4 +4,5 @@ package windows
 type Options struct {
 	WebviewIsTransparent          bool
 	WindowBackgroundIsTranslucent bool
+	DisableWindowIcon             bool
 }

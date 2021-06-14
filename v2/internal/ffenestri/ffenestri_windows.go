@@ -9,6 +9,8 @@ import "C"
 
 #include "ffenestri.h"
 
+extern void DisableWindowIcon(struct Application* app);
+
 */
 import "C"
 
@@ -26,6 +28,10 @@ func (a *Application) processPlatformSettings() error {
 
 	if config.WindowBackgroundIsTranslucent {
 		C.WindowBackgroundIsTranslucent(a.app)
+	}
+
+	if config.DisableWindowIcon {
+		C.DisableWindowIcon(a.app)
 	}
 
 	//// Process menu

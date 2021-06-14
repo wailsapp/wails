@@ -45,6 +45,7 @@ struct Application{
     bool webviewIsTranparent;
     bool windowBackgroundIsTranslucent;
     COREWEBVIEW2_COLOR backgroundColour;
+    bool disableWindowIcon;
 
     // placeholders
     char* bindings;
@@ -69,6 +70,7 @@ void completed(struct Application* app);
 
 // Callback
 extern "C" {
+    void DisableWindowIcon(struct Application* app);
     void messageFromWindowCallback(const char *);
 }
 

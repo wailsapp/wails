@@ -62,6 +62,7 @@ struct Application *NewApplication(const char *title, int width, int height, int
     result->hideWindowOnClose = hideWindowOnClose;
     result->webviewIsTranparent = false;
     result->windowBackgroundIsTranslucent = false;
+    result->disableWindowIcon = false;
 
     // Min/Max Width/Height
     result->minWidth = 0;
@@ -373,9 +374,10 @@ void Run(struct Application* app, int argc, char **argv) {
     wc.hInstance     = GetModuleHandle(NULL);
     wc.lpszClassName = CLASS_NAME;
 
-    // TODO: Make configurable
-    wc.hIcon = LoadIcon(wc.hInstance, MAKEINTRESOURCE(100));
-    wc.hIconSm = LoadIcon(wc.hInstance, MAKEINTRESOURCE(100));
+    if( app->disableWindowIcon == false ) {
+        wc.hIcon = LoadIcon(wc.hInstance, MAKEINTRESOURCE(100));
+        wc.hIconSm = LoadIcon(wc.hInstance, MAKEINTRESOURCE(100));
+    }
 
     // Configure translucency
     DWORD dwExStyle = 0;
@@ -417,6 +419,13 @@ void Run(struct Application* app, int argc, char **argv) {
         return;
     }
 
+    // Credit: https://stackoverflow.com/a/35482689
+    if( app->disableWindowIcon ) {
+        int extendedStyle = GetWindowLong(app->window, GWL_EXSTYLE);
+        SetWindowLong(app->window, GWL_EXSTYLE, extendedStyle | WS_EX_DLGMODALFRAME);
+        SetWindowPos(nullptr, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
+    }
+
     if ( app->windowBackgroundIsTranslucent ) {
 
         // Enable the translucent background effect
@@ -442,7 +451,6 @@ void Run(struct Application* app, int argc, char **argv) {
     // private center() as we are on main thread
     center(app);
 
-//    SetLayeredWindowAttributes(app->window,RGB(255,255,255),0,LWA_COLORKEY);
     ShowWindow(app->window, startVisibility);
     UpdateWindow(app->window);
     SetFocus(app->window);
@@ -557,6 +565,10 @@ void Show(struct Application* app) {
     ON_MAIN_THREAD(
         show(app);
     );
+}
+
+void DisableWindowIcon(struct Application* app) {
+    app->disableWindowIcon = true;
 }
 
 void center(struct Application* app) {
