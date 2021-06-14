@@ -20,7 +20,7 @@ import (
 #cgo darwin LDFLAGS: -framework WebKit -lobjc
 
 #cgo windows CXXFLAGS: -std=c++11
-#cgo windows,amd64 LDFLAGS: -L./windows/x64 -lWebView2Loader -lgdi32 -lole32 -lShlwapi -luser32 -loleaut32
+#cgo windows,amd64 LDFLAGS: -L./windows/x64 -lWebView2Loader -lgdi32 -lole32 -lShlwapi -luser32 -loleaut32 -ldwmapi
 
 #include <stdlib.h>
 #include "ffenestri.h"

@@ -9,11 +9,14 @@
 #include <locale>
 #include <codecvt>
 #include "windows/WebView2.h"
+#include <winuser.h>
 #include "effectstructs_windows.h"
 #include <Shlobj.h>
 
 int debug = 0;
 DWORD mainThread;
+
+#define WS_EX_NOREDIRECTIONBITMAP 0x00200000L
 
 // --- Assets
 extern const unsigned char runtime;
@@ -67,10 +70,10 @@ struct Application *NewApplication(const char *title, int width, int height, int
     result->maxHeight = 0;
 
     // Default colour
-//    result->backgroundColour.R = 255;
-//    result->backgroundColour.G = 255;
-//    result->backgroundColour.B = 255;
-//    result->backgroundColour.A = 255;
+    result->backgroundColour.R = 255;
+    result->backgroundColour.G = 255;
+    result->backgroundColour.B = 255;
+    result->backgroundColour.A = 255;
 
     // Have a frame by default
     result->frame = 1;
@@ -360,24 +363,30 @@ void initialCallback(std::string message) {
 
 void Run(struct Application* app, int argc, char **argv) {
 
-    WNDCLASSEX wc;
-    HINSTANCE hInstance = GetModuleHandle(NULL);
-    ZeroMemory(&wc, sizeof(WNDCLASSEX));
+    // Register the window class.
+    const wchar_t CLASS_NAME[]  = L"Ffenestri";
+
+    WNDCLASSEX wc = { };
+
     wc.cbSize = sizeof(WNDCLASSEX);
-    wc.style = CS_HREDRAW | CS_VREDRAW;
-    wc.hInstance = hInstance;
-    wc.lpszClassName = (LPCWSTR)"ffenestri";
     wc.lpfnWndProc   = WndProc;
+    wc.hInstance     = GetModuleHandle(NULL);
+    wc.lpszClassName = CLASS_NAME;
 
-    // TODO: Make option to disable icon
-    wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(100));
-    wc.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(100));
+    // TODO: Make configurable
+    wc.hIcon = LoadIcon(wc.hInstance, MAKEINTRESOURCE(100));
+    wc.hIconSm = LoadIcon(wc.hInstance, MAKEINTRESOURCE(100));
 
-    // TODO: Menu
-//    wc.lpszMenuName = nullptr;
+    // Configure translucency
+    DWORD dwExStyle = 0;
+    if ( app->windowBackgroundIsTranslucent ) {
+        dwExStyle = WS_EX_NOREDIRECTIONBITMAP;
+        wc.hbrBackground = CreateSolidBrush(RGB(255,255,255));
+    }
 
+    RegisterClassEx(&wc);
 
-    // Process window resizable
+    // Process window style
     DWORD windowStyle = WS_OVERLAPPEDWINDOW;
     if (app->resizable == 0) {
         windowStyle &= ~WS_MAXIMIZEBOX;
@@ -387,13 +396,38 @@ void Run(struct Application* app, int argc, char **argv) {
         windowStyle = WS_POPUP;
     }
 
-    RegisterClassEx(&wc);
-    app->window = CreateWindow((LPCWSTR)"ffenestri", (LPCWSTR)"", windowStyle, CW_USEDEFAULT,
-                                CW_USEDEFAULT, app->width, app->height, NULL, NULL,
-                                hInstance, NULL);
+    // Create the window.
+    app->window = CreateWindowEx(
+        dwExStyle,      // Optional window styles.
+        CLASS_NAME,     // Window class
+        L"",            // Window text
+        windowStyle,    // Window style
+
+        // Size and position
+        CW_USEDEFAULT, CW_USEDEFAULT, 1024, 768,
+
+        NULL,       // Parent window
+        NULL,       // Menu
+        wc.hInstance,  // Instance handle
+        NULL        // Additional application data
+    );
+
+    if (app->window == NULL)
+    {
+        return;
+    }
+
+    if ( app->windowBackgroundIsTranslucent ) {
+
+        // Enable the translucent background effect
+        enableTranslucentBackground(app);
+
+        // Setup transparency of main window. This allows the blur to show through.
+        SetLayeredWindowAttributes(app->window,RGB(255,255,255),0,LWA_COLORKEY);
+    }
+
 
     // Private setTitle as we're on the main thread
-    // TODO: Make sure we check for blank title
     setTitle(app, app->title);
 
     // Store application pointer in window handle
@@ -405,13 +439,10 @@ void Run(struct Application* app, int argc, char **argv) {
         startVisibility = SW_HIDE;
     }
 
-
-    if( app->windowBackgroundIsTranslucent ) {
-        enableTranslucentBackground(app);
-    }
-
     // private center() as we are on main thread
     center(app);
+
+//    SetLayeredWindowAttributes(app->window,RGB(255,255,255),0,LWA_COLORKEY);
     ShowWindow(app->window, startVisibility);
     UpdateWindow(app->window);
     SetFocus(app->window);
@@ -426,10 +457,13 @@ void Run(struct Application* app, int argc, char **argv) {
         app->webviewController->QueryInterface(IID_ICoreWebView2Controller2, (void**)&wc2);
 
         COREWEBVIEW2_COLOR wvColor;
-        wvColor.R = 0;
-        wvColor.G = 0;
-        wvColor.B = 0;
-        wvColor.A = 0;
+        wvColor.R = app->backgroundColour.R;
+        wvColor.G = app->backgroundColour.G;
+        wvColor.B = app->backgroundColour.B;
+        wvColor.A = app->backgroundColour.A == 0 ? 0 : 255;
+        if( app->windowBackgroundIsTranslucent ) {
+            wvColor.A = 0;
+        }
         HRESULT result = wc2->put_DefaultBackgroundColor(wvColor);
         if (!SUCCEEDED(result))
         {
@@ -630,7 +664,10 @@ void ToggleMinimise(struct Application* app) {
 }
 
 void SetColour(struct Application* app, int red, int green, int blue, int alpha) {
-// TBD
+    app->backgroundColour.R = red;
+    app->backgroundColour.G = green;
+    app->backgroundColour.B = blue;
+    app->backgroundColour.A = alpha;
 }
 
 void SetSize(struct Application* app, int width, int height) {
