@@ -9,7 +9,7 @@ copy "%native_dir%\include\*.h" .. >NUL
 copy "%native_dir%\x64\WebView2Loader.dll" "..\x64" >NUL
 @rd /S /Q "microsoft.web.webview2.%sdk_version%"
 del /s version.txt  >nul 2>&1
-echo The version of WebView2 used: %sdk_version% > version.txt
+echo The version of WebView2 SDK used: %sdk_version% > sdkversion.txt
 echo SDK updated to %sdk_version%
 goto :eof
 
