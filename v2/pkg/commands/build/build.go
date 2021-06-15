@@ -47,6 +47,7 @@ type Options struct {
 	Compress            bool                 // Compress the final binary
 	CompressFlags       string               // Flags to pass to UPX
 	AppleIdentity       string
+	WebView2Strategy    string // WebView2 installer strategy
 }
 
 // Build the project!

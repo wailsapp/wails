@@ -103,8 +103,17 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	// Initialise the app
 	err := result.Init()
+	if err != nil {
+		return nil, err
+	}
 
-	return result, err
+	// Preflight Checks
+	err = result.PreflightChecks(appoptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 
 }
 

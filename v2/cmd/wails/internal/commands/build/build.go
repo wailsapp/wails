@@ -69,6 +69,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	cleanBuildDirectory := false
 	command.BoolFlag("clean", "Clean the build directory before building", &cleanBuildDirectory)
 
+	webview2 := "download"
+	command.StringFlag("webview2", "WebView2 installer strategy: download,embed,browser,error.", &webview2)
+
 	command.Action(func() error {
 
 		quiet := verbosity == 0
@@ -122,6 +125,25 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			}
 		}
 
+		// Webview2 installer strategy (download by default)
+		wv2rtstrategy := ""
+		webview2 = strings.ToLower(webview2)
+		if webview2 != "" {
+			validWV2Runtime := slicer.String([]string{"download", "embed", "browser", "error"})
+			if !validWV2Runtime.Contains(webview2) {
+				return fmt.Errorf("invalid option for flag 'webview2': %s", webview2)
+			}
+			// These are the build tags associated with the strategies
+			switch webview2 {
+			case "embed":
+				wv2rtstrategy = "wv2runtime.embed"
+			case "error":
+				wv2rtstrategy = "wv2runtime.error"
+			case "browser":
+				wv2rtstrategy = "wv2runtime.browser"
+			}
+		}
+
 		// Create BuildOptions
 		buildOptions := &build.Options{
 			Logger:              logger,
@@ -137,6 +159,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			Compress:            compress,
 			CompressFlags:       compressFlags,
 			UserTags:            userTags,
+			WebView2Strategy:    wv2rtstrategy,
 		}
 
 		// Calculate platform and arch

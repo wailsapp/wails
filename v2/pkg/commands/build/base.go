@@ -213,6 +213,12 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	var tags slicer.StringSlicer
 	tags.Add(options.OutputType)
 	tags.AddSlice(options.UserTags)
+
+	// Add webview2 strategy if we have it
+	if options.WebView2Strategy != "" {
+		tags.Add(options.WebView2Strategy)
+	}
+
 	if options.Mode == Debug {
 		tags.Add("debug")
 	}

@@ -14,6 +14,7 @@ require (
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/gosod v1.0.1
 	github.com/leaanthony/slicer v1.5.0
+	github.com/leaanthony/webview2runtime v1.1.0
 	github.com/leaanthony/winicon v0.0.0-20200606125418-4419cea822a0
 	github.com/matryer/is v1.4.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
@@ -25,7 +26,7 @@ require (
 	github.com/wzshiming/ctc v1.2.3
 	github.com/xyproto/xpm v1.2.1
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
-	golang.org/x/sys v0.0.0-20200724161237-0e2f3a69832c
+	golang.org/x/sys v0.0.0-20210611083646-a4fc73990273
 	golang.org/x/tools v0.0.0-20200902012652-d1954cc86c82
 	nhooyr.io/websocket v1.8.6
 )
