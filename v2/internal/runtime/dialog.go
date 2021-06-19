@@ -1,3 +1,5 @@
+// +build !windows
+
 package runtime
 
 import (
@@ -10,9 +12,11 @@ import (
 
 // Dialog defines all Dialog related operations
 type Dialog interface {
-	Open(dialogOptions *dialogoptions.OpenDialog) []string
-	Save(dialogOptions *dialogoptions.SaveDialog) string
-	Message(dialogOptions *dialogoptions.MessageDialog) string
+	OpenFile(dialogOptions *dialogoptions.OpenDialog) (string, error)
+	OpenMultipleFiles(dialogOptions *dialogoptions.OpenDialog) ([]string, error)
+	OpenDirectory(dialogOptions *dialogoptions.OpenDialog) (string, error)
+	SaveFile(dialogOptions *dialogoptions.SaveDialog) (string, error)
+	Message(dialogOptions *dialogoptions.MessageDialog) (string, error)
 }
 
 // dialog exposes the Dialog interface
@@ -44,8 +48,32 @@ func (r *dialog) processTitleAndFilter(params ...string) (string, string) {
 	return title, filter
 }
 
+func OpenDirectory(dialogOptions *dialogoptions.OpenDialog) (string, error) {
+
+	// Create unique dialog callback
+	uniqueCallback := crypto.RandomID()
+
+	// Subscribe to the respose channel
+	responseTopic := "dialog:opendirectoryselected:" + uniqueCallback
+	dialogResponseChannel, err := r.bus.Subscribe(responseTopic)
+	if err != nil {
+		return nil, fmt.Printf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
+	}
+
+	message := "dialog:selectdirectory:open:" + uniqueCallback
+	r.bus.Publish(message, dialogOptions)
+
+	// Wait for result
+	var result *servicebus.Message = <-dialogResponseChannel
+
+	// Delete subscription to response topic
+	r.bus.UnSubscribe(responseTopic)
+
+	return result.Data().(string), nil
+}
+
 // Open prompts the user to select a file
-func (r *dialog) Open(dialogOptions *dialogoptions.OpenDialog) []string {
+func (r *dialog) OpenFile(dialogOptions *dialogoptions.OpenDialog) (string, error) {
 
 	// Create unique dialog callback
 	uniqueCallback := crypto.RandomID()
@@ -54,7 +82,7 @@ func (r *dialog) Open(dialogOptions *dialogoptions.OpenDialog) []string {
 	responseTopic := "dialog:openselected:" + uniqueCallback
 	dialogResponseChannel, err := r.bus.Subscribe(responseTopic)
 	if err != nil {
-		fmt.Printf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
+		return nil, fmt.Printf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
 	}
 
 	message := "dialog:select:open:" + uniqueCallback
@@ -66,11 +94,36 @@ func (r *dialog) Open(dialogOptions *dialogoptions.OpenDialog) []string {
 	// Delete subscription to response topic
 	r.bus.UnSubscribe(responseTopic)
 
-	return result.Data().([]string)
+	return result.Data().(string), nil
+}
+
+// OpenMultiple prompts the user to select a file
+func (r *dialog) OpenMultipleFiles(dialogOptions *dialogoptions.OpenDialog) ([]string, error) {
+
+	// Create unique dialog callback
+	uniqueCallback := crypto.RandomID()
+
+	// Subscribe to the respose channel
+	responseTopic := "dialog:openmultipleselected:" + uniqueCallback
+	dialogResponseChannel, err := r.bus.Subscribe(responseTopic)
+	if err != nil {
+		return nil, fmt.Printf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
+	}
+
+	message := "dialog:select:openmultiple:" + uniqueCallback
+	r.bus.Publish(message, dialogOptions)
+
+	// Wait for result
+	var result *servicebus.Message = <-dialogResponseChannel
+
+	// Delete subscription to response topic
+	r.bus.UnSubscribe(responseTopic)
+
+	return result.Data().(string), nil
 }
 
 // Save prompts the user to select a file
-func (r *dialog) Save(dialogOptions *dialogoptions.SaveDialog) string {
+func (r *dialog) SaveFile(dialogOptions *dialogoptions.SaveDialog) (string, error) {
 
 	// Create unique dialog callback
 	uniqueCallback := crypto.RandomID()
@@ -79,7 +132,7 @@ func (r *dialog) Save(dialogOptions *dialogoptions.SaveDialog) string {
 	responseTopic := "dialog:saveselected:" + uniqueCallback
 	dialogResponseChannel, err := r.bus.Subscribe(responseTopic)
 	if err != nil {
-		fmt.Printf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
+		return nil, fmt.Printf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
 	}
 
 	message := "dialog:select:save:" + uniqueCallback
@@ -91,7 +144,7 @@ func (r *dialog) Save(dialogOptions *dialogoptions.SaveDialog) string {
 	// Delete subscription to response topic
 	r.bus.UnSubscribe(responseTopic)
 
-	return result.Data().(string)
+	return result.Data().(string), nil
 }
 
 // Message show a message to the user

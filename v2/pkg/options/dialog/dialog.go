@@ -1,14 +1,19 @@
 package dialog
 
+// FileFilter defines a filter for dialog boxes
+type FileFilter struct {
+	DisplayName string // Filter information EG: "Image Files (*.jpg, *.png)"
+	Pattern     string // semi-colon separated list of extensions, EG: "*.jpg;*.png"
+}
+
 // OpenDialog contains the options for the OpenDialog runtime method
 type OpenDialog struct {
 	DefaultDirectory           string
 	DefaultFilename            string
 	Title                      string
-	Filters                    string
+	Filters                    []FileFilter
 	AllowFiles                 bool
 	AllowDirectories           bool
-	AllowMultiple              bool
 	ShowHiddenFiles            bool
 	CanCreateDirectories       bool
 	ResolvesAliases            bool
@@ -20,7 +25,7 @@ type SaveDialog struct {
 	DefaultDirectory           string
 	DefaultFilename            string
 	Title                      string
-	Filters                    string
+	Filters                    []FileFilter
 	ShowHiddenFiles            bool
 	CanCreateDirectories       bool
 	TreatPackagesAsDirectories bool

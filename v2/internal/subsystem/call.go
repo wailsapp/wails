@@ -140,7 +140,10 @@ func (c *Call) processSystemCall(payload *message.CallMessage, clientID string) 
 		if err != nil {
 			c.logger.Error("Error decoding: %s", err)
 		}
-		result := c.runtime.Dialog.Open(dialogOptions)
+		result, err := c.runtime.Dialog.OpenFile(dialogOptions)
+		if err != nil {
+			c.logger.Error("Error: %s", err)
+		}
 		c.sendResult(result, payload, clientID)
 	case "Dialog.Save":
 		dialogOptions := new(dialog.SaveDialog)
@@ -148,7 +151,10 @@ func (c *Call) processSystemCall(payload *message.CallMessage, clientID string) 
 		if err != nil {
 			c.logger.Error("Error decoding: %s", err)
 		}
-		result := c.runtime.Dialog.Save(dialogOptions)
+		result, err := c.runtime.Dialog.Save(dialogOptions)
+		if err != nil {
+			c.logger.Error("Error: %s", err)
+		}
 		c.sendResult(result, payload, clientID)
 	case "Dialog.Message":
 		dialogOptions := new(dialog.MessageDialog)
@@ -156,7 +162,10 @@ func (c *Call) processSystemCall(payload *message.CallMessage, clientID string) 
 		if err != nil {
 			c.logger.Error("Error decoding: %s", err)
 		}
-		result := c.runtime.Dialog.Message(dialogOptions)
+		result, err := c.runtime.Dialog.Message(dialogOptions)
+		if err != nil {
+			c.logger.Error("Error: %s", err)
+		}
 		c.sendResult(result, payload, clientID)
 	default:
 		c.logger.Error("Unknown system call: %+v", callName)

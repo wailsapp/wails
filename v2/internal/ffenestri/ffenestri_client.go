@@ -6,7 +6,9 @@ package ffenestri
 import "C"
 
 import (
+	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 
@@ -124,15 +126,45 @@ func (c *Client) WindowSetColour(colour int) {
 
 // OpenDialog will open a dialog with the given title and filter
 func (c *Client) OpenDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+	filters := []string{}
+	if runtime.GOOS == "darwin" {
+		for _, filter := range dialogOptions.Filters {
+			filters = append(filters, strings.Split(filter.Pattern, ",")...)
+		}
+	}
 	C.OpenDialog(c.app.app,
 		c.app.string2CString(callbackID),
 		c.app.string2CString(dialogOptions.Title),
-		c.app.string2CString(dialogOptions.Filters),
+		c.app.string2CString(strings.Join(filters, ";")),
 		c.app.string2CString(dialogOptions.DefaultFilename),
 		c.app.string2CString(dialogOptions.DefaultDirectory),
 		c.app.bool2Cint(dialogOptions.AllowFiles),
 		c.app.bool2Cint(dialogOptions.AllowDirectories),
-		c.app.bool2Cint(dialogOptions.AllowMultiple),
+		c.app.bool2Cint(false),
+		c.app.bool2Cint(dialogOptions.ShowHiddenFiles),
+		c.app.bool2Cint(dialogOptions.CanCreateDirectories),
+		c.app.bool2Cint(dialogOptions.ResolvesAliases),
+		c.app.bool2Cint(dialogOptions.TreatPackagesAsDirectories),
+	)
+}
+
+// OpenMultipleDialog will open a dialog with the given title and filter
+func (c *Client) OpenMultipleDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+	filters := []string{}
+	if runtime.GOOS == "darwin" {
+		for _, filter := range dialogOptions.Filters {
+			filters = append(filters, strings.Split(filter.Pattern, ",")...)
+		}
+	}
+	C.OpenDialog(c.app.app,
+		c.app.string2CString(callbackID),
+		c.app.string2CString(dialogOptions.Title),
+		c.app.string2CString(strings.Join(filters, ";")),
+		c.app.string2CString(dialogOptions.DefaultFilename),
+		c.app.string2CString(dialogOptions.DefaultDirectory),
+		c.app.bool2Cint(dialogOptions.AllowFiles),
+		c.app.bool2Cint(dialogOptions.AllowDirectories),
+		c.app.bool2Cint(true),
 		c.app.bool2Cint(dialogOptions.ShowHiddenFiles),
 		c.app.bool2Cint(dialogOptions.CanCreateDirectories),
 		c.app.bool2Cint(dialogOptions.ResolvesAliases),
@@ -142,10 +174,16 @@ func (c *Client) OpenDialog(dialogOptions *dialog.OpenDialog, callbackID string)
 
 // SaveDialog will open a dialog with the given title and filter
 func (c *Client) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string) {
+	filters := []string{}
+	if runtime.GOOS == "darwin" {
+		for _, filter := range dialogOptions.Filters {
+			filters = append(filters, strings.Split(filter.Pattern, ",")...)
+		}
+	}
 	C.SaveDialog(c.app.app,
 		c.app.string2CString(callbackID),
 		c.app.string2CString(dialogOptions.Title),
-		c.app.string2CString(dialogOptions.Filters),
+		c.app.string2CString(strings.Join(filters, ";")),
 		c.app.string2CString(dialogOptions.DefaultFilename),
 		c.app.string2CString(dialogOptions.DefaultDirectory),
 		c.app.bool2Cint(dialogOptions.ShowHiddenFiles),

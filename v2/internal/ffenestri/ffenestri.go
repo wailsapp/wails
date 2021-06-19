@@ -40,6 +40,9 @@ type Application struct {
 
 	// Logger
 	logger logger.CustomLogger
+
+	// Window handle (used by windows)
+	hwnd unsafe.Pointer
 }
 
 func (a *Application) saveMemoryReference(mem unsafe.Pointer) {
