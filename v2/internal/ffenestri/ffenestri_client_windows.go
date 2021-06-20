@@ -115,10 +115,12 @@ func (c *Client) WindowSize(width int, height int) {
 	C.SetSize(c.app.app, C.int(width), C.int(height))
 }
 
+// WindowSetMinSize sets the minimum window size
 func (c *Client) WindowSetMinSize(width int, height int) {
 	C.SetMinWindowSize(c.app.app, C.int(width), C.int(height))
 }
 
+// WindowSetMaxSize sets the maximum window size
 func (c *Client) WindowSetMaxSize(width int, height int) {
 	C.SetMaxWindowSize(c.app.app, C.int(width), C.int(height))
 }
@@ -281,26 +283,32 @@ func (c *Client) MessageDialog(options *dialog.MessageDialog, callbackID string)
 	dispatcher.DispatchMessage("DM" + callbackID + "|" + result)
 }
 
+// DarkModeEnabled sets the application to use dark mode
 func (c *Client) DarkModeEnabled(callbackID string) {
 	C.DarkModeEnabled(c.app.app, c.app.string2CString(callbackID))
 }
 
+// SetApplicationMenu sets the application menu
 func (c *Client) SetApplicationMenu(applicationMenuJSON string) {
 	C.SetApplicationMenu(c.app.app, c.app.string2CString(applicationMenuJSON))
 }
 
+// SetTrayMenu sets the tray menu
 func (c *Client) SetTrayMenu(trayMenuJSON string) {
 	C.SetTrayMenu(c.app.app, c.app.string2CString(trayMenuJSON))
 }
 
+// UpdateTrayMenuLabel updates a tray menu label
 func (c *Client) UpdateTrayMenuLabel(JSON string) {
 	C.UpdateTrayMenuLabel(c.app.app, c.app.string2CString(JSON))
 }
 
+// UpdateContextMenu will update the current context menu
 func (c *Client) UpdateContextMenu(contextMenuJSON string) {
 	C.UpdateContextMenu(c.app.app, c.app.string2CString(contextMenuJSON))
 }
 
+// DeleteTrayMenuByID will remove a tray menu based on the given id
 func (c *Client) DeleteTrayMenuByID(id string) {
 	C.DeleteTrayMenuByID(c.app.app, c.app.string2CString(id))
 }
