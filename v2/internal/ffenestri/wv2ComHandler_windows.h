@@ -70,6 +70,11 @@ class wv2ComHandler
             loadAssets(app);
             return S_OK;
           }
+          else if (strcmp(m, "wails-drag") == 0) {
+            ReleaseCapture();
+            SendMessage(this->window, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+            return S_OK;
+          }
           else {
             messageFromWindowCallback(m);
           }
