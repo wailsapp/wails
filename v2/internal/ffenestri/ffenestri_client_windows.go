@@ -12,9 +12,7 @@ import (
 	"github.com/harry1453/go-common-file-dialog/cfd"
 	"golang.org/x/sys/windows"
 	"log"
-	"runtime"
 	"strconv"
-	"strings"
 	"syscall"
 
 	"github.com/wailsapp/wails/v2/pkg/options/dialog"
@@ -170,7 +168,6 @@ func (c *Client) OpenFileDialog(options *dialog.OpenDialog, callbackID string) {
 
 }
 
-
 // OpenDirectoryDialog will open a dialog with the given title and filter
 func (c *Client) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
 	config := cfd.DialogConfig{
@@ -230,22 +227,25 @@ func (c *Client) OpenMultipleFilesDialog(dialogOptions *dialog.OpenDialog, callb
 
 // SaveDialog will open a dialog with the given title and filter
 func (c *Client) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string) {
-	filters := []string{}
-	if runtime.GOOS == "darwin" {
-		for _, filter := range dialogOptions.Filters {
-			filters = append(filters, strings.Split(filter.Pattern, ",")...)
-		}
+	saveDialog, err := cfd.NewSaveFileDialog(cfd.DialogConfig{
+		Title:       dialogOptions.Title,
+		Role:        "SaveFile",
+		FileFilters: convertFilters(dialogOptions.Filters),
+		FileName:    dialogOptions.DefaultFilename,
+		Folder:      dialogOptions.DefaultDirectory,
+	})
+	if err != nil {
+		log.Fatal(err)
 	}
-	C.SaveDialog(c.app.app,
-		c.app.string2CString(callbackID),
-		c.app.string2CString(dialogOptions.Title),
-		c.app.string2CString(strings.Join(filters, ";")),
-		c.app.string2CString(dialogOptions.DefaultFilename),
-		c.app.string2CString(dialogOptions.DefaultDirectory),
-		c.app.bool2Cint(dialogOptions.ShowHiddenFiles),
-		c.app.bool2Cint(dialogOptions.CanCreateDirectories),
-		c.app.bool2Cint(dialogOptions.TreatPackagesAsDirectories),
-	)
+	//saveDialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
+	if err := saveDialog.Show(); err != nil {
+		log.Fatal(err)
+	}
+	result, err := saveDialog.GetResult()
+	if err != nil {
+		log.Fatal(err)
+	}
+	dispatcher.DispatchMessage("DS" + callbackID + "|" + result)
 }
 
 // MessageDialog will open a message dialog with the given options
