@@ -40,7 +40,6 @@ type Application struct {
 
 	// Logger
 	logger logger.CustomLogger
-
 }
 
 func (a *Application) saveMemoryReference(mem unsafe.Pointer) {
@@ -131,7 +130,6 @@ func (a *Application) Run(incomingDispatcher Dispatcher, bindings string, debug 
 	// Set debug if needed
 	C.SetDebug(app, a.bool2Cint(debug))
 
-	// TODO: Move frameless to Linux options
 	if a.config.Frameless {
 		C.DisableFrame(a.app)
 	}

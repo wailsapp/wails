@@ -144,6 +144,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             break;
         }
         case WM_SIZE: {
+            if ( app == NULL ) {
+                return 0;
+            }
             if( app->webviewController != nullptr) {
                 RECT bounds;
                 GetClientRect(app->window, &bounds);
@@ -385,7 +388,7 @@ void Run(struct Application* app, int argc, char **argv) {
 
     // Configure translucency
     DWORD dwExStyle = 0;
-    if ( app->windowBackgroundIsTranslucent ) {
+    if ( app->windowBackgroundIsTranslucent) {
         dwExStyle = WS_EX_NOREDIRECTIONBITMAP;
         wc.hbrBackground = CreateSolidBrush(RGB(255,255,255));
     }
@@ -393,13 +396,16 @@ void Run(struct Application* app, int argc, char **argv) {
     RegisterClassEx(&wc);
 
     // Process window style
-    DWORD windowStyle = WS_OVERLAPPEDWINDOW;
+    DWORD windowStyle = WS_OVERLAPPEDWINDOW | WS_THICKFRAME | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
+
     if (app->resizable == 0) {
         windowStyle &= ~WS_MAXIMIZEBOX;
         windowStyle &= ~WS_THICKFRAME;
     }
     if ( app->frame == 0 ) {
-        windowStyle = WS_POPUP;
+        windowStyle &= ~WS_OVERLAPPEDWINDOW;
+        windowStyle &= ~WS_CAPTION;
+        windowStyle |= WS_POPUP;
     }
 
     // Create the window.
@@ -424,7 +430,7 @@ void Run(struct Application* app, int argc, char **argv) {
     }
 
     // Credit: https://stackoverflow.com/a/35482689
-    if( app->disableWindowIcon ) {
+    if( app->disableWindowIcon && app->frame == 1 ) {
         int extendedStyle = GetWindowLong(app->window, GWL_EXSTYLE);
         SetWindowLong(app->window, GWL_EXSTYLE, extendedStyle | WS_EX_DLGMODALFRAME);
         SetWindowPos(nullptr, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
@@ -441,7 +447,9 @@ void Run(struct Application* app, int argc, char **argv) {
 
 
     // Private setTitle as we're on the main thread
-    setTitle(app, app->title);
+    if( app->frame == 1) {
+        setTitle(app, app->title);
+    }
 
     // Store application pointer in window handle
     SetWindowLongPtr(app->window, GWLP_USERDATA, (LONG_PTR)app);
