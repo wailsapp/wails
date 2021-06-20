@@ -3,12 +3,11 @@ package subsystem
 import (
 	"context"
 	"fmt"
-	"strings"
-	"sync"
-
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
+	"strings"
+	"sync"
 )
 
 // Runtime is the Runtime subsystem. It handles messages with topics starting

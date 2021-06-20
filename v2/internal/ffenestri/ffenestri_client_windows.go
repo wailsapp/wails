@@ -1,4 +1,4 @@
-// +build !windows
+// +build windows
 
 package ffenestri
 
@@ -8,6 +8,9 @@ package ffenestri
 import "C"
 
 import (
+	"encoding/json"
+	"github.com/harry1453/go-common-file-dialog/cfd"
+	"log"
 	"runtime"
 	"strconv"
 	"strings"
@@ -126,77 +129,102 @@ func (c *Client) WindowSetColour(colour int) {
 	C.SetColour(c.app.app, r, g, b, a)
 }
 
-// OpenFileDialog will open a dialog with the given title and filter
-func (c *Client) OpenFileDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
-	filters := []string{}
-	if runtime.GOOS == "darwin" {
-		for _, filter := range dialogOptions.Filters {
-			filters = append(filters, strings.Split(filter.Pattern, ",")...)
-		}
+func convertFilters(filters []dialog.FileFilter) []cfd.FileFilter {
+	var result []cfd.FileFilter
+	for _, filter := range filters {
+		result = append(result, cfd.FileFilter(filter))
 	}
-	C.OpenDialog(c.app.app,
-		c.app.string2CString(callbackID),
-		c.app.string2CString(dialogOptions.Title),
-		c.app.string2CString(strings.Join(filters, ";")),
-		c.app.string2CString(dialogOptions.DefaultFilename),
-		c.app.string2CString(dialogOptions.DefaultDirectory),
-		c.app.bool2Cint(dialogOptions.AllowFiles),
-		c.app.bool2Cint(dialogOptions.AllowDirectories),
-		c.app.bool2Cint(false),
-		c.app.bool2Cint(dialogOptions.ShowHiddenFiles),
-		c.app.bool2Cint(dialogOptions.CanCreateDirectories),
-		c.app.bool2Cint(dialogOptions.ResolvesAliases),
-		c.app.bool2Cint(dialogOptions.TreatPackagesAsDirectories),
-	)
+	return result
+}
+
+// OpenFileDialog will open a dialog with the given title and filter
+func (c *Client) OpenFileDialog(options *dialog.OpenDialog, callbackID string) {
+	config := cfd.DialogConfig{
+		Folder:      options.DefaultDirectory,
+		FileFilters: convertFilters(options.Filters),
+		FileName:    options.DefaultFilename,
+	}
+	thisdialog, err := cfd.NewOpenFileDialog(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+	thisdialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
+	defer func(thisdialog cfd.OpenFileDialog) {
+		err := thisdialog.Release()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(thisdialog)
+	result, err := thisdialog.ShowAndGetResult()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resultJSON, err := json.Marshal([]string{result})
+	if err != nil {
+		log.Fatal(err)
+	}
+	dispatcher.DispatchMessage("DO" + callbackID + "|" + string(resultJSON))
+
 }
 
 
 // OpenDirectoryDialog will open a dialog with the given title and filter
 func (c *Client) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
-	filters := []string{}
-	if runtime.GOOS == "darwin" {
-		for _, filter := range dialogOptions.Filters {
-			filters = append(filters, strings.Split(filter.Pattern, ",")...)
-		}
+	config := cfd.DialogConfig{
+		Title:  dialogOptions.Title,
+		Role:   "PickFolder",
+		Folder: dialogOptions.DefaultDirectory,
 	}
-	C.OpenDialog(c.app.app,
-		c.app.string2CString(callbackID),
-		c.app.string2CString(dialogOptions.Title),
-		c.app.string2CString(strings.Join(filters, ";")),
-		c.app.string2CString(dialogOptions.DefaultFilename),
-		c.app.string2CString(dialogOptions.DefaultDirectory),
-		c.app.bool2Cint(false), // Files
-		c.app.bool2Cint(true), // Directories
-		c.app.bool2Cint(false), // Multiple
-		c.app.bool2Cint(dialogOptions.ShowHiddenFiles),
-		c.app.bool2Cint(dialogOptions.CanCreateDirectories),
-		c.app.bool2Cint(dialogOptions.ResolvesAliases),
-		c.app.bool2Cint(dialogOptions.TreatPackagesAsDirectories),
-	)
+	thisDialog, err := cfd.NewSelectFolderDialog(config)
+	if err != nil {
+		log.Fatal()
+	}
+	thisDialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
+	defer func(thisDialog cfd.SelectFolderDialog) {
+		err := thisDialog.Release()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(thisDialog)
+	result, err := thisDialog.ShowAndGetResult()
+	resultJSON, err := json.Marshal(result)
+	if err != nil {
+		log.Fatal(err)
+	}
+	dispatcher.DispatchMessage("DD" + callbackID + "|" + string(resultJSON))
 }
 
 // OpenMultipleFilesDialog will open a dialog with the given title and filter
 func (c *Client) OpenMultipleFilesDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
-	filters := []string{}
-	if runtime.GOOS == "darwin" {
-		for _, filter := range dialogOptions.Filters {
-			filters = append(filters, strings.Split(filter.Pattern, ",")...)
-		}
+	config := cfd.DialogConfig{
+		Title:       dialogOptions.Title,
+		Role:        "OpenMultipleFiles",
+		FileFilters: convertFilters(dialogOptions.Filters),
+		FileName:    dialogOptions.DefaultFilename,
+		Folder:      dialogOptions.DefaultDirectory,
 	}
-	C.OpenDialog(c.app.app,
-		c.app.string2CString(callbackID),
-		c.app.string2CString(dialogOptions.Title),
-		c.app.string2CString(strings.Join(filters, ";")),
-		c.app.string2CString(dialogOptions.DefaultFilename),
-		c.app.string2CString(dialogOptions.DefaultDirectory),
-		c.app.bool2Cint(dialogOptions.AllowFiles),
-		c.app.bool2Cint(dialogOptions.AllowDirectories),
-		c.app.bool2Cint(true),
-		c.app.bool2Cint(dialogOptions.ShowHiddenFiles),
-		c.app.bool2Cint(dialogOptions.CanCreateDirectories),
-		c.app.bool2Cint(dialogOptions.ResolvesAliases),
-		c.app.bool2Cint(dialogOptions.TreatPackagesAsDirectories),
-	)
+	thisdialog, err := cfd.NewOpenMultipleFilesDialog(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+	handle := uintptr(C.GetWindowHandle(c.app.app))
+	thisdialog.SetParentWindowHandle(handle)
+	defer func(thisdialog cfd.OpenMultipleFilesDialog) {
+		err := thisdialog.Release()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(thisdialog)
+	result, err := thisdialog.ShowAndGetResults()
+	if err != nil {
+		log.Fatal(err)
+	}
+	resultJSON, err := json.Marshal(result)
+	if err != nil {
+		log.Fatal(err)
+	}
+	dispatcher.DispatchMessage("D*" + callbackID + "|" + string(resultJSON))
 }
 
 // SaveDialog will open a dialog with the given title and filter

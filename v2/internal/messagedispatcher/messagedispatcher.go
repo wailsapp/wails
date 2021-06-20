@@ -422,7 +422,35 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 			// TODO: Work out what we mean in a multi window environment...
 			// For now we will just pick the first one
 			for _, client := range d.clients {
-				client.frontend.OpenDialog(dialogOptions, callbackID)
+				client.frontend.OpenFileDialog(dialogOptions, callbackID)
+			}
+		case "openmultiple":
+			dialogOptions, ok := result.Data().(*dialog.OpenDialog)
+			if !ok {
+				d.logger.Error("Invalid data for 'dialog:select:openmultiple' : %#v", result.Data())
+				return
+			}
+			// This is hardcoded in the sender too
+			callbackID := splitTopic[3]
+
+			// TODO: Work out what we mean in a multi window environment...
+			// For now we will just pick the first one
+			for _, client := range d.clients {
+				client.frontend.OpenMultipleFilesDialog(dialogOptions, callbackID)
+			}
+		case "directory":
+			dialogOptions, ok := result.Data().(*dialog.OpenDialog)
+			if !ok {
+				d.logger.Error("Invalid data for 'dialog:select:directory' : %#v", result.Data())
+				return
+			}
+			// This is hardcoded in the sender too
+			callbackID := splitTopic[3]
+
+			// TODO: Work out what we mean in a multi window environment...
+			// For now we will just pick the first one
+			for _, client := range d.clients {
+				client.frontend.OpenDirectoryDialog(dialogOptions, callbackID)
 			}
 		case "save":
 			dialogOptions, ok := result.Data().(*dialog.SaveDialog)

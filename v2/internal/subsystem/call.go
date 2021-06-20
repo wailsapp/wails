@@ -151,7 +151,7 @@ func (c *Call) processSystemCall(payload *message.CallMessage, clientID string) 
 		if err != nil {
 			c.logger.Error("Error decoding: %s", err)
 		}
-		result, err := c.runtime.Dialog.Save(dialogOptions)
+		result, err := c.runtime.Dialog.SaveFile(dialogOptions)
 		if err != nil {
 			c.logger.Error("Error: %s", err)
 		}

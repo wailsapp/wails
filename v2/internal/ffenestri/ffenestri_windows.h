@@ -72,6 +72,7 @@ void completed(struct Application* app);
 extern "C" {
     void DisableWindowIcon(struct Application* app);
     void messageFromWindowCallback(const char *);
+    void* GetWindowHandle(struct Application*);
 }
 
 #endif

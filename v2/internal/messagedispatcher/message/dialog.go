@@ -32,8 +32,24 @@ func dialogMessageParser(message string) (*parsedMessage, error) {
 
 		switch dialogType {
 		case 'O':
-			var data []string
+			var data string
 			topic = "dialog:openselected:" + callbackID
+			err := json.Unmarshal([]byte(payloadData), &data)
+			if err != nil {
+				return nil, err
+			}
+			responseMessage = &parsedMessage{Topic: topic, Data: data}
+		case 'D':
+			var data string
+			topic = "dialog:opendirectoryselected:" + callbackID
+			err := json.Unmarshal([]byte(payloadData), &data)
+			if err != nil {
+				return nil, err
+			}
+			responseMessage = &parsedMessage{Topic: topic, Data: data}
+		case '*':
+			var data []string
+			topic = "dialog:openmultipleselected:" + callbackID
 			err := json.Unmarshal([]byte(payloadData), &data)
 			if err != nil {
 				return nil, err

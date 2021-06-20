@@ -88,6 +88,10 @@ struct Application *NewApplication(const char *title, int width, int height, int
     return result;
 }
 
+void* GetWindowHandle(struct Application *app) {
+    return (void*)app->window;
+}
+
 void SetMinWindowSize(struct Application* app, int minWidth, int minHeight) {
     app->minWidth = (LONG)minWidth;
     app->minHeight = (LONG)minHeight;

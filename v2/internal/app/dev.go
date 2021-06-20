@@ -125,7 +125,7 @@ func (a *App) Run() error {
 		return err
 	}
 
-	runtimesubsystem, err := subsystem.NewRuntime(ctx, a.servicebus, a.logger, a.startupCallback)
+	runtimesubsystem, err := subsystem.NewRuntime(ctx, a.servicebus, a.logger, a.startupCallback, nil)
 	if err != nil {
 		return err
 	}

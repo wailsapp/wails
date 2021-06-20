@@ -47,6 +47,7 @@ extern void AddContextMenu(struct Application*, char *contextMenuJSON);
 extern void UpdateContextMenu(struct Application*, char *contextMenuJSON);
 extern void WebviewIsTransparent(struct Application*);
 extern void WindowBackgroundIsTranslucent(struct Application*);
+extern void* GetWindowHandle(struct Application*);
 
 #ifdef __cplusplus
 }
