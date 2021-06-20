@@ -10,10 +10,12 @@ import "C"
 import (
 	"encoding/json"
 	"github.com/harry1453/go-common-file-dialog/cfd"
+	"golang.org/x/sys/windows"
 	"log"
 	"runtime"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 
@@ -148,7 +150,7 @@ func (c *Client) OpenFileDialog(options *dialog.OpenDialog, callbackID string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	thisdialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
+	//thisdialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
 	defer func(thisdialog cfd.OpenFileDialog) {
 		err := thisdialog.Release()
 		if err != nil {
@@ -180,7 +182,7 @@ func (c *Client) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackI
 	if err != nil {
 		log.Fatal()
 	}
-	thisDialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
+	//thisDialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
 	defer func(thisDialog cfd.SelectFolderDialog) {
 		err := thisDialog.Release()
 		if err != nil {
@@ -208,8 +210,7 @@ func (c *Client) OpenMultipleFilesDialog(dialogOptions *dialog.OpenDialog, callb
 	if err != nil {
 		log.Fatal(err)
 	}
-	handle := uintptr(C.GetWindowHandle(c.app.app))
-	thisdialog.SetParentWindowHandle(handle)
+	//thisdialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
 	defer func(thisdialog cfd.OpenMultipleFilesDialog) {
 		err := thisdialog.Release()
 		if err != nil {
@@ -248,32 +249,36 @@ func (c *Client) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string)
 }
 
 // MessageDialog will open a message dialog with the given options
-func (c *Client) MessageDialog(dialogOptions *dialog.MessageDialog, callbackID string) {
+func (c *Client) MessageDialog(options *dialog.MessageDialog, callbackID string) {
 
-	// Sanity check button length
-	if len(dialogOptions.Buttons) > 4 {
-		c.app.logger.Error("Given %d message dialog buttons. Maximum is 4", len(dialogOptions.Buttons))
-		return
+	title, err := syscall.UTF16PtrFromString(options.Title)
+	if err != nil {
+		log.Fatal(err)
+	}
+	message, err := syscall.UTF16PtrFromString(options.Message)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var flags uint32
+	switch options.Type {
+	case dialog.InfoDialog:
+		flags = windows.MB_OK | windows.MB_ICONINFORMATION
+	case dialog.ErrorDialog:
+		flags = windows.MB_ICONERROR | windows.MB_OK
+	case dialog.QuestionDialog:
+		flags = windows.MB_YESNO
+	case dialog.WarningDialog:
+		flags = windows.MB_OK | windows.MB_ICONWARNING
 	}
 
-	// Process buttons
-	buttons := []string{"", "", "", ""}
-	for i, button := range dialogOptions.Buttons {
-		buttons[i] = button
+	button, _ := windows.MessageBox(0, message, title, flags|windows.MB_SYSTEMMODAL)
+	// This maps MessageBox return values to strings
+	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}
+	result := "Error"
+	if int(button) < len(responses) {
+		result = responses[button]
 	}
-
-	C.MessageDialog(c.app.app,
-		c.app.string2CString(callbackID),
-		c.app.string2CString(string(dialogOptions.Type)),
-		c.app.string2CString(dialogOptions.Title),
-		c.app.string2CString(dialogOptions.Message),
-		c.app.string2CString(dialogOptions.Icon),
-		c.app.string2CString(buttons[0]),
-		c.app.string2CString(buttons[1]),
-		c.app.string2CString(buttons[2]),
-		c.app.string2CString(buttons[3]),
-		c.app.string2CString(dialogOptions.DefaultButton),
-		c.app.string2CString(dialogOptions.CancelButton))
+	dispatcher.DispatchMessage("DM" + callbackID + "|" + result)
 }
 
 func (c *Client) DarkModeEnabled(callbackID string) {
