@@ -50,4 +50,12 @@ Example:
 
 ## Mac
 
-The `mac` directory holds files specific to Mac builds, such as `Info.plist`. These may be edited and used as part of the build.
+The `darwin` directory holds files specific to Mac builds, such as `Info.plist`. 
+These may be customised and used as part of the build. To return these files to the default state, simply delete them and
+build with the `-package` flag.
+
+## Windows 
+
+The `windows` directory contains the manifest and rc files used when building with the `-package` flag. 
+These may be customised for your application. To return these files to the default state, simply delete them and
+build with the `-package` flag.
