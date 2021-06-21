@@ -9,7 +9,7 @@ import "C"
 
 import (
 	"encoding/json"
-	"github.com/harry1453/go-common-file-dialog/cfd"
+	"github.com/leaanthony/go-common-file-dialog/cfd"
 	"golang.org/x/sys/windows"
 	"log"
 	"strconv"
@@ -154,7 +154,7 @@ func (c *Client) OpenFileDialog(options *dialog.OpenDialog, callbackID string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//thisdialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
+	thisdialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
 	defer func(thisdialog cfd.OpenFileDialog) {
 		err := thisdialog.Release()
 		if err != nil {
@@ -185,7 +185,7 @@ func (c *Client) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackI
 	if err != nil {
 		log.Fatal()
 	}
-	//thisDialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
+	thisDialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
 	defer func(thisDialog cfd.SelectFolderDialog) {
 		err := thisDialog.Release()
 		if err != nil {
@@ -213,7 +213,7 @@ func (c *Client) OpenMultipleFilesDialog(dialogOptions *dialog.OpenDialog, callb
 	if err != nil {
 		log.Fatal(err)
 	}
-	//thisdialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
+	thisdialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
 	defer func(thisdialog cfd.OpenMultipleFilesDialog) {
 		err := thisdialog.Release()
 		if err != nil {
@@ -243,7 +243,7 @@ func (c *Client) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string)
 	if err != nil {
 		log.Fatal(err)
 	}
-	//saveDialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
+	saveDialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
 	err = saveDialog.Show()
 	if err != nil {
 		log.Fatal(err)

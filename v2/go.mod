@@ -7,12 +7,12 @@ require (
 	github.com/fatih/structtag v1.2.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gorilla/websocket v1.4.1
-	github.com/harry1453/go-common-file-dialog v1.0.0
 	github.com/imdario/mergo v0.3.11
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/leaanthony/clir v1.0.4
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
+	github.com/leaanthony/go-common-file-dialog v1.0.2
 	github.com/leaanthony/gosod v1.0.1
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/webview2runtime v1.1.0
