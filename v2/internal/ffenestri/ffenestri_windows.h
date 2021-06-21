@@ -47,6 +47,11 @@ struct Application{
     COREWEBVIEW2_COLOR backgroundColour;
     bool disableWindowIcon;
 
+    // Used by fullscreen/unfullscreen
+    bool isFullscreen;
+    WINDOWPLACEMENT previousPlacement;
+    DWORD previousWindowStyle;
+
     // placeholders
     char* bindings;
     char* initialCode;
@@ -60,6 +65,8 @@ typedef std::function<void(ICoreWebView2Controller *)> comHandlerCallback;
 
 void center(struct Application*);
 void setTitle(struct Application* app, const char *title);
+void fullscreen(struct Application* app);
+void unfullscreen(struct Application* app);
 char* LPWSTRToCstr(LPWSTR input);
 
 // called when the DOM is ready

@@ -71,8 +71,11 @@ class wv2ComHandler
             return S_OK;
           }
           else if (strcmp(m, "wails-drag") == 0) {
-            ReleaseCapture();
-            SendMessage(this->window, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+            // We don't drag in fullscreen mode
+            if (!app->isFullscreen) {
+                ReleaseCapture();
+                SendMessage(this->window, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+            }
             return S_OK;
           }
           else {

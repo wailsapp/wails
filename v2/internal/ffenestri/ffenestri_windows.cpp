@@ -85,6 +85,9 @@ struct Application *NewApplication(const char *title, int width, int height, int
     // Startup url
     result->startupURL = nullptr;
 
+    // Used to remember the window location when going fullscreen
+    result->previousPlacement = { sizeof(result->previousPlacement) };
+
     return result;
 }
 
@@ -460,6 +463,10 @@ void Run(struct Application* app, int argc, char **argv) {
         return;
     }
 
+    if ( app->fullscreen ) {
+        fullscreen(app);
+    }
+
     // Credit: https://stackoverflow.com/a/35482689
     if( app->disableWindowIcon && app->frame == 1 ) {
         int extendedStyle = GetWindowLong(app->window, GWL_EXSTYLE);
@@ -742,10 +749,47 @@ void SetTitle(struct Application* app, const char *title) {
     );
 }
 
+void fullscreen(struct Application* app) {
+
+    // Ensure we aren't in fullscreen
+    if (app->isFullscreen) return;
+
+    app->isFullscreen = true;
+    app->previousWindowStyle = GetWindowLong(app->window, GWL_STYLE);
+    MONITORINFO mi = { sizeof(mi) };
+    if (GetWindowPlacement(app->window, &(app->previousPlacement)) && GetMonitorInfo(MonitorFromWindow(app->window, MONITOR_DEFAULTTOPRIMARY), &mi)) {
+        SetWindowLong(app->window, GWL_STYLE, app->previousWindowStyle & ~WS_OVERLAPPEDWINDOW);
+        SetWindowPos(app->window, HWND_TOP,
+            mi.rcMonitor.left,
+            mi.rcMonitor.top,
+            mi.rcMonitor.right - mi.rcMonitor.left,
+            mi.rcMonitor.bottom - mi.rcMonitor.top,
+            SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+    }
+}
+
 void Fullscreen(struct Application* app) {
+    ON_MAIN_THREAD(
+        fullscreen(app);
+        show(app);
+    );
+}
+
+void unfullscreen(struct Application* app) {
+    if (app->isFullscreen) {
+        SetWindowLong(app->window, GWL_STYLE, app->previousWindowStyle);
+        SetWindowPlacement(app->window, &(app->previousPlacement));
+        SetWindowPos(app->window, NULL, 0, 0, 0, 0,
+                         SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+                         SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+        app->isFullscreen = false;
+    }
 }
 
 void UnFullscreen(struct Application* app) {
+    ON_MAIN_THREAD(
+        unfullscreen(app);
+    );
 }
 
 void ToggleFullscreen(struct Application* app) {
