@@ -139,6 +139,10 @@ func convertFilters(filters []dialog.FileFilter) []cfd.FileFilter {
 	return result
 }
 
+func userCancelled(err error) bool {
+	return err.Error() == "cancelled by user"
+}
+
 // OpenFileDialog will open a dialog with the given title and filter
 func (c *Client) OpenFileDialog(options *dialog.OpenDialog, callbackID string) {
 	config := cfd.DialogConfig{
@@ -158,7 +162,7 @@ func (c *Client) OpenFileDialog(options *dialog.OpenDialog, callbackID string) {
 		}
 	}(thisdialog)
 	result, err := thisdialog.ShowAndGetResult()
-	if err != nil {
+	if err != nil && !userCancelled(err) {
 		log.Fatal(err)
 	}
 
@@ -189,10 +193,10 @@ func (c *Client) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackI
 		}
 	}(thisDialog)
 	result, err := thisDialog.ShowAndGetResult()
-	resultJSON, err := json.Marshal(result)
-	if err != nil {
+	if err != nil && !userCancelled(err) {
 		log.Fatal(err)
 	}
+	resultJSON, err := json.Marshal(result)
 	dispatcher.DispatchMessage("DD" + callbackID + "|" + string(resultJSON))
 }
 
@@ -217,7 +221,7 @@ func (c *Client) OpenMultipleFilesDialog(dialogOptions *dialog.OpenDialog, callb
 		}
 	}(thisdialog)
 	result, err := thisdialog.ShowAndGetResults()
-	if err != nil {
+	if err != nil && !userCancelled(err) {
 		log.Fatal(err)
 	}
 	resultJSON, err := json.Marshal(result)
@@ -240,11 +244,12 @@ func (c *Client) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string)
 		log.Fatal(err)
 	}
 	//saveDialog.SetParentWindowHandle(uintptr(C.GetWindowHandle(c.app.app)))
-	if err := saveDialog.Show(); err != nil {
+	err = saveDialog.Show()
+	if err != nil {
 		log.Fatal(err)
 	}
 	result, err := saveDialog.GetResult()
-	if err != nil {
+	if err != nil && !userCancelled(err) {
 		log.Fatal(err)
 	}
 	dispatcher.DispatchMessage("DS" + callbackID + "|" + result)
@@ -273,7 +278,7 @@ func (c *Client) MessageDialog(options *dialog.MessageDialog, callbackID string)
 		flags = windows.MB_OK | windows.MB_ICONWARNING
 	}
 
-	button, _ := windows.MessageBox(0, message, title, flags|windows.MB_SYSTEMMODAL)
+	button, _ := windows.MessageBox(windows.HWND(C.GetWindowHandle(c.app.app)), message, title, flags|windows.MB_SYSTEMMODAL)
 	// This maps MessageBox return values to strings
 	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}
 	result := "Error"
