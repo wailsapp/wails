@@ -297,6 +297,11 @@ bool initWebView2(struct Application *app, int debugEnabled, messageCallback cb)
                                          controller = webviewController;
                                          controller->get_CoreWebView2(&webview);
                                          webview->AddRef();
+                                         ICoreWebView2Settings* settings;
+                                         webview->get_Settings(&settings);
+                                         if ( debugEnabled == 0 ) {
+                                            settings->put_AreDefaultContextMenusEnabled(FALSE);
+                                         }
                                          flag.clear();
                                      }));
     if (!SUCCEEDED(res))
@@ -416,7 +421,7 @@ void Run(struct Application* app, int argc, char **argv) {
         windowStyle,    // Window style
 
         // Size and position
-        CW_USEDEFAULT, CW_USEDEFAULT, 1024, 768,
+        CW_USEDEFAULT, CW_USEDEFAULT, app->width, app->height,
 
         NULL,       // Parent window
         NULL,       // Menu
@@ -468,7 +473,7 @@ void Run(struct Application* app, int argc, char **argv) {
     SetFocus(app->window);
 
     // Add webview2
-    initWebView2(app, 1, initialCallback);
+    initWebView2(app, debug, initialCallback);
 
     if( app->webviewIsTranparent ) {
         wchar_t szBuff[64];
