@@ -139,8 +139,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
     switch(msg) {
 
+        case WM_CLOSE: {
+            DestroyWindow( app->window );
+            break;
+        }
         case WM_DESTROY: {
-            PostQuitMessage(0);
+            if( app->hideWindowOnClose ) {
+                Hide(app);
+            } else {
+                PostQuitMessage(0);
+            }
             break;
         }
         case WM_SIZE: {
@@ -711,6 +719,8 @@ void SetPosition(struct Application* app, int x, int y) {
 }
 
 void Quit(struct Application* app) {
+    // Override the hide window on close flag
+    app->hideWindowOnClose = 0;
     ON_MAIN_THREAD(
         DestroyWindow(app->window);
     );
