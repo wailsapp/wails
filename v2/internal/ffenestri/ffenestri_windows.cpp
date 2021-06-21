@@ -263,10 +263,25 @@ void completed(struct Application* app) {
     delete[] app->initialCode;
     app->initialCode = nullptr;
 
+    // Process whether window should show by default
+    int startVisibility = SW_SHOWNORMAL;
+    if ( app->startHidden == 1 ) {
+        startVisibility = SW_HIDE;
+    }
+
     // Fix for webview2 bug: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077
     // Will be fixed in next stable release
     app->webviewController->put_IsVisible(false);
     app->webviewController->put_IsVisible(true);
+
+    // Private setTitle as we're on the main thread
+    if( app->frame == 1) {
+        setTitle(app, app->title);
+    }
+
+    ShowWindow(app->window, startVisibility);
+    UpdateWindow(app->window);
+    SetFocus(app->window);
 
     if( app->startupURL == nullptr ) {
         messageFromWindowCallback("SS");
@@ -461,27 +476,11 @@ void Run(struct Application* app, int argc, char **argv) {
         SetLayeredWindowAttributes(app->window,RGB(255,255,255),0,LWA_COLORKEY);
     }
 
-
-    // Private setTitle as we're on the main thread
-    if( app->frame == 1) {
-        setTitle(app, app->title);
-    }
-
     // Store application pointer in window handle
     SetWindowLongPtr(app->window, GWLP_USERDATA, (LONG_PTR)app);
 
-    // Process whether window should show by default
-    int startVisibility = SW_SHOWNORMAL;
-    if ( app->startHidden == 1 ) {
-        startVisibility = SW_HIDE;
-    }
-
     // private center() as we are on main thread
     center(app);
-
-    ShowWindow(app->window, startVisibility);
-    UpdateWindow(app->window);
-    SetFocus(app->window);
 
     // Add webview2
     initWebView2(app, debug, initialCallback);
