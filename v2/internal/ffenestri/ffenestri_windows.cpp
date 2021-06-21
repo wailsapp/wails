@@ -282,24 +282,20 @@ bool initWebView2(struct Application *app, int debugEnabled, messageCallback cb)
     std::atomic_flag flag = ATOMIC_FLAG_INIT;
     flag.test_and_set();
 
-//    char currentExePath[MAX_PATH];
-//    GetModuleFileNameA(NULL, currentExePath, MAX_PATH);
-//    char *currentExeName = PathFindFileNameA(currentExePath);
-//    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wideCharConverter;
-//    auto exeName = wideCharConverter.from_bytes(currentExeName);
-//
-//    PWSTR path;
-//    HRESULT appDataResult = SHGetFolderPathAndSubDir(app->window, CSIDL_LOCAL_APPDATA, nullptr, SHGFP_TYPE_CURRENT, exeName.c_str(), path);
-//    if ( appDataResult == false ) {
-//        path = nullptr;
-//    }
-//
+    char currentExePath[MAX_PATH];
+    GetModuleFileNameA(NULL, currentExePath, MAX_PATH);
+    char *currentExeName = PathFindFileNameA(currentExePath);
+
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wideCharConverter;
+    std::wstring userDataFolder =
+        wideCharConverter.from_bytes(std::getenv("APPDATA"));
+    std::wstring currentExeNameW = wideCharConverter.from_bytes(currentExeName);
 
     ICoreWebView2Controller *controller;
     ICoreWebView2* webview;
 
     HRESULT res = CreateCoreWebView2EnvironmentWithOptions(
-            nullptr, nullptr, nullptr,
+            nullptr, (userDataFolder + L"/" + currentExeNameW).c_str(), nullptr,
             new wv2ComHandler(app, app->window, cb,
                                      [&](ICoreWebView2Controller *webviewController) {
                                          controller = webviewController;
