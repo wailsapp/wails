@@ -140,7 +140,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch(msg) {
 
         case WM_DESTROY: {
-            DestroyApplication(app);
+            PostQuitMessage(0);
             break;
         }
         case WM_SIZE: {
@@ -551,9 +551,6 @@ void Run(struct Application* app, int argc, char **argv) {
     }
 }
 
-void DestroyApplication(struct Application* app) {
-    PostQuitMessage(0);
-}
 void SetDebug(struct Application* app, int flag) {
     debug = flag;
 }
@@ -714,7 +711,9 @@ void SetPosition(struct Application* app, int x, int y) {
 }
 
 void Quit(struct Application* app) {
-    DestroyWindow(app->window);
+    ON_MAIN_THREAD(
+        DestroyWindow(app->window);
+    );
 }
 
 
