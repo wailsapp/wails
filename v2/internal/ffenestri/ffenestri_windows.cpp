@@ -263,6 +263,11 @@ void completed(struct Application* app) {
     delete[] app->initialCode;
     app->initialCode = nullptr;
 
+    // Fix for webview2 bug: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077
+    // Will be fixed in next stable release
+    app->webviewController->put_IsVisible(false);
+    app->webviewController->put_IsVisible(true);
+
     if( app->startupURL == nullptr ) {
         messageFromWindowCallback("SS");
         return;
@@ -306,6 +311,8 @@ bool initWebView2(struct Application *app, int debugEnabled, messageCallback cb)
                                          if ( debugEnabled == 0 ) {
                                             settings->put_AreDefaultContextMenusEnabled(FALSE);
                                          }
+                                         // Fix for invisible webview
+                                         if( app->startHidden ) {}
                                          flag.clear();
                                      }));
     if (!SUCCEEDED(res))
