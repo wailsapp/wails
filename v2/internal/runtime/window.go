@@ -23,7 +23,6 @@ type Window interface {
 	SetPosition(x int, y int)
 	Fullscreen()
 	UnFullscreen()
-	SetColour(colour int)
 }
 
 // Window exposes the Windows interface
@@ -64,11 +63,6 @@ func (w *window) UnFullscreen() {
 // Center the window on the current screen
 func (w *window) Center() {
 	w.bus.Publish("window:center", "")
-}
-
-// SetColour sets the window colour to the given int
-func (w *window) SetColour(colour int) {
-	w.bus.Publish("window:setcolour", colour)
 }
 
 // Show shows the window if hidden
