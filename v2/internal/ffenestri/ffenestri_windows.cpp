@@ -714,17 +714,31 @@ void SetColour(struct Application* app, int red, int green, int blue, int alpha)
 }
 
 void SetSize(struct Application* app, int width, int height) {
-    // TBD
+    if( app->maxWidth > 0 && width > app->maxWidth ) {
+        width = app->maxWidth;
+    }
+    if ( app->maxHeight > 0 && height > app->maxHeight ) {
+        height = app->maxHeight;
+    }
+    SetWindowPos(app->window, nullptr, 0, 0, width, height, SWP_NOMOVE);
 }
 
 void setPosition(struct Application* app, int x, int y) {
-    // TBD
+    HMONITOR currentMonitor = MonitorFromWindow(app->window, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO info = {0};
+    info.cbSize = sizeof(info);
+    GetMonitorInfoA(currentMonitor, &info);
+    RECT workRect = info.rcWork;
+    LONG newX = workRect.left + x;
+    LONG newY = workRect.top + y;
+
+    SetWindowPos(app->window, HWND_TOP, newX, newY, 0, 0, SWP_NOSIZE);
 }
 
 void SetPosition(struct Application* app, int x, int y) {
-//    ON_MAIN_THREAD(
-//        setPosition(app, x, y);
-//    );
+    ON_MAIN_THREAD(
+        setPosition(app, x, y);
+    );
 }
 
 void Quit(struct Application* app) {
@@ -790,9 +804,6 @@ void UnFullscreen(struct Application* app) {
     ON_MAIN_THREAD(
         unfullscreen(app);
     );
-}
-
-void ToggleFullscreen(struct Application* app) {
 }
 
 void DisableFrame(struct Application* app) {
