@@ -2431,6 +2431,8 @@ struct webview_priv
         [panel setAllowedFileTypes:fileTypes];
       }
       [panel setTreatsFilePackagesAsDirectories:YES];
+      [panel setNameFieldStringValue:@"Temp"]; // Necessary to prevent crash when replacing files
+      [panel setNameFieldStringValue:@"Untitled"];
       [panel beginSheetModalForWindow:w->priv.window
                     completionHandler:^(NSInteger result) {
                       [NSApp stopModalWithCode:result];
