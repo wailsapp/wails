@@ -84,11 +84,15 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
 <img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
-<a href="https://github.com/trea" style="width:50px;border-radius: 50%">
-<img src="https://github.com/trea.png?size=50" width="50" style="border-radius: 50%"/>
+<a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
-
-<span id="nav-5"></span>
+<a href="https://github.com/trea" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/trea.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/LanguageAgnostic" style="width:55px;border-radius: 50%">
+  <img src="https://github.com/LanguageAgnostic.png?size=55" width="55" style="border-radius: 50%"/>
+</a>
 
 ## Installation
 
