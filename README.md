@@ -82,9 +82,6 @@ This project is supported by these kind people / companies:
 <img src="https://github.com/tylertravisty.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
-<img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
-</a>
-<a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
   <img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/trea" style="width:50px;border-radius: 50%">
@@ -93,7 +90,12 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/LanguageAgnostic" style="width:55px;border-radius: 50%">
   <img src="https://github.com/LanguageAgnostic.png?size=55" width="55" style="border-radius: 50%"/>
 </a>
-
+<a href="https://github.com/snider" style="width:60px;border-radius: 50%">
+  <img src="https://github.com/snider.png?size=60" width="60" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/fcjr" style="width:45px;border-radius: 50%">
+  <img src="https://github.com/fcjr.png?size=45" width="45" style="border-radius: 50%"/>
+</a>
 ## Installation
 
 Wails uses cgo to bind to the native rendering engines so a number of platform dependent libraries are needed as well as an installation of Go. The basic requirements are:
