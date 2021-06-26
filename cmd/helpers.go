@@ -16,7 +16,7 @@ import (
 	wailsruntime "github.com/wailsapp/wails/runtime"
 )
 
-const xgoVersion = "1.16.2"
+const xgoVersion = "1.16.3"
 
 var fs = NewFSHelper()
 
@@ -46,7 +46,7 @@ func InstallGoDependencies(verbose bool) error {
 		depSpinner.SetSpinSpeed(50)
 		depSpinner.Start()
 	}
-	err := NewProgramHelper(verbose).RunCommand("go get")
+	err := NewProgramHelper(verbose).RunCommand("go mod tidy")
 	if err != nil {
 		if !verbose {
 			depSpinner.Error()
@@ -109,8 +109,8 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 
 	buildCommand := slicer.String()
 	userid := 1000
-	user, _ := user.Current()
-	if i, err := strconv.Atoi(user.Uid); err == nil {
+	currentUser, _ := user.Current()
+	if i, err := strconv.Atoi(currentUser.Uid); err == nil {
 		userid = i
 	}
 	for _, arg := range []string{
@@ -475,7 +475,22 @@ func ServeProject(projectOptions *ProjectOptions, logger *Logger) error {
 	}
 
 	logger.Yellow("Serving Application: " + location)
-	cmd := exec.Command(location)
+	var args []string
+	if len(os.Args) > 2 {
+		foundArgSep := false
+		for index, arg := range os.Args[2:] {
+			if arg == "--" {
+				foundArgSep = true
+				continue
+			}
+			if foundArgSep {
+				args = os.Args[index:]
+				break
+			}
+		}
+		logger.Yellow("Passing arguments: %+v", args)
+	}
+	cmd := exec.Command(location, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
