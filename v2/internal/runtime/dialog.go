@@ -29,7 +29,6 @@ func newDialog(bus *servicebus.ServiceBus) Dialog {
 	}
 }
 
-
 // processTitleAndFilter return the title and filter from the given params.
 // title is the first string, filter is the second
 func (r *dialog) processTitleAndFilter(params ...string) (string, string) {
@@ -94,13 +93,7 @@ func (r *dialog) OpenFile(dialogOptions *dialogoptions.OpenDialog) (string, erro
 	// Delete subscription to response topic
 	r.bus.UnSubscribe(responseTopic)
 
-	files := result.Data().([]string)
-	res := ""
-	if len(files) > 0 {
-		res = files[0]
-	}
-
-	return res, nil
+	return result.Data().(string), nil
 }
 
 // OpenMultipleFiles prompts the user to select a file

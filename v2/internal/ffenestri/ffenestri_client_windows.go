@@ -139,10 +139,6 @@ func convertFilters(filters []dialog.FileFilter) []cfd.FileFilter {
 	return result
 }
 
-func userCancelled(err error) bool {
-	return err.Error() == "cancelled by user"
-}
-
 // OpenFileDialog will open a dialog with the given title and filter
 func (c *Client) OpenFileDialog(options *dialog.OpenDialog, callbackID string) {
 	config := cfd.DialogConfig{
@@ -162,16 +158,11 @@ func (c *Client) OpenFileDialog(options *dialog.OpenDialog, callbackID string) {
 		}
 	}(thisdialog)
 	result, err := thisdialog.ShowAndGetResult()
-	if err != nil && !userCancelled(err) {
+	if err != nil && err != cfd.ErrorCancelled {
 		log.Fatal(err)
 	}
 
-	resultJSON, err := json.Marshal([]string{result})
-	if err != nil {
-		log.Fatal(err)
-	}
-	dispatcher.DispatchMessage("DO" + callbackID + "|" + string(resultJSON))
-
+	dispatcher.DispatchMessage("DO" + callbackID + "|" + result)
 }
 
 // OpenDirectoryDialog will open a dialog with the given title and filter
@@ -193,11 +184,10 @@ func (c *Client) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackI
 		}
 	}(thisDialog)
 	result, err := thisDialog.ShowAndGetResult()
-	if err != nil && !userCancelled(err) {
+	if err != nil && err != cfd.ErrorCancelled {
 		log.Fatal(err)
 	}
-	resultJSON, err := json.Marshal(result)
-	dispatcher.DispatchMessage("DD" + callbackID + "|" + string(resultJSON))
+	dispatcher.DispatchMessage("DD" + callbackID + "|" + result)
 }
 
 // OpenMultipleFilesDialog will open a dialog with the given title and filter
@@ -221,7 +211,7 @@ func (c *Client) OpenMultipleFilesDialog(dialogOptions *dialog.OpenDialog, callb
 		}
 	}(thisdialog)
 	result, err := thisdialog.ShowAndGetResults()
-	if err != nil && !userCancelled(err) {
+	if err != nil && err != cfd.ErrorCancelled {
 		log.Fatal(err)
 	}
 	resultJSON, err := json.Marshal(result)
@@ -249,7 +239,7 @@ func (c *Client) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string)
 		log.Fatal(err)
 	}
 	result, err := saveDialog.GetResult()
-	if err != nil && !userCancelled(err) {
+	if err != nil && err != cfd.ErrorCancelled {
 		log.Fatal(err)
 	}
 	dispatcher.DispatchMessage("DS" + callbackID + "|" + result)
