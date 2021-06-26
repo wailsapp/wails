@@ -228,18 +228,24 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	commands.Add("-tags")
 	commands.Add(tags.Join(","))
 
-	// Strip binary in Production mode
+	// LDFlags
+	ldflags := slicer.String()
+	if options.LDFlags != "" {
+		ldflags.Add(options.LDFlags)
+	}
+
 	if options.Mode == Production {
-
-		// Different linker flags depending on platform
-		commands.Add("-ldflags")
-
-		switch runtime.GOOS {
-		case "windows":
-			commands.Add("-w -s -H windowsgui")
-		default:
-			commands.Add("-w -s")
+		ldflags.Add("-w", "-s")
+		if runtime.GOOS == "windows" {
+			ldflags.Add("-H windowsgui")
 		}
+	}
+
+	ldflags.Deduplicate()
+
+	if ldflags.Length() > 0 {
+		commands.Add("-ldflags")
+		commands.Add(ldflags.Join(" "))
 	}
 
 	// Get application build directory
@@ -249,11 +255,6 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	if options.LDFlags != "" {
-		commands.Add("-ldflags")
-		commands.Add(options.LDFlags)
 	}
 
 	// Set up output filename
