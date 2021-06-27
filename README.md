@@ -279,12 +279,6 @@ This project was mainly coded to the following albums:
 - [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
 - [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
 
-<span id="nav-11"></span>
-
-## Licensing
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
-
 <span id="nav-12"></span>
 
 ## Special Thanks
