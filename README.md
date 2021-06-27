@@ -47,8 +47,7 @@ The official docs can be found at [https://wails.app](https://wails.app).
 - [8. FAQ](#nav-8)
 - [9. Contributors](#nav-9)
 - [10. Special Mentions](#nav-10)
-- [11. Licensing](#nav-11)
-- [12. Special Thanks](#nav-12)
+- [11. Special Thanks](#nav-11)
 
 <span id="nav-3"></span>
 
@@ -279,7 +278,7 @@ This project was mainly coded to the following albums:
 - [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
 - [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
 
-<span id="nav-12"></span>
+<span id="nav-11"></span>
 
 ## Special Thanks
 
