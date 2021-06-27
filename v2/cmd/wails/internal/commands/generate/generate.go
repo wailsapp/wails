@@ -15,7 +15,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 	command := app.NewSubCommand("generate", "Code Generation Tools")
 
-	AddModuleCommand(app, command, w)
+	//AddModuleCommand(app, command, w)
 	template.AddSubCommand(app, command, w)
 
 	return nil
