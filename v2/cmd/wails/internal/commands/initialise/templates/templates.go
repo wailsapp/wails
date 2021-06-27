@@ -5,14 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 	gofs "io/fs"
+	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
+	"github.com/go-git/go-git/v5"
+
+	"github.com/pkg/errors"
+
 	"github.com/leaanthony/debme"
 	"github.com/leaanthony/gosod"
-	"github.com/leaanthony/slicer"
 	"github.com/olekukonko/tablewriter"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
@@ -74,7 +79,7 @@ func parseTemplate(template gofs.FS) (Template, error) {
 	var result Template
 	data, err := gofs.ReadFile(template, "template.json")
 	if err != nil {
-		return result, err
+		return result, errors.Wrap(err, "Error parsing template")
 	}
 	err = json.Unmarshal(data, &result)
 	if err != nil {
@@ -82,26 +87,6 @@ func parseTemplate(template gofs.FS) (Template, error) {
 	}
 	result.FS = template
 	return result, nil
-}
-
-// TemplateShortNames returns a slicer of short template names
-func TemplateShortNames() (*slicer.StringSlicer, error) {
-
-	var result slicer.StringSlicer
-
-	// If the cache isn't loaded, load it
-	if templateCache == nil {
-		err := loadTemplateCache()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	for _, template := range templateCache {
-		result.Add(template.ShortName)
-	}
-
-	return &result, nil
 }
 
 // List returns the list of available templates
@@ -175,12 +160,12 @@ func loadTemplateCache() error {
 	return nil
 }
 
-// Install the given template
-func Install(options *Options) error {
+// Install the given template. Returns true if the template is remote.
+func Install(options *Options) (bool, error) {
 	// Get cwd
 	cwd, err := os.Getwd()
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	// Did the user want to install in current directory?
@@ -189,7 +174,7 @@ func Install(options *Options) error {
 		// If the current directory is empty, use it
 		isEmpty, err := fs.DirIsEmpty(cwd)
 		if err != nil {
-			return err
+			return false, err
 		}
 
 		if isEmpty {
@@ -198,7 +183,7 @@ func Install(options *Options) error {
 		} else {
 			options.TargetDir = filepath.Join(cwd, options.ProjectName)
 			if fs.DirExists(options.TargetDir) {
-				return fmt.Errorf("cannot create project directory. Dir exists: %s", options.TargetDir)
+				return false, fmt.Errorf("cannot create project directory. Dir exists: %s", options.TargetDir)
 			}
 		}
 
@@ -206,21 +191,47 @@ func Install(options *Options) error {
 		// Get the absolute path of the given directory
 		targetDir, err := filepath.Abs(filepath.Join(cwd, options.TargetDir))
 		if err != nil {
-			return err
+			return false, err
 		}
 		options.TargetDir = targetDir
 		if !fs.DirExists(options.TargetDir) {
 			err := fs.Mkdir(options.TargetDir)
 			if err != nil {
-				return err
+				return false, err
 			}
 		}
 	}
 
-	// Get template
+	// Flag to indicate remote template
+	remoteTemplate := false
+
+	// Is this a shortname?
 	template, err := getTemplateByShortname(options.TemplateName)
 	if err != nil {
-		return err
+		// Is this a filepath?
+		templatePath, err := filepath.Abs(options.TemplateName)
+		if fs.DirExists(templatePath) {
+			templateFS := os.DirFS(templatePath)
+			template, err = parseTemplate(templateFS)
+			if err != nil {
+				return false, errors.Wrap(err, "Error installing template")
+			}
+		} else {
+			// git clone to temporary dir
+			tempdir, err := gitclone(options)
+			defer func(path string) {
+				err := os.RemoveAll(path)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}(tempdir)
+			templateFS := os.DirFS(tempdir)
+			template, err = parseTemplate(templateFS)
+			if err != nil {
+				return false, err
+			}
+			remoteTemplate = true
+		}
 	}
 
 	// Use Gosod to install the template
@@ -255,15 +266,30 @@ func Install(options *Options) error {
 	// Extract the template
 	err = installer.Extract(options.TargetDir, templateData)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	err = generateIDEFiles(options)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	return nil
+	return remoteTemplate, nil
+}
+
+// Clones the given uri and returns the temporary cloned directory
+func gitclone(options *Options) (string, error) {
+	// Create temporary directory
+	dirname, err := ioutil.TempDir("", "wails-template-*")
+	if err != nil {
+		return "", err
+	}
+	_, err = git.PlainClone(dirname, false, &git.CloneOptions{
+		URL: options.TemplateName,
+	})
+
+	return dirname, err
+
 }
 
 // OutputList prints the list of available tempaltes to the given logger

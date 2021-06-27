@@ -2,10 +2,11 @@ package initialise
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/buildassets"
 	"io"
 	"strings"
 	"time"
+
+	"github.com/wailsapp/wails/v2/pkg/buildassets"
 
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/initialise/templates"
 
@@ -18,17 +19,11 @@ import (
 // AddSubcommand adds the `init` command for the Wails application
 func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
-	// Load the template shortnames
-	validShortNames, err := templates.TemplateShortNames()
-	if err != nil {
-		return err
-	}
-
 	command := app.NewSubCommand("init", "Initialise a new Wails project")
 
 	// Setup template name flag
 	templateName := "vanilla"
-	description := "Name of template to use. Valid tempates: " + validShortNames.Join(" ")
+	description := "Name of built-in template to use, path to template or template url."
 	command.StringFlag("t", description, &templateName)
 
 	// Setup project name
@@ -70,14 +65,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			err := templates.OutputList(logger)
 			logger.Println("")
 			return err
-		}
-
-		// Validate output type
-		if !validShortNames.Contains(templateName) {
-			logger.Print(fmt.Sprintf("[ERROR] Template '%s' is not valid", templateName))
-			logger.Println("")
-			command.PrintHelp()
-			return nil
 		}
 
 		// Validate name
@@ -122,7 +109,7 @@ func initProject(options *templates.Options) error {
 	start := time.Now()
 
 	// Install the template
-	err := templates.Install(options)
+	remote, err := templates.Install(options)
 	if err != nil {
 		return err
 	}
@@ -152,6 +139,11 @@ func initProject(options *templates.Options) error {
 	if options.InitGit {
 		options.Logger.Println("Git repository initialised.")
 	}
+
+	if remote {
+		options.Logger.Println("\nNOTE: You have created a project using a remote template. The Wails project takes no responsibility for 3rd party templates. Only use remote templates that you trust.")
+	}
+
 	options.Logger.Println("")
 	options.Logger.Println(fmt.Sprintf("Initialised project '%s' in %s.", options.ProjectName, elapsed.Round(time.Millisecond).String()))
 	options.Logger.Println("")

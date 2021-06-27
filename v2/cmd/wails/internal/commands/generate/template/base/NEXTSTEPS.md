@@ -18,9 +18,20 @@ The next steps to complete the template are:
 
 You can test your template by running this command:
 
-`wails init -name test -template /path/to/template`
+`wails init -name test -t /path/to/your/new/template`
 
 ### Checklist 
 Once generated, do the following tests:
   - Change into the new project directory and run `wails build`. A working binary should be generated in the `build/bin` project directory.
   - Run `wails dev`. This will compile your backend and run it. You should be able to go into the frontend directory and run `npm run dev` (or whatever your dev command is) and this should run correctly. You should be able to then open a browser to your local dev server and the application should work.
+
+## Publishing your template
+
+You can publish a template to a git repository and use it as follows:
+
+`wails init -name test -t https://your/git/url`
+
+EG: 
+
+`wails init -name test -t https://github.com/leaanthony/testtemplate`
+
