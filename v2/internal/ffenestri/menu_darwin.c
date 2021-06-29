@@ -375,7 +375,7 @@ id createMenu(id title) {
     id menu = ALLOC("NSMenu");
     msg_id(menu, s("initWithTitle:"), title);
     msg_bool(menu, s("setAutoenablesItems:"), NO);
-    msg(menu, s("autorelease"));
+    msg_reg(menu, s("autorelease"));
     return menu;
 }
 

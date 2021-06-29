@@ -1808,7 +1808,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 
 	result->running = false;
 
-	result->pool = objc_msgSend(c("NSAutoreleasePool"), s("new"));
+	result->pool = msg_reg(c("NSAutoreleasePool"), s("new"));
 
     return (void*) result;
 }
