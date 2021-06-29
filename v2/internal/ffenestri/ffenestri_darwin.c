@@ -560,7 +560,7 @@ void ToggleFullscreen(struct Application *app) {
 }
 
 bool isFullScreen(struct Application *app) {
-	int mask = (int)msg_reg(app->mainWindow, s("styleMask"));
+	long mask = (long)msg_reg(app->mainWindow, s("styleMask"));
 	bool result = (mask & NSWindowStyleMaskFullscreen) == NSWindowStyleMaskFullscreen;
 	return result;
 }
@@ -789,7 +789,7 @@ void MessageDialog(struct Application *app, char *callbackID, char *type, char *
 
 		// Run modal
 		char *buttonPressed;
-	    int response = (int)msg_reg(alert, s("runModal"));
+	    long response = (long)msg_reg(alert, s("runModal"));
 	    if( response == NSAlertFirstButtonReturn ) {
 	        buttonPressed = button1;
 	    }
