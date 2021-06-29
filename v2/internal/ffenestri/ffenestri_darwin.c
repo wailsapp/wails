@@ -102,6 +102,7 @@ struct Application {
 	id mouseDownMonitor;
 	id mouseUpMonitor;
 	int activationPolicy;
+	id pool;
 
 	// Window Data
 	const char *title;
@@ -1451,6 +1452,7 @@ void processDialogIcons(struct hashmap_s *hashmap, const unsigned char *dialogIc
         // Create the icon and add to the hashmap
         id imageData = ((id(*)(id, SEL, const unsigned char *, int))objc_msgSend)(c("NSData"), s("dataWithBytes:length:"), data, length);
         id dialogImage = ALLOC("NSImage");
+        msg_reg(dialogImage, s("autorelease"));
         msg_id(dialogImage, s("initWithData:"), imageData);
         hashmap_put(hashmap, (const char *)name, strlen((const char *)name), dialogImage);
     }
@@ -1622,7 +1624,9 @@ void Run(struct Application *app, int argc, char **argv) {
 	MEMFREE(temp);
 
 	// Add code that sets up the initial state, EG: State Stores.
-	temp = concat(internalCode, getInitialState(app));
+	const char *initialState = getInitialState(app);
+	temp = concat(internalCode, initialState);
+	MEMFREE(initialState);
 	MEMFREE(internalCode);
 	internalCode = temp;
 
@@ -1723,6 +1727,7 @@ id createImageFromBase64Data(const char *data, bool isTemplateImage) {
         imageData = ((id(*)(id, SEL, id, int))objc_msgSend)(nsdata, s("initWithBase64EncodedString:options:"), str(BrokenImage), 0);
     }
     id result = ALLOC("NSImage");
+    msg_reg(result, s("autorelease"));
     msg_id(result, s("initWithData:"), imageData);
 
     if( isTemplateImage ) {
@@ -1800,6 +1805,8 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->startupURL = NULL;
 
 	result->running = false;
+
+	result->pool = objc_msgSend(c("NSAutoreleasePool"), s("new"));
 
     return (void*) result;
 }

@@ -140,6 +140,7 @@ void ShowTrayMenu(TrayMenu* trayMenu) {
 
 	// Create delegate
 	id trayMenuDelegate = msg_reg((id)trayMenuDelegateClass, s("new"));
+	msg_reg(trayMenuDelegate, s("autorelease"));
 	msg_id(menu, s("setDelegate:"), trayMenuDelegate);
     objc_setAssociatedObject(trayMenuDelegate, "menu", menu, OBJC_ASSOCIATION_ASSIGN);
 
