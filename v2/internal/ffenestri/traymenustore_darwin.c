@@ -131,7 +131,7 @@ void UpdateTrayMenuLabelInStore(TrayMenuStore* store, const char* JSON) {
 
     UpdateTrayLabel(menu, Label, fontName, fontSize, RGBA, tooltip, disabled, styledLabel);
 
-
+    json_delete(parsedUpdate);
 }
 
 void UpdateTrayMenuInStore(TrayMenuStore* store, const char* menuJSON) {
