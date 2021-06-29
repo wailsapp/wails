@@ -46,5 +46,6 @@ void LoadTrayIcons();
 void UnloadTrayIcons();
 
 void DeleteTrayMenu(TrayMenu* trayMenu);
+void DeleteTrayMenuKeepStatusBarItem(TrayMenu* trayMenu);
 
 #endif //TRAYMENU_DARWIN_H

@@ -177,9 +177,6 @@ void UpdateTrayMenuInPlace(TrayMenu* currentMenu, TrayMenu* newMenu) {
 
 void DeleteTrayMenu(TrayMenu* trayMenu) {
 
-//    printf("Freeing TrayMenu:\n");
-//    DumpTrayMenu(trayMenu);
-
     // Delete the menu
     DeleteMenu(trayMenu->menu);
 
@@ -196,8 +193,17 @@ void DeleteTrayMenu(TrayMenu* trayMenu) {
         trayMenu->statusbaritem = NULL;
     }
 
-    if ( trayMenu->delegate != NULL ) {
-        msg_reg(trayMenu->delegate, s("release"));
+    // Free the tray menu memory
+    MEMFREE(trayMenu);
+}
+void DeleteTrayMenuKeepStatusBarItem(TrayMenu* trayMenu) {
+
+    // Delete the menu
+    DeleteMenu(trayMenu->menu);
+
+    // Free JSON
+    if (trayMenu->processedJSON != NULL ) {
+        json_delete(trayMenu->processedJSON);
     }
 
     // Free the tray menu memory

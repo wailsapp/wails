@@ -162,11 +162,7 @@ void UpdateTrayMenuInStore(TrayMenuStore* store, const char* menuJSON) {
     pthread_mutex_unlock(&store->lock);
 
     // Delete the current menu
-    DeleteMenu(currentMenu->menu);
-    currentMenu->menu = NULL;
-
-    // Free the tray menu memory
-    MEMFREE(currentMenu);
+    DeleteTrayMenuKeepStatusBarItem(currentMenu);
 
     pthread_mutex_lock(&store->lock);
     hashmap_put(&store->trayMenuMap, newMenu->ID, strlen(newMenu->ID), newMenu);

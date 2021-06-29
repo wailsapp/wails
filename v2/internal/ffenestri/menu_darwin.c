@@ -92,11 +92,6 @@ void DeleteMenu(Menu *menu) {
     }
     vec_deinit(&menu->callbackDataCache);
 
-    // Free nsmenu if we have it
-    if ( menu->menu != NULL ) {
-        msg_reg(menu->menu, s("release"));
-    }
-
     free(menu);
 }
 
@@ -380,7 +375,7 @@ id createMenu(id title) {
     id menu = ALLOC("NSMenu");
     msg_id(menu, s("initWithTitle:"), title);
     msg_bool(menu, s("setAutoenablesItems:"), NO);
-//  msg(menu, s("autorelease"));
+    msg(menu, s("autorelease"));
     return menu;
 }
 
@@ -566,6 +561,7 @@ id processRadioMenuItem(Menu *menu, id parentmenu, const char *title, const char
 id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const char *menuid, bool disabled, bool checked, const char *key) {
 
     id item = ALLOC("NSMenuItem");
+    msg_reg(item, s("autorelease"));
 
     // Store the item in the menu item map
     hashmap_put(&menu->menuItemMap, (char*)menuid, strlen(menuid), item);
@@ -577,7 +573,6 @@ id processCheckboxMenuItem(Menu *menu, id parentmenu, const char *title, const c
     msg_id(item, s("setRepresentedObject:"), wrappedId);
     ((id(*)(id, SEL, id, SEL, id))objc_msgSend)(item, s("initWithTitle:action:keyEquivalent:"), str(title), s("menuItemCallback:"), str(key));
     msg_bool(item, s("setEnabled:"), !disabled);
-    msg_reg(item, s("autorelease"));
     msg_int(item, s("setState:"), (checked ? NSControlStateValueOn : NSControlStateValueOff));
     msg_id(parentmenu, s("addItem:"), item);
     return item;
@@ -731,6 +726,7 @@ id createAttributedString(const char* title, const char* fontName, int fontSize,
 
 id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char *menuid, bool disabled, const char *acceleratorkey, const char **modifiers, const char* tooltip, const char* image, const char* fontName, int fontSize, const char* RGBA, bool templateImage, bool alternate, JsonNode* styledLabel) {
     id item = ALLOC("NSMenuItem");
+    msg_reg(item, s("autorelease"));
 
     // Create a MenuItemCallbackData
     MenuItemCallbackData *callback = CreateMenuItemCallbackData(menu, item, menuid, Text);
@@ -767,7 +763,6 @@ id processTextMenuItem(Menu *menu, id parentMenu, const char *title, const char 
 //msg_id(item, s("setTitle:"), str(title));
 
     msg_bool(item, s("setEnabled:"), !disabled);
-    msg_reg(item, s("autorelease"));
 
     // Process modifiers
     if( modifiers != NULL && !alternate) {
