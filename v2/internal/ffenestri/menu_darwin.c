@@ -85,7 +85,11 @@ void DeleteMenu(Menu *menu) {
         menu->processedMenu = NULL;
     }
 
-    // Release the vector memory
+    // Release the callback data memory + vector
+    int i; MenuItemCallbackData* callbackData;
+    vec_foreach(&menu->callbackDataCache, callbackData, i) {
+      free(callbackData);
+    }
     vec_deinit(&menu->callbackDataCache);
 
     // Free nsmenu if we have it
