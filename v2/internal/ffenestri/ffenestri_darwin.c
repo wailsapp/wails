@@ -1720,7 +1720,6 @@ void Quit(struct Application *app) {
 
 id createImageFromBase64Data(const char *data, bool isTemplateImage) {
     id nsdata = ALLOC("NSData");
-    msg_reg(nsdata, s("autorelease"));
     id imageData = ((id(*)(id, SEL, id, int))objc_msgSend)(nsdata, s("initWithBase64EncodedString:options:"), str(data), 0);
 
     // If it's not valid base64 data, use the broken image
@@ -1730,6 +1729,8 @@ id createImageFromBase64Data(const char *data, bool isTemplateImage) {
     id result = ALLOC("NSImage");
     msg_reg(result, s("autorelease"));
     msg_id(result, s("initWithData:"), imageData);
+    msg_reg(nsdata, s("release"));
+    msg_reg(imageData, s("release"));
 
     if( isTemplateImage ) {
         msg_bool(result, s("setTemplate:"), YES);
