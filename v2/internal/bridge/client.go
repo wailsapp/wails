@@ -34,7 +34,15 @@ func (b BridgeClient) CallResult(message string) {
 	b.session.sendMessage("c" + message)
 }
 
-func (b BridgeClient) OpenDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+func (b BridgeClient) OpenFileDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+	// Handled by dialog_client
+}
+
+func (b BridgeClient) OpenMultipleFilesDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+	// Handled by dialog_client
+}
+
+func (b BridgeClient) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
 	// Handled by dialog_client
 }
 

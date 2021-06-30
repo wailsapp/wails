@@ -117,6 +117,7 @@ func (a *App) Run() error {
 	var subsystemWaitGroup sync.WaitGroup
 	parentContext := context.WithValue(context.Background(), "waitgroup", &subsystemWaitGroup)
 	ctx, cancel := context.WithCancel(parentContext)
+	defer cancel()
 
 	// Start the service bus
 	a.servicebus.Debug()
@@ -125,7 +126,7 @@ func (a *App) Run() error {
 		return err
 	}
 
-	runtimesubsystem, err := subsystem.NewRuntime(ctx, a.servicebus, a.logger, a.startupCallback, nil)
+	runtimesubsystem, err := subsystem.NewRuntime(ctx, a.servicebus, a.logger, a.startupCallback)
 	if err != nil {
 		return err
 	}

@@ -37,7 +37,11 @@ func (d *DialogClient) NotifyEvent(message string) {
 func (d *DialogClient) CallResult(message string) {
 }
 
-func (d *DialogClient) OpenDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+func (d *DialogClient) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+}
+func (d *DialogClient) OpenFileDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+}
+func (d *DialogClient) OpenMultipleFilesDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
 }
 
 func (d *DialogClient) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string) {
