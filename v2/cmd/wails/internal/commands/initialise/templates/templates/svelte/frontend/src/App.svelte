@@ -3,7 +3,6 @@
 	let greeting = "";
 
 	function greet() {
-		console.log("name", name);
 		window.backend.main.App.Greet(name).then((result) => {
 			greeting = result;
 		});
