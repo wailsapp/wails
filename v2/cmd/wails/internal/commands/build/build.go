@@ -9,6 +9,8 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/wailsapp/wails/v2/internal/shell"
+
 	"github.com/leaanthony/clir"
 	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
@@ -71,6 +73,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	webview2 := "download"
 	command.StringFlag("webview2", "WebView2 installer strategy: download,embed,browser,error.", &webview2)
+
+	runDelve := false
+	command.BoolFlag("delve", "Runs the built binary in delve for debugging", &runDelve)
 
 	command.Action(func() error {
 
@@ -144,6 +149,11 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			}
 		}
 
+		// If we want to use delve we need to compile in DEBUG mode
+		if runDelve {
+			mode = build.Debug
+		}
+
 		// Create BuildOptions
 		buildOptions := &build.Options{
 			Logger:              logger,
@@ -160,6 +170,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			CompressFlags:       compressFlags,
 			UserTags:            userTags,
 			WebView2Strategy:    wv2rtstrategy,
+			RunDelve:            runDelve,
 		}
 
 		// Calculate platform and arch
@@ -218,6 +229,41 @@ func doBuild(buildOptions *build.Options) error {
 	buildOptions.Logger.Println("")
 	buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.", outputFilename, elapsed.Round(time.Millisecond).String()))
 	buildOptions.Logger.Println("")
+
+	if buildOptions.RunDelve {
+		// Check delve exists
+		delveExists := shell.CommandExists("dlv")
+		if !delveExists {
+			return fmt.Errorf("cannot launch delve (Is it installed?)")
+		}
+
+		// Get cwd
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+
+		// Launch delve
+		buildOptions.Logger.Println("Launching Delve on port 2345...")
+		cmdArgs := slicer.String([]string{"--listen=:2345", "--headless=true", "--api-version=2", "--accept-multiclient", "exec", outputFilename})
+		if buildOptions.Verbosity == build.VERBOSE {
+			buildOptions.Logger.Println("\tRunning: dlv %s", cmdArgs.Join(" "))
+		}
+		stdout, stderr, err := shell.RunCommand(cwd, "dlv", cmdArgs.AsSlice()...)
+		if buildOptions.Verbosity == build.VERBOSE || err != nil {
+			trimstdout := strings.TrimSpace(stdout)
+			if trimstdout != "" {
+				buildOptions.Logger.Println(trimstdout)
+			}
+			trimstderr := strings.TrimSpace(stderr)
+			if trimstderr != "" {
+				buildOptions.Logger.Println(trimstderr)
+			}
+		}
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

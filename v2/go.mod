@@ -30,6 +30,7 @@ require (
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
+	github.com/tidwall/sjson v1.1.7
 	github.com/wzshiming/ctc v1.2.3
 	github.com/xyproto/xpm v1.2.1
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect

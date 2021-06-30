@@ -3,7 +3,7 @@
     "outputfilename": "{{.BinaryName}}",
     "html": "frontend/dist/index.html",
     "frontend:build": "npm run build",
-    "frontend:install": "npm ci",
+    "frontend:install": "npm install",
     "author": {
         "name": "{{.AuthorName}}",
         "email": "{{.AuthorEmail}}"

@@ -171,6 +171,9 @@ func (b *BaseBuilder) OutputFilename(options *Options) string {
 		case "windows":
 			outputFile = target + ".exe"
 		case "darwin", "linux":
+			if b.options.Arch == "" {
+				b.options.Arch = runtime.GOARCH
+			}
 			outputFile = fmt.Sprintf("%s-%s-%s", target, b.options.Platform, b.options.Arch)
 		}
 

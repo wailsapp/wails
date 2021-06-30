@@ -21,6 +21,7 @@ The build command processes the Wails project and generates an application binar
 | -upx | Compress final binary with UPX (if installed) | |
 | -upxflags "custom flags" | Flags to pass to upx | |
 | -v int | Verbosity level (0 - silent, 1 - default, 2 - verbose) | 1 |
+| -delve | If true, runs delve on the compiled binary | false |
 
 ## The Build Process
 
@@ -44,11 +45,4 @@ The build process is as follows:
   - If the `-upx` flag was provided, `upx` is invoked to compress the binary. Custom flags may be provided using the `-upxflags` flag.
   - If the `package` flag is given for a non Windows target, the application is bundled for the platform. On Mac, this creates a `.app` with the processed icons, the `Info.plist` in `build/darwin` and the compiled binary.
 
-### Server Target
-
-TBD
-
-### Hybrid Target
-
-TBD
 

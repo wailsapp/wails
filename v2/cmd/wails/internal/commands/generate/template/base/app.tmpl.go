@@ -6,29 +6,29 @@ import (
 	"github.com/wailsapp/wails/v2"
 )
 
-// Basic application struct
-type Basic struct {
+// App struct
+type App struct {
 	runtime *wails.Runtime
 }
 
-// NewBasic creates a new Basic application struct
-func NewBasic() *Basic {
-	return &Basic{}
+// NewApp creates a new App application struct
+func NewApp() *App {
+	return &App{}
 }
 
 // startup is called at application startup
-func (b *Basic) startup(runtime *wails.Runtime) {
+func (b *App) startup(runtime *wails.Runtime) {
 	// Perform your setup here
 	b.runtime = runtime
 	runtime.Window.SetTitle("{{.ProjectName}}")
 }
 
 // shutdown is called at application termination
-func (b *Basic) shutdown() {
+func (b *App) shutdown() {
 	// Perform your teardown here
 }
 
 // Greet returns a greeting for the given name
-func (b *Basic) Greet(name string) string {
+func (b *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s!", name)
 }

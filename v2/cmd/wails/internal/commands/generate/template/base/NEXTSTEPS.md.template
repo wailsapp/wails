@@ -12,13 +12,14 @@ The next steps to complete the template are:
      - `html` - path to your `index.html`
      - `frontend:install` - The command to install your frontend dependencies
      - `frontend:build` - The command to build your frontend
-  4. Delete this file.
+  4. Remove any `public` or `dist` directories.
+  5. Delete this file.
 
 ## Testing your template
 
 You can test your template by running this command:
 
-`wails init -name test -t /path/to/your/new/template`
+`wails init -name test -t {{.TemplateDir}}`
 
 ### Checklist 
 Once generated, do the following tests:

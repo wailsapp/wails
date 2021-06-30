@@ -12,9 +12,9 @@ ready( () => {
     // Get name
     let name = nameElement.value;
 
-    // Call Basic.Greet(name)
-    window.backend.main.Basic.Greet(name).then((result) => {
-      // Update result with data back from Basic.Greet()
+    // Call App.Greet(name)
+    window.backend.main.App.Greet(name).then((result) => {
+      // Update result with data back from App.Greet()
       document.getElementById("result").innerText = result;
     });
   };

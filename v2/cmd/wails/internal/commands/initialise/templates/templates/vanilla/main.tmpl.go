@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"log"
+
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
@@ -14,7 +15,7 @@ import (
 func main() {
 
 	// Create application with options
-	app := NewBasic()
+	app := NewApp()
 
 	err := wails.Run(&options.App{
 		Title:             "{{.ProjectName}}",

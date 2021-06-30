@@ -48,6 +48,7 @@ type Options struct {
 	CompressFlags       string               // Flags to pass to UPX
 	AppleIdentity       string
 	WebView2Strategy    string // WebView2 installer strategy
+	RunDelve            bool   // Indicates if we should run delve after the build
 }
 
 // Build the project!
