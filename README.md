@@ -18,7 +18,7 @@
 
 ## Internationalization
 
-English | [简体中文](README.zh_CN.md)
+English | [简体中文](README.zh-hans.md)
 
 The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
 
@@ -85,14 +85,16 @@ This project is supported by these kind people / companies:
 <img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
-  <img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
+<img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/trea" style="width:50px;border-radius: 50%">
-  <img src="https://github.com/trea.png?size=50" width="50" style="border-radius: 50%"/>
+<img src="https://github.com/trea.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/LanguageAgnostic" style="width:55px;border-radius: 50%">
-  <img src="https://github.com/LanguageAgnostic.png?size=55" width="55" style="border-radius: 50%"/>
+<img src="https://github.com/LanguageAgnostic.png?size=55" width="55" style="border-radius: 50%"/>
 </a>
+
+<span id="nav-5"></span>
 
 ## Installation
 

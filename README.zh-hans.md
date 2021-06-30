@@ -22,8 +22,8 @@
 
 向 Go 程序提供 Web 接口的传统方法是通过内置 Web 服务器。Wails 提供了一种不同的方法：它提供了将 Go 代码和 Web 前端都包装成单个二进制文件的能力。通过处理项目创建、编译和打包，可为您提供工具，使您轻松做到这一点。你所要做的就是发挥创造力！
 
-官方文档可以在 [https://wails.app](https://wails.app)中找到。
-国内镜像站点 [https://wails.top](https://wails.top)
+官方文档可以在 [https://wails.app](https://wails.app) 中找到。
+国内镜像站点 [https://wails.top](https://wails.top)。
 
 <span id="nav-2"></span>
 
@@ -85,8 +85,14 @@
 <a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
 <img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
+<a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
+<img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
 <a href="https://github.com/trea" style="width:50px;border-radius: 50%">
 <img src="https://github.com/trea.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/LanguageAgnostic" style="width:55px;border-radius: 50%">
+<img src="https://github.com/LanguageAgnostic.png?size=55" width="55" style="border-radius: 50%"/>
 </a>
 
 <span id="nav-5"></span>
@@ -162,7 +168,7 @@ _Fedora 29, 30_
 
 ### Windows
 
-Windows 需要 GCC 和相关工具。 建议从 [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download)下载， 安装完成，您就可以开始了。
+Windows 需要 GCC 和相关工具。 建议从 [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download) 下载， 安装完成，您就可以开始了。
 
 <span id="nav-6"></span>
 
@@ -180,7 +186,7 @@ go get -u github.com/wailsapp/wails/cmd/wails
 
 ## 下一步
 
-建议在此时阅读[https://wails.app](https://wails.app)上面的文档.
+建议在此时阅读 [https://wails.app](https://wails.app) 上面的文档.
 
 <span id="nav-8"></span>
 
@@ -188,7 +194,7 @@ go get -u github.com/wailsapp/wails/cmd/wails
 
 - 它是 Electron 的替代品吗?
 
-  取决于您的要求。它旨在使 Go 程序员可以轻松制作轻量级桌面应用程序或在其现有应用程序中添加前端。尽管 Wails 当前不提供对诸如菜单之类的本机元素的钩子，但将来可能会改变。
+  取决于您的要求。它旨在使 Go 程序员可以轻松制作轻量级桌面应用程序或在其现有应用程序中添加前端。尽管 Wails 当前不提供对诸如菜单之类的原生元素的钩子，但将来可能会改变。
 
 - 这个项目针对的是谁?
 
@@ -196,7 +202,7 @@ go get -u github.com/wailsapp/wails/cmd/wails
 
 - 名字怎么来的?
 
-  当我看到 WebView 时，我想"我真正想要的是围绕构建 WebView 应用程序工作，有点像 Rails 对于 Ruby"。因此，最初它是一个文字游戏（Webview on Rails）。碰巧也是我来自的[国家](https://en.wikipedia.org/wiki/Wales)的英文名字的同音。所以就是他了。
+  当我看到 WebView 时，我想"我真正想要的是围绕构建 WebView 应用程序工作，有点像 Rails 对于 Ruby"。因此，最初它是一个文字游戏（Webview on Rails）。碰巧也是我来自的 [国家](https://en.wikipedia.org/wiki/Wales) 的英文名字的同音。所以就是他了。
 
 <span id="nav-9"></span>
 
