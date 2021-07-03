@@ -1,10 +1,12 @@
 package system
 
 import (
-	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
-	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 	"os/exec"
 	"strings"
+	"syscall"
+
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
+	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 )
 
 // Info holds information about the current operating system,
@@ -104,4 +106,15 @@ func checkDocker() *packagemanager.Dependancy {
 		Optional:       true,
 		External:       false,
 	}
+}
+
+// IsAppleSilicon returns true if the app is running on Apple Silicon
+// Credit: https://www.yellowduck.be/posts/detecting-apple-silicon-via-go/
+func IsAppleSilicon() bool {
+	r, err := syscall.Sysctl("sysctl.proc_translated")
+	if err != nil {
+		return false
+	}
+
+	return r == "\x00\x00\x00" || r == "\x01\x00\x00"
 }

@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 	"text/tabwriter"
 	"time"
+
+	"github.com/wailsapp/wails/v2/internal/system"
 
 	"github.com/wailsapp/wails/v2/internal/shell"
 
@@ -121,6 +124,12 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			compress = false
 		}
 
+		// Lookup compiler path
+		compilerPath, err := exec.LookPath(compilerCommand)
+		if err != nil {
+			return fmt.Errorf("unable to find compiler: %s", compilerCommand)
+		}
+
 		// Tags
 		userTags := []string{}
 		for _, tag := range strings.Split(tags, " ") {
@@ -176,10 +185,16 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		// Calculate platform and arch
 		platformSplit := strings.Split(platform, "/")
 		buildOptions.Platform = platformSplit[0]
-		buildOptions.Arch = runtime.GOARCH
+		if system.IsAppleSilicon() {
+			buildOptions.Arch = "arm64"
+		} else {
+			buildOptions.Arch = runtime.GOARCH
+		}
 		if len(platformSplit) == 2 {
 			buildOptions.Arch = platformSplit[1]
 		}
+
+		println("Build arch =", buildOptions.Arch)
 
 		// Start a new tabwriter
 		w := new(tabwriter.Writer)
@@ -195,7 +210,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
 		fmt.Fprintf(w, "Platform: \t%s\n", buildOptions.Platform)
 		fmt.Fprintf(w, "Arch: \t%s\n", buildOptions.Arch)
-		fmt.Fprintf(w, "Compiler: \t%s\n", buildOptions.Compiler)
+		fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
 		fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
 		fmt.Fprintf(w, "Build Mode: \t%s\n", buildModeText)
 		fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
