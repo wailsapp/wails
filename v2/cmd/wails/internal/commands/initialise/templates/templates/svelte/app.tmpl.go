@@ -20,7 +20,6 @@ func NewApp() *App {
 func (b *App) startup(runtime *wails.Runtime) {
 	// Perform your setup here
 	b.runtime = runtime
-	runtime.Window.SetTitle("{{.ProjectName}}")
 }
 
 // shutdown is called at application termination
