@@ -140,7 +140,6 @@ void ShowTrayMenu(TrayMenu* trayMenu) {
 
 	// Create delegate
 	id trayMenuDelegate = msg_reg((id)trayMenuDelegateClass, s("new"));
-	msg_reg(trayMenuDelegate, s("autorelease"));
 	msg_id(menu, s("setDelegate:"), trayMenuDelegate);
     objc_setAssociatedObject(trayMenuDelegate, "menu", menu, OBJC_ASSOCIATION_ASSIGN);
 
@@ -156,6 +155,10 @@ void UpdateTrayMenuInPlace(TrayMenu* currentMenu, TrayMenu* newMenu) {
 
     // Delete the old menu
     DeleteMenu(currentMenu->menu);
+	if( currentMenu->delegate != NULL ) {
+	    msg_reg(currentMenu->delegate, s("release"));
+	    currentMenu->delegate = NULL;
+    }
 
     // Set the new one
     currentMenu->menu = newMenu->menu;
@@ -179,6 +182,10 @@ void DeleteTrayMenu(TrayMenu* trayMenu) {
 
     // Delete the menu
     DeleteMenu(trayMenu->menu);
+    if( trayMenu->delegate != NULL ) {
+        msg_reg(trayMenu->delegate, s("release"));
+        trayMenu->delegate = NULL;
+    }
 
     // Free JSON
     if (trayMenu->processedJSON != NULL ) {
@@ -200,6 +207,10 @@ void DeleteTrayMenuKeepStatusBarItem(TrayMenu* trayMenu) {
 
     // Delete the menu
     DeleteMenu(trayMenu->menu);
+    if( trayMenu->delegate != NULL ) {
+        msg_reg(trayMenu->delegate, s("release"));
+        trayMenu->delegate = NULL;
+    }
 
     // Free JSON
     if (trayMenu->processedJSON != NULL ) {
