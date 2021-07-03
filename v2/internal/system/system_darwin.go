@@ -44,3 +44,14 @@ func (i *Info) discover() error {
 	i.Dependencies = append(i.Dependencies, checkUPX())
 	return nil
 }
+
+// IsAppleSilicon returns true if the app is running on Apple Silicon
+// Credit: https://www.yellowduck.be/posts/detecting-apple-silicon-via-go/
+func IsAppleSilicon() bool {
+	r, err := syscall.Sysctl("sysctl.proc_translated")
+	if err != nil {
+		return false
+	}
+
+	return r == "\x00\x00\x00" || r == "\x01\x00\x00"
+}
