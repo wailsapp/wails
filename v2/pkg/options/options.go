@@ -107,14 +107,14 @@ func GetApplicationMenu(appoptions *App) *menu.Menu {
 		if appoptions.Mac != nil {
 			result = appoptions.Mac.Menu
 		}
-		//case "linux":
-		//	if appoptions.Linux != nil {
-		//		result = appoptions.Linux.TrayMenu
-		//	}
-		//case "windows":
-		//	if appoptions.Windows != nil {
-		//		result = appoptions.Windows.TrayMenu
-		//	}
+	//case "linux":
+	//	if appoptions.Linux != nil {
+	//		result = appoptions.Linux.TrayMenu
+	//	}
+	case "windows":
+		if appoptions.Windows != nil {
+			result = appoptions.Windows.Menu
+		}
 	}
 
 	if result == nil {

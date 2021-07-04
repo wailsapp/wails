@@ -69,7 +69,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	menuManager := menumanager.NewManager()
 
 	// Process the application menu
-	menuManager.SetApplicationMenu(options.GetApplicationMenu(appoptions))
+	appMenu := options.GetApplicationMenu(appoptions)
+	menuManager.SetApplicationMenu(appMenu)
 
 	// Process context menus
 	contextMenus := options.GetContextMenus(appoptions)

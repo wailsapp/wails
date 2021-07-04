@@ -34,12 +34,13 @@ func (a *Application) processPlatformSettings() error {
 		C.DisableWindowIcon(a.app)
 	}
 
-	//// Process menu
-	////applicationMenu := options.GetApplicationMenu(a.config)
-	//applicationMenu := a.menuManager.GetApplicationMenuJSON()
-	//if applicationMenu != "" {
-	//	C.SetApplicationMenu(a.app, a.string2CString(applicationMenu))
-	//}
+	// Process menu
+	//applicationMenu := options.GetApplicationMenu(a.config)
+	applicationMenu := a.menuManager.GetApplicationMenuJSON()
+	println("Appmenu =", applicationMenu)
+	if applicationMenu != "" {
+		C.SetApplicationMenu(a.app, a.string2CString(applicationMenu))
+	}
 	//
 	//// Process tray
 	//trays, err := a.menuManager.GetTrayMenus()
