@@ -18,20 +18,23 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"golang.org/x/sys/windows"
 	"log"
+	"strconv"
+	"sync"
 	"unsafe"
 )
 
 var (
 	// DLL stuff
-	user32               = windows.NewLazySystemDLL("User32.dll")
-	win32CreateMenu      = user32.NewProc("CreateMenu")
-	win32CreatePopupMenu = user32.NewProc("CreatePopupMenu")
-	win32AppendMenuW     = user32.NewProc("AppendMenuW")
-	win32SetMenu         = user32.NewProc("SetMenu")
-	win32CheckMenuItem   = user32.NewProc("CheckMenuItem")
-	win32GetMenuState    = user32.NewProc("GetMenuState")
-	applicationMenu      *menumanager.WailsMenu
-	menuManager          *menumanager.Manager
+	user32                  = windows.NewLazySystemDLL("User32.dll")
+	win32CreateMenu         = user32.NewProc("CreateMenu")
+	win32CreatePopupMenu    = user32.NewProc("CreatePopupMenu")
+	win32AppendMenuW        = user32.NewProc("AppendMenuW")
+	win32SetMenu            = user32.NewProc("SetMenu")
+	win32CheckMenuItem      = user32.NewProc("CheckMenuItem")
+	win32GetMenuState       = user32.NewProc("GetMenuState")
+	win32CheckMenuRadioItem = user32.NewProc("CheckMenuRadioItem")
+	applicationMenu         *menumanager.WailsMenu
+	menuManager             *menumanager.Manager
 )
 
 const MF_BITMAP uint32 = 0x00000004
@@ -51,31 +54,46 @@ const MF_BYPOSITION uint32 = 0x00000400
 
 type menuType int
 
-// Credit: https://github.com/getlantern/systray/blob/2c0986dda9aea361e925f90e848d9036be7b5367/systray_windows.go
-type menuItemInfo struct {
-	Size, Mask, Type, State     uint32
-	ID                          uint32
-	SubMenu, Checked, Unchecked windows.Handle
-	ItemData                    uintptr
-	TypeData                    *uint16
-	Cch                         uint32
-	BMPItem                     windows.Handle
-}
-
 const (
 	appMenuType menuType = iota
 	contextMenuType
 	trayMenuType
 )
 
+/**
+
+MenuCache
+---------
+When windows calls back to Go (when an item is clicked), we need to
+be able to retrieve information about the menu item:
+  - The menu that the menuitem is part of (parent)
+  - The original processed menu item
+  - The type of the menu (application, context or tray)
+
+This cache is built up when a menu is created.
+
+*/
+
 type menuCacheEntry struct {
 	parent   uintptr
 	menuType menuType
-	index    int
 	item     *menumanager.ProcessedMenuItem
 }
 
-var menuCache = []menuCacheEntry{}
+var menuCache = map[uint32]menuCacheEntry{}
+var menuCacheLock sync.RWMutex
+
+func addMenuCacheEntry(id uint32, entry menuCacheEntry) {
+	menuCacheLock.Lock()
+	defer menuCacheLock.Unlock()
+	menuCache[id] = entry
+}
+
+func getMenuCacheEntry(id uint32) menuCacheEntry {
+	menuCacheLock.Lock()
+	defer menuCacheLock.Unlock()
+	return menuCache[id]
+}
 
 func (a *Application) processPlatformSettings() error {
 
@@ -165,10 +183,62 @@ func appendMenuItem(menu uintptr, flags uintptr, id uintptr, label string) error
 	return nil
 }
 
+/*
+Radio Groups
+------------
+Radio groups are stored by the ProcessedMenu as a list of menu ids.
+Windows only cares about the start and end ids of the group so we
+preprocess the radio groups and store this data in a radioGroupCache.
+When a radio button is clicked, we use the menu id to read in the
+radio group data and call CheckMenuRadioItem to update the group.
+*/
+type radioGroupCacheEntry struct {
+	startID uint32
+	endID   uint32
+}
+
+var radioGroupCache = map[uint32]*radioGroupCacheEntry{}
+var radioGroupCacheLock sync.RWMutex
+
+func addRadioGroupCacheEntry(id uint32, entry *radioGroupCacheEntry) {
+	radioGroupCacheLock.Lock()
+	defer radioGroupCacheLock.Unlock()
+	radioGroupCache[id] = entry
+}
+
+func getRadioGroupCacheEntry(id uint32) *radioGroupCacheEntry {
+	radioGroupCacheLock.Lock()
+	defer radioGroupCacheLock.Unlock()
+	return radioGroupCache[id]
+}
+
+func mustAtoi(input string) int {
+	result, err := strconv.Atoi(input)
+	if err != nil {
+		log.Fatal("invalid string value for mustAtoi: %s", input)
+	}
+	return result
+}
+
 //export createApplicationMenu
 func createApplicationMenu(hwnd uintptr) {
 	if applicationMenu == nil {
 		return
+	}
+
+	// Process Radio groups
+	for _, rg := range applicationMenu.RadioGroups {
+		startID := uint32(mustAtoi(rg.Members[0]))
+		endID := uint32(mustAtoi(rg.Members[len(rg.Members)-1]))
+		thisRG := &radioGroupCacheEntry{
+			startID: startID,
+			endID:   endID,
+		}
+		// Set this for each member
+		for _, member := range rg.Members {
+			id := uint32(mustAtoi(member))
+			addRadioGroupCacheEntry(id, thisRG)
+		}
 	}
 
 	// Create top level menu bar
@@ -178,8 +248,8 @@ func createApplicationMenu(hwnd uintptr) {
 	}
 
 	// Process top level menus
-	for index, toplevelmenu := range applicationMenu.Menu.Items {
-		err = processMenuItem(menubar, toplevelmenu, appMenuType, index)
+	for _, toplevelmenu := range applicationMenu.Menu.Items {
+		err = processMenuItem(menubar, toplevelmenu, appMenuType)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -191,14 +261,22 @@ func createApplicationMenu(hwnd uintptr) {
 	}
 }
 
+func mustSelectRadioItem(id uint32, parent uintptr) {
+	rg := getRadioGroupCacheEntry(id)
+	res, _, err := win32CheckMenuRadioItem.Call(parent, uintptr(rg.startID), uintptr(rg.endID), uintptr(id), uintptr(MF_BYCOMMAND))
+	if int(res) == 0 {
+		log.Fatal(err)
+	}
+}
+
 //export menuClicked
 func menuClicked(id uint32) {
 
 	// Get the menu from the cache
-	menuitem := menuCache[id]
+	menuitem := getMenuCacheEntry(id)
 
-	if menuitem.item.Type == menu.CheckboxType {
-
+	switch menuitem.item.Type {
+	case menu.CheckboxType:
 		res, _, err := win32GetMenuState.Call(menuitem.parent, uintptr(id), uintptr(MF_BYCOMMAND))
 		if int(res) == -1 {
 			log.Fatal(err)
@@ -212,6 +290,8 @@ func menuClicked(id uint32) {
 		if int(res) == -1 {
 			log.Fatal(err)
 		}
+	case menu.RadioType:
+		mustSelectRadioItem(id, menuitem.parent)
 	}
 
 	// Print the click error - it's not fatal
@@ -226,6 +306,7 @@ var flagMap = map[menu.Type]uint32{
 	menu.SeparatorType: MF_SEPARATOR,
 	menu.SubmenuType:   MF_STRING | MF_POPUP,
 	menu.CheckboxType:  MF_STRING,
+	menu.RadioType:     MF_STRING,
 }
 
 func calculateFlags(menuItem *menumanager.ProcessedMenuItem) uint32 {
@@ -242,15 +323,12 @@ func calculateFlags(menuItem *menumanager.ProcessedMenuItem) uint32 {
 	return result
 }
 
-func processMenuItem(parent uintptr, menuItem *menumanager.ProcessedMenuItem, menuType menuType, index int) error {
+func processMenuItem(parent uintptr, menuItem *menumanager.ProcessedMenuItem, menuType menuType) error {
 
 	// Ignore hidden items
 	if menuItem.Hidden {
 		return nil
 	}
-
-	// Add menuitem to cache
-	ID := len(menuCache)
 
 	// Calculate the flags for this menu item
 	flags := uintptr(calculateFlags(menuItem))
@@ -261,8 +339,8 @@ func processMenuItem(parent uintptr, menuItem *menumanager.ProcessedMenuItem, me
 		if err != nil {
 			return err
 		}
-		for index, submenuItem := range menuItem.SubMenu.Items {
-			err = processMenuItem(submenu, submenuItem, menuType, index)
+		for _, submenuItem := range menuItem.SubMenu.Items {
+			err = processMenuItem(submenu, submenuItem, menuType)
 			if err != nil {
 				return err
 			}
@@ -271,7 +349,8 @@ func processMenuItem(parent uintptr, menuItem *menumanager.ProcessedMenuItem, me
 		if err != nil {
 			return err
 		}
-	case menu.TextType, menu.CheckboxType:
+	case menu.TextType, menu.CheckboxType, menu.RadioType:
+		ID := uint32(mustAtoi(menuItem.ID))
 		err := appendMenuItem(parent, flags, uintptr(ID), menuItem.Label)
 		if err != nil {
 			return err
@@ -279,10 +358,12 @@ func processMenuItem(parent uintptr, menuItem *menumanager.ProcessedMenuItem, me
 		menuCacheItem := menuCacheEntry{
 			parent:   parent,
 			menuType: menuType,
-			index:    index,
 			item:     menuItem,
 		}
-		menuCache = append(menuCache, menuCacheItem)
+		addMenuCacheEntry(ID, menuCacheItem)
+		if menuItem.Type == menu.RadioType && menuItem.Checked {
+			mustSelectRadioItem(ID, parent)
+		}
 	case menu.SeparatorType:
 		err := appendMenuItem(parent, flags, 0, "")
 		if err != nil {
