@@ -23,6 +23,10 @@ func (m *Manager) GetApplicationMenuJSON() string {
 	return m.applicationMenuJSON
 }
 
+func (m *Manager) GetProcessedApplicationMenu() *WailsMenu {
+	return m.processedApplicationMenu
+}
+
 // UpdateApplicationMenu reprocesses the application menu to pick up structure
 // changes etc
 // Returns the JSON representation of the updated menu
@@ -36,8 +40,8 @@ func (m *Manager) UpdateApplicationMenu() (string, error) {
 func (m *Manager) processApplicationMenu() error {
 
 	// Process the menu
-	processedApplicationMenu := NewWailsMenu(m.applicationMenuItemMap, m.applicationMenu)
-	applicationMenuJSON, err := processedApplicationMenu.AsJSON()
+	m.processedApplicationMenu = NewWailsMenu(m.applicationMenuItemMap, m.applicationMenu)
+	applicationMenuJSON, err := m.processedApplicationMenu.AsJSON()
 	if err != nil {
 		return err
 	}

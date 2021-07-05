@@ -80,6 +80,8 @@ extern "C" {
     void DisableWindowIcon(struct Application* app);
     void messageFromWindowCallback(const char *);
     void* GetWindowHandle(struct Application*);
+    void createApplicationMenu(HWND hwnd);
+    void menuClicked(UINT id);
 }
 
 #endif

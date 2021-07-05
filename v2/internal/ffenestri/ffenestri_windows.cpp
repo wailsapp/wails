@@ -142,6 +142,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
     switch(msg) {
 
+        case WM_CREATE: {
+            createApplicationMenu(hwnd);
+            break;
+        }
+        case WM_COMMAND:
+            menuClicked(LOWORD(wParam));
+        break;
+
         case WM_CLOSE: {
             DestroyWindow( app->window );
             break;

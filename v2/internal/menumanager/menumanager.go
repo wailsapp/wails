@@ -8,8 +8,9 @@ import (
 type Manager struct {
 
 	// The application menu.
-	applicationMenu     *menu.Menu
-	applicationMenuJSON string
+	applicationMenu          *menu.Menu
+	applicationMenuJSON      string
+	processedApplicationMenu *WailsMenu
 
 	// Our application menu mappings
 	applicationMenuItemMap *MenuItemMap
