@@ -284,8 +284,8 @@ func (c *Client) DarkModeEnabled(callbackID string) {
 }
 
 // SetApplicationMenu sets the application menu
-func (c *Client) SetApplicationMenu(applicationMenuJSON string) {
-	C.SetApplicationMenu(c.app.app, c.app.string2CString(applicationMenuJSON))
+func (c *Client) SetApplicationMenu(_ string) {
+	c.updateApplicationMenu()
 }
 
 // SetTrayMenu sets the tray menu

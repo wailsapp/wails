@@ -27,6 +27,7 @@ var (
 	// DLL stuff
 	user32                  = windows.NewLazySystemDLL("User32.dll")
 	win32CreateMenu         = user32.NewProc("CreateMenu")
+	win32DestroyMenu        = user32.NewProc("DestroyMenu")
 	win32CreatePopupMenu    = user32.NewProc("CreatePopupMenu")
 	win32AppendMenuW        = user32.NewProc("AppendMenuW")
 	win32SetMenu            = user32.NewProc("SetMenu")
@@ -80,6 +81,7 @@ type menuCacheEntry struct {
 	item     *menumanager.ProcessedMenuItem
 }
 
+var menubar uintptr
 var menuCache = map[uint32]menuCacheEntry{}
 var menuCacheLock sync.RWMutex
 
@@ -150,12 +152,27 @@ func (a *Application) processPlatformSettings() error {
 	return nil
 }
 
+func (c *Client) updateApplicationMenu() {
+	applicationMenu = c.app.menuManager.GetProcessedApplicationMenu()
+	radioGroupCache = map[uint32]*radioGroupCacheEntry{}
+	menuCache = map[uint32]menuCacheEntry{}
+	createApplicationMenu(uintptr(C.GetWindowHandle(c.app.app)))
+}
+
 func createMenu() (uintptr, error) {
 	res, _, err := win32CreateMenu.Call()
 	if res == 0 {
 		return 0, err
 	}
 	return res, nil
+}
+
+func destroyMenu(menu uintptr) error {
+	res, _, err := win32CreateMenu.Call(menu)
+	if res == 0 {
+		return err
+	}
+	return nil
 }
 
 func createPopupMenu() (uintptr, error) {
@@ -220,6 +237,13 @@ func mustAtoi(input string) int {
 	return result
 }
 
+/*
+Application Menu
+----------------
+There's only 1 application menu and this is where we create it. This method
+is called from C after the window is created and the WM_CREATE message has
+been sent.
+*/
 //export createApplicationMenu
 func createApplicationMenu(hwnd uintptr) {
 	if applicationMenu == nil {
@@ -241,8 +265,17 @@ func createApplicationMenu(hwnd uintptr) {
 		}
 	}
 
+	// Delete current menu if it exists
+	var err error
+	if menubar != 0 {
+		err = destroyMenu(menubar)
+		if err != nil {
+			log.Fatal("destroyMenu:", err.Error())
+		}
+	}
+
 	// Create top level menu bar
-	menubar, err := createMenu()
+	menubar, err = createMenu()
 	if err != nil {
 		log.Fatal("createMenu:", err.Error())
 	}
@@ -269,6 +302,9 @@ func mustSelectRadioItem(id uint32, parent uintptr) {
 	}
 }
 
+/*
+This method is called by C when a menu item is pressed
+*/
 //export menuClicked
 func menuClicked(id uint32) {
 
