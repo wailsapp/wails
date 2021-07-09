@@ -5,6 +5,7 @@ package system
 import (
 	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 
