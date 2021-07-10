@@ -142,7 +142,10 @@ func (m *Menu) processRadioGroups() error {
 	for _, win32MenuID := range m.initiallySelectedRadioItems {
 		menuItemDetails := getMenuCacheEntry(win32MenuID)
 		wailsMenuID := wailsMenuItemID(menuItemDetails.item.ID)
-		selectRadioItemFromWailsMenuID(wailsMenuID, win32MenuID)
+		err := selectRadioItemFromWailsMenuID(wailsMenuID, win32MenuID)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -155,6 +158,8 @@ func (m *Menu) Destroy() error {
 
 	// Unload this menu's radio groups from the cache
 	globalRadioGroupCache.removeMenuFromRadioBoxCache(m.wailsMenu.Menu)
+
+	globalRadioGroupMap.removeMenuFromRadioGroupMapping(m.wailsMenu.Menu)
 
 	// Delete menu
 	return destroyWin32Menu(m.menu)

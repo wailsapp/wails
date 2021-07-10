@@ -33,6 +33,7 @@ require (
 	github.com/tidwall/sjson v1.1.7
 	github.com/wzshiming/ctc v1.2.3
 	github.com/xyproto/xpm v1.2.1
+	github.com/ztrue/tracerr v0.3.0
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect
 	golang.org/x/mod v0.4.1 // indirect
 	golang.org/x/net v0.0.0-20210326060303-6b1517762897

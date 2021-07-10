@@ -3,8 +3,12 @@
 package ffenestri
 
 import (
+	"fmt"
+	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
+	"os"
 	"sync"
+	"text/tabwriter"
 )
 
 /* ---------------------------------------------------------------------------------
@@ -25,6 +29,26 @@ type CheckboxCache struct {
 func NewCheckboxCache() *CheckboxCache {
 	return &CheckboxCache{
 		cache: make(map[*menumanager.ProcessedMenu]map[wailsMenuItemID][]win32MenuItemID),
+	}
+}
+
+func (c *CheckboxCache) Dump() {
+	// Start a new tabwriter
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+
+	println("---------------- Checkbox", c, "Dump ----------------")
+	for _, processedMenu := range c.cache {
+		println("Menu", processedMenu)
+		for wailsMenuItemID, win32menus := range processedMenu {
+			println("  WailsMenu: ", wailsMenuItemID)
+			menus := slicer.String()
+			for _, win32menu := range win32menus {
+				menus.Add(fmt.Sprintf("%v", win32menu))
+			}
+			_, _ = fmt.Fprintf(w, "%s\t%s\n", wailsMenuItemID, menus.Join(", "))
+			_ = w.Flush()
+		}
 	}
 }
 

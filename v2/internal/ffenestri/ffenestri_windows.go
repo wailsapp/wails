@@ -14,7 +14,7 @@ extern void DisableWindowIcon(struct Application* app);
 */
 import "C"
 import (
-	"log"
+	"os"
 
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
@@ -105,7 +105,9 @@ been sent.
 
 func checkFatal(err error) {
 	if err != nil {
-		log.Fatal(err)
+		globalRadioGroupCache.Dump()
+		globalRadioGroupMap.Dump()
+		os.Exit(1)
 	}
 }
 
@@ -150,7 +152,7 @@ func menuClicked(id uint32) {
 		// Determine if the menu is set or not
 		res, _, err := win32GetMenuState.Call(uintptr(menuItemDetails.parent), uintptr(id), uintptr(MF_BYCOMMAND))
 		if int(res) == -1 {
-			log.Fatal(err)
+			checkFatal(err)
 		}
 
 		flag := MF_CHECKED
@@ -163,11 +165,12 @@ func menuClicked(id uint32) {
 			menuItemDetails := getMenuCacheEntry(menuid)
 			res, _, err = win32CheckMenuItem.Call(uintptr(menuItemDetails.parent), uintptr(menuid), uintptr(flag))
 			if int(res) == -1 {
-				log.Fatal(err)
+				checkFatal(err)
 			}
 		}
 	case menu.RadioType:
-		selectRadioItemFromWailsMenuID(wailsMenuID, win32MenuID)
+		err := selectRadioItemFromWailsMenuID(wailsMenuID, win32MenuID)
+		checkFatal(err)
 	}
 
 	// Print the click error - it's not fatal

@@ -22,6 +22,9 @@ type Manager struct {
 	// Tray menu stores
 	trayMenus        map[string]*TrayMenu
 	trayMenuPointers map[*menu.TrayMenu]string
+
+	// Radio groups
+	radioGroups map[*menu.MenuItem][]*menu.MenuItem
 }
 
 func NewManager() *Manager {
@@ -31,6 +34,7 @@ func NewManager() *Manager {
 		contextMenuPointers:    make(map[*menu.ContextMenu]string),
 		trayMenus:              make(map[string]*TrayMenu),
 		trayMenuPointers:       make(map[*menu.TrayMenu]string),
+		radioGroups:            make(map[*menu.MenuItem][]*menu.MenuItem),
 	}
 }
 
@@ -73,6 +77,14 @@ func (m *Manager) ProcessClick(menuID string, data string, menuType string, pare
 		menuItem.Checked = !menuItem.Checked
 	}
 
+	if menuItem.Type == menu.RadioType {
+		println("Toggle radio")
+		// Get my radio group
+		for _, radioMenuItem := range m.radioGroups[menuItem] {
+			radioMenuItem.Checked = (radioMenuItem == menuItem)
+		}
+	}
+
 	if menuItem.Click == nil {
 		// No callback
 		return fmt.Errorf("No callback for menu '%s'", menuItem.Label)
@@ -88,4 +100,17 @@ func (m *Manager) ProcessClick(menuID string, data string, menuType string, pare
 	go menuItem.Click(callbackData)
 
 	return nil
+}
+
+func (m *Manager) processRadioGroups(processedMenu *WailsMenu, itemMap *MenuItemMap) {
+	for _, group := range processedMenu.RadioGroups {
+		radioGroupMenuItems := []*menu.MenuItem{}
+		for _, member := range group.Members {
+			item := m.getMenuItemByID(itemMap, member)
+			radioGroupMenuItems = append(radioGroupMenuItems, item)
+		}
+		for _, radioGroupMenuItem := range radioGroupMenuItems {
+			m.radioGroups[radioGroupMenuItem] = radioGroupMenuItems
+		}
+	}
 }

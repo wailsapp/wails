@@ -41,6 +41,7 @@ func (m *Manager) processApplicationMenu() error {
 
 	// Process the menu
 	m.processedApplicationMenu = NewWailsMenu(m.applicationMenuItemMap, m.applicationMenu)
+	m.processRadioGroups(m.processedApplicationMenu, m.applicationMenuItemMap)
 	applicationMenuJSON, err := m.processedApplicationMenu.AsJSON()
 	if err != nil {
 		return err

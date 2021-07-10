@@ -3,7 +3,6 @@
 package ffenestri
 
 import (
-	"log"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/menumanager"
@@ -45,15 +44,15 @@ const MF_BYPOSITION uint32 = 0x00000400
 func createWin32Menu() (win32Menu, error) {
 	res, _, err := win32CreateMenu.Call()
 	if res == 0 {
-		return 0, err
+		return 0, wall(err)
 	}
 	return win32Menu(res), nil
 }
 
 func destroyWin32Menu(menu win32Menu) error {
-	res, _, err := win32CreateMenu.Call(uintptr(menu))
+	res, _, err := win32DestroyMenu.Call(uintptr(menu))
 	if res == 0 {
-		return err
+		return wall(err, "Menu:", menu)
 	}
 	return nil
 }
@@ -61,7 +60,7 @@ func destroyWin32Menu(menu win32Menu) error {
 func createWin32PopupMenu() (win32Menu, error) {
 	res, _, err := win32CreatePopupMenu.Call()
 	if res == 0 {
-		return 0, err
+		return 0, wall(err)
 	}
 	return win32Menu(res), nil
 }
@@ -78,7 +77,7 @@ func appendWin32MenuItem(menu win32Menu, flags uintptr, submenuOrID uintptr, lab
 		uintptr(unsafe.Pointer(menuText)),
 	)
 	if res == 0 {
-		return err
+		return wall(err, "Menu", menu, "Flags", flags, "submenuOrID", submenuOrID, "label", label)
 	}
 	return nil
 }
@@ -86,14 +85,15 @@ func appendWin32MenuItem(menu win32Menu, flags uintptr, submenuOrID uintptr, lab
 func setWindowMenu(window win32Window, menu win32Menu) error {
 	res, _, err := win32SetMenu.Call(uintptr(window), uintptr(menu))
 	if res == 0 {
-		return err
+		return wall(err, "window", window, "menu", menu)
 	}
 	return nil
 }
 
-func selectRadioItem(selectedMenuID, startMenuItemID, endMenuItemID win32MenuItemID, parent win32Menu) {
+func selectRadioItem(selectedMenuID, startMenuItemID, endMenuItemID win32MenuItemID, parent win32Menu) error {
 	res, _, err := win32CheckMenuRadioItem.Call(uintptr(parent), uintptr(startMenuItemID), uintptr(endMenuItemID), uintptr(selectedMenuID), uintptr(MF_BYCOMMAND))
 	if int(res) == 0 {
-		log.Fatal(err)
+		return wall(err, selectedMenuID, startMenuItemID, endMenuItemID, parent)
 	}
+	return nil
 }

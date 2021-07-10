@@ -3,7 +3,11 @@
 package ffenestri
 
 import (
+	"fmt"
+	"github.com/leaanthony/slicer"
+	"os"
 	"sync"
+	"text/tabwriter"
 
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 )
@@ -33,6 +37,26 @@ type RadioGroupCache struct {
 func NewRadioGroupCache() *RadioGroupCache {
 	return &RadioGroupCache{
 		cache: make(map[*menumanager.ProcessedMenu]map[wailsMenuItemID][]*radioGroupStartEnd),
+	}
+}
+
+func (c *RadioGroupCache) Dump() {
+	// Start a new tabwriter
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+
+	println("---------------- RadioGroupCache", c, "Dump ----------------")
+	for menu, processedMenu := range c.cache {
+		println("Menu", menu)
+		_, _ = fmt.Fprintf(w, "Wails ID \tWindows ID Pairs\n")
+		for wailsMenuItemID, radioGroupStartEnd := range processedMenu {
+			menus := slicer.String()
+			for _, se := range radioGroupStartEnd {
+				menus.Add(fmt.Sprintf("[%d -> %d]", se.startID, se.endID))
+			}
+			_, _ = fmt.Fprintf(w, "%s\t%s\n", wailsMenuItemID, menus.Join(", "))
+			_ = w.Flush()
+		}
 	}
 }
 
@@ -87,6 +111,25 @@ func NewRadioGroupMap() *RadioGroupMap {
 	}
 }
 
+func (c *RadioGroupMap) Dump() {
+	// Start a new tabwriter
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+
+	println("---------------- RadioGroupMap", c, "Dump ----------------")
+	for _, processedMenu := range c.cache {
+		_, _ = fmt.Fprintf(w, "Menu\tWails ID \tWindows IDs\n")
+		for wailsMenuItemID, win32menus := range processedMenu {
+			menus := slicer.String()
+			for _, win32menu := range win32menus {
+				menus.Add(fmt.Sprintf("%v", win32menu))
+			}
+			_, _ = fmt.Fprintf(w, "%p\t%s\t%s\n", processedMenu, wailsMenuItemID, menus.Join(", "))
+			_ = w.Flush()
+		}
+	}
+}
+
 func (m *RadioGroupMap) addRadioGroupMapping(menu *menumanager.ProcessedMenu, item wailsMenuItemID, win32ID win32MenuItemID) {
 	m.mutex.Lock()
 
@@ -106,6 +149,12 @@ func (m *RadioGroupMap) addRadioGroupMapping(menu *menumanager.ProcessedMenu, it
 	m.mutex.Unlock()
 }
 
+func (m *RadioGroupMap) removeMenuFromRadioGroupMapping(menu *menumanager.ProcessedMenu) {
+	m.mutex.Lock()
+	delete(m.cache, menu)
+	m.mutex.Unlock()
+}
+
 func (m *RadioGroupMap) getRadioGroupMapping(wailsMenuID wailsMenuItemID) []win32MenuItemID {
 	m.mutex.Lock()
 	result := []win32MenuItemID{}
@@ -119,7 +168,7 @@ func (m *RadioGroupMap) getRadioGroupMapping(wailsMenuID wailsMenuItemID) []win3
 	return result
 }
 
-func selectRadioItemFromWailsMenuID(wailsMenuID wailsMenuItemID, win32MenuID win32MenuItemID) {
+func selectRadioItemFromWailsMenuID(wailsMenuID wailsMenuItemID, win32MenuID win32MenuItemID) error {
 	radioItemGroups := globalRadioGroupCache.getRadioGroupMappings(wailsMenuID)
 	// Figure out offset into group
 	var offset win32MenuItemID = 0
@@ -132,6 +181,14 @@ func selectRadioItemFromWailsMenuID(wailsMenuID wailsMenuItemID, win32MenuID win
 	for _, radioItemGroup := range radioItemGroups {
 		selectedMenuID := radioItemGroup.startID + offset
 		menuItemDetails := getMenuCacheEntry(selectedMenuID)
-		selectRadioItem(selectedMenuID, radioItemGroup.startID, radioItemGroup.endID, menuItemDetails.parent)
+		if menuItemDetails != nil {
+			if menuItemDetails.parent != 0 {
+				err := selectRadioItem(selectedMenuID, radioItemGroup.startID, radioItemGroup.endID, menuItemDetails.parent)
+				if err != nil {
+					return err
+				}
+			}
+		}
 	}
+	return nil
 }
