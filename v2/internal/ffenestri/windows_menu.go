@@ -153,8 +153,11 @@ func (m *Menu) processRadioGroups() error {
 
 func (m *Menu) Destroy() error {
 
+	// Release the MenuIDs
+	releaseMenuIDsForProcessedMenu(m.wailsMenu.Menu)
+
 	// Unload this menu's checkboxes from the cache
-	globalCheckboxCache.removeMenuFromChechboxCache(m.wailsMenu.Menu)
+	globalCheckboxCache.removeMenuFromCheckboxCache(m.wailsMenu.Menu)
 
 	// Unload this menu's radio groups from the cache
 	globalRadioGroupCache.removeMenuFromRadioBoxCache(m.wailsMenu.Menu)

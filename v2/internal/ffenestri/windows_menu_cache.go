@@ -3,6 +3,7 @@
 package ffenestri
 
 import (
+	"github.com/leaanthony/idgen"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"sync"
 )
@@ -30,18 +31,28 @@ type menuCacheEntry struct {
 	processedMenu *menumanager.ProcessedMenu
 }
 
-// windowsMenuIDCounter keeps track of the unique windows menu IDs
-var windowsMenuIDCounter uint32
+var idGenerator = idgen.New()
 
 var menuCache = map[win32MenuItemID]*menuCacheEntry{}
 var menuCacheLock sync.RWMutex
 var wailsMenuIDtoWin32IDMap = map[wailsMenuItemID]win32MenuItemID{}
 
+// This releases the menuIDs back to the id generator
+var winIDsOwnedByProcessedMenu = map[*menumanager.ProcessedMenu][]win32MenuItemID{}
+
+func releaseMenuIDsForProcessedMenu(processedMenu *menumanager.ProcessedMenu) {
+	for _, menuID := range winIDsOwnedByProcessedMenu[processedMenu] {
+		idGenerator.ReleaseID(uint(menuID))
+	}
+	delete(winIDsOwnedByProcessedMenu, processedMenu)
+}
+
 func addMenuCacheEntry(parent win32Menu, typ menuType, wailsMenuItem *menumanager.ProcessedMenuItem, processedMenu *menumanager.ProcessedMenu) win32MenuItemID {
 	menuCacheLock.Lock()
 	defer menuCacheLock.Unlock()
-	menuID := win32MenuItemID(windowsMenuIDCounter)
-	windowsMenuIDCounter++
+	id, err := idGenerator.NewID()
+	checkFatal(err)
+	menuID := win32MenuItemID(id)
 	menuCache[menuID] = &menuCacheEntry{
 		parent:        parent,
 		menuType:      typ,
@@ -50,6 +61,8 @@ func addMenuCacheEntry(parent win32Menu, typ menuType, wailsMenuItem *menumanage
 	}
 	// save the mapping
 	wailsMenuIDtoWin32IDMap[wailsMenuItemID(wailsMenuItem.ID)] = menuID
+	// keep track of menuids owned by this menu (so we can release the ids)
+	winIDsOwnedByProcessedMenu[processedMenu] = append(winIDsOwnedByProcessedMenu[processedMenu], menuID)
 	return menuID
 
 }

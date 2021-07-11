@@ -19,6 +19,7 @@ require (
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/go-common-file-dialog v1.0.3
 	github.com/leaanthony/gosod v1.0.1
+	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/webview2runtime v1.1.0
 	github.com/leaanthony/winicon v0.0.0-20200606125418-4419cea822a0

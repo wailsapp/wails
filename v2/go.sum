@@ -99,6 +99,8 @@ github.com/leaanthony/go-common-file-dialog v1.0.3 h1:O0uGjKnWtdEADGrkg+TyAAbZyl
 github.com/leaanthony/go-common-file-dialog v1.0.3/go.mod h1:TGhEc9eSJgRsupZ+iH1ZgAOnEo9zp05cRH2j08RPrF0=
 github.com/leaanthony/gosod v1.0.1 h1:F+4c3DmEBfigi7oAswCV2RpQ+k4DcNbhuCZUGdBHacQ=
 github.com/leaanthony/gosod v1.0.1/go.mod h1:W8RyeSFBXu7RpIxPGEJfW4moSyGGEjlJMLV25wEbAdU=
+github.com/leaanthony/idgen v1.0.0 h1:IZreR+JGEzFV4yeVuBZA25gM0keUoFy+RDUldncQ+Jw=
+github.com/leaanthony/idgen v1.0.0/go.mod h1:4nBZnt8ml/f/ic/EVQuLxuj817RccT2fyrUaZFxrcVA=
 github.com/leaanthony/slicer v1.5.0 h1:aHYTN8xbCCLxJmkNKiLB6tgcMARl4eWmH9/F+S/0HtY=
 github.com/leaanthony/slicer v1.5.0/go.mod h1:FwrApmf8gOrpzEWM2J/9Lh79tyq8KTX5AzRtwV7m4AY=
 github.com/leaanthony/webview2runtime v1.1.0 h1:N0pv55ift8XtqozIp4PNOtRCJ/Qdd/qzx80lUpalS4c=

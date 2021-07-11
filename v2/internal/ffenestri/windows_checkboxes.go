@@ -71,7 +71,7 @@ func (c *CheckboxCache) addToCheckboxCache(menu *menumanager.ProcessedMenu, item
 
 }
 
-func (c *CheckboxCache) removeMenuFromChechboxCache(menu *menumanager.ProcessedMenu) {
+func (c *CheckboxCache) removeMenuFromCheckboxCache(menu *menumanager.ProcessedMenu) {
 	c.mutex.Lock()
 	delete(c.cache, menu)
 	c.mutex.Unlock()
