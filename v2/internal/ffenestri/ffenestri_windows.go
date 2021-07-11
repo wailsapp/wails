@@ -14,6 +14,7 @@ extern void DisableWindowIcon(struct Application* app);
 */
 import "C"
 import (
+	"github.com/ztrue/tracerr"
 	"os"
 
 	"github.com/wailsapp/wails/v2/pkg/menu"
@@ -105,6 +106,7 @@ been sent.
 
 func checkFatal(err error) {
 	if err != nil {
+		tracerr.PrintSourceColor(err)
 		globalRadioGroupCache.Dump()
 		globalRadioGroupMap.Dump()
 		os.Exit(1)
@@ -118,15 +120,17 @@ func createApplicationMenu(hwnd uintptr) {
 		return
 	}
 
+	var err error
+	window := win32Window(hwnd)
+
 	if globalApplicationMenu != nil {
 		checkFatal(globalApplicationMenu.Destroy())
 	}
 
-	var err error
 	globalApplicationMenu, err = createMenu(applicationMenu, appMenuType)
 	checkFatal(err)
 
-	err = setWindowMenu(win32Window(hwnd), globalApplicationMenu.menu)
+	err = setWindowMenu(window, globalApplicationMenu.menu)
 	checkFatal(err)
 }
 

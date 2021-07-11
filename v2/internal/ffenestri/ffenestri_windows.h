@@ -55,6 +55,10 @@ struct Application{
     // placeholders
     char* bindings;
     char* initialCode;
+
+    // DPI
+    UINT dpix;
+    UINT dpiy;
 };
 
 #define ON_MAIN_THREAD(code) dispatch( [=]{ code; } )

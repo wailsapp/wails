@@ -2,6 +2,7 @@
 // License included in README.md
 
 #include "ffenestri_windows.h"
+#include "shellscalingapi.h"
 #include "wv2ComHandler_windows.h"
 #include <functional>
 #include <atomic>
@@ -40,6 +41,30 @@ char* LPWSTRToCstr(LPWSTR input) {
     char* output = new char[length];
     WideCharToMultiByte(CP_UTF8, 0, input, -1, output , length, NULL, NULL);
     return output;
+}
+
+
+// Credit: https://building.enlyze.com/posts/writing-win32-apps-like-its-2020-part-3/
+typedef int (__cdecl *PGetDpiForMonitor)(HMONITOR, MONITOR_DPI_TYPE,UINT*,UINT*);
+void getDPIForWindow(struct Application *app)
+{
+    HMODULE hShcore = LoadLibraryW(L"shcore");
+    if (hShcore)
+    {
+        PGetDpiForMonitor pGetDpiForMonitor = reinterpret_cast<PGetDpiForMonitor>(GetProcAddress(hShcore, "GetDpiForMonitor"));
+        if (pGetDpiForMonitor)
+        {
+            HMONITOR hMonitor = MonitorFromWindow(app->window, MONITOR_DEFAULTTOPRIMARY);
+            pGetDpiForMonitor(hMonitor, (MONITOR_DPI_TYPE)0, &app->dpix, &app->dpiy);
+        }
+    } else {
+        // We couldn't get the window's DPI above, so get the DPI of the primary monitor
+        // using an API that is available in all Windows versions.
+        HDC hScreenDC = GetDC(0);
+        app->dpix = GetDeviceCaps(hScreenDC, LOGPIXELSX);
+        app->dpiy = GetDeviceCaps(hScreenDC, LOGPIXELSY);
+        ReleaseDC(0, hScreenDC);
+    }
 }
 
 struct Application *NewApplication(const char *title, int width, int height, int resizable, int devtools, int fullscreen, int startHidden, int logLevel, int hideWindowOnClose) {
@@ -87,6 +112,9 @@ struct Application *NewApplication(const char *title, int width, int height, int
 
     // Used to remember the window location when going fullscreen
     result->previousPlacement = { sizeof(result->previousPlacement) };
+
+    // DPI
+    result->dpix = result->dpiy = 0;
 
     return result;
 }
@@ -179,30 +207,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 return 0;
             }
 
-            // get pixel density
-            HDC hDC = GetDC(NULL);
-            double DPIScaleX = GetDeviceCaps(hDC, 88)/96.0;
-            double DPIScaleY = GetDeviceCaps(hDC, 90)/96.0;
-            ReleaseDC(NULL, hDC);
+            // update DPI
+            getDPIForWindow(app);
+            double DPIScaleX = app->dpix/96.0;
+            double DPIScaleY = app->dpiy/96.0;
 
-            RECT rcClient, rcWind;
+            RECT rcWind;
             POINT ptDiff;
-            GetClientRect(hwnd, &rcClient);
             GetWindowRect(hwnd, &rcWind);
 
-            int widthExtra = (rcWind.right - rcWind.left) - rcClient.right;
-            int heightExtra = (rcWind.bottom - rcWind.top) - rcClient.bottom;
+            int widthExtra = (rcWind.right - rcWind.left);
+            int heightExtra = (rcWind.bottom - rcWind.top);
 
             LPMINMAXINFO mmi = (LPMINMAXINFO) lParam;
             if (app->minWidth > 0 && app->minHeight > 0) {
-                mmi->ptMinTrackSize.x = app->minWidth * DPIScaleX + widthExtra;
-                mmi->ptMinTrackSize.y = app->minHeight * DPIScaleY + heightExtra;
+                mmi->ptMinTrackSize.x = app->minWidth * DPIScaleX;
+                mmi->ptMinTrackSize.y = app->minHeight * DPIScaleY;
             }
             if (app->maxWidth > 0 && app->maxHeight > 0) {
-                mmi->ptMaxSize.x = app->maxWidth * DPIScaleX + widthExtra;
-                mmi->ptMaxSize.y = app->maxHeight * DPIScaleY + heightExtra;
-                mmi->ptMaxTrackSize.x = app->maxWidth * DPIScaleX + widthExtra;
-                mmi->ptMaxTrackSize.y = app->maxHeight * DPIScaleY + heightExtra;
+                mmi->ptMaxSize.x = app->maxWidth * DPIScaleX;
+                mmi->ptMaxSize.y = app->maxHeight * DPIScaleY;
+                mmi->ptMaxTrackSize.x = app->maxWidth * DPIScaleX;
+                mmi->ptMaxTrackSize.y = app->maxHeight * DPIScaleY;
             }
             return 0;
         }
@@ -392,6 +418,7 @@ bool initWebView2(struct Application *app, int debugEnabled, messageCallback cb)
     }
     app->webviewController = controller;
     app->webview = webview;
+
     // Resize WebView to fit the bounds of the parent window
     RECT bounds;
     GetClientRect(app->window, &bounds);
@@ -403,7 +430,64 @@ bool initWebView2(struct Application *app, int debugEnabled, messageCallback cb)
     LPCWSTR html = (LPCWSTR) cstrToLPWSTR((char*)assets[0]);
     app->webview->Navigate(html);
 
+    if( app->webviewIsTranparent ) {
+        wchar_t szBuff[64];
+        ICoreWebView2Controller2 *wc2;
+        wc2 = nullptr;
+        app->webviewController->QueryInterface(IID_ICoreWebView2Controller2, (void**)&wc2);
+
+        COREWEBVIEW2_COLOR wvColor;
+        wvColor.R = app->backgroundColour.R;
+        wvColor.G = app->backgroundColour.G;
+        wvColor.B = app->backgroundColour.B;
+        wvColor.A = app->backgroundColour.A == 0 ? 0 : 255;
+        if( app->windowBackgroundIsTranslucent ) {
+            wvColor.A = 0;
+        }
+        HRESULT result = wc2->put_DefaultBackgroundColor(wvColor);
+        if (!SUCCEEDED(result))
+        {
+            switch (result)
+            {
+                case HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND):
+                {
+                    MessageBox(
+                        app->window,
+                        L"Couldn't find Edge installation. "
+                        "Do you have a version installed that's compatible with this "
+                        "WebView2 SDK version?",
+                        nullptr, MB_OK);
+                }
+                break;
+                case HRESULT_FROM_WIN32(ERROR_FILE_EXISTS):
+                {
+                    MessageBox(
+                        app->window, L"User data folder cannot be created because a file with the same name already exists.", nullptr, MB_OK);
+                }
+                break;
+                case E_ACCESSDENIED:
+                {
+                    MessageBox(
+                        app->window, L"Unable to create user data folder, Access Denied.", nullptr, MB_OK);
+                }
+                break;
+                case E_FAIL:
+                {
+                    MessageBox(
+                        app->window, L"Edge runtime unable to start", nullptr, MB_OK);
+                }
+                break;
+                default:
+                {
+                     MessageBox(app->window, L"Failed to create WebView2 environment", nullptr, MB_OK);
+                }
+            }
+        }
+
+    }
+
 	messageFromWindowCallback("Ej{\"name\":\"wails:launched\",\"data\":[]}");
+
     return true;
 }
 
@@ -500,61 +584,6 @@ void Run(struct Application* app, int argc, char **argv) {
     // Add webview2
     initWebView2(app, debug, initialCallback);
 
-    if( app->webviewIsTranparent ) {
-        wchar_t szBuff[64];
-        ICoreWebView2Controller2 *wc2;
-        wc2 = nullptr;
-        app->webviewController->QueryInterface(IID_ICoreWebView2Controller2, (void**)&wc2);
-
-        COREWEBVIEW2_COLOR wvColor;
-        wvColor.R = app->backgroundColour.R;
-        wvColor.G = app->backgroundColour.G;
-        wvColor.B = app->backgroundColour.B;
-        wvColor.A = app->backgroundColour.A == 0 ? 0 : 255;
-        if( app->windowBackgroundIsTranslucent ) {
-            wvColor.A = 0;
-        }
-        HRESULT result = wc2->put_DefaultBackgroundColor(wvColor);
-        if (!SUCCEEDED(result))
-        {
-            switch (result)
-            {
-                case HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND):
-                {
-                    MessageBox(
-                        app->window,
-                        L"Couldn't find Edge installation. "
-                        "Do you have a version installed that's compatible with this "
-                        "WebView2 SDK version?",
-                        nullptr, MB_OK);
-                }
-                break;
-                case HRESULT_FROM_WIN32(ERROR_FILE_EXISTS):
-                {
-                    MessageBox(
-                        app->window, L"User data folder cannot be created because a file with the same name already exists.", nullptr, MB_OK);
-                }
-                break;
-                case E_ACCESSDENIED:
-                {
-                    MessageBox(
-                        app->window, L"Unable to create user data folder, Access Denied.", nullptr, MB_OK);
-                }
-                break;
-                case E_FAIL:
-                {
-                    MessageBox(
-                        app->window, L"Edge runtime unable to start", nullptr, MB_OK);
-                }
-                break;
-                default:
-                {
-                     MessageBox(app->window, L"Failed to create WebView2 environment", nullptr, MB_OK);
-                }
-            }
-        }
-
-    }
 
     // Main event loop
     MSG  msg;

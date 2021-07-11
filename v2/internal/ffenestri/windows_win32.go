@@ -39,6 +39,16 @@ const MF_UNCHECKED uint32 = 0x00000000
 const MF_BYCOMMAND uint32 = 0x00000000
 const MF_BYPOSITION uint32 = 0x00000400
 
+const WM_SIZE = 5
+const WM_GETMINMAXINFO = 36
+
+type Win32Rect struct {
+	Left   int32
+	Top    int32
+	Right  int32
+	Bottom int32
+}
+
 // ------------------- win32 calls -----------------------
 
 func createWin32Menu() (win32Menu, error) {
@@ -97,3 +107,23 @@ func selectRadioItem(selectedMenuID, startMenuItemID, endMenuItemID win32MenuIte
 	}
 	return nil
 }
+
+//
+//func getWindowRect(window win32Window) (*Win32Rect, error) {
+//	var windowRect Win32Rect
+//	res, _, err := win32GetWindowRect.Call(uintptr(window), uintptr(unsafe.Pointer(&windowRect)))
+//	if res == 0 {
+//		return nil, err
+//	}
+//	return &windowRect, nil
+//}
+//
+//func getClientRect(window win32Window) (*Win32Rect, error) {
+//	var clientRect Win32Rect
+//	res, _, err := win32GetClientRect.Call(uintptr(window), uintptr(unsafe.Pointer(&clientRect)))
+//	if res == 0 {
+//		return nil, err
+//	}
+//	return &clientRect, nil
+//}
+//
