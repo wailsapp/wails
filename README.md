@@ -98,6 +98,10 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/nickarellano" style="width:60px;border-radius: 50%">
   <img src="https://github.com/nickarellano.png?size=60" width="60" style="border-radius: 50%"/>
 </a>
+<a href="https://github.com/jugglingjsons" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/jugglingjsons.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+
 ## Installation
 
 Wails uses cgo to bind to the native rendering engines so a number of platform dependent libraries are needed as well as an installation of Go. The basic requirements are:
