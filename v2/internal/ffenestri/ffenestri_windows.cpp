@@ -328,7 +328,6 @@ void completed(struct Application* app) {
     messageFromWindowCallback(readyMessage.c_str());
 }
 
-
 //
 bool initWebView2(struct Application *app, int debugEnabled, messageCallback cb) {
 
