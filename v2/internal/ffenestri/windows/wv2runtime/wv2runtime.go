@@ -4,7 +4,7 @@ import (
 	"github.com/leaanthony/webview2runtime"
 )
 
-const minimumRuntimeVersion string = "91.0.864.48"
+const MinimumRuntimeVersion string = "91.0.864.48"
 
 type installationStatus int
 
@@ -14,21 +14,21 @@ const (
 	installed
 )
 
-func Process() error {
+func Process() (*webview2runtime.Info, error) {
 	installStatus := needsInstalling
 	installedVersion := webview2runtime.GetInstalledVersion()
 	if installedVersion != nil {
 		installStatus = installed
-		updateRequired, err := installedVersion.IsOlderThan(minimumRuntimeVersion)
+		updateRequired, err := installedVersion.IsOlderThan(MinimumRuntimeVersion)
 		if err != nil {
 			_ = webview2runtime.Error(err.Error(), "Error")
-			return err
+			return installedVersion, err
 		}
 		// Installed and does not require updating
 		if !updateRequired {
-			return nil
+			return installedVersion, nil
 		}
-		installStatus = needsUpdating
+
 	}
-	return doInstallationStrategy(installStatus)
+	return installedVersion, doInstallationStrategy(installStatus)
 }
