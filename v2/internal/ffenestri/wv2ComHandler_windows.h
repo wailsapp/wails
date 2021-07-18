@@ -60,28 +60,17 @@ class wv2ComHandler
             if (kind == COREWEBVIEW2_KEY_EVENT_KIND_KEY_DOWN ||
                 kind == COREWEBVIEW2_KEY_EVENT_KIND_SYSTEM_KEY_DOWN)
             {
-//                UINT key;
-//                args->get_VirtualKey(&key);
-//                printf("Got key: %d\n", key);
+                // Prevent WebView2 from processing the key
                 args->put_Handled(TRUE);
-                // Check if the key is one we want to handle.
-//                if (std::function<void()> action =
-//                        m_appWindow->GetAcceleratorKeyFunction(key))
-//                {
-//                    // Keep the browser from handling this key, whether it's autorepeated or
-//                    // not.
-//                    CHECK_FAILURE(args->put_Handled(TRUE));
-//
-//                    // Filter out autorepeated keys.
-//                    COREWEBVIEW2_PHYSICAL_KEY_STATUS status;
-//                    CHECK_FAILURE(args->get_PhysicalKeyStatus(&status));
-//                    if (!status.WasKeyDown)
-//                    {
-//                        // Perform the action asynchronously to avoid blocking the
-//                        // browser process's event queue.
-//                        m_appWindow->RunAsync(action);
-//                    }
-//                }
+
+                UINT key;
+                args->get_VirtualKey(&key);
+                COREWEBVIEW2_PHYSICAL_KEY_STATUS status;
+                args->get_PhysicalKeyStatus(&status);
+                if (!status.WasKeyDown)
+                {
+                    processKeyPress(key);
+                }
             }
             return S_OK;
         }

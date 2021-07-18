@@ -5,6 +5,9 @@ package ffenestri
 import (
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/wailsapp/wails/v2/pkg/menu/keys"
+	"runtime"
+	"strings"
 )
 
 //-------------------- Types ------------------------
@@ -83,8 +86,11 @@ func (m *Menu) processMenuItem(parent win32Menu, menuItem *menumanager.Processed
 		}
 	case menu.TextType, menu.CheckboxType, menu.RadioType:
 		win32ID := addMenuCacheEntry(parent, m.menuType, menuItem, m.wailsMenu.Menu)
-		//label := fmt.Sprintf("%s (%d)", menuItem.Label, win32ID)
+		if menuItem.Accelerator != nil {
+			m.processAccelerator(menuItem)
+		}
 		label := menuItem.Label
+		//label := fmt.Sprintf("%s (%d)", menuItem.Label, win32ID)
 		err := appendWin32MenuItem(parent, flags, uintptr(win32ID), label)
 		if err != nil {
 			return err
@@ -164,8 +170,38 @@ func (m *Menu) Destroy() error {
 
 	globalRadioGroupMap.removeMenuFromRadioGroupMapping(m.wailsMenu.Menu)
 
+	// Free up callbacks
+	resetCallbacks()
+
 	// Delete menu
 	return destroyWin32Menu(m.menu)
+}
+
+func (m *Menu) processAccelerator(menuitem *menumanager.ProcessedMenuItem) {
+
+	// Add in shortcut to label if there is no "\t" override
+	if !strings.Contains(menuitem.Label, "\t") {
+		menuitem.Label += "\t" + keys.Stringify(menuitem.Accelerator, runtime.GOOS)
+	}
+
+	// Calculate the modifier
+	var modifiers uint8
+	for _, mod := range menuitem.Accelerator.Modifiers {
+		switch mod {
+		case keys.ControlKey, keys.CmdOrCtrlKey:
+			modifiers |= 1
+		case keys.OptionOrAltKey:
+			modifiers |= 2
+		case keys.ShiftKey:
+			modifiers |= 4
+		case keys.SuperKey:
+			modifiers |= 8
+		}
+	}
+
+	var keycode = calculateKeycode(strings.ToLower(menuitem.Accelerator.Key))
+	addMenuCallback(keycode, modifiers, menuitem.ID, m.menuType)
+
 }
 
 var flagMap = map[menu.Type]uint32{

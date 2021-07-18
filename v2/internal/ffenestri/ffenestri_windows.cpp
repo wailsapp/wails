@@ -28,6 +28,25 @@ void dispatch(dispatchFunction func) {
     PostThreadMessage(mainThread, WM_APP, 0, (LPARAM) new dispatchFunction(func));
 }
 
+void processKeyPress(UINT key) {
+        // Get state of Control
+        bool controlPressed = GetKeyState(VK_CONTROL) >> 15 != 0;
+        bool altPressed = GetKeyState(VK_MENU) >> 15 != 0;
+        bool shiftPressed = GetKeyState(VK_SHIFT) >> 15 != 0;
+
+        // Save the modifier keys
+        BYTE modState = 0;
+        if ( GetKeyState(VK_CONTROL) >> 15 != 0 ) { modState |= 1; }
+        if ( GetKeyState(VK_MENU) >> 15 != 0 ) { modState |= 2; }
+        if ( GetKeyState(VK_SHIFT) >> 15 != 0 ) { modState |= 4; }
+        if ( GetKeyState(VK_LWIN) >> 15 != 0 ) { modState |= 8; }
+        if ( GetKeyState(VK_RWIN) >> 15 != 0 ) { modState |= 8; }
+
+        // Notify app of keypress
+        handleKeypressInGo(key, modState);
+}
+
+
 LPWSTR cstrToLPWSTR(const char *cstr) {
     int wchars_num = MultiByteToWideChar( CP_UTF8 , 0 , cstr , -1, NULL , 0 );
     wchar_t* wstr = new wchar_t[wchars_num+1];
@@ -201,6 +220,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             }
             break;
         }
+        case WM_KEYDOWN:
+            // This is needed because webview2 is sometimes not in focus
+            // https://github.com/MicrosoftEdge/WebView2Feedback/issues/1541
+            processKeyPress(wParam);
+            break;
         case WM_GETMINMAXINFO: {
             // Exit early if this is called before the window is created.
             if ( app == NULL ) {
@@ -364,6 +388,7 @@ bool initWebView2(struct Application *app, int debugEnabled, messageCallback cb)
                                          }
                                          // Fix for invisible webview
                                          if( app->startHidden ) {}
+                                         controller->MoveFocus(COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC);
                                          flag.clear();
                                      }));
     if (!SUCCEEDED(res))

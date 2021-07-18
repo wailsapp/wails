@@ -20,8 +20,9 @@ var (
 	win32CheckMenuItem      = user32.NewProc("CheckMenuItem")
 	win32GetMenuState       = user32.NewProc("GetMenuState")
 	win32CheckMenuRadioItem = user32.NewProc("CheckMenuRadioItem")
-	applicationMenu         *menumanager.WailsMenu
-	menuManager             *menumanager.Manager
+
+	applicationMenu *menumanager.WailsMenu
+	menuManager     *menumanager.Manager
 )
 
 const MF_BITMAP uint32 = 0x00000004

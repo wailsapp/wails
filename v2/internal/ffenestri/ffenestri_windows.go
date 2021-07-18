@@ -134,6 +134,18 @@ func createApplicationMenu(hwnd uintptr) {
 	checkFatal(err)
 }
 
+//export handleKeypressInGo
+func handleKeypressInGo(keycode uint16, modifiers uint8) {
+	menuID, menuType := getCallbackForKeyPress(keycode, modifiers)
+	if menuID == "" {
+		return
+	}
+	err := menuManager.ProcessClick(menuID, "", string(menuType), "")
+	if err != nil {
+		println(err.Error())
+	}
+}
+
 /*
 This method is called by C when a menu item is pressed
 */

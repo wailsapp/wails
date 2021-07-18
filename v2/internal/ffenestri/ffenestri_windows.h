@@ -79,6 +79,9 @@ void loadAssets(struct Application* app);
 // called when the application assets have been loaded into the DOM
 void completed(struct Application* app);
 
+// Processes the given keycode
+void processKeyPress(UINT key);
+
 // Callback
 extern "C" {
     void DisableWindowIcon(struct Application* app);
@@ -86,6 +89,7 @@ extern "C" {
     void* GetWindowHandle(struct Application*);
     void createApplicationMenu(HWND hwnd);
     void menuClicked(UINT id);
+    void handleKeypressInGo(UINT, BYTE);
 }
 
 #endif
