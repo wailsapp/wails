@@ -51,7 +51,7 @@ type App struct {
 	appconfigStore *runtime.Store
 
 	// Startup/Shutdown
-	startupCallback  func(*runtime.Runtime)
+	startupCallback  func(ctx context.Context)
 	shutdownCallback func()
 }
 

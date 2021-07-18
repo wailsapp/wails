@@ -1,14 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
-
-	"github.com/wailsapp/wails/v2"
 )
 
 // App struct
 type App struct {
-	runtime *wails.Runtime
+	runtime context.Context
 }
 
 // NewApp creates a new App application struct
@@ -17,10 +16,12 @@ func NewApp() *App {
 }
 
 // startup is called at application startup
-func (b *App) startup(runtime *wails.Runtime) {
+func (b *App) startup(ctx context.Context) {
 	// Perform your setup here
-	b.runtime = runtime
-	runtime.Window.SetTitle("{{.ProjectName}}")
+	//TODO: move to new runtime layout
+
+	//b.runtime = runtime
+	//runtime.Window.SetTitle("{{.ProjectName}}")
 }
 
 // shutdown is called at application termination

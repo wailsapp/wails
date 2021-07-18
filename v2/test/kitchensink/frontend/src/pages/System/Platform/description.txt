@@ -1,1 +1,0 @@
-System.Platform() returns the platform that the application in running on. It uses the same values as Go's <code>runtime.GOOS</code>

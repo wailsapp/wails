@@ -1,12 +1,12 @@
 package options
 
 import (
+	"context"
 	"log"
 	"runtime"
 
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 
-	wailsruntime "github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 
 	"github.com/imdario/mergo"
@@ -37,8 +37,8 @@ type App struct {
 	Mac               *mac.Options
 	Logger            logger.Logger `json:"-"`
 	LogLevel          logger.LogLevel
-	Startup           func(*wailsruntime.Runtime) `json:"-"`
-	Shutdown          func()                      `json:"-"`
+	Startup           func(ctx context.Context) `json:"-"`
+	Shutdown          func()                    `json:"-"`
 	Bind              []interface{}
 }
 

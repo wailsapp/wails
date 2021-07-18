@@ -3,7 +3,7 @@ package webserver
 import (
 	"context"
 	"github.com/wailsapp/wails/v2/pkg/menu"
-	"github.com/wailsapp/wails/v2/pkg/options/dialog"
+	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
 	"net/http"
 	"strings"
 
@@ -20,6 +20,18 @@ type WebClient struct {
 	running    bool
 }
 
+func (wc *WebClient) WindowSetMinSize(width int, height int) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) WindowSetMaxSize(width int, height int) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) DeleteTrayMenuByID(id string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
 func (wc *WebClient) SetTrayMenu(trayMenuJSON string) {
 	wc.logger.Info("Not implemented in server build")
 }
@@ -28,7 +40,7 @@ func (wc *WebClient) UpdateTrayMenuLabel(trayMenuJSON string) {
 	wc.logger.Info("Not implemented in server build")
 }
 
-func (wc *WebClient) MessageDialog(dialogOptions *dialog.MessageDialog, callbackID string) {
+func (wc *WebClient) MessageDialog(dialogOptions dialog.MessageDialogOptions, callbackID string) {
 	wc.logger.Info("Not implemented in server build")
 }
 
@@ -44,11 +56,19 @@ func (wc *WebClient) UpdateContextMenu(contextMenuJSON string) {
 	wc.logger.Info("Not implemented in server build")
 }
 
-func (wc *WebClient) OpenDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+func (wc *WebClient) OpenFileDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
 	wc.logger.Info("Not implemented in server build")
 }
 
-func (wc *WebClient) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string) {
+func (wc *WebClient) OpenMultipleFilesDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) OpenDirectoryDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
+	wc.logger.Info("Not implemented in server build")
+}
+
+func (wc *WebClient) SaveDialog(dialogOptions dialog.SaveDialogOptions, callbackID string) {
 	wc.logger.Info("Not implemented in server build")
 }
 

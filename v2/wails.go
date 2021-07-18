@@ -8,9 +8,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
-// Runtime is an alias for the runtime.Runtime struct
-type Runtime = runtime.Runtime
-
 // Store is an alias for the Store object
 type Store = runtime.Store
 

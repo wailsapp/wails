@@ -17,7 +17,7 @@ type Runtime struct {
 
 	// The hooks channel allows us to hook into frontend startup
 	hooksChannel     <-chan *servicebus.Message
-	startupCallback  func(*runtime.Runtime)
+	startupCallback  func(ctx context.Context)
 	shutdownCallback func()
 
 	// quit flag
@@ -39,7 +39,7 @@ type Runtime struct {
 }
 
 // NewRuntime creates a new runtime subsystem
-func NewRuntime(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.Logger, startupCallback func(*runtime.Runtime)) (*Runtime, error) {
+func NewRuntime(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.Logger, startupCallback func(context.Context)) (*Runtime, error) {
 
 	// Subscribe to log messages
 	runtimeChannel, err := bus.Subscribe("runtime:")
@@ -59,9 +59,9 @@ func NewRuntime(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.
 		logger:          logger.CustomLogger("Runtime Subsystem"),
 		runtime:         runtime.New(bus),
 		startupCallback: startupCallback,
-		ctx:             ctx,
 		bus:             bus,
 	}
+	result.ctx = context.WithValue(ctx, "bus", bus)
 
 	return result, nil
 }
@@ -83,8 +83,7 @@ func (r *Runtime) Start() error {
 					if r.startupCallback != nil {
 						r.startupOnce.Do(func() {
 							go func() {
-								r.startupCallback(r.runtime)
-
+								r.startupCallback(r.ctx)
 								// If we got a url, publish it now startup completed
 								url, ok := hooksMessage.Data().(string)
 								if ok && len(url) > 0 {

@@ -15,7 +15,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/wailsapp/wails/v2/pkg/options/dialog"
+	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
@@ -140,7 +140,7 @@ func convertFilters(filters []dialog.FileFilter) []cfd.FileFilter {
 }
 
 // OpenFileDialog will open a dialog with the given title and filter
-func (c *Client) OpenFileDialog(options *dialog.OpenDialog, callbackID string) {
+func (c *Client) OpenFileDialog(options dialog.OpenDialogOptions, callbackID string) {
 	config := cfd.DialogConfig{
 		Folder:      options.DefaultDirectory,
 		FileFilters: convertFilters(options.Filters),
@@ -166,7 +166,7 @@ func (c *Client) OpenFileDialog(options *dialog.OpenDialog, callbackID string) {
 }
 
 // OpenDirectoryDialog will open a dialog with the given title and filter
-func (c *Client) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+func (c *Client) OpenDirectoryDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
 	config := cfd.DialogConfig{
 		Title:  dialogOptions.Title,
 		Role:   "PickFolder",
@@ -191,7 +191,7 @@ func (c *Client) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackI
 }
 
 // OpenMultipleFilesDialog will open a dialog with the given title and filter
-func (c *Client) OpenMultipleFilesDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+func (c *Client) OpenMultipleFilesDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
 	config := cfd.DialogConfig{
 		Title:       dialogOptions.Title,
 		Role:        "OpenMultipleFiles",
@@ -222,7 +222,7 @@ func (c *Client) OpenMultipleFilesDialog(dialogOptions *dialog.OpenDialog, callb
 }
 
 // SaveDialog will open a dialog with the given title and filter
-func (c *Client) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string) {
+func (c *Client) SaveDialog(dialogOptions dialog.SaveDialogOptions, callbackID string) {
 	saveDialog, err := cfd.NewSaveFileDialog(cfd.DialogConfig{
 		Title:       dialogOptions.Title,
 		Role:        "SaveFile",
@@ -246,7 +246,7 @@ func (c *Client) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string)
 }
 
 // MessageDialog will open a message dialog with the given options
-func (c *Client) MessageDialog(options *dialog.MessageDialog, callbackID string) {
+func (c *Client) MessageDialog(options dialog.MessageDialogOptions, callbackID string) {
 
 	title, err := syscall.UTF16PtrFromString(options.Title)
 	if err != nil {

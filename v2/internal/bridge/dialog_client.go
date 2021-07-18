@@ -11,7 +11,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 
 	"github.com/leaanthony/slicer"
-	"github.com/wailsapp/wails/v2/pkg/options/dialog"
+	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
 )
 
 type DialogClient struct {
@@ -37,17 +37,17 @@ func (d *DialogClient) NotifyEvent(message string) {
 func (d *DialogClient) CallResult(message string) {
 }
 
-func (d *DialogClient) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+func (d *DialogClient) OpenDirectoryDialog(options dialog.OpenDialogOptions, callbackID string) {
 }
-func (d *DialogClient) OpenFileDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+func (d *DialogClient) OpenFileDialog(options dialog.OpenDialogOptions, callbackID string) {
 }
-func (d *DialogClient) OpenMultipleFilesDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
-}
-
-func (d *DialogClient) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string) {
+func (d *DialogClient) OpenMultipleFilesDialog(options dialog.OpenDialogOptions, callbackID string) {
 }
 
-func (d *DialogClient) MessageDialog(dialogOptions *dialog.MessageDialog, callbackID string) {
+func (d *DialogClient) SaveDialog(options dialog.SaveDialogOptions, callbackID string) {
+}
+
+func (d *DialogClient) MessageDialog(options dialog.MessageDialogOptions, callbackID string) {
 
 	osa, err := exec.LookPath("osascript")
 	if err != nil {
@@ -58,23 +58,23 @@ func (d *DialogClient) MessageDialog(dialogOptions *dialog.MessageDialog, callba
 	var btns slicer.StringSlicer
 	defaultButton := ""
 	cancelButton := ""
-	for index, btn := range dialogOptions.Buttons {
+	for index, btn := range options.Buttons {
 		btns.Add(strconv.Quote(btn))
-		if btn == dialogOptions.DefaultButton {
+		if btn == options.DefaultButton {
 			defaultButton = fmt.Sprintf("default button %d", index+1)
 		}
-		if btn == dialogOptions.CancelButton {
+		if btn == options.CancelButton {
 			cancelButton = fmt.Sprintf("cancel button %d", index+1)
 		}
 	}
 	buttons := "{" + btns.Join(",") + "}"
-	script := fmt.Sprintf("display dialog \"%s\" buttons %s %s %s with title \"%s\"", dialogOptions.Message, buttons, defaultButton, cancelButton, dialogOptions.Title)
+	script := fmt.Sprintf("display dialog \"%s\" buttons %s %s %s with title \"%s\"", options.Message, buttons, defaultButton, cancelButton, options.Title)
 	go func() {
 		out, err := exec.Command(osa, "-e", script).Output()
 		if err != nil {
 			// Assume user has pressed cancel button
-			if dialogOptions.CancelButton != "" {
-				d.dispatcher.DispatchMessage("DM" + callbackID + "|" + dialogOptions.CancelButton)
+			if options.CancelButton != "" {
+				d.dispatcher.DispatchMessage("DM" + callbackID + "|" + options.CancelButton)
 				return
 			}
 			d.log.Error("Dialog had bad exit code. If this was a Cancel button, add 'CancelButton' to the dialog.MessageDialog struct. Error: %s", err.Error())

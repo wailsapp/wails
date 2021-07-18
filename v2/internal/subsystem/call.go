@@ -4,10 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
 	"strings"
 	"sync"
-
-	"github.com/wailsapp/wails/v2/pkg/options/dialog"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -135,34 +134,34 @@ func (c *Call) processSystemCall(payload *message.CallMessage, clientID string) 
 		darkModeEnabled := c.runtime.System.IsDarkMode()
 		c.sendResult(darkModeEnabled, payload, clientID)
 	case "Dialog.Open":
-		dialogOptions := new(dialog.OpenDialog)
+		var dialogOptions dialog.OpenDialogOptions
 		err := json.Unmarshal(payload.Args[0], dialogOptions)
 		if err != nil {
 			c.logger.Error("Error decoding: %s", err)
 		}
-		result, err := c.runtime.Dialog.OpenFile(dialogOptions)
+		result, err := dialog.OpenFile(c.ctx, dialogOptions)
 		if err != nil {
 			c.logger.Error("Error: %s", err)
 		}
 		c.sendResult(result, payload, clientID)
 	case "Dialog.Save":
-		dialogOptions := new(dialog.SaveDialog)
+		var dialogOptions dialog.SaveDialogOptions
 		err := json.Unmarshal(payload.Args[0], dialogOptions)
 		if err != nil {
 			c.logger.Error("Error decoding: %s", err)
 		}
-		result, err := c.runtime.Dialog.SaveFile(dialogOptions)
+		result, err := dialog.SaveFile(c.ctx, dialogOptions)
 		if err != nil {
 			c.logger.Error("Error: %s", err)
 		}
 		c.sendResult(result, payload, clientID)
 	case "Dialog.Message":
-		dialogOptions := new(dialog.MessageDialog)
+		var dialogOptions dialog.MessageDialogOptions
 		err := json.Unmarshal(payload.Args[0], dialogOptions)
 		if err != nil {
 			c.logger.Error("Error decoding: %s", err)
 		}
-		result, err := c.runtime.Dialog.Message(dialogOptions)
+		result, err := dialog.Message(c.ctx, dialogOptions)
 		if err != nil {
 			c.logger.Error("Error: %s", err)
 		}

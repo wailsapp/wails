@@ -1,2 +1,0 @@
-<code>Events.Emit()</code> is used to emit application-wide events. Data may be passed with the event. 
-Any subscribers listening for events using <code>Events.On</code> will be called, passing the optional data.

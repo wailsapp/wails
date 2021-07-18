@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wailsapp/wails/v2/pkg/options/dialog"
+	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
@@ -127,7 +127,7 @@ func (c *Client) WindowSetColour(colour int) {
 }
 
 // OpenFileDialog will open a dialog with the given title and filter
-func (c *Client) OpenFileDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+func (c *Client) OpenFileDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
 	filters := []string{}
 	if runtime.GOOS == "darwin" {
 		for _, filter := range dialogOptions.Filters {
@@ -150,9 +150,8 @@ func (c *Client) OpenFileDialog(dialogOptions *dialog.OpenDialog, callbackID str
 	)
 }
 
-
 // OpenDirectoryDialog will open a dialog with the given title and filter
-func (c *Client) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+func (c *Client) OpenDirectoryDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
 	filters := []string{}
 	if runtime.GOOS == "darwin" {
 		for _, filter := range dialogOptions.Filters {
@@ -166,7 +165,7 @@ func (c *Client) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackI
 		c.app.string2CString(dialogOptions.DefaultFilename),
 		c.app.string2CString(dialogOptions.DefaultDirectory),
 		c.app.bool2Cint(false), // Files
-		c.app.bool2Cint(true), // Directories
+		c.app.bool2Cint(true),  // Directories
 		c.app.bool2Cint(false), // Multiple
 		c.app.bool2Cint(dialogOptions.ShowHiddenFiles),
 		c.app.bool2Cint(dialogOptions.CanCreateDirectories),
@@ -176,7 +175,7 @@ func (c *Client) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackI
 }
 
 // OpenMultipleFilesDialog will open a dialog with the given title and filter
-func (c *Client) OpenMultipleFilesDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+func (c *Client) OpenMultipleFilesDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
 	filters := []string{}
 	if runtime.GOOS == "darwin" {
 		for _, filter := range dialogOptions.Filters {
@@ -220,7 +219,7 @@ func (c *Client) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string)
 }
 
 // MessageDialog will open a message dialog with the given options
-func (c *Client) MessageDialog(dialogOptions *dialog.MessageDialog, callbackID string) {
+func (c *Client) MessageDialog(dialogOptions dialog.MessageDialogOptions, callbackID string) {
 
 	// Sanity check button length
 	if len(dialogOptions.Buttons) > 4 {

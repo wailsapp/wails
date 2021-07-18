@@ -1,3 +1,0 @@
-<code>Events.OnMultiple()</code> is used to subscribe to events. It takes a number which is the 
-total number of times that the callback will be fired when an event matching the given event 
-name is received.

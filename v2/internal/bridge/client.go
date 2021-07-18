@@ -1,7 +1,7 @@
 package bridge
 
 import (
-	"github.com/wailsapp/wails/v2/pkg/options/dialog"
+	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
 )
 
 type BridgeClient struct {
@@ -34,23 +34,23 @@ func (b BridgeClient) CallResult(message string) {
 	b.session.sendMessage("c" + message)
 }
 
-func (b BridgeClient) OpenFileDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+func (b BridgeClient) OpenFileDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
 	// Handled by dialog_client
 }
 
-func (b BridgeClient) OpenMultipleFilesDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+func (b BridgeClient) OpenMultipleFilesDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
 	// Handled by dialog_client
 }
 
-func (b BridgeClient) OpenDirectoryDialog(dialogOptions *dialog.OpenDialog, callbackID string) {
+func (b BridgeClient) OpenDirectoryDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
 	// Handled by dialog_client
 }
 
-func (b BridgeClient) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string) {
+func (b BridgeClient) SaveDialog(dialogOptions dialog.SaveDialogOptions, callbackID string) {
 	// Handled by dialog_client
 }
 
-func (b BridgeClient) MessageDialog(dialogOptions *dialog.MessageDialog, callbackID string) {
+func (b BridgeClient) MessageDialog(dialogOptions dialog.MessageDialogOptions, callbackID string) {
 	// Handled by dialog_client
 }
 

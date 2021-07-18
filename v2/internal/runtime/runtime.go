@@ -9,7 +9,6 @@ type Runtime struct {
 	Browser Browser
 	Events  Events
 	Window  Window
-	Dialog  Dialog
 	System  System
 	Menu    Menu
 	Store   *StoreProvider
@@ -23,7 +22,6 @@ func New(serviceBus *servicebus.ServiceBus) *Runtime {
 		Browser: newBrowser(),
 		Events:  newEvents(serviceBus),
 		Window:  newWindow(serviceBus),
-		Dialog:  newDialog(serviceBus),
 		System:  newSystem(serviceBus),
 		Menu:    newMenu(serviceBus),
 		Log:     newLog(serviceBus),
