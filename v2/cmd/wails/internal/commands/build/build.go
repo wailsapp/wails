@@ -194,8 +194,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			buildOptions.Arch = platformSplit[1]
 		}
 
-		println("Build arch =", buildOptions.Arch)
-
 		// Start a new tabwriter
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 8, 8, 0, '\t', 0)
