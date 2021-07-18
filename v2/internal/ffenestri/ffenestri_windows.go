@@ -136,6 +136,7 @@ func createApplicationMenu(hwnd uintptr) {
 
 //export handleKeypressInGo
 func handleKeypressInGo(keycode uint16, modifiers uint8) {
+	//fmt.Printf("Key code: %#x\n", keycode)
 	menuID, menuType := getCallbackForKeyPress(keycode, modifiers)
 	if menuID == "" {
 		return

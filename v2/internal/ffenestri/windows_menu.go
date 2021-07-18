@@ -3,6 +3,7 @@
 package ffenestri
 
 import (
+	"fmt"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
@@ -200,6 +201,10 @@ func (m *Menu) processAccelerator(menuitem *menumanager.ProcessedMenuItem) {
 	}
 
 	var keycode = calculateKeycode(strings.ToLower(menuitem.Accelerator.Key))
+	if keycode == 0 {
+		fmt.Printf("WARNING: Key '%s' is unsupported in windows. Cannot bind callback.", menuitem.Accelerator.Key)
+		return
+	}
 	addMenuCallback(keycode, modifiers, menuitem.ID, m.menuType)
 
 }
