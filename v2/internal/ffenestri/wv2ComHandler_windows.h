@@ -55,14 +55,14 @@ class wv2ComHandler
 
         // This is our keyboard callback method
         HRESULT STDMETHODCALLTYPE Invoke(ICoreWebView2Controller *controller, ICoreWebView2AcceleratorKeyPressedEventArgs * args) {
+            // Prevent WebView2 from processing the key
+            args->put_Handled(TRUE);
+
             COREWEBVIEW2_KEY_EVENT_KIND kind;
             args->get_KeyEventKind(&kind);
             if (kind == COREWEBVIEW2_KEY_EVENT_KIND_KEY_DOWN ||
                 kind == COREWEBVIEW2_KEY_EVENT_KIND_SYSTEM_KEY_DOWN)
             {
-                // Prevent WebView2 from processing the key
-                args->put_Handled(TRUE);
-
                 UINT key;
                 args->get_VirtualKey(&key);
                 COREWEBVIEW2_PHYSICAL_KEY_STATUS status;
