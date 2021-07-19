@@ -13,11 +13,6 @@ The lightweight framework for web-like apps
  * Initialises platform specific code
  */
 
-export const System = {
-	AppType: 'desktop',
-	Platform: () => 'darwin',
-};
-
 export function SendMessage(message) {
 	window.wailsInvoke(message);
 }

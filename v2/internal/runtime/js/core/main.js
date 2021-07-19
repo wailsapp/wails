@@ -9,16 +9,11 @@ The lightweight framework for web-like apps
 */
 /* jshint esversion: 6 */
 import * as Log from './log';
-import * as Browser from './browser';
-import * as Window from './window';
-import * as Dialog from './dialog';
-import { On, Once, OnMultiple, Emit, Notify } from './events';
-import { Callback, SystemCall } from './calls';
-import { AddScript, InjectCSS, DisableDefaultContextMenu } from './utils';
-import { AddIPCListener, SendMessage } from 'ipc';
+import {Emit, Notify, On, Once, OnMultiple} from './events';
+import {Callback, SystemCall} from './calls';
+import {AddScript, DisableDefaultContextMenu, InjectCSS} from './utils';
+import {AddIPCListener, SendMessage} from 'ipc';
 import * as Platform from 'platform';
-import * as Store from './store';
-import * as Tray from './tray';
 
 export function Init() {
 	// Backend is where the Go struct wrappers get bound to
@@ -26,12 +21,7 @@ export function Init() {
 
 	// Initialise global if not already
 	window.wails = {
-		System: Platform.System,
 		Log,
-		Browser,
-		Window,
-		Tray,
-		Dialog,
 		Events: {
 			On,
 			Once,
@@ -49,17 +39,7 @@ export function Init() {
 			SystemCall,
 			SendMessage,
 		},
-		Store,
 	};
-
-	// Setup system. Store uses window.wails so needs to be setup after that
-	window.wails.System = {
-		IsDarkMode: Store.New('wails:isdarkmode'),
-		LogLevel: Store.New('wails:loglevel'),
-		AppConfig: Store.New('wails:appconfig'),
-	};
-	// Copy platform specific information into it
-	Object.assign(window.wails.System, Platform.System);
 
 	// Do platform specific Init
 	Platform.Init();

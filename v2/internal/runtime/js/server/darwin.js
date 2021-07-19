@@ -13,9 +13,4 @@ The lightweight framework for web-like apps
  * Initialises platform specific code
  */
 
-export const System = {
-    Platform: "darwin",
-    AppType: "server"
-}
-
 export function Init() { }
