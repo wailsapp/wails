@@ -3,6 +3,7 @@
 package app
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
-	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
 	"github.com/wailsapp/wails/v2/internal/subsystem"
 	"github.com/wailsapp/wails/v2/internal/webserver"
@@ -26,7 +26,6 @@ type App struct {
 	call    *subsystem.Call
 	event   *subsystem.Event
 	log     *subsystem.Log
-	runtime *subsystem.Runtime
 
 	options *options.App
 
@@ -38,12 +37,8 @@ type App struct {
 
 	debug bool
 
-	// Application Stores
-	loglevelStore  *runtime.Store
-	appconfigStore *runtime.Store
-
 	// Startup/Shutdown
-	startupCallback  func(*runtime.Runtime)
+	startupCallback  func(ctx context.Context)
 	shutdownCallback func()
 }
 
@@ -109,19 +104,15 @@ func (a *App) Run() error {
 		}
 
 		// Start the runtime
-		runtime, err := subsystem.NewRuntime(a.servicebus, a.logger, a.startupCallback, a.shutdownCallback)
+		runtime, err := subsystem.NewRuntime(a.servicebus, a.logger, a.startupCallback)
 		if err != nil {
 			return err
 		}
 		a.runtime = runtime
 		a.runtime.Start()
 
-		// Application Stores
-		a.loglevelStore = a.runtime.GoRuntime().Store.New("wails:loglevel", a.options.LogLevel)
-		a.appconfigStore = a.runtime.GoRuntime().Store.New("wails:appconfig", a.options)
-
 		a.servicebus.Start()
-		log, err := subsystem.NewLog(a.servicebus, a.logger, a.loglevelStore)
+		log, err := subsystem.NewLog(a.servicebus, a.logger)
 		if err != nil {
 			return err
 		}
@@ -135,7 +126,7 @@ func (a *App) Run() error {
 		a.dispatcher.Start()
 
 		// Start the binding subsystem
-		binding, err := subsystem.NewBinding(a.servicebus, a.logger, a.bindings, runtime.GoRuntime())
+		binding, err := subsystem.NewBinding(a.servicebus, a.logger, a.bindings)
 		if err != nil {
 			return err
 		}

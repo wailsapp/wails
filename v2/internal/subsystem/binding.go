@@ -3,7 +3,6 @@ package subsystem
 import (
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/logger"
-	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
 )
 
@@ -19,13 +18,10 @@ type Binding struct {
 
 	// logger
 	logger logger.CustomLogger
-
-	// runtime
-	runtime *runtime.Runtime
 }
 
 // NewBinding creates a new binding subsystem. Uses the given bindings db for reference.
-func NewBinding(bus *servicebus.ServiceBus, logger *logger.Logger, bindings *binding.Bindings, runtime *runtime.Runtime) (*Binding, error) {
+func NewBinding(bus *servicebus.ServiceBus, logger *logger.Logger, bindings *binding.Bindings) (*Binding, error) {
 
 	// Subscribe to event messages
 	bindingChannel, err := bus.Subscribe("binding")
@@ -37,7 +33,6 @@ func NewBinding(bus *servicebus.ServiceBus, logger *logger.Logger, bindings *bin
 		bindingChannel: bindingChannel,
 		logger:         logger.CustomLogger("Binding Subsystem"),
 		bindings:       bindings,
-		runtime:        runtime,
 	}
 
 	return result, nil

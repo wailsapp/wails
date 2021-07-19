@@ -3,9 +3,9 @@ package dialog
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/internal/crypto"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
+	"log"
 )
 
 // FileFilter defines a filter for dialog boxes
@@ -59,14 +59,6 @@ type MessageDialogOptions struct {
 	Icon          string
 }
 
-func extractBus(ctx context.Context) (*servicebus.ServiceBus, error) {
-	bus := ctx.Value("bus")
-	if bus == nil {
-		return nil, errors.New("wails runtime has not been initialised correctly")
-	}
-	return bus.(*servicebus.ServiceBus), nil
-}
-
 // processTitleAndFilter return the title and filter from the given params.
 // title is the first string, filter is the second
 func processTitleAndFilter(params ...string) (string, string) {
@@ -84,13 +76,14 @@ func processTitleAndFilter(params ...string) (string, string) {
 	return title, filter
 }
 
+func fatal(caller string) {
+	log.Fatalf("cannot call '%s': Application not initialised", caller)
+}
+
 // OpenDirectory prompts the user to select a directory
 func OpenDirectory(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
 
-	bus, err := extractBus(ctx)
-	if err != nil {
-		return "", errors.Wrap(err, "OpenDirectory")
-	}
+	bus := servicebus.ExtractBus(ctx)
 
 	// Create unique dialog callback
 	uniqueCallback := crypto.RandomID()
@@ -117,10 +110,7 @@ func OpenDirectory(ctx context.Context, dialogOptions OpenDialogOptions) (string
 // OpenFile prompts the user to select a file
 func OpenFile(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
 
-	bus, err := extractBus(ctx)
-	if err != nil {
-		return "", errors.Wrap(err, "OpenFile")
-	}
+	bus := servicebus.ExtractBus(ctx)
 
 	// Create unique dialog callback
 	uniqueCallback := crypto.RandomID()
@@ -147,12 +137,7 @@ func OpenFile(ctx context.Context, dialogOptions OpenDialogOptions) (string, err
 // OpenMultipleFiles prompts the user to select a file
 func OpenMultipleFiles(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error) {
 
-	bus, err := extractBus(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "OpenMultipleFiles")
-	}
-
-	// Create unique dialog callback
+	bus := servicebus.ExtractBus(ctx)
 	uniqueCallback := crypto.RandomID()
 
 	// Subscribe to the respose channel
@@ -177,12 +162,7 @@ func OpenMultipleFiles(ctx context.Context, dialogOptions OpenDialogOptions) ([]
 // SaveFile prompts the user to select a file
 func SaveFile(ctx context.Context, dialogOptions SaveDialogOptions) (string, error) {
 
-	bus, err := extractBus(ctx)
-	if err != nil {
-		return "", errors.Wrap(err, "SaveFile")
-	}
-
-	// Create unique dialog callback
+	bus := servicebus.ExtractBus(ctx)
 	uniqueCallback := crypto.RandomID()
 
 	// Subscribe to the respose channel
@@ -207,10 +187,7 @@ func SaveFile(ctx context.Context, dialogOptions SaveDialogOptions) (string, err
 // Message show a message to the user
 func Message(ctx context.Context, dialogOptions MessageDialogOptions) (string, error) {
 
-	bus, err := extractBus(ctx)
-	if err != nil {
-		return "", errors.Wrap(err, "Message")
-	}
+	bus := servicebus.ExtractBus(ctx)
 
 	// Create unique dialog callback
 	uniqueCallback := crypto.RandomID()

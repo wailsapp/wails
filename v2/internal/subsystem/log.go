@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
-	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
 )
 
@@ -22,9 +21,6 @@ type Log struct {
 	// Logger!
 	logger *logger.Logger
 
-	// Loglevel store
-	logLevelStore *runtime.Store
-
 	// Context for shutdown
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -34,7 +30,7 @@ type Log struct {
 }
 
 // NewLog creates a new log subsystem
-func NewLog(bus *servicebus.ServiceBus, logger *logger.Logger, logLevelStore *runtime.Store) (*Log, error) {
+func NewLog(bus *servicebus.ServiceBus, logger *logger.Logger) (*Log, error) {
 
 	// Subscribe to log messages
 	logChannel, err := bus.Subscribe("log")
@@ -45,11 +41,10 @@ func NewLog(bus *servicebus.ServiceBus, logger *logger.Logger, logLevelStore *ru
 	ctx, cancel := context.WithCancel(context.Background())
 
 	result := &Log{
-		logChannel:    logChannel,
-		logger:        logger,
-		logLevelStore: logLevelStore,
-		ctx:           ctx,
-		cancel:        cancel,
+		logChannel: logChannel,
+		logger:     logger,
+		ctx:        ctx,
+		cancel:     cancel,
 	}
 
 	return result, nil
@@ -90,7 +85,6 @@ func (l *Log) Start() error {
 					switch inLevel := logMessage.Data().(type) {
 					case logger.LogLevel:
 						l.logger.SetLogLevel(inLevel)
-						l.logLevelStore.Set(inLevel)
 					case string:
 						uint64level, err := strconv.ParseUint(inLevel, 10, 8)
 						if err != nil {
@@ -98,7 +92,6 @@ func (l *Log) Start() error {
 							continue
 						}
 						level := logger.LogLevel(uint64level)
-						l.logLevelStore.Set(level)
 						l.logger.SetLogLevel(level)
 					}
 

@@ -4,12 +4,8 @@ package wails
 
 import (
 	"github.com/wailsapp/wails/v2/internal/app"
-	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
-
-// Store is an alias for the Store object
-type Store = runtime.Store
 
 // Run creates an application based on the given config and executes it
 func Run(options *options.App) error {

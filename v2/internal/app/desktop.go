@@ -11,7 +11,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
-	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
 	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/internal/subsystem"
@@ -45,10 +44,6 @@ type App struct {
 
 	// This is our binding DB
 	bindings *binding.Bindings
-
-	// Application Stores
-	loglevelStore  *runtime.Store
-	appconfigStore *runtime.Store
 
 	// Startup/Shutdown
 	startupCallback  func(ctx context.Context)
@@ -145,12 +140,8 @@ func (a *App) Run() error {
 		return err
 	}
 
-	// Application Stores
-	a.loglevelStore = a.runtime.GoRuntime().Store.New("wails:loglevel", a.options.LogLevel)
-	a.appconfigStore = a.runtime.GoRuntime().Store.New("wails:appconfig", a.options)
-
 	// Start the logging subsystem
-	log, err := subsystem.NewLog(a.servicebus, a.logger, a.loglevelStore)
+	log, err := subsystem.NewLog(a.servicebus, a.logger)
 	if err != nil {
 		return err
 	}
@@ -207,7 +198,7 @@ func (a *App) Run() error {
 	}
 
 	// Start the call subsystem
-	callSubsystem, err := subsystem.NewCall(ctx, a.servicebus, a.logger, a.bindings.DB(), a.runtime.GoRuntime())
+	callSubsystem, err := subsystem.NewCall(ctx, a.servicebus, a.logger, a.bindings.DB())
 	if err != nil {
 		return err
 	}

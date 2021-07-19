@@ -11,7 +11,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher/message"
-	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
 )
 
@@ -32,9 +31,6 @@ type Call struct {
 	// logger
 	logger logger.CustomLogger
 
-	// runtime
-	runtime *runtime.Runtime
-
 	// context
 	ctx context.Context
 
@@ -43,7 +39,7 @@ type Call struct {
 }
 
 // NewCall creates a new call subsystem
-func NewCall(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.Logger, DB *binding.DB, runtime *runtime.Runtime) (*Call, error) {
+func NewCall(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.Logger, DB *binding.DB) (*Call, error) {
 
 	// Subscribe to event messages
 	callChannel, err := bus.Subscribe("call:invoke")
@@ -56,7 +52,6 @@ func NewCall(ctx context.Context, bus *servicebus.ServiceBus, logger *logger.Log
 		logger:      logger.CustomLogger("Call Subsystem"),
 		DB:          DB,
 		bus:         bus,
-		runtime:     runtime,
 		ctx:         ctx,
 		wg:          ctx.Value("waitgroup").(*sync.WaitGroup),
 	}
@@ -130,12 +125,9 @@ func (c *Call) processSystemCall(payload *message.CallMessage, clientID string) 
 	c.logger.Trace("Got internal System call: %+v", payload)
 	callName := strings.TrimPrefix(payload.Name, ".wails.")
 	switch callName {
-	case "IsDarkMode":
-		darkModeEnabled := c.runtime.System.IsDarkMode()
-		c.sendResult(darkModeEnabled, payload, clientID)
 	case "Dialog.Open":
 		var dialogOptions dialog.OpenDialogOptions
-		err := json.Unmarshal(payload.Args[0], dialogOptions)
+		err := json.Unmarshal(payload.Args[0], &dialogOptions)
 		if err != nil {
 			c.logger.Error("Error decoding: %s", err)
 		}
@@ -146,7 +138,7 @@ func (c *Call) processSystemCall(payload *message.CallMessage, clientID string) 
 		c.sendResult(result, payload, clientID)
 	case "Dialog.Save":
 		var dialogOptions dialog.SaveDialogOptions
-		err := json.Unmarshal(payload.Args[0], dialogOptions)
+		err := json.Unmarshal(payload.Args[0], &dialogOptions)
 		if err != nil {
 			c.logger.Error("Error decoding: %s", err)
 		}
@@ -157,7 +149,7 @@ func (c *Call) processSystemCall(payload *message.CallMessage, clientID string) 
 		c.sendResult(result, payload, clientID)
 	case "Dialog.Message":
 		var dialogOptions dialog.MessageDialogOptions
-		err := json.Unmarshal(payload.Args[0], dialogOptions)
+		err := json.Unmarshal(payload.Args[0], &dialogOptions)
 		if err != nil {
 			c.logger.Error("Error decoding: %s", err)
 		}

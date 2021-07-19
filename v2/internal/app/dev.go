@@ -14,7 +14,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
-	"github.com/wailsapp/wails/v2/internal/runtime"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
 	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/internal/subsystem"
@@ -185,7 +184,7 @@ func (a *App) Run() error {
 	}
 
 	// Start the call subsystem
-	callSubsystem, err := subsystem.NewCall(ctx, a.servicebus, a.logger, a.bindings.DB(), a.runtime.GoRuntime())
+	callSubsystem, err := subsystem.NewCall(ctx, a.servicebus, a.logger, a.bindings.DB())
 	if err != nil {
 		return err
 	}
