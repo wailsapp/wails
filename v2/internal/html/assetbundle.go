@@ -137,7 +137,7 @@ func (a *AssetBundle) processHTML(htmldata string) error {
 						break
 					}
 				}
-				if !paths.Contains(asset.Path) {
+				if !paths.Contains(asset.Path) && asset.Path != "" {
 					err := asset.Load(a.basedirectory)
 					if err != nil {
 						return err
