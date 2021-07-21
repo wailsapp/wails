@@ -101,6 +101,9 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/jugglingjsons" style="width:50px;border-radius: 50%">
   <img src="https://github.com/jugglingjsons.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
+<a href="https://github.com/marcus-crane" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/marcus-crane.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
 
 ## Installation
 
