@@ -1,11 +1,11 @@
-// +build !windows
+// +build windows
 
 // Package wails is the main package of the Wails project.
 // It is used by client applications.
 package wails
 
 import (
-	"github.com/wailsapp/wails/v2/internal/app"
+	app "github.com/wailsapp/wails/v2/internal/appng"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 

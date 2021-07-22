@@ -28,6 +28,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0 // indirect
+	github.com/tadvi/winc v0.0.0-20190405175627-5454f291903d
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
@@ -43,3 +44,6 @@ require (
 	golang.org/x/tools v0.1.0
 	nhooyr.io/websocket v1.8.6
 )
+
+replace github.com/tadvi/winc v0.0.0-20190405175627-5454f291903d =>  C:\Users\leaan\GolandProjects\winc
+
