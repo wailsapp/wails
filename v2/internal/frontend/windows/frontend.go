@@ -6,7 +6,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"runtime"
-	"time"
 )
 
 type Frontend struct {
@@ -40,19 +39,27 @@ func (f *Frontend) Run() error {
 		mainWindow.SetTranslucentBackground()
 	}
 
+	if f.options.Windows.DisableWindowIcon {
+		mainWindow.DisableIcon()
+	}
+
+	if f.options.StartHidden {
+		mainWindow.Hide()
+	}
+
 	if f.options.Fullscreen {
 		mainWindow.Fullscreen()
 	}
 
-	mainWindow.Center()
-	mainWindow.Show()
+	f.WindowCenter()
+
+	if !f.options.StartHidden {
+		mainWindow.Show()
+	}
+
 	mainWindow.OnClose().Bind(func(arg *winc.Event) {
 		if f.options.HideWindowOnClose {
-
-			go func() {
-				time.Sleep(1 * time.Second)
-				f.WindowShow()
-			}()
+			f.WindowHide()
 		} else {
 			f.Quit()
 		}
@@ -60,6 +67,26 @@ func (f *Frontend) Run() error {
 
 	winc.RunMainLoop()
 	return nil
+}
+
+func (f *Frontend) WindowCenter() {
+	runtime.LockOSThread()
+	f.mainWindow.Center()
+}
+
+func (f *Frontend) WindowSetPos(x, y int) {
+	runtime.LockOSThread()
+	f.mainWindow.SetPos(x, y)
+}
+
+func (f *Frontend) WindowSetSize(width, height int) {
+	runtime.LockOSThread()
+	f.mainWindow.SetSize(width, height)
+}
+
+func (f *Frontend) WindowSetTitle(title string) {
+	runtime.LockOSThread()
+	f.mainWindow.SetText(title)
 }
 
 func (f *Frontend) WindowFullscreen() {
@@ -80,6 +107,22 @@ func (f *Frontend) WindowShow() {
 func (f *Frontend) WindowHide() {
 	runtime.LockOSThread()
 	f.mainWindow.Hide()
+}
+func (f *Frontend) WindowMaximise() {
+	runtime.LockOSThread()
+	f.mainWindow.Maximise()
+}
+func (f *Frontend) WindowUnmaximise() {
+	runtime.LockOSThread()
+	f.mainWindow.Restore()
+}
+func (f *Frontend) WindowMinimise() {
+	runtime.LockOSThread()
+	f.mainWindow.Minimise()
+}
+func (f *Frontend) WindowUnminimise() {
+	runtime.LockOSThread()
+	f.mainWindow.Restore()
 }
 
 func (f *Frontend) Quit() {
