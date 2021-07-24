@@ -127,31 +127,16 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		return nil, err
 	}
 
-	// Process context menus
-	contextMenus := options.GetContextMenus(appoptions)
-	for _, contextMenu := range contextMenus {
-		menuManager.AddContextMenu(contextMenu)
-	}
-
-	// Process tray menus
-	trayMenus := options.GetTrayMenus(appoptions)
-	for _, trayMenu := range trayMenus {
-		_, err := menuManager.AddTrayMenu(trayMenu)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	//window := ffenestri.NewApplicationWithConfig(appoptions, myLogger, menuManager)
-	appFrontend := frontend.NewFrontend(appoptions, myLogger)
-
 	// Create binding exemptions - Ugly hack. There must be a better way
 	bindingExemptions := []interface{}{appoptions.Startup, appoptions.Shutdown}
+	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions)
+
+	appFrontend := frontend.NewFrontend(appoptions, myLogger, appBindings)
 
 	result := &App{
 		frontend:         appFrontend,
 		logger:           myLogger,
-		bindings:         binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions),
+		bindings:         appBindings,
 		menuManager:      menuManager,
 		startupCallback:  appoptions.Startup,
 		shutdownCallback: appoptions.Shutdown,

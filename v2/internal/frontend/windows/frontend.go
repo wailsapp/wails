@@ -2,6 +2,7 @@ package windows
 
 import (
 	"github.com/tadvi/winc"
+	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"runtime"
@@ -14,6 +15,7 @@ type Frontend struct {
 	// main window handle
 	mainWindow                               *Window
 	minWidth, minHeight, maxWidth, maxHeight int
+	bindings                                 *binding.Bindings
 }
 
 func (f *Frontend) Run() error {
@@ -113,14 +115,20 @@ func (f *Frontend) WindowSetMaxSize(width int, height int) {
 	f.mainWindow.SetMaxSize(width, height)
 }
 
+func (f *Frontend) WindowSetColour(colour int) {
+	runtime.LockOSThread()
+	// TODO: Set webview2 background to this colour
+}
+
 func (f *Frontend) Quit() {
 	winc.Exit()
 }
 
-func NewFrontend(appoptions *options.App, myLogger *logger.Logger) *Frontend {
+func NewFrontend(appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings) *Frontend {
 
 	return &Frontend{
 		frontendOptions: appoptions,
 		logger:          myLogger,
+		bindings:        appBindings,
 	}
 }

@@ -34,7 +34,7 @@ type Frontend interface {
 	WindowSetMaxSize(width int, height int)
 	WindowFullscreen()
 	WindowUnFullscreen()
-	//WindowSetColour(colour int)
+	WindowSetColour(colour int)
 	//
 	//// Menus
 	//SetApplicationMenu(menu *menu.Menu)

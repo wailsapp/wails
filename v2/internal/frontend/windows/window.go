@@ -60,5 +60,9 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 		result.Fullscreen()
 	}
 
+	if options.Windows.Menu != nil {
+		processApplicationMenu(result, options.Windows.Menu)
+	}
+
 	return result
 }
