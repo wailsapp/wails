@@ -2,63 +2,33 @@ package windows
 
 import (
 	"github.com/tadvi/winc"
-	"github.com/tadvi/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"runtime"
 )
 
 type Frontend struct {
-	options *options.App
-	logger  *logger.Logger
+	frontendOptions *options.App
+	logger          *logger.Logger
 
 	// main window handle
-	mainWindow *winc.Form
+	mainWindow                               *Window
+	minWidth, minHeight, maxWidth, maxHeight int
 }
 
 func (f *Frontend) Run() error {
 
-	exStyle := w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
-	if f.options.Windows.WindowBackgroundIsTranslucent {
-		exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
-	}
-
-	var dwStyle uint
-	if f.options.Frameless {
-		dwStyle = w32.WS_POPUP
-	}
-
-	mainWindow := winc.NewCustomForm(nil, exStyle, dwStyle)
+	mainWindow := NewWindow(nil, f.frontendOptions)
 	f.mainWindow = mainWindow
-	mainWindow.SetSize(f.options.Width, f.options.Height)
-	mainWindow.SetText(f.options.Title)
-	mainWindow.EnableSizable(!f.options.DisableResize)
-	mainWindow.EnableMaxButton(!f.options.DisableResize)
-
-	if f.options.Windows.WindowBackgroundIsTranslucent {
-		mainWindow.SetTranslucentBackground()
-	}
-
-	if f.options.Windows.DisableWindowIcon {
-		mainWindow.DisableIcon()
-	}
-
-	if f.options.StartHidden {
-		mainWindow.Hide()
-	}
-
-	if f.options.Fullscreen {
-		mainWindow.Fullscreen()
-	}
 
 	f.WindowCenter()
 
-	if !f.options.StartHidden {
+	if !f.frontendOptions.StartHidden {
 		mainWindow.Show()
 	}
 
 	mainWindow.OnClose().Bind(func(arg *winc.Event) {
-		if f.options.HideWindowOnClose {
+		if f.frontendOptions.HideWindowOnClose {
 			f.WindowHide()
 		} else {
 			f.Quit()
@@ -78,10 +48,19 @@ func (f *Frontend) WindowSetPos(x, y int) {
 	runtime.LockOSThread()
 	f.mainWindow.SetPos(x, y)
 }
+func (f *Frontend) WindowGetPos() (int, int) {
+	runtime.LockOSThread()
+	return f.mainWindow.Pos()
+}
 
 func (f *Frontend) WindowSetSize(width, height int) {
 	runtime.LockOSThread()
 	f.mainWindow.SetSize(width, height)
+}
+
+func (f *Frontend) WindowGetSize() (int, int) {
+	runtime.LockOSThread()
+	return f.mainWindow.Size()
 }
 
 func (f *Frontend) WindowSetTitle(title string) {
@@ -125,6 +104,15 @@ func (f *Frontend) WindowUnminimise() {
 	f.mainWindow.Restore()
 }
 
+func (f *Frontend) WindowSetMinSize(width int, height int) {
+	runtime.LockOSThread()
+	f.mainWindow.SetMinSize(width, height)
+}
+func (f *Frontend) WindowSetMaxSize(width int, height int) {
+	runtime.LockOSThread()
+	f.mainWindow.SetMaxSize(width, height)
+}
+
 func (f *Frontend) Quit() {
 	winc.Exit()
 }
@@ -132,7 +120,7 @@ func (f *Frontend) Quit() {
 func NewFrontend(appoptions *options.App, myLogger *logger.Logger) *Frontend {
 
 	return &Frontend{
-		options: appoptions,
-		logger:  myLogger,
+		frontendOptions: appoptions,
+		logger:          myLogger,
 	}
 }
