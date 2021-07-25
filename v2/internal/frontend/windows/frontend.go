@@ -1,6 +1,7 @@
 package windows
 
 import (
+	"context"
 	"github.com/tadvi/winc"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -36,6 +37,12 @@ func (f *Frontend) Run() error {
 			f.Quit()
 		}
 	})
+
+	// TODO: Move this into a callback from frontend
+	go func() {
+		ctx := context.WithValue(context.Background(), "frontend", f)
+		f.frontendOptions.Startup(ctx)
+	}()
 
 	winc.RunMainLoop()
 	return nil

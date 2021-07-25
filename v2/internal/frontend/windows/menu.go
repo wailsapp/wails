@@ -36,9 +36,14 @@ func addRadioItemToMap(menuItem *menu.MenuItem, wincMenuItem *winc.MenuItem) {
 	radioGroupMap[menuItem] = append(radioGroupMap[menuItem], wincMenuItem)
 }
 
-func processApplicationMenu(window *Window, menuToProcess *menu.Menu) {
+func (w *Window) SetApplicationMenu(menu *menu.Menu) {
+	w.applicationMenu = menu
+	processMenu(w, menu)
+}
+
+func processMenu(window *Window, menu *menu.Menu) {
 	mainMenu := window.NewMenu()
-	for _, menuItem := range menuToProcess.Items {
+	for _, menuItem := range menu.Items {
 		submenu := mainMenu.AddSubMenu(menuItem.Label)
 		for _, menuItem := range menuItem.SubMenu.Items {
 			processMenuItem(submenu, menuItem)
@@ -55,7 +60,8 @@ func processMenuItem(parent *winc.MenuItem, menuItem *menu.MenuItem) {
 	case menu.SeparatorType:
 		parent.AddSeparator()
 	case menu.TextType:
-		newItem := parent.AddItem(menuItem.Label, winc.NoShortcut)
+		shortcut := acceleratorToWincShortcut(menuItem.Accelerator)
+		newItem := parent.AddItem(menuItem.Label, shortcut)
 		if menuItem.Tooltip != "" {
 			newItem.SetToolTip(menuItem.Tooltip)
 		}
@@ -69,7 +75,8 @@ func processMenuItem(parent *winc.MenuItem, menuItem *menu.MenuItem) {
 		newItem.SetEnabled(!menuItem.Disabled)
 
 	case menu.CheckboxType:
-		newItem := parent.AddItem(menuItem.Label, winc.NoShortcut)
+		shortcut := acceleratorToWincShortcut(menuItem.Accelerator)
+		newItem := parent.AddItem(menuItem.Label, shortcut)
 		newItem.SetCheckable(true)
 		newItem.SetChecked(menuItem.Checked)
 		if menuItem.Tooltip != "" {
@@ -86,7 +93,8 @@ func processMenuItem(parent *winc.MenuItem, menuItem *menu.MenuItem) {
 		newItem.SetEnabled(!menuItem.Disabled)
 		addCheckBoxToMap(menuItem, newItem)
 	case menu.RadioType:
-		newItem := parent.AddItemRadio(menuItem.Label, winc.NoShortcut)
+		shortcut := acceleratorToWincShortcut(menuItem.Accelerator)
+		newItem := parent.AddItemRadio(menuItem.Label, shortcut)
 		newItem.SetCheckable(true)
 		newItem.SetChecked(menuItem.Checked)
 		if menuItem.Tooltip != "" {
@@ -108,4 +116,12 @@ func processMenuItem(parent *winc.MenuItem, menuItem *menu.MenuItem) {
 			processMenuItem(submenu, menuItem)
 		}
 	}
+}
+
+func (f *Frontend) SetApplicationMenu(menu *menu.Menu) {
+	f.mainWindow.SetApplicationMenu(menu)
+}
+
+func (f *Frontend) UpdateApplicationMenu() {
+	processMenu(f.mainWindow, f.mainWindow.applicationMenu)
 }

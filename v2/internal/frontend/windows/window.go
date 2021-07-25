@@ -3,12 +3,14 @@ package windows
 import (
 	"github.com/tadvi/winc"
 	"github.com/tadvi/winc/w32"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 type Window struct {
 	winc.Form
 	frontendOptions *options.App
+	applicationMenu *menu.Menu
 }
 
 func NewWindow(parent winc.Controller, options *options.App) *Window {
@@ -61,7 +63,7 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 	}
 
 	if options.Windows.Menu != nil {
-		processApplicationMenu(result, options.Windows.Menu)
+		result.SetApplicationMenu(options.Windows.Menu)
 	}
 
 	return result

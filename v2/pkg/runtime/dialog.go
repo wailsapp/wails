@@ -60,23 +60,6 @@ type MessageDialogOptions struct {
 	Icon          string
 }
 
-// processTitleAndFilter return the title and filter from the given params.
-// title is the first string, filter is the second
-func processTitleAndFilter(params ...string) (string, string) {
-
-	var title, filter string
-
-	if len(params) > 0 {
-		title = params[0]
-	}
-
-	if len(params) > 1 {
-		filter = params[1]
-	}
-
-	return title, filter
-}
-
 // OpenDirectoryDialog prompts the user to select a directory
 func OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
 

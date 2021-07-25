@@ -131,7 +131,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	bindingExemptions := []interface{}{appoptions.Startup, appoptions.Shutdown}
 	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions)
 
-	appFrontend := frontend.NewFrontend(appoptions, myLogger, appBindings)
+	appFrontend := NewFrontend(appoptions, myLogger, appBindings)
 
 	result := &App{
 		frontend:         appFrontend,

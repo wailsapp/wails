@@ -187,10 +187,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	verbose := options.Verbosity == VERBOSE
 	// Run go mod tidy first
 	cmd := exec.Command(options.Compiler, "mod", "tidy")
+	cmd.Stderr = os.Stderr
 	if verbose {
 		println("")
 		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
 	}
 	err := cmd.Run()
 	if err != nil {
@@ -271,10 +271,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	// Create the command
 	cmd = exec.Command(options.Compiler, commands.AsSlice()...)
+	cmd.Stderr = os.Stderr
 	if verbose {
 		println("  Build command:", commands.Join(" "))
 		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
 	}
 	// Set the directory
 	cmd.Dir = b.projectData.Path
@@ -321,17 +321,13 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		println("  Environment:", strings.Join(cmd.Env, " "))
 	}
 
-	// Setup buffers
-	var stdo, stde bytes.Buffer
-	cmd.Stdout = &stdo
-	cmd.Stderr = &stde
-
 	// Run command
 	err = cmd.Run()
+	cmd.Stderr = os.Stderr
 
 	// Format error if we have one
 	if err != nil {
-		return fmt.Errorf("%s\n%s", err, string(stde.Bytes()))
+		return err
 	}
 
 	println("Done.")
