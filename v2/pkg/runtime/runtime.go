@@ -1,13 +1,17 @@
 package runtime
 
 import (
-	"context"
-	"github.com/wailsapp/wails/v2/internal/servicebus"
+	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
+	"github.com/wailsapp/wails/v2/pkg/runtime/events"
+	"github.com/wailsapp/wails/v2/pkg/runtime/log"
+	"github.com/wailsapp/wails/v2/pkg/runtime/menu"
+	"github.com/wailsapp/wails/v2/pkg/runtime/window"
 )
 
-// Quit the application
-func Quit(ctx context.Context) {
-	bus := servicebus.ExtractBus(ctx)
-	// Start shutdown of Wails
-	bus.Publish("quit", "runtime.Quit()")
-}
+var (
+	Window = window.Window{}
+	Menu   = menu.Menu{}
+	Log    = log.Log{}
+	Events = events.Events{}
+	Dialog = dialog.Dialog{}
+)

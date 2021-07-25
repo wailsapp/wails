@@ -1,3 +1,5 @@
+// +build !experimental
+
 package dialog
 
 import (
@@ -5,7 +7,6 @@ import (
 	"fmt"
 	"github.com/wailsapp/wails/v2/internal/crypto"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
-	"log"
 )
 
 // FileFilter defines a filter for dialog boxes
@@ -76,12 +77,10 @@ func processTitleAndFilter(params ...string) (string, string) {
 	return title, filter
 }
 
-func fatal(caller string) {
-	log.Fatalf("cannot call '%s': Application not initialised", caller)
-}
+type Dialog struct{}
 
 // OpenDirectory prompts the user to select a directory
-func OpenDirectory(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
+func (d *Dialog) OpenDirectory(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 
@@ -108,7 +107,7 @@ func OpenDirectory(ctx context.Context, dialogOptions OpenDialogOptions) (string
 }
 
 // OpenFile prompts the user to select a file
-func OpenFile(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
+func (d *Dialog) OpenFile(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 
@@ -135,7 +134,7 @@ func OpenFile(ctx context.Context, dialogOptions OpenDialogOptions) (string, err
 }
 
 // OpenMultipleFiles prompts the user to select a file
-func OpenMultipleFiles(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error) {
+func (d *Dialog) OpenMultipleFiles(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 	uniqueCallback := crypto.RandomID()
@@ -160,7 +159,7 @@ func OpenMultipleFiles(ctx context.Context, dialogOptions OpenDialogOptions) ([]
 }
 
 // SaveFile prompts the user to select a file
-func SaveFile(ctx context.Context, dialogOptions SaveDialogOptions) (string, error) {
+func (d *Dialog) SaveFile(ctx context.Context, dialogOptions SaveDialogOptions) (string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 	uniqueCallback := crypto.RandomID()
@@ -185,7 +184,7 @@ func SaveFile(ctx context.Context, dialogOptions SaveDialogOptions) (string, err
 }
 
 // Message show a message to the user
-func Message(ctx context.Context, dialogOptions MessageDialogOptions) (string, error) {
+func (d *Dialog) Message(ctx context.Context, dialogOptions MessageDialogOptions) (string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 
