@@ -8,12 +8,11 @@ package ffenestri
 import "C"
 
 import (
-	runtime2 "github.com/wailsapp/wails/v2/pkg/runtime"
-	"runtime"
+	goruntime "runtime"
 	"strconv"
 	"strings"
 
-	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
@@ -128,9 +127,9 @@ func (c *Client) WindowSetColour(colour int) {
 }
 
 // OpenFileDialog will open a dialog with the given title and filter
-func (c *Client) OpenFileDialog(dialogOptions runtime2.OpenDialogOptions, callbackID string) {
+func (c *Client) OpenFileDialog(dialogOptions runtime.OpenDialogOptions, callbackID string) {
 	filters := []string{}
-	if runtime.GOOS == "darwin" {
+	if goruntime.GOOS == "darwin" {
 		for _, filter := range dialogOptions.Filters {
 			filters = append(filters, strings.Split(filter.Pattern, ",")...)
 		}
@@ -152,9 +151,9 @@ func (c *Client) OpenFileDialog(dialogOptions runtime2.OpenDialogOptions, callba
 }
 
 // OpenDirectoryDialog will open a dialog with the given title and filter
-func (c *Client) OpenDirectoryDialog(dialogOptions runtime2.OpenDialogOptions, callbackID string) {
+func (c *Client) OpenDirectoryDialog(dialogOptions runtime.OpenDialogOptions, callbackID string) {
 	filters := []string{}
-	if runtime.GOOS == "darwin" {
+	if goruntime.GOOS == "darwin" {
 		for _, filter := range dialogOptions.Filters {
 			filters = append(filters, strings.Split(filter.Pattern, ",")...)
 		}
@@ -176,9 +175,9 @@ func (c *Client) OpenDirectoryDialog(dialogOptions runtime2.OpenDialogOptions, c
 }
 
 // OpenMultipleFilesDialog will open a dialog with the given title and filter
-func (c *Client) OpenMultipleFilesDialog(dialogOptions runtime2.OpenDialogOptions, callbackID string) {
+func (c *Client) OpenMultipleFilesDialog(dialogOptions runtime.OpenDialogOptions, callbackID string) {
 	filters := []string{}
-	if runtime.GOOS == "darwin" {
+	if goruntime.GOOS == "darwin" {
 		for _, filter := range dialogOptions.Filters {
 			filters = append(filters, strings.Split(filter.Pattern, ",")...)
 		}
@@ -200,9 +199,9 @@ func (c *Client) OpenMultipleFilesDialog(dialogOptions runtime2.OpenDialogOption
 }
 
 // SaveDialog will open a dialog with the given title and filter
-func (c *Client) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string) {
+func (c *Client) SaveDialog(dialogOptions *runtime.SaveDialogOptions, callbackID string) {
 	filters := []string{}
-	if runtime.GOOS == "darwin" {
+	if goruntime.GOOS == "darwin" {
 		for _, filter := range dialogOptions.Filters {
 			filters = append(filters, strings.Split(filter.Pattern, ",")...)
 		}
@@ -220,7 +219,7 @@ func (c *Client) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string)
 }
 
 // MessageDialog will open a message dialog with the given options
-func (c *Client) MessageDialog(dialogOptions runtime2.MessageDialogOptions, callbackID string) {
+func (c *Client) MessageDialog(dialogOptions runtime.MessageDialogOptions, callbackID string) {
 
 	// Sanity check button length
 	if len(dialogOptions.Buttons) > 4 {
