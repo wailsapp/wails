@@ -77,10 +77,8 @@ func processTitleAndFilter(params ...string) (string, string) {
 	return title, filter
 }
 
-type Dialog struct{}
-
 // OpenDirectory prompts the user to select a directory
-func (d *Dialog) OpenDirectory(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
+func OpenDirectory(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 
@@ -107,7 +105,7 @@ func (d *Dialog) OpenDirectory(ctx context.Context, dialogOptions OpenDialogOpti
 }
 
 // OpenFile prompts the user to select a file
-func (d *Dialog) OpenFile(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
+func OpenFile(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 
@@ -134,7 +132,7 @@ func (d *Dialog) OpenFile(ctx context.Context, dialogOptions OpenDialogOptions) 
 }
 
 // OpenMultipleFiles prompts the user to select a file
-func (d *Dialog) OpenMultipleFiles(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error) {
+func OpenMultipleFiles(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 	uniqueCallback := crypto.RandomID()
@@ -159,7 +157,7 @@ func (d *Dialog) OpenMultipleFiles(ctx context.Context, dialogOptions OpenDialog
 }
 
 // SaveFile prompts the user to select a file
-func (d *Dialog) SaveFile(ctx context.Context, dialogOptions SaveDialogOptions) (string, error) {
+func SaveFile(ctx context.Context, dialogOptions SaveDialogOptions) (string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 	uniqueCallback := crypto.RandomID()
@@ -184,7 +182,7 @@ func (d *Dialog) SaveFile(ctx context.Context, dialogOptions SaveDialogOptions) 
 }
 
 // Message show a message to the user
-func (d *Dialog) Message(ctx context.Context, dialogOptions MessageDialogOptions) (string, error) {
+func Message(ctx context.Context, dialogOptions MessageDialogOptions) (string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 
