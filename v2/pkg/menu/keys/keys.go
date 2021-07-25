@@ -16,7 +16,7 @@ const (
 	// ShiftKey represents the shift key on all systems
 	ShiftKey Modifier = "shift"
 	// SuperKey represents Command on Mac and the Windows key on the other platforms
-	SuperKey Modifier = "super"
+	//SuperKey Modifier = "super"
 	// ControlKey represents the control key on all systems
 	ControlKey Modifier = "ctrl"
 )
@@ -25,8 +25,8 @@ var modifierMap = map[string]Modifier{
 	"cmdorctrl":   CmdOrCtrlKey,
 	"optionoralt": OptionOrAltKey,
 	"shift":       ShiftKey,
-	"super":       SuperKey,
-	"ctrl":        ControlKey,
+	//"super":       SuperKey,
+	"ctrl": ControlKey,
 }
 
 func parseModifier(text string) (*Modifier, error) {
@@ -84,13 +84,14 @@ func Control(key string) *Accelerator {
 	}
 }
 
-// Super creates a 'Super' Accelerator
-func Super(key string) *Accelerator {
-	return &Accelerator{
-		Key:       strings.ToLower(key),
-		Modifiers: []Modifier{SuperKey},
-	}
-}
+//
+//// Super creates a 'Super' Accelerator
+//func Super(key string) *Accelerator {
+//	return &Accelerator{
+//		Key:       strings.ToLower(key),
+//		Modifiers: []Modifier{SuperKey},
+//	}
+//}
 
 // Combo creates an Accelerator with multiple Modifiers
 func Combo(key string, modifier1 Modifier, modifier2 Modifier, rest ...Modifier) *Accelerator {
