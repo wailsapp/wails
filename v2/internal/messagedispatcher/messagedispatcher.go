@@ -3,11 +3,10 @@ package messagedispatcher
 import (
 	"context"
 	"encoding/json"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"strconv"
 	"strings"
 	"sync"
-
-	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
 
 	"github.com/wailsapp/wails/v2/internal/crypto"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -411,7 +410,7 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 		dialogType := splitTopic[2]
 		switch dialogType {
 		case "open":
-			dialogOptions, ok := result.Data().(dialog.OpenDialogOptions)
+			dialogOptions, ok := result.Data().(runtime.OpenDialogOptions)
 			if !ok {
 				d.logger.Error("Invalid data for 'dialog:select:open' : %#v", result.Data())
 				return
@@ -425,7 +424,7 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 				client.frontend.OpenFileDialog(dialogOptions, callbackID)
 			}
 		case "openmultiple":
-			dialogOptions, ok := result.Data().(dialog.OpenDialogOptions)
+			dialogOptions, ok := result.Data().(runtime.OpenDialogOptions)
 			if !ok {
 				d.logger.Error("Invalid data for 'dialog:select:openmultiple' : %#v", result.Data())
 				return
@@ -439,7 +438,7 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 				client.frontend.OpenMultipleFilesDialog(dialogOptions, callbackID)
 			}
 		case "directory":
-			dialogOptions, ok := result.Data().(dialog.OpenDialogOptions)
+			dialogOptions, ok := result.Data().(runtime.OpenDialogOptions)
 			if !ok {
 				d.logger.Error("Invalid data for 'dialog:select:directory' : %#v", result.Data())
 				return
@@ -453,7 +452,7 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 				client.frontend.OpenDirectoryDialog(dialogOptions, callbackID)
 			}
 		case "save":
-			dialogOptions, ok := result.Data().(dialog.SaveDialogOptions)
+			dialogOptions, ok := result.Data().(runtime.SaveDialogOptions)
 			if !ok {
 				d.logger.Error("Invalid data for 'dialog:select:save' : %#v", result.Data())
 				return
@@ -467,7 +466,7 @@ func (d *Dispatcher) processDialogMessage(result *servicebus.Message) {
 				client.frontend.SaveDialog(dialogOptions, callbackID)
 			}
 		case "message":
-			dialogOptions, ok := result.Data().(dialog.MessageDialogOptions)
+			dialogOptions, ok := result.Data().(runtime.MessageDialogOptions)
 			if !ok {
 				d.logger.Error("Invalid data for 'dialog:select:message' : %#v", result.Data())
 				return

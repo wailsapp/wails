@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"strings"
 	"sync"
 
@@ -126,34 +126,34 @@ func (c *Call) processSystemCall(payload *message.CallMessage, clientID string) 
 	callName := strings.TrimPrefix(payload.Name, ".wails.")
 	switch callName {
 	case "Dialog.Open":
-		var dialogOptions dialog.OpenDialogOptions
+		var dialogOptions runtime.OpenDialogOptions
 		err := json.Unmarshal(payload.Args[0], &dialogOptions)
 		if err != nil {
 			c.logger.Error("Error decoding: %s", err)
 		}
-		result, err := dialog.OpenFile(c.ctx, dialogOptions)
+		result, err := runtime.OpenFileDialog(c.ctx, dialogOptions)
 		if err != nil {
 			c.logger.Error("Error: %s", err)
 		}
 		c.sendResult(result, payload, clientID)
 	case "Dialog.Save":
-		var dialogOptions dialog.SaveDialogOptions
+		var dialogOptions runtime.SaveDialogOptions
 		err := json.Unmarshal(payload.Args[0], &dialogOptions)
 		if err != nil {
 			c.logger.Error("Error decoding: %s", err)
 		}
-		result, err := dialog.SaveFile(c.ctx, dialogOptions)
+		result, err := runtime.SaveFileDialog(c.ctx, dialogOptions)
 		if err != nil {
 			c.logger.Error("Error: %s", err)
 		}
 		c.sendResult(result, payload, clientID)
 	case "Dialog.Message":
-		var dialogOptions dialog.MessageDialogOptions
+		var dialogOptions runtime.MessageDialogOptions
 		err := json.Unmarshal(payload.Args[0], &dialogOptions)
 		if err != nil {
 			c.logger.Error("Error decoding: %s", err)
 		}
-		result, err := dialog.Message(c.ctx, dialogOptions)
+		result, err := runtime.MessageDialog(c.ctx, dialogOptions)
 		if err != nil {
 			c.logger.Error("Error: %s", err)
 		}

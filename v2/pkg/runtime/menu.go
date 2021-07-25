@@ -1,6 +1,6 @@
-// +build !experimental\
+// +build !experimental
 
-package menu
+package runtime
 
 import (
 	"context"

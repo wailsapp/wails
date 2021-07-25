@@ -2,6 +2,7 @@ package bridge
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 
 	"github.com/leaanthony/slicer"
-	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
 )
 
 type DialogClient struct {
@@ -37,17 +37,17 @@ func (d *DialogClient) NotifyEvent(message string) {
 func (d *DialogClient) CallResult(message string) {
 }
 
-func (d *DialogClient) OpenDirectoryDialog(options dialog.OpenDialogOptions, callbackID string) {
+func (d *DialogClient) OpenDirectoryDialog(options runtime.OpenDialogOptions, callbackID string) {
 }
-func (d *DialogClient) OpenFileDialog(options dialog.OpenDialogOptions, callbackID string) {
+func (d *DialogClient) OpenFileDialog(options runtime.OpenDialogOptions, callbackID string) {
 }
-func (d *DialogClient) OpenMultipleFilesDialog(options dialog.OpenDialogOptions, callbackID string) {
-}
-
-func (d *DialogClient) SaveDialog(options dialog.SaveDialogOptions, callbackID string) {
+func (d *DialogClient) OpenMultipleFilesDialog(options runtime.OpenDialogOptions, callbackID string) {
 }
 
-func (d *DialogClient) MessageDialog(options dialog.MessageDialogOptions, callbackID string) {
+func (d *DialogClient) SaveDialog(options runtime.SaveDialogOptions, callbackID string) {
+}
+
+func (d *DialogClient) MessageDialog(options runtime.MessageDialogOptions, callbackID string) {
 
 	osa, err := exec.LookPath("osascript")
 	if err != nil {

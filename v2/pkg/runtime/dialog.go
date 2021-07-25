@@ -1,6 +1,6 @@
 // +build !experimental
 
-package dialog
+package runtime
 
 import (
 	"context"
@@ -77,8 +77,8 @@ func processTitleAndFilter(params ...string) (string, string) {
 	return title, filter
 }
 
-// OpenDirectory prompts the user to select a directory
-func OpenDirectory(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
+// OpenDirectoryDialog prompts the user to select a directory
+func OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 
@@ -104,8 +104,8 @@ func OpenDirectory(ctx context.Context, dialogOptions OpenDialogOptions) (string
 	return result.Data().(string), nil
 }
 
-// OpenFile prompts the user to select a file
-func OpenFile(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
+// OpenFileDialog prompts the user to select a file
+func OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 
@@ -131,8 +131,8 @@ func OpenFile(ctx context.Context, dialogOptions OpenDialogOptions) (string, err
 	return result.Data().(string), nil
 }
 
-// OpenMultipleFiles prompts the user to select a file
-func OpenMultipleFiles(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error) {
+// OpenMultipleFilesDialog prompts the user to select a file
+func OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 	uniqueCallback := crypto.RandomID()
@@ -156,8 +156,8 @@ func OpenMultipleFiles(ctx context.Context, dialogOptions OpenDialogOptions) ([]
 	return result.Data().([]string), nil
 }
 
-// SaveFile prompts the user to select a file
-func SaveFile(ctx context.Context, dialogOptions SaveDialogOptions) (string, error) {
+// SaveFileDialog prompts the user to select a file
+func SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 	uniqueCallback := crypto.RandomID()
@@ -181,8 +181,8 @@ func SaveFile(ctx context.Context, dialogOptions SaveDialogOptions) (string, err
 	return result.Data().(string), nil
 }
 
-// Message show a message to the user
-func Message(ctx context.Context, dialogOptions MessageDialogOptions) (string, error) {
+// MessageDialog show a message dialog to the user
+func MessageDialog(ctx context.Context, dialogOptions MessageDialogOptions) (string, error) {
 
 	bus := servicebus.ExtractBus(ctx)
 

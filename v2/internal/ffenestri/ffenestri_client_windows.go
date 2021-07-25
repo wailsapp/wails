@@ -10,12 +10,11 @@ import "C"
 import (
 	"encoding/json"
 	"github.com/leaanthony/go-common-file-dialog/cfd"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"golang.org/x/sys/windows"
 	"log"
 	"strconv"
 	"syscall"
-
-	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
@@ -131,7 +130,7 @@ func (c *Client) WindowSetColour(colour int) {
 	C.SetColour(c.app.app, r, g, b, a)
 }
 
-func convertFilters(filters []dialog.FileFilter) []cfd.FileFilter {
+func convertFilters(filters []runtime.FileFilter) []cfd.FileFilter {
 	var result []cfd.FileFilter
 	for _, filter := range filters {
 		result = append(result, cfd.FileFilter(filter))
@@ -140,7 +139,7 @@ func convertFilters(filters []dialog.FileFilter) []cfd.FileFilter {
 }
 
 // OpenFileDialog will open a dialog with the given title and filter
-func (c *Client) OpenFileDialog(options dialog.OpenDialogOptions, callbackID string) {
+func (c *Client) OpenFileDialog(options runtime.OpenDialogOptions, callbackID string) {
 	config := cfd.DialogConfig{
 		Folder:      options.DefaultDirectory,
 		FileFilters: convertFilters(options.Filters),
@@ -166,7 +165,7 @@ func (c *Client) OpenFileDialog(options dialog.OpenDialogOptions, callbackID str
 }
 
 // OpenDirectoryDialog will open a dialog with the given title and filter
-func (c *Client) OpenDirectoryDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
+func (c *Client) OpenDirectoryDialog(dialogOptions runtime.OpenDialogOptions, callbackID string) {
 	config := cfd.DialogConfig{
 		Title:  dialogOptions.Title,
 		Role:   "PickFolder",
@@ -191,7 +190,7 @@ func (c *Client) OpenDirectoryDialog(dialogOptions dialog.OpenDialogOptions, cal
 }
 
 // OpenMultipleFilesDialog will open a dialog with the given title and filter
-func (c *Client) OpenMultipleFilesDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
+func (c *Client) OpenMultipleFilesDialog(dialogOptions runtime.OpenDialogOptions, callbackID string) {
 	config := cfd.DialogConfig{
 		Title:       dialogOptions.Title,
 		Role:        "OpenMultipleFiles",
@@ -222,7 +221,7 @@ func (c *Client) OpenMultipleFilesDialog(dialogOptions dialog.OpenDialogOptions,
 }
 
 // SaveDialog will open a dialog with the given title and filter
-func (c *Client) SaveDialog(dialogOptions dialog.SaveDialogOptions, callbackID string) {
+func (c *Client) SaveDialog(dialogOptions runtime.SaveDialogOptions, callbackID string) {
 	saveDialog, err := cfd.NewSaveFileDialog(cfd.DialogConfig{
 		Title:       dialogOptions.Title,
 		Role:        "SaveFile",
@@ -246,7 +245,7 @@ func (c *Client) SaveDialog(dialogOptions dialog.SaveDialogOptions, callbackID s
 }
 
 // MessageDialog will open a message dialog with the given options
-func (c *Client) MessageDialog(options dialog.MessageDialogOptions, callbackID string) {
+func (c *Client) MessageDialog(options runtime.MessageDialogOptions, callbackID string) {
 
 	title, err := syscall.UTF16PtrFromString(options.Title)
 	if err != nil {
@@ -258,13 +257,13 @@ func (c *Client) MessageDialog(options dialog.MessageDialogOptions, callbackID s
 	}
 	var flags uint32
 	switch options.Type {
-	case dialog.InfoDialog:
+	case runtime.InfoDialog:
 		flags = windows.MB_OK | windows.MB_ICONINFORMATION
-	case dialog.ErrorDialog:
+	case runtime.ErrorDialog:
 		flags = windows.MB_ICONERROR | windows.MB_OK
-	case dialog.QuestionDialog:
+	case runtime.QuestionDialog:
 		flags = windows.MB_YESNO
-	case dialog.WarningDialog:
+	case runtime.WarningDialog:
 		flags = windows.MB_OK | windows.MB_ICONWARNING
 	}
 

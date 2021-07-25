@@ -3,7 +3,7 @@ package webserver
 import (
 	"context"
 	"github.com/wailsapp/wails/v2/pkg/menu"
-	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"net/http"
 	"strings"
 
@@ -40,7 +40,7 @@ func (wc *WebClient) UpdateTrayMenuLabel(trayMenuJSON string) {
 	wc.logger.Info("Not implemented in server build")
 }
 
-func (wc *WebClient) MessageDialog(dialogOptions dialog.MessageDialogOptions, callbackID string) {
+func (wc *WebClient) MessageDialog(dialogOptions runtime.MessageDialogOptions, callbackID string) {
 	wc.logger.Info("Not implemented in server build")
 }
 
@@ -56,19 +56,19 @@ func (wc *WebClient) UpdateContextMenu(contextMenuJSON string) {
 	wc.logger.Info("Not implemented in server build")
 }
 
-func (wc *WebClient) OpenFileDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
+func (wc *WebClient) OpenFileDialog(dialogOptions runtime.OpenDialogOptions, callbackID string) {
 	wc.logger.Info("Not implemented in server build")
 }
 
-func (wc *WebClient) OpenMultipleFilesDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
+func (wc *WebClient) OpenMultipleFilesDialog(dialogOptions runtime.OpenDialogOptions, callbackID string) {
 	wc.logger.Info("Not implemented in server build")
 }
 
-func (wc *WebClient) OpenDirectoryDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
+func (wc *WebClient) OpenDirectoryDialog(dialogOptions runtime.OpenDialogOptions, callbackID string) {
 	wc.logger.Info("Not implemented in server build")
 }
 
-func (wc *WebClient) SaveDialog(dialogOptions dialog.SaveDialogOptions, callbackID string) {
+func (wc *WebClient) SaveDialog(dialogOptions runtime.SaveDialogOptions, callbackID string) {
 	wc.logger.Info("Not implemented in server build")
 }
 

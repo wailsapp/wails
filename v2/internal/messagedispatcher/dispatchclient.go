@@ -2,11 +2,11 @@ package messagedispatcher
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher/message"
 	"github.com/wailsapp/wails/v2/internal/servicebus"
-	"github.com/wailsapp/wails/v2/pkg/runtime/dialog"
 )
 
 // Client defines what a frontend client can do
@@ -14,11 +14,11 @@ type Client interface {
 	Quit()
 	NotifyEvent(message string)
 	CallResult(message string)
-	OpenFileDialog(dialogOptions dialog.OpenDialogOptions, callbackID string)
-	OpenMultipleFilesDialog(dialogOptions dialog.OpenDialogOptions, callbackID string)
-	OpenDirectoryDialog(dialogOptions dialog.OpenDialogOptions, callbackID string)
-	SaveDialog(dialogOptions dialog.SaveDialogOptions, callbackID string)
-	MessageDialog(dialogOptions dialog.MessageDialogOptions, callbackID string)
+	OpenFileDialog(dialogOptions runtime.OpenDialogOptions, callbackID string)
+	OpenMultipleFilesDialog(dialogOptions runtime.OpenDialogOptions, callbackID string)
+	OpenDirectoryDialog(dialogOptions runtime.OpenDialogOptions, callbackID string)
+	SaveDialog(dialogOptions runtime.SaveDialogOptions, callbackID string)
+	MessageDialog(dialogOptions runtime.MessageDialogOptions, callbackID string)
 	WindowSetTitle(title string)
 	WindowShow()
 	WindowHide()

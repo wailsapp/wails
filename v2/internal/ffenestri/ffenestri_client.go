@@ -8,6 +8,7 @@ package ffenestri
 import "C"
 
 import (
+	runtime2 "github.com/wailsapp/wails/v2/pkg/runtime"
 	"runtime"
 	"strconv"
 	"strings"
@@ -127,7 +128,7 @@ func (c *Client) WindowSetColour(colour int) {
 }
 
 // OpenFileDialog will open a dialog with the given title and filter
-func (c *Client) OpenFileDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
+func (c *Client) OpenFileDialog(dialogOptions runtime2.OpenDialogOptions, callbackID string) {
 	filters := []string{}
 	if runtime.GOOS == "darwin" {
 		for _, filter := range dialogOptions.Filters {
@@ -151,7 +152,7 @@ func (c *Client) OpenFileDialog(dialogOptions dialog.OpenDialogOptions, callback
 }
 
 // OpenDirectoryDialog will open a dialog with the given title and filter
-func (c *Client) OpenDirectoryDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
+func (c *Client) OpenDirectoryDialog(dialogOptions runtime2.OpenDialogOptions, callbackID string) {
 	filters := []string{}
 	if runtime.GOOS == "darwin" {
 		for _, filter := range dialogOptions.Filters {
@@ -175,7 +176,7 @@ func (c *Client) OpenDirectoryDialog(dialogOptions dialog.OpenDialogOptions, cal
 }
 
 // OpenMultipleFilesDialog will open a dialog with the given title and filter
-func (c *Client) OpenMultipleFilesDialog(dialogOptions dialog.OpenDialogOptions, callbackID string) {
+func (c *Client) OpenMultipleFilesDialog(dialogOptions runtime2.OpenDialogOptions, callbackID string) {
 	filters := []string{}
 	if runtime.GOOS == "darwin" {
 		for _, filter := range dialogOptions.Filters {
@@ -219,7 +220,7 @@ func (c *Client) SaveDialog(dialogOptions *dialog.SaveDialog, callbackID string)
 }
 
 // MessageDialog will open a message dialog with the given options
-func (c *Client) MessageDialog(dialogOptions dialog.MessageDialogOptions, callbackID string) {
+func (c *Client) MessageDialog(dialogOptions runtime2.MessageDialogOptions, callbackID string) {
 
 	// Sanity check button length
 	if len(dialogOptions.Buttons) > 4 {
