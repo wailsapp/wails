@@ -195,8 +195,8 @@ func (m *Menu) processAccelerator(menuitem *menumanager.ProcessedMenuItem) {
 			modifiers |= 2
 		case keys.ShiftKey:
 			modifiers |= 4
-		case keys.SuperKey:
-			modifiers |= 8
+			//case keys.SuperKey:
+			//	modifiers |= 8
 		}
 	}
 
