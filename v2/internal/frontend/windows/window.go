@@ -32,9 +32,11 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 	result.SetHandle(winc.CreateWindow("wailsWindow", parent, uint(exStyle), uint(dwStyle)))
 	result.SetParent(parent)
 
-	// result might fail if icon resource is not embedded in the binary
-	if ico, err := winc.NewIconFromResource(winc.GetAppInstance(), uint16(winc.AppIconID)); err == nil {
+	// Wails uses 100 for the icon
+	if ico, err := winc.NewIconFromResource(winc.GetAppInstance(), uint16(100)); err == nil {
 		result.SetIcon(0, ico)
+	} else {
+		println("No icon!")
 	}
 
 	result.SetSize(options.Width, options.Height)
