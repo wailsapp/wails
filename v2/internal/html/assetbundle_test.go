@@ -44,6 +44,17 @@ func TestNewAssetBundle(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:       "inline javascript",
+			pathToHTML: "testdata/inline_javascript.html",
+			wantAssets: []string{
+				AssetTypes.HTML,
+				AssetTypes.FAVICON,
+				AssetTypes.JS,
+				AssetTypes.CSS,
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
