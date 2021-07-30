@@ -18,7 +18,7 @@
 
 ## Internationalization
 
-English | [简体中文](README.zh_CN.md)
+English | [简体中文](README.zh-Hans.md)
 
 The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
 
@@ -69,16 +69,20 @@ The official docs can be found at [https://wails.app](https://wails.app).
 
 This project is supported by these kind people / companies:
 
-<a href="https://github.com/matryer" style="width:100px"><img src="https://github.com/matryer.png" width="100"/></a>
-<a href="https://www.jetbrains.com?from=Wails" style="width:100px"><img src="jetbrains-grayscale.png" width="100"/></a>
+<a href="https://github.com/matryer" style="width:100px">
+  <img src="https://github.com/matryer.png" width="100"/>
+</a>
+<a href="https://www.jetbrains.com?from=Wails" style="width:100px">
+  <img src="jetbrains-grayscale.png" width="100"/>
+</a>
 <a href="https://github.com/tc-hib" style="width:55px;border-radius: 50%">
-<img src="https://github.com/tc-hib.png?size=55" width="55" style="border-radius: 50%"/>
+ <img src="https://github.com/tc-hib.png?size=55" width="55" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/picatz" style="width:50px;border-radius: 50%">
-<img src="https://github.com/picatz.png?size=50" width="50" style="border-radius: 50%"/>
+  <img src="https://github.com/picatz.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/tylertravisty" style="width:50px;border-radius: 50%">
-<img src="https://github.com/tylertravisty.png?size=50" width="50" style="border-radius: 50%"/>
+  <img src="https://github.com/tylertravisty.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
   <img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
@@ -98,7 +102,6 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/nickarellano" style="width:60px;border-radius: 50%">
   <img src="https://github.com/nickarellano.png?size=60" width="60" style="border-radius: 50%"/>
 </a>
-
 <a href="https://github.com/bglw" style="width:65px;border-radius: 50%">
   <img src="https://github.com/bglw.png?size=65" width="65" style="border-radius: 50%"/>
 </a>
@@ -108,6 +111,8 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/marcus-crane" style="width:50px;border-radius: 50%">
   <img src="https://github.com/marcus-crane.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
+
+<span id="nav-5"></span>
 
 ## Installation
 
@@ -298,7 +303,7 @@ This project was mainly coded to the following albums:
 
 <p align="center" style="text-align: center">
    <a href="https://pace.dev"><img src="pace.jpeg"/></a><br/>
-   A *huge* thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
+   A <i>huge<i/> thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
    If you are looking for a Project Management tool that's powerful but quick and easy to use, check them out!<br/><br/>
 </p>
 

@@ -20,10 +20,11 @@
 
 [English](README.md) | 简体中文
 
-向 Go 程序提供 Web 接口的传统方法是通过内置 Web 服务器。Wails 提供了一种不同的方法：它提供了将 Go 代码和 Web 前端都包装成单个二进制文件的能力。通过处理项目创建、编译和打包，可为您提供工具，使您轻松做到这一点。你所要做的就是发挥创造力！
+向 Go 程序提供 Web 接口的传统方法是通过内置 Web 服务器。Wails 提供了一种不同的方法：它提供了将 Go 代码和 Web 前端都包装成单个二进制文件的能力。通过提供工具，可以很轻松的完成项目的创建、编译和打包。你所要做的就是发挥创意！
 
-官方文档可以在 [https://wails.app](https://wails.app)中找到。
-国内镜像站点 [https://wails.top](https://wails.top)
+官方文档可以在 [https://wails.app](https://wails.app) 中找到。
+
+国内镜像站点 [https://wails.top](https://wails.top)。
 
 <span id="nav-2"></span>
 
@@ -71,29 +72,54 @@
 
 这个项目由以下这些人或者公司支持：
 
-<a href="https://github.com/matryer" style="width:100px"><img src="https://github.com/matryer.png" width="100"/></a>
-<a href="https://www.jetbrains.com?from=Wails" style="width:100px"><img src="jetbrains-grayscale.png" width="100"/></a>
+<a href="https://github.com/matryer" style="width:100px">
+  <img src="https://github.com/matryer.png" width="100"/>
+</a>
+<a href="https://www.jetbrains.com?from=Wails" style="width:100px">
+  <img src="jetbrains-grayscale.png" width="100"/>
+</a>
 <a href="https://github.com/tc-hib" style="width:55px;border-radius: 50%">
-<img src="https://github.com/tc-hib.png?size=55" width="55" style="border-radius: 50%"/>
+ <img src="https://github.com/tc-hib.png?size=55" width="55" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/picatz" style="width:50px;border-radius: 50%">
-<img src="https://github.com/picatz.png?size=50" width="50" style="border-radius: 50%"/>
+  <img src="https://github.com/picatz.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/tylertravisty" style="width:50px;border-radius: 50%">
-<img src="https://github.com/tylertravisty.png?size=50" width="50" style="border-radius: 50%"/>
+  <img src="https://github.com/tylertravisty.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
-<img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
+  <img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/trea" style="width:50px;border-radius: 50%">
-<img src="https://github.com/trea.png?size=50" width="50" style="border-radius: 50%"/>
+  <img src="https://github.com/trea.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/LanguageAgnostic" style="width:55px;border-radius: 50%">
+  <img src="https://github.com/LanguageAgnostic.png?size=55" width="55" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/snider" style="width:60px;border-radius: 50%">
+  <img src="https://github.com/snider.png?size=60" width="60" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/fcjr" style="width:55px;border-radius: 50%">
+  <img src="https://github.com/fcjr.png?size=55" width="55" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/nickarellano" style="width:60px;border-radius: 50%">
+  <img src="https://github.com/nickarellano.png?size=60" width="60" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/bglw" style="width:65px;border-radius: 50%">
+  <img src="https://github.com/bglw.png?size=65" width="65" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/jugglingjsons" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/jugglingjsons.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/marcus-crane" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/marcus-crane.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
 
 <span id="nav-5"></span>
 
 ## 安装
 
-Wails 使用 cgo 与原生渲染引擎结合，因此需要一些依赖平台的库以及 Go 的安装。基本要求是：
+Wails 使用 cgo 与原生渲染引擎结合，因此需要依赖一些平台的库以及 Go 的安装。基本要求是：
 
 - Go 1.16
 - npm
@@ -120,7 +146,7 @@ _Debian: 8, 9, 10_
 
 _Ubuntu: 16.04, 18.04, 19.04_
 
-_Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, Kali, Neon_, Pop!\_OS
+_也成功测试了: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, Kali, Neon_, Pop!\_OS
 
 <span id="nav-5-2-2"></span>
 
@@ -128,7 +154,7 @@ _Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, K
 
 `sudo pacman -S webkit2gtk gtk3`
 
-_Also succesfully test on: Manjaro & ArcoLinux_
+_也成功测试了: Manjaro & ArcoLinux_
 
 <span id="nav-5-2-3"></span>
 
@@ -162,13 +188,13 @@ _Fedora 29, 30_
 
 ### Windows
 
-Windows 需要 GCC 和相关工具。 建议从 [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download)下载， 安装完成，您就可以开始了。
+Windows 需要 GCC 和相关工具。 建议从 [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download) 下载， 安装完成，您就可以开始了。
 
 <span id="nav-6"></span>
 
 ## 安装
 
-**确保 Go modules 是开启的: GO111MODULE=on 并且 go/bin 在您的 PATH 变量中.**
+**确保 Go modules 是开启的：GO111MODULE=on 并且 go/bin 在您的 PATH 变量中。**
 
 安装很简单，运行以下命令：
 
@@ -180,7 +206,7 @@ go get -u github.com/wailsapp/wails/cmd/wails
 
 ## 下一步
 
-建议在此时阅读[https://wails.app](https://wails.app)上面的文档.
+建议在此时阅读 [https://wails.app](https://wails.app) 上面的文档.
 
 <span id="nav-8"></span>
 
@@ -188,15 +214,15 @@ go get -u github.com/wailsapp/wails/cmd/wails
 
 - 它是 Electron 的替代品吗?
 
-  取决于您的要求。它旨在使 Go 程序员可以轻松制作轻量级桌面应用程序或在其现有应用程序中添加前端。尽管 Wails 当前不提供对诸如菜单之类的本机元素的钩子，但将来可能会改变。
+  取决于您的要求。它旨在使 Go 程序员可以轻松制作轻量级桌面应用程序或在其现有应用程序中添加前端。尽管 Wails 当前不提供对诸如菜单之类的原生元素的钩子，但将来可能会改变。
 
 - 这个项目针对的是谁?
 
-  希望将 HTML / JS / CSS 前端与其应用程序捆绑在一起的程序员，而无需借助创建服务并打开浏览器进行查看的方式。
+  希望将 HTML / JS / CSS 前端与其应用程序捆绑在一起的程序员，而不是借助创建服务并打开浏览器进行查看的方式。
 
 - 名字怎么来的?
 
-  当我看到 WebView 时，我想"我真正想要的是围绕构建 WebView 应用程序工作，有点像 Rails 对于 Ruby"。因此，最初它是一个文字游戏（Webview on Rails）。碰巧也是我来自的[国家](https://en.wikipedia.org/wiki/Wales)的英文名字的同音。所以就是他了。
+  当我看到 WebView 时，我想"我真正想要的是围绕构建 WebView 应用程序工作，有点像 Rails 对于 Ruby"。因此，最初它是一个文字游戏（Webview on Rails）。碰巧也是我来自的 [国家](https://en.wikipedia.org/wiki/Wales) 的英文名字的同音。所以就是他了。
 
 <span id="nav-9"></span>
 
@@ -252,11 +278,11 @@ go get -u github.com/wailsapp/wails/cmd/wails
 
 ## 特别提及
 
-如果没有以下人员，此项目将永远不会存在：
+如果没有以下人员，此项目或许永远不会存在：
 
-- [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been immense. More patience than you can throw a stick at (Not long now Dustin!).
-- [Serge Zaitsev](https://github.com/zserge) - Creator of [Webview](https://github.com/zserge/webview) which Wails uses for the windowing.
-- [Byron](https://github.com/bh90210) - At times, Byron has single handedly kept this project alive. Without his incredible input, we never would have got to v1.
+- [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - 他的支持和反馈是巨大的。
+- [Serge Zaitsev](https://github.com/zserge) - Wails 窗口所使用的 [Webview](https://github.com/zserge/webview) 的作者。
+- [Byron](https://github.com/bh90210) - 有时，Byron 单枪匹马地保持这个项目活着。没有他令人难以置信的投入，我们永远不会得到 v1 。
 
 This project was mainly coded to the following albums:
 
@@ -286,12 +312,12 @@ This project was mainly coded to the following albums:
 
 <p align="center" style="text-align: center">
    <a href="https://pace.dev"><img src="pace.jpeg"/></a><br/>
-   非常感谢<a href="https://pace.dev">Pace</a>对项目的赞助，并帮助将Wails移植到Apple Silicon<br/><br/>
-   如果您正在寻找一个强大的项目管理工具，并且快速和易于使用，可以看看他们！<br/><br/>
+   <i>非常<i/>感谢<a href="https://pace.dev">Pace</a>对项目的赞助，并帮助将 Wails 移植到 Apple Silicon !<br/><br/>
+   如果您正在寻找一个强大并且快速和易于使用的项目管理工具，可以看看他们！<br/><br/>
 </p>
 
 <p align="center" style="text-align: center">
-   特别感谢JetBrains向我们捐赠许可！<br/><br/>
-   请点击logo让他们知道你的感激之情！<br/><br/>
+   特别感谢 JetBrains 向我们捐赠许可！<br/><br/>
+   请点击 logo 让他们知道你的感激之情！<br/><br/>
    <a href="https://www.jetbrains.com?from=Wails"><img src="jetbrains-grayscale.png" width="30%"></a>
 </p>
