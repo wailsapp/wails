@@ -270,6 +270,7 @@ It is recommended at this stage to read the comprehensive documentation at [http
 <a href="https://github.com/Igogrek"><img src="https://github.com/Igogrek.png?size=40" width="40"/></a></a>
 <a href="https://github.com/aschey"><img src="https://github.com/aschey.png?size=40" width="40"/></a></a>
 <a href="https://github.com/akhudek"><img src="https://github.com/akhudek.png?size=40" width="40"/></a></a>
+<a href="https://github.com/s12chung"><img src="https://github.com/s12chung.png?size=40" width="40"/></a></a>
 
 <span id="nav-10"></span>
 
