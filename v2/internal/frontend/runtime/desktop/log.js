@@ -31,7 +31,7 @@ function sendLogMessage(level, message) {
  * @export
  * @param {string} message
  */
-export function Trace(message) {
+export function LogTrace(message) {
 	sendLogMessage('T', message);
 }
 
@@ -41,7 +41,7 @@ export function Trace(message) {
  * @export
  * @param {string} message
  */
-export function Print(message) {
+export function LogPrint(message) {
 	sendLogMessage('P', message);
 }
 
@@ -51,7 +51,7 @@ export function Print(message) {
  * @export
  * @param {string} message
  */
-export function Debug(message) {
+export function LogDebug(message) {
 	sendLogMessage('D', message);
 }
 
@@ -61,7 +61,7 @@ export function Debug(message) {
  * @export
  * @param {string} message
  */
-export function Info(message) {
+export function LogInfo(message) {
 	sendLogMessage('I', message);
 }
 
@@ -71,7 +71,7 @@ export function Info(message) {
  * @export
  * @param {string} message
  */
-export function Warning(message) {
+export function LogWarning(message) {
 	sendLogMessage('W', message);
 }
 
@@ -81,7 +81,7 @@ export function Warning(message) {
  * @export
  * @param {string} message
  */
-export function Error(message) {
+export function LogError(message) {
 	sendLogMessage('E', message);
 }
 
@@ -91,7 +91,7 @@ export function Error(message) {
  * @export
  * @param {string} message
  */
-export function Fatal(message) {
+export function LogFatal(message) {
 	sendLogMessage('F', message);
 }
 
@@ -106,7 +106,7 @@ export function SetLogLevel(loglevel) {
 }
 
 // Log levels
-export const Level = {
+export const LogLevel = {
 	TRACE: 1,
 	DEBUG: 2,
 	INFO: 3,

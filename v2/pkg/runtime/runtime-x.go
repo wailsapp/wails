@@ -20,8 +20,19 @@ func getFrontend(ctx context.Context) frontend.Frontend {
 	return nil
 }
 
+func getEvents(ctx context.Context) frontend.Events {
+	result := ctx.Value("events")
+	if result != nil {
+		return result.(frontend.Events)
+	}
+	pc, _, _, _ := goruntime.Caller(1)
+	funcName := goruntime.FuncForPC(pc).Name()
+	log.Fatalf("cannot call '%s': Application not initialised", funcName)
+	return nil
+}
+
 // Quit the application
 func Quit(ctx context.Context) {
-	frontend := getFrontend(ctx)
-	frontend.Quit()
+	appFrontend := getFrontend(ctx)
+	appFrontend.Quit()
 }

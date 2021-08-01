@@ -16,6 +16,10 @@ import (
 )
 
 type Frontend struct {
+
+	// Context
+	ctx context.Context
+
 	frontendOptions *options.App
 	logger          *logger.Logger
 	chromium        *edge.Chromium
@@ -30,7 +34,7 @@ type Frontend struct {
 	dispatcher                               frontend.Dispatcher
 }
 
-func (f *Frontend) Run() error {
+func (f *Frontend) Run(ctx context.Context) error {
 
 	mainWindow := NewWindow(nil, f.frontendOptions)
 	f.mainWindow = mainWindow
@@ -57,7 +61,7 @@ func (f *Frontend) Run() error {
 
 	// TODO: Move this into a callback from frontend
 	go func() {
-		ctx := context.WithValue(context.Background(), "frontend", f)
+		ctx := context.WithValue(ctx, "frontend", f)
 		f.frontendOptions.Startup(ctx)
 	}()
 

@@ -5,6 +5,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/dispatcher"
+	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/internal/signal"
@@ -26,87 +27,17 @@ type App struct {
 	// Startup/Shutdown
 	startupCallback  func(ctx context.Context)
 	shutdownCallback func()
+	ctx              context.Context
 }
 
 func (a *App) Run() error {
-
-	go func() {
-		//time.Sleep(3 * time.Second)
-		//println("WindowSetSize(3000,2000)")
-		//a.frontend.WindowSetSize(3000,2000)
-		//x,y := a.frontend.WindowGetSize()
-		//println("X", x, "Y", y)
-		//time.Sleep(3 * time.Second)
-		//println("a.frontend.WindowSetSize(10,10)")
-		//a.frontend.WindowSetSize(10,10)
-		//x,y = a.frontend.WindowGetSize()
-		//println("X", x, "Y", y)
-		//time.Sleep(3 * time.Second)
-		//time.Sleep(3 * time.Second)
-		//println("WindowSetMaxSize(50,50)")
-		//a.frontend.WindowSetMaxSize(200,200)
-		//x,y := a.frontend.WindowGetSize()
-		//println("X", x, "Y", y)
-		//time.Sleep(3 * time.Second)
-		//println("WindowSetMinSize(100,100)")
-		//a.frontend.WindowSetMinSize(600,600)
-		//x,y = a.frontend.WindowGetSize()
-		//println("X", x, "Y", y)
-		//println("fullscreen")
-		//a.frontend.WindowFullscreen()
-		//time.Sleep(1 * time.Second)
-		//println("unfullscreen")
-		//a.frontend.WindowUnFullscreen()
-		//time.Sleep(1 * time.Second)
-		//println("hide")
-		//a.frontend.WindowHide()
-		//time.Sleep(1 * time.Second)
-		//println("show")
-		//a.frontend.WindowShow()
-		//time.Sleep(1 * time.Second)
-		//println("title 1")
-		//a.frontend.WindowSetTitle("title 1")
-		//time.Sleep(1 * time.Second)
-		//println("title 2")
-		//a.frontend.WindowSetTitle("title 2")
-		//time.Sleep(1 * time.Second)
-		//println("setsize 1")
-		//a.frontend.WindowSetSize(100,100)
-		//time.Sleep(1 * time.Second)
-		//println("setsize 2")
-		//a.frontend.WindowSetSize(500,500)
-		//time.Sleep(1 * time.Second)
-		//println("setpos 1")
-		//a.frontend.WindowSetPos(0,0)
-		//time.Sleep(1 * time.Second)
-		//println("setpos 2")
-		//a.frontend.WindowSetPos(500,500)
-		//time.Sleep(1 * time.Second)
-		//println("Center 1")
-		//a.frontend.WindowCenter()
-		//time.Sleep(5 * time.Second)
-		//println("Center 2")
-		//a.frontend.WindowCenter()
-		//time.Sleep(1 * time.Second)
-		//println("maximise")
-		//a.frontend.WindowMaximise()
-		//time.Sleep(1 * time.Second)
-		//println("UnMaximise")
-		//a.frontend.WindowUnmaximise()
-		//time.Sleep(1 * time.Second)
-		//println("minimise")
-		//a.frontend.WindowMinimise()
-		//time.Sleep(1 * time.Second)
-		//println("unminimise")
-		//a.frontend.WindowUnminimise()
-		//time.Sleep(1 * time.Second)
-	}()
-
-	return a.frontend.Run()
+	return a.frontend.Run(a.ctx)
 }
 
 // CreateApp
 func CreateApp(appoptions *options.App) (*App, error) {
+
+	ctx := context.Background()
 
 	// Merge default options
 	options.MergeDefaults(appoptions)
@@ -128,12 +59,14 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	// Create binding exemptions - Ugly hack. There must be a better way
 	bindingExemptions := []interface{}{appoptions.Startup, appoptions.Shutdown}
 	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions)
-
-	messageDispatcher := dispatcher.NewDispatcher(myLogger, appBindings)
+	eventHandler := runtime.NewEvents(myLogger)
+	ctx = context.WithValue(ctx, "events", eventHandler)
+	messageDispatcher := dispatcher.NewDispatcher(myLogger, appBindings, eventHandler)
 
 	appFrontend := NewFrontend(appoptions, myLogger, appBindings, messageDispatcher)
 
 	result := &App{
+		ctx:              ctx,
 		frontend:         appFrontend,
 		logger:           myLogger,
 		menuManager:      menuManager,

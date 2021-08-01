@@ -1,0 +1,15 @@
+{
+  "name": "runtime",
+  "version": "2.0.0",
+  "description": "Wails JS Runtime",
+  "main": "index.js",
+  "scripts": {
+    "build:windows": "esbuild desktop/main.js --bundle --minify --outfile=runtime_windows.js --define:PLATFORM='windows'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lea Anthony <lea.anthony@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "^0.12.17"
+  }
+}

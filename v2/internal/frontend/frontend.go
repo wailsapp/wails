@@ -1,6 +1,9 @@
 package frontend
 
-import "github.com/wailsapp/wails/v2/pkg/menu"
+import (
+	"context"
+	"github.com/wailsapp/wails/v2/pkg/menu"
+)
 
 // FileFilter defines a filter for dialog boxes
 type FileFilter struct {
@@ -54,15 +57,9 @@ type MessageDialogOptions struct {
 }
 
 type Frontend interface {
-
-	// Main methods
-	Run() error
+	Run(context.Context) error
 	Quit()
 
-	//// Events
-	//NotifyEvent(message string)
-	//CallResult(message string)
-	//
 	// Dialog
 	OpenFileDialog(dialogOptions OpenDialogOptions) (string, error)
 	OpenMultipleFilesDialog(dialogOptions OpenDialogOptions) ([]string, error)
