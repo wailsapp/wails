@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/dispatcher"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/internal/signal"
@@ -21,9 +22,6 @@ type App struct {
 
 	// Indicates if the app is in debug mode
 	debug bool
-
-	// This is our binding DB
-	bindings *binding.Bindings
 
 	// Startup/Shutdown
 	startupCallback  func(ctx context.Context)
@@ -131,12 +129,13 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	bindingExemptions := []interface{}{appoptions.Startup, appoptions.Shutdown}
 	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions)
 
-	appFrontend := NewFrontend(appoptions, myLogger, appBindings)
+	messageDispatcher := dispatcher.NewDispatcher(myLogger, appBindings)
+
+	appFrontend := NewFrontend(appoptions, myLogger, appBindings, messageDispatcher)
 
 	result := &App{
 		frontend:         appFrontend,
 		logger:           myLogger,
-		bindings:         appBindings,
 		menuManager:      menuManager,
 		startupCallback:  appoptions.Startup,
 		shutdownCallback: appoptions.Shutdown,

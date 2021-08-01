@@ -2,21 +2,32 @@ package windows
 
 import (
 	"context"
+	"github.com/jchv/go-webview2/pkg/edge"
 	"github.com/tadvi/winc"
+	"github.com/tadvi/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/binding"
+	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"log"
 	"runtime"
+	"strings"
 )
 
 type Frontend struct {
 	frontendOptions *options.App
 	logger          *logger.Logger
+	chromium        *edge.Chromium
+
+	// Assets
+	assets *assetserver.AssetServer
 
 	// main window handle
 	mainWindow                               *Window
 	minWidth, minHeight, maxWidth, maxHeight int
 	bindings                                 *binding.Bindings
+	dispatcher                               frontend.Dispatcher
 }
 
 func (f *Frontend) Run() error {
@@ -29,6 +40,12 @@ func (f *Frontend) Run() error {
 	if !f.frontendOptions.StartHidden {
 		mainWindow.Show()
 	}
+
+	f.setupChromium()
+
+	mainWindow.OnSize().Bind(func(arg *winc.Event) {
+		f.chromium.Resize()
+	})
 
 	mainWindow.OnClose().Bind(func(arg *winc.Event) {
 		if f.frontendOptions.HideWindowOnClose {
@@ -131,11 +148,77 @@ func (f *Frontend) Quit() {
 	winc.Exit()
 }
 
-func NewFrontend(appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings) *Frontend {
+func (f *Frontend) setupChromium() {
+	chromium := edge.NewChromium()
+	chromium.MessageCallback = f.processMessage
+	chromium.WebResourceRequestedCallback = f.processRequest
+	chromium.Embed(f.mainWindow.Handle())
+	chromium.Resize()
+	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
+	chromium.Navigate("file://index.html")
+	f.chromium = chromium
+}
 
-	return &Frontend{
+func (f *Frontend) processRequest(sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebResourceRequestedEventArgs) uintptr {
+	// Get the request
+	requestObject, _ := args.GetRequest()
+	uri, _ := requestObject.GetURI()
+
+	// Translate URI
+	uri = strings.TrimPrefix(uri, "file://index.html")
+	if !strings.HasPrefix(uri, "/") {
+		return 0
+	}
+
+	// Load file from asset store
+	content, mimeType, err := f.assets.Load(uri)
+	if err != nil {
+		return 0
+	}
+
+	// Create stream for response
+	stream, err := w32.SHCreateMemStream(content)
+	if err != nil {
+		log.Fatal(err)
+	}
+	env := f.chromium.Environment()
+	var response *edge.ICoreWebView2WebResourceResponse
+	err = env.CreateWebResourceResponse(stream, 200, "OK", "Content-Type: "+mimeType, &response)
+	if err != nil {
+		return 0
+	}
+	// Send response back
+	err = args.PutResponse(response)
+	if err != nil {
+		return 0
+	}
+	return 0
+}
+
+func (f *Frontend) processMessage(message string) {
+	err := f.dispatcher.ProcessMessage(message)
+	if err != nil {
+		// TODO: Work out what this means
+		return
+	}
+}
+
+func NewFrontend(appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
+
+	result := &Frontend{
 		frontendOptions: appoptions,
 		logger:          myLogger,
 		bindings:        appBindings,
+		dispatcher:      dispatcher,
 	}
+
+	if appoptions.Windows.Assets != nil {
+		assets, err := assetserver.NewAssetServer(*appoptions.Windows.Assets)
+		if err != nil {
+			log.Fatal(err)
+		}
+		result.assets = assets
+	}
+
+	return result
 }

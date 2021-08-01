@@ -19,31 +19,31 @@ func (l *DefaultLogger) Print(message string) {
 
 // Trace level logging. Works like Sprintf.
 func (l *DefaultLogger) Trace(message string) {
-	println("TRACE | " + message)
+	println("TRA | " + message)
 }
 
 // Debug level logging. Works like Sprintf.
 func (l *DefaultLogger) Debug(message string) {
-	println("DEBUG | " + message)
+	println("DEB | " + message)
 }
 
 // Info level logging. Works like Sprintf.
 func (l *DefaultLogger) Info(message string) {
-	println("INFO  | " + message)
+	println("INF | " + message)
 }
 
 // Warning level logging. Works like Sprintf.
 func (l *DefaultLogger) Warning(message string) {
-	println("WARN  | " + message)
+	println("WAR | " + message)
 }
 
 // Error level logging. Works like Sprintf.
 func (l *DefaultLogger) Error(message string) {
-	println("ERROR | " + message)
+	println("ERR | " + message)
 }
 
 // Fatal level logging. Works like Sprintf.
 func (l *DefaultLogger) Fatal(message string) {
-	println("FATAL | " + message)
+	println("FAT | " + message)
 	os.Exit(1)
 }

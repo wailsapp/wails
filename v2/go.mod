@@ -13,6 +13,7 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/imdario/mergo v0.3.12
 	github.com/jackmordaunt/icns v1.0.0
+	github.com/jchv/go-webview2 v0.0.0-20210720204005-cbb937ae0f7f
 	github.com/klauspost/compress v1.11.3 // indirect
 	github.com/leaanthony/clir v1.0.4
 	github.com/leaanthony/debme v1.2.1
@@ -45,5 +46,6 @@ require (
 	nhooyr.io/websocket v1.8.6
 )
 
-replace github.com/tadvi/winc v0.0.0-20190405175627-5454f291903d =>  C:\Users\leaan\GolandProjects\winc
+replace github.com/tadvi/winc v0.0.0-20190405175627-5454f291903d => C:\Users\leaan\GolandProjects\winc
 
+replace github.com/jchv/go-webview2 v0.0.0-20210720204005-cbb937ae0f7f => C:\Users\leaan\GolandProjects\go-webview2
