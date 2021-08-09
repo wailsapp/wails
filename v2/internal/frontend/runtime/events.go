@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"sync"
 )
@@ -17,7 +18,8 @@ type eventListener struct {
 
 // Events handles eventing
 type Events struct {
-	log *logger.Logger
+	log      *logger.Logger
+	frontend frontend.Frontend
 
 	// Go event listeners
 	listeners  map[string][]*eventListener
@@ -42,6 +44,7 @@ func (e *Events) Once(eventName string, callback func(...interface{})) {
 
 func (e *Events) Emit(eventName string, data ...interface{}) {
 	e.notify(eventName, data...)
+	e.frontend.Notify(eventName, data...)
 }
 
 func (e *Events) Off(eventName string) {
@@ -79,7 +82,7 @@ func (e *Events) unRegisterListener(eventName string) {
 	e.notifyLock.Unlock()
 }
 
-// notify for the given event name
+// Notify for the given event name
 func (e *Events) notify(eventName string, data ...interface{}) {
 
 	// Get list of event listeners
@@ -132,4 +135,8 @@ func (e *Events) notify(eventName string, data ...interface{}) {
 
 	// Unlock
 	e.notifyLock.Unlock()
+}
+
+func (e *Events) SetFrontend(appFrontend frontend.Frontend) {
+	e.frontend = appFrontend
 }

@@ -121,6 +121,7 @@ function notifyListeners(eventData) {
 
  */
 export function EventsNotify(notifyMessage) {
+    console.log("EventsNotify");
 
     // Parse the message
     let message;
@@ -130,7 +131,7 @@ export function EventsNotify(notifyMessage) {
         const error = 'Invalid JSON passed to Notify: ' + notifyMessage;
         throw new Error(error);
     }
-
+    console.log({message});
     notifyListeners(message);
 }
 
@@ -155,6 +156,9 @@ export function EventsEmit(eventName) {
 }
 
 export function EventsOff(eventName) {
+    // Remove local listeners
+    eventListeners.delete(eventName);
+
     // Notify Go listeners
     SendMessage('EX' + eventName);
 }

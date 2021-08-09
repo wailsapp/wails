@@ -2,9 +2,9 @@ package windows
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/jchv/go-webview2/pkg/edge"
 	"github.com/tadvi/winc"
-	"github.com/tadvi/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
@@ -159,44 +159,57 @@ func (f *Frontend) setupChromium() {
 	chromium.Embed(f.mainWindow.Handle())
 	chromium.Resize()
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
-	chromium.Navigate("file://index.html")
+	chromium.Navigate("file://wails/")
 	f.chromium = chromium
 }
 
-func (f *Frontend) processRequest(sender *edge.ICoreWebView2, args *edge.ICoreWebView2WebResourceRequestedEventArgs) uintptr {
-	// Get the request
-	requestObject, _ := args.GetRequest()
-	uri, _ := requestObject.GetURI()
+type EventNotify struct {
+	Name string        `json:"name"`
+	Data []interface{} `json:"data"`
+}
+
+func (f *Frontend) Notify(name string, data ...interface{}) {
+	runtime.LockOSThread()
+	notification := EventNotify{
+		Name: name,
+		Data: data,
+	}
+	_, err := json.Marshal(notification)
+	if err != nil {
+		f.logger.Error(err.Error())
+		return
+	}
+	f.chromium.Eval(`alert("test");`)
+	//f.chromium.Eval(`window.wails.EventsNotify('` + string(payload) + `');`)
+}
+
+func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {
+	//Get the request
+	uri, _ := req.GetUri()
 
 	// Translate URI
-	uri = strings.TrimPrefix(uri, "file://index.html")
+	uri = strings.TrimPrefix(uri, "file://wails")
 	if !strings.HasPrefix(uri, "/") {
-		return 0
+		return
 	}
 
 	// Load file from asset store
 	content, mimeType, err := f.assets.Load(uri)
 	if err != nil {
-		return 0
+		return
 	}
 
-	// Create stream for response
-	stream, err := w32.SHCreateMemStream(content)
-	if err != nil {
-		log.Fatal(err)
-	}
 	env := f.chromium.Environment()
-	var response *edge.ICoreWebView2WebResourceResponse
-	err = env.CreateWebResourceResponse(stream, 200, "OK", "Content-Type: "+mimeType, &response)
+	response, err := env.CreateWebResourceResponse(content, 200, "OK", "Content-Type: "+mimeType)
 	if err != nil {
-		return 0
+		return
 	}
 	// Send response back
 	err = args.PutResponse(response)
 	if err != nil {
-		return 0
+		return
 	}
-	return 0
+	return
 }
 
 func (f *Frontend) processMessage(message string) {

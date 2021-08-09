@@ -28,7 +28,6 @@ window.runtime = {
 
 // Initialise global if not already
 window.wails = {
-    _: {
         //     Callback,
         EventsNotify,
         //     AddScript,
@@ -38,6 +37,5 @@ window.wails = {
         //     AddIPCListener,
         //     SystemCall,
         //     SendMessage,
-    },
 };
 

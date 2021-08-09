@@ -93,4 +93,7 @@ type Frontend interface {
 	//UpdateTrayMenuLabel(menu *menu.TrayMenu)
 	//UpdateContextMenu(contextMenu *menu.ContextMenu)
 	//DeleteTrayMenuByID(id string)
+
+	// Events
+	Notify(name string, data ...interface{})
 }

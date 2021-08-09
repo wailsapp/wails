@@ -34,7 +34,7 @@ func (a *App) Run() error {
 	return a.frontend.Run(a.ctx)
 }
 
-// CreateApp
+// CreateApp creates the app!
 func CreateApp(appoptions *options.App) (*App, error) {
 
 	ctx := context.Background()
@@ -64,6 +64,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	messageDispatcher := dispatcher.NewDispatcher(myLogger, appBindings, eventHandler)
 
 	appFrontend := NewFrontend(appoptions, myLogger, appBindings, messageDispatcher)
+	eventHandler.SetFrontend(appFrontend)
 
 	result := &App{
 		ctx:              ctx,

@@ -27,7 +27,7 @@ func (b BridgeClient) Quit() {
 
 func (b BridgeClient) NotifyEvent(message string) {
 	b.session.sendMessage("n" + message)
-	b.session.log.Info("NotifyEvent: %s", message)
+	b.session.log.Info("Notify: %s", message)
 }
 
 func (b BridgeClient) CallResult(message string) {
