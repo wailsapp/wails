@@ -5,12 +5,15 @@ import (
 	"github.com/tadvi/winc/w32"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"sync"
 )
 
 type Window struct {
 	winc.Form
 	frontendOptions *options.App
 	applicationMenu *menu.Menu
+	m               sync.Mutex
+	dispatchq       []func()
 }
 
 func NewWindow(parent winc.Controller, options *options.App) *Window {
@@ -69,4 +72,35 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 	}
 
 	return result
+}
+
+func (w *Window) Run() int {
+	var m w32.MSG
+
+	for w32.GetMessage(&m, 0, 0, 0) != 0 {
+		if m.Message == w32.WM_APP {
+			// Credit: https://github.com/jchv/go-webview2
+			w.m.Lock()
+			q := append([]func(){}, w.dispatchq...)
+			w.dispatchq = []func(){}
+			w.m.Unlock()
+			for _, v := range q {
+				v()
+			}
+		}
+		if !w.PreTranslateMessage(&m) {
+			w32.TranslateMessage(&m)
+			w32.DispatchMessage(&m)
+		}
+	}
+
+	w32.GdiplusShutdown()
+	return int(m.WParam)
+}
+
+func (w *Window) Dispatch(f func()) {
+	w.m.Lock()
+	w.dispatchq = append(w.dispatchq, f)
+	w.m.Unlock()
+	w32.PostMainThreadMessage(w32.WM_APP, 0, 0)
 }

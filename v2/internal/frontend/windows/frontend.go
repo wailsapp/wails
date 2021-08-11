@@ -65,7 +65,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 		f.frontendOptions.Startup(ctx)
 	}()
 
-	winc.RunMainLoop()
+	mainWindow.Run()
 	return nil
 }
 
@@ -169,18 +169,18 @@ type EventNotify struct {
 }
 
 func (f *Frontend) Notify(name string, data ...interface{}) {
-	runtime.LockOSThread()
 	notification := EventNotify{
 		Name: name,
 		Data: data,
 	}
-	_, err := json.Marshal(notification)
+	payload, err := json.Marshal(notification)
 	if err != nil {
 		f.logger.Error(err.Error())
 		return
 	}
-	f.chromium.Eval(`alert("test");`)
-	//f.chromium.Eval(`window.wails.EventsNotify('` + string(payload) + `');`)
+	f.mainWindow.Dispatch(func() {
+		f.chromium.Eval(`window.wails.EventsNotify('` + string(payload) + `');`)
+	})
 }
 
 func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {

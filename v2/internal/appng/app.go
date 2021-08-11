@@ -31,7 +31,11 @@ type App struct {
 }
 
 func (a *App) Run() error {
-	return a.frontend.Run(a.ctx)
+	err := a.frontend.Run(a.ctx)
+	if a.shutdownCallback != nil {
+		a.shutdownCallback()
+	}
+	return err
 }
 
 // CreateApp creates the app!
