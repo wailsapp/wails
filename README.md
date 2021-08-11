@@ -69,6 +69,10 @@ The official docs can be found at [https://wails.app](https://wails.app).
 
 This project is supported by these kind people / companies:
 
+<a href="https://github.com/snider" style="width:100px;border-radius: 50%">
+  <img src="sponsors/snider-bronze.png" width="100" style="border-radius: 50%"/>
+</a>
+<br/>
 <a href="https://github.com/matryer" style="width:100px">
   <img src="https://github.com/matryer.png" width="100"/>
 </a>
@@ -92,9 +96,6 @@ This project is supported by these kind people / companies:
 </a>
 <a href="https://github.com/LanguageAgnostic" style="width:55px;border-radius: 50%">
   <img src="https://github.com/LanguageAgnostic.png?size=55" width="55" style="border-radius: 50%"/>
-</a>
-<a href="https://github.com/snider" style="width:60px;border-radius: 50%">
-  <img src="https://github.com/snider.png?size=60" width="60" style="border-radius: 50%"/>
 </a>
 <a href="https://github.com/fcjr" style="width:55px;border-radius: 50%">
   <img src="https://github.com/fcjr.png?size=55" width="55" style="border-radius: 50%"/>
@@ -304,7 +305,7 @@ This project was mainly coded to the following albums:
 
 <p align="center" style="text-align: center">
    <a href="https://pace.dev"><img src="pace.jpeg"/></a><br/>
-   A <i>huge<i/> thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
+   A <i>huge</i> thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
    If you are looking for a Project Management tool that's powerful but quick and easy to use, check them out!<br/><br/>
 </p>
 
