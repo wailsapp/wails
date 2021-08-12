@@ -69,7 +69,9 @@ The official docs can be found at [https://wails.app](https://wails.app).
 
 This project is supported by these kind people / companies:
 
-<img src="sponsors/bronze%20sponsor.png" width="100"/>
+<a href="https://github.com/sponsors/leaanthony" style="width:100px;">
+  <img src="sponsors/bronze%20sponsor.png" width="100"/>
+</a>
 <a href="https://github.com/snider" style="width:100px;">
   <img src="https://github.com/snider.png?size=100" width="100"/>
 </a>
