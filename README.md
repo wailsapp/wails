@@ -69,8 +69,9 @@ The official docs can be found at [https://wails.app](https://wails.app).
 
 This project is supported by these kind people / companies:
 
-<a href="https://github.com/snider" style="width:100px;border-radius: 50%">
-  <img src="sponsors/snider-bronze.png" width="100" style="border-radius: 50%"/>
+<img src="sponsors/bronze%20sponsor.png" width="100"/>
+<a href="https://github.com/snider" style="width:100px;">
+  <img src="https://github.com/snider.png?size=100" width="100"/>
 </a>
 <br/>
 <a href="https://github.com/matryer" style="width:100px">
@@ -305,7 +306,7 @@ This project was mainly coded to the following albums:
 
 <p align="center" style="text-align: center">
    <a href="https://pace.dev"><img src="pace.jpeg"/></a><br/>
-   A <i>huge</i> thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
+   A <i>huge<i/> thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
    If you are looking for a Project Management tool that's powerful but quick and easy to use, check them out!<br/><br/>
 </p>
 
