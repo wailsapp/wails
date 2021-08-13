@@ -12,6 +12,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"log"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -213,11 +214,17 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 }
 
 func (f *Frontend) processMessage(message string) {
+	println("msg:", message)
 	err := f.dispatcher.ProcessMessage(message)
 	if err != nil {
-		// TODO: Work out what this means
-		return
+		f.logger.Error(err.Error())
 	}
+}
+
+func (f *Frontend) Callback(message string) {
+	f.mainWindow.Dispatch(func() {
+		f.chromium.Eval(`window.wails.Callback(` + strconv.Quote(message) + `);`)
+	})
 }
 
 func NewFrontend(appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
@@ -229,8 +236,15 @@ func NewFrontend(appoptions *options.App, myLogger *logger.Logger, appBindings *
 		dispatcher:      dispatcher,
 	}
 
+	// Setup the callback handler (Go -> JS)
+	dispatcher.SetCallbackHandler(result.Callback)
+
 	if appoptions.Windows.Assets != nil {
-		assets, err := assetserver.NewAssetServer(*appoptions.Windows.Assets)
+		bindingsJSON, err := appBindings.ToJSON()
+		if err != nil {
+			log.Fatal(err)
+		}
+		assets, err := assetserver.NewAssetServer(*appoptions.Windows.Assets, bindingsJSON)
 		if err != nil {
 			log.Fatal(err)
 		}

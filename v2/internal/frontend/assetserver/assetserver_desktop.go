@@ -4,7 +4,6 @@ package assetserver
 
 import (
 	"embed"
-	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"net/http"
 )
 
@@ -19,7 +18,7 @@ func (a *AssetServer) init(assets embed.FS) error {
 	if err != nil {
 		return err
 	}
-	a.indexFile, err = injectScript(string(indexHTML), "<script>"+runtime.RuntimeJS+"</script>")
+	a.indexFile, err = injectScript(string(indexHTML), "<script>"+a.runtimeJS+"</script>")
 	if err != nil {
 		return err
 	}

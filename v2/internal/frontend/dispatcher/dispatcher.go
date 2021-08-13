@@ -8,17 +8,24 @@ import (
 )
 
 type Dispatcher struct {
-	log      *logger.Logger
-	bindings *binding.Bindings
-	events   frontend.Events
+	log            *logger.Logger
+	bindings       *binding.Bindings
+	events         frontend.Events
+	bindingsDB     *binding.DB
+	resultCallback func(string)
 }
 
 func NewDispatcher(log *logger.Logger, bindings *binding.Bindings, events frontend.Events) *Dispatcher {
 	return &Dispatcher{
-		log:      log,
-		bindings: bindings,
-		events:   events,
+		log:        log,
+		bindings:   bindings,
+		events:     events,
+		bindingsDB: bindings.DB(),
 	}
+}
+
+func (d *Dispatcher) SetCallbackHandler(handler func(string)) {
+	d.resultCallback = handler
 }
 
 func (d *Dispatcher) ProcessMessage(message string) error {
@@ -30,6 +37,8 @@ func (d *Dispatcher) ProcessMessage(message string) error {
 		return d.processLogMessage(message)
 	case 'E':
 		return d.processEventMessage(message)
+	case 'C':
+		return d.processCallMessage(message)
 	default:
 		return errors.New("Unknown message from front end: " + message)
 	}

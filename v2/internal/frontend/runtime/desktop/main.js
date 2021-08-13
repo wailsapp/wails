@@ -10,7 +10,8 @@ The lightweight framework for web-like apps
 /* jshint esversion: 9 */
 import * as Log from './log';
 import {EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnce, EventsOnMultiple} from './events';
-// import {Callback, SystemCall} from './calls';
+import {Callback} from './calls';
+import {SetBindings} from "./bindings";
 // import {AddScript, DisableDefaultContextMenu, InjectCSS} from './utils';
 // import {AddIPCListener, SendMessage} from 'ipc';
 
@@ -28,8 +29,9 @@ window.runtime = {
 
 // Initialise global if not already
 window.wails = {
-        //     Callback,
+        Callback,
         EventsNotify,
+        SetBindings,
         //     AddScript,
         //     InjectCSS,
         //     DisableDefaultContextMenu,
@@ -39,3 +41,6 @@ window.wails = {
         //     SendMessage,
 };
 
+window.wails.SetBindings(window.wailsbindings);
+delete window.wails['SetBindings'];
+delete window['wailsbindings'];

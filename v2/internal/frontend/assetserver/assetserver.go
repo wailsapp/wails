@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/leaanthony/debme"
 	"github.com/leaanthony/slicer"
+	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"io/fs"
 	"path/filepath"
 	"strings"
@@ -14,16 +15,19 @@ import (
 type AssetServer struct {
 	assets    debme.Debme
 	indexFile []byte
+	runtimeJS string
+}
+
+func NewAssetServer(assets embed.FS, bindingsJSON string) (*AssetServer, error) {
+	result := &AssetServer{
+		runtimeJS: `window.wailsbindings='` + bindingsJSON + `';` + runtime.RuntimeJS,
+	}
+	err := result.init(assets)
+	return result, err
 }
 
 func (a *AssetServer) IndexHTML() string {
 	return string(a.indexFile)
-}
-
-func NewAssetServer(assets embed.FS) (*AssetServer, error) {
-	result := &AssetServer{}
-	err := result.init(assets)
-	return result, err
 }
 
 func injectScript(input string, script string) ([]byte, error) {
