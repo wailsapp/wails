@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/pkg/buildassets"
 	"io/ioutil"
 	"path/filepath"
@@ -32,6 +33,12 @@ func (d *DesktopBuilder) BuildAssets(options *Options) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	// We only build assets for cgo builds
+	userTags := slicer.String(options.UserTags)
+	if userTags.Contains("experimental") {
+		return nil
 	}
 
 	// Get a list of assets from the HTML
