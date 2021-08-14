@@ -15,6 +15,7 @@ func init() {
 	projectOptions := projectHelper.NewProjectOptions()
 	commandDescription := `Generates a new Wails project using the given flags. 
 Any flags that are required and not given will be prompted for.`
+	build := false
 
 	initCommand := app.Command("init", "Initialises a new Wails project").
 		LongDescription(commandDescription).
@@ -23,7 +24,8 @@ Any flags that are required and not given will be prompted for.`
 		StringFlag("template", "Template name", &projectOptions.Template).
 		StringFlag("name", "Project name", &projectOptions.Name).
 		StringFlag("description", "Project description", &projectOptions.Description).
-		StringFlag("output", "Output binary name", &projectOptions.BinaryName)
+		StringFlag("output", "Output binary name", &projectOptions.BinaryName).
+		BoolFlag("build", "Build project after generating", &build)
 
 	initCommand.Action(func() error {
 
@@ -64,6 +66,10 @@ Any flags that are required and not given will be prompted for.`
 			return err
 		}
 		genSpinner.Success()
+		if !build {
+			logger.Yellow("Project '%s' initialised. Run `wails build` to build it.", projectOptions.Name)
+			return nil
+		}
 
 		// Build the project
 		cwd, _ := os.Getwd()
