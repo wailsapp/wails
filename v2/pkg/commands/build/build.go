@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"github.com/leaanthony/slicer"
 	"log"
 	"os"
 	"path/filepath"
@@ -113,9 +114,12 @@ func Build(options *Options) (string, error) {
 	}
 
 	// Build the base assets
-	err = builder.BuildAssets(options)
-	if err != nil {
-		return "", err
+	userTags := slicer.String(options.UserTags)
+	if !userTags.Contains("experimental") {
+		err = builder.BuildAssets(options)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	// If we are building for windows, we will need to generate the asset bundle before
