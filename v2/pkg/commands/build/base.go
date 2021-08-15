@@ -336,7 +336,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		return nil
 	}
 
-	println("Compressing application: ")
+	fmt.Printf("Compressing application: ")
 
 	// Do we have upx installed?
 	if !shell.CommandExists("upx") {
@@ -359,6 +359,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	if err != nil {
 		return errors.Wrap(err, "Error during compression:")
 	}
+	println("Done.")
 	if verbose {
 		println(string(output))
 	}
