@@ -3,8 +3,10 @@ package windows
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/jchv/go-webview2/pkg/edge"
 	"github.com/tadvi/winc"
+	"github.com/tadvi/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
@@ -215,6 +217,13 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 
 func (f *Frontend) processMessage(message string) {
 	println("msg:", message)
+	if message == "drag" {
+		err := f.startDrag()
+		if err != nil {
+			f.logger.Error(err.Error())
+		}
+		return
+	}
 	err := f.dispatcher.ProcessMessage(message)
 	if err != nil {
 		f.logger.Error(err.Error())
@@ -225,6 +234,14 @@ func (f *Frontend) Callback(message string) {
 	f.mainWindow.Dispatch(func() {
 		f.chromium.Eval(`window.wails.Callback(` + strconv.Quote(message) + `);`)
 	})
+}
+
+func (f *Frontend) startDrag() error {
+	if !w32.ReleaseCapture() {
+		return fmt.Errorf("unable to release mouse capture")
+	}
+	w32.SendMessage(f.mainWindow.Handle(), w32.WM_NCLBUTTONDOWN, w32.HTCAPTION, 0)
+	return nil
 }
 
 func NewFrontend(appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
