@@ -216,7 +216,6 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 }
 
 func (f *Frontend) processMessage(message string) {
-	println("msg:", message)
 	if message == "drag" {
 		err := f.startDrag()
 		if err != nil {

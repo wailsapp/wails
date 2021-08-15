@@ -80,6 +80,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	runDelve := false
 	command.BoolFlag("delve", "Runs the built binary in delve for debugging", &runDelve)
 
+	skipFrontend := false
+	command.BoolFlag("s", "Skips building the frontend", &skipFrontend)
+
 	command.Action(func() error {
 
 		quiet := verbosity == 0
@@ -175,6 +178,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			Compiler:            compilerCommand,
 			KeepAssets:          keepAssets,
 			Verbosity:           verbosity,
+			IgnoreFrontend:      skipFrontend,
 			Compress:            compress,
 			CompressFlags:       compressFlags,
 			UserTags:            userTags,
@@ -209,6 +213,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		fmt.Fprintf(w, "Platform: \t%s\n", buildOptions.Platform)
 		fmt.Fprintf(w, "Arch: \t%s\n", buildOptions.Arch)
 		fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
+		fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
 		fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
 		fmt.Fprintf(w, "Build Mode: \t%s\n", buildModeText)
 		fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
