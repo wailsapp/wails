@@ -25,11 +25,11 @@ require (
 	github.com/leaanthony/webview2runtime v1.1.0
 	github.com/leaanthony/winicon v0.0.0-20200606125418-4419cea822a0
 	github.com/matryer/is v1.4.0
-	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/tadvi/winc v0.0.0-20190405175627-5454f291903d
+	github.com/tc-hib/winres v0.1.5
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect

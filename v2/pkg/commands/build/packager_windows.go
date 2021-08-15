@@ -3,8 +3,8 @@ package build
 import (
 	"fmt"
 	"github.com/leaanthony/winicon"
+	"github.com/tc-hib/winres"
 	"github.com/wailsapp/wails/v2/internal/fs"
-	"github.com/wailsapp/wails/v2/internal/shell"
 	"github.com/wailsapp/wails/v2/pkg/buildassets"
 	"os"
 	"path/filepath"
@@ -14,12 +14,6 @@ func packageApplication(options *Options) error {
 	// Generate icon
 	var err error
 	err = generateIcoFile(options)
-	if err != nil {
-		return err
-	}
-
-	// Ensure RC file is present
-	err = generateRCFile(options)
 	if err != nil {
 		return err
 	}
@@ -48,18 +42,9 @@ func generateManifest(options *Options) error {
 	return nil
 }
 
-func generateRCFile(options *Options) error {
-	filename := options.ProjectData.Name + ".rc"
-	rcFile := filepath.Join(options.ProjectData.Path, "build", "windows", filename)
-	if !fs.FileExists(rcFile) {
-		return buildassets.RegenerateRCFile(options.ProjectData.Path, options.ProjectData.Name)
-	}
-	return nil
-}
-
 func generateIcoFile(options *Options) error {
 	// Check ico file exists already
-	icoFile := filepath.Join(options.ProjectData.Path, "build", "windows", "app.ico")
+	icoFile := filepath.Join(options.ProjectData.Path, "build", "windows", "icon.ico")
 	if !fs.FileExists(icoFile) {
 		// Check icon exists
 		appicon := filepath.Join(options.ProjectData.Path, "build", "appicon.png")
@@ -84,9 +69,61 @@ func generateIcoFile(options *Options) error {
 }
 
 func compileResources(options *Options) error {
-	windowsBuildDir := filepath.Join(options.ProjectData.Path, "build", "windows")
-	sourcefile := filepath.Join(options.ProjectData.BuildDir, "windows", options.ProjectData.Name+".rc")
+
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		os.Chdir(currentDir)
+	}()
+	windowsDir := filepath.Join(options.ProjectData.Path, "build", "windows")
+	err = os.Chdir(windowsDir)
+	if err != nil {
+		return err
+	}
+	rs := winres.ResourceSet{}
+	icon := filepath.Join(windowsDir, "icon.ico")
+	iconFile, err := os.Open(icon)
+	if err != nil {
+		return err
+	}
+	defer iconFile.Close()
+	ico, err := winres.LoadICO(iconFile)
+	if err != nil {
+		return err
+	}
+	err = rs.SetIcon(winres.RT_ICON, ico)
+	if err != nil {
+		return err
+	}
+
+	ManifestFilename := options.ProjectData.Name + ".exe.manifest"
+	manifestData, err := os.ReadFile(ManifestFilename)
+	xmlData, err := winres.AppManifestFromXML(manifestData)
+	if err != nil {
+		return err
+	}
+	rs.SetManifest(xmlData)
+
 	targetFile := filepath.Join(options.ProjectData.Path, options.ProjectData.Name+"-res.syso")
-	_, _, err := shell.RunCommand(windowsBuildDir, "windres", "-o", targetFile, sourcefile)
-	return err
+	fout, err := os.Create(targetFile)
+	if err != nil {
+		return err
+	}
+	defer fout.Close()
+
+	archs := map[string]winres.Arch{
+		"amd64": winres.ArchAMD64,
+	}
+	targetArch, supported := archs[options.Arch]
+	if !supported {
+		return fmt.Errorf("arch '%s' not supported", options.Arch)
+	}
+
+	err = rs.WriteObject(fout, targetArch)
+	if err != nil {
+		return err
+	}
+	return nil
 }

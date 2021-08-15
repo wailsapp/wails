@@ -3,6 +3,7 @@
 package build
 
 import (
+	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/internal/ffenestri/windows/x64"
 	"os"
 	"path/filepath"
@@ -11,6 +12,10 @@ import (
 // PostCompilation is called after the compilation step, if successful
 func (d *DesktopBuilder) PostCompilation(options *Options) error {
 	// Dump the DLLs
+	userTags := slicer.String(options.UserTags)
+	if userTags.Contains("experimental") {
+		return nil
+	}
 	err := os.WriteFile(filepath.Join(options.BuildDirectory, "WebView2Loader.dll"), x64.WebView2Loader, 0755)
 	if err != nil {
 		return err
