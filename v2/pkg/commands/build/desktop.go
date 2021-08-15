@@ -2,7 +2,6 @@ package build
 
 import (
 	"fmt"
-	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/pkg/buildassets"
 	"io/ioutil"
 	"path/filepath"
@@ -24,7 +23,6 @@ func newDesktopBuilder(options *Options) *DesktopBuilder {
 
 // BuildAssets builds the assets for the desktop application
 func (d *DesktopBuilder) BuildAssets(options *Options) error {
-	var err error
 
 	// Check assets directory exists
 	if !fs.DirExists(options.ProjectData.BuildDir) {
@@ -36,22 +34,20 @@ func (d *DesktopBuilder) BuildAssets(options *Options) error {
 	}
 
 	// We only build assets for cgo builds
-	userTags := slicer.String(options.UserTags)
-	if userTags.Contains("experimental") {
-		return nil
-	}
-
-	// Get a list of assets from the HTML
-	assets, err := d.BaseBuilder.ExtractAssets()
-	if err != nil {
-		return err
-	}
-
-	// Build base assets (HTML/JS/CSS/etc)
-	err = d.BuildBaseAssets(assets, options)
-	if err != nil {
-		return err
-	}
+	//userTags := slicer.String(options.UserTags)
+	//if userTags.Contains("cgo") {
+	//	// Get a list of assets from the HTML
+	//	assets, err := d.BaseBuilder.ExtractAssets()
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	// Build base assets (HTML/JS/CSS/etc)
+	//	err = d.BuildBaseAssets(assets, options)
+	//	if err != nil {
+	//		return err
+	//	}
+	//}
 
 	return nil
 }

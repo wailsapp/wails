@@ -1,192 +1,57 @@
-// +build !experimental
-
 package runtime
 
 import (
 	"context"
-	"fmt"
-	"github.com/wailsapp/wails/v2/internal/crypto"
-	"github.com/wailsapp/wails/v2/internal/servicebus"
+	"github.com/wailsapp/wails/v2/internal/frontend"
 )
 
 // FileFilter defines a filter for dialog boxes
-type FileFilter struct {
-	DisplayName string // Filter information EG: "Image Files (*.jpg, *.png)"
-	Pattern     string // semi-colon separated list of extensions, EG: "*.jpg;*.png"
-}
+type FileFilter = frontend.FileFilter
 
 // OpenDialogOptions contains the options for the OpenDialogOptions runtime method
-type OpenDialogOptions struct {
-	DefaultDirectory           string
-	DefaultFilename            string
-	Title                      string
-	Filters                    []FileFilter
-	AllowFiles                 bool
-	AllowDirectories           bool
-	ShowHiddenFiles            bool
-	CanCreateDirectories       bool
-	ResolvesAliases            bool
-	TreatPackagesAsDirectories bool
-}
+type OpenDialogOptions = frontend.OpenDialogOptions
 
 // SaveDialogOptions contains the options for the SaveDialog runtime method
-type SaveDialogOptions struct {
-	DefaultDirectory           string
-	DefaultFilename            string
-	Title                      string
-	Filters                    []FileFilter
-	ShowHiddenFiles            bool
-	CanCreateDirectories       bool
-	TreatPackagesAsDirectories bool
-}
+type SaveDialogOptions = frontend.SaveDialogOptions
 
-type DialogType string
+type DialogType = frontend.DialogType
 
 const (
-	InfoDialog     DialogType = "info"
-	WarningDialog  DialogType = "warning"
-	ErrorDialog    DialogType = "error"
-	QuestionDialog DialogType = "question"
+	InfoDialog     = frontend.InfoDialog
+	WarningDialog  = frontend.WarningDialog
+	ErrorDialog    = frontend.ErrorDialog
+	QuestionDialog = frontend.QuestionDialog
 )
 
 // MessageDialogOptions contains the options for the Message dialogs, EG Info, Warning, etc runtime methods
-type MessageDialogOptions struct {
-	Type          DialogType
-	Title         string
-	Message       string
-	Buttons       []string
-	DefaultButton string
-	CancelButton  string
-	Icon          string
-}
+type MessageDialogOptions = frontend.MessageDialogOptions
 
 // OpenDirectoryDialog prompts the user to select a directory
 func OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
-
-	bus := servicebus.ExtractBus(ctx)
-
-	// Create unique dialog callback
-	uniqueCallback := crypto.RandomID()
-
-	// Subscribe to the respose channel
-	responseTopic := "dialog:opendirectoryselected:" + uniqueCallback
-	dialogResponseChannel, err := bus.Subscribe(responseTopic)
-	if err != nil {
-		return "", fmt.Errorf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
-	}
-
-	message := "dialog:select:directory:" + uniqueCallback
-	bus.Publish(message, dialogOptions)
-
-	// Wait for result
-	var result = <-dialogResponseChannel
-
-	// Delete subscription to response topic
-	bus.UnSubscribe(responseTopic)
-
-	return result.Data().(string), nil
+	appFrontend := getFrontend(ctx)
+	return appFrontend.OpenDirectoryDialog(dialogOptions)
 }
 
 // OpenFileDialog prompts the user to select a file
 func OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
-
-	bus := servicebus.ExtractBus(ctx)
-
-	// Create unique dialog callback
-	uniqueCallback := crypto.RandomID()
-
-	// Subscribe to the respose channel
-	responseTopic := "dialog:openselected:" + uniqueCallback
-	dialogResponseChannel, err := bus.Subscribe(responseTopic)
-	if err != nil {
-		return "", fmt.Errorf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
-	}
-
-	message := "dialog:select:open:" + uniqueCallback
-	bus.Publish(message, dialogOptions)
-
-	// Wait for result
-	var result = <-dialogResponseChannel
-
-	// Delete subscription to response topic
-	bus.UnSubscribe(responseTopic)
-
-	return result.Data().(string), nil
+	appFrontend := getFrontend(ctx)
+	return appFrontend.OpenFileDialog(dialogOptions)
 }
 
 // OpenMultipleFilesDialog prompts the user to select a file
 func OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error) {
-
-	bus := servicebus.ExtractBus(ctx)
-	uniqueCallback := crypto.RandomID()
-
-	// Subscribe to the respose channel
-	responseTopic := "dialog:openmultipleselected:" + uniqueCallback
-	dialogResponseChannel, err := bus.Subscribe(responseTopic)
-	if err != nil {
-		return nil, fmt.Errorf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
-	}
-
-	message := "dialog:select:openmultiple:" + uniqueCallback
-	bus.Publish(message, dialogOptions)
-
-	// Wait for result
-	var result = <-dialogResponseChannel
-
-	// Delete subscription to response topic
-	bus.UnSubscribe(responseTopic)
-
-	return result.Data().([]string), nil
+	appFrontend := getFrontend(ctx)
+	return appFrontend.OpenMultipleFilesDialog(dialogOptions)
 }
 
 // SaveFileDialog prompts the user to select a file
 func SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error) {
-
-	bus := servicebus.ExtractBus(ctx)
-	uniqueCallback := crypto.RandomID()
-
-	// Subscribe to the respose channel
-	responseTopic := "dialog:saveselected:" + uniqueCallback
-	dialogResponseChannel, err := bus.Subscribe(responseTopic)
-	if err != nil {
-		return "", fmt.Errorf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
-	}
-
-	message := "dialog:select:save:" + uniqueCallback
-	bus.Publish(message, dialogOptions)
-
-	// Wait for result
-	var result = <-dialogResponseChannel
-
-	// Delete subscription to response topic
-	bus.UnSubscribe(responseTopic)
-
-	return result.Data().(string), nil
+	appFrontend := getFrontend(ctx)
+	return appFrontend.SaveFileDialog(dialogOptions)
 }
 
 // MessageDialog show a message dialog to the user
 func MessageDialog(ctx context.Context, dialogOptions MessageDialogOptions) (string, error) {
-
-	bus := servicebus.ExtractBus(ctx)
-
-	// Create unique dialog callback
-	uniqueCallback := crypto.RandomID()
-
-	// Subscribe to the respose channel
-	responseTopic := "dialog:messageselected:" + uniqueCallback
-	dialogResponseChannel, err := bus.Subscribe(responseTopic)
-	if err != nil {
-		return "", fmt.Errorf("ERROR: Cannot subscribe to bus topic: %+v\n", err.Error())
-	}
-
-	message := "dialog:select:message:" + uniqueCallback
-	bus.Publish(message, dialogOptions)
-
-	// Wait for result
-	var result = <-dialogResponseChannel
-
-	// Delete subscription to response topic
-	bus.UnSubscribe(responseTopic)
-
-	return result.Data().(string), nil
+	appFrontend := getFrontend(ctx)
+	return appFrontend.MessageDialog(dialogOptions)
 }

@@ -1,98 +1,89 @@
-// +build !experimental
-
 package runtime
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/wailsapp/wails/v2/internal/servicebus"
 )
 
 // WindowSetTitle sets the title of the window
 func WindowSetTitle(ctx context.Context, title string) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("window:settitle", title)
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowSetTitle(title)
 }
 
 // WindowFullscreen makes the window fullscreen
 func WindowFullscreen(ctx context.Context) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("window:fullscreen", "")
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowFullscreen()
 }
 
 // WindowUnFullscreen makes the window UnFullscreen
 func WindowUnFullscreen(ctx context.Context) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("window:unfullscreen", "")
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowUnFullscreen()
 }
 
 // WindowCenter the window on the current screen
 func WindowCenter(ctx context.Context) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("window:center", "")
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowCenter()
 }
 
 // WindowShow shows the window if hidden
 func WindowShow(ctx context.Context) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("window:show", "")
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowShow()
 }
 
 // WindowHide the window
 func WindowHide(ctx context.Context) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("window:hide", "")
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowHide()
 }
 
 // WindowSetSize sets the size of the window
 func WindowSetSize(ctx context.Context, width int, height int) {
-	bus := servicebus.ExtractBus(ctx)
-	message := fmt.Sprintf("window:size:%d:%d", width, height)
-	bus.Publish(message, "")
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowSetSize(width, height)
 }
 
-// WindowSetSize sets the size of the window
+// WindowSetMinSize sets the minimum size of the window
 func WindowSetMinSize(ctx context.Context, width int, height int) {
-	bus := servicebus.ExtractBus(ctx)
-	message := fmt.Sprintf("window:minsize:%d:%d", width, height)
-	bus.Publish(message, "")
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowSetMinSize(width, height)
 }
 
-// WindowSetSize sets the size of the window
+// WindowSetMaxSize sets the maximum size of the window
 func WindowSetMaxSize(ctx context.Context, width int, height int) {
-	bus := servicebus.ExtractBus(ctx)
-	message := fmt.Sprintf("window:maxsize:%d:%d", width, height)
-	bus.Publish(message, "")
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowSetMaxSize(width, height)
 }
 
 // WindowSetPosition sets the position of the window
 func WindowSetPosition(ctx context.Context, x int, y int) {
-	bus := servicebus.ExtractBus(ctx)
-	message := fmt.Sprintf("window:position:%d:%d", x, y)
-	bus.Publish(message, "")
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowSetPos(x, y)
 }
 
 // WindowMaximise the window
 func WindowMaximise(ctx context.Context) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("window:maximise", "")
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowMaximise()
 }
 
 // WindowUnmaximise the window
 func WindowUnmaximise(ctx context.Context) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("window:unmaximise", "")
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowUnmaximise()
 }
 
 // WindowMinimise the window
 func WindowMinimise(ctx context.Context) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("window:minimise", "")
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowMinimise()
 }
 
 // WindowUnminimise the window
 func WindowUnminimise(ctx context.Context) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("window:unminimise", "")
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowUnminimise()
 }

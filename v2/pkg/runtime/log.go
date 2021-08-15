@@ -1,4 +1,4 @@
-// +build !experimental
+// +build cgo
 
 package runtime
 
