@@ -1,6 +1,7 @@
 package wv2runtime
 
 import (
+	"github.com/jchv/go-webview2/webviewloader"
 	"github.com/leaanthony/webview2runtime"
 )
 
@@ -19,11 +20,11 @@ func Process() (*webview2runtime.Info, error) {
 	installedVersion := webview2runtime.GetInstalledVersion()
 	if installedVersion != nil {
 		installStatus = installed
-		updateRequired, err := installedVersion.IsOlderThan(MinimumRuntimeVersion)
+		compareResult, err := webviewloader.CompareBrowserVersions(installedVersion.Version, MinimumRuntimeVersion)
 		if err != nil {
-			_ = webview2runtime.Error(err.Error(), "Error")
-			return installedVersion, err
+			return nil, err
 		}
+		updateRequired := compareResult == -1
 		// Installed and does not require updating
 		if !updateRequired {
 			return installedVersion, nil

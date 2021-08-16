@@ -40,6 +40,7 @@ func (a *App) Run() error {
 
 // CreateApp creates the app!
 func CreateApp(appoptions *options.App) (*App, error) {
+	var err error
 
 	ctx := context.Background()
 
@@ -50,12 +51,18 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	myLogger := logger.New(appoptions.Logger)
 	myLogger.SetLogLevel(appoptions.LogLevel)
 
+	// Preflight Checks
+	err = PreflightChecks(appoptions, myLogger)
+	if err != nil {
+		return nil, err
+	}
+
 	// Create the menu manager
 	menuManager := menumanager.NewManager()
 
 	// Process the application menu
 	appMenu := options.GetApplicationMenu(appoptions)
-	err := menuManager.SetApplicationMenu(appMenu)
+	err = menuManager.SetApplicationMenu(appMenu)
 	if err != nil {
 		return nil, err
 	}
