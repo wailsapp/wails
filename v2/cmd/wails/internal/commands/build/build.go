@@ -63,10 +63,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &tags)
 
 	// Retain assets
-	keepAssets := false
-	command.BoolFlag("k", "Keep generated assets", &keepAssets)
-
-	// Retain assets
 	outputFilename := ""
 	command.StringFlag("o", "Output filename", &outputFilename)
 
@@ -176,7 +172,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			Pack:                pack,
 			LDFlags:             ldflags,
 			Compiler:            compilerCommand,
-			KeepAssets:          keepAssets,
 			Verbosity:           verbosity,
 			IgnoreFrontend:      skipFrontend,
 			Compress:            compress,
@@ -218,7 +213,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		fmt.Fprintf(w, "Build Mode: \t%s\n", buildModeText)
 		fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
 		fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
-		fmt.Fprintf(w, "KeepAssets: \t%t\n", buildOptions.KeepAssets)
 		fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
 		fmt.Fprintf(w, "Tags: \t[%s]\n", strings.Join(buildOptions.UserTags, ","))
 		if len(buildOptions.OutputFile) > 0 {
