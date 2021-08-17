@@ -7,10 +7,9 @@ import (
 
 // Default options for creating the App
 var Default = &App{
-	Width:    1024,
-	Height:   768,
-	DevTools: false,
-	RGBA:     0xFFFFFFFF,
+	Width:  1024,
+	Height: 768,
+	RGBA:   0xFFFFFFFF,
 	Mac: &mac.Options{
 		TitleBar:                      mac.TitleBarDefault(),
 		Appearance:                    mac.DefaultAppearance,

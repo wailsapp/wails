@@ -88,17 +88,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	result.options = appoptions
 
-	//// Initialise the app
-	//err := result.Init()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//// Preflight Checks
-	//err = result.PreflightChecks(appoptions)
-	//if err != nil {
-	//	return nil, err
-	//}
+	result.SetupFlags()
+	result.ctx = context.WithValue(result.ctx, "debug", result.debug)
 
 	return result, nil
 

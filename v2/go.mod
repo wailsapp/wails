@@ -1,6 +1,6 @@
 module github.com/wailsapp/wails/v2
 
-go 1.16
+go 1.17
 
 require (
 	github.com/Masterminds/semver v1.5.0
@@ -46,6 +46,30 @@ require (
 	nhooyr.io/websocket v1.8.6
 )
 
-replace github.com/tadvi/winc v0.0.0-20190405175627-5454f291903d => C:\Users\leaan\GolandProjects\winc
+require (
+	github.com/Microsoft/go-winio v0.4.16 // indirect
+	github.com/emirpasic/gods v1.12.0 // indirect
+	github.com/go-git/gcfg v1.5.0 // indirect
+	github.com/go-ole/go-ole v1.2.4 // indirect
+	github.com/google/go-cmp v0.5.5 // indirect
+	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
+	github.com/jchv/go-winloader v0.0.0-20200815041850-dec1ee9a7fd5 // indirect
+	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
+	github.com/logrusorgru/aurora v0.0.0-20181002194514-a7b3b318ed4e // indirect
+	github.com/mattn/go-runewidth v0.0.7 // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
+	github.com/sergi/go-diff v1.1.0 // indirect
+	github.com/tidwall/gjson v1.8.0 // indirect
+	github.com/tidwall/match v1.0.3 // indirect
+	github.com/tidwall/pretty v1.1.0 // indirect
+	github.com/wzshiming/winseq v0.0.0-20200112104235-db357dc107ae // indirect
+	github.com/xanzy/ssh-agent v0.3.0 // indirect
+	golang.org/x/image v0.0.0-20201208152932-35266b937fa6 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	gopkg.in/warnings.v0 v0.1.2 // indirect
+)
 
-replace github.com/jchv/go-webview2 v0.0.0-20210720204005-cbb937ae0f7f => C:\Users\leaan\GolandProjects\go-webview2
+replace github.com/tadvi/winc v0.0.0-20190405175627-5454f291903d => C:\Users\leaan\Documents\wails-v2-beta\winc
+
+replace github.com/jchv/go-webview2 v0.0.0-20210720204005-cbb937ae0f7f => C:\Users\leaan\Documents\wails-v2-beta\go-webview2

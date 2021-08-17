@@ -26,6 +26,7 @@ type Frontend struct {
 	frontendOptions *options.App
 	logger          *logger.Logger
 	chromium        *edge.Chromium
+	debug           bool
 
 	// Assets
 	assets *assetserver.AssetServer
@@ -41,6 +42,11 @@ func (f *Frontend) Run(ctx context.Context) error {
 
 	mainWindow := NewWindow(nil, f.frontendOptions)
 	f.mainWindow = mainWindow
+
+	var _debug = ctx.Value("debug")
+	if _debug != nil {
+		f.debug = _debug.(bool)
+	}
 
 	f.WindowCenter()
 
@@ -161,6 +167,22 @@ func (f *Frontend) setupChromium() {
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.Embed(f.mainWindow.Handle())
 	chromium.Resize()
+	settings, err := chromium.GetSettings()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = settings.PutAreDefaultContextMenusEnabled(f.debug)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = settings.PutAreDevToolsEnabled(f.debug)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = settings.PutIsZoomControlEnabled(false)
+	if err != nil {
+		log.Fatal(err)
+	}
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
 	chromium.Navigate("file://wails/")
 	f.chromium = chromium

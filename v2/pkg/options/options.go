@@ -28,7 +28,6 @@ type App struct {
 	MaxHeight         int
 	StartHidden       bool
 	HideWindowOnClose bool
-	DevTools          bool
 	RGBA              int
 	ContextMenus      []*menu.ContextMenu
 	TrayMenus         []*menu.TrayMenu
