@@ -1,5 +1,10 @@
 package logger
 
+import (
+	"fmt"
+	"strings"
+)
+
 // LogLevel is an unsigned 8bit int
 type LogLevel uint8
 
@@ -19,6 +24,22 @@ const (
 	// ERROR level logging
 	ERROR LogLevel = 5
 )
+
+var logLevelMap = map[string]LogLevel{
+	"trace":   TRACE,
+	"debug":   DEBUG,
+	"info":    INFO,
+	"warning": WARNING,
+	"error":   ERROR,
+}
+
+func StringToLogLevel(input string) (LogLevel, error) {
+	result, ok := logLevelMap[strings.ToLower(input)]
+	if !ok {
+		return ERROR, fmt.Errorf("invalid log level: %s", input)
+	}
+	return result, nil
+}
 
 // Logger specifies the methods required to attach
 // a logger to a Wails application

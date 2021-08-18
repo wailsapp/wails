@@ -1,3 +1,4 @@
+//go:build debug
 // +build debug
 
 package app
@@ -13,11 +14,6 @@ import (
 func (a *App) Init() error {
 	// Indicate debug mode
 	a.debug = true
-
-	if a.appType == "desktop" {
-		// Enable dev tools
-		a.options.DevTools = true
-	}
 
 	// Set log levels
 	loglevel := flag.String("loglevel", "debug", "Loglevel to use - Trace, Debug, Info, Warning, Error")

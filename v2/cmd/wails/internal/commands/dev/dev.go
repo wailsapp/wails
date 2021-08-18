@@ -2,6 +2,7 @@ package dev
 
 import (
 	"fmt"
+	"github.com/leaanthony/slicer"
 	"io"
 	"log"
 	"os"
@@ -49,6 +50,9 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	// compiler command
 	compilerCommand := "go"
 	command.StringFlag("compiler", "Use a different go compiler to build, eg go1.15beta1", &compilerCommand)
+
+	assetDir := ""
+	command.StringFlag("assets", "Serve assets from the given directory", &assetDir)
 
 	// extensions to trigger rebuilds
 	extensions := "go"
@@ -100,7 +104,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Do initial build
 		logger.Println("Building application for development...")
-		newProcess, appBinary, err := restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity)
+		newProcess, appBinary, err := restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity, assetDir)
 		if newProcess != nil {
 			debugBinaryProcess = newProcess
 		}
@@ -152,7 +156,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				// Do a rebuild
 
 				// Try and build the app
-				newBinaryProcess, _, err = restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity)
+				newBinaryProcess, _, err = restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity, assetDir)
 				if err != nil {
 					fmt.Printf("Error during build: %s", err.Error())
 					return
@@ -247,7 +251,7 @@ exit:
 	}
 }
 
-func restartApp(logger *clilogger.CLILogger, ldflags string, compilerCommand string, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string, verbosity int) (*process.Process, string, error) {
+func restartApp(logger *clilogger.CLILogger, ldflags string, compilerCommand string, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string, verbosity int, assetDir string) (*process.Process, string, error) {
 
 	appBinary, err := buildApp(logger, ldflags, compilerCommand, verbosity)
 	println()
@@ -271,11 +275,16 @@ func restartApp(logger *clilogger.CLILogger, ldflags string, compilerCommand str
 	// TODO: Generate `backend.js`
 
 	// Start up new binary with correct args
-	var args = []string{"-loglevel", loglevel}
-	if len(passthruArgs) > 0 {
-		args = append(args, passthruArgs...)
+	args := slicer.StringSlicer{}
+	args.Add("-loglevel", loglevel)
+	if assetDir != "" {
+		args.Add("-assets", assetDir)
 	}
-	newProcess := process.NewProcess(logger, appBinary, args...)
+
+	if len(passthruArgs) > 0 {
+		args.AddSlice(passthruArgs)
+	}
+	newProcess := process.NewProcess(logger, appBinary, args.AsSlice()...)
 	err = newProcess.Start()
 	if err != nil {
 		// Remove binary
