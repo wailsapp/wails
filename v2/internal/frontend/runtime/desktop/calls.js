@@ -9,7 +9,7 @@ The lightweight framework for web-like apps
 */
 /* jshint esversion: 6 */
 
-import { SendMessage } from './ipc';
+import {SendMessage} from './ipc';
 
 var callbacks = {};
 
@@ -72,9 +72,10 @@ export function Call(name, args, timeout) {
 			callbackID = name + '-' + randomFunc();
 		} while (callbacks[callbackID]);
 
+		var timeoutHandle;
 		// Set timeout
 		if (timeout > 0) {
-			var timeoutHandle = setTimeout(function () {
+			timeoutHandle = setTimeout(function () {
 				reject(Error('Call to ' + name + ' timed out. Request ID: ' + callbackID));
 			}, timeout);
 		}
