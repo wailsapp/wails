@@ -1,3 +1,5 @@
+//go:build windows && desktop
+
 package appng
 
 import (
@@ -29,4 +31,7 @@ func PreflightChecks(options *options.App, logger *logger.Logger) error {
 	}
 
 	return nil
+}
+
+func (a *App) Init() {
 }

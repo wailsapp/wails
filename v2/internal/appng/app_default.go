@@ -1,4 +1,4 @@
-// +build !windows
+//go:build !windows && !dev
 
 package appng
 
@@ -9,4 +9,7 @@ import (
 
 func PreflightChecks(_ *options.App, _ *logger.Logger) error {
 	return nil
+}
+
+func (a *App) Init() {
 }

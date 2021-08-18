@@ -6,3 +6,6 @@ package appng
 func (a *App) SetupFlags() {
 	a.debug = false
 }
+
+func (a *App) Init() {
+}

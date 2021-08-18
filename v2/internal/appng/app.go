@@ -89,6 +89,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	result.options = appoptions
 
 	result.SetupFlags()
+	result.Init()
 	result.ctx = context.WithValue(result.ctx, "debug", result.debug)
 
 	return result, nil
