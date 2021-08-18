@@ -9,8 +9,6 @@ The lightweight framework for web-like apps
 */
 /* jshint esversion: 6 */
 
-import {SendMessage} from './ipc';
-
 // Defines a single listener with a maximum number of times to callback
 
 /**
@@ -152,7 +150,7 @@ export function EventsEmit(eventName) {
     notifyListeners(payload);
 
     // Notify Go listeners
-    SendMessage('EE' + JSON.stringify(payload));
+    window.WailsInvoke('EE' + JSON.stringify(payload));
 }
 
 export function EventsOff(eventName) {
@@ -160,5 +158,5 @@ export function EventsOff(eventName) {
     eventListeners.delete(eventName);
 
     // Notify Go listeners
-    SendMessage('EX' + eventName);
+    window.WailsInvoke('EX' + eventName);
 }

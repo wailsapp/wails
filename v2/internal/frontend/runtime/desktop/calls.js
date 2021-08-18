@@ -9,8 +9,6 @@ The lightweight framework for web-like apps
 */
 /* jshint esversion: 6 */
 
-import {SendMessage} from './ipc';
-
 var callbacks = {};
 
 /**
@@ -95,7 +93,7 @@ export function Call(name, args, timeout) {
 			};
 
 			// Make the call
-			SendMessage('C' + JSON.stringify(payload));
+			window.WailsInvoke('C' + JSON.stringify(payload));
 		} catch (e) {
 			// eslint-disable-next-line
 			console.error(e);

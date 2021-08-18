@@ -12,8 +12,6 @@ import * as Log from './log';
 import {EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnce, EventsOnMultiple} from './events';
 import {Callback} from './calls';
 import {SetBindings} from "./bindings";
-// import {AddScript, DisableDefaultContextMenu, InjectCSS} from './utils';
-import {SendMessage} from './ipc';
 
 // Backend is where the Go struct wrappers get bound to
 window.backend = {};
@@ -35,8 +33,8 @@ window.wails = {
 };
 
 window.wails.SetBindings(window.wailsbindings);
-delete window.wails['SetBindings'];
-delete window['wailsbindings'];
+delete window.wails.SetBindings;
+delete window.wailsbindings;
 
 // Setup drag handler
 // Based on code from: https://github.com/patr0nus/DeskGap
@@ -46,7 +44,7 @@ window.addEventListener('mousedown', (e) => {
         if (currentElement.hasAttribute('data-wails-no-drag')) {
             break;
         } else if (currentElement.hasAttribute('data-wails-drag')) {
-            SendMessage("drag");
+            window.WailsInvoke("drag");
             break;
         }
         currentElement = currentElement.parentElement;

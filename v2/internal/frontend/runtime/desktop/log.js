@@ -10,8 +10,6 @@ The lightweight framework for web-like apps
 
 /* jshint esversion: 6 */
 
-import {SendMessage} from './ipc';
-
 /**
  * Sends a log message to the backend with the given level + message
  *
@@ -22,7 +20,7 @@ function sendLogMessage(level, message) {
 
 	// Log Message format:
 	// l[type][message]
-	SendMessage('L' + level + message);
+	window.WailsInvoke('L' + level + message);
 }
 
 /**
