@@ -1,5 +1,5 @@
-//go:build debug
-// +build debug
+//go:build dev
+// +build dev
 
 package app
 

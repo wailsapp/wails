@@ -12,8 +12,6 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/system"
 
-	"github.com/wailsapp/wails/v2/internal/shell"
-
 	"github.com/leaanthony/clir"
 	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
@@ -28,10 +26,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	validTargetTypes := slicer.String([]string{"desktop", "hybrid", "server"})
 
 	command := app.NewSubCommand("build", "Builds the application")
-
-	// Setup production flag
-	production := false
-	command.BoolFlag("production", "Build in production mode", &production)
 
 	// Setup pack flag
 	pack := false
@@ -62,7 +56,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	tags := ""
 	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &tags)
 
-	// Retain assets
 	outputFilename := ""
 	command.StringFlag("o", "Output filename", &outputFilename)
 
@@ -72,9 +65,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	webview2 := "download"
 	command.StringFlag("webview2", "WebView2 installer strategy: download,embed,browser,error.", &webview2)
-
-	runDelve := false
-	command.BoolFlag("delve", "Runs the built binary in delve for debugging", &runDelve)
 
 	skipFrontend := false
 	command.BoolFlag("s", "Skips building the frontend", &skipFrontend)
@@ -94,12 +84,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 		if !quiet {
 			app.PrintBanner()
-		}
-
-		// Setup mode
-		mode := build.Debug
-		if production {
-			mode = build.Production
 		}
 
 		// Check platform
@@ -157,18 +141,13 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			}
 		}
 
-		// If we want to use delve we need to compile in DEBUG mode
-		if runDelve {
-			mode = build.Debug
-		}
-
 		// Create BuildOptions
 		buildOptions := &build.Options{
 			Logger:              logger,
 			OutputType:          outputType,
 			OutputFile:          outputFilename,
 			CleanBuildDirectory: cleanBuildDirectory,
-			Mode:                mode,
+			Mode:                build.Production,
 			Pack:                pack,
 			LDFlags:             ldflags,
 			Compiler:            compilerCommand,
@@ -178,7 +157,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			CompressFlags:       compressFlags,
 			UserTags:            userTags,
 			WebView2Strategy:    wv2rtstrategy,
-			RunDelve:            runDelve,
 		}
 
 		// Calculate platform and arch
@@ -197,11 +175,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 8, 8, 0, '\t', 0)
 
-		buildModeText := "debug"
-		if production {
-			buildModeText = "production"
-		}
-
 		// Write out the system information
 		fmt.Fprintf(w, "\n")
 		fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
@@ -210,7 +183,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
 		fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
 		fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
-		fmt.Fprintf(w, "Build Mode: \t%s\n", buildModeText)
 		fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
 		fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
 		fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
@@ -241,41 +213,6 @@ func doBuild(buildOptions *build.Options) error {
 	buildOptions.Logger.Println("")
 	buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.", outputFilename, elapsed.Round(time.Millisecond).String()))
 	buildOptions.Logger.Println("")
-
-	if buildOptions.RunDelve {
-		// Check delve exists
-		delveExists := shell.CommandExists("dlv")
-		if !delveExists {
-			return fmt.Errorf("cannot launch delve (Is it installed?)")
-		}
-
-		// Get cwd
-		cwd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-
-		// Launch delve
-		buildOptions.Logger.Println("Launching Delve on port 2345...")
-		cmdArgs := slicer.String([]string{"--listen=:2345", "--headless=true", "--api-version=2", "--accept-multiclient", "exec", outputFilename})
-		if buildOptions.Verbosity == build.VERBOSE {
-			buildOptions.Logger.Println("\tRunning: dlv %s", cmdArgs.Join(" "))
-		}
-		stdout, stderr, err := shell.RunCommand(cwd, "dlv", cmdArgs.AsSlice()...)
-		if buildOptions.Verbosity == build.VERBOSE || err != nil {
-			trimstdout := strings.TrimSpace(stdout)
-			if trimstdout != "" {
-				buildOptions.Logger.Println(trimstdout)
-			}
-			trimstderr := strings.TrimSpace(stderr)
-			if trimstderr != "" {
-				buildOptions.Logger.Println(trimstderr)
-			}
-		}
-		if err != nil {
-			return err
-		}
-	}
 
 	return nil
 }

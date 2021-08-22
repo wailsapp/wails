@@ -1,3 +1,5 @@
+//go:build windows
+
 package windows
 
 import (
@@ -29,13 +31,14 @@ type Frontend struct {
 	debug           bool
 
 	// Assets
-	assets *assetserver.AssetServer
+	assets *assetserver.DesktopAssetServer
 
 	// main window handle
 	mainWindow                               *Window
 	minWidth, minHeight, maxWidth, maxHeight int
 	bindings                                 *binding.Bindings
 	dispatcher                               frontend.Dispatcher
+	servingFromDisk                          bool
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
@@ -183,6 +186,11 @@ func (f *Frontend) setupChromium() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	//c2, err := chromium.GetWebView2Controller2()
+	//err = c2.PutDefaultBackgroundColor(edge.COREWEBVIEW2_COLOR{R: 255, G: 0, B: 0, A: 255})
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
 	chromium.Navigate("file://wails/")
 	f.chromium = chromium
@@ -225,7 +233,11 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	}
 
 	env := f.chromium.Environment()
-	response, err := env.CreateWebResourceResponse(content, 200, "OK", "Content-Type: "+mimeType)
+	headers := "Content-Type: " + mimeType
+	if f.servingFromDisk {
+		headers += "\nPragma: no-cache"
+	}
+	response, err := env.CreateWebResourceResponse(content, 200, "OK", headers)
 	if err != nil {
 		return
 	}
@@ -245,9 +257,20 @@ func (f *Frontend) processMessage(message string) {
 		}
 		return
 	}
-	err := f.dispatcher.ProcessMessage(message)
+	result, err := f.dispatcher.ProcessMessage(message)
 	if err != nil {
 		f.logger.Error(err.Error())
+	}
+	if result == "" {
+		return
+	}
+
+	switch result[0] {
+	case 'c':
+		// Callback from a method call
+		f.Callback(result[1:])
+	default:
+		f.logger.Info("Unknown message returned from dispatcher: %+v", result)
 	}
 }
 
@@ -265,24 +288,31 @@ func (f *Frontend) startDrag() error {
 	return nil
 }
 
-func NewFrontend(appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
+func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 
 	result := &Frontend{
 		frontendOptions: appoptions,
 		logger:          myLogger,
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
+		ctx:             ctx,
 	}
 
-	// Setup the callback handler (Go -> JS)
-	dispatcher.SetCallbackHandler(result.Callback)
+	// Check if we have been given a directory to serve assets from.
+	// If so, this means we are in dev mode and are serving assets off disk.
+	// We indicate this through the `servingFromDisk` flag to ensure requests
+	// aren't cached by WebView2 in dev mode
+	_assetdir := ctx.Value("assetdir")
+	if _assetdir != nil {
+		result.servingFromDisk = true
+	}
 
-	if appoptions.Windows.Assets != nil {
+	if appoptions.Assets != nil {
 		bindingsJSON, err := appBindings.ToJSON()
 		if err != nil {
 			log.Fatal(err)
 		}
-		assets, err := assetserver.NewAssetServer(*appoptions.Windows.Assets, bindingsJSON)
+		assets, err := assetserver.NewDesktopAssetServer(ctx, *appoptions.Assets, bindingsJSON)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -2,9 +2,6 @@
 
     import {menuVisible} from './store'
     import {fade} from 'svelte/transition';
-
-    import {trays} from './store'
-    import TrayMenu from "./TrayMenu.svelte";
     import {onMount} from "svelte";
 
     let time = new Date();
@@ -26,8 +23,8 @@
 
     function handleKeydown(e) {
         // Backtick toggle
-        if( e.keyCode == 192 ) {
-            menuVisible.update( (current) => {
+        if (e.keyCode === 192) {
+            menuVisible.update((current) => {
                 return !current;
             });
         }
@@ -37,12 +34,12 @@
 
 {#if $menuVisible }
     <div class="wails-menubar" transition:fade>
-    <span class="tray-menus">
-    {#each $trays as tray}
-        <TrayMenu {tray}/>
-    {/each}
-    <span class="time">{dateTimeString}</span>
-    </span>
+        <!--    <span class="tray-menus">-->
+        <!--    {#each $trays as tray}-->
+        <!--        <TrayMenu {tray}/>-->
+        <!--    {/each}-->
+        <!--    <span class="time">{dateTimeString}</span>-->
+        <!--    </span>-->
     </div>
 {/if}
 
@@ -50,11 +47,6 @@
 
 <style>
 
-    .tray-menus {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-end;
-    }
     .wails-menubar { position: relative;
         display: block;
         top: 0;
@@ -62,11 +54,5 @@
         width: 100%;
         border-bottom: 1px solid #b3b3b3;
         box-shadow: 0 0 10px 0 #33333360;
-    }
-    .time {
-        padding-left: 0.5rem;
-        padding-right: 1.5rem;
-        overflow: visible;
-        font-size: 14px;
     }
 </style>

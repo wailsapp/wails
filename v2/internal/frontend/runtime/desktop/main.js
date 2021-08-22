@@ -9,8 +9,8 @@ The lightweight framework for web-like apps
 */
 /* jshint esversion: 9 */
 import * as Log from './log';
-import {EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnce, EventsOnMultiple} from './events';
-import {Callback} from './calls';
+import {eventListeners, EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnce, EventsOnMultiple} from './events';
+import {Callback, callbacks} from './calls';
 import {SetBindings} from "./bindings";
 
 // Backend is where the Go struct wrappers get bound to
@@ -30,6 +30,8 @@ window.wails = {
     Callback,
     EventsNotify,
     SetBindings,
+    eventListeners,
+    callbacks
 };
 
 window.wails.SetBindings(window.wailsbindings);

@@ -9,21 +9,17 @@ interface Level {
 }
 
 declare const wailsapp__runtime: {
-    Events: {
-        Emit(eventName: string, data?: any): void;
-        On(eventName: string, callback: (data?: any) => void): void;
-        OnMultiple(eventName: string, callback: (data?: any) => void, maxCallbacks: number): void;
-        Once(eventName: string, callback: (data?: any) => void): void;
-    };
+    EventsEmit(eventName: string, data?: any): void;
+    EventsOn(eventName: string, callback: (data?: any) => void): void;
+    EventsOnMultiple(eventName: string, callback: (data?: any) => void, maxCallbacks: number): void;
+    EventsOnce(eventName: string, callback: (data?: any) => void): void;
     // Init(callback: () => void): void;
-    Log: {
-        Debug(message: string): void;
-        Error(message: string): void;
-        Fatal(message: string): void;
-        Info(message: string): void;
-        Warning(message: string): void;
-        Level: Level;
-    };
+    LogDebug(message: string): void;
+    LogError(message: string): void;
+    LogFatal(message: string): void;
+    LogInfo(message: string): void;
+    LogWarning(message: string): void;
+    LogLevel: Level;
 };
 
 

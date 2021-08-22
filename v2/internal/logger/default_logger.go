@@ -20,11 +20,15 @@ type Logger struct {
 // New creates a new Logger. You may pass in a number of `io.Writer`s that
 // are the targets for the logs
 func New(output logger.Logger) *Logger {
+	if output == nil {
+		output = logger.NewDefaultLogger()
+	}
 	result := &Logger{
 		logLevel:       logger.INFO,
 		showLevelInLog: true,
 		output:         output,
 	}
+
 	return result
 }
 

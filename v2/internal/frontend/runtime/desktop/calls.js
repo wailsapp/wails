@@ -9,7 +9,7 @@ The lightweight framework for web-like apps
 */
 /* jshint esversion: 6 */
 
-var callbacks = {};
+export const callbacks = {};
 
 /**
  * Returns a number from the native browser random function

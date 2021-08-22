@@ -3,6 +3,7 @@ package dev
 import (
 	"fmt"
 	"github.com/leaanthony/slicer"
+	"github.com/wailsapp/wails/v2/internal/project"
 	"io"
 	"log"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/pkg/browser"
 	"github.com/wailsapp/wails/v2/internal/colour"
 
 	"github.com/fsnotify/fsnotify"
@@ -52,7 +54,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("compiler", "Use a different go compiler to build, eg go1.15beta1", &compilerCommand)
 
 	assetDir := ""
-	command.StringFlag("assets", "Serve assets from the given directory", &assetDir)
+	command.StringFlag("assetdir", "Serve assets from the given directory", &assetDir)
 
 	// extensions to trigger rebuilds
 	extensions := "go"
@@ -67,7 +69,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.IntFlag("v", "Verbosity level (0 - silent, 1 - default, 2 - verbose)", &verbosity)
 
 	loglevel := ""
-	command.StringFlag("loglevel", "Loglevel to use - Trace, Debug, Info, Warning, Error", &loglevel)
+	command.StringFlag("loglevel", "Loglevel to use - Trace, Dev, Info, Warning, Error", &loglevel)
 
 	command.Action(func() error {
 
@@ -76,6 +78,30 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		app.PrintBanner()
 
 		// TODO: Check you are in a project directory
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		projectConfig, err := project.Load(cwd)
+		if err != nil {
+			return err
+		}
+
+		if projectConfig.AssetDirectory == "" && assetDir == "" {
+			return fmt.Errorf("No asset directory provided. Please use -assetdir to indicate which directory contains your built assets.")
+		}
+
+		if assetDir != "" && assetDir != projectConfig.AssetDirectory {
+			projectConfig.AssetDirectory = assetDir
+			err := projectConfig.Save()
+			if err != nil {
+				return err
+			}
+		}
+
+		if assetDir == "" && projectConfig.AssetDirectory != "" {
+			assetDir = projectConfig.AssetDirectory
+		}
 
 		watcher, err := fsnotify.NewWatcher()
 		if err != nil {
@@ -104,9 +130,18 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Do initial build
 		logger.Println("Building application for development...")
-		newProcess, appBinary, err := restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity, assetDir)
+		newProcess, appBinary, err := restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity, assetDir, true)
+		if err != nil {
+			return err
+		}
 		if newProcess != nil {
 			debugBinaryProcess = newProcess
+		}
+
+		// open browser
+		err = browser.OpenURL("http://localhost:34115")
+		if err != nil {
+			return err
 		}
 
 		if err != nil {
@@ -156,7 +191,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				// Do a rebuild
 
 				// Try and build the app
-				newBinaryProcess, _, err = restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity, assetDir)
+				newBinaryProcess, _, err = restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity, assetDir, false)
 				if err != nil {
 					fmt.Printf("Error during build: %s", err.Error())
 					return
@@ -251,11 +286,14 @@ exit:
 	}
 }
 
-func restartApp(logger *clilogger.CLILogger, ldflags string, compilerCommand string, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string, verbosity int, assetDir string) (*process.Process, string, error) {
+func restartApp(logger *clilogger.CLILogger, ldflags string, compilerCommand string, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string, verbosity int, assetDir string, firstRun bool) (*process.Process, string, error) {
 
 	appBinary, err := buildApp(logger, ldflags, compilerCommand, verbosity)
 	println()
 	if err != nil {
+		if firstRun {
+			return nil, "", err
+		}
 		LogRed("Build error - continuing to run current version")
 		LogDarkYellow(err.Error())
 		return nil, "", nil
@@ -278,7 +316,7 @@ func restartApp(logger *clilogger.CLILogger, ldflags string, compilerCommand str
 	args := slicer.StringSlicer{}
 	args.Add("-loglevel", loglevel)
 	if assetDir != "" {
-		args.Add("-assets", assetDir)
+		args.Add("-assetdir", assetDir)
 	}
 
 	if len(passthruArgs) > 0 {
@@ -308,15 +346,15 @@ func buildApp(logger *clilogger.CLILogger, ldflags string, compilerCommand strin
 
 	// Create BuildOptions
 	buildOptions := &build.Options{
-		Logger:         logger,
-		OutputType:     "dev",
-		Mode:           build.Debug,
-		Pack:           false,
-		Platform:       runtime.GOOS,
-		LDFlags:        ldflags,
-		Compiler:       compilerCommand,
-		OutputFile:     outputFile,
-		IgnoreFrontend: true,
+		Logger:     logger,
+		OutputType: "dev",
+		Mode:       build.Dev,
+		Pack:       false,
+		Platform:   runtime.GOOS,
+		LDFlags:    ldflags,
+		Compiler:   compilerCommand,
+		//OutputFile:     outputFile,
+		IgnoreFrontend: false,
 		Verbosity:      verbosity,
 	}
 

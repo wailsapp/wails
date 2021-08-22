@@ -1,54 +1,62 @@
-//go:build desktop
-// +build desktop
-
 package assetserver
 
 import (
 	"bytes"
+	"context"
 	"embed"
 	"fmt"
 	"github.com/leaanthony/debme"
 	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
+	"github.com/wailsapp/wails/v2/internal/logger"
 	"io/fs"
 	"net/http"
 	"path/filepath"
 	"strings"
 )
 
-type AssetServer struct {
+type DesktopAssetServer struct {
 	assets    debme.Debme
 	indexFile []byte
 	runtimeJS []byte
+	assetdir  string
+	logger    *logger.Logger
 }
 
-func NewAssetServer(assets embed.FS, bindingsJSON string) (*AssetServer, error) {
-	result := &AssetServer{}
+func NewDesktopAssetServer(ctx context.Context, assets embed.FS, bindingsJSON string) (*DesktopAssetServer, error) {
+	result := &DesktopAssetServer{}
+
+	_logger := ctx.Value("logger")
+	if _logger != nil {
+		result.logger = _logger.(*logger.Logger)
+	}
+
+	_assetdir := ctx.Value("assetdir")
+	if _assetdir != nil {
+		result.assetdir = _assetdir.(string)
+		absdir, err := filepath.Abs(result.assetdir)
+		if err != nil {
+			return nil, err
+		}
+		result.LogInfo("Loading assets from: %s", absdir)
+	}
+
 	var buffer bytes.Buffer
-	buffer.Write(runtime.IPCJS)
 	buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")
-	buffer.Write(runtime.RuntimeJS)
+	buffer.Write(runtime.RuntimeDesktopJS)
 	result.runtimeJS = buffer.Bytes()
 	err := result.init(assets)
 	return result, err
 }
 
-func (a *AssetServer) IndexHTML() string {
-	return string(a.indexFile)
+func (d *DesktopAssetServer) LogInfo(message string, args ...interface{}) {
+	if d.logger != nil {
+		d.logger.Info("[DesktopAssetServer] "+message, args...)
+	}
 }
 
-func injectScript(input string, script string) ([]byte, error) {
-	splits := strings.Split(input, "<head>")
-	if len(splits) != 2 {
-		return nil, fmt.Errorf("unable to locate a </body> tag in your html")
-	}
-
-	var result bytes.Buffer
-	result.WriteString(splits[0])
-	result.WriteString("<head>")
-	result.WriteString(script)
-	result.WriteString(splits[1])
-	return result.Bytes(), nil
+func (d *DesktopAssetServer) SetAssetDir(assetdir string) {
+	d.assetdir = assetdir
 }
 
 func processAssets(assets embed.FS) (debme.Debme, error) {
@@ -84,7 +92,7 @@ func processAssets(assets embed.FS) (debme.Debme, error) {
 	return debme.FS(assets, path)
 }
 
-func (a *AssetServer) init(assets embed.FS) error {
+func (a *DesktopAssetServer) init(assets embed.FS) error {
 
 	var err error
 	a.assets, err = processAssets(assets)
@@ -99,10 +107,14 @@ func (a *AssetServer) init(assets embed.FS) error {
 	if err != nil {
 		return err
 	}
+	a.indexFile, err = injectScript(string(a.indexFile), `<script src="/wails/ipc.js"></script>`)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (a *AssetServer) Load(filename string) ([]byte, string, error) {
+func (a *DesktopAssetServer) Load(filename string) ([]byte, string, error) {
 	var content []byte
 	var err error
 	switch filename {
@@ -111,9 +123,9 @@ func (a *AssetServer) Load(filename string) ([]byte, string, error) {
 	case "/wails/runtime.js":
 		content = a.runtimeJS
 	case "/wails/ipc.js":
-		content = runtime.IPCJS
+		content = runtime.DesktopIPC
 	default:
-		content, err = a.assets.ReadFile(filename)
+		content, err = a.ReadFile(filename)
 	}
 	if err != nil {
 		return nil, "", err

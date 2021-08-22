@@ -3,9 +3,98 @@
 
 package appng
 
-func (a *App) SetupFlags() {
-	a.debug = false
+import (
+	"context"
+	"github.com/wailsapp/wails/v2/internal/binding"
+	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/dispatcher"
+	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
+	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/internal/menumanager"
+	"github.com/wailsapp/wails/v2/internal/signal"
+	"github.com/wailsapp/wails/v2/pkg/options"
+)
+
+// App defines a Wails application structure
+type App struct {
+	frontend frontend.Frontend
+	logger   *logger.Logger
+	signal   *signal.Manager
+	options  *options.App
+
+	menuManager *menumanager.Manager
+
+	// Indicates if the app is in debug mode
+	debug bool
+
+	// Startup/Shutdown
+	startupCallback  func(ctx context.Context)
+	shutdownCallback func()
+	ctx              context.Context
 }
 
-func (a *App) Init() {
+func (a *App) Run() error {
+	err := a.frontend.Run(a.ctx)
+	if a.shutdownCallback != nil {
+		a.shutdownCallback()
+	}
+	return err
+}
+
+// CreateApp creates the app!
+func CreateApp(appoptions *options.App) (*App, error) {
+	var err error
+
+	ctx := context.Background()
+
+	// Merge default options
+	options.MergeDefaults(appoptions)
+
+	// Set up logger
+	myLogger := logger.New(appoptions.Logger)
+	myLogger.SetLogLevel(appoptions.LogLevel)
+
+	// Preflight Checks
+	err = PreflightChecks(appoptions, myLogger)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the menu manager
+	menuManager := menumanager.NewManager()
+
+	// Process the application menu
+	if appoptions.Menu != nil {
+		err = menuManager.SetApplicationMenu(appoptions.Menu)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Create binding exemptions - Ugly hack. There must be a better way
+	bindingExemptions := []interface{}{appoptions.Startup, appoptions.Shutdown}
+	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions)
+	eventHandler := runtime.NewEvents(myLogger)
+	ctx = context.WithValue(ctx, "events", eventHandler)
+	messageDispatcher := dispatcher.NewDispatcher(myLogger, appBindings, eventHandler)
+
+	appFrontend := NewFrontend(appoptions, myLogger, appBindings, messageDispatcher, menuManager)
+	eventHandler.SetFrontend(appFrontend)
+
+	result := &App{
+		ctx:              ctx,
+		frontend:         appFrontend,
+		logger:           myLogger,
+		menuManager:      menuManager,
+		startupCallback:  appoptions.Startup,
+		shutdownCallback: appoptions.Shutdown,
+		debug:            false,
+	}
+
+	result.options = appoptions
+
+	result.ctx = context.WithValue(result.ctx, "debug", result.debug)
+
+	return result, nil
+
 }

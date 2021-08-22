@@ -3,6 +3,7 @@ package project
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -12,14 +13,12 @@ import (
 type Project struct {
 
 	/*** Application Data ***/
-	Name string `json:"name"`
+	Name           string `json:"name"`
+	AssetDirectory string `json:"asset_directory"`
 
-	// Application HTML, JS and CSS filenames
-	HTML           string `json:"html"`
-	JS             string `json:"js"`
-	CSS            string `json:"css"`
 	BuildCommand   string `json:"frontend:build"`
 	InstallCommand string `json:"frontend:install"`
+
 	/*** Internal Data ***/
 
 	// The path to the project directory
@@ -39,6 +38,17 @@ type Project struct {
 
 	// The application author
 	Author Author
+
+	// Fully qualified filename
+	filename string
+}
+
+func (p *Project) Save() error {
+	data, err := json.MarshalIndent(p, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(p.filename, data, 0755)
 }
 
 // Author stores details about the application author
@@ -65,10 +75,8 @@ func Load(projectPath string) (*Project, error) {
 	}
 
 	// Fix up our project paths
+	result.filename = projectFile
 	result.Path = filepath.ToSlash(projectPath) + "/"
-	result.HTML = filepath.Join(projectPath, result.HTML)
-	result.JS = filepath.Join(projectPath, result.JS)
-	result.CSS = filepath.Join(projectPath, result.CSS)
 
 	// Create default name if not given
 	if result.Name == "" {

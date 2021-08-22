@@ -6,9 +6,9 @@
   "scripts": {
     "build": "run-p build:*",
     "build:ipc-windows": "esbuild desktop/ipc.js --bundle --minify --outfile=ipc_windows.js --define:PLATFORM='windows'",
-    "build:ipc-dev": "esbuild desktop/ipc.js --bundle --minify --outfile=ipc_dev.js",
+    "build:ipc-dev": "esbuild dev/main.js --bundle --minify --outfile=ipc_websocket.js",
     "build:runtime-desktop-prod": "esbuild desktop/main.js --bundle --minify --outfile=runtime_prod_desktop.js",
-    "build:runtime-desktop-debug": "esbuild desktop/main.js --bundle --sourcemap=inline --outfile=runtime_debug_desktop.js",
+    "build:runtime-desktop-dev": "esbuild desktop/main.js --bundle --sourcemap=inline --outfile=runtime_dev_desktop.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Lea Anthony <lea.anthony@gmail.com>",

@@ -11,24 +11,24 @@ type callMessage struct {
 	CallbackID string            `json:"callbackID"`
 }
 
-func (d *Dispatcher) processCallMessage(message string) error {
+func (d *Dispatcher) processCallMessage(message string) (string, error) {
 
 	var payload callMessage
 	err := json.Unmarshal([]byte(message[1:]), &payload)
 	if err != nil {
-		return err
+		return "", err
 	}
 	// Lookup method
 	registeredMethod := d.bindingsDB.GetMethod(payload.Name)
 
 	// Check we have it
 	if registeredMethod == nil {
-		return fmt.Errorf("method '%s' not registered", payload.Name)
+		return "", fmt.Errorf("method '%s' not registered", payload.Name)
 	}
 
 	args, err := registeredMethod.ParseArgs(payload.Args)
 	if err != nil {
-		return fmt.Errorf("error parsing arguments: %s", err.Error())
+		return "", fmt.Errorf("error parsing arguments: %s", err.Error())
 	}
 
 	result, err := registeredMethod.Call(args)
@@ -46,9 +46,8 @@ func (d *Dispatcher) processCallMessage(message string) error {
 		// what now?
 		d.log.Fatal(err.Error())
 	}
-	d.resultCallback(string(messageData))
 
-	return nil
+	return "c" + string(messageData), nil
 }
 
 // CallbackMessage defines a message that contains the result of a call

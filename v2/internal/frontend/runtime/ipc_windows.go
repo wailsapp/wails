@@ -1,8 +1,8 @@
-//go:build desktop && windows
+//go:build windows
 
 package runtime
 
 import _ "embed"
 
 //go:embed ipc_windows.js
-var IPCJS []byte
+var DesktopIPC []byte

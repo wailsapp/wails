@@ -8,11 +8,10 @@ import (
 )
 
 type Dispatcher struct {
-	log            *logger.Logger
-	bindings       *binding.Bindings
-	events         frontend.Events
-	bindingsDB     *binding.DB
-	resultCallback func(string)
+	log        *logger.Logger
+	bindings   *binding.Bindings
+	events     frontend.Events
+	bindingsDB *binding.DB
 }
 
 func NewDispatcher(log *logger.Logger, bindings *binding.Bindings, events frontend.Events) *Dispatcher {
@@ -24,13 +23,9 @@ func NewDispatcher(log *logger.Logger, bindings *binding.Bindings, events fronte
 	}
 }
 
-func (d *Dispatcher) SetCallbackHandler(handler func(string)) {
-	d.resultCallback = handler
-}
-
-func (d *Dispatcher) ProcessMessage(message string) error {
+func (d *Dispatcher) ProcessMessage(message string) (string, error) {
 	if message == "" {
-		return errors.New("No message to process")
+		return "", errors.New("No message to process")
 	}
 	switch message[0] {
 	case 'L':
@@ -40,6 +35,6 @@ func (d *Dispatcher) ProcessMessage(message string) error {
 	case 'C':
 		return d.processCallMessage(message)
 	default:
-		return errors.New("Unknown message from front end: " + message)
+		return "", errors.New("Unknown message from front end: " + message)
 	}
 }

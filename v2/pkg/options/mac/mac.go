@@ -1,7 +1,5 @@
 package mac
 
-import "github.com/wailsapp/wails/v2/pkg/menu"
-
 type ActivationPolicy int
 
 const (
@@ -16,9 +14,6 @@ type Options struct {
 	Appearance                    AppearanceType
 	WebviewIsTransparent          bool
 	WindowBackgroundIsTranslucent bool
-	Menu                          *menu.Menu
-	TrayMenus                     []*menu.TrayMenu
-	ContextMenus                  []*menu.ContextMenu
 	ActivationPolicy              ActivationPolicy
 	URLHandlers                   map[string]func(string)
 }

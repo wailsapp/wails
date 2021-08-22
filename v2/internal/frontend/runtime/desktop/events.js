@@ -41,7 +41,7 @@ class Listener {
     }
 }
 
-let eventListeners = {};
+export const eventListeners = {};
 
 /**
  * Registers an event listener that will be invoked `maxCallbacks` times before being destroyed
@@ -119,8 +119,6 @@ function notifyListeners(eventData) {
 
  */
 export function EventsNotify(notifyMessage) {
-    console.log("EventsNotify");
-
     // Parse the message
     let message;
     try {
@@ -129,7 +127,6 @@ export function EventsNotify(notifyMessage) {
         const error = 'Invalid JSON passed to Notify: ' + notifyMessage;
         throw new Error(error);
     }
-    console.log({message});
     notifyListeners(message);
 }
 

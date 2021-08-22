@@ -10,9 +10,9 @@ type EventMessage struct {
 	Data []interface{} `json:"data"`
 }
 
-func (d *Dispatcher) processEventMessage(message string) error {
+func (d *Dispatcher) processEventMessage(message string) (string, error) {
 	if len(message) < 3 {
-		return errors.New("Invalid Event Message: " + message)
+		return "", errors.New("Invalid Event Message: " + message)
 	}
 
 	switch message[1] {
@@ -20,7 +20,7 @@ func (d *Dispatcher) processEventMessage(message string) error {
 		var eventMessage EventMessage
 		err := json.Unmarshal([]byte(message[2:]), &eventMessage)
 		if err != nil {
-			return err
+			return "", err
 		}
 		go d.events.Notify(eventMessage.Name, eventMessage.Data)
 	case 'X':
@@ -28,5 +28,5 @@ func (d *Dispatcher) processEventMessage(message string) error {
 		go d.events.Off(eventName)
 	}
 
-	return nil
+	return "", nil
 }

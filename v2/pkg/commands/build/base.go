@@ -201,7 +201,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	commands := slicer.String([]string{"build"})
 
 	// Add better debugging flags
-	if options.Mode == Debug {
+	if options.Mode == Dev {
 		commands.Add("-gcflags")
 		commands.Add(`"all=-N -l"`)
 	}
@@ -222,9 +222,6 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		tags.Add(options.WebView2Strategy)
 	}
 
-	if options.Mode == Debug {
-		tags.Add("debug")
-	}
 	tags.Deduplicate()
 
 	// Add the output type build tag
@@ -517,7 +514,8 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 func (b *BaseBuilder) ExtractAssets() (*html.AssetBundle, error) {
 
 	// Read in html
-	return html.NewAssetBundle(b.projectData.HTML)
+	//return html.NewAssetBundle(b.projectData.HTML)
+	return nil, nil
 }
 
 func upsertEnv(env []string, key string, update func(v string) string) []string {

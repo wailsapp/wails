@@ -1,3 +1,5 @@
+//go:build windows
+
 package windows
 
 import (
@@ -64,8 +66,8 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 		result.Fullscreen()
 	}
 
-	if options.Windows.Menu != nil {
-		result.SetApplicationMenu(options.Windows.Menu)
+	if options.Menu != nil {
+		result.SetApplicationMenu(options.Menu)
 	}
 
 	return result

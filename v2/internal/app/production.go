@@ -1,4 +1,5 @@
-// +build !debug
+//go:build production
+// +build production
 
 package app
 

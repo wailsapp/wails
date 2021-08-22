@@ -1,3 +1,4 @@
+s
 <script>
 
     export let menu;
@@ -6,18 +7,17 @@
 </script>
 
 {#if !hidden}
-<div class="menu">
-    {#if menu.Menu }
-        {#each menu.Menu.Items as menuItem}
-            <div class="menuitem">
-            {#if menuItem.Image }
-                <div><img alt="" src="data:image/png;base64,{menuItem.Image}"/></div>
-            {/if}
-            <div class="menulabel">{menuItem.Label}</div>
-            </div>
-        {/each}
-    {/if}
-</div>
+    <div class="menu">
+        <span class="menu-title">{menu.Label}</span>
+        <!--{#each menu.Menu.Items as menuItem}-->
+        <!--    <div class="menuitem">-->
+        <!--    {#if menuItem.Image }-->
+        <!--        <div><img alt="" src="data:image/png;base64,{menuItem.Image}"/></div>-->
+        <!--    {/if}-->
+        <!--    <div class="menulabel">{menuItem.Label}</div>-->
+        <!--    </div>-->
+        <!--{/each}-->
+    </div>
 {/if}
 
 <style>

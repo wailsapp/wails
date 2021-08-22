@@ -2,10 +2,9 @@ package options
 
 import (
 	"context"
-	"log"
-	"runtime"
-
+	"embed"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	"log"
 
 	"github.com/wailsapp/wails/v2/pkg/menu"
 
@@ -29,16 +28,18 @@ type App struct {
 	StartHidden       bool
 	HideWindowOnClose bool
 	RGBA              int
-	ContextMenus      []*menu.ContextMenu
-	TrayMenus         []*menu.TrayMenu
+	Assets            *embed.FS
 	Menu              *menu.Menu
-	Windows           *windows.Options
-	Mac               *mac.Options
 	Logger            logger.Logger `json:"-"`
 	LogLevel          logger.LogLevel
 	Startup           func(ctx context.Context) `json:"-"`
 	Shutdown          func()                    `json:"-"`
 	Bind              []interface{}
+
+	//ContextMenus []*menu.ContextMenu
+	//TrayMenus    []*menu.TrayMenu
+	Windows *windows.Options
+	Mac     *mac.Options
 }
 
 // MergeDefaults will set the minimum default values for an application
@@ -73,77 +74,4 @@ func MergeDefaults(appoptions *App) {
 		appoptions.Height = appoptions.MaxHeight
 	}
 
-}
-
-func GetTrayMenus(appoptions *App) []*menu.TrayMenu {
-	var result []*menu.TrayMenu
-	switch runtime.GOOS {
-	case "darwin":
-		if appoptions.Mac != nil {
-			result = appoptions.Mac.TrayMenus
-		}
-		//case "linux":
-		//	if appoptions.Linux != nil {
-		//		result = appoptions.Linux.TrayMenu
-		//	}
-		//case "windows":
-		//	if appoptions.Windows != nil {
-		//		result = appoptions.Windows.TrayMenu
-		//	}
-	}
-
-	if result == nil {
-		result = appoptions.TrayMenus
-	}
-
-	return result
-}
-
-func GetApplicationMenu(appoptions *App) *menu.Menu {
-	var result *menu.Menu
-	switch runtime.GOOS {
-	case "darwin":
-		if appoptions.Mac != nil {
-			result = appoptions.Mac.Menu
-		}
-	//case "linux":
-	//	if appoptions.Linux != nil {
-	//		result = appoptions.Linux.TrayMenu
-	//	}
-	case "windows":
-		if appoptions.Windows != nil {
-			result = appoptions.Windows.Menu
-		}
-	}
-
-	if result == nil {
-		result = appoptions.Menu
-	}
-
-	return result
-}
-
-func GetContextMenus(appoptions *App) []*menu.ContextMenu {
-	var result []*menu.ContextMenu
-
-	switch runtime.GOOS {
-	case "darwin":
-		if appoptions.Mac != nil {
-			result = appoptions.Mac.ContextMenus
-		}
-		//case "linux":
-		//	if appoptions.Linux != nil {
-		//		result = appoptions.Linux.TrayMenu
-		//	}
-		//case "windows":
-		//	if appoptions.Windows != nil {
-		//		result = appoptions.Windows.TrayMenu
-		//	}
-	}
-
-	if result == nil {
-		result = appoptions.ContextMenus
-	}
-
-	return result
 }

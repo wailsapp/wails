@@ -19,8 +19,8 @@ import (
 type Mode int
 
 const (
-	// Debug mode
-	Debug Mode = iota
+	// Dev mode
+	Dev Mode = iota
 	// Production mode
 	Production
 )
@@ -31,7 +31,7 @@ type Options struct {
 	UserTags            []string             // Tags to pass to the Go compiler
 	Logger              *clilogger.CLILogger // All output to the logger
 	OutputType          string               // EG: desktop, server....
-	Mode                Mode                 // release or debug or dev
+	Mode                Mode                 // release or dev
 	ProjectData         *project.Project     // The project data
 	Pack                bool                 // Create a package for the app after building
 	Platform            string               // The platform to build for

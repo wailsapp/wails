@@ -14,9 +14,9 @@ var logLevelMap = map[byte]logger.LogLevel{
 	'5': pkgLogger.ERROR,
 }
 
-func (d *Dispatcher) processLogMessage(message string) error {
+func (d *Dispatcher) processLogMessage(message string) (string, error) {
 	if len(message) < 3 {
-		return errors.New("Invalid Log Message: " + message)
+		return "", errors.New("Invalid Log Message: " + message)
 	}
 
 	messageText := message[2:]
@@ -39,11 +39,11 @@ func (d *Dispatcher) processLogMessage(message string) error {
 	case 'S':
 		loglevel, exists := logLevelMap[message[2]]
 		if !exists {
-			return errors.New("Invalid Set Log Level Message: " + message)
+			return "", errors.New("Invalid Set Log Level Message: " + message)
 		}
 		d.log.SetLogLevel(loglevel)
 	default:
-		return errors.New("Invalid Log Message: " + message)
+		return "", errors.New("Invalid Log Message: " + message)
 	}
-	return nil
+	return "", nil
 }
