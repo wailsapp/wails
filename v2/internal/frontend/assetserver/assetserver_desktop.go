@@ -10,7 +10,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"io/fs"
-	"net/http"
 	"path/filepath"
 	"strings"
 )
@@ -103,11 +102,11 @@ func (a *DesktopAssetServer) init(assets embed.FS) error {
 	if err != nil {
 		return err
 	}
-	a.indexFile, err = injectScript(string(indexHTML), `<script src="/wails/runtime.js"></script>`)
+	a.indexFile, err = injectHTML(string(indexHTML), `<script src="/wails/runtime.js"></script>`)
 	if err != nil {
 		return err
 	}
-	a.indexFile, err = injectScript(string(a.indexFile), `<script src="/wails/ipc.js"></script>`)
+	a.indexFile, err = injectHTML(string(a.indexFile), `<script src="/wails/ipc.js"></script>`)
 	if err != nil {
 		return err
 	}
@@ -130,6 +129,6 @@ func (a *DesktopAssetServer) Load(filename string) ([]byte, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
-	mimeType := http.DetectContentType(content)
+	mimeType := GetMimetype(filename, content)
 	return content, mimeType, nil
 }

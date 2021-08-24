@@ -39,8 +39,18 @@ type DevServer struct {
 	desktopFrontend frontend.Frontend
 }
 
+func (d *DevServer) WindowReload() {
+	d.broadcast("reload")
+}
+
 func (d *DevServer) Run(ctx context.Context) error {
 	d.ctx = ctx
+
+	d.server.Get("/wails/reload", func(fctx *fiber.Ctx) error {
+		d.WindowReload()
+		d.desktopFrontend.WindowReload()
+		return nil
+	})
 
 	d.server.Get("/wails/ipc", websocket.New(func(c *websocket.Conn) {
 		d.newWebsocketSession(c)
@@ -55,14 +65,13 @@ func (d *DevServer) Run(ctx context.Context) error {
 			if mt, msg, err = c.ReadMessage(); err != nil {
 				break
 			}
-			d.logger.Info("[%p] %s", c, msg)
+			//d.logger.Info("[%p] %s", c, msg)
 			if string(msg) == "drag" {
 				continue
 			}
 
 			if len(msg) > 2 && strings.HasPrefix(string(msg), "EE") {
-				d.broadcast(string(msg)[2:])
-				//d.broadcastExcludingSender(string(msg)[2:], c)
+				d.notifyExcludingSender(msg, c)
 				continue
 			}
 
@@ -272,8 +281,6 @@ func (d *DevServer) newWebsocketSession(c *websocket.Conn) {
 	})
 	d.websocketClients[c] = struct{}{}
 	d.LogInfo(fmt.Sprintf("Websocket client %p connected", c))
-	// Send the starttime to see if the client needs to reload
-	c.WriteMessage(websocket.TextMessage, []byte("T"+d.starttime))
 }
 
 type EventNotify struct {
@@ -322,6 +329,19 @@ func (d *DevServer) broadcastExcludingSender(message string, sender *websocket.C
 	}
 }
 
+func (d *DevServer) notifyExcludingSender(eventMessage []byte, sender *websocket.Conn) {
+	message := "n" + string(eventMessage[2:])
+	d.broadcastExcludingSender(message, sender)
+
+	var notifyMessage EventNotify
+	err := json.Unmarshal(eventMessage[2:], &notifyMessage)
+	if err != nil {
+		d.logger.Error(err.Error())
+		return
+	}
+	d.desktopFrontend.Notify(notifyMessage.Name, notifyMessage.Data...)
+}
+
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher, menuManager *menumanager.Manager) *DevServer {
 	result := &DevServer{
 		ctx:             ctx,
@@ -336,7 +356,6 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		}),
 		menuManager:      menuManager,
 		websocketClients: make(map[*websocket.Conn]struct{}),
-		starttime:        time.Now().String(),
 	}
 	return result
 }

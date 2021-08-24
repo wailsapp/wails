@@ -12,6 +12,7 @@ import * as Log from './log';
 import {eventListeners, EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnce, EventsOnMultiple} from './events';
 import {Callback, callbacks} from './calls';
 import {SetBindings} from "./bindings";
+import {WindowReload} from "./window";
 
 // Backend is where the Go struct wrappers get bound to
 window.backend = {};
@@ -23,6 +24,7 @@ window.runtime = {
     EventsOnMultiple,
     EventsEmit,
     EventsOff,
+    WindowReload,
 };
 
 // Initialise global if not already

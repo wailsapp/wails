@@ -6,7 +6,7 @@
   "scripts": {
     "build": "run-p build:*",
     "build:ipc-windows": "esbuild desktop/ipc.js --bundle --minify --outfile=ipc_windows.js --define:PLATFORM='windows'",
-    "build:ipc-dev": "esbuild dev/main.js --bundle --minify --outfile=ipc_websocket.js",
+    "build:ipc-dev": "cd dev && npm run build",
     "build:runtime-desktop-prod": "esbuild desktop/main.js --bundle --minify --outfile=runtime_prod_desktop.js",
     "build:runtime-desktop-dev": "esbuild desktop/main.js --bundle --sourcemap=inline --outfile=runtime_dev_desktop.js",
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -18,7 +18,6 @@ It injects a websocket based IPC script into `index.html`.
 */
 
 import (
-	"net/http"
 	"os"
 )
 
@@ -53,15 +52,20 @@ func (a *AssetServer) loadFileFromDisk(filename string) ([]byte, error) {
 }
 
 func (a *AssetServer) init() error {
-	indexHTML, err := a.loadFileFromDisk("index.html")
+	var err error
+	a.indexFile, err = a.loadFileFromDisk("index.html")
 	if err != nil {
 		return err
 	}
-	a.indexFile, err = injectScript(string(indexHTML), `<script src="/wails/runtime.js"></script>`)
+	a.indexFile, err = injectHTML(string(a.indexFile), `<div id="wails-spinner"></div>`)
 	if err != nil {
 		return err
 	}
-	a.indexFile, err = injectScript(string(a.indexFile), `<script src="/wails/ipc.js"></script>`)
+	a.indexFile, err = injectHTML(string(a.indexFile), `<script src="/wails/ipc.js"></script>`)
+	if err != nil {
+		return err
+	}
+	a.indexFile, err = injectHTML(string(a.indexFile), `<script src="/wails/runtime.js"></script>`)
 	if err != nil {
 		return err
 	}
@@ -84,6 +88,6 @@ func (a *AssetServer) Load(filename string) ([]byte, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
-	mimeType := http.DetectContentType(content)
+	mimeType := GetMimetype(filename, content)
 	return content, mimeType, nil
 }

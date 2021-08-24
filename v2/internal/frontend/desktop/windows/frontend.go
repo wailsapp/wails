@@ -41,6 +41,10 @@ type Frontend struct {
 	servingFromDisk                          bool
 }
 
+func (f *Frontend) WindowReload() {
+	f.ExecJS("runtime.WindowReload();")
+}
+
 func (f *Frontend) Run(ctx context.Context) error {
 
 	mainWindow := NewWindow(nil, f.frontendOptions)
@@ -211,9 +215,7 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 		f.logger.Error(err.Error())
 		return
 	}
-	f.mainWindow.Dispatch(func() {
-		f.chromium.Eval(`window.wails.EventsNotify('` + string(payload) + `');`)
-	})
+	f.ExecJS(`window.wails.EventsNotify('` + string(payload) + `');`)
 }
 
 func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {
@@ -286,6 +288,12 @@ func (f *Frontend) startDrag() error {
 	}
 	w32.SendMessage(f.mainWindow.Handle(), w32.WM_NCLBUTTONDOWN, w32.HTCAPTION, 0)
 	return nil
+}
+
+func (f *Frontend) ExecJS(js string) {
+	f.mainWindow.Dispatch(func() {
+		f.chromium.Eval(js)
+	})
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {

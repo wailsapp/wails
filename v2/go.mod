@@ -6,6 +6,7 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/fatih/structtag v1.2.0
 	github.com/fsnotify/fsnotify v1.4.9
+	github.com/gabriel-vasile/mimetype v1.3.1
 	github.com/go-git/go-billy/v5 v5.2.0 // indirect
 	github.com/go-git/go-git/v5 v5.3.0
 	github.com/gofiber/fiber/v2 v2.17.0
@@ -43,7 +44,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
 	golang.org/x/mod v0.4.1 // indirect
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed
-	golang.org/x/sys v0.0.0-20210616045830-e2b7044e8c71
+	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf
 	golang.org/x/tools v0.1.0
 	nhooyr.io/websocket v1.8.6
 )

@@ -85,6 +85,7 @@ type Frontend interface {
 	WindowFullscreen()
 	WindowUnFullscreen()
 	WindowSetColour(colour int)
+	WindowReload()
 
 	// Menus
 	SetApplicationMenu(menu *menu.Menu)

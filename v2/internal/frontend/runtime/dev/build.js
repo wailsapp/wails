@@ -10,7 +10,7 @@ let sveltePlugin = {
         build.onLoad({filter: /\.svelte$/}, async (args) => {
             // This converts a message in Svelte's format to esbuild's format
             let convertMessage = ({message, start, end}) => {
-                let location
+                let location;
                 if (start && end) {
                     let lineText = source.split(/\r\n|\r|\n/g)[start.line - 1];
                     let lineEnd = start.line === end.line ? end.column : lineText.length;

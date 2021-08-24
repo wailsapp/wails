@@ -6,6 +6,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/project"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -40,6 +41,14 @@ func LogDarkYellow(message string, args ...interface{}) {
 	println(colour.DarkYellow(text))
 }
 
+func sliceToMap(input []string) map[string]struct{} {
+	result := map[string]struct{}{}
+	for _, value := range input {
+		result[value] = struct{}{}
+	}
+	return result
+}
+
 // AddSubcommand adds the `dev` command for the Wails application
 func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
@@ -56,13 +65,23 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	assetDir := ""
 	command.StringFlag("assetdir", "Serve assets from the given directory", &assetDir)
 
-	// extensions to trigger rebuilds
+	// extensions to trigger rebuilds of application
 	extensions := "go"
-	command.StringFlag("e", "Extensions to trigger rebuilds (comma separated) eg go,js,css,html", &extensions)
+	command.StringFlag("e", "Extensions to trigger rebuilds (comma separated) eg go", &extensions)
+
+	// extensions to trigger reloads in the application
+	reloadEnabled := true
+	command.BoolFlag("r", "Reload on asset changes", &reloadEnabled)
 
 	// extensions to trigger rebuilds
 	showWarnings := false
 	command.BoolFlag("w", "Show warnings", &showWarnings)
+
+	openBrowser := false
+	command.BoolFlag("browser", "Open application in browser", &openBrowser)
+
+	noreload := false
+	command.BoolFlag("noreload", "Disable reload on asset change", &noreload)
 
 	// Verbosity
 	verbosity := 1
@@ -77,7 +96,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		logger := clilogger.New(w)
 		app.PrintBanner()
 
-		// TODO: Check you are in a project directory
 		cwd, err := os.Getwd()
 		if err != nil {
 			return err
@@ -89,6 +107,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		if projectConfig.AssetDirectory == "" && assetDir == "" {
 			return fmt.Errorf("No asset directory provided. Please use -assetdir to indicate which directory contains your built assets.")
+		}
+
+		assetDir, err = filepath.Abs(assetDir)
+		if err != nil {
+			return err
 		}
 
 		if assetDir != "" && assetDir != projectConfig.AssetDirectory {
@@ -115,13 +138,12 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}(watcher)
 
 		var debugBinaryProcess *process.Process = nil
-		var extensionsThatTriggerARebuild = strings.Split(extensions, ",")
+		var extensionsThatTriggerARebuild = sliceToMap(strings.Split(extensions, ","))
 
 		// Setup signal handler
 		quitChannel := make(chan os.Signal, 1)
 		signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
-
-		debounceQuit := make(chan bool, 1)
+		exitCodeChannel := make(chan int, 1)
 
 		var passthruArgs []string
 		//if len(os.Args) > 2 {
@@ -130,7 +152,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Do initial build
 		logger.Println("Building application for development...")
-		newProcess, appBinary, err := restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity, assetDir, true)
+		newProcess, appBinary, err := restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity, assetDir, true, exitCodeChannel)
 		if err != nil {
 			return err
 		}
@@ -139,70 +161,17 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		// open browser
-		err = browser.OpenURL("http://localhost:34115")
-		if err != nil {
-			return err
+		if openBrowser {
+			err = browser.OpenURL("http://localhost:34115")
+			if err != nil {
+				return err
+			}
 		}
 
 		if err != nil {
 			return err
 		}
 		var newBinaryProcess *process.Process
-		go debounce(100*time.Millisecond, watcher.Events, debounceQuit, func(event fsnotify.Event) {
-			// logger.Println("event: %+v", event)
-
-			// Check for new directories
-			if event.Op&fsnotify.Create == fsnotify.Create {
-				// If this is a folder, add it to our watch list
-				if fs.DirExists(event.Name) {
-					if !strings.Contains(event.Name, "node_modules") {
-						err := watcher.Add(event.Name)
-						if err != nil {
-							logger.Fatal("%s", err.Error())
-						}
-						LogGreen("[New Directory] Watching new directory: %s", event.Name)
-					}
-				}
-				return
-			}
-
-			// Check for file writes
-			if event.Op&fsnotify.Write == fsnotify.Write {
-
-				var rebuild bool = false
-
-				// Iterate all file patterns
-				for _, pattern := range extensionsThatTriggerARebuild {
-					if strings.HasSuffix(event.Name, pattern) {
-						rebuild = true
-						break
-					}
-				}
-
-				if !rebuild {
-					if showWarnings {
-						LogDarkYellow("[File change] %s did not match extension list (%s)", event.Name, extensions)
-					}
-					return
-				}
-
-				LogGreen("[Attempting rebuild] %s updated", event.Name)
-
-				// Do a rebuild
-
-				// Try and build the app
-				newBinaryProcess, _, err = restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity, assetDir, false)
-				if err != nil {
-					fmt.Printf("Error during build: %s", err.Error())
-					return
-				}
-				// If we have a new process, save it
-				if newBinaryProcess != nil {
-					debugBinaryProcess = newBinaryProcess
-				}
-
-			}
-		})
 
 		// Get project dir
 		projectDir, err := os.Getwd()
@@ -227,20 +196,88 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			if strings.HasPrefix(dir, filepath.Join(projectDir, "build")) {
 				return
 			}
+			//println("Watching", dir)
 			err = watcher.Add(dir)
 			if err != nil {
 				logger.Fatal(err.Error())
 			}
 		})
 
-		// Wait until we get a quit signal
+		// Main Loop
 		quit := false
+		// Use 100ms debounce
+		interval := 100 * time.Millisecond
+		timer := time.NewTimer(interval)
+		rebuild := false
+		reload := false
 		for quit == false {
+			//reload := false
 			select {
+			case exitCode := <-exitCodeChannel:
+				if exitCode == 0 {
+					quit = true
+				}
+			case item := <-watcher.Events:
+				// Check for file writes
+				if item.Op&fsnotify.Write == fsnotify.Write {
+					// Ignore directories
+					if fs.DirExists(item.Name) {
+						continue
+					}
+
+					// Iterate all file patterns
+					ext := filepath.Ext(item.Name)
+					if ext != "" {
+						ext = ext[1:]
+						if _, exists := extensionsThatTriggerARebuild[ext]; exists {
+							rebuild = true
+							continue
+						}
+					}
+
+					if strings.HasPrefix(item.Name, assetDir) {
+						reload = true
+					}
+					timer.Reset(interval)
+				}
+				// Check for new directories
+				if item.Op&fsnotify.Create == fsnotify.Create {
+					// If this is a folder, add it to our watch list
+					if fs.DirExists(item.Name) {
+						//node_modules is BANNED!
+						if !strings.Contains(item.Name, "node_modules") {
+							err := watcher.Add(item.Name)
+							if err != nil {
+								logger.Fatal("%s", err.Error())
+							}
+							LogGreen("Added new directory to watcher: %s", item.Name)
+						}
+					}
+				}
+			case <-timer.C:
+				if rebuild {
+					rebuild = false
+					LogGreen("[Rebuild triggered] files updated")
+					// Try and build the app
+					newBinaryProcess, _, err = restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity, assetDir, false, exitCodeChannel)
+					if err != nil {
+						LogRed("Error during build: %s", err.Error())
+						continue
+					}
+					// If we have a new process, save it
+					if newBinaryProcess != nil {
+						debugBinaryProcess = newBinaryProcess
+					}
+				}
+				if reload {
+					reload = false
+					_, err = http.Get("http://localhost:34115/wails/reload")
+					if err != nil {
+						LogRed("Error during refresh: %s", err.Error())
+					}
+				}
 			case <-quitChannel:
 				LogGreen("\nCaught quit")
-				// Notify debouncer to quit
-				debounceQuit <- true
 				quit = true
 			}
 		}
@@ -267,26 +304,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	return nil
 }
 
-// Credit: https://drailing.net/2018/01/debounce-function-for-golang/
-func debounce(interval time.Duration, input chan fsnotify.Event, quitChannel chan bool, cb func(arg fsnotify.Event)) {
-	var item fsnotify.Event
-	timer := time.NewTimer(interval)
-exit:
-	for {
-		select {
-		case item = <-input:
-			timer.Reset(interval)
-		case <-timer.C:
-			if item.Name != "" {
-				cb(item)
-			}
-		case <-quitChannel:
-			break exit
-		}
-	}
-}
-
-func restartApp(logger *clilogger.CLILogger, ldflags string, compilerCommand string, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string, verbosity int, assetDir string, firstRun bool) (*process.Process, string, error) {
+func restartApp(logger *clilogger.CLILogger, ldflags string, compilerCommand string, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string, verbosity int, assetDir string, firstRun bool, exitCodeChannel chan int) (*process.Process, string, error) {
 
 	appBinary, err := buildApp(logger, ldflags, compilerCommand, verbosity)
 	println()
@@ -322,8 +340,8 @@ func restartApp(logger *clilogger.CLILogger, ldflags string, compilerCommand str
 	if len(passthruArgs) > 0 {
 		args.AddSlice(passthruArgs)
 	}
-	newProcess := process.NewProcess(logger, appBinary, args.AsSlice()...)
-	err = newProcess.Start()
+	newProcess := process.NewProcess(appBinary, args.AsSlice()...)
+	err = newProcess.Start(exitCodeChannel)
 	if err != nil {
 		// Remove binary
 		deleteError := fs.DeleteFile(appBinary)

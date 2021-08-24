@@ -28,6 +28,12 @@ func WindowCenter(ctx context.Context) {
 	appFrontend.WindowCenter()
 }
 
+// WindowReload will reload the window contents
+func WindowReload(ctx context.Context) {
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowReload()
+}
+
 // WindowShow shows the window if hidden
 func WindowShow(ctx context.Context) {
 	appFrontend := getFrontend(ctx)
