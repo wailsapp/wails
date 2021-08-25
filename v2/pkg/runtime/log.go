@@ -1,57 +1,54 @@
-// +build cgo
-
 package runtime
 
 import (
 	"context"
-	"github.com/wailsapp/wails/v2/internal/servicebus"
 	"github.com/wailsapp/wails/v2/pkg/logger"
 )
 
-// Print prints a Print level message
-func Print(ctx context.Context, message string) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("log:print", message)
+// LogPrint prints a Print level message
+func LogPrint(ctx context.Context, message string) {
+	myLogger := getLogger(ctx)
+	myLogger.Print(message)
 }
 
-// Trace prints a Trace level message
-func Trace(ctx context.Context, message string) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("log:trace", message)
+// LogTrace prints a Trace level message
+func LogTrace(ctx context.Context, message string) {
+	myLogger := getLogger(ctx)
+	myLogger.Trace(message)
 }
 
-// Debug prints a Debug level message
-func Debug(ctx context.Context, message string) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("log:debug", message)
+// LogDebug prints a Debug level message
+func LogDebug(ctx context.Context, message string) {
+	myLogger := getLogger(ctx)
+	myLogger.Debug(message)
 }
 
-// Info prints a Info level message
-func Info(ctx context.Context, message string) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("log:info", message)
+// LogInfo prints a Info level message
+func LogInfo(ctx context.Context, message string) {
+	myLogger := getLogger(ctx)
+	myLogger.Info(message)
 }
 
-// Warning prints a Warning level message
-func Warning(ctx context.Context, message string) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("log:warning", message)
+// LogWarning prints a Warning level message
+func LogWarning(ctx context.Context, message string) {
+	myLogger := getLogger(ctx)
+	myLogger.Warning(message)
 }
 
-// Error prints a Error level message
-func Error(ctx context.Context, message string) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("log:error", message)
+// LogError prints a Error level message
+func LogError(ctx context.Context, message string) {
+	myLogger := getLogger(ctx)
+	myLogger.Error(message)
 }
 
-// Fatal prints a Fatal level message
-func Fatal(ctx context.Context, message string) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("log:fatal", message)
+// LogFatal prints a Fatal level message
+func LogFatal(ctx context.Context, message string) {
+	myLogger := getLogger(ctx)
+	myLogger.Fatal(message)
 }
 
-// SetLogLevel sets the log level
-func SetLogLevel(ctx context.Context, level logger.LogLevel) {
-	bus := servicebus.ExtractBus(ctx)
-	bus.Publish("log:setlevel", level)
+// LogSetLogLevel sets the log level
+func LogSetLogLevel(ctx context.Context, level logger.LogLevel) {
+	myLogger := getLogger(ctx)
+	myLogger.SetLogLevel(level)
 }
