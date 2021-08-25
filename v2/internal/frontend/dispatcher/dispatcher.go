@@ -23,7 +23,7 @@ func NewDispatcher(log *logger.Logger, bindings *binding.Bindings, events fronte
 	}
 }
 
-func (d *Dispatcher) ProcessMessage(message string) (string, error) {
+func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (string, error) {
 	if message == "" {
 		return "", errors.New("No message to process")
 	}
@@ -31,7 +31,7 @@ func (d *Dispatcher) ProcessMessage(message string) (string, error) {
 	case 'L':
 		return d.processLogMessage(message)
 	case 'E':
-		return d.processEventMessage(message)
+		return d.processEventMessage(message, sender)
 	case 'C':
 		return d.processCallMessage(message)
 	default:

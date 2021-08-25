@@ -8,6 +8,7 @@ import (
 	"flag"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop"
 	"github.com/wailsapp/wails/v2/internal/frontend/devserver"
 	"github.com/wailsapp/wails/v2/internal/frontend/dispatcher"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
@@ -100,8 +101,11 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	ctx = context.WithValue(ctx, "events", eventHandler)
 	messageDispatcher := dispatcher.NewDispatcher(myLogger, appBindings, eventHandler)
 
-	appFrontend := devserver.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher, menuManager)
-	eventHandler.SetFrontend(appFrontend)
+	// Create the frontends and register to event handler
+	desktopFrontend := desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher)
+	appFrontend := devserver.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher, menuManager, desktopFrontend)
+	eventHandler.AddFrontend(appFrontend)
+	eventHandler.AddFrontend(desktopFrontend)
 
 	result := &App{
 		ctx:              ctx,

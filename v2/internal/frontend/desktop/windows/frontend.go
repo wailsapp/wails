@@ -259,7 +259,7 @@ func (f *Frontend) processMessage(message string) {
 		}
 		return
 	}
-	result, err := f.dispatcher.ProcessMessage(message)
+	result, err := f.dispatcher.ProcessMessage(message, f)
 	if err != nil {
 		f.logger.Error(err.Error())
 	}

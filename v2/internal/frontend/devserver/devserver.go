@@ -9,7 +9,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/pkg/menu"
@@ -70,12 +69,13 @@ func (d *DevServer) Run(ctx context.Context) error {
 				continue
 			}
 
+			// Notify the other browsers
 			if len(msg) > 2 && strings.HasPrefix(string(msg), "EE") {
 				d.notifyExcludingSender(msg, c)
-				continue
 			}
 
-			result, err := d.dispatcher.ProcessMessage(string(msg))
+			// Send the message to dispatch to the frontend
+			result, err := d.dispatcher.ProcessMessage(string(msg), d)
 			if err != nil {
 				d.logger.Error(err.Error())
 			}
@@ -235,8 +235,6 @@ func (d *DevServer) UpdateApplicationMenu() {
 }
 
 func (d *DevServer) Notify(name string, data ...interface{}) {
-	d.desktopFrontend.Notify(name, data...)
-	// Notify Websockets....
 	d.notify(name, data...)
 }
 
@@ -342,10 +340,10 @@ func (d *DevServer) notifyExcludingSender(eventMessage []byte, sender *websocket
 	d.desktopFrontend.Notify(notifyMessage.Name, notifyMessage.Data...)
 }
 
-func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher, menuManager *menumanager.Manager) *DevServer {
+func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher, menuManager *menumanager.Manager, desktopFrontend frontend.Frontend) *DevServer {
 	result := &DevServer{
 		ctx:             ctx,
-		desktopFrontend: desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, dispatcher),
+		desktopFrontend: desktopFrontend,
 		appoptions:      appoptions,
 		logger:          myLogger,
 		appBindings:     appBindings,

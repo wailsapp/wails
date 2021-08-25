@@ -19,15 +19,21 @@ type eventListener struct {
 // Events handles eventing
 type Events struct {
 	log      *logger.Logger
-	frontend frontend.Frontend
+	frontend []frontend.Frontend
 
 	// Go event listeners
 	listeners  map[string][]*eventListener
 	notifyLock sync.RWMutex
 }
 
-func (e *Events) Notify(name string, data ...interface{}) {
-	e.notify(name, data...)
+func (e *Events) Notify(sender frontend.Frontend, name string, data ...interface{}) {
+	e.notifyBackend(name, data...)
+	for _, thisFrontend := range e.frontend {
+		if thisFrontend == sender {
+			continue
+		}
+		thisFrontend.Notify(name, data...)
+	}
 }
 
 func (e *Events) On(eventName string, callback func(...interface{})) {
@@ -43,8 +49,10 @@ func (e *Events) Once(eventName string, callback func(...interface{})) {
 }
 
 func (e *Events) Emit(eventName string, data ...interface{}) {
-	e.notify(eventName, data...)
-	e.frontend.Notify(eventName, data...)
+	e.notifyBackend(eventName, data...)
+	for _, thisFrontend := range e.frontend {
+		thisFrontend.Notify(eventName, data...)
+	}
 }
 
 func (e *Events) Off(eventName string) {
@@ -82,8 +90,8 @@ func (e *Events) unRegisterListener(eventName string) {
 	e.notifyLock.Unlock()
 }
 
-// Notify for the given event name
-func (e *Events) notify(eventName string, data ...interface{}) {
+// Notify backend for the given event name
+func (e *Events) notifyBackend(eventName string, data ...interface{}) {
 
 	// Get list of event listeners
 	listeners := e.listeners[eventName]
@@ -137,6 +145,7 @@ func (e *Events) notify(eventName string, data ...interface{}) {
 	e.notifyLock.Unlock()
 }
 
-func (e *Events) SetFrontend(appFrontend frontend.Frontend) {
-	e.frontend = appFrontend
+func (e *Events) AddFrontend(appFrontend frontend.Frontend) {
+	println("Adding frontend", appFrontend)
+	e.frontend = append(e.frontend, appFrontend)
 }
