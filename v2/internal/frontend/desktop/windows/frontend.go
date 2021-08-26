@@ -58,11 +58,6 @@ func (f *Frontend) Run(ctx context.Context) error {
 	}
 
 	f.WindowCenter()
-
-	if !f.frontendOptions.StartHidden {
-		mainWindow.Show()
-	}
-
 	f.setupChromium()
 
 	mainWindow.OnSize().Bind(func(arg *winc.Event) {
@@ -302,8 +297,25 @@ func (f *Frontend) ExecJS(js string) {
 
 func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
 	if f.frontendOptions.OnDomReady != nil {
-		f.frontendOptions.OnDomReady(f.ctx)
+		go f.frontendOptions.OnDomReady(f.ctx)
 	}
+
+	// If you want to start hidden, return
+	if f.frontendOptions.StartHidden {
+		return
+	}
+
+	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026
+	err := f.chromium.Hide()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = f.chromium.Show()
+	if err != nil {
+		log.Fatal(err)
+	}
+	f.mainWindow.Show()
+
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
