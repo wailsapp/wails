@@ -1,9 +1,11 @@
+//go:build dev
 // +build dev
 
 package app
 
 import (
 	"context"
+	"github.com/wailsapp/wails/runtime"
 	"sync"
 
 	"github.com/wailsapp/wails/v2/internal/bridge"
@@ -49,7 +51,7 @@ type App struct {
 	loglevelStore  *runtime.Store
 	appconfigStore *runtime.Store
 
-	// Startup/Shutdown
+	// OnStartup/OnShutdown
 	startupCallback  func(*runtime.Runtime)
 	shutdownCallback func()
 
@@ -85,15 +87,15 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	}
 
 	// Create binding exemptions - Ugly hack. There must be a better way
-	bindingExemptions := []interface{}{appoptions.Startup, appoptions.Shutdown}
+	bindingExemptions := []interface{}{appoptions.OnStartup, appoptions.OnShutdown, appoptions.OnDomReady}
 
 	result := &App{
 		appType:          "dev",
 		bindings:         binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions),
 		logger:           myLogger,
 		servicebus:       servicebus.New(myLogger),
-		startupCallback:  appoptions.Startup,
-		shutdownCallback: appoptions.Shutdown,
+		startupCallback:  appoptions.OnStartup,
+		shutdownCallback: appoptions.OnShutdown,
 		bridge:           bridge.NewBridge(myLogger),
 		menuManager:      menuManager,
 	}
@@ -235,7 +237,7 @@ func (a *App) Run() error {
 		return err
 	}
 
-	// Shutdown callback
+	// OnShutdown callback
 	if a.shutdownCallback != nil {
 		a.shutdownCallback()
 	}

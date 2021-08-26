@@ -42,7 +42,7 @@ func NewDesktopAssetServer(ctx context.Context, assets embed.FS, bindingsJSON st
 
 	var buffer bytes.Buffer
 	buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")
-	buffer.Write(runtime.RuntimeDesktopJS)
+	buffer.Write(runtime.RuntimeJS)
 	result.runtimeJS = buffer.Bytes()
 	err := result.init(assets)
 	return result, err

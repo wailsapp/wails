@@ -7,7 +7,6 @@ import (
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
-	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
@@ -30,7 +29,6 @@ func main() {
 		Frameless:         false,
 		StartHidden:       false,
 		HideWindowOnClose: false,
-		DevTools:          false,
 		RGBA:              0x000000FF,
 		Windows: &windows.Options{
 			WebviewIsTransparent:          true,
@@ -41,11 +39,10 @@ func main() {
 			WebviewIsTransparent:          true,
 			WindowBackgroundIsTranslucent: true,
 			TitleBar:                      mac.TitleBarHiddenInset(),
-			Menu:                          menu.DefaultMacMenu(),
 		},
-		LogLevel: logger.DEBUG,
-		Startup:  app.startup,
-		Shutdown: app.shutdown,
+		LogLevel:   logger.DEBUG,
+		OnStartup:  app.startup,
+		OnShutdown: app.shutdown,
 		Bind: []interface{}{
 			app,
 		},

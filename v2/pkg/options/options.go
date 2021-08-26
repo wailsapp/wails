@@ -32,8 +32,9 @@ type App struct {
 	Menu              *menu.Menu
 	Logger            logger.Logger `json:"-"`
 	LogLevel          logger.LogLevel
-	Startup           func(ctx context.Context) `json:"-"`
-	Shutdown          func()                    `json:"-"`
+	OnStartup         func(ctx context.Context) `json:"-"`
+	OnDomReady        func(ctx context.Context) `json:"-"`
+	OnShutdown        func(ctx context.Context) `json:"-"`
 	Bind              []interface{}
 
 	//ContextMenus []*menu.ContextMenu

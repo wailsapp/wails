@@ -31,16 +31,16 @@ type App struct {
 	// Indicates if the app is in debug mode
 	debug bool
 
-	// Startup/Shutdown
+	// OnStartup/OnShutdown
 	startupCallback  func(ctx context.Context)
-	shutdownCallback func()
+	shutdownCallback func(ctx context.Context)
 	ctx              context.Context
 }
 
 func (a *App) Run() error {
 	err := a.frontend.Run(a.ctx)
 	if a.shutdownCallback != nil {
-		a.shutdownCallback()
+		a.shutdownCallback(a.ctx)
 	}
 	return err
 }
@@ -95,7 +95,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	}
 
 	// Create binding exemptions - Ugly hack. There must be a better way
-	bindingExemptions := []interface{}{appoptions.Startup, appoptions.Shutdown}
+	bindingExemptions := []interface{}{appoptions.OnStartup, appoptions.OnShutdown, appoptions.OnDomReady}
 	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions)
 	eventHandler := runtime.NewEvents(myLogger)
 	ctx = context.WithValue(ctx, "events", eventHandler)
@@ -112,8 +112,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		frontend:         appFrontend,
 		logger:           myLogger,
 		menuManager:      menuManager,
-		startupCallback:  appoptions.Startup,
-		shutdownCallback: appoptions.Shutdown,
+		startupCallback:  appoptions.OnStartup,
+		shutdownCallback: appoptions.OnShutdown,
 		debug:            true,
 	}
 

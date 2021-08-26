@@ -1,3 +1,4 @@
+//go:build desktop && !server
 // +build desktop,!server
 
 package app
@@ -45,7 +46,7 @@ type App struct {
 	// This is our binding DB
 	bindings *binding.Bindings
 
-	// Startup/Shutdown
+	// OnStartup/OnShutdown
 	startupCallback  func(ctx context.Context)
 	shutdownCallback func()
 }
@@ -82,7 +83,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	window := ffenestri.NewApplicationWithConfig(appoptions, myLogger, menuManager)
 
 	// Create binding exemptions - Ugly hack. There must be a better way
-	bindingExemptions := []interface{}{appoptions.Startup, appoptions.Shutdown}
+	bindingExemptions := []interface{}{appoptions.OnStartup, appoptions.OnShutdown, appoptions.OnDomReady}
 
 	result := &App{
 		appType:          "desktop",
@@ -91,8 +92,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		logger:           myLogger,
 		bindings:         binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions),
 		menuManager:      menuManager,
-		startupCallback:  appoptions.Startup,
-		shutdownCallback: appoptions.Shutdown,
+		startupCallback:  appoptions.OnStartup,
+		shutdownCallback: appoptions.OnShutdown,
 	}
 
 	result.options = appoptions
@@ -246,7 +247,7 @@ func (a *App) Run() error {
 		return err
 	}
 
-	// Shutdown callback
+	// OnShutdown callback
 	if a.shutdownCallback != nil {
 		a.shutdownCallback()
 	}

@@ -1,14 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
-
-	"github.com/wailsapp/wails/v2"
 )
 
 // App application struct
 type App struct {
-	runtime *wails.Runtime
+	ctx context.Context
 }
 
 // NewApp creates a new App application struct
@@ -17,13 +16,13 @@ func NewApp() *App {
 }
 
 // startup is called at application startup
-func (b *App) startup(runtime *wails.Runtime) {
+func (b *App) startup(ctx context.Context) {
 	// Perform your setup here
-	b.runtime = runtime
+	b.ctx = ctx
 }
 
 // shutdown is called at application termination
-func (b *App) shutdown() {
+func (b *App) shutdown(ctx context.Context) {
 	// Perform your teardown here
 }
 

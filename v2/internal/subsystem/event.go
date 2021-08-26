@@ -84,7 +84,7 @@ func (e *Event) Start() error {
 
 	// Spin off a go routine
 	go func() {
-		defer e.logger.Trace("Shutdown")
+		defer e.logger.Trace("OnShutdown")
 		for {
 			select {
 			case <-e.ctx.Done():

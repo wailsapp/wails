@@ -25,7 +25,7 @@ func (b *App) startup(ctx context.Context) {
 }
 
 // shutdown is called at application termination
-func (b *App) shutdown() {
+func (b *App) shutdown(ctx context.Context) {
 	// Perform your teardown here
 }
 

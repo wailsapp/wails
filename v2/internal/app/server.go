@@ -1,3 +1,4 @@
+//go:build server && !desktop
 // +build server,!desktop
 
 package app
@@ -37,7 +38,7 @@ type App struct {
 
 	debug bool
 
-	// Startup/Shutdown
+	// OnStartup/OnShutdown
 	startupCallback  func(ctx context.Context)
 	shutdownCallback func()
 }
@@ -58,8 +59,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		logger:           myLogger,
 		servicebus:       servicebus.New(myLogger),
 		webserver:        webserver.NewWebServer(myLogger),
-		startupCallback:  appoptions.Startup,
-		shutdownCallback: appoptions.Shutdown,
+		startupCallback:  appoptions.OnStartup,
+		shutdownCallback: appoptions.OnShutdown,
 	}
 
 	// Initialise app

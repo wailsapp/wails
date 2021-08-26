@@ -27,7 +27,7 @@ type Runtime struct {
 	//ctx
 	ctx context.Context
 
-	// Startup Hook
+	// OnStartup Hook
 	startupOnce sync.Once
 
 	// Service bus
@@ -66,7 +66,7 @@ func (r *Runtime) Start() error {
 
 	// Spin off a go routine
 	go func() {
-		defer r.logger.Trace("Shutdown")
+		defer r.logger.Trace("OnShutdown")
 		for {
 			select {
 			case hooksMessage := <-r.hooksChannel:

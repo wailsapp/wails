@@ -222,6 +222,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		tags.Add(options.WebView2Strategy)
 	}
 
+	if options.Mode == Production {
+		tags.Add("production")
+	}
+
 	tags.Deduplicate()
 
 	// Add the output type build tag
