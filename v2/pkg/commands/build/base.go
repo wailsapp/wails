@@ -206,12 +206,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		commands.Add(`"all=-N -l"`)
 	}
 
-	// TODO: Work out if we can make this more efficient
-	// We need to do a full build as CGO doesn't detect updates
-	// to .h files, and we package assets into .h file. We could
-	// potentially try and see if the assets have changed but will
-	// this take as much time as a `-a` build?
-	commands.Add("-a")
+	//commands.Add("-a")
 
 	var tags slicer.StringSlicer
 	tags.Add(options.OutputType)
@@ -289,22 +284,28 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	cmd.Env = os.Environ() // inherit env
 
-	// Use upsertEnv so we don't overwrite user's CGO_CFLAGS
-	cmd.Env = upsertEnv(cmd.Env, "CGO_CFLAGS", func(v string) string {
-		if v != "" {
-			v += " "
-		}
-		v += "-I" + buildBaseDir
-		return v
-	})
-	// Use upsertEnv so we don't overwrite user's CGO_CXXFLAGS
-	cmd.Env = upsertEnv(cmd.Env, "CGO_CXXFLAGS", func(v string) string {
-		if v != "" {
-			v += " "
-		}
-		v += "-I" + buildBaseDir
-		return v
-	})
+	if options.Platform != "windows" {
+		// Use upsertEnv so we don't overwrite user's CGO_CFLAGS
+		cmd.Env = upsertEnv(cmd.Env, "CGO_CFLAGS", func(v string) string {
+			if v != "" {
+				v += " "
+			}
+			v += "-I" + buildBaseDir
+			return v
+		})
+		// Use upsertEnv so we don't overwrite user's CGO_CXXFLAGS
+		cmd.Env = upsertEnv(cmd.Env, "CGO_CXXFLAGS", func(v string) string {
+			if v != "" {
+				v += " "
+			}
+			v += "-I" + buildBaseDir
+			return v
+		})
+
+		cmd.Env = upsertEnv(cmd.Env, "CGO_ENABLED", func(v string) string {
+			return "1"
+		})
+	}
 
 	cmd.Env = upsertEnv(cmd.Env, "GOOS", func(v string) string {
 		return options.Platform
@@ -312,10 +313,6 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	cmd.Env = upsertEnv(cmd.Env, "GOARCH", func(v string) string {
 		return options.Arch
-	})
-
-	cmd.Env = upsertEnv(cmd.Env, "CGO_ENABLED", func(v string) string {
-		return "1"
 	})
 
 	if verbose {
@@ -364,6 +361,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	if verbose {
 		println(string(output))
 	}
+
 	return nil
 }
 
