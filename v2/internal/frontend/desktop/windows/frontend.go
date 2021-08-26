@@ -171,6 +171,9 @@ func (f *Frontend) setupChromium() {
 	chromium.MessageCallback = f.processMessage
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
+	chromium.AcceleratorKeyCallback = func(_ uint) {
+		// TODO: Link to standard application shortcuts
+	}
 	chromium.Embed(f.mainWindow.Handle())
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
