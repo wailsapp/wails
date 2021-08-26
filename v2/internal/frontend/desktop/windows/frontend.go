@@ -47,6 +47,8 @@ func (f *Frontend) WindowReload() {
 
 func (f *Frontend) Run(ctx context.Context) error {
 
+	f.ctx = context.WithValue(ctx, "frontend", f)
+
 	mainWindow := NewWindow(nil, f.frontendOptions)
 	f.mainWindow = mainWindow
 
@@ -77,8 +79,9 @@ func (f *Frontend) Run(ctx context.Context) error {
 
 	// TODO: Move this into a callback from frontend
 	go func() {
-		ctx := context.WithValue(ctx, "frontend", f)
-		f.frontendOptions.Startup(ctx)
+		if f.frontendOptions.OnStartup != nil {
+			f.frontendOptions.OnStartup(f.ctx)
+		}
 	}()
 
 	mainWindow.Run()
@@ -172,6 +175,7 @@ func (f *Frontend) setupChromium() {
 	chromium := edge.NewChromium()
 	chromium.MessageCallback = f.processMessage
 	chromium.WebResourceRequestedCallback = f.processRequest
+	chromium.NavigationCompletedCallback = f.navigationCompleted
 	chromium.Embed(f.mainWindow.Handle())
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
@@ -294,6 +298,12 @@ func (f *Frontend) ExecJS(js string) {
 	f.mainWindow.Dispatch(func() {
 		f.chromium.Eval(js)
 	})
+}
+
+func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
+	if f.frontendOptions.OnDomReady != nil {
+		f.frontendOptions.OnDomReady(f.ctx)
+	}
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
