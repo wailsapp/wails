@@ -5,4 +5,4 @@ package runtime
 import _ "embed"
 
 //go:embed runtime_prod_desktop.js
-var RuntimeJS []byte
+var RuntimeDesktopJS []byte
