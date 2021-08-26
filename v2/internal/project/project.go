@@ -19,6 +19,9 @@ type Project struct {
 	BuildCommand   string `json:"frontend:build"`
 	InstallCommand string `json:"frontend:install"`
 
+	// Directory to generate the API Module
+	WailsJSDir string `json:"wailsjsdir"`
+
 	/*** Internal Data ***/
 
 	// The path to the project directory

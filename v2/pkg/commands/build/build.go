@@ -49,6 +49,7 @@ type Options struct {
 	AppleIdentity       string
 	WebView2Strategy    string // WebView2 installer strategy
 	RunDelve            bool   // Indicates if we should run delve after the build
+	WailsJSDir          string // Directory to generate the wailsjs module
 }
 
 // Build the project!
