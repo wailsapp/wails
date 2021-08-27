@@ -4,7 +4,7 @@
 | | /| / / __ `/ / / ___/
 | |/ |/ / /_/ / / (__  )
 |__/|__/\__,_/_/_/____/
-The lightweight framework for web-like apps
+The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
 /* jshint esversion: 6 */

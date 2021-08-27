@@ -3,6 +3,8 @@ package build
 import (
 	"bytes"
 	"fmt"
+	"github.com/leaanthony/gosod"
+	"github.com/wailsapp/wails/v2/internal/frontend/runtime/wrapper"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -184,6 +186,12 @@ func (b *BaseBuilder) OutputFilename(options *Options) string {
 // CompileProject compiles the project
 func (b *BaseBuilder) CompileProject(options *Options) error {
 
+	// Check if the runtime wrapper exists
+	err := generateRuntimeWrapper(options)
+	if err != nil {
+		return err
+	}
+
 	verbose := options.Verbosity == VERBOSE
 	// Run go mod tidy first
 	cmd := exec.Command(options.Compiler, "mod", "tidy")
@@ -192,7 +200,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		println("")
 		cmd.Stdout = os.Stdout
 	}
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return err
 	}
@@ -363,6 +371,15 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	}
 
 	return nil
+}
+
+func generateRuntimeWrapper(options *Options) error {
+	wrapperDir := filepath.Join(options.WailsJSDir, "wailsjs", "runtime")
+	if fs.DirExists(wrapperDir) {
+		return nil
+	}
+	extractor := gosod.New(wrapper.RuntimeWrapper)
+	return extractor.Extract(wrapperDir, nil)
 }
 
 // NpmInstall runs "npm install" in the given directory

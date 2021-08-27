@@ -2,6 +2,8 @@ package binding
 
 import (
 	"fmt"
+	"github.com/tkrajina/typescriptify-golang-structs/typescriptify"
+	"path/filepath"
 	"reflect"
 	"runtime"
 	"strings"
@@ -15,13 +17,17 @@ type Bindings struct {
 	db         *DB
 	logger     logger.CustomLogger
 	exemptions slicer.StringSlicer
+
+	// Typescript writer
+	converter *typescriptify.TypeScriptify
 }
 
 // NewBindings returns a new Bindings object
 func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exemptions []interface{}) *Bindings {
 	result := &Bindings{
-		db:     newDB(),
-		logger: logger.CustomLogger("Bindings"),
+		db:        newDB(),
+		logger:    logger.CustomLogger("Bindings"),
+		converter: typescriptify.New(),
 	}
 
 	for _, exemption := range exemptions {
@@ -63,6 +69,10 @@ func (b *Bindings) Add(structPtr interface{}) error {
 		b.db.AddMethod(packageName, structName, methodName, method)
 	}
 	return nil
+}
+
+func (b *Bindings) WriteTS(dir string) error {
+	return b.converter.ConvertToFile(filepath.Join(dir, "models.ts"))
 }
 
 func (b *Bindings) DB() *DB {

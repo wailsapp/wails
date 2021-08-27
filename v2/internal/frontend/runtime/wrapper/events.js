@@ -8,7 +8,7 @@ The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
 
-/* jshint esversion: 6 */
+/* jshint esversion: 9 */
 
 
 /**
@@ -19,8 +19,8 @@ The electron alternative for Go
  * @param {function} callback
  * @param {number} maxCallbacks
  */
-function OnMultiple(eventName, callback, maxCallbacks) {
-	window.wails.Events.OnMultiple(eventName, callback, maxCallbacks);
+export function EventsOnMultiple(eventName, callback, maxCallbacks) {
+	window.runtime.EventsOnMultiple(eventName, callback, maxCallbacks);
 }
 
 /**
@@ -30,8 +30,8 @@ function OnMultiple(eventName, callback, maxCallbacks) {
  * @param {string} eventName
  * @param {function} callback
  */
-function On(eventName, callback) {
-	OnMultiple(eventName, callback);
+export function EventsOn(eventName, callback) {
+	OnMultiple(eventName, callback, -1);
 }
 
 /**
@@ -41,7 +41,7 @@ function On(eventName, callback) {
  * @param {string} eventName
  * @param {function} callback
  */
-function Once(eventName, callback) {
+export function EventsOnce(eventName, callback) {
 	OnMultiple(eventName, callback, 1);
 }
 
@@ -52,25 +52,7 @@ function Once(eventName, callback) {
  * @export
  * @param {string} eventName
  */
-function Emit(eventName) {
-	var args = [eventName].slice.call(arguments);
-	return window.wails.Events.Emit.apply(null, args);
+export function EventsEmit(eventName) {
+	let args = [eventName].slice.call(arguments);
+	return window.runtime.EventsEmit.apply(null, args);
 }
-
-/**
- * Registers listeners for when the system theme changes
- *
- * @export
- * @param {function} callback
- */
-function OnThemeChange(callback) {
-	On('wails:system:themechange', callback);
-}
-
-module.exports = {
-	OnMultiple: OnMultiple,
-	On: On,
-	Once: Once,
-	Emit: Emit,
-	OnThemeChange: OnThemeChange,
-};

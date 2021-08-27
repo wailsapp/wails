@@ -77,6 +77,24 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 		for inputIndex := 0; inputIndex < inputParamCount; inputIndex++ {
 			input := methodType.In(inputIndex)
 			thisParam := newParameter("", input)
+
+			// Process struct pointer params
+			if input.Kind() == reflect.Ptr {
+				if input.Elem().Kind() == reflect.Struct {
+					typ := input.Elem()
+					a := reflect.New(typ)
+					s := reflect.Indirect(a).Interface()
+					b.converter.Add(s)
+				}
+			}
+
+			// Process struct params
+			if input.Kind() == reflect.Struct {
+				a := reflect.New(input)
+				s := reflect.Indirect(a).Interface()
+				b.converter.Add(s)
+			}
+
 			inputs = append(inputs, thisParam)
 		}
 

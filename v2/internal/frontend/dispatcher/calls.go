@@ -28,7 +28,9 @@ func (d *Dispatcher) processCallMessage(message string) (string, error) {
 
 	args, err := registeredMethod.ParseArgs(payload.Args)
 	if err != nil {
-		return "", fmt.Errorf("error parsing arguments: %s", err.Error())
+		errmsg := fmt.Errorf("error parsing arguments: %s", err.Error())
+		result, _ := d.NewErrorCallback(errmsg.Error(), payload.CallbackID)
+		return result, errmsg
 	}
 
 	result, err := registeredMethod.Call(args)
@@ -55,4 +57,14 @@ type CallbackMessage struct {
 	Result     interface{} `json:"result"`
 	Err        string      `json:"error"`
 	CallbackID string      `json:"callbackid"`
+}
+
+func (d *Dispatcher) NewErrorCallback(message string, callbackID string) (string, error) {
+	result := &CallbackMessage{
+		CallbackID: callbackID,
+		Err:        message,
+	}
+	messageData, err := json.Marshal(result)
+	d.log.Trace("json call result data: %+v\n", string(messageData))
+	return string(messageData), err
 }

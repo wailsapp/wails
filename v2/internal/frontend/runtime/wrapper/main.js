@@ -7,14 +7,14 @@
 The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
-/* jshint esversion: 6 */
+/* jshint esversion: 9 */
 
-const Log = require('./log');
-const Events = require('./events');
-const Init = require('./init');
+import * as Log from "./log";
+import * as Events from './events';
+import * as Window from './window';
 
-module.exports = {
-	Events: Events,
-	ready: Init.ready,
-	Log: Log,
+export default {
+    ...Log,
+    ...Events,
+    ...Window,
 };

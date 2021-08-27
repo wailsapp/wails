@@ -112,14 +112,8 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return fmt.Errorf("No asset directory provided. Please use -assetdir to indicate which directory contains your built assets.")
 		}
 
-		assetDir, err = filepath.Abs(assetDir)
-		if err != nil {
-			return err
-		}
-
-		if assetDir != "" && assetDir != projectConfig.AssetDirectory {
-			projectConfig.AssetDirectory = assetDir
-			err := projectConfig.Save()
+		if assetDir != "" {
+			assetDir, err = filepath.Abs(assetDir)
 			if err != nil {
 				return err
 			}
@@ -127,6 +121,14 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		if assetDir == "" && projectConfig.AssetDirectory != "" {
 			assetDir = projectConfig.AssetDirectory
+		}
+
+		if assetDir != projectConfig.AssetDirectory {
+			projectConfig.AssetDirectory = assetDir
+			err := projectConfig.Save()
+			if err != nil {
+				return err
+			}
 		}
 
 		wailsjsdir, err = filepath.Abs(wailsjsdir)

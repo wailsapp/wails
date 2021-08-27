@@ -264,6 +264,8 @@ func (f *Frontend) processMessage(message string) {
 	result, err := f.dispatcher.ProcessMessage(message, f)
 	if err != nil {
 		f.logger.Error(err.Error())
+		f.Callback(result)
+		return
 	}
 	if result == "" {
 		return

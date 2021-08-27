@@ -7,14 +7,14 @@
 The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
-/* jshint esversion: 6 */
 
-const Log = require('./log');
-const Events = require('./events');
-const Init = require('./init');
+/* jshint esversion: 9 */
 
-module.exports = {
-	Events: Events,
-	ready: Init.ready,
-	Log: Log,
-};
+/**
+ * Reloads the Window
+ *
+ * @export
+ */
+export function WindowReload() {
+	window.runtime.WindowReload();
+}
