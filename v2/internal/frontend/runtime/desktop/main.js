@@ -38,7 +38,11 @@ window.wails = {
 
 window.wails.SetBindings(window.wailsbindings);
 delete window.wails.SetBindings;
-delete window.wailsbindings;
+
+// This is evaluated at build time in package.json
+if (ENV === "production") {
+    delete window.wailsbindings;
+}
 
 // Setup drag handler
 // Based on code from: https://github.com/patr0nus/DeskGap
