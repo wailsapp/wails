@@ -3,7 +3,6 @@ package binding
 import (
 	"fmt"
 	"github.com/tkrajina/typescriptify-golang-structs/typescriptify"
-	"path/filepath"
 	"reflect"
 	"runtime"
 	"strings"
@@ -29,6 +28,9 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 		logger:    logger.CustomLogger("Bindings"),
 		converter: typescriptify.New(),
 	}
+
+	// No backups
+	result.converter.WithBackupDir("")
 
 	for _, exemption := range exemptions {
 		if exemptions == nil {
@@ -71,8 +73,9 @@ func (b *Bindings) Add(structPtr interface{}) error {
 	return nil
 }
 
-func (b *Bindings) WriteTS(dir string) error {
-	return b.converter.ConvertToFile(filepath.Join(dir, "models.ts"))
+func (b *Bindings) WriteTS(filename string) error {
+	println("WriteTS to:", filename)
+	return b.converter.ConvertToFile(filename)
 }
 
 func (b *Bindings) DB() *DB {

@@ -12,11 +12,15 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/devserver"
 	"github.com/wailsapp/wails/v2/internal/frontend/dispatcher"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
+	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
+	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/internal/signal"
 	pkglogger "github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"os"
+	"path/filepath"
 )
 
 // App defines a Wails application structure
@@ -98,8 +102,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	bindingExemptions := []interface{}{appoptions.OnStartup, appoptions.OnShutdown, appoptions.OnDomReady}
 	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions)
 
-	bindingsDir := "."
-	err = appBindings.WriteTS(bindingsDir)
+	err = generateBindings(appBindings)
 	if err != nil {
 		return nil, err
 	}
@@ -126,5 +129,30 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	result.options = appoptions
 
 	return result, nil
+
+}
+
+func generateBindings(bindings *binding.Bindings) error {
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	projectConfig, err := project.Load(cwd)
+	if err != nil {
+		return err
+	}
+
+	targetDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs", "go")
+	println("TargetDir =", targetDir)
+	_ = fs.MkDirs(targetDir)
+	modelsFile := filepath.Join(targetDir, "models.ts")
+	err = bindings.WriteTS(modelsFile)
+	if err != nil {
+		return err
+	}
+
+	// Write backend method wrappers
+	return nil
 
 }
