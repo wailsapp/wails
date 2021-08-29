@@ -12,6 +12,16 @@ The electron alternative for Go
 
 
 /**
+ * Log the given trace message with the backend
+ *
+ * @export
+ * @param {string} message
+ */
+export function LogTrace(message) {
+    window.runtime.LogTrace(message);
+}
+
+/**
  * Log the given debug message with the backend
  *
  * @export

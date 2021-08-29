@@ -7,6 +7,8 @@ interface runtime {
 
     EventsOnce(eventName: string, callback: (data?: any) => void): void;
 
+    LogTrace(message: string): void;
+
     LogDebug(message: string): void;
 
     LogError(message: string): void;
