@@ -318,30 +318,50 @@ distributions:
           - name: webkit2gtk3-devel
             help: Please install with `sudo zypper in webkit2gtk3-devel` and try again
   opensuse-leap:
-      id: opensuse-leap
-      releases:
-        default:
-          version: default
-          name: openSUSE Leap
-          gccversioncommand: *gccdumpfullversion
-          programs: *opensusedefaultprograms
-          libraries: *opensusedefaultlibraries
+    id: opensuse-leap
+    releases:
+      default:
+        version: default
+        name: openSUSE Leap
+        gccversioncommand: *gccdumpfullversion
+        programs: *opensusedefaultprograms
+        libraries: *opensusedefaultlibraries
   crux:
-      id: crux
-      releases:
-        default:
-          version: default
-          name: Crux Linux
-          gccversioncommand: *gccdumpversion
-          programs:
-            - name: gcc
-              help: Please install with `sudo prt-get depinst gcc-c++ make` and try again
-            - name: pkg-config
-              help: Please install with `sudo prt-get depinst pkg-config` and try again
-            - name: npm
-              help: Please install with `sudo prt-get depinst nodejs` and try again
-          libraries:
-            - name: gtk3
-              help: Please install with `sudo prt-get depinst gtk3` and try again
-            - name: webkitgtk
-              help: Please install with `sudo prt-get depinst webkitgtk` and try again
+    id: crux
+    releases:
+      default:
+        version: default
+        name: Crux Linux
+        gccversioncommand: *gccdumpversion
+        programs:
+          - name: gcc
+            help: Please install with `sudo prt-get depinst gcc-c++ make` and try again
+          - name: pkg-config
+            help: Please install with `sudo prt-get depinst pkg-config` and try again
+          - name: npm
+            help: Please install with `sudo prt-get depinst nodejs` and try again
+        libraries:
+          - name: gtk3
+            help: Please install with `sudo prt-get depinst gtk3` and try again
+          - name: webkitgtk
+            help: Please install with `sudo prt-get depinst webkitgtk` and try again
+  nixos:
+    id: nixos
+    releases:
+      default:
+        version: default
+        name: NixOS
+        gccversioncommand: *gccdumpversion
+        programs:
+          - name: gcc
+            help: Please install with `nix-env -iA nixos.gcc`
+          - name: pkg-config
+            help: Please install with `nix-env -iA nixos.pkg-config`
+          - name: npm
+            help: Please install with `nix-env -iA nixos.nodejs`
+        libraries:
+          - name: gtk+3
+            help: Please install with `nix-env -iA nixos.gtk3`
+          - name: webkitgtk
+            help: Please install with `nix-env -iA nixos.nodePackages.webkitgtk`
+

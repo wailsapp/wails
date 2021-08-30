@@ -71,6 +71,8 @@ const (
 	Crux
 	// RHEL distribution
 	RHEL
+	// NixOS distribution
+	NixOS
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -183,6 +185,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = EndeavourOS
 	case "crux":
 		result.Distribution = Crux
+	case "nixos":
+		result.Distribution = NixOS
 	default:
 		result.Distribution = Unknown
 	}
@@ -271,6 +275,18 @@ func PrtGetInstalled(packageName string) (bool, error) {
 		return false, fmt.Errorf("cannot check dependencies: prt-get not found")
 	}
 	_, _, exitCode, _ := prtget.Run("isinst", packageName)
+	return exitCode == 0, nil
+}
+
+// NixEnvInstalled uses nix-env to see if a package is installed
+func NixEnvInstalled(packageName string) (bool, error) {
+	program := NewProgramHelper()
+	nixEnv := program.FindProgram("nix-env")
+	if nixEnv == nil {
+		return false, fmt.Errorf("cannot check dependencies: nix-env not found")
+	}
+	packageName = strings.ReplaceAll(packageName, "+", `\+`)
+	_, _, exitCode, _ := nixEnv.Run("-q", packageName)
 	return exitCode == 0, nil
 }
 

@@ -293,6 +293,8 @@ func CheckDependencies(logger *Logger) (bool, error) {
 			libraryChecker = EOpkgInstalled
 		case Crux:
 			libraryChecker = PrtGetInstalled
+		case NixOS:
+			libraryChecker = NixEnvInstalled
 		default:
 			return false, RequestSupportForDistribution(distroInfo)
 		}
