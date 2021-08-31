@@ -28,7 +28,7 @@ type Project struct {
 	Path string
 
 	// Build directory
-	BuildDir string `json:"builddir"`
+	BuildDir string
 
 	// The output filename
 	OutputFilename string `json:"outputfilename"`
