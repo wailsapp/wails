@@ -214,6 +214,6 @@ func Build(options *Options) (string, error) {
 		return "", err
 	}
 
-	return projectData.OutputFilename, nil
+	return options.CompiledBinary, nil
 
 }
