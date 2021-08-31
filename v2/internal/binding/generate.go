@@ -4,12 +4,10 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"log"
+	"github.com/wailsapp/wails/v2/internal/fs"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/wailsapp/wails/v2/internal/fs"
 
 	"github.com/leaanthony/slicer"
 )
@@ -17,7 +15,7 @@ import (
 //go:embed assets/package.json
 var packageJSON []byte
 
-func (b *Bindings) GenerateBackendJS() {
+func (b *Bindings) GenerateBackendJS(targetfile string) error {
 
 	store := b.db.store
 	var output bytes.Buffer
@@ -103,32 +101,16 @@ const backend = {`)
 export default backend;`)
 	output.WriteString("\n")
 
-	// TODO: Make this configurable in wails.json
-	dirname, err := fs.RelativeToCwd("frontend/src/backend")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if !fs.DirExists(dirname) {
-		err := fs.MkDirs(dirname)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	packageJsonFile := filepath.Join(dirname, "package.json")
+	dir := filepath.Dir(targetfile)
+	packageJsonFile := filepath.Join(dir, "package.json")
 	if !fs.FileExists(packageJsonFile) {
 		err := os.WriteFile(packageJsonFile, packageJSON, 0755)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
-	filename := filepath.Join(dirname, "index.js")
-	err = os.WriteFile(filename, output.Bytes(), 0755)
-	if err != nil {
-		log.Fatal(err)
-	}
+	return os.WriteFile(targetfile, output.Bytes(), 0755)
 }
 
 func goTypeToJSDocType(input string) string {
@@ -150,6 +132,9 @@ func goTypeToJSDocType(input string) string {
 		arrayType := goTypeToJSDocType(input[2:])
 		return "Array.<" + arrayType + ">"
 	default:
+		if strings.ContainsRune(input, '.') {
+			return strings.Split(input, ".")[1]
+		}
 		return "any"
 	}
 }

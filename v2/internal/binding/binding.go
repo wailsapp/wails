@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/leaanthony/slicer"
-
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
 
@@ -31,6 +30,9 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 
 	// No backups
 	result.converter.WithBackupDir("")
+
+	// Hack for TS compilation error
+	result.converter.AddImport("export {};")
 
 	for _, exemption := range exemptions {
 		if exemptions == nil {

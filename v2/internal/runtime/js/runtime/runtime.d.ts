@@ -14,6 +14,7 @@ declare const wailsapp__runtime: {
     EventsOnMultiple(eventName: string, callback: (data?: any) => void, maxCallbacks: number): void;
     EventsOnce(eventName: string, callback: (data?: any) => void): void;
     // Init(callback: () => void): void;
+    LogTrace(message: string): void;
     LogDebug(message: string): void;
     LogError(message: string): void;
     LogFatal(message: string): void;
