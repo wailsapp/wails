@@ -14,7 +14,7 @@ type Project struct {
 
 	/*** Application Data ***/
 	Name           string `json:"name"`
-	AssetDirectory string `json:"asset_directory"`
+	AssetDirectory string `json:"assetdir"`
 
 	BuildCommand   string `json:"frontend:build"`
 	InstallCommand string `json:"frontend:install"`
@@ -79,16 +79,10 @@ func Load(projectPath string) (*Project, error) {
 
 	// Fix up our project paths
 	result.filename = projectFile
-	result.Path = filepath.ToSlash(projectPath) + "/"
 
 	// Create default name if not given
 	if result.Name == "" {
 		result.Name = "wailsapp"
-	}
-
-	// Set default assets directory if none given
-	if result.BuildDir == "" {
-		result.BuildDir = filepath.Join(result.Path, "build")
 	}
 
 	// Fix up OutputFilename
