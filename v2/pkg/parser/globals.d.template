@@ -4,7 +4,7 @@
 
 interface Window {
 
-    backend: {
+    go: {
 
         {{- range . }}{{$packageName:=.Name}}
         {{- if .HasBoundStructs }}

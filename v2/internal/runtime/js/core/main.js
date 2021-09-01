@@ -16,8 +16,8 @@ import {AddIPCListener, SendMessage} from 'ipc';
 import * as Platform from 'platform';
 
 export function Init() {
-	// Backend is where the Go struct wrappers get bound to
-	window.backend = {};
+	// Where the Go struct wrappers get bound to
+	window.go = {};
 
 	// Initialise global if not already
 	window.wails = {

@@ -414,7 +414,7 @@ func ParseProject(projectPath string) (BoundStructs, error) {
 				inputNames = inputNames[:len(inputNames)-2]
 			}
 			println("   ", m.Name+": function("+inputNames+") {")
-			println("     return window.backend." + s.Name + "." + m.Name + "(" + inputNames + ");")
+			println("     return window.go." + s.Name + "." + m.Name + "(" + inputNames + ");")
 			print("    }")
 			if methodCount < noOfMethods-1 {
 				print(",")

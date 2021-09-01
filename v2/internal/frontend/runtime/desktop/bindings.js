@@ -11,7 +11,7 @@ The electron alternative for Go
 
 import {Call} from './calls';
 
-window.backend = {};
+window.go = {};
 
 export function SetBindings(bindingsMap) {
 	try {
@@ -20,24 +20,24 @@ export function SetBindings(bindingsMap) {
 		console.error(e);
 	}
 
-	// Initialise the backend map
-	window.backend = window.backend || {};
+	// Initialise the bindings map
+	window.go = window.go || {};
 
 	// Iterate package names
 	Object.keys(bindingsMap).forEach((packageName) => {
 
 		// Create inner map if it doesn't exist
-		window.backend[packageName] = window.backend[packageName] || {};
+		window.go[packageName] = window.go[packageName] || {};
 
 		// Iterate struct names
 		Object.keys(bindingsMap[packageName]).forEach((structName) => {
 
 			// Create inner map if it doesn't exist
-			window.backend[packageName][structName] = window.backend[packageName][structName] || {};
+			window.go[packageName][structName] = window.go[packageName][structName] || {};
 
 			Object.keys(bindingsMap[packageName][structName]).forEach((methodName) => {
 
-				window.backend[packageName][structName][methodName] = function () {
+				window.go[packageName][structName][methodName] = function () {
 
 					// No timeout by default
 					let timeout = 0;

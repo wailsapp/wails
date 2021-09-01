@@ -1,4 +1,3 @@
-
 import {ready} from '@wails/runtime';
 
 ready( () => {
@@ -13,7 +12,7 @@ ready( () => {
     let name = nameElement.value;
 
     // Call App.Greet(name)
-    window.backend.main.App.Greet(name).then((result) => {
+    window.go.main.App.Greet(name).then((result) => {
       // Update result with data back from App.Greet()
       document.getElementById("result").innerText = result;
     });

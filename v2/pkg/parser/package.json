@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "go",
   "version": "1.0.0",
   "description": "Auto generated module wrapping your Wails backend",
   "main": "index.js",

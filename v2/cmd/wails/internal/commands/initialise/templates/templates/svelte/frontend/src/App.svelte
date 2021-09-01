@@ -3,7 +3,7 @@
 	let greeting = "";
 
 	function greet() {
-		window.backend.main.App.Greet(name).then((result) => {
+		window.go.main.App.Greet(name).then((result) => {
 			greeting = result;
 		});
 	}
