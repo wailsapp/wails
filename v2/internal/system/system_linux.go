@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package system
@@ -26,11 +27,4 @@ func (i *Info) discover() error {
 	}
 
 	return nil
-}
-
-// IsAppleSilicon returns true if the app is running on Apple Silicon
-// Credit: https://www.yellowduck.be/posts/detecting-apple-silicon-via-go/
-// NOTE: Not applicable to linux
-func IsAppleSilicon() bool {
-	return false
 }

@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+var (
+	IsAppleSilicon bool
+)
+
 // Info holds information about the current operating system,
 // package manager and required dependancies
 type Info struct {

@@ -162,7 +162,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		// Calculate platform and arch
 		platformSplit := strings.Split(platform, "/")
 		buildOptions.Platform = platformSplit[0]
-		if system.IsAppleSilicon() {
+		if system.IsAppleSilicon {
 			buildOptions.Arch = "arm64"
 		} else {
 			buildOptions.Arch = runtime.GOARCH

@@ -1,9 +1,12 @@
+//go:build windows
 // +build windows
 
 package system
 
 import (
+	"github.com/leaanthony/webview2runtime"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
+	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 )
 
 func (i *Info) discover() error {
@@ -15,6 +18,7 @@ func (i *Info) discover() error {
 	}
 	i.OS = osinfo
 
+	i.Dependencies = append(i.Dependencies, checkWebView2())
 	i.Dependencies = append(i.Dependencies, checkNPM())
 	i.Dependencies = append(i.Dependencies, checkUPX())
 	i.Dependencies = append(i.Dependencies, checkDocker())
@@ -22,9 +26,20 @@ func (i *Info) discover() error {
 	return nil
 }
 
-// IsAppleSilicon returns true if the app is running on Apple Silicon
-// Credit: https://www.yellowduck.be/posts/detecting-apple-silicon-via-go/
-// NOTE: Not applicable to windows
-func IsAppleSilicon() bool {
-	return false
+func checkWebView2() *packagemanager.Dependancy {
+
+	info := webview2runtime.GetInstalledVersion()
+	version := info.Version
+	installed := version != ""
+
+	return &packagemanager.Dependancy{
+		Name:           "WebView2 ",
+		PackageName:    "N/A",
+		Installed:      installed,
+		InstallCommand: "Available at https://developer.microsoft.com/en-us/microsoft-edge/webview2/",
+		Version:        version,
+		Optional:       false,
+		External:       true,
+	}
+
 }

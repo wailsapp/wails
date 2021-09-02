@@ -1,16 +1,26 @@
+//go:build darwin
 // +build darwin
 
 package system
 
 import (
+	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 	"os/exec"
 	"strings"
-	"syscall"
-
-	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 )
+
+// Determine if the app is running on Apple Silicon
+// Credit: https://www.yellowduck.be/posts/detecting-apple-silicon-via-go/
+func init() {
+	r, err := syscall.Sysctl("sysctl.proc_translated")
+	if err != nil {
+		return false
+	}
+
+	IsAppleSilicon = r == "\x00\x00\x00" || r == "\x01\x00\x00"
+}
 
 func (i *Info) discover() error {
 	var err error
@@ -44,15 +54,4 @@ func (i *Info) discover() error {
 	i.Dependencies = append(i.Dependencies, checkNPM())
 	i.Dependencies = append(i.Dependencies, checkUPX())
 	return nil
-}
-
-// IsAppleSilicon returns true if the app is running on Apple Silicon
-// Credit: https://www.yellowduck.be/posts/detecting-apple-silicon-via-go/
-func IsAppleSilicon() bool {
-	r, err := syscall.Sysctl("sysctl.proc_translated")
-	if err != nil {
-		return false
-	}
-
-	return r == "\x00\x00\x00" || r == "\x01\x00\x00"
 }
