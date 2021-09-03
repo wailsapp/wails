@@ -27,9 +27,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	command := app.NewSubCommand("build", "Builds the application")
 
-	// Setup pack flag
-	pack := false
-	command.BoolFlag("package", "Create a platform specific package", &pack)
+	// Setup noPackage flag
+	noPackage := false
+	command.BoolFlag("noPackage", "Skips platform specific packaging", &noPackage)
 
 	compilerCommand := "go"
 	command.StringFlag("compiler", "Use a different go compiler to build, eg go1.15beta1", &compilerCommand)
@@ -148,7 +148,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			OutputFile:          outputFilename,
 			CleanBuildDirectory: cleanBuildDirectory,
 			Mode:                build.Production,
-			Pack:                pack,
+			Pack:                !noPackage,
 			LDFlags:             ldflags,
 			Compiler:            compilerCommand,
 			Verbosity:           verbosity,
