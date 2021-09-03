@@ -60,7 +60,7 @@ func generateIcoFile(options *Options) error {
 		if err != nil {
 			return err
 		}
-		err = winicon.GenerateIcon(input, output, []int{256, 128, 64, 48, 32, 16})
+		err = winicon.GenerateIcon(input, output, []int{512, 256, 128, 64, 48, 32, 16})
 		if err != nil {
 			return err
 		}

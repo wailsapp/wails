@@ -6,7 +6,6 @@ import (
 	"github.com/leaanthony/gosod"
 	"os"
 	"path/filepath"
-	"text/template"
 )
 
 //go:embed build
@@ -33,38 +32,7 @@ func Install(targetDir string, projectName string) error {
 		return err
 	}
 
-	// Rename the rc file
-	rc := filepath.Join(windowsDir, "wails.rc")
-	targetFile = filepath.Join(windowsDir, projectName+".rc")
-	err = os.Rename(rc, targetFile)
-	if err != nil {
-		return err
-	}
 	return nil
-}
-
-// RegenerateRCFile will recreate the RC file
-func RegenerateRCFile(projectDir string, projectName string) error {
-	targetFile, err := os.OpenFile(filepath.Join(projectDir, "build", "windows", projectName+".rc"), os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-	data := &assetData{Name: projectName}
-	templateData, err := assets.ReadFile("build/windows/wails.rc.tmpl")
-	if err != nil {
-		return err
-	}
-
-	tmpl, err := template.New("rc").Parse(string(templateData))
-	if err != nil {
-		return err
-	}
-	err = tmpl.Execute(targetFile, data)
-	if err != nil {
-		return err
-	}
-	return nil
-
 }
 
 func RegenerateManifest(target string) error {
