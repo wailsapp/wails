@@ -71,6 +71,11 @@ func Build(options *Options) (string, error) {
 	}
 	options.ProjectData = projectData
 
+	// Add default path if it doesn't exist
+	if projectData.Path == "" {
+		projectData.Path = cwd
+	}
+
 	// Set build directory
 	options.BuildDirectory = filepath.Join(options.ProjectData.Path, "build", "bin")
 
