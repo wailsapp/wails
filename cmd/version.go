@@ -1,4 +1,4 @@
 package cmd
 
 // Version - Wails version
-const Version = "v1.16.6"
+const Version = "v1.16.7"
