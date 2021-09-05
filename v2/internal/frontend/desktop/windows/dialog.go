@@ -41,6 +41,7 @@ func (f *Frontend) OpenFileDialog(options frontend.OpenDialogOptions) (string, e
 		Folder:      options.DefaultDirectory,
 		FileFilters: convertFilters(options.Filters),
 		FileName:    options.DefaultFilename,
+		Title:       options.Title,
 	}
 	thisdialog, err := cfd.NewOpenFileDialog(config)
 	if err != nil {
