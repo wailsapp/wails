@@ -35,6 +35,8 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 		logger.Println("Done.")
 
+		logger.Println("")
+
 		// Start a new tabwriter
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 8, 8, 0, '\t', 0)

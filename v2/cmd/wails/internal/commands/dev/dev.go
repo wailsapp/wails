@@ -69,14 +69,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	extensions := "go"
 	command.StringFlag("e", "Extensions to trigger rebuilds (comma separated) eg go", &extensions)
 
-	// extensions to trigger reloads in the application
-	reloadEnabled := true
-	command.BoolFlag("r", "Reload on asset changes", &reloadEnabled)
-
-	// extensions to trigger rebuilds
-	showWarnings := false
-	command.BoolFlag("w", "Show warnings", &showWarnings)
-
 	openBrowser := false
 	command.BoolFlag("browser", "Open application in browser", &openBrowser)
 
@@ -84,11 +76,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.BoolFlag("noreload", "Disable reload on asset change", &noreload)
 
 	wailsjsdir := ""
-	command.StringFlag("wailsjsdir", "Directory to generate api module", &wailsjsdir)
+	command.StringFlag("wailsjsdir", "Directory to generate the Wails JS modules", &wailsjsdir)
 
 	// Verbosity
 	verbosity := 1
-	command.IntFlag("v", "Verbosity level (0 - silent, 1 - default, 2 - verbose)", &verbosity)
+	command.IntFlag("v", "Verbosity level (0 - silent, 1 - standard, 2 - verbose)", &verbosity)
 
 	loglevel := ""
 	command.StringFlag("loglevel", "Loglevel to use - Trace, Dev, Info, Warning, Error", &loglevel)

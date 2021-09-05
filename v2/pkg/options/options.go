@@ -10,7 +10,6 @@ import (
 
 	"github.com/imdario/mergo"
 	"github.com/wailsapp/wails/v2/pkg/logger"
-	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
 
 // App contains options for creating the App
@@ -40,7 +39,7 @@ type App struct {
 	//ContextMenus []*menu.ContextMenu
 	//TrayMenus    []*menu.TrayMenu
 	Windows *windows.Options
-	Mac     *mac.Options
+	//Mac     *mac.Options
 }
 
 // MergeDefaults will set the minimum default values for an application
