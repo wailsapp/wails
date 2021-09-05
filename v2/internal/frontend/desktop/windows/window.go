@@ -23,9 +23,12 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 	result.frontendOptions = options
 	result.SetIsForm(true)
 
-	exStyle := w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
-	if options.Windows.WindowBackgroundIsTranslucent {
-		exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
+	var exStyle int
+	if options.Windows != nil {
+		exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
+		if options.Windows.WindowBackgroundIsTranslucent {
+			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
+		}
 	}
 
 	var dwStyle = w32.WS_OVERLAPPEDWINDOW
@@ -54,12 +57,14 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 
 	result.SetFont(winc.DefaultFont)
 
-	if options.Windows.WindowBackgroundIsTranslucent {
-		result.SetTranslucentBackground()
-	}
+	if options.Windows != nil {
+		if options.Windows.WindowBackgroundIsTranslucent {
+			result.SetTranslucentBackground()
+		}
 
-	if options.Windows.DisableWindowIcon {
-		result.DisableIcon()
+		if options.Windows.DisableWindowIcon {
+			result.DisableIcon()
+		}
 	}
 
 	if options.Fullscreen {
