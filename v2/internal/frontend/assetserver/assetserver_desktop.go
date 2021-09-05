@@ -58,19 +58,13 @@ func (d *DesktopAssetServer) SetAssetDir(assetdir string) {
 	d.assetdir = assetdir
 }
 
-func processAssets(assets embed.FS) (debme.Debme, error) {
-
-	result, err := debme.FS(assets, ".")
-	if err != nil {
-		return result, err
-	}
-	// Find index.html
+func PathToIndexHTML(assets embed.FS) (string, error) {
 	stat, err := fs.Stat(assets, "index.html")
 	if stat != nil {
-		return debme.FS(assets, ".")
+		return ".", nil
 	}
 	var indexFiles slicer.StringSlicer
-	err = fs.WalkDir(result, ".", func(path string, d fs.DirEntry, err error) error {
+	err = fs.WalkDir(assets, ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -80,14 +74,28 @@ func processAssets(assets embed.FS) (debme.Debme, error) {
 		return nil
 	})
 	if err != nil {
-		return debme.Debme{}, err
+		return "", err
 	}
 
 	if indexFiles.Length() > 1 {
-		return debme.Debme{}, fmt.Errorf("multiple 'index.html' files found in assets")
+		return "", fmt.Errorf("multiple 'index.html' files found in assets")
 	}
 
 	path, _ := filepath.Split(indexFiles.AsSlice()[0])
+	return path, nil
+}
+
+func processAssets(assets embed.FS) (debme.Debme, error) {
+
+	result, err := debme.FS(assets, ".")
+	if err != nil {
+		return result, err
+	}
+	// Find index.html
+	path, err := PathToIndexHTML(assets)
+	if err != nil {
+		return debme.Debme{}, err
+	}
 	return debme.FS(assets, path)
 }
 
