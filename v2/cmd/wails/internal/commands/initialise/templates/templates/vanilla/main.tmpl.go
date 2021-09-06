@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"log"
 
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
@@ -8,8 +9,10 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
+
+//go:embed frontend/src
+var assets embed.FS
 
 func main() {
 
@@ -30,15 +33,11 @@ func main() {
 		StartHidden:       false,
 		HideWindowOnClose: false,
 		RGBA:              0x000000FF,
+		Assets:            assets,
 		Windows: &windows.Options{
-			WebviewIsTransparent:          true,
-			WindowBackgroundIsTranslucent: true,
-			DisableWindowIcon:             true,
-		},
-		Mac: &mac.Options{
-			WebviewIsTransparent:          true,
-			WindowBackgroundIsTranslucent: true,
-			TitleBar:                      mac.TitleBarHiddenInset(),
+			WebviewIsTransparent:          false,
+			WindowBackgroundIsTranslucent: false,
+			DisableWindowIcon:             false,
 		},
 		LogLevel:   logger.DEBUG,
 		OnStartup:  app.startup,
