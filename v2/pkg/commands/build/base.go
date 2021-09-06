@@ -394,7 +394,8 @@ func (b *BaseBuilder) NpmInstallUsingCommand(sourceDir string, installCommand st
 
 	// Check package.json exists
 	if !fs.FileExists(packageJSON) {
-		return fmt.Errorf("unable to load package.json at '%s'", packageJSON)
+		// No package.json, no install
+		return nil
 	}
 
 	install := false
