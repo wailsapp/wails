@@ -1,7 +1,7 @@
 package wv2runtime
 
 import (
-	"github.com/jchv/go-webview2/webviewloader"
+	"github.com/leaanthony/go-webview2/webviewloader"
 	"github.com/leaanthony/webview2runtime"
 )
 

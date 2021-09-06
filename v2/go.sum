@@ -125,6 +125,8 @@ github.com/leaanthony/go-ansi-parser v1.0.1 h1:97v6c5kYppVsbScf4r/VZdXyQ21KQIfeQ
 github.com/leaanthony/go-ansi-parser v1.0.1/go.mod h1:7arTzgVI47srICYhvgUV4CGd063sGEeoSlych5yeSPM=
 github.com/leaanthony/go-common-file-dialog v1.0.3 h1:O0uGjKnWtdEADGrkg+TyAAbZylykMwwx/MNEXn9fp+Y=
 github.com/leaanthony/go-common-file-dialog v1.0.3/go.mod h1:TGhEc9eSJgRsupZ+iH1ZgAOnEo9zp05cRH2j08RPrF0=
+github.com/leaanthony/go-webview2 v0.0.0-20210906112707-5ca00d49e830 h1:96/BSuQHPLQHkibP8PMs/BkSTHDL/yZoq4fGinEjb2w=
+github.com/leaanthony/go-webview2 v0.0.0-20210906112707-5ca00d49e830/go.mod h1:jVGFkh5EgsmI4X5Z/XsALrCELLEqrbc4dP3EGO9UY78=
 github.com/leaanthony/gosod v1.0.1 h1:F+4c3DmEBfigi7oAswCV2RpQ+k4DcNbhuCZUGdBHacQ=
 github.com/leaanthony/gosod v1.0.1/go.mod h1:W8RyeSFBXu7RpIxPGEJfW4moSyGGEjlJMLV25wEbAdU=
 github.com/leaanthony/idgen v1.0.0 h1:IZreR+JGEzFV4yeVuBZA25gM0keUoFy+RDUldncQ+Jw=
@@ -136,6 +138,8 @@ github.com/leaanthony/spinner v0.5.3/go.mod h1:oHlrvWicr++CVV7ALWYi+qHk/XNA91D9I
 github.com/leaanthony/synx v0.1.0/go.mod h1:Iz7eybeeG8bdq640iR+CwYb8p+9EOsgMWghkSRyZcqs=
 github.com/leaanthony/webview2runtime v1.1.0 h1:N0pv55ift8XtqozIp4PNOtRCJ/Qdd/qzx80lUpalS4c=
 github.com/leaanthony/webview2runtime v1.1.0/go.mod h1:hH9GnWCve3DYzNaPOcPbhHQ7fodXR1QJNsnwixid4Tk=
+github.com/leaanthony/winc v0.0.0-20210906113646-fd400754f6ba h1:JalbOARv2XoT3RtJg7XGKKYcp7IndycC7pccLlfVRZI=
+github.com/leaanthony/winc v0.0.0-20210906113646-fd400754f6ba/go.mod h1:KEbMsKoznsebyGHwLk5LqkFOxL5uXSRdvpP4+avmAMs=
 github.com/leaanthony/wincursor v0.1.0/go.mod h1:7TVwwrzSH/2Y9gLOGH+VhA+bZhoWXBRgbGNTMk+yimE=
 github.com/leaanthony/winicon v1.0.0 h1:ZNt5U5dY71oEoKZ97UVwJRT4e+5xo5o/ieKuHuk8NqQ=
 github.com/leaanthony/winicon v1.0.0/go.mod h1:en5xhijl92aphrJdmRPlh4NI1L6wq3gEm0LpXAPghjU=

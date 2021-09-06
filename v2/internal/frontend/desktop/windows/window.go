@@ -3,8 +3,8 @@
 package windows
 
 import (
-	"github.com/tadvi/winc"
-	"github.com/tadvi/winc/w32"
+	"github.com/leaanthony/winc"
+	"github.com/leaanthony/winc/w32"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"sync"

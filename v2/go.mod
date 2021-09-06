@@ -16,22 +16,22 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/imdario/mergo v0.3.12
 	github.com/jackmordaunt/icns v1.0.0
-	github.com/jchv/go-webview2 v0.0.0-20210720204005-cbb937ae0f7f
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/leaanthony/clir v1.0.4
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/go-common-file-dialog v1.0.3
+	github.com/leaanthony/go-webview2 v0.0.0-20210906112707-5ca00d49e830
 	github.com/leaanthony/gosod v1.0.1
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/webview2runtime v1.1.0
+	github.com/leaanthony/winc v0.0.0-20210906113646-fd400754f6ba
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2
 	github.com/pkg/errors v0.9.1
-	github.com/tadvi/winc v0.0.0-20190405175627-5454f291903d
 	github.com/tc-hib/winres v0.1.5
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
@@ -84,7 +84,3 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
-
-replace github.com/tadvi/winc v0.0.0-20190405175627-5454f291903d => C:\Users\leaan\Documents\wails-v2-beta\winc
-
-replace github.com/jchv/go-webview2 v0.0.0-20210720204005-cbb937ae0f7f => C:\Users\leaan\Documents\wails-v2-beta\go-webview2

@@ -3,7 +3,7 @@
 package windows
 
 import (
-	"github.com/tadvi/winc"
+	"github.com/leaanthony/winc"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
