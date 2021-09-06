@@ -342,17 +342,15 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		result.servingFromDisk = true
 	}
 
-	if appoptions.Assets != nil {
-		bindingsJSON, err := appBindings.ToJSON()
-		if err != nil {
-			log.Fatal(err)
-		}
-		assets, err := assetserver.NewDesktopAssetServer(ctx, *appoptions.Assets, bindingsJSON)
-		if err != nil {
-			log.Fatal(err)
-		}
-		result.assets = assets
+	bindingsJSON, err := appBindings.ToJSON()
+	if err != nil {
+		log.Fatal(err)
 	}
+	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON)
+	if err != nil {
+		log.Fatal(err)
+	}
+	result.assets = assets
 
 	return result
 }

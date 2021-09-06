@@ -27,7 +27,7 @@ type App struct {
 	StartHidden       bool
 	HideWindowOnClose bool
 	RGBA              int
-	Assets            *embed.FS
+	Assets            embed.FS
 	Menu              *menu.Menu
 	Logger            logger.Logger `json:"-"`
 	LogLevel          logger.LogLevel
