@@ -1,5 +1,7 @@
 //go:build dev
 
+// Package devserver provides a web-based frontend so that
+// it is possible to run a Wails app in a browsers.
 package devserver
 
 import (
@@ -23,7 +25,7 @@ import (
 	"time"
 )
 
-type DevServer struct {
+type DevWebServer struct {
 	server           *fiber.App
 	ctx              context.Context
 	appoptions       *options.App
@@ -40,11 +42,11 @@ type DevServer struct {
 	desktopFrontend frontend.Frontend
 }
 
-func (d *DevServer) WindowReload() {
+func (d *DevWebServer) WindowReload() {
 	d.broadcast("reload")
 }
 
-func (d *DevServer) Run(ctx context.Context) error {
+func (d *DevWebServer) Run(ctx context.Context) error {
 	d.ctx = ctx
 
 	d.server.Get("/wails/reload", func(fctx *fiber.Ctx) error {
@@ -136,111 +138,111 @@ func (d *DevServer) Run(ctx context.Context) error {
 	return err
 }
 
-func (d *DevServer) Quit() {
+func (d *DevWebServer) Quit() {
 	d.desktopFrontend.Quit()
 }
 
-func (d *DevServer) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
+func (d *DevWebServer) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
 	return d.desktopFrontend.OpenFileDialog(dialogOptions)
 }
 
-func (d *DevServer) OpenMultipleFilesDialog(dialogOptions frontend.OpenDialogOptions) ([]string, error) {
+func (d *DevWebServer) OpenMultipleFilesDialog(dialogOptions frontend.OpenDialogOptions) ([]string, error) {
 	return d.OpenMultipleFilesDialog(dialogOptions)
 }
 
-func (d *DevServer) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
+func (d *DevWebServer) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
 	return d.OpenDirectoryDialog(dialogOptions)
 }
 
-func (d *DevServer) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (string, error) {
+func (d *DevWebServer) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (string, error) {
 	return d.desktopFrontend.SaveFileDialog(dialogOptions)
 }
 
-func (d *DevServer) MessageDialog(dialogOptions frontend.MessageDialogOptions) (string, error) {
+func (d *DevWebServer) MessageDialog(dialogOptions frontend.MessageDialogOptions) (string, error) {
 	return d.desktopFrontend.MessageDialog(dialogOptions)
 }
 
-func (d *DevServer) WindowSetTitle(title string) {
+func (d *DevWebServer) WindowSetTitle(title string) {
 	d.desktopFrontend.WindowSetTitle(title)
 }
 
-func (d *DevServer) WindowShow() {
+func (d *DevWebServer) WindowShow() {
 	d.desktopFrontend.WindowShow()
 }
 
-func (d *DevServer) WindowHide() {
+func (d *DevWebServer) WindowHide() {
 	d.desktopFrontend.WindowHide()
 }
 
-func (d *DevServer) WindowCenter() {
+func (d *DevWebServer) WindowCenter() {
 	d.desktopFrontend.WindowCenter()
 }
 
-func (d *DevServer) WindowMaximise() {
+func (d *DevWebServer) WindowMaximise() {
 	d.desktopFrontend.WindowMaximise()
 }
 
-func (d *DevServer) WindowUnmaximise() {
+func (d *DevWebServer) WindowUnmaximise() {
 	d.desktopFrontend.WindowUnmaximise()
 }
 
-func (d *DevServer) WindowMinimise() {
+func (d *DevWebServer) WindowMinimise() {
 	d.desktopFrontend.WindowMinimise()
 }
 
-func (d *DevServer) WindowUnminimise() {
+func (d *DevWebServer) WindowUnminimise() {
 	d.desktopFrontend.WindowUnminimise()
 }
 
-func (d *DevServer) WindowSetPos(x int, y int) {
+func (d *DevWebServer) WindowSetPos(x int, y int) {
 	d.desktopFrontend.WindowSetPos(x, y)
 }
 
-func (d *DevServer) WindowGetPos() (int, int) {
+func (d *DevWebServer) WindowGetPos() (int, int) {
 	return d.desktopFrontend.WindowGetPos()
 }
 
-func (d *DevServer) WindowSetSize(width int, height int) {
+func (d *DevWebServer) WindowSetSize(width int, height int) {
 	d.desktopFrontend.WindowSetSize(width, height)
 }
 
-func (d *DevServer) WindowGetSize() (int, int) {
+func (d *DevWebServer) WindowGetSize() (int, int) {
 	return d.desktopFrontend.WindowGetSize()
 }
 
-func (d *DevServer) WindowSetMinSize(width int, height int) {
+func (d *DevWebServer) WindowSetMinSize(width int, height int) {
 	d.desktopFrontend.WindowSetMinSize(width, height)
 }
 
-func (d *DevServer) WindowSetMaxSize(width int, height int) {
+func (d *DevWebServer) WindowSetMaxSize(width int, height int) {
 	d.desktopFrontend.WindowSetMaxSize(width, height)
 }
 
-func (d *DevServer) WindowFullscreen() {
+func (d *DevWebServer) WindowFullscreen() {
 	d.desktopFrontend.WindowFullscreen()
 }
 
-func (d *DevServer) WindowUnFullscreen() {
+func (d *DevWebServer) WindowUnFullscreen() {
 	d.desktopFrontend.WindowUnFullscreen()
 }
 
-func (d *DevServer) WindowSetColour(colour int) {
+func (d *DevWebServer) WindowSetColour(colour int) {
 	d.desktopFrontend.WindowSetColour(colour)
 }
 
-func (d *DevServer) SetApplicationMenu(menu *menu.Menu) {
+func (d *DevWebServer) SetApplicationMenu(menu *menu.Menu) {
 	d.desktopFrontend.SetApplicationMenu(menu)
 }
 
-func (d *DevServer) UpdateApplicationMenu() {
+func (d *DevWebServer) UpdateApplicationMenu() {
 	d.desktopFrontend.UpdateApplicationMenu()
 }
 
-func (d *DevServer) Notify(name string, data ...interface{}) {
+func (d *DevWebServer) Notify(name string, data ...interface{}) {
 	d.notify(name, data...)
 }
 
-func (d *DevServer) loadAsset(ctx *fiber.Ctx) error {
+func (d *DevWebServer) loadAsset(ctx *fiber.Ctx) error {
 	data, mimetype, err := d.assetServer.Load(ctx.Path())
 	if err != nil {
 		_, ok := err.(*fs.PathError)
@@ -265,11 +267,11 @@ func (d *DevServer) loadAsset(ctx *fiber.Ctx) error {
 	return nil
 }
 
-func (d *DevServer) LogInfo(message string, args ...interface{}) {
-	d.logger.Info("[DevServer] "+message, args...)
+func (d *DevWebServer) LogInfo(message string, args ...interface{}) {
+	d.logger.Info("[DevWebServer] "+message, args...)
 }
 
-func (d *DevServer) newWebsocketSession(c *websocket.Conn) {
+func (d *DevWebServer) newWebsocketSession(c *websocket.Conn) {
 	d.socketMutex.Lock()
 	defer d.socketMutex.Unlock()
 	c.SetCloseHandler(func(code int, text string) error {
@@ -288,7 +290,7 @@ type EventNotify struct {
 	Data []interface{} `json:"data"`
 }
 
-func (d *DevServer) broadcast(message string) {
+func (d *DevWebServer) broadcast(message string) {
 	d.socketMutex.Lock()
 	defer d.socketMutex.Unlock()
 	for client := range d.websocketClients {
@@ -300,7 +302,7 @@ func (d *DevServer) broadcast(message string) {
 	}
 }
 
-func (d *DevServer) notify(name string, data ...interface{}) {
+func (d *DevWebServer) notify(name string, data ...interface{}) {
 	// Notify
 	notification := EventNotify{
 		Name: name,
@@ -314,7 +316,7 @@ func (d *DevServer) notify(name string, data ...interface{}) {
 	d.broadcast("n" + string(payload))
 }
 
-func (d *DevServer) broadcastExcludingSender(message string, sender *websocket.Conn) {
+func (d *DevWebServer) broadcastExcludingSender(message string, sender *websocket.Conn) {
 	d.socketMutex.Lock()
 	defer d.socketMutex.Unlock()
 	for client := range d.websocketClients {
@@ -329,7 +331,7 @@ func (d *DevServer) broadcastExcludingSender(message string, sender *websocket.C
 	}
 }
 
-func (d *DevServer) notifyExcludingSender(eventMessage []byte, sender *websocket.Conn) {
+func (d *DevWebServer) notifyExcludingSender(eventMessage []byte, sender *websocket.Conn) {
 	message := "n" + string(eventMessage[2:])
 	d.broadcastExcludingSender(message, sender)
 
@@ -342,8 +344,8 @@ func (d *DevServer) notifyExcludingSender(eventMessage []byte, sender *websocket
 	d.desktopFrontend.Notify(notifyMessage.Name, notifyMessage.Data...)
 }
 
-func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher, menuManager *menumanager.Manager, desktopFrontend frontend.Frontend) *DevServer {
-	result := &DevServer{
+func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher, menuManager *menumanager.Manager, desktopFrontend frontend.Frontend) *DevWebServer {
+	result := &DevWebServer{
 		ctx:             ctx,
 		desktopFrontend: desktopFrontend,
 		appoptions:      appoptions,
