@@ -22,6 +22,8 @@ type Project struct {
 	// Directory to generate the API Module
 	WailsJSDir string `json:"wailsjsdir"`
 
+	Version string `json:"version"`
+
 	/*** Internal Data ***/
 
 	// The path to the project directory
@@ -79,6 +81,10 @@ func Load(projectPath string) (*Project, error) {
 
 	// Fix up our project paths
 	result.filename = projectFile
+
+	if result.Version == "" {
+		result.Version = "2"
+	}
 
 	// Create default name if not given
 	if result.Name == "" {
