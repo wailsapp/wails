@@ -1,11 +1,11 @@
 {
-    "name": "{{.ProjectName}}",
-    "outputfilename": "{{.BinaryName}}",
-    "html": "frontend/dist/index.html",
-    "frontend:build": "npm run build",
-    "frontend:install": "npm install",
-    "author": {
-        "name": "{{.AuthorName}}",
-        "email": "{{.AuthorEmail}}"
-    }
+  "name": "{{.ProjectName}}",
+  "outputfilename": "{{.BinaryName}}",
+  "assetdir": "frontend/dist",
+  "frontend:build": "npm run build",
+  "frontend:install": "npm install",
+  "author": {
+    "name": "{{.AuthorName}}",
+    "email": "{{.AuthorEmail}}"
+  }
 }
