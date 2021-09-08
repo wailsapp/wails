@@ -40,8 +40,14 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 	result.SetHandle(winc.CreateWindow("wailsWindow", parent, uint(exStyle), uint(dwStyle)))
 	result.SetParent(parent)
 
-	if ico, err := winc.NewIconFromResource(winc.GetAppInstance(), uint16(winc.AppIconID)); err == nil {
-		result.SetIcon(0, ico)
+	loadIcon := true
+	if options.Windows != nil && options.Windows.DisableWindowIcon == true {
+		loadIcon = false
+	}
+	if loadIcon {
+		if ico, err := winc.NewIconFromResource(winc.GetAppInstance(), uint16(winc.AppIconID)); err == nil {
+			result.SetIcon(0, ico)
+		}
 	}
 
 	result.SetSize(options.Width, options.Height)
@@ -50,12 +56,6 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 	result.EnableMaxButton(!options.DisableResize)
 	result.SetMinSize(options.MinWidth, options.MinHeight)
 	result.SetMaxSize(options.MaxWidth, options.MaxHeight)
-
-	// Dlg forces display of focus rectangles, as soon as the user starts to type.
-	w32.SendMessage(result.Handle(), w32.WM_CHANGEUISTATE, w32.UIS_INITIALIZE, 0)
-	winc.RegMsgHandler(result)
-
-	result.SetFont(winc.DefaultFont)
 
 	if options.Windows != nil {
 		if options.Windows.WindowBackgroundIsTranslucent {
@@ -66,6 +66,12 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 			result.DisableIcon()
 		}
 	}
+
+	// Dlg forces display of focus rectangles, as soon as the user starts to type.
+	w32.SendMessage(result.Handle(), w32.WM_CHANGEUISTATE, w32.UIS_INITIALIZE, 0)
+	winc.RegMsgHandler(result)
+
+	result.SetFont(winc.DefaultFont)
 
 	if options.Fullscreen {
 		result.Fullscreen()
