@@ -2,6 +2,8 @@ package assetserver
 
 import (
 	"net/http"
+	"path/filepath"
+	"strings"
 	"sync"
 )
 import "github.com/gabriel-vasile/mimetype"
@@ -25,6 +27,10 @@ func GetMimetype(filename string, data []byte) string {
 		result = http.DetectContentType(data)
 	} else {
 		result = detect.String()
+	}
+
+	if filepath.Ext(filename) == ".css" && strings.HasPrefix(result, "text/plain") {
+		result = strings.Replace(result, "text/plain", "text/css", 1)
 	}
 
 	if result == "" {
