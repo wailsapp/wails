@@ -225,6 +225,15 @@ func Install(options *Options) (bool, error) {
 					log.Fatal(err)
 				}
 			}(tempdir)
+			if err != nil {
+				return false, err
+			}
+			// Remove the .git directory
+			err = os.RemoveAll(filepath.Join(tempdir, ".git"))
+			if err != nil {
+				return false, err
+			}
+
 			templateFS := os.DirFS(tempdir)
 			template, err = parseTemplate(templateFS)
 			if err != nil {
