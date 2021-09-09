@@ -9,6 +9,11 @@ import (
 )
 
 func getFrontend(ctx context.Context) frontend.Frontend {
+	if ctx == nil {
+		pc, _, _, _ := goruntime.Caller(1)
+		funcName := goruntime.FuncForPC(pc).Name()
+		log.Fatalf("cannot call '%s': context is nil", funcName)
+	}
 	result := ctx.Value("frontend")
 	if result != nil {
 		return result.(frontend.Frontend)
@@ -19,6 +24,11 @@ func getFrontend(ctx context.Context) frontend.Frontend {
 	return nil
 }
 func getLogger(ctx context.Context) *logger.Logger {
+	if ctx == nil {
+		pc, _, _, _ := goruntime.Caller(1)
+		funcName := goruntime.FuncForPC(pc).Name()
+		log.Fatalf("cannot call '%s': context is nil", funcName)
+	}
 	result := ctx.Value("logger")
 	if result != nil {
 		return result.(*logger.Logger)
@@ -30,6 +40,11 @@ func getLogger(ctx context.Context) *logger.Logger {
 }
 
 func getEvents(ctx context.Context) frontend.Events {
+	if ctx == nil {
+		pc, _, _, _ := goruntime.Caller(1)
+		funcName := goruntime.FuncForPC(pc).Name()
+		log.Fatalf("cannot call '%s': context is nil", funcName)
+	}
 	result := ctx.Value("events")
 	if result != nil {
 		return result.(frontend.Events)
@@ -42,6 +57,9 @@ func getEvents(ctx context.Context) frontend.Events {
 
 // Quit the application
 func Quit(ctx context.Context) {
+	if ctx == nil {
+		log.Fatalf("cannot call Quit: context is nil")
+	}
 	appFrontend := getFrontend(ctx)
 	appFrontend.Quit()
 }
