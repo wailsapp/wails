@@ -50,7 +50,7 @@ if (window.crypto) {
  *
  * @export
  * @param {string} name
- * @param {string} args
+ * @param {any=} args
  * @param {number=} timeout
  * @returns
  */

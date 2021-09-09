@@ -12,22 +12,20 @@ import * as Log from './log';
 import {eventListeners, EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnce, EventsOnMultiple} from './events';
 import {Callback, callbacks} from './calls';
 import {SetBindings} from "./bindings";
-import {WindowReload} from "./window";
+import * as Window from "./window";
 
-// Backend is where the Go struct wrappers get bound to
-window.backend = {};
-
+// The JS runtime
 window.runtime = {
     ...Log,
+    ...Window,
     EventsOn,
     EventsOnce,
     EventsOnMultiple,
     EventsEmit,
     EventsOff,
-    WindowReload,
 };
 
-// Initialise global if not already
+// Internal wails endpoints
 window.wails = {
     Callback,
     EventsNotify,
@@ -36,6 +34,7 @@ window.wails = {
     callbacks
 };
 
+// Set the bindings
 window.wails.SetBindings(window.wailsbindings);
 delete window.wails.SetBindings;
 

@@ -3,6 +3,8 @@ package dispatcher
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/frontend"
+	"strings"
 )
 
 type callMessage struct {
@@ -11,29 +13,38 @@ type callMessage struct {
 	CallbackID string            `json:"callbackID"`
 }
 
-func (d *Dispatcher) processCallMessage(message string) (string, error) {
+func (d *Dispatcher) processCallMessage(message string, sender frontend.Frontend) (string, error) {
 
 	var payload callMessage
 	err := json.Unmarshal([]byte(message[1:]), &payload)
 	if err != nil {
 		return "", err
 	}
-	// Lookup method
-	registeredMethod := d.bindingsDB.GetMethod(payload.Name)
 
-	// Check we have it
-	if registeredMethod == nil {
-		return "", fmt.Errorf("method '%s' not registered", payload.Name)
+	var result interface{}
+
+	// Handle different calls
+	switch true {
+	case strings.HasPrefix(payload.Name, systemCallPrefix):
+		result, err = d.processSystemCall(payload, sender)
+	default:
+		// Lookup method
+		registeredMethod := d.bindingsDB.GetMethod(payload.Name)
+
+		// Check we have it
+		if registeredMethod == nil {
+			return "", fmt.Errorf("method '%s' not registered", payload.Name)
+		}
+
+		args, err2 := registeredMethod.ParseArgs(payload.Args)
+		if err2 != nil {
+			errmsg := fmt.Errorf("error parsing arguments: %s", err2.Error())
+			result, _ := d.NewErrorCallback(errmsg.Error(), payload.CallbackID)
+			return result, errmsg
+		}
+		result, err = registeredMethod.Call(args)
 	}
 
-	args, err := registeredMethod.ParseArgs(payload.Args)
-	if err != nil {
-		errmsg := fmt.Errorf("error parsing arguments: %s", err.Error())
-		result, _ := d.NewErrorCallback(errmsg.Error(), payload.CallbackID)
-		return result, errmsg
-	}
-
-	result, err := registeredMethod.Call(args)
 	callbackMessage := &CallbackMessage{
 		CallbackID: payload.CallbackID,
 	}

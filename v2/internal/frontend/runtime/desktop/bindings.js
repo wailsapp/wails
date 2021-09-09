@@ -11,6 +11,7 @@ The electron alternative for Go
 
 import {Call} from './calls';
 
+// This is where we bind go method wrappers
 window.go = {};
 
 export function SetBindings(bindingsMap) {

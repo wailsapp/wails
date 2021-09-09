@@ -1,3 +1,14 @@
+interface Position {
+    x: number;
+    y: number;
+}
+
+interface Size {
+    w: number;
+    h: number;
+}
+
+
 interface runtime {
     EventsEmit(eventName: string, data?: any): void;
 
@@ -20,6 +31,40 @@ interface runtime {
     LogWarning(message: string): void;
 
     WindowReload(): void;
+
+    WindowCenter(): void
+
+    WindowSetTitle(title: string): void
+
+    WindowFullscreen(): void
+
+    WindowUnFullscreen(): void
+
+    WindowSetSize(width: number, height: number): Promise<Size>
+
+    WindowGetSize(): Promise<Size>
+
+    WindowSetMaxSize(width: number, height: number): void
+
+    WindowSetMinSize(width: number, height: number): void
+
+    WindowSetPosition(x: number, y: number): void
+
+    WindowGetPosition(): Promise<Position>
+
+    WindowHide(): void
+
+    WindowShow(): void
+
+    WindowMaximise(): void
+
+    WindowUnmaximise(): void
+
+    WindowMinimise(): void
+
+    WindowUnminimise(): void
+
+    WindowClose(): void
 }
 
 declare global {
