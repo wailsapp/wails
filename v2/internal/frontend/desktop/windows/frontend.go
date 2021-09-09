@@ -114,12 +114,16 @@ func (f *Frontend) WindowSetTitle(title string) {
 
 func (f *Frontend) WindowFullscreen() {
 	runtime.LockOSThread()
+	f.mainWindow.SetMaxSize(0, 0)
+	f.mainWindow.SetMinSize(0, 0)
 	f.mainWindow.Fullscreen()
 }
 
 func (f *Frontend) WindowUnFullscreen() {
 	runtime.LockOSThread()
 	f.mainWindow.UnFullscreen()
+	f.mainWindow.SetMaxSize(f.maxWidth, f.maxHeight)
+	f.mainWindow.SetMinSize(f.minWidth, f.minHeight)
 }
 
 func (f *Frontend) WindowShow() {
@@ -150,10 +154,14 @@ func (f *Frontend) WindowUnminimise() {
 
 func (f *Frontend) WindowSetMinSize(width int, height int) {
 	runtime.LockOSThread()
+	f.minWidth = width
+	f.minHeight = height
 	f.mainWindow.SetMinSize(width, height)
 }
 func (f *Frontend) WindowSetMaxSize(width int, height int) {
 	runtime.LockOSThread()
+	f.maxWidth = width
+	f.maxHeight = height
 	f.mainWindow.SetMaxSize(width, height)
 }
 
@@ -340,6 +348,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
+		minHeight:       appoptions.MinHeight,
+		minWidth:        appoptions.MinWidth,
+		maxHeight:       appoptions.MaxHeight,
+		maxWidth:        appoptions.MaxWidth,
 	}
 
 	// Check if we have been given a directory to serve assets from.
