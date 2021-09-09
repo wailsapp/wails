@@ -423,6 +423,11 @@ func (b *BaseBuilder) NpmInstallUsingCommand(sourceDir string, installCommand st
 		install = true
 	}
 
+	// check if forced install
+	if b.options.ForceBuild {
+		install = true
+	}
+
 	// Shortcut installation
 	if install == false {
 		return nil

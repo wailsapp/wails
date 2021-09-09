@@ -78,12 +78,19 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	wailsjsdir := ""
 	command.StringFlag("wailsjsdir", "Directory to generate the Wails JS modules", &wailsjsdir)
 
+	// tags to pass to `go`
+	tags := ""
+	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &tags)
+
 	// Verbosity
 	verbosity := 1
 	command.IntFlag("v", "Verbosity level (0 - silent, 1 - standard, 2 - verbose)", &verbosity)
 
 	loglevel := ""
 	command.StringFlag("loglevel", "Loglevel to use - Trace, Dev, Info, Warning, Error", &loglevel)
+
+	forceBuild := false
+	command.BoolFlag("f", "Force build application", &forceBuild)
 
 	command.Action(func() error {
 
@@ -136,6 +143,21 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			}
 		}
 
+		buildOptions := &build.Options{
+			Logger:         logger,
+			OutputType:     "dev",
+			Mode:           build.Dev,
+			Arch:           runtime.GOARCH,
+			Pack:           true,
+			Platform:       runtime.GOOS,
+			LDFlags:        ldflags,
+			Compiler:       compilerCommand,
+			ForceBuild:     forceBuild,
+			IgnoreFrontend: false,
+			Verbosity:      verbosity,
+			WailsJSDir:     wailsjsdir,
+		}
+
 		watcher, err := fsnotify.NewWatcher()
 		if err != nil {
 			return err
@@ -162,7 +184,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Do initial build
 		logger.Println("Building application for development...")
-		newProcess, appBinary, err := restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity, assetDir, true, exitCodeChannel, wailsjsdir)
+		newProcess, appBinary, err := restartApp(logger, buildOptions, debugBinaryProcess, loglevel, passthruArgs, assetDir, false, exitCodeChannel)
 		if err != nil {
 			return err
 		}
@@ -269,7 +291,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 					rebuild = false
 					LogGreen("[Rebuild triggered] files updated")
 					// Try and build the app
-					newBinaryProcess, _, err = restartApp(logger, ldflags, compilerCommand, debugBinaryProcess, loglevel, passthruArgs, verbosity, assetDir, false, exitCodeChannel, wailsjsdir)
+					newBinaryProcess, _, err = restartApp(logger, buildOptions, debugBinaryProcess, loglevel, passthruArgs, assetDir, false, exitCodeChannel)
 					if err != nil {
 						LogRed("Error during build: %s", err.Error())
 						continue
@@ -314,9 +336,9 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	return nil
 }
 
-func restartApp(logger *clilogger.CLILogger, ldflags string, compilerCommand string, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string, verbosity int, assetDir string, firstRun bool, exitCodeChannel chan int, wailsjsdir string) (*process.Process, string, error) {
+func restartApp(logger *clilogger.CLILogger, buildOptions *build.Options, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string, assetDir string, firstRun bool, exitCodeChannel chan int) (*process.Process, string, error) {
 
-	appBinary, err := buildApp(logger, ldflags, compilerCommand, verbosity, wailsjsdir)
+	appBinary, err := build.Build(buildOptions)
 	println()
 	if err != nil {
 		if firstRun {
@@ -360,32 +382,4 @@ func restartApp(logger *clilogger.CLILogger, ldflags string, compilerCommand str
 	}
 
 	return newProcess, appBinary, nil
-}
-
-func buildApp(logger *clilogger.CLILogger, ldflags string, compilerCommand string, verbosity int, wailsjsdir string) (string, error) {
-
-	// Create random output file
-	outputFile := "wailsdev"
-	if runtime.GOOS == "windows" {
-		outputFile += ".exe"
-	}
-
-	// Create BuildOptions
-	buildOptions := &build.Options{
-		Logger:     logger,
-		OutputType: "dev",
-		Mode:       build.Dev,
-		Arch:       runtime.GOARCH,
-		Pack:       true,
-		Platform:   runtime.GOOS,
-		LDFlags:    ldflags,
-		Compiler:   compilerCommand,
-		//OutputFile:     outputFile,
-		IgnoreFrontend: false,
-		Verbosity:      verbosity,
-		WailsJSDir:     wailsjsdir,
-	}
-
-	return build.Build(buildOptions)
-
 }

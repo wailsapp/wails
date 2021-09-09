@@ -69,6 +69,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	skipFrontend := false
 	command.BoolFlag("s", "Skips building the frontend", &skipFrontend)
 
+	forceBuild := false
+	command.BoolFlag("f", "Force build application", &forceBuild)
+
 	command.Action(func() error {
 
 		quiet := verbosity == 0
@@ -152,6 +155,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			LDFlags:             ldflags,
 			Compiler:            compilerCommand,
 			Verbosity:           verbosity,
+			ForceBuild:          forceBuild,
 			IgnoreFrontend:      skipFrontend,
 			Compress:            compress,
 			CompressFlags:       compressFlags,

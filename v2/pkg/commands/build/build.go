@@ -50,6 +50,7 @@ type Options struct {
 	WebView2Strategy    string // WebView2 installer strategy
 	RunDelve            bool   // Indicates if we should run delve after the build
 	WailsJSDir          string // Directory to generate the wailsjs module
+	ForceBuild          bool   // Force
 }
 
 // Build the project!
@@ -104,14 +105,7 @@ func Build(options *Options) (string, error) {
 	// Initialise Builder
 	builder.SetProjectData(projectData)
 
-	// Generate Frontend JS Package
-	// outputLogger.Println("  - Generating Backend JS Package")
-	// // Ignore the parser report coming back
-	// _, err = parser.GenerateWailsFrontendPackage()
-	// if err != nil {
-	// 	return "", err
-	// }
-	if !options.IgnoreFrontend {
+	if !options.IgnoreFrontend || options.ForceBuild {
 		err = builder.BuildFrontend(outputLogger)
 		if err != nil {
 			return "", err
