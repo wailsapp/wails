@@ -192,6 +192,15 @@ func (f *Frontend) setupChromium() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	err = settings.PutIsStatusBarEnabled(false)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = settings.PutIsStatusBarEnabled(false)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	//c2, err := chromium.GetWebView2Controller2()
 	//err = c2.PutDefaultBackgroundColor(edge.COREWEBVIEW2_COLOR{R: 255, G: 0, B: 0, A: 255})
 	//if err != nil {
