@@ -36,6 +36,8 @@ func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (s
 		return d.processCallMessage(message, sender)
 	case 'W':
 		return d.processWindowMessage(message, sender)
+	case 'B':
+		return d.processBrowserMessage(message, sender)
 	default:
 		return "", errors.New("Unknown message from front end: " + message)
 	}
