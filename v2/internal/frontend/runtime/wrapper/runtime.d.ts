@@ -74,6 +74,8 @@ interface runtime {
     WindowSetRGBA(rgba: RGBA): void;
 
     WindowClose(): void
+
+    BrowserOpenURL(): void
 }
 
 declare global {
@@ -82,4 +84,4 @@ declare global {
     }
 }
 
-export {};
+export { };
