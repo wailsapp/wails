@@ -8,7 +8,6 @@ import (
 var Default = &App{
 	Width:    1024,
 	Height:   768,
-	RGBA:     0xFFFFFFFF,
 	Logger:   logger.NewDefaultLogger(),
 	LogLevel: logger.INFO,
 }

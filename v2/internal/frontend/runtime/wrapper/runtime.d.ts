@@ -8,6 +8,13 @@ interface Size {
     h: number;
 }
 
+interface RGBA {
+    r,
+    g,
+    b,
+    a: number;
+}
+
 
 interface runtime {
     EventsEmit(eventName: string, data?: any): void;
@@ -63,6 +70,8 @@ interface runtime {
     WindowMinimise(): void
 
     WindowUnminimise(): void
+
+    WindowSetRGBA(rgba: RGBA): void;
 
     WindowClose(): void
 }

@@ -173,6 +173,19 @@ export function WindowUnminimise() {
     window.WailsInvoke('Wu');
 }
 
+
+/**
+ * Sets the background colour of the window
+ *
+ * @export
+ * @param {RGBA} RGBA background colour
+ */
+export function WindowSetRGBA(RGBA) {
+    let rgba = JSON.stringify(RGBA);
+    window.WailsInvoke('Wr:' + rgba);
+}
+
+
 /**
  * Close the Window
  *

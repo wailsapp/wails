@@ -165,9 +165,37 @@ func (f *Frontend) WindowSetMaxSize(width int, height int) {
 	f.mainWindow.SetMaxSize(width, height)
 }
 
-func (f *Frontend) WindowSetColour(colour int) {
+func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 	runtime.LockOSThread()
-	// TODO: Set webview2 background to this colour
+	if col == nil {
+		return
+	}
+
+	f.mainWindow.Dispatch(func() {
+		controller := f.chromium.GetController()
+		controller2 := controller.GetICoreWebView2Controller2()
+
+		backgroundCol := edge.COREWEBVIEW2_COLOR{
+			A: col.A,
+			R: col.R,
+			G: col.G,
+			B: col.B,
+		}
+
+		// Webview2 only has 0 and 255 as valid values.
+		if backgroundCol.A > 0 && backgroundCol.A < 255 {
+			backgroundCol.A = 255
+		}
+
+		if f.frontendOptions.Windows != nil && f.frontendOptions.Windows.WebviewIsTransparent {
+			backgroundCol.A = 0
+		}
+
+		err := controller2.PutDefaultBackgroundColor(backgroundCol)
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
 }
 
 func (f *Frontend) Quit() {
@@ -176,6 +204,7 @@ func (f *Frontend) Quit() {
 
 func (f *Frontend) setupChromium() {
 	chromium := edge.NewChromium()
+	f.chromium = chromium
 	chromium.MessageCallback = f.processMessage
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
@@ -209,14 +238,11 @@ func (f *Frontend) setupChromium() {
 		log.Fatal(err)
 	}
 
-	//c2, err := chromium.GetWebView2Controller2()
-	//err = c2.PutDefaultBackgroundColor(edge.COREWEBVIEW2_COLOR{R: 255, G: 0, B: 0, A: 255})
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+	// Set background colour
+	f.WindowSetRGBA(f.frontendOptions.RGBA)
+
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
 	chromium.Navigate("file://wails/")
-	f.chromium = chromium
 }
 
 type EventNotify struct {

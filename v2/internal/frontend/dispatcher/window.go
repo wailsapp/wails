@@ -1,8 +1,10 @@
 package dispatcher
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/pkg/options"
 	"strconv"
 	"strings"
 )
@@ -44,6 +46,13 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 		go sender.WindowHide()
 	case 'S':
 		go sender.WindowShow()
+	case 'r':
+		var rgba options.RGBA
+		err := json.Unmarshal([]byte(message[3:]), &rgba)
+		if err != nil {
+			return "", err
+		}
+		go sender.WindowSetRGBA(&rgba)
 	case 'M':
 		go sender.WindowMaximise()
 	case 'U':

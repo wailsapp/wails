@@ -26,7 +26,7 @@ type App struct {
 	MaxHeight         int
 	StartHidden       bool
 	HideWindowOnClose bool
-	RGBA              int
+	RGBA              *RGBA
 	Assets            embed.FS
 	Menu              *menu.Menu
 	Logger            logger.Logger `json:"-"`
@@ -42,11 +42,28 @@ type App struct {
 	//Mac     *mac.Options
 }
 
+type RGBA struct {
+	R uint8 `json:"r"`
+	G uint8 `json:"g"`
+	B uint8 `json:"b"`
+	A uint8 `json:"a"`
+}
+
 // MergeDefaults will set the minimum default values for an application
 func MergeDefaults(appoptions *App) {
 	err := mergo.Merge(appoptions, Default)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// DEfault colour. Doesn't work well with mergo
+	if appoptions.RGBA == nil {
+		appoptions.RGBA = &RGBA{
+			R: 255,
+			G: 255,
+			B: 255,
+			A: 255,
+		}
 	}
 
 	// Ensure max and min are valid

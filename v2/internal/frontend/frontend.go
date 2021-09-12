@@ -3,6 +3,7 @@ package frontend
 import (
 	"context"
 	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 // FileFilter defines a filter for dialog boxes
@@ -84,7 +85,7 @@ type Frontend interface {
 	WindowSetMaxSize(width int, height int)
 	WindowFullscreen()
 	WindowUnFullscreen()
-	WindowSetColour(colour int)
+	WindowSetRGBA(col *options.RGBA)
 	WindowReload()
 
 	// Menus

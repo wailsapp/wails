@@ -226,8 +226,8 @@ func (d *DevWebServer) WindowUnFullscreen() {
 	d.desktopFrontend.WindowUnFullscreen()
 }
 
-func (d *DevWebServer) WindowSetColour(colour int) {
-	d.desktopFrontend.WindowSetColour(colour)
+func (d *DevWebServer) WindowSetRGBA(col *options.RGBA) {
+	d.desktopFrontend.WindowSetRGBA(col)
 }
 
 func (d *DevWebServer) SetApplicationMenu(menu *menu.Menu) {

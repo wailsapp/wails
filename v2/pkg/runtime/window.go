@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 // WindowSetTitle sets the title of the window
@@ -92,4 +93,9 @@ func WindowMinimise(ctx context.Context) {
 func WindowUnminimise(ctx context.Context) {
 	appFrontend := getFrontend(ctx)
 	appFrontend.WindowUnminimise()
+}
+
+func WindowSetRGBA(ctx context.Context, col *options.RGBA) {
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowSetRGBA(col)
 }

@@ -177,6 +177,16 @@ export function WindowUnminimise() {
 }
 
 /**
+ * Sets the background colour of the window
+ *
+ * @export
+ * @param {RGBA} RGBA background colour
+ */
+export function WindowSetRGBA(RGBA) {
+	window.runtime.WindowSetRGBA(RGBA);
+}
+
+/**
  * Close the Window
  *
  * @export
