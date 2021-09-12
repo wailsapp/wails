@@ -230,12 +230,12 @@ func (d *DevWebServer) WindowSetRGBA(col *options.RGBA) {
 	d.desktopFrontend.WindowSetRGBA(col)
 }
 
-func (d *DevWebServer) SetApplicationMenu(menu *menu.Menu) {
-	d.desktopFrontend.SetApplicationMenu(menu)
+func (d *DevWebServer) MenuSetApplicationMenu(menu *menu.Menu) {
+	d.desktopFrontend.MenuSetApplicationMenu(menu)
 }
 
-func (d *DevWebServer) UpdateApplicationMenu() {
-	d.desktopFrontend.UpdateApplicationMenu()
+func (d *DevWebServer) MenuUpdateApplicationMenu() {
+	d.desktopFrontend.MenuUpdateApplicationMenu()
 }
 
 func (d *DevWebServer) Notify(name string, data ...interface{}) {

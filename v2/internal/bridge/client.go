@@ -118,8 +118,8 @@ func (b BridgeClient) DarkModeEnabled(callbackID string) {
 	b.session.log.Info("DarkModeEnabled unsupported in Bridge mode")
 }
 
-func (b BridgeClient) SetApplicationMenu(menuJSON string) {
-	b.session.log.Info("SetApplicationMenu unsupported in Bridge mode")
+func (b BridgeClient) MenuSetApplicationMenu(menuJSON string) {
+	b.session.log.Info("MenuSetApplicationMenu unsupported in Bridge mode")
 }
 
 func (b BridgeClient) SetTrayMenu(trayMenuJSON string) {

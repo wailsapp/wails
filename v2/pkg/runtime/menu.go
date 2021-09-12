@@ -2,31 +2,15 @@ package runtime
 
 import (
 	"context"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
-func UpdateApplicationMenu(ctx context.Context) {
+func MenuSetApplicationMenu(ctx context.Context, menu *menu.Menu) {
 	frontend := getFrontend(ctx)
-	frontend.UpdateApplicationMenu()
+	frontend.MenuSetApplicationMenu(menu)
 }
 
-/*
-func UpdateContextMenu(ctx context.Context, contextMenu *menu.ContextMenu) {
+func MenuUpdateApplicationMenu(ctx context.Context) {
 	frontend := getFrontend(ctx)
-	bus.Publish("menu:updatecontextmenu", contextMenu)
+	frontend.MenuUpdateApplicationMenu()
 }
-
-func SetTrayMenu(ctx context.Context, trayMenu *menu.TrayMenu) {
-	frontend := getFrontend(ctx)
-	bus.Publish("menu:settraymenu", trayMenu)
-}
-
-func UpdateTrayMenuLabel(ctx context.Context, trayMenu *menu.TrayMenu) {
-	frontend := getFrontend(ctx)
-	bus.Publish("menu:updatetraymenulabel", trayMenu)
-}
-
-func DeleteTrayMenu(ctx context.Context, trayMenu *menu.TrayMenu) {
-	frontend := getFrontend(ctx)
-	bus.Publish("menu:deletetraymenu", trayMenu)
-}
-*/

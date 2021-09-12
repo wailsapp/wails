@@ -1,11 +1,11 @@
 (() => {
   var __defProp = Object.defineProperty;
-    var __markAsModule = (target) => __defProp(target, "__esModule", {value: true});
-    var __export = (target, all) => {
-        __markAsModule(target);
-        for (var name in all)
-            __defProp(target, name, {get: all[name], enumerable: true});
-    };
+  var __markAsModule = (target) => __defProp(target, "__esModule", {value: true});
+  var __export = (target, all) => {
+    __markAsModule(target);
+    for (var name in all)
+      __defProp(target, name, {get: all[name], enumerable: true});
+  };
 
   // desktop/log.js
   var log_exports = {};
@@ -138,17 +138,17 @@
     if (timeout == null) {
       timeout = 0;
     }
-      return new Promise(function (resolve, reject) {
-          var callbackID;
-          do {
-              callbackID = name + "-" + randomFunc();
-          } while (callbacks[callbackID]);
-          var timeoutHandle;
-          if (timeout > 0) {
-              timeoutHandle = setTimeout(function () {
-                  reject(Error("Call to " + name + " timed out. Request ID: " + callbackID));
-              }, timeout);
-          }
+    return new Promise(function (resolve, reject) {
+      var callbackID;
+      do {
+        callbackID = name + "-" + randomFunc();
+      } while (callbacks[callbackID]);
+      var timeoutHandle;
+      if (timeout > 0) {
+        timeoutHandle = setTimeout(function () {
+          reject(Error("Call to " + name + " timed out. Request ID: " + callbackID));
+        }, timeout);
+      }
       callbacks[callbackID] = {
         timeoutHandle,
         reject,
@@ -205,20 +205,20 @@
       Object.keys(bindingsMap[packageName]).forEach((structName) => {
         window.go[packageName][structName] = window.go[packageName][structName] || {};
         Object.keys(bindingsMap[packageName][structName]).forEach((methodName) => {
-            window.go[packageName][structName][methodName] = function () {
-                let timeout = 0;
+          window.go[packageName][structName][methodName] = function () {
+            let timeout = 0;
 
-                function dynamic() {
-                    const args = [].slice.call(arguments);
-                    return Call([packageName, structName, methodName].join("."), args, timeout);
-                }
+            function dynamic() {
+              const args = [].slice.call(arguments);
+              return Call([packageName, structName, methodName].join("."), args, timeout);
+            }
 
-                dynamic.setTimeout = function (newTimeout) {
-                    timeout = newTimeout;
-                };
-                dynamic.getTimeout = function () {
-                    return timeout;
-                };
+            dynamic.setTimeout = function (newTimeout) {
+              timeout = newTimeout;
+            };
+            dynamic.getTimeout = function () {
+              return timeout;
+            };
             return dynamic;
           }();
         });
@@ -231,23 +231,23 @@
   __export(window_exports, {
     WindowCenter: () => WindowCenter,
     WindowClose: () => WindowClose,
-      WindowFullscreen: () => WindowFullscreen,
-      WindowGetPosition: () => WindowGetPosition,
-      WindowGetSize: () => WindowGetSize,
-      WindowHide: () => WindowHide,
-      WindowMaximise: () => WindowMaximise,
-      WindowMinimise: () => WindowMinimise,
-      WindowReload: () => WindowReload,
-      WindowSetMaxSize: () => WindowSetMaxSize,
-      WindowSetMinSize: () => WindowSetMinSize,
-      WindowSetPosition: () => WindowSetPosition,
-      WindowSetRGBA: () => WindowSetRGBA,
-      WindowSetSize: () => WindowSetSize,
-      WindowSetTitle: () => WindowSetTitle,
-      WindowShow: () => WindowShow,
-      WindowUnFullscreen: () => WindowUnFullscreen,
-      WindowUnmaximise: () => WindowUnmaximise,
-      WindowUnminimise: () => WindowUnminimise
+    WindowFullscreen: () => WindowFullscreen,
+    WindowGetPosition: () => WindowGetPosition,
+    WindowGetSize: () => WindowGetSize,
+    WindowHide: () => WindowHide,
+    WindowMaximise: () => WindowMaximise,
+    WindowMinimise: () => WindowMinimise,
+    WindowReload: () => WindowReload,
+    WindowSetMaxSize: () => WindowSetMaxSize,
+    WindowSetMinSize: () => WindowSetMinSize,
+    WindowSetPosition: () => WindowSetPosition,
+    WindowSetRGBA: () => WindowSetRGBA,
+    WindowSetSize: () => WindowSetSize,
+    WindowSetTitle: () => WindowSetTitle,
+    WindowShow: () => WindowShow,
+    WindowUnFullscreen: () => WindowUnFullscreen,
+    WindowUnmaximise: () => WindowUnmaximise,
+    WindowUnminimise: () => WindowUnminimise
   });
   function WindowReload() {
     window.location.reload();
@@ -282,43 +282,46 @@
   function WindowGetPosition() {
     return Call(":wails:WindowGetPos");
   }
+
   function WindowHide() {
     window.WailsInvoke("WH");
   }
+
   function WindowShow() {
     window.WailsInvoke("WS");
   }
+
   function WindowMaximise() {
     window.WailsInvoke("WM");
   }
 
-    function WindowUnmaximise() {
-        window.WailsInvoke("WU");
-    }
+  function WindowUnmaximise() {
+    window.WailsInvoke("WU");
+  }
 
-    function WindowMinimise() {
-        window.WailsInvoke("Wm");
-    }
+  function WindowMinimise() {
+    window.WailsInvoke("Wm");
+  }
 
-    function WindowUnminimise() {
-        window.WailsInvoke("Wu");
-    }
+  function WindowUnminimise() {
+    window.WailsInvoke("Wu");
+  }
 
-    function WindowSetRGBA(RGBA) {
-        let rgba = JSON.stringify(RGBA);
-        window.WailsInvoke("Wr:" + rgba);
-    }
+  function WindowSetRGBA(RGBA) {
+    let rgba = JSON.stringify(RGBA);
+    window.WailsInvoke("Wr:" + rgba);
+  }
 
-    function WindowClose() {
-        window.WailsInvoke("WC");
-    }
+  function WindowClose() {
+    window.WailsInvoke("WC");
+  }
 
-    // desktop/main.js
-    window.runtime = {
-        ...log_exports,
-        ...window_exports,
-        EventsOn,
-        EventsOnce,
+  // desktop/main.js
+  window.runtime = {
+    ...log_exports,
+    ...window_exports,
+    EventsOn,
+    EventsOnce,
     EventsOnMultiple,
     EventsEmit,
     EventsOff

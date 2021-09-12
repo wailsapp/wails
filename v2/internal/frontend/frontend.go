@@ -89,8 +89,8 @@ type Frontend interface {
 	WindowReload()
 
 	// Menus
-	SetApplicationMenu(menu *menu.Menu)
-	UpdateApplicationMenu()
+	MenuSetApplicationMenu(menu *menu.Menu)
+	MenuUpdateApplicationMenu()
 	//SetTrayMenu(menu *menu.TrayMenu)
 	//UpdateTrayMenuLabel(menu *menu.TrayMenu)
 	//UpdateContextMenu(contextMenu *menu.ContextMenu)

@@ -120,10 +120,10 @@ func processMenuItem(parent *winc.MenuItem, menuItem *menu.MenuItem) {
 	}
 }
 
-func (f *Frontend) SetApplicationMenu(menu *menu.Menu) {
+func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
 	f.mainWindow.SetApplicationMenu(menu)
 }
 
-func (f *Frontend) UpdateApplicationMenu() {
+func (f *Frontend) MenuUpdateApplicationMenu() {
 	processMenu(f.mainWindow, f.mainWindow.applicationMenu)
 }
