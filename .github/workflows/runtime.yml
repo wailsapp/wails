@@ -27,4 +27,3 @@ jobs:
           github_token: "${{ secrets.GITHUB_TOKEN }}"
           commit_prefix: "[AUTO]"
           commit_message: "The runtime was rebuilt"
-          target_branch: v2-alpha

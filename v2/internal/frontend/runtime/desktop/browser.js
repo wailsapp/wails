@@ -4,5 +4,5 @@
  * @return {void}
  */
 export function BrowserOpenURL(url) {
-  window.WailsInvoke('BO:' + url)
+  window.WailsInvoke('BO:' + url);
 }
