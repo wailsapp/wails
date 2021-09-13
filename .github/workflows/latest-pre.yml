@@ -1,8 +1,10 @@
 name: latest pre-release
 on:
   push:
+    branches:
+      - develop
     tags:
-    - '**-pre**'
+      - '**-pre**'
 jobs:
 
   build:
