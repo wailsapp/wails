@@ -1,6 +1,6 @@
 name: Runtime
 on:
-  pull_request:
+  push:
     branches:
       - v2-alpha
     paths:
