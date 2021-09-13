@@ -282,36 +282,28 @@
   function WindowGetPosition() {
     return Call(":wails:WindowGetPos");
   }
-
   function WindowHide() {
     window.WailsInvoke("WH");
   }
-
   function WindowShow() {
     window.WailsInvoke("WS");
   }
-
   function WindowMaximise() {
     window.WailsInvoke("WM");
   }
-
   function WindowUnmaximise() {
     window.WailsInvoke("WU");
   }
-
   function WindowMinimise() {
     window.WailsInvoke("Wm");
   }
-
   function WindowUnminimise() {
     window.WailsInvoke("Wu");
   }
-
   function WindowSetRGBA(RGBA) {
     let rgba = JSON.stringify(RGBA);
     window.WailsInvoke("Wr:" + rgba);
   }
-
   function WindowClose() {
     window.WailsInvoke("WC");
   }
