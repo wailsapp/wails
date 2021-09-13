@@ -39,43 +39,43 @@ interface runtime {
 
     WindowReload(): void;
 
-    WindowCenter(): void
+    WindowCenter(): void;
 
-    WindowSetTitle(title: string): void
+    WindowSetTitle(title: string): void;
 
-    WindowFullscreen(): void
+    WindowFullscreen(): void;
 
-    WindowUnFullscreen(): void
+    WindowUnFullscreen(): void;
 
-    WindowSetSize(width: number, height: number): Promise<Size>
+    WindowSetSize(width: number, height: number): Promise<Size>;
 
-    WindowGetSize(): Promise<Size>
+    WindowGetSize(): Promise<Size>;
 
-    WindowSetMaxSize(width: number, height: number): void
+    WindowSetMaxSize(width: number, height: number): void;
 
-    WindowSetMinSize(width: number, height: number): void
+    WindowSetMinSize(width: number, height: number): void;
 
-    WindowSetPosition(x: number, y: number): void
+    WindowSetPosition(x: number, y: number): void;
 
-    WindowGetPosition(): Promise<Position>
+    WindowGetPosition(): Promise<Position>;
 
-    WindowHide(): void
+    WindowHide(): void;
 
-    WindowShow(): void
+    WindowShow(): void;
 
-    WindowMaximise(): void
+    WindowMaximise(): void;
 
-    WindowUnmaximise(): void
+    WindowUnmaximise(): void;
 
-    WindowMinimise(): void
+    WindowMinimise(): void;
 
-    WindowUnminimise(): void
+    WindowUnminimise(): void;
 
-    WindowSetRGBA(rgba: RGBA): void
+    WindowSetRGBA(rgba: RGBA): void;
 
-    BrowserOpenURL(): void
+    BrowserOpenURL(): void;
 
-    Quit(): void
+    Quit(): void;
 }
 
 declare global {
