@@ -36,6 +36,9 @@ func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (s
 		return d.processCallMessage(message, sender)
 	case 'W':
 		return d.processWindowMessage(message, sender)
+	case 'Q':
+		sender.Quit()
+		return "", nil
 	default:
 		return "", errors.New("Unknown message from front end: " + message)
 	}

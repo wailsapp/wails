@@ -13,8 +13,14 @@ import * as Log from "./log";
 import * as Events from './events';
 import * as Window from './window';
 
+export function Quit() {
+    window.runtime.Quit();
+}
+
+
 export default {
     ...Log,
     ...Events,
     ...Window,
+    Quit
 };

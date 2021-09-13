@@ -1,6 +1,6 @@
 name: Runtime
 on:
-  pull_request:
+  push:
     branches:
       - v2-alpha
     paths:
@@ -14,14 +14,17 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 14.17.6
-      #          cache: 'npm'
-      #          cache-dependency-path: v2/internal/frontend/runtime/package-lock.json
+          cache: 'npm'
+          cache-dependency-path: v2/internal/frontend/runtime/package-lock.json
       - run: npm install
         working-directory: v2/internal/frontend/runtime
       - run: npm run build
         working-directory: v2/internal/frontend/runtime
 
       - name: Commit changes
-        uses: elstudio/actions-js-build/commit@v4
+        uses: devops-infra/action-commit-push@master
         with:
-          commitMessage: Rebuild runtime
+          github_token: "${{ secrets.GITHUB_TOKEN }}"
+          add_timestamp: true
+          commit_prefix: "[AUTO]"
+          commit_message: "The runtime was rebuilt"

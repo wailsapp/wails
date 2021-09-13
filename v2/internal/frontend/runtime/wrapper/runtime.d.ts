@@ -73,7 +73,7 @@ interface runtime {
 
     WindowSetRGBA(rgba: RGBA): void;
 
-    WindowClose(): void
+    Quit(): void
 }
 
 declare global {
