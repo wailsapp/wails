@@ -2,6 +2,7 @@ package frontend
 
 import (
 	"context"
+
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
@@ -98,4 +99,7 @@ type Frontend interface {
 
 	// Events
 	Notify(name string, data ...interface{})
+
+	// Browser
+	BrowserOpenURL(url string)
 }

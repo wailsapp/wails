@@ -71,7 +71,9 @@ interface runtime {
 
     WindowUnminimise(): void
 
-    WindowSetRGBA(rgba: RGBA): void;
+    WindowSetRGBA(rgba: RGBA): void
+
+    BrowserOpenURL(): void
 
     Quit(): void
 }
@@ -82,4 +84,4 @@ declare global {
     }
 }
 
-export {};
+export { };

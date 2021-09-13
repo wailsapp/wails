@@ -12,6 +12,7 @@ The electron alternative for Go
 import * as Log from "./log";
 import * as Events from './events';
 import * as Window from './window';
+import * as Browser from './browser';
 
 export function Quit() {
     window.runtime.Quit();
@@ -22,5 +23,6 @@ export default {
     ...Log,
     ...Events,
     ...Window,
+    ...Browser,
     Quit
 };

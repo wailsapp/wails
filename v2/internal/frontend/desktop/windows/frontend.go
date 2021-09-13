@@ -6,6 +6,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"runtime"
+	"strconv"
+	"strings"
+
 	"github.com/leaanthony/go-webview2/pkg/edge"
 	"github.com/leaanthony/winc"
 	"github.com/leaanthony/winc/w32"
@@ -14,10 +19,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"log"
-	"runtime"
-	"strconv"
-	"strings"
 )
 
 type Frontend struct {
@@ -39,6 +40,44 @@ type Frontend struct {
 	bindings                                 *binding.Bindings
 	dispatcher                               frontend.Dispatcher
 	servingFromDisk                          bool
+}
+
+
+
+func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
+
+	result := &Frontend{
+		frontendOptions: appoptions,
+		logger:          myLogger,
+		bindings:        appBindings,
+		dispatcher:      dispatcher,
+		ctx:             ctx,
+		minHeight:       appoptions.MinHeight,
+		minWidth:        appoptions.MinWidth,
+		maxHeight:       appoptions.MaxHeight,
+		maxWidth:        appoptions.MaxWidth,
+	}
+
+	// Check if we have been given a directory to serve assets from.
+	// If so, this means we are in dev mode and are serving assets off disk.
+	// We indicate this through the `servingFromDisk` flag to ensure requests
+	// aren't cached by WebView2 in dev mode
+	_assetdir := ctx.Value("assetdir")
+	if _assetdir != nil {
+		result.servingFromDisk = true
+	}
+
+	bindingsJSON, err := appBindings.ToJSON()
+	if err != nil {
+		log.Fatal(err)
+	}
+	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON)
+	if err != nil {
+		log.Fatal(err)
+	}
+	result.assets = assets
+
+	return result
 }
 
 func (f *Frontend) WindowReload() {
@@ -364,40 +403,4 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 	}
 	f.mainWindow.Show()
 
-}
-
-func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
-
-	result := &Frontend{
-		frontendOptions: appoptions,
-		logger:          myLogger,
-		bindings:        appBindings,
-		dispatcher:      dispatcher,
-		ctx:             ctx,
-		minHeight:       appoptions.MinHeight,
-		minWidth:        appoptions.MinWidth,
-		maxHeight:       appoptions.MaxHeight,
-		maxWidth:        appoptions.MaxWidth,
-	}
-
-	// Check if we have been given a directory to serve assets from.
-	// If so, this means we are in dev mode and are serving assets off disk.
-	// We indicate this through the `servingFromDisk` flag to ensure requests
-	// aren't cached by WebView2 in dev mode
-	_assetdir := ctx.Value("assetdir")
-	if _assetdir != nil {
-		result.servingFromDisk = true
-	}
-
-	bindingsJSON, err := appBindings.ToJSON()
-	if err != nil {
-		log.Fatal(err)
-	}
-	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON)
-	if err != nil {
-		log.Fatal(err)
-	}
-	result.assets = assets
-
-	return result
 }

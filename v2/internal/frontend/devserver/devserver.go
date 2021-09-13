@@ -8,6 +8,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/fs"
+	"log"
+	"path/filepath"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/websocket/v2"
 	"github.com/wailsapp/wails/v2/internal/binding"
@@ -17,12 +24,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"io/fs"
-	"log"
-	"path/filepath"
-	"strings"
-	"sync"
-	"time"
 )
 
 type DevWebServer struct {
@@ -68,7 +69,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 			if mt, msg, err = c.ReadMessage(); err != nil {
 				break
 			}
-			//d.logger.Info("[%p] %s", c, msg)
+			// d.logger.Info("[%p] %s", c, msg)
 			if string(msg) == "drag" {
 				continue
 			}
@@ -236,6 +237,11 @@ func (d *DevWebServer) MenuSetApplicationMenu(menu *menu.Menu) {
 
 func (d *DevWebServer) MenuUpdateApplicationMenu() {
 	d.desktopFrontend.MenuUpdateApplicationMenu()
+}
+
+// BrowserOpenURL uses the system default browser to open the url
+func (d *DevWebServer) BrowserOpenURL(url string) {
+	d.desktopFrontend.BrowserOpenURL(url)
 }
 
 func (d *DevWebServer) Notify(name string, data ...interface{}) {
