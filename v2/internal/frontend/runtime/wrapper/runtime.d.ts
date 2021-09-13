@@ -73,7 +73,7 @@ interface runtime {
 
     WindowSetRGBA(rgba: RGBA): void;
 
-    BrowserOpenURL(utl: string): void;
+    BrowserOpenURL(url: string): void;
 
     Quit(): void;
 }
