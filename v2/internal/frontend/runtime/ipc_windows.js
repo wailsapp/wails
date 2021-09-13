@@ -1,5 +1,1 @@
-(() => {
-    window.WailsInvoke = function (e) {
-        window.chrome.webview.postMessage(e)
-    };
-})();
+(()=>{window.WailsInvoke=function(e){window.chrome.webview.postMessage(e)};})();
