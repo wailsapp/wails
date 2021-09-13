@@ -185,12 +185,3 @@ export function WindowSetRGBA(RGBA) {
     window.WailsInvoke('Wr:' + rgba);
 }
 
-
-/**
- * Close the Window
- *
- * @export
- */
-export function WindowClose() {
-    window.WailsInvoke('WC');
-}

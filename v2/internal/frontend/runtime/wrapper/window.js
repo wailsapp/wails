@@ -185,12 +185,3 @@ export function WindowUnminimise() {
 export function WindowSetRGBA(RGBA) {
 	window.runtime.WindowSetRGBA(RGBA);
 }
-
-/**
- * Close the Window
- *
- * @export
- */
-export function WindowClose() {
-	window.runtime.WindowClose();
-}

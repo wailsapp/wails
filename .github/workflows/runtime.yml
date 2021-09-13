@@ -14,8 +14,8 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 14.17.6
-      #          cache: 'npm'
-      #          cache-dependency-path: v2/internal/frontend/runtime/package-lock.json
+          cache: 'npm'
+          cache-dependency-path: v2/internal/frontend/runtime/package-lock.json
       - run: npm install
         working-directory: v2/internal/frontend/runtime
       - run: npm run build
