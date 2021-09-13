@@ -71,8 +71,6 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 		w := d.mustAtoI(parts[0])
 		h := d.mustAtoI(parts[1])
 		go sender.WindowSetMinSize(w, h)
-	case 'C':
-		sender.Quit()
 	default:
 		d.log.Error("unknown Window message: %s", message)
 	}

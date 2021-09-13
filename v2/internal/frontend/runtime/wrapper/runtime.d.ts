@@ -71,11 +71,11 @@ interface runtime {
 
     WindowUnminimise(): void
 
-    WindowSetRGBA(rgba: RGBA): void;
-
-    WindowClose(): void
+    WindowSetRGBA(rgba: RGBA): void
 
     BrowserOpenURL(): void
+
+    Quit(): void
 }
 
 declare global {

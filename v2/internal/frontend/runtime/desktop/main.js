@@ -15,6 +15,11 @@ import { SetBindings } from "./bindings";
 import * as Window from "./window";
 import * as Browser from "./browser";
 
+
+export function Quit() {
+    window.WailsInvoke('Q');
+}
+
 // The JS runtime
 window.runtime = {
     ...Log,
@@ -25,6 +30,7 @@ window.runtime = {
     EventsOnMultiple,
     EventsEmit,
     EventsOff,
+    Quit
 };
 
 // Internal wails endpoints
