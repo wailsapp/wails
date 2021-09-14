@@ -9,9 +9,9 @@ The electron alternative for Go
 */
 /* jshint esversion: 9 */
 import * as Log from './log';
-import { eventListeners, EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnce, EventsOnMultiple } from './events';
-import { Callback, callbacks } from './calls';
-import { SetBindings } from "./bindings";
+import {eventListeners, EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnce, EventsOnMultiple} from './events';
+import {Callback, callbacks} from './calls';
+import {SetBindings} from "./bindings";
 import * as Window from "./window";
 import * as Browser from "./browser";
 
@@ -47,7 +47,9 @@ window.wails.SetBindings(window.wailsbindings);
 delete window.wails.SetBindings;
 
 // This is evaluated at build time in package.json
-if (ENV === "production") {
+// const dev = 0;
+// const production = 1;
+if (ENV === 0) {
     delete window.wailsbindings;
 }
 

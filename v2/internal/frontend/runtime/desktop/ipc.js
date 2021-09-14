@@ -14,14 +14,19 @@ The electron alternative for Go
  *
  * @param {string} message
  */
+
+// const windows = 0;
+// const linux = 1;
+// const macos = 2;
+
 window.WailsInvoke = function (message) {
 
 	// Call Platform specific invoke method
-	if (PLATFORM === "windows") {
+	if (PLATFORM === 0) {
 		window.chrome.webview.postMessage(message);
-	} else if (PLATFORM === "darwin") {
+	} else if (PLATFORM === 1) {
 		window.blah();
-	} else {
+	} else if (PLATFORM === 2) {
 		console.error("Unsupported Platform");
 	}
 };
