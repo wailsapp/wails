@@ -7,6 +7,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 )
@@ -16,7 +17,7 @@ import (
 func init() {
 	r, err := syscall.Sysctl("sysctl.proc_translated")
 	if err != nil {
-		return false
+		return
 	}
 
 	IsAppleSilicon = r == "\x00\x00\x00" || r == "\x01\x00\x00"
