@@ -135,7 +135,7 @@ struct Application {
 	int fullSizeContent;
 	int useToolBar;
 	int hideToolbarSeparator;
-	int windowBackgroundIsTranslucent;
+	int WindowIsTranslucent;
 	int hasURLHandlers;
 	const char *startupURL;
 
@@ -293,8 +293,8 @@ void Show(struct Application *app) {
 	);
 }
 
-void WindowBackgroundIsTranslucent(struct Application *app) {
-	app->windowBackgroundIsTranslucent = 1;
+void WindowIsTranslucent(struct Application *app) {
+	app->WindowIsTranslucent = 1;
 }
 
 // Sends messages to the backend
@@ -1534,7 +1534,7 @@ void Run(struct Application *app, int argc, char **argv) {
 	applyWindowColour(app);
 
 	// Process translucency
-	if (app->windowBackgroundIsTranslucent) {
+	if (app->WindowIsTranslucent) {
 		makeWindowBackgroundTranslucent(app);
 	}
 
@@ -1775,7 +1775,7 @@ void* NewApplication(const char *title, int width, int height, int resizable, in
 	result->useToolBar = 0;
 	result->hideToolbarSeparator = 0;
 	result->appearance = NULL;
-	result->windowBackgroundIsTranslucent = 0;
+	result->WindowIsTranslucent = 0;
 
 	// Window data
 	result->delegate = NULL;

@@ -8,7 +8,6 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/mac"
 )
 
 func main() {
@@ -29,16 +28,11 @@ func main() {
 		Frameless:         false,
 		StartHidden:       false,
 		HideWindowOnClose: false,
-		RGBA:              0x000000FF,
+		RGBA:              &options.RGBA{0, 0, 0, 255},
 		Windows: &windows.Options{
-			WebviewIsTransparent:          true,
-			WindowBackgroundIsTranslucent: true,
-			DisableWindowIcon:             true,
-		},
-		Mac: &mac.Options{
-			WebviewIsTransparent:          true,
-			WindowBackgroundIsTranslucent: true,
-			TitleBar:                      mac.TitleBarHiddenInset(),
+			WebviewIsTransparent: true,
+			WindowIsTranslucent:  true,
+			DisableWindowIcon:    true,
 		},
 		LogLevel:   logger.DEBUG,
 		OnStartup:  app.startup,

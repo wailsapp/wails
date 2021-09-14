@@ -105,7 +105,7 @@ struct Application *NewApplication(const char *title, int width, int height, int
     result->logLevel = logLevel;
     result->hideWindowOnClose = hideWindowOnClose;
     result->webviewIsTranparent = false;
-    result->windowBackgroundIsTranslucent = false;
+    result->WindowIsTranslucent = false;
     result->disableWindowIcon = false;
 
     // Min/Max Width/Height
@@ -465,7 +465,7 @@ bool initWebView2(struct Application *app, int debugEnabled, messageCallback cb)
         wvColor.G = app->backgroundColour.G;
         wvColor.B = app->backgroundColour.B;
         wvColor.A = app->backgroundColour.A == 0 ? 0 : 255;
-        if( app->windowBackgroundIsTranslucent ) {
+        if( app->WindowIsTranslucent ) {
             wvColor.A = 0;
         }
         HRESULT result = wc2->put_DefaultBackgroundColor(wvColor);
@@ -538,7 +538,7 @@ void Run(struct Application* app, int argc, char **argv) {
 
     // Configure translucency
     DWORD dwExStyle = 0;
-    if ( app->windowBackgroundIsTranslucent) {
+    if ( app->WindowIsTranslucent) {
         dwExStyle = WS_EX_NOREDIRECTIONBITMAP;
         wc.hbrBackground = CreateSolidBrush(RGB(255,255,255));
     }
@@ -590,7 +590,7 @@ void Run(struct Application* app, int argc, char **argv) {
         SetWindowPos(nullptr, nullptr, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
     }
 
-    if ( app->windowBackgroundIsTranslucent ) {
+    if ( app->WindowIsTranslucent ) {
 
         // Enable the translucent background effect
         enableTranslucentBackground(app);
@@ -877,8 +877,8 @@ void WebviewIsTransparent(struct Application *app) {
 	app->webviewIsTranparent = true;
 }
 
-void WindowBackgroundIsTranslucent(struct Application *app) {
-	app->windowBackgroundIsTranslucent = true;
+void WindowIsTranslucent(struct Application *app) {
+	app->WindowIsTranslucent = true;
 }
 
 

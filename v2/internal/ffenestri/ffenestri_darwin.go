@@ -57,8 +57,8 @@ func (a *Application) processPlatformSettings() error {
 	}
 
 	// Check if window should be translucent
-	if mac.WindowBackgroundIsTranslucent {
-		C.WindowBackgroundIsTranslucent(a.app)
+	if mac.WindowIsTranslucent {
+		C.WindowIsTranslucent(a.app)
 	}
 
 	// Process menu

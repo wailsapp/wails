@@ -35,18 +35,18 @@ HideWindowOnClose: false,
 RGBA:              0x000000FF,
 Assets: assets,
 Windows: &windows.Options{
-			WebviewIsTransparent:          true,
-			WindowBackgroundIsTranslucent: true,
-			DisableWindowIcon:             true,
-		},
-		LogLevel:   logger.DEBUG,
-		OnStartup:  app.startup,
-		OnShutdown: app.shutdown,
-		Bind: []interface{}{
-			app,
-		},
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
+WebviewIsTransparent:          true,
+WindowIsTranslucent: true,
+DisableWindowIcon:             true,
+},
+LogLevel:   logger.DEBUG,
+OnStartup:  app.startup,
+OnShutdown: app.shutdown,
+Bind: []interface{}{
+app,
+},
+})
+if err != nil {
+log.Fatal(err)
+}
 }

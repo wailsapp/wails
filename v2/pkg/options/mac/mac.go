@@ -10,10 +10,10 @@ const (
 
 // Options are options specific to Mac
 type Options struct {
-	TitleBar                      *TitleBar
-	Appearance                    AppearanceType
-	WebviewIsTransparent          bool
-	WindowBackgroundIsTranslucent bool
-	ActivationPolicy              ActivationPolicy
-	URLHandlers                   map[string]func(string)
+	TitleBar             *TitleBar
+	Appearance           AppearanceType
+	WebviewIsTransparent bool
+	WindowIsTranslucent  bool
+	ActivationPolicy     ActivationPolicy
+	URLHandlers          map[string]func(string)
 }

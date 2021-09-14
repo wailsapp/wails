@@ -138,7 +138,7 @@ void HideToolbarSeparator(struct Application* app);
 void DisableFrame(struct Application* app);
 void SetAppearance(struct Application* app, const char *);
 void WebviewIsTransparent(struct Application* app);
-void WindowBackgroundIsTranslucent(struct Application* app);
+void WindowIsTranslucent(struct Application* app);
 void SetTray(struct Application* app, const char *, const char *, const char *);
 //void SetContextMenus(struct Application* app, const char *);
 void AddTrayMenu(struct Application* app, const char *);

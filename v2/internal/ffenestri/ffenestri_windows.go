@@ -47,8 +47,8 @@ func (a *Application) processPlatformSettings() error {
 		C.WebviewIsTransparent(a.app)
 	}
 
-	if config.WindowBackgroundIsTranslucent {
-		C.WindowBackgroundIsTranslucent(a.app)
+	if config.WindowIsTranslucent {
+		C.WindowIsTranslucent(a.app)
 	}
 
 	if config.DisableWindowIcon {

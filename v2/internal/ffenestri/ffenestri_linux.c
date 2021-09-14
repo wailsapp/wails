@@ -862,7 +862,7 @@ void UpdateTrayMenuLabel(struct Application* app, const char* JSON) {}
 void AddContextMenu(struct Application* app, char *contextMenuJSON) {}
 void UpdateContextMenu(struct Application* app, char *contextMenuJSON) {}
 void WebviewIsTransparent(struct Application* app) {}
-void WindowBackgroundIsTranslucent(struct Application* app) {}
+void WindowIsTranslucent(struct Application* app) {}
 void OpenDialog(struct Application* app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int allowFiles, int allowDirs, int allowMultiple, int showHiddenFiles, int canCreateDirectories, int resolvesAliases, int treatPackagesAsDirectories) {}
 void SaveDialog(struct Application* app, char *callbackID, char *title, char *filters, char *defaultFilename, char *defaultDir, int showHiddenFiles, int canCreateDirectories, int treatPackagesAsDirectories) {}
 void MessageDialog(struct Application* app, char *callbackID, char *type, char *title, char *message, char *icon, char *button1, char *button2, char *button3, char *button4, char *defaultButton, char *cancelButton) {}

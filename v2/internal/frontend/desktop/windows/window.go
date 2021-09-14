@@ -26,7 +26,7 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 	var exStyle int
 	if options.Windows != nil {
 		exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
-		if options.Windows.WindowBackgroundIsTranslucent {
+		if options.Windows.WindowIsTranslucent {
 			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
 	}
@@ -58,7 +58,7 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 	result.SetMaxSize(options.MaxWidth, options.MaxHeight)
 
 	if options.Windows != nil {
-		if options.Windows.WindowBackgroundIsTranslucent {
+		if options.Windows.WindowIsTranslucent {
 			result.SetTranslucentBackground()
 		}
 

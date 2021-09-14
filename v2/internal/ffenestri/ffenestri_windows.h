@@ -43,7 +43,7 @@ struct Application{
     int frame;
     char *startupURL;
     bool webviewIsTranparent;
-    bool windowBackgroundIsTranslucent;
+    bool WindowIsTranslucent;
     COREWEBVIEW2_COLOR backgroundColour;
     bool disableWindowIcon;
 

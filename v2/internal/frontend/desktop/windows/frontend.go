@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/leaanthony/slicer"
 	"log"
 	"runtime"
 	"strconv"
@@ -41,8 +42,6 @@ type Frontend struct {
 	dispatcher                               frontend.Dispatcher
 	servingFromDisk                          bool
 }
-
-
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 
@@ -241,14 +240,24 @@ func (f *Frontend) Quit() {
 	winc.Exit()
 }
 
+const (
+	ctrlZ int = 90
+	ctrlX     = 88
+	ctrlC     = 67
+	ctrlV     = 86
+)
+
 func (f *Frontend) setupChromium() {
 	chromium := edge.NewChromium()
 	f.chromium = chromium
 	chromium.MessageCallback = f.processMessage
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
-	chromium.AcceleratorKeyCallback = func(_ uint) {
-		// TODO: Link to standard application shortcuts
+
+	acceleratorsWebviewShouldProcess := slicer.Int([]int{ctrlV, ctrlC, ctrlX, ctrlZ})
+	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
+		// We want webview to handle ctrl-C, ctrl-Z, ctrl-v, ctrl-x
+		return !acceleratorsWebviewShouldProcess.Contains(int(vkey))
 	}
 	chromium.Embed(f.mainWindow.Handle())
 	chromium.Resize()
