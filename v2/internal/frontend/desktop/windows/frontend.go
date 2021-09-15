@@ -6,11 +6,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/leaanthony/slicer"
 	"log"
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/leaanthony/slicer"
 
 	"github.com/leaanthony/go-webview2/pkg/edge"
 	"github.com/leaanthony/winc"
@@ -241,10 +242,16 @@ func (f *Frontend) Quit() {
 }
 
 const (
-	ctrlZ int = 90
-	ctrlX     = 88
-	ctrlC     = 67
-	ctrlV     = 86
+	ctrlZ      int = 90
+	ctrlX          = 88
+	ctrlC          = 67
+	ctrlV          = 86
+	ctrlA          = 65
+	arrowUp        = 38
+	arrowDown      = 40
+	arrowRight     = 39
+	arrowLeft      = 37
+	keyDel         = 46
 )
 
 func (f *Frontend) setupChromium() {
@@ -253,7 +260,7 @@ func (f *Frontend) setupChromium() {
 	chromium.MessageCallback = f.processMessage
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
-	acceleratorsWebviewShouldProcess := slicer.Int([]int{ctrlV, ctrlC, ctrlX, ctrlZ})
+	acceleratorsWebviewShouldProcess := slicer.Int([]int{ctrlV, ctrlC, ctrlX, ctrlZ, ctrlA, arrowLeft, arrowRight, arrowUp, arrowDown, keyDel})
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
 		// We want webview to handle ctrl-C, ctrl-Z, ctrl-v, ctrl-x
 		if acceleratorsWebviewShouldProcess.Contains(int(vkey)) {
