@@ -16,8 +16,8 @@ The electron alternative for Go
  */
 
 // const windows = 0;
-// const linux = 1;
-// const macos = 2;
+// const macos = 1;
+// const linux = 2;
 
 window.WailsInvoke = function (message) {
 
@@ -25,8 +25,10 @@ window.WailsInvoke = function (message) {
 	if (PLATFORM === 0) {
 		window.chrome.webview.postMessage(message);
 	} else if (PLATFORM === 1) {
-		window.blah();
+		window.webkit.messageHandlers.external.postMessage(message);
 	} else if (PLATFORM === 2) {
+		console.error("Unsupported Platform");
+	} else {
 		console.error("Unsupported Platform");
 	}
 };
