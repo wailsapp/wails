@@ -253,11 +253,15 @@ func (f *Frontend) setupChromium() {
 	chromium.MessageCallback = f.processMessage
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
-
 	acceleratorsWebviewShouldProcess := slicer.Int([]int{ctrlV, ctrlC, ctrlX, ctrlZ})
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
 		// We want webview to handle ctrl-C, ctrl-Z, ctrl-v, ctrl-x
-		return !acceleratorsWebviewShouldProcess.Contains(int(vkey))
+		if acceleratorsWebviewShouldProcess.Contains(int(vkey)) {
+			return false
+		}
+		// Post keypress
+		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
+		return true
 	}
 	chromium.Embed(f.mainWindow.Handle())
 	chromium.Resize()
