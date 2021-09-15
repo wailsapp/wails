@@ -144,7 +144,10 @@ func generateBindings(bindings *binding.Bindings) error {
 	}
 
 	targetDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs", "go")
-	println("TargetDir =", targetDir)
+	err = os.RemoveAll(targetDir)
+	if err != nil {
+		return err
+	}
 	_ = fs.MkDirs(targetDir)
 	modelsFile := filepath.Join(targetDir, "models.ts")
 	err = bindings.WriteTS(modelsFile)
