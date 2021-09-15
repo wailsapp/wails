@@ -241,10 +241,11 @@ func (f *Frontend) Quit() {
 }
 
 const (
-	ctrlZ int = 90
-	ctrlX     = 88
+	ctrlA int = 65
 	ctrlC     = 67
 	ctrlV     = 86
+	ctrlX     = 88
+	ctrlZ     = 90
 )
 
 func (f *Frontend) setupChromium() {
@@ -253,7 +254,7 @@ func (f *Frontend) setupChromium() {
 	chromium.MessageCallback = f.processMessage
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
-	acceleratorsWebviewShouldProcess := slicer.Int([]int{ctrlV, ctrlC, ctrlX, ctrlZ})
+	acceleratorsWebviewShouldProcess := slicer.Int([]int{ctrlV, ctrlC, ctrlX, ctrlZ, ctrlA})
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
 		// We want webview to handle ctrl-C, ctrl-Z, ctrl-v, ctrl-x
 		if acceleratorsWebviewShouldProcess.Contains(int(vkey)) {
