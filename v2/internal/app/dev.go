@@ -3,10 +3,12 @@
 
 package app
 
+/*
 import (
 	"context"
-	"github.com/wailsapp/wails/runtime"
 	"sync"
+
+	"github.com/wailsapp/wails/runtime"
 
 	"github.com/wailsapp/wails/v2/internal/bridge"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
@@ -244,3 +246,4 @@ func (a *App) Run() error {
 	return nil
 
 }
+*/
