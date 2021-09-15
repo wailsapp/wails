@@ -261,6 +261,7 @@ func (f *Frontend) setupChromium() {
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
 	acceleratorsWebviewShouldProcess := slicer.Int([]int{ctrlV, ctrlC, ctrlX, ctrlZ, ctrlA, arrowLeft, arrowRight, arrowUp, arrowDown, keyDel})
+
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
 		// We want webview to handle ctrl-C, ctrl-Z, ctrl-v, ctrl-x
 		if acceleratorsWebviewShouldProcess.Contains(int(vkey)) {
