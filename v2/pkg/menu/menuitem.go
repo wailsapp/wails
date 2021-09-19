@@ -11,7 +11,7 @@ type MenuItem struct {
 	// Label is what appears as the menu text
 	Label string
 	// Role is a predefined menu type
-	Role Role `json:"Role,omitempty"`
+	//Role Role `json:"Role,omitempty"`
 	// Accelerator holds a representation of a key binding
 	Accelerator *keys.Accelerator `json:"Accelerator,omitempty"`
 	// Type of MenuItem, EG: Checkbox, Text, Separator, Radio, Submenu
@@ -28,26 +28,26 @@ type MenuItem struct {
 
 	// Callback function when menu clicked
 	Click Callback `json:"-"`
+	/*
+		// Text Colour
+		RGBA string
 
-	// Text Colour
-	RGBA string
+		// Font
+		FontSize int
+		FontName string
 
-	// Font
-	FontSize int
-	FontName string
+		// Image - base64 image data
+		Image string
 
-	// Image - base64 image data
-	Image string
+		// MacTemplateImage indicates that on a Mac, this image is a template image
+		MacTemplateImage bool
 
-	// MacTemplateImage indicates that on a Mac, this image is a template image
-	MacTemplateImage bool
+		// MacAlternate indicates that this item is an alternative to the previous menu item
+		MacAlternate bool
 
-	// MacAlternate indicates that this item is an alternative to the previous menu item
-	MacAlternate bool
-
-	// Tooltip
-	Tooltip string
-
+		// Tooltip
+		Tooltip string
+	*/
 	// This holds the menu item's parent.
 	parent *MenuItem
 

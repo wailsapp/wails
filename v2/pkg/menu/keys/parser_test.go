@@ -21,7 +21,6 @@ func TestParse(t *testing.T) {
 		{"CTRL+plus", Control("+")},
 		{"CTRL+SHIFT+escApe", Combo("escape", ControlKey, ShiftKey)},
 		{";", Key(";")},
-		{"Super+Tab", Super("tab")},
 		{"OptionOrAlt+Page Down", OptionOrAlt("Page Down")},
 	}
 	for _, tt := range gooddata {

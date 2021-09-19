@@ -64,9 +64,9 @@ func processMenuItem(parent *winc.MenuItem, menuItem *menu.MenuItem) {
 	case menu.TextType:
 		shortcut := acceleratorToWincShortcut(menuItem.Accelerator)
 		newItem := parent.AddItem(menuItem.Label, shortcut)
-		if menuItem.Tooltip != "" {
-			newItem.SetToolTip(menuItem.Tooltip)
-		}
+		//if menuItem.Tooltip != "" {
+		//	newItem.SetToolTip(menuItem.Tooltip)
+		//}
 		if menuItem.Click != nil {
 			newItem.OnClick().Bind(func(e *winc.Event) {
 				menuItem.Click(&menu.CallbackData{
@@ -81,9 +81,9 @@ func processMenuItem(parent *winc.MenuItem, menuItem *menu.MenuItem) {
 		newItem := parent.AddItem(menuItem.Label, shortcut)
 		newItem.SetCheckable(true)
 		newItem.SetChecked(menuItem.Checked)
-		if menuItem.Tooltip != "" {
-			newItem.SetToolTip(menuItem.Tooltip)
-		}
+		//if menuItem.Tooltip != "" {
+		//	newItem.SetToolTip(menuItem.Tooltip)
+		//}
 		if menuItem.Click != nil {
 			newItem.OnClick().Bind(func(e *winc.Event) {
 				toggleCheckBox(menuItem)
@@ -99,9 +99,9 @@ func processMenuItem(parent *winc.MenuItem, menuItem *menu.MenuItem) {
 		newItem := parent.AddItemRadio(menuItem.Label, shortcut)
 		newItem.SetCheckable(true)
 		newItem.SetChecked(menuItem.Checked)
-		if menuItem.Tooltip != "" {
-			newItem.SetToolTip(menuItem.Tooltip)
-		}
+		//if menuItem.Tooltip != "" {
+		//	newItem.SetToolTip(menuItem.Tooltip)
+		//}
 		if menuItem.Click != nil {
 			newItem.OnClick().Bind(func(e *winc.Event) {
 				toggleRadioItem(menuItem)

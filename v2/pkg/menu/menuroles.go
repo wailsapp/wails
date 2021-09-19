@@ -3,6 +3,7 @@
 // Electron License: https://github.com/electron/electron/blob/master/LICENSE
 package menu
 
+/*
 type Role string
 
 const (
@@ -202,3 +203,4 @@ func HelpSubMenu() *MenuItem {
 		Role: HelpSubMenuRole,
 	}
 }
+*/

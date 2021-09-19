@@ -92,8 +92,8 @@ func (m *Manager) ProcessClick(menuID string, data string, menuType string, pare
 
 	// Create new Callback struct
 	callbackData := &menu.CallbackData{
-		MenuItem:    menuItem,
-		ContextData: data,
+		MenuItem: menuItem,
+		//ContextData: data,
 	}
 
 	// Call back!

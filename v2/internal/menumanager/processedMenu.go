@@ -2,10 +2,6 @@ package menumanager
 
 import (
 	"encoding/json"
-	"strings"
-
-	"github.com/leaanthony/go-ansi-parser"
-
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 )
@@ -15,7 +11,7 @@ type ProcessedMenuItem struct {
 	// Label is what appears as the menu text
 	Label string `json:",omitempty"`
 	// Role is a predefined menu type
-	Role menu.Role `json:",omitempty"`
+	//Role menu.Role `json:",omitempty"`
 	// Accelerator holds a representation of a key binding
 	Accelerator *keys.Accelerator `json:",omitempty"`
 	// Type of MenuItem, EG: Checkbox, Text, Separator, Radio, Submenu
@@ -29,24 +25,25 @@ type ProcessedMenuItem struct {
 	// Submenu contains a list of menu items that will be shown as a submenu
 	//SubMenu []*MenuItem `json:"SubMenu,omitempty"`
 	SubMenu *ProcessedMenu `json:",omitempty"`
+	/*
+		// Colour
+		RGBA string `json:",omitempty"`
 
-	// Colour
-	RGBA string `json:",omitempty"`
+		// Font
+		FontSize int    `json:",omitempty"`
+		FontName string `json:",omitempty"`
 
-	// Font
-	FontSize int    `json:",omitempty"`
-	FontName string `json:",omitempty"`
+		// Image - base64 image data
+		Image            string `json:",omitempty"`
+		MacTemplateImage bool   `json:", omitempty"`
+		MacAlternate     bool   `json:", omitempty"`
 
-	// Image - base64 image data
-	Image            string `json:",omitempty"`
-	MacTemplateImage bool   `json:", omitempty"`
-	MacAlternate     bool   `json:", omitempty"`
+		// Tooltip
+		Tooltip string `json:",omitempty"`
 
-	// Tooltip
-	Tooltip string `json:",omitempty"`
-
-	// Styled label
-	StyledLabel []*ansi.StyledText `json:",omitempty"`
+		// Styled label
+		StyledLabel []*ansi.StyledText `json:",omitempty"`
+	*/
 }
 
 func NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *ProcessedMenuItem {
@@ -54,33 +51,33 @@ func NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *Pr
 	ID := menuItemMap.menuItemToIDMap[menuItem]
 
 	// Parse ANSI text
-	var styledLabel []*ansi.StyledText
-	tempLabel := menuItem.Label
-	if strings.Contains(tempLabel, "\033[") {
-		parsedLabel, err := ansi.Parse(menuItem.Label)
-		if err == nil {
-			styledLabel = parsedLabel
-		}
-	}
+	//var styledLabel []*ansi.StyledText
+	//tempLabel := menuItem.Label
+	//if strings.Contains(tempLabel, "\033[") {
+	//	parsedLabel, err := ansi.Parse(menuItem.Label)
+	//	if err == nil {
+	//		styledLabel = parsedLabel
+	//	}
+	//}
 
 	result := &ProcessedMenuItem{
-		ID:               ID,
-		Label:            menuItem.Label,
-		Role:             menuItem.Role,
-		Accelerator:      menuItem.Accelerator,
-		Type:             menuItem.Type,
-		Disabled:         menuItem.Disabled,
-		Hidden:           menuItem.Hidden,
-		Checked:          menuItem.Checked,
-		SubMenu:          nil,
-		RGBA:             menuItem.RGBA,
-		FontSize:         menuItem.FontSize,
-		FontName:         menuItem.FontName,
-		Image:            menuItem.Image,
-		MacTemplateImage: menuItem.MacTemplateImage,
-		MacAlternate:     menuItem.MacAlternate,
-		Tooltip:          menuItem.Tooltip,
-		StyledLabel:      styledLabel,
+		ID:    ID,
+		Label: menuItem.Label,
+		//Role:             menuItem.Role,
+		Accelerator: menuItem.Accelerator,
+		Type:        menuItem.Type,
+		Disabled:    menuItem.Disabled,
+		Hidden:      menuItem.Hidden,
+		Checked:     menuItem.Checked,
+		SubMenu:     nil,
+		//RGBA:             menuItem.RGBA,
+		//FontSize:         menuItem.FontSize,
+		//FontName:         menuItem.FontName,
+		//Image:            menuItem.Image,
+		//MacTemplateImage: menuItem.MacTemplateImage,
+		//MacAlternate:     menuItem.MacAlternate,
+		//Tooltip:          menuItem.Tooltip,
+		//StyledLabel:      styledLabel,
 	}
 
 	if menuItem.SubMenu != nil {
