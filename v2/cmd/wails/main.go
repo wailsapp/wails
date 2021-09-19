@@ -22,7 +22,13 @@ func fatal(message string) {
 }
 
 func banner(_ *clir.Cli) string {
-	return fmt.Sprintf("%s %s", colour.Yellow("Wails CLI"), colour.DarkRed(version))
+	return fmt.Sprintf("%s %s\n",
+		colour.Yellow("Wails CLI"),
+		colour.DarkRed(version))
+}
+
+func printFooter() {
+	println(colour.Yellow("\nIf Wails is useful to you or your company, please consider sponsoring the project:\nhttps://github.com/sponsors/leaanthony\n"))
 }
 
 func main() {
@@ -32,6 +38,7 @@ func main() {
 	app := clir.NewCli("Wails", "Go/HTML Appkit", version)
 
 	app.SetBannerFunction(banner)
+	defer printFooter()
 
 	build.AddBuildSubcommand(app, os.Stdout)
 	err = initialise.AddSubcommand(app, os.Stdout)
@@ -62,6 +69,7 @@ func main() {
 	err = app.Run()
 	if err != nil {
 		println("\n\nERROR: " + err.Error())
+		printFooter()
 		os.Exit(1)
 	}
 }
