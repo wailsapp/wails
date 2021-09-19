@@ -72,7 +72,7 @@ func AddSubCommand(app *clir.Cli, parent *clir.Command, w io.Writer) {
 			return err
 		}
 		g := gosod.New(baseTemplate)
-		g.SetTemplateFilters([]string{".tmpl"})
+		g.SetTemplateFilters([]string{".template"})
 
 		err = os.Chdir(templateDir)
 		if err != nil {

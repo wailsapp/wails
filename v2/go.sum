@@ -115,8 +115,8 @@ github.com/leaanthony/go-common-file-dialog v1.0.3 h1:O0uGjKnWtdEADGrkg+TyAAbZyl
 github.com/leaanthony/go-common-file-dialog v1.0.3/go.mod h1:TGhEc9eSJgRsupZ+iH1ZgAOnEo9zp05cRH2j08RPrF0=
 github.com/leaanthony/go-webview2 v0.0.0-20210914103035-f00aa774a934 h1:nK/JTPyJi5QRqYjVZjXgtN4/dhg2qtngoLxLDVn429k=
 github.com/leaanthony/go-webview2 v0.0.0-20210914103035-f00aa774a934/go.mod h1:lS5ds4bruPk9d7lzdF/OH31Z0YCerI6MmHNFGsWoUnM=
-github.com/leaanthony/gosod v1.0.1 h1:F+4c3DmEBfigi7oAswCV2RpQ+k4DcNbhuCZUGdBHacQ=
-github.com/leaanthony/gosod v1.0.1/go.mod h1:W8RyeSFBXu7RpIxPGEJfW4moSyGGEjlJMLV25wEbAdU=
+github.com/leaanthony/gosod v1.0.2 h1:LtjqaIoHuoXiQXbzMPq0isjNfltSyHKhWeiU/JbmP0w=
+github.com/leaanthony/gosod v1.0.2/go.mod h1:W8RyeSFBXu7RpIxPGEJfW4moSyGGEjlJMLV25wEbAdU=
 github.com/leaanthony/idgen v1.0.0 h1:IZreR+JGEzFV4yeVuBZA25gM0keUoFy+RDUldncQ+Jw=
 github.com/leaanthony/idgen v1.0.0/go.mod h1:4nBZnt8ml/f/ic/EVQuLxuj817RccT2fyrUaZFxrcVA=
 github.com/leaanthony/slicer v1.5.0 h1:aHYTN8xbCCLxJmkNKiLB6tgcMARl4eWmH9/F+S/0HtY=
