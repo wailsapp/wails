@@ -3,9 +3,10 @@
 package appng
 
 import (
+	"os/exec"
+
 	"github.com/leaanthony/winc/w32"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"os/exec"
 )
 
 // App defines a Wails application structure

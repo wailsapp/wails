@@ -8,7 +8,6 @@ import (
 	"log"
 	"runtime"
 
-	"github.com/leaanthony/winc"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
@@ -234,7 +233,7 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 }
 
 func (f *Frontend) Quit() {
-	winc.Exit()
+	//winc.Exit()
 }
 
 /*
