@@ -109,7 +109,7 @@ func initProject(options *templates.Options) error {
 	start := time.Now()
 
 	// Install the template
-	remote, err := templates.Install(options)
+	remote, template, err := templates.Install(options)
 	if err != nil {
 		return err
 	}
@@ -133,6 +133,8 @@ func initProject(options *templates.Options) error {
 	options.Logger.Println("Project Name:      " + options.ProjectName)
 	options.Logger.Println("Project Directory: " + options.TargetDir)
 	options.Logger.Println("Project Template:  " + options.TemplateName)
+	options.Logger.Println("Template Support:  " + template.HelpURL)
+
 	if options.GenerateVSCode {
 		options.Logger.Println("VSCode config files generated.")
 	}

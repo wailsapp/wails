@@ -4,6 +4,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/go-git/go-git/v5"
 	gofs "io/fs"
 	"io/ioutil"
 	"log"
@@ -11,8 +12,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-
-	"github.com/go-git/go-git/v5"
 
 	"github.com/pkg/errors"
 
@@ -161,11 +160,11 @@ func loadTemplateCache() error {
 }
 
 // Install the given template. Returns true if the template is remote.
-func Install(options *Options) (bool, error) {
+func Install(options *Options) (bool, *Template, error) {
 	// Get cwd
 	cwd, err := os.Getwd()
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
 
 	// Did the user want to install in current directory?
@@ -174,7 +173,7 @@ func Install(options *Options) (bool, error) {
 		// If the current directory is empty, use it
 		isEmpty, err := fs.DirIsEmpty(cwd)
 		if err != nil {
-			return false, err
+			return false, nil, err
 		}
 
 		if isEmpty {
@@ -183,7 +182,7 @@ func Install(options *Options) (bool, error) {
 		} else {
 			options.TargetDir = filepath.Join(cwd, options.ProjectName)
 			if fs.DirExists(options.TargetDir) {
-				return false, fmt.Errorf("cannot create project directory. Dir exists: %s", options.TargetDir)
+				return false, nil, fmt.Errorf("cannot create project directory. Dir exists: %s", options.TargetDir)
 			}
 		}
 
@@ -191,13 +190,13 @@ func Install(options *Options) (bool, error) {
 		// Get the absolute path of the given directory
 		targetDir, err := filepath.Abs(filepath.Join(cwd, options.TargetDir))
 		if err != nil {
-			return false, err
+			return false, nil, err
 		}
 		options.TargetDir = targetDir
 		if !fs.DirExists(options.TargetDir) {
 			err := fs.Mkdir(options.TargetDir)
 			if err != nil {
-				return false, err
+				return false, nil, err
 			}
 		}
 	}
@@ -214,7 +213,7 @@ func Install(options *Options) (bool, error) {
 			templateFS := os.DirFS(templatePath)
 			template, err = parseTemplate(templateFS)
 			if err != nil {
-				return false, errors.Wrap(err, "Error installing template")
+				return false, nil, errors.Wrap(err, "Error installing template")
 			}
 		} else {
 			// git clone to temporary dir
@@ -226,18 +225,18 @@ func Install(options *Options) (bool, error) {
 				}
 			}(tempdir)
 			if err != nil {
-				return false, err
+				return false, nil, err
 			}
 			// Remove the .git directory
 			err = os.RemoveAll(filepath.Join(tempdir, ".git"))
 			if err != nil {
-				return false, err
+				return false, nil, err
 			}
 
 			templateFS := os.DirFS(tempdir)
 			template, err = parseTemplate(templateFS)
 			if err != nil {
-				return false, err
+				return false, nil, err
 			}
 			remoteTemplate = true
 		}
@@ -275,15 +274,15 @@ func Install(options *Options) (bool, error) {
 	// Extract the template
 	err = installer.Extract(options.TargetDir, templateData)
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
 
 	err = generateIDEFiles(options)
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
 
-	return remoteTemplate, nil
+	return remoteTemplate, &template, nil
 }
 
 // Clones the given uri and returns the temporary cloned directory

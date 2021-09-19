@@ -41,6 +41,6 @@ func TestInstall(t *testing.T) {
 		AuthorEmail:  "lea.anthony@gmail.com",
 	}
 
-	err := Install(options)
+	_, _, err := Install(options)
 	is2.NoErr(err)
 }
