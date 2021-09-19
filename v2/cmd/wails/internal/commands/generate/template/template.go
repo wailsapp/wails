@@ -2,6 +2,7 @@ package template
 
 import (
 	"embed"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -26,8 +27,8 @@ func AddSubCommand(app *clir.Cli, parent *clir.Command, w io.Writer) {
 	name := ""
 	command.StringFlag("name", "The name of the template", &name)
 
-	migrate := false
-	command.BoolFlag("migrate", "This indicates that the current directory is a frontend project and should be used by the template", &migrate)
+	existingProjectDir := ""
+	command.StringFlag("frontend", "A path to an existing frontend project to include in the template", &existingProjectDir)
 
 	// Quiet Init
 	quiet := false
@@ -35,12 +36,23 @@ func AddSubCommand(app *clir.Cli, parent *clir.Command, w io.Writer) {
 
 	command.Action(func() error {
 
+		// name is mandatory
+		if name == "" {
+			return fmt.Errorf("no template name given")
+		}
+
 		// If the current directory is not empty, we create a new directory
 		cwd, err := os.Getwd()
 		if err != nil {
 			return err
 		}
-		templateDir := cwd
+		templateDir := filepath.Join(cwd, name)
+		if !fs.DirExists(templateDir) {
+			err := os.MkdirAll(templateDir, 0755)
+			if err != nil {
+				return err
+			}
+		}
 		empty, err := fs.DirIsEmpty(templateDir)
 		if err != nil {
 			return err
@@ -60,7 +72,7 @@ func AddSubCommand(app *clir.Cli, parent *clir.Command, w io.Writer) {
 			return err
 		}
 		g := gosod.New(baseTemplate)
-		g.SetTemplateFilters([]string{".template"})
+		g.SetTemplateFilters([]string{".tmpl"})
 
 		err = os.Chdir(templateDir)
 		if err != nil {
@@ -83,8 +95,13 @@ func AddSubCommand(app *clir.Cli, parent *clir.Command, w io.Writer) {
 			return err
 		}
 
+		err = os.Chdir(cwd)
+		if err != nil {
+			return err
+		}
+
 		// If we aren't migrating the files, just exit
-		if migrate == false {
+		if existingProjectDir == "" {
 			return nil
 		}
 
@@ -95,9 +112,16 @@ func AddSubCommand(app *clir.Cli, parent *clir.Command, w io.Writer) {
 			return err
 		}
 
-		// Move the files into a new frontend directory
-		println("Migrating files to frontend directory...")
-		err = fs.MoveDirExtended(cwd, frontendDir, []string{name})
+		// Copy the files into a new frontend directory
+		println("Migrating existing project files to frontend directory...")
+
+		sourceDir, err := filepath.Abs(existingProjectDir)
+		if err != nil {
+			return err
+		}
+
+		newFrontendDir := filepath.Join(templateDir, "frontend")
+		err = fs.CopyDirExtended(sourceDir, newFrontendDir, []string{name, "node_modules"})
 		if err != nil {
 			return err
 		}

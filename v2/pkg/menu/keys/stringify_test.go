@@ -39,9 +39,9 @@ func TestStringify(t *testing.T) {
 		{OptionOrAlt("a"), "Alt+A", Windows},
 		{OptionOrAlt("a"), "Option+A", Mac},
 		{OptionOrAlt("a"), "Alt+A", Linux},
-		{Super("a"), "Win+A", Windows},
-		{Super("a"), "Cmd+A", Mac},
-		{Super("a"), "Super+A", Linux},
+		//{Super("a"), "Win+A", Windows},
+		//{Super("a"), "Cmd+A", Mac},
+		//{Super("a"), "Super+A", Linux},
 
 		// Dual Combo non duplicate
 		{Combo("a", ControlKey, OptionOrAltKey), "Ctrl+Alt+A", Windows},
@@ -53,17 +53,17 @@ func TestStringify(t *testing.T) {
 		{Combo("a", ShiftKey, OptionOrAltKey), "Shift+Alt+A", Windows},
 		{Combo("a", ShiftKey, OptionOrAltKey), "Shift+Option+A", Mac},
 		{Combo("a", ShiftKey, OptionOrAltKey), "Shift+Alt+A", Linux},
-		{Combo("a", SuperKey, OptionOrAltKey), "Win+Alt+A", Windows},
-		{Combo("a", SuperKey, OptionOrAltKey), "Cmd+Option+A", Mac},
-		{Combo("a", SuperKey, OptionOrAltKey), "Super+Alt+A", Linux},
+		//{Combo("a", SuperKey, OptionOrAltKey), "Win+Alt+A", Windows},
+		//{Combo("a", SuperKey, OptionOrAltKey), "Cmd+Option+A", Mac},
+		//{Combo("a", SuperKey, OptionOrAltKey), "Super+Alt+A", Linux},
 
 		// Combo duplicate
 		{Combo("a", OptionOrAltKey, OptionOrAltKey), "Alt+A", Windows},
 		{Combo("a", OptionOrAltKey, OptionOrAltKey), "Option+A", Mac},
 		{Combo("a", OptionOrAltKey, OptionOrAltKey), "Alt+A", Linux},
-		{Combo("a", OptionOrAltKey, SuperKey, OptionOrAltKey), "Alt+Win+A", Windows},
-		{Combo("a", OptionOrAltKey, SuperKey, OptionOrAltKey), "Option+Cmd+A", Mac},
-		{Combo("a", OptionOrAltKey, SuperKey, OptionOrAltKey), "Alt+Super+A", Linux},
+		//{Combo("a", OptionOrAltKey, SuperKey, OptionOrAltKey), "Alt+Win+A", Windows},
+		//{Combo("a", OptionOrAltKey, SuperKey, OptionOrAltKey), "Option+Cmd+A", Mac},
+		//{Combo("a", OptionOrAltKey, SuperKey, OptionOrAltKey), "Alt+Super+A", Linux},
 	}
 	for index, tt := range tests {
 		t.Run(strconv.Itoa(index), func(t *testing.T) {
