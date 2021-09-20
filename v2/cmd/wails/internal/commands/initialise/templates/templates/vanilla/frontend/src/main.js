@@ -14,3 +14,10 @@ window.greet = function () {
     document.getElementById("result").innerText = result;
   });
 };
+
+nameElement.onkeydown = function (e) {
+  console.log(e)
+  if (e.keyCode == 13) {
+    window.greet()
+  }
+}
