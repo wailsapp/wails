@@ -28,5 +28,5 @@ func (b *App) shutdown(ctx context.Context) {
 
 // Greet returns a greeting for the given name
 func (b *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's your show time!", name)
+	return fmt.Sprintf("Hello %s, It's show time!", name)
 }
