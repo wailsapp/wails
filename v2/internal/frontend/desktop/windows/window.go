@@ -51,11 +51,13 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 	}
 
 	result.SetSize(options.Width, options.Height)
-	result.SetText(options.Title)
-	result.EnableSizable(!options.DisableResize)
-	result.EnableMaxButton(!options.DisableResize)
-	result.SetMinSize(options.MinWidth, options.MinHeight)
-	result.SetMaxSize(options.MaxWidth, options.MaxHeight)
+	if options.Frameless == false {
+		result.SetText(options.Title)
+		result.EnableSizable(!options.DisableResize)
+		result.EnableMaxButton(!options.DisableResize)
+		result.SetMinSize(options.MinWidth, options.MinHeight)
+		result.SetMaxSize(options.MaxWidth, options.MaxHeight)
+	}
 
 	if options.Windows != nil {
 		if options.Windows.WindowIsTranslucent {
