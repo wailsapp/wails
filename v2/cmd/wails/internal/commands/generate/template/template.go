@@ -38,6 +38,7 @@ func AddSubCommand(app *clir.Cli, parent *clir.Command, w io.Writer) {
 
 		// name is mandatory
 		if name == "" {
+			command.PrintHelp()
 			return fmt.Errorf("no template name given")
 		}
 

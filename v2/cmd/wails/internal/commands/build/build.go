@@ -42,7 +42,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	// Setup Platform flag
 	platform := runtime.GOOS
-	command.StringFlag("platform", "Platform to target", &platform)
+	//command.StringFlag("platform", "Platform to target", &platform)
 
 	// Verbosity
 	verbosity := 1
