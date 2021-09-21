@@ -359,9 +359,11 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 
 func (f *Frontend) processMessage(message string) {
 	if message == "drag" {
-		err := f.startDrag()
-		if err != nil {
-			f.logger.Error(err.Error())
+		if !f.mainWindow.IsFullScreen() {
+			err := f.startDrag()
+			if err != nil {
+				f.logger.Error(err.Error())
+			}
 		}
 		return
 	}

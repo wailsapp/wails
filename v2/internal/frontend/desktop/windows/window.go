@@ -51,10 +51,10 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 	}
 
 	result.SetSize(options.Width, options.Height)
-	if options.Frameless == false {
-		result.SetText(options.Title)
-		result.EnableSizable(!options.DisableResize)
+	result.SetText(options.Title)
+	if options.Frameless == false && !options.Fullscreen {
 		result.EnableMaxButton(!options.DisableResize)
+		result.EnableSizable(!options.DisableResize)
 		result.SetMinSize(options.MinWidth, options.MinHeight)
 		result.SetMaxSize(options.MaxWidth, options.MaxHeight)
 	}
