@@ -66,6 +66,12 @@ func main() {
 		fatal(err.Error())
 	}
 
+	command := app.NewSubCommand("version", "The Wails CLI version")
+	command.Action(func() error {
+		println(version)
+		return nil
+	})
+
 	err = app.Run()
 	if err != nil {
 		println("\n\nERROR: " + err.Error())
