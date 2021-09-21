@@ -125,6 +125,8 @@ github.com/leaanthony/webview2runtime v1.1.0 h1:N0pv55ift8XtqozIp4PNOtRCJ/Qdd/qz
 github.com/leaanthony/webview2runtime v1.1.0/go.mod h1:hH9GnWCve3DYzNaPOcPbhHQ7fodXR1QJNsnwixid4Tk=
 github.com/leaanthony/winc v0.0.0-20210906113646-fd400754f6ba h1:JalbOARv2XoT3RtJg7XGKKYcp7IndycC7pccLlfVRZI=
 github.com/leaanthony/winc v0.0.0-20210906113646-fd400754f6ba/go.mod h1:KEbMsKoznsebyGHwLk5LqkFOxL5uXSRdvpP4+avmAMs=
+github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 h1:5iOd93PZbpH4Iir8QkC4coFD+zEQEZSIRcjwjTFZkr0=
+github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18/go.mod h1:KEbMsKoznsebyGHwLk5LqkFOxL5uXSRdvpP4+avmAMs=
 github.com/leaanthony/winicon v1.0.0 h1:ZNt5U5dY71oEoKZ97UVwJRT4e+5xo5o/ieKuHuk8NqQ=
 github.com/leaanthony/winicon v1.0.0/go.mod h1:en5xhijl92aphrJdmRPlh4NI1L6wq3gEm0LpXAPghjU=
 github.com/leodido/go-urn v1.2.0 h1:hpXL4XnriNwQ/ABnpepYM/1vCLWNDfUNts8dX3xTG6Y=

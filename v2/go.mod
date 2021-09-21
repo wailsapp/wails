@@ -25,7 +25,7 @@ require (
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/webview2runtime v1.1.0
-	github.com/leaanthony/winc v0.0.0-20210906113646-fd400754f6ba
+	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
 	github.com/olekukonko/tablewriter v0.0.4
