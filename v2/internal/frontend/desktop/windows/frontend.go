@@ -112,12 +112,15 @@ func (f *Frontend) Run(ctx context.Context) error {
 		}
 	})
 
-	// TODO: Move this into a callback from frontend
 	go func() {
 		if f.frontendOptions.OnStartup != nil {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
+
+	if f.frontendOptions.Fullscreen {
+		mainWindow.Fullscreen()
+	}
 
 	mainWindow.Run()
 	return nil

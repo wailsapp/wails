@@ -75,10 +75,6 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 
 	result.SetFont(winc.DefaultFont)
 
-	if options.Fullscreen {
-		result.Fullscreen()
-	}
-
 	if options.Menu != nil {
 		result.SetApplicationMenu(options.Menu)
 	}
