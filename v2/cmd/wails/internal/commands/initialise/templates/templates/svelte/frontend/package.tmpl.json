@@ -23,5 +23,6 @@
   },
   "dependencies": {
     "sirv-cli": "^1.0.0"
-  }
-,"author":"{{.AuthorName}}"}
+  },
+  "author": "{{.AuthorName}}"
+}

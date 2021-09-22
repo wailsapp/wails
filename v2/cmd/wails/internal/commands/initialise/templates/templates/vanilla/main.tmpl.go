@@ -14,10 +14,10 @@ import (
 var assets embed.FS
 
 func main() {
-
-	// Create application with options
+	// Create an instance of the app structure
 	app := NewApp()
 
+	// Create application with options
 	err := wails.Run(&options.App{
 		Title:             "{{.ProjectName}}",
 		Width:             720,
@@ -33,16 +33,18 @@ func main() {
 		HideWindowOnClose: false,
 		RGBA:              &options.RGBA{255, 255, 255, 255},
 		Assets:            assets,
+		LogLevel:   logger.DEBUG,
+		OnStartup:  app.startup,
+		OnDomReady: app.domReady,
+		OnShutdown: app.shutdown,
+		Bind: []interface{}{
+			app,
+		},
+		// Windows platform specific options
 		Windows: &windows.Options{
 			WebviewIsTransparent: false,
 			WindowIsTranslucent:  false,
 			DisableWindowIcon:    false,
-		},
-		LogLevel:   logger.DEBUG,
-		OnStartup:  app.startup,
-		OnShutdown: app.shutdown,
-		Bind: []interface{}{
-			app,
 		},
 	})
 
