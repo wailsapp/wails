@@ -2,8 +2,6 @@ package dev
 
 import (
 	"fmt"
-	"github.com/leaanthony/slicer"
-	"github.com/wailsapp/wails/v2/internal/project"
 	"io"
 	"log"
 	"net/http"
@@ -14,6 +12,9 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/leaanthony/slicer"
+	"github.com/wailsapp/wails/v2/internal/project"
 
 	"github.com/pkg/browser"
 	"github.com/wailsapp/wails/v2/internal/colour"
@@ -374,9 +375,11 @@ func restartApp(logger *clilogger.CLILogger, buildOptions *build.Options, debugB
 	err = newProcess.Start(exitCodeChannel)
 	if err != nil {
 		// Remove binary
-		deleteError := fs.DeleteFile(appBinary)
-		if deleteError != nil {
-			logger.Fatal("Unable to delete app binary: " + appBinary)
+		if fs.FileExists(appBinary) {
+			deleteError := fs.DeleteFile(appBinary)
+			if deleteError != nil {
+				logger.Fatal("Unable to delete app binary: " + appBinary)
+			}
 		}
 		logger.Fatal("Unable to start application: %s", err.Error())
 	}
