@@ -57,6 +57,7 @@ type Options struct {
 	InitGit             bool
 	AuthorName          string
 	AuthorEmail         string
+	AssetDir            string
 }
 
 // Template holds data relating to a template
@@ -340,8 +341,23 @@ func generateVSCodeFiles(options *Options) error {
 		binaryName += ".exe"
 	}
 
-	options.PathToDesktopBinary = filepath.Join("build", runtime.GOOS, "desktop", binaryName)
-	options.PathToServerBinary = filepath.Join("build", runtime.GOOS, "server", binaryName)
+	// Parse wails.json for assetdir
+	wailsJSONBytes, err := os.ReadFile(filepath.Join(options.TargetDir, "wails.json"))
+	if err != nil {
+		return err
+	}
+	var wailsJSON map[string]interface{}
+	err = json.Unmarshal(wailsJSONBytes, &wailsJSON)
+	if err != nil {
+		return err
+	}
+	assetDir := wailsJSON["assetdir"]
+	if assetDir == "" {
+		return fmt.Errorf("Unable to find 'assetdir' in 'wails.json' ")
+	}
+
+	options.AssetDir = assetDir.(string)
+	options.PathToDesktopBinary = filepath.ToSlash(filepath.Join("build", "bin", binaryName))
 
 	err = installer.Extract(targetDir, options)
 	if err != nil {

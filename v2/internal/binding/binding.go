@@ -2,7 +2,7 @@ package binding
 
 import (
 	"fmt"
-	"github.com/tkrajina/typescriptify-golang-structs/typescriptify"
+	"github.com/leaanthony/typescriptify-golang-structs/typescriptify"
 	"reflect"
 	"runtime"
 	"strings"
@@ -76,7 +76,6 @@ func (b *Bindings) Add(structPtr interface{}) error {
 }
 
 func (b *Bindings) WriteTS(filename string) error {
-	println("WriteTS to:", filename)
 	return b.converter.ConvertToFile(filename)
 }
 

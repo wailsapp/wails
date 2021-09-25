@@ -24,6 +24,7 @@ require (
 	github.com/leaanthony/gosod v1.0.2
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
+	github.com/leaanthony/typescriptify-golang-structs v0.1.7
 	github.com/leaanthony/webview2runtime v1.1.0
 	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18
 	github.com/leaanthony/winicon v1.0.0
@@ -36,7 +37,6 @@ require (
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/tidwall/sjson v1.1.7
-	github.com/tkrajina/typescriptify-golang-structs v0.1.6
 	github.com/wzshiming/ctc v1.2.3
 	github.com/xyproto/xpm v1.2.1
 	github.com/ztrue/tracerr v0.3.0
@@ -68,7 +68,7 @@ require (
 	github.com/tidwall/gjson v1.8.0 // indirect
 	github.com/tidwall/match v1.0.3 // indirect
 	github.com/tidwall/pretty v1.1.0 // indirect
-	github.com/tkrajina/go-reflector v0.5.4 // indirect
+	github.com/tkrajina/go-reflector v0.5.5 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.28.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect

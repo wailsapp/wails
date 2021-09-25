@@ -106,7 +106,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		}
 
 		if compress && platform == "darwin/universal" {
-			println("Warning: compress flag unsupported for universal binaries. Ignoring.")
+			logger.Println("Warning: compress flag unsupported for universal binaries. Ignoring.")
 			compress = false
 		}
 

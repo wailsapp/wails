@@ -1,23 +1,16 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-      {
-        "label": "build_desktop",
-        "type": "shell",
-        "options": {
-            "cwd": "{{.TargetDir}}"
-        },
-        "command": "wails build"
-      },
-      {
-        "label": "build_server",
-        "type": "shell",
-        "options": {
-            "cwd": "{{.TargetDir}}"
-        },
-        "command": "wails build -t server"
-      },
+"version": "2.0.0",
+"tasks": [
+{
+"label": "build",
+"type": "shell",
+"options": {
+"cwd": "${workspaceFolder}"
+},
+"command": "go",
+"args": ["build", "-tags", "dev", "-gcflags", "all=-N -l", "-o", "{{.PathToDesktopBinary}}"]
 
-    ]
-  }
+},
+]
+}
   
