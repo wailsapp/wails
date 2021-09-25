@@ -69,12 +69,12 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 			if mt, msg, err = c.ReadMessage(); err != nil {
 				break
 			}
-			// d.logger.Info("[%p] %s", c, msg)
+			// We do not support drag in browsers
 			if string(msg) == "drag" {
 				continue
 			}
 
-			// Notify the other browsers
+			// Notify the other browsers of "EventEmit"
 			if len(msg) > 2 && strings.HasPrefix(string(msg), "EE") {
 				d.notifyExcludingSender(msg, c)
 			}
@@ -86,7 +86,6 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 			}
 			if result != "" {
 				if err = c.WriteMessage(mt, []byte(result)); err != nil {
-					log.Println("write:", err)
 					break
 				}
 			}
@@ -112,7 +111,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		d.LogInfo("Serving assets from: %s", absdir)
+		d.LogDebug("Serving assets from: %s", absdir)
 	}
 
 	d.server.Get("*", d.loadAsset)
@@ -123,14 +122,14 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		if err != nil {
 			log.Error(err.Error())
 		}
-		d.LogInfo("Shutdown completed")
+		d.LogDebug("Shutdown completed")
 	}(d.server, d.logger)
 
-	d.LogInfo("Serving application at http://localhost:34115")
+	d.LogDebug("Serving application at http://localhost:34115")
 
 	// Launch desktop app
 	err := d.desktopFrontend.Run(ctx)
-	d.LogInfo("Starting shutdown")
+	d.LogDebug("Starting shutdown")
 	err2 := d.server.Shutdown()
 	if err2 != nil {
 		d.logger.Error(err.Error())
@@ -273,8 +272,8 @@ func (d *DevWebServer) loadAsset(ctx *fiber.Ctx) error {
 	return nil
 }
 
-func (d *DevWebServer) LogInfo(message string, args ...interface{}) {
-	d.logger.Info("[DevWebServer] "+message, args...)
+func (d *DevWebServer) LogDebug(message string, args ...interface{}) {
+	d.logger.Debug("[DevWebServer] "+message, args...)
 }
 
 func (d *DevWebServer) newWebsocketSession(c *websocket.Conn) {
@@ -284,11 +283,11 @@ func (d *DevWebServer) newWebsocketSession(c *websocket.Conn) {
 		d.socketMutex.Lock()
 		defer d.socketMutex.Unlock()
 		delete(d.websocketClients, c)
-		d.LogInfo(fmt.Sprintf("Websocket client %p disconnected", c))
+		d.LogDebug(fmt.Sprintf("Websocket client %p disconnected", c))
 		return nil
 	})
 	d.websocketClients[c] = struct{}{}
-	d.LogInfo(fmt.Sprintf("Websocket client %p connected", c))
+	d.LogDebug(fmt.Sprintf("Websocket client %p connected", c))
 }
 
 type EventNotify struct {

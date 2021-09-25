@@ -146,6 +146,5 @@ func (e *Events) notifyBackend(eventName string, data ...interface{}) {
 }
 
 func (e *Events) AddFrontend(appFrontend frontend.Frontend) {
-	println("Adding frontend", appFrontend)
 	e.frontend = append(e.frontend, appFrontend)
 }

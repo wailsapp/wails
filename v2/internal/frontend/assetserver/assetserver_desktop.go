@@ -37,7 +37,7 @@ func NewDesktopAssetServer(ctx context.Context, assets embed.FS, bindingsJSON st
 		if err != nil {
 			return nil, err
 		}
-		result.LogInfo("Loading assets from: %s", absdir)
+		result.LogDebug("Loading assets from: %s", absdir)
 	}
 
 	var buffer bytes.Buffer
@@ -48,9 +48,9 @@ func NewDesktopAssetServer(ctx context.Context, assets embed.FS, bindingsJSON st
 	return result, err
 }
 
-func (d *DesktopAssetServer) LogInfo(message string, args ...interface{}) {
+func (d *DesktopAssetServer) LogDebug(message string, args ...interface{}) {
 	if d.logger != nil {
-		d.logger.Info("[DesktopAssetServer] "+message, args...)
+		d.logger.Debug("[DesktopAssetServer] "+message, args...)
 	}
 }
 
