@@ -124,6 +124,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			}
 		}
 
+		assetDir, err := filepath.Abs(assetDir)
 		if err != nil {
 			return err
 		}
@@ -229,7 +230,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			if strings.HasPrefix(dir, filepath.Join(projectDir, "build")) {
 				return
 			}
-			//println("Watching", dir)
+			// Ignore dot directories
+			if strings.HasPrefix(dir, ".") {
+				return
+			}
+			println("Watching", dir)
 			err = watcher.Add(dir)
 			if err != nil {
 				logger.Fatal(err.Error())
