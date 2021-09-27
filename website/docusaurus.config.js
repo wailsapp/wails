@@ -31,7 +31,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/palenight');
     [
       'docusaurus-plugin-plausible',
       {
-        domain: 'beta.wails.io',
+        domain: 'wails.io',
       },
     ],
   ],
@@ -43,7 +43,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/palenight');
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
-          editUrl: 'https://github.com/wailsapp/wails/website',
+          editUrl: 'https://github.com/wailsapp/wails/edit/master/website',
         },
         blog: {
           showReadingTime: true,
