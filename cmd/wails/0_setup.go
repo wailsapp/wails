@@ -39,12 +39,6 @@ Create your first project by running 'wails init'.`
 			return err
 		}
 
-		// Check Mewn
-		err = cmd.CheckMewn(false)
-		if err != nil {
-			return err
-		}
-
 		// Check for errors
 		// CheckDependencies() returns !errors
 		// so to get the right message in this

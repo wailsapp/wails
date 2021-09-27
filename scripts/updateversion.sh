@@ -16,7 +16,6 @@ cd runtime/js
 npm run build
 
 cd ../..
-mewn
 
 git add cmd/version.go
 git commit cmd/version.go -m "Bump to ${TAG}" 

@@ -95,7 +95,7 @@ var assets embed.FS
 
 由于生产二进制文件使用中包含在`embed.FS`的文件，因此应用程序不需要附带任何外部文件。
 
-在`dev`模式下，资源从磁盘加载，任何更改都会导致“实时重新加载”。资源的位置需要传递给`dev`命令，并且很可能与嵌入路径相同。更多细节可以在[应用程序开发指南](/docs/guides/appdev)中找到。
+在`dev`模式下，资源从磁盘加载，任何更改都会导致“实时重新加载”。资源的位置需要传递给`dev`命令，并且很可能与嵌入路径相同。更多细节可以在[应用程序开发指南](/docs/guides/application-development)中找到。
 
 #### 应用程序生命周期回调
 
@@ -111,7 +111,7 @@ var assets embed.FS
 
 所有数据类型都在 Go 和 Javascript 之间正确转换。包括结构体。如果你从 Go 调用返回一个结构体，它将作为 `Javascript` Map 返回到你的前端。注意：如果你想使用结构体，你必须为你的结构体字段定义`json` 标签！也可以将结构体发送回 Go。任何作为期望结构的参数传递的 Javascript Map 都将转换为该结构类型。为了使这个过程更容易，在 `dev`模式下，会生成一个 TypeScript 模块，定义绑定方法中使用的所有结构类型。使用此模块，可以构建原生 Javascript 对象并将其发送到 Go 代码。
 
-有关绑定的更多信息可以在[绑定示例](/docs/examples/binding)页面中找到。
+有关绑定的更多信息可以在[绑定示例](/docs/guides/application-development#binding-methods)页面中找到。
 
 ## 前端
 

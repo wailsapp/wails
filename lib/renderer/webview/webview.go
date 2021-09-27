@@ -65,6 +65,18 @@ static inline void CgoWebViewSetTitle(void *w, char *title) {
 	webview_set_title((struct webview *)w, title);
 }
 
+static inline void CgoWebViewFocus(void *w) {
+	webview_focus((struct webview *)w);
+}
+
+static inline void CgoWebViewMinSize(void *w, int width, int height) {
+	webview_minsize((struct webview *)w, width, height);
+}
+
+static inline void CgoWebViewMaxSize(void *w, int width, int height) {
+	webview_maxsize((struct webview *)w, width, height);
+}
+
 static inline void CgoWebViewSetFullscreen(void *w, int fullscreen) {
 	webview_set_fullscreen((struct webview *)w, fullscreen);
 }
@@ -170,6 +182,16 @@ type WebView interface {
 	// SetTitle() changes window title. This method must be called from the main
 	// thread only. See Dispatch() for more details.
 	SetTitle(title string)
+
+	// Focus() puts the main window into focus
+	Focus()
+
+	// SetMinSize() sets the minimum size of the window
+	SetMinSize(width, height int)
+
+	// SetMaxSize() sets the maximum size of the window
+	SetMaxSize(width, height int)
+
 	// SetFullscreen() controls window full-screen mode. This method must be
 	// called from the main thread only. See Dispatch() for more details.
 	SetFullscreen(fullscreen bool)
@@ -307,6 +329,18 @@ func (w *webview) SetColor(r, g, b, a uint8) {
 	C.CgoWebViewSetColor(w.w, C.uint8_t(r), C.uint8_t(g), C.uint8_t(b), C.uint8_t(a))
 }
 
+func (w *webview) Focus() {
+	C.CgoWebViewFocus(w.w)
+}
+
+func (w *webview) SetMinSize(width, height int) {
+	C.CgoWebViewMinSize(w.w, C.int(width), C.int(height))
+}
+
+func (w *webview) SetMaxSize(width, height int) {
+	C.CgoWebViewMaxSize(w.w, C.int(width), C.int(height))
+}
+
 func (w *webview) SetFullscreen(fullscreen bool) {
 	C.CgoWebViewSetFullscreen(w.w, C.int(boolToInt(fullscreen)))
 }
@@ -353,7 +387,9 @@ func _webviewDispatchGoCallback(index unsafe.Pointer) {
 	f = fns[uintptr(index)]
 	delete(fns, uintptr(index))
 	m.Unlock()
-	f()
+	if f != nil {
+		f()
+	}
 }
 
 //export _webviewExternalInvokeCallback
@@ -369,5 +405,7 @@ func _webviewExternalInvokeCallback(w unsafe.Pointer, data unsafe.Pointer) {
 		}
 	}
 	m.Unlock()
-	cb(wv, C.GoString((*C.char)(data)))
+	if cb != nil {
+		cb(wv, C.GoString((*C.char)(data)))
+	}
 }

@@ -27,19 +27,13 @@ func init() {
 		logger.PrintSmallBanner(message)
 		fmt.Println()
 
-		// Check Mewn is installed
-		err := cmd.CheckMewn(verbose)
-		if err != nil {
-			return err
-		}
-
 		// Project options
 		projectOptions := &cmd.ProjectOptions{}
 
 		// Check we are in project directory
 		// Check project.json loads correctly
 		fs := cmd.NewFSHelper()
-		err = projectOptions.LoadConfig(fs.Cwd())
+		err := projectOptions.LoadConfig(fs.Cwd())
 		if err != nil {
 			return err
 		}

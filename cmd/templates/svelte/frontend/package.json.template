@@ -3,7 +3,7 @@
   "author": "{{.Author.Name}}<{{.Author.Email}}>",
   "scripts": {
     "build": "rollup -c",
-    "dev": "rollup -c -w",
+    "serve": "rollup -c -w",
     "start": "sirv public"
   },
   "devDependencies": {

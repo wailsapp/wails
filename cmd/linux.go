@@ -67,6 +67,10 @@ const (
 	Ctlos
 	// EndeavourOS linux distribution
 	EndeavourOS
+	// Crux linux distribution
+	Crux
+	// RHEL distribution
+	RHEL
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -129,6 +133,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Fedora
 	case "centos":
 		result.Distribution = CentOS
+	case "rhel":
+		result.Distribution = RHEL
 	case "arch":
 		result.Distribution = Arch
 	case "archlabs":
@@ -175,6 +181,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Solus
 	case "endeavouros":
 		result.Distribution = EndeavourOS
+	case "crux":
+		result.Distribution = Crux
 	default:
 		result.Distribution = Unknown
 	}
@@ -252,6 +260,17 @@ func RpmInstalled(packageName string) (bool, error) {
 		return false, fmt.Errorf("cannot check dependencies: rpm not found")
 	}
 	_, _, exitCode, _ := rpm.Run("--query", packageName)
+	return exitCode == 0, nil
+}
+
+// PrtGetInstalled uses prt-get to see if a package is installed
+func PrtGetInstalled(packageName string) (bool, error) {
+	program := NewProgramHelper()
+	prtget := program.FindProgram("prt-get")
+	if prtget == nil {
+		return false, fmt.Errorf("cannot check dependencies: prt-get not found")
+	}
+	_, _, exitCode, _ := prtget.Run("isinst", packageName)
 	return exitCode == 0, nil
 }
 

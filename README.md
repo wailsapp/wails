@@ -2,7 +2,7 @@
    <img src="logo_cropped.png" width="40%"><br/>
 </p>
 <p align="center">
-   A framework for building desktop applications using Go & Web Technologies.<br/><br/>
+   Build desktop applications using Go & Web Technologies.<br/><br/>
    <a href="https://github.com/wailsapp/wails/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
    <a href="https://goreportcard.com/report/github.com/wailsapp/wails"><img src="https://goreportcard.com/badge/github.com/wailsapp/wails"/></a>
    <a href="http://godoc.org/github.com/wailsapp/wails"><img src="https://img.shields.io/badge/godoc-reference-blue.svg"/></a>
@@ -14,13 +14,48 @@
    <a href="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" rel="nofollow"><img src="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" alt="Release Pipelines"></a>
 </p>
 
-The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
+<span id="nav-1"></span>
+
+## Internationalization
+
+English | [简体中文](README.zh-Hans.md)
+
+The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different
+approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to
+make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
 
 The official docs can be found at [https://wails.app](https://wails.app).
 
+<span id="nav-2"></span>
+
+## Contents
+
+- [1. Internationalization](#nav-1)
+- [2. Contents](#nav-2)
+- [3. Features](#nav-3)
+- [4. Sponsors](#nav-4)
+- [5. Installation](#nav-5)
+   - [5.1 MacOS](#nav-5-1)
+   - [5.2 Linux](#nav-5-2)
+      - [5.2.1 Debian/Ubuntu](#nav-5-2-1)
+      - [5.2.2 Arch Linux / ArchLabs / Ctlos Linux](#nav-5-2-2)
+      - [5.2.3 Centos](#nav-5-2-3)
+      - [5.2.4 Fedora](#nav-5-2-4)
+      - [5.2.5 VoidLinux & VoidLinux-musl](#nav-5-2-5)
+      - [5.2.6 Gentoo](#nav-5-2-6)
+   - [5.3 Windows](#nav-5-3)
+- [6. Installation](#nav-6)
+- [7. Next Steps](#nav-7)
+- [8. FAQ](#nav-8)
+- [9. Contributors](#nav-9)
+- [10. Special Mentions](#nav-10)
+- [11. Special Thanks](#nav-11)
+
+<span id="nav-3"></span>
+
 ## Features
 
-- Use standard Go libraries/frameworks for the backend
+- Use standard Go for the backend
 - Use any frontend technology to build your UI
 - Quickly create Vue, Vuetify or React frontends for your Go programs
 - Expose Go methods/functions to the frontend via a single bind command
@@ -30,13 +65,70 @@ The official docs can be found at [https://wails.app](https://wails.app).
 - Powerful cli tool
 - Multiplatform
 
+<span id="nav-4"></span>
+
+## Sponsors
+
+This project is supported by these kind people / companies:
+
+<a href="https://github.com/sponsors/leaanthony" style="width:100px;">
+  <img src="sponsors/bronze%20sponsor.png" width="100"/>
+</a>
+<a href="https://github.com/snider" style="width:100px;">
+  <img src="https://github.com/snider.png?size=100" width="100"/>
+</a>
+<br/>
+<a href="https://github.com/matryer" style="width:100px">
+  <img src="https://github.com/matryer.png" width="100"/>
+</a>
+<a href="https://www.jetbrains.com?from=Wails" style="width:100px">
+  <img src="jetbrains-grayscale.png" width="100"/>
+</a>
+<a href="https://github.com/tc-hib" style="width:55px;border-radius: 50%">
+ <img src="https://github.com/tc-hib.png?size=55" width="55" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/picatz" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/picatz.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/tylertravisty" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/tylertravisty.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/trea" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/trea.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/LanguageAgnostic" style="width:55px;border-radius: 50%">
+  <img src="https://github.com/LanguageAgnostic.png?size=55" width="55" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/fcjr" style="width:55px;border-radius: 50%">
+  <img src="https://github.com/fcjr.png?size=55" width="55" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/nickarellano" style="width:60px;border-radius: 50%">
+  <img src="https://github.com/nickarellano.png?size=60" width="60" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/bglw" style="width:65px;border-radius: 50%">
+  <img src="https://github.com/bglw.png?size=65" width="65" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/jugglingjsons" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/jugglingjsons.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+<a href="https://github.com/marcus-crane" style="width:50px;border-radius: 50%">
+  <img src="https://github.com/marcus-crane.png?size=50" width="50" style="border-radius: 50%"/>
+</a>
+
+<span id="nav-5"></span>
 
 ## Installation
 
-Wails uses cgo to bind to the native rendering engines so a number of platform dependent libraries are needed as well as an installation of Go. The basic requirements are:
+Wails uses cgo to bind to the native rendering engines so a number of platform dependent libraries are needed as well as
+an installation of Go. The basic requirements are:
 
-- Go 1.13
+- Go 1.16
 - npm
+
+<span id="nav-5-1"></span>
 
 ### MacOS
 
@@ -44,7 +136,11 @@ Make sure you have the xcode command line tools installed. This can be done by r
 
 `xcode-select --install`
 
+<span id="nav-5-2"></span>
+
 ### Linux
+
+<span id="nav-5-2-1"></span>
 
 #### Debian/Ubuntu
 
@@ -54,7 +150,9 @@ _Debian: 8, 9, 10_
 
 _Ubuntu: 16.04, 18.04, 19.04_
 
-_Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, Kali, Neon_, Pop!_OS
+_Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, Kali, Neon_, Pop!\_OS
+
+<span id="nav-5-2-2"></span>
 
 #### Arch Linux / ArchLabs / Ctlos Linux
 
@@ -62,11 +160,15 @@ _Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, K
 
 _Also succesfully test on: Manjaro & ArcoLinux_
 
+<span id="nav-5-2-3"></span>
+
 #### Centos
 
 `sudo yum install webkitgtk3-devel gtk3-devel`
 
 _CentOS 6, 7_
+
+<span id="nav-5-2-4"></span>
 
 #### Fedora
 
@@ -74,17 +176,27 @@ _CentOS 6, 7_
 
 _Fedora 29, 30_
 
+<span id="nav-5-2-5"></span>
+
 #### VoidLinux & VoidLinux-musl
 
 `xbps-install gtk+3-devel webkit2gtk-devel`
+
+<span id="nav-5-2-6"></span>
 
 #### Gentoo
 
 `sudo emerge gtk+:3 webkit-gtk`
 
+<span id="nav-5-3"></span>
+
 ### Windows
 
-Windows requires gcc and related tooling. The recommended download is from [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download). Once this is installed, you are good to go.
+Windows requires gcc and related tooling. The recommended download is
+from [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download). Once this is installed, you are good to
+go.
+
+<span id="nav-6"></span>
 
 ## Installation
 
@@ -96,61 +208,120 @@ Installation is as simple as running the following command:
 go get -u github.com/wailsapp/wails/cmd/wails
 </pre>
 
+<span id="nav-7"></span>
+
 ## Next Steps
 
 It is recommended at this stage to read the comprehensive documentation at [https://wails.app](https://wails.app).
 
+<span id="nav-8"></span>
+
 ## FAQ
 
- * Is this an alternative to Electron?
+- Is this an alternative to Electron?
 
-   Depends on your requirements. It's designed to make it easy for Go programmers to make lightweight desktop applications or add a frontend to their existing applications. Whilst Wails does not currently offer hooks into native elements such as menus, this may change in the future.
+  Depends on your requirements. It's designed to make it easy for Go programmers to make lightweight desktop
+  applications or add a frontend to their existing applications. Whilst Wails does not currently offer hooks into native
+  elements such as menus, this may change in the future.
 
- * Who is this project aimed at?
+- Who is this project aimed at?
 
-   Go programmers who want to bundle an HTML/JS/CSS frontend with their applications, without resorting to creating a server and opening a browser to view it.
+  Go programmers who want to bundle an HTML/JS/CSS frontend with their applications, without resorting to creating a
+  server and opening a browser to view it.
 
- * What's with the name?
+- What's with the name?
 
-   When I saw WebView, I thought "What I really want is tooling around building a WebView app, a bit like Rails is to Ruby". So initially it was a play on words (Webview on Rails). It just so happened to also be a homophone of the English name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it stuck.
+  When I saw WebView, I thought "What I really want is tooling around building a WebView app, a bit like Rails is to
+  Ruby". So initially it was a play on words (Webview on Rails). It just so happened to also be a homophone of the
+  English name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it stuck.
 
-## Shoulders of Giants
+<span id="nav-9"></span>
+
+## Contributors
+
+<a href="https://github.com/qaisjp"><img src="https://github.com/qaisjp.png?size=40" width="40"/></a>
+<a href="https://github.com/alee792"><img src="https://github.com/alee792.png?size=40" width="40"/></a>
+<a href="https://github.com/lanzafame"><img src="https://github.com/lanzafame.png?size=40" width="40"/></a>
+<a href="https://github.com/mattn"><img src="https://github.com/mattn.png?size=40" width="40"/></a>
+<a href="https://github.com/0xflotus"><img src="https://github.com/0xflotus.png?size=40" width="40"/></a>
+<a href="https://github.com/mdhender"><img src="https://github.com/mdhender.png?size=40" width="40"/></a>
+<a href="https://github.com/fishfishfish2104"><img src="https://github.com/fishfishfish2104.png?size=40" width="40"/></a>
+<a href="https://github.com/intelwalk"><img src="https://github.com/intelwalk.png?size=40" width="40"/></a>
+<a href="https://github.com/ocelotsloth"><img src="https://github.com/ocelotsloth.png?size=40" width="40"/></a>
+<a href="https://github.com/bh90210"><img src="https://github.com/bh90210.png?size=40" width="40"/></a>
+<a href="https://github.com/iceleo-com"><img src="https://github.com/iceleo-com.png?size=40" width="40"/></a>
+<a href="https://github.com/fallendusk"><img src="https://github.com/fallendusk.png?size=40" width="40"/></a>
+<a href="https://github.com/Chronophylos"><img src="https://github.com/Chronophylos.png?size=40" width="40"/></a>
+<a href="https://github.com/Vaelatern"><img src="https://github.com/Vaelatern.png?size=40" width="40"/></a>
+<a href="https://github.com/mewmew"><img src="https://github.com/mewmew.png?size=40" width="40"/></a>
+<a href="https://github.com/kraney"><img src="https://github.com/kraney.png?size=40" width="40"/></a>
+<a href="https://github.com/JackMordaunt"><img src="https://github.com/JackMordaunt.png?size=40" width="40"/></a>
+<a href="https://github.com/MichaelHipp"><img src="https://github.com/MichaelHipp.png?size=40" width="40"/></a>
+<a href="https://github.com/tmclane"><img src="https://github.com/tmclane.png?size=40" width="40"/></a>
+<a href="https://github.com/Rested"><img src="https://github.com/Rested.png?size=40" width="40"/></a>
+<a href="https://github.com/Jarek-SRT"><img src="https://github.com/Jarek-SRT.png?size=40" width="40"/></a>
+<a href="https://github.com/konez2k"><img src="https://github.com/konez2k.png?size=40" width="40"/></a>
+<a href="https://github.com/sayuthisobri"><img src="https://github.com/sayuthisobri.png?size=40" width="40"/></a>
+<a href="https://github.com/dedo1911"><img src="https://github.com/dedo1911.png?size=40" width="40"/></a>
+<a href="https://github.com/fdidron"><img src="https://github.com/fdidron.png?size=40" width="40"/></a>
+<a href="https://github.com/Splode"><img src="https://github.com/Splode.png?size=40" width="40"/></a>
+<a href="https://github.com/Lyimmi"><img src="https://github.com/Lyimmi.png?size=40" width="40"/></a>
+<a href="https://github.com/Unix4ever"><img src="https://github.com/Unix4ever.png?size=40" width="40"/></a>
+<a href="https://github.com/timkippdev"><img src="https://github.com/timkippdev.png?size=40" width="40"/></a>
+<a href="https://github.com/kyoto44"><img src="https://github.com/kyoto44.png?size=40" width="40"/></a>
+<a href="https://github.com/artooro"><img src="https://github.com/artooro.png?size=40" width="40"/></a>
+<a href="https://github.com/ilgityildirim"><img src="https://github.com/ilgityildirim.png?size=40" width="40"/></a>
+<a href="https://github.com/gelleson"><img src="https://github.com/gelleson.png?size=40" width="40"/></a>
+<a href="https://github.com/kmuchmore"><img src="https://github.com/kmuchmore.png?size=40" width="40"/></a>
+<a href="https://github.com/aayush420"><img src="https://github.com/aayush420.png?size=40" width="40"/></a>
+<a href="https://github.com/Rezrazi"><img src="https://github.com/Rezrazi.png?size=40" width="40"/></a>
+<a href="https://github.com/misitebao"><img src="https://github.com/misitebao.png?size=40" width="40"/></a>
+<a href="https://github.com/DrunkenPoney"><img src="https://github.com/DrunkenPoney.png?size=40" width="40"/></a>
+<a href="https://github.com/SophieAu"><img src="https://github.com/SophieAu.png?size=40" width="40"/></a>
+<a href="https://github.com/alexmat"><img src="https://github.com/alexmat.png?size=40" width="40"/></a>
+<a href="https://github.com/RH12503"><img src="https://github.com/RH12503.png?size=40" width="40"/></a>
+<a href="https://github.com/hi019"><img src="https://github.com/hi019.png?size=40" width="40"/></a></a>
+<a href="https://github.com/Igogrek"><img src="https://github.com/Igogrek.png?size=40" width="40"/></a></a>
+<a href="https://github.com/aschey"><img src="https://github.com/aschey.png?size=40" width="40"/></a></a>
+<a href="https://github.com/akhudek"><img src="https://github.com/akhudek.png?size=40" width="40"/></a></a>
+<a href="https://github.com/s12chung"><img src="https://github.com/s12chung.png?size=40" width="40"/></a></a>
+
+<span id="nav-10"></span>
+
+## Special Mentions
 
 Without the following people, this project would never have existed:
 
-  * [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been immense. More patience than you can throw a stick at (Not long now Dustin!).
-  * [Serge Zaitsev](https://github.com/zserge) - Creator of [Webview](https://github.com/zserge/webview) which Wails uses for the windowing.
-
-And without [these people](CONTRIBUTORS.md), it wouldn't be what it is today. A huge thank you to each and every one of you!
-
-Special Mentions:
-
-  * [Byron](https://github.com/bh90210) - At times, Byron has single handedly kept this project alive. Without his incredible input, we never would have got to v1.
+- [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been immense. More patience than
+  you can throw a stick at (Not long now Dustin!).
+- [Serge Zaitsev](https://github.com/zserge) - Creator of [Webview](https://github.com/zserge/webview) which Wails uses
+  for the windowing.
+- [Byron](https://github.com/bh90210) - At times, Byron has single handedly kept this project alive. Without his
+  incredible input, we never would have got to v1.
 
 This project was mainly coded to the following albums:
 
-  * [Manic Street Preachers - Resistance Is Futile](https://open.spotify.com/album/1R2rsEUqXjIvAbzM0yHrxA)
-  * [Manic Street Preachers - This Is My Truth, Tell Me Yours](https://open.spotify.com/album/4VzCL9kjhgGQeKCiojK1YN)
-  * [The Midnight - Endless Summer](https://open.spotify.com/album/4Krg8zvprquh7TVn9OxZn8)
-  * [Gary Newman - Savage (Songs from a Broken World)](https://open.spotify.com/album/3kMfsD07Q32HRWKRrpcexr)
-  * [Steve Vai - Passion & Warfare](https://open.spotify.com/album/0oL0OhrE2rYVns4IGj8h2m)
-  * [Ben Howard - Every Kingdom](https://open.spotify.com/album/1nJsbWm3Yy2DW1KIc1OKle)
-  * [Ben Howard - Noonday Dream](https://open.spotify.com/album/6astw05cTiXEc2OvyByaPs)
-  * [Adwaith - Melyn](https://open.spotify.com/album/2vBE40Rp60tl7rNqIZjaXM)
-  * [Gwidaith Hen Fran - Cedors Hen Wrach](https://open.spotify.com/album/3v2hrfNGINPLuDP0YDTOjm)
-  * [Metallica - Metallica](https://open.spotify.com/album/2Kh43m04B1UkVcpcRa1Zug)
-  * [Bloc Party - Silent Alarm](https://open.spotify.com/album/6SsIdN05HQg2GwYLfXuzLB)
-  * [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
-  * [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
+- [Manic Street Preachers - Resistance Is Futile](https://open.spotify.com/album/1R2rsEUqXjIvAbzM0yHrxA)
+- [Manic Street Preachers - This Is My Truth, Tell Me Yours](https://open.spotify.com/album/4VzCL9kjhgGQeKCiojK1YN)
+- [The Midnight - Endless Summer](https://open.spotify.com/album/4Krg8zvprquh7TVn9OxZn8)
+- [Gary Newman - Savage (Songs from a Broken World)](https://open.spotify.com/album/3kMfsD07Q32HRWKRrpcexr)
+- [Steve Vai - Passion & Warfare](https://open.spotify.com/album/0oL0OhrE2rYVns4IGj8h2m)
+- [Ben Howard - Every Kingdom](https://open.spotify.com/album/1nJsbWm3Yy2DW1KIc1OKle)
+- [Ben Howard - Noonday Dream](https://open.spotify.com/album/6astw05cTiXEc2OvyByaPs)
+- [Adwaith - Melyn](https://open.spotify.com/album/2vBE40Rp60tl7rNqIZjaXM)
+- [Gwidaith Hen Fran - Cedors Hen Wrach](https://open.spotify.com/album/3v2hrfNGINPLuDP0YDTOjm)
+- [Metallica - Metallica](https://open.spotify.com/album/2Kh43m04B1UkVcpcRa1Zug)
+- [Bloc Party - Silent Alarm](https://open.spotify.com/album/6SsIdN05HQg2GwYLfXuzLB)
+- [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
+- [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
 
-## Licensing
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
+<span id="nav-11"></span>
 
 ## Special Thanks
 
 <p align="center" style="text-align: center">
-   A *huge* thanks to <a href="https://pace.dev"><img src="pace.jpeg"/> Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
+   <a href="https://pace.dev"><img src="pace.jpeg"/></a><br/>
+   A <i>huge<i/> thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
    If you are looking for a Project Management tool that's powerful but quick and easy to use, check them out!<br/><br/>
 </p>
 
