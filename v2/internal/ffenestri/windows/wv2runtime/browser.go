@@ -8,7 +8,7 @@ import (
 )
 
 func doInstallationStrategy(installStatus installationStatus) error {
-	confirmed, err := webview2runtime.Confirm("This application requires the WebView2 runtime. Press OK to open the download page. Minimum version required: "+minimumRuntimeVersion, "Missing Requirements")
+	confirmed, err := webview2runtime.Confirm("This application requires the WebView2 runtime. Press OK to open the download page. Minimum version required: "+MinimumRuntimeVersion, "Missing Requirements")
 	if err != nil {
 		return err
 	}
