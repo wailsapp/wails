@@ -1,0 +1,140 @@
+---
+sidebar_position: 5
+---
+
+# Dialog
+
+## Overview
+
+This part of the runtime provides access to native dialogs, such as File Selectors and Message boxes.Context
+
+:::info Javascript
+  Dialog is currently unsupported in the JS runtime.
+:::
+
+### OpenDirectoryDialog
+Go Signature: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
+
+Returns: Selected directory (blank if the user cancelled) or an error
+
+Opens a dialog that prompts the user to select a directory. Can be customised using [OpenDialogOptions](#OpenDialogOptions).
+
+### OpenFileDialog
+Go Signature: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
+
+Returns: Selected file (blank if the user cancelled) or an error
+
+Opens a dialog that prompts the user to select a file. Can be customised using [OpenDialogOptions](#OpenDialogOptions).
+
+
+### OpenMultipleFilesDialog
+Go Signature: `OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error)`
+
+Returns: Selected files (nil if the user cancelled) or an error
+
+Opens a dialog that prompts the user to select multiple files. Can be customised using [OpenDialogOptions](#OpenDialogOptions).
+
+
+### SaveFileDialog
+Go Signature: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error)`
+
+Returns: The selected file (blank if the user cancelled) or an error
+
+Opens a dialog that prompts the user to select a filename for the purposes of saving. Can be customised using [SaveDialogOptions](#SaveDialogOptions).
+
+
+### MessageDialog
+Go Signature: `MessageDialog(ctx context.Context, dialogOptions MessageDialogOptions) (string, error)`
+
+Returns: The text of the selected button or an error
+
+Displays a message using a message dialog. Can be customised using [MessageDialogOptions](#MessageDialogOptions).
+
+## Options
+
+### OpenDialogOptions
+
+```go
+type OpenDialogOptions struct {
+	DefaultDirectory           string
+	DefaultFilename            string
+	Title                      string
+	Filters                    []FileFilter
+	AllowFiles                 bool // Mac Only
+	AllowDirectories           bool // Mac Only
+	ShowHiddenFiles            bool // Mac Only
+	CanCreateDirectories       bool // Mac Only
+	ResolvesAliases            bool // Mac Only
+	TreatPackagesAsDirectories bool // Mac Only
+}
+```
+
+### SaveDialogOptions
+
+```go
+type SaveDialogOptions struct {
+	DefaultDirectory           string
+	DefaultFilename            string
+	Title                      string
+	Filters                    []FileFilter
+	ShowHiddenFiles            bool // Mac Only
+	CanCreateDirectories       bool // Mac Only
+	TreatPackagesAsDirectories bool // Mac Only
+}
+```
+
+### MessageDialogOptions
+
+```go
+type MessageDialogOptions struct {
+	Type          DialogType
+	Title         string
+	Message       string
+	Buttons       []string
+	DefaultButton string // Mac Only
+	CancelButton  string // Mac Only
+	Icon          string // Mac Only
+}
+```
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs
+  defaultValue="Windows"
+  values={[
+    {label: 'Windows', value: 'Windows'},
+    {label: 'MacOS', value: 'MacOS'},
+    {label: 'Linux', value: 'Linux'},
+  ]}>
+  <TabItem value="MacOS">
+    Both "DefaultButton" and "CancelButton" should match a value in "Buttons".
+  </TabItem>
+  <TabItem value="Windows">
+    Windows has standard dialog types and the buttons are not customisable. The
+    value returned will be one of: "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "Try Again" or "Continue"
+  </TabItem>
+  <TabItem value="Linux">
+    Coming Soon...
+  </TabItem>
+</Tabs>
+
+#### DialogType
+
+```go
+const (
+     	InfoDialog     DialogType = "info"
+     	WarningDialog  DialogType = "warning"
+     	ErrorDialog    DialogType = "error"
+     	QuestionDialog DialogType = "question"
+     )
+```
+
+### FileFilter
+
+```go
+type FileFilter struct {
+	DisplayName string // Filter information EG: "Image Files (*.jpg, *.png)"
+	Pattern     string // semi-colon separated list of extensions, EG: "*.jpg;*.png"
+}
+```

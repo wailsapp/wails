@@ -1,0 +1,42 @@
+{
+  "link.title.Docs": {
+    "message": "文档",
+    "description": "The title of the footer links column with title=Docs in the footer"
+  },
+  "link.title.Community": {
+    "message": "社区",
+    "description": "The title of the footer links column with title=Community in the footer"
+  },
+  "link.title.More": {
+    "message": "更多",
+    "description": "The title of the footer links column with title=More in the footer"
+  },
+  "link.item.label.About": {
+    "message": "关于",
+    "description": "The label of footer link with label=About linking to /docs/about"
+  },
+  "link.item.label.Github": {
+    "message": "Github",
+    "description": "The label of footer link with label=Github linking to https://github.com/wailsapp/wails"
+  },
+  "link.item.label.Twitter": {
+    "message": "Twitter",
+    "description": "The label of footer link with label=Twitter linking to https://twitter.com/wailsapp"
+  },
+  "link.item.label.Slack": {
+    "message": "Slack",
+    "description": "The label of footer link with label=Slack linking to https://gophers.slack.com/messages/CJ4P9F7MZ/"
+  },
+  "link.item.label.Slack invite": {
+    "message": "Slack 邀请链接",
+    "description": "The label of footer link with label=Slack invite linking to https://invite.slack.golangbridge.org/"
+  },
+  "link.item.label.Blog": {
+    "message": "博客",
+    "description": "The label of footer link with label=Blog linking to /blog"
+  },
+  "copyright": {
+    "message": "Copyright © 2021 Lea Anthony. Built with Docusaurus.",
+    "description": "The footer copyright"
+  }
+}

@@ -1,0 +1,275 @@
+---
+sidebar_position: 3
+---
+
+# Options
+
+## Application Options
+
+The `Options.App` struct contains the application configuration.
+It is passed to the `wails.Run()` method:
+
+```go title="Example"
+import "github.com/wailsapp/wails/v2/pkg/options"
+
+func main() {
+
+    err := wails.Run(&options.App{
+        Title:             "Menus Demo",
+        Width:             800,
+        Height:            600,
+        DisableResize:     false,
+        Fullscreen:        false,
+        Frameless:         true,
+        MinWidth:          400,
+        MinHeight:         400,
+        MaxWidth:          1280,
+        MaxHeight:         1024,
+        StartHidden:       false,
+        HideWindowOnClose: false,
+        RGBA:              &options.RGBA{R: 0, G: 0, B: 0, A: 255},
+        Assets:            assets,
+        Menu:              app.applicationMenu(),
+        Logger:            nil,
+        LogLevel:          logger.DEBUG,
+        OnStartup:         app.startup,
+        OnDomReady:        app.domready,
+        OnShutdown:        app.shutdown,
+        Bind: []interface{}{
+            app,
+        },
+        Windows: &windows.Options{
+            WebviewIsTransparent: false,
+            WindowIsTranslucent:  false,
+            DisableWindowIcon:    false,
+        },
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+
+```
+
+
+
+### Title
+
+Name: Title
+
+Type: string
+
+The text shown in the window's title bar.
+
+### Width
+
+Name: Width
+
+Type: int
+
+The initial width of the window.
+Default: 1024.
+
+### Height
+
+Name: Height
+
+Type: int
+
+The initial height of the window.
+Default: 768
+
+### DisableResize
+
+Name: DisableResize
+
+Type: bool
+
+By default, the main window is resizable. Setting this to `true` will keep it a fixed size.
+
+### Fullscreen
+
+Name: Fullscreen
+
+Type: bool
+
+Setting this to `true` will make the window fullscreen at startup.
+
+### Frameless
+
+Name: Frameless
+
+Type: bool
+
+When set to `true`, the window will have no borders or title bar.
+Also see [Frameless Windows](/docs/guides/frameless).
+
+### MinWidth
+
+Name: MinWidth
+
+Type: int
+
+This sets the minimum width for the window. If the value given in `Width` is less than this value,
+the window will be set to `MinWidth` by default.
+
+### MinHeight
+
+Name: MinHeight
+
+Type: int
+
+This sets the minimum height for the window. If the value given in `Height` is less than this value,
+the window will be set to `MinHeight` by default.
+
+### MaxWidth
+
+Name: MaxWidth
+
+Type: int
+
+This sets the maximum width for the window. If the value given in `Width` is more than this value,
+the window will be set to `MaxWidth` by default.
+
+### MaxHeight
+
+Name: MaxHeight
+
+Type: int
+
+This sets the maximum height for the window. If the value given in `Height` is more than this value,
+the window will be set to `MaxHeight` by default.
+
+### StartHidden
+
+Name: StartHidden
+
+Type: bool
+
+When set to `true`, the application will be hidden until [WindowShow](/docs/reference/runtime/window#WindowShow)
+is called.
+
+### HideWindowOnClose
+
+Name: HideWindowOnClose
+
+Type: bool
+
+By default, closing the window will close the application. Setting this to `true` means closing the window will
+hide the window instead.
+
+### RGBA
+
+Name: RGBA
+
+Type: int (0xRRGGBBAA)
+Example: 0xFF000088 - Red at 50% transparency
+
+This value is the RGBA value to set the window by default.
+Default: 0xFFFFFFFF.
+
+### Assets
+
+Name: Assets
+
+Type: \*embed.FS
+
+The frontend assets to be used by the application. Requires an `index.html` file.
+
+### Menu
+
+Name: Menu
+
+Type: \*menu.Menu
+
+The menu to be used by the application. More details about Menus in the [Menu Reference](/docs/reference/runtime/menu).
+
+### Logger
+
+Name: Logger
+
+Type: logger.Logger
+Default: Logger to Stdout
+
+The logger to be used by the application. More details about logging in the [Log Reference](/docs/reference/runtime/log).
+
+### LogLevel
+
+Name: LogLevel
+
+Type: logger.LogLevel
+Default: `Info` in dev mode, `Error` in production mode
+
+The default log level. More details about logging in the [Log Reference](/docs/reference/runtime/log).
+
+### OnStartup
+
+Name: OnStartup
+
+Type: func(ctx context.Context)
+
+This callback is called after the frontend has been created, but before `index.html` has been loaded. It is given
+the application context.
+
+### OnDomReady
+
+Name: OnDomReady
+
+Type: func(ctx context.Context)
+
+This callback is called after the frontend has loaded `index.html` and the DOM is ready. It is given
+the application context.
+
+### OnShutdown
+
+Name: OnShutdown
+
+Type: func(ctx context.Context)
+
+This callback is called after the frontend has been destroyed, just before the application terminates. It is given
+the application context.
+
+### Bind
+
+Name: Bind
+
+Type: []interface{}
+
+A slice of struct instances defining methods that need to be bound to the frontend.
+
+### Windows
+
+Name: Windows
+
+Type: \*windows.Options
+
+This defines [Windows specific options](#windows-specific-options).
+
+## Windows Specific Options
+
+### WebviewIsTransparent
+
+Name: WebviewIsTransparent
+
+Type: bool
+
+Setting this to `true` will make the webview background transparent when an alpha value of `0` is used.
+This means that if you use `rgba(0,0,0,0)`, the host window will show through.
+Often combined with [WindowIsTranslucent](#WindowIsTranslucent) to make frosty-looking applications.
+
+### WindowIsTranslucent
+
+Name: WindowIsTranslucent
+
+Type: bool
+
+Setting this to `true` will make the window background translucent. Often combined
+with [WebviewIsTransparent](#WebviewIsTransparent) to make frosty-looking applications.
+
+### DisableWindowIcon
+
+Name: DisableWindowIcon
+
+Type: bool
+
+Setting this to true will remove the icon in the top left corner of the title bar.
