@@ -26,6 +26,8 @@ make this easy for you by handling project creation, compilation and bundling. A
 
 The official docs can be found at [https://wails.app](https://wails.app).
 
+Click [here](https://wails.io) if you are interested in trying out v2 Beta for Windows.
+
 <span id="nav-2"></span>
 
 ## Contents
