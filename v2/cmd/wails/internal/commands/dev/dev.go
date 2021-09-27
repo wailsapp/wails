@@ -234,7 +234,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			if strings.HasPrefix(dir, ".") {
 				return
 			}
-			println("Watching", dir)
 			err = watcher.Add(dir)
 			if err != nil {
 				logger.Fatal(err.Error())
