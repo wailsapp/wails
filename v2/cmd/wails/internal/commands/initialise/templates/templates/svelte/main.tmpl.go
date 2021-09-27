@@ -19,7 +19,7 @@ func main() {
 
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:             "",
+		Title:             "{{.ProjectName}}",
 		Width:             720,
 		Height:            570,
 		MinWidth:          720,
@@ -42,9 +42,9 @@ func main() {
 		},
 		// Windows platform specific options
 		Windows: &windows.Options{
-			WebviewIsTransparent: true,
-			WindowIsTranslucent:  true,
-			DisableWindowIcon:    true,
+			WebviewIsTransparent: false,
+			WindowIsTranslucent:  false,
+			DisableWindowIcon:    false,
 		},
 	})
 
