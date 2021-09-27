@@ -2,11 +2,9 @@ import svelte from 'rollup-plugin-svelte';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import livereload from 'rollup-plugin-livereload';
-import { terser } from 'rollup-plugin-terser';
+import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
-import image from '@rollup/plugin-image';
 import postcss from 'rollup-plugin-postcss'
-import url from 'postcss-url';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -40,9 +38,6 @@ export default {
 		file: 'dist/bundle.js'
 	},
 	plugins: [
-		image({
-			include: './src/assets/images/**'
-		}),
 		svelte({
 			compilerOptions: {
 				// enable run-time checks when not in production
@@ -51,11 +46,6 @@ export default {
 		}),
 		postcss({
 			minimize: true,
-			plugins: [
-				url({
-					url: "inline"
-				})
-			]
 		}),
 		// If you have external dependencies installed from
 		// npm, you'll most likely need these plugins. In
@@ -69,7 +59,9 @@ export default {
 		commonjs(),
 		copy({
 			targets: [
-				{ src: 'src/index.html', dest: 'dist/' },
+				{src: 'src/index.html', dest: 'dist/'},
+				{src: 'src/global.css', dest: 'dist/'},
+				{src: 'src/assets', dest: 'dist/'},
 			]
 		}),
 
