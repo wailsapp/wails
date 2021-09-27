@@ -1,0 +1,50 @@
+---
+slug: wails-v2-beta-for-windows
+title: Windows 版的 Wails v2 公测啦
+authors:
+  - name: Lea Anthony
+    title: Wails 项目作者
+    url: https://github.com/leaanthony
+    image_url: https://github.com/leaanthony.png
+tags: [wails, v2]
+---
+
+两年多前，在悉尼的火车上，当我第一次在 Reddit 宣布 Wails 时，我没想到它会引起太多关注。几天后，一位多产的科技视频博主发布了一个教程视频，并给予了正面评价，从那时起，人们对这个项目的兴趣直线上升。
+
+人们对在他们的 Go 项目中添加 web 前端感到兴奋，几乎立即在这个项目推送并超出了我创建这个项目的设想。当时，Wails 使用 [webview](https://github.com/webview/webview) 项目来处理前端，
+Windows 的唯一选择是 IE11 渲染器。许多错误报告都因为受到它的限制：糟糕的 JavaScript/CSS 支持并且没有开发工具来调试它。这是一段令人沮丧的开发经历，但我们也没有采取什么措施去纠正它。
+
+很长一段时间以来，我一直坚信微软最终会解决他们的浏览器问题。世界在不断进步，前端开发正在蓬勃发展，而 IE 并没有做到这一点。当微软宣布将 Chromium 作为其新浏览器方向的基础时，
+我知道 Wails 能够使用它并将 Windows 开发者的体验提升到下一个水平只是时间问题。
+
+今天，我很高兴地宣布：**适用于 Windows 的 Wails v2 公测啦**!
+
+- 没有 CGO 依赖！不，我不是在开玩笑：_没有依赖 CGO_ 🤯！
+- WebView2 （chromium） 渲染引擎！ 终于！
+- 不需要在应用程序中附带任何 dll，包括`WebView2Loader.dll`。单个二进制文件的构想继续存在。
+- 不需要打包资源（只需要提供一个 embed.FS，就像一个 web 服务器）
+- 应用程序菜单支持
+- 具有热重载和自动重新构建功能的新开发方式
+- 用于控制应用程序窗口的运行时方法
+- 现代化的原生对话框
+
+Wails v2 代表了该项目的新基础。此版本的目的是获得有关新方式的反馈，并在完整版本发布之前解决所有错误。欢迎提出您的意见。请直接反馈到 [v2 测试版](https://github.com/wailsapp/wails/discussions)讨论板。
+
+为了达到这一点，经历了许多曲折和坎坷。部分原因是早期的技术决策需要改变，另一部分原因是我们花时间构建的一些核心问题的变通方式已经在上游得到了解决:Go 的 embed 特性就是一个很好的例子。幸运的是，一切都刚刚好，今天我们有了我们所能拥有的最好的解决方案。我相信等待是值得的 - 这在两个月前是完全不可能的。
+
+我还需要特别感谢 :pray: 以下人员，因为没有他们，这个版本就不会存在：
+
+- [Misitebao](https://github.com/misitebao) - 中文翻译的绝对主力和和令人难以置信的漏洞发现者。
+- [John Chadwick](https://github.com/jchv) - 他在 [go-webview2](https://github.com/jchv/go-webview2) 和 [go-winloader](https://github.com/jchv/go-winloader) 方面的出色工作使 Windows 版本成为可能。
+- [Tad Vizbaras](https://github.com/tadvi) - 他的 winc 项目是走向纯粹的 Go Wails 的第一步。
+- [Mat Ryer](https://github.com/matryer) - 他的支持、鼓励和反馈确实推动了项目向前发展。
+
+最后，我还要特别感谢包括[JetBrains](https://www.jetbrains.com?from=Wails)在内的所有项目[赞助商](/docs/credits#sponsors)，他们的幕后支持以多种方式推动了该项目。
+
+我期待看到在项目的下一个激动人心的阶段人们用 Wails 构建什么！
+
+对了，最后一件事：如果您或您的公司发现 Wails 有用，可以考虑[赞助该项目](https://github.com/sponsors/leaanthony)。谢谢！
+
+Lea.
+
+PS：MacOS 和 Linux 用户不必感到被冷落了——移植到这个新基础上的工作正在积极进行中，大部分复杂的工作已经完成。坚持下去。。。

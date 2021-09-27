@@ -1,0 +1,24 @@
+---
+sidebar_position: 5
+---
+
+# Project Config
+
+The project config resides in the `wails.json` file in the project directory. The structure of the config is:
+
+```json
+{
+    "name": "[The project name]",
+	"assetdir": "[Relative path to your assets directory]",
+	"frontend:install": "[The command to install node dependencies, run in the frontend directory - often `npm install`]",
+	"frontend:build": "[The command to build the assets, run in the frontend directory - often `npm run build`]",
+    "wailsjsdir": "[Relative path to the directory that the auto-generated JS modules will be created]",
+	"version": "[Project config version]",
+	"outputfilename": "[The name of the binary]"
+}
+```
+
+This file is read by the Wails CLI when running `wails build` or `wails dev`.
+
+The `assetdir` and `wailsjsdir` flags in `wails build/dev` will update the project config and thus become defaults for
+subsequent runs.

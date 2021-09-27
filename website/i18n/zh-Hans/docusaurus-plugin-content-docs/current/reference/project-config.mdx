@@ -1,0 +1,23 @@
+---
+sidebar_position: 5
+---
+
+# 项目配置
+
+项目配置在项目目录中的`wails.json`文件中。配置的结构是：
+
+```json
+{
+  "name": "[项目名称]",
+  "assetdir": "[资源目录的相对路径]",
+  "frontend:install": "[安装node依赖的命令，在frontend目录下运行 - 通常是 `npm install`]",
+  "frontend:build": "[构建资源的命令，在frontend目录下运行 - 通常是 `npm run build`]",
+  "wailsjsdir": "[自动生成的JS模块将被创建的目录的相对路径]",
+  "version": "[项目配置版本]",
+  "outputfilename": "[二进制文件的名称]"
+}
+```
+
+该文件将在运行`wails build`或`wails dev`时，由 Wails CLI 读取。
+
+`wails build/dev`命令中的`assetdir`和`wailsjsdir`标志将覆盖项目配置并作为后续运行的默认值。
