@@ -20,7 +20,8 @@
 
 [English](README.md) | 简体中文
 
-向 Go 程序提供 Web 接口的传统方法是通过内置 Web 服务器。Wails 提供了一种不同的方法：它提供了将 Go 代码和 Web 前端都包装成单个二进制文件的能力。通过提供工具，可以很轻松的完成项目的创建、编译和打包。你所要做的就是发挥创意！
+向 Go 程序提供 Web 接口的传统方法是通过内置 Web 服务器。Wails 提供了一种不同的方法：它提供了将 Go 代码和 Web
+前端都包装成单个二进制文件的能力。通过提供工具，可以很轻松的完成项目的创建、编译和打包。你所要做的就是发挥创意！
 
 官方文档可以在 [https://wails.app](https://wails.app) 中找到。
 
@@ -35,15 +36,15 @@
 - [3. 特征](#nav-3)
 - [4. 赞助商](#nav-4)
 - [5. 安装](#nav-5)
-  - [5.1 MacOS](#nav-5-1)
-  - [5.2 Linux](#nav-5-2)
-    - [5.2.1 Debian/Ubuntu](#nav-5-2-1)
-    - [5.2.2 Arch Linux / ArchLabs / Ctlos Linux](#nav-5-2-2)
-    - [5.2.3 Centos](#nav-5-2-3)
-    - [5.2.4 Fedora](#nav-5-2-4)
-    - [5.2.5 VoidLinux & VoidLinux-musl](#nav-5-2-5)
-    - [5.2.6 Gentoo](#nav-5-2-6)
-  - [5.3 Windows](#nav-5-3)
+    - [5.1 MacOS](#nav-5-1)
+    - [5.2 Linux](#nav-5-2)
+        - [5.2.1 Debian/Ubuntu](#nav-5-2-1)
+        - [5.2.2 Arch Linux / ArchLabs / Ctlos Linux](#nav-5-2-2)
+        - [5.2.3 Centos](#nav-5-2-3)
+        - [5.2.4 Fedora](#nav-5-2-4)
+        - [5.2.5 VoidLinux & VoidLinux-musl](#nav-5-2-5)
+        - [5.2.6 Gentoo](#nav-5-2-6)
+    - [5.3 Windows](#nav-5-3)
 - [6. 安装](#nav-6)
 - [7. 下一步](#nav-7)
 - [8. 常见问题](#nav-8)
@@ -222,7 +223,8 @@ go get -u github.com/wailsapp/wails/cmd/wails
 
 - 名字怎么来的?
 
-  当我看到 WebView 时，我想"我真正想要的是围绕构建 WebView 应用程序工作，有点像 Rails 对于 Ruby"。因此，最初它是一个文字游戏（Webview on Rails）。碰巧也是我来自的 [国家](https://en.wikipedia.org/wiki/Wales) 的英文名字的同音。所以就是他了。
+  当我看到 WebView 时，我想"我真正想要的是围绕构建 WebView 应用程序工作，有点像 Rails 对于 Ruby"。因此，最初它是一个文字游戏（Webview on
+  Rails）。碰巧也是我来自的 [国家](https://en.wikipedia.org/wiki/Wales) 的英文名字的同音。所以就是他了。
 
 <span id="nav-9"></span>
 

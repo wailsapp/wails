@@ -1,0 +1,9 @@
+{
+  "name": "{{.ProjectName}}",
+  "outputfilename": "{{.BinaryName}}",
+  "assetdir": "frontend/src",
+  "author": {
+    "name": "{{.AuthorName}}",
+    "email": "{{.AuthorEmail}}"
+  }
+}

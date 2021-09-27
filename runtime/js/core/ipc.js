@@ -45,7 +45,7 @@ function Invoke(message) {
  *
  * @export
  * @param {string} type
- * @param {string} payload
+ * @param {Object} payload
  * @param {string=} callbackID
  */
 export function SendMessage(type, payload, callbackID) {

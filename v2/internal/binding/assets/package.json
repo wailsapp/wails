@@ -1,0 +1,10 @@
+{
+  "name": "go",
+  "version": "1.0.0",
+  "description": "Package to wrap your bound go methods",
+  "main": "bindings.js",
+  "types": "bindings.d.ts",
+  "scripts": {},
+  "author": "",
+  "license": "ISC"
+}

@@ -1,8 +1,10 @@
 name: latest pre-release
 on:
   push:
+    branches:
+      - develop
     tags:
-    - '**-pre**'
+      - '**-pre**'
 jobs:
 
   build:
@@ -13,11 +15,11 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
 
-    - name: Set up Go 1.16
-      uses: actions/setup-go@v1
-      with:
-        go-version: 1.16
-      id: go
+      - name: Set up Go 1.16
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.16
+        id: go
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v1

@@ -21,7 +21,7 @@ require (
 	github.com/syossan27/tebata v0.0.0-20180602121909-b283fe4bc5ba
 	golang.org/x/image v0.0.0-20200430140353-33d19683fad8
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
-	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
+	golang.org/x/sys v0.0.0-20200724161237-0e2f3a69832c
 	golang.org/x/text v0.3.0
 	gopkg.in/AlecAivazis/survey.v1 v1.8.4
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22

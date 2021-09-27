@@ -10,11 +10,11 @@ The lightweight framework for web-like apps
 /* jshint esversion: 6 */
 import * as Log from './log';
 import * as Browser from './browser';
-import { On, OnMultiple, Emit, Notify, Heartbeat, Acknowledge } from './events';
-import { NewBinding } from './bindings';
-import { Callback } from './calls';
-import { AddScript, InjectCSS, InjectFirebug } from './utils';
-import { AddIPCListener } from './ipc';
+import {Acknowledge, Emit, Heartbeat, Notify, On, OnMultiple} from './events';
+import {NewBinding} from './bindings';
+import {Callback} from './calls';
+import {AddScript, InjectCSS, InjectFirebug} from './utils';
+import {AddIPCListener} from './ipc';
 import * as Store from './store';
 
 // Initialise global if not already
@@ -29,7 +29,7 @@ window.backend = {};
 // so we have to use an explicit if statement to prevent webpack from optimizing the code.
 if (window.external == undefined) {
 	window.external = {
-		invoke: function(x) {
+		invoke: function (x) {
 			window.webkit.messageHandlers.external.postMessage(x);
 		}
 	};
@@ -75,7 +75,7 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
 };
 
 // Use firebug?
-if( window.usefirebug ) {
+if (window.usefirebug) {
 	InjectFirebug();
 }
 
