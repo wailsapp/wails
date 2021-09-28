@@ -20,7 +20,7 @@ require (
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/go-common-file-dialog v1.0.3
-	github.com/leaanthony/go-webview2 v0.0.0-20210914103035-f00aa774a934
+	github.com/leaanthony/go-webview2 v0.0.0-20210928094513-a94a08b538bd
 	github.com/leaanthony/gosod v1.0.2
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
@@ -42,7 +42,7 @@ require (
 	github.com/ztrue/tracerr v0.3.0
 	golang.org/x/mod v0.4.1 // indirect
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed
-	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf
+	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6
 	golang.org/x/tools v0.1.0
 	nhooyr.io/websocket v1.8.6
 )
@@ -56,7 +56,7 @@ require (
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
-	github.com/jchv/go-winloader v0.0.0-20200815041850-dec1ee9a7fd5 // indirect
+	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/logrusorgru/aurora v0.0.0-20181002194514-a7b3b318ed4e // indirect
