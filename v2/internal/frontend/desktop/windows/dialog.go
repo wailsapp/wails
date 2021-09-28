@@ -2,7 +2,6 @@
 
 package windows
 
-import "C"
 import (
 	"github.com/leaanthony/go-common-file-dialog/cfd"
 	"github.com/wailsapp/wails/v2/internal/frontend"

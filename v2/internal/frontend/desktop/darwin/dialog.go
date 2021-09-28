@@ -2,7 +2,6 @@
 
 package darwin
 
-import "C"
 import (
 	"github.com/wailsapp/wails/v2/internal/frontend"
 )
