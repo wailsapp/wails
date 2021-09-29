@@ -35,7 +35,7 @@ func GetMimetype(filename string, data []byte) string {
 	}
 
 	if filepath.Ext(filename) == ".js" && strings.HasPrefix(result, "text/plain") {
-		result = strings.Replace(result, "text/plain", "application/javascript", 1)
+		result = strings.Replace(result, "text/plain", "text/javascript", 1)
 	}
 
 	if result == "" {
