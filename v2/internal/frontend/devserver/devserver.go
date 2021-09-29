@@ -118,7 +118,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 
 	// Start server
 	go func(server *fiber.App, log *logger.Logger) {
-		err := server.Listen(":34115")
+		err := server.Listen("localhost:34115")
 		if err != nil {
 			log.Error(err.Error())
 		}
@@ -358,6 +358,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		appBindings:     appBindings,
 		dispatcher:      dispatcher,
 		server: fiber.New(fiber.Config{
+
 			ReadTimeout:           time.Second * 5,
 			DisableStartupMessage: true,
 		}),
