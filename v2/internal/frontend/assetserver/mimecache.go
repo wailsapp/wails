@@ -5,8 +5,9 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/gabriel-vasile/mimetype"
 )
-import "github.com/gabriel-vasile/mimetype"
 
 var (
 	cache = map[string]string{}
@@ -31,6 +32,10 @@ func GetMimetype(filename string, data []byte) string {
 
 	if filepath.Ext(filename) == ".css" && strings.HasPrefix(result, "text/plain") {
 		result = strings.Replace(result, "text/plain", "text/css", 1)
+	}
+
+	if filepath.Ext(filename) == ".js" && strings.HasPrefix(result, "text/plain") {
+		result = strings.Replace(result, "text/plain", "text/javascript", 1)
 	}
 
 	if result == "" {
