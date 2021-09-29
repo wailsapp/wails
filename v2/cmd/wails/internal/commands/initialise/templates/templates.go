@@ -274,6 +274,10 @@ func Install(options *Options) (bool, *Template, error) {
 	}
 	templateData.AuthorNameAndEmail = strings.TrimSpace(templateData.AuthorNameAndEmail)
 
+	installer.RenameFiles(map[string]string{
+		"gitignore.txt": ".gitignore",
+	})
+
 	// Extract the template
 	err = installer.Extract(options.TargetDir, templateData)
 	if err != nil {
