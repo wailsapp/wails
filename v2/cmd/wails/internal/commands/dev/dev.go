@@ -145,6 +145,14 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			}
 		}
 
+		userTags := []string{}
+		for _, tag := range strings.Split(tags, " ") {
+			thisTag := strings.TrimSpace(tag)
+			if thisTag != "" {
+				userTags = append(userTags, thisTag)
+			}
+		}
+
 		buildOptions := &build.Options{
 			Logger:         logger,
 			OutputType:     "dev",
@@ -158,6 +166,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			IgnoreFrontend: false,
 			Verbosity:      verbosity,
 			WailsJSDir:     wailsjsdir,
+			UserTags:       userTags,
 		}
 
 		watcher, err := fsnotify.NewWatcher()
