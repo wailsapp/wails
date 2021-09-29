@@ -5,6 +5,9 @@ import (
 	"github.com/flytam/filenamify"
 	"github.com/leaanthony/slicer"
 	"io"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -78,7 +81,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		// Validate IDE option
-		supportedIDEs := slicer.String([]string{"vscode"})
+		supportedIDEs := slicer.String([]string{"vscode", "goland"})
 		ide = strings.ToLower(ide)
 		if ide != "" {
 			if !supportedIDEs.Contains(ide) {
@@ -101,6 +104,16 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		if err != nil {
 			return err
 		}
+		goBinary, err := exec.LookPath("go")
+		if err != nil {
+			return fmt.Errorf("unable to find Go compiler. Please download and install Go: https://golang.org/dl/")
+		}
+
+		// Get base path and convert to forward slashes
+		goPath := filepath.ToSlash(filepath.Dir(goBinary))
+		// Trim bin directory
+		goSDKPath := strings.TrimSuffix(goPath, "/bin")
+
 		// Create Template Options
 		options := &templates.Options{
 			ProjectName:         projectName,
@@ -111,19 +124,20 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			InitGit:             initGit,
 			ProjectNameFilename: projectFilename,
 			WailsVersion:        app.Version(),
+			GoSDKPath:           goSDKPath,
 		}
 
 		// Try to discover author details from git config
 		findAuthorDetails(options)
 
-		return initProject(options)
+		return initProject(options, quiet)
 	})
 
 	return nil
 }
 
 // initProject is our main init command
-func initProject(options *templates.Options) error {
+func initProject(options *templates.Options, quiet bool) error {
 
 	// Start Time
 	start := time.Now()
@@ -140,11 +154,28 @@ func initProject(options *templates.Options) error {
 		return err
 	}
 
+	// Run `go mod tidy` to ensure `go.sum` is up to date
+	cmd := exec.Command("go", "mod", "tidy")
+	cmd.Dir = options.TargetDir
+	cmd.Stderr = os.Stderr
+	if !quiet {
+		println("")
+		cmd.Stdout = os.Stdout
+	}
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
 	if options.InitGit {
 		err = initGit(options)
 		if err != nil {
 			return err
 		}
+	}
+
+	if quiet {
+		return nil
 	}
 
 	// Output stats

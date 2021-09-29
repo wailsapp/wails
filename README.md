@@ -119,7 +119,12 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/marcus-crane" style="width:50px;border-radius: 50%">
   <img src="https://github.com/marcus-crane.png?size=50" width="50" style="border-radius: 50%"/>
 </a>
-
+<a href="https://github.com/codydbentley" style="width:65px">
+  <img src="https://github.com/codydbentley.png?size=65" width="65"/>
+</a>
+<a href="https://github.com/bbergshaven" style="width:45px">
+  <img src="https://github.com/bbergshaven.png?size=45" width="45"/>
+</a>
 <span id="nav-5"></span>
 
 ## Installation

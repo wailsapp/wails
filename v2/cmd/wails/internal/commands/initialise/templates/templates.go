@@ -42,6 +42,11 @@ type Data struct {
 	AuthorEmail        string
 	AuthorNameAndEmail string
 	WailsDirectory     string
+	GoSDKPath          string
+	AssetDir           string
+	WindowsFlags       string
+	CGOEnabled         string
+	OutputFile         string
 }
 
 // Options for installing a template
@@ -60,6 +65,10 @@ type Options struct {
 	IDE                 string
 	ProjectNameFilename string // The project name but as a valid filename
 	WailsVersion        string
+	GoSDKPath           string
+	WindowsFlags        string
+	CGOEnabled          string
+	OutputFile          string
 }
 
 // Template holds data relating to a template
@@ -243,6 +252,7 @@ func Install(options *Options) (bool, *Template, error) {
 	BinaryName := filepath.Base(options.TargetDir)
 	NPMProjectName := strings.ToLower(strings.ReplaceAll(BinaryName, " ", ""))
 	localWailsDirectory := fs.RelativePath("../../../../../..")
+
 	templateData := &Data{
 		ProjectName:    options.ProjectName,
 		BinaryName:     filepath.Base(options.TargetDir),
@@ -251,6 +261,8 @@ func Install(options *Options) (bool, *Template, error) {
 		AuthorEmail:    options.AuthorEmail,
 		AuthorName:     options.AuthorName,
 		WailsVersion:   options.WailsVersion,
+		GoSDKPath:      options.GoSDKPath,
+		AssetDir:       options.AssetDir,
 	}
 
 	// Create a formatted name and email combo.
@@ -330,14 +342,29 @@ func generateIDEFiles(options *Options) error {
 	return nil
 }
 
+type ideOptions struct {
+	name         string
+	targetDir    string
+	options      *Options
+	renameFiles  map[string]string
+	ignoredFiles []string
+}
+
 func generateGolandFiles(options *Options) error {
-	targetDir := filepath.Join(options.TargetDir, ".idea")
-	renameFiles := map[string]string{
-		"projectname.iml": options.ProjectNameFilename + ".iml",
-		"gitignore.txt":   ".gitignore",
-		"name":            ".name",
+	ideoptions := ideOptions{
+		name:      "goland",
+		targetDir: filepath.Join(options.TargetDir, ".idea"),
+		options:   options,
+		renameFiles: map[string]string{
+			"projectname.iml": options.ProjectNameFilename + ".iml",
+			"gitignore.txt":   ".gitignore",
+			"name":            ".name",
+		},
 	}
-	err := installIDEFiles("goland", targetDir, options, renameFiles)
+	if !options.InitGit {
+		ideoptions.ignoredFiles = []string{"vcs.xml"}
+	}
+	err := installIDEFiles(ideoptions)
 	if err != nil {
 		return errors.Wrap(err, "generating Goland IDE files")
 	}
@@ -346,13 +373,17 @@ func generateGolandFiles(options *Options) error {
 }
 
 func generateVSCodeFiles(options *Options) error {
-	targetDir := filepath.Join(options.TargetDir, ".vscode")
-	return installIDEFiles("vscode", targetDir, options, nil)
+	ideoptions := ideOptions{
+		name:      "vscode",
+		targetDir: filepath.Join(options.TargetDir, ".vscode"),
+		options:   options,
+	}
+	return installIDEFiles(ideoptions)
 
 }
 
-func installIDEFiles(ideName string, targetDir string, options *Options, renameFiles map[string]string) error {
-	source, err := debme.FS(ides, "ides/"+ideName)
+func installIDEFiles(o ideOptions) error {
+	source, err := debme.FS(ides, "ides/"+o.name)
 	if err != nil {
 		return err
 	}
@@ -360,18 +391,22 @@ func installIDEFiles(ideName string, targetDir string, options *Options, renameF
 	// Use gosod to install the template
 	installer := gosod.New(source)
 
-	if renameFiles != nil {
-		installer.RenameFiles(renameFiles)
+	if o.renameFiles != nil {
+		installer.RenameFiles(o.renameFiles)
 	}
 
-	binaryName := filepath.Base(options.TargetDir)
+	for _, ignoreFile := range o.ignoredFiles {
+		installer.IgnoreFile(ignoreFile)
+	}
+
+	binaryName := filepath.Base(o.options.TargetDir)
 	if runtime.GOOS == "windows" {
 		// yay windows
 		binaryName += ".exe"
 	}
 
 	// Parse wails.json for assetdir
-	wailsJSONBytes, err := os.ReadFile(filepath.Join(options.TargetDir, "wails.json"))
+	wailsJSONBytes, err := os.ReadFile(filepath.Join(o.options.TargetDir, "wails.json"))
 	if err != nil {
 		return err
 	}
@@ -385,10 +420,16 @@ func installIDEFiles(ideName string, targetDir string, options *Options, renameF
 		return fmt.Errorf("Unable to find 'assetdir' in 'wails.json' ")
 	}
 
-	options.AssetDir = assetDir.(string)
-	options.PathToDesktopBinary = filepath.ToSlash(filepath.Join("build", "bin", binaryName))
+	o.options.AssetDir = assetDir.(string)
+	o.options.PathToDesktopBinary = filepath.ToSlash(filepath.Join("build", "bin", binaryName))
 
-	err = installer.Extract(targetDir, options)
+	o.options.WindowsFlags = ""
+	o.options.CGOEnabled = "1"
+	if runtime.GOOS == "windows" {
+		o.options.WindowsFlags = " -H windowsgui"
+		o.options.CGOEnabled = "0"
+	}
+	err = installer.Extract(o.targetDir, o.options)
 	if err != nil {
 		return err
 	}
