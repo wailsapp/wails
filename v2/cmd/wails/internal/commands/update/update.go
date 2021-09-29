@@ -86,7 +86,7 @@ func updateToVersion(logger *clilogger.CLILogger, targetVersion *github.Semantic
 
 	// Early exit
 	if targetVersionString == currentVersion {
-		logger.Println("Looks like you're up to date!")
+		logger.Println("\nLooks like you're up to date!")
 		return nil
 	}
 

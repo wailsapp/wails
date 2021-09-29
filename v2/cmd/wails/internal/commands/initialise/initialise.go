@@ -2,6 +2,8 @@ package initialise
 
 import (
 	"fmt"
+	"github.com/flytam/filenamify"
+	"github.com/leaanthony/slicer"
 	"io"
 	"strings"
 	"time"
@@ -46,8 +48,8 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	}
 
 	// VSCode project files
-	vscode := false
-	command.BoolFlag("vscode", "Generate VSCode project files", &vscode)
+	ide := ""
+	command.StringFlag("ide", "Generate IDE project files", &ide)
 
 	// List templates
 	list := false
@@ -75,6 +77,15 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return nil
 		}
 
+		// Validate IDE option
+		supportedIDEs := slicer.String([]string{"vscode"})
+		ide = strings.ToLower(ide)
+		if ide != "" {
+			if !supportedIDEs.Contains(ide) {
+				return fmt.Errorf("ide '%s' not supported. Valid values: %s", ide, supportedIDEs.Join(" "))
+			}
+		}
+
 		if !quiet {
 			app.PrintBanner()
 		}
@@ -83,14 +94,23 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		logger.Println(task)
 		logger.Println(strings.Repeat("-", len(task)))
 
+		projectFilename, err := filenamify.Filenamify(projectName, filenamify.Options{
+			Replacement: "_",
+			MaxLength:   255,
+		})
+		if err != nil {
+			return err
+		}
 		// Create Template Options
 		options := &templates.Options{
-			ProjectName:    projectName,
-			TargetDir:      projectDirectory,
-			TemplateName:   templateName,
-			Logger:         logger,
-			GenerateVSCode: vscode,
-			InitGit:        initGit,
+			ProjectName:         projectName,
+			TargetDir:           projectDirectory,
+			TemplateName:        templateName,
+			Logger:              logger,
+			IDE:                 ide,
+			InitGit:             initGit,
+			ProjectNameFilename: projectFilename,
+			WailsVersion:        app.Version(),
 		}
 
 		// Try to discover author details from git config
@@ -135,9 +155,14 @@ func initProject(options *templates.Options) error {
 	options.Logger.Println("Project Template:  " + options.TemplateName)
 	options.Logger.Println("Template Support:  " + template.HelpURL)
 
-	if options.GenerateVSCode {
+	// IDE message
+	switch options.IDE {
+	case "vscode":
 		options.Logger.Println("VSCode config files generated.")
+	case "goland":
+		options.Logger.Println("Goland config files generated.")
 	}
+
 	if options.InitGit {
 		options.Logger.Println("Git repository initialised.")
 	}

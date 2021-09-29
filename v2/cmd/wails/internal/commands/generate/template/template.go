@@ -81,16 +81,18 @@ func AddSubCommand(app *clir.Cli, parent *clir.Command, w io.Writer) {
 		}
 
 		type templateData struct {
-			Name        string
-			Description string
-			TemplateDir string
+			Name         string
+			Description  string
+			TemplateDir  string
+			WailsVersion string
 		}
 
 		println("Extracting base template files...")
 
 		err = g.Extract(templateDir, &templateData{
-			Name:        name,
-			TemplateDir: templateDir,
+			Name:         name,
+			TemplateDir:  templateDir,
+			WailsVersion: app.Version(),
 		})
 		if err != nil {
 			return err

@@ -51,13 +51,15 @@ type Options struct {
 	BinaryName          string
 	TargetDir           string
 	Logger              *clilogger.CLILogger
-	GenerateVSCode      bool
 	PathToDesktopBinary string
 	PathToServerBinary  string
 	InitGit             bool
 	AuthorName          string
 	AuthorEmail         string
 	AssetDir            string
+	IDE                 string
+	ProjectNameFilename string // The project name but as a valid filename
+	WailsVersion        string
 }
 
 // Template holds data relating to a template
@@ -248,6 +250,7 @@ func Install(options *Options) (bool, *Template, error) {
 		WailsDirectory: localWailsDirectory,
 		AuthorEmail:    options.AuthorEmail,
 		AuthorName:     options.AuthorName,
+		WailsVersion:   options.WailsVersion,
 	}
 
 	// Create a formatted name and email combo.
@@ -317,23 +320,49 @@ func OutputList(logger *clilogger.CLILogger) error {
 
 func generateIDEFiles(options *Options) error {
 
-	if options.GenerateVSCode {
+	switch options.IDE {
+	case "vscode":
 		return generateVSCodeFiles(options)
+	case "goland":
+		return generateGolandFiles(options)
+	}
+
+	return nil
+}
+
+func generateGolandFiles(options *Options) error {
+	targetDir := filepath.Join(options.TargetDir, ".idea")
+	renameFiles := map[string]string{
+		"projectname.iml": options.ProjectNameFilename + ".iml",
+		"gitignore.txt":   ".gitignore",
+		"name":            ".name",
+	}
+	err := installIDEFiles("goland", targetDir, options, renameFiles)
+	if err != nil {
+		return errors.Wrap(err, "generating Goland IDE files")
 	}
 
 	return nil
 }
 
 func generateVSCodeFiles(options *Options) error {
-
 	targetDir := filepath.Join(options.TargetDir, ".vscode")
-	source, err := debme.FS(ides, "ides/vscode")
+	return installIDEFiles("vscode", targetDir, options, nil)
+
+}
+
+func installIDEFiles(ideName string, targetDir string, options *Options, renameFiles map[string]string) error {
+	source, err := debme.FS(ides, "ides/"+ideName)
 	if err != nil {
 		return err
 	}
 
 	// Use gosod to install the template
 	installer := gosod.New(source)
+
+	if renameFiles != nil {
+		installer.RenameFiles(renameFiles)
+	}
 
 	binaryName := filepath.Base(options.TargetDir)
 	if runtime.GOOS == "windows" {

@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/fatih/structtag v1.2.0
+	github.com/flytam/filenamify v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gabriel-vasile/mimetype v1.3.1
 	github.com/go-git/go-billy/v5 v5.2.0 // indirect
@@ -21,7 +22,7 @@ require (
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/go-common-file-dialog v1.0.3
 	github.com/leaanthony/go-webview2 v0.0.0-20210928094513-a94a08b538bd
-	github.com/leaanthony/gosod v1.0.2
+	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7
