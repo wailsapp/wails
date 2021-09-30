@@ -4,10 +4,11 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/fs"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/internal/fs"
 
 	"github.com/leaanthony/slicer"
 )
@@ -93,7 +94,7 @@ const go = {`)
 			output.WriteString("\n")
 		})
 
-		output.WriteString(fmt.Sprintf("  }\n"))
+		output.WriteString(fmt.Sprintf("  },\n"))
 		output.WriteString("\n")
 	})
 
