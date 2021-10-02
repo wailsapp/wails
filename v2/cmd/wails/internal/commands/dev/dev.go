@@ -277,6 +277,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 						ext = ext[1:]
 						if _, exists := extensionsThatTriggerARebuild[ext]; exists {
 							rebuild = true
+							timer.Reset(interval)
 							continue
 						}
 					}
