@@ -1,7 +1,7 @@
 
 # Frontend
 
-## Execution Order
+## Script Injection
 
 When Wails serves your `index.html`, by default, it will inject 2 script entries into the `<body>` tag to load `/wails/bindings.js`
 and `/wails/runtime.js`. These files install the bindings and runtime respectively.
@@ -31,7 +31,7 @@ The code below shows where these are injected by default:
 </html>
 ```
 
-### Overriding Default Execution Order
+### Overriding Default Script Injection
 
 To provide more flexibility to developers, there is a meta tag that may be used to customise this behaviour:
 
