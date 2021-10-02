@@ -33,7 +33,7 @@ type DevWebServer struct {
 	logger           *logger.Logger
 	appBindings      *binding.Bindings
 	dispatcher       frontend.Dispatcher
-	assetServer      *assetserver.AssetServer
+	assetServer      *assetserver.BrowserAssetServer
 	socketMutex      sync.Mutex
 	websocketClients map[*websocket.Conn]struct{}
 	menuManager      *menumanager.Manager
@@ -103,7 +103,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		if err != nil {
 			log.Fatal(err)
 		}
-		d.assetServer, err = assetserver.NewAssetServer(assetdir, bindingsJSON, d.appoptions)
+		d.assetServer, err = assetserver.NewBrowserAssetServer(assetdir, bindingsJSON, d.appoptions)
 		if err != nil {
 			log.Fatal(err)
 		}

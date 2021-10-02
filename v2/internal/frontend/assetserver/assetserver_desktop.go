@@ -10,13 +10,13 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"io/fs"
+	"log"
 	"path/filepath"
 	"strings"
 )
 
 type DesktopAssetServer struct {
 	assets    debme.Debme
-	indexFile []byte
 	runtimeJS []byte
 	assetdir  string
 	logger    *logger.Logger
@@ -106,19 +106,34 @@ func (a *DesktopAssetServer) init(assets embed.FS) error {
 	if err != nil {
 		return err
 	}
-	indexHTML, err := a.assets.ReadFile("index.html")
-	if err != nil {
-		return err
-	}
-	a.indexFile, err = injectHTML(string(indexHTML), `<script src="/wails/runtime.js"></script>`)
-	if err != nil {
-		return err
-	}
-	a.indexFile, err = injectHTML(string(a.indexFile), `<script src="/wails/ipc.js"></script>`)
-	if err != nil {
-		return err
-	}
 	return nil
+}
+
+func (a *DesktopAssetServer) processIndexHTML() ([]byte, error) {
+	indexHTML, err := a.ReadFile("index.html")
+	if err != nil {
+		return nil, err
+	}
+	wailsOptions, err := extractOptions(indexHTML)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	fmt.Printf("%+v\n", wailsOptions)
+	if wailsOptions.disableRuntimeInjection == false {
+		indexHTML, err = injectHTML(string(indexHTML), `<script src="/wails/runtime.js"></script>`)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if wailsOptions.disableBindingsInjection == false {
+		indexHTML, err = injectHTML(string(indexHTML), `<script src="/wails/ipc.js"></script>`)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return indexHTML, nil
 }
 
 func (a *DesktopAssetServer) Load(filename string) ([]byte, string, error) {
@@ -126,7 +141,7 @@ func (a *DesktopAssetServer) Load(filename string) ([]byte, string, error) {
 	var err error
 	switch filename {
 	case "/":
-		content = a.indexFile
+		content, err = a.processIndexHTML()
 	case "/wails/runtime.js":
 		content = a.runtimeJS
 	case "/wails/ipc.js":
