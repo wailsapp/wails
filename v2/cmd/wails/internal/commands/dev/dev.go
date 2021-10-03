@@ -93,6 +93,9 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	forceBuild := false
 	command.BoolFlag("f", "Force build application", &forceBuild)
 
+	debounceMS := 100
+	command.IntFlag("debounce", "The amount of time to wait to trigger a reload on change", &debounceMS)
+
 	command.Action(func() error {
 
 		// Create logger
@@ -249,10 +252,26 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			}
 		})
 
+		if debounceMS == 100 && projectConfig.DebounceMS != 100 {
+			if projectConfig.DebounceMS == 0 {
+				projectConfig.DebounceMS = 100
+			}
+			debounceMS = projectConfig.DebounceMS
+		}
+
+		if debounceMS != projectConfig.DebounceMS {
+			projectConfig.DebounceMS = debounceMS
+			err := projectConfig.Save()
+			if err != nil {
+				return err
+			}
+		}
+
+		LogGreen("Using reload debounce setting of %d milliseconds", debounceMS)
+
 		// Main Loop
 		quit := false
-		// Use 100ms debounce
-		interval := 100 * time.Millisecond
+		interval := time.Duration(debounceMS) * time.Millisecond
 		timer := time.NewTimer(interval)
 		rebuild := false
 		reload := false

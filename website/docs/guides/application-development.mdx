@@ -161,11 +161,20 @@ The second, if given, will be executed in the `frontend` directory to build the 
 
 If these 2 keys aren't given, then Wails does absolutely nothing with the frontend. It is only expecting that `embed.FS`.
 
-## Live Reloading
+## Built in Dev Server
 
-Running `wails dev` will start a file watcher in your project directory. By default, if any file changes, wails checks
-if it was an application file (default: `.go`, configurable with `-e` flag). If it was, then it will rebuild your
-application and relaunch it. If the changed file was in the `assetdir` directory, it will issue a reload.
+Running `wails dev` will start the built in dev server which will start a file watcher in your project directory. By
+default, if any file changes, wails checks if it was an application file (default: `.go`, configurable with `-e` flag).
+If it was, then it will rebuild your application and relaunch it. If the changed file was in the `assetdir` directory,
+it will issue a reload after a short amount of time.
+
+The dev server uses a technique called "debouncing" which means it doesn't reload straight away,
+as there may be multiple files changed in a short amount of time. When a trigger occurs, it waits for a set amount of time
+before issuing a reload. If another trigger happens, it resets to the wait time again. By default this value is `100ms`.
+If this value doesn't work for your project, it can be configured using the `-debounce` flag. If used, this value will
+be saved to your project config and become the default.
+
+## External Dev Server
 
 Some frameworks come with their own live-reloading server, however they will not be able to take advantage of the Wails
 Go bindings. In this scenario, it is best to run a watcher script that rebuilds the project into the build directory, which

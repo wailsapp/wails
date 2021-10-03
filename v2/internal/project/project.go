@@ -46,6 +46,9 @@ type Project struct {
 
 	// Fully qualified filename
 	filename string
+
+	// The debounce time for hot-reload of the built-in dev server
+	DebounceMS int `json:"debounceMS"`
 }
 
 func (p *Project) Save() error {

@@ -14,7 +14,8 @@ The project config resides in the `wails.json` file in the project directory. Th
 	"frontend:build": "[The command to build the assets, run in the frontend directory - often `npm run build`]",
     "wailsjsdir": "[Relative path to the directory that the auto-generated JS modules will be created]",
 	"version": "[Project config version]",
-	"outputfilename": "[The name of the binary]"
+	"outputfilename": "[The name of the binary]",
+	"debounceMS": 100, // The default time the dev server waits to reload when it detects a vhange in assets
 }
 ```
 
