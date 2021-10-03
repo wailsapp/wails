@@ -1,15 +1,18 @@
 package dev
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -212,6 +215,33 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		//if len(os.Args) > 2 {
 		//	passthruArgs = os.Args[2:]
 		//}
+		var devCommandWaitGroup sync.WaitGroup
+		if projectConfig.DevCommand != "" {
+			LogGreen("Running dev command: '%s'", projectConfig.DevCommand)
+			ctx, cancel := context.WithCancel(context.Background())
+			go func(ctx context.Context, devCommand string, cwd string, wg *sync.WaitGroup) {
+				dir := filepath.Join(cwd, "frontend")
+				cmdSlice := strings.Split(devCommand, " ")
+				wg.Add(1)
+				cmd := exec.CommandContext(ctx, cmdSlice[0], cmdSlice[1:]...)
+				cmd.Stderr = os.Stderr
+				cmd.Stdout = os.Stdout
+				cmd.Dir = dir
+				err := cmd.Run()
+				if err != nil {
+					if err.Error() != "exit status 1" {
+						LogRed("Error from '%s': %s", devCommand, err.Error())
+					}
+				}
+				LogGreen("Dev command exited!")
+				wg.Done()
+			}(ctx, projectConfig.DevCommand, cwd, &devCommandWaitGroup)
+
+			defer func(wg *sync.WaitGroup) {
+				cancel()
+				wg.Wait()
+			}(&devCommandWaitGroup)
+		}
 
 		// Do initial build
 		logger.Println("Building application for development...")
@@ -225,7 +255,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// open browser
 		if openBrowser {
-			err = browser.OpenURL("http://localhost:34115")
+			url := "http://localhost:34115"
+			if devServerURL != "" {
+				url = devServerURL
+			}
+			err = browser.OpenURL(url)
 			if err != nil {
 				return err
 			}
