@@ -47,8 +47,11 @@ type Project struct {
 	// Fully qualified filename
 	filename string
 
-	// The debounce time for hot-reload of the built-in dev server
+	// The debounce time for hot-reload of the built-in dev server. Default 100
 	DebounceMS int `json:"debounceMS"`
+
+	// The url to use to server assets. Default "https://localhost:34115"
+	DevServerURL string `json:"devserverurl"`
 }
 
 func (p *Project) Save() error {

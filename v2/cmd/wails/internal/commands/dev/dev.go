@@ -27,6 +27,8 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/commands/build"
 )
 
+const defaultDevServerURL = "http://localhost:34115"
+
 func LogGreen(message string, args ...interface{}) {
 	text := fmt.Sprintf(message, args...)
 	println(colour.Green(text))
@@ -96,6 +98,9 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	debounceMS := 100
 	command.IntFlag("debounce", "The amount of time to wait to trigger a reload on change", &debounceMS)
 
+	devServerURL := defaultDevServerURL
+	command.StringFlag("devserverurl", "The url of the dev server to use", &devServerURL)
+
 	command.Action(func() error {
 
 		// Create logger
@@ -130,6 +135,18 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		assetDir, err := filepath.Abs(assetDir)
 		if err != nil {
 			return err
+		}
+
+		if devServerURL == defaultDevServerURL && projectConfig.DevServerURL != defaultDevServerURL && projectConfig.DevServerURL != "" {
+			devServerURL = projectConfig.DevServerURL
+		}
+
+		if devServerURL != projectConfig.DevServerURL {
+			projectConfig.DevServerURL = devServerURL
+			err := projectConfig.Save()
+			if err != nil {
+				return err
+			}
 		}
 
 		if wailsjsdir == "" && projectConfig.WailsJSDir != "" {
@@ -198,7 +215,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Do initial build
 		logger.Println("Building application for development...")
-		newProcess, appBinary, err := restartApp(logger, buildOptions, debugBinaryProcess, loglevel, passthruArgs, assetDir, false, exitCodeChannel)
+		newProcess, appBinary, err := restartApp(logger, buildOptions, debugBinaryProcess, loglevel, passthruArgs, assetDir, false, exitCodeChannel, devServerURL)
 		if err != nil {
 			return err
 		}
@@ -232,6 +249,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		LogGreen("Watching (sub)/directory: %s", projectDir)
+		LogGreen("Using Dev Server URL: %s", devServerURL)
 
 		// Setup a watcher for non-node_modules directories
 		dirs.Each(func(dir string) {
@@ -325,7 +343,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 					rebuild = false
 					LogGreen("[Rebuild triggered] files updated")
 					// Try and build the app
-					newBinaryProcess, _, err = restartApp(logger, buildOptions, debugBinaryProcess, loglevel, passthruArgs, assetDir, false, exitCodeChannel)
+					newBinaryProcess, _, err = restartApp(logger, buildOptions, debugBinaryProcess, loglevel, passthruArgs, assetDir, false, exitCodeChannel, devServerURL)
 					if err != nil {
 						LogRed("Error during build: %s", err.Error())
 						continue
@@ -370,7 +388,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	return nil
 }
 
-func restartApp(logger *clilogger.CLILogger, buildOptions *build.Options, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string, assetDir string, firstRun bool, exitCodeChannel chan int) (*process.Process, string, error) {
+func restartApp(logger *clilogger.CLILogger, buildOptions *build.Options, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string, assetDir string, firstRun bool, exitCodeChannel chan int, devServerURL string) (*process.Process, string, error) {
 
 	appBinary, err := build.Build(buildOptions)
 	println()
@@ -400,7 +418,9 @@ func restartApp(logger *clilogger.CLILogger, buildOptions *build.Options, debugB
 	if assetDir != "" {
 		args.Add("-assetdir", assetDir)
 	}
-
+	if devServerURL != "" {
+		args.Add("-devserverurl", devServerURL)
+	}
 	if len(passthruArgs) > 0 {
 		args.AddSlice(passthruArgs)
 	}

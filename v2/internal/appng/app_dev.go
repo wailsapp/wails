@@ -61,11 +61,16 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	// Check for CLI Flags
 	assetdir := flag.String("assetdir", "", "Directory to serve assets")
+	devServerURL := flag.String("devserverurl", "http://localhost:34115", "URL of development server")
 	loglevel := flag.String("loglevel", "debug", "Loglevel to use - Trace, Debug, Info, Warning, Error")
 	flag.Parse()
+	if devServerURL != nil && *devServerURL != "" {
+		ctx = context.WithValue(ctx, "devserverurl", *devServerURL)
+	}
 	if assetdir != nil && *assetdir != "" {
 		ctx = context.WithValue(ctx, "assetdir", *assetdir)
 	}
+
 	if loglevel != nil && *loglevel != "" {
 		level, err := pkglogger.StringToLogLevel(*loglevel)
 		if err != nil {

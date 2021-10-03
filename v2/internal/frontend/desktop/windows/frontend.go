@@ -35,7 +35,8 @@ type Frontend struct {
 	debug           bool
 
 	// Assets
-	assets *assetserver.DesktopAssetServer
+	assets       *assetserver.DesktopAssetServer
+	devServerURL string
 
 	// main window handle
 	mainWindow                               *Window
@@ -59,19 +60,32 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		maxWidth:        appoptions.MaxWidth,
 	}
 
+	bindingsJSON, err := appBindings.ToJSON()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_devServerURL := ctx.Value("devserverurl")
+	if _devServerURL != nil {
+		result.devServerURL = _devServerURL.(string)
+		if result.devServerURL == "" {
+			result.devServerURL = "http://localhost:34115"
+		}
+		if result.devServerURL != "http://localhost:34115" {
+			return result
+		}
+	}
+
 	// Check if we have been given a directory to serve assets from.
 	// If so, this means we are in dev mode and are serving assets off disk.
 	// We indicate this through the `servingFromDisk` flag to ensure requests
 	// aren't cached by WebView2 in dev mode
+
 	_assetdir := ctx.Value("assetdir")
 	if _assetdir != nil {
 		result.servingFromDisk = true
 	}
 
-	bindingsJSON, err := appBindings.ToJSON()
-	if err != nil {
-		log.Fatal(err)
-	}
 	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON)
 	if err != nil {
 		log.Fatal(err)
@@ -306,7 +320,11 @@ func (f *Frontend) setupChromium() {
 	f.WindowSetRGBA(f.frontendOptions.RGBA)
 
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
-	chromium.Navigate("file://wails/")
+	if f.devServerURL == "http://localhost:34115" {
+		chromium.Navigate("file://wails/")
+	} else {
+		chromium.Navigate(f.devServerURL)
+	}
 }
 
 type EventNotify struct {

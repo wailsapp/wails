@@ -93,47 +93,54 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		}
 	}))
 
-	_assetdir := ctx.Value("assetdir")
-	if _assetdir == nil {
-		return fmt.Errorf("no assetdir provided")
+	_devServerURL := ctx.Value("devserverurl")
+	if _devServerURL == "http://localhost:34115" {
+		// Setup internal dev server
+		_assetdir := ctx.Value("assetdir")
+		if _assetdir == nil {
+			return fmt.Errorf("no assetdir provided")
+		}
+		if _assetdir != nil {
+			assetdir := _assetdir.(string)
+			bindingsJSON, err := d.appBindings.ToJSON()
+			if err != nil {
+				log.Fatal(err)
+			}
+			d.assetServer, err = assetserver.NewBrowserAssetServer(assetdir, bindingsJSON, d.appoptions)
+			if err != nil {
+				log.Fatal(err)
+			}
+			absdir, err := filepath.Abs(assetdir)
+			if err != nil {
+				return err
+			}
+			d.LogDebug("Serving assets from: %s", absdir)
+		}
+
+		d.server.Get("*", d.loadAsset)
+
+		// Start server
+		go func(server *fiber.App, log *logger.Logger) {
+			err := server.Listen("localhost:34115")
+			if err != nil {
+				log.Error(err.Error())
+			}
+			d.LogDebug("Shutdown completed")
+		}(d.server, d.logger)
+
+		d.LogDebug("Serving application at http://localhost:34115")
+
+		defer func() {
+			err := d.server.Shutdown()
+			if err != nil {
+				d.logger.Error(err.Error())
+			}
+		}()
 	}
-	if _assetdir != nil {
-		assetdir := _assetdir.(string)
-		bindingsJSON, err := d.appBindings.ToJSON()
-		if err != nil {
-			log.Fatal(err)
-		}
-		d.assetServer, err = assetserver.NewBrowserAssetServer(assetdir, bindingsJSON, d.appoptions)
-		if err != nil {
-			log.Fatal(err)
-		}
-		absdir, err := filepath.Abs(assetdir)
-		if err != nil {
-			return err
-		}
-		d.LogDebug("Serving assets from: %s", absdir)
-	}
-
-	d.server.Get("*", d.loadAsset)
-
-	// Start server
-	go func(server *fiber.App, log *logger.Logger) {
-		err := server.Listen("localhost:34115")
-		if err != nil {
-			log.Error(err.Error())
-		}
-		d.LogDebug("Shutdown completed")
-	}(d.server, d.logger)
-
-	d.LogDebug("Serving application at http://localhost:34115")
 
 	// Launch desktop app
 	err := d.desktopFrontend.Run(ctx)
 	d.LogDebug("Starting shutdown")
-	err2 := d.server.Shutdown()
-	if err2 != nil {
-		d.logger.Error(err.Error())
-	}
 
 	return err
 }
