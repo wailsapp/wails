@@ -69,3 +69,7 @@ func (p *Process) Kill() error {
 func (p *Process) PID() int {
 	return p.cmd.Process.Pid
 }
+
+func (p *Process) SetDir(dir string) {
+	p.cmd.Dir = dir
+}

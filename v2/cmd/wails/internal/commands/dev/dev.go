@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -215,18 +216,20 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		//if len(os.Args) > 2 {
 		//	passthruArgs = os.Args[2:]
 		//}
+
+		// Dev server command
 		var devCommandWaitGroup sync.WaitGroup
 		if projectConfig.DevCommand != "" {
 			LogGreen("Running dev command: '%s'", projectConfig.DevCommand)
 			ctx, cancel := context.WithCancel(context.Background())
+			dir := filepath.Join(cwd, "frontend")
+			cmdSlice := strings.Split(projectConfig.DevCommand, " ")
+			devCommandWaitGroup.Add(1)
+			cmd := exec.CommandContext(ctx, cmdSlice[0], cmdSlice[1:]...)
+			cmd.Stderr = os.Stderr
+			cmd.Stdout = os.Stdout
+			cmd.Dir = dir
 			go func(ctx context.Context, devCommand string, cwd string, wg *sync.WaitGroup) {
-				dir := filepath.Join(cwd, "frontend")
-				cmdSlice := strings.Split(devCommand, " ")
-				wg.Add(1)
-				cmd := exec.CommandContext(ctx, cmdSlice[0], cmdSlice[1:]...)
-				cmd.Stderr = os.Stderr
-				cmd.Stdout = os.Stdout
-				cmd.Dir = dir
 				err := cmd.Run()
 				if err != nil {
 					if err.Error() != "exit status 1" {
@@ -238,7 +241,21 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			}(ctx, projectConfig.DevCommand, cwd, &devCommandWaitGroup)
 
 			defer func(wg *sync.WaitGroup) {
-				cancel()
+				if runtime.GOOS == "windows" {
+					// Credit: https://stackoverflow.com/a/44551450
+					// For whatever reason, killing an npm script on windows just doesn't exit properly with cancel
+					kill := exec.Command("TASKKILL", "/T", "/F", "/PID", strconv.Itoa(cmd.Process.Pid))
+					kill.Stderr = os.Stderr
+					kill.Stdout = os.Stdout
+					err := kill.Run()
+					if err != nil {
+						if err.Error() != "exit status 1" {
+							LogRed("Error from '%s': %s", projectConfig.DevCommand, err.Error())
+						}
+					}
+				} else {
+					cancel()
+				}
 				wg.Wait()
 			}(&devCommandWaitGroup)
 		}
