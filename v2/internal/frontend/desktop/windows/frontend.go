@@ -35,8 +35,8 @@ type Frontend struct {
 	debug           bool
 
 	// Assets
-	assets       *assetserver.DesktopAssetServer
-	devServerURL string
+	assets   *assetserver.DesktopAssetServer
+	startURL string
 
 	// main window handle
 	mainWindow                               *Window
@@ -58,6 +58,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		minWidth:        appoptions.MinWidth,
 		maxHeight:       appoptions.MaxHeight,
 		maxWidth:        appoptions.MaxWidth,
+		startURL:        "file://wails/",
 	}
 
 	bindingsJSON, err := appBindings.ToJSON()
@@ -67,11 +68,9 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	_devServerURL := ctx.Value("devserverurl")
 	if _devServerURL != nil {
-		result.devServerURL = _devServerURL.(string)
-		if result.devServerURL == "" {
-			result.devServerURL = "http://localhost:34115"
-		}
-		if result.devServerURL != "http://localhost:34115" {
+		devServerURL := _devServerURL.(string)
+		if len(devServerURL) > 0 && devServerURL != "http://localhost:34115" {
+			result.startURL = devServerURL
 			return result
 		}
 	}
@@ -320,11 +319,7 @@ func (f *Frontend) setupChromium() {
 	f.WindowSetRGBA(f.frontendOptions.RGBA)
 
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
-	if f.devServerURL == "http://localhost:34115" {
-		chromium.Navigate("file://wails/")
-	} else {
-		chromium.Navigate(f.devServerURL)
-	}
+	chromium.Navigate(f.startURL)
 }
 
 type EventNotify struct {

@@ -119,7 +119,6 @@ func (a *DesktopAssetServer) processIndexHTML() ([]byte, error) {
 		log.Fatal(err)
 		return nil, err
 	}
-	fmt.Printf("%+v\n", wailsOptions)
 	if wailsOptions.disableRuntimeInjection == false {
 		indexHTML, err = injectHTML(string(indexHTML), `<script src="/wails/runtime.js"></script>`)
 		if err != nil {
