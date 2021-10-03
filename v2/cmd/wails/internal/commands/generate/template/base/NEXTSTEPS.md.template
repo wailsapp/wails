@@ -21,7 +21,7 @@ The next steps to complete the template are:
 
 You can test your template by running this command:
 
-`wails init -name test -t {{.TemplateDir}}`
+`wails init -n test -t {{.TemplateDir}}`
 
 ### Checklist
 
