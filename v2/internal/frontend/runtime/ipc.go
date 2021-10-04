@@ -1,8 +1,8 @@
-//go:build windows
+//go:build darwin || windows
 
 package runtime
 
 import _ "embed"
 
-//go:embed ipc_windows.js
+//go:embed ipc.js
 var DesktopIPC []byte

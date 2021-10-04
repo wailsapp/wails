@@ -10,25 +10,22 @@ The electron alternative for Go
 /* jshint esversion: 6 */
 
 /**
- * SendMessage sends the given message to the backend
+ * WailsInvoke sends the given message to the backend
  *
  * @param {string} message
  */
 
-// const windows = 0;
-// const macos = 1;
-// const linux = 2;
+(function () {
+	// Credit: https://stackoverflow.com/a/2631521
+	let _deeptest = function (s) {
+		var obj = window[s.shift()];
+		while (obj && s.length) obj = obj[s.shift()];
+		return obj;
+	};
+	window.WailsInvoke = _deeptest(["chrome", "webview", "postMessage"]) ||
+		_deeptest(["webkit", "messageHandlers", "external", "postMessage"]);
 
-window.WailsInvoke = function (message) {
-
-	// Call Platform specific invoke method
-	if (PLATFORM === 0) {
-		window.chrome.webview.postMessage(message);
-	} else if (PLATFORM === 1) {
-		window.webkit.messageHandlers.external.postMessage(message);
-	} else if (PLATFORM === 2) {
-		console.error("Unsupported Platform");
-	} else {
+	if (!window.WailsInvoke) {
 		console.error("Unsupported Platform");
 	}
-};
+})();
