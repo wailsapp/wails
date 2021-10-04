@@ -60,21 +60,24 @@ function handleDisconnect() {
     connect();
 }
 
-// Try to connect to the backend every 1s (default value).
+function _connect() {
+    if (websocket == null) {
+        websocket = new WebSocket('ws://' + window.location.hostname + ':34115/wails/ipc');
+        websocket.onopen = handleConnect;
+        websocket.onerror = function (e) {
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            e.preventDefault();
+            websocket = null;
+            return false;
+        };
+    }
+}
+
+// Try to connect to the backend every .5s
 function connect() {
-    connectTimer = setInterval(function () {
-        if (websocket == null) {
-            websocket = new WebSocket('ws://' + window.location.hostname + ':34115/wails/ipc');
-            websocket.onopen = handleConnect;
-            websocket.onerror = function (e) {
-                e.stopImmediatePropagation();
-                e.stopPropagation();
-                e.preventDefault();
-                websocket = null;
-                return false;
-            };
-        }
-    }, 250);
+    _connect();
+    connectTimer = setInterval(_connect, 500);
 }
 
 function handleMessage(message) {
