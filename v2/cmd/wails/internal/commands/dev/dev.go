@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -56,57 +55,43 @@ func sliceToMap(input []string) map[string]struct{} {
 	return result
 }
 
+type devFlags struct {
+	ldflags         string
+	compilerCommand string
+	assetDir        string
+	extensions      string
+	openBrowser     bool
+	noReload        bool
+	wailsjsdir      string
+	tags            string
+	verbosity       int
+	loglevel        string
+	forceBuild      bool
+	debounceMS      int
+	devServerURL    string
+}
+
 // AddSubcommand adds the `dev` command for the Wails application
 func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 	command := app.NewSubCommand("dev", "Development mode")
 
-	// Passthrough ldflags
-	ldflags := ""
-	command.StringFlag("ldflags", "optional ldflags", &ldflags)
-
-	// compiler command
-	compilerCommand := "go"
-	command.StringFlag("compiler", "Use a different go compiler to build, eg go1.15beta1", &compilerCommand)
-
-	assetDir := ""
-	command.StringFlag("assetdir", "Serve assets from the given directory", &assetDir)
-
-	// extensions to trigger rebuilds of application
-	extensions := "go"
-	command.StringFlag("e", "Extensions to trigger rebuilds (comma separated) eg go", &extensions)
-
-	openBrowser := false
-	command.BoolFlag("browser", "Open application in browser", &openBrowser)
-
-	noreload := false
-	command.BoolFlag("noreload", "Disable reload on asset change", &noreload)
-
-	wailsjsdir := ""
-	command.StringFlag("wailsjsdir", "Directory to generate the Wails JS modules", &wailsjsdir)
-
-	// tags to pass to `go`
-	tags := ""
-	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &tags)
-
-	// Verbosity
-	verbosity := 1
-	command.IntFlag("v", "Verbosity level (0 - silent, 1 - standard, 2 - verbose)", &verbosity)
-
-	loglevel := ""
-	command.StringFlag("loglevel", "Loglevel to use - Trace, Dev, Info, Warning, Error", &loglevel)
-
-	forceBuild := false
-	command.BoolFlag("f", "Force build application", &forceBuild)
-
-	debounceMS := 100
-	command.IntFlag("debounce", "The amount of time to wait to trigger a reload on change", &debounceMS)
-
-	devServerURL := defaultDevServerURL
-	command.StringFlag("devserverurl", "The url of the dev server to use", &devServerURL)
+	flags := defaultDevFlags()
+	command.StringFlag("ldflags", "optional ldflags", &flags.ldflags)
+	command.StringFlag("compiler", "Use a different go compiler to build, eg go1.15beta1", &flags.compilerCommand)
+	command.StringFlag("assetdir", "Serve assets from the given directory", &flags.assetDir)
+	command.StringFlag("e", "Extensions to trigger rebuilds (comma separated) eg go", &flags.extensions)
+	command.BoolFlag("browser", "Open application in browser", &flags.openBrowser)
+	command.BoolFlag("noreload", "Disable reload on asset change", &flags.noReload)
+	command.StringFlag("wailsjsdir", "Directory to generate the Wails JS modules", &flags.wailsjsdir)
+	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &flags.tags)
+	command.IntFlag("v", "Verbosity level (0 - silent, 1 - standard, 2 - verbose)", &flags.verbosity)
+	command.StringFlag("loglevel", "Loglevel to use - Trace, Dev, Info, Warning, Error", &flags.loglevel)
+	command.BoolFlag("f", "Force build application", &flags.forceBuild)
+	command.IntFlag("debounce", "The amount of time to wait to trigger a reload on change", &flags.debounceMS)
+	command.StringFlag("devserverurl", "The url of the dev server to use", &flags.devServerURL)
 
 	command.Action(func() error {
-
 		// Create logger
 		logger := clilogger.New(w)
 		app.PrintBanner()
@@ -115,154 +100,33 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		if err != nil {
 			return err
 		}
-		projectConfig, err := project.Load(cwd)
+
+		projectConfig, err := loadAndMergeProjectConfig(cwd, &flags)
 		if err != nil {
 			return err
 		}
 
-		if projectConfig.AssetDirectory == "" && assetDir == "" {
-			return fmt.Errorf("No asset directory provided. Please use -assetdir to indicate which directory contains your built assets.")
+		// frontend:dev server command
+		if projectConfig.DevCommand != "" {
+			var devCommandWaitGroup sync.WaitGroup
+			closer := runFrontendDevCommand(cwd, projectConfig.DevCommand, &devCommandWaitGroup)
+			defer closer(&devCommandWaitGroup)
 		}
 
-		if assetDir == "" && projectConfig.AssetDirectory != "" {
-			assetDir = projectConfig.AssetDirectory
-		}
-
-		if assetDir != projectConfig.AssetDirectory {
-			projectConfig.AssetDirectory = filepath.ToSlash(assetDir)
-			err := projectConfig.Save()
-			if err != nil {
-				return err
-			}
-		}
-
-		assetDir, err := filepath.Abs(assetDir)
-		if err != nil {
-			return err
-		}
-
-		if devServerURL == defaultDevServerURL && projectConfig.DevServerURL != defaultDevServerURL && projectConfig.DevServerURL != "" {
-			devServerURL = projectConfig.DevServerURL
-		}
-
-		if devServerURL != projectConfig.DevServerURL {
-			projectConfig.DevServerURL = devServerURL
-			err := projectConfig.Save()
-			if err != nil {
-				return err
-			}
-		}
-
-		if wailsjsdir == "" && projectConfig.WailsJSDir != "" {
-			wailsjsdir = projectConfig.WailsJSDir
-		}
-
-		if wailsjsdir == "" {
-			wailsjsdir = "./frontend"
-		}
-
-		if wailsjsdir != projectConfig.WailsJSDir {
-			projectConfig.WailsJSDir = filepath.ToSlash(wailsjsdir)
-			err := projectConfig.Save()
-			if err != nil {
-				return err
-			}
-		}
-
-		userTags := []string{}
-		for _, tag := range strings.Split(tags, " ") {
-			thisTag := strings.TrimSpace(tag)
-			if thisTag != "" {
-				userTags = append(userTags, thisTag)
-			}
-		}
-
-		buildOptions := &build.Options{
-			Logger:         logger,
-			OutputType:     "dev",
-			Mode:           build.Dev,
-			Arch:           runtime.GOARCH,
-			Pack:           true,
-			Platform:       runtime.GOOS,
-			LDFlags:        ldflags,
-			Compiler:       compilerCommand,
-			ForceBuild:     forceBuild,
-			IgnoreFrontend: false,
-			Verbosity:      verbosity,
-			WailsJSDir:     wailsjsdir,
-			UserTags:       userTags,
-		}
-
-		watcher, err := fsnotify.NewWatcher()
-		if err != nil {
-			return err
-		}
-		defer func(watcher *fsnotify.Watcher) {
-			err := watcher.Close()
-			if err != nil {
-				log.Fatal(err)
-			}
-		}(watcher)
+		buildOptions := generateBuildOptions(flags)
+		buildOptions.Logger = logger
+		buildOptions.UserTags = parseUserTags(flags.tags)
 
 		var debugBinaryProcess *process.Process = nil
-		var extensionsThatTriggerARebuild = sliceToMap(strings.Split(extensions, ","))
 
 		// Setup signal handler
 		quitChannel := make(chan os.Signal, 1)
 		signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
 		exitCodeChannel := make(chan int, 1)
 
-		var passthruArgs []string
-		//if len(os.Args) > 2 {
-		//	passthruArgs = os.Args[2:]
-		//}
-
-		// Dev server command
-		var devCommandWaitGroup sync.WaitGroup
-		if projectConfig.DevCommand != "" {
-			LogGreen("Running dev command: '%s'", projectConfig.DevCommand)
-			ctx, cancel := context.WithCancel(context.Background())
-			dir := filepath.Join(cwd, "frontend")
-			cmdSlice := strings.Split(projectConfig.DevCommand, " ")
-			devCommandWaitGroup.Add(1)
-			cmd := exec.CommandContext(ctx, cmdSlice[0], cmdSlice[1:]...)
-			cmd.Stderr = os.Stderr
-			cmd.Stdout = os.Stdout
-			cmd.Dir = dir
-			go func(ctx context.Context, devCommand string, cwd string, wg *sync.WaitGroup) {
-				err := cmd.Run()
-				if err != nil {
-					if err.Error() != "exit status 1" {
-						LogRed("Error from '%s': %s", devCommand, err.Error())
-					}
-				}
-				LogGreen("Dev command exited!")
-				wg.Done()
-			}(ctx, projectConfig.DevCommand, cwd, &devCommandWaitGroup)
-
-			defer func(wg *sync.WaitGroup) {
-				if runtime.GOOS == "windows" {
-					// Credit: https://stackoverflow.com/a/44551450
-					// For whatever reason, killing an npm script on windows just doesn't exit properly with cancel
-					kill := exec.Command("TASKKILL", "/T", "/F", "/PID", strconv.Itoa(cmd.Process.Pid))
-					kill.Stderr = os.Stderr
-					kill.Stdout = os.Stdout
-					err := kill.Run()
-					if err != nil {
-						if err.Error() != "exit status 1" {
-							LogRed("Error from '%s': %s", projectConfig.DevCommand, err.Error())
-						}
-					}
-				} else {
-					cancel()
-				}
-				wg.Wait()
-			}(&devCommandWaitGroup)
-		}
-
 		// Do initial build
 		logger.Println("Building application for development...")
-		newProcess, appBinary, err := restartApp(logger, buildOptions, debugBinaryProcess, loglevel, passthruArgs, assetDir, false, exitCodeChannel, devServerURL)
+		newProcess, appBinary, err := restartApp(buildOptions, debugBinaryProcess, flags, exitCodeChannel)
 		if err != nil {
 			return err
 		}
@@ -271,10 +135,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		// open browser
-		if openBrowser {
-			url := "http://localhost:34115"
-			if devServerURL != "" {
-				url = devServerURL
+		if flags.openBrowser {
+			url := defaultDevServerURL
+			if flags.devServerURL != "" {
+				url = flags.devServerURL
 			}
 			err = browser.OpenURL(url)
 			if err != nil {
@@ -282,140 +146,21 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			}
 		}
 
-		if err != nil {
-			return err
-		}
-		var newBinaryProcess *process.Process
-
-		// Get project dir
-		projectDir, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-
-		// Get all subdirectories
-		dirs, err := fs.GetSubdirectories(projectDir)
-		if err != nil {
-			return err
-		}
-
-		LogGreen("Watching (sub)/directory: %s", projectDir)
-		LogGreen("Using Dev Server URL: %s", devServerURL)
-
-		// Setup a watcher for non-node_modules directories
-		dirs.Each(func(dir string) {
-			if strings.Contains(dir, "node_modules") {
-				return
-			}
-			// Ignore build directory
-			if strings.HasPrefix(dir, filepath.Join(projectDir, "build")) {
-				return
-			}
-			// Ignore dot directories
-			if strings.HasPrefix(dir, ".") {
-				return
-			}
-			err = watcher.Add(dir)
+		// create the project files watcher
+		watcher, err := initialiseWatcher(cwd, logger.Fatal)
+		defer func(watcher *fsnotify.Watcher) {
+			err := watcher.Close()
 			if err != nil {
 				logger.Fatal(err.Error())
 			}
-		})
+		}(watcher)
 
-		if debounceMS == 100 && projectConfig.DebounceMS != 100 {
-			if projectConfig.DebounceMS == 0 {
-				projectConfig.DebounceMS = 100
-			}
-			debounceMS = projectConfig.DebounceMS
-		}
+		LogGreen("Watching (sub)/directory: %s", cwd)
+		LogGreen("Using Dev Server URL: %s", flags.devServerURL)
+		LogGreen("Using reload debounce setting of %d milliseconds", flags.debounceMS)
 
-		if debounceMS != projectConfig.DebounceMS {
-			projectConfig.DebounceMS = debounceMS
-			err := projectConfig.Save()
-			if err != nil {
-				return err
-			}
-		}
-
-		LogGreen("Using reload debounce setting of %d milliseconds", debounceMS)
-
-		// Main Loop
-		quit := false
-		interval := time.Duration(debounceMS) * time.Millisecond
-		timer := time.NewTimer(interval)
-		rebuild := false
-		reload := false
-		for quit == false {
-			//reload := false
-			select {
-			case exitCode := <-exitCodeChannel:
-				if exitCode == 0 {
-					quit = true
-				}
-			case item := <-watcher.Events:
-				// Check for file writes
-				if item.Op&fsnotify.Write == fsnotify.Write {
-					// Ignore directories
-					if fs.DirExists(item.Name) {
-						continue
-					}
-
-					// Iterate all file patterns
-					ext := filepath.Ext(item.Name)
-					if ext != "" {
-						ext = ext[1:]
-						if _, exists := extensionsThatTriggerARebuild[ext]; exists {
-							rebuild = true
-							timer.Reset(interval)
-							continue
-						}
-					}
-
-					if strings.HasPrefix(item.Name, assetDir) {
-						reload = true
-					}
-					timer.Reset(interval)
-				}
-				// Check for new directories
-				if item.Op&fsnotify.Create == fsnotify.Create {
-					// If this is a folder, add it to our watch list
-					if fs.DirExists(item.Name) {
-						//node_modules is BANNED!
-						if !strings.Contains(item.Name, "node_modules") {
-							err := watcher.Add(item.Name)
-							if err != nil {
-								logger.Fatal("%s", err.Error())
-							}
-							LogGreen("Added new directory to watcher: %s", item.Name)
-						}
-					}
-				}
-			case <-timer.C:
-				if rebuild {
-					rebuild = false
-					LogGreen("[Rebuild triggered] files updated")
-					// Try and build the app
-					newBinaryProcess, _, err = restartApp(logger, buildOptions, debugBinaryProcess, loglevel, passthruArgs, assetDir, false, exitCodeChannel, devServerURL)
-					if err != nil {
-						LogRed("Error during build: %s", err.Error())
-						continue
-					}
-					// If we have a new process, save it
-					if newBinaryProcess != nil {
-						debugBinaryProcess = newBinaryProcess
-					}
-				}
-				if reload {
-					reload = false
-					_, err = http.Get("http://localhost:34115/wails/reload")
-					if err != nil {
-						LogRed("Error during refresh: %s", err.Error())
-					}
-				}
-			case <-quitChannel:
-				LogGreen("\nCaught quit")
-				quit = true
-			}
-		}
+		// Watch for changes and trigger restartApp()
+		doWatcherLoop(buildOptions, debugBinaryProcess, flags, watcher, exitCodeChannel, quitChannel)
 
 		// Kill the current program if running
 		if debugBinaryProcess != nil {
@@ -435,18 +180,202 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		return nil
 	})
-
 	return nil
 }
 
-func restartApp(logger *clilogger.CLILogger, buildOptions *build.Options, debugBinaryProcess *process.Process, loglevel string, passthruArgs []string, assetDir string, firstRun bool, exitCodeChannel chan int, devServerURL string) (*process.Process, string, error) {
+// defaultDevFlags generates devFlags with default options
+func defaultDevFlags() devFlags {
+	return devFlags{
+		devServerURL:    defaultDevServerURL,
+		compilerCommand: "go",
+		verbosity:       1,
+		extensions:      "go",
+		debounceMS:      100,
+	}
+}
+
+// generateBuildOptions creates a build.Options using the flags
+func generateBuildOptions(flags devFlags) *build.Options {
+	return &build.Options{
+		OutputType:     "dev",
+		Mode:           build.Dev,
+		Arch:           runtime.GOARCH,
+		Pack:           true,
+		Platform:       runtime.GOOS,
+		LDFlags:        flags.ldflags,
+		Compiler:       flags.compilerCommand,
+		ForceBuild:     flags.forceBuild,
+		IgnoreFrontend: false,
+		Verbosity:      flags.verbosity,
+		WailsJSDir:     flags.wailsjsdir,
+	}
+}
+
+// parseUserTags takes the string form of tags and converts to a slice of strings
+func parseUserTags(tagString string) []string {
+	userTags := make([]string, 0)
+	for _, tag := range strings.Split(tagString, " ") {
+		thisTag := strings.TrimSpace(tag)
+		if thisTag != "" {
+			userTags = append(userTags, thisTag)
+		}
+	}
+	return userTags
+}
+
+// loadAndMergeProjectConfig reconciles flags passed to the CLI with project config settings and updates
+// the project config if necessary
+func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, error) {
+	projectConfig, err := project.Load(cwd)
+	if err != nil {
+		return nil, err
+	}
+
+	var shouldSaveConfig bool
+
+	if projectConfig.AssetDirectory == "" && flags.assetDir == "" {
+		return nil, fmt.Errorf("No asset directory provided. Please use -assetdir to indicate which directory contains your built assets.")
+	}
+
+	if flags.assetDir == "" && projectConfig.AssetDirectory != "" {
+		flags.assetDir = projectConfig.AssetDirectory
+	}
+
+	if flags.assetDir != projectConfig.AssetDirectory {
+		projectConfig.AssetDirectory = filepath.ToSlash(flags.assetDir)
+	}
+
+	flags.assetDir, err = filepath.Abs(flags.assetDir)
+	if err != nil {
+		return nil, err
+	}
+
+	if flags.devServerURL == defaultDevServerURL && projectConfig.DevServerURL != defaultDevServerURL && projectConfig.DevServerURL != "" {
+		flags.devServerURL = projectConfig.DevServerURL
+	}
+
+	if flags.devServerURL != projectConfig.DevServerURL {
+		projectConfig.DevServerURL = flags.devServerURL
+		shouldSaveConfig = true
+	}
+
+	if flags.wailsjsdir == "" && projectConfig.WailsJSDir != "" {
+		flags.wailsjsdir = projectConfig.WailsJSDir
+	}
+
+	if flags.wailsjsdir == "" {
+		flags.wailsjsdir = "./frontend"
+	}
+
+	if flags.wailsjsdir != projectConfig.WailsJSDir {
+		projectConfig.WailsJSDir = filepath.ToSlash(flags.wailsjsdir)
+		shouldSaveConfig = true
+	}
+
+	if flags.debounceMS == 100 && projectConfig.DebounceMS != 100 {
+		if projectConfig.DebounceMS == 0 {
+			projectConfig.DebounceMS = 100
+		}
+		flags.debounceMS = projectConfig.DebounceMS
+	}
+
+	if flags.debounceMS != projectConfig.DebounceMS {
+		projectConfig.DebounceMS = flags.debounceMS
+		shouldSaveConfig = true
+	}
+
+	if shouldSaveConfig {
+		err = projectConfig.Save()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return projectConfig, nil
+}
+
+// runFrontendDevCommand will run the `frontend:dev` command if it was given, ex- `npm run dev`
+func runFrontendDevCommand(cwd string, devCommand string, wg *sync.WaitGroup) func(group *sync.WaitGroup) {
+	LogGreen("Running frontend dev command: '%s'", devCommand)
+	ctx, cancel := context.WithCancel(context.Background())
+	dir := filepath.Join(cwd, "frontend")
+	cmdSlice := strings.Split(devCommand, " ")
+	wg.Add(1)
+	cmd := exec.CommandContext(ctx, cmdSlice[0], cmdSlice[1:]...)
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	cmd.Dir = dir
+	go func(ctx context.Context, devCommand string, cwd string, wg *sync.WaitGroup) {
+		err := cmd.Run()
+		if err != nil {
+			if err.Error() != "exit status 1" {
+				LogRed("Error from '%s': %s", devCommand, err.Error())
+			}
+		}
+		LogGreen("Dev command exited!")
+		wg.Done()
+	}(ctx, devCommand, cwd, wg)
+
+	return func(wg *sync.WaitGroup) {
+		if runtime.GOOS == "windows" {
+			// Credit: https://stackoverflow.com/a/44551450
+			// For whatever reason, killing an npm script on windows just doesn't exit properly with cancel
+			kill := exec.Command("TASKKILL", "/T", "/F", "/PID", strconv.Itoa(cmd.Process.Pid))
+			kill.Stderr = os.Stderr
+			kill.Stdout = os.Stdout
+			err := kill.Run()
+			if err != nil {
+				if err.Error() != "exit status 1" {
+					LogRed("Error from '%s': %s", devCommand, err.Error())
+				}
+			}
+		} else {
+			cancel()
+		}
+		wg.Wait()
+	}
+}
+
+// initialiseWatcher creates the project directory watcher that will trigger recompile
+func initialiseWatcher(cwd string, logFatal func(string, ...interface{})) (*fsnotify.Watcher, error) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return nil, err
+	}
+
+	// Get all subdirectories
+	dirs, err := fs.GetSubdirectories(cwd)
+	if err != nil {
+		return nil, err
+	}
+
+	// Setup a watcher for non-node_modules directories
+	dirs.Each(func(dir string) {
+		if strings.Contains(dir, "node_modules") {
+			return
+		}
+		// Ignore build directory
+		if strings.HasPrefix(dir, filepath.Join(cwd, "build")) {
+			return
+		}
+		// Ignore dot directories
+		if strings.HasPrefix(dir, ".") {
+			return
+		}
+		err = watcher.Add(dir)
+		if err != nil {
+			logFatal(err.Error())
+		}
+	})
+	return watcher, nil
+}
+
+// restartApp does the actual rebuilding of the application when files change
+func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process, flags devFlags, exitCodeChannel chan int) (*process.Process, string, error) {
 
 	appBinary, err := build.Build(buildOptions)
 	println()
 	if err != nil {
-		if firstRun {
-			return nil, "", err
-		}
 		LogRed("Build error - continuing to run current version")
 		LogDarkYellow(err.Error())
 		return nil, "", nil
@@ -457,7 +386,7 @@ func restartApp(logger *clilogger.CLILogger, buildOptions *build.Options, debugB
 		killError := debugBinaryProcess.Kill()
 
 		if killError != nil {
-			logger.Fatal("Unable to kill debug binary (PID: %d)!", debugBinaryProcess.PID())
+			buildOptions.Logger.Fatal("Unable to kill debug binary (PID: %d)!", debugBinaryProcess.PID())
 		}
 
 		debugBinaryProcess = nil
@@ -465,15 +394,12 @@ func restartApp(logger *clilogger.CLILogger, buildOptions *build.Options, debugB
 
 	// Start up new binary with correct args
 	args := slicer.StringSlicer{}
-	args.Add("-loglevel", loglevel)
-	if assetDir != "" {
-		args.Add("-assetdir", assetDir)
+	args.Add("-loglevel", flags.loglevel)
+	if flags.assetDir != "" {
+		args.Add("-assetdir", flags.assetDir)
 	}
-	if devServerURL != "" {
-		args.Add("-devserverurl", devServerURL)
-	}
-	if len(passthruArgs) > 0 {
-		args.AddSlice(passthruArgs)
+	if flags.devServerURL != "" {
+		args.Add("-devserverurl", flags.devServerURL)
 	}
 	newProcess := process.NewProcess(appBinary, args.AsSlice()...)
 	err = newProcess.Start(exitCodeChannel)
@@ -482,11 +408,98 @@ func restartApp(logger *clilogger.CLILogger, buildOptions *build.Options, debugB
 		if fs.FileExists(appBinary) {
 			deleteError := fs.DeleteFile(appBinary)
 			if deleteError != nil {
-				logger.Fatal("Unable to delete app binary: " + appBinary)
+				buildOptions.Logger.Fatal("Unable to delete app binary: " + appBinary)
 			}
 		}
-		logger.Fatal("Unable to start application: %s", err.Error())
+		buildOptions.Logger.Fatal("Unable to start application: %s", err.Error())
 	}
 
 	return newProcess, appBinary, nil
+}
+
+// doWatcherLoop is the main watch loop that runs while dev is active
+func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Process, flags devFlags, watcher *fsnotify.Watcher, exitCodeChannel chan int, quitChannel chan os.Signal) {
+	// Main Loop
+	var (
+		err              error
+		newBinaryProcess *process.Process
+	)
+	var extensionsThatTriggerARebuild = sliceToMap(strings.Split(flags.extensions, ","))
+	quit := false
+	interval := time.Duration(flags.debounceMS) * time.Millisecond
+	timer := time.NewTimer(interval)
+	rebuild := false
+	reload := false
+	for quit == false {
+		//reload := false
+		select {
+		case exitCode := <-exitCodeChannel:
+			if exitCode == 0 {
+				quit = true
+			}
+		case item := <-watcher.Events:
+			// Check for file writes
+			if item.Op&fsnotify.Write == fsnotify.Write {
+				// Ignore directories
+				if fs.DirExists(item.Name) {
+					continue
+				}
+
+				// Iterate all file patterns
+				ext := filepath.Ext(item.Name)
+				if ext != "" {
+					ext = ext[1:]
+					if _, exists := extensionsThatTriggerARebuild[ext]; exists {
+						rebuild = true
+						timer.Reset(interval)
+						continue
+					}
+				}
+
+				if strings.HasPrefix(item.Name, flags.assetDir) {
+					reload = true
+				}
+				timer.Reset(interval)
+			}
+			// Check for new directories
+			if item.Op&fsnotify.Create == fsnotify.Create {
+				// If this is a folder, add it to our watch list
+				if fs.DirExists(item.Name) {
+					//node_modules is BANNED!
+					if !strings.Contains(item.Name, "node_modules") {
+						err := watcher.Add(item.Name)
+						if err != nil {
+							buildOptions.Logger.Fatal("%s", err.Error())
+						}
+						LogGreen("Added new directory to watcher: %s", item.Name)
+					}
+				}
+			}
+		case <-timer.C:
+			if rebuild {
+				rebuild = false
+				LogGreen("[Rebuild triggered] files updated")
+				// Try and build the app
+				newBinaryProcess, _, err = restartApp(buildOptions, debugBinaryProcess, flags, exitCodeChannel)
+				if err != nil {
+					LogRed("Error during build: %s", err.Error())
+					continue
+				}
+				// If we have a new process, save it
+				if newBinaryProcess != nil {
+					debugBinaryProcess = newBinaryProcess
+				}
+			}
+			if reload {
+				reload = false
+				_, err = http.Get("http://localhost:34115/wails/reload")
+				if err != nil {
+					LogRed("Error during refresh: %s", err.Error())
+				}
+			}
+		case <-quitChannel:
+			LogGreen("\nCaught quit")
+			quit = true
+		}
+	}
 }
