@@ -10,14 +10,14 @@ import (
 type optionType string
 
 const (
-	noAutoInject         optionType = "noautoinject"
-	noAutoInjectRuntime  optionType = "noautoinjectruntime"
-	noAutoInjectBindings optionType = "noautoinjectbindings"
+	noAutoInject        optionType = "noautoinject"
+	noAutoInjectRuntime optionType = "noautoinjectruntime"
+	noautoinjectipc     optionType = "noautoinjectipc"
 )
 
 type Options struct {
-	disableRuntimeInjection  bool
-	disableBindingsInjection bool
+	disableRuntimeInjection bool
+	disableIPCInjection     bool
 }
 
 func newOptions(optionString string) *Options {
@@ -28,9 +28,9 @@ func newOptions(optionString string) *Options {
 		switch optionType(strings.TrimSpace(option)) {
 		case noAutoInject:
 			result.disableRuntimeInjection = true
-			result.disableBindingsInjection = true
-		case noAutoInjectBindings:
-			result.disableBindingsInjection = true
+			result.disableIPCInjection = true
+		case noautoinjectipc:
+			result.disableIPCInjection = true
 		case noAutoInjectRuntime:
 			result.disableRuntimeInjection = true
 		}

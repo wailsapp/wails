@@ -63,7 +63,7 @@ func (a *BrowserAssetServer) processIndexHTML() ([]byte, error) {
 			return nil, err
 		}
 	}
-	if wailsOptions.disableBindingsInjection == false {
+	if wailsOptions.disableIPCInjection == false {
 		indexHTML, err = injectHTML(string(indexHTML), `<script src="/wails/ipc.js"></script>`)
 		if err != nil {
 			return nil, err

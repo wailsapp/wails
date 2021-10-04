@@ -33,8 +33,8 @@ func genMeta(content string) []byte {
 
 func genOptions(runtime bool, bindings bool) *Options {
 	return &Options{
-		disableRuntimeInjection:  runtime,
-		disableBindingsInjection: bindings,
+		disableRuntimeInjection: runtime,
+		disableIPCInjection:     bindings,
 	}
 }
 
@@ -50,11 +50,11 @@ func Test_extractOptions(t *testing.T) {
 		{"bad options", genMeta("noauto"), genOptions(false, false), false},
 		{"realhtml", []byte(realHTML), genOptions(true, true), false},
 		{"noautoinject", genMeta("noautoinject"), genOptions(true, true), false},
-		{"noautoinjectbindings", genMeta("noautoinjectbindings"), genOptions(false, true), false},
+		{"noautoinjectipc", genMeta("noautoinjectipc"), genOptions(false, true), false},
 		{"noautoinjectruntime", genMeta("noautoinjectruntime"), genOptions(true, false), false},
 		{"spaces", genMeta("  noautoinjectruntime  "), genOptions(true, false), false},
-		{"multiple", genMeta("noautoinjectruntime,noautoinjectbindings"), genOptions(true, true), false},
-		{"multiple spaces", genMeta(" noautoinjectruntime, noautoinjectbindings "), genOptions(true, true), false},
+		{"multiple", genMeta("noautoinjectruntime,noautoinjectipc"), genOptions(true, true), false},
+		{"multiple spaces", genMeta(" noautoinjectruntime, noautoinjectipc "), genOptions(true, true), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
