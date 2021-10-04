@@ -1,0 +1,1 @@
+(()=>{(function(){let n=function(o){for(var e=window[o.shift()];e&&o.length;)e=e[o.shift()];return e};window.WailsInvoke=n(["chrome","webview","postMessage"])||n(["webkit","messageHandlers","external","postMessage"]),window.WailsInvoke||console.error("Unsupported Platform")})();})();

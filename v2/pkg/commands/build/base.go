@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/leaanthony/gosod"
+	wailsRuntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime/wrapper"
 	"io/ioutil"
 	"os"
@@ -377,7 +378,22 @@ func generateRuntimeWrapper(options *Options) error {
 	wrapperDir := filepath.Join(options.WailsJSDir, "wailsjs", "runtime")
 	_ = os.RemoveAll(wrapperDir)
 	extractor := gosod.New(wrapper.RuntimeWrapper)
-	return extractor.Extract(wrapperDir, nil)
+	err := extractor.Extract(wrapperDir, nil)
+	if err != nil {
+		return err
+	}
+
+	//ipcdev.js
+	err = os.WriteFile(filepath.Join(wrapperDir, "ipcdev.js"), wailsRuntime.DesktopIPC, 0755)
+	if err != nil {
+		return err
+	}
+	//runtimedev.js
+	err = os.WriteFile(filepath.Join(wrapperDir, "runtimedev.js"), wailsRuntime.RuntimeDesktopJS, 0755)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // NpmInstall runs "npm install" in the given directory
