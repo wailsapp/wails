@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # 应用开发
 
 使用 Wails 开发应用程序没有硬性规定，但有一些基本准则。
@@ -140,7 +136,7 @@ func main() {
 
 ## 资源
 
-Wails v2 处理资源的方式的伟大之处在于它没有！你唯一需要给 Wails 的是一个 `embed.FS`， 如何做到这一点完全取决于你。您可以像 vanilla 模板一样使用 vanilla html/css/js 文件。你可能有一些复杂的构建系统，但这并不影响。
+Wails v2 处理资源的方式的伟大之处在于它没有！您唯一需要给 Wails 的是一个 `embed.FS`， 如何做到这一点完全取决于您。您可以像 vanilla 模板一样使用 vanilla html/css/js 文件。您可能有一些复杂的构建系统，但这并不影响。
 
 当运行`wails build`时，它会检查项目根目录的`wails.json`文件。文件中有 2 个字段会被读取：
 

@@ -1,5 +1,4 @@
 ---
-title: 安装
 sidebar_position: 1
 ---
 
@@ -15,27 +14,27 @@ sidebar_position: 1
 
 Wails 有许多安装前需要的常见依赖项：
 
-- Go 1.16+
-- npm LTS
+- Go 1.17+
+- npm (Node 14+)
 
 ### Go
 
-从 [Go 下载页面](https://golang.org/dl/) 下载 Go。
+从[Go 下载页面](https://golang.org/dl/)下载 Go。
 
-确保你遵守官方的 [Go 安装说明](https://golang.org/doc/install#install)。你还需要确保你的 `PATH` 环境变量包含你的 `~/go/bin` 目录路径。 重启终端并执行以下命令检查：
+确保您遵守官方的[Go 安装说明](https://golang.org/doc/install#install)。您还需要确保您的 `PATH` 环境变量包含您的 `~/go/bin` 目录路径。 重启终端并执行以下命令检查：
 
 - 检查 Go 是否安装正确： `go version`
-- 检查 "~/go/bin" 是否在你的 PATH 变量中： `echo $PATH | grep go/bin`
+- 检查 "~/go/bin" 是否在您的 PATH 变量中： `echo $PATH | grep go/bin`
 
 ### npm
 
-从 [Node 下载页面](https://nodejs.org/en/download/) 下载 Npm。最好使用最新版本，因为这是我们通常会测试的版本。
+从[Node 下载页面](https://nodejs.org/en/download/)下载 Npm。最好使用最新版本，因为这是我们通常会测试的版本。
 
 运行 `npm --version` 进行校验。
 
 ## 平台指定依赖关系
 
-你还需要安装指定平台的依赖项：
+您还需要安装指定平台的依赖项：
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
@@ -51,7 +50,7 @@ import TabItem from "@theme/TabItem";
   <TabItem value="Windows">
     Wails 要求安装
     <a href="https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/">WebView2</a>
-    运行时。一些 Windows 已经默认安装了这个。你可以使用 <code>wails doctor</code>
+    运行时。一些 Windows 已经默认安装了这个。您可以使用 <code>wails doctor</code>
     命令进行检查（见下文）。
   </TabItem>
   <TabItem value="MacOS">即将推出...</TabItem>
@@ -60,7 +59,7 @@ import TabItem from "@theme/TabItem";
 
 ## 可选依赖
 
-- [UPX](https://upx.github.io/) 用于压缩你的应用程序。
+- [UPX](https://upx.github.io/) 用于压缩您的应用程序。
 
 ## 安装 Wails
 
@@ -68,4 +67,4 @@ import TabItem from "@theme/TabItem";
 
 ## 系统检查
 
-运行 `wails doctor` 将检查你是否安装了正确的依赖项。如果没有，它会就缺少的内容提供建议并帮助纠正任何问题。
+运行 `wails doctor` 将检查您是否安装了正确的依赖项。如果没有，它会就缺少的内容提供建议并帮助纠正任何问题。
