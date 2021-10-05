@@ -5,7 +5,7 @@ require (
 	github.com/abadojack/whatlanggo v1.0.1
 	github.com/fatih/color v1.7.0
 	github.com/go-playground/colors v1.2.0
-	github.com/gorilla/websocket v1.4.0
+	github.com/gorilla/websocket v1.4.1
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/kennygrant/sanitize v1.2.4
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
