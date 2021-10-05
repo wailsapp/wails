@@ -3,6 +3,7 @@ package dev
 import (
 	"context"
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/shell"
 	"io"
 	"net/http"
 	"os"
@@ -102,6 +103,13 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		projectConfig, err := loadAndMergeProjectConfig(cwd, &flags)
+		if err != nil {
+			return err
+		}
+
+		// Generate wailsjs module
+		LogGreen("Generating wailsjs module...")
+		_, _, err = shell.RunCommand(cwd, "wails", "generate", "module")
 		if err != nil {
 			return err
 		}

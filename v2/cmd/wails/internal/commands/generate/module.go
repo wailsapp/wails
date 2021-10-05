@@ -1,58 +1,50 @@
 package generate
 
 import (
-	"io"
-	"time"
-
 	"github.com/leaanthony/clir"
-	"github.com/wailsapp/wails/v2/pkg/clilogger"
-	"github.com/wailsapp/wails/v2/pkg/parser"
+	"github.com/wailsapp/wails/v2/internal/shell"
+	"io"
+	"os"
+	"path/filepath"
+	"runtime"
 )
 
-func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) {
+// AddModuleCommand adds the `module` subcommand for the `generate` command
+func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 
-	// Backend API
-	backendAPI := parent.NewSubCommand("module", "Generates a JS module for the frontend to interface with the backend")
+	command := parent.NewSubCommand("module", "Generate wailsjs modules")
 
-	// Quiet Init
-	quiet := false
-	backendAPI.BoolFlag("q", "Suppress output to console", &quiet)
+	command.Action(func() error {
 
-	backendAPI.Action(func() error {
+		filename := "wailsbindings"
+		if runtime.GOOS == "windows" {
+			filename += ".exe"
+		}
+		// go build -tags bindings -o bindings.exe
+		tempDir := os.TempDir()
+		filename = filepath.Join(tempDir, filename)
 
-		// Create logger
-		logger := clilogger.New(w)
-		logger.Mute(quiet)
-
-		app.PrintBanner()
-
-		logger.Print("Generating Javascript module for Go code...")
-
-		// Start Time
-		start := time.Now()
-
-		p, err := parser.GenerateWailsFrontendPackage()
+		cwd, err := os.Getwd()
 		if err != nil {
 			return err
 		}
 
-		logger.Println("done.")
-		logger.Println("")
-
-		elapsed := time.Since(start)
-		packages := p.Packages
-
-		// Print report
-		for _, pkg := range p.Packages {
-			if pkg.ShouldGenerate() {
-				logPackage(pkg, logger)
-			}
-
+		_, _, err = shell.RunCommand(cwd, "go", "build", "-tags", "bindings", "-o", filename)
+		if err != nil {
+			return err
 		}
 
-		logger.Println("%d packages parsed in %s.", len(packages), elapsed)
+		_, _, err = shell.RunCommand(cwd, filename)
+		if err != nil {
+			return err
+		}
+
+		err = os.Remove(filename)
+		if err != nil {
+			return err
+		}
 
 		return nil
-
 	})
+	return nil
 }

@@ -1,3 +1,5 @@
+//go:build dev || bindings || (!dev && !production && !bindings)
+
 package runtime
 
 import _ "embed"

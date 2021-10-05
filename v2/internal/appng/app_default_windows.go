@@ -1,4 +1,4 @@
-//go:build !dev && !production && windows
+//go:build !dev && !production && !bindings && windows
 
 package appng
 
