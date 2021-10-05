@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"github.com/leaanthony/slicer"
 
@@ -337,7 +338,7 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 		f.logger.Error(err.Error())
 		return
 	}
-	f.ExecJS(`window.wails.EventsNotify('` + string(payload) + `');`)
+	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
 }
 
 func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {
