@@ -6,16 +6,16 @@ sidebar_position: 1
 
 ## Supported Platforms
 
- - Windows 10
- - MacOS x64 & arm64 (due October '21)
- - Linux (due December '21)
+- Windows 10
+- MacOS x64 & arm64 (due October '21)
+- Linux (due December '21)
 
 ## Dependencies
 
 Wails has a number of common dependencies that are required before installation:
 
-  - Go 1.17+
-  - npm (Node 14+)
+- Go 1.17+
+- npm (Node 14+)
 
 ### Go
 
@@ -23,8 +23,8 @@ Download Go from the [Go Downloads Page](https://golang.org/dl/).
 
 Ensure that you follow the official [Go installation instructions](https://golang.org/doc/install#install). You will also need to ensure that your `PATH` environment variable also includes the path to your `~/go/bin` directory. Restart your terminal and do the following checks:
 
- * Check Go is installed correctly: `go version`
- * Check "~/go/bin" is in your PATH variable: `echo $PATH | grep go/bin`
+- Check Go is installed correctly: `go version`
+- Check "~/go/bin" is in your PATH variable: `echo $PATH | grep go/bin`
 
 ### npm
 
@@ -36,31 +36,29 @@ Run `npm --version` to verify.
 
 You will also need to install platform specific dependencies:
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
 
 <Tabs
   defaultValue="Windows"
   values={[
-    {label: 'Windows', value: 'Windows'},
-    {label: 'MacOS', value: 'MacOS'},
-    {label: 'Linux', value: 'Linux'},
-  ]}>
-  <TabItem value="MacOS">
-    Coming Soon...
-  </TabItem>
+    { label: "Windows", value: "Windows" },
+    { label: "MacOS", value: "MacOS" },
+    { label: "Linux", value: "Linux" },
+  ]}
+>
+  <TabItem value="MacOS">Coming Soon...</TabItem>
   <TabItem value="Windows">
-      Wails requires that the <a href='https://developer.microsoft.com/en-us/microsoft-edge/webview2/'>WebView2</a> runtime is installed.
-      Some Windows installations will already have this installed. You can check using the `wails doctor` command (see below).
+    Wails requires that the <a href="https://developer.microsoft.com/en-us/microsoft-edge/webview2/">WebView2</a>{" "}
+    runtime is installed. Some Windows installations will already have this installed. You can check using the{" "}
+    <code>wails doctor</code> command (see below).
   </TabItem>
-  <TabItem value="Linux">
-    Coming Soon...
-  </TabItem>
+  <TabItem value="Linux">Coming Soon...</TabItem>
 </Tabs>
 
 ## Optional Dependencies
 
-  - [UPX](https://upx.github.io/) for compressing your applications.
+- [UPX](https://upx.github.io/) for compressing your applications.
 
 ## Installing Wails
 
