@@ -7,13 +7,13 @@ sidebar_position: 2
 
 ## 项目生成
 
-现在 CLI 已安装，你可以使用该`wails init`命令生成一个新项目。
+现在 CLI 已安装，您可以使用该`wails init`命令生成一个新项目。
 
-为了快速启动和运行，你可以通过运行`wails init -n myproject`生成一个默认项目。这将创建一个名为`myproject`的目录，并使用默认模板填充它。
+为了快速启动和运行，您可以通过运行`wails init -n myproject`生成一个默认项目。这将创建一个名为`myproject`的目录，并使用默认模板填充它。
 
-其他项目模板也可用，可以使用 `wails init -l`列出。
+也可以使用 `wails init -l`列出其他可用模板。
 
-要查看其他可用选项，你可以运行 `wails init -help`。 更多详细信息可以在 [初始化命令](/docs/reference/cli#初始化)中找到。
+要查看其他可用选项，您可以运行 `wails init -help`。 更多详细信息可以在 [初始化命令](/docs/reference/cli#初始化)中找到。
 
 ## 项目布局
 
@@ -26,6 +26,8 @@ Wails 项目具有以下布局：
 │   ├── darwin/
 │   └── windows/
 ├── frontend/
+├── go.mod
+├── go.sum
 ├── main.go
 └── wails.json
 ```
@@ -39,7 +41,11 @@ Wails 项目具有以下布局：
   - `/build/darwin/` - Mac 特定的项目文件
   - `/build/windows/` - Windows 特定的项目文件
 - `/wails.json` - 项目配置
+- `/go.mod` - Go 模块文件
+- `/go.sum` - Go 模块校验文件
 
 `frontend`目录没有特定于 Wails 的内容，可以是您选择的任何前端项目。
 
 `build`目录在构建过程中使用。这些文件可以更新以自定义您的构建。如果文件从构建目录中删除，将重新生成默认版本。
+
+`go.mod`中的默认模块名称是“changeme”。您应该将其更改为更合适的内容。
