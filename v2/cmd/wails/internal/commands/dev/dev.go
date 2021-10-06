@@ -107,9 +107,13 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
-		// Generate wailsjs module
-		LogGreen("Generating wailsjs module...")
-		_, _, err = shell.RunCommand(cwd, "wails", "generate", "module")
+		// Run go mod tidy to ensure we're up to date
+		err = runCommand(cwd, "go", "mod", "tidy")
+		if err != nil {
+			return err
+		}
+
+		err = runCommand(cwd, "wails", "generate", "module")
 		if err != nil {
 			return err
 		}
@@ -188,6 +192,15 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		return nil
 	})
+	return nil
+}
+
+func runCommand(cwd string, command string, args ...string) error {
+	LogGreen("Executing: " + command + " " + strings.Join(args, " "))
+	_, _, err := shell.RunCommand(cwd, command, args...)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
