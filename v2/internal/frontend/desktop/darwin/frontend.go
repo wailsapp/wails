@@ -5,6 +5,7 @@ package darwin
 import (
 	"context"
 	"encoding/json"
+	"html/template"
 	"log"
 	"runtime"
 
@@ -310,7 +311,7 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 		f.logger.Error(err.Error())
 		return
 	}
-	f.ExecJS(`window.wails.EventsNotify('` + string(payload) + `');`)
+	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
 }
 
 //func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {
