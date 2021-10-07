@@ -311,7 +311,7 @@ func (f *Frontend) setupChromium() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = settings.PutIsStatusBarEnabled(false)
+	err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
 	if err != nil {
 		log.Fatal(err)
 	}
