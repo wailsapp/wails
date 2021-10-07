@@ -3,7 +3,6 @@ package dev
 import (
 	"context"
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/shell"
 	"io"
 	"net/http"
 	"os"
@@ -108,12 +107,12 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		// Run go mod tidy to ensure we're up to date
-		err = runCommand(cwd, "go", "mod", "tidy")
+		err = runCommand(cwd, false, "go", "mod", "tidy")
 		if err != nil {
 			return err
 		}
 
-		err = runCommand(cwd, "wails", "generate", "module")
+		err = runCommand(cwd, true, "wails", "generate", "module")
 		if err != nil {
 			return err
 		}
@@ -195,10 +194,16 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	return nil
 }
 
-func runCommand(cwd string, command string, args ...string) error {
+func runCommand(dir string, exitOnError bool, command string, args ...string) error {
 	LogGreen("Executing: " + command + " " + strings.Join(args, " "))
-	_, _, err := shell.RunCommand(cwd, command, args...)
+	cmd := exec.Command(command, args...)
+	cmd.Dir = dir
+	output, err := cmd.CombinedOutput()
 	if err != nil {
+		println(string(output))
+		if exitOnError {
+			os.Exit(1)
+		}
 		return err
 	}
 	return nil
