@@ -120,7 +120,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
-		err = runCommand(cwd, true, "wails", "generate", "module")
+		if flags.tags != "" {
+			err = runCommand(cwd, true, "wails", "generate", "module", "-tags", flags.tags)
+		} else {
+			err = runCommand(cwd, true, "wails", "generate", "module")
+		}
 		if err != nil {
 			return err
 		}
@@ -134,7 +138,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		buildOptions := generateBuildOptions(flags)
 		buildOptions.Logger = logger
-		buildOptions.UserTags = parseUserTags(flags.tags)
+		buildOptions.UserTags = internal.ParseUserTags(flags.tags)
 
 		var debugBinaryProcess *process.Process = nil
 
@@ -264,18 +268,6 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		Verbosity:      flags.verbosity,
 		WailsJSDir:     flags.wailsjsdir,
 	}
-}
-
-// parseUserTags takes the string form of tags and converts to a slice of strings
-func parseUserTags(tagString string) []string {
-	userTags := make([]string, 0)
-	for _, tag := range strings.Split(tagString, " ") {
-		thisTag := strings.TrimSpace(tag)
-		if thisTag != "" {
-			userTags = append(userTags, thisTag)
-		}
-	}
-	return userTags
 }
 
 // loadAndMergeProjectConfig reconciles flags passed to the CLI with project config settings and updates
