@@ -302,7 +302,7 @@ func (f *Frontend) setupChromium() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
+	err = settings.PutAreDefaultScriptDialogsEnabled(false)
 	if err != nil {
 		log.Fatal(err)
 	}
