@@ -24,7 +24,7 @@ Please use "wails build" or press "OK" to open the documentation on how to use "
 		"Error",
 		w32.MB_ICONERROR|w32.MB_OKCANCEL)
 	if result == 1 {
-		exec.Command("rundll32", "url.dll,FileProtocolHandler", "https://wails.io").Start()
+		exec.Command("rundll32", "url.dll,FileProtocolHandler", "https://wails.io/docs/guides/manual-builds").Start()
 	}
 	return nil, nil
 }
