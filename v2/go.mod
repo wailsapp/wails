@@ -21,7 +21,7 @@ require (
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/go-common-file-dialog v1.0.3
-	github.com/leaanthony/go-webview2 v0.0.0-20210928094513-a94a08b538bd
+	github.com/leaanthony/go-webview2 v0.0.0-20211007095229-b1759d2e4ec7
 	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
