@@ -133,9 +133,10 @@ Your system is ready for Wails development!
 |  -v                  | Verbosity level (0 - silent, 1 - standard, 2 - verbose)  | 1 |
 |  -wailsjsdir         | The directory to generate the generated Wails JS modules | Value in `wails.json` |
 |  -debounce         | The time to wait for reload after an asset change is detected  | 100 (milliseconds) |
+|  -devserverurl "url"         | Use 3rd party dev server url, EG Vite  | "http://localhost:34115" |
 
-If the `-assetdir` or `-wailsjsdir` flags are provided on the command line, they are saved in `wails.json`, and become
-the defaults for subsequent invocations.
+If the `assetdir`, `wailsjsdir`, `debounce` or `devserverurl` flags are provided on the command line, they are saved in
+`wails.json`, and become the defaults for subsequent invocations.
 
 Example:
 
