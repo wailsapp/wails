@@ -3,6 +3,8 @@ package dev
 import (
 	"context"
 	"fmt"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal"
+	"github.com/wailsapp/wails/v2/internal/gomod"
 	"io"
 	"net/http"
 	"os"
@@ -106,6 +108,12 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
+		// Update go.mod to use current wails version
+		err = syncGoModVersion(cwd)
+		if err != nil {
+			return err
+		}
+
 		// Run go mod tidy to ensure we're up to date
 		err = runCommand(cwd, false, "go", "mod", "tidy")
 		if err != nil {
@@ -192,6 +200,27 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		return nil
 	})
 	return nil
+}
+
+func syncGoModVersion(cwd string) error {
+	gomodFilename := filepath.Join(cwd, "go.mod")
+	gomodData, err := os.ReadFile(gomodFilename)
+	if err != nil {
+		return err
+	}
+	outOfSync, err := gomod.GoModOutOfSync(gomodData, internal.Version)
+	if err != nil {
+		return err
+	}
+	if !outOfSync {
+		return nil
+	}
+	LogGreen("Updating go.mod to use Wails '%s'", internal.Version)
+	newGoData, err := gomod.UpdateGoModVersion(gomodData, internal.Version)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(gomodFilename, newGoData, 0755)
 }
 
 func runCommand(dir string, exitOnError bool, command string, args ...string) error {

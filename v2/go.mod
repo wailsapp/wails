@@ -41,7 +41,7 @@ require (
 	github.com/wzshiming/ctc v1.2.3
 	github.com/xyproto/xpm v1.2.1
 	github.com/ztrue/tracerr v0.3.0
-	golang.org/x/mod v0.4.1 // indirect
+	golang.org/x/mod v0.4.1
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed
 	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6
 	golang.org/x/tools v0.1.0

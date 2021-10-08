@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal"
 	"os"
 
 	"github.com/wailsapp/wails/v2/internal/colour"
@@ -24,7 +25,7 @@ func fatal(message string) {
 func banner(_ *clir.Cli) string {
 	return fmt.Sprintf("%s %s\n",
 		colour.Yellow("Wails CLI"),
-		colour.DarkRed(version))
+		colour.DarkRed(internal.Version))
 }
 
 func printFooter() {
@@ -35,7 +36,7 @@ func main() {
 
 	var err error
 
-	app := clir.NewCli("Wails", "Go/HTML Appkit", version)
+	app := clir.NewCli("Wails", "Go/HTML Appkit", internal.Version)
 
 	app.SetBannerFunction(banner)
 	defer printFooter()
@@ -61,14 +62,14 @@ func main() {
 		fatal(err.Error())
 	}
 
-	err = update.AddSubcommand(app, os.Stdout, version)
+	err = update.AddSubcommand(app, os.Stdout, internal.Version)
 	if err != nil {
 		fatal(err.Error())
 	}
 
 	command := app.NewSubCommand("version", "The Wails CLI version")
 	command.Action(func() error {
-		println(version)
+		println(internal.Version)
 		return nil
 	})
 
