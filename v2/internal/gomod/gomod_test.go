@@ -10,7 +10,7 @@ const basic string = `module changeme
 
 go 1.17
 
-require github.com/wailsapp/wails/v2 v2.0.0-beta.6
+require github.com/wailsapp/wails/v2 v2.0.0-beta.7
 
 require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
@@ -44,7 +44,7 @@ require (
 	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect
 )
 
-//replace github.com/wailsapp/wails/v2 v2.0.0-beta.6 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2
+//replace github.com/wailsapp/wails/v2 v2.0.0-beta.7 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2
 `
 
 func TestGetWailsVersion(t *testing.T) {
@@ -54,7 +54,7 @@ func TestGetWailsVersion(t *testing.T) {
 		want      *semver.Version
 		wantErr   bool
 	}{
-		{"basic", []byte(basic), semver.MustParse("v2.0.0-beta.6"), false},
+		{"basic", []byte(basic), semver.MustParse("v2.0.0-beta.7"), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -74,7 +74,7 @@ const basicUpdated string = `module changeme
 
 go 1.17
 
-require github.com/wailsapp/wails/v2 v2.0.0-beta.6
+require github.com/wailsapp/wails/v2 v2.0.0-beta.7
 
 require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
@@ -108,7 +108,7 @@ require (
 	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect
 )
 
-//replace github.com/wailsapp/wails/v2 v2.0.0-beta.6 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2
+//replace github.com/wailsapp/wails/v2 v2.0.0-beta.7 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2
 `
 
 func TestUpdateGoModVersion(t *testing.T) {
@@ -122,7 +122,7 @@ func TestUpdateGoModVersion(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"basic", args{[]byte(basic), "v2.0.0-beta.6"}, []byte(basicUpdated), false},
+		{"basic", args{[]byte(basic), "v2.0.0-beta.7"}, []byte(basicUpdated), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
