@@ -46,11 +46,10 @@ type Options struct {
 	Verbosity           int                  // Verbosity level (0 - silent, 1 - default, 2 - verbose)
 	Compress            bool                 // Compress the final binary
 	CompressFlags       string               // Flags to pass to UPX
-	AppleIdentity       string
-	WebView2Strategy    string // WebView2 installer strategy
-	RunDelve            bool   // Indicates if we should run delve after the build
-	WailsJSDir          string // Directory to generate the wailsjs module
-	ForceBuild          bool   // Force
+	WebView2Strategy    string               // WebView2 installer strategy
+	RunDelve            bool                 // Indicates if we should run delve after the build
+	WailsJSDir          string               // Directory to generate the wailsjs module
+	ForceBuild          bool                 // Force
 }
 
 // Build the project!

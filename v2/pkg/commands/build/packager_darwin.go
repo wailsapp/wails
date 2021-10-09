@@ -2,16 +2,15 @@ package build
 
 import (
 	"bytes"
-	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/buildassets"
 	"image"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"github.com/wailsapp/wails/v2/pkg/buildassets"
 
 	"github.com/jackmordaunt/icns"
 	"github.com/pkg/errors"
@@ -55,13 +54,7 @@ func packageApplication(options *Options) error {
 		return err
 	}
 
-	// Sign app if needed
-	if options.AppleIdentity != "" {
-		err = signApplication(options)
-		if err != nil {
-			return err
-		}
-	}
+	options.CompiledBinary = filepath.Join(options.BuildDirectory, bundlename)
 
 	return nil
 }
@@ -185,22 +178,4 @@ func processApplicationIcon(resourceDir string, iconsDir string) (err error) {
 		}
 	}()
 	return icns.Encode(dest, srcImg)
-}
-
-func signApplication(options *Options) error {
-	bundlename := filepath.Join(options.BuildDirectory, options.ProjectData.Name+".app")
-	identity := fmt.Sprintf(`"%s"`, options.AppleIdentity)
-	cmd := exec.Command("codesign", "--sign", identity, "--deep", "--force", "--verbose", "--timestamp", "--options", "runtime", bundlename)
-	var stdo, stde bytes.Buffer
-	cmd.Stdout = &stdo
-	cmd.Stderr = &stde
-
-	// Run command
-	err := cmd.Run()
-
-	// Format error if we have one
-	if err != nil {
-		return fmt.Errorf("%s\n%s", err, string(stde.Bytes()))
-	}
-	return nil
 }
