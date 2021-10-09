@@ -3,8 +3,6 @@ package dev
 import (
 	"context"
 	"fmt"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal"
-	"github.com/wailsapp/wails/v2/internal/gomod"
 	"io"
 	"net/http"
 	"os"
@@ -17,6 +15,9 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/wailsapp/wails/v2/cmd/wails/internal"
+	"github.com/wailsapp/wails/v2/internal/gomod"
 
 	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/internal/project"
@@ -255,7 +256,7 @@ func defaultDevFlags() devFlags {
 
 // generateBuildOptions creates a build.Options using the flags
 func generateBuildOptions(flags devFlags) *build.Options {
-	return &build.Options{
+	result := &build.Options{
 		OutputType:     "dev",
 		Mode:           build.Dev,
 		Arch:           runtime.GOARCH,
@@ -268,6 +269,11 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		Verbosity:      flags.verbosity,
 		WailsJSDir:     flags.wailsjsdir,
 	}
+	switch runtime.GOOS {
+	case "darwin":
+		result.Pack = false
+	}
+	return result
 }
 
 // loadAndMergeProjectConfig reconciles flags passed to the CLI with project config settings and updates
