@@ -54,7 +54,7 @@ func packageApplication(options *Options) error {
 		return err
 	}
 
-	options.CompiledBinary = filepath.Join(options.BuildDirectory, bundlename)
+	options.CompiledBinary = packedBinaryPath
 
 	return nil
 }
