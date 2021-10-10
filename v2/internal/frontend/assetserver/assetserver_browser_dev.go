@@ -7,7 +7,9 @@ import (
 	"bytes"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"golang.org/x/net/html"
 	"path/filepath"
+	"strings"
 )
 
 /*
@@ -49,7 +51,11 @@ func (a *BrowserAssetServer) processIndexHTML() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	indexHTML, err = injectHTML(string(indexHTML), `<div id="wails-spinner"></div>`)
+	htmlNode, err := getHTMLNode(indexHTML)
+	if err != nil {
+		return nil, err
+	}
+	err = appendSpinnerToBody(htmlNode)
 	if err != nil {
 		return nil, err
 	}
@@ -57,19 +63,27 @@ func (a *BrowserAssetServer) processIndexHTML() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if wailsOptions.disableRuntimeInjection == false {
-		indexHTML, err = injectHTML(string(indexHTML), `<script src="/wails/runtime.js"></script>`)
-		if err != nil {
-			return nil, err
-		}
-	}
+
 	if wailsOptions.disableIPCInjection == false {
-		indexHTML, err = injectHTML(string(indexHTML), `<script src="/wails/ipc.js"></script>`)
+		err := insertScriptInHead(htmlNode, "/wails/ipc.js")
 		if err != nil {
 			return nil, err
 		}
 	}
-	return indexHTML, nil
+
+	if wailsOptions.disableRuntimeInjection == false {
+		err := insertScriptInHead(htmlNode, "/wails/runtime.js")
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var buffer bytes.Buffer
+	err = html.Render(&buffer, htmlNode)
+	if err != nil {
+		return nil, err
+	}
+	return buffer.Bytes(), nil
 }
 
 func (a *BrowserAssetServer) Load(filename string) ([]byte, string, error) {
@@ -84,6 +98,13 @@ func (a *BrowserAssetServer) Load(filename string) ([]byte, string, error) {
 		content = runtime.WebsocketIPC
 	default:
 		content, err = a.loadFileFromDisk(filename)
+		if strings.HasSuffix(filename, ".js") {
+			var buffer bytes.Buffer
+			buffer.WriteString("window.awaitIPC('" + filename + "', ()=>{")
+			buffer.Write(content)
+			buffer.WriteString("});")
+			content = buffer.Bytes()
+		}
 	}
 	if err != nil {
 		return nil, "", err

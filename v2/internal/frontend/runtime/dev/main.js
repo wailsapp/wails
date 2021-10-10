@@ -14,11 +14,21 @@ import Overlay from "./Overlay.svelte";
 import {hideOverlay, showOverlay} from "./store";
 
 let components = {};
+window.ipcCallbacks = [];
+window.ipcCallbackNames = [];
 
-// Sets up the overlay
-components.overlay = new Overlay({
-    target: document.body,
-    anchor: document.querySelector('#wails-spinner'),
+window.awaitIPC = (name, callback) => {
+    if (!window.ipcCallbacks) return callback;
+    log("Queuing '" + name + "' for execution once ipc ready.");
+    window.ipcCallbackNames.push(name);
+    window.ipcCallbacks.push(callback);
+};
+
+window.addEventListener('DOMContentLoaded', () => {
+    components.overlay = new Overlay({
+        target: document.body,
+        anchor: document.querySelector('#wails-spinner'),
+    });
 });
 
 let websocket = null;
@@ -40,6 +50,12 @@ function setupIPCBridge() {
     window.WailsInvoke = (message) => {
         websocket.send(message);
     };
+    for (let i = 0; i < window.ipcCallbacks.length; i++) {
+        log("Executing JS: " + window.ipcCallbackNames[i]);
+        window.ipcCallbacks[i]();
+    }
+    delete window.ipcCallbacks;
+    delete window.ipcCallbackNames;
 }
 
 // Handles incoming websocket connections
