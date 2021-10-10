@@ -16,11 +16,12 @@ func GetWailsVersionFromModFile(goModText []byte) (*semver.Version, error) {
 		if req.Syntax == nil {
 			continue
 		}
-		if len(req.Syntax.Token) < 3 {
-			continue
+		tokenPosition := 0
+		if !req.Syntax.InBlock {
+			tokenPosition = 1
 		}
-		if req.Syntax.Token[1] == "github.com/wailsapp/wails/v2" {
-			version := req.Syntax.Token[2]
+		if req.Syntax.Token[tokenPosition] == "github.com/wailsapp/wails/v2" {
+			version := req.Syntax.Token[tokenPosition+1]
 			return semver.NewVersion(version)
 		}
 	}
@@ -34,7 +35,7 @@ func GoModOutOfSync(goModData []byte, currentVersion string) (bool, error) {
 		return false, err
 	}
 	result, err := semver.NewVersion(currentVersion)
-	if err != nil {
+	if err != nil || result == nil {
 		return false, fmt.Errorf("Unable to parse Wails version: %s", currentVersion)
 	}
 
