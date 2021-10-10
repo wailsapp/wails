@@ -75,7 +75,7 @@ const basicUpdated string = `module changeme
 
 go 1.17
 
-require github.com/wailsapp/wails/v2 v2.0.0-beta.9
+require github.com/wailsapp/wails/v2 v2.0.0-beta.10
 
 require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
@@ -159,7 +159,7 @@ const multilineRequireUpdated = `module changeme
 go 1.17
 
 require (
-	github.com/wailsapp/wails/v2 v2.0.0-beta.9
+	github.com/wailsapp/wails/v2 v2.0.0-beta.10
 )
 
 require (
@@ -210,8 +210,8 @@ func TestUpdateGoModVersion(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"basic", args{[]byte(basic), "v2.0.0-beta.9"}, []byte(basicUpdated), false},
-		{"basicmultiline", args{[]byte(multilineRequire), "v2.0.0-beta.9"}, []byte(multilineRequireUpdated), false},
+		{"basic", args{[]byte(basic), "v2.0.0-beta.10"}, []byte(basicUpdated), false},
+		{"basicmultiline", args{[]byte(multilineRequire), "v2.0.0-beta.10"}, []byte(multilineRequireUpdated), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -238,8 +238,8 @@ func TestGoModOutOfSync(t *testing.T) {
 		want    bool
 		wantErr bool
 	}{
-		{"basic", args{[]byte(basic), "v2.0.0-beta.9"}, true, false},
-		{"basicmultiline", args{[]byte(multilineRequire), "v2.0.0-beta.9"}, true, false},
+		{"basic", args{[]byte(basic), "v2.0.0-beta.10"}, true, false},
+		{"basicmultiline", args{[]byte(multilineRequire), "v2.0.0-beta.10"}, true, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
