@@ -71,6 +71,8 @@ const (
 	Crux
 	// RHEL distribution
 	RHEL
+	// Artix linux distribution
+	ArtixLinux
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -183,6 +185,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = EndeavourOS
 	case "crux":
 		result.Distribution = Crux
+	case "artix":
+		result.Distribution = ArtixLinux
 	default:
 		result.Distribution = Unknown
 	}
