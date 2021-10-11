@@ -102,7 +102,8 @@ func (a *BrowserAssetServer) Load(filename string) ([]byte, string, error) {
 			var buffer bytes.Buffer
 			buffer.WriteString("window.awaitIPC('" + filename + "', ()=>{")
 			buffer.Write(content)
-			buffer.WriteString("\r\n});")
+			buffer.WriteString(`
+});`)
 			content = buffer.Bytes()
 		}
 	}
