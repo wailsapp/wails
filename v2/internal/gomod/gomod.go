@@ -53,5 +53,27 @@ func UpdateGoModVersion(goModText []byte, currentVersion string) ([]byte, error)
 		return nil, err
 	}
 
+	// Replace
+	if len(file.Replace) == 0 {
+		return file.Format()
+	}
+
+	for _, req := range file.Replace {
+		if req.Syntax == nil {
+			continue
+		}
+		tokenPosition := 0
+		if !req.Syntax.InBlock {
+			tokenPosition = 1
+		}
+		if req.Syntax.Token[tokenPosition] == "github.com/wailsapp/wails/v2" {
+			version := req.Syntax.Token[tokenPosition+1]
+			_, err := semver.NewVersion(version)
+			if err == nil {
+				req.Syntax.Token[tokenPosition+1] = currentVersion
+			}
+		}
+	}
+
 	return file.Format()
 }
