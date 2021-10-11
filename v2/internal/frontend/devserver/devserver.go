@@ -35,7 +35,7 @@ type DevWebServer struct {
 	dispatcher       frontend.Dispatcher
 	assetServer      *assetserver.BrowserAssetServer
 	socketMutex      sync.Mutex
-	websocketClients map[*websocket.Conn]struct{}
+	websocketClients map[*websocket.Conn]*sync.Mutex
 	menuManager      *menumanager.Manager
 	starttime        string
 
@@ -58,6 +58,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 
 	d.server.Get("/wails/ipc", websocket.New(func(c *websocket.Conn) {
 		d.newWebsocketSession(c)
+		locker := d.websocketClients[c]
 		// websocket.Conn bindings https://pkg.go.dev/github.com/fasthttp/websocket?tab=doc#pkg-index
 		var (
 			mt  int
@@ -85,9 +86,12 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 				d.logger.Error(err.Error())
 			}
 			if result != "" {
+				locker.Lock()
 				if err = c.WriteMessage(mt, []byte(result)); err != nil {
+					locker.Unlock()
 					break
 				}
+				locker.Unlock()
 			}
 
 		}
@@ -293,7 +297,7 @@ func (d *DevWebServer) newWebsocketSession(c *websocket.Conn) {
 		d.LogDebug(fmt.Sprintf("Websocket client %p disconnected", c))
 		return nil
 	})
-	d.websocketClients[c] = struct{}{}
+	d.websocketClients[c] = &sync.Mutex{}
 	d.LogDebug(fmt.Sprintf("Websocket client %p connected", c))
 }
 
@@ -305,16 +309,21 @@ type EventNotify struct {
 func (d *DevWebServer) broadcast(message string) {
 	d.socketMutex.Lock()
 	defer d.socketMutex.Unlock()
-	for client := range d.websocketClients {
-		if client == nil {
-			d.logger.Error("Lost connection to websocket server")
-			return
-		}
-		err := client.WriteMessage(websocket.TextMessage, []byte(message))
-		if err != nil {
-			d.logger.Error(err.Error())
-			return
-		}
+	for client, locker := range d.websocketClients {
+		go func() {
+			if client == nil {
+				d.logger.Error("Lost connection to websocket server")
+				return
+			}
+			locker.Lock()
+			err := client.WriteMessage(websocket.TextMessage, []byte(message))
+			if err != nil {
+				locker.Unlock()
+				d.logger.Error(err.Error())
+				return
+			}
+			locker.Unlock()
+		}()
 	}
 }
 
@@ -335,15 +344,20 @@ func (d *DevWebServer) notify(name string, data ...interface{}) {
 func (d *DevWebServer) broadcastExcludingSender(message string, sender *websocket.Conn) {
 	d.socketMutex.Lock()
 	defer d.socketMutex.Unlock()
-	for client := range d.websocketClients {
-		if client == sender {
-			continue
-		}
-		err := client.WriteMessage(websocket.TextMessage, []byte(message))
-		if err != nil {
-			d.logger.Error(err.Error())
-			return
-		}
+	for client, locker := range d.websocketClients {
+		go func() {
+			if client == sender {
+				return
+			}
+			locker.Lock()
+			err := client.WriteMessage(websocket.TextMessage, []byte(message))
+			if err != nil {
+				locker.Unlock()
+				d.logger.Error(err.Error())
+				return
+			}
+			locker.Unlock()
+		}()
 	}
 }
 
@@ -374,7 +388,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 			DisableStartupMessage: true,
 		}),
 		menuManager:      menuManager,
-		websocketClients: make(map[*websocket.Conn]struct{}),
+		websocketClients: make(map[*websocket.Conn]*sync.Mutex),
 	}
 	return result
 }
