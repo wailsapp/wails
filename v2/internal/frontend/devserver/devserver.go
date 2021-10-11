@@ -306,6 +306,10 @@ func (d *DevWebServer) broadcast(message string) {
 	d.socketMutex.Lock()
 	defer d.socketMutex.Unlock()
 	for client := range d.websocketClients {
+		if client == nil {
+			d.logger.Error("Lost connection to websocket server")
+			return
+		}
 		err := client.WriteMessage(websocket.TextMessage, []byte(message))
 		if err != nil {
 			d.logger.Error(err.Error())
