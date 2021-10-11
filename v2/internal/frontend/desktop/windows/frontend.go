@@ -135,6 +135,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 	}
 
 	mainWindow.Run()
+	mainWindow.Close()
 	return nil
 }
 
