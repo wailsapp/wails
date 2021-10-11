@@ -213,6 +213,15 @@ distributions:
         gccversioncommand: *gccdumpversion
         programs: *archdefaultprograms
         libraries: *archdefaultlibraries
+  artix:
+    id: artix 
+    releases:
+      default:
+        version: default
+        name: Artix Linux
+        gccversioncommand: *gccdumpversion
+        programs: *archdefaultprograms
+        libraries: *archdefaultlibraries
   ctlos:
     id: ctlos
     releases:
