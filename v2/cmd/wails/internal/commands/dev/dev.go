@@ -88,7 +88,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("wailsjsdir", "Directory to generate the Wails JS modules", &flags.wailsjsdir)
 	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &flags.tags)
 	command.IntFlag("v", "Verbosity level (0 - silent, 1 - standard, 2 - verbose)", &flags.verbosity)
-	command.StringFlag("loglevel", "Loglevel to use - Trace, Dev, Info, Warning, Error", &flags.loglevel)
+	command.StringFlag("loglevel", "Loglevel to use - Trace, Debug, Info, Warning, Error", &flags.loglevel)
 	command.BoolFlag("f", "Force build application", &flags.forceBuild)
 	command.IntFlag("debounce", "The amount of time to wait to trigger a reload on change", &flags.debounceMS)
 	command.StringFlag("devserverurl", "The url of the dev server to use", &flags.devServerURL)
