@@ -100,12 +100,10 @@ func (b *Bindings) GenerateBackendJS(targetfile string, isDevBindings bool) erro
 
 			})
 
-			output.WriteString(fmt.Sprintf("    }"))
-			output.WriteString("\n")
+			output.WriteString("    },\n")
 		})
 
-		output.WriteString(fmt.Sprintf("  },\n"))
-		output.WriteString("\n")
+		output.WriteString("  },\n\n")
 	})
 
 	output.WriteString(`};
