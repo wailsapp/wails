@@ -26,6 +26,7 @@ type App struct {
 	MaxHeight         int
 	StartHidden       bool
 	HideWindowOnClose bool
+	AlwaysOnTop       bool
 	RGBA              *RGBA
 	Assets            embed.FS
 	Menu              *menu.Menu

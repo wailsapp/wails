@@ -26,6 +26,9 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 	var exStyle int
 	if options.Windows != nil {
 		exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
+		if options.AlwaysOnTop {
+			exStyle |= w32.WS_EX_TOPMOST
+		}
 		if options.Windows.WindowIsTranslucent {
 			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
