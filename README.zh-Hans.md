@@ -73,47 +73,65 @@
 
 这个项目由以下这些人或者公司支持：
 
+
+<a href="https://github.com/sponsors/leaanthony" style="width:100px;">
+  <img src="sponsors/bronze%20sponsor.png" width="100"/>
+</a>
+<a href="https://github.com/snider" style="width:100px;">
+  <img src="https://github.com/snider.png?size=100" width="100"/>
+</a>
+<a href="https://github.com/codydbentley" style="width:100px">
+  <img src="https://github.com/codydbentley.png?size=100" width="100"/>
+</a>
+<br/>
+<br/>
 <a href="https://github.com/matryer" style="width:100px">
   <img src="https://github.com/matryer.png" width="100"/>
 </a>
 <a href="https://www.jetbrains.com?from=Wails" style="width:100px">
-  <img src="jetbrains-grayscale.png" width="100"/>
+  <img src="/img/jetbrains-grayscale.png" width="100"/>
 </a>
-<a href="https://github.com/tc-hib" style="width:55px;border-radius: 50%">
- <img src="https://github.com/tc-hib.png?size=55" width="55" style="border-radius: 50%"/>
+<a href="https://github.com/tc-hib" style="width:55px">
+ <img src="https://github.com/tc-hib.png?size=55" width="55"/>
 </a>
-<a href="https://github.com/picatz" style="width:50px;border-radius: 50%">
-  <img src="https://github.com/picatz.png?size=50" width="50" style="border-radius: 50%"/>
+<a href="https://github.com/picatz" style="width:50px">
+  <img src="https://github.com/picatz.png?size=50" width="50"/>
 </a>
-<a href="https://github.com/tylertravisty" style="width:50px;border-radius: 50%">
-  <img src="https://github.com/tylertravisty.png?size=50" width="50" style="border-radius: 50%"/>
+<a href="https://github.com/tylertravisty" style="width:50px">
+  <img src="https://github.com/tylertravisty.png?size=50" width="50"/>
 </a>
-<a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
-  <img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
+<a href="https://github.com/akhudek" style="width:50px">
+  <img src="https://github.com/akhudek.png?size=50" width="50"/>
 </a>
-<a href="https://github.com/trea" style="width:50px;border-radius: 50%">
-  <img src="https://github.com/trea.png?size=50" width="50" style="border-radius: 50%"/>
+<a href="https://github.com/trea" style="width:50px">
+  <img src="https://github.com/trea.png?size=50" width="50"/>
 </a>
-<a href="https://github.com/LanguageAgnostic" style="width:55px;border-radius: 50%">
-  <img src="https://github.com/LanguageAgnostic.png?size=55" width="55" style="border-radius: 50%"/>
+<a href="https://github.com/LanguageAgnostic" style="width:55px">
+  <img src="https://github.com/LanguageAgnostic.png?size=55" width="55"/>
 </a>
-<a href="https://github.com/snider" style="width:60px;border-radius: 50%">
-  <img src="https://github.com/snider.png?size=60" width="60" style="border-radius: 50%"/>
+<a href="https://github.com/fcjr" style="width:55px">
+  <img src="https://github.com/fcjr.png?size=55" width="55"/>
 </a>
-<a href="https://github.com/fcjr" style="width:55px;border-radius: 50%">
-  <img src="https://github.com/fcjr.png?size=55" width="55" style="border-radius: 50%"/>
+<a href="https://github.com/nickarellano" style="width:60px">
+  <img src="https://github.com/nickarellano.png?size=60" width="60"/>
 </a>
-<a href="https://github.com/nickarellano" style="width:60px;border-radius: 50%">
-  <img src="https://github.com/nickarellano.png?size=60" width="60" style="border-radius: 50%"/>
+<a href="https://github.com/bglw" style="width:65px">
+  <img src="https://github.com/bglw.png?size=65" width="65"/>
 </a>
-<a href="https://github.com/bglw" style="width:65px;border-radius: 50%">
-  <img src="https://github.com/bglw.png?size=65" width="65" style="border-radius: 50%"/>
+<a href="https://github.com/jugglingjsons" style="width:50px">
+  <img src="https://github.com/jugglingjsons.png?size=50" width="50"/>
 </a>
-<a href="https://github.com/jugglingjsons" style="width:50px;border-radius: 50%">
-  <img src="https://github.com/jugglingjsons.png?size=50" width="50" style="border-radius: 50%"/>
+<a href="https://github.com/marcus-crane" style="width:50px">
+  <img src="https://github.com/marcus-crane.png?size=50" width="50"/>
 </a>
-<a href="https://github.com/marcus-crane" style="width:50px;border-radius: 50%">
-  <img src="https://github.com/marcus-crane.png?size=50" width="50" style="border-radius: 50%"/>
+<a href="https://github.com/bbergshaven" style="width:45px">
+  <img src="https://github.com/bbergshaven.png?size=45" width="45"/>
+</a>
+<a href="https://github.com/Gilgames000" style="width:45px">
+  <img src="https://github.com/Gilgames000.png?size=45" width="45"/>
+</a>
+<a href="https://github.com/ilgityildirim" style="width:50px">
+  <img src="https://github.com/ilgityildirim.png?size=50" width="50"/>
 </a>
 
 <span id="nav-5"></span>
