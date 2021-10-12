@@ -39,7 +39,10 @@ window.wails = {
     EventsNotify,
     SetBindings,
     eventListeners,
-    callbacks
+    callbacks,
+    flags: {
+        disableScrollbarDrag: false,
+    }
 };
 
 // Set the bindings
@@ -61,7 +64,14 @@ window.addEventListener('mousedown', (e) => {
         if (currentElement.hasAttribute('data-wails-no-drag')) {
             break;
         } else if (currentElement.hasAttribute('data-wails-drag')) {
+            if (window.wails.flags.disableScrollbarDrag) {
+                // This checks for clicks on the scroll bar
+                if (e.offsetX > e.target.clientWidth || e.offsetY > e.target.clientHeight) {
+                    break;
+                }
+            }
             window.WailsInvoke("drag");
+            e.preventDefault();
             break;
         }
         currentElement = currentElement.parentElement;
