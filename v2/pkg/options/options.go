@@ -3,8 +3,10 @@ package options
 import (
 	"context"
 	"embed"
-	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"log"
+
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 
 	"github.com/wailsapp/wails/v2/pkg/menu"
 
@@ -40,7 +42,7 @@ type App struct {
 	//ContextMenus []*menu.ContextMenu
 	//TrayMenus    []*menu.TrayMenu
 	Windows *windows.Options
-	//Mac     *mac.Options
+	Mac     *mac.Options
 }
 
 type RGBA struct {

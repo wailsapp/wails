@@ -1252,7 +1252,7 @@ void createDelegate(struct Application *app) {
 
 	app->delegate = delegate;
 
-	msg_id(app->application, s("setDelegate:"), delegate);
+        msg_id(app->application, s("setDelegate:"), delegate);
 }
 
 bool windowShouldClose(id self, SEL cmd, id sender) {

@@ -30,7 +30,7 @@ type Frontend struct {
 	assets *assetserver.DesktopAssetServer
 
 	// main window handle
-	//mainWindow                               *Window
+	mainWindow                               *Window
 	minWidth, minHeight, maxWidth, maxHeight int
 	bindings                                 *binding.Bindings
 	dispatcher                               frontend.Dispatcher
@@ -81,8 +81,12 @@ func (f *Frontend) Run(ctx context.Context) error {
 
 	f.ctx = context.WithValue(ctx, "frontend", f)
 
-	//mainWindow := NewWindow(nil, f.frontendOptions)
-	//f.mainWindow = mainWindow
+	mainWindow := NewWindow(f.frontendOptions)
+	f.mainWindow = mainWindow
+	//go func() {
+	//	time.Sleep(3 * time.Second)
+	//	mainWindow.Center()
+	//}()
 	//
 	//var _debug = ctx.Value("debug")
 	//if _debug != nil {
@@ -111,7 +115,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 	//	}
 	//}()
 	//
-	//mainWindow.Run()
+	mainWindow.Run()
 	return nil
 }
 
