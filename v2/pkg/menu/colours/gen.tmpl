@@ -1,0 +1,29 @@
+package menu
+
+type Rgb struct {
+	R uint8 `json:"r"`
+	G uint8 `json:"g"`
+	B uint8 `json:"b"`
+}
+
+type Hsl struct {
+	H float64 `json:"h"`
+	S float64 `json:"s"`
+	L float64 `json:"l"`
+}
+
+type Col struct {
+	Hex     string `json:"hex"`
+	Rgb     Rgb    `json:"rgb"`
+	Hsl     Hsl    `json:"hsl"`
+	Name    string `json:"name"`
+}
+
+var Cols = []*Col{ {{range $col := .}}
+    {
+        Hex:  "{{.Hexstring}}",
+        Rgb:  Rgb{ {{.Rgb.R}}, {{.Rgb.G}}, {{.Rgb.B}} },
+        Hsl:  Hsl{ {{.Hsl.H}}, {{.Hsl.S}}, {{.Hsl.L}} },
+        Name: "{{.Name}}",
+    },{{end}}
+}
