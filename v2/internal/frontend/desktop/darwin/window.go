@@ -82,3 +82,7 @@ func (w *Window) Run() {
 	C.Run(w.context)
 	println("I exited!")
 }
+
+func (w *Window) Quit() {
+	C.Quit(w.context)
+}

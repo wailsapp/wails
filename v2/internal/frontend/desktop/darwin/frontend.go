@@ -3,6 +3,7 @@
 
 package darwin
 
+import "C"
 import (
 	"context"
 	"encoding/json"
@@ -16,6 +17,8 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
+
+var messageBuffer = make(chan string)
 
 type Frontend struct {
 
@@ -70,7 +73,15 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 	result.assets = assets
 
+	go result.startMessageProcessor(ctx)
+
 	return result
+}
+
+func (f *Frontend) startMessageProcessor(ctx context.Context) {
+	for message := range messageBuffer {
+		f.processMessage(message)
+	}
 }
 
 func (f *Frontend) WindowReload() {
@@ -239,7 +250,7 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 }
 
 func (f *Frontend) Quit() {
-	//winc.Exit()
+	f.mainWindow.Quit()
 }
 
 /*
@@ -421,3 +432,10 @@ func (f *Frontend) ExecJS(js string) {
 //	f.mainWindow.Show()
 //
 //}
+
+//export processMessage
+func processMessage(message *C.char) {
+	goMessage := C.GoString(message)
+	messageBuffer <- goMessage
+	println("Message in Go:", goMessage)
+}

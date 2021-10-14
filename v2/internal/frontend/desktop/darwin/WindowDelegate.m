@@ -8,13 +8,14 @@
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 #import "WindowDelegate.h"
+#import "message.h"
 
 @implementation WindowDelegate
 
 - (BOOL)windowShouldClose:(NSWindow *)sender {
     [sender orderOut:nil];
     if( self.hideOnClose == false ) {
-        NSLog(@"send message: WC");
+        processMessage("Q");
     }
     return !self.hideOnClose;
 }

@@ -28,4 +28,6 @@ void UnFullscreen(WailsContext *ctx);
 void Minimise(WailsContext *ctx);
 void UnMinimise(WailsContext *ctx);
 
+void Quit(void*);
+
 #endif /* Application_h */

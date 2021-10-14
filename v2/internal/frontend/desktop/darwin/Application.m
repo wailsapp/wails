@@ -1,17 +1,15 @@
-////
-////  Window.m
-////  test
-////
-////  Created by Lea Anthony on 10/10/21.
-////
 //
+//  Application.m
+//
+//  Created by Lea Anthony on 10/10/21.
+//
+
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 #import "WailsContext.h"
 #import "Application.h"
 #import "AppDelegate.h"
-//
-//
+
 WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent) {
     
     WailsContext *result = [WailsContext new];
@@ -86,8 +84,14 @@ void UnMinimise(WailsContext *ctx) {
     );
 }
 
+void Quit(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    [NSApp stop:ctx];
+}
+
+
 void Run(void *inctx) {
-    WailsContext *ctx = (WailsContext*) inctx;
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
     [NSApplication sharedApplication];
     AppDelegate* delegate = [AppDelegate new];
     [NSApp setDelegate:(id)delegate];
@@ -98,4 +102,3 @@ void Run(void *inctx) {
     [ctx release];
     NSLog(@"Here");
 }
-//
