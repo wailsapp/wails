@@ -1,5 +1,5 @@
 <p align="center" style="text-align: center">
-   <img src="logo.png" width="40%"><br/>
+   <img src="logo.png" width="55%"><br/>
 </p>
 <p align="center">
    Build desktop applications using Go & Web Technologies.<br/><br/>
