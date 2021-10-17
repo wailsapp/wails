@@ -9,14 +9,16 @@
 #define WailsContext_h
 
 #import <Cocoa/Cocoa.h>
+#import <WebKit/WebKit.h>
 
 @interface WailsWindow : NSWindow
 - (BOOL)canBecomeKeyWindow;
 @end
 
-@interface WailsContext : NSObject
+@interface WailsContext : NSObject <WKURLSchemeHandler>
 
 @property (retain) WailsWindow* mainWindow;
+@property (retain) WKWebView* webview;
 @property (nonatomic, assign) id appdelegate;
 
 @property bool hideOnClose;
@@ -26,6 +28,9 @@
 @property NSSize minSize;
 
 @property bool alwaysOnTop;
+@property bool debug;
+
+@property (retain) NSMutableDictionary *urlRequests;
 
 - (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent  :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(const char *)appearance :(bool)windowIsTranslucent;
 - (void) SetSize:(int)width :(int)height;
@@ -38,6 +43,10 @@
 - (void) UnFullscreen;
 - (void) Minimise;
 - (void) UnMinimise;
+- (void) SetRGBA:(int)r :(int)g :(int)b :(int)a;
+
+- (void) loadRequest:(NSString*)url;
+- (void) processURLResponse:(NSString *)url :(NSString *)contentType :(NSData*)data;
 
 @end
 

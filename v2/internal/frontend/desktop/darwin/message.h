@@ -15,6 +15,7 @@ extern "C"
 #endif
 
 void processMessage(const char *);
+void processURLRequest(void*, const char *);
 
 #ifdef __cplusplus
 }

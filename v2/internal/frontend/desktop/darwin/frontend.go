@@ -219,34 +219,7 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 	if col == nil {
 		return
 	}
-	/*
-
-		//f.mainWindow.Dispatch(func() {
-			controller := f.chromium.GetController()
-			controller2 := controller.GetICoreWebView2Controller2()
-
-			backgroundCol := edge.COREWEBVIEW2_COLOR{
-				A: col.A,
-				R: col.R,
-				G: col.G,
-				B: col.B,
-			}
-
-			// Webview2 only has 0 and 255 as valid values.
-			if backgroundCol.A > 0 && backgroundCol.A < 255 {
-				backgroundCol.A = 255
-			}
-
-			if f.frontendOptions.Windows != nil && f.frontendOptions.Windows.WebviewIsTransparent {
-				backgroundCol.A = 0
-			}
-
-			err := controller2.PutDefaultBackgroundColor(backgroundCol)
-			if err != nil {
-				log.Fatal(err)
-			}
-		})
-	*/
+	f.mainWindow.SetRGBA(col.R, col.G, col.B, col.A)
 }
 
 func (f *Frontend) Quit() {

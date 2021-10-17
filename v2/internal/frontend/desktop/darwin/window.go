@@ -2,7 +2,7 @@ package darwin
 
 /*
 #cgo CFLAGS: -x objective-c
-#cgo LDFLAGS: -framework Foundation -framework Cocoa
+#cgo LDFLAGS: -framework Foundation -framework Cocoa -framework WebKit
 #import <Foundation/Foundation.h>
 #import "Application.h"
 #import "WailsContext.h"
@@ -39,6 +39,11 @@ func NewWindow(frontendOptions *options.App) *Window {
 	alwaysOnTop := bool2Cint(frontendOptions.AlwaysOnTop)
 	webviewIsTransparent := bool2Cint(frontendOptions.AlwaysOnTop)
 	hideWindowOnClose := bool2Cint(frontendOptions.HideWindowOnClose)
+	debug := bool2Cint(true)
+	alpha := C.Int(frontendOptions.RGBA.A)
+	red := C.Int(frontendOptions.RGBA.R)
+	green := C.Int(frontendOptions.RGBA.G)
+	blue := C.Int(frontendOptions.RGBA.B)
 
 	var fullSizeContent, hideTitleBar, hideTitle, useToolbar C.int
 	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent C.int
@@ -62,21 +67,23 @@ func NewWindow(frontendOptions *options.App) *Window {
 		windowIsTranslucent = bool2Cint(mac.WindowIsTranslucent)
 		appearance = C.CString(string(mac.Appearance))
 	}
-	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent, hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent, alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent)
+	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent, hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent, alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug)
 
 	C.free(unsafe.Pointer(title))
 	if appearance != nil {
 		C.free(unsafe.Pointer(appearance))
 	}
 
+	C.SetRGBA(context, red, green, blue, alpha)
+
 	return &Window{
 		context: unsafe.Pointer(context),
 	}
 }
 
-//func (w *Window) Center() {
-//	C.Center(w.wailsApplication)
-//}
+func (w *Window) Center() {
+	C.Center(w.context)
+}
 
 func (w *Window) Run() {
 	C.Run(w.context)
@@ -85,4 +92,8 @@ func (w *Window) Run() {
 
 func (w *Window) Quit() {
 	C.Quit(w.context)
+}
+
+func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
+	C.SetRGBA(w.context, r, g, b, a)
 }

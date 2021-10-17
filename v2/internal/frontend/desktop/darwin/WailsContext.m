@@ -6,8 +6,10 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <WebKit/WebKit.h>
 #import "WailsContext.h"
 #import "WindowDelegate.h"
+#import "message.h"
 
 @implementation WailsWindow
 
@@ -114,6 +116,8 @@
 
 - (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(const char *)appearance :(bool)windowIsTranslucent {
     
+    self.urlRequests = [NSMutableDictionary new];
+    
     NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
  
     if (frameless) {
@@ -140,6 +144,7 @@
     }
     
     if (useToolbar) {
+        NSLog(@"Using Toolbar");
         id toolbar = [[NSToolbar alloc] initWithIdentifier:@"wails.toolbar"];
         [toolbar autorelease];
         [toolbar setShowsBaselineSeparator:!hideToolbarSeparator];
@@ -150,8 +155,8 @@
     [self.mainWindow setTitlebarAppearsTransparent:titlebarAppearsTransparent];
     [self.mainWindow canBecomeKeyWindow];
     
+    id contentView = [self.mainWindow contentView];
     if (windowIsTranslucent) {
-        id contentView = [self.mainWindow contentView];
         NSVisualEffectView *effectView = [NSVisualEffectView alloc];
         NSRect bounds = [contentView bounds];
         [effectView initWithFrame:bounds];
@@ -179,8 +184,47 @@
     [self.mainWindow setDelegate:windowDelegate];
     
     // Webview stuff here!
+    WKWebViewConfiguration *config = [WKWebViewConfiguration new];
+    config.suppressesIncrementalRendering = true;
+    [config setURLSchemeHandler:self forURLScheme:@"wails"];
+    
+    [config.preferences setValue:[NSNumber numberWithBool:true] forKey:@"developerExtrasEnabled"];
+    
+//    if (self.debug) {
+//        [config.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
+//    } else {
+//        // Disable default context menus
+//    }
+    
+    self.webview = [WKWebView alloc];
+    CGRect init = { 0,0,0,0 };
+    [self.webview initWithFrame:init configuration:config];
+    [contentView addSubview:self.webview];
+    [self.webview setAutoresizingMask: NSViewWidthSizable|NSViewHeightSizable];
+    CGRect contentViewBounds = [contentView bounds];
+    [self.webview setFrame:contentViewBounds];
+    
+    if (webviewIsTransparent) {
+        [self.webview setValue:[NSNumber numberWithBool:!webviewIsTransparent] forKey:@"drawsBackground"];
+    }
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setBool:FALSE forKey:@"NSAutomaticQuoteSubstitutionEnabled"];
+    
     
 }
+
+- (void) loadRequest :(NSString*)url {
+    NSURL *wkUrl = [NSURL URLWithString:url];
+    NSURLRequest *wkRequest = [NSURLRequest requestWithURL:wkUrl];
+    [self.webview loadRequest:wkRequest];
+}
+
+- (void) SetRGBA:(int)r :(int)g :(int)b :(int)a {
+    id colour = [NSColor colorWithCalibratedRed:(float)r green:(float)g blue:(float)b alpha:(float)a ];
+    [self.mainWindow setBackgroundColor:colour];
+}
+
 
 - (bool) isFullScreen {
     long mask = [self.mainWindow styleMask];
@@ -207,6 +251,31 @@
 
 - (void) UnMinimise {
     [self.mainWindow deminiaturize:nil];
+}
+
+- (void) processURLResponse:(NSString *)url :(NSString *)contentType :(NSData *)data {
+    id<WKURLSchemeTask> urlSchemeTask = self.urlRequests[url];
+    NSURL *nsurl = [NSURL URLWithString:url];
+
+    NSHTTPURLResponse *response = [NSHTTPURLResponse new];
+    NSMutableDictionary *headerFields = [NSMutableDictionary new];
+    headerFields[@"content-type"] = contentType;
+    [response initWithURL:nsurl statusCode:200 HTTPVersion:@"HTTP/1.1" headerFields:headerFields];
+    [urlSchemeTask didReceiveResponse:response];
+    [urlSchemeTask didReceiveData:data];
+    [urlSchemeTask didFinish];
+    [self.urlRequests removeObjectForKey:url];
+}
+
+- (void)webView:(nonnull WKWebView *)webView startURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
+    NSLog(@"request for resource: %@", urlSchemeTask.request.URL.absoluteString);
+    // Do something
+    self.urlRequests[urlSchemeTask.request.URL.absoluteString] = urlSchemeTask;
+    processURLRequest(self, [urlSchemeTask.request.URL.absoluteString UTF8String]);
+}
+
+- (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
+    
 }
 
 @end

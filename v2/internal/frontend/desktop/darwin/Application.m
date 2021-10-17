@@ -10,9 +10,11 @@
 #import "Application.h"
 #import "AppDelegate.h"
 
-WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent) {
+WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug) {
     
     WailsContext *result = [WailsContext new];
+
+    result.debug = debug;
     
     [result CreateWindow:width :height :frameless :resizable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :appearance :windowIsTranslucent];
     [result SetTitle:title];
@@ -24,9 +26,26 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     return result;
 }
 
+void ProcessURLResponse(void *inctx, const char *url, const char *contentType, Byte data[], int datalength) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    NSString *nsurl = [[NSString alloc] initWithUTF8String:url];
+    NSString *nsContentType = [[NSString alloc] initWithUTF8String:contentType];
+    NSData *nsdata = [NSData dataWithBytes:data length:datalength];
+    
+    [ctx processURLResponse:nsurl :nsContentType :nsdata];
+}
+
 void SetTitle(WailsContext *ctx, const char *title) {
     ON_MAIN_THREAD(
        [ctx SetTitle:title];
+    );
+}
+
+
+void SetRGBA(void *inctx, int r, int g, int b, int a) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx SetRGBA:r :g :b :a];
     );
 }
 
@@ -98,6 +117,9 @@ void Run(void *inctx) {
     ctx.appdelegate = delegate;
     delegate.mainWindow = ctx.mainWindow;
     delegate.alwaysOnTop = ctx.alwaysOnTop;
+
+    [ctx loadRequest:@"wails://wails/ipc.js"];
+    
     [NSApp run];
     [ctx release];
     NSLog(@"Here");
