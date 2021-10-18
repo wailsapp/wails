@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -53,6 +54,11 @@ func WindowSetSize(ctx context.Context, width int, height int) {
 	appFrontend.WindowSetSize(width, height)
 }
 
+func WindowGetSize(ctx context.Context) (int, int) {
+	appFrontend := getFrontend(ctx)
+	return appFrontend.WindowGetSize()
+}
+
 // WindowSetMinSize sets the minimum size of the window
 func WindowSetMinSize(ctx context.Context, width int, height int) {
 	appFrontend := getFrontend(ctx)
@@ -69,6 +75,11 @@ func WindowSetMaxSize(ctx context.Context, width int, height int) {
 func WindowSetPosition(ctx context.Context, x int, y int) {
 	appFrontend := getFrontend(ctx)
 	appFrontend.WindowSetPos(x, y)
+}
+
+func WindowGetPos(ctx context.Context) (int, int) {
+	appFrontend := getFrontend(ctx)
+	return appFrontend.WindowGetPos()
 }
 
 // WindowMaximise the window
