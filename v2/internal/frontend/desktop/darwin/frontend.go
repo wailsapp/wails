@@ -3,13 +3,24 @@
 
 package darwin
 
+/*
+#cgo CFLAGS: -x objective-c
+#cgo LDFLAGS: -framework Foundation -framework Cocoa -framework WebKit
+#import <Foundation/Foundation.h>
+#import "Application.h"
+#import "WailsContext.h"
+
+#include <stdlib.h>
+*/
 import "C"
 import (
 	"context"
 	"encoding/json"
 	"html/template"
 	"log"
-	"runtime"
+	"strconv"
+	"strings"
+	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -18,7 +29,13 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
-var messageBuffer = make(chan string)
+type request struct {
+	url *C.char
+	ctx unsafe.Pointer
+}
+
+var messageBuffer = make(chan string, 100)
+var requestBuffer = make(chan *request, 100)
 
 type Frontend struct {
 
@@ -74,6 +91,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	result.assets = assets
 
 	go result.startMessageProcessor(ctx)
+	go result.startRequestProcessor(ctx)
 
 	return result
 }
@@ -81,6 +99,11 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 func (f *Frontend) startMessageProcessor(ctx context.Context) {
 	for message := range messageBuffer {
 		f.processMessage(message)
+	}
+}
+func (f *Frontend) startRequestProcessor(ctx context.Context) {
+	for request := range requestBuffer {
+		f.processRequest(request)
 	}
 }
 
@@ -94,128 +117,84 @@ func (f *Frontend) Run(ctx context.Context) error {
 
 	mainWindow := NewWindow(f.frontendOptions)
 	f.mainWindow = mainWindow
-	//go func() {
-	//	time.Sleep(3 * time.Second)
-	//	mainWindow.Center()
-	//}()
-	//
-	//var _debug = ctx.Value("debug")
-	//if _debug != nil {
-	//	f.debug = _debug.(bool)
-	//}
-	//
-	//f.WindowCenter()
-	//f.setupChromium()
-	//
-	//mainWindow.OnSize().Bind(func(arg *winc.Event) {
-	//	f.chromium.Resize()
-	//})
-	//
-	//mainWindow.OnClose().Bind(func(arg *winc.Event) {
-	//	if f.frontendOptions.HideWindowOnClose {
-	//		f.WindowHide()
-	//	} else {
-	//		f.Quit()
-	//	}
-	//})
-	//
-	//// TODO: Move this into a callback from frontend
-	//go func() {
-	//	if f.frontendOptions.OnStartup != nil {
-	//		f.frontendOptions.OnStartup(f.ctx)
-	//	}
-	//}()
-	//
+	f.mainWindow.Center()
+
+	go func() {
+		if f.frontendOptions.OnStartup != nil {
+			f.frontendOptions.OnStartup(f.ctx)
+		}
+	}()
 	mainWindow.Run()
 	return nil
 }
 
 func (f *Frontend) WindowCenter() {
-	runtime.LockOSThread()
-	//f.mainWindow.Center()
+	f.mainWindow.Center()
 }
 
 func (f *Frontend) WindowSetPos(x, y int) {
-	runtime.LockOSThread()
-	//f.mainWindow.SetPos(x, y)
+	f.mainWindow.SetPos(x, y)
 }
 func (f *Frontend) WindowGetPos() (int, int) {
-	runtime.LockOSThread()
-	//return f.mainWindow.Pos()
-	return 0, 0
+	return f.mainWindow.Pos()
 }
 
 func (f *Frontend) WindowSetSize(width, height int) {
-	runtime.LockOSThread()
-	//f.mainWindow.SetSize(width, height)
+	f.mainWindow.SetSize(width, height)
 }
 
 func (f *Frontend) WindowGetSize() (int, int) {
-	runtime.LockOSThread()
-	//return f.mainWindow.Size()
-	return 0, 0
+	return f.mainWindow.Size()
 }
 
 func (f *Frontend) WindowSetTitle(title string) {
-	runtime.LockOSThread()
-	//f.mainWindow.SetText(title)
+	f.mainWindow.SetTitle(title)
 }
 
 func (f *Frontend) WindowFullscreen() {
-	runtime.LockOSThread()
-	//f.mainWindow.SetMaxSize(0, 0)
-	//f.mainWindow.SetMinSize(0, 0)
-	//f.mainWindow.Fullscreen()
+	f.mainWindow.SetMaxSize(0, 0)
+	f.mainWindow.SetMinSize(0, 0)
+	f.mainWindow.Fullscreen()
 }
 
 func (f *Frontend) WindowUnFullscreen() {
-	runtime.LockOSThread()
-	//f.mainWindow.UnFullscreen()
-	//f.mainWindow.SetMaxSize(f.maxWidth, f.maxHeight)
-	//f.mainWindow.SetMinSize(f.minWidth, f.minHeight)
+	f.mainWindow.UnFullscreen()
+	f.mainWindow.SetMaxSize(f.maxWidth, f.maxHeight)
+	f.mainWindow.SetMinSize(f.minWidth, f.minHeight)
 }
 
 func (f *Frontend) WindowShow() {
-	runtime.LockOSThread()
-	//f.mainWindow.Show()
+	f.mainWindow.Show()
 }
 
 func (f *Frontend) WindowHide() {
-	runtime.LockOSThread()
-	//f.mainWindow.Hide()
+	f.mainWindow.Hide()
 }
 func (f *Frontend) WindowMaximise() {
-	runtime.LockOSThread()
-	//f.mainWindow.Maximise()
+	f.mainWindow.Maximise()
 }
 func (f *Frontend) WindowUnmaximise() {
-	runtime.LockOSThread()
-	//f.mainWindow.Restore()
+	f.mainWindow.UnMaximise()
 }
 func (f *Frontend) WindowMinimise() {
-	runtime.LockOSThread()
-	//f.mainWindow.Minimise()
+	f.mainWindow.Minimise()
 }
 func (f *Frontend) WindowUnminimise() {
-	runtime.LockOSThread()
-	//f.mainWindow.Restore()
+	f.mainWindow.UnMinimise()
 }
 
 func (f *Frontend) WindowSetMinSize(width int, height int) {
-	runtime.LockOSThread()
 	f.minWidth = width
 	f.minHeight = height
-	//f.mainWindow.SetMinSize(width, height)
+	f.mainWindow.SetMinSize(width, height)
 }
 func (f *Frontend) WindowSetMaxSize(width int, height int) {
-	runtime.LockOSThread()
 	f.maxWidth = width
 	f.maxHeight = height
-	//f.mainWindow.SetMaxSize(width, height)
+	f.mainWindow.SetMaxSize(width, height)
 }
 
 func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
-	runtime.LockOSThread()
 	if col == nil {
 		return
 	}
@@ -225,65 +204,6 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 func (f *Frontend) Quit() {
 	f.mainWindow.Quit()
 }
-
-/*
-const (
-	ctrlZ int = 90
-	ctrlX     = 88
-	ctrlC     = 67
-	ctrlV     = 86
-)
-
-func (f *Frontend) setupChromium() {
-	chromium := edge.NewChromium()
-	f.chromium = chromium
-	chromium.MessageCallback = f.processMessage
-	chromium.WebResourceRequestedCallback = f.processRequest
-	chromium.NavigationCompletedCallback = f.navigationCompleted
-	acceleratorsWebviewShouldProcess := slicer.Int([]int{ctrlV, ctrlC, ctrlX, ctrlZ})
-	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
-		// We want webview to handle ctrl-C, ctrl-Z, ctrl-v, ctrl-x
-		if acceleratorsWebviewShouldProcess.Contains(int(vkey)) {
-			return false
-		}
-		// Post keypress
-		//w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
-		return true
-	}
-	chromium.Embed(f.mainWindow.Handle())
-	chromium.Resize()
-	settings, err := chromium.GetSettings()
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = settings.PutAreDefaultContextMenusEnabled(f.debug)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = settings.PutAreDevToolsEnabled(f.debug)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = settings.PutIsZoomControlEnabled(false)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = settings.PutIsStatusBarEnabled(false)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = settings.PutIsStatusBarEnabled(false)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Set background colour
-	f.WindowSetRGBA(f.frontendOptions.RGBA)
-
-	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
-	chromium.Navigate("file://wails/")
-}
-*/
 
 type EventNotify struct {
 	Name string        `json:"name"`
@@ -302,39 +222,6 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 	}
 	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
 }
-
-//func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {
-//	//Get the request
-//	uri, _ := req.GetUri()
-//
-//	// Translate URI
-//	uri = strings.TrimPrefix(uri, "file://wails")
-//	if !strings.HasPrefix(uri, "/") {
-//		return
-//	}
-//
-//	// Load file from asset store
-//	content, mimeType, err := f.assets.Load(uri)
-//	if err != nil {
-//		return
-//	}
-//
-//	env := f.chromium.Environment()
-//	headers := "Content-Type: " + mimeType
-//	if f.servingFromDisk {
-//		headers += "\nPragma: no-cache"
-//	}
-//	response, err := env.CreateWebResourceResponse(content, 200, "OK", headers)
-//	if err != nil {
-//		return
-//	}
-//	// Send response back
-//	err = args.PutResponse(response)
-//	if err != nil {
-//		return
-//	}
-//	return
-//}
 
 func (f *Frontend) processMessage(message string) {
 	if message == "drag" {
@@ -364,9 +251,7 @@ func (f *Frontend) processMessage(message string) {
 }
 
 func (f *Frontend) Callback(message string) {
-	//f.mainWindow.Dispatch(func() {
-	//	f.chromium.Eval(`window.wails.Callback(` + strconv.Quote(message) + `);`)
-	//})
+	f.ExecJS(`window.wails.Callback(` + strconv.Quote(message) + `);`)
 }
 
 func (f *Frontend) startDrag() error {
@@ -378,37 +263,39 @@ func (f *Frontend) startDrag() error {
 }
 
 func (f *Frontend) ExecJS(js string) {
-	//f.mainWindow.Dispatch(func() {
-	//	f.chromium.Eval(js)
-	//})
+	f.mainWindow.ExecJS(js)
 }
 
-//func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
-//	if f.frontendOptions.OnDomReady != nil {
-//		go f.frontendOptions.OnDomReady(f.ctx)
-//	}
-//
-//	// If you want to start hidden, return
-//	if f.frontendOptions.StartHidden {
-//		return
-//	}
-//
-//	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026
-//	err := f.chromium.Hide()
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	err = f.chromium.Show()
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	f.mainWindow.Show()
-//
-//}
+func (f *Frontend) processRequest(r *request) {
+	url := C.GoString(r.url)
+	url = strings.TrimPrefix(url, "wails://wails")
+	if !strings.HasPrefix(url, "/") {
+		return
+	}
+	_contents, _mimetype, err := f.assets.Load(url)
+	if err != nil {
+		f.logger.Error(err.Error())
+		//TODO: Handle errors
+		return
+	}
+	data := C.CString(string(_contents))
+	defer C.free(unsafe.Pointer(data))
+	mimetype := C.CString(_mimetype)
+	defer C.free(unsafe.Pointer(mimetype))
+
+	C.ProcessURLResponse(r.ctx, r.url, mimetype, data, C.int(len(_contents)))
+}
 
 //export processMessage
 func processMessage(message *C.char) {
 	goMessage := C.GoString(message)
 	messageBuffer <- goMessage
-	println("Message in Go:", goMessage)
+}
+
+//export processURLRequest
+func processURLRequest(ctx unsafe.Pointer, url *C.char) {
+	requestBuffer <- &request{
+		url: url,
+		ctx: ctx,
+	}
 }

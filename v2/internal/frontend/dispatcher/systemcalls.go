@@ -2,8 +2,9 @@ package dispatcher
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/frontend"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/internal/frontend"
 )
 
 const systemCallPrefix = ":wails:"

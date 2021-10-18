@@ -26,7 +26,7 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     return result;
 }
 
-void ProcessURLResponse(void *inctx, const char *url, const char *contentType, Byte data[], int datalength) {
+void ProcessURLResponse(void *inctx, const char *url, const char *contentType, const char* data, int datalength) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSString *nsurl = [[NSString alloc] initWithUTF8String:url];
     NSString *nsContentType = [[NSString alloc] initWithUTF8String:contentType];
@@ -35,7 +35,15 @@ void ProcessURLResponse(void *inctx, const char *url, const char *contentType, B
     [ctx processURLResponse:nsurl :nsContentType :nsdata];
 }
 
-void SetTitle(WailsContext *ctx, const char *title) {
+void ExecJS(void* inctx, const char *script) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx ExecJS:script];
+    );
+}
+
+void SetTitle(void* inctx, const char *title) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
        [ctx SetTitle:title];
     );
@@ -49,63 +57,120 @@ void SetRGBA(void *inctx, int r, int g, int b, int a) {
     );
 }
 
-void SetSize(WailsContext *ctx, int width, int height) {
+void SetSize(void* inctx, int width, int height) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
        [ctx SetSize:width :height];
     );
 }
 
-void SetMinWindowSize(WailsContext *ctx, int width, int height) {
+void SetMinSize(void* inctx, int width, int height) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
-       [ctx SetMinWindowSize:width :height];
+       [ctx SetMinSize:width :height];
     );
 }
 
-void SetMaxWindowSize(WailsContext *ctx, int width, int height) {
+void SetMaxSize(void* inctx, int width, int height) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
-       [ctx SetMaxWindowSize:width :height];
+       [ctx SetMaxSize:width :height];
     );
 }
 
-void SetPosition(WailsContext *ctx, int x, int y) {
+void SetPosition(void* inctx, int x, int y) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
        [ctx SetSize:x :y];
     );
 }
 
-void Center(WailsContext *ctx) {
+void Center(void* inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
        [ctx Center];
     );
 }
 
-void Fullscreen(WailsContext *ctx) {
+void Fullscreen(void* inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
        [ctx Fullscreen];
     );
 }
 
-void UnFullscreen(WailsContext *ctx) {
+void UnFullscreen(void* inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
        [ctx UnFullscreen];
     );
 }
 
-void Minimise(WailsContext *ctx) {
+void Minimise(void* inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
        [ctx Minimise];
     );
 }
 
-void UnMinimise(WailsContext *ctx) {
+void UnMinimise(void* inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
        [ctx UnMinimise];
+    );
+}
+
+void Maximise(void* inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx Maximise];
+    );
+}
+
+const char* GetSize(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    NSRect frame = [ctx.mainWindow frame];
+    NSString *result = [NSString stringWithFormat:@"%d,%d", (int)frame.size.width, (int)frame.size.height];
+    return [result UTF8String];
+}
+
+const char* GetPos(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    NSScreen* screen = [ctx getCurrentScreen];
+    NSRect windowFrame = [ctx.mainWindow frame];
+    NSRect screenFrame = [screen visibleFrame];
+    int x = windowFrame.origin.x - screenFrame.origin.x;
+    int y = windowFrame.origin.y - screenFrame.origin.y;
+    y = screenFrame.size.height - y - windowFrame.size.height;
+    NSString *result = [NSString stringWithFormat:@"%d,%d",x,y];
+    return [result UTF8String];
+    
+}
+
+void UnMaximise(void* inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx UnMaximise];
     );
 }
 
 void Quit(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     [NSApp stop:ctx];
+}
+
+void Hide(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx Hide];
+    );
+}
+
+void Show(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx Show];
+    );
 }
 
 
@@ -118,7 +183,7 @@ void Run(void *inctx) {
     delegate.mainWindow = ctx.mainWindow;
     delegate.alwaysOnTop = ctx.alwaysOnTop;
 
-    [ctx loadRequest:@"wails://wails/ipc.js"];
+    [ctx loadRequest:@"wails://wails/"];
     
     [NSApp run];
     [ctx release];

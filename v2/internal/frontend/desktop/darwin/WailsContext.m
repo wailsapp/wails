@@ -39,14 +39,14 @@
     
     NSScreen* screen = [self getCurrentScreen];
     NSRect windowFrame = [self.mainWindow frame];
-    NSRect screenFrame = [screen frame];
+    NSRect screenFrame = [screen visibleFrame];
     windowFrame.origin.x += screenFrame.origin.x + (float)x;
     windowFrame.origin.y += (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
 
     [self.mainWindow setFrame:windowFrame display:TRUE animate:FALSE];
 }
 
-- (void) SetMinWindowSize:(int)minWidth :(int)minHeight {
+- (void) SetMinSize:(int)minWidth :(int)minHeight {
     
     if (self.shuttingDown) return;
 
@@ -60,7 +60,7 @@
 }
 
 
-- (void) SetMaxWindowSize:(int)maxWidth :(int)maxHeight {
+- (void) SetMaxSize:(int)maxWidth :(int)maxHeight {
     
     if (self.shuttingDown) return;
 
@@ -96,7 +96,11 @@
     [super dealloc];
     [self.appdelegate release];
     [self.mainWindow release];
+    [self.mouseEvent release];
+    [self.userContentController release];
+    [self.urlRequests release];
 }
+
 - (NSScreen*) getCurrentScreen {
     NSScreen* screen = [self.mainWindow screen];
     if( screen == NULL ) {
@@ -190,6 +194,10 @@
     
     [config.preferences setValue:[NSNumber numberWithBool:true] forKey:@"developerExtrasEnabled"];
     
+    WKUserContentController* userContentController = [WKUserContentController new];
+    [userContentController addScriptMessageHandler:self name:@"external"];
+    config.userContentController = userContentController;
+    self.userContentController = userContentController;
 //    if (self.debug) {
 //        [config.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
 //    } else {
@@ -211,6 +219,23 @@
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:FALSE forKey:@"NSAutomaticQuoteSubstitutionEnabled"];
     
+    // Mouse monitors
+    [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskLeftMouseDown handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
+        id window = [event window];
+        if (window == self.mainWindow) {
+            self.mouseEvent = event;
+        }
+        return event;
+    }];
+    
+    [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskLeftMouseUp handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
+        id window = [event window];
+        if (window == self.mainWindow) {
+            self.mouseEvent = nil;
+            [self ShowMouse];
+        }
+        return event;
+    }];
     
 }
 
@@ -225,6 +250,13 @@
     [self.mainWindow setBackgroundColor:colour];
 }
 
+- (void) HideMouse {
+    [NSCursor hide];
+}
+
+- (void) ShowMouse {
+    [NSCursor unhide];
+}
 
 - (bool) isFullScreen {
     long mask = [self.mainWindow styleMask];
@@ -253,6 +285,32 @@
     [self.mainWindow deminiaturize:nil];
 }
 
+- (void) Hide {
+    [self.mainWindow orderOut:nil];
+}
+
+- (void) Show {
+    [self.mainWindow makeKeyAndOrderFront:nil];
+    [NSApp activateIgnoringOtherApps:YES];
+}
+
+- (void) Maximise {
+    if (! self.maximised) {
+        [self.mainWindow zoom:nil];
+    }
+}
+
+- (void) UnMaximise {
+    if (self.maximised) {
+        [self.mainWindow zoom:nil];
+    }
+}
+
+- (void) ExecJS:(const char*)script {
+    NSString *nsscript = [NSString stringWithUTF8String:script];
+    [self.webview evaluateJavaScript:nsscript completionHandler:nil];
+}
+
 - (void) processURLResponse:(NSString *)url :(NSString *)contentType :(NSData *)data {
     id<WKURLSchemeTask> urlSchemeTask = self.urlRequests[url];
     NSURL *nsurl = [NSURL URLWithString:url];
@@ -268,7 +326,6 @@
 }
 
 - (void)webView:(nonnull WKWebView *)webView startURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
-    NSLog(@"request for resource: %@", urlSchemeTask.request.URL.absoluteString);
     // Do something
     self.urlRequests[urlSchemeTask.request.URL.absoluteString] = urlSchemeTask;
     processURLRequest(self, [urlSchemeTask.request.URL.absoluteString UTF8String]);
@@ -276,6 +333,27 @@
 
 - (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
     
+}
+
+- (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
+    NSString *m = message.body;
+
+    // Check for drag
+    if ( [m isEqualToString:@"drag"] ) {
+        if( ! [self isFullScreen] ) {
+            if( self.mouseEvent != nil ) {
+                [self HideMouse];
+                ON_MAIN_THREAD(
+                    [self.mainWindow performWindowDragWithEvent:self.mouseEvent];
+                );
+            }
+            return;
+        }
+    }
+    
+    const char *_m = [m UTF8String];
+    
+    processMessage(_m);
 }
 
 @end

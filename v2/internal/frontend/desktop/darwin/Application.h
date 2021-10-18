@@ -12,26 +12,30 @@
 #import <Cocoa/Cocoa.h>
 #import "WailsContext.h"
 
-#define ON_MAIN_THREAD(str) dispatch_async(dispatch_get_main_queue(), ^{ str; });
-
 WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug);
 void Run(void*);
 
-void SetTitle(WailsContext *ctx, const char *title);
-void Center(WailsContext *ctx);
-void SetSize(WailsContext *ctx, int width, int height);
-void SetMinWindowSize(WailsContext *ctx, int width, int height);
-void SetMaxWindowSize(WailsContext *ctx, int width, int height);
-void SetPosition(WailsContext *ctx, int x, int y);
-void Fullscreen(WailsContext *ctx);
-void UnFullscreen(WailsContext *ctx);
-void Minimise(WailsContext *ctx);
-void UnMinimise(WailsContext *ctx);
-
-void SetRGBA(void *ctx, int r, int g, int b, int a);
-
+void SetTitle(void* ctx, const char *title);
+void Center(void* ctx);
+void SetSize(void* ctx, int width, int height);
+void SetMinSize(void* ctx, int width, int height);
+void SetMaxSize(void* ctx, int width, int height);
+void SetPosition(void* ctx, int x, int y);
+void Fullscreen(void* ctx);
+void UnFullscreen(void* ctx);
+void Minimise(void* ctx);
+void UnMinimise(void* ctx);
+void Maximise(void* ctx);
+void UnMaximise(void* ctx);
+void Hide(void* ctx);
+void Show(void* ctx);
+void SetRGBA(void* ctx, int r, int g, int b, int a);
+void ExecJS(void* ctx, const char*);
 void Quit(void*);
 
-void ProcessURLResponse(void *inctx, const char *url, const char *contentType, Byte data[], int datalength);
+const char* GetSize(void *ctx);
+const char* GetPos(void *ctx);
+
+void ProcessURLResponse(void *inctx, const char *url, const char *contentType, const char *data, int datalength);
 
 #endif /* Application_h */

@@ -22,10 +22,18 @@ The electron alternative for Go
 		while (obj && s.length) obj = obj[s.shift()];
 		return obj;
 	};
-	window.WailsInvoke = _deeptest(["chrome", "webview", "postMessage"]) ||
-		_deeptest(["webkit", "messageHandlers", "external", "postMessage"]);
+	let windows = _deeptest(["chrome", "webview", "postMessage"]);
+	let mac = _deeptest(["webkit", "messageHandlers", "external", "postMessage"]);
 
-	if (!window.WailsInvoke) {
+	if (!windows && !mac) {
 		console.error("Unsupported Platform");
+		return;
+	}
+
+	if (windows) {
+		window.WailsInvoke = (message) => window.chrome.webview.postMessage(message);
+	}
+	if (mac) {
+		window.WailsInvoke = (message) => window.webkit.messageHandlers.external.postMessage(message);
 	}
 })();
