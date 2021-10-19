@@ -23,9 +23,9 @@
 @implementation WailsContext
 
 - (void) SetSize:(int)width :(int)height {
-
+    
     if (self.shuttingDown) return;
-
+    
     NSRect frame = [self.mainWindow frame];
     frame.origin.y += frame.size.height - height;
     frame.size.width = width;
@@ -42,16 +42,16 @@
     NSRect screenFrame = [screen visibleFrame];
     windowFrame.origin.x += screenFrame.origin.x + (float)x;
     windowFrame.origin.y += (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
-
+    
     [self.mainWindow setFrame:windowFrame display:TRUE animate:FALSE];
 }
 
 - (void) SetMinSize:(int)minWidth :(int)minHeight {
     
     if (self.shuttingDown) return;
-
+    
     NSSize size = { minWidth, minHeight };
-
+    
     self.minSize = size;
     
     [self.mainWindow setMinSize:size];
@@ -63,12 +63,12 @@
 - (void) SetMaxSize:(int)maxWidth :(int)maxHeight {
     
     if (self.shuttingDown) return;
-
+    
     NSSize size = { FLT_MAX, FLT_MAX };
     
     size.width = maxWidth > 0 ? maxWidth : FLT_MAX;
     size.height = maxHeight > 0 ? maxHeight : FLT_MAX;
-
+    
     self.maxSize = size;
     
     [self.mainWindow setMinSize:size];
@@ -87,9 +87,9 @@
     if ( currentFrame.size.width < self.minSize.width ) currentFrame.size.width = self.minSize.width;
     if ( currentFrame.size.height > self.maxSize.height ) currentFrame.size.height = self.maxSize.height;
     if ( currentFrame.size.height < self.minSize.height ) currentFrame.size.height = self.minSize.height;
-
+    
     [self.mainWindow setFrame:currentFrame display:TRUE animate:FALSE];
-        
+    
 }
 
 - (void) dealloc {
@@ -123,7 +123,7 @@
     self.urlRequests = [NSMutableDictionary new];
     
     NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
- 
+    
     if (frameless) {
         styleMask = NSWindowStyleMaskBorderless;
     } else {
@@ -134,14 +134,14 @@
     if (fullscreen) {
         styleMask |= NSWindowStyleMaskFullScreen;
     }
-
+    
     if( fullSizeContent || frameless || titlebarAppearsTransparent ) {
         styleMask |= NSWindowStyleMaskFullSizeContentView;
     }
     
     self.mainWindow = [[[WailsWindow alloc] initWithContentRect:NSMakeRect(0, 0, width, height)
-        styleMask:styleMask backing:NSBackingStoreBuffered defer:NO]
-            autorelease];
+                                                      styleMask:styleMask backing:NSBackingStoreBuffered defer:NO]
+                       autorelease];
     
     if (frameless) {
         return;
@@ -198,11 +198,17 @@
     [userContentController addScriptMessageHandler:self name:@"external"];
     config.userContentController = userContentController;
     self.userContentController = userContentController;
-//    if (self.debug) {
-//        [config.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
-//    } else {
-//        // Disable default context menus
-//    }
+    if (self.debug) {
+        [config.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
+    } else {
+        // Disable default context menus
+        WKUserScript *initScript = [WKUserScript new];
+        [initScript initWithSource:@"window.wails.flags.disableWailsDefaultContextMenu = true;"
+                     injectionTime:WKUserScriptInjectionTimeAtDocumentEnd
+                  forMainFrameOnly:false];
+        [userContentController addUserScript:initScript];
+        
+    }
     
     self.webview = [WKWebView alloc];
     CGRect init = { 0,0,0,0 };
@@ -246,7 +252,13 @@
 }
 
 - (void) SetRGBA:(int)r :(int)g :(int)b :(int)a {
-    id colour = [NSColor colorWithCalibratedRed:(float)r green:(float)g blue:(float)b alpha:(float)a ];
+    float red = r/255;
+    float green = g/255;
+    float blue = b/255;
+    float alpha = a/255;
+    
+    id colour = [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha ];
+    
     [self.mainWindow setBackgroundColor:colour];
 }
 
@@ -314,7 +326,7 @@
 - (void) processURLResponse:(NSString *)url :(NSString *)contentType :(NSData *)data {
     id<WKURLSchemeTask> urlSchemeTask = self.urlRequests[url];
     NSURL *nsurl = [NSURL URLWithString:url];
-
+    
     NSHTTPURLResponse *response = [NSHTTPURLResponse new];
     NSMutableDictionary *headerFields = [NSMutableDictionary new];
     headerFields[@"content-type"] = contentType;
@@ -337,15 +349,15 @@
 
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
     NSString *m = message.body;
-
+    
     // Check for drag
     if ( [m isEqualToString:@"drag"] ) {
         if( ! [self isFullScreen] ) {
             if( self.mouseEvent != nil ) {
                 [self HideMouse];
                 ON_MAIN_THREAD(
-                    [self.mainWindow performWindowDragWithEvent:self.mouseEvent];
-                );
+                               [self.mainWindow performWindowDragWithEvent:self.mouseEvent];
+                               );
             }
             return;
         }
