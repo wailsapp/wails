@@ -42,6 +42,7 @@ window.wails = {
     callbacks,
     flags: {
         disableScrollbarDrag: false,
+        disableWailsDefaultContextMenu: false,
     }
 };
 
@@ -75,5 +76,12 @@ window.addEventListener('mousedown', (e) => {
             break;
         }
         currentElement = currentElement.parentElement;
+    }
+});
+
+// Setup context menu hook
+window.addEventListener('contextmenu', function (e) {
+    if (window.wails.flags.disableWailsDefaultContextMenu) {
+        e.preventDefault();
     }
 });
