@@ -90,18 +90,18 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 	result.assets = assets
 
-	go result.startMessageProcessor(ctx)
-	go result.startRequestProcessor(ctx)
+	go result.startMessageProcessor()
+	go result.startRequestProcessor()
 
 	return result
 }
 
-func (f *Frontend) startMessageProcessor(ctx context.Context) {
+func (f *Frontend) startMessageProcessor() {
 	for message := range messageBuffer {
 		f.processMessage(message)
 	}
 }
-func (f *Frontend) startRequestProcessor(ctx context.Context) {
+func (f *Frontend) startRequestProcessor() {
 	for request := range requestBuffer {
 		f.processRequest(request)
 	}
@@ -115,7 +115,12 @@ func (f *Frontend) Run(ctx context.Context) error {
 
 	f.ctx = context.WithValue(ctx, "frontend", f)
 
-	mainWindow := NewWindow(f.frontendOptions)
+	var _debug = ctx.Value("debug")
+	if _debug != nil {
+		f.debug = _debug.(bool)
+	}
+
+	mainWindow := NewWindow(f.frontendOptions, f.debug)
 	f.mainWindow = mainWindow
 	f.mainWindow.Center()
 

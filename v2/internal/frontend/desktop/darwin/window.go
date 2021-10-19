@@ -35,21 +35,20 @@ func bool2Cint(value bool) C.int {
 	return C.int(0)
 }
 
-func NewWindow(frontendOptions *options.App) *Window {
+func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 
 	frameless := bool2Cint(frontendOptions.Frameless)
 	resizable := bool2Cint(!frontendOptions.DisableResize)
 	fullscreen := bool2Cint(frontendOptions.Fullscreen)
 	alwaysOnTop := bool2Cint(frontendOptions.AlwaysOnTop)
-	webviewIsTransparent := bool2Cint(frontendOptions.AlwaysOnTop)
 	hideWindowOnClose := bool2Cint(frontendOptions.HideWindowOnClose)
-	debug := bool2Cint(true)
+	debug := bool2Cint(debugMode)
 	alpha := C.int(frontendOptions.RGBA.A)
 	red := C.int(frontendOptions.RGBA.R)
 	green := C.int(frontendOptions.RGBA.G)
 	blue := C.int(frontendOptions.RGBA.B)
 
-	var fullSizeContent, hideTitleBar, hideTitle, useToolbar C.int
+	var fullSizeContent, hideTitleBar, hideTitle, useToolbar, webviewIsTransparent C.int
 	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent C.int
 	var appearance, title *C.char
 
@@ -69,6 +68,8 @@ func NewWindow(frontendOptions *options.App) *Window {
 			hideToolbarSeparator = bool2Cint(mac.TitleBar.HideToolbarSeparator)
 		}
 		windowIsTranslucent = bool2Cint(mac.WindowIsTranslucent)
+		webviewIsTransparent = bool2Cint(mac.WebviewIsTransparent)
+
 		appearance = C.CString(string(mac.Appearance))
 	}
 	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent, hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent, alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug)
