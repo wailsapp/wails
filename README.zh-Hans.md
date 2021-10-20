@@ -121,8 +121,8 @@
 <a href="https://github.com/jugglingjsons" style="width:50px">
   <img src="https://github.com/jugglingjsons.png?size=50" width="50"/>
 </a>
-<a href="https://github.com/marcus-crane" style="width:50px">
-  <img src="https://github.com/marcus-crane.png?size=50" width="50"/>
+<a href="https://github.com/marcus-crane" style="width:65px">
+  <img src="https://github.com/marcus-crane.png?size=65" width="65"/>
 </a>
 <a href="https://github.com/bbergshaven" style="width:45px">
   <img src="https://github.com/bbergshaven.png?size=45" width="45"/>
@@ -132,6 +132,12 @@
 </a>
 <a href="https://github.com/ilgityildirim" style="width:50px">
   <img src="https://github.com/ilgityildirim.png?size=50" width="50"/>
+</a>
+<a href="https://github.com/ondoki" style="width:65px">
+  <img src="https://github.com/ondoki.png?size=65" width="65"/>
+</a>
+<a href="https://github.com/questrail" style="width:50px">
+  <img src="https://github.com/questrail.png?size=50" width="50"/>
 </a>
 
 <span id="nav-5"></span>
