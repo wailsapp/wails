@@ -37,6 +37,9 @@ func bool2Cint(value bool) C.int {
 
 func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 
+	c := NewCalloc()
+	defer c.Free()
+
 	frameless := bool2Cint(frontendOptions.Frameless)
 	resizable := bool2Cint(!frontendOptions.DisableResize)
 	fullscreen := bool2Cint(frontendOptions.Fullscreen)
@@ -55,7 +58,7 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 	width := C.int(frontendOptions.Width)
 	height := C.int(frontendOptions.Height)
 
-	title = C.CString(frontendOptions.Title)
+	title = c.String(frontendOptions.Title)
 
 	if frontendOptions.Mac != nil {
 		mac := frontendOptions.Mac
@@ -70,14 +73,9 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 		windowIsTranslucent = bool2Cint(mac.WindowIsTranslucent)
 		webviewIsTransparent = bool2Cint(mac.WebviewIsTransparent)
 
-		appearance = C.CString(string(mac.Appearance))
+		appearance = c.String(string(mac.Appearance))
 	}
 	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent, hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent, alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug)
-
-	C.free(unsafe.Pointer(title))
-	if appearance != nil {
-		C.free(unsafe.Pointer(appearance))
-	}
 
 	C.SetRGBA(unsafe.Pointer(context), red, green, blue, alpha)
 

@@ -16,6 +16,9 @@ extern "C"
 
 void processMessage(const char *);
 void processURLRequest(void*, const char *);
+void processMessageDialogResponse(int);
+void processOpenFileDialogResponse(const char*);
+void processSaveFileDialogResponse(const char*);
 
 #ifdef __cplusplus
 }

@@ -173,6 +173,29 @@ void Show(void *inctx) {
     );
 }
 
+void MessageDialog(void *inctx, const char* dialogType, const char* title, const char* message, const char* button1, const char* button2, const char* button3, const char* button4, const char* defaultButton, const char* cancelButton) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+                   [ctx MessageDialog:dialogType :title :message :button1 :button2 :button3 :button4 :defaultButton :cancelButton];
+    )
+}
+
+void OpenFileDialog(void *inctx, const char* title, const char* defaultFilename, const char* defaultDirectory, int allowDirectories, int allowFiles, int canCreateDirectories, int treatPackagesAsDirectories, int resolveAliases, int showHiddenFiles, int allowMultipleSelection, const char* filters) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+                   [ctx OpenFileDialog:title :defaultFilename :defaultDirectory :allowDirectories :allowFiles :canCreateDirectories :treatPackagesAsDirectories :resolveAliases :showHiddenFiles :allowMultipleSelection :filters];
+    )
+}
+
+void SaveFileDialog(void *inctx, const char* title, const char* defaultFilename, const char* defaultDirectory, int canCreateDirectories, int treatPackagesAsDirectories, int showHiddenFiles, const char* filters) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+                   [ctx SaveFileDialog:title :defaultFilename :defaultDirectory :canCreateDirectories :treatPackagesAsDirectories :showHiddenFiles :filters];
+    )
+}
+
+
+
 
 void Run(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;

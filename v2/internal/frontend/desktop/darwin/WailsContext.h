@@ -59,6 +59,9 @@
 - (void) Hide;
 - (void) Show;
 
+-(void) MessageDialog :(const char*)dialogType :(const char*)title :(const char*)message :(const char*)button1 :(const char*)button2 :(const char*)button3 :(const char*)button4 :(const char*)defaultButton :(const char*)cancelButton;
+-(void) OpenFileDialog :(const char*)title :(const char*)defaultFilename :(const char*)defaultDirectory :(bool)allowDirectories :(bool)allowFiles :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)resolveAliases :(bool)showHiddenFiles :(bool)allowMultipleSelection :(const char*)filters;
+-(void) SaveFileDialog :(const char*)title :(const char*)defaultFilename :(const char*)defaultDirectory :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)showHiddenFiles :(const char*)filters;
 
 - (void) loadRequest:(NSString*)url;
 - (void) processURLResponse:(NSString *)url :(NSString *)contentType :(NSData*)data;

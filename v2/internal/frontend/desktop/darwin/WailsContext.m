@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 #import "WailsContext.h"
+#import "WailsAlert.h"
 #import "WindowDelegate.h"
 #import "message.h"
 
@@ -367,6 +368,160 @@
     
     processMessage(_m);
 }
+
+
+/***** Dialogs ******/
+-(void) MessageDialog :(const char*)dialogType :(const char*)title :(const char*)message :(const char*)button1 :(const char*)button2 :(const char*)button3 :(const char*)button4 :(const char*)defaultButton :(const char*)cancelButton {
+
+    WailsAlert *alert = [WailsAlert new];
+    
+    int style = NSAlertStyleInformational;
+    if (dialogType != nil ) {
+        if( strcmp(dialogType, "warning") == 0 ) {
+            style = NSAlertStyleWarning;
+        }
+        if( strcmp(dialogType, "error") == 0) {
+            style = NSAlertStyleCritical;
+        }
+    }
+    [alert setAlertStyle:style];
+    if( strlen(title) > 0 ) {
+        [alert setMessageText:[NSString stringWithUTF8String:title]];
+    }
+    if( strlen(message) > 0 ) {
+        [alert setInformativeText:[NSString stringWithUTF8String:message]];
+    }
+    
+    [alert addButton:button1 :defaultButton :cancelButton];
+    [alert addButton:button2 :defaultButton :cancelButton];
+    [alert addButton:button3 :defaultButton :cancelButton];
+    [alert addButton:button4 :defaultButton :cancelButton];
+    
+    long response = [alert runModal];
+    int result;
+    
+    if( response == NSAlertFirstButtonReturn ) {
+        result = 0;
+    }
+    else if( response == NSAlertSecondButtonReturn ) {
+        result = 1;
+    }
+    else if( response == NSAlertThirdButtonReturn ) {
+        result = 2;
+    } else {
+        result = 3;
+    }
+    processMessageDialogResponse(result);
+}
+
+-(void) OpenFileDialog :(const char*)title :(const char*)defaultFilename :(const char*)defaultDirectory :(bool)allowDirectories :(bool)allowFiles :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)resolveAliases :(bool)showHiddenFiles :(bool)allowMultipleSelection :(const char*)filters {
+    
+    
+    // Create the dialog
+    NSOpenPanel *dialog = [NSOpenPanel openPanel];
+
+    // Valid but appears to do nothing.... :/
+    if( strlen(title) > 0 ) {
+        [dialog setTitle:[NSString stringWithUTF8String:title]];
+    }
+
+    // Filters - semicolon delimited list of file extensions
+    if( allowFiles ) {
+        if( filters != nil && strlen(filters) > 0) {
+            NSString *filterString = [[NSString stringWithUTF8String:filters] stringByReplacingOccurrencesOfString:@"*." withString:@""];
+            filterString = [filterString stringByReplacingOccurrencesOfString:@" " withString:@""];
+            NSArray *filterList = [filterString componentsSeparatedByString:@";"];
+            [dialog setAllowedFileTypes:filterList];
+        } else {
+            [dialog setAllowsOtherFileTypes:true];
+        }
+        // Default Filename
+        if( defaultFilename != NULL && strlen(defaultFilename) > 0 ) {
+            [dialog setNameFieldStringValue:[NSString stringWithUTF8String:defaultFilename]];
+        }
+        
+        [dialog setAllowsMultipleSelection: allowMultipleSelection];
+        [dialog setShowsHiddenFiles: showHiddenFiles];
+
+    }
+
+    // Default Directory
+    if( defaultDirectory != NULL && strlen(defaultDirectory) > 0 ) {
+        NSURL *url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:defaultDirectory]];
+        [dialog setDirectoryURL:url];
+    }
+
+
+    // Setup Options
+    [dialog setCanChooseFiles: allowFiles];
+    [dialog setCanChooseDirectories: allowDirectories];
+    [dialog setCanCreateDirectories: canCreateDirectories];
+    [dialog setResolvesAliases: resolveAliases];
+    [dialog setTreatsFilePackagesAsDirectories: treatPackagesAsDirectories];
+
+    // Setup callback handler
+    [dialog beginSheetModalForWindow:self.mainWindow completionHandler:^(NSModalResponse returnCode) {
+        NSMutableArray *arr = [NSMutableArray new];
+        for (NSURL *url in [dialog URLs]) {
+            [arr addObject:[url path]];
+        }
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:arr options:0 error:nil];
+        NSString *nsjson = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        processOpenFileDialogResponse([nsjson UTF8String]);
+    }];
+    
+
+    [dialog runModal];
+    
+}
+
+
+-(void) SaveFileDialog :(const char*)title :(const char*)defaultFilename :(const char*)defaultDirectory :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)showHiddenFiles :(const char*)filters; {
+    
+    
+    // Create the dialog
+    NSSavePanel *dialog = [NSOpenPanel savePanel];
+
+    // Valid but appears to do nothing.... :/
+    if( strlen(title) > 0 ) {
+        [dialog setTitle:[NSString stringWithUTF8String:title]];
+    }
+
+    // Filters - semicolon delimited list of file extensions
+    if( filters != nil && strlen(filters) > 0) {
+        NSString *filterString = [[NSString stringWithUTF8String:filters] stringByReplacingOccurrencesOfString:@"*." withString:@""];
+        filterString = [filterString stringByReplacingOccurrencesOfString:@" " withString:@""];
+        NSArray *filterList = [filterString componentsSeparatedByString:@";"];
+        [dialog setAllowedFileTypes:filterList];
+    } else {
+        [dialog setAllowsOtherFileTypes:true];
+    }
+    // Default Filename
+    if( defaultFilename != NULL && strlen(defaultFilename) > 0 ) {
+        [dialog setNameFieldStringValue:[NSString stringWithUTF8String:defaultFilename]];
+    }
+    
+    // Default Directory
+    if( defaultDirectory != NULL && strlen(defaultDirectory) > 0 ) {
+        NSURL *url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:defaultDirectory]];
+        [dialog setDirectoryURL:url];
+    }
+
+    // Setup Options
+    [dialog setCanCreateDirectories: canCreateDirectories];
+    [dialog setTreatsFilePackagesAsDirectories: treatPackagesAsDirectories];
+    [dialog setShowsHiddenFiles: showHiddenFiles];
+
+    // Setup callback handler
+    [dialog beginSheetModalForWindow:self.mainWindow completionHandler:^(NSModalResponse returnCode) {
+        NSURL *url = [dialog URL];
+        processSaveFileDialogResponse([url.path UTF8String]);
+    }];
+    
+    [dialog runModal];
+    
+}
+
 
 @end
 
