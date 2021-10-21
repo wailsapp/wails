@@ -22,7 +22,7 @@ func (b *App) startup(ctx context.Context) {
 }
 
 // domReady is called after the front-end dom has been loaded
-func (b App) domReady(ctx context.Context) {
+func (b *App) domReady(ctx context.Context) {
 	// Add your action here
 }
 
