@@ -298,9 +298,11 @@ func (f *Frontend) setupChromium() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	// Set background colour
 	f.WindowSetRGBA(f.frontendOptions.RGBA)
 
+	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
 	chromium.Navigate(f.startURL)
 }
