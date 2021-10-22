@@ -21,7 +21,7 @@ require (
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/go-common-file-dialog v1.0.3
-	github.com/leaanthony/go-webview2 v0.0.0-20211007095229-b1759d2e4ec7
+	github.com/leaanthony/go-webview2 v0.0.0-20211022094055-cb5c7d8dc4ff
 	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
@@ -43,7 +43,7 @@ require (
 	github.com/ztrue/tracerr v0.3.0
 	golang.org/x/mod v0.4.1
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed
-	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6
+	golang.org/x/sys v0.0.0-20211020174200-9d6173849985
 	golang.org/x/tools v0.1.0
 	nhooyr.io/websocket v1.8.6
 )

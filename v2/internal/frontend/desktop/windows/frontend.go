@@ -258,19 +258,6 @@ func (f *Frontend) Quit() {
 	winc.Exit()
 }
 
-const (
-	ctrlZ      int = 90
-	ctrlX          = 88
-	ctrlC          = 67
-	ctrlV          = 86
-	ctrlA          = 65
-	arrowUp        = 38
-	arrowDown      = 40
-	arrowRight     = 39
-	arrowLeft      = 37
-	keyDel         = 46
-)
-
 func (f *Frontend) setupChromium() {
 	chromium := edge.NewChromium()
 	f.chromium = chromium
@@ -307,7 +294,10 @@ func (f *Frontend) setupChromium() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	err = settings.PutIsSwipeNavigationEnabled(false)
+	if err != nil {
+		log.Fatal(err)
+	}
 	// Set background colour
 	f.WindowSetRGBA(f.frontendOptions.RGBA)
 
