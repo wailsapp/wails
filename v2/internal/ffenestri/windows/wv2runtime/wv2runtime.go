@@ -5,7 +5,7 @@ import (
 	"github.com/leaanthony/webview2runtime"
 )
 
-const MinimumRuntimeVersion string = "91.0.864.48"
+const MinimumRuntimeVersion string = "91.0.992.28"
 
 type installationStatus int
 
