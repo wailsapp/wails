@@ -9,9 +9,9 @@ interface Size {
 }
 
 interface RGBA {
-    r,
-    g,
-    b,
+    r: number;
+    g: number;
+    b: number;
     a: number;
 }
 
