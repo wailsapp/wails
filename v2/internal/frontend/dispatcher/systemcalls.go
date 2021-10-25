@@ -30,7 +30,7 @@ func (d *Dispatcher) processSystemCall(payload callMessage, sender frontend.Fron
 		return &position{x, y}, nil
 	case "WindowGetSize":
 		w, h := sender.WindowGetSize()
-		return &position{w, h}, nil
+		return &size{w, h}, nil
 	default:
 		return nil, fmt.Errorf("unknown systemcall message: %s", payload.Name)
 	}
