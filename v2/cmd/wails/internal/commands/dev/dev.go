@@ -276,7 +276,7 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		OutputType:     "dev",
 		Mode:           build.Dev,
 		Arch:           runtime.GOARCH,
-		Pack:           true,
+		Pack:           false,
 		Platform:       runtime.GOOS,
 		LDFlags:        flags.ldflags,
 		Compiler:       flags.compilerCommand,
