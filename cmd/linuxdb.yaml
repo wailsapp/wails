@@ -354,3 +354,22 @@ distributions:
             help: Please install with `sudo prt-get depinst gtk3` and try again
           - name: webkitgtk
             help: Please install with `sudo prt-get depinst webkitgtk` and try again
+  nixos:
+    id: nixos
+    releases:
+      default:
+        version: default
+        name: NixOS
+        gccversioncommand: *gccdumpversion
+        programs:
+          - name: gcc
+            help: Please install with `nix-env -iA nixos.gcc`
+          - name: pkg-config
+            help: Please install with `nix-env -iA nixos.pkg-config`
+          - name: npm
+            help: Please install with `nix-env -iA nixos.nodejs`
+        libraries:
+          - name: gtk+3
+            help: Please install with `nix-env -iA nixos.gtk3`
+          - name: webkitgtk
+            help: Please install with `nix-env -iA nixos.nodePackages.webkitgtk`
