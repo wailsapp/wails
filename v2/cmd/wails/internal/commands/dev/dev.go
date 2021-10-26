@@ -389,13 +389,15 @@ func runFrontendDevCommand(cwd string, devCommand string, wg *sync.WaitGroup) fu
 		if runtime.GOOS == "windows" {
 			// Credit: https://stackoverflow.com/a/44551450
 			// For whatever reason, killing an npm script on windows just doesn't exit properly with cancel
-			kill := exec.Command("TASKKILL", "/T", "/F", "/PID", strconv.Itoa(cmd.Process.Pid))
-			kill.Stderr = os.Stderr
-			kill.Stdout = os.Stdout
-			err := kill.Run()
-			if err != nil {
-				if err.Error() != "exit status 1" {
-					LogRed("Error from '%s': %s", devCommand, err.Error())
+			if cmd != nil && cmd.Process != nil {
+				kill := exec.Command("TASKKILL", "/T", "/F", "/PID", strconv.Itoa(cmd.Process.Pid))
+				kill.Stderr = os.Stderr
+				kill.Stdout = os.Stdout
+				err := kill.Run()
+				if err != nil {
+					if err.Error() != "exit status 1" {
+						LogRed("Error from '%s': %s", devCommand, err.Error())
+					}
 				}
 			}
 		} else {
