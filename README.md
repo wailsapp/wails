@@ -1,5 +1,5 @@
 <p align="center" style="text-align: center">
-   <img src="logo_cropped.png" width="40%"><br/>
+   <img src="logo.png" width="55%"><br/>
 </p>
 <p align="center">
    Build desktop applications using Go & Web Technologies.<br/><br/>
@@ -18,11 +18,15 @@
 
 ## Internationalization
 
-English | [简体中文](README.zh_CN.md)
+English | [简体中文](README.zh-Hans.md)
 
-The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
+The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different
+approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to
+make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
 
 The official docs can be found at [https://wails.app](https://wails.app).
+
+Click [here](https://wails.io) if you are interested in trying out v2 Beta for Windows.
 
 <span id="nav-2"></span>
 
@@ -33,22 +37,21 @@ The official docs can be found at [https://wails.app](https://wails.app).
 - [3. Features](#nav-3)
 - [4. Sponsors](#nav-4)
 - [5. Installation](#nav-5)
-  - [5.1 MacOS](#nav-5-1)
-  - [5.2 Linux](#nav-5-2)
-    - [5.2.1 Debian/Ubuntu](#nav-5-2-1)
-    - [5.2.2 Arch Linux / ArchLabs / Ctlos Linux](#nav-5-2-2)
-    - [5.2.3 Centos](#nav-5-2-3)
-    - [5.2.4 Fedora](#nav-5-2-4)
-    - [5.2.5 VoidLinux & VoidLinux-musl](#nav-5-2-5)
-    - [5.2.6 Gentoo](#nav-5-2-6)
-  - [5.3 Windows](#nav-5-3)
+   - [5.1 MacOS](#nav-5-1)
+   - [5.2 Linux](#nav-5-2)
+      - [5.2.1 Debian/Ubuntu](#nav-5-2-1)
+      - [5.2.2 Arch Linux / ArchLabs / Ctlos Linux](#nav-5-2-2)
+      - [5.2.3 Centos](#nav-5-2-3)
+      - [5.2.4 Fedora](#nav-5-2-4)
+      - [5.2.5 VoidLinux & VoidLinux-musl](#nav-5-2-5)
+      - [5.2.6 Gentoo](#nav-5-2-6)
+   - [5.3 Windows](#nav-5-3)
 - [6. Installation](#nav-6)
 - [7. Next Steps](#nav-7)
 - [8. FAQ](#nav-8)
 - [9. Contributors](#nav-9)
 - [10. Special Mentions](#nav-10)
-- [11. Licensing](#nav-11)
-- [12. Special Thanks](#nav-12)
+- [11. Special Thanks](#nav-11)
 
 <span id="nav-3"></span>
 
@@ -70,33 +73,81 @@ The official docs can be found at [https://wails.app](https://wails.app).
 
 This project is supported by these kind people / companies:
 
-<a href="https://github.com/matryer" style="width:100px"><img src="https://github.com/matryer.png" width="100"/></a>
-<a href="https://www.jetbrains.com?from=Wails" style="width:100px"><img src="jetbrains-grayscale.png" width="100"/></a>
-<a href="https://github.com/tc-hib" style="width:55px;border-radius: 50%">
-<img src="https://github.com/tc-hib.png?size=55" width="55" style="border-radius: 50%"/>
+<a href="https://github.com/sponsors/leaanthony" style="width:100px;">
+  <img src="sponsors/bronze%20sponsor.png" width="100"/>
 </a>
-<a href="https://github.com/picatz" style="width:50px;border-radius: 50%">
-<img src="https://github.com/picatz.png?size=50" width="50" style="border-radius: 50%"/>
+<a href="https://github.com/snider" style="width:100px;">
+  <img src="https://github.com/snider.png?size=100" width="100"/>
 </a>
-<a href="https://github.com/tylertravisty" style="width:50px;border-radius: 50%">
-<img src="https://github.com/tylertravisty.png?size=50" width="50" style="border-radius: 50%"/>
+<a href="https://github.com/codydbentley" style="width:100px">
+  <img src="https://github.com/codydbentley.png?size=100" width="100"/>
 </a>
-<a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
-<img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
+<br/>
+<br/>
+<a href="https://github.com/matryer" style="width:100px">
+  <img src="https://github.com/matryer.png" width="100"/>
 </a>
-<a href="https://github.com/akhudek" style="width:50px;border-radius: 50%">
-  <img src="https://github.com/akhudek.png?size=50" width="50" style="border-radius: 50%"/>
+<a href="https://www.jetbrains.com?from=Wails" style="width:100px">
+  <img src="/img/jetbrains-grayscale.png" width="100"/>
 </a>
-<a href="https://github.com/trea" style="width:50px;border-radius: 50%">
-  <img src="https://github.com/trea.png?size=50" width="50" style="border-radius: 50%"/>
+<a href="https://github.com/tc-hib" style="width:55px">
+ <img src="https://github.com/tc-hib.png?size=55" width="55"/>
 </a>
-<a href="https://github.com/LanguageAgnostic" style="width:55px;border-radius: 50%">
-  <img src="https://github.com/LanguageAgnostic.png?size=55" width="55" style="border-radius: 50%"/>
+<a href="https://github.com/picatz" style="width:50px">
+  <img src="https://github.com/picatz.png?size=50" width="50"/>
 </a>
+<a href="https://github.com/tylertravisty" style="width:50px">
+  <img src="https://github.com/tylertravisty.png?size=50" width="50"/>
+</a>
+<a href="https://github.com/akhudek" style="width:50px">
+  <img src="https://github.com/akhudek.png?size=50" width="50"/>
+</a>
+<a href="https://github.com/trea" style="width:50px">
+  <img src="https://github.com/trea.png?size=50" width="50"/>
+</a>
+<a href="https://github.com/LanguageAgnostic" style="width:55px">
+  <img src="https://github.com/LanguageAgnostic.png?size=55" width="55"/>
+</a>
+<a href="https://github.com/fcjr" style="width:55px">
+  <img src="https://github.com/fcjr.png?size=55" width="55"/>
+</a>
+<a href="https://github.com/nickarellano" style="width:60px">
+  <img src="https://github.com/nickarellano.png?size=60" width="60"/>
+</a>
+<a href="https://github.com/bglw" style="width:65px">
+  <img src="https://github.com/bglw.png?size=65" width="65"/>
+</a>
+<a href="https://github.com/jugglingjsons" style="width:50px">
+  <img src="https://github.com/jugglingjsons.png?size=50" width="50"/>
+</a>
+<a href="https://github.com/marcus-crane" style="width:65px">
+  <img src="https://github.com/marcus-crane.png?size=65" width="65"/>
+</a>
+<a href="https://github.com/bbergshaven" style="width:45px">
+  <img src="https://github.com/bbergshaven.png?size=45" width="45"/>
+</a>
+<a href="https://github.com/Gilgames000" style="width:45px">
+  <img src="https://github.com/Gilgames000.png?size=45" width="45"/>
+</a>
+<a href="https://github.com/ilgityildirim" style="width:50px">
+  <img src="https://github.com/ilgityildirim.png?size=50" width="50"/>
+</a>
+<a href="https://github.com/ondoki" style="width:65px">
+  <img src="https://github.com/ondoki.png?size=65" width="65"/>
+</a>
+<a href="https://github.com/questrail" style="width:50px">
+  <img src="https://github.com/questrail.png?size=50" width="50"/>
+</a>
+<a href="https://github.com/DonTomato" style="width:45px">
+  <img src="https://github.com/DonTomato.png?size=45" width="45"/>
+</a>
+
+<span id="nav-5"></span>
 
 ## Installation
 
-Wails uses cgo to bind to the native rendering engines so a number of platform dependent libraries are needed as well as an installation of Go. The basic requirements are:
+Wails uses cgo to bind to the native rendering engines so a number of platform dependent libraries are needed as well as
+an installation of Go. The basic requirements are:
 
 - Go 1.16
 - npm
@@ -165,7 +216,9 @@ _Fedora 29, 30_
 
 ### Windows
 
-Windows requires gcc and related tooling. The recommended download is from [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download). Once this is installed, you are good to go.
+Windows requires gcc and related tooling. The recommended download is
+from [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download). Once this is installed, you are good to
+go.
 
 <span id="nav-6"></span>
 
@@ -191,15 +244,20 @@ It is recommended at this stage to read the comprehensive documentation at [http
 
 - Is this an alternative to Electron?
 
-  Depends on your requirements. It's designed to make it easy for Go programmers to make lightweight desktop applications or add a frontend to their existing applications. Whilst Wails does not currently offer hooks into native elements such as menus, this may change in the future.
+  Depends on your requirements. It's designed to make it easy for Go programmers to make lightweight desktop
+  applications or add a frontend to their existing applications. Whilst Wails does not currently offer hooks into native
+  elements such as menus, this may change in the future.
 
 - Who is this project aimed at?
 
-  Go programmers who want to bundle an HTML/JS/CSS frontend with their applications, without resorting to creating a server and opening a browser to view it.
+  Go programmers who want to bundle an HTML/JS/CSS frontend with their applications, without resorting to creating a
+  server and opening a browser to view it.
 
 - What's with the name?
 
-  When I saw WebView, I thought "What I really want is tooling around building a WebView app, a bit like Rails is to Ruby". So initially it was a play on words (Webview on Rails). It just so happened to also be a homophone of the English name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it stuck.
+  When I saw WebView, I thought "What I really want is tooling around building a WebView app, a bit like Rails is to
+  Ruby". So initially it was a play on words (Webview on Rails). It just so happened to also be a homophone of the
+  English name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it stuck.
 
 <span id="nav-9"></span>
 
@@ -250,6 +308,7 @@ It is recommended at this stage to read the comprehensive documentation at [http
 <a href="https://github.com/Igogrek"><img src="https://github.com/Igogrek.png?size=40" width="40"/></a></a>
 <a href="https://github.com/aschey"><img src="https://github.com/aschey.png?size=40" width="40"/></a></a>
 <a href="https://github.com/akhudek"><img src="https://github.com/akhudek.png?size=40" width="40"/></a></a>
+<a href="https://github.com/s12chung"><img src="https://github.com/s12chung.png?size=40" width="40"/></a></a>
 
 <span id="nav-10"></span>
 
@@ -257,9 +316,12 @@ It is recommended at this stage to read the comprehensive documentation at [http
 
 Without the following people, this project would never have existed:
 
-- [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been immense. More patience than you can throw a stick at (Not long now Dustin!).
-- [Serge Zaitsev](https://github.com/zserge) - Creator of [Webview](https://github.com/zserge/webview) which Wails uses for the windowing.
-- [Byron](https://github.com/bh90210) - At times, Byron has single handedly kept this project alive. Without his incredible input, we never would have got to v1.
+- [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been immense. More patience than
+  you can throw a stick at (Not long now Dustin!).
+- [Serge Zaitsev](https://github.com/zserge) - Creator of [Webview](https://github.com/zserge/webview) which Wails uses
+  for the windowing.
+- [Byron](https://github.com/bh90210) - At times, Byron has single handedly kept this project alive. Without his
+  incredible input, we never would have got to v1.
 
 This project was mainly coded to the following albums:
 
@@ -279,17 +341,11 @@ This project was mainly coded to the following albums:
 
 <span id="nav-11"></span>
 
-## Licensing
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
-
-<span id="nav-12"></span>
-
 ## Special Thanks
 
 <p align="center" style="text-align: center">
    <a href="https://pace.dev"><img src="pace.jpeg"/></a><br/>
-   A *huge* thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
+   A <i>huge<i/> thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
    If you are looking for a Project Management tool that's powerful but quick and easy to use, check them out!<br/><br/>
 </p>
 

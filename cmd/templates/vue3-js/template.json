@@ -11,5 +11,8 @@
   "serve": "npm run serve",
   "bridge": "src",
   "wailsdir": "",
-  "platforms": ["linux", "darwin"]
+  "platforms": [
+    "linux",
+    "darwin"
+  ]
 }

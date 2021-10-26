@@ -1,0 +1,26 @@
+{
+  "title": {
+    "message": "",
+    "description": "The title in the navbar"
+  },
+  "item.label.About": {
+    "message": "关于",
+    "description": "Navbar item with label About"
+  },
+  "item.label.Showcase": {
+    "message": "作品展示",
+    "description": "Navbar item with label Showcase"
+  },
+  "item.label.Blog": {
+    "message": "博客",
+    "description": "Navbar item with label Blog"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  },
+  "item.label.Sponsor": {
+    "message": "赞助我们 ❤",
+    "description": "Navbar item with label Sponsor"
+  }
+}

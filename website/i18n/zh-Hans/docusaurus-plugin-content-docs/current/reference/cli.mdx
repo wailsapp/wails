@@ -1,0 +1,167 @@
+---
+title: 命令行
+sidebar_position: 2
+---
+
+# 命令行
+
+Wails CLI 有许多用于管理项目的命令。所有命令都以此方式运行：
+
+`wails <command> <flags>`
+
+## 初始化
+
+`wails init` 用于生成项目。
+
+| 标志               | 描述                                                                | 默认    |
+| :----------------- | :------------------------------------------------------------------ | :------ |
+| -n "project name"  | 项目名. **强制必填**.                                               |         |
+| -d "project dir"   | 要创建的项目目录                                                    | 项目名  |
+| -g                 | 初始化 git 存储库                                                   |         |
+| -l                 | 可用项目模板列表                                                    |         |
+| -q                 | 禁止输出到控制台                                                    |         |
+| -t "template name" | 要使用的项目模板。这可能是在 github 上托管的远程模板的 URL 的名称。 | vanilla |
+| -ide               | 生成 IDE 项目文件                                                   |         |
+| -f                 | 强制构建应用                                                        | false   |
+
+示例：
+`wails init -n test -d mytestproject -g -ide vscode -q`
+
+这将在 "mytestproject" 目录生成一个名为 "test" 的项目，初始化 git，生成 vscode 项目文件并静默执行。
+
+### 远程模板
+
+支持远程模板（托管在 GitHub 上）并且可以使用模板的项目 URL 进行安装。
+
+示例： `wails init -n test -t https://github.com/leaanthony/testtemplate`
+
+可以在[此处](/docs/community/templates)找到社区维护的模板列表
+
+:::warning 注意
+
+**Wails 项目不维护也不对第 3 方模板负责**
+
+如果您不确定某个模板，请检查 `package.json` 中运行的脚本和安装的模块。
+
+:::
+
+## 构建
+
+`wails build`用于将您的项目编译为生产可用的二进制文件。
+
+| 标志                 | 描述                                                   | 默认     |
+| :------------------- | :----------------------------------------------------- | :------- |
+| -clean               | 清理`build/bin`目录                                    |          |
+| -compiler "compiler" | 使用不同的 go 编译器来构建，例如 go1.15beta1           | go       |
+| -ldflags "flags"     | 传递给编译器的额外 ldflags                             |          |
+| -nopackage           | 不打包应用程序                                         |          |
+| -o filename          | 输出文件名                                             |          |
+| -s                   | 跳过前端构建                                           |          |
+| -f                   | 强制构建应用                                           | false    |
+| -tags "extra tags"   | 传递给编译器构建标签（引号和空格分隔）                 |          |
+| -upx                 | 使用“upx”压缩最终二进制文件                            |          |
+| -upxflags            | 传递给 upx 的 flags                                    |          |
+| -v int               | 详细级别 (0 - silent, 1 - default, 2 - verbose)        | 1        |
+| -webview2            | WebView2 安装程序策略：: download,embed,browser,error. | download |
+
+如果您更喜欢使用标准 Go 工具进行构建，请参阅[手动构建](/docs/guides/manual-builds)指南。
+
+## 诊断检查
+
+`wails doctor` 将运行诊断程序以确保您的系统已准备好进行开发。
+
+示例:
+
+```
+Wails CLI v2.0.0-beta
+
+Scanning system - Please wait (this may take a long time)...Done.
+
+System
+------
+OS:             Windows 10 Pro
+Version:        2009 (Build: 19043)
+ID:             21H1
+Go Version:     go1.17
+Platform:       windows
+Architecture:   amd64
+
+Dependency      Package Name    Status          Version
+----------      ------------    ------          -------
+WebView2        N/A             Installed       93.0.961.52
+npm             N/A             Installed       6.14.15
+*upx            N/A             Installed       upx 3.96
+*docker         N/A             Installed       20.10.6
+
+* - Optional Dependency
+
+Diagnosis
+---------
+Your system is ready for Wails development!
+
+```
+
+## 开发
+
+`wails dev` 用于以 "实时开发" 模式运行您的应用。这意味着：
+
+- 应用程序被编译并自动运行
+- 一个观察者被启动，如果它检测到您的 go 文件的变化，它将触发您的开发应用程序的重新构建
+- 启动一个网络服务器`http://localhost:34115`，通过 http 为您的应用程序（不仅仅是前端）提供服务。这允许您使用您喜欢的浏览器开发扩展
+- 所有应用程序资源都从磁盘加载。如果它们被更改，应用程序将自动重新加载（而不是重新构建）。所有连接的浏览器也将重新加载
+- 生成的 JS 模块提供以下内容：
+  - 带有自动生成的 JSDoc 的 Go 方法的 Javascript 包装器，提供代码提示
+  - 的 Go 结构体的 TypeScript 版本，可以构造并传递给您的后端方法
+- 生成第二个 JS 模块，为运行时提供包装器 + TS 声明
+
+| 标志                         | 描述                                                  | 默认                        |
+| :--------------------------- | :---------------------------------------------------- | :-------------------------- |
+| -assetdir "./path/to/assets" | 编译资源的路径                                        | Value in `wails.json`       |
+| -browser                     | `http://localhost:34115`在启动时打开浏览器            |                             |
+| -compiler "compiler"         | 使用不同的 go 编译器来构建，例如 go1.15beta1          | go                          |
+| -e                           | 触发重建的扩展（逗号分隔）                            | go                          |
+| -ldflags "flags"             | 传递给编译器的额外 ldflags                            |                             |
+| -tags "extra tags"           | 构建标签以传递给编译器（引号和空格分隔）              |                             |
+| -loglevel "loglevel"         | 要使用的日志级别 - Trace, Debug, Info, Warning, Error | Debug                       |
+| -noreload                    | 资源更改时禁用自动重新加载                            |                             |
+| -v                           | 详细级别 (0 - silent, 1 - standard, 2 - verbose)      | 1                           |
+| -wailsjsdir                  | 生成生成的 Wails JS 模块的目录                        | Value store in `wails.json` |
+
+如果在命令行上提供了`-assetdir`或`-wailsjsdir`标志，它们将保存在`wails.json`中，并成为后续调用的默认值。
+
+示例：
+
+`wails dev -assetdir ./frontend/dist -wailsjsdir ./frontend/src -browser`
+
+此命令将执行以下操作：
+
+- 构建应用程序并运行它（更多细节在[这里](/docs/guides/manual-builds)）
+- 生成 Wails JS 模块 ``./frontend/src`
+- 注意文件的更新`./frontend/dist`并在任何更改时重新加载
+- 打开浏览器并连接到应用程序
+
+## 生成
+
+### 模板
+
+Wails 使用模板来生成项目。`wails generate template`命令有助于构建模板，以使它可以用于生成项目。
+
+| 标志             | 描述                           |
+| :--------------- | :----------------------------- |
+| -name            | 模板名称（必填）               |
+| -frontend "path" | 要在模板中使用的前端项目的路径 |
+
+有关创建模板的更多详细信息，请参阅[模板指南](/docs/guides/templates)。
+
+## 更新
+
+`wails update` 将更新 Wails CLI 的版本。
+
+| 标志               | 描述                   |
+| :----------------- | :--------------------- |
+| -pre               | 更新到最新的预发布版本 |
+| -version "version" | 安装指定版本的 CLI     |
+
+## 版本
+
+`wails version` 将简单地输出当前的 CLI 版本。

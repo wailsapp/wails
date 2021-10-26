@@ -1,0 +1,35 @@
+name: Deploy mirror | 部署镜像
+
+on:
+  push:
+    branches: [master]
+  # pull_request:
+  #   branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    name: Automatic deployment | 自动部署
+    runs-on: ubuntu-latest
+    if: github.repository == 'misitebao/wails'
+
+    steps:
+      - name: Checkout | 切换到部署分支
+        uses: actions/checkout@v2
+        with:
+          ref: "master"
+          submodules: true
+          fetch-depth: 0
+
+      - name: Build Site | 构建网站
+        run: |
+          cd website &&
+          npm install && npm run build
+
+      - name: Deploy to Server | 部署到服务器
+        uses: hengkx/ssh-deploy@v1.0.1
+        with:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USERNAME: ${{ secrets.DEPLOY_HOST_USER }}
+          PASSWORD: ${{ secrets.DEPLOY_HOST_PASSWORD }}
+          SOURCE: "website/build"
+          TARGET: "/www/wwwroot/wails.top"

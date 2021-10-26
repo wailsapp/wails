@@ -26,7 +26,7 @@ export function OpenURL(url) {
  * Opens the given filename using the system's default file handler
  *
  * @export
- * @param {sting} filename
+ * @param {string} filename
  * @returns
  */
 export function OpenFile(filename) {

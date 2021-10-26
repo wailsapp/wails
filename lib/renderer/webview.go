@@ -24,12 +24,12 @@ import (
 var UseFirebug = ""
 
 type WebView struct {
-	window       wv.WebView // The webview object
-	ipc          interfaces.IPCManager
-	log          *logger.CustomLogger
-	config       interfaces.AppConfig
-	eventManager interfaces.EventManager
-	bindingCache []string
+	window         wv.WebView // The webview object
+	ipc            interfaces.IPCManager
+	log            *logger.CustomLogger
+	config         interfaces.AppConfig
+	eventManager   interfaces.EventManager
+	bindingCache   []string
 	maximumSizeSet bool
 }
 
@@ -111,7 +111,7 @@ func (w *WebView) Initialise(config interfaces.AppConfig, ipc interfaces.IPCMana
 	}
 
 	// SignalManager.OnExit(w.Exit)
-	
+
 	// Set colour
 	color := config.GetColour()
 	if color != "" {

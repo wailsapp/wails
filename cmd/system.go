@@ -281,7 +281,7 @@ func CheckDependencies(logger *Logger) (bool, error) {
 		switch distroInfo.Distribution {
 		case Ubuntu, Debian, Zorin, Parrot, Linuxmint, Elementary, Kali, Neon, Deepin, Raspbian, PopOS:
 			libraryChecker = DpkgInstalled
-		case Arch, ArcoLinux, ArchLabs, Ctlos, Manjaro, ManjaroARM, EndeavourOS:
+		case Arch, ArcoLinux, ArchLabs, Ctlos, Manjaro, ManjaroARM, EndeavourOS, ArtixLinux:
 			libraryChecker = PacmanInstalled
 		case CentOS, Fedora, Tumbleweed, Leap, RHEL:
 			libraryChecker = RpmInstalled

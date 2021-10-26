@@ -181,7 +181,7 @@ func newConfig(userConfig *AppConfig) (*AppConfig, error) {
 		MaxWidth:  -1,
 		MaxHeight: -1,
 		Title:     "My Wails App",
-		Colour:    "", 
+		Colour:    "",
 		HTML:      defaultHTML,
 	}
 

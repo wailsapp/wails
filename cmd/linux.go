@@ -73,6 +73,9 @@ const (
 	RHEL
 	// NixOS distribution
 	NixOS
+	// Artix linux distribution
+	ArtixLinux
+
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -187,6 +190,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = Crux
 	case "nixos":
 		result.Distribution = NixOS
+	case "artix":
+		result.Distribution = ArtixLinux
 	default:
 		result.Distribution = Unknown
 	}

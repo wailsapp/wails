@@ -62,7 +62,7 @@ if (window.crypto) {
 export function Call(bindingName, data, timeout) {
 
 	// Timeout infinite by default
-	if (timeout == null || timeout == undefined) {
+	if (timeout == null) {
 		timeout = 0;
 	}
 

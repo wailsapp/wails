@@ -213,6 +213,15 @@ distributions:
         gccversioncommand: *gccdumpversion
         programs: *archdefaultprograms
         libraries: *archdefaultlibraries
+  artix:
+    id: artix 
+    releases:
+      default:
+        version: default
+        name: Artix Linux
+        gccversioncommand: *gccdumpversion
+        programs: *archdefaultprograms
+        libraries: *archdefaultlibraries
   ctlos:
     id: ctlos
     releases:
@@ -364,4 +373,3 @@ distributions:
             help: Please install with `nix-env -iA nixos.gtk3`
           - name: webkitgtk
             help: Please install with `nix-env -iA nixos.nodePackages.webkitgtk`
-
