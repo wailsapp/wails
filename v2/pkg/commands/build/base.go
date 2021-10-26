@@ -520,7 +520,14 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 	}
 
 	// Check if there is a build command
-	if b.projectData.BuildCommand == "" {
+	var buildCommand string
+	switch b.projectData.OutputType {
+	case "dev":
+		buildCommand = b.projectData.DevCommand
+	default:
+		buildCommand = b.projectData.BuildCommand
+	}
+	if buildCommand == "" {
 		outputLogger.Println("No Build command. Skipping.")
 		// No - ignore
 		return nil
