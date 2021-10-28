@@ -534,10 +534,10 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 	}
 
 	outputLogger.Print("Compiling frontend: ")
-	cmd := strings.Split(b.projectData.BuildCommand, " ")
+	cmd := strings.Split(buildCommand, " ")
 	if verbose {
 		outputLogger.Println("")
-		outputLogger.Println("  Build command: '" + strings.Join(cmd, " ") + "'")
+		outputLogger.Println("  Build command: '" + buildCommand + "'")
 	}
 	stdout, stderr, err := shell.RunCommand(frontendDir, cmd[0], cmd[1:]...)
 	if verbose || err != nil {
