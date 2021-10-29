@@ -42,7 +42,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	// Setup Platform flag
 	platform := runtime.GOOS
-	//command.StringFlag("platform", "Platform to target", &platform)
+	command.StringFlag("platform", "Platform to target", &platform)
 
 	// Verbosity
 	verbosity := 1
@@ -95,14 +95,14 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			"darwin/amd64",
 			"darwin/arm64",
 			"darwin/universal",
-			"linux",
+			//"linux",
 			//"linux/amd64",
 			//"linux/arm-7",
 			"windows",
 			"windows/amd64",
 		})
 		if !validPlatformArch.Contains(platform) {
-			return fmt.Errorf("platform %s is not supported", platform)
+			return fmt.Errorf("platform %s is not supported. Platforms supported: %s", platform, validPlatformArch.Join(","))
 		}
 
 		if compress && platform == "darwin/universal" {
