@@ -1,12 +1,18 @@
 package mac
 
-type ActivationPolicy int
+//type ActivationPolicy int
+//
+//const (
+//	NSApplicationActivationPolicyRegular    ActivationPolicy = 0
+//	NSApplicationActivationPolicyAccessory  ActivationPolicy = 1
+//	NSApplicationActivationPolicyProhibited ActivationPolicy = 2
+//)
 
-const (
-	NSApplicationActivationPolicyRegular    ActivationPolicy = 0
-	NSApplicationActivationPolicyAccessory  ActivationPolicy = 1
-	NSApplicationActivationPolicyProhibited ActivationPolicy = 2
-)
+type AboutInfo struct {
+	Title   string
+	Message string
+	Icon    []byte
+}
 
 // Options are options specific to Mac
 type Options struct {
@@ -14,6 +20,7 @@ type Options struct {
 	Appearance           AppearanceType
 	WebviewIsTransparent bool
 	WindowIsTranslucent  bool
-	ActivationPolicy     ActivationPolicy
+	//ActivationPolicy     ActivationPolicy
+	About *AboutInfo
 	//URLHandlers          map[string]func(string)
 }

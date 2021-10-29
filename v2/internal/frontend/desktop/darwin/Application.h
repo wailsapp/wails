@@ -38,7 +38,20 @@ const char* GetPos(void *ctx);
 
 void ProcessURLResponse(void *inctx, const char *url, const char *contentType, const char *data, int datalength);
 
+/* Dialogs */
+
 void MessageDialog(void *inctx, const char* dialogType, const char* title, const char* message, const char* button1, const char* button2, const char* button3, const char* button4, const char* defaultButton, const char* cancelButton);
 void OpenFileDialog(void *inctx, const char* title, const char* defaultFilename, const char* defaultDirectory, int allowDirectories, int allowFiles, int canCreateDirectories, int treatPackagesAsDirectories, int resolveAliases, int showHiddenFiles, int allowMultipleSelection, const char* filters);
 void SaveFileDialog(void *inctx, const char* title, const char* defaultFilename, const char* defaultDirectory, int canCreateDirectories, int treatPackagesAsDirectories, int showHiddenFiles, const char* filters);
+
+/* Application Menu */
+void* NewMenu(const char* name);
+void AppendSubmenu(void* parent, void* child);
+void AppendRole(void *inctx, void *inMenu, int role);
+void SetAsApplicationMenu(void *inctx, void *inMenu);
+
+void SetAbout(void *inctx, const char* title, const char* description, void* imagedata, int datalen);
+void* AppendMenuItem(void* inctx, void* nsmenu, const char* label, const char* shortcutKey, int modifiers, int disabled, int checked, int menuItemID);
+void AppendSeparator(void* inMenu);
+void UpdateMenuItem(void* nsmenuitem, int checked);
 #endif /* Application_h */

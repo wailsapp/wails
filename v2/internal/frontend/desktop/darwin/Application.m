@@ -9,6 +9,8 @@
 #import "WailsContext.h"
 #import "Application.h"
 #import "AppDelegate.h"
+#import "WailsMenu.h"
+#import "WailsMenuItem.h"
 
 WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug) {
     
@@ -22,7 +24,7 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     
     result.alwaysOnTop = alwaysOnTop;
     result.hideOnClose = hideWindowOnClose;
-    
+        
     return result;
 }
 
@@ -194,21 +196,70 @@ void SaveFileDialog(void *inctx, const char* title, const char* defaultFilename,
     )
 }
 
+void AppendRole(void *inctx, void *inMenu, int role) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    WailsMenu *menu = (__bridge WailsMenu*) inMenu;
+    [menu appendRole :ctx :role];
+}
+
+void* NewMenu(const char *name) {
+    NSString *title = @"";
+    if (name != nil) {
+        title = [NSString stringWithUTF8String:name];
+    }
+    WailsMenu *result = [[WailsMenu new] initWithNSTitle:title];
+    return result;
+}
+
+void AppendSubmenu(void* inparent, void* inchild) {
+    WailsMenu *parent = (__bridge WailsMenu*) inparent;
+    WailsMenu *child = (__bridge WailsMenu*) inchild;
+    [parent appendSubmenu:child];
+}
+
+void SetAsApplicationMenu(void *inctx, void *inMenu) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    WailsMenu *menu = (__bridge WailsMenu*) inMenu;
+    ctx.applicationMenu = menu;
+}
+
+void SetAbout(void *inctx, const char* title, const char* description, void* imagedata, int datalen) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    [ctx SetAbout :title :description :imagedata :datalen];
+}
+
+void* AppendMenuItem(void* inctx, void* inMenu, const char* label, const char* shortcutKey, int modifiers, int disabled, int checked, int menuItemID) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    WailsMenu *menu = (__bridge WailsMenu*) inMenu;
+    return [menu AppendMenuItem:ctx :label :shortcutKey :modifiers :disabled :checked :menuItemID];
+}
+
+void UpdateMenuItem(void* nsmenuitem, int checked) {
+    ON_MAIN_THREAD(
+        WailsMenuItem *menuItem = (__bridge WailsMenuItem*) nsmenuitem;
+        [menuItem setState:(checked == 1?NSControlStateValueOn:NSControlStateValueOff)];
+                   )
+}
+
+
+void AppendSeparator(void* inMenu) {
+    WailsMenu *menu = (__bridge WailsMenu*) inMenu;
+    [menu AppendSeparator];
+}
 
 
 
 void Run(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
-    [NSApplication sharedApplication];
+    NSApplication *app = [NSApplication sharedApplication];
     AppDelegate* delegate = [AppDelegate new];
-    [NSApp setDelegate:(id)delegate];
+    [app setDelegate:(id)delegate];
     ctx.appdelegate = delegate;
     delegate.mainWindow = ctx.mainWindow;
     delegate.alwaysOnTop = ctx.alwaysOnTop;
 
     [ctx loadRequest:@"wails://wails/"];
-    
-    [NSApp run];
+    [app setMainMenu:ctx.applicationMenu];
+    [app run];
     [ctx release];
-    NSLog(@"Here");
 }

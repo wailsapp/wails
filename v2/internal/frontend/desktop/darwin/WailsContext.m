@@ -9,8 +9,10 @@
 #import <WebKit/WebKit.h>
 #import "WailsContext.h"
 #import "WailsAlert.h"
+#import "WailsMenu.h"
 #import "WindowDelegate.h"
 #import "message.h"
+#import "Role.h"
 
 @implementation WailsWindow
 
@@ -100,6 +102,7 @@
     [self.mouseEvent release];
     [self.userContentController release];
     [self.urlRequests release];
+    [self.applicationMenu release];
 }
 
 - (NSScreen*) getCurrentScreen {
@@ -149,7 +152,6 @@
     }
     
     if (useToolbar) {
-        NSLog(@"Using Toolbar");
         id toolbar = [[NSToolbar alloc] initWithIdentifier:@"wails.toolbar"];
         [toolbar autorelease];
         [toolbar setShowsBaselineSeparator:!hideToolbarSeparator];
@@ -244,6 +246,30 @@
         return event;
     }];
     
+    self.applicationMenu = [NSMenu new];
+    
+}
+
+- (NSMenuItem*) newMenuItem :(NSString*)title :(SEL)selector :(NSString*)key :(NSEventModifierFlags)flags {
+    NSMenuItem *result = [[[NSMenuItem alloc] initWithTitle:title action:selector keyEquivalent:key] autorelease];
+    if( flags != 0 ) {
+        [result setKeyEquivalentModifierMask:flags];
+    }
+    return result;
+}
+
+- (NSMenuItem*) newMenuItem :(NSString*)title :(SEL)selector :(NSString*)key  {
+    return [self newMenuItem :title :selector :key :0];
+}
+
+- (NSMenu*) newMenu :(NSString*)title {
+    WailsMenu *result = [[[WailsMenu new] initWithTitle:title] autorelease];
+    [result setAutoenablesItems:NO];
+    return result;
+}
+
+- (void) Quit {
+    processMessage("Q");
 }
 
 - (void) loadRequest :(NSString*)url {
@@ -397,6 +423,8 @@
     [alert addButton:button3 :defaultButton :cancelButton];
     [alert addButton:button4 :defaultButton :cancelButton];
     
+    [alert.window setLevel:NSFloatingWindowLevel];
+
     long response = [alert runModal];
     int result;
     
@@ -470,7 +498,6 @@
         processOpenFileDialogResponse([nsjson UTF8String]);
     }];
     
-
     [dialog runModal];
     
 }
@@ -522,6 +549,34 @@
     
 }
 
+- (void) SetAbout :(const char*)title :(const char*)description :(void*)imagedata :(int)datalen {
+    self.aboutTitle = title;
+    self.aboutDescription = description;
+   
+    NSData *imageData = [NSData dataWithBytes:imagedata length:datalen];
+    self.aboutImage = [[NSImage alloc] initWithData:imageData];
+}
+
+-(void) About {
+    
+    WailsAlert *alert = [WailsAlert new];
+    [alert setAlertStyle:NSAlertStyleInformational];
+    if( self.aboutTitle != nil ) {
+        [alert setMessageText:[NSString stringWithUTF8String:self.aboutTitle]];
+    }
+    if( self.aboutDescription != nil ) {
+        [alert setInformativeText:[NSString stringWithUTF8String:self.aboutDescription]];
+    }
+    
+    
+    [alert.window setLevel:NSFloatingWindowLevel];
+    if ( self.aboutImage != nil) {
+        [alert setIcon:self.aboutImage];
+    }
+
+    [alert runModal];
+    
+}
 
 @end
 

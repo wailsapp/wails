@@ -19,6 +19,7 @@ void processURLRequest(void*, const char *);
 void processMessageDialogResponse(int);
 void processOpenFileDialogResponse(const char*);
 void processSaveFileDialogResponse(const char*);
+void processCallback(int);
 
 #ifdef __cplusplus
 }

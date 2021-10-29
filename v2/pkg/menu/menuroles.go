@@ -3,37 +3,39 @@
 // Electron License: https://github.com/electron/electron/blob/master/LICENSE
 package menu
 
-/*
-type Role string
+// Role is a type to identify menu roles
+type Role int
 
+// These constants need to be kept in sync with `v2/internal/frontend/desktop/darwin/Role.h`
 const (
-	AboutRole              Role = "about"
-	UndoRole               Role = "undo"
-	RedoRole               Role = "redo"
-	CutRole                Role = "cut"
-	CopyRole               Role = "copy"
-	PasteRole              Role = "paste"
-	PasteAndMatchStyleRole Role = "pasteAndMatchStyle"
-	SelectAllRole          Role = "selectAll"
-	DeleteRole             Role = "delete"
-	MinimizeRole           Role = "minimize"
-	QuitRole               Role = "quit"
-	TogglefullscreenRole   Role = "togglefullscreen"
-	FileMenuRole           Role = "fileMenu"
-	EditMenuRole           Role = "editMenu"
-	ViewMenuRole           Role = "viewMenu"
-	WindowMenuRole         Role = "windowMenu"
-	AppMenuRole            Role = "appMenu"
-	HideRole               Role = "hide"
-	HideOthersRole         Role = "hideOthers"
-	UnhideRole             Role = "unhide"
-	FrontRole              Role = "front"
-	ZoomRole               Role = "zoom"
-	WindowSubMenuRole      Role = "windowSubMenu"
-	HelpSubMenuRole        Role = "helpSubMenu"
-	SeparatorItemRole      Role = "separatorItem"
+	AppMenuRole  Role = 1
+	EditMenuRole      = 2
+	//AboutRole              Role = "about"
+	//UndoRole               Role = "undo"
+	//RedoRole               Role = "redo"
+	//CutRole                Role = "cut"
+	//CopyRole               Role = "copy"
+	//PasteRole              Role = "paste"
+	//PasteAndMatchStyleRole Role = "pasteAndMatchStyle"
+	//SelectAllRole          Role = "selectAll"
+	//DeleteRole             Role = "delete"
+	//MinimizeRole           Role = "minimize"
+	//QuitRole               Role = "quit"
+	//TogglefullscreenRole   Role = "togglefullscreen"
+	//FileMenuRole           Role = "fileMenu"
+	//ViewMenuRole           Role = "viewMenu"
+	//WindowMenuRole         Role = "windowMenu"
+	//HideRole               Role = "hide"
+	//HideOthersRole         Role = "hideOthers"
+	//UnhideRole             Role = "unhide"
+	//FrontRole              Role = "front"
+	//ZoomRole               Role = "zoom"
+	//WindowSubMenuRole      Role = "windowSubMenu"
+	//HelpSubMenuRole        Role = "helpSubMenu"
+	//SeparatorItemRole      Role = "separatorItem"
 )
 
+/*
 // About provides a MenuItem with the About role
 func About() *MenuItem {
 	return &MenuItem{
@@ -111,8 +113,8 @@ func Quit() *MenuItem {
 	}
 }
 
-// Togglefullscreen provides a MenuItem with the Togglefullscreen role
-func Togglefullscreen() *MenuItem {
+// ToggleFullscreen provides a MenuItem with the ToggleFullscreen role
+func ToggleFullscreen() *MenuItem {
 	return &MenuItem{
 		Role: TogglefullscreenRole,
 	}
@@ -124,6 +126,7 @@ func FileMenu() *MenuItem {
 		Role: FileMenuRole,
 	}
 }
+*/
 
 // EditMenu provides a MenuItem with the whole default "Edit" menu (Undo, Copy, etc.).
 func EditMenu() *MenuItem {
@@ -132,6 +135,7 @@ func EditMenu() *MenuItem {
 	}
 }
 
+/*
 // ViewMenu provides a MenuItem with the whole default "View" menu (Reload, Toggle Developer Tools, etc.)
 func ViewMenu() *MenuItem {
 	return &MenuItem{
@@ -145,7 +149,7 @@ func WindowMenu() *MenuItem {
 		Role: WindowMenuRole,
 	}
 }
-
+*/
 // These roles are Mac only
 
 // AppMenu provides a MenuItem with the whole default "App" menu (About, Services, etc.)
@@ -155,6 +159,7 @@ func AppMenu() *MenuItem {
 	}
 }
 
+/*
 // Hide provides a MenuItem that maps to the hide action.
 func Hide() *MenuItem {
 	return &MenuItem{
@@ -169,8 +174,8 @@ func HideOthers() *MenuItem {
 	}
 }
 
-// Unhide provides a MenuItem that maps to the unhideAllApplications action.
-func Unhide() *MenuItem {
+// UnHide provides a MenuItem that maps to the unHideAllApplications action.
+func UnHide() *MenuItem {
 	return &MenuItem{
 		Role: UnhideRole,
 	}

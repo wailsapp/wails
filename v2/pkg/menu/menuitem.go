@@ -11,9 +11,9 @@ type MenuItem struct {
 	// Label is what appears as the menu text
 	Label string
 	// Role is a predefined menu type
-	//Role Role `json:"Role,omitempty"`
+	Role Role
 	// Accelerator holds a representation of a key binding
-	Accelerator *keys.Accelerator `json:"Accelerator,omitempty"`
+	Accelerator *keys.Accelerator
 	// Type of MenuItem, EG: Checkbox, Text, Separator, Radio, Submenu
 	Type Type
 	// Disabled makes the item unselectable
@@ -24,10 +24,10 @@ type MenuItem struct {
 	Checked bool
 	// Submenu contains a list of menu items that will be shown as a submenu
 	//SubMenu []*MenuItem `json:"SubMenu,omitempty"`
-	SubMenu *Menu `json:"SubMenu,omitempty"`
+	SubMenu *Menu
 
 	// Callback function when menu clicked
-	Click Callback `json:"-"`
+	Click Callback
 	/*
 		// Text Colour
 		RGBA string
@@ -257,19 +257,6 @@ func Checkbox(label string, checked bool, accelerator *keys.Accelerator, click C
 
 // SubMenu is a helper to create Submenus
 func SubMenu(label string, menu *Menu) *MenuItem {
-	result := &MenuItem{
-		Label:   label,
-		SubMenu: menu,
-		Type:    SubmenuType,
-	}
-
-	menu.setParent(result)
-
-	return result
-}
-
-// SubMenuWithID is a helper to create Submenus with an ID
-func SubMenuWithID(label string, menu *Menu) *MenuItem {
 	result := &MenuItem{
 		Label:   label,
 		SubMenu: menu,

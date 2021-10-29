@@ -17,6 +17,8 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v2/pkg/menu"
+
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -46,10 +48,6 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 	alwaysOnTop := bool2Cint(frontendOptions.AlwaysOnTop)
 	hideWindowOnClose := bool2Cint(frontendOptions.HideWindowOnClose)
 	debug := bool2Cint(debugMode)
-	alpha := C.int(frontendOptions.RGBA.A)
-	red := C.int(frontendOptions.RGBA.R)
-	green := C.int(frontendOptions.RGBA.G)
-	blue := C.int(frontendOptions.RGBA.B)
 
 	var fullSizeContent, hideTitleBar, hideTitle, useToolbar, webviewIsTransparent C.int
 	var titlebarAppearsTransparent, hideToolbarSeparator, windowIsTranslucent C.int
@@ -77,11 +75,32 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 	}
 	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent, hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent, alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug)
 
-	C.SetRGBA(unsafe.Pointer(context), red, green, blue, alpha)
-
-	return &Window{
+	// Create menu
+	result := &Window{
 		context: unsafe.Pointer(context),
 	}
+
+	if frontendOptions.RGBA != nil {
+		result.SetRGBA(frontendOptions.RGBA.R, frontendOptions.RGBA.G, frontendOptions.RGBA.B, frontendOptions.RGBA.A)
+	}
+
+	if frontendOptions.Mac != nil && frontendOptions.Mac.About != nil {
+		title := c.String(frontendOptions.Mac.About.Title)
+		description := c.String(frontendOptions.Mac.About.Message)
+		var icon unsafe.Pointer
+		var length C.int
+		if frontendOptions.Mac.About.Icon != nil {
+			icon = unsafe.Pointer(&frontendOptions.Mac.About.Icon[0])
+			length = C.int(len(frontendOptions.Mac.About.Icon))
+		}
+		C.SetAbout(result.context, title, description, icon, length)
+	}
+
+	if frontendOptions.Menu != nil {
+		result.SetApplicationMenu(frontendOptions.Menu)
+	}
+
+	return result
 }
 
 func (w *Window) Center() {
@@ -90,7 +109,6 @@ func (w *Window) Center() {
 
 func (w *Window) Run() {
 	C.Run(w.context)
-	println("I exited!")
 }
 
 func (w *Window) Quit() {
@@ -184,4 +202,21 @@ func (w *Window) Size() (int, int) {
 	var _result *C.char = C.GetSize(w.context)
 	temp := C.GoString(_result)
 	return parseIntDuo(temp)
+}
+
+//func (w *Window) parseMenu(inMenu *menu.Menu) {
+//	for index, item := range inMenu.Items {
+//		switch item.Type {
+//		case menu.TextType:
+//			// Create NSMenuItem
+//			// Append to NSMenu
+//			// Keep track of index
+//		}
+//	}
+//}
+
+func (w *Window) SetApplicationMenu(inMenu *menu.Menu) {
+	mainMenu := NewNSMenu(w.context, "")
+	processMenu(mainMenu, inMenu)
+	C.SetAsApplicationMenu(w.context, mainMenu.nsmenu)
 }

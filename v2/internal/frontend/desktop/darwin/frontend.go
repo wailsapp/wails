@@ -36,6 +36,7 @@ type request struct {
 
 var messageBuffer = make(chan string, 100)
 var requestBuffer = make(chan *request, 100)
+var callbackBuffer = make(chan uint, 10)
 
 type Frontend struct {
 
@@ -92,6 +93,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	go result.startMessageProcessor()
 	go result.startRequestProcessor()
+	go result.startCallbackProcessor()
 
 	return result
 }
@@ -104,6 +106,14 @@ func (f *Frontend) startMessageProcessor() {
 func (f *Frontend) startRequestProcessor() {
 	for request := range requestBuffer {
 		f.processRequest(request)
+	}
+}
+func (f *Frontend) startCallbackProcessor() {
+	for callback := range callbackBuffer {
+		err := f.handleCallback(callback)
+		if err != nil {
+			println(err.Error())
+		}
 	}
 }
 
@@ -229,13 +239,6 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 }
 
 func (f *Frontend) processMessage(message string) {
-	if message == "drag" {
-		err := f.startDrag()
-		if err != nil {
-			f.logger.Error(err.Error())
-		}
-		return
-	}
 	result, err := f.dispatcher.ProcessMessage(message, f)
 	if err != nil {
 		f.logger.Error(err.Error())
@@ -257,14 +260,6 @@ func (f *Frontend) processMessage(message string) {
 
 func (f *Frontend) Callback(message string) {
 	f.ExecJS(`window.wails.Callback(` + strconv.Quote(message) + `);`)
-}
-
-func (f *Frontend) startDrag() error {
-	//if !w32.ReleaseCapture() {
-	//	return fmt.Errorf("unable to release mouse capture")
-	//}
-	//w32.SendMessage(f.mainWindow.Handle(), w32.WM_NCLBUTTONDOWN, w32.HTCAPTION, 0)
-	return nil
 }
 
 func (f *Frontend) ExecJS(js string) {
@@ -303,4 +298,9 @@ func processURLRequest(ctx unsafe.Pointer, url *C.char) {
 		url: url,
 		ctx: ctx,
 	}
+}
+
+//export processCallback
+func processCallback(callbackID uint) {
+	callbackBuffer <- callbackID
 }

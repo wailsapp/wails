@@ -3,6 +3,7 @@ package menumanager
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
