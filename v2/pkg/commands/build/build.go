@@ -115,7 +115,7 @@ func Build(options *Options) (string, error) {
 	// compilation. This will be a .syso file in the project root
 	if options.Pack && options.Platform == "windows" {
 		outputLogger.Print("Generating bundle assets: ")
-		err := packageApplication(options)
+		err := packageApplicationForWindows(options)
 		if err != nil {
 			return "", err
 		}
