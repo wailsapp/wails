@@ -56,7 +56,7 @@
     NSSize size = { minWidth, minHeight };
     
     self.minSize = size;
-    
+
     [self.mainWindow setMinSize:size];
     
     [self adjustWindowSize];
@@ -73,7 +73,7 @@
     size.height = maxHeight > 0 ? maxHeight : FLT_MAX;
     
     self.maxSize = size;
-    
+
     [self.mainWindow setMinSize:size];
     
     [self adjustWindowSize];
@@ -90,7 +90,7 @@
     if ( currentFrame.size.width < self.minSize.width ) currentFrame.size.width = self.minSize.width;
     if ( currentFrame.size.height > self.maxSize.height ) currentFrame.size.height = self.maxSize.height;
     if ( currentFrame.size.height < self.minSize.height ) currentFrame.size.height = self.minSize.height;
-    
+
     [self.mainWindow setFrame:currentFrame display:TRUE animate:FALSE];
     
 }

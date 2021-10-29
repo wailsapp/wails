@@ -66,10 +66,6 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		minHeight:       appoptions.MinHeight,
-		minWidth:        appoptions.MinWidth,
-		maxHeight:       appoptions.MaxHeight,
-		maxWidth:        appoptions.MaxWidth,
 	}
 
 	// Check if we have been given a directory to serve assets from.

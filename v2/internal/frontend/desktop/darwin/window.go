@@ -73,7 +73,9 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 
 		appearance = c.String(string(mac.Appearance))
 	}
-	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent, hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent, alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug)
+	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent,
+		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
+		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug)
 
 	// Create menu
 	result := &Window{
@@ -99,6 +101,9 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 	if frontendOptions.Menu != nil {
 		result.SetApplicationMenu(frontendOptions.Menu)
 	}
+
+	result.SetMinSize(frontendOptions.MinWidth, frontendOptions.MinHeight)
+	result.SetMaxSize(frontendOptions.MaxWidth, frontendOptions.MaxHeight)
 
 	return result
 }
@@ -156,10 +161,16 @@ func (w *Window) UnMinimise() {
 }
 
 func (w *Window) SetMinSize(width int, height int) {
+	if width == 0 && height == 0 {
+		return
+	}
 	C.SetMinSize(w.context, C.int(width), C.int(height))
 }
 
 func (w *Window) SetMaxSize(width int, height int) {
+	if width == 0 && height == 0 {
+		return
+	}
 	C.SetMaxSize(w.context, C.int(width), C.int(height))
 }
 
