@@ -3,15 +3,16 @@ package build
 import (
 	"bytes"
 	"fmt"
-	"github.com/leaanthony/gosod"
-	wailsRuntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
-	"github.com/wailsapp/wails/v2/internal/frontend/runtime/wrapper"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/leaanthony/gosod"
+	wailsRuntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
+	"github.com/wailsapp/wails/v2/internal/frontend/runtime/wrapper"
 
 	"github.com/pkg/errors"
 
@@ -215,8 +216,6 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		commands.Add(`"all=-N -l"`)
 	}
 
-	//commands.Add("-a")
-
 	var tags slicer.StringSlicer
 	tags.Add(options.OutputType)
 	tags.AddSlice(options.UserTags)
@@ -336,8 +335,6 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	if err != nil {
 		return err
 	}
-
-	println("Done.")
 
 	if !options.Compress {
 		return nil

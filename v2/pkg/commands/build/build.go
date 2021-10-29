@@ -111,12 +111,6 @@ func Build(options *Options) (string, error) {
 		}
 	}
 
-	// Build the base assets
-	//err = builder.BuildAssets(options)
-	//if err != nil {
-	//	return "", err
-	//}
-
 	// If we are building for windows, we will need to generate the asset bundle before
 	// compilation. This will be a .syso file in the project root
 	if options.Pack && options.Platform == "windows" {
@@ -149,10 +143,10 @@ func Build(options *Options) (string, error) {
 		options.OutputFile = amd64Filename
 		options.CleanBuildDirectory = false
 		if options.Verbosity == VERBOSE {
-			println()
-			println("  Building AMD64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
+			outputLogger.Println("\nBuilding AMD64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
 		}
 		err = builder.CompileProject(options)
+
 		if err != nil {
 			return "", err
 		}
@@ -161,15 +155,16 @@ func Build(options *Options) (string, error) {
 		options.OutputFile = arm64Filename
 		options.CleanBuildDirectory = false
 		if options.Verbosity == VERBOSE {
-			println("  Building ARM64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
+			outputLogger.Println("Building ARM64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
 		}
 		err = builder.CompileProject(options)
+
 		if err != nil {
 			return "", err
 		}
 		// Run lipo
 		if options.Verbosity == VERBOSE {
-			println("  Running lipo: ", "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
+			outputLogger.Println("  Running lipo: ", "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
 		}
 		_, stderr, err := shell.RunCommand(options.BuildDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
 		if err != nil {
@@ -192,6 +187,8 @@ func Build(options *Options) (string, error) {
 			return "", err
 		}
 	}
+
+	outputLogger.Println("Done.")
 
 	// Do we need to pack the app for non-windows?
 	if options.Pack && options.Platform != "windows" {
