@@ -1,5 +1,5 @@
 <p align="center" style="text-align: center">
-   <img src="logo.png" width="40%"><br/>
+   <img src="logo.png" width="55%"><br/>
 </p>
 <p align="center">
    使用 Go 和 Web 技术构建桌面应用程序。<br/><br/>
@@ -18,44 +18,62 @@
 
 ## 国际化
 
-[English](README.md) | 简体中文
-
-向 Go 程序提供 Web 接口的传统方法是通过内置 Web 服务器。Wails 提供了一种不同的方法：它提供了将 Go 代码和 Web
-前端都包装成单个二进制文件的能力。通过提供工具，可以很轻松的完成项目的创建、编译和打包。你所要做的就是发挥创意！
-
-官方文档可以在 [https://wails.app](https://wails.app) 中找到。
-
-国内镜像站点 [https://wails.top](https://wails.top)。
+[English](README.md) | [简体中文](README.zh-Hans.md)
 
 <span id="nav-2"></span>
 
 ## 内容目录
 
+<details>
+  <summary>点我 打开/关闭 目录列表</summary>
+
 - [1. 国际化](#nav-1)
 - [2. 内容目录](#nav-2)
-- [3. 特征](#nav-3)
-- [4. 赞助商](#nav-4)
-- [5. 安装](#nav-5)
-    - [5.1 MacOS](#nav-5-1)
-    - [5.2 Linux](#nav-5-2)
-        - [5.2.1 Debian/Ubuntu](#nav-5-2-1)
-        - [5.2.2 Arch Linux / ArchLabs / Ctlos Linux](#nav-5-2-2)
-        - [5.2.3 Centos](#nav-5-2-3)
-        - [5.2.4 Fedora](#nav-5-2-4)
-        - [5.2.5 VoidLinux & VoidLinux-musl](#nav-5-2-5)
-        - [5.2.6 Gentoo](#nav-5-2-6)
-    - [5.3 Windows](#nav-5-3)
+- [3. 项目介绍](#nav-3)
+  - [3.1 官方网站](#nav-3-1)
+- [4. 功能](#nav-4)
+- [5. 赞助商](#nav-5)
 - [6. 安装](#nav-6)
-- [7. 下一步](#nav-7)
+  - [6.1 MacOS](#nav-6-1)
+  - [6.2 Linux](#nav-6-2)
+    - [6.2.1 Debian/Ubuntu](#nav-6-2-1)
+    - [6.2.2 Arch Linux / ArchLabs / Ctlos Linux](#nav-6-2-2)
+    - [6.2.3 Centos](#nav-6-2-3)
+    - [6.2.4 Fedora](#nav-6-2-4)
+    - [6.2.5 VoidLinux & VoidLinux-musl](#nav-6-2-5)
+    - [6.2.6 Gentoo](#nav-6-2-6)
+  - [6.3 Windows](#nav-6-3)
+- [7. 使用方法](#nav-7)
+  - [7.1 下一步](#nav-7-1)
 - [8. 常见问题](#nav-8)
 - [9. 贡献者](#nav-9)
 - [10. 特别提及](#nav-10)
-- [11. 许可协议](#nav-11)
-- [12. 特别感谢](#nav-12)
+- [12. 特别感谢](#nav-11)
+
+</details>
 
 <span id="nav-3"></span>
 
-## 特征
+## 项目介绍
+
+为 Go 程序提供 Web 界面的传统方法是通过内置 Web 服务器。Wails 提供了一种不同的方法：它提供了将 Go 代码和 Web
+前端一起打包成单个二进制文件的能力。通过提供的工具，可以很轻松的完成项目的创建、编译和打包。你所要做的就是发挥想象力！
+
+<span id="nav-3-1"></span>
+
+### 官方网站
+
+官方文档可以在 [https://wails.app](https://wails.app) 中找到。
+
+如果您对适用于 Windows 的 v2 测试版感兴趣，可以点击[此处](https://wails.io)查看。
+
+镜像网站：
+
+- [中国大陆镜像站点 - https://wails.top](https://wails.top)
+
+<span id="nav-4"></span>
+
+## 功能
 
 - 后端使用标准 Go
 - 使用任意前端技术构建 UI 界面
@@ -67,12 +85,11 @@
 - 强大的命令行工具
 - 跨多个平台
 
-<span id="nav-4"></span>
+<span id="nav-5"></span>
 
 ## 赞助商
 
 这个项目由以下这些人或者公司支持：
-
 
 <a href="https://github.com/sponsors/leaanthony" style="width:100px;">
   <img src="sponsors/bronze%20sponsor.png" width="100"/>
@@ -143,7 +160,7 @@
   <img src="https://github.com/DonTomato.png?size=45" width="45"/>
 </a>
 
-<span id="nav-5"></span>
+<span id="nav-6"></span>
 
 ## 安装
 
@@ -152,7 +169,7 @@ Wails 使用 cgo 与原生渲染引擎结合，因此需要依赖一些平台的
 - Go 1.16
 - npm
 
-<span id="nav-5-1"></span>
+<span id="nav-6-1"></span>
 
 ### MacOS
 
@@ -160,11 +177,11 @@ Wails 使用 cgo 与原生渲染引擎结合，因此需要依赖一些平台的
 
 `xcode-select --install`
 
-<span id="nav-5-2"></span>
+<span id="nav-6-2"></span>
 
 ### Linux
 
-<span id="nav-5-2-1"></span>
+<span id="nav-6-2-1"></span>
 
 #### Debian/Ubuntu
 
@@ -176,7 +193,7 @@ _Ubuntu: 16.04, 18.04, 19.04_
 
 _也成功测试了: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, Kali, Neon_, Pop!\_OS
 
-<span id="nav-5-2-2"></span>
+<span id="nav-6-2-2"></span>
 
 #### Arch Linux / ArchLabs / Ctlos Linux
 
@@ -184,7 +201,7 @@ _也成功测试了: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, Kali, Neo
 
 _也成功测试了: Manjaro & ArcoLinux_
 
-<span id="nav-5-2-3"></span>
+<span id="nav-6-2-3"></span>
 
 #### Centos
 
@@ -192,7 +209,7 @@ _也成功测试了: Manjaro & ArcoLinux_
 
 _CentOS 6, 7_
 
-<span id="nav-5-2-4"></span>
+<span id="nav-6-2-4"></span>
 
 #### Fedora
 
@@ -200,39 +217,39 @@ _CentOS 6, 7_
 
 _Fedora 29, 30_
 
-<span id="nav-5-2-5"></span>
+<span id="nav-6-2-5"></span>
 
 #### VoidLinux & VoidLinux-musl
 
 `xbps-install gtk+3-devel webkit2gtk-devel`
 
-<span id="nav-5-2-6"></span>
+<span id="nav-6-2-6"></span>
 
 #### Gentoo
 
 `sudo emerge gtk+:3 webkit-gtk`
 
-<span id="nav-5-3"></span>
+<span id="nav-6-3"></span>
 
 ### Windows
 
 Windows 需要 GCC 和相关工具。 建议从 [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download) 下载， 安装完成，您就可以开始了。
 
-<span id="nav-6"></span>
+<span id="nav-7"></span>
 
-## 安装
+## 使用方法
 
 **确保 Go modules 是开启的：GO111MODULE=on 并且 go/bin 在您的 PATH 变量中。**
 
 安装很简单，运行以下命令：
 
-<pre style='color:white'>
+```
 go get -u github.com/wailsapp/wails/cmd/wails
-</pre>
+```
 
-<span id="nav-7"></span>
+<span id="nav-7-1"></span>
 
-## 下一步
+### 下一步
 
 建议在此时阅读 [https://wails.app](https://wails.app) 上面的文档.
 
@@ -244,14 +261,14 @@ go get -u github.com/wailsapp/wails/cmd/wails
 
   取决于您的要求。它旨在使 Go 程序员可以轻松制作轻量级桌面应用程序或在其现有应用程序中添加前端。尽管 Wails 当前不提供对诸如菜单之类的原生元素的钩子，但将来可能会改变。
 
-- 这个项目针对的是谁?
+- 这个项目针对的是哪些人?
 
   希望将 HTML / JS / CSS 前端与其应用程序捆绑在一起的程序员，而不是借助创建服务并打开浏览器进行查看的方式。
 
 - 名字怎么来的?
 
   当我看到 WebView 时，我想"我真正想要的是围绕构建 WebView 应用程序工作，有点像 Rails 对于 Ruby"。因此，最初它是一个文字游戏（Webview on
-  Rails）。碰巧也是我来自的 [国家](https://en.wikipedia.org/wiki/Wales) 的英文名字的同音。所以就是他了。
+  Rails）。碰巧也是我来自的 [国家](https://en.wikipedia.org/wiki/Wales) 的英文名字的同音。所以就是它了。
 
 <span id="nav-9"></span>
 
@@ -302,6 +319,7 @@ go get -u github.com/wailsapp/wails/cmd/wails
 <a href="https://github.com/Igogrek"><img src="https://github.com/Igogrek.png?size=40" width="40"/></a></a>
 <a href="https://github.com/aschey"><img src="https://github.com/aschey.png?size=40" width="40"/></a></a>
 <a href="https://github.com/akhudek"><img src="https://github.com/akhudek.png?size=40" width="40"/></a></a>
+<a href="https://github.com/s12chung"><img src="https://github.com/s12chung.png?size=40" width="40"/></a></a>
 
 <span id="nav-10"></span>
 
@@ -311,9 +329,9 @@ go get -u github.com/wailsapp/wails/cmd/wails
 
 - [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - 他的支持和反馈是巨大的。
 - [Serge Zaitsev](https://github.com/zserge) - Wails 窗口所使用的 [Webview](https://github.com/zserge/webview) 的作者。
-- [Byron](https://github.com/bh90210) - 有时，Byron 单枪匹马地保持这个项目活着。没有他令人难以置信的投入，我们永远不会得到 v1 。
+- [Byron](https://github.com/bh90210) - 有时，Byron 一个人保持这个项目活跃着。没有他令人难以置信的投入，我们永远不会得到 v1 。
 
-This project was mainly coded to the following albums:
+编写项目代码时伴随着以下专辑：
 
 - [Manic Street Preachers - Resistance Is Futile](https://open.spotify.com/album/1R2rsEUqXjIvAbzM0yHrxA)
 - [Manic Street Preachers - This Is My Truth, Tell Me Yours](https://open.spotify.com/album/4VzCL9kjhgGQeKCiojK1YN)
@@ -331,17 +349,11 @@ This project was mainly coded to the following albums:
 
 <span id="nav-11"></span>
 
-## 许可协议
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
-
-<span id="nav-12"></span>
-
 ## 特别感谢
 
 <p align="center" style="text-align: center">
    <a href="https://pace.dev"><img src="pace.jpeg"/></a><br/>
-   <i>非常<i/>感谢<a href="https://pace.dev">Pace</a>对项目的赞助，并帮助将 Wails 移植到 Apple Silicon !<br/><br/>
+   <i>非常</i> 感谢<a href="https://pace.dev">Pace</a>对项目的赞助，并帮助将 Wails 移植到 Apple Silicon !<br/><br/>
    如果您正在寻找一个强大并且快速和易于使用的项目管理工具，可以看看他们！<br/><br/>
 </p>
 
