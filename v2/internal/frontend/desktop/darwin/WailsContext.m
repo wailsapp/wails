@@ -33,7 +33,7 @@
     frame.origin.y += frame.size.height - height;
     frame.size.width = width;
     frame.size.height = height;
-    [self.mainWindow setFrame:frame display:TRUE animate:FALSE];
+    ON_MAIN_THREAD([self.mainWindow setFrame:frame display:TRUE animate:FALSE];);
 }
 
 - (void) SetPosition:(int)x :(int)y {
@@ -46,7 +46,7 @@
     windowFrame.origin.x = screenFrame.origin.x + (float)x;
     windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
 
-    [self.mainWindow setFrame:windowFrame display:TRUE animate:FALSE];
+    ON_MAIN_THREAD([self.mainWindow setFrame:windowFrame display:TRUE animate:FALSE]; );
 }
 
 - (void) SetMinSize:(int)minWidth :(int)minHeight {
@@ -57,9 +57,10 @@
     
     self.minSize = size;
 
-    [self.mainWindow setMinSize:size];
-    
-    [self adjustWindowSize];
+    ON_MAIN_THREAD(
+        [self.mainWindow setMinSize:size];
+        [self adjustWindowSize];
+    );
 }
 
 
@@ -74,9 +75,10 @@
     
     self.maxSize = size;
 
-    [self.mainWindow setMaxSize:size];
-    
-    [self adjustWindowSize];
+    ON_MAIN_THREAD(
+        [self.mainWindow setMaxSize:size];
+        [self adjustWindowSize];
+    );
 }
 
 
@@ -114,12 +116,20 @@
 }
 
 - (void) SetTitle:(const char *)title {
-    NSString *_title = [NSString stringWithUTF8String:title];
-    [self.mainWindow setTitle:_title];
+    self.title = [NSString stringWithUTF8String:title];
+    ON_MAIN_THREAD([self.mainWindow setTitle:self.title];)
 }
 
 - (void) Center {
-    [self.mainWindow center];
+    ON_MAIN_THREAD( [self.mainWindow center]; );
+}
+
+- (BOOL) isFullscreen {
+    NSWindowStyleMask masks = [self.mainWindow styleMask];
+    if ( masks & NSWindowStyleMaskFullScreen ) {
+        return YES;
+    }
+    return NO;
 }
 
 - (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(const char *)appearance :(bool)windowIsTranslucent {
@@ -286,7 +296,7 @@
     
     id colour = [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha ];
     
-    [self.mainWindow setBackgroundColor:colour];
+    ON_MAIN_THREAD([self.mainWindow setBackgroundColor:colour];);
 }
 
 - (void) HideMouse {
@@ -302,46 +312,53 @@
     return (mask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen;
 }
 
+- (bool) isMaximised {
+    long mask = [self.mainWindow styleMask];
+    return (mask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen;
+}
+
 // Fullscreen sets the main window to be fullscreen
 - (void) Fullscreen {
     if( ! [self isFullScreen] ) {
-        [self.mainWindow toggleFullScreen:nil];
+        ON_MAIN_THREAD([self.mainWindow toggleFullScreen:nil];)
     }
 }
 
 // UnFullscreen resets the main window after a fullscreen
 - (void) UnFullscreen {
     if( [self isFullScreen] ) {
-        [self.mainWindow toggleFullScreen:nil];
+        ON_MAIN_THREAD([self.mainWindow toggleFullScreen:nil];)
     }
 }
 
 - (void) Minimise {
-    [self.mainWindow miniaturize:nil];
+    ON_MAIN_THREAD([self.mainWindow miniaturize:nil];)
 }
 
 - (void) UnMinimise {
-    [self.mainWindow deminiaturize:nil];
+    ON_MAIN_THREAD([self.mainWindow deminiaturize:nil];)
 }
 
 - (void) Hide {
-    [self.mainWindow orderOut:nil];
+    ON_MAIN_THREAD([self.mainWindow orderOut:nil];)
 }
 
 - (void) Show {
-    [self.mainWindow makeKeyAndOrderFront:nil];
-    [NSApp activateIgnoringOtherApps:YES];
+    ON_MAIN_THREAD(
+        [self.mainWindow makeKeyAndOrderFront:nil];
+        [NSApp activateIgnoringOtherApps:YES];
+    )
 }
 
 - (void) Maximise {
-    if (! self.maximised) {
-        [self.mainWindow zoom:nil];
+    if (![self.mainWindow isZoomed]) {
+        ON_MAIN_THREAD([self.mainWindow zoom:nil];)
     }
 }
 
 - (void) UnMaximise {
-    if (self.maximised) {
-        [self.mainWindow zoom:nil];
+    if ([self.mainWindow isZoomed]) {
+        ON_MAIN_THREAD([self.mainWindow zoom:nil];)
     }
 }
 
@@ -423,23 +440,25 @@
     [alert addButton:button3 :defaultButton :cancelButton];
     [alert addButton:button4 :defaultButton :cancelButton];
     
-    [alert.window setLevel:NSFloatingWindowLevel];
+    ON_MAIN_THREAD(
+        [alert.window setLevel:NSFloatingWindowLevel];
 
-    long response = [alert runModal];
-    int result;
-    
-    if( response == NSAlertFirstButtonReturn ) {
-        result = 0;
-    }
-    else if( response == NSAlertSecondButtonReturn ) {
-        result = 1;
-    }
-    else if( response == NSAlertThirdButtonReturn ) {
-        result = 2;
-    } else {
-        result = 3;
-    }
-    processMessageDialogResponse(result);
+        long response = [alert runModal];
+        int result;
+        
+        if( response == NSAlertFirstButtonReturn ) {
+            result = 0;
+        }
+        else if( response == NSAlertSecondButtonReturn ) {
+            result = 1;
+        }
+        else if( response == NSAlertThirdButtonReturn ) {
+            result = 2;
+        } else {
+            result = 3;
+        }
+        processMessageDialogResponse(result);
+    )
 }
 
 -(void) OpenFileDialog :(const char*)title :(const char*)defaultFilename :(const char*)defaultDirectory :(bool)allowDirectories :(bool)allowFiles :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)resolveAliases :(bool)showHiddenFiles :(bool)allowMultipleSelection :(const char*)filters {
@@ -498,7 +517,7 @@
         processOpenFileDialogResponse([nsjson UTF8String]);
     }];
     
-    [dialog runModal];
+    ON_MAIN_THREAD([dialog runModal];)
     
 }
 
@@ -545,7 +564,7 @@
         processSaveFileDialogResponse([url.path UTF8String]);
     }];
     
-    [dialog runModal];
+    ON_MAIN_THREAD([dialog runModal];)
     
 }
 
@@ -574,7 +593,7 @@
         [alert setIcon:self.aboutImage];
     }
 
-    [alert runModal];
+    ON_MAIN_THREAD([alert runModal];)
     
 }
 

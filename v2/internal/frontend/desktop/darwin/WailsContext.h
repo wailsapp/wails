@@ -35,7 +35,6 @@
 @property (retain) NSEvent* mouseEvent;
 
 @property bool alwaysOnTop;
-@property bool maximised;
 
 @property bool debug;
 
@@ -48,6 +47,7 @@
 @property const char* aboutTitle;
 @property const char* aboutDescription;
 @property (retain) NSString* appName;
+@property (retain) NSString* title;
 
 - (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent  :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(const char *)appearance :(bool)windowIsTranslucent;
 - (void) SetSize:(int)width :(int)height;
