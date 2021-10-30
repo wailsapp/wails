@@ -48,8 +48,7 @@
 - [8. 常见问题](#nav-8)
 - [9. 贡献者](#nav-9)
 - [10. 特别提及](#nav-10)
-- [11. 许可协议](#nav-11)
-- [12. 特别感谢](#nav-12)
+- [12. 特别感谢](#nav-11)
 
 </details>
 
@@ -349,12 +348,6 @@ go get -u github.com/wailsapp/wails/cmd/wails
 - [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
 
 <span id="nav-11"></span>
-
-## 许可协议
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
-
-<span id="nav-12"></span>
 
 ## 特别感谢
 
