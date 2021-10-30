@@ -362,9 +362,10 @@
     }
 }
 
-- (void) ExecJS:(const char*)script {
-    NSString *nsscript = [NSString stringWithUTF8String:script];
-    [self.webview evaluateJavaScript:nsscript completionHandler:nil];
+- (void) ExecJS:(NSString*)script {
+    ON_MAIN_THREAD(
+                   [self.webview evaluateJavaScript:script completionHandler:nil];
+    )
 }
 
 - (void) processURLResponse:(NSString *)url :(NSString *)contentType :(NSData *)data {

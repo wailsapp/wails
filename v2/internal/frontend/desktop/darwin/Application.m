@@ -39,8 +39,9 @@ void ProcessURLResponse(void *inctx, const char *url, const char *contentType, c
 
 void ExecJS(void* inctx, const char *script) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
+    NSString *nsscript = [NSString stringWithUTF8String:script];
     ON_MAIN_THREAD(
-       [ctx ExecJS:script];
+       [ctx ExecJS:nsscript];
     );
 }
 

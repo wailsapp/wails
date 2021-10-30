@@ -75,7 +75,7 @@
 
 - (void) loadRequest:(NSString*)url;
 - (void) processURLResponse:(NSString *)url :(NSString *)contentType :(NSData*)data;
-- (void) ExecJS:(const char*)script;
+- (void) ExecJS:(NSString*)script;
 - (NSScreen*) getCurrentScreen;
 
 - (void) SetAbout :(const char*)title :(const char*)description :(void*)imagedata :(int)datalen;
