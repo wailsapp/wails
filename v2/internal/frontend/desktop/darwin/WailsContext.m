@@ -42,10 +42,10 @@
     
     NSScreen* screen = [self getCurrentScreen];
     NSRect windowFrame = [self.mainWindow frame];
-    NSRect screenFrame = [screen visibleFrame];
-    windowFrame.origin.x += screenFrame.origin.x + (float)x;
-    windowFrame.origin.y += (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
-    
+    NSRect screenFrame = [screen frame];
+    windowFrame.origin.x = screenFrame.origin.x + (float)x;
+    windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
+
     [self.mainWindow setFrame:windowFrame display:TRUE animate:FALSE];
 }
 

@@ -83,7 +83,7 @@ void SetMaxSize(void* inctx, int width, int height) {
 void SetPosition(void* inctx, int x, int y) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
-       [ctx SetSize:x :y];
+       [ctx SetPosition:x :y];
     );
 }
 

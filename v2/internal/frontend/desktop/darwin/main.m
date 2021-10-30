@@ -228,6 +228,7 @@ int main(int argc, const char * argv[]) {
     AppendSubmenu(m, submenu);
     UpdateMenuItem(menuITem, 1);
     SetAsApplicationMenu(result, m);
+    SetPosition(result, 100, 100);
 
     
     
