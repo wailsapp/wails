@@ -74,7 +74,7 @@
     
     self.maxSize = size;
 
-    [self.mainWindow setMinSize:size];
+    [self.mainWindow setMaxSize:size];
     
     [self adjustWindowSize];
 }
