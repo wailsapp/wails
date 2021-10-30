@@ -18,42 +18,57 @@
 
 ## Internationalization
 
-English | [简体中文](README.zh-Hans.md)
+[English](README.md) | [简体中文](README.zh-Hans.md)
+
+<span id="nav-2"></span>
+
+## Table of Contents
+
+<details>
+  <summary>Click me to Open/Close the directory listing</summary>
+
+- [1. Internationalization](#nav-1)
+- [2. Table of Contents](#nav-2)
+- [3. Introductions](#nav-3)
+  - [3.1 Official Website](#nav-3-1)
+- [4. Features](#nav-4)
+- [5. Sponsors](#nav-5)
+- [6. Installation](#nav-6)
+  - [6.1 MacOS](#nav-6-1)
+  - [6.2 Linux](#nav-6-2)
+    - [6.2.1 Debian/Ubuntu](#nav-6-2-1)
+    - [6.2.2 Arch Linux / ArchLabs / Ctlos Linux](#nav-6-2-2)
+    - [6.2.3 Centos](#nav-6-2-3)
+    - [6.2.4 Fedora](#nav-6-2-4)
+    - [6.2.5 VoidLinux & VoidLinux-musl](#nav-6-2-5)
+    - [6.2.6 Gentoo](#nav-6-2-6)
+  - [6.3 Windows](#nav-6-3)
+- [7. Usage](#nav-7)
+  - [7.1 Next Steps](#nav-7-1)
+- [8. FAQ](#nav-8)
+- [9. Contributors](#nav-9)
+- [10. Special Mentions](#nav-10)
+- [12. Special Thanks](#nav-11)
+
+</details>
+
+<span id="nav-3"></span>
+
+## Introductions
 
 The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different
 approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to
 make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
 
+<span id="nav-3-1"></span>
+
+### Official Website
+
 The official docs can be found at [https://wails.app](https://wails.app).
 
 Click [here](https://wails.io) if you are interested in trying out v2 Beta for Windows.
 
-<span id="nav-2"></span>
-
-## Contents
-
-- [1. Internationalization](#nav-1)
-- [2. Contents](#nav-2)
-- [3. Features](#nav-3)
-- [4. Sponsors](#nav-4)
-- [5. Installation](#nav-5)
-   - [5.1 MacOS](#nav-5-1)
-   - [5.2 Linux](#nav-5-2)
-      - [5.2.1 Debian/Ubuntu](#nav-5-2-1)
-      - [5.2.2 Arch Linux / ArchLabs / Ctlos Linux](#nav-5-2-2)
-      - [5.2.3 Centos](#nav-5-2-3)
-      - [5.2.4 Fedora](#nav-5-2-4)
-      - [5.2.5 VoidLinux & VoidLinux-musl](#nav-5-2-5)
-      - [5.2.6 Gentoo](#nav-5-2-6)
-   - [5.3 Windows](#nav-5-3)
-- [6. Installation](#nav-6)
-- [7. Next Steps](#nav-7)
-- [8. FAQ](#nav-8)
-- [9. Contributors](#nav-9)
-- [10. Special Mentions](#nav-10)
-- [11. Special Thanks](#nav-11)
-
-<span id="nav-3"></span>
+<span id="nav-4"></span>
 
 ## Features
 
@@ -67,7 +82,7 @@ Click [here](https://wails.io) if you are interested in trying out v2 Beta for W
 - Powerful cli tool
 - Multiplatform
 
-<span id="nav-4"></span>
+<span id="nav-5"></span>
 
 ## Sponsors
 
@@ -142,7 +157,7 @@ This project is supported by these kind people / companies:
   <img src="https://github.com/DonTomato.png?size=45" width="45"/>
 </a>
 
-<span id="nav-5"></span>
+<span id="nav-6"></span>
 
 ## Installation
 
@@ -152,7 +167,7 @@ an installation of Go. The basic requirements are:
 - Go 1.16
 - npm
 
-<span id="nav-5-1"></span>
+<span id="nav-6-1"></span>
 
 ### MacOS
 
@@ -160,11 +175,11 @@ Make sure you have the xcode command line tools installed. This can be done by r
 
 `xcode-select --install`
 
-<span id="nav-5-2"></span>
+<span id="nav-6-2"></span>
 
 ### Linux
 
-<span id="nav-5-2-1"></span>
+<span id="nav-6-2-1"></span>
 
 #### Debian/Ubuntu
 
@@ -176,7 +191,7 @@ _Ubuntu: 16.04, 18.04, 19.04_
 
 _Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, Kali, Neon_, Pop!\_OS
 
-<span id="nav-5-2-2"></span>
+<span id="nav-6-2-2"></span>
 
 #### Arch Linux / ArchLabs / Ctlos Linux
 
@@ -184,7 +199,7 @@ _Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, K
 
 _Also succesfully test on: Manjaro & ArcoLinux_
 
-<span id="nav-5-2-3"></span>
+<span id="nav-6-2-3"></span>
 
 #### Centos
 
@@ -192,7 +207,7 @@ _Also succesfully test on: Manjaro & ArcoLinux_
 
 _CentOS 6, 7_
 
-<span id="nav-5-2-4"></span>
+<span id="nav-6-2-4"></span>
 
 #### Fedora
 
@@ -200,19 +215,19 @@ _CentOS 6, 7_
 
 _Fedora 29, 30_
 
-<span id="nav-5-2-5"></span>
+<span id="nav-6-2-5"></span>
 
 #### VoidLinux & VoidLinux-musl
 
 `xbps-install gtk+3-devel webkit2gtk-devel`
 
-<span id="nav-5-2-6"></span>
+<span id="nav-6-2-6"></span>
 
 #### Gentoo
 
 `sudo emerge gtk+:3 webkit-gtk`
 
-<span id="nav-5-3"></span>
+<span id="nav-6-3"></span>
 
 ### Windows
 
@@ -220,21 +235,21 @@ Windows requires gcc and related tooling. The recommended download is
 from [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download). Once this is installed, you are good to
 go.
 
-<span id="nav-6"></span>
+<span id="nav-7"></span>
 
-## Installation
+## Usage
 
 **Ensure Go modules are enabled: GO111MODULE=on and go/bin is in your PATH variable.**
 
 Installation is as simple as running the following command:
 
-<pre style='color:white'>
+```
 go get -u github.com/wailsapp/wails/cmd/wails
-</pre>
+```
 
-<span id="nav-7"></span>
+<span id="nav-7-1"></span>
 
-## Next Steps
+### Next Steps
 
 It is recommended at this stage to read the comprehensive documentation at [https://wails.app](https://wails.app).
 
@@ -345,7 +360,7 @@ This project was mainly coded to the following albums:
 
 <p align="center" style="text-align: center">
    <a href="https://pace.dev"><img src="pace.jpeg"/></a><br/>
-   A <i>huge<i/> thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
+   A <i>huge</i> thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
    If you are looking for a Project Management tool that's powerful but quick and easy to use, check them out!<br/><br/>
 </p>
 
