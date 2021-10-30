@@ -21,7 +21,7 @@
 - (void) appendRole :(WailsContext*)ctx :(Role)role;
 
 - (NSMenuItem*) newMenuItemWithContext :(WailsContext*)ctx :(NSString*)title :(SEL)selector :(NSString*)key :(NSEventModifierFlags)flags;
-- (void*) AppendMenuItem :(WailsContext*)ctx :(const char*)label :(const char *)shortcutKey :(int)modifiers :(bool)disabled :(bool)checked :(int)menuItemID;
+- (void*) AppendMenuItem :(WailsContext*)ctx :(NSString*)label :(NSString *)shortcutKey :(int)modifiers :(bool)disabled :(bool)checked :(int)menuItemID;
 - (void) AppendSeparator;
 
 @end

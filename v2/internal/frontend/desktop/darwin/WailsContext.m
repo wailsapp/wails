@@ -115,9 +115,8 @@
     return screen;
 }
 
-- (void) SetTitle:(const char *)title {
-    self.title = [NSString stringWithUTF8String:title];
-    ON_MAIN_THREAD([self.mainWindow setTitle:self.title];)
+- (void) SetTitle:(NSString*)title {
+    ON_MAIN_THREAD([self.mainWindow setTitle:title];)
 }
 
 - (void) Center {
@@ -132,7 +131,7 @@
     return NO;
 }
 
-- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(const char *)appearance :(bool)windowIsTranslucent {
+- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent {
     
     self.urlRequests = [NSMutableDictionary new];
     
@@ -184,8 +183,7 @@
     }
     
     if (appearance != nil) {
-        NSString *name = [NSString stringWithUTF8String:appearance];
-        NSAppearance *nsAppearance = [NSAppearance appearanceNamed:name];
+        NSAppearance *nsAppearance = [NSAppearance appearanceNamed:appearance];
         [self.mainWindow setAppearance:nsAppearance];
     }
     
@@ -415,25 +413,25 @@
 
 
 /***** Dialogs ******/
--(void) MessageDialog :(const char*)dialogType :(const char*)title :(const char*)message :(const char*)button1 :(const char*)button2 :(const char*)button3 :(const char*)button4 :(const char*)defaultButton :(const char*)cancelButton {
+-(void) MessageDialog :(NSString*)dialogType :(NSString*)title :(NSString*)message :(NSString*)button1 :(NSString*)button2 :(NSString*)button3 :(NSString*)button4 :(NSString*)defaultButton :(NSString*)cancelButton :(void*)iconData :(int)iconDataLength {
 
     WailsAlert *alert = [WailsAlert new];
     
     int style = NSAlertStyleInformational;
     if (dialogType != nil ) {
-        if( strcmp(dialogType, "warning") == 0 ) {
+        if( [dialogType isEqualToString:@"warning"] ) {
             style = NSAlertStyleWarning;
         }
-        if( strcmp(dialogType, "error") == 0) {
+        if( [dialogType isEqualToString:@"error"] ) {
             style = NSAlertStyleCritical;
         }
     }
     [alert setAlertStyle:style];
-    if( strlen(title) > 0 ) {
-        [alert setMessageText:[NSString stringWithUTF8String:title]];
+    if( title != nil ) {
+        [alert setMessageText:title];
     }
-    if( strlen(message) > 0 ) {
-        [alert setInformativeText:[NSString stringWithUTF8String:message]];
+    if( message != nil ) {
+        [alert setInformativeText:message];
     }
     
     [alert addButton:button1 :defaultButton :cancelButton];
@@ -441,7 +439,15 @@
     [alert addButton:button3 :defaultButton :cancelButton];
     [alert addButton:button4 :defaultButton :cancelButton];
     
+    NSImage *icon = nil;
+    if (iconData != nil) {
+        NSData *imageData = [NSData dataWithBytes:iconData length:iconDataLength];
+        icon = [[NSImage alloc] initWithData:imageData];
+    }
     ON_MAIN_THREAD(
+                   if( icon != nil) {
+                       [alert setIcon:icon];
+                   }
         [alert.window setLevel:NSFloatingWindowLevel];
 
         long response = [alert runModal];
@@ -462,30 +468,30 @@
     )
 }
 
--(void) OpenFileDialog :(const char*)title :(const char*)defaultFilename :(const char*)defaultDirectory :(bool)allowDirectories :(bool)allowFiles :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)resolveAliases :(bool)showHiddenFiles :(bool)allowMultipleSelection :(const char*)filters {
+-(void) OpenFileDialog :(NSString*)title :(NSString*)defaultFilename :(NSString*)defaultDirectory :(bool)allowDirectories :(bool)allowFiles :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)resolveAliases :(bool)showHiddenFiles :(bool)allowMultipleSelection :(NSString*)filters {
     
     
     // Create the dialog
     NSOpenPanel *dialog = [NSOpenPanel openPanel];
 
     // Valid but appears to do nothing.... :/
-    if( strlen(title) > 0 ) {
-        [dialog setTitle:[NSString stringWithUTF8String:title]];
+    if( title != nil ) {
+        [dialog setTitle:title];
     }
 
     // Filters - semicolon delimited list of file extensions
     if( allowFiles ) {
-        if( filters != nil && strlen(filters) > 0) {
-            NSString *filterString = [[NSString stringWithUTF8String:filters] stringByReplacingOccurrencesOfString:@"*." withString:@""];
-            filterString = [filterString stringByReplacingOccurrencesOfString:@" " withString:@""];
-            NSArray *filterList = [filterString componentsSeparatedByString:@";"];
+        if( filters != nil ) {
+            filters = [filters stringByReplacingOccurrencesOfString:@"*." withString:@""];
+            filters = [filters stringByReplacingOccurrencesOfString:@" " withString:@""];
+            NSArray *filterList = [filters componentsSeparatedByString:@";"];
             [dialog setAllowedFileTypes:filterList];
         } else {
             [dialog setAllowsOtherFileTypes:true];
         }
         // Default Filename
-        if( defaultFilename != NULL && strlen(defaultFilename) > 0 ) {
-            [dialog setNameFieldStringValue:[NSString stringWithUTF8String:defaultFilename]];
+        if( defaultFilename != nil ) {
+            [dialog setNameFieldStringValue:defaultFilename];
         }
         
         [dialog setAllowsMultipleSelection: allowMultipleSelection];
@@ -494,8 +500,8 @@
     }
 
     // Default Directory
-    if( defaultDirectory != NULL && strlen(defaultDirectory) > 0 ) {
-        NSURL *url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:defaultDirectory]];
+    if( defaultDirectory != nil ) {
+        NSURL *url = [NSURL fileURLWithPath:defaultDirectory];
         [dialog setDirectoryURL:url];
     }
 
@@ -523,34 +529,34 @@
 }
 
 
--(void) SaveFileDialog :(const char*)title :(const char*)defaultFilename :(const char*)defaultDirectory :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)showHiddenFiles :(const char*)filters; {
+-(void) SaveFileDialog :(NSString*)title :(NSString*)defaultFilename :(NSString*)defaultDirectory :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)showHiddenFiles :(NSString*)filters; {
     
     
     // Create the dialog
     NSSavePanel *dialog = [NSOpenPanel savePanel];
 
     // Valid but appears to do nothing.... :/
-    if( strlen(title) > 0 ) {
-        [dialog setTitle:[NSString stringWithUTF8String:title]];
+    if( title != nil ) {
+        [dialog setTitle:title];
     }
 
     // Filters - semicolon delimited list of file extensions
-    if( filters != nil && strlen(filters) > 0) {
-        NSString *filterString = [[NSString stringWithUTF8String:filters] stringByReplacingOccurrencesOfString:@"*." withString:@""];
-        filterString = [filterString stringByReplacingOccurrencesOfString:@" " withString:@""];
-        NSArray *filterList = [filterString componentsSeparatedByString:@";"];
+    if( filters != nil ) {
+        filters = [filters stringByReplacingOccurrencesOfString:@"*." withString:@""];
+        filters = [filters stringByReplacingOccurrencesOfString:@" " withString:@""];
+        NSArray *filterList = [filters componentsSeparatedByString:@";"];
         [dialog setAllowedFileTypes:filterList];
     } else {
         [dialog setAllowsOtherFileTypes:true];
     }
     // Default Filename
-    if( defaultFilename != NULL && strlen(defaultFilename) > 0 ) {
-        [dialog setNameFieldStringValue:[NSString stringWithUTF8String:defaultFilename]];
+    if( defaultFilename != nil ) {
+        [dialog setNameFieldStringValue:defaultFilename];
     }
     
     // Default Directory
-    if( defaultDirectory != NULL && strlen(defaultDirectory) > 0 ) {
-        NSURL *url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:defaultDirectory]];
+    if( defaultDirectory != nil ) {
+        NSURL *url = [NSURL fileURLWithPath:defaultDirectory];
         [dialog setDirectoryURL:url];
     }
 
@@ -569,7 +575,7 @@
     
 }
 
-- (void) SetAbout :(const char*)title :(const char*)description :(void*)imagedata :(int)datalen {
+- (void) SetAbout :(NSString*)title :(NSString*)description :(void*)imagedata :(int)datalen {
     self.aboutTitle = title;
     self.aboutDescription = description;
    
@@ -582,10 +588,10 @@
     WailsAlert *alert = [WailsAlert new];
     [alert setAlertStyle:NSAlertStyleInformational];
     if( self.aboutTitle != nil ) {
-        [alert setMessageText:[NSString stringWithUTF8String:self.aboutTitle]];
+        [alert setMessageText:self.aboutTitle];
     }
     if( self.aboutDescription != nil ) {
-        [alert setInformativeText:[NSString stringWithUTF8String:self.aboutDescription]];
+        [alert setInformativeText:self.aboutDescription];
     }
     
     

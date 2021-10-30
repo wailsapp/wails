@@ -11,7 +11,7 @@
 #import <Cocoa/Cocoa.h>
 
 @interface WailsAlert : NSAlert 
-- (void)addButton:(const char*)text :(const char*)defaultButton :(const char*)cancelButton;
+- (void)addButton:(NSString*)text :(NSString*)defaultButton :(NSString*)cancelButton;
 @end
 
 

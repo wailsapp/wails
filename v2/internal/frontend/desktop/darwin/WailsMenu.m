@@ -61,13 +61,12 @@
         case AppMenu:
         {
             NSString *appName = [[NSProcessInfo processInfo] processName];
-            NSString *cap = [appName capitalizedString];
-            WailsMenu *appMenu = [[WailsMenu new] initWithNSTitle:cap];
-            id quitTitle = [@"Quit " stringByAppendingString:cap];
+            WailsMenu *appMenu = [[WailsMenu new] initWithNSTitle:appName];
+            id quitTitle = [@"Quit " stringByAppendingString:appName];
             NSMenuItem* quitMenuItem = [self newMenuItem:quitTitle :@selector(Quit) :@"q" :NSEventModifierFlagCommand];
             quitMenuItem.target = ctx;
             if (ctx.aboutTitle != nil) {
-                [appMenu addItem:[self newMenuItemWithContext :ctx :[@"About " stringByAppendingString:cap] :@selector(About) :nil :0]];
+                [appMenu addItem:[self newMenuItemWithContext :ctx :[@"About " stringByAppendingString:appName] :@selector(About) :nil :0]];
             }
             [appMenu addItem:quitMenuItem];
             [self appendSubmenu:appMenu];
@@ -83,7 +82,7 @@
             [editMenu addItem:[self newMenuItem:@"Copy" :@selector(copy:) :@"c" :NSEventModifierFlagCommand]];
             [editMenu addItem:[self newMenuItem:@"Paste" :@selector(paste:) :@"v" :NSEventModifierFlagCommand]];
             [editMenu addItem:[self newMenuItem:@"Paste and Match Style" :@selector(pasteAsRichText:) :@"v" :(NSEventModifierFlagOption | NSEventModifierFlagShift | NSEventModifierFlagCommand)]];
-            [editMenu addItem:[self newMenuItem:@"Delete" :@selector(delete:) :[self accel:"backspace"] :0]];
+            [editMenu addItem:[self newMenuItem:@"Delete" :@selector(delete:) :[self accel:@"backspace"] :0]];
             [editMenu addItem:[self newMenuItem:@"Select All" :@selector(selectAll:) :@"a" :NSEventModifierFlagCommand]];
             [editMenu addItem:[NSMenuItem separatorItem]];
 //            NSMenuItem *speechMenuItem = [[NSMenuItem new] autorelease];
@@ -100,10 +99,11 @@
     }
 }
 
-- (void*) AppendMenuItem :(WailsContext*)ctx :(const char*)label :(const char *)shortcutKey :(int)modifiers :(bool)disabled :(bool)checked :(int)menuItemID {
+- (void*) AppendMenuItem :(WailsContext*)ctx :(NSString*)label :(NSString *)shortcutKey :(int)modifiers :(bool)disabled :(bool)checked :(int)menuItemID {
+    
     NSString *nslabel = @"";
     if (label != nil ) {
-        nslabel = [NSString stringWithUTF8String:label];
+        nslabel = label;
     }
     WailsMenuItem *menuItem = [WailsMenuItem new];
     
@@ -136,177 +136,177 @@
 }
 
 
-- (NSString*) accel :(const char *)key {
+- (NSString*) accel :(NSString*)key {
 
     // Guard against no accelerator key
     if( key == NULL ) {
-        return [NSString stringWithUTF8String:""];
+        return @"";
     }
 
-    if( STREQ(key, "backspace") ) {
+    if( [key isEqualToString:@"backspace"] ) {
         return unicode(0x0008);
     }
-    if( STREQ(key, "tab") ) {
+    if( [key isEqualToString:@"tab"] ) {
         return unicode(0x0009);
     }
-    if( STREQ(key, "return") ) {
+    if( [key isEqualToString:@"return"] ) {
         return unicode(0x000d);
     }
-    if( STREQ(key, "enter") ) {
+    if( [key isEqualToString:@"enter"] ) {
         return unicode(0x000d);
     }
-    if( STREQ(key, "escape") ) {
+    if( [key isEqualToString:@"escape"] ) {
         return unicode(0x001b);
     }
-    if( STREQ(key, "left") ) {
+    if( [key isEqualToString:@"left"] ) {
         return unicode(0x001c);
     }
-    if( STREQ(key, "right") ) {
+    if( [key isEqualToString:@"right"] ) {
         return unicode(0x001d);
     }
-    if( STREQ(key, "up") ) {
+    if( [key isEqualToString:@"up"] ) {
         return unicode(0x001e);
     }
-    if( STREQ(key, "down") ) {
+    if( [key isEqualToString:@"down"] ) {
         return unicode(0x001f);
     }
-    if( STREQ(key, "space") ) {
+    if( [key isEqualToString:@"space"] ) {
         return unicode(0x0020);
     }
-    if( STREQ(key, "delete") ) {
+    if( [key isEqualToString:@"delete"] ) {
         return unicode(0x007f);
     }
-    if( STREQ(key, "home") ) {
+    if( [key isEqualToString:@"home"] ) {
         return unicode(0x2196);
     }
-    if( STREQ(key, "end") ) {
+    if( [key isEqualToString:@"end"] ) {
         return unicode(0x2198);
     }
-    if( STREQ(key, "page up") ) {
+    if( [key isEqualToString:@"page up"] ) {
         return unicode(0x21de);
     }
-    if( STREQ(key, "page down") ) {
+    if( [key isEqualToString:@"page down"] ) {
         return unicode(0x21df);
     }
-    if( STREQ(key, "f1") ) {
+    if( [key isEqualToString:@"f1"] ) {
         return unicode(0xf704);
     }
-    if( STREQ(key, "f2") ) {
+    if( [key isEqualToString:@"f2"] ) {
         return unicode(0xf705);
     }
-    if( STREQ(key, "f3") ) {
+    if( [key isEqualToString:@"f3"] ) {
         return unicode(0xf706);
     }
-    if( STREQ(key, "f4") ) {
+    if( [key isEqualToString:@"f4"] ) {
         return unicode(0xf707);
     }
-    if( STREQ(key, "f5") ) {
+    if( [key isEqualToString:@"f5"] ) {
         return unicode(0xf708);
     }
-    if( STREQ(key, "f6") ) {
+    if( [key isEqualToString:@"f6"] ) {
         return unicode(0xf709);
     }
-    if( STREQ(key, "f7") ) {
+    if( [key isEqualToString:@"f7"] ) {
         return unicode(0xf70a);
     }
-    if( STREQ(key, "f8") ) {
+    if( [key isEqualToString:@"f8"] ) {
         return unicode(0xf70b);
     }
-    if( STREQ(key, "f9") ) {
+    if( [key isEqualToString:@"f9"] ) {
         return unicode(0xf70c);
     }
-    if( STREQ(key, "f10") ) {
+    if( [key isEqualToString:@"f10"] ) {
         return unicode(0xf70d);
     }
-    if( STREQ(key, "f11") ) {
+    if( [key isEqualToString:@"f11"] ) {
         return unicode(0xf70e);
     }
-    if( STREQ(key, "f12") ) {
+    if( [key isEqualToString:@"f12"] ) {
         return unicode(0xf70f);
     }
-    if( STREQ(key, "f13") ) {
+    if( [key isEqualToString:@"f13"] ) {
         return unicode(0xf710);
     }
-    if( STREQ(key, "f14") ) {
+    if( [key isEqualToString:@"f14"] ) {
         return unicode(0xf711);
     }
-    if( STREQ(key, "f15") ) {
+    if( [key isEqualToString:@"f15"] ) {
         return unicode(0xf712);
     }
-    if( STREQ(key, "f16") ) {
+    if( [key isEqualToString:@"f16"] ) {
         return unicode(0xf713);
     }
-    if( STREQ(key, "f17") ) {
+    if( [key isEqualToString:@"f17"] ) {
         return unicode(0xf714);
     }
-    if( STREQ(key, "f18") ) {
+    if( [key isEqualToString:@"f18"] ) {
         return unicode(0xf715);
     }
-    if( STREQ(key, "f19") ) {
+    if( [key isEqualToString:@"f19"] ) {
         return unicode(0xf716);
     }
-    if( STREQ(key, "f20") ) {
+    if( [key isEqualToString:@"f20"] ) {
         return unicode(0xf717);
     }
-    if( STREQ(key, "f21") ) {
+    if( [key isEqualToString:@"f21"] ) {
         return unicode(0xf718);
     }
-    if( STREQ(key, "f22") ) {
+    if( [key isEqualToString:@"f22"] ) {
         return unicode(0xf719);
     }
-    if( STREQ(key, "f23") ) {
+    if( [key isEqualToString:@"f23"] ) {
         return unicode(0xf71a);
     }
-    if( STREQ(key, "f24") ) {
+    if( [key isEqualToString:@"f24"] ) {
         return unicode(0xf71b);
     }
-    if( STREQ(key, "f25") ) {
+    if( [key isEqualToString:@"f25"] ) {
         return unicode(0xf71c);
     }
-    if( STREQ(key, "f26") ) {
+    if( [key isEqualToString:@"f26"] ) {
         return unicode(0xf71d);
     }
-    if( STREQ(key, "f27") ) {
+    if( [key isEqualToString:@"f27"] ) {
         return unicode(0xf71e);
     }
-    if( STREQ(key, "f28") ) {
+    if( [key isEqualToString:@"f28"] ) {
         return unicode(0xf71f);
     }
-    if( STREQ(key, "f29") ) {
+    if( [key isEqualToString:@"f29"] ) {
         return unicode(0xf720);
     }
-    if( STREQ(key, "f30") ) {
+    if( [key isEqualToString:@"f30"] ) {
         return unicode(0xf721);
     }
-    if( STREQ(key, "f31") ) {
+    if( [key isEqualToString:@"f31"] ) {
         return unicode(0xf722);
     }
-    if( STREQ(key, "f32") ) {
+    if( [key isEqualToString:@"f32"] ) {
         return unicode(0xf723);
     }
-    if( STREQ(key, "f33") ) {
+    if( [key isEqualToString:@"f33"] ) {
         return unicode(0xf724);
     }
-    if( STREQ(key, "f34") ) {
+    if( [key isEqualToString:@"f34"] ) {
         return unicode(0xf725);
     }
-    if( STREQ(key, "f35") ) {
+    if( [key isEqualToString:@"f35"] ) {
         return unicode(0xf726);
     }
-//  if( STREQ(key, "Insert") ) {
+//  if( [key isEqualToString:@"Insert"] ) {
 //    return unicode(0xf727);
 //  }
-//  if( STREQ(key, "PrintScreen") ) {
+//  if( [key isEqualToString:@"PrintScreen"] ) {
 //    return unicode(0xf72e);
 //  }
-//  if( STREQ(key, "ScrollLock") ) {
+//  if( [key isEqualToString:@"ScrollLock"] ) {
 //    return unicode(0xf72f);
 //  }
-    if( STREQ(key, "numLock") ) {
+    if( [key isEqualToString:@"numLock"] ) {
         return unicode(0xf739);
     }
 
-    return [NSString stringWithUTF8String:key];
+    return key;
 }
 
 

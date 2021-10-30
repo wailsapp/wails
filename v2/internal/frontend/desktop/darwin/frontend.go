@@ -274,8 +274,10 @@ func (f *Frontend) processRequest(r *request) {
 		//TODO: Handle errors
 		return
 	}
-	data := C.CString(string(_contents))
-	defer C.free(unsafe.Pointer(data))
+	var data unsafe.Pointer
+	if _contents != nil {
+		data = unsafe.Pointer(&_contents[0])
+	}
 	mimetype := C.CString(_mimetype)
 	defer C.free(unsafe.Pointer(mimetype))
 

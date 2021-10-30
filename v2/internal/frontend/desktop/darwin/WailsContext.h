@@ -44,17 +44,15 @@
 @property (retain) NSMenu* applicationMenu;
 
 @property (retain) NSImage* aboutImage;
-@property const char* aboutTitle;
-@property const char* aboutDescription;
-@property (retain) NSString* appName;
-@property (retain) NSString* title;
+@property (retain) NSString* aboutTitle;
+@property (retain) NSString* aboutDescription;
 
-- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent  :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(const char *)appearance :(bool)windowIsTranslucent;
+- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent  :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString *)appearance :(bool)windowIsTranslucent;
 - (void) SetSize:(int)width :(int)height;
 - (void) SetPosition:(int)x :(int) y;
 - (void) SetMinSize:(int)minWidth :(int)minHeight;
 - (void) SetMaxSize:(int)maxWidth :(int)maxHeight;
-- (void) SetTitle:(const char*)title;
+- (void) SetTitle:(NSString*)title;
 - (void) Center;
 - (void) Fullscreen;
 - (void) UnFullscreen;
@@ -69,16 +67,16 @@
 - (void) Show;
 - (void) Quit;
 
-- (void) MessageDialog :(const char*)dialogType :(const char*)title :(const char*)message :(const char*)button1 :(const char*)button2 :(const char*)button3 :(const char*)button4 :(const char*)defaultButton :(const char*)cancelButton;
-- (void) OpenFileDialog :(const char*)title :(const char*)defaultFilename :(const char*)defaultDirectory :(bool)allowDirectories :(bool)allowFiles :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)resolveAliases :(bool)showHiddenFiles :(bool)allowMultipleSelection :(const char*)filters;
-- (void) SaveFileDialog :(const char*)title :(const char*)defaultFilename :(const char*)defaultDirectory :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)showHiddenFiles :(const char*)filters;
+-(void) MessageDialog :(NSString*)dialogType :(NSString*)title :(NSString*)message :(NSString*)button1 :(NSString*)button2 :(NSString*)button3 :(NSString*)button4 :(NSString*)defaultButton :(NSString*)cancelButton :(void*)iconData :(int)iconDataLength;
+- (void) OpenFileDialog :(NSString*)title :(NSString*)defaultFilename :(NSString*)defaultDirectory :(bool)allowDirectories :(bool)allowFiles :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)resolveAliases :(bool)showHiddenFiles :(bool)allowMultipleSelection :(NSString*)filters;
+- (void) SaveFileDialog :(NSString*)title :(NSString*)defaultFilename :(NSString*)defaultDirectory :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)showHiddenFiles :(NSString*)filters;
 
 - (void) loadRequest:(NSString*)url;
 - (void) processURLResponse:(NSString *)url :(NSString *)contentType :(NSData*)data;
 - (void) ExecJS:(NSString*)script;
 - (NSScreen*) getCurrentScreen;
 
-- (void) SetAbout :(const char*)title :(const char*)description :(void*)imagedata :(int)datalen;
+- (void) SetAbout :(NSString*)title :(NSString*)description :(void*)imagedata :(int)datalen;
 
 @end
 

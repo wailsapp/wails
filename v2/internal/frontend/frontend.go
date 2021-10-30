@@ -55,7 +55,7 @@ type MessageDialogOptions struct {
 	Buttons       []string
 	DefaultButton string
 	CancelButton  string
-	Icon          string
+	Icon          []byte
 }
 
 type Frontend interface {

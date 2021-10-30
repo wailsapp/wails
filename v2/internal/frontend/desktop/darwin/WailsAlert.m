@@ -11,14 +11,14 @@
 
 @implementation WailsAlert
 
-- (void)addButton:(const char*)text :(const char*)defaultButton :(const char*)cancelButton {
+- (void)addButton:(NSString*)text :(NSString*)defaultButton :(NSString*)cancelButton {
     if( text == nil ) {
         return;
     }
-    NSButton *button = [self addButtonWithTitle:[NSString stringWithUTF8String:text]];
-    if( defaultButton != nil && strcmp(text, defaultButton) == 0) {
+    NSButton *button = [self addButtonWithTitle:text];
+    if( defaultButton != nil && [text isEqualToString:defaultButton]) {
         [button setKeyEquivalent:@"\r"];
-    } else if( cancelButton != nil && strcmp(text, cancelButton) == 0) {
+    } else if( cancelButton != nil && [text isEqualToString:cancelButton]) {
         [button setKeyEquivalent:@"\033"];
     } else {
         [button setKeyEquivalent:@""];

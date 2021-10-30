@@ -18,8 +18,8 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
 
     result.debug = debug;
     
-    [result CreateWindow:width :height :frameless :resizable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :appearance :windowIsTranslucent];
-    [result SetTitle:title];
+    [result CreateWindow:width :height :frameless :resizable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent];
+    [result SetTitle:safeInit(title)];
     [result Center];
     
     result.alwaysOnTop = alwaysOnTop;
@@ -28,10 +28,10 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     return result;
 }
 
-void ProcessURLResponse(void *inctx, const char *url, const char *contentType, const char* data, int datalength) {
+void ProcessURLResponse(void *inctx, const char *url, const char *contentType, void* data, int datalength) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
-    NSString *nsurl = [[NSString alloc] initWithUTF8String:url];
-    NSString *nsContentType = [[NSString alloc] initWithUTF8String:contentType];
+    NSString *nsurl = safeInit(url);
+    NSString *nsContentType = safeInit(contentType);
     NSData *nsdata = [NSData dataWithBytes:data length:datalength];
     
     [ctx processURLResponse:nsurl :nsContentType :nsdata];
@@ -39,7 +39,7 @@ void ProcessURLResponse(void *inctx, const char *url, const char *contentType, c
 
 void ExecJS(void* inctx, const char *script) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
-    NSString *nsscript = [NSString stringWithUTF8String:script];
+    NSString *nsscript = safeInit(script);
     ON_MAIN_THREAD(
        [ctx ExecJS:nsscript];
     );
@@ -47,8 +47,9 @@ void ExecJS(void* inctx, const char *script) {
 
 void SetTitle(void* inctx, const char *title) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
+    NSString *_title = safeInit(title);
     ON_MAIN_THREAD(
-       [ctx SetTitle:title];
+       [ctx SetTitle:_title];
     );
 }
 
@@ -176,24 +177,55 @@ void Show(void *inctx) {
     );
 }
 
-void MessageDialog(void *inctx, const char* dialogType, const char* title, const char* message, const char* button1, const char* button2, const char* button3, const char* button4, const char* defaultButton, const char* cancelButton) {
+NSString* safeInit(const char* input) {
+    NSString *result = nil;
+    if (input != nil) {
+        result = [NSString stringWithUTF8String:input];
+    }
+    return result;
+}
+
+void MessageDialog(void *inctx, const char* dialogType, const char* title, const char* message, const char* button1, const char* button2, const char* button3, const char* button4, const char* defaultButton, const char* cancelButton, void* iconData, int iconDataLength) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
+    
+    NSString *_dialogType = safeInit(dialogType);
+    NSString *_title = safeInit(title);
+    NSString *_message = safeInit(message);
+    NSString *_button1 = safeInit(button1);
+    NSString *_button2 = safeInit(button2);
+    NSString *_button3 = safeInit(button3);
+    NSString *_button4 = safeInit(button4);
+    NSString *_defaultButton = safeInit(defaultButton);
+    NSString *_cancelButton = safeInit(cancelButton);
+    
     ON_MAIN_THREAD(
-                   [ctx MessageDialog:dialogType :title :message :button1 :button2 :button3 :button4 :defaultButton :cancelButton];
+                   [ctx MessageDialog:_dialogType :_title :_message :_button1 :_button2 :_button3 :_button4 :_defaultButton :_cancelButton :iconData :iconDataLength];
     )
 }
 
 void OpenFileDialog(void *inctx, const char* title, const char* defaultFilename, const char* defaultDirectory, int allowDirectories, int allowFiles, int canCreateDirectories, int treatPackagesAsDirectories, int resolveAliases, int showHiddenFiles, int allowMultipleSelection, const char* filters) {
+    
     WailsContext *ctx = (__bridge WailsContext*) inctx;
+    NSString *_title = safeInit(title);
+    NSString *_defaultFilename = safeInit(defaultFilename);
+    NSString *_defaultDirectory = safeInit(defaultDirectory);
+    NSString *_filters = safeInit(filters);
+    
     ON_MAIN_THREAD(
-                   [ctx OpenFileDialog:title :defaultFilename :defaultDirectory :allowDirectories :allowFiles :canCreateDirectories :treatPackagesAsDirectories :resolveAliases :showHiddenFiles :allowMultipleSelection :filters];
+                   [ctx OpenFileDialog:_title :_defaultFilename :_defaultDirectory :allowDirectories :allowFiles :canCreateDirectories :treatPackagesAsDirectories :resolveAliases :showHiddenFiles :allowMultipleSelection :_filters];
     )
 }
 
 void SaveFileDialog(void *inctx, const char* title, const char* defaultFilename, const char* defaultDirectory, int canCreateDirectories, int treatPackagesAsDirectories, int showHiddenFiles, const char* filters) {
+    
     WailsContext *ctx = (__bridge WailsContext*) inctx;
+    NSString *_title = safeInit(title);
+    NSString *_defaultFilename = safeInit(defaultFilename);
+    NSString *_defaultDirectory = safeInit(defaultDirectory);
+    NSString *_filters = safeInit(filters);
+    
     ON_MAIN_THREAD(
-                   [ctx SaveFileDialog:title :defaultFilename :defaultDirectory :canCreateDirectories :treatPackagesAsDirectories :showHiddenFiles :filters];
+                   [ctx SaveFileDialog:_title :_defaultFilename :_defaultDirectory :canCreateDirectories :treatPackagesAsDirectories :showHiddenFiles :_filters];
     )
 }
 
@@ -226,13 +258,19 @@ void SetAsApplicationMenu(void *inctx, void *inMenu) {
 
 void SetAbout(void *inctx, const char* title, const char* description, void* imagedata, int datalen) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
-    [ctx SetAbout :title :description :imagedata :datalen];
+    NSString *_title = safeInit(title);
+    NSString *_description = safeInit(description);
+
+    [ctx SetAbout :_title :_description :imagedata :datalen];
 }
 
 void* AppendMenuItem(void* inctx, void* inMenu, const char* label, const char* shortcutKey, int modifiers, int disabled, int checked, int menuItemID) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     WailsMenu *menu = (__bridge WailsMenu*) inMenu;
-    return [menu AppendMenuItem:ctx :label :shortcutKey :modifiers :disabled :checked :menuItemID];
+    NSString *_label = safeInit(label);
+    NSString *_shortcutKey = safeInit(shortcutKey);
+
+    return [menu AppendMenuItem:ctx :_label :_shortcutKey :modifiers :disabled :checked :menuItemID];
 }
 
 void UpdateMenuItem(void* nsmenuitem, int checked) {

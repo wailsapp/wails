@@ -36,11 +36,11 @@ void Quit(void*);
 const char* GetSize(void *ctx);
 const char* GetPos(void *ctx);
 
-void ProcessURLResponse(void *inctx, const char *url, const char *contentType, const char *data, int datalength);
+void ProcessURLResponse(void *inctx, const char *url, const char *contentType, void* data, int datalength);
 
 /* Dialogs */
 
-void MessageDialog(void *inctx, const char* dialogType, const char* title, const char* message, const char* button1, const char* button2, const char* button3, const char* button4, const char* defaultButton, const char* cancelButton);
+void MessageDialog(void *inctx, const char* dialogType, const char* title, const char* message, const char* button1, const char* button2, const char* button3, const char* button4, const char* defaultButton, const char* cancelButton, void* iconData, int iconDataLength);
 void OpenFileDialog(void *inctx, const char* title, const char* defaultFilename, const char* defaultDirectory, int allowDirectories, int allowFiles, int canCreateDirectories, int treatPackagesAsDirectories, int resolveAliases, int showHiddenFiles, int allowMultipleSelection, const char* filters);
 void SaveFileDialog(void *inctx, const char* title, const char* defaultFilename, const char* defaultDirectory, int canCreateDirectories, int treatPackagesAsDirectories, int showHiddenFiles, const char* filters);
 
@@ -54,4 +54,7 @@ void SetAbout(void *inctx, const char* title, const char* description, void* ima
 void* AppendMenuItem(void* inctx, void* nsmenu, const char* label, const char* shortcutKey, int modifiers, int disabled, int checked, int menuItemID);
 void AppendSeparator(void* inMenu);
 void UpdateMenuItem(void* nsmenuitem, int checked);
+
+NSString* safeInit(const char* input);
+
 #endif /* Application_h */

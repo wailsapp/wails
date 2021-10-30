@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"unsafe"
 
 	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -155,7 +156,14 @@ func (f *Frontend) MessageDialog(options frontend.MessageDialogOptions) (string,
 		buttons[index] = c.String(buttonText)
 	}
 
-	C.MessageDialog(f.mainWindow.context, dialogType, title, message, buttons[0], buttons[1], buttons[2], buttons[3], defaultButton, cancelButton)
+	var iconData unsafe.Pointer
+	var iconDataLength C.int
+	if options.Icon != nil {
+		iconData = unsafe.Pointer(&options.Icon[0])
+		iconDataLength = C.int(len(options.Icon))
+	}
+
+	C.MessageDialog(f.mainWindow.context, dialogType, title, message, buttons[0], buttons[1], buttons[2], buttons[3], defaultButton, cancelButton, iconData, iconDataLength)
 
 	var result = <-messageDialogResponse
 
