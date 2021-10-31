@@ -462,16 +462,14 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 
 		debugBinaryProcess = nil
 	}
+	args := slicer.StringSlicer{}
+
+	// Set environment variables accordingly
+	os.Setenv("loglevel", flags.loglevel)
+	os.Setenv("assetdir", flags.assetDir)
+	os.Setenv("devserverurl", flags.devServerURL)
 
 	// Start up new binary with correct args
-	args := slicer.StringSlicer{}
-	args.Add("-loglevel", flags.loglevel)
-	if flags.assetDir != "" {
-		args.Add("-assetdir", flags.assetDir)
-	}
-	if flags.devServerURL != "" {
-		args.Add("-devserverurl", flags.devServerURL)
-	}
 	newProcess := process.NewProcess(appBinary, args.AsSlice()...)
 	err = newProcess.Start(exitCodeChannel)
 	if err != nil {
