@@ -256,6 +256,14 @@ void SetAsApplicationMenu(void *inctx, void *inMenu) {
     ctx.applicationMenu = menu;
 }
 
+void UpdateApplicationMenu(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+                   NSApplication *app = [NSApplication sharedApplication];
+                   [app setMainMenu:ctx.applicationMenu];
+    )
+}
+
 void SetAbout(void *inctx, const char* title, const char* description, void* imagedata, int datalen) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSString *_title = safeInit(title);
