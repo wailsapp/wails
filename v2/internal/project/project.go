@@ -53,6 +53,9 @@ type Project struct {
 
 	// The url to use to server assets. Default "https://localhost:34115"
 	DevServerURL string `json:"devserverurl"`
+
+	// Arguments that are forwared to the application in dev mode
+	AppArgs string `json:"appargs"`
 }
 
 func (p *Project) Save() error {
