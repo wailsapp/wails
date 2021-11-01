@@ -5,7 +5,9 @@ package appng
 
 import (
 	"context"
-	"flag"
+	"os"
+	"path/filepath"
+
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop"
@@ -19,8 +21,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/signal"
 	pkglogger "github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"os"
-	"path/filepath"
 )
 
 // App defines a Wails application structure
@@ -60,19 +60,20 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	myLogger.SetLogLevel(appoptions.LogLevel)
 
 	// Check for CLI Flags
-	assetdir := flag.String("assetdir", "", "Directory to serve assets")
-	devServerURL := flag.String("devserverurl", "", "URL of development server")
-	loglevel := flag.String("loglevel", "debug", "Loglevel to use - Trace, Debug, Info, Warning, Error")
-	flag.Parse()
-	if devServerURL != nil && *devServerURL != "" {
-		ctx = context.WithValue(ctx, "devserverurl", *devServerURL)
+
+	assetdir := os.Getenv("assetdir")
+	devServerURL := os.Getenv("devserverurl")
+	loglevel := os.Getenv("loglevel")
+
+	if devServerURL != "" {
+		ctx = context.WithValue(ctx, "devserverurl", devServerURL)
 	}
-	if assetdir != nil && *assetdir != "" {
-		ctx = context.WithValue(ctx, "assetdir", *assetdir)
+	if assetdir != "" {
+		ctx = context.WithValue(ctx, "assetdir", assetdir)
 	}
 
-	if loglevel != nil && *loglevel != "" {
-		level, err := pkglogger.StringToLogLevel(*loglevel)
+	if loglevel != "" {
+		level, err := pkglogger.StringToLogLevel(loglevel)
 		if err != nil {
 			return nil, err
 		}

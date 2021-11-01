@@ -16,10 +16,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/google/shlex"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal"
 	"github.com/wailsapp/wails/v2/internal/gomod"
 
-	"github.com/leaanthony/slicer"
 	"github.com/wailsapp/wails/v2/internal/project"
 
 	"github.com/pkg/browser"
@@ -72,6 +72,7 @@ type devFlags struct {
 	forceBuild      bool
 	debounceMS      int
 	devServerURL    string
+	appargs         string
 }
 
 // AddSubcommand adds the `dev` command for the Wails application
@@ -93,6 +94,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.BoolFlag("f", "Force build application", &flags.forceBuild)
 	command.IntFlag("debounce", "The amount of time to wait to trigger a reload on change", &flags.debounceMS)
 	command.StringFlag("devserverurl", "The url of the dev server to use", &flags.devServerURL)
+	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space searated)", &flags.appargs)
 
 	command.Action(func() error {
 		// Create logger
@@ -353,6 +355,10 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 		shouldSaveConfig = true
 	}
 
+	if flags.appargs == "" && projectConfig.AppArgs != "" {
+		flags.appargs = projectConfig.AppArgs
+	}
+
 	if shouldSaveConfig {
 		err = projectConfig.Save()
 		if err != nil {
@@ -463,16 +469,20 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 		debugBinaryProcess = nil
 	}
 
+	// parse appargs if any
+	args, err := shlex.Split(flags.appargs)
+
+	if err != nil {
+		buildOptions.Logger.Fatal("Unable to parse appargs: %s", err.Error())
+	}
+
+	// Set environment variables accordingly
+	os.Setenv("loglevel", flags.loglevel)
+	os.Setenv("assetdir", flags.assetDir)
+	os.Setenv("devserverurl", flags.devServerURL)
+
 	// Start up new binary with correct args
-	args := slicer.StringSlicer{}
-	args.Add("-loglevel", flags.loglevel)
-	if flags.assetDir != "" {
-		args.Add("-assetdir", flags.assetDir)
-	}
-	if flags.devServerURL != "" {
-		args.Add("-devserverurl", flags.devServerURL)
-	}
-	newProcess := process.NewProcess(appBinary, args.AsSlice()...)
+	newProcess := process.NewProcess(appBinary, args...)
 	err = newProcess.Start(exitCodeChannel)
 	if err != nil {
 		// Remove binary
