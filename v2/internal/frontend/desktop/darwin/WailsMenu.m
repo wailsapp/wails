@@ -60,7 +60,7 @@
     switch(role) {
         case AppMenu:
         {
-            NSString *appName = [[NSProcessInfo processInfo] processName];
+            NSString *appName = [NSRunningApplication currentApplication].localizedName;
             WailsMenu *appMenu = [[WailsMenu new] initWithNSTitle:appName];
             id quitTitle = [@"Quit " stringByAppendingString:appName];
             NSMenuItem* quitMenuItem = [self newMenuItem:quitTitle :@selector(Quit) :@"q" :NSEventModifierFlagCommand];
