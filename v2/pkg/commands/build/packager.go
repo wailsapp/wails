@@ -1,16 +1,12 @@
 package build
 
 import (
-	"bytes"
 	"fmt"
 	"image"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
-	"strings"
-	"text/template"
 
 	"github.com/leaanthony/winicon"
 	"github.com/tc-hib/winres"
@@ -113,7 +109,7 @@ func packageApplicationForDarwin(options *Options) error {
 	}
 
 	// Generate Icons
-	err = processApplicationIcon(resourceDir, options.ProjectData.BuildDir)
+	err = processApplicationIcon(resourceDir, options.ProjectData.Path)
 	if err != nil {
 		return err
 	}
@@ -126,11 +122,11 @@ func packageApplicationForDarwin(options *Options) error {
 func processPList(options *Options, contentsDirectory string) error {
 
 	// Check if plist already exists in project dir
-	plistFile := filepath.Join(options.ProjectData.BuildDir, "darwin", "Info.plist")
-
+	plistFileDir := filepath.Join(options.ProjectData.Path, "build", "darwin")
+	plistFile := filepath.Join(plistFileDir, "Info.plist")
 	// If the file doesn't exist, generate it
 	if !fs.FileExists(plistFile) {
-		err := generateDefaultPlist(options, plistFile)
+		err := buildassets.RegeneratePlist(plistFileDir, options.ProjectData.Name)
 		if err != nil {
 			return err
 		}
@@ -139,65 +135,6 @@ func processPList(options *Options, contentsDirectory string) error {
 	// Copy it to the contents directory
 	targetFile := filepath.Join(contentsDirectory, "Info.plist")
 	return fs.CopyFile(plistFile, targetFile)
-}
-
-func generateDefaultPlist(options *Options, targetPlistFile string) error {
-	name := defaultString(options.ProjectData.Name, "WailsTest")
-	exe := defaultString(options.OutputFile, name)
-	version := "1.0.0"
-	author := defaultString(options.ProjectData.Author.Name, "Anonymous")
-	packageID := strings.Join([]string{"wails", name}, ".")
-	plistData := newPlistData(name, exe, packageID, version, author)
-
-	tmpl := template.New("infoPlist")
-	plistTemplate := fs.RelativePath("./internal/packager/darwin/Info.plist")
-	infoPlist, err := ioutil.ReadFile(plistTemplate)
-	if err != nil {
-		return errors.Wrap(err, "Cannot open plist template")
-	}
-	_, err = tmpl.Parse(string(infoPlist))
-	if err != nil {
-		return err
-	}
-	// Write the template to a buffer
-	var tpl bytes.Buffer
-	err = tmpl.Execute(&tpl, plistData)
-	if err != nil {
-		return err
-	}
-
-	// Create the directory if it doesn't exist
-	err = fs.MkDirs(filepath.Dir(targetPlistFile))
-	if err != nil {
-		return err
-	}
-	// Save the file
-	return ioutil.WriteFile(targetPlistFile, tpl.Bytes(), 0644)
-}
-
-func defaultString(val string, defaultVal string) string {
-	if val != "" {
-		return val
-	}
-	return defaultVal
-}
-
-type plistData struct {
-	Title     string
-	Exe       string
-	PackageID string
-	Version   string
-	Author    string
-}
-
-func newPlistData(title, exe, packageID, version, author string) *plistData {
-	return &plistData{
-		Title:     title,
-		Exe:       exe,
-		Version:   version,
-		PackageID: packageID,
-		Author:    author,
-	}
 }
 
 func processApplicationIcon(resourceDir string, iconsDir string) (err error) {
