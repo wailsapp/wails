@@ -32,7 +32,7 @@ void processCallback(int callbackID) {
 void processURLRequest(void *ctx, const char* url) {
     NSLog(@"processURLRequest called");
     const char myByteArray[] = { 0x3c,0x68,0x31,0x3e,0x48,0x65,0x6c,0x6c,0x6f,0x20,0x57,0x6f,0x72,0x6c,0x64,0x21,0x3c,0x2f,0x68,0x31,0x3e };
-    ProcessURLResponse(ctx, url, "text/html", myByteArray, 21);
+    ProcessURLResponse(ctx, url, "text/html", (void*)myByteArray, 21);
 }
 
 unsigned char _Users_username_Pictures_SaltBae_png[] = {
@@ -200,17 +200,17 @@ unsigned int _Users_username_Pictures_SaltBae_png_len = 1863;
 
 int main(int argc, const char * argv[]) {
     // insert code here...
-    int frameless = 0;
-    int resizable = 1;
+    int frameless = 1;
+    int resizable = 0;
     int fullscreen = 0;
     int fullSizeContent = 1;
     int hideTitleBar = 0;
-    int titlebarAppearsTransparent = 1;
+    int titlebarAppearsTransparent = 0;
     int hideTitle = 0;
-    int useToolbar = 1;
-    int hideToolbarSeparator = 1;
-    int webviewIsTransparent = 0;
-    int alwaysOnTop = 1;
+    int useToolbar = 0;
+    int hideToolbarSeparator = 0;
+    int webviewIsTransparent = 1;
+    int alwaysOnTop = 0;
     int hideWindowOnClose = 0;
     const char* appearance = "NSAppearanceNameDarkAqua";
     int windowIsTranslucent = 1;
