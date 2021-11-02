@@ -61,6 +61,9 @@
         case AppMenu:
         {
             NSString *appName = [NSRunningApplication currentApplication].localizedName;
+            if( appName == nil ) {
+                appName = [[NSProcessInfo processInfo] processName];
+            }
             WailsMenu *appMenu = [[WailsMenu new] initWithNSTitle:appName];
             id quitTitle = [@"Quit " stringByAppendingString:appName];
             NSMenuItem* quitMenuItem = [self newMenuItem:quitTitle :@selector(Quit) :@"q" :NSEventModifierFlagCommand];
