@@ -117,21 +117,21 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		}
 
 		// Tags
-		experimental := false
+		//experimental := false
 		userTags := []string{}
 		for _, tag := range strings.Split(tags, " ") {
 			thisTag := strings.TrimSpace(tag)
 			if thisTag != "" {
 				userTags = append(userTags, thisTag)
 			}
-			if thisTag == "exp" {
-				experimental = true
-			}
+			//if thisTag == "exp" {
+			//	experimental = true
+			//}
 		}
 
-		if runtime.GOOS == "darwin" && !experimental {
-			return fmt.Errorf("MacOS version coming soon!")
-		}
+		//if runtime.GOOS == "darwin" && !experimental {
+		//	return fmt.Errorf("MacOS version coming soon!")
+		//}
 
 		// Webview2 installer strategy (download by default)
 		wv2rtstrategy := ""
