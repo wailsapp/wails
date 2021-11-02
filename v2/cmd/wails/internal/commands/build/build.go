@@ -5,10 +5,14 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"text/tabwriter"
 	"time"
+
+	"github.com/wailsapp/wails/v2/cmd/wails/internal"
+	"github.com/wailsapp/wails/v2/internal/gomod"
 
 	"github.com/wailsapp/wails/v2/internal/system"
 
@@ -205,6 +209,11 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		fmt.Fprintf(w, "\n")
 		w.Flush()
 
+		err = checkGoModVersion(logger)
+		if err != nil {
+			return err
+		}
+
 		return doBuild(buildOptions)
 	})
 }
@@ -226,5 +235,31 @@ func doBuild(buildOptions *build.Options) error {
 	buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.", outputFilename, elapsed.Round(time.Millisecond).String()))
 	buildOptions.Logger.Println("")
 
+	return nil
+}
+
+func checkGoModVersion(logger *clilogger.CLILogger) error {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	gomodFilename := filepath.Join(cwd, "go.mod")
+	gomodData, err := os.ReadFile(gomodFilename)
+	if err != nil {
+		return err
+	}
+	outOfSync, err := gomod.GoModOutOfSync(gomodData, internal.Version)
+	if err != nil {
+		return err
+	}
+	if !outOfSync {
+		return nil
+	}
+	gomodversion, err := gomod.GetWailsVersionFromModFile(gomodData)
+	if err != nil {
+		return err
+	}
+
+	logger.Println("Warning: go.mod is using Wails '%s' but the CLI is '%s'. Consider updating it.\n", gomodversion.String(), internal.Version)
 	return nil
 }
