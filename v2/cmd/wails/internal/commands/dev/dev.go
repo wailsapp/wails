@@ -113,8 +113,8 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			}
 		}
 
-		if runtime.GOOS == "darwin" && !experimental {
-			return fmt.Errorf("MacOS version coming soon!")
+		if runtime.GOOS == "linux" && !experimental {
+			return fmt.Errorf("Linux version coming soon!")
 		}
 
 		cwd, err := os.Getwd()
