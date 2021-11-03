@@ -93,7 +93,7 @@
     if ( currentFrame.size.height > self.maxSize.height ) currentFrame.size.height = self.maxSize.height;
     if ( currentFrame.size.height < self.minSize.height ) currentFrame.size.height = self.minSize.height;
 
-    [self.mainWindow setFrame:currentFrame display:TRUE animate:FALSE];
+    [self.mainWindow setFrame:currentFrame display:YES animate:FALSE];
     
 }
 
@@ -135,41 +135,46 @@
     
     self.urlRequests = [NSMutableDictionary new];
     
-    NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
+    NSWindowStyleMask styleMask = NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
     
     if (frameless) {
         styleMask = NSWindowStyleMaskBorderless;
+        titlebarAppearsTransparent = true;
+        hideTitle = true;
     } else {
-        if (resizable) {
-            styleMask |= NSWindowStyleMaskResizable;
+        if (!hideTitleBar) {
+            styleMask |= NSWindowStyleMaskTitled;
+        }
+        
+        if (fullscreen) {
+            styleMask |= NSWindowStyleMaskFullScreen;
+        }
+        
+        if( fullSizeContent || frameless || titlebarAppearsTransparent ) {
+            styleMask |= NSWindowStyleMaskFullSizeContentView;
         }
     }
-    if (fullscreen) {
-        styleMask |= NSWindowStyleMaskFullScreen;
-    }
     
-    if( fullSizeContent || frameless || titlebarAppearsTransparent ) {
-        styleMask |= NSWindowStyleMaskFullSizeContentView;
+    if (resizable) {
+        styleMask |= NSWindowStyleMaskResizable;
     }
     
     self.mainWindow = [[[WailsWindow alloc] initWithContentRect:NSMakeRect(0, 0, width, height)
                                                       styleMask:styleMask backing:NSBackingStoreBuffered defer:NO]
                        autorelease];
-    
-    if (frameless) {
-        return;
-    }
-    
-    if (useToolbar) {
+        
+    if (!frameless && useToolbar) {
         id toolbar = [[NSToolbar alloc] initWithIdentifier:@"wails.toolbar"];
         [toolbar autorelease];
         [toolbar setShowsBaselineSeparator:!hideToolbarSeparator];
         [self.mainWindow setToolbar:toolbar];
+    
     }
     
     [self.mainWindow setTitleVisibility:hideTitle];
     [self.mainWindow setTitlebarAppearsTransparent:titlebarAppearsTransparent];
-    [self.mainWindow canBecomeKeyWindow];
+    
+//    [self.mainWindow canBecomeKeyWindow];
     
     id contentView = [self.mainWindow contentView];
     if (windowIsTranslucent) {
@@ -203,7 +208,7 @@
     config.suppressesIncrementalRendering = true;
     [config setURLSchemeHandler:self forURLScheme:@"wails"];
     
-    [config.preferences setValue:[NSNumber numberWithBool:true] forKey:@"developerExtrasEnabled"];
+//    [config.preferences setValue:[NSNumber numberWithBool:true] forKey:@"developerExtrasEnabled"];
     
     WKUserContentController* userContentController = [WKUserContentController new];
     [userContentController addScriptMessageHandler:self name:@"external"];
