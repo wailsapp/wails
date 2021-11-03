@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"log"
+	"runtime"
 
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
@@ -92,6 +93,13 @@ func MergeDefaults(appoptions *App) {
 	}
 	if appoptions.MaxHeight > 0 && appoptions.Height > appoptions.MaxHeight {
 		appoptions.Height = appoptions.MaxHeight
+	}
+
+	switch runtime.GOOS {
+	case "darwin":
+		if appoptions.Menu == nil {
+			appoptions.Menu = defaultMacMenu
+		}
 	}
 
 }
