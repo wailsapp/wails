@@ -5,6 +5,7 @@ package appng
 
 import (
 	"context"
+
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop"
@@ -12,7 +13,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
-	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -20,7 +20,6 @@ import (
 type App struct {
 	frontend frontend.Frontend
 	logger   *logger.Logger
-	signal   *signal.Manager
 	options  *options.App
 
 	menuManager *menumanager.Manager
@@ -39,6 +38,7 @@ func (a *App) Run() error {
 	if a.shutdownCallback != nil {
 		a.shutdownCallback(a.ctx)
 	}
+
 	return err
 }
 
