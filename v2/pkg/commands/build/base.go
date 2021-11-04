@@ -298,7 +298,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 			if v != "" {
 				v += " "
 			}
-			v += "-I" + buildBaseDir
+			v += "-mmacosx-version-min=10.13"
 			return v
 		})
 		// Use upsertEnv so we don't overwrite user's CGO_CXXFLAGS
@@ -313,6 +313,17 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		cmd.Env = upsertEnv(cmd.Env, "CGO_ENABLED", func(v string) string {
 			return "1"
 		})
+		if runtime.GOOS == "darwin" {
+			// Set the minimum Mac SDK to 10.13
+			cmd.Env = upsertEnv(cmd.Env, "CGO_LDFLAGS", func(v string) string {
+				if v != "" {
+					v += " "
+				}
+				v += "-mmacosx-version-min=10.13"
+
+				return v
+			})
+		}
 	}
 
 	cmd.Env = upsertEnv(cmd.Env, "GOOS", func(v string) string {
