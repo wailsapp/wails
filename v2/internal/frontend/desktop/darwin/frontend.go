@@ -214,6 +214,9 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 
 func (f *Frontend) Quit() {
 	f.mainWindow.Quit()
+	if f.frontendOptions.OnShutdown != nil {
+		f.frontendOptions.OnShutdown(f.ctx)
+	}
 }
 
 type EventNotify struct {
@@ -235,6 +238,14 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 }
 
 func (f *Frontend) processMessage(message string) {
+
+	if message == "DomReady" {
+		if f.frontendOptions.OnDomReady != nil {
+			f.frontendOptions.OnDomReady(f.ctx)
+		}
+		return
+	}
+
 	result, err := f.dispatcher.ProcessMessage(message, f)
 	if err != nil {
 		f.logger.Error(err.Error())
