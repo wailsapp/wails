@@ -4,6 +4,7 @@
   "assetdir": "frontend/dist",
   "frontend:install": "npm install",
   "frontend:build": "npm run build",
+  "frontend:dev": "npm run build",
   "author": {
     "name": "{{.AuthorName}}",
     "email": "{{.AuthorEmail}}"
