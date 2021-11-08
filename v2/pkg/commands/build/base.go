@@ -17,7 +17,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/leaanthony/slicer"
-	"github.com/ryboe/q"
 	"github.com/wailsapp/wails/v2/internal/assetdb"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/html"
@@ -527,8 +526,6 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 		}
 		outputLogger.Println("Done.")
 	}
-
-	q.Q(b.projectData)
 
 	// Check if there is a build command
 	var buildCommand string
