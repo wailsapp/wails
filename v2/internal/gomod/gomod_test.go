@@ -76,7 +76,7 @@ const basicUpdated string = `module changeme
 
 go 1.17
 
-require github.com/wailsapp/wails/v2 v2.0.0-beta.16
+require github.com/wailsapp/wails/v2 v2.0.0-beta.17
 
 require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
@@ -331,7 +331,7 @@ const multilineRequireUpdated = `module changeme
 go 1.17
 
 require (
-	github.com/wailsapp/wails/v2 v2.0.0-beta.16
+	github.com/wailsapp/wails/v2 v2.0.0-beta.17
 )
 
 require (
@@ -382,12 +382,12 @@ func TestUpdateGoModVersion(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		{"basic", args{[]byte(basic), "v2.0.0-beta.16"}, []byte(basicUpdated), false},
-		{"basicmultiline", args{[]byte(multilineRequire), "v2.0.0-beta.16"}, []byte(multilineRequireUpdated), false},
-		{"basicmultilinereplace", args{[]byte(multilineReplace), "v2.0.0-beta.16"}, []byte(multilineReplaceUpdated), false},
-		{"basicmultilinereplaceblock", args{[]byte(multilineReplaceBlock), "v2.0.0-beta.16"}, []byte(multilineReplaceBlockUpdated), false},
-		{"basicmultilinereplacenoversion", args{[]byte(multilineReplaceNoVersion), "v2.0.0-beta.16"}, []byte(multilineReplaceNoVersionUpdated), false},
-		{"basicmultilinereplacenoversionblock", args{[]byte(multilineReplaceNoVersionBlock), "v2.0.0-beta.16"}, []byte(multilineReplaceNoVersionBlockUpdated), false},
+		{"basic", args{[]byte(basic), "v2.0.0-beta.17"}, []byte(basicUpdated), false},
+		{"basicmultiline", args{[]byte(multilineRequire), "v2.0.0-beta.17"}, []byte(multilineRequireUpdated), false},
+		{"basicmultilinereplace", args{[]byte(multilineReplace), "v2.0.0-beta.17"}, []byte(multilineReplaceUpdated), false},
+		{"basicmultilinereplaceblock", args{[]byte(multilineReplaceBlock), "v2.0.0-beta.17"}, []byte(multilineReplaceBlockUpdated), false},
+		{"basicmultilinereplacenoversion", args{[]byte(multilineReplaceNoVersion), "v2.0.0-beta.17"}, []byte(multilineReplaceNoVersionUpdated), false},
+		{"basicmultilinereplacenoversionblock", args{[]byte(multilineReplaceNoVersionBlock), "v2.0.0-beta.17"}, []byte(multilineReplaceNoVersionBlockUpdated), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -414,8 +414,8 @@ func TestGoModOutOfSync(t *testing.T) {
 		want    bool
 		wantErr bool
 	}{
-		{"basic", args{[]byte(basic), "v2.0.0-beta.16"}, true, false},
-		{"basicmultiline", args{[]byte(multilineRequire), "v2.0.0-beta.16"}, true, false},
+		{"basic", args{[]byte(basic), "v2.0.0-beta.17"}, true, false},
+		{"basicmultiline", args{[]byte(multilineRequire), "v2.0.0-beta.17"}, true, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -434,7 +434,7 @@ const multilineReplaceUpdated = `module changeme
 go 1.17
 
 require (
-	github.com/wailsapp/wails/v2 v2.0.0-beta.16
+	github.com/wailsapp/wails/v2 v2.0.0-beta.17
 )
 
 require (
@@ -469,14 +469,14 @@ require (
 	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect
 )
 
-replace github.com/wailsapp/wails/v2 v2.0.0-beta.16 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2
+replace github.com/wailsapp/wails/v2 v2.0.0-beta.17 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2
 `
 const multilineReplaceNoVersionUpdated = `module changeme
 
 go 1.17
 
 require (
-	github.com/wailsapp/wails/v2 v2.0.0-beta.16
+	github.com/wailsapp/wails/v2 v2.0.0-beta.17
 )
 
 require (
@@ -518,7 +518,7 @@ const multilineReplaceNoVersionBlockUpdated = `module changeme
 go 1.17
 
 require (
-	github.com/wailsapp/wails/v2 v2.0.0-beta.16
+	github.com/wailsapp/wails/v2 v2.0.0-beta.17
 )
 
 require (
@@ -563,7 +563,7 @@ const multilineReplaceBlockUpdated = `module changeme
 go 1.17
 
 require (
-	github.com/wailsapp/wails/v2 v2.0.0-beta.16
+	github.com/wailsapp/wails/v2 v2.0.0-beta.17
 )
 
 require (
@@ -599,6 +599,6 @@ require (
 )
 
 replace (
-	github.com/wailsapp/wails/v2 v2.0.0-beta.16 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2
+	github.com/wailsapp/wails/v2 v2.0.0-beta.17 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2
 )
 `
