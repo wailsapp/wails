@@ -1,12 +1,11 @@
 html {
-  background-color: rgba(33, 37, 43, 0.5);
+  background-color: rgba(33, 37, 43, 0.2);
   text-align: center;
   color: white;
 }
 
 body {
   margin: 0;
-  color: white;
   font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
   "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
   sans-serif;
