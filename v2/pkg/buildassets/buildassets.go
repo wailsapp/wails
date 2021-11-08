@@ -2,10 +2,11 @@ package buildassets
 
 import (
 	"embed"
-	"github.com/leaanthony/debme"
-	"github.com/leaanthony/gosod"
 	"os"
 	"path/filepath"
+
+	"github.com/leaanthony/debme"
+	"github.com/leaanthony/gosod"
 )
 
 //go:embed build
@@ -49,4 +50,18 @@ func RegenerateAppIcon(target string) error {
 		return err
 	}
 	return a.CopyFile("appicon.png", target, 0644)
+}
+
+func RegeneratePlist(targetDir string, projectName string) error {
+	darwinAssets, err := debme.FS(assets, "build/darwin")
+	if err != nil {
+		return err
+	}
+	templateDir := gosod.New(darwinAssets)
+	err = templateDir.Extract(targetDir, &assetData{Name: projectName})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

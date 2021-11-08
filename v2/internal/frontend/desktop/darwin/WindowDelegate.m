@@ -9,10 +9,11 @@
 #import <Cocoa/Cocoa.h>
 #import "WindowDelegate.h"
 #import "message.h"
+#import "WailsContext.h"
 
 @implementation WindowDelegate
 
-- (BOOL)windowShouldClose:(NSWindow *)sender {
+- (BOOL)windowShouldClose:(WailsWindow *)sender {
     [sender orderOut:nil];
     if( self.hideOnClose == false ) {
         processMessage("Q");

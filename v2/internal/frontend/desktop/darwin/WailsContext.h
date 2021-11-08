@@ -13,14 +13,12 @@
 
 #define ON_MAIN_THREAD(str) dispatch_async(dispatch_get_main_queue(), ^{ str; });
 #define unicode(input) [NSString stringWithFormat:@"%C", input]
-#define STREQ(a,b) strcmp(a, b) == 0
-
 
 @interface WailsWindow : NSWindow
 - (BOOL)canBecomeKeyWindow;
 @end
 
-@interface WailsContext : NSObject <WKURLSchemeHandler,WKScriptMessageHandler>
+@interface WailsContext : NSObject <WKURLSchemeHandler,WKScriptMessageHandler,WKNavigationDelegate>
 
 @property (retain) WailsWindow* mainWindow;
 @property (retain) WKWebView* webview;

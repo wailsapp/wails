@@ -18,7 +18,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/internal/project"
-	"github.com/wailsapp/wails/v2/internal/signal"
 	pkglogger "github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
@@ -27,7 +26,6 @@ import (
 type App struct {
 	frontend frontend.Frontend
 	logger   *logger.Logger
-	signal   *signal.Manager
 	options  *options.App
 
 	menuManager *menumanager.Manager

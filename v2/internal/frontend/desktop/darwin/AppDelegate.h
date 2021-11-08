@@ -9,11 +9,12 @@
 #define AppDelegate_h
 
 #import <Cocoa/Cocoa.h>
+#import "WailsContext.h"
 
 @interface AppDelegate : NSResponder <NSTouchBarProvider>
 
 @property bool alwaysOnTop;
-@property (retain) NSWindow* mainWindow;
+@property (retain) WailsWindow* mainWindow;
 
 @end
 

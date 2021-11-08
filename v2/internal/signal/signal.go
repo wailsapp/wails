@@ -35,7 +35,7 @@ func NewManager(ctx context.Context, cancel context.CancelFunc, bus *servicebus.
 
 	result := &Manager{
 		bus:           bus,
-		logger:        logger.CustomLogger("Event Manager"),
+		logger:        logger.CustomLogger("Signal Manager"),
 		signalchannel: make(chan os.Signal, 2),
 		ctx:           ctx,
 		cancel:        cancel,
@@ -49,7 +49,7 @@ func NewManager(ctx context.Context, cancel context.CancelFunc, bus *servicebus.
 func (m *Manager) Start() {
 
 	// Hook into interrupts
-	gosignal.Notify(m.signalchannel, os.Interrupt, syscall.SIGTERM)
+	gosignal.Notify(m.signalchannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 
 	m.wg.Add(1)
 

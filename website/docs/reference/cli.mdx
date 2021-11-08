@@ -74,6 +74,12 @@ Example:
 
 `wails build -clean -o myproject.exe`
 
+:::info UPX on Apple Silicon
+
+  There are [issues](https://github.com/upx/upx/issues/446) with using UPX with Apple Silicon.
+
+:::
+
 ## doctor
 
 `wails doctor` will run diagnostics to ensure that your system is ready for development.
@@ -135,6 +141,7 @@ Your system is ready for Wails development!
 |  -debounce         | The time to wait for reload after an asset change is detected  | 100 (milliseconds) |
 |  -devserverurl "url"         | Use 3rd party dev server url, EG Vite  | "http://localhost:34115" |
 |  -appargs "args"         | Arguments passed to the application in shell style  | |
+|  -platform "platform"    | Platform/Arch to target | `runtime.GOOS` |
 
 If the `assetdir`, `wailsjsdir`, `debounce` or `devserverurl` flags are provided on the command line, they are saved in
 `wails.json`, and become the defaults for subsequent invocations.

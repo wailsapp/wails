@@ -29,7 +29,7 @@
 
 - [1. Internationalization](#nav-1)
 - [2. Table of Contents](#nav-2)
-- [3. Introductions](#nav-3)
+- [3. Introduction](#nav-3)
   - [3.1 Official Website](#nav-3-1)
 - [4. Features](#nav-4)
 - [5. Sponsors](#nav-5)

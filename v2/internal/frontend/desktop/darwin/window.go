@@ -215,19 +215,12 @@ func (w *Window) Size() (int, int) {
 	return parseIntDuo(temp)
 }
 
-//func (w *Window) parseMenu(inMenu *menu.Menu) {
-//	for index, item := range inMenu.Items {
-//		switch item.Type {
-//		case menu.TextType:
-//			// Create NSMenuItem
-//			// Append to NSMenu
-//			// Keep track of index
-//		}
-//	}
-//}
-
 func (w *Window) SetApplicationMenu(inMenu *menu.Menu) {
 	mainMenu := NewNSMenu(w.context, "")
 	processMenu(mainMenu, inMenu)
 	C.SetAsApplicationMenu(w.context, mainMenu.nsmenu)
+}
+
+func (w *Window) UpdateApplicationMenu() {
+	C.UpdateApplicationMenu(w.context)
 }

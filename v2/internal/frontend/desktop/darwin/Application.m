@@ -14,6 +14,8 @@
 
 WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug) {
     
+    [NSApplication sharedApplication];
+
     WailsContext *result = [WailsContext new];
 
     result.debug = debug;
@@ -254,6 +256,14 @@ void SetAsApplicationMenu(void *inctx, void *inMenu) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     WailsMenu *menu = (__bridge WailsMenu*) inMenu;
     ctx.applicationMenu = menu;
+}
+
+void UpdateApplicationMenu(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+                   NSApplication *app = [NSApplication sharedApplication];
+                   [app setMainMenu:ctx.applicationMenu];
+    )
 }
 
 void SetAbout(void *inctx, const char* title, const char* description, void* imagedata, int datalen) {

@@ -13,6 +13,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.17.0
 	github.com/gofiber/websocket/v2 v2.0.8
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/gorilla/websocket v1.4.1
 	github.com/imdario/mergo v0.3.12
@@ -56,11 +57,11 @@ require (
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/google/go-cmp v0.5.5 // indirect
-	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/klauspost/compress v1.12.2 // indirect
+	github.com/kr/pretty v0.3.0 // indirect
 	github.com/logrusorgru/aurora v0.0.0-20181002194514-a7b3b318ed4e // indirect
 	github.com/mattn/go-runewidth v0.0.7 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
