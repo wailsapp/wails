@@ -5,6 +5,7 @@ package appng
 
 import (
 	"context"
+	"flag"
 	"os"
 	"path/filepath"
 
@@ -58,10 +59,37 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	myLogger.SetLogLevel(appoptions.LogLevel)
 
 	// Check for CLI Flags
+	var assetdirFlag *string
+	var devServerURLFlag *string
+	var loglevelFlag *string
 
 	assetdir := os.Getenv("assetdir")
+	if assetdir == "" {
+		assetdirFlag = flag.String("assetdir", "", "Directory to serve assets")
+	}
 	devServerURL := os.Getenv("devserverurl")
+	if devServerURL == "" {
+		devServerURLFlag = flag.String("devserverurl", "", "URL of development server")
+	}
+
 	loglevel := os.Getenv("loglevel")
+	if loglevel == "" {
+		loglevelFlag = flag.String("loglevel", "debug", "Loglevel to use - Trace, Debug, Info, Warning, Error")
+	}
+
+	// If we weren't given the assetdir in the environment variables
+	if assetdir == "" {
+		flag.Parse()
+		if assetdirFlag != nil {
+			assetdir = *assetdirFlag
+		}
+		if devServerURLFlag != nil {
+			devServerURL = *devServerURLFlag
+		}
+		if loglevelFlag != nil {
+			loglevel = *loglevelFlag
+		}
+	}
 
 	if devServerURL != "" {
 		ctx = context.WithValue(ctx, "devserverurl", devServerURL)
