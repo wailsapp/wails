@@ -214,9 +214,6 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 
 func (f *Frontend) Quit() {
 	f.mainWindow.Quit()
-	if f.frontendOptions.OnShutdown != nil {
-		f.frontendOptions.OnShutdown(f.ctx)
-	}
 }
 
 type EventNotify struct {

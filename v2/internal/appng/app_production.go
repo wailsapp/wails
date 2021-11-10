@@ -35,6 +35,9 @@ type App struct {
 
 func (a *App) Run() error {
 	err := a.frontend.Run(a.ctx)
+	if a.shutdownCallback != nil {
+		a.shutdownCallback(a.ctx)
+	}
 	return err
 }
 
