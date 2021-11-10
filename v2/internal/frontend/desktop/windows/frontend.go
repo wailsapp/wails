@@ -130,10 +130,6 @@ func (f *Frontend) Run(ctx context.Context) error {
 		}
 	}()
 
-	if f.frontendOptions.Fullscreen {
-		mainWindow.Fullscreen()
-	}
-
 	mainWindow.Run()
 	mainWindow.Close()
 	return nil
@@ -412,11 +408,6 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 		go f.frontendOptions.OnDomReady(f.ctx)
 	}
 
-	// If you want to start hidden, return
-	if f.frontendOptions.StartHidden {
-		return
-	}
-
 	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026
 	err := f.chromium.Hide()
 	if err != nil {
@@ -426,6 +417,24 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 	if err != nil {
 		log.Fatal(err)
 	}
-	f.mainWindow.Show()
+
+	if f.frontendOptions.StartHidden {
+		return
+	}
+
+	switch f.frontendOptions.WindowStartState {
+	case options.Maximised:
+		f.mainWindow.Maximise()
+	case options.Minimised:
+		f.mainWindow.Minimise()
+	case options.Fullscreen:
+		f.mainWindow.Fullscreen()
+		f.mainWindow.Show()
+	default:
+		if f.frontendOptions.Fullscreen {
+			f.mainWindow.Fullscreen()
+		}
+		f.mainWindow.Show()
+	}
 
 }
