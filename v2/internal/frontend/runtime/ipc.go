@@ -1,5 +1,3 @@
-//go:build darwin || windows
-
 package runtime
 
 import _ "embed"
