@@ -3,6 +3,7 @@ package options
 import (
 	"context"
 	"embed"
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"log"
 	"runtime"
 
@@ -44,6 +45,7 @@ type App struct {
 	//TrayMenus    []*menu.TrayMenu
 	Windows *windows.Options
 	Mac     *mac.Options
+	Linux   *linux.Options
 }
 
 type RGBA struct {

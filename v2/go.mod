@@ -49,6 +49,8 @@ require (
 	nhooyr.io/websocket v1.8.6
 )
 
+require github.com/gotk3/gotk3 v0.6.1
+
 require (
 	github.com/Microsoft/go-winio v0.4.16 // indirect
 	github.com/andybalholm/brotli v1.0.2 // indirect

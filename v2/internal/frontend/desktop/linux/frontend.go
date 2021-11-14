@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"strconv"
 	"text/template"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
@@ -14,6 +15,8 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
+
+	"github.com/gotk3/gotk3/gtk"
 )
 
 type Frontend struct {
@@ -82,6 +85,9 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 	result.assets = assets
 
+	// Initialise GTK
+	gtk.Init(nil)
+
 	return result
 }
 
@@ -101,14 +107,14 @@ func (f *Frontend) Run(ctx context.Context) error {
 		f.debug = _debug.(bool)
 	}
 
-	f.WindowCenter()
+	//f.WindowCenter()
 	//f.setupChromium()
 	//
-	//mainWindow.OnSize().Bind(func(arg *winc.Event) {
+	//gtkWindow.OnSize().Bind(func(arg *winc.Event) {
 	//	f.chromium.Resize()
 	//})
 	//
-	//mainWindow.OnClose().Bind(func(arg *winc.Event) {
+	//gtkWindow.OnClose().Bind(func(arg *winc.Event) {
 	//	if f.frontendOptions.HideWindowOnClose {
 	//		f.WindowHide()
 	//	} else {
@@ -177,13 +183,13 @@ func (f *Frontend) WindowMaximise() {
 	f.mainWindow.Maximise()
 }
 func (f *Frontend) WindowUnmaximise() {
-	f.mainWindow.Restore()
+	f.mainWindow.UnMaximise()
 }
 func (f *Frontend) WindowMinimise() {
 	f.mainWindow.Minimise()
 }
 func (f *Frontend) WindowUnminimise() {
-	f.mainWindow.Restore()
+	f.mainWindow.UnMinimise()
 }
 
 func (f *Frontend) WindowSetMinSize(width int, height int) {
@@ -202,7 +208,7 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 		return
 	}
 	//
-	//f.mainWindow.Dispatch(func() {
+	//f.gtkWindow.Dispatch(func() {
 	//	controller := f.chromium.GetController()
 	//	controller2 := controller.GetICoreWebView2Controller2()
 	//
@@ -240,10 +246,10 @@ func (f *Frontend) Quit() {
 //	chromium.WebResourceRequestedCallback = f.processRequest
 //	chromium.NavigationCompletedCallback = f.navigationCompleted
 //	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
-//		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
+//		w32.PostMessage(f.gtkWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
 //		return false
 //	}
-//	chromium.Embed(f.mainWindow.Handle())
+//	chromium.Embed(f.gtkWindow.Handle())
 //	chromium.Resize()
 //	settings, err := chromium.GetSettings()
 //	if err != nil {
@@ -363,21 +369,19 @@ func (f *Frontend) processMessage(message string) {
 }
 
 func (f *Frontend) Callback(message string) {
-	//f.mainWindow.Dispatch(func() {
-	//	f.chromium.Eval(`window.wails.Callback(` + strconv.Quote(message) + `);`)
-	//})
+	f.ExecJS(`window.wails.Callback(` + strconv.Quote(message) + `);`)
 }
 
 func (f *Frontend) startDrag() error {
 	//if !w32.ReleaseCapture() {
 	//	return fmt.Errorf("unable to release mouse capture")
 	//}
-	//w32.SendMessage(f.mainWindow.Handle(), w32.WM_NCLBUTTONDOWN, w32.HTCAPTION, 0)
+	//w32.SendMessage(f.gtkWindow.Handle(), w32.WM_NCLBUTTONDOWN, w32.HTCAPTION, 0)
 	return nil
 }
 
 func (f *Frontend) ExecJS(js string) {
-	//f.mainWindow.Dispatch(func() {
+	//f.gtkWindow.Dispatch(func() {
 	//	f.chromium.Eval(js)
 	//})
 }
@@ -392,6 +396,6 @@ func (f *Frontend) ExecJS(js string) {
 //		return
 //	}
 //
-//	f.mainWindow.Show()
+//	f.gtkWindow.Show()
 //
 //}
