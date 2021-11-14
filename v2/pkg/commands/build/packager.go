@@ -27,6 +27,8 @@ func packageProject(options *Options, platform string) error {
 		err = packageApplicationForDarwin(options)
 	case "windows":
 		err = packageApplicationForWindows(options)
+	case "linux":
+		err = packageApplicationForLinux(options)
 	default:
 		err = fmt.Errorf("packing not supported for %s yet", platform)
 	}
@@ -200,6 +202,29 @@ func packageApplicationForWindows(options *Options) error {
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func packageApplicationForLinux(options *Options) error {
+	// Generate icon
+	//var err error
+	//err = generateIcoFile(options)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// Ensure Manifest is present
+	//err = generateManifest(options)
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//// Create syso file
+	//err = compileResources(options)
+	//if err != nil {
+	//	return err
+	//}
 
 	return nil
 }
