@@ -14,6 +14,7 @@
 @interface AppDelegate : NSResponder <NSTouchBarProvider>
 
 @property bool alwaysOnTop;
+@property bool startHidden;
 @property (retain) WailsWindow* mainWindow;
 
 @end

@@ -19,7 +19,7 @@
 }
 
 - (NSMenuItem*) newMenuItemWithContext :(WailsContext*)ctx :(NSString*)title :(SEL)selector :(NSString*)key :(NSEventModifierFlags)flags {
-    NSMenuItem *result = [[NSMenuItem new] autorelease];
+    NSMenuItem *result = [NSMenuItem new];
     if ( title != nil ) {
         [result setTitle:title];
     }
@@ -45,7 +45,7 @@
         [super initWithTitle:title];
     }
     [self setAutoenablesItems:NO];
-    return self;
+    return [self init];
 }
 
 - (void) appendSubmenu :(WailsMenu*)child {

@@ -18,24 +18,24 @@ type Window struct {
 	dispatchq       []func()
 }
 
-func NewWindow(parent winc.Controller, options *options.App) *Window {
+func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 	result := new(Window)
-	result.frontendOptions = options
+	result.frontendOptions = appoptions
 	result.SetIsForm(true)
 
 	var exStyle int
-	if options.Windows != nil {
+	if appoptions.Windows != nil {
 		exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
-		if options.Windows.WindowIsTranslucent {
+		if appoptions.Windows.WindowIsTranslucent {
 			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
 	}
-	if options.AlwaysOnTop {
+	if appoptions.AlwaysOnTop {
 		exStyle |= w32.WS_EX_TOPMOST
 	}
 
 	var dwStyle = w32.WS_OVERLAPPEDWINDOW
-	if options.Frameless {
+	if appoptions.Frameless {
 		dwStyle = w32.WS_POPUP
 	}
 
@@ -44,7 +44,7 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 	result.SetParent(parent)
 
 	loadIcon := true
-	if options.Windows != nil && options.Windows.DisableWindowIcon == true {
+	if appoptions.Windows != nil && appoptions.Windows.DisableWindowIcon == true {
 		loadIcon = false
 	}
 	if loadIcon {
@@ -53,21 +53,21 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 		}
 	}
 
-	result.SetSize(options.Width, options.Height)
-	result.SetText(options.Title)
-	if options.Frameless == false && !options.Fullscreen {
-		result.EnableMaxButton(!options.DisableResize)
-		result.EnableSizable(!options.DisableResize)
-		result.SetMinSize(options.MinWidth, options.MinHeight)
-		result.SetMaxSize(options.MaxWidth, options.MaxHeight)
+	result.SetSize(appoptions.Width, appoptions.Height)
+	result.SetText(appoptions.Title)
+	if appoptions.Frameless == false && !appoptions.Fullscreen {
+		result.EnableMaxButton(!appoptions.DisableResize)
+		result.EnableSizable(!appoptions.DisableResize)
+		result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
+		result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
 	}
 
-	if options.Windows != nil {
-		if options.Windows.WindowIsTranslucent {
+	if appoptions.Windows != nil {
+		if appoptions.Windows.WindowIsTranslucent {
 			result.SetTranslucentBackground()
 		}
 
-		if options.Windows.DisableWindowIcon {
+		if appoptions.Windows.DisableWindowIcon {
 			result.DisableIcon()
 		}
 	}
@@ -78,8 +78,8 @@ func NewWindow(parent winc.Controller, options *options.App) *Window {
 
 	result.SetFont(winc.DefaultFont)
 
-	if options.Menu != nil {
-		result.SetApplicationMenu(options.Menu)
+	if appoptions.Menu != nil {
+		result.SetApplicationMenu(appoptions.Menu)
 	}
 
 	return result

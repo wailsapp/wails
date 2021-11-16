@@ -16,6 +16,15 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/logger"
 )
 
+type WindowStartState int
+
+const (
+	Normal     WindowStartState = 0
+	Maximised  WindowStartState = 1
+	Minimised  WindowStartState = 2
+	Fullscreen WindowStartState = 3
+)
+
 // App contains options for creating the App
 type App struct {
 	Title             string
@@ -40,6 +49,7 @@ type App struct {
 	OnDomReady        func(ctx context.Context) `json:"-"`
 	OnShutdown        func(ctx context.Context) `json:"-"`
 	Bind              []interface{}
+	WindowStartState  WindowStartState
 
 	//ContextMenus []*menu.ContextMenu
 	//TrayMenus    []*menu.TrayMenu
