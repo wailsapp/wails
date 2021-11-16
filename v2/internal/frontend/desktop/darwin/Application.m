@@ -12,7 +12,7 @@
 #import "WailsMenu.h"
 #import "WailsMenuItem.h"
 
-WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug) {
+WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug, int windowStartState, int startsHidden) {
     
     [NSApplication sharedApplication];
 
@@ -20,9 +20,26 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
 
     result.debug = debug;
     
+    if ( windowStartState == WindowStartsFullscreen ) {
+        fullscreen = 1;
+    }
+
     [result CreateWindow:width :height :frameless :resizable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent];
     [result SetTitle:safeInit(title)];
     [result Center];
+    
+    switch( windowStartState ) {
+        case WindowStartsMaximised:
+            [result.mainWindow zoom:nil];
+            break;
+        case WindowStartsMinimised:
+            //TODO: Can you start a mac app minimised?
+            break;
+    }
+
+    if ( startsHidden == 1 ) {
+        result.startHidden = true;
+    }
     
     result.alwaysOnTop = alwaysOnTop;
     result.hideOnClose = hideWindowOnClose;
@@ -306,6 +323,7 @@ void Run(void *inctx) {
     ctx.appdelegate = delegate;
     delegate.mainWindow = ctx.mainWindow;
     delegate.alwaysOnTop = ctx.alwaysOnTop;
+    delegate.startHidden = ctx.startHidden;
 
     [ctx loadRequest:@"wails://wails/"];
     [app setMainMenu:ctx.applicationMenu];

@@ -26,6 +26,7 @@
 
 @property bool hideOnClose;
 @property bool shuttingDown;
+@property bool startHidden;
 
 @property NSSize maxSize;
 @property NSSize minSize;

@@ -533,9 +533,9 @@
         NSData *jsonData = [NSJSONSerialization dataWithJSONObject:arr options:0 error:nil];
         NSString *nsjson = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
         processOpenFileDialogResponse([nsjson UTF8String]);
+        [nsjson release];
+        [arr release];
     }];
-    
-    ON_MAIN_THREAD([dialog runModal];)
     
 }
 
@@ -579,11 +579,13 @@
     // Setup callback handler
     [dialog beginSheetModalForWindow:self.mainWindow completionHandler:^(NSModalResponse returnCode) {
         NSURL *url = [dialog URL];
-        processSaveFileDialogResponse([url.path UTF8String]);
+        if ( url != nil ) {
+            processSaveFileDialogResponse([url.path UTF8String]);
+            return;
+        }
+        processSaveFileDialogResponse("");
     }];
-    
-    ON_MAIN_THREAD([dialog runModal];)
-    
+        
 }
 
 - (void) SetAbout :(NSString*)title :(NSString*)description :(void*)imagedata :(int)datalen {

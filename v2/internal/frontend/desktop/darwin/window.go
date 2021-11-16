@@ -47,6 +47,7 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 	fullscreen := bool2Cint(frontendOptions.Fullscreen)
 	alwaysOnTop := bool2Cint(frontendOptions.AlwaysOnTop)
 	hideWindowOnClose := bool2Cint(frontendOptions.HideWindowOnClose)
+	startsHidden := bool2Cint(frontendOptions.StartHidden)
 	debug := bool2Cint(debugMode)
 
 	var fullSizeContent, hideTitleBar, hideTitle, useToolbar, webviewIsTransparent C.int
@@ -55,6 +56,7 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 
 	width := C.int(frontendOptions.Width)
 	height := C.int(frontendOptions.Height)
+	windowStartState := C.int(int(frontendOptions.WindowStartState))
 
 	title = c.String(frontendOptions.Title)
 
@@ -75,7 +77,7 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 	}
 	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent,
 		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
-		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug)
+		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug, windowStartState, startsHidden)
 
 	// Create menu
 	result := &Window{

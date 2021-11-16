@@ -16,14 +16,20 @@
 }
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification {
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-    [self.mainWindow makeKeyAndOrderFront:self];
     if (self.alwaysOnTop) {
         [self.mainWindow setLevel:NSStatusWindowLevel];
+    }
+    if ( !self.startHidden ) {
+        [self.mainWindow makeKeyAndOrderFront:self];
     }
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     [NSApp activateIgnoringOtherApps:YES];
+}
+
+- (void)dealloc {
+    [super dealloc];
 }
 
 @synthesize touchBar;
