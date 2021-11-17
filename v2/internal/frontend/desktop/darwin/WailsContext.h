@@ -10,7 +10,10 @@
 
 #import <Cocoa/Cocoa.h>
 #import <WebKit/WebKit.h>
+
+#if __has_include(<UniformTypeIdentifiers/UTType.h>)
 #import <UniformTypeIdentifiers/UTType.h>
+#endif
 
 #define ON_MAIN_THREAD(str) dispatch_async(dispatch_get_main_queue(), ^{ str; });
 #define unicode(input) [NSString stringWithFormat:@"%C", input]
