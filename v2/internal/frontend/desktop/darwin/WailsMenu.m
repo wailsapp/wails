@@ -64,7 +64,7 @@
             if( appName == nil ) {
                 appName = [[NSProcessInfo processInfo] processName];
             }
-            WailsMenu *appMenu = [[WailsMenu new] initWithNSTitle:appName];
+            WailsMenu *appMenu = [[[WailsMenu new] initWithNSTitle:appName] autorelease];
             id quitTitle = [@"Quit " stringByAppendingString:appName];
             NSMenuItem* quitMenuItem = [self newMenuItem:quitTitle :@selector(Quit) :@"q" :NSEventModifierFlagCommand];
             quitMenuItem.target = ctx;
@@ -77,7 +77,7 @@
         }
         case EditMenu:
         {
-            WailsMenu *editMenu = [[WailsMenu new] initWithNSTitle:@"Edit"];
+            WailsMenu *editMenu = [[[WailsMenu new] initWithNSTitle:@"Edit"] autorelease];
             [editMenu addItem:[self newMenuItem:@"Undo" :@selector(undoActionName) :@"z" :NSEventModifierFlagCommand]];
             [editMenu addItem:[self newMenuItem:@"Redo" :@selector(redoActionName) :@"z" :(NSEventModifierFlagShift | NSEventModifierFlagCommand)]];
             [editMenu addItem:[NSMenuItem separatorItem]];
@@ -91,7 +91,7 @@
 //            NSMenuItem *speechMenuItem = [[NSMenuItem new] autorelease];
 //            [speechMenuItem setTitle:@"Speech"];
 //            [editMenu addItem:speechMenuItem];
-            WailsMenu *speechMenu =  [[WailsMenu new] initWithNSTitle:@"Speech"];
+            WailsMenu *speechMenu =  [[[WailsMenu new] initWithNSTitle:@"Speech"] autorelease];
             [speechMenu addItem:[self newMenuItem:@"Start Speaking" :@selector(startSpeaking:) :@""]];
             [speechMenu addItem:[self newMenuItem:@"Stop Speaking" :@selector(stopSpeaking:) :@""]];
             [editMenu appendSubmenu:speechMenu];

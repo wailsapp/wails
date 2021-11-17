@@ -10,6 +10,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <WebKit/WebKit.h>
+#import <UniformTypeIdentifiers/UTType.h>
 
 #define ON_MAIN_THREAD(str) dispatch_async(dispatch_get_main_queue(), ^{ str; });
 #define unicode(input) [NSString stringWithFormat:@"%C", input]
@@ -76,6 +77,7 @@
 - (NSScreen*) getCurrentScreen;
 
 - (void) SetAbout :(NSString*)title :(NSString*)description :(void*)imagedata :(int)datalen;
+- (void) dealloc;
 
 @end
 

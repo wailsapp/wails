@@ -98,13 +98,13 @@
 }
 
 - (void) dealloc {
-    [super dealloc];
     [self.appdelegate release];
     [self.mainWindow release];
     [self.mouseEvent release];
     [self.userContentController release];
     [self.urlRequests release];
     [self.applicationMenu release];
+    [super dealloc];
 }
 
 - (NSScreen*) getCurrentScreen {
@@ -278,7 +278,7 @@
 }
 
 - (NSMenu*) newMenu :(NSString*)title {
-    WailsMenu *result = [[[WailsMenu new] initWithTitle:title] autorelease];
+    WailsMenu *result = [[WailsMenu new] initWithTitle:title];
     [result setAutoenablesItems:NO];
     return result;
 }
@@ -376,15 +376,15 @@
 - (void) processURLResponse:(NSString *)url :(NSString *)contentType :(NSData *)data {
     id<WKURLSchemeTask> urlSchemeTask = self.urlRequests[url];
     NSURL *nsurl = [NSURL URLWithString:url];
-    
-    NSHTTPURLResponse *response = [NSHTTPURLResponse new];
     NSMutableDictionary *headerFields = [NSMutableDictionary new];
     headerFields[@"content-type"] = contentType;
-    [response initWithURL:nsurl statusCode:200 HTTPVersion:@"HTTP/1.1" headerFields:headerFields];
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse new] initWithURL:nsurl statusCode:200 HTTPVersion:@"HTTP/1.1" headerFields:headerFields];
     [urlSchemeTask didReceiveResponse:response];
     [urlSchemeTask didReceiveData:data];
     [urlSchemeTask didFinish];
     [self.urlRequests removeObjectForKey:url];
+    [response release];
+    [headerFields release];
 }
 
 - (void)webView:(nonnull WKWebView *)webView startURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
@@ -492,11 +492,20 @@
 
     // Filters - semicolon delimited list of file extensions
     if( allowFiles ) {
-        if( filters != nil ) {
+        if( filters != nil && [filters length] > 0) {
             filters = [filters stringByReplacingOccurrencesOfString:@"*." withString:@""];
             filters = [filters stringByReplacingOccurrencesOfString:@" " withString:@""];
             NSArray *filterList = [filters componentsSeparatedByString:@";"];
-            [dialog setAllowedFileTypes:filterList];
+            if (@available(macOS 10.16, *)) {
+                NSMutableArray *contentTypes = [[NSMutableArray new] autorelease];
+                for (NSString *filter in filterList) {
+                    UTType *t = [UTType typeWithFilenameExtension:filter];
+                    [contentTypes addObject:t];
+                }
+                [dialog setAllowedContentTypes:contentTypes];
+            } else {
+                [dialog setAllowedFileTypes:filterList];
+            }
         } else {
             [dialog setAllowsOtherFileTypes:true];
         }
