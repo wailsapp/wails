@@ -78,10 +78,16 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 			input := methodType.In(inputIndex)
 			thisParam := newParameter("", input)
 
+			thisInput := input
+
+			if thisInput.Kind() == reflect.Slice {
+				thisInput = thisInput.Elem()
+			}
+
 			// Process struct pointer params
-			if input.Kind() == reflect.Ptr {
-				if input.Elem().Kind() == reflect.Struct {
-					typ := input.Elem()
+			if thisInput.Kind() == reflect.Ptr {
+				if thisInput.Elem().Kind() == reflect.Struct {
+					typ := thisInput.Elem()
 					a := reflect.New(typ)
 					s := reflect.Indirect(a).Interface()
 					b.converter.Add(s)
@@ -89,8 +95,8 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 			}
 
 			// Process struct params
-			if input.Kind() == reflect.Struct {
-				a := reflect.New(input)
+			if thisInput.Kind() == reflect.Struct {
+				a := reflect.New(thisInput)
 				s := reflect.Indirect(a).Interface()
 				b.converter.Add(s)
 			}
@@ -108,6 +114,30 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 		for outputIndex := 0; outputIndex < outputParamCount; outputIndex++ {
 			output := methodType.Out(outputIndex)
 			thisParam := newParameter("", output)
+
+			thisOutput := output
+
+			if thisOutput.Kind() == reflect.Slice {
+				thisOutput = thisOutput.Elem()
+			}
+
+			// Process struct pointer params
+			if thisOutput.Kind() == reflect.Ptr {
+				if thisOutput.Elem().Kind() == reflect.Struct {
+					typ := thisOutput.Elem()
+					a := reflect.New(typ)
+					s := reflect.Indirect(a).Interface()
+					b.converter.Add(s)
+				}
+			}
+
+			// Process struct params
+			if thisOutput.Kind() == reflect.Struct {
+				a := reflect.New(thisOutput)
+				s := reflect.Indirect(a).Interface()
+				b.converter.Add(s)
+			}
+
 			outputs = append(outputs, thisParam)
 		}
 		boundMethod.Outputs = outputs

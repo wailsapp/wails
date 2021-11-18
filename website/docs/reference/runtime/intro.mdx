@@ -8,9 +8,19 @@ The runtime is a library that provides utility methods for your application. The
 and the aim is to try and keep them at parity where possible.
 
 The Go Runtime is available through importing `github.com/wailsapp/wails/v2/pkg/runtime`. All methods in this package
-take a context as the first parameter. This context can be obtained from the [OnStartup](/docs/reference/options#OnStartup)
-or [OnDomReady](/docs/reference/options#OnDomReady) hooks.
+take a context as the first parameter. This context can be obtained from the [OnStartup](/docs/reference/options#onstartup)
+or [OnDomReady](/docs/reference/options#ondomready) hooks.
+
+:::info Note
+
+Whilst the context will be provided to the
+[OnStartup](/docs/reference/options#onstartup) method, there's no guarantee the runtime will work in this method as
+the window is initialising in a different thread. If
+you wish to call runtime methods at startup, use [OnDomReady](/docs/reference/options#ondomready).
+
+:::
 
 The Javascript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev`
 mode that provides Typescript declarations for the runtime. This should be located in the `wailsjs` directory in your
 frontend directory.
+
