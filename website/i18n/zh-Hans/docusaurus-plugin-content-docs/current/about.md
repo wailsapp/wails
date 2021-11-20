@@ -10,10 +10,9 @@ sidebar_position: 1
 
 Wails 是一个可让您使用 Go 和 Web 技术编写桌面应用的项目。
 
-将它看作为 Go 的轻量级和快速的 Electron 替代品。 您可以使用 Go 的灵活性和强大功能，结合丰富的现代前端，轻松的构建应用程序。
+将它看作为 Go 的快并且轻量的 Electron 替代品。 您可以使用 Go 的灵活性和强大功能，结合丰富的现代前端，轻松的构建应用程序。
 
-Wails 一点也不弱！这是 [xbar](https://xbarapp.com) - 一个使用 Wails 编写的 MacOS 桌面应用。它使用 Mac 的系统原生菜单，支持浅色和深色桌面主题，主窗口使用半透明，使其具有原生应用的
-“冰霜” 效果。
+Wails 一点也不弱！这是 [xbar](https://xbarapp.com) - 一个使用 Wails 编写的 MacOS 桌面应用。它使用 Mac 的系统原生菜单，支持浅色和深色桌面主题，主窗口使用半透明，使其具有原生应用的“冰霜” 效果。
 
 <div class="text--center">
   <a href="https://xbarapp.com"><img src="/img/xbar-app-preview-2.png"/></a>
@@ -21,7 +20,7 @@ Wails 一点也不弱！这是 [xbar](https://xbarapp.com) - 一个使用 Wails 
 
 ## 原生元素
 
-Wails 使用专门的库来处理原生元素，例如窗口、菜单、对话框等，因此您可以构建美观、功能丰富的桌面应用程序。
+Wails 使用专门构建的库来处理原生元素，例如窗口、菜单、对话框等，因此您可以构建美观、功能丰富的桌面应用程序。
 
 **它不嵌入浏览器**，因此性能高。相反，它使用平台的原生渲染引擎。在 Windows 上，是基于 Chromium 构建的新 Microsoft Webview2 库。
 

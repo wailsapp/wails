@@ -17,10 +17,11 @@ sidebar_position: 5
   "version": "[项目配置版本]",
   "outputfilename": "[二进制文件的名称]",
   "debounceMS": 100, // 在检测到资源更改时，开发服务器等待重新加载的时间
-  "devserverurl": "[用于服务本地资源的开发服务器URL。默认：http://localhost:34115]"
+  "devserverurl": "[用于服务本地资源的开发服务器URL。默认：http://localhost:34115]",
+  "appargs": "[在dev模式下以shell样式传递给应用程序的参数]"
 }
 ```
 
 该文件将在运行`wails build`或`wails dev`时，由 Wails CLI 读取。
 
-`wails build/dev`命令中的`assetdir`,`wailsjsdir`,`debounceMS`和`devserverurl`标志将覆盖项目配置并作为后续运行的默认值。
+`wails build/dev`命令中的`assetdir`、`wailsjsdir`、`debounceMS`和`devserverurl`标志将覆盖项目配置并作为后续运行的默认值。
