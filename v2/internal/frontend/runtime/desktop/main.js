@@ -43,6 +43,8 @@ window.wails = {
     flags: {
         disableScrollbarDrag: false,
         disableWailsDefaultContextMenu: false,
+        enableResize: false,
+        defaultCursor: null
     }
 };
 
@@ -60,6 +62,15 @@ if (ENV === 0) {
 // Setup drag handler
 // Based on code from: https://github.com/patr0nus/DeskGap
 window.addEventListener('mousedown', (e) => {
+
+    // Check for resizing
+    if (window.wails.flags.resizeEdge) {
+        window.WailsInvoke("resize:" + window.wails.flags.resizeEdge);
+        e.preventDefault();
+        return;
+    }
+
+    // Check for dragging
     let currentElement = e.target;
     while (currentElement != null) {
         if (currentElement.hasAttribute('data-wails-no-drag')) {
@@ -77,6 +88,40 @@ window.addEventListener('mousedown', (e) => {
         }
         currentElement = currentElement.parentElement;
     }
+});
+
+function setResize(cursor) {
+    document.body.style.cursor = cursor || window.wails.flags.defaultCursor;
+    window.wails.flags.resizeEdge = cursor;
+}
+
+window.addEventListener('mousemove', function (e) {
+    if (!window.wails.flags.enableResize) {
+        return;
+    }
+    if (window.wails.flags.defaultCursor == null) {
+        window.wails.flags.defaultCursor = document.body.style.cursor;
+    }
+    if (window.outerWidth - e.clientX < 16 && window.outerHeight - e.clientY < 16) {
+        document.body.style.cursor = "se-resize";
+    }
+    let rightBorder = window.outerWidth - e.clientX < 16;
+    let leftBorder = e.clientX < 16;
+    let topBorder = e.clientY < 16;
+    let bottomBorder = window.outerHeight - e.clientY < 16;
+
+    // If we aren't on an edge, but were, reset the cursor to default
+    if (!leftBorder && !rightBorder && !topBorder && !bottomBorder && window.wails.flags.resizeEdge !== undefined) {
+        setResize();
+    } else if (rightBorder && bottomBorder) setResize("se-resize");
+    else if (leftBorder && bottomBorder) setResize("sw-resize");
+    else if (leftBorder && topBorder) setResize("nw-resize");
+    else if (topBorder && rightBorder) setResize("ne-resize");
+    else if (leftBorder) setResize("w-resize");
+    else if (topBorder) setResize("n-resize");
+    else if (bottomBorder) setResize("s-resize");
+    else if (rightBorder) setResize("e-resize");
+
 });
 
 // Setup context menu hook
