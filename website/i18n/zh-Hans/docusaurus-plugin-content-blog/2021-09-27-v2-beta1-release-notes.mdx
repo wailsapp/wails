@@ -1,6 +1,6 @@
 ---
 slug: wails-v2-beta-for-windows
-title: Windows 版的 Wails v2 公测啦
+title: 适用于 Windows 平台的 Wails v2 测试版
 authors:
   - name: Lea Anthony
     title: Wails 项目作者
@@ -13,7 +13,10 @@ tags: [wails, v2]
   <img
     src="/img/wails.png"
     width="40%"
-    style={{ "box-shadow": "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px" }}
+    style={{
+      "box-shadow":
+        "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px",
+    }}
   />
 </div>
 <br />
@@ -41,7 +44,10 @@ Windows 的唯一选择是 IE11 渲染器。许多错误报告都因为受到它
   <img
     src="/img/devtools.png"
     width="75%"
-    style={{ "box-shadow": "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px" }}
+    style={{
+      "box-shadow":
+        "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px",
+    }}
   />
 </div>
 <br />
@@ -60,7 +66,10 @@ Gophers 欢呼吧！单个二进制文件的设想依然存在！
   <img
     src="/img/wails-menus.png"
     width="60%"
-    style={{ "box-shadow": "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px" }}
+    style={{
+      "box-shadow":
+        "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px",
+    }}
   />
 </div>
 <br />
@@ -76,7 +85,10 @@ Gophers 欢呼吧！单个二进制文件的设想依然存在！
   <img
     src="/img/vscode.png"
     width="100%"
-    style={{ "box-shadow": "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px" }}
+    style={{
+      "box-shadow":
+        "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px",
+    }}
   />
 </div>
 <br />
@@ -100,7 +112,10 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
   <img
     src="/img/browser.png"
     width="60%"
-    style={{ "box-shadow": "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px" }}
+    style={{
+      "box-shadow":
+        "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px",
+    }}
   />
 </div>
 <br />
@@ -116,6 +131,7 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
 
 在 Go 中，我们习惯于在应用程序中处理结构。将结构发送到我们的前端并将它们用作我们应用程序中的状态通常很有用。在 v1 中，这是一个非常手动的过程，对开发人员来说有点负担。
 我很高兴地宣布，在 v2 中，任何在开发模式下运行的应用程序都将自动为所有结构生成 Typescript 模型，这些结构是绑定方法的输入或输出参数。这实现了两个世界之间数据模型的无缝交换。
+
 除此之外，还会动态生成另一个 JS 模块来包装您的所有绑定方法。这为您的方法提供了 JSDoc，在您的 IDE 中提供代码完成和提示。当您在自动生成的包含 Go 代码的模块中点击 Tab 时自动导入数据模型，这真的很酷！
 
 ### 远程模板
@@ -124,7 +140,10 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
   <img
     src="/img/remote.png"
     width="60%"
-    style={{ "box-shadow": "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px" }}
+    style={{
+      "box-shadow":
+        "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px",
+    }}
   />
 </div>
 <br />
@@ -137,7 +156,7 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
 
 ### 结语
 
-Wails v2 代表了该项目的新基础。此版本的目的是获得有关新方式的反馈，并在完整版本发布之前解决所有错误。欢迎提出您的意见。请直接反馈到 [v2 测试版](https://github.com/wailsapp/wails/discussions/828)讨论板。
+Wails v2 代表了该项目的新起点。此版本的目的是获得有关新方式的反馈，并在完整版本发布之前解决所有错误。欢迎提出您的意见。请直接反馈到 [v2 测试版](https://github.com/wailsapp/wails/discussions/828)讨论板。
 
 为了达到这一点，经历了许多曲折和坎坷。部分原因是早期的技术决策需要改变，另一部分原因是我们花时间构建的一些核心问题的变通方式已经在上游得到了解决：Go 的 embed 特性就是一个很好的例子。幸运的是，一切都刚刚好，今天我们有了我们所能拥有的最好的解决方案。我相信等待是值得的 - 这在两个月前是完全不可能的。
 
