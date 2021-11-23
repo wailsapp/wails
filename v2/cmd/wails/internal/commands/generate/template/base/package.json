@@ -7,6 +7,6 @@
     "build:macos-arm": "npm run build -- --platform darwin/arm64",
     "build:macos-intel": "npm run build -- --platform darwin",
     "build:windows": "npm run build -- --platform windows/amd64",
-    "setup": "go install github.com/wailsapp/wails/v2/cmd/wails@v2.0.0-beta.20"
+    "setup": "go install github.com/wailsapp/wails/v2/cmd/wails@latest"
   }
 }
