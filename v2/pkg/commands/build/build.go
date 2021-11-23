@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/fs"
 
@@ -211,16 +210,6 @@ func Build(options *Options) (string, error) {
 	}
 
 	result := options.CompiledBinary
-
-	if options.Pack && options.Platform == "darwin" {
-		sr := strings.Split(result, "/")
-		for i := len(sr) - 1; i >= 0; i-- {
-			if strings.Contains(sr[i], ".app") {
-				result = strings.Join(sr[:i+1], "/")
-				break
-			}
-		}
-	}
 
 	return result, nil
 

@@ -200,9 +200,9 @@ unsigned int _Users_username_Pictures_SaltBae_png_len = 1863;
 
 int main(int argc, const char * argv[]) {
     // insert code here...
-    int frameless = 1;
-    int resizable = 0;
-    int fullscreen = 0;
+    int frameless = 0;
+    int resizable = 1;
+    int fullscreen = 1;
     int fullSizeContent = 1;
     int hideTitleBar = 0;
     int titlebarAppearsTransparent = 0;
@@ -215,7 +215,10 @@ int main(int argc, const char * argv[]) {
     const char* appearance = "NSAppearanceNameDarkAqua";
     int windowIsTranslucent = 1;
     int debug = 1;
-    WailsContext *result = Create("OI OI!",400,400, frameless,  resizable, fullscreen, fullSizeContent, hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent, alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug);
+    int windowStartState = 0;
+    int startsHidden = 0;
+    WailsContext *result = Create("OI OI!",400,400, frameless,  resizable, fullscreen, fullSizeContent, hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent, alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug, windowStartState,
+                                  startsHidden, 400, 400, 600, 600);
     SetRGBA(result, 255, 0, 0, 255);
     void *m = NewMenu("");
     SetAbout(result, "Fake title", "I am a description", _Users_username_Pictures_SaltBae_png, _Users_username_Pictures_SaltBae_png_len);
@@ -228,7 +231,7 @@ int main(int argc, const char * argv[]) {
     AppendSubmenu(m, submenu);
     UpdateMenuItem(menuITem, 1);
     SetAsApplicationMenu(result, m);
-    SetPosition(result, 100, 100);
+//    SetPosition(result, 100, 100);
 
     
     

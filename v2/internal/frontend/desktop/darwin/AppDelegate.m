@@ -26,6 +26,12 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     [NSApp activateIgnoringOtherApps:YES];
+    if ( self.startFullscreen ) {
+        NSWindowCollectionBehavior behaviour = [self.mainWindow collectionBehavior];
+        behaviour |= NSWindowCollectionBehaviorFullScreenPrimary;
+        [self.mainWindow setCollectionBehavior:behaviour];
+        [self.mainWindow toggleFullScreen:nil];
+    }
 }
 
 - (void)dealloc {

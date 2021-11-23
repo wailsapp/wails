@@ -51,11 +51,10 @@ type Frontend struct {
 	assets *assetserver.DesktopAssetServer
 
 	// main window handle
-	mainWindow                               *Window
-	minWidth, minHeight, maxWidth, maxHeight int
-	bindings                                 *binding.Bindings
-	dispatcher                               frontend.Dispatcher
-	servingFromDisk                          bool
+	mainWindow      *Window
+	bindings        *binding.Bindings
+	dispatcher      frontend.Dispatcher
+	servingFromDisk bool
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
@@ -163,15 +162,11 @@ func (f *Frontend) WindowSetTitle(title string) {
 }
 
 func (f *Frontend) WindowFullscreen() {
-	f.mainWindow.SetMaxSize(0, 0)
-	f.mainWindow.SetMinSize(0, 0)
 	f.mainWindow.Fullscreen()
 }
 
 func (f *Frontend) WindowUnFullscreen() {
 	f.mainWindow.UnFullscreen()
-	f.mainWindow.SetMaxSize(f.maxWidth, f.maxHeight)
-	f.mainWindow.SetMinSize(f.minWidth, f.minHeight)
 }
 
 func (f *Frontend) WindowShow() {
@@ -195,13 +190,9 @@ func (f *Frontend) WindowUnminimise() {
 }
 
 func (f *Frontend) WindowSetMinSize(width int, height int) {
-	f.minWidth = width
-	f.minHeight = height
 	f.mainWindow.SetMinSize(width, height)
 }
 func (f *Frontend) WindowSetMaxSize(width int, height int) {
-	f.maxWidth = width
-	f.maxHeight = height
 	f.mainWindow.SetMaxSize(width, height)
 }
 
@@ -242,6 +233,11 @@ func (f *Frontend) processMessage(message string) {
 		}
 		return
 	}
+
+	//if strings.HasPrefix(message, "systemevent:") {
+	//	f.processSystemEvent(message)
+	//	return
+	//}
 
 	result, err := f.dispatcher.ProcessMessage(message, f)
 	if err != nil {
@@ -291,6 +287,22 @@ func (f *Frontend) processRequest(r *request) {
 
 	C.ProcessURLResponse(r.ctx, r.url, mimetype, data, C.int(len(_contents)))
 }
+
+//func (f *Frontend) processSystemEvent(message string) {
+//	sl := strings.Split(message, ":")
+//	if len(sl) != 2 {
+//		f.logger.Error("Invalid system message: %s", message)
+//		return
+//	}
+//	switch sl[1] {
+//	case "fullscreen":
+//		f.mainWindow.DisableSizeConstraints()
+//	case "unfullscreen":
+//		f.mainWindow.EnableSizeConstraints()
+//	default:
+//		f.logger.Error("Unknown system message: %s", message)
+//	}
+//}
 
 //export processMessage
 func processMessage(message *C.char) {

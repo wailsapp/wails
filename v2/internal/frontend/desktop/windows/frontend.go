@@ -168,11 +168,17 @@ func (f *Frontend) WindowFullscreen() {
 	runtime.LockOSThread()
 	f.mainWindow.SetMaxSize(0, 0)
 	f.mainWindow.SetMinSize(0, 0)
+	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
+		f.ExecJS("window.wails.flags.enableResize = false;")
+	}
 	f.mainWindow.Fullscreen()
 }
 
 func (f *Frontend) WindowUnFullscreen() {
 	runtime.LockOSThread()
+	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
+		f.ExecJS("window.wails.flags.enableResize = true;")
+	}
 	f.mainWindow.UnFullscreen()
 	f.mainWindow.SetMaxSize(f.maxWidth, f.maxHeight)
 	f.mainWindow.SetMinSize(f.minWidth, f.minHeight)
@@ -354,10 +360,36 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	return
 }
 
+var edgeMap = map[string]uintptr{
+	"n-resize":  w32.HTTOP,
+	"ne-resize": w32.HTTOPRIGHT,
+	"e-resize":  w32.HTRIGHT,
+	"se-resize": w32.HTBOTTOMRIGHT,
+	"s-resize":  w32.HTBOTTOM,
+	"sw-resize": w32.HTBOTTOMLEFT,
+	"w-resize":  w32.HTLEFT,
+	"nw-resize": w32.HTTOPLEFT,
+}
+
 func (f *Frontend) processMessage(message string) {
 	if message == "drag" {
 		if !f.mainWindow.IsFullScreen() {
 			err := f.startDrag()
+			if err != nil {
+				f.logger.Error(err.Error())
+			}
+		}
+		return
+	}
+	if strings.HasPrefix(message, "resize:") {
+		if !f.mainWindow.IsFullScreen() {
+			sl := strings.Split(message, ":")
+			if len(sl) != 2 {
+				f.logger.Info("Unknown message returned from dispatcher: %+v", message)
+				return
+			}
+			edge := edgeMap[sl[1]]
+			err := f.startResize(edge)
 			if err != nil {
 				f.logger.Error(err.Error())
 			}
@@ -397,6 +429,14 @@ func (f *Frontend) startDrag() error {
 	return nil
 }
 
+func (f *Frontend) startResize(border uintptr) error {
+	if !w32.ReleaseCapture() {
+		return fmt.Errorf("unable to release mouse capture")
+	}
+	w32.SendMessage(f.mainWindow.Handle(), w32.WM_NCLBUTTONDOWN, border, 0)
+	return nil
+}
+
 func (f *Frontend) ExecJS(js string) {
 	f.mainWindow.Dispatch(func() {
 		f.chromium.Eval(js)
@@ -406,6 +446,10 @@ func (f *Frontend) ExecJS(js string) {
 func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
 	if f.frontendOptions.OnDomReady != nil {
 		go f.frontendOptions.OnDomReady(f.ctx)
+	}
+
+	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
+		f.ExecJS("window.wails.flags.enableResize = true;")
 	}
 
 	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026

@@ -15,6 +15,7 @@
 
 @property bool alwaysOnTop;
 @property bool startHidden;
+@property bool startFullscreen;
 @property (retain) WailsWindow* mainWindow;
 
 @end

@@ -17,7 +17,7 @@
 #define WindowStartsMinimised 2
 #define WindowStartsFullscreen 3
 
-WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug, int windowStartState, int startsHidden);
+WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight);
 void Run(void*);
 
 void SetTitle(void* ctx, const char *title);
