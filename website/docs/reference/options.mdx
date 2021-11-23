@@ -36,6 +36,7 @@ func main() {
         OnStartup:         app.startup,
         OnDomReady:        app.domready,
         OnShutdown:        app.shutdown,
+        WindowStartState:  options.Maximised,
         Bind: []interface{}{
             app,
         },
@@ -258,6 +259,20 @@ Type: func(ctx context.Context)
 This callback is called after the frontend has been destroyed, just before the application terminates. It is given
 the application context.
 
+### WindowStartState
+
+Name: WindowStartState
+
+Type: options.WindowStartState
+
+Defines how the window should present itself at startup.
+
+| Value           | Win | Mac |
+| --------------- | --- | --- |
+| Fullscreen      | ✅  | ✅   |
+| Maximised       | ✅  | ✅   |
+| Minimised       | ✅  |     |
+
 ### Bind
 
 Name: Bind
@@ -452,3 +467,4 @@ When clicked, that will open an about message box:
     <img src="/img/reference/about-dialog.png" width="40%" style={{"box-shadow": "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px"}}/>
 </div>
 <br/>
+
