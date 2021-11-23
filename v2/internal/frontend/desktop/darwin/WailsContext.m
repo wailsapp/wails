@@ -21,6 +21,16 @@
     return YES;
 }
 
+- (void) applyWindowConstraints {
+    [self setMinSize:self.userMinSize];
+    [self setMaxSize:self.userMaxSize];
+}
+
+- (void) disableWindowConstraints {
+    [self setMinSize:NSMakeSize(0, 0)];
+    [self setMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
+}
+
 @end
 
 @implementation WailsContext
@@ -33,7 +43,7 @@
     frame.origin.y += frame.size.height - height;
     frame.size.width = width;
     frame.size.height = height;
-    ON_MAIN_THREAD([self.mainWindow setFrame:frame display:TRUE animate:FALSE];);
+    [self.mainWindow setFrame:frame display:TRUE animate:FALSE];
 }
 
 - (void) SetPosition:(int)x :(int)y {
@@ -45,8 +55,8 @@
     NSRect screenFrame = [screen frame];
     windowFrame.origin.x = screenFrame.origin.x + (float)x;
     windowFrame.origin.y = (screenFrame.origin.y + screenFrame.size.height) - windowFrame.size.height - (float)y;
-
-    ON_MAIN_THREAD([self.mainWindow setFrame:windowFrame display:TRUE animate:FALSE]; );
+    
+    [self.mainWindow setFrame:windowFrame display:TRUE animate:FALSE];
 }
 
 - (void) SetMinSize:(int)minWidth :(int)minHeight {
@@ -54,13 +64,9 @@
     if (self.shuttingDown) return;
     
     NSSize size = { minWidth, minHeight };
-    
-    self.minSize = size;
-
-    ON_MAIN_THREAD(
-        [self.mainWindow setMinSize:size];
-        [self adjustWindowSize];
-    );
+    self.mainWindow.userMinSize = size;
+    [self.mainWindow setMinSize:size];
+    [self adjustWindowSize];
 }
 
 
@@ -73,12 +79,9 @@
     size.width = maxWidth > 0 ? maxWidth : FLT_MAX;
     size.height = maxHeight > 0 ? maxHeight : FLT_MAX;
     
-    self.maxSize = size;
-
-    ON_MAIN_THREAD(
-        [self.mainWindow setMaxSize:size];
-        [self adjustWindowSize];
-    );
+    self.mainWindow.userMaxSize = size;
+    [self.mainWindow setMaxSize:size];
+    [self adjustWindowSize];
 }
 
 
@@ -88,10 +91,10 @@
     
     NSRect currentFrame = [self.mainWindow frame];
     
-    if ( currentFrame.size.width > self.maxSize.width ) currentFrame.size.width = self.maxSize.width;
-    if ( currentFrame.size.width < self.minSize.width ) currentFrame.size.width = self.minSize.width;
-    if ( currentFrame.size.height > self.maxSize.height ) currentFrame.size.height = self.maxSize.height;
-    if ( currentFrame.size.height < self.minSize.height ) currentFrame.size.height = self.minSize.height;
+    if ( currentFrame.size.width > self.mainWindow.userMaxSize.width ) currentFrame.size.width = self.mainWindow.userMaxSize.width;
+    if ( currentFrame.size.width < self.mainWindow.userMinSize.width ) currentFrame.size.width = self.mainWindow.userMinSize.width;
+    if ( currentFrame.size.height > self.mainWindow.userMaxSize.height ) currentFrame.size.height = self.mainWindow.userMaxSize.height;
+    if ( currentFrame.size.height < self.mainWindow.userMinSize.height ) currentFrame.size.height = self.mainWindow.userMinSize.height;
 
     [self.mainWindow setFrame:currentFrame display:YES animate:FALSE];
     
@@ -116,11 +119,11 @@
 }
 
 - (void) SetTitle:(NSString*)title {
-    ON_MAIN_THREAD([self.mainWindow setTitle:title];)
+    [self.mainWindow setTitle:title];
 }
 
 - (void) Center {
-    ON_MAIN_THREAD( [self.mainWindow center]; );
+     [self.mainWindow center];
 }
 
 - (BOOL) isFullscreen {
@@ -131,37 +134,29 @@
     return NO;
 }
 
-- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent {
+- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight {
     
     self.urlRequests = [NSMutableDictionary new];
     
-    NSWindowStyleMask styleMask = NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
+    NSWindowStyleMask styleMask = 0;
     
-    if (frameless) {
-        styleMask = NSWindowStyleMaskBorderless;
-        titlebarAppearsTransparent = true;
-        hideTitle = true;
-    } else {
+    if( !frameless ) {
         if (!hideTitleBar) {
             styleMask |= NSWindowStyleMaskTitled;
         }
-        
-        if (fullscreen) {
-            styleMask |= NSWindowStyleMaskFullScreen;
-        }
-        
-        if( fullSizeContent || frameless || titlebarAppearsTransparent ) {
-            styleMask |= NSWindowStyleMaskFullSizeContentView;
-        }
+        styleMask |= NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
     }
-    
+
+    if( fullSizeContent || frameless || titlebarAppearsTransparent ) {
+        styleMask |= NSWindowStyleMaskFullSizeContentView;
+    }
+
     if (resizable) {
         styleMask |= NSWindowStyleMaskResizable;
     }
     
-    self.mainWindow = [[[WailsWindow alloc] initWithContentRect:NSMakeRect(0, 0, width, height)
-                                                      styleMask:styleMask backing:NSBackingStoreBuffered defer:NO]
-                       autorelease];
+    self.mainWindow = [[WailsWindow alloc] initWithContentRect:NSMakeRect(0, 0, width, height)
+                                                      styleMask:styleMask backing:NSBackingStoreBuffered defer:NO];
         
     if (!frameless && useToolbar) {
         id toolbar = [[NSToolbar alloc] initWithIdentifier:@"wails.toolbar"];
@@ -192,15 +187,25 @@
         [self.mainWindow setAppearance:nsAppearance];
     }
     
-    // Set up min/max
-    NSSize maxSize = { FLT_MAX, FLT_MAX };
-    self.maxSize = maxSize;
-    NSSize minSize = { 0, 0 };
-    self.minSize = minSize;
-    [self adjustWindowSize];
+
+    NSSize minSize = { minWidth, minHeight };
+    NSSize maxSize = { maxWidth, maxHeight };
+    if (maxSize.width == 0) {
+        maxSize.width = FLT_MAX;
+    }
+    if (maxSize.height == 0) {
+        maxSize.height = FLT_MAX;
+    }
+    self.mainWindow.userMaxSize = maxSize;
+    self.mainWindow.userMinSize = minSize;
+    
+    if( !fullscreen ) {
+        [self.mainWindow applyWindowConstraints];
+    }
     
     WindowDelegate *windowDelegate = [WindowDelegate new];
     windowDelegate.hideOnClose = hideWindowOnClose;
+    windowDelegate.ctx = self;
     [self.mainWindow setDelegate:windowDelegate];
     
     // Webview stuff here!
@@ -301,7 +306,7 @@
     
     id colour = [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha ];
     
-    ON_MAIN_THREAD([self.mainWindow setBackgroundColor:colour];);
+    [self.mainWindow setBackgroundColor:colour];
 }
 
 - (void) HideMouse {
@@ -325,52 +330,50 @@
 // Fullscreen sets the main window to be fullscreen
 - (void) Fullscreen {
     if( ! [self isFullScreen] ) {
-        ON_MAIN_THREAD([self.mainWindow toggleFullScreen:nil];)
+        [self.mainWindow disableWindowConstraints];
+        [self.mainWindow toggleFullScreen:nil];
     }
 }
 
 // UnFullscreen resets the main window after a fullscreen
 - (void) UnFullscreen {
     if( [self isFullScreen] ) {
-        ON_MAIN_THREAD([self.mainWindow toggleFullScreen:nil];)
+        [self.mainWindow applyWindowConstraints];
+        [self.mainWindow toggleFullScreen:nil];
     }
 }
 
 - (void) Minimise {
-    ON_MAIN_THREAD([self.mainWindow miniaturize:nil];)
+    [self.mainWindow miniaturize:nil];
 }
 
 - (void) UnMinimise {
-    ON_MAIN_THREAD([self.mainWindow deminiaturize:nil];)
+    [self.mainWindow deminiaturize:nil];
 }
 
 - (void) Hide {
-    ON_MAIN_THREAD([self.mainWindow orderOut:nil];)
+    [self.mainWindow orderOut:nil];
 }
 
 - (void) Show {
-    ON_MAIN_THREAD(
-        [self.mainWindow makeKeyAndOrderFront:nil];
-        [NSApp activateIgnoringOtherApps:YES];
-    )
+    [self.mainWindow makeKeyAndOrderFront:nil];
+    [NSApp activateIgnoringOtherApps:YES];
 }
 
 - (void) Maximise {
     if (![self.mainWindow isZoomed]) {
-        ON_MAIN_THREAD([self.mainWindow zoom:nil];)
+        [self.mainWindow zoom:nil];
     }
 }
 
 - (void) UnMaximise {
     if ([self.mainWindow isZoomed]) {
-        ON_MAIN_THREAD([self.mainWindow zoom:nil];)
+        [self.mainWindow zoom:nil];
     }
 }
 
 - (void) ExecJS:(NSString*)script {
-    ON_MAIN_THREAD(
-                   [self.webview evaluateJavaScript:script completionHandler:nil];
-    )
+   [self.webview evaluateJavaScript:script completionHandler:nil];
 }
 
 - (void) processURLResponse:(NSString *)url :(NSString *)contentType :(NSData *)data {
@@ -406,15 +409,13 @@
     
     // Check for drag
     if ( [m isEqualToString:@"drag"] ) {
-        if( ! [self isFullScreen] ) {
-            if( self.mouseEvent != nil ) {
-                [self HideMouse];
-                ON_MAIN_THREAD(
-                               [self.mainWindow performWindowDragWithEvent:self.mouseEvent];
-                               );
-            }
+        if( [self isFullScreen] ) {
             return;
         }
+        if( self.mouseEvent != nil ) {
+           [self.mainWindow performWindowDragWithEvent:self.mouseEvent];
+        }
+        return;
     }
     
     const char *_m = [m UTF8String];
@@ -455,28 +456,26 @@
         NSData *imageData = [NSData dataWithBytes:iconData length:iconDataLength];
         icon = [[NSImage alloc] initWithData:imageData];
     }
-    ON_MAIN_THREAD(
-                   if( icon != nil) {
-                       [alert setIcon:icon];
-                   }
-        [alert.window setLevel:NSFloatingWindowLevel];
+    if( icon != nil) {
+       [alert setIcon:icon];
+    }
+    [alert.window setLevel:NSFloatingWindowLevel];
 
-        long response = [alert runModal];
-        int result;
-        
-        if( response == NSAlertFirstButtonReturn ) {
-            result = 0;
-        }
-        else if( response == NSAlertSecondButtonReturn ) {
-            result = 1;
-        }
-        else if( response == NSAlertThirdButtonReturn ) {
-            result = 2;
-        } else {
-            result = 3;
-        }
-        processMessageDialogResponse(result);
-    )
+    long response = [alert runModal];
+    int result;
+
+    if( response == NSAlertFirstButtonReturn ) {
+        result = 0;
+    }
+    else if( response == NSAlertSecondButtonReturn ) {
+        result = 1;
+    }
+    else if( response == NSAlertThirdButtonReturn ) {
+        result = 2;
+    } else {
+        result = 3;
+    }
+    processMessageDialogResponse(result);
 }
 
 -(void) OpenFileDialog :(NSString*)title :(NSString*)defaultFilename :(NSString*)defaultDirectory :(bool)allowDirectories :(bool)allowFiles :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)resolveAliases :(bool)showHiddenFiles :(bool)allowMultipleSelection :(NSString*)filters {
@@ -622,8 +621,7 @@
         [alert setIcon:self.aboutImage];
     }
 
-    ON_MAIN_THREAD([alert runModal];)
-    
+    [alert runModal];
 }
 
 @end

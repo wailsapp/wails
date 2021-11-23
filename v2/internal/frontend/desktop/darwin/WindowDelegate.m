@@ -21,4 +21,18 @@
     return !self.hideOnClose;
 }
 
+
+- (void)windowDidExitFullScreen:(NSNotification *)notification {
+    [self.ctx.mainWindow applyWindowConstraints];
+}
+
+- (void)windowWillEnterFullScreen:(NSNotification *)notification {
+    [self.ctx.mainWindow disableWindowConstraints];
+}
+
+- (NSApplicationPresentationOptions)window:(WailsWindow *)window willUseFullScreenPresentationOptions:(NSApplicationPresentationOptions)proposedOptions {
+    return NSApplicationPresentationAutoHideToolbar | NSApplicationPresentationAutoHideMenuBar | NSApplicationPresentationFullScreen;
+}
+
+
 @end
