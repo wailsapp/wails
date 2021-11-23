@@ -299,10 +299,10 @@
 }
 
 - (void) SetRGBA:(int)r :(int)g :(int)b :(int)a {
-    float red = r/255;
-    float green = g/255;
-    float blue = b/255;
-    float alpha = a/255;
+    float red = r/255.0;
+    float green = g/255.0;
+    float blue = b/255.0;
+    float alpha = a/255.0;
     
     id colour = [NSColor colorWithCalibratedRed:red green:green blue:blue alpha:alpha ];
     
