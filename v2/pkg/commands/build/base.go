@@ -243,7 +243,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	if options.Mode == Production {
 		ldflags.Add("-w", "-s")
-		if runtime.GOOS == "windows" {
+		if options.Platform == "windows" {
 			ldflags.Add("-H windowsgui")
 		}
 	}
