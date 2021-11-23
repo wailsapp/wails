@@ -278,7 +278,7 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		OutputType:     "dev",
 		Mode:           build.Dev,
 		Arch:           runtime.GOARCH,
-		Pack:           false,
+		Pack:           true,
 		Platform:       runtime.GOOS,
 		LDFlags:        flags.ldflags,
 		Compiler:       flags.compilerCommand,
@@ -287,10 +287,7 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		Verbosity:      flags.verbosity,
 		WailsJSDir:     flags.wailsjsdir,
 	}
-	switch runtime.GOOS {
-	case "darwin":
-		result.Pack = false
-	}
+
 	return result
 }
 
