@@ -158,18 +158,17 @@ func processPackageJSON(frontendDir string) error {
 		return nil
 	}
 
-	data, err := os.ReadFile(packageJSON)
+	json, err := os.ReadFile(packageJSON)
 	if err != nil {
 		return err
 	}
-	json := string(data)
 
 	// We will ignore these errors - it's not critical
 	println("Updating package.json data...")
-	json, _ = sjson.Set(json, "name", "{{.ProjectName}}")
-	json, _ = sjson.Set(json, "author", "{{.AuthorName}}")
+	json, _ = sjson.SetBytes(json, "name", "{{.ProjectName}}")
+	json, _ = sjson.SetBytes(json, "author", "{{.AuthorName}}")
 
-	err = os.WriteFile(packageJSON, []byte(json), 0644)
+	err = os.WriteFile(packageJSON, json, 0644)
 	if err != nil {
 		return err
 	}
