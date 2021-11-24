@@ -7,8 +7,9 @@ sidebar_position: 1
 ## 支持的平台
 
 - Windows 10
-- MacOS x64 & arm64 (due October '21)
-- Linux (due December '21)
+- MacOS 10.13+ (amd64)
+- MacOS 11.0+ (arm64)
+- Linux (截至时间 12 月 22 日)
 
 ## 依赖
 
@@ -49,11 +50,18 @@ import TabItem from "@theme/TabItem";
 >
   <TabItem value="Windows">
     Wails 要求安装
-    <a href="https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/">WebView2</a>
-    运行时。一些 Windows 已经默认安装了这个。您可以使用 <code>wails doctor</code>
+    <a href="https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/">
+      WebView2
+    </a>
+    运行时。一些 Windows 已经默认安装了这个。您可以使用{" "}
+    <code>wails doctor</code>
     命令进行检查（见下文）。
   </TabItem>
-  <TabItem value="MacOS">即将推出...</TabItem>
+  <TabItem value="MacOS">
+    Wails 要求安装 xcode 命令行工具。这可以通过运行以下命令来完成：
+    <br />
+    <code>xcode-select --install</code>
+  </TabItem>
   <TabItem value="Linux">即将推出...</TabItem>
 </Tabs>
 

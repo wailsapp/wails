@@ -34,7 +34,8 @@ func main() {
         LogLevel:          logger.DEBUG,
         OnStartup:         app.startup,
         OnDomReady:        app.domready,
-        OnShutdown:        app.shutdown,
+        OnShutdown:        app.shutdown,,
+        WindowStartState:  options.Maximised,
         Bind: []interface{}{
             app,
         },
@@ -42,6 +43,24 @@ func main() {
             WebviewIsTransparent: false,
             WindowIsTranslucent:  false,
             DisableWindowIcon:    false,
+        },
+        Mac: &mac.Options{
+            TitleBar: &mac.TitleBar{
+                TitlebarAppearsTransparent: true,
+                HideTitle:                  false,
+                HideTitleBar:               false,
+                FullSizeContent:            false,
+                UseToolbar:                 false,
+                HideToolbarSeparator:       true,
+            },
+			Appearance:           mac.NSAppearanceNameDarkAqua,
+            WebviewIsTransparent: true,
+            WindowIsTranslucent:  false,
+            About: &mac.AboutInfo{
+                Title:   "My Application",
+                Message: "© 2021 Me",
+                Icon:    icon,
+            },
         },
     })
     if err != nil {
@@ -81,7 +100,7 @@ func main() {
 
 类型：bool
 
-默认情况下，主窗口可调整大小。将此设置为 true 将使其保持固定大小。
+默认情况下，主窗口可调整大小。将此设置为 `true` 将使其保持固定大小。
 
 ### 全屏
 
@@ -89,7 +108,7 @@ func main() {
 
 类型：bool
 
-将此设置为 true 将在启动时使窗口全屏。
+将此设置为 `true` 将在启动时使窗口全屏。
 
 ### 无边框
 
@@ -97,7 +116,7 @@ func main() {
 
 类型：bool
 
-设置为 时 true，窗口将没有边框或标题栏。另请参阅[无边框窗口](/docs/guides/frameless)。
+设置为`true`时，窗口将没有边框或标题栏。另请参阅[无边框窗口](/docs/guides/frameless)。
 
 ### 最小宽度
 
@@ -137,7 +156,7 @@ func main() {
 
 类型：bool
 
-设置为 时`true`，应用程序将被隐藏，直到调用[显示窗口](/docs/reference/runtime/window#显示窗口)。
+设置为`true`时，应用程序将被隐藏，直到调用[显示窗口](/docs/reference/runtime/window#显示窗口)。
 
 ### 关闭时隐藏窗口
 
@@ -179,11 +198,15 @@ func main() {
 
 应用程序要使用的菜单。[菜单参考](/docs/reference/runtime/menu)中有关菜单的更多详细信息。
 
+注意：在 Mac 上，如果未指定菜单，则将创建默认菜单。
+
 ### 日志
 
 名称：Logger
 
-类型：logger.Logger 默认值：Logger to Stdout
+类型：logger.Logger
+
+默认值：Logger to Stdout
 
 应用程序要使用的记录器。有关日志记录的更多详细信息，请参阅[日志参考](/docs/reference/runtime/log)。
 
@@ -191,7 +214,9 @@ func main() {
 
 名称：LogLevel
 
-类型：logger.LogLevel 默认值：Info 在开发模式下，Error 在生产模式下
+类型：logger.LogLevel
+
+默认值：在开发模式下是`Info`，在生产模式下是`Error`。
 
 默认日志级别。有关日志记录的更多详细信息，请参阅[设置日志等级](/docs/reference/runtime/log#设置日志等级)。
 
@@ -219,6 +244,20 @@ func main() {
 
 在前端被销毁之后，就在应用程序终止之前，调用此回调。它给出了应用程序上下文。
 
+### 窗口启动状态
+
+名称：WindowStartState
+
+类型： options.WindowStartState
+
+定义窗口在启动时应如何呈现。
+
+| 值         | Win | Mac |
+| ---------- | --- | --- |
+| Fullscreen | ✅  | ✅  |
+| Maximised  | ✅  | ✅  |
+| Minimised  | ✅  |     |
+
 ### 绑定
 
 名称：Bind
@@ -243,7 +282,7 @@ func main() {
 
 类型：bool
 
-当 alpha 值为 0 时，设置为 true 将使 WebView 背景透明。这意味着如果你使用`rgba(0,0,0,0)`，主窗口将显示。通常与[窗口半透明](#窗口半透明)结合使用以制作冰霜效果的应用程序。
+设置为 `true` 时将使 WebView 背景透明。这意味着如果你使用`rgba(0,0,0,0)`，主窗口将显示。通常与[窗口半透明](#窗口半透明)结合使用以制作冰霜效果的应用程序。
 
 ### 窗口半透明
 
@@ -251,7 +290,7 @@ func main() {
 
 类型：bool
 
-将此设置为 true 将使窗口半透明。通常与[网页透明](#网页透明) 结合使用以制作冰霜效果的应用程序。
+将此设置为 `true` 将使窗口半透明。通常与[网页透明](#网页透明) 结合使用以制作冰霜效果的应用程序。
 
 ### 禁用窗口图标
 
@@ -259,4 +298,167 @@ func main() {
 
 类型：bool
 
-将此设置为 true 将删除标题栏左上角的图标。
+将此设置为 `true` 将删除标题栏左上角的图标。
+
+## Mac 特定选项
+
+### 标题栏
+
+Name: TitleBar
+
+Type: [\*mac.TitleBar](#标题栏结构)
+
+TitleBar 结构提供了配置标题栏外观的能力。
+
+### 外观
+
+Name: Appearance
+
+Type: [AppearanceType](#外观类型)
+
+Appearance 用于根据 Apple 的 [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) 名称设置应用程序的样式。
+
+### 网页透明
+
+Name: WebviewIsTransparent
+
+Type: bool
+
+设置为 `true` 时将使 WebView 背景透明。这意味着如果你使用`rgba(0,0,0,0)`，主窗口将显示。通常与[窗口半透明](#窗口半透明)结合使用以制作冰霜效果的应用程序。
+
+### 窗口半透明
+
+Name: WindowIsTranslucent
+
+Type: bool
+
+将此设置为 `true` 将使窗口半透明。通常与[网页透明](#网页透明) 结合使用以制作冰霜效果的应用程序。
+
+### 关于
+
+Name: About
+
+Type: [About](#关于结构)
+
+此配置允许您为“AppMenu” role 创建的应用程序菜单中的“关于”菜单项设置标题、消息和图标。
+
+#### 标题栏结构
+
+可以使用 TitleBar 选项自定义应用程序的标题栏：
+
+```go
+type TitleBar struct {
+	TitlebarAppearsTransparent bool
+	HideTitle                  bool
+	HideTitleBar               bool
+	FullSizeContent            bool
+	UseToolbar                 bool
+	HideToolbarSeparator       bool
+}
+```
+
+| 名称                       | 描述                                                                                                                                           |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| TitlebarAppearsTransparent | 使标题栏透明。[Apple Docs](https://developer.apple.com/documentation/appkit/nswindow/1419167-titlebarappearstransparent?language=objc)         |
+| HideTitle                  | 隐藏窗口的标题。[Apple Docs](https://developer.apple.com/documentation/appkit/nswindowtitlevisibility?language=objc)                           |
+| HideTitleBar               | 从样式掩码中移除 [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/)。      |
+| FullSizeContent            | 使 webview 填满整个窗口。[Apple Docs](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemaskfullsizecontentview) |
+| UseToolbar                 | 向窗口添加默认工具栏。 [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar?language=objc)                                  |
+| HideToolbarSeparator       | 删除工具栏下方的线条。 [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar/1516954-showsbaselineseparator?language=objc)   |
+
+预设的标题栏设置可用：
+
+| 设置                        | 示例                                          |
+| --------------------------- | --------------------------------------------- |
+| `mac.TitleBarDefault()`     | ![](/img/reference/titlebar-default.png)      |
+| `mac.TitleBarHidden()`      | ![](/img/reference/titlebar-hidden.png)       |
+| `mac.TitleBarHiddenInset()` | ![](/img/reference/titlebar-hidden-inset.png) |
+
+示例：
+
+```go
+Mac: &mac.Options{
+	TitleBar:     mac.TitleBarHiddenInset(),
+}
+```
+
+单击[此处](https://github.com/lukakerr/NSWindowStyles)获取有关自定义标题栏的一些灵感。
+
+#### 外观类型
+
+您可以指定应用程序的[外观](https://developer.apple.com/documentation/appkit/nsappearance?language=objc)。
+
+| 值                                                    | 描述                           |
+| ----------------------------------------------------- | ------------------------------ |
+| DefaultAppearance                                     | 使用默认系统值                 |
+| NSAppearanceNameAqua                                  | 标准日间系统外观               |
+| NSAppearanceNameDarkAqua                              | 标准黑夜系统外观               |
+| NSAppearanceNameVibrantLight                          | 轻盈灵动的外观                 |
+| NSAppearanceNameAccessibilityHighContrastAqua         | 标准白天系统外观的高对比度版本 |
+| NSAppearanceNameAccessibilityHighContrastDarkAqua     | 标准黑夜系统外观的高对比度版本 |
+| NSAppearanceNameAccessibilityHighContrastVibrantLight | 轻盈灵动外观的高对比度版本     |
+| NSAppearanceNameAccessibilityHighContrastVibrantDark  | 深色活力外观的高对比度版本     |
+
+示例：
+
+```go
+Mac: &mac.Options{
+    Appearance: mac.NSAppearanceNameDarkAqua,
+}
+```
+
+#### 关于结构
+
+```go
+type AboutInfo struct {
+	Title   string
+	Message string
+	Icon    []byte
+}
+```
+
+如果提供了这些设置，“关于”菜单项将出现在应用程序菜单中（使用`AppMenu` role 时）。建议这样配置：
+
+```go
+//go:embed build/appicon.png
+var icon []byte
+
+func main() {
+	err := wails.Run(&options.App{
+	    ...
+        Mac: &mac.Options{
+            About: &mac.AboutInfo{
+                Title:   "My Application",
+                Message: "© 2021 Me",
+                Icon:    icon,
+            },
+        },
+    })
+```
+
+“关于”菜单项将出现在应用程序菜单中：
+
+<div class="text--center">
+  <img
+    src="/img/reference/about-menu.png"
+    style={{
+      "box-shadow":
+        "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px",
+    }}
+  />
+</div>
+<br />
+
+单击后，将打开一个关于消息框：
+
+<div class="text--center">
+  <img
+    src="/img/reference/about-dialog.png"
+    width="40%"
+    style={{
+      "box-shadow":
+        "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px",
+    }}
+  />
+</div>
+<br />
