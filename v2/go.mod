@@ -28,7 +28,7 @@ require (
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7
 	github.com/leaanthony/webview2runtime v1.1.0
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18
+	github.com/leaanthony/winc v0.0.0-20211124105230-0330cfc6d50c
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
 	github.com/olekukonko/tablewriter v0.0.4
