@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -126,7 +125,7 @@ func RelativePath(relativepath string, optionalpaths ...string) string {
 // MustLoadString attempts to load a string and will abort with a fatal message if
 // something goes wrong
 func MustLoadString(filename string) string {
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		fmt.Printf("FATAL: Unable to load file '%s': %s\n", filename, err.Error())
 		os.Exit(1)
@@ -163,7 +162,7 @@ func MustMD5File(filename string) string {
 // MustWriteString will attempt to write the given data to the given filename
 // It will abort the program in the event of a failure
 func MustWriteString(filename string, data string) {
-	err := ioutil.WriteFile(filename, []byte(data), 0755)
+	err := os.WriteFile(filename, []byte(data), 0755)
 	if err != nil {
 		fatal("Unable to write file", filename, ":", err.Error())
 		os.Exit(1)
@@ -244,7 +243,7 @@ func CopyDir(src string, dst string) (err error) {
 		return
 	}
 
-	entries, err := ioutil.ReadDir(src)
+	entries, err := os.ReadDir(src)
 	if err != nil {
 		return
 	}
@@ -260,7 +259,7 @@ func CopyDir(src string, dst string) (err error) {
 			}
 		} else {
 			// Skip symlinks.
-			if entry.Mode()&os.ModeSymlink != 0 {
+			if entry.Type()&os.ModeSymlink != 0 {
 				continue
 			}
 
@@ -306,7 +305,7 @@ func CopyDirExtended(src string, dst string, ignore []string) (err error) {
 		return
 	}
 
-	entries, err := ioutil.ReadDir(src)
+	entries, err := os.ReadDir(src)
 	if err != nil {
 		return
 	}
@@ -325,7 +324,7 @@ func CopyDirExtended(src string, dst string, ignore []string) (err error) {
 			}
 		} else {
 			// Skip symlinks.
-			if entry.Mode()&os.ModeSymlink != 0 {
+			if entry.Type()&os.ModeSymlink != 0 {
 				continue
 			}
 
@@ -370,7 +369,7 @@ func MoveDirExtended(src string, dst string, ignore []string) (err error) {
 		return
 	}
 
-	entries, err := ioutil.ReadDir(src)
+	entries, err := os.ReadDir(src)
 	if err != nil {
 		return
 	}
@@ -383,7 +382,7 @@ func MoveDirExtended(src string, dst string, ignore []string) (err error) {
 		dstPath := filepath.Join(dst, entry.Name())
 
 		// Skip symlinks.
-		if entry.Mode()&os.ModeSymlink != 0 {
+		if entry.Type()&os.ModeSymlink != 0 {
 			continue
 		}
 

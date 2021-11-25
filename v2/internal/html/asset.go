@@ -2,9 +2,9 @@ package html
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -39,7 +39,7 @@ type Asset struct {
 // Load the asset from disk
 func (a *Asset) Load(basedirectory string) error {
 	assetpath := filepath.Join(basedirectory, a.Path)
-	data, err := ioutil.ReadFile(assetpath)
+	data, err := os.ReadFile(assetpath)
 	if err != nil {
 		return err
 	}

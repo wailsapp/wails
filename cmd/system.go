@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -124,7 +123,7 @@ func (s *SystemHelper) setup() error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(s.wailsSystemConfig, configData, 0755)
+	err = os.WriteFile(s.wailsSystemConfig, configData, 0755)
 	if err != nil {
 		return err
 	}
@@ -207,11 +206,11 @@ func (sc *SystemConfig) Save(filename string) error {
 	}
 
 	// Write it out to the config file
-	return ioutil.WriteFile(filename, theJSON, 0644)
+	return os.WriteFile(filename, theJSON, 0644)
 }
 
 func (sc *SystemConfig) load(filename string) error {
-	configData, err := ioutil.ReadFile(filename)
+	configData, err := os.ReadFile(filename)
 	if err != nil {
 		return err
 	}

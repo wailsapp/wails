@@ -2,7 +2,6 @@ package binding
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -144,7 +143,7 @@ export {};`
 
 	dir := filepath.Dir(typescriptDefinitionFilename)
 	os.MkdirAll(dir, 0755)
-	return ioutil.WriteFile(typescriptDefinitionFilename, []byte(output.String()), 0755)
+	return os.WriteFile(typescriptDefinitionFilename, []byte(output.String()), 0755)
 }
 
 // bind the given struct method

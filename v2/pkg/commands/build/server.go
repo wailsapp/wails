@@ -2,7 +2,6 @@ package build
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -73,7 +72,7 @@ func (s *ServerBuilder) BuildBaseAssets(assets *html.AssetBundle) error {
 
 	// Add wails.js
 	wailsjsPath := fs.RelativePath("../../../internal/runtime/assets/server.js")
-	if rawData, err := ioutil.ReadFile(wailsjsPath); err == nil {
+	if rawData, err := os.ReadFile(wailsjsPath); err == nil {
 		db.AddAsset("/wails.js", rawData)
 	}
 

@@ -5,7 +5,6 @@ package build
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"path/filepath"
 	"strconv"
@@ -75,7 +74,7 @@ func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) err
 	for count, filename := range trayIconFilenames {
 
 		// Load the tray icon
-		dataBytes, err = ioutil.ReadFile(filename)
+		dataBytes, err = os.ReadFile(filename)
 		if err != nil {
 			return err
 		}
@@ -110,7 +109,7 @@ func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) err
 	}
 	cdata.WriteString("0x00 };\n")
 
-	err = ioutil.WriteFile(targetFile, []byte(cdata.String()), 0600)
+	err = os.WriteFile(targetFile, []byte(cdata.String()), 0600)
 	if err != nil {
 		return err
 	}
@@ -169,7 +168,7 @@ func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) e
 	for count, filename := range dialogIconFilenames {
 
 		// Load the tray icon
-		dataBytes, err = ioutil.ReadFile(filename)
+		dataBytes, err = os.ReadFile(filename)
 		if err != nil {
 			return err
 		}
@@ -204,7 +203,7 @@ func (d *DesktopBuilder) processDialogIcons(assetDir string, options *Options) e
 	}
 	cdata.WriteString("0x00 };\n")
 
-	err = ioutil.WriteFile(targetFile, []byte(cdata.String()), 0600)
+	err = os.WriteFile(targetFile, []byte(cdata.String()), 0600)
 	if err != nil {
 		return err
 	}

@@ -3,7 +3,6 @@ package parser
 import (
 	"bytes"
 	_ "embed"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -135,7 +134,7 @@ func generatePackage(pkg *Package, moduledir string) error {
 	}
 
 	// Save typescript file
-	err = ioutil.WriteFile(filepath.Join(moduledir, "_"+pkg.Name+".d.ts"), buffer.Bytes(), 0755)
+	err = os.WriteFile(filepath.Join(moduledir, "_"+pkg.Name+".d.ts"), buffer.Bytes(), 0755)
 	if err != nil {
 		return errors.Wrap(err, "Error writing backend package file")
 	}
@@ -156,7 +155,7 @@ func generatePackage(pkg *Package, moduledir string) error {
 	}
 
 	// Save javascript file
-	err = ioutil.WriteFile(filepath.Join(moduledir, "_"+pkg.Name+".js"), buffer.Bytes(), 0755)
+	err = os.WriteFile(filepath.Join(moduledir, "_"+pkg.Name+".js"), buffer.Bytes(), 0755)
 	if err != nil {
 		return errors.Wrap(err, "Error writing backend package file")
 	}
@@ -183,7 +182,7 @@ func generateIndexJS(dir string, packages []*Package) error {
 	// Calculate target filename
 	indexJS := filepath.Join(dir, "index.js")
 
-	err = ioutil.WriteFile(indexJS, buffer.Bytes(), 0755)
+	err = os.WriteFile(indexJS, buffer.Bytes(), 0755)
 	if err != nil {
 		return errors.Wrap(err, "Error writing backend package index.js file")
 	}
@@ -209,7 +208,7 @@ func generateIndexTS(dir string, packages []*Package) error {
 	// Calculate target filename
 	indexJS := filepath.Join(dir, "index.d.ts")
 
-	err = ioutil.WriteFile(indexJS, buffer.Bytes(), 0755)
+	err = os.WriteFile(indexJS, buffer.Bytes(), 0755)
 	if err != nil {
 		return errors.Wrap(err, "Error writing backend package index.d.ts file")
 	}
@@ -236,7 +235,7 @@ func generateGlobalsTS(dir string, packages []*Package) error {
 	// Calculate target filename
 	indexJS := filepath.Join(dir, "globals.d.ts")
 
-	err = ioutil.WriteFile(indexJS, buffer.Bytes(), 0755)
+	err = os.WriteFile(indexJS, buffer.Bytes(), 0755)
 	if err != nil {
 		return errors.Wrap(err, "Error writing backend package globals.d.ts file")
 	}

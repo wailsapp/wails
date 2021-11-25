@@ -4,15 +4,14 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"github.com/go-git/go-git/v5"
 	gofs "io/fs"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/pkg/errors"
 
 	"github.com/leaanthony/debme"
@@ -295,7 +294,7 @@ func Install(options *Options) (bool, *Template, error) {
 // Clones the given uri and returns the temporary cloned directory
 func gitclone(options *Options) (string, error) {
 	// Create temporary directory
-	dirname, err := ioutil.TempDir("", "wails-template-*")
+	dirname, err := os.MkdirTemp("", "wails-template-*")
 	if err != nil {
 		return "", err
 	}

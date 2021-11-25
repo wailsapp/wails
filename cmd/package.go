@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"image"
 	"image/png"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -244,7 +243,7 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 		// No - create a new plist from our defaults
 		tmpl := template.New("infoPlist")
 		plistFile := filepath.Join(b.getPackageFileBaseDir(), "info.plist")
-		infoPlist, err := ioutil.ReadFile(plistFile)
+		infoPlist, err := os.ReadFile(plistFile)
 		if err != nil {
 			return err
 		}
@@ -258,13 +257,13 @@ func (b *PackageHelper) packageOSX(po *ProjectOptions) error {
 		}
 
 		// Save to the package
-		err = ioutil.WriteFile(plistFilename, tpl.Bytes(), 0644)
+		err = os.WriteFile(plistFilename, tpl.Bytes(), 0644)
 		if err != nil {
 			return err
 		}
 
 		// Also write to project directory for customisation
-		err = ioutil.WriteFile(customPlist, tpl.Bytes(), 0644)
+		err = os.WriteFile(customPlist, tpl.Bytes(), 0644)
 		if err != nil {
 			return err
 		}
@@ -334,12 +333,12 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 	tgtRCFile := filepath.Join(outputDir, basename+".rc")
 	if !b.fs.FileExists(tgtRCFile) {
 		srcRCfile := filepath.Join(b.getPackageFileBaseDir(), "wails.rc")
-		rcfilebytes, err := ioutil.ReadFile(srcRCfile)
+		rcfilebytes, err := os.ReadFile(srcRCfile)
 		if err != nil {
 			return err
 		}
 		rcfiledata := strings.Replace(string(rcfilebytes), "$NAME$", basename, -1)
-		err = ioutil.WriteFile(tgtRCFile, []byte(rcfiledata), 0755)
+		err = os.WriteFile(tgtRCFile, []byte(rcfiledata), 0755)
 		if err != nil {
 			return err
 		}
@@ -387,11 +386,11 @@ func (b *PackageHelper) copyIcon() (string, error) {
 
 		// Install default icon
 		iconfile := filepath.Join(b.getPackageFileBaseDir(), "icon.png")
-		iconData, err := ioutil.ReadFile(iconfile)
+		iconData, err := os.ReadFile(iconfile)
 		if err != nil {
 			return "", err
 		}
-		err = ioutil.WriteFile(srcIcon, iconData, 0644)
+		err = os.WriteFile(srcIcon, iconData, 0644)
 		if err != nil {
 			return "", err
 		}
