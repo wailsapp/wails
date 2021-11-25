@@ -2,16 +2,34 @@
    <img src="logo.png" width="55%"><br/>
 </p>
 <p align="center">
-   使用 Go 和 Web 技术构建桌面应用程序。<br/><br/>
-   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
-   <a href="https://goreportcard.com/report/github.com/wailsapp/wails"><img src="https://goreportcard.com/badge/github.com/wailsapp/wails"/></a>
-   <a href="http://godoc.org/github.com/wailsapp/wails"><img src="https://img.shields.io/badge/godoc-reference-blue.svg"/></a>
-   <a href="https://www.codefactor.io/repository/github/wailsapp/wails"><img src="https://www.codefactor.io/repository/github/wailsapp/wails/badge" alt="CodeFactor" /></a>
-   <a href="https://github.com/wailsapp/wails/issues"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="CodeFactor" /></a>
-   <a href="https://app.fossa.io/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=shield"/></a>
-   <a href="https://houndci.com"><img src="https://img.shields.io/badge/Reviewed_by-Hound-8E64B0.svg"/></a>
-   <a href="https://github.com/avelino/awesome-go" rel="nofollow"><img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome"></a>
-   <a href="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" rel="nofollow"><img src="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" alt="Release Pipelines"></a>
+  使用 Go 和 Web 技术构建桌面应用程序。<br/><br/>
+  <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg">
+  </a>
+  <a href="https://goreportcard.com/report/github.com/wailsapp/wails">
+    <img src="https://goreportcard.com/badge/github.com/wailsapp/wails"/>
+  </a>
+  <a href="http://godoc.org/github.com/wailsapp/wails">
+    <img src="https://img.shields.io/badge/godoc-reference-blue.svg"/>
+  </a>
+  <a href="https://www.codefactor.io/repository/github/wailsapp/wails">
+    <img src="https://www.codefactor.io/repository/github/wailsapp/wails/badge" alt="CodeFactor" />
+  </a>
+  <a href="https://github.com/wailsapp/wails/issues">
+    <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="CodeFactor" />
+  </a>
+  <a href="https://app.fossa.io/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_shield" alt="FOSSA Status">
+    <img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=shield"/>
+  </a>
+  <a href="https://houndci.com">
+    <img src="https://img.shields.io/badge/Reviewed_by-Hound-8E64B0.svg"/>
+  </a>
+  <a href="https://github.com/avelino/awesome-go" rel="nofollow">
+    <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome"/>
+  </a>
+  <a href="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" rel="nofollow">
+    <img src="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" alt="Release Pipelines"/>
+  </a>
 </p>
 
 <span id="nav-1"></span>
@@ -117,7 +135,7 @@
   <img src="https://github.com/matryer.png" width="100"/>
 </a>
 <a href="https://www.jetbrains.com?from=Wails" style="width:100px">
-  <img src="/img/jetbrains-grayscale.png" width="100"/>
+  <img src="/assets/images/jetbrains-grayscale.png" width="100"/>
 </a>
 <a href="https://github.com/tc-hib" style="width:55px">
  <img src="https://github.com/tc-hib.png?size=55" width="55"/>
@@ -326,11 +344,11 @@ go get -u github.com/wailsapp/wails/cmd/wails
 <a href="https://github.com/SophieAu"><img src="https://github.com/SophieAu.png?size=40" width="40"/></a>
 <a href="https://github.com/alexmat"><img src="https://github.com/alexmat.png?size=40" width="40"/></a>
 <a href="https://github.com/RH12503"><img src="https://github.com/RH12503.png?size=40" width="40"/></a>
-<a href="https://github.com/hi019"><img src="https://github.com/hi019.png?size=40" width="40"/></a></a>
-<a href="https://github.com/Igogrek"><img src="https://github.com/Igogrek.png?size=40" width="40"/></a></a>
-<a href="https://github.com/aschey"><img src="https://github.com/aschey.png?size=40" width="40"/></a></a>
-<a href="https://github.com/akhudek"><img src="https://github.com/akhudek.png?size=40" width="40"/></a></a>
-<a href="https://github.com/s12chung"><img src="https://github.com/s12chung.png?size=40" width="40"/></a></a>
+<a href="https://github.com/hi019"><img src="https://github.com/hi019.png?size=40" width="40"/></a>
+<a href="https://github.com/Igogrek"><img src="https://github.com/Igogrek.png?size=40" width="40"/></a>
+<a href="https://github.com/aschey"><img src="https://github.com/aschey.png?size=40" width="40"/></a>
+<a href="https://github.com/akhudek"><img src="https://github.com/akhudek.png?size=40" width="40"/></a>
+<a href="https://github.com/s12chung"><img src="https://github.com/s12chung.png?size=40" width="40"/></a>
 
 <span id="nav-10"></span>
 
@@ -363,7 +381,7 @@ go get -u github.com/wailsapp/wails/cmd/wails
 ## 特别感谢
 
 <p align="center" style="text-align: center">
-   <a href="https://pace.dev"><img src="pace.jpeg"/></a><br/>
+   <a href="https://pace.dev"><img src="/assets/images/pace.jpeg"/></a><br/>
    <i>非常</i> 感谢<a href="https://pace.dev">Pace</a>对项目的赞助，并帮助将 Wails 移植到 Apple Silicon !<br/><br/>
    如果您正在寻找一个强大并且快速和易于使用的项目管理工具，可以看看他们！<br/><br/>
 </p>
@@ -371,5 +389,5 @@ go get -u github.com/wailsapp/wails/cmd/wails
 <p align="center" style="text-align: center">
    特别感谢 JetBrains 向我们捐赠许可！<br/><br/>
    请点击 logo 让他们知道你的感激之情！<br/><br/>
-   <a href="https://www.jetbrains.com?from=Wails"><img src="jetbrains-grayscale.png" width="30%"></a>
+   <a href="https://www.jetbrains.com?from=Wails"><img src="/assets/images/jetbrains-grayscale.png" width="30%"></a>
 </p>
