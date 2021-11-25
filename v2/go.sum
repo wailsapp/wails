@@ -132,8 +132,6 @@ github.com/leaanthony/typescriptify-golang-structs v0.1.7 h1:yoznzWzyxkO/iWdlpq+
 github.com/leaanthony/typescriptify-golang-structs v0.1.7/go.mod h1:cWtOkiVhMF77e6phAXUcfNwYmMwCJ67Sij24lfvi9Js=
 github.com/leaanthony/webview2runtime v1.1.0 h1:N0pv55ift8XtqozIp4PNOtRCJ/Qdd/qzx80lUpalS4c=
 github.com/leaanthony/webview2runtime v1.1.0/go.mod h1:hH9GnWCve3DYzNaPOcPbhHQ7fodXR1QJNsnwixid4Tk=
-github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 h1:5iOd93PZbpH4Iir8QkC4coFD+zEQEZSIRcjwjTFZkr0=
-github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18/go.mod h1:KEbMsKoznsebyGHwLk5LqkFOxL5uXSRdvpP4+avmAMs=
 github.com/leaanthony/winc v0.0.0-20211124105230-0330cfc6d50c h1:TiVq07fzkq0QHJNC2WAb3efpM1R0gPcVgdxcvIu7K84=
 github.com/leaanthony/winc v0.0.0-20211124105230-0330cfc6d50c/go.mod h1:KEbMsKoznsebyGHwLk5LqkFOxL5uXSRdvpP4+avmAMs=
 github.com/leaanthony/winicon v1.0.0 h1:ZNt5U5dY71oEoKZ97UVwJRT4e+5xo5o/ieKuHuk8NqQ=

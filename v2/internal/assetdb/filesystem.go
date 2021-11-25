@@ -1,4 +1,6 @@
+//go:build !desktop
 // +build !desktop
+
 package assetdb
 
 import (

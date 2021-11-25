@@ -75,7 +75,6 @@ const (
 	NixOS
 	// Artix linux distribution
 	ArtixLinux
-
 )
 
 // DistroInfo contains all the information relating to a linux distribution

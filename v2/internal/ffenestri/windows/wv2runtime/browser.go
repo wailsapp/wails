@@ -1,3 +1,4 @@
+//go:build wv2runtime.browser
 // +build wv2runtime.browser
 
 package wv2runtime

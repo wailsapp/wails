@@ -8,7 +8,6 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/kennygrant/sanitize v1.2.4
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/leaanthony/slicer v1.4.0
 	github.com/leaanthony/spinner v0.5.3
 	github.com/mattn/go-colorable v0.1.1 // indirect
@@ -17,7 +16,6 @@ require (
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/objx v0.1.1 // indirect
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/syossan27/tebata v0.0.0-20180602121909-b283fe4bc5ba
 	golang.org/x/image v0.0.0-20200430140353-33d19683fad8

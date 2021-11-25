@@ -1,14 +1,16 @@
-//+build windows
+//go:build windows
+// +build windows
 
 package ffenestri
 
 import (
 	"fmt"
-	"github.com/leaanthony/slicer"
-	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"os"
 	"sync"
 	"text/tabwriter"
+
+	"github.com/leaanthony/slicer"
+	"github.com/wailsapp/wails/v2/internal/menumanager"
 )
 
 /* ---------------------------------------------------------------------------------

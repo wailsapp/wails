@@ -1,3 +1,4 @@
+//go:build wv2runtime.embed
 // +build wv2runtime.embed
 
 package wv2runtime
