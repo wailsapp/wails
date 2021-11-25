@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -189,7 +189,7 @@ func (a *AssetBundle) WriteToCFile(targetDir string) (string, error) {
 
 	// Save file
 	assetsFile := filepath.Join(targetDir, "assets.h")
-	err = ioutil.WriteFile(assetsFile, []byte(cdata.String()), 0600)
+	err = os.WriteFile(assetsFile, []byte(cdata.String()), 0600)
 	if err != nil {
 		return "", err
 	}

@@ -1,10 +1,10 @@
+//go:build linux
 // +build linux
 
 package operatingsystem
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -16,7 +16,7 @@ func platformInfo() (*OS, error) {
 		return nil, fmt.Errorf("unable to read system information")
 	}
 
-	osRelease, _ := ioutil.ReadFile("/etc/os-release")
+	osRelease, _ := os.ReadFile("/etc/os-release")
 	return parseOsRelease(string(osRelease)), nil
 }
 

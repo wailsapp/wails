@@ -1,6 +1,5 @@
-// +build !wv2runtime.error
-// +build !wv2runtime.browser
-// +build !wv2runtime.embed
+//go:build !wv2runtime.error && !wv2runtime.browser && !wv2runtime.embed
+// +build !wv2runtime.error,!wv2runtime.browser,!wv2runtime.embed
 
 package wv2runtime
 

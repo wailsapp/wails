@@ -2,12 +2,12 @@ package build
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/buildassets"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/html"
+	"github.com/wailsapp/wails/v2/pkg/buildassets"
 )
 
 // DesktopBuilder builds applications for the desktop
@@ -138,7 +138,7 @@ func (d *DesktopBuilder) BuildRuntime(options *Options) error {
 	}
 
 	wailsJS := fs.RelativePath("../../../internal/runtime/assets/desktop.js")
-	runtimeData, err := ioutil.ReadFile(wailsJS)
+	runtimeData, err := os.ReadFile(wailsJS)
 	if err != nil {
 		return err
 	}
@@ -158,7 +158,7 @@ const unsigned char runtime[]={`
 	// Save file
 	outputFile := fs.RelativePath("../../../internal/ffenestri/runtime.c")
 
-	if err := ioutil.WriteFile(outputFile, []byte(runtimeC), 0600); err != nil {
+	if err := os.WriteFile(outputFile, []byte(runtimeC), 0600); err != nil {
 		return err
 	}
 

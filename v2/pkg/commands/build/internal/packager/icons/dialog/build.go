@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/leaanthony/slicer"
-	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/leaanthony/slicer"
 )
 
 func convertToHexLiteral(bytes []byte) string {
@@ -56,7 +57,7 @@ func buildMacIcons(dialogIconFilenames []string) error {
 	for count, filename := range dialogIconFilenames {
 
 		// Load the tray icon
-		dataBytes, err = ioutil.ReadFile(filename)
+		dataBytes, err = os.ReadFile(filename)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -91,7 +92,7 @@ func buildMacIcons(dialogIconFilenames []string) error {
 	}
 	cdata.WriteString("0x00 };\n")
 
-	err = ioutil.WriteFile(targetFile, []byte(cdata.String()), 0600)
+	err = os.WriteFile(targetFile, []byte(cdata.String()), 0600)
 	if err != nil {
 		log.Fatal(err)
 	}

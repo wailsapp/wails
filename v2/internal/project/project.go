@@ -2,7 +2,6 @@ package project
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -77,7 +76,7 @@ func Load(projectPath string) (*Project, error) {
 
 	// Attempt to load project.json
 	projectFile := filepath.Join(projectPath, "wails.json")
-	rawBytes, err := ioutil.ReadFile(projectFile)
+	rawBytes, err := os.ReadFile(projectFile)
 	if err != nil {
 		return nil, err
 	}

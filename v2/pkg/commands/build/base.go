@@ -3,7 +3,6 @@ package build
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -87,7 +86,7 @@ func (b *BaseBuilder) buildCustomAssets(projectData *project.Project) error {
 		if len(localPath) == 0 {
 			return nil
 		}
-		if data, err := ioutil.ReadFile(filepath.Join(customAssetsDir, localPath)); err == nil {
+		if data, err := os.ReadFile(filepath.Join(customAssetsDir, localPath)); err == nil {
 			assets.AddAsset(localPath, data)
 		}
 
@@ -100,7 +99,7 @@ func (b *BaseBuilder) buildCustomAssets(projectData *project.Project) error {
 	// Write assetdb out to root directory
 	assetsDbFilename := fs.RelativePath("../../../assetsdb.go")
 	b.addFileToDelete(assetsDbFilename)
-	err = ioutil.WriteFile(assetsDbFilename, []byte(assets.Serialize("assets", "wails")), 0644)
+	err = os.WriteFile(assetsDbFilename, []byte(assets.Serialize("assets", "wails")), 0644)
 	if err != nil {
 		return err
 	}
@@ -108,7 +107,7 @@ func (b *BaseBuilder) buildCustomAssets(projectData *project.Project) error {
 }
 
 func (b *BaseBuilder) convertFileToIntegerString(filename string) (string, error) {
-	rawData, err := ioutil.ReadFile(filename)
+	rawData, err := os.ReadFile(filename)
 	if err != nil {
 		return "", err
 	}

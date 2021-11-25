@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -51,7 +50,7 @@ func main() {
 		}
 
 		wailsJS := fs.RelativePath("../assets/desktop_" + platform + ".js")
-		runtimeData, err := ioutil.ReadFile(wailsJS)
+		runtimeData, err := os.ReadFile(wailsJS)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -78,7 +77,7 @@ const unsigned char runtime[]={`
 		// Save file
 		outputFile := fs.RelativePath(fmt.Sprintf("../../ffenestri/runtime_%s.c", platform))
 
-		if err := ioutil.WriteFile(outputFile, []byte(runtimeC), 0600); err != nil {
+		if err := os.WriteFile(outputFile, []byte(runtimeC), 0600); err != nil {
 			log.Fatal(err)
 		}
 	}

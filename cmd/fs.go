@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -50,7 +49,7 @@ func (fs *FSHelper) FileExists(path string) bool {
 
 // FindFile returns the first occurrence of match inside path.
 func (fs *FSHelper) FindFile(path, match string) (string, error) {
-	files, err := ioutil.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		return "", err
 	}
@@ -69,7 +68,7 @@ func (fs *FSHelper) FindFile(path, match string) (string, error) {
 func (fs *FSHelper) CreateFile(filename string, data []byte) error {
 	// Ensure directory exists
 	fs.MkDirs(filepath.Dir(filename))
-	return ioutil.WriteFile(filename, data, 0644)
+	return os.WriteFile(filename, data, 0644)
 }
 
 // MkDirs creates the given nested directories.
@@ -156,14 +155,14 @@ func (fs *FSHelper) LoadRelativeFile(relativePath string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ioutil.ReadFile(fullPath)
+	return os.ReadFile(fullPath)
 }
 
 // GetSubdirs will return a list of FQPs to subdirectories in the given directory
 func (d *Dir) GetSubdirs() (map[string]string, error) {
 
 	// Read in the directory information
-	fileInfo, err := ioutil.ReadDir(d.fullPath)
+	fileInfo, err := os.ReadDir(d.fullPath)
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +214,7 @@ func (fs *FSHelper) SaveAsJSON(data interface{}, filename string) error {
 	e.SetIndent("", "  ")
 	e.Encode(data)
 
-	err := ioutil.WriteFile(filename, buf.Bytes(), 0755)
+	err := os.WriteFile(filename, buf.Bytes(), 0755)
 	if err != nil {
 		return err
 	}
@@ -231,7 +230,7 @@ func (fs *FSHelper) LoadAsString(filename string) (string, error) {
 
 // LoadAsBytes returns the contents of the file as a byte slice
 func (fs *FSHelper) LoadAsBytes(filename string) ([]byte, error) {
-	return ioutil.ReadFile(filename)
+	return os.ReadFile(filename)
 }
 
 // FileMD5 returns the md5sum of the given file

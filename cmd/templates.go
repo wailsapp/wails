@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -125,7 +125,7 @@ func (t *TemplateHelper) LoadMetadata(dir string) (*TemplateMetadata, error) {
 	if !t.fs.FileExists(templateFile) {
 		return nil, nil
 	}
-	rawJSON, err := ioutil.ReadFile(templateFile)
+	rawJSON, err := os.ReadFile(templateFile)
 	if err != nil {
 		return nil, err
 	}

@@ -1,3 +1,4 @@
+//go:build wv2runtime.error
 // +build wv2runtime.error
 
 package wv2runtime

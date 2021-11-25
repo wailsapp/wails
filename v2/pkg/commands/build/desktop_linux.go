@@ -1,10 +1,10 @@
+//go:build linux
 // +build linux
 
 package build
 
 import (
 	"image/png"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -51,7 +51,7 @@ func (d *DesktopBuilder) compileIcon(assetDir string, iconFile string) error {
 	output = strings.Replace(output, "static char", "const char", 1)
 
 	// save icon.c
-	err = ioutil.WriteFile(targetFile, []byte(output), 0755)
+	err = os.WriteFile(targetFile, []byte(output), 0755)
 
 	return err
 }

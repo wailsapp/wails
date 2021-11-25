@@ -1,4 +1,5 @@
-//+build windows,debug
+//go:build windows && debug
+// +build windows,debug
 
 package ffenestri
 

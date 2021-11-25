@@ -3,7 +3,7 @@ package github
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sort"
 	"strings"
@@ -20,7 +20,7 @@ func GetVersionTags() ([]*SemanticVersion, error) {
 	if err != nil {
 		return result, err
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return result, err
 	}

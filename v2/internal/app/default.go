@@ -1,3 +1,4 @@
+//go:build !desktop && !hybrid && !server && !dev
 // +build !desktop,!hybrid,!server,!dev
 
 package app

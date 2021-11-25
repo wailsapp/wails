@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -310,14 +309,14 @@ func (po *ProjectOptions) WriteProjectConfig() error {
 		return err
 	}
 
-	return ioutil.WriteFile(targetFile, filedata, 0600)
+	return os.WriteFile(targetFile, filedata, 0600)
 }
 
 // LoadConfig loads the project configuration file from the
 // given directory
 func (po *ProjectOptions) LoadConfig(projectDir string) error {
 	targetFile := filepath.Join(projectDir, "project.json")
-	rawBytes, err := ioutil.ReadFile(targetFile)
+	rawBytes, err := os.ReadFile(targetFile)
 	if err != nil {
 		return err
 	}

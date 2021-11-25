@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -305,7 +304,7 @@ func updateWailsVersion(currentVersion, latestVersion *semver.Version) error {
 	new := fmt.Sprintf("%s v%s", wailsModule, latestVersion)
 
 	goMod = strings.Replace(goMod, old, new, -1)
-	err := ioutil.WriteFile(goModFile, []byte(goMod), 0600)
+	err := os.WriteFile(goModFile, []byte(goMod), 0600)
 	if err != nil {
 		checkSpinner.Error()
 		return err
@@ -343,7 +342,7 @@ func patchMainJS() error {
 	newStartLine := `Wails.Init`
 	mainJSContents = strings.Replace(mainJSContents, oldStartLine, newStartLine, -1)
 
-	err := ioutil.WriteFile(mainJSFile, []byte(mainJSContents), 0600)
+	err := os.WriteFile(mainJSFile, []byte(mainJSContents), 0600)
 	if err != nil {
 		checkSpinner.Error()
 		return err

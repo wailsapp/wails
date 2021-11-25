@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -112,7 +112,7 @@ To help you in this process, we will ask for some information, add Go/Wails deta
 			os.Exit(1)
 		}
 		defer resp.Body.Close()
-		template, _ := ioutil.ReadAll(resp.Body)
+		template, _ := io.ReadAll(resp.Body)
 		body := string(template)
 		body = "**Description**\n" + (strings.Split(body, "**Description**")[1])
 		fullURL := "https://github.com/wailsapp/wails/issues/new?"

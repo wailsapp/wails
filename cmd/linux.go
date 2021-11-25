@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"runtime"
@@ -75,7 +74,6 @@ const (
 	NixOS
 	// Artix linux distribution
 	ArtixLinux
-
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -96,7 +94,7 @@ func GetLinuxDistroInfo() *DistroInfo {
 	}
 	_, err := os.Stat("/etc/os-release")
 	if !os.IsNotExist(err) {
-		osRelease, _ := ioutil.ReadFile("/etc/os-release")
+		osRelease, _ := os.ReadFile("/etc/os-release")
 		result = parseOsRelease(string(osRelease))
 	}
 	return result
