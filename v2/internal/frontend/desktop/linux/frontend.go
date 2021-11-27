@@ -3,20 +3,28 @@
 
 package linux
 
+/*
+#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
+
+#include "gtk/gtk.h"
+
+*/
+import "C"
 import (
+	"bytes"
 	"context"
 	"encoding/json"
-	"log"
-	"strconv"
-	"text/template"
-
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
-
-	"github.com/gotk3/gotk3/gtk"
+	"github.com/xyproto/xpm"
+	"image/png"
+	"log"
+	"os"
+	"strconv"
+	"text/template"
 )
 
 type Frontend struct {
@@ -33,14 +41,39 @@ type Frontend struct {
 	startURL string
 
 	// main window handle
-	mainWindow                               *Window
-	minWidth, minHeight, maxWidth, maxHeight int
-	bindings                                 *binding.Bindings
-	dispatcher                               frontend.Dispatcher
-	servingFromDisk                          bool
+	mainWindow *Window
+	//minWidth, minHeight, maxWidth, maxHeight int
+	bindings        *binding.Bindings
+	dispatcher      frontend.Dispatcher
+	servingFromDisk bool
+}
+
+func png2XPM(pngData []byte) string {
+
+	// Create a new XPM encoder
+	enc := xpm.NewEncoder("icon")
+
+	// Open the PNG file
+	m, err := png.Decode(bytes.NewReader(pngData))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var buf bytes.Buffer
+
+	// Generate and output the XPM data
+	err = enc.Encode(&buf, m)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return buf.String()
+
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
+
+	// Set GDK_BACKEND=x11
+	os.Setenv("GDK_BACKEND", "x11")
 
 	result := &Frontend{
 		frontendOptions: appoptions,
@@ -48,10 +81,6 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		minHeight:       appoptions.MinHeight,
-		minWidth:        appoptions.MinWidth,
-		maxHeight:       appoptions.MaxHeight,
-		maxWidth:        appoptions.MaxWidth,
 		startURL:        "file://wails/",
 	}
 
@@ -72,7 +101,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	// Check if we have been given a directory to serve assets from.
 	// If so, this means we are in dev mode and are serving assets off disk.
 	// We indicate this through the `servingFromDisk` flag to ensure requests
-	// aren't cached by WebView2 in dev mode
+	// aren't cached by webkit.
 
 	_assetdir := ctx.Value("assetdir")
 	if _assetdir != nil {
@@ -85,8 +114,13 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 	result.assets = assets
 
-	// Initialise GTK
-	gtk.Init(nil)
+	C.gtk_init(nil, nil)
+
+	var _debug = ctx.Value("debug")
+	if _debug != nil {
+		result.debug = _debug.(bool)
+	}
+	result.mainWindow = NewWindow(appoptions, result.debug)
 
 	return result
 }
@@ -99,108 +133,83 @@ func (f *Frontend) Run(ctx context.Context) error {
 
 	f.ctx = context.WithValue(ctx, "frontend", f)
 
-	mainWindow := NewWindow(f.frontendOptions)
-	f.mainWindow = mainWindow
-
-	var _debug = ctx.Value("debug")
-	if _debug != nil {
-		f.debug = _debug.(bool)
-	}
-
-	//f.WindowCenter()
-	//f.setupChromium()
-	//
-	//gtkWindow.OnSize().Bind(func(arg *winc.Event) {
-	//	f.chromium.Resize()
-	//})
-	//
-	//gtkWindow.OnClose().Bind(func(arg *winc.Event) {
-	//	if f.frontendOptions.HideWindowOnClose {
-	//		f.WindowHide()
-	//	} else {
-	//		f.Quit()
-	//	}
-	//})
-
 	go func() {
 		if f.frontendOptions.OnStartup != nil {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
 
-	if f.frontendOptions.Fullscreen {
-		mainWindow.Fullscreen()
-	}
+	f.mainWindow.Run()
 
-	mainWindow.Run()
-	mainWindow.Close()
 	return nil
 }
 
 func (f *Frontend) WindowCenter() {
-	f.mainWindow.Center()
+	////dCenter()
 }
 
 func (f *Frontend) WindowSetPos(x, y int) {
-	f.mainWindow.SetPos(x, y)
+	////dSetPos(x, y)
 }
 func (f *Frontend) WindowGetPos() (int, int) {
-	return f.mainWindow.Pos()
+	////return dPos()
+	return 0, 0
 }
 
 func (f *Frontend) WindowSetSize(width, height int) {
-	f.mainWindow.SetSize(width, height)
+	////dSetSize(width, height)
 }
 
 func (f *Frontend) WindowGetSize() (int, int) {
-	return f.mainWindow.Size()
+	////return dSize()
+	return 0, 0
 }
 
 func (f *Frontend) WindowSetTitle(title string) {
-	f.mainWindow.SetText(title)
+	////dSetText(title)
 }
 
 func (f *Frontend) WindowFullscreen() {
-	f.mainWindow.SetMaxSize(0, 0)
-	f.mainWindow.SetMinSize(0, 0)
-	f.mainWindow.Fullscreen()
+	////dSetMaxSize(0, 0)
+	////dSetMinSize(0, 0)
+	////dFullscreen()
 }
 
 func (f *Frontend) WindowUnFullscreen() {
-	f.mainWindow.UnFullscreen()
-	f.mainWindow.SetMaxSize(f.maxWidth, f.maxHeight)
-	f.mainWindow.SetMinSize(f.minWidth, f.minHeight)
+	////dUnFullscreen()
+	////dSetMaxSize(f.maxWidth, f.maxHeight)
+	////dSetMinSize(f.minWidth, f.minHeight)
 }
 
 func (f *Frontend) WindowShow() {
-	f.mainWindow.Show()
+	////dShow()
 }
 
 func (f *Frontend) WindowHide() {
-	f.mainWindow.Hide()
+	////dHide()
 }
 func (f *Frontend) WindowMaximise() {
-	f.mainWindow.Maximise()
+	////dMaximise()
 }
 func (f *Frontend) WindowUnmaximise() {
-	f.mainWindow.UnMaximise()
+	////dUnMaximise()
 }
 func (f *Frontend) WindowMinimise() {
-	f.mainWindow.Minimise()
+	//dMinimise()
 }
 func (f *Frontend) WindowUnminimise() {
-	f.mainWindow.UnMinimise()
+	//dUnMinimise()
 }
 
 func (f *Frontend) WindowSetMinSize(width int, height int) {
-	f.minWidth = width
-	f.minHeight = height
-	f.mainWindow.SetMinSize(width, height)
+	//f.minWidth = width
+	////f.minHeight = height
+	//dSetMinSize(width, height)
 }
 func (f *Frontend) WindowSetMaxSize(width int, height int) {
-	f.maxWidth = width
-	f.maxHeight = height
-	f.mainWindow.SetMaxSize(width, height)
+	//f.maxWidth = width
+	////f.maxHeight = height
+	//dSetMaxSize(width, height)
 }
 
 func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
@@ -341,12 +350,12 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 
 func (f *Frontend) processMessage(message string) {
 	if message == "drag" {
-		if !f.mainWindow.IsFullScreen() {
-			err := f.startDrag()
-			if err != nil {
-				f.logger.Error(err.Error())
-			}
+		//if !f.mainWindow.IsFullScreen() {
+		err := f.startDrag()
+		if err != nil {
+			f.logger.Error(err.Error())
 		}
+		//}
 		return
 	}
 	result, err := f.dispatcher.ProcessMessage(message, f)

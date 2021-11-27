@@ -215,6 +215,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		commands.Add(`"all=-N -l"`)
 	}
 
+	if options.ForceBuild {
+		commands.Add("-a")
+	}
+
 	var tags slicer.StringSlicer
 	tags.Add(options.OutputType)
 	tags.AddSlice(options.UserTags)
