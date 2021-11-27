@@ -113,29 +113,10 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	result.SetKeepAbove(appoptions.AlwaysOnTop)
 	result.SetResizable(!appoptions.DisableResize)
 	result.SetSize(appoptions.Width, appoptions.Height)
-	result.Center()
 	result.SetDecorated(!appoptions.Frameless)
 	result.SetTitle(appoptions.Title)
 	result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
 	result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
-
-	//if appoptions.Linux != nil && appoptions.Linux.Icon != nil {
-	//	xpmData := png2XPM(appoptions.Linux.Icon)
-	//	xpm := C.CString(xpmData)
-	//	defer C.free(unsafe.Pointer(xpm))
-	//	appIcon := C.gdk_pixbuf_new_from_xpm_data(
-	//	C.gtk_window_set_icon(result.asGTKWindow(), appIcon)
-	//}
-
-	//windowStartState := C.int(int(a.appoptions.WindowStartState))
-
-	//if a.appoptions.RGBA != nil {
-	//	result.SetRGBA(a.appoptions.RGBA.R, a.appoptions.RGBA.G, a.appoptions.RGBA.B, a.appoptions.RGBA.A)
-	//}
-
-	//if a.appoptions.Menu != nil {
-	//	result.SetApplicationMenu(a.appoptions.Menu)
-	//}
 
 	return result
 }
@@ -162,17 +143,6 @@ func (w *Window) UnFullscreen() {
 }
 
 func (w *Window) Destroy() {
-	/*
-	   for (gulong connection: {
-	       impl_->deleteEventConnection,
-	       impl_->focusInEventConnection,
-	       impl_->focusOutEventConnection,
-	       impl_->configureEventConnection
-	   }) {
-	       g_signal_handler_disconnect(impl_->gtkWindow, connection);
-	   }
-	   gtk_widget_destroy(GTK_WIDGET(impl_->gtkWindow));
-	*/
 
 	//TODO: Proper shutdown
 	C.g_object_unref(C.gpointer(w.gtkWindow))
@@ -261,16 +231,15 @@ func (w *Window) UpdateApplicationMenu() {
 
 func (w *Window) Run() {
 	C.gtk_widget_show_all(w.asGTKWidget())
-	//switch w.appoptions.WindowStartState {
-	//case options.Fullscreen:
-	//	w.Fullscreen()
-	//case options.Minimised:
-	//	w.Minimise()
-	//case options.Maximised:
-	//	w.Maximise()
-	//}
-
-	//println("Fullscreen: ", w.IsFullScreen())
+	w.Center()
+	switch w.appoptions.WindowStartState {
+	case options.Fullscreen:
+		w.Fullscreen()
+	case options.Minimised:
+		w.Minimise()
+	case options.Maximised:
+		w.Maximise()
+	}
 	C.gtk_main()
 }
 
