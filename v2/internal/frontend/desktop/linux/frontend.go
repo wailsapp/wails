@@ -8,10 +8,19 @@ package linux
 
 #include "gtk/gtk.h"
 
+extern void callDispatchedMethod(int id);
+
+static inline void processDispatchID(gpointer id) {
+    callDispatchedMethod(GPOINTER_TO_INT(id));
+}
+
+static void gtkDispatch(int id) {
+	gdk_threads_add_idle((GSourceFunc)processDispatchID, GINT_TO_POINTER(id));
+}
+
 */
 import "C"
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"github.com/wailsapp/wails/v2/internal/binding"
@@ -19,11 +28,10 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/xyproto/xpm"
-	"image/png"
 	"log"
 	"os"
 	"strconv"
+	"sync"
 	"text/template"
 )
 
@@ -48,31 +56,9 @@ type Frontend struct {
 	servingFromDisk bool
 }
 
-func png2XPM(pngData []byte) string {
-
-	// Create a new XPM encoder
-	enc := xpm.NewEncoder("icon")
-
-	// Open the PNG file
-	m, err := png.Decode(bytes.NewReader(pngData))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var buf bytes.Buffer
-
-	// Generate and output the XPM data
-	err = enc.Encode(&buf, m)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return buf.String()
-
-}
-
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 
-	// Set GDK_BACKEND=x11
+	// Set GDK_BACKEND=x11 to prevent warnings
 	os.Setenv("GDK_BACKEND", "x11")
 
 	result := &Frontend{
@@ -398,9 +384,19 @@ func (f *Frontend) startDrag() error {
 }
 
 func (f *Frontend) ExecJS(js string) {
-	//f.gtkWindow.Dispatch(func() {
-	//	f.chromium.Eval(js)
-	//})
+	f.dispatch(func() {
+		f.mainWindow.ExecJS(js)
+	})
+}
+
+func (f *Frontend) dispatch(fn func()) {
+	dispatchCallbackLock.Lock()
+	id := 0
+	for fn := dispatchCallbacks[id]; fn != nil; id++ {
+	}
+	dispatchCallbacks[id] = fn
+	dispatchCallbackLock.Unlock()
+	C.gtkDispatch(C.int(id))
 }
 
 //func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
@@ -423,4 +419,22 @@ var messageBuffer = make(chan string, 100)
 func processMessage(message *C.char) {
 	goMessage := C.GoString(message)
 	messageBuffer <- goMessage
+}
+
+// Map of functions passed to dispatch()
+var dispatchCallbacks = make(map[int]func())
+var dispatchCallbackLock sync.Mutex
+
+//export callDispatchedMethod
+func callDispatchedMethod(cid C.int) {
+	id := int(cid)
+	fn := dispatchCallbacks[id]
+	if fn != nil {
+		go fn()
+		dispatchCallbackLock.Lock()
+		delete(dispatchCallbacks, id)
+		dispatchCallbackLock.Unlock()
+	} else {
+		println("Error: No dispatch method with id", id, cid)
+	}
 }

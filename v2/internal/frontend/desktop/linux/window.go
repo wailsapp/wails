@@ -111,6 +111,12 @@ GtkWidget* setupWebview(void* contentManager, GtkWindow* window) {
 	return webview;
 }
 
+void devtoolsEnabled(void* webview, int enabled) {
+	WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
+	gboolean genabled = enabled == 1 ? true : false;
+	webkit_settings_set_enable_developer_extras(settings, genabled);
+}
+
 */
 import "C"
 import (
@@ -152,6 +158,10 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	result.signalInvoke = C.setupInvokeSignal(result.contentManager)
 	webview := C.setupWebview(result.contentManager, result.asGTKWindow())
 	result.webview = unsafe.Pointer(webview)
+
+	if debug {
+		C.devtoolsEnabled(unsafe.Pointer(webview), C.int(1))
+	}
 
 	// Setup window
 	result.SetKeepAbove(appoptions.AlwaysOnTop)
@@ -313,4 +323,10 @@ func (w *Window) SetTitle(title string) {
 	cTitle := C.CString(title)
 	defer C.free(unsafe.Pointer(cTitle))
 	C.gtk_window_set_title(w.asGTKWindow(), cTitle)
+}
+
+func (w *Window) ExecJS(js string) {
+	script := C.CString(js)
+	defer C.free(unsafe.Pointer(script))
+	C.webkit_web_view_run_javascript((*C.WebKitWebView)(w.webview), script, nil, nil, nil)
 }
