@@ -114,6 +114,8 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 	result.assets = assets
 
+	go result.startMessageProcessor()
+
 	C.gtk_init(nil, nil)
 
 	var _debug = ctx.Value("debug")
@@ -123,6 +125,12 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	result.mainWindow = NewWindow(appoptions, result.debug)
 
 	return result
+}
+
+func (f *Frontend) startMessageProcessor() {
+	for message := range messageBuffer {
+		f.processMessage(message)
+	}
 }
 
 func (f *Frontend) WindowReload() {
@@ -408,3 +416,11 @@ func (f *Frontend) ExecJS(js string) {
 //	f.gtkWindow.Show()
 //
 //}
+
+var messageBuffer = make(chan string, 100)
+
+//export processMessage
+func processMessage(message *C.char) {
+	goMessage := C.GoString(message)
+	messageBuffer <- goMessage
+}

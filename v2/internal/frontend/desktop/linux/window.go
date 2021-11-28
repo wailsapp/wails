@@ -6,8 +6,8 @@ package linux
 /*
 #cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
 
-
 #include "gtk/gtk.h"
+#include "webkit2/webkit2.h"
 #include <stdio.h>
 #include <limits.h>
 
@@ -79,6 +79,38 @@ int IsFullscreen(GtkWidget *widget) {
 	return state & GDK_WINDOW_STATE_FULLSCREEN == GDK_WINDOW_STATE_FULLSCREEN;
 }
 
+extern void processMessage(char*);
+
+static void sendMessageToBackend(WebKitUserContentManager *contentManager,
+                                 WebKitJavascriptResult *result,
+                                 void*)
+{
+#if WEBKIT_MAJOR_VERSION >= 2 && WEBKIT_MINOR_VERSION >= 22
+    JSCValue *value = webkit_javascript_result_get_js_value(result);
+    char *message = jsc_value_to_string(value);
+#else
+    JSGlobalContextRef context = webkit_javascript_result_get_global_context(result);
+    JSValueRef value = webkit_javascript_result_get_value(result);
+    JSStringRef js = JSValueToStringCopy(context, value, NULL);
+    size_t messageSize = JSStringGetMaximumUTF8CStringSize(js);
+    char *message = g_new(char, messageSize);
+    JSStringGetUTF8CString(js, message, messageSize);
+    JSStringRelease(js);
+#endif
+    processMessage(message);
+    g_free(message);
+}
+
+ulong setupInvokeSignal(void* contentManager) {
+	return g_signal_connect((WebKitUserContentManager*)contentManager, "script-message-received::external", G_CALLBACK(sendMessageToBackend), NULL);
+}
+
+GtkWidget* setupWebview(void* contentManager, GtkWindow* window) {
+	GtkWidget* webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager*)contentManager);
+	gtk_container_add(GTK_CONTAINER(window), webview);
+	return webview;
+}
+
 */
 import "C"
 import (
@@ -94,9 +126,12 @@ func gtkBool(input bool) C.gboolean {
 }
 
 type Window struct {
-	appoptions *options.App
-	debug      bool
-	gtkWindow  unsafe.Pointer
+	appoptions     *options.App
+	debug          bool
+	gtkWindow      unsafe.Pointer
+	contentManager unsafe.Pointer
+	webview        unsafe.Pointer
+	signalInvoke   C.ulong
 }
 
 func NewWindow(appoptions *options.App, debug bool) *Window {
@@ -108,8 +143,17 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 
 	gtkWindow := C.gtk_window_new(C.GTK_WINDOW_TOPLEVEL)
 	C.g_object_ref_sink(C.gpointer(gtkWindow))
-
 	result.gtkWindow = unsafe.Pointer(gtkWindow)
+
+	result.contentManager = unsafe.Pointer(C.webkit_user_content_manager_new())
+	external := C.CString("external")
+	defer C.free(unsafe.Pointer(external))
+	C.webkit_user_content_manager_register_script_message_handler(result.cWebKitUserContentManager(), external)
+	result.signalInvoke = C.setupInvokeSignal(result.contentManager)
+	webview := C.setupWebview(result.contentManager, result.asGTKWindow())
+	result.webview = unsafe.Pointer(webview)
+
+	// Setup window
 	result.SetKeepAbove(appoptions.AlwaysOnTop)
 	result.SetResizable(!appoptions.DisableResize)
 	result.SetSize(appoptions.Width, appoptions.Height)
@@ -129,6 +173,10 @@ func (w *Window) asGTKWindow() *C.GtkWindow {
 	return C.GTKWINDOW(w.gtkWindow)
 }
 
+func (w *Window) cWebKitUserContentManager() *C.WebKitUserContentManager {
+	return (*C.WebKitUserContentManager)(w.contentManager)
+}
+
 //func (w *Window) Dispatch(f func()) {
 //	glib.IdleAdd(f)
 //}
@@ -143,6 +191,8 @@ func (w *Window) UnFullscreen() {
 }
 
 func (w *Window) Destroy() {
+	// Destroy signal handlers
+	C.g_signal_handler_disconnect((C.gpointer)(w.contentManager), w.signalInvoke)
 
 	//TODO: Proper shutdown
 	C.g_object_unref(C.gpointer(w.gtkWindow))
