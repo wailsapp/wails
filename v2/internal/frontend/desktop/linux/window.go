@@ -105,9 +105,14 @@ ulong setupInvokeSignal(void* contentManager) {
 	return g_signal_connect((WebKitUserContentManager*)contentManager, "script-message-received::external", G_CALLBACK(sendMessageToBackend), NULL);
 }
 
+extern void processURLRequest(WebKitURISchemeRequest *request);
+
 GtkWidget* setupWebview(void* contentManager, GtkWindow* window) {
 	GtkWidget* webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager*)contentManager);
 	gtk_container_add(GTK_CONTAINER(window), webview);
+	WebKitWebContext *context = webkit_web_context_get_default();
+	webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
+	//g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webview_load_changed_cb), NULL);
 	return webview;
 }
 
@@ -117,6 +122,10 @@ void devtoolsEnabled(void* webview, int enabled) {
 	webkit_settings_set_enable_developer_extras(settings, genabled);
 }
 
+
+void loadIndex(void* webview) {
+	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview), "wails:///");
+}
 */
 import "C"
 import (
@@ -290,6 +299,7 @@ func (w *Window) UpdateApplicationMenu() {
 }
 
 func (w *Window) Run() {
+	C.loadIndex(w.webview)
 	C.gtk_widget_show_all(w.asGTKWidget())
 	w.Center()
 	switch w.appoptions.WindowStartState {

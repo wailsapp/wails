@@ -7,6 +7,7 @@ package linux
 #cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
 
 #include "gtk/gtk.h"
+#include "webkit2/webkit2.h"
 
 extern void callDispatchedMethod(int id);
 
@@ -31,8 +32,10 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"text/template"
+	"unsafe"
 )
 
 type Frontend struct {
@@ -101,6 +104,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	result.assets = assets
 
 	go result.startMessageProcessor()
+	go result.startRequestProcessor()
 
 	C.gtk_init(nil, nil)
 
@@ -437,4 +441,43 @@ func callDispatchedMethod(cid C.int) {
 	} else {
 		println("Error: No dispatch method with id", id, cid)
 	}
+}
+
+var requestBuffer = make(chan unsafe.Pointer, 100)
+
+func (f *Frontend) startRequestProcessor() {
+	for request := range requestBuffer {
+		f.processRequest(request)
+	}
+}
+
+//export processURLRequest
+func processURLRequest(request unsafe.Pointer) {
+	requestBuffer <- request
+}
+
+func (f *Frontend) processRequest(request unsafe.Pointer) {
+	req := (*C.WebKitURISchemeRequest)(request)
+	uri := C.webkit_uri_scheme_request_get_uri(req)
+	goURI := C.GoString(uri)
+
+	// Translate URI
+	goURI = strings.TrimPrefix(goURI, "wails://")
+	if !strings.HasPrefix(goURI, "/") {
+		return
+	}
+
+	// Load file from asset store
+	content, mimeType, err := f.assets.Load(goURI)
+	if err != nil {
+		return
+	}
+
+	cContent := C.CString(string(content))
+	defer C.free(unsafe.Pointer(cContent))
+	cMimeType := C.CString(mimeType)
+	defer C.free(unsafe.Pointer(cMimeType))
+	var cLen C.long = (C.long)(C.strlen(cContent))
+	stream := C.g_memory_input_stream_new_from_data(unsafe.Pointer(cContent), cLen, nil)
+	C.webkit_uri_scheme_request_finish(req, stream, cLen, cMimeType)
 }
