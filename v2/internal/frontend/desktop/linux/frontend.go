@@ -349,10 +349,7 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 func (f *Frontend) processMessage(message string) {
 	if message == "drag" {
 		//if !f.mainWindow.IsFullScreen() {
-		err := f.startDrag()
-		if err != nil {
-			f.logger.Error(err.Error())
-		}
+		f.startDrag()
 		//}
 		return
 	}
@@ -379,12 +376,10 @@ func (f *Frontend) Callback(message string) {
 	f.ExecJS(`window.wails.Callback(` + strconv.Quote(message) + `);`)
 }
 
-func (f *Frontend) startDrag() error {
-	//if !w32.ReleaseCapture() {
-	//	return fmt.Errorf("unable to release mouse capture")
-	//}
-	//w32.SendMessage(f.gtkWindow.Handle(), w32.WM_NCLBUTTONDOWN, w32.HTCAPTION, 0)
-	return nil
+func (f *Frontend) startDrag() {
+	f.dispatch(func() {
+		f.mainWindow.StartDrag()
+	})
 }
 
 func (f *Frontend) ExecJS(js string) {
@@ -402,20 +397,6 @@ func (f *Frontend) dispatch(fn func()) {
 	dispatchCallbackLock.Unlock()
 	C.gtkDispatch(C.int(id))
 }
-
-//func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.ICoreWebView2NavigationCompletedEventArgs) {
-//	if f.frontendOptions.OnDomReady != nil {
-//		go f.frontendOptions.OnDomReady(f.ctx)
-//	}
-//
-//	// If you want to start hidden, return
-//	if f.frontendOptions.StartHidden {
-//		return
-//	}
-//
-//	f.gtkWindow.Show()
-//
-//}
 
 var messageBuffer = make(chan string, 100)
 

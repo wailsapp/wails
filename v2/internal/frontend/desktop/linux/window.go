@@ -105,6 +105,43 @@ ulong setupInvokeSignal(void* contentManager) {
 	return g_signal_connect((WebKitUserContentManager*)contentManager, "script-message-received::external", G_CALLBACK(sendMessageToBackend), NULL);
 }
 
+// These are the x,y & time of the last mouse down event
+// It's used for window dragging
+float xroot = 0.0f;
+float yroot = 0.0f;
+int dragTime = -1;
+
+gboolean buttonPress(GtkWidget *widget, GdkEventButton *event, void* dummy)
+{
+	if( event == NULL ) {
+		xroot = yroot = 0.0f;
+		dragTime = -1;
+		return FALSE;
+	}
+	if (event->type == GDK_BUTTON_PRESS && event->button == 1)
+    {
+        xroot = event->x_root;
+        yroot = event->y_root;
+        dragTime = event->time;
+    }
+    return FALSE;
+}
+
+gboolean buttonRelease(GtkWidget *widget, GdkEventButton *event, void* dummy)
+{
+    if (event == NULL || (event->type == GDK_BUTTON_RELEASE && event->button == 1))
+    {
+		xroot = yroot = 0.0f;
+		dragTime = -1;
+    }
+    return FALSE;
+}
+
+void connectButtons(void* webview, ulong* pressed, ulong* released) {
+	*pressed = g_signal_connect(WEBKIT_WEB_VIEW(webview), "button-press-event", G_CALLBACK(buttonPress), NULL);
+	*released = g_signal_connect(WEBKIT_WEB_VIEW(webview), "button-release-event", G_CALLBACK(buttonRelease), NULL);
+}
+
 extern void processURLRequest(WebKitURISchemeRequest *request);
 
 GtkWidget* setupWebview(void* contentManager, GtkWindow* window) {
@@ -122,10 +159,19 @@ void devtoolsEnabled(void* webview, int enabled) {
 	webkit_settings_set_enable_developer_extras(settings, genabled);
 }
 
-
 void loadIndex(void* webview) {
 	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview), "wails:///");
 }
+
+static void startDrag(void *webview, GtkWindow* mainwindow)
+{
+    // Ignore non-toplevel widgets
+    GtkWidget *window = gtk_widget_get_toplevel(GTK_WIDGET(webview));
+    if (!GTK_IS_WINDOW(window)) return;
+
+    gtk_window_begin_move_drag(mainwindow, 1, xroot, yroot, dragTime);
+}
+
 */
 import "C"
 import (
@@ -141,12 +187,14 @@ func gtkBool(input bool) C.gboolean {
 }
 
 type Window struct {
-	appoptions     *options.App
-	debug          bool
-	gtkWindow      unsafe.Pointer
-	contentManager unsafe.Pointer
-	webview        unsafe.Pointer
-	signalInvoke   C.ulong
+	appoptions          *options.App
+	debug               bool
+	gtkWindow           unsafe.Pointer
+	contentManager      unsafe.Pointer
+	webview             unsafe.Pointer
+	signalInvoke        C.ulong
+	signalMousePressed  C.ulong
+	signalMouseReleased C.ulong
 }
 
 func NewWindow(appoptions *options.App, debug bool) *Window {
@@ -165,8 +213,12 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	defer C.free(unsafe.Pointer(external))
 	C.webkit_user_content_manager_register_script_message_handler(result.cWebKitUserContentManager(), external)
 	result.signalInvoke = C.setupInvokeSignal(result.contentManager)
+
 	webview := C.setupWebview(result.contentManager, result.asGTKWindow())
 	result.webview = unsafe.Pointer(webview)
+	buttonPressedName := C.CString("button-press-event")
+	defer C.free(unsafe.Pointer(buttonPressedName))
+	C.connectButtons(unsafe.Pointer(webview), &result.signalMousePressed, &result.signalMouseReleased)
 
 	if debug {
 		C.devtoolsEnabled(unsafe.Pointer(webview), C.int(1))
@@ -339,4 +391,8 @@ func (w *Window) ExecJS(js string) {
 	script := C.CString(js)
 	defer C.free(unsafe.Pointer(script))
 	C.webkit_web_view_run_javascript((*C.WebKitWebView)(w.webview), script, nil, nil, nil)
+}
+
+func (w *Window) StartDrag() {
+	C.startDrag(w.webview, w.asGTKWindow())
 }
