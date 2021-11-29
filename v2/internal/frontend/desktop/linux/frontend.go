@@ -143,157 +143,72 @@ func (f *Frontend) Run(ctx context.Context) error {
 }
 
 func (f *Frontend) WindowCenter() {
-	////dCenter()
+	f.mainWindow.Center()
 }
 
 func (f *Frontend) WindowSetPos(x, y int) {
-	////dSetPos(x, y)
+	f.mainWindow.SetPos(x, y)
 }
 func (f *Frontend) WindowGetPos() (int, int) {
-	////return dPos()
-	return 0, 0
+	return f.mainWindow.Pos()
 }
 
 func (f *Frontend) WindowSetSize(width, height int) {
-	////dSetSize(width, height)
+	f.mainWindow.SetSize(width, height)
 }
 
 func (f *Frontend) WindowGetSize() (int, int) {
-	////return dSize()
-	return 0, 0
+	return f.mainWindow.Size()
 }
 
 func (f *Frontend) WindowSetTitle(title string) {
-	////dSetText(title)
+	f.mainWindow.SetTitle(title)
 }
 
 func (f *Frontend) WindowFullscreen() {
-	////dSetMaxSize(0, 0)
-	////dSetMinSize(0, 0)
-	////dFullscreen()
+	f.mainWindow.Fullscreen()
 }
 
 func (f *Frontend) WindowUnFullscreen() {
-	////dUnFullscreen()
-	////dSetMaxSize(f.maxWidth, f.maxHeight)
-	////dSetMinSize(f.minWidth, f.minHeight)
+	f.mainWindow.UnFullscreen()
 }
 
 func (f *Frontend) WindowShow() {
-	////dShow()
+	f.mainWindow.Show()
 }
 
 func (f *Frontend) WindowHide() {
-	////dHide()
+	f.mainWindow.Hide()
 }
 func (f *Frontend) WindowMaximise() {
-	////dMaximise()
+	f.mainWindow.Maximise()
 }
 func (f *Frontend) WindowUnmaximise() {
-	////dUnMaximise()
+	f.mainWindow.UnMaximise()
 }
 func (f *Frontend) WindowMinimise() {
-	//dMinimise()
+	f.mainWindow.Minimise()
 }
 func (f *Frontend) WindowUnminimise() {
-	//dUnMinimise()
+	f.mainWindow.UnMinimise()
 }
 
 func (f *Frontend) WindowSetMinSize(width int, height int) {
-	//f.minWidth = width
-	////f.minHeight = height
-	//dSetMinSize(width, height)
+	f.mainWindow.SetMinSize(width, height)
 }
 func (f *Frontend) WindowSetMaxSize(width int, height int) {
-	//f.maxWidth = width
-	////f.maxHeight = height
-	//dSetMaxSize(width, height)
+	f.mainWindow.SetMaxSize(width, height)
 }
 
 func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 	if col == nil {
 		return
 	}
-	//
-	//f.gtkWindow.Dispatch(func() {
-	//	controller := f.chromium.GetController()
-	//	controller2 := controller.GetICoreWebView2Controller2()
-	//
-	//	backgroundCol := edge.COREWEBVIEW2_COLOR{
-	//		A: col.A,
-	//		R: col.R,
-	//		G: col.G,
-	//		B: col.B,
-	//	}
-	//
-	//	// Webview2 only has 0 and 255 as valid values.
-	//	if backgroundCol.A > 0 && backgroundCol.A < 255 {
-	//		backgroundCol.A = 255
-	//	}
-	//
-	//	if f.frontendOptions.Windows != nil && f.frontendOptions.Windows.WebviewIsTransparent {
-	//		backgroundCol.A = 0
-	//	}
-	//
-	//	err := controller2.PutDefaultBackgroundColor(backgroundCol)
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
-	//})
 }
 
 func (f *Frontend) Quit() {
-	//winc.Exit()
+	f.mainWindow.Quit()
 }
-
-//func (f *Frontend) setupChromium() {
-//	chromium := edge.NewChromium()
-//	f.chromium = chromium
-//	chromium.MessageCallback = f.processMessage
-//	chromium.WebResourceRequestedCallback = f.processRequest
-//	chromium.NavigationCompletedCallback = f.navigationCompleted
-//	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
-//		w32.PostMessage(f.gtkWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
-//		return false
-//	}
-//	chromium.Embed(f.gtkWindow.Handle())
-//	chromium.Resize()
-//	settings, err := chromium.GetSettings()
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	err = settings.PutAreDefaultContextMenusEnabled(f.debug)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	err = settings.PutAreDevToolsEnabled(f.debug)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	err = settings.PutIsZoomControlEnabled(false)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	err = settings.PutIsStatusBarEnabled(false)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	err = settings.PutAreBrowserAcceleratorKeysEnabled(false)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	err = settings.PutIsSwipeNavigationEnabled(false)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//
-//	// Set background colour
-//	f.WindowSetRGBA(f.frontendOptions.RGBA)
-//
-//	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
-//	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
-//	chromium.Navigate(f.startURL)
-//}
 
 type EventNotify struct {
 	Name string        `json:"name"`
@@ -312,39 +227,6 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 	}
 	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
 }
-
-//func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {
-//	//Get the request
-//	uri, _ := req.GetUri()
-//
-//	// Translate URI
-//	uri = strings.TrimPrefix(uri, "file://wails")
-//	if !strings.HasPrefix(uri, "/") {
-//		return
-//	}
-//
-//	// Load file from asset store
-//	content, mimeType, err := f.assets.Load(uri)
-//	if err != nil {
-//		return
-//	}
-//
-//	env := f.chromium.Environment()
-//	headers := "Content-Type: " + mimeType
-//	if f.servingFromDisk {
-//		headers += "\nPragma: no-cache"
-//	}
-//	response, err := env.CreateWebResourceResponse(content, 200, "OK", headers)
-//	if err != nil {
-//		return
-//	}
-//	// Send response back
-//	err = args.PutResponse(response)
-//	if err != nil {
-//		return
-//	}
-//	return
-//}
 
 func (f *Frontend) processMessage(message string) {
 	if message == "drag" {

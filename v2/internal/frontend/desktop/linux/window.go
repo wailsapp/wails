@@ -396,3 +396,8 @@ func (w *Window) ExecJS(js string) {
 func (w *Window) StartDrag() {
 	C.startDrag(w.webview, w.asGTKWindow())
 }
+
+func (w *Window) Quit() {
+	w.Close()
+	w.Destroy()
+}
