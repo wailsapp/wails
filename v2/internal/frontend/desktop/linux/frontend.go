@@ -340,7 +340,7 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	defer C.free(unsafe.Pointer(cContent))
 	cMimeType := C.CString(mimeType)
 	defer C.free(unsafe.Pointer(cMimeType))
-	var cLen C.long = (C.long)(C.strlen(cContent))
+	cLen := C.long(len(content))
 	stream := C.g_memory_input_stream_new_from_data(unsafe.Pointer(cContent), cLen, nil)
 	C.webkit_uri_scheme_request_finish(req, stream, cLen, cMimeType)
 }
