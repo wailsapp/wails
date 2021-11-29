@@ -22,7 +22,7 @@ require (
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/go-common-file-dialog v1.0.3
-	github.com/leaanthony/go-webview2 v0.0.0-20211022194343-1e4c8d4226f3
+	github.com/leaanthony/go-webview2 v0.0.0-20211130085920-c044f547e45c
 	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
@@ -55,7 +55,7 @@ require (
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
-	github.com/go-ole/go-ole v1.2.5 // indirect
+	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
