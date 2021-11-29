@@ -43,6 +43,8 @@ type Frontend struct {
 	bindings                                 *binding.Bindings
 	dispatcher                               frontend.Dispatcher
 	servingFromDisk                          bool
+
+	hasStarted bool
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
@@ -451,6 +453,11 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
 		f.ExecJS("window.wails.flags.enableResize = true;")
 	}
+
+	if f.hasStarted {
+		return
+	}
+	f.hasStarted = true
 
 	// Hack to make it visible: https://github.com/MicrosoftEdge/WebView2Feedback/issues/1077#issuecomment-825375026
 	err := f.chromium.Hide()
