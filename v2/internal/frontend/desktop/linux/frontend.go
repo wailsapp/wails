@@ -27,7 +27,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 	"text/template"
 	"unsafe"
@@ -35,6 +34,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/common"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
@@ -328,14 +328,16 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	uri := C.webkit_uri_scheme_request_get_uri(req)
 	goURI := C.GoString(uri)
 
-	// Translate URI
-	goURI = strings.TrimPrefix(goURI, "wails://")
-	if !strings.HasPrefix(goURI, "/") {
+	file, match, err := common.TranslateUriToFile(uri, "wails", "")
+	if err != nil {
+		// TODO Handle errors
+		return
+	} else if !match {
 		return
 	}
 
 	// Load file from asset store
-	content, mimeType, err := f.assets.Load(goURI)
+	content, mimeType, err := f.assets.Load(file)
 	if err != nil {
 		return
 	}
