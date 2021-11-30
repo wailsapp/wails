@@ -1,7 +1,9 @@
 package git
 
 import (
+	"html/template"
 	"runtime"
+	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/shell"
 )
@@ -29,7 +31,8 @@ func Email() (string, error) {
 // Name tries to retrieve the
 func Name() (string, error) {
 	stdout, _, err := shell.RunCommand(".", gitcommand(), "config", "user.name")
-	return stdout, err
+	name := template.JSEscapeString(strings.TrimSpace(stdout))
+	return name, err
 }
 
 func InitRepo(projectDir string) error {
