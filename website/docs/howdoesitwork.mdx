@@ -123,11 +123,89 @@ has completed loading all assets in `index.html` and is equivalent of the [`body
 #### Method Binding
 
 The `Bind` option is one of the most important options in a Wails application. It specifies which struct methods
-to expose to the frontend. When the application starts, it examines the struct instances listed in `Bind`, determines
-which methods are public (starts with an uppercase letter) and will generate Javascript versions of those methods that
-can be called by the frontend code.
+to expose to the frontend. When the application starts, it examines the struct instances listed in the `Bind` field in
+the options, determines which methods are public (starts with an uppercase letter) and will generate Javascript versions
+of those methods that can be called by the frontend code.
 
-These methods are located in the frontend at `window.go.<packagename>.<struct>.<method>`.
+:::info Note
+
+  Wails requires that you pass in an *instance* of the struct for it to bind it correctly
+
+:::
+
+In this example, we create a new `App` instance and then add this instance to the `Bind` option in `wails.Run`:
+
+```go {16,26} title="main.go"
+package main
+
+import (
+	"embed"
+	"log"
+
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+
+	app := &App{}
+
+	err := wails.Run(&options.App{
+		Title:             "Basic Demo",
+		Width:             1024,
+		Height:            768,
+		Assets:            &assets,
+		OnStartup:         app.startup,
+		OnShutdown:        app.shutdown,
+		Bind: []interface{}{
+			app,
+		},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+
+type App struct {
+    ctx context.Context
+}
+
+func (b *App) startup(ctx context.Context) {
+    b.ctx = ctx
+}
+
+func (b *App) shutdown(ctx context.Context) {}
+
+func (b *App) Greet(name string) string {
+    return fmt.Sprintf("Hello %s!", name)
+}
+```
+
+You may bind as many structs as you like. Just make sure you create an instance of it and pass it in bind:
+
+```go {10-12}
+...
+	err := wails.Run(&options.App{
+		Title:             "Basic Demo",
+		Width:             1024,
+		Height:            768,
+		Assets:            &assets,
+		OnStartup:         app.startup,
+		OnShutdown:        app.shutdown,
+		Bind: []interface{}{
+			app,
+			&mystruct1{},
+			&mystruct2{},
+		},
+	})
+...
+```
+
+The bound methods are located in the frontend at `window.go.<packagename>.<struct>.<method>`.
 In the example above, we bind `app`, which has one public method `Greet`.
 This can be called in Javascript by calling `window.go.main.App.Greet`.
 These methods return a promise. A successful call will result in the first return value from the Go call to be passed
