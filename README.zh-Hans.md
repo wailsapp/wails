@@ -188,6 +188,9 @@
 <a href="https://github.com/DonTomato" style="width:45px">
   <img src="https://github.com/DonTomato.png?size=45" width="45"/>
 </a>
+<a href="https://github.com/taigrr" style="width:45px">
+  <img src="https://github.com/taigrr.png?size=45" width="45"/>
+</a>
 
 <span id="nav-6"></span>
 
