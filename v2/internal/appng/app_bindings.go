@@ -103,6 +103,12 @@ func generateBindings(bindings *binding.Bindings) error {
 		return err
 	}
 
+	bindingsTypes := filepath.Join(targetDir, "bindings.d.ts")
+	err = bindings.GenerateBackendTS(bindingsTypes)
+	if err != nil {
+		return err
+	}
+
 	return nil
 
 }

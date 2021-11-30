@@ -122,6 +122,83 @@ export default go;`)
 	return os.WriteFile(targetfile, output.Bytes(), 0755)
 }
 
+// GenerateBackendTS generates typescript bindings for
+// the bound methods.
+func (b *Bindings) GenerateBackendTS(targetfile string) error {
+
+	store := b.db.store
+	var output bytes.Buffer
+
+	output.WriteString("interface go {\n")
+
+	var sortedPackageNames slicer.StringSlicer
+	for packageName := range store {
+		sortedPackageNames.Add(packageName)
+	}
+	sortedPackageNames.Sort()
+	sortedPackageNames.Each(func(packageName string) {
+		packages := store[packageName]
+		output.WriteString(fmt.Sprintf("  \"%s\": {", packageName))
+		output.WriteString("\n")
+		var sortedStructNames slicer.StringSlicer
+		for structName := range packages {
+			sortedStructNames.Add(structName)
+		}
+		sortedStructNames.Sort()
+
+		sortedStructNames.Each(func(structName string) {
+			structs := packages[structName]
+			output.WriteString(fmt.Sprintf("    \"%s\": {", structName))
+			output.WriteString("\n")
+
+			var sortedMethodNames slicer.StringSlicer
+			for methodName := range structs {
+				sortedMethodNames.Add(methodName)
+			}
+			sortedMethodNames.Sort()
+
+			sortedMethodNames.Each(func(methodName string) {
+				methodDetails := structs[methodName]
+				output.WriteString(fmt.Sprintf("\t\t%s(", methodName))
+
+				var args slicer.StringSlicer
+				for count, input := range methodDetails.Inputs {
+					arg := fmt.Sprintf("arg%d", count+1)
+					args.Add(arg + ":" + goTypeToJSDocType(input.TypeName))
+				}
+				output.WriteString(args.Join(",") + "):")
+				returnType := "Promise"
+				if methodDetails.OutputCount() > 0 {
+					firstType := goTypeToJSDocType(methodDetails.Outputs[0].TypeName)
+					returnType += "<" + firstType
+					if methodDetails.OutputCount() == 2 {
+						secondType := goTypeToJSDocType(methodDetails.Outputs[1].TypeName)
+						returnType += "|" + secondType
+					}
+					returnType += ">"
+				} else {
+					returnType = "Promise<void>"
+				}
+				output.WriteString(returnType + "\n")
+			})
+
+			output.WriteString("    },\n")
+		})
+		output.WriteString("  }\n\n")
+	})
+	output.WriteString("}\n")
+
+	globals := `
+declare global {
+	interface Window {
+		go: go;
+	}
+}
+export {};`
+	output.WriteString(globals)
+	return os.WriteFile(targetfile, output.Bytes(), 0755)
+}
+
 func goTypeToJSDocType(input string) string {
 	switch true {
 	case input == "string":
