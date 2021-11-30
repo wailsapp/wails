@@ -104,6 +104,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			//"linux/arm-7",
 			"windows",
 			"windows/amd64",
+			"windows/arm64",
 		})
 		if !validPlatformArch.Contains(platform) {
 			return fmt.Errorf("platform %s is not supported. Platforms supported: %s", platform, validPlatformArch.Join(","))
