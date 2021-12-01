@@ -194,7 +194,7 @@ declare global {
 		go: go;
 	}
 }
-export {};`
+`
 	output.WriteString(globals)
 	return os.WriteFile(targetfile, output.Bytes(), 0755)
 }
