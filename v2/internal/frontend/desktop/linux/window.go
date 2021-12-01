@@ -144,12 +144,24 @@ void connectButtons(void* webview, ulong* pressed, ulong* released) {
 
 extern void processURLRequest(WebKitURISchemeRequest *request);
 
-GtkWidget* setupWebview(void* contentManager, GtkWindow* window) {
+// This is called when the close button on the window is pressed
+gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void*)
+{
+   	gtk_main_quit();
+    return TRUE;
+}
+
+GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowOnClose) {
 	GtkWidget* webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager*)contentManager);
 	gtk_container_add(GTK_CONTAINER(window), webview);
 	WebKitWebContext *context = webkit_web_context_get_default();
 	webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
 	//g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webview_load_changed_cb), NULL);
+	if (hideWindowOnClose) {
+		g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+	} else {
+		g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(close_button_pressed), NULL);
+	}
 	return webview;
 }
 
@@ -197,6 +209,13 @@ type Window struct {
 	signalMouseReleased C.ulong
 }
 
+func bool2Cint(value bool) C.int {
+	if value {
+		return C.int(1)
+	}
+	return C.int(0)
+}
+
 func NewWindow(appoptions *options.App, debug bool) *Window {
 
 	result := &Window{
@@ -214,7 +233,7 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	C.webkit_user_content_manager_register_script_message_handler(result.cWebKitUserContentManager(), external)
 	result.signalInvoke = C.setupInvokeSignal(result.contentManager)
 
-	webview := C.setupWebview(result.contentManager, result.asGTKWindow())
+	webview := C.setupWebview(result.contentManager, result.asGTKWindow(), bool2Cint(appoptions.HideWindowOnClose))
 	result.webview = unsafe.Pointer(webview)
 	buttonPressedName := C.CString("button-press-event")
 	defer C.free(unsafe.Pointer(buttonPressedName))
@@ -248,11 +267,6 @@ func (w *Window) cWebKitUserContentManager() *C.WebKitUserContentManager {
 	return (*C.WebKitUserContentManager)(w.contentManager)
 }
 
-//func (w *Window) Dispatch(f func()) {
-//	glib.IdleAdd(f)
-//}
-//
-
 func (w *Window) Fullscreen() {
 	C.gtk_window_fullscreen(w.asGTKWindow())
 }
@@ -263,7 +277,7 @@ func (w *Window) UnFullscreen() {
 
 func (w *Window) Destroy() {
 	// Destroy signal handlers
-	C.g_signal_handler_disconnect((C.gpointer)(w.contentManager), w.signalInvoke)
+	//C.g_signal_handler_disconnect((C.gpointer)(w.contentManager), w.signalInvoke)
 
 	//TODO: Proper shutdown
 	C.g_object_unref(C.gpointer(w.gtkWindow))
@@ -363,6 +377,7 @@ func (w *Window) Run() {
 		w.Maximise()
 	}
 	C.gtk_main()
+	w.Destroy()
 }
 
 func (w *Window) SetKeepAbove(top bool) {
@@ -398,6 +413,5 @@ func (w *Window) StartDrag() {
 }
 
 func (w *Window) Quit() {
-	w.Close()
-	w.Destroy()
+	C.gtk_main_quit()
 }
