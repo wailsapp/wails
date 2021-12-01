@@ -45,8 +45,6 @@ github.com/go-git/go-git-fixtures/v4 v4.0.2-0.20200613231340-f56387b50c12/go.mod
 github.com/go-git/go-git/v5 v5.3.0 h1:8WKMtJR2j8RntEXR/uvTKagfEt4GYlwQ7mntE4+0GWc=
 github.com/go-git/go-git/v5 v5.3.0/go.mod h1:xdX4bWJ48aOrdhnl2XqHYstHbbp6+LFS4r4X+lNVprw=
 github.com/go-ole/go-ole v1.2.4/go.mod h1:XCwSNxSkXRo4vlyPy93sltvi/qJq0jqQhjqQNIwKuxM=
-github.com/go-ole/go-ole v1.2.5 h1:t4MGB5xEDZvXI+0rMjjsfBsD7yAgp/s9ZDkL1JndXwY=
-github.com/go-ole/go-ole v1.2.5/go.mod h1:pprOEPIfldk/42T2oK7lQ4v4JSDwmV0As9GaiUsvbm0=
 github.com/go-ole/go-ole v1.2.6 h1:/Fpf6oFPoeFik9ty7siob0G6Ke8QvQEuVcuChpwXzpY=
 github.com/go-ole/go-ole v1.2.6/go.mod h1:pprOEPIfldk/42T2oK7lQ4v4JSDwmV0As9GaiUsvbm0=
 github.com/go-playground/assert/v2 v2.0.1/go.mod h1:VDjEfimB/XKnb+ZQfWdccd7VUvScMdVu0Titje2rxJ4=
@@ -120,8 +118,6 @@ github.com/leaanthony/go-ansi-parser v1.0.1 h1:97v6c5kYppVsbScf4r/VZdXyQ21KQIfeQ
 github.com/leaanthony/go-ansi-parser v1.0.1/go.mod h1:7arTzgVI47srICYhvgUV4CGd063sGEeoSlych5yeSPM=
 github.com/leaanthony/go-common-file-dialog v1.0.3 h1:O0uGjKnWtdEADGrkg+TyAAbZylykMwwx/MNEXn9fp+Y=
 github.com/leaanthony/go-common-file-dialog v1.0.3/go.mod h1:TGhEc9eSJgRsupZ+iH1ZgAOnEo9zp05cRH2j08RPrF0=
-github.com/leaanthony/go-webview2 v0.0.0-20211022194343-1e4c8d4226f3 h1:qhgrg3MhFRAIvtaqoqI+SrT+0wDYpxDMp9e3cvcxMpI=
-github.com/leaanthony/go-webview2 v0.0.0-20211022194343-1e4c8d4226f3/go.mod h1:lS5ds4bruPk9d7lzdF/OH31Z0YCerI6MmHNFGsWoUnM=
 github.com/leaanthony/go-webview2 v0.0.0-20211130085920-c044f547e45c h1:iqeWcnvUgu0/1dnnazsA8udhekLQoloJbGrq+3qlaY4=
 github.com/leaanthony/go-webview2 v0.0.0-20211130085920-c044f547e45c/go.mod h1:iX54IaVk1FnDqMuHJ47VYLPQOcVqQiOe9SJACt9CAbU=
 github.com/leaanthony/gosod v1.0.3 h1:Fnt+/B6NjQOVuCWOKYRREZnjGyvg+mEhd1nkkA04aTQ=
@@ -134,8 +130,6 @@ github.com/leaanthony/typescriptify-golang-structs v0.1.7 h1:yoznzWzyxkO/iWdlpq+
 github.com/leaanthony/typescriptify-golang-structs v0.1.7/go.mod h1:cWtOkiVhMF77e6phAXUcfNwYmMwCJ67Sij24lfvi9Js=
 github.com/leaanthony/webview2runtime v1.1.0 h1:N0pv55ift8XtqozIp4PNOtRCJ/Qdd/qzx80lUpalS4c=
 github.com/leaanthony/webview2runtime v1.1.0/go.mod h1:hH9GnWCve3DYzNaPOcPbhHQ7fodXR1QJNsnwixid4Tk=
-github.com/leaanthony/winc v0.0.0-20211124105230-0330cfc6d50c h1:TiVq07fzkq0QHJNC2WAb3efpM1R0gPcVgdxcvIu7K84=
-github.com/leaanthony/winc v0.0.0-20211124105230-0330cfc6d50c/go.mod h1:KEbMsKoznsebyGHwLk5LqkFOxL5uXSRdvpP4+avmAMs=
 github.com/leaanthony/winicon v1.0.0 h1:ZNt5U5dY71oEoKZ97UVwJRT4e+5xo5o/ieKuHuk8NqQ=
 github.com/leaanthony/winicon v1.0.0/go.mod h1:en5xhijl92aphrJdmRPlh4NI1L6wq3gEm0LpXAPghjU=
 github.com/leodido/go-urn v1.2.0 h1:hpXL4XnriNwQ/ABnpepYM/1vCLWNDfUNts8dX3xTG6Y=
@@ -173,6 +167,8 @@ github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f/go.mod h1:lHhJedqxC
 github.com/sergi/go-diff v1.1.0 h1:we8PVUC3FE2uYfodKH/nBHMSetSfHDR6scGdBi+erh0=
 github.com/sergi/go-diff v1.1.0/go.mod h1:STckp+ISIX8hZLjrqAeVduY0gWCT9IjLuqbuNXdaHfM=
 github.com/sirupsen/logrus v1.4.1/go.mod h1:ni0Sbl8bgC9z8RoU9G6nDWqqs/fq4eDPysMBDgk/93Q=
+github.com/stffabi/winc v0.0.0-20211201085336-530acbf04fef h1:CByuuebRiEjaBTDBJ4nBeqmdIg8uae/zKtURrvoIavU=
+github.com/stffabi/winc v0.0.0-20211201085336-530acbf04fef/go.mod h1:KEbMsKoznsebyGHwLk5LqkFOxL5uXSRdvpP4+avmAMs=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
@@ -217,8 +213,6 @@ github.com/wzshiming/winseq v0.0.0-20200112104235-db357dc107ae h1:tpXvBXC3hpQBDC
 github.com/wzshiming/winseq v0.0.0-20200112104235-db357dc107ae/go.mod h1:VTAq37rkGeV+WOybvZwjXiJOicICdpLCN8ifpISjK20=
 github.com/xanzy/ssh-agent v0.3.0 h1:wUMzuKtKilRgBAD1sUb8gOwwRr2FGoBVumcjoOACClI=
 github.com/xanzy/ssh-agent v0.3.0/go.mod h1:3s9xbODqPuuhK9JV1R321M/FlMZSBvE5aY6eAcqrDh0=
-github.com/xyproto/xpm v1.2.1 h1:trdvGjjWBsOOKzBBUPT6JvaIQM3acJEEYfbxN7M96wg=
-github.com/xyproto/xpm v1.2.1/go.mod h1:cMnesLsD0PBXLgjDfTDEaKr8XyTFsnP1QycSqRw7BiY=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/ztrue/tracerr v0.3.0 h1:lDi6EgEYhPYPnKcjsYzmWw4EkFEoA/gfe+I9Y5f+h6Y=
 github.com/ztrue/tracerr v0.3.0/go.mod h1:qEalzze4VN9O8tnhBXScfCrmoJo10o8TN5ciKjm6Mww=
@@ -256,7 +250,6 @@ golang.org/x/sys v0.0.0-20200107162124-548cf772de50/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20200116001909-b77594299b42/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200810151505-1b9f1253b3ed/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
-golang.org/x/sys v0.0.0-20200814200057-3d37ad5750ed/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20201119102817-f84b799fce68/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=

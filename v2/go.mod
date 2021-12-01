@@ -40,7 +40,6 @@ require (
 	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/tidwall/sjson v1.1.7
 	github.com/wzshiming/ctc v1.2.3
-	github.com/xyproto/xpm v1.2.1
 	github.com/ztrue/tracerr v0.3.0
 	golang.org/x/mod v0.4.1
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed
@@ -82,3 +81,5 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
+
+replace github.com/leaanthony/winc v0.0.0-20211124105230-0330cfc6d50c => github.com/stffabi/winc v0.0.0-20211201085336-530acbf04fef

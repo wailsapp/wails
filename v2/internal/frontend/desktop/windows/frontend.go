@@ -231,7 +231,7 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 		return
 	}
 
-	f.mainWindow.Dispatch(func() {
+	f.mainWindow.Invoke(func() {
 		controller := f.chromium.GetController()
 		controller2 := controller.GetICoreWebView2Controller2()
 
@@ -423,7 +423,7 @@ func (f *Frontend) processMessage(message string) {
 }
 
 func (f *Frontend) Callback(message string) {
-	f.mainWindow.Dispatch(func() {
+	f.mainWindow.Invoke(func() {
 		f.chromium.Eval(`window.wails.Callback(` + strconv.Quote(message) + `);`)
 	})
 }
@@ -445,7 +445,7 @@ func (f *Frontend) startResize(border uintptr) error {
 }
 
 func (f *Frontend) ExecJS(js string) {
-	f.mainWindow.Dispatch(func() {
+	f.mainWindow.Invoke(func() {
 		f.chromium.Eval(js)
 	})
 }
