@@ -10,6 +10,7 @@ import (
 
 	"github.com/leaanthony/winicon"
 	"github.com/tc-hib/winres"
+	"github.com/tc-hib/winres/version"
 
 	"github.com/jackmordaunt/icns"
 	"github.com/pkg/errors"
@@ -301,6 +302,14 @@ func compileResources(options *Options) error {
 		return err
 	}
 	rs.SetManifest(xmlData)
+
+	if versionInfo, _ := os.ReadFile("info.json"); len(versionInfo) != 0 {
+		var v version.Info
+		if err := v.UnmarshalJSON(versionInfo); err != nil {
+			return err
+		}
+		rs.SetVersionInfo(v)
+	}
 
 	targetFile := filepath.Join(options.ProjectData.Path, options.ProjectData.Name+"-res.syso")
 	fout, err := os.Create(targetFile)

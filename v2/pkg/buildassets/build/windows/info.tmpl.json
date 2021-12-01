@@ -1,0 +1,15 @@
+{
+	"fixed": {
+		"file_version": "1.0.0"
+	},
+	"info": {
+		"0000": {
+			"ProductVersion": "1.0.0",
+			"CompanyName": "{{.Name}}",
+			"FileDescription": "{{.Name}}",
+			"LegalCopyright": "Copyright.........",
+			"ProductName": "{{.Name}}",
+			"Comments": "Built using Wails (https://wails.app)"
+		}
+	}
+}
