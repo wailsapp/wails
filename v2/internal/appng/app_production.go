@@ -81,6 +81,9 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	appFrontend := desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher)
 	eventHandler.AddFrontend(appFrontend)
 
+	// Attach logger to context
+	ctx = context.WithValue(ctx, "logger", myLogger)
+
 	result := &App{
 		ctx:              ctx,
 		frontend:         appFrontend,
