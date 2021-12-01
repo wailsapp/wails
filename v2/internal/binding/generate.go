@@ -164,15 +164,15 @@ func (b *Bindings) GenerateBackendTS(targetfile string) error {
 				var args slicer.StringSlicer
 				for count, input := range methodDetails.Inputs {
 					arg := fmt.Sprintf("arg%d", count+1)
-					args.Add(arg + ":" + goTypeToJSDocType(input.TypeName))
+					args.Add(arg + ":" + goTypeToTypescriptType(input.TypeName))
 				}
 				output.WriteString(args.Join(",") + "):")
 				returnType := "Promise"
 				if methodDetails.OutputCount() > 0 {
-					firstType := goTypeToJSDocType(methodDetails.Outputs[0].TypeName)
+					firstType := goTypeToTypescriptType(methodDetails.Outputs[0].TypeName)
 					returnType += "<" + firstType
 					if methodDetails.OutputCount() == 2 {
-						secondType := goTypeToJSDocType(methodDetails.Outputs[1].TypeName)
+						secondType := goTypeToTypescriptType(methodDetails.Outputs[1].TypeName)
 						returnType += "|" + secondType
 					}
 					returnType += ">"
@@ -216,11 +216,19 @@ func goTypeToJSDocType(input string) string {
 		return "string"
 	case strings.HasPrefix(input, "[]"):
 		arrayType := goTypeToJSDocType(input[2:])
-		return "Array.<" + arrayType + ">"
+		return "Array<" + arrayType + ">"
 	default:
 		if strings.ContainsRune(input, '.') {
 			return strings.Split(input, ".")[1]
 		}
 		return "any"
 	}
+}
+
+func goTypeToTypescriptType(input string) string {
+	if strings.HasPrefix(input, "[]") {
+		arrayType := goTypeToJSDocType(input[2:])
+		return "Array<" + arrayType + ">"
+	}
+	return goTypeToJSDocType(input)
 }
