@@ -41,9 +41,10 @@ func main() {
             app,
         },
         Windows: &windows.Options{
-            WebviewIsTransparent: false,
-            WindowIsTranslucent:  false,
-            DisableWindowIcon:    false,
+            WebviewIsTransparent:  false,
+            WindowIsTranslucent:   false,
+            DisableWindowIcon:     false,
+            EnableFramelessBorder: false,
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -316,8 +317,16 @@ Name: DisableWindowIcon
 
 Type: bool
 
-Setting this to true will remove the icon in the top left corner of the title bar.
+Setting this to `true` will remove the icon in the top left corner of the title bar.
 
+### EnableFramelessBorder
+
+Name: EnableFramelessBorder
+
+Type: bool
+
+Setting this to `true` will add a border around the window if [Frameless](#Frameless) has been activated.
+This allows hiding the title bar but still having a border around the window.
 
 ## Mac Specific Options
 

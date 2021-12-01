@@ -40,9 +40,10 @@ func main() {
             app,
         },
         Windows: &windows.Options{
-            WebviewIsTransparent: false,
-            WindowIsTranslucent:  false,
-            DisableWindowIcon:    false,
+            WebviewIsTransparent:  false,
+            WindowIsTranslucent:   false,
+            DisableWindowIcon:     false,
+            EnableFramelessBorder: false,
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
