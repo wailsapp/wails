@@ -19,12 +19,12 @@ import (
 	"html/template"
 	"log"
 	"strconv"
-	"strings"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/common"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
@@ -270,12 +270,18 @@ func (f *Frontend) ExecJS(js string) {
 }
 
 func (f *Frontend) processRequest(r *request) {
-	url := C.GoString(r.url)
-	url = strings.TrimPrefix(url, "wails://wails")
-	if !strings.HasPrefix(url, "/") {
+	uri := C.GoString(r.url)
+
+	// Translate URI to file
+	file, match, err := common.TranslateUriToFile(uri, "wails", "wails")
+	if err != nil {
+		// TODO Handle errors
+		return
+	} else if !match {
 		return
 	}
-	_contents, _mimetype, err := f.assets.Load(url)
+
+	_contents, _mimetype, err := f.assets.Load(file)
 	if err != nil {
 		f.logger.Error(err.Error())
 		//TODO: Handle errors
