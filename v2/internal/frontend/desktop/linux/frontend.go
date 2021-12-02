@@ -24,11 +24,6 @@ import "C"
 import (
 	"context"
 	"encoding/json"
-	"github.com/wailsapp/wails/v2/internal/binding"
-	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
-	"github.com/wailsapp/wails/v2/internal/logger"
-	"github.com/wailsapp/wails/v2/pkg/options"
 	"log"
 	"os"
 	"strconv"
@@ -36,6 +31,12 @@ import (
 	"sync"
 	"text/template"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v2/internal/binding"
+	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
+	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 type Frontend struct {
@@ -235,23 +236,26 @@ func (f *Frontend) processMessage(message string) {
 		//}
 		return
 	}
-	result, err := f.dispatcher.ProcessMessage(message, f)
-	if err != nil {
-		f.logger.Error(err.Error())
-		f.Callback(result)
-		return
-	}
-	if result == "" {
-		return
-	}
 
-	switch result[0] {
-	case 'c':
-		// Callback from a method call
-		f.Callback(result[1:])
-	default:
-		f.logger.Info("Unknown message returned from dispatcher: %+v", result)
-	}
+	go func() {
+		result, err := f.dispatcher.ProcessMessage(message, f)
+		if err != nil {
+			f.logger.Error(err.Error())
+			f.Callback(result)
+			return
+		}
+		if result == "" {
+			return
+		}
+
+		switch result[0] {
+		case 'c':
+			// Callback from a method call
+			f.Callback(result[1:])
+		default:
+			f.logger.Info("Unknown message returned from dispatcher: %+v", result)
+		}
+	}()
 }
 
 func (f *Frontend) Callback(message string) {

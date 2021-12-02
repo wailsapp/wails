@@ -85,7 +85,3 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 func (w *Window) Run() int {
 	return winc.RunMainLoop()
 }
-
-func (w *Window) Dispatch(f func()) {
-	w.Invoke(f)
-}

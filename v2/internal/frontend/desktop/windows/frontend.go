@@ -231,7 +231,7 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 		return
 	}
 
-	f.mainWindow.Dispatch(func() {
+	f.mainWindow.Invoke(func() {
 		controller := f.chromium.GetController()
 		controller2 := controller.GetICoreWebView2Controller2()
 
@@ -259,7 +259,9 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 }
 
 func (f *Frontend) Quit() {
-	winc.Exit()
+	// Exit must be called on the Main-Thread. It calls PostQuitMessage which sends the WM_QUIT message to the thread's
+	// message queue and our message queue runs on the Main-Thread.
+	f.mainWindow.Invoke(winc.Exit)
 }
 
 func (f *Frontend) setupChromium() {
@@ -398,27 +400,30 @@ func (f *Frontend) processMessage(message string) {
 		}
 		return
 	}
-	result, err := f.dispatcher.ProcessMessage(message, f)
-	if err != nil {
-		f.logger.Error(err.Error())
-		f.Callback(result)
-		return
-	}
-	if result == "" {
-		return
-	}
 
-	switch result[0] {
-	case 'c':
-		// Callback from a method call
-		f.Callback(result[1:])
-	default:
-		f.logger.Info("Unknown message returned from dispatcher: %+v", result)
-	}
+	go func() {
+		result, err := f.dispatcher.ProcessMessage(message, f)
+		if err != nil {
+			f.logger.Error(err.Error())
+			f.Callback(result)
+			return
+		}
+		if result == "" {
+			return
+		}
+
+		switch result[0] {
+		case 'c':
+			// Callback from a method call
+			f.Callback(result[1:])
+		default:
+			f.logger.Info("Unknown message returned from dispatcher: %+v", result)
+		}
+	}()
 }
 
 func (f *Frontend) Callback(message string) {
-	f.mainWindow.Dispatch(func() {
+	f.mainWindow.Invoke(func() {
 		f.chromium.Eval(`window.wails.Callback(` + strconv.Quote(message) + `);`)
 	})
 }
@@ -440,7 +445,7 @@ func (f *Frontend) startResize(border uintptr) error {
 }
 
 func (f *Frontend) ExecJS(js string) {
-	f.mainWindow.Dispatch(func() {
+	f.mainWindow.Invoke(func() {
 		f.chromium.Eval(js)
 	})
 }
