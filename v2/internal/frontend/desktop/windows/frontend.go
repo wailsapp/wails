@@ -356,6 +356,8 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	if err != nil {
 		return
 	}
+	defer response.Release()
+
 	// Send response back
 	err = args.PutResponse(response)
 	if err != nil {
