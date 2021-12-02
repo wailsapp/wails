@@ -58,6 +58,8 @@ void ProcessURLResponse(void *inctx, const char *url, const char *contentType, v
     NSData *nsdata = [NSData dataWithBytes:data length:datalength];
     
     [ctx processURLResponse:nsurl :nsContentType :nsdata];
+
+    [nsdata release];
 }
 
 void ExecJS(void* inctx, const char *script) {
