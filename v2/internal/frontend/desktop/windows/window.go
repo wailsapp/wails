@@ -34,6 +34,9 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 	var dwStyle = w32.WS_OVERLAPPEDWINDOW
 	if appoptions.Frameless {
 		dwStyle = w32.WS_POPUP
+		if winoptions := appoptions.Windows; winoptions != nil && winoptions.EnableFramelessBorder {
+			dwStyle |= w32.WS_BORDER
+		}
 	}
 
 	winc.RegClassOnlyOnce("wailsWindow")
