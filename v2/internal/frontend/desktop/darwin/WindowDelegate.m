@@ -12,15 +12,14 @@
 #import "WailsContext.h"
 
 @implementation WindowDelegate
-
 - (BOOL)windowShouldClose:(WailsWindow *)sender {
-    [sender orderOut:nil];
-    if( self.hideOnClose == false ) {
-        processMessage("Q");
+    if( self.hideOnClose ) {
+        [NSApp hide:nil];
+        return false;
     }
-    return !self.hideOnClose;
+    processMessage("Q");
+    return false;
 }
-
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
     [self.ctx.mainWindow applyWindowConstraints];
