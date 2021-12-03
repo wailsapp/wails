@@ -376,12 +376,14 @@
    [self.webview evaluateJavaScript:script completionHandler:nil];
 }
 
-- (void) processURLResponse:(NSString *)url :(NSString *)contentType :(NSData *)data {
+- (void) processURLResponse:(NSString *)url :(int)statusCode :(NSString *)contentType :(NSData *)data {
     id<WKURLSchemeTask> urlSchemeTask = self.urlRequests[url];
     NSURL *nsurl = [NSURL URLWithString:url];
     NSMutableDictionary *headerFields = [NSMutableDictionary new];
-    headerFields[@"content-type"] = contentType;
-    NSHTTPURLResponse *response = [[NSHTTPURLResponse new] initWithURL:nsurl statusCode:200 HTTPVersion:@"HTTP/1.1" headerFields:headerFields];
+    if ( ![contentType isEqualToString:@""] ) {
+        headerFields[@"content-type"] = contentType;
+    }
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse new] initWithURL:nsurl statusCode:statusCode HTTPVersion:@"HTTP/1.1" headerFields:headerFields];
     [urlSchemeTask didReceiveResponse:response];
     [urlSchemeTask didReceiveData:data];
     [urlSchemeTask didFinish];
