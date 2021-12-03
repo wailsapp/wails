@@ -54,7 +54,7 @@ type Frontend struct {
 
 	// main window handle
 	mainWindow *Window
-	//minWidth, minHeight, maxWidth, maxHeight int
+	// minWidth, minHeight, maxWidth, maxHeight int
 	bindings        *binding.Bindings
 	dispatcher      frontend.Dispatcher
 	servingFromDisk bool
@@ -231,9 +231,9 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 
 func (f *Frontend) processMessage(message string) {
 	if message == "drag" {
-		//if !f.mainWindow.IsFullScreen() {
+		// if !f.mainWindow.IsFullScreen() {
 		f.startDrag()
-		//}
+		// }
 		return
 	}
 
@@ -328,7 +328,7 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	uri := C.webkit_uri_scheme_request_get_uri(req)
 	goURI := C.GoString(uri)
 
-	file, match, err := common.TranslateUriToFile(uri, "wails", "")
+	file, match, err := common.TranslateUriToFile(goURI, "wails", "")
 	if err != nil {
 		// TODO Handle errors
 		return
