@@ -45,9 +45,10 @@ type App struct {
 	Menu              *menu.Menu
 	Logger            logger.Logger `json:"-"`
 	LogLevel          logger.LogLevel
-	OnStartup         func(ctx context.Context) `json:"-"`
-	OnDomReady        func(ctx context.Context) `json:"-"`
-	OnShutdown        func(ctx context.Context) `json:"-"`
+	OnStartup         func(ctx context.Context)                `json:"-"`
+	OnDomReady        func(ctx context.Context)                `json:"-"`
+	OnShutdown        func(ctx context.Context)                `json:"-"`
+	OnBeforeClose     func(ctx context.Context) (prevent bool) `json:"-"`
 	Bind              []interface{}
 	WindowStartState  WindowStartState
 

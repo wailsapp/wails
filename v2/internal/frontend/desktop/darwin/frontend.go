@@ -206,6 +206,9 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 }
 
 func (f *Frontend) Quit() {
+	if f.frontendOptions.OnBeforeClose != nil && f.frontendOptions.OnBeforeClose(f.ctx) {
+		return
+	}
 	f.mainWindow.Quit()
 }
 
