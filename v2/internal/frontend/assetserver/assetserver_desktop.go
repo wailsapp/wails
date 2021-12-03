@@ -3,26 +3,22 @@ package assetserver
 import (
 	"bytes"
 	"context"
-	"embed"
-	"fmt"
-	"github.com/leaanthony/debme"
-	"github.com/leaanthony/slicer"
-	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
-	"github.com/wailsapp/wails/v2/internal/logger"
 	"io/fs"
 	"log"
-	"path/filepath"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
+	"github.com/wailsapp/wails/v2/internal/logger"
 )
 
 type DesktopAssetServer struct {
-	assets    debme.Debme
+	assets    fs.FS
 	runtimeJS []byte
-	assetdir  string
 	logger    *logger.Logger
+	fromDisk  bool
 }
 
-func NewDesktopAssetServer(ctx context.Context, assets embed.FS, bindingsJSON string) (*DesktopAssetServer, error) {
+func NewDesktopAssetServer(ctx context.Context, assets fs.FS, bindingsJSON string) (*DesktopAssetServer, error) {
 	result := &DesktopAssetServer{}
 
 	_logger := ctx.Value("logger")
@@ -30,22 +26,18 @@ func NewDesktopAssetServer(ctx context.Context, assets embed.FS, bindingsJSON st
 		result.logger = _logger.(*logger.Logger)
 	}
 
-	_assetdir := ctx.Value("assetdir")
-	if _assetdir != nil {
-		result.assetdir = _assetdir.(string)
-		absdir, err := filepath.Abs(result.assetdir)
-		if err != nil {
-			return nil, err
-		}
-		result.LogDebug("Loading assets from: %s", absdir)
+	var err error
+	result.assets, result.fromDisk, err = prepareAssetsForServing(ctx, "DesktopAssetServer", assets)
+	if err != nil {
+		return nil, err
 	}
 
 	var buffer bytes.Buffer
 	buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")
 	buffer.Write(runtime.RuntimeDesktopJS)
 	result.runtimeJS = buffer.Bytes()
-	err := result.init(assets)
-	return result, err
+
+	return result, nil
 }
 
 func (d *DesktopAssetServer) LogDebug(message string, args ...interface{}) {
@@ -54,63 +46,8 @@ func (d *DesktopAssetServer) LogDebug(message string, args ...interface{}) {
 	}
 }
 
-func (d *DesktopAssetServer) SetAssetDir(assetdir string) {
-	d.assetdir = assetdir
-}
-
-func PathToIndexHTML(assets embed.FS) (string, error) {
-	stat, err := fs.Stat(assets, "index.html")
-	if stat != nil {
-		return ".", nil
-	}
-	var indexFiles slicer.StringSlicer
-	err = fs.WalkDir(assets, ".", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if strings.HasSuffix(path, "index.html") {
-			indexFiles.Add(path)
-		}
-		return nil
-	})
-	if err != nil {
-		return "", err
-	}
-
-	if indexFiles.Length() > 1 {
-		return "", fmt.Errorf("multiple 'index.html' files found in assets")
-	}
-
-	path, _ := filepath.Split(indexFiles.AsSlice()[0])
-	return path, nil
-}
-
-func processAssets(assets embed.FS) (debme.Debme, error) {
-
-	result, err := debme.FS(assets, ".")
-	if err != nil {
-		return result, err
-	}
-	// Find index.html
-	path, err := PathToIndexHTML(assets)
-	if err != nil {
-		return debme.Debme{}, err
-	}
-	return debme.FS(assets, path)
-}
-
-func (a *DesktopAssetServer) init(assets embed.FS) error {
-
-	var err error
-	a.assets, err = processAssets(assets)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (a *DesktopAssetServer) processIndexHTML() ([]byte, error) {
-	indexHTML, err := a.ReadFile("index.html")
+	indexHTML, err := fs.ReadFile(a.assets, "index.html")
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +83,13 @@ func (a *DesktopAssetServer) Load(filename string) ([]byte, string, error) {
 	case "/wails/ipc.js":
 		content = runtime.DesktopIPC
 	default:
-		content, err = a.ReadFile(filename)
+		filename = strings.TrimPrefix(filename, "/")
+		fromDisk := ""
+		if a.fromDisk {
+			fromDisk = " (disk)"
+		}
+		a.LogDebug("Loading file: %s%s", filename, fromDisk)
+		content, err = fs.ReadFile(a.assets, filename)
 	}
 	if err != nil {
 		return nil, "", err
