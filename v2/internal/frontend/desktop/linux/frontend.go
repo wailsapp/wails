@@ -333,7 +333,8 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 		// TODO Handle errors
 		return
 	} else if !match {
-		return
+		// This should never happen on linux, because we get only called for wails://
+		panic("Unexpected host for request on wails:// scheme")
 	}
 
 	// Load file from asset store
@@ -341,6 +342,8 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	if err != nil {
 		return
 	}
+
+	// TODO How to return 404/500 errors to webkit?
 
 	cContent := C.CString(string(content))
 	defer C.free(unsafe.Pointer(cContent))

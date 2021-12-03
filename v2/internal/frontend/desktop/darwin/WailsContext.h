@@ -79,7 +79,7 @@
 - (void) SaveFileDialog :(NSString*)title :(NSString*)defaultFilename :(NSString*)defaultDirectory :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)showHiddenFiles :(NSString*)filters;
 
 - (void) loadRequest:(NSString*)url;
-- (void) processURLResponse:(NSString *)url :(NSString *)contentType :(NSData*)data;
+- (void) processURLResponse:(NSString *)url :(int)statusCode :(NSString *)contentType :(NSData*)data;
 - (void) ExecJS:(NSString*)script;
 - (NSScreen*) getCurrentScreen;
 

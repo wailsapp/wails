@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -336,26 +337,45 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	//Get the request
 	uri, _ := req.GetUri()
 
+	var content []byte
+	var mimeType string
+
+	// Translate URI to file
 	file, match, err := common.TranslateUriToFile(uri, "file", "wails")
-	if err != nil {
-		// TODO Handle errors
-		return
-	} else if !match {
-		return
+	if err == nil {
+		if !match {
+			// In this case we should let the WebView2 handle the request with it's default handler
+			return
+		}
+
+		// Load file from asset store
+		content, mimeType, err = f.assets.Load(file)
 	}
 
-	// Load file from asset store
-	content, mimeType, err := f.assets.Load(file)
+	statusCode := 200
+	reasonPhrase := "OK"
 	if err != nil {
-		return
+		if os.IsNotExist(err) {
+			statusCode = 404
+			reasonPhrase = "Not Found"
+		} else {
+			err = fmt.Errorf("Error processing request %s: %w", uri, err)
+			f.logger.Error(err.Error())
+			statusCode = 500
+			reasonPhrase = "Internal Server Error"
+		}
+	}
+
+	headers := []string{}
+	if mimeType != "" {
+		headers = append(headers, "Content-Type: "+mimeType)
+	}
+	if content != nil && f.servingFromDisk {
+		headers = append(headers, "Pragma: no-cache")
 	}
 
 	env := f.chromium.Environment()
-	headers := "Content-Type: " + mimeType
-	if f.servingFromDisk {
-		headers += "\nPragma: no-cache"
-	}
-	response, err := env.CreateWebResourceResponse(content, 200, "OK", headers)
+	response, err := env.CreateWebResourceResponse(content, statusCode, reasonPhrase, strings.Join(headers, "\n"))
 	if err != nil {
 		return
 	}
@@ -366,7 +386,6 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	if err != nil {
 		return
 	}
-	return
 }
 
 var edgeMap = map[string]uintptr{

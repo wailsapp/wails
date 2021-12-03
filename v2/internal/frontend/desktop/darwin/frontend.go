@@ -16,8 +16,10 @@ import "C"
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"log"
+	"os"
 	"strconv"
 	"unsafe"
 
@@ -272,21 +274,32 @@ func (f *Frontend) ExecJS(js string) {
 func (f *Frontend) processRequest(r *request) {
 	uri := C.GoString(r.url)
 
+	var _contents []byte
+	var _mimetype string
+
 	// Translate URI to file
 	file, match, err := common.TranslateUriToFile(uri, "wails", "wails")
-	if err != nil {
-		// TODO Handle errors
-		return
-	} else if !match {
-		return
+	if err == nil {
+		if !match {
+			// This should never happen on darwin, because we get only called for wails://
+			panic("Unexpected host for request on wails:// scheme")
+		}
+
+		// Load file from asset store
+		_contents, _mimetype, err = f.assets.Load(file)
 	}
 
-	_contents, _mimetype, err := f.assets.Load(file)
+	statusCode := 200
 	if err != nil {
-		f.logger.Error(err.Error())
-		//TODO: Handle errors
-		return
+		if os.IsNotExist(err) {
+			statusCode = 404
+		} else {
+			err = fmt.Errorf("Error processing request %s: %w", uri, err)
+			f.logger.Error(err.Error())
+			statusCode = 500
+		}
 	}
+
 	var data unsafe.Pointer
 	if _contents != nil {
 		data = unsafe.Pointer(&_contents[0])
@@ -294,7 +307,7 @@ func (f *Frontend) processRequest(r *request) {
 	mimetype := C.CString(_mimetype)
 	defer C.free(unsafe.Pointer(mimetype))
 
-	C.ProcessURLResponse(r.ctx, r.url, mimetype, data, C.int(len(_contents)))
+	C.ProcessURLResponse(r.ctx, r.url, C.int(statusCode), mimetype, data, C.int(len(_contents)))
 }
 
 //func (f *Frontend) processSystemEvent(message string) {

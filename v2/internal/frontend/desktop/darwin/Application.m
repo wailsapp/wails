@@ -51,13 +51,13 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     return result;
 }
 
-void ProcessURLResponse(void *inctx, const char *url, const char *contentType, void* data, int datalength) {
+void ProcessURLResponse(void *inctx, const char *url, int statusCode, const char *contentType, void* data, int datalength) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSString *nsurl = safeInit(url);
     NSString *nsContentType = safeInit(contentType);
     NSData *nsdata = [NSData dataWithBytes:data length:datalength];
     
-    [ctx processURLResponse:nsurl :nsContentType :nsdata];
+    [ctx processURLResponse:nsurl :statusCode :nsContentType :nsdata];
 
     [nsdata release];
 }
