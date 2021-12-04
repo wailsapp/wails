@@ -137,9 +137,9 @@ gboolean buttonRelease(GtkWidget *widget, GdkEventButton *event, void* dummy)
     return FALSE;
 }
 
-void connectButtons(void* webview, ulong* pressed, ulong* released) {
-	*pressed = g_signal_connect(WEBKIT_WEB_VIEW(webview), "button-press-event", G_CALLBACK(buttonPress), NULL);
-	*released = g_signal_connect(WEBKIT_WEB_VIEW(webview), "button-release-event", G_CALLBACK(buttonRelease), NULL);
+void connectButtons(void* webview) {
+	g_signal_connect(WEBKIT_WEB_VIEW(webview), "button-press-event", G_CALLBACK(buttonPress), NULL);
+	g_signal_connect(WEBKIT_WEB_VIEW(webview), "button-release-event", G_CALLBACK(buttonRelease), NULL);
 }
 
 extern void processURLRequest(WebKitURISchemeRequest *request);
@@ -147,20 +147,20 @@ extern void processURLRequest(WebKitURISchemeRequest *request);
 // This is called when the close button on the window is pressed
 gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void*)
 {
-   	gtk_main_quit();
-    return TRUE;
+   	processMessage("Q");
+    return FALSE;
 }
 
-GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowOnClose, ulong* disconnectHandler) {
+GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowOnClose) {
 	GtkWidget* webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager*)contentManager);
 	gtk_container_add(GTK_CONTAINER(window), webview);
 	WebKitWebContext *context = webkit_web_context_get_default();
 	webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
 	//g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webview_load_changed_cb), NULL);
 	if (hideWindowOnClose) {
-		*disconnectHandler = g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+		g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 	} else {
-		*disconnectHandler = g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(close_button_pressed), NULL);
+		g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(close_button_pressed), NULL);
 	}
 	return webview;
 }
@@ -199,15 +199,11 @@ func gtkBool(input bool) C.gboolean {
 }
 
 type Window struct {
-	appoptions          *options.App
-	debug               bool
-	gtkWindow           unsafe.Pointer
-	contentManager      unsafe.Pointer
-	webview             unsafe.Pointer
-	signalInvoke        C.ulong
-	signalMousePressed  C.ulong
-	signalMouseReleased C.ulong
-	signalDestroy       C.ulong
+	appoptions     *options.App
+	debug          bool
+	gtkWindow      unsafe.Pointer
+	contentManager unsafe.Pointer
+	webview        unsafe.Pointer
 }
 
 func bool2Cint(value bool) C.int {
@@ -232,13 +228,13 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	external := C.CString("external")
 	defer C.free(unsafe.Pointer(external))
 	C.webkit_user_content_manager_register_script_message_handler(result.cWebKitUserContentManager(), external)
-	result.signalInvoke = C.setupInvokeSignal(result.contentManager)
+	C.setupInvokeSignal(result.contentManager)
 
-	webview := C.setupWebview(result.contentManager, result.asGTKWindow(), bool2Cint(appoptions.HideWindowOnClose), &result.signalDestroy)
+	webview := C.setupWebview(result.contentManager, result.asGTKWindow(), bool2Cint(appoptions.HideWindowOnClose))
 	result.webview = unsafe.Pointer(webview)
 	buttonPressedName := C.CString("button-press-event")
 	defer C.free(unsafe.Pointer(buttonPressedName))
-	C.connectButtons(unsafe.Pointer(webview), &result.signalMousePressed, &result.signalMouseReleased)
+	C.connectButtons(unsafe.Pointer(webview))
 
 	if debug {
 		C.devtoolsEnabled(unsafe.Pointer(webview), C.int(1))
@@ -277,11 +273,6 @@ func (w *Window) UnFullscreen() {
 }
 
 func (w *Window) Destroy() {
-	// Destroy signal handlers
-	C.g_signal_handler_disconnect((C.gpointer)(w.contentManager), w.signalInvoke)
-	C.g_signal_handler_disconnect((C.gpointer)(w.webview), w.signalMousePressed)
-	C.g_signal_handler_disconnect((C.gpointer)(w.webview), w.signalMouseReleased)
-	C.g_signal_handler_disconnect((C.gpointer)(w.asGTKWindow()), w.signalDestroy)
 	C.g_object_unref(C.gpointer(w.gtkWindow))
 	C.gtk_widget_destroy(w.asGTKWidget())
 }
