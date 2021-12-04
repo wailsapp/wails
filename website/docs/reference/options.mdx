@@ -36,6 +36,7 @@ func main() {
         OnStartup:         app.startup,
         OnDomReady:        app.domready,
         OnShutdown:        app.shutdown,
+        OnBeforeClose:     app.beforeClose,
         WindowStartState:  options.Maximised,
         Bind: []interface{}{
             app,
@@ -314,6 +315,14 @@ Name: Windows
 Type: \*windows.Options
 
 This defines [Windows specific options](#windows-specific-options).
+
+### Mac
+
+Name: Mac
+
+Type: \*mac.Options
+
+This defines [Mac specific options](#mac-specific-options).
 
 ## Windows Specific Options
 
