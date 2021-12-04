@@ -34,7 +34,8 @@ func main() {
         LogLevel:          logger.DEBUG,
         OnStartup:         app.startup,
         OnDomReady:        app.domready,
-        OnShutdown:        app.shutdown,,
+        OnShutdown:        app.shutdown,
+        OnBeforeClose:     app.beforeClose,
         WindowStartState:  options.Maximised,
         Bind: []interface{}{
             app,
@@ -245,6 +246,30 @@ func main() {
 
 在前端被销毁之后，就在应用程序终止之前，调用此回调。它给出了应用程序上下文。
 
+### 关闭应用程序之前回调
+
+名称：OnBeforeClose
+
+类型：func(ctx context.Context) bool
+
+如果设置了此回调，它将在通过单击窗口关闭按钮或调用`runtime.Quit`即将退出应用程序时被调用. 返回 `true` 将导致应用程序继续，`false` 将继续正常关闭。这有助于与用户确认他们希望退出程序。
+
+示例：
+
+```go title=windowsapp.go
+func (b *App) beforeClose(ctx context.Context) (prevent bool) {
+	dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
+		Type:          runtime.QuestionDialog,
+		Title:         "Quit?",
+		Message:       "Are you sure you want to quit?",
+	})
+
+	if err != nil {
+		return false
+	}
+	return dialog != "Yes"
+```
+
 ### 窗口启动状态
 
 名称：WindowStartState
@@ -273,7 +298,15 @@ func main() {
 
 类型：\*windows.Options
 
-这定义了[Windows 特定的选项](#windows-特定选项).。
+这定义了[Windows 特定的选项](#windows-特定选项)。
+
+### Mac
+
+名称：Mac
+
+类型：\*mac.Options
+
+这定义了[Mac 特定的选项](#mac-特定选项)。
 
 ## Windows 特定选项
 
@@ -300,6 +333,14 @@ func main() {
 类型：bool
 
 将此设置为 `true` 将删除标题栏左上角的图标。
+
+### 启用无边框模式的外边框
+
+名称：EnableFramelessBorder
+
+类型：bool
+
+如果已激活[无边框](#无边框)，则将此设置为`true`将在窗口周围添加边框。这允许隐藏标题栏但仍然在窗口周围有边框。
 
 ## Mac 特定选项
 
