@@ -260,6 +260,31 @@ Type: func(ctx context.Context)
 This callback is called after the frontend has been destroyed, just before the application terminates. It is given
 the application context.
 
+### OnBeforeClose
+
+Name: OnBeforeClose
+
+Type: func(ctx context.Context) bool
+
+If this callback is set, it will be called when the application is about to quit, either by clicking the window close
+button or calling `runtime.Quit`. Returning true will cause the application to continue, false will continue shutdown
+as normal. This is good for confirming with the user that they wish to exit the program.
+
+Example:
+```go title=windowsapp.go
+func (b *App) beforeClose(ctx context.Context) (prevent bool) {
+	dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
+		Type:          runtime.QuestionDialog,
+		Title:         "Quit?",
+		Message:       "Are you sure you want to quit?",
+	})
+
+	if err != nil {
+		return false
+	}
+	return dialog != "Yes"
+```
+
 ### WindowStartState
 
 Name: WindowStartState

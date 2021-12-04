@@ -119,6 +119,8 @@ A standard Go context is passed to this method. This context is required when ca
 a reference to in this method. Just before the application shuts down, the [OnShutdown](/docs/reference/options#OnShutdown) callback is called in the same way,
 again with the context. There is also an [OnDomReady](/docs/reference/options#OnDomReady) callback for when the frontend
 has completed loading all assets in `index.html` and is equivalent of the [`body onload`](https://www.w3schools.com/jsref/event_onload.asp) event in Javascript.
+It is also possible to hook into the window close (or application quit) event by setting the
+option [OnBeforeClose](/docs/reference/options#OnBeforeClose).
 
 #### Method Binding
 
