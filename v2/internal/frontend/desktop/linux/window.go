@@ -151,16 +151,16 @@ gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void*)
     return TRUE;
 }
 
-GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowOnClose) {
+GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowOnClose, ulong* disconnectHandler) {
 	GtkWidget* webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager*)contentManager);
 	gtk_container_add(GTK_CONTAINER(window), webview);
 	WebKitWebContext *context = webkit_web_context_get_default();
 	webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
 	//g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webview_load_changed_cb), NULL);
 	if (hideWindowOnClose) {
-		g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+		*disconnectHandler = g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 	} else {
-		g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(close_button_pressed), NULL);
+		*disconnectHandler = g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(close_button_pressed), NULL);
 	}
 	return webview;
 }
@@ -207,6 +207,7 @@ type Window struct {
 	signalInvoke        C.ulong
 	signalMousePressed  C.ulong
 	signalMouseReleased C.ulong
+	signalDestroy       C.ulong
 }
 
 func bool2Cint(value bool) C.int {
@@ -233,7 +234,7 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	C.webkit_user_content_manager_register_script_message_handler(result.cWebKitUserContentManager(), external)
 	result.signalInvoke = C.setupInvokeSignal(result.contentManager)
 
-	webview := C.setupWebview(result.contentManager, result.asGTKWindow(), bool2Cint(appoptions.HideWindowOnClose))
+	webview := C.setupWebview(result.contentManager, result.asGTKWindow(), bool2Cint(appoptions.HideWindowOnClose), &result.signalDestroy)
 	result.webview = unsafe.Pointer(webview)
 	buttonPressedName := C.CString("button-press-event")
 	defer C.free(unsafe.Pointer(buttonPressedName))
@@ -277,9 +278,10 @@ func (w *Window) UnFullscreen() {
 
 func (w *Window) Destroy() {
 	// Destroy signal handlers
-	//C.g_signal_handler_disconnect((C.gpointer)(w.contentManager), w.signalInvoke)
-
-	//TODO: Proper shutdown
+	C.g_signal_handler_disconnect((C.gpointer)(w.contentManager), w.signalInvoke)
+	C.g_signal_handler_disconnect((C.gpointer)(w.webview), w.signalMousePressed)
+	C.g_signal_handler_disconnect((C.gpointer)(w.webview), w.signalMouseReleased)
+	C.g_signal_handler_disconnect((C.gpointer)(w.asGTKWindow()), w.signalDestroy)
 	C.g_object_unref(C.gpointer(w.gtkWindow))
 	C.gtk_widget_destroy(w.asGTKWidget())
 }
