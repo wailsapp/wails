@@ -14,14 +14,17 @@ import Overlay from "./Overlay.svelte";
 import {hideOverlay, showOverlay} from "./store";
 
 let components = {};
-window.ipcCallbacks = [];
-window.ipcCallbackNames = [];
 
-window.awaitIPC = (name, callback) => {
-    if (!window.ipcCallbacks) return callback;
-    log("Queuing '" + name + "' for execution once ipc ready.");
-    window.ipcCallbackNames.push(name);
-    window.ipcCallbacks.push(callback);
+let wailsInvokeInternal = null;
+let messageQueue = [];
+
+window.WailsInvoke = (message) => {
+    if (!wailsInvokeInternal) {
+        console.log("Queueing: " + message);
+        messageQueue.push(message);
+        return;
+    }
+    wailsInvokeInternal(message);
 };
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -47,15 +50,14 @@ window.onbeforeunload = function () {
 connect();
 
 function setupIPCBridge() {
-    window.WailsInvoke = (message) => {
+    wailsInvokeInternal = (message) => {
         websocket.send(message);
     };
-    for (let i = 0; i < window.ipcCallbacks.length; i++) {
-        log("Executing JS: " + window.ipcCallbackNames[i]);
-        window.ipcCallbacks[i]();
+    for (let i = 0; i < messageQueue.length; i++) {
+        console.log("sending queued message: " + messageQueue[i]);
+        window.WailsInvoke(messageQueue[i]);
     }
-    delete window.ipcCallbacks;
-    delete window.ipcCallbackNames;
+    messageQueue = [];
 }
 
 // Handles incoming websocket connections

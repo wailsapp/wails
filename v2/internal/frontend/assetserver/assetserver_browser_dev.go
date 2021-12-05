@@ -9,7 +9,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"golang.org/x/net/html"
 	"path/filepath"
-	"strings"
 )
 
 /*
@@ -98,14 +97,6 @@ func (a *BrowserAssetServer) Load(filename string) ([]byte, string, error) {
 		content = runtime.WebsocketIPC
 	default:
 		content, err = a.loadFileFromDisk(filename)
-		if strings.HasSuffix(filename, ".js") {
-			var buffer bytes.Buffer
-			buffer.WriteString("window.awaitIPC('" + filename + "', ()=>{")
-			buffer.Write(content)
-			buffer.WriteString(`
-});`)
-			content = buffer.Bytes()
-		}
 	}
 	if err != nil {
 		return nil, "", err
