@@ -55,20 +55,20 @@ func (e *Manager) addEventListener(eventName string, callback func(...interface{
 		return fmt.Errorf("nil callback bassed to addEventListener")
 	}
 
-	// Check event has been registered before
-	if e.listeners[eventName] == nil {
-		e.listeners[eventName] = []*eventListener{}
-	}
-
 	// Create the callback
 	listener := &eventListener{
 		callback: callback,
 		counter:  counter,
 	}
+	e.mu.Lock()
+	// Check event has been registered before
+	if e.listeners[eventName] == nil {
+		e.listeners[eventName] = []*eventListener{}
+	}
 
 	// Register listener
 	e.listeners[eventName] = append(e.listeners[eventName], listener)
-
+	e.mu.Unlock()
 	// All good mate
 	return nil
 }
