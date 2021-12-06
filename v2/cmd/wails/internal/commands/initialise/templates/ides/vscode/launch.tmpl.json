@@ -9,11 +9,7 @@
       "program": "${workspaceFolder}/{{.PathToDesktopBinary}}",
       "preLaunchTask": "build",
       "cwd": "${workspaceFolder}",
-      "env": {},
-      "args": [
-        "-assetdir",
-        "{{.AssetDir}}"
-      ]
+      "env": {}
     }
   ]
 }

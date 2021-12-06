@@ -5,7 +5,10 @@ package appng
 
 import (
 	"context"
+	"embed"
 	"flag"
+	"fmt"
+	iofs "io/fs"
 	"os"
 	"path/filepath"
 
@@ -91,11 +94,29 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		}
 	}
 
+	if assetdir == "" {
+		// If no assetdir has been defined, let's try to infer it from the project root and the asset FS.
+		assetdir, err = tryInferAssetDirFromFS(appoptions.Assets)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if assetdir != "" {
+		// Let's override the assets to serve from on disk, if needed
+		absdir, err := filepath.Abs(assetdir)
+		if err != nil {
+			return nil, err
+		}
+
+		myLogger.Info("Serving assets from disk: %s", absdir)
+		appoptions.Assets = os.DirFS(absdir)
+
+		ctx = context.WithValue(ctx, "assetdir", assetdir)
+	}
+
 	if devServerURL != "" {
 		ctx = context.WithValue(ctx, "devserverurl", devServerURL)
-	}
-	if assetdir != "" {
-		ctx = context.WithValue(ctx, "assetdir", assetdir)
 	}
 
 	if loglevel != "" {
@@ -202,4 +223,33 @@ func generateBindings(bindings *binding.Bindings) error {
 
 	return nil
 
+}
+
+func tryInferAssetDirFromFS(assets iofs.FS) (string, error) {
+	if _, isEmbedFs := assets.(embed.FS); !isEmbedFs {
+		// We only infer the assetdir for embed.FS assets
+		return "", nil
+	}
+
+	path, err := fs.FindPathToFile(assets, "index.html")
+	if err != nil {
+		return "", err
+	}
+
+	path, err = filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+
+	if _, err := os.Stat(filepath.Join(path, "index.html")); err != nil {
+		if os.IsNotExist(err) {
+			err = fmt.Errorf(
+				"inferred assetdir '%s' does not exist or does not contain an 'index.html' file, "+
+					"please specify it with -assetdir or set it in wails.json",
+				path)
+		}
+		return "", err
+	}
+
+	return path, nil
 }

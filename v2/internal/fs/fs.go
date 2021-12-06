@@ -4,9 +4,11 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"unsafe"
 
 	"github.com/leaanthony/slicer"
@@ -393,4 +395,31 @@ func MoveDirExtended(src string, dst string, ignore []string) (err error) {
 	}
 
 	return
+}
+
+func FindPathToFile(fsys fs.FS, file string) (string, error) {
+	stat, _ := fs.Stat(fsys, file)
+	if stat != nil {
+		return ".", nil
+	}
+	var indexFiles slicer.StringSlicer
+	err := fs.WalkDir(fsys, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if strings.HasSuffix(path, file) {
+			indexFiles.Add(path)
+		}
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	if indexFiles.Length() > 1 {
+		return "", fmt.Errorf("multiple '%s' files found in assets", file)
+	}
+
+	path, _ := filepath.Split(indexFiles.AsSlice()[0])
+	return path, nil
 }

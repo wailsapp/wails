@@ -5,10 +5,13 @@ package assetserver
 
 import (
 	"bytes"
+	"context"
+	"io/fs"
+	"strings"
+
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
-	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/internal/logger"
 	"golang.org/x/net/html"
-	"path/filepath"
 )
 
 /*
@@ -18,35 +21,41 @@ It injects a websocket based IPC script into `index.html`.
 
 */
 
-import (
-	"os"
-)
-
 type BrowserAssetServer struct {
-	runtimeJS  []byte
-	assetdir   string
-	appOptions *options.App
+	assets    fs.FS
+	runtimeJS []byte
+	logger    *logger.Logger
 }
 
-func NewBrowserAssetServer(assetdir string, bindingsJSON string, appOptions *options.App) (*BrowserAssetServer, error) {
-	result := &BrowserAssetServer{
-		assetdir:   assetdir,
-		appOptions: appOptions,
+func NewBrowserAssetServer(ctx context.Context, assets fs.FS, bindingsJSON string) (*BrowserAssetServer, error) {
+	result := &BrowserAssetServer{}
+	_logger := ctx.Value("logger")
+	if _logger != nil {
+		result.logger = _logger.(*logger.Logger)
+	}
+
+	var err error
+	result.assets, err = prepareAssetsForServing(assets)
+	if err != nil {
+		return nil, err
 	}
 
 	var buffer bytes.Buffer
 	buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")
 	buffer.Write(runtime.RuntimeDesktopJS)
 	result.runtimeJS = buffer.Bytes()
+
 	return result, nil
 }
 
-func (a *BrowserAssetServer) loadFileFromDisk(filename string) ([]byte, error) {
-	return os.ReadFile(filepath.Join(a.assetdir, filename))
+func (d *BrowserAssetServer) LogDebug(message string, args ...interface{}) {
+	if d.logger != nil {
+		d.logger.Debug("[BrowserAssetServer] "+message, args...)
+	}
 }
 
 func (a *BrowserAssetServer) processIndexHTML() ([]byte, error) {
-	indexHTML, err := a.loadFileFromDisk("index.html")
+	indexHTML, err := fs.ReadFile(a.assets, "index.html")
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +105,9 @@ func (a *BrowserAssetServer) Load(filename string) ([]byte, string, error) {
 	case "/wails/ipc.js":
 		content = runtime.WebsocketIPC
 	default:
-		content, err = a.loadFileFromDisk(filename)
+		filename = strings.TrimPrefix(filename, "/")
+		a.LogDebug("Loading file: %s", filename)
+		content, err = fs.ReadFile(a.assets, filename)
 	}
 	if err != nil {
 		return nil, "", err

@@ -15,6 +15,8 @@ type Project struct {
 	Name           string `json:"name"`
 	AssetDirectory string `json:"assetdir"`
 
+	ReloadDirectories string `json:"reloaddirs"`
+
 	BuildCommand   string `json:"frontend:build"`
 	InstallCommand string `json:"frontend:install"`
 	DevCommand     string `json:"frontend:dev"`

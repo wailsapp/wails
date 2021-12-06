@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -49,6 +48,11 @@ func (d *DevWebServer) WindowReload() {
 
 func (d *DevWebServer) Run(ctx context.Context) error {
 	d.ctx = ctx
+
+	assetdir, _ := ctx.Value("assetdir").(string)
+	d.server.Get("/wails/assetdir", func(fctx *fiber.Ctx) error {
+		return fctx.SendString(assetdir)
+	})
 
 	d.server.Get("/wails/reload", func(fctx *fiber.Ctx) error {
 		d.WindowReload()
@@ -100,25 +104,14 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 	_devServerURL := ctx.Value("devserverurl")
 	if _devServerURL == "http://localhost:34115" {
 		// Setup internal dev server
-		_assetdir := ctx.Value("assetdir")
-		if _assetdir == nil {
-			return fmt.Errorf("no assetdir provided")
+		bindingsJSON, err := d.appBindings.ToJSON()
+		if err != nil {
+			log.Fatal(err)
 		}
-		if _assetdir != nil {
-			assetdir := _assetdir.(string)
-			bindingsJSON, err := d.appBindings.ToJSON()
-			if err != nil {
-				log.Fatal(err)
-			}
-			d.assetServer, err = assetserver.NewBrowserAssetServer(assetdir, bindingsJSON, d.appoptions)
-			if err != nil {
-				log.Fatal(err)
-			}
-			absdir, err := filepath.Abs(assetdir)
-			if err != nil {
-				return err
-			}
-			d.LogDebug("Serving assets from: %s", absdir)
+
+		d.assetServer, err = assetserver.NewBrowserAssetServer(ctx, d.appoptions.Assets, bindingsJSON)
+		if err != nil {
+			log.Fatal(err)
 		}
 
 		d.server.Get("*", d.loadAsset)

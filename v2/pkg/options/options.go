@@ -2,11 +2,11 @@ package options
 
 import (
 	"context"
-	"embed"
-	"github.com/wailsapp/wails/v2/pkg/options/linux"
+	"io/fs"
 	"log"
 	"runtime"
 
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 
@@ -41,7 +41,7 @@ type App struct {
 	HideWindowOnClose bool
 	AlwaysOnTop       bool
 	RGBA              *RGBA
-	Assets            embed.FS
+	Assets            fs.FS
 	Menu              *menu.Menu
 	Logger            logger.Logger `json:"-"`
 	LogLevel          logger.LogLevel

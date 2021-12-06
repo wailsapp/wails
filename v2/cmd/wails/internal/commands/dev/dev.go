@@ -63,6 +63,7 @@ type devFlags struct {
 	compilerCommand string
 	assetDir        string
 	extensions      string
+	reloadDirs      string
 	openBrowser     bool
 	noReload        bool
 	wailsjsdir      string
@@ -83,8 +84,9 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	flags := defaultDevFlags()
 	command.StringFlag("ldflags", "optional ldflags", &flags.ldflags)
 	command.StringFlag("compiler", "Use a different go compiler to build, eg go1.15beta1", &flags.compilerCommand)
-	command.StringFlag("assetdir", "Serve assets from the given directory", &flags.assetDir)
+	command.StringFlag("assetdir", "Serve assets from the given directory instead of using the provided asset FS", &flags.assetDir)
 	command.StringFlag("e", "Extensions to trigger rebuilds (comma separated) eg go", &flags.extensions)
+	command.StringFlag("reloaddirs", "Additional directories to trigger reloads (comma separated)", &flags.reloadDirs)
 	command.BoolFlag("browser", "Open application in browser", &flags.openBrowser)
 	command.BoolFlag("noreload", "Disable reload on asset change", &flags.noReload)
 	command.StringFlag("wailsjsdir", "Directory to generate the Wails JS modules", &flags.wailsjsdir)
@@ -301,10 +303,6 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 
 	var shouldSaveConfig bool
 
-	if projectConfig.AssetDirectory == "" && flags.assetDir == "" {
-		return nil, fmt.Errorf("No asset directory provided. Please use -assetdir to indicate which directory contains your built assets.")
-	}
-
 	if flags.assetDir == "" && projectConfig.AssetDirectory != "" {
 		flags.assetDir = projectConfig.AssetDirectory
 	}
@@ -313,9 +311,19 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 		projectConfig.AssetDirectory = filepath.ToSlash(flags.assetDir)
 	}
 
-	flags.assetDir, err = filepath.Abs(flags.assetDir)
-	if err != nil {
-		return nil, err
+	if flags.assetDir != "" {
+		flags.assetDir, err = filepath.Abs(flags.assetDir)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if flags.reloadDirs == "" && projectConfig.ReloadDirectories != "" {
+		flags.reloadDirs = projectConfig.ReloadDirectories
+	}
+
+	if flags.reloadDirs != projectConfig.ReloadDirectories {
+		projectConfig.ReloadDirectories = filepath.ToSlash(flags.reloadDirs)
 	}
 
 	if flags.devServerURL == defaultDevServerURL && projectConfig.DevServerURL != defaultDevServerURL && projectConfig.DevServerURL != "" {
@@ -503,11 +511,26 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 		newBinaryProcess *process.Process
 	)
 	var extensionsThatTriggerARebuild = sliceToMap(strings.Split(flags.extensions, ","))
+	var dirsThatTriggerAReload []string
+	for _, dir := range strings.Split(flags.reloadDirs, ",") {
+		if dir == "" {
+			continue
+		}
+		path, err := filepath.Abs(dir)
+		if err != nil {
+			LogRed("Unable to expand reloadDir '%s': %s", dir, err)
+			continue
+		}
+		dirsThatTriggerAReload = append(dirsThatTriggerAReload, path)
+	}
+
 	quit := false
 	interval := time.Duration(flags.debounceMS) * time.Millisecond
 	timer := time.NewTimer(interval)
 	rebuild := false
 	reload := false
+	assetDir := ""
+	changedPaths := map[string]struct{}{}
 	for quit == false {
 		//reload := false
 		select {
@@ -519,12 +542,13 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			// Check for file writes
 			if item.Op&fsnotify.Write == fsnotify.Write {
 				// Ignore directories
-				if fs.DirExists(item.Name) {
+				itemName := item.Name
+				if fs.DirExists(itemName) {
 					continue
 				}
 
 				// Iterate all file patterns
-				ext := filepath.Ext(item.Name)
+				ext := filepath.Ext(itemName)
 				if ext != "" {
 					ext = ext[1:]
 					if _, exists := extensionsThatTriggerARebuild[ext]; exists {
@@ -534,9 +558,17 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 					}
 				}
 
-				if strings.HasPrefix(item.Name, flags.assetDir) {
-					reload = true
+				for _, reloadDir := range dirsThatTriggerAReload {
+					if strings.HasPrefix(itemName, reloadDir) {
+						reload = true
+						break
+					}
 				}
+
+				if !reload {
+					changedPaths[filepath.Dir(itemName)] = struct{}{}
+				}
+
 				timer.Reset(interval)
 			}
 			// Check for new directories
@@ -567,6 +599,35 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 				if newBinaryProcess != nil {
 					debugBinaryProcess = newBinaryProcess
 				}
+			}
+			if len(changedPaths) != 0 {
+				if assetDir == "" {
+					resp, err := http.Get("http://localhost:34115/wails/assetdir")
+					if err != nil {
+						LogRed("Error during retrieving assetdir: %s", err.Error())
+					} else {
+						content, err := io.ReadAll(resp.Body)
+						if err != nil {
+							LogRed("Error reading assetdir from devserver: %s", err.Error())
+						} else {
+							assetDir = string(content)
+						}
+						resp.Body.Close()
+					}
+				}
+
+				if assetDir != "" {
+					for path := range changedPaths {
+						if strings.HasPrefix(path, assetDir) {
+							reload = true
+							break
+						}
+					}
+				} else if len(dirsThatTriggerAReload) == 0 {
+					LogRed("Reloading couldn't be triggered: Please specify -assetdir or -reloaddirs")
+				}
+
+				changedPaths = map[string]struct{}{}
 			}
 			if reload {
 				reload = false
