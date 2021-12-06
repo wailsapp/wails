@@ -106,7 +106,7 @@ var assets embed.FS
 
 在即将加载前端`index.html`之前，对 [应用启动回调](/docs/reference/options#应用启动回调) 中提供的函数进行回调。一个标准的 Go 上下文被传递给这个方法。
 调用运行时需要此上下文，因此标准模式是保存此时对它的引用。在应用程序关闭之前，以同样的方式调用 [应用退出回调](/docs/reference/options#应用退出回调) 回调，
-再次使用上下文。当前端完成加载`index.html`中所有资源时，还有一个 [前端 Dom 加载完成回调](/docs/reference/options#前端-dom-加载完成回调) 回调，相当于 Javascript 中的`body onload`事件。
+再次使用上下文。当前端完成加载`index.html`中所有资源时，还有一个 [前端 Dom 加载完成回调](/docs/reference/options#前端-dom-加载完成回调) 回调，相当于 Javascript 中的`body onload`事件。还可以通过设置[关闭应用程序之前回调](/docs/reference/options#关闭应用程序之前回调)选项来控制窗口关闭（或应用程序退出）事件。
 
 #### 方法绑定
 
