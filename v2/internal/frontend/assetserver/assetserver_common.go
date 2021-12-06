@@ -1,64 +1,25 @@
 package assetserver
 
 import (
-	"context"
-	"fmt"
-	"io/fs"
+	iofs "io/fs"
 	"path"
-	"path/filepath"
-	"strings"
 
-	"github.com/leaanthony/slicer"
+	"github.com/wailsapp/wails/v2/internal/fs"
 )
 
-func prepareAssetsForServing(ctx context.Context, serverType string, assets fs.FS) (fs.FS, bool, error) {
-	// Let's check if we need an assetdir override
-	if assetdir, err := isAssetDirOverride(ctx, serverType, assets); err != nil {
-		return nil, false, err
-	} else if assetdir != nil {
-		return assetdir, true, nil
-	}
-
-	// Otherwise let's search for the index.html
+func prepareAssetsForServing(assets iofs.FS) (iofs.FS, error) {
 	if _, err := assets.Open("."); err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
-	subDir, err := pathToIndexHTML(assets)
+	subDir, err := fs.FindPathToFile(assets, "index.html")
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
-	assets, err = fs.Sub(assets, path.Clean(subDir))
+	assets, err = iofs.Sub(assets, path.Clean(subDir))
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
-	return assets, false, nil
-}
-
-func pathToIndexHTML(assets fs.FS) (string, error) {
-	stat, _ := fs.Stat(assets, "index.html")
-	if stat != nil {
-		return ".", nil
-	}
-	var indexFiles slicer.StringSlicer
-	err := fs.WalkDir(assets, ".", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if strings.HasSuffix(path, "index.html") {
-			indexFiles.Add(path)
-		}
-		return nil
-	})
-	if err != nil {
-		return "", err
-	}
-
-	if indexFiles.Length() > 1 {
-		return "", fmt.Errorf("multiple 'index.html' files found in assets")
-	}
-
-	path, _ := filepath.Split(indexFiles.AsSlice()[0])
-	return path, nil
+	return assets, nil
 }

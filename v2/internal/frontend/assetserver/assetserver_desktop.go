@@ -15,7 +15,6 @@ type DesktopAssetServer struct {
 	assets    fs.FS
 	runtimeJS []byte
 	logger    *logger.Logger
-	fromDisk  bool
 }
 
 func NewDesktopAssetServer(ctx context.Context, assets fs.FS, bindingsJSON string) (*DesktopAssetServer, error) {
@@ -27,7 +26,7 @@ func NewDesktopAssetServer(ctx context.Context, assets fs.FS, bindingsJSON strin
 	}
 
 	var err error
-	result.assets, result.fromDisk, err = prepareAssetsForServing(ctx, "DesktopAssetServer", assets)
+	result.assets, err = prepareAssetsForServing(assets)
 	if err != nil {
 		return nil, err
 	}
@@ -84,11 +83,7 @@ func (a *DesktopAssetServer) Load(filename string) ([]byte, string, error) {
 		content = runtime.DesktopIPC
 	default:
 		filename = strings.TrimPrefix(filename, "/")
-		fromDisk := ""
-		if a.fromDisk {
-			fromDisk = " (disk)"
-		}
-		a.LogDebug("Loading file: %s%s", filename, fromDisk)
+		a.LogDebug("Loading file: %s", filename)
 		content, err = fs.ReadFile(a.assets, filename)
 	}
 	if err != nil {

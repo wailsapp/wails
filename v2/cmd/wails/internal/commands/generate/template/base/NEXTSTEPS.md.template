@@ -10,7 +10,6 @@ The next steps to complete the template are:
      - It is really important to ensure `helpurl` is valid as this is where users of the template will be directed for help.
   2. Update `README.md`.
   3. Edit `wails.json` and ensure all fields are correct, especially:
-     - `assetdir` - path to your assets
      - `wailsjsdir` - path to generate wailsjs modules
      - `frontend:install` - The command to install your frontend dependencies
      - `frontend:build` - The command to build your frontend

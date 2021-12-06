@@ -12,7 +12,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"golang.org/x/net/html"
-	"path/filepath"
 )
 
 /*
@@ -26,7 +25,6 @@ type BrowserAssetServer struct {
 	assets    fs.FS
 	runtimeJS []byte
 	logger    *logger.Logger
-	fromDisk  bool
 }
 
 func NewBrowserAssetServer(ctx context.Context, assets fs.FS, bindingsJSON string) (*BrowserAssetServer, error) {
@@ -37,7 +35,7 @@ func NewBrowserAssetServer(ctx context.Context, assets fs.FS, bindingsJSON strin
 	}
 
 	var err error
-	result.assets, result.fromDisk, err = prepareAssetsForServing(ctx, "BrowserAssetServer", assets)
+	result.assets, err = prepareAssetsForServing(assets)
 	if err != nil {
 		return nil, err
 	}
@@ -108,11 +106,7 @@ func (a *BrowserAssetServer) Load(filename string) ([]byte, string, error) {
 		content = runtime.WebsocketIPC
 	default:
 		filename = strings.TrimPrefix(filename, "/")
-		fromDisk := ""
-		if a.fromDisk {
-			fromDisk = " (disk)"
-		}
-		a.LogDebug("Loading file: %s%s", filename, fromDisk)
+		a.LogDebug("Loading file: %s", filename)
 		content, err = fs.ReadFile(a.assets, filename)
 	}
 	if err != nil {

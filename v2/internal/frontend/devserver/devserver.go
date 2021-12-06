@@ -49,6 +49,11 @@ func (d *DevWebServer) WindowReload() {
 func (d *DevWebServer) Run(ctx context.Context) error {
 	d.ctx = ctx
 
+	assetdir, _ := ctx.Value("assetdir").(string)
+	d.server.Get("/wails/assetdir", func(fctx *fiber.Ctx) error {
+		return fctx.SendString(assetdir)
+	})
+
 	d.server.Get("/wails/reload", func(fctx *fiber.Ctx) error {
 		d.WindowReload()
 		d.desktopFrontend.WindowReload()

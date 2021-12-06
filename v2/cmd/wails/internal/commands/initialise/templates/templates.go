@@ -42,7 +42,6 @@ type Data struct {
 	AuthorNameAndEmail string
 	WailsDirectory     string
 	GoSDKPath          string
-	AssetDir           string
 	WindowsFlags       string
 	CGOEnabled         string
 	OutputFile         string
@@ -60,7 +59,6 @@ type Options struct {
 	InitGit             bool
 	AuthorName          string
 	AuthorEmail         string
-	AssetDir            string
 	IDE                 string
 	ProjectNameFilename string // The project name but as a valid filename
 	WailsVersion        string
@@ -261,7 +259,6 @@ func Install(options *Options) (bool, *Template, error) {
 		AuthorName:     options.AuthorName,
 		WailsVersion:   options.WailsVersion,
 		GoSDKPath:      options.GoSDKPath,
-		AssetDir:       options.AssetDir,
 	}
 
 	// Create a formatted name and email combo.
@@ -408,22 +405,6 @@ func installIDEFiles(o ideOptions) error {
 		binaryName += ".exe"
 	}
 
-	// Parse wails.json for assetdir
-	wailsJSONBytes, err := os.ReadFile(filepath.Join(o.options.TargetDir, "wails.json"))
-	if err != nil {
-		return err
-	}
-	var wailsJSON map[string]interface{}
-	err = json.Unmarshal(wailsJSONBytes, &wailsJSON)
-	if err != nil {
-		return err
-	}
-	assetDir := wailsJSON["assetdir"]
-	if assetDir == "" {
-		return fmt.Errorf("Unable to find 'assetdir' in 'wails.json' ")
-	}
-
-	o.options.AssetDir = assetDir.(string)
 	o.options.PathToDesktopBinary = filepath.ToSlash(filepath.Join("build", "bin", binaryName))
 
 	o.options.WindowsFlags = ""
