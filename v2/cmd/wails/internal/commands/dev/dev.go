@@ -325,6 +325,7 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 
 	if flags.reloadDirs != projectConfig.ReloadDirectories {
 		projectConfig.ReloadDirectories = filepath.ToSlash(flags.reloadDirs)
+		shouldSaveConfig = true
 	}
 
 	if flags.devServerURL == defaultDevServerURL && projectConfig.DevServerURL != defaultDevServerURL && projectConfig.DevServerURL != "" {
