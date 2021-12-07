@@ -13,9 +13,9 @@ type Project struct {
 
 	/*** Application Data ***/
 	Name           string `json:"name"`
-	AssetDirectory string `json:"assetdir"`
+	AssetDirectory string `json:"assetdir,omitempty"`
 
-	ReloadDirectories string `json:"reloaddirs"`
+	ReloadDirectories string `json:"reloaddirs,omitempty"`
 
 	BuildCommand   string `json:"frontend:build"`
 	InstallCommand string `json:"frontend:install"`
