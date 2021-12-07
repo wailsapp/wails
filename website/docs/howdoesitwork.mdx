@@ -106,9 +106,7 @@ As production binaries use the files contained in `embed.FS`, there are no exter
 the application.
 
 When running in development mode using the `wails dev` command, the assets are loaded off disk, and any changes result
-in a "live reload". The location of the assets needs to be passed to the `wails dev` command using the `-assetdir` flag
-and is likely to be the same as the embed path. It is hoped that in the future we can calculate this from the `embed.FS`
-itself.
+in a "live reload". The location of the assets will be inferred from the `embed.FS`.
 
 More details can be found in the [Application Development Guide](/docs/guides/application-development).
 
