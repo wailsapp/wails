@@ -309,6 +309,7 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 
 	if flags.assetDir != projectConfig.AssetDirectory {
 		projectConfig.AssetDirectory = filepath.ToSlash(flags.assetDir)
+		shouldSaveConfig = true
 	}
 
 	if flags.assetDir != "" {
