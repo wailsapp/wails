@@ -130,10 +130,11 @@ Your system is ready for Wails development!
 
 |  Flag                |  Description                            |  Default                   |
 | :------------------- | :-------------------------------------- | :------------------------- |
-|  -assetdir "./path/to/assets" | The path to your compiled assets  | Value in `wails.json` |
+|  -assetdir "./path/to/assets" | Serve assets from the given directory instead of using the provided asset FS | Value in `wails.json` |
 |  -browser | Opens a browser to `http://localhost:34115` on startup | |
 |  -compiler "compiler"| Use a different go compiler to build, eg go1.15beta1 | go            |
 |  -e                  | Extensions to trigger rebuilds (comma separated)  | go |
+|  -reloaddirs         | Additional directories to trigger reloads (comma separated) | Value in `wails.json` |
 |  -ldflags "flags"    | Additional ldflags to pass to the compiler |                         |
 |  -tags "extra tags"  | Build tags to pass to compiler (quoted and space separated) |        |
 |  -loglevel "loglevel"| Loglevel to use - Trace, Debug, Info, Warning, Error | Debug         |
@@ -145,7 +146,7 @@ Your system is ready for Wails development!
 |  -appargs "args"         | Arguments passed to the application in shell style  | |
 |  -platform "platform"    | Platform/Arch to target | `runtime.GOOS` |
 
-If the `assetdir`, `wailsjsdir`, `debounce` or `devserverurl` flags are provided on the command line, they are saved in
+If the `assetdir`, `reloaddirs`, `wailsjsdir`, `debounce` or `devserverurl` flags are provided on the command line, they are saved in
 `wails.json`, and become the defaults for subsequent invocations.
 
 Example:

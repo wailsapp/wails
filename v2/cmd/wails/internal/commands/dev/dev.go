@@ -309,6 +309,7 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 
 	if flags.assetDir != projectConfig.AssetDirectory {
 		projectConfig.AssetDirectory = filepath.ToSlash(flags.assetDir)
+		shouldSaveConfig = true
 	}
 
 	if flags.assetDir != "" {
@@ -324,6 +325,7 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 
 	if flags.reloadDirs != projectConfig.ReloadDirectories {
 		projectConfig.ReloadDirectories = filepath.ToSlash(flags.reloadDirs)
+		shouldSaveConfig = true
 	}
 
 	if flags.devServerURL == defaultDevServerURL && projectConfig.DevServerURL != defaultDevServerURL && projectConfig.DevServerURL != "" {
