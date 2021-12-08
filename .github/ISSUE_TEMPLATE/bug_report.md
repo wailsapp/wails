@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 #####################################################
-     **If you have a technical issue, please do not open a bug this way!** 
+     **V1 users: If you have a technical issue, please do not open a bug this way!** 
                       Please use the `wails issue` command!
           If you do not do this then the issue may be closed automatically.                      
 
@@ -33,7 +33,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **System Details**
-Please provide your platform, GO version and variables, etc
+V2 users: Please add the output of `wails doctor`.
 
 **Additional context**
 Add any other context about the problem here.
