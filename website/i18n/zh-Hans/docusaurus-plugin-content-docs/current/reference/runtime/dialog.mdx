@@ -63,8 +63,6 @@ type OpenDialogOptions struct {
 	DefaultFilename            string
 	Title                      string
 	Filters                    []FileFilter
-	AllowFiles                 bool
-	AllowDirectories           bool
 	ShowHiddenFiles            bool
 	CanCreateDirectories       bool
 	ResolvesAliases            bool
@@ -78,8 +76,6 @@ type OpenDialogOptions struct {
 | DefaultFilename            | 默认文件名                        | ✅  | ✅  |
 | Title                      | 对话框的标题                      | ✅  | ✅  |
 | [Filters](#文件过滤)       | 文件过滤器列表                    | ✅  | ✅  |
-| AllowFiles                 | 允许选择文件                      |     | ✅  |
-| AllowDirectories           | 允许选择目录                      |     | ✅  |
 | ShowHiddenFiles            | 显示系统隐藏的文件                |     | ✅  |
 | CanCreateDirectories       | 允许用户创建目录                  |     | ✅  |
 | ResolvesAliases            | 如果为 true，则返回文件而不是别名 |     | ✅  |

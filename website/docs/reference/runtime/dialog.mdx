@@ -69,8 +69,6 @@ type OpenDialogOptions struct {
 	DefaultFilename            string
 	Title                      string
 	Filters                    []FileFilter
-	AllowFiles                 bool
-	AllowDirectories           bool
 	ShowHiddenFiles            bool
 	CanCreateDirectories       bool
 	ResolvesAliases            bool
@@ -83,8 +81,6 @@ type OpenDialogOptions struct {
 | DefaultFilename            | The default filename                           | ✅  | ✅  |
 | Title                      | Title for the dialog                           | ✅  | ✅  |
 | [Filters](#filefilter)     | A list of file filters                         | ✅  | ✅  |
-| AllowFiles                 | Allow files to be selected                     |     | ✅  |
-| AllowDirectories           | Allow directories to be selected               |     | ✅  |
 | ShowHiddenFiles            | Show files hidden by the system                |     | ✅  |
 | CanCreateDirectories       | Allow user to create directories               |     | ✅  |
 | ResolvesAliases            | If true, returns the file not the alias        |     | ✅  |

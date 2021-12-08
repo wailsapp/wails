@@ -19,8 +19,6 @@ type OpenDialogOptions struct {
 	DefaultFilename            string
 	Title                      string
 	Filters                    []FileFilter
-	AllowFiles                 bool
-	AllowDirectories           bool
 	ShowHiddenFiles            bool
 	CanCreateDirectories       bool
 	ResolvesAliases            bool

@@ -84,7 +84,7 @@ func (f *Frontend) openDialog(options *frontend.OpenDialogOptions, multiple bool
 
 // OpenFileDialog prompts the user to select a file
 func (f *Frontend) OpenFileDialog(options frontend.OpenDialogOptions) (string, error) {
-	results, err := f.openDialog(&options, false, options.AllowFiles, options.AllowDirectories)
+	results, err := f.openDialog(&options, false, true, false)
 	if err != nil {
 		return "", err
 	}
@@ -97,7 +97,7 @@ func (f *Frontend) OpenFileDialog(options frontend.OpenDialogOptions) (string, e
 
 // OpenMultipleFilesDialog prompts the user to select a file
 func (f *Frontend) OpenMultipleFilesDialog(options frontend.OpenDialogOptions) ([]string, error) {
-	return f.openDialog(&options, true, options.AllowFiles, options.AllowDirectories)
+	return f.openDialog(&options, true, true, false)
 }
 
 // SaveFileDialog prompts the user to select a file
