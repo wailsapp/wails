@@ -497,16 +497,16 @@
             filters = [filters stringByReplacingOccurrencesOfString:@"*." withString:@""];
             filters = [filters stringByReplacingOccurrencesOfString:@" " withString:@""];
             NSArray *filterList = [filters componentsSeparatedByString:@";"];
-            if (@available(macOS 10.16, *)) {
+#ifdef USE_NEW_FILTERS
                 NSMutableArray *contentTypes = [[NSMutableArray new] autorelease];
                 for (NSString *filter in filterList) {
                     UTType *t = [UTType typeWithFilenameExtension:filter];
                     [contentTypes addObject:t];
                 }
                 [dialog setAllowedContentTypes:contentTypes];
-            } else {
+#else
                 [dialog setAllowedFileTypes:filterList];
-            }
+#endif
         } else {
             [dialog setAllowsOtherFileTypes:true];
         }
