@@ -109,6 +109,13 @@
 
 这个项目由以下这些人或者公司支持：
 
+<p align="center">
+  <a href="https://www.easywebadv.it/" style="width:100px;">
+    <img src="website/static/img/easyweb.png" width="100"/>
+  </a>
+</p>
+<br/>
+<br/>
 <a href="https://github.com/sponsors/leaanthony" style="width:100px;">
   <img src="sponsors/silver%20sponsor.png" width="100"/>
 </a>

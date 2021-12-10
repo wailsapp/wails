@@ -106,6 +106,13 @@ Click [here](https://wails.io) if you are interested in trying out v2 Beta for W
 
 This project is supported by these kind people / companies:
 
+<p align="center">
+  <a href="https://www.easywebadv.it/" style="width:100px;">
+    <img src="website/static/img/easyweb.png" width="100"/>
+  </a>
+</p>
+<br/>
+<br/>
 <a href="https://github.com/sponsors/leaanthony" style="width:100px;">
   <img src="sponsors/silver%20sponsor.png" width="100"/>
 </a>
