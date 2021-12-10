@@ -313,10 +313,12 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 		return err
 	}
 
-	// Generate icon from PNG
-	err = generateWindowsIcon(icon, basename+".ico")
-	if err != nil {
-		return err
+	// Generate icon from PNG if it doesn't exist
+	if !fs.FileExists(basename + ".ico") {
+		err = generateWindowsIcon(icon, basename+".ico")
+		if err != nil {
+			return err
+		}
 	}
 
 	// Copy manifest
