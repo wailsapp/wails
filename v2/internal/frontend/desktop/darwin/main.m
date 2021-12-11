@@ -32,7 +32,8 @@ void processCallback(int callbackID) {
 void processURLRequest(void *ctx, const char* url) {
     NSLog(@"processURLRequest called");
     const char myByteArray[] = { 0x3c,0x68,0x31,0x3e,0x48,0x65,0x6c,0x6c,0x6f,0x20,0x57,0x6f,0x72,0x6c,0x64,0x21,0x3c,0x2f,0x68,0x31,0x3e };
-    ProcessURLResponse(ctx, url, "text/html", (void*)myByteArray, 21);
+    // void *inctx, const char *url, int statusCode, const char *contentType, void* data, int datalength
+    ProcessURLResponse(ctx, url, 200, "text/html", (void*)myByteArray, 21);
 }
 
 unsigned char _Users_username_Pictures_SaltBae_png[] = {

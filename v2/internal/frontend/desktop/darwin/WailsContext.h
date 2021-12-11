@@ -12,6 +12,7 @@
 #import <WebKit/WebKit.h>
 
 #if __has_include(<UniformTypeIdentifiers/UTType.h>)
+#define USE_NEW_FILTERS
 #import <UniformTypeIdentifiers/UTType.h>
 #endif
 

@@ -500,10 +500,14 @@
 #ifdef USE_NEW_FILTERS
                 NSMutableArray *contentTypes = [[NSMutableArray new] autorelease];
                 for (NSString *filter in filterList) {
-                    UTType *t = [UTType typeWithFilenameExtension:filter];
-                    [contentTypes addObject:t];
+                    if (@available(macOS 11.0, *)) {
+                        UTType *t = [UTType typeWithFilenameExtension:filter];
+                        [contentTypes addObject:t];
+                    }
                 }
+            if (@available(macOS 11.0, *)) {
                 [dialog setAllowedContentTypes:contentTypes];
+            }
 #else
                 [dialog setAllowedFileTypes:filterList];
 #endif

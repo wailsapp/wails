@@ -3,12 +3,14 @@ package build
 import (
 	"bytes"
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/system"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/internal/system"
 
 	"github.com/leaanthony/gosod"
 	wailsRuntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
@@ -320,13 +322,18 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 			return "1"
 		})
 		if options.Platform == "darwin" {
-			// Determine verison
+			// Determine version so we can link to newer frameworks
+			// Why doesn't CGO have this option?!?!
 			info, err := system.GetInfo()
 			if err != nil {
 				return err
 			}
 			versionSplit := strings.Split(info.OS.Version, ".")
-			addUTIFramework := versionSplit[0] == "11"
+			majorVersion, err := strconv.Atoi(versionSplit[0])
+			if err != nil {
+				return err
+			}
+			addUTIFramework := majorVersion >= 11
 			// Set the minimum Mac SDK to 10.13
 			cmd.Env = upsertEnv(cmd.Env, "CGO_LDFLAGS", func(v string) string {
 				if v != "" {
