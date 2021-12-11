@@ -326,7 +326,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 				return err
 			}
 			versionSplit := strings.Split(info.OS.Version, ".")
-			addUTIFramework := versionSplit[0] == "10"
+			addUTIFramework := versionSplit[0] == "11"
 			// Set the minimum Mac SDK to 10.13
 			cmd.Env = upsertEnv(cmd.Env, "CGO_LDFLAGS", func(v string) string {
 				if v != "" {
