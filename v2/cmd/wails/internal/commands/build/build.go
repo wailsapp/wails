@@ -38,6 +38,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	compilerCommand := "go"
 	command.StringFlag("compiler", "Use a different go compiler to build, eg go1.15beta1", &compilerCommand)
 
+	skipModTidy := false
+	command.BoolFlag("m", "Skip mod tidy before compile", &skipModTidy)
+
 	compress := false
 	command.BoolFlag("upx", "Compress final binary with UPX (if installed)", &compress)
 
@@ -167,6 +170,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			Pack:                !noPackage,
 			LDFlags:             ldflags,
 			Compiler:            compilerCommand,
+			SkipModTidy:         skipModTidy,
 			Verbosity:           verbosity,
 			ForceBuild:          forceBuild,
 			IgnoreFrontend:      skipFrontend,

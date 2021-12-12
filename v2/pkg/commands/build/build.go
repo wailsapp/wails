@@ -37,6 +37,7 @@ type Options struct {
 	Platform            string               // The platform to build for
 	Arch                string               // The architecture to build for
 	Compiler            string               // The compiler command to use
+	SkipModTidy         bool                 //  Skip mod tidy before compile
 	IgnoreFrontend      bool                 // Indicates if the frontend does not need building
 	OutputFile          string               // Override the output filename
 	BuildDirectory      string               // Directory to use for building the application

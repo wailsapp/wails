@@ -198,15 +198,17 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	verbose := options.Verbosity == VERBOSE
 	// Run go mod tidy first
-	cmd := exec.Command(options.Compiler, "mod", "tidy")
-	cmd.Stderr = os.Stderr
-	if verbose {
-		println("")
-		cmd.Stdout = os.Stdout
-	}
-	err = cmd.Run()
-	if err != nil {
-		return err
+	if !options.SkipModTidy {
+		cmd := exec.Command(options.Compiler, "mod", "tidy")
+		cmd.Stderr = os.Stderr
+		if verbose {
+			println("")
+			cmd.Stdout = os.Stdout
+		}
+		err = cmd.Run()
+		if err != nil {
+			return err
+		}
 	}
 
 	// Default go build command
@@ -280,7 +282,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	options.CompiledBinary = compiledBinary
 
 	// Create the command
-	cmd = exec.Command(options.Compiler, commands.AsSlice()...)
+	cmd := exec.Command(options.Compiler, commands.AsSlice()...)
 	cmd.Stderr = os.Stderr
 	if verbose {
 		println("  Build command:", commands.Join(" "))
