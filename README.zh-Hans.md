@@ -111,7 +111,7 @@
 
 <p align="center">
   <a href="https://www.easywebadv.it/" style="width:100px;">
-    <img src="website/static/img/easyweb.png" width="100"/>
+    <img src="website/static/img/easyweb.png" width="120"/>
   </a>
 </p>
 <br/>
