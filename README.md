@@ -107,8 +107,8 @@ Click [here](https://wails.io) if you are interested in trying out v2 Beta for W
 This project is supported by these kind people / companies:
 
 <p align="center">
-  <a href="https://www.easywebadv.it/" style="width:100px;">
-    <img src="website/static/img/easyweb.png" width="120"/>
+  <a href="https://www.easywebadv.it/" style="width:150px;">
+    <img src="website/static/img/easyweb.png" width="150"/>
   </a>
 </p>
 <br/>
