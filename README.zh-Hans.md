@@ -198,6 +198,9 @@
 <a href="https://github.com/taigrr" style="width:45px">
   <img src="https://github.com/taigrr.png?size=45" width="45"/>
 </a>
+<a href="https://github.com/charlie-dee" style="width:55px">
+  <img src="https://github.com/charlie-dee.png?size=55" width="55"/>
+</a>
 
 <span id="nav-6"></span>
 
