@@ -198,6 +198,9 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/charlie-dee" style="width:55px">
   <img src="https://github.com/charlie-dee.png?size=55" width="55"/>
 </a>
+<a href="https://github.com/EdenNetworkItalia" style="width:65px">
+  <img src="https://github.com/EdenNetworkItalia.png?size=65" width="65"/>
+</a>
 
 <span id="nav-6"></span>
 
