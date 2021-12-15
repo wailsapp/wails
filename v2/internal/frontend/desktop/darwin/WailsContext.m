@@ -566,7 +566,7 @@
     }
 
     // Filters - semicolon delimited list of file extensions
-    if( filters != nil ) {
+    if( filters != nil && [filters length] > 0) {
         filters = [filters stringByReplacingOccurrencesOfString:@"*." withString:@""];
         filters = [filters stringByReplacingOccurrencesOfString:@" " withString:@""];
         NSArray *filterList = [filters componentsSeparatedByString:@";"];
