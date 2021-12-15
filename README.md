@@ -183,9 +183,6 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/ilgityildirim" style="width:50px">
   <img src="https://github.com/ilgityildirim.png?size=50" width="50"/>
 </a>
-<a href="https://github.com/ondoki" style="width:65px">
-  <img src="https://github.com/ondoki.png?size=65" width="65"/>
-</a>
 <a href="https://github.com/questrail" style="width:50px">
   <img src="https://github.com/questrail.png?size=50" width="50"/>
 </a>
