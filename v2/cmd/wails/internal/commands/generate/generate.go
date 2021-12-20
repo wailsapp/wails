@@ -1,9 +1,8 @@
 package generate
 
 import (
-	"io"
-
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/generate/template"
+	"io"
 
 	"github.com/leaanthony/clir"
 )
@@ -17,6 +16,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	if err != nil {
 		return err
 	}
+
 	template.AddSubCommand(app, command, w)
 
 	return nil
