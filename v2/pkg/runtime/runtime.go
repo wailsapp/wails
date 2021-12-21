@@ -8,6 +8,9 @@ import (
 	goruntime "runtime"
 )
 
+const contextError = `An invalid context was passed. This method requires the specific context given in the lifecycle hooks:
+https://wails.io/docs/reference/runtime/intro`
+
 func getFrontend(ctx context.Context) frontend.Frontend {
 	if ctx == nil {
 		pc, _, _, _ := goruntime.Caller(1)
@@ -20,7 +23,7 @@ func getFrontend(ctx context.Context) frontend.Frontend {
 	}
 	pc, _, _, _ := goruntime.Caller(1)
 	funcName := goruntime.FuncForPC(pc).Name()
-	log.Fatalf("cannot call '%s': Application not initialised", funcName)
+	log.Fatalf("cannot call '%s': %s", funcName, contextError)
 	return nil
 }
 func getLogger(ctx context.Context) *logger.Logger {
@@ -35,7 +38,7 @@ func getLogger(ctx context.Context) *logger.Logger {
 	}
 	pc, _, _, _ := goruntime.Caller(1)
 	funcName := goruntime.FuncForPC(pc).Name()
-	log.Fatalf("cannot call '%s': Application not initialised", funcName)
+	log.Fatalf("cannot call '%s': %s", funcName, contextError)
 	return nil
 }
 
@@ -51,7 +54,7 @@ func getEvents(ctx context.Context) frontend.Events {
 	}
 	pc, _, _, _ := goruntime.Caller(1)
 	funcName := goruntime.FuncForPC(pc).Name()
-	log.Fatalf("cannot call '%s': Application not initialised", funcName)
+	log.Fatalf("cannot call '%s': %s", funcName, contextError)
 	return nil
 }
 
