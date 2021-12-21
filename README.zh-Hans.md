@@ -204,6 +204,9 @@
 <a href="https://github.com/michaelolson1996" style="width:55px">
   <img src="https://github.com/michaelolson1996.png?size=55" width="55"/>
 </a>
+<a href="https://github.com/GargantuaX" style="width:45px">
+  <img src="https://github.com/GargantuaX.png?size=45" width="45"/>
+</a>
 
 <span id="nav-6"></span>
 
