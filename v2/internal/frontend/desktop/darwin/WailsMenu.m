@@ -43,14 +43,16 @@
 - (WailsMenu*) initWithNSTitle:(NSString *)title {
     if( title != nil ) {
         [super initWithTitle:title];
+    } else {
+        [self init];
     }
     [self setAutoenablesItems:NO];
-    return [self init];
+    return self;
 }
 
 - (void) appendSubmenu :(WailsMenu*)child {
     NSMenuItem *childMenuItem = [[NSMenuItem new] autorelease];
-    [childMenuItem setTitle:[child title]];
+    [childMenuItem setTitle:child.title];
     [self addItem:childMenuItem];
     [childMenuItem setSubmenu:child];
 }
