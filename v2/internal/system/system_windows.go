@@ -28,11 +28,7 @@ func (i *Info) discover() error {
 
 func checkWebView2() *packagemanager.Dependancy {
 
-	info := webview2runtime.GetInstalledVersion()
-	version := ""
-	if info != nil {
-		version = info.Version
-	}
+	version := webview2runtime.GetInstalledVersion()
 	installed := version != ""
 
 	return &packagemanager.Dependancy{
