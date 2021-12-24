@@ -15,14 +15,14 @@ const (
 	installed
 )
 
-func Process() (*webview2runtime.Info, error) {
+func Process() (string, error) {
 	installStatus := needsInstalling
 	installedVersion := webview2runtime.GetInstalledVersion()
-	if installedVersion != nil {
+	if installedVersion != "" {
 		installStatus = installed
-		compareResult, err := webviewloader.CompareBrowserVersions(installedVersion.Version, MinimumRuntimeVersion)
+		compareResult, err := webviewloader.CompareBrowserVersions(installedVersion, MinimumRuntimeVersion)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 		updateRequired := compareResult == -1
 		// Installed and does not require updating

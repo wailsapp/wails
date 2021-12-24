@@ -27,7 +27,7 @@ require (
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7
-	github.com/leaanthony/webview2runtime v1.1.0
+	github.com/leaanthony/webview2runtime v1.3.0
 	github.com/leaanthony/winc v0.0.0-20211202091710-9931d43181ff
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
@@ -81,3 +81,5 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
+
+replace github.com/leaanthony/webview2runtime => C:\Users\leaan\Documents\wails-v2-beta\webview2runtime
