@@ -22,12 +22,11 @@ require (
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/go-common-file-dialog v1.0.3
-	github.com/leaanthony/go-webview2 v0.0.0-20211202091502-64deee9a37e3
+	github.com/leaanthony/go-webview2 v1.0.2
 	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7
-	github.com/leaanthony/webview2runtime v1.3.0
 	github.com/leaanthony/winc v0.0.0-20211202091710-9931d43181ff
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
@@ -43,7 +42,7 @@ require (
 	github.com/ztrue/tracerr v0.3.0
 	golang.org/x/mod v0.4.1
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed
-	golang.org/x/sys v0.0.0-20211020174200-9d6173849985
+	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
 	golang.org/x/tools v0.1.0
 	nhooyr.io/websocket v1.8.6
 )
@@ -82,4 +81,4 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
 
-replace github.com/leaanthony/webview2runtime => C:\Users\leaan\Documents\wails-v2-beta\webview2runtime
+replace github.com/leaanthony/go-webview2 => C:\Users\leaan\Documents\wails-v2-beta\go-webview2

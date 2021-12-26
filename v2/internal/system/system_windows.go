@@ -4,7 +4,7 @@
 package system
 
 import (
-	"github.com/leaanthony/webview2runtime"
+	"github.com/leaanthony/go-webview2/webviewloader"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 )
@@ -28,7 +28,7 @@ func (i *Info) discover() error {
 
 func checkWebView2() *packagemanager.Dependancy {
 
-	version := webview2runtime.GetInstalledVersion()
+	version, _ := webviewloader.GetInstalledVersion()
 	installed := version != ""
 
 	return &packagemanager.Dependancy{

@@ -118,8 +118,6 @@ github.com/leaanthony/go-ansi-parser v1.0.1 h1:97v6c5kYppVsbScf4r/VZdXyQ21KQIfeQ
 github.com/leaanthony/go-ansi-parser v1.0.1/go.mod h1:7arTzgVI47srICYhvgUV4CGd063sGEeoSlych5yeSPM=
 github.com/leaanthony/go-common-file-dialog v1.0.3 h1:O0uGjKnWtdEADGrkg+TyAAbZylykMwwx/MNEXn9fp+Y=
 github.com/leaanthony/go-common-file-dialog v1.0.3/go.mod h1:TGhEc9eSJgRsupZ+iH1ZgAOnEo9zp05cRH2j08RPrF0=
-github.com/leaanthony/go-webview2 v0.0.0-20211202091502-64deee9a37e3 h1:vKdQzUWiq5wtVBLTTeYuikcgQbF/HtYaOmxGzbfkcT0=
-github.com/leaanthony/go-webview2 v0.0.0-20211202091502-64deee9a37e3/go.mod h1:iX54IaVk1FnDqMuHJ47VYLPQOcVqQiOe9SJACt9CAbU=
 github.com/leaanthony/gosod v1.0.3 h1:Fnt+/B6NjQOVuCWOKYRREZnjGyvg+mEhd1nkkA04aTQ=
 github.com/leaanthony/gosod v1.0.3/go.mod h1:BJ2J+oHsQIyIQpnLPjnqFGTMnOZXDbvWtRCSG7jGxs4=
 github.com/leaanthony/idgen v1.0.0 h1:IZreR+JGEzFV4yeVuBZA25gM0keUoFy+RDUldncQ+Jw=
@@ -128,8 +126,6 @@ github.com/leaanthony/slicer v1.5.0 h1:aHYTN8xbCCLxJmkNKiLB6tgcMARl4eWmH9/F+S/0H
 github.com/leaanthony/slicer v1.5.0/go.mod h1:FwrApmf8gOrpzEWM2J/9Lh79tyq8KTX5AzRtwV7m4AY=
 github.com/leaanthony/typescriptify-golang-structs v0.1.7 h1:yoznzWzyxkO/iWdlpq+aPcuJ5Y/hpjq/lmgMFmpjwl0=
 github.com/leaanthony/typescriptify-golang-structs v0.1.7/go.mod h1:cWtOkiVhMF77e6phAXUcfNwYmMwCJ67Sij24lfvi9Js=
-github.com/leaanthony/webview2runtime v1.1.0 h1:N0pv55ift8XtqozIp4PNOtRCJ/Qdd/qzx80lUpalS4c=
-github.com/leaanthony/webview2runtime v1.1.0/go.mod h1:hH9GnWCve3DYzNaPOcPbhHQ7fodXR1QJNsnwixid4Tk=
 github.com/leaanthony/winc v0.0.0-20211202091710-9931d43181ff h1:FwGObElCr/T/xy8S9IKDjWsNcfJHGxgjRl/GIbcseoQ=
 github.com/leaanthony/winc v0.0.0-20211202091710-9931d43181ff/go.mod h1:KEbMsKoznsebyGHwLk5LqkFOxL5uXSRdvpP4+avmAMs=
 github.com/leaanthony/winicon v1.0.0 h1:ZNt5U5dY71oEoKZ97UVwJRT4e+5xo5o/ieKuHuk8NqQ=
@@ -258,10 +254,9 @@ golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20210324051608-47abb6519492/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210423082822-04245dca01da/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210514084401-e8d321eab015/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.0.0-20210611083646-a4fc73990273/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20210616045830-e2b7044e8c71/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.0.0-20211020174200-9d6173849985 h1:LOlKVhfDyahgmqa97awczplwkjzNaELFg3zRIJ13RYo=
-golang.org/x/sys v0.0.0-20211020174200-9d6173849985/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e h1:fLOSk5Q00efkSvAm+4xcoXD+RRmLmmulPn5I3Y9F2EM=
+golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 h1:v+OssWQX+hTHEmOBgwxdZxK4zHq3yOs8F9J7mk0PY8E=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=

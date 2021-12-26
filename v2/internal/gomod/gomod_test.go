@@ -33,7 +33,6 @@ require (
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/webview2runtime v1.1.0 // indirect
 	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -97,7 +96,6 @@ require (
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/webview2runtime v1.1.0 // indirect
 	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -139,7 +137,6 @@ require (
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/webview2runtime v1.1.0 // indirect
 	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -180,7 +177,6 @@ require (
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/webview2runtime v1.1.0 // indirect
 	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -222,7 +218,6 @@ require (
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/webview2runtime v1.1.0 // indirect
 	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -264,7 +259,6 @@ require (
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/webview2runtime v1.1.0 // indirect
 	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -308,7 +302,6 @@ require (
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/webview2runtime v1.1.0 // indirect
 	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -353,7 +346,6 @@ require (
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/webview2runtime v1.1.0 // indirect
 	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -456,7 +448,6 @@ require (
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/webview2runtime v1.1.0 // indirect
 	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -498,7 +489,6 @@ require (
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/webview2runtime v1.1.0 // indirect
 	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -540,7 +530,6 @@ require (
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/webview2runtime v1.1.0 // indirect
 	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -585,7 +574,6 @@ require (
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/webview2runtime v1.1.0 // indirect
 	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

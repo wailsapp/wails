@@ -5,7 +5,7 @@ package wv2runtime
 
 import (
 	"fmt"
-	"github.com/leaanthony/webview2runtime"
+	"github.com/wailsapp/wails/v2/internal/webview2runtime"
 )
 
 func doInstallationStrategy(installStatus installationStatus) error {

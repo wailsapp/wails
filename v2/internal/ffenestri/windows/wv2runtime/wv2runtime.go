@@ -2,7 +2,6 @@ package wv2runtime
 
 import (
 	"github.com/leaanthony/go-webview2/webviewloader"
-	"github.com/leaanthony/webview2runtime"
 )
 
 const MinimumRuntimeVersion string = "91.0.992.28"
@@ -17,7 +16,10 @@ const (
 
 func Process() (string, error) {
 	installStatus := needsInstalling
-	installedVersion := webview2runtime.GetInstalledVersion()
+	installedVersion, err := webviewloader.GetInstalledVersion()
+	if err != nil {
+		return "", err
+	}
 	if installedVersion != "" {
 		installStatus = installed
 		compareResult, err := webviewloader.CompareBrowserVersions(installedVersion, MinimumRuntimeVersion)
