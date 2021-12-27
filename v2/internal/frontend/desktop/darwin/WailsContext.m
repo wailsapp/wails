@@ -558,7 +558,7 @@
     
     
     // Create the dialog
-    NSSavePanel *dialog = [NSOpenPanel savePanel];
+    NSSavePanel *dialog = [NSSavePanel savePanel];
 
     // Valid but appears to do nothing.... :/
     if( title != nil ) {
