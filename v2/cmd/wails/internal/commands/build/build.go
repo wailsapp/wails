@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/colour"
 	"io"
 	"os"
 	"os/exec"
@@ -78,6 +79,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	forceBuild := false
 	command.BoolFlag("f", "Force build application", &forceBuild)
+
+	updateGoMod := false
+	command.BoolFlag("u", "Updates go.mod to use the same Wails version as the CLI", &updateGoMod)
 
 	command.Action(func() error {
 
@@ -214,7 +218,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		fmt.Fprintf(w, "\n")
 		w.Flush()
 
-		err = checkGoModVersion(logger)
+		err = checkGoModVersion(logger, updateGoMod)
 		if err != nil {
 			return err
 		}
@@ -243,7 +247,7 @@ func doBuild(buildOptions *build.Options) error {
 	return nil
 }
 
-func checkGoModVersion(logger *clilogger.CLILogger) error {
+func checkGoModVersion(logger *clilogger.CLILogger, updateGoMod bool) error {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -265,6 +269,36 @@ func checkGoModVersion(logger *clilogger.CLILogger) error {
 		return err
 	}
 
-	logger.Println("Warning: go.mod is using Wails '%s' but the CLI is '%s'. Consider updating it.\n", gomodversion.String(), internal.Version)
+	if updateGoMod {
+		return syncGoModVersion(cwd)
+	}
+
+	logger.Println("Warning: go.mod is using Wails '%s' but the CLI is '%s'. Consider updating your project's `go.mod` file.\n", gomodversion.String(), internal.Version)
 	return nil
+}
+
+func LogGreen(message string, args ...interface{}) {
+	text := fmt.Sprintf(message, args...)
+	println(colour.Green(text))
+}
+
+func syncGoModVersion(cwd string) error {
+	gomodFilename := filepath.Join(cwd, "go.mod")
+	gomodData, err := os.ReadFile(gomodFilename)
+	if err != nil {
+		return err
+	}
+	outOfSync, err := gomod.GoModOutOfSync(gomodData, internal.Version)
+	if err != nil {
+		return err
+	}
+	if !outOfSync {
+		return nil
+	}
+	LogGreen("Updating go.mod to use Wails '%s'", internal.Version)
+	newGoData, err := gomod.UpdateGoModVersion(gomodData, internal.Version)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(gomodFilename, newGoData, 0755)
 }
