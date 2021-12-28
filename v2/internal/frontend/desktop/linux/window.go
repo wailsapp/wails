@@ -4,10 +4,11 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
+#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0 x11
 
 #include "gtk/gtk.h"
 #include "webkit2/webkit2.h"
+#include <X11/Xlib.h>
 #include <stdio.h>
 #include <limits.h>
 
@@ -105,6 +106,11 @@ ulong setupInvokeSignal(void* contentManager) {
 	return g_signal_connect((WebKitUserContentManager*)contentManager, "script-message-received::external", G_CALLBACK(sendMessageToBackend), NULL);
 }
 
+void initThreads() {
+	printf("init threads\n");
+	XInitThreads();
+}
+
 // These are the x,y & time of the last mouse down event
 // It's used for window dragging
 float xroot = 0.0f;
@@ -199,10 +205,37 @@ int executeJS(gpointer data) {
 void ExecuteOnMainThread(JSCallback* jscallback) {
     g_idle_add((GSourceFunc)executeJS, (gpointer)jscallback);
 }
+
+void extern processOpenFileResult(char*);
+
+static void OpenDialog(GtkWindow* window, char *title) {
+	printf("Here\n");
+      GtkWidget *dlg = gtk_file_chooser_dialog_new(title, window, GTK_FILE_CHOOSER_ACTION_OPEN,
+          "_Cancel", GTK_RESPONSE_CANCEL,
+          "_Open", GTK_RESPONSE_ACCEPT,
+			NULL);
+	printf("Here3\n");
+
+	gint response = gtk_dialog_run(GTK_DIALOG(dlg));
+	printf("Here 4\n");
+
+  if (response == GTK_RESPONSE_ACCEPT)
+      {
+	printf("Here 5\n");
+
+        gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dlg));
+        processOpenFileResult(filename);
+        g_free(filename);
+      }
+      gtk_widget_destroy(dlg);
+}
+
 */
 import "C"
 import (
+	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"os"
 	"unsafe"
 )
 
@@ -384,6 +417,8 @@ func (w *Window) Run() {
 	case options.Maximised:
 		w.Maximise()
 	}
+
+	C.initThreads()
 	C.gtk_main()
 	w.Destroy()
 }
@@ -424,4 +459,12 @@ func (w *Window) StartDrag() {
 
 func (w *Window) Quit() {
 	C.gtk_main_quit()
+}
+
+func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) {
+	println("OpenFileDialog PID:", os.Getpid())
+	mem := NewCalloc()
+	title := mem.String(dialogOptions.Title)
+	C.OpenDialog(w.asGTKWindow(), title)
+	mem.Free()
 }

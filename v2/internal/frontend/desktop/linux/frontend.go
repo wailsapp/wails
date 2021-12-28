@@ -24,6 +24,7 @@ import "C"
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -62,6 +63,7 @@ type Frontend struct {
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 
+	println("[NewFrontend] PID:", os.Getpid())
 	// Set GDK_BACKEND=x11 to prevent warnings
 	os.Setenv("GDK_BACKEND", "x11")
 
@@ -301,10 +303,11 @@ var dispatchCallbackLock sync.Mutex
 
 //export callDispatchedMethod
 func callDispatchedMethod(cid C.int) {
+	println("[callDispatchedMethod] PID:", os.Getpid())
 	id := int(cid)
 	fn := dispatchCallbacks[id]
 	if fn != nil {
-		go fn()
+		fn()
 		dispatchCallbackLock.Lock()
 		delete(dispatchCallbacks, id)
 		dispatchCallbackLock.Unlock()
@@ -342,11 +345,24 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 
 	// Load file from asset store
 	content, mimeType, err := f.assets.Load(file)
-	if err != nil {
-		return
-	}
 
 	// TODO How to return 404/500 errors to webkit?
+	if err != nil {
+		if os.IsNotExist(err) {
+			f.dispatch(func() {
+				message := C.CString("not found")
+				defer C.free(unsafe.Pointer(message))
+				C.webkit_uri_scheme_request_finish_error(req, C.g_error_new_literal(C.G_FILE_ERROR_NOENT, C.int(404), message))
+			})
+		} else {
+			err = fmt.Errorf("Error processing request %s: %w", uri, err)
+			f.logger.Error(err.Error())
+			message := C.CString("internal server error")
+			defer C.free(unsafe.Pointer(message))
+			C.webkit_uri_scheme_request_finish_error(req, C.g_error_new_literal(C.G_FILE_ERROR_NOENT, C.int(500), message))
+		}
+		return
+	}
 
 	cContent := C.CString(string(content))
 	defer C.free(unsafe.Pointer(cContent))
