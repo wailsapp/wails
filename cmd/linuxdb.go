@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	_ "embed"
 	"log"
 
 	"gopkg.in/yaml.v3"
 )
+
+//go:embed linuxdb.yaml
+var LinuxDBYaml []byte
 
 // LinuxDB is the database for linux distribution data.
 type LinuxDB struct {
@@ -78,14 +82,10 @@ func (l *LinuxDB) GetDistro(distro string) *Distribution {
 // NewLinuxDB creates a new LinuxDB instance from the bundled
 // linuxdb.yaml file.
 func NewLinuxDB() *LinuxDB {
-	data, err := fs.LoadRelativeFile("./linuxdb.yaml")
-	if err != nil {
-		log.Fatal("Could not load linuxdb.yaml")
-	}
 	result := LinuxDB{
 		Distributions: make(map[string]*Distribution),
 	}
-	err = result.ImportData(data)
+	err := result.ImportData(LinuxDBYaml)
 	if err != nil {
 		log.Fatal(err)
 	}
