@@ -152,7 +152,7 @@ export function EventsEmit(eventName) {
 
 export function EventsOff(eventName) {
     // Remove local listeners
-    eventListeners.delete(eventName);
+    delete eventListeners[eventName];
 
     // Notify Go listeners
     window.WailsInvoke('EX' + eventName);
