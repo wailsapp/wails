@@ -23,6 +23,8 @@ const (
 	Dev Mode = iota
 	// Production mode
 	Production
+	// Debug build
+	Debug
 )
 
 // Options contains all the build options as well as the project data

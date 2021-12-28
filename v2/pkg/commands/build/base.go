@@ -215,7 +215,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	commands := slicer.String([]string{"build"})
 
 	// Add better debugging flags
-	if options.Mode == Dev {
+	if options.Mode == Dev || options.Mode == Debug {
 		commands.Add("-gcflags")
 		commands.Add(`"all=-N -l"`)
 	}
@@ -233,7 +233,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		tags.Add(options.WebView2Strategy)
 	}
 
-	if options.Mode == Production {
+	if options.Mode == Production || options.Mode == Debug {
 		tags.Add("production")
 	}
 

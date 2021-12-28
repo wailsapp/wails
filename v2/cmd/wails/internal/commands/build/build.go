@@ -83,6 +83,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	updateGoMod := false
 	command.BoolFlag("u", "Updates go.mod to use the same Wails version as the CLI", &updateGoMod)
 
+	debug := false
+	command.BoolFlag("debug", "Retains debug data in the compiled application", &debug)
+
 	command.Action(func() error {
 
 		quiet := verbosity == 0
@@ -164,13 +167,20 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			}
 		}
 
+		mode := build.Production
+		modeString := "Production"
+		if debug {
+			mode = build.Debug
+			modeString = "Debug"
+		}
+
 		// Create BuildOptions
 		buildOptions := &build.Options{
 			Logger:              logger,
 			OutputType:          outputType,
 			OutputFile:          outputFilename,
 			CleanBuildDirectory: cleanBuildDirectory,
-			Mode:                build.Production,
+			Mode:                mode,
 			Pack:                !noPackage,
 			LDFlags:             ldflags,
 			Compiler:            compilerCommand,
@@ -206,6 +216,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		fmt.Fprintf(w, "Platform: \t%s\n", buildOptions.Platform)
 		fmt.Fprintf(w, "Arch: \t%s\n", buildOptions.Arch)
 		fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
+		fmt.Fprintf(w, "Build Mode: \t%s\n", modeString)
 		fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
 		fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
 		fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
