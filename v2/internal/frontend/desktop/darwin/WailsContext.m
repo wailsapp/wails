@@ -540,6 +540,10 @@
 
     // Setup callback handler
     [dialog beginSheetModalForWindow:self.mainWindow completionHandler:^(NSModalResponse returnCode) {
+        if ( returnCode != NSModalResponseOK) {
+            processOpenFileDialogResponse("[]");
+            return;
+        }
         NSMutableArray *arr = [NSMutableArray new];
         for (NSURL *url in [dialog URLs]) {
             [arr addObject:[url path]];
@@ -592,10 +596,12 @@
 
     // Setup callback handler
     [dialog beginSheetModalForWindow:self.mainWindow completionHandler:^(NSModalResponse returnCode) {
-        NSURL *url = [dialog URL];
-        if ( url != nil ) {
-            processSaveFileDialogResponse([url.path UTF8String]);
-            return;
+        if ( returnCode == NSModalResponseOK ) {
+            NSURL *url = [dialog URL];
+            if ( url != nil ) {
+                processSaveFileDialogResponse([url.path UTF8String]);
+                return;
+            }
         }
         processSaveFileDialogResponse("");
     }];
