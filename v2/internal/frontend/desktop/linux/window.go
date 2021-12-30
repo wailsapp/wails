@@ -83,7 +83,7 @@ extern void processMessage(char*);
 
 static void sendMessageToBackend(WebKitUserContentManager *contentManager,
                                  WebKitJavascriptResult *result,
-                                 void*)
+                                 void* data)
 {
 #if WEBKIT_MAJOR_VERSION >= 2 && WEBKIT_MINOR_VERSION >= 22
     JSCValue *value = webkit_javascript_result_get_js_value(result);
@@ -145,7 +145,7 @@ void connectButtons(void* webview) {
 extern void processURLRequest(WebKitURISchemeRequest *request);
 
 // This is called when the close button on the window is pressed
-gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void*)
+gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void* data)
 {
    	processMessage("Q");
     return FALSE;
