@@ -2,7 +2,9 @@ package runtime
 
 import (
 	"context"
+	"fmt"
 	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/fs"
 )
 
 // FileFilter defines a filter for dialog boxes
@@ -29,24 +31,44 @@ type MessageDialogOptions = frontend.MessageDialogOptions
 // OpenDirectoryDialog prompts the user to select a directory
 func OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
 	appFrontend := getFrontend(ctx)
+	if dialogOptions.DefaultDirectory != "" {
+		if !fs.DirExists(dialogOptions.DefaultDirectory) {
+			return "", fmt.Errorf("default directory '%s' does not exist", dialogOptions.DefaultDirectory)
+		}
+	}
 	return appFrontend.OpenDirectoryDialog(dialogOptions)
 }
 
 // OpenFileDialog prompts the user to select a file
 func OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error) {
 	appFrontend := getFrontend(ctx)
+	if dialogOptions.DefaultDirectory != "" {
+		if !fs.DirExists(dialogOptions.DefaultDirectory) {
+			return "", fmt.Errorf("default directory '%s' does not exist", dialogOptions.DefaultDirectory)
+		}
+	}
 	return appFrontend.OpenFileDialog(dialogOptions)
 }
 
 // OpenMultipleFilesDialog prompts the user to select a file
 func OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error) {
 	appFrontend := getFrontend(ctx)
+	if dialogOptions.DefaultDirectory != "" {
+		if !fs.DirExists(dialogOptions.DefaultDirectory) {
+			return nil, fmt.Errorf("default directory '%s' does not exist", dialogOptions.DefaultDirectory)
+		}
+	}
 	return appFrontend.OpenMultipleFilesDialog(dialogOptions)
 }
 
 // SaveFileDialog prompts the user to select a file
 func SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error) {
 	appFrontend := getFrontend(ctx)
+	if dialogOptions.DefaultDirectory != "" {
+		if !fs.DirExists(dialogOptions.DefaultDirectory) {
+			return "", fmt.Errorf("default directory '%s' does not exist", dialogOptions.DefaultDirectory)
+		}
+	}
 	return appFrontend.SaveFileDialog(dialogOptions)
 }
 
