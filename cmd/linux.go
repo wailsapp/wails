@@ -74,6 +74,8 @@ const (
 	NixOS
 	// Artix linux distribution
 	ArtixLinux
+	//Uos distribution
+	Uos
 )
 
 // DistroInfo contains all the information relating to a linux distribution
@@ -190,6 +192,8 @@ func parseOsRelease(osRelease string) *DistroInfo {
 		result.Distribution = NixOS
 	case "artix":
 		result.Distribution = ArtixLinux
+	case "uos":
+		result.Distribution = Uos
 	default:
 		result.Distribution = Unknown
 	}
