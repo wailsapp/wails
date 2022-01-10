@@ -106,21 +106,6 @@ Click [here](https://wails.io) if you are interested in trying out v2 Beta for W
 
 This project is supported by these kind people / companies:
 
-<p align="center">
-  <a href="https://www.easywebadv.it/" style="width:150px;">
-    <img src="website/static/img/easyweb.png" width="150"/>
-  </a>
-</p>
-<br/>
-<br/>
-<a href="https://github.com/sponsors/leaanthony" style="width:100px;">
-  <img src="sponsors/silver%20sponsor.png" width="100"/>
-</a>
-<a href="https://github.com/letheanVPN" style="width:100px;">
-  <img src="https://github.com/letheanVPN.png?size=100" width="100"/>
-</a>
-<br/>
-<br/>
 <a href="https://github.com/sponsors/leaanthony" style="width:100px;">
   <img src="sponsors/bronze%20sponsor.png" width="100"/>
 </a>
@@ -132,6 +117,9 @@ This project is supported by these kind people / companies:
 </a>
 <a href="https://github.com/CrackDavid" style="width:100px">
   <img src="https://github.com/CrackDavid.png?size=100" width="100"/>
+</a>
+<a href="https://www.easywebadv.it/" style="width:100px">
+  <img src="website/static/img/easyweb.png" width="100"/>
 </a>
 <br/>
 <br/>
@@ -189,8 +177,8 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/DonTomato" style="width:45px">
   <img src="https://github.com/DonTomato.png?size=45" width="45"/>
 </a>
-<a href="https://github.com/taigrr" style="width:45px">
-  <img src="https://github.com/taigrr.png?size=45" width="45"/>
+<a href="https://github.com/taigrr" style="width:55px">
+  <img src="https://github.com/taigrr.png?size=55" width="55"/>
 </a>
 <a href="https://github.com/charlie-dee" style="width:55px">
   <img src="https://github.com/charlie-dee.png?size=55" width="55"/>
