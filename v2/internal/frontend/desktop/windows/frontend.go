@@ -211,7 +211,11 @@ func (f *Frontend) WindowUnmaximise() {
 }
 func (f *Frontend) WindowMinimise() {
 	runtime.LockOSThread()
-	f.mainWindow.Minimise()
+	if f.hasStarted {
+		f.mainWindow.Minimise()
+	} else {
+		f.frontendOptions.WindowStartState = options.Minimised
+	}
 }
 func (f *Frontend) WindowUnminimise() {
 	runtime.LockOSThread()
