@@ -173,7 +173,7 @@ func (f *Frontend) WindowFullscreen() {
 	f.mainWindow.SetMaxSize(0, 0)
 	f.mainWindow.SetMinSize(0, 0)
 	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
-		f.ExecJS("window.wails.enableFramelessResize();")
+		f.ExecJS("window.wails.flags.enableResize = false;")
 	}
 	f.mainWindow.Fullscreen()
 }
@@ -181,7 +181,7 @@ func (f *Frontend) WindowFullscreen() {
 func (f *Frontend) WindowUnFullscreen() {
 	runtime.LockOSThread()
 	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
-		f.ExecJS("window.wails.enableFramelessResize();")
+		f.ExecJS("window.wails.flags.enableResize = true;")
 	}
 	f.mainWindow.UnFullscreen()
 	f.mainWindow.SetMaxSize(f.maxWidth, f.maxHeight)
@@ -491,7 +491,7 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 	}
 
 	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
-		f.ExecJS("window.wails.enableFramelessResize();")
+		f.ExecJS("window.wails.flags.enableResize = true;")
 	}
 
 	if f.hasStarted {

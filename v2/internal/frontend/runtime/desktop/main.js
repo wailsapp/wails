@@ -43,11 +43,9 @@ window.wails = {
     flags: {
         disableScrollbarDrag: false,
         disableWailsDefaultContextMenu: false,
-        enableFramelessResize: false,
+        enableResize: false,
         defaultCursor: null
-    },
-    enableFramelessResize,
-    disableFramelessResize
+    }
 };
 
 // Set the bindings
@@ -66,7 +64,7 @@ if (ENV === 0) {
 window.addEventListener('mousedown', (e) => {
 
     // Check for resizing
-    if (window.wails.flags.enableFramelessResize && window.wails.flags.resizeEdge) {
+    if (window.wails.flags.resizeEdge) {
         window.WailsInvoke("resize:" + window.wails.flags.resizeEdge);
         e.preventDefault();
         return;
@@ -97,7 +95,7 @@ function setResize(cursor) {
     window.wails.flags.resizeEdge = cursor;
 }
 
-function mouseHandler(e) {
+window.addEventListener('mousemove', function (e) {
     if (!window.wails.flags.enableResize) {
         return;
     }
@@ -124,17 +122,7 @@ function mouseHandler(e) {
     else if (bottomBorder) setResize("s-resize");
     else if (rightBorder) setResize("e-resize");
 
-}
-
-export function enableFramelessResize() {
-    window.wails.flags.enableFramelessResize = true;
-    window.addEventListener('mousemove', mouseHandler);
-}
-
-export function disableFramelessResize() {
-    window.wails.flags.enableFramelessResize = false;
-    window.removeEventListener('mousemove', mouseHandler);
-}
+});
 
 // Setup context menu hook
 window.addEventListener('contextmenu', function (e) {
