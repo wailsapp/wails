@@ -530,6 +530,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 	interval := time.Duration(flags.debounceMS) * time.Millisecond
 	timer := time.NewTimer(interval)
 	rebuild := false
+	ignoreFrontend := false
 	reload := false
 	assetDir := ""
 	changedPaths := map[string]struct{}{}
@@ -555,6 +556,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 					ext = ext[1:]
 					if _, exists := extensionsThatTriggerARebuild[ext]; exists {
 						rebuild = true
+						ignoreFrontend = strings.HasSuffix(ext, "go")
 						timer.Reset(interval)
 						continue
 					}
@@ -590,6 +592,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 		case <-timer.C:
 			if rebuild {
 				rebuild = false
+				buildOptions.IgnoreFrontend = ignoreFrontend
 				LogGreen("[Rebuild triggered] files updated")
 				// Try and build the app
 				newBinaryProcess, _, err = restartApp(buildOptions, debugBinaryProcess, flags, exitCodeChannel)
