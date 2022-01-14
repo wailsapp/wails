@@ -27,7 +27,7 @@ require (
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7
-	github.com/leaanthony/winc v0.0.0-20220112092814-1608a1744133
+	github.com/leaanthony/winc v0.0.0-20220117090042-fdd739b32c58
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
 	github.com/olekukonko/tablewriter v0.0.4
@@ -42,7 +42,7 @@ require (
 	github.com/ztrue/tracerr v0.3.0
 	golang.org/x/mod v0.4.1
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 	golang.org/x/tools v0.1.0
 	nhooyr.io/websocket v1.8.6
 )
