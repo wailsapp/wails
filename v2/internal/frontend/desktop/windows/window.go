@@ -55,12 +55,17 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 
 	result.SetSize(appoptions.Width, appoptions.Height)
 	result.SetText(appoptions.Title)
-	if appoptions.Frameless == false && !appoptions.Fullscreen {
-		result.EnableMaxButton(!appoptions.DisableResize)
-		result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
-		result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
+	if appoptions.Frameless == false {
+		if !appoptions.Fullscreen {
+			result.EnableMaxButton(!appoptions.DisableResize)
+			result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
+			result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
+		}
+		// Only call EnableSizable for normal windows, frameless windows are always not resizable per default and
+		// the resizing for those will be initiated by the frontend see processMessage.
+		// If EnableSizable is enabled for frameless windows, a small white titlebar will be shown.
+		result.EnableSizable(!appoptions.DisableResize)
 	}
-	result.EnableSizable(!appoptions.DisableResize)
 
 	if appoptions.Windows != nil {
 		if appoptions.Windows.WindowIsTranslucent {
