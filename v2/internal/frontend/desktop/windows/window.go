@@ -88,3 +88,13 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 func (w *Window) Run() int {
 	return winc.RunMainLoop()
 }
+
+func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
+	switch msg {
+	case w32.WM_NCLBUTTONDOWN:
+		w32.SetFocus(w.Handle())
+	case w32.WM_MOVE, w32.WM_MOVING:
+		w.frontendOptions.Windows.NotifyParentWindowPositionChanged()
+	}
+	return w.Form.WndProc(msg, wparam, lparam)
+}
