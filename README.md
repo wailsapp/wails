@@ -107,7 +107,15 @@ Click [here](https://wails.io) if you are interested in trying out v2 Beta for W
 This project is supported by these kind people / companies:
 
 <a href="https://github.com/sponsors/leaanthony" style="width:100px;">
-  <img src="sponsors/bronze%20sponsor.png" width="100"/>
+  <img src="/img/silver%20sponsor.png" width="100"/>
+</a>
+<a href="https://github.com/letheanVPN" style="width:100px;">
+  <img src="https://github.com/letheanVPN.png?size=100" width="100"/>
+</a>
+<br/>
+<br/>
+<a href="https://github.com/sponsors/leaanthony" style="width:100px;">
+  <img src="img/bronze%20sponsor.png" width="100"/>
 </a>
 <a href="https://github.com/snider" style="width:100px;">
   <img src="https://github.com/snider.png?size=100" width="100"/>

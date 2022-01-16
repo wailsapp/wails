@@ -109,9 +109,16 @@
 
 这个项目由以下这些人或者公司支持：
 
-
 <a href="https://github.com/sponsors/leaanthony" style="width:100px;">
-  <img src="sponsors/bronze%20sponsor.png" width="100"/>
+  <img src="/img/silver%20sponsor.png" width="100"/>
+</a>
+<a href="https://github.com/letheanVPN" style="width:100px;">
+  <img src="https://github.com/letheanVPN.png?size=100" width="100"/>
+</a>
+<br/>
+<br/>
+<a href="https://github.com/sponsors/leaanthony" style="width:100px;">
+  <img src="img/bronze%20sponsor.png" width="100"/>
 </a>
 <a href="https://github.com/snider" style="width:100px;">
   <img src="https://github.com/snider.png?size=100" width="100"/>
