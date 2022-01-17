@@ -236,6 +236,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	if options.Mode == Production || options.Mode == Debug {
 		tags.Add("production")
 	}
+	// This mode allows you to debug a production build (not dev build)
+	if options.Mode == Debug {
+		tags.Add("debug")
+	}
 
 	tags.Deduplicate()
 
