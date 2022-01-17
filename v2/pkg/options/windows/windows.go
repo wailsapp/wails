@@ -7,6 +7,5 @@ type Options struct {
 	DisableWindowIcon    bool
 
 	// Draw a border around the window, even if the window is frameless
-	EnableFramelessBorder             bool
-	NotifyParentWindowPositionChanged func()
+	EnableFramelessBorder bool
 }

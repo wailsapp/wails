@@ -11,8 +11,9 @@ import (
 
 type Window struct {
 	winc.Form
-	frontendOptions *options.App
-	applicationMenu *menu.Menu
+	frontendOptions                   *options.App
+	applicationMenu                   *menu.Menu
+	notifyParentWindowPositionChanged func() error
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
@@ -74,7 +75,6 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 
 	// Dlg forces display of focus rectangles, as soon as the user starts to type.
 	w32.SendMessage(result.Handle(), w32.WM_CHANGEUISTATE, w32.UIS_INITIALIZE, 0)
-	winc.RegMsgHandler(result)
 
 	result.SetFont(winc.DefaultFont)
 
@@ -86,6 +86,7 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 }
 
 func (w *Window) Run() int {
+	winc.RegMsgHandler(w)
 	return winc.RunMainLoop()
 }
 
@@ -94,7 +95,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	case w32.WM_NCLBUTTONDOWN:
 		w32.SetFocus(w.Handle())
 	case w32.WM_MOVE, w32.WM_MOVING:
-		w.frontendOptions.Windows.NotifyParentWindowPositionChanged()
+		w.notifyParentWindowPositionChanged()
 	}
 	return w.Form.WndProc(msg, wparam, lparam)
 }

@@ -64,8 +64,6 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		startURL:        "file://wails/",
 	}
 
-	result.frontendOptions.Windows.NotifyParentWindowPositionChanged = result.NotifyParentWindowPositionChanged
-
 	bindingsJSON, err := appBindings.ToJSON()
 	if err != nil {
 		log.Fatal(err)
@@ -118,6 +116,8 @@ func (f *Frontend) Run(ctx context.Context) error {
 	f.WindowCenter()
 	f.setupChromium()
 
+	f.mainWindow.notifyParentWindowPositionChanged = f.chromium.NotifyParentWindowPositionChanged
+
 	mainWindow.OnSize().Bind(func(arg *winc.Event) {
 		f.chromium.Resize()
 	})
@@ -135,7 +135,6 @@ func (f *Frontend) Run(ctx context.Context) error {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
-
 	mainWindow.Run()
 	mainWindow.Close()
 	return nil
@@ -530,10 +529,4 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 		f.mainWindow.Show()
 	}
 
-}
-
-func (f *Frontend) NotifyParentWindowPositionChanged() {
-	if f.chromium != nil {
-		f.chromium.NotifyParentWindowPositionChanged()
-	}
 }
