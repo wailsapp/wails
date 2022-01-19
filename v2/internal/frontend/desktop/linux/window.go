@@ -184,6 +184,21 @@ static void startDrag(void *webview, GtkWindow* mainwindow)
     gtk_window_begin_move_drag(mainwindow, 1, xroot, yroot, dragTime);
 }
 
+typedef struct JSCallback {
+    void* webview;
+    char* script;
+} JSCallback;
+
+int executeJS(gpointer data) {
+    struct JSCallback *js = data;
+    webkit_web_view_run_javascript(js->webview, js->script, NULL, NULL, NULL);
+    free(js->script);
+    return G_SOURCE_REMOVE;
+}
+
+void ExecuteOnMainThread(JSCallback* jscallback) {
+    g_idle_add((GSourceFunc)executeJS, (gpointer)jscallback);
+}
 */
 import "C"
 import (
@@ -396,9 +411,11 @@ func (w *Window) SetTitle(title string) {
 }
 
 func (w *Window) ExecJS(js string) {
-	script := C.CString(js)
-	defer C.free(unsafe.Pointer(script))
-	C.webkit_web_view_run_javascript((*C.WebKitWebView)(w.webview), script, nil, nil, nil)
+	jscallback := C.JSCallback{
+		webview: w.webview,
+		script: C.CString(js),
+	}
+	C.ExecuteOnMainThread(&jscallback)
 }
 
 func (w *Window) StartDrag() {
