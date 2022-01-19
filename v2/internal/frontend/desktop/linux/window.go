@@ -4,11 +4,10 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0 x11
+#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
 
 #include "gtk/gtk.h"
 #include "webkit2/webkit2.h"
-#include <X11/Xlib.h>
 #include <stdio.h>
 #include <limits.h>
 
@@ -104,11 +103,6 @@ static void sendMessageToBackend(WebKitUserContentManager *contentManager,
 
 ulong setupInvokeSignal(void* contentManager) {
 	return g_signal_connect((WebKitUserContentManager*)contentManager, "script-message-received::external", G_CALLBACK(sendMessageToBackend), NULL);
-}
-
-void initThreads() {
-	printf("init threads\n");
-	XInitThreads();
 }
 
 // These are the x,y & time of the last mouse down event
@@ -418,7 +412,6 @@ func (w *Window) Run() {
 		w.Maximise()
 	}
 
-	C.initThreads()
 	C.gtk_main()
 	w.Destroy()
 }
