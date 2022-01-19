@@ -202,26 +202,23 @@ void ExecuteOnMainThread(void* f, JSCallback* jscallback) {
 
 void extern processOpenFileResult(char*);
 
-static void OpenDialog(GtkWindow* window, char *title) {
-	printf("Here\n");
-      GtkWidget *dlg = gtk_file_chooser_dialog_new(title, window, GTK_FILE_CHOOSER_ACTION_OPEN,
+int opendialog(gpointer data) {
+    struct JSCallback *js = data;
+    GtkWidget *dlg = gtk_file_chooser_dialog_new(js->script, js->webview, GTK_FILE_CHOOSER_ACTION_OPEN,
           "_Cancel", GTK_RESPONSE_CANCEL,
           "_Open", GTK_RESPONSE_ACCEPT,
 			NULL);
-	printf("Here3\n");
 
 	gint response = gtk_dialog_run(GTK_DIALOG(dlg));
-	printf("Here 4\n");
 
-  if (response == GTK_RESPONSE_ACCEPT)
-      {
-	printf("Here 5\n");
-
+    if (response == GTK_RESPONSE_ACCEPT) {
         gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dlg));
         processOpenFileResult(filename);
         g_free(filename);
-      }
-      gtk_widget_destroy(dlg);
+    }
+    gtk_widget_destroy(dlg);
+    free(js->script);
+    return G_SOURCE_REMOVE;
 }
 
 */
@@ -229,7 +226,6 @@ import "C"
 import (
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"os"
 	"unsafe"
 )
 
@@ -455,9 +451,10 @@ func (w *Window) Quit() {
 }
 
 func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) {
-	println("OpenFileDialog PID:", os.Getpid())
-	mem := NewCalloc()
-	title := mem.String(dialogOptions.Title)
-	C.OpenDialog(w.asGTKWindow(), title)
-	mem.Free()
+	data := C.JSCallback{
+		webview: w.webview,
+		script: C.CString(dialogOptions.Title),
+	}
+	C.ExecuteOnMainThread(C.opendialog, &data)
 }
+
