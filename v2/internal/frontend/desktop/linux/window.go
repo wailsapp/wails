@@ -196,8 +196,8 @@ int executeJS(gpointer data) {
     return G_SOURCE_REMOVE;
 }
 
-void ExecuteOnMainThread(JSCallback* jscallback) {
-    g_idle_add((GSourceFunc)executeJS, (gpointer)jscallback);
+void ExecuteOnMainThread(void* f, JSCallback* jscallback) {
+    g_idle_add((GSourceFunc)f, (gpointer)jscallback);
 }
 
 void extern processOpenFileResult(char*);
@@ -443,7 +443,7 @@ func (w *Window) ExecJS(js string) {
 		webview: w.webview,
 		script: C.CString(js),
 	}
-	C.ExecuteOnMainThread(&jscallback)
+	C.ExecuteOnMainThread(C.executeJS, &jscallback)
 }
 
 func (w *Window) StartDrag() {
