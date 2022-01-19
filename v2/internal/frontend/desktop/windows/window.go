@@ -3,6 +3,11 @@
 package windows
 
 import (
+	"fmt"
+	"log"
+	"syscall"
+	"unsafe"
+
 	"github.com/leaanthony/winc"
 	"github.com/leaanthony/winc/w32"
 	"github.com/wailsapp/wails/v2/pkg/menu"
@@ -32,15 +37,10 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 	}
 
 	var dwStyle = w32.WS_OVERLAPPEDWINDOW
-	if appoptions.Frameless {
-		dwStyle = w32.WS_POPUP
-		if winoptions := appoptions.Windows; winoptions != nil && winoptions.EnableFramelessBorder {
-			dwStyle |= w32.WS_BORDER
-		}
-	}
 
 	winc.RegClassOnlyOnce("wailsWindow")
 	result.SetHandle(winc.CreateWindow("wailsWindow", parent, uint(exStyle), uint(dwStyle)))
+	winc.RegMsgHandler(result)
 	result.SetParent(parent)
 
 	loadIcon := true
@@ -55,16 +55,11 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 
 	result.SetSize(appoptions.Width, appoptions.Height)
 	result.SetText(appoptions.Title)
-	if appoptions.Frameless == false {
-		if !appoptions.Fullscreen {
-			result.EnableMaxButton(!appoptions.DisableResize)
-			result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
-			result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
-		}
-		// Only call EnableSizable for normal windows, frameless windows are always not resizable per default and
-		// the resizing for those will be initiated by the frontend see processMessage.
-		// If EnableSizable is enabled for frameless windows, a small white titlebar will be shown.
-		result.EnableSizable(!appoptions.DisableResize)
+	result.EnableSizable(!appoptions.DisableResize)
+	if !appoptions.Fullscreen {
+		result.EnableMaxButton(!appoptions.DisableResize)
+		result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
+		result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
 	}
 
 	if appoptions.Windows != nil {
@@ -79,7 +74,6 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 
 	// Dlg forces display of focus rectangles, as soon as the user starts to type.
 	w32.SendMessage(result.Handle(), w32.WM_CHANGEUISTATE, w32.UIS_INITIALIZE, 0)
-	winc.RegMsgHandler(result)
 
 	result.SetFont(winc.DefaultFont)
 
@@ -92,4 +86,64 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 
 func (w *Window) Run() int {
 	return winc.RunMainLoop()
+}
+
+func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
+	if w.frontendOptions.Frameless {
+		switch msg {
+		case w32.WM_ACTIVATE:
+			// If we want to have a frameless window but with border, extend the client area outside of the window. This
+			// Option is not affected by returning 0 in WM_NCCALCSIZE.
+			// As a result we have hidden the titlebar but still have the default border drawn.
+			// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
+			if winoptions := w.frontendOptions.Windows; winoptions != nil && winoptions.EnableFramelessBorder {
+				if err := dwmExtendFrameIntoClientArea(w.Handle(), w32.MARGINS{-1, -1, -1, -1}); err != nil {
+					log.Fatal(fmt.Errorf("DwmExtendFrameIntoClientArea failed: %s", err))
+				}
+			}
+		case w32.WM_NCCALCSIZE:
+			// Disable the standard frame by allowing the client area to take the full
+			// window size.
+			// See: https://docs.microsoft.com/en-us/windows/win32/winmsg/wm-nccalcsize#remarks
+			// This hides the titlebar and also disables the resizing from user interaction because the standard frame is not
+			// shown. We still need the WS_THICKFRAME style to enable resizing from the frontend.
+			if wparam != 0 {
+				style := uint32(w32.GetWindowLong(w.Handle(), w32.GWL_STYLE))
+				if style&w32.WS_MAXIMIZE != 0 {
+					// If the window is maximized we must adjust the client area to the work area of the monitor. Otherwise
+					// some content goes beyond the visible part of the monitor.
+					monitor := w32.MonitorFromWindow(w.Handle(), w32.MONITOR_DEFAULTTONEAREST)
+
+					var monitorInfo w32.MONITORINFO
+					monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
+					if w32.GetMonitorInfo(monitor, &monitorInfo) {
+						rgrc := (*w32.RECT)(unsafe.Pointer(lparam))
+						*rgrc = monitorInfo.RcWork
+					}
+				}
+
+				return 0
+			}
+		}
+	}
+	return w.Form.WndProc(msg, wparam, lparam)
+}
+
+// TODO this should be put into the winc if we are happy with this solution.
+var (
+	modkernel32 = syscall.NewLazyDLL("dwmapi.dll")
+
+	procDwmExtendFrameIntoClientArea = modkernel32.NewProc("DwmExtendFrameIntoClientArea")
+)
+
+func dwmExtendFrameIntoClientArea(hwnd w32.HWND, margins w32.MARGINS) error {
+	ret, _, _ := procDwmExtendFrameIntoClientArea.Call(
+		uintptr(hwnd),
+		uintptr(unsafe.Pointer(&margins)))
+
+	if ret != 0 {
+		return syscall.GetLastError()
+	}
+
+	return nil
 }
