@@ -11,15 +11,8 @@ import "C"
 var openFileResults = make(chan string)
 
 func (f *Frontend) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (result string, err error) {
-
-	f.dispatch(func() {
-		println("Before OpenFileDialog")
-		f.mainWindow.OpenFileDialog(dialogOptions)
-		println("After OpenFileDialog")
-	})
-	println("Waiting for result")
+	f.mainWindow.OpenFileDialog(dialogOptions)
 	result = <-openFileResults
-	println("Got result")
 	return
 }
 

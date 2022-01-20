@@ -16,7 +16,7 @@ static inline void processDispatchID(gpointer id) {
 }
 
 static void gtkDispatch(int id) {
-	gdk_threads_add_idle((GSourceFunc)processDispatchID, GINT_TO_POINTER(id));
+	g_idle_add((GSourceFunc)processDispatchID, GINT_TO_POINTER(id));
 }
 
 */
@@ -63,7 +63,6 @@ type Frontend struct {
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 
-	println("[NewFrontend] PID:", os.Getpid())
 	// Set GDK_BACKEND=x11 to prevent warnings
 	os.Setenv("GDK_BACKEND", "x11")
 
@@ -303,7 +302,6 @@ var dispatchCallbackLock sync.Mutex
 
 //export callDispatchedMethod
 func callDispatchedMethod(cid C.int) {
-	println("[callDispatchedMethod] PID:", os.Getpid())
 	id := int(cid)
 	fn := dispatchCallbacks[id]
 	if fn != nil {

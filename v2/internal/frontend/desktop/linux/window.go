@@ -196,15 +196,23 @@ int executeJS(gpointer data) {
     return G_SOURCE_REMOVE;
 }
 
-void ExecuteOnMainThread(void* f, JSCallback* jscallback) {
+void ExecuteOnMainThread(void* f, gpointer jscallback) {
     g_idle_add((GSourceFunc)f, (gpointer)jscallback);
 }
 
 void extern processOpenFileResult(char*);
 
+
+typedef struct OpenFileDialogOptions {
+    void* webview;
+    char* title;
+	char** filters;
+} OpenFileDialogOptions;
+
+
 int opendialog(gpointer data) {
-    struct JSCallback *js = data;
-    GtkWidget *dlg = gtk_file_chooser_dialog_new(js->script, js->webview, GTK_FILE_CHOOSER_ACTION_OPEN,
+    struct OpenFileDialogOptions *options = data;
+    GtkWidget *dlg = gtk_file_chooser_dialog_new(options->title, options->webview, GTK_FILE_CHOOSER_ACTION_OPEN,
           "_Cancel", GTK_RESPONSE_CANCEL,
           "_Open", GTK_RESPONSE_ACCEPT,
 			NULL);
@@ -215,9 +223,11 @@ int opendialog(gpointer data) {
         gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dlg));
         processOpenFileResult(filename);
         g_free(filename);
-    }
+    } else {
+		processOpenFileResult("");
+	}
     gtk_widget_destroy(dlg);
-    free(js->script);
+    free(options->title);
     return G_SOURCE_REMOVE;
 }
 
@@ -437,9 +447,9 @@ func (w *Window) SetTitle(title string) {
 func (w *Window) ExecJS(js string) {
 	jscallback := C.JSCallback{
 		webview: w.webview,
-		script: C.CString(js),
+		script:  C.CString(js),
 	}
-	C.ExecuteOnMainThread(C.executeJS, &jscallback)
+	C.ExecuteOnMainThread(C.executeJS, C.gpointer(&jscallback))
 }
 
 func (w *Window) StartDrag() {
@@ -451,10 +461,10 @@ func (w *Window) Quit() {
 }
 
 func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) {
-	data := C.JSCallback{
+	data := C.OpenFileDialogOptions{
 		webview: w.webview,
-		script: C.CString(dialogOptions.Title),
+		title:   C.CString(dialogOptions.Title),
 	}
-	C.ExecuteOnMainThread(C.opendialog, &data)
+	// TODO: Filter
+	C.ExecuteOnMainThread(C.opendialog, C.gpointer(&data))
 }
-
