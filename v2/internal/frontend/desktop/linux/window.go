@@ -223,7 +223,7 @@ void freeFileFilterArray(GtkFileFilter** filters) {
 
 int opendialog(gpointer data) {
     struct OpenFileDialogOptions *options = data;
-    GtkWidget *dlgWidget = gtk_file_chooser_dialog_new(options->title, options->webview, GTK_FILE_CHOOSER_ACTION_OPEN,
+    GtkWidget *dlgWidget = gtk_file_chooser_dialog_new(options->title, options->webview, options->action,
           "_Cancel", GTK_RESPONSE_CANCEL,
           "_Open", GTK_RESPONSE_ACCEPT,
 			NULL);
