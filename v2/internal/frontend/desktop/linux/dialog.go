@@ -38,7 +38,12 @@ func (f *Frontend) OpenMultipleFilesDialog(dialogOptions frontend.OpenDialogOpti
 }
 
 func (f *Frontend) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
-	panic("implement me")
+	f.mainWindow.OpenFileDialog(dialogOptions, 0, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER)
+	result := <-openFileResults
+	if len(result) == 1 {
+		return result[0], nil
+	}
+	return "", nil
 }
 
 func (f *Frontend) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (string, error) {
