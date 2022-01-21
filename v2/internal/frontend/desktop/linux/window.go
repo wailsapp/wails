@@ -142,7 +142,7 @@ void connectButtons(void* webview) {
 	g_signal_connect(WEBKIT_WEB_VIEW(webview), "button-release-event", G_CALLBACK(buttonRelease), NULL);
 }
 
-extern void processURLRequest(WebKitURISchemeRequest *request);
+extern void processURLRequest(void *request);
 
 // This is called when the close button on the window is pressed
 gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void* data)
@@ -200,35 +200,113 @@ void ExecuteOnMainThread(void* f, gpointer jscallback) {
     g_idle_add((GSourceFunc)f, (gpointer)jscallback);
 }
 
-void extern processOpenFileResult(char*);
-
+void extern processOpenFileResult(void*);
 
 typedef struct OpenFileDialogOptions {
     void* webview;
     char* title;
-	char** filters;
+	char* defaultFilename;
+	int createDirectories;
+	int multipleFiles;
+	int showHiddenFiles;
+ 	GtkFileChooserAction action;
+	GtkFileFilter** filters;
 } OpenFileDialogOptions;
 
+GtkFileFilter** allocFileFilterArray(size_t ln) {
+	return (GtkFileFilter**) malloc(ln * sizeof(GtkFileFilter*));
+}
+
+void freeFileFilterArray(GtkFileFilter** filters) {
+	free(filters);
+}
 
 int opendialog(gpointer data) {
     struct OpenFileDialogOptions *options = data;
-    GtkWidget *dlg = gtk_file_chooser_dialog_new(options->title, options->webview, GTK_FILE_CHOOSER_ACTION_OPEN,
+    GtkWidget *dlgWidget = gtk_file_chooser_dialog_new(options->title, options->webview, GTK_FILE_CHOOSER_ACTION_OPEN,
           "_Cancel", GTK_RESPONSE_CANCEL,
           "_Open", GTK_RESPONSE_ACCEPT,
 			NULL);
 
-	gint response = gtk_dialog_run(GTK_DIALOG(dlg));
+	GtkFileChooser *fc = GTK_FILE_CHOOSER(dlgWidget);
+	// filters
+	if (options->filters != 0) {
+		int index = 0;
+		GtkFileFilter* thisFilter;
+		while(options->filters[index] != NULL) {
+			thisFilter = options->filters[index];
+			gtk_file_chooser_add_filter(fc, thisFilter);
+			index++;
+		}
+	}
+
+	gtk_file_chooser_set_local_only(fc, FALSE);
+
+	if (options->multipleFiles == 1) {
+		gtk_file_chooser_set_select_multiple(fc, TRUE);
+	}
+	gtk_file_chooser_set_do_overwrite_confirmation(fc, TRUE);
+	if (options->createDirectories == 1) {
+		gtk_file_chooser_set_create_folders(fc, TRUE);
+	}
+	if (options->showHiddenFiles == 1) {
+		gtk_file_chooser_set_show_hidden(fc, TRUE);
+	}
+
+	if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE) {
+		if (options->defaultFilename != NULL) {
+			gtk_file_chooser_set_current_name(fc, options->defaultFilename);
+			free(options->defaultFilename);
+		}
+	}
+
+	gint response = gtk_dialog_run(GTK_DIALOG(dlgWidget));
+
+	// Max 1024 files to select
+	char** result = calloc(1024, sizeof(char*));
+	int resultIndex = 0;
 
     if (response == GTK_RESPONSE_ACCEPT) {
-        gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dlg));
-        processOpenFileResult(filename);
-        g_free(filename);
+        GSList* filenames = gtk_file_chooser_get_filenames(fc);
+		GSList *iter = filenames;
+		while(iter) {
+		  	result[resultIndex++] = (char *)iter->data;
+		  	iter = g_slist_next(iter);
+          	if (resultIndex == 1024) {
+				break;
+			}
+		}
+		processOpenFileResult(result);
+		iter = filenames;
+		while(iter) {
+		  g_free(iter->data);
+		  iter = g_slist_next(iter);
+		}
     } else {
-		processOpenFileResult("");
+		processOpenFileResult(result);
 	}
-    gtk_widget_destroy(dlg);
+	free(result);
+
+	// Release filters
+	if (options->filters != NULL) {
+		int index = 0;
+		GtkFileFilter* thisFilter;
+		while(options->filters[index] != 0) {
+			thisFilter = options->filters[index];
+			g_object_unref(thisFilter);
+			index++;
+		}
+		freeFileFilterArray(options->filters);
+	}
+    gtk_widget_destroy(dlgWidget);
     free(options->title);
     return G_SOURCE_REMOVE;
+}
+
+GtkFileFilter* newFileFilter() {
+	GtkFileFilter* result = gtk_file_filter_new();
+	g_object_ref(result);
+	return result;
 }
 
 */
@@ -236,6 +314,7 @@ import "C"
 import (
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"strings"
 	"unsafe"
 )
 
@@ -286,6 +365,7 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 
 	if debug {
 		C.devtoolsEnabled(unsafe.Pointer(webview), C.int(1))
+
 	}
 
 	// Setup window
@@ -460,11 +540,51 @@ func (w *Window) Quit() {
 	C.gtk_main_quit()
 }
 
-func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) {
+func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multipleFiles int, action C.GtkFileChooserAction) {
+
 	data := C.OpenFileDialogOptions{
-		webview: w.webview,
-		title:   C.CString(dialogOptions.Title),
+		webview:       w.webview,
+		title:         C.CString(dialogOptions.Title),
+		multipleFiles: C.int(multipleFiles),
+		action:        action,
 	}
-	// TODO: Filter
+
+	if len(dialogOptions.Filters) > 0 {
+		// Create filter array
+		mem := NewCalloc()
+		arraySize := len(dialogOptions.Filters) + 1
+		data.filters = C.allocFileFilterArray((C.ulong)(arraySize))
+		filters := (*[1 << 30]*C.struct__GtkFileFilter)(unsafe.Pointer(data.filters))
+		for index, filter := range dialogOptions.Filters {
+			thisFilter := C.gtk_file_filter_new()
+			C.g_object_ref(C.gpointer(thisFilter))
+			if filter.DisplayName != "" {
+				cName := mem.String(filter.DisplayName)
+				C.gtk_file_filter_set_name(thisFilter, cName)
+			}
+			if filter.Pattern != "" {
+				for _, thisPattern := range strings.Split(filter.Pattern, ";") {
+					cThisPattern := mem.String(thisPattern)
+					C.gtk_file_filter_add_pattern(thisFilter, cThisPattern)
+				}
+			}
+			// Add filter to array
+			filters[index] = thisFilter
+		}
+		mem.Free()
+		filters[arraySize-1] = (*C.struct__GtkFileFilter)(unsafe.Pointer(uintptr(0)))
+	}
+
+	if dialogOptions.CanCreateDirectories {
+		data.createDirectories = C.int(1)
+	}
+
+	if dialogOptions.ShowHiddenFiles {
+		data.showHiddenFiles = C.int(1)
+	}
+
+	if dialogOptions.DefaultFilename != "" {
+		data.defaultFilename = C.CString(dialogOptions.DefaultFilename)
+	}
 	C.ExecuteOnMainThread(C.opendialog, C.gpointer(&data))
 }
