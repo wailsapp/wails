@@ -47,7 +47,12 @@ func (f *Frontend) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions)
 }
 
 func (f *Frontend) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (string, error) {
-	panic("implement me")
+	f.mainWindow.OpenFileDialog(dialogOptions, 0, GTK_FILE_CHOOSER_ACTION_SAVE)
+	results := <-openFileResults
+	if len(results) == 1 {
+		return results[0], nil
+	}
+	return "", nil
 }
 
 func (f *Frontend) MessageDialog(dialogOptions frontend.MessageDialogOptions) (string, error) {
