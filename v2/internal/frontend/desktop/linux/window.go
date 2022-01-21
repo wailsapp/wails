@@ -206,6 +206,7 @@ typedef struct OpenFileDialogOptions {
     void* webview;
     char* title;
 	char* defaultFilename;
+	char* defaultDirectory;
 	int createDirectories;
 	int multipleFiles;
 	int showHiddenFiles;
@@ -223,9 +224,13 @@ void freeFileFilterArray(GtkFileFilter** filters) {
 
 int opendialog(gpointer data) {
     struct OpenFileDialogOptions *options = data;
+	char *label = "_Open";
+	if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE) {
+		label = "_Save";
+	}
     GtkWidget *dlgWidget = gtk_file_chooser_dialog_new(options->title, options->webview, options->action,
           "_Cancel", GTK_RESPONSE_CANCEL,
-          "_Open", GTK_RESPONSE_ACCEPT,
+          label, GTK_RESPONSE_ACCEPT,
 			NULL);
 
 	GtkFileChooser *fc = GTK_FILE_CHOOSER(dlgWidget);
@@ -251,6 +256,11 @@ int opendialog(gpointer data) {
 	}
 	if (options->showHiddenFiles == 1) {
 		gtk_file_chooser_set_show_hidden(fc, TRUE);
+	}
+
+	if (options->defaultDirectory != NULL) {
+		gtk_file_chooser_set_current_folder (fc, options->defaultDirectory);
+		free(options->defaultDirectory);
 	}
 
 	if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE) {
@@ -572,7 +582,7 @@ func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multip
 			filters[index] = thisFilter
 		}
 		mem.Free()
-		filters[arraySize-1] = (*C.struct__GtkFileFilter)(unsafe.Pointer(uintptr(0)))
+		filters[arraySize-1] = nil
 	}
 
 	if dialogOptions.CanCreateDirectories {
@@ -586,5 +596,10 @@ func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multip
 	if dialogOptions.DefaultFilename != "" {
 		data.defaultFilename = C.CString(dialogOptions.DefaultFilename)
 	}
+
+	if dialogOptions.DefaultDirectory != "" {
+		data.defaultDirectory = C.CString(dialogOptions.DefaultDirectory)
+	}
+
 	C.ExecuteOnMainThread(C.opendialog, C.gpointer(&data))
 }

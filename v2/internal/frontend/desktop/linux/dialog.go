@@ -48,13 +48,12 @@ func (f *Frontend) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions)
 
 func (f *Frontend) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (string, error) {
 	options := frontend.OpenDialogOptions{
-		DefaultDirectory: dialogOptions.DefaultDirectory,
-		DefaultFilename: dialogOptions.DefaultFilename,
-		Title: dialogOptions.Title,
-		Filters: dialogOptions.Filters,
-		ShowHiddenFiles: dialogOptions.ShowHiddenFiles,
+		DefaultDirectory:     dialogOptions.DefaultDirectory,
+		DefaultFilename:      dialogOptions.DefaultFilename,
+		Title:                dialogOptions.Title,
+		Filters:              dialogOptions.Filters,
+		ShowHiddenFiles:      dialogOptions.ShowHiddenFiles,
 		CanCreateDirectories: dialogOptions.CanCreateDirectories,
-		TreatPackagesAsDirectories: dialogOptions.TreatPackagesAsDirectories,
 	}
 	f.mainWindow.OpenFileDialog(options, 0, GTK_FILE_CHOOSER_ACTION_SAVE)
 	results := <-openFileResults
