@@ -64,12 +64,12 @@ func Test_goTypeToJSDocType(t *testing.T) {
 		{
 			name:  "[]int",
 			input: "[]int",
-			want:  "Array.<number>",
+			want:  "Array<number>",
 		},
 		{
 			name:  "[]bool",
 			input: "[]bool",
-			want:  "Array.<boolean>",
+			want:  "Array<boolean>",
 		},
 		{
 			name:  "anything else",
