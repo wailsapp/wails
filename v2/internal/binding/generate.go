@@ -129,7 +129,7 @@ func (b *Bindings) GenerateBackendTS(targetfile string) error {
 	store := b.db.store
 	var output bytes.Buffer
 
-	output.WriteString("interface go {\n")
+	output.WriteString("export interface go {\n")
 
 	var sortedPackageNames slicer.StringSlicer
 	for packageName := range store {
