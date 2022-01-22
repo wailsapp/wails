@@ -201,6 +201,8 @@ declare global {
 
 func goTypeToJSDocType(input string) string {
 	switch true {
+	case input == "interface{}":
+		return "any"
 	case input == "string":
 		return "string"
 	case input == "error":

@@ -57,6 +57,11 @@ func Test_goTypeToJSDocType(t *testing.T) {
 			want:  "boolean",
 		},
 		{
+			name:  "interface{}",
+			input: "interface{}",
+			want:  "any",
+		},
+		{
 			name:  "[]byte",
 			input: "[]byte",
 			want:  "string",
