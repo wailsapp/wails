@@ -95,7 +95,9 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	case w32.WM_NCLBUTTONDOWN:
 		w32.SetFocus(w.Handle())
 	case w32.WM_MOVE, w32.WM_MOVING:
-		w.notifyParentWindowPositionChanged()
+		if w.notifyParentWindowPositionChanged != nil {
+			w.notifyParentWindowPositionChanged()
+		}
 	}
 	return w.Form.WndProc(msg, wparam, lparam)
 }
