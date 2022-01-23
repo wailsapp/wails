@@ -42,6 +42,7 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 
 	winc.RegClassOnlyOnce("wailsWindow")
 	result.SetHandle(winc.CreateWindow("wailsWindow", parent, uint(exStyle), uint(dwStyle)))
+	winc.RegMsgHandler(w)
 	result.SetParent(parent)
 
 	loadIcon := true
@@ -86,7 +87,6 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 }
 
 func (w *Window) Run() int {
-	winc.RegMsgHandler(w)
 	return winc.RunMainLoop()
 }
 
