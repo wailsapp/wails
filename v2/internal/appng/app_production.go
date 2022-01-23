@@ -91,7 +91,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		menuManager:      menuManager,
 		startupCallback:  appoptions.OnStartup,
 		shutdownCallback: appoptions.OnShutdown,
-		debug:            false,
+		debug:            IsDebug(),
 	}
 
 	result.options = appoptions
