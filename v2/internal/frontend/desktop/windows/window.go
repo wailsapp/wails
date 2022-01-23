@@ -97,9 +97,9 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	case w32.WM_MOVE, w32.WM_MOVING:
 		if w.notifyParentWindowPositionChanged != nil {
 			w.notifyParentWindowPositionChanged()
-    }
-  }
-  
+		}
+	}
+
 	if w.frontendOptions.Frameless {
 		switch msg {
 		case w32.WM_ACTIVATE:
@@ -135,6 +135,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 				return 0
 			}
+		}
 	}
 	return w.Form.WndProc(msg, wparam, lparam)
 }
