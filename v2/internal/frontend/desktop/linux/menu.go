@@ -30,6 +30,7 @@ var menuIdCounter int
 var menuItemToId map[*menu.MenuItem]int
 var menuIdToItem map[int]*menu.MenuItem
 var gtkCheckboxCache map[*menu.MenuItem][]*C.GtkWidget
+var gtkMenuCache map[*menu.MenuItem]*C.GtkWidget
 
 func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
 	f.mainWindow.SetApplicationMenu(menu)
@@ -47,6 +48,7 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 	menuItemToId = make(map[*menu.MenuItem]int)
 	menuIdToItem = make(map[int]*menu.MenuItem)
 	gtkCheckboxCache = make(map[*menu.MenuItem][]*C.GtkWidget)
+	gtkMenuCache = make(map[*menu.MenuItem]*C.GtkWidget)
 
 	// Increase ref count?
 	w.menubar = C.gtk_menu_bar_new()
@@ -58,18 +60,28 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 
 func processMenu(window *Window, menu *menu.Menu) {
 	for _, menuItem := range menu.Items {
-		gtkMenu := C.gtk_menu_new()
-		submenu := GtkMenuItemWithLabel(menuItem.Label)
-		for _, menuItem := range menuItem.SubMenu.Items {
-			menuID := menuIdCounter
-			menuIdToItem[menuID] = menuItem
-			menuItemToId[menuItem] = menuID
-			menuIdCounter++
-			processMenuItem(gtkMenu, menuItem, menuID)
-		}
-		C.gtk_menu_item_set_submenu(C.toGtkMenuItem(unsafe.Pointer(submenu)), gtkMenu)
+		submenu := processSubmenu(menuItem)
 		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(window.menubar)), submenu)
 	}
+}
+
+func processSubmenu(menuItem *menu.MenuItem) *C.GtkWidget {
+	existingMenu := gtkMenuCache[menuItem]
+	if existingMenu != nil {
+		return existingMenu
+	}
+	gtkMenu := C.gtk_menu_new()
+	submenu := GtkMenuItemWithLabel(menuItem.Label)
+	for _, menuItem := range menuItem.SubMenu.Items {
+		menuID := menuIdCounter
+		menuIdToItem[menuID] = menuItem
+		menuItemToId[menuItem] = menuID
+		menuIdCounter++
+		processMenuItem(gtkMenu, menuItem, menuID)
+	}
+	C.gtk_menu_item_set_submenu(C.toGtkMenuItem(unsafe.Pointer(submenu)), gtkMenu)
+	gtkMenuCache[menuItem] = existingMenu
+	return submenu
 }
 
 func processMenuItem(parent *C.GtkWidget, menuItem *menu.MenuItem, menuID int) {
@@ -116,29 +128,26 @@ func processMenuItem(parent *C.GtkWidget, menuItem *menu.MenuItem, menuID int) {
 
 		gtkCheckboxCache[menuItem] = append(gtkCheckboxCache[menuItem], gtkMenuItem)
 
-		//	addCheckBoxToMap(menuItem, newItem)
-		//case menu.RadioType:
-		//	shortcut := acceleratorToWincShortcut(menuItem.Accelerator)
-		//	newItem := parent.AddItemRadio(menuItem.Label, shortcut)
-		//	newItem.SetCheckable(true)
-		//	newItem.SetChecked(menuItem.Checked)
-		//	//if menuItem.Tooltip != "" {
-		//	//	newItem.SetToolTip(menuItem.Tooltip)
-		//	//}
-		//	if menuItem.Click != nil {
-		//		newItem.OnClick().Bind(func(e *winc.Event) {
-		//			toggleRadioItem(menuItem)
-		//			menuItem.Click(&menu.CallbackData{
-		//				MenuItem: menuItem,
-		//			})
-		//		})
-		//	}
-		//	newItem.SetEnabled(!menuItem.Disabled)
-		//	addRadioItemToMap(menuItem, newItem)
-		//case menu.SubmenuType:
-		//	submenu := parent.AddSubMenu(menuItem.Label)
-		//	for _, menuItem := range menuItem.SubMenu.Items {
-		//		processMenuItem(submenu, menuItem)
-		//	}
+	//case menu.RadioType:
+	//	shortcut := acceleratorToWincShortcut(menuItem.Accelerator)
+	//	newItem := parent.AddItemRadio(menuItem.Label, shortcut)
+	//	newItem.SetCheckable(true)
+	//	newItem.SetChecked(menuItem.Checked)
+	//	//if menuItem.Tooltip != "" {
+	//	//	newItem.SetToolTip(menuItem.Tooltip)
+	//	//}
+	//	if menuItem.Click != nil {
+	//		newItem.OnClick().Bind(func(e *winc.Event) {
+	//			toggleRadioItem(menuItem)
+	//			menuItem.Click(&menu.CallbackData{
+	//				MenuItem: menuItem,
+	//			})
+	//		})
+	//	}
+	//	newItem.SetEnabled(!menuItem.Disabled)
+	//	addRadioItemToMap(menuItem, newItem)
+	case menu.SubmenuType:
+		submenu := processSubmenu(menuItem)
+		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), submenu)
 	}
 }
