@@ -11,10 +11,23 @@ package linux
 static GtkMenuItem *toGtkMenuItem(void *pointer) { return (GTK_MENU_ITEM(pointer)); }
 static GtkMenuShell *toGtkMenuShell(void *pointer) { return (GTK_MENU_SHELL(pointer)); }
 
+extern void handleMenuItemClick(int);
+
+void clickCallback(void *dummy, gpointer data) {
+	handleMenuItemClick(GPOINTER_TO_INT(data));
+}
+
+void connectClick(GtkWidget* menuItem, int data) {
+	g_signal_connect(menuItem, "activate", G_CALLBACK(clickCallback), GINT_TO_POINTER(data));
+}
 */
 import "C"
 import "github.com/wailsapp/wails/v2/pkg/menu"
 import "unsafe"
+
+var menuIdCounter int
+var menuItemToId map[*menu.MenuItem]int
+var menuIdToItem map[int]*menu.MenuItem
 
 func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
 	f.mainWindow.SetApplicationMenu(menu)
@@ -24,17 +37,18 @@ func (f *Frontend) MenuUpdateApplicationMenu() {
 	//processMenu(f.mainWindow, f.mainWindow.applicationMenu)
 }
 
-func (w *Window) SetApplicationMenu(menu *menu.Menu) {
-	if menu == nil {
+func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
+	if inmenu == nil {
 		return
 	}
 
-	// TODO: Remove existing menu if exists
+	menuItemToId = make(map[*menu.MenuItem]int)
+	menuIdToItem = make(map[int]*menu.MenuItem)
 
 	// Increase ref count?
 	w.menubar = C.gtk_menu_bar_new()
 
-	processMenu(w, menu)
+	processMenu(w, inmenu)
 
 	C.gtk_widget_show(w.menubar)
 }
@@ -42,44 +56,43 @@ func (w *Window) SetApplicationMenu(menu *menu.Menu) {
 func processMenu(window *Window, menu *menu.Menu) {
 	for _, menuItem := range menu.Items {
 		gtkMenu := C.gtk_menu_new()
-		cLabel := C.CString(menuItem.Label)
-		submenu := C.gtk_menu_item_new_with_label(cLabel)
+		submenu := GtkMenuItemWithLabel(menuItem.Label)
 		for _, menuItem := range menuItem.SubMenu.Items {
-			processMenuItem(gtkMenu, menuItem)
+			menuID := menuIdCounter
+			menuIdToItem[menuID] = menuItem
+			menuItemToId[menuItem] = menuID
+			menuIdCounter++
+			processMenuItem(gtkMenu, menuItem, menuID)
 		}
 		C.gtk_menu_item_set_submenu(C.toGtkMenuItem(unsafe.Pointer(submenu)), gtkMenu)
 		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(window.menubar)), submenu)
 	}
 }
 
-func processMenuItem(parent *C.GtkWidget, menuItem *menu.MenuItem) {
+func processMenuItem(parent *C.GtkWidget, menuItem *menu.MenuItem, menuID int) {
 	if menuItem.Hidden {
 		return
 	}
 	switch menuItem.Type {
-	//case menu.SeparatorType:
-	//	parent.AddSeparator()
+	case menu.SeparatorType:
+		separator := C.gtk_separator_menu_item_new()
+		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), separator)
 	case menu.TextType:
-		//shortcut := acceleratorToWincShortcut(menuItem.Accelerator)
-		cLabel := C.CString(menuItem.Label)
-		textMenuItem := C.gtk_menu_item_new_with_label(cLabel)
+		textMenuItem := GtkMenuItemWithLabel(menuItem.Label)
+		//if menuItem.Accelerator != nil {
+		//	setAccelerator(textMenuItem, menuItem.Accelerator)
+		//}
+
 		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), textMenuItem)
 		C.gtk_widget_show(textMenuItem)
-		//newItem := parent.AddItem(menuItem.Label, shortcut)
 
-		//if menuItem.Tooltip != "" {
-		//	newItem.SetToolTip(menuItem.Tooltip)
-		//}
+		if menuItem.Click != nil {
+			C.connectClick(textMenuItem, C.int(menuID))
+		}
 
-		//if menuItem.Click != nil {
-		//	newItem.OnClick().Bind(func(e *winc.Event) {
-		//		menuItem.Click(&menu.CallbackData{
-		//			MenuItem: menuItem,
-		//		})
-		//	})
-		//}
-
-		//newItem.SetEnabled(!menuItem.Disabled)
+		if menuItem.Disabled {
+			C.gtk_widget_set_sensitive(textMenuItem, 0)
+		}
 
 		//case menu.CheckboxType:
 		//	shortcut := acceleratorToWincShortcut(menuItem.Accelerator)
