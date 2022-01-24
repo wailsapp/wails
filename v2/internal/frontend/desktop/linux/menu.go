@@ -10,6 +10,7 @@ package linux
 
 static GtkMenuItem *toGtkMenuItem(void *pointer) { return (GTK_MENU_ITEM(pointer)); }
 static GtkMenuShell *toGtkMenuShell(void *pointer) { return (GTK_MENU_SHELL(pointer)); }
+static GtkCheckMenuItem *toGtkCheckMenuItem(void *pointer) { return (GTK_CHECK_MENU_ITEM(pointer)); }
 
 extern void handleMenuItemClick(int);
 
@@ -78,23 +79,38 @@ func processMenuItem(parent *C.GtkWidget, menuItem *menu.MenuItem, menuID int) {
 		separator := C.gtk_separator_menu_item_new()
 		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), separator)
 	case menu.TextType:
-		textMenuItem := GtkMenuItemWithLabel(menuItem.Label)
+		gtkMenuItem := GtkMenuItemWithLabel(menuItem.Label)
 		//if menuItem.Accelerator != nil {
-		//	setAccelerator(textMenuItem, menuItem.Accelerator)
+		//	setAccelerator(gtkMenuItem, menuItem.Accelerator)
 		//}
 
-		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), textMenuItem)
-		C.gtk_widget_show(textMenuItem)
+		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), gtkMenuItem)
+		C.gtk_widget_show(gtkMenuItem)
 
 		if menuItem.Click != nil {
-			C.connectClick(textMenuItem, C.int(menuID))
+			C.connectClick(gtkMenuItem, C.int(menuID))
 		}
 
 		if menuItem.Disabled {
-			C.gtk_widget_set_sensitive(textMenuItem, 0)
+			C.gtk_widget_set_sensitive(gtkMenuItem, 0)
 		}
 
-		//case menu.CheckboxType:
+	case menu.CheckboxType:
+
+		gtkMenuItem := GtkCheckMenuItemWithLabel(menuItem.Label)
+		if menuItem.Checked {
+			C.gtk_check_menu_item_set_active(C.toGtkCheckMenuItem(unsafe.Pointer(gtkMenuItem)), 1)
+		}
+		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), gtkMenuItem)
+		C.gtk_widget_show(gtkMenuItem)
+
+		if menuItem.Click != nil {
+			C.connectClick(gtkMenuItem, C.int(menuID))
+		}
+
+		if menuItem.Disabled {
+			C.gtk_widget_set_sensitive(gtkMenuItem, 0)
+		}
 		//	shortcut := acceleratorToWincShortcut(menuItem.Accelerator)
 		//	newItem := parent.AddItem(menuItem.Label, shortcut)
 		//	newItem.SetCheckable(true)
