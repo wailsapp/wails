@@ -29,6 +29,7 @@ import "unsafe"
 var menuIdCounter int
 var menuItemToId map[*menu.MenuItem]int
 var menuIdToItem map[int]*menu.MenuItem
+var gtkCheckboxCache map[*menu.MenuItem][]*C.GtkWidget
 
 func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
 	f.mainWindow.SetApplicationMenu(menu)
@@ -45,6 +46,7 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 
 	menuItemToId = make(map[*menu.MenuItem]int)
 	menuIdToItem = make(map[int]*menu.MenuItem)
+	gtkCheckboxCache = make(map[*menu.MenuItem][]*C.GtkWidget)
 
 	// Increase ref count?
 	w.menubar = C.gtk_menu_bar_new()
@@ -111,22 +113,9 @@ func processMenuItem(parent *C.GtkWidget, menuItem *menu.MenuItem, menuID int) {
 		if menuItem.Disabled {
 			C.gtk_widget_set_sensitive(gtkMenuItem, 0)
 		}
-		//	shortcut := acceleratorToWincShortcut(menuItem.Accelerator)
-		//	newItem := parent.AddItem(menuItem.Label, shortcut)
-		//	newItem.SetCheckable(true)
-		//	newItem.SetChecked(menuItem.Checked)
-		//	//if menuItem.Tooltip != "" {
-		//	//	newItem.SetToolTip(menuItem.Tooltip)
-		//	//}
-		//	if menuItem.Click != nil {
-		//		newItem.OnClick().Bind(func(e *winc.Event) {
-		//			toggleCheckBox(menuItem)
-		//			menuItem.Click(&menu.CallbackData{
-		//				MenuItem: menuItem,
-		//			})
-		//		})
-		//	}
-		//	newItem.SetEnabled(!menuItem.Disabled)
+
+		gtkCheckboxCache[menuItem] = append(gtkCheckboxCache[menuItem], gtkMenuItem)
+
 		//	addCheckBoxToMap(menuItem, newItem)
 		//case menu.RadioType:
 		//	shortcut := acceleratorToWincShortcut(menuItem.Accelerator)
