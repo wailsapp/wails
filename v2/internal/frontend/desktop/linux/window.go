@@ -200,6 +200,59 @@ void ExecuteOnMainThread(void* f, gpointer jscallback) {
     g_idle_add((GSourceFunc)f, (gpointer)jscallback);
 }
 
+void extern processMessageDialogResult(char*);
+
+typedef struct MessageDialogOptions {
+	void* window;
+	char* title;
+	char* message;
+	int messageType;
+} MessageDialogOptions;
+
+void messageDialog(gpointer data) {
+
+	GtkDialogFlags flags;
+	GtkMessageType messageType;
+	MessageDialogOptions *options = (MessageDialogOptions*) data;
+	if( options->messageType == 0 ) {
+		messageType = GTK_MESSAGE_INFO;
+		flags = GTK_BUTTONS_OK;
+	} else if( options->messageType == 1 ) {
+		messageType = GTK_MESSAGE_ERROR;
+		flags = GTK_BUTTONS_OK;
+	} else if( options->messageType == 2 ) {
+		messageType = GTK_MESSAGE_QUESTION;
+		flags = GTK_BUTTONS_YES_NO;
+	} else {
+		messageType = GTK_MESSAGE_WARNING;
+		flags = GTK_BUTTONS_OK;
+	}
+
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(options->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			messageType,
+			flags,
+			options->message, NULL);
+	gtk_window_set_title(GTK_WINDOW(dialog), options->title);
+	GtkResponseType result = gtk_dialog_run(GTK_DIALOG(dialog));
+	if ( result == GTK_RESPONSE_YES ) {
+		processMessageDialogResult("Yes");
+	} else if ( result == GTK_RESPONSE_NO ) {
+		processMessageDialogResult("No");
+	} else if ( result == GTK_RESPONSE_OK ) {
+		processMessageDialogResult("OK");
+	} else if ( result == GTK_RESPONSE_CANCEL ) {
+		processMessageDialogResult("Cancel");
+	} else {
+		processMessageDialogResult("");
+	}
+
+	gtk_widget_destroy(dialog);
+	free(options->title);
+	free(options->message);
+}
+
 void extern processOpenFileResult(void*);
 
 typedef struct OpenFileDialogOptions {
@@ -602,4 +655,24 @@ func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multip
 	}
 
 	C.ExecuteOnMainThread(C.opendialog, C.gpointer(&data))
+}
+
+func (w *Window) MessageDialog(dialogOptions frontend.MessageDialogOptions) {
+
+	data := C.MessageDialogOptions{
+		window:  w.gtkWindow,
+		title:   C.CString(dialogOptions.Title),
+		message: C.CString(dialogOptions.Message),
+	}
+	switch dialogOptions.Type {
+	case frontend.InfoDialog:
+		data.messageType = C.int(0)
+	case frontend.ErrorDialog:
+		data.messageType = C.int(1)
+	case frontend.QuestionDialog:
+		data.messageType = C.int(2)
+	case frontend.WarningDialog:
+		data.messageType = C.int(3)
+	}
+	C.ExecuteOnMainThread(C.messageDialog, C.gpointer(&data))
 }

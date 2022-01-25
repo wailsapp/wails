@@ -21,6 +21,7 @@ const (
 )
 
 var openFileResults = make(chan []string)
+var messageDialogResult = make(chan string)
 
 func (f *Frontend) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (result string, err error) {
 	f.mainWindow.OpenFileDialog(dialogOptions, 0, GTK_FILE_CHOOSER_ACTION_OPEN)
@@ -64,7 +65,8 @@ func (f *Frontend) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (str
 }
 
 func (f *Frontend) MessageDialog(dialogOptions frontend.MessageDialogOptions) (string, error) {
-	panic("implement me")
+	f.mainWindow.MessageDialog(dialogOptions)
+	return <-messageDialogResult, nil
 }
 
 //export processOpenFileResult
@@ -79,4 +81,9 @@ func processOpenFileResult(carray **C.char) {
 		result = append(result, C.GoString(s))
 	}
 	openFileResults <- result
+}
+
+//export processMessageDialogResult
+func processMessageDialogResult(result *C.char) {
+	messageDialogResult <- C.GoString(result)
 }
