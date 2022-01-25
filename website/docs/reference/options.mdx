@@ -46,6 +46,7 @@ func main() {
             WindowIsTranslucent:   false,
             DisableWindowIcon:     false,
             EnableFramelessBorder: false,
+            WebviewUserDataPath:   "",
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -362,6 +363,14 @@ Type: bool
 
 Setting this to `true` will add a border around the window if [Frameless](#Frameless) has been activated.
 This allows hiding the title bar but still having a border around the window.
+
+### WebviewUserDataPath
+
+Name: WebviewUserDataPath
+
+Type: string
+
+This defines the path where the WebView2 stores the user data. If empty `%APPDATA%\[BinaryName.exe]` will be used.
 
 ## Mac Specific Options
 
