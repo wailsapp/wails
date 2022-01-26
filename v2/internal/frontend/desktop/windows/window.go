@@ -16,8 +16,9 @@ import (
 
 type Window struct {
 	winc.Form
-	frontendOptions *options.App
-	applicationMenu *menu.Menu
+	frontendOptions                   *options.App
+	applicationMenu                   *menu.Menu
+	notifyParentWindowPositionChanged func() error
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
@@ -89,6 +90,16 @@ func (w *Window) Run() int {
 }
 
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
+
+	switch msg {
+	case w32.WM_NCLBUTTONDOWN:
+		w32.SetFocus(w.Handle())
+	case w32.WM_MOVE, w32.WM_MOVING:
+		if w.notifyParentWindowPositionChanged != nil {
+			w.notifyParentWindowPositionChanged()
+		}
+	}
+
 	if w.frontendOptions.Frameless {
 		switch msg {
 		case w32.WM_ACTIVATE:
