@@ -75,16 +75,16 @@ type OpenDialogOptions struct {
 	TreatPackagesAsDirectories bool
 }
 ```
-| Field                      | Description                                    | Win | Mac |
-| -------------------------- | ---------------------------------------------- | --- | --- |
-| DefaultDirectory           | The directory the dialog will show when opened | ✅  | ✅  |
-| DefaultFilename            | The default filename                           | ✅  | ✅  |
-| Title                      | Title for the dialog                           | ✅  | ✅  |
-| [Filters](#filefilter)     | A list of file filters                         | ✅  | ✅  |
-| ShowHiddenFiles            | Show files hidden by the system                |     | ✅  |
-| CanCreateDirectories       | Allow user to create directories               |     | ✅  |
-| ResolvesAliases            | If true, returns the file not the alias        |     | ✅  |
-| TreatPackagesAsDirectories | Allow navigating into packages                 |     | ✅  |
+| Field                      | Description                                    | Win | Mac | Lin |
+| -------------------------- | ---------------------------------------------- | --- | --- | --- |
+| DefaultDirectory           | The directory the dialog will show when opened | ✅  | ✅  |  ✅  |
+| DefaultFilename            | The default filename                           | ✅  | ✅  |  ✅  |
+| Title                      | Title for the dialog                           | ✅  | ✅  |  ✅  |
+| [Filters](#filefilter)     | A list of file filters                         | ✅  | ✅  |  ✅  |
+| ShowHiddenFiles            | Show files hidden by the system                |     | ✅  | ✅  |
+| CanCreateDirectories       | Allow user to create directories               |     | ✅  |    |
+| ResolvesAliases            | If true, returns the file not the alias        |     | ✅  |    |
+| TreatPackagesAsDirectories | Allow navigating into packages                 |     | ✅  |    |
 
 
 ### SaveDialogOptions
@@ -101,15 +101,15 @@ type SaveDialogOptions struct {
 }
 ```
 
-| Field                      | Description                                    | Win | Mac |
-| -------------------------- | ---------------------------------------------- | --- | --- |
-| DefaultDirectory           | The directory the dialog will show when opened | ✅  | ✅  |
-| DefaultFilename            | The default filename                           | ✅  | ✅  |
-| Title                      | Title for the dialog                           | ✅  | ✅  |
-| [Filters](#filefilter)     | A list of file filters                         | ✅  | ✅  |
-| ShowHiddenFiles            | Show files hidden by the system                |     | ✅  |
-| CanCreateDirectories       | Allow user to create directories               |     | ✅  |
-| TreatPackagesAsDirectories | Allow navigating into packages                 |     | ✅  |
+| Field                      | Description                                    | Win | Mac | Lin |
+| -------------------------- | ---------------------------------------------- | --- | --- | --- |
+| DefaultDirectory           | The directory the dialog will show when opened | ✅  | ✅  |   ✅  |
+| DefaultFilename            | The default filename                           | ✅  | ✅  |   ✅  |
+| Title                      | Title for the dialog                           | ✅  | ✅  |   ✅  |
+| [Filters](#filefilter)     | A list of file filters                         | ✅  | ✅  |   ✅  |
+| ShowHiddenFiles            | Show files hidden by the system                |     | ✅  |  ✅  |
+| CanCreateDirectories       | Allow user to create directories               |     | ✅  |     |
+| TreatPackagesAsDirectories | Allow navigating into packages                 |     | ✅  |     |
 
 ### MessageDialogOptions
 
@@ -123,19 +123,24 @@ type MessageDialogOptions struct {
 	CancelButton  string
 }
 ```
-| Field         | Description                                                               | Win | Mac |
-| ------------- | ------------------------------------------------------------------------- | --- | --- |
-| Type          | The type of message dialog, eg question, info...                          | ✅  | ✅  |
-| Title         | Title for the dialog                                                      | ✅  | ✅  |
-| Message       | The message to show the user                                              | ✅  | ✅  |
-| Buttons       | A list of button titles                                                   |     | ✅  |
-| DefaultButton | The button with this text should be treated as default. Bound to `return` |     | ✅  |
-| CancelButton  | The button with this text should be treated as cancel. Bound to `escape`  |     | ✅  |
+| Field         | Description                                                               | Win | Mac | Lin |
+| ------------- | ------------------------------------------------------------------------- | --- | --- | --- |
+| Type          | The type of message dialog, eg question, info...                          | ✅  | ✅  |   ✅  |
+| Title         | Title for the dialog                                                      | ✅  | ✅  |   ✅  |
+| Message       | The message to show the user                                              | ✅  | ✅  |   ✅  |
+| Buttons       | A list of button titles                                                   |     | ✅  |      |
+| DefaultButton | The button with this text should be treated as default. Bound to `return` |     | ✅  |      |
+| CancelButton  | The button with this text should be treated as cancel. Bound to `escape`  |     | ✅  |      |
 
 #### Windows
 
 Windows has standard dialog types in which the buttons are not customisable.
 The value returned will be one of: "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "Try Again" or "Continue"
+
+#### Linux
+
+Linux has standard dialog types in which the buttons are not customisable.
+The value returned will be one of: "Ok", "Cancel", "Yes", "No"
 
 #### Mac
 
@@ -221,6 +226,19 @@ dialog:
 <br/>
 <br/>
 <br/>
+
+#### Linux
+
+Linux allows you to use multiple file filters in dialog boxes. Each FileFilter will show up as a separate entry in the
+dialog:
+
+<div class="text--center">
+  <img src="/img/runtime/dialog_lin_filters.png" width="50%" style={{"box-shadow": "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px"}}/>
+</div>
+<br/>
+<br/>
+<br/>
+
 
 #### Mac
 
