@@ -78,11 +78,13 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	ctx = context.WithValue(ctx, "events", eventHandler)
 	messageDispatcher := dispatcher.NewDispatcher(myLogger, appBindings, eventHandler)
 
-	appFrontend := desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher)
-	eventHandler.AddFrontend(appFrontend)
-
+	debug := IsDebug()
+	ctx = context.WithValue(ctx, "debug", debug)
 	// Attach logger to context
 	ctx = context.WithValue(ctx, "logger", myLogger)
+
+	appFrontend := desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher)
+	eventHandler.AddFrontend(appFrontend)
 
 	result := &App{
 		ctx:              ctx,
@@ -91,12 +93,9 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		menuManager:      menuManager,
 		startupCallback:  appoptions.OnStartup,
 		shutdownCallback: appoptions.OnShutdown,
-		debug:            IsDebug(),
+		debug:            debug,
+		options:          appoptions,
 	}
-
-	result.options = appoptions
-
-	result.ctx = context.WithValue(result.ctx, "debug", result.debug)
 
 	return result, nil
 

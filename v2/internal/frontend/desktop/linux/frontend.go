@@ -16,7 +16,7 @@ static inline void processDispatchID(gpointer id) {
 }
 
 static void gtkDispatch(int id) {
-	gdk_threads_add_idle((GSourceFunc)processDispatchID, GINT_TO_POINTER(id));
+	g_idle_add((GSourceFunc)processDispatchID, GINT_TO_POINTER(id));
 }
 
 */
@@ -24,6 +24,7 @@ import "C"
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -304,7 +305,7 @@ func callDispatchedMethod(cid C.int) {
 	id := int(cid)
 	fn := dispatchCallbacks[id]
 	if fn != nil {
-		go fn()
+		fn()
 		dispatchCallbackLock.Lock()
 		delete(dispatchCallbacks, id)
 		dispatchCallbackLock.Unlock()
@@ -342,11 +343,24 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 
 	// Load file from asset store
 	content, mimeType, err := f.assets.Load(file)
-	if err != nil {
-		return
-	}
 
 	// TODO How to return 404/500 errors to webkit?
+	//if err != nil {
+	//if os.IsNotExist(err) {
+	//	f.dispatch(func() {
+	//		message := C.CString("not found")
+	//		defer C.free(unsafe.Pointer(message))
+	//		C.webkit_uri_scheme_request_finish_error(req, C.g_error_new_literal(C.G_FILE_ERROR_NOENT, C.int(404), message))
+	//	})
+	//} else {
+	//	err = fmt.Errorf("Error processing request %s: %w", uri, err)
+	//	f.logger.Error(err.Error())
+	//	message := C.CString("internal server error")
+	//	defer C.free(unsafe.Pointer(message))
+	//	C.webkit_uri_scheme_request_finish_error(req, C.g_error_new_literal(C.G_FILE_ERROR_NOENT, C.int(500), message))
+	//}
+	//return
+	//}
 
 	cContent := C.CString(string(content))
 	defer C.free(unsafe.Pointer(cContent))

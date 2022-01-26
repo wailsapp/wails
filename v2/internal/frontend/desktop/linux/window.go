@@ -150,7 +150,7 @@ void connectButtons(void* webview) {
 	g_signal_connect(WEBKIT_WEB_VIEW(webview), "button-release-event", G_CALLBACK(buttonRelease), NULL);
 }
 
-extern void processURLRequest(WebKitURISchemeRequest *request);
+extern void processURLRequest(void *request);
 
 // This is called when the close button on the window is pressed
 gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void* data)
@@ -204,14 +204,189 @@ int executeJS(gpointer data) {
     return G_SOURCE_REMOVE;
 }
 
-void ExecuteOnMainThread(JSCallback* jscallback) {
-    g_idle_add((GSourceFunc)executeJS, (gpointer)jscallback);
+void ExecuteOnMainThread(void* f, gpointer jscallback) {
+    g_idle_add((GSourceFunc)f, (gpointer)jscallback);
 }
+
+void extern processMessageDialogResult(char*);
+
+typedef struct MessageDialogOptions {
+	void* window;
+	char* title;
+	char* message;
+	int messageType;
+} MessageDialogOptions;
+
+void messageDialog(gpointer data) {
+
+	GtkDialogFlags flags;
+	GtkMessageType messageType;
+	MessageDialogOptions *options = (MessageDialogOptions*) data;
+	if( options->messageType == 0 ) {
+		messageType = GTK_MESSAGE_INFO;
+		flags = GTK_BUTTONS_OK;
+	} else if( options->messageType == 1 ) {
+		messageType = GTK_MESSAGE_ERROR;
+		flags = GTK_BUTTONS_OK;
+	} else if( options->messageType == 2 ) {
+		messageType = GTK_MESSAGE_QUESTION;
+		flags = GTK_BUTTONS_YES_NO;
+	} else {
+		messageType = GTK_MESSAGE_WARNING;
+		flags = GTK_BUTTONS_OK;
+	}
+
+	GtkWidget *dialog;
+	dialog = gtk_message_dialog_new(GTK_WINDOW(options->window),
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			messageType,
+			flags,
+			options->message, NULL);
+	gtk_window_set_title(GTK_WINDOW(dialog), options->title);
+	GtkResponseType result = gtk_dialog_run(GTK_DIALOG(dialog));
+	if ( result == GTK_RESPONSE_YES ) {
+		processMessageDialogResult("Yes");
+	} else if ( result == GTK_RESPONSE_NO ) {
+		processMessageDialogResult("No");
+	} else if ( result == GTK_RESPONSE_OK ) {
+		processMessageDialogResult("OK");
+	} else if ( result == GTK_RESPONSE_CANCEL ) {
+		processMessageDialogResult("Cancel");
+	} else {
+		processMessageDialogResult("");
+	}
+
+	gtk_widget_destroy(dialog);
+	free(options->title);
+	free(options->message);
+}
+
+void extern processOpenFileResult(void*);
+
+typedef struct OpenFileDialogOptions {
+    void* webview;
+    char* title;
+	char* defaultFilename;
+	char* defaultDirectory;
+	int createDirectories;
+	int multipleFiles;
+	int showHiddenFiles;
+ 	GtkFileChooserAction action;
+	GtkFileFilter** filters;
+} OpenFileDialogOptions;
+
+GtkFileFilter** allocFileFilterArray(size_t ln) {
+	return (GtkFileFilter**) malloc(ln * sizeof(GtkFileFilter*));
+}
+
+void freeFileFilterArray(GtkFileFilter** filters) {
+	free(filters);
+}
+
+int opendialog(gpointer data) {
+    struct OpenFileDialogOptions *options = data;
+	char *label = "_Open";
+	if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE) {
+		label = "_Save";
+	}
+    GtkWidget *dlgWidget = gtk_file_chooser_dialog_new(options->title, options->webview, options->action,
+          "_Cancel", GTK_RESPONSE_CANCEL,
+          label, GTK_RESPONSE_ACCEPT,
+			NULL);
+
+	GtkFileChooser *fc = GTK_FILE_CHOOSER(dlgWidget);
+	// filters
+	if (options->filters != 0) {
+		int index = 0;
+		GtkFileFilter* thisFilter;
+		while(options->filters[index] != NULL) {
+			thisFilter = options->filters[index];
+			gtk_file_chooser_add_filter(fc, thisFilter);
+			index++;
+		}
+	}
+
+	gtk_file_chooser_set_local_only(fc, FALSE);
+
+	if (options->multipleFiles == 1) {
+		gtk_file_chooser_set_select_multiple(fc, TRUE);
+	}
+	gtk_file_chooser_set_do_overwrite_confirmation(fc, TRUE);
+	if (options->createDirectories == 1) {
+		gtk_file_chooser_set_create_folders(fc, TRUE);
+	}
+	if (options->showHiddenFiles == 1) {
+		gtk_file_chooser_set_show_hidden(fc, TRUE);
+	}
+
+	if (options->defaultDirectory != NULL) {
+		gtk_file_chooser_set_current_folder (fc, options->defaultDirectory);
+		free(options->defaultDirectory);
+	}
+
+	if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE) {
+		if (options->defaultFilename != NULL) {
+			gtk_file_chooser_set_current_name(fc, options->defaultFilename);
+			free(options->defaultFilename);
+		}
+	}
+
+	gint response = gtk_dialog_run(GTK_DIALOG(dlgWidget));
+
+	// Max 1024 files to select
+	char** result = calloc(1024, sizeof(char*));
+	int resultIndex = 0;
+
+    if (response == GTK_RESPONSE_ACCEPT) {
+        GSList* filenames = gtk_file_chooser_get_filenames(fc);
+		GSList *iter = filenames;
+		while(iter) {
+		  	result[resultIndex++] = (char *)iter->data;
+		  	iter = g_slist_next(iter);
+          	if (resultIndex == 1024) {
+				break;
+			}
+		}
+		processOpenFileResult(result);
+		iter = filenames;
+		while(iter) {
+		  g_free(iter->data);
+		  iter = g_slist_next(iter);
+		}
+    } else {
+		processOpenFileResult(result);
+	}
+	free(result);
+
+	// Release filters
+	if (options->filters != NULL) {
+		int index = 0;
+		GtkFileFilter* thisFilter;
+		while(options->filters[index] != 0) {
+			thisFilter = options->filters[index];
+			g_object_unref(thisFilter);
+			index++;
+		}
+		freeFileFilterArray(options->filters);
+	}
+    gtk_widget_destroy(dlgWidget);
+    free(options->title);
+    return G_SOURCE_REMOVE;
+}
+
+GtkFileFilter* newFileFilter() {
+	GtkFileFilter* result = gtk_file_filter_new();
+	g_object_ref(result);
+	return result;
+}
+
 */
 import "C"
 import (
 	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"strings"
 	"unsafe"
 )
 
@@ -408,6 +583,7 @@ func (w *Window) Run() {
 	case options.Maximised:
 		w.Maximise()
 	}
+
 	C.gtk_main()
 	w.Destroy()
 }
@@ -439,7 +615,7 @@ func (w *Window) ExecJS(js string) {
 		webview: w.webview,
 		script:  C.CString(js),
 	}
-	C.ExecuteOnMainThread(&jscallback)
+	C.ExecuteOnMainThread(C.executeJS, C.gpointer(&jscallback))
 }
 
 func (w *Window) StartDrag() {
@@ -448,4 +624,78 @@ func (w *Window) StartDrag() {
 
 func (w *Window) Quit() {
 	C.gtk_main_quit()
+}
+
+func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multipleFiles int, action C.GtkFileChooserAction) {
+
+	data := C.OpenFileDialogOptions{
+		webview:       w.webview,
+		title:         C.CString(dialogOptions.Title),
+		multipleFiles: C.int(multipleFiles),
+		action:        action,
+	}
+
+	if len(dialogOptions.Filters) > 0 {
+		// Create filter array
+		mem := NewCalloc()
+		arraySize := len(dialogOptions.Filters) + 1
+		data.filters = C.allocFileFilterArray((C.ulong)(arraySize))
+		filters := (*[1 << 30]*C.struct__GtkFileFilter)(unsafe.Pointer(data.filters))
+		for index, filter := range dialogOptions.Filters {
+			thisFilter := C.gtk_file_filter_new()
+			C.g_object_ref(C.gpointer(thisFilter))
+			if filter.DisplayName != "" {
+				cName := mem.String(filter.DisplayName)
+				C.gtk_file_filter_set_name(thisFilter, cName)
+			}
+			if filter.Pattern != "" {
+				for _, thisPattern := range strings.Split(filter.Pattern, ";") {
+					cThisPattern := mem.String(thisPattern)
+					C.gtk_file_filter_add_pattern(thisFilter, cThisPattern)
+				}
+			}
+			// Add filter to array
+			filters[index] = thisFilter
+		}
+		mem.Free()
+		filters[arraySize-1] = nil
+	}
+
+	if dialogOptions.CanCreateDirectories {
+		data.createDirectories = C.int(1)
+	}
+
+	if dialogOptions.ShowHiddenFiles {
+		data.showHiddenFiles = C.int(1)
+	}
+
+	if dialogOptions.DefaultFilename != "" {
+		data.defaultFilename = C.CString(dialogOptions.DefaultFilename)
+	}
+
+	if dialogOptions.DefaultDirectory != "" {
+		data.defaultDirectory = C.CString(dialogOptions.DefaultDirectory)
+	}
+
+	C.ExecuteOnMainThread(C.opendialog, C.gpointer(&data))
+}
+
+func (w *Window) MessageDialog(dialogOptions frontend.MessageDialogOptions) {
+
+	data := C.MessageDialogOptions{
+		window:  w.gtkWindow,
+		title:   C.CString(dialogOptions.Title),
+		message: C.CString(dialogOptions.Message),
+	}
+	switch dialogOptions.Type {
+	case frontend.InfoDialog:
+		data.messageType = C.int(0)
+	case frontend.ErrorDialog:
+		data.messageType = C.int(1)
+	case frontend.QuestionDialog:
+		data.messageType = C.int(2)
+	case frontend.WarningDialog:
+		data.messageType = C.int(3)
+	}
+	C.ExecuteOnMainThread(C.messageDialog, C.gpointer(&data))
 }
