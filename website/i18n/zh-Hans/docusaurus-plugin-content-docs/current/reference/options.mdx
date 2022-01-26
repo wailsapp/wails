@@ -28,6 +28,7 @@ func main() {
         StartHidden:       false,
         HideWindowOnClose: false,
         RGBA:              &options.RGBA{R: 0, G: 0, B: 0, A: 255},
+        AlwaysOnTop:       false,
         Assets:            assets,
         Menu:              app.applicationMenu(),
         Logger:            nil,
@@ -45,6 +46,7 @@ func main() {
             WindowIsTranslucent:   false,
             DisableWindowIcon:     false,
             EnableFramelessBorder: false,
+            WebviewUserDataPath:   "",
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -228,7 +230,7 @@ func main() {
 
 类型：func(ctx context.Context)
 
-此回调在前端创建之后调用，但在`index.html`加载之前调用。它给出了应用程序上下文。
+此回调在前端创建之后调用，但在`index.html`加载之前调用。它提供了应用程序上下文。
 
 ### 前端 Dom 加载完成回调
 
@@ -236,7 +238,7 @@ func main() {
 
 类型：func(ctx context.Context)
 
-在前端加载`index.html`完毕并且 DOM 准备就绪后调用此回调。它给出了应用程序上下文。
+在前端加载`index.html`完毕并且 DOM 准备就绪后调用此回调。它提供了应用程序上下文。
 
 ### 应用退出回调
 
@@ -244,7 +246,7 @@ func main() {
 
 类型：func(ctx context.Context)
 
-在前端被销毁之后，就在应用程序终止之前，调用此回调。它给出了应用程序上下文。
+在前端被销毁之后，应用程序终止之前，调用此回调。它提供了应用程序上下文。
 
 ### 关闭应用程序之前回调
 
@@ -259,7 +261,7 @@ func main() {
 ```go title=windowsapp.go
 func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 	dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
-		Type:          runtime.QuestionDialog,
+		类型：          runtime.QuestionDialog,
 		Title:         "Quit?",
 		Message:       "Are you sure you want to quit?",
 	})
@@ -342,45 +344,53 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 
 如果已激活[无边框](#无边框)，则将此设置为`true`将在窗口周围添加边框。这允许隐藏标题栏但仍然在窗口周围有边框。
 
+### Webview 用户数据路径
+
+名称：WebviewUserDataPath
+
+类型：string
+
+这定义了 WebView2 存储用户数据的路径。如果为空将使用`%APPDATA%\[BinaryName.exe]`。
+
 ## Mac 特定选项
 
 ### 标题栏
 
-Name: TitleBar
+名称：TitleBar
 
-Type: [\*mac.TitleBar](#标题栏结构)
+类型：[\*mac.TitleBar](#标题栏结构)
 
 TitleBar 结构提供了配置标题栏外观的能力。
 
 ### 外观
 
-Name: Appearance
+名称：Appearance
 
-Type: [AppearanceType](#外观类型)
+类型：[AppearanceType](#外观类型)
 
 Appearance 用于根据 Apple 的 [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) 名称设置应用程序的样式。
 
 ### 网页透明
 
-Name: WebviewIsTransparent
+名称：WebviewIsTransparent
 
-Type: bool
+类型：bool
 
 设置为 `true` 时将使 WebView 背景透明。这意味着如果你使用`rgba(0,0,0,0)`，主窗口将显示。通常与[窗口半透明](#窗口半透明)结合使用以制作冰霜效果的应用程序。
 
 ### 窗口半透明
 
-Name: WindowIsTranslucent
+名称：WindowIsTranslucent
 
-Type: bool
+类型：bool
 
 将此设置为 `true` 将使窗口半透明。通常与[网页透明](#网页透明) 结合使用以制作冰霜效果的应用程序。
 
 ### 关于
 
-Name: About
+名称：About
 
-Type: [About](#关于结构)
+类型：[About](#关于结构)
 
 此配置允许您为“AppMenu” role 创建的应用程序菜单中的“关于”菜单项设置标题、消息和图标。
 
