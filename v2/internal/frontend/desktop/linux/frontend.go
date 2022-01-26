@@ -24,6 +24,7 @@ import "C"
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
