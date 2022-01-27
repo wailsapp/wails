@@ -1,0 +1,3 @@
+# Contributing
+
+## Directory layout description
