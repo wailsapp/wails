@@ -11,15 +11,20 @@ package linux
 static GtkMenuItem *toGtkMenuItem(void *pointer) { return (GTK_MENU_ITEM(pointer)); }
 static GtkMenuShell *toGtkMenuShell(void *pointer) { return (GTK_MENU_SHELL(pointer)); }
 static GtkCheckMenuItem *toGtkCheckMenuItem(void *pointer) { return (GTK_CHECK_MENU_ITEM(pointer)); }
+static GtkRadioMenuItem *toGtkRadioMenuItem(void *pointer) { return (GTK_RADIO_MENU_ITEM(pointer)); }
 
-extern void handleMenuItemClick(int);
+extern void handleMenuItemClick(void*);
 
-void clickCallback(void *dummy, gpointer data) {
-	handleMenuItemClick(GPOINTER_TO_INT(data));
+void blockClick(GtkWidget* menuItem, gulong handler_id) {
+	g_signal_handler_block (menuItem, handler_id);
 }
 
-void connectClick(GtkWidget* menuItem, int data) {
-	g_signal_connect(menuItem, "activate", G_CALLBACK(clickCallback), GINT_TO_POINTER(data));
+void unblockClick(GtkWidget* menuItem, gulong handler_id) {
+	g_signal_handler_unblock (menuItem, handler_id);
+}
+
+gulong connectClick(GtkWidget* menuItem) {
+	return g_signal_connect(menuItem, "activate", G_CALLBACK(handleMenuItemClick), (void*)menuItem);
 }
 */
 import "C"
@@ -31,6 +36,9 @@ var menuItemToId map[*menu.MenuItem]int
 var menuIdToItem map[int]*menu.MenuItem
 var gtkCheckboxCache map[*menu.MenuItem][]*C.GtkWidget
 var gtkMenuCache map[*menu.MenuItem]*C.GtkWidget
+var gtkRadioMenuCache map[*menu.MenuItem][]*C.GtkWidget
+var gtkSignalHandlers map[*C.GtkWidget]C.gulong
+var gtkSignalToMenuItem map[*C.GtkWidget]*menu.MenuItem
 
 func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
 	f.mainWindow.SetApplicationMenu(menu)
@@ -49,6 +57,9 @@ func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
 	menuIdToItem = make(map[int]*menu.MenuItem)
 	gtkCheckboxCache = make(map[*menu.MenuItem][]*C.GtkWidget)
 	gtkMenuCache = make(map[*menu.MenuItem]*C.GtkWidget)
+	gtkRadioMenuCache = make(map[*menu.MenuItem][]*C.GtkWidget)
+	gtkSignalHandlers = make(map[*C.GtkWidget]C.gulong)
+	gtkSignalToMenuItem = make(map[*C.GtkWidget]*menu.MenuItem)
 
 	// Increase ref count?
 	w.menubar = C.gtk_menu_bar_new()
@@ -77,77 +88,62 @@ func processSubmenu(menuItem *menu.MenuItem) *C.GtkWidget {
 		menuIdToItem[menuID] = menuItem
 		menuItemToId[menuItem] = menuID
 		menuIdCounter++
-		processMenuItem(gtkMenu, menuItem, menuID)
+		processMenuItem(gtkMenu, menuItem)
 	}
 	C.gtk_menu_item_set_submenu(C.toGtkMenuItem(unsafe.Pointer(submenu)), gtkMenu)
 	gtkMenuCache[menuItem] = existingMenu
 	return submenu
 }
 
-func processMenuItem(parent *C.GtkWidget, menuItem *menu.MenuItem, menuID int) {
+var currentRadioGroup *C.GSList
+
+func processMenuItem(parent *C.GtkWidget, menuItem *menu.MenuItem) {
 	if menuItem.Hidden {
 		return
 	}
+
+	if menuItem.Type != menu.RadioType {
+		currentRadioGroup = nil
+	}
+
+	if menuItem.Type == menu.SeparatorType {
+		result := C.gtk_separator_menu_item_new()
+		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), result)
+		return
+	}
+
+	var result *C.GtkWidget
+
 	switch menuItem.Type {
-	case menu.SeparatorType:
-		separator := C.gtk_separator_menu_item_new()
-		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), separator)
 	case menu.TextType:
-		gtkMenuItem := GtkMenuItemWithLabel(menuItem.Label)
-		//if menuItem.Accelerator != nil {
-		//	setAccelerator(gtkMenuItem, menuItem.Accelerator)
-		//}
-
-		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), gtkMenuItem)
-		C.gtk_widget_show(gtkMenuItem)
-
-		if menuItem.Click != nil {
-			C.connectClick(gtkMenuItem, C.int(menuID))
-		}
-
-		if menuItem.Disabled {
-			C.gtk_widget_set_sensitive(gtkMenuItem, 0)
-		}
-
+		result = GtkMenuItemWithLabel(menuItem.Label)
 	case menu.CheckboxType:
-
-		gtkMenuItem := GtkCheckMenuItemWithLabel(menuItem.Label)
+		result = GtkCheckMenuItemWithLabel(menuItem.Label)
 		if menuItem.Checked {
-			C.gtk_check_menu_item_set_active(C.toGtkCheckMenuItem(unsafe.Pointer(gtkMenuItem)), 1)
+			C.gtk_check_menu_item_set_active(C.toGtkCheckMenuItem(unsafe.Pointer(result)), 1)
 		}
-		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), gtkMenuItem)
-		C.gtk_widget_show(gtkMenuItem)
+		gtkCheckboxCache[menuItem] = append(gtkCheckboxCache[menuItem], result)
 
-		if menuItem.Click != nil {
-			C.connectClick(gtkMenuItem, C.int(menuID))
+	case menu.RadioType:
+		result = GtkRadioMenuItemWithLabel(menuItem.Label, currentRadioGroup)
+		currentRadioGroup = C.gtk_radio_menu_item_get_group(C.toGtkRadioMenuItem(unsafe.Pointer(result)))
+		if menuItem.Checked {
+			C.gtk_check_menu_item_set_active(C.toGtkCheckMenuItem(unsafe.Pointer(result)), 1)
 		}
-
-		if menuItem.Disabled {
-			C.gtk_widget_set_sensitive(gtkMenuItem, 0)
-		}
-
-		gtkCheckboxCache[menuItem] = append(gtkCheckboxCache[menuItem], gtkMenuItem)
-
-	//case menu.RadioType:
-	//	shortcut := acceleratorToWincShortcut(menuItem.Accelerator)
-	//	newItem := parent.AddItemRadio(menuItem.Label, shortcut)
-	//	newItem.SetCheckable(true)
-	//	newItem.SetChecked(menuItem.Checked)
-	//	//if menuItem.Tooltip != "" {
-	//	//	newItem.SetToolTip(menuItem.Tooltip)
-	//	//}
-	//	if menuItem.Click != nil {
-	//		newItem.OnClick().Bind(func(e *winc.Event) {
-	//			toggleRadioItem(menuItem)
-	//			menuItem.Click(&menu.CallbackData{
-	//				MenuItem: menuItem,
-	//			})
-	//		})
-	//	}
-	//	newItem.SetEnabled(!menuItem.Disabled)
-	//	addRadioItemToMap(menuItem, newItem)
+		gtkRadioMenuCache[menuItem] = append(gtkRadioMenuCache[menuItem], result)
 	case menu.SubmenuType:
-		submenu := processSubmenu(menuItem)
-		C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), submenu)
+		result = processSubmenu(menuItem)
+	}
+	C.gtk_menu_shell_append(C.toGtkMenuShell(unsafe.Pointer(parent)), result)
+	C.gtk_widget_show(result)
+
+	if menuItem.Click != nil {
+		handler := C.connectClick(result)
+		gtkSignalHandlers[result] = handler
+		gtkSignalToMenuItem[result] = menuItem
+	}
+
+	if menuItem.Disabled {
+		C.gtk_widget_set_sensitive(result, 0)
 	}
 }

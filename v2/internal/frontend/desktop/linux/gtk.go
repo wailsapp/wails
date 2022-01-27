@@ -7,6 +7,8 @@ package linux
 
 static GtkCheckMenuItem *toGtkCheckMenuItem(void *pointer) { return (GTK_CHECK_MENU_ITEM(pointer)); }
 
+extern void blockClick(GtkWidget* menuItem, gulong handler_id);
+extern void unblockClick(GtkWidget* menuItem, gulong handler_id);
 */
 import "C"
 import "unsafe"
@@ -26,28 +28,46 @@ func GtkCheckMenuItemWithLabel(label string) *C.GtkWidget {
 	return result
 }
 
-var menuItemBeingProcessed *menu.MenuItem
+func GtkRadioMenuItemWithLabel(label string, group *C.GSList) *C.GtkWidget {
+	cLabel := C.CString(label)
+	result := C.gtk_radio_menu_item_new_with_label(group, cLabel)
+	C.free(unsafe.Pointer(cLabel))
+	return result
+}
 
 //export handleMenuItemClick
-func handleMenuItemClick(menuID int) {
-	item := menuIdToItem[menuID]
-	// This is here because setting multiple checkboxes to active triggers the gtk action for each one,
-	// meaning multiple calls to this method. As it's all in the same thread, we can short circuit the other calls
-	// by keeping a "lock". When we deal with multiple windows, we will need to take the window ID into consideration too
-	if item == menuItemBeingProcessed {
-		return
-	}
-	menuItemBeingProcessed = item
-	if item.Type == menu.CheckboxType {
+func handleMenuItemClick(gtkWidget unsafe.Pointer) {
+	item := gtkSignalToMenuItem[(*C.GtkWidget)(gtkWidget)]
+	switch item.Type {
+	case menu.CheckboxType:
 		item.Checked = !item.Checked
 		checked := C.int(0)
 		if item.Checked {
 			checked = C.int(1)
 		}
 		for _, gtkCheckbox := range gtkCheckboxCache[item] {
+			handler := gtkSignalHandlers[gtkCheckbox]
+			C.blockClick(gtkCheckbox, handler)
 			C.gtk_check_menu_item_set_active(C.toGtkCheckMenuItem(unsafe.Pointer(gtkCheckbox)), checked)
+			C.unblockClick(gtkCheckbox, handler)
 		}
+		item.Click(&menu.CallbackData{MenuItem: item})
+	case menu.RadioType:
+		gtkRadioItems := gtkRadioMenuCache[item]
+		active := C.gtk_check_menu_item_get_active(C.toGtkCheckMenuItem(gtkWidget))
+		if int(active) == 1 {
+			for _, gtkRadioItem := range gtkRadioItems {
+				handler := gtkSignalHandlers[gtkRadioItem]
+				C.blockClick(gtkRadioItem, handler)
+				C.gtk_check_menu_item_set_active(C.toGtkCheckMenuItem(unsafe.Pointer(gtkRadioItem)), 1)
+				C.unblockClick(gtkRadioItem, handler)
+			}
+			item.Checked = true
+			item.Click(&menu.CallbackData{MenuItem: item})
+		} else {
+			item.Checked = false
+		}
+	default:
+		item.Click(&menu.CallbackData{MenuItem: item})
 	}
-	item.Click(&menu.CallbackData{MenuItem: item})
-	menuItemBeingProcessed = nil
 }
