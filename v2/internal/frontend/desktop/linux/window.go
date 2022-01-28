@@ -383,8 +383,8 @@ GtkFileFilter* newFileFilter() {
 */
 import "C"
 import (
-	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"strings"
 	"unsafe"
@@ -406,6 +406,7 @@ type Window struct {
 	applicationMenu *menu.Menu
 	menubar         *C.GtkWidget
 	vbox            *C.GtkWidget
+	accels          *C.GtkAccelGroup
 }
 
 func bool2Cint(value bool) C.int {
