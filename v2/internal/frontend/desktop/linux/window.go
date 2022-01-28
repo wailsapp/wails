@@ -19,6 +19,14 @@ static GtkWindow* GTKWINDOW(void *pointer) {
 	return GTK_WINDOW(pointer);
 }
 
+static GtkContainer* GTKCONTAINER(void *pointer) {
+	return GTK_CONTAINER(pointer);
+}
+
+static GtkBox* GTKBOX(void *pointer) {
+	return GTK_BOX(pointer);
+}
+
 static void SetMinSize(GtkWindow* window, int width, int height) {
 	GdkGeometry size;
 	size.min_height = height;
@@ -153,7 +161,7 @@ gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void* data)
 
 GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowOnClose) {
 	GtkWidget* webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager*)contentManager);
-	gtk_container_add(GTK_CONTAINER(window), webview);
+	//gtk_container_add(GTK_CONTAINER(window), webview);
 	WebKitWebContext *context = webkit_web_context_get_default();
 	webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
 	//g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webview_load_changed_cb), NULL);
@@ -376,6 +384,7 @@ GtkFileFilter* newFileFilter() {
 import "C"
 import (
 	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"strings"
 	"unsafe"
@@ -389,11 +398,15 @@ func gtkBool(input bool) C.gboolean {
 }
 
 type Window struct {
-	appoptions     *options.App
-	debug          bool
-	gtkWindow      unsafe.Pointer
-	contentManager unsafe.Pointer
-	webview        unsafe.Pointer
+	appoptions      *options.App
+	debug           bool
+	gtkWindow       unsafe.Pointer
+	contentManager  unsafe.Pointer
+	webview         unsafe.Pointer
+	applicationMenu *menu.Menu
+	menubar         *C.GtkWidget
+	vbox            *C.GtkWidget
+	accels          *C.GtkAccelGroup
 }
 
 func bool2Cint(value bool) C.int {
@@ -414,6 +427,9 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	C.g_object_ref_sink(C.gpointer(gtkWindow))
 	result.gtkWindow = unsafe.Pointer(gtkWindow)
 
+	result.vbox = C.gtk_box_new(C.GTK_ORIENTATION_VERTICAL, 0)
+	C.gtk_container_add(result.asGTKContainer(), result.vbox)
+
 	result.contentManager = unsafe.Pointer(C.webkit_user_content_manager_new())
 	external := C.CString("external")
 	defer C.free(unsafe.Pointer(external))
@@ -428,7 +444,6 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 
 	if debug {
 		C.devtoolsEnabled(unsafe.Pointer(webview), C.int(1))
-
 	}
 
 	// Setup window
@@ -440,6 +455,9 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
 	result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
 
+	// Menu
+	result.SetApplicationMenu(appoptions.Menu)
+
 	return result
 }
 
@@ -449,6 +467,10 @@ func (w *Window) asGTKWidget() *C.GtkWidget {
 
 func (w *Window) asGTKWindow() *C.GtkWindow {
 	return C.GTKWINDOW(w.gtkWindow)
+}
+
+func (w *Window) asGTKContainer() *C.GtkContainer {
+	return C.GTKCONTAINER(w.gtkWindow)
 }
 
 func (w *Window) cWebKitUserContentManager() *C.WebKitUserContentManager {
@@ -549,6 +571,8 @@ func (w *Window) UpdateApplicationMenu() {
 }
 
 func (w *Window) Run() {
+	C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), w.menubar, 0, 0, 0)
+	C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), C.GTKWIDGET(w.webview), 1, 1, 0)
 	C.loadIndex(w.webview)
 	C.gtk_widget_show_all(w.asGTKWidget())
 	w.Center()
