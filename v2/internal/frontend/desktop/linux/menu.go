@@ -49,7 +49,7 @@ func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
 }
 
 func (f *Frontend) MenuUpdateApplicationMenu() {
-	//processMenu(f.mainWindow, f.mainWindow.applicationMenu)
+	f.mainWindow.SetApplicationMenu(f.mainWindow.applicationMenu)
 }
 
 func (w *Window) SetApplicationMenu(inmenu *menu.Menu) {
