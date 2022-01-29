@@ -380,6 +380,19 @@ GtkFileFilter* newFileFilter() {
 	return result;
 }
 
+typedef struct RGBAOptions {
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
+	uint8_t a;
+	void *webview;
+} RGBAOptions;
+
+void setRGBA(gpointer* data) {
+	RGBAOptions* options = (RGBAOptions*)data;
+	GdkRGBA colour = {options->r / 255.0, options->g / 255.0, options->b / 255.0, options->a / 255.0};
+	webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(options->webview), &colour);
+}
 */
 import "C"
 import (
@@ -445,6 +458,10 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	if debug {
 		C.devtoolsEnabled(unsafe.Pointer(webview), C.int(1))
 	}
+
+	// Set background colour
+	RGBA := appoptions.RGBA
+	result.SetRGBA(RGBA.R, RGBA.G, RGBA.B, RGBA.A)
 
 	// Setup window
 	result.SetKeepAbove(appoptions.AlwaysOnTop)
@@ -557,17 +574,15 @@ func (w *Window) IsFullScreen() bool {
 }
 
 func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
-	//C.SetRGBA(w.context, C.int(r), C.int(g), C.int(b), C.int(a))
-}
+	data := C.RGBAOptions{
+		r:       C.uchar(r),
+		g:       C.uchar(g),
+		b:       C.uchar(b),
+		a:       C.uchar(a),
+		webview: w.webview,
+	}
+	C.ExecuteOnMainThread(C.setRGBA, C.gpointer(&data))
 
-//func (w *Window) SetApplicationMenu(inMenu *menu.Menu) {
-//	//mainMenu := NewNSMenu(w.context, "")
-//	//processMenu(mainMenu, inMenu)
-//	//C.SetAsApplicationMenu(w.context, mainMenu.nsmenu)
-//}
-
-func (w *Window) UpdateApplicationMenu() {
-	//C.UpdateApplicationMenu(w.context)
 }
 
 func (w *Window) Run() {
