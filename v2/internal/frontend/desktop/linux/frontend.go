@@ -234,9 +234,9 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 
 func (f *Frontend) processMessage(message string) {
 	if message == "drag" {
-		// if !f.mainWindow.IsFullScreen() {
-		f.startDrag()
-		// }
+		if !f.mainWindow.IsFullScreen() {
+			f.startDrag()
+		}
 		return
 	}
 
