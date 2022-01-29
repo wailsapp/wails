@@ -62,7 +62,7 @@ type Frontend struct {
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 
 	// Set GDK_BACKEND=x11 to prevent warnings
-	os.Setenv("GDK_BACKEND", "x11")
+	_ = os.Setenv("GDK_BACKEND", "x11")
 
 	result := &Frontend{
 		frontendOptions: appoptions,
