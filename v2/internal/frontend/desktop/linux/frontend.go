@@ -18,7 +18,6 @@ static inline void processDispatchID(gpointer id) {
 static void gtkDispatch(int id) {
 	g_idle_add((GSourceFunc)processDispatchID, GINT_TO_POINTER(id));
 }
-
 */
 import "C"
 import (
@@ -205,6 +204,7 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 	if col == nil {
 		return
 	}
+	f.mainWindow.SetRGBA(col.R, col.G, col.B, col.A)
 }
 
 func (f *Frontend) Quit() {
@@ -365,8 +365,11 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	defer C.free(unsafe.Pointer(cContent))
 	cMimeType := C.CString(mimeType)
 	defer C.free(unsafe.Pointer(cMimeType))
-	cLen := C.long(len(content))
-	stream := C.g_memory_input_stream_new_from_data(unsafe.Pointer(C.g_strdup(cContent)), cLen, C.g_free)
+	cLen := C.long(C.strlen(cContent))
+	stream := C.g_memory_input_stream_new_from_data(
+		unsafe.Pointer(C.g_strdup(cContent)),
+		cLen,
+		(*[0]byte)(C.g_free))
 	C.webkit_uri_scheme_request_finish(req, stream, cLen, cMimeType)
 	C.g_object_unref(C.gpointer(stream))
 }
