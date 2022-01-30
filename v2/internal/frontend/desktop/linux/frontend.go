@@ -23,6 +23,7 @@ import "C"
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -344,22 +345,23 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	content, mimeType, err := f.assets.Load(file)
 
 	// TODO How to return 404/500 errors to webkit?
-	//if err != nil {
-	//if os.IsNotExist(err) {
-	//	f.dispatch(func() {
-	//		message := C.CString("not found")
-	//		defer C.free(unsafe.Pointer(message))
-	//		C.webkit_uri_scheme_request_finish_error(req, C.g_error_new_literal(C.G_FILE_ERROR_NOENT, C.int(404), message))
-	//	})
-	//} else {
-	//	err = fmt.Errorf("Error processing request %s: %w", uri, err)
-	//	f.logger.Error(err.Error())
-	//	message := C.CString("internal server error")
-	//	defer C.free(unsafe.Pointer(message))
-	//	C.webkit_uri_scheme_request_finish_error(req, C.g_error_new_literal(C.G_FILE_ERROR_NOENT, C.int(500), message))
-	//}
-	//return
-	//}
+	if err != nil {
+		if os.IsNotExist(err) {
+			message := C.CString("File not found")
+			gerr := C.g_error_new_literal(C.g_quark_from_string(message), C.int(404), message)
+			C.webkit_uri_scheme_request_finish_error(req, gerr)
+			C.g_error_free(gerr)
+			C.free(unsafe.Pointer(message))
+		} else {
+			err = fmt.Errorf("Error processing request %s: %v", uri, err)
+			message := C.CString("Internal Error")
+			gerr := C.g_error_new_literal(C.g_quark_from_string(message), C.int(500), message)
+			C.webkit_uri_scheme_request_finish_error(req, gerr)
+			C.g_error_free(gerr)
+			C.free(unsafe.Pointer(message))
+		}
+		return
+	}
 
 	cContent := C.CString(string(content))
 	defer C.free(unsafe.Pointer(cContent))
