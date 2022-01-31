@@ -1,4 +1,5 @@
 //go:build darwin
+// +build darwin
 
 package desktop
 

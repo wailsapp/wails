@@ -1,4 +1,5 @@
 //go:build dev
+// +build dev
 
 package runtime
 
