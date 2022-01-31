@@ -9,15 +9,6 @@ package linux
 #include "gtk/gtk.h"
 #include "webkit2/webkit2.h"
 
-extern void callDispatchedMethod(int id);
-
-static inline void processDispatchID(gpointer id) {
-    callDispatchedMethod(GPOINTER_TO_INT(id));
-}
-
-static void gtkDispatch(int id) {
-	g_idle_add((GSourceFunc)processDispatchID, GINT_TO_POINTER(id));
-}
 */
 import "C"
 import (
@@ -27,7 +18,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"sync"
 	"text/template"
 	"unsafe"
 
@@ -230,7 +220,7 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 		f.logger.Error(err.Error())
 		return
 	}
-	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
+	f.mainWindow.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
 }
 
 func (f *Frontend) processMessage(message string) {
@@ -267,25 +257,11 @@ func (f *Frontend) Callback(message string) {
 }
 
 func (f *Frontend) startDrag() {
-	f.dispatch(func() {
-		f.mainWindow.StartDrag()
-	})
+	f.mainWindow.StartDrag()
 }
 
 func (f *Frontend) ExecJS(js string) {
-	f.dispatch(func() {
-		f.mainWindow.ExecJS(js)
-	})
-}
-
-func (f *Frontend) dispatch(fn func()) {
-	dispatchCallbackLock.Lock()
-	id := 0
-	for fn := dispatchCallbacks[id]; fn != nil; id++ {
-	}
-	dispatchCallbacks[id] = fn
-	dispatchCallbackLock.Unlock()
-	C.gtkDispatch(C.int(id))
+	f.mainWindow.ExecJS(js)
 }
 
 var messageBuffer = make(chan string, 100)
@@ -294,24 +270,6 @@ var messageBuffer = make(chan string, 100)
 func processMessage(message *C.char) {
 	goMessage := C.GoString(message)
 	messageBuffer <- goMessage
-}
-
-// Map of functions passed to dispatch()
-var dispatchCallbacks = make(map[int]func())
-var dispatchCallbackLock sync.Mutex
-
-//export callDispatchedMethod
-func callDispatchedMethod(cid C.int) {
-	id := int(cid)
-	fn := dispatchCallbacks[id]
-	if fn != nil {
-		fn()
-		dispatchCallbackLock.Lock()
-		delete(dispatchCallbacks, id)
-		dispatchCallbackLock.Unlock()
-	} else {
-		println("Error: No dispatch method with id", id, cid)
-	}
 }
 
 var requestBuffer = make(chan unsafe.Pointer, 100)
@@ -337,8 +295,14 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 		// TODO Handle errors
 		return
 	} else if !match {
-		// This should never happen on linux, because we get only called for wails://
-		panic("Unexpected host for request on wails:// scheme")
+		file, match, err = common.TranslateUriToFile(goURI, "wails", "null")
+		if err != nil {
+			// TODO Handle errors
+			return
+		} else if !match {
+			// This should never happen on linux, because we get only called for wails://
+			panic("Unexpected host for request on wails:// scheme")
+		}
 	}
 
 	// Load file from asset store
