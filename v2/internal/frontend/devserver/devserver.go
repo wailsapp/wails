@@ -1,4 +1,5 @@
 //go:build dev
+// +build dev
 
 // Package devserver provides a web-based frontend so that
 // it is possible to run a Wails app in a browsers.
