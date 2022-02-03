@@ -570,7 +570,7 @@ func (w *Window) Center() {
 	C.ExecuteOnMainThread(C.Center, C.gpointer(w.asGTKWindow()))
 }
 
-func (w *Window) SetPos(x int, y int) {
+func (w *Window) SetPosition(x int, y int) {
 	C.SetPosition(unsafe.Pointer(w.asGTKWindow()), C.int(x), C.int(y))
 }
 
@@ -580,7 +580,7 @@ func (w *Window) Size() (int, int) {
 	return int(width), int(height)
 }
 
-func (w *Window) Pos() (int, int) {
+func (w *Window) GetPosition() (int, int) {
 	var width, height C.int
 	C.gtk_window_get_position(w.asGTKWindow(), &width, &height)
 	return int(width), int(height)

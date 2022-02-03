@@ -137,11 +137,11 @@ func (f *Frontend) WindowCenter() {
 	f.mainWindow.Center()
 }
 
-func (f *Frontend) WindowSetPos(x, y int) {
-	f.mainWindow.SetPos(x, y)
+func (f *Frontend) WindowSetPosition(x, y int) {
+	f.mainWindow.SetPosition(x, y)
 }
-func (f *Frontend) WindowGetPos() (int, int) {
-	return f.mainWindow.Pos()
+func (f *Frontend) WindowGetPosition() (int, int) {
+	return f.mainWindow.GetPosition()
 }
 
 func (f *Frontend) WindowSetSize(width, height int) {

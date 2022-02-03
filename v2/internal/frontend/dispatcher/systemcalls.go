@@ -26,7 +26,7 @@ func (d *Dispatcher) processSystemCall(payload callMessage, sender frontend.Fron
 
 	switch name {
 	case "WindowGetPos":
-		x, y := sender.WindowGetPos()
+		x, y := sender.WindowGetPosition()
 		return &position{x, y}, nil
 	case "WindowGetSize":
 		w, h := sender.WindowGetSize()
