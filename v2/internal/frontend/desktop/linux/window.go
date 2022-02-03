@@ -65,13 +65,10 @@ GdkRectangle getCurrentMonitorGeometry(GtkWindow *window) {
     return result;
 }
 
-void SetPosition(GtkWindow *window, int x, int y) {
-	GdkRectangle monitorDimensions = getCurrentMonitorGeometry(window);
-	gtk_window_move(window, monitorDimensions.x + x, monitorDimensions.y + y);
-}
-
-void Center(GtkWindow *window)
+void Center(gpointer data)
 {
+	GtkWindow *window = (GtkWindow*)data;
+
     // Get the geometry of the monitor
     GdkRectangle m = getCurrentMonitorGeometry(window);
 
@@ -429,6 +426,28 @@ void SetTitle(GtkWindow* window, char* title) {
 	ExecuteOnMainThread(setTitle, (gpointer)args);
 }
 
+typedef struct SetPositionArgs {
+	int x;
+	int y;
+	void* window;
+} SetPositionArgs;
+
+void setPosition(gpointer data) {
+	SetPositionArgs* args = (SetPositionArgs*)data;
+	gtk_window_move((GtkWindow*)args->window, args->x, args->y);
+	free(args);
+}
+
+void SetPosition(void* window, int x, int y) {
+	GdkRectangle monitorDimensions = getCurrentMonitorGeometry(window);
+	SetPositionArgs* args = malloc(sizeof(SetPositionArgs));
+	args->window = window;
+	args->x = monitorDimensions.x + x;
+	args->y = monitorDimensions.y + y;
+	ExecuteOnMainThread(setPosition, (gpointer)args);
+}
+
+
 */
 import "C"
 import (
@@ -531,11 +550,11 @@ func (w *Window) cWebKitUserContentManager() *C.WebKitUserContentManager {
 }
 
 func (w *Window) Fullscreen() {
-	C.gtk_window_fullscreen(w.asGTKWindow())
+	C.ExecuteOnMainThread(C.gtk_window_fullscreen, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) UnFullscreen() {
-	C.gtk_window_unfullscreen(w.asGTKWindow())
+	C.ExecuteOnMainThread(C.gtk_window_unfullscreen, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) Destroy() {
@@ -548,13 +567,11 @@ func (w *Window) Close() {
 }
 
 func (w *Window) Center() {
-	C.Center(w.asGTKWindow())
+	C.ExecuteOnMainThread(C.Center, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) SetPos(x int, y int) {
-	cX := C.int(x)
-	cY := C.int(y)
-	C.gtk_window_move(w.asGTKWindow(), cX, cY)
+	C.SetPosition(unsafe.Pointer(w.asGTKWindow()), C.int(x), C.int(y))
 }
 
 func (w *Window) Size() (int, int) {
