@@ -163,7 +163,7 @@ const char* GetSize(void *inctx) {
     return [result UTF8String];
 }
 
-const char* GetPos(void *inctx) {
+const char* GetPosition(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSScreen* screen = [ctx getCurrentScreen];
     NSRect windowFrame = [ctx.mainWindow frame];

@@ -199,12 +199,12 @@ func (d *DevWebServer) WindowUnminimise() {
 	d.desktopFrontend.WindowUnminimise()
 }
 
-func (d *DevWebServer) WindowSetPos(x int, y int) {
-	d.desktopFrontend.WindowSetPos(x, y)
+func (d *DevWebServer) WindowSetPosition(x int, y int) {
+	d.desktopFrontend.WindowSetPosition(x, y)
 }
 
-func (d *DevWebServer) WindowGetPos() (int, int) {
-	return d.desktopFrontend.WindowGetPos()
+func (d *DevWebServer) WindowGetPosition() (int, int) {
+	return d.desktopFrontend.WindowGetPosition()
 }
 
 func (d *DevWebServer) WindowSetSize(width int, height int) {
