@@ -24,3 +24,24 @@ The Javascript library is available to the frontend via the `window.runtime` map
 mode that provides Typescript declarations for the runtime. This should be located in the `wailsjs` directory in your
 frontend directory.
 
+### Quit
+
+Go Signature: `LogPrint(ctx context.Context, message string)`
+
+Quits the application.
+
+### Environment
+
+Go Signature: `Enviromnent() EnvironmentInfo`
+
+Returns details of the current environment.
+
+#### EnvironmentInfo
+
+```go
+type EnvironmentInfo struct {
+    BuildType string  // Either "production", "debug" or "dev"
+}
+```
+
+
