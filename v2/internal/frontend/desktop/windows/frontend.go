@@ -147,11 +147,11 @@ func (f *Frontend) WindowCenter() {
 
 func (f *Frontend) WindowSetPosition(x, y int) {
 	runtime.LockOSThread()
-	f.mainWindow.SetPosition(x, y)
+	f.mainWindow.SetPos(x, y)
 }
 func (f *Frontend) WindowGetPosition() (int, int) {
 	runtime.LockOSThread()
-	return f.mainWindow.GetPosition()
+	return f.mainWindow.Pos()
 }
 
 func (f *Frontend) WindowSetSize(width, height int) {
