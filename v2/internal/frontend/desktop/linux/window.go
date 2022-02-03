@@ -426,6 +426,28 @@ void SetTitle(GtkWindow* window, char* title) {
 	ExecuteOnMainThread(setTitle, (gpointer)args);
 }
 
+typedef struct SetPositionArgs {
+	int x;
+	int y;
+	void* window;
+} SetPositionArgs;
+
+void setPosition(gpointer data) {
+	SetPositionArgs* args = (SetPositionArgs*)data;
+	gtk_window_move((GtkWindow*)args->window, args->x, args->y);
+	free(args);
+}
+
+void SetPosition(void* window, int x, int y) {
+	GdkRectangle monitorDimensions = getCurrentMonitorGeometry(window);
+	SetPositionArgs* args = malloc(sizeof(SetPositionArgs));
+	args->window = window;
+	args->x = monitorDimensions.x + x;
+	args->y = monitorDimensions.y + y;
+	ExecuteOnMainThread(setPosition, (gpointer)args);
+}
+
+
 */
 import "C"
 import (
