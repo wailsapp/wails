@@ -417,7 +417,14 @@ func FindPathToFile(fsys fs.FS, file string) (string, error) {
 	}
 
 	if indexFiles.Length() > 1 {
-		return "", fmt.Errorf("multiple '%s' files found in assets", file)
+		selected := indexFiles.AsSlice()[0]
+		for _, f := range indexFiles.AsSlice() {
+			if len(f) < len(selected) {
+				selected = f
+			}
+		}
+		path, _ := filepath.Split(selected)
+		return path, nil
 	}
 
 	path, _ := filepath.Split(indexFiles.AsSlice()[0])
