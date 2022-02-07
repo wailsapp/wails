@@ -98,6 +98,17 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 		if w.notifyParentWindowPositionChanged != nil {
 			w.notifyParentWindowPositionChanged()
 		}
+
+	// TODO move WM_DPICHANGED handling into winc
+	case 0x02E0: //w32.WM_DPICHANGED
+		newWindowSize := (*w32.RECT)(unsafe.Pointer(lparam))
+		w32.SetWindowPos(w.Handle(),
+			uintptr(0),
+			int(newWindowSize.Left),
+			int(newWindowSize.Top),
+			int(newWindowSize.Right-newWindowSize.Left),
+			int(newWindowSize.Bottom-newWindowSize.Top),
+			w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
 	}
 
 	if w.frontendOptions.Frameless {
