@@ -27,7 +27,7 @@ require (
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7
-	github.com/leaanthony/winc v0.0.0-20220202120322-32d63aaf77de
+	github.com/leaanthony/winc v0.0.0-20220207200219-3173d94f373e
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
 	github.com/olekukonko/tablewriter v0.0.4
