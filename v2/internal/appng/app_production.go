@@ -81,8 +81,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	debug := IsDebug()
 	ctx = context.WithValue(ctx, "debug", debug)
 	// Attach logger to context
-	ctx = context.WithValue(ctx, "logger", myLogger)
 	if debug {
+		ctx = context.WithValue(ctx, "logger", myLogger)
 		ctx = context.WithValue(ctx, "buildtype", "debug")
 	} else {
 		ctx = context.WithValue(ctx, "buildtype", "production")
