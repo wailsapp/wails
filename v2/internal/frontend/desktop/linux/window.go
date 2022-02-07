@@ -32,25 +32,15 @@ static GtkBox* GTKBOX(void *pointer) {
 	return GTK_BOX(pointer);
 }
 
-static void SetMinSize(GtkWindow* window, int width, int height) {
-	GdkGeometry size;
-	size.min_height = height;
-	size.min_width = width;
-	gtk_window_set_geometry_hints(window, NULL, &size, GDK_HINT_MIN_SIZE);
-}
-
-static void SetMaxSize(GtkWindow* window, int width, int height) {
-	GdkGeometry size;
-	if( width == 0 ) {
-		width = INT_MAX;
-	}
-	if( height == 0 ) {
-		height = INT_MAX;
-	}
-
-	size.max_height = height;
-	size.max_width = width;
-	gtk_window_set_geometry_hints(window, NULL, &size, GDK_HINT_MAX_SIZE);
+static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int max_width, int max_height) {
+    GdkGeometry size;
+    size.min_width = size.min_height = size.max_width = size.max_height = 0;
+    int flags = GDK_HINT_MAX_SIZE | GDK_HINT_MIN_SIZE;
+	size.max_height = (max_height == 0 ? INT_MAX : max_height);
+	size.max_width = (max_width == 0 ? INT_MAX : max_width);
+	size.min_height = min_height;
+	size.min_width = min_width;
+    gtk_window_set_geometry_hints(window, NULL, &size, flags);
 }
 
 GdkRectangle getCurrentMonitorGeometry(GtkWindow *window) {
@@ -505,15 +495,16 @@ func gtkBool(input bool) C.gboolean {
 }
 
 type Window struct {
-	appoptions      *options.App
-	debug           bool
-	gtkWindow       unsafe.Pointer
-	contentManager  unsafe.Pointer
-	webview         unsafe.Pointer
-	applicationMenu *menu.Menu
-	menubar         *C.GtkWidget
-	vbox            *C.GtkWidget
-	accels          *C.GtkAccelGroup
+	appoptions                               *options.App
+	debug                                    bool
+	gtkWindow                                unsafe.Pointer
+	contentManager                           unsafe.Pointer
+	webview                                  unsafe.Pointer
+	applicationMenu                          *menu.Menu
+	menubar                                  *C.GtkWidget
+	vbox                                     *C.GtkWidget
+	accels                                   *C.GtkAccelGroup
+	minWidth, minHeight, maxWidth, maxHeight int
 }
 
 func bool2Cint(value bool) C.int {
@@ -528,6 +519,10 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	result := &Window{
 		appoptions: appoptions,
 		debug:      debug,
+		minHeight:  appoptions.MinHeight,
+		minWidth:   appoptions.MinWidth,
+		maxHeight:  appoptions.MaxHeight,
+		maxWidth:   appoptions.MaxWidth,
 	}
 
 	gtkWindow := C.gtk_window_new(C.GTK_WINDOW_TOPLEVEL)
@@ -591,11 +586,15 @@ func (w *Window) cWebKitUserContentManager() *C.WebKitUserContentManager {
 }
 
 func (w *Window) Fullscreen() {
+	w.SetMaxSize(0, 0)
+	w.SetMinSize(0, 0)
 	C.ExecuteOnMainThread(C.gtk_window_fullscreen, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) UnFullscreen() {
 	C.ExecuteOnMainThread(C.gtk_window_unfullscreen, C.gpointer(w.asGTKWindow()))
+	w.SetMaxSize(w.maxWidth, w.maxHeight)
+	w.SetMinSize(w.minWidth, w.minHeight)
 }
 
 func (w *Window) Destroy() {
@@ -628,11 +627,15 @@ func (w *Window) GetPosition() (int, int) {
 }
 
 func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
-	C.SetMaxSize(w.asGTKWindow(), C.int(maxWidth), C.int(maxHeight))
+	w.maxHeight = maxHeight
+	w.maxWidth = maxWidth
+	C.SetMinMaxSize(w.asGTKWindow(), C.int(w.minWidth), C.int(w.minHeight), C.int(w.maxWidth), C.int(w.maxHeight))
 }
 
 func (w *Window) SetMinSize(minWidth int, minHeight int) {
-	C.SetMinSize(w.asGTKWindow(), C.int(minWidth), C.int(minHeight))
+	w.minHeight = minHeight
+	w.minWidth = minWidth
+	C.SetMinMaxSize(w.asGTKWindow(), C.int(w.minWidth), C.int(w.minHeight), C.int(w.maxWidth), C.int(w.maxHeight))
 }
 
 func (w *Window) Show() {
