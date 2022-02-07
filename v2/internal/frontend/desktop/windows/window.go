@@ -98,6 +98,17 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 		if w.notifyParentWindowPositionChanged != nil {
 			w.notifyParentWindowPositionChanged()
 		}
+
+	// TODO move WM_DPICHANGED handling into winc
+	case 0x02E0: //w32.WM_DPICHANGED
+		newWindowSize := (*w32.RECT)(unsafe.Pointer(lparam))
+		w32.SetWindowPos(w.Handle(),
+			uintptr(0),
+			int(newWindowSize.Left),
+			int(newWindowSize.Top),
+			int(newWindowSize.Right-newWindowSize.Left),
+			int(newWindowSize.Bottom-newWindowSize.Top),
+			w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
 	}
 
 	if w.frontendOptions.Frameless {
@@ -130,6 +141,23 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 					if w32.GetMonitorInfo(monitor, &monitorInfo) {
 						rgrc := (*w32.RECT)(unsafe.Pointer(lparam))
 						*rgrc = monitorInfo.RcWork
+
+						maxWidth := w.frontendOptions.MaxWidth
+						maxHeight := w.frontendOptions.MaxHeight
+						if maxWidth > 0 || maxHeight > 0 {
+							var dpiX, dpiY uint
+							w32.GetDPIForMonitor(monitor, w32.MDT_EFFECTIVE_DPI, &dpiX, &dpiY)
+
+							maxWidth := int32(winc.ScaleWithDPI(maxWidth, dpiX))
+							if maxWidth > 0 && rgrc.Right-rgrc.Left > maxWidth {
+								rgrc.Right = rgrc.Left + maxWidth
+							}
+
+							maxHeight := int32(winc.ScaleWithDPI(maxHeight, dpiY))
+							if maxHeight > 0 && rgrc.Bottom-rgrc.Top > maxHeight {
+								rgrc.Bottom = rgrc.Top + maxHeight
+							}
+						}
 					}
 				}
 

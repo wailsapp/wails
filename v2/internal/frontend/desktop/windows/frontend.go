@@ -473,7 +473,8 @@ func (f *Frontend) startDrag() error {
 	if !w32.ReleaseCapture() {
 		return fmt.Errorf("unable to release mouse capture")
 	}
-	w32.SendMessage(f.mainWindow.Handle(), w32.WM_NCLBUTTONDOWN, w32.HTCAPTION, 0)
+	// Use PostMessage because we don't want to block the caller until dragging has been finished.
+	w32.PostMessage(f.mainWindow.Handle(), w32.WM_NCLBUTTONDOWN, w32.HTCAPTION, 0)
 	return nil
 }
 
@@ -481,7 +482,8 @@ func (f *Frontend) startResize(border uintptr) error {
 	if !w32.ReleaseCapture() {
 		return fmt.Errorf("unable to release mouse capture")
 	}
-	w32.SendMessage(f.mainWindow.Handle(), w32.WM_NCLBUTTONDOWN, border, 0)
+	// Use PostMessage because we don't want to block the caller until resizing has been finished.
+	w32.PostMessage(f.mainWindow.Handle(), w32.WM_NCLBUTTONDOWN, border, 0)
 	return nil
 }
 
