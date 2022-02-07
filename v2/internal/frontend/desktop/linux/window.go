@@ -120,6 +120,7 @@ ulong setupInvokeSignal(void* contentManager) {
 float xroot = 0.0f;
 float yroot = 0.0f;
 int dragTime = -1;
+bool contextMenuDisabled = false;
 
 gboolean buttonPress(GtkWidget *widget, GdkEventButton *event, void* dummy)
 {
@@ -128,12 +129,18 @@ gboolean buttonPress(GtkWidget *widget, GdkEventButton *event, void* dummy)
 		dragTime = -1;
 		return FALSE;
 	}
+
+	if( event->button == 3 && contextMenuDisabled ) {
+		return TRUE;
+	}
+
 	if (event->type == GDK_BUTTON_PRESS && event->button == 1)
     {
         xroot = event->x_root;
         yroot = event->y_root;
         dragTime = event->time;
     }
+
     return FALSE;
 }
 
@@ -448,28 +455,37 @@ void SetPosition(void* window, int x, int y) {
 }
 
 void Show(gpointer data) {
-	gtk_widget_show((GTKWidget*)data);
+	gtk_widget_show((GtkWidget*)data);
 }
 
 void Hide(gpointer data) {
-	gtk_widget_hide((GTKWidget*)data);
+	gtk_widget_hide((GtkWidget*)data);
 }
 
 void Maximise(gpointer data) {
-	gtk_window_maximize((GTKWindow*)data);
+	gtk_window_maximize((GtkWindow*)data);
 }
 
 void UnMaximise(gpointer data) {
-	gtk_window_unmaximize((GTKWindow*)data);
+	gtk_window_unmaximize((GtkWindow*)data);
 }
 
 void Minimise(gpointer data) {
-	gtk_window_iconify((GTKWindow*)data);
+	gtk_window_iconify((GtkWindow*)data);
 }
 
 void UnMinimise(gpointer data) {
-	gtk_window_present((GTKWindow*)data);
+	gtk_window_present((GtkWindow*)data);
 }
+
+bool disableContextMenu(GtkWindow* window) {
+	return TRUE;
+}
+void DisableContextMenu(void* webview) {
+	contextMenuDisabled = TRUE;
+	g_signal_connect(WEBKIT_WEB_VIEW(webview), "context-menu", G_CALLBACK(disableContextMenu), NULL);
+}
+
 
 */
 import "C"
@@ -535,6 +551,8 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 
 	if debug {
 		C.devtoolsEnabled(unsafe.Pointer(webview), C.int(1))
+	} else {
+		C.DisableContextMenu(unsafe.Pointer(webview))
 	}
 
 	// Set background colour
