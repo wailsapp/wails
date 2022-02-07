@@ -43,11 +43,11 @@ type Frontend struct {
 	startURL string
 
 	// main window handle
-	mainWindow *Window
-	// minWidth, minHeight, maxWidth, maxHeight int
-	bindings        *binding.Bindings
-	dispatcher      frontend.Dispatcher
-	servingFromDisk bool
+	mainWindow                               *Window
+	minWidth, minHeight, maxWidth, maxHeight int
+	bindings                                 *binding.Bindings
+	dispatcher                               frontend.Dispatcher
+	servingFromDisk                          bool
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
@@ -62,6 +62,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		dispatcher:      dispatcher,
 		ctx:             ctx,
 		startURL:        "file://wails/",
+		minHeight:       appoptions.MinHeight,
+		minWidth:        appoptions.MinWidth,
+		maxHeight:       appoptions.MaxHeight,
+		maxWidth:        appoptions.MaxWidth,
 	}
 
 	bindingsJSON, err := appBindings.ToJSON()
@@ -157,11 +161,15 @@ func (f *Frontend) WindowSetTitle(title string) {
 }
 
 func (f *Frontend) WindowFullscreen() {
+	f.mainWindow.SetMaxSize(0, 0)
+	f.mainWindow.SetMinSize(0, 0)
 	f.mainWindow.Fullscreen()
 }
 
 func (f *Frontend) WindowUnFullscreen() {
 	f.mainWindow.UnFullscreen()
+	f.mainWindow.SetMaxSize(f.maxWidth, f.maxHeight)
+	f.mainWindow.SetMinSize(f.minWidth, f.minHeight)
 }
 
 func (f *Frontend) WindowShow() {
@@ -185,9 +193,13 @@ func (f *Frontend) WindowUnminimise() {
 }
 
 func (f *Frontend) WindowSetMinSize(width int, height int) {
+	f.minWidth = width
+	f.minHeight = height
 	f.mainWindow.SetMinSize(width, height)
 }
 func (f *Frontend) WindowSetMaxSize(width int, height int) {
+	f.maxWidth = width
+	f.maxHeight = height
 	f.mainWindow.SetMaxSize(width, height)
 }
 
