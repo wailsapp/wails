@@ -447,6 +447,29 @@ void SetPosition(void* window, int x, int y) {
 	ExecuteOnMainThread(setPosition, (gpointer)args);
 }
 
+void Show(gpointer data) {
+	gtk_widget_show((GTKWidget*)data);
+}
+
+void Hide(gpointer data) {
+	gtk_widget_hide((GTKWidget*)data);
+}
+
+void Maximise(gpointer data) {
+	gtk_window_maximize((GTKWindow*)data);
+}
+
+void UnMaximise(gpointer data) {
+	gtk_window_unmaximize((GTKWindow*)data);
+}
+
+void Minimise(gpointer data) {
+	gtk_window_iconify((GTKWindow*)data);
+}
+
+void UnMinimise(gpointer data) {
+	gtk_window_present((GTKWindow*)data);
+}
 
 */
 import "C"
@@ -595,27 +618,27 @@ func (w *Window) SetMinSize(minWidth int, minHeight int) {
 }
 
 func (w *Window) Show() {
-	C.gtk_widget_show(w.asGTKWidget())
+	C.ExecuteOnMainThread(C.Show, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) Hide() {
-	C.gtk_widget_hide(w.asGTKWidget())
+	C.ExecuteOnMainThread(C.Hide, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) Maximise() {
-	C.gtk_window_maximize(w.asGTKWindow())
+	C.ExecuteOnMainThread(C.Maximise, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) UnMaximise() {
-	C.gtk_window_unmaximize(w.asGTKWindow())
+	C.ExecuteOnMainThread(C.UnMaximise, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) Minimise() {
-	C.gtk_window_iconify(w.asGTKWindow())
+	C.ExecuteOnMainThread(C.Minimise, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) UnMinimise() {
-	C.gtk_window_present(w.asGTKWindow())
+	C.ExecuteOnMainThread(C.UnMinimise, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) IsFullScreen() bool {
