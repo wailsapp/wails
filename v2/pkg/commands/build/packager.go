@@ -85,7 +85,10 @@ func packageApplicationForDarwin(options *Options) error {
 	var err error
 
 	// Create directory structure
-	bundlename := options.ProjectData.Name + ".app"
+	bundlename := options.BundleName
+	if bundlename == "" {
+		bundlename = options.ProjectData.Name + ".app"
+	}
 
 	contentsDirectory := filepath.Join(options.BuildDirectory, bundlename, "/Contents")
 	exeDir := filepath.Join(contentsDirectory, "/MacOS")

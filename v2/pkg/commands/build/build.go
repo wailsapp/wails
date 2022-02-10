@@ -53,6 +53,7 @@ type Options struct {
 	RunDelve            bool                 // Indicates if we should run delve after the build
 	WailsJSDir          string               // Directory to generate the wailsjs module
 	ForceBuild          bool                 // Force
+	BundleName          string               // Bundlename for Mac
 }
 
 // Build the project!

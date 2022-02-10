@@ -2,9 +2,6 @@ package build
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/colour"
-	"github.com/wailsapp/wails/v2/internal/project"
-	"github.com/wailsapp/wails/v2/internal/system"
 	"io"
 	"os"
 	"os/exec"
@@ -13,6 +10,10 @@ import (
 	"strings"
 	"text/tabwriter"
 	"time"
+
+	"github.com/wailsapp/wails/v2/internal/colour"
+	"github.com/wailsapp/wails/v2/internal/project"
+	"github.com/wailsapp/wails/v2/internal/system"
 
 	"github.com/wailsapp/wails/v2/cmd/wails/internal"
 	"github.com/wailsapp/wails/v2/internal/gomod"
@@ -187,7 +188,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		w.Init(os.Stdout, 8, 8, 0, '\t', 0)
 
 		// Write out the system information
-		fmt.Fprintf(w, "\n")
 		fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
 		fmt.Fprintf(w, "Platforms: \t%s\n", platform)
 		fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
@@ -274,6 +274,12 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 					logger.Println("Crosscompiling to Mac not currently supported.\n")
 					return
 				}
+				macTargets := targets.Filter(func(platform string) bool {
+					return strings.HasPrefix(platform, "darwin")
+				})
+				if macTargets.Length() == 2 {
+					buildOptions.BundleName = fmt.Sprintf("%s-%s.app", desiredFilename, buildOptions.Arch)
+				}
 			}
 
 			if targets.Length() > 1 {
@@ -281,7 +287,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 				switch buildOptions.Platform {
 				case "windows":
 					desiredFilename = fmt.Sprintf("%s-%s", desiredFilename, buildOptions.Arch)
-				default:
+				case "linux", "darwin":
 					desiredFilename = fmt.Sprintf("%s-%s-%s", desiredFilename, buildOptions.Platform, buildOptions.Arch)
 				}
 			}
