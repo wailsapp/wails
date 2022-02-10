@@ -49,7 +49,13 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	command.StringFlag("upxflags", "Flags to pass to upx", &compressFlags)
 
 	// Setup Platform flag
-	platform := runtime.GOOS
+	platform := runtime.GOOS + "/"
+	if system.IsAppleSilicon {
+		platform += "arm64"
+	} else {
+		platform += runtime.GOARCH
+	}
+
 	command.StringFlag("platform", "Platform to target. Comma separate multiple platforms", &platform)
 
 	// Verbosity
