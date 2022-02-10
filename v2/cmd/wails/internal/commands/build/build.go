@@ -292,7 +292,10 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 				logger.Println("Error: ", err.Error())
 				return
 			}
+
+			// Subsequent iterations
 			buildOptions.IgnoreFrontend = true
+			buildOptions.CleanBuildDirectory = false
 
 			// Output stats
 			buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", outputFilename, time.Since(start).Round(time.Millisecond).String()))
