@@ -196,7 +196,7 @@ func Build(options *Options) (string, error) {
 	// Do we need to pack the app for non-windows?
 	if options.Pack && options.Platform != "windows" {
 
-		outputLogger.Print("Packaging application: ")
+		outputLogger.Print("  - Packaging application: ")
 
 		// TODO: Allow cross platform build
 		err = packageProject(options, runtime.GOOS)
