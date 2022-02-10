@@ -545,7 +545,7 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 	// Check there is an 'InstallCommand' provided in wails.json
 	if b.projectData.InstallCommand == "" {
 		// No - don't install
-		outputLogger.Println("No Install command. Skipping.")
+		outputLogger.Println("  - No Install command. Skipping.")
 	} else {
 		// Do install if needed
 		outputLogger.Print("  - Installing frontend dependencies: ")
@@ -571,7 +571,7 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 		buildCommand = b.projectData.BuildCommand
 	}
 	if buildCommand == "" {
-		outputLogger.Println("No Build command. Skipping.")
+		outputLogger.Println("  - No Build command. Skipping.")
 		// No - ignore
 		return nil
 	}

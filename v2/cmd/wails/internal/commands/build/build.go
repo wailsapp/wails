@@ -274,10 +274,13 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 				// target filename
 				switch buildOptions.Platform {
 				case "windows":
-					desiredFilename = fmt.Sprintf("%s-%s.exe", desiredFilename, buildOptions.Arch)
+					desiredFilename = fmt.Sprintf("%s-%s", desiredFilename, buildOptions.Arch)
 				default:
 					desiredFilename = fmt.Sprintf("%s-%s-%s", desiredFilename, buildOptions.Platform, buildOptions.Arch)
 				}
+			}
+			if buildOptions.Platform == "windows" {
+				desiredFilename += ".exe"
 			}
 			buildOptions.OutputFile = desiredFilename
 
