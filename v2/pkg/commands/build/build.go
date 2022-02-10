@@ -117,7 +117,7 @@ func Build(options *Options) (string, error) {
 	// If we are building for windows, we will need to generate the asset bundle before
 	// compilation. This will be a .syso file in the project root
 	if options.Pack && options.Platform == "windows" {
-		outputLogger.Print("Generating bundle assets: ")
+		outputLogger.Print("  - Generating bundle assets: ")
 		err := packageApplicationForWindows(options)
 		if err != nil {
 			return "", err
@@ -134,7 +134,7 @@ func Build(options *Options) (string, error) {
 	}
 
 	// Compile the application
-	outputLogger.Print("Compiling application: ")
+	outputLogger.Print("  - Compiling application: ")
 
 	if options.Platform == "darwin" && options.Arch == "universal" {
 		outputFile := builder.OutputFilename(options)

@@ -548,7 +548,7 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 		outputLogger.Println("No Install command. Skipping.")
 	} else {
 		// Do install if needed
-		outputLogger.Print("Installing frontend dependencies: ")
+		outputLogger.Print("  - Installing frontend dependencies: ")
 		if verbose {
 			outputLogger.Println("")
 			outputLogger.Println("  Install command: '" + b.projectData.InstallCommand + "'")
@@ -576,7 +576,7 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 		return nil
 	}
 
-	outputLogger.Print("Compiling frontend: ")
+	outputLogger.Print("  - Compiling frontend: ")
 	cmd := strings.Split(buildCommand, " ")
 	if verbose {
 		outputLogger.Println("")
