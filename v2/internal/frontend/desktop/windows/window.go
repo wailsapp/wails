@@ -16,14 +16,20 @@ import (
 
 type Window struct {
 	winc.Form
-	frontendOptions                   *options.App
-	applicationMenu                   *menu.Menu
-	notifyParentWindowPositionChanged func() error
+	frontendOptions                          *options.App
+	applicationMenu                          *menu.Menu
+	notifyParentWindowPositionChanged        func() error
+	minWidth, minHeight, maxWidth, maxHeight int
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
-	result := new(Window)
-	result.frontendOptions = appoptions
+	result := &Window{
+		frontendOptions: appoptions,
+		minHeight:       appoptions.MinHeight,
+		minWidth:        appoptions.MinWidth,
+		maxHeight:       appoptions.MaxHeight,
+		maxWidth:        appoptions.MaxWidth,
+	}
 	result.SetIsForm(true)
 
 	var exStyle int
@@ -87,6 +93,33 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 
 func (w *Window) Run() int {
 	return winc.RunMainLoop()
+}
+
+func (w *Window) Fullscreen() {
+	w.Form.SetMaxSize(0, 0)
+	w.Form.SetMinSize(0, 0)
+	w.Form.Fullscreen()
+}
+
+func (w *Window) UnFullscreen() {
+	if !w.IsFullScreen() {
+		return
+	}
+	w.Form.UnFullscreen()
+	w.SetMinSize(w.minWidth, w.minHeight)
+	w.SetMaxSize(w.maxWidth, w.maxHeight)
+}
+
+func (w *Window) SetMinSize(minWidth int, minHeight int) {
+	w.minWidth = minWidth
+	w.minHeight = minHeight
+	w.Form.SetMinSize(minWidth, minHeight)
+}
+
+func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
+	w.maxWidth = maxWidth
+	w.maxHeight = maxHeight
+	w.Form.SetMaxSize(maxWidth, maxHeight)
 }
 
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
