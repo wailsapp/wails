@@ -495,17 +495,16 @@ func gtkBool(input bool) C.gboolean {
 }
 
 type Window struct {
-	appoptions                                               *options.App
-	debug                                                    bool
-	gtkWindow                                                unsafe.Pointer
-	contentManager                                           unsafe.Pointer
-	webview                                                  unsafe.Pointer
-	applicationMenu                                          *menu.Menu
-	menubar                                                  *C.GtkWidget
-	vbox                                                     *C.GtkWidget
-	accels                                                   *C.GtkAccelGroup
-	minWidth, minHeight, maxWidth, maxHeight                 int
-	tempMaxWidth, tempMinWidth, tempMaxHeight, tempMinHeight int
+	appoptions                               *options.App
+	debug                                    bool
+	gtkWindow                                unsafe.Pointer
+	contentManager                           unsafe.Pointer
+	webview                                  unsafe.Pointer
+	applicationMenu                          *menu.Menu
+	menubar                                  *C.GtkWidget
+	vbox                                     *C.GtkWidget
+	accels                                   *C.GtkAccelGroup
+	minWidth, minHeight, maxWidth, maxHeight int
 }
 
 func bool2Cint(value bool) C.int {
@@ -587,19 +586,17 @@ func (w *Window) cWebKitUserContentManager() *C.WebKitUserContentManager {
 }
 
 func (w *Window) Fullscreen() {
-	w.tempMaxWidth = w.maxWidth
-	w.tempMaxHeight = w.maxHeight
-	w.tempMinWidth = w.minWidth
-	w.tempMinHeight = w.minHeight
-	w.SetMaxSize(0, 0)
-	w.SetMinSize(0, 0)
+	C.SetMinMaxSize(w.asGTKWindow(), C.int(0), C.int(0), C.int(0), C.int(0))
 	C.ExecuteOnMainThread(C.gtk_window_fullscreen, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) UnFullscreen() {
+	if !w.IsFullScreen() {
+		return
+	}
 	C.ExecuteOnMainThread(C.gtk_window_unfullscreen, C.gpointer(w.asGTKWindow()))
-	w.SetMaxSize(w.tempMaxWidth, w.tempMaxHeight)
-	w.SetMinSize(w.tempMinWidth, w.tempMinHeight)
+	w.SetMinSize(w.minWidth, w.minHeight)
+	w.SetMaxSize(w.maxWidth, w.maxHeight)
 }
 
 func (w *Window) Destroy() {
