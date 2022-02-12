@@ -216,7 +216,13 @@ is passed to it.
 
 All data types are correctly translated between Go and Javascript. Even structs. If you return a struct from a Go call,
 it will be returned to your frontend as a Javascript map. Note: If you wish to use structs, you **must** define `json` struct
-tags for your fields! It is also possible to send structs back to Go. Any Javascript map passed as an argument that
+tags for your fields!
+
+:::info Note
+Anonymous nested structs are not supported at this time.
+:::
+
+It is also possible to send structs back to Go. Any Javascript map passed as an argument that
 is expecting a struct, will be converted to that struct type. To make this process a lot easier, in `dev` mode,
 a TypeScript module is generated, defining all the struct types used in bound methods. Using this module, it's possible
 to construct and send native Javascript objects to the Go code.
