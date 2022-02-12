@@ -115,7 +115,11 @@ func packageApplicationForDarwin(options *Options) error {
 	}
 
 	// Generate Icons
-	err = processApplicationIcon(resourceDir, options.ProjectData.Path)
+	buildDir, err := getBuildBaseDirectory(options)
+	if err != nil {
+		return err
+	}
+	err = processApplicationIcon(resourceDir, buildDir)
 	if err != nil {
 		return err
 	}
