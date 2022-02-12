@@ -373,6 +373,19 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	// Format error if we have one
 	if err != nil {
+		if options.Platform == "darwin" {
+			output, _ := cmd.CombinedOutput()
+			stdErr := string(output)
+			if strings.Contains(err.Error(), "ld: framework not found UniformTypeIdentifiers") ||
+				strings.Contains(stdErr, "ld: framework not found UniformTypeIdentifiers") {
+				println(`
+NOTE: It would appear that you do not have the latest Xcode cli tools installed.
+Please reinstall by doing the following:
+  1. Remove the current installation located at "xcode-select -p", EG: sudo rm -rf /Library/Developer/CommandLineTools
+  2. Install latest Xcode tools: xcode-select --install
+`)
+			}
+		}
 		return err
 	}
 
