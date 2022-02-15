@@ -295,7 +295,7 @@ func compileResources(options *Options) error {
 	defer iconFile.Close()
 	ico, err := winres.LoadICO(iconFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("couldn't load icon from icon.ico: %w", err)
 	}
 	err = rs.SetIcon(winres.RT_ICON, ico)
 	if err != nil {
