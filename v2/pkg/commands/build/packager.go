@@ -260,7 +260,7 @@ func generateIcoFile(options *Options) error {
 		if err != nil {
 			return err
 		}
-		output, err := os.OpenFile(icoFile, os.O_CREATE, 0644)
+		output, err := os.OpenFile(icoFile, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
 		}
