@@ -260,7 +260,7 @@ func generateIcoFile(options *Options) error {
 		if err != nil {
 			return err
 		}
-		output, err := os.OpenFile(icoFile, os.O_CREATE, 0644)
+		output, err := os.OpenFile(icoFile, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
 		}
@@ -295,7 +295,7 @@ func compileResources(options *Options) error {
 	defer iconFile.Close()
 	ico, err := winres.LoadICO(iconFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("couldn't load icon from icon.ico: %w", err)
 	}
 	err = rs.SetIcon(winres.RT_ICON, ico)
 	if err != nil {
