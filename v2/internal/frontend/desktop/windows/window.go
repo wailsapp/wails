@@ -151,7 +151,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			// This Option is not affected by returning 0 in WM_NCCALCSIZE.
 			// As a result we have hidden the titlebar but still have the default window frame styling.
 			// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
-			if winoptions := w.frontendOptions.Windows; winoptions != nil && winoptions.EnableFramelessBorder {
+			if winoptions := w.frontendOptions.Windows; winoptions == nil || !winoptions.DisableFramelessWindowDecorations {
 				// -1: Adds the default frame styling (aero shadow and e.g. rounded corners on Windows 11)
 				//     Also shows the caption buttons if transparent ant translucent but they don't work.
 				//  0: Adds the default frame styling but no aero shadow, does not show the caption buttons.

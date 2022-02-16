@@ -42,11 +42,11 @@ func main() {
             app,
         },
         Windows: &windows.Options{
-            WebviewIsTransparent:  false,
-            WindowIsTranslucent:   false,
-            DisableWindowIcon:     false,
-            EnableFramelessBorder: false,
-            WebviewUserDataPath:   "",
+            WebviewIsTransparent:              false,
+            WindowIsTranslucent:               false,
+            DisableWindowIcon:                 false,
+            DisableFramelessWindowDecorations: false,
+            WebviewUserDataPath:               "",
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -357,14 +357,15 @@ Type: bool
 
 Setting this to `true` will remove the icon in the top left corner of the title bar.
 
-### EnableFramelessBorder
+### DisableFramelessWindowDecorations
 
-Name: EnableFramelessBorder
+Name: DisableFramelessWindowDecorations
 
 Type: bool
 
-Setting this to `true` will add a border around the window if [Frameless](#Frameless) has been activated.
-This allows hiding the title bar but still having a border around the window.
+Setting this to `true` will remove the window decorations in [Frameless](#Frameless) mode. This means there will be no
+'Aero Shadow' and no 'Rounded Corners' shown for the window. Please note that 'Rounded Corners' are only supported on
+Windows 11.
 
 ### WebviewUserDataPath
 
