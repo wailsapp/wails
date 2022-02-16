@@ -147,6 +147,15 @@ export function WindowMaximise() {
 }
 
 /**
+ * Toggle the Maximise of the Window
+ *
+ * @export
+ */
+export function WindowToggleMaximise() {
+    window.WailsInvoke('Wt');
+}
+
+/**
  * Unmaximise the Window
  *
  * @export

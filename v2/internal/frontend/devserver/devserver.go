@@ -187,6 +187,10 @@ func (d *DevWebServer) WindowMaximise() {
 	d.desktopFrontend.WindowMaximise()
 }
 
+func (d *DevWebServer) WindowToggleMaximise() {
+	d.desktopFrontend.WindowToggleMaximise()
+}
+
 func (d *DevWebServer) WindowUnmaximise() {
 	d.desktopFrontend.WindowUnmaximise()
 }

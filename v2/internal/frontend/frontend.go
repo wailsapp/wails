@@ -72,6 +72,7 @@ type Frontend interface {
 	WindowShow()
 	WindowHide()
 	WindowCenter()
+	WindowToggleMaximise()
 	WindowMaximise()
 	WindowUnmaximise()
 	WindowMinimise()

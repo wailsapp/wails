@@ -88,6 +88,12 @@ func WindowMaximise(ctx context.Context) {
 	appFrontend.WindowMaximise()
 }
 
+// WindowToggleMaximise the window
+func WindowToggleMaximise(ctx context.Context) {
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowToggleMaximise()
+}
+
 // WindowUnmaximise the window
 func WindowUnmaximise(ctx context.Context) {
 	appFrontend := getFrontend(ctx)

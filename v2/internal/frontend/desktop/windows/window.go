@@ -201,6 +201,11 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	return w.Form.WndProc(msg, wparam, lparam)
 }
 
+func (w *Window) IsMaximised() bool {
+	style := uint32(w32.GetWindowLong(w.Handle(), w32.GWL_STYLE))
+	return style&w32.WS_MAXIMIZE != 0
+}
+
 // TODO this should be put into the winc if we are happy with this solution.
 var (
 	modkernel32 = syscall.NewLazyDLL("dwmapi.dll")

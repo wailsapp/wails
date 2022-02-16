@@ -65,6 +65,8 @@ export interface runtime {
 
     WindowMaximise(): void;
 
+    WindowToggleMaximise(): void;
+
     WindowUnmaximise(): void;
 
     WindowMinimise(): void;
