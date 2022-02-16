@@ -147,12 +147,18 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	if w.frontendOptions.Frameless {
 		switch msg {
 		case w32.WM_ACTIVATE:
-			// If we want to have a frameless window but with border, extend the client area outside of the window. This
-			// Option is not affected by returning 0 in WM_NCCALCSIZE.
-			// As a result we have hidden the titlebar but still have the default border drawn.
+			// If we want to have a frameless window but with the default frame decorations, extend the DWM client area.
+			// This Option is not affected by returning 0 in WM_NCCALCSIZE.
+			// As a result we have hidden the titlebar but still have the default window frame styling.
 			// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
 			if winoptions := w.frontendOptions.Windows; winoptions != nil && winoptions.EnableFramelessBorder {
-				if err := dwmExtendFrameIntoClientArea(w.Handle(), w32.MARGINS{-1, -1, -1, -1}); err != nil {
+				// -1: Adds the default frame styling (aero shadow and e.g. rounded corners on Windows 11)
+				//     Also shows the caption buttons if transparent ant translucent but they don't work.
+				//  0: Adds the default frame styling but no aero shadow, does not show the caption buttons.
+				//  1: Adds the default frame styling (aero shadow and e.g. rounded corners on Windows 11) but no caption buttons
+				//     are shown if transparent ant translucent.
+				margins := w32.MARGINS{1, 1, 1, 1} // Only extend 1 pixel to have the default frame styling but no caption buttons
+				if err := dwmExtendFrameIntoClientArea(w.Handle(), margins); err != nil {
 					log.Fatal(fmt.Errorf("DwmExtendFrameIntoClientArea failed: %s", err))
 				}
 			}
