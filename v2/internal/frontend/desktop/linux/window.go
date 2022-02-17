@@ -79,6 +79,13 @@ int IsFullscreen(GtkWidget *widget) {
 	return state & GDK_WINDOW_STATE_FULLSCREEN == GDK_WINDOW_STATE_FULLSCREEN;
 }
 
+int IsMaximised(GtkWidget *widget) {
+	GdkWindow *gdkwindow = gtk_widget_get_window(widget);
+	GdkWindowState state = gdk_window_get_state(GDK_WINDOW(gdkwindow));
+	return state & GDK_WINDOW_STATE_MAXIMIZED;
+}
+
+
 extern void processMessage(char*);
 
 static void sendMessageToBackend(WebKitUserContentManager *contentManager,
@@ -672,6 +679,11 @@ func (w *Window) IsFullScreen() bool {
 	return false
 }
 
+func (w *Window) IsMaximised() bool {
+	result := C.IsMaximised(w.asGTKWidget())
+	return result > 0
+}
+
 func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
 	data := C.RGBAOptions{
 		r:       C.uchar(r),
@@ -811,4 +823,12 @@ func (w *Window) MessageDialog(dialogOptions frontend.MessageDialogOptions) {
 		data.messageType = C.int(3)
 	}
 	C.ExecuteOnMainThread(C.messageDialog, C.gpointer(&data))
+}
+
+func (w *Window) ToggleMaximise() {
+	if w.IsMaximised() {
+		w.UnMaximise()
+	} else {
+		w.Maximise()
+	}
 }
