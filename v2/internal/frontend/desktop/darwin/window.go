@@ -154,6 +154,9 @@ func (w *Window) SetTitle(title string) {
 func (w *Window) Maximise() {
 	C.Maximise(w.context)
 }
+func (w *Window) ToggleMaximise() {
+	C.ToggleMaximise(w.context)
+}
 
 func (w *Window) UnMaximise() {
 	C.UnMaximise(w.context)

@@ -156,6 +156,13 @@ void Maximise(void* inctx) {
     );
 }
 
+void ToggleMaximise(void* inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx ToggleMaximise];
+    );
+}
+
 const char* GetSize(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSRect frame = [ctx.mainWindow frame];
