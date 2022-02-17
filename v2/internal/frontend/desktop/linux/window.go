@@ -10,6 +10,7 @@ package linux
 #include "webkit2/webkit2.h"
 #include <stdio.h>
 #include <limits.h>
+#include "stdint.h"
 
 
 void ExecuteOnMainThread(void* f, gpointer jscallback) {
