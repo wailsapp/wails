@@ -199,6 +199,18 @@ func (f *Frontend) WindowMaximise() {
 		f.frontendOptions.WindowStartState = options.Maximised
 	}
 }
+func (f *Frontend) WindowToggleMaximise() {
+	runtime.LockOSThread()
+	if !f.hasStarted {
+		return
+	}
+	if f.mainWindow.IsMaximised() {
+		f.WindowUnmaximise()
+	} else {
+		f.WindowMaximise()
+	}
+}
+
 func (f *Frontend) WindowUnmaximise() {
 	runtime.LockOSThread()
 	f.mainWindow.Restore()

@@ -55,6 +55,8 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 		go sender.WindowSetRGBA(&rgba)
 	case 'M':
 		go sender.WindowMaximise()
+	case 't':
+		go sender.WindowToggleMaximise()
 	case 'U':
 		go sender.WindowUnmaximise()
 	case 'm':

@@ -30,6 +30,7 @@ void Fullscreen(void* ctx);
 void UnFullscreen(void* ctx);
 void Minimise(void* ctx);
 void UnMinimise(void* ctx);
+void ToggleMaximise(void* ctx);
 void Maximise(void* ctx);
 void UnMaximise(void* ctx);
 void Hide(void* ctx);

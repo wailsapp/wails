@@ -181,6 +181,9 @@ func (f *Frontend) WindowHide() {
 func (f *Frontend) WindowMaximise() {
 	f.mainWindow.Maximise()
 }
+func (f *Frontend) WindowToggleMaximise() {
+	f.mainWindow.ToggleMaximise()
+}
 func (f *Frontend) WindowUnmaximise() {
 	f.mainWindow.UnMaximise()
 }

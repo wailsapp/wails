@@ -67,6 +67,7 @@
 - (void) Minimise;
 - (void) UnMinimise;
 - (void) Maximise;
+- (void) ToggleMaximise;
 - (void) UnMaximise;
 - (void) SetRGBA:(int)r :(int)g :(int)b :(int)a;
 - (void) HideMouse;

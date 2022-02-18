@@ -150,6 +150,15 @@ export function WindowMaximise() {
 }
 
 /**
+ * Toggle the Maximise of the Window
+ *
+ * @export
+ */
+export function WindowToggleMaximise() {
+	window.runtime.WindowToggleMaximise();
+}
+
+/**
  * Unmaximise the Window
  *
  * @export
