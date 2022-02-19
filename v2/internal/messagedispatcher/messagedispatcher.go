@@ -3,10 +3,11 @@ package messagedispatcher
 import (
 	"context"
 	"encoding/json"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"github.com/wailsapp/wails/v2/internal/crypto"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -278,7 +279,7 @@ func (d *Dispatcher) processWindowMessage(result *servicebus.Message) {
 	case "unfullscreen":
 		// Notify clients
 		for _, client := range d.clients {
-			client.frontend.WindowUnFullscreen()
+			client.frontend.WindowUnfullscreen()
 		}
 	case "setcolour":
 		colour, ok := result.Data().(int)

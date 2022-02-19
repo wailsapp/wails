@@ -50,7 +50,7 @@ export function WindowFullscreen() {
  *
  * @export
  */
-export function WindowUnFullscreen() {
+export function WindowUnfullscreen() {
     window.WailsInvoke('Wf');
 }
 

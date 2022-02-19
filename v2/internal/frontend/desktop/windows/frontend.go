@@ -172,7 +172,7 @@ func (f *Frontend) WindowFullscreen() {
 	f.mainWindow.Fullscreen()
 }
 
-func (f *Frontend) WindowUnFullscreen() {
+func (f *Frontend) WindowUnfullscreen() {
 	runtime.LockOSThread()
 	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
 		f.ExecJS("window.wails.flags.enableResize = true;")

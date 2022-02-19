@@ -37,7 +37,7 @@ export interface runtime {
 
     WindowFullscreen(): void;
 
-    WindowUnFullscreen(): void;
+    WindowUnfullscreen(): void;
 
     WindowSetSize(width: number, height: number): Promise<Size>;
 

@@ -32,7 +32,7 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 	case 'F':
 		go sender.WindowFullscreen()
 	case 'f':
-		go sender.WindowUnFullscreen()
+		go sender.WindowUnfullscreen()
 	case 's':
 		parts := strings.Split(message[3:], ":")
 		w := d.mustAtoI(parts[0])
