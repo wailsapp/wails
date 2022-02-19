@@ -2,10 +2,11 @@ package bridge
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"github.com/wailsapp/wails/v2/internal/messagedispatcher"
 
@@ -126,7 +127,7 @@ func (d *DialogClient) WindowSetMaxSize(width int, height int) {
 func (d *DialogClient) WindowFullscreen() {
 }
 
-func (d *DialogClient) WindowUnFullscreen() {
+func (d *DialogClient) WindowUnfullscreen() {
 }
 
 func (d *DialogClient) WindowSetColour(colour int) {

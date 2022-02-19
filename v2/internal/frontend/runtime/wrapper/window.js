@@ -52,8 +52,8 @@ export function WindowFullscreen() {
  *
  * @export
  */
-export function WindowUnFullscreen() {
-	window.runtime.WindowUnFullscreen();
+export function WindowUnfullscreen() {
+	window.runtime.WindowUnfullscreen();
 }
 
 /**

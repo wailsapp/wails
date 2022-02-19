@@ -84,7 +84,7 @@ type Frontend interface {
 	WindowSetMinSize(width int, height int)
 	WindowSetMaxSize(width int, height int)
 	WindowFullscreen()
-	WindowUnFullscreen()
+	WindowUnfullscreen()
 	WindowSetRGBA(col *options.RGBA)
 	WindowReload()
 

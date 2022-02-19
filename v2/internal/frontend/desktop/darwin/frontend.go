@@ -167,7 +167,7 @@ func (f *Frontend) WindowFullscreen() {
 	f.mainWindow.Fullscreen()
 }
 
-func (f *Frontend) WindowUnFullscreen() {
+func (f *Frontend) WindowUnfullscreen() {
 	f.mainWindow.UnFullscreen()
 }
 
