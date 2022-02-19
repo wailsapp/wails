@@ -112,7 +112,13 @@ func WindowUnminimise(ctx context.Context) {
 	appFrontend.WindowUnminimise()
 }
 
-func WindowSetRGBA(ctx context.Context, col *options.RGBA) {
+func WindowSetRGBA(ctx context.Context, R, G, B, A uint8) {
 	appFrontend := getFrontend(ctx)
+	col := &options.RGBA{
+		R: r,
+		G: g,
+		B: b,
+		A: a,
+	}
 	appFrontend.WindowSetRGBA(col)
 }
