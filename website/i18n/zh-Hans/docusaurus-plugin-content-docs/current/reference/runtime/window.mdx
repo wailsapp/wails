@@ -159,11 +159,11 @@ JS 方法签名: `WindowUnminimise()`
 
 ### 窗口设置 RGBA
 
-Go 方法签名: `WindowSetRGBA(ctx context.Context, col *options.RGBA)`
+Go 方法签名: `WindowSetRGBA(ctx context.Context, R, G, B, A uint8)`
 
-JS 方法签名: `WindowSetRGBA(col: RGBA)`
+JS 方法签名: `WindowSetRGBA(R, G, B, A)`
 
-将窗口的背景颜色设置为给定的[RGBA](window#颜色)颜色定义。此颜色将显示所有透明像素。
+将窗口的背景颜色设置为给定的 RGBA 颜色定义。此颜色将显示所有透明像素。
 
 R、G、B 和 A 的有效值为 0-255。
 
@@ -190,16 +190,5 @@ interface Position {
 interface Size {
   w: number;
   h: number;
-}
-```
-
-### 颜色
-
-```ts
-interface RGBA {
-  r: number;
-  g: number;
-  b: number;
-  a: number;
 }
 ```
