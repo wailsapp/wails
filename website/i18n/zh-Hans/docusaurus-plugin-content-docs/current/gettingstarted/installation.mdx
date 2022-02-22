@@ -16,7 +16,7 @@ sidebar_position: 1
 Wails 有许多安装前需要的常见依赖项：
 
 - Go 1.17+
-- NPM (Node 14+)
+- NPM (Node 15+)
 
 ### Go
 
@@ -62,7 +62,14 @@ import TabItem from "@theme/TabItem";
     <br />
     <code>xcode-select --install</code>
   </TabItem>
-  <TabItem value="Linux">即将推出...</TabItem>
+  <TabItem value="Linux">
+    Linux 需要标准的<code>gcc</code>构建工具以及 <code>libgtk3</code>和
+    <code>libwebkit</code>。与其为不同的发行版列出大量命令，Wails
+    可以尝试确定针对您的特定发行版的安装命令。安装后运行
+    <code>wails doctor</code>
+    以显示如何安装依赖项。如果不支持您的发行版/包管理器，请参阅
+    <a href="/docs/guides/linux-distro-support">添加Linux发行版</a>指南。
+  </TabItem>
 </Tabs>
 
 ## 可选依赖
