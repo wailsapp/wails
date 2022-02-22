@@ -150,7 +150,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
-		// frontend:dev server command
+		// frontend:dev server command. *Not concurrent*
 		if projectConfig.DevCommand != "" {
 			var devCommandWaitGroup sync.WaitGroup
 			closer := runFrontendDevCommand(cwd, projectConfig.DevCommand, &devCommandWaitGroup)
