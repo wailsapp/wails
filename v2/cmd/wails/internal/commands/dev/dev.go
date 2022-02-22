@@ -103,20 +103,12 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		logger := clilogger.New(w)
 		app.PrintBanner()
 
-		experimental := false
 		userTags := []string{}
 		for _, tag := range strings.Split(flags.tags, " ") {
 			thisTag := strings.TrimSpace(tag)
 			if thisTag != "" {
 				userTags = append(userTags, thisTag)
 			}
-			if thisTag == "exp" {
-				experimental = true
-			}
-		}
-
-		if runtime.GOOS == "linux" && !experimental {
-			return fmt.Errorf("Linux version coming soon!")
 		}
 
 		cwd, err := os.Getwd()
