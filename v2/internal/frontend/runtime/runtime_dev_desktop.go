@@ -1,4 +1,5 @@
 //go:build dev || bindings || (!dev && !production && !bindings)
+// +build dev bindings !dev,!production,!bindings
 
 package runtime
 

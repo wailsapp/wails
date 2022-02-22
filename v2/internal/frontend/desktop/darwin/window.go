@@ -137,7 +137,7 @@ func (w *Window) ExecJS(js string) {
 	C.free(unsafe.Pointer(_js))
 }
 
-func (w *Window) SetPos(x int, y int) {
+func (w *Window) SetPosition(x int, y int) {
 	C.SetPosition(w.context, C.int(x), C.int(y))
 }
 
@@ -204,8 +204,8 @@ func parseIntDuo(temp string) (int, int) {
 	return x, y
 }
 
-func (w *Window) Pos() (int, int) {
-	var _result *C.char = C.GetPos(w.context)
+func (w *Window) GetPosition() (int, int) {
+	var _result *C.char = C.GetPosition(w.context)
 	temp := C.GoString(_result)
 	return parseIntDuo(temp)
 }

@@ -11,6 +11,11 @@ package linux
 #include <stdio.h>
 #include <limits.h>
 
+
+void ExecuteOnMainThread(void* f, gpointer jscallback) {
+    g_idle_add((GSourceFunc)f, (gpointer)jscallback);
+}
+
 static GtkWidget* GTKWIDGET(void *pointer) {
 	return GTK_WIDGET(pointer);
 }
@@ -60,13 +65,10 @@ GdkRectangle getCurrentMonitorGeometry(GtkWindow *window) {
     return result;
 }
 
-void SetPosition(GtkWindow *window, int x, int y) {
-	GdkRectangle monitorDimensions = getCurrentMonitorGeometry(window);
-	gtk_window_move(window, monitorDimensions.x + x, monitorDimensions.y + y);
-}
-
-void Center(GtkWindow *window)
+void Center(gpointer data)
 {
+	GtkWindow *window = (GtkWindow*)data;
+
     // Get the geometry of the monitor
     GdkRectangle m = getCurrentMonitorGeometry(window);
 
@@ -183,13 +185,28 @@ void loadIndex(void* webview) {
 	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview), "wails:///");
 }
 
-static void startDrag(void *webview, GtkWindow* mainwindow)
-{
-    // Ignore non-toplevel widgets
-    GtkWidget *window = gtk_widget_get_toplevel(GTK_WIDGET(webview));
-    if (!GTK_IS_WINDOW(window)) return;
+typedef struct DragOptions {
+	void *webview;
+	GtkWindow* mainwindow;
+} DragOptions;
 
-    gtk_window_begin_move_drag(mainwindow, 1, xroot, yroot, dragTime);
+static void startDrag(gpointer data)
+{
+	DragOptions* options = (DragOptions*)data;
+
+   // Ignore non-toplevel widgets
+   GtkWidget *window = gtk_widget_get_toplevel(GTK_WIDGET(options->webview));
+   if (!GTK_IS_WINDOW(window)) return;
+
+   gtk_window_begin_move_drag(options->mainwindow, 1, xroot, yroot, dragTime);
+	free(data);
+}
+
+static void StartDrag(void *webview, GtkWindow* mainwindow) {
+	DragOptions* data = malloc(sizeof(DragOptions));
+	data->webview = webview;
+	data->mainwindow = mainwindow;
+	ExecuteOnMainThread(startDrag, (gpointer)data);
 }
 
 typedef struct JSCallback {
@@ -202,10 +219,6 @@ int executeJS(gpointer data) {
     webkit_web_view_run_javascript(js->webview, js->script, NULL, NULL, NULL);
     free(js->script);
     return G_SOURCE_REMOVE;
-}
-
-void ExecuteOnMainThread(void* f, gpointer jscallback) {
-    g_idle_add((GSourceFunc)f, (gpointer)jscallback);
 }
 
 void extern processMessageDialogResult(char*);
@@ -393,6 +406,48 @@ void setRGBA(gpointer* data) {
 	GdkRGBA colour = {options->r / 255.0, options->g / 255.0, options->b / 255.0, options->a / 255.0};
 	webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(options->webview), &colour);
 }
+
+typedef struct SetTitleArgs {
+	GtkWindow* window;
+	char* title;
+} SetTitleArgs;
+
+void setTitle(gpointer data) {
+	SetTitleArgs* args = (SetTitleArgs*)data;
+	gtk_window_set_title(args->window, args->title);
+	free((void*)args->title);
+	free((void*)data);
+}
+
+void SetTitle(GtkWindow* window, char* title) {
+	SetTitleArgs* args = malloc(sizeof(SetTitleArgs));
+	args->window = window;
+	args->title = title;
+	ExecuteOnMainThread(setTitle, (gpointer)args);
+}
+
+typedef struct SetPositionArgs {
+	int x;
+	int y;
+	void* window;
+} SetPositionArgs;
+
+void setPosition(gpointer data) {
+	SetPositionArgs* args = (SetPositionArgs*)data;
+	gtk_window_move((GtkWindow*)args->window, args->x, args->y);
+	free(args);
+}
+
+void SetPosition(void* window, int x, int y) {
+	GdkRectangle monitorDimensions = getCurrentMonitorGeometry(window);
+	SetPositionArgs* args = malloc(sizeof(SetPositionArgs));
+	args->window = window;
+	args->x = monitorDimensions.x + x;
+	args->y = monitorDimensions.y + y;
+	ExecuteOnMainThread(setPosition, (gpointer)args);
+}
+
+
 */
 import "C"
 import (
@@ -495,11 +550,11 @@ func (w *Window) cWebKitUserContentManager() *C.WebKitUserContentManager {
 }
 
 func (w *Window) Fullscreen() {
-	C.gtk_window_fullscreen(w.asGTKWindow())
+	C.ExecuteOnMainThread(C.gtk_window_fullscreen, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) UnFullscreen() {
-	C.gtk_window_unfullscreen(w.asGTKWindow())
+	C.ExecuteOnMainThread(C.gtk_window_unfullscreen, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) Destroy() {
@@ -512,13 +567,11 @@ func (w *Window) Close() {
 }
 
 func (w *Window) Center() {
-	C.Center(w.asGTKWindow())
+	C.ExecuteOnMainThread(C.Center, C.gpointer(w.asGTKWindow()))
 }
 
-func (w *Window) SetPos(x int, y int) {
-	cX := C.int(x)
-	cY := C.int(y)
-	C.gtk_window_move(w.asGTKWindow(), cX, cY)
+func (w *Window) SetPosition(x int, y int) {
+	C.SetPosition(unsafe.Pointer(w.asGTKWindow()), C.int(x), C.int(y))
 }
 
 func (w *Window) Size() (int, int) {
@@ -527,7 +580,7 @@ func (w *Window) Size() (int, int) {
 	return int(width), int(height)
 }
 
-func (w *Window) Pos() (int, int) {
+func (w *Window) GetPosition() (int, int) {
 	var width, height C.int
 	C.gtk_window_get_position(w.asGTKWindow(), &width, &height)
 	return int(width), int(height)
@@ -621,9 +674,7 @@ func (w *Window) SetDecorated(frameless bool) {
 }
 
 func (w *Window) SetTitle(title string) {
-	cTitle := C.CString(title)
-	defer C.free(unsafe.Pointer(cTitle))
-	C.gtk_window_set_title(w.asGTKWindow(), cTitle)
+	C.SetTitle(w.asGTKWindow(), C.CString(title))
 }
 
 func (w *Window) ExecJS(js string) {
@@ -635,7 +686,7 @@ func (w *Window) ExecJS(js string) {
 }
 
 func (w *Window) StartDrag() {
-	C.startDrag(w.webview, w.asGTKWindow())
+	C.StartDrag(w.webview, w.asGTKWindow())
 }
 
 func (w *Window) Quit() {

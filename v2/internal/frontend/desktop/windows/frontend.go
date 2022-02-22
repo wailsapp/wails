@@ -145,11 +145,11 @@ func (f *Frontend) WindowCenter() {
 	f.mainWindow.Center()
 }
 
-func (f *Frontend) WindowSetPos(x, y int) {
+func (f *Frontend) WindowSetPosition(x, y int) {
 	runtime.LockOSThread()
 	f.mainWindow.SetPos(x, y)
 }
-func (f *Frontend) WindowGetPos() (int, int) {
+func (f *Frontend) WindowGetPosition() (int, int) {
 	runtime.LockOSThread()
 	return f.mainWindow.Pos()
 }
@@ -201,7 +201,9 @@ func (f *Frontend) WindowHide() {
 func (f *Frontend) WindowMaximise() {
 	runtime.LockOSThread()
 	if f.hasStarted {
-		f.mainWindow.Maximise()
+		if !f.frontendOptions.DisableResize {
+			f.mainWindow.Maximise()
+		}
 	} else {
 		f.frontendOptions.WindowStartState = options.Maximised
 	}
@@ -519,7 +521,10 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 
 	switch f.frontendOptions.WindowStartState {
 	case options.Maximised:
-		f.mainWindow.Maximise()
+		if !f.frontendOptions.DisableResize {
+			f.mainWindow.Maximise()
+		}
+		f.mainWindow.Show()
 	case options.Minimised:
 		f.mainWindow.Minimise()
 	case options.Fullscreen:

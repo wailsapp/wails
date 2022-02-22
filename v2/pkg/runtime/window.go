@@ -74,12 +74,12 @@ func WindowSetMaxSize(ctx context.Context, width int, height int) {
 // WindowSetPosition sets the position of the window
 func WindowSetPosition(ctx context.Context, x int, y int) {
 	appFrontend := getFrontend(ctx)
-	appFrontend.WindowSetPos(x, y)
+	appFrontend.WindowSetPosition(x, y)
 }
 
-func WindowGetPos(ctx context.Context) (int, int) {
+func WindowGetPosition(ctx context.Context) (int, int) {
 	appFrontend := getFrontend(ctx)
-	return appFrontend.WindowGetPos()
+	return appFrontend.WindowGetPosition()
 }
 
 // WindowMaximise the window

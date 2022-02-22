@@ -111,20 +111,17 @@ export function Call(name, args, timeout) {
  * @param {string} incomingMessage
  */
 export function Callback(incomingMessage) {
-	// Decode the message - Credit: https://stackoverflow.com/a/13865680
-	//incomingMessage = decodeURIComponent(incomingMessage.replace(/\s+/g, '').replace(/[0-9a-f]{2}/g, '%$&'));
-
 	// Parse the message
-	var message;
+	let message;
 	try {
 		message = JSON.parse(incomingMessage);
 	} catch (e) {
 		const error = `Invalid JSON passed to callback: ${e.message}. Message: ${incomingMessage}`;
-		wails.LogDebug(error);
+		runtime.LogDebug(error);
 		throw new Error(error);
 	}
-	var callbackID = message.callbackid;
-	var callbackData = callbacks[callbackID];
+	let callbackID = message.callbackid;
+	let callbackData = callbacks[callbackID];
 	if (!callbackData) {
 		const error = `Callback '${callbackID}' not registered!!!`;
 		console.error(error); // eslint-disable-line

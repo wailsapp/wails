@@ -1,4 +1,5 @@
 //go:build windows && !bindings
+// +build windows,!bindings
 
 package appng
 

@@ -1,4 +1,5 @@
 //go:build darwin && !bindings
+// +build darwin,!bindings
 
 package appng
 

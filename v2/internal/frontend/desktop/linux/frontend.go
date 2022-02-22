@@ -9,24 +9,15 @@ package linux
 #include "gtk/gtk.h"
 #include "webkit2/webkit2.h"
 
-extern void callDispatchedMethod(int id);
-
-static inline void processDispatchID(gpointer id) {
-    callDispatchedMethod(GPOINTER_TO_INT(id));
-}
-
-static void gtkDispatch(int id) {
-	g_idle_add((GSourceFunc)processDispatchID, GINT_TO_POINTER(id));
-}
 */
 import "C"
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
-	"sync"
 	"text/template"
 	"unsafe"
 
@@ -146,11 +137,11 @@ func (f *Frontend) WindowCenter() {
 	f.mainWindow.Center()
 }
 
-func (f *Frontend) WindowSetPos(x, y int) {
-	f.mainWindow.SetPos(x, y)
+func (f *Frontend) WindowSetPosition(x, y int) {
+	f.mainWindow.SetPosition(x, y)
 }
-func (f *Frontend) WindowGetPos() (int, int) {
-	return f.mainWindow.Pos()
+func (f *Frontend) WindowGetPosition() (int, int) {
+	return f.mainWindow.GetPosition()
 }
 
 func (f *Frontend) WindowSetSize(width, height int) {
@@ -229,7 +220,7 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 		f.logger.Error(err.Error())
 		return
 	}
-	f.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
+	f.mainWindow.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
 }
 
 func (f *Frontend) processMessage(message string) {
@@ -266,25 +257,11 @@ func (f *Frontend) Callback(message string) {
 }
 
 func (f *Frontend) startDrag() {
-	f.dispatch(func() {
-		f.mainWindow.StartDrag()
-	})
+	f.mainWindow.StartDrag()
 }
 
 func (f *Frontend) ExecJS(js string) {
-	f.dispatch(func() {
-		f.mainWindow.ExecJS(js)
-	})
-}
-
-func (f *Frontend) dispatch(fn func()) {
-	dispatchCallbackLock.Lock()
-	id := 0
-	for fn := dispatchCallbacks[id]; fn != nil; id++ {
-	}
-	dispatchCallbacks[id] = fn
-	dispatchCallbackLock.Unlock()
-	C.gtkDispatch(C.int(id))
+	f.mainWindow.ExecJS(js)
 }
 
 var messageBuffer = make(chan string, 100)
@@ -293,24 +270,6 @@ var messageBuffer = make(chan string, 100)
 func processMessage(message *C.char) {
 	goMessage := C.GoString(message)
 	messageBuffer <- goMessage
-}
-
-// Map of functions passed to dispatch()
-var dispatchCallbacks = make(map[int]func())
-var dispatchCallbackLock sync.Mutex
-
-//export callDispatchedMethod
-func callDispatchedMethod(cid C.int) {
-	id := int(cid)
-	fn := dispatchCallbacks[id]
-	if fn != nil {
-		fn()
-		dispatchCallbackLock.Lock()
-		delete(dispatchCallbacks, id)
-		dispatchCallbackLock.Unlock()
-	} else {
-		println("Error: No dispatch method with id", id, cid)
-	}
 }
 
 var requestBuffer = make(chan unsafe.Pointer, 100)
@@ -336,30 +295,37 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 		// TODO Handle errors
 		return
 	} else if !match {
-		// This should never happen on linux, because we get only called for wails://
-		panic("Unexpected host for request on wails:// scheme")
+		file, match, err = common.TranslateUriToFile(goURI, "wails", "null")
+		if err != nil {
+			// TODO Handle errors
+			return
+		} else if !match {
+			// This should never happen on linux, because we get only called for wails://
+			panic("Unexpected host for request on wails:// scheme")
+		}
 	}
 
 	// Load file from asset store
 	content, mimeType, err := f.assets.Load(file)
 
 	// TODO How to return 404/500 errors to webkit?
-	//if err != nil {
-	//if os.IsNotExist(err) {
-	//	f.dispatch(func() {
-	//		message := C.CString("not found")
-	//		defer C.free(unsafe.Pointer(message))
-	//		C.webkit_uri_scheme_request_finish_error(req, C.g_error_new_literal(C.G_FILE_ERROR_NOENT, C.int(404), message))
-	//	})
-	//} else {
-	//	err = fmt.Errorf("Error processing request %s: %w", uri, err)
-	//	f.logger.Error(err.Error())
-	//	message := C.CString("internal server error")
-	//	defer C.free(unsafe.Pointer(message))
-	//	C.webkit_uri_scheme_request_finish_error(req, C.g_error_new_literal(C.G_FILE_ERROR_NOENT, C.int(500), message))
-	//}
-	//return
-	//}
+	if err != nil {
+		if os.IsNotExist(err) {
+			message := C.CString("File not found")
+			gerr := C.g_error_new_literal(C.g_quark_from_string(message), C.int(404), message)
+			C.webkit_uri_scheme_request_finish_error(req, gerr)
+			C.g_error_free(gerr)
+			C.free(unsafe.Pointer(message))
+		} else {
+			err = fmt.Errorf("Error processing request %s: %v", uri, err)
+			message := C.CString("Internal Error")
+			gerr := C.g_error_new_literal(C.g_quark_from_string(message), C.int(500), message)
+			C.webkit_uri_scheme_request_finish_error(req, gerr)
+			C.g_error_free(gerr)
+			C.free(unsafe.Pointer(message))
+		}
+		return
+	}
 
 	cContent := C.CString(string(content))
 	defer C.free(unsafe.Pointer(cContent))

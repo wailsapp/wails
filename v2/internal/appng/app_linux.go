@@ -1,4 +1,5 @@
 //go:build linux && !bindings
+// +build linux,!bindings
 
 package appng
 

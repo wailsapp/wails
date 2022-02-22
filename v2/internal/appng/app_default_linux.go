@@ -1,4 +1,5 @@
 //go:build !dev && !production && !bindings && linux
+// +build !dev,!production,!bindings,linux
 
 package appng
 

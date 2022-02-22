@@ -41,7 +41,7 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 		parts := strings.Split(message[3:], ":")
 		x := d.mustAtoI(parts[0])
 		y := d.mustAtoI(parts[1])
-		go sender.WindowSetPos(x, y)
+		go sender.WindowSetPosition(x, y)
 	case 'H':
 		go sender.WindowHide()
 	case 'S':

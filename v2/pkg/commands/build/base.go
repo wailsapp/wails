@@ -412,6 +412,9 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 }
 
 func generateRuntimeWrapper(options *Options) error {
+	if options.WailsJSDir == "" {
+		options.WailsJSDir = filepath.Join("./frontend")
+	}
 	wrapperDir := filepath.Join(options.WailsJSDir, "wailsjs", "runtime")
 	_ = os.RemoveAll(wrapperDir)
 	extractor := gosod.New(wrapper.RuntimeWrapper)

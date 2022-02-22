@@ -185,7 +185,7 @@ func (b *App) Greet(name string) string {
 }
 ```
 
-You may bind as many structs as you like. Just make sure you create an instance of it and pass it in bind:
+You may bind as many structs as you like. Just make sure you create an instance of it and pass it in `Bind`:
 
 ```go {10-12}
 ...
@@ -208,9 +208,9 @@ You may bind as many structs as you like. Just make sure you create an instance 
 The bound methods are located in the frontend at `window.go.<packagename>.<struct>.<method>`.
 In the example above, we bind `app`, which has one public method `Greet`.
 This can be called in Javascript by calling `window.go.main.App.Greet`.
-These methods return a promise. A successful call will result in the first return value from the Go call to be passed
-to the resolve handler. An unsuccessful call is when a Go method that has an error type as it's second return value,
-passes an error instance back to the caller. This is passed back via the reject handler.
+These methods return a Promise. A successful call will result in the first return value from the Go call to be passed
+to the `resolve` handler. An unsuccessful call is when a Go method that has an error type as it's second return value,
+passes an error instance back to the caller. This is passed back via the `reject` handler.
 In the example above, `Greet` only returns a `string` so the Javascript call will never reject - unless invalid data
 is passed to it.
 

@@ -129,6 +129,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	// Attach logger to context
 	ctx = context.WithValue(ctx, "logger", myLogger)
+	ctx = context.WithValue(ctx, "buildtype", "dev")
 
 	// Preflight checks
 	err = PreflightChecks(appoptions, myLogger)

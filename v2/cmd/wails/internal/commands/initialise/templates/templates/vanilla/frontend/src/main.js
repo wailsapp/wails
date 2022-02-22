@@ -16,8 +16,7 @@ window.greet = function () {
 };
 
 nameElement.onkeydown = function (e) {
-  console.log(e)
-  if (e.keyCode == 13) {
-    window.greet()
+  if (e.code === "Enter") {
+    window.greet();
   }
-}
+};

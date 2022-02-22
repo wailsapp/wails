@@ -6,17 +6,17 @@ sidebar_position: 1
 
 ## 支持的平台
 
-- Windows 10
-- MacOS 10.13+ (amd64)
-- MacOS 11.0+ (arm64)
-- Linux (截至时间 12 月 22 日)
+- Windows 10 AMD64/ARM64
+- MacOS 10.13+ AMD64
+- MacOS 11.0+ ARM64
+- Linux (暂定时间 1 月 22 日)
 
 ## 依赖
 
 Wails 有许多安装前需要的常见依赖项：
 
 - Go 1.17+
-- npm (Node 14+)
+- NPM (Node 14+)
 
 ### Go
 
@@ -27,9 +27,9 @@ Wails 有许多安装前需要的常见依赖项：
 - 检查 Go 是否安装正确： `go version`
 - 检查 "~/go/bin" 是否在您的 PATH 变量中： `echo $PATH | grep go/bin`
 
-### npm
+### NPM
 
-从[Node 下载页面](https://nodejs.org/en/download/)下载 Npm。最好使用最新版本，因为这是我们通常会测试的版本。
+从[Node 下载页面](https://nodejs.org/en/download/)下载 NPM。最好使用最新版本，因为这是我们通常会测试的版本。
 
 运行 `npm --version` 进行验证。
 
@@ -75,4 +75,4 @@ import TabItem from "@theme/TabItem";
 
 ## 系统检查
 
-运行 `wails doctor` 将检查您是否安装了正确的依赖项。如果没有，它会就缺少的内容提供建议并帮助纠正任何问题。
+运行 `wails doctor` 将检查您是否安装了正确的依赖项。如果没有，它会就缺少的内容提供建议以帮助纠正问题。

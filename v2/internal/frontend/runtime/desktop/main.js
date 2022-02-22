@@ -44,7 +44,8 @@ window.wails = {
         disableScrollbarDrag: false,
         disableWailsDefaultContextMenu: false,
         enableResize: false,
-        defaultCursor: null
+        defaultCursor: null,
+        borderThickness: 6
     }
 };
 
@@ -102,13 +103,13 @@ window.addEventListener('mousemove', function (e) {
     if (window.wails.flags.defaultCursor == null) {
         window.wails.flags.defaultCursor = document.body.style.cursor;
     }
-    if (window.outerWidth - e.clientX < 16 && window.outerHeight - e.clientY < 16) {
+    if (window.outerWidth - e.clientX < window.wails.flags.borderThickness && window.outerHeight - e.clientY < window.wails.flags.borderThickness) {
         document.body.style.cursor = "se-resize";
     }
-    let rightBorder = window.outerWidth - e.clientX < 16;
-    let leftBorder = e.clientX < 16;
-    let topBorder = e.clientY < 16;
-    let bottomBorder = window.outerHeight - e.clientY < 16;
+    let rightBorder = window.outerWidth - e.clientX < window.wails.flags.borderThickness;
+    let leftBorder = e.clientX < window.wails.flags.borderThickness;
+    let topBorder = e.clientY < window.wails.flags.borderThickness;
+    let bottomBorder = window.outerHeight - e.clientY < window.wails.flags.borderThickness;
 
     // If we aren't on an edge, but were, reset the cursor to default
     if (!leftBorder && !rightBorder && !topBorder && !bottomBorder && window.wails.flags.resizeEdge !== undefined) {

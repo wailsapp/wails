@@ -66,3 +66,16 @@ func Quit(ctx context.Context) {
 	appFrontend := getFrontend(ctx)
 	appFrontend.Quit()
 }
+
+type EnvironmentInfo struct {
+	BuildType string `json:"buildtype"`
+}
+
+func Environment(ctx context.Context) EnvironmentInfo {
+	var result EnvironmentInfo
+	buildType := ctx.Value("buildtype")
+	if buildType != nil {
+		result.BuildType = buildType.(string)
+	}
+	return result
+}

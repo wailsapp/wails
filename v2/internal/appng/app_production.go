@@ -82,6 +82,11 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	ctx = context.WithValue(ctx, "debug", debug)
 	// Attach logger to context
 	ctx = context.WithValue(ctx, "logger", myLogger)
+	if debug {
+		ctx = context.WithValue(ctx, "buildtype", "debug")
+	} else {
+		ctx = context.WithValue(ctx, "buildtype", "production")
+	}
 
 	appFrontend := desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher)
 	eventHandler.AddFrontend(appFrontend)
