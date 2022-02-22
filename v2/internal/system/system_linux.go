@@ -23,6 +23,29 @@ func (i *Info) discover() error {
 		if err != nil {
 			return err
 		}
+		for _, dep := range dependencies {
+			if dep.Name == "npm" {
+				locallyInstalled := checkNPM()
+				if locallyInstalled.Installed {
+					dep.Installed = true
+					dep.Version = locallyInstalled.Version
+				}
+			}
+			if dep.Name == "docker" {
+				locallyInstalled := checkDocker()
+				if locallyInstalled.Installed {
+					dep.Installed = true
+					dep.Version = locallyInstalled.Version
+				}
+			}
+			if dep.Name == "upx" {
+				locallyInstalled := checkUPX()
+				if locallyInstalled.Installed {
+					dep.Installed = true
+					dep.Version = locallyInstalled.Version
+				}
+			}
+		}
 		i.Dependencies = dependencies
 	}
 
