@@ -81,9 +81,13 @@
 
 ### 官方网站
 
+#### v1
+
 官方文档可以在 [https://wails.app](https://wails.app) 中找到。
 
-如果您对适用于 Windows 的 v2 测试版感兴趣，可以点击[此处](https://wails.io)查看。
+#### v2
+
+Wails v2 已针对所有 3 个平台发布了 Beta 版。如果您有兴趣尝试一下，请查看[新网站](https://wails.io)。
 
 镜像网站：
 
