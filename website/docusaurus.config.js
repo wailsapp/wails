@@ -63,7 +63,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/palenight');
       ({
         announcementBar: {
           id: 'beta-message',
-          content: 'Wails v2 is currently Beta.',
+          content: 'Wails v2 is currently in Beta',
           backgroundColor: '#b00',
           textColor: '#FFF',
           isCloseable: false,
