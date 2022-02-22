@@ -1,3 +1,3 @@
 package internal
 
-var Version = "v2.0.0-beta.31"
+var Version = "v2.0.0-beta.32"

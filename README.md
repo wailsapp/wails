@@ -80,11 +80,14 @@ make this easy for you by handling project creation, compilation and bundling. A
 
 <span id="nav-3-1"></span>
 
-### Official Website
+### Official v1 Website
 
-The official docs can be found at [https://wails.app](https://wails.app).
+The official v1 docs can be found at [https://wails.app](https://wails.app).
 
-Click [here](https://wails.io) if you are interested in trying out v2 Beta for Windows.
+### Version 2
+
+Wails v2 has been released in Beta for all 3 platforms. Check out the [new website](https://wails.io) if you are
+interested in trying it out.
 
 <span id="nav-4"></span>
 
