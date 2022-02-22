@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/docker"
 	"log"
 	"os"
 	"path/filepath"
@@ -186,7 +187,13 @@ func Build(options *Options) (string, error) {
 		projectData.OutputFilename = outputFile
 		options.CompiledBinary = filepath.Join(options.BuildDirectory, outputFile)
 	} else {
-		err = builder.CompileProject(options)
+		if options.Platform == "linux" && runtime.GOOS != "linux" {
+			outputFile := fmt.Sprintf("%s-linux-%s", options.OutputFile, options.Arch)
+			err = docker.CrossCompile(options.ProjectData.Path, outputFile, options.Platform+"/"+options.Arch, options.Verbosity == VERBOSE, options.Logger.Writer)
+			options.CompiledBinary = filepath.Join(options.BuildDirectory, outputFile)
+		} else {
+			err = builder.CompileProject(options)
+		}
 		if err != nil {
 			return "", err
 		}

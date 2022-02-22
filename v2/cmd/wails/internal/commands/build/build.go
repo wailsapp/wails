@@ -264,11 +264,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			}
 
 			switch buildOptions.Platform {
-			case "linux":
-				if runtime.GOOS != "linux" {
-					logger.Println("Crosscompiling to Linux not currently supported.\n")
-					return
-				}
 			case "darwin":
 				if runtime.GOOS != "darwin" {
 					logger.Println("Crosscompiling to Mac not currently supported.\n")
