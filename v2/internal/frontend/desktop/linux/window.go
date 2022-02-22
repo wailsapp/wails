@@ -698,7 +698,9 @@ func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
 }
 
 func (w *Window) Run() {
-	C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), w.menubar, 0, 0, 0)
+	if w.menubar != nil {
+		C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), w.menubar, 0, 0, 0)
+	}
 	C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), C.GTKWIDGET(w.webview), 1, 1, 0)
 	C.loadIndex(w.webview)
 	C.gtk_widget_show_all(w.asGTKWidget())
