@@ -2,10 +2,11 @@ package webserver
 
 import (
 	"context"
-	"github.com/wailsapp/wails/v2/pkg/menu"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"net/http"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 	ws "nhooyr.io/websocket"
@@ -150,8 +151,8 @@ func (wc *WebClient) WindowSetTitle(title string) {}
 // WindowFullscreen is a noop in the webclient
 func (wc *WebClient) WindowFullscreen() {}
 
-// WindowUnFullscreen is a noop in the webclient
-func (wc *WebClient) WindowUnFullscreen() {}
+// WindowUnfullscreen is a noop in the webclient
+func (wc *WebClient) WindowUnfullscreen() {}
 
 // WindowSetColour is a noop in the webclient
 func (wc *WebClient) WindowSetColour(colour int) {

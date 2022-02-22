@@ -54,6 +54,7 @@ A list of community maintained templates can be found [here](/docs/community/tem
 
 |  Flag                |  Description                            |  Default                   |
 | :------------------- | :-------------------------------------- | :------------------------- |
+|  -platform           | Build for the given (comma delimited) platforms eg. `windows/arm64`. Note, if you do not give the architecture, `runtime.GOARCH` is used. | runtime.GOOS/runtime.GOARCH |
 |  -clean              | Cleans the `build/bin` directory        |                            |
 |  -compiler "compiler"| Use a different go compiler to build, eg go1.15beta1 | go            |
 |  -ldflags "flags"    | Additional ldflags to pass to the compiler |                         |

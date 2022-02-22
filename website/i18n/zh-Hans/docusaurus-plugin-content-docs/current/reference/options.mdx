@@ -42,11 +42,11 @@ func main() {
             app,
         },
         Windows: &windows.Options{
-            WebviewIsTransparent:  false,
-            WindowIsTranslucent:   false,
-            DisableWindowIcon:     false,
-            EnableFramelessBorder: false,
-            WebviewUserDataPath:   "",
+            WebviewIsTransparent:              false,
+            WindowIsTranslucent:               false,
+            DisableWindowIcon:                 false,
+            DisableFramelessWindowDecorations: false,
+            WebviewUserDataPath:               "",
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -336,13 +336,13 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 
 将此设置为 `true` 将删除标题栏左上角的图标。
 
-### 启用无边框模式的外边框
+### 禁用无边框窗口装饰
 
-名称：EnableFramelessBorder
+名称：DisableFramelessWindowDecorations
 
 类型：bool
 
-如果已激活[无边框](#无边框)，则将此设置为`true`将在窗口周围添加边框。这允许隐藏标题栏但仍然在窗口周围有边框。
+将此设置为`true`将移除[无边框](#无边框)模式下的窗口装饰。这意味着将不会有`Aero 阴影` 和 `圆角`显示在窗口上。请注意，`圆角`只在 Windows 11 上支持。
 
 ### Webview 用户数据路径
 

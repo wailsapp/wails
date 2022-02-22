@@ -85,7 +85,10 @@ func packageApplicationForDarwin(options *Options) error {
 	var err error
 
 	// Create directory structure
-	bundlename := options.ProjectData.Name + ".app"
+	bundlename := options.BundleName
+	if bundlename == "" {
+		bundlename = options.ProjectData.Name + ".app"
+	}
 
 	contentsDirectory := filepath.Join(options.BuildDirectory, bundlename, "/Contents")
 	exeDir := filepath.Join(contentsDirectory, "/MacOS")
@@ -112,7 +115,11 @@ func packageApplicationForDarwin(options *Options) error {
 	}
 
 	// Generate Icons
-	err = processApplicationIcon(resourceDir, options.ProjectData.Path)
+	buildDir, err := getBuildBaseDirectory(options)
+	if err != nil {
+		return err
+	}
+	err = processApplicationIcon(resourceDir, buildDir)
 	if err != nil {
 		return err
 	}
@@ -253,7 +260,7 @@ func generateIcoFile(options *Options) error {
 		if err != nil {
 			return err
 		}
-		output, err := os.OpenFile(icoFile, os.O_CREATE, 0644)
+		output, err := os.OpenFile(icoFile, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
 		}
@@ -288,7 +295,7 @@ func compileResources(options *Options) error {
 	defer iconFile.Close()
 	ico, err := winres.LoadICO(iconFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("couldn't load icon from icon.ico: %w", err)
 	}
 	err = rs.SetIcon(winres.RT_ICON, ico)
 	if err != nil {

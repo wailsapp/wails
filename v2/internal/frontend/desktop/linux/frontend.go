@@ -43,8 +43,7 @@ type Frontend struct {
 	startURL string
 
 	// main window handle
-	mainWindow *Window
-	// minWidth, minHeight, maxWidth, maxHeight int
+	mainWindow      *Window
 	bindings        *binding.Bindings
 	dispatcher      frontend.Dispatcher
 	servingFromDisk bool
@@ -160,7 +159,7 @@ func (f *Frontend) WindowFullscreen() {
 	f.mainWindow.Fullscreen()
 }
 
-func (f *Frontend) WindowUnFullscreen() {
+func (f *Frontend) WindowUnfullscreen() {
 	f.mainWindow.UnFullscreen()
 }
 
@@ -173,6 +172,9 @@ func (f *Frontend) WindowHide() {
 }
 func (f *Frontend) WindowMaximise() {
 	f.mainWindow.Maximise()
+}
+func (f *Frontend) WindowToggleMaximise() {
+	f.mainWindow.ToggleMaximise()
 }
 func (f *Frontend) WindowUnmaximise() {
 	f.mainWindow.UnMaximise()

@@ -111,7 +111,7 @@ var assets embed.FS
 `Bind`选项是 Wails 应用程序中最重要的参数选项之一。它指定向前端暴露哪些结构方法。当应用程序启动时，它会检查 `Bind` 中列出的结构实例，
 确定哪些方法是公开的（以大写字母开头），并将生成前端可以调用的那些方法的 Javascript 版本。
 
-:::info 笔记
+:::info 注意
 
 Wails 要求您传入结构的 _实例_ 才能正确绑定它
 
@@ -192,7 +192,13 @@ func (b *App) Greet(name string) string {
 这些方法位于前端 `window.go.<packagename>.<struct>.<method>`。在上面的例子中，我们绑定 `app`，它有一个公开方法 `Greet`。这可以通过在 `Javascript` 中用 `window.go.main.App.Greet`调用。这些方法返回一个 Promise。成功的调用将导致 Go 调用的第一个返回值被传递给 `resolve` 处理程序。一个不成功的调用是将一个 Go 方法的第二个错误类型返回值通过`reject`传递回调用者。在上面的例子中，Greet 只返回一个字符串，所以 `Javascript` 调用永远不会`reject` - 除非将无效数据传递给它。
 
 所有数据类型都在 Go 和 Javascript 之间正确转换。包括结构体。如果您从 Go 调用返回一个结构体，它将作为 `Javascript` Map 返回到您的前端。
-注意：如果您想使用结构体，您必须为您的结构体字段定义`json` 标签！也可以将结构体发送回 Go。任何作为期望结构的参数传递的 Javascript Map 都将转换为该结构类型。
+注意：如果您想使用结构体，您必须为您的结构体字段定义`json` 标签！
+
+:::info 注意
+目前不支持嵌套匿名结构体。
+:::
+
+也可以将结构体发送回 Go。任何作为期望结构的参数传递的 Javascript Map 都将转换为该结构类型。
 为了使这个过程更容易，在 `开发`模式下，会生成一个 TypeScript 模块，定义绑定方法中使用的所有结构类型。使用此模块，可以构建原生 Javascript 对象并将其发送到 Go 代码。
 
 关于绑定的更多信息可以在[应用程序开发指南](/docs/guides/application-development)的[绑定方法](/docs/guides/application-development#绑定方法)一节中找到。

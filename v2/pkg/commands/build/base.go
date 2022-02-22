@@ -373,6 +373,19 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	// Format error if we have one
 	if err != nil {
+		if options.Platform == "darwin" {
+			output, _ := cmd.CombinedOutput()
+			stdErr := string(output)
+			if strings.Contains(err.Error(), "ld: framework not found UniformTypeIdentifiers") ||
+				strings.Contains(stdErr, "ld: framework not found UniformTypeIdentifiers") {
+				println(`
+NOTE: It would appear that you do not have the latest Xcode cli tools installed.
+Please reinstall by doing the following:
+  1. Remove the current installation located at "xcode-select -p", EG: sudo rm -rf /Library/Developer/CommandLineTools
+  2. Install latest Xcode tools: xcode-select --install
+`)
+			}
+		}
 		return err
 	}
 
@@ -545,10 +558,10 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 	// Check there is an 'InstallCommand' provided in wails.json
 	if b.projectData.InstallCommand == "" {
 		// No - don't install
-		outputLogger.Println("No Install command. Skipping.")
+		outputLogger.Println("  - No Install command. Skipping.")
 	} else {
 		// Do install if needed
-		outputLogger.Print("Installing frontend dependencies: ")
+		outputLogger.Print("  - Installing frontend dependencies: ")
 		if verbose {
 			outputLogger.Println("")
 			outputLogger.Println("  Install command: '" + b.projectData.InstallCommand + "'")
@@ -571,12 +584,12 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 		buildCommand = b.projectData.BuildCommand
 	}
 	if buildCommand == "" {
-		outputLogger.Println("No Build command. Skipping.")
+		outputLogger.Println("  - No Build command. Skipping.")
 		// No - ignore
 		return nil
 	}
 
-	outputLogger.Print("Compiling frontend: ")
+	outputLogger.Print("  - Compiling frontend: ")
 	cmd := strings.Split(buildCommand, " ")
 	if verbose {
 		outputLogger.Println("")

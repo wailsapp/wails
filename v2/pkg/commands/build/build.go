@@ -53,6 +53,7 @@ type Options struct {
 	RunDelve            bool                 // Indicates if we should run delve after the build
 	WailsJSDir          string               // Directory to generate the wailsjs module
 	ForceBuild          bool                 // Force
+	BundleName          string               // Bundlename for Mac
 }
 
 // Build the project!
@@ -117,7 +118,7 @@ func Build(options *Options) (string, error) {
 	// If we are building for windows, we will need to generate the asset bundle before
 	// compilation. This will be a .syso file in the project root
 	if options.Pack && options.Platform == "windows" {
-		outputLogger.Print("Generating bundle assets: ")
+		outputLogger.Print("  - Generating bundle assets: ")
 		err := packageApplicationForWindows(options)
 		if err != nil {
 			return "", err
@@ -134,7 +135,7 @@ func Build(options *Options) (string, error) {
 	}
 
 	// Compile the application
-	outputLogger.Print("Compiling application: ")
+	outputLogger.Print("  - Compiling application: ")
 
 	if options.Platform == "darwin" && options.Arch == "universal" {
 		outputFile := builder.OutputFilename(options)
@@ -196,7 +197,7 @@ func Build(options *Options) (string, error) {
 	// Do we need to pack the app for non-windows?
 	if options.Pack && options.Platform != "windows" {
 
-		outputLogger.Print("Packaging application: ")
+		outputLogger.Print("  - Packaging application: ")
 
 		// TODO: Allow cross platform build
 		err = packageProject(options, runtime.GOOS)

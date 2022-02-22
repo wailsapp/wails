@@ -40,11 +40,10 @@ type Frontend struct {
 	startURL string
 
 	// main window handle
-	mainWindow                               *Window
-	minWidth, minHeight, maxWidth, maxHeight int
-	bindings                                 *binding.Bindings
-	dispatcher                               frontend.Dispatcher
-	servingFromDisk                          bool
+	mainWindow      *Window
+	bindings        *binding.Bindings
+	dispatcher      frontend.Dispatcher
+	servingFromDisk bool
 
 	hasStarted bool
 }
@@ -57,10 +56,6 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		minHeight:       appoptions.MinHeight,
-		minWidth:        appoptions.MinWidth,
-		maxHeight:       appoptions.MaxHeight,
-		maxWidth:        appoptions.MaxWidth,
 		startURL:        "file://wails/",
 	}
 
@@ -171,22 +166,18 @@ func (f *Frontend) WindowSetTitle(title string) {
 
 func (f *Frontend) WindowFullscreen() {
 	runtime.LockOSThread()
-	f.mainWindow.SetMaxSize(0, 0)
-	f.mainWindow.SetMinSize(0, 0)
 	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
 		f.ExecJS("window.wails.flags.enableResize = false;")
 	}
 	f.mainWindow.Fullscreen()
 }
 
-func (f *Frontend) WindowUnFullscreen() {
+func (f *Frontend) WindowUnfullscreen() {
 	runtime.LockOSThread()
 	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
 		f.ExecJS("window.wails.flags.enableResize = true;")
 	}
 	f.mainWindow.UnFullscreen()
-	f.mainWindow.SetMaxSize(f.maxWidth, f.maxHeight)
-	f.mainWindow.SetMinSize(f.minWidth, f.minHeight)
 }
 
 func (f *Frontend) WindowShow() {
@@ -208,6 +199,18 @@ func (f *Frontend) WindowMaximise() {
 		f.frontendOptions.WindowStartState = options.Maximised
 	}
 }
+func (f *Frontend) WindowToggleMaximise() {
+	runtime.LockOSThread()
+	if !f.hasStarted {
+		return
+	}
+	if f.mainWindow.IsMaximised() {
+		f.WindowUnmaximise()
+	} else {
+		f.WindowMaximise()
+	}
+}
+
 func (f *Frontend) WindowUnmaximise() {
 	runtime.LockOSThread()
 	f.mainWindow.Restore()
@@ -227,14 +230,10 @@ func (f *Frontend) WindowUnminimise() {
 
 func (f *Frontend) WindowSetMinSize(width int, height int) {
 	runtime.LockOSThread()
-	f.minWidth = width
-	f.minHeight = height
 	f.mainWindow.SetMinSize(width, height)
 }
 func (f *Frontend) WindowSetMaxSize(width int, height int) {
 	runtime.LockOSThread()
-	f.maxWidth = width
-	f.maxHeight = height
 	f.mainWindow.SetMaxSize(width, height)
 }
 
@@ -473,7 +472,8 @@ func (f *Frontend) startDrag() error {
 	if !w32.ReleaseCapture() {
 		return fmt.Errorf("unable to release mouse capture")
 	}
-	w32.SendMessage(f.mainWindow.Handle(), w32.WM_NCLBUTTONDOWN, w32.HTCAPTION, 0)
+	// Use PostMessage because we don't want to block the caller until dragging has been finished.
+	w32.PostMessage(f.mainWindow.Handle(), w32.WM_NCLBUTTONDOWN, w32.HTCAPTION, 0)
 	return nil
 }
 
@@ -481,7 +481,8 @@ func (f *Frontend) startResize(border uintptr) error {
 	if !w32.ReleaseCapture() {
 		return fmt.Errorf("unable to release mouse capture")
 	}
-	w32.SendMessage(f.mainWindow.Handle(), w32.WM_NCLBUTTONDOWN, border, 0)
+	// Use PostMessage because we don't want to block the caller until resizing has been finished.
+	w32.PostMessage(f.mainWindow.Handle(), w32.WM_NCLBUTTONDOWN, border, 0)
 	return nil
 }
 

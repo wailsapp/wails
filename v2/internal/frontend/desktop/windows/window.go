@@ -16,14 +16,20 @@ import (
 
 type Window struct {
 	winc.Form
-	frontendOptions                   *options.App
-	applicationMenu                   *menu.Menu
-	notifyParentWindowPositionChanged func() error
+	frontendOptions                          *options.App
+	applicationMenu                          *menu.Menu
+	notifyParentWindowPositionChanged        func() error
+	minWidth, minHeight, maxWidth, maxHeight int
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
-	result := new(Window)
-	result.frontendOptions = appoptions
+	result := &Window{
+		frontendOptions: appoptions,
+		minHeight:       appoptions.MinHeight,
+		minWidth:        appoptions.MinWidth,
+		maxHeight:       appoptions.MaxHeight,
+		maxWidth:        appoptions.MaxWidth,
+	}
 	result.SetIsForm(true)
 
 	var exStyle int
@@ -89,6 +95,33 @@ func (w *Window) Run() int {
 	return winc.RunMainLoop()
 }
 
+func (w *Window) Fullscreen() {
+	w.Form.SetMaxSize(0, 0)
+	w.Form.SetMinSize(0, 0)
+	w.Form.Fullscreen()
+}
+
+func (w *Window) UnFullscreen() {
+	if !w.IsFullScreen() {
+		return
+	}
+	w.Form.UnFullscreen()
+	w.SetMinSize(w.minWidth, w.minHeight)
+	w.SetMaxSize(w.maxWidth, w.maxHeight)
+}
+
+func (w *Window) SetMinSize(minWidth int, minHeight int) {
+	w.minWidth = minWidth
+	w.minHeight = minHeight
+	w.Form.SetMinSize(minWidth, minHeight)
+}
+
+func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
+	w.maxWidth = maxWidth
+	w.maxHeight = maxHeight
+	w.Form.SetMaxSize(maxWidth, maxHeight)
+}
+
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 	switch msg {
@@ -98,17 +131,34 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 		if w.notifyParentWindowPositionChanged != nil {
 			w.notifyParentWindowPositionChanged()
 		}
+
+	// TODO move WM_DPICHANGED handling into winc
+	case 0x02E0: //w32.WM_DPICHANGED
+		newWindowSize := (*w32.RECT)(unsafe.Pointer(lparam))
+		w32.SetWindowPos(w.Handle(),
+			uintptr(0),
+			int(newWindowSize.Left),
+			int(newWindowSize.Top),
+			int(newWindowSize.Right-newWindowSize.Left),
+			int(newWindowSize.Bottom-newWindowSize.Top),
+			w32.SWP_NOZORDER|w32.SWP_NOACTIVATE)
 	}
 
 	if w.frontendOptions.Frameless {
 		switch msg {
 		case w32.WM_ACTIVATE:
-			// If we want to have a frameless window but with border, extend the client area outside of the window. This
-			// Option is not affected by returning 0 in WM_NCCALCSIZE.
-			// As a result we have hidden the titlebar but still have the default border drawn.
+			// If we want to have a frameless window but with the default frame decorations, extend the DWM client area.
+			// This Option is not affected by returning 0 in WM_NCCALCSIZE.
+			// As a result we have hidden the titlebar but still have the default window frame styling.
 			// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
-			if winoptions := w.frontendOptions.Windows; winoptions != nil && winoptions.EnableFramelessBorder {
-				if err := dwmExtendFrameIntoClientArea(w.Handle(), w32.MARGINS{-1, -1, -1, -1}); err != nil {
+			if winoptions := w.frontendOptions.Windows; winoptions == nil || !winoptions.DisableFramelessWindowDecorations {
+				// -1: Adds the default frame styling (aero shadow and e.g. rounded corners on Windows 11)
+				//     Also shows the caption buttons if transparent ant translucent but they don't work.
+				//  0: Adds the default frame styling but no aero shadow, does not show the caption buttons.
+				//  1: Adds the default frame styling (aero shadow and e.g. rounded corners on Windows 11) but no caption buttons
+				//     are shown if transparent ant translucent.
+				margins := w32.MARGINS{1, 1, 1, 1} // Only extend 1 pixel to have the default frame styling but no caption buttons
+				if err := dwmExtendFrameIntoClientArea(w.Handle(), margins); err != nil {
 					log.Fatal(fmt.Errorf("DwmExtendFrameIntoClientArea failed: %s", err))
 				}
 			}
@@ -130,6 +180,23 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 					if w32.GetMonitorInfo(monitor, &monitorInfo) {
 						rgrc := (*w32.RECT)(unsafe.Pointer(lparam))
 						*rgrc = monitorInfo.RcWork
+
+						maxWidth := w.frontendOptions.MaxWidth
+						maxHeight := w.frontendOptions.MaxHeight
+						if maxWidth > 0 || maxHeight > 0 {
+							var dpiX, dpiY uint
+							w32.GetDPIForMonitor(monitor, w32.MDT_EFFECTIVE_DPI, &dpiX, &dpiY)
+
+							maxWidth := int32(winc.ScaleWithDPI(maxWidth, dpiX))
+							if maxWidth > 0 && rgrc.Right-rgrc.Left > maxWidth {
+								rgrc.Right = rgrc.Left + maxWidth
+							}
+
+							maxHeight := int32(winc.ScaleWithDPI(maxHeight, dpiY))
+							if maxHeight > 0 && rgrc.Bottom-rgrc.Top > maxHeight {
+								rgrc.Bottom = rgrc.Top + maxHeight
+							}
+						}
 					}
 				}
 
@@ -138,6 +205,11 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 		}
 	}
 	return w.Form.WndProc(msg, wparam, lparam)
+}
+
+func (w *Window) IsMaximised() bool {
+	style := uint32(w32.GetWindowLong(w.Handle(), w32.GWL_STYLE))
+	return style&w32.WS_MAXIMIZE != 0
 }
 
 // TODO this should be put into the winc if we are happy with this solution.

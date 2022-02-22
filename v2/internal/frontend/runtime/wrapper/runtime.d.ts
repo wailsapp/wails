@@ -8,14 +8,6 @@ export interface Size {
     h: number;
 }
 
-export interface RGBA {
-    r: number;
-    g: number;
-    b: number;
-    a: number;
-}
-
-
 export interface runtime {
     EventsEmit(eventName: string, data?: any): void;
 
@@ -45,7 +37,7 @@ export interface runtime {
 
     WindowFullscreen(): void;
 
-    WindowUnFullscreen(): void;
+    WindowUnfullscreen(): void;
 
     WindowSetSize(width: number, height: number): Promise<Size>;
 
@@ -65,13 +57,15 @@ export interface runtime {
 
     WindowMaximise(): void;
 
+    WindowToggleMaximise(): void;
+
     WindowUnmaximise(): void;
 
     WindowMinimise(): void;
 
     WindowUnminimise(): void;
 
-    WindowSetRGBA(rgba: RGBA): void;
+    WindowSetRGBA(R: number, G: number, B: number, A: number): void;
 
     BrowserOpenURL(url: string): void;
 

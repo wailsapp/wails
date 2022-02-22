@@ -22,10 +22,10 @@ JS Signature: `WindowFullscreen()`
 
 Makes the window full screen.
 
-### WindowUnFullscreen
-Go Signature: `WindowUnFullscreen(ctx context.Context)`
+### WindowUnfullscreen
+Go Signature: `WindowUnfullscreen(ctx context.Context)`
 
-JS Signature: `WindowUnFullscreen()`
+JS Signature: `WindowUnfullscreen()`
 
 Restores the previous window dimensions and position prior to full screen.
 
@@ -119,6 +119,13 @@ JS Signature: `WindowUnmaximise()`
 
 Restores the window to the dimensions and position prior to maximising.
 
+### WindowToggleMaximise
+Go Signature: `WindowToggleMaximise(ctx context.Context)`
+
+JS Signature: `WindowToggleMaximise()`
+
+Toggles between Maximised and UnMaximised.
+
 ### WindowMinimise
 Go Signature: `WindowMinimise(ctx context.Context)`
 
@@ -134,11 +141,11 @@ JS Signature: `WindowUnminimise()`
 Restores the window to the dimensions and position prior to minimising.
 
 ### WindowSetRGBA
-Go Signature: `WindowSetRGBA(ctx context.Context, col *options.RGBA)`
+Go Signature: `WindowSetRGBA(ctx context.Context, R, G, B, A uint8)`
 
-JS Signature: `WindowSetRGBA(col: RGBA)`
+JS Signature: `WindowSetRGBA(R, G, B, A)`
 
-Sets the background colour of the window to the given [RGBA](window#rgba) colour definition.
+Sets the background colour of the window to the given RGBA colour definition.
 This colour will show through for all transparent pixels.
 
 Valid values for R, G, B and A are 0-255.
@@ -167,17 +174,6 @@ interface Position {
 interface Size {
     w: number;
     h: number;
-}
-```
-
-### RGBA
-
-```ts
-interface RGBA {
-    r: number;
-    g: number;
-    b: number;
-    a: number;
 }
 ```
 

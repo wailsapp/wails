@@ -322,11 +322,6 @@
     return (mask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen;
 }
 
-- (bool) isMaximised {
-    long mask = [self.mainWindow styleMask];
-    return (mask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen;
-}
-
 // Fullscreen sets the main window to be fullscreen
 - (void) Fullscreen {
     if( ! [self isFullScreen] ) {
@@ -364,6 +359,10 @@
     if (![self.mainWindow isZoomed]) {
         [self.mainWindow zoom:nil];
     }
+}
+
+- (void) ToggleMaximise {
+        [self.mainWindow zoom:nil];
 }
 
 - (void) UnMaximise {

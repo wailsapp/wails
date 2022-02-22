@@ -61,8 +61,8 @@ func (c *Client) WindowFullscreen() {
 	C.Fullscreen(c.app.app)
 }
 
-// WindowUnFullscreen will unfullscreen the window
-func (c *Client) WindowUnFullscreen() {
+// WindowUnfullscreen will unfullscreen the window
+func (c *Client) WindowUnfullscreen() {
 	C.UnFullscreen(c.app.app)
 }
 
@@ -141,8 +141,6 @@ func (c *Client) OpenFileDialog(dialogOptions runtime.OpenDialogOptions, callbac
 		c.app.string2CString(strings.Join(filters, ";")),
 		c.app.string2CString(dialogOptions.DefaultFilename),
 		c.app.string2CString(dialogOptions.DefaultDirectory),
-		c.app.bool2Cint(dialogOptions.AllowFiles),
-		c.app.bool2Cint(dialogOptions.AllowDirectories),
 		c.app.bool2Cint(false),
 		c.app.bool2Cint(dialogOptions.ShowHiddenFiles),
 		c.app.bool2Cint(dialogOptions.CanCreateDirectories),
@@ -189,8 +187,6 @@ func (c *Client) OpenMultipleFilesDialog(dialogOptions runtime.OpenDialogOptions
 		c.app.string2CString(strings.Join(filters, ";")),
 		c.app.string2CString(dialogOptions.DefaultFilename),
 		c.app.string2CString(dialogOptions.DefaultDirectory),
-		c.app.bool2Cint(dialogOptions.AllowFiles),
-		c.app.bool2Cint(dialogOptions.AllowDirectories),
 		c.app.bool2Cint(true),
 		c.app.bool2Cint(dialogOptions.ShowHiddenFiles),
 		c.app.bool2Cint(dialogOptions.CanCreateDirectories),
@@ -239,7 +235,6 @@ func (c *Client) MessageDialog(dialogOptions runtime.MessageDialogOptions, callb
 		c.app.string2CString(string(dialogOptions.Type)),
 		c.app.string2CString(dialogOptions.Title),
 		c.app.string2CString(dialogOptions.Message),
-		c.app.string2CString(dialogOptions.Icon),
 		c.app.string2CString(buttons[0]),
 		c.app.string2CString(buttons[1]),
 		c.app.string2CString(buttons[2]),

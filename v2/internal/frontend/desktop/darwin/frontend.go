@@ -167,7 +167,7 @@ func (f *Frontend) WindowFullscreen() {
 	f.mainWindow.Fullscreen()
 }
 
-func (f *Frontend) WindowUnFullscreen() {
+func (f *Frontend) WindowUnfullscreen() {
 	f.mainWindow.UnFullscreen()
 }
 
@@ -180,6 +180,9 @@ func (f *Frontend) WindowHide() {
 }
 func (f *Frontend) WindowMaximise() {
 	f.mainWindow.Maximise()
+}
+func (f *Frontend) WindowToggleMaximise() {
+	f.mainWindow.ToggleMaximise()
 }
 func (f *Frontend) WindowUnmaximise() {
 	f.mainWindow.UnMaximise()
