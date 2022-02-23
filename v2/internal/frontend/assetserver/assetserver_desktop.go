@@ -3,6 +3,7 @@ package assetserver
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"io/fs"
 	"log"
 	"strings"
@@ -10,6 +11,9 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
+
+//go:embed defaultindex.html
+var defaultHTML []byte
 
 type DesktopAssetServer struct {
 	assets    fs.FS
@@ -48,7 +52,7 @@ func (d *DesktopAssetServer) LogDebug(message string, args ...interface{}) {
 func (a *DesktopAssetServer) processIndexHTML() ([]byte, error) {
 	indexHTML, err := fs.ReadFile(a.assets, "index.html")
 	if err != nil {
-		return nil, err
+		return defaultHTML, err
 	}
 	wailsOptions, err := extractOptions(indexHTML)
 	if err != nil {
