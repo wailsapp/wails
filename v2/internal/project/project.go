@@ -19,7 +19,10 @@ type Project struct {
 
 	BuildCommand   string `json:"frontend:build"`
 	InstallCommand string `json:"frontend:install"`
-	DevCommand     string `json:"frontend:dev"`
+
+	// Commands used in `wails dev`
+	DevCommand        string `json:"frontend:dev"`
+	DevWatcherCommand string `json:"frontend:dev:watcher"`
 
 	// Directory to generate the API Module
 	WailsJSDir string `json:"wailsjsdir"`

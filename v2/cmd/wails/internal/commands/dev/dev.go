@@ -142,10 +142,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
-		// frontend:dev server command. *Not concurrent*
-		if projectConfig.DevCommand != "" {
+		// frontend:dev:watcher command.
+		if command := projectConfig.DevWatcherCommand; command != "" {
 			var devCommandWaitGroup sync.WaitGroup
-			closer := runFrontendDevCommand(cwd, projectConfig.DevCommand, &devCommandWaitGroup)
+			closer := runFrontendDevWatcherCommand(cwd, command, &devCommandWaitGroup)
 			defer closer(&devCommandWaitGroup)
 		}
 
@@ -368,9 +368,9 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 	return projectConfig, nil
 }
 
-// runFrontendDevCommand will run the `frontend:dev` command if it was given, ex- `npm run dev`
-func runFrontendDevCommand(cwd string, devCommand string, wg *sync.WaitGroup) func(group *sync.WaitGroup) {
-	LogGreen("Running frontend dev command: '%s'", devCommand)
+// runFrontendDevWatcherCommand will run the `frontend:dev:watcher` command if it was given, ex- `npm run dev`
+func runFrontendDevWatcherCommand(cwd string, devCommand string, wg *sync.WaitGroup) func(group *sync.WaitGroup) {
+	LogGreen("Running frontend dev watcher command: '%s'", devCommand)
 	ctx, cancel := context.WithCancel(context.Background())
 	dir := filepath.Join(cwd, "frontend")
 	cmdSlice := strings.Split(devCommand, " ")
