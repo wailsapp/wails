@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/pkg/errors"
 
 	"github.com/leaanthony/debme"
@@ -295,9 +296,17 @@ func gitclone(options *Options) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	_, err = git.PlainClone(dirname, false, &git.CloneOptions{
-		URL: options.TemplateName,
-	})
+
+	// Parse remote template url and version number
+	templateInfo := strings.Split(options.TemplateName, "@")
+	cloneOption := &git.CloneOptions{
+		URL: templateInfo[0],
+	}
+	if len(templateInfo) > 1 {
+		cloneOption.ReferenceName = plumbing.NewTagReferenceName(templateInfo[1])
+	}
+
+	_, err = git.PlainClone(dirname, false, cloneOption)
 
 	return dirname, err
 
