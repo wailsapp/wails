@@ -1,5 +1,5 @@
 <p align="center" style="text-align: center">
-   <img src="logo.png" width="55%"><br/>
+   <img src="logo-universal.png" width="55%"><br/>
 </p>
 <p align="center">
   使用 Go 和 Web 技术构建桌面应用程序。<br/><br/>
