@@ -426,7 +426,9 @@ func FindPathToFile(fsys fs.FS, file string) (string, error) {
 		path, _ := filepath.Split(selected)
 		return path, nil
 	}
-
-	path, _ := filepath.Split(indexFiles.AsSlice()[0])
-	return path, nil
+	if indexFiles.Length() > 0 {
+		path, _ := filepath.Split(indexFiles.AsSlice()[0])
+		return path, nil
+	}
+	return "", fmt.Errorf("no index.html found")
 }
