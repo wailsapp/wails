@@ -45,7 +45,7 @@ func (i *Info) discover() error {
 		}
 		for _, dep := range dependencies {
 			checker := checkerFunctions[dep.Name]
-			if checker() != nil {
+			if checker != nil {
 				checkLocallyInstalled(checker, dep)
 				continue
 			}
