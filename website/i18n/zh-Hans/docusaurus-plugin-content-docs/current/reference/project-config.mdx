@@ -11,16 +11,16 @@ sidebar_position: 5
   "name": "[项目名称]",
   "assetdir": "[资源目录的相对路径]",
   "reloaddirs": "[触发重新加载的附加目录（逗号分隔），这仅用于一些重要资源配置]",
-  "frontend:install": "[安装node依赖的命令，在frontend目录下运行 - 通常是 `npm install`]",
-  "frontend:dev": "[此命令在“Wails dev”上的单独进程中运行。适用于第三方观察者]",
+  "frontend:install": "[安装 node 依赖的命令，在 frontend 目录下运行 - 通常是 `npm install`]",
   "frontend:build": "[构建资源的命令，在frontend目录下运行 - 通常是 `npm run build`]",
+  "frontend:dev": "[此命令等效于开发模式中的 frontend:build，如果没有指定则只有 frontend:build]",
+  "frontend:dev:watcher": "[此命令在 `wails dev` 上的单独进程中运行。对第 3 方观察者有用]",
   "wailsjsdir": "[自动生成的JS模块将被创建的目录的相对路径]",
   "version": "[项目配置版本]",
   "outputfilename": "[二进制文件的名称]",
   "debounceMS": 100, // 在检测到资源更改时，开发服务器等待重新加载的时间
   "devserverurl": "[用于服务本地资源的开发服务器URL。默认：http://localhost:34115]",
   "appargs": "[在dev模式下以shell样式传递给应用程序的参数]"
-  
 }
 ```
 
