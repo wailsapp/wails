@@ -1,5 +1,8 @@
 # Wails bin directory
 build/bin
+# Wails Windows NSIS support files
+build/windows/installer/wails_tools.nsh
+build/windows/installer/tmp/
 
 # IDEs
 .idea

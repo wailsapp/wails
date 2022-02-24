@@ -76,6 +76,9 @@ type Project struct {
 
 	// Arguments that are forwared to the application in dev mode
 	AppArgs string `json:"appargs"`
+
+	// NSISType to be build
+	NSISType string `json:"nsisType"`
 }
 
 func (p *Project) Save() error {
