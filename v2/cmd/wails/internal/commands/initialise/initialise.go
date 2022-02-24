@@ -2,14 +2,15 @@ package initialise
 
 import (
 	"fmt"
-	"github.com/flytam/filenamify"
-	"github.com/leaanthony/slicer"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/flytam/filenamify"
+	"github.com/leaanthony/slicer"
 
 	"github.com/wailsapp/wails/v2/pkg/buildassets"
 
@@ -149,7 +150,7 @@ func initProject(options *templates.Options, quiet bool) error {
 	}
 
 	// Install the default assets
-	err = buildassets.Install(options.TargetDir, options.ProjectName)
+	err = buildassets.Install(options.TargetDir)
 	if err != nil {
 		return err
 	}

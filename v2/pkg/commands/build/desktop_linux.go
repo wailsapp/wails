@@ -4,7 +4,7 @@
 package build
 
 // compileIcon will compile the icon found at <projectdir>/icon.png into the application
-func (d *DesktopBuilder) compileIcon(assetDir string, iconFile string) error {
+func (d *DesktopBuilder) compileIcon(assetDir string, iconFile []byte) error {
 	//
 	//// Load icon into a databuffer
 	//targetFilename := "icon"

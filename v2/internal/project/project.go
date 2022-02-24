@@ -62,6 +62,9 @@ type Project struct {
 	// The application author
 	Author Author
 
+	// The application information
+	Info Info
+
 	// Fully qualified filename
 	filename string
 
@@ -87,6 +90,14 @@ func (p *Project) Save() error {
 type Author struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
+}
+
+type Info struct {
+	CompanyName    string  `json:"companyName"`
+	ProductName    string  `json:"productName"`
+	ProductVersion string  `json:"productVersion"`
+	Copyright      *string `json:"copyright"`
+	Comments       *string `json:"comments"`
 }
 
 // Load the project from the current working directory
@@ -128,6 +139,24 @@ func Load(projectPath string) (*Project, error) {
 		if strings.HasSuffix(result.OutputFilename, ".exe") {
 			result.OutputFilename = strings.TrimSuffix(result.OutputFilename, ".exe")
 		}
+	}
+
+	if result.Info.CompanyName == "" {
+		result.Info.CompanyName = result.Name
+	}
+	if result.Info.ProductName == "" {
+		result.Info.ProductName = result.Name
+	}
+	if result.Info.ProductVersion == "" {
+		result.Info.ProductVersion = "1.0.0"
+	}
+	if result.Info.Copyright == nil {
+		v := "Copyright........."
+		result.Info.Copyright = &v
+	}
+	if result.Info.Comments == nil {
+		v := "Built using Wails (https://wails.app)"
+		result.Info.Comments = &v
 	}
 
 	// Return our project data
