@@ -15,6 +15,10 @@
     "message": "关于",
     "description": "The label of footer link with label=About linking to /docs/about"
   },
+  "link.item.label.Getting Started": {
+    "message": "快速入门",
+    "description": "The label of footer link with label=Getting Started linking to /docs/gettingstarted/installation"
+  },
   "link.item.label.Github": {
     "message": "Github",
     "description": "The label of footer link with label=Github linking to https://github.com/wailsapp/wails"

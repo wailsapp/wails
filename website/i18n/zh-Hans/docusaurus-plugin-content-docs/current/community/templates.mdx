@@ -6,9 +6,11 @@ sidebar_position: 1
 
 此页面用作社区支持的模板列表。请提交一个包含您的模板的 PR（点击页面底部的`编辑此页`）。要构建您自己的模板，请参考[模板](/docs/guides/templates)指南。
 
-要使用这些模板，请运行 `wails init -n "您的项目名" -t [下面的链接]`
+要使用这些模板，请运行 `wails init -n "您的项目名" -t [下面的链接[@版本]]`
 
-示例：`wails init -n "Your Project Name" -t https://github.com/misitebao/wails-template-vue`
+如果不带版本后缀，默认使用的是主分支代码模板，如果带有版本后缀，则使用该版本对应标签的代码模板。
+
+示例：`wails init -n "Your Project Name" -t https://github.com/misitebao/wails-template-vue@v2.0.0-beta.3`
 
 :::warning 注意
 

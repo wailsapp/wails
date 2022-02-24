@@ -119,6 +119,10 @@ const darkCodeTheme = require('prism-react-renderer/themes/palenight');
                   label: 'About',
                   to: '/docs/about',
                 },
+                {
+                  label: 'Getting Started',
+                  to: '/docs/gettingstarted/installation',
+                },
               ],
             },
             {
