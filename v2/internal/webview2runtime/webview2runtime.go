@@ -5,7 +5,6 @@ package webview2runtime
 
 import (
 	_ "embed"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -76,9 +75,7 @@ func downloadBootstrapper() (string, error) {
 // Returns true if the installer ran successfully.
 // Returns an error if something goes wrong
 func InstallUsingEmbeddedBootstrapper() (bool, error) {
-
-	installer := filepath.Join(os.TempDir(), `MicrosoftEdgeWebview2Setup.exe`)
-	err := os.WriteFile(installer, setupexe, 0755)
+	installer, err := WriteInstaller(os.TempDir())
 	if err != nil {
 		return false, err
 	}
@@ -112,10 +109,17 @@ func InstallUsingBootstrapper() (bool, error) {
 }
 
 func runInstaller(installer string) (bool, error) {
-	err := ShellExecuteAndWait(0, "runas", installer, "", os.Getenv("TMP"), syscall.SW_NORMAL)
-	if err != nil {
-		fmt.Println(err)
+	// Credit: https://stackoverflow.com/a/10385867
+	cmd := exec.Command(installer)
+	if err := cmd.Start(); err != nil {
 		return false, err
+	}
+	if err := cmd.Wait(); err != nil {
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+				return status.ExitStatus() == 0, nil
+			}
+		}
 	}
 	return true, nil
 }
@@ -165,4 +169,10 @@ func MessageBox(caption string, title string, flags uint) (int, error) {
 func OpenInstallerDownloadWebpage() error {
 	cmd := exec.Command("rundll32", "url.dll,FileProtocolHandler", "https://developer.microsoft.com/en-us/microsoft-edge/webview2/")
 	return cmd.Run()
+}
+
+// WriteInstaller writes the installer exe file to the given path
+func WriteInstaller(targetPath string) (string, error) {
+	installer := filepath.Join(targetPath, `MicrosoftEdgeWebview2Setup.exe`)
+	return installer, os.WriteFile(installer, setupexe, 0755)
 }
