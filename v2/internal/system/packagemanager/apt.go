@@ -69,7 +69,7 @@ func (a *Apt) PackageInstalled(pkg *Package) (bool, error) {
 	var stdo, stde bytes.Buffer
 	cmd.Stdout = &stdo
 	cmd.Stderr = &stde
-	cmd.Env = append(os.Environ(), "LANG=en_US.utf8")
+	cmd.Env = append(os.Environ(), "LC_ALL=en_US.utf8")
 	err := cmd.Run()
 	return strings.Contains(stdo.String(), "[installed]"), err
 }
