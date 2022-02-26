@@ -659,7 +659,7 @@ id createAttributedStringFromStyledLabel(JsonNode *styledLabel, const char* font
                                     (CGFloat)g / (CGFloat)255.0,
                                     (CGFloat)b / (CGFloat)255.0,
                                     (CGFloat)a / (CGFloat)255.0);
-                msg_id_id(dictionary, s("setObject:forKey:"), colour, NSForegroundColorAttributeName);
+                msg_id_id(dictionary, s("setObject:forKey:"), colour, NSBackgroundColorAttributeName);
             }
         }
 
