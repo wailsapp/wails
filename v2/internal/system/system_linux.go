@@ -47,7 +47,6 @@ func (i *Info) discover() error {
 			checker := checkerFunctions[dep.Name]
 			if checker != nil {
 				checkLocallyInstalled(checker, dep)
-				continue
 			}
 			if dep.Name == "nsis" {
 				locallyInstalled := checkNSIS()
