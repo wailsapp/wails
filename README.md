@@ -79,15 +79,18 @@ approach: it provides the ability to wrap both Go code and a web frontend into a
 make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
 
 <span id="nav-3-1"></span>
-
-### Official v1 Website
-
-The official v1 docs can be found at [https://wails.app](https://wails.app).
+<hr/>
+<h3><strong>PLEASE NOTE: As we are approaching the v2 release, we are not accepting any new feature requests or bug reports for v1. If you have a critical issue, please open a ticket and state why it is critical.</strong></h3>
+<hr/>
 
 ### Version 2
 
 Wails v2 has been released in Beta for all 3 platforms. Check out the [new website](https://wails.io) if you are
 interested in trying it out.
+
+### Legacy v1 Website
+
+The legacy v1 docs can be found at [https://wails.app](https://wails.app).
 
 <span id="nav-4"></span>
 
