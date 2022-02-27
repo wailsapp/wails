@@ -1,0 +1,15 @@
+
+# Troubleshooting
+
+An assortment of troubleshooting tips.
+
+## My application is displaying a white/blank screen
+
+Check that your application includes the assets from the correct directory. In your `main.go` file, you will have
+something similar to the following code:
+
+```go
+//go:embed frontend/dist
+var assets embed.FS
+```
+Check that `frontend/dist` contains your application assets.
