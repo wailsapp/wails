@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -353,46 +352,32 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	//Get the request
 	uri, _ := req.GetUri()
 
-	var content []byte
-	var mimeType string
-
-	// Translate URI to file
-	file, match, err := common.TranslateUriToFile(uri, "file", "wails")
-	if err == nil {
-		if !match {
-			// In this case we should let the WebView2 handle the request with it's default handler
-			return
-		}
-
-		// Load file from asset store
-		content, mimeType, err = f.assets.Load(file)
-	}
-
-	statusCode := 200
-	reasonPhrase := "OK"
-	if err != nil {
-		if os.IsNotExist(err) {
-			statusCode = 404
-			reasonPhrase = "Not Found"
-		} else {
-			err = fmt.Errorf("Error processing request %s: %w", uri, err)
-			f.logger.Error(err.Error())
-			statusCode = 500
-			reasonPhrase = "Internal Server Error"
-		}
+	res, err := common.ProcessRequest(uri, f.assets, "file", "wails")
+	if err == common.ErrUnexpectedScheme {
+		// In this case we should let the WebView2 handle the request with its default handler
+		return
+	} else if err == common.ErrUnexpectedHost {
+		// This means file:// to something other than wails, should we prevent this?
+		// Maybe we should introduce an AllowList for explicitly allowing schemes and hosts, this could also be interesting
+		// for all other platforms to improve security.
+		return // Let WebView2 handle the request with its default handler
+	} else if err != nil {
+		f.logger.Error("Error processing request '%s': %s (HttpResponse=%s)", uri, err, res)
 	}
 
 	headers := []string{}
-	if mimeType != "" {
+	if mimeType := res.MimeType; mimeType != "" {
 		headers = append(headers, "Content-Type: "+mimeType)
 	}
+	content := res.Body
 	if content != nil && f.servingFromDisk {
 		headers = append(headers, "Pragma: no-cache")
 	}
 
 	env := f.chromium.Environment()
-	response, err := env.CreateWebResourceResponse(content, statusCode, reasonPhrase, strings.Join(headers, "\n"))
+	response, err := env.CreateWebResourceResponse(content, res.StatusCode, res.StatusText(), strings.Join(headers, "\n"))
 	if err != nil {
+		f.logger.Error("CreateWebResourceResponse Error: %s", err)
 		return
 	}
 	defer response.Release()
@@ -400,6 +385,7 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	// Send response back
 	err = args.PutResponse(response)
 	if err != nil {
+		f.logger.Error("PutResponse Error: %s", err)
 		return
 	}
 }

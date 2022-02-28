@@ -14,8 +14,8 @@ import "C"
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"text/template"
@@ -292,46 +292,23 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	uri := C.webkit_uri_scheme_request_get_uri(req)
 	goURI := C.GoString(uri)
 
-	file, match, err := common.TranslateUriToFile(goURI, "wails", "")
+	res, err := common.ProcessRequest(goURI, f.assets, "wails", "", "null")
 	if err != nil {
-		// TODO Handle errors
-		return
-	} else if !match {
-		file, match, err = common.TranslateUriToFile(goURI, "wails", "null")
-		if err != nil {
-			// TODO Handle errors
-			return
-		} else if !match {
-			// This should never happen on linux, because we get only called for wails://
-			panic("Unexpected host for request on wails:// scheme")
-		}
+		f.logger.Error("Error processing request '%s': %s (HttpResponse=%s)", goURI, err, res)
 	}
 
-	// Load file from asset store
-	content, mimeType, err := f.assets.Load(file)
-
-	// TODO How to return 404/500 errors to webkit?
-	if err != nil {
-		if os.IsNotExist(err) {
-			message := C.CString("File not found")
-			gerr := C.g_error_new_literal(C.g_quark_from_string(message), C.int(404), message)
-			C.webkit_uri_scheme_request_finish_error(req, gerr)
-			C.g_error_free(gerr)
-			C.free(unsafe.Pointer(message))
-		} else {
-			err = fmt.Errorf("Error processing request %s: %v", uri, err)
-			message := C.CString("Internal Error")
-			gerr := C.g_error_new_literal(C.g_quark_from_string(message), C.int(500), message)
-			C.webkit_uri_scheme_request_finish_error(req, gerr)
-			C.g_error_free(gerr)
-			C.free(unsafe.Pointer(message))
-		}
+	if code := res.StatusCode; code != http.StatusOK {
+		message := C.CString(res.StatusText())
+		gerr := C.g_error_new_literal(C.g_quark_from_string(message), C.int(code), message)
+		C.webkit_uri_scheme_request_finish_error(req, gerr)
+		C.g_error_free(gerr)
+		C.free(unsafe.Pointer(message))
 		return
 	}
 
-	cContent := C.CString(string(content))
+	cContent := C.CString(string(res.Body))
 	defer C.free(unsafe.Pointer(cContent))
-	cMimeType := C.CString(mimeType)
+	cMimeType := C.CString(res.MimeType)
 	defer C.free(unsafe.Pointer(cMimeType))
 	cLen := C.long(C.strlen(cContent))
 	stream := C.g_memory_input_stream_new_from_data(
