@@ -609,8 +609,8 @@ func (w *Window) UnFullscreen() {
 }
 
 func (w *Window) Destroy() {
-	C.g_object_unref(C.gpointer(w.gtkWindow))
 	C.gtk_widget_destroy(w.asGTKWidget())
+	C.g_object_unref(C.gpointer(w.gtkWindow))
 }
 
 func (w *Window) Close() {
