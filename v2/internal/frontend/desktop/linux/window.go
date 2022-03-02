@@ -413,25 +413,6 @@ void setRGBA(gpointer* data) {
 	webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(options->webview), &colour);
 }
 
-typedef struct SetTitleArgs {
-	GtkWindow* window;
-	char* title;
-} SetTitleArgs;
-
-void setTitle(gpointer data) {
-	SetTitleArgs* args = (SetTitleArgs*)data;
-	gtk_window_set_title(args->window, args->title);
-	free((void*)args->title);
-	free((void*)data);
-}
-
-void SetTitle(GtkWindow* window, char* title) {
-	SetTitleArgs* args = malloc(sizeof(SetTitleArgs));
-	args->window = window;
-	args->title = title;
-	ExecuteOnMainThread(setTitle, (gpointer)args);
-}
-
 typedef struct SetPositionArgs {
 	int x;
 	int y;
@@ -736,7 +717,9 @@ func (w *Window) SetDecorated(frameless bool) {
 }
 
 func (w *Window) SetTitle(title string) {
-	C.SetTitle(w.asGTKWindow(), C.CString(title))
+	newTitle := C.CString(title)
+	defer C.free(unsafe.Pointer(newTitle))
+	C.gtk_window_set_title(w.asGTKWindow(), newTitle)
 }
 
 func (w *Window) ExecJS(js string) {
