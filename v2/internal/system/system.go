@@ -1,10 +1,11 @@
 package system
 
 import (
-	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
-	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 	"os/exec"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
+	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 )
 
 var (
@@ -69,6 +70,28 @@ func checkUPX() *packagemanager.Dependancy {
 		PackageName:    "N/A",
 		Installed:      installed,
 		InstallCommand: "Available at https://upx.github.io/",
+		Version:        version,
+		Optional:       true,
+		External:       false,
+	}
+}
+
+func checkNSIS() *packagemanager.Dependancy {
+
+	// Check for nsis installer
+	output, err := exec.Command("makensis", "-VERSION").Output()
+	installed := true
+	version := ""
+	if err != nil {
+		installed = false
+	} else {
+		version = strings.TrimSpace(strings.Split(string(output), "\n")[0])
+	}
+	return &packagemanager.Dependancy{
+		Name:           "nsis ",
+		PackageName:    "N/A",
+		Installed:      installed,
+		InstallCommand: "Available at https://nsis.sourceforge.io/Download",
 		Version:        version,
 		Optional:       true,
 		External:       false,

@@ -45,6 +45,13 @@ func (i *Info) discover() error {
 					dep.Version = locallyInstalled.Version
 				}
 			}
+			if dep.Name == "nsis" {
+				locallyInstalled := checkNSIS()
+				if locallyInstalled.Installed {
+					dep.Installed = true
+					dep.Version = locallyInstalled.Version
+				}
+			}
 		}
 		i.Dependencies = dependencies
 	}
