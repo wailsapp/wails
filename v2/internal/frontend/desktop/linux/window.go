@@ -192,27 +192,18 @@ void loadIndex(void* webview) {
 }
 
 typedef struct DragOptions {
-	void *webview;
-	GtkWindow* mainwindow;
+	void* webview;
+	void* mainwindow;
 } DragOptions;
 
-static void startDrag(gpointer data)
-{
+void startDrag(gpointer* data) {
 	DragOptions* options = (DragOptions*)data;
 
-   // Ignore non-toplevel widgets
-   GtkWidget *window = gtk_widget_get_toplevel(GTK_WIDGET(options->webview));
-   if (!GTK_IS_WINDOW(window)) return;
+	// Ignore non-toplevel widgets
+	GtkWidget *window = gtk_widget_get_toplevel(GTK_WIDGET(options->webview));
+	if (!GTK_IS_WINDOW(window)) return;
 
-   gtk_window_begin_move_drag(options->mainwindow, 1, xroot, yroot, dragTime);
-	free(data);
-}
-
-static void StartDrag(void *webview, GtkWindow* mainwindow) {
-	DragOptions* data = malloc(sizeof(DragOptions));
-	data->webview = webview;
-	data->mainwindow = mainwindow;
-	ExecuteOnMainThread(startDrag, (gpointer)data);
+	gtk_window_begin_move_drag(options->mainwindow, 1, xroot, yroot, dragTime);
 }
 
 typedef struct JSCallback {
@@ -731,7 +722,11 @@ func (w *Window) ExecJS(js string) {
 }
 
 func (w *Window) StartDrag() {
-	C.StartDrag(w.webview, w.asGTKWindow())
+	data := C.DragOptions{
+		webview:    w.webview,
+		mainwindow: w.gtkWindow,
+	}
+	C.ExecuteOnMainThread(C.startDrag, C.gpointer(&data))
 }
 
 func (w *Window) Quit() {
