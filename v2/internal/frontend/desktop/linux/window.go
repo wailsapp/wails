@@ -6,6 +6,7 @@ package linux
 /*
 #cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
 
+#include <JavaScriptCore/JavaScript.h>
 #include "gtk/gtk.h"
 #include "webkit2/webkit2.h"
 #include <stdio.h>
