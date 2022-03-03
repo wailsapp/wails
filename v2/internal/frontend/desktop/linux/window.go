@@ -500,6 +500,18 @@ gboolean UnMinimise(gpointer data) {
 	return G_SOURCE_REMOVE;
 }
 
+gboolean Fullscreen(gpointer data) {
+	gtk_window_fullscreen((GtkWindow*)data);
+
+	return G_SOURCE_REMOVE;
+}
+
+gboolean UnFullscreen(gpointer data) {
+	gtk_window_unfullscreen((GtkWindow*)data);
+
+	return G_SOURCE_REMOVE;
+}
+
 bool disableContextMenu(GtkWindow* window) {
 	return TRUE;
 }
@@ -619,14 +631,14 @@ func (w *Window) cWebKitUserContentManager() *C.WebKitUserContentManager {
 
 func (w *Window) Fullscreen() {
 	C.SetMinMaxSize(w.asGTKWindow(), C.int(0), C.int(0), C.int(0), C.int(0))
-	C.ExecuteOnMainThread(C.gtk_window_fullscreen, C.gpointer(w.asGTKWindow()))
+	C.ExecuteOnMainThread(C.Fullscreen, C.gpointer(w.asGTKWindow()))
 }
 
 func (w *Window) UnFullscreen() {
 	if !w.IsFullScreen() {
 		return
 	}
-	C.ExecuteOnMainThread(C.gtk_window_unfullscreen, C.gpointer(w.asGTKWindow()))
+	C.ExecuteOnMainThread(C.UnFullscreen, C.gpointer(w.asGTKWindow()))
 	w.SetMinSize(w.minWidth, w.minHeight)
 	w.SetMaxSize(w.maxWidth, w.maxHeight)
 }
