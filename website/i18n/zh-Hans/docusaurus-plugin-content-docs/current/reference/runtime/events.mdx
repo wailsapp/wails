@@ -43,8 +43,8 @@ JS 方法签名: `EventsOnMultiple(eventName string, callback function(optionalD
 
 ### 触发指定事件
 
-Go 方法签名: `Events(ctx context.Context, eventName string, optionalData ...interface{})`
+Go 方法签名: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`
 
-JS 方法签名: `Events(ctx context, optionalData function(optionalData?: any))`
+JS 方法签名: `EventsEmit(ctx context, optionalData function(optionalData?: any))`
 
 此方法触发指定的事件。可选数据可以与事件一起传递。这将触发任何事件侦听器。
