@@ -57,8 +57,7 @@ GdkRectangle getCurrentMonitorGeometry(GtkWindow *window) {
     return result;
 }
 
-void Center(gpointer data)
-{
+gboolean Center(gpointer data) {
 	GtkWindow *window = (GtkWindow*)data;
 
     // Get the geometry of the monitor
@@ -73,6 +72,8 @@ void Center(gpointer data)
 
     // Place the window at the center of the monitor
     gtk_window_move(window, newX, newY);
+
+    return G_SOURCE_REMOVE;
 }
 
 int IsFullscreen(GtkWidget *widget) {
@@ -192,18 +193,29 @@ void loadIndex(void* webview) {
 }
 
 typedef struct DragOptions {
-	void* webview;
-	void* mainwindow;
+	void *webview;
+	GtkWindow* mainwindow;
 } DragOptions;
 
-void startDrag(gpointer* data) {
+static gboolean startDrag(gpointer data)
+{
 	DragOptions* options = (DragOptions*)data;
 
 	// Ignore non-toplevel widgets
 	GtkWidget *window = gtk_widget_get_toplevel(GTK_WIDGET(options->webview));
-	if (!GTK_IS_WINDOW(window)) return;
+	if (!GTK_IS_WINDOW(window)) return G_SOURCE_REMOVE;
 
 	gtk_window_begin_move_drag(options->mainwindow, 1, xroot, yroot, dragTime);
+	free(data);
+
+	return G_SOURCE_REMOVE;
+}
+
+static void StartDrag(void *webview, GtkWindow* mainwindow) {
+	DragOptions* data = malloc(sizeof(DragOptions));
+	data->webview = webview;
+	data->mainwindow = mainwindow;
+	ExecuteOnMainThread(startDrag, (gpointer)data);
 }
 
 typedef struct JSCallback {
@@ -211,7 +223,7 @@ typedef struct JSCallback {
     char* script;
 } JSCallback;
 
-int executeJS(gpointer data) {
+gboolean executeJS(gpointer data) {
     struct JSCallback *js = data;
     webkit_web_view_run_javascript(js->webview, js->script, NULL, NULL, NULL);
     free(js->script);
@@ -227,7 +239,7 @@ typedef struct MessageDialogOptions {
 	int messageType;
 } MessageDialogOptions;
 
-void messageDialog(gpointer data) {
+gboolean messageDialog(gpointer data) {
 
 	GtkDialogFlags flags;
 	GtkMessageType messageType;
@@ -269,6 +281,8 @@ void messageDialog(gpointer data) {
 	gtk_widget_destroy(dialog);
 	free(options->title);
 	free(options->message);
+
+	return G_SOURCE_REMOVE;
 }
 
 void extern processOpenFileResult(void*);
@@ -293,7 +307,7 @@ void freeFileFilterArray(GtkFileFilter** filters) {
 	free(filters);
 }
 
-int opendialog(gpointer data) {
+gboolean opendialog(gpointer data) {
     struct OpenFileDialogOptions *options = data;
 	char *label = "_Open";
 	if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE) {
@@ -398,10 +412,33 @@ typedef struct RGBAOptions {
 	void *webview;
 } RGBAOptions;
 
-void setRGBA(gpointer* data) {
+gboolean setRGBA(gpointer* data) {
 	RGBAOptions* options = (RGBAOptions*)data;
 	GdkRGBA colour = {options->r / 255.0, options->g / 255.0, options->b / 255.0, options->a / 255.0};
 	webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(options->webview), &colour);
+
+	return G_SOURCE_REMOVE;
+}
+
+typedef struct SetTitleArgs {
+	GtkWindow* window;
+	char* title;
+} SetTitleArgs;
+
+gboolean setTitle(gpointer data) {
+	SetTitleArgs* args = (SetTitleArgs*)data;
+	gtk_window_set_title(args->window, args->title);
+	free((void*)args->title);
+	free((void*)data);
+
+	return G_SOURCE_REMOVE;
+}
+
+void SetTitle(GtkWindow* window, char* title) {
+	SetTitleArgs* args = malloc(sizeof(SetTitleArgs));
+	args->window = window;
+	args->title = title;
+	ExecuteOnMainThread(setTitle, (gpointer)args);
 }
 
 typedef struct SetPositionArgs {
@@ -410,10 +447,12 @@ typedef struct SetPositionArgs {
 	void* window;
 } SetPositionArgs;
 
-void setPosition(gpointer data) {
+gboolean setPosition(gpointer data) {
 	SetPositionArgs* args = (SetPositionArgs*)data;
 	gtk_window_move((GtkWindow*)args->window, args->x, args->y);
 	free(args);
+
+	return G_SOURCE_REMOVE;
 }
 
 void SetPosition(void* window, int x, int y) {
@@ -425,28 +464,40 @@ void SetPosition(void* window, int x, int y) {
 	ExecuteOnMainThread(setPosition, (gpointer)args);
 }
 
-void Show(gpointer data) {
+gboolean Show(gpointer data) {
 	gtk_widget_show((GtkWidget*)data);
+
+	return G_SOURCE_REMOVE;
 }
 
-void Hide(gpointer data) {
+gboolean Hide(gpointer data) {
 	gtk_widget_hide((GtkWidget*)data);
+
+	return G_SOURCE_REMOVE;
 }
 
-void Maximise(gpointer data) {
+gboolean Maximise(gpointer data) {
 	gtk_window_maximize((GtkWindow*)data);
+
+	return G_SOURCE_REMOVE;
 }
 
-void UnMaximise(gpointer data) {
+gboolean UnMaximise(gpointer data) {
 	gtk_window_unmaximize((GtkWindow*)data);
+
+	return G_SOURCE_REMOVE;
 }
 
-void Minimise(gpointer data) {
+gboolean Minimise(gpointer data) {
 	gtk_window_iconify((GtkWindow*)data);
+
+	return G_SOURCE_REMOVE;
 }
 
-void UnMinimise(gpointer data) {
+gboolean UnMinimise(gpointer data) {
 	gtk_window_present((GtkWindow*)data);
+
+	return G_SOURCE_REMOVE;
 }
 
 bool disableContextMenu(GtkWindow* window) {
@@ -708,9 +759,7 @@ func (w *Window) SetDecorated(frameless bool) {
 }
 
 func (w *Window) SetTitle(title string) {
-	newTitle := C.CString(title)
-	defer C.free(unsafe.Pointer(newTitle))
-	C.gtk_window_set_title(w.asGTKWindow(), newTitle)
+	C.SetTitle(w.asGTKWindow(), C.CString(title))
 }
 
 func (w *Window) ExecJS(js string) {
@@ -722,11 +771,7 @@ func (w *Window) ExecJS(js string) {
 }
 
 func (w *Window) StartDrag() {
-	data := C.DragOptions{
-		webview:    w.webview,
-		mainwindow: w.gtkWindow,
-	}
-	C.ExecuteOnMainThread(C.startDrag, C.gpointer(&data))
+	C.StartDrag(w.webview, w.asGTKWindow())
 }
 
 func (w *Window) Quit() {
