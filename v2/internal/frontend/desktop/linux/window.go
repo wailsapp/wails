@@ -45,16 +45,28 @@ static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int 
     gtk_window_set_geometry_hints(window, NULL, &size, flags);
 }
 
-GdkRectangle getCurrentMonitorGeometry(GtkWindow *window) {
-    // Get the monitor that the window is currently on
-    GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
-    GdkWindow *gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
-    GdkMonitor *monitor = gdk_display_get_monitor_at_window (display, gdk_window);
+GdkMonitor* getCurrentMonitor(GtkWindow *window) {
+	// Get the monitor that the window is currently on
+	GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
+	GdkWindow *gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
+	GdkMonitor *monitor = gdk_display_get_monitor_at_window(display, gdk_window);
 
-    // Get the geometry of the monitor
-    GdkRectangle result;
-    gdk_monitor_get_geometry (monitor,&result);
-    return result;
+	return GDK_MONITOR(monitor);
+}
+
+GdkRectangle getCurrentMonitorGeometry(GtkWindow *window) {
+	GdkMonitor *monitor = getCurrentMonitor(window);
+
+	// Get the geometry of the monitor
+	GdkRectangle result;
+	gdk_monitor_get_geometry (monitor,&result);
+	return result;
+}
+
+int getCurrentMonitorScaleFactor(GtkWindow *window) {
+	GdkMonitor *monitor = getCurrentMonitor(window);
+
+	return gdk_monitor_get_scale_factor(monitor);
 }
 
 gboolean Center(gpointer data) {
@@ -503,7 +515,14 @@ gboolean UnMinimise(gpointer data) {
 }
 
 gboolean Fullscreen(gpointer data) {
-	gtk_window_fullscreen((GtkWindow*)data);
+	GtkWindow* window = (GtkWindow*)data;
+
+	// Get the geometry of the monitor.
+	GdkRectangle m = getCurrentMonitorGeometry(window);
+	int scale = getCurrentMonitorScaleFactor(window);
+	SetMinMaxSize(window, 0, 0, m.width * scale, m.height * scale);
+
+	gtk_window_fullscreen(window);
 
 	return G_SOURCE_REMOVE;
 }
@@ -632,7 +651,6 @@ func (w *Window) cWebKitUserContentManager() *C.WebKitUserContentManager {
 }
 
 func (w *Window) Fullscreen() {
-	C.SetMinMaxSize(w.asGTKWindow(), C.int(0), C.int(0), C.int(0), C.int(0))
 	C.ExecuteOnMainThread(C.Fullscreen, C.gpointer(w.asGTKWindow()))
 }
 
