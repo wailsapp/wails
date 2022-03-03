@@ -197,13 +197,15 @@ typedef struct DragOptions {
 	GtkWindow* mainwindow;
 } DragOptions;
 
-static gboolean startDrag(gpointer data)
-{
+static gboolean startDrag(gpointer data) {
 	DragOptions* options = (DragOptions*)data;
 
 	// Ignore non-toplevel widgets
 	GtkWidget *window = gtk_widget_get_toplevel(GTK_WIDGET(options->webview));
-	if (!GTK_IS_WINDOW(window)) return G_SOURCE_REMOVE;
+	if (!GTK_IS_WINDOW(window)) {
+		free(data);
+		return G_SOURCE_REMOVE;
+	}
 
 	gtk_window_begin_move_drag(options->mainwindow, 1, xroot, yroot, dragTime);
 	free(data);
