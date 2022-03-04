@@ -128,6 +128,7 @@ Your system is ready for Wails development!
 
 `wails dev` is used to run your application in a "live development" mode. This means:
 
+   - The application's `go.mod` will be updated to use the same version of Wails as the CLI
    - The application is compiled and run automatically
    - A watcher is started and will trigger a rebuild of your dev app if it detects changes to your go files
    - A webserver is started on `http://localhost:34115` which serves your application (not just frontend) over http. This allows you to use your favourite browser development extensions
