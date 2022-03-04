@@ -28,6 +28,7 @@
     "react": "^17.0.1",
     "react-contributors": "^1.1.2",
     "react-dom": "^17.0.1",
+    "react-responsive-carousel": "^3.2.22",
     "styled-components": "^5.3.1",
     "url-loader": "^4.1.1"
   },
