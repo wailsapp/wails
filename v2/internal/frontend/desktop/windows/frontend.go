@@ -55,7 +55,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		startURL:        "file://wails/",
+		startURL:        "https://wails.localhost/",
 	}
 
 	bindingsJSON, err := appBindings.ToJSON()
@@ -352,7 +352,7 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	//Get the request
 	uri, _ := req.GetUri()
 
-	res, err := common.ProcessRequest(uri, f.assets, "file", "wails")
+	res, err := common.ProcessRequest(uri, f.assets, "https", "wails.localhost")
 	if err == common.ErrUnexpectedScheme {
 		// In this case we should let the WebView2 handle the request with its default handler
 		return
