@@ -1,6 +1,7 @@
 {
   "name": "{{.ProjectName}}",
   "outputfilename": "{{.BinaryName}}",
+  "assetdir": "frontend/src",
   "wailsjsdir": "./frontend",
   "author": {
     "name": "{{.AuthorName}}",
