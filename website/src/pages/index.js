@@ -19,7 +19,7 @@ function HomepageHeader() {
                           showIndicators={false}
                           infiniteLoop={true} interval={3000} transitionTime={1000}>
                     <div>
-                        <img src="/img/logo-dark.svg"/>
+                        <img src="/img/wails-app-mac.png"/>
                     </div>
                     <div>
                         <img src="/img/showcase/ytd.png"/>
@@ -29,6 +29,9 @@ function HomepageHeader() {
                     </div>
                     <div>
                         <img src="/img/showcase/wally.png"/>
+                    </div>
+                    <div>
+                        <img src="/img/october.png"/>
                     </div>
                     <div>
                         <img src="/img/showcase/mollywallet.png"/>
