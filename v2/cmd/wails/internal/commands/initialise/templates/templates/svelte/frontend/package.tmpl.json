@@ -1,28 +1,18 @@
 {
   "name": "{{.ProjectName}}",
-  "version": "1.0.0",
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
-    "start": "sirv dist --no-clear"
+    "dev": "vite",
+    "build": "vite build",
+    "build:watch": "vite build --watch",
+    "preview": "vite preview"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^17.0.0",
-    "@rollup/plugin-image": "^2.0.6",
-    "@rollup/plugin-node-resolve": "^11.0.0",
-    "postcss": "^8.3.5",
-    "postcss-url": "^10.1.3",
-    "rollup": "^2.3.4",
-    "rollup-plugin-copy": "^3.4.0",
-    "rollup-plugin-livereload": "^2.0.0",
-    "rollup-plugin-postcss": "^4.0.0",
-    "rollup-plugin-svelte": "^7.0.0",
-    "rollup-plugin-terser": "^7.0.0",
-    "svelte": "^3.0.0"
-  },
-  "dependencies": {
-    "sirv-cli": "^1.0.0"
+    "@sveltejs/vite-plugin-svelte": "^1.0.0-next.30",
+    "svelte": "^3.44.0",
+    "vite": "^2.8.0"
   },
   "author": "{{.AuthorName}}"
 }

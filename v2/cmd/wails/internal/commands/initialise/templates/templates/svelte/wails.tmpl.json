@@ -1,9 +1,12 @@
 {
   "name": "{{.ProjectName}}",
   "outputfilename": "{{.BinaryName}}",
+  "assetdir": "frontend/dist",
   "frontend:install": "npm install",
   "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run build:watch",
   "wailsjsdir": "./frontend",
+  "debounceMS": 2000,
   "author": {
     "name": "{{.AuthorName}}",
     "email": "{{.AuthorEmail}}"
