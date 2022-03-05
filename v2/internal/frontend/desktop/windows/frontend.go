@@ -362,7 +362,8 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 		// for all other platforms to improve security.
 		return // Let WebView2 handle the request with its default handler
 	} else if err != nil {
-		f.logger.Error("Error processing request '%s': %s (HttpResponse=%s)", uri, err, res)
+		path := strings.Replace(uri, "https://wails.localhost", "", 1)
+		f.logger.Error("Error processing request '%s': %s (HttpResponse=%s)", path, err, res)
 	}
 
 	headers := []string{}
