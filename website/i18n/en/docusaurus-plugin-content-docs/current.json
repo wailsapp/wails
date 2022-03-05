@@ -30,5 +30,9 @@
   "sidebar.tutorialSidebar.category.Showcase": {
     "message": "Showcase",
     "description": "The label for category Showcase in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Appendix": {
+    "message": "Appendix",
+    "description": "The label for category Appendix in sidebar tutorialSidebar"
   }
 }
