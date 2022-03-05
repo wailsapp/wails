@@ -181,7 +181,7 @@ func (f *Frontend) WindowUnfullscreen() {
 
 func (f *Frontend) WindowShow() {
 	runtime.LockOSThread()
-	f.mainWindow.Show()
+	f.ShowWindow()
 }
 
 func (f *Frontend) WindowHide() {
@@ -512,17 +512,23 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 		if !f.frontendOptions.DisableResize {
 			f.mainWindow.Maximise()
 		}
-		f.mainWindow.Show()
+		f.ShowWindow()
 	case options.Minimised:
 		f.mainWindow.Minimise()
 	case options.Fullscreen:
 		f.mainWindow.Fullscreen()
-		f.mainWindow.Show()
+		f.ShowWindow()
 	default:
 		if f.frontendOptions.Fullscreen {
 			f.mainWindow.Fullscreen()
 		}
-		f.mainWindow.Show()
+		f.ShowWindow()
 	}
 
+}
+
+func (f *Frontend) ShowWindow() {
+	f.mainWindow.Show()
+	f.mainWindow.SetFocus()
+	w32.BringWindowToTop(f.mainWindow.Handle())
 }
