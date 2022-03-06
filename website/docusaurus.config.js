@@ -53,7 +53,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/palenight");
               "https://github.com/wailsapp/wails/edit/master/website/blog/",
           },
           theme: {
-            customCss: require.resolve("./src/css/custom.css"),
+            customCss: [require.resolve("./src/css/custom.css"), require.resolve("./src/css/carousel.min.css")],
           },
         }),
       ],
