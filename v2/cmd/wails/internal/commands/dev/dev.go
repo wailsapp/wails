@@ -142,13 +142,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
-		// frontend:dev:watcher command.
-		if command := projectConfig.DevWatcherCommand; command != "" {
-			var devCommandWaitGroup sync.WaitGroup
-			closer := runFrontendDevWatcherCommand(cwd, command, &devCommandWaitGroup)
-			defer closer(&devCommandWaitGroup)
-		}
-
 		buildOptions := generateBuildOptions(flags)
 		buildOptions.Logger = logger
 		buildOptions.UserTags = internal.ParseUserTags(flags.tags)
@@ -168,6 +161,13 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 		if newProcess != nil {
 			debugBinaryProcess = newProcess
+		}
+
+		// frontend:dev:watcher command.
+		if command := projectConfig.DevWatcherCommand; command != "" {
+			var devCommandWaitGroup sync.WaitGroup
+			closer := runFrontendDevWatcherCommand(cwd, command, &devCommandWaitGroup)
+			defer closer(&devCommandWaitGroup)
 		}
 
 		// open browser
