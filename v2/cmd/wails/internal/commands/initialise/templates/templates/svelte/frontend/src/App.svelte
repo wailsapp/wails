@@ -25,7 +25,7 @@
 
 <div class="logo" />
 <div class="result" id="result">{greeting}</div>
-<div class="input-box" id="input" data-wails-no-drag>
+<div class="input-box" id="input">
   <input
     class="input"
     id="name"
