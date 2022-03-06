@@ -180,7 +180,7 @@
     "description": "The title of the tag list page"
   },
   "homepage.Tagline": {
-    "message": "Build applications using Go + HTML + CSS + JS"
+    "message": "Build cross-platform applications using Go + HTML + CSS + JS"
   },
   "homepage.ButtonText": {
     "message": "Get Started"
@@ -202,5 +202,21 @@
   },
   "homepage.Features.Description3": {
     "message": "Quickly generate, build and package your projects using the Wails CLI."
+  },
+  "theme.ErrorPageContent.title": {
+    "message": "This page crashed.",
+    "description": "The title of the fallback page when the page crashed"
+  },
+  "theme.ErrorPageContent.tryAgain": {
+    "message": "Try again",
+    "description": "The label of the button to try again when the page crashed"
+  },
+  "theme.BackToTopButton.buttonAriaLabel": {
+    "message": "Scroll back to top",
+    "description": "The ARIA label for the back to top button"
+  },
+  "theme.DocSidebarItem.toggleCollapsedCategoryAriaLabel": {
+    "message": "Toggle the collapsible sidebar category '{label}'",
+    "description": "The ARIA label to toggle the collapsible sidebar category"
   }
 }

@@ -30,5 +30,9 @@
   "sidebar.tutorialSidebar.category.Showcase": {
     "message": "项目展示",
     "description": "The label for category Showcase in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Appendix": {
+    "message": "附录",
+    "description": "The label for category Appendix in sidebar tutorialSidebar"
   }
 }
