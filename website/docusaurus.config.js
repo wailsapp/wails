@@ -53,7 +53,10 @@ const darkCodeTheme = require("prism-react-renderer/themes/palenight");
               "https://github.com/wailsapp/wails/edit/master/website/blog/",
           },
           theme: {
-            customCss: [require.resolve("./src/css/custom.css"), require.resolve("./src/css/carousel.min.css")],
+            customCss: [
+              require.resolve("./src/css/custom.css"),
+              require.resolve("./src/css/carousel.css"),
+            ],
           },
         }),
       ],
@@ -169,12 +172,12 @@ const darkCodeTheme = require("prism-react-renderer/themes/palenight");
         },
         algolia: {
           // The application ID provided by Algolia
-          appId: 'AWTCNFZ4FF',
+          appId: "AWTCNFZ4FF",
 
           // Public API key: it is safe to commit it
-          apiKey: 'd6495e0dda237daa037967b3809e4089',
+          apiKey: "d6495e0dda237daa037967b3809e4089",
 
-          indexName: 'wails',
+          indexName: "wails",
 
           // Optional: see doc section below
           contextualSearch: true,
@@ -186,7 +189,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/palenight");
           searchParameters: {},
 
           // Optional: path for search page that enabled by default (`false` to disable it)
-          searchPagePath: 'false',
+          searchPagePath: "false",
 
           //... other Algolia params
         },
