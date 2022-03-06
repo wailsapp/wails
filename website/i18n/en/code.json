@@ -180,7 +180,7 @@
     "description": "The title of the tag list page"
   },
   "homepage.Tagline": {
-    "message": "Build cross-platform applications using Go + HTML + CSS + JS"
+    "message": "Build beautiful cross-platform applications using Go + HTML + CSS + JS"
   },
   "homepage.ButtonText": {
     "message": "Get Started"
