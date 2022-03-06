@@ -13,3 +13,15 @@ something similar to the following code:
 var assets embed.FS
 ```
 Check that `frontend/dist` contains your application assets.
+
+## Mac application not valid
+
+If your built application looks like this in finder:
+
+<p className="text--center">
+    <img src="/img/troubleshooting/invalid_mac_app.png"></img>
+</p>
+
+it's likely that your application's `info.plist` is invalid. Update the file in `build/<yourapp>.app/Contents/info.plist`
+and check if the data is valid, EG check the binary name is correct. To persist the changes, copy the file back to
+the `build/darwin` directory.
