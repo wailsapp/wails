@@ -22,3 +22,44 @@ var assets embed.FS
 </p>
 
 您的应用程序的 `info.plist` 可能无效。更新 `build/<yourapp>.app/Contents/info.plist` 文件并检查数据是否有效，例如二进制文件名称是否正确。要保留更改，请将文件复制回 `build/darwin` 目录。
+
+## 前端调用后端方法无法使用可变参数
+
+如果您有使用可变参数定义的后端方法，例如：
+
+```go
+func (a *App) TestFunc(msg string, args ...interface{}) error {
+    // Code
+}
+```
+
+像这样从前端调用此方法将失败：
+
+```js
+var msg = "Hello: ";
+var args = ["Go", "JS"];
+window.go.main.App.TestFunc(msg, ...args)
+  .then((result) => {
+    //do things here
+  })
+  .catch((error) => {
+    //handle error
+  });
+```
+
+解决办法：
+
+```js
+var msg = "Hello ";
+var args = ["Go", "JS"];
+window.go.main.App.TestFunc(msg, args)
+  .then((result) => {
+    // 不需要展开符
+    // do things here
+  })
+  .catch((error) => {
+    //handle error
+  });
+```
+
+勋章：https://github.com/wailsapp/wails/issues/1186
