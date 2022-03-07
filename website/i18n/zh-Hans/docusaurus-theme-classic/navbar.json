@@ -1,15 +1,11 @@
 {
-  "title": {
-    "message": "",
-    "description": "The title in the navbar"
+  "item.label.Sponsor ❤": {
+    "message": "赞助我们 ❤",
+    "description": "Navbar item with label Sponsor ❤"
   },
   "item.label.Docs": {
     "message": "文档",
     "description": "Navbar item with label Docs"
-  },
-  "item.label.Showcase": {
-    "message": "作品展示",
-    "description": "Navbar item with label Showcase"
   },
   "item.label.Blog": {
     "message": "博客",
@@ -18,9 +14,5 @@
   "item.label.GitHub": {
     "message": "GitHub",
     "description": "Navbar item with label GitHub"
-  },
-  "item.label.Sponsor": {
-    "message": "赞助我们 ❤",
-    "description": "Navbar item with label Sponsor"
   }
 }
