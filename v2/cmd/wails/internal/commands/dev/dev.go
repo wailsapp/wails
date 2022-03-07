@@ -532,6 +532,8 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			if exitCode == 0 {
 				quit = true
 			}
+		case err := <-watcher.Errors:
+			LogDarkYellow(err.Error())
 		case item := <-watcher.Events:
 			// Check for file writes
 			if item.Op&fsnotify.Write == fsnotify.Write {
