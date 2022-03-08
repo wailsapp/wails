@@ -11,11 +11,11 @@ Unicode true
 ## > wails build --target windows/amd64 --nsis
 ## Then you can call makensis on this file with specifying the path to your binary:
 ## For a AMD64 only installer:
-## > makensis -DARG_WAILS_AMD64_BINARY=../../bin/app.exe
+## > makensis -DARG_WAILS_AMD64_BINARY=..\..\bin\app.exe
 ## For a ARM64 only installer:
-## > makensis -DARG_WAILS_ARM64_BINARY=../../bin/app.exe
+## > makensis -DARG_WAILS_ARM64_BINARY=..\..\bin\app.exe
 ## For a installer with both architectures:
-## > makensis -DARG_WAILS_AMD64_BINARY=../../bin/app-amd64.exe -DARG_WAILS_ARM64_BINARY=../../bin/app-arm64.exe
+## > makensis -DARG_WAILS_AMD64_BINARY=..\..\bin\app-amd64.exe -DARG_WAILS_ARM64_BINARY=..\..\bin\app-arm64.exe
 ####
 ## The following information is taken from the ProjectInfo file, but they can be overwritten here. 
 ####
@@ -47,14 +47,14 @@ VIAddVersionKey "ProductName"     "${INFO_PRODUCTNAME}"
 
 !include "MUI.nsh"
 
-!define MUI_ICON "../icon.ico"
-!define MUI_UNICON "../icon.ico"
-# !define MUI_WELCOMEFINISHPAGE_BITMAP "resources/leftimage.bmp" #Include this to add a bitmap on the left side of the Welcome Page. Must be a size of 164x314
+!define MUI_ICON "..\icon.ico"
+!define MUI_UNICON "..\icon.ico"
+# !define MUI_WELCOMEFINISHPAGE_BITMAP "resources\leftimage.bmp" #Include this to add a bitmap on the left side of the Welcome Page. Must be a size of 164x314
 !define MUI_FINISHPAGE_NOAUTOCLOSE # Wait on the INSTFILES page so the user can take a look into the details of the installation steps
 !define MUI_ABORTWARNING # This will warn the user if they exit from the installer.
 
 !insertmacro MUI_PAGE_WELCOME # Welcome to the installer page.
-# !insertmacro MUI_PAGE_LICENSE "resources/eula.txt" # Adds a EULA page to the installer
+# !insertmacro MUI_PAGE_LICENSE "resources\eula.txt" # Adds a EULA page to the installer
 !insertmacro MUI_PAGE_DIRECTORY # In which folder install page.
 !insertmacro MUI_PAGE_INSTFILES # Installing page.
 !insertmacro MUI_PAGE_FINISH # Finished installation page.
@@ -68,7 +68,7 @@ VIAddVersionKey "ProductName"     "${INFO_PRODUCTNAME}"
 #!finalize 'signtool --file "%1"'
 
 Name "${INFO_PRODUCTNAME}"
-OutFile "../../bin/${INFO_PROJECTNAME}-${ARCH}-installer.exe" # Name of the installer's file.
+OutFile "..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe" # Name of the installer's file.
 InstallDir "$PROGRAMFILES64\${INFO_COMPANYNAME}\${INFO_PRODUCTNAME}" # Default installing folder ($PROGRAMFILES is Program Files folder).
 ShowInstDetails show # This will always show the installation details.
 
