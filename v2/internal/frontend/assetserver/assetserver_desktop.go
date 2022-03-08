@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -50,9 +51,16 @@ func (d *DesktopAssetServer) LogDebug(message string, args ...interface{}) {
 }
 
 func (a *DesktopAssetServer) processIndexHTML() ([]byte, error) {
-	indexHTML, err := fs.ReadFile(a.assets, "index.html")
+	var indexHTML []byte
+	var err error
+	for tries := 0; tries < 10; tries++ {
+		indexHTML, err = fs.ReadFile(a.assets, "index.html")
+		if err != nil {
+			time.Sleep(500 * time.Millisecond)
+		}
+	}
 	if err != nil {
-		return defaultHTML, err
+		indexHTML = defaultHTML
 	}
 	wailsOptions, err := extractOptions(indexHTML)
 	if err != nil {
