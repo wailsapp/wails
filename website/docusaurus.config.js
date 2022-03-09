@@ -29,12 +29,14 @@ const darkCodeTheme = require("prism-react-renderer/themes/palenight");
       },
     },
     plugins: [
-      [
-        "docusaurus-plugin-plausible",
+      ["docusaurus-plugin-plausible",
         {
           domain: "wails.io",
         },
       ],
+      [require.resolve('docusaurus-lunr-search'), {
+        languages: ['en', 'zh'] // language codes
+      }]
     ],
     presets: [
       [
@@ -170,29 +172,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/palenight");
           theme: lightCodeTheme,
           darkTheme: darkCodeTheme,
         },
-        algolia: {
-          // The application ID provided by Algolia
-          appId: "AWTCNFZ4FF",
 
-          // Public API key: it is safe to commit it
-          apiKey: "d6495e0dda237daa037967b3809e4089",
-
-          indexName: "wails",
-
-          // Optional: see doc section below
-          contextualSearch: true,
-
-          // Optional: Specify domains where the navigation should occur through window.location instead on history.push. Useful when our Algolia config crawls multiple documentation sites and we want to navigate with window.location.href to them.
-          // externalUrlRegex: 'external\\.com|domain\\.com',
-
-          // Optional: Algolia search parameters
-          searchParameters: {},
-
-          // Optional: path for search page that enabled by default (`false` to disable it)
-          searchPagePath: "false",
-
-          //... other Algolia params
-        },
       }),
   }
 );
