@@ -3,13 +3,18 @@ package assetserver
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"io/fs"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
+
+//go:embed defaultindex.html
+var defaultHTML []byte
 
 type DesktopAssetServer struct {
 	assets    fs.FS
@@ -45,10 +50,24 @@ func (d *DesktopAssetServer) LogDebug(message string, args ...interface{}) {
 	}
 }
 
-func (a *DesktopAssetServer) processIndexHTML() ([]byte, error) {
-	indexHTML, err := fs.ReadFile(a.assets, "index.html")
+// loadFile will try to load the file from disk. If there is an error
+// it will retry until eventually it will give up and error.
+func (d *DesktopAssetServer) loadFile(filename string) ([]byte, error) {
+	var result []byte
+	var err error
+	for tries := 0; tries < 50; tries++ {
+		result, err = fs.ReadFile(d.assets, filename)
+		if err != nil {
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
+	return result, err
+}
+
+func (d *DesktopAssetServer) processIndexHTML() ([]byte, error) {
+	indexHTML, err := d.loadFile("index.html")
 	if err != nil {
-		return nil, err
+		indexHTML = defaultHTML
 	}
 	wailsOptions, err := extractOptions(indexHTML)
 	if err != nil {
@@ -71,20 +90,20 @@ func (a *DesktopAssetServer) processIndexHTML() ([]byte, error) {
 	return indexHTML, nil
 }
 
-func (a *DesktopAssetServer) Load(filename string) ([]byte, string, error) {
+func (d *DesktopAssetServer) Load(filename string) ([]byte, string, error) {
 	var content []byte
 	var err error
 	switch filename {
 	case "/":
-		content, err = a.processIndexHTML()
+		content, err = d.processIndexHTML()
 	case "/wails/runtime.js":
-		content = a.runtimeJS
+		content = d.runtimeJS
 	case "/wails/ipc.js":
 		content = runtime.DesktopIPC
 	default:
 		filename = strings.TrimPrefix(filename, "/")
-		a.LogDebug("Loading file: %s", filename)
-		content, err = fs.ReadFile(a.assets, filename)
+		d.LogDebug("Loading file: %s", filename)
+		content, err = d.loadFile(filename)
 	}
 	if err != nil {
 		return nil, "", err
