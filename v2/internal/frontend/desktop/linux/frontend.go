@@ -306,15 +306,24 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 		return
 	}
 
-	cContent := C.CString(string(res.Body))
-	defer C.free(unsafe.Pointer(cContent))
+	var cContent unsafe.Pointer
+	bodyLen := len(res.Body)
+	var cLen C.long
+	if bodyLen > 0 {
+		cContent = C.malloc(C.ulong(bodyLen))
+		if cContent != nil {
+			C.memcpy(cContent, unsafe.Pointer(&res.Body[0]), C.size_t(bodyLen))
+			cLen = C.long(len(res.Body))
+		}
+	}
+
 	cMimeType := C.CString(res.MimeType)
 	defer C.free(unsafe.Pointer(cMimeType))
-	cLen := C.long(C.strlen(cContent))
+
 	stream := C.g_memory_input_stream_new_from_data(
-		unsafe.Pointer(C.g_strdup(cContent)),
+		cContent,
 		cLen,
-		(*[0]byte)(C.g_free))
+		(*[0]byte)(C.free))
 	C.webkit_uri_scheme_request_finish(req, stream, cLen, cMimeType)
 	C.g_object_unref(C.gpointer(stream))
 }
