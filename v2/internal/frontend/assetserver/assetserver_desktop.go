@@ -17,13 +17,16 @@ import (
 var defaultHTML []byte
 
 type DesktopAssetServer struct {
-	assets    fs.FS
-	runtimeJS []byte
-	logger    *logger.Logger
+	assets          fs.FS
+	runtimeJS       []byte
+	logger          *logger.Logger
+	servingFromDisk bool
 }
 
-func NewDesktopAssetServer(ctx context.Context, assets fs.FS, bindingsJSON string) (*DesktopAssetServer, error) {
-	result := &DesktopAssetServer{}
+func NewDesktopAssetServer(ctx context.Context, assets fs.FS, bindingsJSON string, servingFromDisk bool) (*DesktopAssetServer, error) {
+	result := &DesktopAssetServer{
+		servingFromDisk: servingFromDisk,
+	}
 
 	_logger := ctx.Value("logger")
 	if _logger != nil {
@@ -53,6 +56,9 @@ func (d *DesktopAssetServer) LogDebug(message string, args ...interface{}) {
 // loadFile will try to load the file from disk. If there is an error
 // it will retry until eventually it will give up and error.
 func (d *DesktopAssetServer) loadFile(filename string) ([]byte, error) {
+	if !d.servingFromDisk {
+		return fs.ReadFile(d.assets, filename)
+	}
 	var result []byte
 	var err error
 	for tries := 0; tries < 50; tries++ {

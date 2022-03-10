@@ -80,7 +80,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	if err != nil {
 		log.Fatal(err)
 	}
-	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON)
+	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON, result.servingFromDisk)
 	if err != nil {
 		log.Fatal(err)
 	}
