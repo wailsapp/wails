@@ -511,8 +511,9 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 	case options.Maximised:
 		if !f.frontendOptions.DisableResize {
 			f.mainWindow.Maximise()
+		} else {
+			f.mainWindow.Show()
 		}
-		f.mainWindow.Show()
 	case options.Minimised:
 		f.mainWindow.Minimise()
 	case options.Fullscreen:
