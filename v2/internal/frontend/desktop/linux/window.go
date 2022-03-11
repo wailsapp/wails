@@ -91,7 +91,7 @@ gboolean Center(gpointer data) {
 int IsFullscreen(GtkWidget *widget) {
 	GdkWindow *gdkwindow = gtk_widget_get_window(widget);
 	GdkWindowState state = gdk_window_get_state(GDK_WINDOW(gdkwindow));
-	return state & GDK_WINDOW_STATE_FULLSCREEN == GDK_WINDOW_STATE_FULLSCREEN;
+	return state & GDK_WINDOW_STATE_FULLSCREEN;
 }
 
 int IsMaximised(GtkWidget *widget) {
@@ -730,7 +730,7 @@ func (w *Window) UnMinimise() {
 
 func (w *Window) IsFullScreen() bool {
 	result := C.IsFullscreen(w.asGTKWidget())
-	if result == 1 {
+	if result != 0 {
 		return true
 	}
 	return false
