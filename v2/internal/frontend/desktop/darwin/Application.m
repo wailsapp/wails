@@ -67,6 +67,7 @@ void ExecJS(void* inctx, const char *script) {
     NSString *nsscript = safeInit(script);
     ON_MAIN_THREAD(
        [ctx ExecJS:nsscript];
+       [nsscript release];
     );
 }
 
