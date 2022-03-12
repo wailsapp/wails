@@ -126,7 +126,7 @@ static void sendMessageToBackend(WebKitUserContentManager *contentManager,
 static void webviewLoadChanged(WebKitWebView *web_view, WebKitLoadEvent load_event, gpointer data)
 {
     if (load_event == WEBKIT_LOAD_FINISHED) {
-		processMessage("DomReady");
+        processMessage("DomReady");
     }
 }
 
