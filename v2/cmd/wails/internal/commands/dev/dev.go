@@ -418,6 +418,10 @@ func initialiseWatcher(cwd string, logFatal func(string, ...interface{})) (*fsno
 			return
 		}
 		// Ignore build directory
+		if strings.Contains(dir, ".git") {
+			return
+		}
+		// Ignore build directory
 		if strings.HasPrefix(dir, filepath.Join(cwd, "build")) {
 			return
 		}
