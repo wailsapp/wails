@@ -123,6 +123,13 @@ static void sendMessageToBackend(WebKitUserContentManager *contentManager,
     g_free(message);
 }
 
+static void webviewLoadChanged(WebKitWebView *web_view, WebKitLoadEvent load_event, gpointer data)
+{
+    if (load_event == WEBKIT_LOAD_FINISHED) {
+		processMessage("DomReady");
+    }
+}
+
 ulong setupInvokeSignal(void* contentManager) {
 	return g_signal_connect((WebKitUserContentManager*)contentManager, "script-message-received::external", G_CALLBACK(sendMessageToBackend), NULL);
 }
@@ -185,7 +192,7 @@ GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowO
 	//gtk_container_add(GTK_CONTAINER(window), webview);
 	WebKitWebContext *context = webkit_web_context_get_default();
 	webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
-	//g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webview_load_changed_cb), NULL);
+	g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webviewLoadChanged), NULL);
 	if (hideWindowOnClose) {
 		g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 	} else {
@@ -536,6 +543,7 @@ gboolean UnFullscreen(gpointer data) {
 bool disableContextMenu(GtkWindow* window) {
 	return TRUE;
 }
+
 void DisableContextMenu(void* webview) {
 	contextMenuDisabled = TRUE;
 	g_signal_connect(WEBKIT_WEB_VIEW(webview), "context-menu", G_CALLBACK(disableContextMenu), NULL);

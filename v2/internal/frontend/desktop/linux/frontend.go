@@ -226,6 +226,13 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 }
 
 func (f *Frontend) processMessage(message string) {
+	if message == "DomReady" {
+		if f.frontendOptions.OnDomReady != nil {
+			f.frontendOptions.OnDomReady(f.ctx)
+		}
+		return
+	}
+
 	if message == "drag" {
 		if !f.mainWindow.IsFullScreen() {
 			f.startDrag()
@@ -313,7 +320,7 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 		cContent = C.malloc(C.ulong(bodyLen))
 		if cContent != nil {
 			C.memcpy(cContent, unsafe.Pointer(&res.Body[0]), C.size_t(bodyLen))
-			cLen = C.long(len(res.Body))
+			cLen = C.long(bodyLen)
 		}
 	}
 
