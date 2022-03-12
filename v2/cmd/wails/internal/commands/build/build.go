@@ -225,6 +225,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			"windows",
 			"windows/amd64",
 			"windows/arm64",
+			"windows/386",
 		})
 
 		outputBinaries := map[string]string{}

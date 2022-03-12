@@ -287,6 +287,7 @@ func compileResources(options *Options) error {
 	archs := map[string]winres.Arch{
 		"amd64": winres.ArchAMD64,
 		"arm64": winres.ArchARM64,
+		"386":   winres.ArchI386,
 	}
 	targetArch, supported := archs[options.Arch]
 	if !supported {
