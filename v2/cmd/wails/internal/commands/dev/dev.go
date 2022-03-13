@@ -102,6 +102,15 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		logger := clilogger.New(w)
 		app.PrintBanner()
 
+		gopath := os.Getenv("GOPATH")
+		if gopath == "" {
+			return fmt.Errorf("unable to detect GOPATH environment variable. Please ensure you have installed Go correctly and your go/bin directory is in your path: https://go.dev/doc/install")
+		}
+		// Check we are not calling wails from an absolute path
+		if !strings.HasPrefix(os.Args[0], gopath) {
+			return fmt.Errorf("the wails binary does not appear to be in your path. Please ensure you have installed Go correctly and your go/bin directory is in your path: https://go.dev/doc/install")
+		}
+
 		userTags := []string{}
 		for _, tag := range strings.Split(flags.tags, " ") {
 			thisTag := strings.TrimSpace(tag)
