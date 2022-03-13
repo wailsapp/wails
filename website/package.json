@@ -25,6 +25,7 @@
     "prism-react-renderer": "^1.2.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "react-github-contributors": "^0.1.0-beta.1",
     "react-responsive-carousel": "^3.2.23"
   },
   "browserslist": {
