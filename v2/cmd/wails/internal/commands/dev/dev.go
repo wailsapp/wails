@@ -246,6 +246,7 @@ func runCommand(dir string, exitOnError bool, command string, args ...string) er
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		println(string(output))
+		println(err.Error())
 		if exitOnError {
 			os.Exit(1)
 		}

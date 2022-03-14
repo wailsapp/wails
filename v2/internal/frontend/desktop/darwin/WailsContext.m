@@ -563,6 +563,9 @@
     // Create the dialog
     NSSavePanel *dialog = [NSSavePanel savePanel];
 
+    // Do not hide extension
+    [dialog setExtensionHidden:false];
+    
     // Valid but appears to do nothing.... :/
     if( title != nil ) {
         [dialog setTitle:title];
@@ -573,7 +576,25 @@
         filters = [filters stringByReplacingOccurrencesOfString:@"*." withString:@""];
         filters = [filters stringByReplacingOccurrencesOfString:@" " withString:@""];
         NSArray *filterList = [filters componentsSeparatedByString:@";"];
-        [dialog setAllowedFileTypes:filterList];
+#ifdef USE_NEW_FILTERS
+            NSMutableArray *contentTypes = [[NSMutableArray new] autorelease];
+            for (NSString *filter in filterList) {
+                if (@available(macOS 11.0, *)) {
+                    UTType *t = [UTType typeWithFilenameExtension:filter];
+                    [contentTypes addObject:t];
+                }
+            }
+        if( contentTypes.count == 0) {
+            [dialog setAllowsOtherFileTypes:true];
+        } else {
+            if (@available(macOS 11.0, *)) {
+                [dialog setAllowedContentTypes:contentTypes];
+            }
+        }
+
+#else
+            [dialog setAllowedFileTypes:filterList];
+#endif
     } else {
         [dialog setAllowsOtherFileTypes:true];
     }
@@ -589,6 +610,8 @@
     }
 
     // Setup Options
+    [dialog setCanSelectHiddenExtension:true];
+//    dialog.isExtensionHidden = false;
     [dialog setCanCreateDirectories: canCreateDirectories];
     [dialog setTreatsFilePackagesAsDirectories: treatPackagesAsDirectories];
     [dialog setShowsHiddenFiles: showHiddenFiles];
