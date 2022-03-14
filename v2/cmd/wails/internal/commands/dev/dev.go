@@ -3,6 +3,7 @@ package dev
 import (
 	"context"
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/shell"
 	"io"
 	"net/http"
 	"os"
@@ -102,7 +103,8 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		logger := clilogger.New(w)
 		app.PrintBanner()
 
-		gopath := os.Getenv("GOPATH")
+		gopath, _, _ := shell.RunCommand(".", "go", "env", "GOPATH")
+		gopath = strings.TrimSpace(gopath)
 		if gopath == "" {
 			return fmt.Errorf("unable to detect GOPATH environment variable. Please ensure you have installed Go correctly and your go/bin directory is in your path: https://go.dev/doc/install")
 		}
