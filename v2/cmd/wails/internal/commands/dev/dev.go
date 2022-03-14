@@ -132,10 +132,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
+		self := os.Args[0]
 		if flags.tags != "" {
-			err = runCommand(cwd, true, "wails", "generate", "module", "-tags", flags.tags)
+			err = runCommand(cwd, true, self, "generate", "module", "-tags", flags.tags)
 		} else {
-			err = runCommand(cwd, true, "wails", "generate", "module")
+			err = runCommand(cwd, true, self, "generate", "module")
 		}
 		if err != nil {
 			return err
