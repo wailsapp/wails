@@ -46,6 +46,9 @@ func (a *Apt) Packages() packagemap {
 		"docker": []*Package{
 			{Name: "docker.io", SystemPackage: true, Optional: true},
 		},
+		"nsis": []*Package{
+			{Name: "nsis", SystemPackage: true, Optional: true},
+		},
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/fs"
 
@@ -213,8 +214,63 @@ func Build(options *Options) (string, error) {
 		return "", err
 	}
 
-	result := options.CompiledBinary
+	compileBinary := options.CompiledBinary
+	hookArgs := map[string]string{
+		"${platform}": options.Platform + "/" + options.Arch,
+		"${bin}":      compileBinary,
+	}
 
-	return result, nil
+	for _, hook := range []string{options.Platform + "/" + options.Arch, options.Platform + "/*", "*/*"} {
+		if err := execPostBuildHook(outputLogger, options, hook, hookArgs); err != nil {
+			return "", err
+		}
+	}
 
+	return compileBinary, nil
+}
+
+func execPostBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string) error {
+	postBuildHook := options.ProjectData.PostBuildHooks[hookIdentifier]
+	if postBuildHook == "" {
+		return nil
+	}
+
+	if !options.ProjectData.RunNonNativeBuildHooks {
+		if hookIdentifier == "" {
+			// That's the global hook
+		} else {
+			platformOfHook := strings.Split(hookIdentifier, "/")[0]
+			if platformOfHook == "*" {
+				// Thats OK, we don't have a specific platform of the hook
+			} else if platformOfHook == runtime.GOOS {
+				// The hook is for host platform
+			} else {
+				// Skip a hook which is not native
+				outputLogger.Println("  - Non native build hook '%s': Skipping.", hookIdentifier)
+				return nil
+			}
+		}
+	}
+
+	outputLogger.Print("  - Executing post build hook '%s': ", hookIdentifier)
+	args := strings.Split(postBuildHook, " ")
+	for i, arg := range args {
+		newArg := argReplacements[arg]
+		if newArg == "" {
+			continue
+		}
+		args[i] = newArg
+	}
+
+	if options.Verbosity == VERBOSE {
+		outputLogger.Println("%s", strings.Join(args, " "))
+	}
+
+	_, stderr, err := shell.RunCommand(options.BuildDirectory, args[0], args[1:]...)
+	if err != nil {
+		return fmt.Errorf("%s - %s", err.Error(), stderr)
+	}
+	outputLogger.Println("Done.")
+
+	return nil
 }

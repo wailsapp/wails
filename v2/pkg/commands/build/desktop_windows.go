@@ -106,7 +106,7 @@ func (d *DesktopBuilder) processTrayIcons(assetDir string, options *Options) err
 }
 
 // compileIcon will compile the icon found at <projectdir>/icon.png into the application
-func (d *DesktopBuilder) compileIcon(assetDir string, iconFile string) error {
+func (d *DesktopBuilder) compileIcon(assetDir string, iconFile []byte) error {
 	return nil
 }
 

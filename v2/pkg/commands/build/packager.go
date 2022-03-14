@@ -1,10 +1,10 @@
 package build
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"os"
-	"path"
 	"path/filepath"
 	"runtime"
 
@@ -63,18 +63,6 @@ func cleanBuildDirectory(options *Options) error {
 	return nil
 }
 
-// Gets (and creates) the build base directory
-func getBuildBaseDirectory(options *Options) (string, error) {
-	buildDirectory := filepath.Join(options.ProjectData.Path, "build")
-	if !fs.DirExists(buildDirectory) {
-		err := os.MkdirAll(buildDirectory, 0700)
-		if err != nil {
-			return "", err
-		}
-	}
-	return buildDirectory, nil
-}
-
 // Gets the platform dependent package assets directory
 func getPackageAssetsDirectory() string {
 	return fs.RelativePath("internal/packager", runtime.GOOS)
@@ -115,11 +103,7 @@ func packageApplicationForDarwin(options *Options) error {
 	}
 
 	// Generate Icons
-	buildDir, err := getBuildBaseDirectory(options)
-	if err != nil {
-		return err
-	}
-	err = processApplicationIcon(resourceDir, buildDir)
+	err = processApplicationIcon(options, resourceDir)
 	if err != nil {
 		return err
 	}
@@ -130,53 +114,28 @@ func packageApplicationForDarwin(options *Options) error {
 }
 
 func processPList(options *Options, contentsDirectory string) error {
-
-	// Check if plist already exists in project dir
-	plistFileDir := filepath.Join(options.ProjectData.Path, "build", "darwin")
-	plistFile := filepath.Join(plistFileDir, "Info.plist")
-	// If the file doesn't exist, generate it
-	if !fs.FileExists(plistFile) {
-		err := buildassets.RegeneratePlist(plistFileDir, options.ProjectData.Name)
-		if err != nil {
-			return err
-		}
+	// Read the resolved BuildAssets file and copy it to the destination
+	content, err := buildassets.ReadFileWithProjectData(options.ProjectData, "darwin/Info.plist")
+	if err != nil {
+		return err
 	}
 
-	// Copy it to the contents directory
 	targetFile := filepath.Join(contentsDirectory, "Info.plist")
-	return fs.CopyFile(plistFile, targetFile)
+	return os.WriteFile(targetFile, content, 0644)
 }
 
-func processApplicationIcon(resourceDir string, iconsDir string) (err error) {
-
-	appIcon := filepath.Join(iconsDir, "appicon.png")
-
-	// Install default icon if one doesn't exist
-	if !fs.FileExists(appIcon) {
-		// No - Install default icon
-		err = buildassets.RegenerateAppIcon(appIcon)
-		if err != nil {
-			return
-		}
-	}
-
-	tgtBundle := path.Join(resourceDir, "iconfile.icns")
-	imageFile, err := os.Open(appIcon)
+func processApplicationIcon(options *Options, resourceDir string) (err error) {
+	appIcon, err := buildassets.ReadFile(options.ProjectData, "appicon.png")
 	if err != nil {
 		return err
 	}
 
-	defer func() {
-		err = imageFile.Close()
-		if err == nil {
-			return
-		}
-	}()
-	srcImg, _, err := image.Decode(imageFile)
+	srcImg, _, err := image.Decode(bytes.NewBuffer(appIcon))
 	if err != nil {
 		return err
-
 	}
+
+	tgtBundle := filepath.Join(resourceDir, "iconfile.icns")
 	dest, err := os.Create(tgtBundle)
 	if err != nil {
 		return err
@@ -195,12 +154,6 @@ func packageApplicationForWindows(options *Options) error {
 	// Generate icon
 	var err error
 	err = generateIcoFile(options)
-	if err != nil {
-		return err
-	}
-
-	// Ensure Manifest is present
-	err = generateManifest(options)
 	if err != nil {
 		return err
 	}
@@ -238,33 +191,31 @@ func packageApplicationForLinux(options *Options) error {
 }
 
 func generateManifest(options *Options) error {
-	filename := options.ProjectData.Name + ".exe.manifest"
-	manifestFile := filepath.Join(options.ProjectData.Path, "build", "windows", filename)
-	if !fs.FileExists(manifestFile) {
-		return buildassets.RegenerateManifest(manifestFile)
-	}
 	return nil
 }
 
 func generateIcoFile(options *Options) error {
 	// Check ico file exists already
-	icoFile := filepath.Join(options.ProjectData.Path, "build", "windows", "icon.ico")
+	icoFile := buildassets.GetLocalPath(options.ProjectData, "windows/icon.ico")
 	if !fs.FileExists(icoFile) {
-		// Check icon exists
-		appicon := filepath.Join(options.ProjectData.Path, "build", "appicon.png")
-		if !fs.FileExists(appicon) {
-			return fmt.Errorf("application icon missing: %s", appicon)
-		}
-		// Load icon
-		input, err := os.Open(appicon)
+		content, err := buildassets.ReadFile(options.ProjectData, "appicon.png")
 		if err != nil {
 			return err
 		}
+
+		if dir := filepath.Dir(icoFile); !fs.DirExists(dir) {
+			if err := fs.MkDirs(dir, 0755); err != nil {
+				return err
+			}
+		}
+
 		output, err := os.OpenFile(icoFile, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return err
 		}
-		err = winicon.GenerateIcon(input, output, []int{256, 128, 64, 48, 32, 16})
+		defer output.Close()
+
+		err = winicon.GenerateIcon(bytes.NewBuffer(content), output, []int{256, 128, 64, 48, 32, 16})
 		if err != nil {
 			return err
 		}
@@ -302,15 +253,23 @@ func compileResources(options *Options) error {
 		return err
 	}
 
-	ManifestFilename := options.ProjectData.Name + ".exe.manifest"
-	manifestData, err := os.ReadFile(ManifestFilename)
+	manifestData, err := buildassets.ReadFileWithProjectData(options.ProjectData, "windows/wails.exe.manifest")
+	if err != nil {
+		return err
+	}
+
 	xmlData, err := winres.AppManifestFromXML(manifestData)
 	if err != nil {
 		return err
 	}
 	rs.SetManifest(xmlData)
 
-	if versionInfo, _ := os.ReadFile("info.json"); len(versionInfo) != 0 {
+	versionInfo, err := buildassets.ReadFileWithProjectData(options.ProjectData, "windows/info.json")
+	if err != nil {
+		return err
+	}
+
+	if len(versionInfo) != 0 {
 		var v version.Info
 		if err := v.UnmarshalJSON(versionInfo); err != nil {
 			return err
@@ -328,6 +287,7 @@ func compileResources(options *Options) error {
 	archs := map[string]winres.Arch{
 		"amd64": winres.ArchAMD64,
 		"arm64": winres.ArchARM64,
+		"386":   winres.ArchI386,
 	}
 	targetArch, supported := archs[options.Arch]
 	if !supported {

@@ -20,8 +20,21 @@ The project config resides in the `wails.json` file in the project directory. Th
 	"outputfilename": "[The name of the binary]",
 	"debounceMS": 100, // The default time the dev server waits to reload when it detects a vhange in assets
 	"devserverurl": "[URL to the dev server serving local assets. Default: http://localhost:34115]",
-	"appargs": "[Arguments passed to the application in shell style when in dev mode]"
-
+	"appargs": "[Arguments passed to the application in shell style when in dev mode]",
+	"runNonNativeBuildHooks": false, // Defines if build hooks should be run though they are defined for an OS other than the host OS.
+	"postBuildHooks": {
+		"GOOS/GOARCH": "[The command that will be executed after a build of the specified GOOS/GOARCH: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary. The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.]",
+		"GOOS/*": "[The command that will be executed after a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary. The "GOOS/*" hook is executed before the "*/*" hook.]",
+		"*/*": "[The command that will be executed after every build: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary.]"
+	},
+	"info": { // Data used to populate manifests and version info.
+		"companyName": "[The company name. Default: [The project name]]",
+		"productName": "[The product name. Default: [The project name]]",
+		"productVersion": "[The version of the product. Default: '1.0.0']",
+		"copyright": "[The copyright of the product. Default: 'Copyright.........']",
+		"comments": "[A short comment of the app. Default: 'Built using Wails (https://wails.app)']"
+	},
+	"nsisType": "['multiple': One installer per achitecture. 'single': Single universal installer for all architectures being built. Default: 'multiple']"
 }
 ```
 

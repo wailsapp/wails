@@ -1,20 +1,34 @@
 package common
 
-import "net/url"
+import (
+	"fmt"
+	"net/url"
+)
 
-func TranslateUriToFile(uri string, expectedScheme string, expectedHost string) (file string, match bool, err error) {
+var ErrUnexpectedScheme = fmt.Errorf("unexpected scheme")
+var ErrUnexpectedHost = fmt.Errorf("unexpected host")
+
+func translateUriToFile(uri string, expectedScheme string, expectedHosts ...string) (file string, err error) {
 	url, err := url.Parse(uri)
 	if err != nil {
-		return "", false, err
+		return "", err
 	}
 
-	if url.Scheme != expectedScheme || url.Host != expectedHost {
-		return "", false, nil
+	if url.Scheme != expectedScheme {
+		return "", ErrUnexpectedScheme
 	}
 
-	filePath := url.Path
-	if filePath == "" {
-		filePath = "/"
+	for _, expectedHost := range expectedHosts {
+		if url.Host != expectedHost {
+			continue
+		}
+
+		filePath := url.Path
+		if filePath == "" {
+			filePath = "/"
+		}
+		return filePath, nil
 	}
-	return filePath, true, nil
+
+	return "", ErrUnexpectedHost
 }
