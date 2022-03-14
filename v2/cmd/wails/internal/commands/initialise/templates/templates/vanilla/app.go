@@ -21,7 +21,7 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// domReady is called after the front-end dom has been loaded
+// domReady is called after front-end resources have been loaded
 func (a App) domReady(ctx context.Context) {
 	// Add your action here
 }
