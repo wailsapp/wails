@@ -10,7 +10,6 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -380,12 +379,7 @@ func runFrontendDevWatcherCommand(cwd string, devCommand string, wg *sync.WaitGr
 	cmd.Stdout = os.Stdout
 	cmd.Dir = dir
 
-	// not sure if this conditional is necessary, I mainly used it to prevent any issues with Windows
-	// since I do not have a Windows dev environment at the moment
-	// this conditional could be removed if found it causes no conflicts with Windows
-	if runtime.GOOS != "windows" {
-		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	}
+	setParentGID(cmd)
 	go func(ctx context.Context, devCommand string, cwd string, wg *sync.WaitGroup) {
 		err := cmd.Run()
 		if err != nil {
@@ -398,36 +392,9 @@ func runFrontendDevWatcherCommand(cwd string, devCommand string, wg *sync.WaitGr
 	}(ctx, devCommand, cwd, wg)
 
 	return func(wg *sync.WaitGroup) {
-		if runtime.GOOS == "windows" {
-			// Credit: https://stackoverflow.com/a/44551450
-			// For whatever reason, killing an npm script on windows just doesn't exit properly with cancel
-			if cmd != nil && cmd.Process != nil {
-				kill := exec.Command("TASKKILL", "/T", "/F", "/PID", strconv.Itoa(cmd.Process.Pid))
-				kill.Stderr = os.Stderr
-				kill.Stdout = os.Stdout
-				err := kill.Run()
-				if err != nil {
-					if err.Error() != "exit status 1" {
-						LogRed("Error from '%s': %s", devCommand, err.Error())
-					}
-				}
-			}
-		} else {
-			// Experiencing the same issue on macOS BigSur
-			// I'm using Vite, but I would imagine this could be an issue with Node (npm) in general
-			// Also, after several edit/rebuild cycles any abnormal shutdown (crash or CTRL-C) may still leave Node running
-			// Credit: https://stackoverflow.com/a/29552044/14764450 (same page as the Windows solution above)
-			// Not tested on *nix
-			pgid, err := syscall.Getpgid(cmd.Process.Pid)
-			if err == nil {
-				err := syscall.Kill(-pgid, 15) // note the minus sign
-				if err != nil {
-					LogRed("Error from '%s' when attempting to kill the process: %s", devCommand, err.Error())
-				}
-			}
-			LogGreen("Dev command killed!")
-			cancel()
-		}
+		killProc(cmd, devCommand)
+		LogGreen("Dev command killed!")
+		cancel()
 		wg.Wait()
 	}
 }
@@ -448,6 +415,10 @@ func initialiseWatcher(cwd string, logFatal func(string, ...interface{})) (*fsno
 	// Setup a watcher for non-node_modules directories
 	dirs.Each(func(dir string) {
 		if strings.Contains(dir, "node_modules") {
+			return
+		}
+		// Ignore build directory
+		if strings.Contains(dir, ".git") {
 			return
 		}
 		// Ignore build directory
