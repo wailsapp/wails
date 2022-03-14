@@ -21,7 +21,7 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// domReady is called after the front-end dom has been loaded
+// domReady is called after front-end resources have been loaded
 func (a App) domReady(ctx context.Context) {
 	// Add your action here
 }
@@ -40,5 +40,5 @@ func (a *App) shutdown(ctx context.Context) {
 
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s!", name)
+	return fmt.Sprintf("Hello %s, It's show time!", name)
 }

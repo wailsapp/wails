@@ -94,7 +94,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			app.PrintBanner()
 		}
 
-		task := fmt.Sprintf("Initialising Project %s", strings.Title(projectName))
+		task := fmt.Sprintf("Initialising Project '%s'", projectName)
 		logger.Println(task)
 		logger.Println(strings.Repeat("-", len(task)))
 

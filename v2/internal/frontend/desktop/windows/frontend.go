@@ -55,7 +55,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		startURL:        "https://wails.localhost/",
+		startURL:        "http://wails.localhost/",
 	}
 
 	bindingsJSON, err := appBindings.ToJSON()
@@ -82,7 +82,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		result.servingFromDisk = true
 	}
 
-	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON)
+	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON, result.servingFromDisk)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -352,7 +352,7 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	//Get the request
 	uri, _ := req.GetUri()
 
-	res, err := common.ProcessRequest(uri, f.assets, "https", "wails.localhost")
+	res, err := common.ProcessRequest(uri, f.assets, "http", "wails.localhost")
 	if err == common.ErrUnexpectedScheme {
 		// In this case we should let the WebView2 handle the request with its default handler
 		return
@@ -362,7 +362,7 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 		// for all other platforms to improve security.
 		return // Let WebView2 handle the request with its default handler
 	} else if err != nil {
-		path := strings.Replace(uri, "https://wails.localhost", "", 1)
+		path := strings.Replace(uri, "http://wails.localhost", "", 1)
 		f.logger.Error("Error processing request '%s': %s (HttpResponse=%s)", path, err, res)
 	}
 
@@ -511,8 +511,11 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 	case options.Maximised:
 		if !f.frontendOptions.DisableResize {
 			f.mainWindow.Maximise()
+		} else {
+			f.mainWindow.Show()
 		}
 		f.ShowWindow()
+
 	case options.Minimised:
 		f.mainWindow.Minimise()
 	case options.Fullscreen:

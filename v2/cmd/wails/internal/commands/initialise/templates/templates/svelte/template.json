@@ -1,7 +1,7 @@
 {
-  "name": "Basic Svelte + Rollup",
+  "name": "Basic Svelte + Vite",
   "shortname": "svelte",
   "author": "Lea Anthony <lea.anthony@gmail.com>",
-  "description": "Svelte template using rollup to bundle css, images and fonts",
+  "description": "Svelte template using vite to bundle css, images and fonts",
   "helpurl": "https://github.com/wailsapp/wails"
 }
