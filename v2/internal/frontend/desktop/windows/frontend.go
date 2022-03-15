@@ -535,9 +535,12 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 }
 
 func (f *Frontend) ShowWindow() {
-	f.mainWindow.Show()
-	f.mainWindow.SetFocus()
-	w32.BringWindowToTop(f.mainWindow.Handle())
+	f.mainWindow.Invoke(func() {
+		f.mainWindow.Restore()
+		w32.SetForegroundWindow(f.mainWindow.Handle())
+		w32.SetFocus(f.mainWindow.Handle())
+	})
+
 }
 
 func (f *Frontend) onFocus(arg *winc.Event) {
