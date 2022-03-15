@@ -478,6 +478,10 @@ func (f *Frontend) startResize(border uintptr) error {
 }
 
 func (f *Frontend) ExecJS(js string) {
+	if f.chromium == nil {
+		f.logger.Error("Unable to run ExecJS! Looks like the webview is still initalising. Please try increasing the debounceMS setting in `wails.json`")
+		return
+	}
 	f.mainWindow.Invoke(func() {
 		f.chromium.Eval(js)
 	})
