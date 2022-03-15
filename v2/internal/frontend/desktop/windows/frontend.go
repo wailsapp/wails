@@ -322,6 +322,10 @@ func (f *Frontend) setupChromium() {
 		log.Fatal(err)
 	}
 
+	// Setup focus event handler
+	onFocus := f.mainWindow.OnSetFocus()
+	onFocus.Bind(f.onFocus)
+
 	// Set background colour
 	f.WindowSetRGBA(f.frontendOptions.RGBA)
 
@@ -526,4 +530,8 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 		f.mainWindow.Show()
 	}
 
+}
+
+func (f *Frontend) onFocus(arg *winc.Event) {
+	f.chromium.Focus()
 }
