@@ -1,11 +1,10 @@
 package system
 
 import (
-	"os/exec"
-	"strings"
-
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
+	"os/exec"
+	"strings"
 )
 
 var (
@@ -95,6 +94,53 @@ func checkNSIS() *packagemanager.Dependancy {
 		Version:        version,
 		Optional:       true,
 		External:       false,
+	}
+}
+
+func checkGCC() *packagemanager.Dependancy {
+
+	version := packagemanager.AppVersion("gcc")
+
+	return &packagemanager.Dependancy{
+		Name:           "gcc ",
+		PackageName:    "N/A",
+		Installed:      version != "",
+		InstallCommand: "Install via your package manager",
+		Version:        version,
+		Optional:       false,
+		External:       false,
+	}
+}
+
+func checkPkgConfig() *packagemanager.Dependancy {
+
+	version := packagemanager.AppVersion("pkg-config")
+
+	return &packagemanager.Dependancy{
+		Name:           "pkg-config ",
+		PackageName:    "N/A",
+		Installed:      version != "",
+		InstallCommand: "Install via your package manager",
+		Version:        version,
+		Optional:       false,
+		External:       false,
+	}
+}
+
+func checkLibrary(name string) func() *packagemanager.Dependancy {
+	return func() *packagemanager.Dependancy {
+		output, _, _ := shell.RunCommand(".", "pkg-config", "--cflags", name)
+		installed := len(strings.TrimSpace(output)) > 0
+
+		return &packagemanager.Dependancy{
+			Name:           "lib" + name + " ",
+			PackageName:    "N/A",
+			Installed:      installed,
+			InstallCommand: "Install via your package manager",
+			Version:        "N/A",
+			Optional:       false,
+			External:       false,
+		}
 	}
 }
 
