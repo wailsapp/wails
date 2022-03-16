@@ -38,6 +38,8 @@
             <useCustomBuildTags value="true"/>
             <envs>
                 <env name="CGO_ENABLED" value="&quot;{{.CGOEnabled}}&quot;"/>
+                <env name="CGO_LDFLAGS" value="&quot;{{.CGOLDFlags}}&quot;"/>
+
             </envs>
             <kind value="DIRECTORY"/>
             <directory value="$PROJECT_DIR$"/>
@@ -50,10 +52,11 @@
             <module name="{{.ProjectName}}"/>
             <working_directory value="$PROJECT_DIR$"/>
             <go_parameters
-                    value="-ldflags &quot;{{.WindowsFlags}}&quot; -tags desktop,production,debug -o {{.PathToDesktopBinary}}"/>
+                    value="-gcflags &quot;all=-N -l&quot; -ldflags &quot;{{.WindowsFlags}}&quot; -tags desktop,production,debug -o {{.PathToDesktopBinary}}"/>
             <useCustomBuildTags value="true"/>
             <envs>
                 <env name="CGO_ENABLED" value="&quot;{{.CGOEnabled}}&quot;"/>
+                <env name="CGO_LDFLAGS" value="&quot;{{.CGOLDFlags}}&quot;"/>
             </envs>
             <kind value="DIRECTORY"/>
             <directory value="$PROJECT_DIR$"/>
@@ -70,6 +73,7 @@
             <useCustomBuildTags value="true"/>
             <envs>
                 <env name="CGO_ENABLED" value="&quot;{{.CGOEnabled}}&quot;"/>
+                <env name="CGO_LDFLAGS" value="&quot;{{.CGOLDFlags}}&quot;"/>
             </envs>
             <kind value="DIRECTORY"/>
             <directory value="$PROJECT_DIR$"/>
