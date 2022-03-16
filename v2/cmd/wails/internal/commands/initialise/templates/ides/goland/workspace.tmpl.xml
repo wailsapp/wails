@@ -38,8 +38,7 @@
             <useCustomBuildTags value="true"/>
             <envs>
                 <env name="CGO_ENABLED" value="&quot;{{.CGOEnabled}}&quot;"/>
-                <env name="CGO_LDFLAGS" value="&quot;{{.CGOLDFlags}}&quot;"/>
-
+                <env name="CGO_LDFLAGS" value="{{.CGOLDFlags}}"/>
             </envs>
             <kind value="DIRECTORY"/>
             <directory value="$PROJECT_DIR$"/>
@@ -56,7 +55,7 @@
             <useCustomBuildTags value="true"/>
             <envs>
                 <env name="CGO_ENABLED" value="&quot;{{.CGOEnabled}}&quot;"/>
-                <env name="CGO_LDFLAGS" value="&quot;{{.CGOLDFlags}}&quot;"/>
+                <env name="CGO_LDFLAGS" value="{{.CGOLDFlags}}"/>
             </envs>
             <kind value="DIRECTORY"/>
             <directory value="$PROJECT_DIR$"/>
@@ -73,7 +72,7 @@
             <useCustomBuildTags value="true"/>
             <envs>
                 <env name="CGO_ENABLED" value="&quot;{{.CGOEnabled}}&quot;"/>
-                <env name="CGO_LDFLAGS" value="&quot;{{.CGOLDFlags}}&quot;"/>
+                <env name="CGO_LDFLAGS" value="{{.CGOLDFlags}}"/>
             </envs>
             <kind value="DIRECTORY"/>
             <directory value="$PROJECT_DIR$"/>
