@@ -8,6 +8,36 @@ import (
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 )
 
+func checkGCC() *packagemanager.Dependancy {
+
+	version := packagemanager.AppVersion("gcc")
+
+	return &packagemanager.Dependancy{
+		Name:           "gcc ",
+		PackageName:    "N/A",
+		Installed:      version != "",
+		InstallCommand: "Install via your package manager",
+		Version:        version,
+		Optional:       false,
+		External:       false,
+	}
+}
+
+func checkPkgConfig() *packagemanager.Dependancy {
+
+	version := packagemanager.AppVersion("pkg-config")
+
+	return &packagemanager.Dependancy{
+		Name:           "pkg-config ",
+		PackageName:    "N/A",
+		Installed:      version != "",
+		InstallCommand: "Install via your package manager",
+		Version:        version,
+		Optional:       false,
+		External:       false,
+	}
+}
+
 func checkLocallyInstalled(checker func() *packagemanager.Dependancy, dependency *packagemanager.Dependancy) {
 	if !dependency.Installed {
 		locallyInstalled := checker()
