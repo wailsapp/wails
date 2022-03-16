@@ -30,11 +30,27 @@
         <property name="settings.editor.selected.configurable"
                   value="reference.settingsdialog.IDE.editor.colors.Console Font"/>
     </component>
-    <component name="RunManager" selected="Go Build.{{.ProjectName}} (dev)">>
+    <component name="RunManager" selected="Go Build.{{.ProjectName}} (debug)">>
         <configuration name="{{.ProjectName}} (dev)" type="GoApplicationRunConfiguration" factoryName="Go Application">
             <module name="{{.ProjectName}}"/>
             <working_directory value="$PROJECT_DIR$"/>
             <go_parameters value="-gcflags &quot;all=-N -l&quot; -tags dev -o {{.PathToDesktopBinary}}"/>
+            <useCustomBuildTags value="true"/>
+            <envs>
+                <env name="CGO_ENABLED" value="&quot;{{.CGOEnabled}}&quot;"/>
+            </envs>
+            <kind value="DIRECTORY"/>
+            <directory value="$PROJECT_DIR$"/>
+            <filePath value="$PROJECT_DIR$"/>
+            <method v="2">
+            </method>
+        </configuration>
+        <configuration name="{{.ProjectName}} (debug)" type="GoApplicationRunConfiguration"
+                       factoryName="Go Application">
+            <module name="{{.ProjectName}}"/>
+            <working_directory value="$PROJECT_DIR$"/>
+            <go_parameters
+                    value="-ldflags &quot;{{.WindowsFlags}}&quot; -tags desktop,production,debug -o {{.PathToDesktopBinary}}"/>
             <useCustomBuildTags value="true"/>
             <envs>
                 <env name="CGO_ENABLED" value="&quot;{{.CGOEnabled}}&quot;"/>
