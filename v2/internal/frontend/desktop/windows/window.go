@@ -22,7 +22,8 @@ type Window struct {
 	minWidth, minHeight, maxWidth, maxHeight int
 }
 
-func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
+func NewWindow(parent winc.Controller, f *Frontend) *Window {
+	appoptions := f.frontendOptions
 	result := &Window{
 		frontendOptions: appoptions,
 		minHeight:       appoptions.MinHeight,
@@ -46,7 +47,9 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 	var dwStyle = w32.WS_OVERLAPPEDWINDOW
 
 	winc.RegClassOnlyOnce("wailsWindow")
-	result.SetHandle(winc.CreateWindow("wailsWindow", parent, uint(exStyle), uint(dwStyle)))
+	handle := winc.CreateWindow("wailsWindow", parent, uint(exStyle), uint(dwStyle))
+	f.setupChromium(handle)
+	result.SetHandle(handle)
 	winc.RegMsgHandler(result)
 	result.SetParent(parent)
 

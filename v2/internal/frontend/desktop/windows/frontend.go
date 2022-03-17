@@ -98,17 +98,14 @@ func (f *Frontend) WindowReload() {
 func (f *Frontend) Run(ctx context.Context) error {
 
 	f.ctx = context.WithValue(ctx, "frontend", f)
-
-	mainWindow := NewWindow(nil, f.frontendOptions)
-	f.mainWindow = mainWindow
-
 	var _debug = ctx.Value("debug")
 	if _debug != nil {
 		f.debug = _debug.(bool)
 	}
 
+	mainWindow := NewWindow(nil, f)
+	f.mainWindow = mainWindow
 	f.WindowCenter()
-	f.setupChromium()
 
 	f.mainWindow.notifyParentWindowPositionChanged = f.chromium.NotifyParentWindowPositionChanged
 
@@ -278,7 +275,7 @@ func (f *Frontend) Quit() {
 	f.mainWindow.Invoke(winc.Exit)
 }
 
-func (f *Frontend) setupChromium() {
+func (f *Frontend) setupChromium(handle w32.HWND) {
 	chromium := edge.NewChromium()
 	f.chromium = chromium
 	if opts := f.frontendOptions.Windows; opts != nil && opts.WebviewUserDataPath != "" {
@@ -288,10 +285,10 @@ func (f *Frontend) setupChromium() {
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
 	chromium.AcceleratorKeyCallback = func(vkey uint) bool {
-		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
+		w32.PostMessage(handle, w32.WM_KEYDOWN, uintptr(vkey), 0)
 		return false
 	}
-	chromium.Embed(f.mainWindow.Handle())
+	chromium.Embed(handle)
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
 	if err != nil {
