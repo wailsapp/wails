@@ -194,6 +194,7 @@ void UnMaximise(void* inctx) {
 void Quit(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     [NSApp stop:ctx];
+    [NSApp abortModal];
 }
 
 void Hide(void *inctx) {
