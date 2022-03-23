@@ -48,7 +48,8 @@ type Frontend struct {
 	debug           bool
 
 	// Assets
-	assets *assetserver.AssetServer
+	assets   *assetserver.AssetServer
+	startURL string
 
 	// main window handle
 	mainWindow      *Window
@@ -65,6 +66,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
+		startURL:        "wails://wails/",
 	}
 
 	// Check if we have been given a directory to serve assets from.
@@ -134,7 +136,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
-	mainWindow.Run()
+	mainWindow.Run(f.startURL)
 	return nil
 }
 

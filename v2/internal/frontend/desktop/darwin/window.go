@@ -119,8 +119,10 @@ func (w *Window) Center() {
 	C.Center(w.context)
 }
 
-func (w *Window) Run() {
-	C.Run(w.context)
+func (w *Window) Run(url string) {
+	_url := C.CString(url)
+	C.Run(w.context, _url)
+	C.free(unsafe.Pointer(_url))
 }
 
 func (w *Window) Quit() {

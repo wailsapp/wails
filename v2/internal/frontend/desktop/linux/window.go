@@ -207,8 +207,8 @@ void devtoolsEnabled(void* webview, int enabled) {
 	webkit_settings_set_enable_developer_extras(settings, genabled);
 }
 
-void loadIndex(void* webview) {
-	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview), "wails:///");
+void loadIndex(void* webview, char* url) {
+	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview), url);
 }
 
 typedef struct DragOptions {
@@ -553,11 +553,12 @@ void DisableContextMenu(void* webview) {
 */
 import "C"
 import (
+	"strings"
+	"unsafe"
+
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"strings"
-	"unsafe"
 )
 
 func gtkBool(input bool) C.gboolean {
@@ -761,12 +762,14 @@ func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
 
 }
 
-func (w *Window) Run() {
+func (w *Window) Run(url string) {
 	if w.menubar != nil {
 		C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), w.menubar, 0, 0, 0)
 	}
 	C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), C.GTKWIDGET(w.webview), 1, 1, 0)
-	C.loadIndex(w.webview)
+	_url := C.CString(url)
+	C.loadIndex(w.webview, _url)
+	defer C.free(unsafe.Pointer(_url))
 	C.gtk_widget_show_all(w.asGTKWidget())
 	w.Center()
 	switch w.appoptions.WindowStartState {

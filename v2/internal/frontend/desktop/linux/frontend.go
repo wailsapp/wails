@@ -60,7 +60,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		startURL:        "file://wails/",
+		startURL:        "wails://wails/",
 	}
 
 	bindingsJSON, err := appBindings.ToJSON()
@@ -127,7 +127,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 		}
 	}()
 
-	f.mainWindow.Run()
+	f.mainWindow.Run(f.startURL)
 
 	return nil
 }
@@ -299,7 +299,7 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	uri := C.webkit_uri_scheme_request_get_uri(req)
 	goURI := C.GoString(uri)
 
-	res, err := common.ProcessRequest(goURI, f.assets, "wails", "", "null")
+	res, err := common.ProcessRequest(goURI, f.assets, "wails", "wails")
 	if err != nil {
 		f.logger.Error("Error processing request '%s': %s (HttpResponse=%s)", goURI, err, res)
 	}
