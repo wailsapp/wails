@@ -48,7 +48,7 @@ type Frontend struct {
 	debug           bool
 
 	// Assets
-	assets *assetserver.DesktopAssetServer
+	assets *assetserver.AssetServer
 
 	// main window handle
 	mainWindow      *Window
@@ -80,7 +80,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	if err != nil {
 		log.Fatal(err)
 	}
-	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON, result.servingFromDisk)
+	assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
 	if err != nil {
 		log.Fatal(err)
 	}

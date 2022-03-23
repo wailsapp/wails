@@ -3,9 +3,9 @@ package assetserver
 import (
 	"bytes"
 	"errors"
-	"fmt"
-	"golang.org/x/net/html"
 	"strings"
+
+	"golang.org/x/net/html"
 )
 
 type optionType string
@@ -39,25 +39,7 @@ func newOptions(optionString string) *Options {
 	return result
 }
 
-func injectHTML(input string, html string) ([]byte, error) {
-	splits := strings.Split(input, "</head>")
-	if len(splits) != 2 {
-		return nil, fmt.Errorf("unable to locate a </head> tag in your html")
-	}
-
-	var result bytes.Buffer
-	result.WriteString(splits[0])
-	result.WriteString(html)
-	result.WriteString("</head>")
-	result.WriteString(splits[1])
-	return result.Bytes(), nil
-}
-
-func extractOptions(htmldata []byte) (*Options, error) {
-	doc, err := html.Parse(bytes.NewReader(htmldata))
-	if err != nil {
-		return nil, err
-	}
+func extractOptions(htmlNode *html.Node) (*Options, error) {
 	var extractor func(*html.Node) *Options
 	extractor = func(node *html.Node) *Options {
 		if node.Type == html.ElementNode && node.Data == "meta" {
@@ -81,7 +63,7 @@ func extractOptions(htmldata []byte) (*Options, error) {
 		}
 		return nil
 	}
-	result := extractor(doc)
+	result := extractor(htmlNode)
 	if result == nil {
 		result = &Options{}
 	}

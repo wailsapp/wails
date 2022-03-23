@@ -58,7 +58,11 @@ func Test_extractOptions(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := extractOptions(tt.htmldata)
+			htmlNode, err := getHTMLNode(tt.htmldata)
+			if !tt.wantError && err != nil {
+				t.Errorf("did not want error but got it")
+			}
+			got, err := extractOptions(htmlNode)
 			if !tt.wantError && err != nil {
 				t.Errorf("did not want error but got it")
 			}
