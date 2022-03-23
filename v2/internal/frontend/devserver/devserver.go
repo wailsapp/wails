@@ -9,14 +9,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/fs"
 	"log"
+	"net"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/websocket/v2"
+	"github.com/labstack/echo/v4"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
@@ -24,16 +26,16 @@ import (
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"golang.org/x/net/websocket"
 )
 
 type DevWebServer struct {
-	server           *fiber.App
+	server           *echo.Echo
 	ctx              context.Context
 	appoptions       *options.App
 	logger           *logger.Logger
 	appBindings      *binding.Bindings
 	dispatcher       frontend.Dispatcher
-	assetServer      *assetserver.AssetServer
 	socketMutex      sync.Mutex
 	websocketClients map[*websocket.Conn]*sync.Mutex
 	menuManager      *menumanager.Manager
@@ -41,95 +43,73 @@ type DevWebServer struct {
 
 	// Desktop frontend
 	desktopFrontend frontend.Frontend
-}
 
-func (d *DevWebServer) WindowReload() {
-	d.broadcast("reload")
+	devServerAddr string
 }
 
 func (d *DevWebServer) Run(ctx context.Context) error {
 	d.ctx = ctx
 
-	assetdir, _ := ctx.Value("assetdir").(string)
-	d.server.Get("/wails/assetdir", func(fctx *fiber.Ctx) error {
-		return fctx.SendString(assetdir)
-	})
+	d.server.GET("/wails/reload", d.handleReload)
+	d.server.GET("/wails/ipc", d.handleIPCWebSocket)
 
-	d.server.Get("/wails/reload", func(fctx *fiber.Ctx) error {
-		d.WindowReload()
-		d.desktopFrontend.WindowReload()
+	var assetHandler http.Handler
+	_fronendDevServerURL, _ := ctx.Value("frontenddevserverurl").(string)
+	if _fronendDevServerURL == "" {
+		assetdir, _ := ctx.Value("assetdir").(string)
+		d.server.GET("/wails/assetdir", func(c echo.Context) error {
+			return c.String(http.StatusOK, assetdir)
+		})
+
+		var err error
+		assetHandler, err = assetserver.NewAsssetHandler(ctx, d.appoptions)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		externalURL, err := url.Parse(_fronendDevServerURL)
+		if err != nil {
+			return err
+		}
+
+		waitCb := func() { d.LogDebug("Waiting for frontend DevServer '%s' to be ready", externalURL) }
+		if !checkPortIsOpen(externalURL.Host, time.Minute, waitCb) {
+			d.logger.Error("Timeout waiting for frontend DevServer")
+		}
+
+		assetHandler = httputil.NewSingleHostReverseProxy(externalURL)
+	}
+
+	// Setup internal dev server
+	bindingsJSON, err := d.appBindings.ToJSON()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	assetServer, err := assetserver.NewBrowserAssetServer(ctx, assetHandler, bindingsJSON)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	d.server.GET("/*", func(c echo.Context) error {
+		assetServer.ServeHTTP(c.Response(), c.Request())
 		return nil
 	})
 
-	d.server.Get("/wails/ipc", websocket.New(func(c *websocket.Conn) {
-		d.newWebsocketSession(c)
-		locker := d.websocketClients[c]
-		// websocket.Conn bindings https://pkg.go.dev/github.com/fasthttp/websocket?tab=doc#pkg-index
-		var (
-			mt  int
-			msg []byte
-			err error
-		)
-
-		for {
-			if mt, msg, err = c.ReadMessage(); err != nil {
-				break
-			}
-			// We do not support drag in browsers
-			if string(msg) == "drag" {
-				continue
-			}
-
-			// Notify the other browsers of "EventEmit"
-			if len(msg) > 2 && strings.HasPrefix(string(msg), "EE") {
-				d.notifyExcludingSender(msg, c)
-			}
-
-			// Send the message to dispatch to the frontend
-			result, err := d.dispatcher.ProcessMessage(string(msg), d)
-			if err != nil {
-				d.logger.Error(err.Error())
-			}
-			if result != "" {
-				locker.Lock()
-				if err = c.WriteMessage(mt, []byte(result)); err != nil {
-					locker.Unlock()
-					break
-				}
-				locker.Unlock()
-			}
-
-		}
-	}))
-
-	_devServerURL := ctx.Value("devserverurl")
-	if _devServerURL == "http://localhost:34115" {
-		// Setup internal dev server
-		bindingsJSON, err := d.appBindings.ToJSON()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		d.assetServer, err = assetserver.NewBrowserAssetServer(ctx, d.appoptions, bindingsJSON)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		d.server.Get("*", d.loadAsset)
-
+	if devServerAddr := d.devServerAddr; devServerAddr != "" {
 		// Start server
-		go func(server *fiber.App, log *logger.Logger) {
-			err := server.Listen("localhost:34115")
+		go func(server *echo.Echo, log *logger.Logger) {
+			err := server.Start(devServerAddr)
 			if err != nil {
 				log.Error(err.Error())
 			}
 			d.LogDebug("Shutdown completed")
 		}(d.server, d.logger)
 
-		d.LogDebug("Serving application at http://localhost:34115")
+		d.LogDebug("Serving DevServer at http://%s", devServerAddr)
 
 		defer func() {
-			err := d.server.Shutdown()
+			err := d.server.Shutdown(context.Background())
 			if err != nil {
 				d.logger.Error(err.Error())
 			}
@@ -137,7 +117,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 	}
 
 	// Launch desktop app
-	err := d.desktopFrontend.Run(ctx)
+	err = d.desktopFrontend.Run(ctx)
 	d.LogDebug("Starting shutdown")
 
 	return err
@@ -165,6 +145,11 @@ func (d *DevWebServer) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) 
 
 func (d *DevWebServer) MessageDialog(dialogOptions frontend.MessageDialogOptions) (string, error) {
 	return d.desktopFrontend.MessageDialog(dialogOptions)
+}
+
+func (d *DevWebServer) WindowReload() {
+	d.broadcast("reload")
+	d.desktopFrontend.WindowReload()
 }
 
 func (d *DevWebServer) WindowSetTitle(title string) {
@@ -256,47 +241,62 @@ func (d *DevWebServer) Notify(name string, data ...interface{}) {
 	d.notify(name, data...)
 }
 
-func (d *DevWebServer) loadAsset(ctx *fiber.Ctx) error {
-	data, mimetype, err := d.assetServer.Load(ctx.Path())
-	if err != nil {
-		_, ok := err.(*fs.PathError)
-		if !ok {
-			return err
+func (d *DevWebServer) handleReload(c echo.Context) error {
+	d.WindowReload()
+	return c.NoContent(http.StatusNoContent)
+}
+
+func (d *DevWebServer) handleIPCWebSocket(c echo.Context) error {
+	websocket.Handler(func(c *websocket.Conn) {
+		d.LogDebug(fmt.Sprintf("Websocket client %p connected", c))
+		d.socketMutex.Lock()
+		d.websocketClients[c] = &sync.Mutex{}
+		locker := d.websocketClients[c]
+		d.socketMutex.Unlock()
+
+		defer func() {
+			d.socketMutex.Lock()
+			delete(d.websocketClients, c)
+			d.socketMutex.Unlock()
+			d.LogDebug(fmt.Sprintf("Websocket client %p disconnected", c))
+		}()
+
+		var msg string
+		defer c.Close()
+		for {
+			if err := websocket.Message.Receive(c, &msg); err != nil {
+				break
+			}
+			// We do not support drag in browsers
+			if msg == "drag" {
+				continue
+			}
+
+			// Notify the other browsers of "EventEmit"
+			if len(msg) > 2 && strings.HasPrefix(string(msg), "EE") {
+				d.notifyExcludingSender([]byte(msg), c)
+			}
+
+			// Send the message to dispatch to the frontend
+			result, err := d.dispatcher.ProcessMessage(string(msg), d)
+			if err != nil {
+				d.logger.Error(err.Error())
+			}
+			if result != "" {
+				locker.Lock()
+				if err = websocket.Message.Send(c, result); err != nil {
+					locker.Unlock()
+					break
+				}
+				locker.Unlock()
+			}
 		}
-		err := ctx.SendStatus(404)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-	err = ctx.SendStatus(200)
-	if err != nil {
-		return err
-	}
-	ctx.Set("Content-Type", mimetype)
-	err = ctx.Send(data)
-	if err != nil {
-		return err
-	}
+	}).ServeHTTP(c.Response(), c.Request())
 	return nil
 }
 
 func (d *DevWebServer) LogDebug(message string, args ...interface{}) {
 	d.logger.Debug("[DevWebServer] "+message, args...)
-}
-
-func (d *DevWebServer) newWebsocketSession(c *websocket.Conn) {
-	d.socketMutex.Lock()
-	defer d.socketMutex.Unlock()
-	c.SetCloseHandler(func(code int, text string) error {
-		d.socketMutex.Lock()
-		defer d.socketMutex.Unlock()
-		delete(d.websocketClients, c)
-		d.LogDebug(fmt.Sprintf("Websocket client %p disconnected", c))
-		return nil
-	})
-	d.websocketClients[c] = &sync.Mutex{}
-	d.LogDebug(fmt.Sprintf("Websocket client %p connected", c))
 }
 
 type EventNotify struct {
@@ -314,7 +314,7 @@ func (d *DevWebServer) broadcast(message string) {
 				return
 			}
 			locker.Lock()
-			err := client.WriteMessage(websocket.TextMessage, []byte(message))
+			err := websocket.Message.Send(client, message)
 			if err != nil {
 				locker.Unlock()
 				d.logger.Error(err.Error())
@@ -348,7 +348,7 @@ func (d *DevWebServer) broadcastExcludingSender(message string, sender *websocke
 				return
 			}
 			locker.Lock()
-			err := client.WriteMessage(websocket.TextMessage, []byte(message))
+			err := websocket.Message.Send(client, message)
 			if err != nil {
 				locker.Unlock()
 				d.logger.Error(err.Error())
@@ -374,19 +374,38 @@ func (d *DevWebServer) notifyExcludingSender(eventMessage []byte, sender *websoc
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher, menuManager *menumanager.Manager, desktopFrontend frontend.Frontend) *DevWebServer {
 	result := &DevWebServer{
-		ctx:             ctx,
-		desktopFrontend: desktopFrontend,
-		appoptions:      appoptions,
-		logger:          myLogger,
-		appBindings:     appBindings,
-		dispatcher:      dispatcher,
-		server: fiber.New(fiber.Config{
-
-			ReadTimeout:           time.Second * 5,
-			DisableStartupMessage: true,
-		}),
+		ctx:              ctx,
+		desktopFrontend:  desktopFrontend,
+		appoptions:       appoptions,
+		logger:           myLogger,
+		appBindings:      appBindings,
+		dispatcher:       dispatcher,
+		server:           echo.New(),
 		menuManager:      menuManager,
 		websocketClients: make(map[*websocket.Conn]*sync.Mutex),
 	}
+
+	result.devServerAddr, _ = ctx.Value("devserver").(string)
+	result.server.HideBanner = true
+	result.server.HidePort = true
 	return result
+}
+
+func checkPortIsOpen(host string, timeout time.Duration, waitCB func()) (ret bool) {
+	if timeout == 0 {
+		timeout = time.Minute
+	}
+
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		conn, _ := net.DialTimeout("tcp", host, 2*time.Second)
+		if conn != nil {
+			conn.Close()
+			return true
+		}
+
+		waitCB()
+		time.Sleep(1 * time.Second)
+	}
+	return false
 }

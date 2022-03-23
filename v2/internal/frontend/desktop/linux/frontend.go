@@ -63,38 +63,35 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		startURL:        "wails://wails/",
 	}
 
-	bindingsJSON, err := appBindings.ToJSON()
-	if err != nil {
-		log.Fatal(err)
-	}
+	_starturl, _ := ctx.Value("starturl").(string)
+	if _starturl != "" {
+		result.startURL = _starturl
+	} else {
+		// Check if we have been given a directory to serve assets from.
+		// If so, this means we are in dev mode and are serving assets off disk.
+		// We indicate this through the `servingFromDisk` flag to ensure requests
+		// aren't cached by webkit.
 
-	_devServerURL := ctx.Value("devserverurl")
-	if _devServerURL != nil {
-		devServerURL := _devServerURL.(string)
-		if len(devServerURL) > 0 && devServerURL != "http://localhost:34115" {
-			result.startURL = devServerURL
-			return result
+		_assetdir := ctx.Value("assetdir")
+		if _assetdir != nil {
+			result.servingFromDisk = true
 		}
-	}
 
-	// Check if we have been given a directory to serve assets from.
-	// If so, this means we are in dev mode and are serving assets off disk.
-	// We indicate this through the `servingFromDisk` flag to ensure requests
-	// aren't cached by webkit.
+		bindingsJSON, err := appBindings.ToJSON()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	_assetdir := ctx.Value("assetdir")
-	if _assetdir != nil {
-		result.servingFromDisk = true
-	}
+		assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
+		if err != nil {
+			log.Fatal(err)
+		}
+		result.assets = assets
 
-	assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
-	if err != nil {
-		log.Fatal(err)
+		go result.startRequestProcessor()
 	}
-	result.assets = assets
 
 	go result.startMessageProcessor()
-	go result.startRequestProcessor()
 
 	C.gtk_init(nil, nil)
 

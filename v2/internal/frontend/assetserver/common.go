@@ -3,72 +3,18 @@ package assetserver
 import (
 	"bytes"
 	"errors"
-	"strings"
 
 	"golang.org/x/net/html"
 )
 
-type optionType string
-
 const (
-	noAutoInject        optionType = "noautoinject"
-	noAutoInjectRuntime optionType = "noautoinjectruntime"
-	noAutoInjectIPC     optionType = "noautoinjectipc"
+	HeaderContentType   = "Content-Type"
+	HeaderContentLength = "Content-Length"
+	HeaderUserAgent     = "User-Agent"
+	HeaderCacheControl  = "Cache-Control"
+
+	WailsUserAgentValue = "wails.io"
 )
-
-type Options struct {
-	disableRuntimeInjection bool
-	disableIPCInjection     bool
-}
-
-func newOptions(optionString string) *Options {
-	var result = &Options{}
-	optionString = strings.ToLower(optionString)
-	options := strings.Split(optionString, ",")
-	for _, option := range options {
-		switch optionType(strings.TrimSpace(option)) {
-		case noAutoInject:
-			result.disableRuntimeInjection = true
-			result.disableIPCInjection = true
-		case noAutoInjectIPC:
-			result.disableIPCInjection = true
-		case noAutoInjectRuntime:
-			result.disableRuntimeInjection = true
-		}
-	}
-	return result
-}
-
-func extractOptions(htmlNode *html.Node) (*Options, error) {
-	var extractor func(*html.Node) *Options
-	extractor = func(node *html.Node) *Options {
-		if node.Type == html.ElementNode && node.Data == "meta" {
-			isWailsOptionsTag := false
-			wailsOptions := ""
-			for _, attr := range node.Attr {
-				if isWailsOptionsTag && attr.Key == "content" {
-					wailsOptions = attr.Val
-				}
-				if attr.Val == "wails-options" {
-					isWailsOptionsTag = true
-				}
-			}
-			return newOptions(wailsOptions)
-		}
-		for child := node.FirstChild; child != nil; child = child.NextSibling {
-			result := extractor(child)
-			if result != nil {
-				return result
-			}
-		}
-		return nil
-	}
-	result := extractor(htmlNode)
-	if result == nil {
-		result = &Options{}
-	}
-	return result, nil
-}
 
 func createScriptNode(scriptName string) *html.Node {
 	return &html.Node{

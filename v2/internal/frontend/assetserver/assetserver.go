@@ -3,15 +3,12 @@ package assetserver
 import (
 	"bytes"
 	"context"
-	_ "embed"
-	iofs "io/fs"
-	"log"
-	"path"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"strings"
-	"time"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
-	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 
@@ -23,13 +20,10 @@ const (
 	ipcJSPath     = "/wails/ipc.js"
 )
 
-//go:embed defaultindex.html
-var defaultHTML []byte
-
 type AssetServer struct {
-	assets    iofs.FS
+	handler   http.Handler
 	runtimeJS []byte
-	ipcJS     []byte
+	ipcJS     func(*http.Request) []byte
 
 	logger *logger.Logger
 
@@ -38,30 +32,22 @@ type AssetServer struct {
 }
 
 func NewAssetServer(ctx context.Context, options *options.App, bindingsJSON string) (*AssetServer, error) {
-	assets := options.Assets
-
-	if _, err := assets.Open("."); err != nil {
-		return nil, err
-	}
-
-	subDir, err := fs.FindPathToFile(assets, "index.html")
+	handler, err := NewAsssetHandler(ctx, options)
 	if err != nil {
 		return nil, err
 	}
 
-	assets, err = iofs.Sub(assets, path.Clean(subDir))
-	if err != nil {
-		return nil, err
-	}
+	return NewAssetServerWithHandler(ctx, handler, bindingsJSON)
+}
 
+func NewAssetServerWithHandler(ctx context.Context, handler http.Handler, bindingsJSON string) (*AssetServer, error) {
 	var buffer bytes.Buffer
 	buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")
 	buffer.Write(runtime.RuntimeDesktopJS)
 
 	result := &AssetServer{
-		assets:    assets,
+		handler:   handler,
 		runtimeJS: buffer.Bytes(),
-		ipcJS:     runtime.DesktopIPC,
 
 		// Check if we have been given a directory to serve assets from.
 		// If so, this means we are in dev mode and are serving assets off disk.
@@ -77,57 +63,72 @@ func NewAssetServer(ctx context.Context, options *options.App, bindingsJSON stri
 	return result, nil
 }
 
-func (d *AssetServer) LogDebug(message string, args ...interface{}) {
-	if d.logger != nil {
-		d.logger.Debug("[AssetServer] "+message, args...)
+func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	header := rw.Header()
+	if d.servingFromDisk {
+		header.Add(HeaderCacheControl, "no-cache")
+	}
+
+	path := req.URL.Path
+	switch path {
+	case "", "/", "/index.html":
+		recorder := httptest.NewRecorder()
+		d.handler.ServeHTTP(recorder, req)
+		for k, v := range recorder.HeaderMap {
+			header[k] = v
+		}
+
+		if recorder.Code != http.StatusOK {
+			rw.WriteHeader(recorder.Code)
+			return
+		}
+
+		content, err := d.processIndexHTML(recorder.Body.Bytes())
+		if err != nil {
+			d.serveError(rw, err, "Unable to processIndexHTML")
+			return
+		}
+
+		d.writeBlob(rw, "/index.html", content)
+
+	case runtimeJSPath:
+		d.writeBlob(rw, path, d.runtimeJS)
+
+	case ipcJSPath:
+		content := runtime.DesktopIPC
+		if d.ipcJS != nil {
+			content = d.ipcJS(req)
+		}
+		d.writeBlob(rw, path, content)
+
+	default:
+		d.handler.ServeHTTP(rw, req)
 	}
 }
 
 func (d *AssetServer) Load(filename string) ([]byte, string, error) {
-	var content []byte
-	var err error
-	switch filename {
-	case "/":
-		content, err = d.loadFile("index.html")
-		if err != nil {
-			content = defaultHTML
-		}
-
-		content, err = d.ProcessIndexHTML(content)
-	case runtimeJSPath:
-		content = d.runtimeJS
-	case ipcJSPath:
-		content = d.ipcJS
-	default:
-		filename = strings.TrimPrefix(filename, "/")
-		d.LogDebug("Loading file: %s", filename)
-		content, err = d.loadFile(filename)
+	// This will be removed as soon as AssetsHandler have been fully introduced.
+	if !strings.HasPrefix(filename, "/") {
+		filename = "/" + filename
 	}
+
+	req, err := http.NewRequest(http.MethodGet, "wails://wails"+filename, nil)
 	if err != nil {
 		return nil, "", err
 	}
-	mimeType := GetMimetype(filename, content)
+
+	rw := httptest.NewRecorder()
+	d.ServeHTTP(rw, req)
+
+	content := rw.Body.Bytes()
+	mimeType := rw.HeaderMap.Get(HeaderContentType)
+	if mimeType == "" {
+		mimeType = GetMimetype(filename, content)
+	}
 	return content, mimeType, nil
 }
 
-// loadFile will try to load the file from disk. If there is an error
-// it will retry until eventually it will give up and error.
-func (d *AssetServer) loadFile(filename string) ([]byte, error) {
-	if !d.servingFromDisk {
-		return iofs.ReadFile(d.assets, filename)
-	}
-	var result []byte
-	var err error
-	for tries := 0; tries < 50; tries++ {
-		result, err = iofs.ReadFile(d.assets, filename)
-		if err != nil {
-			time.Sleep(100 * time.Millisecond)
-		}
-	}
-	return result, err
-}
-
-func (d *AssetServer) ProcessIndexHTML(indexHTML []byte) ([]byte, error) {
+func (d *AssetServer) processIndexHTML(indexHTML []byte) ([]byte, error) {
 	htmlNode, err := getHTMLNode(indexHTML)
 	if err != nil {
 		return nil, err
@@ -140,24 +141,12 @@ func (d *AssetServer) ProcessIndexHTML(indexHTML []byte) ([]byte, error) {
 		}
 	}
 
-	wailsOptions, err := extractOptions(htmlNode)
-	if err != nil {
-		log.Fatal(err)
+	if err := insertScriptInHead(htmlNode, runtimeJSPath); err != nil {
 		return nil, err
 	}
 
-	if !wailsOptions.disableRuntimeInjection {
-		err := insertScriptInHead(htmlNode, runtimeJSPath)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if !wailsOptions.disableIPCInjection {
-		err := insertScriptInHead(htmlNode, ipcJSPath)
-		if err != nil {
-			return nil, err
-		}
+	if err := insertScriptInHead(htmlNode, ipcJSPath); err != nil {
+		return nil, err
 	}
 
 	var buffer bytes.Buffer
@@ -166,4 +155,36 @@ func (d *AssetServer) ProcessIndexHTML(indexHTML []byte) ([]byte, error) {
 		return nil, err
 	}
 	return buffer.Bytes(), nil
+}
+
+func (d *AssetServer) writeBlob(rw http.ResponseWriter, filename string, blob []byte) {
+	header := rw.Header()
+	header.Set(HeaderContentLength, fmt.Sprintf("%d", len(blob)))
+	if mimeType := header.Get(HeaderContentType); mimeType == "" {
+		mimeType = GetMimetype(filename, blob)
+		header.Set(HeaderContentType, mimeType)
+	}
+
+	rw.WriteHeader(http.StatusOK)
+	if _, err := rw.Write(blob); err != nil {
+		d.serveError(rw, err, "Unable to write content %s", filename)
+	}
+}
+
+func (d *AssetServer) serveError(rw http.ResponseWriter, err error, msg string, args ...interface{}) {
+	args = append(args, err)
+	d.logError(msg+": %s", args...)
+	rw.WriteHeader(http.StatusInternalServerError)
+}
+
+func (d *AssetServer) logDebug(message string, args ...interface{}) {
+	if d.logger != nil {
+		d.logger.Debug("[AssetServer] "+message, args...)
+	}
+}
+
+func (d *AssetServer) logError(message string, args ...interface{}) {
+	if d.logger != nil {
+		d.logger.Error("[AssetServer] "+message, args...)
+	}
 }

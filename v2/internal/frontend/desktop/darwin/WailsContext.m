@@ -211,6 +211,7 @@
     // Webview stuff here!
     WKWebViewConfiguration *config = [WKWebViewConfiguration new];
     config.suppressesIncrementalRendering = true;
+    config.applicationNameForUserAgent = @"wails.io";
     [config setURLSchemeHandler:self forURLScheme:@"wails"];
     
 //    [config.preferences setValue:[NSNumber numberWithBool:true] forKey:@"developerExtrasEnabled"];

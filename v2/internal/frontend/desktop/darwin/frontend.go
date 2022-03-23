@@ -69,27 +69,34 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		startURL:        "wails://wails/",
 	}
 
-	// Check if we have been given a directory to serve assets from.
-	// If so, this means we are in dev mode and are serving assets off disk.
-	// We indicate this through the `servingFromDisk` flag to ensure requests
-	// aren't cached by WebView2 in dev mode
-	_assetdir := ctx.Value("assetdir")
-	if _assetdir != nil {
-		result.servingFromDisk = true
-	}
+	_starturl, _ := ctx.Value("starturl").(string)
+	if _starturl != "" {
+		result.startURL = _starturl
+	} else {
+		// Check if we have been given a directory to serve assets from.
+		// If so, this means we are in dev mode and are serving assets off disk.
+		// We indicate this through the `servingFromDisk` flag to ensure requests
+		// aren't cached by WebView2 in dev mode
+		_assetdir := ctx.Value("assetdir")
+		if _assetdir != nil {
+			result.servingFromDisk = true
+		}
 
-	bindingsJSON, err := appBindings.ToJSON()
-	if err != nil {
-		log.Fatal(err)
+		bindingsJSON, err := appBindings.ToJSON()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
+		if err != nil {
+			log.Fatal(err)
+		}
+		result.assets = assets
+
+		go result.startRequestProcessor()
 	}
-	assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
-	if err != nil {
-		log.Fatal(err)
-	}
-	result.assets = assets
 
 	go result.startMessageProcessor()
-	go result.startRequestProcessor()
 	go result.startCallbackProcessor()
 
 	return result

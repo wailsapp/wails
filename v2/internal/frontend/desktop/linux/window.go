@@ -198,6 +198,9 @@ GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowO
 	} else {
 		g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(close_button_pressed), NULL);
 	}
+
+	WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
+	webkit_settings_set_user_agent_with_application_details(settings, "wails.io", "");
 	return webview;
 }
 
