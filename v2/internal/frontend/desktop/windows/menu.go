@@ -48,8 +48,10 @@ func processMenu(window *Window, menu *menu.Menu) {
 	mainMenu := window.NewMenu()
 	for _, menuItem := range menu.Items {
 		submenu := mainMenu.AddSubMenu(menuItem.Label)
-		for _, menuItem := range menuItem.SubMenu.Items {
-			processMenuItem(submenu, menuItem)
+		if menuItem.SubMenu != nil {
+			for _, menuItem := range menuItem.SubMenu.Items {
+				processMenuItem(submenu, menuItem)
+			}
 		}
 	}
 	mainMenu.Show()
