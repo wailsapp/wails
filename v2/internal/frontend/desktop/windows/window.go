@@ -4,6 +4,8 @@ package windows
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"log"
 	"syscall"
 	"unsafe"
@@ -20,15 +22,17 @@ type Window struct {
 	applicationMenu                          *menu.Menu
 	notifyParentWindowPositionChanged        func() error
 	minWidth, minHeight, maxWidth, maxHeight int
+	versionInfo                              *operatingsystem.WindowsVersionInfo
 }
 
-func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
+func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo) *Window {
 	result := &Window{
 		frontendOptions: appoptions,
 		minHeight:       appoptions.MinHeight,
 		minWidth:        appoptions.MinWidth,
 		maxHeight:       appoptions.MaxHeight,
 		maxWidth:        appoptions.MaxWidth,
+		versionInfo:     versionInfo,
 	}
 	result.SetIsForm(true)
 
@@ -46,7 +50,8 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 	var dwStyle = w32.WS_OVERLAPPEDWINDOW
 
 	winc.RegClassOnlyOnce("wailsWindow")
-	result.SetHandle(winc.CreateWindow("wailsWindow", parent, uint(exStyle), uint(dwStyle)))
+	handle := winc.CreateWindow("wailsWindow", parent, uint(exStyle), uint(dwStyle))
+	result.SetHandle(handle)
 	winc.RegMsgHandler(result)
 	result.SetParent(parent)
 
@@ -69,6 +74,8 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 		result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
 	}
 
+	result.updateTheme()
+
 	if appoptions.Windows != nil {
 		if appoptions.Windows.WindowIsTranslucent {
 			result.SetTranslucentBackground()
@@ -89,6 +96,32 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 	}
 
 	return result
+}
+
+// Dark Mode
+const DwmwaUseImmersiveDarkModeBefore20h1 w32.DWMWINDOWATTRIBUTE = 19
+const DwmwaUseImmersiveDarkMode w32.DWMWINDOWATTRIBUTE = 20
+
+func (w *Window) updateTheme() {
+	// Default use system theme
+	useDarkMode := operatingsystem.UseDarkMode()
+	winOptions := w.frontendOptions.Windows
+	if winOptions != nil {
+		if winOptions.Theme == windows.Dark {
+			useDarkMode = true
+		}
+		if winOptions.Theme == windows.Light {
+			useDarkMode = false
+		}
+	}
+
+	if w.versionInfo.IsWindowsVersionAtLeast(10, 0, 17763) {
+		attr := DwmwaUseImmersiveDarkModeBefore20h1
+		if w.versionInfo.IsWindowsVersionAtLeast(10, 0, 18985) {
+			attr = DwmwaUseImmersiveDarkMode
+		}
+		w32.DwmSetWindowAttribute(w.Handle(), attr, w32.LPCVOID(&useDarkMode), uint32(unsafe.Sizeof(&useDarkMode)))
+	}
 }
 
 func (w *Window) Run() int {
@@ -125,6 +158,12 @@ func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 	switch msg {
+	case w32.WM_WININICHANGE:
+		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lparam)))
+		if settingChanged == "ImmersiveColorSet" {
+			w.updateTheme()
+		}
+		return 0
 	case w32.WM_NCLBUTTONDOWN:
 		w32.SetFocus(w.Handle())
 	case w32.WM_MOVE, w32.WM_MOVING:

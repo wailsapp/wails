@@ -375,6 +375,20 @@ Type: string
 
 This defines the path where the WebView2 stores the user data. If empty `%APPDATA%\[BinaryName.exe]` will be used.
 
+### Theme
+
+Name: Theme
+
+Type: `windows.Theme`
+
+This defines the theme that the application should use:
+
+| Value           | Description |
+| --------------- | ----------- |
+| SystemDefault   | *Default*. The theme will be based on the system default. If the user changes their theme, the application will update to use the new setting |
+| Dark            | The application will use a dark theme exclusively |
+| Light           | The application will use a light theme exclusively |
+
 ## Mac Specific Options
 
 ### TitleBar

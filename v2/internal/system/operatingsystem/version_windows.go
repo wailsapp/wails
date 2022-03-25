@@ -23,14 +23,22 @@ func GetWindowsVersionInfo() (*WindowsVersionInfo, error) {
 	}
 
 	return &WindowsVersionInfo{
-		Major:          regKeyAsInt(key, "CurrentMajorVersionNumber"),
-		Minor:          regKeyAsInt(key, "CurrentMinorVersionNumber"),
-		Build:          regKeyAsInt(key, "CurrentBuildNumber"),
+		Major:          regDWORDKeyAsInt(key, "CurrentMajorVersionNumber"),
+		Minor:          regDWORDKeyAsInt(key, "CurrentMinorVersionNumber"),
+		Build:          regStringKeyAsInt(key, "CurrentBuildNumber"),
 		DisplayVersion: regKeyAsString(key, "DisplayVersion"),
 	}, nil
 }
 
-func regKeyAsInt(key registry.Key, name string) int {
+func regDWORDKeyAsInt(key registry.Key, name string) int {
+	result, _, err := key.GetIntegerValue(name)
+	if err != nil {
+		return -1
+	}
+	return int(result)
+}
+
+func regStringKeyAsInt(key registry.Key, name string) int {
 	resultStr, _, err := key.GetStringValue(name)
 	if err != nil {
 		return -1
@@ -41,6 +49,7 @@ func regKeyAsInt(key registry.Key, name string) int {
 	}
 	return result
 }
+
 func regKeyAsString(key registry.Key, name string) string {
 	resultStr, _, err := key.GetStringValue(name)
 	if err != nil {

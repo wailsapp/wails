@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"log"
 	"runtime"
 	"strconv"
@@ -45,9 +46,15 @@ type Frontend struct {
 	servingFromDisk bool
 
 	hasStarted bool
+
+	// Windows build number
+	versionInfo *operatingsystem.WindowsVersionInfo
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
+
+	// Get Windows build number
+	versionInfo, _ := operatingsystem.GetWindowsVersionInfo()
 
 	result := &Frontend{
 		frontendOptions: appoptions,
@@ -56,6 +63,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		dispatcher:      dispatcher,
 		ctx:             ctx,
 		startURL:        "http://wails.localhost/",
+		versionInfo:     versionInfo,
 	}
 
 	bindingsJSON, err := appBindings.ToJSON()
@@ -99,7 +107,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 
 	f.ctx = context.WithValue(ctx, "frontend", f)
 
-	mainWindow := NewWindow(nil, f.frontendOptions)
+	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo)
 	f.mainWindow = mainWindow
 
 	var _debug = ctx.Value("debug")
