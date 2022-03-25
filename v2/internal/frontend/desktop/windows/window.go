@@ -2,6 +2,7 @@
 
 package windows
 
+import "C"
 import (
 	"fmt"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
@@ -23,6 +24,7 @@ type Window struct {
 	notifyParentWindowPositionChanged        func() error
 	minWidth, minHeight, maxWidth, maxHeight int
 	versionInfo                              *operatingsystem.WindowsVersionInfo
+	isDarkMode                               bool
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo) *Window {
@@ -101,12 +103,28 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 // Dark Mode
 const DwmwaUseImmersiveDarkModeBefore20h1 w32.DWMWINDOWATTRIBUTE = 19
 const DwmwaUseImmersiveDarkMode w32.DWMWINDOWATTRIBUTE = 20
+const DwmwaBorderColor w32.DWMWINDOWATTRIBUTE = 34
+const DwmwaCaptionColor w32.DWMWINDOWATTRIBUTE = 35
+const DwmwaTextColor w32.DWMWINDOWATTRIBUTE = 36
 
 func (w *Window) updateTheme() {
-	// Default use system theme
+	// We can't support Windows versions before 17763
+	if !w.versionInfo.IsWindowsVersionAtLeast(10, 0, 17763) {
+		return
+	}
+
+	// Only process if there's a theme change
 	useDarkMode := operatingsystem.UseDarkMode()
+	if w.isDarkMode == useDarkMode {
+		return
+	}
+	w.isDarkMode = useDarkMode
+
+	// Default use system theme
 	winOptions := w.frontendOptions.Windows
+	var customTheme *windows.ThemeSettings
 	if winOptions != nil {
+		customTheme = winOptions.CustomTheme
 		if winOptions.Theme == windows.Dark {
 			useDarkMode = true
 		}
@@ -121,6 +139,19 @@ func (w *Window) updateTheme() {
 			attr = DwmwaUseImmersiveDarkMode
 		}
 		w32.DwmSetWindowAttribute(w.Handle(), attr, w32.LPCVOID(&useDarkMode), uint32(unsafe.Sizeof(&useDarkMode)))
+	}
+
+	// Custom theme
+	if customTheme != nil {
+		if useDarkMode {
+			w32.DwmSetWindowAttribute(w.Handle(), DwmwaCaptionColor, w32.LPCVOID(&customTheme.DarkModeTitleBar), 4)
+			w32.DwmSetWindowAttribute(w.Handle(), DwmwaTextColor, w32.LPCVOID(&customTheme.DarkModeTitleText), 4)
+			w32.DwmSetWindowAttribute(w.Handle(), DwmwaBorderColor, w32.LPCVOID(&customTheme.DarkModeBorder), 4)
+		} else {
+			w32.DwmSetWindowAttribute(w.Handle(), DwmwaCaptionColor, w32.LPCVOID(&customTheme.LightModeTitleBar), 4)
+			w32.DwmSetWindowAttribute(w.Handle(), DwmwaTextColor, w32.LPCVOID(&customTheme.LightModeTitleText), 4)
+			w32.DwmSetWindowAttribute(w.Handle(), DwmwaBorderColor, w32.LPCVOID(&customTheme.LightModeBorder), 4)
+		}
 	}
 }
 
@@ -158,7 +189,7 @@ func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 	switch msg {
-	case w32.WM_WININICHANGE:
+	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lparam)))
 		if settingChanged == "ImmersiveColorSet" {
 			w.updateTheme()

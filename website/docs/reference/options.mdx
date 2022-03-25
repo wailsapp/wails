@@ -47,6 +47,15 @@ func main() {
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
+            Theme:                             windows.SystemDefault,
+            CustomTheme: &windows.ThemeSettings{
+                DarkModeTitleBar:   windows.RGB(20, 20, 20),
+                DarkModeTitleText:  windows.RGB(200, 200, 200),
+                DarkModeBorder:     windows.RGB(20, 0, 20),
+                LightModeTitleBar:  windows.RGB(200, 200, 200),
+                LightModeTitleText: windows.RGB(20, 20, 20),
+                LightModeBorder:    windows.RGB(200, 200, 200),
+            },
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -388,6 +397,43 @@ This defines the theme that the application should use:
 | SystemDefault   | *Default*. The theme will be based on the system default. If the user changes their theme, the application will update to use the new setting |
 | Dark            | The application will use a dark theme exclusively |
 | Light           | The application will use a light theme exclusively |
+
+
+### CustomTheme
+
+Name: CustomTheme
+
+Type: `windows.CustomTheme`
+
+Allows you to specify custom colours for TitleBar, TitleText and Border for both light and dark mode.
+
+#### CustomTheme
+
+The CustomTheme struct uses `int32` to specify the colour values. These are in the standard(!) Windows format of:
+`0x00BBGGAA`. A helper function is provided to do RGB conversions into this format: `windows.RGB(r,g,b uint8)`
+
+```go
+type ThemeSettings struct {
+	DarkModeTitleBar   int32
+	DarkModeTitleText  int32
+	DarkModeBorder     int32
+	LightModeTitleBar  int32
+	LightModeTitleText int32
+	LightModeBorder    int32
+}
+```
+
+Example:
+```go
+    CustomTheme: &windows.ThemeSettings{
+        DarkModeTitleBar:   windows.RGB(255, 20, 20), // Red
+        DarkModeTitleText:  windows.RGB(0, 255, 0),   // Green
+        DarkModeBorder:     windows.RGB(0, 0, 255),   // Blue
+        LightModeTitleBar:  windows.RGB(200, 200, 200),
+        LightModeTitleText: windows.RGB(20, 20, 20),
+        LightModeBorder:    windows.RGB(200, 200, 200),
+    },
+```
 
 ## Mac Specific Options
 
