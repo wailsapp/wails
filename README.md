@@ -206,6 +206,9 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/GargantuaX" style="width:45px">
   <img src="https://github.com/GargantuaX.png?size=45" width="45"/>
 </a>
+<a href="https://github.com/brodyover" style="width:45px">
+  <img src="https://github.com/brodyover.png?size=45" width="45"/>
+</a>
 
 <span id="nav-6"></span>
 
