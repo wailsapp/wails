@@ -86,14 +86,16 @@ The legacy v1 docs can be found at [https://wails.app](https://wails.app).
 ## Features
 
 - Use standard Go for the backend
-- Use any frontend technology to build your UI
-- Quickly create Vue, Vuetify or React frontends for your Go programs
-- Expose Go methods/functions to the frontend via a single bind command
-- Uses native rendering engines - no embedded browser
-- Shared events system
-- Native file dialogs
-- Powerful cli tool
+- Use any frontend technology you are already familiar with to build your UI
+- Quickly create rich frontends for your Go programs using pre-built templates
+- Easily call Go methods from Javascript
+- Auto-generated Typescript definitions for your Go structs and methods
+- Native Dialogs & Menus
+- Supports modern translucency and "frosted window" effects
+- Unified eventing system between Go and Javascript
+- Powerful cli tool to quickly generate and build your projects
 - Multiplatform
+- Uses native rendering engines - *no embedded browser*!
 
 <span id="nav-5"></span>
 
