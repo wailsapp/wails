@@ -21,12 +21,18 @@ func RGB(r, g, b uint8) int32 {
 // ThemeSettings contains optional colours to use.
 // They may be set using the hex values: 0x00BBGGRR
 type ThemeSettings struct {
-	DarkModeTitleBar   int32
-	DarkModeTitleText  int32
-	DarkModeBorder     int32
-	LightModeTitleBar  int32
-	LightModeTitleText int32
-	LightModeBorder    int32
+	DarkModeTitleBar           int32
+	DarkModeTitleBarInactive   int32
+	DarkModeTitleText          int32
+	DarkModeTitleTextInactive  int32
+	DarkModeBorder             int32
+	DarkModeBorderInactive     int32
+	LightModeTitleBar          int32
+	LightModeTitleBarInactive  int32
+	LightModeTitleText         int32
+	LightModeTitleTextInactive int32
+	LightModeBorder            int32
+	LightModeBorderInactive    int32
 }
 
 // Options are options specific to Windows

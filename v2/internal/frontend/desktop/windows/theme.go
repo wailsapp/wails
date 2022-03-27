@@ -14,12 +14,8 @@ func (w *Window) updateTheme() {
 	if !win32.SupportsThemes() {
 		return
 	}
-
 	// Only process if there's a theme change
 	isDarkMode := win32.IsCurrentlyDarkMode()
-	if w.isDarkMode == isDarkMode {
-		return
-	}
 	w.isDarkMode = isDarkMode
 
 	// Default use system theme
@@ -39,14 +35,28 @@ func (w *Window) updateTheme() {
 
 	// Custom theme
 	if win32.SupportsCustomThemes() && customTheme != nil {
-		if isDarkMode {
-			win32.SetTitleBarColour(w.Handle(), customTheme.DarkModeTitleBar)
-			win32.SetTitleTextColour(w.Handle(), customTheme.DarkModeTitleText)
-			win32.SetBorderColour(w.Handle(), customTheme.DarkModeBorder)
+		if w.isActive {
+			if isDarkMode {
+				println("1")
+				win32.SetTitleBarColour(w.Handle(), customTheme.DarkModeTitleBar)
+				win32.SetTitleTextColour(w.Handle(), customTheme.DarkModeTitleText)
+				win32.SetBorderColour(w.Handle(), customTheme.DarkModeBorder)
+			} else {
+				println("2")
+				win32.SetTitleBarColour(w.Handle(), customTheme.LightModeTitleBar)
+				win32.SetTitleTextColour(w.Handle(), customTheme.LightModeTitleText)
+				win32.SetBorderColour(w.Handle(), customTheme.LightModeBorder)
+			}
 		} else {
-			win32.SetTitleBarColour(w.Handle(), customTheme.LightModeTitleBar)
-			win32.SetTitleTextColour(w.Handle(), customTheme.LightModeTitleText)
-			win32.SetBorderColour(w.Handle(), customTheme.LightModeBorder)
+			if isDarkMode {
+				win32.SetTitleBarColour(w.Handle(), customTheme.DarkModeTitleBarInactive)
+				win32.SetTitleTextColour(w.Handle(), customTheme.DarkModeTitleTextInactive)
+				win32.SetBorderColour(w.Handle(), customTheme.DarkModeBorderInactive)
+			} else {
+				win32.SetTitleBarColour(w.Handle(), customTheme.LightModeTitleBarInactive)
+				win32.SetTitleTextColour(w.Handle(), customTheme.LightModeTitleTextInactive)
+				win32.SetBorderColour(w.Handle(), customTheme.LightModeBorderInactive)
+			}
 		}
 	}
 }

@@ -410,28 +410,44 @@ Allows you to specify custom colours for TitleBar, TitleText and Border for both
 #### CustomTheme
 
 The CustomTheme struct uses `int32` to specify the colour values. These are in the standard(!) Windows format of:
-`0x00BBGGAA`. A helper function is provided to do RGB conversions into this format: `windows.RGB(r,g,b uint8)`
+`0x00BBGGAA`. A helper function is provided to do RGB conversions into this format: `windows.RGB(r,g,b uint8)`.
+
+NOTE: Any value not provided will default to black.
 
 ```go
 type ThemeSettings struct {
-	DarkModeTitleBar   int32
-	DarkModeTitleText  int32
-	DarkModeBorder     int32
-	LightModeTitleBar  int32
-	LightModeTitleText int32
-	LightModeBorder    int32
+	DarkModeTitleBar           int32
+	DarkModeTitleBarInactive   int32
+	DarkModeTitleText          int32
+	DarkModeTitleTextInactive  int32
+	DarkModeBorder             int32
+	DarkModeBorderInactive     int32
+	LightModeTitleBar          int32
+	LightModeTitleBarInactive  int32
+	LightModeTitleText         int32
+	LightModeTitleTextInactive int32
+	LightModeBorder            int32
+	LightModeBorderInactive    int32
 }
 ```
 
 Example:
 ```go
     CustomTheme: &windows.ThemeSettings{
-        DarkModeTitleBar:   windows.RGB(255, 20, 20), // Red
+        // Theme to use when window is active
+        DarkModeTitleBar:   windows.RGB(255, 0, 0),   // Red
         DarkModeTitleText:  windows.RGB(0, 255, 0),   // Green
         DarkModeBorder:     windows.RGB(0, 0, 255),   // Blue
         LightModeTitleBar:  windows.RGB(200, 200, 200),
         LightModeTitleText: windows.RGB(20, 20, 20),
         LightModeBorder:    windows.RGB(200, 200, 200),
+        // Theme to use when window is inactive
+        DarkModeTitleBarInactive:   windows.RGB(128, 0, 0),
+        DarkModeTitleTextInactive:  windows.RGB(0, 128, 0),
+        DarkModeBorderInactive:     windows.RGB(0, 0, 128),
+        LightModeTitleBarInactive:  windows.RGB(100, 100, 100),
+        LightModeTitleTextInactive: windows.RGB(10, 10, 10),
+        LightModeBorderInactive:    windows.RGB(100, 100, 100),
     },
 ```
 

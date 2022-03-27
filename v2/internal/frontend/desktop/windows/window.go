@@ -21,6 +21,7 @@ type Window struct {
 	minWidth, minHeight, maxWidth, maxHeight int
 	versionInfo                              *operatingsystem.WindowsVersionInfo
 	isDarkMode                               bool
+	isActive                                 bool
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo) *Window {
@@ -31,6 +32,7 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		maxHeight:       appoptions.MaxHeight,
 		maxWidth:        appoptions.MaxWidth,
 		versionInfo:     versionInfo,
+		isActive:        true,
 	}
 	result.SetIsForm(true)
 
@@ -141,6 +143,14 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	case w32.WM_MOVE, w32.WM_MOVING:
 		if w.notifyParentWindowPositionChanged != nil {
 			w.notifyParentWindowPositionChanged()
+		}
+	case w32.WM_ACTIVATE:
+		if int(wparam) == w32.WA_INACTIVE {
+			w.isActive = false
+			w.updateTheme()
+		} else {
+			w.isActive = true
+			w.updateTheme()
 		}
 
 	// TODO move WM_DPICHANGED handling into winc
