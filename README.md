@@ -61,7 +61,7 @@
 
 <span id="nav-3"></span>
 
-## Introductions
+## Introduction
 
 The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different
 approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to
