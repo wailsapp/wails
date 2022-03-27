@@ -130,6 +130,8 @@ github.com/leaanthony/typescriptify-golang-structs v0.1.7 h1:yoznzWzyxkO/iWdlpq+
 github.com/leaanthony/typescriptify-golang-structs v0.1.7/go.mod h1:cWtOkiVhMF77e6phAXUcfNwYmMwCJ67Sij24lfvi9Js=
 github.com/leaanthony/winc v0.0.0-20220208061147-37b059b9dc3b h1:cJ+VfVwX3GkRGSy0SiOyZ7FjSGMPAY/rS/wJzilo23I=
 github.com/leaanthony/winc v0.0.0-20220208061147-37b059b9dc3b/go.mod h1:OPfk8SNMAKRcSv8Vw1QL0yupmwcRtJyXZUgtMoaHUGc=
+github.com/leaanthony/winc v0.0.0-20220323084916-ea5df694ec1f h1:RM0TNQXGTt06ZrSysdo+r9E9fk1ObACFBOww+W1zOiU=
+github.com/leaanthony/winc v0.0.0-20220323084916-ea5df694ec1f/go.mod h1:OPfk8SNMAKRcSv8Vw1QL0yupmwcRtJyXZUgtMoaHUGc=
 github.com/leaanthony/winicon v1.0.0 h1:ZNt5U5dY71oEoKZ97UVwJRT4e+5xo5o/ieKuHuk8NqQ=
 github.com/leaanthony/winicon v1.0.0/go.mod h1:en5xhijl92aphrJdmRPlh4NI1L6wq3gEm0LpXAPghjU=
 github.com/leodido/go-urn v1.2.0 h1:hpXL4XnriNwQ/ABnpepYM/1vCLWNDfUNts8dX3xTG6Y=
