@@ -47,6 +47,18 @@ func (d *DevWebServer) WindowReload() {
 	d.broadcast("reload")
 }
 
+func (d *DevWebServer) WindowSetSystemDefaultTheme() {
+	d.desktopFrontend.WindowSetSystemDefaultTheme()
+}
+
+func (d *DevWebServer) WindowSetLightTheme() {
+	d.desktopFrontend.WindowSetLightTheme()
+}
+
+func (d *DevWebServer) WindowSetDarkTheme() {
+	d.desktopFrontend.WindowSetDarkTheme()
+}
+
 func (d *DevWebServer) Run(ctx context.Context) error {
 	d.ctx = ctx
 
