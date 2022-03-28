@@ -17,6 +17,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"strconv"
 	"text/template"
 	"unsafe"
@@ -47,6 +48,10 @@ type Frontend struct {
 	bindings        *binding.Bindings
 	dispatcher      frontend.Dispatcher
 	servingFromDisk bool
+}
+
+func init() {
+	runtime.LockOSThread()
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
