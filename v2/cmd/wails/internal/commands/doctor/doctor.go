@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 	"runtime"
-	"runtime/debug"
 	"strings"
 	"text/tabwriter"
 
@@ -60,20 +59,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		fmt.Fprintf(w, "------\n")
 		fmt.Fprintf(w, "%s\t%s\n", "Version: ", app.Version())
 
-		if buildInfo, _ := debug.ReadBuildInfo(); buildInfo != nil {
-			buildSettingToName := map[string]string{
-				"vcs.revision": "Revision",
-				"vcs.modified": "Modified",
-			}
-			for _, buildSetting := range buildInfo.Settings {
-				name := buildSettingToName[buildSetting.Key]
-				if name == "" {
-					continue
-				}
-
-				fmt.Fprintf(w, "%s:\t%s\n", name, buildSetting.Value)
-			}
-		}
+		printBuildSettings(w)
 
 		// Exit early if PM not found
 		if info.PM != nil {
