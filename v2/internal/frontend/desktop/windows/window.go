@@ -3,9 +3,8 @@
 package windows
 
 import (
-	"fmt"
-	"log"
-	"syscall"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"unsafe"
 
 	"github.com/leaanthony/winc"
@@ -20,15 +19,20 @@ type Window struct {
 	applicationMenu                          *menu.Menu
 	notifyParentWindowPositionChanged        func() error
 	minWidth, minHeight, maxWidth, maxHeight int
+	versionInfo                              *operatingsystem.WindowsVersionInfo
+	isDarkMode                               bool
+	isActive                                 bool
 }
 
-func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
+func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo) *Window {
 	result := &Window{
 		frontendOptions: appoptions,
 		minHeight:       appoptions.MinHeight,
 		minWidth:        appoptions.MinWidth,
 		maxHeight:       appoptions.MaxHeight,
 		maxWidth:        appoptions.MaxWidth,
+		versionInfo:     versionInfo,
+		isActive:        true,
 	}
 	result.SetIsForm(true)
 
@@ -46,7 +50,8 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 	var dwStyle = w32.WS_OVERLAPPEDWINDOW
 
 	winc.RegClassOnlyOnce("wailsWindow")
-	result.SetHandle(winc.CreateWindow("wailsWindow", parent, uint(exStyle), uint(dwStyle)))
+	handle := winc.CreateWindow("wailsWindow", parent, uint(exStyle), uint(dwStyle))
+	result.SetHandle(handle)
 	winc.RegMsgHandler(result)
 	result.SetParent(parent)
 
@@ -68,6 +73,8 @@ func NewWindow(parent winc.Controller, appoptions *options.App) *Window {
 		result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
 		result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
 	}
+
+	result.updateTheme()
 
 	if appoptions.Windows != nil {
 		if appoptions.Windows.WindowIsTranslucent {
@@ -125,11 +132,25 @@ func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 	switch msg {
+	case w32.WM_SETTINGCHANGE:
+		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lparam)))
+		if settingChanged == "ImmersiveColorSet" {
+			w.updateTheme()
+		}
+		return 0
 	case w32.WM_NCLBUTTONDOWN:
 		w32.SetFocus(w.Handle())
 	case w32.WM_MOVE, w32.WM_MOVING:
 		if w.notifyParentWindowPositionChanged != nil {
 			w.notifyParentWindowPositionChanged()
+		}
+	case w32.WM_ACTIVATE:
+		if int(wparam) == w32.WA_INACTIVE {
+			w.isActive = false
+			w.updateTheme()
+		} else {
+			w.isActive = true
+			w.updateTheme()
 		}
 
 	// TODO move WM_DPICHANGED handling into winc
@@ -152,15 +173,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			// As a result we have hidden the titlebar but still have the default window frame styling.
 			// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
 			if winoptions := w.frontendOptions.Windows; winoptions == nil || !winoptions.DisableFramelessWindowDecorations {
-				// -1: Adds the default frame styling (aero shadow and e.g. rounded corners on Windows 11)
-				//     Also shows the caption buttons if transparent ant translucent but they don't work.
-				//  0: Adds the default frame styling but no aero shadow, does not show the caption buttons.
-				//  1: Adds the default frame styling (aero shadow and e.g. rounded corners on Windows 11) but no caption buttons
-				//     are shown if transparent ant translucent.
-				margins := w32.MARGINS{1, 1, 1, 1} // Only extend 1 pixel to have the default frame styling but no caption buttons
-				if err := dwmExtendFrameIntoClientArea(w.Handle(), margins); err != nil {
-					log.Fatal(fmt.Errorf("DwmExtendFrameIntoClientArea failed: %s", err))
-				}
+				win32.ExtendFrameIntoClientArea(w.Handle())
 			}
 		case w32.WM_NCCALCSIZE:
 			// Disable the standard frame by allowing the client area to take the full
@@ -208,25 +221,6 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 }
 
 func (w *Window) IsMaximised() bool {
-	style := uint32(w32.GetWindowLong(w.Handle(), w32.GWL_STYLE))
-	return style&w32.WS_MAXIMIZE != 0
-}
+	return win32.IsWindowMaximised(w.Handle())
 
-// TODO this should be put into the winc if we are happy with this solution.
-var (
-	modkernel32 = syscall.NewLazyDLL("dwmapi.dll")
-
-	procDwmExtendFrameIntoClientArea = modkernel32.NewProc("DwmExtendFrameIntoClientArea")
-)
-
-func dwmExtendFrameIntoClientArea(hwnd w32.HWND, margins w32.MARGINS) error {
-	ret, _, _ := procDwmExtendFrameIntoClientArea.Call(
-		uintptr(hwnd),
-		uintptr(unsafe.Pointer(&margins)))
-
-	if ret != 0 {
-		return syscall.GetLastError()
-	}
-
-	return nil
 }

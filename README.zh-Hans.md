@@ -207,7 +207,9 @@ Wails v2 已针对所有 3 个平台发布了 Beta 版。如果您有兴趣尝�
 <a href="https://github.com/GargantuaX" style="width:45px">
   <img src="https://github.com/GargantuaX.png?size=45" width="45"/>
 </a>
-
+<a href="https://github.com/brodyover" style="width:45px">
+  <img src="https://github.com/brodyover.png?size=45" width="45"/>
+</a>
 <span id="nav-6"></span>
 
 ## 安装
