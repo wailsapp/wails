@@ -73,6 +73,7 @@ type devFlags struct {
 	debounceMS      int
 	devServerURL    string
 	appargs         string
+	saveConfig      bool
 }
 
 // AddSubcommand adds the `dev` command for the Wails application
@@ -96,6 +97,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.IntFlag("debounce", "The amount of time to wait to trigger a reload on change", &flags.debounceMS)
 	command.StringFlag("devserverurl", "The url of the dev server to use", &flags.devServerURL)
 	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space searated)", &flags.appargs)
+	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
 
 	command.Action(func() error {
 		// Create logger
@@ -294,15 +296,12 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 		return nil, err
 	}
 
-	var shouldSaveConfig bool
-
 	if flags.assetDir == "" && projectConfig.AssetDirectory != "" {
 		flags.assetDir = projectConfig.AssetDirectory
 	}
 
 	if flags.assetDir != projectConfig.AssetDirectory {
 		projectConfig.AssetDirectory = filepath.ToSlash(flags.assetDir)
-		shouldSaveConfig = true
 	}
 
 	if flags.assetDir != "" {
@@ -318,7 +317,6 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 
 	if flags.reloadDirs != projectConfig.ReloadDirectories {
 		projectConfig.ReloadDirectories = filepath.ToSlash(flags.reloadDirs)
-		shouldSaveConfig = true
 	}
 
 	if flags.devServerURL == defaultDevServerURL && projectConfig.DevServerURL != defaultDevServerURL && projectConfig.DevServerURL != "" {
@@ -327,7 +325,6 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 
 	if flags.devServerURL != projectConfig.DevServerURL {
 		projectConfig.DevServerURL = flags.devServerURL
-		shouldSaveConfig = true
 	}
 
 	if flags.wailsjsdir == "" && projectConfig.WailsJSDir != "" {
@@ -340,7 +337,6 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 
 	if flags.wailsjsdir != projectConfig.WailsJSDir {
 		projectConfig.WailsJSDir = filepath.ToSlash(flags.wailsjsdir)
-		shouldSaveConfig = true
 	}
 
 	if flags.debounceMS == 100 && projectConfig.DebounceMS != 100 {
@@ -352,14 +348,13 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 
 	if flags.debounceMS != projectConfig.DebounceMS {
 		projectConfig.DebounceMS = flags.debounceMS
-		shouldSaveConfig = true
 	}
 
 	if flags.appargs == "" && projectConfig.AppArgs != "" {
 		flags.appargs = projectConfig.AppArgs
 	}
 
-	if shouldSaveConfig {
+	if flags.saveConfig {
 		err = projectConfig.Save()
 		if err != nil {
 			return nil, err
@@ -584,7 +579,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 					LogRed("Error during build: %s", err.Error())
 					continue
 				}
-				// If we have a new process, save it
+				// If we have a new process, saveConfig it
 				if newBinaryProcess != nil {
 					debugBinaryProcess = newBinaryProcess
 				}

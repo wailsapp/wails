@@ -18,16 +18,15 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	github.com/imdario/mergo v0.3.12
 	github.com/jackmordaunt/icns v1.0.0
+	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e
 	github.com/leaanthony/clir v1.0.4
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/go-common-file-dialog v1.0.3
-	github.com/leaanthony/go-webview2 v1.0.3-0.20220314105146-f44268990abe
 	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7
-	github.com/leaanthony/winc v0.0.0-20220323084916-ea5df694ec1f
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
 	github.com/olekukonko/tablewriter v0.0.4
@@ -56,7 +55,6 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
-	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/kr/pretty v0.3.0 // indirect

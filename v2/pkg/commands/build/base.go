@@ -13,7 +13,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/system"
 
 	"github.com/leaanthony/gosod"
-	wailsRuntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime/wrapper"
 
 	"github.com/pkg/errors"
@@ -436,16 +435,6 @@ func generateRuntimeWrapper(options *Options) error {
 		return err
 	}
 
-	//ipcdev.js
-	err = os.WriteFile(filepath.Join(wrapperDir, "ipcdev.js"), wailsRuntime.DesktopIPC, 0755)
-	if err != nil {
-		return err
-	}
-	//runtimedev.js
-	err = os.WriteFile(filepath.Join(wrapperDir, "runtimedev.js"), wailsRuntime.RuntimeDesktopJS, 0755)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
