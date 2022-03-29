@@ -18,7 +18,7 @@ For now, you'll need to install the Webview2 runtime, as it does not ship with W
 After that, you should be able to run go-webview2 directly:
 
 ```
-go run github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/cmd/demo
+go run go-webview2/cmd/demo
 ```
 
 This will use go-winloader to load an embedded copy of WebView2Loader.dll.
