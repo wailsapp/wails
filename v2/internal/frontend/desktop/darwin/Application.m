@@ -67,6 +67,7 @@ void ExecJS(void* inctx, const char *script) {
     NSString *nsscript = safeInit(script);
     ON_MAIN_THREAD(
        [ctx ExecJS:nsscript];
+       [nsscript release];
     );
 }
 
@@ -156,6 +157,13 @@ void Maximise(void* inctx) {
     );
 }
 
+void ToggleMaximise(void* inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx ToggleMaximise];
+    );
+}
+
 const char* GetSize(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSRect frame = [ctx.mainWindow frame];
@@ -186,6 +194,7 @@ void UnMaximise(void* inctx) {
 void Quit(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     [NSApp stop:ctx];
+    [NSApp abortModal];
 }
 
 void Hide(void *inctx) {

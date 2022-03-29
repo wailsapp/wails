@@ -18,10 +18,10 @@ func WindowFullscreen(ctx context.Context) {
 	appFrontend.WindowFullscreen()
 }
 
-// WindowUnFullscreen makes the window UnFullscreen
-func WindowUnFullscreen(ctx context.Context) {
+// WindowUnfullscreen makes the window UnFullscreen
+func WindowUnfullscreen(ctx context.Context) {
 	appFrontend := getFrontend(ctx)
-	appFrontend.WindowUnFullscreen()
+	appFrontend.WindowUnfullscreen()
 }
 
 // WindowCenter the window on the current screen
@@ -88,6 +88,12 @@ func WindowMaximise(ctx context.Context) {
 	appFrontend.WindowMaximise()
 }
 
+// WindowToggleMaximise the window
+func WindowToggleMaximise(ctx context.Context) {
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowToggleMaximise()
+}
+
 // WindowUnmaximise the window
 func WindowUnmaximise(ctx context.Context) {
 	appFrontend := getFrontend(ctx)
@@ -106,7 +112,13 @@ func WindowUnminimise(ctx context.Context) {
 	appFrontend.WindowUnminimise()
 }
 
-func WindowSetRGBA(ctx context.Context, col *options.RGBA) {
+func WindowSetRGBA(ctx context.Context, R, G, B, A uint8) {
 	appFrontend := getFrontend(ctx)
+	col := &options.RGBA{
+		R: R,
+		G: G,
+		B: B,
+		A: A,
+	}
 	appFrontend.WindowSetRGBA(col)
 }

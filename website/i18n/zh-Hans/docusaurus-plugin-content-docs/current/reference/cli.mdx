@@ -35,7 +35,7 @@ Wails CLI 有许多用于管理项目的命令。所有命令都以此方式运�
 
 支持远程模板（托管在 GitHub 上）并且可以使用模板项目的 URL 进行安装。
 
-示例： `wails init -n test -t https://github.com/leaanthony/testtemplate`
+示例： `wails init -n test -t https://github.com/leaanthony/testtemplate[@v1.0.0]`
 
 可以在[此处](/docs/community/templates)找到社区维护的模板列表
 
@@ -51,22 +51,23 @@ Wails CLI 有许多用于管理项目的命令。所有命令都以此方式运�
 
 `wails build`用于将您的项目编译为生产可用的二进制文件。
 
-| 标志               | 描述                                                 | 默认     |
-| :----------------- | :--------------------------------------------------- | :------- |
-| -clean             | 清理`build/bin`目录                                  |          |
-| -compiler "编译器" | 使用不同的 go 编译器来构建，例如 go1.15beta1         | go       |
-| -ldflags "标志"    | 传递给编译器的额外 ldflags                           |          |
-| -nopackage         | 不打包应用程序                                       |          |
-| -o filename        | 输出文件名                                           |          |
-| -s                 | 跳过前端构建                                         |          |
-| -f                 | 强制构建应用                                         | 否       |
-| -tags "额外标签"   | 传递给编译器构建标签（引号和空格分隔）               |          |
-| -upx               | 使用“upx”压缩最终二进制文件                          |          |
-| -upxflags          | 传递给 upx 的标志                                    |          |
-| -v int             | 详细级别 (0 - silent, 1 - default, 2 - verbose)      | 1        |
-| -webview2          | WebView2 安装程序策略：download,embed,browser,error. | download |
-| -u                 | 更新项目的 `go.mod` 以使用与 CLI 相同版本的 Wails    |          |
-| -debug             | 在应用程序中保留调试信息                             | 否       |
+| 标志               | 描述                                                                                                  | 默认                        |
+| :----------------- | :---------------------------------------------------------------------------------------------------- | :-------------------------- |
+| -platform          | 为指定的平台（逗号分割）构建，例如：`windows/arm64`。注意，如果没有指定架构，则使用`runtime.GOARCH`。 | runtime.GOOS/runtime.GOARCH |
+| -clean             | 清理`build/bin`目录                                                                                   |                             |
+| -compiler "编译器" | 使用不同的 go 编译器来构建，例如 go1.15beta1                                                          | go                          |
+| -ldflags "标志"    | 传递给编译器的额外 ldflags                                                                            |                             |
+| -nopackage         | 不打包应用程序                                                                                        |                             |
+| -o filename        | 输出文件名                                                                                            |                             |
+| -s                 | 跳过前端构建                                                                                          |                             |
+| -f                 | 强制构建应用                                                                                          | 否                          |
+| -tags "额外标签"   | 传递给编译器构建标签（引号和空格分隔）                                                                |                             |
+| -upx               | 使用“upx”压缩最终二进制文件                                                                           |                             |
+| -upxflags          | 传递给 upx 的标志                                                                                     |                             |
+| -v int             | 详细级别 (0 - silent, 1 - default, 2 - verbose)                                                       | 1                           |
+| -webview2          | WebView2 安装程序策略：download,embed,browser,error.                                                  | download                    |
+| -u                 | 更新项目的 `go.mod` 以使用与 CLI 相同版本的 Wails                                                     |                             |
+| -debug             | 在应用程序中保留调试信息                                                                              | 否                          |
 
 有关`webview2`标志的详细描述，请参阅[Windows 系统](/docs/guides/windows)指南。
 
@@ -127,6 +128,7 @@ Your system is ready for Wails development!
 
 `wails dev` 用于以 "实时开发" 模式运行您的应用。这意味着：
 
+- 应用程序的`go.mod`将被更新为与 Wails CLI 版本相同的版本
 - 应用程序被编译并自动运行
 - 一个观察者被启动，如果它检测到您的 go 文件的变化，它将触发您的开发应用程序的重新构建
 - 启动一个网络服务器`http://localhost:34115`，通过 http 为您的应用程序（不仅仅是前端）提供服务。这允许您使用您喜欢的浏览器开发扩展

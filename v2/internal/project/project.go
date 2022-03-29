@@ -19,7 +19,10 @@ type Project struct {
 
 	BuildCommand   string `json:"frontend:build"`
 	InstallCommand string `json:"frontend:install"`
-	DevCommand     string `json:"frontend:dev"`
+
+	// Commands used in `wails dev`
+	DevCommand        string `json:"frontend:dev"`
+	DevWatcherCommand string `json:"frontend:dev:watcher"`
 
 	// Directory to generate the API Module
 	WailsJSDir string `json:"wailsjsdir"`
@@ -43,8 +46,24 @@ type Project struct {
 	// The platform to target
 	Platform string
 
+	// RunNonNativeBuildHooks will run build hooks though they are defined for a GOOS which is not equal to the host os
+	RunNonNativeBuildHooks bool `json:"runNonNativeBuildHooks"`
+
+	// Post build hooks for different targets, the hooks are executed in the following order
+	// Key: GOOS/GOARCH - Executed at build level after a build of the specific platform and arch
+	// Key: GOOS/*      - Executed at build level after a build of the specific platform
+	// Key: */*         - Executed at build level after a build
+	// The following keys are not yet supported.
+	// Key: GOOS        - Executed at platform level after all builds of the specific platform
+	// Key: *           - Executed at platform level after all builds of a platform
+	// Key: [empty]     - Executed at global level after all builds of all platforms
+	PostBuildHooks map[string]string `json:"postBuildHooks"`
+
 	// The application author
 	Author Author
+
+	// The application information
+	Info Info
 
 	// Fully qualified filename
 	filename string
@@ -57,6 +76,9 @@ type Project struct {
 
 	// Arguments that are forwared to the application in dev mode
 	AppArgs string `json:"appargs"`
+
+	// NSISType to be build
+	NSISType string `json:"nsisType"`
 }
 
 func (p *Project) Save() error {
@@ -71,6 +93,14 @@ func (p *Project) Save() error {
 type Author struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
+}
+
+type Info struct {
+	CompanyName    string  `json:"companyName"`
+	ProductName    string  `json:"productName"`
+	ProductVersion string  `json:"productVersion"`
+	Copyright      *string `json:"copyright"`
+	Comments       *string `json:"comments"`
 }
 
 // Load the project from the current working directory
@@ -112,6 +142,24 @@ func Load(projectPath string) (*Project, error) {
 		if strings.HasSuffix(result.OutputFilename, ".exe") {
 			result.OutputFilename = strings.TrimSuffix(result.OutputFilename, ".exe")
 		}
+	}
+
+	if result.Info.CompanyName == "" {
+		result.Info.CompanyName = result.Name
+	}
+	if result.Info.ProductName == "" {
+		result.Info.ProductName = result.Name
+	}
+	if result.Info.ProductVersion == "" {
+		result.Info.ProductVersion = "1.0.0"
+	}
+	if result.Info.Copyright == nil {
+		v := "Copyright........."
+		result.Info.Copyright = &v
+	}
+	if result.Info.Comments == nil {
+		v := "Built using Wails (https://wails.app)"
+		result.Info.Comments = &v
 	}
 
 	// Return our project data

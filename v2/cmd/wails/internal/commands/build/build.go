@@ -93,6 +93,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	debug := false
 	command.BoolFlag("debug", "Retains debug data in the compiled application", &debug)
 
+	nsis := false
+	command.BoolFlag("nsis", "Generate NSIS installer for Windows", &nsis)
+
 	command.Action(func() error {
 
 		quiet := verbosity == 0
@@ -117,20 +120,12 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		}
 
 		// Tags
-		experimental := false
 		userTags := []string{}
 		for _, tag := range strings.Split(tags, " ") {
 			thisTag := strings.TrimSpace(tag)
 			if thisTag != "" {
 				userTags = append(userTags, thisTag)
 			}
-			if thisTag == "exp" {
-				experimental = true
-			}
-		}
-
-		if runtime.GOOS == "linux" && !experimental {
-			return fmt.Errorf("Linux version coming soon!")
 		}
 
 		// Webview2 installer strategy (download by default)
@@ -214,6 +209,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			return err
 		}
 		projectOptions, err := project.Load(cwd)
+		if err != nil {
+			return err
+		}
 
 		// Check platform
 		validPlatformArch := slicer.String([]string{
@@ -227,9 +225,18 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			"windows",
 			"windows/amd64",
 			"windows/arm64",
+			"windows/386",
 		})
 
+		outputBinaries := map[string]string{}
+
+		// Allows cancelling the build after the first error. It would be nice if targets.Each would support funcs
+		// returning an error.
+		var targetErr error
 		targets.Each(func(platform string) {
+			if targetErr != nil {
+				return
+			}
 
 			if !validPlatformArch.Contains(platform) {
 				buildOptions.Logger.Println("platform '%s' is not supported - skipping. Supported platforms: %s", platform, validPlatformArch.Join(","))
@@ -301,18 +308,35 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 			outputFilename, err := build.Build(buildOptions)
 			if err != nil {
-				logger.Println("Error: ", err.Error())
+				logger.Println("Error: %s", err.Error())
+				targetErr = err
 				return
 			}
 
-			// Subsequent iterations
 			buildOptions.IgnoreFrontend = true
 			buildOptions.CleanBuildDirectory = false
 
 			// Output stats
 			buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", outputFilename, time.Since(start).Round(time.Millisecond).String()))
 
+			outputBinaries[platform] = outputFilename
 		})
+
+		if targetErr != nil {
+			return targetErr
+		}
+
+		if nsis {
+			amd64Binary := outputBinaries["windows/amd64"]
+			arm64Binary := outputBinaries["windows/arm64"]
+			if amd64Binary == "" && arm64Binary == "" {
+				return fmt.Errorf("cannot build nsis installer - no windows targets")
+			}
+
+			if err := build.GenerateNSISInstaller(buildOptions, amd64Binary, arm64Binary); err != nil {
+				return err
+			}
+		}
 		return nil
 	})
 }

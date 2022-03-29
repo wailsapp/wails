@@ -36,7 +36,7 @@ More information on using IDEs with Wails can be found [here](/docs/guides/ides)
 Remote templates (hosted on GitHub) are supported and can be installed by using the template's project URL.
 
 Example:
- `wails init -n test -t https://github.com/leaanthony/testtemplate`
+ `wails init -n test -t https://github.com/leaanthony/testtemplate[@v1.0.0]`
 
 A list of community maintained templates can be found [here](/docs/community/templates)
 
@@ -54,6 +54,7 @@ A list of community maintained templates can be found [here](/docs/community/tem
 
 |  Flag                |  Description                            |  Default                   |
 | :------------------- | :-------------------------------------- | :------------------------- |
+|  -platform           | Build for the given (comma delimited) [platforms](/docs/reference/cli#platforms) eg. `windows/arm64`. Note, if you do not give the architecture, `runtime.GOARCH` is used. | runtime.GOOS/runtime.GOARCH |
 |  -clean              | Cleans the `build/bin` directory        |                            |
 |  -compiler "compiler"| Use a different go compiler to build, eg go1.15beta1 | go            |
 |  -ldflags "flags"    | Additional ldflags to pass to the compiler |                         |
@@ -89,6 +90,24 @@ Example:
   Some Antivirus vendors false positively mark `upx` compressed binaries as virus, see [issue](https://github.com/upx/upx/issues/437).
 
 :::
+
+### Platforms
+
+Supported platforms are:
+
+| Platform         | Description                                   |
+|:---------------- |:--------------------------------------------- |
+| darwin           | MacOS + architecture of build machine         |
+| darwin/amd64     | MacOS 10.13+ AMD64                            |
+| darwin/arm64     | MacOS 11.0+ ARM64                             |
+| darwin/universal | MacOS AMD64+ARM64 universal application       |
+| windows          | Windows 10/11 + architecture of build machine |
+| windows/amd64    | Windows 10/11 AMD64                           |
+| windows/arm64    | Windows 10/11 ARM64                           |
+| linux            | Linux + architecture of build machine         |
+| linux/amd64      | Linux AMD64                                   |
+| linux/arm64      | Linux ARM64                                   |
+
 
 ## doctor
 
@@ -127,6 +146,7 @@ Your system is ready for Wails development!
 
 `wails dev` is used to run your application in a "live development" mode. This means:
 
+   - The application's `go.mod` will be updated to use the same version of Wails as the CLI
    - The application is compiled and run automatically
    - A watcher is started and will trigger a rebuild of your dev app if it detects changes to your go files
    - A webserver is started on `http://localhost:34115` which serves your application (not just frontend) over http. This allows you to use your favourite browser development extensions

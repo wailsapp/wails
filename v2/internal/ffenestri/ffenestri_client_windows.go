@@ -10,12 +10,13 @@ import "C"
 
 import (
 	"encoding/json"
-	"github.com/leaanthony/go-common-file-dialog/cfd"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"golang.org/x/sys/windows"
 	"log"
 	"strconv"
 	"syscall"
+
+	"github.com/leaanthony/go-common-file-dialog/cfd"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"golang.org/x/sys/windows"
 
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
@@ -63,8 +64,8 @@ func (c *Client) WindowFullscreen() {
 	C.Fullscreen(c.app.app)
 }
 
-// WindowUnFullscreen will unfullscreen the window
-func (c *Client) WindowUnFullscreen() {
+// WindowUnfullscreen will unfullscreen the window
+func (c *Client) WindowUnfullscreen() {
 	C.UnFullscreen(c.app.app)
 }
 

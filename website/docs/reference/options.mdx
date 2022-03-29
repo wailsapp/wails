@@ -42,11 +42,20 @@ func main() {
             app,
         },
         Windows: &windows.Options{
-            WebviewIsTransparent:  false,
-            WindowIsTranslucent:   false,
-            DisableWindowIcon:     false,
-            EnableFramelessBorder: false,
-            WebviewUserDataPath:   "",
+            WebviewIsTransparent:              false,
+            WindowIsTranslucent:               false,
+            DisableWindowIcon:                 false,
+            DisableFramelessWindowDecorations: false,
+            WebviewUserDataPath:               "",
+            Theme:                             windows.SystemDefault,
+            CustomTheme: &windows.ThemeSettings{
+                DarkModeTitleBar:   windows.RGB(20, 20, 20),
+                DarkModeTitleText:  windows.RGB(200, 200, 200),
+                DarkModeBorder:     windows.RGB(20, 0, 20),
+                LightModeTitleBar:  windows.RGB(200, 200, 200),
+                LightModeTitleText: windows.RGB(20, 20, 20),
+                LightModeBorder:    windows.RGB(200, 200, 200),
+            },
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -252,7 +261,7 @@ Name: OnDomReady
 
 Type: func(ctx context.Context)
 
-This callback is called after the frontend has loaded `index.html` and the DOM is ready. It is given
+This callback is called after the frontend has loaded `index.html` and its resources. It is given
 the application context.
 
 ### OnShutdown
@@ -298,11 +307,11 @@ Type: options.WindowStartState
 
 Defines how the window should present itself at startup.
 
-| Value           | Win | Mac |
-| --------------- | --- | --- |
-| Fullscreen      | ✅  | ✅   |
-| Maximised       | ✅  | ✅   |
-| Minimised       | ✅  |     |
+| Value           | Win | Mac | Lin |
+| --------------- | --- | --- | --- |
+| Fullscreen      | ✅  | ✅   | ✅ |
+| Maximised       | ✅  | ✅   | ✅ |
+| Minimised       | ✅  |     | ✅ |
 
 ### Bind
 
@@ -357,14 +366,15 @@ Type: bool
 
 Setting this to `true` will remove the icon in the top left corner of the title bar.
 
-### EnableFramelessBorder
+### DisableFramelessWindowDecorations
 
-Name: EnableFramelessBorder
+Name: DisableFramelessWindowDecorations
 
 Type: bool
 
-Setting this to `true` will add a border around the window if [Frameless](#Frameless) has been activated.
-This allows hiding the title bar but still having a border around the window.
+Setting this to `true` will remove the window decorations in [Frameless](#Frameless) mode. This means there will be no
+'Aero Shadow' and no 'Rounded Corners' shown for the window. Please note that 'Rounded Corners' are only supported on
+Windows 11.
 
 ### WebviewUserDataPath
 
@@ -373,6 +383,78 @@ Name: WebviewUserDataPath
 Type: string
 
 This defines the path where the WebView2 stores the user data. If empty `%APPDATA%\[BinaryName.exe]` will be used.
+
+### Theme
+
+Name: Theme
+
+Type: `windows.Theme`
+
+Minimum Windows Version: Windows 10 2004/20H1
+
+This defines the theme that the application should use:
+
+| Value           | Description |
+| --------------- | ----------- |
+| SystemDefault   | *Default*. The theme will be based on the system default. If the user changes their theme, the application will update to use the new setting |
+| Dark            | The application will use a dark theme exclusively |
+| Light           | The application will use a light theme exclusively |
+
+
+### CustomTheme
+
+Name: CustomTheme
+
+Type: `windows.CustomTheme`
+
+Minimum Windows Version: Windows 10/11 2009/21H2 Build 22000
+
+Allows you to specify custom colours for TitleBar, TitleText and Border for both light and dark mode, as well as
+when the window is active or inactive.
+
+#### CustomTheme
+
+The CustomTheme struct uses `int32` to specify the colour values. These are in the standard(!) Windows format of:
+`0x00BBGGAA`. A helper function is provided to do RGB conversions into this format: `windows.RGB(r,g,b uint8)`.
+
+NOTE: Any value not provided will default to black.
+
+```go
+type ThemeSettings struct {
+	DarkModeTitleBar           int32
+	DarkModeTitleBarInactive   int32
+	DarkModeTitleText          int32
+	DarkModeTitleTextInactive  int32
+	DarkModeBorder             int32
+	DarkModeBorderInactive     int32
+	LightModeTitleBar          int32
+	LightModeTitleBarInactive  int32
+	LightModeTitleText         int32
+	LightModeTitleTextInactive int32
+	LightModeBorder            int32
+	LightModeBorderInactive    int32
+}
+```
+
+Example:
+```go
+    CustomTheme: &windows.ThemeSettings{
+        // Theme to use when window is active
+        DarkModeTitleBar:   windows.RGB(255, 0, 0),   // Red
+        DarkModeTitleText:  windows.RGB(0, 255, 0),   // Green
+        DarkModeBorder:     windows.RGB(0, 0, 255),   // Blue
+        LightModeTitleBar:  windows.RGB(200, 200, 200),
+        LightModeTitleText: windows.RGB(20, 20, 20),
+        LightModeBorder:    windows.RGB(200, 200, 200),
+        // Theme to use when window is inactive
+        DarkModeTitleBarInactive:   windows.RGB(128, 0, 0),
+        DarkModeTitleTextInactive:  windows.RGB(0, 128, 0),
+        DarkModeBorderInactive:     windows.RGB(0, 0, 128),
+        LightModeTitleBarInactive:  windows.RGB(100, 100, 100),
+        LightModeTitleTextInactive: windows.RGB(10, 10, 10),
+        LightModeBorderInactive:    windows.RGB(100, 100, 100),
+    },
+```
 
 ## Mac Specific Options
 

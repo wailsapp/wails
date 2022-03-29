@@ -24,7 +24,7 @@ func (d *DesktopBuilder) convertToHexLiteral(bytes []byte) string {
 }
 
 // compileIcon will compile the icon found at <projectdir>/icon.png into the application
-func (d *DesktopBuilder) compileIcon(assetDir string, iconFile string) error {
+func (d *DesktopBuilder) compileIcon(assetDir string, iconFile []byte) error {
 	return nil
 }
 

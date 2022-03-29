@@ -3,10 +3,11 @@ package dispatcher
 import (
 	"encoding/json"
 	"errors"
-	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/pkg/options"
 	"strconv"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 func (d *Dispatcher) mustAtoI(input string) int {
@@ -31,7 +32,7 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 	case 'F':
 		go sender.WindowFullscreen()
 	case 'f':
-		go sender.WindowUnFullscreen()
+		go sender.WindowUnfullscreen()
 	case 's':
 		parts := strings.Split(message[3:], ":")
 		w := d.mustAtoI(parts[0])
@@ -55,6 +56,8 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 		go sender.WindowSetRGBA(&rgba)
 	case 'M':
 		go sender.WindowMaximise()
+	case 't':
+		go sender.WindowToggleMaximise()
 	case 'U':
 		go sender.WindowUnmaximise()
 	case 'm':

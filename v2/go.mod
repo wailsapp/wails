@@ -22,12 +22,12 @@ require (
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/go-common-file-dialog v1.0.3
-	github.com/leaanthony/go-webview2 v1.0.3-0.20220125181555-00f20a61c17d
+	github.com/leaanthony/go-webview2 v1.0.3-0.20220314105146-f44268990abe
 	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7
-	github.com/leaanthony/winc v0.0.0-20220208061147-37b059b9dc3b
+	github.com/leaanthony/winc v0.0.0-20220323084916-ea5df694ec1f
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
 	github.com/olekukonko/tablewriter v0.0.4

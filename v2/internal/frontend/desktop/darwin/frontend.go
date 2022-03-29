@@ -16,10 +16,8 @@ import "C"
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"log"
-	"os"
 	"strconv"
 	"unsafe"
 
@@ -82,7 +80,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	if err != nil {
 		log.Fatal(err)
 	}
-	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON)
+	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON, result.servingFromDisk)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -167,7 +165,7 @@ func (f *Frontend) WindowFullscreen() {
 	f.mainWindow.Fullscreen()
 }
 
-func (f *Frontend) WindowUnFullscreen() {
+func (f *Frontend) WindowUnfullscreen() {
 	f.mainWindow.UnFullscreen()
 }
 
@@ -180,6 +178,9 @@ func (f *Frontend) WindowHide() {
 }
 func (f *Frontend) WindowMaximise() {
 	f.mainWindow.Maximise()
+}
+func (f *Frontend) WindowToggleMaximise() {
+	f.mainWindow.ToggleMaximise()
 }
 func (f *Frontend) WindowUnmaximise() {
 	f.mainWindow.UnMaximise()
@@ -277,40 +278,21 @@ func (f *Frontend) ExecJS(js string) {
 func (f *Frontend) processRequest(r *request) {
 	uri := C.GoString(r.url)
 
-	var _contents []byte
-	var _mimetype string
-
-	// Translate URI to file
-	file, match, err := common.TranslateUriToFile(uri, "wails", "wails")
-	if err == nil {
-		if !match {
-			// This should never happen on darwin, because we get only called for wails://
-			panic("Unexpected host for request on wails:// scheme")
-		}
-
-		// Load file from asset store
-		_contents, _mimetype, err = f.assets.Load(file)
-	}
-
-	statusCode := 200
+	res, err := common.ProcessRequest(uri, f.assets, "wails", "wails")
 	if err != nil {
-		if os.IsNotExist(err) {
-			statusCode = 404
-		} else {
-			err = fmt.Errorf("Error processing request %s: %w", uri, err)
-			f.logger.Error(err.Error())
-			statusCode = 500
-		}
+		f.logger.Error("Error processing request '%s': %s (HttpResponse=%s)", uri, err, res)
 	}
 
-	var data unsafe.Pointer
-	if _contents != nil {
-		data = unsafe.Pointer(&_contents[0])
+	var content unsafe.Pointer
+	var contentLen int
+	if _contents := res.Body; _contents != nil {
+		content = unsafe.Pointer(&_contents[0])
+		contentLen = len(_contents)
 	}
-	mimetype := C.CString(_mimetype)
+	mimetype := C.CString(res.MimeType)
 	defer C.free(unsafe.Pointer(mimetype))
 
-	C.ProcessURLResponse(r.ctx, r.url, C.int(statusCode), mimetype, data, C.int(len(_contents)))
+	C.ProcessURLResponse(r.ctx, r.url, C.int(res.StatusCode), mimetype, content, C.int(contentLen))
 }
 
 //func (f *Frontend) processSystemEvent(message string) {

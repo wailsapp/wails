@@ -1,5 +1,5 @@
 <p align="center" style="text-align: center">
-   <img src="logo.png" width="55%"><br/>
+   <img src="logo-universal.png" width="55%"><br/>
 </p>
 <p align="center">
   使用 Go 和 Web 技术构建桌面应用程序。<br/><br/>
@@ -81,9 +81,13 @@
 
 ### 官方网站
 
+#### v1
+
 官方文档可以在 [https://wails.app](https://wails.app) 中找到。
 
-如果您对适用于 Windows 的 v2 测试版感兴趣，可以点击[此处](https://wails.io)查看。
+#### v2
+
+Wails v2 已针对所有 3 个平台发布了 Beta 版。如果您有兴趣尝试一下，请查看[新网站](https://wails.io)。
 
 镜像网站：
 
@@ -203,7 +207,9 @@
 <a href="https://github.com/GargantuaX" style="width:45px">
   <img src="https://github.com/GargantuaX.png?size=45" width="45"/>
 </a>
-
+<a href="https://github.com/brodyover" style="width:45px">
+  <img src="https://github.com/brodyover.png?size=45" width="45"/>
+</a>
 <span id="nav-6"></span>
 
 ## 安装

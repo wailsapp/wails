@@ -27,9 +27,9 @@ JS 方法签名: `WindowFullscreen()`
 
 ### 窗口取消全屏
 
-Go 方法签名: `WindowUnFullscreen(ctx context.Context)`
+Go 方法签名: `WindowUnfullscreen(ctx context.Context)`
 
-JS 方法签名: `WindowUnFullscreen()`
+JS 方法签名: `WindowUnfullscreen()`
 
 在全屏之前恢复先前的窗口尺寸和位置。
 
@@ -133,6 +133,14 @@ JS 方法签名: `WindowUnmaximise()`
 
 将窗口恢复到最大化之前的尺寸和位置。
 
+### 窗口最大化切换
+
+Go 方法签名: `WindowToggleMaximise(ctx context.Context)`
+
+JS 方法签名: `WindowToggleMaximise()`
+
+在最大化和最大化之间切换。
+
 ### 窗口最小化
 
 Go 方法签名: `WindowMinimise(ctx context.Context)`
@@ -151,11 +159,11 @@ JS 方法签名: `WindowUnminimise()`
 
 ### 窗口设置 RGBA
 
-Go 方法签名: `WindowSetRGBA(ctx context.Context, col *options.RGBA)`
+Go 方法签名: `WindowSetRGBA(ctx context.Context, R, G, B, A uint8)`
 
-JS 方法签名: `WindowSetRGBA(col: RGBA)`
+JS 方法签名: `WindowSetRGBA(R, G, B, A)`
 
-将窗口的背景颜色设置为给定的[RGBA](window#颜色)颜色定义。此颜色将显示所有透明像素。
+将窗口的背景颜色设置为给定的 RGBA 颜色定义。此颜色将显示所有透明像素。
 
 R、G、B 和 A 的有效值为 0-255。
 
@@ -182,16 +190,5 @@ interface Position {
 interface Size {
   w: number;
   h: number;
-}
-```
-
-### 颜色
-
-```ts
-interface RGBA {
-  r: number;
-  g: number;
-  b: number;
-  a: number;
 }
 ```

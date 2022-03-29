@@ -52,8 +52,8 @@ export function WindowFullscreen() {
  *
  * @export
  */
-export function WindowUnFullscreen() {
-	window.runtime.WindowUnFullscreen();
+export function WindowUnfullscreen() {
+	window.runtime.WindowUnfullscreen();
 }
 
 /**
@@ -147,6 +147,15 @@ export function WindowShow() {
  */
 export function WindowMaximise() {
 	window.runtime.WindowMaximise();
+}
+
+/**
+ * Toggle the Maximise of the Window
+ *
+ * @export
+ */
+export function WindowToggleMaximise() {
+	window.runtime.WindowToggleMaximise();
 }
 
 /**

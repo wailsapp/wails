@@ -50,7 +50,7 @@ export function WindowFullscreen() {
  *
  * @export
  */
-export function WindowUnFullscreen() {
+export function WindowUnfullscreen() {
     window.WailsInvoke('Wf');
 }
 
@@ -147,6 +147,15 @@ export function WindowMaximise() {
 }
 
 /**
+ * Toggle the Maximise of the Window
+ *
+ * @export
+ */
+export function WindowToggleMaximise() {
+    window.WailsInvoke('Wt');
+}
+
+/**
  * Unmaximise the Window
  *
  * @export
@@ -178,10 +187,13 @@ export function WindowUnminimise() {
  * Sets the background colour of the window
  *
  * @export
- * @param {RGBA} RGBA background colour
+ * @param {number} R Red
+ * @param {number} G Green
+ * @param {number} B Blue
+ * @param {number} A Alpha
  */
-export function WindowSetRGBA(RGBA) {
-    let rgba = JSON.stringify(RGBA);
+export function WindowSetRGBA(R, G, B, A) {
+    let rgba = JSON.stringify({r:R || 0, g:G || 0, b:B || 0, a:A || 255});
     window.WailsInvoke('Wr:' + rgba);
 }
 

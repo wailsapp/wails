@@ -187,6 +187,10 @@ func (d *DevWebServer) WindowMaximise() {
 	d.desktopFrontend.WindowMaximise()
 }
 
+func (d *DevWebServer) WindowToggleMaximise() {
+	d.desktopFrontend.WindowToggleMaximise()
+}
+
 func (d *DevWebServer) WindowUnmaximise() {
 	d.desktopFrontend.WindowUnmaximise()
 }
@@ -227,8 +231,8 @@ func (d *DevWebServer) WindowFullscreen() {
 	d.desktopFrontend.WindowFullscreen()
 }
 
-func (d *DevWebServer) WindowUnFullscreen() {
-	d.desktopFrontend.WindowUnFullscreen()
+func (d *DevWebServer) WindowUnfullscreen() {
+	d.desktopFrontend.WindowUnfullscreen()
 }
 
 func (d *DevWebServer) WindowSetRGBA(col *options.RGBA) {
@@ -304,7 +308,7 @@ func (d *DevWebServer) broadcast(message string) {
 	d.socketMutex.Lock()
 	defer d.socketMutex.Unlock()
 	for client, locker := range d.websocketClients {
-		go func() {
+		go func(client *websocket.Conn, locker *sync.Mutex) {
 			if client == nil {
 				d.logger.Error("Lost connection to websocket server")
 				return
@@ -317,7 +321,7 @@ func (d *DevWebServer) broadcast(message string) {
 				return
 			}
 			locker.Unlock()
-		}()
+		}(client, locker)
 	}
 }
 
@@ -339,7 +343,7 @@ func (d *DevWebServer) broadcastExcludingSender(message string, sender *websocke
 	d.socketMutex.Lock()
 	defer d.socketMutex.Unlock()
 	for client, locker := range d.websocketClients {
-		go func() {
+		go func(client *websocket.Conn, locker *sync.Mutex) {
 			if client == sender {
 				return
 			}
@@ -351,7 +355,7 @@ func (d *DevWebServer) broadcastExcludingSender(message string, sender *websocke
 				return
 			}
 			locker.Unlock()
-		}()
+		}(client, locker)
 	}
 }
 

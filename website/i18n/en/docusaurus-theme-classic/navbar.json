@@ -3,9 +3,9 @@
     "message": "",
     "description": "The title in the navbar"
   },
-  "item.label.About": {
-    "message": "About",
-    "description": "Navbar item with label About"
+  "item.label.Docs": {
+    "message": "Docs",
+    "description": "Navbar item with label Docs"
   },
   "item.label.Showcase": {
     "message": "Showcase",

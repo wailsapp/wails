@@ -14,8 +14,8 @@ import "C"
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"text/template"
@@ -87,7 +87,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		result.servingFromDisk = true
 	}
 
-	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON)
+	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON, result.servingFromDisk)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -159,7 +159,7 @@ func (f *Frontend) WindowFullscreen() {
 	f.mainWindow.Fullscreen()
 }
 
-func (f *Frontend) WindowUnFullscreen() {
+func (f *Frontend) WindowUnfullscreen() {
 	f.mainWindow.UnFullscreen()
 }
 
@@ -172,6 +172,9 @@ func (f *Frontend) WindowHide() {
 }
 func (f *Frontend) WindowMaximise() {
 	f.mainWindow.Maximise()
+}
+func (f *Frontend) WindowToggleMaximise() {
+	f.mainWindow.ToggleMaximise()
 }
 func (f *Frontend) WindowUnmaximise() {
 	f.mainWindow.UnMaximise()
@@ -223,6 +226,13 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 }
 
 func (f *Frontend) processMessage(message string) {
+	if message == "DomReady" {
+		if f.frontendOptions.OnDomReady != nil {
+			f.frontendOptions.OnDomReady(f.ctx)
+		}
+		return
+	}
+
 	if message == "drag" {
 		if !f.mainWindow.IsFullScreen() {
 			f.startDrag()
@@ -289,52 +299,38 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	uri := C.webkit_uri_scheme_request_get_uri(req)
 	goURI := C.GoString(uri)
 
-	file, match, err := common.TranslateUriToFile(goURI, "wails", "")
+	res, err := common.ProcessRequest(goURI, f.assets, "wails", "", "null")
 	if err != nil {
-		// TODO Handle errors
-		return
-	} else if !match {
-		file, match, err = common.TranslateUriToFile(goURI, "wails", "null")
-		if err != nil {
-			// TODO Handle errors
-			return
-		} else if !match {
-			// This should never happen on linux, because we get only called for wails://
-			panic("Unexpected host for request on wails:// scheme")
-		}
+		f.logger.Error("Error processing request '%s': %s (HttpResponse=%s)", goURI, err, res)
 	}
 
-	// Load file from asset store
-	content, mimeType, err := f.assets.Load(file)
-
-	// TODO How to return 404/500 errors to webkit?
-	if err != nil {
-		if os.IsNotExist(err) {
-			message := C.CString("File not found")
-			gerr := C.g_error_new_literal(C.g_quark_from_string(message), C.int(404), message)
-			C.webkit_uri_scheme_request_finish_error(req, gerr)
-			C.g_error_free(gerr)
-			C.free(unsafe.Pointer(message))
-		} else {
-			err = fmt.Errorf("Error processing request %s: %v", uri, err)
-			message := C.CString("Internal Error")
-			gerr := C.g_error_new_literal(C.g_quark_from_string(message), C.int(500), message)
-			C.webkit_uri_scheme_request_finish_error(req, gerr)
-			C.g_error_free(gerr)
-			C.free(unsafe.Pointer(message))
-		}
+	if code := res.StatusCode; code != http.StatusOK {
+		message := C.CString(res.StatusText())
+		gerr := C.g_error_new_literal(C.g_quark_from_string(message), C.int(code), message)
+		C.webkit_uri_scheme_request_finish_error(req, gerr)
+		C.g_error_free(gerr)
+		C.free(unsafe.Pointer(message))
 		return
 	}
 
-	cContent := C.CString(string(content))
-	defer C.free(unsafe.Pointer(cContent))
-	cMimeType := C.CString(mimeType)
+	var cContent unsafe.Pointer
+	bodyLen := len(res.Body)
+	var cLen C.long
+	if bodyLen > 0 {
+		cContent = C.malloc(C.ulong(bodyLen))
+		if cContent != nil {
+			C.memcpy(cContent, unsafe.Pointer(&res.Body[0]), C.size_t(bodyLen))
+			cLen = C.long(bodyLen)
+		}
+	}
+
+	cMimeType := C.CString(res.MimeType)
 	defer C.free(unsafe.Pointer(cMimeType))
-	cLen := C.long(C.strlen(cContent))
+
 	stream := C.g_memory_input_stream_new_from_data(
-		unsafe.Pointer(C.g_strdup(cContent)),
+		cContent,
 		cLen,
-		(*[0]byte)(C.g_free))
+		(*[0]byte)(C.free))
 	C.webkit_uri_scheme_request_finish(req, stream, cLen, cMimeType)
 	C.g_object_unref(C.gpointer(stream))
 }

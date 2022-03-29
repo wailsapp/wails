@@ -21,6 +21,7 @@ func (i *Info) discover() error {
 	i.Dependencies = append(i.Dependencies, checkWebView2())
 	i.Dependencies = append(i.Dependencies, checkNPM())
 	i.Dependencies = append(i.Dependencies, checkUPX())
+	i.Dependencies = append(i.Dependencies, checkNSIS())
 	//i.Dependencies = append(i.Dependencies, checkDocker())
 
 	return nil

@@ -53,7 +53,7 @@ Wails CLI 为项目做了很多繁重的工作，但有时需要手动构建项�
 
 ##### Windows
 
-- 它创建的图标大小有 256、128、64、48、32 和 16。这是使用[winicon](https://github.com/leaanthony/winicon)完成的。
+- 如果`build/windows/icon.ico`不存在，它将从`build/appicon.png`创建 256、128、64、48、32 和 16 大小的图标。这是使用[winicon](https://github.com/leaanthony/winicon)完成的。
 - 如果`build/windows/<projectname>.manifest`文件不存在，它会从默认版本创建它。
 - 将应用程序编译为生产版本（如上所述）。
 - 使用[winres](https://github.com/tc-hib/winres)将 icon 和 manifest 打包到一个`.syso`文件。

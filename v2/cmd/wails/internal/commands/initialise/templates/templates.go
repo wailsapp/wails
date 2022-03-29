@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/pkg/errors"
 
 	"github.com/leaanthony/debme"
@@ -65,6 +66,7 @@ type Options struct {
 	GoSDKPath           string
 	WindowsFlags        string
 	CGOEnabled          string
+	CGOLDFlags          string
 	OutputFile          string
 }
 
@@ -295,9 +297,17 @@ func gitclone(options *Options) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	_, err = git.PlainClone(dirname, false, &git.CloneOptions{
-		URL: options.TemplateName,
-	})
+
+	// Parse remote template url and version number
+	templateInfo := strings.Split(options.TemplateName, "@")
+	cloneOption := &git.CloneOptions{
+		URL: templateInfo[0],
+	}
+	if len(templateInfo) > 1 {
+		cloneOption.ReferenceName = plumbing.NewTagReferenceName(templateInfo[1])
+	}
+
+	_, err = git.PlainClone(dirname, false, cloneOption)
 
 	return dirname, err
 
@@ -400,19 +410,20 @@ func installIDEFiles(o ideOptions) error {
 	}
 
 	binaryName := filepath.Base(o.options.TargetDir)
-	if runtime.GOOS == "windows" {
-		// yay windows
+	o.options.WindowsFlags = ""
+	o.options.CGOEnabled = "1"
+
+	switch runtime.GOOS {
+	case "windows":
 		binaryName += ".exe"
+		o.options.WindowsFlags = " -H windowsgui"
+		o.options.CGOEnabled = "0"
+	case "darwin":
+		o.options.CGOLDFlags = "-framework UniformTypeIdentifiers"
 	}
 
 	o.options.PathToDesktopBinary = filepath.ToSlash(filepath.Join("build", "bin", binaryName))
 
-	o.options.WindowsFlags = ""
-	o.options.CGOEnabled = "1"
-	if runtime.GOOS == "windows" {
-		o.options.WindowsFlags = " -H windowsgui"
-		o.options.CGOEnabled = "0"
-	}
 	err = installer.Extract(o.targetDir, o.options)
 	if err != nil {
 		return err

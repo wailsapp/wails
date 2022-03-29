@@ -3,9 +3,9 @@
     "message": "",
     "description": "The title in the navbar"
   },
-  "item.label.About": {
-    "message": "关于",
-    "description": "Navbar item with label About"
+  "item.label.Docs": {
+    "message": "文档",
+    "description": "Navbar item with label Docs"
   },
   "item.label.Showcase": {
     "message": "作品展示",

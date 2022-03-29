@@ -81,6 +81,11 @@ func Test_goTypeToJSDocType(t *testing.T) {
 			input: "foo",
 			want:  "any",
 		},
+		{
+			name:  "types",
+			input: "main.SomeType",
+			want:  "models.SomeType",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

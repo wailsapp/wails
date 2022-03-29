@@ -106,8 +106,8 @@ func (b BridgeClient) WindowFullscreen() {
 	b.session.log.Info("WindowFullscreen unsupported in Bridge mode")
 }
 
-func (b BridgeClient) WindowUnFullscreen() {
-	b.session.log.Info("WindowUnFullscreen unsupported in Bridge mode")
+func (b BridgeClient) WindowUnfullscreen() {
+	b.session.log.Info("WindowUnfullscreen unsupported in Bridge mode")
 }
 
 func (b BridgeClient) WindowSetColour(colour int) {
