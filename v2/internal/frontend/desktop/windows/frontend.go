@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"log"
 	"runtime"
 	"strconv"
@@ -45,9 +46,15 @@ type Frontend struct {
 	servingFromDisk bool
 
 	hasStarted bool
+
+	// Windows build number
+	versionInfo *operatingsystem.WindowsVersionInfo
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
+
+	// Get Windows build number
+	versionInfo, _ := operatingsystem.GetWindowsVersionInfo()
 
 	result := &Frontend{
 		frontendOptions: appoptions,
@@ -55,7 +62,8 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		startURL:        "https://wails.localhost/",
+		startURL:        "http://wails.localhost/",
+		versionInfo:     versionInfo,
 	}
 
 	bindingsJSON, err := appBindings.ToJSON()
@@ -82,7 +90,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		result.servingFromDisk = true
 	}
 
-	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON)
+	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON, result.servingFromDisk)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -99,7 +107,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 
 	f.ctx = context.WithValue(ctx, "frontend", f)
 
-	mainWindow := NewWindow(nil, f.frontendOptions)
+	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo)
 	f.mainWindow = mainWindow
 
 	var _debug = ctx.Value("debug")
@@ -181,7 +189,7 @@ func (f *Frontend) WindowUnfullscreen() {
 
 func (f *Frontend) WindowShow() {
 	runtime.LockOSThread()
-	f.mainWindow.Show()
+	f.ShowWindow()
 }
 
 func (f *Frontend) WindowHide() {
@@ -322,6 +330,10 @@ func (f *Frontend) setupChromium() {
 		log.Fatal(err)
 	}
 
+	// Setup focus event handler
+	onFocus := f.mainWindow.OnSetFocus()
+	onFocus.Bind(f.onFocus)
+
 	// Set background colour
 	f.WindowSetRGBA(f.frontendOptions.RGBA)
 
@@ -352,7 +364,7 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	//Get the request
 	uri, _ := req.GetUri()
 
-	res, err := common.ProcessRequest(uri, f.assets, "https", "wails.localhost")
+	res, err := common.ProcessRequest(uri, f.assets, "http", "wails.localhost")
 	if err == common.ErrUnexpectedScheme {
 		// In this case we should let the WebView2 handle the request with its default handler
 		return
@@ -362,7 +374,7 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 		// for all other platforms to improve security.
 		return // Let WebView2 handle the request with its default handler
 	} else if err != nil {
-		path := strings.Replace(uri, "https://wails.localhost", "", 1)
+		path := strings.Replace(uri, "http://wails.localhost", "", 1)
 		f.logger.Error("Error processing request '%s': %s (HttpResponse=%s)", path, err, res)
 	}
 
@@ -511,18 +523,34 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 	case options.Maximised:
 		if !f.frontendOptions.DisableResize {
 			f.mainWindow.Maximise()
+		} else {
+			f.mainWindow.Show()
 		}
-		f.mainWindow.Show()
+		f.ShowWindow()
+
 	case options.Minimised:
 		f.mainWindow.Minimise()
 	case options.Fullscreen:
 		f.mainWindow.Fullscreen()
-		f.mainWindow.Show()
+		f.ShowWindow()
 	default:
 		if f.frontendOptions.Fullscreen {
 			f.mainWindow.Fullscreen()
 		}
-		f.mainWindow.Show()
+		f.ShowWindow()
 	}
 
+}
+
+func (f *Frontend) ShowWindow() {
+	f.mainWindow.Invoke(func() {
+		f.mainWindow.Restore()
+		w32.SetForegroundWindow(f.mainWindow.Handle())
+		w32.SetFocus(f.mainWindow.Handle())
+	})
+
+}
+
+func (f *Frontend) onFocus(arg *winc.Event) {
+	f.chromium.Focus()
 }

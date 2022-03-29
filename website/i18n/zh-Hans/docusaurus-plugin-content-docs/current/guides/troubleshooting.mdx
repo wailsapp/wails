@@ -62,4 +62,21 @@ window.go.main.App.TestFunc(msg, args)
   });
 ```
 
-勋章：https://github.com/wailsapp/wails/issues/1186
+归功于：https://github.com/wailsapp/wails/issues/1186
+
+## 尝试安装 Wails 时遇到代理错误
+
+如果您遇到这样的错误：
+
+```
+"https://proxy.golang.org/github.com/wailsapp/wails/cmd/wails/@v/list": dial tcp 172.217.163.49:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+```
+
+这可能是因为官方 Go Proxy 被阻止（中国用户反馈了这一点）。解决方案是手动设置代理，例如：
+
+```
+go env -w GO111MODULE=on
+go env -w GOPROXY=https://goproxy.cn,direct
+```
+
+来源：https://github.com/wailsapp/wails/issues/1233

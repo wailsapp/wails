@@ -55,3 +55,17 @@ window.go.main.App.TestFunc(msg, args).then((result) => { //without the 3 dots
 });
 ```
 Credit: https://github.com/wailsapp/wails/issues/1186
+
+## I'm having getting proxy errors when trying to install Wails
+
+If you are getting errors like this:
+```
+"https://proxy.golang.org/github.com/wailsapp/wails/cmd/wails/@v/list": dial tcp 172.217.163.49:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+```
+it's probably because the official Go Proxy is being blocked (Users in China have reported this).
+The solution is to set up the proxy manually, eg:
+```
+go env -w GO111MODULE=on
+go env -w GOPROXY=https://goproxy.cn,direct
+```
+Source: https://github.com/wailsapp/wails/issues/1233

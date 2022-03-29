@@ -91,7 +91,7 @@ gboolean Center(gpointer data) {
 int IsFullscreen(GtkWidget *widget) {
 	GdkWindow *gdkwindow = gtk_widget_get_window(widget);
 	GdkWindowState state = gdk_window_get_state(GDK_WINDOW(gdkwindow));
-	return state & GDK_WINDOW_STATE_FULLSCREEN == GDK_WINDOW_STATE_FULLSCREEN;
+	return state & GDK_WINDOW_STATE_FULLSCREEN;
 }
 
 int IsMaximised(GtkWidget *widget) {
@@ -121,6 +121,13 @@ static void sendMessageToBackend(WebKitUserContentManager *contentManager,
 #endif
     processMessage(message);
     g_free(message);
+}
+
+static void webviewLoadChanged(WebKitWebView *web_view, WebKitLoadEvent load_event, gpointer data)
+{
+    if (load_event == WEBKIT_LOAD_FINISHED) {
+        processMessage("DomReady");
+    }
 }
 
 ulong setupInvokeSignal(void* contentManager) {
@@ -185,7 +192,7 @@ GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowO
 	//gtk_container_add(GTK_CONTAINER(window), webview);
 	WebKitWebContext *context = webkit_web_context_get_default();
 	webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
-	//g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webview_load_changed_cb), NULL);
+	g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webviewLoadChanged), NULL);
 	if (hideWindowOnClose) {
 		g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 	} else {
@@ -536,6 +543,7 @@ gboolean UnFullscreen(gpointer data) {
 bool disableContextMenu(GtkWindow* window) {
 	return TRUE;
 }
+
 void DisableContextMenu(void* webview) {
 	contextMenuDisabled = TRUE;
 	g_signal_connect(WEBKIT_WEB_VIEW(webview), "context-menu", G_CALLBACK(disableContextMenu), NULL);
@@ -730,7 +738,7 @@ func (w *Window) UnMinimise() {
 
 func (w *Window) IsFullScreen() bool {
 	result := C.IsFullscreen(w.asGTKWidget())
-	if result == 1 {
+	if result != 0 {
 		return true
 	}
 	return false

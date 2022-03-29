@@ -8,6 +8,56 @@ import (
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 )
 
+func checkGCC() *packagemanager.Dependancy {
+
+	version := packagemanager.AppVersion("gcc")
+
+	return &packagemanager.Dependancy{
+		Name:           "gcc ",
+		PackageName:    "N/A",
+		Installed:      version != "",
+		InstallCommand: "Install via your package manager",
+		Version:        version,
+		Optional:       false,
+		External:       false,
+	}
+}
+
+func checkPkgConfig() *packagemanager.Dependancy {
+
+	version := packagemanager.AppVersion("pkg-config")
+
+	return &packagemanager.Dependancy{
+		Name:           "pkg-config ",
+		PackageName:    "N/A",
+		Installed:      version != "",
+		InstallCommand: "Install via your package manager",
+		Version:        version,
+		Optional:       false,
+		External:       false,
+	}
+}
+
+func checkLocallyInstalled(checker func() *packagemanager.Dependancy, dependency *packagemanager.Dependancy) {
+	if !dependency.Installed {
+		locallyInstalled := checker()
+		if locallyInstalled.Installed {
+			dependency.Installed = true
+			dependency.Version = locallyInstalled.Version
+		}
+	}
+}
+
+var checkerFunctions = map[string]func() *packagemanager.Dependancy{
+	"npm":        checkNPM,
+	"docker":     checkDocker,
+	"upx":        checkUPX,
+	"gcc":        checkGCC,
+	"pkg-config": checkPkgConfig,
+	"libgtk-3":   checkLibrary("libgtk-3"),
+	"libwebkit":  checkLibrary("libwebkit"),
+}
+
 func (i *Info) discover() error {
 
 	var err error
@@ -24,26 +74,9 @@ func (i *Info) discover() error {
 			return err
 		}
 		for _, dep := range dependencies {
-			if dep.Name == "npm" {
-				locallyInstalled := checkNPM()
-				if locallyInstalled.Installed {
-					dep.Installed = true
-					dep.Version = locallyInstalled.Version
-				}
-			}
-			if dep.Name == "docker" {
-				locallyInstalled := checkDocker()
-				if locallyInstalled.Installed {
-					dep.Installed = true
-					dep.Version = locallyInstalled.Version
-				}
-			}
-			if dep.Name == "upx" {
-				locallyInstalled := checkUPX()
-				if locallyInstalled.Installed {
-					dep.Installed = true
-					dep.Version = locallyInstalled.Version
-				}
+			checker := checkerFunctions[dep.Name]
+			if checker != nil {
+				checkLocallyInstalled(checker, dep)
 			}
 			if dep.Name == "nsis" {
 				locallyInstalled := checkNSIS()

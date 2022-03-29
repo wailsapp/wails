@@ -66,6 +66,7 @@ type Options struct {
 	GoSDKPath           string
 	WindowsFlags        string
 	CGOEnabled          string
+	CGOLDFlags          string
 	OutputFile          string
 }
 
@@ -409,19 +410,20 @@ func installIDEFiles(o ideOptions) error {
 	}
 
 	binaryName := filepath.Base(o.options.TargetDir)
-	if runtime.GOOS == "windows" {
-		// yay windows
+	o.options.WindowsFlags = ""
+	o.options.CGOEnabled = "1"
+
+	switch runtime.GOOS {
+	case "windows":
 		binaryName += ".exe"
+		o.options.WindowsFlags = " -H windowsgui"
+		o.options.CGOEnabled = "0"
+	case "darwin":
+		o.options.CGOLDFlags = "-framework UniformTypeIdentifiers"
 	}
 
 	o.options.PathToDesktopBinary = filepath.ToSlash(filepath.Join("build", "bin", binaryName))
 
-	o.options.WindowsFlags = ""
-	o.options.CGOEnabled = "1"
-	if runtime.GOOS == "windows" {
-		o.options.WindowsFlags = " -H windowsgui"
-		o.options.CGOEnabled = "0"
-	}
 	err = installer.Extract(o.targetDir, o.options)
 	if err != nil {
 		return err

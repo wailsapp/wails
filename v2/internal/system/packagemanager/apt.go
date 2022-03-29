@@ -4,6 +4,9 @@
 package packagemanager
 
 import (
+	"bytes"
+	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 
@@ -62,8 +65,13 @@ func (a *Apt) PackageInstalled(pkg *Package) (bool, error) {
 	if pkg.SystemPackage == false {
 		return false, nil
 	}
-	stdout, _, err := shell.RunCommand(".", "apt", "-qq", "list", pkg.Name)
-	return strings.Contains(stdout, "[installed]"), err
+	cmd := exec.Command("apt", "-qq", "list", pkg.Name)
+	var stdo, stde bytes.Buffer
+	cmd.Stdout = &stdo
+	cmd.Stderr = &stde
+	cmd.Env = append(os.Environ(), "LC_ALL=en_US.utf8")
+	err := cmd.Run()
+	return strings.Contains(stdo.String(), "[installed]"), err
 }
 
 // PackageAvailable tests if the given package is available for installation

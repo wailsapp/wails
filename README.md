@@ -52,27 +52,16 @@
 - [4. Features](#nav-4)
 - [5. Sponsors](#nav-5)
 - [6. Installation](#nav-6)
-  - [6.1 MacOS](#nav-6-1)
-  - [6.2 Linux](#nav-6-2)
-    - [6.2.1 Debian/Ubuntu](#nav-6-2-1)
-    - [6.2.2 Arch Linux / ArchLabs / Ctlos Linux](#nav-6-2-2)
-    - [6.2.3 Centos](#nav-6-2-3)
-    - [6.2.4 Fedora](#nav-6-2-4)
-    - [6.2.5 VoidLinux & VoidLinux-musl](#nav-6-2-5)
-    - [6.2.6 Gentoo](#nav-6-2-6)
-  - [6.3 Windows](#nav-6-3)
-- [7. Usage](#nav-7)
-  - [7.1 Next Steps](#nav-7-1)
-- [8. FAQ](#nav-8)
-- [9. Contributors](#nav-9)
-- [10. Special Mentions](#nav-10)
-- [12. Special Thanks](#nav-11)
+- [7. FAQ](#nav-8)
+- [8. Contributors](#nav-9)
+- [9. Special Mentions](#nav-10)
+- [10. Special Thanks](#nav-11)
 
 </details>
 
 <span id="nav-3"></span>
 
-## Introductions
+## Introduction
 
 The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different
 approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to
@@ -97,14 +86,16 @@ The legacy v1 docs can be found at [https://wails.app](https://wails.app).
 ## Features
 
 - Use standard Go for the backend
-- Use any frontend technology to build your UI
-- Quickly create Vue, Vuetify or React frontends for your Go programs
-- Expose Go methods/functions to the frontend via a single bind command
-- Uses native rendering engines - no embedded browser
-- Shared events system
-- Native file dialogs
-- Powerful cli tool
+- Use any frontend technology you are already familiar with to build your UI
+- Quickly create rich frontends for your Go programs using pre-built templates
+- Easily call Go methods from Javascript
+- Auto-generated Typescript definitions for your Go structs and methods
+- Native Dialogs & Menus
+- Supports modern translucency and "frosted window" effects
+- Unified eventing system between Go and Javascript
+- Powerful cli tool to quickly generate and build your projects
 - Multiplatform
+- Uses native rendering engines - *no embedded browser*!
 
 <span id="nav-5"></span>
 
@@ -206,102 +197,15 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/GargantuaX" style="width:45px">
   <img src="https://github.com/GargantuaX.png?size=45" width="45"/>
 </a>
+<a href="https://github.com/brodyover" style="width:45px">
+  <img src="https://github.com/brodyover.png?size=45" width="45"/>
+</a>
 
 <span id="nav-6"></span>
 
 ## Installation
 
-Wails uses cgo to bind to the native rendering engines so a number of platform dependent libraries are needed as well as
-an installation of Go. The basic requirements are:
-
-- Go 1.16
-- npm
-
-<span id="nav-6-1"></span>
-
-### MacOS
-
-Make sure you have the xcode command line tools installed. This can be done by running:
-
-`xcode-select --install`
-
-<span id="nav-6-2"></span>
-
-### Linux
-
-<span id="nav-6-2-1"></span>
-
-#### Debian/Ubuntu
-
-`sudo apt install libgtk-3-dev libwebkit2gtk-4.0-dev`
-
-_Debian: 8, 9, 10_
-
-_Ubuntu: 16.04, 18.04, 19.04_
-
-_Also succesfully tested on: Zorin 15, Parrot 4.7, Linuxmint 19, Elementary 5, Kali, Neon_, Pop!\_OS
-
-<span id="nav-6-2-2"></span>
-
-#### Arch Linux / ArchLabs / Ctlos Linux
-
-`sudo pacman -S webkit2gtk gtk3`
-
-_Also succesfully test on: Manjaro & ArcoLinux_
-
-<span id="nav-6-2-3"></span>
-
-#### Centos
-
-`sudo yum install webkitgtk3-devel gtk3-devel`
-
-_CentOS 6, 7_
-
-<span id="nav-6-2-4"></span>
-
-#### Fedora
-
-`sudo yum install webkit2gtk3-devel gtk3-devel`
-
-_Fedora 29, 30_
-
-<span id="nav-6-2-5"></span>
-
-#### VoidLinux & VoidLinux-musl
-
-`xbps-install gtk+3-devel webkit2gtk-devel`
-
-<span id="nav-6-2-6"></span>
-
-#### Gentoo
-
-`sudo emerge gtk+:3 webkit-gtk`
-
-<span id="nav-6-3"></span>
-
-### Windows
-
-Windows requires gcc and related tooling. The recommended download is
-from [http://tdm-gcc.tdragon.net/download](http://tdm-gcc.tdragon.net/download). Once this is installed, you are good to
-go.
-
-<span id="nav-7"></span>
-
-## Usage
-
-**Ensure Go modules are enabled: GO111MODULE=on and go/bin is in your PATH variable.**
-
-Installation is as simple as running the following command:
-
-```
-go get -u github.com/wailsapp/wails/cmd/wails
-```
-
-<span id="nav-7-1"></span>
-
-### Next Steps
-
-It is recommended at this stage to read the comprehensive documentation at [https://wails.app](https://wails.app).
+The installation instructions are on the [official website](https://wails.io/docs/gettingstarted/installation).
 
 <span id="nav-8"></span>
 

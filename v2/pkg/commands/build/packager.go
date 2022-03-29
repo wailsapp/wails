@@ -195,14 +195,13 @@ func generateManifest(options *Options) error {
 }
 
 func generateIcoFile(options *Options) error {
+	content, err := buildassets.ReadFile(options.ProjectData, "appicon.png")
+	if err != nil {
+		return err
+	}
 	// Check ico file exists already
 	icoFile := buildassets.GetLocalPath(options.ProjectData, "windows/icon.ico")
 	if !fs.FileExists(icoFile) {
-		content, err := buildassets.ReadFile(options.ProjectData, "appicon.png")
-		if err != nil {
-			return err
-		}
-
 		if dir := filepath.Dir(icoFile); !fs.DirExists(dir) {
 			if err := fs.MkDirs(dir, 0755); err != nil {
 				return err
@@ -287,6 +286,7 @@ func compileResources(options *Options) error {
 	archs := map[string]winres.Arch{
 		"amd64": winres.ArchAMD64,
 		"arm64": winres.ArchARM64,
+		"386":   winres.ArchI386,
 	}
 	targetArch, supported := archs[options.Arch]
 	if !supported {

@@ -67,6 +67,7 @@ void ExecJS(void* inctx, const char *script) {
     NSString *nsscript = safeInit(script);
     ON_MAIN_THREAD(
        [ctx ExecJS:nsscript];
+       [nsscript release];
     );
 }
 
@@ -193,6 +194,7 @@ void UnMaximise(void* inctx) {
 void Quit(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     [NSApp stop:ctx];
+    [NSApp abortModal];
 }
 
 void Hide(void *inctx) {
