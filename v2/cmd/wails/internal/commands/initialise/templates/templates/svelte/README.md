@@ -2,8 +2,8 @@
 
 ## About
 
-This is a basic Svelte template, using rollup to bundle the assets into a single JS file.
-Rollup is configured to do the following:
+This is a basic Svelte template, using rollup to bundle the assets into a single JS file. Rollup is configured to do the
+following:
 
 - Convert imported images to base64 strings
 - Convert `url()` in `@font-face` declarations to base64 strings
@@ -11,6 +11,9 @@ Rollup is configured to do the following:
 - Copy `index.html` from `frontend/src/` to `frontend/dist/`
 
 Clicking the button will call the backend.
+
+You can configure the project by editing `wails.json`. More information about the project settings can be found
+here: https://wails.io/docs/reference/project-config
 
 ## Live Development
 

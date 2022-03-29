@@ -3,7 +3,6 @@ package build
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/html"
@@ -27,7 +26,7 @@ func (d *DesktopBuilder) BuildAssets(options *Options) error {
 	// Check assets directory exists
 	if !fs.DirExists(options.ProjectData.BuildDir) {
 		// Path to default assets
-		err := buildassets.Install(options.ProjectData.Path, options.ProjectData.Name)
+		err := buildassets.Install(options.ProjectData.Path)
 		if err != nil {
 			return err
 		}
@@ -81,7 +80,7 @@ func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, options *Opti
 	d.addFileToDelete(assetsFile)
 
 	// Process Icon
-	err = d.processApplicationIcon(assetDir)
+	err = d.processApplicationIcon(assetDir, options)
 	if err != nil {
 		return err
 	}
@@ -105,15 +104,10 @@ func (d *DesktopBuilder) BuildBaseAssets(assets *html.AssetBundle, options *Opti
 
 // processApplicationIcon will copy a default icon if one doesn't exist, then, if
 // needed, will compile the icon
-func (d *DesktopBuilder) processApplicationIcon(assetDir string) error {
-
-	// Copy default icon if one doesn't exist
-	iconFile := filepath.Join(d.projectData.BuildDir, "appicon.png")
-	if !fs.FileExists(iconFile) {
-		err := buildassets.RegenerateAppIcon(iconFile)
-		if err != nil {
-			return err
-		}
+func (d *DesktopBuilder) processApplicationIcon(assetDir string, options *Options) error {
+	iconFile, err := buildassets.ReadFile(options.ProjectData, "appicon.png")
+	if err != nil {
+		return err
 	}
 
 	// Compile Icon

@@ -13,6 +13,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
+	pkgLog "github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -50,9 +51,17 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	// Merge default options
 	options.MergeDefaults(appoptions)
 
+	debug := IsDebug()
+	ctx = context.WithValue(ctx, "debug", debug)
+
 	// Set up logger
 	myLogger := logger.New(appoptions.Logger)
 	myLogger.SetLogLevel(appoptions.LogLevel)
+
+	if !IsDebug() {
+		myLogger.SetLogLevel(pkgLog.ERROR)
+	}
+	ctx = context.WithValue(ctx, "logger", myLogger)
 
 	// Preflight Checks
 	err = PreflightChecks(appoptions, myLogger)
@@ -78,11 +87,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	ctx = context.WithValue(ctx, "events", eventHandler)
 	messageDispatcher := dispatcher.NewDispatcher(myLogger, appBindings, eventHandler)
 
-	debug := IsDebug()
-	ctx = context.WithValue(ctx, "debug", debug)
 	// Attach logger to context
 	if debug {
-		ctx = context.WithValue(ctx, "logger", myLogger)
 		ctx = context.WithValue(ctx, "buildtype", "debug")
 	} else {
 		ctx = context.WithValue(ctx, "buildtype", "production")

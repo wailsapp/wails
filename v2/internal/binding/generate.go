@@ -129,6 +129,7 @@ func (b *Bindings) GenerateBackendTS(targetfile string) error {
 	store := b.db.store
 	var output bytes.Buffer
 
+	output.WriteString("import * as models from './models';\n\n")
 	output.WriteString("export interface go {\n")
 
 	var sortedPackageNames slicer.StringSlicer
@@ -221,7 +222,7 @@ func goTypeToJSDocType(input string) string {
 		return "Array<" + arrayType + ">"
 	default:
 		if strings.ContainsRune(input, '.') {
-			return strings.Split(input, ".")[1]
+			return "models." + strings.Split(input, ".")[1]
 		}
 		return "any"
 	}

@@ -10,7 +10,6 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -133,20 +132,14 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
+		self := os.Args[0]
 		if flags.tags != "" {
-			err = runCommand(cwd, true, "wails", "generate", "module", "-tags", flags.tags)
+			err = runCommand(cwd, true, self, "generate", "module", "-tags", flags.tags)
 		} else {
-			err = runCommand(cwd, true, "wails", "generate", "module")
+			err = runCommand(cwd, true, self, "generate", "module")
 		}
 		if err != nil {
 			return err
-		}
-
-		// frontend:dev:watcher command.
-		if command := projectConfig.DevWatcherCommand; command != "" {
-			var devCommandWaitGroup sync.WaitGroup
-			closer := runFrontendDevWatcherCommand(cwd, command, &devCommandWaitGroup)
-			defer closer(&devCommandWaitGroup)
 		}
 
 		buildOptions := generateBuildOptions(flags)
@@ -168,6 +161,13 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 		if newProcess != nil {
 			debugBinaryProcess = newProcess
+		}
+
+		// frontend:dev:watcher command.
+		if command := projectConfig.DevWatcherCommand; command != "" {
+			var devCommandWaitGroup sync.WaitGroup
+			closer := runFrontendDevWatcherCommand(cwd, command, &devCommandWaitGroup)
+			defer closer(&devCommandWaitGroup)
 		}
 
 		// open browser
@@ -247,6 +247,7 @@ func runCommand(dir string, exitOnError bool, command string, args ...string) er
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		println(string(output))
+		println(err.Error())
 		if exitOnError {
 			os.Exit(1)
 		}
@@ -379,6 +380,8 @@ func runFrontendDevWatcherCommand(cwd string, devCommand string, wg *sync.WaitGr
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	cmd.Dir = dir
+
+	setParentGID(cmd)
 	go func(ctx context.Context, devCommand string, cwd string, wg *sync.WaitGroup) {
 		err := cmd.Run()
 		if err != nil {
@@ -391,23 +394,9 @@ func runFrontendDevWatcherCommand(cwd string, devCommand string, wg *sync.WaitGr
 	}(ctx, devCommand, cwd, wg)
 
 	return func(wg *sync.WaitGroup) {
-		if runtime.GOOS == "windows" {
-			// Credit: https://stackoverflow.com/a/44551450
-			// For whatever reason, killing an npm script on windows just doesn't exit properly with cancel
-			if cmd != nil && cmd.Process != nil {
-				kill := exec.Command("TASKKILL", "/T", "/F", "/PID", strconv.Itoa(cmd.Process.Pid))
-				kill.Stderr = os.Stderr
-				kill.Stdout = os.Stdout
-				err := kill.Run()
-				if err != nil {
-					if err.Error() != "exit status 1" {
-						LogRed("Error from '%s': %s", devCommand, err.Error())
-					}
-				}
-			}
-		} else {
-			cancel()
-		}
+		killProc(cmd, devCommand)
+		LogGreen("Dev command killed!")
+		cancel()
 		wg.Wait()
 	}
 }
@@ -428,6 +417,10 @@ func initialiseWatcher(cwd string, logFatal func(string, ...interface{})) (*fsno
 	// Setup a watcher for non-node_modules directories
 	dirs.Each(func(dir string) {
 		if strings.Contains(dir, "node_modules") {
+			return
+		}
+		// Ignore build directory
+		if strings.Contains(dir, ".git") {
 			return
 		}
 		// Ignore build directory
@@ -532,6 +525,8 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			if exitCode == 0 {
 				quit = true
 			}
+		case err := <-watcher.Errors:
+			LogDarkYellow(err.Error())
 		case item := <-watcher.Events:
 			// Check for file writes
 			if item.Op&fsnotify.Write == fsnotify.Write {

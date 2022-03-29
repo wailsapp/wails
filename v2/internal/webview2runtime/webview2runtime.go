@@ -14,9 +14,6 @@ import (
 	"unsafe"
 )
 
-//go:embed MicrosoftEdgeWebview2Setup.exe
-var setupexe []byte
-
 // Info contains all the information about an installation of the webview2 runtime.
 type Info struct {
 	Location        string
@@ -169,10 +166,4 @@ func MessageBox(caption string, title string, flags uint) (int, error) {
 func OpenInstallerDownloadWebpage() error {
 	cmd := exec.Command("rundll32", "url.dll,FileProtocolHandler", "https://developer.microsoft.com/en-us/microsoft-edge/webview2/")
 	return cmd.Run()
-}
-
-// WriteInstaller writes the installer exe file to the given path
-func WriteInstaller(targetPath string) (string, error) {
-	installer := filepath.Join(targetPath, `MicrosoftEdgeWebview2Setup.exe`)
-	return installer, os.WriteFile(installer, setupexe, 0755)
 }

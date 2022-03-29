@@ -11,7 +11,24 @@
       "args": [
         "build",
         "-tags",
-        "dev",
+        "production,desktop",
+        "-gcflags",
+        "all=-N -l",
+        "-o",
+        "{{.PathToDesktopBinary}}"
+      ]
+    },
+    {
+      "label": "build debug",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "command": "go",
+      "args": [
+        "build",
+        "-tags",
+        "production,desktop,debug",
         "-gcflags",
         "all=-N -l",
         "-o",
