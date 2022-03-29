@@ -3,6 +3,12 @@
 
 package doctor
 
+import (
+	"fmt"
+	"runtime/debug"
+	"text/tabwriter"
+)
+
 func printBuildSettings(w *tabwriter.Writer) {
 	if buildInfo, _ := debug.ReadBuildInfo(); buildInfo != nil {
 		buildSettingToName := map[string]string{
