@@ -66,6 +66,9 @@ func main() {
                 Icon:    icon,
             },
         },
+        Linux: &linux.Options{
+            Icon: icon,
+        },
     })
     if err != nil {
         log.Fatal(err)
@@ -328,6 +331,14 @@ Type: \*mac.Options
 
 This defines [Mac specific options](#mac-specific-options).
 
+### Linux
+
+Name: Linux
+
+Type: \*linux.Options
+
+This defines [Linux specific options](#linux-specific-options).
+
 ## Windows Specific Options
 
 ### WebviewIsTransparent
@@ -524,3 +535,20 @@ When clicked, that will open an about message box:
 </div>
 <br/>
 
+## Linux Specific Options
+
+### Icon
+
+Name: Icon
+
+Type: []byte
+
+Sets up the icon representing the window. This icon is used when the window is minimized (also known as iconified).
+Some window managers or desktop environments may also place it in the window frame, or display it in other contexts.
+On others, the icon is not used at all, so your mileage may vary.
+
+NOTE: Gnome on Wayland at least does not display this icon. To have a application icon there, a `.desktop` file has to be used.
+On KDE it should work.
+
+The icon should be provided in whatever size it was naturally drawn; that is, don’t scale the image before passing it.
+Scaling is postponed until the last minute, when the desired final size is known, to allow best quality.
