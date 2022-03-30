@@ -1,4 +1,36 @@
 {
+  "homepage.Features.Title1": {
+    "message": "功能丰富"
+  },
+  "homepage.Features.Description1": {
+    "message": "使用菜单、对话框等原生 UI 元素构建全面的跨平台应用程序。"
+  },
+  "homepage.Features.Title2": {
+    "message": "技术熟悉"
+  },
+  "homepage.Features.Description2": {
+    "message": "使用您熟悉的技术来构建出色的应用程序。"
+  },
+  "homepage.Features.Title3": {
+    "message": "方便快捷"
+  },
+  "homepage.Features.Description3": {
+    "message": "使用Wails CLI快速生成、构建和打包项目。"
+  },
+  "homepage.Tagline": {
+    "message": "使用 Go + HTML + CSS + JS 构建漂亮的跨平台桌面应用"
+  },
+  "homepage.ButtonText": {
+    "message": "快速入门"
+  },
+  "theme.ErrorPageContent.title": {
+    "message": "页面已崩溃。",
+    "description": "The title of the fallback page when the page crashed"
+  },
+  "theme.ErrorPageContent.tryAgain": {
+    "message": "重试",
+    "description": "The label of the button to try again when the page crashed"
+  },
   "theme.NotFound.title": {
     "message": "找不到页面",
     "description": "The title of the 404 page"
@@ -15,12 +47,16 @@
     "message": "关闭",
     "description": "The ARIA label for close button of announcement bar"
   },
+  "theme.BackToTopButton.buttonAriaLabel": {
+    "message": "回到顶部",
+    "description": "The ARIA label for the back to top button"
+  },
   "theme.blog.archive.title": {
-    "message": "Archive",
+    "message": "历史博文",
     "description": "The page & hero title of the blog archive page"
   },
   "theme.blog.archive.description": {
-    "message": "Archive",
+    "message": "历史博文",
     "description": "The page & hero description of the blog archive page"
   },
   "theme.blog.paginator.navAriaLabel": {
@@ -38,6 +74,10 @@
   "theme.blog.post.readingTime.plurals": {
     "message": "{readingTime} 分钟阅读",
     "description": "Pluralized label for \"{readingTime} min read\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.blog.post.readMoreLabel": {
+    "message": "阅读 {title} 的全文",
+    "description": "The ARIA label for the link to full blog posts from excerpts"
   },
   "theme.blog.post.readMore": {
     "message": "阅读更多",
@@ -83,6 +123,22 @@
     "message": "复制",
     "description": "The copy button label on code blocks"
   },
+  "theme.colorToggle.ariaLabel": {
+    "message": "切换浅色/暗黑模式（当前为{mode}）",
+    "description": "The ARIA label for the navbar color mode toggle"
+  },
+  "theme.colorToggle.ariaLabel.mode.dark": {
+    "message": "暗黑模式",
+    "description": "The name for the dark color mode"
+  },
+  "theme.colorToggle.ariaLabel.mode.light": {
+    "message": "浅色模式",
+    "description": "The name for the light color mode"
+  },
+  "theme.docs.DocCard.categoryDescription": {
+    "message": "{count} 个项目",
+    "description": "The default description for a category card in the generated index about how many items this category includes"
+  },
   "theme.docs.sidebar.expandButtonTitle": {
     "message": "展开侧边栏",
     "description": "The ARIA label and title attribute for expand button of doc sidebar"
@@ -111,13 +167,20 @@
     "message": "收起侧边栏",
     "description": "The title attribute for collapse button of doc sidebar"
   },
+  "theme.DocSidebarItem.toggleCollapsedCategoryAriaLabel": {
+    "message": "打开/收起侧边栏菜单「{label}」",
+    "description": "The ARIA label to toggle the collapsible sidebar category"
+  },
   "theme.docs.tagDocListPageTitle.nDocsTagged": {
     "message": "{count} 篇文档带有标签",
     "description": "Pluralized label for \"{count} docs tagged\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
   },
   "theme.docs.tagDocListPageTitle": {
-    "message": "{nDocsTagged} 含有标签「{tagName}」",
+    "message": "{nDocsTagged} 篇带有标签「{tagName}」",
     "description": "The title of the page for a docs tag"
+  },
+  "theme.docs.versionBadge.label": {
+    "message": "版本：{versionLabel}"
   },
   "theme.docs.versions.unreleasedVersionLabel": {
     "message": "此为 {siteTitle} {versionLabel} 版尚未发行的文档。",
@@ -175,48 +238,51 @@
     "message": "本页总览",
     "description": "The label used by the button on the collapsible TOC component"
   },
+  "theme.navbar.mobileLanguageDropdown.label": {
+    "message": "选择语言",
+    "description": "The label for the mobile language switcher dropdown"
+  },
+  "theme.SearchBar.seeAll": {
+    "message": "查看全部 {count} 个结果"
+  },
+  "theme.SearchBar.label": {
+    "message": "搜索",
+    "description": "The ARIA label and placeholder for search button"
+  },
+  "theme.SearchPage.documentsFound.plurals": {
+    "message": "找到 {count} 份文件",
+    "description": "Pluralized label for \"{count} documents found\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.SearchPage.existingResultsTitle": {
+    "message": "「{query}」的搜索结果",
+    "description": "The search page title for non-empty query"
+  },
+  "theme.SearchPage.emptyResultsTitle": {
+    "message": "在文档中搜索",
+    "description": "The search page title for empty query"
+  },
+  "theme.SearchPage.inputPlaceholder": {
+    "message": "在此输入搜索字词",
+    "description": "The placeholder for search page input"
+  },
+  "theme.SearchPage.inputLabel": {
+    "message": "搜索",
+    "description": "The ARIA label for search page input"
+  },
+  "theme.SearchPage.algoliaLabel": {
+    "message": "通过 Algolia 搜索",
+    "description": "The ARIA label for Algolia mention"
+  },
+  "theme.SearchPage.noResultsText": {
+    "message": "未找到任何结果",
+    "description": "The paragraph for empty search result"
+  },
+  "theme.SearchPage.fetchingNewResults": {
+    "message": "正在获取新的搜索结果...",
+    "description": "The paragraph for fetching new search results"
+  },
   "theme.tags.tagsPageTitle": {
     "message": "标签",
     "description": "The title of the tag list page"
-  },
-  "homepage.Tagline": {
-    "message": "使用 Go + HTML + CSS + JS 构建漂亮的跨平台桌面应用"
-  },
-  "homepage.ButtonText": {
-    "message": "快速入门"
-  },
-  "homepage.Features.Title1": {
-    "message": "功能丰富"
-  },
-  "homepage.Features.Title2": {
-    "message": "技术熟悉"
-  },
-  "homepage.Features.Title3": {
-    "message": "方便快捷"
-  },
-  "homepage.Features.Description1": {
-    "message": "使用菜单、对话框等原生 UI 元素构建全面的跨平台应用程序。"
-  },
-  "homepage.Features.Description2": {
-    "message": "使用您已经知道的技术来构建出色的应用程序。"
-  },
-  "homepage.Features.Description3": {
-    "message": "使用Wails CLI快速生成、构建和打包项目。"
-  },
-  "theme.ErrorPageContent.title": {
-    "message": "页面已崩溃。",
-    "description": "The title of the fallback page when the page crashed"
-  },
-  "theme.ErrorPageContent.tryAgain": {
-    "message": "重试",
-    "description": "The label of the button to try again when the page crashed"
-  },
-  "theme.BackToTopButton.buttonAriaLabel": {
-    "message": "回到顶部",
-    "description": "The ARIA label for the back to top button"
-  },
-  "theme.DocSidebarItem.toggleCollapsedCategoryAriaLabel": {
-    "message": "打开/收起侧边栏菜单「{label}」",
-    "description": "The ARIA label to toggle the collapsible sidebar category"
   }
 }
