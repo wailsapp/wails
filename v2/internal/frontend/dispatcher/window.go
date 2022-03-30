@@ -3,7 +3,6 @@ package dispatcher
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -26,7 +25,6 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 
 	switch message[1] {
 	case 'A':
-		fmt.Println(message[2:])
 		switch message[2:] {
 		case "SDT":
 			go sender.WindowSetSystemDefaultTheme()
