@@ -551,6 +551,19 @@ void DisableContextMenu(void* webview) {
 	g_signal_connect(WEBKIT_WEB_VIEW(webview), "context-menu", G_CALLBACK(disableContextMenu), NULL);
 }
 
+void SetWindowIcon(GtkWindow* window, const guchar* buf, gsize len) {
+	GdkPixbufLoader* loader = gdk_pixbuf_loader_new();
+	if (!loader) {
+		return;
+	}
+	if (gdk_pixbuf_loader_write(loader, buf, len, NULL) && gdk_pixbuf_loader_close(loader, NULL)) {
+		GdkPixbuf* pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+		if (pixbuf) {
+			gtk_window_set_icon(window, pixbuf);
+		}
+	}
+	g_object_unref(loader);
+}
 
 */
 import "C"
@@ -637,6 +650,11 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	result.SetTitle(appoptions.Title)
 	result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
 	result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
+	if appoptions.Linux != nil {
+		if appoptions.Linux.Icon != nil {
+			result.SetWindowIcon(appoptions.Linux.Icon)
+		}
+	}
 
 	// Menu
 	result.SetApplicationMenu(appoptions.Menu)
@@ -761,6 +779,13 @@ func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
 	}
 	C.ExecuteOnMainThread(C.setRGBA, C.gpointer(&data))
 
+}
+
+func (w *Window) SetWindowIcon(icon []byte) {
+	if len(icon) == 0 {
+		return
+	}
+	C.SetWindowIcon(w.asGTKWindow(), (*C.guchar)(&icon[0]), (C.gsize)(len(icon)))
 }
 
 func (w *Window) Run() {
