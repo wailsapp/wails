@@ -184,7 +184,9 @@ extern void processURLRequest(void *request);
 gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void* data)
 {
    	processMessage("Q");
-    return FALSE;
+    // since we handle the close in processMessage tell GTK to not invoke additional handlers - see:
+    // https://docs.gtk.org/gtk3/signal.Widget.delete-event.html
+    return TRUE;
 }
 
 GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowOnClose) {
