@@ -108,19 +108,25 @@ func (f *Frontend) WindowReload() {
 func (f *Frontend) WindowSetSystemDefaultTheme() {
 	runtime.LockOSThread()
 	f.mainWindow.frontendOptions.Windows.Theme = windows.SystemDefault
-	f.mainWindow.updateTheme()
+	f.mainWindow.Invoke(func() {
+		f.mainWindow.updateTheme()
+	})
 }
 
 func (f *Frontend) WindowSetLightTheme() {
 	runtime.LockOSThread()
 	f.mainWindow.frontendOptions.Windows.Theme = windows.Light
-	f.mainWindow.updateTheme()
+	f.mainWindow.Invoke(func() {
+		f.mainWindow.updateTheme()
+	})
 }
 
 func (f *Frontend) WindowSetDarkTheme() {
 	runtime.LockOSThread()
 	f.mainWindow.frontendOptions.Windows.Theme = windows.Dark
-	f.mainWindow.updateTheme()
+	f.mainWindow.Invoke(func() {
+		f.mainWindow.updateTheme()
+	})
 }
 
 func (f *Frontend) Run(ctx context.Context) error {

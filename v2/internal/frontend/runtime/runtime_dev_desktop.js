@@ -235,6 +235,9 @@
     WindowMaximise: () => WindowMaximise,
     WindowMinimise: () => WindowMinimise,
     WindowReload: () => WindowReload,
+    WindowSetSystemDefaultTheme: () => WindowSetSystemDefaultTheme,
+    WindowSetLightTheme: () => WindowSetLightTheme,
+    WindowSetDarkTheme: () => WindowSetDarkTheme,
     WindowSetMaxSize: () => WindowSetMaxSize,
     WindowSetMinSize: () => WindowSetMinSize,
     WindowSetPosition: () => WindowSetPosition,
@@ -249,6 +252,15 @@
   });
   function WindowReload() {
     window.location.reload();
+  }
+  function WindowSetSystemDefaultTheme() {
+    window.WailsInvoke('WASDT');
+  }
+  function WindowSetLightTheme() {
+    window.WailsInvoke('WALT');
+  }
+  function WindowSetDarkTheme() {
+    window.WailsInvoke('WADT');
   }
   function WindowCenter() {
     window.WailsInvoke("Wc");
