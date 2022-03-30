@@ -23,6 +23,8 @@ type Project struct {
 	// Commands used in `wails dev`
 	DevCommand        string `json:"frontend:dev"`
 	DevWatcherCommand string `json:"frontend:dev:watcher"`
+	// The url of the external wails dev server. If this is set, this server is used for the frontend. Default ""
+	FrontendDevServerURL string `json:"frontend:dev:serverUrl"`
 
 	// Directory to generate the API Module
 	WailsJSDir string `json:"wailsjsdir"`
@@ -71,8 +73,8 @@ type Project struct {
 	// The debounce time for hot-reload of the built-in dev server. Default 100
 	DebounceMS int `json:"debounceMS"`
 
-	// The url to use to server assets. Default "https://localhost:34115"
-	DevServerURL string `json:"devserverurl"`
+	// The address to bind the wails dev server to. Default "localhost:34115"
+	DevServer string `json:"devServer"`
 
 	// Arguments that are forwared to the application in dev mode
 	AppArgs string `json:"appargs"`
@@ -160,6 +162,10 @@ func Load(projectPath string) (*Project, error) {
 	if result.Info.Comments == nil {
 		v := "Built using Wails (https://wails.app)"
 		result.Info.Comments = &v
+	}
+
+	if result.DevServer == "" {
+		result.DevServer = "localhost:34115"
 	}
 
 	// Return our project data

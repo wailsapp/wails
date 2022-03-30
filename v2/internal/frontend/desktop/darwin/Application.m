@@ -330,7 +330,7 @@ void AppendSeparator(void* inMenu) {
 
 
 
-void Run(void *inctx) {
+void Run(void *inctx, const char* url) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSApplication *app = [NSApplication sharedApplication];
     AppDelegate* delegate = [AppDelegate new];
@@ -341,7 +341,10 @@ void Run(void *inctx) {
     delegate.startHidden = ctx.startHidden;
     delegate.startFullscreen = ctx.startFullscreen;
 
-    [ctx loadRequest:@"wails://wails/"];
+    NSString *_url = safeInit(url);
+    [ctx loadRequest:_url];
+    [_url release];
+
     [app setMainMenu:ctx.applicationMenu];
     [app run];
     [ctx release];

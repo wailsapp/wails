@@ -14,12 +14,13 @@ The project config resides in the `wails.json` file in the project directory. Th
 	"frontend:install": "[The command to install node dependencies, run in the frontend directory - often `npm install`]",
 	"frontend:build": "[The command to build the assets, run in the frontend directory - often `npm run build`]",
 	"frontend:dev": "[This command is the dev equivalent of frontend:build. If not specified falls back to frontend:build]",
-	"frontend:dev:watcher": "[This command is run in a separate process on `wails dev`. Useful for 3rd party watchers]",
+	"frontend:dev:watcher": "[This command is run in a separate process on `wails dev`. Useful for 3rd party watchers or starting 3d party dev servers]",
+	"frontend:dev:serverUrl": "[URL to a 3rd party dev server to be used to serve assets, EG Vite",
     "wailsjsdir": "[Relative path to the directory that the auto-generated JS modules will be created]",
 	"version": "[Project config version]",
 	"outputfilename": "[The name of the binary]",
 	"debounceMS": 100, // The default time the dev server waits to reload when it detects a vhange in assets
-	"devserverurl": "[URL to the dev server serving local assets. Default: http://localhost:34115]",
+	"devServer": "[Address to bind the wails dev sever to. Default: http://localhost:34115]",
 	"appargs": "[Arguments passed to the application in shell style when in dev mode]",
 	"runNonNativeBuildHooks": false, // Defines if build hooks should be run though they are defined for an OS other than the host OS.
 	"postBuildHooks": {
@@ -40,5 +41,5 @@ The project config resides in the `wails.json` file in the project directory. Th
 
 This file is read by the Wails CLI when running `wails build` or `wails dev`.
 
-The `assetdir`, `reloaddirs`, `wailsjsdir`, `debounceMS` and `devserverurl` flags in `wails build/dev` will update the project config
+The `assetdir`, `reloaddirs`, `wailsjsdir`, `debounceMS`, `devserver` and `frontenddevserverurl` flags in `wails build/dev` will update the project config
 and thus become defaults for subsequent runs.

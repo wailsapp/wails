@@ -23,7 +23,7 @@ func (r RequestRespone) String() string {
 	return fmt.Sprintf("Body: '%s', StatusCode: %d", string(r.Body), r.StatusCode)
 }
 
-func ProcessRequest(uri string, assets *assetserver.DesktopAssetServer, expectedScheme string, expectedHosts ...string) (RequestRespone, error) {
+func ProcessRequest(uri string, assets *assetserver.AssetServer, expectedScheme string, expectedHosts ...string) (RequestRespone, error) {
 	// Translate URI to file
 	file, err := translateUriToFile(uri, expectedScheme, expectedHosts...)
 	if err != nil {

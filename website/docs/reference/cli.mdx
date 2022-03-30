@@ -169,11 +169,12 @@ Your system is ready for Wails development!
 |  -noreload           | Disable automatic reload when assets change | |
 |  -v                  | Verbosity level (0 - silent, 1 - standard, 2 - verbose)  | 1 |
 |  -wailsjsdir         | The directory to generate the generated Wails JS modules | Value in `wails.json` |
-|  -debounce         | The time to wait for reload after an asset change is detected  | 100 (milliseconds) |
-|  -devserverurl "url"         | Use 3rd party dev server url, EG Vite  | "http://localhost:34115" |
+|  -debounce           | The time to wait for reload after an asset change is detected  | 100 (milliseconds) |
+|  -devserver "host:port"       | The address to bind the wails dev server to | "localhost:34115" |
+|  -frontenddevserverurl "url"  | Use 3rd party dev server url to serve assets, EG Vite  | "" |
 |  -appargs "args"         | Arguments passed to the application in shell style  | |
 |  -platform "platform"    | Platform/Arch to target | `runtime.GOOS` |
-|  -save                   | Saves the given `assetdir`, `reloaddirs`, `wailsjsdir`, `debounce` and `devserverurl` flags in
+|  -save                   | Saves the given `assetdir`, `reloaddirs`, `wailsjsdir`, `debounce`, `devserver` and `frontenddevserverurl` flags in
                              `wails.json` to become the defaults for subsequent invocations. | |
 
 Example:
