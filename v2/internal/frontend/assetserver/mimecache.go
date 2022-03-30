@@ -18,7 +18,7 @@ var (
 	startComment    = []byte{0x3c, 0x21, 0x2d, 0x2d}
 	lenStartComment = len(startComment)
 	endComment      = []byte{0x2d, 0x2d, 0x3e}
-	lenComment      = len(endComment)
+	lenEndComment   = len(endComment)
 )
 
 func GetMimetype(filename string, data []byte) string {
@@ -71,7 +71,7 @@ func GetMimetype(filename string, data []byte) string {
 
 func getSvgStart(data []byte) int {
 	lenData := len(data)
-	if lenData > lenStartComment+lenComment {
+	if lenData > lenStartComment+lenEndComment {
 		var reader *bytes.Reader
 		pos := 0
 		if len(data) > 4 && data[0] == bomUTF8[0] && data[1] == bomUTF8[1] && data[2] == bomUTF8[2] {
@@ -94,8 +94,8 @@ func getSvgStart(data []byte) int {
 		startComment := bytes.Index(data, startComment)
 		if startComment > -1 && startComment >= pos {
 			endComment := bytes.Index(data[startComment+1:], endComment)
-			if endComment > -1 && endComment+lenComment+1 < lenData {
-				return endComment + lenComment + 1
+			if endComment > -1 && endComment+lenEndComment+1 < lenData {
+				return endComment + lenEndComment + 1
 			}
 		}
 	}
