@@ -74,7 +74,7 @@ func getSvgStart(data []byte) int {
 	if lenData > lenStartComment+lenEndComment {
 		var reader *bytes.Reader
 		pos := 0
-		if len(data) > 4 && data[0] == bomUTF8[0] && data[1] == bomUTF8[1] && data[2] == bomUTF8[2] {
+		if lenData > 4 && data[0] == bomUTF8[0] && data[1] == bomUTF8[1] && data[2] == bomUTF8[2] {
 			reader = bytes.NewReader(data[4:])
 		} else {
 			reader = bytes.NewReader(data)
