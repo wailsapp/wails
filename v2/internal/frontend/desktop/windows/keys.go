@@ -4,7 +4,7 @@
 package windows
 
 import (
-	"github.com/leaanthony/winc"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 	"strings"
 )
