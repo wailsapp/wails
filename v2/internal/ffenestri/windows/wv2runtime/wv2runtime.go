@@ -1,7 +1,7 @@
 package wv2runtime
 
 import (
-	"github.com/leaanthony/go-webview2/webviewloader"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webviewloader"
 )
 
 const MinimumRuntimeVersion string = "91.0.992.28"

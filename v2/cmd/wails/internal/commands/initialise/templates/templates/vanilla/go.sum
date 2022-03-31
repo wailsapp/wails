@@ -83,16 +83,12 @@ github.com/leaanthony/go-ansi-parser v1.0.1 h1:97v6c5kYppVsbScf4r/VZdXyQ21KQIfeQ
 github.com/leaanthony/go-ansi-parser v1.0.1/go.mod h1:7arTzgVI47srICYhvgUV4CGd063sGEeoSlych5yeSPM=
 github.com/leaanthony/go-common-file-dialog v1.0.3 h1:O0uGjKnWtdEADGrkg+TyAAbZylykMwwx/MNEXn9fp+Y=
 github.com/leaanthony/go-common-file-dialog v1.0.3/go.mod h1:TGhEc9eSJgRsupZ+iH1ZgAOnEo9zp05cRH2j08RPrF0=
-github.com/leaanthony/go-webview2 v0.0.0-20210928094513-a94a08b538bd h1:6m4zZ/esiByaDbzgdvDxjsOaIDgtuG1q2cyhjAi6uAg=
-github.com/leaanthony/go-webview2 v0.0.0-20210928094513-a94a08b538bd/go.mod h1:lS5ds4bruPk9d7lzdF/OH31Z0YCerI6MmHNFGsWoUnM=
 github.com/leaanthony/gosod v1.0.3/go.mod h1:BJ2J+oHsQIyIQpnLPjnqFGTMnOZXDbvWtRCSG7jGxs4=
 github.com/leaanthony/idgen v1.0.0/go.mod h1:4nBZnt8ml/f/ic/EVQuLxuj817RccT2fyrUaZFxrcVA=
 github.com/leaanthony/slicer v1.5.0 h1:aHYTN8xbCCLxJmkNKiLB6tgcMARl4eWmH9/F+S/0HtY=
 github.com/leaanthony/slicer v1.5.0/go.mod h1:FwrApmf8gOrpzEWM2J/9Lh79tyq8KTX5AzRtwV7m4AY=
 github.com/leaanthony/typescriptify-golang-structs v0.1.7 h1:yoznzWzyxkO/iWdlpq+aPcuJ5Y/hpjq/lmgMFmpjwl0=
 github.com/leaanthony/typescriptify-golang-structs v0.1.7/go.mod h1:cWtOkiVhMF77e6phAXUcfNwYmMwCJ67Sij24lfvi9Js=
-github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 h1:5iOd93PZbpH4Iir8QkC4coFD+zEQEZSIRcjwjTFZkr0=
-github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18/go.mod h1:KEbMsKoznsebyGHwLk5LqkFOxL5uXSRdvpP4+avmAMs=
 github.com/leaanthony/winicon v1.0.0/go.mod h1:en5xhijl92aphrJdmRPlh4NI1L6wq3gEm0LpXAPghjU=
 github.com/leodido/go-urn v1.2.0/go.mod h1:+8+nEpDfqqsY+g338gtMEUOtuK+4dEMhiQEgxpxOKII=
 github.com/logrusorgru/aurora v0.0.0-20181002194514-a7b3b318ed4e/go.mod h1:7rIyQOR62GCctdiQpZ/zOJlFyk6y+94wXzv6RNZgaR4=

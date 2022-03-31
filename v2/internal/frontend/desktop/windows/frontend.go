@@ -15,13 +15,13 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 
-	"github.com/leaanthony/go-webview2/pkg/edge"
-	"github.com/leaanthony/winc"
-	"github.com/leaanthony/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/common"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"

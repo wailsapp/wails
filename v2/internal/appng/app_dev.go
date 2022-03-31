@@ -211,7 +211,7 @@ func generateBindings(bindings *binding.Bindings) error {
 
 	// Write backend method wrappers
 	bindingsFilename := filepath.Join(targetDir, "bindings.js")
-	err = bindings.GenerateBackendJS(bindingsFilename, false)
+	err = bindings.GenerateBackendJS(bindingsFilename)
 	if err != nil {
 		return err
 	}

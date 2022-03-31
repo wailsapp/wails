@@ -53,6 +53,14 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		fmt.Fprintf(w, "%s\t%s\n", "Platform:", runtime.GOOS)
 		fmt.Fprintf(w, "%s\t%s\n", "Architecture:", runtime.GOARCH)
 
+		// Write out the wails information
+		fmt.Fprintf(w, "\n")
+		fmt.Fprintf(w, "Wails\n")
+		fmt.Fprintf(w, "------\n")
+		fmt.Fprintf(w, "%s\t%s\n", "Version: ", app.Version())
+
+		printBuildSettings(w)
+
 		// Exit early if PM not found
 		if info.PM != nil {
 			fmt.Fprintf(w, "%s\t%s\n", "Package Manager: ", info.PM.Name())

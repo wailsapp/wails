@@ -7,8 +7,8 @@ import (
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"unsafe"
 
-	"github.com/leaanthony/winc"
-	"github.com/leaanthony/winc/w32"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )

@@ -10,9 +10,7 @@ type Builder interface {
 	SetProjectData(projectData *project.Project)
 	BuildAssets(*Options) error
 	BuildFrontend(*clilogger.CLILogger) error
-	BuildRuntime(*Options) error
 	CompileProject(*Options) error
 	OutputFilename(*Options) string
-	PostCompilation(*Options) error
 	CleanUp()
 }

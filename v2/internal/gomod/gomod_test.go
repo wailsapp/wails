@@ -29,11 +29,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -92,11 +92,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -133,11 +133,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -173,11 +173,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -214,11 +214,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -255,11 +255,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -298,11 +298,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -342,11 +342,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -444,11 +444,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -485,11 +485,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -526,11 +526,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -570,11 +570,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
