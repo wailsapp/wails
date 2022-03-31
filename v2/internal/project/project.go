@@ -160,7 +160,7 @@ func Load(projectPath string) (*Project, error) {
 		result.Info.Copyright = &v
 	}
 	if result.Info.Comments == nil {
-		v := "Built using Wails (https://wails.app)"
+		v := "Built using Wails (https://wails.io)"
 		result.Info.Comments = &v
 	}
 
