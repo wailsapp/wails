@@ -9,7 +9,7 @@ func TestGetMimetype(t *testing.T) {
 		filename string
 		data     []byte
 	}
-
+	bomUTF8 := []byte{0xef, 0xbb, 0xbf}
 	var emptyMsg []byte
 	css := []byte("body{margin:0;padding:0;background-color:#d579b2}#app{font-family:Avenir,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-align:center;color:#2c3e50;background-color:#ededed}#nav{padding:30px}#nav a{font-weight:700;color:#2c\n3e50}#nav a.router-link-exact-active{color:#42b983}.hello[data-v-4e26ad49]{margin:10px 0}")
 	html := []byte("<!DOCTYPE html><html><head>title</head><body></body></html>")
@@ -25,7 +25,7 @@ func TestGetMimetype(t *testing.T) {
 		want string
 	}{
 		// TODO: Add test cases.
-		{"nil data", args{"nil.html", nil}, "text/plain"},
+		{"nil data", args{"nil.svg", nil}, "text/plain"},
 		{"empty data", args{"empty.html", emptyMsg}, "text/plain"},
 		{"css", args{"test.css", css}, "text/css; charset=utf-8"},
 		{"js", args{"test.js", []byte("let foo = 'bar'; console.log(foo);")}, "application/javascript"},
