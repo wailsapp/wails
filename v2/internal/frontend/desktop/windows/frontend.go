@@ -13,8 +13,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
-
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
