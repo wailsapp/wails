@@ -2,9 +2,15 @@
 
 Wails supports generating Windows installers using the [NSIS installer](https://nsis.sourceforge.io/).
 
+<p style={{"text-align": "center"}}>
+   <img src="/img/nsis.png"></img><br/>
+</p>
+
 ## Installing NSIS
 
 ### Windows
+
+The installer is available on the [NSIS Download](https://nsis.sourceforge.io/Download) page.
 
 If you use the chocolatey package manager, run the following script:
 ```
@@ -23,11 +29,23 @@ NSIS is available to install through homebrew: `brew install nsis`.
 
 ## Generating the installer
 
-When a new project is created, Wails generates a `.nsi` installer script in `build/windows/installer`.
+When a new project is created, Wails generates a `.nsi` installer script in `build/windows/installer`. The config
+data is read from the project's `wails.json` so you can use this to configure the installer:
+
+```json
+// ...
+ "Info": {
+    "companyName": "wailsvite",
+    "productName": "wailsvite",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright.........",
+    "comments": "Built using Wails (https://wails.app)"
+  },
+```
 
 To generate an installer for your application, use the `-nsis` flag with `wails build`:
 ```
 wails build -nsis
 ```
 
-
+The installer will now be available in the `build/bin` directory.
