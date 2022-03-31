@@ -114,6 +114,18 @@ func (f *Frontend) WindowReload() {
 	f.ExecJS("runtime.WindowReload();")
 }
 
+func (f *Frontend) WindowSetSystemDefaultTheme() {
+	return
+}
+
+func (f *Frontend) WindowSetLightTheme() {
+	return
+}
+
+func (f *Frontend) WindowSetDarkTheme() {
+	return
+}
+
 func (f *Frontend) Run(ctx context.Context) error {
 
 	f.ctx = context.WithValue(ctx, "frontend", f)

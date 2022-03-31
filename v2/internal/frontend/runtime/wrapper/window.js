@@ -19,6 +19,18 @@ export function WindowReload() {
 	window.runtime.WindowReload();
 }
 
+export function WindowSetSystemDefaultTheme() {
+  window.runtime.WindowSetSystemDefaultTheme();
+}
+
+export function WindowSetLightTheme() {
+  window.runtime.WindowSetLightTheme();
+}
+
+export function WindowSetDarkTheme() {
+  window.runtime.WindowSetDarkTheme();
+}
+
 /**
  * Place the window in the center of the screen
  *

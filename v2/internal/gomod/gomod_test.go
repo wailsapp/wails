@@ -18,7 +18,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.4.1-beta.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -81,7 +81,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -122,7 +122,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -162,7 +162,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -203,7 +203,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -244,7 +244,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -287,7 +287,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -331,7 +331,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -433,7 +433,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -474,7 +474,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -515,7 +515,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -559,7 +559,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
