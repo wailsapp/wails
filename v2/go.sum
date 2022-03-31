@@ -20,8 +20,6 @@ github.com/flytam/filenamify v1.0.0 h1:ewx6BY2dj7U6h2zGPJmt33q/BjkSf/YsY/woQvnUN
 github.com/flytam/filenamify v1.0.0/go.mod h1:Dzf9kVycwcsBlr2ATg6uxjqiFgKGH+5SKFuhdeP5zu8=
 github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWoS4=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
-github.com/gabriel-vasile/mimetype v1.3.1 h1:qevA6c2MtE1RorlScnixeG0VA1H4xrXyhyX3oWBynNQ=
-github.com/gabriel-vasile/mimetype v1.3.1/go.mod h1:fA8fi6KUiG7MgQQ+mEWotXoEOvmxRtOJlERCzSmRvr8=
 github.com/gliderlabs/ssh v0.2.2 h1:6zsha5zo/TWhRhwqCD3+EarCAgZ2yN28ipRnGPnwkI0=
 github.com/gliderlabs/ssh v0.2.2/go.mod h1:U7qILu1NlMHj9FlMhZLlkCdDnU1DBEAqr0aevW3Awn0=
 github.com/go-git/gcfg v1.5.0 h1:Q5ViNfGF8zFgyJWPqYwA7qGFoMTEiBmdlkcfRmpIMa4=
@@ -139,6 +137,8 @@ github.com/valyala/bytebufferpool v1.0.0 h1:GqA5TC/0021Y/b9FG4Oi9Mr3q7XYx6Kllzaw
 github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyCJ6HpOuEn7z0Csc=
 github.com/valyala/fasttemplate v1.2.1 h1:TVEnxayobAdVkhQfrfes2IzOB6o+z4roRkPF52WA1u4=
 github.com/valyala/fasttemplate v1.2.1/go.mod h1:KHLXt3tVN2HBp8eijSv/kGJopbvo7S+qRAEEKiv+SiQ=
+github.com/wailsapp/mimetype v1.4.1-beta.1 h1:gSnKX7WH+7aA0EEjOGUmpWXTb0Nt5B7/8Dm9wHLrnnY=
+github.com/wailsapp/mimetype v1.4.1-beta.1/go.mod h1:9aV5k31bBOv5z6u+QP8TltzvNGJPmNJD4XlAL3U+j3o=
 github.com/wzshiming/ctc v1.2.3 h1:q+hW3IQNsjIlOFBTGZZZeIXTElFM4grF4spW/errh/c=
 github.com/wzshiming/ctc v1.2.3/go.mod h1:2tVAtIY7SUyraSk0JxvwmONNPFL4ARavPuEsg5+KA28=
 github.com/wzshiming/winseq v0.0.0-20200112104235-db357dc107ae h1:tpXvBXC3hpQBDCc9OojJZCQMVRAbT3TTdUMP8WguXkY=
