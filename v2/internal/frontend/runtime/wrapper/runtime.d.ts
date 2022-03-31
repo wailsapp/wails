@@ -31,6 +31,12 @@ export interface runtime {
 
     WindowReload(): void;
 
+    WindowSetSystemDefaultTheme(): void;
+
+    WindowSetLightTheme(): void;
+
+    WindowSetDarkTheme(): void;
+
     WindowCenter(): void;
 
     WindowSetTitle(title: string): void;

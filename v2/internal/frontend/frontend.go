@@ -87,6 +87,9 @@ type Frontend interface {
 	WindowUnfullscreen()
 	WindowSetRGBA(col *options.RGBA)
 	WindowReload()
+	WindowSetSystemDefaultTheme()
+	WindowSetLightTheme()
+	WindowSetDarkTheme()
 
 	// Menus
 	MenuSetApplicationMenu(menu *menu.Menu)
