@@ -48,7 +48,8 @@ type Frontend struct {
 	debug           bool
 
 	// Assets
-	assets *assetserver.DesktopAssetServer
+	assets   *assetserver.AssetServer
+	startURL string
 
 	// main window handle
 	mainWindow      *Window
@@ -65,29 +66,37 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
+		startURL:        "wails://wails/",
 	}
 
-	// Check if we have been given a directory to serve assets from.
-	// If so, this means we are in dev mode and are serving assets off disk.
-	// We indicate this through the `servingFromDisk` flag to ensure requests
-	// aren't cached by WebView2 in dev mode
-	_assetdir := ctx.Value("assetdir")
-	if _assetdir != nil {
-		result.servingFromDisk = true
-	}
+	_starturl, _ := ctx.Value("starturl").(string)
+	if _starturl != "" {
+		result.startURL = _starturl
+	} else {
+		// Check if we have been given a directory to serve assets from.
+		// If so, this means we are in dev mode and are serving assets off disk.
+		// We indicate this through the `servingFromDisk` flag to ensure requests
+		// aren't cached by WebView2 in dev mode
+		_assetdir := ctx.Value("assetdir")
+		if _assetdir != nil {
+			result.servingFromDisk = true
+		}
 
-	bindingsJSON, err := appBindings.ToJSON()
-	if err != nil {
-		log.Fatal(err)
+		bindingsJSON, err := appBindings.ToJSON()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
+		if err != nil {
+			log.Fatal(err)
+		}
+		result.assets = assets
+
+		go result.startRequestProcessor()
 	}
-	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON, result.servingFromDisk)
-	if err != nil {
-		log.Fatal(err)
-	}
-	result.assets = assets
 
 	go result.startMessageProcessor()
-	go result.startRequestProcessor()
 	go result.startCallbackProcessor()
 
 	return result
@@ -146,7 +155,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
-	mainWindow.Run()
+	mainWindow.Run(f.startURL)
 	return nil
 }
 

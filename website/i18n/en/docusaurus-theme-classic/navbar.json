@@ -1,15 +1,11 @@
 {
-  "title": {
-    "message": "",
-    "description": "The title in the navbar"
+  "item.label.Sponsor ❤": {
+    "message": "Sponsor ❤",
+    "description": "Navbar item with label Sponsor ❤"
   },
   "item.label.Docs": {
     "message": "Docs",
     "description": "Navbar item with label Docs"
-  },
-  "item.label.Showcase": {
-    "message": "Showcase",
-    "description": "Navbar item with label Showcase"
   },
   "item.label.Blog": {
     "message": "Blog",
@@ -18,9 +14,5 @@
   "item.label.GitHub": {
     "message": "GitHub",
     "description": "Navbar item with label GitHub"
-  },
-  "item.label.Sponsor": {
-    "message": "Sponsor ❤",
-    "description": "Navbar item with label Sponsor"
   }
 }

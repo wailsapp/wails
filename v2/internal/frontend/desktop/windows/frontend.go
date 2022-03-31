@@ -23,6 +23,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
@@ -38,7 +39,7 @@ type Frontend struct {
 	debug           bool
 
 	// Assets
-	assets   *assetserver.DesktopAssetServer
+	assets   *assetserver.AssetServer
 	startURL string
 
 	// main window handle
@@ -68,18 +69,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		versionInfo:     versionInfo,
 	}
 
-	bindingsJSON, err := appBindings.ToJSON()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_devServerURL := ctx.Value("devserverurl")
-	if _devServerURL != nil {
-		devServerURL := _devServerURL.(string)
-		if len(devServerURL) > 0 && devServerURL != "http://localhost:34115" {
-			result.startURL = devServerURL
-			return result
-		}
+	_starturl, _ := ctx.Value("starturl").(string)
+	if _starturl != "" {
+		result.startURL = _starturl
+		return result
 	}
 
 	// Check if we have been given a directory to serve assets from.
@@ -92,7 +85,12 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		result.servingFromDisk = true
 	}
 
-	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON, result.servingFromDisk)
+	bindingsJSON, err := appBindings.ToJSON()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -387,6 +385,15 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 }
 
 func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {
+	// Setting the UserAgent on the CoreWebView2Settings clears the whole default UserAgent of the Edge browser, but
+	// we want to just append our ApplicationIdentifier. So we adjust the UserAgent for every request.
+	if reqHeaders, err := req.GetHeaders(); err == nil {
+		useragent, _ := reqHeaders.GetHeader(assetserver.HeaderUserAgent)
+		useragent = strings.Join([]string{useragent, assetserver.WailsUserAgentValue}, " ")
+		reqHeaders.SetHeader(assetserver.HeaderUserAgent, useragent)
+		reqHeaders.Release()
+	}
+
 	//Get the request
 	uri, _ := req.GetUri()
 

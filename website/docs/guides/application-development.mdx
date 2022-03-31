@@ -30,7 +30,7 @@ func (a *App) shutdown(ctx context.Context) {
 - The startup method is called as soon as Wails allocates the resources it needs and is a good place for creating resources,
   setting up event listeners and anything else the application needs at startup.
   It is given a `context.Context` which is usually saved in a struct field. This context is needed for calling the
-  [runtime](/docs/reference/runtime/intro). If this method returns an error, the application will terminate.
+  [runtime](../reference/runtime/intro.mdx). If this method returns an error, the application will terminate.
   In dev mode, the error will be output to the console.
 
 - The shutdown method will be called by Wails right at the end of the shutdown process. This is a good place to deallocate
@@ -59,7 +59,7 @@ func main() {
 
 ```
 
-More information on application lifecycle hooks can be found [here](/docs/howdoesitwork#application-lifecycle-callbacks).
+More information on application lifecycle hooks can be found [here](../howdoesitwork.mdx#application-lifecycle-callbacks).
 
 ## Binding Methods
 
@@ -113,11 +113,11 @@ func main() {
 
 This will bind all public methods in our `App` struct (it will never bind the startup and shutdown methods).
 
-More information on Binding can be found [here](/docs/howdoesitwork#method-binding).
+More information on Binding can be found [here](../howdoesitwork.mdx#method-binding).
 
 ## Application Menu
 
-Wails supports adding a menu to your application. This is done by passing a [Menu](/docs/reference/menus#menu) struct
+Wails supports adding a menu to your application. This is done by passing a [Menu](../reference/menus.mdx#menu) struct
 to application config. It's common to use a method that returns a Menu, and even more common for that to be a method on
 the `App` struct used for the lifecycle hooks.
 

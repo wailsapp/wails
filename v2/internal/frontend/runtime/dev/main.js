@@ -80,7 +80,7 @@ function handleDisconnect() {
 
 function _connect() {
     if (websocket == null) {
-        websocket = new WebSocket('ws://' + window.location.hostname + ':34115/wails/ipc');
+        websocket = new WebSocket('ws://' + window.location.host + '/wails/ipc');
         websocket.onopen = handleConnect;
         websocket.onerror = function (e) {
             e.stopImmediatePropagation();

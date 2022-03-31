@@ -1,6 +1,6 @@
 {
   "version.label": {
-    "message": "测试版本",
+    "message": "下个版本",
     "description": "The label for version current"
   },
   "sidebar.tutorialSidebar.category.Getting Started": {
@@ -15,14 +15,6 @@
     "message": "运行时",
     "description": "The label for category Runtime in sidebar tutorialSidebar"
   },
-  "sidebar.tutorialSidebar.category.Examples": {
-    "message": "示例",
-    "description": "The label for category Examples in sidebar tutorialSidebar"
-  },
-  "sidebar.tutorialSidebar.category.Guides": {
-    "message": "指南",
-    "description": "The label for category Guides in sidebar tutorialSidebar"
-  },
   "sidebar.tutorialSidebar.category.Community": {
     "message": "社区",
     "description": "The label for category Community in sidebar tutorialSidebar"
@@ -31,8 +23,8 @@
     "message": "项目展示",
     "description": "The label for category Showcase in sidebar tutorialSidebar"
   },
-  "sidebar.tutorialSidebar.category.Appendix": {
-    "message": "附录",
-    "description": "The label for category Appendix in sidebar tutorialSidebar"
+  "sidebar.tutorialSidebar.category.Guides": {
+    "message": "指南",
+    "description": "The label for category Guides in sidebar tutorialSidebar"
   }
 }
