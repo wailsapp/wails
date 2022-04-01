@@ -6,7 +6,6 @@ require (
 	github.com/Masterminds/semver v1.5.0
 	github.com/flytam/filenamify v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/gabriel-vasile/mimetype v1.3.1
 	github.com/go-git/go-billy/v5 v5.2.0 // indirect
 	github.com/go-git/go-git/v5 v5.3.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -30,6 +29,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/tc-hib/winres v0.1.5
 	github.com/tidwall/sjson v1.1.7
+	github.com/wailsapp/mimetype v1.4.1-beta.1.0.20220331112158-6df7e41671fe
 	github.com/wzshiming/ctc v1.2.3
 	github.com/ztrue/tracerr v0.3.0
 	golang.org/x/mod v0.4.1
