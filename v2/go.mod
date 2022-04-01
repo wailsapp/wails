@@ -30,7 +30,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/tc-hib/winres v0.1.5
 	github.com/tidwall/sjson v1.1.7
-	github.com/wailsapp/mimetype v1.4.1-beta.1
+	github.com/wailsapp/mimetype v1.4.1-beta.1.0.20220331112158-6df7e41671fe
 	github.com/wzshiming/ctc v1.2.3
 	github.com/ztrue/tracerr v0.3.0
 	golang.org/x/mod v0.4.1
