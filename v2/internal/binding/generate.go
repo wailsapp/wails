@@ -140,7 +140,7 @@ func (b *Bindings) GenerateBackendTS(targetfile string) error {
 
 		sortedStructNames.Each(func(structName string) {
 			structs := packages[structName]
-			output.WriteString(fmt.Sprintf("    \"%s\": {", structName))
+			output.WriteString(fmt.Sprintf("    \"models.%s\": {", structName))
 			output.WriteString("\n")
 
 			var sortedMethodNames slicer.StringSlicer

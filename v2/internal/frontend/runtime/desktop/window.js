@@ -17,6 +17,18 @@ export function WindowReload() {
     window.location.reload();
 }
 
+export function WindowSetSystemDefaultTheme() {
+  window.WailsInvoke('WASDT');
+}
+
+export function WindowSetLightTheme() {
+  window.WailsInvoke('WALT');
+}
+
+export function WindowSetDarkTheme() {
+  window.WailsInvoke('WADT');
+}
+
 /**
  * Place the window in the center of the screen
  *

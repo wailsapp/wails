@@ -23,6 +23,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 type Frontend struct {
@@ -98,6 +99,30 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 func (f *Frontend) WindowReload() {
 	f.ExecJS("runtime.WindowReload();")
+}
+
+func (f *Frontend) WindowSetSystemDefaultTheme() {
+	runtime.LockOSThread()
+	f.mainWindow.frontendOptions.Windows.Theme = windows.SystemDefault
+	f.mainWindow.Invoke(func() {
+		f.mainWindow.updateTheme()
+	})
+}
+
+func (f *Frontend) WindowSetLightTheme() {
+	runtime.LockOSThread()
+	f.mainWindow.frontendOptions.Windows.Theme = windows.Light
+	f.mainWindow.Invoke(func() {
+		f.mainWindow.updateTheme()
+	})
+}
+
+func (f *Frontend) WindowSetDarkTheme() {
+	runtime.LockOSThread()
+	f.mainWindow.frontendOptions.Windows.Theme = windows.Dark
+	f.mainWindow.Invoke(func() {
+		f.mainWindow.updateTheme()
+	})
 }
 
 func (f *Frontend) Run(ctx context.Context) error {

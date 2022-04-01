@@ -36,6 +36,21 @@ func WindowReload(ctx context.Context) {
 	appFrontend.WindowReload()
 }
 
+func WindowSetSystemDefaultTheme(ctx context.Context) {
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowSetSystemDefaultTheme()
+}
+
+func WindowSetLightTheme(ctx context.Context) {
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowSetLightTheme()
+}
+
+func WindowSetDarkTheme(ctx context.Context) {
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowSetDarkTheme()
+}
+
 // WindowShow shows the window if hidden
 func WindowShow(ctx context.Context) {
 	appFrontend := getFrontend(ctx)
