@@ -9,11 +9,12 @@ import (
 // BoundMethod defines all the data related to a Go method that is
 // bound to the Wails application
 type BoundMethod struct {
-	Name     string        `json:"name"`
-	Inputs   []*Parameter  `json:"inputs,omitempty"`
-	Outputs  []*Parameter  `json:"outputs,omitempty"`
-	Comments string        `json:"comments,omitempty"`
-	Method   reflect.Value `json:"-"`
+	Name        string        `json:"name"`
+	Inputs      []*Parameter  `json:"inputs,omitempty"`
+	Outputs     []*Parameter  `json:"outputs,omitempty"`
+	Comments    string        `json:"comments,omitempty"`
+	Method      reflect.Value `json:"-"`
+	StructNames []string      `json:"structNames"`
 }
 
 // InputCount returns the number of inputs this bound method has

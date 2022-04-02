@@ -4,6 +4,9 @@
 package appng
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/leaanthony/gosod"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	wailsRuntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
@@ -12,8 +15,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"os"
-	"path/filepath"
 )
 
 // App defines a Wails application structure
@@ -96,6 +97,10 @@ func generateBindings(bindings *binding.Bindings) error {
 		return err
 	}
 
+	err = bindings.GenerateGoBindings(targetDir)
+	if err != nil {
+		return err
+	}
 	// Write backend method wrappers
 	bindingsFilename := filepath.Join(targetDir, "bindings.js")
 	err = bindings.GenerateBackendJS(bindingsFilename)

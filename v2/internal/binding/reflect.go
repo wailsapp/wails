@@ -91,6 +91,7 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 					a := reflect.New(typ)
 					s := reflect.Indirect(a).Interface()
 					b.converter.Add(s)
+					boundMethod.StructNames = append(boundMethod.StructNames, thisInput.Name())
 				}
 			}
 
@@ -99,6 +100,7 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 				a := reflect.New(thisInput)
 				s := reflect.Indirect(a).Interface()
 				b.converter.Add(s)
+				boundMethod.StructNames = append(boundMethod.StructNames, thisInput.Name())
 			}
 
 			inputs = append(inputs, thisParam)
@@ -128,6 +130,7 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 					a := reflect.New(typ)
 					s := reflect.Indirect(a).Interface()
 					b.converter.Add(s)
+					boundMethod.StructNames = append(boundMethod.StructNames, thisOutput.Name())
 				}
 			}
 
@@ -136,6 +139,7 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 				a := reflect.New(thisOutput)
 				s := reflect.Indirect(a).Interface()
 				b.converter.Add(s)
+				boundMethod.StructNames = append(boundMethod.StructNames, thisOutput.Name())
 			}
 
 			outputs = append(outputs, thisParam)
