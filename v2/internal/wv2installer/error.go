@@ -10,6 +10,6 @@ import (
 )
 
 func doInstallationStrategy(installStatus installationStatus, messages *windows.Messages) error {
-	_ = webview2runtime.Error(messages.ContactAdminMsg, messages.ErrorMsg)
-	return fmt.Errorf(messages.Webview2NotInstalledMsg)
+	_ = webview2runtime.Error(messages.ContactAdmin, messages.Error)
+	return fmt.Errorf(messages.Webview2NotInstalled)
 }

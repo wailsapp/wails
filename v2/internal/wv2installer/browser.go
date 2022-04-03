@@ -10,7 +10,7 @@ import (
 )
 
 func doInstallationStrategy(installStatus installationStatus, messages *windows.Messages) error {
-	confirmed, err := webview2runtime.Confirm(messages.DownloadPageMsg+MinimumRuntimeVersion, messages.MissingRequirementsMsg)
+	confirmed, err := webview2runtime.Confirm(messages.DownloadPageMsg+MinimumRuntimeVersion, messages.MissingRequirements)
 	if err != nil {
 		return err
 	}
@@ -21,5 +21,5 @@ func doInstallationStrategy(installStatus installationStatus, messages *windows.
 		}
 	}
 
-	return fmt.Errorf(messages.FailedToInstallMsg)
+	return fmt.Errorf(messages.FailedToInstall)
 }

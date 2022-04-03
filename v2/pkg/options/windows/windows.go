@@ -3,15 +3,15 @@ package windows
 type Theme int
 
 type Messages struct {
-	InstallationRequiredMsg string
-	UpdateRequiredMsg       string
-	MissingRequirementsMsg  string
-	Webview2NotInstalledMsg string
-	ErrorMsg                string
-	FailedToInstallMsg      string
-	DownloadPageMsg         string
-	PressOKToInstallMsg     string
-	ContactAdminMsg         string
+	InstallationRequired string
+	UpdateRequired       string
+	MissingRequirements  string
+	Webview2NotInstalled string
+	Error                string
+	FailedToInstall      string
+	DownloadPage         string
+	PressOKToInstall     string
+	ContactAdmin         string
 }
 
 const (
@@ -73,14 +73,14 @@ type Options struct {
 
 func DefaultMessages() *Messages {
 	return &Messages{
-		InstallationRequiredMsg: "The WebView2 runtime is required. Press Ok to download and install. Note: The installer will download silently so please wait.",
-		UpdateRequiredMsg:       "The Webview2 runtime needs updating. Press Ok to download and install. Note: The installer will download silently so please wait.",
-		MissingRequirementsMsg:  "Missing Requirements",
-		Webview2NotInstalledMsg: "webview2 runtime not installed",
-		ErrorMsg:                "Error",
-		FailedToInstallMsg:      "The runtime failed to install correctly. Please try again.",
-		DownloadPageMsg:         "This application requires the WebView2 runtime. Press OK to open the download page. Minimum version required: ",
-		PressOKToInstallMsg:     "Press Ok to install.",
-		ContactAdminMsg:         "The WebView2 runtime is required to run this application. Please contact your system administrator.",
+		InstallationRequired: "The WebView2 runtime is required. Press Ok to download and install. Note: The installer will download silently so please wait.",
+		UpdateRequired:       "The Webview2 runtime needs updating. Press Ok to download and install. Note: The installer will download silently so please wait.",
+		MissingRequirements:  "Missing Requirements",
+		Webview2NotInstalled: "webview2 runtime not installed",
+		Error:                "Error",
+		FailedToInstall:      "The runtime failed to install correctly. Please try again.",
+		DownloadPage:         "This application requires the WebView2 runtime. Press OK to open the download page. Minimum version required: ",
+		PressOKToInstall:     "Press Ok to install.",
+		ContactAdmin:         "The WebView2 runtime is required to run this application. Please contact your system administrator.",
 	}
 }
