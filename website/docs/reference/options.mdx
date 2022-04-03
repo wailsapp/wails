@@ -56,6 +56,8 @@ func main() {
                 LightModeTitleText: windows.RGB(20, 20, 20),
                 LightModeBorder:    windows.RGB(200, 200, 200),
             },
+            // User messages that can be customised
+            Messages *windows.Messages
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -466,6 +468,15 @@ Example:
         LightModeBorderInactive:    windows.RGB(100, 100, 100),
     },
 ```
+
+### Messages
+
+Name: Messages
+
+Type: `*windows.Messages`
+
+A struct of strings used by the webview2 installer if a valid webview2 runtime is not found.
+Customise this for any language you choose to support.
 
 ## Mac Specific Options
 
