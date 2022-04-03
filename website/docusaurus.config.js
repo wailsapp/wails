@@ -89,7 +89,7 @@ const config = {
           },
           {
             to: "https://github.com/sponsors/leaanthony",
-            label: "Sponsor ❤",
+            label: "Sponsor",
             position: "left",
           },
           {
