@@ -17,6 +17,8 @@ export interface runtime {
 
     EventsOnce(eventName: string, callback: (data?: any) => void): void;
 
+    EventsOff(eventName: string): void;
+
     LogTrace(message: string): void;
 
     LogDebug(message: string): void;
