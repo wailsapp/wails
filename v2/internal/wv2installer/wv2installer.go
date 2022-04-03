@@ -1,7 +1,11 @@
-package wv2runtime
+//go:build windows
+
+package wv2installer
 
 import (
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webviewloader"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 const MinimumRuntimeVersion string = "91.0.992.28"
@@ -14,7 +18,12 @@ const (
 	installed
 )
 
-func Process() (string, error) {
+func Process(appoptions *options.App) (string, error) {
+
+	messages := windows.DefaultMessages()
+	if appoptions.Windows != nil && appoptions.Windows.Messages != nil {
+		messages = appoptions.Windows.Messages
+	}
 	installStatus := needsInstalling
 	installedVersion, err := webviewloader.GetInstalledVersion()
 	if err != nil {
@@ -33,5 +42,5 @@ func Process() (string, error) {
 		}
 
 	}
-	return installedVersion, doInstallationStrategy(installStatus)
+	return installedVersion, doInstallationStrategy(installStatus, messages)
 }
