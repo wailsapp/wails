@@ -35,6 +35,16 @@ export function EventsOn(eventName, callback) {
 }
 
 /**
+ * Unregisters the listener for the given event name
+ *
+ * @export
+ * @param {string} eventName
+ */
+export function EventsOff(eventName) {
+    return window.runtime.EventsOff(eventName);
+}
+
+/**
  * Registers an event listener that will be invoked once then destroyed
  *
  * @export
