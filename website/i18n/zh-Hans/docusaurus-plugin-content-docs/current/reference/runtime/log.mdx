@@ -26,11 +26,23 @@ JS 方法签名: `LogPrint(message: string)`
 
 将给定的消息记录为原始消息。
 
+### 格式化打印日志
+
+Go 方法签名: `LogPrintf(ctx context.Context, format string, args ...interface{})`
+
+将给定的消息记录为原始消息。
+
 ### Trace 日志
 
 Go 方法签名: `LogTrace(ctx context.Context, message string)`
 
 JS 方法签名: `LogTrace(message: string)`
+
+在`Trace`日志级别记录给定的消息。
+
+### 格式化 Trace 日志
+
+Go 方法签名: `LogTracef(ctx context.Context, format string, args ...interface{})`
 
 在`Trace`日志级别记录给定的消息。
 
@@ -42,11 +54,23 @@ JS 方法签名: `LogDebug(message: string)`
 
 在`Debug`日志级别记录给定的消息。
 
+### 格式化 Debug 日志
+
+Go 方法签名: `LogDebugf(ctx context.Context, format string, args ...interface{})`
+
+在`Debug`日志级别记录给定的消息。
+
 ### Info 日志
 
 Go 方法签名: `LogInfo(ctx context.Context, message string)`
 
 JS 方法签名: `LogInfo(message: string)`
+
+在`Info`日志级别记录给定的消息。
+
+### 格式化 Info 日志
+
+Go 方法签名: `LogInfof(ctx context.Context, format string, args ...interface{})`
 
 在`Info`日志级别记录给定的消息。
 
@@ -58,6 +82,12 @@ JS 方法签名: `LogWarning(message: string)`
 
 在`Warning`日志级别记录给定的消息。
 
+### 格式化 Warning 日志
+
+Go 方法签名: `LogWarningf(ctx context.Context, format string, args ...interface{})`
+
+在`Warning`日志级别记录给定的消息。
+
 ### Error 日志
 
 Go 方法签名: `LogError(ctx context.Context, message string)`
@@ -66,11 +96,23 @@ JS 方法签名: `LogError(message: string)`
 
 在`Error`日志级别记录给定的消息。
 
+### 格式化 Error 日志
+
+Go 方法签名: `LogErrorf(ctx context.Context, format string, args ...interface{})`
+
+在`Error`日志级别记录给定的消息。
+
 ### Fatal 日志
 
 Go 方法签名: `LogFatal(ctx context.Context, message string)`
 
 JS 方法签名: `LogFatal(message: string)`
+
+在`Fatal`日志级别记录给定的消息。
+
+### 格式化 Fatal 日志
+
+Go 方法签名: `LogFatalf(ctx context.Context, format string, args ...interface{})`
 
 在`Fatal`日志级别记录给定的消息。
 
@@ -92,7 +134,7 @@ JS 方法签名: `LogSetLogLevel(level: number)`
 
 ## 使用自定义日志
 
-可以通过使用应用程序参数选项 [日志](/docs/reference/options#日志) 提供自定义记录器来使用它。唯一的要求是记录器实现了在`github.com/wailsapp/wails/v2/pkg/logger`里`logger.Logger`定义的接口：
+可以通过使用应用程序参数选项 [日志](../../reference/options#日志) 提供自定义记录器来使用它。唯一的要求是记录器实现了在`github.com/wailsapp/wails/v2/pkg/logger`里`logger.Logger`定义的接口：
 
 ```go title="logger.go"
 type Logger interface {
