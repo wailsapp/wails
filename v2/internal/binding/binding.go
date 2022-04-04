@@ -118,7 +118,6 @@ func (b *Bindings) WriteModels(modelsDir string) error {
 }
 
 func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, s interface{}) {
-	println("Adding struct:", packageName, structName)
 	if b.structsToGenerateTS[packageName] == nil {
 		b.structsToGenerateTS[packageName] = make(map[string]interface{})
 	}

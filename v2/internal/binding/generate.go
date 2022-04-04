@@ -96,7 +96,6 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 	}
 	err := b.WriteModels(baseDir)
 	if err != nil {
-		println(err)
 		return err
 	}
 	return nil
