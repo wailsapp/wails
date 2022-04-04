@@ -50,7 +50,6 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 	structValue := reflect.ValueOf(value)
 	structTypeString := structType.String()
 	baseName := structTypeString[1:]
-	packageName := strings.Split(baseName, ".")[0]
 
 	// Process Methods
 	for i := 0; i < structType.NumMethod(); i++ {
@@ -94,6 +93,7 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 					a := reflect.New(typ)
 					s := reflect.Indirect(a).Interface()
 					name := typ.Name()
+					packageName := getPackageName(thisInput.String())
 					b.AddStructToGenerateTS(packageName, name, s)
 				}
 			}
@@ -103,6 +103,7 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 				a := reflect.New(thisInput)
 				s := reflect.Indirect(a).Interface()
 				name := thisInput.Name()
+				packageName := getPackageName(thisInput.String())
 				b.AddStructToGenerateTS(packageName, name, s)
 			}
 
@@ -133,6 +134,7 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 					a := reflect.New(typ)
 					s := reflect.Indirect(a).Interface()
 					name := typ.Name()
+					packageName := getPackageName(thisOutput.String())
 					b.AddStructToGenerateTS(packageName, name, s)
 				}
 			}
@@ -142,6 +144,7 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 				a := reflect.New(thisOutput)
 				s := reflect.Indirect(a).Interface()
 				name := thisOutput.Name()
+				packageName := getPackageName(thisOutput.String())
 				b.AddStructToGenerateTS(packageName, name, s)
 			}
 
@@ -154,4 +157,11 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 
 	}
 	return result, nil
+}
+
+func getPackageName(in string) string {
+	result := strings.Split(in, ".")[0]
+	result = strings.ReplaceAll(result, "[]", "")
+	result = strings.ReplaceAll(result, "*", "")
+	return result
 }

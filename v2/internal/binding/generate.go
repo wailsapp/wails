@@ -55,18 +55,15 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 				args.Clear()
 				for count, input := range methodDetails.Inputs {
 					arg := fmt.Sprintf("arg%d", count+1)
-					args.Add(arg + ":" + goTypeToTypescriptType(input.TypeName))
-					if strings.ContainsRune(input.TypeName, '.') {
-						importNamespaces.Add(strings.Split(input.TypeName, ".")[0])
-					}
+					args.Add(arg + ":" + goTypeToTypescriptType(input.TypeName, &importNamespaces))
 				}
 				tsBody.WriteString(args.Join(",") + "):")
 				returnType := "Promise"
 				if methodDetails.OutputCount() > 0 {
-					firstType := goTypeToTypescriptType(methodDetails.Outputs[0].TypeName)
+					firstType := goTypeToTypescriptType(methodDetails.Outputs[0].TypeName, &importNamespaces)
 					returnType += "<" + firstType
 					if methodDetails.OutputCount() == 2 {
-						secondType := goTypeToTypescriptType(methodDetails.Outputs[1].TypeName)
+						secondType := goTypeToTypescriptType(methodDetails.Outputs[1].TypeName, &importNamespaces)
 						returnType += "|" + secondType
 					}
 					returnType += ">"
@@ -101,7 +98,7 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 	return nil
 }
 
-func goTypeToJSDocType(input string) string {
+func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) string {
 	switch true {
 	case input == "interface{}":
 		return "any"
@@ -119,20 +116,22 @@ func goTypeToJSDocType(input string) string {
 	case input == "[]byte":
 		return "string"
 	case strings.HasPrefix(input, "[]"):
-		arrayType := goTypeToJSDocType(input[2:])
+		arrayType := goTypeToJSDocType(input[2:], importNamespaces)
 		return "Array<" + arrayType + ">"
 	default:
 		if strings.ContainsRune(input, '.') {
-			return input
+			namespace := getPackageName(input)
+			importNamespaces.Add(namespace)
+			return namespace + "." + strings.Split(input, ".")[1]
 		}
 		return "any"
 	}
 }
 
-func goTypeToTypescriptType(input string) string {
+func goTypeToTypescriptType(input string, importNamespaces *slicer.StringSlicer) string {
 	if strings.HasPrefix(input, "[]") {
-		arrayType := goTypeToJSDocType(input[2:])
+		arrayType := goTypeToJSDocType(input[2:], importNamespaces)
 		return "Array<" + arrayType + ">"
 	}
-	return goTypeToJSDocType(input)
+	return goTypeToJSDocType(input, importNamespaces)
 }
