@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"os"
 	"runtime"
@@ -83,7 +82,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		}
 		result.assets = assets
 
-		go result.startRequestProcessor()
+		// Start 10 processors to handle requests in parallel
+		for i := 0; i < 10; i++ {
+			go result.startRequestProcessor()
+		}
 	}
 
 	go result.startMessageProcessor()
@@ -290,11 +292,15 @@ var requestBuffer = make(chan unsafe.Pointer, 100)
 func (f *Frontend) startRequestProcessor() {
 	for request := range requestBuffer {
 		f.processRequest(request)
+		C.g_object_unref(C.gpointer(request))
 	}
 }
 
 //export processURLRequest
 func processURLRequest(request unsafe.Pointer) {
+	// Increment reference counter to allow async processing, will be decremented after the processing
+	// has been finished by a worker.
+	C.g_object_ref(C.gpointer(request))
 	requestBuffer <- request
 }
 
@@ -305,7 +311,9 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 
 	// WebKitGTK stable < 2.36 API does not support request method, request headers and request.
 	// Apart from request bodies, this is only available beginning with 2.36: https://webkitgtk.org/reference/webkit2gtk/stable/WebKitURISchemeResponse.html
-	rw := httptest.NewRecorder()
+	rw := &webKitResponseWriter{req: req}
+	defer rw.Close()
+
 	f.assets.ProcessHTTPRequest(
 		goURI,
 		rw,
@@ -326,34 +334,4 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 			return req, nil
 		})
 
-	if code := rw.Code; code != http.StatusOK {
-		message := C.CString(http.StatusText(code))
-		gerr := C.g_error_new_literal(C.g_quark_from_string(message), C.int(code), message)
-		C.webkit_uri_scheme_request_finish_error(req, gerr)
-		C.g_error_free(gerr)
-		C.free(unsafe.Pointer(message))
-		return
-	}
-
-	var cContent unsafe.Pointer
-	bodyLen := len(rw.Body.Bytes())
-	var cLen C.long
-	if bodyLen > 0 {
-		cContent = C.malloc(C.ulong(bodyLen))
-		if cContent != nil {
-			C.memcpy(cContent, unsafe.Pointer(&res.Body[0]), C.size_t(bodyLen))
-			cLen = C.long(bodyLen)
-		}
-	}
-
-	// WebKitGTK stable < 2.36 API does not support response headers and response statuscodes
-	cMimeType := C.CString(rw.Header.Get(assetserver.HeaderContentType))
-	defer C.free(unsafe.Pointer(cMimeType))
-
-	stream := C.g_memory_input_stream_new_from_data(
-		cContent,
-		cLen,
-		(*[0]byte)(C.free))
-	C.webkit_uri_scheme_request_finish(req, stream, cLen, cMimeType)
-	C.g_object_unref(C.gpointer(stream))
 }
