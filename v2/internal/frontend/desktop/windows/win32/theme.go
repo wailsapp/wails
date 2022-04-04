@@ -1,8 +1,11 @@
+//go:build windows
+
 package win32
 
 import (
-	"golang.org/x/sys/windows/registry"
 	"unsafe"
+
+	"golang.org/x/sys/windows/registry"
 )
 
 type DWMWINDOWATTRIBUTE int32
