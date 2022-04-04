@@ -103,6 +103,29 @@ const config = {
             label: "Blog",
             position: "right",
           },
+          {
+            type: 'dropdown',
+            label: 'About',
+            position: 'right',
+            items: [
+              {
+                to: "/faq",
+                label: "FAQ",
+              },
+              {
+                to: '/changelog',
+                label: "Changelog",
+              },
+              {
+                to: '/community-guide',
+                label: "Community Guide",
+              },
+              {
+                to: '/credits',
+                label: "Credits",
+              },
+            ],
+          },
           { type: "localeDropdown", position: "right" },
           {
             href: "https://github.com/wailsapp/wails",
@@ -139,7 +162,7 @@ const config = {
               },
               {
                 label: "Changelog",
-                to: "/docs/changelog",
+                to: "/changelog",
               },
             ],
           },

@@ -1,7 +1,3 @@
----
-sidebar_position: 80
----
-
 # Changelog
 
 All notable changes to this project will be documented in this file.
