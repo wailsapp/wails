@@ -49,6 +49,36 @@ JS 方法签名: `WindowReload()`
 
 执行“重新加载”（重新加载 index.html）
 
+### 窗口设置系统默认主题
+
+Go 方法签名: `WindowSetSystemDefaultTheme(ctx context.Context)`
+
+JS 方法签名: `WindowSetSystemDefaultTheme()`
+
+仅限 Windows。
+
+将窗口主题设置为系统默认值（浅色/深色）。
+
+### 窗口设置浅色主题
+
+Go 方法签名: `WindowSetLightTheme(ctx context.Context)`
+
+JS 方法签名: `WindowSetLightTheme()`
+
+仅限 Windows。
+
+设置窗口主题为浅色 。
+
+### 窗口设置深色主题
+
+Go 方法签名: `WindowSetDarkTheme(ctx context.Context)`
+
+JS 方法签名: `WindowSetDarkTheme()`
+
+仅限 Windows。
+
+设置窗口主题为深色。
+
 ### 显示窗口
 
 Go 方法签名: `WindowShow(ctx context.Context)`

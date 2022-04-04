@@ -83,7 +83,7 @@ This example has the following options set:
 - `OnShutdown` - A callback for when the application is about to quit
 - `Bind` - A slice of struct instances that we wish to expose to the frontend
 
-A full list of application options can be found in the [Options Reference](/docs/reference/options).
+A full list of application options can be found in the [Options Reference](./reference/options).
 
 #### Assets
 
@@ -108,17 +108,17 @@ the application.
 When running in development mode using the `wails dev` command, the assets are loaded off disk, and any changes result
 in a "live reload". The location of the assets will be inferred from the `embed.FS`.
 
-More details can be found in the [Application Development Guide](/docs/guides/application-development).
+More details can be found in the [Application Development Guide](./guides/application-development).
 
 #### Application Lifecycle Callbacks
 
-Just before the frontend is about to load `index.html`, a callback is made to the function provided in [OnStartup](/docs/reference/options#OnStartup).
+Just before the frontend is about to load `index.html`, a callback is made to the function provided in [OnStartup](./reference/options#OnStartup).
 A standard Go context is passed to this method. This context is required when calling the runtime so a standard pattern is to save
-a reference to in this method. Just before the application shuts down, the [OnShutdown](/docs/reference/options#OnShutdown) callback is called in the same way,
-again with the context. There is also an [OnDomReady](/docs/reference/options#OnDomReady) callback for when the frontend
+a reference to in this method. Just before the application shuts down, the [OnShutdown](./reference/options#OnShutdown) callback is called in the same way,
+again with the context. There is also an [OnDomReady](./reference/options#OnDomReady) callback for when the frontend
 has completed loading all assets in `index.html` and is equivalent of the [`body onload`](https://www.w3schools.com/jsref/event_onload.asp) event in Javascript.
 It is also possible to hook into the window close (or application quit) event by setting the
-option [OnBeforeClose](/docs/reference/options#OnBeforeClose).
+option [OnBeforeClose](./reference/options#OnBeforeClose).
 
 #### Method Binding
 
@@ -227,8 +227,8 @@ is expecting a struct, will be converted to that struct type. To make this proce
 a TypeScript module is generated, defining all the struct types used in bound methods. Using this module, it's possible
 to construct and send native Javascript objects to the Go code.
 
-More information on Binding can be found in the [Binding Methods](/docs/guides/application-development#binding-methods)
-section of the [Application Development Guide](/docs/guides/application-development).
+More information on Binding can be found in the [Binding Methods](./guides/application-development#binding-methods)
+section of the [Application Development Guide](./guides/application-development).
 
 ## The Frontend
 
@@ -412,4 +412,4 @@ tasks such as emit an event or perform logging operations:
 window.runtime.EventsEmit("my-event", 1);
 ```
 
-More details about the JS runtime can be found in the [Runtime Reference](/docs/reference/runtime/intro).
+More details about the JS runtime can be found in the [Runtime Reference](./reference/runtime/intro).

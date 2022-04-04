@@ -1,7 +1,7 @@
 {
-  "item.label.Sponsor ❤": {
+  "item.label.Sponsor": {
     "message": "赞助我们 ❤",
-    "description": "Navbar item with label Sponsor ❤"
+    "description": "Navbar item with label Sponsor"
   },
   "item.label.Docs": {
     "message": "文档",
