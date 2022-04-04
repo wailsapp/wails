@@ -2,14 +2,15 @@ package generate
 
 import (
 	"fmt"
-	"github.com/leaanthony/clir"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal"
-	"github.com/wailsapp/wails/v2/internal/shell"
 	"io"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/leaanthony/clir"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal"
+	"github.com/wailsapp/wails/v2/internal/shell"
 )
 
 // AddModuleCommand adds the `module` subcommand for the `generate` command
@@ -43,6 +44,8 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 		}
 
 		stdout, stderr, err = shell.RunCommand(cwd, filename)
+		println(stdout)
+		println(stderr)
 		if err != nil {
 			return fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 		}

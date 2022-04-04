@@ -21,7 +21,6 @@ require (
 	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
-	github.com/leaanthony/typescriptify-golang-structs v0.1.7
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
 	github.com/olekukonko/tablewriter v0.0.4
@@ -29,6 +28,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/tc-hib/winres v0.1.5
 	github.com/tidwall/sjson v1.1.7
+	github.com/tkrajina/go-reflector v0.5.5
 	github.com/wailsapp/mimetype v1.4.1-beta.1.0.20220331112158-6df7e41671fe
 	github.com/wzshiming/ctc v1.2.3
 	github.com/ztrue/tracerr v0.3.0
@@ -58,7 +58,6 @@ require (
 	github.com/tidwall/gjson v1.8.0 // indirect
 	github.com/tidwall/match v1.0.3 // indirect
 	github.com/tidwall/pretty v1.1.0 // indirect
-	github.com/tkrajina/go-reflector v0.5.5 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/wzshiming/winseq v0.0.0-20200112104235-db357dc107ae // indirect
