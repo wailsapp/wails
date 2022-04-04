@@ -25,7 +25,7 @@ Example:
   app.Run()
 ```
 
-In v2, there is just a single method, `wails.Run()`, that accepts [application options](/docs/reference/options#application-options).
+In v2, there is just a single method, `wails.Run()`, that accepts [application options](../reference/options#application-options).
 
 ```go title="v2"
 	err := wails.Run(&options.App{
@@ -43,7 +43,7 @@ In v2, there is just a single method, `wails.Run()`, that accepts [application o
 
 In v1, it was possible to bind both arbitrary functions and structs. In v2, this has been simplified to only binding structs.
 The struct instances that were previously passed to the `Bind()` method in v1, are now specified in the `Bind` field of
-the [application options](/docs/reference/options#application-options):
+the [application options](../reference/options#application-options):
 
 ```go title="v1"
   app := wails.CreateApp(/* options */)
@@ -64,13 +64,13 @@ In v1, bound methods were available to the frontend at `window.backend`. This ha
 ### Application Lifecycle
 
 In v1, there were 2 special methods in a bound struct: `WailsInit()` and `WailsShutdown()`. These have
-been replaced with 3 lifecycle hooks as part of the [application options](/docs/reference/options#application-options):
+been replaced with 3 lifecycle hooks as part of the [application options](../reference/options#application-options):
 
-- [OnStartup](/docs/reference/options#onstartup)
-- [OnShutdown](/docs/reference/options#onshutdown)
-- [OnDomReady](/docs/reference/options#ondomready)
+- [OnStartup](../reference/options#onstartup)
+- [OnShutdown](../reference/options#onshutdown)
+- [OnDomReady](../reference/options#ondomready)
 
-Note: [OnDomReady](/docs/reference/options#ondomready) replaces the `wails:ready` system event in v1.
+Note: [OnDomReady](../reference/options#ondomready) replaces the `wails:ready` system event in v1.
 
 These methods can be standard functions, but a common practice is to have them part of a struct:
 
@@ -96,11 +96,11 @@ func (b *Basic) startup(ctx context.Context) {
 
 The runtime in v2 is much richer than v1 with support for menus, window manipulation
 and better dialogs. The signature of the methods has changed slightly - please refer
-the the [Runtime Reference](/docs/reference/runtime/intro).
+the the [Runtime Reference](../reference/runtime/intro).
 
-In v1, the [runtime](/docs/reference/runtime/intro) was available via a struct passed to `WailsInit()`.
+In v1, the [runtime](../reference/runtime/intro) was available via a struct passed to `WailsInit()`.
 In v2, the runtime has been moved out to its own package. Each method in the runtime takes the
-`context.Context` that is passed to the [OnStartup](/docs/reference/options#onstartup) method.
+`context.Context` that is passed to the [OnStartup](../reference/options#onstartup) method.
 
 ```go title="Runtime Example"
 package main
@@ -173,7 +173,7 @@ func main() {
 
 Of course, bundlers can be used if you wish to. The only requirement is to pass
 the final application assets directory to Wails using an `embed.FS` in the `Assets`
-key of the [application options](/docs/reference/options#application-options).
+key of the [application options](../reference/options#application-options).
 
 ### Project Configuration
 
