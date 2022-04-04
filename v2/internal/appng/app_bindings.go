@@ -91,25 +91,7 @@ func generateBindings(bindings *binding.Bindings) error {
 	}
 	_ = fs.MkDirs(targetDir)
 
-	modelsFile := filepath.Join(targetDir, "models.ts")
-	err = bindings.WriteTS(modelsFile)
-	if err != nil {
-		return err
-	}
-
 	err = bindings.GenerateGoBindings(targetDir)
-	if err != nil {
-		return err
-	}
-	// Write backend method wrappers
-	bindingsFilename := filepath.Join(targetDir, "bindings.js")
-	err = bindings.GenerateBackendJS(bindingsFilename)
-	if err != nil {
-		return err
-	}
-
-	bindingsTypes := filepath.Join(targetDir, "bindings.d.ts")
-	err = bindings.GenerateBackendTS(bindingsTypes)
 	if err != nil {
 		return err
 	}

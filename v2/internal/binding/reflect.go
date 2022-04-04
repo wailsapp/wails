@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"strings"
 )
 
 // isStructPtr returns true if the value given is a
@@ -47,7 +48,9 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 	// Process Struct
 	structType := reflect.TypeOf(value)
 	structValue := reflect.ValueOf(value)
-	baseName := structType.String()[1:]
+	structTypeString := structType.String()
+	baseName := structTypeString[1:]
+	packageName := strings.Split(baseName, ".")[0]
 
 	// Process Methods
 	for i := 0; i < structType.NumMethod(); i++ {
@@ -90,8 +93,8 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 					typ := thisInput.Elem()
 					a := reflect.New(typ)
 					s := reflect.Indirect(a).Interface()
-					b.converter.Add(s)
-					boundMethod.StructNames = append(boundMethod.StructNames, typ.Name())
+					name := typ.Name()
+					b.AddStructToGenerateTS(packageName, name, s)
 				}
 			}
 
@@ -99,8 +102,8 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 			if thisInput.Kind() == reflect.Struct {
 				a := reflect.New(thisInput)
 				s := reflect.Indirect(a).Interface()
-				b.converter.Add(s)
-				boundMethod.StructNames = append(boundMethod.StructNames, thisInput.Name())
+				name := thisInput.Name()
+				b.AddStructToGenerateTS(packageName, name, s)
 			}
 
 			inputs = append(inputs, thisParam)
@@ -129,8 +132,8 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 					typ := thisOutput.Elem()
 					a := reflect.New(typ)
 					s := reflect.Indirect(a).Interface()
-					b.converter.Add(s)
-					boundMethod.StructNames = append(boundMethod.StructNames, typ.Name())
+					name := typ.Name()
+					b.AddStructToGenerateTS(packageName, name, s)
 				}
 			}
 
@@ -138,8 +141,8 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 			if thisOutput.Kind() == reflect.Struct {
 				a := reflect.New(thisOutput)
 				s := reflect.Indirect(a).Interface()
-				b.converter.Add(s)
-				boundMethod.StructNames = append(boundMethod.StructNames, thisOutput.Name())
+				name := thisOutput.Name()
+				b.AddStructToGenerateTS(packageName, name, s)
 			}
 
 			outputs = append(outputs, thisParam)
