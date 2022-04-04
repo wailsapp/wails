@@ -1,8 +1,11 @@
 package assetserver
 
 import (
+	"bytes"
 	"context"
 	_ "embed"
+	"fmt"
+	"io"
 	iofs "io/fs"
 	"net/http"
 	"os"
@@ -18,8 +21,13 @@ import (
 //go:embed defaultindex.html
 var defaultHTML []byte
 
+const (
+	indexHTML = "index.html"
+)
+
 type assetHandler struct {
-	fs iofs.FS
+	fs      iofs.FS
+	handler http.Handler
 
 	logger *logger.Logger
 
@@ -33,7 +41,7 @@ func NewAsssetHandler(ctx context.Context, options *options.App) (http.Handler, 
 			return nil, err
 		}
 
-		subDir, err := fs.FindPathToFile(vfs, "index.html")
+		subDir, err := fs.FindPathToFile(vfs, indexHTML)
 		if err != nil {
 			return nil, err
 		}
@@ -45,7 +53,8 @@ func NewAsssetHandler(ctx context.Context, options *options.App) (http.Handler, 
 	}
 
 	result := &assetHandler{
-		fs: vfs,
+		fs:      vfs,
+		handler: options.AssetsHandler,
 
 		// Check if we have been given a directory to serve assets from.
 		// If so, this means we are in dev mode and are serving assets off disk.
@@ -62,63 +71,96 @@ func NewAsssetHandler(ctx context.Context, options *options.App) (http.Handler, 
 }
 
 func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	if d.fs == nil {
-		rw.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	filename := strings.TrimPrefix(req.URL.Path, "/")
-	if d.logger != nil {
-		d.logger.Debug("[AssetHandler] Loading file '%s'", filename)
-	}
-
-	var content []byte
-	var err error
-	switch filename {
-	case "", "index.html":
-		content, err = d.loadFile("index.html")
-		if err != nil {
-			err = nil
-			content = defaultHTML
+	handler := d.handler
+	if strings.EqualFold(req.Method, http.MethodGet) {
+		filename := strings.TrimPrefix(req.URL.Path, "/")
+		if filename == "" {
+			filename = indexHTML
 		}
 
-	default:
-		content, err = d.loadFile(filename)
-	}
-
-	if os.IsNotExist(err) {
-		rw.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	if err == nil {
-		mimeType := GetMimetype(filename, content)
-		rw.Header().Set(HeaderContentType, mimeType)
-		rw.WriteHeader(http.StatusOK)
-		_, err = rw.Write(content)
-	}
-
-	if err != nil {
-		rw.WriteHeader(http.StatusInternalServerError)
-		if d.logger != nil {
-			d.logger.Error("[AssetHandler] Unable to load file '%s': %s", filename, err)
+		d.logDebug("[AssetHandler] Loading file '%s'", filename)
+		if err := d.serveFSFile(rw, filename); err != nil {
+			if os.IsNotExist(err) {
+				if handler != nil {
+					d.logDebug("[AssetHandler] File '%s' not found, serving '%s' by AssetHandler", filename, req.URL)
+					handler.ServeHTTP(rw, req)
+				} else {
+					rw.WriteHeader(http.StatusNotFound)
+				}
+			} else {
+				d.logError("[AssetHandler] Unable to load file '%s': %s", filename, err)
+				http.Error(rw, err.Error(), http.StatusInternalServerError)
+			}
 		}
+	} else if handler != nil {
+		d.logDebug("[AssetHandler] No GET request, serving '%s' by AssetHandler", req.URL)
+		handler.ServeHTTP(rw, req)
+	} else {
+		rw.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
-// loadFile will try to load the file from disk. If there is an error
-// it will retry until eventually it will give up and error.
-func (d *assetHandler) loadFile(filename string) ([]byte, error) {
-	if !d.servingFromDisk {
-		return iofs.ReadFile(d.fs, filename)
+// serveFile will try to load the file from the fs.FS and write it to the response
+func (d *assetHandler) serveFSFile(rw http.ResponseWriter, filename string) error {
+	if d.fs == nil {
+		return os.ErrNotExist
 	}
-	var result []byte
-	var err error
-	for tries := 0; tries < 50; tries++ {
-		result, err = iofs.ReadFile(d.fs, filename)
-		if err != nil {
-			time.Sleep(100 * time.Millisecond)
+
+	file, err := d.fs.Open(filename)
+	if err != nil && d.servingFromDisk {
+		for tries := 0; tries < 50; tries++ {
+			file, err = d.fs.Open(filename)
+			if err != nil {
+				time.Sleep(100 * time.Millisecond)
+			}
 		}
 	}
-	return result, err
+
+	if err != nil {
+		if filename == indexHTML && os.IsNotExist(err) {
+			return serveFile(rw, filename, defaultHTML)
+		}
+		return err
+	}
+	defer file.Close()
+
+	statInfo, err := file.Stat()
+	if err != nil {
+		return err
+	}
+
+	rw.Header().Set(HeaderContentLength, fmt.Sprintf("%d", statInfo.Size()))
+
+	var buf [512]byte
+	n, err := file.Read(buf[:])
+	if err != nil && err != io.EOF {
+		return err
+	}
+
+	// Detect MimeType by sniffing the first 512 bytes
+	if contentType := GetMimetype(filename, buf[:n]); contentType != "" {
+		rw.Header().Set(HeaderContentType, contentType)
+	}
+
+	// Write the first bytes
+	_, err = io.Copy(rw, bytes.NewReader(buf[:n]))
+	if err != nil {
+		return err
+	}
+
+	// Copy the remaining content of the file
+	_, err = io.Copy(rw, file)
+	return err
+}
+
+func (d *assetHandler) logDebug(message string, args ...interface{}) {
+	if d.logger != nil {
+		d.logger.Debug("[AssetHandler] "+message, args...)
+	}
+}
+
+func (d *assetHandler) logError(message string, args ...interface{}) {
+	if d.logger != nil {
+		d.logger.Error("[AssetHandler] "+message, args...)
+	}
 }

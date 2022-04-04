@@ -14,8 +14,11 @@ import "C"
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
 	"runtime"
 	"strconv"
@@ -25,7 +28,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/common"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
@@ -41,13 +43,12 @@ type Frontend struct {
 
 	// Assets
 	assets   *assetserver.AssetServer
-	startURL string
+	startURL *url.URL
 
 	// main window handle
-	mainWindow      *Window
-	bindings        *binding.Bindings
-	dispatcher      frontend.Dispatcher
-	servingFromDisk bool
+	mainWindow *Window
+	bindings   *binding.Bindings
+	dispatcher frontend.Dispatcher
 }
 
 func init() {
@@ -65,23 +66,12 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		startURL:        "wails://wails/",
 	}
+	result.startURL, _ = url.Parse("wails://wails/")
 
-	_starturl, _ := ctx.Value("starturl").(string)
-	if _starturl != "" {
+	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
 	} else {
-		// Check if we have been given a directory to serve assets from.
-		// If so, this means we are in dev mode and are serving assets off disk.
-		// We indicate this through the `servingFromDisk` flag to ensure requests
-		// aren't cached by webkit.
-
-		_assetdir := ctx.Value("assetdir")
-		if _assetdir != nil {
-			result.servingFromDisk = true
-		}
-
 		bindingsJSON, err := appBindings.ToJSON()
 		if err != nil {
 			log.Fatal(err)
@@ -141,7 +131,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 		}
 	}()
 
-	f.mainWindow.Run(f.startURL)
+	f.mainWindow.Run(f.startURL.String())
 
 	return nil
 }
@@ -313,13 +303,31 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	uri := C.webkit_uri_scheme_request_get_uri(req)
 	goURI := C.GoString(uri)
 
-	res, err := common.ProcessRequest(goURI, f.assets, "wails", "wails")
-	if err != nil {
-		f.logger.Error("Error processing request '%s': %s (HttpResponse=%s)", goURI, err, res)
-	}
+	// WebKitGTK stable < 2.36 API does not support request method, request headers and request.
+	// Apart from request bodies, this is only available beginning with 2.36: https://webkitgtk.org/reference/webkit2gtk/stable/WebKitURISchemeResponse.html
+	rw := httptest.NewRecorder()
+	f.assets.ProcessHTTPRequest(
+		goURI,
+		rw,
+		func() (*http.Request, error) {
+			req, err := http.NewRequest(http.MethodGet, goURI, nil)
+			if err != nil {
+				return nil, err
+			}
 
-	if code := res.StatusCode; code != http.StatusOK {
-		message := C.CString(res.StatusText())
+			if req.URL.Host != f.startURL.Host {
+				if req.Body != nil {
+					req.Body.Close()
+				}
+
+				return nil, fmt.Errorf("Expected host '%d' in request, but was '%s'", f.startURL.Host, req.URL.Host)
+			}
+
+			return req, nil
+		})
+
+	if code := rw.Code; code != http.StatusOK {
+		message := C.CString(http.StatusText(code))
 		gerr := C.g_error_new_literal(C.g_quark_from_string(message), C.int(code), message)
 		C.webkit_uri_scheme_request_finish_error(req, gerr)
 		C.g_error_free(gerr)
@@ -328,7 +336,7 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	}
 
 	var cContent unsafe.Pointer
-	bodyLen := len(res.Body)
+	bodyLen := len(rw.Body.Bytes())
 	var cLen C.long
 	if bodyLen > 0 {
 		cContent = C.malloc(C.ulong(bodyLen))
@@ -338,7 +346,8 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 		}
 	}
 
-	cMimeType := C.CString(res.MimeType)
+	// WebKitGTK stable < 2.36 API does not support response headers and response statuscodes
+	cMimeType := C.CString(rw.Header.Get(assetserver.HeaderContentType))
 	defer C.free(unsafe.Pointer(cMimeType))
 
 	stream := C.g_memory_input_stream_new_from_data(
