@@ -124,6 +124,10 @@ const config = {
                 to: '/credits',
                 label: "Credits",
               },
+              {
+                to: '/stats',
+                label: "Stats",
+              },
             ],
           },
           { type: "localeDropdown", position: "right" },
