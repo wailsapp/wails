@@ -26,5 +26,45 @@
   "sidebar.tutorialSidebar.category.Guides": {
     "message": "指南",
     "description": "The label for category Guides in sidebar tutorialSidebar"
+  },
+  "sidebar.docs.category.Getting Started": {
+    "message": "快速入门",
+    "description": "The label for category Getting Started in sidebar docs"
+  },
+  "sidebar.docs.category.Reference": {
+    "message": "参考",
+    "description": "The label for category Reference in sidebar docs"
+  },
+  "sidebar.docs.category.Runtime": {
+    "message": "运行时",
+    "description": "The label for category Runtime in sidebar docs"
+  },
+  "sidebar.docs.category.Community": {
+    "message": "社区",
+    "description": "The label for category Community in sidebar docs"
+  },
+  "sidebar.docs.category.Showcase": {
+    "message": "项目展示",
+    "description": "The label for category Showcase in sidebar docs"
+  },
+  "sidebar.docs.category.Guides": {
+    "message": "指南",
+    "description": "The label for category Guides in sidebar docs"
+  },
+  "sidebar.docs.link.FAQ": {
+    "message": "常见问题",
+    "description": "The label for link FAQ in sidebar docs, linking to /faq"
+  },
+  "sidebar.docs.link.Changelog": {
+    "message": "更新日志",
+    "description": "The label for link Changelog in sidebar docs, linking to /changelog"
+  },
+  "sidebar.docs.link.Credits": {
+    "message": "勋章墙",
+    "description": "The label for link Credits in sidebar docs, linking to /credits"
+  },
+  "sidebar.docs.link.Website Stats": {
+    "message": "网站统计",
+    "description": "The label for link Website Stats in sidebar docs, linking to /stats"
   }
 }

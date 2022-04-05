@@ -35,8 +35,8 @@
     "message": "勋章墙",
     "description": "Navbar item with label Credits"
   },
-  "item.label.Stats": {
+  "item.label.Website Stats": {
     "message": "网站统计",
-    "description": "Navbar item with label Stats"
+    "description": "Navbar item with label Website Stats"
   }
 }

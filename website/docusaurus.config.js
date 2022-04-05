@@ -126,7 +126,7 @@ const config = {
               },
               {
                 to: '/stats',
-                label: "Stats",
+                label: "Website Stats",
               },
             ],
           },
