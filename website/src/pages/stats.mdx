@@ -1,7 +1,3 @@
----
-sidebar_position: 100
----
-
 # Website Stats
 
 To enable us to understand how better to focus our efforts on translations and platform support,
@@ -12,13 +8,20 @@ We also believe in transparency, therefore have made the dashboard public.
 If you have any concerns or suggestions, please raise them in the projects github discussions.
 
 <head>
-<script async src="https://plausible.io/js/embed.host.js"></script>
+  <script async src="https://plausible.io/js/embed.host.js"></script>
 </head>
 
 export const NewComponent = () => (
-        <div>
-            <iframe plausible-embed="true" src="https://plausible.io/share/wails.io?auth=Ll6cPlScOwOi_wgwZwMBn&embed=true&theme=system" scrolling="no" frameBorder={0} loading="lazy" style={{width: '1px', minWidth: '100%', height: '1600px'}} />
-        </div>
+  <div>
+    <iframe
+      plausible-embed="true"
+      src="https://plausible.io/share/wails.io?auth=Ll6cPlScOwOi_wgwZwMBn&embed=true&theme=system"
+      scrolling="no"
+      frameBorder={0}
+      loading="lazy"
+      style={{ width: "1px", minWidth: "100%", height: "1600px" }}
+    />
+  </div>
 );
 
-<NewComponent/>
+<NewComponent />
