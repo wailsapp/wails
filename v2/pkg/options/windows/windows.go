@@ -74,9 +74,9 @@ type Options struct {
 func DefaultMessages() *Messages {
 	return &Messages{
 		InstallationRequired: "The WebView2 runtime is required. Press Ok to download and install. Note: The installer will download silently so please wait.",
-		UpdateRequired:       "The Webview2 runtime needs updating. Press Ok to download and install. Note: The installer will download silently so please wait.",
+		UpdateRequired:       "The WebView2 runtime needs updating. Press Ok to download and install. Note: The installer will download silently so please wait.",
 		MissingRequirements:  "Missing Requirements",
-		Webview2NotInstalled: "webview2 runtime not installed",
+		Webview2NotInstalled: "WebView2 runtime not installed",
 		Error:                "Error",
 		FailedToInstall:      "The runtime failed to install correctly. Please try again.",
 		DownloadPage:         "This application requires the WebView2 runtime. Press OK to open the download page. Minimum version required: ",
