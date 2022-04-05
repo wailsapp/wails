@@ -83,9 +83,14 @@ func (b *Bindings) ToJSON() (string, error) {
 
 func (b *Bindings) WriteModels(modelsDir string) error {
 	models := map[string]string{}
+	var seen slicer.StringSlicer
 	for packageName, structsToGenerate := range b.structsToGenerateTS {
 		thisPackageCode := ""
-		for _, structInterface := range structsToGenerate {
+		for structName, structInterface := range structsToGenerate {
+			fqstructname := packageName + "." + structName
+			if seen.Contains(fqstructname) {
+				continue
+			}
 			w := typescriptify.New()
 			w.Namespace = packageName
 			w.WithBackupDir("")
@@ -95,6 +100,7 @@ func (b *Bindings) WriteModels(modelsDir string) error {
 				return err
 			}
 			thisPackageCode += str
+			seen.AddSlice(w.GetGeneratedStructs())
 		}
 		models[packageName] = thisPackageCode
 	}

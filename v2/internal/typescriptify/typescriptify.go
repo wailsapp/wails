@@ -95,7 +95,7 @@ type TypeScriptify struct {
 	fieldTypeOptions map[reflect.Type]TypeOptions
 
 	// throwaway, used when converting
-	alreadyConverted map[reflect.Type]bool
+	alreadyConverted map[string]bool
 
 	Namespace string
 }
@@ -131,9 +131,6 @@ func New() *TypeScriptify {
 	result.CreateFromMethod = true
 	result.CreateConstructor = true
 
-	// if result.CreateFromMethod {
-	// 	fmt.Fprintln(os.Stderr, "FromMethod METHOD IS DEPRECATED AND WILL BE REMOVED!!!!!!")
-	// }
 	return result
 }
 
@@ -186,6 +183,14 @@ func (t *TypeScriptify) ManageType(fld interface{}, opts TypeOptions) *TypeScrip
 	}
 	t.fieldTypeOptions[typ] = opts
 	return t
+}
+
+func (t *TypeScriptify) GetGeneratedStructs() []string {
+	var result []string
+	for key := range t.alreadyConverted {
+		result = append(result, key)
+	}
+	return result
 }
 
 func (t *TypeScriptify) WithCreateFromMethod(b bool) *TypeScriptify {
@@ -323,7 +328,7 @@ func (t *TypeScriptify) AddEnumValues(typeOf reflect.Type, values interface{}) *
 }
 
 func (t *TypeScriptify) Convert(customCode map[string]string) (string, error) {
-	t.alreadyConverted = make(map[reflect.Type]bool)
+	t.alreadyConverted = make(map[string]bool)
 	depth := 0
 
 	result := ""
@@ -343,6 +348,7 @@ func (t *TypeScriptify) Convert(customCode map[string]string) (string, error) {
 		result += "\n" + strings.Trim(typeScriptCode, " "+t.Indent+"\r\n")
 	}
 
+	fmt.Printf("t.structTypes: %+v\n", t.structTypes)
 	for _, strctTyp := range t.structTypes {
 		typeScriptCode, err := t.convertType(depth, strctTyp.Type, customCode)
 		if err != nil {
@@ -466,10 +472,10 @@ type TSNamer interface {
 
 func (t *TypeScriptify) convertEnum(depth int, typeOf reflect.Type, elements []enumElement) (string, error) {
 	t.logf(depth, "Converting enum %s", typeOf.String())
-	if _, found := t.alreadyConverted[typeOf]; found { // Already converted
+	if _, found := t.alreadyConverted[typeOf.String()]; found { // Already converted
 		return "", nil
 	}
-	t.alreadyConverted[typeOf] = true
+	t.alreadyConverted[typeOf.String()] = true
 
 	entityName := t.Prefix + typeOf.Name() + t.Suffix
 	result := "enum " + entityName + " {\n"
@@ -552,7 +558,7 @@ func (t *TypeScriptify) getJSONFieldName(field reflect.StructField, isPtr bool) 
 }
 
 func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode map[string]string) (string, error) {
-	if _, found := t.alreadyConverted[typeOf]; found { // Already converted
+	if _, found := t.alreadyConverted[typeOf.String()]; found { // Already converted
 		return "", nil
 	}
 	t.logf(depth, "Converting type %s", typeOf.String())
@@ -563,7 +569,7 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		}
 	}
 
-	t.alreadyConverted[typeOf] = true
+	t.alreadyConverted[typeOf.String()] = true
 
 	entityName := t.Prefix + typeOf.Name() + t.Suffix
 	result := ""
