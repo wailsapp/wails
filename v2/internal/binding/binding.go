@@ -109,6 +109,11 @@ func (b *Bindings) WriteModels(modelsDir string) error {
 		modelsData.WriteString("\n}\n\n")
 	}
 
+	// Don't write if we don't have anything
+	if len(modelsData.Bytes()) == 0 {
+		return nil
+	}
+
 	filename := filepath.Join(modelsDir, "models.ts")
 	err := os.WriteFile(filename, modelsData.Bytes(), 0755)
 	if err != nil {
