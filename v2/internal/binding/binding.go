@@ -87,6 +87,7 @@ func (b *Bindings) WriteModels(modelsDir string) error {
 		thisPackageCode := ""
 		for _, structInterface := range structsToGenerate {
 			w := typescriptify.New()
+			w.Namespace = packageName
 			w.WithBackupDir("")
 			w.Add(structInterface)
 			str, err := w.Convert(nil)
@@ -121,5 +122,40 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 	if b.structsToGenerateTS[packageName] == nil {
 		b.structsToGenerateTS[packageName] = make(map[string]interface{})
 	}
+	if b.structsToGenerateTS[packageName][structName] != nil {
+		return
+	}
 	b.structsToGenerateTS[packageName][structName] = s
+
+	// Iterate this struct and add any struct field references
+	structType := reflect.TypeOf(s)
+	if structType.Kind() == reflect.Ptr {
+		structType = structType.Elem()
+	}
+
+	for i := 0; i < structType.NumField(); i++ {
+		field := structType.Field(i)
+		if field.Anonymous {
+			return
+		}
+
+		kind := field.Type.Kind()
+		if kind == reflect.Struct {
+			fqname := field.Type.String()
+			sName := strings.Split(fqname, ".")[1]
+			pName := getPackageName(fqname)
+			a := reflect.New(field.Type)
+			s := reflect.Indirect(a).Interface()
+			b.AddStructToGenerateTS(pName, sName, s)
+		} else if kind == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct {
+			fqname := field.Type.String()
+			sName := strings.Split(fqname, ".")[1]
+			pName := getPackageName(fqname)
+			typ := field.Type.Elem()
+			a := reflect.New(typ)
+			s := reflect.Indirect(a).Interface()
+			b.AddStructToGenerateTS(pName, sName, s)
+		}
+	}
+
 }

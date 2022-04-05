@@ -96,6 +96,8 @@ type TypeScriptify struct {
 
 	// throwaway, used when converting
 	alreadyConverted map[reflect.Type]bool
+
+	Namespace string
 }
 
 func New() *TypeScriptify {
@@ -554,6 +556,12 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		return "", nil
 	}
 	t.logf(depth, "Converting type %s", typeOf.String())
+	if strings.ContainsRune(typeOf.String(), '.') {
+		namespace := strings.Split(typeOf.String(), ".")[0]
+		if namespace != t.Namespace {
+			return "", nil
+		}
+	}
 
 	t.alreadyConverted[typeOf] = true
 
@@ -568,10 +576,11 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		result = "export " + result
 	}
 	builder := typeScriptClassBuilder{
-		types:  t.kinds,
-		indent: t.Indent,
-		prefix: t.Prefix,
-		suffix: t.Suffix,
+		types:     t.kinds,
+		indent:    t.Indent,
+		prefix:    t.Prefix,
+		suffix:    t.Suffix,
+		namespace: t.Namespace,
 	}
 
 	fields := deepFields(typeOf)
@@ -731,6 +740,7 @@ type typeScriptClassBuilder struct {
 	createFromMethodBody []string
 	constructorBody      []string
 	prefix, suffix       string
+	namespace            string
 }
 
 func (t *typeScriptClassBuilder) AddSimpleArrayField(fieldName string, field reflect.StructField, arrayDepth int, opts TypeOptions) error {
@@ -785,10 +795,14 @@ func (t *typeScriptClassBuilder) AddEnumField(fieldName string, field reflect.St
 }
 
 func (t *typeScriptClassBuilder) AddStructField(fieldName string, field reflect.StructField) {
-	fieldType := field.Type.Name()
 	strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
-	t.addField(fieldName, t.prefix+fieldType+t.suffix)
-	t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("this.convertValues(source[\"%s\"], %s)", strippedFieldName, t.prefix+fieldType+t.suffix))
+	namespace := strings.Split(field.Type.String(), ".")[0]
+	fqname := field.Type.Name()
+	if namespace != t.namespace {
+		fqname = field.Type.String()
+	}
+	t.addField(fieldName, fqname)
+	t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("this.convertValues(source[\"%s\"], %s)", strippedFieldName, fqname))
 }
 
 func (t *typeScriptClassBuilder) AddArrayOfStructsField(fieldName string, field reflect.StructField, arrayDepth int) {
