@@ -153,7 +153,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	verbose := options.Verbosity == VERBOSE
 	// Run go mod tidy first
 	if !options.SkipModTidy {
-		cmd := exec.Command(options.Compiler, "mod", "tidy")
+		cmd := exec.Command(options.Compiler, "mod", "tidy", "-compat=1.17")
 		cmd.Stderr = os.Stderr
 		if verbose {
 			println("")
