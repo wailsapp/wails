@@ -99,6 +99,7 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 }
 
 func (w *Window) Run() int {
+	w.updateTheme()
 	return winc.RunMainLoop()
 }
 
