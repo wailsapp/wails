@@ -84,29 +84,34 @@ func (b *Bindings) ToJSON() (string, error) {
 func (b *Bindings) WriteModels(modelsDir string) error {
 	models := map[string]string{}
 	var seen slicer.StringSlicer
+	allStructNames := b.getAllStructNames()
 	for packageName, structsToGenerate := range b.structsToGenerateTS {
 		thisPackageCode := ""
+		w := typescriptify.New()
+		w.Namespace = packageName
+		w.WithBackupDir("")
+		w.KnownStructs = allStructNames
 		for structName, structInterface := range structsToGenerate {
 			fqstructname := packageName + "." + structName
 			if seen.Contains(fqstructname) {
 				continue
 			}
-			w := typescriptify.New()
-			w.Namespace = packageName
-			w.WithBackupDir("")
 			w.Add(structInterface)
-			str, err := w.Convert(nil)
-			if err != nil {
-				return err
-			}
-			thisPackageCode += str
-			seen.AddSlice(w.GetGeneratedStructs())
 		}
+		str, err := w.Convert(nil)
+		if err != nil {
+			return err
+		}
+		thisPackageCode += str
+		seen.AddSlice(w.GetGeneratedStructs())
 		models[packageName] = thisPackageCode
 	}
 
 	var modelsData bytes.Buffer
 	for packageName, modelData := range models {
+		if strings.TrimSpace(modelData) == "" {
+			continue
+		}
 		modelsData.WriteString("export namespace " + packageName + " {\n")
 		sc := bufio.NewScanner(strings.NewReader(modelData))
 		for sc.Scan() {
@@ -156,17 +161,55 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 			sName := strings.Split(fqname, ".")[1]
 			pName := getPackageName(fqname)
 			a := reflect.New(field.Type)
-			s := reflect.Indirect(a).Interface()
-			b.AddStructToGenerateTS(pName, sName, s)
+			if b.hasExportedJSONFields(field.Type) {
+				s := reflect.Indirect(a).Interface()
+				b.AddStructToGenerateTS(pName, sName, s)
+			}
 		} else if kind == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct {
 			fqname := field.Type.String()
 			sName := strings.Split(fqname, ".")[1]
 			pName := getPackageName(fqname)
 			typ := field.Type.Elem()
 			a := reflect.New(typ)
-			s := reflect.Indirect(a).Interface()
-			b.AddStructToGenerateTS(pName, sName, s)
+			if b.hasExportedJSONFields(typ) {
+				s := reflect.Indirect(a).Interface()
+				b.AddStructToGenerateTS(pName, sName, s)
+			}
 		}
 	}
 
+}
+
+func (b *Bindings) getAllStructNames() *slicer.StringSlicer {
+	var result slicer.StringSlicer
+	for packageName, structsToGenerate := range b.structsToGenerateTS {
+		for structName := range structsToGenerate {
+			result.Add(packageName + "." + structName)
+		}
+	}
+	return &result
+}
+
+func (b *Bindings) hasExportedJSONFields(typeOf reflect.Type) bool {
+	for i := 0; i < typeOf.NumField(); i++ {
+		jsonFieldName := ""
+		f := typeOf.Field(i)
+		jsonTag := f.Tag.Get("json")
+		if len(jsonTag) == 0 {
+			continue
+		}
+		jsonTagParts := strings.Split(jsonTag, ",")
+		if len(jsonTagParts) > 0 {
+			jsonFieldName = jsonTagParts[0]
+		}
+		for _, t := range jsonTagParts {
+			if t == "-" {
+				continue
+			}
+		}
+		if jsonFieldName != "" {
+			return true
+		}
+	}
+	return false
 }
