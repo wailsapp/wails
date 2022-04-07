@@ -302,6 +302,9 @@
 }
 
 @media (min-width: 960px) {
+  .carousel-root {
+    padding: 15px;
+  }
   .carousel .slider-wrapper {
     width: 50%;
   }

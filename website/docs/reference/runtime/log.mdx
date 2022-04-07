@@ -27,11 +27,23 @@ JS Signature: `LogPrint(message: string)`
 
 Logs the given message as a raw message.
 
+### LogPrintf
+
+Go Signature: `LogPrintf(ctx context.Context, format string, args ...interface{})`
+
+Logs the given message as a raw message.
+
 ### LogTrace
 
 Go Signature: `LogTrace(ctx context.Context, message string)`
 
 JS Signature: `LogTrace(message: string)`
+
+Logs the given message at the `Trace` log level.
+
+### LogTracef
+
+Go Signature: `LogTracef(ctx context.Context, format string, args ...interface{})`
 
 Logs the given message at the `Trace` log level.
 
@@ -43,6 +55,11 @@ JS Signature: `LogDebug(message: string)`
 
 Logs the given message at the `Debug` log level.
 
+### LogDebugf
+
+Go Signature: `LogDebugf(ctx context.Context, format string, args ...interface{})`
+
+Logs the given message at the `Debug` log level.
 
 ### LogInfo
 
@@ -52,6 +69,11 @@ JS Signature: `LogInfo(message: string)`
 
 Logs the given message at the `Info` log level.
 
+### LogInfof
+
+Go Signature: `LogInfof(ctx context.Context, format string, args ...interface{})`
+
+Logs the given message at the `Info` log level.
 
 ### LogWarning
 
@@ -61,6 +83,11 @@ JS Signature: `LogWarning(message: string)`
 
 Logs the given message at the `Warning` log level.
 
+### LogWarningf
+
+Go Signature: `LogWarningf(ctx context.Context, format string, args ...interface{})`
+
+Logs the given message at the `Warning` log level.
 
 ### LogError
 
@@ -70,11 +97,23 @@ JS Signature: `LogError(message: string)`
 
 Logs the given message at the `Error` log level.
 
+### LogErrorf
+
+Go Signature: `LogErrorf(ctx context.Context, format string, args ...interface{})`
+
+Logs the given message at the `Error` log level.
 
 ### LogFatal
+
 Go Signature: `LogFatal(ctx context.Context, message string)`
 
 JS Signature: `LogFatal(message: string)`
+
+Logs the given message at the `Fatal` log level.
+
+### LogFatalf
+
+Go Signature: `LogFatalf(ctx context.Context, format string, args ...interface{})`
 
 Logs the given message at the `Fatal` log level.
 
@@ -96,7 +135,7 @@ Sets the log level. In Javascript, the number relates to the following log level
 
 ## Using a Custom Logger
 
-A custom logger may be used by providing it using the [Logger](/docs/reference/options#logger)
+A custom logger may be used by providing it using the [Logger](../options.mdx#logger)
 application option. The only requirement is that the logger implements the `logger.Logger` interface
 defined in `github.com/wailsapp/wails/v2/pkg/logger`:
 

@@ -13,15 +13,12 @@ import (
 	"github.com/wailsapp/wails/v2/internal/system"
 
 	"github.com/leaanthony/gosod"
-	wailsRuntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime/wrapper"
 
 	"github.com/pkg/errors"
 
 	"github.com/leaanthony/slicer"
-	"github.com/wailsapp/wails/v2/internal/assetdb"
 	"github.com/wailsapp/wails/v2/internal/fs"
-	"github.com/wailsapp/wails/v2/internal/html"
 	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/internal/shell"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
@@ -64,49 +61,6 @@ func (b *BaseBuilder) fileExists(path string) bool {
 		return !os.IsNotExist(err)
 	}
 	return true
-}
-
-// buildCustomAssets will iterate through the projects static directory and add all files
-// to the application wide asset database.
-func (b *BaseBuilder) buildCustomAssets(projectData *project.Project) error {
-
-	// Add trailing slash to Asset directory
-	customAssetsDir := filepath.Join(projectData.Path, "assets", "custom") + "/"
-	if !b.fileExists(customAssetsDir) {
-		err := fs.MkDirs(customAssetsDir)
-		if err != nil {
-			return err
-		}
-	}
-
-	assets := assetdb.NewAssetDB()
-	err := filepath.Walk(customAssetsDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		normalisedPath := filepath.ToSlash(path)
-		localPath := strings.TrimPrefix(normalisedPath, customAssetsDir)
-		if len(localPath) == 0 {
-			return nil
-		}
-		if data, err := os.ReadFile(filepath.Join(customAssetsDir, localPath)); err == nil {
-			assets.AddAsset(localPath, data)
-		}
-
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-
-	// Write assetdb out to root directory
-	assetsDbFilename := fs.RelativePath("../../../assetsdb.go")
-	b.addFileToDelete(assetsDbFilename)
-	err = os.WriteFile(assetsDbFilename, []byte(assets.Serialize("assets", "wails")), 0644)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (b *BaseBuilder) convertFileToIntegerString(filename string) (string, error) {
@@ -436,16 +390,6 @@ func generateRuntimeWrapper(options *Options) error {
 		return err
 	}
 
-	//ipcdev.js
-	err = os.WriteFile(filepath.Join(wrapperDir, "ipcdev.js"), wailsRuntime.DesktopIPC, 0755)
-	if err != nil {
-		return err
-	}
-	//runtimedev.js
-	err = os.WriteFile(filepath.Join(wrapperDir, "runtimedev.js"), wailsRuntime.RuntimeDesktopJS, 0755)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -610,14 +554,6 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 
 	outputLogger.Println("Done.")
 	return nil
-}
-
-// ExtractAssets gets the assets from the index.html file
-func (b *BaseBuilder) ExtractAssets() (*html.AssetBundle, error) {
-
-	// Read in html
-	//return html.NewAssetBundle(b.projectData.HTML)
-	return nil, nil
 }
 
 func upsertEnv(env []string, key string, update func(v string) string) []string {

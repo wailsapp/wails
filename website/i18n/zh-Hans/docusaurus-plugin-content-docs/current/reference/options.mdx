@@ -47,6 +47,17 @@ func main() {
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
+            Theme:                             windows.SystemDefault,
+            CustomTheme: &windows.ThemeSettings{
+                DarkModeTitleBar:   windows.RGB(20, 20, 20),
+                DarkModeTitleText:  windows.RGB(200, 200, 200),
+                DarkModeBorder:     windows.RGB(20, 0, 20),
+                LightModeTitleBar:  windows.RGB(200, 200, 200),
+                LightModeTitleText: windows.RGB(20, 20, 20),
+                LightModeBorder:    windows.RGB(200, 200, 200),
+            },
+            // 可以自定义的用户消息
+            Messages *windows.Messages
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -65,6 +76,9 @@ func main() {
                 Message: "© 2021 Me",
                 Icon:    icon,
             },
+        },
+        Linux: &linux.Options{
+            Icon: icon,
         },
     })
     if err != nil {
@@ -120,7 +134,7 @@ func main() {
 
 类型：bool
 
-设置为`true`时，窗口将没有边框或标题栏。另请参阅[无边框窗口](/docs/guides/frameless)。
+设置为`true`时，窗口将没有边框或标题栏。另请参阅[无边框窗口](../guides/frameless)。
 
 ### 最小宽度
 
@@ -160,7 +174,7 @@ func main() {
 
 类型：bool
 
-设置为`true`时，应用程序将被隐藏，直到调用[显示窗口](/docs/reference/runtime/window#显示窗口)。
+设置为`true`时，应用程序将被隐藏，直到调用[显示窗口](../reference/runtime/window#显示窗口)。
 
 ### 关闭时隐藏窗口
 
@@ -200,7 +214,7 @@ func main() {
 
 类型：\*menu.Menu
 
-应用程序要使用的菜单。[菜单参考](/docs/reference/runtime/menu)中有关菜单的更多详细信息。
+应用程序要使用的菜单。[菜单参考](../reference/runtime/menu)中有关菜单的更多详细信息。
 
 注意：在 Mac 上，如果未指定菜单，则将创建默认菜单。
 
@@ -212,7 +226,7 @@ func main() {
 
 默认值：Logger to Stdout
 
-应用程序要使用的记录器。有关日志记录的更多详细信息，请参阅[日志参考](/docs/reference/runtime/log)。
+应用程序要使用的记录器。有关日志记录的更多详细信息，请参阅[日志参考](../reference/runtime/log)。
 
 ### 日志级别
 
@@ -222,7 +236,7 @@ func main() {
 
 默认值：在开发模式下是`Info`，在生产模式下是`Error`。
 
-默认日志级别。有关日志记录的更多详细信息，请参阅[设置日志等级](/docs/reference/runtime/log#设置日志等级)。
+默认日志级别。有关日志记录的更多详细信息，请参阅[设置日志等级](../reference/runtime/log#设置日志等级)。
 
 ### 应用启动回调
 
@@ -280,11 +294,11 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 
 定义窗口在启动时应如何呈现。
 
-| 值         | Win | Mac |
-| ---------- | --- | --- |
-| Fullscreen | ✅  | ✅  |
-| Maximised  | ✅  | ✅  |
-| Minimised  | ✅  |     |
+| 值         | Win | Mac | Lin |
+| ---------- | --- | --- | --- |
+| Fullscreen | ✅  | ✅  | ✅  |
+| Maximised  | ✅  | ✅  | ✅  |
+| Minimised  | ✅  |     | ✅  |
 
 ### 绑定
 
@@ -309,6 +323,14 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 类型：\*mac.Options
 
 这定义了[Mac 特定的选项](#mac-特定选项)。
+
+### Linux
+
+名称：Linux
+
+类型：\*linux.Options
+
+这定义了[Linux 特定的选项](#linux-特定选项).
 
 ## Windows 特定选项
 
@@ -351,6 +373,86 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 类型：string
 
 这定义了 WebView2 存储用户数据的路径。如果为空将使用`%APPDATA%\[BinaryName.exe]`。
+
+### 主题
+
+名称：Theme
+
+类型：`windows.Theme`
+
+最低 Windows 版本：Windows 10 2004/20H1
+
+这定义了应用程序应该使用的主题：
+
+| 值            | 描述                                                                               |
+| ------------- | ---------------------------------------------------------------------------------- |
+| SystemDefault | _默认_. 主题将基于系统默认值。如果用户更改了他们的主题，应用程序将更新以使用新设置 |
+| Dark          | 该应用程序将只使用深色主题                                                         |
+| Light         | 该应用程序将只使用浅色主题                                                         |
+
+### 自定义主题
+
+名称：CustomTheme
+
+类型：`windows.CustomTheme`
+
+最低 Windows 版本：Windows 10/11 2009/21H2 Build 22000
+
+允许您为浅色和深色模式以及窗口处于活动或非活动状态的 TitleBar、TitleText 和 Border 指定自定义颜色。
+
+#### 自定义主题
+
+CustomTheme 结构使用 `int32` 指定颜色值. 这些是非标准 Windows 格式：
+`0x00BBGGAA`。 提供了一个辅助函数来将 RGB 转换为这种格式：`windows.RGB(r,g,b uint8)`。
+
+注意：任何未提供的值都将默认为黑色。
+
+```go
+type ThemeSettings struct {
+	DarkModeTitleBar           int32
+	DarkModeTitleBarInactive   int32
+	DarkModeTitleText          int32
+	DarkModeTitleTextInactive  int32
+	DarkModeBorder             int32
+	DarkModeBorderInactive     int32
+	LightModeTitleBar          int32
+	LightModeTitleBarInactive  int32
+	LightModeTitleText         int32
+	LightModeTitleTextInactive int32
+	LightModeBorder            int32
+	LightModeBorderInactive    int32
+}
+```
+
+示例：
+
+```go
+    CustomTheme: &windows.ThemeSettings{
+        // Theme to use when window is active
+        DarkModeTitleBar:   windows.RGB(255, 0, 0),   // Red
+        DarkModeTitleText:  windows.RGB(0, 255, 0),   // Green
+        DarkModeBorder:     windows.RGB(0, 0, 255),   // Blue
+        LightModeTitleBar:  windows.RGB(200, 200, 200),
+        LightModeTitleText: windows.RGB(20, 20, 20),
+        LightModeBorder:    windows.RGB(200, 200, 200),
+        // Theme to use when window is inactive
+        DarkModeTitleBarInactive:   windows.RGB(128, 0, 0),
+        DarkModeTitleTextInactive:  windows.RGB(0, 128, 0),
+        DarkModeBorderInactive:     windows.RGB(0, 0, 128),
+        LightModeTitleBarInactive:  windows.RGB(100, 100, 100),
+        LightModeTitleTextInactive: windows.RGB(10, 10, 10),
+        LightModeBorderInactive:    windows.RGB(100, 100, 100),
+    },
+```
+
+### 消息
+
+名称：Messages
+
+类型：`*windows.Messages`
+
+一个如果找不到有效的 webview2 运行时，webview2 安装程序所使用的字符串结构。
+您可以选择支持的任意语言定制此选项。
 
 ## Mac 特定选项
 
@@ -514,3 +616,18 @@ func main() {
   />
 </div>
 <br />
+
+## Linux 特定选项
+
+### Icon
+
+名称：Icon
+
+类型：[]byte
+
+设置代表窗口的图标。当窗口最小化（也称为图标化）时使用此图标。一些窗口管理器或桌面环境也可能将其放置在窗口框架中，或在其他上下文中显示。在其他情况下，根本不使用该图标，因此您的预计情况可能会有所不同。
+
+注意：Wayland 上的 Gnome 至少不显示此图标。要在那里有一个应用程序图标，必须使用一个`.desktop`文件。在 KDE 上它应该可以工作。
+
+图标应该以自然绘制的任何尺寸提供；也就是说，在传递图像之前不要缩放图像。
+缩放将延迟到当所需的最终尺寸已知的最后一刻，以获得最佳质量。

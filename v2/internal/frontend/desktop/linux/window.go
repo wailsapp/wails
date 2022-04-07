@@ -184,8 +184,8 @@ extern void processURLRequest(void *request);
 gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void* data)
 {
    	processMessage("Q");
-	// since we handle the close in processMessage tell GTK to not invoke additional handlers - see:
-	// https://docs.gtk.org/gtk3/signal.Widget.delete-event.html
+    // since we handle the close in processMessage tell GTK to not invoke additional handlers - see:
+    // https://docs.gtk.org/gtk3/signal.Widget.delete-event.html
     return TRUE;
 }
 
@@ -200,6 +200,9 @@ GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowO
 	} else {
 		g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(close_button_pressed), NULL);
 	}
+
+	WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
+	webkit_settings_set_user_agent_with_application_details(settings, "wails.io", "");
 	return webview;
 }
 
@@ -209,8 +212,8 @@ void devtoolsEnabled(void* webview, int enabled) {
 	webkit_settings_set_enable_developer_extras(settings, genabled);
 }
 
-void loadIndex(void* webview) {
-	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview), "wails:///");
+void loadIndex(void* webview, char* url) {
+	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview), url);
 }
 
 typedef struct DragOptions {
@@ -551,15 +554,29 @@ void DisableContextMenu(void* webview) {
 	g_signal_connect(WEBKIT_WEB_VIEW(webview), "context-menu", G_CALLBACK(disableContextMenu), NULL);
 }
 
+void SetWindowIcon(GtkWindow* window, const guchar* buf, gsize len) {
+	GdkPixbufLoader* loader = gdk_pixbuf_loader_new();
+	if (!loader) {
+		return;
+	}
+	if (gdk_pixbuf_loader_write(loader, buf, len, NULL) && gdk_pixbuf_loader_close(loader, NULL)) {
+		GdkPixbuf* pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+		if (pixbuf) {
+			gtk_window_set_icon(window, pixbuf);
+		}
+	}
+	g_object_unref(loader);
+}
 
 */
 import "C"
 import (
+	"strings"
+	"unsafe"
+
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"strings"
-	"unsafe"
 )
 
 func gtkBool(input bool) C.gboolean {
@@ -637,6 +654,11 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	result.SetTitle(appoptions.Title)
 	result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
 	result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
+	if appoptions.Linux != nil {
+		if appoptions.Linux.Icon != nil {
+			result.SetWindowIcon(appoptions.Linux.Icon)
+		}
+	}
 
 	// Menu
 	result.SetApplicationMenu(appoptions.Menu)
@@ -763,12 +785,21 @@ func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
 
 }
 
-func (w *Window) Run() {
+func (w *Window) SetWindowIcon(icon []byte) {
+	if len(icon) == 0 {
+		return
+	}
+	C.SetWindowIcon(w.asGTKWindow(), (*C.guchar)(&icon[0]), (C.gsize)(len(icon)))
+}
+
+func (w *Window) Run(url string) {
 	if w.menubar != nil {
 		C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), w.menubar, 0, 0, 0)
 	}
 	C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), C.GTKWIDGET(w.webview), 1, 1, 0)
-	C.loadIndex(w.webview)
+	_url := C.CString(url)
+	C.loadIndex(w.webview, _url)
+	defer C.free(unsafe.Pointer(_url))
 	C.gtk_widget_show_all(w.asGTKWidget())
 	w.Center()
 	switch w.appoptions.WindowStartState {

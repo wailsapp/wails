@@ -7,22 +7,23 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"log"
 	"runtime"
 	"strconv"
 	"strings"
 	"text/template"
 
-	"github.com/leaanthony/go-webview2/pkg/edge"
-	"github.com/leaanthony/winc"
-	"github.com/leaanthony/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/common"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 type Frontend struct {
@@ -36,7 +37,7 @@ type Frontend struct {
 	debug           bool
 
 	// Assets
-	assets   *assetserver.DesktopAssetServer
+	assets   *assetserver.AssetServer
 	startURL string
 
 	// main window handle
@@ -66,18 +67,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		versionInfo:     versionInfo,
 	}
 
-	bindingsJSON, err := appBindings.ToJSON()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_devServerURL := ctx.Value("devserverurl")
-	if _devServerURL != nil {
-		devServerURL := _devServerURL.(string)
-		if len(devServerURL) > 0 && devServerURL != "http://localhost:34115" {
-			result.startURL = devServerURL
-			return result
-		}
+	_starturl, _ := ctx.Value("starturl").(string)
+	if _starturl != "" {
+		result.startURL = _starturl
+		return result
 	}
 
 	// Check if we have been given a directory to serve assets from.
@@ -90,7 +83,12 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		result.servingFromDisk = true
 	}
 
-	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON, result.servingFromDisk)
+	bindingsJSON, err := appBindings.ToJSON()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -101,6 +99,30 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 func (f *Frontend) WindowReload() {
 	f.ExecJS("runtime.WindowReload();")
+}
+
+func (f *Frontend) WindowSetSystemDefaultTheme() {
+	runtime.LockOSThread()
+	f.mainWindow.frontendOptions.Windows.Theme = windows.SystemDefault
+	f.mainWindow.Invoke(func() {
+		f.mainWindow.updateTheme()
+	})
+}
+
+func (f *Frontend) WindowSetLightTheme() {
+	runtime.LockOSThread()
+	f.mainWindow.frontendOptions.Windows.Theme = windows.Light
+	f.mainWindow.Invoke(func() {
+		f.mainWindow.updateTheme()
+	})
+}
+
+func (f *Frontend) WindowSetDarkTheme() {
+	runtime.LockOSThread()
+	f.mainWindow.frontendOptions.Windows.Theme = windows.Dark
+	f.mainWindow.Invoke(func() {
+		f.mainWindow.updateTheme()
+	})
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
@@ -361,6 +383,15 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 }
 
 func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {
+	// Setting the UserAgent on the CoreWebView2Settings clears the whole default UserAgent of the Edge browser, but
+	// we want to just append our ApplicationIdentifier. So we adjust the UserAgent for every request.
+	if reqHeaders, err := req.GetHeaders(); err == nil {
+		useragent, _ := reqHeaders.GetHeader(assetserver.HeaderUserAgent)
+		useragent = strings.Join([]string{useragent, assetserver.WailsUserAgentValue}, " ")
+		reqHeaders.SetHeader(assetserver.HeaderUserAgent, useragent)
+		reqHeaders.Release()
+	}
+
 	//Get the request
 	uri, _ := req.GetUri()
 

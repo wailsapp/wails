@@ -93,10 +93,6 @@ func Build(options *Options) (string, error) {
 	switch projectData.OutputType {
 	case "desktop":
 		builder = newDesktopBuilder(options)
-	case "hybrid":
-		builder = newHybridBuilder(options)
-	case "server":
-		builder = newServerBuilder(options)
 	case "dev":
 		builder = newDesktopBuilder(options)
 	default:
@@ -206,12 +202,6 @@ func Build(options *Options) (string, error) {
 			return "", err
 		}
 		outputLogger.Println("Done.")
-	}
-
-	// Post compilation tasks
-	err = builder.PostCompilation(options)
-	if err != nil {
-		return "", err
 	}
 
 	compileBinary := options.CompiledBinary

@@ -2,6 +2,18 @@ package windows
 
 type Theme int
 
+type Messages struct {
+	InstallationRequired string
+	UpdateRequired       string
+	MissingRequirements  string
+	Webview2NotInstalled string
+	Error                string
+	FailedToInstall      string
+	DownloadPage         string
+	PressOKToInstall     string
+	ContactAdmin         string
+}
+
 const (
 	// SystemDefault will use whatever the system theme is. The application will follow system theme changes.
 	SystemDefault Theme = 0
@@ -54,4 +66,21 @@ type Options struct {
 
 	// Custom settings for dark/light mode
 	CustomTheme *ThemeSettings
+
+	// User messages that can be customised
+	Messages *Messages
+}
+
+func DefaultMessages() *Messages {
+	return &Messages{
+		InstallationRequired: "The WebView2 runtime is required. Press Ok to download and install. Note: The installer will download silently so please wait.",
+		UpdateRequired:       "The WebView2 runtime needs updating. Press Ok to download and install. Note: The installer will download silently so please wait.",
+		MissingRequirements:  "Missing Requirements",
+		Webview2NotInstalled: "WebView2 runtime not installed",
+		Error:                "Error",
+		FailedToInstall:      "The runtime failed to install correctly. Please try again.",
+		DownloadPage:         "This application requires the WebView2 runtime. Press OK to open the download page. Minimum version required: ",
+		PressOKToInstall:     "Press Ok to install.",
+		ContactAdmin:         "The WebView2 runtime is required to run this application. Please contact your system administrator.",
+	}
 }

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/gabriel-vasile/mimetype"
+	"github.com/wailsapp/mimetype"
 )
 
 var (
@@ -17,12 +17,13 @@ func GetMimetype(filename string, data []byte) string {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	if filepath.Ext(filename) == ".js" {
+	// short-circuit .js, .css to ensure the
+	// browser evaluates them in the right context
+	switch filepath.Ext(filename) {
+	case ".js":
 		return "application/javascript"
-	}
-
-	if filepath.Ext(filename) == ".css" {
-		return "text/css"
+	case ".css":
+		return "text/css; charset=utf-8"
 	}
 
 	result := cache[filename]

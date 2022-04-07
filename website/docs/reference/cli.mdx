@@ -29,7 +29,7 @@ Example:
 This will generate a a project called "test" in the "mytestproject" directory, initialise git,
 generate vscode project files and do so silently.
 
-More information on using IDEs with Wails can be found [here](/docs/guides/ides).
+More information on using IDEs with Wails can be found [here](../guides/ides.mdx).
 
 ### Remote Templates
 
@@ -38,7 +38,7 @@ Remote templates (hosted on GitHub) are supported and can be installed by using 
 Example:
  `wails init -n test -t https://github.com/leaanthony/testtemplate[@v1.0.0]`
 
-A list of community maintained templates can be found [here](/docs/community/templates)
+A list of community maintained templates can be found [here](../community/templates.mdx)
 
 :::warning Attention
 
@@ -54,7 +54,7 @@ A list of community maintained templates can be found [here](/docs/community/tem
 
 |  Flag                |  Description                            |  Default                   |
 | :------------------- | :-------------------------------------- | :------------------------- |
-|  -platform           | Build for the given (comma delimited) [platforms](/docs/reference/cli#platforms) eg. `windows/arm64`. Note, if you do not give the architecture, `runtime.GOARCH` is used. | runtime.GOOS/runtime.GOARCH |
+|  -platform           | Build for the given (comma delimited) [platforms](../reference/cli.mdx#platforms) eg. `windows/arm64`. Note, if you do not give the architecture, `runtime.GOARCH` is used. | runtime.GOOS/runtime.GOARCH |
 |  -clean              | Cleans the `build/bin` directory        |                            |
 |  -compiler "compiler"| Use a different go compiler to build, eg go1.15beta1 | go            |
 |  -ldflags "flags"    | Additional ldflags to pass to the compiler |                         |
@@ -70,9 +70,9 @@ A list of community maintained templates can be found [here](/docs/community/tem
 |  -u                  | Updates your project's `go.mod` to use the same version of Wails as the CLI | |
 |  -debug              | Retains debug information in the application | false |
 
-For a detailed description of the `webview2` flag, please refer to the [Windows](/docs/guides/windows) Guide.
+For a detailed description of the `webview2` flag, please refer to the [Windows](../guides/windows.mdx) Guide.
 
-If you prefer to build using standard Go tooling, please consult the [Manual Builds](/docs/guides/manual-builds)
+If you prefer to build using standard Go tooling, please consult the [Manual Builds](../guides/manual-builds.mdx)
 guide.
 
 Example:
@@ -169,13 +169,13 @@ Your system is ready for Wails development!
 |  -noreload           | Disable automatic reload when assets change | |
 |  -v                  | Verbosity level (0 - silent, 1 - standard, 2 - verbose)  | 1 |
 |  -wailsjsdir         | The directory to generate the generated Wails JS modules | Value in `wails.json` |
-|  -debounce         | The time to wait for reload after an asset change is detected  | 100 (milliseconds) |
-|  -devserverurl "url"         | Use 3rd party dev server url, EG Vite  | "http://localhost:34115" |
+|  -debounce           | The time to wait for reload after an asset change is detected  | 100 (milliseconds) |
+|  -devserver "host:port"       | The address to bind the wails dev server to | "localhost:34115" |
+|  -frontenddevserverurl "url"  | Use 3rd party dev server url to serve assets, EG Vite  | "" |
 |  -appargs "args"         | Arguments passed to the application in shell style  | |
 |  -platform "platform"    | Platform/Arch to target | `runtime.GOOS` |
-
-If the `assetdir`, `reloaddirs`, `wailsjsdir`, `debounce` or `devserverurl` flags are provided on the command line, they are saved in
-`wails.json`, and become the defaults for subsequent invocations.
+|  -save                   | Saves the given `assetdir`, `reloaddirs`, `wailsjsdir`, `debounce`, `devserver` and `frontenddevserverurl` flags in
+                             `wails.json` to become the defaults for subsequent invocations. | |
 
 Example:
 
@@ -183,12 +183,12 @@ Example:
 
 This command will do the following:
 
-  - Build the application and run it (more details [here](/docs/guides/manual-builds)
+  - Build the application and run it (more details [here](../guides/manual-builds.mdx)
   - Generate the Wails JS modules in `./frontend/src`
   - Watch for updates to files in `./frontend/dist` and reload on any change
   - Open a browser and connect to the application
 
-There is more information on using this feature with existing framework scripts [here](/docs/guides/application-development#live-reloading).
+There is more information on using this feature with existing framework scripts [here](../guides/application-development.mdx#live-reloading).
 
 ## generate
 
@@ -202,7 +202,7 @@ it may be used for generating projects.
 |  -name               | The template name (Mandatory)                |
 |  -frontend "path"    | Path to frontend project to use in template  |
 
-For more details on creating templates, consult the [Templates guide](/docs/guides/templates).
+For more details on creating templates, consult the [Templates guide](../guides/templates.mdx).
 
 ## update
 

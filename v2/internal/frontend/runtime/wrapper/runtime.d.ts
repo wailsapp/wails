@@ -17,6 +17,8 @@ export interface runtime {
 
     EventsOnce(eventName: string, callback: (data?: any) => void): void;
 
+    EventsOff(eventName: string): void;
+
     LogTrace(message: string): void;
 
     LogDebug(message: string): void;
@@ -30,6 +32,12 @@ export interface runtime {
     LogWarning(message: string): void;
 
     WindowReload(): void;
+
+    WindowSetSystemDefaultTheme(): void;
+
+    WindowSetLightTheme(): void;
+
+    WindowSetDarkTheme(): void;
 
     WindowCenter(): void;
 

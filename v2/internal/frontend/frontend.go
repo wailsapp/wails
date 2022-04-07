@@ -87,14 +87,13 @@ type Frontend interface {
 	WindowUnfullscreen()
 	WindowSetRGBA(col *options.RGBA)
 	WindowReload()
+	WindowSetSystemDefaultTheme()
+	WindowSetLightTheme()
+	WindowSetDarkTheme()
 
 	// Menus
 	MenuSetApplicationMenu(menu *menu.Menu)
 	MenuUpdateApplicationMenu()
-	//SetTrayMenu(menu *menu.TrayMenu)
-	//UpdateTrayMenuLabel(menu *menu.TrayMenu)
-	//UpdateContextMenu(contextMenu *menu.ContextMenu)
-	//DeleteTrayMenuByID(id string)
 
 	// Events
 	Notify(name string, data ...interface{})
