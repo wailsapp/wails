@@ -60,6 +60,10 @@ if (ENV === 0) {
     delete window.wailsbindings;
 }
 
+var dragTimeOut;
+var dragLastTime = 0;
+var dbClickInterval = 100;
+
 // Setup drag handler
 // Based on code from: https://github.com/patr0nus/DeskGap
 window.addEventListener('mousedown', (e) => {
@@ -83,7 +87,14 @@ window.addEventListener('mousedown', (e) => {
                     break;
                 }
             }
-            window.WailsInvoke("drag");
+            if (new Date().getTime() - dragLastTime < dbClickInterval) {
+                clearTimeout(dragTimeOut)
+                break;
+            }
+            dragTimeOut = setTimeout(function () {
+                window.WailsInvoke("drag");
+            }, dbClickInterval)
+            dragLastTime = new Date().getTime();
             e.preventDefault();
             break;
         }
