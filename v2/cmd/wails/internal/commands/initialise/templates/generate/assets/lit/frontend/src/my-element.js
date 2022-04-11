@@ -1,26 +1,20 @@
-<script>
-  import logo from './assets/images/logo-universal.png'
-  import {Greet} from '../wailsjs/go/main/App.js'
+import {css, html, LitElement} from 'lit'
+import logo from './assets/images/logo-universal.png'
 
-  let resultText = "Please enter your name below 👇"
-  let name
-
-  function greet() {
-    Greet(name).then(result => resultText = result)
+/**
+ * An example element.
+ *
+ * @slot - This element has a slot
+ * @csspart button - The button
+ */
+export class MyElement extends LitElement {
+  constructor() {
+    super()
+    this.resultText = "Please enter your name below 👇"
   }
-</script>
 
-<main>
-  <img alt="Wails logo" id="logo" src="{logo}">
-  <div class="result" id="result">{resultText}</div>
-  <div class="input-box" id="input">
-    <input autocomplete="off" bind:value={name} class="input" id="name" type="text"/>
-    <button class="btn" on:click={greet}>Greet</button>
-  </div>
-</main>
-
-<style>
-
+  static get styles() {
+    return css`
   #logo {
     display: block;
     width: 50%;
@@ -76,4 +70,25 @@
     background-color: rgba(255, 255, 255, 1);
   }
 
-</style>
+    `
+  }
+
+  static get properties() {
+    return {}
+  }
+
+  render() {
+    return html`
+      <main>
+        <img id="logo" src=${logo} alt="Wails logo">
+        <div class="result" id="result">${this.resultText}</div>
+        <div class="input-box" id="input">
+          <input class="input" id="name" type="text" bind:value={name} autocomplete="off"/>
+          <button class="btn" on:click={greet}>Greet</button>
+        </div>
+      </main>
+    `
+  }
+}
+
+window.customElements.define('my-element', MyElement)
