@@ -1,5 +1,7 @@
 package menu
 
+import "github.com/wailsapp/wails/v2/pkg/menu/keys"
+
 type Menu struct {
 	Items []*MenuItem
 }
@@ -18,6 +20,40 @@ func (m *Menu) Merge(menu *Menu) {
 	for _, item := range menu.Items {
 		m.Items = append(m.Items, item)
 	}
+}
+
+// AddText adds a TextMenu item to the menu
+func (m *Menu) AddText(label string, accelerator *keys.Accelerator, click Callback) *MenuItem {
+	item := Text(label, accelerator, click)
+	m.Append(item)
+	return item
+}
+
+// AddCheckbox adds a CheckboxMenu item to the menu
+func (m *Menu) AddCheckbox(label string, checked bool, accelerator *keys.Accelerator, click Callback) *MenuItem {
+	item := Checkbox(label, checked, accelerator, click)
+	m.Append(item)
+	return item
+}
+
+// AddRadio adds a radio item to the menu
+func (m *Menu) AddRadio(label string, checked bool, accelerator *keys.Accelerator, click Callback) *MenuItem {
+	item := Radio(label, checked, accelerator, click)
+	m.Append(item)
+	return item
+}
+
+// AddSeparator adds a separator to the menu
+func (m *Menu) AddSeparator() {
+	item := Separator()
+	m.Append(item)
+}
+
+func (m *Menu) AddSubmenu(label string) *Menu {
+	submenu := NewMenu()
+	item := SubMenu(label, submenu)
+	m.Append(item)
+	return submenu
 }
 
 func (m *Menu) Prepend(item *MenuItem) {

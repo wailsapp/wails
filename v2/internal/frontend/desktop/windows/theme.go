@@ -37,12 +37,10 @@ func (w *Window) updateTheme() {
 	if win32.SupportsCustomThemes() && customTheme != nil {
 		if w.isActive {
 			if isDarkMode {
-				println("1")
 				win32.SetTitleBarColour(w.Handle(), customTheme.DarkModeTitleBar)
 				win32.SetTitleTextColour(w.Handle(), customTheme.DarkModeTitleText)
 				win32.SetBorderColour(w.Handle(), customTheme.DarkModeBorder)
 			} else {
-				println("2")
 				win32.SetTitleBarColour(w.Handle(), customTheme.LightModeTitleBar)
 				win32.SetTitleTextColour(w.Handle(), customTheme.LightModeTitleText)
 				win32.SetBorderColour(w.Handle(), customTheme.LightModeBorder)

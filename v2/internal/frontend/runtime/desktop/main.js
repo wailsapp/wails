@@ -45,7 +45,8 @@ window.wails = {
         disableWailsDefaultContextMenu: false,
         enableResize: false,
         defaultCursor: null,
-        borderThickness: 6
+        borderThickness: 6,
+        dbClickInterval: 100,
     }
 };
 
@@ -59,6 +60,9 @@ delete window.wails.SetBindings;
 if (ENV === 0) {
     delete window.wailsbindings;
 }
+
+var dragTimeOut;
+var dragLastTime = 0;
 
 // Setup drag handler
 // Based on code from: https://github.com/patr0nus/DeskGap
@@ -83,7 +87,14 @@ window.addEventListener('mousedown', (e) => {
                     break;
                 }
             }
-            window.WailsInvoke("drag");
+            if (new Date().getTime() - dragLastTime < window.wails.flags.dbClickInterval) {
+                clearTimeout(dragTimeOut)
+                break;
+            }
+            dragTimeOut = setTimeout(function () {
+                window.WailsInvoke("drag");
+            }, window.wails.flags.dbClickInterval)
+            dragLastTime = new Date().getTime();
             e.preventDefault();
             break;
         }
