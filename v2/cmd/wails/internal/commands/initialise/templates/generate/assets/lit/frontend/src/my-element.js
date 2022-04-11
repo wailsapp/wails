@@ -1,5 +1,6 @@
 import {css, html, LitElement} from 'lit'
 import logo from './assets/images/logo-universal.png'
+import {Greet} from "../wailsjs/go/main/App";
 
 /**
  * An example element.
@@ -8,11 +9,6 @@ import logo from './assets/images/logo-universal.png'
  * @csspart button - The button
  */
 export class MyElement extends LitElement {
-  constructor() {
-    super()
-    this.resultText = "Please enter your name below 👇"
-  }
-
   static get styles() {
     return css`
   #logo {
@@ -73,8 +69,22 @@ export class MyElement extends LitElement {
     `
   }
 
+  constructor() {
+    super()
+    this.resultText = "Please enter your name below 👇"
+  }
+
   static get properties() {
-    return {}
+    return {
+      resultText: {type: String},
+    }
+  }
+
+  greet() {
+    let thisName = this.shadowRoot.getElementById('name').value
+    Greet(thisName).then(result => {
+      this.resultText = result
+    });
   }
 
   render() {
@@ -83,12 +93,13 @@ export class MyElement extends LitElement {
         <img id="logo" src=${logo} alt="Wails logo">
         <div class="result" id="result">${this.resultText}</div>
         <div class="input-box" id="input">
-          <input class="input" id="name" type="text" bind:value={name} autocomplete="off"/>
-          <button class="btn" on:click={greet}>Greet</button>
+          <input class="input" id="name" type="text" autocomplete="off"/>
+          <button @click=${this.greet} class="btn">Greet</button>
         </div>
       </main>
     `
   }
+
 }
 
 window.customElements.define('my-element', MyElement)

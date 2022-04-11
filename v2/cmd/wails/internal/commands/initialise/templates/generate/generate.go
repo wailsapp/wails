@@ -41,11 +41,11 @@ var templates = []*template{
 		DirsToDelete:  []string{"frontend/public", "frontend/src/lib"},
 	},
 	{
-		Name:        "Lit + Vite",
-		ShortName:   "Lit",
-		Description: "Lit + Vite development server",
-		Assets:      lit,
-		//FilesToDelete: []string{"frontend/index.html", "frontend/.gitignore", "frontend/src/assets/svelte.png"},
+		Name:          "Lit + Vite",
+		ShortName:     "Lit",
+		Description:   "Lit + Vite development server",
+		Assets:        lit,
+		FilesToDelete: []string{"frontend/index.html", "frontend/vite.config.js"},
 		//DirsToDelete:  []string{"frontend/public", "frontend/src/lib"},
 	},
 }
