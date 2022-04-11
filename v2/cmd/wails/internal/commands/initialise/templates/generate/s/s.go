@@ -78,7 +78,8 @@ func MKDIR(path string, mode ...os.FileMode) {
 	checkError(err)
 }
 
-func MKDIRINE(path string, mode ...os.FileMode) {
+// ENDIR ensures that the path gets created if it doesn't exist
+func ENDIR(path string, mode ...os.FileMode) {
 	var perms os.FileMode
 	perms = 0755
 	if len(mode) == 1 {

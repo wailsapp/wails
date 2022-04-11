@@ -5,8 +5,6 @@
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "http://localhost:3000",
-  "wailsjsdir": "./frontend",
-  "debounceMS": 1000,
   "author": {
     "name": "{{.AuthorName}}",
     "email": "{{.AuthorEmail}}"

@@ -1,44 +1,27 @@
 <script>
-  let name = "";
+  import logo from './assets/images/logo-universal.png'
+  import {Greet} from '../wailsjs/go/main/App.js'
 
-  let greeting = "Please enter your name below 👇";
+  let resultText = "Please enter your name below 👇"
+  let name
 
   function greet() {
-    // Check if the input is empty
-    if (name === "") return;
-
-    // Call App.Greet(name)
-    try {
-      window.go.main.App.Greet(name)
-        .then((result) => {
-          // Update result with data back from App.Greet()
-          greeting = result;
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    } catch (err) {
-      console.error(err);
-    }
+    Greet(name).then(result => resultText = result)
   }
 </script>
 
-<div class="logo" />
-<div class="result" id="result">{greeting}</div>
-<div class="input-box" id="input">
-  <input
-    class="input"
-    id="name"
-    type="text"
-    autocomplete="off"
-    bind:value={name}
-    on:keydown={(e) => e.key === "Enter" && greet()}
-  />
-  <button class="btn" on:click={greet}>Greet</button>
-</div>
+<main>
+  <img alt="Wails logo" id="logo" src="{logo}">
+  <div class="result" id="result">{resultText}</div>
+  <div class="input-box" id="input">
+    <input autocomplete="off" bind:value={name} class="input" id="name" type="text"/>
+    <button class="btn" on:click={greet}>Greet</button>
+  </div>
+</main>
 
 <style>
-  .logo {
+
+  #logo {
     display: block;
     width: 50%;
     height: 50%;
@@ -46,15 +29,16 @@
     padding: 10% 0 0;
     background-position: center;
     background-repeat: no-repeat;
-    background-image: url("./assets/images/logo-universal.png");
     background-size: 100% 100%;
     background-origin: content-box;
   }
+
   .result {
     height: 20px;
     line-height: 20px;
     margin: 1.5rem auto;
   }
+
   .input-box .btn {
     width: 60px;
     height: 30px;
@@ -65,6 +49,7 @@
     padding: 0 8px;
     cursor: pointer;
   }
+
   .input-box .btn:hover {
     background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
     color: #333333;
@@ -90,4 +75,5 @@
     border: none;
     background-color: rgba(255, 255, 255, 1);
   }
+
 </style>
