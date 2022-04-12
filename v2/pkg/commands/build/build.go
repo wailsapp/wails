@@ -81,6 +81,11 @@ func Build(options *Options) (string, error) {
 		projectData.Path = cwd
 	}
 
+	// wails js dir
+	if projectData.WailsJSDir != "" {
+		options.WailsJSDir = projectData.WailsJSDir
+	}
+
 	// Set build directory
 	options.BuildDirectory = filepath.Join(options.ProjectData.Path, "build", "bin")
 
