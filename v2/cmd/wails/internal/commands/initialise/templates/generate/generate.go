@@ -15,6 +15,9 @@ var svelte embed.FS
 //go:embed assets/lit/*
 var lit embed.FS
 
+//go:embed assets/vue/*
+var vue embed.FS
+
 func checkError(err error) {
 	if err != nil {
 		println("\nERROR:", err.Error())
@@ -46,7 +49,14 @@ var templates = []*template{
 		Description:   "Lit + Vite development server",
 		Assets:        lit,
 		FilesToDelete: []string{"frontend/index.html", "frontend/vite.config.js"},
-		//DirsToDelete:  []string{"frontend/public", "frontend/src/lib"},
+	},
+	{
+		Name:          "Vue + Vite",
+		ShortName:     "Vue",
+		Description:   "Vue + Vite development server",
+		Assets:        vue,
+		FilesToDelete: []string{"frontend/index.html", "frontend/.gitignore"},
+		DirsToDelete:  []string{"frontend/src/assets", "frontend/src/components", "frontend/public"},
 	},
 }
 
