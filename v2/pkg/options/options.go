@@ -4,6 +4,7 @@ import (
 	"context"
 	"io/fs"
 	"log"
+	"net/http"
 	"runtime"
 
 	"github.com/wailsapp/wails/v2/pkg/options/linux"
@@ -42,6 +43,7 @@ type App struct {
 	AlwaysOnTop       bool
 	RGBA              *RGBA
 	Assets            fs.FS
+	AssetsHandler     http.Handler
 	Menu              *menu.Menu
 	Logger            logger.Logger `json:"-"`
 	LogLevel          logger.LogLevel

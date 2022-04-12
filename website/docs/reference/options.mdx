@@ -30,6 +30,7 @@ func main() {
         RGBA:              &options.RGBA{R: 0, G: 0, B: 0, A: 255},
         AlwaysOnTop:       false,
         Assets:            assets,
+        AssetsHandler:     assetsHandler,
         Menu:              app.applicationMenu(),
         Logger:            nil,
         LogLevel:          logger.DEBUG,
@@ -221,6 +222,36 @@ Type: \*embed.FS
 
 The frontend assets to be used by the application. Requires an `index.html` file.
 
+### AssetsHandler
+
+Name: AssetsHandler
+
+Type: \*http.Handler
+
+The assets handler is a generic `http.Handler` which will be called for any non GET request on the assets server
+and for GET requests which can not be served from the `assets` because the file is not found.
+
+| Value                         | Win | Mac | Lin |
+| ----------------------------- | --- | --- | --- |
+| GET                           | ✅  | ✅   | ✅  |
+| POST                          | ✅  | ✅   | ❌  |
+| PUT                           | ✅  | ✅   | ❌  |
+| PATCH                         | ✅  | ✅   | ❌  |
+| DELETE                        | ✅  | ✅   | ❌  |
+| Request Headers               | ✅  | ✅   | ❌  |
+| Request Body                  | ✅  | ✅   | ❌  |
+| Request Body Streaming        | ❌  | ❌   | ❌  |
+| Response StatusCodes          | ✅  | ✅   | ❌  |
+| Response Headers              | ✅  | ✅   | ❌  |
+| Response Body                 | ✅  | ✅   | ✅  |
+| Response Body Streaming       | ❌  | ❌   | ✅  |
+
+NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.36.0. In the future some features will be
+supported by the introduction of WebKit2GTK 2.36.0+ support.
+
+NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html
+on every path, that does not contain a file extension.
+
 ### Menu
 
 Name: Menu
@@ -316,7 +347,7 @@ Defines how the window should present itself at startup.
 | --------------- | --- | --- | --- |
 | Fullscreen      | ✅  | ✅   | ✅ |
 | Maximised       | ✅  | ✅   | ✅ |
-| Minimised       | ✅  |     | ✅ |
+| Minimised       | ✅  | ❌   | ✅ |
 
 ### Bind
 

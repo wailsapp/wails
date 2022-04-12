@@ -376,26 +376,44 @@
    [self.webview evaluateJavaScript:script completionHandler:nil];
 }
 
-- (void) processURLResponse:(NSString *)url :(int)statusCode :(NSString *)contentType :(NSData *)data {
+- (void) processURLResponse:(NSString *)url :(int)statusCode :(NSData *)headersJSON :(NSData *)data {
     id<WKURLSchemeTask> urlSchemeTask = self.urlRequests[url];
     NSURL *nsurl = [NSURL URLWithString:url];
-    NSMutableDictionary *headerFields = [NSMutableDictionary new];
-    if ( ![contentType isEqualToString:@""] ) {
-        headerFields[@"content-type"] = contentType;
-    }
+    NSDictionary *headerFields = [NSJSONSerialization JSONObjectWithData: headersJSON options: NSJSONReadingMutableContainers error: nil];
     NSHTTPURLResponse *response = [[NSHTTPURLResponse new] initWithURL:nsurl statusCode:statusCode HTTPVersion:@"HTTP/1.1" headerFields:headerFields];
     [urlSchemeTask didReceiveResponse:response];
     [urlSchemeTask didReceiveData:data];
     [urlSchemeTask didFinish];
     [self.urlRequests removeObjectForKey:url];
     [response release];
-    [headerFields release];
+    if (headerFields != nil) {
+        [headerFields release];
+    }
 }
 
 - (void)webView:(nonnull WKWebView *)webView startURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
-    // Do something
+    // This callback is run with an autorelease pool
     self.urlRequests[urlSchemeTask.request.URL.absoluteString] = urlSchemeTask;
-    processURLRequest(self, [urlSchemeTask.request.URL.absoluteString UTF8String]);
+    const char *url = [urlSchemeTask.request.URL.absoluteString UTF8String];
+    const char *method = [urlSchemeTask.request.HTTPMethod UTF8String];
+    const char *headerJSON = "";
+    const void *body;
+    int bodyLen;
+
+    NSData *headers = [NSJSONSerialization dataWithJSONObject: urlSchemeTask.request.allHTTPHeaderFields options:0 error: nil];
+    if (headers) {
+        NSString* headerString = [[[NSString alloc] initWithData:headers encoding:NSUTF8StringEncoding] autorelease];
+        headerJSON = [headerString UTF8String];
+    }
+
+    if (urlSchemeTask.request.HTTPBody) {
+        body = urlSchemeTask.request.HTTPBody.bytes;
+        bodyLen = urlSchemeTask.request.HTTPBody.length;
+    } else {
+        // TODO handle HTTPBodyStream
+    }
+
+    processURLRequest(self, url, method, headerJSON, body, bodyLen);
 }
 
 - (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {

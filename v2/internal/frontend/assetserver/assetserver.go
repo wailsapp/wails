@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strings"
+	"strconv"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -106,26 +106,45 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (d *AssetServer) Load(filename string) ([]byte, string, error) {
-	// This will be removed as soon as AssetsHandler have been fully introduced.
-	if !strings.HasPrefix(filename, "/") {
-		filename = "/" + filename
-	}
+// ProcessHTTPRequest processes the HTTP Request by faking a golang HTTP Server.
+// The request will be finished with a StatusNotImplemented code if no handler has written to the response.
+func (d *AssetServer) ProcessHTTPRequest(logInfo string, rw http.ResponseWriter, reqGetter func() (*http.Request, error)) {
+	rw = &contentTypeSniffer{rw: rw} // Make sure we have a Content-Type sniffer
 
-	req, err := http.NewRequest(http.MethodGet, "wails://wails"+filename, nil)
+	req, err := reqGetter()
 	if err != nil {
-		return nil, "", err
+		d.logError("Error processing request '%s': %s (HttpResponse=500)", logInfo, err)
+
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	rw := httptest.NewRecorder()
+	if req.Body == nil {
+		req.Body = http.NoBody
+	}
+	defer req.Body.Close()
+
+	if req.RemoteAddr == "" {
+		// 192.0.2.0/24 is "TEST-NET" in RFC 5737
+		req.RemoteAddr = "192.0.2.1:1234"
+	}
+
+	if req.RequestURI == "" && req.URL != nil {
+		req.RequestURI = req.URL.String()
+	}
+
+	if req.ContentLength == 0 {
+		req.ContentLength, _ = strconv.ParseInt(req.Header.Get(HeaderContentLength), 10, 64)
+	} else {
+		req.Header.Set(HeaderContentLength, fmt.Sprintf("%d", req.ContentLength))
+	}
+
+	if host := req.Header.Get(HeaderHost); host != "" {
+		req.Host = host
+	}
+
 	d.ServeHTTP(rw, req)
-
-	content := rw.Body.Bytes()
-	mimeType := rw.HeaderMap.Get(HeaderContentType)
-	if mimeType == "" {
-		mimeType = GetMimetype(filename, content)
-	}
-	return content, mimeType, nil
+	rw.WriteHeader(http.StatusNotImplemented) // This is a NOP when a handler has already written and set the status
 }
 
 func (d *AssetServer) processIndexHTML(indexHTML []byte) ([]byte, error) {
@@ -158,15 +177,8 @@ func (d *AssetServer) processIndexHTML(indexHTML []byte) ([]byte, error) {
 }
 
 func (d *AssetServer) writeBlob(rw http.ResponseWriter, filename string, blob []byte) {
-	header := rw.Header()
-	header.Set(HeaderContentLength, fmt.Sprintf("%d", len(blob)))
-	if mimeType := header.Get(HeaderContentType); mimeType == "" {
-		mimeType = GetMimetype(filename, blob)
-		header.Set(HeaderContentType, mimeType)
-	}
-
-	rw.WriteHeader(http.StatusOK)
-	if _, err := rw.Write(blob); err != nil {
+	err := serveFile(rw, filename, blob)
+	if err != nil {
 		d.serveError(rw, err, "Unable to write content %s", filename)
 	}
 }

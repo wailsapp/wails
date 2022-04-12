@@ -3,11 +3,15 @@ package assetserver
 import (
 	"bytes"
 	"errors"
+	"fmt"
+	"io"
+	"net/http"
 
 	"golang.org/x/net/html"
 )
 
 const (
+	HeaderHost          = "Host"
 	HeaderContentType   = "Content-Type"
 	HeaderContentLength = "Content-Length"
 	HeaderUserAgent     = "User-Agent"
@@ -15,6 +19,19 @@ const (
 
 	WailsUserAgentValue = "wails.io"
 )
+
+func serveFile(rw http.ResponseWriter, filename string, blob []byte) error {
+	header := rw.Header()
+	header.Set(HeaderContentLength, fmt.Sprintf("%d", len(blob)))
+	if mimeType := header.Get(HeaderContentType); mimeType == "" {
+		mimeType = GetMimetype(filename, blob)
+		header.Set(HeaderContentType, mimeType)
+	}
+
+	rw.WriteHeader(http.StatusOK)
+	_, err := io.Copy(rw, bytes.NewReader(blob))
+	return err
+}
 
 func createScriptNode(scriptName string) *html.Node {
 	return &html.Node{
