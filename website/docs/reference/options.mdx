@@ -218,7 +218,7 @@ Indicates that the window should stay above other windows when losing focus.
 
 Name: Assets
 
-Type: \*embed.FS
+Type: embed.FS
 
 The frontend assets to be used by the application. Requires an `index.html` file.
 
@@ -226,7 +226,9 @@ The frontend assets to be used by the application. Requires an `index.html` file
 
 Name: AssetsHandler
 
-Type: \*http.Handler
+Type: http.Handler
+
+![](http://badges.github.io/stability-badges/dist/experimental.svg)
 
 The assets handler is a generic `http.Handler` which will be called for any non GET request on the assets server
 and for GET requests which can not be served from the `assets` because the file is not found.
