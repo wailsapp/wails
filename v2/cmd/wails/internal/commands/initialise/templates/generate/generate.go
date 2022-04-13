@@ -18,6 +18,9 @@ var lit embed.FS
 //go:embed assets/vue/*
 var vue embed.FS
 
+//go:embed assets/react/*
+var react embed.FS
+
 func checkError(err error) {
 	if err != nil {
 		println("\nERROR:", err.Error())
@@ -57,6 +60,13 @@ var templates = []*template{
 		Assets:        vue,
 		FilesToDelete: []string{"frontend/index.html", "frontend/.gitignore"},
 		DirsToDelete:  []string{"frontend/src/assets", "frontend/src/components", "frontend/public"},
+	},
+	{
+		Name:          "React + Vite",
+		ShortName:     "React",
+		Description:   "React + Vite development server",
+		Assets:        react,
+		FilesToDelete: []string{"frontend/src/index.css", "frontend/src/favicon.svg", "frontend/src/logo.svg", "frontend/.gitignore", "frontend/index.html"},
 	},
 }
 
