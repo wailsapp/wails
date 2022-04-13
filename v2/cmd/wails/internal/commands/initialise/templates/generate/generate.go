@@ -21,6 +21,9 @@ var vue embed.FS
 //go:embed assets/react/*
 var react embed.FS
 
+//go:embed assets/preact/*
+var preact embed.FS
+
 func checkError(err error) {
 	if err != nil {
 		println("\nERROR:", err.Error())
@@ -67,6 +70,13 @@ var templates = []*template{
 		Description:   "React + Vite development server",
 		Assets:        react,
 		FilesToDelete: []string{"frontend/src/index.css", "frontend/src/favicon.svg", "frontend/src/logo.svg", "frontend/.gitignore", "frontend/index.html"},
+	},
+	{
+		Name:          "Preact + Vite",
+		ShortName:     "Preact",
+		Description:   "Preact + Vite development server",
+		Assets:        preact,
+		FilesToDelete: []string{"frontend/src/index.css", "frontend/src/favicon.svg", "frontend/src/logo.jsx", "frontend/.gitignore", "frontend/index.html"},
 	},
 }
 
