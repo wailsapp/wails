@@ -12,7 +12,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strings"
 	"sync"
@@ -84,12 +83,16 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 			return err
 		}
 
+		if externalURL.Host == "" {
+			return fmt.Errorf("Invalid frontend:dev:serverUrl missing protocol scheme?")
+		}
+
 		waitCb := func() { d.LogDebug("Waiting for frontend DevServer '%s' to be ready", externalURL) }
 		if !checkPortIsOpen(externalURL.Host, time.Minute, waitCb) {
 			d.logger.Error("Timeout waiting for frontend DevServer")
 		}
 
-		assetHandler = httputil.NewSingleHostReverseProxy(externalURL)
+		assetHandler = newExternalDevServerAssetHandler(d.logger, externalURL, d.appoptions.AssetsHandler)
 	}
 
 	// Setup internal dev server
@@ -103,7 +106,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		log.Fatal(err)
 	}
 
-	d.server.GET("/*", func(c echo.Context) error {
+	d.server.Any("/*", func(c echo.Context) error {
 		assetServer.ServeHTTP(c.Response(), c.Request())
 		return nil
 	})

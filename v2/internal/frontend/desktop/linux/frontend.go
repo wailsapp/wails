@@ -14,8 +14,10 @@ import "C"
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"runtime"
 	"strconv"
@@ -25,7 +27,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/common"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
@@ -41,13 +42,12 @@ type Frontend struct {
 
 	// Assets
 	assets   *assetserver.AssetServer
-	startURL string
+	startURL *url.URL
 
 	// main window handle
-	mainWindow      *Window
-	bindings        *binding.Bindings
-	dispatcher      frontend.Dispatcher
-	servingFromDisk bool
+	mainWindow *Window
+	bindings   *binding.Bindings
+	dispatcher frontend.Dispatcher
 }
 
 func init() {
@@ -65,23 +65,12 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		startURL:        "wails://wails/",
 	}
+	result.startURL, _ = url.Parse("wails://wails/")
 
-	_starturl, _ := ctx.Value("starturl").(string)
-	if _starturl != "" {
+	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
 	} else {
-		// Check if we have been given a directory to serve assets from.
-		// If so, this means we are in dev mode and are serving assets off disk.
-		// We indicate this through the `servingFromDisk` flag to ensure requests
-		// aren't cached by webkit.
-
-		_assetdir := ctx.Value("assetdir")
-		if _assetdir != nil {
-			result.servingFromDisk = true
-		}
-
 		bindingsJSON, err := appBindings.ToJSON()
 		if err != nil {
 			log.Fatal(err)
@@ -93,7 +82,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		}
 		result.assets = assets
 
-		go result.startRequestProcessor()
+		// Start 10 processors to handle requests in parallel
+		for i := 0; i < 10; i++ {
+			go result.startRequestProcessor()
+		}
 	}
 
 	go result.startMessageProcessor()
@@ -141,7 +133,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 		}
 	}()
 
-	f.mainWindow.Run(f.startURL)
+	f.mainWindow.Run(f.startURL.String())
 
 	return nil
 }
@@ -300,11 +292,15 @@ var requestBuffer = make(chan unsafe.Pointer, 100)
 func (f *Frontend) startRequestProcessor() {
 	for request := range requestBuffer {
 		f.processRequest(request)
+		C.g_object_unref(C.gpointer(request))
 	}
 }
 
 //export processURLRequest
 func processURLRequest(request unsafe.Pointer) {
+	// Increment reference counter to allow async processing, will be decremented after the processing
+	// has been finished by a worker.
+	C.g_object_ref(C.gpointer(request))
 	requestBuffer <- request
 }
 
@@ -313,38 +309,29 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	uri := C.webkit_uri_scheme_request_get_uri(req)
 	goURI := C.GoString(uri)
 
-	res, err := common.ProcessRequest(goURI, f.assets, "wails", "wails")
-	if err != nil {
-		f.logger.Error("Error processing request '%s': %s (HttpResponse=%s)", goURI, err, res)
-	}
+	// WebKitGTK stable < 2.36 API does not support request method, request headers and request.
+	// Apart from request bodies, this is only available beginning with 2.36: https://webkitgtk.org/reference/webkit2gtk/stable/WebKitURISchemeResponse.html
+	rw := &webKitResponseWriter{req: req}
+	defer rw.Close()
 
-	if code := res.StatusCode; code != http.StatusOK {
-		message := C.CString(res.StatusText())
-		gerr := C.g_error_new_literal(C.g_quark_from_string(message), C.int(code), message)
-		C.webkit_uri_scheme_request_finish_error(req, gerr)
-		C.g_error_free(gerr)
-		C.free(unsafe.Pointer(message))
-		return
-	}
+	f.assets.ProcessHTTPRequest(
+		goURI,
+		rw,
+		func() (*http.Request, error) {
+			req, err := http.NewRequest(http.MethodGet, goURI, nil)
+			if err != nil {
+				return nil, err
+			}
 
-	var cContent unsafe.Pointer
-	bodyLen := len(res.Body)
-	var cLen C.long
-	if bodyLen > 0 {
-		cContent = C.malloc(C.ulong(bodyLen))
-		if cContent != nil {
-			C.memcpy(cContent, unsafe.Pointer(&res.Body[0]), C.size_t(bodyLen))
-			cLen = C.long(bodyLen)
-		}
-	}
+			if req.URL.Host != f.startURL.Host {
+				if req.Body != nil {
+					req.Body.Close()
+				}
 
-	cMimeType := C.CString(res.MimeType)
-	defer C.free(unsafe.Pointer(cMimeType))
+				return nil, fmt.Errorf("Expected host '%d' in request, but was '%s'", f.startURL.Host, req.URL.Host)
+			}
 
-	stream := C.g_memory_input_stream_new_from_data(
-		cContent,
-		cLen,
-		(*[0]byte)(C.free))
-	C.webkit_uri_scheme_request_finish(req, stream, cLen, cMimeType)
-	C.g_object_unref(C.gpointer(stream))
+			return req, nil
+		})
+
 }

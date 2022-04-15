@@ -42,7 +42,7 @@ void Quit(void*);
 const char* GetSize(void *ctx);
 const char* GetPosition(void *ctx);
 
-void ProcessURLResponse(void *inctx, const char *url, int statusCode, const char *contentType, void* data, int datalength);
+void ProcessURLResponse(void *inctx, const char *url, int statusCode, void *headersString, int headersStringLength, void* data, int datalength);
 
 /* Dialogs */
 
