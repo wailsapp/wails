@@ -132,7 +132,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		// Run go mod tidy to ensure we're up to date
-		err = runCommand(cwd, false, "go", "mod", "tidy")
+		err = runCommand(cwd, false, "go", "mod", "tidy", "-compat=1.17")
 		if err != nil {
 			return err
 		}

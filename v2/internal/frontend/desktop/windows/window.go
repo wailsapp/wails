@@ -146,12 +146,14 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			w.notifyParentWindowPositionChanged()
 		}
 	case w32.WM_ACTIVATE:
+		//if !w.frontendOptions.Frameless {
 		if int(wparam) == w32.WA_INACTIVE {
 			w.isActive = false
 			w.updateTheme()
 		} else {
 			w.isActive = true
 			w.updateTheme()
+			//}
 		}
 
 	// TODO move WM_DPICHANGED handling into winc

@@ -38,12 +38,14 @@ require (
 	golang.org/x/tools v0.1.0
 )
 
+require github.com/bitfield/script v0.19.0
+
 require (
+	bitbucket.org/creachadair/shell v0.0.7 // indirect
 	github.com/Microsoft/go-winio v0.4.16 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
