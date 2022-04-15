@@ -2,9 +2,9 @@ package main
 
 import (
 	"embed"
-	"generate/s"
 	"github.com/leaanthony/debme"
 	"github.com/leaanthony/gosod"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/initialise/templates/generate/s"
 	"os"
 	"strings"
 )
