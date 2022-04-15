@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	iofs "io/fs"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -114,7 +115,13 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		if devServer == "" {
 			return nil, fmt.Errorf("Unable to use FrontendDevServerUrl without a DevServer address")
 		}
-		ctx = context.WithValue(ctx, "starturl", "http://"+devServer)
+
+		startURL, err := url.Parse("http://" + devServer)
+		if err != nil {
+			return nil, err
+		}
+
+		ctx = context.WithValue(ctx, "starturl", startURL)
 		ctx = context.WithValue(ctx, "frontenddevserverurl", frontendDevServerURL)
 
 		myLogger.Info("Serving assets from frontend DevServer URL: %s", frontendDevServerURL)
