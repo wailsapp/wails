@@ -1,1 +1,140 @@
-(()=>{var d=Object.defineProperty;var m=n=>d(n,"__esModule",{value:!0});var e=(n,i)=>{m(n);for(var o in i)d(n,o,{get:i[o],enumerable:!0})};var t={};e(t,{LogDebug:()=>p,LogError:()=>x,LogFatal:()=>s,LogInfo:()=>W,LogTrace:()=>f,LogWarning:()=>c});function f(n){window.runtime.LogTrace(n)}function p(n){window.runtime.LogDebug(n)}function W(n){window.runtime.LogInfo(n)}function c(n){window.runtime.LogWarning(n)}function x(n){window.runtime.LogError(n)}function s(n){window.runtime.LogFatal(n)}var w={};e(w,{EventsEmit:()=>L,EventsOff:()=>S,EventsOn:()=>a,EventsOnMultiple:()=>l,EventsOnce:()=>g});function l(n,i,o){window.runtime.EventsOnMultiple(n,i,o)}function a(n,i){OnMultiple(n,i,-1)}function S(n){return window.runtime.EventsOff(n)}function g(n,i){OnMultiple(n,i,1)}function L(n){let i=[n].slice.call(arguments);return window.runtime.EventsEmit.apply(null,i)}var r={};e(r,{WindowCenter:()=>v,WindowFullscreen:()=>z,WindowGetPosition:()=>P,WindowGetSize:()=>D,WindowHide:()=>b,WindowMaximise:()=>k,WindowMinimise:()=>H,WindowReload:()=>M,WindowSetDarkTheme:()=>h,WindowSetLightTheme:()=>T,WindowSetMaxSize:()=>R,WindowSetMinSize:()=>B,WindowSetPosition:()=>F,WindowSetRGBA:()=>Q,WindowSetSize:()=>G,WindowSetSystemDefaultTheme:()=>E,WindowSetTitle:()=>O,WindowShow:()=>y,WindowToggleMaximise:()=>A,WindowUnfullscreen:()=>U,WindowUnmaximise:()=>C,WindowUnminimise:()=>I});function M(){window.runtime.WindowReload()}function E(){window.runtime.WindowSetSystemDefaultTheme()}function T(){window.runtime.WindowSetLightTheme()}function h(){window.runtime.WindowSetDarkTheme()}function v(){window.runtime.WindowCenter()}function O(n){window.runtime.WindowSetTitle(n)}function z(){window.runtime.WindowFullscreen()}function U(){window.runtime.WindowUnfullscreen()}function D(){window.runtime.WindowGetSize()}function G(n,i){window.runtime.WindowSetSize(n,i)}function R(n,i){window.runtime.WindowSetMaxSize(n,i)}function B(n,i){window.runtime.WindowSetMinSize(n,i)}function F(n,i){window.runtime.WindowSetPosition(n,i)}function P(){window.runtime.WindowGetPosition()}function b(){window.runtime.WindowHide()}function y(){window.runtime.WindowShow()}function k(){window.runtime.WindowMaximise()}function A(){window.runtime.WindowToggleMaximise()}function C(){window.runtime.WindowUnmaximise()}function H(){window.runtime.WindowMinimise()}function I(){window.runtime.WindowUnminimise()}function Q(n){window.runtime.WindowSetRGBA(n)}var u={};e(u,{BrowserOpenURL:()=>j});function j(n){window.runtime.BrowserOpenURL(n)}function q(){window.runtime.Quit()}var K={...t,...w,...r,...u,Quit:q};})();
+export function LogTrace(message) {
+    window.runtime.LogTrace(message);
+}
+
+export function LogDebug(message) {
+    window.runtime.LogDebug(message);
+}
+
+export function LogInfo(message) {
+    window.runtime.LogInfo(message);
+}
+
+export function LogWarning(message) {
+    window.runtime.LogWarning(message);
+}
+
+export function LogError(message) {
+    window.runtime.LogError(message);
+}
+
+export function LogFatal(message) {
+    window.runtime.LogFatal(message);
+}
+
+export function EventsOnMultiple(eventName, callback, maxCallbacks) {
+    window.runtime.EventsOnMultiple(eventName, callback, maxCallbacks);
+}
+
+export function EventsOn(eventName, callback) {
+    OnMultiple(eventName, callback, -1);
+}
+
+export function EventsOff(eventName) {
+    return window.runtime.EventsOff(eventName);
+}
+
+export function EventsOnce(eventName, callback) {
+    OnMultiple(eventName, callback, 1);
+}
+
+export function EventsEmit(eventName) {
+    let args = [eventName].slice.call(arguments);
+    return window.runtime.EventsEmit.apply(null, args);
+}
+
+export function WindowReload() {
+    window.runtime.WindowReload();
+}
+
+export function WindowSetSystemDefaultTheme() {
+    window.runtime.WindowSetSystemDefaultTheme();
+}
+
+export function WindowSetLightTheme() {
+    window.runtime.WindowSetLightTheme();
+}
+
+export function WindowSetDarkTheme() {
+    window.runtime.WindowSetDarkTheme();
+}
+
+export function WindowCenter() {
+    window.runtime.WindowCenter();
+}
+
+export function WindowSetTitle(title) {
+    window.runtime.WindowSetTitle(title);
+}
+
+export function WindowFullscreen() {
+    window.runtime.WindowFullscreen();
+}
+
+export function WindowUnfullscreen() {
+    window.runtime.WindowUnfullscreen();
+}
+
+export function WindowGetSize() {
+    window.runtime.WindowGetSize();
+}
+
+export function WindowSetSize(width, height) {
+    window.runtime.WindowSetSize(width, height);
+}
+
+export function WindowSetMaxSize(width, height) {
+    window.runtime.WindowSetMaxSize(width, height);
+}
+
+export function WindowSetMinSize(width, height) {
+    window.runtime.WindowSetMinSize(width, height);
+}
+
+export function WindowSetPosition(x, y) {
+    window.runtime.WindowSetPosition(x, y);
+}
+
+export function WindowGetPosition() {
+    window.runtime.WindowGetPosition();
+}
+
+export function WindowHide() {
+    window.runtime.WindowHide();
+}
+
+export function WindowShow() {
+    window.runtime.WindowShow();
+}
+
+export function WindowMaximise() {
+    window.runtime.WindowMaximise();
+}
+
+export function WindowToggleMaximise() {
+    window.runtime.WindowToggleMaximise();
+}
+
+export function WindowUnmaximise() {
+    window.runtime.WindowUnmaximise();
+}
+
+export function WindowMinimise() {
+    window.runtime.WindowMinimise();
+}
+
+export function WindowUnminimise() {
+    window.runtime.WindowUnminimise();
+}
+
+export function WindowSetRGBA(RGBA) {
+    window.runtime.WindowSetRGBA(RGBA);
+}
+
+export function BrowserOpenURL(url) {
+    window.runtime.BrowserOpenURL(url);
+}
+
+export function Quit() {
+    window.runtime.Quit();
+}

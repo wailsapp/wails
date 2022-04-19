@@ -9,11 +9,6 @@ import {Greet} from "../wailsjs/go/main/App";
  * @csspart button - The button
  */
 export class MyElement extends LitElement {
-  constructor() {
-    super()
-    this.resultText = "Please enter your name below 👇"
-  }
-
   static get styles() {
     return css`
   #logo {
@@ -72,6 +67,11 @@ export class MyElement extends LitElement {
   }
 
     `
+  }
+
+  constructor() {
+    super()
+    this.resultText = "Please enter your name below 👇"
   }
 
   static get properties() {

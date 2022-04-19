@@ -8,80 +8,73 @@ export interface Size {
     h: number;
 }
 
-export interface runtime {
-    EventsEmit(eventName: string, data?: any): void;
 
-    EventsOn(eventName: string, callback: (data?: any) => void): void;
+export function EventsEmit(eventName: string, data?: any): void;
 
-    EventsOnMultiple(eventName: string, callback: (data?: any) => void, maxCallbacks: number): void;
+export function EventsOn(eventName: string, callback: (data?: any) => void): void;
 
-    EventsOnce(eventName: string, callback: (data?: any) => void): void;
+export function EventsOnMultiple(eventName: string, callback: (data?: any) => void, maxCallbacks: number): void;
 
-    EventsOff(eventName: string): void;
+export function EventsOnce(eventName: string, callback: (data?: any) => void): void;
 
-    LogTrace(message: string): void;
+export function EventsOff(eventName: string): void;
 
-    LogDebug(message: string): void;
+export function LogTrace(message: string): void;
 
-    LogError(message: string): void;
+export function LogDebug(message: string): void;
 
-    LogFatal(message: string): void;
+export function LogError(message: string): void;
 
-    LogInfo(message: string): void;
+export function LogFatal(message: string): void;
 
-    LogWarning(message: string): void;
+export function LogInfo(message: string): void;
 
-    WindowReload(): void;
+export function LogWarning(message: string): void;
 
-    WindowSetSystemDefaultTheme(): void;
+export function WindowReload(): void;
 
-    WindowSetLightTheme(): void;
+export function WindowSetSystemDefaultTheme(): void;
 
-    WindowSetDarkTheme(): void;
+export function WindowSetLightTheme(): void;
 
-    WindowCenter(): void;
+export function WindowSetDarkTheme(): void;
 
-    WindowSetTitle(title: string): void;
+export function WindowCenter(): void;
 
-    WindowFullscreen(): void;
+export function WindowSetTitle(title: string): void;
 
-    WindowUnfullscreen(): void;
+export function WindowFullscreen(): void;
 
-    WindowSetSize(width: number, height: number): Promise<Size>;
+export function WindowUnfullscreen(): void;
 
-    WindowGetSize(): Promise<Size>;
+export function WindowSetSize(width: number, height: number): Promise<Size>;
 
-    WindowSetMaxSize(width: number, height: number): void;
+export function WindowGetSize(): Promise<Size>;
 
-    WindowSetMinSize(width: number, height: number): void;
+export function WindowSetMaxSize(width: number, height: number): void;
 
-    WindowSetPosition(x: number, y: number): void;
+export function WindowSetMinSize(width: number, height: number): void;
 
-    WindowGetPosition(): Promise<Position>;
+export function WindowSetPosition(x: number, y: number): void;
 
-    WindowHide(): void;
+export function WindowGetPosition(): Promise<Position>;
 
-    WindowShow(): void;
+export function WindowHide(): void;
 
-    WindowMaximise(): void;
+export function WindowShow(): void;
 
-    WindowToggleMaximise(): void;
+export function WindowMaximise(): void;
 
-    WindowUnmaximise(): void;
+export function WindowToggleMaximise(): void;
 
-    WindowMinimise(): void;
+export function WindowUnmaximise(): void;
 
-    WindowUnminimise(): void;
+export function WindowMinimise(): void;
 
-    WindowSetRGBA(R: number, G: number, B: number, A: number): void;
+export function WindowUnminimise(): void;
 
-    BrowserOpenURL(url: string): void;
+export function WindowSetRGBA(R: number, G: number, B: number, A: number): void;
 
-    Quit(): void;
-}
+export function BrowserOpenURL(url: string): void;
 
-declare global {
-    interface Window {
-        runtime: runtime;
-    }
-}
+export function Quit(): void;
