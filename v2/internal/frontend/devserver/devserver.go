@@ -167,6 +167,11 @@ func (d *DevWebServer) WindowReload() {
 	d.desktopFrontend.WindowReload()
 }
 
+func (d *DevWebServer) WindowReloadApp() {
+	d.broadcast("reloadapp")
+	d.desktopFrontend.WindowReloadApp()
+}
+
 func (d *DevWebServer) WindowSetTitle(title string) {
 	d.desktopFrontend.WindowSetTitle(title)
 }
@@ -258,6 +263,10 @@ func (d *DevWebServer) Notify(name string, data ...interface{}) {
 
 func (d *DevWebServer) handleReload(c echo.Context) error {
 	d.WindowReload()
+	return c.NoContent(http.StatusNoContent)
+}
+func (d *DevWebServer) handleReloadApp(c echo.Context) error {
+	d.WindowReloadApp()
 	return c.NoContent(http.StatusNoContent)
 }
 

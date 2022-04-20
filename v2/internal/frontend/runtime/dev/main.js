@@ -104,6 +104,10 @@ function handleMessage(message) {
         window.runtime.WindowReload();
         return;
     }
+    if (message.data === "reloadapp") {
+        window.runtime.WindowReloadApp()
+        return;
+    }
 
     // As a bridge we ignore js and css injections
     switch (message.data[0]) {
