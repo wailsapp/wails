@@ -18,6 +18,12 @@ export interface Size {
     h: number;
 }
 
+// Environment information such as platform, buildtype, ...
+export interface EnvironmentInfo {
+    buildType: string;
+    platform: string;
+    arch: string;
+}
 
 // [EventsEmit](https://wails.io/docs/reference/runtime/events#eventsemit)
 // emits the given event. Optional data may be passed with the event.
@@ -71,6 +77,10 @@ export function LogWarning(message: string): void;
 // [WindowReload](https://wails.io/docs/reference/runtime/window#windowreload)
 // Forces a reload by the main application as well as connected browsers.
 export function WindowReload(): void;
+
+// [WindowReloadApp](https://wails.io/docs/reference/runtime/window#windowreloadapp)
+// Reloads the application frontend.
+export function WindowReloadApp(): void;
 
 // [WindowSetSystemDefaultTheme](https://wails.io/docs/next/reference/runtime/window#windowsetsystemdefaulttheme)
 // *Windows only*
@@ -161,9 +171,17 @@ export function WindowUnminimise(): void;
 // Sets the background colour of the window to the given RGBA colour definition. This colour will show through for all transparent pixels.
 export function WindowSetRGBA(R: number, G: number, B: number, A: number): void;
 
+// Navigates back to the application after navigating away
+export function NavigateBackToApp(): void;
+
 // [BrowserOpenURL](https://wails.io/docs/next/reference/runtime/browser#browseropenurl)
 // Opens the given URL in the system browser.
 export function BrowserOpenURL(url: string): void;
+
+// []()
+//
+export function Environment(): EnvironmentInfo;
+
 
 // [Quit](https://wails.io/docs/next/reference/runtime/intro#quit)
 // Quits the application.

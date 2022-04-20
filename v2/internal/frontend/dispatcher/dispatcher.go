@@ -1,6 +1,7 @@
 package dispatcher
 
 import (
+	"context"
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -12,14 +13,16 @@ type Dispatcher struct {
 	bindings   *binding.Bindings
 	events     frontend.Events
 	bindingsDB *binding.DB
+	ctx        context.Context
 }
 
-func NewDispatcher(log *logger.Logger, bindings *binding.Bindings, events frontend.Events) *Dispatcher {
+func NewDispatcher(ctx context.Context, log *logger.Logger, bindings *binding.Bindings, events frontend.Events) *Dispatcher {
 	return &Dispatcher{
 		log:        log,
 		bindings:   bindings,
 		events:     events,
 		bindingsDB: bindings.DB(),
+		ctx:        ctx,
 	}
 }
 

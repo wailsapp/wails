@@ -10,7 +10,7 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 import * as Log from './log';
 import {eventListeners, EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnce, EventsOnMultiple} from './events';
-import {Callback, callbacks} from './calls';
+import {Call, Callback, callbacks} from './calls';
 import {SetBindings} from "./bindings";
 import * as Window from "./window";
 import * as Browser from "./browser";
@@ -18,6 +18,10 @@ import * as Browser from "./browser";
 
 export function Quit() {
     window.WailsInvoke('Q');
+}
+
+export function Environment() {
+    return Call(":wails:Environment");
 }
 
 // The JS runtime
@@ -30,6 +34,7 @@ window.runtime = {
     EventsOnMultiple,
     EventsEmit,
     EventsOff,
+    Environment,
     Quit
 };
 
@@ -64,6 +69,10 @@ if (ENV === 0) {
 var dragTimeOut;
 var dragLastTime = 0;
 
+function drag() {
+    window.WailsInvoke("drag");
+}
+
 // Setup drag handler
 // Based on code from: https://github.com/patr0nus/DeskGap
 window.addEventListener('mousedown', (e) => {
@@ -88,12 +97,10 @@ window.addEventListener('mousedown', (e) => {
                 }
             }
             if (new Date().getTime() - dragLastTime < window.wails.flags.dbClickInterval) {
-                clearTimeout(dragTimeOut)
+                clearTimeout(dragTimeOut);
                 break;
             }
-            dragTimeOut = setTimeout(function () {
-                window.WailsInvoke("drag");
-            }, window.wails.flags.dbClickInterval)
+            dragTimeOut = setTimeout(drag, window.wails.flags.dbClickInterval);
             dragLastTime = new Date().getTime();
             e.preventDefault();
             break;

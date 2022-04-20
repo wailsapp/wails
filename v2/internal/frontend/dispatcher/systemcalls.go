@@ -2,6 +2,7 @@ package dispatcher
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -31,6 +32,8 @@ func (d *Dispatcher) processSystemCall(payload callMessage, sender frontend.Fron
 	case "WindowGetSize":
 		w, h := sender.WindowGetSize()
 		return &size{w, h}, nil
+	case "Environment":
+		return runtime.Environment(d.ctx), nil
 	default:
 		return nil, fmt.Errorf("unknown systemcall message: %s", payload.Name)
 	}

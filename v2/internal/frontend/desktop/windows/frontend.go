@@ -29,6 +29,8 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
+const startURL = "http://wails.localhost/"
+
 type Frontend struct {
 
 	// Context
@@ -69,7 +71,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 
 	// We currently can't use wails://wails/ as other platforms do, therefore we map the assets sever onto the following url.
-	result.startURL, _ = url.Parse("http://wails.localhost/")
+	result.startURL, _ = url.Parse(startURL)
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
@@ -207,6 +209,10 @@ func (f *Frontend) WindowFullscreen() {
 		f.ExecJS("window.wails.flags.enableResize = false;")
 	}
 	f.mainWindow.Fullscreen()
+}
+
+func (f *Frontend) WindowReloadApp() {
+	f.ExecJS(fmt.Sprintf("window.location.href = '%s';", startURL))
 }
 
 func (f *Frontend) WindowUnfullscreen() {

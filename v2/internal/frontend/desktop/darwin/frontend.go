@@ -34,6 +34,8 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
+const startURL = "wails://wails/"
+
 var messageBuffer = make(chan string, 100)
 var requestBuffer = make(chan *request, 100)
 var callbackBuffer = make(chan uint, 10)
@@ -65,7 +67,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		dispatcher:      dispatcher,
 		ctx:             ctx,
 	}
-	result.startURL, _ = url.Parse("wails://wails/")
+	result.startURL, _ = url.Parse(startURL)
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
@@ -111,6 +113,10 @@ func (f *Frontend) startCallbackProcessor() {
 
 func (f *Frontend) WindowReload() {
 	f.ExecJS("runtime.WindowReload();")
+}
+
+func (f *Frontend) WindowReloadApp() {
+	f.ExecJS(fmt.Sprintf("window.location.href = '%s';", startURL))
 }
 
 func (f *Frontend) WindowSetSystemDefaultTheme() {

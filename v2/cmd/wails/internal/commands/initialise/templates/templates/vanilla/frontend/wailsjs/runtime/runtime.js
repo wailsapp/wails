@@ -61,6 +61,10 @@ export function WindowReload() {
     window.runtime.WindowReload();
 }
 
+export function WindowReloadApp() {
+    window.runtime.WindowReloadApp();
+}
+
 export function WindowSetSystemDefaultTheme() {
     window.runtime.WindowSetSystemDefaultTheme();
 }
@@ -90,7 +94,7 @@ export function WindowUnfullscreen() {
 }
 
 export function WindowGetSize() {
-    window.runtime.WindowGetSize();
+    return window.runtime.WindowGetSize();
 }
 
 export function WindowSetSize(width, height) {
@@ -110,7 +114,7 @@ export function WindowSetPosition(x, y) {
 }
 
 export function WindowGetPosition() {
-    window.runtime.WindowGetPosition();
+    return window.runtime.WindowGetPosition();
 }
 
 export function WindowHide() {
@@ -147,6 +151,10 @@ export function WindowSetRGBA(RGBA) {
 
 export function BrowserOpenURL(url) {
     window.runtime.BrowserOpenURL(url);
+}
+
+export function Environment() {
+    return window.runtime.Environment();
 }
 
 export function Quit() {
