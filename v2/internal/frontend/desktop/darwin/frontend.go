@@ -116,7 +116,7 @@ func (f *Frontend) WindowReload() {
 }
 
 func (f *Frontend) WindowReloadApp() {
-	f.ExecJS(fmt.Sprintf("window.location.href = '%s';", startURL))
+	f.ExecJS(fmt.Sprintf("window.location.href = '%s';", f.startURL))
 }
 
 func (f *Frontend) WindowSetSystemDefaultTheme() {
