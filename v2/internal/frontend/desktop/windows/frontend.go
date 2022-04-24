@@ -97,7 +97,6 @@ func (f *Frontend) WindowReload() {
 }
 
 func (f *Frontend) WindowSetSystemDefaultTheme() {
-	runtime.LockOSThread()
 	f.mainWindow.frontendOptions.Windows.Theme = windows.SystemDefault
 	f.mainWindow.Invoke(func() {
 		f.mainWindow.updateTheme()
@@ -105,7 +104,6 @@ func (f *Frontend) WindowSetSystemDefaultTheme() {
 }
 
 func (f *Frontend) WindowSetLightTheme() {
-	runtime.LockOSThread()
 	if f.mainWindow.frontendOptions != nil && f.mainWindow.frontendOptions.Windows != nil {
 		f.mainWindow.frontendOptions.Windows.Theme = windows.Light
 		f.mainWindow.Invoke(func() {
@@ -115,7 +113,6 @@ func (f *Frontend) WindowSetLightTheme() {
 }
 
 func (f *Frontend) WindowSetDarkTheme() {
-	runtime.LockOSThread()
 	if f.mainWindow.frontendOptions != nil && f.mainWindow.frontendOptions.Windows != nil {
 		f.mainWindow.frontendOptions.Windows.Theme = windows.Dark
 		f.mainWindow.Invoke(func() {
@@ -281,7 +278,6 @@ func (f *Frontend) WindowSetMaxSize(width int, height int) {
 }
 
 func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
-	runtime.LockOSThread()
 	if col == nil {
 		return
 	}
