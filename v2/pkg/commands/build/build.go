@@ -55,6 +55,7 @@ type Options struct {
 	WailsJSDir          string               // Directory to generate the wailsjs module
 	ForceBuild          bool                 // Force
 	BundleName          string               // Bundlename for Mac
+	TrimPath            bool                 // Use Go's trimpath compiler flag
 }
 
 // Build the project!

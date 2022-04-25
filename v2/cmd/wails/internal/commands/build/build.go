@@ -96,6 +96,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	nsis := false
 	command.BoolFlag("nsis", "Generate NSIS installer for Windows", &nsis)
 
+	trimpath := false
+	command.BoolFlag("trimpath", "Remove all file system paths from the resulting executable", &trimpath)
+
 	command.Action(func() error {
 
 		quiet := verbosity == 0
@@ -176,6 +179,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			CompressFlags:       compressFlags,
 			UserTags:            userTags,
 			WebView2Strategy:    wv2rtstrategy,
+			TrimPath:            trimpath,
 		}
 
 		// Start a new tabwriter

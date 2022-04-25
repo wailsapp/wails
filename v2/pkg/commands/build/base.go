@@ -178,6 +178,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		commands.Add("-a")
 	}
 
+	if options.TrimPath {
+		commands.Add("-trimpath")
+	}
+
 	var tags slicer.StringSlicer
 	tags.Add(options.OutputType)
 	tags.AddSlice(options.UserTags)
