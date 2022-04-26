@@ -44,7 +44,11 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 				argsString := args.Join(", ")
 				jsoutput.WriteString(fmt.Sprintf("\nexport function %s(%s) {", methodName, argsString))
 				jsoutput.WriteString("\n")
-				jsoutput.WriteString(fmt.Sprintf("  return window['go']['%s']['%s']['%s'](%s);", packageName, structName, methodName, argsString))
+				if methodDetails.OutputCount() == 0 {
+					jsoutput.WriteString(fmt.Sprintf("  window['go']['%s']['%s']['%s'](%s);", packageName, structName, methodName, argsString))
+				} else {
+					jsoutput.WriteString(fmt.Sprintf("  return window['go']['%s']['%s']['%s'](%s);", packageName, structName, methodName, argsString))
+				}
 				jsoutput.WriteString("\n")
 				jsoutput.WriteString(fmt.Sprintf("}"))
 				jsoutput.WriteString("\n")
@@ -68,7 +72,7 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 					}
 					returnType += ">"
 				} else {
-					returnType = "Promise<void>"
+					returnType = "void"
 				}
 				tsBody.WriteString(returnType + ";\n")
 			}
