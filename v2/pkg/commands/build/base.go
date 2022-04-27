@@ -383,8 +383,13 @@ Please reinstall by doing the following:
 }
 
 func generateRuntimeWrapper(options *Options) error {
+
 	if options.WailsJSDir == "" {
-		options.WailsJSDir = filepath.Join("./frontend")
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		options.WailsJSDir = filepath.Join(cwd, "frontend")
 	}
 	wrapperDir := filepath.Join(options.WailsJSDir, "wailsjs", "runtime")
 	_ = os.RemoveAll(wrapperDir)

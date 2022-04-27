@@ -220,6 +220,10 @@ func generateBindings(bindings *binding.Bindings) error {
 		return err
 	}
 
+	if projectConfig.WailsJSDir == "" {
+		projectConfig.WailsJSDir = filepath.Join(cwd, "frontend")
+	}
+
 	targetDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs", "go")
 	err = os.RemoveAll(targetDir)
 	if err != nil {

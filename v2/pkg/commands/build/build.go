@@ -85,6 +85,8 @@ func Build(options *Options) (string, error) {
 	// wails js dir
 	if projectData.WailsJSDir != "" {
 		options.WailsJSDir = projectData.WailsJSDir
+	} else {
+		options.WailsJSDir = filepath.Join(cwd, "frontend")
 	}
 
 	// Set build directory
