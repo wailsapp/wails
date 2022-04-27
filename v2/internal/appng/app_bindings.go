@@ -9,7 +9,6 @@ import (
 
 	"github.com/leaanthony/gosod"
 	"github.com/wailsapp/wails/v2/internal/binding"
-	wailsRuntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime/wrapper"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -69,17 +68,6 @@ func generateBindings(bindings *binding.Bindings) error {
 	_ = os.RemoveAll(wrapperDir)
 	extractor := gosod.New(wrapper.RuntimeWrapper)
 	err = extractor.Extract(wrapperDir, nil)
-	if err != nil {
-		return err
-	}
-
-	//ipcdev.js
-	err = os.WriteFile(filepath.Join(wrapperDir, "ipcdev.js"), wailsRuntime.DesktopIPC, 0755)
-	if err != nil {
-		return err
-	}
-	//runtimedev.js
-	err = os.WriteFile(filepath.Join(wrapperDir, "runtimedev.js"), wailsRuntime.RuntimeDesktopJS, 0755)
 	if err != nil {
 		return err
 	}
