@@ -28,18 +28,18 @@ export interface EnvironmentInfo {
 // [EventsEmit](https://wails.io/docs/reference/runtime/events#eventsemit)
 // emits the given event. Optional data may be passed with the event.
 // This will trigger any event listeners.
-export function EventsEmit(eventName: string, data?: any): void;
+export function EventsEmit(eventName: string, ...data: any): void;
 
 // [EventsOn](https://wails.io/docs/reference/runtime/events#eventson) sets up a listener for the given event name.
-export function EventsOn(eventName: string, callback: (data?: any) => void): void;
+export function EventsOn(eventName: string, callback: (...data: any) => void): void;
 
 // [EventsOnMultiple](https://wails.io/docs/reference/runtime/events#eventsonmultiple)
 // sets up a listener for the given event name, but will only trigger a given number times.
-export function EventsOnMultiple(eventName: string, callback: (data?: any) => void, maxCallbacks: number): void;
+export function EventsOnMultiple(eventName: string, callback: (...data: any) => void, maxCallbacks: number): void;
 
 // [EventsOnce](https://wails.io/docs/reference/runtime/events#eventsonce)
 // sets up a listener for the given event name, but will only trigger once.
-export function EventsOnce(eventName: string, callback: (data?: any) => void): void;
+export function EventsOnce(eventName: string, callback: (...data: any) => void): void;
 
 // [EventsOff](https://wails.io/docs/reference/runtime/events#eventsff)
 // unregisters the listener for the given event name.
@@ -171,18 +171,14 @@ export function WindowUnminimise(): void;
 // Sets the background colour of the window to the given RGBA colour definition. This colour will show through for all transparent pixels.
 export function WindowSetRGBA(R: number, G: number, B: number, A: number): void;
 
-// Navigates back to the application after navigating away
-export function NavigateBackToApp(): void;
-
-// [BrowserOpenURL](https://wails.io/docs/next/reference/runtime/browser#browseropenurl)
+// [BrowserOpenURL](https://wails.io/docs/reference/runtime/browser#browseropenurl)
 // Opens the given URL in the system browser.
 export function BrowserOpenURL(url: string): void;
 
-// []()
-//
+// [Environment](https://wails.io/docs/reference/runtime/intro#environment)
+// Returns information about the environment
 export function Environment(): EnvironmentInfo;
 
-
-// [Quit](https://wails.io/docs/next/reference/runtime/intro#quit)
+// [Quit](https://wails.io/docs/reference/runtime/intro#quit)
 // Quits the application.
 export function Quit(): void;

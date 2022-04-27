@@ -157,9 +157,26 @@ var templates = []*template{
 
 func main() {
 
+	rebuildRuntime()
+
 	for _, t := range templates {
 		createTemplate(t)
 	}
+}
+
+func rebuildRuntime() {
+	s.ECHO("Generating Runtime")
+	cwd := s.CWD()
+	const runtimeDir = "../../../../../../../internal/frontend/runtime/"
+	const commonDir = "../../../../cmd/wails/internal/commands/initialise/templates/generate/assets/common/frontend/wailsjs/runtime/"
+	s.CD(runtimeDir)
+	s.EXEC("npm run build")
+	s.ECHO("Copying new files")
+	s.CD("wrapper")
+	s.COPY("package.json", commonDir+"package.json")
+	s.COPY("runtime.js", commonDir+"runtime.js")
+	s.COPY("runtime.d.ts", commonDir+"runtime.d.ts")
+	s.CD(cwd)
 }
 
 func createTemplate(template *template) {

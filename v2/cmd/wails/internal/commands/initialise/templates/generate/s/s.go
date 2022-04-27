@@ -137,6 +137,7 @@ func COPYDIR(src string, dst string) {
 
 // COPY file from source to target
 func COPY(source string, target string) {
+	log("COPY %s -> %s", source, target)
 	src, err := os.Open(source)
 	checkError(err)
 	defer closefile(src)
