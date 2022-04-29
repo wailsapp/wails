@@ -397,8 +397,8 @@
     const char *url = [urlSchemeTask.request.URL.absoluteString UTF8String];
     const char *method = [urlSchemeTask.request.HTTPMethod UTF8String];
     const char *headerJSON = "";
-    const void *body;
-    int bodyLen;
+    const void *body = nil;
+    int bodyLen = 0;
 
     NSData *headers = [NSJSONSerialization dataWithJSONObject: urlSchemeTask.request.allHTTPHeaderFields options:0 error: nil];
     if (headers) {
