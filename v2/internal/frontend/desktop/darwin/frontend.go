@@ -178,7 +178,11 @@ func (f *Frontend) Run(ctx context.Context) error {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
-	mainWindow.Run(f.startURL.String())
+	var activationPolicy C.int
+	if f.frontendOptions != nil && f.frontendOptions.Mac != nil {
+		activationPolicy = C.int(f.frontendOptions.Mac.ActivationPolicy)
+	}
+	mainWindow.Run(f.startURL.String(), activationPolicy)
 	return nil
 }
 

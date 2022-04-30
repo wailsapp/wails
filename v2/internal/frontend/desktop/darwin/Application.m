@@ -19,7 +19,7 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     WailsContext *result = [WailsContext new];
 
     result.debug = debug;
-    
+
     if ( windowStartState == WindowStartsFullscreen ) {
         fullscreen = 1;
     }
@@ -27,7 +27,7 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     [result CreateWindow:width :height :frameless :resizable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent :minWidth :minHeight :maxWidth :maxHeight];
     [result SetTitle:safeInit(title)];
     [result Center];
-    
+
     switch( windowStartState ) {
         case WindowStartsMaximised:
             [result.mainWindow zoom:nil];
@@ -344,12 +344,11 @@ void AppendSeparator(void* inMenu) {
     [menu AppendSeparator];
 }
 
-
-
-void Run(void *inctx, const char* url) {
+void Run(void *inctx, const char* url, int activationPolicy) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSApplication *app = [NSApplication sharedApplication];
     AppDelegate* delegate = [AppDelegate new];
+    delegate.activationPolicy = activationPolicy;
     [app setDelegate:(id)delegate];
     ctx.appdelegate = delegate;
     delegate.mainWindow = ctx.mainWindow;
