@@ -67,6 +67,10 @@ type MenuItem struct {
 	radioGroupMembers []*MenuItem
 }
 
+func (m *MenuItem) SetChecked(value bool) {
+	C.SetMenuItemChecked(m.nsmenuitem, bool2Cint(value))
+}
+
 func (m *NSMenu) AddMenuItem(menuItem *menu.MenuItem) *MenuItem {
 	c := NewCalloc()
 	defer c.Free()
@@ -83,6 +87,7 @@ func (m *NSMenu) AddMenuItem(menuItem *menu.MenuItem) *MenuItem {
 
 	result.id = createMenuItemID(result)
 	result.nsmenuitem = C.AppendMenuItem(m.context, m.nsmenu, c.String(menuItem.Label), key, modifier, bool2Cint(menuItem.Disabled), bool2Cint(menuItem.Checked), C.int(result.id))
+	menuItem.Impl = result
 	return result
 }
 

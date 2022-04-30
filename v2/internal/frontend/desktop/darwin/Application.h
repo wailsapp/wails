@@ -56,6 +56,7 @@ void AppendSubmenu(void* parent, void* child);
 void AppendRole(void *inctx, void *inMenu, int role);
 void SetAsApplicationMenu(void *inctx, void *inMenu);
 void UpdateApplicationMenu(void *inctx);
+void SetMenuItemChecked(void* nsMenuItem, int checked);
 
 /* Tray Menu */
 void* NewNSStatusItem(const char* label);

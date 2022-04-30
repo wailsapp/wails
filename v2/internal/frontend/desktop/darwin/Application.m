@@ -165,6 +165,10 @@ void ToggleMaximise(void* inctx) {
     );
 }
 
+void SetMenuItemChecked(void* nsMenuItem, int checked) {
+    [(NSMenuItem*)nsMenuItem setState:(checked == 0 ? NSOffState : NSOnState)];
+}
+
 const char* GetSize(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSRect frame = [ctx.mainWindow frame];
