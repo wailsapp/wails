@@ -57,6 +57,10 @@ void AppendRole(void *inctx, void *inMenu, int role);
 void SetAsApplicationMenu(void *inctx, void *inMenu);
 void UpdateApplicationMenu(void *inctx);
 
+/* Tray Menu */
+void* NewNSStatusItem(const char* label);
+void SetTrayMenu(void *nsStatusItem, void* nsMenu);
+
 void SetAbout(void *inctx, const char* title, const char* description, void* imagedata, int datalen);
 void* AppendMenuItem(void* inctx, void* nsmenu, const char* label, const char* shortcutKey, int modifiers, int disabled, int checked, int menuItemID);
 void AppendSeparator(void* inMenu);

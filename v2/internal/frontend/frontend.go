@@ -101,4 +101,7 @@ type Frontend interface {
 
 	// Browser
 	BrowserOpenURL(url string)
+
+	// Tray Menu
+	TrayMenuAdd(trayMenu *menu.TrayMenu)
 }

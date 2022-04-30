@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "AppDelegate.h"
+#import "message.h"
 
 @implementation AppDelegate
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender {
@@ -25,6 +26,7 @@
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
+    processNotification(0); // Notify Go 
     [NSApp activateIgnoringOtherApps:YES];
     if ( self.startFullscreen ) {
         NSWindowCollectionBehavior behaviour = [self.mainWindow collectionBehavior];

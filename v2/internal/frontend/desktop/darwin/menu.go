@@ -20,6 +20,20 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 )
 
+func NewNSTrayMenu(context unsafe.Pointer, trayMenu *menu.TrayMenu) *NSTrayMenu {
+	c := NewCalloc()
+	defer c.Free()
+	theMenu := NewNSMenu(context, "")
+	processMenu(theMenu, trayMenu.Menu)
+	title := c.String(trayMenu.Label)
+	nsStatusItem := C.NewNSStatusItem(title)
+	C.SetTrayMenu(nsStatusItem, theMenu.nsmenu)
+	return &NSTrayMenu{
+		context:      context,
+		nsStatusItem: nsStatusItem,
+	}
+}
+
 type NSMenu struct {
 	context unsafe.Pointer
 	nsmenu  unsafe.Pointer

@@ -32,3 +32,4 @@ v2/test/kitchensink/frontend/package.json.md5
 !v2/internal/ffenestri/windows/x64/WebView2Loader.dll
 .idea/
 v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
+v2/internal/frontend/desktop/darwin/test.xcodeproj

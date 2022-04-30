@@ -1,7 +1,18 @@
 package menu
 
+import (
+	"context"
+	"log"
+	goruntime "runtime"
+)
+
+type TrayMenuAdd interface {
+	TrayMenuAdd(menu *TrayMenu)
+}
+
 // TrayMenu are the options
 type TrayMenu struct {
+	ctx context.Context
 
 	// Label is the text we wish to display in the tray
 	Label string
@@ -27,7 +38,7 @@ type TrayMenu struct {
 	Tooltip string
 
 	// Callback function when menu clicked
-	//Click Callback `json:"-"`
+	Click Callback
 
 	// Disabled makes the item unselectable
 	Disabled bool
@@ -40,4 +51,22 @@ type TrayMenu struct {
 
 	// OnClose is called when the Menu is closed
 	OnClose func()
+}
+
+func NewTrayMenu(ctx context.Context) *TrayMenu {
+	return &TrayMenu{
+		ctx: ctx,
+	}
+}
+
+func (t *TrayMenu) Show() {
+	result := t.ctx.Value("frontend")
+	if result == nil {
+		pc, _, _, _ := goruntime.Caller(1)
+		funcName := goruntime.FuncForPC(pc).Name()
+		log.Fatalf("invalid context at '%s'", funcName)
+	}
+	println("\n\n\n\nFWEFWEFWFE")
+	result.(TrayMenuAdd).TrayMenuAdd(t)
+
 }

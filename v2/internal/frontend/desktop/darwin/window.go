@@ -112,6 +112,10 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 		result.SetApplicationMenu(frontendOptions.Menu)
 	}
 
+	if frontendOptions.TrayMenu != nil {
+		result.TrayMenuAdd(frontendOptions.TrayMenu)
+	}
+
 	return result
 }
 

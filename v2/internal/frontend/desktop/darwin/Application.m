@@ -270,6 +270,21 @@ void AppendRole(void *inctx, void *inMenu, int role) {
     [menu appendRole :ctx :role];
 }
 
+void* NewNSStatusItem(const char* label) {
+    NSString *_label = safeInit(label);
+    NSStatusBar *statusBar = [NSStatusBar systemStatusBar];
+    NSStatusItem *result = [[statusBar statusItemWithLength:NSVariableStatusItemLength] retain];
+    [result button].title = _label;
+    return result;
+}
+
+void SetTrayMenu(void *nsStatusItem, void* nsMenu) {
+    ON_MAIN_THREAD(
+       [(NSStatusItem*)nsStatusItem setMenu:(NSMenu *)nsMenu];
+    )
+}
+
+
 void* NewMenu(const char *name) {
     NSString *title = @"";
     if (name != nil) {
