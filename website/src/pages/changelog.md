@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [v2.0.0-beta.36] - 2022-04-27
+
+### Fixed
+- [v2] Validate devServer property to be of the correct form by [@stffabi](https://github.com/stffabi) in https://github.com/wailsapp/wails/pull/1359
+- [v2, darwin] Initialize native variables on stack to prevent segfault by [@stffabi](https://github.com/stffabi) in https://github.com/wailsapp/wails/pull/1362
+- Vue-TS template fix
+
+### Changed
+- Added `OnStartup` method back to default templates
+
 ## [v2.0.0-beta.35] - 2022-04-27
 
 ### Breaking Changes
