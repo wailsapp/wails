@@ -2,11 +2,12 @@ package main
 
 import (
 	"embed"
+	"os"
+	"strings"
+
 	"github.com/leaanthony/debme"
 	"github.com/leaanthony/gosod"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/initialise/templates/generate/s"
-	"os"
-	"strings"
 )
 
 //go:embed assets/common/*
@@ -229,4 +230,6 @@ func createTemplate(template *template) {
 	//s.EXEC("wails build -debug")
 	//s.ECHO("HERE")
 	s.CD(cwd)
+
+	s.ECHO(`Until an auto fix is done, add "@babel/types": "^7.17.10" to vite-ts/frontend/package.json`)
 }
