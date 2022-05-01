@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -125,6 +126,16 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
+		devServer := flags.devServer
+		if _, _, err := net.SplitHostPort(devServer); err != nil {
+			return fmt.Errorf("DevServer is not of the form 'host:port', please check your wails.json")
+		}
+
+		devServerURL, err := url.Parse("http://" + devServer)
+		if err != nil {
+			return err
+		}
+
 		// Update go.mod to use current wails version
 		err = syncGoModVersion(cwd)
 		if err != nil {
@@ -173,11 +184,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			var devCommandWaitGroup sync.WaitGroup
 			closer := runFrontendDevWatcherCommand(cwd, command, &devCommandWaitGroup)
 			defer closer(&devCommandWaitGroup)
-		}
-
-		devServerURL, err := url.Parse("http://" + flags.devServer)
-		if err != nil {
-			return err
 		}
 
 		// open browser

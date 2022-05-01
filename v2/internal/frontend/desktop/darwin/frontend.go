@@ -434,7 +434,7 @@ func processNotification(notification NotificationType) {
 //export processURLRequest
 func processURLRequest(ctx unsafe.Pointer, url *C.char, method *C.char, headers *C.char, body unsafe.Pointer, bodyLen C.int) {
 	var goBody []byte
-	if bodyLen != 0 {
+	if body != nil && bodyLen != 0 {
 		goBody = C.GoBytes(body, bodyLen)
 	}
 
