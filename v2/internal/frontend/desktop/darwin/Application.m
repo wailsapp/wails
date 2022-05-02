@@ -275,12 +275,24 @@ void AppendRole(void *inctx, void *inMenu, int role) {
     [menu appendRole :ctx :role];
 }
 
-void NewNSStatusItem(int id) {
-    ON_MAIN_THREAD(
+void NewNSStatusItem(int id, int length) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
         NSStatusBar *statusBar = [NSStatusBar systemStatusBar];
-        NSStatusItem *result = [[statusBar statusItemWithLength:NSVariableStatusItemLength] retain];
+        // Map Go to Cocoa length. 0 = NSVariableStatusItemLength.
+        CGFloat length = NSVariableStatusItemLength;
+        if( length == 1 ) {
+            length = NSSquareStatusItemLength;
+        }
+        NSStatusItem *result = [[statusBar statusItemWithLength:length] retain];
         objectCreated(id,result);
-    )
+        
+    });
+}
+
+void DeleteStatusItem(void *_nsStatusItem) {
+    NSStatusItem *nsStatusItem = (NSStatusItem*) _nsStatusItem;
+    [nsStatusItem release];
 }
 
 void SetTrayMenuLabel(void *_nsStatusItem, const char *label) {
@@ -365,6 +377,7 @@ void SetTrayImage(void *nsStatusItem, void *imageData, int imageDataLength, int 
         if(template) {
             image.template = true;
         }
+        image.size = NSMakeSize(22.0, 22.0);
         statusItem.button.image = image;
                
         // Swap NSNoImage and NSImageLeading because we wanted NSImageLeading to be default in Go
@@ -375,6 +388,7 @@ void SetTrayImage(void *nsStatusItem, void *imageData, int imageDataLength, int 
            actualPosition = 7;
         }
         [statusItem.button setImagePosition:actualPosition];
+                   
     )
 }
 

@@ -29,6 +29,13 @@ const (
 	NSImageTrailing ImagePosition = 8
 )
 
+type TraySizing int
+
+const (
+	Variable TraySizing = 0
+	Square   TraySizing = 1
+)
+
 type TrayImage struct {
 	Image      []byte
 	Image2x    []byte
@@ -44,9 +51,6 @@ type TrayMenu struct {
 	Label string
 
 	Image *TrayImage
-
-	// MacTemplateImage indicates that on a Mac, this image is a template image
-	MacTemplateImage bool
 
 	// Text Colour
 	RGBA string
@@ -73,6 +77,10 @@ type TrayMenu struct {
 	// OnClose is called when the Menu is closed
 	OnClose func()
 
+	/* Mac Options */
+	Sizing TraySizing
+
+	// This is the reference to the OS specific implementation
 	impl TrayMenuImpl
 }
 

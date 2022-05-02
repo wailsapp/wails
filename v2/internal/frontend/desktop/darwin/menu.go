@@ -52,7 +52,7 @@ func NewNSTrayMenu(context unsafe.Pointer, trayMenu *menu.TrayMenu, isRetina boo
 
 	id := uuid.New().ID()
 	nsStatusItem := waitNSObjectCreate(id, func() {
-		C.NewNSStatusItem(C.int(id))
+		C.NewNSStatusItem(C.int(id), C.int(trayMenu.Sizing))
 	})
 	result := &NSTrayMenu{
 		context:      context,
@@ -83,17 +83,17 @@ func (n *NSTrayMenu) SetImage(image *menu.TrayImage) {
 		return
 	}
 
-	var imagePtr unsafe.Pointer
+	var imageToUse []byte
 	if image.Image != nil {
-		imagePtr = unsafe.Pointer(&image.Image[0])
+		imageToUse = image.Image
 	}
 	if n.isRetina && image.Image2x != nil {
-		imagePtr = unsafe.Pointer(&image.Image2x[0])
+		imageToUse = image.Image2x
 	}
 
 	C.SetTrayImage(n.nsStatusItem,
-		imagePtr,
-		C.int(len(image.Image)),
+		unsafe.Pointer(&imageToUse[0]),
+		C.int(len(imageToUse)),
 		bool2Cint(image.IsTemplate),
 		C.int(image.Position),
 	)

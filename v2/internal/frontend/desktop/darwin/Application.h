@@ -59,7 +59,7 @@ void UpdateApplicationMenu(void *inctx);
 void SetMenuItemChecked(void* nsMenuItem, int checked);
 
 /* Tray Menu */
-void NewNSStatusItem(int);
+void NewNSStatusItem(int id, int length);
 void SetTrayMenu(void *nsStatusItem, void* nsMenu);
 void SetTrayMenuLabel(void *nsStatusItem, const char *label);
 
