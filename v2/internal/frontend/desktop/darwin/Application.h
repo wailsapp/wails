@@ -72,4 +72,6 @@ NSString* safeInit(const char* input);
 
 void SetTrayImage(void *nsStatusItem, void *imageData, int imageDataLength, int template, int position);
 
+bool IsRetina(void *ctx);
+
 #endif /* Application_h */

@@ -46,7 +46,7 @@ func objectCreated(id uint32, pointer unsafe.Pointer) {
 	createNSObjectMapLock.Unlock()
 }
 
-func NewNSTrayMenu(context unsafe.Pointer, trayMenu *menu.TrayMenu) *NSTrayMenu {
+func NewNSTrayMenu(context unsafe.Pointer, trayMenu *menu.TrayMenu, isRetina bool) *NSTrayMenu {
 	c := NewCalloc()
 	defer c.Free()
 
@@ -57,6 +57,7 @@ func NewNSTrayMenu(context unsafe.Pointer, trayMenu *menu.TrayMenu) *NSTrayMenu 
 	result := &NSTrayMenu{
 		context:      context,
 		nsStatusItem: nsStatusItem,
+		isRetina:     isRetina,
 	}
 
 	if trayMenu.Label != "" {
@@ -77,11 +78,21 @@ func NewNSTrayMenu(context unsafe.Pointer, trayMenu *menu.TrayMenu) *NSTrayMenu 
 }
 
 func (n *NSTrayMenu) SetImage(image *menu.TrayImage) {
-	if image.Image == nil {
+
+	if !n.isRetina && image.Image == nil {
 		return
 	}
+
+	var imagePtr unsafe.Pointer
+	if image.Image != nil {
+		imagePtr = unsafe.Pointer(&image.Image[0])
+	}
+	if n.isRetina && image.Image2x != nil {
+		imagePtr = unsafe.Pointer(&image.Image2x[0])
+	}
+
 	C.SetTrayImage(n.nsStatusItem,
-		unsafe.Pointer(&image.Image[0]),
+		imagePtr,
 		C.int(len(image.Image)),
 		bool2Cint(image.IsTemplate),
 		C.int(image.Position),

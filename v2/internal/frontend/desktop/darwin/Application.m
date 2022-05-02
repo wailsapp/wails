@@ -378,6 +378,11 @@ void SetTrayImage(void *nsStatusItem, void *imageData, int imageDataLength, int 
     )
 }
 
+bool IsRetina(void *ctx) {
+    CGFloat scale = [((WailsContext*)ctx).mainWindow backingScaleFactor];
+    return scale != (CGFloat)1;
+}
+
 void Run(void *inctx, const char* url, int activationPolicy) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSApplication *app = [NSApplication sharedApplication];

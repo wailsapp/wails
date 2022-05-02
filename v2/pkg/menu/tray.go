@@ -31,6 +31,7 @@ const (
 
 type TrayImage struct {
 	Image      []byte
+	Image2x    []byte
 	IsTemplate bool
 	Position   ImagePosition
 }

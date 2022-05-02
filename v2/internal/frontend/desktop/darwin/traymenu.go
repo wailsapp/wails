@@ -25,6 +25,7 @@ func (f *Frontend) TrayMenuAdd(trayMenu *menu.TrayMenu) menu.TrayMenuImpl {
 type NSTrayMenu struct {
 	context      unsafe.Pointer
 	nsStatusItem unsafe.Pointer // NSStatusItem
+	isRetina     bool
 }
 
 func (n *NSTrayMenu) SetLabel(label string) {
@@ -33,5 +34,5 @@ func (n *NSTrayMenu) SetLabel(label string) {
 }
 
 func (w *Window) TrayMenuAdd(trayMenu *menu.TrayMenu) *NSTrayMenu {
-	return NewNSTrayMenu(w.context, trayMenu)
+	return NewNSTrayMenu(w.context, trayMenu, IsRetina(w))
 }
