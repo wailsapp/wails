@@ -11,6 +11,7 @@
 #import "AppDelegate.h"
 #import "WailsMenu.h"
 #import "WailsMenuItem.h"
+#import "message.h"
 
 WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight) {
     
@@ -274,12 +275,20 @@ void AppendRole(void *inctx, void *inMenu, int role) {
     [menu appendRole :ctx :role];
 }
 
-void* NewNSStatusItem(const char* label) {
-    NSString *_label = safeInit(label);
-    NSStatusBar *statusBar = [NSStatusBar systemStatusBar];
-    NSStatusItem *result = [[statusBar statusItemWithLength:NSVariableStatusItemLength] retain];
-    [result button].title = _label;
-    return result;
+void NewNSStatusItem(int id) {
+    ON_MAIN_THREAD(
+        NSStatusBar *statusBar = [NSStatusBar systemStatusBar];
+        NSStatusItem *result = [[statusBar statusItemWithLength:NSVariableStatusItemLength] retain];
+        objectCreated(id,result);
+    )
+}
+
+void SetTrayMenuLabel(void *_nsStatusItem, const char *label) {
+    ON_MAIN_THREAD(
+        NSStatusItem *nsStatusItem = (NSStatusItem*) _nsStatusItem;
+        nsStatusItem.button.title = safeInit(label);
+       free((void*)label);
+    )
 }
 
 void SetTrayMenu(void *nsStatusItem, void* nsMenu) {
@@ -313,8 +322,8 @@ void SetAsApplicationMenu(void *inctx, void *inMenu) {
 void UpdateApplicationMenu(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
-                   NSApplication *app = [NSApplication sharedApplication];
-                   [app setMainMenu:ctx.applicationMenu];
+       NSApplication *app = [NSApplication sharedApplication];
+       [app setMainMenu:ctx.applicationMenu];
     )
 }
 
@@ -339,13 +348,34 @@ void UpdateMenuItem(void* nsmenuitem, int checked) {
     ON_MAIN_THREAD(
         WailsMenuItem *menuItem = (__bridge WailsMenuItem*) nsmenuitem;
         [menuItem setState:(checked == 1?NSControlStateValueOn:NSControlStateValueOff)];
-                   )
+       )
 }
 
 
 void AppendSeparator(void* inMenu) {
     WailsMenu *menu = (__bridge WailsMenu*) inMenu;
     [menu AppendSeparator];
+}
+
+void SetTrayImage(void *nsStatusItem, void *imageData, int imageDataLength, int template, int position) {
+    ON_MAIN_THREAD(
+        NSStatusItem *statusItem = (NSStatusItem*) nsStatusItem;
+        NSData *nsdata = [NSData dataWithBytes:imageData length:imageDataLength];
+        NSImage *image = [[[NSImage alloc] initWithData:nsdata] autorelease];
+        if(template) {
+            image.template = true;
+        }
+        statusItem.button.image = image;
+               
+        // Swap NSNoImage and NSImageLeading because we wanted NSImageLeading to be default in Go
+        int actualPosition = position;
+        if( position == 7) {
+           actualPosition = 0;
+        } else if (position == 0) {
+           actualPosition = 7;
+        }
+        [statusItem.button setImagePosition:actualPosition];
+    )
 }
 
 void Run(void *inctx, const char* url, int activationPolicy) {

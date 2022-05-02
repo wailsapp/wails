@@ -56,10 +56,9 @@ type App struct {
 
 	//ContextMenus []*menu.ContextMenu
 	//TrayMenus    []*menu.TrayMenu
-	Windows  *windows.Options
-	Mac      *mac.Options
-	Linux    *linux.Options
-	TrayMenu *menu.TrayMenu
+	Windows *windows.Options
+	Mac     *mac.Options
+	Linux   *linux.Options
 }
 
 type RGBA struct {

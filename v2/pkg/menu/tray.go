@@ -7,7 +7,32 @@ import (
 )
 
 type TrayMenuAdd interface {
-	TrayMenuAdd(menu *TrayMenu)
+	TrayMenuAdd(menu *TrayMenu) TrayMenuImpl
+}
+
+type TrayMenuImpl interface {
+	SetLabel(string)
+	SetImage(*TrayImage)
+}
+
+type ImagePosition int
+
+const (
+	NSImageLeading  ImagePosition = 0
+	NSImageOnly     ImagePosition = 1
+	NSImageLeft     ImagePosition = 2
+	NSImageRight    ImagePosition = 3
+	NSImageBelow    ImagePosition = 4
+	NSImageAbove    ImagePosition = 5
+	NSImageOverlaps ImagePosition = 6
+	NSNoImage       ImagePosition = 7
+	NSImageTrailing ImagePosition = 8
+)
+
+type TrayImage struct {
+	Image      []byte
+	IsTemplate bool
+	Position   ImagePosition
 }
 
 // TrayMenu are the options
@@ -17,12 +42,7 @@ type TrayMenu struct {
 	// Label is the text we wish to display in the tray
 	Label string
 
-	// Image is the name of the tray icon we wish to display.
-	// These are read up during build from <projectdir>/trayicons and
-	// the filenames are used as IDs, minus the extension
-	// EG: <projectdir>/trayicons/main.png can be referenced here with "main"
-	// If the image is not a filename, it will be treated as base64 image data
-	Image string
+	Image *TrayImage
 
 	// MacTemplateImage indicates that on a Mac, this image is a template image
 	MacTemplateImage bool
@@ -51,22 +71,39 @@ type TrayMenu struct {
 
 	// OnClose is called when the Menu is closed
 	OnClose func()
+
+	impl TrayMenuImpl
 }
 
-func NewTrayMenu(ctx context.Context) *TrayMenu {
-	return &TrayMenu{
-		ctx: ctx,
+func NewTrayMenu() *TrayMenu {
+	return &TrayMenu{}
+}
+
+func (t *TrayMenu) Show(ctx context.Context) {
+	if ctx == nil {
+		log.Fatal("TrayMenu.Show() called before Run()")
 	}
-}
-
-func (t *TrayMenu) Show() {
-	result := t.ctx.Value("frontend")
+	t.ctx = ctx
+	result := ctx.Value("frontend")
 	if result == nil {
 		pc, _, _, _ := goruntime.Caller(1)
 		funcName := goruntime.FuncForPC(pc).Name()
 		log.Fatalf("invalid context at '%s'", funcName)
 	}
-	println("\n\n\n\nFWEFWEFWFE")
-	result.(TrayMenuAdd).TrayMenuAdd(t)
+	t.impl = result.(TrayMenuAdd).TrayMenuAdd(t)
 
+}
+
+func (t *TrayMenu) SetLabel(label string) {
+	t.Label = label
+	if t.impl != nil {
+		t.impl.SetLabel(label)
+	}
+}
+
+func (t *TrayMenu) SetImage(image *TrayImage) {
+	t.Image = image
+	if t.impl != nil {
+		t.impl.SetImage(image)
+	}
 }

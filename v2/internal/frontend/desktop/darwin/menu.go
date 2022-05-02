@@ -14,24 +14,82 @@ package darwin
 */
 import "C"
 import (
+	"sync"
 	"unsafe"
+
+	"github.com/google/uuid"
 
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 )
 
+var createNSObjectMap = make(map[uint32]chan unsafe.Pointer)
+var createNSObjectMapLock sync.RWMutex
+
+func waitNSObjectCreate(id uint32, fn func()) unsafe.Pointer {
+	waitchan := make(chan unsafe.Pointer)
+	createNSObjectMapLock.Lock()
+	createNSObjectMap[id] = waitchan
+	createNSObjectMapLock.Unlock()
+	fn()
+	result := <-waitchan
+	createNSObjectMapLock.Lock()
+	createNSObjectMap[id] = nil
+	createNSObjectMapLock.Unlock()
+	return result
+}
+
+//export objectCreated
+func objectCreated(id uint32, pointer unsafe.Pointer) {
+	createNSObjectMapLock.Lock()
+	createNSObjectMap[id] <- pointer
+	createNSObjectMapLock.Unlock()
+}
+
 func NewNSTrayMenu(context unsafe.Pointer, trayMenu *menu.TrayMenu) *NSTrayMenu {
 	c := NewCalloc()
 	defer c.Free()
-	theMenu := NewNSMenu(context, "")
-	processMenu(theMenu, trayMenu.Menu)
-	title := c.String(trayMenu.Label)
-	nsStatusItem := C.NewNSStatusItem(title)
-	C.SetTrayMenu(nsStatusItem, theMenu.nsmenu)
-	return &NSTrayMenu{
+
+	id := uuid.New().ID()
+	nsStatusItem := waitNSObjectCreate(id, func() {
+		C.NewNSStatusItem(C.int(id))
+	})
+	result := &NSTrayMenu{
 		context:      context,
 		nsStatusItem: nsStatusItem,
 	}
+
+	if trayMenu.Label != "" {
+		result.SetLabel(trayMenu.Label)
+	}
+
+	// TODO: Move this into NSTrayMenu method
+	if trayMenu.Menu != nil {
+		theMenu := NewNSMenu(context, "")
+		processMenu(theMenu, trayMenu.Menu)
+		result.SetMenu(theMenu)
+	}
+
+	if trayMenu.Image != nil {
+		result.SetImage(trayMenu.Image)
+	}
+	return result
+}
+
+func (n *NSTrayMenu) SetImage(image *menu.TrayImage) {
+	if image.Image == nil {
+		return
+	}
+	C.SetTrayImage(n.nsStatusItem,
+		unsafe.Pointer(&image.Image[0]),
+		C.int(len(image.Image)),
+		bool2Cint(image.IsTemplate),
+		C.int(image.Position),
+	)
+}
+
+func (n *NSTrayMenu) SetMenu(menu *NSMenu) {
+	C.SetTrayMenu(n.nsStatusItem, menu.nsmenu)
 }
 
 type NSMenu struct {

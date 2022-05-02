@@ -9,7 +9,6 @@ package darwin
 
 #include <stdlib.h>
 */
-
 import "C"
 import (
 	"unsafe"
@@ -17,18 +16,20 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
-func (f *Frontend) TrayMenuAdd(trayMenu *menu.TrayMenu) {
-	if f.applicationDidFinishLaunching == false {
-		f.trayMenusBuffer = append(f.trayMenusBuffer, trayMenu)
-		return
-	}
+func (f *Frontend) TrayMenuAdd(trayMenu *menu.TrayMenu) menu.TrayMenuImpl {
 	nsTrayMenu := f.mainWindow.TrayMenuAdd(trayMenu)
 	f.trayMenus[trayMenu] = nsTrayMenu
+	return nsTrayMenu
 }
 
 type NSTrayMenu struct {
 	context      unsafe.Pointer
 	nsStatusItem unsafe.Pointer // NSStatusItem
+}
+
+func (n *NSTrayMenu) SetLabel(label string) {
+	cLabel := C.CString(label)
+	C.SetTrayMenuLabel(n.nsStatusItem, cLabel)
 }
 
 func (w *Window) TrayMenuAdd(trayMenu *menu.TrayMenu) *NSTrayMenu {

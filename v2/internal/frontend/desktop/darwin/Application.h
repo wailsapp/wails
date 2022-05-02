@@ -59,8 +59,9 @@ void UpdateApplicationMenu(void *inctx);
 void SetMenuItemChecked(void* nsMenuItem, int checked);
 
 /* Tray Menu */
-void* NewNSStatusItem(const char* label);
+void NewNSStatusItem(int);
 void SetTrayMenu(void *nsStatusItem, void* nsMenu);
+void SetTrayMenuLabel(void *nsStatusItem, const char *label);
 
 void SetAbout(void *inctx, const char* title, const char* description, void* imagedata, int datalen);
 void* AppendMenuItem(void* inctx, void* nsmenu, const char* label, const char* shortcutKey, int modifiers, int disabled, int checked, int menuItemID);
@@ -68,5 +69,7 @@ void AppendSeparator(void* inMenu);
 void UpdateMenuItem(void* nsmenuitem, int checked);
 
 NSString* safeInit(const char* input);
+
+void SetTrayImage(void *nsStatusItem, void *imageData, int imageDataLength, int template, int position);
 
 #endif /* Application_h */
