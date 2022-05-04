@@ -158,11 +158,14 @@ var templates = []*template{
 
 func main() {
 
-	rebuildRuntime()
+	//rebuildRuntime()
+	//
+	//for _, t := range templates {
+	//	createTemplate(t)
+	//}
 
-	for _, t := range templates {
-		createTemplate(t)
-	}
+	// copy plain template
+	s.COPYDIR("plain", "../templates/plain")
 }
 
 func rebuildRuntime() {
@@ -220,15 +223,6 @@ func createTemplate(template *template) {
 	err = g.Extract(".", nil)
 	checkError(err)
 
-	//s.ECHO("HERE")
-	//s.EXEC("wails init -n " + shortName + "test -t ./" + shortName)
-	//s.ECHO("HERE")
-	//s.CD(shortName + "test")
-	//s.ECHO("HERE")
-	//s.REPLACEALL("go.mod", s.Sub{"// replace": "replace"})
-	//s.ECHO("HERE")
-	//s.EXEC("wails build -debug")
-	//s.ECHO("HERE")
 	s.CD(cwd)
 
 	s.ECHO(`Until an auto fix is done, add "@babel/types": "^7.17.10" to vite-ts/frontend/package.json`)
