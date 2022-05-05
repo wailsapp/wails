@@ -116,8 +116,8 @@ Wails v2 已针对所有 3 个平台发布了 Beta 版。如果您有兴趣尝�
 <a href="https://github.com/sponsors/leaanthony" style="width:100px;">
   <img src="/img/silver%20sponsor.png" width="100"/>
 </a>
-<a href="https://github.com/letheanVPN" style="width:100px;">
-  <img src="https://github.com/letheanVPN.png?size=100" width="100"/>
+<a href="https://github.com/selvindev" style="width:100px;">
+  <img src="https://github.com/selvindev.png?size=100" width="100"/>
 </a>
 <br/>
 <br/>
