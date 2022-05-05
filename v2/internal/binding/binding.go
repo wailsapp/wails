@@ -152,13 +152,14 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 	for i := 0; i < structType.NumField(); i++ {
 		field := structType.Field(i)
 		if field.Anonymous {
-			return
+			continue
 		}
-
 		kind := field.Type.Kind()
 		if kind == reflect.Struct {
+			if field.PkgPath == "" {
+				continue
+			}
 			fqname := field.Type.String()
-			println("fqname:", fqname)
 			sName := strings.Split(fqname, ".")[1]
 			pName := getPackageName(fqname)
 			a := reflect.New(field.Type)
@@ -167,8 +168,10 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 				b.AddStructToGenerateTS(pName, sName, s)
 			}
 		} else if kind == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct {
+			if field.PkgPath == "" {
+				continue
+			}
 			fqname := field.Type.String()
-			println("fqname:", fqname)
 			sName := strings.Split(fqname, ".")[1]
 			pName := getPackageName(fqname)
 			typ := field.Type.Elem()
