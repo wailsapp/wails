@@ -40,8 +40,8 @@ func bool2Cint(value bool) C.int {
 	return C.int(0)
 }
 
-func IsRetina(window *Window) bool {
-	return bool(C.IsRetina(window.context))
+func ScalingFactor(window *Window) int {
+	return int(C.ScalingFactor(window.context))
 }
 
 func NewWindow(frontendOptions *options.App, debugMode bool) *Window {

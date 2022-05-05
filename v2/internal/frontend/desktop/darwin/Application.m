@@ -392,9 +392,9 @@ void SetTrayImage(void *nsStatusItem, void *imageData, int imageDataLength, int 
     )
 }
 
-bool IsRetina(void *ctx) {
+int ScalingFactor(void *ctx) {
     CGFloat scale = [((WailsContext*)ctx).mainWindow backingScaleFactor];
-    return scale != (CGFloat)1;
+    return (int)scale;
 }
 
 void Run(void *inctx, const char* url, int activationPolicy) {

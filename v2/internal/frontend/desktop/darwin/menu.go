@@ -14,6 +14,7 @@ package darwin
 */
 import "C"
 import (
+	"fmt"
 	"sync"
 	"unsafe"
 
@@ -46,7 +47,7 @@ func objectCreated(id uint32, pointer unsafe.Pointer) {
 	createNSObjectMapLock.Unlock()
 }
 
-func NewNSTrayMenu(context unsafe.Pointer, trayMenu *menu.TrayMenu, isRetina bool) *NSTrayMenu {
+func NewNSTrayMenu(context unsafe.Pointer, trayMenu *menu.TrayMenu, scalingFactor int) *NSTrayMenu {
 	c := NewCalloc()
 	defer c.Free()
 
@@ -55,52 +56,42 @@ func NewNSTrayMenu(context unsafe.Pointer, trayMenu *menu.TrayMenu, isRetina boo
 		C.NewNSStatusItem(C.int(id), C.int(trayMenu.Sizing))
 	})
 	result := &NSTrayMenu{
-		context:      context,
-		nsStatusItem: nsStatusItem,
-		isRetina:     isRetina,
+		context:       context,
+		nsStatusItem:  nsStatusItem,
+		scalingFactor: scalingFactor,
 	}
 
-	if trayMenu.Label != "" {
-		result.SetLabel(trayMenu.Label)
-	}
+	result.SetLabel(trayMenu.Label)
+	result.SetMenu(trayMenu.Menu)
+	result.SetImage(trayMenu.Image)
 
-	// TODO: Move this into NSTrayMenu method
-	if trayMenu.Menu != nil {
-		theMenu := NewNSMenu(context, "")
-		processMenu(theMenu, trayMenu.Menu)
-		result.SetMenu(theMenu)
-	}
-
-	if trayMenu.Image != nil {
-		result.SetImage(trayMenu.Image)
-	}
 	return result
 }
 
 func (n *NSTrayMenu) SetImage(image *menu.TrayImage) {
-
-	if !n.isRetina && image.Image == nil {
+	if image == nil {
 		return
 	}
-
-	var imageToUse []byte
-	if image.Image != nil {
-		imageToUse = image.Image
+	bitmap := image.GetBestBitmap(n.scalingFactor, false)
+	if bitmap == nil {
+		fmt.Printf("[Warning] No TrayMenu Image available for scaling factor %dx\n", n.scalingFactor)
+		return
 	}
-	if n.isRetina && image.Image2x != nil {
-		imageToUse = image.Image2x
-	}
-
 	C.SetTrayImage(n.nsStatusItem,
-		unsafe.Pointer(&imageToUse[0]),
-		C.int(len(imageToUse)),
+		unsafe.Pointer(&bitmap[0]),
+		C.int(len(bitmap)),
 		bool2Cint(image.IsTemplate),
 		C.int(image.Position),
 	)
 }
 
-func (n *NSTrayMenu) SetMenu(menu *NSMenu) {
-	C.SetTrayMenu(n.nsStatusItem, menu.nsmenu)
+func (n *NSTrayMenu) SetMenu(menu *menu.Menu) {
+	if menu == nil {
+		return
+	}
+	theMenu := NewNSMenu(n.context, "")
+	processMenu(theMenu, menu)
+	C.SetTrayMenu(n.nsStatusItem, theMenu.nsmenu)
 }
 
 type NSMenu struct {

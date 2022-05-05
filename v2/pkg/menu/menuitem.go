@@ -225,7 +225,6 @@ func (m *MenuItem) insertItemAtIndex(index int, target *MenuItem) bool {
 
 func (m *MenuItem) SetChecked(b bool) {
 	if m.Checked != b {
-		println("here!!!!!")
 		m.Checked = b
 		m.Impl.SetChecked(b)
 	}

@@ -23,16 +23,19 @@ func (f *Frontend) TrayMenuAdd(trayMenu *menu.TrayMenu) menu.TrayMenuImpl {
 }
 
 type NSTrayMenu struct {
-	context      unsafe.Pointer
-	nsStatusItem unsafe.Pointer // NSStatusItem
-	isRetina     bool
+	context       unsafe.Pointer
+	nsStatusItem  unsafe.Pointer // NSStatusItem
+	scalingFactor int
 }
 
 func (n *NSTrayMenu) SetLabel(label string) {
+	if label == "" {
+		return
+	}
 	cLabel := C.CString(label)
 	C.SetTrayMenuLabel(n.nsStatusItem, cLabel)
 }
 
 func (w *Window) TrayMenuAdd(trayMenu *menu.TrayMenu) *NSTrayMenu {
-	return NewNSTrayMenu(w.context, trayMenu, IsRetina(w))
+	return NewNSTrayMenu(w.context, trayMenu, ScalingFactor(w))
 }
