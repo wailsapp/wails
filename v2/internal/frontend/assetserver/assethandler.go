@@ -31,7 +31,7 @@ type assetHandler struct {
 
 	logger *logger.Logger
 
-	servingFromDisk bool
+	retryMissingFiles bool
 }
 
 func NewAsssetHandler(ctx context.Context, options *options.App) (http.Handler, error) {
@@ -56,11 +56,10 @@ func NewAsssetHandler(ctx context.Context, options *options.App) (http.Handler, 
 		fs:      vfs,
 		handler: options.AssetsHandler,
 
-		// Check if we have been given a directory to serve assets from.
-		// If so, this means we are in dev mode and are serving assets off disk.
-		// We indicate this through the `servingFromDisk` flag to ensure requests
-		// aren't cached in dev mode.
-		servingFromDisk: ctx.Value("assetdir") != nil,
+		// Retry the loading of missing files on the Assets if we are in dev mode (with an AssetDir) and
+		// if the user doesn't use the AssetsHandler. If AssetsHandler are in use we would defer
+		// every request to the handler for 5s which is not quite useful.
+		retryMissingFiles: ctx.Value("assetdir") != nil && (options.AssetsHandler == nil),
 	}
 
 	if _logger := ctx.Value("logger"); _logger != nil {
@@ -84,10 +83,16 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				if handler != nil {
 					d.logDebug("[AssetHandler] File '%s' not found, serving '%s' by AssetHandler", filename, req.URL)
 					handler.ServeHTTP(rw, req)
+					err = nil
+				} else if filename == indexHTML {
+					err = serveFile(rw, filename, defaultHTML)
 				} else {
 					rw.WriteHeader(http.StatusNotFound)
+					err = nil
 				}
-			} else {
+			}
+
+			if err != nil {
 				d.logError("[AssetHandler] Unable to load file '%s': %s", filename, err)
 				http.Error(rw, err.Error(), http.StatusInternalServerError)
 			}
@@ -107,7 +112,7 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, filename string) erro
 	}
 
 	file, err := d.fs.Open(filename)
-	if err != nil && d.servingFromDisk {
+	if err != nil && d.retryMissingFiles {
 		for tries := 0; tries < 50; tries++ {
 			file, err = d.fs.Open(filename)
 			if err != nil {
@@ -117,9 +122,6 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, filename string) erro
 	}
 
 	if err != nil {
-		if filename == indexHTML && os.IsNotExist(err) {
-			return serveFile(rw, filename, defaultHTML)
-		}
 		return err
 	}
 	defer file.Close()
