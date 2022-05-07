@@ -259,10 +259,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			// Calculate platform and arch
 			platformSplit := strings.Split(platform, "/")
 			buildOptions.Platform = platformSplit[0]
+			buildOptions.Arch = runtime.GOARCH
 			if system.IsAppleSilicon {
 				buildOptions.Arch = "arm64"
-			} else {
-				buildOptions.Arch = runtime.GOARCH
 			}
 			if len(platformSplit) == 2 {
 				buildOptions.Arch = platformSplit[1]
@@ -330,7 +329,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			// Output stats
 			buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", outputFilename, time.Since(start).Round(time.Millisecond).String()))
 
-			outputBinaries[platform] = outputFilename
+			outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = outputFilename
 		})
 
 		if targetErr != nil {
