@@ -62,6 +62,10 @@ void SetMenuItemChecked(void* nsMenuItem, int checked);
 void NewNSStatusItem(int id, int length);
 void SetTrayMenu(void *nsStatusItem, void* nsMenu);
 void SetTrayMenuLabel(void *nsStatusItem, const char *label);
+void SetTrayImage(void *nsStatusItem, void *imageData, int imageDataLength, int template, int position);
+
+/* MenuItems */
+void SetMenuItemLabel(void *nsStatusItem, const char *label);
 
 void SetAbout(void *inctx, const char* title, const char* description, void* imagedata, int datalen);
 void* AppendMenuItem(void* inctx, void* nsmenu, const char* label, const char* shortcutKey, int modifiers, int disabled, int checked, int menuItemID);
@@ -70,7 +74,6 @@ void UpdateMenuItem(void* nsmenuitem, int checked);
 
 NSString* safeInit(const char* input);
 
-void SetTrayImage(void *nsStatusItem, void *imageData, int imageDataLength, int template, int position);
 
 int ScalingFactor(void *ctx);
 

@@ -295,12 +295,16 @@ void DeleteStatusItem(void *_nsStatusItem) {
     [nsStatusItem release];
 }
 
+void on_main_thread(void (^l)(void)) {
+    dispatch_async(dispatch_get_main_queue(), l);
+}
+
 void SetTrayMenuLabel(void *_nsStatusItem, const char *label) {
-    ON_MAIN_THREAD(
+    on_main_thread(^{
         NSStatusItem *nsStatusItem = (NSStatusItem*) _nsStatusItem;
         nsStatusItem.button.title = safeInit(label);
-       free((void*)label);
-    )
+        free((void*)label);
+    });
 }
 
 void SetTrayMenu(void *nsStatusItem, void* nsMenu) {
@@ -309,6 +313,16 @@ void SetTrayMenu(void *nsStatusItem, void* nsMenu) {
     )
 }
 
+
+/**** Menu Item ****/
+
+void SetMenuItemLabel(void *_nsMenuItem, const char *label) {
+    on_main_thread(^{
+        NSMenuItem *nsMenuItem = (NSMenuItem*) _nsMenuItem;
+        [ nsMenuItem setTitle:safeInit(label) ];
+        free((void*)label);
+    });
+}
 
 void* NewMenu(const char *name) {
     NSString *title = @"";

@@ -131,6 +131,11 @@ func (m *MenuItem) SetChecked(value bool) {
 	C.SetMenuItemChecked(m.nsmenuitem, bool2Cint(value))
 }
 
+func (m *MenuItem) SetLabel(label string) {
+	cLabel := C.CString(label)
+	C.SetMenuItemLabel(m.nsmenuitem, cLabel)
+}
+
 func (m *NSMenu) AddMenuItem(menuItem *menu.MenuItem) *MenuItem {
 	c := NewCalloc()
 	defer c.Free()

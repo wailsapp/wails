@@ -50,17 +50,17 @@ func (m *Menu) AddSeparator() *MenuItem {
 	return item
 }
 
-func (m *Menu) AddSubmenu(label string) *Menu {
+func (m *Menu) AddSubmenu(label string) *MenuItem {
 	submenu := NewMenu()
 	item := SubMenu(label, submenu)
 	m.Append(item)
-	return submenu
+	return item
 }
 
-func (m *Menu) InsertSubmenu(label string, submenu *Menu) *Menu {
+func (m *Menu) InsertSubmenu(label string, submenu *Menu) *MenuItem {
 	item := SubMenu(label, submenu)
 	m.Append(item)
-	return submenu
+	return item
 }
 
 func (m *Menu) Prepend(item *MenuItem) {

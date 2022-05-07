@@ -8,6 +8,7 @@ import (
 
 type MenuItemImpl interface {
 	SetChecked(bool)
+	SetLabel(string)
 }
 
 // MenuItem represents a menuitem contained in a menu
@@ -228,6 +229,14 @@ func (m *MenuItem) SetChecked(b bool) {
 		m.Checked = b
 		m.Impl.SetChecked(b)
 	}
+}
+
+func (m *MenuItem) SetLabel(name string) {
+	if m.Label == name {
+		return
+	}
+	m.Label = name
+	m.Impl.SetLabel(name)
 }
 
 // Text is a helper to create basic Text menu items
