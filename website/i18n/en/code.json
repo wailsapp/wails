@@ -18,7 +18,7 @@
     "message": "Quickly generate, build and package your projects using the Wails CLI."
   },
   "homepage.Tagline": {
-    "message": "Build beautiful cross-platform applications using Go + HTML + CSS + JS"
+    "message": "Build beautiful cross-platform applications using Go"
   },
   "homepage.ButtonText": {
     "message": "Get Started"
