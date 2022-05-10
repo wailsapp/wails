@@ -104,7 +104,7 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 
 func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) string {
 	switch true {
-	case input == "interface{}":
+	case input == "interface {}":
 		return "any"
 	case input == "string":
 		return "string"
