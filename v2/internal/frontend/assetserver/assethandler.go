@@ -34,7 +34,7 @@ type assetHandler struct {
 	retryMissingFiles bool
 }
 
-func NewAsssetHandler(ctx context.Context, options *options.App) (http.Handler, error) {
+func NewAssetHandler(ctx context.Context, options *options.App) (http.Handler, error) {
 	vfs := options.Assets
 	if vfs != nil {
 		if _, err := vfs.Open("."); err != nil {
