@@ -5,9 +5,7 @@ package windows
 
 import (
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/pkg/menu"
-	"golang.org/x/sys/windows"
 	"log"
 	"sync"
 	"unsafe"
@@ -37,31 +35,14 @@ func (w *Win32TrayMenu) SetMenu(menu *menu.Menu) {}
 
 func (w *Win32TrayMenu) SetImage(image *menu.TrayImage) {
 	data := w.newNotifyIconData()
-	//var iconBuffer bytes.Buffer
-	//bitmap := image.GetBestBitmap(1, false)
-	//iconData, err := ResizePNG(bitmap, 32)
-	//if err != nil {
-	//	log.Fatal(err.Error())
-	//}
-	icon, err := win32.LoadImage(
-		0,
-		windows.StringToUTF16Ptr("icon-44.ico"),
-		w32.IMAGE_ICON,
-		32,
-		32,
-		0x00000040|0x00000010)
-	if err != nil && err != windows.ERROR_SUCCESS {
-		panic(err)
+	bitmap := image.GetBestBitmap(1, false)
+	icon, err := win32.CreateIconFromResourceEx(uintptr(unsafe.Pointer(&bitmap[0])), uint32(len(bitmap)), true, 0x30000, 0, 0, 0)
+	if err != nil {
+		log.Fatal(err.Error())
 	}
-	data.HIcon = icon
-	//
-	//icon, err := win32.CreateIconFromResourceEx(uintptr(unsafe.Pointer(&bitmap[0])), uint32(len(bitmap)), true, 0x30000, 0, 0, 0)
-	//if err != nil {
-	//	log.Fatal(err.Error())
-	//}
 	data.UFlags |= win32.NIF_ICON
-	//data.HIcon = icon
-	if _, err := win32.NotifyIcon(win32.NIM_ADD, data); err != nil {
+	data.HIcon = icon
+	if _, err := win32.NotifyIcon(win32.NIM_MODIFY, data); err != nil {
 		log.Fatal(err.Error())
 	}
 }
