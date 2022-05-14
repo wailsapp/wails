@@ -78,7 +78,12 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 
 	if appoptions.Windows != nil {
 		if appoptions.Windows.WindowIsTranslucent {
-			result.SetTranslucentBackground()
+			// TODO: Migrate to win32 package
+			if !win32.IsWindowsVersionAtLeast(10, 0, 22579) {
+				result.SetTranslucentBackground()
+			} else {
+				win32.EnableTranslucency(result.Handle(), win32.BackdropType(appoptions.Windows.TranslucencyType))
+			}
 		}
 
 		if appoptions.Windows.DisableWindowIcon {

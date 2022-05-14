@@ -11,6 +11,16 @@ const (
 	Light Theme = 2
 )
 
+type BackdropType int32
+
+const (
+	Auto            BackdropType = 0
+	Disable         BackdropType = 1 // None
+	MainWindow      BackdropType = 2 // Mica
+	TransientWindow BackdropType = 3 // Acrylic
+	TabbedWindow    BackdropType = 4 // Tabbed
+)
+
 func RGB(r, g, b uint8) int32 {
 	var col = int32(b)
 	col = col<<8 | int32(g)
@@ -54,4 +64,7 @@ type Options struct {
 
 	// Custom settings for dark/light mode
 	CustomTheme *ThemeSettings
+
+	// Windows 11 22579 minimum
+	TranslucencyType BackdropType
 }

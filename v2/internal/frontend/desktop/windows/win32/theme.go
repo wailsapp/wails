@@ -1,6 +1,7 @@
 package win32
 
 import (
+	"fmt"
 	"golang.org/x/sys/windows/registry"
 	"unsafe"
 )
@@ -12,9 +13,18 @@ const DwmwaUseImmersiveDarkMode DWMWINDOWATTRIBUTE = 20
 const DwmwaBorderColor DWMWINDOWATTRIBUTE = 34
 const DwmwaCaptionColor DWMWINDOWATTRIBUTE = 35
 const DwmwaTextColor DWMWINDOWATTRIBUTE = 36
+const DwmwaSystemBackdropType DWMWINDOWATTRIBUTE = 38
 
 const SPI_GETHIGHCONTRAST = 0x0042
 const HCF_HIGHCONTRASTON = 0x00000001
+
+type BackdropType int32
+
+const DwmsbtAuto BackdropType = 0
+const DwmsbtDisable = 1         // None
+const DwmsbtMainWindow = 2      // Mica
+const DwmsbtTransientWindow = 3 // Acrylic
+const DwmsbtTabbedWindow = 4    // Tabbed
 
 func dwmSetWindowAttribute(hwnd uintptr, dwAttribute DWMWINDOWATTRIBUTE, pvAttribute unsafe.Pointer, cbAttribute uintptr) {
 	ret, _, err := procDwmSetWindowAttribute.Call(
@@ -47,6 +57,16 @@ func SetTheme(hwnd uintptr, useDarkMode bool) {
 	}
 }
 
+func EnableTranslucency(hwnd uintptr, backdrop BackdropType) {
+	fmt.Printf("%+v\n", windowsVersion)
+	if IsWindowsVersionAtLeast(10, 0, 22579) {
+		dwmSetWindowAttribute(hwnd, DwmwaSystemBackdropType, unsafe.Pointer(&backdrop), unsafe.Sizeof(&backdrop))
+	} else {
+		println("NOOOOOO here!!!!MICA")
+
+	}
+}
+
 func SetTitleBarColour(hwnd uintptr, titleBarColour int32) {
 	dwmSetWindowAttribute(hwnd, DwmwaCaptionColor, unsafe.Pointer(&titleBarColour), unsafe.Sizeof(titleBarColour))
 }
@@ -70,7 +90,7 @@ func IsCurrentlyDarkMode() bool {
 	if err != nil {
 		return false
 	}
-
+	println("AppsUseLighttheme = ", AppsUseLightTheme)
 	return AppsUseLightTheme == 0
 }
 
@@ -88,5 +108,6 @@ func IsCurrentlyHighContrastMode() bool {
 		_ = err
 		return false
 	}
-	return result.DwFlags&HCF_HIGHCONTRASTON == HCF_HIGHCONTRASTON
+	r := result.DwFlags&HCF_HIGHCONTRASTON == HCF_HIGHCONTRASTON
+	return r
 }
