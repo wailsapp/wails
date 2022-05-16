@@ -51,15 +51,16 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     return result;
 }
 
-void ProcessURLResponse(void *inctx, const char *url, int statusCode, const char *contentType, void* data, int datalength) {
+void ProcessURLResponse(void *inctx, const char *url, int statusCode, void *headersString, int headersStringLength, void* data, int datalength) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSString *nsurl = safeInit(url);
-    NSString *nsContentType = safeInit(contentType);
+    NSData *nsHeadersJSON = [NSData dataWithBytes:headersString length:headersStringLength];
     NSData *nsdata = [NSData dataWithBytes:data length:datalength];
     
-    [ctx processURLResponse:nsurl :statusCode :nsContentType :nsdata];
+    [ctx processURLResponse:nsurl :statusCode :nsHeadersJSON :nsdata];
 
     [nsdata release];
+    [nsHeadersJSON release];
 }
 
 void ExecJS(void* inctx, const char *script) {
@@ -330,7 +331,7 @@ void AppendSeparator(void* inMenu) {
 
 
 
-void Run(void *inctx) {
+void Run(void *inctx, const char* url) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSApplication *app = [NSApplication sharedApplication];
     AppDelegate* delegate = [AppDelegate new];
@@ -341,7 +342,10 @@ void Run(void *inctx) {
     delegate.startHidden = ctx.startHidden;
     delegate.startFullscreen = ctx.startFullscreen;
 
-    [ctx loadRequest:@"wails://wails/"];
+    NSString *_url = safeInit(url);
+    [ctx loadRequest:_url];
+    [_url release];
+
     [app setMainMenu:ctx.applicationMenu];
     [app run];
     [ctx release];

@@ -18,7 +18,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.4.1-beta.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -29,11 +29,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -81,7 +81,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -92,11 +92,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -122,7 +122,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -133,11 +133,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -162,7 +162,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -173,11 +173,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -203,7 +203,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -214,11 +214,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -244,7 +244,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -255,11 +255,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -287,7 +287,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -298,11 +298,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -331,7 +331,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -342,11 +342,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -433,7 +433,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -444,11 +444,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -474,7 +474,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -485,11 +485,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -515,7 +515,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -526,11 +526,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect
@@ -559,7 +559,7 @@ require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fasthttp/websocket v0.0.0-20200320073529-1554a54587ab // indirect
-	github.com/gabriel-vasile/mimetype v1.3.1 // indirect
+	github.com/wailsapp/mimetype v1.3.1 // indirect
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gofiber/fiber/v2 v2.17.0 // indirect
 	github.com/gofiber/websocket/v2 v2.0.8 // indirect
@@ -570,11 +570,11 @@ require (
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
 	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
-	github.com/leaanthony/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
 	github.com/leaanthony/typescriptify-golang-structs v0.1.7 // indirect
-	github.com/leaanthony/winc v0.0.0-20210921073452-54963136bf18 // indirect
+	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc v0.0.0-20210921073452-54963136bf18 // indirect
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f // indirect

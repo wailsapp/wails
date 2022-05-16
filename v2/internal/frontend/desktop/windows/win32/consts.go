@@ -1,8 +1,11 @@
+//go:build windows
+
 package win32
 
 import (
-	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"syscall"
+
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 )
 
 type HRESULT int32

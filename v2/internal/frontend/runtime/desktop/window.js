@@ -17,6 +17,22 @@ export function WindowReload() {
     window.location.reload();
 }
 
+export function WindowReloadApp() {
+    window.WailsInvoke('WR');
+}
+
+export function WindowSetSystemDefaultTheme() {
+    window.WailsInvoke('WASDT');
+}
+
+export function WindowSetLightTheme() {
+    window.WailsInvoke('WALT');
+}
+
+export function WindowSetDarkTheme() {
+    window.WailsInvoke('WADT');
+}
+
 /**
  * Place the window in the center of the screen
  *
@@ -193,7 +209,7 @@ export function WindowUnminimise() {
  * @param {number} A Alpha
  */
 export function WindowSetRGBA(R, G, B, A) {
-    let rgba = JSON.stringify({r:R || 0, g:G || 0, b:B || 0, a:A || 255});
+    let rgba = JSON.stringify({r: R || 0, g: G || 0, b: B || 0, a: A || 255});
     window.WailsInvoke('Wr:' + rgba);
 }
 

@@ -1,6 +1,6 @@
 {
   "version.label": {
-    "message": "Beta Version",
+    "message": "Next Version 🚧",
     "description": "The label for version current"
   },
   "sidebar.tutorialSidebar.category.Getting Started": {
@@ -15,14 +15,6 @@
     "message": "Runtime",
     "description": "The label for category Runtime in sidebar tutorialSidebar"
   },
-  "sidebar.tutorialSidebar.category.Examples": {
-    "message": "Examples",
-    "description": "The label for category Examples in sidebar tutorialSidebar"
-  },
-  "sidebar.tutorialSidebar.category.Guides": {
-    "message": "Guides",
-    "description": "The label for category Guides in sidebar tutorialSidebar"
-  },
   "sidebar.tutorialSidebar.category.Community": {
     "message": "Community",
     "description": "The label for category Community in sidebar tutorialSidebar"
@@ -31,8 +23,8 @@
     "message": "Showcase",
     "description": "The label for category Showcase in sidebar tutorialSidebar"
   },
-  "sidebar.tutorialSidebar.category.Appendix": {
-    "message": "Appendix",
-    "description": "The label for category Appendix in sidebar tutorialSidebar"
+  "sidebar.tutorialSidebar.category.Guides": {
+    "message": "Guides",
+    "description": "The label for category Guides in sidebar tutorialSidebar"
   }
 }

@@ -1,0 +1,7 @@
+{
+  "name": "$NAME",
+  "shortname": "$SHORTNAME",
+  "author": "Lea Anthony",
+  "description": "$DESCRIPTION",
+  "helpurl": "https://wails.io"
+}

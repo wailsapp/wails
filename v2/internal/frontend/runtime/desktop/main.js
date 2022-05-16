@@ -10,7 +10,7 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 import * as Log from './log';
 import {eventListeners, EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnce, EventsOnMultiple} from './events';
-import {Callback, callbacks} from './calls';
+import {Call, Callback, callbacks} from './calls';
 import {SetBindings} from "./bindings";
 import * as Window from "./window";
 import * as Browser from "./browser";
@@ -18,6 +18,10 @@ import * as Browser from "./browser";
 
 export function Quit() {
     window.WailsInvoke('Q');
+}
+
+export function Environment() {
+    return Call(":wails:Environment");
 }
 
 // The JS runtime
@@ -30,6 +34,7 @@ window.runtime = {
     EventsOnMultiple,
     EventsEmit,
     EventsOff,
+    Environment,
     Quit
 };
 
@@ -45,7 +50,8 @@ window.wails = {
         disableWailsDefaultContextMenu: false,
         enableResize: false,
         defaultCursor: null,
-        borderThickness: 6
+        borderThickness: 6,
+        dbClickInterval: 100,
     }
 };
 
@@ -58,6 +64,13 @@ delete window.wails.SetBindings;
 // const production = 1;
 if (ENV === 0) {
     delete window.wailsbindings;
+}
+
+var dragTimeOut;
+var dragLastTime = 0;
+
+function drag() {
+    window.WailsInvoke("drag");
 }
 
 // Setup drag handler
@@ -83,7 +96,12 @@ window.addEventListener('mousedown', (e) => {
                     break;
                 }
             }
-            window.WailsInvoke("drag");
+            if (new Date().getTime() - dragLastTime < window.wails.flags.dbClickInterval) {
+                clearTimeout(dragTimeOut);
+                break;
+            }
+            dragTimeOut = setTimeout(drag, window.wails.flags.dbClickInterval);
+            dragLastTime = new Date().getTime();
             e.preventDefault();
             break;
         }

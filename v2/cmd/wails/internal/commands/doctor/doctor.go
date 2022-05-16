@@ -53,6 +53,14 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		fmt.Fprintf(w, "%s\t%s\n", "Platform:", runtime.GOOS)
 		fmt.Fprintf(w, "%s\t%s\n", "Architecture:", runtime.GOARCH)
 
+		// Write out the wails information
+		fmt.Fprintf(w, "\n")
+		fmt.Fprintf(w, "Wails\n")
+		fmt.Fprintf(w, "------\n")
+		fmt.Fprintf(w, "%s\t%s\n", "Version: ", app.Version())
+
+		printBuildSettings(w)
+
 		// Exit early if PM not found
 		if info.PM != nil {
 			fmt.Fprintf(w, "%s\t%s\n", "Package Manager: ", info.PM.Name())
@@ -133,21 +141,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		if dependenciesAvailableOptional != 0 {
 			logger.Println("Optional package(s) installation details: \n" + info.Dependencies.InstallAllOptionalCommand())
 		}
-		//
-		//if len(externalPackages) > 0 {
-		//	for _, p := range externalPackages {
-		//		if p.Optional {
-		//			print("[Optional] ")
-		//		}
-		//		logger.Println("Install " + p.Name + ": " + p.InstallCommand)
-		//	}
-		//}
 
 		if len(dependenciesMissing) != 0 {
-			// TODO: Check if apps are available locally and if so, adjust the diagnosis
 			logger.Println("Fatal:")
 			logger.Println("Required dependencies missing: " + strings.Join(dependenciesMissing, " "))
-			logger.Println("Please read this article on how to resolve this: https://wails.app/guides/resolving-missing-packages")
+			logger.Println("Please read this article on how to resolve this: https://wails.io/guides/resolving-missing-packages")
 		}
 
 		logger.Println("")

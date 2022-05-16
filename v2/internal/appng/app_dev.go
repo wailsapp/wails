@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	iofs "io/fs"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -63,16 +64,21 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	// Check for CLI Flags
 	var assetdirFlag *string
-	var devServerURLFlag *string
+	var devServerFlag *string
+	var frontendDevServerURLFlag *string
 	var loglevelFlag *string
 
 	assetdir := os.Getenv("assetdir")
 	if assetdir == "" {
 		assetdirFlag = flag.String("assetdir", "", "Directory to serve assets")
 	}
-	devServerURL := os.Getenv("devserverurl")
-	if devServerURL == "" {
-		devServerURLFlag = flag.String("devserverurl", "", "URL of development server")
+	devServer := os.Getenv("devserver")
+	if devServer == "" {
+		devServerFlag = flag.String("devserver", "", "Address to bind the wails dev server to")
+	}
+	frontendDevServerURL := os.Getenv("frontenddevserverurl")
+	if frontendDevServerURL == "" {
+		frontendDevServerURLFlag = flag.String("frontenddevserverurl", "", "URL of the external frontend dev server")
 	}
 
 	loglevel := os.Getenv("loglevel")
@@ -86,8 +92,11 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		if assetdirFlag != nil {
 			assetdir = *assetdirFlag
 		}
-		if devServerURLFlag != nil {
-			devServerURL = *devServerURLFlag
+		if devServerFlag != nil {
+			devServer = *devServerFlag
+		}
+		if frontendDevServerURLFlag != nil {
+			frontendDevServerURL = *frontendDevServerURLFlag
 		}
 		if loglevelFlag != nil {
 			loglevel = *loglevelFlag
@@ -102,7 +111,21 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		}
 	}
 
-	if assetdir != "" {
+	if frontendDevServerURL != "" {
+		if devServer == "" {
+			return nil, fmt.Errorf("Unable to use FrontendDevServerUrl without a DevServer address")
+		}
+
+		startURL, err := url.Parse("http://" + devServer)
+		if err != nil {
+			return nil, err
+		}
+
+		ctx = context.WithValue(ctx, "starturl", startURL)
+		ctx = context.WithValue(ctx, "frontenddevserverurl", frontendDevServerURL)
+
+		myLogger.Info("Serving assets from frontend DevServer URL: %s", frontendDevServerURL)
+	} else if assetdir != "" {
 		// Let's override the assets to serve from on disk, if needed
 		absdir, err := filepath.Abs(assetdir)
 		if err != nil {
@@ -115,8 +138,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		ctx = context.WithValue(ctx, "assetdir", assetdir)
 	}
 
-	if devServerURL != "" {
-		ctx = context.WithValue(ctx, "devserverurl", devServerURL)
+	if devServer != "" {
+		ctx = context.WithValue(ctx, "devserver", devServer)
 	}
 
 	if loglevel != "" {
@@ -162,7 +185,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	}
 	eventHandler := runtime.NewEvents(myLogger)
 	ctx = context.WithValue(ctx, "events", eventHandler)
-	messageDispatcher := dispatcher.NewDispatcher(myLogger, appBindings, eventHandler)
+	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler)
 
 	// Create the frontends and register to event handler
 	desktopFrontend := desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher)
@@ -197,27 +220,18 @@ func generateBindings(bindings *binding.Bindings) error {
 		return err
 	}
 
+	if projectConfig.WailsJSDir == "" {
+		projectConfig.WailsJSDir = filepath.Join(cwd, "frontend")
+	}
+
 	targetDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs", "go")
 	err = os.RemoveAll(targetDir)
 	if err != nil {
 		return err
 	}
 	_ = fs.MkDirs(targetDir)
-	modelsFile := filepath.Join(targetDir, "models.ts")
-	err = bindings.WriteTS(modelsFile)
-	if err != nil {
-		return err
-	}
 
-	// Write backend method wrappers
-	bindingsFilename := filepath.Join(targetDir, "bindings.js")
-	err = bindings.GenerateBackendJS(bindingsFilename, false)
-	if err != nil {
-		return err
-	}
-
-	bindingsTypes := filepath.Join(targetDir, "bindings.d.ts")
-	err = bindings.GenerateBackendTS(bindingsTypes)
+	err = bindings.GenerateGoBindings(targetDir)
 	if err != nil {
 		return err
 	}

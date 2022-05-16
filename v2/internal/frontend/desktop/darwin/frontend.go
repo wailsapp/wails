@@ -14,25 +14,27 @@ package darwin
 */
 import "C"
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"html/template"
+	"io"
 	"log"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"strconv"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/common"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
-type request struct {
-	url *C.char
-	ctx unsafe.Pointer
-}
+const startURL = "wails://wails/"
 
 var messageBuffer = make(chan string, 100)
 var requestBuffer = make(chan *request, 100)
@@ -48,17 +50,16 @@ type Frontend struct {
 	debug           bool
 
 	// Assets
-	assets *assetserver.DesktopAssetServer
+	assets   *assetserver.AssetServer
+	startURL *url.URL
 
 	// main window handle
-	mainWindow      *Window
-	bindings        *binding.Bindings
-	dispatcher      frontend.Dispatcher
-	servingFromDisk bool
+	mainWindow *Window
+	bindings   *binding.Bindings
+	dispatcher frontend.Dispatcher
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
-
 	result := &Frontend{
 		frontendOptions: appoptions,
 		logger:          myLogger,
@@ -66,28 +67,26 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		dispatcher:      dispatcher,
 		ctx:             ctx,
 	}
+	result.startURL, _ = url.Parse(startURL)
 
-	// Check if we have been given a directory to serve assets from.
-	// If so, this means we are in dev mode and are serving assets off disk.
-	// We indicate this through the `servingFromDisk` flag to ensure requests
-	// aren't cached by WebView2 in dev mode
-	_assetdir := ctx.Value("assetdir")
-	if _assetdir != nil {
-		result.servingFromDisk = true
-	}
+	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
+		result.startURL = _starturl
+	} else {
+		bindingsJSON, err := appBindings.ToJSON()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	bindingsJSON, err := appBindings.ToJSON()
-	if err != nil {
-		log.Fatal(err)
+		assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
+		if err != nil {
+			log.Fatal(err)
+		}
+		result.assets = assets
+
+		go result.startRequestProcessor()
 	}
-	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON, result.servingFromDisk)
-	if err != nil {
-		log.Fatal(err)
-	}
-	result.assets = assets
 
 	go result.startMessageProcessor()
-	go result.startRequestProcessor()
 	go result.startCallbackProcessor()
 
 	return result
@@ -116,6 +115,22 @@ func (f *Frontend) WindowReload() {
 	f.ExecJS("runtime.WindowReload();")
 }
 
+func (f *Frontend) WindowReloadApp() {
+	f.ExecJS(fmt.Sprintf("window.location.href = '%s';", f.startURL))
+}
+
+func (f *Frontend) WindowSetSystemDefaultTheme() {
+	return
+}
+
+func (f *Frontend) WindowSetLightTheme() {
+	return
+}
+
+func (f *Frontend) WindowSetDarkTheme() {
+	return
+}
+
 func (f *Frontend) Run(ctx context.Context) error {
 
 	f.ctx = context.WithValue(ctx, "frontend", f)
@@ -134,7 +149,7 @@ func (f *Frontend) Run(ctx context.Context) error {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
-	mainWindow.Run()
+	mainWindow.Run(f.startURL.String())
 	return nil
 }
 
@@ -278,21 +293,48 @@ func (f *Frontend) ExecJS(js string) {
 func (f *Frontend) processRequest(r *request) {
 	uri := C.GoString(r.url)
 
-	res, err := common.ProcessRequest(uri, f.assets, "wails", "wails")
-	if err != nil {
-		f.logger.Error("Error processing request '%s': %s (HttpResponse=%s)", uri, err, res)
+	rw := httptest.NewRecorder()
+	f.assets.ProcessHTTPRequest(
+		uri,
+		rw,
+		func() (*http.Request, error) {
+			req, err := r.GetHttpRequest()
+			if err != nil {
+				return nil, err
+			}
+
+			if req.URL.Host != f.startURL.Host {
+				if req.Body != nil {
+					req.Body.Close()
+				}
+
+				return nil, fmt.Errorf("Expected host '%d' in request, but was '%s'", f.startURL.Host, req.URL.Host)
+			}
+			return req, nil
+		},
+	)
+
+	header := map[string]string{}
+	for k := range rw.Header() {
+		header[k] = rw.Header().Get(k)
 	}
+	headerData, _ := json.Marshal(header)
 
 	var content unsafe.Pointer
 	var contentLen int
-	if _contents := res.Body; _contents != nil {
+	if _contents := rw.Body.Bytes(); _contents != nil {
 		content = unsafe.Pointer(&_contents[0])
 		contentLen = len(_contents)
 	}
-	mimetype := C.CString(res.MimeType)
-	defer C.free(unsafe.Pointer(mimetype))
 
-	C.ProcessURLResponse(r.ctx, r.url, C.int(res.StatusCode), mimetype, content, C.int(contentLen))
+	var headers unsafe.Pointer
+	var headersLen int
+	if len(headerData) != 0 {
+		headers = unsafe.Pointer(&headerData[0])
+		headersLen = len(headerData)
+	}
+
+	C.ProcessURLResponse(r.ctx, r.url, C.int(rw.Code), headers, C.int(headersLen), content, C.int(contentLen))
 }
 
 //func (f *Frontend) processSystemEvent(message string) {
@@ -311,6 +353,40 @@ func (f *Frontend) processRequest(r *request) {
 //	}
 //}
 
+type request struct {
+	url     *C.char
+	method  string
+	headers string
+	body    []byte
+
+	ctx unsafe.Pointer
+}
+
+func (r *request) GetHttpRequest() (*http.Request, error) {
+	var body io.Reader
+	if len(r.body) != 0 {
+		body = bytes.NewReader(r.body)
+	}
+
+	req, err := http.NewRequest(r.method, C.GoString(r.url), body)
+	if err != nil {
+		return nil, err
+	}
+
+	if r.headers != "" {
+		var h map[string]string
+		if err := json.Unmarshal([]byte(r.headers), &h); err != nil {
+			return nil, fmt.Errorf("Unable to unmarshal request headers: %s", err)
+		}
+
+		for k, v := range h {
+			req.Header.Add(k, v)
+		}
+	}
+
+	return req, nil
+}
+
 //export processMessage
 func processMessage(message *C.char) {
 	goMessage := C.GoString(message)
@@ -318,10 +394,18 @@ func processMessage(message *C.char) {
 }
 
 //export processURLRequest
-func processURLRequest(ctx unsafe.Pointer, url *C.char) {
+func processURLRequest(ctx unsafe.Pointer, url *C.char, method *C.char, headers *C.char, body unsafe.Pointer, bodyLen C.int) {
+	var goBody []byte
+	if body != nil && bodyLen != 0 {
+		goBody = C.GoBytes(body, bodyLen)
+	}
+
 	requestBuffer <- &request{
-		url: url,
-		ctx: ctx,
+		url:     url,
+		method:  C.GoString(method),
+		headers: C.GoString(headers),
+		body:    goBody,
+		ctx:     ctx,
 	}
 }
 

@@ -18,7 +18,7 @@
 #define WindowStartsFullscreen 3
 
 WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight);
-void Run(void*);
+void Run(void*, const char* url);
 
 void SetTitle(void* ctx, const char *title);
 void Center(void* ctx);
@@ -42,7 +42,7 @@ void Quit(void*);
 const char* GetSize(void *ctx);
 const char* GetPosition(void *ctx);
 
-void ProcessURLResponse(void *inctx, const char *url, int statusCode, const char *contentType, void* data, int datalength);
+void ProcessURLResponse(void *inctx, const char *url, int statusCode, void *headersString, int headersStringLength, void* data, int datalength);
 
 /* Dialogs */
 

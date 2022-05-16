@@ -8,6 +8,7 @@ exemptLabels:
   - security
   - onhold
   - inprogress
+  - "Selected For Development"
 # Label to use when marking an issue as stale
 staleLabel: wontfix
 # Comment to post when marking an issue as stale. Set to `false` to disable
@@ -17,3 +18,5 @@ markComment: >
   for your contributions.
 # Comment to post when closing a stale issue. Set to `false` to disable
 closeComment: false
+exemptMilestones: true
+exemptAssignees: true

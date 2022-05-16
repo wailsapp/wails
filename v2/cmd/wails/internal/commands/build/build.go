@@ -96,6 +96,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	nsis := false
 	command.BoolFlag("nsis", "Generate NSIS installer for Windows", &nsis)
 
+	trimpath := false
+	command.BoolFlag("trimpath", "Remove all file system paths from the resulting executable", &trimpath)
+
 	command.Action(func() error {
 
 		quiet := verbosity == 0
@@ -176,6 +179,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			CompressFlags:       compressFlags,
 			UserTags:            userTags,
 			WebView2Strategy:    wv2rtstrategy,
+			TrimPath:            trimpath,
 		}
 
 		// Start a new tabwriter
@@ -183,21 +187,24 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		w.Init(os.Stdout, 8, 8, 0, '\t', 0)
 
 		// Write out the system information
-		fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
-		fmt.Fprintf(w, "Platforms: \t%s\n", platform)
-		fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
-		fmt.Fprintf(w, "Build Mode: \t%s\n", modeString)
-		fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
-		fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
-		fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
-		fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
-		fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
-		fmt.Fprintf(w, "Tags: \t[%s]\n", strings.Join(buildOptions.UserTags, ","))
+		_, _ = fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
+		_, _ = fmt.Fprintf(w, "Platforms: \t%s\n", platform)
+		_, _ = fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
+		_, _ = fmt.Fprintf(w, "Build Mode: \t%s\n", modeString)
+		_, _ = fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
+		_, _ = fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
+		_, _ = fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
+		_, _ = fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
+		_, _ = fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
+		_, _ = fmt.Fprintf(w, "Tags: \t[%s]\n", strings.Join(buildOptions.UserTags, ","))
 		if len(buildOptions.OutputFile) > 0 && targets.Length() == 1 {
-			fmt.Fprintf(w, "Output File: \t%s\n", buildOptions.OutputFile)
+			_, _ = fmt.Fprintf(w, "Output File: \t%s\n", buildOptions.OutputFile)
 		}
-		fmt.Fprintf(w, "\n")
-		w.Flush()
+		_, _ = fmt.Fprintf(w, "\n")
+		err = w.Flush()
+		if err != nil {
+			return err
+		}
 
 		err = checkGoModVersion(logger, updateGoMod)
 		if err != nil {
@@ -252,10 +259,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			// Calculate platform and arch
 			platformSplit := strings.Split(platform, "/")
 			buildOptions.Platform = platformSplit[0]
+			buildOptions.Arch = runtime.GOARCH
 			if system.IsAppleSilicon {
 				buildOptions.Arch = "arm64"
-			} else {
-				buildOptions.Arch = runtime.GOARCH
 			}
 			if len(platformSplit) == 2 {
 				buildOptions.Arch = platformSplit[1]
@@ -303,6 +309,10 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			}
 			buildOptions.OutputFile = desiredFilename
 
+			if outputFilename != "" {
+				buildOptions.OutputFile = outputFilename
+			}
+
 			// Start Time
 			start := time.Now()
 
@@ -319,7 +329,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			// Output stats
 			buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", outputFilename, time.Since(start).Round(time.Millisecond).String()))
 
-			outputBinaries[platform] = outputFilename
+			outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = outputFilename
 		})
 
 		if targetErr != nil {

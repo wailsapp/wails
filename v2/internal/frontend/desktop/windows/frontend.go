@@ -7,23 +7,29 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
+	"io"
 	"log"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"runtime"
 	"strconv"
 	"strings"
 	"text/template"
 
-	"github.com/leaanthony/go-webview2/pkg/edge"
-	"github.com/leaanthony/winc"
-	"github.com/leaanthony/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/common"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
+
+const startURL = "http://wails.localhost/"
 
 type Frontend struct {
 
@@ -36,14 +42,13 @@ type Frontend struct {
 	debug           bool
 
 	// Assets
-	assets   *assetserver.DesktopAssetServer
-	startURL string
+	assets   *assetserver.AssetServer
+	startURL *url.URL
 
 	// main window handle
-	mainWindow      *Window
-	bindings        *binding.Bindings
-	dispatcher      frontend.Dispatcher
-	servingFromDisk bool
+	mainWindow *Window
+	bindings   *binding.Bindings
+	dispatcher frontend.Dispatcher
 
 	hasStarted bool
 
@@ -62,8 +67,15 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		startURL:        "http://wails.localhost/",
 		versionInfo:     versionInfo,
+	}
+
+	// We currently can't use wails://wails/ as other platforms do, therefore we map the assets sever onto the following url.
+	result.startURL, _ = url.Parse(startURL)
+
+	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
+		result.startURL = _starturl
+		return result
 	}
 
 	bindingsJSON, err := appBindings.ToJSON()
@@ -71,26 +83,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		log.Fatal(err)
 	}
 
-	_devServerURL := ctx.Value("devserverurl")
-	if _devServerURL != nil {
-		devServerURL := _devServerURL.(string)
-		if len(devServerURL) > 0 && devServerURL != "http://localhost:34115" {
-			result.startURL = devServerURL
-			return result
-		}
-	}
-
-	// Check if we have been given a directory to serve assets from.
-	// If so, this means we are in dev mode and are serving assets off disk.
-	// We indicate this through the `servingFromDisk` flag to ensure requests
-	// aren't cached by WebView2 in dev mode
-
-	_assetdir := ctx.Value("assetdir")
-	if _assetdir != nil {
-		result.servingFromDisk = true
-	}
-
-	assets, err := assetserver.NewDesktopAssetServer(ctx, appoptions.Assets, bindingsJSON, result.servingFromDisk)
+	assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -101,6 +94,34 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 func (f *Frontend) WindowReload() {
 	f.ExecJS("runtime.WindowReload();")
+}
+
+func (f *Frontend) WindowSetSystemDefaultTheme() {
+	runtime.LockOSThread()
+	f.mainWindow.frontendOptions.Windows.Theme = windows.SystemDefault
+	f.mainWindow.Invoke(func() {
+		f.mainWindow.updateTheme()
+	})
+}
+
+func (f *Frontend) WindowSetLightTheme() {
+	runtime.LockOSThread()
+	if f.mainWindow.frontendOptions != nil && f.mainWindow.frontendOptions.Windows != nil {
+		f.mainWindow.frontendOptions.Windows.Theme = windows.Light
+		f.mainWindow.Invoke(func() {
+			f.mainWindow.updateTheme()
+		})
+	}
+}
+
+func (f *Frontend) WindowSetDarkTheme() {
+	runtime.LockOSThread()
+	if f.mainWindow.frontendOptions != nil && f.mainWindow.frontendOptions.Windows != nil {
+		f.mainWindow.frontendOptions.Windows.Theme = windows.Dark
+		f.mainWindow.Invoke(func() {
+			f.mainWindow.updateTheme()
+		})
+	}
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
@@ -121,6 +142,17 @@ func (f *Frontend) Run(ctx context.Context) error {
 	f.mainWindow.notifyParentWindowPositionChanged = f.chromium.NotifyParentWindowPositionChanged
 
 	mainWindow.OnSize().Bind(func(arg *winc.Event) {
+		if f.frontendOptions.Frameless {
+			// If the window is frameless and we are minimizing, then we need to suppress the Resize on the
+			// WebView2. If we don't do this, restoring does not work as expected and first restores with some wrong
+			// size during the restore animation and only fully renders when the animation is done. This highly
+			// depends on the content in the WebView, see https://github.com/wailsapp/wails/issues/1319
+			event, _ := arg.Data.(*winc.SizeEventData)
+			if event != nil && event.Type == w32.SIZE_MINIMIZED {
+				return
+			}
+		}
+
 		f.chromium.Resize()
 	})
 
@@ -177,6 +209,10 @@ func (f *Frontend) WindowFullscreen() {
 		f.ExecJS("window.wails.flags.enableResize = false;")
 	}
 	f.mainWindow.Fullscreen()
+}
+
+func (f *Frontend) WindowReloadApp() {
+	f.ExecJS(fmt.Sprintf("window.location.href = '%s';", f.startURL))
 }
 
 func (f *Frontend) WindowUnfullscreen() {
@@ -339,7 +375,7 @@ func (f *Frontend) setupChromium() {
 
 	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
-	chromium.Navigate(f.startURL)
+	chromium.Navigate(f.startURL.String())
 }
 
 type EventNotify struct {
@@ -361,34 +397,48 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 }
 
 func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, args *edge.ICoreWebView2WebResourceRequestedEventArgs) {
+	// Setting the UserAgent on the CoreWebView2Settings clears the whole default UserAgent of the Edge browser, but
+	// we want to just append our ApplicationIdentifier. So we adjust the UserAgent for every request.
+	if reqHeaders, err := req.GetHeaders(); err == nil {
+		useragent, _ := reqHeaders.GetHeader(assetserver.HeaderUserAgent)
+		useragent = strings.Join([]string{useragent, assetserver.WailsUserAgentValue}, " ")
+		reqHeaders.SetHeader(assetserver.HeaderUserAgent, useragent)
+		reqHeaders.Release()
+	}
+
+	if f.assets == nil {
+		// We are using the devServer let the WebView2 handle the request with its default handler
+		return
+	}
+
 	//Get the request
 	uri, _ := req.GetUri()
-
-	res, err := common.ProcessRequest(uri, f.assets, "http", "wails.localhost")
-	if err == common.ErrUnexpectedScheme {
-		// In this case we should let the WebView2 handle the request with its default handler
+	reqUri, err := url.ParseRequestURI(uri)
+	if err != nil {
+		f.logger.Error("Unable to parse equest uri %s: %s", uri, err)
 		return
-	} else if err == common.ErrUnexpectedHost {
-		// This means file:// to something other than wails, should we prevent this?
-		// Maybe we should introduce an AllowList for explicitly allowing schemes and hosts, this could also be interesting
-		// for all other platforms to improve security.
-		return // Let WebView2 handle the request with its default handler
-	} else if err != nil {
-		path := strings.Replace(uri, "http://wails.localhost", "", 1)
-		f.logger.Error("Error processing request '%s': %s (HttpResponse=%s)", path, err, res)
 	}
+
+	if reqUri.Scheme != f.startURL.Scheme {
+		// Let the WebView2 handle the request with its default handler
+		return
+	} else if reqUri.Host != f.startURL.Host {
+		// Let the WebView2 handle the request with its default handler
+		return
+	}
+
+	logInfo := strings.Replace(uri, f.startURL.String(), "", 1)
+
+	rw := httptest.NewRecorder()
+	f.assets.ProcessHTTPRequest(logInfo, rw, coreWebview2RequestToHttpRequest(req))
 
 	headers := []string{}
-	if mimeType := res.MimeType; mimeType != "" {
-		headers = append(headers, "Content-Type: "+mimeType)
-	}
-	content := res.Body
-	if content != nil && f.servingFromDisk {
-		headers = append(headers, "Pragma: no-cache")
+	for k, v := range rw.Header() {
+		headers = append(headers, fmt.Sprintf("%s: %s", k, strings.Join(v, ",")))
 	}
 
 	env := f.chromium.Environment()
-	response, err := env.CreateWebResourceResponse(content, res.StatusCode, res.StatusText(), strings.Join(headers, "\n"))
+	response, err := env.CreateWebResourceResponse(rw.Body.Bytes(), rw.Code, http.StatusText(rw.Code), strings.Join(headers, "\n"))
 	if err != nil {
 		f.logger.Error("CreateWebResourceResponse Error: %s", err)
 		return
@@ -553,4 +603,88 @@ func (f *Frontend) ShowWindow() {
 
 func (f *Frontend) onFocus(arg *winc.Event) {
 	f.chromium.Focus()
+}
+
+func coreWebview2RequestToHttpRequest(coreReq *edge.ICoreWebView2WebResourceRequest) func() (*http.Request, error) {
+	return func() (r *http.Request, err error) {
+		header := http.Header{}
+		headers, err := coreReq.GetHeaders()
+		if err != nil {
+			return nil, fmt.Errorf("GetHeaders Error: %s", err)
+		}
+		defer headers.Release()
+
+		headersIt, err := headers.GetIterator()
+		if err != nil {
+			return nil, fmt.Errorf("GetIterator Error: %s", err)
+		}
+		defer headersIt.Release()
+
+		for {
+			has, err := headersIt.HasCurrentHeader()
+			if err != nil {
+				return nil, fmt.Errorf("HasCurrentHeader Error: %s", err)
+			}
+			if !has {
+				break
+			}
+
+			name, value, err := headersIt.GetCurrentHeader()
+			if err != nil {
+				return nil, fmt.Errorf("GetCurrentHeader Error: %s", err)
+			}
+
+			header.Set(name, value)
+			if _, err := headersIt.MoveNext(); err != nil {
+				return nil, fmt.Errorf("MoveNext Error: %s", err)
+			}
+		}
+
+		method, err := coreReq.GetMethod()
+		if err != nil {
+			return nil, fmt.Errorf("GetMethod Error: %s", err)
+		}
+
+		uri, err := coreReq.GetUri()
+		if err != nil {
+			return nil, fmt.Errorf("GetUri Error: %s", err)
+		}
+
+		var body io.ReadCloser
+		if content, err := coreReq.GetContent(); err != nil {
+			return nil, fmt.Errorf("GetContent Error: %s", err)
+		} else if content != nil {
+			body = &iStreamReleaseCloser{stream: content}
+		}
+
+		req, err := http.NewRequest(method, uri, body)
+		if err != nil {
+			if body != nil {
+				body.Close()
+			}
+			return nil, err
+		}
+		req.Header = header
+		return req, nil
+	}
+}
+
+type iStreamReleaseCloser struct {
+	stream *edge.IStream
+	closed bool
+}
+
+func (i *iStreamReleaseCloser) Read(p []byte) (int, error) {
+	if i.closed {
+		return 0, io.ErrClosedPipe
+	}
+	return i.stream.Read(p)
+}
+
+func (i *iStreamReleaseCloser) Close() error {
+	if i.closed {
+		return nil
+	}
+	i.closed = true
+	return i.stream.Release()
 }

@@ -55,6 +55,7 @@ type Options struct {
 	WailsJSDir          string               // Directory to generate the wailsjs module
 	ForceBuild          bool                 // Force
 	BundleName          string               // Bundlename for Mac
+	TrimPath            bool                 // Use Go's trimpath compiler flag
 }
 
 // Build the project!
@@ -81,6 +82,13 @@ func Build(options *Options) (string, error) {
 		projectData.Path = cwd
 	}
 
+	// wails js dir
+	if projectData.WailsJSDir != "" {
+		options.WailsJSDir = projectData.WailsJSDir
+	} else {
+		options.WailsJSDir = filepath.Join(cwd, "frontend")
+	}
+
 	// Set build directory
 	options.BuildDirectory = filepath.Join(options.ProjectData.Path, "build", "bin")
 
@@ -93,10 +101,6 @@ func Build(options *Options) (string, error) {
 	switch projectData.OutputType {
 	case "desktop":
 		builder = newDesktopBuilder(options)
-	case "hybrid":
-		builder = newHybridBuilder(options)
-	case "server":
-		builder = newServerBuilder(options)
 	case "dev":
 		builder = newDesktopBuilder(options)
 	default:
@@ -206,12 +210,6 @@ func Build(options *Options) (string, error) {
 			return "", err
 		}
 		outputLogger.Println("Done.")
-	}
-
-	// Post compilation tasks
-	err = builder.PostCompilation(options)
-	if err != nil {
-		return "", err
 	}
 
 	compileBinary := options.CompiledBinary

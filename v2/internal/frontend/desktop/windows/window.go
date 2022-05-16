@@ -7,8 +7,8 @@ import (
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"unsafe"
 
-	"github.com/leaanthony/winc"
-	"github.com/leaanthony/winc/w32"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
@@ -104,6 +104,7 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 }
 
 func (w *Window) Run() int {
+	w.updateTheme()
 	return winc.RunMainLoop()
 }
 
@@ -150,12 +151,14 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			w.notifyParentWindowPositionChanged()
 		}
 	case w32.WM_ACTIVATE:
+		//if !w.frontendOptions.Frameless {
 		if int(wparam) == w32.WA_INACTIVE {
 			w.isActive = false
 			w.updateTheme()
 		} else {
 			w.isActive = true
 			w.updateTheme()
+			//}
 		}
 
 	// TODO move WM_DPICHANGED handling into winc

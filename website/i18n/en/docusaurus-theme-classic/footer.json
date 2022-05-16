@@ -15,6 +15,14 @@
     "message": "Introduction",
     "description": "The label of footer link with label=Introduction linking to /docs/introduction"
   },
+  "link.item.label.Getting Started": {
+    "message": "Getting Started",
+    "description": "The label of footer link with label=Getting Started linking to /docs/gettingstarted/installation"
+  },
+  "link.item.label.Changelog": {
+    "message": "Changelog",
+    "description": "The label of footer link with label=Changelog linking to /changelog"
+  },
   "link.item.label.Github": {
     "message": "Github",
     "description": "The label of footer link with label=Github linking to https://github.com/wailsapp/wails"
@@ -36,15 +44,7 @@
     "description": "The label of footer link with label=Blog linking to /blog"
   },
   "copyright": {
-    "message": "Copyright © 2021 Lea Anthony. Built with Docusaurus.",
+    "message": "Copyright © 2022 Lea Anthony. Built with Docusaurus.",
     "description": "The footer copyright"
-  },
-  "link.item.label.Getting Started": {
-    "message": "Getting Started",
-    "description": "The label of footer link with label=Getting Started linking to /docs/gettingstarted/installation"
-  },
-  "link.item.label.Changelog": {
-    "message": "Changelog",
-    "description": "The label of footer link with label=Changelog linking to /docs/changelog"
   }
 }

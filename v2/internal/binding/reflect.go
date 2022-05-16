@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"strings"
 )
 
 // isStructPtr returns true if the value given is a
@@ -47,7 +48,8 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 	// Process Struct
 	structType := reflect.TypeOf(value)
 	structValue := reflect.ValueOf(value)
-	baseName := structType.String()[1:]
+	structTypeString := structType.String()
+	baseName := structTypeString[1:]
 
 	// Process Methods
 	for i := 0; i < structType.NumMethod(); i++ {
@@ -90,7 +92,9 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 					typ := thisInput.Elem()
 					a := reflect.New(typ)
 					s := reflect.Indirect(a).Interface()
-					b.converter.Add(s)
+					name := typ.Name()
+					packageName := getPackageName(thisInput.String())
+					b.AddStructToGenerateTS(packageName, name, s)
 				}
 			}
 
@@ -98,7 +102,9 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 			if thisInput.Kind() == reflect.Struct {
 				a := reflect.New(thisInput)
 				s := reflect.Indirect(a).Interface()
-				b.converter.Add(s)
+				name := thisInput.Name()
+				packageName := getPackageName(thisInput.String())
+				b.AddStructToGenerateTS(packageName, name, s)
 			}
 
 			inputs = append(inputs, thisParam)
@@ -127,7 +133,9 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 					typ := thisOutput.Elem()
 					a := reflect.New(typ)
 					s := reflect.Indirect(a).Interface()
-					b.converter.Add(s)
+					name := typ.Name()
+					packageName := getPackageName(thisOutput.String())
+					b.AddStructToGenerateTS(packageName, name, s)
 				}
 			}
 
@@ -135,7 +143,9 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 			if thisOutput.Kind() == reflect.Struct {
 				a := reflect.New(thisOutput)
 				s := reflect.Indirect(a).Interface()
-				b.converter.Add(s)
+				name := thisOutput.Name()
+				packageName := getPackageName(thisOutput.String())
+				b.AddStructToGenerateTS(packageName, name, s)
 			}
 
 			outputs = append(outputs, thisParam)
@@ -147,4 +157,11 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 
 	}
 	return result, nil
+}
+
+func getPackageName(in string) string {
+	result := strings.Split(in, ".")[0]
+	result = strings.ReplaceAll(result, "[]", "")
+	result = strings.ReplaceAll(result, "*", "")
+	return result
 }

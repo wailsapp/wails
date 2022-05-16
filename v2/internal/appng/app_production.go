@@ -85,8 +85,6 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions)
 	eventHandler := runtime.NewEvents(myLogger)
 	ctx = context.WithValue(ctx, "events", eventHandler)
-	messageDispatcher := dispatcher.NewDispatcher(myLogger, appBindings, eventHandler)
-
 	// Attach logger to context
 	if debug {
 		ctx = context.WithValue(ctx, "buildtype", "debug")
@@ -94,6 +92,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		ctx = context.WithValue(ctx, "buildtype", "production")
 	}
 
+	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler)
 	appFrontend := desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher)
 	eventHandler.AddFrontend(appFrontend)
 

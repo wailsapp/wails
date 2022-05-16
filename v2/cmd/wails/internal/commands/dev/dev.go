@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"os/signal"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -31,8 +34,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/commands/build"
 )
-
-const defaultDevServerURL = "http://localhost:34115"
 
 func LogGreen(message string, args ...interface{}) {
 	text := fmt.Sprintf(message, args...)
@@ -71,8 +72,11 @@ type devFlags struct {
 	loglevel        string
 	forceBuild      bool
 	debounceMS      int
-	devServerURL    string
+	devServer       string
 	appargs         string
+	saveConfig      bool
+
+	frontendDevServerURL string
 }
 
 // AddSubcommand adds the `dev` command for the Wails application
@@ -94,8 +98,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("loglevel", "Loglevel to use - Trace, Debug, Info, Warning, Error", &flags.loglevel)
 	command.BoolFlag("f", "Force build application", &flags.forceBuild)
 	command.IntFlag("debounce", "The amount of time to wait to trigger a reload on change", &flags.debounceMS)
-	command.StringFlag("devserverurl", "The url of the dev server to use", &flags.devServerURL)
+	command.StringFlag("devserver", "The address of the wails dev server", &flags.devServer)
+	command.StringFlag("frontenddevserverurl", "The url of the external frontend dev server to use", &flags.frontendDevServerURL)
 	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space searated)", &flags.appargs)
+	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
 
 	command.Action(func() error {
 		// Create logger
@@ -120,6 +126,16 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
+		devServer := flags.devServer
+		if _, _, err := net.SplitHostPort(devServer); err != nil {
+			return fmt.Errorf("DevServer is not of the form 'host:port', please check your wails.json")
+		}
+
+		devServerURL, err := url.Parse("http://" + devServer)
+		if err != nil {
+			return err
+		}
+
 		// Update go.mod to use current wails version
 		err = syncGoModVersion(cwd)
 		if err != nil {
@@ -127,7 +143,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		// Run go mod tidy to ensure we're up to date
-		err = runCommand(cwd, false, "go", "mod", "tidy")
+		err = runCommand(cwd, false, "go", "mod", "tidy", "-compat=1.17")
 		if err != nil {
 			return err
 		}
@@ -172,11 +188,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// open browser
 		if flags.openBrowser {
-			url := defaultDevServerURL
-			if flags.devServerURL != "" {
-				url = flags.devServerURL
-			}
-			err = browser.OpenURL(url)
+			err = browser.OpenURL(devServerURL.String())
 			if err != nil {
 				return err
 			}
@@ -184,6 +196,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// create the project files watcher
 		watcher, err := initialiseWatcher(cwd, logger.Fatal)
+		if err != nil {
+			return err
+		}
+
 		defer func(watcher *fsnotify.Watcher) {
 			err := watcher.Close()
 			if err != nil {
@@ -192,11 +208,14 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}(watcher)
 
 		LogGreen("Watching (sub)/directory: %s", cwd)
-		LogGreen("Using Dev Server URL: %s", flags.devServerURL)
+		LogGreen("Using DevServer URL: %s", devServerURL)
+		if flags.frontendDevServerURL != "" {
+			LogGreen("Using Frontend DevServer URL: %s", flags.frontendDevServerURL)
+		}
 		LogGreen("Using reload debounce setting of %d milliseconds", flags.debounceMS)
 
 		// Watch for changes and trigger restartApp()
-		doWatcherLoop(buildOptions, debugBinaryProcess, flags, watcher, exitCodeChannel, quitChannel)
+		doWatcherLoop(buildOptions, debugBinaryProcess, flags, watcher, exitCodeChannel, quitChannel, devServerURL)
 
 		// Kill the current program if running
 		if debugBinaryProcess != nil {
@@ -259,7 +278,6 @@ func runCommand(dir string, exitOnError bool, command string, args ...string) er
 // defaultDevFlags generates devFlags with default options
 func defaultDevFlags() devFlags {
 	return devFlags{
-		devServerURL:    defaultDevServerURL,
 		compilerCommand: "go",
 		verbosity:       1,
 		extensions:      "go",
@@ -294,15 +312,12 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 		return nil, err
 	}
 
-	var shouldSaveConfig bool
-
 	if flags.assetDir == "" && projectConfig.AssetDirectory != "" {
 		flags.assetDir = projectConfig.AssetDirectory
 	}
 
 	if flags.assetDir != projectConfig.AssetDirectory {
 		projectConfig.AssetDirectory = filepath.ToSlash(flags.assetDir)
-		shouldSaveConfig = true
 	}
 
 	if flags.assetDir != "" {
@@ -318,16 +333,14 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 
 	if flags.reloadDirs != projectConfig.ReloadDirectories {
 		projectConfig.ReloadDirectories = filepath.ToSlash(flags.reloadDirs)
-		shouldSaveConfig = true
 	}
 
-	if flags.devServerURL == defaultDevServerURL && projectConfig.DevServerURL != defaultDevServerURL && projectConfig.DevServerURL != "" {
-		flags.devServerURL = projectConfig.DevServerURL
+	if flags.devServer == "" && projectConfig.DevServer != "" {
+		flags.devServer = projectConfig.DevServer
 	}
 
-	if flags.devServerURL != projectConfig.DevServerURL {
-		projectConfig.DevServerURL = flags.devServerURL
-		shouldSaveConfig = true
+	if flags.frontendDevServerURL == "" && projectConfig.FrontendDevServerURL != "" {
+		flags.frontendDevServerURL = projectConfig.FrontendDevServerURL
 	}
 
 	if flags.wailsjsdir == "" && projectConfig.WailsJSDir != "" {
@@ -340,7 +353,6 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 
 	if flags.wailsjsdir != projectConfig.WailsJSDir {
 		projectConfig.WailsJSDir = filepath.ToSlash(flags.wailsjsdir)
-		shouldSaveConfig = true
 	}
 
 	if flags.debounceMS == 100 && projectConfig.DebounceMS != 100 {
@@ -352,14 +364,13 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 
 	if flags.debounceMS != projectConfig.DebounceMS {
 		projectConfig.DebounceMS = flags.debounceMS
-		shouldSaveConfig = true
 	}
 
 	if flags.appargs == "" && projectConfig.AppArgs != "" {
 		flags.appargs = projectConfig.AppArgs
 	}
 
-	if shouldSaveConfig {
+	if flags.saveConfig {
 		err = projectConfig.Save()
 		if err != nil {
 			return nil, err
@@ -471,7 +482,8 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 	// Set environment variables accordingly
 	os.Setenv("loglevel", flags.loglevel)
 	os.Setenv("assetdir", flags.assetDir)
-	os.Setenv("devserverurl", flags.devServerURL)
+	os.Setenv("devserver", flags.devServer)
+	os.Setenv("frontenddevserverurl", flags.frontendDevServerURL)
 
 	// Start up new binary with correct args
 	newProcess := process.NewProcess(appBinary, args...)
@@ -491,7 +503,7 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 }
 
 // doWatcherLoop is the main watch loop that runs while dev is active
-func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Process, flags devFlags, watcher *fsnotify.Watcher, exitCodeChannel chan int, quitChannel chan os.Signal) {
+func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Process, flags devFlags, watcher *fsnotify.Watcher, exitCodeChannel chan int, quitChannel chan os.Signal, devServerURL *url.URL) {
 	// Main Loop
 	var (
 		err              error
@@ -518,6 +530,9 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 	reload := false
 	assetDir := ""
 	changedPaths := map[string]struct{}{}
+
+	assetDirURL := joinPath(devServerURL, "/wails/assetdir")
+	reloadURL := joinPath(devServerURL, "/wails/reload")
 	for quit == false {
 		//reload := false
 		select {
@@ -584,14 +599,19 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 					LogRed("Error during build: %s", err.Error())
 					continue
 				}
-				// If we have a new process, save it
+				// If we have a new process, saveConfig it
 				if newBinaryProcess != nil {
 					debugBinaryProcess = newBinaryProcess
 				}
 			}
+
+			if flags.frontendDevServerURL != "" {
+				// If we are using an external dev server all the reload of the frontend part can be skipped
+				continue
+			}
 			if len(changedPaths) != 0 {
 				if assetDir == "" {
-					resp, err := http.Get("http://localhost:34115/wails/assetdir")
+					resp, err := http.Get(assetDirURL)
 					if err != nil {
 						LogRed("Error during retrieving assetdir: %s", err.Error())
 					} else {
@@ -620,7 +640,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			}
 			if reload {
 				reload = false
-				_, err = http.Get("http://localhost:34115/wails/reload")
+				_, err = http.Get(reloadURL)
 				if err != nil {
 					LogRed("Error during refresh: %s", err.Error())
 				}
@@ -630,4 +650,10 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			quit = true
 		}
 	}
+}
+
+func joinPath(url *url.URL, subPath string) string {
+	u := *url
+	u.Path = path.Join(u.Path, subPath)
+	return u.String()
 }

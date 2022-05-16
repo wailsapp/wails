@@ -69,6 +69,8 @@ func Quit(ctx context.Context) {
 
 type EnvironmentInfo struct {
 	BuildType string `json:"buildtype"`
+	Platform  string `json:"platform"`
+	Arch      string `json:"arch"`
 }
 
 func Environment(ctx context.Context) EnvironmentInfo {
@@ -77,5 +79,7 @@ func Environment(ctx context.Context) EnvironmentInfo {
 	if buildType != nil {
 		result.BuildType = buildType.(string)
 	}
+	result.Platform = goruntime.GOOS
+	result.Arch = goruntime.GOARCH
 	return result
 }

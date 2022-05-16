@@ -5,7 +5,7 @@
 	<key>CFBundleExecutable</key><string>{{.Title}}</string>
 	<key>CFBundleIdentifier</key><string>com.wails.{{.Title}}</string>
 	<key>CFBundleVersion</key><string>1.0.0</string>
-	<key>CFBundleGetInfoString</key><string>Built using Wails (https://wails.app)</string>
+	<key>CFBundleGetInfoString</key><string>Built using Wails (https://wails.io)</string>
 	<key>CFBundleShortVersionString</key><string>1.0.0</string>
 	<key>CFBundleIconFile</key><string>iconfile</string>
 	<key>LSMinimumSystemVersion</key><string>10.13.0</string>

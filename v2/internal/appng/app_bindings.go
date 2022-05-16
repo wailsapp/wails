@@ -4,16 +4,16 @@
 package appng
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/leaanthony/gosod"
 	"github.com/wailsapp/wails/v2/internal/binding"
-	wailsRuntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime/wrapper"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/pkg/options"
-	"os"
-	"path/filepath"
 )
 
 // App defines a Wails application structure
@@ -72,17 +72,6 @@ func generateBindings(bindings *binding.Bindings) error {
 		return err
 	}
 
-	//ipcdev.js
-	err = os.WriteFile(filepath.Join(wrapperDir, "ipcdev.js"), wailsRuntime.DesktopIPC, 0755)
-	if err != nil {
-		return err
-	}
-	//runtimedev.js
-	err = os.WriteFile(filepath.Join(wrapperDir, "runtimedev.js"), wailsRuntime.RuntimeDesktopJS, 0755)
-	if err != nil {
-		return err
-	}
-
 	targetDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs", "go")
 	err = os.RemoveAll(targetDir)
 	if err != nil {
@@ -90,21 +79,7 @@ func generateBindings(bindings *binding.Bindings) error {
 	}
 	_ = fs.MkDirs(targetDir)
 
-	modelsFile := filepath.Join(targetDir, "models.ts")
-	err = bindings.WriteTS(modelsFile)
-	if err != nil {
-		return err
-	}
-
-	// Write backend method wrappers
-	bindingsFilename := filepath.Join(targetDir, "bindings.js")
-	err = bindings.GenerateBackendJS(bindingsFilename, true)
-	if err != nil {
-		return err
-	}
-
-	bindingsTypes := filepath.Join(targetDir, "bindings.d.ts")
-	err = bindings.GenerateBackendTS(bindingsTypes)
+	err = bindings.GenerateGoBindings(targetDir)
 	if err != nil {
 		return err
 	}

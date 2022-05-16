@@ -20,10 +20,19 @@ func (d *Dispatcher) mustAtoI(input string) int {
 
 func (d *Dispatcher) processWindowMessage(message string, sender frontend.Frontend) (string, error) {
 	if len(message) < 2 {
-		return "", errors.New("Invalid Event Message: " + message)
+		return "", errors.New("Invalid Window Message: " + message)
 	}
 
 	switch message[1] {
+	case 'A':
+		switch message[2:] {
+		case "SDT":
+			go sender.WindowSetSystemDefaultTheme()
+		case "LT":
+			go sender.WindowSetLightTheme()
+		case "DT":
+			go sender.WindowSetDarkTheme()
+		}
 	case 'c':
 		go sender.WindowCenter()
 	case 'T':
@@ -47,6 +56,8 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 		go sender.WindowHide()
 	case 'S':
 		go sender.WindowShow()
+	case 'R':
+		go sender.WindowReloadApp()
 	case 'r':
 		var rgba options.RGBA
 		err := json.Unmarshal([]byte(message[3:]), &rgba)

@@ -30,6 +30,7 @@ func main() {
         RGBA:              &options.RGBA{R: 0, G: 0, B: 0, A: 255},
         AlwaysOnTop:       false,
         Assets:            assets,
+        AssetsHandler:     assetsHandler,
         Menu:              app.applicationMenu(),
         Logger:            nil,
         LogLevel:          logger.DEBUG,
@@ -56,6 +57,8 @@ func main() {
                 LightModeTitleText: windows.RGB(20, 20, 20),
                 LightModeBorder:    windows.RGB(200, 200, 200),
             },
+            // User messages that can be customised
+            Messages *windows.Messages
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -74,6 +77,9 @@ func main() {
                 Message: "© 2021 Me",
                 Icon:    icon,
             },
+        },
+        Linux: &linux.Options{
+            Icon: icon,
         },
     })
     if err != nil {
@@ -134,7 +140,7 @@ Name: Frameless
 Type: bool
 
 When set to `true`, the window will have no borders or title bar.
-Also see [Frameless Windows](/docs/guides/frameless).
+Also see [Frameless Windows](../guides/frameless.mdx).
 
 ### MinWidth
 
@@ -178,7 +184,7 @@ Name: StartHidden
 
 Type: bool
 
-When set to `true`, the application will be hidden until [WindowShow](/docs/reference/runtime/window#WindowShow)
+When set to `true`, the application will be hidden until [WindowShow](../reference/runtime/window.mdx#windowshow)
 is called.
 
 ### HideWindowOnClose
@@ -212,9 +218,41 @@ Indicates that the window should stay above other windows when losing focus.
 
 Name: Assets
 
-Type: \*embed.FS
+Type: embed.FS
 
 The frontend assets to be used by the application. Requires an `index.html` file.
+
+### AssetsHandler <img src="http://badges.github.io/stability-badges/dist/experimental.svg"/>
+
+
+Name: AssetsHandler
+
+Type: http.Handler
+
+
+The assets handler is a generic `http.Handler` which will be called for any non GET request on the assets server
+and for GET requests which can not be served from the `assets` because the file is not found.
+
+| Value                         | Win | Mac | Lin |
+| ----------------------------- | --- | --- | --- |
+| GET                           | ✅  | ✅   | ✅  |
+| POST                          | ✅  | ✅   | ❌  |
+| PUT                           | ✅  | ✅   | ❌  |
+| PATCH                         | ✅  | ✅   | ❌  |
+| DELETE                        | ✅  | ✅   | ❌  |
+| Request Headers               | ✅  | ✅   | ❌  |
+| Request Body                  | ✅  | ✅   | ❌  |
+| Request Body Streaming        | ❌  | ❌   | ❌  |
+| Response StatusCodes          | ✅  | ✅   | ❌  |
+| Response Headers              | ✅  | ✅   | ❌  |
+| Response Body                 | ✅  | ✅   | ✅  |
+| Response Body Streaming       | ❌  | ❌   | ✅  |
+
+NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.36.0. In the future some features will be
+supported by the introduction of WebKit2GTK 2.36.0+ support.
+
+NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html
+on every path, that does not contain a file extension.
 
 ### Menu
 
@@ -222,7 +260,7 @@ Name: Menu
 
 Type: \*menu.Menu
 
-The menu to be used by the application. More details about Menus in the [Menu Reference](/docs/reference/runtime/menu).
+The menu to be used by the application. More details about Menus in the [Menu Reference](../reference/runtime/menu.mdx).
 
 NOTE: On Mac, if no menu is specified, a default menu will be created.
 
@@ -234,7 +272,7 @@ Type: logger.Logger
 
 Default: Logger to Stdout
 
-The logger to be used by the application. More details about logging in the [Log Reference](/docs/reference/runtime/log).
+The logger to be used by the application. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
 
 ### LogLevel
 
@@ -244,7 +282,7 @@ Type: logger.LogLevel
 
 Default: `Info` in dev mode, `Error` in production mode
 
-The default log level. More details about logging in the [Log Reference](/docs/reference/runtime/log).
+The default log level. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
 
 ### OnStartup
 
@@ -311,7 +349,7 @@ Defines how the window should present itself at startup.
 | --------------- | --- | --- | --- |
 | Fullscreen      | ✅  | ✅   | ✅ |
 | Maximised       | ✅  | ✅   | ✅ |
-| Minimised       | ✅  |     | ✅ |
+| Minimised       | ✅  | ❌   | ✅ |
 
 ### Bind
 
@@ -336,6 +374,14 @@ Name: Mac
 Type: \*mac.Options
 
 This defines [Mac specific options](#mac-specific-options).
+
+### Linux
+
+Name: Linux
+
+Type: \*linux.Options
+
+This defines [Linux specific options](#linux-specific-options).
 
 ## Windows Specific Options
 
@@ -456,6 +502,15 @@ Example:
     },
 ```
 
+### Messages
+
+Name: Messages
+
+Type: `*windows.Messages`
+
+A struct of strings used by the webview2 installer if a valid webview2 runtime is not found.
+Customise this for any language you choose to support.
+
 ## Mac Specific Options
 
 ### TitleBar
@@ -518,7 +573,7 @@ type TitleBar struct {
 
 | Name | Description |
 | ---- | ----------- |
-| TitlebarAppearsTransparent | Makes the titlebar transparent. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindow/1419167-titlebarappearstransparent?language=objc)  |
+| TitlebarAppearsTransparent | Makes the titlebar transparent. This has the effect of hiding the titlebar and the content fill the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindow/1419167-titlebarappearstransparent?language=objc)  |
 | HideTitle                  | Hides the title of the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowtitlevisibility?language=objc)  |
 | HideTitleBar               | Removes [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/) from the style mask  |
 | FullSizeContent            | Makes the webview fill the entire window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemaskfullsizecontentview)|
@@ -605,3 +660,20 @@ When clicked, that will open an about message box:
 </div>
 <br/>
 
+## Linux Specific Options
+
+### Icon
+
+Name: Icon
+
+Type: []byte
+
+Sets up the icon representing the window. This icon is used when the window is minimized (also known as iconified).
+Some window managers or desktop environments may also place it in the window frame, or display it in other contexts.
+On others, the icon is not used at all, so your mileage may vary.
+
+NOTE: Gnome on Wayland at least does not display this icon. To have a application icon there, a `.desktop` file has to be used.
+On KDE it should work.
+
+The icon should be provided in whatever size it was naturally drawn; that is, don’t scale the image before passing it.
+Scaling is postponed until the last minute, when the desired final size is known, to allow best quality.
