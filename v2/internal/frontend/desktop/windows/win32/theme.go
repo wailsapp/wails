@@ -1,11 +1,8 @@
-//go:build windows
-
 package win32
 
 import (
-	"fmt"
-	"unsafe"
 	"golang.org/x/sys/windows/registry"
+	"unsafe"
 )
 
 type DWMWINDOWATTRIBUTE int32
@@ -55,17 +52,15 @@ func SetTheme(hwnd uintptr, useDarkMode bool) {
 		if IsWindowsVersionAtLeast(10, 0, 18985) {
 			attr = DwmwaUseImmersiveDarkMode
 		}
-		dwmSetWindowAttribute(hwnd, attr, unsafe.Pointer(&useDarkMode), unsafe.Sizeof(&useDarkMode))
+		dwmSetWindowAttribute(hwnd, attr, unsafe.Pointer(&useDarkMode), unsafe.Sizeof(useDarkMode))
 	}
 }
 
 func EnableTranslucency(hwnd uintptr, backdrop BackdropType) {
-	fmt.Printf("%+v\n", windowsVersion)
 	if IsWindowsVersionAtLeast(10, 0, 22579) {
-		dwmSetWindowAttribute(hwnd, DwmwaSystemBackdropType, unsafe.Pointer(&backdrop), unsafe.Sizeof(&backdrop))
+		dwmSetWindowAttribute(hwnd, DwmwaSystemBackdropType, unsafe.Pointer(&backdrop), unsafe.Sizeof(backdrop))
 	} else {
-		println("NOOOOOO here!!!!MICA")
-
+		println("Warning: Translucency unavailable on Windows < 22579")
 	}
 }
 
@@ -92,7 +87,6 @@ func IsCurrentlyDarkMode() bool {
 	if err != nil {
 		return false
 	}
-	println("AppsUseLighttheme = ", AppsUseLightTheme)
 	return AppsUseLightTheme == 0
 }
 
