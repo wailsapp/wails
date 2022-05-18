@@ -314,7 +314,7 @@ gboolean messageDialog(gpointer data) {
 void extern processOpenFileResult(void*);
 
 typedef struct OpenFileDialogOptions {
-    void* webview;
+    GtkWindow* window;
     char* title;
 	char* defaultFilename;
 	char* defaultDirectory;
@@ -339,7 +339,7 @@ gboolean opendialog(gpointer data) {
 	if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE) {
 		label = "_Save";
 	}
-    GtkWidget *dlgWidget = gtk_file_chooser_dialog_new(options->title, options->webview, options->action,
+    GtkWidget *dlgWidget = gtk_file_chooser_dialog_new(options->title, options->window, options->action,
           "_Cancel", GTK_RESPONSE_CANCEL,
           label, GTK_RESPONSE_ACCEPT,
 			NULL);
@@ -854,7 +854,7 @@ func (w *Window) Quit() {
 func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multipleFiles int, action C.GtkFileChooserAction) {
 
 	data := C.OpenFileDialogOptions{
-		webview:       w.webview,
+		window:        w.asGTKWindow(),
 		title:         C.CString(dialogOptions.Title),
 		multipleFiles: C.int(multipleFiles),
 		action:        action,
