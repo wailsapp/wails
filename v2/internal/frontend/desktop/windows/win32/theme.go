@@ -52,7 +52,11 @@ func SetTheme(hwnd uintptr, useDarkMode bool) {
 		if IsWindowsVersionAtLeast(10, 0, 18985) {
 			attr = DwmwaUseImmersiveDarkMode
 		}
-		dwmSetWindowAttribute(hwnd, attr, unsafe.Pointer(&useDarkMode), unsafe.Sizeof(useDarkMode))
+		var winDark int32
+		if useDarkMode {
+			winDark = 1
+		}
+		dwmSetWindowAttribute(hwnd, attr, unsafe.Pointer(&winDark), unsafe.Sizeof(winDark))
 	}
 }
 
