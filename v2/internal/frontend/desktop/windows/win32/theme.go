@@ -1,11 +1,8 @@
-//go:build windows
-
 package win32
 
 import (
-	"unsafe"
-
 	"golang.org/x/sys/windows/registry"
+	"unsafe"
 )
 
 type DWMWINDOWATTRIBUTE int32
@@ -15,9 +12,18 @@ const DwmwaUseImmersiveDarkMode DWMWINDOWATTRIBUTE = 20
 const DwmwaBorderColor DWMWINDOWATTRIBUTE = 34
 const DwmwaCaptionColor DWMWINDOWATTRIBUTE = 35
 const DwmwaTextColor DWMWINDOWATTRIBUTE = 36
+const DwmwaSystemBackdropType DWMWINDOWATTRIBUTE = 38
 
 const SPI_GETHIGHCONTRAST = 0x0042
 const HCF_HIGHCONTRASTON = 0x00000001
+
+type BackdropType int32
+
+const DwmsbtAuto BackdropType = 0
+const DwmsbtDisable = 1         // None
+const DwmsbtMainWindow = 2      // Mica
+const DwmsbtTransientWindow = 3 // Acrylic
+const DwmsbtTabbedWindow = 4    // Tabbed
 
 func dwmSetWindowAttribute(hwnd uintptr, dwAttribute DWMWINDOWATTRIBUTE, pvAttribute unsafe.Pointer, cbAttribute uintptr) {
 	ret, _, err := procDwmSetWindowAttribute.Call(
@@ -46,7 +52,19 @@ func SetTheme(hwnd uintptr, useDarkMode bool) {
 		if IsWindowsVersionAtLeast(10, 0, 18985) {
 			attr = DwmwaUseImmersiveDarkMode
 		}
-		dwmSetWindowAttribute(hwnd, attr, unsafe.Pointer(&useDarkMode), unsafe.Sizeof(&useDarkMode))
+		var winDark int32
+		if useDarkMode {
+			winDark = 1
+		}
+		dwmSetWindowAttribute(hwnd, attr, unsafe.Pointer(&winDark), unsafe.Sizeof(winDark))
+	}
+}
+
+func EnableTranslucency(hwnd uintptr, backdrop BackdropType) {
+	if IsWindowsVersionAtLeast(10, 0, 22579) {
+		dwmSetWindowAttribute(hwnd, DwmwaSystemBackdropType, unsafe.Pointer(&backdrop), unsafe.Sizeof(backdrop))
+	} else {
+		println("Warning: Translucency unavailable on Windows < 22579")
 	}
 }
 
@@ -73,7 +91,6 @@ func IsCurrentlyDarkMode() bool {
 	if err != nil {
 		return false
 	}
-
 	return AppsUseLightTheme == 0
 }
 
@@ -91,5 +108,6 @@ func IsCurrentlyHighContrastMode() bool {
 		_ = err
 		return false
 	}
-	return result.DwFlags&HCF_HIGHCONTRASTON == HCF_HIGHCONTRASTON
+	r := result.DwFlags&HCF_HIGHCONTRASTON == HCF_HIGHCONTRASTON
+	return r
 }
