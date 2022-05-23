@@ -66,6 +66,7 @@ type devFlags struct {
 	reloadDirs      string
 	openBrowser     bool
 	noReload        bool
+	noGen           bool
 	wailsjsdir      string
 	tags            string
 	verbosity       int
@@ -92,6 +93,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("reloaddirs", "Additional directories to trigger reloads (comma separated)", &flags.reloadDirs)
 	command.BoolFlag("browser", "Open application in browser", &flags.openBrowser)
 	command.BoolFlag("noreload", "Disable reload on asset change", &flags.noReload)
+	command.BoolFlag("nogen", "Disable generate module", &flags.noGen)
 	command.StringFlag("wailsjsdir", "Directory to generate the Wails JS modules", &flags.wailsjsdir)
 	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &flags.tags)
 	command.IntFlag("v", "Verbosity level (0 - silent, 1 - standard, 2 - verbose)", &flags.verbosity)
@@ -148,14 +150,16 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
-		self := os.Args[0]
-		if flags.tags != "" {
-			err = runCommand(cwd, true, self, "generate", "module", "-tags", flags.tags)
-		} else {
-			err = runCommand(cwd, true, self, "generate", "module")
-		}
-		if err != nil {
-			return err
+		if !flags.noGen {
+			self := os.Args[0]
+			if flags.tags != "" {
+				err = runCommand(cwd, true, self, "generate", "module", "-tags", flags.tags)
+			} else {
+				err = runCommand(cwd, true, self, "generate", "module")
+			}
+			if err != nil {
+				return err
+			}
 		}
 
 		buildOptions := generateBuildOptions(flags)
