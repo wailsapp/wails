@@ -177,7 +177,7 @@ export function BrowserOpenURL(url: string): void;
 
 // [Environment](https://wails.io/docs/reference/runtime/intro#environment)
 // Returns information about the environment
-export function Environment(): EnvironmentInfo;
+export function Environment(): Promise<EnvironmentInfo>;
 
 // [Quit](https://wails.io/docs/reference/runtime/intro#quit)
 // Quits the application.
