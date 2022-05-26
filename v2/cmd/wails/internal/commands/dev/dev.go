@@ -76,6 +76,7 @@ type devFlags struct {
 	devServer       string
 	appargs         string
 	saveConfig      bool
+	raceDetector    bool
 
 	frontendDevServerURL string
 }
@@ -104,6 +105,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("frontenddevserverurl", "The url of the external frontend dev server to use", &flags.frontendDevServerURL)
 	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space searated)", &flags.appargs)
 	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
+	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
 
 	command.Action(func() error {
 		// Create logger
@@ -303,6 +305,7 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		IgnoreFrontend: false,
 		Verbosity:      flags.verbosity,
 		WailsJSDir:     flags.wailsjsdir,
+		RaceDetector:   flags.raceDetector,
 	}
 
 	return result
