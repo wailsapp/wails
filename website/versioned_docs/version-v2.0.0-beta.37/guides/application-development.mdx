@@ -30,7 +30,7 @@ func (a *App) shutdown(ctx context.Context) {
 - The startup method is called as soon as Wails allocates the resources it needs and is a good place for creating resources,
   setting up event listeners and anything else the application needs at startup.
   It is given a `context.Context` which is usually saved in a struct field. This context is needed for calling the
-  [runtime](../reference/runtime/intro). If this method returns an error, the application will terminate.
+  [runtime](../reference/runtime/intro.mdx). If this method returns an error, the application will terminate.
   In dev mode, the error will be output to the console.
 
 - The shutdown method will be called by Wails right at the end of the shutdown process. This is a good place to deallocate
@@ -59,7 +59,7 @@ func main() {
 
 ```
 
-More information on application lifecycle hooks can be found [here](../howdoesitwork#application-lifecycle-callbacks).
+More information on application lifecycle hooks can be found [here](../howdoesitwork.mdx#application-lifecycle-callbacks).
 
 ## Binding Methods
 
@@ -113,7 +113,7 @@ func main() {
 
 This will bind all public methods in our `App` struct (it will never bind the startup and shutdown methods).
 
-More information on Binding can be found [here](../howdoesitwork#method-binding).
+More information on Binding can be found [here](../howdoesitwork.mdx#method-binding).
 
 ## Application Menu
 
@@ -160,6 +160,15 @@ The first, if given, will be executed in the `frontend` directory to install the
 The second, if given, will be executed in the `frontend` directory to build the frontend project.
 
 If these 2 keys aren't given, then Wails does absolutely nothing with the frontend. It is only expecting that `embed.FS`.
+
+### AssetsHandler
+
+A Wails v2 app can optionally define a `http.Handler` in the `options.App`, which allows hooking into the AssetServer to
+create files on the fly or process POST/PUT requests.
+GET requests are always first handled by the `assets` FS. If the FS doesn't find the requested file the request will be
+forwarded to the `http.Handler` for serving. Any requests other than GET will be directly processed by the `AssetsHandler`
+if specified.
+It's also possible to only use the `AssetsHandler` by specifiy `nil` as the `Assets` option.
 
 ## Built in Dev Server
 
