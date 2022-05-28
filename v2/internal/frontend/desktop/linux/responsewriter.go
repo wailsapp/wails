@@ -84,7 +84,7 @@ func (rw *webKitResponseWriter) WriteHeader(code int) {
 	}
 
 	stream := C.g_unix_input_stream_new(C.int(rFD), gtkBool(true))
-	C.webkit_uri_scheme_request_finish(rw.req, stream, C.long(contentLength), cMimeType)
+	C.webkit_uri_scheme_request_finish(rw.req, stream, C.gint64(contentLength), cMimeType)
 	C.g_object_unref(C.gpointer(stream))
 }
 

@@ -864,8 +864,8 @@ func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multip
 		// Create filter array
 		mem := NewCalloc()
 		arraySize := len(dialogOptions.Filters) + 1
-		data.filters = C.allocFileFilterArray((C.ulong)(arraySize))
-		filters := (*[1 << 30]*C.struct__GtkFileFilter)(unsafe.Pointer(data.filters))
+		data.filters = C.allocFileFilterArray((C.size_t)(arraySize))
+		filters := unsafe.Slice((**C.struct__GtkFileFilter)(unsafe.Pointer(data.filters)), arraySize)
 		for index, filter := range dialogOptions.Filters {
 			thisFilter := C.gtk_file_filter_new()
 			C.g_object_ref(C.gpointer(thisFilter))

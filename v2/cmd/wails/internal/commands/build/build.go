@@ -234,6 +234,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			"linux",
 			"linux/amd64",
 			"linux/arm64",
+			"linux/arm",
 			"windows",
 			"windows/amd64",
 			"windows/arm64",
