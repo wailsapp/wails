@@ -3,7 +3,6 @@ package initialise
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -218,11 +217,11 @@ func initGit(options *templates.Options) error {
 	}
 
 	ignore := []string{
-		"build/bin",
-		"frontend/dist",
-		"frontend/node_modules",
+		filepath.Join("build", "bin"),
+		filepath.Join("frontend", "dist"),
+		filepath.Join("frontend", "node_modules"),
 	}
-	err = ioutil.WriteFile(options.TargetDir+"/.gitignore", []byte(strings.Join(ignore, "\n")), "0644")
+	err = os.WriteFile(filepath.Join(options.TargetDir, ".gitignore"), []byte(strings.Join(ignore, "\n")), 0644)
 	if err != nil {
 		return errors.Wrap(err, "Unable to create gitignore")
 	}
