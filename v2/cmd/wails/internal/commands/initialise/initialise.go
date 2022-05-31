@@ -217,9 +217,9 @@ func initGit(options *templates.Options) error {
 	}
 
 	ignore := []string{
-		filepath.Join("build", "bin"),
-		filepath.Join("frontend", "dist"),
-		filepath.Join("frontend", "node_modules"),
+		"build/bin",
+		"frontend/dist",
+		"frontend/node_modules",
 	}
 	err = os.WriteFile(filepath.Join(options.TargetDir, ".gitignore"), []byte(strings.Join(ignore, "\n")), 0644)
 	if err != nil {
