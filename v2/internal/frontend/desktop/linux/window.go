@@ -249,11 +249,10 @@ typedef struct JSCallback {
     char* script;
 } JSCallback;
 
-gboolean executeJS(gpointer data) {
+void executeJS(void *data) {
     struct JSCallback *js = data;
     webkit_web_view_run_javascript(js->webview, js->script, NULL, NULL, NULL);
     free(js->script);
-    return G_SOURCE_REMOVE;
 }
 
 void extern processMessageDialogResult(char*);
@@ -265,8 +264,7 @@ typedef struct MessageDialogOptions {
 	int messageType;
 } MessageDialogOptions;
 
-gboolean messageDialog(gpointer data) {
-
+void messageDialog(void *data) {
 	GtkDialogFlags flags;
 	GtkMessageType messageType;
 	MessageDialogOptions *options = (MessageDialogOptions*) data;
@@ -307,8 +305,6 @@ gboolean messageDialog(gpointer data) {
 	gtk_widget_destroy(dialog);
 	free(options->title);
 	free(options->message);
-
-	return G_SOURCE_REMOVE;
 }
 
 void extern processOpenFileResult(void*);
@@ -333,7 +329,7 @@ void freeFileFilterArray(GtkFileFilter** filters) {
 	free(filters);
 }
 
-gboolean opendialog(gpointer data) {
+void opendialog(void *data) {
     struct OpenFileDialogOptions *options = data;
 	char *label = "_Open";
 	if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE) {
@@ -421,7 +417,6 @@ gboolean opendialog(gpointer data) {
 	}
     gtk_widget_destroy(dlgWidget);
     free(options->title);
-    return G_SOURCE_REMOVE;
 }
 
 GtkFileFilter* newFileFilter() {
@@ -438,12 +433,10 @@ typedef struct RGBAOptions {
 	void *webview;
 } RGBAOptions;
 
-gboolean setRGBA(gpointer* data) {
+void setRGBA(void* data) {
 	RGBAOptions* options = (RGBAOptions*)data;
 	GdkRGBA colour = {options->r / 255.0, options->g / 255.0, options->b / 255.0, options->a / 255.0};
 	webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(options->webview), &colour);
-
-	return G_SOURCE_REMOVE;
 }
 
 typedef struct SetTitleArgs {
@@ -781,7 +774,7 @@ func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
 		a:       C.uchar(a),
 		webview: w.webview,
 	}
-	C.ExecuteOnMainThread(C.setRGBA, C.gpointer(&data))
+	invokeOnMainThread(func() { C.setRGBA(unsafe.Pointer(&data)) })
 
 }
 
@@ -840,7 +833,7 @@ func (w *Window) ExecJS(js string) {
 		webview: w.webview,
 		script:  C.CString(js),
 	}
-	C.ExecuteOnMainThread(C.executeJS, C.gpointer(&jscallback))
+	invokeOnMainThread(func() { C.executeJS(unsafe.Pointer(&jscallback)) })
 }
 
 func (w *Window) StartDrag() {
@@ -902,7 +895,7 @@ func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multip
 		data.defaultDirectory = C.CString(dialogOptions.DefaultDirectory)
 	}
 
-	C.ExecuteOnMainThread(C.opendialog, C.gpointer(&data))
+	invokeOnMainThread(func() { C.opendialog(unsafe.Pointer(&data)) })
 }
 
 func (w *Window) MessageDialog(dialogOptions frontend.MessageDialogOptions) {
@@ -922,7 +915,7 @@ func (w *Window) MessageDialog(dialogOptions frontend.MessageDialogOptions) {
 	case frontend.WarningDialog:
 		data.messageType = C.int(3)
 	}
-	C.ExecuteOnMainThread(C.messageDialog, C.gpointer(&data))
+	invokeOnMainThread(func() { C.messageDialog(unsafe.Pointer(&data)) })
 }
 
 func (w *Window) ToggleMaximise() {
