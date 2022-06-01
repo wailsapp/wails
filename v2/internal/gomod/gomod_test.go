@@ -28,7 +28,6 @@ require (
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
-	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
 	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
@@ -91,7 +90,7 @@ require (
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
-	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
+	github.com/wailsapp/wails/v2/internal/go-common-file-dialog v1.0.3 // indirect
 	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
@@ -132,7 +131,7 @@ require (
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
-	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
+	github.com/wailsapp/wails/v2/internal/go-common-file-dialog v1.0.3 // indirect
 	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
@@ -172,7 +171,7 @@ require (
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
-	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
+	github.com/wailsapp/wails/v2/internal/go-common-file-dialog v1.0.3 // indirect
 	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
@@ -213,7 +212,7 @@ require (
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
-	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
+	github.com/wailsapp/wails/v2/internal/go-common-file-dialog v1.0.3 // indirect
 	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
@@ -254,7 +253,7 @@ require (
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
-	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
+	github.com/wailsapp/wails/v2/internal/go-common-file-dialog v1.0.3 // indirect
 	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
@@ -297,7 +296,7 @@ require (
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
-	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
+	github.com/wailsapp/wails/v2/internal/go-common-file-dialog v1.0.3 // indirect
 	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
@@ -341,7 +340,7 @@ require (
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
-	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
+	github.com/wailsapp/wails/v2/internal/go-common-file-dialog v1.0.3 // indirect
 	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
@@ -443,7 +442,7 @@ require (
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
-	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
+	github.com/wailsapp/wails/v2/internal/go-common-file-dialog v1.0.3 // indirect
 	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
@@ -484,7 +483,7 @@ require (
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
-	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
+	github.com/wailsapp/wails/v2/internal/go-common-file-dialog v1.0.3 // indirect
 	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
@@ -525,7 +524,7 @@ require (
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
-	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
+	github.com/wailsapp/wails/v2/internal/go-common-file-dialog v1.0.3 // indirect
 	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
@@ -569,7 +568,7 @@ require (
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/leaanthony/debme v1.2.1 // indirect
 	github.com/leaanthony/go-ansi-parser v1.0.1 // indirect
-	github.com/leaanthony/go-common-file-dialog v1.0.3 // indirect
+	github.com/wailsapp/wails/v2/internal/go-common-file-dialog v1.0.3 // indirect
 	github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2 v0.0.0-20211007092718-65d2f028ef2d // indirect
 	github.com/leaanthony/gosod v1.0.3 // indirect
 	github.com/leaanthony/slicer v1.5.0 // indirect
