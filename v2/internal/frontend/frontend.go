@@ -77,6 +77,7 @@ type Frontend interface {
 	WindowUnmaximise()
 	WindowMinimise()
 	WindowUnminimise()
+	WindowSetAlwaysOnTop(b bool)
 	WindowSetPosition(x int, y int)
 	WindowGetPosition() (int, int)
 	WindowSetSize(width int, height int)
