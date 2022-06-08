@@ -97,7 +97,6 @@ func (f *Frontend) WindowReload() {
 }
 
 func (f *Frontend) WindowSetSystemDefaultTheme() {
-	runtime.LockOSThread()
 	f.mainWindow.frontendOptions.Windows.Theme = windows.SystemDefault
 	f.mainWindow.Invoke(func() {
 		f.mainWindow.updateTheme()
@@ -105,7 +104,6 @@ func (f *Frontend) WindowSetSystemDefaultTheme() {
 }
 
 func (f *Frontend) WindowSetLightTheme() {
-	runtime.LockOSThread()
 	if f.mainWindow.frontendOptions != nil && f.mainWindow.frontendOptions.Windows != nil {
 		f.mainWindow.frontendOptions.Windows.Theme = windows.Light
 		f.mainWindow.Invoke(func() {
@@ -115,7 +113,6 @@ func (f *Frontend) WindowSetLightTheme() {
 }
 
 func (f *Frontend) WindowSetDarkTheme() {
-	runtime.LockOSThread()
 	if f.mainWindow.frontendOptions != nil && f.mainWindow.frontendOptions.Windows != nil {
 		f.mainWindow.frontendOptions.Windows.Theme = windows.Dark
 		f.mainWindow.Invoke(func() {
@@ -176,35 +173,42 @@ func (f *Frontend) Run(ctx context.Context) error {
 
 func (f *Frontend) WindowCenter() {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	f.mainWindow.Center()
 }
 
 func (f *Frontend) WindowSetPosition(x, y int) {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	f.mainWindow.SetPos(x, y)
 }
 func (f *Frontend) WindowGetPosition() (int, int) {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	return f.mainWindow.Pos()
 }
 
 func (f *Frontend) WindowSetSize(width, height int) {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	f.mainWindow.SetSize(width, height)
 }
 
 func (f *Frontend) WindowGetSize() (int, int) {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	return f.mainWindow.Size()
 }
 
 func (f *Frontend) WindowSetTitle(title string) {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	f.mainWindow.SetText(title)
 }
 
 func (f *Frontend) WindowFullscreen() {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
 		f.ExecJS("window.wails.flags.enableResize = false;")
 	}
@@ -217,6 +221,7 @@ func (f *Frontend) WindowReloadApp() {
 
 func (f *Frontend) WindowUnfullscreen() {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
 		f.ExecJS("window.wails.flags.enableResize = true;")
 	}
@@ -225,15 +230,19 @@ func (f *Frontend) WindowUnfullscreen() {
 
 func (f *Frontend) WindowShow() {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	f.ShowWindow()
 }
 
 func (f *Frontend) WindowHide() {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	f.mainWindow.Hide()
 }
+
 func (f *Frontend) WindowMaximise() {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	if f.hasStarted {
 		if !f.frontendOptions.DisableResize {
 			f.mainWindow.Maximise()
@@ -242,8 +251,10 @@ func (f *Frontend) WindowMaximise() {
 		f.frontendOptions.WindowStartState = options.Maximised
 	}
 }
+
 func (f *Frontend) WindowToggleMaximise() {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	if !f.hasStarted {
 		return
 	}
@@ -256,32 +267,38 @@ func (f *Frontend) WindowToggleMaximise() {
 
 func (f *Frontend) WindowUnmaximise() {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	f.mainWindow.Restore()
 }
+
 func (f *Frontend) WindowMinimise() {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	if f.hasStarted {
 		f.mainWindow.Minimise()
 	} else {
 		f.frontendOptions.WindowStartState = options.Minimised
 	}
 }
+
 func (f *Frontend) WindowUnminimise() {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	f.mainWindow.Restore()
 }
 
 func (f *Frontend) WindowSetMinSize(width int, height int) {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	f.mainWindow.SetMinSize(width, height)
 }
 func (f *Frontend) WindowSetMaxSize(width int, height int) {
 	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	f.mainWindow.SetMaxSize(width, height)
 }
 
 func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
-	runtime.LockOSThread()
 	if col == nil {
 		return
 	}
