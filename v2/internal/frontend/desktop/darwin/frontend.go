@@ -156,7 +156,11 @@ func (f *Frontend) Run(ctx context.Context) error {
 func (f *Frontend) WindowCenter() {
 	f.mainWindow.Center()
 }
-func (f *Frontend) WindowSetAlwaysOnTop(b bool) {
+func (f *Frontend) WindowSetAlwaysOnTop() {
+	println("Not implemented")
+	return
+}
+func (f *Frontend) WindowSetUnalwaysOnTop() {
 	println("Not implemented")
 	return
 }
