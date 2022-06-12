@@ -138,7 +138,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		wv2rtstrategy := ""
 		webview2 = strings.ToLower(webview2)
 		if webview2 != "" {
-			validWV2Runtime := slicer.String([]string{"download", "embed", "browser", "error"})
+			validWV2Runtime := slicer.String([]string{"download", "embed", "browser", "error", "manual"})
 			if !validWV2Runtime.Contains(webview2) {
 				return fmt.Errorf("invalid option for flag 'webview2': %s", webview2)
 			}
@@ -150,6 +150,8 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 				wv2rtstrategy = "wv2runtime.error"
 			case "browser":
 				wv2rtstrategy = "wv2runtime.browser"
+			case "manual":
+				wv2rtstrategy = "wv2runtime.manual"
 			}
 		}
 
