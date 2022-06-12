@@ -342,8 +342,9 @@ func (f *Frontend) Quit() {
 func (f *Frontend) setupChromium() {
 	chromium := edge.NewChromium()
 	f.chromium = chromium
-	if opts := f.frontendOptions.Windows; opts != nil && opts.WebviewUserDataPath != "" {
+	if opts := f.frontendOptions.Windows; opts != nil {
 		chromium.DataPath = opts.WebviewUserDataPath
+		chromium.BrowserPath = opts.WebviewBrowserPath
 	}
 	chromium.MessageCallback = f.processMessage
 	chromium.WebResourceRequestedCallback = f.processRequest

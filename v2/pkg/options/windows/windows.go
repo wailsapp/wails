@@ -71,6 +71,9 @@ type Options struct {
 	// If the path is not valid, a messagebox will be displayed with the error and the app will exit with error code.
 	WebviewUserDataPath string
 
+	// Path to the directory with WebView2 executables. If empty WebView2 installed in the system will be used.
+	WebviewBrowserPath string
+
 	// Dark/Light or System Default Theme
 	Theme Theme
 
