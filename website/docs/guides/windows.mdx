@@ -15,6 +15,7 @@ The four options are:
 2. Embed
 3. Browser
 4. Error
+5. Manual
 
 ### Download
 
@@ -35,3 +36,30 @@ up to the user.
 ### Error
 
 If no suitable runtime is found, an error is given to the user and no further action taken.
+
+### Manual
+
+This option will require you to specify path to installed webview2 runtime in `windows.Options` structure.
+
+```go title="main.go"
+func main() {
+	app := NewApp()
+
+	err := wails.Run(&options.App{
+		Title:             "My App",
+		Width:             800,
+		Height:            600,
+		OnStartup:  app.startup,
+		OnShutdown: app.shutdown,
+        Bind: []interface{}{
+            app,
+        },
+        Windows: &windows.Options{
+            WebviewBrowserPath:  "path/to/runtime",
+        },
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+```

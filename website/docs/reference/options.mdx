@@ -48,6 +48,7 @@ func main() {
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
+            WebviewBrowserPath:                "",
             Theme:                             windows.SystemDefault,
             CustomTheme: &windows.ThemeSettings{
                 DarkModeTitleBar:   windows.RGB(20, 20, 20),
@@ -429,6 +430,14 @@ Name: WebviewUserDataPath
 Type: string
 
 This defines the path where the WebView2 stores the user data. If empty `%APPDATA%\[BinaryName.exe]` will be used.
+
+### WebviewBrowserPath
+
+Name: WebviewBrowserPath
+
+Type: string
+
+This defines the path to a directory with WebView2 executable files and libraries. If empty, webview2 installed in the system will be used.
 
 ### Theme
 
