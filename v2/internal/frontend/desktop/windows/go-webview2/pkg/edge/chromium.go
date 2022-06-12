@@ -4,6 +4,7 @@
 package edge
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -87,7 +88,11 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 
 	var browserPathPtr *uint16 = nil
 	if e.BrowserPath != "" {
-		browserPathPtr = windows.StringToUTF16Ptr(e.BrowserPath)
+		if _, err := os.Stat(e.BrowserPath); !errors.Is(err, os.ErrNotExist) {
+			browserPathPtr = windows.StringToUTF16Ptr(e.BrowserPath)
+		} else {
+			log.Printf("Browser path %s does not exist, will use webview2 installed in the system", e.BrowserPath)
+		}
 	}
 
 	res, err := createCoreWebView2EnvironmentWithOptions(browserPathPtr, windows.StringToUTF16Ptr(dataPath), 0, e.envCompleted)
