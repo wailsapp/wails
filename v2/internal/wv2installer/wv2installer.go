@@ -35,7 +35,7 @@ func Process(appoptions *options.App) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		updateRequired := compareResult == -1
+		updateRequired := compareResult < 0
 		// Installed and does not require updating
 		if !updateRequired {
 			return installedVersion, nil
