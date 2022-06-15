@@ -1,8 +1,9 @@
 package edge
 
 import (
-	"golang.org/x/sys/windows"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 // ICoreWebviewSettings is the merged settings class
@@ -27,17 +28,17 @@ type _ICoreWebViewSettingsVtbl struct {
 	PutIsZoomControlEnabled             ComProc
 	GetIsBuiltInErrorPageEnabled        ComProc
 	PutIsBuiltInErrorPageEnabled        ComProc
-	GetUserAgent                        ComProc
+	GetUserAgent                        ComProc // ICoreWebView2Settings2: SDK 1.0.864.35
 	PutUserAgent                        ComProc
-	GetAreBrowserAcceleratorKeysEnabled ComProc
+	GetAreBrowserAcceleratorKeysEnabled ComProc // ICoreWebView2Settings3: SDK 1.0.864.35
 	PutAreBrowserAcceleratorKeysEnabled ComProc
-	GetIsPasswordAutosaveEnabled        ComProc
+	GetIsPasswordAutosaveEnabled        ComProc // ICoreWebView2Settings4: SDK 1.0.902.49
 	PutIsPasswordAutosaveEnabled        ComProc
 	GetIsGeneralAutofillEnabled         ComProc
 	PutIsGeneralAutofillEnabled         ComProc
-	GetIsPinchZoomEnabled               ComProc
+	GetIsPinchZoomEnabled               ComProc // ICoreWebView2Settings5: SDK 1.0.902.49
 	PutIsPinchZoomEnabled               ComProc
-	GetIsSwipeNavigationEnabled         ComProc
+	GetIsSwipeNavigationEnabled         ComProc // ICoreWebView2Settings6: SDK 1.0.992.28
 	PutIsSwipeNavigationEnabled         ComProc
 }
 
