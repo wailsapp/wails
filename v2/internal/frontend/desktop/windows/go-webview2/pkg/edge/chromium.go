@@ -91,7 +91,8 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 		if _, err := os.Stat(e.BrowserPath); !errors.Is(err, os.ErrNotExist) {
 			browserPathPtr = windows.StringToUTF16Ptr(e.BrowserPath)
 		} else {
-			log.Printf("Browser path %s does not exist, will use webview2 installed in the system", e.BrowserPath)
+			log.Printf("Browser path %s does not exist", e.BrowserPath)
+			return false
 		}
 	}
 

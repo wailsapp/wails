@@ -19,13 +19,19 @@ const (
 )
 
 func Process(appoptions *options.App) (string, error) {
-
 	messages := windows.DefaultMessages()
 	if appoptions.Windows != nil && appoptions.Windows.Messages != nil {
 		messages = appoptions.Windows.Messages
 	}
 	installStatus := needsInstalling
-	installedVersion, err := webviewloader.GetInstalledVersion()
+
+	// Override version check for manually specified webview path if present
+	var webviewPath = ""
+	if opts := appoptions.Windows; opts != nil && opts.WebviewBrowserPath != "" {
+		webviewPath = opts.WebviewBrowserPath
+	}
+
+	installedVersion, err := webviewloader.GetWebviewVersion(webviewPath)
 	if err != nil {
 		return "", err
 	}
