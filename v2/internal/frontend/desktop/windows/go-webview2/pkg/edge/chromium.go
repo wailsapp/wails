@@ -89,14 +89,23 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 	var browserPathPtr *uint16 = nil
 	if e.BrowserPath != "" {
 		if _, err := os.Stat(e.BrowserPath); !errors.Is(err, os.ErrNotExist) {
-			browserPathPtr = windows.StringToUTF16Ptr(e.BrowserPath)
+			browserPathPtr, err = windows.UTF16PtrFromString(e.BrowserPath)
+			if err != nil {
+				log.Printf("Error calling UTF16PtrFromString for %s: %v", e.BrowserPath, err)
+				return false
+			}
 		} else {
 			log.Printf("Browser path %s does not exist", e.BrowserPath)
 			return false
 		}
 	}
 
-	res, err := createCoreWebView2EnvironmentWithOptions(browserPathPtr, windows.StringToUTF16Ptr(dataPath), 0, e.envCompleted)
+	dataPathPtr, err := windows.UTF16PtrFromString(dataPath)
+	if err != nil {
+		log.Printf("Error calling UTF16PtrFromString for %s: %v", dataPath, err)
+	}
+
+	res, err := createCoreWebView2EnvironmentWithOptions(browserPathPtr, dataPathPtr, 0, e.envCompleted)
 	if err != nil {
 		log.Printf("Error calling Webview2Loader: %v", err)
 		return false

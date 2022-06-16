@@ -66,7 +66,10 @@ func GetWebviewVersion(path string) (string, error) {
 
 	var browserPath *uint16 = nil
 	if path != "" {
-		browserPath = windows.StringToUTF16Ptr(path)
+		browserPath, err = windows.UTF16PtrFromString(path)
+		if err != nil {
+			return "", fmt.Errorf("error calling UTF16PtrFromString for %s: %v", path, err)
+		}
 	}
 
 	var result *uint16
