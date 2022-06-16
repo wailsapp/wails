@@ -103,6 +103,7 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 	dataPathPtr, err := windows.UTF16PtrFromString(dataPath)
 	if err != nil {
 		log.Printf("Error calling UTF16PtrFromString for %s: %v", dataPath, err)
+		return false
 	}
 
 	res, err := createCoreWebView2EnvironmentWithOptions(browserPathPtr, dataPathPtr, 0, e.envCompleted)
