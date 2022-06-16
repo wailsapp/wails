@@ -117,23 +117,16 @@ export function WindowSetMinSize(width, height) {
 
 
 /**
- * Set the window AlwaysOnTop
+ * Set the window AlwaysOnTop or not on top
  *
  * @export
  */
-export function WindowSetAlwaysOnTop() {
-    window.WailsInvoke('WATP:1');
+export function WindowSetAlwaysOnTop(b) {
+
+    window.WailsInvoke('WATP:' + (b ? '1' : '0'));
 }
 
 
-/**
- * Set the window UnalwaysOnTop
- *
- * @export
- */
-export function WindowSetUnalwaysOnTop() {
-    window.WailsInvoke('WATP:0');
-}
 
 
 /**

@@ -34,9 +34,9 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 			go sender.WindowSetDarkTheme()
 		case "TP:0", "TP:1":
 			if message[2:] == "TP:0" {
-				go sender.WindowSetUnalwaysOnTop()
+				go sender.WindowSetAlwaysOnTop(false)
 			} else if message[2:] == "TP:1" {
-				go sender.WindowSetAlwaysOnTop()
+				go sender.WindowSetAlwaysOnTop(true)
 			}
 		}
 	case 'c':
