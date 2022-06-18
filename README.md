@@ -158,9 +158,6 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/bglw" style="width:65px">
   <img src="https://github.com/bglw.png?size=65" width="65"/>
 </a>
-<a href="https://github.com/jugglingjsons" style="width:50px">
-  <img src="https://github.com/jugglingjsons.png?size=50" width="50"/>
-</a>
 <a href="https://github.com/marcus-crane" style="width:65px">
   <img src="https://github.com/marcus-crane.png?size=65" width="65"/>
 </a>
@@ -194,10 +191,9 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/GargantuaX" style="width:45px">
   <img src="https://github.com/GargantuaX.png?size=45" width="45"/>
 </a>
-<a href="https://github.com/brodyover" style="width:45px">
-  <img src="https://github.com/brodyover.png?size=45" width="45"/>
+<a href="https://github.com/CharlieGo88" style="width:55px">
+  <img src="https://github.com/CharlieGo88.png?size=55" width="55"/>
 </a>
-
 <span id="nav-6"></span>
 
 ## Installation
