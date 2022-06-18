@@ -11,6 +11,7 @@ import (
 
 const (
 	WS_MAXIMIZE = 0x01000000
+	WS_MINIMIZE = 0x20000000
 
 	GWL_STYLE = -16
 )
@@ -35,6 +36,10 @@ func ExtendFrameIntoClientArea(hwnd uintptr) {
 func IsWindowMaximised(hwnd uintptr) bool {
 	style := uint32(getWindowLong(hwnd, GWL_STYLE))
 	return style&WS_MAXIMIZE != 0
+}
+func IsWindowMinimised(hwnd uintptr) bool {
+	style := uint32(getWindowLong(hwnd, GWL_STYLE))
+	return style&WS_MINIMIZE != 0
 }
 
 func dwmExtendFrameIntoClientArea(hwnd uintptr, margins *MARGINS) error {

@@ -611,7 +611,9 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 
 func (f *Frontend) ShowWindow() {
 	f.mainWindow.Invoke(func() {
-		f.mainWindow.Restore()
+		if f.mainWindow.IsMinimised() {
+			f.mainWindow.Restore()
+		}
 		w32.SetForegroundWindow(f.mainWindow.Handle())
 		w32.SetFocus(f.mainWindow.Handle())
 	})

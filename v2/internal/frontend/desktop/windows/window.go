@@ -230,5 +230,8 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 func (w *Window) IsMaximised() bool {
 	return win32.IsWindowMaximised(w.Handle())
+}
 
+func (w *Window) IsMinimised() bool {
+	return win32.IsWindowMinimised(w.Handle())
 }
