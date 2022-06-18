@@ -48,6 +48,8 @@ func main() {
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
+            ZoomFactor:                        1.0,
+            IsZoomControlEnabled:              false,
             Theme:                             windows.SystemDefault,
             CustomTheme: &windows.ThemeSettings{
                 DarkModeTitleBar:   windows.RGB(20, 20, 20),
@@ -429,6 +431,20 @@ Name: WebviewUserDataPath
 Type: string
 
 This defines the path where the WebView2 stores the user data. If empty `%APPDATA%\[BinaryName.exe]` will be used.
+
+### ZoomFactor
+
+Type: float64
+
+This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
+
+### IsZoomControlEnabled
+
+Type: bool
+
+This enables the zoom factor to be changed by the user. Please note that the zoom factor can set in the options while
+disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
+
 
 ### Theme
 
