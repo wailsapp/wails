@@ -1,5 +1,6 @@
 package edge
 
+import "C"
 import (
 	"unsafe"
 
@@ -129,4 +130,37 @@ func (i *ICoreWebView2Controller) NotifyParentWindowPositionChanged() error {
 		return err
 	}
 	return nil
+}
+
+func Float64fromBits(b uint64) float64 {
+	return *(*float64)(unsafe.Pointer(&b))
+}
+
+func Float64bits(f float64) uint64 {
+	return *(*uint64)(unsafe.Pointer(&f))
+}
+
+func (i *ICoreWebView2Controller) PutZoomFactor(zoomFactor float64) error {
+	var err error
+	_, _, err = i.vtbl.PutZoomFactor.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(Float64bits(zoomFactor)),
+	)
+	if err != windows.ERROR_SUCCESS {
+		return err
+	}
+	return nil
+}
+
+func (i *ICoreWebView2Controller) GetZoomFactor() (float64, error) {
+	var err error
+	var zoomFactorUint64 uint64
+	_, _, err = i.vtbl.GetZoomFactor.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(&zoomFactorUint64)),
+	)
+	if err != windows.ERROR_SUCCESS {
+		return 0.0, err
+	}
+	return Float64fromBits(zoomFactorUint64), nil
 }

@@ -56,6 +56,8 @@ func main() {
 			DisableWindowIcon:    false,
 			// DisableFramelessWindowDecorations: false,
 			WebviewUserDataPath: "",
+			IsZoomControlEnabled: false,
+			ZoomFactor: float64,
 		},
 		Mac: &mac.Options{
 			TitleBar: &mac.TitleBar{
