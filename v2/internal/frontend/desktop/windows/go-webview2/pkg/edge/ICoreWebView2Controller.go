@@ -1,11 +1,10 @@
 package edge
 
-import "C"
 import (
-	"unsafe"
-
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/internal/w32"
 	"golang.org/x/sys/windows"
+	"math"
+	"unsafe"
 )
 
 type _ICoreWebView2ControllerVtbl struct {
@@ -132,19 +131,11 @@ func (i *ICoreWebView2Controller) NotifyParentWindowPositionChanged() error {
 	return nil
 }
 
-func Float64fromBits(b uint64) float64 {
-	return *(*float64)(unsafe.Pointer(&b))
-}
-
-func Float64bits(f float64) uint64 {
-	return *(*uint64)(unsafe.Pointer(&f))
-}
-
 func (i *ICoreWebView2Controller) PutZoomFactor(zoomFactor float64) error {
 	var err error
 	_, _, err = i.vtbl.PutZoomFactor.Call(
 		uintptr(unsafe.Pointer(i)),
-		uintptr(Float64bits(zoomFactor)),
+		uintptr(math.Float64bits(zoomFactor)),
 	)
 	if err != windows.ERROR_SUCCESS {
 		return err
@@ -162,5 +153,5 @@ func (i *ICoreWebView2Controller) GetZoomFactor() (float64, error) {
 	if err != windows.ERROR_SUCCESS {
 		return 0.0, err
 	}
-	return Float64fromBits(zoomFactorUint64), nil
+	return math.Float64frombits(zoomFactorUint64), nil
 }
