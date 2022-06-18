@@ -207,8 +207,8 @@ The installation instructions are on the [official website](https://wails.io/doc
 - Is this an alternative to Electron?
 
   Depends on your requirements. It's designed to make it easy for Go programmers to make lightweight desktop
-  applications or add a frontend to their existing applications. Whilst Wails does not currently offer hooks into native
-  elements such as menus, this may change in the future.
+  applications or add a frontend to their existing applications. Wails v2 does offer native elements such as menus
+  and dialogs so it is becoming a lightweight electron alternative.
 
 - Who is this project aimed at?
 
