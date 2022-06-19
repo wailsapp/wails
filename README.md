@@ -194,6 +194,10 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/CharlieGo88" style="width:55px">
   <img src="https://github.com/CharlieGo88.png?size=55" width="55"/>
 </a>
+<a href="https://github.com/Bironou" style="width:55px">
+  <img src="https://github.com/Bironou.png?size=55" width="55"/>
+</a>
+
 <span id="nav-6"></span>
 
 ## Installation
@@ -208,7 +212,7 @@ The installation instructions are on the [official website](https://wails.io/doc
 
   Depends on your requirements. It's designed to make it easy for Go programmers to make lightweight desktop
   applications or add a frontend to their existing applications. Wails v2 does offer native elements such as menus
-  and dialogs so it is becoming a lightweight electron alternative.
+  and dialogs, so it is becoming a lightweight electron alternative.
 
 - Who is this project aimed at?
 
