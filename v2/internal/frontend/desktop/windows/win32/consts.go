@@ -15,6 +15,7 @@ var (
 	moduser32                = syscall.NewLazyDLL("user32.dll")
 	procSystemParametersInfo = moduser32.NewProc("SystemParametersInfoW")
 	procGetWindowLong        = moduser32.NewProc("GetWindowLongW")
+	procSetClassLongPtr      = moduser32.NewProc("SetClassLongPtrW")
 	procShowWindow           = moduser32.NewProc("ShowWindow")
 )
 var (
@@ -22,6 +23,11 @@ var (
 	procDwmSetWindowAttribute        = moddwmapi.NewProc("DwmSetWindowAttribute")
 	procDwmExtendFrameIntoClientArea = moddwmapi.NewProc("DwmExtendFrameIntoClientArea")
 )
+var (
+	modwingdi            = syscall.NewLazyDLL("gdi32.dll")
+	procCreateSolidBrush = modwingdi.NewProc("CreateSolidBrush")
+)
+
 var windowsVersion, _ = operatingsystem.GetWindowsVersionInfo()
 
 func IsWindowsVersionAtLeast(major, minor, buildNumber int) bool {
