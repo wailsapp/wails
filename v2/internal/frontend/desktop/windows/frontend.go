@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"io"
 	"log"
 	"net/http"
@@ -589,30 +590,54 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 	switch f.frontendOptions.WindowStartState {
 	case options.Maximised:
 		if !f.frontendOptions.DisableResize {
-			f.mainWindow.Maximise()
+			win32.ShowWindowMaximised(f.mainWindow.Handle())
 		} else {
-			f.mainWindow.Show()
+			win32.ShowWindow(f.mainWindow.Handle())
 		}
-		f.ShowWindow()
-
 	case options.Minimised:
-		f.mainWindow.Minimise()
+		win32.ShowWindowMinimised(f.mainWindow.Handle())
 	case options.Fullscreen:
 		f.mainWindow.Fullscreen()
-		f.ShowWindow()
+		win32.ShowWindow(f.mainWindow.Handle())
 	default:
 		if f.frontendOptions.Fullscreen {
 			f.mainWindow.Fullscreen()
 		}
-		f.ShowWindow()
+		win32.ShowWindow(f.mainWindow.Handle())
 	}
+
+	f.mainWindow.hasBeenShown = true
 
 }
 
 func (f *Frontend) ShowWindow() {
 	f.mainWindow.Invoke(func() {
-		if f.mainWindow.IsMinimised() {
-			f.mainWindow.Restore()
+		if !f.mainWindow.hasBeenShown {
+			f.mainWindow.hasBeenShown = true
+			switch f.frontendOptions.WindowStartState {
+			case options.Maximised:
+				if !f.frontendOptions.DisableResize {
+					win32.ShowWindowMaximised(f.mainWindow.Handle())
+				} else {
+					win32.ShowWindow(f.mainWindow.Handle())
+				}
+			case options.Minimised:
+				win32.RestoreWindow(f.mainWindow.Handle())
+			case options.Fullscreen:
+				f.mainWindow.Fullscreen()
+				win32.ShowWindow(f.mainWindow.Handle())
+			default:
+				if f.frontendOptions.Fullscreen {
+					f.mainWindow.Fullscreen()
+				}
+				win32.ShowWindow(f.mainWindow.Handle())
+			}
+		} else {
+			if win32.IsWindowMinimised(f.mainWindow.Handle()) {
+				win32.RestoreWindow(f.mainWindow.Handle())
+			} else {
+				win32.ShowWindow(f.mainWindow.Handle())
+			}
 		}
 		w32.SetForegroundWindow(f.mainWindow.Handle())
 		w32.SetFocus(f.mainWindow.Handle())

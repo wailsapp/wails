@@ -22,6 +22,7 @@ type Window struct {
 	versionInfo                              *operatingsystem.WindowsVersionInfo
 	isDarkMode                               bool
 	isActive                                 bool
+	hasBeenShown                             bool
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo) *Window {
