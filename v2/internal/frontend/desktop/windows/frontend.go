@@ -106,28 +106,15 @@ func (f *Frontend) WindowReload() {
 }
 
 func (f *Frontend) WindowSetSystemDefaultTheme() {
-	f.mainWindow.frontendOptions.Windows.Theme = windows.SystemDefault
-	f.mainWindow.Invoke(func() {
-		f.mainWindow.updateTheme()
-	})
+	f.mainWindow.SetTheme(windows.SystemDefault)
 }
 
 func (f *Frontend) WindowSetLightTheme() {
-	if f.mainWindow.frontendOptions != nil && f.mainWindow.frontendOptions.Windows != nil {
-		f.mainWindow.frontendOptions.Windows.Theme = windows.Light
-		f.mainWindow.Invoke(func() {
-			f.mainWindow.updateTheme()
-		})
-	}
+	f.mainWindow.SetTheme(windows.Light)
 }
 
 func (f *Frontend) WindowSetDarkTheme() {
-	if f.mainWindow.frontendOptions != nil && f.mainWindow.frontendOptions.Windows != nil {
-		f.mainWindow.frontendOptions.Windows.Theme = windows.Dark
-		f.mainWindow.Invoke(func() {
-			f.mainWindow.updateTheme()
-		})
-	}
+	f.mainWindow.SetTheme(windows.Dark)
 }
 
 func (f *Frontend) Run(ctx context.Context) error {

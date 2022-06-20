@@ -12,6 +12,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	winoptions "github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 type Window struct {
@@ -24,6 +25,10 @@ type Window struct {
 	isDarkMode                               bool
 	isActive                                 bool
 	hasBeenShown                             bool
+
+	// Theme
+	theme        winoptions.Theme
+	themeChanged bool
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo) *Window {
@@ -35,6 +40,7 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		maxWidth:        appoptions.MaxWidth,
 		versionInfo:     versionInfo,
 		isActive:        true,
+		themeChanged:    true,
 	}
 	result.SetIsForm(true)
 
@@ -65,6 +71,12 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		if ico, err := winc.NewIconFromResource(winc.GetAppInstance(), uint16(winc.AppIconID)); err == nil {
 			result.SetIcon(0, ico)
 		}
+	}
+
+	if appoptions.Windows != nil {
+		result.theme = appoptions.Windows.Theme
+	} else {
+		result.theme = winoptions.SystemDefault
 	}
 
 	if appoptions.RGBA != nil {
@@ -245,4 +257,12 @@ func (w *Window) IsMaximised() bool {
 
 func (w *Window) IsMinimised() bool {
 	return win32.IsWindowMinimised(w.Handle())
+}
+
+func (w *Window) SetTheme(theme winoptions.Theme) {
+	w.theme = theme
+	w.themeChanged = true
+	w.Invoke(func() {
+		w.updateTheme()
+	})
 }
