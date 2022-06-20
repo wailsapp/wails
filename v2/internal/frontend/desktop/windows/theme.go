@@ -21,12 +21,14 @@ func (w *Window) updateTheme() {
 		return
 	}
 
-	isDarkMode := win32.IsCurrentlyDarkMode()
-	if w.theme == windows.Light {
-		isDarkMode = false
-	}
-	if w.theme == windows.Dark {
+	var isDarkMode bool
+	switch w.theme {
+	case windows.SystemDefault:
+		isDarkMode = win32.IsCurrentlyDarkMode()
+	case windows.Dark:
 		isDarkMode = true
+	case windows.Light:
+		isDarkMode = false
 	}
 	win32.SetTheme(w.Handle(), isDarkMode)
 
