@@ -3,9 +3,10 @@
 package windows
 
 import (
+	"unsafe"
+
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
-	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
@@ -195,6 +196,8 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			// This hides the titlebar and also disables the resizing from user interaction because the standard frame is not
 			// shown. We still need the WS_THICKFRAME style to enable resizing from the frontend.
 			if wparam != 0 {
+				rgrc := (*w32.RECT)(unsafe.Pointer(lparam))
+
 				style := uint32(w32.GetWindowLong(w.Handle(), w32.GWL_STYLE))
 				if style&w32.WS_MAXIMIZE != 0 {
 					// If the window is maximized we must adjust the client area to the work area of the monitor. Otherwise
@@ -204,7 +207,6 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 					var monitorInfo w32.MONITORINFO
 					monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
 					if w32.GetMonitorInfo(monitor, &monitorInfo) {
-						rgrc := (*w32.RECT)(unsafe.Pointer(lparam))
 						*rgrc = monitorInfo.RcWork
 
 						maxWidth := w.frontendOptions.MaxWidth
@@ -224,6 +226,10 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 							}
 						}
 					}
+				} else {
+					// This is needed to workaround the resize flickering in frameless mode with WindowDecorations
+					// See: https://stackoverflow.com/a/6558508
+					rgrc.Bottom -= 1
 				}
 
 				return 0
