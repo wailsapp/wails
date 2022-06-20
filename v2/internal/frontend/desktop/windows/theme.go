@@ -25,6 +25,9 @@ func (w *Window) updateTheme() {
 	if w.theme == windows.Light {
 		isDarkMode = false
 	}
+	if w.theme == windows.Dark {
+		isDarkMode = true
+	}
 	win32.SetTheme(w.Handle(), isDarkMode)
 
 	// Custom theme processing
