@@ -82,6 +82,10 @@ type Options struct {
 
 	// User messages that can be customised
 	Messages *Messages
+
+	// ResizeDebounceMS is the amount of time to debounce redraws of webview2
+	// when resizing the window
+	ResizeDebounceMS uint16
 }
 
 func DefaultMessages() *Messages {

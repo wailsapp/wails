@@ -7,7 +7,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/bep/debounce"
+	"github.com/wailsapp/wails/v2/internal/binding"
+	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
+	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"io"
 	"log"
 	"net/http"
@@ -17,17 +28,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
-
-	"github.com/wailsapp/wails/v2/internal/binding"
-	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
-	"github.com/wailsapp/wails/v2/internal/logger"
-	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
-	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	"time"
 )
 
 const startURL = "http://wails.localhost/"
@@ -54,7 +55,8 @@ type Frontend struct {
 	hasStarted bool
 
 	// Windows build number
-	versionInfo *operatingsystem.WindowsVersionInfo
+	versionInfo     *operatingsystem.WindowsVersionInfo
+	resizeDebouncer func(f func())
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
@@ -69,6 +71,12 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		dispatcher:      dispatcher,
 		ctx:             ctx,
 		versionInfo:     versionInfo,
+	}
+
+	if appoptions.Windows != nil {
+		if appoptions.Windows.ResizeDebounceMS > 0 {
+			result.resizeDebouncer = debounce.New(time.Duration(appoptions.Windows.ResizeDebounceMS) * time.Millisecond)
+		}
 	}
 
 	// We currently can't use wails://wails/ as other platforms do, therefore we map the assets sever onto the following url.
@@ -151,7 +159,15 @@ func (f *Frontend) Run(ctx context.Context) error {
 			}
 		}
 
-		f.chromium.Resize()
+		if f.resizeDebouncer != nil {
+			f.resizeDebouncer(func() {
+				f.mainWindow.Invoke(func() {
+					f.chromium.Resize()
+				})
+			})
+		} else {
+			f.chromium.Resize()
+		}
 	})
 
 	mainWindow.OnClose().Bind(func(arg *winc.Event) {
@@ -329,6 +345,7 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 			log.Fatal(err)
 		}
 	})
+
 }
 
 func (f *Frontend) Quit() {

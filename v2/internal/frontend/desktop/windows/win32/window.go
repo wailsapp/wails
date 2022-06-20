@@ -4,6 +4,7 @@ package win32
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"log"
 	"syscall"
 	"unsafe"
@@ -31,6 +32,10 @@ const (
 	SW_RESTORE         = 9
 	SW_SHOWDEFAULT     = 10
 	SW_FORCEMINIMIZE   = 11
+)
+
+const (
+	GCLP_HBRBACKGROUND int32 = -10
 )
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb773244.aspx
@@ -74,6 +79,12 @@ func ShowWindowMinimised(hwnd uintptr) {
 	showWindow(hwnd, SW_MINIMIZE)
 }
 
+func SetBackgroundColour(hwnd uintptr, r, g, b uint8) {
+	col := winc.RGB(r, g, b)
+	hbrush, _, _ := procCreateSolidBrush.Call(uintptr(col))
+	setClassLongPtr(hwnd, GCLP_HBRBACKGROUND, hbrush)
+}
+
 func dwmExtendFrameIntoClientArea(hwnd uintptr, margins *MARGINS) error {
 	ret, _, _ := procDwmExtendFrameIntoClientArea.Call(
 		hwnd,
@@ -84,6 +95,15 @@ func dwmExtendFrameIntoClientArea(hwnd uintptr, margins *MARGINS) error {
 	}
 
 	return nil
+}
+
+func setClassLongPtr(hwnd uintptr, param int32, val uintptr) bool {
+	ret, _, _ := procSetClassLongPtr.Call(
+		hwnd,
+		uintptr(param),
+		val,
+	)
+	return ret != 0
 }
 
 func getWindowLong(hwnd uintptr, index int) int32 {
