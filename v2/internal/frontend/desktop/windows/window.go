@@ -67,8 +67,8 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		}
 	}
 
-	if appoptions.RGBA != nil {
-		win32.SetBackgroundColour(result.Handle(), appoptions.RGBA.R, appoptions.RGBA.G, appoptions.RGBA.B)
+	if appoptions.BackgroundColour != nil {
+		win32.SetBackgroundColour(result.Handle(), appoptions.BackgroundColour.R, appoptions.BackgroundColour.G, appoptions.BackgroundColour.B)
 	}
 
 	result.SetSize(appoptions.Width, appoptions.Height)
