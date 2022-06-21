@@ -24,6 +24,8 @@ type Window struct {
 	isDarkMode                               bool
 	isActive                                 bool
 	hasBeenShown                             bool
+	OnSuspend                                func()
+	OnResume                                 func()
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo) *Window {
@@ -83,6 +85,8 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 	result.updateTheme()
 
 	if appoptions.Windows != nil {
+		result.OnSuspend = appoptions.Windows.OnSuspend
+		result.OnResume = appoptions.Windows.OnResume
 		if appoptions.Windows.WindowIsTranslucent {
 			// TODO: Migrate to win32 package
 			if !win32.IsWindowsVersionAtLeast(10, 0, 22579) {
@@ -144,6 +148,18 @@ func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 	switch msg {
+	case win32.WM_POWERBROADCAST:
+		switch wparam {
+		case win32.PBT_APMSUSPEND:
+			if w.OnSuspend != nil {
+				w.OnSuspend()
+			}
+		case win32.PBT_APMRESUMEAUTOMATIC:
+			if w.OnResume != nil {
+				w.OnResume()
+			}
+		}
+
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lparam)))
 		if settingChanged == "ImmersiveColorSet" {
@@ -154,7 +170,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 		w32.SetFocus(w.Handle())
 	case w32.WM_MOVE, w32.WM_MOVING:
 		if w.notifyParentWindowPositionChanged != nil {
-			w.notifyParentWindowPositionChanged()
+			_ = w.notifyParentWindowPositionChanged()
 		}
 	case w32.WM_ACTIVATE:
 		//if !w.frontendOptions.Frameless {
