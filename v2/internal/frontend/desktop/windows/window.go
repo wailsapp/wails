@@ -159,6 +159,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lparam)))
 		if settingChanged == "ImmersiveColorSet" {
+			w.themeChanged = true
 			w.updateTheme()
 		}
 		return 0
@@ -170,6 +171,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 		}
 	case w32.WM_ACTIVATE:
 		//if !w.frontendOptions.Frameless {
+		w.themeChanged = true
 		if int(wparam) == w32.WA_INACTIVE {
 			w.isActive = false
 			w.updateTheme()
