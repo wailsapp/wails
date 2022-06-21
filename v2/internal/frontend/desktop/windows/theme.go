@@ -7,6 +7,12 @@ import (
 
 func (w *Window) updateTheme() {
 
+	// Don't redraw theme if nothing has changed
+	if !w.themeChanged {
+		return
+	}
+	w.themeChanged = false
+
 	if win32.IsCurrentlyHighContrastMode() {
 		return
 	}
@@ -14,25 +20,24 @@ func (w *Window) updateTheme() {
 	if !win32.SupportsThemes() {
 		return
 	}
-	// Only process if there's a theme change
-	isDarkMode := win32.IsCurrentlyDarkMode()
-	w.isDarkMode = isDarkMode
 
-	// Default use system theme
+	var isDarkMode bool
+	switch w.theme {
+	case windows.SystemDefault:
+		isDarkMode = win32.IsCurrentlyDarkMode()
+	case windows.Dark:
+		isDarkMode = true
+	case windows.Light:
+		isDarkMode = false
+	}
+	win32.SetTheme(w.Handle(), isDarkMode)
+
+	// Custom theme processing
 	winOptions := w.frontendOptions.Windows
 	var customTheme *windows.ThemeSettings
 	if winOptions != nil {
 		customTheme = winOptions.CustomTheme
-		if winOptions.Theme == windows.Dark {
-			isDarkMode = true
-		}
-		if winOptions.Theme == windows.Light {
-			isDarkMode = false
-		}
 	}
-
-	win32.SetTheme(w.Handle(), isDarkMode)
-
 	// Custom theme
 	if win32.SupportsCustomThemes() && customTheme != nil {
 		if w.isActive {
