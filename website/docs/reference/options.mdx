@@ -520,6 +520,24 @@ Type: uint16
 ResizeDebounceMS is the amount of time to debounce redraws of webview2 when resizing the window.
 The default value (0) will perform redraws as fast as it can.
 
+### OnSuspend
+
+Name: OnSuspend
+
+Type: func()
+
+If set, this function will be called when windows initiates a switch to low power mode (suspend/hibernate)
+
+### OnResume
+
+Name: OnResume
+
+Type: func()
+
+If set, this function will be called when windows resumes from low power mode (suspend/hibernate)
+
+
+
 ## Mac Specific Options
 
 ### TitleBar

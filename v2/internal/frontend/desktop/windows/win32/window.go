@@ -38,6 +38,27 @@ const (
 	GCLP_HBRBACKGROUND int32 = -10
 )
 
+// Power
+const (
+	// WM_POWERBROADCAST - Notifies applications that a power-management event has occurred.
+	WM_POWERBROADCAST = 536
+
+	// PBT_APMPOWERSTATUSCHANGE - Power status has changed.
+	PBT_APMPOWERSTATUSCHANGE = 10
+
+	// PBT_APMRESUMEAUTOMATIC -Operation is resuming automatically from a low-power state. This message is sent every time the system resumes.
+	PBT_APMRESUMEAUTOMATIC = 18
+
+	// PBT_APMRESUMESUSPEND - Operation is resuming from a low-power state. This message is sent after PBT_APMRESUMEAUTOMATIC if the resume is triggered by user input, such as pressing a key.
+	PBT_APMRESUMESUSPEND = 7
+
+	// PBT_APMSUSPEND - System is suspending operation.
+	PBT_APMSUSPEND = 4
+
+	// PBT_POWERSETTINGCHANGE - A power setting change event has been received.
+	PBT_POWERSETTINGCHANGE = 32787
+)
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb773244.aspx
 type MARGINS struct {
 	CxLeftWidth, CxRightWidth, CyTopHeight, CyBottomHeight int32

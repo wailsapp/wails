@@ -86,6 +86,11 @@ type Options struct {
 	// ResizeDebounceMS is the amount of time to debounce redraws of webview2
 	// when resizing the window
 	ResizeDebounceMS uint16
+
+	// OnSuspend is called when Windows enters low power mode
+	OnSuspend func()
+	// OnResume is called when Windows enters low power mode
+	OnResume func()
 }
 
 func DefaultMessages() *Messages {
