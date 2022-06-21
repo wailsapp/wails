@@ -89,7 +89,7 @@ type Options struct {
 
 	// OnSuspend is called when Windows enters low power mode
 	OnSuspend func()
-	// OnResume is called when Windows enters low power mode
+	// OnResume is called when Windows resumes from low power mode
 	OnResume func()
 }
 
