@@ -393,7 +393,7 @@ func (f *Frontend) setupChromium() {
 	onFocus.Bind(f.onFocus)
 
 	// Set background colour
-	f.WindowSetRGBA(f.frontendOptions.RGBA)
+	f.WindowSetRGBA(f.frontendOptions.BackgroundColour)
 
 	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)

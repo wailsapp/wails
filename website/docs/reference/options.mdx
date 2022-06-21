@@ -27,7 +27,7 @@ func main() {
         MaxHeight:         1024,
         StartHidden:       false,
         HideWindowOnClose: false,
-        RGBA:              &options.RGBA{R: 0, G: 0, B: 0, A: 255},
+        BackgroundColour:              &options.RGBA{R: 0, G: 0, B: 0, A: 255},
         AlwaysOnTop:       false,
         Assets:            assets,
         AssetsHandler:     assetsHandler,
@@ -196,14 +196,14 @@ Type: bool
 By default, closing the window will close the application. Setting this to `true` means closing the window will
 hide the window instead.
 
-### RGBA
+### BackgroundColour
 
-Name: RGBA
+Name: BackgroundColour
 
 Type: int (0xRRGGBBAA)
 Example: 0xFF000088 - Red at 50% transparency
 
-This value is the RGBA value to set the window by default.
+This value is the default background colour of the window.
 Default: 0xFFFFFFFF.
 
 ### AlwaysOnTop
@@ -392,7 +392,7 @@ Name: WebviewIsTransparent
 Type: bool
 
 Setting this to `true` will make the webview background transparent when an alpha value of `0` is used.
-This means that if you use `rgba(0,0,0,0)`, the host window will show through.
+This means that if you use `rgba(0,0,0,0)` for `background-color` in your CSS, the host window will show through.
 Often combined with [WindowIsTranslucent](#WindowIsTranslucent) to make frosty-looking applications.
 
 ### WindowIsTranslucent
@@ -520,6 +520,24 @@ Type: uint16
 ResizeDebounceMS is the amount of time to debounce redraws of webview2 when resizing the window.
 The default value (0) will perform redraws as fast as it can.
 
+### OnSuspend
+
+Name: OnSuspend
+
+Type: func()
+
+If set, this function will be called when windows initiates a switch to low power mode (suspend/hibernate)
+
+### OnResume
+
+Name: OnResume
+
+Type: func()
+
+If set, this function will be called when windows resumes from low power mode (suspend/hibernate)
+
+
+
 ## Mac Specific Options
 
 ### TitleBar
@@ -545,7 +563,7 @@ Name: WebviewIsTransparent
 Type: bool
 
 Setting this to `true` will make the webview background transparent when an alpha value of `0` is used.
-This means that if you use `rgba(0,0,0,0)`, the host window will show through.
+This means that if you use `rgba(0,0,0,0)` for `background-color` in your CSS, the host window will show through.
 Often combined with [WindowIsTranslucent](#WindowIsTranslucent) to make frosty-looking applications.
 
 ### WindowIsTranslucent

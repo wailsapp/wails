@@ -41,18 +41,20 @@ type App struct {
 	StartHidden       bool
 	HideWindowOnClose bool
 	AlwaysOnTop       bool
-	RGBA              *RGBA
-	Assets            fs.FS
-	AssetsHandler     http.Handler
-	Menu              *menu.Menu
-	Logger            logger.Logger `json:"-"`
-	LogLevel          logger.LogLevel
-	OnStartup         func(ctx context.Context)                `json:"-"`
-	OnDomReady        func(ctx context.Context)                `json:"-"`
-	OnShutdown        func(ctx context.Context)                `json:"-"`
-	OnBeforeClose     func(ctx context.Context) (prevent bool) `json:"-"`
-	Bind              []interface{}
-	WindowStartState  WindowStartState
+	BackgroundColour  *RGBA
+	// RGBA is deprecated. Please use BackgroundColour
+	RGBA             *RGBA
+	Assets           fs.FS
+	AssetsHandler    http.Handler
+	Menu             *menu.Menu
+	Logger           logger.Logger `json:"-"`
+	LogLevel         logger.LogLevel
+	OnStartup        func(ctx context.Context)                `json:"-"`
+	OnDomReady       func(ctx context.Context)                `json:"-"`
+	OnShutdown       func(ctx context.Context)                `json:"-"`
+	OnBeforeClose    func(ctx context.Context) (prevent bool) `json:"-"`
+	Bind             []interface{}
+	WindowStartState WindowStartState
 
 	//ContextMenus []*menu.ContextMenu
 	//TrayMenus    []*menu.TrayMenu
@@ -75,9 +77,9 @@ func MergeDefaults(appoptions *App) {
 		log.Fatal(err)
 	}
 
-	// DEfault colour. Doesn't work well with mergo
-	if appoptions.RGBA == nil {
-		appoptions.RGBA = &RGBA{
+	// Default colour. Doesn't work well with mergo
+	if appoptions.BackgroundColour == nil {
+		appoptions.BackgroundColour = &RGBA{
 			R: 255,
 			G: 255,
 			B: 255,
