@@ -61,6 +61,7 @@
 - (void) SetMinSize:(int)minWidth :(int)minHeight;
 - (void) SetMaxSize:(int)maxWidth :(int)maxHeight;
 - (void) SetTitle:(NSString*)title;
+- (void) SetAlwaysOnTop:(int)onTop;
 - (void) Center;
 - (void) Fullscreen;
 - (void) UnFullscreen;

@@ -147,6 +147,10 @@ func (w *Window) SetSize(width int, height int) {
 	C.SetSize(w.context, C.int(width), C.int(height))
 }
 
+func (w *Window) SetAlwaysOnTop(onTop bool) {
+	C.SetAlwaysOnTop(w.context, bool2Cint(onTop))
+}
+
 func (w *Window) SetTitle(title string) {
 	t := C.CString(title)
 	C.SetTitle(w.context, t)
