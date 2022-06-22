@@ -200,6 +200,10 @@ This project is supported by these kind people / companies:
 
 <span id="nav-6"></span>
 
+## Roadmap
+
+The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484).
+
 ## Installation
 
 The installation instructions are on the [official website](https://wails.io/docs/gettingstarted/installation).
