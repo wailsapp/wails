@@ -15,22 +15,22 @@ type installationStatus int
 const (
 	needsInstalling installationStatus = iota
 	needsUpdating
-	installed
 )
 
 func Process(appoptions *options.App) (string, error) {
-
 	messages := windows.DefaultMessages()
 	if appoptions.Windows != nil && appoptions.Windows.Messages != nil {
 		messages = appoptions.Windows.Messages
 	}
+
 	installStatus := needsInstalling
 	installedVersion, err := webviewloader.GetInstalledVersion()
 	if err != nil {
 		return "", err
 	}
+
 	if installedVersion != "" {
-		installStatus = installed
+		installStatus = needsUpdating
 		compareResult, err := webviewloader.CompareBrowserVersions(installedVersion, MinimumRuntimeVersion)
 		if err != nil {
 			return "", err
@@ -40,7 +40,7 @@ func Process(appoptions *options.App) (string, error) {
 		if !updateRequired {
 			return installedVersion, nil
 		}
-
 	}
+
 	return installedVersion, doInstallationStrategy(installStatus, messages)
 }
