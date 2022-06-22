@@ -202,7 +202,8 @@ This project is supported by these kind people / companies:
 
 ## Roadmap
 
-The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484).
+The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
+this before open up an enhancement request.
 
 ## Installation
 
