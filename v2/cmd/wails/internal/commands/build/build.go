@@ -99,6 +99,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	trimpath := false
 	command.BoolFlag("trimpath", "Remove all file system paths from the resulting executable", &trimpath)
 
+	raceDetector := false
+	command.BoolFlag("race", "Build with Go's race detector", &raceDetector)
+
 	command.Action(func() error {
 
 		quiet := verbosity == 0
@@ -180,6 +183,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			UserTags:            userTags,
 			WebView2Strategy:    wv2rtstrategy,
 			TrimPath:            trimpath,
+			RaceDetector:        raceDetector,
 		}
 
 		// Start a new tabwriter
@@ -197,6 +201,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		_, _ = fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
 		_, _ = fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
 		_, _ = fmt.Fprintf(w, "Tags: \t[%s]\n", strings.Join(buildOptions.UserTags, ","))
+		_, _ = fmt.Fprintf(w, "Race Detector: \t%t\n", buildOptions.RaceDetector)
 		if len(buildOptions.OutputFile) > 0 && targets.Length() == 1 {
 			_, _ = fmt.Fprintf(w, "Output File: \t%s\n", buildOptions.OutputFile)
 		}
@@ -229,6 +234,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			"linux",
 			"linux/amd64",
 			"linux/arm64",
+			"linux/arm",
 			"windows",
 			"windows/amd64",
 			"windows/arm64",

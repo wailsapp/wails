@@ -65,7 +65,7 @@ func (a *Apt) PackageInstalled(pkg *Package) (bool, error) {
 	if pkg.SystemPackage == false {
 		return false, nil
 	}
-	cmd := exec.Command("apt", "-qq", "list", pkg.Name)
+	cmd := exec.Command("apt", "list", "-qq", pkg.Name)
 	var stdo, stde bytes.Buffer
 	cmd.Stdout = &stdo
 	cmd.Stderr = &stde
@@ -79,7 +79,7 @@ func (a *Apt) PackageAvailable(pkg *Package) (bool, error) {
 	if pkg.SystemPackage == false {
 		return false, nil
 	}
-	stdout, _, err := shell.RunCommand(".", "apt", "-qq", "list", pkg.Name)
+	stdout, _, err := shell.RunCommand(".", "apt", "list", "-qq", pkg.Name)
 	// We add a space to ensure we get a full match, not partial match
 	output := a.removeEscapeSequences(stdout)
 	installed := strings.HasPrefix(output, pkg.Name)

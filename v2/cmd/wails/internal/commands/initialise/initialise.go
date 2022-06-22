@@ -216,6 +216,16 @@ func initGit(options *templates.Options) error {
 		return errors.Wrap(err, "Unable to initialise git repository:")
 	}
 
+	ignore := []string{
+		"build/bin",
+		"frontend/dist",
+		"frontend/node_modules",
+	}
+	err = os.WriteFile(filepath.Join(options.TargetDir, ".gitignore"), []byte(strings.Join(ignore, "\n")), 0644)
+	if err != nil {
+		return errors.Wrap(err, "Unable to create gitignore")
+	}
+
 	return nil
 }
 

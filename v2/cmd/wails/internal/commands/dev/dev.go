@@ -66,6 +66,7 @@ type devFlags struct {
 	reloadDirs      string
 	openBrowser     bool
 	noReload        bool
+	noGen           bool
 	wailsjsdir      string
 	tags            string
 	verbosity       int
@@ -75,6 +76,7 @@ type devFlags struct {
 	devServer       string
 	appargs         string
 	saveConfig      bool
+	raceDetector    bool
 
 	frontendDevServerURL string
 }
@@ -92,6 +94,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("reloaddirs", "Additional directories to trigger reloads (comma separated)", &flags.reloadDirs)
 	command.BoolFlag("browser", "Open application in browser", &flags.openBrowser)
 	command.BoolFlag("noreload", "Disable reload on asset change", &flags.noReload)
+	command.BoolFlag("nogen", "Disable generate module", &flags.noGen)
 	command.StringFlag("wailsjsdir", "Directory to generate the Wails JS modules", &flags.wailsjsdir)
 	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &flags.tags)
 	command.IntFlag("v", "Verbosity level (0 - silent, 1 - standard, 2 - verbose)", &flags.verbosity)
@@ -102,6 +105,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("frontenddevserverurl", "The url of the external frontend dev server to use", &flags.frontendDevServerURL)
 	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space searated)", &flags.appargs)
 	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
+	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
 
 	command.Action(func() error {
 		// Create logger
@@ -148,14 +152,16 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
-		self := os.Args[0]
-		if flags.tags != "" {
-			err = runCommand(cwd, true, self, "generate", "module", "-tags", flags.tags)
-		} else {
-			err = runCommand(cwd, true, self, "generate", "module")
-		}
-		if err != nil {
-			return err
+		if !flags.noGen {
+			self := os.Args[0]
+			if flags.tags != "" {
+				err = runCommand(cwd, true, self, "generate", "module", "-tags", flags.tags)
+			} else {
+				err = runCommand(cwd, true, self, "generate", "module")
+			}
+			if err != nil {
+				return err
+			}
 		}
 
 		buildOptions := generateBuildOptions(flags)
@@ -299,6 +305,7 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		IgnoreFrontend: false,
 		Verbosity:      flags.verbosity,
 		WailsJSDir:     flags.wailsjsdir,
+		RaceDetector:   flags.raceDetector,
 	}
 
 	return result

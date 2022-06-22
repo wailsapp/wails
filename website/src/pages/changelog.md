@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.0.0-beta.37] - 2022-05-26
+
+### Added
+* Add `nogen` flag in wails dev command by @mondy in https://github.com/wailsapp/wails/pull/1413
+* Initial support for new native translucency in Windows Preview by @leaanthony in https://github.com/wailsapp/wails/pull/1400
+
+### Fixed
+* Bugfix/incorrect bindings by @leaanthony in https://github.com/wailsapp/wails/pull/1383
+* Fix runtime.js events by @polikow in https://github.com/wailsapp/wails/pull/1369
+* Fix docs formatting by @antimatter96 in https://github.com/wailsapp/wails/pull/1372
+* Events | fixes #1388 by @lambdajack in https://github.com/wailsapp/wails/pull/1390
+* bugfix: correct typo by @tmclane in https://github.com/wailsapp/wails/pull/1391
+* Fix typo in docs by @LGiki in https://github.com/wailsapp/wails/pull/1393
+* Fix typo bindings.js to ipc.js by @rayshoo in https://github.com/wailsapp/wails/pull/1406
+* Make sure to execute the menu callbacks on a new goroutine by @stffabi in https://github.com/wailsapp/wails/pull/1403
+* Update runtime.d.ts & templates by @Yz4230 in https://github.com/wailsapp/wails/pull/1421
+* Add missing className to input in React and Preact templates by @edwardbrowncross in https://github.com/wailsapp/wails/pull/1419
+
+### Changed
+* Improve multi-platform builds by @stffabi in https://github.com/wailsapp/wails/pull/1373
+* During wails dev only use reload logic if no AssetsHandler are in use by @stffabi in https://github.com/wailsapp/wails/pull/1385
+* Update events.mdx by @Junkher in https://github.com/wailsapp/wails/pull/1387
+* Add Next.js template by @LGiki in https://github.com/wailsapp/wails/pull/1394
+* Add docs on wails generate module by @TechplexEngineer in https://github.com/wailsapp/wails/pull/1414
+* Add macos custom menu EditMenu tips by @daodao97 in https://github.com/wailsapp/wails/pull/1423
+
+### New Contributors
+* @polikow made their first contribution in https://github.com/wailsapp/wails/pull/1369
+* @antimatter96 made their first contribution in https://github.com/wailsapp/wails/pull/1372
+* @Junkher made their first contribution in https://github.com/wailsapp/wails/pull/1387
+* @lambdajack made their first contribution in https://github.com/wailsapp/wails/pull/1390
+* @LGiki made their first contribution in https://github.com/wailsapp/wails/pull/1393
+* @rayshoo made their first contribution in https://github.com/wailsapp/wails/pull/1406
+* @TechplexEngineer made their first contribution in https://github.com/wailsapp/wails/pull/1414
+* @mondy made their first contribution in https://github.com/wailsapp/wails/pull/1413
+* @Yz4230 made their first contribution in https://github.com/wailsapp/wails/pull/1421
+* @daodao97 made their first contribution in https://github.com/wailsapp/wails/pull/1423
+* @edwardbrowncross made their first contribution in https://github.com/wailsapp/wails/pull/1419
+
 
 ## [v2.0.0-beta.36] - 2022-04-27
 

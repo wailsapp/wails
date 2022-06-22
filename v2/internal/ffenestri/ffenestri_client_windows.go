@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/leaanthony/go-common-file-dialog/cfd"
+	"github.com/wailsapp/wails/v2/internal/go-common-file-dialog/cfd"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"golang.org/x/sys/windows"
 

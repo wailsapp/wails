@@ -182,6 +182,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		commands.Add("-trimpath")
 	}
 
+	if options.RaceDetector {
+		commands.Add("-race")
+	}
+
 	var tags slicer.StringSlicer
 	tags.Add(options.OutputType)
 	tags.AddSlice(options.UserTags)
