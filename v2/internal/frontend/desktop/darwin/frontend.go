@@ -157,7 +157,7 @@ func (f *Frontend) WindowCenter() {
 	f.mainWindow.Center()
 }
 func (f *Frontend) WindowSetAlwaysOnTop(onTop bool) {
-	f.mainWindow.AlwaysOnTop(onTop)
+	f.mainWindow.SetAlwaysOnTop(onTop)
 }
 
 func (f *Frontend) WindowSetPosition(x, y int) {
