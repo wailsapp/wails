@@ -92,8 +92,8 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 		context: unsafe.Pointer(context),
 	}
 
-	if frontendOptions.RGBA != nil {
-		result.SetRGBA(frontendOptions.RGBA.R, frontendOptions.RGBA.G, frontendOptions.RGBA.B, frontendOptions.RGBA.A)
+	if frontendOptions.BackgroundColour != nil {
+		result.SetRGBA(frontendOptions.BackgroundColour.R, frontendOptions.BackgroundColour.G, frontendOptions.BackgroundColour.B, frontendOptions.BackgroundColour.A)
 	}
 
 	if frontendOptions.Mac != nil && frontendOptions.Mac.About != nil {
@@ -145,6 +145,10 @@ func (w *Window) SetPosition(x int, y int) {
 
 func (w *Window) SetSize(width int, height int) {
 	C.SetSize(w.context, C.int(width), C.int(height))
+}
+
+func (w *Window) SetAlwaysOnTop(onTop bool) {
+	C.SetAlwaysOnTop(w.context, bool2Cint(onTop))
 }
 
 func (w *Window) SetTitle(title string) {

@@ -637,7 +637,7 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	}
 
 	// Set background colour
-	RGBA := appoptions.RGBA
+	RGBA := appoptions.BackgroundColour
 	result.SetRGBA(RGBA.R, RGBA.G, RGBA.B, RGBA.A)
 
 	// Setup window

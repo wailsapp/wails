@@ -207,6 +207,9 @@ func (d *DevWebServer) WindowMinimise() {
 func (d *DevWebServer) WindowUnminimise() {
 	d.desktopFrontend.WindowUnminimise()
 }
+func (d *DevWebServer) WindowSetAlwaysOnTop(b bool) {
+	d.desktopFrontend.WindowSetAlwaysOnTop(b)
+}
 
 func (d *DevWebServer) WindowSetPosition(x int, y int) {
 	d.desktopFrontend.WindowSetPosition(x, y)

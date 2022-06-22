@@ -32,6 +32,12 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 			go sender.WindowSetLightTheme()
 		case "DT":
 			go sender.WindowSetDarkTheme()
+		case "TP:0", "TP:1":
+			if message[2:] == "TP:0" {
+				go sender.WindowSetAlwaysOnTop(false)
+			} else if message[2:] == "TP:1" {
+				go sender.WindowSetAlwaysOnTop(true)
+			}
 		}
 	case 'c':
 		go sender.WindowCenter()
