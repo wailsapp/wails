@@ -1,5 +1,5 @@
-//go:build !wv2runtime.error && !wv2runtime.browser && !wv2runtime.embed && !wv2runtime.manual
-// +build !wv2runtime.error,!wv2runtime.browser,!wv2runtime.embed,!wv2runtime.manual
+//go:build !wv2runtime.error && !wv2runtime.browser && !wv2runtime.embed
+// +build !wv2runtime.error,!wv2runtime.browser,!wv2runtime.embed
 
 package wv2installer
 

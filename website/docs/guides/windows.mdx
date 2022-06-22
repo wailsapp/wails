@@ -15,7 +15,6 @@ The four options are:
 2. Embed
 3. Browser
 4. Error
-5. Manual
 
 ### Download
 
@@ -37,29 +36,19 @@ up to the user.
 
 If no suitable runtime is found, an error is given to the user and no further action taken.
 
-### Manual
+## Fixed version runtime
 
-This option will require you to specify path to installed webview2 runtime in `windows.Options` structure.
+Another way of dealing with webview2 dependency is shipping it yourself.
+You can download [fixed version runtime](https://developer.microsoft.com/ru-ru/microsoft-edge/webview2/#download-section) and bundle or download it with your application.
 
-```go title="main.go"
-func main() {
-	app := NewApp()
+Also, you should specify path to fixed version of webview2 runtime in the `windows.Options` structure when launching wails.
 
-	err := wails.Run(&options.App{
-		Title:             "My App",
-		Width:             800,
-		Height:            600,
-		OnStartup:  app.startup,
-		OnShutdown: app.shutdown,
-        Bind: []interface{}{
-            app,
-        },
-        Windows: &windows.Options{
-            WebviewBrowserPath:  "path/to/runtime",
-        },
+```go
+	wails.Run(&options.App{
+		Windows: &windows.Options{
+			WebviewBrowserPath:  "",
+		},
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 ```
+
+Note: When `WebviewBrowserPath` is specified, `error` strategy will be forced in case of minimal required version mismatch or invalid path to a runtime.

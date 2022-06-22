@@ -3,6 +3,7 @@
 package wv2installer
 
 import (
+	"fmt"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webviewloader"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
@@ -46,7 +47,12 @@ func Process(appoptions *options.App) (string, error) {
 		if !updateRequired {
 			return installedVersion, nil
 		}
-
 	}
+
+	// Force error strategy if webview is manually specified
+	if webviewPath != "" {
+		return installedVersion, fmt.Errorf(messages.InvalidFixedWebview2)
+	}
+
 	return installedVersion, doInstallationStrategy(installStatus, messages)
 }
