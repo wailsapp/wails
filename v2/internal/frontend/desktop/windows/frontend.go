@@ -7,6 +7,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/bep/debounce"
+	"github.com/wailsapp/wails/v2/internal/binding"
+	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
+	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"io"
 	"log"
 	"net/http"
@@ -16,17 +28,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
-
-	"github.com/wailsapp/wails/v2/internal/binding"
-	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
-	"github.com/wailsapp/wails/v2/internal/logger"
-	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
-	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	"time"
 )
 
 const startURL = "http://wails.localhost/"
@@ -53,7 +55,8 @@ type Frontend struct {
 	hasStarted bool
 
 	// Windows build number
-	versionInfo *operatingsystem.WindowsVersionInfo
+	versionInfo     *operatingsystem.WindowsVersionInfo
+	resizeDebouncer func(f func())
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
@@ -68,6 +71,12 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		dispatcher:      dispatcher,
 		ctx:             ctx,
 		versionInfo:     versionInfo,
+	}
+
+	if appoptions.Windows != nil {
+		if appoptions.Windows.ResizeDebounceMS > 0 {
+			result.resizeDebouncer = debounce.New(time.Duration(appoptions.Windows.ResizeDebounceMS) * time.Millisecond)
+		}
 	}
 
 	// We currently can't use wails://wails/ as other platforms do, therefore we map the assets sever onto the following url.
@@ -97,28 +106,15 @@ func (f *Frontend) WindowReload() {
 }
 
 func (f *Frontend) WindowSetSystemDefaultTheme() {
-	f.mainWindow.frontendOptions.Windows.Theme = windows.SystemDefault
-	f.mainWindow.Invoke(func() {
-		f.mainWindow.updateTheme()
-	})
+	f.mainWindow.SetTheme(windows.SystemDefault)
 }
 
 func (f *Frontend) WindowSetLightTheme() {
-	if f.mainWindow.frontendOptions != nil && f.mainWindow.frontendOptions.Windows != nil {
-		f.mainWindow.frontendOptions.Windows.Theme = windows.Light
-		f.mainWindow.Invoke(func() {
-			f.mainWindow.updateTheme()
-		})
-	}
+	f.mainWindow.SetTheme(windows.Light)
 }
 
 func (f *Frontend) WindowSetDarkTheme() {
-	if f.mainWindow.frontendOptions != nil && f.mainWindow.frontendOptions.Windows != nil {
-		f.mainWindow.frontendOptions.Windows.Theme = windows.Dark
-		f.mainWindow.Invoke(func() {
-			f.mainWindow.updateTheme()
-		})
-	}
+	f.mainWindow.SetTheme(windows.Dark)
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
@@ -150,7 +146,15 @@ func (f *Frontend) Run(ctx context.Context) error {
 			}
 		}
 
-		f.chromium.Resize()
+		if f.resizeDebouncer != nil {
+			f.resizeDebouncer(func() {
+				f.mainWindow.Invoke(func() {
+					f.chromium.Resize()
+				})
+			})
+		} else {
+			f.chromium.Resize()
+		}
 	})
 
 	mainWindow.OnClose().Bind(func(arg *winc.Event) {
@@ -333,6 +337,7 @@ func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
 			log.Fatal(err)
 		}
 	})
+
 }
 
 func (f *Frontend) Quit() {
@@ -393,7 +398,7 @@ func (f *Frontend) setupChromium() {
 	onFocus.Bind(f.onFocus)
 
 	// Set background colour
-	f.WindowSetRGBA(f.frontendOptions.RGBA)
+	f.WindowSetRGBA(f.frontendOptions.BackgroundColour)
 
 	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
@@ -594,29 +599,55 @@ func (f *Frontend) navigationCompleted(sender *edge.ICoreWebView2, args *edge.IC
 	switch f.frontendOptions.WindowStartState {
 	case options.Maximised:
 		if !f.frontendOptions.DisableResize {
-			f.mainWindow.Maximise()
+			win32.ShowWindowMaximised(f.mainWindow.Handle())
 		} else {
-			f.mainWindow.Show()
+			win32.ShowWindow(f.mainWindow.Handle())
 		}
-		f.ShowWindow()
-
 	case options.Minimised:
-		f.mainWindow.Minimise()
+		win32.ShowWindowMinimised(f.mainWindow.Handle())
 	case options.Fullscreen:
 		f.mainWindow.Fullscreen()
-		f.ShowWindow()
+		win32.ShowWindow(f.mainWindow.Handle())
 	default:
 		if f.frontendOptions.Fullscreen {
 			f.mainWindow.Fullscreen()
 		}
-		f.ShowWindow()
+		win32.ShowWindow(f.mainWindow.Handle())
 	}
+
+	f.mainWindow.hasBeenShown = true
 
 }
 
 func (f *Frontend) ShowWindow() {
 	f.mainWindow.Invoke(func() {
-		f.mainWindow.Restore()
+		if !f.mainWindow.hasBeenShown {
+			f.mainWindow.hasBeenShown = true
+			switch f.frontendOptions.WindowStartState {
+			case options.Maximised:
+				if !f.frontendOptions.DisableResize {
+					win32.ShowWindowMaximised(f.mainWindow.Handle())
+				} else {
+					win32.ShowWindow(f.mainWindow.Handle())
+				}
+			case options.Minimised:
+				win32.RestoreWindow(f.mainWindow.Handle())
+			case options.Fullscreen:
+				f.mainWindow.Fullscreen()
+				win32.ShowWindow(f.mainWindow.Handle())
+			default:
+				if f.frontendOptions.Fullscreen {
+					f.mainWindow.Fullscreen()
+				}
+				win32.ShowWindow(f.mainWindow.Handle())
+			}
+		} else {
+			if win32.IsWindowMinimised(f.mainWindow.Handle()) {
+				win32.RestoreWindow(f.mainWindow.Handle())
+			} else {
+				win32.ShowWindow(f.mainWindow.Handle())
+			}
+		}
 		w32.SetForegroundWindow(f.mainWindow.Handle())
 		w32.SetFocus(f.mainWindow.Handle())
 	})

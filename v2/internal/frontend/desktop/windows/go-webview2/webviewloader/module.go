@@ -24,11 +24,10 @@ const (
 )
 
 // CompareBrowserVersions will compare the 2 given versions and return:
-//  -1 = v1 < v2
-//   0 = v1 == v2
-//   1 = v1 > v2
+//     Less than zero: v1 < v2
+//               zero: v1 == v2
+//  Greater than zero: v1 > v2
 func CompareBrowserVersions(v1 string, v2 string) (int, error) {
-
 	_v1, err := windows.UTF16PtrFromString(v1)
 	if err != nil {
 		return 0, err
@@ -43,16 +42,16 @@ func CompareBrowserVersions(v1 string, v2 string) (int, error) {
 		return 0, err
 	}
 
-	var result int
+	var result int32
 	_, _, err = memCompareBrowserVersions.Call(
 		uint64(uintptr(unsafe.Pointer(_v1))),
 		uint64(uintptr(unsafe.Pointer(_v2))),
 		uint64(uintptr(unsafe.Pointer(&result))))
 
 	if err != windows.ERROR_SUCCESS {
-		return result, err
+		return 0, err
 	}
-	return result, nil
+	return int(result), nil
 }
 
 // GetInstalledVersion returns the installed version of the webview2 runtime.

@@ -92,8 +92,8 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 		context: unsafe.Pointer(context),
 	}
 
-	if frontendOptions.RGBA != nil {
-		result.SetRGBA(frontendOptions.RGBA.R, frontendOptions.RGBA.G, frontendOptions.RGBA.B, frontendOptions.RGBA.A)
+	if frontendOptions.BackgroundColour != nil {
+		result.SetRGBA(frontendOptions.BackgroundColour.R, frontendOptions.BackgroundColour.G, frontendOptions.BackgroundColour.B, frontendOptions.BackgroundColour.A)
 	}
 
 	if frontendOptions.Mac != nil && frontendOptions.Mac.About != nil {
