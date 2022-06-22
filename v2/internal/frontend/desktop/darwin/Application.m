@@ -95,6 +95,13 @@ void SetSize(void* inctx, int width, int height) {
     );
 }
 
+void SetAlwaysOnTop(void* ctx, int onTop) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx SetAlwaysOnTop:onTop];
+    );
+}
+
 void SetMinSize(void* inctx, int width, int height) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(

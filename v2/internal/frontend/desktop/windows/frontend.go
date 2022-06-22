@@ -181,6 +181,11 @@ func (f *Frontend) WindowCenter() {
 	f.mainWindow.Center()
 }
 
+func (f *Frontend) WindowSetAlwaysOnTop(b bool) {
+	runtime.LockOSThread()
+	f.mainWindow.SetAlwaysOnTop(b)
+}
+
 func (f *Frontend) WindowSetPosition(x, y int) {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
