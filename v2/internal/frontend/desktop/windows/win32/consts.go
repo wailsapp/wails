@@ -15,6 +15,7 @@ var (
 	moduser32                = syscall.NewLazyDLL("user32.dll")
 	procSystemParametersInfo = moduser32.NewProc("SystemParametersInfoW")
 	procGetWindowLong        = moduser32.NewProc("GetWindowLongW")
+	procSetClassLong         = moduser32.NewProc("SetClassLongW")
 	procSetClassLongPtr      = moduser32.NewProc("SetClassLongPtrW")
 	procShowWindow           = moduser32.NewProc("ShowWindow")
 )
