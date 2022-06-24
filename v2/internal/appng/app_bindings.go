@@ -35,6 +35,8 @@ func (a *App) Run() error {
 	return nil
 }
 
+func (a *App) Shutdown() {}
+
 // CreateApp creates the app!
 func CreateApp(appoptions *options.App) (*App, error) {
 	// Set up logger
