@@ -24,9 +24,6 @@ func Start() {
 	// Hook into interrupts
 	gosignal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-
 	// Spin off signal listener and wait for either a cancellation
 	// or signal
 	go func() {
@@ -37,7 +34,6 @@ func Start() {
 			for _, callback := range callbacks {
 				callback()
 			}
-			wg.Done()
 		}
 	}()
 }
