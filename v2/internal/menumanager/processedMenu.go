@@ -70,7 +70,7 @@ func NewProcessedMenuItem(menuItemMap *MenuItemMap, menuItem *menu.MenuItem) *Pr
 		Hidden:      menuItem.Hidden,
 		Checked:     menuItem.Checked,
 		SubMenu:     nil,
-		//RGBA:             menuItem.RGBA,
+		//BackgroundColour:             menuItem.BackgroundColour,
 		//FontSize:         menuItem.FontSize,
 		//FontName:         menuItem.FontName,
 		//Image:            menuItem.Image,

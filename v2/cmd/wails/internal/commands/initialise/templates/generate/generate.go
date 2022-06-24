@@ -158,11 +158,11 @@ var templates = []*template{
 
 func main() {
 
-	//rebuildRuntime()
-	//
-	//for _, t := range templates {
-	//	createTemplate(t)
-	//}
+	rebuildRuntime()
+
+	for _, t := range templates {
+		createTemplate(t)
+	}
 
 	// copy plain template
 	s.COPYDIR("plain", "../templates/plain")

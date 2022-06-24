@@ -372,6 +372,14 @@
     }
 }
 
+- (void) SetAlwaysOnTop:(int)onTop {
+    if (onTop) {
+        [self.mainWindow setLevel:NSStatusWindowLevel];
+    } else {
+        [self.mainWindow setLevel:NSNormalWindowLevel];
+    }
+}
+
 - (void) ExecJS:(NSString*)script {
    [self.webview evaluateJavaScript:script completionHandler:nil];
 }
