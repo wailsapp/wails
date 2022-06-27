@@ -34,3 +34,20 @@ up to the user.
 ### Error
 
 If no suitable runtime is found, an error is given to the user and no further action taken.
+
+## Fixed version runtime
+
+Another way of dealing with webview2 dependency is shipping it yourself.
+You can download [fixed version runtime](https://developer.microsoft.com/ru-ru/microsoft-edge/webview2/#download-section) and bundle or download it with your application.
+
+Also, you should specify path to fixed version of webview2 runtime in the `windows.Options` structure when launching wails.
+
+```go
+	wails.Run(&options.App{
+		Windows: &windows.Options{
+			WebviewBrowserPath:  "",
+		},
+	})
+```
+
+Note: When `WebviewBrowserPath` is specified, `error` strategy will be forced in case of minimal required version mismatch or invalid path to a runtime.

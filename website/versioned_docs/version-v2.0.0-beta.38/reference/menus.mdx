@@ -18,6 +18,10 @@ An example of how to create a menu:
     FileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
         runtime.Quit()
     })
+    
+    if runtime.GOOS == "darwin" {
+	AppMenu.Append(menu.EditMenu())  // on macos platform, we should append EditMenu to enable Cmd+C,Cmd+V,Cmd+Z... shortcut
+    }
 
     err := wails.Run(&options.App{
         Title:             "Menus Demo",
