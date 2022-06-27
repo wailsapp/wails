@@ -7,7 +7,7 @@ import (
 
 	"github.com/leaanthony/debme"
 	"github.com/leaanthony/gosod"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/initialise/templates/generate/s"
+	"github.com/wailsapp/wails/v2/internal/s"
 )
 
 //go:embed assets/common/*
@@ -165,7 +165,11 @@ func main() {
 	}
 
 	// copy plain template
+	s.ECHO("Copying plain template")
+	s.RMDIR("../templates/plain")
 	s.COPYDIR("plain", "../templates/plain")
+
+	s.ECHO(`Until an auto fix is done, add "@babel/types": "^7.17.10" to vite-ts/frontend/package.json`)
 }
 
 func rebuildRuntime() {
@@ -224,6 +228,4 @@ func createTemplate(template *template) {
 	checkError(err)
 
 	s.CD(cwd)
-
-	s.ECHO(`Until an auto fix is done, add "@babel/types": "^7.17.10" to vite-ts/frontend/package.json`)
 }
