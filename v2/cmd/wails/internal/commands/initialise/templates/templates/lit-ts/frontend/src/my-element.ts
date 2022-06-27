@@ -75,7 +75,7 @@ export class MyElement extends LitElement {
     greet() {
         let thisName = (this.shadowRoot.getElementById('name') as HTMLInputElement)?.value;
         if (thisName) {
-            Greet(thisName || 'UAAA').then(result => {
+            Greet(thisName).then(result => {
                 this.resultText = result
             });
         }
