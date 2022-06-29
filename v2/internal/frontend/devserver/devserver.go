@@ -243,8 +243,8 @@ func (d *DevWebServer) WindowUnfullscreen() {
 	d.desktopFrontend.WindowUnfullscreen()
 }
 
-func (d *DevWebServer) WindowSetRGBA(col *options.RGBA) {
-	d.desktopFrontend.WindowSetRGBA(col)
+func (d *DevWebServer) WindowSetBackgroundColour(col *options.RGBA) {
+	d.desktopFrontend.WindowSetBackgroundColour(col)
 }
 
 func (d *DevWebServer) MenuSetApplicationMenu(menu *menu.Menu) {

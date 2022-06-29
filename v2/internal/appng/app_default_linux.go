@@ -16,6 +16,8 @@ func (a *App) Run() error {
 	return nil
 }
 
+func (a *App) Shutdown() {}
+
 // CreateApp creates the app!
 func CreateApp(_ *options.App) (*App, error) {
 	return nil, fmt.Errorf(`Wails applications will not build without the correct build tags.`)

@@ -139,7 +139,8 @@ func WindowUnminimise(ctx context.Context) {
 	appFrontend.WindowUnminimise()
 }
 
-func WindowSetRGBA(ctx context.Context, R, G, B, A uint8) {
+// WindowSetBackgroundColour sets the colour of the window background
+func WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8) {
 	appFrontend := getFrontend(ctx)
 	col := &options.RGBA{
 		R: R,
@@ -147,5 +148,5 @@ func WindowSetRGBA(ctx context.Context, R, G, B, A uint8) {
 		B: B,
 		A: A,
 	}
-	appFrontend.WindowSetRGBA(col)
+	appFrontend.WindowSetBackgroundColour(col)
 }

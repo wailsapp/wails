@@ -70,7 +70,7 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 		if err != nil {
 			return "", err
 		}
-		go sender.WindowSetRGBA(&rgba)
+		go sender.WindowSetBackgroundColour(&rgba)
 	case 'M':
 		go sender.WindowMaximise()
 	case 't':
