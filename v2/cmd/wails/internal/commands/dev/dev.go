@@ -187,9 +187,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// frontend:dev:watcher command.
 		if command := projectConfig.DevWatcherCommand; command != "" {
-			var devCommandWaitGroup sync.WaitGroup
-			closer := runFrontendDevWatcherCommand(cwd, command, &devCommandWaitGroup)
-			defer closer(&devCommandWaitGroup)
+			closer, err := runFrontendDevWatcherCommand(cwd, command)
+			if err != nil {
+				return err
+			}
+			defer closer()
 		}
 
 		// open browser
@@ -388,35 +390,39 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 }
 
 // runFrontendDevWatcherCommand will run the `frontend:dev:watcher` command if it was given, ex- `npm run dev`
-func runFrontendDevWatcherCommand(cwd string, devCommand string, wg *sync.WaitGroup) func(group *sync.WaitGroup) {
-	LogGreen("Running frontend dev watcher command: '%s'", devCommand)
+func runFrontendDevWatcherCommand(cwd string, devCommand string) (func(), error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	dir := filepath.Join(cwd, "frontend")
 	cmdSlice := strings.Split(devCommand, " ")
-	wg.Add(1)
 	cmd := exec.CommandContext(ctx, cmdSlice[0], cmdSlice[1:]...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	cmd.Dir = dir
-
 	setParentGID(cmd)
-	go func(ctx context.Context, devCommand string, cwd string, wg *sync.WaitGroup) {
-		err := cmd.Run()
-		if err != nil {
+	if err := cmd.Start(); err != nil {
+		cancel()
+		return nil, fmt.Errorf("Unable to start frontend DevWatcher: %w", err)
+	}
+
+	LogGreen("Running frontend DevWatcher command: '%s'", devCommand)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		if err := cmd.Wait(); err != nil {
 			if err.Error() != "exit status 1" {
-				LogRed("Error from '%s': %s", devCommand, err.Error())
+				LogRed("Error from DevWatcher '%s': %s", devCommand, err.Error())
 			}
 		}
-		LogGreen("Dev command exited!")
+		LogGreen("DevWatcher command exited!")
 		wg.Done()
-	}(ctx, devCommand, cwd, wg)
+	}()
 
-	return func(wg *sync.WaitGroup) {
+	return func() {
 		killProc(cmd, devCommand)
-		LogGreen("Dev command killed!")
+		LogGreen("DevWatcher command killed!")
 		cancel()
 		wg.Wait()
-	}
+	}, nil
 }
 
 // initialiseWatcher creates the project directory watcher that will trigger recompile
