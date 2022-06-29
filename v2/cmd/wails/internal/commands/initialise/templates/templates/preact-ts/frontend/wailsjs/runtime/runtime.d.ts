@@ -167,9 +167,9 @@ export function WindowMinimise(): void;
 // Restores the window to the dimensions and position prior to minimising.
 export function WindowUnminimise(): void;
 
-// [WindowSetRGBA](https://wails.io/docs/reference/runtime/window#windowsetrgba)
+// [WindowSetBackgroundColour](https://wails.io/docs/reference/runtime/window#windowsetbackgroundcolour)
 // Sets the background colour of the window to the given RGBA colour definition. This colour will show through for all transparent pixels.
-export function WindowSetRGBA(R: number, G: number, B: number, A: number): void;
+export function WindowSetBackgroundColour(R: number, G: number, B: number, A: number): void;
 
 // [BrowserOpenURL](https://wails.io/docs/reference/runtime/browser#browseropenurl)
 // Opens the given URL in the system browser.

@@ -433,7 +433,7 @@ typedef struct RGBAOptions {
 	void *webview;
 } RGBAOptions;
 
-void setRGBA(void* data) {
+void setBackgroundColour(void* data) {
 	RGBAOptions* options = (RGBAOptions*)data;
 	GdkRGBA colour = {options->r / 255.0, options->g / 255.0, options->b / 255.0, options->a / 255.0};
 	webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(options->webview), &colour);
@@ -638,7 +638,7 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 
 	// Set background colour
 	RGBA := appoptions.BackgroundColour
-	result.SetRGBA(RGBA.R, RGBA.G, RGBA.B, RGBA.A)
+	result.SetBackgroundColour(RGBA.R, RGBA.G, RGBA.B, RGBA.A)
 
 	// Setup window
 	result.SetKeepAbove(appoptions.AlwaysOnTop)
@@ -779,7 +779,7 @@ func (w *Window) IsMaximised() bool {
 	return result > 0
 }
 
-func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
+func (w *Window) SetBackgroundColour(r uint8, g uint8, b uint8, a uint8) {
 	data := C.RGBAOptions{
 		r:       C.uchar(r),
 		g:       C.uchar(g),
@@ -787,7 +787,7 @@ func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
 		a:       C.uchar(a),
 		webview: w.webview,
 	}
-	invokeOnMainThread(func() { C.setRGBA(unsafe.Pointer(&data)) })
+	invokeOnMainThread(func() { C.setBackgroundColour(unsafe.Pointer(&data)) })
 
 }
 

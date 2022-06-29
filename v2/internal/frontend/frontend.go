@@ -86,7 +86,7 @@ type Frontend interface {
 	WindowSetMaxSize(width int, height int)
 	WindowFullscreen()
 	WindowUnfullscreen()
-	WindowSetRGBA(col *options.RGBA)
+	WindowSetBackgroundColour(col *options.RGBA)
 	WindowReload()
 	WindowReloadApp()
 	WindowSetSystemDefaultTheme()

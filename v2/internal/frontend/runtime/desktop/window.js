@@ -11,7 +11,7 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 
-import { Call } from "./calls";
+import {Call} from "./calls";
 
 export function WindowReload() {
     window.location.reload();
@@ -213,7 +213,6 @@ export function WindowUnminimise() {
     window.WailsInvoke('Wu');
 }
 
-
 /**
  * Sets the background colour of the window
  *
@@ -223,8 +222,8 @@ export function WindowUnminimise() {
  * @param {number} B Blue
  * @param {number} A Alpha
  */
-export function WindowSetRGBA(R, G, B, A) {
-    let rgba = JSON.stringify({ r: R || 0, g: G || 0, b: B || 0, a: A || 255 });
+export function WindowSetBackgroundColour(R, G, B, A) {
+    let rgba = JSON.stringify({r: R || 0, g: G || 0, b: B || 0, a: A || 255});
     window.WailsInvoke('Wr:' + rgba);
 }
 

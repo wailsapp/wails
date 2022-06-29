@@ -209,11 +209,11 @@ func (f *Frontend) WindowSetMaxSize(width int, height int) {
 	f.mainWindow.SetMaxSize(width, height)
 }
 
-func (f *Frontend) WindowSetRGBA(col *options.RGBA) {
+func (f *Frontend) WindowSetWindowBackground(col *options.RGBA) {
 	if col == nil {
 		return
 	}
-	f.mainWindow.SetRGBA(col.R, col.G, col.B, col.A)
+	f.mainWindow.SetBackgroundColour(col.R, col.G, col.B, col.A)
 }
 
 func (f *Frontend) Quit() {
