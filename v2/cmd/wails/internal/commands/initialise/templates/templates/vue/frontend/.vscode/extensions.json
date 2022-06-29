@@ -1,3 +1,5 @@
 {
-  "recommendations": ["johnsoncodehk.volar"]
+  "recommendations": [
+    "Vue.volar"
+  ]
 }

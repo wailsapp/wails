@@ -4,6 +4,7 @@ package wails
 
 import (
 	app "github.com/wailsapp/wails/v2/internal/appng"
+	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -29,6 +30,12 @@ func Run(options *options.App) error {
 	if err != nil {
 		return err
 	}
+
+	signal.OnShutdown(func() {
+		mainapp.Shutdown()
+	})
+
+	signal.Start()
 
 	return mainapp.Run()
 }

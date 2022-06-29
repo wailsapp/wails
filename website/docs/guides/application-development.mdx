@@ -113,6 +113,40 @@ func main() {
 
 This will bind all public methods in our `App` struct (it will never bind the startup and shutdown methods).
 
+### Dealing with context when binding multiple structs
+
+If you want to bind methods for multiple structs but want each struct to keep a reference to the context so that you
+can use the runtime functions, a good pattern is to pass the context from the `OnStartup` method to your struct instances
+:
+
+```go
+func main() {
+
+	app := NewApp()
+	otherStruct := NewOtherStruct()
+
+	err := wails.Run(&options.App{
+		Title:             "My App",
+		Width:             800,
+		Height:            600,
+		OnStartup:  func(ctx context.Context){
+			app.SetContext(ctx)
+			otherStruct.SetContext(ctx)
+		},
+		OnShutdown: app.shutdown,
+        Bind: []interface{}{
+            app,
+			otherStruct
+        },
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+
+
 More information on Binding can be found [here](../howdoesitwork.mdx#method-binding).
 
 ## Application Menu

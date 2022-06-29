@@ -4,6 +4,7 @@
 package edge
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -30,8 +31,9 @@ type Chromium struct {
 	environment *ICoreWebView2Environment
 
 	// Settings
-	Debug    bool
-	DataPath string
+	Debug       bool
+	DataPath    string
+	BrowserPath string
 
 	// permissions
 	permissions      map[CoreWebView2PermissionKind]CoreWebView2PermissionState
@@ -84,7 +86,27 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 		dataPath = filepath.Join(os.Getenv("AppData"), currentExeName)
 	}
 
-	res, err := createCoreWebView2EnvironmentWithOptions(nil, windows.StringToUTF16Ptr(dataPath), 0, e.envCompleted)
+	var browserPathPtr *uint16 = nil
+	if e.BrowserPath != "" {
+		if _, err := os.Stat(e.BrowserPath); !errors.Is(err, os.ErrNotExist) {
+			browserPathPtr, err = windows.UTF16PtrFromString(e.BrowserPath)
+			if err != nil {
+				log.Printf("Error calling UTF16PtrFromString for %s: %v", e.BrowserPath, err)
+				return false
+			}
+		} else {
+			log.Printf("Browser path %s does not exist", e.BrowserPath)
+			return false
+		}
+	}
+
+	dataPathPtr, err := windows.UTF16PtrFromString(dataPath)
+	if err != nil {
+		log.Printf("Error calling UTF16PtrFromString for %s: %v", dataPath, err)
+		return false
+	}
+
+	res, err := createCoreWebView2EnvironmentWithOptions(browserPathPtr, dataPathPtr, 0, e.envCompleted)
 	if err != nil {
 		log.Printf("Error calling Webview2Loader: %v", err)
 		return false
