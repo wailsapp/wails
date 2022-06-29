@@ -7,6 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
+        Before opening a feature request, please check the [Roadmap](https://github.com/wailsapp/wails/discussions/1484) to see if it has already been requested.
         ***Please note: No new feature requests are being accepted for Wails v1***
 
   - type: textarea

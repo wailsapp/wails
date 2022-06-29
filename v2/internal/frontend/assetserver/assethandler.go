@@ -11,7 +11,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"time"
 
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/logger"
@@ -55,11 +54,6 @@ func NewAssetHandler(ctx context.Context, options *options.App) (http.Handler, e
 	result := &assetHandler{
 		fs:      vfs,
 		handler: options.AssetsHandler,
-
-		// Retry the loading of missing files on the Assets if we are in dev mode (with an AssetDir) and
-		// if the user doesn't use the AssetsHandler. If AssetsHandler are in use we would defer
-		// every request to the handler for 5s which is not quite useful.
-		retryMissingFiles: ctx.Value("assetdir") != nil && (options.AssetsHandler == nil),
 	}
 
 	if _logger := ctx.Value("logger"); _logger != nil {
@@ -112,15 +106,6 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, filename string) erro
 	}
 
 	file, err := d.fs.Open(filename)
-	if err != nil && d.retryMissingFiles {
-		for tries := 0; tries < 50; tries++ {
-			file, err = d.fs.Open(filename)
-			if err != nil {
-				time.Sleep(100 * time.Millisecond)
-			}
-		}
-	}
-
 	if err != nil {
 		return err
 	}

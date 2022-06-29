@@ -92,6 +92,12 @@ func WindowSetMaxSize(ctx context.Context, width int, height int) {
 	appFrontend.WindowSetMaxSize(width, height)
 }
 
+// WindowSetAlwaysOnTop sets the window AlwaysOnTop or not on top
+func WindowSetAlwaysOnTop(ctx context.Context, b bool) {
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowSetAlwaysOnTop(b)
+}
+
 // WindowSetPosition sets the position of the window
 func WindowSetPosition(ctx context.Context, x int, y int) {
 	appFrontend := getFrontend(ctx)

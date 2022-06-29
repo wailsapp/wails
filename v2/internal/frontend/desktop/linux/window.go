@@ -565,6 +565,7 @@ void SetWindowIcon(GtkWindow* window, const guchar* buf, gsize len) {
 import "C"
 import (
 	"strings"
+	"sync"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -636,7 +637,7 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	}
 
 	// Set background colour
-	RGBA := appoptions.RGBA
+	RGBA := appoptions.BackgroundColour
 	result.SetRGBA(RGBA.R, RGBA.G, RGBA.B, RGBA.A)
 
 	// Setup window
@@ -707,13 +708,25 @@ func (w *Window) SetPosition(x int, y int) {
 
 func (w *Window) Size() (int, int) {
 	var width, height C.int
-	C.gtk_window_get_size(w.asGTKWindow(), &width, &height)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	invokeOnMainThread(func() {
+		C.gtk_window_get_size(w.asGTKWindow(), &width, &height)
+		wg.Done()
+	})
+	wg.Wait()
 	return int(width), int(height)
 }
 
 func (w *Window) GetPosition() (int, int) {
 	var width, height C.int
-	C.gtk_window_get_position(w.asGTKWindow(), &width, &height)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	invokeOnMainThread(func() {
+		C.gtk_window_get_position(w.asGTKWindow(), &width, &height)
+		wg.Done()
+	})
+	wg.Wait()
 	return int(width), int(height)
 }
 

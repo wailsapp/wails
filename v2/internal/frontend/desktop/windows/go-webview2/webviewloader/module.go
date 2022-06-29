@@ -54,17 +54,26 @@ func CompareBrowserVersions(v1 string, v2 string) (int, error) {
 	return int(result), nil
 }
 
-// GetInstalledVersion returns the installed version of the webview2 runtime.
+// GetWebviewVersion returns version of the webview2 runtime.
+// If path is empty, it will try to find installed webview2 is the system.
 // If there is no version installed, a blank string is returned.
-func GetInstalledVersion() (string, error) {
+func GetWebviewVersion(path string) (string, error) {
 	err := loadFromMemory()
 	if err != nil {
 		return "", err
 	}
 
+	var browserPath *uint16 = nil
+	if path != "" {
+		browserPath, err = windows.UTF16PtrFromString(path)
+		if err != nil {
+			return "", fmt.Errorf("error calling UTF16PtrFromString for %s: %v", path, err)
+		}
+	}
+
 	var result *uint16
 	res, _, err := memGetAvailableCoreWebView2BrowserVersionString.Call(
-		uint64(uintptr(unsafe.Pointer(nil))),
+		uint64(uintptr(unsafe.Pointer(browserPath))),
 		uint64(uintptr(unsafe.Pointer(&result))))
 
 	if res != 0 {

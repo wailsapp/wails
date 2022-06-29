@@ -21,7 +21,7 @@ If your built application looks like this in finder:
     <img src="/img/troubleshooting/invalid_mac_app.png"></img>
 </p>
 
-it's likely that your application's `info.plist` is invalid. Update the file in `build/<yourapp>.app/Contents/info.plist`
+it''s likely that your application''s `info.plist` is invalid. Update the file in `build/<yourapp>.app/Contents/info.plist`
 and check if the data is valid, EG check the binary name is correct. To persist the changes, copy the file back to
 the `build/darwin` directory.
 
@@ -55,7 +55,7 @@ window.go.main.App.TestFunc(msg, args).then((result) => { //without the 3 dots
 ```
 Credit: https://github.com/wailsapp/wails/issues/1186
 
-## I'm having getting proxy errors when trying to install Wails
+## I''m having getting proxy errors when trying to install Wails
 
 If you are getting errors like this:
 ```
@@ -68,3 +68,9 @@ go env -w GO111MODULE=on
 go env -w GOPROXY=https://goproxy.cn,direct
 ```
 Source: https://github.com/wailsapp/wails/issues/1233
+
+## The generated Typescript doesn''t have the correct types
+
+Sometimes the generated Typescript doesn''t have the correct types. To mitigate this,
+it is possible to specify what types should be generated using the `ts_type` struct tag. For
+more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types).

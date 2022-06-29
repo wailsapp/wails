@@ -12,6 +12,7 @@ type Messages struct {
 	DownloadPage         string
 	PressOKToInstall     string
 	ContactAdmin         string
+	InvalidFixedWebview2 string
 }
 
 const (
@@ -74,6 +75,9 @@ type Options struct {
 	// If the path is not valid, a messagebox will be displayed with the error and the app will exit with error code.
 	WebviewUserDataPath string
 
+	// Path to the directory with WebView2 executables. If empty WebView2 installed in the system will be used.
+	WebviewBrowserPath string
+
 	// Dark/Light or System Default Theme
 	Theme Theme
 
@@ -85,6 +89,15 @@ type Options struct {
 
 	// User messages that can be customised
 	Messages *Messages
+
+	// ResizeDebounceMS is the amount of time to debounce redraws of webview2
+	// when resizing the window
+	ResizeDebounceMS uint16
+
+	// OnSuspend is called when Windows enters low power mode
+	OnSuspend func()
+	// OnResume is called when Windows resumes from low power mode
+	OnResume func()
 }
 
 func DefaultMessages() *Messages {
@@ -98,5 +111,6 @@ func DefaultMessages() *Messages {
 		DownloadPage:         "This application requires the WebView2 runtime. Press OK to open the download page. Minimum version required: ",
 		PressOKToInstall:     "Press Ok to install.",
 		ContactAdmin:         "The WebView2 runtime is required to run this application. Please contact your system administrator.",
+		InvalidFixedWebview2: "The WebView2 runtime is manually specified, but It is not valid. Check minimum required version and webview2 path.",
 	}
 }

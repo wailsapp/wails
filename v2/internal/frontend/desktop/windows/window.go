@@ -3,14 +3,16 @@
 package windows
 
 import (
+	"unsafe"
+
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
-	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	winoptions "github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 type Window struct {
@@ -22,6 +24,14 @@ type Window struct {
 	versionInfo                              *operatingsystem.WindowsVersionInfo
 	isDarkMode                               bool
 	isActive                                 bool
+	hasBeenShown                             bool
+
+	// Theme
+	theme        winoptions.Theme
+	themeChanged bool
+
+	OnSuspend                                func()
+	OnResume                                 func()
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo) *Window {
@@ -33,6 +43,7 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		maxWidth:        appoptions.MaxWidth,
 		versionInfo:     versionInfo,
 		isActive:        true,
+		themeChanged:    true,
 	}
 	result.SetIsForm(true)
 
@@ -65,6 +76,16 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		}
 	}
 
+	if appoptions.BackgroundColour != nil {
+		win32.SetBackgroundColour(result.Handle(), appoptions.BackgroundColour.R, appoptions.BackgroundColour.G, appoptions.BackgroundColour.B)
+	}
+
+	if appoptions.Windows != nil {
+		result.theme = appoptions.Windows.Theme
+	} else {
+		result.theme = winoptions.SystemDefault
+	}
+
 	result.SetSize(appoptions.Width, appoptions.Height)
 	result.SetText(appoptions.Title)
 	result.EnableSizable(!appoptions.DisableResize)
@@ -77,6 +98,8 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 	result.updateTheme()
 
 	if appoptions.Windows != nil {
+		result.OnSuspend = appoptions.Windows.OnSuspend
+		result.OnResume = appoptions.Windows.OnResume
 		if appoptions.Windows.WindowIsTranslucent {
 			// TODO: Migrate to win32 package
 			if !win32.IsWindowsVersionAtLeast(10, 0, 22579) {
@@ -138,9 +161,22 @@ func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 	switch msg {
+	case win32.WM_POWERBROADCAST:
+		switch wparam {
+		case win32.PBT_APMSUSPEND:
+			if w.OnSuspend != nil {
+				w.OnSuspend()
+			}
+		case win32.PBT_APMRESUMEAUTOMATIC:
+			if w.OnResume != nil {
+				w.OnResume()
+			}
+		}
+
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lparam)))
 		if settingChanged == "ImmersiveColorSet" {
+			w.themeChanged = true
 			w.updateTheme()
 		}
 		return 0
@@ -148,10 +184,11 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 		w32.SetFocus(w.Handle())
 	case w32.WM_MOVE, w32.WM_MOVING:
 		if w.notifyParentWindowPositionChanged != nil {
-			w.notifyParentWindowPositionChanged()
+			_ = w.notifyParentWindowPositionChanged()
 		}
 	case w32.WM_ACTIVATE:
 		//if !w.frontendOptions.Frameless {
+		w.themeChanged = true
 		if int(wparam) == w32.WA_INACTIVE {
 			w.isActive = false
 			w.updateTheme()
@@ -190,6 +227,8 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			// This hides the titlebar and also disables the resizing from user interaction because the standard frame is not
 			// shown. We still need the WS_THICKFRAME style to enable resizing from the frontend.
 			if wparam != 0 {
+				rgrc := (*w32.RECT)(unsafe.Pointer(lparam))
+
 				style := uint32(w32.GetWindowLong(w.Handle(), w32.GWL_STYLE))
 				if style&w32.WS_MAXIMIZE != 0 {
 					// If the window is maximized we must adjust the client area to the work area of the monitor. Otherwise
@@ -199,7 +238,6 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 					var monitorInfo w32.MONITORINFO
 					monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
 					if w32.GetMonitorInfo(monitor, &monitorInfo) {
-						rgrc := (*w32.RECT)(unsafe.Pointer(lparam))
 						*rgrc = monitorInfo.RcWork
 
 						maxWidth := w.frontendOptions.MaxWidth
@@ -219,6 +257,10 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 							}
 						}
 					}
+				} else {
+					// This is needed to workaround the resize flickering in frameless mode with WindowDecorations
+					// See: https://stackoverflow.com/a/6558508
+					rgrc.Bottom -= 1
 				}
 
 				return 0
@@ -230,5 +272,16 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 func (w *Window) IsMaximised() bool {
 	return win32.IsWindowMaximised(w.Handle())
+}
 
+func (w *Window) IsMinimised() bool {
+	return win32.IsWindowMinimised(w.Handle())
+}
+
+func (w *Window) SetTheme(theme winoptions.Theme) {
+	w.theme = theme
+	w.themeChanged = true
+	w.Invoke(func() {
+		w.updateTheme()
+	})
 }

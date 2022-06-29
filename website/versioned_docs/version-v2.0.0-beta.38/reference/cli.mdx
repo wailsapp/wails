@@ -70,6 +70,7 @@ If you are unsure about a template, inspect `package.json` and `wails.json` for 
 |  -u                  | Updates your project's `go.mod` to use the same version of Wails as the CLI | |
 |  -debug              | Retains debug information in the application | false |
 |  -trimpath           | Remove all file system paths from the resulting executable. | false |
+|  -race               | Build with Go's race detector           | false                      |
 
 For a detailed description of the `webview2` flag, please refer to the [Windows](../guides/windows.mdx) Guide.
 
@@ -168,6 +169,7 @@ Your system is ready for Wails development!
 |  -tags "extra tags"  | Build tags to pass to compiler (quoted and space separated) |        |
 |  -loglevel "loglevel"| Loglevel to use - Trace, Debug, Info, Warning, Error | Debug         |
 |  -noreload           | Disable automatic reload when assets change | |
+|  -nogen              | Disable generate module | |
 |  -v                  | Verbosity level (0 - silent, 1 - standard, 2 - verbose)  | 1 |
 |  -wailsjsdir         | The directory to generate the generated Wails JS modules | Value in `wails.json` |
 |  -debounce           | The time to wait for reload after an asset change is detected  | 100 (milliseconds) |
@@ -175,8 +177,8 @@ Your system is ready for Wails development!
 |  -frontenddevserverurl "url"  | Use 3rd party dev server url to serve assets, EG Vite  | "" |
 |  -appargs "args"         | Arguments passed to the application in shell style  | |
 |  -platform "platform"    | Platform/Arch to target | `runtime.GOOS` |
-|  -save                   | Saves the given `assetdir`, `reloaddirs`, `wailsjsdir`, `debounce`, `devserver` and `frontenddevserverurl` flags in
-`wails.json` to become the defaults for subsequent invocations. | |
+|  -save                   | Saves the given `assetdir`, `reloaddirs`, `wailsjsdir`, `debounce`, `devserver` and `frontenddevserverurl` flags in `wails.json` to become the defaults for subsequent invocations. | |
+|  -race               | Build with Go's race detector           | false                      |
 
 Example:
 
@@ -192,9 +194,6 @@ This command will do the following:
 There is more information on using this feature with existing framework scripts [here](../guides/application-development.mdx#live-reloading).
 
 ## generate
-
-### module
-Wails creates a javascript module as described in `wails dev`. Use `wails generate module` to generate the javascript interface code.
 
 ### template
 

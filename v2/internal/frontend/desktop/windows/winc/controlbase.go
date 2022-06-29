@@ -267,6 +267,13 @@ func (cba *ControlBase) SetPos(x, y int) {
 
 	w32.SetWindowPos(cba.hwnd, w32.HWND_TOP, int(workRect.Left)+x, int(workRect.Top)+y, 0, 0, w32.SWP_NOSIZE)
 }
+func (cba *ControlBase) SetAlwaysOnTop(b bool) {
+	if b {
+		w32.SetWindowPos(cba.hwnd, w32.HWND_TOPMOST, 0, 0, 0, 0, w32.SWP_NOSIZE|w32.SWP_NOMOVE)
+	} else {
+		w32.SetWindowPos(cba.hwnd, w32.HWND_NOTOPMOST, 0, 0, 0, 0, w32.SWP_NOSIZE|w32.SWP_NOMOVE)
+	}
+}
 
 func (cba *ControlBase) Pos() (x, y int) {
 	rect := w32.GetWindowRect(cba.hwnd)
