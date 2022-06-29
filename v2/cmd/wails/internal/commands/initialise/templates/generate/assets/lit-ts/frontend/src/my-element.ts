@@ -68,32 +68,31 @@ export class MyElement extends LitElement {
   }
 
     `
-}
 
-@property()
-resultText = "Please enter your name below 👇"
+    @property()
+    resultText = "Please enter your name below 👇"
 
-greet()
-{
-    let thisName = this.shadowRoot.getElementById('name').value
-    Greet(thisName).then(result => {
-        this.resultText = result
-    });
-}
+    greet() {
+        let thisName = (this.shadowRoot.getElementById('name') as HTMLInputElement)?.value;
+        if (thisName) {
+            Greet(thisName).then(result => {
+                this.resultText = result
+            });
+        }
+    }
 
-render()
-{
-    return html`
-        <main>
-            <img id="logo" src=${logo} alt="Wails logo">
-            <div class="result" id="result">${this.resultText}</div>
-            <div class="input-box" id="input">
-                <input class="input" id="name" type="text" autocomplete="off"/>
-                <button @click=${this.greet} class="btn">Greet</button>
-            </div>
-        </main>
-    `
-}
+    render() {
+        return html`
+            <main>
+                <img id="logo" src=${logo} alt="Wails logo">
+                <div class="result" id="result">${this.resultText}</div>
+                <div class="input-box" id="input">
+                    <input class="input" id="name" type="text" autocomplete="off"/>
+                    <button @click=${this.greet} class="btn">Greet</button>
+                </div>
+            </main>
+        `
+    }
 }
 
 declare global {

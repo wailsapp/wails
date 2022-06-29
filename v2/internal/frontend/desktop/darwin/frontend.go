@@ -156,6 +156,9 @@ func (f *Frontend) Run(ctx context.Context) error {
 func (f *Frontend) WindowCenter() {
 	f.mainWindow.Center()
 }
+func (f *Frontend) WindowSetAlwaysOnTop(onTop bool) {
+	f.mainWindow.SetAlwaysOnTop(onTop)
+}
 
 func (f *Frontend) WindowSetPosition(x, y int) {
 	f.mainWindow.SetPosition(x, y)

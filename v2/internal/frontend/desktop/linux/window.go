@@ -249,11 +249,10 @@ typedef struct JSCallback {
     char* script;
 } JSCallback;
 
-gboolean executeJS(gpointer data) {
+void executeJS(void *data) {
     struct JSCallback *js = data;
     webkit_web_view_run_javascript(js->webview, js->script, NULL, NULL, NULL);
     free(js->script);
-    return G_SOURCE_REMOVE;
 }
 
 void extern processMessageDialogResult(char*);
@@ -265,8 +264,7 @@ typedef struct MessageDialogOptions {
 	int messageType;
 } MessageDialogOptions;
 
-gboolean messageDialog(gpointer data) {
-
+void messageDialog(void *data) {
 	GtkDialogFlags flags;
 	GtkMessageType messageType;
 	MessageDialogOptions *options = (MessageDialogOptions*) data;
@@ -307,14 +305,12 @@ gboolean messageDialog(gpointer data) {
 	gtk_widget_destroy(dialog);
 	free(options->title);
 	free(options->message);
-
-	return G_SOURCE_REMOVE;
 }
 
 void extern processOpenFileResult(void*);
 
 typedef struct OpenFileDialogOptions {
-    void* webview;
+    GtkWindow* window;
     char* title;
 	char* defaultFilename;
 	char* defaultDirectory;
@@ -333,13 +329,13 @@ void freeFileFilterArray(GtkFileFilter** filters) {
 	free(filters);
 }
 
-gboolean opendialog(gpointer data) {
+void opendialog(void *data) {
     struct OpenFileDialogOptions *options = data;
 	char *label = "_Open";
 	if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE) {
 		label = "_Save";
 	}
-    GtkWidget *dlgWidget = gtk_file_chooser_dialog_new(options->title, options->webview, options->action,
+    GtkWidget *dlgWidget = gtk_file_chooser_dialog_new(options->title, options->window, options->action,
           "_Cancel", GTK_RESPONSE_CANCEL,
           label, GTK_RESPONSE_ACCEPT,
 			NULL);
@@ -421,7 +417,6 @@ gboolean opendialog(gpointer data) {
 	}
     gtk_widget_destroy(dlgWidget);
     free(options->title);
-    return G_SOURCE_REMOVE;
 }
 
 GtkFileFilter* newFileFilter() {
@@ -438,12 +433,10 @@ typedef struct RGBAOptions {
 	void *webview;
 } RGBAOptions;
 
-gboolean setRGBA(gpointer* data) {
+void setRGBA(void* data) {
 	RGBAOptions* options = (RGBAOptions*)data;
 	GdkRGBA colour = {options->r / 255.0, options->g / 255.0, options->b / 255.0, options->a / 255.0};
 	webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(options->webview), &colour);
-
-	return G_SOURCE_REMOVE;
 }
 
 typedef struct SetTitleArgs {
@@ -572,6 +565,7 @@ void SetWindowIcon(GtkWindow* window, const guchar* buf, gsize len) {
 import "C"
 import (
 	"strings"
+	"sync"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -643,7 +637,7 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	}
 
 	// Set background colour
-	RGBA := appoptions.RGBA
+	RGBA := appoptions.BackgroundColour
 	result.SetRGBA(RGBA.R, RGBA.G, RGBA.B, RGBA.A)
 
 	// Setup window
@@ -714,13 +708,25 @@ func (w *Window) SetPosition(x int, y int) {
 
 func (w *Window) Size() (int, int) {
 	var width, height C.int
-	C.gtk_window_get_size(w.asGTKWindow(), &width, &height)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	invokeOnMainThread(func() {
+		C.gtk_window_get_size(w.asGTKWindow(), &width, &height)
+		wg.Done()
+	})
+	wg.Wait()
 	return int(width), int(height)
 }
 
 func (w *Window) GetPosition() (int, int) {
 	var width, height C.int
-	C.gtk_window_get_position(w.asGTKWindow(), &width, &height)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	invokeOnMainThread(func() {
+		C.gtk_window_get_position(w.asGTKWindow(), &width, &height)
+		wg.Done()
+	})
+	wg.Wait()
 	return int(width), int(height)
 }
 
@@ -781,7 +787,7 @@ func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
 		a:       C.uchar(a),
 		webview: w.webview,
 	}
-	C.ExecuteOnMainThread(C.setRGBA, C.gpointer(&data))
+	invokeOnMainThread(func() { C.setRGBA(unsafe.Pointer(&data)) })
 
 }
 
@@ -840,7 +846,7 @@ func (w *Window) ExecJS(js string) {
 		webview: w.webview,
 		script:  C.CString(js),
 	}
-	C.ExecuteOnMainThread(C.executeJS, C.gpointer(&jscallback))
+	invokeOnMainThread(func() { C.executeJS(unsafe.Pointer(&jscallback)) })
 }
 
 func (w *Window) StartDrag() {
@@ -854,7 +860,7 @@ func (w *Window) Quit() {
 func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multipleFiles int, action C.GtkFileChooserAction) {
 
 	data := C.OpenFileDialogOptions{
-		webview:       w.webview,
+		window:        w.asGTKWindow(),
 		title:         C.CString(dialogOptions.Title),
 		multipleFiles: C.int(multipleFiles),
 		action:        action,
@@ -864,8 +870,8 @@ func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multip
 		// Create filter array
 		mem := NewCalloc()
 		arraySize := len(dialogOptions.Filters) + 1
-		data.filters = C.allocFileFilterArray((C.ulong)(arraySize))
-		filters := (*[1 << 30]*C.struct__GtkFileFilter)(unsafe.Pointer(data.filters))
+		data.filters = C.allocFileFilterArray((C.size_t)(arraySize))
+		filters := unsafe.Slice((**C.struct__GtkFileFilter)(unsafe.Pointer(data.filters)), arraySize)
 		for index, filter := range dialogOptions.Filters {
 			thisFilter := C.gtk_file_filter_new()
 			C.g_object_ref(C.gpointer(thisFilter))
@@ -902,7 +908,7 @@ func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multip
 		data.defaultDirectory = C.CString(dialogOptions.DefaultDirectory)
 	}
 
-	C.ExecuteOnMainThread(C.opendialog, C.gpointer(&data))
+	invokeOnMainThread(func() { C.opendialog(unsafe.Pointer(&data)) })
 }
 
 func (w *Window) MessageDialog(dialogOptions frontend.MessageDialogOptions) {
@@ -922,7 +928,7 @@ func (w *Window) MessageDialog(dialogOptions frontend.MessageDialogOptions) {
 	case frontend.WarningDialog:
 		data.messageType = C.int(3)
 	}
-	C.ExecuteOnMainThread(C.messageDialog, C.gpointer(&data))
+	invokeOnMainThread(func() { C.messageDialog(unsafe.Pointer(&data)) })
 }
 
 func (w *Window) ToggleMaximise() {

@@ -11,7 +11,7 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 
-import {Call} from "./calls";
+import { Call } from "./calls";
 
 export function WindowReload() {
     window.location.reload();
@@ -114,6 +114,21 @@ export function WindowSetMinSize(width, height) {
     window.WailsInvoke('Wz:' + width + ':' + height);
 }
 
+
+
+/**
+ * Set the window AlwaysOnTop or not on top
+ *
+ * @export
+ */
+export function WindowSetAlwaysOnTop(b) {
+
+    window.WailsInvoke('WATP:' + (b ? '1' : '0'));
+}
+
+
+
+
 /**
  * Set the Position of the window
  *
@@ -209,7 +224,7 @@ export function WindowUnminimise() {
  * @param {number} A Alpha
  */
 export function WindowSetRGBA(R, G, B, A) {
-    let rgba = JSON.stringify({r: R || 0, g: G || 0, b: B || 0, a: A || 255});
+    let rgba = JSON.stringify({ r: R || 0, g: G || 0, b: B || 0, a: A || 255 });
     window.WailsInvoke('Wr:' + rgba);
 }
 

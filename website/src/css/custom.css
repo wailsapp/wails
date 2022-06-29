@@ -39,7 +39,7 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
     --ifm-color-primary-lightest: rgb(146, 224, 208);
     --ifm-code-font-size: 95%;
     --ifm-button-color: white;
-    --ifm-container-width-xl: 85%;
+    --ifm-container-width-xl: 100%;
 }
 
 .docusaurus-highlight-code-line {
@@ -51,6 +51,10 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
 
 .prism-code {
     counter-reset: line-number;
+}
+
+.container {
+    padding-left: 2%;
 }
 
 .prism-code.language-js .token-line::before,

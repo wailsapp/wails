@@ -73,7 +73,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		})
 
 		var err error
-		assetHandler, err = assetserver.NewAsssetHandler(ctx, d.appoptions)
+		assetHandler, err = assetserver.NewAssetHandler(ctx, d.appoptions)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -206,6 +206,9 @@ func (d *DevWebServer) WindowMinimise() {
 
 func (d *DevWebServer) WindowUnminimise() {
 	d.desktopFrontend.WindowUnminimise()
+}
+func (d *DevWebServer) WindowSetAlwaysOnTop(b bool) {
+	d.desktopFrontend.WindowSetAlwaysOnTop(b)
 }
 
 func (d *DevWebServer) WindowSetPosition(x int, y int) {

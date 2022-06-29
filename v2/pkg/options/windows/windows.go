@@ -12,6 +12,7 @@ type Messages struct {
 	DownloadPage         string
 	PressOKToInstall     string
 	ContactAdmin         string
+	InvalidFixedWebview2 string
 }
 
 const (
@@ -21,6 +22,16 @@ const (
 	Dark Theme = 1
 	// Light Mode
 	Light Theme = 2
+)
+
+type BackdropType int32
+
+const (
+	Auto            BackdropType = 0
+	Disable         BackdropType = 1 // None
+	MainWindow      BackdropType = 2 // Mica
+	TransientWindow BackdropType = 3 // Acrylic
+	TabbedWindow    BackdropType = 4 // Tabbed
 )
 
 func RGB(r, g, b uint8) int32 {
@@ -61,14 +72,29 @@ type Options struct {
 	// If the path is not valid, a messagebox will be displayed with the error and the app will exit with error code.
 	WebviewUserDataPath string
 
+	// Path to the directory with WebView2 executables. If empty WebView2 installed in the system will be used.
+	WebviewBrowserPath string
+
 	// Dark/Light or System Default Theme
 	Theme Theme
 
 	// Custom settings for dark/light mode
 	CustomTheme *ThemeSettings
 
+	// Windows 11 22579 minimum
+	TranslucencyType BackdropType
+
 	// User messages that can be customised
 	Messages *Messages
+
+	// ResizeDebounceMS is the amount of time to debounce redraws of webview2
+	// when resizing the window
+	ResizeDebounceMS uint16
+
+	// OnSuspend is called when Windows enters low power mode
+	OnSuspend func()
+	// OnResume is called when Windows resumes from low power mode
+	OnResume func()
 }
 
 func DefaultMessages() *Messages {
@@ -82,5 +108,6 @@ func DefaultMessages() *Messages {
 		DownloadPage:         "This application requires the WebView2 runtime. Press OK to open the download page. Minimum version required: ",
 		PressOKToInstall:     "Press Ok to install.",
 		ContactAdmin:         "The WebView2 runtime is required to run this application. Please contact your system administrator.",
+		InvalidFixedWebview2: "The WebView2 runtime is manually specified, but It is not valid. Check minimum required version and webview2 path.",
 	}
 }

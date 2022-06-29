@@ -44,11 +44,7 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 				argsString := args.Join(", ")
 				jsoutput.WriteString(fmt.Sprintf("\nexport function %s(%s) {", methodName, argsString))
 				jsoutput.WriteString("\n")
-				if methodDetails.OutputCount() == 0 {
-					jsoutput.WriteString(fmt.Sprintf("  window['go']['%s']['%s']['%s'](%s);", packageName, structName, methodName, argsString))
-				} else {
-					jsoutput.WriteString(fmt.Sprintf("  return window['go']['%s']['%s']['%s'](%s);", packageName, structName, methodName, argsString))
-				}
+				jsoutput.WriteString(fmt.Sprintf("  return window['go']['%s']['%s']['%s'](%s);", packageName, structName, methodName, argsString))
 				jsoutput.WriteString("\n")
 				jsoutput.WriteString(fmt.Sprintf("}"))
 				jsoutput.WriteString("\n")
@@ -104,7 +100,7 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 
 func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) string {
 	switch true {
-	case input == "interface{}":
+	case input == "interface {}":
 		return "any"
 	case input == "string":
 		return "string"

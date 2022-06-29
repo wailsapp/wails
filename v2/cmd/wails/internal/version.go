@@ -1,3 +1,6 @@
 package internal
 
-var Version = "v2.0.0-beta.36"
+import _ "embed"
+
+//go:embed version.txt
+var Version string

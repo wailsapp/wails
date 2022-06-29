@@ -4,11 +4,21 @@ package wails
 
 import (
 	app "github.com/wailsapp/wails/v2/internal/appng"
+	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 // Run creates an application based on the given config and executes it
 func Run(options *options.App) error {
+
+	if options.RGBA != nil {
+		println("---- WARNING ----")
+		println("The `RGBA` option has been deprecated. Please use `BackgroundColour`.")
+
+		if options.BackgroundColour == nil {
+			options.BackgroundColour = options.RGBA
+		}
+	}
 
 	// Call an Init method manually
 	err := Init()
@@ -20,6 +30,12 @@ func Run(options *options.App) error {
 	if err != nil {
 		return err
 	}
+
+	signal.OnShutdown(func() {
+		mainapp.Shutdown()
+	})
+
+	signal.Start()
 
 	return mainapp.Run()
 }
