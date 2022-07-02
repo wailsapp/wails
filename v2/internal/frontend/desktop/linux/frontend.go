@@ -209,6 +209,10 @@ func (f *Frontend) WindowSetMaxSize(width int, height int) {
 	f.mainWindow.SetMaxSize(width, height)
 }
 
+func (f *Frontend) WindowGetDimensions() (int, int) {
+	return f.mainWindow.GetDimensions()
+}
+
 func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 	if col == nil {
 		return

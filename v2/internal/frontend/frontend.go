@@ -84,6 +84,7 @@ type Frontend interface {
 	WindowGetSize() (int, int)
 	WindowSetMinSize(width int, height int)
 	WindowSetMaxSize(width int, height int)
+	WindowGetDimensions() (int, int)
 	WindowFullscreen()
 	WindowUnfullscreen()
 	WindowSetBackgroundColour(col *options.RGBA)

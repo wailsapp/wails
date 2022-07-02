@@ -235,6 +235,10 @@ func (d *DevWebServer) WindowSetMaxSize(width int, height int) {
 	d.desktopFrontend.WindowSetMaxSize(width, height)
 }
 
+func (d *DevWebServer) WindowGetDimensions() (int, int) {
+	return d.desktopFrontend.WindowGetDimensions()
+}
+
 func (d *DevWebServer) WindowFullscreen() {
 	d.desktopFrontend.WindowFullscreen()
 }

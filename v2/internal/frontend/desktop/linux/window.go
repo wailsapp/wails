@@ -742,6 +742,20 @@ func (w *Window) SetMinSize(minWidth int, minHeight int) {
 	C.SetMinMaxSize(w.asGTKWindow(), C.int(w.minWidth), C.int(w.minHeight), C.int(w.maxWidth), C.int(w.maxHeight))
 }
 
+func (w *Window) GetDimensions() (int, int) {
+	var width, height C.int
+	var wg sync.WaitGroup
+	wg.Add(1)
+	invokeOnMainThread(func() {
+		result := C.getCurrentMonitorGeometry(w.asGTKWindow())
+		width = result.width
+		height = result.height
+		wg.Done()
+	})
+	wg.Wait()
+	return int(width), int(height)
+}
+
 func (w *Window) Show() {
 	C.ExecuteOnMainThread(C.Show, C.gpointer(w.asGTKWindow()))
 }

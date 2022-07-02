@@ -109,6 +109,10 @@ export function WindowSetMinSize(width, height) {
     window.runtime.WindowSetMinSize(width, height);
 }
 
+export function WindowGetDimensions() {
+    return window.runtime.WindowGetDimensions();
+}
+
 export function WindowSetPosition(x, y) {
     window.runtime.WindowSetPosition(x, y);
 }

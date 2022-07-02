@@ -115,6 +115,17 @@ export function WindowSetMinSize(width, height) {
 }
 
 
+/**
+ * Get the dimensions of the current screen
+ *
+ * @export
+ * @return {Promise<{x: number, y: number}>} The dimensions of the screen
+ */
+export function WindowGetDimensions() {
+    return Call(":wails:WindowGetDimensions");
+}
+
+
 
 /**
  * Set the window AlwaysOnTop or not on top
