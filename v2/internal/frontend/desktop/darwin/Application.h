@@ -36,7 +36,7 @@ void Maximise(void* ctx);
 void UnMaximise(void* ctx);
 void Hide(void* ctx);
 void Show(void* ctx);
-void SetRGBA(void* ctx, int r, int g, int b, int a);
+void SetBackgroundColour(void* ctx, int r, int g, int b, int a);
 void ExecJS(void* ctx, const char*);
 void Quit(void*);
 

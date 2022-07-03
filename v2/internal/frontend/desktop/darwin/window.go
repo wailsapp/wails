@@ -93,7 +93,7 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 	}
 
 	if frontendOptions.BackgroundColour != nil {
-		result.SetRGBA(frontendOptions.BackgroundColour.R, frontendOptions.BackgroundColour.G, frontendOptions.BackgroundColour.B, frontendOptions.BackgroundColour.A)
+		result.SetBackgroundColour(frontendOptions.BackgroundColour.R, frontendOptions.BackgroundColour.G, frontendOptions.BackgroundColour.B, frontendOptions.BackgroundColour.A)
 	}
 
 	if frontendOptions.Mac != nil && frontendOptions.Mac.About != nil {
@@ -129,8 +129,8 @@ func (w *Window) Quit() {
 	C.Quit(w.context)
 }
 
-func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
-	C.SetRGBA(w.context, C.int(r), C.int(g), C.int(b), C.int(a))
+func (w *Window) SetBackgroundColour(r uint8, g uint8, b uint8, a uint8) {
+	C.SetBackgroundColour(w.context, C.int(r), C.int(g), C.int(b), C.int(a))
 }
 
 func (w *Window) ExecJS(js string) {

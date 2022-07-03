@@ -220,7 +220,7 @@ int main(int argc, const char * argv[]) {
     int startsHidden = 0;
     WailsContext *result = Create("OI OI!",400,400, frameless,  resizable, fullscreen, fullSizeContent, hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent, alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug, windowStartState,
                                   startsHidden, 400, 400, 600, 600);
-    SetRGBA(result, 255, 0, 0, 255);
+    SetBackgroundColour(result, 255, 0, 0, 255);
     void *m = NewMenu("");
     SetAbout(result, "Fake title", "I am a description", _Users_username_Pictures_SaltBae_png, _Users_username_Pictures_SaltBae_png_len);
 //    AddMenuByRole(result, 1);
