@@ -20,6 +20,20 @@ var assets embed.FS
 ```
 Check that `frontend/dist` contains your application assets.
 
+### Mac
+
+If this happens on Mac, try adding the following to your `Info.plist`:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsLocalNetworking</key>
+    <true/>
+</dict>
+```
+
+Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
+
 ## Mac application not valid
 
 If your built application looks like this in finder:
