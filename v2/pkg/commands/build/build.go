@@ -57,6 +57,7 @@ type Options struct {
 	BundleName          string               // Bundlename for Mac
 	TrimPath            bool                 // Use Go's trimpath compiler flag
 	RaceDetector        bool                 // Build with Go's race detector
+	WindowsConsole      bool                 // Indicates that the windows console should be kept
 }
 
 // Build the project!
