@@ -116,10 +116,10 @@ export function WindowSetMinSize(width, height) {
 
 
 /**
- * Get the dimensions of the current screen
+ * // Gets the all screens. Call this anew each time you want to refresh data from the underlying windowing system.
  *
  * @export
- * @return {Promise<{x: number, y: number}>} The dimensions of the screen
+ * @return {Promise<{isCurrent: boolean; isPrimary: boolean; width : number  height : number}>} The screens
  */
 export function ScreenGetAll() {
     return Call(":wails:ScreenGetAll");

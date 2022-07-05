@@ -242,7 +242,6 @@
     WindowSetLightTheme: () => WindowSetLightTheme,
     WindowSetMaxSize: () => WindowSetMaxSize,
     WindowSetMinSize: () => WindowSetMinSize,
-    ScreenGetAll: () => ScreenGetAll,
     WindowSetPosition: () => WindowSetPosition,
     WindowSetSize: () => WindowSetSize,
     WindowSetSystemDefaultTheme: () => WindowSetSystemDefaultTheme,
@@ -251,7 +250,8 @@
     WindowToggleMaximise: () => WindowToggleMaximise,
     WindowUnfullscreen: () => WindowUnfullscreen,
     WindowUnmaximise: () => WindowUnmaximise,
-    WindowUnminimise: () => WindowUnminimise
+    WindowUnminimise: () => WindowUnminimise,
+    ScreenGetAll: () => ScreenGetAll,
   });
   function WindowReload() {
     window.location.reload();
@@ -292,9 +292,6 @@
   function WindowSetMinSize(width, height) {
     window.WailsInvoke("Wz:" + width + ":" + height);
   }
-  function ScreenGetAll() {
-    return Call(":wails:ScreenGetAll");
-  }
   function WindowSetAlwaysOnTop(b) {
     window.WailsInvoke("WATP:" + (b ? "1" : "0"));
   }
@@ -333,6 +330,10 @@
   function WindowSetBackgroundColour(R, G, B, A) {
     let rgba = JSON.stringify({r: R || 0, g: G || 0, b: B || 0, a: A || 255});
     window.WailsInvoke("Wr:" + rgba);
+  }
+
+  function ScreenGetAll() {
+    return Call(":wails:ScreenGetAll");
   }
 
   // desktop/browser.js
