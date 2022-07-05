@@ -102,6 +102,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	raceDetector := false
 	command.BoolFlag("race", "Build with Go's race detector", &raceDetector)
 
+	windowsConsole := false
+	command.BoolFlag("windowsconsole", "Keep the console when building for Windows", &windowsConsole)
+
 	command.Action(func() error {
 
 		quiet := verbosity == 0
@@ -184,6 +187,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			WebView2Strategy:    wv2rtstrategy,
 			TrimPath:            trimpath,
 			RaceDetector:        raceDetector,
+			WindowsConsole:      windowsConsole,
 		}
 
 		// Start a new tabwriter
