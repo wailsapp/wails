@@ -109,10 +109,6 @@ export function WindowSetMinSize(width, height) {
     window.runtime.WindowSetMinSize(width, height);
 }
 
-export function WindowGetDimensions() {
-    return window.runtime.WindowGetDimensions();
-}
-
 export function WindowSetPosition(x, y) {
     window.runtime.WindowSetPosition(x, y);
 }
@@ -151,6 +147,10 @@ export function WindowUnminimise() {
 
 export function WindowSetBackgroundColour(R, G, B, A) {
     window.runtime.WindowSetBackgroundColour(R, G, B, A);
+}
+
+export function ScreenGetAll() {
+    window.runtime.ScreenGetAll();
 }
 
 export function BrowserOpenURL(url) {

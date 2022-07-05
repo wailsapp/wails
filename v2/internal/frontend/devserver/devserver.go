@@ -28,6 +28,8 @@ import (
 	"golang.org/x/net/websocket"
 )
 
+type Screen = frontend.Screen
+
 type DevWebServer struct {
 	server           *echo.Echo
 	ctx              context.Context
@@ -235,10 +237,6 @@ func (d *DevWebServer) WindowSetMaxSize(width int, height int) {
 	d.desktopFrontend.WindowSetMaxSize(width, height)
 }
 
-func (d *DevWebServer) WindowGetDimensions() (int, int) {
-	return d.desktopFrontend.WindowGetDimensions()
-}
-
 func (d *DevWebServer) WindowFullscreen() {
 	d.desktopFrontend.WindowFullscreen()
 }
@@ -249,6 +247,10 @@ func (d *DevWebServer) WindowUnfullscreen() {
 
 func (d *DevWebServer) WindowSetBackgroundColour(col *options.RGBA) {
 	d.desktopFrontend.WindowSetBackgroundColour(col)
+}
+
+func (d *DevWebServer) ScreenGetAll() ([]Screen, error) {
+	return d.desktopFrontend.ScreenGetAll()
 }
 
 func (d *DevWebServer) MenuSetApplicationMenu(menu *menu.Menu) {

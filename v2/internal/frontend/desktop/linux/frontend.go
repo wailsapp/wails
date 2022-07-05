@@ -209,15 +209,15 @@ func (f *Frontend) WindowSetMaxSize(width int, height int) {
 	f.mainWindow.SetMaxSize(width, height)
 }
 
-func (f *Frontend) WindowGetDimensions() (int, int) {
-	return f.mainWindow.GetDimensions()
-}
-
 func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 	if col == nil {
 		return
 	}
 	f.mainWindow.SetBackgroundColour(col.R, col.G, col.B, col.A)
+}
+
+func (f *Frontend) ScreenGetAll() ([]Screen, error) {
+	return GetAllScreens(f.mainWindow.asGTKWindow())
 }
 
 func (f *Frontend) Quit() {

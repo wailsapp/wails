@@ -18,6 +18,13 @@ export interface Size {
     h: number;
 }
 
+export interface Screen {
+    isCurrent: boolean;
+    isPrimary: boolean;
+    width : number
+    height : number
+}
+
 // Environment information such as platform, buildtype, ...
 export interface EnvironmentInfo {
     buildType: string;
@@ -131,10 +138,6 @@ export function WindowSetMaxSize(width: number, height: number): void;
 // Setting a size of 0,0 will disable this constraint.
 export function WindowSetMinSize(width: number, height: number): void;
 
-// [WindowGetDimensions](https://wails.io/docs/reference/runtime/window#windowgetdimensions)
-// Gets the dimensions of the screen.
-export function WindowGetSize(): Promise<Size>;
-
 // [WindowSetPosition](https://wails.io/docs/reference/runtime/window#windowsetposition)
 // Sets the window position relative to the monitor the window is currently on.
 export function WindowSetPosition(x: number, y: number): void;
@@ -174,6 +177,10 @@ export function WindowUnminimise(): void;
 // [WindowSetBackgroundColour](https://wails.io/docs/reference/runtime/window#windowsetbackgroundcolour)
 // Sets the background colour of the window to the given RGBA colour definition. This colour will show through for all transparent pixels.
 export function WindowSetBackgroundColour(R: number, G: number, B: number, A: number): void;
+
+// [ScreenGetAll](https://wails.io/docs/reference/runtime/window#screengetall)
+// Gets the all screens. Call this anew each time you want to refresh data from the underlying windowing system.
+export function ScreenGetAll(): Promise<Screen>;
 
 // [BrowserOpenURL](https://wails.io/docs/reference/runtime/browser#browseropenurl)
 // Opens the given URL in the system browser.

@@ -242,7 +242,7 @@
     WindowSetLightTheme: () => WindowSetLightTheme,
     WindowSetMaxSize: () => WindowSetMaxSize,
     WindowSetMinSize: () => WindowSetMinSize,
-    WindowGetDimensions: () => WindowGetDimensions,
+    ScreenGetAll: () => ScreenGetAll,
     WindowSetPosition: () => WindowSetPosition,
     WindowSetSize: () => WindowSetSize,
     WindowSetSystemDefaultTheme: () => WindowSetSystemDefaultTheme,
@@ -292,8 +292,8 @@
   function WindowSetMinSize(width, height) {
     window.WailsInvoke("Wz:" + width + ":" + height);
   }
-  function WindowGetDimensions() {
-    return Call(":wails:WindowGetDimensions");
+  function ScreenGetAll() {
+    return Call(":wails:ScreenGetAll");
   }
   function WindowSetAlwaysOnTop(b) {
     window.WailsInvoke("WATP:" + (b ? "1" : "0"));

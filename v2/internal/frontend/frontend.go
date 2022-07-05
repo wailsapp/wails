@@ -45,6 +45,13 @@ const (
 	QuestionDialog DialogType = "question"
 )
 
+type Screen struct {
+	IsCurrent bool `json:"isCurrent"`
+	IsPrimary bool `json:"isPrimary"`
+	Width     int  `json:"width"`
+	Height    int  `json:"height"`
+}
+
 // MessageDialogOptions contains the options for the Message dialogs, EG Info, Warning, etc runtime methods
 type MessageDialogOptions struct {
 	Type          DialogType
@@ -84,7 +91,7 @@ type Frontend interface {
 	WindowGetSize() (int, int)
 	WindowSetMinSize(width int, height int)
 	WindowSetMaxSize(width int, height int)
-	WindowGetDimensions() (int, int)
+	ScreenGetAll() ([]Screen, error)
 	WindowFullscreen()
 	WindowUnfullscreen()
 	WindowSetBackgroundColour(col *options.RGBA)

@@ -121,8 +121,8 @@ export function WindowSetMinSize(width, height) {
  * @export
  * @return {Promise<{x: number, y: number}>} The dimensions of the screen
  */
-export function WindowGetDimensions() {
-    return Call(":wails:WindowGetDimensions");
+export function ScreenGetAll() {
+    return Call(":wails:ScreenGetAll");
 }
 
 
