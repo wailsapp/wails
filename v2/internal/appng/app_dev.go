@@ -68,6 +68,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	myLogger.SetLogLevel(appoptions.LogLevel)
 
 	// Check for CLI Flags
+	devFlags := flag.NewFlagSet("dev", flag.ContinueOnError)
+
 	var assetdirFlag *string
 	var devServerFlag *string
 	var frontendDevServerURLFlag *string
@@ -75,25 +77,28 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	assetdir := os.Getenv("assetdir")
 	if assetdir == "" {
-		assetdirFlag = flag.String("assetdir", "", "Directory to serve assets")
+		assetdirFlag = devFlags.String("assetdir", "", "Directory to serve assets")
 	}
+
 	devServer := os.Getenv("devserver")
 	if devServer == "" {
-		devServerFlag = flag.String("devserver", "", "Address to bind the wails dev server to")
+		devServerFlag = devFlags.String("devserver", "", "Address to bind the wails dev server to")
 	}
+
 	frontendDevServerURL := os.Getenv("frontenddevserverurl")
 	if frontendDevServerURL == "" {
-		frontendDevServerURLFlag = flag.String("frontenddevserverurl", "", "URL of the external frontend dev server")
+		frontendDevServerURLFlag = devFlags.String("frontenddevserverurl", "", "URL of the external frontend dev server")
 	}
 
 	loglevel := os.Getenv("loglevel")
 	if loglevel == "" {
-		loglevelFlag = flag.String("loglevel", "debug", "Loglevel to use - Trace, Debug, Info, Warning, Error")
+		loglevelFlag = devFlags.String("loglevel", "debug", "Loglevel to use - Trace, Debug, Info, Warning, Error")
 	}
 
 	// If we weren't given the assetdir in the environment variables
 	if assetdir == "" {
-		flag.Parse()
+		// Parse args but ignore errors in case -appargs was used to pass in args for the app.
+		_ = devFlags.Parse(os.Args[1:])
 		if assetdirFlag != nil {
 			assetdir = *assetdirFlag
 		}
