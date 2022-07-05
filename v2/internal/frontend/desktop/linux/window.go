@@ -48,7 +48,7 @@ static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int 
 GdkMonitor* getCurrentMonitor(GtkWindow *window) {
 	// Get the monitor that the window is currently on
 	GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
-	GdkWindow *gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
+	GdkWindow *gdk_window = gtk_widget_get_window(window);
 	GdkMonitor *monitor = gdk_display_get_monitor_at_window(display, gdk_window);
 
 	return GDK_MONITOR(monitor);
