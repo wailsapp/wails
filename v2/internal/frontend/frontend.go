@@ -91,7 +91,6 @@ type Frontend interface {
 	WindowGetSize() (int, int)
 	WindowSetMinSize(width int, height int)
 	WindowSetMaxSize(width int, height int)
-	ScreenGetAll() ([]Screen, error)
 	WindowFullscreen()
 	WindowUnfullscreen()
 	WindowSetBackgroundColour(col *options.RGBA)
@@ -100,6 +99,9 @@ type Frontend interface {
 	WindowSetSystemDefaultTheme()
 	WindowSetLightTheme()
 	WindowSetDarkTheme()
+
+	//Screen
+	ScreenGetAll() ([]Screen, error)
 
 	// Menus
 	MenuSetApplicationMenu(menu *menu.Menu)
