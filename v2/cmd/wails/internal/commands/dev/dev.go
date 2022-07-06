@@ -104,7 +104,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.IntFlag("debounce", "The amount of time to wait to trigger a reload on change", &flags.debounceMS)
 	command.StringFlag("devserver", "The address of the wails dev server", &flags.devServer)
 	command.StringFlag("frontenddevserverurl", "The url of the external frontend dev server to use", &flags.frontendDevServerURL)
-	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space searated)", &flags.appargs)
+	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space separated)", &flags.appargs)
 	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
 	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
 
@@ -560,7 +560,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 	assetDirURL := joinPath(devServerURL, "/wails/assetdir")
 	reloadURL := joinPath(devServerURL, "/wails/reload")
 	for quit == false {
-		//reload := false
+		// reload := false
 		select {
 		case exitCode := <-exitCodeChannel:
 			if exitCode == 0 {
@@ -605,7 +605,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			if item.Op&fsnotify.Create == fsnotify.Create {
 				// If this is a folder, add it to our watch list
 				if fs.DirExists(item.Name) {
-					//node_modules is BANNED!
+					// node_modules is BANNED!
 					if !strings.Contains(item.Name, "node_modules") {
 						err := watcher.Add(item.Name)
 						if err != nil {
