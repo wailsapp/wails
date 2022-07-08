@@ -55,6 +55,12 @@ func AddSubcommand(app *clir.Cli, w io.Writer, currentVersion string) error {
 				desiredVersion, err = github.GetLatestPreRelease()
 			} else {
 				desiredVersion, err = github.GetLatestStableRelease()
+				if err != nil {
+					println("")
+					println("No stable release found for this major version. To update to the latest pre-release (eg beta), run:")
+					println("   wails update -pre")
+					return nil
+				}
 			}
 		}
 		if err != nil {
