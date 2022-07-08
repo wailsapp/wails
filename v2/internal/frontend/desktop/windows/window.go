@@ -86,10 +86,6 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		result.theme = winoptions.SystemDefault
 	}
 
-	if appoptions.BackgroundColour != nil {
-		win32.SetBackgroundColour(result.Handle(), appoptions.BackgroundColour.R, appoptions.BackgroundColour.G, appoptions.BackgroundColour.B)
-	}
-
 	result.SetSize(appoptions.Width, appoptions.Height)
 	result.SetText(appoptions.Title)
 	result.EnableSizable(!appoptions.DisableResize)

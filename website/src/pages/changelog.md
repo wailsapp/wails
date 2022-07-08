@@ -7,13 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.0.0-beta.38] - 2022-06-27
+
+### Added
+
+* Add race detector to build & dev by @Lyimmi in https://github.com/wailsapp/wails/pull/1426
+* [linux] Support `linux/arm` architecture by @Lyimmi in https://github.com/wailsapp/wails/pull/1427
+* Create gitignore when using `-g` option by @jaesung9507 in https://github.com/wailsapp/wails/pull/1430
+* [windows] Add Suspend/Resume callback support by @leaanthony in https://github.com/wailsapp/wails/pull/1474
+* Add runtime function `WindowSetAlwaysOnTop` by @chenxiao1990 in https://github.com/wailsapp/wails/pull/1442
+* [windows] Allow setting browser path by @NanoNik in https://github.com/wailsapp/wails/pull/1448
+
+### Fixed
+
+* [linux] Improve switching to main thread for callbacks by @stffabi in https://github.com/wailsapp/wails/pull/1392
+* [windows] Fix WebView2 minimum runtime version check by @stffabi in https://github.com/wailsapp/wails/pull/1456
+* [linux] Fix apt command syntax (#1458) by @abtin in https://github.com/wailsapp/wails/pull/1461
+* [windows] Set Window Background colour if provided + debounce redraw option by @leaanthony
+  in https://github.com/wailsapp/wails/pull/1466
+* Fix small typo in docs by @LukenSkyne in https://github.com/wailsapp/wails/pull/1449
+* Fix the url to surge by @andywenk in https://github.com/wailsapp/wails/pull/1460
+* Fixed theme change at runtime by @leaanthony in https://github.com/wailsapp/wails/pull/1473
+* Fix: Don't stop if unable to remove temporary bindings build by @leaanthony
+  in https://github.com/wailsapp/wails/pull/1465
+* [windows] Pass the correct installationStatus to the webview installation strategy by @stffabi
+  in https://github.com/wailsapp/wails/pull/1483
+* [windows] Make `SetBackgroundColour` compatible for `windows/386` by @stffabi
+  in https://github.com/wailsapp/wails/pull/1493
+* Fix lit-ts template by @Orijhins in https://github.com/wailsapp/wails/pull/1494
+
+### Changed
+
+* [windows] Load WebView2 loader from embedded only by @stffabi in https://github.com/wailsapp/wails/pull/1432
+* Add showcase entry for October + update homepage carousel entry for October by @marcus-crane
+  in https://github.com/wailsapp/wails/pull/1436
+* Always use return in wrapped method by @leaanthony in https://github.com/wailsapp/wails/pull/1410
+* [windows] Unlock OSThread after native calls have been finished by @stffabi
+  in https://github.com/wailsapp/wails/pull/1441
+* Add `BackgroundColour` and deprecate `RGBA` by @leaanthony in https://github.com/wailsapp/wails/pull/1475
+* AssetsHandler remove retry logic in dev mode by @stffabi in https://github.com/wailsapp/wails/pull/1479
+* Add Solid JS template to docs by @sidwebworks in https://github.com/wailsapp/wails/pull/1492
+* Better signal handling by @leaanthony in https://github.com/wailsapp/wails/pull/1488
+* Chore/react 18 create root by @tomanagle in https://github.com/wailsapp/wails/pull/1489
+
+## New Contributors
+
+* @jaesung9507 made their first contribution in https://github.com/wailsapp/wails/pull/1430
+* @LukenSkyne made their first contribution in https://github.com/wailsapp/wails/pull/1449
+* @andywenk made their first contribution in https://github.com/wailsapp/wails/pull/1460
+* @abtin made their first contribution in https://github.com/wailsapp/wails/pull/1461
+* @chenxiao1990 made their first contribution in https://github.com/wailsapp/wails/pull/1442
+* @NanoNik made their first contribution in https://github.com/wailsapp/wails/pull/1448
+* @sidwebworks made their first contribution in https://github.com/wailsapp/wails/pull/1492
+* @tomanagle made their first contribution in https://github.com/wailsapp/wails/pull/1489
+
 ## [v2.0.0-beta.37] - 2022-05-26
 
 ### Added
+
 * Add `nogen` flag in wails dev command by @mondy in https://github.com/wailsapp/wails/pull/1413
-* Initial support for new native translucency in Windows Preview by @leaanthony in https://github.com/wailsapp/wails/pull/1400
+* Initial support for new native translucency in Windows Preview by @leaanthony
+  in https://github.com/wailsapp/wails/pull/1400
 
 ### Fixed
+
 * Bugfix/incorrect bindings by @leaanthony in https://github.com/wailsapp/wails/pull/1383
 * Fix runtime.js events by @polikow in https://github.com/wailsapp/wails/pull/1369
 * Fix docs formatting by @antimatter96 in https://github.com/wailsapp/wails/pull/1372

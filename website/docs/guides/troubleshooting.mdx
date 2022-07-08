@@ -1,7 +1,13 @@
-
 # Troubleshooting
 
 An assortment of troubleshooting tips.
+
+## The `wails` command appears to be missing?
+
+If your system is reporting that the `wails` command is missing, make sure you have followed the Go installation guide
+correctly. Normally, it means that the `go/bin` directory in your User's home directory is not in the `PATH` environment
+variable. You will also normally need to close and reopen any open command prompts so that changes to the environment
+made by the installer are reflected at the command prompt.
 
 ## My application is displaying a white/blank screen
 
@@ -13,6 +19,20 @@ something similar to the following code:
 var assets embed.FS
 ```
 Check that `frontend/dist` contains your application assets.
+
+### Mac
+
+If this happens on Mac, try adding the following to your `Info.plist`:
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsLocalNetworking</key>
+    <true/>
+</dict>
+```
+
+Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
 
 ## Mac application not valid
 

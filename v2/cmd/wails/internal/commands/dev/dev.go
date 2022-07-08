@@ -2,6 +2,7 @@ package dev
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -36,16 +37,25 @@ import (
 )
 
 func LogGreen(message string, args ...interface{}) {
+	if len(message) == 0 {
+		return
+	}
 	text := fmt.Sprintf(message, args...)
 	println(colour.Green(text))
 }
 
 func LogRed(message string, args ...interface{}) {
+	if len(message) == 0 {
+		return
+	}
 	text := fmt.Sprintf(message, args...)
 	println(colour.Red(text))
 }
 
 func LogDarkYellow(message string, args ...interface{}) {
+	if len(message) == 0 {
+		return
+	}
 	text := fmt.Sprintf(message, args...)
 	println(colour.DarkYellow(text))
 }
@@ -103,7 +113,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.IntFlag("debounce", "The amount of time to wait to trigger a reload on change", &flags.debounceMS)
 	command.StringFlag("devserver", "The address of the wails dev server", &flags.devServer)
 	command.StringFlag("frontenddevserverurl", "The url of the external frontend dev server to use", &flags.frontendDevServerURL)
-	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space searated)", &flags.appargs)
+	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space separated)", &flags.appargs)
 	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
 	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
 
@@ -168,8 +178,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		buildOptions.Logger = logger
 		buildOptions.UserTags = internal.ParseUserTags(flags.tags)
 
-		var debugBinaryProcess *process.Process = nil
-
 		// Setup signal handler
 		quitChannel := make(chan os.Signal, 1)
 		signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
@@ -177,19 +185,23 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Do initial build
 		logger.Println("Building application for development...")
-		newProcess, appBinary, err := restartApp(buildOptions, debugBinaryProcess, flags, exitCodeChannel)
+		debugBinaryProcess, appBinary, err := restartApp(buildOptions, nil, flags, exitCodeChannel)
 		if err != nil {
 			return err
 		}
-		if newProcess != nil {
-			debugBinaryProcess = newProcess
-		}
+		defer func() {
+			if err := killProcessAndCleanupBinary(debugBinaryProcess, appBinary); err != nil {
+				LogDarkYellow("Unable to kill process and cleanup binary: %s", err)
+			}
+		}()
 
 		// frontend:dev:watcher command.
 		if command := projectConfig.DevWatcherCommand; command != "" {
-			var devCommandWaitGroup sync.WaitGroup
-			closer := runFrontendDevWatcherCommand(cwd, command, &devCommandWaitGroup)
-			defer closer(&devCommandWaitGroup)
+			closer, err := runFrontendDevWatcherCommand(cwd, command)
+			if err != nil {
+				return err
+			}
+			defer closer()
 		}
 
 		// open browser
@@ -221,26 +233,37 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		LogGreen("Using reload debounce setting of %d milliseconds", flags.debounceMS)
 
 		// Watch for changes and trigger restartApp()
-		doWatcherLoop(buildOptions, debugBinaryProcess, flags, watcher, exitCodeChannel, quitChannel, devServerURL)
+		debugBinaryProcess = doWatcherLoop(buildOptions, debugBinaryProcess, flags, watcher, exitCodeChannel, quitChannel, devServerURL)
 
-		// Kill the current program if running
-		if debugBinaryProcess != nil {
-			err := debugBinaryProcess.Kill()
-			if err != nil {
-				return err
-			}
-		}
-
-		// Remove dev binary
-		err = os.Remove(appBinary)
-		if err != nil {
+		// Kill the current program if running and remove dev binary
+		if err := killProcessAndCleanupBinary(debugBinaryProcess, appBinary); err != nil {
 			return err
 		}
+
+		// Reset the process and the binary so the defer knows about it and is a nop.
+		debugBinaryProcess = nil
+		appBinary = ""
 
 		LogGreen("Development mode exited")
 
 		return nil
 	})
+	return nil
+}
+
+func killProcessAndCleanupBinary(process *process.Process, binary string) error {
+	if process != nil && process.Running {
+		if err := process.Kill(); err != nil {
+			return err
+		}
+	}
+
+	if binary != "" {
+		err := os.Remove(binary)
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -388,35 +411,39 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 }
 
 // runFrontendDevWatcherCommand will run the `frontend:dev:watcher` command if it was given, ex- `npm run dev`
-func runFrontendDevWatcherCommand(cwd string, devCommand string, wg *sync.WaitGroup) func(group *sync.WaitGroup) {
-	LogGreen("Running frontend dev watcher command: '%s'", devCommand)
+func runFrontendDevWatcherCommand(cwd string, devCommand string) (func(), error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	dir := filepath.Join(cwd, "frontend")
 	cmdSlice := strings.Split(devCommand, " ")
-	wg.Add(1)
 	cmd := exec.CommandContext(ctx, cmdSlice[0], cmdSlice[1:]...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 	cmd.Dir = dir
-
 	setParentGID(cmd)
-	go func(ctx context.Context, devCommand string, cwd string, wg *sync.WaitGroup) {
-		err := cmd.Run()
-		if err != nil {
+	if err := cmd.Start(); err != nil {
+		cancel()
+		return nil, fmt.Errorf("Unable to start frontend DevWatcher: %w", err)
+	}
+
+	LogGreen("Running frontend DevWatcher command: '%s'", devCommand)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		if err := cmd.Wait(); err != nil {
 			if err.Error() != "exit status 1" {
-				LogRed("Error from '%s': %s", devCommand, err.Error())
+				LogRed("Error from DevWatcher '%s': %s", devCommand, err.Error())
 			}
 		}
-		LogGreen("Dev command exited!")
+		LogGreen("DevWatcher command exited!")
 		wg.Done()
-	}(ctx, devCommand, cwd, wg)
+	}()
 
-	return func(wg *sync.WaitGroup) {
+	return func() {
 		killProc(cmd, devCommand)
-		LogGreen("Dev command killed!")
+		LogGreen("DevWatcher command killed!")
 		cancel()
 		wg.Wait()
-	}
+	}, nil
 }
 
 // initialiseWatcher creates the project directory watcher that will trigger recompile
@@ -463,8 +490,13 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 	appBinary, err := build.Build(buildOptions)
 	println()
 	if err != nil {
-		LogRed("Build error - continuing to run current version")
-		LogDarkYellow(err.Error())
+		LogRed("Build error - " + err.Error())
+
+		msg := "Continuing to run current version"
+		if debugBinaryProcess == nil {
+			msg = "No version running, build will be retriggered as soon as changes have been detected"
+		}
+		LogDarkYellow(msg)
 		return nil, "", nil
 	}
 
@@ -510,12 +542,8 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 }
 
 // doWatcherLoop is the main watch loop that runs while dev is active
-func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Process, flags devFlags, watcher *fsnotify.Watcher, exitCodeChannel chan int, quitChannel chan os.Signal, devServerURL *url.URL) {
+func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Process, flags devFlags, watcher *fsnotify.Watcher, exitCodeChannel chan int, quitChannel chan os.Signal, devServerURL *url.URL) *process.Process {
 	// Main Loop
-	var (
-		err              error
-		newBinaryProcess *process.Process
-	)
 	var extensionsThatTriggerARebuild = sliceToMap(strings.Split(flags.extensions, ","))
 	var dirsThatTriggerAReload []string
 	for _, dir := range strings.Split(flags.reloadDirs, ",") {
@@ -541,7 +569,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 	assetDirURL := joinPath(devServerURL, "/wails/assetdir")
 	reloadURL := joinPath(devServerURL, "/wails/reload")
 	for quit == false {
-		//reload := false
+		// reload := false
 		select {
 		case exitCode := <-exitCodeChannel:
 			if exitCode == 0 {
@@ -586,7 +614,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			if item.Op&fsnotify.Create == fsnotify.Create {
 				// If this is a folder, add it to our watch list
 				if fs.DirExists(item.Name) {
-					//node_modules is BANNED!
+					// node_modules is BANNED!
 					if !strings.Contains(item.Name, "node_modules") {
 						err := watcher.Add(item.Name)
 						if err != nil {
@@ -601,7 +629,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 				rebuild = false
 				LogGreen("[Rebuild triggered] files updated")
 				// Try and build the app
-				newBinaryProcess, _, err = restartApp(buildOptions, debugBinaryProcess, flags, exitCodeChannel)
+				newBinaryProcess, _, err := restartApp(buildOptions, debugBinaryProcess, flags, exitCodeChannel)
 				if err != nil {
 					LogRed("Error during build: %s", err.Error())
 					continue
@@ -647,7 +675,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			}
 			if reload {
 				reload = false
-				_, err = http.Get(reloadURL)
+				_, err := http.Get(reloadURL)
 				if err != nil {
 					LogRed("Error during refresh: %s", err.Error())
 				}
@@ -657,6 +685,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			quit = true
 		}
 	}
+	return debugBinaryProcess
 }
 
 func joinPath(url *url.URL, subPath string) string {

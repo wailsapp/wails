@@ -4,10 +4,12 @@ package win32
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"log"
+	"strconv"
 	"syscall"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 )
 
 const (
@@ -119,7 +121,19 @@ func dwmExtendFrameIntoClientArea(hwnd uintptr, margins *MARGINS) error {
 }
 
 func setClassLongPtr(hwnd uintptr, param int32, val uintptr) bool {
-	ret, _, _ := procSetClassLongPtr.Call(
+	proc := procSetClassLongPtr
+	if strconv.IntSize == 32 {
+		/*
+			https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setclasslongptrw
+			Note: 	To write code that is compatible with both 32-bit and 64-bit Windows, use SetClassLongPtr.
+					When compiling for 32-bit Windows, SetClassLongPtr is defined as a call to the SetClassLong function
+
+			=> We have to do this dynamically when directly calling the DLL procedures
+		*/
+		proc = procSetClassLong
+	}
+
+	ret, _, _ := proc.Call(
 		hwnd,
 		uintptr(param),
 		val,

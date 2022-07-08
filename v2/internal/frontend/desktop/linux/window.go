@@ -431,12 +431,20 @@ typedef struct RGBAOptions {
 	uint8_t b;
 	uint8_t a;
 	void *webview;
+	void *window;
 } RGBAOptions;
 
-void setRGBA(void* data) {
+void setBackgroundColour(void* data) {
 	RGBAOptions* options = (RGBAOptions*)data;
 	GdkRGBA colour = {options->r / 255.0, options->g / 255.0, options->b / 255.0, options->a / 255.0};
 	webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(options->webview), &colour);
+	GtkCssProvider *provider = gtk_css_provider_new();
+	char buffer[60];
+	sprintf((void*)&buffer[0], "* { background-color: rgba(%d,%d,%d,%d); }", options->r, options->g, options->b, options->a);
+	gtk_css_provider_load_from_data (provider, &buffer[0], -1, NULL);
+	gtk_style_context_add_provider(gtk_widget_get_style_context(GTK_WIDGET(options->window)),
+                                        GTK_STYLE_PROVIDER(provider),
+                                        GTK_STYLE_PROVIDER_PRIORITY_USER);
 }
 
 typedef struct SetTitleArgs {
@@ -565,6 +573,7 @@ void SetWindowIcon(GtkWindow* window, const guchar* buf, gsize len) {
 import "C"
 import (
 	"strings"
+	"sync"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -637,7 +646,7 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 
 	// Set background colour
 	RGBA := appoptions.BackgroundColour
-	result.SetRGBA(RGBA.R, RGBA.G, RGBA.B, RGBA.A)
+	result.SetBackgroundColour(RGBA.R, RGBA.G, RGBA.B, RGBA.A)
 
 	// Setup window
 	result.SetKeepAbove(appoptions.AlwaysOnTop)
@@ -707,13 +716,25 @@ func (w *Window) SetPosition(x int, y int) {
 
 func (w *Window) Size() (int, int) {
 	var width, height C.int
-	C.gtk_window_get_size(w.asGTKWindow(), &width, &height)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	invokeOnMainThread(func() {
+		C.gtk_window_get_size(w.asGTKWindow(), &width, &height)
+		wg.Done()
+	})
+	wg.Wait()
 	return int(width), int(height)
 }
 
 func (w *Window) GetPosition() (int, int) {
 	var width, height C.int
-	C.gtk_window_get_position(w.asGTKWindow(), &width, &height)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	invokeOnMainThread(func() {
+		C.gtk_window_get_position(w.asGTKWindow(), &width, &height)
+		wg.Done()
+	})
+	wg.Wait()
 	return int(width), int(height)
 }
 
@@ -766,15 +787,16 @@ func (w *Window) IsMaximised() bool {
 	return result > 0
 }
 
-func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
+func (w *Window) SetBackgroundColour(r uint8, g uint8, b uint8, a uint8) {
 	data := C.RGBAOptions{
 		r:       C.uchar(r),
 		g:       C.uchar(g),
 		b:       C.uchar(b),
 		a:       C.uchar(a),
 		webview: w.webview,
+		window:  w.gtkWindow,
 	}
-	invokeOnMainThread(func() { C.setRGBA(unsafe.Pointer(&data)) })
+	invokeOnMainThread(func() { C.setBackgroundColour(unsafe.Pointer(&data)) })
 
 }
 
