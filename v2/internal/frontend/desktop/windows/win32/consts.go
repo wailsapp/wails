@@ -12,12 +12,12 @@ type HRESULT int32
 type HANDLE uintptr
 
 var (
-	moduser32                = syscall.NewLazyDLL("user32.dll")
-	procSystemParametersInfo = moduser32.NewProc("SystemParametersInfoW")
-	procGetWindowLong        = moduser32.NewProc("GetWindowLongW")
-	procSetClassLong         = moduser32.NewProc("SetClassLongW")
-	procSetClassLongPtr      = moduser32.NewProc("SetClassLongPtrW")
-	procShowWindow           = moduser32.NewProc("ShowWindow")
+	moduser32                       = syscall.NewLazyDLL("user32.dll")
+	procSystemParametersInfo        = moduser32.NewProc("SystemParametersInfoW")
+	procGetWindowLong               = moduser32.NewProc("GetWindowLongW")
+	procSetClassLong                = moduser32.NewProc("SetClassLongW")
+	procSetClassLongPtr             = moduser32.NewProc("SetClassLongPtrW")
+	procShowWindow                  = moduser32.NewProc("ShowWindow")
 	procLookupIconIdFromDirectoryEx = moduser32.NewProc("LookupIconIdFromDirectoryEx")
 	procCreateIconFromResourceEx    = moduser32.NewProc("CreateIconFromResourceEx")
 	procCreateIconIndirect          = moduser32.NewProc("CreateIconIndirect")
@@ -191,7 +191,6 @@ const (
 	WM_PENWINFIRST            = 896
 	WM_PENWINLAST             = 911
 	WM_POWER                  = 72
-	WM_POWERBROADCAST         = 536
 	WM_PRINT                  = 791
 	WM_PRINTCLIENT            = 792
 	WM_QUERYDRAGICON          = 55
