@@ -13,6 +13,7 @@ import {eventListeners, EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnc
 import {Call, Callback, callbacks} from './calls';
 import {SetBindings} from "./bindings";
 import * as Window from "./window";
+import * as Screen from "./screen";
 import * as Browser from "./browser";
 
 
@@ -29,6 +30,7 @@ window.runtime = {
     ...Log,
     ...Window,
     ...Browser,
+    ...Screen,
     EventsOn,
     EventsOnce,
     EventsOnMultiple,

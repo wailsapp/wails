@@ -114,19 +114,6 @@ export function WindowSetMinSize(width, height) {
     window.WailsInvoke('Wz:' + width + ':' + height);
 }
 
-
-/**
- * // Gets the all screens. Call this anew each time you want to refresh data from the underlying windowing system.
- *
- * @export
- * @return {Promise<{isCurrent: boolean; isPrimary: boolean; width : number  height : number}>} The screens
- */
-export function ScreenGetAll() {
-    return Call(":wails:ScreenGetAll");
-}
-
-
-
 /**
  * Set the window AlwaysOnTop or not on top
  *
