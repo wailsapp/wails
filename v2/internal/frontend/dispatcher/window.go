@@ -32,6 +32,12 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 			go sender.WindowSetLightTheme()
 		case "DT":
 			go sender.WindowSetDarkTheme()
+		case "TP:0", "TP:1":
+			if message[2:] == "TP:0" {
+				go sender.WindowSetAlwaysOnTop(false)
+			} else if message[2:] == "TP:1" {
+				go sender.WindowSetAlwaysOnTop(true)
+			}
 		}
 	case 'c':
 		go sender.WindowCenter()
@@ -64,7 +70,7 @@ func (d *Dispatcher) processWindowMessage(message string, sender frontend.Fronte
 		if err != nil {
 			return "", err
 		}
-		go sender.WindowSetRGBA(&rgba)
+		go sender.WindowSetBackgroundColour(&rgba)
 	case 'M':
 		go sender.WindowMaximise()
 	case 't':

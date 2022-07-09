@@ -96,8 +96,8 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 		context: unsafe.Pointer(context),
 	}
 
-	if frontendOptions.RGBA != nil {
-		result.SetRGBA(frontendOptions.RGBA.R, frontendOptions.RGBA.G, frontendOptions.RGBA.B, frontendOptions.RGBA.A)
+	if frontendOptions.BackgroundColour != nil {
+		result.SetBackgroundColour(frontendOptions.BackgroundColour.R, frontendOptions.BackgroundColour.G, frontendOptions.BackgroundColour.B, frontendOptions.BackgroundColour.A)
 	}
 
 	if frontendOptions.Mac != nil && frontendOptions.Mac.About != nil {
@@ -133,8 +133,8 @@ func (w *Window) Quit() {
 	C.Quit(w.context)
 }
 
-func (w *Window) SetRGBA(r uint8, g uint8, b uint8, a uint8) {
-	C.SetRGBA(w.context, C.int(r), C.int(g), C.int(b), C.int(a))
+func (w *Window) SetBackgroundColour(r uint8, g uint8, b uint8, a uint8) {
+	C.SetBackgroundColour(w.context, C.int(r), C.int(g), C.int(b), C.int(a))
 }
 
 func (w *Window) ExecJS(js string) {
@@ -149,6 +149,10 @@ func (w *Window) SetPosition(x int, y int) {
 
 func (w *Window) SetSize(width int, height int) {
 	C.SetSize(w.context, C.int(width), C.int(height))
+}
+
+func (w *Window) SetAlwaysOnTop(onTop bool) {
+	C.SetAlwaysOnTop(w.context, bool2Cint(onTop))
 }
 
 func (w *Window) SetTitle(title string) {

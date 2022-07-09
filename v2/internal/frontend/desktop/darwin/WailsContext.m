@@ -299,7 +299,7 @@
     [self.webview loadRequest:wkRequest];
 }
 
-- (void) SetRGBA:(int)r :(int)g :(int)b :(int)a {
+- (void) SetBackgroundColour:(int)r :(int)g :(int)b :(int)a {
     float red = r/255.0;
     float green = g/255.0;
     float blue = b/255.0;
@@ -369,6 +369,14 @@
 - (void) UnMaximise {
     if ([self.mainWindow isZoomed]) {
         [self.mainWindow zoom:nil];
+    }
+}
+
+- (void) SetAlwaysOnTop:(int)onTop {
+    if (onTop) {
+        [self.mainWindow setLevel:NSStatusWindowLevel];
+    } else {
+        [self.mainWindow setLevel:NSNormalWindowLevel];
     }
 }
 

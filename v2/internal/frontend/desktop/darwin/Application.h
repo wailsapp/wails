@@ -23,6 +23,7 @@ void Run(void *inctx, const char* url, int activationPolicy);
 void SetTitle(void* ctx, const char *title);
 void Center(void* ctx);
 void SetSize(void* ctx, int width, int height);
+void SetAlwaysOnTop(void* ctx, int onTop);
 void SetMinSize(void* ctx, int width, int height);
 void SetMaxSize(void* ctx, int width, int height);
 void SetPosition(void* ctx, int x, int y);
@@ -35,7 +36,7 @@ void Maximise(void* ctx);
 void UnMaximise(void* ctx);
 void Hide(void* ctx);
 void Show(void* ctx);
-void SetRGBA(void* ctx, int r, int g, int b, int a);
+void SetBackgroundColour(void* ctx, int r, int g, int b, int a);
 void ExecJS(void* ctx, const char*);
 void Quit(void*);
 

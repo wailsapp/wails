@@ -50,10 +50,8 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 			return fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 		}
 
-		err = os.Remove(filename)
-		if err != nil {
-			return err
-		}
+		// Best effort removal of temp file
+		_ = os.Remove(filename)
 
 		return nil
 	})

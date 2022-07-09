@@ -12,9 +12,12 @@ type HRESULT int32
 type HANDLE uintptr
 
 var (
-	moduser32                       = syscall.NewLazyDLL("user32.dll")
-	procSystemParametersInfo        = moduser32.NewProc("SystemParametersInfoW")
-	procGetWindowLong               = moduser32.NewProc("GetWindowLongW")
+	moduser32                = syscall.NewLazyDLL("user32.dll")
+	procSystemParametersInfo = moduser32.NewProc("SystemParametersInfoW")
+	procGetWindowLong        = moduser32.NewProc("GetWindowLongW")
+	procSetClassLong         = moduser32.NewProc("SetClassLongW")
+	procSetClassLongPtr      = moduser32.NewProc("SetClassLongPtrW")
+	procShowWindow           = moduser32.NewProc("ShowWindow")
 	procLookupIconIdFromDirectoryEx = moduser32.NewProc("LookupIconIdFromDirectoryEx")
 	procCreateIconFromResourceEx    = moduser32.NewProc("CreateIconFromResourceEx")
 	procCreateIconIndirect          = moduser32.NewProc("CreateIconIndirect")
@@ -30,6 +33,11 @@ var (
 	procDwmSetWindowAttribute        = moddwmapi.NewProc("DwmSetWindowAttribute")
 	procDwmExtendFrameIntoClientArea = moddwmapi.NewProc("DwmExtendFrameIntoClientArea")
 )
+var (
+	modwingdi            = syscall.NewLazyDLL("gdi32.dll")
+	procCreateSolidBrush = modwingdi.NewProc("CreateSolidBrush")
+)
+
 var windowsVersion, _ = operatingsystem.GetWindowsVersionInfo()
 
 func IsWindowsVersionAtLeast(major, minor, buildNumber int) bool {

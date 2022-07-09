@@ -92,6 +92,12 @@ func WindowSetMaxSize(ctx context.Context, width int, height int) {
 	appFrontend.WindowSetMaxSize(width, height)
 }
 
+// WindowSetAlwaysOnTop sets the window AlwaysOnTop or not on top
+func WindowSetAlwaysOnTop(ctx context.Context, b bool) {
+	appFrontend := getFrontend(ctx)
+	appFrontend.WindowSetAlwaysOnTop(b)
+}
+
 // WindowSetPosition sets the position of the window
 func WindowSetPosition(ctx context.Context, x int, y int) {
 	appFrontend := getFrontend(ctx)
@@ -133,7 +139,8 @@ func WindowUnminimise(ctx context.Context) {
 	appFrontend.WindowUnminimise()
 }
 
-func WindowSetRGBA(ctx context.Context, R, G, B, A uint8) {
+// WindowSetBackgroundColour sets the colour of the window background
+func WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8) {
 	appFrontend := getFrontend(ctx)
 	col := &options.RGBA{
 		R: R,
@@ -141,5 +148,5 @@ func WindowSetRGBA(ctx context.Context, R, G, B, A uint8) {
 		B: B,
 		A: A,
 	}
-	appFrontend.WindowSetRGBA(col)
+	appFrontend.WindowSetBackgroundColour(col)
 }

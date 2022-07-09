@@ -99,6 +99,12 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	trimpath := false
 	command.BoolFlag("trimpath", "Remove all file system paths from the resulting executable", &trimpath)
 
+	raceDetector := false
+	command.BoolFlag("race", "Build with Go's race detector", &raceDetector)
+
+	windowsConsole := false
+	command.BoolFlag("windowsconsole", "Keep the console when building for Windows", &windowsConsole)
+
 	command.Action(func() error {
 
 		quiet := verbosity == 0
@@ -180,6 +186,8 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			UserTags:            userTags,
 			WebView2Strategy:    wv2rtstrategy,
 			TrimPath:            trimpath,
+			RaceDetector:        raceDetector,
+			WindowsConsole:      windowsConsole,
 		}
 
 		// Start a new tabwriter
@@ -197,6 +205,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		_, _ = fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
 		_, _ = fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
 		_, _ = fmt.Fprintf(w, "Tags: \t[%s]\n", strings.Join(buildOptions.UserTags, ","))
+		_, _ = fmt.Fprintf(w, "Race Detector: \t%t\n", buildOptions.RaceDetector)
 		if len(buildOptions.OutputFile) > 0 && targets.Length() == 1 {
 			_, _ = fmt.Fprintf(w, "Output File: \t%s\n", buildOptions.OutputFile)
 		}
@@ -229,6 +238,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			"linux",
 			"linux/amd64",
 			"linux/arm64",
+			"linux/arm",
 			"windows",
 			"windows/amd64",
 			"windows/arm64",
@@ -259,10 +269,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			// Calculate platform and arch
 			platformSplit := strings.Split(platform, "/")
 			buildOptions.Platform = platformSplit[0]
+			buildOptions.Arch = runtime.GOARCH
 			if system.IsAppleSilicon {
 				buildOptions.Arch = "arm64"
-			} else {
-				buildOptions.Arch = runtime.GOARCH
 			}
 			if len(platformSplit) == 2 {
 				buildOptions.Arch = platformSplit[1]
@@ -330,7 +339,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			// Output stats
 			buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", outputFilename, time.Since(start).Round(time.Millisecond).String()))
 
-			outputBinaries[platform] = outputFilename
+			outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = outputFilename
 		})
 
 		if targetErr != nil {

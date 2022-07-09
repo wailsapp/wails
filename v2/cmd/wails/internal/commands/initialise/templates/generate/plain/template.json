@@ -1,0 +1,7 @@
+{
+  "name": "Plain HTML/JS/CSS",
+  "shortname": "plain",
+  "author": "Lea Anthony <lea.anthony@gmail.com>",
+  "description": "A simple template using only HTML/CSS/JS",
+  "helpurl": "https://github.com/wailsapp/wails"
+}

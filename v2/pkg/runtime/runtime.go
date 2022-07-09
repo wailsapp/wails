@@ -67,12 +67,14 @@ func Quit(ctx context.Context) {
 	appFrontend.Quit()
 }
 
+// EnvironmentInfo contains information about the environment
 type EnvironmentInfo struct {
-	BuildType string `json:"buildtype"`
+	BuildType string `json:"buildType"`
 	Platform  string `json:"platform"`
 	Arch      string `json:"arch"`
 }
 
+// Environment returns information about the environment
 func Environment(ctx context.Context) EnvironmentInfo {
 	var result EnvironmentInfo
 	buildType := ctx.Value("buildtype")

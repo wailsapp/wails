@@ -17,6 +17,8 @@ func (a *App) Run() error {
 	return nil
 }
 
+func (a *App) Shutdown() {}
+
 // CreateApp creates the app!
 func CreateApp(_ *options.App) (*App, error) {
 	result := w32.MessageBox(0,

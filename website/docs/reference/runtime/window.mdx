@@ -127,6 +127,14 @@ Will resize the window if the window is currently larger than the given dimensio
 
 Setting a size of `0,0` will disable this constraint.
 
+### WindowSetAlwaysOnTop
+Go Signature: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`
+
+JS Signature: `WindowSetAlwaysOnTop(b: Boolen)`
+
+Sets the window AlwaysOnTop or not on top.
+
+
 ### WindowSetPosition
 Go Signature: `WindowSetPosition(ctx context.Context, x int, y int)`
 
@@ -176,10 +184,10 @@ JS Signature: `WindowUnminimise()`
 
 Restores the window to the dimensions and position prior to minimising.
 
-### WindowSetRGBA
-Go Signature: `WindowSetRGBA(ctx context.Context, R, G, B, A uint8)`
+### WindowSetBackgroundColour
+Go Signature: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`
 
-JS Signature: `WindowSetRGBA(R, G, B, A)`
+JS Signature: `WindowSetBackgroundColour(R, G, B, A)`
 
 Sets the background colour of the window to the given RGBA colour definition.
 This colour will show through for all transparent pixels.

@@ -82,10 +82,10 @@ void SetTitle(void* inctx, const char *title) {
 }
 
 
-void SetRGBA(void *inctx, int r, int g, int b, int a) {
+void SetBackgroundColour(void *inctx, int r, int g, int b, int a) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
-       [ctx SetRGBA:r :g :b :a];
+       [ctx SetBackgroundColour:r :g :b :a];
     );
 }
 
@@ -93,6 +93,13 @@ void SetSize(void* inctx, int width, int height) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
        [ctx SetSize:width :height];
+    );
+}
+
+void SetAlwaysOnTop(void* inctx, int onTop) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx SetAlwaysOnTop:onTop];
     );
 }
 
