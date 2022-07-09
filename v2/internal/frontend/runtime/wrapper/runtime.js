@@ -150,7 +150,7 @@ export function WindowSetBackgroundColour(R, G, B, A) {
 }
 
 export function ScreenGetAll() {
-    window.runtime.ScreenGetAll();
+    return window.runtime.ScreenGetAll();
 }
 
 export function BrowserOpenURL(url) {
