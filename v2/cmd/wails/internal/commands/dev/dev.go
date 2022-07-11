@@ -1,10 +1,14 @@
 package dev
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/acarl005/stripansi"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -183,6 +187,19 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
 		exitCodeChannel := make(chan int, 1)
 
+		// frontend:dev:watcher command.
+		if command := projectConfig.DevWatcherCommand; command != "" {
+			closer, devServerURL, err := runFrontendDevWatcherCommand(cwd, command, projectConfig.FrontendDevServerURL == "auto")
+			if err != nil {
+				return err
+			}
+			if devServerURL != "" {
+				projectConfig.FrontendDevServerURL = devServerURL
+				flags.frontendDevServerURL = devServerURL
+			}
+			defer closer()
+		}
+
 		// Do initial build
 		logger.Println("Building application for development...")
 		debugBinaryProcess, appBinary, err := restartApp(buildOptions, nil, flags, exitCodeChannel)
@@ -194,15 +211,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				LogDarkYellow("Unable to kill process and cleanup binary: %s", err)
 			}
 		}()
-
-		// frontend:dev:watcher command.
-		if command := projectConfig.DevWatcherCommand; command != "" {
-			closer, err := runFrontendDevWatcherCommand(cwd, command)
-			if err != nil {
-				return err
-			}
-			defer closer()
-		}
 
 		// open browser
 		if flags.openBrowser {
@@ -411,18 +419,22 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 }
 
 // runFrontendDevWatcherCommand will run the `frontend:dev:watcher` command if it was given, ex- `npm run dev`
-func runFrontendDevWatcherCommand(cwd string, devCommand string) (func(), error) {
+func runFrontendDevWatcherCommand(cwd string, devCommand string, discoverViteServerURL bool) (func(), string, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	dir := filepath.Join(cwd, "frontend")
 	cmdSlice := strings.Split(devCommand, " ")
 	cmd := exec.CommandContext(ctx, cmdSlice[0], cmdSlice[1:]...)
 	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
 	cmd.Dir = dir
 	setParentGID(cmd)
+	stdo, err := cmd.StdoutPipe()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if err := cmd.Start(); err != nil {
 		cancel()
-		return nil, fmt.Errorf("Unable to start frontend DevWatcher: %w", err)
+		return nil, "", fmt.Errorf("Unable to start frontend DevWatcher: %w", err)
 	}
 
 	LogGreen("Running frontend DevWatcher command: '%s'", devCommand)
@@ -438,12 +450,34 @@ func runFrontendDevWatcherCommand(cwd string, devCommand string) (func(), error)
 		wg.Done()
 	}()
 
+	var viteServerURL string
+	if discoverViteServerURL {
+		buf := bufio.NewReader(stdo)
+		count := 0
+		for {
+			line, _, _ := buf.ReadLine()
+			count++
+			match := bytes.Index(line, []byte("Local:"))
+			if match != -1 {
+				line := strings.TrimSpace(string(line[match+6:]))
+				viteServerURL = stripansi.Strip(line)
+				LogGreen("Vite Server URL: %s", viteServerURL)
+				_, err := url.Parse(viteServerURL)
+				if err != nil {
+					println(err.Error())
+					break
+				}
+				break
+			}
+		}
+	}
+
 	return func() {
 		killProc(cmd, devCommand)
 		LogGreen("DevWatcher command killed!")
 		cancel()
 		wg.Wait()
-	}, nil
+	}, viteServerURL, nil
 }
 
 // initialiseWatcher creates the project directory watcher that will trigger recompile
@@ -550,12 +584,12 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 		if dir == "" {
 			continue
 		}
-		path, err := filepath.Abs(dir)
+		thePath, err := filepath.Abs(dir)
 		if err != nil {
 			LogRed("Unable to expand reloadDir '%s': %s", dir, err)
 			continue
 		}
-		dirsThatTriggerAReload = append(dirsThatTriggerAReload, path)
+		dirsThatTriggerAReload = append(dirsThatTriggerAReload, thePath)
 	}
 
 	quit := false
@@ -661,8 +695,8 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 				}
 
 				if assetDir != "" {
-					for path := range changedPaths {
-						if strings.HasPrefix(path, assetDir) {
+					for thePath := range changedPaths {
+						if strings.HasPrefix(thePath, assetDir) {
 							reload = true
 							break
 						}
