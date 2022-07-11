@@ -73,8 +73,10 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 					firstType := goTypeToTypescriptType(methodDetails.Outputs[0].TypeName, &importNamespaces)
 					returnType += "<" + firstType
 					if methodDetails.OutputCount() == 2 {
-						secondType := goTypeToTypescriptType(methodDetails.Outputs[1].TypeName, &importNamespaces)
-						returnType += "|" + secondType
+						if methodDetails.Outputs[1].TypeName != "error" {
+							secondType := goTypeToTypescriptType(methodDetails.Outputs[1].TypeName, &importNamespaces)
+							returnType += "|" + secondType
+						}
 					}
 					returnType += ">"
 				} else {
