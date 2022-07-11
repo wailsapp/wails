@@ -453,10 +453,8 @@ func runFrontendDevWatcherCommand(cwd string, devCommand string, discoverViteSer
 	var viteServerURL string
 	if discoverViteServerURL {
 		buf := bufio.NewReader(stdo)
-		count := 0
 		for {
 			line, _, _ := buf.ReadLine()
-			count++
 			match := bytes.Index(line, []byte("Local:"))
 			if match != -1 {
 				line := strings.TrimSpace(string(line[match+6:]))
@@ -464,7 +462,7 @@ func runFrontendDevWatcherCommand(cwd string, devCommand string, discoverViteSer
 				LogGreen("Vite Server URL: %s", viteServerURL)
 				_, err := url.Parse(viteServerURL)
 				if err != nil {
-					println(err.Error())
+					LogRed(err.Error())
 					break
 				}
 				break
