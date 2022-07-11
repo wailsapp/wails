@@ -32,7 +32,7 @@ func GetInfo() (*Info, error) {
 	return &result, nil
 }
 
-func checkNPM() *packagemanager.Dependancy {
+func checkNPM() *packagemanager.Dependency {
 
 	// Check for npm
 	output, err := exec.Command("npm", "-version").Output()
@@ -43,7 +43,7 @@ func checkNPM() *packagemanager.Dependancy {
 	} else {
 		version = strings.TrimSpace(strings.Split(string(output), "\n")[0])
 	}
-	return &packagemanager.Dependancy{
+	return &packagemanager.Dependency{
 		Name:           "npm ",
 		PackageName:    "N/A",
 		Installed:      installed,
@@ -54,7 +54,7 @@ func checkNPM() *packagemanager.Dependancy {
 	}
 }
 
-func checkUPX() *packagemanager.Dependancy {
+func checkUPX() *packagemanager.Dependency {
 
 	// Check for npm
 	output, err := exec.Command("upx", "-V").Output()
@@ -65,7 +65,7 @@ func checkUPX() *packagemanager.Dependancy {
 	} else {
 		version = strings.TrimSpace(strings.Split(string(output), "\n")[0])
 	}
-	return &packagemanager.Dependancy{
+	return &packagemanager.Dependency{
 		Name:           "upx ",
 		PackageName:    "N/A",
 		Installed:      installed,
@@ -76,7 +76,7 @@ func checkUPX() *packagemanager.Dependancy {
 	}
 }
 
-func checkNSIS() *packagemanager.Dependancy {
+func checkNSIS() *packagemanager.Dependency {
 
 	// Check for nsis installer
 	output, err := exec.Command("makensis", "-VERSION").Output()
@@ -87,7 +87,7 @@ func checkNSIS() *packagemanager.Dependancy {
 	} else {
 		version = strings.TrimSpace(strings.Split(string(output), "\n")[0])
 	}
-	return &packagemanager.Dependancy{
+	return &packagemanager.Dependency{
 		Name:           "nsis ",
 		PackageName:    "N/A",
 		Installed:      installed,
@@ -98,12 +98,12 @@ func checkNSIS() *packagemanager.Dependancy {
 	}
 }
 
-func checkLibrary(name string) func() *packagemanager.Dependancy {
-	return func() *packagemanager.Dependancy {
+func checkLibrary(name string) func() *packagemanager.Dependency {
+	return func() *packagemanager.Dependency {
 		output, _, _ := shell.RunCommand(".", "pkg-config", "--cflags", name)
 		installed := len(strings.TrimSpace(output)) > 0
 
-		return &packagemanager.Dependancy{
+		return &packagemanager.Dependency{
 			Name:           "lib" + name + " ",
 			PackageName:    "N/A",
 			Installed:      installed,
@@ -115,7 +115,7 @@ func checkLibrary(name string) func() *packagemanager.Dependancy {
 	}
 }
 
-func checkDocker() *packagemanager.Dependancy {
+func checkDocker() *packagemanager.Dependency {
 
 	// Check for npm
 	output, err := exec.Command("docker", "version").Output()
@@ -139,7 +139,7 @@ func checkDocker() *packagemanager.Dependancy {
 			}
 		}
 	}
-	return &packagemanager.Dependancy{
+	return &packagemanager.Dependency{
 		Name:           "docker ",
 		PackageName:    "N/A",
 		Installed:      installed,

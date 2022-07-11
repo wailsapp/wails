@@ -21,8 +21,8 @@ type PackageManager interface {
 	InstallCommand(*Package) string
 }
 
-// Dependancy represents a system package that we require
-type Dependancy struct {
+// Dependency represents a system package that we require
+type Dependency struct {
 	Name           string
 	PackageName    string
 	Installed      bool
@@ -33,7 +33,7 @@ type Dependancy struct {
 }
 
 // DependencyList is a list of Dependency instances
-type DependencyList []*Dependancy
+type DependencyList []*Dependency
 
 // InstallAllRequiredCommand returns the command you need to use to install all required dependencies
 func (d DependencyList) InstallAllRequiredCommand() string {

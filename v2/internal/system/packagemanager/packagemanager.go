@@ -50,15 +50,15 @@ func newPackageManager(pmname string, osid string) PackageManager {
 	return nil
 }
 
-// Dependancies scans the system for required dependancies
-// Returns a list of dependancies search for, whether they were found
+// Dependencies scans the system for required dependencies
+// Returns a list of dependencies search for, whether they were found
 // and whether they were installed
-func Dependancies(p PackageManager) (DependencyList, error) {
+func Dependencies(p PackageManager) (DependencyList, error) {
 
 	var dependencies DependencyList
 
 	for name, packages := range p.Packages() {
-		dependency := &Dependancy{Name: name}
+		dependency := &Dependency{Name: name}
 		for _, pkg := range packages {
 			dependency.Optional = pkg.Optional
 			dependency.External = !pkg.SystemPackage
