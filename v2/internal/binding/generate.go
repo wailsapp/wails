@@ -73,8 +73,10 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 					firstType := goTypeToTypescriptType(methodDetails.Outputs[0].TypeName, &importNamespaces)
 					returnType += "<" + firstType
 					if methodDetails.OutputCount() == 2 {
-						secondType := goTypeToTypescriptType(methodDetails.Outputs[1].TypeName, &importNamespaces)
-						returnType += "|" + secondType
+						if methodDetails.Outputs[1].TypeName != "error" {
+							secondType := goTypeToTypescriptType(methodDetails.Outputs[1].TypeName, &importNamespaces)
+							returnType += "|" + secondType
+						}
 					}
 					returnType += ">"
 				} else {
@@ -110,7 +112,7 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 
 func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) string {
 	switch true {
-	case input == "interface {}":
+	case input == "interface {}" || input == "interface{}":
 		return "any"
 	case input == "string":
 		return "string"
@@ -125,6 +127,10 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 		return "boolean"
 	case input == "[]byte":
 		return "string"
+	case strings.HasPrefix(input, "map"):
+		temp := strings.TrimPrefix(input, "map[")
+		keyType, valueType, _ := strings.Cut(temp, "]")
+		return fmt.Sprintf("{[key: %s]: %s}", goTypeToJSDocType(keyType, importNamespaces), goTypeToJSDocType(valueType, importNamespaces))
 	case strings.HasPrefix(input, "[]"):
 		arrayType := goTypeToJSDocType(input[2:], importNamespaces)
 		return "Array<" + arrayType + ">"
