@@ -38,6 +38,7 @@ require (
 )
 
 require (
+	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/bep/debounce v1.2.1
 	github.com/bitfield/script v0.19.0
 	github.com/go-ole/go-ole v1.2.6
