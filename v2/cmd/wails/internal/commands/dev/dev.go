@@ -1,14 +1,10 @@
 package dev
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"github.com/acarl005/stripansi"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -240,6 +236,12 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 		LogGreen("Using reload debounce setting of %d milliseconds", flags.debounceMS)
 
+		// Show dev server URL in terminal after 3 seconds
+		go func() {
+			time.Sleep(3 * time.Second)
+			LogGreen("\n\nTo develop in the browser, navigate to: %s", devServerURL)
+		}()
+
 		// Watch for changes and trigger restartApp()
 		debugBinaryProcess = doWatcherLoop(buildOptions, debugBinaryProcess, flags, watcher, exitCodeChannel, quitChannel, devServerURL)
 
@@ -421,20 +423,29 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 // runFrontendDevWatcherCommand will run the `frontend:dev:watcher` command if it was given, ex- `npm run dev`
 func runFrontendDevWatcherCommand(cwd string, devCommand string, discoverViteServerURL bool) (func(), string, error) {
 	ctx, cancel := context.WithCancel(context.Background())
+	scanner := NewStdoutScanner()
 	dir := filepath.Join(cwd, "frontend")
 	cmdSlice := strings.Split(devCommand, " ")
 	cmd := exec.CommandContext(ctx, cmdSlice[0], cmdSlice[1:]...)
 	cmd.Stderr = os.Stderr
+	cmd.Stdout = scanner
 	cmd.Dir = dir
 	setParentGID(cmd)
-	stdo, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	if err := cmd.Start(); err != nil {
 		cancel()
-		return nil, "", fmt.Errorf("Unable to start frontend DevWatcher: %w", err)
+		return nil, "", fmt.Errorf("unable to start frontend DevWatcher: %w", err)
+	}
+
+	var viteServerURL string
+	if discoverViteServerURL {
+		select {
+		case serverURL := <-scanner.ViteServerURLChan:
+			viteServerURL = serverURL
+		case <-time.After(time.Second * 10):
+			cancel()
+			return nil, "", errors.New("failed to find Vite server URL")
+		}
 	}
 
 	LogGreen("Running frontend DevWatcher command: '%s'", devCommand)
@@ -449,26 +460,6 @@ func runFrontendDevWatcherCommand(cwd string, devCommand string, discoverViteSer
 		LogGreen("DevWatcher command exited!")
 		wg.Done()
 	}()
-
-	var viteServerURL string
-	if discoverViteServerURL {
-		buf := bufio.NewReader(stdo)
-		for {
-			line, _, _ := buf.ReadLine()
-			match := bytes.Index(line, []byte("Local:"))
-			if match != -1 {
-				line := strings.TrimSpace(string(line[match+6:]))
-				viteServerURL = stripansi.Strip(line)
-				LogGreen("Vite Server URL: %s", viteServerURL)
-				_, err := url.Parse(viteServerURL)
-				if err != nil {
-					LogRed(err.Error())
-					break
-				}
-				break
-			}
-		}
-	}
 
 	return func() {
 		killProc(cmd, devCommand)
