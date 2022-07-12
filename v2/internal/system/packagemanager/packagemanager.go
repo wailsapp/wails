@@ -18,6 +18,7 @@ var pmcommands = []string{
 	"pacman",
 	"emerge",
 	"zypper",
+	"nix-env",
 }
 
 // Find will attempt to find the system package manager
@@ -46,6 +47,8 @@ func newPackageManager(pmname string, osid string) PackageManager {
 		return NewEmerge(osid)
 	case "zypper":
 		return NewZypper(osid)
+	case "nix-env":
+		return NewNixpkgs(osid)
 	}
 	return nil
 }
