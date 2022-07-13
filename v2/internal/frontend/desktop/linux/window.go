@@ -35,6 +35,14 @@ static GtkBox* GTKBOX(void *pointer) {
 }
 
 static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int max_width, int max_height) {
+	// Get the geometry of the monitor.
+	GdkRectangle m = getCurrentMonitorGeometry(window);
+	int scale = getCurrentMonitorScaleFactor(window);
+	min_width = min_width * scale;
+	min_height = min_height * scale;
+	max_width = max_width * scale;
+	max_height = max_height * scale;
+
     GdkGeometry size;
     size.min_width = size.min_height = size.max_width = size.max_height = 0;
     int flags = GDK_HINT_MAX_SIZE | GDK_HINT_MIN_SIZE;
@@ -532,8 +540,7 @@ gboolean Fullscreen(gpointer data) {
 
 	// Get the geometry of the monitor.
 	GdkRectangle m = getCurrentMonitorGeometry(window);
-	int scale = getCurrentMonitorScaleFactor(window);
-	SetMinMaxSize(window, 0, 0, m.width * scale, m.height * scale);
+	SetMinMaxSize(window, 0, 0, m.width, m.height);
 
 	gtk_window_fullscreen(window);
 
