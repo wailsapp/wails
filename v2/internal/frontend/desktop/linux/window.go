@@ -34,6 +34,24 @@ static GtkBox* GTKBOX(void *pointer) {
 	return GTK_BOX(pointer);
 }
 
+GdkMonitor* getCurrentMonitor(GtkWindow *window) {
+	// Get the monitor that the window is currently on
+	GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
+	GdkWindow *gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
+	GdkMonitor *monitor = gdk_display_get_monitor_at_window(display, gdk_window);
+
+	return GDK_MONITOR(monitor);
+}
+
+GdkRectangle getCurrentMonitorGeometry(GtkWindow *window) {
+	GdkMonitor *monitor = getCurrentMonitor(window);
+
+	// Get the geometry of the monitor
+	GdkRectangle result;
+	gdk_monitor_get_geometry (monitor,&result);
+	return result;
+}
+
 static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int max_width, int max_height) {
 	// Get the geometry of the monitor.
 	GdkRectangle m = getCurrentMonitorGeometry(window);
@@ -51,24 +69,6 @@ static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int 
 	size.min_height = min_height;
 	size.min_width = min_width;
     gtk_window_set_geometry_hints(window, NULL, &size, flags);
-}
-
-GdkMonitor* getCurrentMonitor(GtkWindow *window) {
-	// Get the monitor that the window is currently on
-	GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
-	GdkWindow *gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
-	GdkMonitor *monitor = gdk_display_get_monitor_at_window(display, gdk_window);
-
-	return GDK_MONITOR(monitor);
-}
-
-GdkRectangle getCurrentMonitorGeometry(GtkWindow *window) {
-	GdkMonitor *monitor = getCurrentMonitor(window);
-
-	// Get the geometry of the monitor
-	GdkRectangle result;
-	gdk_monitor_get_geometry (monitor,&result);
-	return result;
 }
 
 int getCurrentMonitorScaleFactor(GtkWindow *window) {
