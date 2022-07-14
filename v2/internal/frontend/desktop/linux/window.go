@@ -52,6 +52,12 @@ GdkRectangle getCurrentMonitorGeometry(GtkWindow *window) {
 	return result;
 }
 
+int getCurrentMonitorScaleFactor(GtkWindow *window) {
+	GdkMonitor *monitor = getCurrentMonitor(window);
+
+	return gdk_monitor_get_scale_factor(monitor);
+}
+
 static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int max_width, int max_height) {
 	// Get the geometry of the monitor.
 	GdkRectangle m = getCurrentMonitorGeometry(window);
@@ -69,12 +75,6 @@ static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int 
 	size.min_height = min_height;
 	size.min_width = min_width;
     gtk_window_set_geometry_hints(window, NULL, &size, flags);
-}
-
-int getCurrentMonitorScaleFactor(GtkWindow *window) {
-	GdkMonitor *monitor = getCurrentMonitor(window);
-
-	return gdk_monitor_get_scale_factor(monitor);
 }
 
 gboolean Center(gpointer data) {
