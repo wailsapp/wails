@@ -23,7 +23,7 @@ func fatal(message string) {
 }
 
 func banner(_ *clir.Cli) string {
-	return fmt.Sprintf("%s %s\n",
+	return fmt.Sprintf("%s %s",
 		colour.Yellow("Wails CLI"),
 		colour.DarkRed(internal.Version))
 }

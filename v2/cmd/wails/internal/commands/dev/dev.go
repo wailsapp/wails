@@ -37,16 +37,25 @@ import (
 )
 
 func LogGreen(message string, args ...interface{}) {
+	if len(message) == 0 {
+		return
+	}
 	text := fmt.Sprintf(message, args...)
 	println(colour.Green(text))
 }
 
 func LogRed(message string, args ...interface{}) {
+	if len(message) == 0 {
+		return
+	}
 	text := fmt.Sprintf(message, args...)
 	println(colour.Red(text))
 }
 
 func LogDarkYellow(message string, args ...interface{}) {
+	if len(message) == 0 {
+		return
+	}
 	text := fmt.Sprintf(message, args...)
 	println(colour.DarkYellow(text))
 }
@@ -104,7 +113,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.IntFlag("debounce", "The amount of time to wait to trigger a reload on change", &flags.debounceMS)
 	command.StringFlag("devserver", "The address of the wails dev server", &flags.devServer)
 	command.StringFlag("frontenddevserverurl", "The url of the external frontend dev server to use", &flags.frontendDevServerURL)
-	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space searated)", &flags.appargs)
+	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space separated)", &flags.appargs)
 	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
 	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
 
@@ -174,6 +183,19 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
 		exitCodeChannel := make(chan int, 1)
 
+		// frontend:dev:watcher command.
+		if command := projectConfig.DevWatcherCommand; command != "" {
+			closer, devServerURL, err := runFrontendDevWatcherCommand(cwd, command, projectConfig.FrontendDevServerURL == "auto")
+			if err != nil {
+				return err
+			}
+			if devServerURL != "" {
+				projectConfig.FrontendDevServerURL = devServerURL
+				flags.frontendDevServerURL = devServerURL
+			}
+			defer closer()
+		}
+
 		// Do initial build
 		logger.Println("Building application for development...")
 		debugBinaryProcess, appBinary, err := restartApp(buildOptions, nil, flags, exitCodeChannel)
@@ -185,15 +207,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				LogDarkYellow("Unable to kill process and cleanup binary: %s", err)
 			}
 		}()
-
-		// frontend:dev:watcher command.
-		if command := projectConfig.DevWatcherCommand; command != "" {
-			closer, err := runFrontendDevWatcherCommand(cwd, command)
-			if err != nil {
-				return err
-			}
-			defer closer()
-		}
 
 		// open browser
 		if flags.openBrowser {
@@ -222,6 +235,12 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			LogGreen("Using Frontend DevServer URL: %s", flags.frontendDevServerURL)
 		}
 		LogGreen("Using reload debounce setting of %d milliseconds", flags.debounceMS)
+
+		// Show dev server URL in terminal after 3 seconds
+		go func() {
+			time.Sleep(3 * time.Second)
+			LogGreen("\n\nTo develop in the browser, navigate to: %s", devServerURL)
+		}()
 
 		// Watch for changes and trigger restartApp()
 		debugBinaryProcess = doWatcherLoop(buildOptions, debugBinaryProcess, flags, watcher, exitCodeChannel, quitChannel, devServerURL)
@@ -402,18 +421,31 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 }
 
 // runFrontendDevWatcherCommand will run the `frontend:dev:watcher` command if it was given, ex- `npm run dev`
-func runFrontendDevWatcherCommand(cwd string, devCommand string) (func(), error) {
+func runFrontendDevWatcherCommand(cwd string, devCommand string, discoverViteServerURL bool) (func(), string, error) {
 	ctx, cancel := context.WithCancel(context.Background())
+	scanner := NewStdoutScanner()
 	dir := filepath.Join(cwd, "frontend")
 	cmdSlice := strings.Split(devCommand, " ")
 	cmd := exec.CommandContext(ctx, cmdSlice[0], cmdSlice[1:]...)
 	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
+	cmd.Stdout = scanner
 	cmd.Dir = dir
 	setParentGID(cmd)
+
 	if err := cmd.Start(); err != nil {
 		cancel()
-		return nil, fmt.Errorf("Unable to start frontend DevWatcher: %w", err)
+		return nil, "", fmt.Errorf("unable to start frontend DevWatcher: %w", err)
+	}
+
+	var viteServerURL string
+	if discoverViteServerURL {
+		select {
+		case serverURL := <-scanner.ViteServerURLChan:
+			viteServerURL = serverURL
+		case <-time.After(time.Second * 10):
+			cancel()
+			return nil, "", errors.New("failed to find Vite server URL")
+		}
 	}
 
 	LogGreen("Running frontend DevWatcher command: '%s'", devCommand)
@@ -434,7 +466,7 @@ func runFrontendDevWatcherCommand(cwd string, devCommand string) (func(), error)
 		LogGreen("DevWatcher command killed!")
 		cancel()
 		wg.Wait()
-	}, nil
+	}, viteServerURL, nil
 }
 
 // initialiseWatcher creates the project directory watcher that will trigger recompile
@@ -541,12 +573,12 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 		if dir == "" {
 			continue
 		}
-		path, err := filepath.Abs(dir)
+		thePath, err := filepath.Abs(dir)
 		if err != nil {
 			LogRed("Unable to expand reloadDir '%s': %s", dir, err)
 			continue
 		}
-		dirsThatTriggerAReload = append(dirsThatTriggerAReload, path)
+		dirsThatTriggerAReload = append(dirsThatTriggerAReload, thePath)
 	}
 
 	quit := false
@@ -560,7 +592,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 	assetDirURL := joinPath(devServerURL, "/wails/assetdir")
 	reloadURL := joinPath(devServerURL, "/wails/reload")
 	for quit == false {
-		//reload := false
+		// reload := false
 		select {
 		case exitCode := <-exitCodeChannel:
 			if exitCode == 0 {
@@ -605,7 +637,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			if item.Op&fsnotify.Create == fsnotify.Create {
 				// If this is a folder, add it to our watch list
 				if fs.DirExists(item.Name) {
-					//node_modules is BANNED!
+					// node_modules is BANNED!
 					if !strings.Contains(item.Name, "node_modules") {
 						err := watcher.Add(item.Name)
 						if err != nil {
@@ -652,8 +684,8 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 				}
 
 				if assetDir != "" {
-					for path := range changedPaths {
-						if strings.HasPrefix(path, assetDir) {
+					for thePath := range changedPaths {
+						if strings.HasPrefix(thePath, assetDir) {
 							reload = true
 							break
 						}

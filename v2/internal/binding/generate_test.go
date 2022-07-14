@@ -1,6 +1,7 @@
 package binding
 
 import (
+	"github.com/leaanthony/slicer"
 	"testing"
 )
 
@@ -82,14 +83,25 @@ func Test_goTypeToJSDocType(t *testing.T) {
 			want:  "any",
 		},
 		{
+			name:  "map",
+			input: "map[string]float64",
+			want:  "{[key: string]: number}",
+		},
+		{
+			name:  "map",
+			input: "map[string]map[string]float64",
+			want:  "{[key: string]: {[key: string]: number}}",
+		},
+		{
 			name:  "types",
 			input: "main.SomeType",
-			want:  "models.SomeType",
+			want:  "main.SomeType",
 		},
 	}
+	var importNamespaces slicer.StringSlicer
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := goTypeToJSDocType(tt.input); got != tt.want {
+			if got := goTypeToJSDocType(tt.input, &importNamespaces); got != tt.want {
 				t.Errorf("goTypeToJSDocType() = %v, want %v", got, tt.want)
 			}
 		})

@@ -68,7 +68,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Output Dependencies Status
 		var dependenciesMissing = []string{}
-		var externalPackages = []*packagemanager.Dependancy{}
+		var externalPackages = []*packagemanager.Dependency{}
 		var dependenciesAvailableRequired = 0
 		var dependenciesAvailableOptional = 0
 		fmt.Fprintf(w, "\n")
