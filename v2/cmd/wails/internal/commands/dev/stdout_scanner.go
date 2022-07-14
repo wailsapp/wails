@@ -30,6 +30,9 @@ func (s *stdoutScanner) Write(data []byte) (n int, err error) {
 		for sc.Scan() {
 			line := sc.Text()
 			index := strings.Index(line, "Local:")
+			if index == -1 || len(line) < 7 {
+				continue
+			}
 			line = strings.TrimSpace(line[index+6:])
 			viteServerURL := stripansi.Strip(line)
 			LogGreen("Vite Server URL: %s", viteServerURL)
