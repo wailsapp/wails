@@ -21,7 +21,7 @@ typedef struct Screen {
 } Screen;
 
 
-int GetNumScrens(){
+int GetNumScreens(){
 	return [[NSScreen screens] count];
 }
 
@@ -61,7 +61,7 @@ import (
 func GetAllScreens(wailsContext unsafe.Pointer) ([]frontend.Screen, error) {
 	err := error(nil)
 	screens := []frontend.Screen{}
-	numScreens := int(C.GetNumScrens())
+	numScreens := int(C.GetNumScreens())
 	for screeNum := 0; screeNum < numScreens; screeNum++ {
 		screenNumC := C.int(screeNum)
 		cScreen := C.GetNthScreen(screenNumC, wailsContext)
