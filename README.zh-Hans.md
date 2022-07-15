@@ -210,6 +210,9 @@ Wails v2 已针对所有 3 个平台发布了 Beta 版。如果您有兴趣尝�
 <a href="https://github.com/Shackelford-Arden" style="width:55px">
   <img src="https://github.com/Shackelford-Arden.png?size=55" width="55"/>
 </a>
+<a href="https://github.com/boostchicken" style="width:65px">
+  <img src="https://github.com/boostchicken.png?size=65" width="65"/>
+</a>
 <span id="nav-6"></span>
 
 ## 安装

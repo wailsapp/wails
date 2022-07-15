@@ -60,7 +60,11 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	// Set up logger
 	myLogger := logger.New(appoptions.Logger)
-	myLogger.SetLogLevel(appoptions.LogLevelProduction)
+	if IsDebug() {
+		myLogger.SetLogLevel(appoptions.LogLevel)
+	} else {
+		myLogger.SetLogLevel(appoptions.LogLevelProduction)
+	}
 	ctx = context.WithValue(ctx, "logger", myLogger)
 
 	// Preflight Checks

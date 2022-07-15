@@ -200,7 +200,9 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/Shackelford-Arden" style="width:55px">
   <img src="https://github.com/Shackelford-Arden.png?size=55" width="55"/>
 </a>
-
+<a href="https://github.com/boostchicken" style="width:65px">
+  <img src="https://github.com/boostchicken.png?size=65" width="65"/>
+</a>
 <span id="nav-6"></span>
 
 ## Roadmap
@@ -234,6 +236,10 @@ The installation instructions are on the [official website](https://wails.io/doc
   English name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it stuck.
 
 <span id="nav-9"></span>
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/wailsapp/wails.svg)](https://starchart.cc/wailsapp/wails)
 
 ## Contributors
 
