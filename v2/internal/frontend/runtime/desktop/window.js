@@ -114,6 +114,8 @@ export function WindowSetMinSize(width, height) {
     window.WailsInvoke('Wz:' + width + ':' + height);
 }
 
+
+
 /**
  * Set the window AlwaysOnTop or not on top
  *
