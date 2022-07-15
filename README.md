@@ -237,6 +237,10 @@ The installation instructions are on the [official website](https://wails.io/doc
 
 <span id="nav-9"></span>
 
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/wailsapp/wails.svg)](https://starchart.cc/wailsapp/wails)
+
 ## Contributors
 
 <a href="https://github.com/qaisjp"><img src="https://github.com/qaisjp.png?size=40" width="40"/></a>
