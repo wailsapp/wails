@@ -22,8 +22,7 @@ func MonitorsEqual(first w32.MONITORINFO, second w32.MONITORINFO) bool {
 		first.RcWork.Top == second.RcWork.Top &&
 		first.RcWork.Bottom == second.RcWork.Bottom &&
 		first.RcWork.Right == second.RcWork.Right &&
-		first.RcWork.Left == second.RcWork.Left &&
-		first.DwFlags == second.DwFlags
+		first.RcWork.Left == second.RcWork.Left
 }
 
 func GetMonitorInfo(hMonitor w32.HMONITOR) (*w32.MONITORINFO, error) {
