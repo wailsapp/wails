@@ -221,7 +221,12 @@ func (f *Frontend) ScreenGetAll() ([]Screen, error) {
 }
 
 func (f *Frontend) Quit() {
-	if f.frontendOptions.OnBeforeClose != nil && f.frontendOptions.OnBeforeClose(f.ctx) {
+	if f.frontendOptions.OnBeforeClose != nil {
+		go func() {
+			if !f.frontendOptions.OnBeforeClose(f.ctx) {
+				f.mainWindow.Quit()
+			}
+		}()
 		return
 	}
 	f.mainWindow.Quit()

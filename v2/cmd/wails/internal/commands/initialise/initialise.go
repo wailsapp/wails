@@ -181,7 +181,6 @@ func initProject(options *templates.Options, quiet bool) error {
 
 	// Output stats
 	elapsed := time.Since(start)
-	options.Logger.Println("")
 	options.Logger.Println("Project Name:      " + options.ProjectName)
 	options.Logger.Println("Project Directory: " + options.TargetDir)
 	options.Logger.Println("Project Template:  " + options.TemplateName)
