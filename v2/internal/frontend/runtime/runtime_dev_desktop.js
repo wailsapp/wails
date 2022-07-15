@@ -309,20 +309,25 @@
   function WindowMaximise() {
     window.WailsInvoke("WM");
   }
+
   function WindowToggleMaximise() {
     window.WailsInvoke("Wt");
   }
+
   function WindowUnmaximise() {
     window.WailsInvoke("WU");
   }
+
   function WindowMinimise() {
     window.WailsInvoke("Wm");
   }
+
   function WindowUnminimise() {
     window.WailsInvoke("Wu");
   }
+
   function WindowSetBackgroundColour(R, G, B, A) {
-    let rgba = JSON.stringify({ r: R || 0, g: G || 0, b: B || 0, a: A || 255 });
+    let rgba = JSON.stringify({r: R || 0, g: G || 0, b: B || 0, a: A || 255});
     window.WailsInvoke("Wr:" + rgba);
   }
 
@@ -340,6 +345,7 @@
   __export(browser_exports, {
     BrowserOpenURL: () => BrowserOpenURL
   });
+
   function BrowserOpenURL(url) {
     window.WailsInvoke("BO:" + url);
   }
