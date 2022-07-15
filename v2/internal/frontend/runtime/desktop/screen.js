@@ -15,10 +15,10 @@ import {Call} from "./calls";
 
 
 /**
- * // Gets the all screens. Call this anew each time you want to refresh data from the underlying windowing system.
- *
+ * Gets the all screens. Call this anew each time you want to refresh data from the underlying windowing system.
  * @export
- * @return {Promise<{isCurrent: boolean; isPrimary: boolean; width : number  height : number}>} The screens
+ * @typedef {import('../wrapper/runtime').Screen} Screen
+ * @return {Promise<{Screen[]}>} The screens
  */
 export function ScreenGetAll() {
     return Call(":wails:ScreenGetAll");
