@@ -235,13 +235,17 @@ The installation instructions are on the [official website](https://wails.io/doc
   Ruby". So initially it was a play on words (Webview on Rails). It just so happened to also be a homophone of the
   English name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it stuck.
 
-<span id="nav-9"></span>
-
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/wailsapp/wails.svg)](https://starchart.cc/wailsapp/wails)
 
+<span id="nav-9"></span>
+
 ## Contributors
+
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors)
+<!-- ALL-CONTRIBUTORS-BADGE:END --> 
 
 <a href="https://github.com/qaisjp"><img src="https://github.com/qaisjp.png?size=40" width="40"/></a>
 <a href="https://github.com/alee792"><img src="https://github.com/alee792.png?size=40" width="40"/></a>
