@@ -1,0 +1,26 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "skamensky",
+      "name": "skamensky",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19151369?v=4",
+      "profile": "https://github.com/skamensky",
+      "contributions": [
+        "code",
+        "ideas",
+        "doc"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "wails",
+  "projectOwner": "wailsapp",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
