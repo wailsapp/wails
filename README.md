@@ -31,7 +31,7 @@
     <img src="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" alt="Release Pipelines"/>
   </a>
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href='#contributors'><img src='https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat' alt='Contributors'/></a>
+[![All Contributors](https://img.shields.io/badge/all_contributors-0-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
@@ -246,69 +246,13 @@ The installation instructions are on the [official website](https://wails.io/doc
 
 ## Contributors
 
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
-<table>
-  <tr>
-    <td align="center"><a href="https://github.com/skamensky"><img src="https://avatars.githubusercontent.com/u/19151369?v=4?s=100" width="100px;" alt=""/><br /><sub><b>skamensky</b></sub></a><br /><a href="https://github.com/wailsapp/wails/commits?author=skamensky" title="Code">💻</a> <a href="#ideas-skamensky" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/wailsapp/wails/commits?author=skamensky" title="Documentation">📖</a></td>
-  </tr>
-</table>
-
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors)
-<!-- ALL-CONTRIBUTORS-BADGE:END --> 
-
-<a href="https://github.com/qaisjp"><img src="https://github.com/qaisjp.png?size=40" width="40"/></a>
-<a href="https://github.com/alee792"><img src="https://github.com/alee792.png?size=40" width="40"/></a>
-<a href="https://github.com/lanzafame"><img src="https://github.com/lanzafame.png?size=40" width="40"/></a>
-<a href="https://github.com/mattn"><img src="https://github.com/mattn.png?size=40" width="40"/></a>
-<a href="https://github.com/0xflotus"><img src="https://github.com/0xflotus.png?size=40" width="40"/></a>
-<a href="https://github.com/mdhender"><img src="https://github.com/mdhender.png?size=40" width="40"/></a>
-<a href="https://github.com/fishfishfish2104"><img src="https://github.com/fishfishfish2104.png?size=40" width="40"/></a>
-<a href="https://github.com/intelwalk"><img src="https://github.com/intelwalk.png?size=40" width="40"/></a>
-<a href="https://github.com/ocelotsloth"><img src="https://github.com/ocelotsloth.png?size=40" width="40"/></a>
-<a href="https://github.com/bh90210"><img src="https://github.com/bh90210.png?size=40" width="40"/></a>
-<a href="https://github.com/iceleo-com"><img src="https://github.com/iceleo-com.png?size=40" width="40"/></a>
-<a href="https://github.com/fallendusk"><img src="https://github.com/fallendusk.png?size=40" width="40"/></a>
-<a href="https://github.com/Chronophylos"><img src="https://github.com/Chronophylos.png?size=40" width="40"/></a>
-<a href="https://github.com/Vaelatern"><img src="https://github.com/Vaelatern.png?size=40" width="40"/></a>
-<a href="https://github.com/mewmew"><img src="https://github.com/mewmew.png?size=40" width="40"/></a>
-<a href="https://github.com/kraney"><img src="https://github.com/kraney.png?size=40" width="40"/></a>
-<a href="https://github.com/JackMordaunt"><img src="https://github.com/JackMordaunt.png?size=40" width="40"/></a>
-<a href="https://github.com/MichaelHipp"><img src="https://github.com/MichaelHipp.png?size=40" width="40"/></a>
-<a href="https://github.com/tmclane"><img src="https://github.com/tmclane.png?size=40" width="40"/></a>
-<a href="https://github.com/Rested"><img src="https://github.com/Rested.png?size=40" width="40"/></a>
-<a href="https://github.com/Jarek-SRT"><img src="https://github.com/Jarek-SRT.png?size=40" width="40"/></a>
-<a href="https://github.com/konez2k"><img src="https://github.com/konez2k.png?size=40" width="40"/></a>
-<a href="https://github.com/sayuthisobri"><img src="https://github.com/sayuthisobri.png?size=40" width="40"/></a>
-<a href="https://github.com/dedo1911"><img src="https://github.com/dedo1911.png?size=40" width="40"/></a>
-<a href="https://github.com/fdidron"><img src="https://github.com/fdidron.png?size=40" width="40"/></a>
-<a href="https://github.com/Splode"><img src="https://github.com/Splode.png?size=40" width="40"/></a>
-<a href="https://github.com/Lyimmi"><img src="https://github.com/Lyimmi.png?size=40" width="40"/></a>
-<a href="https://github.com/Unix4ever"><img src="https://github.com/Unix4ever.png?size=40" width="40"/></a>
-<a href="https://github.com/timkippdev"><img src="https://github.com/timkippdev.png?size=40" width="40"/></a>
-<a href="https://github.com/kyoto44"><img src="https://github.com/kyoto44.png?size=40" width="40"/></a>
-<a href="https://github.com/artooro"><img src="https://github.com/artooro.png?size=40" width="40"/></a>
-<a href="https://github.com/ilgityildirim"><img src="https://github.com/ilgityildirim.png?size=40" width="40"/></a>
-<a href="https://github.com/gelleson"><img src="https://github.com/gelleson.png?size=40" width="40"/></a>
-<a href="https://github.com/kmuchmore"><img src="https://github.com/kmuchmore.png?size=40" width="40"/></a>
-<a href="https://github.com/aayush420"><img src="https://github.com/aayush420.png?size=40" width="40"/></a>
-<a href="https://github.com/Rezrazi"><img src="https://github.com/Rezrazi.png?size=40" width="40"/></a>
-<a href="https://github.com/misitebao"><img src="https://github.com/misitebao.png?size=40" width="40"/></a>
-<a href="https://github.com/DrunkenPoney"><img src="https://github.com/DrunkenPoney.png?size=40" width="40"/></a>
-<a href="https://github.com/SophieAu"><img src="https://github.com/SophieAu.png?size=40" width="40"/></a>
-<a href="https://github.com/alexmat"><img src="https://github.com/alexmat.png?size=40" width="40"/></a>
-<a href="https://github.com/RH12503"><img src="https://github.com/RH12503.png?size=40" width="40"/></a>
-<a href="https://github.com/hi019"><img src="https://github.com/hi019.png?size=40" width="40"/></a>
-<a href="https://github.com/Igogrek"><img src="https://github.com/Igogrek.png?size=40" width="40"/></a>
-<a href="https://github.com/aschey"><img src="https://github.com/aschey.png?size=40" width="40"/></a>
-<a href="https://github.com/akhudek"><img src="https://github.com/akhudek.png?size=40" width="40"/></a>
-<a href="https://github.com/s12chung"><img src="https://github.com/s12chung.png?size=40" width="40"/></a>
 
 <span id="nav-10"></span>
 
