@@ -4,6 +4,7 @@
   ],
   "imageSize": 100,
   "commit": false,
+  "badgeTemplate": "<a href='#contributors'><img src='https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat' alt='Contributors'/></a>",
   "contributors": [
     {
       "login": "skamensky",
