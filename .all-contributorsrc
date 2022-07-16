@@ -138,7 +138,7 @@
         "ideas",
         "test",
         "review",
-        "platform",
+        "platform"
       ]
     },
     {
@@ -760,7 +760,7 @@
         "code",
         "ideas",
         "test",
-        "review",
+        "review"
       ]
     },
     {
@@ -1043,7 +1043,7 @@
         "code",
         "maintenance"
       ]
-    },
+    }
   ],
   "contributorsPerLine": 8,
   "projectName": "wails",
