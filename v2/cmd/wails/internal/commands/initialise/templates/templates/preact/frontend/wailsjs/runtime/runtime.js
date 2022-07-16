@@ -160,3 +160,7 @@ export function Environment() {
 export function Quit() {
     window.runtime.Quit();
 }
+
+export function ScreenGetAll() {
+    return window.runtime.ScreenGetAll();
+}

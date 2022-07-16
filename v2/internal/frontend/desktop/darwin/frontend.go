@@ -224,6 +224,9 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 	f.mainWindow.SetBackgroundColour(col.R, col.G, col.B, col.A)
 }
 
+func (f *Frontend) ScreenGetAll() ([]frontend.Screen, error) {
+	return GetAllScreens(f.mainWindow.context)
+}
 func (f *Frontend) Quit() {
 	if f.frontendOptions.OnBeforeClose != nil {
 		go func() {
