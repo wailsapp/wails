@@ -117,6 +117,10 @@ export function WindowGetPosition() {
     return window.runtime.WindowGetPosition();
 }
 
+export function ScreenGetAll() {
+    return window.runtime.ScreenGetAll();
+}
+
 export function WindowHide() {
     window.runtime.WindowHide();
 }

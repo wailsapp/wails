@@ -43,18 +43,19 @@ type App struct {
 	AlwaysOnTop       bool
 	BackgroundColour  *RGBA
 	// RGBA is deprecated. Please use BackgroundColour
-	RGBA             *RGBA
-	Assets           fs.FS
-	AssetsHandler    http.Handler
-	Menu             *menu.Menu
-	Logger           logger.Logger `json:"-"`
-	LogLevel         logger.LogLevel
-	OnStartup        func(ctx context.Context)                `json:"-"`
-	OnDomReady       func(ctx context.Context)                `json:"-"`
-	OnShutdown       func(ctx context.Context)                `json:"-"`
-	OnBeforeClose    func(ctx context.Context) (prevent bool) `json:"-"`
-	Bind             []interface{}
-	WindowStartState WindowStartState
+	RGBA               *RGBA
+	Assets             fs.FS
+	AssetsHandler      http.Handler
+	Menu               *menu.Menu
+	Logger             logger.Logger `json:"-"`
+	LogLevel           logger.LogLevel
+	LogLevelProduction logger.LogLevel
+	OnStartup          func(ctx context.Context)                `json:"-"`
+	OnDomReady         func(ctx context.Context)                `json:"-"`
+	OnShutdown         func(ctx context.Context)                `json:"-"`
+	OnBeforeClose      func(ctx context.Context) (prevent bool) `json:"-"`
+	Bind               []interface{}
+	WindowStartState   WindowStartState
 
 	//ContextMenus []*menu.ContextMenu
 	//TrayMenus    []*menu.TrayMenu
