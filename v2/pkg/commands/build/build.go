@@ -115,6 +115,16 @@ func Build(options *Options) (string, error) {
 	// Initialise Builder
 	builder.SetProjectData(projectData)
 
+	hookArgs := map[string]string{
+		"${platform}": options.Platform + "/" + options.Arch,
+	}
+
+	for _, hook := range []string{options.Platform + "/" + options.Arch, options.Platform + "/*", "*/*"} {
+		if err := execPreBuildHook(outputLogger, options, hook, hookArgs); err != nil {
+			return "", err
+		}
+	}
+
 	if !options.IgnoreFrontend || options.ForceBuild {
 		err = builder.BuildFrontend(outputLogger)
 		if err != nil {
@@ -215,10 +225,7 @@ func Build(options *Options) (string, error) {
 	}
 
 	compileBinary := options.CompiledBinary
-	hookArgs := map[string]string{
-		"${platform}": options.Platform + "/" + options.Arch,
-		"${bin}":      compileBinary,
-	}
+	hookArgs["${bin}"] = compileBinary
 
 	for _, hook := range []string{options.Platform + "/" + options.Arch, options.Platform + "/*", "*/*"} {
 		if err := execPostBuildHook(outputLogger, options, hook, hookArgs); err != nil {
@@ -227,6 +234,55 @@ func Build(options *Options) (string, error) {
 	}
 
 	return compileBinary, nil
+}
+
+func execPreBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string) error {
+	preBuildHook := options.ProjectData.PreBuildHooks[hookIdentifier]
+	if preBuildHook == "" {
+		return nil
+	}
+
+	if !options.ProjectData.RunNonNativeBuildHooks {
+		if hookIdentifier == "" {
+			// That's the global hook
+		} else {
+			platformOfHook := strings.Split(hookIdentifier, "/")[0]
+			if platformOfHook == "*" {
+				// That's OK, we don't have a specific platform of the hook
+			} else if platformOfHook == runtime.GOOS {
+				// The hook is for host platform
+			} else {
+				// Skip a hook which is not native
+				outputLogger.Println("  - Non native build hook '%s': Skipping.", hookIdentifier)
+				return nil
+			}
+		}
+	}
+
+	outputLogger.Print("  - Executing pre build hook '%s': ", hookIdentifier)
+	args := strings.Split(preBuildHook, " ")
+	for i, arg := range args {
+		newArg := argReplacements[arg]
+		if newArg == "" {
+			continue
+		}
+		args[i] = newArg
+	}
+
+	if options.Verbosity == VERBOSE {
+		outputLogger.Println("%s", strings.Join(args, " "))
+	}
+
+	stdout, stderr, err := shell.RunCommand(options.BuildDirectory, args[0], args[1:]...)
+	if options.Verbosity == VERBOSE {
+		println(stdout)
+	}
+	if err != nil {
+		return fmt.Errorf("%s - %s", err.Error(), stderr)
+	}
+	outputLogger.Println("Done.")
+
+	return nil
 }
 
 func execPostBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string) error {
@@ -266,7 +322,10 @@ func execPostBuildHook(outputLogger *clilogger.CLILogger, options *Options, hook
 		outputLogger.Println("%s", strings.Join(args, " "))
 	}
 
-	_, stderr, err := shell.RunCommand(options.BuildDirectory, args[0], args[1:]...)
+	stdout, stderr, err := shell.RunCommand(options.BuildDirectory, args[0], args[1:]...)
+	if options.Verbosity == VERBOSE {
+		println(stdout)
+	}
 	if err != nil {
 		return fmt.Errorf("%s - %s", err.Error(), stderr)
 	}
