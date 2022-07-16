@@ -1,4 +1,7 @@
 <p align="center" style="text-align: center">
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
   <img src="logo-universal.png" width="55%"><br/>
 </p>
 <p align="center">
@@ -244,6 +247,19 @@ The installation instructions are on the [official website](https://wails.io/doc
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/skamensky"><img src="https://avatars.githubusercontent.com/u/19151369?v=4?s=100" width="100px;" alt=""/><br /><sub><b>skamensky</b></sub></a><br /><a href="https://github.com/wailsapp/wails/commits?author=skamensky" title="Code">💻</a> <a href="#ideas-skamensky" title="Ideas, Planning, & Feedback">🤔</a> <a href="https://github.com/wailsapp/wails/commits?author=skamensky" title="Documentation">📖</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors)
 <!-- ALL-CONTRIBUTORS-BADGE:END --> 
 
