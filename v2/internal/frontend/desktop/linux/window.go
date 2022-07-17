@@ -431,20 +431,12 @@ typedef struct RGBAOptions {
 	uint8_t b;
 	uint8_t a;
 	void *webview;
-	void *window;
 } RGBAOptions;
 
 void setBackgroundColour(void* data) {
 	RGBAOptions* options = (RGBAOptions*)data;
 	GdkRGBA colour = {options->r / 255.0, options->g / 255.0, options->b / 255.0, options->a / 255.0};
 	webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(options->webview), &colour);
-	GtkCssProvider *provider = gtk_css_provider_new();
-	char buffer[60];
-	sprintf((void*)&buffer[0], "* { background-color: rgba(%d,%d,%d,%d); }", options->r, options->g, options->b, options->a);
-	gtk_css_provider_load_from_data (provider, &buffer[0], -1, NULL);
-	gtk_style_context_add_provider(gtk_widget_get_style_context(GTK_WIDGET(options->window)),
-                                        GTK_STYLE_PROVIDER(provider),
-                                        GTK_STYLE_PROVIDER_PRIORITY_USER);
 }
 
 typedef struct SetTitleArgs {
@@ -794,7 +786,6 @@ func (w *Window) SetBackgroundColour(r uint8, g uint8, b uint8, a uint8) {
 		b:       C.uchar(b),
 		a:       C.uchar(a),
 		webview: w.webview,
-		window:  w.gtkWindow,
 	}
 	invokeOnMainThread(func() { C.setBackgroundColour(unsafe.Pointer(&data)) })
 

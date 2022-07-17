@@ -27,11 +27,14 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"text/template"
 	"time"
 )
 
 const startURL = "http://wails.localhost/"
+
+type Screen = frontend.Screen
 
 type Frontend struct {
 
@@ -338,6 +341,20 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 		}
 	})
 
+}
+
+func (f *Frontend) ScreenGetAll() ([]Screen, error) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	screens := []Screen{}
+	err := error(nil)
+	f.mainWindow.Invoke(func() {
+		screens, err = GetAllScreens(f.mainWindow.Handle())
+		wg.Done()
+
+	})
+	wg.Wait()
+	return screens, err
 }
 
 func (f *Frontend) Quit() {

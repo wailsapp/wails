@@ -13,7 +13,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
-	pkgLog "github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -61,10 +60,10 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	// Set up logger
 	myLogger := logger.New(appoptions.Logger)
-	myLogger.SetLogLevel(appoptions.LogLevel)
-
-	if !IsDebug() {
-		myLogger.SetLogLevel(pkgLog.ERROR)
+	if IsDebug() {
+		myLogger.SetLogLevel(appoptions.LogLevel)
+	} else {
+		myLogger.SetLogLevel(appoptions.LogLevelProduction)
 	}
 	ctx = context.WithValue(ctx, "logger", myLogger)
 
