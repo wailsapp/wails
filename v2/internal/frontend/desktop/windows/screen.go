@@ -97,7 +97,7 @@ func GetAllScreens(mainWinHandle w32.HWND) ([]Screen, error) {
 
 	dc := w32.GetDC(0)
 	defer w32.ReleaseDC(0, dc)
-	succeeded := w32.EnumDisplayMonitors(dc, nil, syscall.NewCallback(EnumProc), uintptr(unsafe.Pointer(&monitorContainer)))
+	succeeded := w32.EnumDisplayMonitors(dc, nil, syscall.NewCallback(EnumProc), unsafe.Pointer(&monitorContainer))
 	if !succeeded {
 		return monitorContainer.monitors, errors.New("Windows call to EnumDisplayMonitors failed")
 	}
