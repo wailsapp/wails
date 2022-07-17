@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"golang.org/x/net/html"
 )
@@ -16,6 +17,7 @@ const (
 	HeaderContentLength = "Content-Length"
 	HeaderUserAgent     = "User-Agent"
 	HeaderCacheControl  = "Cache-Control"
+	HeaderUpgrade       = "Upgrade"
 
 	WailsUserAgentValue = "wails.io"
 )
@@ -105,4 +107,9 @@ func findFirstTag(htmlnode *html.Node, tagName string) *html.Node {
 	}
 	result = extractor(htmlnode)
 	return result
+}
+
+func isWebSocket(req *http.Request) bool {
+	upgrade := req.Header.Get(HeaderUpgrade)
+	return strings.EqualFold(upgrade, "websocket")
 }
