@@ -3,10 +3,11 @@ package dev
 import (
 	"bufio"
 	"bytes"
-	"github.com/acarl005/stripansi"
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/acarl005/stripansi"
 )
 
 // stdoutScanner acts as a stdout target that will scan the incoming
@@ -24,7 +25,7 @@ func NewStdoutScanner() *stdoutScanner {
 
 // Write bytes to the scanner. Will copy the bytes to stdout
 func (s *stdoutScanner) Write(data []byte) (n int, err error) {
-	match := bytes.Index(data, []byte("> Local:"))
+	match := bytes.Index(data, []byte("Local:"))
 	if match != -1 {
 		sc := bufio.NewScanner(strings.NewReader(string(data)))
 		for sc.Scan() {
