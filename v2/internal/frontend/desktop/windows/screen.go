@@ -39,7 +39,7 @@ func GetMonitorInfo(hMonitor w32.HMONITOR) (*w32.MONITORINFO, error) {
 	return &info, nil
 }
 
-func EnumProc(hMonitor w32.HMONITOR, hdcMonitor w32.HDC, lprcMonitor *w32.RECT, dwData w32.LPARAM) uintptr {
+func EnumProc(hMonitor w32.HMONITOR, hdcMonitor w32.HDC, lprcMonitor *w32.RECT, screenContainer *ScreenContainer) uintptr {
 	// adapted from https://stackoverflow.com/a/23492886/4188138
 
 	// see docs for the following pages to better understand this function
@@ -49,8 +49,6 @@ func EnumProc(hMonitor w32.HMONITOR, hdcMonitor w32.HDC, lprcMonitor *w32.RECT, 
 	// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-monitorfromwindow
 
 	ourMonitorData := Screen{}
-	screenContainer := (*ScreenContainer)(unsafe.Pointer(dwData))
-
 	currentMonHndl := w32.MonitorFromWindow(screenContainer.mainWinHandle, w32.MONITOR_DEFAULTTONEAREST)
 	currentMonInfo, currErr := GetMonitorInfo(currentMonHndl)
 
