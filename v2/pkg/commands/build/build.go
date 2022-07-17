@@ -242,6 +242,20 @@ func execPreBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookI
 		return nil
 	}
 
+	return executeBuildHook(outputLogger, options, hookIdentifier, argReplacements, preBuildHook, "pre")
+}
+
+func execPostBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string) error {
+	postBuildHook := options.ProjectData.PostBuildHooks[hookIdentifier]
+	if postBuildHook == "" {
+		return nil
+	}
+
+	return executeBuildHook(outputLogger, options, hookIdentifier, argReplacements, postBuildHook, "post")
+
+}
+
+func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string, buildHook string, hookName string) error {
 	if !options.ProjectData.RunNonNativeBuildHooks {
 		if hookIdentifier == "" {
 			// That's the global hook
@@ -259,57 +273,8 @@ func execPreBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookI
 		}
 	}
 
-	outputLogger.Print("  - Executing pre build hook '%s': ", hookIdentifier)
-	args := strings.Split(preBuildHook, " ")
-	for i, arg := range args {
-		newArg := argReplacements[arg]
-		if newArg == "" {
-			continue
-		}
-		args[i] = newArg
-	}
-
-	if options.Verbosity == VERBOSE {
-		outputLogger.Println("%s", strings.Join(args, " "))
-	}
-
-	stdout, stderr, err := shell.RunCommand(options.BuildDirectory, args[0], args[1:]...)
-	if options.Verbosity == VERBOSE {
-		println(stdout)
-	}
-	if err != nil {
-		return fmt.Errorf("%s - %s", err.Error(), stderr)
-	}
-	outputLogger.Println("Done.")
-
-	return nil
-}
-
-func execPostBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string) error {
-	postBuildHook := options.ProjectData.PostBuildHooks[hookIdentifier]
-	if postBuildHook == "" {
-		return nil
-	}
-
-	if !options.ProjectData.RunNonNativeBuildHooks {
-		if hookIdentifier == "" {
-			// That's the global hook
-		} else {
-			platformOfHook := strings.Split(hookIdentifier, "/")[0]
-			if platformOfHook == "*" {
-				// Thats OK, we don't have a specific platform of the hook
-			} else if platformOfHook == runtime.GOOS {
-				// The hook is for host platform
-			} else {
-				// Skip a hook which is not native
-				outputLogger.Println("  - Non native build hook '%s': Skipping.", hookIdentifier)
-				return nil
-			}
-		}
-	}
-
-	outputLogger.Print("  - Executing post build hook '%s': ", hookIdentifier)
-	args := strings.Split(postBuildHook, " ")
+	outputLogger.Print("  - Executing %s build hook '%s': ", hookName, hookIdentifier)
+	args := strings.Split(buildHook, " ")
 	for i, arg := range args {
 		newArg := argReplacements[arg]
 		if newArg == "" {
