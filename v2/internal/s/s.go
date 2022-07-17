@@ -3,12 +3,13 @@ package s
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/bitfield/script"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/bitfield/script"
 )
 
 var (
@@ -55,11 +56,17 @@ func RENAME(source string, target string) {
 	checkError(err)
 }
 
-// DELETE a file.
-func DELETE(filename string) {
+// MUSTDELETE a file.
+func MUSTDELETE(filename string) {
 	log("DELETE %s", filename)
 	err := os.Remove(filepath.Join(CWD(), filename))
 	checkError(err)
+}
+
+// DELETE a file.
+func DELETE(filename string) {
+	log("DELETE %s", filename)
+	_ = os.Remove(filepath.Join(CWD(), filename))
 }
 
 func CD(dir string) {
