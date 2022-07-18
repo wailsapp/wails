@@ -23,7 +23,7 @@ func (i *ICoreWebView2HttpHeadersCollectionIterator) Release() error {
 }
 
 func (i *ICoreWebView2HttpHeadersCollectionIterator) HasCurrentHeader() (bool, error) {
-	var hasHeader bool
+	var hasHeader int32
 	res, _, err := i.vtbl.GetHasCurrentHeader.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&hasHeader)),
@@ -34,7 +34,7 @@ func (i *ICoreWebView2HttpHeadersCollectionIterator) HasCurrentHeader() (bool, e
 	if windows.Handle(res) != windows.S_OK {
 		return false, syscall.Errno(res)
 	}
-	return hasHeader, nil
+	return hasHeader != 0, nil
 }
 
 func (i *ICoreWebView2HttpHeadersCollectionIterator) GetCurrentHeader() (string, string, error) {
@@ -61,7 +61,7 @@ func (i *ICoreWebView2HttpHeadersCollectionIterator) GetCurrentHeader() (string,
 }
 
 func (i *ICoreWebView2HttpHeadersCollectionIterator) MoveNext() (bool, error) {
-	var next bool
+	var next int32
 	res, _, err := i.vtbl.MoveNext.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&next)),
@@ -72,5 +72,5 @@ func (i *ICoreWebView2HttpHeadersCollectionIterator) MoveNext() (bool, error) {
 	if windows.Handle(res) != windows.S_OK {
 		return false, syscall.Errno(res)
 	}
-	return next, nil
+	return next != 0, nil
 }
