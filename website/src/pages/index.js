@@ -54,16 +54,22 @@ function HomepageHeader() {
         </Carousel>
 
         <p className="hero__subtitle">
-          {translate({ id: "homepage.Tagline" })}
+          {translate({id: "homepage.Tagline"})}
         </p>
-        <div className={styles.buttons}>
-          <Link
-            className="button button--primary button--lg"
-            to="/docs/gettingstarted/installation"
-          >
-            {translate({ id: "homepage.ButtonText" })}
-          </Link>
-        </div>
+          <div className={styles.buttons}>
+            <Link
+                className="button button--outline button--lg"
+                to="/docs/introduction"
+            >
+              {translate({id: "homepage.LearnMoreButtonText"})}
+            </Link>
+            <Link
+                className="button button--primary button--lg"
+                to="/docs/gettingstarted/installation"
+            >
+              {translate({id: "homepage.ButtonText"})}
+            </Link>
+          </div>
       </div>
     </header>
   );

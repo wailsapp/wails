@@ -8,6 +8,7 @@
   text-align: center;
   position: relative;
   overflow: hidden;
+  padding-bottom: 35px;
 }
 
 @media screen and (max-width: 966px) {
@@ -17,7 +18,11 @@
 }
 
 .buttons {
+  column-gap: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.button--outline:hover, .button--outline:active, .button--outline.button--active {
 }
