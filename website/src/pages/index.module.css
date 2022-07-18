@@ -25,4 +25,5 @@
 }
 
 .button--outline:hover, .button--outline:active, .button--outline.button--active {
+  --ifm-button-color: var(--ifm-font-color-base-inverse);
 }

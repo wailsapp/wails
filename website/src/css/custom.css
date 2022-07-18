@@ -39,7 +39,7 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
     --ifm-color-primary-lightest: rgb(146, 224, 208);
     --ifm-code-font-size: 95%;
     --ifm-button-color: white;
-    --ifm-container-width-xl: 100%;
+    --ifm-container-width-xl: 50%;
 }
 
 .docusaurus-highlight-code-line {
