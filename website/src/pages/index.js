@@ -58,7 +58,7 @@ function HomepageHeader() {
         </p>
           <div className={styles.buttons}>
             <Link
-                className="button button--outline button--lg"
+                className="button button--secondary button--outline button--lg"
                 to="/docs/introduction"
             >
               {translate({id: "homepage.LearnMoreButtonText"})}
