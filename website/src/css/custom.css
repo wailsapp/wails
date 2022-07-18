@@ -55,7 +55,25 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
 
 .container {
     padding-left: 2%;
+    max-width: 1400px;
+    width: 85%;
 }
+
+@media screen and (max-width: 576px) {
+    .container {
+        padding-left: 2%;
+        width: 100%;
+    }
+}
+
+
+@media screen and (max-width: 966px) {
+    .container {
+        padding-left: 2%;
+        width: 90%;
+    }
+}
+
 
 .prism-code.language-js .token-line::before,
 .prism-code.language-ts .token-line::before,

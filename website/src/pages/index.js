@@ -5,17 +5,17 @@ import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import styles from "./index.module.css";
 import HomepageFeatures from "../components/HomepageFeatures";
-import { translate } from "@docusaurus/Translate"; // i18n component
+import {translate} from "@docusaurus/Translate"; // i18n component
 import useBaseUrl from "@docusaurus/useBaseUrl";
 
 var Carousel = require("react-responsive-carousel").Carousel;
 
 function HomepageHeader() {
-  const { siteConfig } = useDocusaurusContext();
+  const {siteConfig} = useDocusaurusContext();
   return (
-    <header className={clsx("hero", styles.heroBanner)}>
-      <div className="container">
-        <Carousel
+      <header className={clsx("hero", styles.heroBanner)}>
+        <div className="container">
+          <Carousel
           showArrows={false}
           width={"100%"}
           showThumbs={false}
@@ -52,15 +52,6 @@ function HomepageHeader() {
             />
           </div>
         </Carousel>
-
-        {/*<ThemedImage*/}
-        {/*    alt="Wails Logo"*/}
-        {/*    width="30%"*/}
-        {/*    sources={{*/}
-        {/*        light: useBaseUrl('/img/logo-light.svg'),*/}
-        {/*        dark: useBaseUrl('/img/logo-dark.svg'),*/}
-        {/*    }}*/}
-        {/*/>*/}
 
         <p className="hero__subtitle">
           {translate({ id: "homepage.Tagline" })}
