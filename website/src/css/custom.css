@@ -40,6 +40,7 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
     --ifm-code-font-size: 95%;
     --ifm-button-color: white;
     --ifm-container-width-xl: 50%;
+    --ifm-font-color-base-inverse: #df0000;
 }
 
 .docusaurus-highlight-code-line {
@@ -88,8 +89,4 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
     left: var(--ifm-pre-padding);
     border-right: 1px solid;
     padding-right: 0.5rem;
-}
-
-.button--outline:hover, .button--outline:active, .button--outline.button--active {
-    --ifm-button-color: #df0000;
 }
