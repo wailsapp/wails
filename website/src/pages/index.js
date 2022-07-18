@@ -37,6 +37,9 @@ function HomepageHeader() {
             <img src={useBaseUrl("/img/showcase/wombat.png")} />
           </div>
           <div className="slide-item-box">
+            <img src={useBaseUrl("/img/showcase/restic-browser-2.png")} />
+          </div>
+          <div className="slide-item-box">
             <img src={useBaseUrl("/img/showcase/wally.png")} />
           </div>
           <div className="slide-item-box">
