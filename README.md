@@ -403,6 +403,7 @@ The installation instructions are on the [official website](https://wails.io/doc
     <td align="center"><a href="https://github.com/trea"><img src="https://avatars.githubusercontent.com/u/1181448?v=4?s=75" width="75px;" alt=""/><br /><sub><b>Trea Hauet</b></sub></a><br /><a href="#financial-trea" title="Financial">💵</a></td>
     <td align="center"><a href="https://picatz.github.io/"><img src="https://avatars.githubusercontent.com/u/14850816?v=4?s=75" width="75px;" alt=""/><br /><sub><b>Kent 'picat' Gruber</b></sub></a><br /><a href="#financial-picatz" title="Financial">💵</a></td>
     <td align="center"><a href="https://github.com/tc-hib"><img src="https://avatars.githubusercontent.com/u/55949036?v=4?s=75" width="75px;" alt=""/><br /><sub><b>tc-hib</b></sub></a><br /><a href="#financial-tc-hib" title="Financial">💵</a></td>
+    <td align="center"><a href="https://github.com/acheong08"><img src="https://avatars.githubusercontent.com/u/36258159?v=4?s=75" width="75px;" alt=""/><br /><sub><b>Antonio</b></sub></a><br /><a href="https://github.com/wailsapp/wails/commits?author=acheong08" title="Documentation">📖</a></td>
   </tr>
 </table>
 
