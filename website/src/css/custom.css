@@ -15,6 +15,10 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
     background-color: rgba(0, 0, 0, 0.3);
 }
 
+html[data-theme="light"] .button--secondary {
+    --ifm-button-border-color: var(--ifm-font-color-base);
+}
+
 /* customs css */
 :root {
     --ifm-color-primary: #df0000;
@@ -76,4 +80,10 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
     left: var(--ifm-pre-padding);
     border-right: 1px solid;
     padding-right: 0.5rem;
+}
+
+.button.button--secondary:hover {
+    color: var(--ifm-color-primary);
+    background-color: transparent;
+    border-color: var(--ifm-color-primary);
 }

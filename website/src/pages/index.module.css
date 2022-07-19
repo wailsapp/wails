@@ -23,3 +23,13 @@
   align-items: center;
   justify-content: center;
 }
+
+@media screen and (max-width: 450px) {
+  .buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    row-gap: 1rem;
+  }
+}
