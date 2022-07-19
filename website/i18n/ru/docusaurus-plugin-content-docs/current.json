@@ -1,0 +1,30 @@
+{
+  "version.label": {
+    "message": "Следующая версия 🚧",
+    "description": "The label for version current"
+  },
+  "sidebar.tutorialSidebar.category.Getting Started": {
+    "message": "Начало работы",
+    "description": "The label for category Getting Started in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Reference": {
+    "message": "Ссылки",
+    "description": "The label for category Reference in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Runtime": {
+    "message": "Runtime",
+    "description": "The label for category Runtime in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Community": {
+    "message": "Сообщество",
+    "description": "The label for category Community in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Showcase": {
+    "message": "Демонстрация",
+    "description": "The label for category Showcase in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Guides": {
+    "message": "Инструкции",
+    "description": "The label for category Guides in sidebar tutorialSidebar"
+  }
+}
