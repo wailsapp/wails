@@ -12,11 +12,15 @@ An example of how to create a menu:
 
 ```go
     AppMenu := menu.NewMenu()
+    if runtime.GOOS == "darwin" {
+    	AppMenu.Append(menu.AppMenu())  // On MacOS platform, the first menu will always be fixed
+	AppMenu.Append(menu.EditMenu())  // on macos platform, we should append EditMenu to enable Cmd+C,Cmd+V,Cmd+Z... shortcut
+    }
     FileMenu := AppMenu.AddSubmenu("File")
     FileMenu.AddText("&Open", keys.CmdOrCtrl("o"), openFile)
     FileMenu.AddSeparator()
     FileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
-        runtime.Quit()
+        a.Quit()
     })
     
     if runtime.GOOS == "darwin" {
