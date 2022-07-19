@@ -12,13 +12,17 @@ An example of how to create a menu:
 
 ```go
     AppMenu := menu.NewMenu()
+    if runtime.GOOS == "darwin" {
+    	AppMenu.Append(menu.AppMenu())  // On MacOS platform, the first menu will always be fixed
+	AppMenu.Append(menu.EditMenu())  // on macos platform, we should append EditMenu to enable Cmd+C,Cmd+V,Cmd+Z... shortcut
+    }
     FileMenu := AppMenu.AddSubmenu("File")
     FileMenu.AddText("&Open", keys.CmdOrCtrl("o"), openFile)
     FileMenu.AddSeparator()
     FileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
-        runtime.Quit()
+	a.Quit() // Create quit function in app.go with context
     })
-
+  
     err := wails.Run(&options.App{
         Title:             "Menus Demo",
         Width:             800,
@@ -254,7 +258,7 @@ using radio groups that may share a callback.
 
 :::info Roles
 
-  Roles are currently supported on Mac only.
+Roles are currently supported on Mac only.
 
 :::
 
@@ -264,4 +268,3 @@ A menu item may have a role, which is essentially a pre-defined menu item. We cu
 | ---- | ----------- |
 | AppMenuRole | The standard Mac application menu. Can be created using `menu.AppMenu()` |
 | EditMenuRole | The standard Mac edit menu. Can be created using `menu.EditMenu()` |
-
