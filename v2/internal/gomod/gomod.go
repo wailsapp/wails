@@ -2,6 +2,7 @@ package gomod
 
 import (
 	"fmt"
+
 	"github.com/Masterminds/semver"
 	"golang.org/x/mod/modfile"
 )
@@ -34,6 +35,10 @@ func GoModOutOfSync(goModData []byte, currentVersion string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	if gomodversion == nil {
+		return false, fmt.Errorf("Unable to find Wails in go.mod")
+	}
+
 	result, err := semver.NewVersion(currentVersion)
 	if err != nil || result == nil {
 		return false, fmt.Errorf("Unable to parse Wails version: %s", currentVersion)
