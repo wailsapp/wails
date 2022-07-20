@@ -7,6 +7,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"runtime"
+	"strconv"
+	"strings"
+	"sync"
+	"text/template"
+	"time"
+
 	"github.com/bep/debounce"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -19,17 +31,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
-	"io"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"runtime"
-	"strconv"
-	"strings"
-	"sync"
-	"text/template"
-	"time"
 )
 
 const startURL = "http://wails.localhost/"
@@ -355,6 +356,14 @@ func (f *Frontend) ScreenGetAll() ([]Screen, error) {
 	})
 	wg.Wait()
 	return screens, err
+}
+
+func (f *Frontend) Show() {
+	f.mainWindow.Show()
+}
+
+func (f *Frontend) Hide() {
+	f.mainWindow.Hide()
 }
 
 func (f *Frontend) Quit() {

@@ -193,3 +193,11 @@ export function Environment(): Promise<EnvironmentInfo>;
 // [Quit](https://wails.io/docs/reference/runtime/intro#quit)
 // Quits the application.
 export function Quit(): void;
+
+// [Hide](https://wails.io/docs/reference/runtime/intro#hide)
+// Hides the application.
+export function Hide(): void;
+
+// [Show](https://wails.io/docs/reference/runtime/intro#show)
+// Shows the application.
+export function Show(): void;

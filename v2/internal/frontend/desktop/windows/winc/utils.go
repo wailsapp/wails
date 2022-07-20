@@ -78,7 +78,7 @@ func CreateWindow(className string, parent Controller, exStyle, style uint) w32.
 
 func RegisterClass(className string, wndproc uintptr) {
 	instance := GetAppInstance()
-	icon := w32.LoadIcon(instance, w32.MakeIntResource(w32.IDI_APPLICATION))
+	icon := w32.LoadIconWithResourceID(instance, w32.IDI_APPLICATION)
 
 	var wc w32.WNDCLASSEX
 	wc.Size = uint32(unsafe.Sizeof(wc))
@@ -87,7 +87,7 @@ func RegisterClass(className string, wndproc uintptr) {
 	wc.Instance = instance
 	wc.Background = w32.COLOR_BTNFACE + 1
 	wc.Icon = icon
-	wc.Cursor = w32.LoadCursor(0, w32.MakeIntResource(w32.IDC_ARROW))
+	wc.Cursor = w32.LoadCursorWithResourceID(0, w32.IDC_ARROW)
 	wc.ClassName = syscall.StringToUTF16Ptr(className)
 	wc.MenuName = nil
 	wc.IconSm = icon

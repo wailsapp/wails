@@ -185,24 +185,26 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
 		exitCodeChannel := make(chan int, 1)
 
-		nodeModulesPath := filepath.Join(cwd, "frontend", "node_modules")
-		nodeModulesExists := fs.DirExists(nodeModulesPath)
-		if projectConfig.InstallCommand != "" && !nodeModulesExists {
-			// Install frontend dev dependencies if node_modules doesn't exist
-			err = os.Chdir(filepath.Join(cwd, "frontend"))
-			if err != nil {
-				return err
-			}
-			LogGreen("Installing frontend dependencies...")
-			pipe := script.Exec(projectConfig.InstallCommand)
-			pipe.Wait()
-			if pipe.Error() != nil {
-				return pipe.Error()
-			}
-			err = os.Chdir(cwd)
-			if err != nil {
-				return err
-			}
+		// Install if needed
+		installCommand := projectConfig.GetDevInstallerCommand()
+		if installCommand == "" {
+			return fmt.Errorf("no `frontend:dev` or `frontend:install` defined. Please add one of these to your wails.json")
+		}
+
+		// Install initial frontend dev dependencies
+		err = os.Chdir(filepath.Join(cwd, "frontend"))
+		if err != nil {
+			return err
+		}
+		LogGreen("Installing frontend dependencies...")
+		pipe := script.Exec(installCommand)
+		pipe.Wait()
+		if pipe.Error() != nil {
+			return pipe.Error()
+		}
+		err = os.Chdir(cwd)
+		if err != nil {
+			return err
 		}
 
 		// frontend:dev:watcher command.

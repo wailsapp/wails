@@ -219,6 +219,21 @@ void Show(void *inctx) {
     );
 }
 
+
+void HideApplication(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx HideApplication];
+    );
+}
+
+void ShowApplication(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx ShowApplication];
+    );
+}
+
 NSString* safeInit(const char* input) {
     NSString *result = nil;
     if (input != nil) {

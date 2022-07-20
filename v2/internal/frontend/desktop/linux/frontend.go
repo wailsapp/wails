@@ -186,6 +186,14 @@ func (f *Frontend) WindowShow() {
 func (f *Frontend) WindowHide() {
 	f.mainWindow.Hide()
 }
+
+func (f *Frontend) Show() {
+	f.mainWindow.Show()
+}
+
+func (f *Frontend) Hide() {
+	f.mainWindow.Hide()
+}
 func (f *Frontend) WindowMaximise() {
 	f.mainWindow.Maximise()
 }

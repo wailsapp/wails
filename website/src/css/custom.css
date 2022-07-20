@@ -4,19 +4,6 @@
  * work well for content-centric websites.
  */
 
-/* You can override the default Infima variables here. */
-:root {
-    --ifm-color-primary: #25c2a0;
-    --ifm-color-primary-dark: rgb(33, 175, 144);
-    --ifm-color-primary-darker: rgb(31, 165, 136);
-    --ifm-color-primary-darkest: rgb(26, 136, 112);
-    --ifm-color-primary-light: rgb(70, 203, 174);
-    --ifm-color-primary-lighter: rgb(102, 212, 189);
-    --ifm-color-primary-lightest: rgb(146, 224, 208);
-    --ifm-code-font-size: 95%;
-    --ifm-container-width-xl: 90%;
-}
-
 .docusaurus-highlight-code-line {
     background-color: rgba(0, 0, 0, 0.1);
     display: block;
@@ -26,6 +13,10 @@
 
 html[data-theme="dark"] .docusaurus-highlight-code-line {
     background-color: rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="light"] .button--secondary {
+    --ifm-button-border-color: var(--ifm-font-color-base);
 }
 
 /* customs css */
@@ -39,7 +30,8 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
     --ifm-color-primary-lightest: rgb(146, 224, 208);
     --ifm-code-font-size: 95%;
     --ifm-button-color: white;
-    --ifm-container-width-xl: 100%;
+    --ifm-container-width-xl: 95%;
+    --ifm-font-color-base-inverse: #df0000;
 }
 
 .docusaurus-highlight-code-line {
@@ -53,8 +45,26 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
     counter-reset: line-number;
 }
 
-.container {
+.carousel-root {
     padding-left: 2%;
+    max-width: 1400px;
+    width: 85%;
+    margin: 0 auto;
+}
+
+@media screen and (max-width: 576px) {
+    .carousel-root {
+        padding-left: 2%;
+        width: 100%;
+    }
+}
+
+
+@media screen and (max-width: 966px) {
+    .carousel-root {
+        padding-left: 2%;
+        width: 90%;
+    }
 }
 
 .prism-code.language-js .token-line::before,
@@ -71,4 +81,10 @@ html[data-theme="dark"] .docusaurus-highlight-code-line {
     left: var(--ifm-pre-padding);
     border-right: 1px solid;
     padding-right: 0.5rem;
+}
+
+.button.button--secondary:hover {
+    color: var(--ifm-color-primary);
+    background-color: transparent;
+    border-color: var(--ifm-color-primary);
 }

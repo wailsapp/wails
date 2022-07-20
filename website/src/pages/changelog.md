@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.0.0-beta.39.2] - 2022-07-20
+
+## Added
+
+* Update example for macOS Menu by @acheong08 in https://github.com/wailsapp/wails/pull/1600
+
+## Fixed
+
+* Reinstate Go 1.17 compatibility by @leaanthony in https://github.com/wailsapp/wails/pull/1605
+
+## [v2.0.0-beta.39] - 2022-07-19
+
+## Added
+
+* New screen dimensions runtime API by @skamensky in https://github.com/wailsapp/wails/pull/1519
+* Auto discover vite devserver port by @leaanthony in https://github.com/wailsapp/wails/pull/1547
+* Add nixpkgs support to doctor command. by @ianmjones in https://github.com/wailsapp/wails/pull/1551
+* New pre-build hooks feature by @leaanthony in https://github.com/wailsapp/wails/pull/1578
+* New production log level option by @leaanthony in https://github.com/wailsapp/wails/pull/1555
+
+## Fixed
+
+* Fix stack corruption in Windows when using ICoreWebView2HttpHeadersCollectionIterator by @stffabi
+  in https://github.com/wailsapp/wails/pull/1589
+* Move WindowGet* to main thread by @leaanthony in https://github.com/wailsapp/wails/pull/1464
+* Allow -appargs flag to pass flags to binary. by @ianmjones in https://github.com/wailsapp/wails/pull/1534
+* Fix checking for installed apt package in none English session. by @ianmjones
+  in https://github.com/wailsapp/wails/pull/1548
+* Fix OnBeforeClose code for Mac by @leaanthony in https://github.com/wailsapp/wails/pull/1558
+* Support Maps in TS conversion by @leaanthony in https://github.com/wailsapp/wails/pull/1435
+* Check for line length when scanning for local devserver url by @leaanthony
+  in https://github.com/wailsapp/wails/pull/1566
+* Remove usage of unsafe.Pointer in winc by @stffabi and @leaanthony in https://github.com/wailsapp/wails/pull/1556
+
+## Changed
+
+* Rename WindowSetRGBA -> WindowSetBackgroundColour by @leaanthony in https://github.com/wailsapp/wails/pull/1506
+* Improvements to the dev command by @stffabi in https://github.com/wailsapp/wails/pull/1510
+* Update vscode template by @leaanthony in https://github.com/wailsapp/wails/pull/1398
+* Bump svelte from 3.42.2 to 3.49.0 in /v2/internal/frontend/runtime/dev by @dependabot
+  in https://github.com/wailsapp/wails/pull/1572
+* Bump svelte from 3.42.5 to 3.49.0 in /v2/internal/frontend/runtime by @dependabot
+  in https://github.com/wailsapp/wails/pull/1573
+* Add troubleshooting for `Not Found` error by @acheong08 in https://github.com/wailsapp/wails/pull/1586
+* Docs/better homepage by @leaanthony in https://github.com/wailsapp/wails/pull/1591
+
+## New Contributors
+
+* @skamensky made their first contribution in https://github.com/wailsapp/wails/pull/1519
+* @acheong08 made their first contribution in https://github.com/wailsapp/wails/pull/1586
+
+**Full Changelog**: https://github.com/wailsapp/wails/compare/v2.0.0-beta.38...v2.0.0-beta.39
+
 ## [v2.0.0-beta.38] - 2022-06-27
 
 ### Added
