@@ -162,7 +162,24 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			mode = build.Debug
 			modeString = "Debug"
 		}
+		splitPlatform := strings.Split(platform, "/")
+		targetPlatform := os.Getenv("GOOS")
+		targetArch := os.Getenv("GOARCH")
+		if targetPlatform == "" {
+			targetPlatform = splitPlatform[0]
+		}
+		if targetArch == "" {
+			targetArch = runtime.GOOS
+			if len(splitPlatform) > 1 {
+				targetArch = splitPlatform[1]
+			} else {
+				if system.IsAppleSilicon {
+					targetArch = "arm64"
+				}
+			}
+		}
 
+		platform := targetPlatform + "/" + targetArch
 		var targets slicer.StringSlicer
 		targets.AddSlice(strings.Split(platform, ","))
 		targets.Deduplicate()
@@ -191,30 +208,31 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		}
 
 		// Start a new tabwriter
-		w := new(tabwriter.Writer)
-		w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+		if !quiet {
+			w := new(tabwriter.Writer)
+			w.Init(os.Stdout, 8, 8, 0, '\t', 0)
 
-		// Write out the system information
-		_, _ = fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
-		_, _ = fmt.Fprintf(w, "Platforms: \t%s\n", platform)
-		_, _ = fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
-		_, _ = fmt.Fprintf(w, "Build Mode: \t%s\n", modeString)
-		_, _ = fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
-		_, _ = fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
-		_, _ = fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
-		_, _ = fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
-		_, _ = fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
-		_, _ = fmt.Fprintf(w, "Tags: \t[%s]\n", strings.Join(buildOptions.UserTags, ","))
-		_, _ = fmt.Fprintf(w, "Race Detector: \t%t\n", buildOptions.RaceDetector)
-		if len(buildOptions.OutputFile) > 0 && targets.Length() == 1 {
-			_, _ = fmt.Fprintf(w, "Output File: \t%s\n", buildOptions.OutputFile)
+			// Write out the system information
+			_, _ = fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
+			_, _ = fmt.Fprintf(w, "Platforms: \t%s\n", platform)
+			_, _ = fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
+			_, _ = fmt.Fprintf(w, "Build Mode: \t%s\n", modeString)
+			_, _ = fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
+			_, _ = fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
+			_, _ = fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
+			_, _ = fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
+			_, _ = fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
+			_, _ = fmt.Fprintf(w, "Tags: \t[%s]\n", strings.Join(buildOptions.UserTags, ","))
+			_, _ = fmt.Fprintf(w, "Race Detector: \t%t\n", buildOptions.RaceDetector)
+			if len(buildOptions.OutputFile) > 0 && targets.Length() == 1 {
+				_, _ = fmt.Fprintf(w, "Output File: \t%s\n", buildOptions.OutputFile)
+			}
+			_, _ = fmt.Fprintf(w, "\n")
+			err = w.Flush()
+			if err != nil {
+				return err
+			}
 		}
-		_, _ = fmt.Fprintf(w, "\n")
-		err = w.Flush()
-		if err != nil {
-			return err
-		}
-
 		err = checkGoModVersion(logger, updateGoMod)
 		if err != nil {
 			return err
@@ -269,14 +287,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			// Calculate platform and arch
 			platformSplit := strings.Split(platform, "/")
 			buildOptions.Platform = platformSplit[0]
-			buildOptions.Arch = runtime.GOARCH
-			if system.IsAppleSilicon {
-				buildOptions.Arch = "arm64"
-			}
-			if len(platformSplit) == 2 {
-				buildOptions.Arch = platformSplit[1]
-			}
-
+			buildOptions.Arch = platformSplit[1]
 			banner := "Building target: " + platform
 			logger.Println(banner)
 			logger.Println(strings.Repeat("-", len(banner)))
