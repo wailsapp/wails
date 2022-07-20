@@ -1,3 +1,9 @@
 files:
   - source: website/docs
     translation: /website/i18n/%locale%/docusaurus-plugin-content-docs/current/%original_file_name%
+  - source: website/blog
+    translation: /website/i18n/%locale%/docusaurus-plugin-content-blog
+  - source: website/src/pages
+    translation: /website/i18n/%locale%/docusaurus-plugin-content-pages
+  - source: website/i18n/en/docusaurus-theme-classic
+    translation: /website/i18n/%locale%/docusaurus-theme-classic
