@@ -25,15 +25,15 @@ const config = {
         direction: "ltr",
         htmlLang: "en-US",
       },
-      ru: {
-        label: "Русский",
-        direction: "ltr",
-        htmlLang: "ru-RU",
-      },
       "zh-Hans": {
         label: "简体中文",
         direction: "ltr",
         htmlLang: "zh-Hans",
+      },
+      ru: {
+        label: "Русский",
+        direction: "ltr",
+        htmlLang: "ru-RU",
       },
     },
   },
