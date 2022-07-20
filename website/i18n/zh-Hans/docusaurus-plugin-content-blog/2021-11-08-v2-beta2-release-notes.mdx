@@ -1,6 +1,6 @@
 ---
 slug: wails-v2-beta-for-mac
-title: Wails v2 Beta for MacOS
+title: Mac 平台的 Wails v2 测试版
 authors:
   - leaanthony
 tags:
@@ -15,13 +15,13 @@ tags:
 
 <br/>
 
-Today marks the first beta release of Wails v2 for Mac! It's taken quite a while to get to this point and I'm hoping that today's release will give you something that's reasonably useful. There have been a number of twists and turns to get to this point and I'm hoping, with your help, to iron out the crinkles and get the Mac port polished for the final v2 release.
+今天是 Mac 版 Wails v2 的第一个测试版！ 花了很长时间才走到这一步，我希望今天的版本会给你一些相当有用的东西。 为了达到这一点，经历了许多曲折，我希望在您的帮助下，消除问题并为最终的 v2 版本完善 Mac 端口。
 
-You mean this isn't ready for production? For your use case, it may well be ready, but there are still a number of known issues so keep your eye on [this project board](https://github.com/wailsapp/wails/projects/7) and if you would like to contribute, you'd be very welcome!
+你的意思是这还没有准备好生产？ 对于您的用例，它可能已经准备就绪，但仍然存在许多已知问题，因此请密切关注此[项目板](https://github.com/wailsapp/wails/projects/7)，如果您愿意做出贡献，我们将非常欢迎您！
 
-So what's new for Wails v2 for Mac vs v1? Hint: It's pretty similar to the Windows Beta :wink:
+那么 Mac 版 Wails v2 与 v1 有哪些新变化？ 提示：它与 Windows Beta 非常相似 😉
 
-### New Features
+### 新特性
 
 <div class="text--center">
     <img src="/img/wails-menus-mac.png" width="80%" style={{"box-shadow": "rgb(255 255 >
@@ -29,47 +29,47 @@ So what's new for Wails v2 for Mac vs v1? Hint: It's pretty similar to the Windo
 
 <br/>
 
-There were a lot of requests for native menu support. Wails has finally got you covered. Application menus are now available and include support for most native menu features. This includes standard menu items, checkboxes, radio groups, submenus and separators.
+有很多对原生菜单支持的需求。 Wails 终于帮您搞定了。 应用程序菜单现已可用，并且包括对大多数本原生菜单功能的支持。 这包括标准菜单项、复选框、单选组、子菜单和分隔符。
 
-There were a huge number of requests in v1 for the ability to have greater control of the window itself. I'm happy to announce that there's new runtime APIs specifically for this. It's feature-rich and supports multi-monitor configurations. There is also an improved dialogs API: Now, you can have modern, native dialogs with rich configuration to cater for all your dialog needs.
+在 v1 中有大量的需求，要求能够更好地控制窗口本身。 我很高兴地宣布，有专门用于此的新运行时 API。 它功能丰富，支持多显示器配置。 还有一个改进的对话框 API：现在，您可以拥有具有丰富配置的现代原生对话框，以满足您所有的对话框需求。
 
-### Mac Specific Options
+### Mac 特定选项
 
-In addition to the normal application options, Wails v2 for Mac also brings some Mac extras:
+除了普通的应用程序选项，Wails v2 for Mac 还带来了一些 Mac 附加功能：
 
-  - Make your window all funky and translucent, like all the pretty swift apps!
-  - Highly customisable titlebar
-  - We support the NSAppearance options for the application
-  - Simple config to auto-create an "About" menu
+  - 让你的窗口变得时髦和半透明，就像所有 Swift 应用程序一样！
+  - 高度可定制的标题栏
+  - 我们支持应用程序的 NSAppearance 选项
+  - 自动创建“关于”菜单的简单配置
 
-### No requirement to bundle assets
+### 无需打包资源
 
-A huge pain-point of v1 was the need to condense your entire application down to single JS & CSS files. I'm happy to announce that for v2, there is no requirement to bundle assets, in any way, shape or form. Want to load a local image? Use an `<img>` tag with a local src path. Want to use a cool font? Copy it in and add the path to it in your CSS.
+v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS 文件。 我很高兴地宣布，对于 v2，不需要以任何形式打包资源。 想要加载本地图片？ 使用带有本地`src`路径的`<img>`标签。 想使用很酷的字体吗？ 复制它并在你的 CSS 中添加它的路径。
 
-> Wow, that sounds like a webserver...
+> 哇，这听起来像一个网络服务器......
 
-Yes, it works just like a webserver, except it isn't.
+是的，它就像一个网络服务器一样工作，但它不是。
 
-> So how do I include my assets?
+> 那么我如何包含我的资源？
 
-You just pass a single `embed.FS` that contains all your assets into your application configuration. They don't even need to be in the top directory - Wails will just work it out for you.
+您只需将`embed.FS`包含所有资源的单个文件传递到您的应用程序配置中。 他们甚至不需要在顶级目录中——Wails 会为你解决这个问题。
 
-### New Development Experience
+### 全新的开发体验
 
-Now that assets don't need to be bundled, it's enabled a whole new development experience. The new `wails dev` command will build and run your application, but instead of using the assets in the `embed.FS`, it loads them directly from disk.
+现在不需要打包资源，它启用了全新的开发体验。 新`wails dev`命令将构建并运行您的应用程序，但它不使用`embed.FS`中的资源，而是直接从磁盘加载它们。
 
-It also provides the additional features:
+它还提供了附加功能：
 
-  - Hot reload - Any changes to frontend assets will trigger and auto reload of the application frontend
-  - Auto rebuild - Any changes to your Go code will rebuild and relaunch your application
+  - 热重载 - 对前端资源的任何更改都将触发并自动重载应用程序前端
+  - 自动重新构建 - 对 Go 代码的任何更改都将重新构建并重新启动您的应用程序
 
-In addition to this, a webserver will start on port 34115. This will serve your application to any browser that connects to it. All connected web browsers will respond to system events like hot reload on asset change.
+除此之外，网络服务器将在端口 34115 上启动。 这将为您的应用程序提供连接到它的任何浏览器。 所有连接的 Web 浏览器都会响应系统事件，例如资源更改时的热重载。
 
-In Go, we are used to dealing with structs in our applications. It's often useful to send structs to our frontend and use them as state in our application. In v1, this was a very manual process and a bit of a burden on the developer. I'm happy to announce that in v2, any application run in dev mode will automatically generate Typescript models for all structs that are input or output parameters to bound methods. This enables seamless interchange of data models between the two worlds.
+在 Go 中，我们习惯于在应用程序中处理结构。 将结构发送到我们的前端并将它们用作我们应用程序中的状态通常很有用。 在 v1 中，这是一个非常需要手动的过程，对开发人员来说有点负担。 我很高兴地宣布，在 v2 中，任何在开发模式下运行的应用程序都将自动为所有结构生成 Typescript 模型，这些结构是绑定方法的输入或输出参数。 这实现了两个世界之间数据模型的无缝交换。
 
-In addition to this, another JS module is dynamically generated wrapping all your bound methods. This provides JSDoc for your methods, providing code completion and hinting in your IDE. It's really cool when you get data models auto-imported when hitting tab in an auto-generated module wrapping your Go code!
+除此之外，还会动态生成另一个 JS 模块来包装您的所有绑定方法。 这为您的方法提供了 JSDoc，在您的 IDE 中提供代码完成和提示。 当您在自动生成的包含 Go 代码的模块中点击 Tab 时自动导入数据模型，这真的很酷！
 
-### Remote Templates
+### 远程模板
 
 <div class="text--center">
     <img src="/img/remote-mac.png" width="80%" style={{"box-shadow": "rgb(255 255 >
@@ -77,13 +77,13 @@ In addition to this, another JS module is dynamically generated wrapping all you
 
 <br/>
 
-Getting an application up and running quickly was always a key goal for the Wails project. When we launched, we tried to cover a lot of the modern frameworks at the time: react, vue and angular. The world of frontend development is very opinionated, fast moving and hard to keep on top of! As a result, we found our base templates getting out of date pretty quickly and this caused a maintenance headache. It also meant that we didn't have cool modern templates for the latest and greatest tech stacks.
+让应用程序快速启动并运行一直是 Wails 项目的一个关键目标。 当我们推出时，我们试图涵盖当时的很多现代框架：react、vue 和 angular。 前端开发的世界非常固执己见，发展迅速，很难保持领先地位！ 结果，我们发现我们的基本模板很快就过时了，这导致了维护问题。 这也意味着，我们没有为最新和最伟大的技术栈提供酷炫的现代模板。
 
-With v2, I wanted to empower the community by giving you the ability to create and host templates yourselves, rather than rely on the Wails project. So now you can create projects using community supported templates! I hope this will inspire developers to create a vibrant ecosystem of project templates. I'm really quite excited about what our developer community can create!
+在 v2 中，我希望通过让您能够自己创建和托管模板来增强社区的能力，而不是依赖于 Wails 项目。 所以现在您可以使用社区支持的模板创建项目！ 我希望这将激励开发人员创建一个充满活力的项目模板生态系统。 我对我们的开发者社区可以创造的东西感到非常兴奋！
 
-### Native M1 Support
+### 原生 M1 支持
 
-Thanks to the amazing support of [Mat Ryer](https://github.com/matryer/), the Wails project now supports M1 native builds:
+感谢[Mat Ryer](https://github.com/matryer/)的惊人支持，Wails 项目现在支持 M1 原生构建：
 
 <div class="text--center">
     <img src="/img/build-darwin-arm.png" width="80%" style={{"box-shadow": "rgb(255 255 >
@@ -91,7 +91,7 @@ Thanks to the amazing support of [Mat Ryer](https://github.com/matryer/), the Wa
 
 <br/>
 
-You can also specify `darwin/amd64` as a target too:
+您也可以指定`darwin/amd64`为目标：
 
 <div class="text--center">
     <img src="/img/build-darwin-amd.png" width="80%" style={{"box-shadow": "rgb(255 255 >
@@ -99,7 +99,7 @@ You can also specify `darwin/amd64` as a target too:
 
 <br/>
 
-Oh, I almost forgot.... you can also do `darwin/universal`.... :wink:
+哦，我差点忘了....你也可以做`darwin/universal`....😉
 
 <div class="text--center">
     <img src="/img/build-darwin-universal.png" width="80%" style={{"box-shadow": "rgb(255 255 >
@@ -107,9 +107,9 @@ Oh, I almost forgot.... you can also do `darwin/universal`.... :wink:
 
 <br/>
 
-### Cross Compilation to Windows
+### 交叉编译到 Windows
 
-Because Wails v2 for Windows is pure Go, you can target Windows builds without docker.
+因为 Windows 的 Wails v2 是纯 Go，所以你可以在没有 docker 的情况下针对 Windows 构建。
 
 <div class="text--center">
     <img src="/img/build-cross-windows.png" width="80%" style={{"box-shadow": "rgb(255 255 >
@@ -118,20 +118,20 @@ Because Wails v2 for Windows is pure Go, you can target Windows builds without d
 <br/>
 
 
-### WKWebView Renderer
+### WKWebView 渲染器
 
-V1 relied on a (now deprecated) WebView component. V2 uses the most recent WKWebKit component so expect the latest and greatest from Apple.
+V1 依赖于 WebView（现已弃用）组件。 V2 使用最新的 WKWebKit 组件，所以期待 Apple 的最新和最棒的组件。
 
-### In Conclusion
+### 结语
 
-As I'd said in the Windows release notes, Wails v2 represents a new foundation for the project. The aim of this release is to get feedback on the new approach, and to iron out any bugs before a full release. Your input would be most welcome! Please direct any feedback to the [v2 Beta](https://github.com/wailsapp/wails/discussions/828) discussion board.
+正如我在 Windows 发行说明中所说，Wails v2 代表了该项目的新起点。 此版本的目的是获得有关新方式的反馈，并在完整版本发布之前解决所有错误。 非常欢迎您的意见！ 请将任何反馈发送到[v2 测试版](https://github.com/wailsapp/wails/discussions/828)讨论板。
 
-And finally, I'd like to give a special thank you to all the [project sponsors](/credits#sponsors), including [JetBrains](https://www.jetbrains.com?from=Wails), whose support drive the project in many ways behind the scenes.
+最后，我还要特别感谢包括[JetBrains](https://www.jetbrains.com?from=Wails)在内的所有项目[赞助商](/credits#sponsors)，他们的幕后支持以多种方式推动了该项目。
 
-I look forward to seeing what people build with Wails in this next exciting phase of the project!
+我期待看到在项目的下一个激动人心的阶段人们用 Wails 构建什么！
 
 Lea.
 
-PS: Linux users, you're next!
+PS: Linux 用户们，你们将是下一个！
 
-PPS: If you or your company find Wails useful, please consider [sponsoring the project](https://github.com/sponsors/leaanthony). Thanks!
+PPS：如果您或您的公司发现 Wails 有用，可以考虑[赞助该项目](https://github.com/sponsors/leaanthony)。 谢谢！
