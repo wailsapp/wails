@@ -30,7 +30,7 @@ html[data-theme="light"] .button--secondary {
     --ifm-color-primary-lightest: rgb(146, 224, 208);
     --ifm-code-font-size: 95%;
     --ifm-button-color: white;
-    --ifm-container-width-xl: 50%;
+    --ifm-container-width-xl: 95%;
     --ifm-font-color-base-inverse: #df0000;
 }
 
@@ -45,14 +45,15 @@ html[data-theme="light"] .button--secondary {
     counter-reset: line-number;
 }
 
-.container {
+.carousel-root {
     padding-left: 2%;
     max-width: 1400px;
     width: 85%;
+    margin: 0 auto;
 }
 
 @media screen and (max-width: 576px) {
-    .container {
+    .carousel-root {
         padding-left: 2%;
         width: 100%;
     }
@@ -60,7 +61,7 @@ html[data-theme="light"] .button--secondary {
 
 
 @media screen and (max-width: 966px) {
-    .container {
+    .carousel-root {
         padding-left: 2%;
         width: 90%;
     }
