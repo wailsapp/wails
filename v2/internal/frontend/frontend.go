@@ -65,6 +65,8 @@ type MessageDialogOptions struct {
 
 type Frontend interface {
 	Run(context.Context) error
+	Hide()
+	Show()
 	Quit()
 
 	// Dialog

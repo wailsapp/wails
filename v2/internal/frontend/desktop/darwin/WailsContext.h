@@ -75,6 +75,8 @@
 - (void) ShowMouse;
 - (void) Hide;
 - (void) Show;
+- (void) HideApplication;
+- (void) ShowApplication;
 - (void) Quit;
 
 -(void) MessageDialog :(NSString*)dialogType :(NSString*)title :(NSString*)message :(NSString*)button1 :(NSString*)button2 :(NSString*)button3 :(NSString*)button4 :(NSString*)defaultButton :(NSString*)cancelButton :(void*)iconData :(int)iconDataLength;
