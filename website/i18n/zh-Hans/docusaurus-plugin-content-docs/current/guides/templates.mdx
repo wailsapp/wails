@@ -1,35 +1,36 @@
 
 # 模板
 
-Wail从预创建的模板生成项目。 In v1, this was a difficult to maintain set of projects that were subject to going out of date. 在v2中，为了增强社区能力，模板添加了几个新功能：
+Wails 从预先创建的模板生成项目。 在 v1 中，这是一组难以维护的项目，这些项目可能会过时。 在 v2 中，为了增强社区的能力，为模板添加了一些新功能：
 
-- 从 [远程模板生成项目的能力](../reference/cli.mdx#remote-templates)
-- 配刀来帮助创建您自己的模板
+- 能够从[远程模板](../reference/cli#远程模板)生成项目
+- 帮助创建自己的模板的工具
 
 ## 创建模板
 
-要创建模板，您可以使用 `wails 生成模板` 命令。 要生成一个默认模板，请运行：
+要创建模板，您可以使用`wails generate template`命令。 要生成默认模板，请运行：
 
-`生成模板 - 名称模板`
+`wails generate template -name mytemplate`
 
-这创建了默认文件的目录“mytemplate”：
+这将使用默认文件创建“mytemplate”目录：
 
 ```shell title=mytemplate/
 .
+.
 |-- NEXTSTEPS.md
 |-- README.md
-|-- app.tmpl. o
-|-- 前端
-| "-- dist
-| -- 素材
-| | -- 字体
-| | | -- OffL xt
-| | | `-- nunito-v16-latin-regular. off2
-| | `-- 图像
-| | | `-- 标志-暗。 vg
-| -- index.html
-| | -- main. ss
-| `-- main.js
+|-- app.tmpl.go
+|-- frontend
+|   `-- dist
+|       |-- assets
+|       |   |-- fonts
+|       |   |   |-- OFL.txt
+|       |   |   `-- nunito-v16-latin-regular.woff2
+|       |   `-- images
+|       |       `-- logo-dark.svg
+|       |-- index.html
+|       |-- main.css
+|       `-- main.js
 |-- go.mod.tmpl
 |-- main.tmpl.go
 |-- template.json
@@ -38,33 +39,38 @@ Wail从预创建的模板生成项目。 In v1, this was a difficult to maintain
 
 ### 模板概述
 
-默认模板由以下文件和目录组成：
+默认模板包含以下文件和目录：
 
-| 文件名 / 目录        | 描述                     |
-| --------------- | ---------------------- |
-| md              | 关于如何完成模板的说明            |
-| 毫秒              | 使用模板发布的README          |
-| app.tmpl.go     | `app.go` 模板文件          |
-| 前端/             | 包含前端资源的目录              |
-| go.mod.tmpl     | `go.mod` template file |
-| main.tmpl.go    | `main.go` 模板文件         |
-| json            | 模板元数据                  |
-| wails.tmpl.json | `wails.json` 模板文件      |
+| 文件名 / 目录        | 描述                |
+| --------------- | ----------------- |
+| NEXTSTEPS.md    | 有关如何完成模板的说明       |
+| README.md       | 随模板发布的 README     |
+| app.tmpl.go     | `app.go` 模板文件     |
+| frontend/       | 包含前端资源的目录         |
+| go.mod.tmpl     | `go.mod` 模板文件     |
+| main.tmpl.go    | `main.go` 模板文件    |
+| template.json   | 模板元数据             |
+| wails.tmpl.json | `wails.json` 模板文件 |
 
-此时此刻，最好跟进 `NEXSTEPS.md` 中的步骤。
+此时，建议按照`NEXTSTEPS.md`中的步骤操作。
 
 ## 从现有项目创建模板
 
-在生成 个模板时，可以从一个现有的前端项目创建一个模板。 我们现在将走过如何创建 Vue 3 模板：
+通过在生成模板时将路径传递给项目，可以从现有的前端项目创建模板。 我们现在将介绍如何创建 Vue 3 模板：
 
-- 安装 vue 片段: `npm install -g @vue/cli`
-- 创建默认项目： `vue create vue3-base`
-  - 选择 `默认 (Vue 3) ([Vue 3] 婴儿, eslint)`
+- 安装 vue cli： `npm install -g @vue/cli`
+- 创建默认项目：`vue create vue3-base`
+  - 选择 `Default (Vue 3) ([Vue 3] babel, eslint)`
 - 项目生成后，运行：
 
 ```shell
-> wails 生成模板-name waers-vue3-template -frontend.\vue3-base\
-提取基础模板文件...
+> wails generate template -name wails-vue3-template -frontend .\vue3-base\
+Extracting base template files...
+Migrating existing project files to frontend directory...
+Updating package.json data...
+Renaming package.json -> package.tmpl.json...
+Updating package-lock.json data...
+Renaming package-lock.json -> package-lock.tmpl.json...
 正在将现有项目文件迁移到前端目录...
 正在更新 package.json 数据...
 重命名包.json -> package.tmpl.json...
@@ -72,11 +78,11 @@ Wail从预创建的模板生成项目。 In v1, this was a difficult to maintain
 正在重命名package-lock.json -> package-lock.tmpl.json...
 ```
 
-- 模板现在可以按照 `NEXTSTEPS.md` 文件的指定进行自定义
-- 一旦文件准备就绪，它可以通过运行来测试：`wails init -n my-vue3-project -t .\wails-vue3-template\`
-- 若要测试新项目，请运行： `cd my-vue3-project` 然后 `等待构建`
-- 一旦项目编译完毕，运行它： `\build\bin\my-vue3-project.exe`
-- 您应该有一个完全正常工作的 Vue3 应用程序：
+- 现在可以按照`NEXTSTEPS.md`中指定的方式定制模板。
+- 一旦文件准备完毕，就可以通过运行命令来测试它：`wails init -n my-vue3-project -t .\wails-vue3-template\`
+- 要测试新项目，请运行：`cd my-vue3-project` then `wails build`
+- 项目编译完成后，运行它：`.\build\bin\my-vue3-project.exe`
+- 您应该有了一个功能齐全的 Vue3 应用程序：
 
 <div className="text--center">
   <img src="/img/vue3-template.png" width="50%" />
@@ -84,10 +90,10 @@ Wail从预创建的模板生成项目。 In v1, this was a difficult to maintain
 
 ## 发布模板
 
-发布模板只是将文件推送到 GitHub 上。 鼓励采取以下最佳做法：
+发布模板只是将文件推送到 GitHub。 鼓励以下最佳实践：
 
-- 从您的前端目录中删除任何不需要的文件和目录(例如 `.git`)
-- 确认 `template.json` 已经完成，特别是 `helpurl`
+- 从前端目录中删除任何不需要的文件和目录（例如：.git）
+- 确保`template.json`完整，尤其是`helpurl`
 - 将文件推送到 GitHub
-- 在 [社区模板](../community/templates.mdx) 页面上创建一个 PR
-- 在 [模板公告板](https://github.com/wailsapp/wails/discussions/825) 讨论板上发布模板
+- 在[社区模板](../community/templates)页面上创建 PR
+- 在[模板公告](https://github.com/wailsapp/wails/discussions/825)讨论板上发布模板
