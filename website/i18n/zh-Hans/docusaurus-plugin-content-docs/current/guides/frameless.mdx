@@ -1,11 +1,11 @@
 
-# Frameless Applications
+# Frameless应用程序
 
-Wails supports applications with no frame. This can be achieved by using the [frameless](../reference/options.mdx#frameless) field in [Application Options](../reference/options.mdx#application-options).
+Wail支持没有帧的应用程序。 这可以通过在 [应用程序选项](../reference/options.mdx#application-options)中使用 [帧](../reference/options.mdx#frameless) 字段来实现。
 
-Wails offers a simple solution for dragging the window: Any HTML element that has the attribute "data-wails-drag" will act as a "drag handle". This property applies to all nested elements. If you need to indicate that a nested element should not drag, then use the attribute 'data-wails-no-drag' on that element.
+Wails offers a simple solution for dragging the window: Any HTML element that has the attribute "data-wails-drag" will act as a "drag handle". 此属性适用于所有嵌套元素。 如果您需要指明嵌套元素 不应拖动，那么使用该元素上的属性 'data wails-n-Drag' 。
 
-The default vanilla template uses this, even though it is not frameless. The whole `body` element is tagged as draggable. The `<div id="input" data-wails-no-drag>` is tagged as being not draggable.
+默认的原版模板使用这个模板，即使它不是虚弱的。 整个 `正文` 元素被标记为可拖拽。 `<div id="input" data-wails-no-drag>` 被标记为不可拖拽。
 
 ```html
 <html>
@@ -26,6 +26,6 @@ The default vanilla template uses this, even though it is not frameless. The who
 </html>
 ```
 
-:::info Fullscreen
-  If you allow your application to go fullscreen, this drag functionality will be disabled.
+:::info 全屏
+  如果您允许您的应用程序全屏，此拖动功能将被禁用。
 :::
