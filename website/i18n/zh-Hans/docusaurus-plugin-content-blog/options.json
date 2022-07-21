@@ -1,14 +1,14 @@
 {
   "title": {
-    "message": "Blog",
+    "message": "博客",
     "description": "The title for the blog used in SEO"
   },
   "description": {
-    "message": "Blog",
+    "message": "博客",
     "description": "The description for the blog used in SEO"
   },
   "sidebar.title": {
-    "message": "Recent posts",
+    "message": "最近的帖子",
     "description": "The label for the left sidebar"
   }
 }
