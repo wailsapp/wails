@@ -129,7 +129,13 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 		return "string"
 	case strings.HasPrefix(input, "map"):
 		temp := strings.TrimPrefix(input, "map[")
-		keyType, valueType, _ := strings.Cut(temp, "]")
+		// Split the string into the key and value types
+		tempSplit := strings.SplitN(temp, "]", 2)
+		if len(tempSplit) < 2 {
+			panic("Invalid map type provided: " + input)
+		}
+		keyType := tempSplit[0]
+		valueType := tempSplit[1]
 		return fmt.Sprintf("{[key: %s]: %s}", goTypeToJSDocType(keyType, importNamespaces), goTypeToJSDocType(valueType, importNamespaces))
 	case strings.HasPrefix(input, "[]"):
 		arrayType := goTypeToJSDocType(input[2:], importNamespaces)

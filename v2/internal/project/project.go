@@ -84,6 +84,13 @@ type Project struct {
 	NSISType string `json:"nsisType"`
 }
 
+func (p *Project) GetDevInstallerCommand() string {
+	if p.DevCommand != "" {
+		return p.DevCommand
+	}
+	return p.InstallCommand
+}
+
 func (p *Project) Save() error {
 	data, err := json.MarshalIndent(p, "", "  ")
 	if err != nil {

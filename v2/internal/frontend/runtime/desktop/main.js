@@ -21,6 +21,14 @@ export function Quit() {
     window.WailsInvoke('Q');
 }
 
+export function Show() {
+    window.WailsInvoke('S');
+}
+
+export function Hide() {
+    window.WailsInvoke('H');
+}
+
 export function Environment() {
     return Call(":wails:Environment");
 }
@@ -37,6 +45,8 @@ window.runtime = {
     EventsEmit,
     EventsOff,
     Environment,
+    Show,
+    Hide,
     Quit
 };
 

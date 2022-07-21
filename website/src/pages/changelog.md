@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.0.0-beta.39.2] - 2022-07-20
+
+## Added
+
+* Update example for macOS Menu by @acheong08 in https://github.com/wailsapp/wails/pull/1600
+
+## Fixed
+
+* Reinstate Go 1.17 compatibility by @leaanthony in https://github.com/wailsapp/wails/pull/1605
+
 ## [v2.0.0-beta.39] - 2022-07-19
 
 ## Added
