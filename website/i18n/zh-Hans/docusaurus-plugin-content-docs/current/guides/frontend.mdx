@@ -3,75 +3,71 @@
 
 ## 脚本注入
 
-当Wail服务于您的 `索引时。 tml`, 默认, 它将注入2个脚本条目到 `<body>` 标签以加载 `/wails/ipc。 s` 和 `/wails/runtime.js`. 这些文件分别安装绑定和运行时间。
+当 Wails 为您的`index.html`提供服务时，默认情况下，它会将 2 个脚本注入`<body>`标签以加载`/wails/ipc.js`和`/wails/runtime.js`。 这些文件分别安装绑定和运行时。
 
-下面的代码显示默认注入的位置：
+下面的代码显示了这些默认注入的位置：
 
 ```html
 <html>
-<head>
-  <title>注入示例</title>
-  <link rel="stylesheet" href="/main.css">
-  <！ -     <script src="/wails/ipc.js"></script> -->
-  <！ -     <script src="/wails/runtime.js"></script> -->
-</head>
+  <head>
+    <title>injection example</title>
+    <link rel="stylesheet" href="/main.css" />
+    <!--     <script src="/wails/ipc.js"></script> -->
+    <!--     <script src="/wails/runtime.js"></script> -->
+  </head>
 
-<body data-wails-drag>
-  <div class="logo"></div></div>
-  <div class="result" id="result">请输入您的名字在 👇</div>
-  <div class="input-box" id="input" data-wails-no-drag>
-    <input class="input" id="name" type="text" autocomplete="off">
-    <button class="btn" onclick="greet()">Greet</button>
-  </div>
+  <body data-wails-drag>
+    <div class="logo"></div>
+    <div class="result" id="result">Please enter your name below 👇</div>
+    <div class="input-box" id="input" data-wails-no-drag>
+      <input class="input" id="name" type="text" autocomplete="off" />
+      <button class="btn" onclick="greet()">Greet</button>
+    </div>
 
-  <script src="/main.js"></script>
-</body>
-
+    <script src="/main.js"></script>
+  </body>
 </html>
 ```
 
-### 覆盖默认脚本注入值
+### 覆盖默认脚本注入
 
-为了给开发者提供更多的灵活性，有一个元标签可以用于自定义此行为：
+为了给开发人员提供更大的灵活性，有一个`meta`标签可用于自定义此行为：
 
 ```html
-  <meta name="wails-options" content="[options]">
+  <meta name="wails-options" content="[options]" />
 ```
 
-备选办法如下：
+选项如下：
 
-| 值                | 描述                         |
-| ---------------- | -------------------------- |
-| noautointruntime | 禁用自动注入 `/wails/runtime.js` |
-| noautoinjectipc  | 禁用自动注入 `/wails/ipc.js`     |
-| noautoinject     | 禁用所有自动插入脚本                 |
+| 值                   | 描述                         |
+| ------------------- | -------------------------- |
+| noautoinjectruntime | 禁用自动注入 `/wails/runtime.js` |
+| noautoinjectipc     | 禁用自动注入 `/wails/ipc.js`     |
+| noautoinject        | 禁用所有脚本自动注入                 |
 
-可以使用多个选项，如果它们是逗号分隔的。
+可以使用多个选项，前提是它们以逗号分隔。
 
-此代码完全有效，并且与自动注入版本操作相同：
+此代码完全有效并且与自动注入版本的操作相同：
 
 ```html
 <html>
+  <head>
+    <title>injection example</title>
+    <meta name="wails-options" content="noautoinject" />
+    <link rel="stylesheet" href="/main.css" />
+  </head>
 
-<head>
-  <title>注入示例</title>
-  <meta name="wails-options" content="noautoinject">
-  <link rel="stylesheet" href="/main.css">
+  <body data-wails-drag>
+    <div class="logo"></div>
+    <div class="result" id="result">Please enter your name below 👇</div>
+    <div class="input-box" id="input" data-wails-no-drag>
+      <input class="input" id="name" type="text" autocomplete="off" />
+      <button class="btn" onclick="greet()">Greet</button>
+    </div>
 
-</head></head>
-
-<body data-wails-drag>
-  <div class="logo"></div>
-  <div class="result" id="result">请填写您的名字在 👇</div>
-  <div class="input-box" id="input" data-wails-no-drag>
-    <input class="input" id="name" type="text" autocomplete="off">
-    <button class="btn" onclick="greet()">Greet</button>
-  </div>
-
-  <script src="/wails/ipc.js"></script>
-  <script src="/wails/runtime.js"></script>
-  <script src="/main.js"></script>
-</body>
-
+    <script src="/wails/ipc.js"></script>
+    <script src="/wails/runtime.js"></script>
+    <script src="/main.js"></script>
+  </body>
 </html>
 ```
