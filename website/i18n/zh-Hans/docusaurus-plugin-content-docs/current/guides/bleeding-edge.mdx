@@ -1,48 +1,48 @@
 
-# Bleeding Edge
+# 出血边缘
 
-## Overview
+## 概览
 
-Wails is in constant development and new releases are regularly "tagged". This usually happens when all the newer code on `master` has been tested and confirmed working. If you need a bugfix or feature that has not yet made it to a release, it's possible to use the latest "bleeding edge" version using the following steps:
+邮票正在不断开发，新版本经常“标记”。 这通常发生在所有更新代码 `master` 已经测试并确认正常运行的时候。 如果您需要一个尚未发布的 bugfix 或功能， 可以使用最新的“出血边缘”版本，使用以下步骤：
 
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails/v2/cmd/wails`
-- `go install`
+- `开始安装`
 
-NOTE: The directory that you cloned the project into will now be called "clonedir".
+注意：您克隆的项目所进入的目录现在将被称为“克隆”。
 
-The Wails CLI will now be at the very latest version. To update projects to use the latest version, update the project's `go.mod` and ensure the following line is at the bottom of the file:
+Wails CLI 现在将是最新版本。 若要更新项目以使用最新版本，请先更新项目的 `od` 并确保以下行处于文件底部：
 
-`replace github.com/wailsapp/wails/v2 => <clonedir>`
+`替换 github.com/wailsapp/wails/v2 => <clonedir>`
 
-Example:
+示例：
 
-On Windows: `replace github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
+在 Windows： `替换github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
 
-On 'nix: `replace github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
+在 'nix: `替换github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
 
-To revert back to a stable version, run:
+若要恢复到稳定版本，请运行：
 
-`go install github.com/wailsapp/wails/v2/cmd/wails@latest`
+`安装 github.com/wailsapp/wails/v2/cmd/wails@最新版本`
 
-## Testing a Branch
+## 测试分支
 
-If you want to test a branch, follow the instructions above, but ensure you switch the branch you want to test before installing:
-
-- `git clone https://github.com/wailsapp/wails`
-- `cd wails`
-- `git checkout -b branch-to-test --track origin/branch-to-test`
-- `cd v2/cmd/wails`
-- `go install`
-
-## Testing a PR
-
-If you want to test a PR, follow the instructions above, but ensure you fetch the PR and switch the branch before installing. Please replace `[IDofThePR]` with the ID of the PR shown on github.com:
+如果您想要测试一个分支，请遵循上面的指示，但确保您在安装之前切换想要测试的分支：
 
 - `git clone https://github.com/wailsapp/wails`
-- `cd wails`
-- `git fetch -u origin pull/[IDofThePR]/head:test/pr-[IDofThePR]`
-- `git checkout test/pr-[IDofThePR]`
-- `git reset --hard HEAD`
+- `cd 唤醒`
+- `git 签出-b branchto-test-track origin/branch-test`
 - `cd v2/cmd/wails`
-- `go install`
+- `开始安装`
+
+## 测试一个 PR
+
+如果您想要测试一个 PR，请遵循上面的指示，但确保您在安装前获取PR 并切换分支。 请将 `[IDofThePR]替换为` 在 github.com 上显示的 PR ID：
+
+- `git clone https://github.com/wailsapp/wails`
+- `cd 唤醒`
+- `git 获取 -u 源纸/[IDofThePR]/head:test/pr-[IDofThePR]`
+- `git 结帐测试/打印-[IDofThePR]`
+- `git 重置 --hard HEAD`
+- `cd v2/cmd/wails`
+- `开始安装`
