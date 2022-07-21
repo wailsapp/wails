@@ -169,7 +169,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			targetPlatform = splitPlatform[0]
 		}
 		if targetArch == "" {
-			targetArch = runtime.GOOS
+			targetArch = runtime.GOARCH
 			if len(splitPlatform) > 1 {
 				targetArch = splitPlatform[1]
 			} else {
