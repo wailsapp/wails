@@ -1,47 +1,47 @@
 
 # IDEs
 
-Wails aims to provide a great development experience. To that aim, we now support generating IDE specific configuration to provide smoother project setup.
+邮寄的目的是提供优秀的发展经验。 为此目的，我们现在支持生成 IDE 特定配置 以提供更安全的项目设置。
 
-Currently, we support [Visual Studio Code](https://code.visualstudio.com/) but aim to support other IDEs such as Goland.
+目前，我们支持 [Visual Studio 代码](https://code.visualstudio.com/) 但旨在支持其他IDE，例如戈兰。
 
-## Visual Studio Code
+## Visual Studio 代码
 
 <p className="text--center">
     <img src="/img/vscode.png" style={{"width": "75%"}}></img>
 </p>
 
-When generating a project using the `-ide vscode` flags, IDE files will be created alongside the other project files. These files are placed into the `.vscode` directory and provide the correct configuration for debugging your application.
+当使用 `-ide vscode` 标志生成项目时，IDE 文件将与其他项目文件一起创建。 这些文件被放置到 `.vscode` 目录中，并为你的应用程序的调试提供了正确的配置。
 
-The 2 files generated are `tasks.json` and `launch.json`. Below are the files generated for the default vanilla project:
+生成的两个文件是 `tasks.json` 和 `launch.json`。 下面是默认的原版项目生成的文件：
 
 ```json title="tasks.json"
-{
-    "version": "2.0.0",
+主席:
+    "version": "2.0 ",
     "tasks": [
-        {
+        }
             "label": "build",
-            "type": "shell",
-            "options": {
+            "类型": "shell",
+            "options": □
                 "cwd": "${workspaceFolder}"
             },
             "command": "go",
-            "args": ["build", "-tags", "dev", "-gcflags", "all=-N -l", "-o", "build/bin/myproject.exe"]
+            "args": ["build", "-tags", "dev", "-gcflags", "all=-N -l", "-o", "build/bin/myproject. xe"]
         },
     ]
 }
 ```
 
 ```json title="launch.json"
-{
-    "version": "0.2.0",
+主席:
+    "version": "0.2. ",
     "configurations": [
-        {
+        }
             "name": "Wails: Debug myproject",
-            "type": "go",
-            "request": "launch",
-            "mode": "exec",
-            "program": "${workspaceFolder}/build/bin/myproject.exe",
+            "类型": "去",
+            "request": "launch"
+            "模式": "exec",
+            "program": "${workspaceFolder}/build/bin/myproject. xe",
             "preLaunchTask": "build",
             "cwd": "${workspaceFolder}",
             "env": {}
@@ -50,9 +50,9 @@ The 2 files generated are `tasks.json` and `launch.json`. Below are the files ge
 }
 ```
 
-### Configuring the install and build steps
+### 配置安装和构建步骤
 
-The `tasks.json` file is simple for the default project as there is no `npm install` or `npm run build` step needed. For projects that have a frontend build step, such as the svelte template, we would need to edit `tasks.json` to add the install and build steps:
+`任务。 son` 文件对于默认项目来说是简单的，因为没有 `npm 安装` 或 `npm 运行 building` 步骤。 对于有前端构建步骤的项目，如svelte模板，我们需要编辑 `任务。 son` 到 添加安装和构建步骤：
 
 ```json title="tasks.json"
 {
@@ -104,8 +104,8 @@ The `tasks.json` file is simple for the default project as there is no `npm inst
 }
 ```
 
-:::info Future Enhancement
+:::info 未来改进
 
-In the future, we hope to generate a `tasks.json` that includes the install and build steps automatically.
+今后，我们希望生成一个 `tasks.json` ，其中包括安装和自动构建步骤。
 
 :::
