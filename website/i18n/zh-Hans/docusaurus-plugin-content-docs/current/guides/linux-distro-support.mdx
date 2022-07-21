@@ -1,23 +1,23 @@
 
-# Linux Distro Support
+# Linux Distro 支持
 
-## Overview
+## 概览
 
-Wails offers Linux support but providing installation instructions for all available distributions is an impossible task. Instead, Wails tries to determine if the packages you need to develop applications are available via your system's package manager. Currently, we support the following package managers:
+Wails提供Linux支持，但为所有可用发行版提供安装说明是不可能的。 相反，Wails试图确定您需要开发应用程序的软件包是否可以通过您的系统包 管理器获得。 目前，我们支持以下软件包管理员：
 
-- apt
+- 小贴士
 - dnf
-- emerge
+- 出现了
 - eopkg
 - nixpkgs
 - pacman
-- zypper
+- zyper
 
-## Adding package names
+## 添加软件包名称
 
-There may be circumstances where your distro uses one of the supported package managers but the package name is different. For example, you may use an Ubuntu derivative, but the package name for gtk may be different. Wails attempts to find the correct package by iterating through a list of package names. The list of packages are stored in the packagemanager specific file in the `v2/internal/system/packagemanager` directory. In our example, this would be `v2/internal/system/packagemanager/apt.go`.
+在某些情况下，您的磁盘可能使用支持的软件包管理器之一，但是包名 不同。 例如，您可以使用 Ubuntu 衍生工具，但gtk 的软件包名称可能不同。 发送 通过一个软件包名称列表来尝试找到正确的软件包。 软件包列表存储在 `v2/internal/system/packemanager` 目录中的包管理器特定文件。 在我们的例子中，这将是 `v2/internal/system/packemanager/apt.go`。
 
-In this file, the list of packages are defined by the `Packages()` method:
+在这个文件中，包列表是由 `Packages()` 方法定义的：
 
 ```go
 func (a *Apt) Packages() packagemap {
@@ -44,7 +44,7 @@ func (a *Apt) Packages() packagemap {
 }
 ```
 
-Let's assume that in our linux distro, `libgtk-3` is packaged under the name `lib-gtk3-dev`. We could add support for this by adding the following line:
+让我们假设，在我们的 linux distro, `libgtk-3` 被打包在 `lib-gtk3-dev` 中。 我们可以通过增加以下行来增加对此的支持：
 
 ```go {5}
 func (a *Apt) Packages() packagemap {
@@ -72,30 +72,30 @@ func (a *Apt) Packages() packagemap {
 }
 ```
 
-## Adding new package managers
+## 添加新的软件包管理器
 
-To add a new package manager, perform the following steps:
+要添加一个新的软件包管理器，执行以下步骤：
 
-- Create a new file in `v2/internal/system/packagemanager` called `<pm>.go`, where `<pm>` is the name of the package manager.
-- Define a struct that conforms to the package manager interface defined in `pm.go`:
+- 在 `v2/internal/system/packemanager` 调用 `<pm>.go`中创建一个新的文件，其中 `<pm>` 是包管理器的名称。
+- 定义一个符合 `pm.go` 定义的包管理界面的结构：
 
 ```go
-type PackageManager interface {
-    Name() string
-    Packages() packagemap
-    PackageInstalled(*Package) (bool, error)
-    PackageAvailable(*Package) (bool, error)
-    InstallCommand(*Package) string
+类型 PackageManager 界面 ！
+    Name() 字符串
+    Packages() 软件包
+    PackageInstalled(*Package) (bool, 错误)
+    PackageAvailable(*Package) (bool, 错误)
+    InstallCommand(*Package) 字符串
 }
 ```
-- `Name()` should return the name of the package manager
-- `Packages()` should return a `packagemap`, that provides candidate filenames for dependencies
-- `PackageInstalled()` should return `true` if the given package is installed
-- `PackageAvailable()` should return `true` if the given package is not installed but available for installation
-- `InstallCommand()` should return the exact command to install the given package name
+- `Name()` 应该返回包管理器的名称
+- `Packages()` 应该返回一个 `packemap`, 它为依赖关系提供候选文件名
+- `如果安装了指定的软件包，PackageInstaled()` 应该返回 `true`
+- `PackageAvailable()` 应该返回 `true` 如果指定的软件包没有安装但可以安装
+- `InstallCommand()` 应该返回准确的命令来安装给定的软件包名称
 
-Take a look at the other package managers code to get an idea how this works.
+查看其它软件包管理员代码，了解这种方法是如何运作的。
 
 :::info Remember
-If you add support for a new package manager, don't forget to also update this page!
+如果您增加了对新软件包管理器的支持，请不要忘记更新此页面！
 :::
