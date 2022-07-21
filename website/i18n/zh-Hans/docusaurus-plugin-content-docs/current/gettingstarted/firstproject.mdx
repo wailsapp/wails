@@ -2,26 +2,26 @@
 sidebar_position: 2
 ---
 
-# Creating a Project
+# 创建一个项目
 
-## Project Generation
+## 项目生成
 
-Now that the CLI is installed, you can generate a new project by using the `wails init` command.
+现在安装了CLI，你可以通过使用 `wils 嵌入` 命令来生成一个新项目。
 
-Pick your favourite framework:
+选择您最喜欢的框架：
 
-import TabsFrameworks from "../../src/components/frameworktabs";
+从 "../../src/components/framework"导入TabsFrameworks;
 <TabsFrameworks/>
 
 <hr />
 
-There are also [community templates](../community/templates.mdx) available that offer different capabilities and frameworks.
+还有 [个社区模板](../community/templates.mdx) 可用来提供不同的能力和框架。
 
-To see the other options available, you can run `wails init -help`. More details can be found in the [CLI Reference](../reference/cli.mdx#init).
+要看看其他可用的选项，您可以运行 `个wils init -help`。 更多详情可在 [CLI 引用](../reference/cli.mdx#init) 中找到。
 
-## Project Layout
+## 项目布局
 
-Wails projects have the following layout:
+Wail项目有以下布局：
 
 ```
 .
@@ -36,20 +36,20 @@ Wails projects have the following layout:
 └── wails.json
 ```
 
-### Project structure rundown
+### 项目结构已经断开
 
-- `/main.go` - The main application
-- `/frontend/` - Frontend project files
-- `/build/` - Project build directory
-- `/build/appicon.png` - The application icon
-- `/build/darwin/` - Mac specific project files
-- `/build/windows/` - Windows specific project files
-- `/wails.json` - The project configuration
+- `/main.go` - 主要应用程序
+- `/frontend/` - 前端项目文件
+- `/build/` - 项目构建目录
+- `/build/appicon.png` - 应用程序图标
+- `/build/darwin/` - Mac 特定项目文件
+- `/build/windows/` - Windows 特定项目文件
+- `/wails.json` - 项目配置
 - `/go.mod` - Go module file
 - `/go.sum` - Go module checksum file
 
-The `frontend` directory has nothing specific to Wails and can be any frontend project of your choosing.
+`前端` 目录没有特定的邮件地址，可以是您选择的任何前端项目。
 
-The `build` directory is used during the build process. These files may be updated to customise your builds. If files are removed from the build directory, default versions will be regenerated.
+`构建` 目录在构建过程中被使用。 这些文件可能被更新以自定义您的构建。 如果将 文件从构建目录中删除，默认版本将会重新生成。
 
-The default module name in `go.mod` is "changeme". You should change this to something more appropriate.
+`go.mod` 中的默认模块名称为“changeme”。 您应该将此更改为更合适的东西。
