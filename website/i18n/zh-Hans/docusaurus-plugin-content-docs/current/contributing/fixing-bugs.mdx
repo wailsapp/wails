@@ -2,26 +2,26 @@
 sidebar_position: 30
 ---
 
-# Fixing Bugs
+# 修复错误
 
-The process for fixing bugs are as follows:
+修复bug的过程如下：
 
-- Check the current [Backlog](https://github.com/orgs/wailsapp/projects/1/views/1) and select a bug to fix
-- Before developing, check that the ticket includes the following information:
-- The scope of the issue including platforms affected
-- The steps to reproduce. Sometimes bugs are opened that are not Wails issues and the onus is on the reporter to prove that it is a Wails issue with a minimal reproducible example
-- The output of `wails doctor`
-- If the ticket does not include this information, feel free to request the information from the person who opened the ticket.
-- Comment on the ticket stating you wish to develop a fix
-- Clone the repository and create a branch with the format `bugfix/<ticket_number>_<ticket_title>`
-- Once the fix is ready for testing, create a draft PR. Please ensure the PR description has the test scenarios and test cases listed with checkmarks, so that others can know what still needs to be tested.
-- Once all the testing is completed, please update the status of the PR from draft and leave a message.
+- 检查当前的 [待办事宜](https://github.com/orgs/wailsapp/projects/1/views/1) 并选择一个 bug 以修复
+- 在开发之前，请检查工单是否包含以下信息：
+- A. 问题的范围，包括受影响的平台
+- 要复制的步骤。 有时出现了不属于邮寄问题的故障，报告者有责任 证明它是一个用最小的可复制示例的遗迹问题
+- `视觉医生的输出`
+- 如果工单没有包含此信息，请随时向打开工单的 个人索取信息。
+- 对工单的评论，您希望开发一个修复
+- 复制仓库并创建一个分支，格式为 `bugfix/<ticket_number>_<ticket_title>`
+- 一旦修复准备好进行测试，创建一个 PR草案。 请确认 PR 描述有测试场景和 带有检查标记的测试案例， 使其他人能够知道仍然需要测试的内容。
+- 一旦完成所有测试，请从草稿中更新PR 状态并留下一条消息。
 
 :::note
-There is nothing stopping you from opening a ticket and working on it yourself, but please be aware that all
-bugfixes should be discussed as the approach may have unintended side effects.
+没有任何东西阻止您打开工单并自己工作。 但请注意，应该讨论所有
+bug修复，因为该方法可能会产生意外的副作用。
 :::
 
-:::warning
-Any PRs opened without a corresponding ticket may be rejected.
+:::警告
+在没有相应服务单的情况下打开的任何PR都可能被拒绝。
 :::
