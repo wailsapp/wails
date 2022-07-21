@@ -4,28 +4,28 @@ sidebar_position: 10
 
 # 设置开发环境
 
-您可以通过以下方式设置一个开发环境：
+You can set up a development environment by doing the following:
 
-- 安装 Go 和 Git 的最新版本
+- Install the latest versions of Go and Git
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails/v2/cmd/wails`
-- `开始安装`
+- `go install`
 
-注意：您克隆的项目所进入的目录现在将被称为“克隆”。
+NOTE: The directory that you cloned the project into will now be called "clonedir".
 
-Wails CLI 现在将是最新版本。
+The Wails CLI will now be at the very latest version.
 
-若要更新项目以使用最新版本，请随时更新项目的 `od` and 确保以下行处于文件的底部：
+To update projects to use the latest version, update the project's `go.mod` and ensure the following line is at the bottom of the file:
 
-`替换 github.com/wailsapp/wails/v2 => <clonedir>`
+`replace github.com/wailsapp/wails/v2 => <clonedir>`
 
-示例：
+Example:
 
-在 Windows： `替换github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
+On Windows: `replace github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
 
-在 'nix: `替换github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
+On 'nix: `replace github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
 
-若要恢复到稳定版本，请运行：
+To revert back to a stable version, run:
 
-`安装 github.com/wailsapp/wails/v2/cmd/wails@最新版本`
+`go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
