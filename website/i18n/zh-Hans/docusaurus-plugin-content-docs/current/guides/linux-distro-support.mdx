@@ -1,23 +1,23 @@
 
-# Linux Distro 支持
+# Linux 发行版支持
 
-## 概览
+## 概述
 
-Wails提供Linux支持，但为所有可用发行版提供安装说明是不可能的。 相反，Wails试图确定您需要开发应用程序的软件包是否可以通过您的系统包 管理器获得。 目前，我们支持以下软件包管理员：
+Wails 提供 Linux 支持，但为所有可用发行版提供安装说明是一项不可能完成的任务。 相反，Wails 会尝试确定您开发应用程序所需的包是否可以通过系统的包管理器获得。 目前，我们支持以下包管理器：
 
-- 小贴士
+- apt
 - dnf
-- 出现了
+- emerge
 - eopkg
 - nixpkgs
 - pacman
-- zyper
+- zypper
 
-## 添加软件包名称
+## 添加包名
 
-在某些情况下，您的磁盘可能使用支持的软件包管理器之一，但是包名 不同。 例如，您可以使用 Ubuntu 衍生工具，但gtk 的软件包名称可能不同。 发送 通过一个软件包名称列表来尝试找到正确的软件包。 软件包列表存储在 `v2/internal/system/packemanager` 目录中的包管理器特定文件。 在我们的例子中，这将是 `v2/internal/system/packemanager/apt.go`。
+在某些情况下，您的发行版使用受支持的包管理器之一，但包名称不同。 例如，您可能使用 Ubuntu 衍生产品，但 gtk 的包名称可能不同。 Wails 尝试通过遍历包名称列表来找到正确的包。 包列表存储在`v2/internal/system/packagemanager` 目录中的包管理器特定文件中。 在我们的示例中，将是`v2/internal/system/packagemanager/apt.go`。
 
-在这个文件中，包列表是由 `Packages()` 方法定义的：
+在此文件中，包列表由以下`Packages()`方法定义：
 
 ```go
 func (a *Apt) Packages() packagemap {
@@ -44,7 +44,7 @@ func (a *Apt) Packages() packagemap {
 }
 ```
 
-让我们假设，在我们的 linux distro, `libgtk-3` 被打包在 `lib-gtk3-dev` 中。 我们可以通过增加以下行来增加对此的支持：
+假设在我们的 linux 发行版中，libgtk-3 以 lib-gtk3-dev 的名称打包。 我们可以通过添加以下行来添加对此的支持：
 
 ```go {5}
 func (a *Apt) Packages() packagemap {
@@ -72,30 +72,30 @@ func (a *Apt) Packages() packagemap {
 }
 ```
 
-## 添加新的软件包管理器
+## 添加新的包管理器
 
-要添加一个新的软件包管理器，执行以下步骤：
+要添加新的包管理器，请执行以下步骤：
 
-- 在 `v2/internal/system/packemanager` 调用 `<pm>.go`中创建一个新的文件，其中 `<pm>` 是包管理器的名称。
-- 定义一个符合 `pm.go` 定义的包管理界面的结构：
+- 在`v2/internal/system/packagemanager`中创建一个名为`<pm>.go`的新文件，其中`<pm>`是包管理器的名称。
+- 定义一个符合`pm.go`中定义的包管理器接口的结构体。
 
 ```go
-类型 PackageManager 界面 ！
-    Name() 字符串
-    Packages() 软件包
-    PackageInstalled(*Package) (bool, 错误)
-    PackageAvailable(*Package) (bool, 错误)
-    InstallCommand(*Package) 字符串
+type PackageManager interface {
+    Name() string
+    Packages() packagemap
+    PackageInstalled(*Package) (bool, error)
+    PackageAvailable(*Package) (bool, error)
+    InstallCommand(*Package) string
 }
 ```
 - `Name()` 应该返回包管理器的名称
-- `Packages()` 应该返回一个 `packemap`, 它为依赖关系提供候选文件名
-- `如果安装了指定的软件包，PackageInstaled()` 应该返回 `true`
-- `PackageAvailable()` 应该返回 `true` 如果指定的软件包没有安装但可以安装
-- `InstallCommand()` 应该返回准确的命令来安装给定的软件包名称
+- `Packages()` 应该返回一个`packagemap`，它为依赖项提供候选文件名
+- `PackageInstalled()` 如果安装了指定的包，应该返回`true`
+- `PackageAvailable()` 如果指定的软件包未安装但可以安装，则应返回`true`
+- `InstallCommand()` 应该返回确切的命令来安装指定的包名
 
-查看其它软件包管理员代码，了解这种方法是如何运作的。
+查看其他包管理器代码以了解其工作原理。
 
-:::info Remember
-如果您增加了对新软件包管理器的支持，请不要忘记更新此页面！
+:::info 记住
+如果您添加了对新包管理器的支持，请不要忘记更新此页面！
 :::
