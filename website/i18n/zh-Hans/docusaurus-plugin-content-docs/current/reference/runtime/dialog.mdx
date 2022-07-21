@@ -2,190 +2,190 @@
 sidebar_position: 5
 ---
 
-# Dialog
+# 对话框
 
-## Overview
+## 概览
 
-This part of the runtime provides access to native dialogs, such as File Selectors and Message boxes.
+这部分运行时间提供了对本地对话框的访问权，例如文件选择器和消息框。
 
 :::info Javascript
-  Dialog is currently unsupported in the JS runtime.
+  对话框目前在 JS 运行时不被支持。
 :::
 
-### OpenDirectoryDialog
+### OpenDirectory对话框
 
-Opens a dialog that prompts the user to select a directory. Can be customised using [OpenDialogOptions](#opendialogoptions).
+打开一个提醒用户选择目录的对话框。 可以使用 [OpenDialogoptions](#opendialogoptions) 自定义.
 
-Go Signature: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
+去签署: `OpenDirectoryDialog(ctx context. Context, dialogoptions OpenDialogoptions) (string, error)`
 
-Returns: Selected directory (blank if the user cancelled) or an error
-
-
-### OpenFileDialog
-
-Opens a dialog that prompts the user to select a file. Can be customised using [OpenDialogOptions](#opendialogoptions).
-
-Go Signature: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
-
-Returns: Selected file (blank if the user cancelled) or an error
+返回：选中的目录(如果用户取消，则为空)或错误
 
 
+### OpenFile对话框
 
-### OpenMultipleFilesDialog
+打开一个提醒用户选择文件的对话框。 可以使用 [OpenDialogoptions](#opendialogoptions) 自定义.
 
-Opens a dialog that prompts the user to select multiple files. Can be customised using [OpenDialogOptions](#opendialogoptions).
+去签署: `OpenFileDialog(ctx context. Context, dialogoptions OpenDialogoptions) (string, error)`
 
-Go Signature: `OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error)`
-
-Returns: Selected files (nil if the user cancelled) or an error
+返回：选中的文件(如果用户取消则为空)或错误
 
 
 
-### SaveFileDialog
+### OpenMultipleFiles对话框
 
-Opens a dialog that prompts the user to select a filename for the purposes of saving. Can be customised using [SaveDialogOptions](#savedialogoptions).
+打开一个提醒用户选择多个文件的对话框。 可以使用 [OpenDialogoptions](#opendialogoptions) 自定义.
 
-Go Signature: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error)`
+去签署: `OpenMultipleFilesDialogalog(ctx context. Context, dialogoptions OpenDialogoptions) ([]string, error)`
 
-Returns: The selected file (blank if the user cancelled) or an error
+返回：选定的文件(如果用户取消，则为零)或错误
 
 
 
-### MessageDialog
+### 保存文件对话框
 
-Displays a message using a message dialog. Can be customised using [MessageDialogOptions](#messagedialogoptions).
+打开一个对话框，提醒用户为保存目的选择一个文件名。 可以使用 [保存对话选项](#savedialogoptions) 自定义.
 
-Go Signature: `MessageDialog(ctx context.Context, dialogOptions MessageDialogOptions) (string, error)`
+去签署: `保存文件对话框(ctx context. Context, dialogoptions SaveDialogoptions) (字符串, 错误)`
 
-Returns: The text of the selected button or an error
+返回：选中的文件(如果用户取消则为空)或错误
 
-## Options
 
-### OpenDialogOptions
+
+### 消息对话框
+
+使用消息对话框显示消息。 可以使用 [MessageDialogoptions](#messagedialogoptions) 自定义.
+
+去签署: `MessageDialog(ctx context. Context, dialogoptions MessageDialogoptions) (string, error)`
+
+返回：所选按钮的文本或一个错误
+
+## 备选方案
+
+### 打开对话框选项
 
 ```go
-type OpenDialogOptions struct {
-    DefaultDirectory           string
-    DefaultFilename            string
-    Title                      string
-    Filters                    []FileFilter
-    ShowHiddenFiles            bool
-    CanCreateDirectories       bool
-    ResolvesAliases            bool
+输入 OpenDialogOptions 结构如下:
+    默认目录字符串
+    默认文件字符串
+    标题字符串
+    过滤器[]文件过滤器
+    ShowHiddenFiles bool
+    CanCreateDirectories bool
+    ResolvesAliases bool
+    TreatyPackagesAsDirectories bool
+}
+```
+| 字段                            | 描述                 | 胜利 | 马奇文 | Lin |
+| ----------------------------- | ------------------ | -- | --- | --- |
+| 默认目录                          | 打开时对话框将显示的目录       | ✅  | ✅   | ✅   |
+| 默认文件名                         | 默认文件名              | ✅  | ✅   | ✅   |
+| 标题                            | 对话框标题              | ✅  | ✅   | ✅   |
+| [筛选器](#filefilter)            | 文件过滤器列表            | ✅  | ✅   | ✅   |
+| 显示隐藏文件                        | 显示系统隐藏的文件          |    | ✅   | ✅   |
+| CanCreateDirectories          | 允许用户创建目录           |    | ✅   |     |
+| 解析别名                          | 如果为 true，返回的文件不是别名 |    | ✅   |     |
+| Treaty PackagesAssDirectories | 允许导航到软件包           |    | ✅   |     |
+
+
+### 保存对话框选项
+
+```go
+输入 SaveDialogOptions struct PDF *
+    DefaultDirectDirectDirectory 字符串
+    DefaultFilename string
+    Title string
+    filters []FileFillel
+    ShowHiddenFiles bool
+    CanCreateDirectories bool
     TreatPackagesAsDirectories bool
 }
 ```
-| Field                      | Description                                    | Win | Mac | Lin |
-| -------------------------- | ---------------------------------------------- | --- | --- | --- |
-| DefaultDirectory           | The directory the dialog will show when opened | ✅   | ✅   | ✅   |
-| DefaultFilename            | The default filename                           | ✅   | ✅   | ✅   |
-| Title                      | Title for the dialog                           | ✅   | ✅   | ✅   |
-| [Filters](#filefilter)     | A list of file filters                         | ✅   | ✅   | ✅   |
-| ShowHiddenFiles            | Show files hidden by the system                |     | ✅   | ✅   |
-| CanCreateDirectories       | Allow user to create directories               |     | ✅   |     |
-| ResolvesAliases            | If true, returns the file not the alias        |     | ✅   |     |
-| TreatPackagesAsDirectories | Allow navigating into packages                 |     | ✅   |     |
 
+| 字段                            | 描述           | 胜利 | 马奇文 | Lin |
+| ----------------------------- | ------------ | -- | --- | --- |
+| 默认目录                          | 打开时对话框将显示的目录 | ✅  | ✅   | ✅   |
+| 默认文件名                         | 默认文件名        | ✅  | ✅   | ✅   |
+| 标题                            | 对话框标题        | ✅  | ✅   | ✅   |
+| [筛选器](#filefilter)            | 文件过滤器列表      | ✅  | ✅   | ✅   |
+| 显示隐藏文件                        | 显示系统隐藏的文件    |    | ✅   | ✅   |
+| CanCreateDirectories          | 允许用户创建目录     |    | ✅   |     |
+| Treaty PackagesAssDirectories | 允许导航到软件包     |    | ✅   |     |
 
-### SaveDialogOptions
-
-```go
-type SaveDialogOptions struct {
-    DefaultDirectory           string
-    DefaultFilename            string
-    Title                      string
-    Filters                    []FileFilter
-    ShowHiddenFiles            bool
-    CanCreateDirectories       bool
-    TreatPackagesAsDirectories bool
-}
-```
-
-| Field                      | Description                                    | Win | Mac | Lin |
-| -------------------------- | ---------------------------------------------- | --- | --- | --- |
-| DefaultDirectory           | The directory the dialog will show when opened | ✅   | ✅   | ✅   |
-| DefaultFilename            | The default filename                           | ✅   | ✅   | ✅   |
-| Title                      | Title for the dialog                           | ✅   | ✅   | ✅   |
-| [Filters](#filefilter)     | A list of file filters                         | ✅   | ✅   | ✅   |
-| ShowHiddenFiles            | Show files hidden by the system                |     | ✅   | ✅   |
-| CanCreateDirectories       | Allow user to create directories               |     | ✅   |     |
-| TreatPackagesAsDirectories | Allow navigating into packages                 |     | ✅   |     |
-
-### MessageDialogOptions
+### 消息对话框选项
 
 ```go
-type MessageDialogOptions struct {
-    Type          DialogType
-    Title         string
-    Message       string
-    Buttons       []string
-    DefaultButton string
-    CancelButton  string
+输入 MessageDialogOptions struct 然后置于
+    输入对话类型
+    标题字符串
+    消息字符串
+    按钮[]字符串
+    默认按钮字符串
+    取消按钮字符串
 }
 ```
-| Field         | Description                                                               | Win | Mac | Lin |
-| ------------- | ------------------------------------------------------------------------- | --- | --- | --- |
-| Type          | The type of message dialog, eg question, info...                          | ✅   | ✅   | ✅   |
-| Title         | Title for the dialog                                                      | ✅   | ✅   | ✅   |
-| Message       | The message to show the user                                              | ✅   | ✅   | ✅   |
-| Buttons       | A list of button titles                                                   |     | ✅   |     |
-| DefaultButton | The button with this text should be treated as default. Bound to `return` |     | ✅   |     |
-| CancelButton  | The button with this text should be treated as cancel. Bound to `escape`  |     | ✅   |     |
+| 字段            | 描述                     | 胜利 | 马奇文 | Lin |
+| ------------- | ---------------------- | -- | --- | --- |
+| 类型            | 消息对话框的类型，比如问题，信息...    | ✅  | ✅   | ✅   |
+| 标题            | 对话框标题                  | ✅  | ✅   | ✅   |
+| 留言            | 要显示用户的消息               | ✅  | ✅   | ✅   |
+| 按钮            | 按钮标题列表                 |    | ✅   |     |
+| DefaultButton | 此文本的按钮应被视为默认。 绑定到 `返回` |    | ✅   |     |
+| 取消按钮          | 此文本的按钮应被视为取消。 绑定到 `逃逸` |    | ✅   |     |
 
-#### Windows
+#### 窗口
 
-Windows has standard dialog types in which the buttons are not customisable. The value returned will be one of: "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "Try Again" or "Continue"
+Windows有标准对话框类型，在这些对话框中按钮不可自定义. 返回的值将是 "好", "取消", "中止", "重试", "忽略", "是", "否", "再试一次" 或"继续"
 
 #### Linux
 
-Linux has standard dialog types in which the buttons are not customisable. The value returned will be one of: "Ok", "Cancel", "Yes", "No"
+Linux有无法自定义按钮的标准对话框类型。 返回的值将是“好”、“取消”、“是”、“否”
 
-#### Mac
+#### 马奇文
 
-A message dialog on Mac may specify up to 4 buttons. If no `DefaultButton` or `CancelButton` is given, the first button is considered default and is bound to the `return` key.
+Mac 上的消息对话框可以指定最多4个按钮。 如果没有 `默认按钮` 或 `取消按钮` 第一个按钮 被视为默认并绑定到 `返回` 密钥。
 
-For the following code:
+以下代码：
 ```go
-selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
-    Title:        "It's your turn!",
-    Message:      "Select a number",
-    Buttons:      []string{"one", "two", "three", "four"},
+selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogtions.pdf.
+    Title: "It your cour!",
+    Message: "选择一个数字",
+    Buttons: []string{"one", "two", "the", "four"},
 })
 ```
-the first button is shown as default:
+第一个按钮显示为默认值：
 <div class="text--center">
     <img src="/img/runtime/dialog_no_defaults.png" width="30%" style={{"box-shadow": "rgb(255 255 >
 </div>
 
 <br/>
 
-And if we specify `DefaultButton` to be "two":
+如果我们指定 `默认按钮` 为“双重”：
 ```go
-selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
-    Title:         "It's your turn!",
-    Message:       "Select a number",
-    Buttons:       []string{"one", "two", "three", "four"},
-    DefaultButton: "two",
+选项，err := runtime.MessageDialog(b.ctx)，运行时间。 文章对话选项
+    标题：“这是你回来的！ ,
+    消息：“选择一个数字”，
+    按钮：[]string{"one", "2", "the", "four"},
+    DefaultButton: "tw",
 })
 ```
-the second button is shown as default. When `return` is pressed, the value "two" is returned.
+第二个按钮显示为默认。 当 `返回` 按下时，返回值“2”。
 <div class="text--center">
     <img src="/img/runtime/dialog_default_button.png" width="30%" style={{"box-shadow": "rgb(255 255 >
 </div>
 
 <br/>
 
-If we now specify `CancelButton` to be "three":
+如果我们现在指定 `取消按钮` 为“三”：
 ```go
-selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
-    Title:         "It's your turn!",
-    Message:       "Select a number",
-    Buttons:       []string{"one", "two", "three", "four"},
-    DefaultButton: "two",
-    CancelButton:  "three",
+选项，err := runtime.MessageDialog(b.ctx)，运行时间。 文章对话选项
+    标题：“这是你回来的！ ,
+    消息：“选择一个数字”，
+    按钮: []string{"one", "two", "the", "four"},
+    DefaultButton: "tw",
+    CancelButton: "the",
 })
 ```
-the button with "three" is shown at the bottom of the dialog. When `escape` is pressed, the value "three" is returned:
+带有"三"的按钮显示在对话框底部。 当 `逃逸` 被按下时，返回"3"的值：
 <div class="text--center">
     <img src="/img/runtime/dialog_default_cancel.png" width="30%" style={{"box-shadow": "rgb(255 255 >
 </div>
@@ -199,25 +199,25 @@ the button with "three" is shown at the bottom of the dialog. When `escape` is p
 
 ```go
 const (
-        InfoDialog     DialogType = "info"
-        WarningDialog  DialogType = "warning"
-        ErrorDialog    DialogType = "error"
-        QuestionDialog DialogType = "question"
-     )
+        InfoDialog 对话类型 = "info"
+        警告对话类型 = "警告"
+        错误对话类型 = "错误"
+        问卷对话类型 = "问题"
+)
 ```
 
-### FileFilter
+### 文件过滤器
 
 ```go
-type FileFilter struct {
-    DisplayName string // Filter information EG: "Image Files (*.jpg, *.png)"
-    Pattern     string // semi-colon separated list of extensions, EG: "*.jpg;*.png"
+输入 FileFile/FilleFille struct v.
+    Displayname 字符串 // 过滤信息 EG: "图像文件 (*.jpg, *). ng)"
+    模式字符串 // 半colon 分隔扩展列表, EG: "*.jpg;*.png"
 }
 ```
 
-#### Windows
+#### 窗口
 
-Windows allows you to use multiple file filters in dialog boxes. Each FileFilter will show up as a separate entry in the dialog:
+Windows 允许您在对话框中使用多个文件过滤器。 每个文件过滤器将在 对话框中作为单独条目显示：
 
 <div class="text--center">
     <img src="/img/runtime/dialog_win_filters.png" width="50%" style={{"box-shadow": "rgb(255 255 >
@@ -229,7 +229,7 @@ Windows allows you to use multiple file filters in dialog boxes. Each FileFilter
 
 #### Linux
 
-Linux allows you to use multiple file filters in dialog boxes. Each FileFilter will show up as a separate entry in the dialog:
+Linux允许您在对话框中使用多个文件过滤器。 每个文件过滤器将在 对话框中作为单独条目显示：
 
 <div class="text--center">
   <img src="/img/runtime/dialog_lin_filters.png" width="50%" style={{"box-shadow": "rgb(255 255 >
@@ -240,23 +240,23 @@ Linux allows you to use multiple file filters in dialog boxes. Each FileFilter w
 <br/>
 
 
-#### Mac
+#### 马奇文
 
-Mac dialogs only have the concept of a single set of patterns to filter files. If multiple FileFilters are provided, Wails will use all the Patterns defined.
+Mac 对话框仅有筛选文件的一组模式的概念。 如果提供了多个文件过滤器， Wail将使用定义的所有模式。
 
-Example:
+示例：
 ```go
-    selection, err := runtime.OpenFileDialog(b.ctx, runtime.OpenDialogOptions{
-        Title: "Select File",
-        Filters: []runtime.FileFilter{
-            {
-                DisplayName: "Images (*.png;*.jpg)",
-                Pattern:     "*.png;*.jpg",
-            }, {
-                DisplayName: "Videos (*.mov;*.mp4)",
-                Pattern:     "*.mov;*.mp4",
+    选项，err := runtime.OpenFileDialog(b.ctx)，运行时间。 penDialogOptions
+        标题：“选择文件”，
+        过滤器：[]运行时间。 ileFilter@un.org
+
+                Displayname: "Images (*. ng;*。 pg)",
+                模式: "*.png;*. pg",
+            }, 主席:
+                DisplayName: "Videos (*). ov;*.mp4)",
+                模式: "*.mov;*. p4",
             },
         },
-    })
+})
 ```
-This will result in the Open File dialog using `*.png,*.jpg,*.mov,*.mp4` as a filter.
+这将导致打开文件对话框使用 `*.png,*.jpg,*.mov,*mp4` 作为过滤器。
