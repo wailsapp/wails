@@ -4,216 +4,216 @@ sidebar_position: 4
 
 # 窗口
 
-## 概览
+## 概述
 
-这些方法能够控制应用程序窗口。
+这些方法可以控制应用程序窗口。
 
-### 窗口设置标题
-去签署: `WindowSetTitle(ctx context. Context, title string)`
+### 窗口标题
+Go 方法签名: `WindowSetTitle(ctx context.Context, title string)`
 
-JS 签署： `WindowSetTitle(标题：字符串)`
+JS 方法签名: `WindowSetTitle(title: string)`
 
 设置窗口标题栏中的文本。
 
-### Windows全屏
-去签署: `WindowFullscreen(ctx context.Context)`
+### 窗口全屏
+Go 方法签名: `WindowFullscreen(ctx context.Context)`
 
-JS 签署： `WindowFullscreen()`
+JS 方法签名: `WindowFullscreen()`
 
-使窗口全屏化。
+使窗口全屏。
 
-### Windows全屏
-去签署: `WindowUnfullscreen(ctx context.Context)`
+### 窗口取消全屏
+Go 方法签名: `WindowUnfullscreen(ctx context.Context)`
 
-JS 签署： `WindowUnfullscreen()`
+JS 方法签名: `WindowUnfullscreen()`
 
-在全屏之前还原上一个窗口尺寸和位置。
+在全屏之前恢复先前的窗口尺寸和位置。
 
-### 窗口中心
-去签署: `WindowCenter(ctx context.Context)`
+### 窗口居中
+Go 方法签名: `WindowCenter(ctx context.Context)`
 
-JS 签署： `WindowCenter()`
+JS 方法签名: `WindowCenter()`
 
-将窗口放在监视器上的窗口上。
+使窗口在当前窗口所在的监视器上居中。
 
 ### 窗口重新加载
-去签署: `WindowReload(ctx context.Context)`
+Go 方法签名: `WindowReload(ctx context.Context)`
 
-JS 签署： `WindowReload()`
+JS 方法签名: `WindowReload()`
 
-执行"重新加载"(重新加载当前页面)。
+执行“重新加载”（重新加载 index.html）
 
-### WindowReloadApp
-去签署: `WindowReloadApp(ctx context.Context)`
+### 窗口设置系统默认主题
+Go 方法签名: `WindowSetSystemDefaultTheme(ctx context.Context)`
 
-JS 签署： `WindowReloadApp()`
+JS 方法签名: `WindowSetSystemDefaultTheme()`
 
-重新加载应用程序前端。
+仅限 Windows。
 
-### WindowsSetSy
+### 窗口设置浅色主题
 
-### WindowsSet系统默认主题
-去签署: `WindowSetSystemDefaultTheme(ctx context)`
+### 窗口设置深色主题
+将窗口主题设置为系统默认值（浅色/深色）。
 
-JS 签署： `WindowSetSystemDefaultTheme()`
+Go 方法签名: `WindowSetLightTheme(ctx context.Context)`
 
-仅限窗口
+JS 方法签名: `WindowSetLightTheme()`
 
-设置窗口主题为系统默认 (dark/light).
+仅限 Windows。
 
-### WindowsSetLight主题
-去签署: `WindowSetLightTheme(ctx context.Context)`
+### 显示窗口
+设置窗口主题为浅色 。
 
-JS 签署： `WindowSetLightTheme()`
+Go 方法签名: `WindowSetDarkTheme(ctx context.Context)`
 
-仅限窗口
+JS 方法签名: `WindowSetDarkTheme()`
 
-将窗口主题设置为亮点。
+仅限 Windows。
 
-### WindowsSet暗色主题
-去签署: `WindowSetDarkTheme(ctx context.Context)`
+### 隐藏窗口
+设置窗口主题为深色。
 
-JS 签署： `WindowSetDarkTheme()`
+Go 方法签名: `WindowShow(ctx context.Context)`
 
-仅限窗口
+JS 方法签名: `WindowShow()`
 
-将窗口主题设置为暗淡。
+如果窗口当前处于隐藏状态，则显示该窗口。
 
-### 窗口显示
-去签署: `WindowShow(ctx context.Context)`
+### 设置窗口尺寸
+Go 方法签名: `WindowHide(ctx context.Context)`
 
-JS 签署： `WindowShow()`
+JS 方法签名: `WindowHide()`
 
-显示当前隐藏的窗口。
+隐藏窗口（如果当前可见）。
 
-### 窗口隐藏
-去签署: `WindowHide(ctx context.Context)`
+### 获取窗口尺寸
+Go 方法签名: `WindowSetSize(ctx context.Context, width int, height int)`
 
-JS 签署： `WindowHide()`
+JS 方法签名: `WindowSetSize(size: Size)`
 
-隐藏窗口，如果它目前可见。
+设置窗口的宽度和高度。
 
-### 窗口设置大小
-去签署: `WindowSetSize(ctx context. Context, 宽度, 高度)`
+### 设置窗口最小尺寸
+Go 方法签名: `WindowGetSize(ctx context.Context) (width int, height int)`
 
-JS 签署： `WindowSetSize(大小：大小)`
+JS 方法签名: `WindowGetSize() : Size`
 
-设置窗口的宽度和高度
+获取窗口的宽度和高度。
 
-### 窗口Getsize
-去签署: `WindowGetSize(ctx context) (宽度, 高度)`
+### 设置窗口最大尺寸
+Go 方法签名: `WindowSetMinSize(ctx context.Context, width int, height int)`
 
-JS 签署： `WindowGetSize() : 大小`
+JS 方法签名: `WindowSetMinSize(size: Size)`
 
 获取窗口的宽度和高度
 
-### Windows设置Minize
-去签署: `WindowSetMinSize(ctx context, 宽度, 高度)`
+### 设置窗口位置
+将大小设置为 `0,0` 将禁用此约束。
 
-JS 签署： `WindowSetMinize(大小：大小)`
+Go 方法签名: `WindowSetMaxSize(ctx context.Context, width int, height int)`
 
-设置最小窗口大小。 如果窗口当前小于给定的尺寸，将调整窗口的大小。
-
-设置大小为 `0,0` 将禁用此限制。
-
-### Windows设置MaxSize
-去签署: `WindowSetMaxSize(ctx context. Context, 宽度, 高度)`
-
-JS 签署： `WindowSetMaxSize(大小：大小)`
-
-设置最大窗口大小。 如果窗口当前大于给定的尺寸，将调整窗口的大小。
+设置最小窗口大小。 如果窗口当前小于给定尺寸，将调整窗口大小。
 
 设置大小为 `0,0` 将禁用此限制。
 
-### Windows SetAlwaysOntop
-去签署: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`
+### 获取窗口位置
+将大小设置为 `0,0` 将禁用此约束。
 
-JS 签署： `WindowSetAlwaysOnTop(b: Boolen)`
+Go 方法签名: `WindowSetPosition(ctx context.Context, x int, y int)`
 
-设置窗口总是在顶部或不在顶部。
+设置最大窗口大小。 如果窗口当前大于给定尺寸，将调整窗口大小。
 
-
-### 窗口设置位置
-签署: `Windows设置位置(ctx context.Context, x int, y int)`
-
-JS 签署： `Windows定位(位置：位置)`
-
-设置窗口相对于当前显示器的位置。
-
-### 窗口获取位置
-去签署: `WindowGetPosition(ctx context.Context) (x int, y int)`
-
-JS 签署： `WindowGetPosition() : 位置`
-
-获取窗口相对于当前显示器的位置。
-
-### Windows最大化
-去签署: `WindowMaximise(ctx context.Context)`
-
-JS 签署： `WindowMaximise()`
-
-最大化窗口以填充屏幕。
+设置相对于窗口当前所在监视器的窗口位置。
 
 ### 窗口最大化
-去签署: `WindowUnmaximise(ctx context.Context)`
+Go 方法签名: `WindowGetPosition(ctx context.Context) (x int, y int)`
 
-JS 签署： `WindowUnmaximise()`
+JS 方法签名: `WindowGetPosition() : Position`
 
-在最大化之前将窗口还原到尺寸和位置。
+获取相对于窗口当前所在显示器的窗口位置。
 
-### Windows切换最大化
-去签署: `WindowToggleMaximise(ctx context.Context)`
 
-JS 签署： `WindowToggleMaximise()`
+### 窗口取消最大化
+Go 方法签名: `WindowMaximise(ctx context.Context)`
 
-在最大化和未最大化之间切换。
+JS 方法签名: `WindowMaximise()`
+
+最大化窗口以填满屏幕。
+
+### 窗口最大化切换
+Go 方法签名: `WindowUnmaximise(ctx context.Context)`
+
+JS 方法签名: `WindowUnmaximise()`
+
+将窗口恢复到最大化之前的尺寸和位置。
 
 ### 窗口最小化
-去签署: `WindowsMinimise(ctx context.Context)`
+Go 方法签名: `WindowToggleMaximise(ctx context.Context)`
 
-JS 签署： `Windows Minimise()`
+JS 方法签名: `WindowToggleMaximise()`
 
-最小化窗口
+在最大化和最大化之间切换。
 
-### 窗口最小化
-去签署: `WindowUnminimise(ctx context.Context)`
+### 窗口取消最小化
+Go 方法签名: `WindowMinimise(ctx context.Context)`
 
-JS 签署： `WindowUnminimise()`
+JS 方法签名: `WindowMinimise()`
+
+最小化窗口。
+
+### 窗口设置 RGBA
+Go 方法签名: `WindowUnminimise(ctx context.Context)`
+
+JS 方法签名: `WindowUnminimise()`
+
+将窗口恢复到最小化之前的尺寸和位置。
+
+### 位置
+Go 方法签名: `WindowSetRGBA(ctx context.Context, R, G, B, A uint8)`
+
+JS 方法签名: `WindowSetRGBA(R, G, B, A)`
+
+窗口
+
+### 尺寸
+R、G、B 和 A 的有效值为 0-255。
+
+JS 方法签名: `WindowSetMaxSize(size: Size)`
 
 将窗口还原到最小化前的尺寸和位置。
 
 ### WindowSetBackgroundColour
 去签署: `Windows SetBackgroundColourour(ctx context.Context, R, G, B, A uint8)`
 
-JS 签署： `WindowSetBackgroundColour(R, G, B, A)`
+JS 方法签名: `WindowSetPosition(position: Position)`
 
-将窗口的背景颜色设置为给定的 RGBA 颜色定义。 此颜色将会显示所有透明像素。
+将窗口的背景颜色设置为给定的 RGBA 颜色定义。 此颜色将显示所有透明像素。
 
 R、G、B和A有效值为0-255。
 
-:::info 窗口
+:::info Windows
 
-在 Windows上，仅支持 0 或 255 的alpha 值。 不为 0 的任何值将被视为255。
+在 Windows 上，仅支持 0 或 255 的 alpha 值。 任何不为 0 的值都将被视为 255。
 
 :::
 
-## 类型对象定义
+## Typescript 对象定义
 
 ### 位置
 
 ```ts
-接口位置：
-    x: 数;
-    y: 数;
+interface Position {
+  x: number;
+  y: number;
 }
 ```
 
 ### 大小
 
 ```ts
-接口大小:
-    w: 数字;
-    h: 数字;
+interface Size {
+  w: number;
+  h: number;
 }
 ```
 
