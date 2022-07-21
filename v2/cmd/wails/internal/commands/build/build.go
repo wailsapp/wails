@@ -112,7 +112,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	command.BoolFlag("windowsconsole", "Keep the console when building for Windows", &windowsConsole)
 
 	dryRun := false
-	command.BoolFlag("dryrun", "Dry run, prints the config for the command that would be executed", &dryRun).Hidden()
+	command.BoolFlag("dryrun", "Dry run, prints the config for the command that would be executed", &dryRun)
 
 	command.Action(func() error {
 
