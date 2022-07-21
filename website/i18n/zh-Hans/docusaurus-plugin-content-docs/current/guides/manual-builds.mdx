@@ -1,96 +1,96 @@
 
-# 手动构建
+# Manual Builds
 
-Wails CLI 为项目做了很多繁重的工作，但有时需要手动构建项目。 本文档将讨论 CLI 执行的不同操作以及如何以不同方式实现这一点。
+The Wails CLI does a lot of heavy lifting for the project, but sometimes it's desirable to manually build your project. This document will discuss the different operations the CLI does and how this may be achieved in different ways.
 
-## 构建过程
+## Build Process
 
-当使用`wails build`或`wails dev`时，Wails CLI 会执行一个通用的构建过程：
+When either `wails build` or `wails dev` are used, the Wails CLI performs a common build process:
 
-    - 安装前端依赖
-    - 构建前端项目
-    - 生成构建资源
-    - 编译应用程序
-    - [可选]压缩应用程序
+    - Install frontend dependencies
+    - Build frontend project
+    - Generate build assets
+    - Compile application
+    - [optional] Compress application
 
-### 安装前端依赖
+### Install frontend dependencies
 
-#### 命令行步骤
+#### CLI Steps
 
-- 如果给出了`-s`标志，则跳过此步骤
-- 检查`wails.json`中是否有安装命令`frontend:install`
-- 如果没有，则跳过此步骤
-- 如果有，则检查前端目录中是否存在`package.json`。 如果不存在，则跳过这一步
-- 从`package.json`文件内容生成 MD5
-- 它检查`package.json.md5`是否存在，如果存在，则将其内容（MD5 sum）与生成的内容进行比较，以查看内容是否已更改。 如果相同，则跳过此步骤
-- 如果`package.json.md5`不存在，则使用生成的 MD5 sum 创建它
-- 如果现在需要构建，或者`node_modules`不存在，或者给出了`-f`标志，则在前端目录中执行安装命令
+- If the `-s` flag is given, this step is skipped
+- Checks `wails.json` to see if there is an install command in the key `frontend:install`
+- If there isn't, it skips this step
+- If there is, it checks if `package.json` exists in the frontend directory. If it doesn't exist, it skips this step
+- An MD5 sum is generated from the `package.json` file contents
+- It checks for the existence of `package.json.md5` and if it exists, will compare the contents of it (an MD5 sum) with the one generated to see if the contents have changed. If they are the same, this step is skipped
+- If `package.json.md5` does not exist, it creates it using the generated MD5 sum
+- If a build is now required, or `node_modules` does not exist, or the `-f` flag is given, the install command is executed in the frontend directory
 
-#### 手动步骤
+#### Manual Steps
 
-这一步可以从命令行或带有`npm install`的前端脚本完成.
+This step could be done from the command line or a script with `npm install`.
 
-### 构建前端项目
+### Build frontend project
 
-#### Wails 命令行
+#### Wails CLI
 
-- 如果给出了`-s`标志，则跳过此步骤
-- 检查`wails.json`中是否有构建命令`frontend:build`
-- 如果没有，则跳过此步骤
-- 如果有，就在 frontend 目录下执行它
+- If the `-s` flag is given, this step is skipped
+- Checks `wails.json` to see if there is a build command in the key `frontend:build`
+- If there isn't, it skips this step
+- If there is, it is executed in the frontend directory
 
-#### 手动步骤
+#### Manual Steps
 
-这一步可以从命令行或带有前端构建脚本`npm run build`的脚本或任何前端构建脚本完成。
+This step could be done from the command line or a script with `npm run build` or whatever the frontend build script is.
 
-### 生成资源
+### Generate assets
 
-#### Wails 命令行
+#### Wails CLI
 
-- 如果设置了`-nopackage`标志，则跳过此阶段
-- 如果`build/appicon.png`文件不存在，则创建一个默认文件
-- 对于 Windows，请参阅[Windows](#windows)
-- 如果`build/windows/icon.ico`不存在，它将从`build/appicon.png`图像创建它。
+- If `-nopackage` flag is set, this stage is skipped
+- If the `build/appicon.png` file does not exist, a default one is created
+- For Windows, see [Bundling for Windows](#windows)
+- If `build/windows/icon.ico` does not exist, it will create it from the `build/appicon.png` image.
 
 ##### Windows
 
-- 如果`build/windows/icon.ico`不存在，它将从`build/appicon.png`创建 256、128、64、48、32 和 16 大小的图标。 这是使用[winicon](https://github.com/leaanthony/winicon)完成的。
-- 如果`build/windows/<projectname>.manifest`文件不存在，它会从默认版本创建它。
-- 将应用程序编译为生产版本（如上所述）。
-- 使用[winres](https://github.com/tc-hib/winres)将 icon 和 manifest 打包到一个`.syso`文件。
+- If `build/windows/icon.ico` does not exist, it will create it from `build/appicon.png` using icon sizes of 256, 128, 64, 48, 32 and 16. This is done using [winicon](https://github.com/leaanthony/winicon).
+- If the `build/windows/<projectname>.manifest` file does not exist, it creates it from a default version.
+- Compiles the application as a production build (above)
+- Uses [winres](https://github.com/tc-hib/winres) to bundle the icon and manifest into a `.syso` file ready for linking.
 
-#### 手动步骤
+#### Manual Steps
 
-- 使用[winicon](https://github.com/leaanthony/winicon)命令行工具或者其他工具创建`icon.ico`
-- 为您的应用程序创建或者更新`.manifest`文件
-- 使用[winres 命令行](https://github.com/tc-hib/go-winres)生成一个`.syso`文件
+- Create `icon.ico` using the [winicon](https://github.com/leaanthony/winicon) CLI tool (or any other tool).
+- Create / Update a `.manifest` file for your application
+- Use the [winres CLI](https://github.com/tc-hib/go-winres) to generate a `.syso` file.
 
-### 编译应用程序
+### Compile application
 
-#### Wails 命令行
+#### Wails CLI
 
-- 如果提供了`-clean`标志，则删除并重新创建`build`目录
-- 对于`wails dev`，使用以下默认 Go 标志：`-tags dev -gcflags "all=-N -l"`
-- 对于`wails build`，使用以下默认 Go 标志：`-tags desktop,production -ldflags "-w -s"`
-  - 在 Windows 上， `-ldflags "-w -h -H windowsgui"`
-- 使用`-tags`传递给命令行的其他`tags`被添加到默认值中
-- 使用`-ldflags`传递给命令行的其他`ldflags`将添加到默认值中
-- 传递`-o`标志
-- 指定的`-compiler`将用于 Go 编译器
+- If the `-clean` flag is provided, the `build` directory is deleted and recreated
+- For `wails dev`, the following default Go flags are used: `-tags dev -gcflags "all=-N -l"`
+- For `wails build`, the following default Go flags are used: `-tags desktop,production -ldflags "-w -s"`
+  - On Windows, `-ldflags "-w -h -H windowsgui"`
+- Additional tags passed to the CLI using `-tags` are added to the defaults
+- Additional ldflags passed to the CLI using `-ldflags` are added to the defaults
+- The `-o` flag is passed through
+- The Go compiler specified by `-compiler` will be used for compilation
 
-#### 手动步骤
+#### Manual steps
 
-- 开发环境构建，最简单的命令是： `go build -tags dev -gcflags "all=-N -l"`
-- 生产环境构建，最简单的命令是：`go build -tags desktop,production -ldflags "-w -s -H windowsgui"`
-- 确保在与`.syso`文件相同的目录中进行编译
+- For dev build, the minimum command would be: `go build -tags dev -gcflags "all=-N -l"`
+- For production build, the minimum command would be: `go build -tags desktop,production -ldflags "-w -s -H windowsgui"`
+- Ensure that you compile in the same directory as the `.syso` file
 
-### 压缩应用程序
+### Compress application
 
-#### Wails 命令行
+#### Wails CLI
 
-- 如果已给出`-upx`标志，则`upx`程序将运行以使用默认设置压缩应用程序
-- 如果也传递了`-upxflags`标志，则使用这些标志而不是默认
+- If the `-upx` flag has been given, the `upx` program will be run to compress the application with the default settings
+- If `-upxflags` is also passed, these flags are used instead of the default ones
 
-#### 手动步骤
+#### Manual steps
 
-- 手动运行`upx [flags]`以压缩应用程序。
+- Run `upx [flags]` manually to compress the application.
