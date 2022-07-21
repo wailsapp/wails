@@ -1,17 +1,18 @@
-# 模板
 
-Wails 从预先创建的模板生成项目。在 v1 中，这是一组难以维护的项目，这些项目可能会过时。在 v2 中，为了增强社区的能力，为模板添加了一些新功能：
+# Templates
 
-- 能够从[远程模板](../reference/cli#远程模板)生成项目
-- 帮助创建自己的模板的工具
+Wails generates projects from pre-created templates. In v1, this was a difficult to maintain set of projects that were subject to going out of date. In v2, to empower the community, a couple of new features have been added for templates:
 
-## 创建模板
+- Ability to generate projects from [Remote Templates](../reference/cli.mdx#remote-templates)
+- Tooling to help create your own templates
 
-要创建模板，您可以使用`wails generate template`命令。要生成默认模板，请运行：
+## Creating Templates
 
-`wails generate template -name mytemplate `
+To create a template, you can use the `wails generate template` command. To generate a default template, run:
 
-这将使用默认文件创建“mytemplate”目录：
+`wails generate template -name mytemplate`
+
+This creates the directory "mytemplate" with default files:
 
 ```shell title=mytemplate/
 .
@@ -35,31 +36,31 @@ Wails 从预先创建的模板生成项目。在 v1 中，这是一组难以维�
 `-- wails.tmpl.json
 ```
 
-### 模板概述
+### Template Overview
 
-默认模板包含以下文件和目录：
+The default template consists of the following files and directories:
 
-| 文件名 / 目录   | 描述                   |
-| --------------- | ---------------------- |
-| NEXTSTEPS.md    | 有关如何完成模板的说明 |
-| README.md       | 随模板发布的 README    |
-| app.tmpl.go     | `app.go` 模板文件      |
-| frontend/       | 包含前端资源的目录     |
-| go.mod.tmpl     | `go.mod` 模板文件      |
-| main.tmpl.go    | `main.go` 模板文件     |
-| template.json   | 模板元数据             |
-| wails.tmpl.json | `wails.json` 模板文件  |
+| Filename / Dir  | Description                                  |
+| --------------- | -------------------------------------------- |
+| NEXTSTEPS.md    | Instructions on how to complete the template |
+| README.md       | The README published with the template       |
+| app.tmpl.go     | `app.go` template file                       |
+| frontend/       | The directory containing frontend assets     |
+| go.mod.tmpl     | `go.mod` template file                       |
+| main.tmpl.go    | `main.go` template file                      |
+| template.json   | The template metadata                        |
+| wails.tmpl.json | `wails.json` template file                   |
 
-此时，建议按照`NEXTSTEPS.md`中的步骤操作。
+At this point it is advisable to follow the steps in `NEXTSTEPS.md`.
 
-## 从现有项目创建模板
+## Creating a Template from an Existing Project
 
-通过在生成模板时将路径传递给项目，可以从现有的前端项目创建模板。我们现在将介绍如何创建 Vue 3 模板：
+It's possible to create a template from an existing frontend project by passing the path to the project when generating the template. We will now walk through how to create a Vue 3 template:
 
-- 安装 vue cli： `npm install -g @vue/cli`
-- 创建默认项目：`vue create vue3-base`
-  - 选择 `Default (Vue 3) ([Vue 3] babel, eslint)`
-- 项目生成后，运行：
+- Install the vue cli: `npm install -g @vue/cli`
+- Create the default project: `vue create vue3-base`
+  - Select `Default (Vue 3) ([Vue 3] babel, eslint)`
+- After the project has been generated, run:
 
 ```shell
 > wails generate template -name wails-vue3-template -frontend .\vue3-base\
@@ -71,22 +72,22 @@ Updating package-lock.json data...
 Renaming package-lock.json -> package-lock.tmpl.json...
 ```
 
-- 现在可以按照`NEXTSTEPS.md`中指定的方式定制模板。
-- 一旦文件准备完毕，就可以通过运行命令来测试它：`wails init -n my-vue3-project -t .\wails-vue3-template\`
-- 要测试新项目，请运行：`cd my-vue3-project` then `wails build`
-- 项目编译完成后，运行它：`.\build\bin\my-vue3-project.exe`
-- 您应该有了一个功能齐全的 Vue3 应用程序：
+- The template may now be customised as specified in the `NEXTSTEPS.md` file
+- Once the files are ready, it can be tested by running: `wails init -n my-vue3-project -t .\wails-vue3-template\`
+- To test the new project, run: `cd my-vue3-project` then `wails build`
+- Once the project has compiled, run it: `.\build\bin\my-vue3-project.exe`
+- You should have a fully functioning Vue3 application:
 
 <div className="text--center">
   <img src="/img/vue3-template.png" width="50%" />
 </div>
 
-## 发布模板
+## Publishing Templates
 
-发布模板只是将文件推送到 GitHub。鼓励以下最佳实践：
+Publishing a template is simply pushing the files to GitHub. The following best practice is encouraged:
 
-- 从前端目录中删除任何不需要的文件和目录（例如：.git）
-- 确保`template.json`完整，尤其是`helpurl`
-- 将文件推送到 GitHub
-- 在[社区模板](../community/templates)页面上创建 PR
-- 在[模板公告](https://github.com/wailsapp/wails/discussions/825)讨论板上发布模板
+- Remove any unwanted files and directories (such as `.git`) from your frontend directory
+- Ensure that `template.json` is complete, especially `helpurl`
+- Push the files to GitHub
+- Create a PR on the [Community Templates](../community/templates.mdx) page
+- Announce the template on the [Template Announcement](https://github.com/wailsapp/wails/discussions/825) discussion board
