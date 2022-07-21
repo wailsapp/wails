@@ -283,7 +283,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			if len(platformSplit) > 1 {
 				buildOptions.Arch = platformSplit[1]
 			}
-			banner := "Building target: " + platform
+			banner := "Building target: " + buildOptions.Platform + "/" + buildOptions.Arch
 			logger.Println(banner)
 			logger.Println(strings.Repeat("-", len(banner)))
 
