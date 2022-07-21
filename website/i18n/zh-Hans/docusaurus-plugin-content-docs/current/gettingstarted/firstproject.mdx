@@ -2,11 +2,11 @@
 sidebar_position: 2
 ---
 
-# 创建一个项目
+# 创建项目
 
 ## 项目生成
 
-现在安装了CLI，你可以通过使用 `wils 嵌入` 命令来生成一个新项目。
+现在 CLI 已安装，您可以使用该`wails init`命令生成一个新项目。
 
 选择您最喜欢的框架：
 
@@ -15,15 +15,16 @@ sidebar_position: 2
 
 <hr />
 
-还有 [个社区模板](../community/templates.mdx) 可用来提供不同的能力和框架。
+Wails 项目具有以下布局：
 
-要看看其他可用的选项，您可以运行 `个wils init -help`。 更多详情可在 [CLI 引用](../reference/cli.mdx#init) 中找到。
+要查看其他可用选项，您可以运行 `wails init -help`。 更多详细信息可以在 [初始化命令](../reference/cli#初始化)中找到。
 
 ## 项目布局
 
 Wail项目有以下布局：
 
 ```
+.
 .
 ├── build/
 │   ├── appicon.png
@@ -36,20 +37,20 @@ Wail项目有以下布局：
 └── wails.json
 ```
 
-### 项目结构已经断开
+### 项目结构概要
 
-- `/main.go` - 主要应用程序
+- `/main.go` - 主应用
 - `/frontend/` - 前端项目文件
 - `/build/` - 项目构建目录
-- `/build/appicon.png` - 应用程序图标
-- `/build/darwin/` - Mac 特定项目文件
-- `/build/windows/` - Windows 特定项目文件
 - `/wails.json` - 项目配置
+- `/go.mod` - Go mod 文件
+- `/go.sum` - Go mod 校验文件
+- `/build/windows/` - Windows 特定的项目文件
 - `/go.mod` - Go module file
 - `/go.sum` - Go module checksum file
 
-`前端` 目录没有特定的邮件地址，可以是您选择的任何前端项目。
+`frontend`目录没有特定于 Wails 的内容，可以是您选择的任何前端项目。
 
-`构建` 目录在构建过程中被使用。 这些文件可能被更新以自定义您的构建。 如果将 文件从构建目录中删除，默认版本将会重新生成。
+`build`目录在构建过程中使用。 这些文件可以修改以自定义您的构建。 如果文件从构建目录中删除，将重新生成默认版本。
 
-`go.mod` 中的默认模块名称为“changeme”。 您应该将此更改为更合适的东西。
+`go.mod`中的默认模块名称是“changeme”。 您应该将其更改为更合适的内容。
