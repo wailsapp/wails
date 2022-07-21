@@ -1,24 +1,24 @@
 
-# Frontend
+# 前端
 
-## Script Injection
+## 脚本注入
 
-When Wails serves your `index.html`, by default, it will inject 2 script entries into the `<body>` tag to load `/wails/ipc.js` and `/wails/runtime.js`. These files install the bindings and runtime respectively.
+当Wail服务于您的 `索引时。 tml`, 默认, 它将注入2个脚本条目到 `<body>` 标签以加载 `/wails/ipc。 s` 和 `/wails/runtime.js`. 这些文件分别安装绑定和运行时间。
 
-The code below shows where these are injected by default:
+下面的代码显示默认注入的位置：
 
 ```html
 <html>
 <head>
-  <title>injection example</title>
+  <title>注入示例</title>
   <link rel="stylesheet" href="/main.css">
-  <!--     <script src="/wails/ipc.js"></script> -->
-  <!--     <script src="/wails/runtime.js"></script> -->
+  <！ -     <script src="/wails/ipc.js"></script> -->
+  <！ -     <script src="/wails/runtime.js"></script> -->
 </head>
 
 <body data-wails-drag>
-  <div class="logo"></div>
-  <div class="result" id="result">Please enter your name below 👇</div>
+  <div class="logo"></div></div>
+  <div class="result" id="result">请输入您的名字在 👇</div>
   <div class="input-box" id="input" data-wails-no-drag>
     <input class="input" id="name" type="text" autocomplete="off">
     <button class="btn" onclick="greet()">Greet</button>
@@ -30,38 +30,39 @@ The code below shows where these are injected by default:
 </html>
 ```
 
-### Overriding Default Script Injection
+### 覆盖默认脚本注入值
 
-To provide more flexibility to developers, there is a meta tag that may be used to customise this behaviour:
+为了给开发者提供更多的灵活性，有一个元标签可以用于自定义此行为：
 
 ```html
   <meta name="wails-options" content="[options]">
 ```
 
-The options are as follows:
+备选办法如下：
 
-| Value               | Description                                      |
-| ------------------- | ------------------------------------------------ |
-| noautoinjectruntime | Disable the autoinjection of `/wails/runtime.js` |
-| noautoinjectipc     | Disable the autoinjection of `/wails/ipc.js`     |
-| noautoinject        | Disable all autoinjection of scripts             |
+| 值                | 描述                         |
+| ---------------- | -------------------------- |
+| noautointruntime | 禁用自动注入 `/wails/runtime.js` |
+| noautoinjectipc  | 禁用自动注入 `/wails/ipc.js`     |
+| noautoinject     | 禁用所有自动插入脚本                 |
 
-Multiple options may be used provided they are comma seperated.
+可以使用多个选项，如果它们是逗号分隔的。
 
-This code is perfectly valid and operates the same as the autoinjection version:
+此代码完全有效，并且与自动注入版本操作相同：
 
 ```html
 <html>
 
 <head>
-  <title>injection example</title>
+  <title>注入示例</title>
   <meta name="wails-options" content="noautoinject">
   <link rel="stylesheet" href="/main.css">
-</head>
+
+</head></head>
 
 <body data-wails-drag>
   <div class="logo"></div>
-  <div class="result" id="result">Please enter your name below 👇</div>
+  <div class="result" id="result">请填写您的名字在 👇</div>
   <div class="input-box" id="input" data-wails-no-drag>
     <input class="input" id="name" type="text" autocomplete="off">
     <button class="btn" onclick="greet()">Greet</button>
