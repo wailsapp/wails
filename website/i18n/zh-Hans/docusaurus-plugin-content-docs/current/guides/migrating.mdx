@@ -1,83 +1,90 @@
 
 # 从 v1 迁移
 
-## 概览
+## 概述
 
-Wails v2与v1相比有很大变化。 本文件旨在突出现有项目的变化和迁移步骤。
+Wails v2 与 v1 相比有重大变化。 本文档旨在重点介绍迁移现有项目的更改和步骤。
 
 ### 创建应用程序
 
-In v1, the main application is created using `wails.CreateApp`, bindings are added with `app.Bind`, then the application is run using `app.Run()`.
+在 v1 中，使用`wails.CreateApp`来创建主应用程序，使用`app.Bind`来添加绑定，然后使用`app.Run()`运行应用程序。
 
 示例：
 
 ```go title="v1"
- App := wails.CreateApp(&wails. ppConfig@un.org
-    标题：“MyApp”，
-    宽度：1024，
-    高度：768，
-    JS: js,
-    CS: css,
-    颜色: "#131313",
+ app := wails.CreateApp(&wails.AppConfig{
+    Title:  "MyApp",
+    Width:  1024,
+    Height: 768,
+    JS:     js,
+    CSS:    css,
+    Colour: "#131313",
   })
-  应用。 ind(basic)
+  app.Bind(basic)
   app.Run()
 ```
 
-在 v2 中，只有一个方法， `wails.Run()`, 接受 [应用程序选项](../reference/options.mdx#application-options)。
+在 v2 中，只有一个方法`wails.Run()`接受[应用程序参数选项](../reference/options#应用程序参数选项)。
 
 ```go title="v2"
-    err := wails.Run(&options.App@un.org
-        标题: "MyApp",
-        宽度: 800,
+    err := wails.Run(&options.App{
+        Title:  "MyApp",
+        Width:  800,
         Height: 600,
         Assets: assets,
-        绑定: []interface{}{
+        Bind:   []interface{}{
             basic,
         },
-})
+    })
 ```
 
-### 绑定中
+### 绑定
 
-在诉状中，可以对任意的功能和结构加以约束。 在v2中，这已经简化为仅有约束力的结构。 先前在 v1 中传递到 `Bind()` 方法的结构实例， 现在在 `绑定` 的 [应用程序选项](../reference/options.mdx#application-options) 中指定:
+在 v1 中，可以绑定任意函数和结构。 在 v2 中，这已被简化为仅绑定结构。 以前传递给 v1`Bind()`中的方法的结构实例现在在[应用程序参数选项](../reference/options#应用程序参数选项)`Bind`字段中指定：
 
 ```go title="v1"
-  应用 := wails.CreateApp(/* 选项*/)
-  app.Bind(基本)
+  app := wails.CreateApp(/* options */)
+  app.Bind(basic)
 ```
 
 ```go title="v2"
-    err := wails.Run(&options.App@un.org
-        /* 其他选项 */
-        绑定: []interface{}{
+    err := wails.Run(&options.App{
+        /* other options */
+        Bind: []interface{}{
             basic,
         },
-})
+    })
 ```
 
-在 v1 中，前端在 `wind.backend` 中可以使用绑定的方法。 这已更改为 `windo.go`.``
+在 v1 中，绑定方法在`window.backend`中。 这已更改为`window.go`。
 
-### 应用生命周期
+### 应用程序生命周期
 
 在 v1, 绑定结构中有2种特殊方法： `WailsInit()` and `WailsShutdown()`。 已将 替换为 3 个生命周期钩子，作为 [应用程序选项](../reference/options.mdx#application-options) 的一部分：
 
-- [OnStartup](../reference/options.mdx#onstartup)
-- [OnShutdut](../reference/options.mdx#onshutdown)
-- [OnDomReady](../reference/options.mdx#ondomready)
+- [应用启动回调](../reference/options.mdx#onstartup)
+- [应用退出回调](../reference/options.mdx#onshutdown)
+- [前端 Dom 加载完成回调](../reference/options.mdx#ondomready)
 
-注意： [OnDomReady](../reference/options.mdx#ondomready) 替换了 `wails:ready` 系统事件v1。
+注意：[前端 Dom 加载完成回调](../reference/options#前端-dom-加载完成回调)替换了 v1 中的 `wails:ready` 系统事件。
 
-这些方法可以是标准功能，但通常的做法是使它们成为一个结构的一部分：
+这些方法可以是标准函数，但通常的做法是将它们作为结构的一部分：
 
 ```go title="v2"
     basic := NewBasicApp()
-    err := wails.Run(&选项 pp@un.org
-        /* 其他选项 */
-        Onstartup: basic。 启动，
-        OnShutdown：基本。 hutdown,
-        OnDomReady: basic.domored,
+    err := wails.Run(&options.App{
+        /* Other Options */
+        OnStartup:  basic.startup,
+        OnShutdown: basic.shutdown,
+        OnDomReady: basic.domready,
     })
+...
+type Basic struct {
+    ctx context.Context
+}
+func (b *Basic) startup(ctx context.Context) {
+    b.ctx = ctx
+}
 ...
 type Basic struct {
     ctx context.Context
@@ -88,11 +95,11 @@ func (b *Basic) startup(ctx context.Context) {
 ...
 ```
 
-### 运行时间
+### 运行时
 
-v2中的运行时间要比v1更丰富，支持菜单、窗口操作 和更好的对话框。 The signature of the methods has changed slightly - please refer the the [Runtime Reference](../reference/runtime/intro.mdx).
+v2 中的运行时比 v1 丰富得多，支持菜单、窗口操作和更好的对话框。 方法的签名略有变化 - 请参阅[运行时](../reference/runtime/intro)。
 
-在 v1 中， [运行时间](../reference/runtime/intro.mdx) 可以通过传递到 `WailsInit()` 的结构访问。 在v2中，运行时间已移至自己的包裹。 运行时的每个方法都需要 `上下文。Context` 会传递给 [启动](../reference/options.mdx#onstartup) 方法。
+在 v1 中，[运行时](../reference/runtime/intro)可通过传递给`WailsInit()`. 在 v2 中，运行时已移出到它自己的包。 在v2中，运行时间已移至自己的包裹。 运行时中的每个方法都采用`context.Context`传递给了[应用启动回调](../reference/options#应用启动回调)方法。
 
 ```go title="Runtime Example"
 package main
@@ -108,29 +115,31 @@ func (a *App) startup(ctx context.Context) {
     a.ctx = ctx
     runtime.LogInfo(ctx, "Application Startup called!")
 }
+}
 
 ```
 
-### 资产
+### 资源
 
-v2中最大的 _个更改_ 是如何处理资产。
+在 v2 最大的变化是资源的处理方式。
 
-在v1中，资产通过2个应用程序选项传递：
+在 v1 中，资源通过 2 个应用程序参数选项传递：
 
 - `JS` - 应用程序的 Javascript
 - `CSS` - 应用程序的 CSS
 
-这意味着生成一个 JS 和 CSS 文件的责任在 开发者。 这基本上需要使用诸如网络包等复杂的包装材料。
+这意味着生成单个 JS 和 CSS 文件的责任在于开发人员。 这本质上需要使用繁琐的打包程序，例如 webpack。
 
-在 v2 中，Wails 没有对您的前端资产做任何假设，就像一个web服务器一样。 您所有的应用程序资源都传递给了应用程序选项作为一个 `嵌入.FS`。
+在 v2 中，Wails 不对您的前端资源做任何预设，就像网络服务器一样。 您的所有应用程序资源都作为`embed.FS`.
 
-**这意味着不需要捆绑您的资产。 将图像编码为 Base64 或 。尝试使用 bundler 配置的黑色艺术来使用自定义字体**
+这意味着不需要打包您的资源、将图像编码为 Base64 或尝试使用奇葩的打包工具配置来使用自定义字体。
 
-启动时，路径 将扫描给定的 `embed.FS` `索引。 tml` 并使用它的位置作为根路径 作为所有其他应用程序资源-就像一个web服务器一样。
+在启动时，Wails 将扫描给定的`embed.FS`的`index.html`并将其位置用作所有其他应用程序资源的根路径 - 就像网络服务器一样。
 
-示例：应用程序有以下项目布局。 All final assets are placed in the `frontend/dist` directory:
+示例：应用程序具有以下项目布局。 所有最终资源都放在 `frontend/dist`目录中：
 
 ```shell
+.
 .
 ├── build/
 ├── frontend/
@@ -143,48 +152,48 @@ v2中最大的 _个更改_ 是如何处理资产。
 └── wails.json
 ```
 
-通过创建一个 `嵌入.FS` 来使用这些资产：
+应用程序可以通过简单地创建一个`embed.FS`来使用这些资源：
 
 ```go title="Assets Example"
 //go:embed frontend/dist
 var assets embed.FS
 
-func main()
-    err := wails.Run(&options. pp@un.org
-        /* 其他选项 */
-        资产：资产
+func main() {
+    err := wails.Run(&options.App{
+        /* Other Options */
+        Assets: assets,
     })
 }
 ```
 
-当然，如果您想要，可以使用捆绑机。 唯一的要求是使用 `嵌入，将
-个最终应用程序资源目录传递给邮件。 S` 在 `Asset` key of the [application options](../reference/options.mdx#application-options) 中。
+当然，如果您愿意，也可以使用打包工具。 唯一的要求是在 Wails 中使用`embed.FS`,将最终的程序资源目录传递给[应用程序参数选项](../reference/options#应用程序参数选项)的`Assets`键。
 
 ### 项目配置
 
-在 v1 中，项目配置被存储在项目根目录下的 `project.json` 文件中。 在 v2 中，项目配置保存在项目根目录下的 `wails.json` 文件中。
+在 v1 中，项目配置存储在项目根的 `project.json` 文件中。 在 v2 中，项目配置存储在项目根部的 `wails.json` 文件中。
 
-文件的格式稍有不同。 下面是比较：
+文件的格式略有不同。 下面是区别：
 
 <p align="center">
 
-| v1 | v2 | 备注|
-| ---------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------- | |
-| 名称 |
-| 描述 | 删除|
-| 作者 / 名 | 作者 / 名称 | | |
-| 作者 / email | |
-| 版本 | 版本 | | | | |
-| binaryname | outputfilename | 更改|
-| 前端/ dir | 删除|
-| 前端/安装| 前端：安装 | 更改|
-| 前端/ build| 构建| 更改|| 更改||
-| 前端/服务| 删除| 删除|
-| 前端/服务| 删除|
-| 标签| 删除|
-| wailsjsdir | 生成波浪漫的目录|
-| assetdir | 这通常是推断的，可以留空。 |
-| | 重放器 | 用逗号分隔的附加目录列表来监视更改并触发`dev`模式下的重新加载。 这只是一些更先进的资产配置所需要的。 |
+| v1                 | v2               | 注解                                                                                             |
+| ------------------ | ---------------- | ------------------------------------------------------------------------------------------------ |
+| name               | name             |                                                                                                  |
+| description        |                  | 移除                                                                                             |
+| author / name      | author / name    |                                                                                                  |
+| author / email     | author / email   |                                                                                                  |
+| version            | version          |                                                                                                  |
+| binaryname         | outputfilename   | 变更                                                                                             |
+| frontend / dir     |                  | 移除                                                                                             |
+| frontend / install | frontend:install | 变更                                                                                             |
+| frontend / build   | frontend:build   | 变更                                                                                             |
+| frontend / bridge  |                  | 移除                                                                                             |
+| frontend / serve   |                  | 移除                                                                                             |
+| tags               |                  | 移除                                                                                             |
+|                    | wailsjsdir       | 生成 wailsjs 模块的目录                                                                          |
+|                    | assetdir         | `dev` 模式下前端资源文件目录                                                                     |
+|                    | reloaddirs       | 以逗号分隔的附加目录列表，用于监视更改并在开发模式下触发重新加载。 这通常是推断的，可以留空。 |
+| | 重放器 | 用逗号分隔的附加目录列表来监视更改并触发`dev`模式下的重新加载。 这只需要一些更重要的资源配置。 |
 
 </p>
 
