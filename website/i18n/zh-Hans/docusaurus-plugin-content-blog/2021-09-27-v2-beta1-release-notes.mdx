@@ -1,6 +1,6 @@
 ---
 slug: wails-v2-beta-for-windows
-title: Windows 平台的 Wails v2 测试版
+title: Wails v2 Beta for Windows
 authors:
   - leaanthony
 tags:
@@ -16,19 +16,19 @@ tags:
 <br/>
 
 
-两年多前，在悉尼的火车上，当我第一次在 Reddit 宣布 Wails 时，我没想到它会引起太多关注。 几天后，一位多产的科技视频博主发布了一个教程视频，并给予了正面评价，从那时起，人们对该项目的兴趣猛增。
+When I first announced Wails on Reddit, just over 2 years ago from a train in Sydney, I did not expect it to get much attention. A few days later, a prolific tech vlogger released a tutorial video, gave it a positive review and from that point on, interest in the project has skyrocketed.
 
-很明显，人们对将 Web 前端添加到他们的 Go 项目感到兴奋，几乎立即将项目推动到超出我创建这个项目的设想。 当时，Wails 使用 [webview](https://github.com/webview/webview) 项目来处理前端， Windows 的唯一选择是 IE11 渲染器。 许多错误报告都因为受到它的限制：糟糕的 JavaScript/CSS 支持并且没有开发工具来调试它。 这是一段令人沮丧的开发经历，但我们也没有采取什么措施去纠正它。
+It was clear that people were excited about adding web frontends to their Go projects, and almost immediately pushed the project beyond the proof of concept that I had created. At the time, Wails used the [webview](https://github.com/webview/webview) project to handle the frontend, and the only option for Windows was the IE11 renderer. Many bug reports were rooted in this limitation: poor JavaScript/CSS support and no dev tools to debug it. This was a frustrating development experience but there wasn't much that could have been done to rectify it.
 
-很长一段时间以来，我一直坚信微软最终会解决他们的浏览器问题。 世界在不断进步，前端开发正在蓬勃发展，而 IE 并没有做到这一点。 当微软宣布将 Chromium 作为其新浏览器方向的基础时， 我知道 Wails 能够使用它并将 Windows 开发者的体验提升到下一个水平只是时间问题。
+For a long time, I'd firmly believed that Microsoft would eventually have to sort out their browser situation. The world was moving on, frontend development was booming and IE wasn't cutting it. When Microsoft announced the move to using Chromium as the basis for their new browser direction, I knew it was only a matter of time until Wails could use it, and move the Windows developer experience to the next level.
 
-今天，我很高兴地宣布：**Windows 的 Wails v2 公测啦**！ 此版本中有大量内容需要展开来说，所以，请倒一杯茶，咱们坐下来慢慢讲......
+Today, I am pleased to announce: **Wails v2 Beta for Windows**! There's a huge amount to unpack in this release, so grab a drink, take a seat and we'll begin...
 
-### 没有 CGO 依赖
+### No CGO Dependency!
 
-不，我不是在开玩笑：*没有 CGO 依赖*🤯！ Windows 的问题在于，与 MacOS 和 Linux 不同，它没有默认编译器。 此外，CGO 需要一个 mingw 编译器，并且有大量不同的安装选项。 删除 CGO 的要求大大简化了设置，并使调试变得非常容易。 虽然我已经付出了相当多的努力来完成这项工作，但大部分功劳应该归功于[John Chadwick](https://github.com/jchv)，他不仅启动了几个项目使这成为可能， 而且还对接受这些项目并以此为基础的人持开放态度. 还要归功于[Tad Vizbaras](https://github.com/tadvi)，他的[winc](https://github.com/tadvi/winc)项目让我走上了这条道路。 还要感谢 [Tad Vizbaras](https://github.com/tadvi) 他的 [获胜](https://github.com/tadvi/winc) 项目开始我走这条道路。
+No, I'm not joking: *No* *CGO* *dependency* 🤯! The thing about Windows is that, unlike MacOS and Linux, it doesn't come with a default compiler. In addition, CGO requires a mingw compiler and there's a ton of different installation options. Removing the CGO requirement has massively simplified setup, as well as making debugging an awful lot easier. Whilst I have put a fair bit of effort in getting this working, the majority of the credit should go to [John Chadwick](https://github.com/jchv) for not only starting a couple of projects to make this possible, but also being open to someone taking those projects and building on them. Credit also to [Tad Vizbaras](https://github.com/tadvi) whose [winc](https://github.com/tadvi/winc) project started me down this path.
 
-### WebView2 Chromium 渲染引擎
+### WebView2 Chromium Renderer
 
 <div class="text--center">
     <img src="/img/devtools.png" width="75%" style={{"box-shadow": "rgb(255 255 >
@@ -36,15 +36,15 @@ tags:
 
 <br/>
 
-最终，Windows 开发人员为他们的应用程序获得了一流的渲染引擎！ 扭曲前端代码以在 Windows 上工作的日子已经一去不复返了。 最重要的是，您将获得一流的开发者工具体验！
+Finally, Windows developers get a first class rendering engine for their applications! Gone are the days of contorting your frontend code to work on Windows. On top of that, you get a first-class developer tools experience!
 
-但是，WebView2 组件确实需要将其放置`WebView2Loader.dll`在二进制文件旁边。 这使得分发比我们 gophers 习惯的更痛苦。 所有使用 WebView2 的解决方案和库（我知道的）都具有这种依赖性。
+The WebView2 component does, however, have a requirement to have the `WebView2Loader.dll` sitting alongside the binary. This makes distribution just that little bit more painful than we gophers are used to. All solutions and libraries (that I know of) that use WebView2 have this dependency.
 
-然而，我真的很高兴地宣布，Wails 应用程序*没有这样的要求*！ 感谢[John Chadwick](https://github.com/jchv)的魔法，我们能够将这个 dll 打包在二进制文件中，并让 Windows 加载它，就像它存在于磁盘上一样。
+However, I'm really excited to announce that Wails applications *have no such requirement*! Thanks to the wizardry of [John Chadwick](https://github.com/jchv), we are able to bundle this dll inside the binary and get Windows to load it as if it were present on disk.
 
-Gophers 欢呼吧！ 单个二进制文件的构想依然存在！
+Gophers rejoice! The single binary dream lives on!
 
-### 新功能
+### New Features
 
 <div class="text--center">
     <img src="/img/wails-menus.png" width="60%" style={{"box-shadow": "rgb(255 255 >
@@ -52,11 +52,11 @@ Gophers 欢呼吧！ 单个二进制文件的构想依然存在！
 
 <br/>
 
-有很多对原生菜单支持的请求。 Wails 终于帮您搞定了。 应用程序菜单现已可用，并且包括对大多数原生菜单功能的支持。 这包括标准菜单项、复选框、单选组、子菜单和分隔符。
+There were a lot of requests for native menu support. Wails has finally got you covered. Application menus are now available and include support for most native menu features. This includes standard menu items, checkboxes, radio groups, submenus and separators.
 
-在 v1 中有大量的请求，要求能够更好地控制窗口本身。 我很高兴地宣布，有专门用于此的新运行时 API。 它功能丰富，支持多显示器配置。 还有一个改进的对话框 API：现在，您可以拥有具有丰富配置的现代原生对话框，以满足您的所有对话框需求。
+There were a huge number of requests in v1 for the ability to have greater control of the window itself. I'm happy to announce that there's new runtime APIs specifically for this. It's feature-rich and supports multi-monitor configurations. There is also an improved dialogs API: Now, you can have modern, native dialogs with rich configuration to cater for all your dialog needs.
 
-现在可以选择随项目生成 IDE 配置。 这意味着如果您在受支持的 IDE 中打开您的项目，它已经被配置为构建和调试您的应用程序。 目前支持 VSCode，但我们希望尽快支持其他 IDE，例如 Goland。
+There is now the option to generate IDE configuration along with your project. This means that if you open your project in a supported IDE, it will already be configured for building and debugging your application. Currently VSCode is supported but we hope to support other IDEs such as Goland soon.
 
 <div class="text--center">
     <img src="/img/vscode.png" width="100%" style={{"box-shadow": "rgb(255 255 >
@@ -64,19 +64,19 @@ Gophers 欢呼吧！ 单个二进制文件的构想依然存在！
 
 <br/>
 
-### 无需打包资源
+### No requirement to bundle assets
 
-v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS 文件。 我很高兴地宣布，对于 v2，不需要以任何形式打包资源。 想要加载本地图片？ 使用带有本地`src`路径的`<img>`标签。 想使用很酷的字体吗？ 复制它并在你的 CSS 中添加它的路径。
+A huge pain-point of v1 was the need to condense your entire application down to single JS & CSS files. I'm happy to announce that for v2, there is no requirement to bundle assets, in any way, shape or form. Want to load a local image? Use an `<img>` tag with a local src path. Want to use a cool font? Copy it in and add the path to it in your CSS.
 
-> 哇，这听起来像一个网络服务器......
+> Wow, that sounds like a webserver...
 
-是的，它就像一个网络服务器一样工作，但它不是。
+Yes, it works just like a webserver, except it isn't.
 
-> 那么我如何包含我的资源？
+> So how do I include my assets?
 
-您只需将`embed.FS`包含所有资源的单个文件传递到您的应用程序配置中。 他们甚至不需要在顶级目录中——Wails 会为你解决这个问题。
+You just pass a single `embed.FS` that contains all your assets into your application configuration. They don't even need to be in the top directory - Wails will just work it out for you.
 
-### 全新的开发体验
+### New Development Experience
 
 <div class="text--center">
     <img src="/img/browser.png" width="60%" style={{"box-shadow": "rgb(255 255 >
@@ -85,20 +85,20 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
 <br/>
 
 
-现在不需要打包资源，它启用了全新的开发体验。 新`wails dev`命令将构建并运行您的应用程序，但它不使用`embed.FS`中的资源，而是直接从磁盘加载它们。
+Now that assets don't need to be bundled, it's enabled a whole new development experience. The new `wails dev` command will build and run your application, but instead of using the assets in the `embed.FS`, it loads them directly from disk.
 
-它还提供了附加功能：
+It also provides the additional features:
 
-  - 热重载 - 对前端资源的任何更改都将触发并自动重载应用程序前端
-  - 自动重新构建 - 对 Go 代码的任何更改都将重新构建并重新启动您的应用程序
+  - Hot reload - Any changes to frontend assets will trigger and auto reload of the application frontend
+  - Auto rebuild - Any changes to your Go code will rebuild and relaunch your application
 
-除此之外，网络服务器将在端口 34115 上启动。 这将为您的应用程序提供连接到它的任何浏览器。 所有连接的 Web 浏览器都会响应系统事件，例如资源更改时的热重载。
+In addition to this, a webserver will start on port 34115. This will serve your application to any browser that connects to it. All connected web browsers will respond to system events like hot reload on asset change.
 
-在 Go 中，我们习惯于在应用程序中处理结构。 将结构发送到我们的前端并将它们用作我们应用程序中的状态通常很有用。 在 v1 中，这是一个非常需要手动的过程，对开发人员来说有点负担。 我很高兴地宣布，在 v2 中，任何在开发模式下运行的应用程序都将自动为所有结构生成 Typescript 模型，这些结构是绑定方法的输入或输出参数。 这实现了两个世界之间数据模型的无缝交换。
+In Go, we are used to dealing with structs in our applications. It's often useful to send structs to our frontend and use them as state in our application. In v1, this was a very manual process and a bit of a burden on the developer. I'm happy to announce that in v2, any application run in dev mode will automatically generate Typescript models for all structs that are input or output parameters to bound methods. This enables seamless interchange of data models between the two worlds.
 
-除此之外，还会动态生成另一个 JS 模块来包装您的所有绑定方法。 这为您的方法提供了 JSDoc，在您的 IDE 中提供代码完成和提示。 当您在自动生成的包含 Go 代码的模块中点击 Tab 时自动导入数据模型，这真的很酷！
+In addition to this, another JS module is dynamically generated wrapping all your bound methods. This provides JSDoc for your methods, providing code completion and hinting in your IDE. It's really cool when you get data models auto-imported when hitting tab in an auto-generated module wrapping your Go code!
 
-### 远程模板
+### Remote Templates
 
 <div class="text--center">
     <img src="/img/remote.png" width="60%" style={{"box-shadow": "rgb(255 255 >
@@ -106,29 +106,29 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
 
 <br/>
 
-让应用程序快速启动并运行一直是 Wails 项目的一个关键目标。 当我们推出时，我们试图涵盖当时的很多现代框架：react、vue 和 angular。 前端开发的世界非常固执己见，发展迅速，很难保持领先地位！ 结果，我们发现我们的基本模板很快就过时了，这导致了维护问题。 这也意味着，我们没有为最新和最伟大的技术栈提供酷炫的现代模板。
+Getting an application up and running quickly was always a key goal for the Wails project. When we launched, we tried to cover a lot of the modern frameworks at the time: react, vue and angular. The world of frontend development is very opinionated, fast moving and hard to keep on top of! As a result, we found our base templates getting out of date pretty quickly and this caused a maintenance headache. It also meant that we didn't have cool modern templates for the latest and greatest tech stacks.
 
-在 v2 中，我希望通过让您能够自己创建和托管模板来增强社区的能力，而不是依赖于 Wails 项目。 所以现在您可以使用社区支持的模板创建项目！ 我希望这将激励开发人员创建一个充满活力的项目模板生态系统。 我对我们的开发者社区可以创造的东西感到非常兴奋！
+With v2, I wanted to empower the community by giving you the ability to create and host templates yourselves, rather than rely on the Wails project. So now you can create projects using community supported templates! I hope this will inspire developers to create a vibrant ecosystem of project templates. I'm really quite excited about what our developer community can create!
 
-### 结语
+### In Conclusion
 
-Wails v2 代表了该项目的新起点。 此版本的目的是获得有关新方式的反馈，并在完整版本发布之前解决所有错误。 欢迎提出您的意见。 请直接反馈到 [v2 测试版](https://github.com/wailsapp/wails/discussions/828)讨论板。
+Wails v2 represents a new foundation for the project. The aim of this release is to get feedback on the new approach, and to iron out any bugs before a full release. Your input would be most welcome. Please direct any feedback to the [v2 Beta](https://github.com/wailsapp/wails/discussions/828) discussion board.
 
-为了达到这一点，经历了许多曲折和坎坷。 部分原因是早期的技术决策需要改变，另一部分原因是我们花时间构建的一些核心问题的变通方式已经在上游得到了解决：Go 的 embed 特性就是一个很好的例子。 幸运的是，一切都刚刚好，今天我们有了我们所能拥有的最好的解决方案。 我相信等待是值得的 - 这在两个月前是完全不可能的。
+There were many twists and turns, pivots and u-turns to get to this point. This was due partly to early technical decisions that needed changing, and partly because some core problems we had spent time building workarounds for were fixed upstream: Go’s embed feature is a good example. Fortunately, everything came together at the right time, and today we have the very best solution that we can have. I believe the wait has been worth it - this would not have been possible even 2 months ago.
 
-我还需要特别感谢 :pray: 以下人员，因为没有他们，这个版本就不会存在：
+I also need to give a huge thank you :pray: to the following people because without them, this release just wouldn't exist:
 
-- [Misitebao](https://github.com/misitebao) - 中文翻译的主要人员和和令人难以置信的漏洞发现者。
-- [John Chadwick](https://github.com/jchv) - 他在 [go-webview2](https://github.com/jchv/go-webview2) 和 [go-winloader](https://github.com/jchv/go-winloader) 方面的出色工作使 Windows 版本成为可能。
-- [Tad Vizbaras](https://github.com/tadvi) - 他的[winc](https://github.com/tadvi/winc)项目是走向纯粹的 Go Wails 的第一步。
-- [Mat Ryer](https://github.com/matryer) - 他的支持、鼓励和反馈确实推动了项目向前发展。
+- [Misitebao](https://github.com/misitebao) - An absolute workhorse on the Chinese translations and an incredible bug finder.
+- [John Chadwick](https://github.com/jchv) - His amazing work on [go-webview2](https://github.com/jchv/go-webview2) and [go-winloader](https://github.com/jchv/go-winloader) have made the Windows version we have today possible.
+- [Tad Vizbaras](https://github.com/tadvi) - Experimenting with his [winc](https://github.com/tadvi/winc) project was the first step down the path to a pure Go Wails.
+- [Mat Ryer](https://github.com/matryer) - His support, encouragement and feedback has really helped drive the project forward.
 
-最后，我还要特别感谢包括[JetBrains](https://www.jetbrains.com?from=Wails)在内的所有项目[赞助商](/credits#sponsors)，他们的幕后支持以多种方式推动了该项目。
+And finally, I'd like to give a special thank you to all the [project sponsors](/credits#sponsors), including [JetBrains](https://www.jetbrains.com?from=Wails), whose support drive the project in many ways behind the scenes.
 
-我期待看到在项目的下一个激动人心的阶段人们用 Wails 构建什么！
+I look forward to seeing what people build with Wails in this next exciting phase of the project!
 
 Lea.
 
-PS：MacOS 和 Linux 用户不必感到被忽略了——移植到这个新基础上的工作正在积极进行中，大部分复杂的工作已经完成。 坚持下去...
+PS: MacOS and Linux users need not feel left out - porting to this new foundation is actively under way and most of the hard work has already been done. Hang in there!
 
-PPS：如果您或您的公司发现 Wails 有用，可以考虑[赞助该项目](https://github.com/sponsors/leaanthony)。 谢谢！
+PPS: If you or your company find Wails useful, please consider [sponsoring the project](https://github.com/sponsors/leaanthony). Thanks!
