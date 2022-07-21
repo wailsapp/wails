@@ -1,8 +1,8 @@
-# 更新日志
+# Changelog
 
-此项目的所有重要变更都将记录在此文件中。
+All notable changes to this project will be documented in this file.
 
-格式基于 [维护更新日志](https://keepachangelog.com/en/1.0.0/)， 并且该项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased][]
 
@@ -10,7 +10,7 @@
 
 ## Added
 
-* 由 @acheong08 在 https://github.com/wailsapp/wails/pull/1600 中更新macOS 菜单示例
+* Update example for macOS Menu by @acheong08 in https://github.com/wailsapp/wails/pull/1600
 
 ## Fixed
 
@@ -20,218 +20,218 @@
 
 ## Added
 
-* 新的屏幕尺寸运行时间API由 @skamensky 在 https://github.com/wailsapp/wails/pull/1519
-* 通过 @leaanthony 在https://github.com/wailsapp/wails/pull/1547 自动发现vite devserver 端口
-* 添加 nixpkgs 支持医生命令。 由 @ianmjones 在 https://github.com/wailsapp/wails/pull/1551
-* 由 @leaanthony 在 https://github.com/wailsapp/wails/pull/1578 开发的新预构建钩子
-* 新的生产日志级别选项由 @leaanthony 在 https://github.com/wailsapp/wails/pull/1555
+* New screen dimensions runtime API by @skamensky in https://github.com/wailsapp/wails/pull/1519
+* Auto discover vite devserver port by @leaanthony in https://github.com/wailsapp/wails/pull/1547
+* Add nixpkgs support to doctor command. by @ianmjones in https://github.com/wailsapp/wails/pull/1551
+* New pre-build hooks feature by @leaanthony in https://github.com/wailsapp/wails/pull/1578
+* New production log level option by @leaanthony in https://github.com/wailsapp/wails/pull/1555
 
 ## Fixed
 
-* 修复Windows中使用 ICoreWebView2HttpheadersCollectionIterator 的 @stffabi 在 https://github.com/wailsapp/wails/pull/1589
-* 将 WindowGet * 移动到主线程由 @leaanthony 在 https://github.com/wailsapp/wails/pull/1464
-* 允许 -appargs 标志传递标记到二进制文件。 由 @ianmjones 在 https://github.com/wailsapp/wails/pull/1534
-* 以无英文会话修复已安装的 apt 软件包。 由 @ianmjones 在 https://github.com/wailsapp/wails/pull/1548
-* 由 @leaanthony 在 https://github.com/wailsapp/wails/pull/1558 修复Mac OnBEforeClos代码
-* 支持由 @leaanthony 在 https://github.com/wailsapp/wails/pull/1435 中转换TS 的地图
+* Fix stack corruption in Windows when using ICoreWebView2HttpHeadersCollectionIterator by @stffabi in https://github.com/wailsapp/wails/pull/1589
+* Move WindowGet* to main thread by @leaanthony in https://github.com/wailsapp/wails/pull/1464
+* Allow -appargs flag to pass flags to binary. by @ianmjones in https://github.com/wailsapp/wails/pull/1534
+* Fix checking for installed apt package in none English session. by @ianmjones in https://github.com/wailsapp/wails/pull/1548
+* Fix OnBeforeClose code for Mac by @leaanthony in https://github.com/wailsapp/wails/pull/1558
+* Support Maps in TS conversion by @leaanthony in https://github.com/wailsapp/wails/pull/1435
 * Check for line length when scanning for local devserver url by @leaanthony in https://github.com/wailsapp/wails/pull/1566
-* 在 https://github.com/wailsapp/wails/pull/1556 中删除winc 中由 @stffabi 和 @leaanthony 在 winc 中使用 unsafe.Pointer
+* Remove usage of unsafe.Pointer in winc by @stffabi and @leaanthony in https://github.com/wailsapp/wails/pull/1556
 
 ## Changed
 
-* 重命名WindowSetRGBA -> WindowSetBackgroundColour by @leaanthony in https://github.com/wailsapp/wails/pull/1506
-* 由 @stffabi 在 https://github.com/wailsapp/wails/pull/1510 中对dev 命令的改进
-* 由 @leaanthony 在 https://github.com/wailsapp/wails/pull/1398 更新vscode 模板
-* 在 /v2/internal/frontend/runtime/dev 由 @dependabot 从 3.42.2到 3.49.0 堆放在https://github.com/wailsapp/wails/pull/1572
+* Rename WindowSetRGBA -> WindowSetBackgroundColour by @leaanthony in https://github.com/wailsapp/wails/pull/1506
+* Improvements to the dev command by @stffabi in https://github.com/wailsapp/wails/pull/1510
+* Update vscode template by @leaanthony in https://github.com/wailsapp/wails/pull/1398
+* Bump svelte from 3.42.2 to 3.49.0 in /v2/internal/frontend/runtime/dev by @dependabot in https://github.com/wailsapp/wails/pull/1572
 * Bump svelte from 3.42.5 to 3.49.0 in /v2/internal/frontend/runtime by @dependabot in https://github.com/wailsapp/wails/pull/1573
-* 在 https://github.com/wailsapp/wails/pull/1586 中添加 `在 @acheong08 中发现` 错误
-* https://github.com/wailsapp/wails/pull/1591
+* Add troubleshooting for `Not Found` error by @acheong08 in https://github.com/wailsapp/wails/pull/1586
+* Docs/better homepage by @leaanthony in https://github.com/wailsapp/wails/pull/1591
 
-## 新建贡献者
+## New Contributors
 
-* @skamensky在https://github.com/wailsapp/wails/pull/1519 中做了他们的首次贡献
-* @acheong08 在https://github.com/wailsapp/wails/pull/1586 中做了他们的首次贡献
+* @skamensky made their first contribution in https://github.com/wailsapp/wails/pull/1519
+* @acheong08 made their first contribution in https://github.com/wailsapp/wails/pull/1586
 
-**完整更新日志**: https://github.com/wailsapp/wails/compare/v2.0.0-beta.38...v2.0.0-beta.39
+**Full Changelog**: https://github.com/wailsapp/wails/compare/v2.0.0-beta.38...v2.0.0-beta.39
 
 ## [v2.0.0-beta.38] - 2022-06-27
 
 ### Added
 
-* 在 https://github.com/wailsapp/wails/pull/1426 通过@Lyimmi 添加种族检测器 & dev
-* [linux] 支持 `linux/arm` 架构由 @Lyimmi 在 https://github.com/wailsapp/wails/pull/1427
-* 使用 `-g` 选项在 https://github.com/wailsapp/wails/pull/1430 由 @jaesung9507 创建 gitnore
-* [windows] 在 https://github.com/wailsapp/wails/pull/1474 由 @leaanthony 添加 Suspend/Resume 回调支持
-* 添加运行时函数 `WindowSetAlwaysOnTop` 由 @chenxiao1990 在 https://github.com/wailsapp/wails/pull/1442
-* [windows] 允许用@NanoNik设置浏览器路径在 https://github.com/wailsapp/wails/pull/1448
+* Add race detector to build & dev by @Lyimmi in https://github.com/wailsapp/wails/pull/1426
+* [linux] Support `linux/arm` architecture by @Lyimmi in https://github.com/wailsapp/wails/pull/1427
+* Create gitignore when using `-g` option by @jaesung9507 in https://github.com/wailsapp/wails/pull/1430
+* [windows] Add Suspend/Resume callback support by @leaanthony in https://github.com/wailsapp/wails/pull/1474
+* Add runtime function `WindowSetAlwaysOnTop` by @chenxiao1990 in https://github.com/wailsapp/wails/pull/1442
+* [windows] Allow setting browser path by @NanoNik in https://github.com/wailsapp/wails/pull/1448
 
 ### Fixed
 
-* [linux] 改进由 @stffabi 在 https://github.com/wailsapp/wails/pull/1392 中转换回调的主线程
-* [windows] 修复 WebView2 最小运行时间检查通过 @stffabi 在 https://github.com/wailsapp/wails/pull/1456
-* [linux] 由 @abtin 在 https://github.com/wailsapp/wails/pull/1461 修复apt 命令语法 (#1458)
-* [windows] 如果在 https://github.com/wailsapp/wails/pull/1466 通过 @leaanthony 设置窗口背景颜色
-* 由 @LukenSkyne 在 https://github.com/wailsapp/wails/pull/1449 修复文档中的小类型
-* 修复网址由 @andywenk 在 https://github.com/wailsapp/wails/pull/1460
-* 修复运行时由 https://github.com/wailsapp/wails/pull/1473 @leaanthony 更改主题
-* 修复：如果无法移除由 @leaanthony 在 https://github.com/wailsapp/wails/pull/1465 构建的临时绑定，不要停止
-* [windows] 将正确的安装状态传递到webview安装策略，由 @stffabi 在 https://github.com/wailsapp/wails/pull/1483
-* [windows] 使 `设置背景颜色` 兼容 `windows/386` 由 @stffabi 在 https://github.com/wailsapp/wails/pull/1493
-* 由 @Orijhins 修复lit-ts 模板在 https://github.com/wailsapp/wails/pull/1494
+* [linux] Improve switching to main thread for callbacks by @stffabi in https://github.com/wailsapp/wails/pull/1392
+* [windows] Fix WebView2 minimum runtime version check by @stffabi in https://github.com/wailsapp/wails/pull/1456
+* [linux] Fix apt command syntax (#1458) by @abtin in https://github.com/wailsapp/wails/pull/1461
+* [windows] Set Window Background colour if provided + debounce redraw option by @leaanthony in https://github.com/wailsapp/wails/pull/1466
+* Fix small typo in docs by @LukenSkyne in https://github.com/wailsapp/wails/pull/1449
+* Fix the url to surge by @andywenk in https://github.com/wailsapp/wails/pull/1460
+* Fixed theme change at runtime by @leaanthony in https://github.com/wailsapp/wails/pull/1473
+* Fix: Don't stop if unable to remove temporary bindings build by @leaanthony in https://github.com/wailsapp/wails/pull/1465
+* [windows] Pass the correct installationStatus to the webview installation strategy by @stffabi in https://github.com/wailsapp/wails/pull/1483
+* [windows] Make `SetBackgroundColour` compatible for `windows/386` by @stffabi in https://github.com/wailsapp/wails/pull/1493
+* Fix lit-ts template by @Orijhins in https://github.com/wailsapp/wails/pull/1494
 
 ### Changed
 
-* [windows] 只能通过@stffabi 在 https://github.com/wailsapp/wails/pull/1432 从嵌入的 WebView2 加载程序
-* 添加展示条目，10月份由 @marcus-crane 更新主页旋转至10月份。https://github.com/wailsapp/wails/pull/1436
-* 在https://github.com/wailsapp/wails/pull/1410 中使用@leaanthony 包装的退货方式
+* [windows] Load WebView2 loader from embedded only by @stffabi in https://github.com/wailsapp/wails/pull/1432
+* Add showcase entry for October + update homepage carousel entry for October by @marcus-crane in https://github.com/wailsapp/wails/pull/1436
+* Always use return in wrapped method by @leaanthony in https://github.com/wailsapp/wails/pull/1410
 * [windows] Unlock OSThread after native calls have been finished by @stffabi in https://github.com/wailsapp/wails/pull/1441
-* 添加 `背景颜色` 并废弃 `RGBA` 由 @leaanthony 在 https://github.com/wailsapp/wails/pull/1475
-* AssetsHandler 删除 dev 模式 @stffabi 在 https://github.com/wailsapp/wails/pull/1479 中的重试逻辑。
-* 在 https://github.com/wailsapp/wails/pull/1492 通过 @sidwebworks添加Solid JS 模板到文档
-* 由 @leaanthony 在 https://github.com/wailsapp/wails/pull/1488 中更好地处理信号
-* 在 https://github.com/wailsapp/wails/pull/1489 通过 @tomanagle 创建 root 的18。
+* Add `BackgroundColour` and deprecate `RGBA` by @leaanthony in https://github.com/wailsapp/wails/pull/1475
+* AssetsHandler remove retry logic in dev mode by @stffabi in https://github.com/wailsapp/wails/pull/1479
+* Add Solid JS template to docs by @sidwebworks in https://github.com/wailsapp/wails/pull/1492
+* Better signal handling by @leaanthony in https://github.com/wailsapp/wails/pull/1488
+* Chore/react 18 create root by @tomanagle in https://github.com/wailsapp/wails/pull/1489
 
-## 新建贡献者
+## New Contributors
 
-* @jaesung9507在https://github.com/wailsapp/wails/pull/1430中做了他们的首次贡献
-* @LukenSkyne 在https://github.com/wailsapp/wails/pull/1449 中做出了他们的首次贡献
-* @andywenk 在https://github.com/wailsapp/wails/pull/1460中做了他们的首次贡献
-* @abtin 在https://github.com/wailsapp/wails/pull/1461 中做了他们的首次贡献
-* @chenxiao1990在https://github.com/wailsapp/wails/pull/1442 中做了他们的首次贡献
-* @NanoNik在https://github.com/wailsapp/wails/pull/1448 中做了他们的首次贡献
-* @sidwebworks在https://github.com/wailsapp/wails/pull/1492 中做出了他们的首次贡献
-* @tomanagle 在https://github.com/wailsapp/wails/pull/1489中做了他们的首次贡献
+* @jaesung9507 made their first contribution in https://github.com/wailsapp/wails/pull/1430
+* @LukenSkyne made their first contribution in https://github.com/wailsapp/wails/pull/1449
+* @andywenk made their first contribution in https://github.com/wailsapp/wails/pull/1460
+* @abtin made their first contribution in https://github.com/wailsapp/wails/pull/1461
+* @chenxiao1990 made their first contribution in https://github.com/wailsapp/wails/pull/1442
+* @NanoNik made their first contribution in https://github.com/wailsapp/wails/pull/1448
+* @sidwebworks made their first contribution in https://github.com/wailsapp/wails/pull/1492
+* @tomanagle made their first contribution in https://github.com/wailsapp/wails/pull/1489
 
 ## [v2.0.0-beta.37] - 2022-05-26
 
 ### Added
 
-* 在 https://github.com/wailsapp/wails/pull/1413 中以 @mondy 在wails dev 命令中添加 `nogen` 标志
-* 由 @leaanthony 在 https://github.com/wailsapp/wails/pull/1400在 Windows 预览中对新本地半透明性的初步支持
+* Add `nogen` flag in wails dev command by @mondy in https://github.com/wailsapp/wails/pull/1413
+* Initial support for new native translucency in Windows Preview by @leaanthony in https://github.com/wailsapp/wails/pull/1400
 
 ### Fixed
 
-* 由 @leaanthony 在 https://github.com/wailsapp/wails/pull/1383 编写的 Bugfix/不正确绑定
-* 由 @polikow 修复运行时间.js 在 https://github.com/wailsapp/wails/pull/1369
-* 修复由 @antimatter96 格式的文档：https://github.com/wailsapp/wails/pull/1372
-* 事件 | 修正 #1388 由 @lambdajack 在 https://github.com/wailsapp/wails/pull/1390
-* bugfix: correctly typo by @tmclane in https://github.com/wailsapp/wails/pull/1391
-* 修复文档中的 @LGiki 在 https://github.com/wailsapp/wails/pull/1393
-* 修复由 @rayshoo 在 https://github.com/wailsapp/wails/pull/1466 通过 ipc.js 绑定的
-* 请确保在 https://github.com/wailsapp/wails/pull/1403 由 @stffabi 在一个新的goroutine 上执行菜单回调
-* 更新运行时间.d.ts & 模板由 @Yz4230 在 https://github.com/wailsapp/wails/pull/1421
-* 在 https://github.com/wailsapp/wails/pull/1419 由 @edwardbrowncres 添加缺失的类名称到React 和Preact 模板的输入
+* Bugfix/incorrect bindings by @leaanthony in https://github.com/wailsapp/wails/pull/1383
+* Fix runtime.js events by @polikow in https://github.com/wailsapp/wails/pull/1369
+* Fix docs formatting by @antimatter96 in https://github.com/wailsapp/wails/pull/1372
+* Events | fixes #1388 by @lambdajack in https://github.com/wailsapp/wails/pull/1390
+* bugfix: correct typo by @tmclane in https://github.com/wailsapp/wails/pull/1391
+* Fix typo in docs by @LGiki in https://github.com/wailsapp/wails/pull/1393
+* Fix typo bindings.js to ipc.js by @rayshoo in https://github.com/wailsapp/wails/pull/1406
+* Make sure to execute the menu callbacks on a new goroutine by @stffabi in https://github.com/wailsapp/wails/pull/1403
+* Update runtime.d.ts & templates by @Yz4230 in https://github.com/wailsapp/wails/pull/1421
+* Add missing className to input in React and Preact templates by @edwardbrowncross in https://github.com/wailsapp/wails/pull/1419
 
 ### Changed
-* 由 @stffabi 在 https://github.com/wailsapp/wails/pulliture 改进多平台版本
-* 在 https://github.com/wailsapp/wails/pull/1385 中@stffabi 使用的 AssetsHandler 仅使用重新加载逻辑。
-* 在 https://github.com/wailsapp/wails/pull/1387 通过 @Junkher 更新 events.mdx
-* 添加 Next.js 模板由 @LGiki 在 https://github.com/wailsapp/wails/pull/1394
-* 在 https://github.com/wailsapp/wails/pull/1414 由 @TechplexEngineer 在生成器上添加文档
-* 在 https://github.com/wailsapp/wails/pull/1423 通过 @daodao97 添加 macos 自定义菜单编辑器提示
+* Improve multi-platform builds by @stffabi in https://github.com/wailsapp/wails/pull/1373
+* During wails dev only use reload logic if no AssetsHandler are in use by @stffabi in https://github.com/wailsapp/wails/pull/1385
+* Update events.mdx by @Junkher in https://github.com/wailsapp/wails/pull/1387
+* Add Next.js template by @LGiki in https://github.com/wailsapp/wails/pull/1394
+* Add docs on wails generate module by @TechplexEngineer in https://github.com/wailsapp/wails/pull/1414
+* Add macos custom menu EditMenu tips by @daodao97 in https://github.com/wailsapp/wails/pull/1423
 
-### 新建贡献者
-* @polikow在https://github.com/wailsapp/wails/pull/1369 中做出了他们的首次贡献
-* @antimatter96 在https://github.com/wailsapp/wails/pull/1372 中做出了他们的首次贡献
-* @Junkher在https://github.com/wailsapp/wails/pull/1387中做出了他们的首次贡献
-* @lambdajack在https://github.com/wailsapp/wails/pull/1390中做出了他们的首次贡献
-* @LGiki 在https://github.com/wailsapp/wails/pull/1393 中做了他们的首次贡献
-* @rayshoo在https://github.com/wailsapp/wails/pull/1406中做出了他们的首次贡献
-* @TechplexEngineer 在https://github.com/wailsapp/wails/pull/1414中做了他们的首次贡献
-* @mondy 在https://github.com/wailsapp/wails/pull/1413中做了他们的首次贡献
-* @Yz4230 在https://github.com/wailsapp/wails/pull/1421 中做了他们的首次贡献
-* @daodao97 在https://github.com/wailsapp/wails/pull/1423中做了他们的首次贡献
-* @edwardbrowncross在https://github.com/wailsapp/wails/pull/1419中做出了他们的第一个贡献
+### New Contributors
+* @polikow made their first contribution in https://github.com/wailsapp/wails/pull/1369
+* @antimatter96 made their first contribution in https://github.com/wailsapp/wails/pull/1372
+* @Junkher made their first contribution in https://github.com/wailsapp/wails/pull/1387
+* @lambdajack made their first contribution in https://github.com/wailsapp/wails/pull/1390
+* @LGiki made their first contribution in https://github.com/wailsapp/wails/pull/1393
+* @rayshoo made their first contribution in https://github.com/wailsapp/wails/pull/1406
+* @TechplexEngineer made their first contribution in https://github.com/wailsapp/wails/pull/1414
+* @mondy made their first contribution in https://github.com/wailsapp/wails/pull/1413
+* @Yz4230 made their first contribution in https://github.com/wailsapp/wails/pull/1421
+* @daodao97 made their first contribution in https://github.com/wailsapp/wails/pull/1423
+* @edwardbrowncross made their first contribution in https://github.com/wailsapp/wails/pull/1419
 
 
 ## [v2.0.0-beta.36] - 2022-04-27
 
 ### Fixed
-- [v2] 验证 devServer 属性为正确的表单，由 [@stffabi](https://github.com/stffabi) 在 https://github.com/wailsapp/wails/pull/1359
-- [v2, darwin] 初始化堆栈上的本地变量，以防止由 [@stffabi](https://github.com/stffabi) 在https://github.com/wailsapp/wails/pull/1362 中产生的断层故障
-- Vue-TS 模板修复
+- [v2] Validate devServer property to be of the correct form by [@stffabi](https://github.com/stffabi) in https://github.com/wailsapp/wails/pull/1359
+- [v2, darwin] Initialize native variables on stack to prevent segfault by [@stffabi](https://github.com/stffabi) in https://github.com/wailsapp/wails/pull/1362
+- Vue-TS template fix
 
 ### Changed
-- 将 `Onstartup` 方法添加到默认模板
+- Added `OnStartup` method back to default templates
 
 ## [v2.0.0-beta.35] - 2022-04-27
 
-### 打破更改
+### Breaking Changes
 
-- 当数据被发送到 `EventsOn` 回调时 它是作为数值的分割发送的， 而不是方法的可选参数。 `事件` 现在可以正常工作，但如果您 目前使用此功能，您需要更新您的代码 [更多信息](https://github.com/wailsapp/wails/issues/1324)
-- 已损坏的 `bindings.js` 和 `bindings.d.ts` 文件已被新的 JS/TS 代码生成系统所取代。 更多 详情 [在这里](https://wails.io/docs/howdoesitwork#calling-bound-go-methods)
+- When data was sent to the `EventsOn` callback, it was being sent as a slice of values, instead of optional parameters to the method. `EventsOn` now works as expected, but you will need to update your code if you currently use this. [More information](https://github.com/wailsapp/wails/issues/1324)
+- The broken `bindings.js` and `bindings.d.ts` files have been replaced by a new JS/TS code generation system. More details [here](https://wails.io/docs/howdoesitwork#calling-bound-go-methods)
 
 ### Added
 
-- **新模板**: Swelte, React, Vue, Preact, Lit and Vanilla 模板, 既有JS 版本又有TS 版本。 `等待 -l` 获取更多信息 信息。
-- 默认模板现在由 [Vite](https://vitejs.dev) 供电。 当你 使用 `wails dev` 时，启用闪电快速重新加载！
-- 为外部前端开发服务器添加支持。 请参阅 `frontend:dev:serverUrl` [工程配置](https://wails.io/docs/reference/project-config) - [@stffabi](https://github.com/stffabi)
-- [Windows完全配置的暗色模式](https://wails.io/docs/reference/options#theme)。
-- 极大改进了 [WailsJS 生成](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) (都是 Javascript 和类型)
-- Wails医生现在报告有关安装wail的信息 - [@stffabi](https://github.com/stffabi)
-- [代码签名](https://wails.io/docs/guides/signing) 和 [NSIS 安装程序](https://wails.io/docs/guides/windows-installer) - [@gardc](https://github.com/gardc)
-- 添加对 `-trimpath` [构建标志](https://wails.io/docs/reference/cli#build)
-- 添加对默认资产处理程序的支持 - [@stffabi](https://github.com/stffabi)
+- **New Templates**: Svelte, React, Vue, Preact, Lit and Vanilla templates, both JS and TS versions. `wails init -l` for more info.
+- Default templates now powered by [Vite](https://vitejs.dev). This enables lightning fast reloads when you use `wails dev`!
+- Add support for external frontend development servers. See `frontend:dev:serverUrl` in the [project config](https://wails.io/docs/reference/project-config) - [@stffabi](https://github.com/stffabi)
+- [Fully configurable dark mode](https://wails.io/docs/reference/options#theme) for Windows.
+- Hugely improved [WailsJS generation](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) (both Javascript and Typescript)
+- Wails doctor now reports information about the wails installation - [@stffabi](https://github.com/stffabi)
+- Added docs for [code-signing](https://wails.io/docs/guides/signing) and [NSIS installer](https://wails.io/docs/guides/windows-installer) - [@gardc](https://github.com/gardc)
+- Add support for `-trimpath` [build flag](https://wails.io/docs/reference/cli#build)
+- Add support for a default AssetsHandler - [@stffabi](https://github.com/stffabi)
 
 ### Fixed
 
-- 改进了 BOM 标记和注释的 mimetype 检测 - [@napalu](https://github.com/napalu)
-- 删除重复的 mimetype 条目 - [@napalu](https://github.com/napalu)
-- 删除生成的定义文件中重复的类型导入- [@adalessa](https://github.com/adalessa)
-- 添加缺少的方法声明 - [@adalessa](https://github.com/adalessa)
-- 启动时修复 Linux sigabrt - [@napalu](https://github.com/napalu)
-- 双击事件现在可以使用 `数据wails-drag` 属性 - [@jicg](https://github.com/jicg)
-- 最小化帧率窗口时禁止调整大小 - [@stffabi](https://github.com/stffabi)
-- 固定的 TS/JS 生成用于不返回的去方法
-- 修复工程目录中生成的WailsJS
+- Improved mimetype detection for BOM marker and comments - [@napalu](https://github.com/napalu)
+- Remove duplicate mimetype entries - [@napalu](https://github.com/napalu)
+- Remove duplicate Typescript imports in generated definition files - [@adalessa](https://github.com/adalessa)
+- Add missing method declaration - [@adalessa](https://github.com/adalessa)
+- Fix Linux sigabrt on start - [@napalu](https://github.com/napalu)
+- Double Click event now works on elements with `data-wails-drag` attribute - [@jicg](https://github.com/jicg)
+- Suppress resizing during minimize of a frameless window - [@stffabi](https://github.com/stffabi)
+- Fixed TS/JS generation for Go methods with no returns
+- Fixed WailsJS being generated in project directory
 
 ### Changed
 
-- 网站文档现已版本
-- 改进 `runtime.Environment` 调用
-- 改进Mac 的关闭操作
-- 一堆依赖物的安全更新
-- 改进网站内容 - [@misitebao](https://github.com/misitebao)
-- 升级问题模板 - [@misitebao](https://github.com/misitebao)
-- 将不需要版本管理的文档转换为单个页面
+- Website docs are now versioned
+- Improved `runtime.Environment` call
+- Improve the close action for Mac
+- A bunch of dependabot security updates
+- Improved website content - [@misitebao](https://github.com/misitebao)
+- Upgrade issue template - [@misitebao](https://github.com/misitebao)
+- Convert documents that don't require version management to individual pages
   - [@misitebao](https://github.com/misitebao)
-- 正在使用Algolia搜索的网站
+- Website now using Algolia search
 
 ## [v2.0.0-beta.34] - 2022-03-26
 
 ### Added
 
-- 在 [@napalu](https://github.com/napalu) 在 Linux 上添加对 'DomReady' 回调的支持 #1249
-- MacOS - 默认显示扩展 [@leaanthony](https://github.com/leaanthony)  在 #1228
+- Add support for 'DomReady' callback on linux by [@napalu](https://github.com/napalu) in #1249
+- MacOS - Show extension by default by [@leaanthony](https://github.com/leaanthony)  in #1228
 
 ### Fixed
 
-- [v2, nsis] 看起来像/作为路径分隔器只适用于一些指令。在#1227 中使用 由 [@stffabi](https://github.com/stffabi)
-- 导入绑定定义模型由 [@adalessa](https://github.com/adalessa) 在 #1231
-- 使用 [@leaanthony](https://github.com/leaanthony)  在网站上进行本地搜索 #1234
-- 确保二进制资源可以由 [@napalu](https://github.com/napalu) 在 #1240
-- 在#1241中从 [@leaanthony](https://github.com/leaanthony)  从磁盘中加载时仅重试加载素材
-- [v2, window] 修复最大起始状态由 [@stffabi](https://github.com/stffabi) 在 #1243
-- 确保Linux IsFullscreen使用GDK_WINDOW_STATE_FULLSCREEN bit掩码。 由 [@ianmjones](https://github.com/ianmjones) 在 #1245
-- 修复Mac 的ExecJS内存泄漏由 [@leaanthony](https://github.com/leaanthony)  在 #1230
-- 由 [@BillBuilt](https://github.com/BillBuilt) 在 #1247 中修复或至少一个工作区 (#1232)
-- [v2] 在 #1258 中使用 os.Args[0] 来启动自己的外挂 [@stffabi](https://github.com/stffabi)
-- [v2, windows] Windows开关方案: https -> http by @stefpap, in #1255
-- 在 [@leaanthony](https://github.com/leaanthony)  在 #1257 中在 Web 视图2 中恢复聚焦。
-- 在 Show() 被调用时尝试聚焦窗口。 由 [@leaanthony](https://github.com/leaanthony)  在 #1212
-- 检查用户安装的 Linux 依赖关系的系统，由 [@leaanthony](https://github.com/leaanthony)  在 #1180 中
+- [v2, nsis] Seems like / as path separator works only for some directives in a cross platform way by [@stffabi](https://github.com/stffabi) in #1227
+- import models on binding definition by [@adalessa](https://github.com/adalessa) in #1231
+- Use local search on website by [@leaanthony](https://github.com/leaanthony)  in #1234
+- Ensure binary resources can be served by [@napalu](https://github.com/napalu) in #1240
+- Only retry loading assets when loading from disk by [@leaanthony](https://github.com/leaanthony)  in #1241
+- [v2, windows] Fix maximised start state by [@stffabi](https://github.com/stffabi) in #1243
+- Ensure Linux IsFullScreen uses GDK_WINDOW_STATE_FULLSCREEN bitmask appropriately. by [@ianmjones](https://github.com/ianmjones) in #1245
+- Fix memory leak in ExecJS for Mac by [@leaanthony](https://github.com/leaanthony)  in #1230
+- Fix, or at least a workaround, for (#1232) by [@BillBuilt](https://github.com/BillBuilt) in #1247
+- [v2] Use os.Args[0] for self starting wails by [@stffabi](https://github.com/stffabi) in #1258
+- [v2, windows] Windows switch scheme: https -> http by @stefpap in #1255
+- Ensure Focus is regained by Webview2 when tabbing by [@leaanthony](https://github.com/leaanthony)  in #1257
+- Try to focus window when Show() is called. by [@leaanthony](https://github.com/leaanthony)  in #1212
+- Check system for user installed Linux dependencies by [@leaanthony](https://github.com/leaanthony)  in #1180
 
 ### Changed
 
-- 功能 (网站)：在 [@misitebao](https://github.com/misitebao) 在 #1215 中同步文档并添加内容
-- refactory(片段)：优化默认模板由 [@misitebao](https://github.com/misitebao) 在 #1214 中
-- 由 [@leaanthony](https://github.com/leaanthony)  在 #1216 中初始构建后运行监视器
-- 由 [@leaanthony](https://github.com/leaanthony)  在 #1218 中更新特色/文档
-- 功能 (网站)：优化网站并同步文档由 [@misitebao](https://github.com/misitebao) 在 #1219
-- 文档：由 [@misitebao](https://github.com/misitebao) 在 #1224 中同步文档
-- 默认索引页面由 [@leaanthony](https://github.com/leaanthony)  在 #1229 中
+- feat(website): sync documents and add content by [@misitebao](https://github.com/misitebao) in #1215
+- refactor(cli): optimize default templates by [@misitebao](https://github.com/misitebao) in #1214
+- Run watcher after initial build by [@leaanthony](https://github.com/leaanthony)  in #1216
+- Feature/docs update by [@leaanthony](https://github.com/leaanthony)  in #1218
+- feat(website): optimize website and sync documents by [@misitebao](https://github.com/misitebao) in #1219
+- docs: sync documents by [@misitebao](https://github.com/misitebao) in #1224
+- Default index page by [@leaanthony](https://github.com/leaanthony)  in #1229
 - Build added win32 compatibility by [@fengweiqiang](https://github.com/fengweiqiang) in #1238
-- 文档：由 [@misitebao](https://github.com/misitebao) 在 #1260 中同步文档
+- docs: sync documents by [@misitebao](https://github.com/misitebao) in #1260
 
 ## [v2.0.0-beta.33][] - 2022-03-05
 
