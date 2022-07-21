@@ -1,13 +1,13 @@
 
-# Application Development
+# 应用程序开发
 
-There are no hard and fast rules for developing applications with Wails, but there are some basic guidelines.
+在开发Wail应用程序方面没有严格和快速的规则，但有一些基本准则。
 
-## Application Setup
+## 应用程序设置
 
-The pattern used by the default templates are that `main.go` is used for configuring and running the application, whilst `app.go` is used for defining the application logic.
+默认模板使用的模式是 `主要模板。 o` 用于配置和运行应用程序。 `app.go` 用于定义应用程序逻辑。
 
-The `app.go` file will define a struct that has 2 methods which act as hooks into the main application:
+`app.go` 文件将定义一个结构，其中包含两个方法作为钩子进入主应用程序：
 
 ```go title="app.go"
 type App struct {
@@ -26,36 +26,36 @@ func (a *App) shutdown(ctx context.Context) {
 }
 ```
 
-- The startup method is called as soon as Wails allocates the resources it needs and is a good place for creating resources, setting up event listeners and anything else the application needs at startup. It is given a `context.Context` which is usually saved in a struct field. This context is needed for calling the [runtime](../reference/runtime/intro.mdx). If this method returns an error, the application will terminate. In dev mode, the error will be output to the console.
+- 一旦Wail分配了它所需要的资源并且是创建资源的一个良好场所，启动方法就会被调用。 设置事件监听器以及启动时应用程序需要的其他任何东西。 它被赋予一个 `上下文。上下文` 通常被保存到一个结构字段。 调用 [运行时间](../reference/runtime/intro.mdx) 需要此环境。 如果此方法返回错误，应用程序将终止。 在开发模式下，错误将输出到控制台。
 
-- The shutdown method will be called by Wails right at the end of the shutdown process. This is a good place to deallocate memory and perform any shutdown tasks.
+- 关机方法将在关机过程结束时被Wails调用。 这是一个很好的场所，可以调用 内存并执行任何关机任务。
 
-The `main.go` file generally consists of a single call to `wails.Run()`, which accepts the application configuration. The pattern used by the templates is that before the call to `wails.Run()`, an instance of the struct we defined in `app.go` is created and saved in a variable called `app`. This configuration is where we add our callbacks:
+`main.go` 文件通常包含一个调用 `wails.Run()`的单次调用，它接受了应用程序配置。 模板使用的模式是 `通话之前。 un()`, 一个我们在 中定义的结构的实例`应用。 o` 已创建并保存到一个名为 `应用程序` 的变量。 此配置是我们添加回调的地方：
 
 ```go {3,9,10} title="main.go"
-func main() {
+func main() volume
 
     app := NewApp()
 
-    err := wails.Run(&options.App{
-        Title:             "My App",
-        Width:             800,
-        Height:            600,
-        OnStartup:  app.startup,
-        OnShutdown: app.shutdown,
+    err := wails.Run(&选项 pp@un.org
+        标题：“我的应用程序”，
+        宽度：800,
+        高度：600,
+        启动：应用。 启动，
+        OnShutdown：应用。 休眠，
     })
-    if err != nil {
-        log.Fatal(err)
+    如果是老的！ nil 然后再来回复
+        日志 atal(错误)
     }
 }
 
 ```
 
-More information on application lifecycle hooks can be found [here](../howdoesitwork.mdx#application-lifecycle-callbacks).
+关于应用程序生命周期钩子的更多信息可以在这里找到 [](../howdoesitwork.mdx#application-lifecycle-callbacks)。
 
-## Binding Methods
+## 绑定方法
 
-It is likely that you will want to call Go methods from the frontend. This is normally done by adding public methods to the already defined struct in `app.go`:
+你很可能想要从前台调用方法。 这通常是通过将公共方法添加到 `app.go` 中已经定义的结构来完成：
 
 ```go {16-18} title="app.go"
 type App struct {
@@ -78,120 +78,120 @@ func (a *App) Greet(name string) string {
 }
 ```
 
-In the main application configuration, the `Bind` key is where we can tell Wails what we want to bind:
+在主要应用程序配置中， `绑定` 键是我们可以告诉Wail什么我们想要绑定的：
 
 ```go {11-13} title="main.go"
-func main() {
+func main() volume
 
     app := NewApp()
 
-    err := wails.Run(&options.App{
-        Title:             "My App",
-        Width:             800,
-        Height:            600,
-        OnStartup:  app.startup,
-        OnShutdown: app.shutdown,
-        Bind: []interface{}{
+    err := wails.Run(&选项 pp@un.org
+        标题：“我的应用程序”，
+        宽度：800,
+        高度：600,
+        启动：应用。 启动，
+        OnShutdown：应用。 hutdown,
+        绑定: []interface{}{
             app,
         },
     })
-    if err != nil {
-        log.Fatal(err)
+    如果是老的！ nil 族群*
+        日志。 atal(错误)
     }
 }
 
 ```
 
-This will bind all public methods in our `App` struct (it will never bind the startup and shutdown methods).
+这将绑定我们的 `App` 结构中的所有公共方法 (它将永远不会绑定启动和关闭方法)。
 
-### Dealing with context when binding multiple structs
+### 绑定多个结构时处理上下文信息
 
-If you want to bind methods for multiple structs but want each struct to keep a reference to the context so that you can use the runtime functions, a good pattern is to pass the context from the `OnStartup` method to your struct instances :
+如果你想要绑定多个结构的方法，但每个结构都要保持上下文的引用，以便你可以使用运行时的函数 一个很好的模式是从 `Onstartup` 方法传递上下文到您的结构实例 ：
 
 ```go
-func main() {
+func main() pp
 
-    app := NewApp()
+    = NewApp()
     otherStruct := NewOtherStruct()
 
-    err := wails.Run(&options.App{
-        Title:             "My App",
-        Width:             800,
-        Height:            600,
-        OnStartup:  func(ctx context.Context){
-            app.SetContext(ctx)
-            otherStruct.SetContext(ctx)
+    err := wails. un(&选项)。 pp@un.org
+        标题：“我的应用程序”，
+        宽度：800,
+        高度：600,
+        Onstartup: function(ctx context http://untreaty.unfccc.int)
+            app. etContext(ctx)
+            其他结构。 etContext(ctx)
         },
-        OnShutdown: app.shutdown,
-        Bind: []interface{}{
+        OnShutdown: app. hutdown,
+        绑定: []interface{}{
             app,
             otherStruct
         },
     })
-    if err != nil {
-        log.Fatal(err)
+    如果是老的 ！ nil 然后再回复
+        日志。 atal(错误)
     }
 }
 ```
 
 
 
-More information on Binding can be found [here](../howdoesitwork.mdx#method-binding).
+关于绑定的更多信息可以在这里找到 [](../howdoesitwork.mdx#method-binding)。
 
-## Application Menu
+## 应用程序菜单
 
-Wails supports adding a menu to your application. This is done by passing a [Menu](../reference/menus.mdx#menu) struct to application config. It's common to use a method that returns a Menu, and even more common for that to be a method on the `App` struct used for the lifecycle hooks.
+Wail支持添加菜单到您的应用程序。 通过将 [菜单](../reference/menus.mdx#menu) 结构 传递给应用程序配置来做到这一点。 通常使用返回菜单的方法 甚至更常见的情况是，这将成为用于生命周期钩子的 的 `App` 结构。
 
 ```go {11} title="main.go"
-func main() {
+func main() volume
 
     app := NewApp()
 
-    err := wails.Run(&options.App{
-        Title:             "My App",
-        Width:             800,
-        Height:            600,
-        OnStartup:  app.startup,
-        OnShutdown: app.shutdown,
-        Menu:       app.menu(),
-        Bind: []interface{}{
+    err := wails.Run(&选项 pp@un.org
+        标题：“我的应用程序”，
+        宽度：800,
+        高度：600,
+        启动：应用。 启动，
+        OnShutdown：应用。 已关闭，
+        菜单：应用。 enu(),
+        绑定: []interface{}{
             app,
         },
     })
-    if err != nil {
-        log.Fatal(err)
+    如果是老的！ nil 然后再来回复
+        日志 atal(错误)
     }
 }
 
 ```
 
-## Assets
+## 资产
 
-The great thing about the way Wails v2 handles assets is that it doesn't! The only thing you need to give Wails is an `embed.FS`. How you get to that is entirely up to you. You can use vanilla html/css/js files like the vanilla template. You could have some complicated build system, it doesn't matter.
+关于Wails v2处理资产的方式的好事是它没有！ 您唯一需要给Wail的东西是 `embed.FS`. 你如何做到这一点完全取决于你。 您可以使用原版的 html/css/js 文件，例如原版模板。 你可能有一些复杂的构建系统，这是无关紧要的。
 
-When `wails build` is run, it will check the `wails.json` project file at the project root. There are 2 keys in the project file that are read:
+当 `wails build` 运行时，它将在项目根目录中检查 `wails.json` 工程文件。 工程文件中有2个键读取：
 
 - "frontend:install"
 - "frontend:build"
 
-The first, if given, will be executed in the `frontend` directory to install the node modules. The second, if given, will be executed in the `frontend` directory to build the frontend project.
+如果给出第一个，将在 `前端` 目录下执行来安装节点模块。 如果给出第二个，将在 `前端` 目录下执行，以构建前端项目。
 
-If these 2 keys aren't given, then Wails does absolutely nothing with the frontend. It is only expecting that `embed.FS`.
+如果没有给这两个密钥，那么Wail绝对不会在前端做任何事情。 它只是期望 `embed.FS`。
 
-### AssetsHandler
+### 资产处理器
 
-A Wails v2 app can optionally define a `http.Handler` in the `options.App`, which allows hooking into the AssetServer to create files on the fly or process POST/PUT requests. GET requests are always first handled by the `assets` FS. If the FS doesn't find the requested file the request will be forwarded to the `http.Handler` for serving. Any requests other than GET will be directly processed by the `AssetsHandler` if specified. It's also possible to only use the `AssetsHandler` by specifiy `nil` as the `Assets` option.
+Wails v2 应用程序可以在 `选项中定义一个 <code>http.Handler` 。 pp</code>, 它允许绑定到 AssetServer 在运行时创建文件或处理 POST/PUT 请求。 GET 请求总是由 `asset` FS 处理的。 If the FS doesn't find the requested file the request will be forwarded to the `http.Handler` for serving. 如果指定了 `资产处理程序` 将直接处理除GET 以外的任何请求。 It's also possible to only use the `AssetsHandler` by specifiy `nil` as the `Assets` option.
 
-## Built in Dev Server
+## 建立在Dev服务器中
 
-Running `wails dev` will start the built in dev server which will start a file watcher in your project directory. By default, if any file changes, wails checks if it was an application file (default: `.go`, configurable with `-e` flag). If it was, then it will rebuild your application and relaunch it. If the changed file was in the assets, it will issue a reload after a short amount of time.
+运行 `wails dev` 将在开发服务器中启动构建，它将在您的项目目录中启动一个文件监视器。 By default, if any file changes, wails checks if it was an application file (default: `.go`, configurable with `-e` flag). 如果是的话，它将重建你的应用程序并重新启动它。 如果更改的文件在资产中， 它将在短时间后发布重新加载。
 
-The dev server uses a technique called "debouncing" which means it doesn't reload straight away, as there may be multiple files changed in a short amount of time. When a trigger occurs, it waits for a set amount of time before issuing a reload. If another trigger happens, it resets to the wait time again. By default this value is `100ms`. If this value doesn't work for your project, it can be configured using the `-debounce` flag. If used, this value will be saved to your project config and become the default.
+dev 服务器使用了一个叫做“debouncing”的技术，这意味着它不会立即重新加载， 因为在短时间内可能有多个文件被更改。 当触发器发生时，它等待一定的时间 才发出重新加载。 如果发生另一个触发器, 它会再次重置到等待. 默认情况下，这个值是 `100ms`。 如果这个值不能用于您的项目，它可以使用 `-debount` 标志进行配置。 如果使用，此值将 保存到您的工程配置并成为默认值。
 
-## External Dev Server
+## 外部开发服务器
 
-Some frameworks come with their own live-reloading server, however they will not be able to take advantage of the Wails Go bindings. In this scenario, it is best to run a watcher script that rebuilds the project into the build directory, which Wails will be watching. For an example, see the default svelte template that uses [rollup](https://rollupjs.org/guide/en/). For [create-react-app](https://create-react-app.dev/), it's possible to use [this script](https://gist.github.com/int128/e0cdec598c5b3db728ff35758abdbafd) to achieve a similar result.
+一些框架带着自己的实时重新加载服务器，但他们将无法利用Wails 进行绑定。 在这种情况下，最好运行一个将项目重建到构建目录的监视器脚本，该目录 将会观看。 例如，看看使用 [滚动](https://rollupjs.org/guide/en/) 的默认svelte模板。 对于 [创建 react-app](https://create-react-app.dev/), 可以使用 [这个脚本](https://gist.github.com/int128/e0cdec598c5b3db728ff35758abdbafd) 来取得类似的结果。
 
 ## Go Module
 
-The default Wails templates generate a `go.mod` file that contains the module name "changeme". You should change this to something more appropriate after project generation.
+默认的邮件模板生成一个 `go.mod` 文件，其中包含模块名称“changeme”。 你应该在项目生成后将 更改为更合适的东西。
