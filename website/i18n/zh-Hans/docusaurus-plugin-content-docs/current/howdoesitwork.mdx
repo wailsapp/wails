@@ -17,51 +17,51 @@ Wails 应用程序是一个带有一个 webkit 前端的标准的 Go 应用程�
 主应用程序由对`wails.Run()`的调用组成. 它接受描述应用程序窗口大小、窗口标题、要使用的资源等应用程序配置。 它接受了描述应用程序窗口大小、窗口标题、 要使用的资源等的 应用程序配置。 基本应用程序可能如下所示：
 
 ```go title="main.go"
-包主
+package main
 
-导入 (
+import (
     "embed"
     "log"
 
-    "github. om/wailsapp/wails/v2"
-    "github. om/wailsapp/wails/v2/pkg/options”
-
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
+)
 
 //go:embed frontend/dist
-var assets embed。 S
+var assets embed.FS
 
-func main() v.
+func main() {
 
     app := &App{}
 
-    err := wails. un(&选项)。 pp}
-        标题：“基本降级”，
-        宽度： 1024,
-        高度：768，
-        资产：            &资产
-        启动：应用。 启动，
-        OnShutdown：应用。 hutdown,
-        绑定: []interface{}{
+    err := wails.Run(&options.App{
+        Title:             "Basic Demo",
+        Width:             1024,
+        Height:            768,
+        Assets:            &assets,
+        OnStartup:         app.startup,
+        OnShutdown:        app.shutdown,
+        Bind: []interface{}{
             app,
         },
     })
-    如果是老的！ nil 族群
-        log. atal(err)
+    if err != nil {
+        log.Fatal(err)
     }
 }
 
 
-类型App struct construct {
+type App struct {
     ctx context.Context
 }
 
-func (B*App) startup(ctx contexer)。 ontext (http://europa-eu-un.org )
+func (b *App) startup(ctx context.Context) {
     b.ctx = ctx
 }
 
-func (b*App) shutdown(ctx context ontext) {}
+func (b *App) shutdown(ctx context.Context) {}
 
-func (b*App) Greet(name string) string volunt.
+func (b *App) Greet(name string) string {
     return fmt.Sprintf("Hello %s!", name)
 }
 ```
@@ -84,7 +84,7 @@ func (b*App) Greet(name string) string volunt.
 `Assets` 选项是必须的，因为您不能拥有没有前端资源的 Wails 应用程序。 这些资源可以是您希望在 Web 应用程序中找到的任何文件 - html、js、css、svg、png 等。 **不需要生成资源包** - 纯文件即可。 当应用程序启动时，它将尝试从您的资源中加载`index.html`，并且那时起前端基本上将作为浏览器工作。 值得注意的是`embed.FS`对文件所在的位置没有要求。 嵌入路径很可能使用了相对于您的主应用程序代码的嵌套目录，例如 `frontend/dist`：
 
 ```go title="main.go"
-//go:嵌入前端/dist
+//go:embed frontend/dist
 var assets embed.FS
 ```
 
@@ -248,19 +248,19 @@ export default go;
 此外`bindings.js`，还有一个名为`models.ts`的文件. 这包含我们 Go 结构体的 TypeScript 形式：
 
 ```go title="main.go"
-输入联系人结构卷.
-    Name string`json:"name""
-    Age uint8 `json:"age"
-    Address *Address `json:"address"
+type Person struct {
+    Name string `json:"name"`
+    Age uint8 `json:"age"`
+    Address *Address `json:"address"`
 }
 
-type Address struct 卷.
-    Street string `json:"street"
-    Poststring `json:"postcode"
+type Address struct {
+    Street string `json:"street"`
+    Postcode string `json:"postcode"`
 }
 
-func (a.*App) Greet(p Person)字符串.
-    return fmt. 打印("Hello %s (: %d)!", p.Name, p.Age)
+func (a *App) Greet(p Person) string {
+    return fmt.Sprintf("Hello %s (Age: %d)!", p.Name, p.Age)
 }
 ```
 
@@ -420,7 +420,7 @@ export default go;
 Javascript 运行时位于`window.runtime`并包含许多方法来执行各种任务，例如发出事件或执行日志记录操作：
 
 ```js title="mycode.js"
-window .runtime.EventsEmit("my-event", 1);
+window.runtime.EventsEmit("my-event", 1);
 ```
 
 关于JS 运行时间的更多详细信息可在 [运行时间参考](reference/runtime/intro) 中找到。
