@@ -4,46 +4,46 @@ sidebar_position: 2
 
 # 事件
 
-## 概览
+## 概述
 
-Wail运行时提供了一个统一的事件系统，在这个系统中，事件可以被传送或接收到去或Javascript。 可选择通过事件传递数据。 监听器将收到本地数据类型中的数据。
+Wails 运行时提供了一个统一的事件系统，其中事件可以由 Go 或 Javascript 发出或接收。 可选地，数据可以与事件一起传递。 侦听器将接收本地数据类型中的数据。
 
-### 事件
+### 添加事件侦听器
 
-去签署: `EventsOn(ctx context.Context, eventname 字符串, callback functionalData ...interface{}))`
+Go 方法签名: `EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`
 
-JS 签署： `EventsOn(eventname 字符串，回调函数(可选Data?：任何))`
+JS 方法签名: `EventsOn(eventName string, callback function(optionalData?: any))`
 
-这个方法设置给定事件名称的监听器。 当类型为 `事件名称` 的事件 [已经发出](#EventsEmit), 会触发回调。 任何与发出的事件一起发送的额外数据都将传递给回调。
+此方法为给定的事件名称设置一个侦听器。 当一个`eventName`类型的事件被[触发指定事件](#触发指定事件)时，回调被触发。 与触发事件一起发送的任何其他数据都将传递给回调。
 
-### 事件关闭
+### 移除事件侦听器
 
-去签署: `EventsOff(ctx context.Context, eventname 字符串)`
+Go 方法签名: `EventsOff(ctx context.Context, eventName string)`
 
-JS 签署： `EventsOff(eventname 字符串)`
+JS 方法签名: `EventsOff(eventName string)`
 
-这个方法取消了给定事件名称的监听器。
+此方法取消注册给定事件名称的侦听器。
 
-### EventsOnce
+### 添加只触发一次的事件侦听器
 
-去签署: `EventsOnce(ctx context.Context, eventname 字符串, callback functionalData ...interface{}))`
+Go 方法签名: `EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`
 
-JS 签署： `EventsOnce(eventname 字符串，回调函数(可选的数据？：任何))`
+JS 方法签名: `EventsOnce(eventName string, callback function(optionalData?: any))`
 
-此方法为给定事件名称设置一个监听器，但只触发一次。
+此方法为给定的事件名称设置一个侦听器，但只会触发一次。
 
-### EventsonMultiple
+### 添加指定对多触发次数的事件侦听器
 
-去签署: `EventsOnMultiple(ctx context. Context, eventname 字符串, callback functionalData ...interface{}), 计数器`
+Go 方法签名: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int)`
 
-JS 签署： `EventsOnMultiple(eventname 字符串，回调函数(可选的数据？：任何)，计数器)`
+JS 方法签名: `EventsOnMultiple(eventName string, callback function(optionalData?: any), counter int)`
 
-这个方法为给定事件名称设置了一个监听器，但只会触发最多 `计数器` 次。
+此方法为给定的事件名称设置一个侦听器，但最多只能触发`counter`次。
 
-### 事件
+### 触发指定事件
 
-去签署: `EventsEmit(ctx context.Context, eventname 字符串, optionalData ...interface{})`
+Go 方法签名: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`
 
-JS 签署： `EventsEmit(ctx context, optionalData functionalData?: any))`
+JS 方法签名: `EventsEmit(ctx context, optionalData function(optionalData?: any))`
 
-这个方法发布给定的事件。 可选的数据与事件一起传递。 这将触发任何事件监听器。
+此方法触发指定的事件。 可选数据可以与事件一起传递。 这将触发任何事件侦听器。
