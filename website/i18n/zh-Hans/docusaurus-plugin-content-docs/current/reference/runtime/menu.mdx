@@ -2,24 +2,24 @@
 sidebar_position: 6
 ---
 
-# 菜单
+# Menu
 
-## 概述
+## Overview
 
-这些方法与应用程序菜单相关。
+These methods are related to the application menu.
 
 :::info Javascript
-  当前在 JS 运行时不支持菜单。
+  Menu is currently unsupported in the JS runtime.
 :::
 
-### 设置应用程序菜单
-JS 运行时当前不支持菜单。
+### MenuSetApplicationMenu
+Go Signature: `MenuSetApplicationMenu(ctx context.Context, menu *menu.Menu)`
 
-:::
+Sets the application menu to the given [menu](../menus.mdx) .
 
-### 更新应用程序菜单
-Go 方法签名: `MenuSetApplicationMenu(ctx context.Context, menu *menu.Menu)`
+### MenuUpdateApplicationMenu
+Go Signature: `MenuUpdateApplicationMenu(ctx context.Context)`
 
-将应用程序菜单设置为给定的[应用菜单](../../reference/menus)。
+Updates the application menu, picking up any changes to the menu passed to `MenuSetApplicationMenu`.
 
 
