@@ -2,218 +2,218 @@
 sidebar_position: 4
 ---
 
-# Window
+# 窗口
 
-## Overview
+## 概览
 
-These methods give control of the application window.
+这些方法能够控制应用程序窗口。
 
-### WindowSetTitle
-Go Signature: `WindowSetTitle(ctx context.Context, title string)`
+### 窗口设置标题
+去签署: `WindowSetTitle(ctx context. Context, title string)`
 
-JS Signature: `WindowSetTitle(title: string)`
+JS 签署： `WindowSetTitle(标题：字符串)`
 
-Sets the text in the window title bar.
+设置窗口标题栏中的文本。
 
-### WindowFullscreen
-Go Signature: `WindowFullscreen(ctx context.Context)`
+### Windows全屏
+去签署: `WindowFullscreen(ctx context.Context)`
 
-JS Signature: `WindowFullscreen()`
+JS 签署： `WindowFullscreen()`
 
-Makes the window full screen.
+使窗口全屏化。
 
-### WindowUnfullscreen
-Go Signature: `WindowUnfullscreen(ctx context.Context)`
+### Windows全屏
+去签署: `WindowUnfullscreen(ctx context.Context)`
 
-JS Signature: `WindowUnfullscreen()`
+JS 签署： `WindowUnfullscreen()`
 
-Restores the previous window dimensions and position prior to full screen.
+在全屏之前还原上一个窗口尺寸和位置。
 
-### WindowCenter
-Go Signature: `WindowCenter(ctx context.Context)`
+### 窗口中心
+去签署: `WindowCenter(ctx context.Context)`
 
-JS Signature: `WindowCenter()`
+JS 签署： `WindowCenter()`
 
-Centers the window on the monitor the window is currently on.
+将窗口放在监视器上的窗口上。
 
-### WindowReload
-Go Signature: `WindowReload(ctx context.Context)`
+### 窗口重新加载
+去签署: `WindowReload(ctx context.Context)`
 
-JS Signature: `WindowReload()`
+JS 签署： `WindowReload()`
 
-Performs a "reload" (Reloads current page).
+执行"重新加载"(重新加载当前页面)。
 
 ### WindowReloadApp
-Go Signature: `WindowReloadApp(ctx context.Context)`
+去签署: `WindowReloadApp(ctx context.Context)`
 
-JS Signature: `WindowReloadApp()`
+JS 签署： `WindowReloadApp()`
 
-Reloads the application frontend.
+重新加载应用程序前端。
 
-### WindowSetSy
+### WindowsSetSy
 
-### WindowSetSystemDefaultTheme
-Go Signature: `WindowSetSystemDefaultTheme(ctx context.Context)`
+### WindowsSet系统默认主题
+去签署: `WindowSetSystemDefaultTheme(ctx context)`
 
-JS Signature: `WindowSetSystemDefaultTheme()`
+JS 签署： `WindowSetSystemDefaultTheme()`
 
-Windows only.
+仅限窗口
 
-Sets window theme to system default (dark/light).
+设置窗口主题为系统默认 (dark/light).
 
-### WindowSetLightTheme
-Go Signature: `WindowSetLightTheme(ctx context.Context)`
+### WindowsSetLight主题
+去签署: `WindowSetLightTheme(ctx context.Context)`
 
-JS Signature: `WindowSetLightTheme()`
+JS 签署： `WindowSetLightTheme()`
 
-Windows only.
+仅限窗口
 
-Sets window theme to light.
+将窗口主题设置为亮点。
 
-### WindowSetDarkTheme
-Go Signature: `WindowSetDarkTheme(ctx context.Context)`
+### WindowsSet暗色主题
+去签署: `WindowSetDarkTheme(ctx context.Context)`
 
-JS Signature: `WindowSetDarkTheme()`
+JS 签署： `WindowSetDarkTheme()`
 
-Windows only.
+仅限窗口
 
-Sets window theme to dark.
+将窗口主题设置为暗淡。
 
-### WindowShow
-Go Signature: `WindowShow(ctx context.Context)`
+### 窗口显示
+去签署: `WindowShow(ctx context.Context)`
 
-JS Signature: `WindowShow()`
+JS 签署： `WindowShow()`
 
-Shows the window, if it is currently hidden.
+显示当前隐藏的窗口。
 
-### WindowHide
-Go Signature: `WindowHide(ctx context.Context)`
+### 窗口隐藏
+去签署: `WindowHide(ctx context.Context)`
 
-JS Signature: `WindowHide()`
+JS 签署： `WindowHide()`
 
-Hides the window, if it is currently visible.
+隐藏窗口，如果它目前可见。
 
-### WindowSetSize
-Go Signature: `WindowSetSize(ctx context.Context, width int, height int)`
+### 窗口设置大小
+去签署: `WindowSetSize(ctx context. Context, 宽度, 高度)`
 
-JS Signature: `WindowSetSize(size: Size)`
+JS 签署： `WindowSetSize(大小：大小)`
 
-Sets the width and height of the window.
+设置窗口的宽度和高度
 
-### WindowGetSize
-Go Signature: `WindowGetSize(ctx context.Context) (width int, height int)`
+### 窗口Getsize
+去签署: `WindowGetSize(ctx context) (宽度, 高度)`
 
-JS Signature: `WindowGetSize() : Size`
+JS 签署： `WindowGetSize() : 大小`
 
-Gets the width and height of the window.
+获取窗口的宽度和高度
 
-### WindowSetMinSize
-Go Signature: `WindowSetMinSize(ctx context.Context, width int, height int)`
+### Windows设置Minize
+去签署: `WindowSetMinSize(ctx context, 宽度, 高度)`
 
-JS Signature: `WindowSetMinSize(size: Size)`
+JS 签署： `WindowSetMinize(大小：大小)`
 
-Sets the minimum window size. Will resize the window if the window is currently smaller than the given dimensions.
+设置最小窗口大小。 如果窗口当前小于给定的尺寸，将调整窗口的大小。
 
-Setting a size of `0,0` will disable this constraint.
+设置大小为 `0,0` 将禁用此限制。
 
-### WindowSetMaxSize
-Go Signature: `WindowSetMaxSize(ctx context.Context, width int, height int)`
+### Windows设置MaxSize
+去签署: `WindowSetMaxSize(ctx context. Context, 宽度, 高度)`
 
-JS Signature: `WindowSetMaxSize(size: Size)`
+JS 签署： `WindowSetMaxSize(大小：大小)`
 
-Sets the maximum window size. Will resize the window if the window is currently larger than the given dimensions.
+设置最大窗口大小。 如果窗口当前大于给定的尺寸，将调整窗口的大小。
 
-Setting a size of `0,0` will disable this constraint.
+设置大小为 `0,0` 将禁用此限制。
 
-### WindowSetAlwaysOnTop
-Go Signature: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`
+### Windows SetAlwaysOntop
+去签署: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`
 
-JS Signature: `WindowSetAlwaysOnTop(b: Boolen)`
+JS 签署： `WindowSetAlwaysOnTop(b: Boolen)`
 
-Sets the window AlwaysOnTop or not on top.
+设置窗口总是在顶部或不在顶部。
 
 
-### WindowSetPosition
-Go Signature: `WindowSetPosition(ctx context.Context, x int, y int)`
+### 窗口设置位置
+签署: `Windows设置位置(ctx context.Context, x int, y int)`
 
-JS Signature: `WindowSetPosition(position: Position)`
+JS 签署： `Windows定位(位置：位置)`
 
-Sets the window position relative to the monitor the window is currently on.
+设置窗口相对于当前显示器的位置。
 
-### WindowGetPosition
-Go Signature: `WindowGetPosition(ctx context.Context) (x int, y int)`
+### 窗口获取位置
+去签署: `WindowGetPosition(ctx context.Context) (x int, y int)`
 
-JS Signature: `WindowGetPosition() : Position`
+JS 签署： `WindowGetPosition() : 位置`
 
-Gets the window position relative to the monitor the window is currently on.
+获取窗口相对于当前显示器的位置。
 
-### WindowMaximise
-Go Signature: `WindowMaximise(ctx context.Context)`
+### Windows最大化
+去签署: `WindowMaximise(ctx context.Context)`
 
-JS Signature: `WindowMaximise()`
+JS 签署： `WindowMaximise()`
 
-Maximises the window to fill the screen.
+最大化窗口以填充屏幕。
 
-### WindowUnmaximise
-Go Signature: `WindowUnmaximise(ctx context.Context)`
+### 窗口最大化
+去签署: `WindowUnmaximise(ctx context.Context)`
 
-JS Signature: `WindowUnmaximise()`
+JS 签署： `WindowUnmaximise()`
 
-Restores the window to the dimensions and position prior to maximising.
+在最大化之前将窗口还原到尺寸和位置。
 
-### WindowToggleMaximise
-Go Signature: `WindowToggleMaximise(ctx context.Context)`
+### Windows切换最大化
+去签署: `WindowToggleMaximise(ctx context.Context)`
 
-JS Signature: `WindowToggleMaximise()`
+JS 签署： `WindowToggleMaximise()`
 
-Toggles between Maximised and UnMaximised.
+在最大化和未最大化之间切换。
 
-### WindowMinimise
-Go Signature: `WindowMinimise(ctx context.Context)`
+### 窗口最小化
+去签署: `WindowsMinimise(ctx context.Context)`
 
-JS Signature: `WindowMinimise()`
+JS 签署： `Windows Minimise()`
 
-Minimises the window.
+最小化窗口
 
-### WindowUnminimise
-Go Signature: `WindowUnminimise(ctx context.Context)`
+### 窗口最小化
+去签署: `WindowUnminimise(ctx context.Context)`
 
-JS Signature: `WindowUnminimise()`
+JS 签署： `WindowUnminimise()`
 
-Restores the window to the dimensions and position prior to minimising.
+将窗口还原到最小化前的尺寸和位置。
 
 ### WindowSetBackgroundColour
-Go Signature: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`
+去签署: `Windows SetBackgroundColourour(ctx context.Context, R, G, B, A uint8)`
 
-JS Signature: `WindowSetBackgroundColour(R, G, B, A)`
+JS 签署： `WindowSetBackgroundColour(R, G, B, A)`
 
-Sets the background colour of the window to the given RGBA colour definition. This colour will show through for all transparent pixels.
+将窗口的背景颜色设置为给定的 RGBA 颜色定义。 此颜色将会显示所有透明像素。
 
-Valid values for R, G, B and A are 0-255.
+R、G、B和A有效值为0-255。
 
-:::info Windows
+:::info 窗口
 
-On Windows, only alpha values of 0 or 255 are supported. Any value that is not 0 will be considered 255.
+在 Windows上，仅支持 0 或 255 的alpha 值。 不为 0 的任何值将被视为255。
 
 :::
 
-## Typescript Object Definitions
+## 类型对象定义
 
-### Position
+### 位置
 
 ```ts
-interface Position {
-    x: number;
-    y: number;
+接口位置：
+    x: 数;
+    y: 数;
 }
 ```
 
-### Size
+### 大小
 
 ```ts
-interface Size {
-    w: number;
-    h: number;
+接口大小:
+    w: 数字;
+    h: 数字;
 }
 ```
 
