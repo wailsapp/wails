@@ -4,146 +4,146 @@ sidebar_position: 3
 
 # 日志
 
-## 概览
+## 概述
 
-Wails 运行时提供了一个可以从 Go 或 Javascript 调用的日志机制。 像大多数 日志记录器一样，有一些日志级别：
+Wails 运行时提供了一种可以从 Go 或 Javascript 调用的日志记录机制。 像大多数记录器一样，有许多日志级别：
 
-  - 轨迹
+  - Trace
   - Debug
-  - 信息
-  - 警告
-  - 错误
+  - Info
+  - Warning
+  - Error
   - Fatal
 
-日志记录器将在当前或更高的日志级别输出任何日志消息。 例如： `调试` 日志 级别将输出除 `追踪` 消息以外的所有消息。
+记录器将输出当前或更高日志级别的任何日志消息。 示例：`Debug`日志级别将输出除`Trace`消息之外的所有消息。
 
-### 日志打印
+### 打印日志
 
-去签署: `LogPrint(ctx context.Context, message string)`
+Go 方法签名: `LogPrint(ctx context.Context, message string)`
 
-JS 签署： `LogPrint(消息：字符串)`
-
-将给定的消息记录为原始消息。
-
-### LogPrintf
-
-去签署: `LogPrintf(ctx context. Context, format string, args ...interface{})`
+JS 方法签名: `LogPrint(message: string)`
 
 将给定的消息记录为原始消息。
 
-### LogTrace
+### 格式化打印日志
 
-去签署: `LogTrace(ctx context.Context, message string)`
+Go 方法签名: `LogPrintf(ctx context.Context, format string, args ...interface{})`
 
-JS 签署： `LogTrace(消息：字符串)`
+将给定的消息记录为原始消息。
 
-在 `跟踪` 日志级别记录给定的消息。
+### Trace 日志
 
-### LogTracef
+Go 方法签名: `LogTrace(ctx context.Context, message string)`
 
-去签署: `LogTracef(ctx context. Context, format string, args ...interface{})`
+JS 方法签名: `LogTrace(message: string)`
 
-在 `跟踪` 日志级别记录给定的消息。
+在`Trace`日志级别记录给定的消息。
 
-### LogDebug
+### 格式化 Trace 日志
 
-去签署: `LogDebug(ctx context.Context, message 字符串)`
+Go 方法签名: `LogTracef(ctx context.Context, format string, args ...interface{})`
 
-JS 签署： `LogDebug(消息：字符串)`
+在`Trace`日志级别记录给定的消息。
 
-在 `调试` 日志级别记录给定的消息。
+### Debug 日志
 
-### LogDebugf
+Go 方法签名: `LogDebug(ctx context.Context, message string)`
 
-去签署: `LogDebugf(ctx context. Context, format string, args ...interface{})`
+JS 方法签名: `LogDebug(message: string)`
 
-在 `调试` 日志级别记录给定的消息。
+在`Debug`日志级别记录给定的消息。
 
-### LogInfo
+### 格式化 Debug 日志
 
-去签署: `LogInfo(ctx context.Context, message 字符串)`
+Go 方法签名: `LogDebugf(ctx context.Context, format string, args ...interface{})`
 
-JS 签署： `LogInfo(消息：字符串)`
+在`Debug`日志级别记录给定的消息。
 
-在 `信息` 日志级别记录给定的消息。
+### Info 日志
 
-### LogInfof
+Go 方法签名: `LogInfo(ctx context.Context, message string)`
 
-去签署: `LogInfof(ctx context. Context, format string, args ...interface{})`
+JS 方法签名: `LogInfo(message: string)`
 
-在 `信息` 日志级别记录给定的消息。
+在`Info`日志级别记录给定的消息。
 
-### 日志警告
+### 格式化 Info 日志
 
-去签署: `LogWarning(ctx context.Context, message string)`
+Go 方法签名: `LogInfof(ctx context.Context, format string, args ...interface{})`
 
-JS 签署： `Log警告(消息：字符串)`
+在`Info`日志级别记录给定的消息。
 
-在 `警告` 日志级别记录给定的消息。
+### Warning 日志
 
-### 日志警告
+Go 方法签名: `LogWarning(ctx context.Context, message string)`
 
-去签署: `LogWarningf(ctx context. Context, format string, args ...interface{})`
+JS 方法签名: `LogWarning(message: string)`
 
-在 `警告` 日志级别记录给定的消息。
+在`Warning`日志级别记录给定的消息。
 
-### LogError
+### 格式化 Warning 日志
 
-去签署: `LogError(ctx context.Context, message string)`
+Go 方法签名: `LogWarningf(ctx context.Context, format string, args ...interface{})`
 
-JS 签署： `LogError(消息：字符串)`
+在`Warning`日志级别记录给定的消息。
 
-日志记录给定的消息到 `错误` 日志。
+### Error 日志
 
-### LogErrorf
+Go 方法签名: `LogError(ctx context.Context, message string)`
 
-去签署: `LogErrorf(ctx context. Context, format string, args ...interface{})`
+JS 方法签名: `LogError(message: string)`
 
-日志记录给定的消息到 `错误` 日志。
+在`Error`日志级别记录给定的消息。
 
-### 致命的
+### 格式化 Error 日志
 
-去签署: `LogFatal(ctx context.Context, message 字符串)`
+Go 方法签名: `LogErrorf(ctx context.Context, format string, args ...interface{})`
 
-JS 签署： `LogFatal(消息：字符串)`
+在`Error`日志级别记录给定的消息。
 
-将给定消息记录到 `致命` 日志。
+### Fatal 日志
 
-### LogFatalf
+Go 方法签名: `LogFatal(ctx context.Context, message string)`
 
-去签署: `LogFatalf(ctx context. Context, format string, args ...interface{})`
+JS 方法签名: `LogFatal(message: string)`
 
-将给定消息记录到 `致命` 日志。
+在`Fatal`日志级别记录给定的消息。
 
-### 日志设置日志日志级别
+### 格式化 Fatal 日志
 
-去签署: `LogSetLevel(ctx context.Context, level logger.LogLevel)`
+Go 方法签名: `LogFatalf(ctx context.Context, format string, args ...interface{})`
 
-JS 签署： `LogSetLevel(级别：数字)`
+在`Fatal`日志级别记录给定的消息。
 
-设置日志级别。 在 Javascript 中，数字与以下日志级别有关：
+### 设置日志级别
 
-| 值 | 日志级别  |
-| - | ----- |
-| 1 | 轨迹    |
-| 2 | Debug |
-| 3 | 信息    |
-| 4 | 警告    |
-| 5 | 错误    |
+Go 方法签名: `LogSetLogLevel(ctx context.Context, level logger.LogLevel)`
 
-## 使用自定义日志记录
+JS 方法签名: `LogSetLogLevel(level: number)`
 
-通过使用 [日志](../options.mdx#logger) 应用程序选项提供一个自定义日志。 唯一的要求是记录器实现 `logger.Logger` 接口 定义在 `github.com/wailsapp/wails/v2/pkg/logger`
+设置日志级别。 在 Javascript 中，该数字与以下日志级别有关：
+
+| 值 | 日志等级    |
+| - | ------- |
+| 1 | Trace   |
+| 2 | Debug   |
+| 3 | Info    |
+| 4 | Warning |
+| 5 | Error   |
+
+## 使用自定义日志
+
+可以通过使用应用程序参数选项 [日志](../../reference/options#日志) 提供自定义记录器来使用它。 唯一的要求是记录器实现了在`github.com/wailsapp/wails/v2/pkg/logger`里`logger.Logger`定义的接口：
 
 ```go title="logger.go"
-输入Logger 接口 然后
-    Print(消息字符串)
-    Trace(消息字符串)
-    Debug(消息字符串)
-    Info(消息字符串)
-    警告 (消息字符串)
-    错误(消息字符串)
-    Fatal(消息字符串)
+type Logger interface {
+    Print(message string)
+    Trace(message string)
+    Debug(message string)
+    Info(message string)
+    Warning(message string)
+    Error(message string)
+    Fatal(message string)
 }
 ```
 
