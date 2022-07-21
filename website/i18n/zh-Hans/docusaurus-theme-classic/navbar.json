@@ -1,6 +1,6 @@
 {
   "item.label.Sponsor": {
-    "message": "赞助者 ❤",
+    "message": "赞助我们 ❤",
     "description": "Navbar item with label Sponsor"
   },
   "item.label.Docs": {
@@ -32,11 +32,11 @@
     "description": "Navbar item with label Community Guide"
   },
   "item.label.Credits": {
-    "message": "致谢",
+    "message": "勋章墙",
     "description": "Navbar item with label Credits"
   },
   "item.label.Stats": {
-    "message": "统计信息",
+    "message": "网站统计",
     "description": "Navbar item with label Stats"
   }
 }
