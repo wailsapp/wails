@@ -58,7 +58,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		if system.IsAppleSilicon {
 			defaultArch = "arm64"
 		} else {
-			defaultArch += runtime.GOARCH
+			defaultArch = runtime.GOARCH
 		}
 	}
 	platform := defaultPlatform + "/" + defaultArch
