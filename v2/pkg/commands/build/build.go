@@ -164,7 +164,7 @@ func Build(options *Options) (string, error) {
 		options.OutputFile = amd64Filename
 		options.CleanBuildDirectory = false
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("\nBuilding AMD64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
+			outputLogger.Println("\nBuilding AMD64 Target: %s", filepath.Join(options.BuildDirectory, options.OutputFile))
 		}
 		err = builder.CompileProject(options)
 
@@ -176,7 +176,7 @@ func Build(options *Options) (string, error) {
 		options.OutputFile = arm64Filename
 		options.CleanBuildDirectory = false
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("Building ARM64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
+			outputLogger.Println("Building ARM64 Target: %s", filepath.Join(options.BuildDirectory, options.OutputFile))
 		}
 		err = builder.CompileProject(options)
 
@@ -185,7 +185,7 @@ func Build(options *Options) (string, error) {
 		}
 		// Run lipo
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("  Running lipo: ", "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
+			outputLogger.Println("  Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename)
 		}
 		_, stderr, err := shell.RunCommand(options.BuildDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
 		if err != nil {
