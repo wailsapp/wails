@@ -1,47 +1,47 @@
 
-# Windows
+# 窗口
 
-This page has miscellaneous guides related to developing Wails applications for Windows.
+此页面有与开发Windows应用相关的杂项指南。
 
-## Handling the WebView2 Runtime Dependency
+## 处理 WebView2 运行时依赖关系
 
-Wails applications built for Windows have a runtime requirement on the Microsoft [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/). Windows 11 will have this installed by default, but some machines won't. Wails offers an easy approach to dealing with this dependency.
+Windows构建的Wail应用程序在Microsoft [WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) 上有运行时间。 Windows 11默认情况下会安装这个设备，但是有些机器不会安装。 邮寄为处理这种依赖提供了一种简单的方法。
 
-By using the `-webview2` flag when building, you can decide what your application will do when a suitable runtime is not detected (including if the installed runtime is too old). The four options are:
+在构建时使用 `-webview2` 标志， 您可以决定当没有检测到合适的运行时间时您的应用程序将做些什么(包括如果安装的运行时间太老)。 这四个备选方案是：
 
-1. Download
-2. Embed
-3. Browser
-4. Error
+1. 下载
+2. 嵌入
+3. 浏览器
+4. 错误
 
-### Download
+### 下载
 
-This option will prompt the user that no suitable runtime has been found and then offer to download and run the official bootstrapper from Microsoft's WebView2 site. If the user proceeds, the official bootstrapper will be downloaded and run.
+此选项将提示用户没有找到合适的运行时间，然后提议从 Microsoft 的 WebView2 网站下载和运行官方 引导器。 如果用户继续，官方引导程序将被下载并运行。
 
-### Embed
+### 嵌入
 
-This option embeds the official bootstrapper within the application. If no suitable runtime has been found, the application will offer to run the bootstrapper. This adds ~150k to the binary size.
+此选项在应用程序中包含官方引导器。 如果没有找到合适的运行时间， 应用程序将提供运行引导器。 这会将~150k添加到二进制文件大小。
 
-### Browser
+### 浏览器
 
-This option will prompt the user that no suitable runtime has been found and then offer to open a browser to the official WebView2 page where the bootstrapper can be downloaded and installed. The application will then exit, leaving the installation up to the user.
+此选项将提示用户没有找到合适的运行时间，然后提议打开浏览器到官方 WebView2页面，在那里可以下载和安装bootstraper。 然后应用程序将退出，将安装 留给用户。
 
-### Error
+### 错误
 
-If no suitable runtime is found, an error is given to the user and no further action taken.
+如果没有找到合适的运行时间，用户将会出现错误，没有采取进一步的行动。
 
-## Fixed version runtime
+## 固定版本运行时间
 
-Another way of dealing with webview2 dependency is shipping it yourself. You can download [fixed version runtime](https://developer.microsoft.com/ru-ru/microsoft-edge/webview2/#download-section) and bundle or download it with your application.
+处理webview2依赖关系的另一种方式是将它送到自己。 您可以下载 [固定版本运行时](https://developer.microsoft.com/ru-ru/microsoft-edge/webview2/#download-section) 和捆绑或者用您的应用程序下载它。
 
-Also, you should specify path to fixed version of webview2 runtime in the `windows.Options` structure when launching wails.
+另外，您应该在 `窗口中指定固定版本的 webview2 运行时间的路径。启动唤醒时选项` 结构。
 
 ```go
-    wails.Run(&options.App{
-        Windows: &windows.Options{
-            WebviewBrowserPath:  "",
-        },
-    })
+    运行(&options.App@un.org
+        Windows： &winds.Options@un.org
+            WebviewBrowserPath：""，
+        }，
+})
 ```
 
-Note: When `WebviewBrowserPath` is specified, `error` strategy will be forced in case of minimal required version mismatch or invalid path to a runtime.
+注意：当 `WebviewBrowserPath` 被指定时 `错误` 策略将在最小需要的版本不匹配或无效路径到运行时间时强制执行。
