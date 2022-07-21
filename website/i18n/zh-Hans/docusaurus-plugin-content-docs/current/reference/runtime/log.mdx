@@ -1,149 +1,149 @@
 ---
-title: 日志
 sidebar_position: 3
 ---
 
-# 日志
+# Log
 
-## 概述
+## Overview
 
-Wails 运行时提供了一种可以从 Go 或 Javascript 调用的日志记录机制。像大多数记录器一样，有许多日志级别：
+The Wails runtime provides a logging mechanism that may be called from Go or Javascript. Like most loggers, there are a number of log levels:
 
-- Trace
-- Debug
-- Info
-- Warning
-- Error
-- Fatal
+  - Trace
+  - Debug
+  - Info
+  - Warning
+  - Error
+  - Fatal
 
-记录器将输出当前或更高日志级别的任何日志消息。示例：`Debug`日志级别将输出除`Trace`消息之外的所有消息。
+The logger will output any log message at the current, or higher, log level. Example: The `Debug` log level will output all messages except `Trace` messages.
 
-### 打印日志
+### LogPrint
 
-Go 方法签名: `LogPrint(ctx context.Context, message string)`
+Go Signature: `LogPrint(ctx context.Context, message string)`
 
-JS 方法签名: `LogPrint(message: string)`
+JS Signature: `LogPrint(message: string)`
 
-将给定的消息记录为原始消息。
+Logs the given message as a raw message.
 
-### 格式化打印日志
+### LogPrintf
 
-Go 方法签名: `LogPrintf(ctx context.Context, format string, args ...interface{})`
+Go Signature: `LogPrintf(ctx context.Context, format string, args ...interface{})`
 
-将给定的消息记录为原始消息。
+Logs the given message as a raw message.
 
-### Trace 日志
+### LogTrace
 
-Go 方法签名: `LogTrace(ctx context.Context, message string)`
+Go Signature: `LogTrace(ctx context.Context, message string)`
 
-JS 方法签名: `LogTrace(message: string)`
+JS Signature: `LogTrace(message: string)`
 
-在`Trace`日志级别记录给定的消息。
+Logs the given message at the `Trace` log level.
 
-### 格式化 Trace 日志
+### LogTracef
 
-Go 方法签名: `LogTracef(ctx context.Context, format string, args ...interface{})`
+Go Signature: `LogTracef(ctx context.Context, format string, args ...interface{})`
 
-在`Trace`日志级别记录给定的消息。
+Logs the given message at the `Trace` log level.
 
-### Debug 日志
+### LogDebug
 
-Go 方法签名: `LogDebug(ctx context.Context, message string)`
+Go Signature: `LogDebug(ctx context.Context, message string)`
 
-JS 方法签名: `LogDebug(message: string)`
+JS Signature: `LogDebug(message: string)`
 
-在`Debug`日志级别记录给定的消息。
+Logs the given message at the `Debug` log level.
 
-### 格式化 Debug 日志
+### LogDebugf
 
-Go 方法签名: `LogDebugf(ctx context.Context, format string, args ...interface{})`
+Go Signature: `LogDebugf(ctx context.Context, format string, args ...interface{})`
 
-在`Debug`日志级别记录给定的消息。
+Logs the given message at the `Debug` log level.
 
-### Info 日志
+### LogInfo
 
-Go 方法签名: `LogInfo(ctx context.Context, message string)`
+Go Signature: `LogInfo(ctx context.Context, message string)`
 
-JS 方法签名: `LogInfo(message: string)`
+JS Signature: `LogInfo(message: string)`
 
-在`Info`日志级别记录给定的消息。
+Logs the given message at the `Info` log level.
 
-### 格式化 Info 日志
+### LogInfof
 
-Go 方法签名: `LogInfof(ctx context.Context, format string, args ...interface{})`
+Go Signature: `LogInfof(ctx context.Context, format string, args ...interface{})`
 
-在`Info`日志级别记录给定的消息。
+Logs the given message at the `Info` log level.
 
-### Warning 日志
+### LogWarning
 
-Go 方法签名: `LogWarning(ctx context.Context, message string)`
+Go Signature: `LogWarning(ctx context.Context, message string)`
 
-JS 方法签名: `LogWarning(message: string)`
+JS Signature: `LogWarning(message: string)`
 
-在`Warning`日志级别记录给定的消息。
+Logs the given message at the `Warning` log level.
 
-### 格式化 Warning 日志
+### LogWarningf
 
-Go 方法签名: `LogWarningf(ctx context.Context, format string, args ...interface{})`
+Go Signature: `LogWarningf(ctx context.Context, format string, args ...interface{})`
 
-在`Warning`日志级别记录给定的消息。
+Logs the given message at the `Warning` log level.
 
-### Error 日志
+### LogError
 
-Go 方法签名: `LogError(ctx context.Context, message string)`
+Go Signature: `LogError(ctx context.Context, message string)`
 
-JS 方法签名: `LogError(message: string)`
+JS Signature: `LogError(message: string)`
 
-在`Error`日志级别记录给定的消息。
+Logs the given message at the `Error` log level.
 
-### 格式化 Error 日志
+### LogErrorf
 
-Go 方法签名: `LogErrorf(ctx context.Context, format string, args ...interface{})`
+Go Signature: `LogErrorf(ctx context.Context, format string, args ...interface{})`
 
-在`Error`日志级别记录给定的消息。
+Logs the given message at the `Error` log level.
 
-### Fatal 日志
+### LogFatal
 
-Go 方法签名: `LogFatal(ctx context.Context, message string)`
+Go Signature: `LogFatal(ctx context.Context, message string)`
 
-JS 方法签名: `LogFatal(message: string)`
+JS Signature: `LogFatal(message: string)`
 
-在`Fatal`日志级别记录给定的消息。
+Logs the given message at the `Fatal` log level.
 
-### 格式化 Fatal 日志
+### LogFatalf
 
-Go 方法签名: `LogFatalf(ctx context.Context, format string, args ...interface{})`
+Go Signature: `LogFatalf(ctx context.Context, format string, args ...interface{})`
 
-在`Fatal`日志级别记录给定的消息。
+Logs the given message at the `Fatal` log level.
 
-### 设置日志级别
+### LogSetLogLevel
 
-Go 方法签名: `LogSetLogLevel(ctx context.Context, level logger.LogLevel)`
+Go Signature: `LogSetLogLevel(ctx context.Context, level logger.LogLevel)`
 
-JS 方法签名: `LogSetLogLevel(level: number)`
+JS Signature: `LogSetLogLevel(level: number)`
 
-设置日志级别。在 Javascript 中，该数字与以下日志级别有关：
+Sets the log level. In Javascript, the number relates to the following log levels:
 
-| 值  | 日志等级 |
-| --- | -------- |
-| 1   | Trace    |
-| 2   | Debug    |
-| 3   | Info     |
-| 4   | Warning  |
-| 5   | Error    |
+| Value | Log Level |
+| ----- | --------- |
+| 1     | Trace     |
+| 2     | Debug     |
+| 3     | Info      |
+| 4     | Warning   |
+| 5     | Error     |
 
-## 使用自定义日志
+## Using a Custom Logger
 
-可以通过使用应用程序参数选项 [日志](../../reference/options#日志) 提供自定义记录器来使用它。唯一的要求是记录器实现了在`github.com/wailsapp/wails/v2/pkg/logger`里`logger.Logger`定义的接口：
+A custom logger may be used by providing it using the [Logger](../options.mdx#logger) application option. The only requirement is that the logger implements the `logger.Logger` interface defined in `github.com/wailsapp/wails/v2/pkg/logger`:
 
 ```go title="logger.go"
 type Logger interface {
-	Print(message string)
-	Trace(message string)
-	Debug(message string)
-	Info(message string)
-	Warning(message string)
-	Error(message string)
-	Fatal(message string)
+    Print(message string)
+    Trace(message string)
+    Debug(message string)
+    Info(message string)
+    Warning(message string)
+    Error(message string)
+    Fatal(message string)
 }
 ```
+
