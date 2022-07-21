@@ -60,7 +60,7 @@ A list of community maintained templates can be found [here](../community/templa
 |  -ldflags "flags"    | Additional ldflags to pass to the compiler |                         |
 |  -nopackage          | Do not package application              |                            |
 |  -o filename         | Output filename                         |                            |
-|  -s                  | Skip building the frontend              |                            |
+|  -s                  | Skip building the frontend              | false                      |
 |  -f                  | Force build application                 | false                      |
 |  -tags "extra tags"  | Build tags to pass to compiler (quoted and space separated) |        |
 |  -upx                | Compress final binary using "upx"       |                            |
@@ -180,6 +180,7 @@ Your system is ready for Wails development!
 |  -platform "platform"    | Platform/Arch to target | `runtime.GOOS` |
 |  -save                   | Saves the given `assetdir`, `reloaddirs`, `wailsjsdir`, `debounce`, `devserver` and `frontenddevserverurl` flags in `wails.json` to become the defaults for subsequent invocations. | |
 |  -race               | Build with Go's race detector           | false                      |
+|  -s                  | Skip building the frontend              | false                      |
 
 Example:
 
