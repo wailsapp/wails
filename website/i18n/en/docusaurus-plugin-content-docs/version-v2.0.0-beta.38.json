@@ -1,7 +1,7 @@
 {
   "version.label": {
-    "message": "Next Version 🚧",
-    "description": "The label for version current"
+    "message": "v2.0.0-beta.38",
+    "description": "The label for version v2.0.0-beta.38"
   },
   "sidebar.tutorialSidebar.category.Getting Started": {
     "message": "Getting Started",
@@ -26,13 +26,5 @@
   "sidebar.tutorialSidebar.category.Guides": {
     "message": "Guides",
     "description": "The label for category Guides in sidebar tutorialSidebar"
-  },
-  "sidebar.tutorialSidebar.category.Tutorials": {
-    "message": "Tutorials",
-    "description": "The label for category Tutorials in sidebar tutorialSidebar"
-  },
-  "sidebar.tutorialSidebar.category.Contributing": {
-    "message": "Contributing",
-    "description": "The label for category Contributing in sidebar tutorialSidebar"
   }
 }
