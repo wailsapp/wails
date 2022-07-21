@@ -1,50 +1,49 @@
 ---
-title: 事件
 sidebar_position: 2
 ---
 
-# 事件
+# Events
 
-## 概述
+## Overview
 
-Wails 运行时提供了一个统一的事件系统，其中事件可以由 Go 或 Javascript 发出或接收。可选地，数据可以与事件一起传递。侦听器将接收本地数据类型中的数据。
+The Wails runtime provides a unified events system, where events can be emitted or received by either Go or Javascript. Optionally, data may be passed with the events. Listeners will receive the data in the local data types.
 
-### 添加事件侦听器
+### EventsOn
 
-Go 方法签名: `EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`
+Go Signature: `EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`
 
-JS 方法签名: `EventsOn(eventName string, callback function(optionalData?: any))`
+JS Signature: `EventsOn(eventName string, callback function(optionalData?: any))`
 
-此方法为给定的事件名称设置一个侦听器。当一个`eventName`类型的事件被[触发指定事件](#触发指定事件)时，回调被触发。与触发事件一起发送的任何其他数据都将传递给回调。
+This method sets up a listener for the given event name. When an event of type `eventName` is [emitted](#EventsEmit), the callback is triggered. Any additional data sent with the emitted event will be passed to the callback.
 
-### 移除事件侦听器
+### EventsOff
 
-Go 方法签名: `EventsOff(ctx context.Context, eventName string)`
+Go Signature: `EventsOff(ctx context.Context, eventName string)`
 
-JS 方法签名: `EventsOff(eventName string)`
+JS Signature: `EventsOff(eventName string)`
 
-此方法取消注册给定事件名称的侦听器。
+This method unregisters the listener for the given event name.
 
-### 添加只触发一次的事件侦听器
+### EventsOnce
 
-Go 方法签名: `EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`
+Go Signature: `EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`
 
-JS 方法签名: `EventsOnce(eventName string, callback function(optionalData?: any))`
+JS Signature: `EventsOnce(eventName string, callback function(optionalData?: any))`
 
-此方法为给定的事件名称设置一个侦听器，但只会触发一次。
+This method sets up a listener for the given event name, but will only trigger once.
 
-### 添加指定对多触发次数的事件侦听器
+### EventsOnMultiple
 
-Go 方法签名: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int)`
+Go Signature: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int)`
 
-JS 方法签名: `EventsOnMultiple(eventName string, callback function(optionalData?: any), counter int)`
+JS Signature: `EventsOnMultiple(eventName string, callback function(optionalData?: any), counter int)`
 
-此方法为给定的事件名称设置一个侦听器，但最多只能触发`counter`次。
+This method sets up a listener for the given event name, but will only trigger a maximum of `counter` times.
 
-### 触发指定事件
+### EventsEmit
 
-Go 方法签名: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`
+Go Signature: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`
 
-JS 方法签名: `EventsEmit(ctx context, optionalData function(optionalData?: any))`
+JS Signature: `EventsEmit(ctx context, optionalData function(optionalData?: any))`
 
-此方法触发指定的事件。可选数据可以与事件一起传递。这将触发任何事件侦听器。
+This method emits the given event. Optional data may be passed with the event. This will trigger any event listeners.
