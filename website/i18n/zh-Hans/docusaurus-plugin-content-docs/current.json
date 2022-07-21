@@ -1,10 +1,10 @@
 {
   "version.label": {
-    "message": "下一版本 🚧",
+    "message": "下个版本 🚧",
     "description": "The label for version current"
   },
   "sidebar.tutorialSidebar.category.Getting Started": {
-    "message": "正在开始",
+    "message": "快速入门",
     "description": "The label for category Getting Started in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Reference": {
@@ -12,7 +12,7 @@
     "description": "The label for category Reference in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Runtime": {
-    "message": "运行时间",
+    "message": "运行时",
     "description": "The label for category Runtime in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Community": {
@@ -20,7 +20,7 @@
     "description": "The label for category Community in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Showcase": {
-    "message": "展区",
+    "message": "项目展示",
     "description": "The label for category Showcase in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Guides": {
@@ -32,7 +32,7 @@
     "description": "The label for category Tutorials in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Contributing": {
-    "message": "贡献中",
+    "message": "参与贡献",
     "description": "The label for category Contributing in sidebar tutorialSidebar"
   }
 }
