@@ -49,13 +49,19 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	compressFlags := ""
 	command.StringFlag("upxflags", "Flags to pass to upx", &compressFlags)
 
-	// Setup Platform flag
-	platform := runtime.GOOS + "/"
-	if system.IsAppleSilicon {
-		platform += "arm64"
-	} else {
-		platform += runtime.GOARCH
+	defaultPlatform := os.Getenv("GOOS")
+	if defaultPlatform == "" {
+		defaultPlatform = runtime.GOOS
 	}
+	defaultArch := os.Getenv("GOARCH")
+	if defaultArch == "" {
+		if system.IsAppleSilicon {
+			defaultArch = "arm64"
+		} else {
+			defaultArch += runtime.GOARCH
+		}
+	}
+	platform := defaultPlatform + "/" + defaultArch
 
 	command.StringFlag("platform", "Platform to target. Comma separate multiple platforms", &platform)
 
@@ -104,6 +110,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	windowsConsole := false
 	command.BoolFlag("windowsconsole", "Keep the console when building for Windows", &windowsConsole)
+
+	dryRun := false
+	command.BoolFlag("dryrun", "Dry run, prints the config for the command that would be executed", &dryRun).Hidden()
 
 	command.Action(func() error {
 
@@ -162,24 +171,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			mode = build.Debug
 			modeString = "Debug"
 		}
-		splitPlatform := strings.Split(platform, "/")
-		targetPlatform := os.Getenv("GOOS")
-		targetArch := os.Getenv("GOARCH")
-		if targetPlatform == "" {
-			targetPlatform = splitPlatform[0]
-		}
-		if targetArch == "" {
-			targetArch = runtime.GOARCH
-			if len(splitPlatform) > 1 {
-				targetArch = splitPlatform[1]
-			} else {
-				if system.IsAppleSilicon {
-					targetArch = "arm64"
-				}
-			}
-		}
 
-		platform := targetPlatform + "/" + targetArch
 		var targets slicer.StringSlicer
 		targets.AddSlice(strings.Split(platform, ","))
 		targets.Deduplicate()
@@ -334,27 +326,35 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 				buildOptions.OutputFile = outputFilename
 			}
 
-			// Start Time
-			start := time.Now()
+			if !dryRun {
 
-			outputFilename, err := build.Build(buildOptions)
-			if err != nil {
-				logger.Println("Error: %s", err.Error())
-				targetErr = err
-				return
+				// Start Time
+				start := time.Now()
+
+				outputFilename, err := build.Build(buildOptions)
+				if err != nil {
+					logger.Println("Error: %s", err.Error())
+					targetErr = err
+					return
+				}
+
+				buildOptions.IgnoreFrontend = true
+				buildOptions.CleanBuildDirectory = false
+
+				// Output stats
+				buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", outputFilename, time.Since(start).Round(time.Millisecond).String()))
+			} else {
+				logger.Println("Dry run: skipped build.")
 			}
-
-			buildOptions.IgnoreFrontend = true
-			buildOptions.CleanBuildDirectory = false
-
-			// Output stats
-			buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", outputFilename, time.Since(start).Round(time.Millisecond).String()))
-
 			outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = outputFilename
 		})
 
 		if targetErr != nil {
 			return targetErr
+		}
+
+		if dryRun {
+			return nil
 		}
 
 		if nsis {
