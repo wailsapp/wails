@@ -2,148 +2,148 @@
 sidebar_position: 3
 ---
 
-# Log
+# 日志
 
-## Overview
+## 概览
 
-The Wails runtime provides a logging mechanism that may be called from Go or Javascript. Like most loggers, there are a number of log levels:
+Wails 运行时提供了一个可以从 Go 或 Javascript 调用的日志机制。 像大多数 日志记录器一样，有一些日志级别：
 
-  - Trace
+  - 轨迹
   - Debug
-  - Info
-  - Warning
-  - Error
+  - 信息
+  - 警告
+  - 错误
   - Fatal
 
-The logger will output any log message at the current, or higher, log level. Example: The `Debug` log level will output all messages except `Trace` messages.
+日志记录器将在当前或更高的日志级别输出任何日志消息。 例如： `调试` 日志 级别将输出除 `追踪` 消息以外的所有消息。
 
-### LogPrint
+### 日志打印
 
-Go Signature: `LogPrint(ctx context.Context, message string)`
+去签署: `LogPrint(ctx context.Context, message string)`
 
-JS Signature: `LogPrint(message: string)`
+JS 签署： `LogPrint(消息：字符串)`
 
-Logs the given message as a raw message.
+将给定的消息记录为原始消息。
 
 ### LogPrintf
 
-Go Signature: `LogPrintf(ctx context.Context, format string, args ...interface{})`
+去签署: `LogPrintf(ctx context. Context, format string, args ...interface{})`
 
-Logs the given message as a raw message.
+将给定的消息记录为原始消息。
 
 ### LogTrace
 
-Go Signature: `LogTrace(ctx context.Context, message string)`
+去签署: `LogTrace(ctx context.Context, message string)`
 
-JS Signature: `LogTrace(message: string)`
+JS 签署： `LogTrace(消息：字符串)`
 
-Logs the given message at the `Trace` log level.
+在 `跟踪` 日志级别记录给定的消息。
 
 ### LogTracef
 
-Go Signature: `LogTracef(ctx context.Context, format string, args ...interface{})`
+去签署: `LogTracef(ctx context. Context, format string, args ...interface{})`
 
-Logs the given message at the `Trace` log level.
+在 `跟踪` 日志级别记录给定的消息。
 
 ### LogDebug
 
-Go Signature: `LogDebug(ctx context.Context, message string)`
+去签署: `LogDebug(ctx context.Context, message 字符串)`
 
-JS Signature: `LogDebug(message: string)`
+JS 签署： `LogDebug(消息：字符串)`
 
-Logs the given message at the `Debug` log level.
+在 `调试` 日志级别记录给定的消息。
 
 ### LogDebugf
 
-Go Signature: `LogDebugf(ctx context.Context, format string, args ...interface{})`
+去签署: `LogDebugf(ctx context. Context, format string, args ...interface{})`
 
-Logs the given message at the `Debug` log level.
+在 `调试` 日志级别记录给定的消息。
 
 ### LogInfo
 
-Go Signature: `LogInfo(ctx context.Context, message string)`
+去签署: `LogInfo(ctx context.Context, message 字符串)`
 
-JS Signature: `LogInfo(message: string)`
+JS 签署： `LogInfo(消息：字符串)`
 
-Logs the given message at the `Info` log level.
+在 `信息` 日志级别记录给定的消息。
 
 ### LogInfof
 
-Go Signature: `LogInfof(ctx context.Context, format string, args ...interface{})`
+去签署: `LogInfof(ctx context. Context, format string, args ...interface{})`
 
-Logs the given message at the `Info` log level.
+在 `信息` 日志级别记录给定的消息。
 
-### LogWarning
+### 日志警告
 
-Go Signature: `LogWarning(ctx context.Context, message string)`
+去签署: `LogWarning(ctx context.Context, message string)`
 
-JS Signature: `LogWarning(message: string)`
+JS 签署： `Log警告(消息：字符串)`
 
-Logs the given message at the `Warning` log level.
+在 `警告` 日志级别记录给定的消息。
 
-### LogWarningf
+### 日志警告
 
-Go Signature: `LogWarningf(ctx context.Context, format string, args ...interface{})`
+去签署: `LogWarningf(ctx context. Context, format string, args ...interface{})`
 
-Logs the given message at the `Warning` log level.
+在 `警告` 日志级别记录给定的消息。
 
 ### LogError
 
-Go Signature: `LogError(ctx context.Context, message string)`
+去签署: `LogError(ctx context.Context, message string)`
 
-JS Signature: `LogError(message: string)`
+JS 签署： `LogError(消息：字符串)`
 
-Logs the given message at the `Error` log level.
+日志记录给定的消息到 `错误` 日志。
 
 ### LogErrorf
 
-Go Signature: `LogErrorf(ctx context.Context, format string, args ...interface{})`
+去签署: `LogErrorf(ctx context. Context, format string, args ...interface{})`
 
-Logs the given message at the `Error` log level.
+日志记录给定的消息到 `错误` 日志。
 
-### LogFatal
+### 致命的
 
-Go Signature: `LogFatal(ctx context.Context, message string)`
+去签署: `LogFatal(ctx context.Context, message 字符串)`
 
-JS Signature: `LogFatal(message: string)`
+JS 签署： `LogFatal(消息：字符串)`
 
-Logs the given message at the `Fatal` log level.
+将给定消息记录到 `致命` 日志。
 
 ### LogFatalf
 
-Go Signature: `LogFatalf(ctx context.Context, format string, args ...interface{})`
+去签署: `LogFatalf(ctx context. Context, format string, args ...interface{})`
 
-Logs the given message at the `Fatal` log level.
+将给定消息记录到 `致命` 日志。
 
-### LogSetLogLevel
+### 日志设置日志日志级别
 
-Go Signature: `LogSetLogLevel(ctx context.Context, level logger.LogLevel)`
+去签署: `LogSetLevel(ctx context.Context, level logger.LogLevel)`
 
-JS Signature: `LogSetLogLevel(level: number)`
+JS 签署： `LogSetLevel(级别：数字)`
 
-Sets the log level. In Javascript, the number relates to the following log levels:
+设置日志级别。 在 Javascript 中，数字与以下日志级别有关：
 
-| Value | Log Level |
-| ----- | --------- |
-| 1     | Trace     |
-| 2     | Debug     |
-| 3     | Info      |
-| 4     | Warning   |
-| 5     | Error     |
+| 值 | 日志级别  |
+| - | ----- |
+| 1 | 轨迹    |
+| 2 | Debug |
+| 3 | 信息    |
+| 4 | 警告    |
+| 5 | 错误    |
 
-## Using a Custom Logger
+## 使用自定义日志记录
 
-A custom logger may be used by providing it using the [Logger](../options.mdx#logger) application option. The only requirement is that the logger implements the `logger.Logger` interface defined in `github.com/wailsapp/wails/v2/pkg/logger`:
+通过使用 [日志](../options.mdx#logger) 应用程序选项提供一个自定义日志。 唯一的要求是记录器实现 `logger.Logger` 接口 定义在 `github.com/wailsapp/wails/v2/pkg/logger`
 
 ```go title="logger.go"
-type Logger interface {
-    Print(message string)
-    Trace(message string)
-    Debug(message string)
-    Info(message string)
-    Warning(message string)
-    Error(message string)
-    Fatal(message string)
+输入Logger 接口 然后
+    Print(消息字符串)
+    Trace(消息字符串)
+    Debug(消息字符串)
+    Info(消息字符串)
+    警告 (消息字符串)
+    错误(消息字符串)
+    Fatal(消息字符串)
 }
 ```
 
