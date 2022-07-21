@@ -26,5 +26,13 @@
   "sidebar.tutorialSidebar.category.Guides": {
     "message": "指南",
     "description": "The label for category Guides in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Tutorials": {
+    "message": "教程",
+    "description": "The label for category Tutorials in sidebar tutorialSidebar"
+  },
+  "sidebar.tutorialSidebar.category.Contributing": {
+    "message": "参与贡献",
+    "description": "The label for category Contributing in sidebar tutorialSidebar"
   }
 }
