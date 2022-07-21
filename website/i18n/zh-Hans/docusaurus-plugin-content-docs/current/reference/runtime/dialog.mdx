@@ -4,188 +4,184 @@ sidebar_position: 5
 
 # 对话框
 
-## 概览
+## 概述
 
-这部分运行时间提供了对本地对话框的访问权，例如文件选择器和消息框。
+运行时的这一部分提供对原生对话框的调用，例如文件选择器和消息框。
 
 :::info Javascript
-  对话框目前在 JS 运行时不被支持。
+JS 运行时当前不支持对话框。
 :::
 
-### OpenDirectory对话框
+### 打开选择目录对话框
 
-打开一个提醒用户选择目录的对话框。 可以使用 [OpenDialogoptions](#opendialogoptions) 自定义.
+打开一个对话框，提示用户选择目录。 可以使用 [打开选择文件对话框参数选项](#打开选择文件对话框参数选项)进行自定义。
 
-去签署: `OpenDirectoryDialog(ctx context. Context, dialogoptions OpenDialogoptions) (string, error)`
+Go 方法签名: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
 
-返回：选中的目录(如果用户取消，则为空)或错误
-
-
-### OpenFile对话框
-
-打开一个提醒用户选择文件的对话框。 可以使用 [OpenDialogoptions](#opendialogoptions) 自定义.
-
-去签署: `OpenFileDialog(ctx context. Context, dialogoptions OpenDialogoptions) (string, error)`
-
-返回：选中的文件(如果用户取消则为空)或错误
+返回值: 所选目录（如果用户取消则为空白）或错误
 
 
+### 打开选择文件对话框
 
-### OpenMultipleFiles对话框
+打开一个对话框，提示用户选择文件。 可以使用[打开选择文件对话框参数选项](#打开选择文件对话框参数选项)进行自定义。
 
-打开一个提醒用户选择多个文件的对话框。 可以使用 [OpenDialogoptions](#opendialogoptions) 自定义.
+Go 方法签名: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
 
-去签署: `OpenMultipleFilesDialogalog(ctx context. Context, dialogoptions OpenDialogoptions) ([]string, error)`
+返回值: 所选文件（如果用户取消则为空白）或错误
 
-返回：选定的文件(如果用户取消，则为零)或错误
+
+
+### 打开选择多个文件对话框
+
+打开一个对话框，提示用户选择多个文件。 可以使用[打开选择文件对话框参数选项](#打开选择文件对话框参数选项)进行自定义。
+
+Go 方法签名: `OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error)`
+
+返回值: 选定的文件（如果用户取消则为零）或错误
 
 
 
 ### 保存文件对话框
 
-打开一个对话框，提醒用户为保存目的选择一个文件名。 可以使用 [保存对话选项](#savedialogoptions) 自定义.
+打开一个对话框，提示用户选择文件名以进行保存。 可以使用[保存文件对话框参数选项](#保存文件对话框参数选项)自定义。
 
-去签署: `保存文件对话框(ctx context. Context, dialogoptions SaveDialogoptions) (字符串, 错误)`
+Go 方法签名: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error)`
 
-返回：选中的文件(如果用户取消则为空)或错误
+返回值: 所选文件（如果用户取消则为空白）或错误
 
 
 
 ### 消息对话框
 
-使用消息对话框显示消息。 可以使用 [MessageDialogoptions](#messagedialogoptions) 自定义.
+使用消息对话框显示消息。 可以使用[消息对话框参数选项](#消息对话框参数选项)进行自定义。
 
-去签署: `MessageDialog(ctx context. Context, dialogoptions MessageDialogoptions) (string, error)`
+Go 方法签名: `MessageDialog(ctx context.Context, dialogOptions MessageDialogOptions) (string, error)`
 
-返回：所选按钮的文本或一个错误
+返回值: 所选按钮的文本或错误
 
-## 备选方案
+## 参数选项
 
-### 打开对话框选项
+### 打开选择文件对话框参数选项
 
 ```go
-输入 OpenDialogOptions 结构如下:
-    默认目录字符串
-    默认文件字符串
-    标题字符串
-    过滤器[]文件过滤器
-    ShowHiddenFiles bool
-    CanCreateDirectories bool
-    ResolvesAliases bool
-    TreatyPackagesAsDirectories bool
+type OpenDialogOptions struct {
+    DefaultDirectory           string
+    DefaultFilename            string
+    Title                      string
+    Filters                    []FileFilter
+    ShowHiddenFiles            bool
+    CanCreateDirectories       bool
+    ResolvesAliases            bool
+    TreatPackagesAsDirectories bool
 }
 ```
-| 字段                            | 描述                 | 胜利 | 马奇文 | Lin |
-| ----------------------------- | ------------------ | -- | --- | --- |
-| 默认目录                          | 打开时对话框将显示的目录       | ✅  | ✅   | ✅   |
-| 默认文件名                         | 默认文件名              | ✅  | ✅   | ✅   |
-| 标题                            | 对话框标题              | ✅  | ✅   | ✅   |
-| [筛选器](#filefilter)            | 文件过滤器列表            | ✅  | ✅   | ✅   |
-| 显示隐藏文件                        | 显示系统隐藏的文件          |    | ✅   | ✅   |
-| CanCreateDirectories          | 允许用户创建目录           |    | ✅   |     |
-| 解析别名                          | 如果为 true，返回的文件不是别名 |    | ✅   |     |
-| Treaty PackagesAssDirectories | 允许导航到软件包           |    | ✅   |     |
+| 字段                         | 描述                  | Win | Mac | Lin |
+| -------------------------- | ------------------- | --- | --- | --- |
+| DefaultDirectory           | 对话框打开时显示的目录         | ✅   | ✅   | ✅   |
+| DefaultFilename            | 默认文件名               | ✅   | ✅   | ✅   |
+| Title                      | 对话框的标题              | ✅   | ✅   | ✅   |
+| [Filters](#filefilter)     | 文件过滤器列表             | ✅   | ✅   | ✅   |
+| ShowHiddenFiles            | 显示系统隐藏的文件           |     | ✅   | ✅   |
+| CanCreateDirectories       | 允许用户创建目录            |     | ✅   |     |
+| ResolvesAliases            | 如果为 true，则返回文件而不是别名 |     | ✅   |     |
+| TreatPackagesAsDirectories | 允许导航到包              |     | ✅   |     |
 
 
-### 保存对话框选项
+### 保存文件对话框参数选项
 
 ```go
-输入 SaveDialogOptions struct PDF *
-    DefaultDirectDirectDirectory 字符串
-    DefaultFilename string
-    Title string
-    filters []FileFillel
-    ShowHiddenFiles bool
-    CanCreateDirectories bool
+type SaveDialogOptions struct {
+    DefaultDirectory           string
+    DefaultFilename            string
+    Title                      string
+    Filters                    []FileFilter
+    ShowHiddenFiles            bool
+    CanCreateDirectories       bool
     TreatPackagesAsDirectories bool
 }
 ```
 
-| 字段                            | 描述           | 胜利 | 马奇文 | Lin |
-| ----------------------------- | ------------ | -- | --- | --- |
-| 默认目录                          | 打开时对话框将显示的目录 | ✅  | ✅   | ✅   |
-| 默认文件名                         | 默认文件名        | ✅  | ✅   | ✅   |
-| 标题                            | 对话框标题        | ✅  | ✅   | ✅   |
-| [筛选器](#filefilter)            | 文件过滤器列表      | ✅  | ✅   | ✅   |
-| 显示隐藏文件                        | 显示系统隐藏的文件    |    | ✅   | ✅   |
-| CanCreateDirectories          | 允许用户创建目录     |    | ✅   |     |
-| Treaty PackagesAssDirectories | 允许导航到软件包     |    | ✅   |     |
+| 字段                         | 描述          | Win | Mac | Lin |
+| -------------------------- | ----------- | --- | --- | --- |
+| DefaultDirectory           | 对话框打开时显示的目录 | ✅   | ✅   | ✅   |
+| DefaultFilename            | 默认文件名       | ✅   | ✅   | ✅   |
+| Title                      | 对话框的标题      | ✅   | ✅   | ✅   |
+| [Filters](#filefilter)     | 文件过滤器列表     | ✅   | ✅   | ✅   |
+| ShowHiddenFiles            | 显示系统隐藏的文件   |     | ✅   | ✅   |
+| CanCreateDirectories       | 允许用户创建目录    |     | ✅   |     |
+| TreatPackagesAsDirectories | 允许导航到包      |     | ✅   |     |
 
-### 消息对话框选项
+### 消息对话框参数选项
 
 ```go
-输入 MessageDialogOptions struct 然后置于
-    输入对话类型
-    标题字符串
-    消息字符串
-    按钮[]字符串
-    默认按钮字符串
-    取消按钮字符串
+type MessageDialogOptions struct {
+    Type          DialogType
+    Title         string
+    Message       string
+    Buttons       []string
+    DefaultButton string
+    CancelButton  string
 }
 ```
-| 字段            | 描述                     | 胜利 | 马奇文 | Lin |
-| ------------- | ---------------------- | -- | --- | --- |
-| 类型            | 消息对话框的类型，比如问题，信息...    | ✅  | ✅   | ✅   |
-| 标题            | 对话框标题                  | ✅  | ✅   | ✅   |
-| 留言            | 要显示用户的消息               | ✅  | ✅   | ✅   |
-| 按钮            | 按钮标题列表                 |    | ✅   |     |
-| DefaultButton | 此文本的按钮应被视为默认。 绑定到 `返回` |    | ✅   |     |
-| 取消按钮          | 此文本的按钮应被视为取消。 绑定到 `逃逸` |    | ✅   |     |
+| 字段            | 描述                                  | Win | Mac | Lin |
+| ------------- | ----------------------------------- | --- | --- | --- |
+| Type          | 消息对话框的类型，例如问题、信息...                 | ✅   | ✅   | ✅   |
+| Title         | 对话框的标题                              | ✅   | ✅   | ✅   |
+| Message       | 向用户显示的消息                            | ✅   | ✅   | ✅   |
+| Buttons       | 按钮标题列表                              |     | ✅   |     |
+| DefaultButton | 带有此文本的按钮应被视为默认按钮。 Bound to `return` |     | ✅   |     |
+| CancelButton  | 带有此文本的按钮应被视为取消。 Bound to `escape`   |     | ✅   |     |
 
-#### 窗口
+#### Windows
 
-Windows有标准对话框类型，在这些对话框中按钮不可自定义. 返回的值将是 "好", "取消", "中止", "重试", "忽略", "是", "否", "再试一次" 或"继续"
+Windows 具有标准对话框类型，其中的按钮不可自定义。 返回的值将是以下之一："Ok"、"Cancel"、"Abort"、"Retry"、"Ignore"、"Yes"、"No"、"Try Again"或"Continue"
 
 #### Linux
 
-Linux有无法自定义按钮的标准对话框类型。 返回的值将是“好”、“取消”、“是”、“否”
+Linux 有标准的对话框类型，其中的按钮是不可定制的。 返回的值将是以下之一：“Ok”、“Cancel”、“Yes”、“No”
 
-#### 马奇文
+#### Mac
 
-Mac 上的消息对话框可以指定最多4个按钮。 如果没有 `默认按钮` 或 `取消按钮` 第一个按钮 被视为默认并绑定到 `返回` 密钥。
+Mac 上的消息对话框最多可以指定 4 个按钮。 如果没有`DefaultButton`或`CancelButton`给出，第一个按钮被认为是默认的并绑定到`return`键。
 
-以下代码：
+对于以下代码：
 ```go
-selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogtions.pdf.
-    Title: "It your cour!",
-    Message: "选择一个数字",
-    Buttons: []string{"one", "two", "the", "four"},
+selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
+    Title:        "It's your turn!",
+    Message:      "Select a number",
+    Buttons:      []string{"one", "two", "three", "four"},
 })
 ```
-第一个按钮显示为默认值：
-<div class="text--center">
-    <img src="/img/runtime/dialog_no_defaults.png" width="30%" style={{"box-shadow": "rgb(255 255 >
-</div>
-
+第一个按钮显示为默认值：div class="text--center"> <img src="/img/runtime/dialog_no_defaults.png" width="30%" style={{"box-shadow": "rgb(255 255 > </div>
 <br/>
 
-如果我们指定 `默认按钮` 为“双重”：
+如果我们指定`DefaultButton`为“two”：
 ```go
-选项，err := runtime.MessageDialog(b.ctx)，运行时间。 文章对话选项
-    标题：“这是你回来的！ ,
-    消息：“选择一个数字”，
-    按钮：[]string{"one", "2", "the", "four"},
-    DefaultButton: "tw",
+selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
+    Title:         "It's your turn!",
+    Message:       "Select a number",
+    Buttons:       []string{"one", "two", "three", "four"},
+    DefaultButton: "two",
 })
 ```
-第二个按钮显示为默认。 当 `返回` 按下时，返回值“2”。
+第二个按钮显示为默认值。 当 `return` 被按下时，则返回数值“two”。
 <div class="text--center">
     <img src="/img/runtime/dialog_default_button.png" width="30%" style={{"box-shadow": "rgb(255 255 >
 </div>
 
 <br/>
 
-如果我们现在指定 `取消按钮` 为“三”：
+如果我们现在指定`CancelButton`为“three”：
 ```go
-选项，err := runtime.MessageDialog(b.ctx)，运行时间。 文章对话选项
-    标题：“这是你回来的！ ,
-    消息：“选择一个数字”，
-    按钮: []string{"one", "two", "the", "four"},
-    DefaultButton: "tw",
-    CancelButton: "the",
+selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
+    Title:         "It's your turn!",
+    Message:       "Select a number",
+    Buttons:       []string{"one", "two", "three", "four"},
+    DefaultButton: "two",
+    CancelButton:  "three",
 })
 ```
-带有"三"的按钮显示在对话框底部。 当 `逃逸` 被按下时，返回"3"的值：
+带有“three”的按钮显示在对话框的底部。 当`escape`被按下时，则返回值“three”：
 <div class="text--center">
     <img src="/img/runtime/dialog_default_cancel.png" width="30%" style={{"box-shadow": "rgb(255 255 >
 </div>
@@ -195,29 +191,29 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogtions.pdf.
 <br/>
 
 
-#### DialogType
+#### 对话框类型
 
 ```go
 const (
-        InfoDialog 对话类型 = "info"
-        警告对话类型 = "警告"
-        错误对话类型 = "错误"
-        问卷对话类型 = "问题"
-)
+        InfoDialog     DialogType = "info"
+        WarningDialog  DialogType = "warning"
+        ErrorDialog    DialogType = "error"
+        QuestionDialog DialogType = "question"
+     )
 ```
 
-### 文件过滤器
+### 文件过滤
 
 ```go
-输入 FileFile/FilleFille struct v.
-    Displayname 字符串 // 过滤信息 EG: "图像文件 (*.jpg, *). ng)"
-    模式字符串 // 半colon 分隔扩展列表, EG: "*.jpg;*.png"
+type FileFilter struct {
+    DisplayName string // Filter information EG: "Image Files (*.jpg, *.png)"
+    Pattern     string // semi-colon separated list of extensions, EG: "*.jpg;*.png"
 }
 ```
 
-#### 窗口
+#### Windows
 
-Windows 允许您在对话框中使用多个文件过滤器。 每个文件过滤器将在 对话框中作为单独条目显示：
+Windows 允许您在对话框中使用多个文件过滤器。 每个 FileFilter 将在对话框中显示为一个单独的条目：
 
 <div class="text--center">
     <img src="/img/runtime/dialog_win_filters.png" width="50%" style={{"box-shadow": "rgb(255 255 >
@@ -229,7 +225,7 @@ Windows 允许您在对话框中使用多个文件过滤器。 每个文件过�
 
 #### Linux
 
-Linux允许您在对话框中使用多个文件过滤器。 每个文件过滤器将在 对话框中作为单独条目显示：
+Linux 允许您在对话框中使用多个文件过滤器。 每个 文件过滤器 将在对话框中显示为单独的条目：
 
 <div class="text--center">
   <img src="/img/runtime/dialog_lin_filters.png" width="50%" style={{"box-shadow": "rgb(255 255 >
@@ -240,23 +236,23 @@ Linux允许您在对话框中使用多个文件过滤器。 每个文件过滤�
 <br/>
 
 
-#### 马奇文
+#### Mac
 
-Mac 对话框仅有筛选文件的一组模式的概念。 如果提供了多个文件过滤器， Wail将使用定义的所有模式。
+Mac 对话框只有一组模式来过滤文件的概念。 如果提供了多个 FileFilters，Wails 将使用所有定义的模式。
 
 示例：
 ```go
-    选项，err := runtime.OpenFileDialog(b.ctx)，运行时间。 penDialogOptions
-        标题：“选择文件”，
-        过滤器：[]运行时间。 ileFilter@un.org
-
-                Displayname: "Images (*. ng;*。 pg)",
-                模式: "*.png;*. pg",
-            }, 主席:
-                DisplayName: "Videos (*). ov;*.mp4)",
-                模式: "*.mov;*. p4",
+    selection, err := runtime.OpenFileDialog(b.ctx, runtime.OpenDialogOptions{
+        Title: "Select File",
+        Filters: []runtime.FileFilter{
+            {
+                DisplayName: "Images (*.png;*.jpg)",
+                Pattern:     "*.png;*.jpg",
+            }, {
+                DisplayName: "Videos (*.mov;*.mp4)",
+                Pattern:     "*.mov;*.mp4",
             },
         },
-})
+    })
 ```
-这将导致打开文件对话框使用 `*.png,*.jpg,*.mov,*mp4` 作为过滤器。
+这将导致使用`*.png,*.jpg,*.mov,*.mp4`作为过滤器打开文件对话框。
