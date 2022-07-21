@@ -4,92 +4,89 @@ sidebar_position: 10
 
 # Hello World
 
-The aim of this tutorial is to get you up and running with the most basic application using Wails. You will be able to:
+本教程的目的是让你使用最基本的 软件来运行和使用Wail。 您将能够：
 
-  - Create a new Wails application
-  - Build the application
-  - Run the application
+  - 创建一个新的Wail应用程序
+  - 构建应用程序
+  - 运行应用程序
 
-:::note
-This tutorial uses Windows as the target platform. Output will vary slightly
-depending on your operating system.
-:::
+::note 此教程使用 Windows 作为目标平台。 输出将根据您的操作系统略微变化 。 :::
 
-## Create a new Wails application
+## 创建一个新的Wail应用程序
 
-To create a new Wails application using the default vanilla JS template, you need to run the following command:
+要使用默认的原版JS模板创建一个新的Wail应用程序， 您需要运行以下命令：
 
 ```bash
-wails init -n helloworld
+行内-n Helloworld
 ```
 
-You should see something similar to the following:
+您应该看到类似于以下内容的东西：
 
 ```
-Wails CLI v2.0.0
+Wails CLI v2.0
 
-Initialising Project 'helloworld'
----------------------------------
+初始化项目 'helloworld'
+--------------------------------------------------------
 
-Project Name:      helloworld
-Project Directory: C:\Users\leaan\tutorial\helloworld
-Project Template:  vanilla
-Template Support:  https://wails.io
+项目名称: helloworld
+项目目录: C:\Users\leaan\tutorial\helloworld
+项目模板: vanilla
+模板支持: https://wails. o
 
-Initialised project 'helloworld' in 232ms.
+在232ms中初始化项目“helloworld”。
 ```
 
-This will create a new directory called `helloworld` in the current directory. In this directory, you will find a number of files:
+这将在当前目录中创建一个名为 `helloworld` 的新目录。 在这个目录中，您会找到一些文件：
 
 ```
-build/       - Contains the build files + compiled application
-frontend/    - Contains the frontend files
-app.go       - Contains the application code
-main.go      - The main program with the application configuration
-wails.json   - The project configuration file
-go.mod       - The go module file
-go.sum       - The go module checksum file
+build/ - 包含构建文件 + 编译的应用程序
+前端/ - 包含前端文件
+应用。 o -包含应用程序代码
+Main。 o - 具有应用程序配置的主要程序
+wails.json - 项目配置文件
+过了。 od - 模块文件
+过了。 um - 模块校验和文件
 ```
 
-## Build the application
+## 构建应用程序
 
-To build the application, change to the new `helloworld` project directory and run the following command:
+要构建应用程序，请更改为新的 `helloword` 项目目录并运行以下命令：
 
 ```bash
-wails build
+构建Wails
 ```
 
-You should see something like the following:
+你应该看到如下东西：
 
 ```
-Wails CLI v2.0.0
+Wails CLI v2.0
 
-App Type:               desktop
-Platforms:              windows/amd64
-Compiler:               C:\Users\leaan\go\go1.18.3\bin\go.exe
-Build Mode:             Production
-Skip Frontend:          false
-Compress:               false
-Package:                true
-Clean Build Dir:        false
-LDFlags:                ""
-Tags:                   []
-Race Detector:          false
+应用类型：桌面
+平台：windows/amd64
+编译器：C:\Users\leaan\go\go1。 8.3\bin\go。 xe
+构建模式：生产
+跳过前端： false
+压缩： false
+Package： true
+Clean Building Dir： false
+LDFlags： ""
+标签： […]
+种族检测器： false
 
-Building target: windows/amd64
-------------------------------
-  - Installing frontend dependencies: Done.
-  - Compiling frontend: Done.
-  - Generating bundle assets: Done.
-  - Compiling application: Done.
-Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
+Building target： windows/amd64
+--------------------------------------
+  - 安装前端依赖： 完成。
+  - 编译前端：完成。
+  - 生成捆绑资产：完成。
+  - 编译应用程序：完成。
+在 10.616 秒内生成'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe'
 ```
 
-This has compiled the application and saved it in the `build/bin` directory.
+这已经编译了应用程序并保存在 `build/bin` 目录中。
 
-## Run the application
+## 运行应用程序
 
-If we view the `build/bin` directory in Windows Explorer, we should see our project binary:
+如果我们在 Windows Explorer 中查看 `build/bin` 目录，我们应该看到我们的项目二进制：
 
 <div class="text--center">
     <img src="/img/helloworld-app-icon.png" width="134px"/>
@@ -97,13 +94,13 @@ If we view the `build/bin` directory in Windows Explorer, we should see our proj
 
 <br/>
 
-We can run it by simply double-clicking the `helloworld.exe` file.
+我们可以通过简单的双击 `helloworld.exe` 文件来运行它。
 
-On Mac, Wails generates a `helloworld.app` file which can be run by double-clicking it.
+在 Mac 上，Wails 生成一个 `helloworld.app` 文件，可以通过双击来运行。
 
-On Linux, you can run the application using `./helloworld` from the `build/bin` directory.
+在 Linux 上，您可以使用 `/helloword` 从 `build/bin` 目录运行应用程序。
 
-You should see the application working as expected:
+您应该看到应用程序按预期运行：
 
 <div class="text--center">
     <img src="/img/windows-default-app.png" width="50%"
