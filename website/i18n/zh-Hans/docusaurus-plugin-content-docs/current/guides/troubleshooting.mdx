@@ -1,20 +1,20 @@
 # 故障排除
 
-一系列故障排除提示。
+各种故障排除技巧。
 
-## `wails` 命令似乎丢失了？
+## 我的应用程序显示白色/空白屏幕
 
 If your system is reporting that the `wails` command is missing, make sure you have followed the Go installation guide correctly. 通常情况下，这意味着用户主目录中的 `go/bin` 目录不在 `PATH` 环境 变量。 您通常还需要关闭并重新打开任何打开的命令提示，以便安装器对环境 的更改能够反映在命令提示中。
 
-## 我的应用程序正在显示白屏/空白屏幕
+## Mac 应用程序无效
 
-请检查您的应用程序是否包含来自正确目录的资产。 在您的 `main.go` 文件中，您将有 个类似于以下代码：
+检查您的应用程序是否在正确目录中包含资源。 在您的`main.go`文件中，您将拥有类似于以下代码的内容：
 
 ```go
-//go:嵌入前端/dist
+//go:embed frontend/dist
 var assets embed.FS
 ```
-检查 `前端/dist` 包含您的应用程序资产。
+如果您构建的应用程序在 finder 中如下所示：
 
 ### 马奇文
 
@@ -30,55 +30,60 @@ var assets embed.FS
 
 参考： https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
 
-## Mac 应用程序无效
+## 前端调用后端方法无法使用可变参数
 
-如果您的内建应用程序看起来像是在查找中：
+如果您有使用可变参数定义的后端方法，例如：
 
 <p className="text--center">
     <img src="/img/troubleshooting/invalid_mac_app.png"></img>
 </p>
 
-它可能是您的应用程序的 `info.plist` 无效。 在 `build/<yourapp>.app/Contents/info.plist` 中更新文件，并检查数据是否有效，EG 检查二进制名称是否正确。 若要保持更改，请将文件复制回 到 `build/darwin` 目录。
+您的应用程序的 `info.plist` 可能无效。 更新 `build/<yourapp>.app/Contents/info.plist` 文件并检查数据是否有效，例如二进制文件名称是否正确。 要保留更改，请将文件复制回 `build/darwin` 目录。
 
-## 无法从前端用变量参数调用后端方法
+## 尝试安装 Wails 时遇到代理错误
 
-如果您有一个带有变量参数的后端方法，例如：
+归功于：https://github.com/wailsapp/wails/issues/1186
 ```go
 func (a *App) TestFunc(msg string, args ...interface{}) error {
     // Code
 }
 ```
-从前端调用此方法将失败：
+如果您遇到这样的错误：
 ```js
-var msg = "Hello: "
-var args = ["Go", "JS"]
-windo.go.main.App.TestFunc(msg, ...args). hen(result) => 研究，
-    /do there
-})。 atch(error) => □
-    //chealer error
-});
+var msg = "Hello ";
+var args = ["Go", "JS"];
+window.go.main.App.TestFunc(msg, args)
+  .then((result) => {
+    // 不需要展开符
+    // do things here
+  })
+  .catch((error) => {
+    //handle error
+  });
 ```
-工作区：
+解决办法：
 ```js
-var msg = "Hello "
-var args = ["Go", "JS"]
-windo.go.main.App.TestFunc(msg, args). hen(result) => 亲/ /without 3 points
-    //do there
-}). atch(error) => □
-    //chealer error
-});
+var msg = "Hello: ";
+var args = ["Go", "JS"];
+window.go.main.App.TestFunc(msg, ...args)
+  .then((result) => {
+    //do things here
+  })
+  .catch((error) => {
+    //handle error
+  });
 ```
-信用额度：https://github.com/wailsapp/wails/issues/1186
+来源：https://github.com/wailsapp/wails/issues/1233
 
 ## 尝试安装Wail时，我会得到代理错误
 
 如果您正在获取像这样的错误：
 ```
-"https://proxy.golang.org/github.com/wailsapp/wails/cmd/wails/@v/list"：拨打tcp 172.217.163。 9:443：连接：连接尝试失败，因为连接方在一段时间后没有适当响应 或已建立的连接因连接主机未能响应而失败。
+"https://proxy.golang.org/github.com/wailsapp/wails/cmd/wails/@v/list": dial tcp 172.217.163.49:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
 ```
-这可能是因为官方的 Go Proxy 正在被屏蔽(中国的用户已经报告了这一点)。 解决方案是手动设置代理，例如
+这可能是因为官方 Go Proxy 被阻止（中国用户反馈了这一点）。 解决方案是手动设置代理，例如：
 ```
-到 env -w GO111MODULE=on
+go env -w GO111MODULE=on
 go env -w GOPROXY=https://goproxy.cn,direct
 ```
 资料来源：https://github.com/wailsapp/wails/issues/1233。
@@ -87,7 +92,7 @@ go env -w GOPROXY=https://goproxy.cn,direct
 
 有时生成的类型不正确。 为了缓解这个问题， 可以指定使用 `ts_type` struct 标签生成哪些类型。 更多详情，请阅读 [](https://github.com/tkrajina/typescriptify-golang-structs#custom-types)。
 
-## When I navigate away from `index.html`, I am unable to call methods on the frontend
+## 检查`frontend/dist`中是否包含您的应用程序资源。
 
 如果您从 `index.html` 到新的 html 文件导航，上下文将丢失。 可以通过在您导航到的任何新页面中添加 个导入到 `<head>` 部分来解决这个问题：
 
