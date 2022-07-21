@@ -1,93 +1,47 @@
+---
+sidebar_position: 1
+---
 
 # Templates
 
-Wails generates projects from pre-created templates. In v1, this was a difficult to maintain set of projects that were subject to going out of date. In v2, to empower the community, a couple of new features have been added for templates:
+This page serves as a list for community supported templates. Please submit a PR (click `Edit this page` at the bottom) to include your templates. To build your own template, please see the [Templates](../guides/templates.mdx) guide.
 
-- Ability to generate projects from [Remote Templates](../reference/cli.mdx#remote-templates)
-- Tooling to help create your own templates
+To use these templates, run `wails init -n "Your Project Name" -t [the link below[@version]]`
 
-## Creating Templates
+If there is no version suffix, the main branch code template is used by default. If there is a version suffix, the code template corresponding to the tag of this version is used.
 
-To create a template, you can use the `wails generate template` command. To generate a default template, run:
+Example: `wails init -n "Your Project Name" -t https://github.com/misitebao/wails-template-vue`
 
-`wails generate template -name mytemplate`
+:::warning Attention
 
-This creates the directory "mytemplate" with default files:
+**The Wails project does not maintain, is not responsible nor liable for 3rd party templates!**
 
-```shell title=mytemplate/
-.
-|-- NEXTSTEPS.md
-|-- README.md
-|-- app.tmpl.go
-|-- frontend
-|   `-- dist
-|       |-- assets
-|       |   |-- fonts
-|       |   |   |-- OFL.txt
-|       |   |   `-- nunito-v16-latin-regular.woff2
-|       |   `-- images
-|       |       `-- logo-dark.svg
-|       |-- index.html
-|       |-- main.css
-|       `-- main.js
-|-- go.mod.tmpl
-|-- main.tmpl.go
-|-- template.json
-`-- wails.tmpl.json
-```
+If you are unsure about a template, inspect `package.json` and `wails.json` for what scripts are run and what packages are installed.
 
-### Template Overview
+:::
 
-The default template consists of the following files and directories:
+## Vue
 
-| Filename / Dir  | Description                                  |
-| --------------- | -------------------------------------------- |
-| NEXTSTEPS.md    | Instructions on how to complete the template |
-| README.md       | The README published with the template       |
-| app.tmpl.go     | `app.go` template file                       |
-| frontend/       | The directory containing frontend assets     |
-| go.mod.tmpl     | `go.mod` template file                       |
-| main.tmpl.go    | `main.go` template file                      |
-| template.json   | The template metadata                        |
-| wails.tmpl.json | `wails.json` template file                   |
+- [wails-template-vue](https://github.com/misitebao/wails-template-vue) - A template using Vite,Vue and Vue-Router(Support both JavaScript and TypeScript)
+- [wails-vite-vue-ts](https://github.com/codydbentley/wails-vite-vue-ts) - Vue 3 TypeScript with Vite (and instructions to add features)
+- [wails-vite-vue-the-works](https://github.com/codydbentley/wails-vite-vue-the-works) - Vue 3 TypeScript with Vite, Vuex, Vue Router, Sass, and ESLint + Prettier
 
-At this point it is advisable to follow the steps in `NEXTSTEPS.md`.
+## Angular
 
-## Creating a Template from an Existing Project
+- [wails-angular-template](https://github.com/TAINCER/wails-angular-template) - Angular with TypeScript, Sass, Hot-Reload, Code-Splitting and i18n
 
-It's possible to create a template from an existing frontend project by passing the path to the project when generating the template. We will now walk through how to create a Vue 3 template:
+## React
 
-- Install the vue cli: `npm install -g @vue/cli`
-- Create the default project: `vue create vue3-base`
-  - Select `Default (Vue 3) ([Vue 3] babel, eslint)`
-- After the project has been generated, run:
+- [wails-react-template](https://github.com/AlienRecall/wails-react-template) - A template using reactjs
+- [wails-react-template](https://github.com/flin7/wails-react-template) - A minimal template for React that supports live development
+- [wails-template-nextjs](https://github.com/LGiki/wails-template-nextjs) - A template using Next.js and TypeScript
 
-```shell
-> wails generate template -name wails-vue3-template -frontend .\vue3-base\
-Extracting base template files...
-Migrating existing project files to frontend directory...
-Updating package.json data...
-Renaming package.json -> package.tmpl.json...
-Updating package-lock.json data...
-Renaming package-lock.json -> package-lock.tmpl.json...
-```
+## Svelte
 
-- The template may now be customised as specified in the `NEXTSTEPS.md` file
-- Once the files are ready, it can be tested by running: `wails init -n my-vue3-project -t .\wails-vue3-template\`
-- To test the new project, run: `cd my-vue3-project` then `wails build`
-- Once the project has compiled, run it: `.\build\bin\my-vue3-project.exe`
-- You should have a fully functioning Vue3 application:
+- [wails-svelte-template](https://github.com/raitonoberu/wails-svelte-template) - A template using Svelte
+- [wails-vite-svelte-template](https://github.com/BillBuilt/wails-vite-svelte-template) - A template using Svelte and Vite
+- [wails-vite-svelte-tailwind-template](https://github.com/BillBuilt/wails-vite-svelte-tailwind-template) - A template using Svelte and Vite with TailwindCSS v3
 
-<div className="text--center">
-  <img src="/img/vue3-template.png" width="50%" />
-</div>
+## Elm
 
-## Publishing Templates
-
-Publishing a template is simply pushing the files to GitHub. The following best practice is encouraged:
-
-- Remove any unwanted files and directories (such as `.git`) from your frontend directory
-- Ensure that `template.json` is complete, especially `helpurl`
-- Push the files to GitHub
-- Create a PR on the [Community Templates](../community/templates.mdx) page
-- Announce the template on the [Template Announcement](https://github.com/wailsapp/wails/discussions/825) discussion board
+- [wails-elm-template](https://github.com/benjamin-thomas/wails-elm-template) - Develop your GUI app with functional programming and a **snappy** hot-reload setup :tada: :rocket:
