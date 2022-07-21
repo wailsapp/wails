@@ -24,6 +24,29 @@ The Javascript library is available to the frontend via the `window.runtime` map
 mode that provides Typescript declarations for the runtime. This should be located in the `wailsjs` directory in your
 frontend directory.
 
+### Hide
+
+Go Signature: `Hide(ctx context.Context)`
+
+Hides the application.
+
+:::info Note
+On Mac, this will hide the application in the same way as the `Hide` menu item in standard Mac applications.
+This is different to hiding the window, but the application still being in the foreground.
+For Windows and Linux, this is currently the same as `WindowHide`.
+:::
+
+### Show
+
+Go Signature: `Show(ctx context.Context)`
+
+Shows the application.
+
+:::info Note
+On Mac, this will bring the application back into the foreground.
+For Windows and Linux, this is currently the same as `WindowShow`.
+:::
+
 ### Quit
 
 Go Signature: `Quit(ctx context.Context)`

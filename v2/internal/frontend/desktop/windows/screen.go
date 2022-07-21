@@ -39,7 +39,7 @@ func GetMonitorInfo(hMonitor w32.HMONITOR) (*w32.MONITORINFO, error) {
 	return &info, nil
 }
 
-func EnumProc(hMonitor w32.HMONITOR, hdcMonitor w32.HDC, lprcMonitor *w32.RECT, dwData w32.LPARAM) uintptr {
+func EnumProc(hMonitor w32.HMONITOR, hdcMonitor w32.HDC, lprcMonitor *w32.RECT, screenContainer *ScreenContainer) uintptr {
 	// adapted from https://stackoverflow.com/a/23492886/4188138
 
 	// see docs for the following pages to better understand this function
@@ -49,8 +49,6 @@ func EnumProc(hMonitor w32.HMONITOR, hdcMonitor w32.HDC, lprcMonitor *w32.RECT, 
 	// https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-monitorfromwindow
 
 	ourMonitorData := Screen{}
-	screenContainer := (*ScreenContainer)(unsafe.Pointer(dwData))
-
 	currentMonHndl := w32.MonitorFromWindow(screenContainer.mainWinHandle, w32.MONITOR_DEFAULTTONEAREST)
 	currentMonInfo, currErr := GetMonitorInfo(currentMonHndl)
 
@@ -99,7 +97,7 @@ func GetAllScreens(mainWinHandle w32.HWND) ([]Screen, error) {
 
 	dc := w32.GetDC(0)
 	defer w32.ReleaseDC(0, dc)
-	succeeded := w32.EnumDisplayMonitors(dc, nil, syscall.NewCallback(EnumProc), uintptr(unsafe.Pointer(&monitorContainer)))
+	succeeded := w32.EnumDisplayMonitors(dc, nil, syscall.NewCallback(EnumProc), unsafe.Pointer(&monitorContainer))
 	if !succeeded {
 		return monitorContainer.monitors, errors.New("Windows call to EnumDisplayMonitors failed")
 	}

@@ -179,13 +179,28 @@ func LoadIcon(instance HINSTANCE, iconName *uint16) HICON {
 	return HICON(ret)
 }
 
+func LoadIconWithResourceID(instance HINSTANCE, res uint16) HICON {
+	ret, _, _ := procLoadIcon.Call(
+		uintptr(instance),
+		uintptr(res))
+
+	return HICON(ret)
+}
+
 func LoadCursor(instance HINSTANCE, cursorName *uint16) HCURSOR {
 	ret, _, _ := procLoadCursor.Call(
 		uintptr(instance),
 		uintptr(unsafe.Pointer(cursorName)))
 
 	return HCURSOR(ret)
+}
 
+func LoadCursorWithResourceID(instance HINSTANCE, res uint16) HCURSOR {
+	ret, _, _ := procLoadCursor.Call(
+		uintptr(instance),
+		uintptr(res))
+
+	return HCURSOR(ret)
 }
 
 func ShowWindow(hwnd HWND, cmdshow int) bool {
@@ -1115,12 +1130,12 @@ func GetMonitorInfo(hMonitor HMONITOR, lmpi *MONITORINFO) bool {
 	return ret != 0
 }
 
-func EnumDisplayMonitors(hdc HDC, clip *RECT, fnEnum, dwData uintptr) bool {
+func EnumDisplayMonitors(hdc HDC, clip *RECT, fnEnum uintptr, dwData unsafe.Pointer) bool {
 	ret, _, _ := procEnumDisplayMonitors.Call(
-		uintptr(hdc),
+		hdc,
 		uintptr(unsafe.Pointer(clip)),
 		fnEnum,
-		dwData,
+		uintptr(dwData),
 	)
 	return ret != 0
 }

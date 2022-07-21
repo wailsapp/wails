@@ -29,7 +29,7 @@ func NewIconFromFile(path string) (*Icon, error) {
 func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (*Icon, error) {
 	ico := new(Icon)
 	var err error
-	if ico.handle = w32.LoadIcon(instance, w32.MakeIntResource(resId)); ico.handle == 0 {
+	if ico.handle = w32.LoadIconWithResourceID(instance, resId); ico.handle == 0 {
 		err = errors.New(fmt.Sprintf("Cannot load icon from resource with id %v", resId))
 	}
 	return ico, err
