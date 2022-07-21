@@ -2,48 +2,48 @@
 sidebar_position: 2
 ---
 
-# Events
+# 事件
 
-## Overview
+## 概览
 
-The Wails runtime provides a unified events system, where events can be emitted or received by either Go or Javascript. Optionally, data may be passed with the events. Listeners will receive the data in the local data types.
+Wail运行时提供了一个统一的事件系统，在这个系统中，事件可以被传送或接收到去或Javascript。 可选择通过事件传递数据。 监听器将收到本地数据类型中的数据。
 
-### EventsOn
+### 事件
 
-Go Signature: `EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`
+去签署: `EventsOn(ctx context.Context, eventname 字符串, callback functionalData ...interface{}))`
 
-JS Signature: `EventsOn(eventName string, callback function(optionalData?: any))`
+JS 签署： `EventsOn(eventname 字符串，回调函数(可选Data?：任何))`
 
-This method sets up a listener for the given event name. When an event of type `eventName` is [emitted](#EventsEmit), the callback is triggered. Any additional data sent with the emitted event will be passed to the callback.
+这个方法设置给定事件名称的监听器。 当类型为 `事件名称` 的事件 [已经发出](#EventsEmit), 会触发回调。 任何与发出的事件一起发送的额外数据都将传递给回调。
 
-### EventsOff
+### 事件关闭
 
-Go Signature: `EventsOff(ctx context.Context, eventName string)`
+去签署: `EventsOff(ctx context.Context, eventname 字符串)`
 
-JS Signature: `EventsOff(eventName string)`
+JS 签署： `EventsOff(eventname 字符串)`
 
-This method unregisters the listener for the given event name.
+这个方法取消了给定事件名称的监听器。
 
 ### EventsOnce
 
-Go Signature: `EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`
+去签署: `EventsOnce(ctx context.Context, eventname 字符串, callback functionalData ...interface{}))`
 
-JS Signature: `EventsOnce(eventName string, callback function(optionalData?: any))`
+JS 签署： `EventsOnce(eventname 字符串，回调函数(可选的数据？：任何))`
 
-This method sets up a listener for the given event name, but will only trigger once.
+此方法为给定事件名称设置一个监听器，但只触发一次。
 
-### EventsOnMultiple
+### EventsonMultiple
 
-Go Signature: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int)`
+去签署: `EventsOnMultiple(ctx context. Context, eventname 字符串, callback functionalData ...interface{}), 计数器`
 
-JS Signature: `EventsOnMultiple(eventName string, callback function(optionalData?: any), counter int)`
+JS 签署： `EventsOnMultiple(eventname 字符串，回调函数(可选的数据？：任何)，计数器)`
 
-This method sets up a listener for the given event name, but will only trigger a maximum of `counter` times.
+这个方法为给定事件名称设置了一个监听器，但只会触发最多 `计数器` 次。
 
-### EventsEmit
+### 事件
 
-Go Signature: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`
+去签署: `EventsEmit(ctx context.Context, eventname 字符串, optionalData ...interface{})`
 
-JS Signature: `EventsEmit(ctx context, optionalData function(optionalData?: any))`
+JS 签署： `EventsEmit(ctx context, optionalData functionalData?: any))`
 
-This method emits the given event. Optional data may be passed with the event. This will trigger any event listeners.
+这个方法发布给定的事件。 可选的数据与事件一起传递。 这将触发任何事件监听器。
