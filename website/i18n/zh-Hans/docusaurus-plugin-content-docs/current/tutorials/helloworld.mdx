@@ -2,91 +2,93 @@
 sidebar_position: 10
 ---
 
-# Hello World
+# 你好世界
 
-本教程的目的是让你使用最基本的 软件来运行和使用Wail。 您将能够：
+本教程的目的是让您使用 Wails 启动并运行最基本的应用程序。 您将能够：
 
-  - 创建一个新的Wail应用程序
+  - 创建一个新的 Wails 应用程序
   - 构建应用程序
   - 运行应用程序
 
-::note 此教程使用 Windows 作为目标平台。 输出将根据您的操作系统略微变化 。 :::
+:::note
+此教程使用 Windows 作为目标平台。 根据操作系统的不同，输出略有不同。
+:::
 
-## 创建一个新的Wail应用程序
+## 创建一个新的 Wails 应用程序
 
-要使用默认的原版JS模板创建一个新的Wail应用程序， 您需要运行以下命令：
+要使用默认的 Vanilla JS 模板创建一个新的 Wails 应用程序， 您需要运行以下命令：
 
 ```bash
-行内-n Helloworld
+wails init -n helloworld
 ```
 
-您应该看到类似于以下内容的东西：
+你应该会看到类似下面的输出:
 
 ```
-Wails CLI v2.0
+Wails CLI v2.0.0
 
-初始化项目 'helloworld'
---------------------------------------------------------
+Initialising Project 'helloworld'
+---------------------------------
 
-项目名称: helloworld
-项目目录: C:\Users\leaan\tutorial\helloworld
-项目模板: vanilla
-模板支持: https://wails. o
+Project Name:      helloworld
+Project Directory: C:\Users\leaan\tutorial\helloworld
+Project Template:  vanilla
+Template Support:  https://wails.io
 
-在232ms中初始化项目“helloworld”。
+Initialised project 'helloworld' in 232ms.
 ```
 
 这将在当前目录中创建一个名为 `helloworld` 的新目录。 在这个目录中，您会找到一些文件：
 
 ```
-build/ - 包含构建文件 + 编译的应用程序
-前端/ - 包含前端文件
-应用。 o -包含应用程序代码
-Main。 o - 具有应用程序配置的主要程序
-wails.json - 项目配置文件
-过了。 od - 模块文件
-过了。 um - 模块校验和文件
+build/       - Contains the build files + compiled application
+frontend/    - Contains the frontend files
+app.go       - Contains the application code
+main.go      - The main program with the application configuration
+wails.json   - The project configuration file
+go.mod       - The go module file
+go.sum       - The go module checksum file
 ```
 
 ## 构建应用程序
 
-要构建应用程序，请更改为新的 `helloword` 项目目录并运行以下命令：
+要构建应用程序，请切换到新的 `helloword` 项目目录并运行以下命令：
 
 ```bash
-构建Wails
+wails build
 ```
 
-你应该看到如下东西：
+你应该会看到如下内容：
 
 ```
-Wails CLI v2.0
+Wails CLI v2.0.0
 
-应用类型：桌面
-平台：windows/amd64
-编译器：C:\Users\leaan\go\go1。 8.3\bin\go。 xe
-构建模式：生产
-跳过前端： false
-压缩： false
-Package： true
-Clean Building Dir： false
-LDFlags： ""
-标签： […]
-种族检测器： false
+App Type:               desktop
+Platforms:              windows/amd64
+Compiler:               C:\Users\leaan\go\go1.18.3\bin\go.exe
+Build Mode:             Production
+Skip Frontend:          false
+Compress:               false
+Package:                true
+Clean Build Dir:        false
+LDFlags:                ""
+Tags:                   []
+Race Detector:          false
 
-Building target： windows/amd64
---------------------------------------
-  - 安装前端依赖： 完成。
-  - 编译前端：完成。
-  - 生成捆绑资产：完成。
-  - 编译应用程序：完成。
-在 10.616 秒内生成'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe'
+Building target: windows/amd64
+------------------------------
+  - Installing frontend dependencies: Done.
+  - Compiling frontend: Done.
+  - Generating bundle assets: Done.
+  - Compiling application: Done.
+Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
 ```
 
-这已经编译了应用程序并保存在 `build/bin` 目录中。
+应用程序已编译完成并保存在 `build/bin` 目录中。
 
 ## 运行应用程序
 
-如果我们在 Windows Explorer 中查看 `build/bin` 目录，我们应该看到我们的项目二进制：
+如果我们在 Windows 资源管理器中查看 `build/bin` 目录，我们应该看到我们的项目二进制文件：
 
 <div class="text--center">
     <img src="/img/helloworld-app-icon.png" width="134px"/>
@@ -98,7 +100,7 @@ Building target： windows/amd64
 
 在 Mac 上，Wails 生成一个 `helloworld.app` 文件，可以通过双击来运行。
 
-在 Linux 上，您可以使用 `/helloword` 从 `build/bin` 目录运行应用程序。
+在 Linux 上，您可以使用 `./helloword` 从 `build/bin` 目录运行应用程序。
 
 您应该看到应用程序按预期运行：
 
