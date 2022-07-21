@@ -298,7 +298,7 @@ Windows 需要 GCC 和相关工具。 建议从 [http://tdm-gcc.tdragon.net/down
 
 安装很简单，运行以下命令：
 
-```
+```go
 go get -u github.com/wailsapp/wails/cmd/wails
 ```
 
