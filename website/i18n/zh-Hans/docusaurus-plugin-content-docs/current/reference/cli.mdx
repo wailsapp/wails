@@ -4,215 +4,215 @@ sidebar_position: 2
 
 # CLI
 
-The Wails CLI has a number of commands that are used for managing your projects. All commands are run in the following way:
+Wails CLI 有一些命令用于管理您的项目。 所有命令都以以下方式运行：
 
 `wails <command> <flags>`
 
 ## init
 
-`wails init` is used for generating projects.
+`嵌入` 用于生成项目。
 
-| Flag               | Description                                                                                                             |       Default       |
-|:------------------ |:----------------------------------------------------------------------------------------------------------------------- |:-------------------:|
-| -n "project name"  | Name of the project. **Mandatory**.                                                                                     |                     |
-| -d "project dir"   | Project directory to create                                                                                             | Name of the project |
-| -g                 | Initialise git repository                                                                                               |                     |
-| -l                 | List available project templates                                                                                        |                     |
-| -q                 | Suppress output to console                                                                                              |                     |
-| -t "template name" | The project template to use. This can be the name of a default template or a URL to a remote template hosted on github. |       vanilla       |
-| -ide               | Generate IDE project files                                                                                              |                     |
-| -f                 | Force build application                                                                                                 |        false        |
+| 标志               | 描述                                       |  默认设置   |
+|:---------------- |:---------------------------------------- |:-------:|
+| -n "项目名称"        | 项目名称 **Mandatory**.                      |         |
+| -d "project dir" | 要创建的项目目录                                 |  项目名称   |
+| -g               | 初始化git 仓库                                |         |
+| -l               | 列出可用的项目模板                                |         |
+| -q               | 禁止输出到控制台                                 |         |
+| -t "模板名称"        | 要使用的项目模板。 这可以是默认模板或在 githb 托管的远程模板的 URL。 | vanilla |
+| -ide             | 生成 IDE 工程文件                              |         |
+| -f               | 强制构建应用程序                                 |  false  |
 
-Example: `wails init -n test -d mytestproject -g -ide vscode -q`
+示例： `wails init -n test-d mytestproject -g -ide vscode -q`
 
-This will generate a a project called "test" in the "mytestproject" directory, initialise git, generate vscode project files and do so silently.
+这将在"mytestproject"目录中生成一个名为 "test" 的项目，初始化git， 生成vscode 项目文件，并静默地这样做。
 
-More information on using IDEs with Wails can be found [here](../guides/ides.mdx).
+关于使用 IDEs Wails 的更多信息可以在这里找到 [](../guides/ides.mdx)。
 
-### Remote Templates
+### 远程模板
 
-Remote templates (hosted on GitHub) are supported and can be installed by using the template's project URL.
+远程模板 (在 GitHub 上托管) 得到支持，可以通过使用模板的项目 URL 安装。
 
-Example: `wails init -n test -t https://github.com/leaanthony/testtemplate[@v1.0.0]`
+示例： `wails init -n test-t https://github.com/leaanthony/testtemplate[@v1.0.0]`
 
-A list of community maintained templates can be found [here](../community/templates.mdx)
+社区维护模板列表可以在这里找到 [](../community/templates.mdx)
 
-:::warning Attention
+:::警告注意事项
 
-  **The Wails project does not maintain, is not responsible nor liable for 3rd party templates!**
+  **Wails项目不维护，对第三方模板不负责任或责任！**
 
-  If you are unsure about a template, inspect `package.json` and `wails.json` for what scripts are run and what packages are installed.
+  如果您对模板不确定，请检查 `package.json` 和 `wails.json` 查看哪些脚本正在运行和哪些软件包已安装。
 
 :::
 
-## build
+## 构建中
 
-`wails build` is used for compiling your project to a production-ready binary.
+`wails build` 被用于编译你的项目到准备好生产的二进制文件。
 
-| Flag                 | Description                                                                                                                                                                 | Default                                                                                                                                             |
-|:-------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| -platform            | Build for the given (comma delimited) [platforms](../reference/cli.mdx#platforms) eg. `windows/arm64`. Note, if you do not give the architecture, `runtime.GOARCH` is used. | platform = `GOOS` environment variable if given else `runtime.GOOS`.<br/>arch = `GOARCH` envrionment variable if given else `runtime.GOARCH`. |
-| -clean               | Cleans the `build/bin` directory                                                                                                                                            |                                                                                                                                                     |
-| -compiler "compiler" | Use a different go compiler to build, eg go1.15beta1                                                                                                                        | go                                                                                                                                                  |
-| -ldflags "flags"     | Additional ldflags to pass to the compiler                                                                                                                                  |                                                                                                                                                     |
-| -nopackage           | Do not package application                                                                                                                                                  |                                                                                                                                                     |
-| -o filename          | Output filename                                                                                                                                                             |                                                                                                                                                     |
-| -s                   | Skip building the frontend                                                                                                                                                  | false                                                                                                                                               |
-| -f                   | Force build application                                                                                                                                                     | false                                                                                                                                               |
-| -tags "extra tags"   | Build tags to pass to compiler (quoted and space separated)                                                                                                                 |                                                                                                                                                     |
-| -upx                 | Compress final binary using "upx"                                                                                                                                           |                                                                                                                                                     |
-| -upxflags            | Flags to pass to upx                                                                                                                                                        |                                                                                                                                                     |
-| -v int               | Verbosity level (0 - silent, 1 - default, 2 - verbose)                                                                                                                      | 1                                                                                                                                                   |
-| -webview2            | WebView2 installer strategy: download,embed,browser,error                                                                                                                   | download                                                                                                                                            |
-| -u                   | Updates your project's `go.mod` to use the same version of Wails as the CLI                                                                                                 |                                                                                                                                                     |
-| -debug               | Retains debug information in the application. Allows the use of the devtools in the application window                                                                      | false                                                                                                                                               |
-| -trimpath            | Remove all file system paths from the resulting executable.                                                                                                                 | false                                                                                                                                               |
-| -race                | Build with Go's race detector                                                                                                                                               | false                                                                                                                                               |
-| -windowsconsole      | Keep the console window for Windows builds                                                                                                                                  | false                                                                                                                                               |
+| 标志                 | 描述                                                                                                                                      | 默认设置                                                                                                  |
+|:------------------ |:--------------------------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------- |
+| -平台                | Build for the given (comma delimited) [platforms](../reference/cli.mdx#platforms) eg. `windows/arm64`. 注意，如果您没有给出架构， `运行时间。GAARH` 已被使用。 | 平台 = `GOOS` 环境变量，如果另外给出 `运行时间。GOOS`。<br/>arch = `GOARCH` envrionment 变量如果给出其他 `runtime.GOARCH`. |
+| -清理                | 清除 `生成/bin` 目录                                                                                                                          |                                                                                                       |
+| -编译器"编译器"          | 使用不同的编译器来构建，例如 go1.15bet1                                                                                                               | 转至                                                                                                    |
+| -ldflags "flags"   | 添加要传递到编译器的 ldflags                                                                                                                      |                                                                                                       |
+| -不拍照               | 不要打包应用程序                                                                                                                                |                                                                                                       |
+| -o 文件名             | 输出文件名                                                                                                                                   |                                                                                                       |
+| - 秒                | 跳过建立前端                                                                                                                                  | false                                                                                                 |
+| -f                 | 强制构建应用程序                                                                                                                                | false                                                                                                 |
+| -tags "extra tags" | 构建标签传递给编译器 (引用和空间分隔)                                                                                                                    |                                                                                                       |
+| -up                | 使用 "ux" 压缩最后二进制文件                                                                                                                       |                                                                                                       |
+| -upxflags          | 要传递到上方的标记                                                                                                                               |                                                                                                       |
+| -v int             | 详细级别 (0-静音, 1 - 默认, 2 - 详细)                                                                                                             | 1                                                                                                     |
+| -webview2          | WebView2 安装程序策略: download,embed,browser,错误                                                                                              | 下载                                                                                                    |
+| -u                 | 更新你的项目的 `go.mod` 来使用与 CLI 相同的版本Wails                                                                                                    |                                                                                                       |
+| -debug             | 在应用程序中获取调试信息。 允许在应用程序窗口中使用 devtools                                                                                                     | false                                                                                                 |
+| -trimpath          | 从生成的可执行文件中删除所有文件系统路径。                                                                                                                   | false                                                                                                 |
+| -竞技场               | 使用 Go的种族探测器建设                                                                                                                           | false                                                                                                 |
+| -windsconsole      | 为Windows构建保留控制台窗口                                                                                                                       | false                                                                                                 |
 
-For a detailed description of the `webview2` flag, please refer to the [Windows](../guides/windows.mdx) Guide.
+`webview2` 标志的详细描述，请参阅 [Windows](../guides/windows.mdx) 指南。
 
-If you prefer to build using standard Go tooling, please consult the [Manual Builds](../guides/manual-builds.mdx) guide.
+如果您喜欢使用标准的去配刀构建，请参阅 [手册编译](../guides/manual-builds.mdx) 指南。
 
-Example:
+示例：
 
-`wails build -clean -o myproject.exe`
+`wails build-clean-o myproject.exe`
 
-:::info UPX on Apple Silicon
+:::info UPX 在 Apple Silicon
 
   There are [issues](https://github.com/upx/upx/issues/446) with using UPX with Apple Silicon.
 
 :::
 
-:::info UPX on Windows
+:::info UPX 在 Windows 上
 
-  Some Antivirus vendors false positively mark `upx` compressed binaries as virus, see [issue](https://github.com/upx/upx/issues/437).
+  一些抗病毒销售商错误地将 `升到` 压缩二进制病毒，见 [问题](https://github.com/upx/upx/issues/437)。
 
 :::
 
-### Platforms
+### 平台
 
-Supported platforms are:
+支持的平台是：
 
-| Platform         | Description                                   |
-|:---------------- |:--------------------------------------------- |
-| darwin           | MacOS + architecture of build machine         |
-| darwin/amd64     | MacOS 10.13+ AMD64                            |
-| darwin/arm64     | MacOS 11.0+ ARM64                             |
-| darwin/universal | MacOS AMD64+ARM64 universal application       |
-| windows          | Windows 10/11 + architecture of build machine |
-| windows/amd64    | Windows 10/11 AMD64                           |
-| windows/arm64    | Windows 10/11 ARM64                           |
-| linux            | Linux + architecture of build machine         |
-| linux/amd64      | Linux AMD64                                   |
-| linux/arm64      | Linux ARM64                                   |
+| 平台            | 描述                      |
+|:------------- |:----------------------- |
+| 达尔文省          | MacOS + 构建机器的架构         |
+| 黑色/安德64       | MacOS 10.13+ AMD64      |
+| 深色/arm64      | MacOS 11.0+ ARM64       |
+| 黑暗/通用         | MacOS AMD64+ARM64 普遍应用  |
+| 窗口            | Windows 10/11 + 构建机器的架构 |
+| windows/amd64 | Windows 10/11 AMD64     |
+| 窗户/arm64      | Windows 10/11 ARM64     |
+| linux         | Linux + 构建机器的架构         |
+| linux/amd64   | Linux AMD64             |
+| linux/arm64   | Linux ARM64             |
 
 
-## doctor
+## 法师
 
-`wails doctor` will run diagnostics to ensure that your system is ready for development.
+`视觉医生` 将运行诊断，以确保您的系统已准备就绪可供开发。
 
-Example:
+示例：
 ```
 Wails CLI v2.0.0-beta
 
-Scanning system - Please wait (this may take a long time)...Done.
+扫描系统 - 请等待 (这可能需要很长时间)...完成。
 
-System
+系统
 ------
-OS:             Windows 10 Pro
-Version:        2009 (Build: 19043)
-ID:             21H1
-Go Version:     go1.17
-Platform:       windows
-Architecture:   amd64
+OS: Windows 10 Pro
+版本: 2009 (Build: 19043)
+ID: 21H1
+Go 版本: go1 7
+平台：windows
+Architection：amd64
 
-Dependency      Package Name    Status          Version
-----------      ------------    ------          -------
-WebView2        N/A             Installed       93.0.961.52
-npm             N/A             Installed       6.14.15
-*upx            N/A             Installed       upx 3.96
+依赖包名称状态版本
+---------- ------------ --------
+WebView2 N/A已安装93 961.52
+npm N/A已安装6.14。 5
+*upx N/A已安装up 3。 6
 
-* - Optional Dependency
+* - 可选依赖
 
-Diagnosis
----------
-Your system is ready for Wails development!
+诊断
+-------
+您的系统已准备就绪，可以开发邮件。
 
 ```
 
 ## dev
 
-`wails dev` is used to run your application in a "live development" mode. This means:
+`wails dev` 被用来运行您的应用程序在 "live development" 模式。 这意味着：
 
-   - The application's `go.mod` will be updated to use the same version of Wails as the CLI
-   - The application is compiled and run automatically
-   - A watcher is started and will trigger a rebuild of your dev app if it detects changes to your go files
-   - A webserver is started on `http://localhost:34115` which serves your application (not just frontend) over http. This allows you to use your favourite browser development extensions
-   - All application assets are loaded from disk. If they are changed, the application will automatically reload (not rebuild). All connected browsers will also reload
-   - A JS module is generated that provides the following:
-     - Javascript wrappers of your Go methods with autogenerated JSDoc, providing code hinting
-     - TypeScript versions of your Go structs, that can be constructed and passed to your go methods
-   - A second JS module is generated that provides a wrapper + TS declaration for the runtime
+   - 应用程序的 `go.mod` 将被更新以使用与 CLI 相同版本的Wails
+   - 应用程序被自动编译和运行
+   - 一个监视器已经启动，如果检测到您的数据文件的更改，将会触发你的开发应用的重建
+   - Web 服务器已在 `http://localhost:34115` 上启动，后者通过 http 为您的应用程序(不仅仅是前端)服务。 这允许您使用您最喜欢的浏览器开发扩展
+   - 所有应用程序资源都从磁盘加载。 如果更改，应用程序将自动重新加载(而不是重建)。 所有已连接的浏览器也将重新加载
+   - 生成了一个提供以下服务的JS模块：
+     - 自动生成的 JSDoc，提供代码提示的 Javascript 转手方法
+     - 您的 Go 结构的 TypeScript 版本，可以构造并传递到您的去方法
+   - 生成了第二个JS模块，为运行时提供一个包装器 + TS 声明
 
-| Flag                         | Description                                                                                                                                                                         | Default               |
-|:---------------------------- |:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |:--------------------- |
-| -assetdir "./path/to/assets" | Serve assets from the given directory instead of using the provided asset FS                                                                                                        | Value in `wails.json` |
-| -browser                     | Opens a browser to `http://localhost:34115` on startup                                                                                                                              |                       |
-| -compiler "compiler"         | Use a different go compiler to build, eg go1.15beta1                                                                                                                                | go                    |
-| -e                           | Extensions to trigger rebuilds (comma separated)                                                                                                                                    | go                    |
-| -reloaddirs                  | Additional directories to trigger reloads (comma separated)                                                                                                                         | Value in `wails.json` |
-| -ldflags "flags"             | Additional ldflags to pass to the compiler                                                                                                                                          |                       |
-| -tags "extra tags"           | Build tags to pass to compiler (quoted and space separated)                                                                                                                         |                       |
-| -loglevel "loglevel"         | Loglevel to use - Trace, Debug, Info, Warning, Error                                                                                                                                | Debug                 |
-| -noreload                    | Disable automatic reload when assets change                                                                                                                                         |                       |
-| -nogen                       | Disable generate module                                                                                                                                                             |                       |
-| -v                           | Verbosity level (0 - silent, 1 - standard, 2 - verbose)                                                                                                                             | 1                     |
-| -wailsjsdir                  | The directory to generate the generated Wails JS modules                                                                                                                            | Value in `wails.json` |
-| -debounce                    | The time to wait for reload after an asset change is detected                                                                                                                       | 100 (milliseconds)    |
-| -devserver "host:port"       | The address to bind the wails dev server to                                                                                                                                         | "localhost:34115"     |
-| -frontenddevserverurl "url"  | Use 3rd party dev server url to serve assets, EG Vite                                                                                                                               | ""                    |
-| -appargs "args"              | Arguments passed to the application in shell style                                                                                                                                  |                       |
-| -save                        | Saves the given `assetdir`, `reloaddirs`, `wailsjsdir`, `debounce`, `devserver` and `frontenddevserverurl` flags in `wails.json` to become the defaults for subsequent invocations. |                       |
-| -race                        | Build with Go's race detector                                                                                                                                                       | false                 |
-| -s                           | Skip building the frontend                                                                                                                                                          | false                 |
+| 标志                           | 描述                                                                                                                  | 默认设置              |
+|:---------------------------- |:------------------------------------------------------------------------------------------------------------------- |:----------------- |
+| -assetdir "./path/to/assets" | 从给定目录服务资产，而不是使用提供的资产 FS                                                                                             | `wails.json` 中的值  |
+| -浏览器                         | 启动时打开浏览器到 `http://localhost:34115`                                                                                  |                   |
+| -编译器"编译器"                    | 使用不同的编译器来构建，例如 go1.15bet1                                                                                           | 转至                |
+| -e                           | 触发重建的扩展 (逗号分隔)                                                                                                      | 转至                |
+| -reloaddirs                  | 触发重新加载的附加目录(逗号分隔)                                                                                                   | `wails.json` 中的值  |
+| -ldflags "flags"             | 添加要传递到编译器的 ldflags                                                                                                  |                   |
+| -tags "extra tags"           | 构建标签传递给编译器 (引用和空间分隔)                                                                                                |                   |
+| -loglevel "loglevel"         | 要使用的日志级别 - Trace, Debug, Info, 警告, 错误                                                                               | Debug             |
+| -noreload                    | 当资产改变时禁用自动重新加载                                                                                                      |                   |
+| -nogen                       | 禁用生成模块                                                                                                              |                   |
+| -v                           | 详细程度 (0-静音, 1 - 标准, 2 - 详细)                                                                                         | 1                 |
+| -wailsjsdir                  | 生成的Wails JS 模块的目录                                                                                                   | `wails.json` 中的值  |
+| -debounce                    | 检测到资产变更后等待重新加载的时间                                                                                                   | 100 (毫秒)          |
+| -devserver "host:port"       | 将Wails dev 服务器绑定到的地址                                                                                                | "localhost:34115" |
+| -frontenddevserverurl "url"  | 使用第三方开发服务器URL为资产服务，EG Vite                                                                                          | ""                |
+| -appargs "args"              | 使用 shell 风格传递到应用程序的参数                                                                                               |                   |
+| -保存                          | 保存给给定的 `assetdir`, `重新加载者`, `wailsjsdir`, `反弹`, `devserver` 和 `frontenddevserverurl` 标记在 `wails。 son` 将成为随后被调用的默认值。 |                   |
+| -竞技场                         | 使用 Go的种族探测器建设                                                                                                       | false             |
+| - 秒                          | 跳过建立前端                                                                                                              | false             |
 
-Example:
+示例：
 
-`wails dev -assetdir ./frontend/dist -wailsjsdir ./frontend/src -browser`
+`wails dev -assetdir ./frontend/dist -wailsjsdir ./frontend/src -浏览器`
 
-This command will do the following:
+此命令将执行以下操作：
 
-  - Build the application and run it (more details [here](../guides/manual-builds.mdx)
-  - Generate the Wails JS modules in `./frontend/src`
-  - Watch for updates to files in `./frontend/dist` and reload on any change
-  - Open a browser and connect to the application
+  - 构建应用程序并运行它(更多详细信息 [在这里](../guides/manual-builds.mdx)
+  - 在 `./frontend/src 中生成Wails JS 模块`
+  - 监视对 `中的文件的更新。/frontend/dist` 并重新加载任何更改
+  - 打开浏览器并连接到应用程序
 
 There is more information on using this feature with existing framework scripts [here](../guides/application-development.mdx#live-reloading).
 
-## generate
+## 生成
 
-### template
+### 模版
 
-Wails uses templates for project generation. The `wails generate template` command helps scaffold a template so that it may be used for generating projects.
+Wail使用模板生成项目。 `wails 生成模板` 命令帮助手写手写一个模板，以便 它可以用于生成项目。
 
-| Flag             | Description                                 |
-|:---------------- |:------------------------------------------- |
-| -name            | The template name (Mandatory)               |
-| -frontend "path" | Path to frontend project to use in template |
+| 标志      | 描述             |
+|:------- |:-------------- |
+| -名称     | 模板名称(随机)       |
+| -前端"路径" | 要在模板中使用的前端项目路径 |
 
-For more details on creating templates, consult the [Templates guide](../guides/templates.mdx).
+关于创建模板的详细信息，请参阅 [模板指南](../guides/templates.mdx)。
 
-## update
+## 更新
 
-`wails update` will update the version of the Wails CLI.
+`等待更新` 将更新Wails CLI 版本。
 
-| Flag               | Description                           |
-|:------------------ |:------------------------------------- |
-| -pre               | Update to latest pre-release version  |
-| -version "version" | Install a specific version of the CLI |
+| 标志            | 描述          |
+|:------------- |:----------- |
+| -pre          | 更新到最新的预发布版本 |
+| -版本 "version" | 安装指定版本的 CLI |
 
 
-## version
+## 版本
 
-`wails version` will simply output the current CLI version.
+`wails 版本` 将只是输出当前的 CLI 版本。
