@@ -226,22 +226,45 @@ on:
 
           node-version: 14
       # 你可能需要手动构建你在这里的前端。 除非您已配置前端构建并安装在前端的命令。 儿子。
-      - 名称: Get Wails
-        run：去安装 github。 om/wailsapp/wails/v2/cmd/wails@latest
-      - 名称: Building Wails app
+      name: "example"
+on:
+  workflow_dispatch:
+    # This Action only starts when you go to Actions and manually run the workflow.
+
+jobs:
+  package:
+    strategy:
+      matrix:
+        platform: [ windows-latest, macos-latest ]
+        go-version: [1.18]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      # You may need to manually build you frontend here, unless you have configured frontend build and install commands in wails.json.
+      - name: Get Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+      - name: Build Wails app
         run: |
           wails build
-      - 名称: 上传艺术品macOS
-        如果矩阵的话。 latform == 'macos-latest'
+      - name: upload artifacts macOS
+        if: matrix.platform == 'macos-latest'
         uses: actions/upload-artifact@v2
-        with
+        with:
           name: wails-binaries-macos
           path: build/bin/*
-      - name: 上传伪影窗
-        if 矩阵。 latform == 'windows-latest'
+      - name: upload artifacts windows
+        if: matrix.platform == 'windows-latest'
         uses: actions/upload-artifact@v2
-        with
-          name: wails-binaries-winds
+        with:
+          name: wails-binaries-windows
           path: build/bin/*
 ```
 
