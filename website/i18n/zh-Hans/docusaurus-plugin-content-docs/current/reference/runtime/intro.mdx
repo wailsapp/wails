@@ -2,31 +2,31 @@
 sidebar_position: 1
 ---
 
-# 一. 导言
+# 介绍
 
-运行时间是一个为您的应用程序提供实用方法的库。 有一个 Go 和 Javascript 运行时间 ，其目标是尽可能地尝试保持对等。
+运行时是一个为应用程序提供实用方法的库。 有 Go 和 Javascript 运行时，目的是在可能的情况下尝试使它们保持一致。
 
-Go Runtime 可以通过导入 `github.com/wailsapp/wails/v2/pkg/runtime` 来使用。 这个包 中的所有方法都以上下文作为第一个参数。 此上下文应该从 [On启动](../options.mdx#onstartup) 或 [OnDomReady](../options.mdx#ondomready) 钩子。
+Go 运行时可通过导入`github.com/wailsapp/wails/v2/pkg/runtime`. 此包中的所有方法都将 context 作为第一个参数。 这个包 中的所有方法都以上下文作为第一个参数。 此上下文应该从 [On启动](../options.mdx#onstartup) 或 [OnDomReady](../options.mdx#ondomready) 钩子。
 
-:::info 笔记
+:::info 注意
 
-虽然上下文将提供给 [Onstartup](../options.mdx#onstartup) 方法， 无法保证运行时间将在这个方法中工作，因为 窗口正在另一个线程初始化。 如果 您想在启动时调用运行方式, 请使用 [OnDomReady](../options.mdx#ondomready)。
+虽然上下文将提供给[应用启动回调](../../reference/options#应用启动回调)方法，但不能保证运行时将在此方法中工作，因为窗口正在不同的线程中初始化。 如果您希望在启动时调用运行时方法，请使用[前端 Dom 加载完成回调](../../reference/options#前端-dom-加载完成回调)方法。
 
 :::
 
-Javascript 库可以通过 `window 运行时` 地图到前端。 当使用 `dev` 模式提供运行时生成了一个运行时的软件包。 这应该位于您 前端目录中的 `wailsjs` 目录。
+Javascript 库可通过`window.runtime`提供给前端。 使用 `开发` 模式时会生成一个运行时包，该包为运行时提供 Typescript 声明。 这应该位于您的前端目录中的`wailsjs`目录中。
 
-### 隐藏
+### 退出
 
-去签署: `隐藏 (ctx context.Context)`
+Go 方法签名: `Quit(ctx context.Context)`
 
-隐藏应用程序。
+退出应用程序。
 
 :::info Note On Mac, this will hide the application in the same way as the `Hide` menu item in standard Mac applications. 隐藏窗口不同，但应用程序仍处于前台状态。 对于Windows和Linux，这目前与 `Windows隐藏` 相同。 :::
 
-### 显示
+### 环境
 
-去签署: `show(ctx context.Context)`
+返回当前环境的详细信息。
 
 显示应用程序。
 
@@ -34,7 +34,7 @@ Javascript 库可以通过 `window 运行时` 地图到前端。 当使用 `dev`
 
 ### 退出
 
-去签署: `Quit(ctx context.Context)`
+Go 方法签名: `Environment(ctx context.Context) EnvironmentInfo`
 
 退出应用程序。
 
@@ -47,8 +47,8 @@ Javascript 库可以通过 `window 运行时` 地图到前端。 当使用 `dev`
 #### 环境信息
 
 ```go
-type EnvironmentInfo structt à
-    BuildType string// Either "production", "debug" or "dev"
+type EnvironmentInfo struct {
+    BuildType string  // Either "production", "debug" or "dev"
 }
 ```
 
