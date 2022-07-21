@@ -292,7 +292,7 @@ func (iv *ImageViewBox) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 		} else {
 			if !iv.add {
-				w32.SetCursor(w32.LoadCursor(0, w32.MakeIntResource(iv.getCursor(x, y))))
+				w32.SetCursor(w32.LoadCursorWithResourceID(0, iv.getCursor(x, y)))
 			}
 			//  do not call repaint if underMouse item did not change.
 			if iv.updateHighlight(x, y) {

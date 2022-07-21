@@ -1,0 +1,33 @@
+project_id: 527906
+api_token_env: CROWDIN_PERSONAL_TOKEN
+
+files:
+  # Docs
+  - source: /website/docs/**/*
+    translation: /website/i18n/%locale%/docusaurus-plugin-content-docs/current/**/%original_file_name%
+    ignore: [/**/*.json]
+
+  # Blog
+  - source: /website/blog/*
+    translation: /website/i18n/%locale%/docusaurus-plugin-content-blog/%original_file_name%
+
+  # Pages
+  - source: /website/src/pages/**/*
+    translation: /website/i18n/%locale%/docusaurus-plugin-content-pages/**/%original_file_name%
+    ignore: [/**/*.json, /**/*.js, /**/*.jsx, /**/*.ts, /**/*.tsx, /**/*.css]
+
+  # Configuration files
+  # - source: /website/i18n/en/docusaurus-plugin-content-blog/*
+  #   translation: /website/i18n/%locale%/docusaurus-plugin-content-blog/%original_file_name%
+
+  # - source: /website/i18n/en/docusaurus-plugin-content-docs/*
+  #   translation: /website/i18n/%locale%/docusaurus-plugin-content-docs/%original_file_name%
+
+  # - source: /website/i18n/en/docusaurus-theme-classic/*
+  #   translation: /website/i18n/%locale%/docusaurus-theme-classic/%original_file_name%
+
+  # - source: /website/i18n/en/*
+  #   translation: /website/i18n/%locale%/%original_file_name%
+
+  - source: /website/i18n/en/**/*.json
+    translation: /website/i18n/%locale%/**/%original_file_name%

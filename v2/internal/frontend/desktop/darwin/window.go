@@ -199,6 +199,13 @@ func (w *Window) Show() {
 func (w *Window) Hide() {
 	C.Hide(w.context)
 }
+func (w *Window) ShowApplication() {
+	C.ShowApplication(w.context)
+}
+
+func (w *Window) HideApplication() {
+	C.HideApplication(w.context)
+}
 
 func parseIntDuo(temp string) (int, int) {
 	split := strings.Split(temp, ",")

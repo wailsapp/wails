@@ -18,7 +18,7 @@
   filter: alpha(opacity=40);
   position: absolute;
   z-index: 2;
-  top: 20px;
+  top: 0px;
   background: none;
   border: 0;
   font-size: 32px;
@@ -303,9 +303,9 @@
 
 @media (min-width: 960px) {
   .carousel-root {
-    padding: 15px;
+    padding-bottom: 5px;
   }
   .carousel .slider-wrapper {
-    width: 50%;
+    width: 75%;
   }
 }

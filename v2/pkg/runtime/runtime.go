@@ -2,10 +2,11 @@ package runtime
 
 import (
 	"context"
-	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/logger"
 	"log"
 	goruntime "runtime"
+
+	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/logger"
 )
 
 const contextError = `An invalid context was passed. This method requires the specific context given in the lifecycle hooks:
@@ -65,6 +66,24 @@ func Quit(ctx context.Context) {
 	}
 	appFrontend := getFrontend(ctx)
 	appFrontend.Quit()
+}
+
+// Hide the application
+func Hide(ctx context.Context) {
+	if ctx == nil {
+		log.Fatalf("cannot call Hide: context is nil")
+	}
+	appFrontend := getFrontend(ctx)
+	appFrontend.Hide()
+}
+
+// Show the application if it is hidden
+func Show(ctx context.Context) {
+	if ctx == nil {
+		log.Fatalf("cannot call Show: context is nil")
+	}
+	appFrontend := getFrontend(ctx)
+	appFrontend.Show()
 }
 
 // EnvironmentInfo contains information about the environment

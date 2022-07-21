@@ -48,6 +48,14 @@ type DevWebServer struct {
 	devServerAddr string
 }
 
+func (d *DevWebServer) Hide() {
+	d.desktopFrontend.Hide()
+}
+
+func (d *DevWebServer) Show() {
+	d.desktopFrontend.Show()
+}
+
 func (d *DevWebServer) WindowSetSystemDefaultTheme() {
 	d.desktopFrontend.WindowSetSystemDefaultTheme()
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/bitfield/script"
 	"io"
 	"net"
 	"net/http"
@@ -182,6 +183,28 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		quitChannel := make(chan os.Signal, 1)
 		signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
 		exitCodeChannel := make(chan int, 1)
+
+		// Install if needed
+		installCommand := projectConfig.GetDevInstallerCommand()
+		if installCommand == "" {
+			return fmt.Errorf("no `frontend:dev` or `frontend:install` defined. Please add one of these to your wails.json")
+		}
+
+		// Install initial frontend dev dependencies
+		err = os.Chdir(filepath.Join(cwd, "frontend"))
+		if err != nil {
+			return err
+		}
+		LogGreen("Installing frontend dependencies...")
+		pipe := script.Exec(installCommand)
+		pipe.Wait()
+		if pipe.Error() != nil {
+			return pipe.Error()
+		}
+		err = os.Chdir(cwd)
+		if err != nil {
+			return err
+		}
 
 		// frontend:dev:watcher command.
 		if command := projectConfig.DevWatcherCommand; command != "" {
