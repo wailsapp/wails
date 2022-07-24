@@ -2,31 +2,31 @@
 sidebar_position: 1
 ---
 
-# Introduction
+# 介绍
 
-The runtime is a library that provides utility methods for your application. There is both a Go and Javascript runtime and the aim is to try and keep them at parity where possible.
+运行时是一个为应用程序提供实用方法的库。 有 Go 和 Javascript 运行时，目的是在可能的情况下尝试使它们保持一致。
 
-The Go Runtime is available through importing `github.com/wailsapp/wails/v2/pkg/runtime`. All methods in this package take a context as the first parameter. This context should be obtained from the [OnStartup](../options.mdx#onstartup) or [OnDomReady](../options.mdx#ondomready) hooks.
+Go 运行时可通过导入`github.com/wailsapp/wails/v2/pkg/runtime`. 此包中的所有方法都将 context 作为第一个参数。 All methods in this package take a context as the first parameter. This context should be obtained from the [OnStartup](../options.mdx#onstartup) or [OnDomReady](../options.mdx#ondomready) hooks.
 
-:::info Note
+:::info 注意
 
-Whilst the context will be provided to the [OnStartup](../options.mdx#onstartup) method, there's no guarantee the runtime will work in this method as the window is initialising in a different thread. If you wish to call runtime methods at startup, use [OnDomReady](../options.mdx#ondomready).
+虽然上下文将提供给[应用启动回调](../../reference/options#应用启动回调)方法，但不能保证运行时将在此方法中工作，因为窗口正在不同的线程中初始化。 如果您希望在启动时调用运行时方法，请使用[前端 Dom 加载完成回调](../../reference/options#前端-dom-加载完成回调)方法。
 
 :::
 
-The Javascript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev` mode that provides Typescript declarations for the runtime. This should be located in the `wailsjs` directory in your frontend directory.
+Javascript 库可通过`window.runtime`提供给前端。 使用 `开发` 模式时会生成一个运行时包，该包为运行时提供 Typescript 声明。 这应该位于您的前端目录中的`wailsjs`目录中。
 
-### Hide
+### 退出
 
-Go Signature: `Hide(ctx context.Context)`
+Go 方法签名: `Quit(ctx context.Context)`
 
-Hides the application.
+退出应用程序。
 
 :::info Note On Mac, this will hide the application in the same way as the `Hide` menu item in standard Mac applications. This is different to hiding the window, but the application still being in the foreground. For Windows and Linux, this is currently the same as `WindowHide`. :::
 
-### Show
+### 环境
 
-Go Signature: `Show(ctx context.Context)`
+返回当前环境的详细信息。
 
 Shows the application.
 
@@ -34,7 +34,7 @@ Shows the application.
 
 ### Quit
 
-Go Signature: `Quit(ctx context.Context)`
+Go 方法签名: `Environment(ctx context.Context) EnvironmentInfo`
 
 Quits the application.
 
@@ -44,7 +44,7 @@ Go Signature: `Environment(ctx context.Context) EnvironmentInfo`
 
 Returns details of the current environment.
 
-#### EnvironmentInfo
+#### 环境信息
 
 ```go
 type EnvironmentInfo struct {
