@@ -2,11 +2,11 @@
 sidebar_position: 2
 ---
 
-# Creating a Project
+# 创建项目
 
-## Project Generation
+## 项目生成
 
-Now that the CLI is installed, you can generate a new project by using the `wails init` command.
+现在 CLI 已安装，您可以使用该`wails init`命令生成一个新项目。
 
 Pick your favourite framework:
 
@@ -15,15 +15,16 @@ import TabsFrameworks from "../../src/components/frameworktabs";
 
 <hr />
 
-There are also [community templates](../community/templates.mdx) available that offer different capabilities and frameworks.
+Wails 项目具有以下布局：
 
-To see the other options available, you can run `wails init -help`. More details can be found in the [CLI Reference](../reference/cli.mdx#init).
+要查看其他可用选项，您可以运行 `wails init -help`。 更多详细信息可以在 [初始化命令](../reference/cli#初始化)中找到。
 
-## Project Layout
+## 项目布局
 
 Wails projects have the following layout:
 
 ```
+.
 .
 ├── build/
 │   ├── appicon.png
@@ -36,20 +37,20 @@ Wails projects have the following layout:
 └── wails.json
 ```
 
-### Project structure rundown
+### 项目结构概要
 
-- `/main.go` - The main application
-- `/frontend/` - Frontend project files
-- `/build/` - Project build directory
-- `/build/appicon.png` - The application icon
-- `/build/darwin/` - Mac specific project files
-- `/build/windows/` - Windows specific project files
-- `/wails.json` - The project configuration
+- `/main.go` - 主应用
+- `/frontend/` - 前端项目文件
+- `/build/` - 项目构建目录
+- `/wails.json` - 项目配置
+- `/go.mod` - Go mod 文件
+- `/go.sum` - Go mod 校验文件
+- `/build/windows/` - Windows 特定的项目文件
 - `/go.mod` - Go module file
 - `/go.sum` - Go module checksum file
 
-The `frontend` directory has nothing specific to Wails and can be any frontend project of your choosing.
+`frontend`目录没有特定于 Wails 的内容，可以是您选择的任何前端项目。
 
-The `build` directory is used during the build process. These files may be updated to customise your builds. If files are removed from the build directory, default versions will be regenerated.
+`build`目录在构建过程中使用。 这些文件可以修改以自定义您的构建。 如果文件从构建目录中删除，将重新生成默认版本。
 
-The default module name in `go.mod` is "changeme". You should change this to something more appropriate.
+`go.mod`中的默认模块名称是“changeme”。 您应该将其更改为更合适的内容。
