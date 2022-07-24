@@ -264,7 +264,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		// Show dev server URL in terminal after 3 seconds
 		go func() {
 			time.Sleep(3 * time.Second)
-			LogGreen("\n\nTo develop in the browser, navigate to: %s", devServerURL)
+			LogGreen("\n\nTo develop in the browser and call your bound Go methods from Javascript, navigate to: %s", devServerURL)
 		}()
 
 		// Watch for changes and trigger restartApp()
