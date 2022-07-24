@@ -1,15 +1,15 @@
 
-# Migrating from v1
+# 从 v1 迁移
 
-## Overview
+## 概述
 
-Wails v2 is a significant change from v1. This document aims to highlight the changes and the steps in migrating an existing project.
+Wails v2 与 v1 相比有重大变化。 本文档旨在重点介绍迁移现有项目的更改和步骤。
 
-### Creating the Application
+### 创建应用程序
 
-In v1, the main application is created using `wails.CreateApp`, bindings are added with `app.Bind`, then the application is run using `app.Run()`.
+在 v1 中，使用`wails.CreateApp`来创建主应用程序，使用`app.Bind`来添加绑定，然后使用`app.Run()`运行应用程序。
 
-Example:
+示例：
 
 ```go title="v1"
  app := wails.CreateApp(&wails.AppConfig{
@@ -24,7 +24,7 @@ Example:
   app.Run()
 ```
 
-In v2, there is just a single method, `wails.Run()`, that accepts [application options](../reference/options.mdx#application-options).
+在 v2 中，只有一个方法`wails.Run()`接受[应用程序参数选项](../reference/options#应用程序参数选项)。
 
 ```go title="v2"
     err := wails.Run(&options.App{
@@ -38,9 +38,9 @@ In v2, there is just a single method, `wails.Run()`, that accepts [application o
     })
 ```
 
-### Binding
+### 绑定
 
-In v1, it was possible to bind both arbitrary functions and structs. In v2, this has been simplified to only binding structs. The struct instances that were previously passed to the `Bind()` method in v1, are now specified in the `Bind` field of the [application options](../reference/options.mdx#application-options):
+在 v1 中，可以绑定任意函数和结构。 在 v2 中，这已被简化为仅绑定结构。 以前传递给 v1`Bind()`中的方法的结构实例现在在[应用程序参数选项](../reference/options#应用程序参数选项)`Bind`字段中指定：
 
 ```go title="v1"
   app := wails.CreateApp(/* options */)
@@ -56,19 +56,19 @@ In v1, it was possible to bind both arbitrary functions and structs. In v2, this
     })
 ```
 
-In v1, bound methods were available to the frontend at `window.backend`. This has changed to `window.go`.``
+在 v1 中，绑定方法在`window.backend`中。 这已更改为`window.go`。
 
-### Application Lifecycle
+### 应用程序生命周期
 
 In v1, there were 2 special methods in a bound struct: `WailsInit()` and `WailsShutdown()`. These have been replaced with 3 lifecycle hooks as part of the [application options](../reference/options.mdx#application-options):
 
-- [OnStartup](../reference/options.mdx#onstartup)
-- [OnShutdown](../reference/options.mdx#onshutdown)
-- [OnDomReady](../reference/options.mdx#ondomready)
+- [应用启动回调](../reference/options.mdx#onstartup)
+- [应用退出回调](../reference/options.mdx#onshutdown)
+- [前端 Dom 加载完成回调](../reference/options.mdx#ondomready)
 
-Note: [OnDomReady](../reference/options.mdx#ondomready) replaces the `wails:ready` system event in v1.
+注意：[前端 Dom 加载完成回调](../reference/options#前端-dom-加载完成回调)替换了 v1 中的 `wails:ready` 系统事件。
 
-These methods can be standard functions, but a common practice is to have them part of a struct:
+这些方法可以是标准函数，但通常的做法是将它们作为结构的一部分：
 
 ```go title="v2"
     basic := NewBasicApp()
@@ -86,13 +86,20 @@ func (b *Basic) startup(ctx context.Context) {
     b.ctx = ctx
 }
 ...
+type Basic struct {
+    ctx context.Context
+}
+func (b *Basic) startup(ctx context.Context) {
+    b.ctx = ctx
+}
+...
 ```
 
-### Runtime
+### 运行时
 
-The runtime in v2 is much richer than v1 with support for menus, window manipulation and better dialogs. The signature of the methods has changed slightly - please refer the the [Runtime Reference](../reference/runtime/intro.mdx).
+v2 中的运行时比 v1 丰富得多，支持菜单、窗口操作和更好的对话框。 方法的签名略有变化 - 请参阅[运行时](../reference/runtime/intro)。
 
-In v1, the [runtime](../reference/runtime/intro.mdx) was available via a struct passed to `WailsInit()`. In v2, the runtime has been moved out to its own package. Each method in the runtime takes the `context.Context` that is passed to the [OnStartup](../reference/options.mdx#onstartup) method.
+在 v1 中，[运行时](../reference/runtime/intro)可通过传递给`WailsInit()`. 在 v2 中，运行时已移出到它自己的包。 In v2, the runtime has been moved out to its own package. 运行时中的每个方法都采用`context.Context`传递给了[应用启动回调](../reference/options#应用启动回调)方法。
 
 ```go title="Runtime Example"
 package main
@@ -108,29 +115,31 @@ func (a *App) startup(ctx context.Context) {
     a.ctx = ctx
     runtime.LogInfo(ctx, "Application Startup called!")
 }
+}
 
 ```
 
-### Assets
+### 资源
 
-The _biggest_ change in v2 is how assets are handled.
+在 v2 最大的变化是资源的处理方式。
 
-In v1, assets were passed via 2 application options:
+在 v1 中，资源通过 2 个应用程序参数选项传递：
 
-- `JS` - The application's Javascript
-- `CSS` - The application's CSS
+- `JS` - 应用程序的 Javascript
+- `CSS` - 应用程序的 CSS
 
-This meant that the responsibility of generating a single JS and CSS file was on the developer. This essentially required the use of complicated packers such as webpack.
+这意味着生成单个 JS 和 CSS 文件的责任在于开发人员。 这本质上需要使用繁琐的打包程序，例如 webpack。
 
-In v2, Wails makes no assumptions about your frontend assets, just like a webserver. All of your application assets are passed to the application options as an `embed.FS`.
+在 v2 中，Wails 不对您的前端资源做任何预设，就像网络服务器一样。 您的所有应用程序资源都作为`embed.FS`.
 
-**This means there is no requirement to bundle your assets, encode images as Base64 or attempt the dark art of bundler configuration to use custom fonts**.
+这意味着不需要打包您的资源、将图像编码为 Base64 或尝试使用奇葩的打包工具配置来使用自定义字体。
 
-At startup, Wails will scan the given `embed.FS` for `index.html` and use its location as the root path for all the other application assets - just like a webserver would.
+在启动时，Wails 将扫描给定的`embed.FS`的`index.html`并将其位置用作所有其他应用程序资源的根路径 - 就像网络服务器一样。
 
-Example: An application has the following project layout. All final assets are placed in the `frontend/dist` directory:
+示例：应用程序具有以下项目布局。 所有最终资源都放在 `frontend/dist`目录中：
 
 ```shell
+.
 .
 ├── build/
 ├── frontend/
@@ -143,7 +152,7 @@ Example: An application has the following project layout. All final assets are p
 └── wails.json
 ```
 
-Those assets may be used by the application by simply creating an `embed.FS`:
+应用程序可以通过简单地创建一个`embed.FS`来使用这些资源：
 
 ```go title="Assets Example"
 //go:embed frontend/dist
@@ -157,33 +166,34 @@ func main() {
 }
 ```
 
-Of course, bundlers can be used if you wish to. The only requirement is to pass the final application assets directory to Wails using an `embed.FS` in the `Assets` key of the [application options](../reference/options.mdx#application-options).
+当然，如果您愿意，也可以使用打包工具。 唯一的要求是在 Wails 中使用`embed.FS`,将最终的程序资源目录传递给[应用程序参数选项](../reference/options#应用程序参数选项)的`Assets`键。
 
-### Project Configuration
+### 项目配置
 
-In v1, the project configuration was stored in the `project.json` file in the project root. In v2, the project configuration is stored in the `wails.json` file in the project root.
+在 v1 中，项目配置存储在项目根的 `project.json` 文件中。 在 v2 中，项目配置存储在项目根部的 `wails.json` 文件中。
 
-The format of the file is slightly different. Here is a comparison:
+文件的格式略有不同。 下面是区别：
 
 <p align="center">
 
-| v1                 | v2               | Notes                                               |
-| ------------------ | ---------------- | --------------------------------------------------- |
-| name               | name             |                                                     |
-| description        |                  | Removed                                             |
-| author / name      | author / name    |                                                     |
-| author / email     | author / email   |                                                     |
-| version            | version          |                                                     |
-| binaryname         | outputfilename   | Changed                                             |
-| frontend / dir     |                  | Removed                                             |
-| frontend / install | frontend:install | Changed                                             |
-| frontend / build   | frontend:build   | Changed                                             |
-| frontend / bridge  |                  | Removed                                             |
-| frontend / serve   |                  | Removed                                             |
-| tags               |                  | Removed                                             |
-|                    | wailsjsdir       | The directory to generate wailsjs modules           |
-|                    | assetdir         | The directory of the compiled frontend assets for `dev` mode. This is normally inferred and could be left empty. |
-|                    | reloaddirs       | Comma separated list of additional directories to watch for changes and to trigger reloads in `dev` mode. This is only needed for some more advanced asset configurations. |
+| v1                 | v2               | 注解                                                                                             |
+| ------------------ | ---------------- | ------------------------------------------------------------------------------------------------ |
+| name               | name             |                                                                                                  |
+| description        |                  | 移除                                                                                             |
+| author / name      | author / name    |                                                                                                  |
+| author / email     | author / email   |                                                                                                  |
+| version            | version          |                                                                                                  |
+| binaryname         | outputfilename   | 变更                                                                                             |
+| frontend / dir     |                  | 移除                                                                                             |
+| frontend / install | frontend:install | 变更                                                                                             |
+| frontend / build   | frontend:build   | 变更                                                                                             |
+| frontend / bridge  |                  | 移除                                                                                             |
+| frontend / serve   |                  | 移除                                                                                             |
+| tags               |                  | 移除                                                                                             |
+|                    | wailsjsdir       | 生成 wailsjs 模块的目录                                                                          |
+|                    | assetdir         | `dev` 模式下前端资源文件目录                                                                     |
+|                    | reloaddirs       | 以逗号分隔的附加目录列表，用于监视更改并在开发模式下触发重新加载。 This is normally inferred and could be left empty. |
+|                    | reloaddirs       | Comma separated list of additional directories to watch for changes and to trigger reloads in `dev` mode. 这只需要一些更重要的资源配置。 |
 
 </p>
 
