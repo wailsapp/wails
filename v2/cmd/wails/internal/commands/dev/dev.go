@@ -90,6 +90,7 @@ type devFlags struct {
 	raceDetector    bool
 
 	frontendDevServerURL string
+	skipFrontend         bool
 }
 
 // AddSubcommand adds the `dev` command for the Wails application
@@ -117,6 +118,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space separated)", &flags.appargs)
 	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
 	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
+	command.BoolFlag("s", "Skips building the frontend", &flags.skipFrontend)
 
 	command.Action(func() error {
 		// Create logger
@@ -358,7 +360,7 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		LDFlags:        flags.ldflags,
 		Compiler:       flags.compilerCommand,
 		ForceBuild:     flags.forceBuild,
-		IgnoreFrontend: false,
+		IgnoreFrontend: flags.skipFrontend || flags.frontendDevServerURL != "",
 		Verbosity:      flags.verbosity,
 		WailsJSDir:     flags.wailsjsdir,
 		RaceDetector:   flags.raceDetector,
