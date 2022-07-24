@@ -360,7 +360,7 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		LDFlags:        flags.ldflags,
 		Compiler:       flags.compilerCommand,
 		ForceBuild:     flags.forceBuild,
-		IgnoreFrontend: flags.skipFrontend,
+		IgnoreFrontend: flags.skipFrontend || flags.frontendDevServerURL != "",
 		Verbosity:      flags.verbosity,
 		WailsJSDir:     flags.wailsjsdir,
 		RaceDetector:   flags.raceDetector,
