@@ -1,37 +1,38 @@
-# NSIS installer
+# NSIS 安装程序
 
 <p style={{"text-align": "center"}}>
    <img src="/img/nsis.png" style={{"max-width":"50%"}}></img><br/>
 </p>
 
-Wails supports generating Windows installers using the [NSIS installer](https://nsis.sourceforge.io/).
+Wails 支持使用[NSIS 安装程序](https://nsis.sourceforge.io/)生成 Windows 安装程序。
 
-## Installing NSIS
+## 安装 NSIS
 
 ### Windows
 
-The installer is available on the [NSIS Download](https://nsis.sourceforge.io/Download) page.
+安装程序可在[NSIS 下载页面](https://nsis.sourceforge.io/Download)上找到。
 
-If you use the chocolatey package manager, run the following script:
+如果您使用 chocolatey 包管理器，请运行以下脚本：
 ```
 choco install nsis
 ```
-If you install NSIS manually, you need to add the *Bin* folder, which contains `makensis.exe`, in your NSIS installation to your path. [Here](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) is a good tutorial on how to add to path on Windows.
+如果手动安装 NSIS，则需要将 NSIS 安装目录中包含`makensis.exe`的*Bin*目录添加到 PATH 中。 [这是](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) 一个关于如何在 Windows 上添加到 PATH 的好教程。
 
 ### Linux
 
-The `nsis` package should be available through your distribution's package manager.
+应该可以通过您的发行版的软件包管理器获得`nsis`包。
 
 ### MacOS
 
-NSIS is available to install through homebrew: `brew install nsis`.
+NSIS 可通 homebrew 安装：`brew install nsis`。
 
-## Generating the installer
+## 生成安装程序
 
-When a new project is created, Wails generates the NSIS configuration files in `build/windows/installer`. The config data is read from `installer/info.json` and that is configured to use the project's `wails.json` Info section:
+创建新项目时，Wails 从`installer/info.json`中读取配置数据并使用项目的`wails.json`的 Info 部分，在`build/windows/installer`中生成 NSIS 配置文件： The config data is read from `installer/info.json` and that is configured to use the project's `wails.json` Info section:
 
 ```json
 // ...
+ // ...
  "Info": {
     "companyName": "My Company Name",
     "productName": "Wails Vite",
@@ -41,9 +42,9 @@ When a new project is created, Wails generates the NSIS configuration files in `
   },
 ```
 
-To generate an installer for your application, use the `-nsis` flag with `wails build`:
+要为您的应用程序生成安装程序，请使用`wails build`的`-nsis`标志：
 ```
 wails build -nsis
 ```
 
-The installer will now be available in the `build/bin` directory.
+现在可用安装程序将生成在`build/bin`目录中。
