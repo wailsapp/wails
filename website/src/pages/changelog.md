@@ -32,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * docs: add MyNameIsAres as a contributor for doc by @allcontributors in https://github.com/wailsapp/wails/pull/1638
 * Deprecate Fullscreen appoption by @acheong08 in https://github.com/wailsapp/wails/pull/1640
 
+## Deprecated
+
+* The `fullscreen` option is deprecated. Please
+  use [`WindowStartState`](https://wails.io/docs/reference/options#windowstartstate) instead.
+
 ## New Contributors
 
 * @MyNameIsAres made their first contribution in https://github.com/wailsapp/wails/pull/1636
