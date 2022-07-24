@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased][]
 
+## [v2.0.0-beta.40] - 2022-07-24
+
+## Added
+
+* Add Show() and Hide() to runtime to show/hide application by @leaanthony in https://github.com/wailsapp/wails/pull/1599
+* Override target platform/arch using GOOS and GOARCH environment variables by @leaanthony in https://github.com/wailsapp/wails/pull/1618
+* Add option to skip frontend rebuild in dev mode by @leaanthony in https://github.com/wailsapp/wails/pull/1632
+
+## Fixed
+
+* Update svelte templates to use vite 3 by @leaanthony in https://github.com/wailsapp/wails/pull/1643
+* Fix plain template by @stffabi in https://github.com/wailsapp/wails/pull/1609
+* Fix Website layout by @leaanthony in https://github.com/wailsapp/wails/pull/1616
+* Fixed typo in documentation page docs/howdoesitwork by @MyNameIsAres in https://github.com/wailsapp/wails/pull/1636
+* Use scaling when setting min/max window by @leaanthony in https://github.com/wailsapp/wails/pull/1557
+
+## Changed
+
+* Install dev dependencies before starting dev mode by @leaanthony in https://github.com/wailsapp/wails/pull/1615
+* Translate and fix website text by @misitebao in https://github.com/wailsapp/wails/pull/1525
+* docs: add MyNameIsAres as a contributor for doc by @allcontributors in https://github.com/wailsapp/wails/pull/1638
+* Deprecate Fullscreen appoption by @acheong08 in https://github.com/wailsapp/wails/pull/1640
+
+## New Contributors
+
+* @MyNameIsAres made their first contribution in https://github.com/wailsapp/wails/pull/1636
+
 ## [v2.0.0-beta.39.2] - 2022-07-20
 
 ## Added
