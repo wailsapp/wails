@@ -1,33 +1,33 @@
 
-# Bleeding Edge
+# 前沿风险技术
 
-## Overview
+## 概述
 
-Wails is in constant development and new releases are regularly "tagged". This usually happens when all the newer code on `master` has been tested and confirmed working. If you need a bugfix or feature that has not yet made it to a release, it's possible to use the latest "bleeding edge" version using the following steps:
+Wails 一直在开发中，新版本会定期“标记”。 这通常发生在`master`分支上所有较新的代码都经过测试并确认有效时。 如果您需要尚未发布的错误修复或功能，可以通过以下步骤使用最新的“前沿风险”版本：
 
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails/v2/cmd/wails`
 - `go install`
 
-NOTE: The directory that you cloned the project into will now be called "clonedir".
+注意：您将项目克隆到的目录现在将被称为“clonedir”。
 
-The Wails CLI will now be at the very latest version. To update projects to use the latest version, update the project's `go.mod` and ensure the following line is at the bottom of the file:
+Wails CLI 现在将是最新版本。 要更新项目以使用最新版本，请更新项目并确保以下行位于`go.mod`文件底部：
 
 `replace github.com/wailsapp/wails/v2 => <clonedir>`
 
-Example:
+示例：
 
-On Windows: `replace github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
+在 Windows 上： `replace github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
 
-On 'nix: `replace github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
+在'nix 上： `replace github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
 
-To revert back to a stable version, run:
+要恢复到稳定版本，请运行：
 
 `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
-## Testing a Branch
+## 测试一个分支
 
-If you want to test a branch, follow the instructions above, but ensure you switch the branch you want to test before installing:
+如果要测试一个分支，请按照上面的说明进行操作，但请确保在安装之前切换要测试的分支：
 
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails`
