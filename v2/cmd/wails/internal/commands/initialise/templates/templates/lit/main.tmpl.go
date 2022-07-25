@@ -28,6 +28,6 @@ func main() {
 	})
 
 	if err != nil {
-		println("Error:", err)
+		println("Error:", err.Error())
 	}
 }

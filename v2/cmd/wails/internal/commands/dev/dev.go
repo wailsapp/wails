@@ -360,7 +360,7 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		LDFlags:        flags.ldflags,
 		Compiler:       flags.compilerCommand,
 		ForceBuild:     flags.forceBuild,
-		IgnoreFrontend: flags.skipFrontend || flags.frontendDevServerURL != "",
+		IgnoreFrontend: flags.skipFrontend,
 		Verbosity:      flags.verbosity,
 		WailsJSDir:     flags.wailsjsdir,
 		RaceDetector:   flags.raceDetector,
@@ -677,6 +677,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 				rebuild = false
 				LogGreen("[Rebuild triggered] files updated")
 				// Try and build the app
+				buildOptions.IgnoreFrontend = flags.skipFrontend || flags.frontendDevServerURL != ""
 				newBinaryProcess, _, err := restartApp(buildOptions, debugBinaryProcess, flags, exitCodeChannel)
 				if err != nil {
 					LogRed("Error during build: %s", err.Error())
