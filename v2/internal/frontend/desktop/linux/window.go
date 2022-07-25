@@ -68,7 +68,6 @@ static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int 
 	size.max_width = (max_width == 0 ? monitorSize.width : max_width);
 	size.min_height = min_height;
 	size.min_width = min_width;
-	printf("SetMinMaxSize - min: (%d,%d) max: (%d,%d)\n", size.min_width, size.min_height, size.max_width, size.max_height);
     gtk_window_set_geometry_hints(window, NULL, &size, flags);
 }
 
@@ -84,8 +83,6 @@ gboolean Center(gpointer data) {
 
 	int newX = ((m.width - windowWidth) / 2) + m.x;
 	int newY = ((m.height - windowHeight) / 2) + m.y;
-
-	printf("Center: %dx%d\n", newX, newY);
 
     // Place the window at the center of the monitor
     gtk_window_move(window, newX, newY);
@@ -485,7 +482,6 @@ void SetPosition(void* window, int x, int y) {
 	args->window = window;
 	args->x = monitorDimensions.x + x;
 	args->y = monitorDimensions.y + y;
-	printf("SetPosition: %dx%d\n", args->x, args->y);
 	ExecuteOnMainThread(setPosition, (gpointer)args);
 }
 
@@ -531,7 +527,6 @@ gboolean Fullscreen(gpointer data) {
 	// Get the geometry of the monitor.
 	GdkRectangle m = getCurrentMonitorGeometry(window);
 	int scale = getCurrentMonitorScaleFactor(window);
-	printf("Fullscreen scale: %d\n", scale);
 	SetMinMaxSize(window, 0, 0, m.width * scale, m.height * scale);
 
 	gtk_window_fullscreen(window);
@@ -837,7 +832,6 @@ func (w *Window) SetResizable(resizable bool) {
 }
 
 func (w *Window) SetSize(width int, height int) {
-	println("SetSize: ", width, height)
 	C.gtk_window_resize(w.asGTKWindow(), C.gint(width), C.gint(height))
 }
 
