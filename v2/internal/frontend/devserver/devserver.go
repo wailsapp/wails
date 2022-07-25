@@ -110,7 +110,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		}
 		return nil
 	})
-
+	d.LogDebug("Serving DevServer at http://%s", d.devServerAddr)
 	if devServerAddr := d.devServerAddr; devServerAddr != "" {
 		// Start server
 		go func(server *echo.Echo, log *logger.Logger) {
@@ -156,7 +156,7 @@ func (d *DevWebServer) handleReloadApp(c echo.Context) error {
 
 func (d *DevWebServer) handleIPCWebSocket(c echo.Context) error {
 	websocket.Handler(func(c *websocket.Conn) {
-		d.LogDebug(fmt.Sprintf("Websocket client %p connected", c))
+		d.LogDebug(fmt.Sprintf("Websocket client %v connected", c.Request().RemoteAddr))
 		d.socketMutex.Lock()
 		d.websocketClients[c] = &sync.Mutex{}
 		locker := d.websocketClients[c]
@@ -166,7 +166,7 @@ func (d *DevWebServer) handleIPCWebSocket(c echo.Context) error {
 			d.socketMutex.Lock()
 			delete(d.websocketClients, c)
 			d.socketMutex.Unlock()
-			d.LogDebug(fmt.Sprintf("Websocket client %p disconnected", c))
+			d.LogDebug(fmt.Sprintf("Websocket client %v disconnected", c.Request().RemoteAddr))
 		}()
 
 		var msg string
