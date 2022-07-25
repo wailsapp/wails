@@ -1,4 +1,4 @@
-//go:build production
+//go:build production && desktop
 
 package app
 
