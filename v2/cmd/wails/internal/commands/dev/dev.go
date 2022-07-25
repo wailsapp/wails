@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/bitfield/script"
 	"io"
 	"net"
 	"net/http"
@@ -20,6 +19,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/bitfield/script"
 	"github.com/google/shlex"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal"
 	"github.com/wailsapp/wails/v2/internal/gomod"
@@ -187,25 +187,22 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		exitCodeChannel := make(chan int, 1)
 
 		// Install if needed
-		installCommand := projectConfig.GetDevInstallerCommand()
-		if installCommand == "" {
-			return fmt.Errorf("no `frontend:dev` or `frontend:install` defined. Please add one of these to your wails.json")
-		}
-
-		// Install initial frontend dev dependencies
-		err = os.Chdir(filepath.Join(cwd, "frontend"))
-		if err != nil {
-			return err
-		}
-		LogGreen("Installing frontend dependencies...")
-		pipe := script.Exec(installCommand)
-		pipe.Wait()
-		if pipe.Error() != nil {
-			return pipe.Error()
-		}
-		err = os.Chdir(cwd)
-		if err != nil {
-			return err
+		if installCommand := projectConfig.GetDevInstallerCommand(); installCommand != "" {
+			// Install initial frontend dev dependencies
+			err = os.Chdir(filepath.Join(cwd, "frontend"))
+			if err != nil {
+				return err
+			}
+			LogGreen("Installing frontend dependencies...")
+			pipe := script.Exec(installCommand)
+			pipe.Wait()
+			if pipe.Error() != nil {
+				return pipe.Error()
+			}
+			err = os.Chdir(cwd)
+			if err != nil {
+				return err
+			}
 		}
 
 		// frontend:dev:watcher command.
