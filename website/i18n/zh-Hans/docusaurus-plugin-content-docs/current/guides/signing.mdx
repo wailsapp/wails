@@ -108,6 +108,29 @@ jobs:
         with:
           node-version: 14
       # You may need to manually build you frontend here, unless you have configured frontend build and install commands in wails.json.
+      name: "example"
+on:
+  workflow_dispatch:
+    # This Action only starts when you go to Actions and manually run the workflow.
+
+jobs:
+  package:
+    strategy:
+      matrix:
+        platform: [ windows-latest, macos-latest ]
+        go-version: [1.18]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      # You may need to manually build you frontend here, unless you have configured frontend build and install commands in wails.json.
       - name: Get Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
       - name: Build Wails app
