@@ -1,7 +1,5 @@
 {
   "files": [
-    "README.md",
-    "README.zh-Hans.md",
     "website/src/pages/credits.mdx"
   ],
   "imageSize": 75,
