@@ -8,11 +8,11 @@
 
 ## [v2.0.0-beta.42] - 2022-07-25
 
-## Added
+## 新增
 
 * Added `options.NewRGBA` and `options.NewRGB` functions to create `*options.RGBA` by @leaanthony
 
-## Fixed
+## 修复
 
 * Fixed initial build of frontend when using `wails dev` on new projects by @leaanthony in https://github.com/wailsapp/wails/pull/1650
 * Ignore empty install command when running `wails dev` by @stffabi in https://github.com/wailsapp/wails/pull/1651
@@ -22,13 +22,13 @@
 
 ## [v2.0.0-beta.40] - 2022-07-24
 
-## Added
+## 新增
 
 * Add Show() and Hide() to runtime to show/hide application by @leaanthony in https://github.com/wailsapp/wails/pull/1599
 * Override target platform/arch using GOOS and GOARCH environment variables by @leaanthony in https://github.com/wailsapp/wails/pull/1618
 * Add option to skip frontend rebuild in dev mode by @leaanthony in https://github.com/wailsapp/wails/pull/1632
 
-## Fixed
+## 修复
 
 * Update svelte templates to use vite 3 by @leaanthony in https://github.com/wailsapp/wails/pull/1643
 * Fix plain template by @stffabi in https://github.com/wailsapp/wails/pull/1609
@@ -36,33 +36,33 @@
 * Fixed typo in documentation page docs/howdoesitwork by @MyNameIsAres in https://github.com/wailsapp/wails/pull/1636
 * Use scaling when setting min/max window by @leaanthony in https://github.com/wailsapp/wails/pull/1557
 
-## Changed
+## 变更
 
 * Install dev dependencies before starting dev mode by @leaanthony in https://github.com/wailsapp/wails/pull/1615
 * Translate and fix website text by @misitebao in https://github.com/wailsapp/wails/pull/1525
 * docs: add MyNameIsAres as a contributor for doc by @allcontributors in https://github.com/wailsapp/wails/pull/1638
 * Deprecate Fullscreen appoption by @acheong08 in https://github.com/wailsapp/wails/pull/1640
 
-## Deprecated
+## 不建议
 
 * The `Fullscreen` application option is deprecated. Please use [`WindowStartState`](https://wails.io/docs/reference/options#windowstartstate) instead.
-## New Contributors
+## 新贡献者
 
 * @MyNameIsAres made their first contribution in https://github.com/wailsapp/wails/pull/1636
 
 ## [v2.0.0-beta.39.2] - 2022-07-20
 
-## Added
+## 新增
 
 * Update example for macOS Menu by @acheong08 in https://github.com/wailsapp/wails/pull/1600
 
-## Fixed
+## 修复
 
 * Reinstate Go 1.17 compatibility by @leaanthony in https://github.com/wailsapp/wails/pull/1605
 
 ## [v2.0.0-beta.39] - 2022-07-19
 
-## Added
+## 新增
 
 * New screen dimensions runtime API by @skamensky in https://github.com/wailsapp/wails/pull/1519
 * Auto discover vite devserver port by @leaanthony in https://github.com/wailsapp/wails/pull/1547
@@ -70,7 +70,7 @@
 * New pre-build hooks feature by @leaanthony in https://github.com/wailsapp/wails/pull/1578
 * New production log level option by @leaanthony in https://github.com/wailsapp/wails/pull/1555
 
-## Fixed
+## 修复
 
 * Fix stack corruption in Windows when using ICoreWebView2HttpHeadersCollectionIterator by @stffabi in https://github.com/wailsapp/wails/pull/1589
 * Move WindowGet* to main thread by @leaanthony in https://github.com/wailsapp/wails/pull/1464
@@ -81,7 +81,7 @@
 * Check for line length when scanning for local devserver url by @leaanthony in https://github.com/wailsapp/wails/pull/1566
 * Remove usage of unsafe.Pointer in winc by @stffabi and @leaanthony in https://github.com/wailsapp/wails/pull/1556
 
-## Changed
+## 变更
 
 * Rename WindowSetRGBA -> WindowSetBackgroundColour by @leaanthony in https://github.com/wailsapp/wails/pull/1506
 * Improvements to the dev command by @stffabi in https://github.com/wailsapp/wails/pull/1510
@@ -91,7 +91,7 @@
 * Add troubleshooting for `Not Found` error by @acheong08 in https://github.com/wailsapp/wails/pull/1586
 * Docs/better homepage by @leaanthony in https://github.com/wailsapp/wails/pull/1591
 
-## New Contributors
+## 新贡献者
 
 * @skamensky made their first contribution in https://github.com/wailsapp/wails/pull/1519
 * @acheong08 made their first contribution in https://github.com/wailsapp/wails/pull/1586
@@ -100,7 +100,7 @@
 
 ## [v2.0.0-beta.38] - 2022-06-27
 
-### Added
+### 新增
 
 * Add race detector to build & dev by @Lyimmi in https://github.com/wailsapp/wails/pull/1426
 * [linux] Support `linux/arm` architecture by @Lyimmi in https://github.com/wailsapp/wails/pull/1427
@@ -109,7 +109,7 @@
 * Add runtime function `WindowSetAlwaysOnTop` by @chenxiao1990 in https://github.com/wailsapp/wails/pull/1442
 * [windows] Allow setting browser path by @NanoNik in https://github.com/wailsapp/wails/pull/1448
 
-### Fixed
+### 修复
 
 * [linux] Improve switching to main thread for callbacks by @stffabi in https://github.com/wailsapp/wails/pull/1392
 * [windows] Fix WebView2 minimum runtime version check by @stffabi in https://github.com/wailsapp/wails/pull/1456
@@ -123,7 +123,7 @@
 * [windows] Make `SetBackgroundColour` compatible for `windows/386` by @stffabi in https://github.com/wailsapp/wails/pull/1493
 * Fix lit-ts template by @Orijhins in https://github.com/wailsapp/wails/pull/1494
 
-### Changed
+### 变更
 
 * [windows] Load WebView2 loader from embedded only by @stffabi in https://github.com/wailsapp/wails/pull/1432
 * Add showcase entry for October + update homepage carousel entry for October by @marcus-crane in https://github.com/wailsapp/wails/pull/1436
@@ -135,7 +135,7 @@
 * Better signal handling by @leaanthony in https://github.com/wailsapp/wails/pull/1488
 * Chore/react 18 create root by @tomanagle in https://github.com/wailsapp/wails/pull/1489
 
-## New Contributors
+## 新贡献者
 
 * @jaesung9507 made their first contribution in https://github.com/wailsapp/wails/pull/1430
 * @LukenSkyne made their first contribution in https://github.com/wailsapp/wails/pull/1449
@@ -148,12 +148,12 @@
 
 ## [v2.0.0-beta.37] - 2022-05-26
 
-### Added
+### 新增
 
 * Add `nogen` flag in wails dev command by @mondy in https://github.com/wailsapp/wails/pull/1413
 * Initial support for new native translucency in Windows Preview by @leaanthony in https://github.com/wailsapp/wails/pull/1400
 
-### Fixed
+### 修复
 
 * Bugfix/incorrect bindings by @leaanthony in https://github.com/wailsapp/wails/pull/1383
 * Fix runtime.js events by @polikow in https://github.com/wailsapp/wails/pull/1369
@@ -166,7 +166,7 @@
 * Update runtime.d.ts & templates by @Yz4230 in https://github.com/wailsapp/wails/pull/1421
 * Add missing className to input in React and Preact templates by @edwardbrowncross in https://github.com/wailsapp/wails/pull/1419
 
-### Changed
+### 变更
 * Improve multi-platform builds by @stffabi in https://github.com/wailsapp/wails/pull/1373
 * During wails dev only use reload logic if no AssetsHandler are in use by @stffabi in https://github.com/wailsapp/wails/pull/1385
 * Update events.mdx by @Junkher in https://github.com/wailsapp/wails/pull/1387
@@ -174,7 +174,7 @@
 * Add docs on wails generate module by @TechplexEngineer in https://github.com/wailsapp/wails/pull/1414
 * Add macos custom menu EditMenu tips by @daodao97 in https://github.com/wailsapp/wails/pull/1423
 
-### New Contributors
+### 新贡献者
 * @polikow made their first contribution in https://github.com/wailsapp/wails/pull/1369
 * @antimatter96 made their first contribution in https://github.com/wailsapp/wails/pull/1372
 * @Junkher made their first contribution in https://github.com/wailsapp/wails/pull/1387
@@ -190,22 +190,22 @@
 
 ## [v2.0.0-beta.36] - 2022-04-27
 
-### Fixed
+### 修复
 - [v2] Validate devServer property to be of the correct form by [@stffabi](https://github.com/stffabi) in https://github.com/wailsapp/wails/pull/1359
 - [v2, darwin] Initialize native variables on stack to prevent segfault by [@stffabi](https://github.com/stffabi) in https://github.com/wailsapp/wails/pull/1362
 - Vue-TS template fix
 
-### Changed
+### 变更
 - Added `OnStartup` method back to default templates
 
 ## [v2.0.0-beta.35] - 2022-04-27
 
-### Breaking Changes
+### 重大变更
 
 - When data was sent to the `EventsOn` callback, it was being sent as a slice of values, instead of optional parameters to the method. `EventsOn` now works as expected, but you will need to update your code if you currently use this. [More information](https://github.com/wailsapp/wails/issues/1324)
 - The broken `bindings.js` and `bindings.d.ts` files have been replaced by a new JS/TS code generation system. More details [here](https://wails.io/docs/howdoesitwork#calling-bound-go-methods)
 
-### Added
+### 新增
 
 - **New Templates**: Svelte, React, Vue, Preact, Lit and Vanilla templates, both JS and TS versions. `wails init -l` for more info.
 - Default templates now powered by [Vite](https://vitejs.dev). This enables lightning fast reloads when you use `wails dev`!
@@ -217,7 +217,7 @@
 - Add support for `-trimpath` [build flag](https://wails.io/docs/reference/cli#build)
 - Add support for a default AssetsHandler - [@stffabi](https://github.com/stffabi)
 
-### Fixed
+### 修复
 
 - Improved mimetype detection for BOM marker and comments - [@napalu](https://github.com/napalu)
 - Remove duplicate mimetype entries - [@napalu](https://github.com/napalu)
@@ -229,7 +229,7 @@
 - Fixed TS/JS generation for Go methods with no returns
 - Fixed WailsJS being generated in project directory
 
-### Changed
+### 变更
 
 - Website docs are now versioned
 - Improved `runtime.Environment` call
@@ -243,12 +243,12 @@
 
 ## [v2.0.0-beta.34] - 2022-03-26
 
-### Added
+### 新增
 
 - Add support for 'DomReady' callback on linux by [@napalu](https://github.com/napalu) in #1249
 - MacOS - Show extension by default by [@leaanthony](https://github.com/leaanthony)  in #1228
 
-### Fixed
+### 修复
 
 - [v2, nsis] Seems like / as path separator works only for some directives in a cross platform way by [@stffabi](https://github.com/stffabi) in #1227
 - import models on binding definition by [@adalessa](https://github.com/adalessa) in #1231
@@ -265,7 +265,7 @@
 - Try to focus window when Show() is called. by [@leaanthony](https://github.com/leaanthony)  in #1212
 - Check system for user installed Linux dependencies by [@leaanthony](https://github.com/leaanthony)  in #1180
 
-### Changed
+### 变更
 
 - feat(website): sync documents and add content by [@misitebao](https://github.com/misitebao) in #1215
 - refactor(cli): optimize default templates by [@misitebao](https://github.com/misitebao) in #1214
@@ -279,20 +279,20 @@
 
 ## [v2.0.0-beta.33][] - 2022-03-05
 
-### Added
+### 新增
 
 - NSIS Installer support for creating installers for Windows applications - Thanks [@stffabi](https://github.com/stffabi) 🎉
 - New frontend:dev:watcher command to spin out 3rd party watchers when using wails dev - Thanks [@stffabi](https://github.com/stffabi)🎉
 - Remote templates now support version tags - Thanks [@misitebao](https://github.com/misitebao) 🎉
 
-### Fixed
+### 修复
 
 - A number of fixes for ARM Linux providing a huge improvement - Thanks [@ianmjones](https://github.com/ianmjones) 🎉
 - Fixed potential Nil reference when discovering the path to `index.html`
 - Fixed crash when using `runtime.Log` methods in a production build
 - Improvements to internal file handling meaning webworkers will now work on Windows - Thanks [@stffabi](https://github.com/stffabi)🎉
 
-### Changed
+### 变更
 
 - The Webview2 bootstrapper is now run as a normal user and doesn't require admin rights
 - The docs have been improved and updated
