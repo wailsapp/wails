@@ -6,6 +6,14 @@
 
 ## [Unreleased][]
 
+## Added
+
+* Added `options.NewRGBA` and `options.NewRGB` functions to create `*options.RGBA` by @leaanthony
+
+## Fixed
+
+* BackgroundColour documentation fix
+
 ## [v2.0.0-beta.40] - 2022-07-24
 
 ## Added
