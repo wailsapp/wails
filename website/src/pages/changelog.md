@@ -7,13 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.0.0-beta.41] - 2022-07-25
+
 ## Added
 
 * Added `options.NewRGBA` and `options.NewRGB` functions to create `*options.RGBA` by @leaanthony
 
 ## Fixed
 
+* Fixed initial build of frontend when using `wails dev` on new projects by @leaanthony
+  in https://github.com/wailsapp/wails/pull/1650
+* Ignore empty install command when running `wails dev` by @stffabi in https://github.com/wailsapp/wails/pull/1651
+* Fixed error reporting in templates
 * BackgroundColour documentation fix
+* Generalize manual compile steps [Documentation] by @acheong08 in https://github.com/wailsapp/wails/pull/1644
 
 ## [v2.0.0-beta.40] - 2022-07-24
 
