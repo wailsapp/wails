@@ -1,8 +1,9 @@
+
 # 前沿风险技术
 
 ## 概述
 
-Wails 一直在开发中，新版本会定期“标记”。这通常发生在`master`分支上所有较新的代码都经过测试并确认有效时。如果您需要尚未发布的错误修复或功能，可以通过以下步骤使用最新的“前沿风险”版本：
+Wails 一直在开发中，新版本会定期“标记”。 这通常发生在`master`分支上所有较新的代码都经过测试并确认有效时。 如果您需要尚未发布的错误修复或功能，可以通过以下步骤使用最新的“前沿风险”版本：
 
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails/v2/cmd/wails`
@@ -10,17 +11,15 @@ Wails 一直在开发中，新版本会定期“标记”。这通常发生在`m
 
 注意：您将项目克隆到的目录现在将被称为“clonedir”。
 
-Wails CLI 现在将是最新版本。要更新项目以使用最新版本，请更新项目并确保以下行位于`go.mod`文件底部：
+Wails CLI 现在将是最新版本。 要更新项目以使用最新版本，请更新项目并确保以下行位于`go.mod`文件底部：
 
 `replace github.com/wailsapp/wails/v2 => <clonedir>`
 
 示例：
 
-在 Windows 上：
-`replace github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
+在 Windows 上： `replace github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
 
-在'nix 上：
-`replace github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
+在'nix 上： `replace github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
 
 要恢复到稳定版本，请运行：
 
@@ -31,6 +30,19 @@ Wails CLI 现在将是最新版本。要更新项目以使用最新版本，请�
 如果要测试一个分支，请按照上面的说明进行操作，但请确保在安装之前切换要测试的分支：
 
 - `git clone https://github.com/wailsapp/wails`
+- `cd wails`
 - `git checkout -b branch-to-test --track origin/branch-to-test`
-- `cd wails/v2/cmd/wails`
+- `cd v2/cmd/wails`
+- `go install`
+
+## Testing a PR
+
+If you want to test a PR, follow the instructions above, but ensure you fetch the PR and switch the branch before installing. Please replace `[IDofThePR]` with the ID of the PR shown on github.com:
+
+- `git clone https://github.com/wailsapp/wails`
+- `cd wails`
+- `git fetch -u origin pull/[IDofThePR]/head:test/pr-[IDofThePR]`
+- `git checkout test/pr-[IDofThePR]`
+- `git reset --hard HEAD`
+- `cd v2/cmd/wails`
 - `go install`
