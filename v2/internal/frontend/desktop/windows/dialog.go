@@ -135,7 +135,13 @@ func (f *Frontend) MessageDialog(options frontend.MessageDialogOptions) (string,
 		flags = windows.MB_OK | windows.MB_ICONWARNING
 	}
 
-	button, _ := windows.MessageBox(windows.HWND(f.mainWindow.Handle()), message, title, flags|windows.MB_SYSTEMMODAL)
+	// Check if window is visible or not
+	handle := f.mainWindow.Handle()
+	if !f.mainWindow.IsVisible() {
+		handle = 0
+	}
+
+	button, _ := windows.MessageBox(windows.HWND(handle), message, title, flags|windows.MB_SYSTEMMODAL)
 	// This maps MessageBox return values to strings
 	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}
 	result := "Error"
