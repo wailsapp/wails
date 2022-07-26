@@ -7,6 +7,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"runtime"
+	"strconv"
+	"strings"
+	"sync"
+	"text/template"
+	"time"
+
 	"github.com/bep/debounce"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -19,19 +31,11 @@ import (
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
-	"io"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"runtime"
-	"strconv"
-	"strings"
-	"text/template"
-	"time"
 )
 
 const startURL = "http://wails.localhost/"
+
+type Screen = frontend.Screen
 
 type Frontend struct {
 
@@ -338,6 +342,28 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 		}
 	})
 
+}
+
+func (f *Frontend) ScreenGetAll() ([]Screen, error) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	screens := []Screen{}
+	err := error(nil)
+	f.mainWindow.Invoke(func() {
+		screens, err = GetAllScreens(f.mainWindow.Handle())
+		wg.Done()
+
+	})
+	wg.Wait()
+	return screens, err
+}
+
+func (f *Frontend) Show() {
+	f.mainWindow.Show()
+}
+
+func (f *Frontend) Hide() {
+	f.mainWindow.Hide()
 }
 
 func (f *Frontend) Quit() {

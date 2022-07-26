@@ -28,6 +28,8 @@ import (
 	"golang.org/x/net/websocket"
 )
 
+type Screen = frontend.Screen
+
 type DevWebServer struct {
 	server           *echo.Echo
 	ctx              context.Context
@@ -44,6 +46,14 @@ type DevWebServer struct {
 	desktopFrontend frontend.Frontend
 
 	devServerAddr string
+}
+
+func (d *DevWebServer) Hide() {
+	d.desktopFrontend.Hide()
+}
+
+func (d *DevWebServer) Show() {
+	d.desktopFrontend.Show()
 }
 
 func (d *DevWebServer) WindowSetSystemDefaultTheme() {
@@ -245,6 +255,10 @@ func (d *DevWebServer) WindowUnfullscreen() {
 
 func (d *DevWebServer) WindowSetBackgroundColour(col *options.RGBA) {
 	d.desktopFrontend.WindowSetBackgroundColour(col)
+}
+
+func (d *DevWebServer) ScreenGetAll() ([]Screen, error) {
+	return d.desktopFrontend.ScreenGetAll()
 }
 
 func (d *DevWebServer) MenuSetApplicationMenu(menu *menu.Menu) {

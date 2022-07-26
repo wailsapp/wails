@@ -51,15 +51,16 @@ type Project struct {
 	// RunNonNativeBuildHooks will run build hooks though they are defined for a GOOS which is not equal to the host os
 	RunNonNativeBuildHooks bool `json:"runNonNativeBuildHooks"`
 
-	// Post build hooks for different targets, the hooks are executed in the following order
-	// Key: GOOS/GOARCH - Executed at build level after a build of the specific platform and arch
-	// Key: GOOS/*      - Executed at build level after a build of the specific platform
-	// Key: */*         - Executed at build level after a build
+	// Build hooks for different targets, the hooks are executed in the following order
+	// Key: GOOS/GOARCH - Executed at build level before/after a build of the specific platform and arch
+	// Key: GOOS/*      - Executed at build level before/after a build of the specific platform
+	// Key: */*         - Executed at build level before/after a build
 	// The following keys are not yet supported.
-	// Key: GOOS        - Executed at platform level after all builds of the specific platform
-	// Key: *           - Executed at platform level after all builds of a platform
-	// Key: [empty]     - Executed at global level after all builds of all platforms
+	// Key: GOOS        - Executed at platform level before/after all builds of the specific platform
+	// Key: *           - Executed at platform level before/after all builds of a platform
+	// Key: [empty]     - Executed at global level before/after all builds of all platforms
 	PostBuildHooks map[string]string `json:"postBuildHooks"`
+	PreBuildHooks  map[string]string `json:"preBuildHooks"`
 
 	// The application author
 	Author Author
@@ -81,6 +82,13 @@ type Project struct {
 
 	// NSISType to be build
 	NSISType string `json:"nsisType"`
+}
+
+func (p *Project) GetDevInstallerCommand() string {
+	if p.DevCommand != "" {
+		return p.DevCommand
+	}
+	return p.InstallCommand
 }
 
 func (p *Project) Save() error {

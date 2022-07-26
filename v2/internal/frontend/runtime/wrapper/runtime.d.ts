@@ -18,6 +18,13 @@ export interface Size {
     h: number;
 }
 
+export interface Screen {
+    isCurrent: boolean;
+    isPrimary: boolean;
+    width : number
+    height : number
+}
+
 // Environment information such as platform, buildtype, ...
 export interface EnvironmentInfo {
     buildType: string;
@@ -171,6 +178,10 @@ export function WindowUnminimise(): void;
 // Sets the background colour of the window to the given RGBA colour definition. This colour will show through for all transparent pixels.
 export function WindowSetBackgroundColour(R: number, G: number, B: number, A: number): void;
 
+// [ScreenGetAll](https://wails.io/docs/reference/runtime/window#screengetall)
+// Gets the all screens. Call this anew each time you want to refresh data from the underlying windowing system.
+export function ScreenGetAll(): Promise<Screen[]>;
+
 // [BrowserOpenURL](https://wails.io/docs/reference/runtime/browser#browseropenurl)
 // Opens the given URL in the system browser.
 export function BrowserOpenURL(url: string): void;
@@ -182,3 +193,11 @@ export function Environment(): Promise<EnvironmentInfo>;
 // [Quit](https://wails.io/docs/reference/runtime/intro#quit)
 // Quits the application.
 export function Quit(): void;
+
+// [Hide](https://wails.io/docs/reference/runtime/intro#hide)
+// Hides the application.
+export function Hide(): void;
+
+// [Show](https://wails.io/docs/reference/runtime/intro#show)
+// Shows the application.
+export function Show(): void;

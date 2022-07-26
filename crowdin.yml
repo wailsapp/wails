@@ -1,0 +1,20 @@
+project_id: 527906
+api_token_env: CROWDIN_PERSONAL_TOKEN
+files:
+  - source: /website/docs/**/*
+    translation: /website/i18n/%locale%/docusaurus-plugin-content-docs/current/**/%original_file_name%
+    ignore:
+      - /**/*.json
+  - source: /website/blog/*
+    translation: /website/i18n/%locale%/docusaurus-plugin-content-blog/%original_file_name%
+  - source: /website/src/pages/**/*
+    translation: /website/i18n/%locale%/docusaurus-plugin-content-pages/**/%original_file_name%
+    ignore:
+      - /**/*.json
+      - /**/*.js
+      - /**/*.jsx
+      - /**/*.ts
+      - /**/*.tsx
+      - /**/*.css
+  - source: /website/i18n/en/**/*.json
+    translation: /website/i18n/%locale%/**/%original_file_name%

@@ -356,6 +356,16 @@
     [NSApp activateIgnoringOtherApps:YES];
 }
 
+- (void) HideApplication {
+    [[NSApplication sharedApplication] hide:self];
+}
+
+- (void) ShowApplication {
+    [[NSApplication sharedApplication] unhide:self];
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:TRUE];
+
+}
+
 - (void) Maximise {
     if (![self.mainWindow isZoomed]) {
         [self.mainWindow zoom:nil];

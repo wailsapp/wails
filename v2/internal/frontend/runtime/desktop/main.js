@@ -13,11 +13,20 @@ import {eventListeners, EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnc
 import {Call, Callback, callbacks} from './calls';
 import {SetBindings} from "./bindings";
 import * as Window from "./window";
+import * as Screen from "./screen";
 import * as Browser from "./browser";
 
 
 export function Quit() {
     window.WailsInvoke('Q');
+}
+
+export function Show() {
+    window.WailsInvoke('S');
+}
+
+export function Hide() {
+    window.WailsInvoke('H');
 }
 
 export function Environment() {
@@ -29,12 +38,15 @@ window.runtime = {
     ...Log,
     ...Window,
     ...Browser,
+    ...Screen,
     EventsOn,
     EventsOnce,
     EventsOnMultiple,
     EventsEmit,
     EventsOff,
     Environment,
+    Show,
+    Hide,
     Quit
 };
 

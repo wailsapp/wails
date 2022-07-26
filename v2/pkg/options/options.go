@@ -41,20 +41,23 @@ type App struct {
 	StartHidden       bool
 	HideWindowOnClose bool
 	AlwaysOnTop       bool
-	BackgroundColour  *RGBA
+	// BackgroundColour is the background colour of the window
+	// You can use the options.NewRGB and options.NewRGBA functions to create a new colour
+	BackgroundColour *RGBA
 	// RGBA is deprecated. Please use BackgroundColour
-	RGBA             *RGBA
-	Assets           fs.FS
-	AssetsHandler    http.Handler
-	Menu             *menu.Menu
-	Logger           logger.Logger `json:"-"`
-	LogLevel         logger.LogLevel
-	OnStartup        func(ctx context.Context)                `json:"-"`
-	OnDomReady       func(ctx context.Context)                `json:"-"`
-	OnShutdown       func(ctx context.Context)                `json:"-"`
-	OnBeforeClose    func(ctx context.Context) (prevent bool) `json:"-"`
-	Bind             []interface{}
-	WindowStartState WindowStartState
+	RGBA               *RGBA
+	Assets             fs.FS
+	AssetsHandler      http.Handler
+	Menu               *menu.Menu
+	Logger             logger.Logger `json:"-"`
+	LogLevel           logger.LogLevel
+	LogLevelProduction logger.LogLevel
+	OnStartup          func(ctx context.Context)                `json:"-"`
+	OnDomReady         func(ctx context.Context)                `json:"-"`
+	OnShutdown         func(ctx context.Context)                `json:"-"`
+	OnBeforeClose      func(ctx context.Context) (prevent bool) `json:"-"`
+	Bind               []interface{}
+	WindowStartState   WindowStartState
 
 	//ContextMenus []*menu.ContextMenu
 	//TrayMenus    []*menu.TrayMenu
@@ -68,6 +71,26 @@ type RGBA struct {
 	G uint8 `json:"g"`
 	B uint8 `json:"b"`
 	A uint8 `json:"a"`
+}
+
+// NewRGBA creates a new RGBA struct with the given values
+func NewRGBA(r, g, b, a uint8) *RGBA {
+	return &RGBA{
+		R: r,
+		G: g,
+		B: b,
+		A: a,
+	}
+}
+
+// NewRGB creates a new RGBA struct with the given values and Alpha set to 255
+func NewRGB(r, g, b uint8) *RGBA {
+	return &RGBA{
+		R: r,
+		G: g,
+		B: b,
+		A: 255,
+	}
 }
 
 // MergeDefaults will set the minimum default values for an application

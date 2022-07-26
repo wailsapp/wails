@@ -37,10 +37,6 @@ func FAILED(hr HRESULT) bool {
 	return hr < 0
 }
 
-func MakeIntResource(id uint16) *uint16 {
-	return (*uint16)(unsafe.Pointer(uintptr(id)))
-}
-
 func LOWORD(dw uint32) uint16 {
 	return uint16(dw)
 }

@@ -194,6 +194,13 @@ func (f *Frontend) WindowShow() {
 func (f *Frontend) WindowHide() {
 	f.mainWindow.Hide()
 }
+func (f *Frontend) Show() {
+	f.mainWindow.ShowApplication()
+}
+
+func (f *Frontend) Hide() {
+	f.mainWindow.HideApplication()
+}
 func (f *Frontend) WindowMaximise() {
 	f.mainWindow.Maximise()
 }
@@ -224,8 +231,16 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 	f.mainWindow.SetBackgroundColour(col.R, col.G, col.B, col.A)
 }
 
+func (f *Frontend) ScreenGetAll() ([]frontend.Screen, error) {
+	return GetAllScreens(f.mainWindow.context)
+}
 func (f *Frontend) Quit() {
-	if f.frontendOptions.OnBeforeClose != nil && f.frontendOptions.OnBeforeClose(f.ctx) {
+	if f.frontendOptions.OnBeforeClose != nil {
+		go func() {
+			if !f.frontendOptions.OnBeforeClose(f.ctx) {
+				f.mainWindow.Quit()
+			}
+		}()
 		return
 	}
 	f.mainWindow.Quit()

@@ -19,6 +19,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/bitfield/script"
 	"github.com/google/shlex"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal"
 	"github.com/wailsapp/wails/v2/internal/gomod"
@@ -89,6 +90,7 @@ type devFlags struct {
 	raceDetector    bool
 
 	frontendDevServerURL string
+	skipFrontend         bool
 }
 
 // AddSubcommand adds the `dev` command for the Wails application
@@ -116,6 +118,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space separated)", &flags.appargs)
 	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
 	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
+	command.BoolFlag("s", "Skips building the frontend", &flags.skipFrontend)
 
 	command.Action(func() error {
 		// Create logger
@@ -183,6 +186,25 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
 		exitCodeChannel := make(chan int, 1)
 
+		// Install if needed
+		if installCommand := projectConfig.GetDevInstallerCommand(); installCommand != "" {
+			// Install initial frontend dev dependencies
+			err = os.Chdir(filepath.Join(cwd, "frontend"))
+			if err != nil {
+				return err
+			}
+			LogGreen("Installing frontend dependencies...")
+			pipe := script.Exec(installCommand)
+			pipe.Wait()
+			if pipe.Error() != nil {
+				return pipe.Error()
+			}
+			err = os.Chdir(cwd)
+			if err != nil {
+				return err
+			}
+		}
+
 		// frontend:dev:watcher command.
 		if command := projectConfig.DevWatcherCommand; command != "" {
 			closer, devServerURL, err := runFrontendDevWatcherCommand(cwd, command, projectConfig.FrontendDevServerURL == "auto")
@@ -239,7 +261,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		// Show dev server URL in terminal after 3 seconds
 		go func() {
 			time.Sleep(3 * time.Second)
-			LogGreen("\n\nTo develop in the browser, navigate to: %s", devServerURL)
+			LogGreen("\n\nTo develop in the browser and call your bound Go methods from Javascript, navigate to: %s", devServerURL)
 		}()
 
 		// Watch for changes and trigger restartApp()
@@ -335,7 +357,7 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		LDFlags:        flags.ldflags,
 		Compiler:       flags.compilerCommand,
 		ForceBuild:     flags.forceBuild,
-		IgnoreFrontend: false,
+		IgnoreFrontend: flags.skipFrontend,
 		Verbosity:      flags.verbosity,
 		WailsJSDir:     flags.wailsjsdir,
 		RaceDetector:   flags.raceDetector,
@@ -652,6 +674,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 				rebuild = false
 				LogGreen("[Rebuild triggered] files updated")
 				// Try and build the app
+				buildOptions.IgnoreFrontend = flags.skipFrontend || flags.frontendDevServerURL != ""
 				newBinaryProcess, _, err := restartApp(buildOptions, debugBinaryProcess, flags, exitCodeChannel)
 				if err != nil {
 					LogRed("Error during build: %s", err.Error())
