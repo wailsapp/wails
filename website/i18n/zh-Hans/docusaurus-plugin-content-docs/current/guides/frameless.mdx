@@ -1,11 +1,11 @@
+
 # 无边框应用
 
-Wails 支持无边框应用程序。这可以通过使用[应用程序参数选项](../reference/options#应用程序参数选项)中的[无边框](../reference/options#无边框)字段来实现。
+Wails 支持无边框应用程序。 这可以通过使用[应用程序参数选项](../reference/options#应用程序参数选项)中的[无边框](../reference/options#无边框)字段来实现。
 
-Wails 为拖动窗口提供了一个简单的解决方案：任何具有“data-wails-drag”属性的 HTML 元素都将充当“拖动手柄”。
-此属性适用于所有嵌套元素。如果您需要指定不应该拖动的嵌套元素，请在该元素上使用属性“data-wails-no-drag”。
+Wails 为拖动窗口提供了一个简单的解决方案：任何具有“data-wails-drag”属性的 HTML 元素都将充当“拖动手柄”。 此属性适用于所有嵌套元素。 如果您需要指定不应该拖动的嵌套元素，请在该元素上使用属性“data-wails-no-drag”。
 
-默认的 vanilla 模板使用它，即使它不是无边框的。整个 body 元素被标记为可拖动。`<div id="input" data-wails-no-drag>`元素被标记为不可拖动。
+默认的 vanilla 模板使用它，即使它不是无边框的。 整个 body 元素被标记为可拖动。 `<div id="input" data-wails-no-drag>`元素被标记为不可拖动。
 
 ```html
 <html>
