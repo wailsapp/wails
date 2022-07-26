@@ -1,5 +1,5 @@
-//go:build hybrid || server
-// +build hybrid server
+//go:build (exp && hybrid) || (exp && server)
+// +build exp,hybrid exp,server
 
 package app
 

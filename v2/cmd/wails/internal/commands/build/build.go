@@ -146,6 +146,13 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			}
 		}
 
+		// Validate experimental
+		if slicer.String([]string{"hybrid", "server"}).Contains(outputType) {
+			if !slicer.String(userTags).Contains("exp") {
+				return fmt.Errorf("output type '%s' requires the '-tags exp'", outputType)
+			}
+		}
+
 		// Webview2 installer strategy (download by default)
 		wv2rtstrategy := ""
 		webview2 = strings.ToLower(webview2)

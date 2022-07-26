@@ -1,5 +1,5 @@
-//go:build server
-// +build server
+//go:build exp && server
+// +build exp,server
 
 package hybrid
 

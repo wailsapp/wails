@@ -1,5 +1,5 @@
-//go:build hybrid
-// +build hybrid
+//go:build exp && hybrid
+// +build exp,hybrid
 
 package hybrid
 
