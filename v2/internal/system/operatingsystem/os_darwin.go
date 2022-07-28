@@ -1,8 +1,9 @@
 package operatingsystem
 
 import (
-	"github.com/wailsapp/wails/v2/internal/shell"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/internal/shell"
 )
 
 func getSysctlValue(key string) (string, error) {
@@ -26,7 +27,7 @@ func platformInfo() (*OS, error) {
 		return nil, err
 	}
 	result.Version = version
-	ID, err := getSysctlValue("kern.osrevision")
+	ID, err := getSysctlValue("kern.osversion")
 	if err != nil {
 		return nil, err
 	}
