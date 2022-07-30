@@ -162,11 +162,7 @@ func updateToVersion(logger *clilogger.CLILogger, targetVersion *github.Semantic
 	wg.Add(1)
 	releaseNotes := ""
 	go func() {
-		var err error
-		releaseNotes, err = github.GetReleaseNotes(targetVersionString)
-		if err != nil {
-			releaseNotes = "Unable to download release notes at this time."
-		}
+		releaseNotes = github.GetReleaseNotes(targetVersionString)
 		wg.Done()
 	}()
 

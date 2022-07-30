@@ -11,26 +11,27 @@ import (
 	"strings"
 )
 
-func GetReleaseNotes(tagVersion string) (string, error) {
+func GetReleaseNotes(tagVersion string) string {
 	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/releases/tags/" + tagVersion)
 	if err != nil {
-		return "", err
+		return "Unable to retrieve release notes. Please check your network connection"
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "Unable to retrieve release notes. Please check your network connection"
 	}
 
 	data := map[string]interface{}{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		return "", err
+		return "Unable to retrieve release notes. Please check your network connection"
 	}
 
 	if data["body"] == nil {
-		return "", fmt.Errorf("no release notes found")
+		return "No release notes found"
 	}
 
+	result := "# Release Notes for " + tagVersion + "\n" + data["body"].(string)
 	var renderer *glamour.TermRenderer
 	if runtime.GOOS == "windows" {
 		renderer, err = glamour.NewTermRenderer(glamour.WithStyles(glamour.NoTTYStyleConfig))
@@ -38,10 +39,13 @@ func GetReleaseNotes(tagVersion string) (string, error) {
 		renderer, err = glamour.NewTermRenderer(glamour.WithAutoStyle())
 	}
 	if err != nil {
-		return "", nil
+		return result
 	}
-	result := "# Release Notes for " + tagVersion + "\n" + data["body"].(string)
-	return renderer.Render(result)
+	result, err = renderer.Render(result)
+	if err != nil {
+		return err.Error()
+	}
+	return result
 }
 
 // GetVersionTags gets the list of tags on the Wails repo
