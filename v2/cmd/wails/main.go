@@ -24,12 +24,12 @@ func fatal(message string) {
 
 func banner(_ *clir.Cli) string {
 	return fmt.Sprintf("%s %s",
-		colour.Yellow("Wails CLI"),
+		colour.Green("Wails CLI"),
 		colour.DarkRed(internal.Version))
 }
 
 func printFooter() {
-	println(colour.Yellow("\nIf Wails is useful to you or your company, please consider sponsoring the project:\nhttps://github.com/sponsors/leaanthony\n"))
+	println(colour.Green("\nIf Wails is useful to you or your company, please consider sponsoring the project:\nhttps://github.com/sponsors/leaanthony\n"))
 }
 
 func main() {
