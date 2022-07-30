@@ -164,3 +164,11 @@ export function Environment() {
 export function Quit() {
     window.runtime.Quit();
 }
+
+export function Hide() {
+    window.runtime.Hide();
+}
+
+export function Show() {
+    window.runtime.Show();
+}
