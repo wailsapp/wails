@@ -309,11 +309,9 @@ func (f *Frontend) ExecJS(js string) {
 }
 
 func (f *Frontend) processRequest(r *request) {
-	uri := C.GoString(r.url)
-
 	rw := httptest.NewRecorder()
 	f.assets.ProcessHTTPRequest(
-		uri,
+		r.url,
 		rw,
 		func() (*http.Request, error) {
 			req, err := r.GetHttpRequest()
@@ -352,7 +350,9 @@ func (f *Frontend) processRequest(r *request) {
 		headersLen = len(headerData)
 	}
 
-	C.ProcessURLResponse(r.ctx, r.url, C.int(rw.Code), headers, C.int(headersLen), content, C.int(contentLen))
+	url := C.CString(r.url)
+	defer C.free(unsafe.Pointer(url))
+	C.ProcessURLResponse(r.ctx, url, C.int(rw.Code), headers, C.int(headersLen), content, C.int(contentLen))
 }
 
 //func (f *Frontend) processSystemEvent(message string) {
@@ -372,7 +372,7 @@ func (f *Frontend) processRequest(r *request) {
 //}
 
 type request struct {
-	url     *C.char
+	url     string
 	method  string
 	headers string
 	body    []byte
@@ -386,7 +386,7 @@ func (r *request) GetHttpRequest() (*http.Request, error) {
 		body = bytes.NewReader(r.body)
 	}
 
-	req, err := http.NewRequest(r.method, C.GoString(r.url), body)
+	req, err := http.NewRequest(r.method, r.url, body)
 	if err != nil {
 		return nil, err
 	}
@@ -419,7 +419,7 @@ func processURLRequest(ctx unsafe.Pointer, url *C.char, method *C.char, headers 
 	}
 
 	requestBuffer <- &request{
-		url:     url,
+		url:     C.GoString(url),
 		method:  C.GoString(method),
 		headers: C.GoString(headers),
 		body:    goBody,
