@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/wailsapp/wails/v2/internal/shell"
 
@@ -157,6 +158,18 @@ func updateToVersion(logger *clilogger.CLILogger, targetVersion *github.Semantic
 		log.Fatal("Cannot find home directory! Please file a bug report!")
 	}
 
+	var wg sync.WaitGroup
+	wg.Add(1)
+	releaseNotes := ""
+	go func() {
+		var err error
+		releaseNotes, err = github.GetReleaseNotes(targetVersionString)
+		if err != nil {
+			releaseNotes = "Unable to download release notes at this time."
+		}
+		wg.Done()
+	}()
+
 	sout, serr, err := shell.RunCommand(homeDir, "go", "install", "github.com/wailsapp/wails/v2/cmd/wails@"+desiredVersion)
 	if err != nil {
 		logger.Println("Failed.")
@@ -164,9 +177,17 @@ func updateToVersion(logger *clilogger.CLILogger, targetVersion *github.Semantic
 		return err
 	}
 	logger.Println("\n")
+
+	wg.Wait()
+
 	logger.Println("Wails CLI updated to " + desiredVersion)
 	logger.Println("Make sure you update your project go.mod file to use " + desiredVersion + ":")
 	logger.Println("  require github.com/wailsapp/wails/v2 " + desiredVersion)
+
+	if releaseNotes != "" {
+		logger.Print("\n%s release notes:\n\n", targetVersionString)
+		logger.Println(releaseNotes)
+	}
 
 	return nil
 }

@@ -3,11 +3,46 @@ package github
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/charmbracelet/glamour"
 	"io"
 	"net/http"
+	"runtime"
 	"sort"
 	"strings"
 )
+
+func GetReleaseNotes(tagVersion string) (string, error) {
+	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/releases/tags/" + tagVersion)
+	if err != nil {
+		return "", err
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	data := map[string]interface{}{}
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return "", err
+	}
+
+	if data["body"] == nil {
+		return "", fmt.Errorf("no release notes found")
+	}
+
+	var renderer *glamour.TermRenderer
+	if runtime.GOOS == "windows" {
+		renderer, err = glamour.NewTermRenderer(glamour.WithStyles(glamour.NoTTYStyleConfig))
+	} else {
+		renderer, err = glamour.NewTermRenderer(glamour.WithAutoStyle())
+	}
+	if err != nil {
+		return "", nil
+	}
+	result := "# Release Notes for " + tagVersion + "\n" + data["body"].(string)
+	return renderer.Render(result)
+}
 
 // GetVersionTags gets the list of tags on the Wails repo
 // It returns a list of sorted tags in descending order
