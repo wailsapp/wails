@@ -12,10 +12,12 @@ import (
 func AddSubcommand(app *clir.Cli, w io.Writer) {
 	showCommand := app.NewSubCommand("show", "Shows various information")
 
+	version := internal.Version
 	releaseNotes := showCommand.NewSubCommand("releasenotes", "Shows the release notes for the current version")
+	releaseNotes.StringFlag("version", "The version to show the release notes for", &version)
 	releaseNotes.Action(func() error {
 		app.PrintBanner()
-		releaseNotes := github.GetReleaseNotes(internal.Version)
+		releaseNotes := github.GetReleaseNotes(version)
 		_, _ = fmt.Fprintln(w, releaseNotes)
 		return nil
 	})
