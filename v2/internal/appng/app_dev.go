@@ -45,15 +45,14 @@ type App struct {
 }
 
 func (a *App) Shutdown() {
-	if a.shutdownCallback != nil {
-		a.shutdownCallback(a.ctx)
-	}
 	a.frontend.Quit()
 }
 
 func (a *App) Run() error {
 	err := a.frontend.Run(a.ctx)
-	a.Shutdown()
+	if a.shutdownCallback != nil {
+		a.shutdownCallback(a.ctx)
+	}
 	return err
 }
 
