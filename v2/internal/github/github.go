@@ -6,13 +6,14 @@ import (
 	"github.com/charmbracelet/glamour"
 	"io"
 	"net/http"
+	"net/url"
 	"runtime"
 	"sort"
 	"strings"
 )
 
 func GetReleaseNotes(tagVersion string) string {
-	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/releases/tags/" + tagVersion)
+	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/releases/tags/" + url.PathEscape(tagVersion))
 	if err != nil {
 		return "Unable to retrieve release notes. Please check your network connection"
 	}
