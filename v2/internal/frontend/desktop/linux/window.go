@@ -645,11 +645,11 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	// Setup window
 	result.SetKeepAbove(appoptions.AlwaysOnTop)
 	result.SetResizable(!appoptions.DisableResize)
+	result.SetSize(appoptions.Width, appoptions.Height)
 	result.SetDecorated(!appoptions.Frameless)
 	result.SetTitle(appoptions.Title)
 	result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
 	result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
-	result.SetSize(appoptions.Width, appoptions.Height)
 	if appoptions.Linux != nil {
 		if appoptions.Linux.Icon != nil {
 			result.SetWindowIcon(appoptions.Linux.Icon)
@@ -735,13 +735,17 @@ func (w *Window) GetPosition() (int, int) {
 func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
 	w.maxHeight = maxHeight
 	w.maxWidth = maxWidth
-	C.SetMinMaxSize(w.asGTKWindow(), C.int(w.minWidth), C.int(w.minHeight), C.int(w.maxWidth), C.int(w.maxHeight))
+	invokeOnMainThread(func() {
+		C.SetMinMaxSize(w.asGTKWindow(), C.int(w.minWidth), C.int(w.minHeight), C.int(w.maxWidth), C.int(w.maxHeight))
+	})
 }
 
 func (w *Window) SetMinSize(minWidth int, minHeight int) {
 	w.minHeight = minHeight
 	w.minWidth = minWidth
-	C.SetMinMaxSize(w.asGTKWindow(), C.int(w.minWidth), C.int(w.minHeight), C.int(w.maxWidth), C.int(w.maxHeight))
+	invokeOnMainThread(func() {
+		C.SetMinMaxSize(w.asGTKWindow(), C.int(w.minWidth), C.int(w.minHeight), C.int(w.maxWidth), C.int(w.maxHeight))
+	})
 }
 
 func (w *Window) Show() {
