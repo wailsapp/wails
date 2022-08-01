@@ -650,11 +650,11 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	// Setup window
 	result.SetKeepAbove(appoptions.AlwaysOnTop)
 	result.SetResizable(!appoptions.DisableResize)
+	result.SetSize(appoptions.Width, appoptions.Height)
 	result.SetDecorated(!appoptions.Frameless)
 	result.SetTitle(appoptions.Title)
 	result.SetMinSize(appoptions.MinWidth, appoptions.MinHeight)
 	result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
-	result.SetSize(appoptions.Width, appoptions.Height)
 	if appoptions.Linux != nil {
 		if appoptions.Linux.Icon != nil {
 			result.SetWindowIcon(appoptions.Linux.Icon)
