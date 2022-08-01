@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/show"
 	"os"
 
 	"github.com/wailsapp/wails/v2/internal/colour"
@@ -61,6 +62,8 @@ func main() {
 	if err != nil {
 		fatal(err.Error())
 	}
+
+	show.AddSubcommand(app, os.Stdout)
 
 	err = update.AddSubcommand(app, os.Stdout, internal.Version)
 	if err != nil {
