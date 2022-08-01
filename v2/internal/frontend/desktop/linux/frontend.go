@@ -355,7 +355,7 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 					req.Body.Close()
 				}
 
-				return nil, fmt.Errorf("Expected host '%d' in request, but was '%s'", f.startURL.Host, req.URL.Host)
+				return nil, fmt.Errorf("Expected host '%s' in request, but was '%s'", f.startURL.Host, req.URL.Host)
 			}
 
 			return req, nil

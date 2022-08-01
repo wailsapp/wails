@@ -30,8 +30,8 @@ type Window struct {
 	theme        winoptions.Theme
 	themeChanged bool
 
-	OnSuspend                                func()
-	OnResume                                 func()
+	OnSuspend func()
+	OnResume  func()
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo) *Window {
@@ -156,6 +156,10 @@ func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
 	w.maxWidth = maxWidth
 	w.maxHeight = maxHeight
 	w.Form.SetMaxSize(maxWidth, maxHeight)
+}
+
+func (w *Window) IsVisible() bool {
+	return win32.IsVisible(w.Handle())
 }
 
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {

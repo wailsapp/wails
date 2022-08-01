@@ -16,7 +16,7 @@ func getFrontend(ctx context.Context) frontend.Frontend {
 	if ctx == nil {
 		pc, _, _, _ := goruntime.Caller(1)
 		funcName := goruntime.FuncForPC(pc).Name()
-		log.Fatalf("cannot call '%s': context is nil", funcName)
+		log.Fatalf("cannot call '%s': %s", funcName, contextError)
 	}
 	result := ctx.Value("frontend")
 	if result != nil {
@@ -31,7 +31,7 @@ func getLogger(ctx context.Context) *logger.Logger {
 	if ctx == nil {
 		pc, _, _, _ := goruntime.Caller(1)
 		funcName := goruntime.FuncForPC(pc).Name()
-		log.Fatalf("cannot call '%s': context is nil", funcName)
+		log.Fatalf("cannot call '%s': %s", funcName, contextError)
 	}
 	result := ctx.Value("logger")
 	if result != nil {
@@ -47,7 +47,7 @@ func getEvents(ctx context.Context) frontend.Events {
 	if ctx == nil {
 		pc, _, _, _ := goruntime.Caller(1)
 		funcName := goruntime.FuncForPC(pc).Name()
-		log.Fatalf("cannot call '%s': context is nil", funcName)
+		log.Fatalf("cannot call '%s': %s", funcName, contextError)
 	}
 	result := ctx.Value("events")
 	if result != nil {
@@ -62,7 +62,7 @@ func getEvents(ctx context.Context) frontend.Events {
 // Quit the application
 func Quit(ctx context.Context) {
 	if ctx == nil {
-		log.Fatalf("cannot call Quit: context is nil")
+		log.Fatalf("Error calling 'runtime.Quit': %s", contextError)
 	}
 	appFrontend := getFrontend(ctx)
 	appFrontend.Quit()
@@ -71,7 +71,7 @@ func Quit(ctx context.Context) {
 // Hide the application
 func Hide(ctx context.Context) {
 	if ctx == nil {
-		log.Fatalf("cannot call Hide: context is nil")
+		log.Fatalf("Error calling 'runtime.Hide': %s", contextError)
 	}
 	appFrontend := getFrontend(ctx)
 	appFrontend.Hide()
@@ -80,7 +80,7 @@ func Hide(ctx context.Context) {
 // Show the application if it is hidden
 func Show(ctx context.Context) {
 	if ctx == nil {
-		log.Fatalf("cannot call Show: context is nil")
+		log.Fatalf("Error calling 'runtime.Show': %s", contextError)
 	}
 	appFrontend := getFrontend(ctx)
 	appFrontend.Show()
