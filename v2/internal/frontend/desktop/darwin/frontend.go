@@ -350,9 +350,7 @@ func (f *Frontend) processRequest(r *request) {
 		headersLen = len(headerData)
 	}
 
-	url := C.CString(r.url)
-	defer C.free(unsafe.Pointer(url))
-	C.ProcessURLResponse(r.ctx, url, C.int(rw.Code), headers, C.int(headersLen), content, C.int(contentLen))
+	C.ProcessURLResponse(r.ctx, r.id, C.int(rw.Code), headers, C.int(headersLen), content, C.int(contentLen))
 }
 
 //func (f *Frontend) processSystemEvent(message string) {
@@ -372,6 +370,7 @@ func (f *Frontend) processRequest(r *request) {
 //}
 
 type request struct {
+	id      C.ulonglong
 	url     string
 	method  string
 	headers string
@@ -412,13 +411,14 @@ func processMessage(message *C.char) {
 }
 
 //export processURLRequest
-func processURLRequest(ctx unsafe.Pointer, url *C.char, method *C.char, headers *C.char, body unsafe.Pointer, bodyLen C.int) {
+func processURLRequest(ctx unsafe.Pointer, requestId C.ulonglong, url *C.char, method *C.char, headers *C.char, body unsafe.Pointer, bodyLen C.int) {
 	var goBody []byte
 	if body != nil && bodyLen != 0 {
 		goBody = C.GoBytes(body, bodyLen)
 	}
 
 	requestBuffer <- &request{
+		id:      requestId,
 		url:     C.GoString(url),
 		method:  C.GoString(method),
 		headers: C.GoString(headers),
