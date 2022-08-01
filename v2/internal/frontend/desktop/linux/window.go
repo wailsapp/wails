@@ -35,14 +35,10 @@ static GtkBox* GTKBOX(void *pointer) {
 }
 
 GdkMonitor* getCurrentMonitor(GtkWindow *window) {
-	printf("getCurrentMonitor: window=%p ", window);
 	// Get the monitor that the window is currently on
 	GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
-	printf("display=%p ", display);
 	GdkWindow *gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
-	printf("gdk_window=%p ", gdk_window);
 	GdkMonitor *monitor = gdk_display_get_monitor_at_window(display, gdk_window);
-	printf("monitor=%p\n", monitor);
 
 	return GDK_MONITOR(monitor);
 }
@@ -67,7 +63,6 @@ static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int 
     size.min_width = size.min_height = size.max_width = size.max_height = 0;
 
 	GdkRectangle monitorSize = getCurrentMonitorGeometry(window);
-printf("SetMinMaxSize - monitorSize = %d,%d %dx%d\n", monitorSize.x, monitorSize.y, monitorSize.width, monitorSize.height);
     int flags = GDK_HINT_MAX_SIZE | GDK_HINT_MIN_SIZE;
 	size.max_height = (max_height == 0 ? monitorSize.height : max_height);
 	size.max_width = (max_width == 0 ? monitorSize.width : max_width);
