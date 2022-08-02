@@ -513,7 +513,17 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 	frontendDir := filepath.Join(b.projectData.Path, "frontend")
 
 	// Check there is an 'InstallCommand' provided in wails.json
-	if b.projectData.InstallCommand == "" {
+	var installCommand string
+	switch b.projectData.OutputType {
+	case "dev":
+		installCommand = b.projectData.DevInstallCommand
+		if installCommand == "" {
+			installCommand = b.projectData.InstallCommand
+		}
+	default:
+		installCommand = b.projectData.InstallCommand
+	}
+	if installCommand == "" {
 		// No - don't install
 		outputLogger.Println("  - No Install command. Skipping.")
 	} else {
@@ -521,9 +531,9 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 		outputLogger.Print("  - Installing frontend dependencies: ")
 		if verbose {
 			outputLogger.Println("")
-			outputLogger.Println("  Install command: '" + b.projectData.InstallCommand + "'")
+			outputLogger.Println("  Install command: '" + installCommand + "'")
 		}
-		if err := b.NpmInstallUsingCommand(frontendDir, b.projectData.InstallCommand, verbose); err != nil {
+		if err := b.NpmInstallUsingCommand(frontendDir, installCommand, verbose); err != nil {
 			return err
 		}
 		outputLogger.Println("Done.")
