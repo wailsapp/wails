@@ -513,15 +513,9 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 	frontendDir := filepath.Join(b.projectData.Path, "frontend")
 
 	// Check there is an 'InstallCommand' provided in wails.json
-	var installCommand string
-	switch b.projectData.OutputType {
-	case "dev":
-		installCommand = b.projectData.DevInstallCommand
-		if installCommand == "" {
-			installCommand = b.projectData.InstallCommand
-		}
-	default:
-		installCommand = b.projectData.InstallCommand
+	installCommand := b.projectData.InstallCommand
+	if b.projectData.OutputType == "dev" {
+		installCommand = b.projectData.GetDevInstallerCommand()
 	}
 	if installCommand == "" {
 		// No - don't install
