@@ -139,16 +139,22 @@ func WindowUnminimise(ctx context.Context) {
 	appFrontend.WindowUnminimise()
 }
 
+// WindowIsFullscreen get the window state is window Fullscreen
+func WindowIsFullscreen(ctx context.Context) bool {
+	appFrontend := getFrontend(ctx)
+	return appFrontend.WindowIsFullscreen()
+}
+
 // WindowIsMaximised get the window state is window Maximised
 func WindowIsMaximised(ctx context.Context) bool {
 	appFrontend := getFrontend(ctx)
 	return appFrontend.WindowIsMaximised()
 }
 
-// WindowIsMinimized get the window state is window Minimized
-func WindowIsMinimized(ctx context.Context) bool {
+// WindowIsMinimised get the window state is window Minimised
+func WindowIsMinimised(ctx context.Context) bool {
 	appFrontend := getFrontend(ctx)
-	return appFrontend.WindowIsMinimized()
+	return appFrontend.WindowIsMinimised()
 }
 
 // WindowIsNormal get the window state is window Normal

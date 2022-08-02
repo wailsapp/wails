@@ -232,8 +232,8 @@ func (f *Frontend) WindowIsMaximised() bool {
 	return f.mainWindow.IsMaximised()
 }
 
-func (f *Frontend) WindowIsMinimized() bool {
-	return f.mainWindow.IsMinimized()
+func (f *Frontend) WindowIsMinimised() bool {
+	return f.mainWindow.IsMinimised()
 }
 
 func (f *Frontend) WindowIsNormal() bool {

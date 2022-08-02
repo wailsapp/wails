@@ -67,15 +67,14 @@
 - (void) Center;
 - (void) Fullscreen;
 - (void) UnFullscreen;
+- (bool) IsFullScreen;
 - (void) Minimise;
 - (void) UnMinimise;
-- (bool) IsMinimized;
+- (bool) IsMinimised;
 - (void) Maximise;
-- (bool) IsMaximised;
-- (bool) IsNormal;
-- (bool) IsFullScreen;
 - (void) ToggleMaximise;
 - (void) UnMaximise;
+- (bool) IsMaximised;
 - (void) SetBackgroundColour:(int)r :(int)g :(int)b :(int)a;
 - (void) HideMouse;
 - (void) ShowMouse;

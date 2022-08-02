@@ -102,7 +102,7 @@ type Frontend interface {
 	WindowSetLightTheme()
 	WindowSetDarkTheme()
 	WindowIsMaximised() bool
-	WindowIsMinimized() bool
+	WindowIsMinimised() bool
 	WindowIsNormal() bool
 	WindowIsFullscreen() bool
 

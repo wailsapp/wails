@@ -349,7 +349,7 @@
     [self.mainWindow deminiaturize:nil];
 }
 
-- (bool) IsMinimized {
+- (bool) IsMinimised {
     return [self.mainWindow isMiniaturized];
 }
 
@@ -398,10 +398,6 @@
 
 - (bool) IsMaximised {
     return [self.mainWindow isZoomed];
-}
-
-- (bool) IsNormal {
-    return ![self.mainWindow isZoomed] && ![self.mainWindow isMiniaturized];
 }
 
 - (void) ExecJS:(NSString*)script {
