@@ -320,14 +320,14 @@
     [NSCursor unhide];
 }
 
-- (bool) isFullScreen {
+- (bool) IsFullScreen {
     long mask = [self.mainWindow styleMask];
     return (mask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen;
 }
 
 // Fullscreen sets the main window to be fullscreen
 - (void) Fullscreen {
-    if( ! [self isFullScreen] ) {
+    if( ! [self IsFullScreen] ) {
         [self.mainWindow disableWindowConstraints];
         [self.mainWindow toggleFullScreen:nil];
     }
@@ -335,7 +335,7 @@
 
 // UnFullscreen resets the main window after a fullscreen
 - (void) UnFullscreen {
-    if( [self isFullScreen] ) {
+    if( [self IsFullScreen] ) {
         [self.mainWindow applyWindowConstraints];
         [self.mainWindow toggleFullScreen:nil];
     }
@@ -347,6 +347,10 @@
 
 - (void) UnMinimise {
     [self.mainWindow deminiaturize:nil];
+}
+
+- (bool) IsMinimized {
+    return [self.mainWindow isMiniaturized];
 }
 
 - (void) Hide {
@@ -390,6 +394,14 @@
     } else {
         [self.mainWindow setLevel:NSNormalWindowLevel];
     }
+}
+
+- (bool) IsMaximised {
+    return [self.mainWindow isZoomed];
+}
+
+- (bool) IsNormal {
+    return ![self.mainWindow isZoomed] && ![self.mainWindow isMiniaturized];
 }
 
 - (void) ExecJS:(NSString*)script {
@@ -474,7 +486,7 @@
     
     // Check for drag
     if ( [m isEqualToString:@"drag"] ) {
-        if( [self isFullScreen] ) {
+        if( [self IsFullScreen] ) {
             return;
         }
         if( self.mouseEvent != nil ) {

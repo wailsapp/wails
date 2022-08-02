@@ -234,6 +234,23 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 func (f *Frontend) ScreenGetAll() ([]frontend.Screen, error) {
 	return GetAllScreens(f.mainWindow.context)
 }
+
+func (f *Frontend) WindowIsMaximised() bool {
+	return f.mainWindow.IsMaximised()
+}
+
+func (f *Frontend) WindowIsMinimized() bool {
+	return f.mainWindow.IsMinimized()
+}
+
+func (f *Frontend) WindowIsNormal() bool {
+	return f.mainWindow.IsNormal()
+}
+
+func (f *Frontend) WindowIsFullscreen() bool {
+	return f.mainWindow.IsFullscreen()
+}
+
 func (f *Frontend) Quit() {
 	if f.frontendOptions.OnBeforeClose != nil {
 		go func() {
