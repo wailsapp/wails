@@ -248,7 +248,7 @@ func (f *Frontend) WindowIsNormal() bool {
 }
 
 func (f *Frontend) WindowIsFullscreen() bool {
-	return f.mainWindow.IsFullscreen()
+	return f.mainWindow.IsFullScreen()
 }
 
 func (f *Frontend) Quit() {

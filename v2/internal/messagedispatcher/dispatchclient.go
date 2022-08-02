@@ -41,6 +41,10 @@ type Client interface {
 	UpdateTrayMenuLabel(JSON string)
 	UpdateContextMenu(contextMenuJSON string)
 	DeleteTrayMenuByID(id string)
+	WindowIsMaximised() bool
+	WindowIsMinimised() bool
+	WindowIsNormal() bool
+	WindowIsFullscreen() bool
 }
 
 // DispatchClient is what the frontends use to interface with the

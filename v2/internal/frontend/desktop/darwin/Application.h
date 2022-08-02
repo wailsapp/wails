@@ -44,6 +44,9 @@ void Quit(void*);
 
 const char* GetSize(void *ctx);
 const char* GetPosition(void *ctx);
+const bool IsFullScreen(void *ctx);
+const bool IsMinimised(void *ctx);
+const bool IsMaximised(void *ctx);
 
 void ProcessURLResponse(void *inctx, unsigned long long requestId, int statusCode, void *headersString, int headersStringLength, void* data, int datalength);
 
