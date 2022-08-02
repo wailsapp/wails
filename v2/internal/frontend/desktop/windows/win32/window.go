@@ -193,13 +193,13 @@ func getWindowLong(hwnd uintptr, index int) int32 {
 	return int32(ret)
 }
 
-<<<<<<< HEAD
 func showWindow(hwnd uintptr, cmdshow int) bool {
 	ret, _, _ := procShowWindow.Call(
 		hwnd,
 		uintptr(cmdshow))
+	return ret != 0
+}
 
-=======
 func GetWindowRect(hwnd uintptr) *RECT {
 	var rect RECT
 	procGetWindowRect.Call(
@@ -222,6 +222,5 @@ func GetMonitorInfo(hMonitor HMONITOR, lmpi *MONITORINFO) bool {
 		uintptr(hMonitor),
 		uintptr(unsafe.Pointer(lmpi)),
 	)
->>>>>>> c7f95cf3 (Modify the instructions)
 	return ret != 0
 }
