@@ -34,6 +34,14 @@ func (d *Dispatcher) processSystemCall(payload callMessage, sender frontend.Fron
 		return &size{w, h}, nil
 	case "ScreenGetAll":
 		return sender.ScreenGetAll()
+	case "WindowIsMaximised":
+		return sender.WindowIsMaximised(), nil
+	case "WindowIsMinimised":
+		return sender.WindowIsMinimised(), nil
+	case "WindowIsNormal":
+		return sender.WindowIsNormal(), nil
+	case "WindowIsFullscreen":
+		return sender.WindowIsFullscreen(), nil
 	case "Environment":
 		return runtime.Environment(d.ctx), nil
 	default:
