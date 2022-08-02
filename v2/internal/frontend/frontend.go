@@ -101,10 +101,10 @@ type Frontend interface {
 	WindowSetSystemDefaultTheme()
 	WindowSetLightTheme()
 	WindowSetDarkTheme()
-	WindowIsMaximised()
-	WindowIsMinimized()
-	WindowIsNormal()
-	WindowIsFullscreen()
+	WindowIsMaximised() bool
+	WindowIsMinimized() bool
+	WindowIsNormal() bool
+	WindowIsFullscreen() bool
 
 	//Screen
 	ScreenGetAll() ([]Screen, error)

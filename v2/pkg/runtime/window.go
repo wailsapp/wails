@@ -139,7 +139,24 @@ func WindowUnminimise(ctx context.Context) {
 	appFrontend.WindowUnminimise()
 }
 
-// WindowSetBackgroundColour sets the colour of the window background
+// WindowIsMaximised get the window state is window Maximised
+func WindowIsMaximised(ctx context.Context) bool {
+	appFrontend := getFrontend(ctx)
+	return appFrontend.WindowIsMaximised()
+}
+
+// WindowIsMinimized get the window state is window Minimized
+func WindowIsMinimized(ctx context.Context) bool {
+	appFrontend := getFrontend(ctx)
+	return appFrontend.WindowIsMinimized()
+}
+
+// WindowIsNormal get the window state is window Normal
+func WindowIsNormal(ctx context.Context) bool {
+	appFrontend := getFrontend(ctx)
+	return appFrontend.WindowIsNormal()
+}
+
 func WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8) {
 	appFrontend := getFrontend(ctx)
 	col := &options.RGBA{
