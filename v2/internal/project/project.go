@@ -22,6 +22,7 @@ type Project struct {
 
 	// Commands used in `wails dev`
 	DevCommand        string `json:"frontend:dev"`
+	DevBuildCommand   string `json:"frontend:dev:build"`
 	DevInstallCommand string `json:"frontend:dev:install"`
 	DevWatcherCommand string `json:"frontend:dev:watcher"`
 	// The url of the external wails dev server. If this is set, this server is used for the frontend. Default ""
@@ -83,6 +84,16 @@ type Project struct {
 
 	// NSISType to be build
 	NSISType string `json:"nsisType"`
+}
+
+func (p *Project) GetDevBuildCommand() string {
+	if p.DevBuildCommand != "" {
+		return p.DevBuildCommand
+	}
+	if p.DevCommand != "" {
+		return p.DevCommand
+	}
+	return p.BuildCommand
 }
 
 func (p *Project) GetDevInstallerCommand() string {
