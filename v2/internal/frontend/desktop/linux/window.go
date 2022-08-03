@@ -38,16 +38,27 @@ GdkMonitor* getCurrentMonitor(GtkWindow *window) {
 	// Get the monitor that the window is currently on
 	GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
 	GdkWindow *gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
+	if( gdk_window == NULL ) {
+		return NULL;
+	}
 	GdkMonitor *monitor = gdk_display_get_monitor_at_window(display, gdk_window);
 
 	return GDK_MONITOR(monitor);
 }
 
+bool isNULLRectangle(GdkRectangle input) {
+	return input.x == -1 && input.y == -1 && input.width == -1 && input.height == -1;
+}
+
 GdkRectangle getCurrentMonitorGeometry(GtkWindow *window) {
 	GdkMonitor *monitor = getCurrentMonitor(window);
+	GdkRectangle result;
+	if( monitor == NULL ) {
+		result.x = result.y = result.height = result.width = -1;
+		return result;
+	}
 
 	// Get the geometry of the monitor
-	GdkRectangle result;
 	gdk_monitor_get_geometry (monitor,&result);
 	return result;
 }
@@ -63,7 +74,10 @@ static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int 
     size.min_width = size.min_height = size.max_width = size.max_height = 0;
 
 	GdkRectangle monitorSize = getCurrentMonitorGeometry(window);
-    int flags = GDK_HINT_MAX_SIZE | GDK_HINT_MIN_SIZE;
+	if( isNULLRectangle(monitorSize) ) {
+		return;
+	}
+  int flags = GDK_HINT_MAX_SIZE | GDK_HINT_MIN_SIZE;
 	size.max_height = (max_height == 0 ? monitorSize.height : max_height);
 	size.max_width = (max_width == 0 ? monitorSize.width : max_width);
 	size.min_height = min_height;
@@ -76,6 +90,9 @@ gboolean Center(gpointer data) {
 
     // Get the geometry of the monitor
     GdkRectangle m = getCurrentMonitorGeometry(window);
+	if( isNULLRectangle(m) ) {
+		return G_SOURCE_REMOVE;
+	}
 
     // Get the window width/height
     int windowWidth, windowHeight;
@@ -478,6 +495,9 @@ gboolean setPosition(gpointer data) {
 
 void SetPosition(void* window, int x, int y) {
 	GdkRectangle monitorDimensions = getCurrentMonitorGeometry(window);
+	if( isNULLRectangle(monitorDimensions) ) {
+		return;
+	}
 	SetPositionArgs* args = malloc(sizeof(SetPositionArgs));
 	args->window = window;
 	args->x = monitorDimensions.x + x;
@@ -526,6 +546,9 @@ gboolean Fullscreen(gpointer data) {
 
 	// Get the geometry of the monitor.
 	GdkRectangle m = getCurrentMonitorGeometry(window);
+	if( isNULLRectangle(m) ) {
+		return G_SOURCE_REMOVE;
+	}
 	int scale = getCurrentMonitorScaleFactor(window);
 	SetMinMaxSize(window, 0, 0, m.width * scale, m.height * scale);
 
