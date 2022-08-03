@@ -171,7 +171,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	// Add better debugging flags
 	if options.Mode == Dev || options.Mode == Debug {
 		commands.Add("-gcflags")
-		commands.Add(`"all=-N -l"`)
+		commands.Add("all=-N -l")
 	}
 
 	if options.ForceBuild {
@@ -513,7 +513,11 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 	frontendDir := filepath.Join(b.projectData.Path, "frontend")
 
 	// Check there is an 'InstallCommand' provided in wails.json
-	if b.projectData.InstallCommand == "" {
+	installCommand := b.projectData.InstallCommand
+	if b.projectData.OutputType == "dev" {
+		installCommand = b.projectData.GetDevInstallerCommand()
+	}
+	if installCommand == "" {
 		// No - don't install
 		outputLogger.Println("  - No Install command. Skipping.")
 	} else {
@@ -521,9 +525,9 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 		outputLogger.Print("  - Installing frontend dependencies: ")
 		if verbose {
 			outputLogger.Println("")
-			outputLogger.Println("  Install command: '" + b.projectData.InstallCommand + "'")
+			outputLogger.Println("  Install command: '" + installCommand + "'")
 		}
-		if err := b.NpmInstallUsingCommand(frontendDir, b.projectData.InstallCommand, verbose); err != nil {
+		if err := b.NpmInstallUsingCommand(frontendDir, installCommand, verbose); err != nil {
 			return err
 		}
 		outputLogger.Println("Done.")
