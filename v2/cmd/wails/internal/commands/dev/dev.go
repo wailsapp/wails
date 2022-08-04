@@ -16,6 +16,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -473,19 +474,30 @@ func runFrontendDevWatcherCommand(cwd string, devCommand string, discoverViteSer
 	LogGreen("Running frontend DevWatcher command: '%s'", devCommand)
 	var wg sync.WaitGroup
 	wg.Add(1)
+
+	const (
+		stateRunning   int32 = 0
+		stateCanceling       = 1
+		stateStopped         = 2
+	)
+	state := stateRunning
 	go func() {
 		if err := cmd.Wait(); err != nil {
-			if err.Error() != "exit status 1" {
+			wasRunning := atomic.CompareAndSwapInt32(&state, stateRunning, stateStopped)
+			if err.Error() != "exit status 1" && wasRunning {
 				LogRed("Error from DevWatcher '%s': %s", devCommand, err.Error())
 			}
 		}
+		atomic.StoreInt32(&state, stateStopped)
 		LogGreen("DevWatcher command exited!")
 		wg.Done()
 	}()
 
 	return func() {
-		killProc(cmd, devCommand)
-		LogGreen("DevWatcher command killed!")
+		if atomic.CompareAndSwapInt32(&state, stateRunning, stateCanceling) {
+			LogGreen("Killing DevWatcher command...")
+			killProc(cmd, devCommand)
+		}
 		cancel()
 		wg.Wait()
 	}, viteServerURL, nil
