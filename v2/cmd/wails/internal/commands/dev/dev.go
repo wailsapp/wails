@@ -20,7 +20,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/bitfield/script"
 	"github.com/google/shlex"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal"
 	"github.com/wailsapp/wails/v2/internal/gomod"
@@ -187,23 +186,15 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
 		exitCodeChannel := make(chan int, 1)
 
-		// Install if needed
-		if installCommand := projectConfig.GetDevInstallerCommand(); installCommand != "" {
-			// Install initial frontend dev dependencies
-			err = os.Chdir(filepath.Join(cwd, "frontend"))
-			if err != nil {
+		// Build the frontend if requested, but ignore building the application itself.
+		ignoreFrontend := buildOptions.IgnoreFrontend
+		if !ignoreFrontend {
+			logger.Println("Building frontend for development...")
+			buildOptions.IgnoreApplication = true
+			if _, err := build.Build(buildOptions); err != nil {
 				return err
 			}
-			LogGreen("Installing frontend dependencies...")
-			pipe := script.Exec(installCommand)
-			pipe.Wait()
-			if pipe.Error() != nil {
-				return pipe.Error()
-			}
-			err = os.Chdir(cwd)
-			if err != nil {
-				return err
-			}
+			buildOptions.IgnoreApplication = false
 		}
 
 		// frontend:dev:watcher command.
@@ -219,9 +210,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			defer closer()
 		}
 
-		// Do initial build
+		// Do initial build but only for the application.
 		logger.Println("Building application for development...")
+		buildOptions.IgnoreFrontend = true
 		debugBinaryProcess, appBinary, err := restartApp(buildOptions, nil, flags, exitCodeChannel)
+		buildOptions.IgnoreFrontend = ignoreFrontend || flags.frontendDevServerURL != ""
 		if err != nil {
 			return err
 		}
@@ -686,7 +679,6 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 				rebuild = false
 				LogGreen("[Rebuild triggered] files updated")
 				// Try and build the app
-				buildOptions.IgnoreFrontend = flags.skipFrontend || flags.frontendDevServerURL != ""
 				newBinaryProcess, _, err := restartApp(buildOptions, debugBinaryProcess, flags, exitCodeChannel)
 				if err != nil {
 					LogRed("Error during build: %s", err.Error())
