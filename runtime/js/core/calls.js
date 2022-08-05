@@ -130,7 +130,7 @@ export function Callback(incomingMessage) {
 	var callbackID = message.callbackid;
 	var callbackData = callbacks[callbackID];
 	if (!callbackData) {
-		const error = `Callback '${callbackID}' not registed!!!`;
+		const error = `Callback '${callbackID}' not registered!!!`;
 		console.error(error); // eslint-disable-line
 		throw new Error(error);
 	}

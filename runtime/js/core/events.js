@@ -119,7 +119,7 @@ export function Notify(eventName, data) {
 			}
 		}
 
-		// Update callbacks with new list of listners
+		// Update callbacks with new list of listeners
 		eventListeners[eventName] = newEventListenerList;
 	}
 }

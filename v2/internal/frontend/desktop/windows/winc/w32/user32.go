@@ -1176,7 +1176,7 @@ func SendInput(inputs []INPUT) uint32 {
 		case INPUT_HARDWARE:
 			(*HardwareInput)(unsafe.Pointer(&input)).hi = oneInput.Hi
 		default:
-			panic("unkown type")
+			panic("unknown type")
 		}
 
 		validInputs = append(validInputs, input)

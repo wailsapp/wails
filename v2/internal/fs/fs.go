@@ -118,7 +118,7 @@ func RelativePath(relativepath string, optionalpaths ...string) string {
 		// I'm allowing this for 1 reason only: It's fatal if the path
 		// supplied is wrong as it's only used internally in Wails. If we get
 		// that path wrong, we should know about it immediately. The other reason is
-		// that it cuts down a ton of unnecassary error handling.
+		// that it cuts down a ton of unnecessary error handling.
 		panic(err)
 	}
 	return result

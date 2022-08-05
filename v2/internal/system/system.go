@@ -13,7 +13,7 @@ var (
 )
 
 // Info holds information about the current operating system,
-// package manager and required dependancies
+// package manager and required dependencies
 type Info struct {
 	OS           *operatingsystem.OS
 	PM           packagemanager.PackageManager
@@ -22,7 +22,7 @@ type Info struct {
 
 // GetInfo scans the system for operating system details,
 // the system package manager and the status of required
-// dependancies.
+// dependencies.
 func GetInfo() (*Info, error) {
 	var result Info
 	err := result.discover()
