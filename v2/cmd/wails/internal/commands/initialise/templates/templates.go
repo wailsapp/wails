@@ -11,7 +11,6 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/pkg/errors"
 
@@ -313,7 +312,7 @@ func gitclone(options *Options) (string, error) {
 
 }
 
-// OutputList prints the list of available tempaltes to the given logger
+// OutputList prints the list of available templates to the given logger
 func OutputList(logger *clilogger.CLILogger) error {
 	templates, err := List()
 	if err != nil {

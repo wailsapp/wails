@@ -54,7 +54,7 @@ A list of community maintained templates can be found [here](../community/templa
 
 |  Flag                |  Description                            |  Default                   |
 | :------------------- | :-------------------------------------- | :------------------------- |
-|  -platform           | Build for the given (comma delimited) [platforms](../reference/cli.mdx#platforms) eg. `windows/arm64`. Note, if you do not give the architecture, `runtime.GOARCH` is used. | platform = `GOOS` environment variable if given else `runtime.GOOS`.<br/>arch = `GOARCH` envrionment variable if given else `runtime.GOARCH`. |
+|  -platform           | Build for the given (comma delimited) [platforms](../reference/cli.mdx#platforms) eg. `windows/arm64`. Note, if you do not give the architecture, `runtime.GOARCH` is used. | platform = `GOOS` environment variable if given else `runtime.GOOS`.<br/>arch = `GOARCH` environment variable if given else `runtime.GOARCH`. |
 |  -clean              | Cleans the `build/bin` directory        |                            |
 |  -compiler "compiler"| Use a different go compiler to build, eg go1.15beta1 | go            |
 |  -ldflags "flags"    | Additional ldflags to pass to the compiler |                         |
