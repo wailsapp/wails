@@ -64,6 +64,7 @@ window.wails = {
         defaultCursor: null,
         borderThickness: 6,
         dbClickInterval: 150,
+        shouldDrag: false
     }
 };
 
@@ -77,6 +78,10 @@ delete window.wails.SetBindings;
 if (ENV === 0) {
     delete window.wailsbindings;
 }
+
+window.addEventListener('mouseup', () => {
+    window.wails.flags.shouldDrag = false;
+});
 
 // Setup drag handler
 // Based on code from: https://github.com/patr0nus/DeskGap
@@ -102,7 +107,7 @@ window.addEventListener('mousedown', (e) => {
                 }
             }
 
-            window.WailsInvoke("drag");
+            window.wails.flags.shouldDrag = true;
             break;
         }
         currentElement = currentElement.parentElement;
@@ -115,6 +120,10 @@ function setResize(cursor) {
 }
 
 window.addEventListener('mousemove', function (e) {
+    if (window.wails.flags.shouldDrag) {
+        window.WailsInvoke("drag");
+        return;
+    }
     if (!window.wails.flags.enableResize) {
         return;
     }
