@@ -572,6 +572,7 @@ func (f *Frontend) Callback(message string) {
 }
 
 func (f *Frontend) startDrag() error {
+	time.Sleep(time.Millisecond * 75)
 	if !w32.ReleaseCapture() {
 		return fmt.Errorf("unable to release mouse capture")
 	}
