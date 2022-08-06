@@ -63,7 +63,7 @@ window.wails = {
         enableResize: false,
         defaultCursor: null,
         borderThickness: 6,
-        dbClickInterval: 100,
+        dbClickInterval: 150,
     }
 };
 
@@ -76,13 +76,6 @@ delete window.wails.SetBindings;
 // const production = 1;
 if (ENV === 0) {
     delete window.wailsbindings;
-}
-
-var dragTimeOut;
-var dragLastTime = 0;
-
-function drag() {
-    window.WailsInvoke("drag");
 }
 
 // Setup drag handler
@@ -108,13 +101,8 @@ window.addEventListener('mousedown', (e) => {
                     break;
                 }
             }
-            if (new Date().getTime() - dragLastTime < window.wails.flags.dbClickInterval) {
-                clearTimeout(dragTimeOut);
-                break;
-            }
-            dragTimeOut = setTimeout(drag, window.wails.flags.dbClickInterval);
-            dragLastTime = new Date().getTime();
-            e.preventDefault();
+
+            window.WailsInvoke("drag");
             break;
         }
         currentElement = currentElement.parentElement;
