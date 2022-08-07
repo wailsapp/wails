@@ -63,7 +63,6 @@ window.wails = {
         enableResize: false,
         defaultCursor: null,
         borderThickness: 6,
-        dbClickInterval: 150,
         shouldDrag: false
     }
 };
