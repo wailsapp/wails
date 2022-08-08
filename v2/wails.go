@@ -3,7 +3,7 @@
 package wails
 
 import (
-	app "github.com/wailsapp/wails/v2/internal/appng"
+	"github.com/wailsapp/wails/v2/internal/app"
 	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
