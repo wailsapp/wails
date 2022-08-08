@@ -330,11 +330,10 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			}
 
 			if !dryRun {
-
 				// Start Time
 				start := time.Now()
 
-				outputFilename, err := build.Build(buildOptions)
+				compiledBinary, err := build.Build(buildOptions)
 				if err != nil {
 					logger.Println("Error: %s", err.Error())
 					targetErr = err
@@ -345,11 +344,12 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 				buildOptions.CleanBuildDirectory = false
 
 				// Output stats
-				buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", outputFilename, time.Since(start).Round(time.Millisecond).String()))
+				buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", compiledBinary, time.Since(start).Round(time.Millisecond).String()))
+
+				outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = compiledBinary
 			} else {
 				logger.Println("Dry run: skipped build.")
 			}
-			outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = outputFilename
 		})
 
 		if targetErr != nil {
