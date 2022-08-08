@@ -61,7 +61,15 @@ func main() {
 	s.ECHO("Removing old version: " + oldestVersion)
 	s.CD("versioned_docs")
 	s.RMDIR("version-" + oldestVersion)
-	s.CD("../versioned_sidebars")
+	s.CD("version-" + newVersion + "/gettingstarted")
+	s.REPLACEALL("firstproject.mdx", s.Sub{
+		"../../src/components/frameworktabs": "../../../src/components/frameworktabs",
+	})
+	s.REPLACEALL("installation.mdx", s.Sub{
+		"../../src/components/tabinstall": "../../../src/components/tabinstall",
+	})
+
+	s.CD("../../../versioned_sidebars")
 	s.RM("version-" + oldestVersion + "-sidebars.json")
 
 }
