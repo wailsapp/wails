@@ -1,7 +1,7 @@
-//go:build !dev && !production && !bindings && darwin
-// +build !dev,!production,!bindings,darwin
+//go:build !dev && !production && !bindings && linux
+// +build !dev,!production,!bindings,linux
 
-package appng
+package app
 
 import (
 	"fmt"

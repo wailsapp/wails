@@ -1,7 +1,7 @@
 //go:build windows && !bindings
 // +build windows,!bindings
 
-package appng
+package app
 
 import (
 	"github.com/wailsapp/wails/v2/internal/logger"

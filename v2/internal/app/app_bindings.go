@@ -1,7 +1,7 @@
 //go:build bindings
 // +build bindings
 
-package appng
+package app
 
 import (
 	"os"

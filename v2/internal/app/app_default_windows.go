@@ -1,7 +1,7 @@
 //go:build !dev && !production && !bindings && windows
 // +build !dev,!production,!bindings,windows
 
-package appng
+package app
 
 import (
 	"os/exec"

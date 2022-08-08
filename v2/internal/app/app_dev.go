@@ -1,7 +1,7 @@
 //go:build dev
 // +build dev
 
-package appng
+package app
 
 import (
 	"context"

@@ -1,7 +1,7 @@
-//go:build linux && !bindings
-// +build linux,!bindings
+//go:build darwin && !bindings
+// +build darwin,!bindings
 
-package appng
+package app
 
 import (
 	"github.com/wailsapp/wails/v2/internal/logger"

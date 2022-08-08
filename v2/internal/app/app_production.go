@@ -1,7 +1,7 @@
 //go:build production
 // +build production
 
-package appng
+package app
 
 import (
 	"context"

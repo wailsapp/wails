@@ -1,7 +1,7 @@
 //go:build !debug
 // +build !debug
 
-package appng
+package app
 
 func IsDebug() bool {
 	return false
