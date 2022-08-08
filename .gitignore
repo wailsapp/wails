@@ -27,8 +27,5 @@ v2/pkg/parser/testproject/frontend/wails
 v2/test/kitchensink/frontend/public
 v2/test/kitchensink/build/darwin/desktop/kitchensink
 v2/test/kitchensink/frontend/package.json.md5
-/v2/internal/ffenestri/windows/test/cmake-build-debug/
-!v2/internal/ffenestri/windows/x64/webview2.dll
-!v2/internal/ffenestri/windows/x64/WebView2Loader.dll
 .idea/
 v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
