@@ -14,13 +14,6 @@ import (
 	"github.com/leaanthony/slicer"
 )
 
-// LocalDirectory gets the caller's file directory
-// Equivalent to node's __DIRNAME
-func LocalDirectory() string {
-	_, thisFile, _, _ := runtime.Caller(1)
-	return filepath.Dir(thisFile)
-}
-
 // RelativeToCwd returns an absolute path based on the cwd
 // and the given relative path
 func RelativeToCwd(relativePath string) (string, error) {
@@ -334,63 +327,6 @@ func CopyDirExtended(src string, dst string, ignore []string) (err error) {
 			if err != nil {
 				return
 			}
-		}
-	}
-
-	return
-}
-
-// MoveDirExtended recursively moves a directory tree, attempting to preserve permissions.
-// Source directory must exist, destination directory must *not* exist. It ignores any files or
-// directories that are given through the ignore parameter.
-// Symlinks are ignored and skipped.
-func MoveDirExtended(src string, dst string, ignore []string) (err error) {
-
-	ignoreList := slicer.String(ignore)
-	src = filepath.Clean(src)
-	dst = filepath.Clean(dst)
-
-	si, err := os.Stat(src)
-	if err != nil {
-		return err
-	}
-	if !si.IsDir() {
-		return fmt.Errorf("source is not a directory")
-	}
-
-	_, err = os.Stat(dst)
-	if err != nil && !os.IsNotExist(err) {
-		return
-	}
-	if err == nil {
-		return fmt.Errorf("destination already exists")
-	}
-
-	err = MkDirs(dst)
-	if err != nil {
-		return
-	}
-
-	entries, err := os.ReadDir(src)
-	if err != nil {
-		return
-	}
-
-	for _, entry := range entries {
-		if ignoreList.Contains(entry.Name()) {
-			continue
-		}
-		srcPath := filepath.Join(src, entry.Name())
-		dstPath := filepath.Join(dst, entry.Name())
-
-		// Skip symlinks.
-		if entry.Type()&os.ModeSymlink != 0 {
-			continue
-		}
-
-		err := os.Rename(srcPath, dstPath)
-		if err != nil {
-			return err
 		}
 	}
 
