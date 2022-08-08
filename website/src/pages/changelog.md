@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.0.0-beta.42] - 2022-08-08
+
+## Added
+
+* Add support for retrieving the release notes from Github by @leaanthony in https://github.com/wailsapp/wails/pull/1679
+* Add `frontend:dev:install` configuration by @LGiki in https://github.com/wailsapp/wails/pull/1666
+
+## Fixed
+
+* Fix formatting of some error messages by @stffabi in https://github.com/wailsapp/wails/pull/1665
+* Windows dialogs now work when window is not visible yet by @leaanthony in https://github.com/wailsapp/wails/pull/1662
+* Multiple fixes for MacOS asset requests by @stffabi in https://github.com/wailsapp/wails/pull/1668
+  and https://github.com/wailsapp/wails/pull/1681
+* Fix for Go 1.19 by @stffabi in https://github.com/wailsapp/wails/pull/1689
+* Removed Linux warnings by @leaanthony in https://github.com/wailsapp/wails/pull/1656
+* Better support for doubleclick events in drag regions by @leaanthony in https://github.com/wailsapp/wails/pull/1704
+* Allow MacOS frameless window to be miniturisable by @leaanthony in https://github.com/wailsapp/wails/pull/1705
+
+## What's Changed
+
+* add wails-sveltekit-template by @h8gi in https://github.com/wailsapp/wails/pull/1671
+* wails doctor now reports correct MacOS os id by @stffabi in https://github.com/wailsapp/wails/pull/1673
+* Update application-development.mdx by @SamHennessy in https://github.com/wailsapp/wails/pull/1682
+* Move SetMin/Max calls to main thread by @leaanthony in https://github.com/wailsapp/wails/pull/1684
+* Change `frontend:dev` to `frontend:dev:build` by @LGiki in https://github.com/wailsapp/wails/pull/1691
+* Build frontend only before starting the dev watcher command by @stffabi in https://github.com/wailsapp/wails/pull/1694
+* Improve error message for auto dev server discovery without a dev watcher by @stffabi
+  in https://github.com/wailsapp/wails/pull/1711
+
+## New Contributors
+
+* @h8gi made their first contribution in https://github.com/wailsapp/wails/pull/1671
+* @SamHennessy made their first contribution in https://github.com/wailsapp/wails/pull/1682
+
 ## [v2.0.0-beta.42] - 2022-07-25
 
 ## Added
