@@ -103,6 +103,10 @@ func (p *Project) GetDevInstallerCommand() string {
 	return p.InstallCommand
 }
 
+func (p *Project) IsFrontendDevServerURLAutoDiscovery() bool {
+	return p.FrontendDevServerURL == "auto"
+}
+
 func (p *Project) Save() error {
 	data, err := json.MarshalIndent(p, "", "  ")
 	if err != nil {
