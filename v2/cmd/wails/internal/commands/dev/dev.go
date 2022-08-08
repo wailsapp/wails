@@ -198,8 +198,9 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		// frontend:dev:watcher command.
+		frontendDevAutoDiscovery := projectConfig.IsFrontendDevServerURLAutoDiscovery()
 		if command := projectConfig.DevWatcherCommand; command != "" {
-			closer, devServerURL, err := runFrontendDevWatcherCommand(cwd, command, projectConfig.FrontendDevServerURL == "auto")
+			closer, devServerURL, err := runFrontendDevWatcherCommand(cwd, command, frontendDevAutoDiscovery)
 			if err != nil {
 				return err
 			}
@@ -208,6 +209,8 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				flags.frontendDevServerURL = devServerURL
 			}
 			defer closer()
+		} else if frontendDevAutoDiscovery {
+			return fmt.Errorf("Unable to auto discover frontend:dev:serverUrl without a frontend:dev:watcher command, please either set frontend:dev:watcher or remove the auto discovery from frontend:dev:serverUrl")
 		}
 
 		// Do initial build but only for the application.
