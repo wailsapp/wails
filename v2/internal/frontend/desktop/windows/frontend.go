@@ -407,6 +407,7 @@ func (f *Frontend) setupChromium() {
 	}
 	chromium.Embed(f.mainWindow.Handle())
 	chromium.Resize()
+	f.mainWindow.chromium = chromium
 	settings, err := chromium.GetSettings()
 	if err != nil {
 		log.Fatal(err)
@@ -588,6 +589,7 @@ func (f *Frontend) Callback(message string) {
 }
 
 func (f *Frontend) startDrag() error {
+	f.mainWindow.dragging = true
 	if !w32.ReleaseCapture() {
 		return fmt.Errorf("unable to release mouse capture")
 	}

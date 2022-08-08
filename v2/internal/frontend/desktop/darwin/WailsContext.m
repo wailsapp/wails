@@ -146,8 +146,10 @@
         if (!hideTitleBar) {
             styleMask |= NSWindowStyleMaskTitled;
         }
-        styleMask |= NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
+        styleMask |= NSWindowStyleMaskClosable;
     }
+    
+    styleMask |= NSWindowStyleMaskMiniaturizable;
 
     if( fullSizeContent || frameless || titlebarAppearsTransparent ) {
         styleMask |= NSWindowStyleMaskFullSizeContentView;
