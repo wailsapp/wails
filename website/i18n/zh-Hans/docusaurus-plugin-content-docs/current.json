@@ -1,38 +1,38 @@
 {
   "version.label": {
-    "message": "下个版本 🚧",
+    "message": "Next Version 🚧",
     "description": "The label for version current"
   },
   "sidebar.tutorialSidebar.category.Getting Started": {
-    "message": "快速入门",
+    "message": "Getting Started",
     "description": "The label for category Getting Started in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Reference": {
-    "message": "参考",
+    "message": "Reference",
     "description": "The label for category Reference in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Runtime": {
-    "message": "运行时",
+    "message": "Runtime",
     "description": "The label for category Runtime in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Community": {
-    "message": "社区",
+    "message": "Community",
     "description": "The label for category Community in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Showcase": {
-    "message": "项目展示",
+    "message": "Showcase",
     "description": "The label for category Showcase in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Guides": {
-    "message": "指南",
+    "message": "Guides",
     "description": "The label for category Guides in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Tutorials": {
-    "message": "教程",
+    "message": "Tutorials",
     "description": "The label for category Tutorials in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Contributing": {
-    "message": "参与贡献",
+    "message": "Contributing",
     "description": "The label for category Contributing in sidebar tutorialSidebar"
   }
 }
