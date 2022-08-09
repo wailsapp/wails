@@ -1,5 +1,4 @@
 ---
-title: 菜单
 sidebar_position: 6
 ---
 
@@ -10,19 +9,17 @@ sidebar_position: 6
 这些方法与应用程序菜单相关。
 
 :::info Javascript
+  Menu is currently unsupported in the JS runtime.
+:::
 
+### 设置应用程序菜单
 JS 运行时当前不支持菜单。
 
 :::
 
-### 设置应用程序菜单
-
+### 更新应用程序菜单
 Go 方法签名: `MenuSetApplicationMenu(ctx context.Context, menu *menu.Menu)`
 
 将应用程序菜单设置为给定的[应用菜单](../../reference/menus)。
 
-### 更新应用程序菜单
 
-Go 方法签名: `MenuUpdateApplicationMenu(ctx context.Context)`
-
-更新应用程序菜单，选取对传递给`MenuSetApplicationMenu`的菜单所做的任何更改。
