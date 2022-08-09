@@ -1,5 +1,4 @@
 ---
-title: 参数选项
 sidebar_position: 3
 ---
 
@@ -7,7 +6,7 @@ sidebar_position: 3
 
 ## 应用程序参数选项
 
-该`Options.App`结构包含应用程序配置。它被传递给`wails.Run()`方法：
+该`Options.App`结构包含应用程序配置。 它被传递给`wails.Run()`方法：
 
 ```go title="Example"
 import "github.com/wailsapp/wails/v2/pkg/options"
@@ -68,7 +67,7 @@ func main() {
                 UseToolbar:                 false,
                 HideToolbarSeparator:       true,
             },
-			Appearance:           mac.NSAppearanceNameDarkAqua,
+            Appearance:           mac.NSAppearanceNameDarkAqua,
             WebviewIsTransparent: true,
             WindowIsTranslucent:  false,
             About: &mac.AboutInfo{
@@ -88,6 +87,8 @@ func main() {
 
 ```
 
+
+
 ### 标题
 
 名称：Title
@@ -102,7 +103,7 @@ func main() {
 
 类型：int
 
-窗口的初始宽度。默认值：1024。
+窗口的初始宽度。 默认值：1024。
 
 ### 高度
 
@@ -110,7 +111,7 @@ func main() {
 
 类型：int
 
-窗口的初始高度。默认值：768
+窗口的初始高度。 默认值：768
 
 ### 禁用调整窗口尺寸
 
@@ -118,9 +119,9 @@ func main() {
 
 类型：bool
 
-默认情况下，主窗口可调整大小。将此设置为 `true` 将使其保持固定大小。
+默认情况下，主窗口可调整大小。 将此设置为 `true` 将使其保持固定大小。
 
-### 全屏
+### Fullscreen
 
 名称：Fullscreen
 
@@ -134,7 +135,7 @@ func main() {
 
 类型：bool
 
-设置为`true`时，窗口将没有边框或标题栏。另请参阅[无边框窗口](../guides/frameless)。
+设置为`true`时，窗口将没有边框或标题栏。 另请参阅[无边框窗口](../guides/frameless)。
 
 ### 最小宽度
 
@@ -142,7 +143,7 @@ func main() {
 
 类型：int
 
-这将设置窗口的最小宽度。如果给出的值`Width`小于这个值，窗口将被设置为`MinWidth`默认值。
+这将设置窗口的最小宽度。 如果给出的值`Width`小于这个值，窗口将被设置为`MinWidth`默认值。
 
 ### 最小高度
 
@@ -150,7 +151,7 @@ func main() {
 
 类型：int
 
-这将设置窗口的最小高度。如果给出的值`Height`小于这个值，窗口将被设置为`MinHeight`默认值。
+这将设置窗口的最小高度。 如果给出的值`Height`小于这个值，窗口将被设置为`MinHeight`默认值。
 
 ### 最大宽度
 
@@ -158,7 +159,7 @@ func main() {
 
 类型：int
 
-这将设置窗口的最大宽度。如果给出的值`Width`大于这个值，窗口将被设置为`MaxWidth`默认值。
+这将设置窗口的最大宽度。 如果给出的值`Width`大于这个值，窗口将被设置为`MaxWidth`默认值。
 
 ### 最大高度
 
@@ -166,7 +167,7 @@ func main() {
 
 类型：int
 
-这将设置窗口的最大高度。如果给出的值`Height`大于这个值，窗口将被设置为`MaxHeight`默认值。
+这将设置窗口的最大高度。 如果给出的值`Height`大于这个值，窗口将被设置为`MaxHeight`默认值。
 
 ### 启动时隐藏窗口
 
@@ -182,7 +183,7 @@ func main() {
 
 类型：bool
 
-默认情况下，关闭窗口将关闭应用程序。将此设置为`true`意味着关闭窗口将隐藏窗口。
+默认情况下，关闭窗口将关闭应用程序。 将此设置为`true`意味着关闭窗口将隐藏窗口。
 
 ### RGBA
 
@@ -190,7 +191,7 @@ func main() {
 
 类型：int (0xRRGGBBAA) 示例：0xFF000088 - 透明度为 50% 的红色
 
-该值是默认设置窗口的 RGBA 值。默认值：0xFFFFFFFF。
+This value is the default background colour of the window. Default: white
 
 ### 窗口固定在最顶层
 
@@ -206,226 +207,277 @@ func main() {
 
 类型：\*embed.FS
 
-应用程序要使用的前端资源。需要一个`index.html`文件。
+应用程序要使用的前端资源。 需要一个`index.html`文件。
 
 ### 菜单
 
-名称：Menu
+<img src="http://badges.github.io/stability-badges/dist/experimental.svg" />
 
 类型：\*menu.Menu
 
-应用程序要使用的菜单。[菜单参考](../reference/runtime/menu)中有关菜单的更多详细信息。
+类型：logger.Logger
+
 
 注意：在 Mac 上，如果未指定菜单，则将创建默认菜单。
 
+| 值                       | Win | Mac | Lin |
+| ----------------------- | --- | --- | --- |
+| GET                     | ✅   | ✅   | ✅   |
+| POST                    | ✅   | ✅   | ❌   |
+| PUT                     | ✅   | ✅   | ❌   |
+| PATCH                   | ✅   | ✅   | ❌   |
+| DELETE                  | ✅   | ✅   | ❌   |
+| Request Headers         | ✅   | ✅   | ❌   |
+| Request Body            | ✅   | ✅   | ❌   |
+| Request Body Streaming  | ❌   | ❌   | ❌   |
+| Response StatusCodes    | ✅   | ✅   | ❌   |
+| Response Headers        | ✅   | ✅   | ❌   |
+| Response Body           | ✅   | ✅   | ✅   |
+| Response Body Streaming | ❌   | ❌   | ✅   |
+
+NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.36.0. In the future some features will be supported by the introduction of WebKit2GTK 2.36.0+ support.
+
+NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html on every path, that does not contain a file extension.
+
 ### 日志
-
-名称：Logger
-
-类型：logger.Logger
 
 默认值：Logger to Stdout
 
-应用程序要使用的记录器。有关日志记录的更多详细信息，请参阅[日志参考](../reference/runtime/log)。
+名称：Menu
 
-### 日志级别
-
-名称：LogLevel
+应用程序要使用的菜单。 [菜单参考](../reference/runtime/menu)中有关菜单的更多详细信息。
 
 类型：logger.LogLevel
 
+### 日志级别
+
 默认值：在开发模式下是`Info`，在生产模式下是`Error`。
 
-默认日志级别。有关日志记录的更多详细信息，请参阅[设置日志等级](../reference/runtime/log#设置日志等级)。
-
-### 应用启动回调
+名称：Logger
 
 名称：OnStartup
 
-类型：func(ctx context.Context)
+应用程序要使用的记录器。 有关日志记录的更多详细信息，请参阅[日志参考](../reference/runtime/log)。
 
-此回调在前端创建之后调用，但在`index.html`加载之前调用。它提供了应用程序上下文。
+### 应用启动回调
 
-### 前端 Dom 加载完成回调
+名称：LogLevel
 
 名称：OnDomReady
 
 类型：func(ctx context.Context)
 
-在前端加载完毕`index.html`及其资源后调用此回调。它提供了应用程序上下文。
+默认日志级别。 有关日志记录的更多详细信息，请参阅[日志参考](../reference/runtime/log)。
 
-### 应用退出回调
+### 前端 Dom 加载完成回调
 
 名称：OnShutdown
 
-类型：func(ctx context.Context)
+名称：OnDomReady
 
-在前端被销毁之后，应用程序终止之前，调用此回调。它提供了应用程序上下文。
+Default: `Error`
 
-### 关闭应用程序之前回调
+The default log level for production builds. 有关日志记录的更多详细信息，请参阅[日志参考](../reference/runtime/log)。
 
-名称：OnBeforeClose
+### 应用退出回调
 
 类型：func(ctx context.Context) bool
 
-如果设置了此回调，它将在通过单击窗口关闭按钮或调用`runtime.Quit`即将退出应用程序时被调用. 返回 `true` 将导致应用程序继续，`false` 将继续正常关闭。这有助于与用户确认他们希望退出程序。
+类型：func(ctx context.Context)
 
-示例：
+此回调在前端创建之后调用，但在`index.html`加载之前调用。 它提供了应用程序上下文。
 
-```go title=windowsapp.go
-func (b *App) beforeClose(ctx context.Context) (prevent bool) {
-	dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
-		类型：          runtime.QuestionDialog,
-		Title:         "Quit?",
-		Message:       "Are you sure you want to quit?",
-	})
-
-	if err != nil {
-		return false
-	}
-	return dialog != "Yes"
-```
-
-### 窗口启动状态
+### 关闭应用程序之前回调
 
 名称：WindowStartState
 
-类型： options.WindowStartState
+类型：func(ctx context.Context)
 
-定义窗口在启动时应如何呈现。
+在前端加载完毕`index.html`及其资源后调用此回调。 它提供了应用程序上下文。
 
-| 值         | Win | Mac | Lin |
-| ---------- | --- | --- | --- |
-| Fullscreen | ✅  | ✅  | ✅  |
-| Maximised  | ✅  | ✅  | ✅  |
-| Minimised  | ✅  |     | ✅  |
-
-### 绑定
+### 窗口启动状态
 
 名称：Bind
 
-类型： []interface{}
+类型：func(ctx context.Context)
 
-定义需要绑定到前端的方法的一部分结构实例。
+在前端被销毁之后，应用程序终止之前，调用此回调。 它提供了应用程序上下文。
 
-### Windows
+### 绑定
 
 名称：Windows
 
 类型：\*windows.Options
 
-这定义了[Windows 特定的选项](#windows-特定选项)。
-
-### Mac
+如果设置了此回调，它将在通过单击窗口关闭按钮或调用`runtime.Quit`即将退出应用程序时被调用. 返回 `true` 将导致应用程序继续，`false` 将继续正常关闭。 Returning true will cause the application to continue, false will continue shutdown as normal. 这有助于与用户确认他们希望退出程序。
 
 名称：Mac
+```go title=windowsapp.go
+func (b *App) beforeClose(ctx context.Context) (prevent bool) {
+    dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
+        类型：          runtime.QuestionDialog,
+        Title:         "Quit?",
+        Message:       "Are you sure you want to quit?",
+    })
+
+    if err != nil {
+        return false
+    }
+    return dialog != "Yes"
+```
+
+### WindowStartState
 
 类型：\*mac.Options
 
 这定义了[Mac 特定的选项](#mac-特定选项)。
 
-### Linux
-
 名称：Linux
+
+| 值          | Win | Mac | Lin |
+| ---------- | --- | --- | --- |
+| Fullscreen | ✅   | ✅   | ✅   |
+| Maximised  | ✅   | ✅   | ✅   |
+| Minimised  | ✅   | ❌   | ✅   |
+
+### Bind
 
 类型：\*linux.Options
 
 这定义了[Linux 特定的选项](#linux-特定选项).
 
-## Windows 特定选项
-
-### 网页透明
-
 名称：WebviewIsTransparent
+
+### Windows
 
 类型：bool
 
-设置为 `true` 时将使 WebView 背景透明。这意味着如果你使用`rgba(0,0,0,0)`，主窗口将显示。通常与[窗口半透明](#窗口半透明)结合使用以制作冰霜效果的应用程序。
-
-### 窗口半透明
+类型：`*windows.Messages`
 
 名称：WindowIsTranslucent
 
+### Mac
+
 类型：bool
 
-将此设置为 `true` 将使窗口半透明。通常与[网页透明](#网页透明) 结合使用以制作冰霜效果的应用程序。
-
-### 禁用窗口图标
+Type: \*mac.Options
 
 名称：DisableWindowIcon
+
+### Linux
 
 类型：bool
 
 将此设置为 `true` 将删除标题栏左上角的图标。
 
-### 禁用无边框窗口装饰
-
 名称：DisableFramelessWindowDecorations
+
+## Windows 特定选项
+
+### 禁用窗口图标
 
 类型：bool
 
-将此设置为`true`将移除[无边框](#无边框)模式下的窗口装饰。这意味着将不会有`Aero 阴影` 和 `圆角`显示在窗口上。请注意，`圆角`只在 Windows 11 上支持。
+类型：bool
 
-### Webview 用户数据路径
+设置为 `true` 时将使 WebView 背景透明。 这意味着如果你使用`rgba(0,0,0,0)`，主窗口将显示。 通常与[窗口半透明](#窗口半透明)结合使用以制作冰霜效果的应用程序。
 
-名称：WebviewUserDataPath
+### 禁用无边框窗口装饰
 
 类型：string
 
-这定义了 WebView2 存储用户数据的路径。如果为空将使用`%APPDATA%\[BinaryName.exe]`。
+类型：bool
 
-### 主题
+将此设置为 `true` 将使窗口半透明。 通常与[网页透明](#网页透明) 结合使用以制作冰霜效果的应用程序。
 
-名称：Theme
+### Webview 用户数据路径
 
 类型：`windows.Theme`
 
-最低 Windows 版本：Windows 10 2004/20H1
+类型：bool
 
 这定义了应用程序应该使用的主题：
 
-| 值            | 描述                                                                               |
-| ------------- | ---------------------------------------------------------------------------------- |
-| SystemDefault | _默认_. 主题将基于系统默认值。如果用户更改了他们的主题，应用程序将更新以使用新设置 |
-| Dark          | 该应用程序将只使用深色主题                                                         |
-| Light         | 该应用程序将只使用浅色主题                                                         |
-
-### 自定义主题
+### 主题
 
 名称：CustomTheme
 
-类型：`windows.CustomTheme`
+类型：bool
 
-最低 Windows 版本：Windows 10/11 2009/21H2 Build 22000
+将此设置为`true`将移除[无边框](#无边框)模式下的窗口装饰。 这意味着将不会有`Aero 阴影` 和 `圆角`显示在窗口上。 请注意，`圆角`只在 Windows 11 上支持。
+
+### 自定义主题
 
 允许您为浅色和深色模式以及窗口处于活动或非活动状态的 TitleBar、TitleText 和 Border 指定自定义颜色。
 
-#### 自定义主题
+类型：string
 
-CustomTheme 结构使用 `int32` 指定颜色值. 这些是非标准 Windows 格式：
-`0x00BBGGAA`。 提供了一个辅助函数来将 RGB 转换为这种格式：`windows.RGB(r,g,b uint8)`。
+这定义了 WebView2 存储用户数据的路径。 如果为空将使用`%APPDATA%\[BinaryName.exe]`。
 
-注意：任何未提供的值都将默认为黑色。
-
-```go
-type ThemeSettings struct {
-	DarkModeTitleBar           int32
-	DarkModeTitleBarInactive   int32
-	DarkModeTitleText          int32
-	DarkModeTitleTextInactive  int32
-	DarkModeBorder             int32
-	DarkModeBorderInactive     int32
-	LightModeTitleBar          int32
-	LightModeTitleBarInactive  int32
-	LightModeTitleText         int32
-	LightModeTitleTextInactive int32
-	LightModeBorder            int32
-	LightModeBorderInactive    int32
-}
-```
+### 消息
 
 示例：
 
+类型：string
+
+This defines the path to a directory with WebView2 executable files and libraries. If empty, webview2 installed in the system will be used.
+
+Important information about distribution of fixed version runtime:
+- [How to get and extract runtime](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode)
+- [Known issues for fixed version](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#known-issues-for-fixed-version)
+- [The path of fixed version of the WebView2 Runtime should not contain \Edge\Application\.](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
+
+### 标题栏
+
+名称：TitleBar
+
+类型：[\*mac.TitleBar](#标题栏结构)
+
+TitleBar 结构提供了配置标题栏外观的能力。
+
+名称：Appearance
+
+| 值             | 描述                                                                                                                               |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| SystemDefault | _默认_. 主题将基于系统默认值。 The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置                                      |
+| Dark          | 该应用程序将只使用深色主题                                                                                                                    |
+| Light         | 从样式掩码中移除 [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/)。 |
+
+
+### 外观
+
+类型：[AppearanceType](#外观类型)
+
+Appearance 用于根据 Apple 的 [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) 名称设置应用程序的样式。
+
+名称：WebviewIsTransparent
+
+类型：bool
+
+#### 外观
+
+CustomTheme 结构使用 `int32` 指定颜色值. 这些是非标准 Windows 格式： `0x00BBGGAA`。 These are in the standard(!) Windows format of: `0x00BBGGAA`. 提供了一个辅助函数来将 RGB 转换为这种格式：`windows.RGB(r,g,b uint8)`。
+
+名称：WindowIsTranslucent
+
+```go
+type ThemeSettings struct {
+    DarkModeTitleBar           int32
+    DarkModeTitleBarInactive   int32
+    DarkModeTitleText          int32
+    DarkModeTitleTextInactive  int32
+    DarkModeBorder             int32
+    DarkModeBorderInactive     int32
+    LightModeTitleBar          int32
+    LightModeTitleBarInactive  int32
+    LightModeTitleText         int32
+    LightModeTitleTextInactive int32
+    LightModeBorder            int32
+    LightModeBorderInactive    int32
+}
+```
+
+名称：Mac
 ```go
     CustomTheme: &windows.ThemeSettings{
         // Theme to use when window is active
@@ -445,116 +497,139 @@ type ThemeSettings struct {
     },
 ```
 
-### 消息
-
-名称：Messages
-
-类型：`*windows.Messages`
-
-一个如果找不到有效的 webview2 运行时，webview2 安装程序所使用的字符串结构。
-您可以选择支持的任意语言定制此选项。
-
-## Mac 特定选项
-
-### 标题栏
-
-名称：TitleBar
-
-类型：[\*mac.TitleBar](#标题栏结构)
-
-TitleBar 结构提供了配置标题栏外观的能力。
-
-### 外观
-
-名称：Appearance
-
-类型：[AppearanceType](#外观类型)
-
-Appearance 用于根据 Apple 的 [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) 名称设置应用程序的样式。
-
 ### 网页透明
 
-名称：WebviewIsTransparent
-
-类型：bool
-
-设置为 `true` 时将使 WebView 背景透明。这意味着如果你使用`rgba(0,0,0,0)`，主窗口将显示。通常与[窗口半透明](#窗口半透明)结合使用以制作冰霜效果的应用程序。
-
-### 窗口半透明
-
-名称：WindowIsTranslucent
-
-类型：bool
-
-将此设置为 `true` 将使窗口半透明。通常与[网页透明](#网页透明) 结合使用以制作冰霜效果的应用程序。
-
-### 关于
+名称：Theme
 
 名称：About
 
-类型：[About](#关于结构)
+一个如果找不到有效的 webview2 运行时，webview2 安装程序所使用的字符串结构。 您可以选择支持的任意语言定制此选项。
+
+### 窗口半透明
 
 此配置允许您为“AppMenu” role 创建的应用程序菜单中的“关于”菜单项设置标题、消息和图标。
 
-#### 标题栏结构
-
 可以使用 TitleBar 选项自定义应用程序的标题栏：
 
-```go
-type TitleBar struct {
-	TitlebarAppearsTransparent bool
-	HideTitle                  bool
-	HideTitleBar               bool
-	FullSizeContent            bool
-	UseToolbar                 bool
-	HideToolbarSeparator       bool
-}
-```
+ResizeDebounceMS is the amount of time to debounce redraws of webview2 when resizing the window. The default value (0) will perform redraws as fast as it can.
 
-| 名称                       | 描述                                                                                                                                           |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| TitlebarAppearsTransparent | 使标题栏透明。[Apple Docs](https://developer.apple.com/documentation/appkit/nswindow/1419167-titlebarappearstransparent?language=objc)         |
-| HideTitle                  | 隐藏窗口的标题。[Apple Docs](https://developer.apple.com/documentation/appkit/nswindowtitlevisibility?language=objc)                           |
-| HideTitleBar               | 从样式掩码中移除 [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/)。      |
-| FullSizeContent            | 使 webview 填满整个窗口。[Apple Docs](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemaskfullsizecontentview) |
-| UseToolbar                 | 向窗口添加默认工具栏。 [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar?language=objc)                                  |
-| HideToolbarSeparator       | 删除工具栏下方的线条。 [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar/1516954-showsbaselineseparator?language=objc)   |
+### 关于
+
+示例：
+
+单击[此处](https://github.com/lukakerr/NSWindowStyles)获取有关自定义标题栏的一些灵感。
+
+您可以指定应用程序的[外观](https://developer.apple.com/documentation/appkit/nsappearance?language=objc)。
+
+### OnResume
+
+示例：
+
+单击[此处](https://github.com/lukakerr/NSWindowStyles)获取有关自定义标题栏的一些灵感。
+
+“关于”菜单项将出现在应用程序菜单中：
+
+
+
+## Mac 特定选项
+
+### TitleBar
+
+名称：OnBeforeClose
+
+单击后，将打开一个关于消息框：
+
+The TitleBar struct provides the ability to configure the look and feel of the title bar.
+
+### Appearance
+
+名称：Icon
+
+类型：[]byte
+
+Appearance is used to set the style of your app in accordance with Apple's [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) names.
+
+### 禁用窗口图标
+
+类型：bool
+
+类型：bool
+
+设置为 `true` 时将使 WebView 背景透明。 这意味着如果你使用`rgba(0,0,0,0)`，主窗口将显示。 通常与[窗口半透明](#窗口半透明)结合使用以制作冰霜效果的应用程序。
+
+### 禁用无边框窗口装饰
+
+类型：string
+
+类型：bool
+
+将此设置为 `true` 将使窗口半透明。 通常与[网页透明](#网页透明) 结合使用以制作冰霜效果的应用程序。
+
+### About
+
+名称：WebviewUserDataPath
+
+类型：[About](#关于结构)
+
+This configuration lets you set the title, message and icon for the "About" menu item in the app menu created by the "AppMenu" role.
+
+#### 标题栏结构
 
 预设的标题栏设置可用：
 
-| 设置                        | 示例                                          |
+```go
+type TitleBar struct {
+    TitlebarAppearsTransparent bool
+    HideTitle                  bool
+    HideTitleBar               bool
+    FullSizeContent            bool
+    UseToolbar                 bool
+    HideToolbarSeparator       bool
+}
+```
+
+| 设置                         | 描述                                                                                                                                                                                                           |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| TitlebarAppearsTransparent | 使标题栏透明。 This has the effect of hiding the titlebar and the content fill the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindow/1419167-titlebarappearstransparent?language=objc) |
+| HideTitle                  | 隐藏窗口的标题。 [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowtitlevisibility?language=objc)                                                                                                |
+| HideTitleBar               | Removes [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/) from the style mask                                                           |
+| FullSizeContent            | 使 webview 填满整个窗口。 [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemaskfullsizecontentview)                                                                      |
+| UseToolbar                 | 向窗口添加默认工具栏。 [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar?language=objc)                                                                                                           |
+| HideToolbarSeparator       | 删除工具栏下方的线条。 [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar/1516954-showsbaselineseparator?language=objc)                                                                            |
+
+Preconfigured titlebar settings are available:
+
+| 值                           | 描述                                            |
 | --------------------------- | --------------------------------------------- |
 | `mac.TitleBarDefault()`     | ![](/img/reference/titlebar-default.png)      |
 | `mac.TitleBarHidden()`      | ![](/img/reference/titlebar-hidden.png)       |
 | `mac.TitleBarHiddenInset()` | ![](/img/reference/titlebar-hidden-inset.png) |
 
-示例：
-
+名称：Mac
 ```go
 Mac: &mac.Options{
-	TitleBar:     mac.TitleBarHiddenInset(),
+    TitleBar:     mac.TitleBarHiddenInset(),
 }
 ```
 
-单击[此处](https://github.com/lukakerr/NSWindowStyles)获取有关自定义标题栏的一些灵感。
+Click [here](https://github.com/lukakerr/NSWindowStyles) for some inspiration on customising the titlebar.
 
 #### 外观类型
 
-您可以指定应用程序的[外观](https://developer.apple.com/documentation/appkit/nsappearance?language=objc)。
+You can specify the application's [appearance](https://developer.apple.com/documentation/appkit/nsappearance?language=objc).
 
-| 值                                                    | 描述                           |
-| ----------------------------------------------------- | ------------------------------ |
-| DefaultAppearance                                     | 使用默认系统值                 |
-| NSAppearanceNameAqua                                  | 标准日间系统外观               |
-| NSAppearanceNameDarkAqua                              | 标准黑夜系统外观               |
-| NSAppearanceNameVibrantLight                          | 轻盈灵动的外观                 |
+| 值                                                     | 描述              |
+| ----------------------------------------------------- | --------------- |
+| DefaultAppearance                                     | 使用默认系统值         |
+| NSAppearanceNameAqua                                  | 标准日间系统外观        |
+| NSAppearanceNameDarkAqua                              | 标准黑夜系统外观        |
+| NSAppearanceNameVibrantLight                          | 轻盈灵动的外观         |
 | NSAppearanceNameAccessibilityHighContrastAqua         | 标准白天系统外观的高对比度版本 |
 | NSAppearanceNameAccessibilityHighContrastDarkAqua     | 标准黑夜系统外观的高对比度版本 |
-| NSAppearanceNameAccessibilityHighContrastVibrantLight | 轻盈灵动外观的高对比度版本     |
-| NSAppearanceNameAccessibilityHighContrastVibrantDark  | 深色活力外观的高对比度版本     |
+| NSAppearanceNameAccessibilityHighContrastVibrantLight | 轻盈灵动外观的高对比度版本   |
+| NSAppearanceNameAccessibilityHighContrastVibrantDark  | 深色活力外观的高对比度版本   |
 
-示例：
-
+名称：Mac
 ```go
 Mac: &mac.Options{
     Appearance: mac.NSAppearanceNameDarkAqua,
@@ -565,21 +640,27 @@ Mac: &mac.Options{
 
 ```go
 type AboutInfo struct {
-	Title   string
-	Message string
-	Icon    []byte
+    Title   string
+    Message string
+    Icon    []byte
 }
 ```
-
-如果提供了这些设置，“关于”菜单项将出现在应用程序菜单中（使用`AppMenu` role 时）。建议这样配置：
-
+如果提供了这些设置，“关于”菜单项将出现在应用程序菜单中（使用`AppMenu` role 时）。 建议这样配置：
 ```go
 //go:embed build/appicon.png
 var icon []byte
 
 func main() {
-	err := wails.Run(&options.App{
-	    ...
+    err := wails.Run(&options.App{
+        ...
+        Mac: &mac.Options{
+            About: &mac.AboutInfo{
+                Title:   "My Application",
+                Message: "© 2021 Me",
+                Icon:    icon,
+            },
+        },
+    })
         Mac: &mac.Options{
             About: &mac.AboutInfo{
                 Title:   "My Application",
@@ -589,45 +670,32 @@ func main() {
         },
     })
 ```
-
-“关于”菜单项将出现在应用程序菜单中：
-
-<div class="text--center">
-  <img
-    src="/img/reference/about-menu.png"
-    style={{
-      "box-shadow":
-        "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px",
-    }}
-  />
-</div>
-<br />
-
-单击后，将打开一个关于消息框：
+The "About" menu item will appear in the app menu:
 
 <div class="text--center">
-  <img
-    src="/img/reference/about-dialog.png"
-    width="40%"
-    style={{
-      "box-shadow":
-        "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px",
-    }}
-  />
+    <img src="/img/reference/about-menu.png" style={{"box-shadow": "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px"}}/>>
 </div>
-<br />
+
+<br/>
+
+When clicked, that will open an about message box:
+
+<div class="text--center">
+    <img src="/img/reference/about-dialog.png" width="40%" style={{"box-shadow": "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px"}}/>>
+</div>
+
+<br/>
 
 ## Linux 特定选项
 
 ### Icon
 
-名称：Icon
+Name: Icon
 
-类型：[]byte
+Type: []byte
 
-设置代表窗口的图标。当窗口最小化（也称为图标化）时使用此图标。一些窗口管理器或桌面环境也可能将其放置在窗口框架中，或在其他上下文中显示。在其他情况下，根本不使用该图标，因此您的预计情况可能会有所不同。
+设置代表窗口的图标。 当窗口最小化（也称为图标化）时使用此图标。 一些窗口管理器或桌面环境也可能将其放置在窗口框架中，或在其他上下文中显示。 在其他情况下，根本不使用该图标，因此您的预计情况可能会有所不同。
 
-注意：Wayland 上的 Gnome 至少不显示此图标。要在那里有一个应用程序图标，必须使用一个`.desktop`文件。在 KDE 上它应该可以工作。
+注意：Wayland 上的 Gnome 至少不显示此图标。 要在那里有一个应用程序图标，必须使用一个`.desktop`文件。 在 KDE 上它应该可以工作。
 
-图标应该以自然绘制的任何尺寸提供；也就是说，在传递图像之前不要缩放图像。
-缩放将延迟到当所需的最终尺寸已知的最后一刻，以获得最佳质量。
+图标应该以自然绘制的任何尺寸提供；也就是说，在传递图像之前不要缩放图像。 缩放将延迟到当所需的最终尺寸已知的最后一刻，以获得最佳质量。

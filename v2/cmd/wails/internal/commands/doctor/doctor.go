@@ -115,7 +115,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				}
 			}
 
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", name, packageName, status, dependency.Version)
+			fmt.Fprintf(w, "%s \t%s \t%s \t%s\n", name, packageName, status, dependency.Version)
 		}
 		if hasOptionalDependencies {
 			fmt.Fprintf(w, "\n")

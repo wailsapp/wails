@@ -1,5 +1,4 @@
 ---
-title: 日志
 sidebar_position: 3
 ---
 
@@ -7,16 +6,16 @@ sidebar_position: 3
 
 ## 概述
 
-Wails 运行时提供了一种可以从 Go 或 Javascript 调用的日志记录机制。像大多数记录器一样，有许多日志级别：
+Wails 运行时提供了一种可以从 Go 或 Javascript 调用的日志记录机制。 像大多数记录器一样，有许多日志级别：
 
-- Trace
-- Debug
-- Info
-- Warning
-- Error
-- Fatal
+  - Trace
+  - Debug
+  - Info
+  - Warning
+  - Error
+  - Fatal
 
-记录器将输出当前或更高日志级别的任何日志消息。示例：`Debug`日志级别将输出除`Trace`消息之外的所有消息。
+记录器将输出当前或更高日志级别的任何日志消息。 示例：`Debug`日志级别将输出除`Trace`消息之外的所有消息。
 
 ### 打印日志
 
@@ -122,28 +121,29 @@ Go 方法签名: `LogSetLogLevel(ctx context.Context, level logger.LogLevel)`
 
 JS 方法签名: `LogSetLogLevel(level: number)`
 
-设置日志级别。在 Javascript 中，该数字与以下日志级别有关：
+设置日志级别。 在 Javascript 中，该数字与以下日志级别有关：
 
-| 值  | 日志等级 |
-| --- | -------- |
-| 1   | Trace    |
-| 2   | Debug    |
-| 3   | Info     |
-| 4   | Warning  |
-| 5   | Error    |
+| 值 | 日志等级    |
+| - | ------- |
+| 1 | Trace   |
+| 2 | Debug   |
+| 3 | Info    |
+| 4 | Warning |
+| 5 | Error   |
 
 ## 使用自定义日志
 
-可以通过使用应用程序参数选项 [日志](../../reference/options#日志) 提供自定义记录器来使用它。唯一的要求是记录器实现了在`github.com/wailsapp/wails/v2/pkg/logger`里`logger.Logger`定义的接口：
+可以通过使用应用程序参数选项 [日志](../../reference/options#日志) 提供自定义记录器来使用它。 唯一的要求是记录器实现了在`github.com/wailsapp/wails/v2/pkg/logger`里`logger.Logger`定义的接口：
 
 ```go title="logger.go"
 type Logger interface {
-	Print(message string)
-	Trace(message string)
-	Debug(message string)
-	Info(message string)
-	Warning(message string)
-	Error(message string)
-	Fatal(message string)
+    Print(message string)
+    Trace(message string)
+    Debug(message string)
+    Info(message string)
+    Warning(message string)
+    Error(message string)
+    Fatal(message string)
 }
 ```
+
