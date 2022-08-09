@@ -1,3 +1,3 @@
-# 社区指南
+# Community Guide
 
-Wails 用户量正在以惊人的速度增长，如果您正在阅读本文，那么您很有可能已经准备好加入它。 那么……欢迎加入！
+The number of Wails users is growing at an incredible rate, and if you're reading this, chances are you're ready to join. So... welcome!
