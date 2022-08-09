@@ -7,6 +7,9 @@ files:
   - source: /website/blog/**/*
     translation: /website/i18n/%two_letters_code%/docusaurus-plugin-content-blog/**/%original_file_name%
   - source: /website/src/pages/**/*
+    ignore:
+      - '*.js'
+      - '*.css'
     translation: /website/i18n/%two_letters_code%/docusaurus-plugin-content-pages/**/%original_file_name%
   - source: /website/i18n/en/**/*.json
     translation: /website/i18n/%two_letters_code%/**/%original_file_name%
