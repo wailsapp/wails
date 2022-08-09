@@ -4,7 +4,7 @@
 
 格式基于 [维护更新日志](https://keepachangelog.com/en/1.0.0/)， 并且该项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
-## [即将发布][]
+## [Unreleased][]
 
 ## [v2.0.0-beta.43] - 2022-08-08
 
@@ -330,5 +330,5 @@
 - The docs have been improved and updated
 - Added troubleshooting guide
 
-[即将发布]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.33...HEAD
+[Unreleased]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.33...HEAD
 [v2.0.0-beta.33]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.32...v2.0.0-beta.33
