@@ -42,6 +42,7 @@ type Options struct {
 	Compiler            string               // The compiler command to use
 	SkipModTidy         bool                 //  Skip mod tidy before compile
 	IgnoreFrontend      bool                 // Indicates if the frontend does not need building
+	IgnoreApplication   bool                 // Indicates if the application does not need building
 	OutputFile          string               // Override the output filename
 	BuildDirectory      string               // Directory to use for building the application
 	CleanBuildDirectory bool                 // Indicates if the build directory should be cleaned before building
@@ -125,12 +126,34 @@ func Build(options *Options) (string, error) {
 		}
 	}
 
-	if !options.IgnoreFrontend || options.ForceBuild {
+	if !options.IgnoreFrontend {
 		err = builder.BuildFrontend(outputLogger)
 		if err != nil {
 			return "", err
 		}
 	}
+
+	compileBinary := ""
+	if !options.IgnoreApplication {
+		compileBinary, err = execBuildApplication(builder, options)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	hookArgs["${bin}"] = compileBinary
+	for _, hook := range []string{options.Platform + "/" + options.Arch, options.Platform + "/*", "*/*"} {
+		if err := execPostBuildHook(outputLogger, options, hook, hookArgs); err != nil {
+			return "", err
+		}
+	}
+
+	return compileBinary, nil
+}
+
+func execBuildApplication(builder Builder, options *Options) (string, error) {
+	// Extract logger
+	outputLogger := options.Logger
 
 	// If we are building for windows, we will need to generate the asset bundle before
 	// compilation. This will be a .syso file in the project root
@@ -164,10 +187,9 @@ func Build(options *Options) (string, error) {
 		options.OutputFile = amd64Filename
 		options.CleanBuildDirectory = false
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("\nBuilding AMD64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
+			outputLogger.Println("\nBuilding AMD64 Target: %s", filepath.Join(options.BuildDirectory, options.OutputFile))
 		}
-		err = builder.CompileProject(options)
-
+		err := builder.CompileProject(options)
 		if err != nil {
 			return "", err
 		}
@@ -176,7 +198,7 @@ func Build(options *Options) (string, error) {
 		options.OutputFile = arm64Filename
 		options.CleanBuildDirectory = false
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("Building ARM64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
+			outputLogger.Println("Building ARM64 Target: %s", filepath.Join(options.BuildDirectory, options.OutputFile))
 		}
 		err = builder.CompileProject(options)
 
@@ -185,7 +207,7 @@ func Build(options *Options) (string, error) {
 		}
 		// Run lipo
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("  Running lipo: ", "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
+			outputLogger.Println("  Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename)
 		}
 		_, stderr, err := shell.RunCommand(options.BuildDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
 		if err != nil {
@@ -200,10 +222,10 @@ func Build(options *Options) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		projectData.OutputFilename = outputFile
+		options.ProjectData.OutputFilename = outputFile
 		options.CompiledBinary = filepath.Join(options.BuildDirectory, outputFile)
 	} else {
-		err = builder.CompileProject(options)
+		err := builder.CompileProject(options)
 		if err != nil {
 			return "", err
 		}
@@ -217,23 +239,14 @@ func Build(options *Options) (string, error) {
 		outputLogger.Print("  - Packaging application: ")
 
 		// TODO: Allow cross platform build
-		err = packageProject(options, runtime.GOOS)
+		err := packageProject(options, runtime.GOOS)
 		if err != nil {
 			return "", err
 		}
 		outputLogger.Println("Done.")
 	}
 
-	compileBinary := options.CompiledBinary
-	hookArgs["${bin}"] = compileBinary
-
-	for _, hook := range []string{options.Platform + "/" + options.Arch, options.Platform + "/*", "*/*"} {
-		if err := execPostBuildHook(outputLogger, options, hook, hookArgs); err != nil {
-			return "", err
-		}
-	}
-
-	return compileBinary, nil
+	return options.CompiledBinary, nil
 }
 
 func execPreBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string) error {

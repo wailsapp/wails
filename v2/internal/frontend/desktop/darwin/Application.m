@@ -51,16 +51,13 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     return result;
 }
 
-void ProcessURLResponse(void *inctx, const char *url, int statusCode, void *headersString, int headersStringLength, void* data, int datalength) {
+void ProcessURLResponse(void *inctx, unsigned long long requestId, int statusCode, void *headersString, int headersStringLength, void* data, int datalength) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
-    NSString *nsurl = safeInit(url);
-    NSData *nsHeadersJSON = [NSData dataWithBytes:headersString length:headersStringLength];
-    NSData *nsdata = [NSData dataWithBytes:data length:datalength];
-    
-    [ctx processURLResponse:nsurl :statusCode :nsHeadersJSON :nsdata];
-
-    [nsdata release];
-    [nsHeadersJSON release];
+    @autoreleasepool {
+        NSData *nsHeadersJSON = [NSData dataWithBytes:headersString length:headersStringLength];
+        NSData *nsdata = [NSData dataWithBytes:data length:datalength];
+        [ctx processURLResponse:requestId :statusCode :nsHeadersJSON :nsdata];
+    }
 }
 
 void ExecJS(void* inctx, const char *script) {

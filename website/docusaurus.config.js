@@ -18,7 +18,7 @@ const config = {
 
   i18n: {
     defaultLocale: "en",
-    locales: ["en", "zh-Hans", "ru"],
+    locales: ["en", "zh-Hans", "ja", "ru"],
     localeConfigs: {
       en: {
         label: "English",
@@ -35,6 +35,11 @@ const config = {
         direction: "ltr",
         htmlLang: "ru-RU",
       },
+      "ja": {
+        label: "日本語",
+        direction: "ltr",
+        htmlLang: "ja-JP",
+      }
     },
   },
   plugins: [

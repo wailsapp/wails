@@ -18,6 +18,7 @@ var (
 	procSetClassLong         = moduser32.NewProc("SetClassLongW")
 	procSetClassLongPtr      = moduser32.NewProc("SetClassLongPtrW")
 	procShowWindow           = moduser32.NewProc("ShowWindow")
+	procIsWindowVisible      = moduser32.NewProc("IsWindowVisible")
 )
 var (
 	moddwmapi                        = syscall.NewLazyDLL("dwmapi.dll")

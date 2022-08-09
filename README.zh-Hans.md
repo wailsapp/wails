@@ -215,6 +215,9 @@ directory
 <a href="https://github.com/iansinnott" style="width:55px">
   <img src="https://github.com/iansinnott.png?size=55" width="55"/>
 </a>
+<a href="https://github.com/Ilshidur" style="width:50px">
+  <img src="https://github.com/Ilshidur.png?size=50" width="50"/>
+</a>
 <span id="nav-6"></span>
 
 ## 安装
@@ -491,6 +494,7 @@ go get -u github.com/wailsapp/wails/cmd/wails
     <td align="center"><a href="https://picatz.github.io/"><img src="https://avatars.githubusercontent.com/u/14850816?v=4?s=75" width="75px;" alt=""/><br /><sub><b>Kent 'picat' Gruber</b></sub></a><br /><a href="#financial-picatz" title="Financial">💵</a></td>
     <td align="center"><a href="https://github.com/tc-hib"><img src="https://avatars.githubusercontent.com/u/55949036?v=4?s=75" width="75px;" alt=""/><br /><sub><b>tc-hib</b></sub></a><br /><a href="#financial-tc-hib" title="Financial">💵</a></td>
     <td align="center"><a href="https://github.com/acheong08"><img src="https://avatars.githubusercontent.com/u/36258159?v=4?s=75" width="75px;" alt=""/><br /><sub><b>Antonio</b></sub></a><br /><a href="https://github.com/wailsapp/wails/commits?author=acheong08" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/MyNameIsAres"><img src="https://avatars.githubusercontent.com/u/32432637?v=4?s=75" width="75px;" alt=""/><br /><sub><b>MyNameIsAres</b></sub></a><br /><a href="https://github.com/wailsapp/wails/commits?author=MyNameIsAres" title="Documentation">📖</a></td>
   </tr>
 </table>
 

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/show"
 	"os"
 
 	"github.com/wailsapp/wails/v2/internal/colour"
@@ -24,12 +25,12 @@ func fatal(message string) {
 
 func banner(_ *clir.Cli) string {
 	return fmt.Sprintf("%s %s",
-		colour.Yellow("Wails CLI"),
+		colour.Green("Wails CLI"),
 		colour.DarkRed(internal.Version))
 }
 
 func printFooter() {
-	println(colour.Yellow("\nIf Wails is useful to you or your company, please consider sponsoring the project:\nhttps://github.com/sponsors/leaanthony\n"))
+	println(colour.Green("\nIf Wails is useful to you or your company, please consider sponsoring the project:\nhttps://github.com/sponsors/leaanthony\n"))
 }
 
 func main() {
@@ -61,6 +62,8 @@ func main() {
 	if err != nil {
 		fatal(err.Error())
 	}
+
+	show.AddSubcommand(app, os.Stdout)
 
 	err = update.AddSubcommand(app, os.Stdout, internal.Version)
 	if err != nil {

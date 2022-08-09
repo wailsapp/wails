@@ -47,6 +47,8 @@
 @property bool debug;
 
 @property (retain) WKUserContentController* userContentController;
+@property (retain) NSLock *urlRequestsLock;
+@property unsigned long long urlRequestsId;
 @property (retain) NSMutableDictionary *urlRequests;
 
 @property (retain) NSMenu* applicationMenu;
@@ -84,7 +86,7 @@
 - (void) SaveFileDialog :(NSString*)title :(NSString*)defaultFilename :(NSString*)defaultDirectory :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)showHiddenFiles :(NSString*)filters;
 
 - (void) loadRequest:(NSString*)url;
-- (void) processURLResponse:(NSString *)url :(int)statusCode :(NSData *)headersString :(NSData*)data;
+- (void) processURLResponse:(unsigned long long)requestId :(int)statusCode :(NSData *)headersString :(NSData*)data;
 - (void) ExecJS:(NSString*)script;
 - (NSScreen*) getCurrentScreen;
 

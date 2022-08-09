@@ -4,7 +4,7 @@
 package dev
 
 import (
-	"os"
+	"bytes"
 	"os/exec"
 	"strconv"
 )
@@ -16,11 +16,15 @@ func killProc(cmd *exec.Cmd, devCommand string) {
 	// For whatever reason, killing an npm script on windows just doesn't exit properly with cancel
 	if cmd != nil && cmd.Process != nil {
 		kill := exec.Command("TASKKILL", "/T", "/F", "/PID", strconv.Itoa(cmd.Process.Pid))
-		kill.Stderr = os.Stderr
-		kill.Stdout = os.Stdout
+		var errorBuffer bytes.Buffer
+		var stdoutBuffer bytes.Buffer
+		kill.Stderr = &errorBuffer
+		kill.Stdout = &stdoutBuffer
 		err := kill.Run()
 		if err != nil {
 			if err.Error() != "exit status 1" {
+				println(stdoutBuffer.String())
+				println(errorBuffer.String())
 				LogRed("Error from '%s': %s", devCommand, err.Error())
 			}
 		}

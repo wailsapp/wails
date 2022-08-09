@@ -3,6 +3,7 @@
 package windows
 
 import (
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
@@ -30,8 +31,11 @@ type Window struct {
 	theme        winoptions.Theme
 	themeChanged bool
 
-	OnSuspend                                func()
-	OnResume                                 func()
+	OnSuspend func()
+	OnResume  func()
+	dragging  bool
+
+	chromium *edge.Chromium
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo) *Window {
@@ -158,9 +162,20 @@ func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
 	w.Form.SetMaxSize(maxWidth, maxHeight)
 }
 
+func (w *Window) IsVisible() bool {
+	return win32.IsVisible(w.Handle())
+}
+
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 	switch msg {
+	case w32.WM_EXITSIZEMOVE:
+		if w.dragging {
+			w.dragging = false
+			w.Invoke(func() {
+				w.chromium.Eval("wails.flags.shouldDrag = false;")
+			})
+		}
 	case win32.WM_POWERBROADCAST:
 		switch wparam {
 		case win32.PBT_APMSUSPEND:
@@ -172,7 +187,6 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 				w.OnResume()
 			}
 		}
-
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lparam)))
 		if settingChanged == "ImmersiveColorSet" {

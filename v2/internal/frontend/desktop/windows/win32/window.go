@@ -78,6 +78,11 @@ func ExtendFrameIntoClientArea(hwnd uintptr) {
 	}
 }
 
+func IsVisible(hwnd uintptr) bool {
+	ret, _, _ := procIsWindowVisible.Call(hwnd)
+	return ret != 0
+}
+
 func IsWindowMaximised(hwnd uintptr) bool {
 	style := uint32(getWindowLong(hwnd, GWL_STYLE))
 	return style&WS_MAXIMIZE != 0

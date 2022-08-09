@@ -49,13 +49,19 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	compressFlags := ""
 	command.StringFlag("upxflags", "Flags to pass to upx", &compressFlags)
 
-	// Setup Platform flag
-	platform := runtime.GOOS + "/"
-	if system.IsAppleSilicon {
-		platform += "arm64"
-	} else {
-		platform += runtime.GOARCH
+	defaultPlatform := os.Getenv("GOOS")
+	if defaultPlatform == "" {
+		defaultPlatform = runtime.GOOS
 	}
+	defaultArch := os.Getenv("GOARCH")
+	if defaultArch == "" {
+		if system.IsAppleSilicon {
+			defaultArch = "arm64"
+		} else {
+			defaultArch = runtime.GOARCH
+		}
+	}
+	platform := defaultPlatform + "/" + defaultArch
 
 	command.StringFlag("platform", "Platform to target. Comma separate multiple platforms", &platform)
 
@@ -104,6 +110,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	windowsConsole := false
 	command.BoolFlag("windowsconsole", "Keep the console when building for Windows", &windowsConsole)
+
+	dryRun := false
+	command.BoolFlag("dryrun", "Dry run, prints the config for the command that would be executed", &dryRun)
 
 	command.Action(func() error {
 
@@ -191,30 +200,31 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		}
 
 		// Start a new tabwriter
-		w := new(tabwriter.Writer)
-		w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+		if !quiet {
+			w := new(tabwriter.Writer)
+			w.Init(os.Stdout, 8, 8, 0, '\t', 0)
 
-		// Write out the system information
-		_, _ = fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
-		_, _ = fmt.Fprintf(w, "Platforms: \t%s\n", platform)
-		_, _ = fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
-		_, _ = fmt.Fprintf(w, "Build Mode: \t%s\n", modeString)
-		_, _ = fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
-		_, _ = fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
-		_, _ = fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
-		_, _ = fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
-		_, _ = fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
-		_, _ = fmt.Fprintf(w, "Tags: \t[%s]\n", strings.Join(buildOptions.UserTags, ","))
-		_, _ = fmt.Fprintf(w, "Race Detector: \t%t\n", buildOptions.RaceDetector)
-		if len(buildOptions.OutputFile) > 0 && targets.Length() == 1 {
-			_, _ = fmt.Fprintf(w, "Output File: \t%s\n", buildOptions.OutputFile)
+			// Write out the system information
+			_, _ = fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
+			_, _ = fmt.Fprintf(w, "Platforms: \t%s\n", platform)
+			_, _ = fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
+			_, _ = fmt.Fprintf(w, "Build Mode: \t%s\n", modeString)
+			_, _ = fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
+			_, _ = fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
+			_, _ = fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
+			_, _ = fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
+			_, _ = fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
+			_, _ = fmt.Fprintf(w, "Tags: \t[%s]\n", strings.Join(buildOptions.UserTags, ","))
+			_, _ = fmt.Fprintf(w, "Race Detector: \t%t\n", buildOptions.RaceDetector)
+			if len(buildOptions.OutputFile) > 0 && targets.Length() == 1 {
+				_, _ = fmt.Fprintf(w, "Output File: \t%s\n", buildOptions.OutputFile)
+			}
+			_, _ = fmt.Fprintf(w, "\n")
+			err = w.Flush()
+			if err != nil {
+				return err
+			}
 		}
-		_, _ = fmt.Fprintf(w, "\n")
-		err = w.Flush()
-		if err != nil {
-			return err
-		}
-
 		err = checkGoModVersion(logger, updateGoMod)
 		if err != nil {
 			return err
@@ -269,15 +279,11 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			// Calculate platform and arch
 			platformSplit := strings.Split(platform, "/")
 			buildOptions.Platform = platformSplit[0]
-			buildOptions.Arch = runtime.GOARCH
-			if system.IsAppleSilicon {
-				buildOptions.Arch = "arm64"
-			}
-			if len(platformSplit) == 2 {
+			buildOptions.Arch = defaultArch
+			if len(platformSplit) > 1 {
 				buildOptions.Arch = platformSplit[1]
 			}
-
-			banner := "Building target: " + platform
+			banner := "Building target: " + buildOptions.Platform + "/" + buildOptions.Arch
 			logger.Println(banner)
 			logger.Println(strings.Repeat("-", len(banner)))
 
@@ -323,27 +329,35 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 				buildOptions.OutputFile = outputFilename
 			}
 
-			// Start Time
-			start := time.Now()
+			if !dryRun {
+				// Start Time
+				start := time.Now()
 
-			outputFilename, err := build.Build(buildOptions)
-			if err != nil {
-				logger.Println("Error: %s", err.Error())
-				targetErr = err
-				return
+				compiledBinary, err := build.Build(buildOptions)
+				if err != nil {
+					logger.Println("Error: %s", err.Error())
+					targetErr = err
+					return
+				}
+
+				buildOptions.IgnoreFrontend = true
+				buildOptions.CleanBuildDirectory = false
+
+				// Output stats
+				buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", compiledBinary, time.Since(start).Round(time.Millisecond).String()))
+
+				outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = compiledBinary
+			} else {
+				logger.Println("Dry run: skipped build.")
 			}
-
-			buildOptions.IgnoreFrontend = true
-			buildOptions.CleanBuildDirectory = false
-
-			// Output stats
-			buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", outputFilename, time.Since(start).Round(time.Millisecond).String()))
-
-			outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = outputFilename
 		})
 
 		if targetErr != nil {
 			return targetErr
+		}
+
+		if dryRun {
+			return nil
 		}
 
 		if nsis {

@@ -309,11 +309,9 @@ func (f *Frontend) ExecJS(js string) {
 }
 
 func (f *Frontend) processRequest(r *request) {
-	uri := C.GoString(r.url)
-
 	rw := httptest.NewRecorder()
 	f.assets.ProcessHTTPRequest(
-		uri,
+		r.url,
 		rw,
 		func() (*http.Request, error) {
 			req, err := r.GetHttpRequest()
@@ -326,7 +324,7 @@ func (f *Frontend) processRequest(r *request) {
 					req.Body.Close()
 				}
 
-				return nil, fmt.Errorf("Expected host '%d' in request, but was '%s'", f.startURL.Host, req.URL.Host)
+				return nil, fmt.Errorf("Expected host '%s' in request, but was '%s'", f.startURL.Host, req.URL.Host)
 			}
 			return req, nil
 		},
@@ -352,7 +350,7 @@ func (f *Frontend) processRequest(r *request) {
 		headersLen = len(headerData)
 	}
 
-	C.ProcessURLResponse(r.ctx, r.url, C.int(rw.Code), headers, C.int(headersLen), content, C.int(contentLen))
+	C.ProcessURLResponse(r.ctx, r.id, C.int(rw.Code), headers, C.int(headersLen), content, C.int(contentLen))
 }
 
 //func (f *Frontend) processSystemEvent(message string) {
@@ -372,7 +370,8 @@ func (f *Frontend) processRequest(r *request) {
 //}
 
 type request struct {
-	url     *C.char
+	id      C.ulonglong
+	url     string
 	method  string
 	headers string
 	body    []byte
@@ -386,7 +385,7 @@ func (r *request) GetHttpRequest() (*http.Request, error) {
 		body = bytes.NewReader(r.body)
 	}
 
-	req, err := http.NewRequest(r.method, C.GoString(r.url), body)
+	req, err := http.NewRequest(r.method, r.url, body)
 	if err != nil {
 		return nil, err
 	}
@@ -412,14 +411,15 @@ func processMessage(message *C.char) {
 }
 
 //export processURLRequest
-func processURLRequest(ctx unsafe.Pointer, url *C.char, method *C.char, headers *C.char, body unsafe.Pointer, bodyLen C.int) {
+func processURLRequest(ctx unsafe.Pointer, requestId C.ulonglong, url *C.char, method *C.char, headers *C.char, body unsafe.Pointer, bodyLen C.int) {
 	var goBody []byte
 	if body != nil && bodyLen != 0 {
 		goBody = C.GoBytes(body, bodyLen)
 	}
 
 	requestBuffer <- &request{
-		url:     url,
+		id:      requestId,
+		url:     C.GoString(url),
 		method:  C.GoString(method),
 		headers: C.GoString(headers),
 		body:    goBody,

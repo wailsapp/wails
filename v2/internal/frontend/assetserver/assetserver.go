@@ -69,6 +69,12 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		header.Add(HeaderCacheControl, "no-cache")
 	}
 
+	if isWebSocket(req) {
+		// WebSockets can always directly be forwarded to the handler
+		d.handler.ServeHTTP(rw, req)
+		return
+	}
+
 	path := req.URL.Path
 	switch path {
 	case "", "/", "/index.html":

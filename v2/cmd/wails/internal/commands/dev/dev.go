@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/bitfield/script"
 	"io"
 	"net"
 	"net/http"
@@ -17,6 +16,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -90,6 +90,7 @@ type devFlags struct {
 	raceDetector    bool
 
 	frontendDevServerURL string
+	skipFrontend         bool
 }
 
 // AddSubcommand adds the `dev` command for the Wails application
@@ -117,6 +118,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space separated)", &flags.appargs)
 	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
 	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
+	command.BoolFlag("s", "Skips building the frontend", &flags.skipFrontend)
 
 	command.Action(func() error {
 		// Create logger
@@ -184,31 +186,21 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
 		exitCodeChannel := make(chan int, 1)
 
-		// Install if needed
-		installCommand := projectConfig.GetDevInstallerCommand()
-		if installCommand == "" {
-			return fmt.Errorf("no `frontend:dev` or `frontend:install` defined. Please add one of these to your wails.json")
-		}
-
-		// Install initial frontend dev dependencies
-		err = os.Chdir(filepath.Join(cwd, "frontend"))
-		if err != nil {
-			return err
-		}
-		LogGreen("Installing frontend dependencies...")
-		pipe := script.Exec(installCommand)
-		pipe.Wait()
-		if pipe.Error() != nil {
-			return pipe.Error()
-		}
-		err = os.Chdir(cwd)
-		if err != nil {
-			return err
+		// Build the frontend if requested, but ignore building the application itself.
+		ignoreFrontend := buildOptions.IgnoreFrontend
+		if !ignoreFrontend {
+			logger.Println("Building frontend for development...")
+			buildOptions.IgnoreApplication = true
+			if _, err := build.Build(buildOptions); err != nil {
+				return err
+			}
+			buildOptions.IgnoreApplication = false
 		}
 
 		// frontend:dev:watcher command.
+		frontendDevAutoDiscovery := projectConfig.IsFrontendDevServerURLAutoDiscovery()
 		if command := projectConfig.DevWatcherCommand; command != "" {
-			closer, devServerURL, err := runFrontendDevWatcherCommand(cwd, command, projectConfig.FrontendDevServerURL == "auto")
+			closer, devServerURL, err := runFrontendDevWatcherCommand(cwd, command, frontendDevAutoDiscovery)
 			if err != nil {
 				return err
 			}
@@ -217,11 +209,15 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				flags.frontendDevServerURL = devServerURL
 			}
 			defer closer()
+		} else if frontendDevAutoDiscovery {
+			return fmt.Errorf("Unable to auto discover frontend:dev:serverUrl without a frontend:dev:watcher command, please either set frontend:dev:watcher or remove the auto discovery from frontend:dev:serverUrl")
 		}
 
-		// Do initial build
+		// Do initial build but only for the application.
 		logger.Println("Building application for development...")
+		buildOptions.IgnoreFrontend = true
 		debugBinaryProcess, appBinary, err := restartApp(buildOptions, nil, flags, exitCodeChannel)
+		buildOptions.IgnoreFrontend = ignoreFrontend || flags.frontendDevServerURL != ""
 		if err != nil {
 			return err
 		}
@@ -262,7 +258,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		// Show dev server URL in terminal after 3 seconds
 		go func() {
 			time.Sleep(3 * time.Second)
-			LogGreen("\n\nTo develop in the browser, navigate to: %s", devServerURL)
+			LogGreen("\n\nTo develop in the browser and call your bound Go methods from Javascript, navigate to: %s", devServerURL)
 		}()
 
 		// Watch for changes and trigger restartApp()
@@ -358,7 +354,7 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		LDFlags:        flags.ldflags,
 		Compiler:       flags.compilerCommand,
 		ForceBuild:     flags.forceBuild,
-		IgnoreFrontend: false,
+		IgnoreFrontend: flags.skipFrontend,
 		Verbosity:      flags.verbosity,
 		WailsJSDir:     flags.wailsjsdir,
 		RaceDetector:   flags.raceDetector,
@@ -474,19 +470,28 @@ func runFrontendDevWatcherCommand(cwd string, devCommand string, discoverViteSer
 	LogGreen("Running frontend DevWatcher command: '%s'", devCommand)
 	var wg sync.WaitGroup
 	wg.Add(1)
+
+	const (
+		stateRunning   int32 = 0
+		stateCanceling       = 1
+		stateStopped         = 2
+	)
+	state := stateRunning
 	go func() {
 		if err := cmd.Wait(); err != nil {
-			if err.Error() != "exit status 1" {
+			wasRunning := atomic.CompareAndSwapInt32(&state, stateRunning, stateStopped)
+			if err.Error() != "exit status 1" && wasRunning {
 				LogRed("Error from DevWatcher '%s': %s", devCommand, err.Error())
 			}
 		}
-		LogGreen("DevWatcher command exited!")
+		atomic.StoreInt32(&state, stateStopped)
 		wg.Done()
 	}()
 
 	return func() {
-		killProc(cmd, devCommand)
-		LogGreen("DevWatcher command killed!")
+		if atomic.CompareAndSwapInt32(&state, stateRunning, stateCanceling) {
+			killProc(cmd, devCommand)
+		}
 		cancel()
 		wg.Wait()
 	}, viteServerURL, nil

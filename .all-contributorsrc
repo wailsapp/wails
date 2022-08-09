@@ -1,7 +1,5 @@
 {
   "files": [
-    "README.md",
-    "README.zh-Hans.md",
     "website/src/pages/credits.mdx"
   ],
   "imageSize": 75,
@@ -1300,6 +1298,15 @@
       "name": "Antonio",
       "avatar_url": "https://avatars.githubusercontent.com/u/36258159?v=4",
       "profile": "https://github.com/acheong08",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "MyNameIsAres",
+      "name": "MyNameIsAres",
+      "avatar_url": "https://avatars.githubusercontent.com/u/32432637?v=4",
+      "profile": "https://github.com/MyNameIsAres",
       "contributions": [
         "doc"
       ]

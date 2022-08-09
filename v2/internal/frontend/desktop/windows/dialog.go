@@ -5,10 +5,18 @@ package windows
 
 import (
 	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/go-common-file-dialog/cfd"
 	"golang.org/x/sys/windows"
 	"syscall"
 )
+
+func (f *Frontend) getHandleForDialog() w32.HWND {
+	if f.mainWindow.IsVisible() {
+		return f.mainWindow.Handle()
+	}
+	return 0
+}
 
 // OpenDirectoryDialog prompts the user to select a directory
 func (f *Frontend) OpenDirectoryDialog(options frontend.OpenDialogOptions) (string, error) {
@@ -21,7 +29,7 @@ func (f *Frontend) OpenDirectoryDialog(options frontend.OpenDialogOptions) (stri
 	if err != nil {
 		return "", err
 	}
-	thisDialog.SetParentWindowHandle(f.mainWindow.Handle())
+	thisDialog.SetParentWindowHandle(f.getHandleForDialog())
 	defer func(thisDialog cfd.SelectFolderDialog) {
 		err := thisDialog.Release()
 		if err != nil {
@@ -47,7 +55,7 @@ func (f *Frontend) OpenFileDialog(options frontend.OpenDialogOptions) (string, e
 	if err != nil {
 		return "", err
 	}
-	thisdialog.SetParentWindowHandle(f.mainWindow.Handle())
+	thisdialog.SetParentWindowHandle(f.getHandleForDialog())
 	defer func(thisdialog cfd.OpenFileDialog) {
 		err := thisdialog.Release()
 		if err != nil {
@@ -74,7 +82,7 @@ func (f *Frontend) OpenMultipleFilesDialog(dialogOptions frontend.OpenDialogOpti
 	if err != nil {
 		return nil, err
 	}
-	thisdialog.SetParentWindowHandle(f.mainWindow.Handle())
+	thisdialog.SetParentWindowHandle(f.getHandleForDialog())
 	defer func(thisdialog cfd.OpenMultipleFilesDialog) {
 		err := thisdialog.Release()
 		if err != nil {
@@ -100,7 +108,7 @@ func (f *Frontend) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (str
 	if err != nil {
 		return "", err
 	}
-	saveDialog.SetParentWindowHandle(f.mainWindow.Handle())
+	saveDialog.SetParentWindowHandle(f.getHandleForDialog())
 	err = saveDialog.Show()
 	if err != nil {
 		return "", err
@@ -135,7 +143,7 @@ func (f *Frontend) MessageDialog(options frontend.MessageDialogOptions) (string,
 		flags = windows.MB_OK | windows.MB_ICONWARNING
 	}
 
-	button, _ := windows.MessageBox(windows.HWND(f.mainWindow.Handle()), message, title, flags|windows.MB_SYSTEMMODAL)
+	button, _ := windows.MessageBox(windows.HWND(f.getHandleForDialog()), message, title, flags|windows.MB_SYSTEMMODAL)
 	// This maps MessageBox return values to strings
 	responses := []string{"", "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "", "", "Try Again", "Continue"}
 	result := "Error"

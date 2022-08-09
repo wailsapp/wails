@@ -34,31 +34,31 @@ static GtkBox* GTKBOX(void *pointer) {
 	return GTK_BOX(pointer);
 }
 
-static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int max_width, int max_height) {
-    GdkGeometry size;
-    size.min_width = size.min_height = size.max_width = size.max_height = 0;
-    int flags = GDK_HINT_MAX_SIZE | GDK_HINT_MIN_SIZE;
-	size.max_height = (max_height == 0 ? INT_MAX : max_height);
-	size.max_width = (max_width == 0 ? INT_MAX : max_width);
-	size.min_height = min_height;
-	size.min_width = min_width;
-    gtk_window_set_geometry_hints(window, NULL, &size, flags);
-}
-
 GdkMonitor* getCurrentMonitor(GtkWindow *window) {
 	// Get the monitor that the window is currently on
 	GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
 	GdkWindow *gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
+	if( gdk_window == NULL ) {
+		return NULL;
+	}
 	GdkMonitor *monitor = gdk_display_get_monitor_at_window(display, gdk_window);
 
 	return GDK_MONITOR(monitor);
 }
 
+bool isNULLRectangle(GdkRectangle input) {
+	return input.x == -1 && input.y == -1 && input.width == -1 && input.height == -1;
+}
+
 GdkRectangle getCurrentMonitorGeometry(GtkWindow *window) {
 	GdkMonitor *monitor = getCurrentMonitor(window);
+	GdkRectangle result;
+	if( monitor == NULL ) {
+		result.x = result.y = result.height = result.width = -1;
+		return result;
+	}
 
 	// Get the geometry of the monitor
-	GdkRectangle result;
 	gdk_monitor_get_geometry (monitor,&result);
 	return result;
 }
@@ -69,11 +69,30 @@ int getCurrentMonitorScaleFactor(GtkWindow *window) {
 	return gdk_monitor_get_scale_factor(monitor);
 }
 
+static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int max_width, int max_height) {
+    GdkGeometry size;
+    size.min_width = size.min_height = size.max_width = size.max_height = 0;
+
+	GdkRectangle monitorSize = getCurrentMonitorGeometry(window);
+	if( isNULLRectangle(monitorSize) ) {
+		return;
+	}
+  int flags = GDK_HINT_MAX_SIZE | GDK_HINT_MIN_SIZE;
+	size.max_height = (max_height == 0 ? monitorSize.height : max_height);
+	size.max_width = (max_width == 0 ? monitorSize.width : max_width);
+	size.min_height = min_height;
+	size.min_width = min_width;
+    gtk_window_set_geometry_hints(window, NULL, &size, flags);
+}
+
 gboolean Center(gpointer data) {
 	GtkWindow *window = (GtkWindow*)data;
 
     // Get the geometry of the monitor
     GdkRectangle m = getCurrentMonitorGeometry(window);
+	if( isNULLRectangle(m) ) {
+		return G_SOURCE_REMOVE;
+	}
 
     // Get the window width/height
     int windowWidth, windowHeight;
@@ -476,6 +495,9 @@ gboolean setPosition(gpointer data) {
 
 void SetPosition(void* window, int x, int y) {
 	GdkRectangle monitorDimensions = getCurrentMonitorGeometry(window);
+	if( isNULLRectangle(monitorDimensions) ) {
+		return;
+	}
 	SetPositionArgs* args = malloc(sizeof(SetPositionArgs));
 	args->window = window;
 	args->x = monitorDimensions.x + x;
@@ -524,6 +546,9 @@ gboolean Fullscreen(gpointer data) {
 
 	// Get the geometry of the monitor.
 	GdkRectangle m = getCurrentMonitorGeometry(window);
+	if( isNULLRectangle(m) ) {
+		return G_SOURCE_REMOVE;
+	}
 	int scale = getCurrentMonitorScaleFactor(window);
 	SetMinMaxSize(window, 0, 0, m.width * scale, m.height * scale);
 
@@ -733,13 +758,17 @@ func (w *Window) GetPosition() (int, int) {
 func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
 	w.maxHeight = maxHeight
 	w.maxWidth = maxWidth
-	C.SetMinMaxSize(w.asGTKWindow(), C.int(w.minWidth), C.int(w.minHeight), C.int(w.maxWidth), C.int(w.maxHeight))
+	invokeOnMainThread(func() {
+		C.SetMinMaxSize(w.asGTKWindow(), C.int(w.minWidth), C.int(w.minHeight), C.int(w.maxWidth), C.int(w.maxHeight))
+	})
 }
 
 func (w *Window) SetMinSize(minWidth int, minHeight int) {
 	w.minHeight = minHeight
 	w.minWidth = minWidth
-	C.SetMinMaxSize(w.asGTKWindow(), C.int(w.minWidth), C.int(w.minHeight), C.int(w.maxWidth), C.int(w.maxHeight))
+	invokeOnMainThread(func() {
+		C.SetMinMaxSize(w.asGTKWindow(), C.int(w.minWidth), C.int(w.minHeight), C.int(w.maxWidth), C.int(w.maxHeight))
+	})
 }
 
 func (w *Window) Show() {

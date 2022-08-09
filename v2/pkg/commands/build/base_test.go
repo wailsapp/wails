@@ -14,9 +14,12 @@ func TestUpdateEnv(t *testing.T) {
 	newEnv = upsertEnv(newEnv, "three", func(v string) string {
 		return "3"
 	})
+	newEnv = upsertEnv(newEnv, "GOARCH", func(v string) string {
+		return "amd64"
+	})
 
-	if len(newEnv) != 4 {
-		t.Errorf("expected: 4, got: %d", len(newEnv))
+	if len(newEnv) != 5 {
+		t.Errorf("expected: 5, got: %d", len(newEnv))
 	}
 	if newEnv[1] != "two=a=b+added" {
 		t.Errorf("expected: \"two=a=b+added\", got: %q", newEnv[1])
@@ -26,6 +29,9 @@ func TestUpdateEnv(t *testing.T) {
 	}
 	if newEnv[3] != "newVar=added" {
 		t.Errorf("expected: \"newVar=added\", got: %q", newEnv[3])
+	}
+	if newEnv[4] != "GOARCH=amd64" {
+		t.Errorf("expected: \"newVar=added\", got: %q", newEnv[4])
 	}
 
 }
