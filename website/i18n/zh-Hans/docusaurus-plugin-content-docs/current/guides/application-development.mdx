@@ -28,7 +28,7 @@ func (a *App) shutdown(ctx context.Context) {
 
 - `startup`方法会在 Wails 分配它需要的资源后立即调用，这是创建资源、设置事件侦听器以及应用程序在启动时需要的任何其他内容的好地方。 它提供了一个`context.Context`， 通常保存在结构字段中。 调用[运行时](../reference/runtime/intro)需要此`context.Context`。 如果此方法返回错误，则应用程序将终止。 在开发模式下，错误会输出到控制台。
 
-- The shutdown method will be called by Wails right at the end of the shutdown process. This is a good place to deallocate memory and perform any shutdown tasks.
+- The shutdown method will be called by Wails right at the end of the shutdown process. This is a good place to deallocate memory and perform any shutdown tasks. This is a good place to deallocate memory and perform any shutdown tasks.
 
 `main.go`文件通常由对`wails.Run()`的单个调用组成，它接受应用程序配置。 模板使用的模式是，在调用`wails.Run()`之前， 我们创建并保存一个在`app.go`中定义的结构体的实例在名`app`的变量中。 这个配置是我们添加回调的地方：
 
@@ -180,7 +180,7 @@ Wails v2 处理资源的方式的伟大之处在于它没有！ 您唯一需要�
 
 ### AssetsHandler
 
-A Wails v2 app can optionally define a `http.Handler` in the `options.App`, which allows hooking into the AssetServer to create files on the fly or process POST/PUT requests. GET requests are always first handled by the `assets` FS. If the FS doesn't find the requested file the request will be forwarded to the `http.Handler` for serving. Any requests other than GET will be directly processed by the `AssetsHandler` if specified. It's also possible to only use the `AssetsHandler` by specifiy `nil` as the `Assets` option.
+A Wails v2 app can optionally define a `http.Handler` in the `options.App`, which allows hooking into the AssetServer to create files on the fly or process POST/PUT requests. GET requests are always first handled by the `assets` FS. If the FS doesn't find the requested file the request will be forwarded to the `http.Handler` for serving. Any requests other than GET will be directly processed by the `AssetsHandler` if specified. It's also possible to only use the `AssetsHandler` by specifiy `nil` as the `Assets` option. GET requests are always first handled by the `assets` FS. If the FS doesn't find the requested file the request will be forwarded to the `http.Handler` for serving. Any requests other than GET will be directly processed by the `AssetsHandler` if specified. It's also possible to only use the `AssetsHandler` by specifiy `nil` as the `Assets` option.
 
 ## 内置开发服务器
 
