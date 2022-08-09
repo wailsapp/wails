@@ -13,7 +13,7 @@ sidebar_position: 5
   "reloaddirs": "[触发重新加载的附加目录（逗号分隔），这仅用于一些重要资源配置]",
   "frontend:install": "[安装 node 依赖的命令，在 frontend 目录下运行 - 通常是 `npm install`]",
   "frontend:build": "[构建资源的命令，在 frontend 目录下运行 - 通常是 `npm run build`]",
-  "frontend:dev": "[此命令已被 frontend:dev:build 替代。 If frontend:dev:build is not specified will falls back to this command. 如果没有指定 frontend:dev:build 将回退到该命令，如果此命令也没有指定将回退到 frontend:build]",
+  "frontend:dev": "[此命令已被 frontend:dev:build 替代。 If frontend:dev:build is not specified will falls back to this command. If frontend:dev:build is not specified will falls back to this command. 如果没有指定 frontend:dev:build 将回退到该命令，如果此命令也没有指定将回退到 frontend:build]",
   "frontend:dev:build": "[此命令等效于开发模式中的 frontend:build，如果没有指定则回退到 frontend:dev]",
   "frontend:dev:install": "[此命令等效于开发模式中的 frontend:install，如果没有指定则只有 frontend:install]",
   "frontend:dev:watcher": "[此命令在 `wails dev` 上的单独进程中运行。 If not specified falls back to frontend:dev]",
@@ -30,6 +30,10 @@ sidebar_position: 5
   "runNonNativeBuildHooks": false, // 定义构建钩子是否应该运行，尽管它们是为主机操作系统以外的操作系统定义的。
     "preBuildHooks": {
         "GOOS/GOARCH": "[The command that will be executed before a build of the specified GOOS/GOARCH: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.]",
+        "GOOS/*": "[The command that will be executed before a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/*" hook is executed before the "*/*" hook.]",
+        "*/*": "[The command that will be executed before every build: ${platform} is replaced with the "GOOS/GOARCH".]"
+    "postBuildHooks": {
+    "GOOS/GOARCH": "[在构建指定的 GOOS/GOARCH 后将执行的命令：${platform} 替换为'GOOS/GOARCH'，${bin} 替换为编译后的二进制文件的路径。 The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.]",
         "GOOS/*": "[The command that will be executed before a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/*" hook is executed before the "*/*" hook.]",
         "*/*": "[The command that will be executed before every build: ${platform} is replaced with the "GOOS/GOARCH".]"
     "postBuildHooks": {
