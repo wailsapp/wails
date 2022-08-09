@@ -1,8 +1,8 @@
-# 更新日志
+# Changelog
 
-此项目的所有重要变更都将记录在此文件中。
+All notable changes to this project will be documented in this file.
 
-格式基于 [维护更新日志](https://keepachangelog.com/en/1.0.0/)， 并且该项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased][]
 
@@ -10,8 +10,8 @@
 
 ## Added
 
-* NSIS Installer support for creating installers for Windows applications - Thanks [@stffabi](https://github.com/stffabi) 🎉
-* New frontend:dev:watcher command to spin out 3rd party watchers when using wails dev - Thanks [@stffabi](https://github.com/stffabi)🎉
+* Add support for retrieving the release notes from Github by @leaanthony in https://github.com/wailsapp/wails/pull/1679
+* Add `frontend:dev:install` configuration by @LGiki in https://github.com/wailsapp/wails/pull/1666
 
 ## Fixed
 
