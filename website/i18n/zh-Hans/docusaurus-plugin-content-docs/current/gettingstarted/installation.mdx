@@ -22,14 +22,14 @@ Wails 有许多安装前需要的常见依赖项：
 
 从[Go 下载页面](https://golang.org/dl/)下载 Go。
 
-确保您遵守官方的[Go 安装说明](https://golang.org/doc/install#install)。您还需要确保您的 `PATH` 环境变量包含您的 `~/go/bin` 目录路径。 重启终端并执行以下命令检查：
+确保您遵守官方的[Go 安装说明](https://golang.org/doc/install#install)。 您还需要确保您的 `PATH` 环境变量包含您的 `~/go/bin` 目录路径。 重启终端并执行以下命令检查：
 
 - 检查 Go 是否安装正确： `go version`
 - 检查 "~/go/bin" 是否在您的 PATH 变量中： `echo $PATH | grep go/bin`
 
 ### NPM
 
-从[Node 下载页面](https://nodejs.org/en/download/)下载 NPM。最好使用最新版本，因为这是我们通常会测试的版本。
+从[Node 下载页面](https://nodejs.org/en/download/)下载 NPM。 最好使用最新版本，因为这是我们通常会测试的版本。
 
 运行 `npm --version` 进行验证。
 
@@ -39,37 +39,7 @@ Wails 有许多安装前需要的常见依赖项：
 
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
-
-<Tabs
-  defaultValue="Windows"
-  values={[
-    { label: "Windows", value: "Windows" },
-    { label: "MacOS", value: "MacOS" },
-    { label: "Linux", value: "Linux" },
-  ]}
->
-  <TabItem value="Windows">
-    Wails 要求安装
-    <a href="https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/">
-      WebView2
-    </a>
-    运行时。一些 Windows 已经默认安装了这个。您可以使用{" "}
-    <code>wails doctor</code>
-    命令进行检查（见下文）。
-  </TabItem>
-  <TabItem value="MacOS">
-    Wails 要求安装 xcode 命令行工具。这可以通过运行以下命令来完成：
-    <br />
-    <code>xcode-select --install</code>
-  </TabItem>
-  <TabItem value="Linux">
-    Linux 需要标准的<code>gcc</code>构建工具以及 <code>libgtk3</code>和
-    <code>libwebkit</code>。与其为不同的发行版列出大量命令，Wails
-    可以尝试确定针对您的特定发行版的安装命令。安装后运行
-    <code>wails doctor</code>
-    以显示如何安装依赖项。如果您的发行版/包管理器不受支持，请参阅<a href="../guides/linux-distro-support">添加Linux发行版</a>指南。
-  </TabItem>
-</Tabs>
+<TabsInstaller />
 
 ## 可选依赖
 
@@ -81,4 +51,8 @@ import TabItem from "@theme/TabItem";
 
 ## 系统检查
 
-运行 `wails doctor` 将检查您是否安装了正确的依赖项。如果没有，它会就缺少的内容提供建议以帮助纠正问题。
+运行 `wails doctor` 将检查您是否安装了正确的依赖项。 如果没有，它会就缺少的内容提供建议以帮助纠正问题。
+
+## The `wails` command appears to be missing?
+
+If your system is reporting that the `wails` command is missing, make sure you have followed the Go installation guide correctly. Normally, it means that the `go/bin` directory in your User's home directory is not in the `PATH` environment variable. You will also normally need to close and reopen any open command prompts so that changes to the environment made by the installer are reflected at the command prompt.
