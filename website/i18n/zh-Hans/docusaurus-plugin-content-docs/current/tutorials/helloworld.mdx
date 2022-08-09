@@ -2,29 +2,28 @@
 sidebar_position: 10
 ---
 
-# 你好世界
+# Hello World
 
-The aim of this tutorial is to get you up and running with the most basic application using Wails. You will be able to: 你将可以:
+The aim of this tutorial is to get you up and running with the most basic application using Wails. You will be able to:
 
-  - 创建新的Wails程序
-  - 编译程序
-  - 运行程序
+  - Create a new Wails application
+  - Build the application
+  - Run the application
 
 :::note
 This tutorial uses Windows as the target platform. Output will vary slightly
 depending on your operating system.
-::: 在您的操作系统上,输出可能会略有不同.
 :::
 
-## 创建新的Wails程序
+## Create a new Wails application
 
-使用默认的vanilla JS模板创建新的Wails程序, 您需要运行这个指令:
+To create a new Wails application using the default vanilla JS template, you need to run the following command:
 
 ```bash
 wails init -n helloworld
 ```
 
-您应该会看到类型以下的输出:
+You should see something similar to the following:
 
 ```
 Wails CLI v2.0.0
@@ -40,7 +39,7 @@ Template Support:  https://wails.io
 Initialised project 'helloworld' in 232ms.
 ```
 
-This will create a new directory called `helloworld` in the current directory. In this directory, you will find a number of files: In this directory, you will find a number of files:
+This will create a new directory called `helloworld` in the current directory. In this directory, you will find a number of files:
 
 ```
 build/       - Contains the build files + compiled application
@@ -52,7 +51,7 @@ go.mod       - The go module file
 go.sum       - The go module checksum file
 ```
 
-## 编译程序
+## Build the application
 
 To build the application, change to the new `helloworld` project directory and run the following command:
 
@@ -84,15 +83,11 @@ Building target: windows/amd64
   - Generating bundle assets: Done.
   - Compiling application: Done.
 Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
-  - Compiling frontend: Done.
-  - Generating bundle assets: Done.
-  - Compiling application: Done.
-Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
 ```
 
 This has compiled the application and saved it in the `build/bin` directory.
 
-## 运行程序
+## Run the application
 
 If we view the `build/bin` directory in Windows Explorer, we should see our project binary:
 
