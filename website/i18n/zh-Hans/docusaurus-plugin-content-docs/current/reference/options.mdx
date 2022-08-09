@@ -191,7 +191,7 @@ func main() {
 
 类型：int (0xRRGGBBAA) 示例：0xFF000088 - 透明度为 50% 的红色
 
-This value is the default background colour of the window. Default: white
+This value is the default background colour of the window. Default: white Default: white
 
 ### 窗口固定在最顶层
 
@@ -235,9 +235,9 @@ This value is the default background colour of the window. Default: white
 | Response Body           | ✅   | ✅   | ✅   |
 | Response Body Streaming | ❌   | ❌   | ✅   |
 
-NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.36.0. In the future some features will be supported by the introduction of WebKit2GTK 2.36.0+ support.
+NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.36.0. In the future some features will be supported by the introduction of WebKit2GTK 2.36.0+ support. In the future some features will be supported by the introduction of WebKit2GTK 2.36.0+ support.
 
-NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html on every path, that does not contain a file extension.
+NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html on every path, that does not contain a file extension. Vite serves the index.html on every path, that does not contain a file extension.
 
 ### 日志
 
@@ -277,7 +277,7 @@ NOTE: When used in combination with a Frontend DevServer there might be limitati
 
 Default: `Error`
 
-The default log level for production builds. 有关日志记录的更多详细信息，请参阅[日志参考](../reference/runtime/log)。
+The default log level for production builds. 有关日志记录的更多详细信息，请参阅[日志参考](../reference/runtime/log)。 有关日志记录的更多详细信息，请参阅[日志参考](../reference/runtime/log)。
 
 ### 应用退出回调
 
@@ -309,7 +309,7 @@ The default log level for production builds. 有关日志记录的更多详细�
 
 类型：\*windows.Options
 
-如果设置了此回调，它将在通过单击窗口关闭按钮或调用`runtime.Quit`即将退出应用程序时被调用. 返回 `true` 将导致应用程序继续，`false` 将继续正常关闭。 Returning true will cause the application to continue, false will continue shutdown as normal. 这有助于与用户确认他们希望退出程序。
+如果设置了此回调，它将在通过单击窗口关闭按钮或调用`runtime.Quit`即将退出应用程序时被调用. 返回 `true` 将导致应用程序继续，`false` 将继续正常关闭。 Returning true will cause the application to continue, false will continue shutdown as normal. 这有助于与用户确认他们希望退出程序。 这有助于与用户确认他们希望退出程序。
 
 名称：Mac
 ```go title=windowsapp.go
@@ -420,7 +420,7 @@ Type: \*mac.Options
 
 类型：string
 
-This defines the path to a directory with WebView2 executable files and libraries. If empty, webview2 installed in the system will be used.
+This defines the path to a directory with WebView2 executable files and libraries. If empty, webview2 installed in the system will be used. If empty, webview2 installed in the system will be used.
 
 Important information about distribution of fixed version runtime:
 - [How to get and extract runtime](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode)
@@ -437,11 +437,11 @@ TitleBar 结构提供了配置标题栏外观的能力。
 
 名称：Appearance
 
-| 值             | 描述                                                                                                                               |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| SystemDefault | _默认_. 主题将基于系统默认值。 The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置                                      |
-| Dark          | 该应用程序将只使用深色主题                                                                                                                    |
-| Light         | 从样式掩码中移除 [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/)。 |
+| 值             | 描述                                                                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| SystemDefault | _默认_. 主题将基于系统默认值。 The theme will be based on the system default. The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 |
+| Dark          | 该应用程序将只使用深色主题                                                                                                                              |
+| Light         | 从样式掩码中移除 [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/)。           |
 
 
 ### 外观
@@ -456,7 +456,7 @@ Appearance 用于根据 Apple 的 [NSAppearance](https://developer.apple.com/doc
 
 #### 外观
 
-CustomTheme 结构使用 `int32` 指定颜色值. 这些是非标准 Windows 格式： `0x00BBGGAA`。 These are in the standard(!) Windows format of: `0x00BBGGAA`. 提供了一个辅助函数来将 RGB 转换为这种格式：`windows.RGB(r,g,b uint8)`。
+CustomTheme 结构使用 `int32` 指定颜色值. 这些是非标准 Windows 格式： `0x00BBGGAA`。 These are in the standard(!) Windows format of: `0x00BBGGAA`. These are in the standard(!) Windows format of: `0x00BBGGAA`. 提供了一个辅助函数来将 RGB 转换为这种格式：`windows.RGB(r,g,b uint8)`。
 
 名称：WindowIsTranslucent
 
@@ -511,7 +511,7 @@ type ThemeSettings struct {
 
 可以使用 TitleBar 选项自定义应用程序的标题栏：
 
-ResizeDebounceMS is the amount of time to debounce redraws of webview2 when resizing the window. The default value (0) will perform redraws as fast as it can.
+ResizeDebounceMS is the amount of time to debounce redraws of webview2 when resizing the window. The default value (0) will perform redraws as fast as it can. The default value (0) will perform redraws as fast as it can.
 
 ### 关于
 
@@ -588,14 +588,14 @@ type TitleBar struct {
 }
 ```
 
-| 设置                         | 描述                                                                                                                                                                                                           |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| TitlebarAppearsTransparent | 使标题栏透明。 This has the effect of hiding the titlebar and the content fill the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindow/1419167-titlebarappearstransparent?language=objc) |
-| HideTitle                  | 隐藏窗口的标题。 [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowtitlevisibility?language=objc)                                                                                                |
-| HideTitleBar               | Removes [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/) from the style mask                                                           |
-| FullSizeContent            | 使 webview 填满整个窗口。 [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemaskfullsizecontentview)                                                                      |
-| UseToolbar                 | 向窗口添加默认工具栏。 [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar?language=objc)                                                                                                           |
-| HideToolbarSeparator       | 删除工具栏下方的线条。 [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar/1516954-showsbaselineseparator?language=objc)                                                                            |
+| 设置                         | 描述                                                                                                                                                                                                                                                                                       |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TitlebarAppearsTransparent | 使标题栏透明。 This has the effect of hiding the titlebar and the content fill the window. This has the effect of hiding the titlebar and the content fill the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindow/1419167-titlebarappearstransparent?language=objc) |
+| HideTitle                  | 隐藏窗口的标题。 [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowtitlevisibility?language=objc)                                                                                                                                                                            |
+| HideTitleBar               | Removes [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/) from the style mask                                                                                                                                       |
+| FullSizeContent            | 使 webview 填满整个窗口。 [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemaskfullsizecontentview)                                                                                                                                                  |
+| UseToolbar                 | 向窗口添加默认工具栏。 [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar?language=objc)                                                                                                                                                                                       |
+| HideToolbarSeparator       | 删除工具栏下方的线条。 [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar/1516954-showsbaselineseparator?language=objc)                                                                                                                                                        |
 
 Preconfigured titlebar settings are available:
 
@@ -669,11 +669,19 @@ func main() {
             },
         },
     })
+        Mac: &mac.Options{
+            About: &mac.AboutInfo{
+                Title:   "My Application",
+                Message: "© 2021 Me",
+                Icon:    icon,
+            },
+        },
+    })
 ```
 The "About" menu item will appear in the app menu:
 
 <div class="text--center">
-    <img src="/img/reference/about-menu.png" style={{"box-shadow": "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px"}}/>>
+    <img src="/img/reference/about-menu.png" style={{"box-shadow": "rgb(255 255 >
 </div>
 
 <br/>
@@ -681,7 +689,7 @@ The "About" menu item will appear in the app menu:
 When clicked, that will open an about message box:
 
 <div class="text--center">
-    <img src="/img/reference/about-dialog.png" width="40%" style={{"box-shadow": "rgb(255 255 255 / 20%) 0px 4px 8px 0px, rgb(104 104 104) 0px 6px 20px 0px"}}/>>
+    <img src="/img/reference/about-dialog.png" width="40%" style={{"box-shadow": "rgb(255 255 >
 </div>
 
 <br/>
