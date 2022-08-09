@@ -1,0 +1,22 @@
+{
+  "item.label.Sponsor": {
+    "message": "Спонсор ❤",
+    "description": "Navbar item with label Sponsor"
+  },
+  "item.label.Docs": {
+    "message": "Документация",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Blog": {
+    "message": "Блог",
+    "description": "Navbar item with label Blog"
+  },
+  "item.label.About": {
+    "message": "Подробнее",
+    "description": "Navbar item with label Blog"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  }
+}
