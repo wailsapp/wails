@@ -426,33 +426,31 @@ jobs:
           # The certificates in a PKCS12 file encoded as a base64 string
           p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
           # The password used to import the PKCS12 file.
-          p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
-      - name: Sign our macOS binary
-        if: matrix.platform == 'macos-latest'
-        run: |
-          echo "Signing Package"
-          gon -log-level=info ./build/darwin/gon-sign.json
-      - name: Sign Windows binaries
-        if: matrix.platform == 'windows-latest'
-        run: |
-          echo "Creating certificate file"
-          New-Item -ItemType directory -Path certificate
-          Set-Content -Path certificate\certificate.txt -Value '${{ secrets.WIN_SIGNING_CERT }}'
-          certutil -decode certificate\certificate.txt certificate\certificate.pfx
-          echo "Signing our binaries"
-          & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe' sign /fd sha256 /tr http://ts.ssl.com /f certificate\certificate.pfx /p '${{ secrets.WIN_SIGNING_CERT_PASSWORD }}' .\build\bin\Monitor.exe
-      - name: upload artifacts macOS
-        if: matrix.platform == 'macos-latest'
-        uses: actions/upload-artifact@v2
-        with:
-          name: wails-binaries-macos
-          path: build/bin/*
-      - name: upload artifacts windows
-        if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v2
-        with:
-          name: wails-binaries-windows
-          path: build/bin/*
+          - name: Import Code-Signing Certificates for macOS
+  if: matrix.platform == 'macos-latest'
+  uses: Apple-Actions/import-codesign-certs@v1
+  with:
+    # The certificates in a PKCS12 file encoded as a base64 string
+    p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
+    # The password used to import the PKCS12 file.
+    p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
+- name: Sign our macOS binary
+  if: matrix.platform == 'macos-latest'
+  run: |
+    echo "Signing Package"
+    gon -log-level=info ./build/darwin/gon-sign.json
+    p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
+- name: Sign our macOS binary
+  if: matrix.platform == 'macos-latest'
+  run: |
+    echo "Signing Package"
+    gon -log-level=info ./build/darwin/gon-sign.json
+    p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
+- name: Sign our macOS binary
+  if: matrix.platform == 'macos-latest'
+  run: |
+    echo "Signing Package"
+    gon -log-level=info ./build/darwin/gon-sign.json
 ```
 
 # End notes
