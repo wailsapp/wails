@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # 应用菜单
 
-It is possible to add an application menu to Wails projects. 可以通过定义 [菜单](#菜单) 结构并设置 [`Menu`](../reference/options#菜单) 选项或者通过调用运行时方法 [设置应用程序菜单](../reference/runtime/menu#设置应用程序菜单) 来将应用程序菜单添加到 Wails 项目。
+It is possible to add an application menu to Wails projects. 可以通过定义 [菜单](#菜单) 结构并设置 [`Menu`](../reference/options#菜单) 选项或者通过调用运行时方法 [设置应用程序菜单](../reference/runtime/menu#设置应用程序菜单) 来将应用程序菜单添加到 Wails 项目。 可以通过定义 [菜单](#菜单) 结构并设置 [`Menu`](../reference/options#菜单) 选项或者通过调用运行时方法 [设置应用程序菜单](../reference/runtime/menu#设置应用程序菜单) 来将应用程序菜单添加到 Wails 项目。
 
 也可以通过更新菜单结构并调用[更新应用程序菜单](../reference/runtime/menu#更新应用程序菜单)来动态更新菜单 。
 
@@ -31,6 +31,16 @@ It is possible to add an application menu to Wails projects. 可以通过定义 
         },
     )
     // ...
+````
+
+It is also possible to dynamically update the menu, by updating the menu struct and calling
+[MenuUpdateApplicationMenu](../reference/runtime/menu.mdx#menuupdateapplicationmenu).
+
+The example above uses helper methods, however it's possible to build the menu structs manually.
+
+type Menu struct {
+    Items []*MenuItem
+}
 ````
 
 It is also possible to dynamically update the menu, by updating the menu struct and calling

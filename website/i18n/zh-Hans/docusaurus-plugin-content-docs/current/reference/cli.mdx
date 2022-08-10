@@ -49,26 +49,26 @@ Wails CLI 有许多用于管理项目的命令。 所有命令都以此方式运
 
 `wails build`用于将您的项目编译为生产可用的二进制文件。
 
-| 标志                   | 描述                                                                                                          | 默认                          |
-|:-------------------- |:----------------------------------------------------------------------------------------------------------- |:--------------------------- |
-| -platform            | 为指定的[平台](../reference/cli#平台)（逗号分割）构建，例如：`windows/arm64`。 `windows/arm64`. 注意，如果没有指定架构，则使用`runtime.GOARCH`。 | runtime.GOOS/runtime.GOARCH |
-| -clean               | 清理`build/bin`目录                                                                                             |                             |
-| -compiler "编译器"      | 使用不同的 go 编译器来构建，例如 go1.15beta1                                                                              | go                          |
-| -ldflags "标志"        | 传递给编译器的额外 ldflags                                                                                           |                             |
-| -nopackage           | 不打包应用程序                                                                                                     |                             |
-| -o filename          | 输出文件名                                                                                                       |                             |
-| -s                   | 跳过前端构建                                                                                                      | 否                           |
-| -f                   | 强制构建应用                                                                                                      | 否                           |
-| -tags "额外标签"         | 传递给编译器构建标签（引号和空格分隔）                                                                                         |                             |
-| -upx                 | 使用“upx”压缩最终二进制文件                                                                                            |                             |
-| -upxflags            | 传递给 upx 的标志                                                                                                 |                             |
-| -v int               | 详细级别 (0 - silent, 1 - default, 2 - verbose)                                                                 | 1                           |
-| -webview2            | WebView2 安装程序策略：download,embed,browser,error.                                                               | download                    |
-| -u                   | 更新项目的 `go.mod` 以使用与 CLI 相同版本的 Wails                                                                         |                             |
-| -debug               | 在应用程序中保留调试信息 Allows the use of the devtools in the application window                                       | 否                           |
-| -trimpath            | Remove all file system paths from the resulting executable.                                                 | 否                           |
-| -race                | Build with Go's race detector                                                                               | 否                           |
-| -platform "platform" | Keep the console window for Windows builds                                                                  | 否                           |
+| 标志                   | 描述                                                                                                                           | 默认                          |
+|:-------------------- |:---------------------------------------------------------------------------------------------------------------------------- |:--------------------------- |
+| -platform            | 为指定的[平台](../reference/cli#平台)（逗号分割）构建，例如：`windows/arm64`。 `windows/arm64`. `windows/arm64`. 注意，如果没有指定架构，则使用`runtime.GOARCH`。 | runtime.GOOS/runtime.GOARCH |
+| -clean               | 清理`build/bin`目录                                                                                                              |                             |
+| -compiler "编译器"      | 使用不同的 go 编译器来构建，例如 go1.15beta1                                                                                               | go                          |
+| -ldflags "标志"        | 传递给编译器的额外 ldflags                                                                                                            |                             |
+| -nopackage           | 不打包应用程序                                                                                                                      |                             |
+| -o filename          | 输出文件名                                                                                                                        |                             |
+| -s                   | 跳过前端构建                                                                                                                       | 否                           |
+| -f                   | 强制构建应用                                                                                                                       | 否                           |
+| -tags "额外标签"         | 传递给编译器构建标签（引号和空格分隔）                                                                                                          |                             |
+| -upx                 | 使用“upx”压缩最终二进制文件                                                                                                             |                             |
+| -upxflags            | 传递给 upx 的标志                                                                                                                  |                             |
+| -v int               | 详细级别 (0 - silent, 1 - default, 2 - verbose)                                                                                  | 1                           |
+| -webview2            | WebView2 安装程序策略：download,embed,browser,error.                                                                                | download                    |
+| -u                   | 更新项目的 `go.mod` 以使用与 CLI 相同版本的 Wails                                                                                          |                             |
+| -debug               | 在应用程序中保留调试信息 在应用程序中保留调试信息 Allows the use of the devtools in the application window                                           | 否                           |
+| -trimpath            | Remove all file system paths from the resulting executable.                                                                  | 否                           |
+| -race                | Build with Go's race detector                                                                                                | 否                           |
+| -platform "platform" | Keep the console window for Windows builds                                                                                   | 否                           |
 
 有关`webview2`标志的详细描述，请参阅[Windows 系统](../guides/windows)指南。
 
@@ -117,6 +117,32 @@ Wails CLI 有许多用于管理项目的命令。 所有命令都以此方式运
 Wails CLI v2.0.0-beta
 
 Scanning system - Please wait (this may take a long time)...Done.
+
+Wails CLI v2.0.0-beta
+
+Scanning system - Please wait (this may take a long time)...Done.
+
+System
+------
+OS:             Windows 10 Pro
+Version:        2009 (Build: 19043)
+ID:             21H1
+Go Version:     go1.17
+Platform:       windows
+Architecture:   amd64
+
+Dependency      Package Name    Status          Version
+----------      ------------    ------          -------
+WebView2        N/A             Installed       93.0.961.52
+npm             N/A             Installed       6.14.15
+*upx            N/A             Installed       upx 3.96
+*docker         N/A             Installed       20.10.6
+
+* - Optional Dependency
+
+Diagnosis
+---------
+Your system is ready for Wails development!
 
 Wails CLI v2.0.0-beta
 

@@ -28,10 +28,11 @@ NSIS 可通 homebrew 安装：`brew install nsis`。
 
 ## 生成安装程序
 
-创建新项目时，Wails 从`installer/info.json`中读取配置数据并使用项目的`wails.json`的 Info 部分，在`build/windows/installer`中生成 NSIS 配置文件： The config data is read from `installer/info.json` and that is configured to use the project's `wails.json` Info section:
+创建新项目时，Wails 从`installer/info.json`中读取配置数据并使用项目的`wails.json`的 Info 部分，在`build/windows/installer`中生成 NSIS 配置文件： 创建新项目时，Wails 从`installer/info.json`中读取配置数据并使用项目的`wails.json`的 Info 部分，在`build/windows/installer`中生成 NSIS 配置文件： The config data is read from `installer/info.json` and that is configured to use the project's `wails.json` Info section:
 
 ```json
 // ...
+ // ...
  // ...
  "Info": {
     "companyName": "My Company Name",
