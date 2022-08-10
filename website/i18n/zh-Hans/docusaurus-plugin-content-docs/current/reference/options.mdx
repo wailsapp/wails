@@ -237,7 +237,7 @@ This value is the default background colour of the window. Default: white Defaul
 
 NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.36.0. In the future some features will be supported by the introduction of WebKit2GTK 2.36.0+ support. In the future some features will be supported by the introduction of WebKit2GTK 2.36.0+ support.
 
-NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html on every path, that does not contain a file extension. Vite serves the index.html on every path, that does not contain a file extension.
+NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html on every path, that does not contain a file extension. NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html on every path, that does not contain a file extension. Vite serves the index.html on every path, that does not contain a file extension.
 
 ### 日志
 
@@ -437,11 +437,11 @@ TitleBar 结构提供了配置标题栏外观的能力。
 
 名称：Appearance
 
-| 值             | 描述                                                                                                                                         |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| SystemDefault | _默认_. 主题将基于系统默认值。 The theme will be based on the system default. The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 |
-| Dark          | 该应用程序将只使用深色主题                                                                                                                              |
-| Light         | 从样式掩码中移除 [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/)。           |
+| 值             | 描述                                                                                                                                                                                                                   |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SystemDefault | _默认_. 主题将基于系统默认值。 The theme will be based on the system default. The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 |
+| Dark          | 该应用程序将只使用深色主题                                                                                                                                                                                                        |
+| Light         | 从样式掩码中移除 [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/)。                                                                                     |
 
 
 ### 外观
@@ -681,7 +681,7 @@ func main() {
 The "About" menu item will appear in the app menu:
 
 <div class="text--center">
-    <img src="/img/reference/about-menu.png" className="screenshot"/>
+    <img src="/img/reference/about-menu.png" style={{"box-shadow": "rgb(255 255 >
 </div>
 
 <br/>
@@ -689,7 +689,7 @@ The "About" menu item will appear in the app menu:
 When clicked, that will open an about message box:
 
 <div class="text--center">
-    <img src="/img/reference/about-dialog.png" width="40%" className="screenshot"/>
+    <img src="/img/reference/about-dialog.png" width="40%" style={{"box-shadow": "rgb(255 255 >
 </div>
 
 <br/>
