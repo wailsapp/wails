@@ -240,7 +240,7 @@
 ### Added
 
 - **New Templates**: Svelte, React, Vue, Preact, Lit and Vanilla templates, both JS and TS versions. `wails init -l` for more info. `wails init -l` for more info.
-- Default templates now powered by [Vite](https://vitejs.dev). This enables lightning fast reloads when you use `wails dev`! This enables lightning fast reloads when you use `wails dev`!
+- Default templates now powered by [Vite](https://vitejs.dev). This enables lightning fast reloads when you use `wails dev`! Default templates now powered by [Vite](https://vitejs.dev). This enables lightning fast reloads when you use `wails dev`! This enables lightning fast reloads when you use `wails dev`!
 - Add support for external frontend development servers. Add support for external frontend development servers. See `frontend:dev:serverUrl` in the [project config](https://wails.io/docs/reference/project-config) - [@stffabi](https://github.com/stffabi)
 - [Fully configurable dark mode](https://wails.io/docs/reference/options#theme) for Windows.
 - Hugely improved [WailsJS generation](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) (both Javascript and Typescript)
