@@ -156,7 +156,7 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 		}
 		kind := field.Type.Kind()
 		if kind == reflect.Struct {
-			if field.PkgPath == "" {
+			if !field.IsExported() {
 				continue
 			}
 			fqname := field.Type.String()
@@ -168,7 +168,7 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 				b.AddStructToGenerateTS(pName, sName, s)
 			}
 		} else if kind == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct {
-			if field.PkgPath == "" {
+			if !field.IsExported() {
 				continue
 			}
 			fqname := field.Type.String()
@@ -182,7 +182,6 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 			}
 		}
 	}
-
 }
 
 func (b *Bindings) getAllStructNames() *slicer.StringSlicer {
