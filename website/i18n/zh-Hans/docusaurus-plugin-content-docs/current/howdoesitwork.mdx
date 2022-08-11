@@ -14,7 +14,7 @@ Wails 应用程序是一个带有一个 webkit 前端的标准的 Go 应用程�
 
 ### 概述
 
-主应用程序由对`wails.Run()`的调用组成. 它接受描述应用程序窗口大小、窗口标题、要使用的资源等应用程序配置。 It accepts the application configuration which describes the size of the application window, the window title, what assets to use, etc. 基本应用程序可能如下所示：
+主应用程序由对`wails.Run()`的调用组成. 它接受描述应用程序窗口大小、窗口标题、要使用的资源等应用程序配置。 It accepts the application configuration which describes the size of the application window, the window title, what assets to use, etc. 基本应用程序可能如下所示： 基本应用程序可能如下所示：
 
 ```go title="main.go"
 package main
@@ -102,7 +102,7 @@ var assets embed.FS
 
 #### 方法绑定
 
-`Bind`选项是 Wails 应用程序中最重要的参数选项之一。 它指定向前端暴露哪些结构方法。 Think of structs like "controllers" in a traditional web application. 当应用程序启动时，它会检查 `Bind` 中列出的结构实例， 确定哪些方法是公开的（以大写字母开头），并将生成前端可以调用的那些方法的 Javascript 版本。
+`Bind`选项是 Wails 应用程序中最重要的参数选项之一。 它指定向前端暴露哪些结构方法。 Think of structs like "controllers" in a traditional web application. 当应用程序启动时，它会检查 `Bind` 中列出的结构实例， 确定哪些方法是公开的（以大写字母开头），并将生成前端可以调用的那些方法的 Javascript 版本。 当应用程序启动时，它会检查 `Bind` 中列出的结构实例， 确定哪些方法是公开的（以大写字母开头），并将生成前端可以调用的那些方法的 Javascript 版本。
 
 :::info 注意
 
@@ -158,6 +158,7 @@ func (a *App) Greet(name string) string {
 
 ```go {8-10}
     //...
+    //...
     ...
     err := wails.Run(&options.App{
         Title:             "Basic Demo",
@@ -194,16 +195,17 @@ This makes it incredibly simple to call Go code from the frontend, using the sam
 
 ### Calling bound Go methods
 
-在`开发`模式下运行应用程序时，会生成一个 javascript 模块，该模块用 JSDoc 注释包装这些方法。 这确实有助于开发，尤其是因为大多数 IDE 将处理 JSDoc 以提供代码完成和类型提示。 该模块名为`go` 并在`wailsjsdir`标志指定的目录中生成。 The generated files mirror the package names in your application. 在上面的例子中，我们绑定 `app`，它有一个公开方法 `Greet`。 This will lead to the generation of the following files:
+在`开发`模式下运行应用程序时，会生成一个 javascript 模块，该模块用 JSDoc 注释包装这些方法。 这确实有助于开发，尤其是因为大多数 IDE 将处理 JSDoc 以提供代码完成和类型提示。 该模块名为`go` 并在`wailsjsdir`标志指定的目录中生成。 The generated files mirror the package names in your application. 在上面的例子中，我们绑定 `app`，它有一个公开方法 `Greet`。 在上面的例子中，我们绑定 `app`，它有一个公开方法 `Greet`。 This will lead to the generation of the following files:
 
 ```bash
 window.go.main.App.Greet("Bill").then((result) => {
     console.log("The greeting is: " + result);
  })
 ```
-Here we can see that there is a `main` package that contains the Javascript bindings for the bound `App` struct, as well as the Typescript declaration file for those methods. To call `Greet` from our frontend, we simply import the method and call it like a regular Javascript function:
+Here we can see that there is a `main` package that contains the Javascript bindings for the bound `App` struct, as well as the Typescript declaration file for those methods. To call `Greet` from our frontend, we simply import the method and call it like a regular Javascript function: To call `Greet` from our frontend, we simply import the method and call it like a regular Javascript function:
 
 ```javascript
+    // ...
     // ...
     import {Greet} from '../wailsjs/go/main/App'
 
@@ -233,7 +235,7 @@ const go = {
 export default go;
 ```
 
-这些方法返回一个 Promise。 成功的调用将导致 Go 调用的第一个返回值被传递给 `resolve` 处理程序。 一个不成功的调用是将一个 Go 方法的第二个错误类型返回值通过`reject`传递回调用者。 This is passed back via the `reject` handler. 在上面的例子中，Greet 只返回一个字符串，所以 `Javascript` 调用永远不会`reject` - 除非将无效数据传递给它。
+这些方法返回一个 Promise。 成功的调用将导致 Go 调用的第一个返回值被传递给 `resolve` 处理程序。 一个不成功的调用是将一个 Go 方法的第二个错误类型返回值通过`reject`传递回调用者。 This is passed back via the `reject` handler. This is passed back via the `reject` handler. 在上面的例子中，Greet 只返回一个字符串，所以 `Javascript` 调用永远不会`reject` - 除非将无效数据传递给它。
 
 所有数据类型都在 Go 和 Javascript 之间正确转换。 包括结构体。 如果您从 Go 调用返回一个结构体，它将作为 `Javascript` Map 返回到您的前端。 注意：如果您想使用结构体，您必须为您的结构体字段定义`json` 标签！
 
@@ -335,7 +337,7 @@ function greet(name) {
 }
 ```
 
-As we can see, the "main" namespace is imported from a new "models.ts" file. This file contains all the struct definitions used by our bound methods. In this example, this is a `Person` struct. If we look at `models.ts`, we can see how the models are defined:
+As we can see, the "main" namespace is imported from a new "models.ts" file. This file contains all the struct definitions used by our bound methods. In this example, this is a `Person` struct. If we look at `models.ts`, we can see how the models are defined: This file contains all the struct definitions used by our bound methods. In this example, this is a `Person` struct. If we look at `models.ts`, we can see how the models are defined:
 
 ```ts title="models.ts"
 export namespace main {
