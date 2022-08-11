@@ -82,37 +82,6 @@ window.addEventListener('mouseup', () => {
     window.wails.flags.shouldDrag = false;
 });
 
-// Setup drag handler
-// Based on code from: https://github.com/patr0nus/DeskGap
-window.addEventListener('mousedown', (e) => {
-
-    // Check for resizing
-    if (window.wails.flags.resizeEdge) {
-        window.WailsInvoke("resize:" + window.wails.flags.resizeEdge);
-        e.preventDefault();
-        return;
-    }
-
-    // Check for dragging
-    let currentElement = e.target;
-    while (currentElement != null) {
-        if (currentElement.hasAttribute('data-wails-no-drag')) {
-            break;
-        } else if (currentElement.hasAttribute('data-wails-drag')) {
-            if (window.wails.flags.disableScrollbarDrag) {
-                // This checks for clicks on the scroll bar
-                if (e.offsetX > e.target.clientWidth || e.offsetY > e.target.clientHeight) {
-                    break;
-                }
-            }
-
-            window.wails.flags.shouldDrag = true;
-            break;
-        }
-        currentElement = currentElement.parentElement;
-    }
-});
-
 function setResize(cursor) {
     document.body.style.cursor = cursor || window.wails.flags.defaultCursor;
     window.wails.flags.resizeEdge = cursor;
