@@ -118,37 +118,11 @@ function setResize(cursor) {
     window.wails.flags.resizeEdge = cursor;
 }
 
-window.addEventListener('mousemove', function (e) {
-    if (window.wails.flags.shouldDrag) {
-        window.WailsInvoke("drag");
-        return;
-    }
-    if (!window.wails.flags.enableResize) {
-        return;
-    }
-    if (window.wails.flags.defaultCursor == null) {
-        window.wails.flags.defaultCursor = document.body.style.cursor;
-    }
-    if (window.outerWidth - e.clientX < window.wails.flags.borderThickness && window.outerHeight - e.clientY < window.wails.flags.borderThickness) {
-        document.body.style.cursor = "se-resize";
-    }
-    let rightBorder = window.outerWidth - e.clientX < window.wails.flags.borderThickness;
-    let leftBorder = e.clientX < window.wails.flags.borderThickness;
-    let topBorder = e.clientY < window.wails.flags.borderThickness;
-    let bottomBorder = window.outerHeight - e.clientY < window.wails.flags.borderThickness;
-
-    // If we aren't on an edge, but were, reset the cursor to default
-    if (!leftBorder && !rightBorder && !topBorder && !bottomBorder && window.wails.flags.resizeEdge !== undefined) {
-        setResize();
-    } else if (rightBorder && bottomBorder) setResize("se-resize");
-    else if (leftBorder && bottomBorder) setResize("sw-resize");
-    else if (leftBorder && topBorder) setResize("nw-resize");
-    else if (topBorder && rightBorder) setResize("ne-resize");
-    else if (leftBorder) setResize("w-resize");
-    else if (topBorder) setResize("n-resize");
-    else if (bottomBorder) setResize("s-resize");
-    else if (rightBorder) setResize("e-resize");
-
+window.addEventListener('mousedown', function (e) {
+   if (e.target.hasAttribute('data-wails-drag') && e.buttons === 1) {
+    e.preventDefault();
+    window.WailsInvoke("drag");
+   }
 });
 
 // Setup context menu hook
