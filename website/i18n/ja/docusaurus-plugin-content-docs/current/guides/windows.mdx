@@ -45,3 +45,17 @@ Also, you should specify path to fixed version of webview2 runtime in the `windo
 ```
 
 Note: When `WebviewBrowserPath` is specified, `error` strategy will be forced in case of minimal required version mismatch or invalid path to a runtime.
+
+## Spawning other programs
+
+When spawning other programs, such as scripts, you will see the window appear on the screen. To hide the window, you can use the following code:
+
+```go
+cmd := exec.Command("your_script.exe")
+cmd.SysProcAttr = &syscall.SysProcAttr{
+    HideWindow:    true,
+    CreationFlags: 0x08000000,
+}
+cmd.Start()
+```
+Solution provided by [sithembiso](https://github.com/sithembiso) on the [discussions board](https://github.com/wailsapp/wails/discussions/1734#discussioncomment-3386172).
