@@ -8,6 +8,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"github.com/wailsapp/wails/v2/internal/go-common-file-dialog/cfd"
 	"golang.org/x/sys/windows"
+	"path/filepath"
 	"syscall"
 )
 
@@ -18,12 +19,25 @@ func (f *Frontend) getHandleForDialog() w32.HWND {
 	return 0
 }
 
+func getDefaultFolder(folder string) (string, error) {
+	if folder == "" {
+		return "", nil
+	}
+	return filepath.Abs(folder)
+}
+
 // OpenDirectoryDialog prompts the user to select a directory
 func (f *Frontend) OpenDirectoryDialog(options frontend.OpenDialogOptions) (string, error) {
+
+	defaultFolder, err := getDefaultFolder(options.DefaultDirectory)
+	if err != nil {
+		return "", err
+	}
+
 	config := cfd.DialogConfig{
 		Title:  options.Title,
 		Role:   "PickFolder",
-		Folder: options.DefaultDirectory,
+		Folder: defaultFolder,
 	}
 	thisDialog, err := cfd.NewSelectFolderDialog(config)
 	if err != nil {
@@ -45,8 +59,14 @@ func (f *Frontend) OpenDirectoryDialog(options frontend.OpenDialogOptions) (stri
 
 // OpenFileDialog prompts the user to select a file
 func (f *Frontend) OpenFileDialog(options frontend.OpenDialogOptions) (string, error) {
+
+	defaultFolder, err := getDefaultFolder(options.DefaultDirectory)
+	if err != nil {
+		return "", err
+	}
+
 	config := cfd.DialogConfig{
-		Folder:      options.DefaultDirectory,
+		Folder:      defaultFolder,
 		FileFilters: convertFilters(options.Filters),
 		FileName:    options.DefaultFilename,
 		Title:       options.Title,
@@ -70,13 +90,19 @@ func (f *Frontend) OpenFileDialog(options frontend.OpenDialogOptions) (string, e
 }
 
 // OpenMultipleFilesDialog prompts the user to select a file
-func (f *Frontend) OpenMultipleFilesDialog(dialogOptions frontend.OpenDialogOptions) ([]string, error) {
+func (f *Frontend) OpenMultipleFilesDialog(options frontend.OpenDialogOptions) ([]string, error) {
+
+	defaultFolder, err := getDefaultFolder(options.DefaultDirectory)
+	if err != nil {
+		return nil, err
+	}
+
 	config := cfd.DialogConfig{
-		Title:       dialogOptions.Title,
+		Title:       options.Title,
 		Role:        "OpenMultipleFiles",
-		FileFilters: convertFilters(dialogOptions.Filters),
-		FileName:    dialogOptions.DefaultFilename,
-		Folder:      dialogOptions.DefaultDirectory,
+		FileFilters: convertFilters(options.Filters),
+		FileName:    options.DefaultFilename,
+		Folder:      defaultFolder,
 	}
 	thisdialog, err := cfd.NewOpenMultipleFilesDialog(config)
 	if err != nil {
@@ -97,13 +123,19 @@ func (f *Frontend) OpenMultipleFilesDialog(dialogOptions frontend.OpenDialogOpti
 }
 
 // SaveFileDialog prompts the user to select a file
-func (f *Frontend) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (string, error) {
+func (f *Frontend) SaveFileDialog(options frontend.SaveDialogOptions) (string, error) {
+
+	defaultFolder, err := getDefaultFolder(options.DefaultDirectory)
+	if err != nil {
+		return "", err
+	}
+
 	saveDialog, err := cfd.NewSaveFileDialog(cfd.DialogConfig{
-		Title:       dialogOptions.Title,
+		Title:       options.Title,
 		Role:        "SaveFile",
-		FileFilters: convertFilters(dialogOptions.Filters),
-		FileName:    dialogOptions.DefaultFilename,
-		Folder:      dialogOptions.DefaultDirectory,
+		FileFilters: convertFilters(options.Filters),
+		FileName:    options.DefaultFilename,
+		Folder:      defaultFolder,
 	})
 	if err != nil {
 		return "", err
