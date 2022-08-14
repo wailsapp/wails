@@ -11,14 +11,17 @@ import (
 // Frontend implements an empty Frontend that simply waits until the context is done.
 type Frontend struct {
 	// Context
-	ctx  context.Context
+	ctx             context.Context
+	frontendOptions *options.App
+
 	done bool
 }
 
 // NewFrontend returns an initialized Frontend
-func NewFrontend(ctx context.Context) *Frontend {
+func NewFrontend(ctx context.Context, appoptions *options.App) *Frontend {
 	return &Frontend{
-		ctx: ctx,
+		frontendOptions: appoptions,
+		ctx:             ctx,
 	}
 }
 
@@ -73,19 +76,25 @@ func (f *Frontend) WindowSetDarkTheme() {
 }
 
 // Run waits until the context is done and then exits
-func (f *Frontend) Run(ctx context.Context) error {
+func (f *Frontend) Run(ctx context.Context) (err error) {
+	err = nil
+	go func() {
+		if f.frontendOptions.OnStartup != nil {
+			f.frontendOptions.OnStartup(f.ctx)
+		}
+	}()
 	for {
 		select {
 		case <-ctx.Done():
-			break
+			return
 		default:
 			time.Sleep(1 * time.Millisecond)
 		}
 		if f.done {
-			break
+			return
 		}
 	}
-	return nil
+
 }
 
 // WindowCenter does nothing
