@@ -32,11 +32,11 @@ Wails использует специально созданную библио�
 
 Wails автоматически делает ваши методы на Go доступными в Javascript, чтобы вы могли вызывать их по имени! Он также генерирует Typescript версии структур, используемых вашими методами на Go, чтобы вы могли передавать те же данные между Go и Javascript.
 
-## Runtime Library
+## Библиотека среды выполнения
 
-Wails provides a runtime library, for both Go and Javascript, that handles a lot of the things modern applications need, like Eventing, Logging, Dialogs, etc.
+Wails предоставляет библиотеку среды выполнения для Go и Javascript, которая справляется со многими вещями, нужными для современный приложений, например, работа с событими, логирование, диалоги и так далее.
 
-## Live Development Experience
+## Опыт разработки в реальном времени
 
 ### Автоматическая пересборка
 
@@ -46,14 +46,14 @@ Wails provides a runtime library, for both Go and Javascript, that handles a lot
 
 When changes to your application assets are detected, your running application will "reload", reflecting your changes almost immediately.
 
-### Develop your application in a Browser
+### Разрабатывайте приложение в браузере
 
-If you prefer to debug and develop in a browser then Wails has you covered. The running application also has a webserver that will run your application in any browser that connects to it. It will even refresh when your assets change on disk.
+Если вы предпочитаете отладку и разработку в браузере, то Wails это умеет. Запущенное приложение также имеет веб-сервер который будет запускать ваше приложение в любом браузере который к нему прилоединится. Он будет перезапускаться когда ресурсы на вашем диске изменятся.
 
 ## Бинарные файлы, готовые к выпуску
 
 Когда вы готовы сделать финальную сборку вашего приложения, CLI соберет всё в один исполняемый файл со всеми ресурсами внутри. На Windows и MacOS есть возможность создать нативный установочный пакет для распространения. The assets used in packaging (icon, info.plist, manifest file, etc) are part of your project and may be customised, giving you total control over how your applications are built.
 
-## Tooling
+## Инструментарий
 
-The Wails CLI provides a hassle-free way to generate, build and bundle your applications. It will do the heavy lifting of creating icons, compiling your application with optimal settings and delivering a distributable, production ready binary. Choose from a number of starter templates to get up and running quickly!
+Wails CLI предоставляет легкий способ генерировать, собирать и упаковывать ваши приложения. It will do the heavy lifting of creating icons, compiling your application with optimal settings and delivering a distributable, production ready binary. Choose from a number of starter templates to get up and running quickly!
