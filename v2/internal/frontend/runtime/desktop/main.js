@@ -180,3 +180,5 @@ window.addEventListener('contextmenu', function (e) {
         e.preventDefault();
     }
 });
+
+window.WailsInvoke("runtime:ready");
