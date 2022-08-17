@@ -4,7 +4,7 @@
 
 格式基于 [维护更新日志](https://keepachangelog.com/en/1.0.0/)， 并且该项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
-## [Unreleased][]
+## [即将发布][]
 
 ## [v2.0.0-beta.43] - 2022-08-08
 
@@ -33,7 +33,7 @@
 * Build frontend only before starting the dev watcher command by @stffabi in https://github.com/wailsapp/wails/pull/1694
 * Improve error message for auto dev server discovery without a dev watcher by @stffabi in https://github.com/wailsapp/wails/pull/1711
 
-### New Contributors
+### 新贡献者
 
 * @h8gi made their first contribution in https://github.com/wailsapp/wails/pull/1671
 * @SamHennessy made their first contribution in https://github.com/wailsapp/wails/pull/1682
@@ -79,7 +79,7 @@
 
 * The `Fullscreen` application option is deprecated. The `Fullscreen` application option is deprecated. Please use [`WindowStartState`](https://wails.io/docs/reference/options#windowstartstate) instead.
 
-### New Contributors
+### 新贡献者
 
 * @MyNameIsAres made their first contribution in https://github.com/wailsapp/wails/pull/1636
 
@@ -124,7 +124,7 @@
 * Add troubleshooting for `Not Found` error by @acheong08 in https://github.com/wailsapp/wails/pull/1586
 * Docs/better homepage by @leaanthony in https://github.com/wailsapp/wails/pull/1591
 
-### New Contributors
+### 新贡献者
 
 * @skamensky made their first contribution in https://github.com/wailsapp/wails/pull/1519
 * @acheong08 made their first contribution in https://github.com/wailsapp/wails/pull/1586
@@ -168,7 +168,7 @@
 * Better signal handling by @leaanthony in https://github.com/wailsapp/wails/pull/1488
 * Chore/react 18 create root by @tomanagle in https://github.com/wailsapp/wails/pull/1489
 
-### New Contributors
+### 新贡献者
 
 * @jaesung9507 made their first contribution in https://github.com/wailsapp/wails/pull/1430
 * @LukenSkyne made their first contribution in https://github.com/wailsapp/wails/pull/1449
@@ -207,7 +207,7 @@
 * Add docs on wails generate module by @TechplexEngineer in https://github.com/wailsapp/wails/pull/1414
 * Add macos custom menu EditMenu tips by @daodao97 in https://github.com/wailsapp/wails/pull/1423
 
-### New Contributors
+### 新贡献者
 * @polikow made their first contribution in https://github.com/wailsapp/wails/pull/1369
 * @antimatter96 made their first contribution in https://github.com/wailsapp/wails/pull/1372
 * @Junkher made their first contribution in https://github.com/wailsapp/wails/pull/1387
@@ -331,5 +331,5 @@
 - The docs have been improved and updated
 - Added troubleshooting guide
 
-[Unreleased]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.33...HEAD
+[即将发布]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.33...HEAD
 [v2.0.0-beta.33]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.32...v2.0.0-beta.33
