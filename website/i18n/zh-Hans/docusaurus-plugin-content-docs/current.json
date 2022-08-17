@@ -20,7 +20,7 @@
     "description": "The label for category Community in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Showcase": {
-    "message": "项目展示",
+    "message": "案例展示",
     "description": "The label for category Showcase in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Guides": {
