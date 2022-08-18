@@ -268,6 +268,16 @@ func CopyDir(src string, dst string) (err error) {
 	return
 }
 
+// SetPermissions recursively sets file permissions on a directory
+func SetPermissions(dir string, perm os.FileMode) error {
+	return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		return os.Chmod(path, perm)
+	})
+}
+
 // CopyDirExtended recursively copies a directory tree, attempting to preserve permissions.
 // Source directory must exist, destination directory must *not* exist. It ignores any files or
 // directories that are given through the ignore parameter.

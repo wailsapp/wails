@@ -86,6 +86,6 @@ func generateBindings(bindings *binding.Bindings) error {
 		return err
 	}
 
-	return nil
-
+	wailsJSDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs")
+	return fs.SetPermissions(wailsJSDir, 0755)
 }
