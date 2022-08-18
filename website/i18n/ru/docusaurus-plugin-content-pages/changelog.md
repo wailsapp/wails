@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased][]
 
+### Deprecation Notice
+
+The `data-wails-drag` attribute is being deprecated in favour of the following CSS style: `style="--wails-draggable:drag"`. You can use `style="--wails-draggable:no-drag"` to disable the drag behaviour. For this release only, you can test this by setting the following application option:
+
+```go
+        Experimental: &options.Experimental{
+UseCSSDrag: true,
+},
+```
+
 ## [v2.0.0-beta.43] - 2022-08-08
 
 ### Added
