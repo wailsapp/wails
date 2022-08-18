@@ -32,7 +32,7 @@
     "description": "Navbar item with label Community Guide"
   },
   "item.label.Credits": {
-    "message": "勋章墙",
+    "message": "致谢",
     "description": "Navbar item with label Credits"
   },
   "item.label.Stats": {
