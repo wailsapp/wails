@@ -6,6 +6,16 @@
 
 ## [即将发布][]
 
+### 弃用通知
+
+`data-wails-drag` 属性正在被弃用，改为以下的 CSS 样式： `style="--wails-dragable:drag` 您可以使用 `style="--wails-dragable:no-drag"` 来禁用拖动操作。 仅限此版本，您可以通过设置以下应用程序选项来测试：
+
+```go
+        Experimental: &options.Experimental{
+UseCSSDrag: true,
+},
+```
+
 ## [v2.0.0-beta.43] - 2022-08-08
 
 ### Added
