@@ -14,7 +14,7 @@ Wails 应用程序是一个带有一个 webkit 前端的标准的 Go 应用程�
 
 ### 概述
 
-主应用程序由对`wails.Run()`的调用组成. 它接受描述应用程序窗口大小、窗口标题、要使用的资源等应用程序配置。 It accepts the application configuration which describes the size of the application window, the window title, what assets to use, etc. 基本应用程序可能如下所示： 基本应用程序可能如下所示：
+主应用程序由对`wails.Run()`的调用组成。 它接受描述应用程序窗口大小、窗口标题、要使用的资源等应用程序配置。 基本应用程序可能如下所示：
 
 ```go title="main.go"
 package main
@@ -79,7 +79,7 @@ func (b *App) Greet(name string) string {
 
 完整的应用程序参数选项列表可以在[参数选项](./reference/options)中找到。
 
-#### 资源
+#### 资产
 
 `Assets` 选项是必须的，因为您不能拥有没有前端资源的 Wails 应用程序。 这些资源可以是您希望在 Web 应用程序中找到的任何文件 - html、js、css、svg、png 等。 **不需要生成资源包** - 纯文件即可。 当应用程序启动时，它将尝试从您的资源中加载`index.html`，并且那时起前端基本上将作为浏览器工作。 值得注意的是`embed.FS`对文件所在的位置没有要求。 嵌入路径很可能使用了相对于您的主应用程序代码的嵌套目录，例如 `frontend/dist`：
 
