@@ -19,6 +19,32 @@ UseCSSDrag: true,
 },
 ```
 
+### Added
+* Set file permissions for generated files by @leaanthony in https://github.com/wailsapp/wails/pull/1763
+* Experimental support for CSS Drag detection by @leaanthony in https://github.com/wailsapp/wails/pull/1750
+
+### Fixed
+* Bug fix collecting of output binaries for platforms by @stffabi in https://github.com/wailsapp/wails/pull/1715
+* Fix registration of exposed fields by @ValentinTrinque in https://github.com/wailsapp/wails/pull/1727
+* Fix column widths for doctor command's dependencies table by @ianmjones in https://github.com/wailsapp/wails/pull/1717
+* Do not generate bindings for `OnBeforeClose` method
+
+### What's Changed
+* Misc code refactors and removal by @leaanthony in https://github.com/wailsapp/wails/pull/1713
+* Add react-router to routing.mdx by @Maicarons2022 in https://github.com/wailsapp/wails/pull/1755
+* Add Japanese to doc by @RyoTagami in https://github.com/wailsapp/wails/pull/1716
+* Added EmailIt and Modal File Manager by @raguay in https://github.com/wailsapp/wails/pull/1728
+* Adding my ScriptBar program by @raguay in https://github.com/wailsapp/wails/pull/1761
+* Link to general webview2 runtime download page and not to a specific language by @stffabi in https://github.com/wailsapp/wails/pull/1764
+* Updated translations in https://github.com/wailsapp/wails/pull/1719 and https://github.com/wailsapp/wails/pull/1720
+* Remove text outside style's brackets by @DragoSpiro98 in https://github.com/wailsapp/wails/pull/1765
+
+### New Contributors
+* @RyoTagami made their first contribution in https://github.com/wailsapp/wails/pull/1716
+* @raguay made their first contribution in https://github.com/wailsapp/wails/pull/1728
+* @Maicarons2022 made their first contribution in https://github.com/wailsapp/wails/pull/1755
+* @DragoSpiro98 made their first contribution in https://github.com/wailsapp/wails/pull/1765
+
 ## [v2.0.0-beta.43] - 2022-08-08
 
 ### Added
