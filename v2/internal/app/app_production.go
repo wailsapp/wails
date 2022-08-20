@@ -85,10 +85,10 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	// Create binding exemptions - Ugly hack. There must be a better way
 	bindingExemptions := []interface{}{
-		a.appoptions.OnStartup,
-		a.appoptions.OnShutdown,
-		a.appoptions.OnDomReady,
-		a.appoptions.OnBeforeClose,
+		appoptions.OnStartup,
+		appoptions.OnShutdown,
+		appoptions.OnDomReady,
+		appoptions.OnBeforeClose,
 	}
 	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions)
 	eventHandler := runtime.NewEvents(myLogger)
