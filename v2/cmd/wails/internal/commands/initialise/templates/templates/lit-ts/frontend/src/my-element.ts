@@ -73,7 +73,7 @@ export class MyElement extends LitElement {
     resultText = "Please enter your name below 👇"
 
     greet() {
-        let thisName = (this.shadowRoot.getElementById('name') as HTMLInputElement)?.value;
+        let thisName = (this.shadowRoot?.getElementById('name') as HTMLInputElement)?.value;
         if (thisName) {
             Greet(thisName).then(result => {
                 this.resultText = result
