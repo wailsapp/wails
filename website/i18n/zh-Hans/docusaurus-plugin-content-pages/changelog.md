@@ -4,7 +4,7 @@
 
 格式基于 [维护更新日志](https://keepachangelog.com/en/1.0.0/)， 并且该项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
-## [即将发布][]
+## [v2.0.0-beta.44 2022-08-20]
 
 ### 弃用通知
 
@@ -15,6 +15,32 @@
 UseCSSDrag: true,
 },
 ```
+
+### Added
+* Set file permissions for generated files by @leaanthony in https://github.com/wailsapp/wails/pull/1763
+* Experimental support for CSS Drag detection by @leaanthony in https://github.com/wailsapp/wails/pull/1750
+
+### Fixed
+* Bug fix collecting of output binaries for platforms by @stffabi in https://github.com/wailsapp/wails/pull/1715
+* Fix registration of exposed fields by @ValentinTrinque in https://github.com/wailsapp/wails/pull/1727
+* Fix column widths for doctor command's dependencies table by @ianmjones in https://github.com/wailsapp/wails/pull/1717
+* Do not generate bindings for `OnBeforeClose` method
+
+### What's Changed
+* Misc code refactors and removal by @leaanthony in https://github.com/wailsapp/wails/pull/1713
+* Add react-router to routing.mdx by @Maicarons2022 in https://github.com/wailsapp/wails/pull/1755
+* Add Japanese to doc by @RyoTagami in https://github.com/wailsapp/wails/pull/1716
+* Added EmailIt and Modal File Manager by @raguay in https://github.com/wailsapp/wails/pull/1728
+* Adding my ScriptBar program by @raguay in https://github.com/wailsapp/wails/pull/1761
+* Link to general webview2 runtime download page and not to a specific language by @stffabi in https://github.com/wailsapp/wails/pull/1764
+* Updated translations in https://github.com/wailsapp/wails/pull/1719 and https://github.com/wailsapp/wails/pull/1720
+* Remove text outside style's brackets by @DragoSpiro98 in https://github.com/wailsapp/wails/pull/1765
+
+### 新贡献者
+* @RyoTagami made their first contribution in https://github.com/wailsapp/wails/pull/1716
+* @raguay made their first contribution in https://github.com/wailsapp/wails/pull/1728
+* @Maicarons2022 made their first contribution in https://github.com/wailsapp/wails/pull/1755
+* @DragoSpiro98 made their first contribution in https://github.com/wailsapp/wails/pull/1765
 
 ## [v2.0.0-beta.43] - 2022-08-08
 
@@ -341,5 +367,4 @@ UseCSSDrag: true,
 - The docs have been improved and updated
 - Added troubleshooting guide
 
-[即将发布]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.33...HEAD
 [v2.0.0-beta.33]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.32...v2.0.0-beta.33
