@@ -46,6 +46,6 @@ This method sets up a listener for the given event name, but will only trigger a
 
 Go Signature: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`
 
-JS Signature: `EventsEmit(eventName string, optionalData function(optionalData?: any))`
+JS Signature: `EventsEmit(ctx context, optionalData function(optionalData?: any))`
 
 This method emits the given event. Optional data may be passed with the event. This will trigger any event listeners.

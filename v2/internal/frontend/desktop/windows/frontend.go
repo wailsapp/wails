@@ -529,6 +529,16 @@ func (f *Frontend) processMessage(message string) {
 		}
 		return
 	}
+
+	if message == "runtime:ready" {
+		if f.frontendOptions.Experimental != nil {
+			if f.frontendOptions.Experimental.UseCSSDrag {
+				f.ExecJS(`window.wails.useCSSDrag();`)
+			}
+		}
+		return
+	}
+
 	if strings.HasPrefix(message, "resize:") {
 		if !f.mainWindow.IsFullScreen() {
 			sl := strings.Split(message, ":")

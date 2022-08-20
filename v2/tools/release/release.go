@@ -62,7 +62,8 @@ func main() {
 	s.ECHO("Removing old version: " + oldestVersion)
 	s.CD("versioned_docs")
 	s.RMDIR("version-" + oldestVersion)
-	s.CD("../../versioned_sidebars")
+	s.CD("../versioned_sidebars")
 	s.RM("version-" + oldestVersion + "-sidebars.json")
-
+	s.CD("..")
+	s.EXEC("Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; yarn build")
 }
