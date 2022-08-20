@@ -82,8 +82,39 @@ window.addEventListener('mouseup', () => {
     window.wails.flags.shouldDrag = false;
 });
 
-// Setup drag handler
+let cssDragTest = function (e) {
+    return window.getComputedStyle(e.target).getPropertyValue('--wails-draggable') === "drag";
+};
+
+// Element drag handler
 // Based on code from: https://github.com/patr0nus/DeskGap
+let elementDragTest = function (e) {
+    // Check for dragging
+    let currentElement = e.target;
+    while (currentElement != null) {
+        if (currentElement.hasAttribute('data-wails-no-drag')) {
+            break;
+        } else if (currentElement.hasAttribute('data-wails-drag')) {
+            return true;
+        }
+        currentElement = currentElement.parentElement;
+    }
+    return false;
+};
+
+let dragTest = elementDragTest;
+
+window.wails.useCSSDrag = function (t) {
+    if (t === false) {
+        console.log("Using original drag detection");
+        dragTest = elementDragTest;
+    } else {
+        console.log("Using CSS drag detection");
+        dragTest = cssDragTest;
+    }
+};
+
+
 window.addEventListener('mousedown', (e) => {
 
     // Check for resizing
@@ -93,24 +124,16 @@ window.addEventListener('mousedown', (e) => {
         return;
     }
 
-    // Check for dragging
-    let currentElement = e.target;
-    while (currentElement != null) {
-        if (currentElement.hasAttribute('data-wails-no-drag')) {
-            break;
-        } else if (currentElement.hasAttribute('data-wails-drag')) {
-            if (window.wails.flags.disableScrollbarDrag) {
-                // This checks for clicks on the scroll bar
-                if (e.offsetX > e.target.clientWidth || e.offsetY > e.target.clientHeight) {
-                    break;
-                }
+    if (dragTest(e)) {
+        if (window.wails.flags.disableScrollbarDrag) {
+            // This checks for clicks on the scroll bar
+            if (e.offsetX > e.target.clientWidth || e.offsetY > e.target.clientHeight) {
+                return;
             }
-
-            window.wails.flags.shouldDrag = true;
-            break;
         }
-        currentElement = currentElement.parentElement;
+        window.wails.flags.shouldDrag = true;
     }
+
 });
 
 function setResize(cursor) {
@@ -157,3 +180,5 @@ window.addEventListener('contextmenu', function (e) {
         e.preventDefault();
     }
 });
+
+window.WailsInvoke("runtime:ready");
