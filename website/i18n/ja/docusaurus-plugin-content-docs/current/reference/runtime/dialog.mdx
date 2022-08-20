@@ -152,7 +152,10 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
     Buttons:      []string{"one", "two", "three", "four"},
 })
 ```
-the first button is shown as default: div class="text--center"> <img src="/img/runtime/dialog_no_defaults.png" width="30%" style={{"box-shadow": "rgb(255 255 > </div>
+the first button is shown as default: 
+<div class="text--center"> 
+    <img src="/img/runtime/dialog_no_defaults.png" width="30%" class="screenshot"/> 
+</div>
 <br/>
 
 And if we specify `DefaultButton` to be "two":
@@ -166,7 +169,7 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 ```
 the second button is shown as default. When `return` is pressed, the value "two" is returned.
 <div class="text--center">
-    <img src="/img/runtime/dialog_default_button.png" width="30%" style={{"box-shadow": "rgb(255 255 >
+    <img src="/img/runtime/dialog_default_button.png" width="30%" class="screenshot"/>
 </div>
 
 <br/>
@@ -183,7 +186,7 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 ```
 the button with "three" is shown at the bottom of the dialog. When `escape` is pressed, the value "three" is returned:
 <div class="text--center">
-    <img src="/img/runtime/dialog_default_cancel.png" width="30%" style={{"box-shadow": "rgb(255 255 >
+    <img src="/img/runtime/dialog_default_cancel.png" width="30%" class="screenshot"/>
 </div>
 
 <br/>
@@ -216,7 +219,7 @@ type FileFilter struct {
 Windows allows you to use multiple file filters in dialog boxes. Each FileFilter will show up as a separate entry in the dialog:
 
 <div class="text--center">
-    <img src="/img/runtime/dialog_win_filters.png" width="50%" style={{"box-shadow": "rgb(255 255 >
+    <img src="/img/runtime/dialog_win_filters.png" width="50%" class="screenshot"/>
 </div>
 
 <br/>
@@ -228,7 +231,7 @@ Windows allows you to use multiple file filters in dialog boxes. Each FileFilter
 Linux allows you to use multiple file filters in dialog boxes. Each FileFilter will show up as a separate entry in the dialog:
 
 <div class="text--center">
-  <img src="/img/runtime/dialog_lin_filters.png" width="50%" style={{"box-shadow": "rgb(255 255 >
+  <img src="/img/runtime/dialog_lin_filters.png" width="50%" class="screenshot"/>
 </div>
 
 <br/>

@@ -84,7 +84,7 @@ This step could be done from the command line or a script with `npm run build` o
 #### Manual steps
 
 - For dev build, the minimum command would be: `go build -tags dev -gcflags "all=-N -l"`
-- For production build, the minimum command would be: `go build -tags desktop,production -ldflags "-w -s"`. Add `-H windowsgui` to `ldflags` on Windows
+- For production build, the minimum command would be: `go build -tags desktop,production -ldflags "-w -s -H windowsgui"`
 - Ensure that you compile in the same directory as the `.syso` file
 
 ### Compress application
