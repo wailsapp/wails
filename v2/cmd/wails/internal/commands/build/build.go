@@ -111,8 +111,17 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	windowsConsole := false
 	command.BoolFlag("windowsconsole", "Keep the console when building for Windows", &windowsConsole)
 
+	obfuscate := false
+	command.BoolFlag("obfuscate", "Obfuscate bound methods", &obfuscate)
+
+	garbleargs := ""
+	command.StringFlag("garbleargs", "Arguments to pass to garble", &garbleargs)
+
 	dryRun := false
 	command.BoolFlag("dryrun", "Dry run, prints the config for the command that would be executed", &dryRun)
+
+	save := false
+	command.BoolFlag("save", "Save flags to project config (wails.json)", &save)
 
 	command.Action(func() error {
 
@@ -176,6 +185,17 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		targets.AddSlice(strings.Split(platform, ","))
 		targets.Deduplicate()
 
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		projectOptions, err := project.Load(cwd)
+		if err != nil {
+			return err
+		}
+
+		// TODO: Override project options with command line flags
+
 		// Create BuildOptions
 		buildOptions := &build.Options{
 			Logger:              logger,
@@ -197,6 +217,8 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			TrimPath:            trimpath,
 			RaceDetector:        raceDetector,
 			WindowsConsole:      windowsConsole,
+			Obfuscate:           obfuscate,
+			GarbleArgs:          garbleargs,
 		}
 
 		// Start a new tabwriter
@@ -209,6 +231,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			_, _ = fmt.Fprintf(w, "Platforms: \t%s\n", platform)
 			_, _ = fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
 			_, _ = fmt.Fprintf(w, "Build Mode: \t%s\n", modeString)
+			_, _ = fmt.Fprintf(w, "Obfuscate: \t%t\n", buildOptions.Obfuscate)
 			_, _ = fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
 			_, _ = fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
 			_, _ = fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
@@ -226,15 +249,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			}
 		}
 		err = checkGoModVersion(logger, updateGoMod)
-		if err != nil {
-			return err
-		}
-
-		cwd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		projectOptions, err := project.Load(cwd)
 		if err != nil {
 			return err
 		}

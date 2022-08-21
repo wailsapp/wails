@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -59,6 +60,8 @@ type Options struct {
 	TrimPath            bool                 // Use Go's trimpath compiler flag
 	RaceDetector        bool                 // Build with Go's race detector
 	WindowsConsole      bool                 // Indicates that the windows console should be kept
+	Obfuscate           bool                 // Indicates that bound methods should be obfuscated
+	GarbleArgs          string               // The arguments for Garble
 }
 
 // Build the project!
@@ -126,6 +129,14 @@ func Build(options *Options) (string, error) {
 		}
 	}
 
+	if options.Obfuscate {
+		err := generateBindings(options)
+		if err != nil {
+			return "", err
+		}
+		options.UserTags = append(options.UserTags, "obfuscated")
+	}
+
 	if !options.IgnoreFrontend {
 		err = builder.BuildFrontend(outputLogger)
 		if err != nil {
@@ -149,6 +160,50 @@ func Build(options *Options) (string, error) {
 	}
 
 	return compileBinary, nil
+}
+
+func generateBindings(options *Options) error {
+	options.Logger.Print("  - Generating obfuscated bindings: ")
+	defer func() {
+		options.Logger.Println("Done.")
+	}()
+	// Run go mod tidy to ensure we're up to date
+	stdout, stderr, err := shell.RunCommand(".", "go", "mod", "tidy")
+	if err != nil {
+		options.Logger.Println(stdout)
+		options.Logger.Println(stderr)
+		return err
+	}
+
+	self := os.Args[0]
+	var env []string
+	if options.Obfuscate {
+		env = append(env, "WAILS_OBFUSCATE=true")
+	} else {
+	}
+	if len(options.UserTags) > 0 {
+		userTags := strings.Join(options.UserTags, ",")
+		err = runCommandWithEnv(".", true, env, self, "generate", "module", "-tags", userTags)
+	} else {
+		err = runCommandWithEnv(".", true, env, self, "generate", "module")
+	}
+	return err
+}
+
+func runCommandWithEnv(dir string, exitOnError bool, env []string, command string, args ...string) error {
+	cmd := exec.Command(command, args...)
+	cmd.Dir = dir
+	cmd.Env = append(os.Environ(), env...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		println(string(output))
+		println(err.Error())
+		if exitOnError {
+			os.Exit(1)
+		}
+		return err
+	}
+	return nil
 }
 
 func execBuildApplication(builder Builder, options *Options) (string, error) {

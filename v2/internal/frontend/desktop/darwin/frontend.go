@@ -72,12 +72,16 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
 	} else {
-		bindingsJSON, err := appBindings.ToJSON()
-		if err != nil {
-			log.Fatal(err)
+		bindings := ""
+		if _obfuscated, _ := ctx.Value("obfuscated").(bool); !_obfuscated {
+			bindingsJSON, err := appBindings.ToJSON()
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			appBindings.DB().UpdateObfuscatedCallMap()
 		}
-
-		assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
+		assets, err := assetserver.NewAssetServer(ctx, appoptions, bindings)
 		if err != nil {
 			log.Fatal(err)
 		}

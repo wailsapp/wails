@@ -38,6 +38,8 @@ func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (s
 		return d.processEventMessage(message, sender)
 	case 'C':
 		return d.processCallMessage(message, sender)
+	case 'c':
+		return d.processSecureCallMessage(message, sender)
 	case 'W':
 		return d.processWindowMessage(message, sender)
 	case 'B':

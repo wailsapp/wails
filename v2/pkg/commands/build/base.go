@@ -165,8 +165,22 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		}
 	}
 
+	commands := slicer.String()
+
+	compiler := options.Compiler
+	if options.Obfuscate {
+		if !shell.CommandExists("garble") {
+			options.Logger.Print("garble not found. Please install it with `go install mvdan.cc/garble@latest`. Using Go compiler instead.")
+		} else {
+			compiler = "garble"
+			if options.GarbleArgs != "" {
+				commands.AddSlice(strings.Split(options.GarbleArgs, " "))
+			}
+		}
+	}
+
 	// Default go build command
-	commands := slicer.String([]string{"build"})
+	commands.Add("build")
 
 	// Add better debugging flags
 	if options.Mode == Dev || options.Mode == Debug {
@@ -201,6 +215,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	// This mode allows you to debug a production build (not dev build)
 	if options.Mode == Debug {
 		tags.Add("debug")
+	}
+
+	if options.Obfuscate {
+		tags.Add("obfuscated")
 	}
 
 	tags.Deduplicate()
@@ -247,11 +265,11 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	b.projectData.OutputFilename = strings.TrimPrefix(compiledBinary, options.ProjectData.Path)
 	options.CompiledBinary = compiledBinary
 
-	// Create the command
-	cmd := exec.Command(options.Compiler, commands.AsSlice()...)
+	// Build the application
+	cmd := exec.Command(compiler, commands.AsSlice()...)
 	cmd.Stderr = os.Stderr
 	if verbose {
-		println("  Build command:", commands.Join(" "))
+		println("  Build command:", compiler, commands.Join(" "))
 		cmd.Stdout = os.Stdout
 	}
 	// Set the directory

@@ -25,7 +25,7 @@ type B struct {
 
 func TestNestedStruct(t *testing.T) {
 	bind := &BindForTest{}
-	testBindings := NewBindings(logger.New(nil), []interface{}{bind}, []interface{}{})
+	testBindings := NewBindings(logger.New(nil), []interface{}{bind}, []interface{}{}, false)
 
 	namesStrSlicer := testBindings.getAllStructNames()
 	names := []string{}

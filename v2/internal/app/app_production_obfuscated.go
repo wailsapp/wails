@@ -1,4 +1,4 @@
-//go:build production && !obfuscated
+//go:build production && obfuscated
 
 package app
 
@@ -64,6 +64,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		myLogger.SetLogLevel(appoptions.LogLevelProduction)
 	}
 	ctx = context.WithValue(ctx, "logger", myLogger)
+	ctx = context.WithValue(ctx, "obfuscated", true)
 
 	// Preflight Checks
 	err = PreflightChecks(appoptions, myLogger)
@@ -89,7 +90,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		appoptions.OnDomReady,
 		appoptions.OnBeforeClose,
 	}
-	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions, false)
+	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions, true)
 	eventHandler := runtime.NewEvents(myLogger)
 	ctx = context.WithValue(ctx, "events", eventHandler)
 	// Attach logger to context

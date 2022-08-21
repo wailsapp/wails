@@ -31,7 +31,9 @@ func (a *App) Run() error {
 		a.appoptions.OnDomReady,
 		a.appoptions.OnBeforeClose,
 	}
-	appBindings := binding.NewBindings(a.logger, a.appoptions.Bind, bindingExemptions)
+
+	obfuscate := os.Getenv("WAILS_OBFUSCATE") != ""
+	appBindings := binding.NewBindings(a.logger, a.appoptions.Bind, bindingExemptions, obfuscate)
 
 	err := generateBindings(appBindings)
 	if err != nil {

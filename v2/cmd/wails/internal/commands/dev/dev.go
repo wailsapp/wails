@@ -91,6 +91,7 @@ type devFlags struct {
 
 	frontendDevServerURL string
 	skipFrontend         bool
+	obfuscate            bool
 }
 
 // AddSubcommand adds the `dev` command for the Wails application
@@ -119,6 +120,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
 	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
 	command.BoolFlag("s", "Skips building the frontend", &flags.skipFrontend)
+	command.BoolFlag("obfuscate", "Obfuscate bound methods", &flags.obfuscate)
 
 	command.Action(func() error {
 		// Create logger
@@ -167,10 +169,17 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		if !flags.noGen {
 			self := os.Args[0]
-			if flags.tags != "" {
-				err = runCommand(cwd, true, self, "generate", "module", "-tags", flags.tags)
+			var env []string
+			if flags.obfuscate {
+				println("USING OBFUSCATED MODE")
+				env = append(env, "WAILS_OBFUSCATE=true")
 			} else {
-				err = runCommand(cwd, true, self, "generate", "module")
+				println("NOT USING OBFUSCATED MODE")
+			}
+			if flags.tags != "" {
+				err = runCommandWithEnv(cwd, true, env, self, "generate", "module", "-tags", flags.tags)
+			} else {
+				err = runCommandWithEnv(cwd, true, env, self, "generate", "module")
 			}
 			if err != nil {
 				return err
@@ -321,6 +330,23 @@ func runCommand(dir string, exitOnError bool, command string, args ...string) er
 	LogGreen("Executing: " + command + " " + strings.Join(args, " "))
 	cmd := exec.Command(command, args...)
 	cmd.Dir = dir
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		println(string(output))
+		println(err.Error())
+		if exitOnError {
+			os.Exit(1)
+		}
+		return err
+	}
+	return nil
+}
+
+func runCommandWithEnv(dir string, exitOnError bool, env []string, command string, args ...string) error {
+	LogGreen("Executing: " + command + " " + strings.Join(args, " "))
+	cmd := exec.Command(command, args...)
+	cmd.Dir = dir
+	cmd.Env = append(os.Environ(), env...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		println(string(output))
@@ -574,6 +600,9 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 	os.Setenv("assetdir", flags.assetDir)
 	os.Setenv("devserver", flags.devServer)
 	os.Setenv("frontenddevserverurl", flags.frontendDevServerURL)
+	if flags.obfuscate {
+		os.Setenv("WAILS_OBFUSCATE", "TRUE")
+	}
 
 	// Start up new binary with correct args
 	newProcess := process.NewProcess(appBinary, args...)

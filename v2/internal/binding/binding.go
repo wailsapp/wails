@@ -22,14 +22,16 @@ type Bindings struct {
 	exemptions slicer.StringSlicer
 
 	structsToGenerateTS map[string]map[string]interface{}
+	obfuscate           bool
 }
 
 // NewBindings returns a new Bindings object
-func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exemptions []interface{}) *Bindings {
+func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exemptions []interface{}, obfuscate bool) *Bindings {
 	result := &Bindings{
 		db:                  newDB(),
 		logger:              logger.CustomLogger("Bindings"),
 		structsToGenerateTS: make(map[string]map[string]interface{}),
+		obfuscate:           obfuscate,
 	}
 
 	for _, exemption := range exemptions {
