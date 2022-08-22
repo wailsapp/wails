@@ -29,6 +29,13 @@ JS Signature: `WindowUnfullscreen()`
 
 Restores the previous window dimensions and position prior to full screen.
 
+### WindowIsFullscreen
+Go Signature: `WindowIsFullscreen(ctx context.Context) bool`
+
+JS Signature: `WindowIsFullscreen() bool`
+
+Returns true if the window is full screen.
+
 ### WindowCenter
 Go Signature: `WindowCenter(ctx context.Context)`
 
@@ -92,6 +99,13 @@ Go Signature: `WindowHide(ctx context.Context)`
 JS Signature: `WindowHide()`
 
 Hides the window, if it is currently visible.
+
+### WindowIsNormal
+Go Signature: `WindowIsNormal(ctx context.Context) bool`
+
+JS Signature: `WindowIsNormal() bool`
+
+Returns true if the window not minimised, maximised or fullscreen.
 
 ### WindowSetSize
 Go Signature: `WindowSetSize(ctx context.Context, width int, height int)`
@@ -163,6 +177,13 @@ JS Signature: `WindowUnmaximise()`
 
 Restores the window to the dimensions and position prior to maximising.
 
+### WindowIsMaximised
+Go Signature: `WindowIsMaximised(ctx context.Context) bool`
+
+JS Signature: `WindowIsMaximised() bool`
+
+Returns true if the window is maximised.
+
 ### WindowToggleMaximise
 Go Signature: `WindowToggleMaximise(ctx context.Context)`
 
@@ -183,6 +204,13 @@ Go Signature: `WindowUnminimise(ctx context.Context)`
 JS Signature: `WindowUnminimise()`
 
 Restores the window to the dimensions and position prior to minimising.
+
+### WindowIsMinimised
+Go Signature: `WindowIsMinimised(ctx context.Context) bool`
+
+JS Signature: `WindowIsMinimised() bool`
+
+Returns true if the window is minimised.
 
 ### WindowSetBackgroundColour
 Go Signature: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`
