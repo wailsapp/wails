@@ -91,8 +91,6 @@ func main() {
 
 ```
 
-
-
 ### Title
 
 Name: Title
@@ -202,7 +200,7 @@ hide the window instead.
 
 Name: BackgroundColour
 
-Type: *options.RGBA
+Type: \*options.RGBA
 Example: options.NewRGBA(255,0,0,128) - Red at 50% transparency
 
 This value is the default background colour of the window.
@@ -226,30 +224,29 @@ The frontend assets to be used by the application. Requires an `index.html` file
 
 ### AssetsHandler
 
-<img src="http://badges.github.io/stability-badges/dist/experimental.svg"/>
+<img src="http://badges.github.io/stability-badges/dist/experimental.svg" />
 
 Name: AssetsHandler
 
 Type: http.Handler
 
-
 The assets handler is a generic `http.Handler` which will be called for any non GET request on the assets server
 and for GET requests which can not be served from the `assets` because the file is not found.
 
-| Value                         | Win | Mac | Lin |
-| ----------------------------- | --- | --- | --- |
-| GET                           | ✅  | ✅   | ✅  |
-| POST                          | ✅  | ✅   | ❌  |
-| PUT                           | ✅  | ✅   | ❌  |
-| PATCH                         | ✅  | ✅   | ❌  |
-| DELETE                        | ✅  | ✅   | ❌  |
-| Request Headers               | ✅  | ✅   | ❌  |
-| Request Body                  | ✅  | ✅   | ❌  |
-| Request Body Streaming        | ❌  | ❌   | ❌  |
-| Response StatusCodes          | ✅  | ✅   | ❌  |
-| Response Headers              | ✅  | ✅   | ❌  |
-| Response Body                 | ✅  | ✅   | ✅  |
-| Response Body Streaming       | ❌  | ❌   | ✅  |
+| Value                   | Win | Mac | Lin |
+| ----------------------- | --- | --- | --- |
+| GET                     | ✅  | ✅  | ✅  |
+| POST                    | ✅  | ✅  | ❌  |
+| PUT                     | ✅  | ✅  | ❌  |
+| PATCH                   | ✅  | ✅  | ❌  |
+| DELETE                  | ✅  | ✅  | ❌  |
+| Request Headers         | ✅  | ✅  | ❌  |
+| Request Body            | ✅  | ✅  | ❌  |
+| Request Body Streaming  | ❌  | ❌  | ❌  |
+| Response StatusCodes    | ✅  | ✅  | ❌  |
+| Response Headers        | ✅  | ✅  | ❌  |
+| Response Body           | ✅  | ✅  | ✅  |
+| Response Body Streaming | ❌  | ❌  | ✅  |
 
 NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.36.0. In the future some features will be
 supported by the introduction of WebKit2GTK 2.36.0+ support.
@@ -335,6 +332,7 @@ button or calling `runtime.Quit`. Returning true will cause the application to c
 as normal. This is good for confirming with the user that they wish to exit the program.
 
 Example:
+
 ```go title=windowsapp.go
 func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 	dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
@@ -358,11 +356,11 @@ Type: options.WindowStartState
 
 Defines how the window should present itself at startup.
 
-| Value           | Win | Mac | Lin |
-| --------------- | --- | --- | --- |
-| Fullscreen      | ✅  | ✅   | ✅ |
-| Maximised       | ✅  | ✅   | ✅ |
-| Minimised       | ✅  | ❌   | ✅ |
+| Value      | Win | Mac | Lin |
+| ---------- | --- | --- | --- |
+| Fullscreen | ✅  | ✅  | ✅  |
+| Maximised  | ✅  | ✅  | ✅  |
+| Minimised  | ✅  | ❌  | ✅  |
 
 ### Bind
 
@@ -452,6 +450,7 @@ Type: string
 This defines the path to a directory with WebView2 executable files and libraries. If empty, webview2 installed in the system will be used.
 
 Important information about distribution of fixed version runtime:
+
 - [How to get and extract runtime](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode)
 - [Known issues for fixed version](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#known-issues-for-fixed-version)
 - [The path of fixed version of the WebView2 Runtime should not contain \Edge\Application\.](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
@@ -466,12 +465,11 @@ Minimum Windows Version: Windows 10 2004/20H1
 
 This defines the theme that the application should use:
 
-| Value           | Description |
-| --------------- | ----------- |
-| SystemDefault   | *Default*. The theme will be based on the system default. If the user changes their theme, the application will update to use the new setting |
-| Dark            | The application will use a dark theme exclusively |
-| Light           | The application will use a light theme exclusively |
-
+| Value         | Description                                                                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| SystemDefault | _Default_. The theme will be based on the system default. If the user changes their theme, the application will update to use the new setting |
+| Dark          | The application will use a dark theme exclusively                                                                                             |
+| Light         | The application will use a light theme exclusively                                                                                            |
 
 ### CustomTheme
 
@@ -509,6 +507,7 @@ type ThemeSettings struct {
 ```
 
 Example:
+
 ```go
     CustomTheme: &windows.ThemeSettings{
         // Theme to use when window is active
@@ -562,15 +561,13 @@ Type: func()
 
 If set, this function will be called when windows resumes from low power mode (suspend/hibernate)
 
-
-
 ## Mac Specific Options
 
 ### TitleBar
 
 Name: TitleBar
 
-Type: [*mac.TitleBar](#titlebar-struct)
+Type: [\*mac.TitleBar](#titlebar-struct)
 
 The TitleBar struct provides the ability to configure the look and feel of the title bar.
 
@@ -624,24 +621,25 @@ type TitleBar struct {
 }
 ```
 
-| Name | Description |
-| ---- | ----------- |
-| TitlebarAppearsTransparent | Makes the titlebar transparent. This has the effect of hiding the titlebar and the content fill the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindow/1419167-titlebarappearstransparent?language=objc)  |
-| HideTitle                  | Hides the title of the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowtitlevisibility?language=objc)  |
-| HideTitleBar               | Removes [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/) from the style mask  |
-| FullSizeContent            | Makes the webview fill the entire window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemaskfullsizecontentview)|
-| UseToolbar                 | Adds a default toolbar to the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar?language=objc)  |
-| HideToolbarSeparator       | Removes the line beneath the toolbar. [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar/1516954-showsbaselineseparator?language=objc)  |
+| Name                       | Description                                                                                                                                                                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| TitlebarAppearsTransparent | Makes the titlebar transparent. This has the effect of hiding the titlebar and the content fill the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindow/1419167-titlebarappearstransparent?language=objc) |
+| HideTitle                  | Hides the title of the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowtitlevisibility?language=objc)                                                                                                  |
+| HideTitleBar               | Removes [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/) from the style mask                                                                                   |
+| FullSizeContent            | Makes the webview fill the entire window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemaskfullsizecontentview)                                                                      |
+| UseToolbar                 | Adds a default toolbar to the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar?language=objc)                                                                                                         |
+| HideToolbarSeparator       | Removes the line beneath the toolbar. [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar/1516954-showsbaselineseparator?language=objc)                                                                          |
 
 Preconfigured titlebar settings are available:
 
-| Setting | Example |
-| ------- | ------- |
-|`mac.TitleBarDefault()` | ![](/img/reference/titlebar-default.png) |
-|`mac.TitleBarHidden()` | ![](/img/reference/titlebar-hidden.png) |
-|`mac.TitleBarHiddenInset()` | ![](/img/reference/titlebar-hidden-inset.png) |
+| Setting                     | Example                                       |
+| --------------------------- | --------------------------------------------- |
+| `mac.TitleBarDefault()`     | ![](/img/reference/titlebar-default.png)      |
+| `mac.TitleBarHidden()`      | ![](/img/reference/titlebar-hidden.png)       |
+| `mac.TitleBarHiddenInset()` | ![](/img/reference/titlebar-hidden-inset.png) |
 
 Example:
+
 ```go
 Mac: &mac.Options{
 	TitleBar:     mac.TitleBarHiddenInset(),
@@ -654,18 +652,19 @@ Click [here](https://github.com/lukakerr/NSWindowStyles) for some inspiration on
 
 You can specify the application's [appearance](https://developer.apple.com/documentation/appkit/nsappearance?language=objc).
 
-| Value           | Description |
-| --------------- | ------------------ |
-| DefaultAppearance | DefaultAppearance uses the default system value |
-| NSAppearanceNameAqua | The standard light system appearance |
-| NSAppearanceNameDarkAqua | The standard dark system appearance |
-| NSAppearanceNameVibrantLight | The light vibrant appearance |
-| NSAppearanceNameAccessibilityHighContrastAqua | A high-contrast version of the standard light system appearance |
-| NSAppearanceNameAccessibilityHighContrastDarkAqua | A high-contrast version of the standard dark system appearance |
-| NSAppearanceNameAccessibilityHighContrastVibrantLight | A high-contrast version of the light vibrant appearance |
-| NSAppearanceNameAccessibilityHighContrastVibrantDark | A high-contrast version of the dark vibrant appearance |
+| Value                                                 | Description                                                     |
+| ----------------------------------------------------- | --------------------------------------------------------------- |
+| DefaultAppearance                                     | DefaultAppearance uses the default system value                 |
+| NSAppearanceNameAqua                                  | The standard light system appearance                            |
+| NSAppearanceNameDarkAqua                              | The standard dark system appearance                             |
+| NSAppearanceNameVibrantLight                          | The light vibrant appearance                                    |
+| NSAppearanceNameAccessibilityHighContrastAqua         | A high-contrast version of the standard light system appearance |
+| NSAppearanceNameAccessibilityHighContrastDarkAqua     | A high-contrast version of the standard dark system appearance  |
+| NSAppearanceNameAccessibilityHighContrastVibrantLight | A high-contrast version of the light vibrant appearance         |
+| NSAppearanceNameAccessibilityHighContrastVibrantDark  | A high-contrast version of the dark vibrant appearance          |
 
 Example:
+
 ```go
 Mac: &mac.Options{
     Appearance: mac.NSAppearanceNameDarkAqua,
@@ -681,8 +680,10 @@ type AboutInfo struct {
 	Icon    []byte
 }
 ```
+
 If these settings are provided, an "About" menu item will appear in the app menu (when using the `AppMenu` role).
 Given this configuration:
+
 ```go
 //go:embed build/appicon.png
 var icon []byte
@@ -699,19 +700,27 @@ func main() {
         },
     })
 ```
+
 The "About" menu item will appear in the app menu:
 
 <div class="text--center">
-    <img src="/img/reference/about-menu.png" class="screenshot"/>
+  <img
+    src={require("@site/static/img/reference/about-menu.png").default}
+    class="screenshot"
+  />
 </div>
-<br/>
+<br />
 
 When clicked, that will open an about message box:
 
 <div class="text--center">
-    <img src="/img/reference/about-dialog.png" width="40%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/reference/about-dialog.png").default}
+    width="40%"
+    class="screenshot"
+  />
 </div>
-<br/>
+<br />
 
 ## Linux Specific Options
 

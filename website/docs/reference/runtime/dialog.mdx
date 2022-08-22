@@ -9,7 +9,7 @@ sidebar_position: 5
 This part of the runtime provides access to native dialogs, such as File Selectors and Message boxes.
 
 :::info Javascript
-  Dialog is currently unsupported in the JS runtime.
+Dialog is currently unsupported in the JS runtime.
 :::
 
 ### OpenDirectoryDialog
@@ -20,7 +20,6 @@ Go Signature: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialog
 
 Returns: Selected directory (blank if the user cancelled) or an error
 
-
 ### OpenFileDialog
 
 Opens a dialog that prompts the user to select a file. Can be customised using [OpenDialogOptions](#opendialogoptions).
@@ -28,8 +27,6 @@ Opens a dialog that prompts the user to select a file. Can be customised using [
 Go Signature: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
 
 Returns: Selected file (blank if the user cancelled) or an error
-
-
 
 ### OpenMultipleFilesDialog
 
@@ -39,8 +36,6 @@ Go Signature: `OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDi
 
 Returns: Selected files (nil if the user cancelled) or an error
 
-
-
 ### SaveFileDialog
 
 Opens a dialog that prompts the user to select a filename for the purposes of saving. Can be customised using [SaveDialogOptions](#savedialogoptions).
@@ -48,8 +43,6 @@ Opens a dialog that prompts the user to select a filename for the purposes of sa
 Go Signature: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error)`
 
 Returns: The selected file (blank if the user cancelled) or an error
-
-
 
 ### MessageDialog
 
@@ -75,17 +68,17 @@ type OpenDialogOptions struct {
 	TreatPackagesAsDirectories bool
 }
 ```
+
 | Field                      | Description                                    | Win | Mac | Lin |
 | -------------------------- | ---------------------------------------------- | --- | --- | --- |
-| DefaultDirectory           | The directory the dialog will show when opened | ✅  | ✅  |  ✅  |
-| DefaultFilename            | The default filename                           | ✅  | ✅  |  ✅  |
-| Title                      | Title for the dialog                           | ✅  | ✅  |  ✅  |
-| [Filters](#filefilter)     | A list of file filters                         | ✅  | ✅  |  ✅  |
+| DefaultDirectory           | The directory the dialog will show when opened | ✅  | ✅  | ✅  |
+| DefaultFilename            | The default filename                           | ✅  | ✅  | ✅  |
+| Title                      | Title for the dialog                           | ✅  | ✅  | ✅  |
+| [Filters](#filefilter)     | A list of file filters                         | ✅  | ✅  | ✅  |
 | ShowHiddenFiles            | Show files hidden by the system                |     | ✅  | ✅  |
-| CanCreateDirectories       | Allow user to create directories               |     | ✅  |    |
-| ResolvesAliases            | If true, returns the file not the alias        |     | ✅  |    |
-| TreatPackagesAsDirectories | Allow navigating into packages                 |     | ✅  |    |
-
+| CanCreateDirectories       | Allow user to create directories               |     | ✅  |     |
+| ResolvesAliases            | If true, returns the file not the alias        |     | ✅  |     |
+| TreatPackagesAsDirectories | Allow navigating into packages                 |     | ✅  |     |
 
 ### SaveDialogOptions
 
@@ -103,11 +96,11 @@ type SaveDialogOptions struct {
 
 | Field                      | Description                                    | Win | Mac | Lin |
 | -------------------------- | ---------------------------------------------- | --- | --- | --- |
-| DefaultDirectory           | The directory the dialog will show when opened | ✅  | ✅  |   ✅  |
-| DefaultFilename            | The default filename                           | ✅  | ✅  |   ✅  |
-| Title                      | Title for the dialog                           | ✅  | ✅  |   ✅  |
-| [Filters](#filefilter)     | A list of file filters                         | ✅  | ✅  |   ✅  |
-| ShowHiddenFiles            | Show files hidden by the system                |     | ✅  |  ✅  |
+| DefaultDirectory           | The directory the dialog will show when opened | ✅  | ✅  | ✅  |
+| DefaultFilename            | The default filename                           | ✅  | ✅  | ✅  |
+| Title                      | Title for the dialog                           | ✅  | ✅  | ✅  |
+| [Filters](#filefilter)     | A list of file filters                         | ✅  | ✅  | ✅  |
+| ShowHiddenFiles            | Show files hidden by the system                |     | ✅  | ✅  |
 | CanCreateDirectories       | Allow user to create directories               |     | ✅  |     |
 | TreatPackagesAsDirectories | Allow navigating into packages                 |     | ✅  |     |
 
@@ -123,14 +116,15 @@ type MessageDialogOptions struct {
 	CancelButton  string
 }
 ```
+
 | Field         | Description                                                               | Win | Mac | Lin |
 | ------------- | ------------------------------------------------------------------------- | --- | --- | --- |
-| Type          | The type of message dialog, eg question, info...                          | ✅  | ✅  |   ✅  |
-| Title         | Title for the dialog                                                      | ✅  | ✅  |   ✅  |
-| Message       | The message to show the user                                              | ✅  | ✅  |   ✅  |
-| Buttons       | A list of button titles                                                   |     | ✅  |      |
-| DefaultButton | The button with this text should be treated as default. Bound to `return` |     | ✅  |      |
-| CancelButton  | The button with this text should be treated as cancel. Bound to `escape`  |     | ✅  |      |
+| Type          | The type of message dialog, eg question, info...                          | ✅  | ✅  | ✅  |
+| Title         | Title for the dialog                                                      | ✅  | ✅  | ✅  |
+| Message       | The message to show the user                                              | ✅  | ✅  | ✅  |
+| Buttons       | A list of button titles                                                   |     | ✅  |     |
+| DefaultButton | The button with this text should be treated as default. Bound to `return` |     | ✅  |     |
+| CancelButton  | The button with this text should be treated as cancel. Bound to `escape`  |     | ✅  |     |
 
 #### Windows
 
@@ -148,6 +142,7 @@ A message dialog on Mac may specify up to 4 buttons. If no `DefaultButton` or `C
 is considered default and is bound to the `return` key.
 
 For the following code:
+
 ```go
 selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
     Title:        "It's your turn!",
@@ -155,13 +150,20 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
     Buttons:      []string{"one", "two", "three", "four"},
 })
 ```
+
 the first button is shown as default:
+
 <div class="text--center">
-    <img src="/img/runtime/dialog_no_defaults.png" width="30%" class="screenshot"/>
+  <img
+    src="/img/runtime/dialog_no_defaults.png"
+    width="30%"
+    class="screenshot"
+  />
 </div>
-<br/>
+<br />
 
 And if we specify `DefaultButton` to be "two":
+
 ```go
 selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
     Title:         "It's your turn!",
@@ -170,13 +172,20 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
     DefaultButton: "two",
 })
 ```
+
 the second button is shown as default. When `return` is pressed, the value "two" is returned.
+
 <div class="text--center">
-    <img src="/img/runtime/dialog_default_button.png" width="30%" class="screenshot"/>
+  <img
+    src="/img/runtime/dialog_default_button.png"
+    width="30%"
+    class="screenshot"
+  />
 </div>
-<br/>
+<br />
 
 If we now specify `CancelButton` to be "three":
+
 ```go
 selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
     Title:         "It's your turn!",
@@ -186,14 +195,19 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
     CancelButton:  "three",
 })
 ```
-the button with "three" is shown at the bottom of the dialog. When `escape` is pressed, the value "three" is returned:
-<div class="text--center">
-    <img src="/img/runtime/dialog_default_cancel.png" width="30%" class="screenshot"/>
-</div>
-<br/>
-<br/>
-<br/>
 
+the button with "three" is shown at the bottom of the dialog. When `escape` is pressed, the value "three" is returned:
+
+<div class="text--center">
+  <img
+    src="/img/runtime/dialog_default_cancel.png"
+    width="30%"
+    class="screenshot"
+  />
+</div>
+<br />
+<br />
+<br />
 
 #### DialogType
 
@@ -221,11 +235,15 @@ Windows allows you to use multiple file filters in dialog boxes. Each FileFilter
 dialog:
 
 <div class="text--center">
-    <img src="/img/runtime/dialog_win_filters.png" width="50%" class="screenshot"/>
+  <img
+    src="/img/runtime/dialog_win_filters.png"
+    width="50%"
+    class="screenshot"
+  />
 </div>
-<br/>
-<br/>
-<br/>
+<br />
+<br />
+<br />
 
 #### Linux
 
@@ -233,12 +251,15 @@ Linux allows you to use multiple file filters in dialog boxes. Each FileFilter w
 dialog:
 
 <div class="text--center">
-  <img src="/img/runtime/dialog_lin_filters.png" width="50%" class="screenshot"/>
+  <img
+    src="/img/runtime/dialog_lin_filters.png"
+    width="50%"
+    class="screenshot"
+  />
 </div>
-<br/>
-<br/>
-<br/>
-
+<br />
+<br />
+<br />
 
 #### Mac
 
@@ -246,6 +267,7 @@ Mac dialogs only have the concept of a single set of patterns to filter files. I
 Wails will use all the Patterns defined.
 
 Example:
+
 ```go
 	selection, err := runtime.OpenFileDialog(b.ctx, runtime.OpenDialogOptions{
 		Title: "Select File",
@@ -260,4 +282,5 @@ Example:
 		},
 	})
 ```
+
 This will result in the Open File dialog using `*.png,*.jpg,*.mov,*.mp4` as a filter.
