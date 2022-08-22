@@ -1,4 +1,3 @@
-
 # 从 v1 迁移
 
 ## 概述
@@ -185,24 +184,22 @@ func main() {
 
 <p align="center">
 
-| v1                 | v2               | 注解                                                                                             |
-| ------------------ | ---------------- | ------------------------------------------------------------------------------------------------ |
-| name               | name             |                                                                                                  |
-| description        |                  | 移除                                                                                             |
-| author / name      | author / name    |                                                                                                  |
-| author / email     | author / email   |                                                                                                  |
-| version            | version          |                                                                                                  |
-| binaryname         | outputfilename   | 变更                                                                                             |
-| frontend / dir     |                  | 移除                                                                                             |
-| frontend / install | frontend:install | 变更                                                                                             |
-| frontend / build   | frontend:build   | 变更                                                                                             |
-| frontend / bridge  |                  | 移除                                                                                             |
-| frontend / serve   |                  | 移除                                                                                             |
-| tags               |                  | 移除                                                                                             |
-|                    | wailsjsdir       | 生成 wailsjs 模块的目录                                                                          |
-|                    | assetdir         | `dev` 模式下前端资源文件目录                                                                     |
-|                    | reloaddirs       | 以逗号分隔的附加目录列表，用于监视更改并在开发模式下触发重新加载。 This is normally inferred and could be left empty. |
+| v1                 | v2               | Notes                                                                                                                                                                      |
+| ------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name               | name             |                                                                                                                                                                            |
+| description        |                  | Removed                                                                                                                                                                    |
+| author / name      | author / name    |                                                                                                                                                                            |
+| author / email     | author / email   |                                                                                                                                                                            |
+| version            | version          |                                                                                                                                                                            |
+| binaryname         | outputfilename   | Changed                                                                                                                                                                    |
+| frontend / dir     |                  | Removed                                                                                                                                                                    |
+| frontend / install | frontend:install | Changed                                                                                                                                                                    |
+| frontend / build   | frontend:build   | Changed                                                                                                                                                                    |
+| frontend / bridge  |                  | Removed                                                                                                                                                                    |
+| frontend / serve   |                  | Removed                                                                                                                                                                    |
+| tags               |                  | Removed                                                                                                                                                                    |
+|                    | wailsjsdir       | The directory to generate wailsjs modules                                                                                                                                  |
+|                    | assetdir         | The directory of the compiled frontend assets for `dev` mode. This is normally inferred and could be left empty.                                                           |
 |                    | reloaddirs       | Comma separated list of additional directories to watch for changes and to trigger reloads in `dev` mode. 这只需要一些更重要的资源配置。 |
 
 </p>
-
