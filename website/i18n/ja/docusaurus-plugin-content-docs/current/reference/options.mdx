@@ -190,7 +190,7 @@ By default, closing the window will close the application. Setting this to `true
 
 Name: BackgroundColour
 
-Type: \*options.RGBA Example: options.NewRGBA(255,0,0,128) - Red at 50% transparency
+Type: *options.RGBA Example: options.NewRGBA(255,0,0,128) - Red at 50% transparency
 
 This value is the default background colour of the window. Default: white
 
@@ -442,7 +442,7 @@ This defines the theme that the application should use:
 
 | Value         | Description                                                                                                                                   |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| SystemDefault | _Default_. The theme will be based on the system default. If the user changes their theme, the application will update to use the new setting |
+| SystemDefault | *Default*. The theme will be based on the system default. If the user changes their theme, the application will update to use the new setting |
 | Dark          | The application will use a dark theme exclusively                                                                                             |
 | Light         | The application will use a light theme exclusively                                                                                            |
 
@@ -538,7 +538,7 @@ If set, this function will be called when windows resumes from low power mode (s
 
 Name: TitleBar
 
-Type: [\*mac.TitleBar](#titlebar-struct)
+Type: [*mac.TitleBar](#titlebar-struct)
 
 The TitleBar struct provides the ability to configure the look and feel of the title bar.
 
