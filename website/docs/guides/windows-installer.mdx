@@ -1,7 +1,11 @@
 # NSIS installer
 
-<p style={{"text-align": "center"}}>
-   <img src="/img/nsis.png" style={{"max-width":"50%"}}></img><br/>
+<p style={{ "text-align": "center" }}>
+  <img
+    src={require("@site/static/img/nsis.png").default}
+    style={{ "max-width": "50%" }}
+  />
+  <br />
 </p>
 
 Wails supports generating Windows installers using the [NSIS installer](https://nsis.sourceforge.io/).
@@ -13,10 +17,12 @@ Wails supports generating Windows installers using the [NSIS installer](https://
 The installer is available on the [NSIS Download](https://nsis.sourceforge.io/Download) page.
 
 If you use the chocolatey package manager, run the following script:
+
 ```
 choco install nsis
 ```
-If you install NSIS manually, you need to add the *Bin* folder, which contains `makensis.exe`, in your NSIS installation to your path.
+
+If you install NSIS manually, you need to add the _Bin_ folder, which contains `makensis.exe`, in your NSIS installation to your path.
 [Here](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) is a good tutorial on how to add to path on Windows.
 
 ### Linux
@@ -44,6 +50,7 @@ data is read from `installer/info.json` and that is configured to use the projec
 ```
 
 To generate an installer for your application, use the `-nsis` flag with `wails build`:
+
 ```
 wails build -nsis
 ```
