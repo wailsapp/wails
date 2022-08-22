@@ -23,7 +23,7 @@ Wails CLI 有许多用于管理项目的命令。 所有命令都以此方式运
 | -ide      | 生成 IDE 项目文件                                    |         |
 | -f        | 强制构建应用                                         |    否    |
 
-示例： `wails init -n test -d mytestproject -g -ide vscode -q`
+Example: `wails init -n test -d mytestproject -g -ide vscode -q`
 
 这将在 "mytestproject" 目录生成一个名为 "test" 的项目，初始化 git，生成 vscode 项目文件并静默执行。
 
@@ -33,15 +33,15 @@ Wails CLI 有许多用于管理项目的命令。 所有命令都以此方式运
 
 支持远程模板（托管在 GitHub 上）并且可以使用模板项目的 URL 进行安装。
 
-示例： `wails init -n test -t https://github.com/leaanthony/testtemplate[@v1.0.0]`
+Example: `wails init -n test -t https://github.com/leaanthony/testtemplate[@v1.0.0]`
 
 可以在[此处](../community/templates)找到社区维护的模板列表
 
 :::warning 注意
 
-  **Wails 项目不维护也不对第 3 方模板负责**
+**Wails 项目不维护也不对第 3 方模板负责**
 
-  如果您不信任某个模板，请检查 `package.json` 和 `wails.json` 中安装的模块和运行的脚本。
+如果您不信任某个模板，请检查 `package.json` 和 `wails.json` 中安装的模块和运行的脚本。
 
 :::
 
@@ -80,13 +80,13 @@ Wails CLI 有许多用于管理项目的命令。 所有命令都以此方式运
 
 :::info 苹果芯片上的 UPX
 
-  在苹果芯片上使用 UPX 相关的[问题](https://github.com/upx/upx/issues/446)。
+在苹果芯片上使用 UPX 相关的[问题](https://github.com/upx/upx/issues/446)。
 
 :::
 
 :::info Windows 上的 UPX
 
-  一些防病毒软件供应商误将`upx`压缩的二进制文件标记为病毒，请查看相关[问题](https://github.com/upx/upx/issues/437)。
+一些防病毒软件供应商误将`upx`压缩的二进制文件标记为病毒，请查看相关[问题](https://github.com/upx/upx/issues/437)。
 
 :::
 
@@ -107,12 +107,12 @@ Wails CLI 有许多用于管理项目的命令。 所有命令都以此方式运
 | linux/amd64      | Linux AMD64                                   |
 | linux/arm64      | Linux ARM64                                   |
 
-
 ## 诊断检查
 
 `wails doctor` 将运行诊断程序以确保您的系统已准备好进行开发。
 
 示例：
+
 ```
 Wails CLI v2.0.0-beta
 
@@ -176,15 +176,15 @@ Your system is ready for Wails development!
 
 `wails dev` 用于以 "实时开发" 模式运行您的应用。 这意味着：
 
-   - 应用程序的`go.mod`将被更新为与 Wails CLI 版本相同的版本
-   - 应用程序被编译并自动运行
-   - 一个观察者被启动，如果它检测到您的 go 文件的变化，它将触发您的开发应用程序的重新构建
-   - 启动一个网络服务器`http://localhost:34115`，通过 http 为您的应用程序（不仅仅是前端）提供服务。 这允许您使用您喜欢的浏览器开发扩展
-   - 所有应用程序资源都从磁盘加载。 如果它们被更改，应用程序将自动重新加载（而不是重新构建）。 所有连接的浏览器也将重新加载
-   - 生成的 JS 模块提供以下内容：
-     - 带有自动生成的 JSDoc 的 Go 方法的 Javascript 包装器，提供代码提示
-     - 您的 Go 结构体的 TypeScript 版本，可以构造并传递给您的 Go 方法
-   - 生成第二个 JS 模块，为运行时提供包装器 + TS 声明
+- 应用程序的`go.mod`将被更新为与 Wails CLI 版本相同的版本
+- 应用程序被编译并自动运行
+- 一个观察者被启动，如果它检测到您的 go 文件的变化，它将触发您的开发应用程序的重新构建
+- 启动一个网络服务器`http://localhost:34115`，通过 http 为您的应用程序（不仅仅是前端）提供服务。 这允许您使用您喜欢的浏览器开发扩展
+- 所有应用程序资源都从磁盘加载。 如果它们被更改，应用程序将自动重新加载（而不是重新构建）。 所有连接的浏览器也将重新加载
+- 生成的 JS 模块提供以下内容：
+  - 带有自动生成的 JSDoc 的 Go 方法的 Javascript 包装器，提供代码提示
+  - 您的 Go 结构体的 TypeScript 版本，可以构造并传递给您的 Go 方法
+- 生成第二个 JS 模块，为运行时提供包装器 + TS 声明
 
 | 标志                             | 描述                                                                                                                               | 默认                       |
 |:------------------------------ |:-------------------------------------------------------------------------------------------------------------------------------- |:------------------------ |
@@ -214,10 +214,10 @@ Your system is ready for Wails development!
 
 此命令将执行以下操作：
 
-  - 构建应用程序并运行它（更多细节在[这里](../guides/manual-builds)）
-  - 在`./frontend/src`中生成 Wails JS 模块
-  - 监听`./frontend/dist`中文件的更新并在更改时重新加载
-  - 打开浏览器并连接到应用程序
+- 构建应用程序并运行它（更多细节在[这里](../guides/manual-builds)）
+- 在`./frontend/src`中生成 Wails JS 模块
+- 监听`./frontend/dist`中文件的更新并在更改时重新加载
+- 打开浏览器并连接到应用程序
 
 [此处](../guides/application-development)提供了有关将此功能与现有框架脚本一起使用的更多信息。
 
@@ -246,7 +246,6 @@ Wails 使用模板来生成项目。 `wails generate template`命令有助于构
 |:------------- |:----------- |
 | -pre          | 更新到最新的预发布版本 |
 | -version "版本" | 安装指定版本的 CLI |
-
 
 ## 版本
 
