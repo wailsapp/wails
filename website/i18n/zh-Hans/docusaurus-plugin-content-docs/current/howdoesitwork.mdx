@@ -106,7 +106,7 @@ var assets embed.FS
 
 :::info 注意
 
-Wails requires that you pass in an _instance_ of the struct for it to bind it correctly
+Wails 要求您传入结构的 _实例_ 才能正确绑定它
 
 :::
 
@@ -208,19 +208,35 @@ Here we can see that there is a `main` package that contains the Javascript bind
 
 ```javascript
 // ...
-import { Greet } from "../wailsjs/go/main/App";
+// ...
+    // ...
+    import {Greet} from '../wailsjs/go/main/App'
 
-function doGreeting(name) {
-  Greet(name).then((result) => {
-    // Do something with result
-  });
-}
+    function doGreeting(name) {
+        Greet(name).then((result) => {
+            // Do something with result
+        })
+    }
 ```
 
 The Typescript declaration file gives you the correct types for the bound methods:
 
 ```ts
-export function Greet(arg1: string): Promise<string>;
+const go = {
+  main: {
+    App: {
+      /**
+       * Greet
+       * @param {Person} arg1 - Go Type: string
+       * @returns {Promise<string>}  - Go Type: string
+       */
+      Greet: (arg1) => {
+        return window.go.main.App.Greet(arg1);
+      },
+    },
+  },
+};
+export default go;
 ```
 
 这些方法返回一个 Promise。 成功的调用将导致 Go 调用的第一个返回值被传递给 `resolve` 处理程序。 一个不成功的调用是将一个 Go 方法的第二个错误类型返回值通过`reject`传递回调用者。 这通过 `reject` 处理程序传回。 This is passed back via the `reject` handler. 在上面的例子中，Greet 只返回一个字符串，所以 `Javascript` 调用永远不会`reject` - 除非将无效数据传递给它。
@@ -257,88 +273,148 @@ func (a *App) Greet(p Person) string {
 只要您将 TypeScript 作为前端构建配置的一部分，您就可以通过以下方式使用这些模型：
 
 ```js title="App.js"
-export function Greet(arg1) {
-  return window["go"]["main"]["App"]["Greet"](arg1);
+export class Address {
+  street: string;
+  postcode: string;
+
+  static createFrom(source: any = {}) {
+    return new Address(source);
+  }
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.street = source["street"];
+    this.postcode = source["postcode"];
+  }
+}
+export class Person {
+  name: string;
+  age: number;
+  address?: Address;
+
+  static createFrom(source: any = {}) {
+    return new Person(source);
+  }
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.name = source["name"];
+    this.age = source["age"];
+    this.address = this.convertValues(source["address"], Address);
+  }
+
+  convertValues(a: any, classs: any, asMap: boolean = false): any {
+    if (!a) {
+      return a;
+    }
+    if (a.slice) {
+      return (a as any[]).map((elem) => this.convertValues(elem, classs));
+    } else if ("object" === typeof a) {
+      if (asMap) {
+        for (const key of Object.keys(a)) {
+          a[key] = new classs(a[key]);
+        }
+        return a;
+      }
+      return new classs(a);
+    }
+    return a;
+  }
 }
 ```
 
 JSDoc 和 TypeScript 生成模型的组合构成了一个强大的开发环境。
 
 ```ts title="App.d.ts"
-import { main } from "../models";
+import go from "./wailsjs/go/bindings";
+import { Person } from "./wailsjs/go/models";
 
-export function Greet(arg1: main.Person): Promise<string>;
+let name = "";
+
+function greet(name) {
+  let p = new Person();
+  p.name = name;
+  p.age = 42;
+  go.main.App.Greet(p).then((result) => {
+    console.log(result);
+  });
+}
 ```
 
 As we can see, the "main" namespace is imported from a new "models.ts" file. This file contains all the struct definitions used by our bound methods. In this example, this is a `Person` struct. If we look at `models.ts`, we can see how the models are defined: 该文件包含我们绑定方法使用的所有结构定义。 在这个示例中，这是一个 `Person` 结构体。 如果我们查看 `models.ts`，我们可以看到模型是如何定义的：
 
 ```ts title="models.ts"
 export namespace main {
-  export class Address {
-    street: string;
-    postcode: string;
 
-    static createFrom(source: any = {}) {
-      return new Address(source);
-    }
+    export class Address {
+        street: string;
+        postcode: string;
 
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.street = source["street"];
-      this.postcode = source["postcode"];
-    }
-  }
-  export class Person {
-    name: string;
-    age: number;
-    address?: Address;
-
-    static createFrom(source: any = {}) {
-      return new Person(source);
-    }
-
-    constructor(source: any = {}) {
-      if ("string" === typeof source) source = JSON.parse(source);
-      this.name = source["name"];
-      this.age = source["age"];
-      this.address = this.convertValues(source["address"], Address);
-    }
-
-    convertValues(a: any, classs: any, asMap: boolean = false): any {
-      if (!a) {
-        return a;
-      }
-      if (a.slice) {
-        return (a as any[]).map((elem) => this.convertValues(elem, classs));
-      } else if ("object" === typeof a) {
-        if (asMap) {
-          for (const key of Object.keys(a)) {
-            a[key] = new classs(a[key]);
-          }
-          return a;
+        static createFrom(source: any = {}) {
+            return new Address(source);
         }
-        return new classs(a);
-      }
-      return a;
+
+        constructor(source: any = {}) {
+            if ('string' === typeof source) source = JSON.parse(source);
+            this.street = source["street"];
+            this.postcode = source["postcode"];
+        }
     }
-  }
+    export class Person {
+        name: string;
+        age: number;
+        address?: Address;
+
+        static createFrom(source: any = {}) {
+            return new Person(source);
+        }
+
+        constructor(source: any = {}) {
+            if ('string' === typeof source) source = JSON.parse(source);
+            this.name = source["name"];
+            this.age = source["age"];
+            this.address = this.convertValues(source["address"], Address);
+        }
+
+        convertValues(a: any, classs: any, asMap: boolean = false): any {
+            if (!a) {
+                return a;
+            }
+            if (a.slice) {
+                return (a as any[]).map(elem => this.convertValues(elem, classs));
+            } else if ("object" === typeof a) {
+                if (asMap) {
+                    for (const key of Object.keys(a)) {
+                        a[key] = new classs(a[key]);
+                    }
+                    return a;
+                }
+                return new classs(a);
+            }
+            return a;
+        }
+    }
 }
 ```
 
 可以在[运行时参考](./reference/runtime/intro)中找到有关 JS 运行时的更多详细信息。
 
 ```js title="mycode.js"
-import { Greet } from "../wailsjs/go/main/App";
-import { main } from "../wailsjs/go/models";
-
-function generate() {
-  let person = new main.Person();
-  person.name = "Peter";
-  person.age = 27;
-  Greet(person).then((result) => {
-    console.log(result);
-  });
-}
+const go = {
+  main: {
+    App: {
+      /**
+       * Greet
+       * @param {Person} arg1 - Go Type: main.Person
+       * @returns {Promise<string>}  - Go Type: string
+       */
+      Greet: (arg1) => {
+        return window.go.main.App.Greet(arg1);
+      },
+    },
+  },
+};
+export default go;
 ```
 
 The combination of generated bindings and TypeScript models makes for a powerful development environment.
