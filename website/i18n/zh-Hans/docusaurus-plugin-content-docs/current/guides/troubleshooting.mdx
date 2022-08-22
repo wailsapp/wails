@@ -14,6 +14,7 @@ If your system is reporting that the `wails` command is missing, make sure you h
 //go:embed frontend/dist
 var assets embed.FS
 ```
+
 如果您构建的应用程序在 finder 中如下所示：
 
 ### Mac
@@ -35,7 +36,9 @@ Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
 如果您有使用可变参数定义的后端方法，例如：
 
 <p className="text--center">
-    <img src="/img/troubleshooting/invalid_mac_app.png"></img>
+  <img
+    src={
+      require("@site>
 </p>
 
 您的应用程序的 `info.plist` 可能无效。 更新 `build/<yourapp>.app/Contents/info.plist` 文件并检查数据是否有效，例如二进制文件名称是否正确。 要保留更改，请将文件复制回 `build/darwin` 目录。
@@ -43,25 +46,15 @@ Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
 ## 尝试安装 Wails 时遇到代理错误
 
 归功于：https://github.com/wailsapp/wails/issues/1186
+
 ```go
 func (a *App) TestFunc(msg string, args ...interface{}) error {
     // Code
 }
 ```
+
 如果您遇到这样的错误：
-```js
-var msg = "Hello ";
-var args = ["Go", "JS"];
-window.go.main.App.TestFunc(msg, args)
-  .then((result) => {
-    // 不需要展开符
-    // do things here
-  })
-  .catch((error) => {
-    //handle error
-  });
-```
-解决办法：
+
 ```js
 var msg = "Hello: ";
 var args = ["Go", "JS"];
@@ -73,19 +66,39 @@ window.go.main.App.TestFunc(msg, ...args)
     //handle error
   });
 ```
+
+解决办法：
+
+```js
+var msg = "Hello ";
+var args = ["Go", "JS"];
+window.go.main.App.TestFunc(msg, args)
+  .then((result) => {
+    //without the 3 dots
+    //do things here
+  })
+  .catch((error) => {
+    //handle error
+  });
+```
+
 来源：https://github.com/wailsapp/wails/issues/1233
 
 ## I''m having getting proxy errors when trying to install Wails
 
 If you are getting errors like this:
+
 ```
 "https://proxy.golang.org/github.com/wailsapp/wails/cmd/wails/@v/list": dial tcp 172.217.163.49:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
 ```
+
 这可能是因为官方 Go Proxy 被阻止（中国用户反馈了这一点）。 解决方案是手动设置代理，例如：
+
 ```
 go env -w GO111MODULE=on
 go env -w GOPROXY=https://goproxy.cn,direct
 ```
+
 Source: https://github.com/wailsapp/wails/issues/1233
 
 ## The generated Typescript doesn''t have the correct types
@@ -98,8 +111,8 @@ If you navigate away from `index.html` to a new html file, the context will be l
 
 ```html
 <head>
-    <script src="/wails/ipc.js"></script>
-    <script src="/wails/runtime.js"></script>
+  <script src="/wails/ipc.js"></script>
+  <script src="/wails/runtime.js"></script>
 </head>
 ```
 
