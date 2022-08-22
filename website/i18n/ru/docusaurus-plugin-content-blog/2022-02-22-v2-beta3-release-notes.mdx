@@ -8,22 +8,29 @@ tags:
   - v2
 ---
 
-
 <div class="text--center">
-    <img src="/img/wails-linux.png" width="40%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/wails-linux.png").default}
+    width="40%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 I'm pleased to finally announce that Wails v2 is now in beta for Linux! It is somewhat ironic that the very first experiments with v2 was on Linux and yet it has ended up as the last release. That being said, the v2 we have today is very different from those first experiments. So without further ado, let's go over the new features:
 
 ### New Features
 
 <div class="text--center">
-    <img src="/img/wails-menus-linux.png" width="50%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/wails-menus-linux.png").default}
+    width="50%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 There were a lot of requests for native menu support. Wails has finally got you covered. Application menus are now available and include support for most native menu features. This includes standard menu items, checkboxes, radio groups, submenus and separators.
 
@@ -47,8 +54,8 @@ Now that assets don't need to be bundled, it's enabled a whole new development e
 
 It also provides the additional features:
 
-  - Hot reload - Any changes to frontend assets will trigger and auto reload of the application frontend
-  - Auto rebuild - Any changes to your Go code will rebuild and relaunch your application
+- Hot reload - Any changes to frontend assets will trigger and auto reload of the application frontend
+- Auto rebuild - Any changes to your Go code will rebuild and relaunch your application
 
 In addition to this, a webserver will start on port 34115. This will serve your application to any browser that connects to it. All connected web browsers will respond to system events like hot reload on asset change.
 
@@ -59,10 +66,14 @@ In addition to this, another JS module is dynamically generated wrapping all you
 ### Remote Templates
 
 <div class="text--center">
-    <img src="/img/remote-linux.png" width="80%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/remote-linux.png").default}
+    width="80%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 Getting an application up and running quickly was always a key goal for the Wails project. When we launched, we tried to cover a lot of the modern frameworks at the time: react, vue and angular. The world of frontend development is very opinionated, fast moving and hard to keep on top of! As a result, we found our base templates getting out of date pretty quickly and this caused a maintenance headache. It also meant that we didn't have cool modern templates for the latest and greatest tech stacks.
 
@@ -73,11 +84,14 @@ With v2, I wanted to empower the community by giving you the ability to create a
 Because Wails v2 for Windows is pure Go, you can target Windows builds without docker.
 
 <div class="text--center">
-    <img src="/img/linux-build-cross-windows.png" width="80%" class="screenshot"/>
+  <img
+    src="/img/linux-build-cross-windows.png"
+    width="80%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
-
+<br />
 
 ### In Conclusion
 
