@@ -41,13 +41,17 @@ The example above uses helper methods, however it's possible to build the menu s
 type Menu struct {
     Items []*MenuItem
 }
-````
+```
 
-It is also possible to dynamically update the menu, by updating the menu struct and calling
-[MenuUpdateApplicationMenu](../reference/runtime/menu.mdx#menuupdateapplicationmenu).
+It is also possible to dynamically update the menu, by updating the menu struct and calling [MenuUpdateApplicationMenu](../reference/runtime/menu.mdx#menuupdateapplicationmenu).
 
 The example above uses helper methods, however it's possible to build the menu structs manually.
 
+## Menu
+
+A Menu is a collection of MenuItems:
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
 type Menu struct {
     Items []*MenuItem
 }
@@ -184,6 +188,7 @@ const (
     ControlKey Modifier = "ctrl"
 )
 ```
+
 A number of helper methods are available to create Accelerators using modifiers:
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
@@ -229,6 +234,7 @@ myMenu := menu.NewMenuFromItems(
 
     runtime.MenuSetApplicationMenu(myMenu)
 ```
+
 修饰符可以结合`keys.Combo(key string, modifier1 Modifier, modifier2 Modifier, rest ...Modifier)`使用：
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
@@ -238,7 +244,6 @@ func Radio(label string, selected bool, accelerator *keys.Accelerator, click Cal
 func Checkbox(label string, checked bool, accelerator *keys.Accelerator, click Callback) *MenuItem
 func SubMenu(label string, menu *Menu) *MenuItem
 ```
-
 
 关于单选菜单组的说明:单选菜单组定义为菜单中相邻的多个单选菜单项。 这意味着您不需要将项目分组在一起，因为它是自动的。 然而，这也意味着您不能有两个相邻的单选菜单组-它们之间必须有一个非单选菜单项。
 
@@ -260,7 +265,7 @@ type CallbackData struct {
 
 每个菜单项都可能有一个回调，在单击该项时会执行该回调：
 
-  目前仅 Mac 支持角色。
+目前仅 Mac 支持角色。
 
 :::
 
@@ -270,4 +275,3 @@ type CallbackData struct {
 | ------------ | -------------------------------------- |
 | AppMenuRole  | 标准的 Mac 应用程序菜单。 可以使用`menu.AppMenu()`创建 |
 | EditMenuRole | 标准的 Mac 编辑菜单。 可以使用`menu.EditMenu()`创建  |
-
