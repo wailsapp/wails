@@ -8,13 +8,15 @@ tags:
   - v2
 ---
 
-
 <div class="text--center">
-    <img src="/img/wails.png" width="40%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/wails.png").default}
+    width="40%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
-
+<br />
 
 When I first announced Wails on Reddit, just over 2 years ago from a train in Sydney, I did not expect it to get much attention. A few days later, a prolific tech vlogger released a tutorial video, gave it a positive review and from that point on, interest in the project has skyrocketed.
 
@@ -26,31 +28,39 @@ Today, I am pleased to announce: **Wails v2 Beta for Windows**! There's a huge a
 
 ### No CGO Dependency!
 
-No, I'm not joking: *No* *CGO* *dependency* 🤯! The thing about Windows is that, unlike MacOS and Linux, it doesn't come with a default compiler. In addition, CGO requires a mingw compiler and there's a ton of different installation options. Removing the CGO requirement has massively simplified setup, as well as making debugging an awful lot easier. Whilst I have put a fair bit of effort in getting this working, the majority of the credit should go to [John Chadwick](https://github.com/jchv) for not only starting a couple of projects to make this possible, but also being open to someone taking those projects and building on them. Credit also to [Tad Vizbaras](https://github.com/tadvi) whose [winc](https://github.com/tadvi/winc) project started me down this path.
+No, I'm not joking: _No_ _CGO_ _dependency_ 🤯! The thing about Windows is that, unlike MacOS and Linux, it doesn't come with a default compiler. In addition, CGO requires a mingw compiler and there's a ton of different installation options. Removing the CGO requirement has massively simplified setup, as well as making debugging an awful lot easier. Whilst I have put a fair bit of effort in getting this working, the majority of the credit should go to [John Chadwick](https://github.com/jchv) for not only starting a couple of projects to make this possible, but also being open to someone taking those projects and building on them. Credit also to [Tad Vizbaras](https://github.com/tadvi) whose [winc](https://github.com/tadvi/winc) project started me down this path.
 
 ### WebView2 Chromium Renderer
 
 <div class="text--center">
-    <img src="/img/devtools.png" width="75%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/devtools.png").default}
+    width="75%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 Finally, Windows developers get a first class rendering engine for their applications! Gone are the days of contorting your frontend code to work on Windows. On top of that, you get a first-class developer tools experience!
 
 The WebView2 component does, however, have a requirement to have the `WebView2Loader.dll` sitting alongside the binary. This makes distribution just that little bit more painful than we gophers are used to. All solutions and libraries (that I know of) that use WebView2 have this dependency.
 
-However, I'm really excited to announce that Wails applications *have no such requirement*! Thanks to the wizardry of [John Chadwick](https://github.com/jchv), we are able to bundle this dll inside the binary and get Windows to load it as if it were present on disk.
+However, I'm really excited to announce that Wails applications _have no such requirement_! Thanks to the wizardry of [John Chadwick](https://github.com/jchv), we are able to bundle this dll inside the binary and get Windows to load it as if it were present on disk.
 
 Gophers rejoice! The single binary dream lives on!
 
 ### New Features
 
 <div class="text--center">
-    <img src="/img/wails-menus.png" width="60%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/wails-menus.png").default}
+    width="60%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 There were a lot of requests for native menu support. Wails has finally got you covered. Application menus are now available and include support for most native menu features. This includes standard menu items, checkboxes, radio groups, submenus and separators.
 
@@ -59,10 +69,14 @@ There were a huge number of requests in v1 for the ability to have greater contr
 There is now the option to generate IDE configuration along with your project. This means that if you open your project in a supported IDE, it will already be configured for building and debugging your application. Currently VSCode is supported but we hope to support other IDEs such as Goland soon.
 
 <div class="text--center">
-    <img src="/img/vscode.png" width="100%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/vscode.png").default}
+    width="100%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 ### No requirement to bundle assets
 
@@ -79,18 +93,21 @@ You just pass a single `embed.FS` that contains all your assets into your applic
 ### New Development Experience
 
 <div class="text--center">
-    <img src="/img/browser.png" width="60%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/browser.png").default}
+    width="60%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
-
+<br />
 
 Now that assets don't need to be bundled, it's enabled a whole new development experience. The new `wails dev` command will build and run your application, but instead of using the assets in the `embed.FS`, it loads them directly from disk.
 
 It also provides the additional features:
 
-  - Hot reload - Any changes to frontend assets will trigger and auto reload of the application frontend
-  - Auto rebuild - Any changes to your Go code will rebuild and relaunch your application
+- Hot reload - Any changes to frontend assets will trigger and auto reload of the application frontend
+- Auto rebuild - Any changes to your Go code will rebuild and relaunch your application
 
 In addition to this, a webserver will start on port 34115. This will serve your application to any browser that connects to it. All connected web browsers will respond to system events like hot reload on asset change.
 
@@ -101,10 +118,14 @@ In addition to this, another JS module is dynamically generated wrapping all you
 ### Remote Templates
 
 <div class="text--center">
-    <img src="/img/remote.png" width="60%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/remote.png").default}
+    width="60%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 Getting an application up and running quickly was always a key goal for the Wails project. When we launched, we tried to cover a lot of the modern frameworks at the time: react, vue and angular. The world of frontend development is very opinionated, fast moving and hard to keep on top of! As a result, we found our base templates getting out of date pretty quickly and this caused a maintenance headache. It also meant that we didn't have cool modern templates for the latest and greatest tech stacks.
 
