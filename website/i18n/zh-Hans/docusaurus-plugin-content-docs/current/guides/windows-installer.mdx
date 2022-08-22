@@ -1,8 +1,7 @@
 # NSIS 安装程序
 
-<p style={{ "text-align": "center" }}>
-  <img src="/img/nsis.png" style={{ "max-width": "50%" }}></img>
-  <br />
+<p style={{"text-align": "center"}}>
+   <img src="/img/nsis.png" style={{"max-width":"50%"}}></img><br/>
 </p>
 
 Wails 支持使用[NSIS 安装程序](https://nsis.sourceforge.io/)生成 Windows 安装程序。
@@ -14,11 +13,9 @@ Wails 支持使用[NSIS 安装程序](https://nsis.sourceforge.io/)生成 Window
 安装程序可在[NSIS 下载页面](https://nsis.sourceforge.io/Download)上找到。
 
 如果您使用 chocolatey 包管理器，请运行以下脚本：
-
 ```
 choco install nsis
 ```
-
 如果手动安装 NSIS，则需要将 NSIS 安装目录中包含`makensis.exe`的*Bin*目录添加到 PATH 中。 [这是](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) 一个关于如何在 Windows 上添加到 PATH 的好教程。
 
 ### Linux
@@ -31,10 +28,12 @@ NSIS 可通 homebrew 安装：`brew install nsis`。
 
 ## 生成安装程序
 
-创建新项目时，Wails 从`installer/info.json`中读取配置数据并使用项目的`wails.json`的 Info 部分，在`build/windows/installer`中生成 NSIS 配置文件：
+创建新项目时，Wails 从`installer/info.json`中读取配置数据并使用项目的`wails.json`的 Info 部分，在`build/windows/installer`中生成 NSIS 配置文件： 创建新项目时，Wails 从`installer/info.json`中读取配置数据并使用项目的`wails.json`的 Info 部分，在`build/windows/installer`中生成 NSIS 配置文件： The config data is read from `installer/info.json` and that is configured to use the project's `wails.json` Info section: 创建新项目时，Wails 从`installer/info.json`中读取配置数据并使用项目的`wails.json`的 Info 部分，在`build/windows/installer`中生成 NSIS 配置文件： The config data is read from `installer/info.json` and that is configured to use the project's `wails.json` Info section:
 
 ```json
 // ...
+ // ...
+ // ...
  "Info": {
     "companyName": "My Company Name",
     "productName": "Wails Vite",
@@ -45,7 +44,6 @@ NSIS 可通 homebrew 安装：`brew install nsis`。
 ```
 
 要为您的应用程序生成安装程序，请使用`wails build`的`-nsis`标志：
-
 ```
 wails build -nsis
 ```

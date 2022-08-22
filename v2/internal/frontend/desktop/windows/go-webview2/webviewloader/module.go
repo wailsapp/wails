@@ -9,6 +9,10 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+func init() {
+	preventEnvAndRegistryOverrides(nil, nil)
+}
+
 var (
 	memOnce                                         sync.Once
 	memModule                                       winloader.Module
@@ -71,6 +75,7 @@ func GetWebviewVersion(path string) (string, error) {
 		}
 	}
 
+	preventEnvAndRegistryOverrides(browserPath, nil)
 	var result *uint16
 	res, _, err := memGetAvailableCoreWebView2BrowserVersionString.Call(
 		uint64(uintptr(unsafe.Pointer(browserPath))),
@@ -97,6 +102,8 @@ func CreateCoreWebView2EnvironmentWithOptions(browserExecutableFolder, userDataF
 	if err != nil {
 		return 0, err
 	}
+
+	preventEnvAndRegistryOverrides(browserExecutableFolder, userDataFolder)
 	res, _, _ := memCreate.Call(
 		uint64(uintptr(unsafe.Pointer(browserExecutableFolder))),
 		uint64(uintptr(unsafe.Pointer(userDataFolder))),
@@ -120,4 +127,16 @@ func loadFromMemory() error {
 		memGetAvailableCoreWebView2BrowserVersionString = memModule.Proc("GetAvailableCoreWebView2BrowserVersionString")
 	})
 	return err
+}
+
+func preventEnvAndRegistryOverrides(browserFolder, userDataFolder *uint16) {
+	// Setting these env variables to empty string also prevents registry overrides because webview2loader
+	// checks for existence and not for empty value
+	os.Setenv("WEBVIEW2_PIPE_FOR_SCRIPT_DEBUGGER", "")
+	os.Setenv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "")
+
+	// Set these overrides to the values or empty to prevent registry and external env overrides
+	os.Setenv("WEBVIEW2_RELEASE_CHANNEL_PREFERENCE", "0")
+	os.Setenv("WEBVIEW2_BROWSER_EXECUTABLE_FOLDER", windows.UTF16PtrToString(browserFolder))
+	os.Setenv("WEBVIEW2_USER_DATA_FOLDER", windows.UTF16PtrToString(userDataFolder))
 }

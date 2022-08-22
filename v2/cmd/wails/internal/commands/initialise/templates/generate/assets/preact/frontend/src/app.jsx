@@ -1,5 +1,5 @@
-import './App.css'
-import logo from "./assets/images/logo-universal.png"
+import './app.css';
+import logo from "./assets/images/logo-universal.png";
 import {Greet} from "../wailsjs/go/main/App";
 import {useState} from "preact/hooks";
 

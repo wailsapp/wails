@@ -1,13 +1,10 @@
 ---
-title: 它是如何工作的？
 sidebar_position: 20
 ---
 
 # 它是如何工作的？
 
-Wails 应用程序是一个带有一个 webkit 前端的标准的 Go 应用程序。 应用程序的 Go 部分由应用程序代码和一个运行时库组成，
-该库提供了许多有用的操作，例如控制应用程序窗口。 前端是一个 webkit 窗口，将显示前端资源。 前端还可以使用运行时库的 Javascript 版本。
-最后，可以将 Go 方法绑定到前端，这些将显示为可以调用的 Javascript 方法，就像它们是原生 Javascript 方法一样。
+Wails 应用程序是一个带有一个 webkit 前端的标准的 Go 应用程序。 应用程序的 Go 部分由应用程序代码和一个运行时库组成， 该库提供了许多有用的操作，例如控制应用程序窗口。 前端是一个 webkit 窗口，将显示前端资源。 前端还可以使用运行时库的 Javascript 版本。 最后，可以将 Go 方法绑定到前端，这些将显示为可以调用的 Javascript 方法，就像它们是原生 Javascript 方法一样。
 
 <div className="text--center">
   <img src="/img/architecture.svg" width="75%" />
@@ -17,17 +14,17 @@ Wails 应用程序是一个带有一个 webkit 前端的标准的 Go 应用程�
 
 ### 概述
 
-主应用程序由对`wails.Run()`的调用组成. 它接受描述应用程序窗口大小、窗口标题、要使用的资源等应用程序配置。基本应用程序可能如下所示：
+主应用程序由对`wails.Run()`的调用组成. 它接受描述应用程序窗口大小、窗口标题、要使用的资源等应用程序配置。 It accepts the application configuration which describes the size of the application window, the window title, what assets to use, etc. 基本应用程序可能如下所示： 基本应用程序可能如下所示：
 
 ```go title="main.go"
 package main
 
 import (
-	"embed"
-	"log"
+    "embed"
+    "log"
 
-	"github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
 )
 
 //go:embed frontend/dist
@@ -35,22 +32,22 @@ var assets embed.FS
 
 func main() {
 
-	app := &App{}
+    app := &App{}
 
-	err := wails.Run(&options.App{
-		Title:             "Basic Demo",
-		Width:             1024,
-		Height:            768,
-		Assets:            &assets,
-		OnStartup:         app.startup,
-		OnShutdown:        app.shutdown,
-		Bind: []interface{}{
-			app,
-		},
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
+    err := wails.Run(&options.App{
+        Title:             "Basic Demo",
+        Width:             1024,
+        Height:            768,
+        Assets:            &assets,
+        OnStartup:         app.startup,
+        OnShutdown:        app.shutdown,
+        Bind: []interface{}{
+            app,
+        },
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
 }
 
 
@@ -84,50 +81,46 @@ func (b *App) Greet(name string) string {
 
 #### 资源
 
-`Assets` 选项是必须的，因为您不能拥有没有前端资源的 Wails 应用程序。这些资源可以是您希望在 Web 应用程序中找到的任何文件 - html、js、css、svg、png 等。
-**不需要生成资源包** - 纯文件即可。当应用程序启动时，它将尝试从您的资源中加载`index.html`，并且那时起前端基本上将作为浏览器工作。值得注意的是`embed.FS`对文件所在的位置没有要求。嵌入路径很可能使用了相对于您的主应用程序代码的嵌套目录，例如 `frontend/dist`：
+`Assets` 选项是必须的，因为您不能拥有没有前端资源的 Wails 应用程序。 这些资源可以是您希望在 Web 应用程序中找到的任何文件 - html、js、css、svg、png 等。 **不需要生成资源包** - 纯文件即可。 当应用程序启动时，它将尝试从您的资源中加载`index.html`，并且那时起前端基本上将作为浏览器工作。 值得注意的是`embed.FS`对文件所在的位置没有要求。 嵌入路径很可能使用了相对于您的主应用程序代码的嵌套目录，例如 `frontend/dist`：
 
 ```go title="main.go"
 //go:embed frontend/dist
 var assets embed.FS
 ```
 
-启动时，Wails 将遍历嵌入的文件，寻找包含的`index.html`。所有其他资源将相对于该目录加载。
+启动时，Wails 将遍历嵌入的文件，寻找包含的`index.html`。 所有其他资源将相对于该目录加载。
 
 由于可用于生产的二进制文件使用包含在`embed.FS`中的文件，因此应用程序不需要附带任何外部文件。
 
-当使用`wails dev`命令在“开发”模式下，资源从磁盘加载，任何更改都会导致“实时重新加载”。资源的位置需要使用`-assetdir`传递给`wails dev`命令，并且很可能与嵌入路径相同。
-希望将来我们可以从`embed.FS`本身计算出来。
+当使用`wails dev`命令在“开发”模式下，资源从磁盘加载，任何更改都会导致“实时重新加载”。 资源的位置需要使用`-assetdir`传递给`wails dev`命令，并且很可能与嵌入路径相同。 希望将来我们可以从`embed.FS`本身计算出来。
 
 更多细节可以在[应用程序开发指南](./guides/application-development)中找到。
 
 #### 应用程序生命周期回调
 
-在即将加载前端`index.html`之前，对 [应用启动回调](./reference/options#应用启动回调) 中提供的函数进行调用。一个标准的 Go 上下文被传递给这个方法。
-调用运行时需要此上下文，因此标准方式是保存此时对它的引用。在应用程序关闭之前，再次使用上下文以同样的方式调用 [应用退出回调](./reference/options#应用退出回调)。当前端完成加载`index.html`中所有资源时，还有一个 [前端 Dom 加载完成回调](./reference/options#前端-dom-加载完成回调) ，相当于 Javascript 中的`body onload`事件。还可以通过设置 [关闭应用程序之前回调](./reference/options#关闭应用程序之前回调) 选项来控制窗口关闭（或应用程序退出）事件。
+在即将加载前端`index.html`之前，对 [应用启动回调](./reference/options#应用启动回调) 中提供的函数进行调用。 一个标准的 Go 上下文被传递给这个方法。 调用运行时需要此上下文，因此标准方式是保存此时对它的引用。 在应用程序关闭之前，再次使用上下文以同样的方式调用 [应用退出回调](./reference/options#应用退出回调)。 当前端完成加载`index.html`中所有资源时，还有一个 [前端 Dom 加载完成回调](./reference/options#前端-dom-加载完成回调) ，相当于 Javascript 中的`body onload`事件。 还可以通过设置 [关闭应用程序之前回调](./reference/options#关闭应用程序之前回调) 选项来控制窗口关闭（或应用程序退出）事件。
 
 #### 方法绑定
 
-`Bind`选项是 Wails 应用程序中最重要的参数选项之一。它指定向前端暴露哪些结构方法。当应用程序启动时，它会检查 `Bind` 中列出的结构实例，
-确定哪些方法是公开的（以大写字母开头），并将生成前端可以调用的那些方法的 Javascript 版本。
+`Bind`选项是 Wails 应用程序中最重要的参数选项之一。 它指定向前端暴露哪些结构方法。 Think of structs like "controllers" in a traditional web application. 当应用程序启动时，它会检查 `Bind` 中列出的结构实例， 确定哪些方法是公开的（以大写字母开头），并将生成前端可以调用的那些方法的 Javascript 版本。 当应用程序启动时，它会检查 `Bind` 中列出的结构实例， 确定哪些方法是公开的（以大写字母开头），并将生成前端可以调用的那些方法的 Javascript 版本。
 
 :::info 注意
 
-Wails 要求您传入结构的 _实例_ 才能正确绑定它
+  Wails 要求您传入结构的 _实例_ 才能正确绑定它
 
 :::
 
 在此示例中，我们创建一个新`App`实例，然后将此实例添加到`wails.Run`中的`Bind`选项：
 
-```go {16,26} title="main.go"
+```go {16,24} title="main.go"
 package main
 
 import (
-	"embed"
-	"log"
+    "embed"
+    "log"
 
-	"github.com/wailsapp/wails/v2"
-	"github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
 )
 
 //go:embed frontend/dist
@@ -135,22 +128,20 @@ var assets embed.FS
 
 func main() {
 
-	app := &App{}
+    app := &App{}
 
-	err := wails.Run(&options.App{
-		Title:             "Basic Demo",
-		Width:             1024,
-		Height:            768,
-		Assets:            &assets,
-		OnStartup:         app.startup,
-		OnShutdown:        app.shutdown,
-		Bind: []interface{}{
-			app,
-		},
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
+    err := wails.Run(&options.App{
+        Title:             "Basic Demo",
+        Width:             1024,
+        Height:            768,
+        Assets:            &assets,
+        Bind: []interface{}{
+            app,
+        },
+    })
+    if err != nil {
+        log.Fatal(err)
+    }
 }
 
 
@@ -158,76 +149,75 @@ type App struct {
     ctx context.Context
 }
 
-func (b *App) startup(ctx context.Context) {
-    b.ctx = ctx
-}
-
-func (b *App) shutdown(ctx context.Context) {}
-
-func (b *App) Greet(name string) string {
+func (a *App) Greet(name string) string {
     return fmt.Sprintf("Hello %s!", name)
 }
 ```
 
-您可以绑定任意数量的结构体。只需确保创建它的一个实例并将其传递给 `Bind`：
+您可以绑定任意数量的结构体。 只需确保创建它的一个实例并将其传递给 `Bind`：
 
-```go {10-12}
+```go {8-10}
+    //...
+    //...
+    ...
+    err := wails.Run(&options.App{
+        Title:             "Basic Demo",
+        Width:             1024,
+        Height:            768,
+        Assets:            &assets,
+        OnStartup:         app.startup,
+        OnShutdown:        app.shutdown,
+        Bind: []interface{}{
+            app,
+            &mystruct1{},
+            &mystruct2{},
+        },
+    })
 ...
-	err := wails.Run(&options.App{
-		Title:             "Basic Demo",
-		Width:             1024,
-		Height:            768,
-		Assets:            &assets,
-		OnStartup:         app.startup,
-		OnShutdown:        app.shutdown,
-		Bind: []interface{}{
-			app,
-			&mystruct1{},
-			&mystruct2{},
-		},
-	})
-...
+
 ```
 
-这些方法位于前端 `window.go.<packagename>.<struct>.<method>`。在上面的例子中，我们绑定 `app`，它有一个公开方法 `Greet`。这可以通过在 `Javascript` 中用 `window.go.main.App.Greet`调用。这些方法返回一个 Promise。成功的调用将导致 Go 调用的第一个返回值被传递给 `resolve` 处理程序。一个不成功的调用是将一个 Go 方法的第二个错误类型返回值通过`reject`传递回调用者。在上面的例子中，Greet 只返回一个字符串，所以 `Javascript` 调用永远不会`reject` - 除非将无效数据传递给它。
+When you run `wails dev` (or `wails generate module`), a frontend module will be generated containing the following:
+  - 调用绑定的 Go 方法
+  - 调用运行时方法
+  - Typescript definitions for all Go structs used as inputs or outputs by the bound methods
 
-所有数据类型都在 Go 和 Javascript 之间正确转换。包括结构体。如果您从 Go 调用返回一个结构体，它将作为 `Javascript` Map 返回到您的前端。
-注意：如果您想使用结构体，您必须为您的结构体字段定义`json` 标签！
-
-:::info 注意
-目前不支持嵌套匿名结构体。
-:::
-
-也可以将结构体发送回 Go。任何作为期望结构的参数传递的 Javascript Map 都将转换为该结构类型。
-为了使这个过程更容易，在 `开发`模式下，会生成一个 TypeScript 模块，定义绑定方法中使用的所有结构类型。使用此模块，可以构建原生 Javascript 对象并将其发送到 Go 代码。
-
-关于绑定的更多信息可以在[应用程序开发指南](./guides/application-development)的[绑定方法](./guides/application-development#绑定方法)一节中找到。
+This makes it incredibly simple to call Go code from the frontend, using the same strongly typed datastructures.
 
 ## 前端
 
 ### 概述
 
-前端是由 webkit 渲染的文件集合。这就像浏览器和网络服务器合二为一。您可以使用的框架或库[^1]几乎没有限制。前端和 Go 代码之间的主要交互点是：
+前端是由 webkit 渲染的文件集合。 这就像浏览器和网络服务器合二为一。 您可以使用的框架或库[^1]几乎没有限制。 前端和 Go 代码之间的主要交互点是：
 
-- 调用绑定的 Go 方法
-- 调用运行时方法
+- Calling bound Go methods
+- Calling runtime methods
 
-[^1]: 有一小部分库使用了 WebView 中不支持的功能。对于这种情况，通常有替代方案和解决方法。
+### Calling bound Go methods
 
-### 调用绑定的 Go 方法
+在`开发`模式下运行应用程序时，会生成一个 javascript 模块，该模块用 JSDoc 注释包装这些方法。 这确实有助于开发，尤其是因为大多数 IDE 将处理 JSDoc 以提供代码完成和类型提示。 该模块名为`go` 并在`wailsjsdir`标志指定的目录中生成。 The generated files mirror the package names in your application. 在上面的例子中，我们绑定 `app`，它有一个公开方法 `Greet`。 在上面的例子中，我们绑定 `app`，它有一个公开方法 `Greet`。 This will lead to the generation of the following files:
 
-所有绑定的 Go 方法都可以在`window.go.<package>.<struct>.<method>`调用. 如上一节所述，这些方法返回一个 Promise，
-其中成功调用将值返回给 resolve 处理程序，错误将值返回给 reject 处理程序。
-
-```go title="mycode.js"
- window.go.main.App.Greet("Bill").then((result) => {
+```bash
+window.go.main.App.Greet("Bill").then((result) => {
     console.log("The greeting is: " + result);
  })
 ```
+Here we can see that there is a `main` package that contains the Javascript bindings for the bound `App` struct, as well as the Typescript declaration file for those methods. To call `Greet` from our frontend, we simply import the method and call it like a regular Javascript function: To call `Greet` from our frontend, we simply import the method and call it like a regular Javascript function:
 
-在`开发`模式下运行应用程序时，会生成一个 javascript 模块，该模块用 JSDoc 注释包装这些方法。这确实有助于开发，尤其是因为大多数 IDE 将处理 JSDoc 以提供代码完成和类型提示。该模块名为`go` 并在`wailsjsdir`标志指定的目录中生成。在这个模块中有一个`bindings.js`的文件，其中包含这些包装器。对于上面的示例，该文件包含以下代码：
+```javascript
+    // ...
+    // ...
+    import {Greet} from '../wailsjs/go/main/App'
 
-```js title="bindings.js"
+    function doGreeting(name) {
+        Greet(name).then((result) => {
+            // Do something with result
+        })
+    }
+```
+The Typescript declaration file gives you the correct types for the bound methods:
+
+```ts
 const go = {
   main: {
     App: {
@@ -245,53 +235,40 @@ const go = {
 export default go;
 ```
 
-#### 支持结构体
+这些方法返回一个 Promise。 成功的调用将导致 Go 调用的第一个返回值被传递给 `resolve` 处理程序。 一个不成功的调用是将一个 Go 方法的第二个错误类型返回值通过`reject`传递回调用者。 This is passed back via the `reject` handler. This is passed back via the `reject` handler. 在上面的例子中，Greet 只返回一个字符串，所以 `Javascript` 调用永远不会`reject` - 除非将无效数据传递给它。
 
-还额外支持在其签名中使用结构的 Go 方法。所有由绑定方法指定的 Go 结构体（作为参数或返回类型）都将自动生成 Typescript 版本作为 Go 代码包装器模块的一部分。
-使用这些，可以在 Go 和 Javascript 之间共享相同的数据模型。这些模型与 JSDoc 注释一致，支持 IDE 代码自动完成。
+所有数据类型都在 Go 和 Javascript 之间正确转换。 包括结构体。 如果您从 Go 调用返回一个结构体，它将作为 `Javascript` Map 返回到您的前端。 注意：如果您想使用结构体，您必须为您的结构体字段定义`json` 标签！
 
-示例：我们更新我们的`Gree`方法以接受一个`Person`而不是字符串：
+:::info 注意
+目前不支持嵌套匿名结构体。
+:::
 
-```go title="main.go"
-type Person struct {
-	Name string `json:"name"`
-	Age uint8 `json:"age"`
-	Address *Address `json:"address"`
-}
+也可以将结构体发送回 Go。 任何作为期望结构的参数传递的 Javascript Map 都将转换为该结构类型。 为了使这个过程更容易，在 `开发`模式下，会生成一个 TypeScript 模块，定义绑定方法中使用的所有结构类型。 使用此模块，可以构建原生 Javascript 对象并将其发送到 Go 代码。
 
-type Address struct {
-	Street string `json:"street"`
-	Postcode string `json:"postcode"`
-}
-
-func (a *App) Greet(p Person) string {
-	return fmt.Sprintf("Hello %s (Age: %d)!", p.Name, p.Age)
-}
-```
-
-我们的`bindings.js`文件现已更新以反映更改：
-
-```js title="bindings.js"
-const go = {
-  main: {
-    App: {
-      /**
-       * Greet
-       * @param {Person} arg1 - Go Type: main.Person
-       * @returns {Promise<string>}  - Go Type: string
-       */
-      Greet: (arg1) => {
-        return window.go.main.App.Greet(arg1);
-      },
-    },
-  },
-};
-export default go;
-```
+还额外支持在其签名中使用结构的 Go 方法。 所有由绑定方法指定的 Go 结构体（作为参数或返回类型）都将自动生成 Typescript 版本作为 Go 代码包装器模块的一部分。 使用这些，可以在 Go 和 Javascript 之间共享相同的数据模型。
 
 此外`bindings.js`，还有一个名为`models.ts`的文件. 这包含我们 Go 结构体的 TypeScript 形式：
 
-```ts title="models.ts"
+```go title="main.go"
+type Person struct {
+    Name string `json:"name"`
+    Age uint8 `json:"age"`
+    Address *Address `json:"address"`
+}
+
+type Address struct {
+    Street string `json:"street"`
+    Postcode string `json:"postcode"`
+}
+
+func (a *App) Greet(p Person) string {
+    return fmt.Sprintf("Hello %s (Age: %d)!", p.Name, p.Age)
+}
+```
+
+只要您将 TypeScript 作为前端构建配置的一部分，您就可以通过以下方式使用这些模型：
+
+```js title="App.js"
 export class Address {
   street: string;
   postcode: string;
@@ -342,9 +319,9 @@ export class Person {
 }
 ```
 
-只要您将 TypeScript 作为前端构建配置的一部分，您就可以通过以下方式使用这些模型：
+JSDoc 和 TypeScript 生成模型的组合构成了一个强大的开发环境。
 
-```js title="mycode.js"
+```ts title="App.d.ts"
 import go from "./wailsjs/go/bindings";
 import { Person } from "./wailsjs/go/models";
 
@@ -360,9 +337,87 @@ function greet(name) {
 }
 ```
 
-JSDoc 和 TypeScript 生成模型的组合构成了一个强大的开发环境。
+As we can see, the "main" namespace is imported from a new "models.ts" file. This file contains all the struct definitions used by our bound methods. In this example, this is a `Person` struct. If we look at `models.ts`, we can see how the models are defined: This file contains all the struct definitions used by our bound methods. In this example, this is a `Person` struct. If we look at `models.ts`, we can see how the models are defined:
 
-### 调用运行时方法
+```ts title="models.ts"
+export namespace main {
+
+    export class Address {
+        street: string;
+        postcode: string;
+
+        static createFrom(source: any = {}) {
+            return new Address(source);
+        }
+
+        constructor(source: any = {}) {
+            if ('string' === typeof source) source = JSON.parse(source);
+            this.street = source["street"];
+            this.postcode = source["postcode"];
+        }
+    }
+    export class Person {
+        name: string;
+        age: number;
+        address?: Address;
+
+        static createFrom(source: any = {}) {
+            return new Person(source);
+        }
+
+        constructor(source: any = {}) {
+            if ('string' === typeof source) source = JSON.parse(source);
+            this.name = source["name"];
+            this.age = source["age"];
+            this.address = this.convertValues(source["address"], Address);
+        }
+
+        convertValues(a: any, classs: any, asMap: boolean = false): any {
+            if (!a) {
+                return a;
+            }
+            if (a.slice) {
+                return (a as any[]).map(elem => this.convertValues(elem, classs));
+            } else if ("object" === typeof a) {
+                if (asMap) {
+                    for (const key of Object.keys(a)) {
+                        a[key] = new classs(a[key]);
+                    }
+                    return a;
+                }
+                return new classs(a);
+            }
+            return a;
+        }
+    }
+}
+```
+
+可以在[运行时参考](./reference/runtime/intro)中找到有关 JS 运行时的更多详细信息。
+
+```js title="mycode.js"
+  const go = {
+  main: {
+    App: {
+      /**
+       * Greet
+       * @param {Person} arg1 - Go Type: main.Person
+       * @returns {Promise<string>}  - Go Type: string
+       */
+      Greet: (arg1) => {
+        return window.go.main.App.Greet(arg1);
+      },
+    },
+  },
+};
+export default go;
+```
+
+The combination of generated bindings and TypeScript models makes for a powerful development environment.
+
+关于绑定的更多信息可以在[应用程序开发指南](./guides/application-development)的[绑定方法](./guides/application-development#绑定方法)一节中找到。
+
+### Calling runtime methods
 
 Javascript 运行时位于`window.runtime`并包含许多方法来执行各种任务，例如发出事件或执行日志记录操作：
 
@@ -370,4 +425,6 @@ Javascript 运行时位于`window.runtime`并包含许多方法来执行各种�
 window.runtime.EventsEmit("my-event", 1);
 ```
 
-可以在[运行时参考](./reference/runtime/intro)中找到有关 JS 运行时的更多详细信息。
+More details about the JS runtime can be found in the [Runtime Reference](reference/runtime/intro).
+
+[^1]: 有一小部分库使用了 WebView 中不支持的功能。 对于这种情况，通常有替代方案和解决方法。

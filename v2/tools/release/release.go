@@ -2,11 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/wailsapp/wails/v2/internal/s"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/wailsapp/wails/v2/internal/s"
 )
 
 const versionFile = "../../cmd/wails/internal/version.txt"
@@ -61,15 +62,8 @@ func main() {
 	s.ECHO("Removing old version: " + oldestVersion)
 	s.CD("versioned_docs")
 	s.RMDIR("version-" + oldestVersion)
-	s.CD("version-" + newVersion + "/gettingstarted")
-	s.REPLACEALL("firstproject.mdx", s.Sub{
-		"../../src/components/frameworktabs": "../../../src/components/frameworktabs",
-	})
-	s.REPLACEALL("installation.mdx", s.Sub{
-		"../../src/components/tabinstall": "../../../src/components/tabinstall",
-	})
-
-	s.CD("../../../versioned_sidebars")
+	s.CD("../versioned_sidebars")
 	s.RM("version-" + oldestVersion + "-sidebars.json")
-
+	s.CD("..")
+	s.EXEC("Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; yarn build")
 }

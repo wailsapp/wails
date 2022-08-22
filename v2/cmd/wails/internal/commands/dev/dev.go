@@ -485,13 +485,11 @@ func runFrontendDevWatcherCommand(cwd string, devCommand string, discoverViteSer
 			}
 		}
 		atomic.StoreInt32(&state, stateStopped)
-		LogGreen("DevWatcher command exited!")
 		wg.Done()
 	}()
 
 	return func() {
 		if atomic.CompareAndSwapInt32(&state, stateRunning, stateCanceling) {
-			LogGreen("Killing DevWatcher command...")
 			killProc(cmd, devCommand)
 		}
 		cancel()

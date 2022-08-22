@@ -1,3 +1,4 @@
+
 # 前端
 
 ## 脚本注入
@@ -33,16 +34,16 @@
 为了给开发人员提供更大的灵活性，有一个`meta`标签可用于自定义此行为：
 
 ```html
-<meta name="wails-options" content="[options]" />
+  <meta name="wails-options" content="[options]" />
 ```
 
 选项如下：
 
-| 值                  | 描述                             |
-| ------------------- | -------------------------------- |
+| 值                   | 描述                         |
+| ------------------- | -------------------------- |
 | noautoinjectruntime | 禁用自动注入 `/wails/runtime.js` |
 | noautoinjectipc     | 禁用自动注入 `/wails/ipc.js`     |
-| noautoinject        | 禁用所有脚本自动注入             |
+| noautoinject        | 禁用所有脚本自动注入                 |
 
 可以使用多个选项，前提是它们以逗号分隔。
 

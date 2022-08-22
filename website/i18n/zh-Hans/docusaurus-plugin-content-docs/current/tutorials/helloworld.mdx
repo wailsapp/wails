@@ -4,22 +4,25 @@ sidebar_position: 10
 
 # 你好世界
 
-The aim of this tutorial is to get you up and running with the most basic
-application using Wails. You will be able to:
+The aim of this tutorial is to get you up and running with the most basic application using Wails. You will be able to: You will be able to: You will be able to:
 
-- Create a new Wails application
-- Build the application
-- Run the application
+  - Create a new Wails application
+  - Build the application
+  - Run the application
 
 :::note
 This tutorial uses Windows as the target platform. Output will vary slightly
 depending on your operating system.
-:::
+::: :::note
+This tutorial uses Windows as the target platform. Output will vary slightly
+depending on your operating system.
+::: Output will vary slightly
+depending on your operating system.
+::: :::
 
-## Create a new Wails application
+## 创建一个新Wails应用
 
-To create a new Wails application using the default vanilla JS template,
-you need to run the following command:
+To create a new Wails application using the default vanilla JS template, you need to run the following command:
 
 ```bash
 wails init -n helloworld
@@ -41,8 +44,7 @@ Template Support:  https://wails.io
 Initialised project 'helloworld' in 232ms.
 ```
 
-This will create a new directory called `helloworld` in the current directory.
-In this directory, you will find a number of files:
+This will create a new directory called `helloworld` in the current directory. In this directory, you will find a number of files: In this directory, you will find a number of files: In this directory, you will find a number of files:
 
 ```
 build/       - Contains the build files + compiled application
@@ -54,7 +56,7 @@ go.mod       - The go module file
 go.sum       - The go module checksum file
 ```
 
-## Build the application
+## 构建应用
 
 To build the application, change to the new `helloworld` project directory and run the following command:
 
@@ -86,18 +88,27 @@ Building target: windows/amd64
   - Generating bundle assets: Done.
   - Compiling application: Done.
 Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
+  - Compiling frontend: Done.
+  - Generating bundle assets: Done.
+  - Compiling application: Done.
+Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
+  - Compiling frontend: Done.
+  - Generating bundle assets: Done.
+  - Compiling application: Done.
+Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
 ```
 
 This has compiled the application and saved it in the `build/bin` directory.
 
-## Run the application
+## 运行应用
 
 If we view the `build/bin` directory in Windows Explorer, we should see our project binary:
 
 <div class="text--center">
-  <img src="/img/helloworld-app-icon.png" width="134px" />
+    <img src="/img/helloworld-app-icon.png" width="134px"/>
 </div>
-<br />
+
+<br/>
 
 We can run it by simply double-clicking the `helloworld.exe` file.
 
@@ -108,13 +119,6 @@ On Linux, you can run the application using `./helloworld` from the `build/bin` 
 You should see the application working as expected:
 
 <div class="text--center">
-  <img
-    src="/img/windows-default-app.png"
-    width="50%"
-    style={{
-      "box-shadow":
-        "rgb(255 255 255 / 20%) 0px 1px 2px 0px, rgb(104 104 104) 0px 1px 5px 0px",
-    }}
-  />
+    <img src="/img/windows-default-app.png" width="50%" className="screenshot"/>
 </div>
-<br />
+<br/>

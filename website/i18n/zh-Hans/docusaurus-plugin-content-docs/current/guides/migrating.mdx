@@ -1,8 +1,9 @@
+
 # 从 v1 迁移
 
 ## 概述
 
-Wails v2 与 v1 相比有重大变化。本文档旨在重点介绍迁移现有项目的更改和步骤。
+Wails v2 与 v1 相比有重大变化。 本文档旨在重点介绍迁移现有项目的更改和步骤。
 
 ### 创建应用程序
 
@@ -26,20 +27,20 @@ Wails v2 与 v1 相比有重大变化。本文档旨在重点介绍迁移现有�
 在 v2 中，只有一个方法`wails.Run()`接受[应用程序参数选项](../reference/options#应用程序参数选项)。
 
 ```go title="v2"
-	err := wails.Run(&options.App{
-		Title:  "MyApp",
-		Width:  800,
-		Height: 600,
-		Assets: assets,
-		Bind:   []interface{}{
-			basic,
-		},
-	})
+    err := wails.Run(&options.App{
+        Title:  "MyApp",
+        Width:  800,
+        Height: 600,
+        Assets: assets,
+        Bind:   []interface{}{
+            basic,
+        },
+    })
 ```
 
 ### 绑定
 
-在 v1 中，可以绑定任意函数和结构。在 v2 中，这已被简化为仅绑定结构。以前传递给 v1`Bind()`中的方法的结构实例现在在[应用程序参数选项](../reference/options#应用程序参数选项)`Bind`字段中指定：
+在 v1 中，可以绑定任意函数和结构。 在 v2 中，这已被简化为仅绑定结构。 以前传递给 v1`Bind()`中的方法的结构实例现在在[应用程序参数选项](../reference/options#应用程序参数选项)`Bind`字段中指定：
 
 ```go title="v1"
   app := wails.CreateApp(/* options */)
@@ -47,23 +48,23 @@ Wails v2 与 v1 相比有重大变化。本文档旨在重点介绍迁移现有�
 ```
 
 ```go title="v2"
-	err := wails.Run(&options.App{
-		/* other options */
-		Bind: []interface{}{
-			basic,
-		},
-	})
+    err := wails.Run(&options.App{
+        /* other options */
+        Bind: []interface{}{
+            basic,
+        },
+    })
 ```
 
 在 v1 中，绑定方法在`window.backend`中。 这已更改为`window.go`。
 
 ### 应用程序生命周期
 
-在 v1 中，绑定结构中有 2 个特殊方法：`WailsInit()`和`WailsShutdown()`. 这些已被替换为 3 个生命周期回调，作为[应用程序参数选项](../reference/options#应用程序参数选项)的一部分：
+In v1, there were 2 special methods in a bound struct: `WailsInit()` and `WailsShutdown()`. In v1, there were 2 special methods in a bound struct: `WailsInit()` and `WailsShutdown()`. These have been replaced with 3 lifecycle hooks as part of the [application options](../reference/options.mdx#application-options): In v1, there were 2 special methods in a bound struct: `WailsInit()` and `WailsShutdown()`. These have been replaced with 3 lifecycle hooks as part of the [application options](../reference/options.mdx#application-options):
 
-- [应用启动回调](../reference/options#应用启动回调)
-- [应用退出回调](../reference/options#应用退出回调)
-- [前端 Dom 加载完成回调](../reference/options#前端-dom-加载完成回调)
+- [应用启动回调](../reference/options.mdx#onstartup)
+- [应用退出回调](../reference/options.mdx#onshutdown)
+- [前端 Dom 加载完成回调](../reference/options.mdx#ondomready)
 
 注意：[前端 Dom 加载完成回调](../reference/options#前端-dom-加载完成回调)替换了 v1 中的 `wails:ready` 系统事件。
 
@@ -71,12 +72,26 @@ Wails v2 与 v1 相比有重大变化。本文档旨在重点介绍迁移现有�
 
 ```go title="v2"
     basic := NewBasicApp()
-	err := wails.Run(&options.App{
-	    /* Other Options */
-		OnStartup:  basic.startup,
-		OnShutdown: basic.shutdown,
-		OnDomReady: basic.domready,
-	})
+    err := wails.Run(&options.App{
+        /* Other Options */
+        OnStartup:  basic.startup,
+        OnShutdown: basic.shutdown,
+        OnDomReady: basic.domready,
+    })
+...
+type Basic struct {
+    ctx context.Context
+}
+func (b *Basic) startup(ctx context.Context) {
+    b.ctx = ctx
+}
+...
+type Basic struct {
+    ctx context.Context
+}
+func (b *Basic) startup(ctx context.Context) {
+    b.ctx = ctx
+}
 ...
 type Basic struct {
     ctx context.Context
@@ -89,23 +104,25 @@ func (b *Basic) startup(ctx context.Context) {
 
 ### 运行时
 
-v2 中的运行时比 v1 丰富得多，支持菜单、窗口操作和更好的对话框。方法的签名略有变化 - 请参阅[运行时](../reference/runtime/intro)。
+v2 中的运行时比 v1 丰富得多，支持菜单、窗口操作和更好的对话框。 方法的签名略有变化 - 请参阅[运行时](../reference/runtime/intro)。
 
-在 v1 中，[运行时](../reference/runtime/intro)可通过传递给`WailsInit()`. 在 v2 中，运行时已移出到它自己的包。运行时中的每个方法都采用`context.Context`传递给了[应用启动回调](../reference/options#应用启动回调)方法。
+在 v1 中，[运行时](../reference/runtime/intro)可通过传递给`WailsInit()`. 在 v2 中，运行时已移出到它自己的包。 In v2, the runtime has been moved out to its own package. 运行时中的每个方法都采用`context.Context`传递给了[应用启动回调](../reference/options#应用启动回调)方法。
 
-```go title="运行时示例"
+```go title="Runtime Example"
 package main
 
 import "github.com/wailsapp/wails/v2/pkg/runtime"
 
 type Basic struct {
-	ctx context.Context
+    ctx context.Context
 }
 
 // startup is called at application startup
 func (a *App) startup(ctx context.Context) {
-	a.ctx = ctx
-	runtime.LogInfo(ctx, "Application Startup called!")
+    a.ctx = ctx
+    runtime.LogInfo(ctx, "Application Startup called!")
+}
+}
 }
 
 ```
@@ -119,17 +136,19 @@ func (a *App) startup(ctx context.Context) {
 - `JS` - 应用程序的 Javascript
 - `CSS` - 应用程序的 CSS
 
-这意味着生成单个 JS 和 CSS 文件的责任在于开发人员。这本质上需要使用繁琐的打包程序，例如 webpack。
+这意味着生成单个 JS 和 CSS 文件的责任在于开发人员。 这本质上需要使用繁琐的打包程序，例如 webpack。
 
-在 v2 中，Wails 不对您的前端资源做任何预设，就像网络服务器一样。您的所有应用程序资源都作为`embed.FS`.
+在 v2 中，Wails 不对您的前端资源做任何预设，就像网络服务器一样。 您的所有应用程序资源都作为`embed.FS`.
 
-**这意味着不需要打包您的资源、将图像编码为 Base64 或尝试使用奇葩的打包工具配置来使用自定义字体。**
+这意味着不需要打包您的资源、将图像编码为 Base64 或尝试使用奇葩的打包工具配置来使用自定义字体。
 
 在启动时，Wails 将扫描给定的`embed.FS`的`index.html`并将其位置用作所有其他应用程序资源的根路径 - 就像网络服务器一样。
 
-示例：应用程序具有以下项目布局。所有最终资源都放在 `frontend/dist`目录中：
+示例：应用程序具有以下项目布局。 所有最终资源都放在 `frontend/dist`目录中：
 
 ```shell
+.
+.
 .
 ├── build/
 ├── frontend/
@@ -144,26 +163,25 @@ func (a *App) startup(ctx context.Context) {
 
 应用程序可以通过简单地创建一个`embed.FS`来使用这些资源：
 
-```go title="资源示例"
+```go title="Assets Example"
 //go:embed frontend/dist
 var assets embed.FS
 
 func main() {
-	err := wails.Run(&options.App{
-	    /* Other Options */
-		Assets: assets,
-	})
+    err := wails.Run(&options.App{
+        /* Other Options */
+        Assets: assets,
+    })
 }
 ```
 
-当然，如果您愿意，也可以使用打包工具。唯一的要求是在 Wails 中使用`embed.FS`,将最终的程序资源目录传递给[应用程序参数选项](../reference/options#应用程序参数选项)的`Assets`键。
+当然，如果您愿意，也可以使用打包工具。 唯一的要求是在 Wails 中使用`embed.FS`,将最终的程序资源目录传递给[应用程序参数选项](../reference/options#应用程序参数选项)的`Assets`键。
 
 ### 项目配置
 
-在 v1 中，项目配置存储在项目根的 `project.json` 文件中。
-在 v2 中，项目配置存储在项目根部的 `wails.json` 文件中。
+在 v1 中，项目配置存储在项目根的 `project.json` 文件中。 在 v2 中，项目配置存储在项目根部的 `wails.json` 文件中。
 
-文件的格式略有不同。下面是区别：
+文件的格式略有不同。 下面是区别：
 
 <p align="center">
 
@@ -183,6 +201,8 @@ func main() {
 | tags               |                  | 移除                                                                                             |
 |                    | wailsjsdir       | 生成 wailsjs 模块的目录                                                                          |
 |                    | assetdir         | `dev` 模式下前端资源文件目录                                                                     |
-|                    | reloaddirs       | 以逗号分隔的附加目录列表，用于监视更改并在开发模式下触发重新加载。这只需要一些更重要的资源配置。 |
+|                    | reloaddirs       | 以逗号分隔的附加目录列表，用于监视更改并在开发模式下触发重新加载。 This is normally inferred and could be left empty. |
+|                    | reloaddirs       | Comma separated list of additional directories to watch for changes and to trigger reloads in `dev` mode. 这只需要一些更重要的资源配置。 |
 
 </p>
+

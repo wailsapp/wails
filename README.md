@@ -18,11 +18,8 @@
   <a href="https://github.com/wailsapp/wails/issues">
     <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="CodeFactor" />
   </a>
-  <a href="https://app.fossa.io/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_shield" alt="FOSSA Status">
-    <img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=shield"/>
-  </a>
-  <a href="https://houndci.com">
-    <img src="https://img.shields.io/badge/Reviewed_by-Hound-8E64B0.svg"/>
+  <a href="https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_shield" alt="FOSSA Status">
+    <img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=shield"/>
   </a>
   <a href="https://github.com/avelino/awesome-go" rel="nofollow">
     <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome"/>
@@ -30,9 +27,6 @@
   <a href="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" rel="nofollow">
     <img src="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" alt="Release Pipelines"/>
   </a>
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-<a href='#contributors'><img src='https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat' alt='Contributors'/></a>
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
 <span id="nav-1"></span>
@@ -292,3 +286,7 @@ This project was mainly coded to the following albums:
    Please click the logo to let them know your appreciation!<br/><br/>
    <a href="https://www.jetbrains.com?from=Wails"><img src="/assets/images/jetbrains-grayscale.png" width="30%"></a>
 </p>
+
+## License Report
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)

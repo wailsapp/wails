@@ -5,16 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v2.0.0-beta.44 2022-08-20]
+
+### Deprecation Notice
+
+The `data-wails-drag` attribute is being deprecated in favour of the following CSS style:
+`style="--wails-draggable:drag"`. You can use `style="--wails-draggable:no-drag"` to disable the drag behaviour.
+For this release only, you can test this by setting the following application option:
+
+```go
+        Experimental: &options.Experimental{
+UseCSSDrag: true,
+},
+```
+
+### Added
+* Set file permissions for generated files by @leaanthony in https://github.com/wailsapp/wails/pull/1763
+* Experimental support for CSS Drag detection by @leaanthony in https://github.com/wailsapp/wails/pull/1750
+
+### Fixed
+* Bug fix collecting of output binaries for platforms by @stffabi in https://github.com/wailsapp/wails/pull/1715
+* Fix registration of exposed fields by @ValentinTrinque in https://github.com/wailsapp/wails/pull/1727
+* Fix column widths for doctor command's dependencies table by @ianmjones in https://github.com/wailsapp/wails/pull/1717
+* Do not generate bindings for `OnBeforeClose` method
+
+### What's Changed
+* Misc code refactors and removal by @leaanthony in https://github.com/wailsapp/wails/pull/1713
+* Add react-router to routing.mdx by @Maicarons2022 in https://github.com/wailsapp/wails/pull/1755
+* Add Japanese to doc by @RyoTagami in https://github.com/wailsapp/wails/pull/1716
+* Added EmailIt and Modal File Manager by @raguay in https://github.com/wailsapp/wails/pull/1728
+* Adding my ScriptBar program by @raguay in https://github.com/wailsapp/wails/pull/1761
+* Link to general webview2 runtime download page and not to a specific language by @stffabi in https://github.com/wailsapp/wails/pull/1764
+* Updated translations in https://github.com/wailsapp/wails/pull/1719 and https://github.com/wailsapp/wails/pull/1720
+* Remove text outside style's brackets by @DragoSpiro98 in https://github.com/wailsapp/wails/pull/1765
+
+### New Contributors
+* @RyoTagami made their first contribution in https://github.com/wailsapp/wails/pull/1716
+* @raguay made their first contribution in https://github.com/wailsapp/wails/pull/1728
+* @Maicarons2022 made their first contribution in https://github.com/wailsapp/wails/pull/1755
+* @DragoSpiro98 made their first contribution in https://github.com/wailsapp/wails/pull/1765
 
 ## [v2.0.0-beta.43] - 2022-08-08
 
-## Added
+### Added
 
 * Add support for retrieving the release notes from Github by @leaanthony in https://github.com/wailsapp/wails/pull/1679
 * Add `frontend:dev:install` configuration by @LGiki in https://github.com/wailsapp/wails/pull/1666
 
-## Fixed
+### Fixed
 
 * Fix formatting of some error messages by @stffabi in https://github.com/wailsapp/wails/pull/1665
 * Windows dialogs now work when window is not visible yet by @leaanthony in https://github.com/wailsapp/wails/pull/1662
@@ -25,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Better support for doubleclick events in drag regions by @leaanthony in https://github.com/wailsapp/wails/pull/1704
 * Allow MacOS frameless window to be miniturisable by @leaanthony in https://github.com/wailsapp/wails/pull/1705
 
-## What's Changed
+### What's Changed
 
 * add wails-sveltekit-template by @h8gi in https://github.com/wailsapp/wails/pull/1671
 * wails doctor now reports correct MacOS os id by @stffabi in https://github.com/wailsapp/wails/pull/1673
@@ -36,18 +74,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Improve error message for auto dev server discovery without a dev watcher by @stffabi
   in https://github.com/wailsapp/wails/pull/1711
 
-## New Contributors
+### New Contributors
 
 * @h8gi made their first contribution in https://github.com/wailsapp/wails/pull/1671
 * @SamHennessy made their first contribution in https://github.com/wailsapp/wails/pull/1682
 
 ## [v2.0.0-beta.42] - 2022-07-25
 
-## Added
+### Added
 
 * Added `options.NewRGBA` and `options.NewRGB` functions to create `*options.RGBA` by @leaanthony
 
-## Fixed
+### Fixed
 
 * Fixed initial build of frontend when using `wails dev` on new projects by @leaanthony
   in https://github.com/wailsapp/wails/pull/1650
@@ -58,7 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v2.0.0-beta.40] - 2022-07-24
 
-## Added
+### Added
 
 * Add Show() and Hide() to runtime to show/hide application by @leaanthony
   in https://github.com/wailsapp/wails/pull/1599
@@ -66,7 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in https://github.com/wailsapp/wails/pull/1618
 * Add option to skip frontend rebuild in dev mode by @leaanthony in https://github.com/wailsapp/wails/pull/1632
 
-## Fixed
+### Fixed
 
 * Update svelte templates to use vite 3 by @leaanthony in https://github.com/wailsapp/wails/pull/1643
 * Fix plain template by @stffabi in https://github.com/wailsapp/wails/pull/1609
@@ -74,34 +112,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fixed typo in documentation page docs/howdoesitwork by @MyNameIsAres in https://github.com/wailsapp/wails/pull/1636
 * Use scaling when setting min/max window by @leaanthony in https://github.com/wailsapp/wails/pull/1557
 
-## Changed
+### Changed
 
 * Install dev dependencies before starting dev mode by @leaanthony in https://github.com/wailsapp/wails/pull/1615
 * Translate and fix website text by @misitebao in https://github.com/wailsapp/wails/pull/1525
 * docs: add MyNameIsAres as a contributor for doc by @allcontributors in https://github.com/wailsapp/wails/pull/1638
 * Deprecate Fullscreen appoption by @acheong08 in https://github.com/wailsapp/wails/pull/1640
 
-## Deprecated
+### Deprecated
 
 * The `Fullscreen` application option is deprecated. Please
   use [`WindowStartState`](https://wails.io/docs/reference/options#windowstartstate) instead.
-## New Contributors
+
+### New Contributors
 
 * @MyNameIsAres made their first contribution in https://github.com/wailsapp/wails/pull/1636
 
 ## [v2.0.0-beta.39.2] - 2022-07-20
 
-## Added
+### Added
 
 * Update example for macOS Menu by @acheong08 in https://github.com/wailsapp/wails/pull/1600
 
-## Fixed
+### Fixed
 
 * Reinstate Go 1.17 compatibility by @leaanthony in https://github.com/wailsapp/wails/pull/1605
 
 ## [v2.0.0-beta.39] - 2022-07-19
 
-## Added
+### Added
 
 * New screen dimensions runtime API by @skamensky in https://github.com/wailsapp/wails/pull/1519
 * Auto discover vite devserver port by @leaanthony in https://github.com/wailsapp/wails/pull/1547
@@ -109,7 +148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * New pre-build hooks feature by @leaanthony in https://github.com/wailsapp/wails/pull/1578
 * New production log level option by @leaanthony in https://github.com/wailsapp/wails/pull/1555
 
-## Fixed
+### Fixed
 
 * Fix stack corruption in Windows when using ICoreWebView2HttpHeadersCollectionIterator by @stffabi
   in https://github.com/wailsapp/wails/pull/1589
@@ -123,7 +162,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in https://github.com/wailsapp/wails/pull/1566
 * Remove usage of unsafe.Pointer in winc by @stffabi and @leaanthony in https://github.com/wailsapp/wails/pull/1556
 
-## Changed
+### Changed
 
 * Rename WindowSetRGBA -> WindowSetBackgroundColour by @leaanthony in https://github.com/wailsapp/wails/pull/1506
 * Improvements to the dev command by @stffabi in https://github.com/wailsapp/wails/pull/1510
@@ -135,7 +174,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add troubleshooting for `Not Found` error by @acheong08 in https://github.com/wailsapp/wails/pull/1586
 * Docs/better homepage by @leaanthony in https://github.com/wailsapp/wails/pull/1591
 
-## New Contributors
+### New Contributors
 
 * @skamensky made their first contribution in https://github.com/wailsapp/wails/pull/1519
 * @acheong08 made their first contribution in https://github.com/wailsapp/wails/pull/1586
@@ -185,7 +224,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Better signal handling by @leaanthony in https://github.com/wailsapp/wails/pull/1488
 * Chore/react 18 create root by @tomanagle in https://github.com/wailsapp/wails/pull/1489
 
-## New Contributors
+### New Contributors
 
 * @jaesung9507 made their first contribution in https://github.com/wailsapp/wails/pull/1430
 * @LukenSkyne made their first contribution in https://github.com/wailsapp/wails/pull/1449
