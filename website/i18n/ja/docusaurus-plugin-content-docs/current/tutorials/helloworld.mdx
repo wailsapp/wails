@@ -6,9 +6,9 @@ sidebar_position: 10
 
 The aim of this tutorial is to get you up and running with the most basic application using Wails. You will be able to:
 
-  - Create a new Wails application
-  - Build the application
-  - Run the application
+- Create a new Wails application
+- Build the application
+- Run the application
 
 :::note
 This tutorial uses Windows as the target platform. Output will vary slightly
@@ -92,10 +92,13 @@ This has compiled the application and saved it in the `build/bin` directory.
 If we view the `build/bin` directory in Windows Explorer, we should see our project binary:
 
 <div class="text--center">
-    <img src="/img/helloworld-app-icon.png" width="134px"/>
+  <img
+    src={require("@site/static/img/helloworld-app-icon.png").default}
+    width="134px"
+  />
 </div>
 
-<br/>
+<br />
 
 We can run it by simply double-clicking the `helloworld.exe` file.
 
@@ -106,6 +109,10 @@ On Linux, you can run the application using `./helloworld` from the `build/bin` 
 You should see the application working as expected:
 
 <div class="text--center">
-    <img src="/img/windows-default-app.png" width="50%" className="screenshot"/>
+  <img
+    src={require("@site/static/img/windows-default-app.png").default}
+    width="50%"
+    className="screenshot"
+  />
 </div>
-<br/>
+<br />
