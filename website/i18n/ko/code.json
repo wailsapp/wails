@@ -1,69 +1,69 @@
 {
   "homepage.Features.Title1": {
-    "message": "Feature Rich"
+    "message": "풍부한 기능"
   },
   "homepage.Features.Description1": {
-    "message": "Build comprehensive cross-platform applications using native UI elements such as menus, dialogs, etc."
+    "message": "메뉴, 대화상자 등과 같은 네이티브 UI 요소를 사용하여 크로스 플랫폼 애플리케이션을 빌드하세요."
   },
   "homepage.Features.Title2": {
-    "message": "Familiar"
+    "message": "친숙함"
   },
   "homepage.Features.Description2": {
-    "message": "Use the technologies you already know to build amazing applications."
+    "message": "이미 알고 있는 기술로 멋진 애플리케이션을 빌드하세요."
   },
   "homepage.Features.Title3": {
-    "message": "Fast"
+    "message": "빠른 구성"
   },
   "homepage.Features.Description3": {
-    "message": "Quickly generate, build and package your projects using the Wails CLI."
+    "message": "Wails CLI를 사용하여 프로젝트를 빠르게 생성, 빌드 및 패키징할 수 있습니다."
   },
   "homepage.Tagline": {
-    "message": "Build beautiful cross-platform applications using Go"
+    "message": "Go에서 아름다운 크로스 플랫폼 애플리케이션 빌드"
   },
   "homepage.ButtonText": {
-    "message": "Get Started"
+    "message": "시작하기"
   },
   "homepage.LearnMoreButtonText": {
-    "message": "Learn More"
+    "message": "자세히 보기"
   },
   "theme.ErrorPageContent.title": {
-    "message": "This page crashed.",
+    "message": "페이지가 충돌했습니다.",
     "description": "The title of the fallback page when the page crashed"
   },
   "theme.ErrorPageContent.tryAgain": {
-    "message": "Try again",
+    "message": "재시도",
     "description": "The label of the button to try again when the page crashed"
   },
   "theme.NotFound.title": {
-    "message": "Page Not Found",
+    "message": "페이지를 찾을 수 없습니다.",
     "description": "The title of the 404 page"
   },
   "theme.NotFound.p1": {
-    "message": "We could not find what you were looking for.",
+    "message": "요청한 페이지를 찾을 수 없습니다.",
     "description": "The first paragraph of the 404 page"
   },
   "theme.NotFound.p2": {
-    "message": "Please contact the owner of the site that linked you to the original URL and let them know their link is broken.",
+    "message": "링크 제공자에게 이 페이지가 유효하지 않다고 알려주세요.",
     "description": "The 2nd paragraph of the 404 page"
   },
   "theme.AnnouncementBar.closeButtonAriaLabel": {
-    "message": "Close",
+    "message": "닫기",
     "description": "The ARIA label for close button of announcement bar"
   },
   "theme.blog.archive.title": {
-    "message": "Archive",
+    "message": "아카이브",
     "description": "The page & hero title of the blog archive page"
   },
   "theme.blog.archive.description": {
-    "message": "Archive",
+    "message": "아카이브",
     "description": "The page & hero description of the blog archive page"
   },
   "theme.BackToTopButton.buttonAriaLabel": {
-    "message": "Scroll back to top",
+    "message": "맨위로",
     "description": "The ARIA label for the back to top button"
   },
   "theme.blog.paginator.navAriaLabel": {
-    "message": "Blog list page navigation",
+    "message": "블로그 목록 페이지 탐색",
     "description": "The ARIA label for the blog pagination"
   },
   "theme.blog.paginator.newerEntries": {
@@ -75,7 +75,7 @@
     "description": "The label used to navigate to the older blog posts page (next page)"
   },
   "theme.blog.post.readingTime.plurals": {
-    "message": "One min read|{readingTime} min read",
+    "message": "읽는 데 1분 걸림|읽는 데 {readingTime}분 걸림",
     "description": "Pluralized label for \"{readingTime} min read\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
   },
   "theme.blog.post.readMoreLabel": {
@@ -111,19 +111,19 @@
     "description": "The title of the page for a blog tag"
   },
   "theme.tags.tagsPageLink": {
-    "message": "View All Tags",
+    "message": "모든 태그 보기",
     "description": "The label of the link targeting the tag list page"
   },
   "theme.CodeBlock.copyButtonAriaLabel": {
-    "message": "Copy code to clipboard",
+    "message": "클립보드에 코드 복사",
     "description": "The ARIA label for copy code blocks button"
   },
   "theme.CodeBlock.copied": {
-    "message": "Copied",
+    "message": "복사됨",
     "description": "The copied button label on code blocks"
   },
   "theme.CodeBlock.copy": {
-    "message": "Copy",
+    "message": "복사",
     "description": "The copy button label on code blocks"
   },
   "theme.colorToggle.ariaLabel": {
@@ -131,11 +131,11 @@
     "description": "The ARIA label for the navbar color mode toggle"
   },
   "theme.colorToggle.ariaLabel.mode.dark": {
-    "message": "dark mode",
+    "message": "다크 모드",
     "description": "The name for the dark color mode"
   },
   "theme.colorToggle.ariaLabel.mode.light": {
-    "message": "light mode",
+    "message": "라이트 모드",
     "description": "The name for the light color mode"
   },
   "theme.docs.DocCard.categoryDescription": {
