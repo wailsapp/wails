@@ -27,7 +27,8 @@ RouterModule.forRoot(routes, { useHash: true });
 
 ## React
 
-The recommended approach for routing in React is [HashRouter](https://reactrouter.com/docs/en/v6/routers/hash-router):
+import { createRouter, createWebHashHistory } from "vue-router";
+ const router = createRouter({ history: createWebHashHistory(), routes: [ //... ], }); ], }) ], })
 
 ```jsx
 import { HashRouter } from "react-router-dom";
