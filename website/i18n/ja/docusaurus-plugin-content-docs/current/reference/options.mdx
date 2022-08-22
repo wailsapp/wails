@@ -90,8 +90,6 @@ func main() {
 
 ```
 
-
-
 ### Title
 
 Name: Title
@@ -192,7 +190,7 @@ By default, closing the window will close the application. Setting this to `true
 
 Name: BackgroundColour
 
-Type: *options.RGBA Example: options.NewRGBA(255,0,0,128) - Red at 50% transparency
+Type: \*options.RGBA Example: options.NewRGBA(255,0,0,128) - Red at 50% transparency
 
 This value is the default background colour of the window. Default: white
 
@@ -219,7 +217,6 @@ The frontend assets to be used by the application. Requires an `index.html` file
 Name: AssetsHandler
 
 Type: http.Handler
-
 
 The assets handler is a generic `http.Handler` which will be called for any non GET request on the assets server and for GET requests which can not be served from the `assets` because the file is not found.
 
@@ -315,6 +312,7 @@ Type: func(ctx context.Context) bool
 If this callback is set, it will be called when the application is about to quit, either by clicking the window close button or calling `runtime.Quit`. Returning true will cause the application to continue, false will continue shutdown as normal. This is good for confirming with the user that they wish to exit the program.
 
 Example:
+
 ```go title=windowsapp.go
 func (b *App) beforeClose(ctx context.Context) (prevent bool) {
     dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
@@ -427,6 +425,7 @@ Type: string
 This defines the path to a directory with WebView2 executable files and libraries. If empty, webview2 installed in the system will be used.
 
 Important information about distribution of fixed version runtime:
+
 - [How to get and extract runtime](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode)
 - [Known issues for fixed version](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#known-issues-for-fixed-version)
 - [The path of fixed version of the WebView2 Runtime should not contain \Edge\Application\.](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
@@ -443,10 +442,9 @@ This defines the theme that the application should use:
 
 | Value         | Description                                                                                                                                   |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| SystemDefault | *Default*. The theme will be based on the system default. If the user changes their theme, the application will update to use the new setting |
+| SystemDefault | _Default_. The theme will be based on the system default. If the user changes their theme, the application will update to use the new setting |
 | Dark          | The application will use a dark theme exclusively                                                                                             |
 | Light         | The application will use a light theme exclusively                                                                                            |
-
 
 ### CustomTheme
 
@@ -482,6 +480,7 @@ type ThemeSettings struct {
 ```
 
 Example:
+
 ```go
     CustomTheme: &windows.ThemeSettings{
         // Theme to use when window is active
@@ -533,15 +532,13 @@ Type: func()
 
 If set, this function will be called when windows resumes from low power mode (suspend/hibernate)
 
-
-
 ## Mac Specific Options
 
 ### TitleBar
 
 Name: TitleBar
 
-Type: [*mac.TitleBar](#titlebar-struct)
+Type: [\*mac.TitleBar](#titlebar-struct)
 
 The TitleBar struct provides the ability to configure the look and feel of the title bar.
 
@@ -610,6 +607,7 @@ Preconfigured titlebar settings are available:
 | `mac.TitleBarHiddenInset()` | ![](/img/reference/titlebar-hidden-inset.png) |
 
 Example:
+
 ```go
 Mac: &mac.Options{
     TitleBar:     mac.TitleBarHiddenInset(),
@@ -634,6 +632,7 @@ You can specify the application's [appearance](https://developer.apple.com/docum
 | NSAppearanceNameAccessibilityHighContrastVibrantDark  | A high-contrast version of the dark vibrant appearance          |
 
 Example:
+
 ```go
 Mac: &mac.Options{
     Appearance: mac.NSAppearanceNameDarkAqua,
@@ -649,7 +648,9 @@ type AboutInfo struct {
     Icon    []byte
 }
 ```
+
 If these settings are provided, an "About" menu item will appear in the app menu (when using the `AppMenu` role). Given this configuration:
+
 ```go
 //go:embed build/appicon.png
 var icon []byte
@@ -666,21 +667,29 @@ func main() {
         },
     })
 ```
+
 The "About" menu item will appear in the app menu:
 
 <div class="text--center">
-    <img src="/img/reference/about-menu.png" class="screenshot"/>
+  <img
+    src={require("@site/static/img/reference/about-menu.png").default}
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 When clicked, that will open an about message box:
 
 <div class="text--center">
-    <img src="/img/reference/about-dialog.png" width="40%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/reference/about-dialog.png").default}
+    width="40%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 ## Linux Specific Options
 
