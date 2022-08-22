@@ -12,6 +12,7 @@ body:
         - Log undocumented APIs
         - Update link
         - Documentation other than non-project code
+        - Add new language
 
         If you followed the documentation but things don't work, take some time to consider if it's the documentation or the code that's wrong. In the latter, prefer using the "[Bug Report](https://github.com/wailsapp/wails/issues/new?assignees=&labels=bug&template=bug_report.yml)" template.
 
