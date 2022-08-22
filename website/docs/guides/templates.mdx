@@ -1,4 +1,3 @@
-
 # Templates
 
 Wails generates projects from pre-created templates. In v1, this was a difficult to maintain set of projects that were
@@ -81,7 +80,10 @@ Renaming package-lock.json -> package-lock.tmpl.json...
 - You should have a fully functioning Vue3 application:
 
 <div className="text--center">
-  <img src="/img/vue3-template.png" width="50%" />
+  <img
+    src={require("@site/static/img/vue3-template.png").default}
+    width="50%"
+  />
 </div>
 
 ## Publishing Templates

@@ -35,19 +35,20 @@ const config = {
         direction: "ltr",
         htmlLang: "ru-RU",
       },
-      "ja": {
+      ja: {
         label: "日本語",
         direction: "ltr",
         htmlLang: "ja-JP",
-      }
+      },
     },
   },
   plugins: [
-    ["docusaurus-plugin-plausible",
+    [
+      "docusaurus-plugin-plausible",
       {
         domain: "wails.io",
       },
-    ]
+    ],
   ],
 
   presets: [
@@ -109,33 +110,42 @@ const config = {
             position: "right",
           },
           {
-            type: 'dropdown',
-            label: 'About',
-            position: 'right',
+            type: "dropdown",
+            label: "About",
+            position: "right",
             items: [
               {
                 to: "/faq",
                 label: "FAQ",
               },
               {
-                to: '/changelog',
+                to: "/changelog",
                 label: "Changelog",
               },
               {
-                to: '/community-guide',
+                to: "/community-guide",
                 label: "Community Guide",
               },
               {
-                to: '/credits',
+                to: "/credits",
                 label: "Credits",
               },
               {
-                to: '/stats',
+                to: "/stats",
                 label: "Stats",
               },
             ],
           },
-          { type: "localeDropdown", position: "right" },
+          {
+            type: "localeDropdown",
+            position: "right",
+            dropdownItemsAfter: [
+              {
+                to: "/docs/contributing/documenting",
+                label: "Help Us Translate ❤",
+              },
+            ],
+          },
           {
             href: "https://github.com/wailsapp/wails",
             label: "GitHub",

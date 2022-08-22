@@ -18,7 +18,7 @@ An example of how to create a menu:
     FileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
         runtime.Quit()
     })
-    
+
     if runtime.GOOS == "darwin" {
 	AppMenu.Append(menu.EditMenu())  // on macos platform, we should append EditMenu to enable Cmd+C,Cmd+V,Cmd+Z... shortcut
     }
@@ -33,7 +33,7 @@ An example of how to create a menu:
         },
     )
     // ...
-````
+```
 
 It is also possible to dynamically update the menu, by updating the menu struct and calling
 [MenuUpdateApplicationMenu](../reference/runtime/menu.mdx#menuupdateapplicationmenu).
@@ -80,17 +80,17 @@ type MenuItem struct {
 }
 ```
 
-| Field            | Type                               | Notes                                                 |
-| ---------------- | ---------------------------------- | ----------------------------------------------------- |
-| Label            | string                             | The menu text                                         |
-| Accelerator      | [\*keys.Accelerator](#accelerator) | Key binding for this menu item                        |
-| Type             | [Type](#type)                      | Type of MenuItem                                      |
-| Disabled         | bool                               | Disables the menu item                                |
-| Hidden           | bool                               | Hides this menu item                                  |
-| Checked          | bool                               | Adds check to item (Checkbox & Radio types)           |
-| SubMenu          | [\*Menu](#menu)                    | Sets the submenu                                      |
-| Click            | [Callback](#callback)              | Callback function when menu clicked                   |
-| Role             | string                             | Defines a [role](#role) for this menu item. Mac only for now.           |
+| Field       | Type                               | Notes                                                         |
+| ----------- | ---------------------------------- | ------------------------------------------------------------- |
+| Label       | string                             | The menu text                                                 |
+| Accelerator | [\*keys.Accelerator](#accelerator) | Key binding for this menu item                                |
+| Type        | [Type](#type)                      | Type of MenuItem                                              |
+| Disabled    | bool                               | Disables the menu item                                        |
+| Hidden      | bool                               | Hides this menu item                                          |
+| Checked     | bool                               | Adds check to item (Checkbox & Radio types)                   |
+| SubMenu     | [\*Menu](#menu)                    | Sets the submenu                                              |
+| Click       | [Callback](#callback)              | Callback function when menu clicked                           |
+| Role        | string                             | Defines a [role](#role) for this menu item. Mac only for now. |
 
 ### Accelerator
 
@@ -185,6 +185,7 @@ const (
 	ControlKey Modifier = "ctrl"
 )
 ```
+
 A number of helper methods are available to create Accelerators using modifiers:
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
@@ -224,6 +225,7 @@ func Radio(label string, selected bool, accelerator *keys.Accelerator, click Cal
 func Checkbox(label string, checked bool, accelerator *keys.Accelerator, click Callback) *MenuItem
 func SubMenu(label string, menu *Menu) *Menu
 ```
+
 You can also create menu items directly on a menu by using the "Add" helpers:
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
@@ -233,7 +235,6 @@ func (m *Menu) AddRadio(label string, selected bool, accelerator *keys.Accelerat
 func (m *Menu) AddCheckbox(label string, checked bool, accelerator *keys.Accelerator, click Callback) *MenuItem
 func (m *Menu) AddSubMenu(label string, menu *Menu) *MenuI
 ```
-
 
 A note on radio groups: A radio group is defined as a number of radio menu items that are next to each other in the menu.
 This means that you do not need to group items together as it is automatic. However, that also means you cannot have 2
@@ -258,14 +259,13 @@ using radio groups that may share a callback.
 
 :::info Roles
 
-  Roles are currently supported on Mac only.
+Roles are currently supported on Mac only.
 
 :::
 
 A menu item may have a role, which is essentially a pre-defined menu item. We currently support the following roles:
 
-| Role | Description |
-| ---- | ----------- |
-| AppMenuRole | The standard Mac application menu. Can be created using `menu.AppMenu()` |
-| EditMenuRole | The standard Mac edit menu. Can be created using `menu.EditMenu()` |
-
+| Role         | Description                                                              |
+| ------------ | ------------------------------------------------------------------------ |
+| AppMenuRole  | The standard Mac application menu. Can be created using `menu.AppMenu()` |
+| EditMenuRole | The standard Mac edit menu. Can be created using `menu.EditMenu()`       |

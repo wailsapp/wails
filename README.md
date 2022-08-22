@@ -1,16 +1,17 @@
 <p align="center" style="text-align: center">
-  <img src="logo-universal.png" width="55%"><br/>
+  <img src="./assets/images/logo-universal.png" width="55%"><br/>
 </p>
+
 <p align="center">
   Build desktop applications using Go & Web Technologies.<br/><br/>
   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-blue.svg">
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg" />
   </a>
   <a href="https://goreportcard.com/report/github.com/wailsapp/wails">
-    <img src="https://goreportcard.com/badge/github.com/wailsapp/wails"/>
+    <img src="https://goreportcard.com/badge/github.com/wailsapp/wails" />
   </a>
   <a href="http://godoc.org/github.com/wailsapp/wails">
-    <img src="https://img.shields.io/badge/godoc-reference-blue.svg"/>
+    <img src="https://img.shields.io/badge/godoc-reference-blue.svg" />
   </a>
   <a href="https://www.codefactor.io/repository/github/wailsapp/wails">
     <img src="https://www.codefactor.io/repository/github/wailsapp/wails/badge" alt="CodeFactor" />
@@ -19,44 +20,48 @@
     <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="CodeFactor" />
   </a>
   <a href="https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_shield" alt="FOSSA Status">
-    <img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=shield"/>
+    <img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=shield" />
   </a>
   <a href="https://github.com/avelino/awesome-go" rel="nofollow">
-    <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome"/>
+    <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome" />
   </a>
   <a href="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" rel="nofollow">
-    <img src="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" alt="Release Pipelines"/>
+    <img src="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" alt="Release Pipelines" />
   </a>
 </p>
 
-<span id="nav-1"></span>
+<hr/>
+<h3 align="center">
+<strong>
+PLEASE NOTE: As we are approaching the v2 release, we are not accepting any new feature requests or bug reports for v1. If you have a critical issue, please open a ticket and state why it is critical.
+</strong>
+</h3>
+<hr/>
 
 ## Internationalization
 
 [English](README.md) | [简体中文](README.zh-Hans.md)
-
-<span id="nav-2"></span>
 
 ## Table of Contents
 
 <details>
   <summary>Click me to Open/Close the directory listing</summary>
 
-- [1. Internationalization](#nav-1)
-- [2. Table of Contents](#nav-2)
-- [3. Introduction](#nav-3)
-  - [3.1 Official Website](#nav-3-1)
-- [4. Features](#nav-4)
-- [5. Sponsors](#nav-5)
-- [6. Installation](#nav-6)
-- [7. FAQ](#nav-8)
-- [8. Contributors](#nav-9)
-- [9. Special Mentions](#nav-10)
-- [10. Special Thanks](#nav-11)
+- [1. Internationalization](#internationalization)
+- [2. Table of Contents](#table-of-contents)
+- [3. Introduction](#introduction)
+  - [3.1 Official Website](#official-website)
+  - [3.2 Roadmap](#roadmap)
+- [4. Features](#features)
+- [5. Sponsors](#sponsors)
+- [6. Getting Started](#getting-started)
+- [7. FAQ](#faq)
+- [8. Contributors](#contributors)
+- [9. Special Mentions](#special-mentions)
+- [10. Special Thanks](#special-thanks)
+- [11. License](#license)
 
 </details>
-
-<span id="nav-3"></span>
 
 ## Introduction
 
@@ -64,21 +69,21 @@ The traditional method of providing web interfaces to Go programs is via a built
 approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to
 make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
 
-<span id="nav-3-1"></span>
-<hr/>
-<h3><strong>PLEASE NOTE: As we are approaching the v2 release, we are not accepting any new feature requests or bug reports for v1. If you have a critical issue, please open a ticket and state why it is critical.</strong></h3>
-<hr/>
+### Official Website
 
-### Version 2
+Version 2:
 
 Wails v2 has been released in Beta for all 3 platforms. Check out the [new website](https://wails.io) if you are
 interested in trying it out.
 
-### Legacy v1 Website
+Legacy v1 Website:
 
 The legacy v1 docs can be found at [https://wails.app](https://wails.app).
 
-<span id="nav-4"></span>
+### Roadmap
+
+The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
+this before open up an enhancement request.
 
 ## Features
 
@@ -92,16 +97,14 @@ The legacy v1 docs can be found at [https://wails.app](https://wails.app).
 - Unified eventing system between Go and Javascript
 - Powerful cli tool to quickly generate and build your projects
 - Multiplatform
-- Uses native rendering engines - *no embedded browser*!
-
-<span id="nav-5"></span>
+- Uses native rendering engines - _no embedded browser_!
 
 ## Sponsors
 
 This project is supported by these kind people / companies:
 
 <a href="https://github.com/sponsors/leaanthony" style="width:100px;">
-  <img src="/img/silver%20sponsor.png" width="100"/>
+  <img src="/assets/images/sponsors/silver-sponsor.png" width="100"/>
 </a>
 <a href="https://github.com/selvindev" style="width:100px;">
   <img src="https://github.com/selvindev.png?size=100" width="100"/>
@@ -109,7 +112,7 @@ This project is supported by these kind people / companies:
 <br/>
 <br/>
 <a href="https://github.com/sponsors/leaanthony" style="width:100px;">
-  <img src="img/bronze%20sponsor.png" width="100"/>
+  <img src="/assets/images/sponsors/bronze-sponsor.png" width="100"/>
 </a>
 
 <a href="https://github.com/codydbentley" style="width:100px">
@@ -174,7 +177,6 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/charlie-dee" style="width:55px">
   <img src="https://github.com/charlie-dee.png?size=55" width="55"/>
 </a>
-directory
 <a href="https://github.com/michaelolson1996" style="width:55px">
   <img src="https://github.com/michaelolson1996.png?size=55" width="55"/>
 </a>
@@ -199,18 +201,10 @@ directory
 <a href="https://github.com/Ilshidur" style="width:50px">
   <img src="https://github.com/Ilshidur.png?size=50" width="50"/>
 </a>
-<span id="nav-6"></span>
 
-## Roadmap
-
-The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
-this before open up an enhancement request.
-
-## Installation
+## Getting Started
 
 The installation instructions are on the [official website](https://wails.io/docs/gettingstarted/installation).
-
-<span id="nav-8"></span>
 
 ## FAQ
 
@@ -235,14 +229,10 @@ The installation instructions are on the [official website](https://wails.io/doc
 
 [![Stargazers over time](https://starchart.cc/wailsapp/wails.svg)](https://starchart.cc/wailsapp/wails)
 
-<span id="nav-9"></span>
-
 ## Contributors
 
 The contributors list is getting too big for the readme! All the amazing people who have contributed to this
 project have their own page [here](https://wails.io/credits#contributors).
-
-<span id="nav-10"></span>
 
 ## Special Mentions
 
@@ -271,8 +261,6 @@ This project was mainly coded to the following albums:
 - [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
 - [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
 
-<span id="nav-11"></span>
-
 ## Special Thanks
 
 <p align="center" style="text-align: center">
@@ -287,6 +275,6 @@ This project was mainly coded to the following albums:
    <a href="https://www.jetbrains.com?from=Wails"><img src="/assets/images/jetbrains-grayscale.png" width="30%"></a>
 </p>
 
-## License Report
+## License
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
