@@ -7,7 +7,10 @@ Wails 旨在提供出色的开发体验。 为此，我们现在支持生成 IDE
 ## Visual Studio Code
 
 <p className="text--center">
-    <img src="/img/vscode.png" style={{"width": "75%"}}></img>
+  <img
+    src={require("@site/static/img/vscode.png").default}
+    style={{ width: "75%" }}
+  />
 </p>
 
 使用`-ide vscode`标志生成项目时，IDE 文件将与其他项目文件一起创建。 这些文件放置在`.vscode`目录中，并为调试应用程序提供正确的配置。
@@ -25,7 +28,15 @@ Wails 旨在提供出色的开发体验。 为此，我们现在支持生成 IDE
         "cwd": "${workspaceFolder}"
       },
       "command": "go",
-      "args": ["build", "-tags", "dev", "-gcflags", "all=-N -l", "-o", "build/bin/myproject.exe"]
+      "args": [
+        "build",
+        "-tags",
+        "dev",
+        "-gcflags",
+        "all=-N -l",
+        "-o",
+        "build/bin/myproject.exe"
+      ]
     }
   ]
 }
@@ -43,8 +54,7 @@ Wails 旨在提供出色的开发体验。 为此，我们现在支持生成 IDE
       "program": "${workspaceFolder}/build/bin/myproject.exe",
       "preLaunchTask": "build",
       "cwd": "${workspaceFolder}",
-      "env": {},
-      "args": ["-assetdir", "frontend/src"]
+      "env": {}
     }
   ]
 }
@@ -93,7 +103,15 @@ Wails 旨在提供出色的开发体验。 为此，我们现在支持生成 IDE
         "cwd": "${workspaceFolder}"
       },
       "command": "go",
-      "args": ["build", "-tags", "dev", "-gcflags", "all=-N -l", "-o", "build/bin/vscode.exe"],
+      "args": [
+        "build",
+        "-tags",
+        "dev",
+        "-gcflags",
+        "all=-N -l",
+        "-o",
+        "build/bin/vscode.exe"
+      ],
       "dependsOn": ["npm install", "npm run build"]
     }
   ]
