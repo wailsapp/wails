@@ -1,4 +1,3 @@
-
 # Linux
 
 This page has miscellaneous guides related to developing Wails applications for Linux.
@@ -9,10 +8,11 @@ When using a video tag, the "ended" event is not fired when the video is finishe
 
 ```js
 videoTag.addEventListener("timeupdate", (event) => {
-    if(event.target.duration - event.target.currentTime < 0.2) {
-        let ended = new Event("ended");
-        event.target.dispatchEvent(ended);
-    }
-})
+  if (event.target.duration - event.target.currentTime < 0.2) {
+    let ended = new Event("ended");
+    event.target.dispatchEvent(ended);
+  }
+});
 ```
+
 Source: [Lyimmi](https://github.com/Lyimmi) on the [discussions board](https://github.com/wailsapp/wails/issues/1729#issuecomment-1212291275)
