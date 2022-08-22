@@ -74,8 +74,8 @@ var msg = "Hello ";
 var args = ["Go", "JS"];
 window.go.main.App.TestFunc(msg, args)
   .then((result) => {
-    //without the 3 dots
-    //do things here
+    // 不需要展开符
+    // do things here
   })
   .catch((error) => {
     //handle error
@@ -103,16 +103,16 @@ Source: https://github.com/wailsapp/wails/issues/1233
 
 ## The generated Typescript doesn''t have the correct types
 
-Sometimes the generated Typescript doesn''t have the correct types. Sometimes the generated Typescript doesn''t have the correct types. To mitigate this, it is possible to specify what types should be generated using the `ts_type` struct tag. For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types). For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types). Sometimes the generated Typescript doesn''t have the correct types. To mitigate this, it is possible to specify what types should be generated using the `ts_type` struct tag. For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types). For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types).
+Sometimes the generated Typescript doesn''t have the correct types. Sometimes the generated Typescript doesn''t have the correct types. To mitigate this, it is possible to specify what types should be generated using the `ts_type` struct tag. For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types). For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types). Sometimes the generated Typescript doesn''t have the correct types. To mitigate this, it is possible to specify what types should be generated using the `ts_type` struct tag. For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types). For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types). Sometimes the generated Typescript doesn''t have the correct types. To mitigate this, it is possible to specify what types should be generated using the `ts_type` struct tag. For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types). For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types).
 
 ## 检查`frontend/dist`中是否包含您的应用程序资源。
 
-If you navigate away from `index.html` to a new html file, the context will be lost. If you navigate away from `index.html` to a new html file, the context will be lost. This can be fixed by adding the following imports to the `<head>` section of any new page you navigate to: If you navigate away from `index.html` to a new html file, the context will be lost. This can be fixed by adding the following imports to the `<head>` section of any new page you navigate to:
+If you navigate away from `index.html` to a new html file, the context will be lost. If you navigate away from `index.html` to a new html file, the context will be lost. This can be fixed by adding the following imports to the `<head>` section of any new page you navigate to: If you navigate away from `index.html` to a new html file, the context will be lost. This can be fixed by adding the following imports to the `<head>` section of any new page you navigate to: If you navigate away from `index.html` to a new html file, the context will be lost. This can be fixed by adding the following imports to the `<head>` section of any new page you navigate to:
 
 ```html
 <head>
-  <script src="/wails/ipc.js"></script>
-  <script src="/wails/runtime.js"></script>
+    <script src="/wails/ipc.js"></script>
+    <script src="/wails/runtime.js"></script>
 </head>
 ```
 
