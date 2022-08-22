@@ -156,7 +156,7 @@ func initProject(options *templates.Options, quiet bool) error {
 	}
 
 	// Run `go mod tidy` to ensure `go.sum` is up to date
-	cmd := exec.Command("go", "mod", "tidy", "-compat=1.17")
+	cmd := exec.Command("go", "mod", "tidy")
 	cmd.Dir = options.TargetDir
 	cmd.Stderr = os.Stderr
 	if !quiet {
