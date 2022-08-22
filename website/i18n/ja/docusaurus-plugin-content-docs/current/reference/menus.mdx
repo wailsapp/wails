@@ -33,10 +33,15 @@ An example of how to create a menu:
     // ...
 ```
 
-It is also possible to dynamically update the menu, by updating the menu struct and calling [MenuUpdateApplicationMenu](../reference/runtime/menu.mdx#menuupdateapplicationmenu).
+```` It is also possible to dynamically update the menu, by updating the menu struct and calling \[MenuUpdateApplicationMenu\](../reference/runtime/menu.mdx#menuupdateapplicationmenu).
 
 The example above uses helper methods, however it's possible to build the menu structs manually.
 
+## Menu
+
+A Menu is a collection of MenuItems:
+
+```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
 ## Menu
 
 A Menu is a collection of MenuItems:
