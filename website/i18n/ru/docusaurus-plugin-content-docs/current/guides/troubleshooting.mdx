@@ -56,30 +56,25 @@ func (a *App) TestFunc(msg string, args ...interface{}) error {
 calling this method from the frontend like this will fail:
 
 ```js
-var msg = "Hello: ";
-var args = ["Go", "JS"];
-window.go.main.App.TestFunc(msg, ...args)
-  .then((result) => {
+var msg = "Hello: "
+var args = ["Go", "JS"]
+window.go.main.App.TestFunc(msg, ...args).then((result) => {
     //do things here
-  })
-  .catch((error) => {
+}).catch((error) => {
     //handle error
-  });
+});
 ```
 
 Workaround:
 
 ```js
-var msg = "Hello ";
-var args = ["Go", "JS"];
-window.go.main.App.TestFunc(msg, args)
-  .then((result) => {
-    //without the 3 dots
+var msg = "Hello "
+var args = ["Go", "JS"]
+window.go.main.App.TestFunc(msg, args).then((result) => { //without the 3 dots
     //do things here
-  })
-  .catch((error) => {
+}).catch((error) => {
     //handle error
-  });
+});
 ```
 
 Credit: https://github.com/wailsapp/wails/issues/1186
@@ -111,8 +106,8 @@ If you navigate away from `index.html` to a new html file, the context will be l
 
 ```html
 <head>
-  <script src="/wails/ipc.js"></script>
-  <script src="/wails/runtime.js"></script>
+    <script src="/wails/ipc.js"></script>
+    <script src="/wails/runtime.js"></script>
 </head>
 ```
 
