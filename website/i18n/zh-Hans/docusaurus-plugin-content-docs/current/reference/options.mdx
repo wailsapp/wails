@@ -187,7 +187,7 @@ func main() {
 
 名称：RGBA
 
-Type: \*options.RGBA Example: options.NewRGBA(255,0,0,128) - Red at 50% transparency
+类型：int (0xRRGGBBAA) 示例：0xFF000088 - 透明度为 50% 的红色
 
 This value is the default background colour of the window. Default: white Default: white
 
@@ -436,11 +436,11 @@ TitleBar 结构提供了配置标题栏外观的能力。
 
 名称：Appearance
 
-| 值             | 描述                                                                                                                                                                                                            |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| SystemDefault | _Default_. The theme will be based on the system default. The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 |
-| Dark          | 该应用程序将只使用深色主题                                                                                                                                                                                                 |
-| Light         | 从样式掩码中移除 [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/)。                                                                              |
+| 值             | 描述                                                                                                                                                                                                                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SystemDefault | _默认_. 主题将基于系统默认值。 The theme will be based on the system default. The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 |
+| Dark          | 该应用程序将只使用深色主题                                                                                                                                                                                                                                                                                  |
+| Light         | 从样式掩码中移除 [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/)。                                                                                                                                                               |
 
 ### 外观
 
@@ -534,7 +534,7 @@ ResizeDebounceMS is the amount of time to debounce redraws of webview2 when resi
 
 名称：OnBeforeClose
 
-Type: [\*mac.TitleBar](#titlebar-struct)
+单击后，将打开一个关于消息框：
 
 The TitleBar struct provides the ability to configure the look and feel of the title bar.
 
