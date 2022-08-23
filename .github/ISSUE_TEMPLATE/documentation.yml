@@ -20,7 +20,7 @@ body:
     attributes:
       label: Have you read the Documentation Contribution Guidelines?
       options:
-        - label: I have read the [Documentation Contribution Guidelines](https://wails.io/contributing/documenting).
+        - label: I have read the [Documentation Contribution Guidelines](https://wails.io/community-guide#ways-of-contributing).
           required: true
 
   - type: textarea
