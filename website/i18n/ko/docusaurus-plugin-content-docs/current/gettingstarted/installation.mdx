@@ -2,40 +2,40 @@
 sidebar_position: 1
 ---
 
-# Installation
+# 설치하기
 
-## Supported Platforms
+## 지원되는 플랫폼
 
 - Windows 10/11 AMD64/ARM64
 - MacOS 10.13+ AMD64
 - MacOS 11.0+ ARM64
 - Linux AMD64/ARM64
 
-## Dependencies
+## 의존성
 
-Wails has a number of common dependencies that are required before installation:
+Wails는 설치 전에 아래와 같은 몇 가지 공통적인 의존성이 필요합니다.
 
 - Go 1.17+
 - NPM (Node 15+)
 
 ### Go
 
-Download Go from the [Go Downloads Page](https://go.dev/doc/install).
+[Go 다운로드 페이지](https://go.dev/doc/install)에서 Go를 다운로드 합니다.
 
-Ensure that you follow the official [Go installation instructions](https://go.dev/doc/install). You will also need to ensure that your `PATH` environment variable also includes the path to your `~/go/bin` directory. Restart your terminal and do the following checks:
+공식 [Go 설치 지침](https://go.dev/doc/install)에 따라 진행하세요. 또한 `PATH` 환경변수에 `~/go/bin` 디렉토리 경로가 포함되어 있는지 확인해야 합니다. 터미널을 다시 시작하고 아래 내용을 확인하세요.
 
-- Check Go is installed correctly: `go version`
-- Check "~/go/bin" is in your PATH variable: `echo $PATH | grep go/bin`
+- Go 설치 확인: `go version`
+- PATH 변수에 "~/go/bin" 확인: `echo $PATH | grep go/bin`
 
 ### NPM
 
-Download NPM from the [Node Downloads Page](https://nodejs.org/en/download/). It is best to use the latest release as that is what we generally test against.
+[Node 다운로드 페이지](https://nodejs.org/en/download/)에서 NPM을 다운로드 합니다. 우리는 일반적으로 최신 버전에서 테스트를 진행하기 때문에 최신 버전 사용을 권장합니다.
 
-Run `npm --version` to verify.
+정상적으로 설치된 것을 확인하기 위해 `npm --version`을 실행합니다.
 
-## Platform Specific Dependencies
+## 플랫폼에 따른 의존성
 
-You will also need to install platform specific dependencies:
+아래와 같이 플랫폼별 의존성이 있습니다.
 
 <!-- @formatter:off -->
 
@@ -51,7 +51,7 @@ import TabItem from "@theme/TabItem";
  ]}
 >
   <TabItem value="MacOS">
-    Wails requires that the xcode command line tools are installed. This can be
+    Wails를 사용하려면 xcode 명령어 라인 도구가 설치되어 있어야 합니다. This can be
     done by running: <br />
     <code>xcode-select --install</code>
   </TabItem>
@@ -78,18 +78,18 @@ import TabItem from "@theme/TabItem";
 
 <!-- @formatter:on -->
 
-## Optional Dependencies
+## 선택 설치
 
-- [UPX](https://upx.github.io/) for compressing your applications.
+- [UPX](https://upx.github.io/)는 어플리케이션 압축에 필요합니다.
 
-## Installing Wails
+## Wails 설치
 
-Run `go install github.com/wailsapp/wails/v2/cmd/wails@latest` to install the Wails CLI.
+`go install github.com/wailsapp/wails/v2/cmd/wails@latest`을 실행하여 Wails CLI를 설치합니다.
 
-## System Check
+## 시스템 점검
 
-Running `wails doctor` will check if you have the correct dependencies installed. If not, it will advise on what is missing and help on how to rectify any problems.
+`wails doctor`를 실행하면 의존성이 올바르게 설치되어 있는지 점검할 수 있습니다. 문제가 있는 의존성에 대해서는 문제 해결을 위한 도움을 줄 수 있습니다.
 
-## The `wails` command appears to be missing?
+## `wails` 명령어를 찾을 수 없나요?
 
-If your system is reporting that the `wails` command is missing, make sure you have followed the Go installation guide correctly. Normally, it means that the `go/bin` directory in your User's home directory is not in the `PATH` environment variable. You will also normally need to close and reopen any open command prompts so that changes to the environment made by the installer are reflected at the command prompt.
+시스템에서 `wails` 명령어를 찾을 수 없는 경우 Go 설치 지침을 잘 따라했는지 확인해보세요. 대부분 사용자 홈 디렉토리에 있는 `go/bin` 디렉토리가 `PATH` 환경변수에 존재하지 않는 경우입니다. 또한 변경사항이 명령 프롬프트에 반영되도록 일반적으로 열려 있는 모든 명령 프롬프트를 닫았다가 다시 열어야 합니다.
