@@ -227,6 +227,10 @@ const config = {
         ],
         copyright: `Copyright © ${new Date().getFullYear()} Lea Anthony. Built with Docusaurus.`,
       },
+      tableOfContents: {
+        minHeadingLevel: 2,
+        maxHeadingLevel: 5,
+      },
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
