@@ -2,6 +2,7 @@ import './App.css'
 import logo from "./assets/images/logo-universal.png"
 import {Greet} from "../wailsjs/go/main/App";
 import {useState} from "preact/hooks";
+import { h, Fragment } from 'preact';
 
 export function App(props: any) {
     const [resultText, setResultText] = useState("Please enter your name below 👇");
