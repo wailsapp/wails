@@ -210,36 +210,36 @@ Wails v2が3つのプラットフォームでベータ版としてリリース�
 
 - Electronの代替品になりますか？
 
-  それはあなたの要件によります。Goプログラマーが簡単に軽量のデスクトップアプリケーションを作成したり、既存のアプリケーションにフロントエンドを追加できるように設計されています。
+  それはあなたの求める要件によります。WailsはGoプログラマーが簡単に軽量のデスクトップアプリケーションを作成したり、既存のアプリケーションにフロントエンドを追加できるように設計されています。
   Wails v2ではメニューやダイアログといったネイティブな要素を提供するようになったため、軽量なElectronの代替となりつつあります。
 
 - このプロジェクトは誰に向けたものですか？
 
-  HTML/JS/CSSのフロントエンドをアプリケーションにバンドルさせることで、サーバーを作成してブラウザ経由で表示させることなくアプリケーションを利用させたいGoプログラマにおすすめです。
+  HTML/JS/CSSのフロントエンド技術をアプリケーションにバンドルさせることで、サーバーを作成してブラウザ経由で表示させることなくアプリケーションを利用したいGoプログラマにおすすめです。
 
 - 名前の由来を教えて下さい
 
   WebViewを見たとき、私はこう思いました。  
   「私が本当に欲しいのは、WebViewアプリを構築するためのツールであり、Rubyに対するRailsのようなものである」と。  
-  だから、最初は言葉遊びのつもりでした（Webview on Rails）。  
-  また、私の[出身国](https://en.wikipedia.org/wiki/Wales)の英語名と同音異義語でもあります。それでこの名前が定着しました。
+  そのため、最初は言葉遊びのつもりでした（Webview on Rails）。  
+  また、私の[出身国](https://en.wikipedia.org/wiki/Wales)の英語名と同音異義語でもあります。そしてこの名前が定着しました。
 
-## Stargazers over time
+## スター数の推移
 
-[![Stargazers over time](https://starchart.cc/wailsapp/wails.svg)](https://starchart.cc/wailsapp/wails)
+[![スター数の推移](https://starchart.cc/wailsapp/wails.svg)](https://starchart.cc/wailsapp/wails)
 
 ## コントリビューター
 
-貢献してくれた方のリストが大きくなりすぎて、readmeに入りきらなくなりそうです！  
-このプロジェクトに貢献してくれた素晴らしい人たちのページは[こちら](https://wails.io/credits#contributors)です。
+貢献してくれた方のリストが大きくなりすぎて、readmeに入りきらなくなりました！  
+このプロジェクトに貢献してくれた素晴らしい方々のページは[こちら](https://wails.io/credits#contributors)です。
 
 ## 特記事項
 
-このプロジェクトは、以下の方々の協力がなければ、実現しなかったと思います。
+このプロジェクトは以下の方々の協力がなければ、実現しなかったと思います。
 
 - [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - 彼のサポートとフィードバックはとても大きいものでした。
 - [Serge Zaitsev](https://github.com/zserge) - Wailsのウィンドウで使用している[Webview](https://github.com/zserge/webview)の作者です。
-- [Byron](https://github.com/bh90210) - 時には、Byronが一人でこのプロジェクトを存続させてくれたこともありました。彼の素晴らしいインプットがなければ、v1に到達することはなかったでしょう。
+- [Byron](https://github.com/bh90210) - 時にはByronが一人でこのプロジェクトを存続させてくれたこともありました。彼の素晴らしいインプットがなければv1に到達することはなかったでしょう。
 
 プロジェクトを進める際に、以下のアルバムたちも支えてくれています。
 
@@ -261,7 +261,7 @@ Wails v2が3つのプラットフォームでベータ版としてリリース�
 
 <p align="center" style="text-align: center">
    <a href="https://pace.dev"><img src="/assets/images/pace.jpeg"/></a><br/>
-   このプロジェクトを後援し、WailsをApple Siliconに移植する取り組みを支援してくれた <a href="https://pace.dev">Pace</a> に <i>大</i>感謝です!<br/><br/>
+   このプロジェクトを後援し、WailsをApple Siliconに移植する取り組みを支援してくれた <a href="https://pace.dev">Pace</a> に <i>とても</i>感謝しています！<br/><br/>
    パワフルで素早く簡単に使えるプロジェクト管理ツールをお探しなら、ぜひチェックしてみてください！<br/><br/>
 </p>
 
