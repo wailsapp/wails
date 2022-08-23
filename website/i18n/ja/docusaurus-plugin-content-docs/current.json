@@ -3,36 +3,64 @@
     "message": "次のバージョン 🚧",
     "description": "The label for version current"
   },
-  "sidebar.tutorialSidebar.category.Getting Started": {
-    "message": "はじめよう",
-    "description": "The label for category Getting Started in sidebar tutorialSidebar"
+  "sidebar.docs.category.Getting Started": {
+    "message": "Getting Started",
+    "description": "The label for category Getting Started in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Reference": {
-    "message": "リファレンス",
-    "description": "The label for category Reference in sidebar tutorialSidebar"
+  "sidebar.docs.category.Reference": {
+    "message": "Reference",
+    "description": "The label for category Reference in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Runtime": {
-    "message": "ランタイム",
-    "description": "The label for category Runtime in sidebar tutorialSidebar"
+  "sidebar.docs.category.Runtime": {
+    "message": "Runtime",
+    "description": "The label for category Runtime in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Community": {
-    "message": "コミュニティ",
-    "description": "The label for category Community in sidebar tutorialSidebar"
+  "sidebar.docs.category.Community": {
+    "message": "Community",
+    "description": "The label for category Community in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Showcase": {
-    "message": "ショーケース",
-    "description": "The label for category Showcase in sidebar tutorialSidebar"
+  "sidebar.docs.category.Showcase": {
+    "message": "Showcase",
+    "description": "The label for category Showcase in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Guides": {
-    "message": "ガイド",
-    "description": "The label for category Guides in sidebar tutorialSidebar"
+  "sidebar.docs.category.Guides": {
+    "message": "Guides",
+    "description": "The label for category Guides in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Tutorials": {
-    "message": "チュートリアル",
-    "description": "The label for category Tutorials in sidebar tutorialSidebar"
+  "sidebar.docs.category.Tutorials": {
+    "message": "Tutorials",
+    "description": "The label for category Tutorials in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Contributing": {
-    "message": "コントリビューション",
-    "description": "The label for category Contributing in sidebar tutorialSidebar"
+  "sidebar.docs.category.Contributing": {
+    "message": "Contributing",
+    "description": "The label for category Contributing in sidebar docs"
+  },
+  "sidebar.docs.link.Ways of contributing": {
+    "message": "Ways of contributing",
+    "description": "The label for link Ways of contributing in sidebar docs, linking to /contributing/ways-of-contributing"
+  },
+  "sidebar.docs.link.Setting up a Development Environment": {
+    "message": "Setting up a Development Environment",
+    "description": "The label for link Setting up a Development Environment in sidebar docs, linking to /contributing/setting-up-a-dev-environment"
+  },
+  "sidebar.docs.link.Developing New Features": {
+    "message": "Developing New Features",
+    "description": "The label for link Developing New Features in sidebar docs, linking to /contributing/developing-new-features"
+  },
+  "sidebar.docs.link.Fixing Bugs": {
+    "message": "Fixing Bugs",
+    "description": "The label for link Fixing Bugs in sidebar docs, linking to /contributing/fixing-bugs"
+  },
+  "sidebar.docs.link.Testing": {
+    "message": "Testing",
+    "description": "The label for link Testing in sidebar docs, linking to /contributing/testing"
+  },
+  "sidebar.docs.link.Documenting": {
+    "message": "Documenting",
+    "description": "The label for link Documenting in sidebar docs, linking to /contributing/documenting"
+  },
+  "sidebar.docs.link.Helping Others": {
+    "message": "Helping Others",
+    "description": "The label for link Helping Others in sidebar docs, linking to /contributing/helping-others"
   }
 }
