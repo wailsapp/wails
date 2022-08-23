@@ -1,9 +1,9 @@
 <p align="center" style="text-align: center">
-   <img src="./assets/images/logo-universal.png" width="55%"><br/>
+  <img src="./assets/images/logo-universal.png" width="55%"><br/>
 </p>
 
 <p align="center">
-  使用 Go 和 Web 技术构建桌面应用程序。<br/><br/>
+  GoとWebの技術を用いてデスクトップアプリケーションを構築します。<br/><br/>
   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-blue.svg" />
   </a>
@@ -33,72 +33,75 @@
 <hr/>
 <h3 align="center">
 <strong>
-请注意：随着我们接近 v2 版本，我们不接受 v1 的任何新功能请求或错误报告。如果您有一个关键问题，请开一个Issue并说明为什么它很关键。
+注意：v2のリリースが近づいているため、v1の新しい機能リクエストやバグレポートは受け付けておりません。重要な問題がある場合はチケットを開き、なぜそれが重要なのかを明記してください。
 </strong>
 </h3>
 <hr/>
 
-## 国际化
+## 国際化
 
 [English](README.md) | [简体中文](README.zh-Hans.md) | [日本語](README.ja.md)
 
-## 内容目录
+## 目次
 
 <details>
-  <summary>点我 打开/关闭 目录列表</summary>
+  <summary>クリックすることで、ディレクトリ一覧の開閉が可能です。</summary>
 
-- [1. 国际化](#国际化)
-- [2. 内容目录](#内容目录)
-- [3. 项目介绍](#项目介绍)
-  - [3.1 官方网站](#官方网站)
-  - [3.2 路线图](#路线图)
-- [4. 功能](#功能)
-- [5. 赞助商](#赞助商)
-- [6. 快速入门](#快速入门)
-- [7. 常见问题](#常见问题)
-- [8. 贡献者](#贡献者)
-- [9. 特别提及](#特别提及)
-- [10. 特别感谢](#特别感谢)
-- [11. 许可证](#许可证)
+- [1. 国際化](#国際化)
+- [2. 目次](#目次)
+- [3. はじめに](#はじめに)
+  - [3.1 公式サイト](#公式サイト)
+  - [3.2 ロードマップ](#ロードマップ)
+- [4. 特徴](#特徴)
+- [5. スポンサー](#スポンサー)
+- [6. 始め方](#始め方)
+- [7. FAQ](#faq)
+- [8. コントリビューター](#コントリビューター)
+- [9. 特記事項](#特記事項)
+- [10. スペシャルサンクス](#スペシャルサンクス)
+- [11. ライセンス](#ライセンス)
 
 </details>
 
-## 项目介绍
+## はじめに
 
-为 Go 程序提供 Web 界面的传统方法是通过内置 Web 服务器。Wails 提供了一种不同的方法：它提供了将 Go 代码和 Web
-前端一起打包成单个二进制文件的能力。通过提供的工具，可以很轻松的完成项目的创建、编译和打包。你所要做的就是发挥创造力！
+Goプログラムにウェブインタフェースを提供する従来の方法は内蔵のウェブサーバを経由するものですが、 Wailsでは異なるアプローチを提供します。
+Wailsでは Go のコードとウェブフロントエンドを単一のバイナリにまとめる機能を提供します。
+また、プロジェクトの作成、コンパイル、ビルドを行うためのツールが提供されています。あなたがすべきことは創造性を発揮することです！
 
-### 官方网站
+### 公式サイト
 
-V2：
+Version 2:
 
-Wails v2 已针对所有 3 个平台发布了 Beta 版。如果您有兴趣尝试一下，请查看[新网站](https://wails.io)。
+Wails v2が3つのプラットフォームでベータ版としてリリースされました。興味のある方は[新しいウェブサイト](https://wails.io)をご覧ください。
 
-旧版 V1：
+レガシー版 v1:
 
-旧版 v1 文档可以在[https://wails.app](https://wails.app)找到。
+レガシー版 v1のドキュメントは[https://wails.app](https://wails.app)で見ることができます。
 
-### 路线图
+### ロードマップ
 
-项目路线图可在[此处](https://github.com/wailsapp/wails/discussions/1484)找到。在提出增强请求之前请查阅此内容。
+プロジェクトのロードマップは[こちら](https://github.com/wailsapp/wails/discussions/1484)になります。  
+機能拡張のリクエストを出す前にご覧ください。
 
-## 功能
+## 特徴
 
-- 后端使用标准 Go
-- 使用您已经熟悉的任何前端技术来构建您的 UI
-- 使用内置模板为您的 Go 程序快速创建丰富的前端
-- 从 Javascript 轻松调用 Go 方法
-- 为您的 Go 结构体和方法自动生成 Typescript 声明
-- 原生对话框和菜单
-- 支持现代半透明和“磨砂窗”效果
-- Go 和 Javascript 之间的统一事件系统
-- 强大的 CLI 工具，可快速生成和构建您的项目
-- 跨平台
-- 使用原生渲染引擎 - _没有嵌入式浏览器_！
+- バックエンドにはGoを利用しています
+- 使い慣れたフロントエンド技術を利用してUIを構築できます
+- あらかじめ用意されたテンプレートを利用することで、リッチなフロントエンドを備えたGoプログラムを作成できます
+- JavaScriptからGoのメソッドを簡単に呼び出すことができます
+- あなたの書いたGoの構造体やメソットに応じたTypeScriptの定義が自動生成されます
+- ネイティブのダイアログとメニューが利用できます
+- モダンな半透明や「frosted window」エフェクトをサポートしています
+- GoとJavaScript間で統一されたイベント・システムを備えています
+- プロジェクトを素早く生成して構築する強力なcliツールを用意しています
+- マルチプラットフォームに対応しています
+- ネイティブなレンダリングエンジンを使用しています - _つまりブラウザを埋め込んでいるわけではありません！_
 
-## 赞助商
 
-这个项目由以下这些人或者公司支持：
+## スポンサー
+
+このプロジェクトは、以下の方々・企業によって支えられています。
 
 <a href="https://github.com/sponsors/leaanthony" style="width:100px;">
   <img src="/assets/images/sponsors/silver-sponsor.png" width="100"/>
@@ -199,42 +202,46 @@ Wails v2 已针对所有 3 个平台发布了 Beta 版。如果您有兴趣尝�
   <img src="https://github.com/Ilshidur.png?size=50" width="50"/>
 </a>
 
-## 快速入门
+## 始め方
 
-使用说明在[官网](https://wails.io/docs/gettingstarted/installation)。
+インストール方法は[公式サイト](https://wails.io/docs/gettingstarted/installation)に掲載されています。
 
-## 常见问题
+## FAQ
 
-- 它是 Electron 的替代品吗?
+- Electronの代替品になりますか？
 
-  取决于您的要求。它旨在使 Go 程序员可以轻松制作轻量级桌面应用程序或在其现有应用程序中添加前端。尽管 Wails 当前不提供对诸如菜单之类的原生元素的钩子，但将来可能会改变。
+  それはあなたの要件によります。Goプログラマーが簡単に軽量のデスクトップアプリケーションを作成したり、既存のアプリケーションにフロントエンドを追加できるように設計されています。
+  Wails v2ではメニューやダイアログといったネイティブな要素を提供するようになったため、軽量なElectronの代替となりつつあります。
 
-- 这个项目针对的是哪些人?
+- このプロジェクトは誰に向けたものですか？
 
-  希望将 HTML / JS / CSS 前端与其应用程序捆绑在一起的程序员，而不是借助创建服务并打开浏览器进行查看的方式。
+  HTML/JS/CSSのフロントエンドをアプリケーションにバンドルさせることで、サーバーを作成してブラウザ経由で表示させることなくアプリケーションを利用させたいGoプログラマにおすすめです。
 
-- 名字怎么来的?
+- 名前の由来を教えて下さい
 
-  当我看到 WebView 时，我想"我真正想要的是围绕构建 WebView 应用程序工作，有点像 Rails 对于 Ruby"。因此，最初它是一个文字游戏（Webview on
-  Rails）。碰巧也是我来自的 [国家](https://en.wikipedia.org/wiki/Wales) 的英文名字的同音。所以就是它了。
+  WebViewを見たとき、私はこう思いました。  
+  「私が本当に欲しいのは、WebViewアプリを構築するためのツールであり、Rubyに対するRailsのようなものである」と。  
+  だから、最初は言葉遊びのつもりでした（Webview on Rails）。  
+  また、私の[出身国](https://en.wikipedia.org/wiki/Wales)の英語名と同音異義語でもあります。それでこの名前が定着しました。
 
-## 星星增长趋势
+## Stargazers over time
 
-[![星星增长趋势](https://starchart.cc/wailsapp/wails.svg)](https://starchart.cc/wailsapp/wails)
+[![Stargazers over time](https://starchart.cc/wailsapp/wails.svg)](https://starchart.cc/wailsapp/wails)
 
-## 贡献者
+## コントリビューター
 
-贡献者列表对于 README 文件来说太大了！所有为这个项目做出贡献的了不起的人在[这里](https://wails.io/credits#contributors)都有自己的页面。
+貢献してくれた方のリストが大きくなりすぎて、readmeに入りきらなくなりそうです！  
+このプロジェクトに貢献してくれた素晴らしい人たちのページは[こちら](https://wails.io/credits#contributors)です。
 
-## 特别提及
+## 特記事項
 
-如果没有以下人员，此项目或许永远不会存在：
+このプロジェクトは、以下の方々の協力がなければ、実現しなかったと思います。
 
-- [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - 他的支持和反馈是巨大的。
-- [Serge Zaitsev](https://github.com/zserge) - Wails 窗口所使用的 [Webview](https://github.com/zserge/webview) 的作者。
-- [Byron](https://github.com/bh90210) - 有时，Byron 一个人保持这个项目活跃着。没有他令人难以置信的投入，我们永远不会得到 v1 。
+- [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - 彼のサポートとフィードバックはとても大きいものでした。
+- [Serge Zaitsev](https://github.com/zserge) - Wailsのウィンドウで使用している[Webview](https://github.com/zserge/webview)の作者です。
+- [Byron](https://github.com/bh90210) - 時には、Byronが一人でこのプロジェクトを存続させてくれたこともありました。彼の素晴らしいインプットがなければ、v1に到達することはなかったでしょう。
 
-编写项目代码时伴随着以下专辑：
+プロジェクトを進める際に、以下のアルバムたちも支えてくれています。
 
 - [Manic Street Preachers - Resistance Is Futile](https://open.spotify.com/album/1R2rsEUqXjIvAbzM0yHrxA)
 - [Manic Street Preachers - This Is My Truth, Tell Me Yours](https://open.spotify.com/album/4VzCL9kjhgGQeKCiojK1YN)
@@ -250,20 +257,20 @@ Wails v2 已针对所有 3 个平台发布了 Beta 版。如果您有兴趣尝�
 - [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
 - [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
 
-## 特别感谢
+## スペシャルサンクス
 
 <p align="center" style="text-align: center">
    <a href="https://pace.dev"><img src="/assets/images/pace.jpeg"/></a><br/>
-   <i>非常</i> 感谢<a href="https://pace.dev">Pace</a>对项目的赞助，并帮助将 Wails 移植到 Apple Silicon !<br/><br/>
-   如果您正在寻找一个强大并且快速和易于使用的项目管理工具，可以看看他们！<br/><br/>
+   このプロジェクトを後援し、WailsをApple Siliconに移植する取り組みを支援してくれた <a href="https://pace.dev">Pace</a> に <i>大</i>感謝です!<br/><br/>
+   パワフルで素早く簡単に使えるプロジェクト管理ツールをお探しなら、ぜひチェックしてみてください！<br/><br/>
 </p>
 
 <p align="center" style="text-align: center">
-   特别感谢 JetBrains 向我们捐赠许可！<br/><br/>
-   请点击 logo 让他们知道你的感激之情！<br/><br/>
+   ライセンスを提供していただいたJetBrains社に感謝します！<br/><br/>
+   ロゴをクリックして、感謝の気持ちを伝えてください！<br/><br/>
    <a href="https://www.jetbrains.com?from=Wails"><img src="/assets/images/jetbrains-grayscale.png" width="30%"></a>
 </p>
 
-## 许可证
+## ライセンス
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
