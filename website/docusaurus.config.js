@@ -146,7 +146,7 @@ const config = {
             position: "right",
             dropdownItemsAfter: [
               {
-                to: "/contributing/documenting",
+                to: "/community-guide#documenting",
                 label: "Help Us Translate ❤",
               },
             ],
