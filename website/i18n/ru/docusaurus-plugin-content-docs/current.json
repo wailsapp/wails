@@ -31,36 +31,8 @@
     "message": "Tutorials",
     "description": "The label for category Tutorials in sidebar docs"
   },
-  "sidebar.docs.category.Contributing": {
+  "sidebar.docs.link.Contributing": {
     "message": "Contributing",
-    "description": "The label for category Contributing in sidebar docs"
-  },
-  "sidebar.docs.link.Ways of contributing": {
-    "message": "Ways of contributing",
-    "description": "The label for link Ways of contributing in sidebar docs, linking to /contributing/ways-of-contributing"
-  },
-  "sidebar.docs.link.Setting up a Development Environment": {
-    "message": "Setting up a Development Environment",
-    "description": "The label for link Setting up a Development Environment in sidebar docs, linking to /contributing/setting-up-a-dev-environment"
-  },
-  "sidebar.docs.link.Developing New Features": {
-    "message": "Developing New Features",
-    "description": "The label for link Developing New Features in sidebar docs, linking to /contributing/developing-new-features"
-  },
-  "sidebar.docs.link.Fixing Bugs": {
-    "message": "Fixing Bugs",
-    "description": "The label for link Fixing Bugs in sidebar docs, linking to /contributing/fixing-bugs"
-  },
-  "sidebar.docs.link.Testing": {
-    "message": "Testing",
-    "description": "The label for link Testing in sidebar docs, linking to /contributing/testing"
-  },
-  "sidebar.docs.link.Documenting": {
-    "message": "Documenting",
-    "description": "The label for link Documenting in sidebar docs, linking to /contributing/documenting"
-  },
-  "sidebar.docs.link.Helping Others": {
-    "message": "Helping Others",
-    "description": "The label for link Helping Others in sidebar docs, linking to /contributing/helping-others"
+    "description": "The label for link Contributing in sidebar docs, linking to /community-guide#ways-of-contributing"
   }
 }
