@@ -11,7 +11,7 @@ version of the runtime library. Finally, it is possible to bind Go methods to th
 Javascript methods that can be called, just as if they were local Javascript methods.
 
 <div className="text--center">
-  <img src="/img/architecture.svg" width="75%" />
+  <img src={require("@site/static/img/architecture.png").default} width="75%" />
 </div>
 
 ## The Main Application
@@ -130,7 +130,7 @@ by the frontend code.
 
 :::info Note
 
-  Wails requires that you pass in an *instance* of the struct for it to bind it correctly
+Wails requires that you pass in an _instance_ of the struct for it to bind it correctly
 
 :::
 
@@ -197,9 +197,10 @@ You may bind as many structs as you like. Just make sure you create an instance 
 ```
 
 When you run `wails dev` (or `wails generate module`), a frontend module will be generated containing the following:
-  - Javascript bindings for all bound methods
-  - Typescript declarations for all bound methods
-  - Typescript definitions for all Go structs used as inputs or outputs by the bound methods
+
+- Javascript bindings for all bound methods
+- Typescript declarations for all bound methods
+- Typescript definitions for all Go structs used as inputs or outputs by the bound methods
 
 This makes it incredibly simple to call Go code from the frontend, using the same strongly typed datastructures.
 
@@ -232,24 +233,26 @@ wailsjs
       ├─App.d.ts
       └─App.js
 ```
+
 Here we can see that there is a `main` package that contains the Javascript bindings for the bound `App` struct, as well
 as the Typescript declaration file for those methods. To call `Greet` from our frontend, we simply import the method and
 call it like a regular Javascript function:
 
 ```javascript
-    // ...
-    import {Greet} from '../wailsjs/go/main/App'
+// ...
+import { Greet } from "../wailsjs/go/main/App";
 
-    function doGreeting(name) {
-        Greet(name).then((result) => {
-            // Do something with result
-        })
-    }
+function doGreeting(name) {
+  Greet(name).then((result) => {
+    // Do something with result
+  });
+}
 ```
+
 The Typescript declaration file gives you the correct types for the bound methods:
 
 ```ts
-export function Greet(arg1:string):Promise<string>;
+export function Greet(arg1: string): Promise<string>;
 ```
 
 The generated methods return a Promise. A successful call will result in the first return value from the Go call to be passed
@@ -299,16 +302,16 @@ The `wailsjs/go/main/App.js` file will still have the following code:
 
 ```js title="App.js"
 export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
+  return window["go"]["main"]["App"]["Greet"](arg1);
 }
 ```
 
 But the `wailsjs/go/main/App.d.ts` file will be updated with the following code:
 
 ```ts title="App.d.ts"
-import {main} from '../models';
+import { main } from "../models";
 
-export function Greet(arg1:main.Person):Promise<string>;
+export function Greet(arg1: main.Person): Promise<string>;
 ```
 
 As we can see, the "main" namespace is imported from a new "models.ts" file. This file contains all the struct definitions
@@ -317,55 +320,54 @@ are defined:
 
 ```ts title="models.ts"
 export namespace main {
+  export class Address {
+    street: string;
+    postcode: string;
 
-	export class Address {
-	    street: string;
-	    postcode: string;
+    static createFrom(source: any = {}) {
+      return new Address(source);
+    }
 
-	    static createFrom(source: any = {}) {
-	        return new Address(source);
-	    }
+    constructor(source: any = {}) {
+      if ("string" === typeof source) source = JSON.parse(source);
+      this.street = source["street"];
+      this.postcode = source["postcode"];
+    }
+  }
+  export class Person {
+    name: string;
+    age: number;
+    address?: Address;
 
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.street = source["street"];
-	        this.postcode = source["postcode"];
-	    }
-	}
-	export class Person {
-	    name: string;
-	    age: number;
-	    address?: Address;
+    static createFrom(source: any = {}) {
+      return new Person(source);
+    }
 
-	    static createFrom(source: any = {}) {
-	        return new Person(source);
-	    }
+    constructor(source: any = {}) {
+      if ("string" === typeof source) source = JSON.parse(source);
+      this.name = source["name"];
+      this.age = source["age"];
+      this.address = this.convertValues(source["address"], Address);
+    }
 
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.name = source["name"];
-	        this.age = source["age"];
-	        this.address = this.convertValues(source["address"], Address);
-	    }
-
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
+    convertValues(a: any, classs: any, asMap: boolean = false): any {
+      if (!a) {
+        return a;
+      }
+      if (a.slice) {
+        return (a as any[]).map((elem) => this.convertValues(elem, classs));
+      } else if ("object" === typeof a) {
+        if (asMap) {
+          for (const key of Object.keys(a)) {
+            a[key] = new classs(a[key]);
+          }
+          return a;
+        }
+        return new classs(a);
+      }
+      return a;
+    }
+  }
 }
 ```
 
@@ -373,17 +375,17 @@ So long as you have TypeScript as part of your frontend build configuration, you
 the following way:
 
 ```js title="mycode.js"
-  import {Greet} from '../wailsjs/go/main/App'
-  import {main} from '../wailsjs/go/models'
+import { Greet } from "../wailsjs/go/main/App";
+import { main } from "../wailsjs/go/models";
 
-  function generate() {
-    let person = new main.Person()
-    person.name = "Peter"
-    person.age = 27
-    Greet(person).then((result) => {
-      console.log(result)
-    })
-  }
+function generate() {
+  let person = new main.Person();
+  person.name = "Peter";
+  person.age = 27;
+  Greet(person).then((result) => {
+    console.log(result);
+  });
+}
 ```
 
 The combination of generated bindings and TypeScript models makes for a powerful development environment.

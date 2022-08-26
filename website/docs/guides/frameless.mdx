@@ -1,19 +1,19 @@
-
 # Frameless Applications
 
 Wails supports applications with no frame. This can be achieved by using the [frameless](../reference/options.mdx#frameless)
 field in [Application Options](../reference/options.mdx#application-options).
 
-
 :::warning
 The `data-wails-drag` attribute is being deprecated in favour of the following CSS style:
 `style="--wails-draggable:drag"`. You can use `style="--wails-draggable:no-drag"` to disable the drag behaviour.
 For this release only, you can test this by setting the following application option:
+
 ```go
 		Experimental: &options.Experimental{
 			UseCSSDrag: true,
 		},
 ```
+
 :::
 
 Wails offers a simple solution for dragging the window: Any HTML element that has the attribute "data-wails-drag" will
@@ -43,5 +43,5 @@ The `<div id="input" data-wails-no-drag>` is tagged as being not draggable.
 ```
 
 :::info Fullscreen
-  If you allow your application to go fullscreen, this drag functionality will be disabled.
+If you allow your application to go fullscreen, this drag functionality will be disabled.
 :::
