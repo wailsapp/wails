@@ -112,7 +112,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	command.BoolFlag("windowsconsole", "Keep the console when building for Windows", &windowsConsole)
 
 	obfuscate := false
-	command.BoolFlag("obfuscate", "Obfuscate bound methods", &obfuscate)
+	command.BoolFlag("obfuscate", "Code obfuscation of bound Wails methods", &obfuscate)
 
 	garbleargs := ""
 	command.StringFlag("garbleargs", "Arguments to pass to garble", &garbleargs)

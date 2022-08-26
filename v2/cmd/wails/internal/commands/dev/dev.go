@@ -120,7 +120,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
 	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
 	command.BoolFlag("s", "Skips building the frontend", &flags.skipFrontend)
-	command.BoolFlag("obfuscate", "Obfuscate bound methods", &flags.obfuscate)
+	command.BoolFlag("obfuscate", "Code obfuscation of bound Wails methods", &flags.obfuscate)
 
 	command.Action(func() error {
 		// Create logger
