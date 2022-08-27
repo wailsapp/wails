@@ -4,8 +4,6 @@ sidebar_position: 5
 
 # 对话框
 
-## 概述
-
 运行时的这一部分提供对原生对话框的调用，例如文件选择器和消息框。
 
 :::info Javascript
@@ -16,7 +14,7 @@ JS 运行时当前不支持对话框。
 
 打开一个对话框，提示用户选择目录。 可以使用 [打开选择文件对话框参数选项](#打开选择文件对话框参数选项)进行自定义。
 
-Go 方法签名: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
+Go: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
 
 返回值: 所选目录（如果用户取消则为空白）或错误
 
@@ -24,7 +22,7 @@ Go 方法签名: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDia
 
 打开一个对话框，提示用户选择文件。 可以使用 [打开选择文件对话框参数选项](#打开选择文件对话框参数选项)进行自定义。
 
-Go 方法签名: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
+Go: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
 
 返回值: 所选文件（如果用户取消则为空白）或错误
 
@@ -32,7 +30,7 @@ Go 方法签名: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOp
 
 打开一个对话框，提示用户选择多个文件。 可以使用 [打开选择文件对话框参数选项](#打开选择文件对话框参数选项)进行自定义。
 
-Go 方法签名: `OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error)`
+Go: `OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error)`
 
 返回值: 选定的文件（如果用户取消则为零）或错误
 
@@ -40,7 +38,7 @@ Go 方法签名: `OpenMultipleFilesDialog(ctx context.Context, dialogOptions Ope
 
 打开一个对话框，提示用户选择文件名以进行保存。 可以使用[保存文件对话框参数选项](#保存文件对话框参数选项)自定义。
 
-Go 方法签名: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error)`
+Go: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error)`
 
 返回值: 所选文件（如果用户取消则为空白）或错误
 
@@ -48,7 +46,7 @@ Go 方法签名: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOp
 
 使用消息对话框显示消息。 可以使用[消息对话框参数选项](#消息对话框参数选项)进行自定义。
 
-Go 方法签名: `MessageDialog(ctx context.Context, dialogOptions MessageDialogOptions) (string, error)`
+Go: `MessageDialog(ctx context.Context, dialogOptions MessageDialogOptions) (string, error)`
 
 返回值: 所选按钮的文本或错误
 
