@@ -4,198 +4,168 @@ sidebar_position: 4
 
 # 窗口
 
-## 概述
-
 这些方法可以控制应用程序窗口。
 
 ### 窗口标题
-Go 方法签名: `WindowSetTitle(ctx context.Context, title string)`
-
-JS 方法签名: `WindowSetTitle(title: string)`
 
 设置窗口标题栏中的文本。
 
-### 窗口全屏
-Go 方法签名: `WindowFullscreen(ctx context.Context)`
+Go: `WindowSetTitle(ctx context.Context, title string)`<br/> JS: `WindowSetTitle(title: string)`
 
-JS 方法签名: `WindowFullscreen()`
+### 窗口全屏
 
 使窗口全屏。
 
-### 窗口取消全屏
-Go 方法签名: `WindowUnfullscreen(ctx context.Context)`
+Go: `WindowFullscreen(ctx context.Context)`<br/> JS: `WindowFullscreen()`
 
-JS 方法签名: `WindowUnfullscreen()`
+### 窗口取消全屏
 
 在全屏之前恢复先前的窗口尺寸和位置。
 
-### 窗口居中
-Go 方法签名: `WindowCenter(ctx context.Context)`
+Go: `WindowUnfullscreen(ctx context.Context)`<br/> JS: `WindowUnfullscreen()`
 
-JS 方法签名: `WindowCenter()`
+### 窗口居中
 
 使窗口在当前窗口所在的监视器上居中。
 
-### 窗口重新加载
-Go 方法签名: `WindowReload(ctx context.Context)`
+Go: `WindowCenter(ctx context.Context)`<br/> JS: `WindowCenter()`
 
-JS 方法签名: `WindowReload()`
+### 窗口重新加载
 
 执行“重新加载”（重新加载 index.html）
 
-### 窗口设置系统默认主题
-Go 方法签名: `WindowSetSystemDefaultTheme(ctx context.Context)`
+Go: `WindowReload(ctx context.Context)`<br/> JS: `WindowReload()`
 
-JS 方法签名: `WindowSetSystemDefaultTheme()`
+### 窗口设置系统默认主题
 
 仅限 Windows。
 
-### 窗口设置浅色主题
+Go: `WindowReloadApp(ctx context.Context)`<br/> JS: `WindowReloadApp()`
 
 ### 窗口设置深色主题
-将窗口主题设置为系统默认值（浅色/深色）。
-
-Go 方法签名: `WindowSetLightTheme(ctx context.Context)`
 
 JS 方法签名: `WindowSetLightTheme()`
+
+Go: `WindowSetSystemDefaultTheme(ctx context.Context)`<br/> JS: `WindowSetSystemDefaultTheme()`
 
 仅限 Windows。
 
 ### 显示窗口
-设置窗口主题为浅色 。
-
-Go 方法签名: `WindowSetDarkTheme(ctx context.Context)`
 
 JS 方法签名: `WindowSetLightTheme()`
+
+Go: `WindowSetLightTheme(ctx context.Context)`<br/> JS: `WindowSetLightTheme()`
 
 仅限 Windows。
 
 ### 隐藏窗口
-设置窗口主题为深色。
-
-Go 方法签名: `WindowShow(ctx context.Context)`
 
 JS 方法签名: `WindowSetLightTheme()`
+
+Go: `WindowSetDarkTheme(ctx context.Context)`<br/> JS: `WindowSetDarkTheme()`
 
 如果窗口当前处于隐藏状态，则显示该窗口。
 
 ### 设置窗口尺寸
-Go 方法签名: `WindowHide(ctx context.Context)`
-
-JS 方法签名: `WindowHide()`
 
 隐藏窗口（如果当前可见）。
 
-### 获取窗口尺寸
-Go 方法签名: `WindowSetSize(ctx context.Context, width int, height int)`
+Go: `WindowShow(ctx context.Context)`<br/> JS: `WindowShow()`
 
-JS 方法签名: `WindowSetSize(size: Size)`
+### 获取窗口尺寸
 
 设置窗口的宽度和高度。
 
-### 设置窗口最小尺寸
-Go 方法签名: `WindowGetSize(ctx context.Context) (width int, height int)`
+Go: `WindowHide(ctx context.Context)`<br/> JS: `WindowHide()`
 
-JS 方法签名: `WindowGetSize() : Size`
+### 设置窗口最小尺寸
 
 获取窗口的宽度和高度。
 
-### 设置窗口最大尺寸
-Go 方法签名: `WindowSetMinSize(ctx context.Context, width int, height int)`
+Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetSize(size: Size)`
 
-JS 方法签名: `WindowSetMinSize(size: Size)`
+### 设置窗口最大尺寸
 
 Gets the width and height of the window.
 
-### 设置窗口位置
-将大小设置为 `0,0` 将禁用此约束。
+Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize() : Size`
 
-Go 方法签名: `WindowSetMaxSize(ctx context.Context, width int, height int)`
+### 设置窗口位置
 
 设置最小窗口大小。 如果窗口当前小于给定尺寸，将调整窗口大小。
 
 Setting a size of `0,0` will disable this constraint.
 
-### 获取窗口位置
-将大小设置为 `0,0` 将禁用此约束。
+Go: `WindowSetMinSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMinSize(size: Size)`
 
-Go 方法签名: `WindowSetPosition(ctx context.Context, x int, y int)`
+### 获取窗口位置
 
 设置最大窗口大小。 如果窗口当前大于给定尺寸，将调整窗口大小。
 
 Setting a size of `0,0` will disable this constraint.
 
-### 窗口最大化
-Go 方法签名: `WindowGetPosition(ctx context.Context) (x int, y int)`
+Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMaxSize(size: Size)`
 
-JS 方法签名: `WindowGetPosition() : Position`
+### 窗口最大化
 
 获取相对于窗口当前所在显示器的窗口位置。
 
+Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: Boolen)`
 
 ### 窗口取消最大化
-Go 方法签名: `WindowMaximise(ctx context.Context)`
-
-JS 方法签名: `WindowMaximise()`
 
 最大化窗口以填满屏幕。
 
-### 窗口最大化切换
-Go 方法签名: `WindowUnmaximise(ctx context.Context)`
+Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPosition(position: Position)`
 
-JS 方法签名: `WindowUnmaximise()`
+### 窗口最大化切换
 
 将窗口恢复到最大化之前的尺寸和位置。
 
-### 窗口最小化
-Go 方法签名: `WindowToggleMaximise(ctx context.Context)`
+Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetPosition() : Position`
 
-JS 方法签名: `WindowToggleMaximise()`
+### 窗口最小化
 
 在最大化和最大化之间切换。
 
-### 窗口取消最小化
-Go 方法签名: `WindowMinimise(ctx context.Context)`
+Go: `WindowMaximise(ctx context.Context)`<br/> JS: `WindowMaximise()`
 
-JS 方法签名: `WindowMinimise()`
+### 窗口取消最小化
 
 最小化窗口。
 
-### 窗口设置 RGBA
-Go 方法签名: `WindowUnminimise(ctx context.Context)`
+Go: `WindowUnmaximise(ctx context.Context)`<br/> JS: `WindowUnmaximise()`
 
-JS 方法签名: `WindowUnminimise()`
+### 窗口设置 RGBA
 
 将窗口恢复到最小化之前的尺寸和位置。
 
-### 位置
-Go 方法签名: `WindowSetRGBA(ctx context.Context, R, G, B, A uint8)`
+Go: `WindowToggleMaximise(ctx context.Context)`<br/> JS: `WindowToggleMaximise()`
 
-JS 方法签名: `WindowSetRGBA(R, G, B, A)`
+### 位置
 
 窗口
 
-### 尺寸
-R、G、B 和 A 的有效值为 0-255。
+Go: `WindowMinimise(ctx context.Context)`<br/> JS: `WindowMinimise()`
 
-JS 方法签名: `WindowSetMaxSize(size: Size)`
+### 尺寸
 
 Restores the window to the dimensions and position prior to minimising.
 
-### WindowSetBackgroundColour
-Go Signature: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`
+Go: `WindowUnminimise(ctx context.Context)`<br/> JS: `WindowUnminimise()`
 
-JS 方法签名: `WindowSetPosition(position: Position)`
+### WindowSetBackgroundColour
 
 将窗口的背景颜色设置为给定的 RGBA 颜色定义。 此颜色将显示所有透明像素。
 
 Valid values for R, G, B and A are 0-255.
 
 :::info Windows
-
-在 Windows 上，仅支持 0 或 255 的 alpha 值。 任何不为 0 的值都将被视为 255。
-
+On Windows, only alpha values of 0 or 255 are supported.
+任何不为 0 的值都将被视为 255。
 :::
+
+Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/> JS: `WindowSetBackgroundColour(R, G, B, A)`
 
 ## Typescript 对象定义
 
@@ -216,5 +186,3 @@ interface Size {
   h: number;
 }
 ```
-
-

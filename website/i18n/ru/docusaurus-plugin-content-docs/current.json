@@ -1,38 +1,38 @@
 {
   "version.label": {
-    "message": "Next Version 🚧",
+    "message": "Следующая версия 🚧",
     "description": "The label for version current"
   },
-  "sidebar.tutorialSidebar.category.Getting Started": {
+  "sidebar.docs.category.Getting Started": {
     "message": "Getting Started",
-    "description": "The label for category Getting Started in sidebar tutorialSidebar"
+    "description": "The label for category Getting Started in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Reference": {
+  "sidebar.docs.category.Reference": {
     "message": "Reference",
-    "description": "The label for category Reference in sidebar tutorialSidebar"
+    "description": "The label for category Reference in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Runtime": {
+  "sidebar.docs.category.Runtime": {
     "message": "Runtime",
-    "description": "The label for category Runtime in sidebar tutorialSidebar"
+    "description": "The label for category Runtime in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Community": {
+  "sidebar.docs.category.Community": {
     "message": "Community",
-    "description": "The label for category Community in sidebar tutorialSidebar"
+    "description": "The label for category Community in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Showcase": {
+  "sidebar.docs.category.Showcase": {
     "message": "Showcase",
-    "description": "The label for category Showcase in sidebar tutorialSidebar"
+    "description": "The label for category Showcase in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Guides": {
+  "sidebar.docs.category.Guides": {
     "message": "Guides",
-    "description": "The label for category Guides in sidebar tutorialSidebar"
+    "description": "The label for category Guides in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Tutorials": {
+  "sidebar.docs.category.Tutorials": {
     "message": "Tutorials",
-    "description": "The label for category Tutorials in sidebar tutorialSidebar"
+    "description": "The label for category Tutorials in sidebar docs"
   },
-  "sidebar.tutorialSidebar.category.Contributing": {
+  "sidebar.docs.link.Contributing": {
     "message": "Contributing",
-    "description": "The label for category Contributing in sidebar tutorialSidebar"
+    "description": "The label for link Contributing in sidebar docs, linking to /community-guide#ways-of-contributing"
   }
 }

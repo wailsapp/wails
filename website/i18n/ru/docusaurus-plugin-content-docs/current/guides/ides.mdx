@@ -1,4 +1,3 @@
-
 # IDEs
 
 Wails aims to provide a great development experience. To that aim, we now support generating IDE specific configuration to provide smoother project setup.
@@ -8,7 +7,10 @@ Currently, we support [Visual Studio Code](https://code.visualstudio.com/) but a
 ## Visual Studio Code
 
 <p className="text--center">
-    <img src="/img/vscode.png" style={{"width": "75%"}}></img>
+  <img
+    src={require("@site/static/img/vscode.png").default}
+    style={{ width: "75%" }}
+  />
 </p>
 
 When generating a project using the `-ide vscode` flags, IDE files will be created alongside the other project files. These files are placed into the `.vscode` directory and provide the correct configuration for debugging your application.
