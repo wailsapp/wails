@@ -40,7 +40,7 @@ PLEASE NOTE: As we are approaching the v2 release, we are not accepting any new 
 
 ## Internationalization
 
-[English](README.md) | [简体中文](README.zh-Hans.md)
+[English](README.md) | [简体中文](README.zh-Hans.md) | [日本語](README.ja.md)
 
 ## Table of Contents
 
