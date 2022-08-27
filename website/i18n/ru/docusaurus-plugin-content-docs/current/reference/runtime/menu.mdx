@@ -4,8 +4,6 @@ sidebar_position: 6
 
 # Menu
 
-## Overview
-
 These methods are related to the application menu.
 
 :::info Javascript
@@ -14,12 +12,12 @@ These methods are related to the application menu.
 
 ### MenuSetApplicationMenu
 
-Go Signature: `MenuSetApplicationMenu(ctx context.Context, menu *menu.Menu)`
+Sets the application menu to the given [menu](../menus.mdx).
 
-Sets the application menu to the given [menu](../menus.mdx) .
+Go: `MenuSetApplicationMenu(ctx context.Context, menu *menu.Menu)`
 
 ### MenuUpdateApplicationMenu
 
-Go Signature: `MenuUpdateApplicationMenu(ctx context.Context)`
-
 Updates the application menu, picking up any changes to the menu passed to `MenuSetApplicationMenu`.
+
+Go: `MenuUpdateApplicationMenu(ctx context.Context)`
