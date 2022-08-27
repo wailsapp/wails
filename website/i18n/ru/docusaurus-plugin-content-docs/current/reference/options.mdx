@@ -92,131 +92,98 @@ func main() {
 
 ### Title
 
-Name: Title
-
-Type: string
-
 The text shown in the window's title bar.
+
+Type: `string`
 
 ### Width
 
-Name: Width
+The initial width of the window.
 
-Type: int
-
-The initial width of the window. Default: 1024.
+Type: `int`<br/> Default: 1024.
 
 ### Height
 
-Name: Height
+The initial height of the window.
 
-Type: int
-
-The initial height of the window. Default: 768
+Type: `int`<br/> Default: 768
 
 ### DisableResize
 
-Name: DisableResize
-
-Type: bool
-
 By default, the main window is resizable. Setting this to `true` will keep it a fixed size.
+
+Type: `bool`
 
 ### Fullscreen
 
-Name: Fullscreen
-
-Type: bool
-
 Setting this to `true` will make the window fullscreen at startup.
+
+Type: `bool`
 
 ### Frameless
 
-Name: Frameless
-
-Type: bool
-
 When set to `true`, the window will have no borders or title bar. Also see [Frameless Windows](../guides/frameless.mdx).
+
+Type: `bool`
 
 ### MinWidth
 
-Name: MinWidth
-
-Type: int
-
 This sets the minimum width for the window. If the value given in `Width` is less than this value, the window will be set to `MinWidth` by default.
+
+Type: `int`
 
 ### MinHeight
 
-Name: MinHeight
-
-Type: int
-
 This sets the minimum height for the window. If the value given in `Height` is less than this value, the window will be set to `MinHeight` by default.
+
+Type: `int`
 
 ### MaxWidth
 
-Name: MaxWidth
-
-Type: int
-
 This sets the maximum width for the window. If the value given in `Width` is more than this value, the window will be set to `MaxWidth` by default.
+
+Type: `int`
 
 ### MaxHeight
 
-Name: MaxHeight
-
-Type: int
-
 This sets the maximum height for the window. If the value given in `Height` is more than this value, the window will be set to `MaxHeight` by default.
+
+Type: `int`
 
 ### StartHidden
 
-Name: StartHidden
-
-Type: bool
-
 When set to `true`, the application will be hidden until [WindowShow](../reference/runtime/window.mdx#windowshow) is called.
 
+Type: `bool`
 ### HideWindowOnClose
 
-Name: HideWindowOnClose
+By default, closing the window will close the application. Setting this to `true` means closing the window will
 
-Type: bool
+hide the window instead.
 
-By default, closing the window will close the application. Setting this to `true` means closing the window will hide the window instead.
+Type: `bool`
 
 ### BackgroundColour
 
-Name: BackgroundColour
+This value is the default background colour of the window. Example: options.NewRGBA(255,0,0,128) - Red at 50% transparency
 
-Type: *options.RGBA Example: options.NewRGBA(255,0,0,128) - Red at 50% transparency
-
-This value is the default background colour of the window. Default: white
+Type: `*options.RGBA`<br/> Default: white
 
 ### AlwaysOnTop
 
-Name: AlwaysOnTop
-
-Type: bool
-
 Indicates that the window should stay above other windows when losing focus.
+
+Type: `bool`
 
 ### Assets
 
-Name: Assets
-
-Type: embed.FS
-
 The frontend assets to be used by the application. Requires an `index.html` file.
+
+Type: `embed.FS`
 
 ### AssetsHandler
 
 <img src="http://badges.github.io/stability-badges/dist/experimental.svg" />
-
-Name: AssetsHandler
-
-Type: http.Handler
 
 The assets handler is a generic `http.Handler` which will be called for any non GET request on the assets server and for GET requests which can not be served from the `assets` because the file is not found.
 
@@ -239,75 +206,55 @@ NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.
 
 NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html on every path, that does not contain a file extension.
 
+Type: `http.Handler`
+
 ### Menu
-
-Name: Menu
-
-Type: \*menu.Menu
 
 The menu to be used by the application. More details about Menus in the [Menu Reference](../reference/runtime/menu.mdx).
 
-NOTE: On Mac, if no menu is specified, a default menu will be created.
+:::note
+On Mac, if no menu is specified, a default menu will be created.
+:::
+
+Type: `*menu.Menu`
 
 ### Logger
 
-Name: Logger
-
-Type: logger.Logger
-
-Default: Logger to Stdout
-
 The logger to be used by the application. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
+
+Type: `logger.Logger`<br/> Default: Logs to Stdout
 
 ### LogLevel
 
-Name: LogLevel
-
-Type: logger.LogLevel
-
-Default: `Info` in dev mode, `Error` in production mode
-
 The default log level. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
+
+Type: `logger.LogLevel`<br/> Default: `Info` in dev mode, `Error` in production mode
 
 ### LogLevelProduction
 
-Name: LogLevelProduction
-
-Type: logger.LogLevel
-
-Default: `Error`
-
 The default log level for production builds. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
+
+Type: `logger.LogLevel`<br/> Default: `Error`
 
 ### OnStartup
 
-Name: OnStartup
-
-Type: func(ctx context.Context)
-
 This callback is called after the frontend has been created, but before `index.html` has been loaded. It is given the application context.
+
+Type: `func(ctx context.Context)`
 
 ### OnDomReady
 
-Name: OnDomReady
-
-Type: func(ctx context.Context)
-
 This callback is called after the frontend has loaded `index.html` and its resources. It is given the application context.
+
+Type: `func(ctx context.Context)`
 
 ### OnShutdown
 
-Name: OnShutdown
-
-Type: func(ctx context.Context)
-
 This callback is called after the frontend has been destroyed, just before the application terminates. It is given the application context.
 
+Type: `func(ctx context.Context)`
+
 ### OnBeforeClose
-
-Name: OnBeforeClose
-
-Type: func(ctx context.Context) bool
 
 If this callback is set, it will be called when the application is about to quit, either by clicking the window close button or calling `runtime.Quit`. Returning true will cause the application to continue, false will continue shutdown as normal. This is good for confirming with the user that they wish to exit the program.
 
@@ -316,9 +263,11 @@ Example:
 ```go title=windowsapp.go
 func (b *App) beforeClose(ctx context.Context) (prevent bool) {
     dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
-        Type:          runtime.QuestionDialog,
         Title:         "Quit?",
         Message:       "Are you sure you want to quit?",
+
+        Type: `         runtime`.QuestionDialog,
+
     })
 
     if err != nil {
@@ -328,11 +277,9 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 }
 ```
 
+Type: `func(ctx context.Context) bool`
+
 ### WindowStartState
-
-Name: WindowStartState
-
-Type: options.WindowStartState
 
 Defines how the window should present itself at startup.
 
@@ -342,85 +289,65 @@ Defines how the window should present itself at startup.
 | Maximised  | ✅   | ✅   | ✅   |
 | Minimised  | ✅   | ❌   | ✅   |
 
+Type: `options.WindowStartState`
+
 ### Bind
-
-Name: Bind
-
-Type: []interface{}
 
 A slice of struct instances defining methods that need to be bound to the frontend.
 
+Type: `[]interface{}`
+
 ### Windows
-
-Name: Windows
-
-Type: \*windows.Options
 
 This defines [Windows specific options](#windows-specific-options).
 
+Type: `*windows.Options`
+
 ### Mac
-
-Name: Mac
-
-Type: \*mac.Options
 
 This defines [Mac specific options](#mac-specific-options).
 
+Type: `*mac.Options`
+
 ### Linux
 
-Name: Linux
-
-Type: \*linux.Options
-
 This defines [Linux specific options](#linux-specific-options).
+
+Type: `*linux.Options`
 
 ## Windows Specific Options
 
 ### WebviewIsTransparent
 
-Name: WebviewIsTransparent
-
-Type: bool
-
 Setting this to `true` will make the webview background transparent when an alpha value of `0` is used. This means that if you use `rgba(0,0,0,0)` for `background-color` in your CSS, the host window will show through. Often combined with [WindowIsTranslucent](#WindowIsTranslucent) to make frosty-looking applications.
+
+Type: `bool`
 
 ### WindowIsTranslucent
 
-Name: WindowIsTranslucent
-
-Type: bool
-
 Setting this to `true` will make the window background translucent. Often combined with [WebviewIsTransparent](#WebviewIsTransparent) to make frosty-looking applications.
+
+Type: `bool`
 
 ### DisableWindowIcon
 
-Name: DisableWindowIcon
-
-Type: bool
-
 Setting this to `true` will remove the icon in the top left corner of the title bar.
+
+Type: `bool`
 
 ### DisableFramelessWindowDecorations
 
-Name: DisableFramelessWindowDecorations
-
-Type: bool
-
 Setting this to `true` will remove the window decorations in [Frameless](#Frameless) mode. This means there will be no 'Aero Shadow' and no 'Rounded Corners' shown for the window. Please note that 'Rounded Corners' are only supported on Windows 11.
+
+Type: `bool`
 
 ### WebviewUserDataPath
 
-Name: WebviewUserDataPath
-
-Type: string
-
 This defines the path where the WebView2 stores the user data. If empty `%APPDATA%\[BinaryName.exe]` will be used.
 
+Type: `string`
+
 ### WebviewBrowserPath
-
-Name: WebviewBrowserPath
-
-Type: string
 
 This defines the path to a directory with WebView2 executable files and libraries. If empty, webview2 installed in the system will be used.
 
@@ -430,11 +357,9 @@ Important information about distribution of fixed version runtime:
 - [Known issues for fixed version](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#known-issues-for-fixed-version)
 - [The path of fixed version of the WebView2 Runtime should not contain \Edge\Application\.](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
 
+Type: `string`
+
 ### Theme
-
-Name: Theme
-
-Type: `windows.Theme`
 
 Minimum Windows Version: Windows 10 2004/20H1
 
@@ -446,17 +371,19 @@ This defines the theme that the application should use:
 | Dark          | The application will use a dark theme exclusively                                                                                             |
 | Light         | The application will use a light theme exclusively                                                                                            |
 
+Type: `windows.Theme`
+
 ### CustomTheme
 
-Name: CustomTheme
-
-Type: `windows.CustomTheme`
-
+:::note
 Minimum Windows Version: Windows 10/11 2009/21H2 Build 22000
+:::
 
 Allows you to specify custom colours for TitleBar, TitleText and Border for both light and dark mode, as well as when the window is active or inactive.
 
-#### CustomTheme
+Type: `windows.CustomTheme`
+
+#### CustomTheme Type
 
 The CustomTheme struct uses `int32` to specify the colour values. These are in the standard(!) Windows format of: `0x00BBGGAA`. A helper function is provided to do RGB conversions into this format: `windows.RGB(r,g,b uint8)`.
 
@@ -502,77 +429,63 @@ Example:
 
 ### Messages
 
-Name: Messages
+A struct of strings used by the webview2 installer if a valid webview2 runtime is not found.
 
 Type: `*windows.Messages`
 
-A struct of strings used by the webview2 installer if a valid webview2 runtime is not found. Customise this for any language you choose to support.
+Customise this for any language you choose to support.
 
 ### ResizeDebounceMS
 
-Name: ResizeDebounceMS
-
-Type: uint16
-
 ResizeDebounceMS is the amount of time to debounce redraws of webview2 when resizing the window. The default value (0) will perform redraws as fast as it can.
+
+Type: `uint16`
 
 ### OnSuspend
 
-Name: OnSuspend
-
-Type: func()
-
 If set, this function will be called when windows initiates a switch to low power mode (suspend/hibernate)
+
+Type: `func()`
 
 ### OnResume
 
-Name: OnResume
-
-Type: func()
-
 If set, this function will be called when windows resumes from low power mode (suspend/hibernate)
+
+Type: `func()`
 
 ## Mac Specific Options
 
 ### TitleBar
 
-Name: TitleBar
-
-Type: [*mac.TitleBar](#titlebar-struct)
-
 The TitleBar struct provides the ability to configure the look and feel of the title bar.
+
+Type: [`*mac.TitleBar`](#titlebar-struct)
+
 
 ### Appearance
 
-Name: Appearance
-
-Type: [AppearanceType](#appearance-type)
-
 Appearance is used to set the style of your app in accordance with Apple's [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) names.
+
+Type: [`AppearanceType`](#appearance-type)
 
 ### WebviewIsTransparent
 
-Name: WebviewIsTransparent
-
-Type: bool
-
 Setting this to `true` will make the webview background transparent when an alpha value of `0` is used. This means that if you use `rgba(0,0,0,0)` for `background-color` in your CSS, the host window will show through. Often combined with [WindowIsTranslucent](#WindowIsTranslucent) to make frosty-looking applications.
+
+Type: `bool`
 
 ### WindowIsTranslucent
 
-Name: WindowIsTranslucent
-
-Type: bool
-
 Setting this to `true` will make the window background translucent. Often combined with [WebviewIsTransparent](#WebviewIsTransparent) to make frosty-looking applications.
+
+Type: `bool`
 
 ### About
 
-Name: About
-
-Type: [About](#about-struct)
-
 This configuration lets you set the title, message and icon for the "About" menu item in the app menu created by the "AppMenu" role.
+
+Type: [`About`](#about-struct)
+
 
 #### Titlebar struct
 
@@ -695,11 +608,11 @@ When clicked, that will open an about message box:
 
 ### Icon
 
-Name: Icon
+Sets up the icon representing the window. This icon is used when the window is minimized (also known as iconified).
 
-Type: []byte
+Type: `[]byte`
 
-Sets up the icon representing the window. This icon is used when the window is minimized (also known as iconified). Some window managers or desktop environments may also place it in the window frame, or display it in other contexts. On others, the icon is not used at all, so your mileage may vary.
+Some window managers or desktop environments may also place it in the window frame, or display it in other contexts. On others, the icon is not used at all, so your mileage may vary.
 
 NOTE: Gnome on Wayland at least does not display this icon. To have a application icon there, a `.desktop` file has to be used. On KDE it should work.
 
