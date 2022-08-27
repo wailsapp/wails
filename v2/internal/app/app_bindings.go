@@ -25,7 +25,12 @@ type App struct {
 func (a *App) Run() error {
 
 	// Create binding exemptions - Ugly hack. There must be a better way
-	bindingExemptions := []interface{}{a.appoptions.OnStartup, a.appoptions.OnShutdown, a.appoptions.OnDomReady}
+	bindingExemptions := []interface{}{
+		a.appoptions.OnStartup,
+		a.appoptions.OnShutdown,
+		a.appoptions.OnDomReady,
+		a.appoptions.OnBeforeClose,
+	}
 	appBindings := binding.NewBindings(a.logger, a.appoptions.Bind, bindingExemptions)
 
 	err := generateBindings(appBindings)
@@ -86,6 +91,6 @@ func generateBindings(bindings *binding.Bindings) error {
 		return err
 	}
 
-	return nil
-
+	wailsJSDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs")
+	return fs.SetPermissions(wailsJSDir, 0755)
 }

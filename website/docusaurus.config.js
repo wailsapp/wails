@@ -18,7 +18,7 @@ const config = {
 
   i18n: {
     defaultLocale: "en",
-    locales: ["en", "zh-Hans", "ja", "ru"],
+    locales: ["en", "zh-Hans", "ja", "ru", "ko"],
     localeConfigs: {
       en: {
         label: "English",
@@ -35,19 +35,25 @@ const config = {
         direction: "ltr",
         htmlLang: "ru-RU",
       },
-      "ja": {
+      ko: {
+        label: "한국어",
+        direction: "ltr",
+        htmlLang: "ko-KR",
+      },
+      ja: {
         label: "日本語",
         direction: "ltr",
         htmlLang: "ja-JP",
-      }
+      },
     },
   },
   plugins: [
-    ["docusaurus-plugin-plausible",
+    [
+      "docusaurus-plugin-plausible",
       {
         domain: "wails.io",
       },
-    ]
+    ],
   ],
 
   presets: [
@@ -109,33 +115,42 @@ const config = {
             position: "right",
           },
           {
-            type: 'dropdown',
-            label: 'About',
-            position: 'right',
+            type: "dropdown",
+            label: "About",
+            position: "right",
             items: [
               {
                 to: "/faq",
                 label: "FAQ",
               },
               {
-                to: '/changelog',
+                to: "/changelog",
                 label: "Changelog",
               },
               {
-                to: '/community-guide',
+                to: "/community-guide",
                 label: "Community Guide",
               },
               {
-                to: '/credits',
+                to: "/credits",
                 label: "Credits",
               },
               {
-                to: '/stats',
+                to: "/stats",
                 label: "Stats",
               },
             ],
           },
-          { type: "localeDropdown", position: "right" },
+          {
+            type: "localeDropdown",
+            position: "right",
+            dropdownItemsAfter: [
+              {
+                to: "/community-guide#documenting",
+                label: "Help Us Translate ❤",
+              },
+            ],
+          },
           {
             href: "https://github.com/wailsapp/wails",
             label: "GitHub",
@@ -211,6 +226,10 @@ const config = {
           },
         ],
         copyright: `Copyright © ${new Date().getFullYear()} Lea Anthony. Built with Docusaurus.`,
+      },
+      tableOfContents: {
+        minHeadingLevel: 2,
+        maxHeadingLevel: 5,
       },
       prism: {
         theme: lightCodeTheme,

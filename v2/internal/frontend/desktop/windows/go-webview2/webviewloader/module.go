@@ -1,13 +1,21 @@
 package webviewloader
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"sync"
 	"unsafe"
 
 	"github.com/jchv/go-winloader"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webview2loader"
+
 	"golang.org/x/sys/windows"
 )
+
+func init() {
+	preventEnvAndRegistryOverrides(nil, nil)
+}
 
 var (
 	memOnce                                         sync.Once
@@ -24,9 +32,10 @@ const (
 )
 
 // CompareBrowserVersions will compare the 2 given versions and return:
-//     Less than zero: v1 < v2
-//               zero: v1 == v2
-//  Greater than zero: v1 > v2
+//
+//	   Less than zero: v1 < v2
+//	             zero: v1 == v2
+//	Greater than zero: v1 > v2
 func CompareBrowserVersions(v1 string, v2 string) (int, error) {
 	_v1, err := windows.UTF16PtrFromString(v1)
 	if err != nil {
@@ -58,6 +67,19 @@ func CompareBrowserVersions(v1 string, v2 string) (int, error) {
 // If path is empty, it will try to find installed webview2 is the system.
 // If there is no version installed, a blank string is returned.
 func GetWebviewVersion(path string) (string, error) {
+	if path != "" {
+		// The default implementation fails if CGO and a fixed browser path is used. It's caused by the go-winloader
+		// which loads the native DLL from memory.
+		// Use the new GoWebView2Loader in this case, in the future we will make GoWebView2Loader
+		// feature-complete and remove the use of the native DLL and go-winloader.
+		version, err := webview2loader.GetAvailableCoreWebView2BrowserVersionString(path)
+		if errors.Is(err, os.ErrNotExist) {
+			// Webview2 is not found
+			return "", nil
+		}
+		return version, nil
+	}
+
 	err := loadFromMemory()
 	if err != nil {
 		return "", err
@@ -71,6 +93,7 @@ func GetWebviewVersion(path string) (string, error) {
 		}
 	}
 
+	preventEnvAndRegistryOverrides(browserPath, nil)
 	var result *uint16
 	res, _, err := memGetAvailableCoreWebView2BrowserVersionString.Call(
 		uint64(uintptr(unsafe.Pointer(browserPath))),
@@ -97,6 +120,8 @@ func CreateCoreWebView2EnvironmentWithOptions(browserExecutableFolder, userDataF
 	if err != nil {
 		return 0, err
 	}
+
+	preventEnvAndRegistryOverrides(browserExecutableFolder, userDataFolder)
 	res, _, _ := memCreate.Call(
 		uint64(uintptr(unsafe.Pointer(browserExecutableFolder))),
 		uint64(uintptr(unsafe.Pointer(userDataFolder))),
@@ -120,4 +145,16 @@ func loadFromMemory() error {
 		memGetAvailableCoreWebView2BrowserVersionString = memModule.Proc("GetAvailableCoreWebView2BrowserVersionString")
 	})
 	return err
+}
+
+func preventEnvAndRegistryOverrides(browserFolder, userDataFolder *uint16) {
+	// Setting these env variables to empty string also prevents registry overrides because webview2loader
+	// checks for existence and not for empty value
+	os.Setenv("WEBVIEW2_PIPE_FOR_SCRIPT_DEBUGGER", "")
+	os.Setenv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "")
+
+	// Set these overrides to the values or empty to prevent registry and external env overrides
+	os.Setenv("WEBVIEW2_RELEASE_CHANNEL_PREFERENCE", "0")
+	os.Setenv("WEBVIEW2_BROWSER_EXECUTABLE_FOLDER", windows.UTF16PtrToString(browserFolder))
+	os.Setenv("WEBVIEW2_USER_DATA_FOLDER", windows.UTF16PtrToString(userDataFolder))
 }

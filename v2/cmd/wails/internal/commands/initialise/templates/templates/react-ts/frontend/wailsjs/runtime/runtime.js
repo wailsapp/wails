@@ -109,10 +109,6 @@ export function WindowSetMinSize(width, height) {
     window.runtime.WindowSetMinSize(width, height);
 }
 
-export function ScreenGetAll() {
-    return window.runtime.ScreenGetAll();
-}
-
 export function WindowSetPosition(x, y) {
     window.runtime.WindowSetPosition(x, y);
 }
@@ -153,6 +149,10 @@ export function WindowSetBackgroundColour(R, G, B, A) {
     window.runtime.WindowSetBackgroundColour(R, G, B, A);
 }
 
+export function ScreenGetAll() {
+    return window.runtime.ScreenGetAll();
+}
+
 export function BrowserOpenURL(url) {
     window.runtime.BrowserOpenURL(url);
 }
@@ -163,4 +163,12 @@ export function Environment() {
 
 export function Quit() {
     window.runtime.Quit();
+}
+
+export function Hide() {
+    window.runtime.Hide();
+}
+
+export function Show() {
+    window.runtime.Show();
 }

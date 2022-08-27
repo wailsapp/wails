@@ -88,3 +88,7 @@ html[data-theme="light"] .button--secondary {
     background-color: transparent;
     border-color: var(--ifm-color-primary);
 }
+
+.screenshot {
+    box-shadow: rgb(255 255 255 / 20%) 0 4px 8px 0, rgb(104 104 104) 0 6px 20px 0;
+}

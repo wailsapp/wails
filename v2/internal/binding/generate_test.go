@@ -1,9 +1,40 @@
 package binding
 
 import (
-	"github.com/leaanthony/slicer"
 	"testing"
+
+	"github.com/leaanthony/slicer"
+	"github.com/stretchr/testify/assert"
+	"github.com/wailsapp/wails/v2/internal/logger"
 )
+
+type BindForTest struct {
+}
+
+func (b *BindForTest) GetA() A {
+	return A{}
+}
+
+type A struct {
+	B B `json:"B"`
+}
+
+type B struct {
+	Name string `json:"name"`
+}
+
+func TestNestedStruct(t *testing.T) {
+	bind := &BindForTest{}
+	testBindings := NewBindings(logger.New(nil), []interface{}{bind}, []interface{}{})
+
+	namesStrSlicer := testBindings.getAllStructNames()
+	names := []string{}
+	namesStrSlicer.Each(func(s string) {
+		names = append(names, s)
+	})
+	assert.Contains(t, names, "binding.A")
+	assert.Contains(t, names, "binding.B")
+}
 
 func Test_goTypeToJSDocType(t *testing.T) {
 
