@@ -204,9 +204,8 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/KiddoV" style="width:45px">
   <img src="https://github.com/KiddoV.png?size=45" width="45"/>
 </a>
-<a href="https://github.com/KiddoV" style="width:45px">
-  <img src="https://github.com/KiddoV.png?size=45" width="45"/>
-</a>
+
+
 
 ## Getting Started
 
