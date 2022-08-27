@@ -12,7 +12,7 @@ import { createRouter, createWebHashHistory } from "vue-router";
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
-    //...
+      // ....
   ],
 });
 ```
@@ -27,8 +27,7 @@ RouterModule.forRoot(routes, { useHash: true });
 
 ## React
 
-import { createRouter, createWebHashHistory } from "vue-router";
- const router = createRouter({ history: createWebHashHistory(), routes: [ //... ], }); ], }) ], })
+The recommended approach for routing in React is [HashRouter](https://reactrouter.com/docs/en/v6/routers/hash-router):
 
 ```jsx
 import { HashRouter } from "react-router-dom";

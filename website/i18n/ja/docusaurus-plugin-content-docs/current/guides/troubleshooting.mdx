@@ -36,9 +36,10 @@ Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
 If your built application looks like this in finder:
 
 <p className="text--center">
-  <img
-    src={
-      require("@site>
+    <img 
+    src={require("@site/static/img/troubleshooting/invalid_mac_app.png").default}
+        width="40%"
+        class="screenshot"/>
 </p>
 
 it''s likely that your application''s `info.plist` is invalid. Update the file in `build/<yourapp>.app/Contents/info.plist` and check if the data is valid, EG check the binary name is correct. To persist the changes, copy the file back to the `build/darwin` directory.
