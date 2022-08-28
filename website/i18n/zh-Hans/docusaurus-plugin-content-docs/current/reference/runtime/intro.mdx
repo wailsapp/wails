@@ -6,16 +6,7 @@ sidebar_position: 1
 
 运行时是一个为应用程序提供实用方法的库。 有 Go 和 Javascript 运行时，目的是在可能的情况下尝试使它们保持一致。
 
-It has utility methods for:
-
-- [Window](window.mdx)
-- [Menu](menu.mdx)
-- [Dialog](dialog.mdx)
-- [Events](events.mdx)
-- [Browser](browser.mdx)
-- [Log](log.mdx)
-
-Go 运行时可通过导入`github.com/wailsapp/wails/v2/pkg/runtime`。 此包中的所有方法都将 context 作为第一个参数。 此 context 应该从 [应用启动回调](../options.mdx#onstartup) 或 [前端 Dom 加载完成回调](../options.mdx#ondomready) 钩子获得。
+Go 运行时可通过导入`github.com/wailsapp/wails/v2/pkg/runtime`. 此包中的所有方法都将 context 作为第一个参数。 All methods in this package take a context as the first parameter. All methods in this package take a context as the first parameter. This context should be obtained from the [OnStartup](../options.mdx#onstartup) or [OnDomReady](../options.mdx#ondomready) hooks.
 
 :::info 注意
 
@@ -25,49 +16,40 @@ Go 运行时可通过导入`github.com/wailsapp/wails/v2/pkg/runtime`。 此包�
 
 Javascript 库可通过`window.runtime`提供给前端。 使用 `开发` 模式时会生成一个运行时包，该包为运行时提供 Typescript 声明。 这应该位于您的前端目录中的`wailsjs`目录中。
 
-### 隐藏
+### 退出
 
-Go: `Hide(ctx context.Context)`<br/> JS: `Hide()`
+Go 方法签名: `Quit(ctx context.Context)`
 
-隐藏应用程序。
+退出应用程序。
 
 :::info Note On Mac, this will hide the application in the same way as the `Hide` menu item in standard Mac applications. This is different to hiding the window, but the application still being in the foreground. For Windows and Linux, this is currently the same as `WindowHide`. ::: This is different to hiding the window, but the application still being in the foreground. For Windows and Linux, this is currently the same as `WindowHide`. :::
 
 ### 环境
 
+返回当前环境的详细信息。
+
 Shows the application.
 
 :::info Note On Mac, this will bring the application back into the foreground. For Windows and Linux, this is currently the same as `WindowShow`. ::: :::info Note On Mac, this will bring the application back into the foreground. For Windows and Linux, this is currently the same as `WindowShow`. ::: For Windows and Linux, this is currently the same as `WindowShow`. ::: :::
 
-Go: `Show(ctx context.Context)`<br/> JS: `Show()`
-
 ### Quit
+
+Go 方法签名: `Environment(ctx context.Context) EnvironmentInfo`
 
 Quits the application.
 
-Go: `Quit(ctx context.Context)`<br/> JS: `Quit()`
-
 ### Environment
+
+Go Signature: `Environment(ctx context.Context) EnvironmentInfo`
 
 Returns details of the current environment.
 
-Go: `Environment(ctx context.Context) EnvironmentInfo`<br/> JS: `Environment(): Promise<EnvironmentInfo>`
-
 #### 环境信息
 
-Go:
 ```go
 type EnvironmentInfo struct {
-    BuildType string
-    Platform  string
-    Arch      string
+    BuildType string  // Either "production", "debug" or "dev"
 }
 ```
-JS:
-```ts
-interface EnvironmentInfo {
-    buildType: string;
-    platform: string;
-    arch: string;
-}
-```
+
+

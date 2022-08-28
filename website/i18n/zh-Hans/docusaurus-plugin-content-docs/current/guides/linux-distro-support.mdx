@@ -1,3 +1,4 @@
+
 # Linux 发行版支持
 
 ## 概述
@@ -87,7 +88,6 @@ type PackageManager interface {
     InstallCommand(*Package) string
 }
 ```
-
 - `Name()` 应该返回包管理器的名称
 - `Packages()` 应该返回一个`packagemap`，它为依赖项提供候选文件名
 - `PackageInstalled()` 如果安装了指定的包，应该返回`true`

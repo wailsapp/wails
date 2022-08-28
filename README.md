@@ -201,11 +201,6 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/Ilshidur" style="width:50px">
   <img src="https://github.com/Ilshidur.png?size=50" width="50"/>
 </a>
-<a href="https://github.com/KiddoV" style="width:45px">
-  <img src="https://github.com/KiddoV.png?size=45" width="45"/>
-</a>
-
-
 
 ## Getting Started
 

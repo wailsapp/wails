@@ -2,70 +2,58 @@
 sidebar_position: 1
 ---
 
-# Введение
+# Introduction
 
-Wails - это проект, позволяющий писать настольные приложения с использованием Go и web технологий.
+## Overview
 
-Считайте, что это легкая и быстрая альтернатива Electron для Go. Вы можете легко создавать приложения с гибкостью и мощностью Go, в сочетании с богатым современным фронтендом.
+Wails is a project that enables you to write desktop apps using Go and web technologies.
 
-### Features
+Consider it a lightweight and fast Electron alternative for Go. You can easily build applications with the flexibility and power of Go, combined with a rich, modern frontend.
 
-- Native Menus, Dialogs, Theming and Translucency
-- Windows, macOS and linux support
-- Built in templates for Svelte, React, Preact, Vue, Lit and Vanilla JS
-- Easily call Go methods from Javascript
-- Automatic Go struct to Typescript model generation
-- No CGO or external DLLs required on Windows
-- Live development mode using the power of [Vite](https://vite.net/)
-- Powerful CLI to easily Create, Build and Package applications
-- A rich [runtime library](/docs/next/reference/runtime)
-- Applications built with Wails are Apple & Microsoft Store compliant
-
-
-Например, [varly](https://varly.app) - настольное приложение для MacOS & Windows, написанное с помощью Wails. Оно не только великолепно выглядит, но и использует системные меню и полупрозрачность - все, что можно ожидать от современного нативного приложения.
+Wails doesn't hold back with the eye candy either! This is [varly](https://varly.app) - a desktop application for MacOS & Windows written using Wails. Not only does it look great, it uses native menus and translucency - everything you'd expect from a modern native app.
 
 <p class="text--center">
-  <a href="https://varly.app/">
-    <img src={require("@site/static/img/varly.png").default} width="75%" />
-  </a>
+    <a href="https://varly.app/">
+        <img src="/img/varly.png" width="75%"/>
+    </a>
 </p>
 
-### Шаблоны для быстрого начала
+## Quick Start Templates
 
-Wails поставляется с рядом предварительно настроенных шаблонов, которые позволяют вам быстро создать и запустить ваше приложение. Есть шаблоны для следующих фреймворков: Svelte, React, Vue, Preact, Lit и Vanilla. Для каждого шаблона есть и Javascript и Typescript версия.
+Wails comes with a number of pre-configured templates that allow you to get your application up and running quickly. There are templates for the following frameworks: Svelte, React, Vue, Preact, Lit and Vanilla. There are both Javascript and Typescript versions for each template.
 
-### Системные элементы
+## Native Elements
 
-Wails использует специально созданную библиотеку для обработки системных элементов, таких как окна, меню, диалоги и так далее, чтобы вы могли создавать хорошо выглядящие, богатые функционалом приложения.
+Wails uses a purpose built library for handling native elements such as Window, Menus, Dialogs, etc, so you can build good-looking, feature rich desktop applications.
 
-**It does not embed a browser**, so it is resource efficient. Вместо этого он использует нативный движок отрисовки для необходимой платформы. На Windows это новая библиотека Microsoft Webview2, основанная на Chromium.
+**It does not embed a browser**, so it is resource efficient. Instead, it uses the native rendering engine for the platform. On Windows, this is the new Microsoft Webview2 library, built on Chromium.
 
-### Взаимодействие Go & Javascript
+## Go & Javascript Interoperability
 
-Wails автоматически делает ваши методы на Go доступными в Javascript, чтобы вы могли вызывать их по имени! It even generates Typescript models for the structs used by your Go methods, so you can pass the same data structures between Go and Javascript.
+Wails automatically makes your Go methods available to Javascript, so you can call them by name from your frontend! It even generates Typescript versions of the structs used by your Go methods, so you can pass the same data structures between Go and Javascript.
 
-### Библиотека среды выполнения
+## Runtime Library
 
-Wails предоставляет библиотеку среды выполнения для Go и Javascript, которая справляется со многими вещями, нужными для современный приложений, например, работа с событими, логирование, диалоги и так далее.
+Wails provides a runtime library, for both Go and Javascript, that handles a lot of the things modern applications need, like Eventing, Logging, Dialogs, etc.
 
-### Опыт разработки в реальном времени
+## Live Development Experience
 
-#### Автоматическая пересборка
+### Automatic Rebuilds
 
-Когда вы запускаете ваше приложение в режиме разработки, Wails будет собирать его, но читать ресурсы с диска. Он будет отслеживать любые изменения в вашем коде на Go и автоматически пересобирать и перезапускать приложение.
+When you run your application in "dev" mode, Wails will build your application as a native desktop application, but will read your assets from disk. It will detect any changes to your Go code and automatically rebuild and relaunch your application.
 
-#### Автоматическая перезагрузка
+### Automatic Reloads
 
 When changes to your application assets are detected, your running application will "reload", reflecting your changes almost immediately.
 
-#### Разрабатывайте приложение в браузере
+### Develop your application in a Browser
 
-Если вы предпочитаете отладку и разработку в браузере, то Wails это умеет. Запущенное приложение также имеет веб-сервер который будет запускать ваше приложение в любом браузере который к нему прилоединится. Он будет перезапускаться когда ресурсы на вашем диске изменятся.
+If you prefer to debug and develop in a browser then Wails has you covered. The running application also has a webserver that will run your application in any browser that connects to it. It will even refresh when your assets change on disk.
 
-### Бинарные файлы, готовые к выпуску
+## Production-ready Native Binaries
 
-Когда вы готовы сделать финальную сборку вашего приложения, CLI соберет всё в один исполняемый файл со всеми ресурсами внутри. На Windows и MacOS есть возможность создать нативный установочный пакет для распространения. The assets used in packaging (icon, info.plist, manifest file, etc) are part of your project and may be customised, giving you total control over how your applications are built.
+When you're ready to do the final build of your application, the CLI will compile it down to a single executable, with all the assets bundled into it. On Windows and MacOS, it is possible to create a native package for distribution. The assets used in packaging (icon, info.plist, manifest file, etc) are part of your project and may be customised, giving you total control over how your applications are built.
 
-### Инструментарий
+## Tooling
 
-Wails CLI предоставляет легкий способ генерировать, собирать и упаковывать ваши приложения. Оно создаст иконки, соберет ваше приложение с оптимальными параметрами и создаст готовый для распространения исполняемый файл. Выберите из нескольких стартовых шаблонов для быстрого старта!
+The Wails CLI provides a hassle-free way to generate, build and bundle your applications. It will do the heavy lifting of creating icons, compiling your application with optimal settings and delivering a distributable, production ready binary. Choose from a number of starter templates to get up and running quickly!

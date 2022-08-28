@@ -3,36 +3,36 @@
     "message": "下个版本 🚧",
     "description": "The label for version current"
   },
-  "sidebar.docs.category.Getting Started": {
+  "sidebar.tutorialSidebar.category.Getting Started": {
     "message": "快速入门",
-    "description": "The label for category Getting Started in sidebar docs"
+    "description": "The label for category Getting Started in sidebar tutorialSidebar"
   },
-  "sidebar.docs.category.Reference": {
+  "sidebar.tutorialSidebar.category.Reference": {
     "message": "参考",
-    "description": "The label for category Reference in sidebar docs"
+    "description": "The label for category Reference in sidebar tutorialSidebar"
   },
-  "sidebar.docs.category.Runtime": {
+  "sidebar.tutorialSidebar.category.Runtime": {
     "message": "运行时",
-    "description": "The label for category Runtime in sidebar docs"
+    "description": "The label for category Runtime in sidebar tutorialSidebar"
   },
-  "sidebar.docs.category.Community": {
+  "sidebar.tutorialSidebar.category.Community": {
     "message": "社区",
-    "description": "The label for category Community in sidebar docs"
+    "description": "The label for category Community in sidebar tutorialSidebar"
   },
-  "sidebar.docs.category.Showcase": {
-    "message": "案例展示",
-    "description": "The label for category Showcase in sidebar docs"
+  "sidebar.tutorialSidebar.category.Showcase": {
+    "message": "项目展示",
+    "description": "The label for category Showcase in sidebar tutorialSidebar"
   },
-  "sidebar.docs.category.Guides": {
+  "sidebar.tutorialSidebar.category.Guides": {
     "message": "指南",
-    "description": "The label for category Guides in sidebar docs"
+    "description": "The label for category Guides in sidebar tutorialSidebar"
   },
-  "sidebar.docs.category.Tutorials": {
+  "sidebar.tutorialSidebar.category.Tutorials": {
     "message": "教程",
-    "description": "The label for category Tutorials in sidebar docs"
+    "description": "The label for category Tutorials in sidebar tutorialSidebar"
   },
-  "sidebar.docs.link.Contributing": {
+  "sidebar.tutorialSidebar.category.Contributing": {
     "message": "参与贡献",
-    "description": "The label for link Contributing in sidebar docs, linking to /community-guide#ways-of-contributing"
+    "description": "The label for category Contributing in sidebar tutorialSidebar"
   }
 }

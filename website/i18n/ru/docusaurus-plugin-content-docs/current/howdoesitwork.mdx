@@ -7,7 +7,7 @@ sidebar_position: 20
 A Wails application is a standard Go application, with a webkit frontend. The Go part of the application consists of the application code and a runtime library that provides a number of useful operations, like controlling the application window. The frontend is a webkit window that will display the frontend assets. Also available to the frontend is a Javascript version of the runtime library. Finally, it is possible to bind Go methods to the frontend, and these will appear as Javascript methods that can be called, just as if they were local Javascript methods.
 
 <div className="text--center">
-  <img src={require("@site/static/img/architecture.png").default} width="75%" />
+  <img src="/img/architecture.svg" width="75%" />
 </div>
 
 ## The Main Application
@@ -106,7 +106,7 @@ The `Bind` option is one of the most important options in a Wails application. I
 
 :::info Note
 
-Wails requires that you pass in an *instance* of the struct for it to bind it correctly
+  Wails requires that you pass in an *instance* of the struct for it to bind it correctly
 
 :::
 
@@ -173,10 +173,9 @@ You may bind as many structs as you like. Just make sure you create an instance 
 ```
 
 When you run `wails dev` (or `wails generate module`), a frontend module will be generated containing the following:
-
-- Javascript bindings for all bound methods
-- Typescript declarations for all bound methods
-- Typescript definitions for all Go structs used as inputs or outputs by the bound methods
+  - Javascript bindings for all bound methods
+  - Typescript declarations for all bound methods
+  - Typescript definitions for all Go structs used as inputs or outputs by the bound methods
 
 This makes it incredibly simple to call Go code from the frontend, using the same strongly typed datastructures.
 
@@ -200,12 +199,11 @@ wailsjs
       ├─App.d.ts
       └─App.js
 ```
-
 Here we can see that there is a `main` package that contains the Javascript bindings for the bound `App` struct, as well as the Typescript declaration file for those methods. To call `Greet` from our frontend, we simply import the method and call it like a regular Javascript function:
 
 ```javascript
-// ...
-import {Greet} from '../wailsjs/go/main/App'
+    // ...
+    import {Greet} from '../wailsjs/go/main/App'
 
     function doGreeting(name) {
         Greet(name).then((result) => {
@@ -213,7 +211,6 @@ import {Greet} from '../wailsjs/go/main/App'
         })
     }
 ```
-
 The Typescript declaration file gives you the correct types for the bound methods:
 
 ```ts
@@ -326,7 +323,7 @@ export namespace main {
 So long as you have TypeScript as part of your frontend build configuration, you can use these models in the following way:
 
 ```js title="mycode.js"
-import {Greet} from '../wailsjs/go/main/App'
+  import {Greet} from '../wailsjs/go/main/App'
   import {main} from '../wailsjs/go/models'
 
   function generate() {
