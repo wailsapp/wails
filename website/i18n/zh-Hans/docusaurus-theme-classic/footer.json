@@ -28,7 +28,7 @@
     "description": "The label of footer link with label=Github linking to https://github.com/wailsapp/wails"
   },
   "link.item.label.Twitter": {
-    "message": "Twitter",
+    "message": "推特（Twitter）",
     "description": "The label of footer link with label=Twitter linking to https://twitter.com/wailsapp"
   },
   "link.item.label.Slack": {

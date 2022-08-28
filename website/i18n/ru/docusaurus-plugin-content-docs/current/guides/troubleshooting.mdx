@@ -14,6 +14,7 @@ Check that your application includes the assets from the correct directory. In y
 //go:embed frontend/dist
 var assets embed.FS
 ```
+
 Check that `frontend/dist` contains your application assets.
 
 ### Mac
@@ -35,7 +36,10 @@ Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
 If your built application looks like this in finder:
 
 <p className="text--center">
-    <img src="/img/troubleshooting/invalid_mac_app.png"></img>
+    <img 
+    src={require("@site/static/img/troubleshooting/invalid_mac_app.png").default}
+        width="40%"
+        class="screenshot"/>
 </p>
 
 it''s likely that your application''s `info.plist` is invalid. Update the file in `build/<yourapp>.app/Contents/info.plist` and check if the data is valid, EG check the binary name is correct. To persist the changes, copy the file back to the `build/darwin` directory.
@@ -43,12 +47,15 @@ it''s likely that your application''s `info.plist` is invalid. Update the file i
 ## Cannot call backend method from frontend with variadic arguments
 
 If you have a backend method defined with variadic parameters, eg:
+
 ```go
 func (a *App) TestFunc(msg string, args ...interface{}) error {
     // Code
 }
 ```
+
 calling this method from the frontend like this will fail:
+
 ```js
 var msg = "Hello: "
 var args = ["Go", "JS"]
@@ -58,7 +65,9 @@ window.go.main.App.TestFunc(msg, ...args).then((result) => {
     //handle error
 });
 ```
+
 Workaround:
+
 ```js
 var msg = "Hello "
 var args = ["Go", "JS"]
@@ -68,19 +77,24 @@ window.go.main.App.TestFunc(msg, args).then((result) => { //without the 3 dots
     //handle error
 });
 ```
+
 Credit: https://github.com/wailsapp/wails/issues/1186
 
 ## I''m having getting proxy errors when trying to install Wails
 
 If you are getting errors like this:
+
 ```
 "https://proxy.golang.org/github.com/wailsapp/wails/cmd/wails/@v/list": dial tcp 172.217.163.49:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
 ```
+
 it's probably because the official Go Proxy is being blocked (Users in China have reported this). The solution is to set up the proxy manually, eg:
+
 ```
 go env -w GO111MODULE=on
 go env -w GOPROXY=https://goproxy.cn,direct
 ```
+
 Source: https://github.com/wailsapp/wails/issues/1233
 
 ## The generated Typescript doesn''t have the correct types

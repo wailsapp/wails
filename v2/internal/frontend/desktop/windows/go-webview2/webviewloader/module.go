@@ -1,11 +1,15 @@
 package webviewloader
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"sync"
 	"unsafe"
 
 	"github.com/jchv/go-winloader"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webview2loader"
+
 	"golang.org/x/sys/windows"
 )
 
@@ -28,9 +32,10 @@ const (
 )
 
 // CompareBrowserVersions will compare the 2 given versions and return:
-//     Less than zero: v1 < v2
-//               zero: v1 == v2
-//  Greater than zero: v1 > v2
+//
+//	   Less than zero: v1 < v2
+//	             zero: v1 == v2
+//	Greater than zero: v1 > v2
 func CompareBrowserVersions(v1 string, v2 string) (int, error) {
 	_v1, err := windows.UTF16PtrFromString(v1)
 	if err != nil {
@@ -62,6 +67,19 @@ func CompareBrowserVersions(v1 string, v2 string) (int, error) {
 // If path is empty, it will try to find installed webview2 is the system.
 // If there is no version installed, a blank string is returned.
 func GetWebviewVersion(path string) (string, error) {
+	if path != "" {
+		// The default implementation fails if CGO and a fixed browser path is used. It's caused by the go-winloader
+		// which loads the native DLL from memory.
+		// Use the new GoWebView2Loader in this case, in the future we will make GoWebView2Loader
+		// feature-complete and remove the use of the native DLL and go-winloader.
+		version, err := webview2loader.GetAvailableCoreWebView2BrowserVersionString(path)
+		if errors.Is(err, os.ErrNotExist) {
+			// Webview2 is not found
+			return "", nil
+		}
+		return version, nil
+	}
+
 	err := loadFromMemory()
 	if err != nil {
 		return "", err

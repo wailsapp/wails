@@ -4,213 +4,182 @@ sidebar_position: 4
 
 # Window
 
-## Overview
-
 These methods give control of the application window.
 
 ### WindowSetTitle
 
-Go Signature: `WindowSetTitle(ctx context.Context, title string)`
-
-JS Signature: `WindowSetTitle(title: string)`
-
 Sets the text in the window title bar.
+
+Go: `WindowSetTitle(ctx context.Context, title string)`<br/>
+JS: `WindowSetTitle(title: string)`
 
 ### WindowFullscreen
 
-Go Signature: `WindowFullscreen(ctx context.Context)`
-
-JS Signature: `WindowFullscreen()`
-
 Makes the window full screen.
+
+Go: `WindowFullscreen(ctx context.Context)`<br/>
+JS: `WindowFullscreen()`
 
 ### WindowUnfullscreen
 
-Go Signature: `WindowUnfullscreen(ctx context.Context)`
-
-JS Signature: `WindowUnfullscreen()`
-
 Restores the previous window dimensions and position prior to full screen.
+
+Go: `WindowUnfullscreen(ctx context.Context)`<br/>
+JS: `WindowUnfullscreen()`
 
 ### WindowCenter
 
-Go Signature: `WindowCenter(ctx context.Context)`
-
-JS Signature: `WindowCenter()`
-
 Centers the window on the monitor the window is currently on.
+
+Go: `WindowCenter(ctx context.Context)`<br/>
+JS: `WindowCenter()`
 
 ### WindowReload
 
-Go Signature: `WindowReload(ctx context.Context)`
-
-JS Signature: `WindowReload()`
-
 Performs a "reload" (Reloads current page).
+
+Go: `WindowReload(ctx context.Context)`<br/>
+JS: `WindowReload()`
 
 ### WindowReloadApp
 
-Go Signature: `WindowReloadApp(ctx context.Context)`
-
-JS Signature: `WindowReloadApp()`
-
 Reloads the application frontend.
 
-### WindowSetSy
+Go: `WindowReloadApp(ctx context.Context)`<br/>
+JS: `WindowReloadApp()`
 
 ### WindowSetSystemDefaultTheme
 
-Go Signature: `WindowSetSystemDefaultTheme(ctx context.Context)`
-
-JS Signature: `WindowSetSystemDefaultTheme()`
-
 Windows only.
+
+Go: `WindowSetSystemDefaultTheme(ctx context.Context)`<br/>
+JS: `WindowSetSystemDefaultTheme()`
 
 Sets window theme to system default (dark/light).
 
 ### WindowSetLightTheme
 
-Go Signature: `WindowSetLightTheme(ctx context.Context)`
-
-JS Signature: `WindowSetLightTheme()`
-
 Windows only.
+
+Go: `WindowSetLightTheme(ctx context.Context)`<br/>
+JS: `WindowSetLightTheme()`
 
 Sets window theme to light.
 
 ### WindowSetDarkTheme
 
-Go Signature: `WindowSetDarkTheme(ctx context.Context)`
-
-JS Signature: `WindowSetDarkTheme()`
-
 Windows only.
+
+Go: `WindowSetDarkTheme(ctx context.Context)`<br/>
+JS: `WindowSetDarkTheme()`
 
 Sets window theme to dark.
 
 ### WindowShow
 
-Go Signature: `WindowShow(ctx context.Context)`
-
-JS Signature: `WindowShow()`
-
 Shows the window, if it is currently hidden.
+
+Go: `WindowShow(ctx context.Context)`<br/>
+JS: `WindowShow()`
 
 ### WindowHide
 
-Go Signature: `WindowHide(ctx context.Context)`
-
-JS Signature: `WindowHide()`
-
 Hides the window, if it is currently visible.
+
+Go: `WindowHide(ctx context.Context)`<br/>
+JS: `WindowHide()`
 
 ### WindowSetSize
 
-Go Signature: `WindowSetSize(ctx context.Context, width int, height int)`
-
-JS Signature: `WindowSetSize(size: Size)`
-
 Sets the width and height of the window.
+
+Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/>
+JS: `WindowSetSize(size: Size)`
 
 ### WindowGetSize
 
-Go Signature: `WindowGetSize(ctx context.Context) (width int, height int)`
-
-JS Signature: `WindowGetSize() : Size`
-
 Gets the width and height of the window.
 
+Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/>
+JS: `WindowGetSize() : Size`
+
 ### WindowSetMinSize
-
-Go Signature: `WindowSetMinSize(ctx context.Context, width int, height int)`
-
-JS Signature: `WindowSetMinSize(size: Size)`
 
 Sets the minimum window size.
 Will resize the window if the window is currently smaller than the given dimensions.
 
 Setting a size of `0,0` will disable this constraint.
 
+Go: `WindowSetMinSize(ctx context.Context, width int, height int)`<br/>
+JS: `WindowSetMinSize(size: Size)`
+
 ### WindowSetMaxSize
-
-Go Signature: `WindowSetMaxSize(ctx context.Context, width int, height int)`
-
-JS Signature: `WindowSetMaxSize(size: Size)`
 
 Sets the maximum window size.
 Will resize the window if the window is currently larger than the given dimensions.
 
 Setting a size of `0,0` will disable this constraint.
 
+Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/>
+JS: `WindowSetMaxSize(size: Size)`
+
 ### WindowSetAlwaysOnTop
-
-Go Signature: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`
-
-JS Signature: `WindowSetAlwaysOnTop(b: Boolen)`
 
 Sets the window AlwaysOnTop or not on top.
 
+Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/>
+JS: `WindowSetAlwaysOnTop(b: Boolen)`
+
 ### WindowSetPosition
-
-Go Signature: `WindowSetPosition(ctx context.Context, x int, y int)`
-
-JS Signature: `WindowSetPosition(position: Position)`
 
 Sets the window position relative to the monitor the window is currently on.
 
+Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/>
+JS: `WindowSetPosition(position: Position)`
+
 ### WindowGetPosition
-
-Go Signature: `WindowGetPosition(ctx context.Context) (x int, y int)`
-
-JS Signature: `WindowGetPosition() : Position`
 
 Gets the window position relative to the monitor the window is currently on.
 
+Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/>
+JS: `WindowGetPosition() : Position`
+
 ### WindowMaximise
-
-Go Signature: `WindowMaximise(ctx context.Context)`
-
-JS Signature: `WindowMaximise()`
 
 Maximises the window to fill the screen.
 
+Go: `WindowMaximise(ctx context.Context)`<br/>
+JS: `WindowMaximise()`
+
 ### WindowUnmaximise
-
-Go Signature: `WindowUnmaximise(ctx context.Context)`
-
-JS Signature: `WindowUnmaximise()`
 
 Restores the window to the dimensions and position prior to maximising.
 
+Go: `WindowUnmaximise(ctx context.Context)`<br/>
+JS: `WindowUnmaximise()`
+
 ### WindowToggleMaximise
-
-Go Signature: `WindowToggleMaximise(ctx context.Context)`
-
-JS Signature: `WindowToggleMaximise()`
 
 Toggles between Maximised and UnMaximised.
 
+Go: `WindowToggleMaximise(ctx context.Context)`<br/>
+JS: `WindowToggleMaximise()`
+
 ### WindowMinimise
-
-Go Signature: `WindowMinimise(ctx context.Context)`
-
-JS Signature: `WindowMinimise()`
 
 Minimises the window.
 
+Go: `WindowMinimise(ctx context.Context)`<br/>
+JS: `WindowMinimise()`
+
 ### WindowUnminimise
-
-Go Signature: `WindowUnminimise(ctx context.Context)`
-
-JS Signature: `WindowUnminimise()`
 
 Restores the window to the dimensions and position prior to minimising.
 
+Go: `WindowUnminimise(ctx context.Context)`<br/>
+JS: `WindowUnminimise()`
+
 ### WindowSetBackgroundColour
-
-Go Signature: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`
-
-JS Signature: `WindowSetBackgroundColour(R, G, B, A)`
 
 Sets the background colour of the window to the given RGBA colour definition.
 This colour will show through for all transparent pixels.
@@ -218,11 +187,12 @@ This colour will show through for all transparent pixels.
 Valid values for R, G, B and A are 0-255.
 
 :::info Windows
-
 On Windows, only alpha values of 0 or 255 are supported.
 Any value that is not 0 will be considered 255.
-
 :::
+
+Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/>
+JS: `WindowSetBackgroundColour(R, G, B, A)`
 
 ## Typescript Object Definitions
 

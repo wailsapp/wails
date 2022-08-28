@@ -198,6 +198,9 @@ Wails v2 已针对所有 3 个平台发布了 Beta 版。如果您有兴趣尝�
 <a href="https://github.com/Ilshidur" style="width:50px">
   <img src="https://github.com/Ilshidur.png?size=50" width="50"/>
 </a>
+<a href="https://github.com/KiddoV" style="width:45px">
+  <img src="https://github.com/KiddoV.png?size=45" width="45"/>
+</a>
 
 ## 快速入门
 
