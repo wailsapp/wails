@@ -4,26 +4,26 @@ sidebar_position: 10
 
 # Hello World
 
-The aim of this tutorial is to get you up and running with the most basic application using Wails. You will be able to:
+Цель этого урока — запустить наиболее базовое приложение, использующее Wails. Вы сможете:
 
-  - Create a new Wails application
-  - Build the application
-  - Run the application
+- Создавать новое Wails приложение
+- Собирать приложение
+- Запускать приложение
 
 :::note
-This tutorial uses Windows as the target platform. Output will vary slightly
-depending on your operating system.
+В этом уроке в качестве целевой платформы используется Windows. Вывод будет варьироваться в
+зависимости от вашей операционной системы.
 :::
 
-## Create a new Wails application
+## Создавать новое Wails приложение
 
-To create a new Wails application using the default vanilla JS template, you need to run the following command:
+Чтобы создать новое Wails приложение, использующее стандартный шаблон JS, вам нужно выполнить следующую команду:
 
 ```bash
 wails init -n helloworld
 ```
 
-You should see something similar to the following:
+Вы должны увидеть что-то похожее на следующее:
 
 ```
 Wails CLI v2.0.0
@@ -39,27 +39,27 @@ Template Support:  https://wails.io
 Initialised project 'helloworld' in 232ms.
 ```
 
-This will create a new directory called `helloworld` in the current directory. In this directory, you will find a number of files:
+Это создаст новый каталог под названием `helloworld` в текущей директории. В этом каталоге вы найдете несколько файлов:
 
 ```
-build/       - Contains the build files + compiled application
-frontend/    - Contains the frontend files
-app.go       - Contains the application code
-main.go      - The main program with the application configuration
-wails.json   - The project configuration file
-go.mod       - The go module file
-go.sum       - The go module checksum file
+build/       - Содержит файлы сборки + собранное приложение
+frontend/    - Содержит файлы интерфейса
+app.go       - Содержит код приложения
+main.go      - Основная программа с настройками приложения
+wails.json   - Файл настройки проекта
+go.mod       - Файл модуля Go
+go.sum       - Файл контрольной суммы модуля Go
 ```
 
-## Build the application
+## Собирать приложение
 
-To build the application, change to the new `helloworld` project directory and run the following command:
+Чтобы собрать приложение, перейдите в новую директорию `helloworld` и запустите следующую команду:
 
 ```bash
 wails build
 ```
 
-You should see something like the following:
+Вы должны увидеть что-то похожее на следующее:
 
 ```
 Wails CLI v2.0.0
@@ -85,28 +85,34 @@ Building target: windows/amd64
 Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
 ```
 
-This has compiled the application and saved it in the `build/bin` directory.
+Приложение собрано и сохранено в папке `build/bin`.
 
-## Run the application
+## Запускать приложение
 
-If we view the `build/bin` directory in Windows Explorer, we should see our project binary:
-
-<div class="text--center">
-    <img src="/img/helloworld-app-icon.png" width="134px"/>
-</div>
-
-<br/>
-
-We can run it by simply double-clicking the `helloworld.exe` file.
-
-On Mac, Wails generates a `helloworld.app` file which can be run by double-clicking it.
-
-On Linux, you can run the application using `./helloworld` from the `build/bin` directory.
-
-You should see the application working as expected:
+Если мы откроем папку `build/bin` в Проводнике, то увидим исполняемый файл проекта:
 
 <div class="text--center">
-    <img src="/img/windows-default-app.png" width="50%"
-         className="screenshot"/>
+  <img
+    src={require("@site/static/img/helloworld-app-icon.png").default}
+    width="134px"
+  />
 </div>
-<br/>
+
+<br />
+
+Мы можем запустить его, просто дважды щелкнув по файлу `helloworld.exe`.
+
+На Mac, Wails генерирует файл `helloworld.app` который может быть запущен двойным щелчком.
+
+На Linux вы можете запустить приложение с помощью файла `./helloworld` из папки `build/bin`.
+
+Вы должны видеть приложение, работающее так, как ожидалось:
+
+<div class="text--center">
+  <img
+    src={require("@site/static/img/windows-default-app.png").default}
+    width="50%"
+    className="screenshot"
+  />
+</div>
+<br />
