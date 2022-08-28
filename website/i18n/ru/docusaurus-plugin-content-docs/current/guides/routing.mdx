@@ -1,3 +1,4 @@
+
 # Routing
 
 Routing is a popular way to switch views in an application. This page offers some guidance around how to do that.
@@ -23,25 +24,4 @@ The recommended approach for routing in Angular is [HashLocationStrategy](https:
 
 ```ts
 RouterModule.forRoot(routes, {useHash: true})
-```
-
-## React
-
-The recommended approach for routing in React is [HashRouter](https://reactrouter.com/docs/en/v6/routers/hash-router):
-
-```jsx
-import { HashRouter } from "react-router-dom";
-
-ReactDOM.render(
-  <HashRouter basename={"/"}>
-    {/* The rest of your app goes here */}
-    <Routes>
-      <Route path="/" element={<Page0 />} exact />
-      <Route path="/page1" element={<Page1 />} />
-      <Route path="/page2" element={<Page2 />} />
-      {/* more... */}
-    </Routes>
-  </HashRouter>,
-  root
-);
 ```

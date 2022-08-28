@@ -1,3 +1,4 @@
+
 # Linux Distro Support
 
 ## Overview
@@ -87,7 +88,6 @@ type PackageManager interface {
     InstallCommand(*Package) string
 }
 ```
-
 - `Name()` should return the name of the package manager
 - `Packages()` should return a `packagemap`, that provides candidate filenames for dependencies
 - `PackageInstalled()` should return `true` if the given package is installed
