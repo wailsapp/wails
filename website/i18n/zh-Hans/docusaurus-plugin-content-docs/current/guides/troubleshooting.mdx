@@ -1,25 +1,25 @@
-# 故障排除
+# Troubleshooting
 
-各种故障排除技巧。
+An assortment of troubleshooting tips.
 
-## 我的应用程序显示白色/空白屏幕
+## The `wails` command appears to be missing?
 
 If your system is reporting that the `wails` command is missing, make sure you have followed the Go installation guide correctly. Normally, it means that the `go/bin` directory in your User's home directory is not in the `PATH` environment variable. You will also normally need to close and reopen any open command prompts so that changes to the environment made by the installer are reflected at the command prompt.
 
-## 我的应用程序显示白色/空白屏幕
+## My application is displaying a white/blank screen
 
-检查您的应用程序是否在正确目录中包含资源。 在您的`main.go`文件中，您将拥有类似于以下代码的内容：
+检查您的应用程序是否在正确目录中包含资源。 Check that your application includes the assets from the correct directory. In your `main.go` file, you will have something similar to the following code:
 
 ```go
 //go:embed frontend/dist
 var assets embed.FS
 ```
 
-如果您构建的应用程序在 finder 中如下所示：
+Check that `frontend/dist` contains your application assets.
 
 ### Mac
 
-如果在 Mac 上发生这种情况，请尝试在您的 `Info.plist` 中添加以下内容：
+If this happens on Mac, try adding the following to your `Info.plist`:
 
 ```xml
 <key>NSAppTransportSecurity</key>
@@ -31,9 +31,9 @@ var assets embed.FS
 
 Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
 
-## 前端调用后端方法无法使用可变参数
+## Mac application not valid
 
-如果您有使用可变参数定义的后端方法，例如：
+If your built application looks like this in finder:
 
 <p className="text--center">
   <img
@@ -41,11 +41,11 @@ Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
       require("@site>
 </p>
 
-您的应用程序的 `info.plist` 可能无效。 更新 `build/<yourapp>.app/Contents/info.plist` 文件并检查数据是否有效，例如二进制文件名称是否正确。 要保留更改，请将文件复制回 `build/darwin` 目录。
+it''s likely that your application''s `info.plist` is invalid. Update the file in `build/<yourapp>.app/Contents/info.plist` and check if the data is valid, EG check the binary name is correct. To persist the changes, copy the file back to the `build/darwin` directory.
 
-## 尝试安装 Wails 时遇到代理错误
+## Cannot call backend method from frontend with variadic arguments
 
-归功于：https://github.com/wailsapp/wails/issues/1186
+If you have a backend method defined with variadic parameters, eg:
 
 ```go
 func (a *App) TestFunc(msg string, args ...interface{}) error {
@@ -53,7 +53,7 @@ func (a *App) TestFunc(msg string, args ...interface{}) error {
 }
 ```
 
-如果您遇到这样的错误：
+calling this method from the frontend like this will fail:
 
 ```js
 var msg = "Hello: ";
@@ -67,7 +67,7 @@ window.go.main.App.TestFunc(msg, ...args)
   });
 ```
 
-解决办法：
+Workaround:
 
 ```js
 var msg = "Hello ";
@@ -82,7 +82,7 @@ window.go.main.App.TestFunc(msg, args)
   });
 ```
 
-来源：https://github.com/wailsapp/wails/issues/1233
+Credit: https://github.com/wailsapp/wails/issues/1186
 
 ## I''m having getting proxy errors when trying to install Wails
 
@@ -92,7 +92,7 @@ If you are getting errors like this:
 "https://proxy.golang.org/github.com/wailsapp/wails/cmd/wails/@v/list": dial tcp 172.217.163.49:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
 ```
 
-这可能是因为官方 Go Proxy 被阻止（中国用户反馈了这一点）。 解决方案是手动设置代理，例如：
+it's probably because the official Go Proxy is being blocked (Users in China have reported this). The solution is to set up the proxy manually, eg: 解决方案是手动设置代理，例如：
 
 ```
 go env -w GO111MODULE=on
@@ -103,11 +103,11 @@ Source: https://github.com/wailsapp/wails/issues/1233
 
 ## The generated Typescript doesn''t have the correct types
 
-Sometimes the generated Typescript doesn''t have the correct types. To mitigate this, it is possible to specify what types should be generated using the `ts_type` struct tag. For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types).
+Sometimes the generated Typescript doesn''t have the correct types. Sometimes the generated Typescript doesn''t have the correct types. To mitigate this, it is possible to specify what types should be generated using the `ts_type` struct tag. For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types). For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types).
 
 ## When I navigate away from `index.html`, I am unable to call methods on the frontend
 
-If you navigate away from `index.html` to a new html file, the context will be lost. This can be fixed by adding the following imports to the `<head>` section of any new page you navigate to:
+If you navigate away from `index.html` to a new html file, the context will be lost. If you navigate away from `index.html` to a new html file, the context will be lost. This can be fixed by adding the following imports to the `<head>` section of any new page you navigate to:
 
 ```html
 <head>
