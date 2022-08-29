@@ -27,6 +27,13 @@ Restores the previous window dimensions and position prior to full screen.
 Go: `WindowUnfullscreen(ctx context.Context)`<br/>
 JS: `WindowUnfullscreen()`
 
+### WindowIsFullscreen
+
+Returns true if the window is full screen.
+
+Go: `WindowIsFullscreen(ctx context.Context) bool`
+JS: `WindowIsFullscreen() bool`
+
 ### WindowCenter
 
 Centers the window on the monitor the window is currently on.
@@ -88,6 +95,13 @@ Hides the window, if it is currently visible.
 
 Go: `WindowHide(ctx context.Context)`<br/>
 JS: `WindowHide()`
+
+### WindowIsNormal
+
+Returns true if the window not minimised, maximised or fullscreen.
+
+Go: `WindowIsNormal(ctx context.Context) bool`
+JS: `WindowIsNormal() bool`
 
 ### WindowSetSize
 
@@ -158,6 +172,13 @@ Restores the window to the dimensions and position prior to maximising.
 Go: `WindowUnmaximise(ctx context.Context)`<br/>
 JS: `WindowUnmaximise()`
 
+### WindowIsMaximised
+
+Returns true if the window is maximised.
+
+Go: `WindowIsMaximised(ctx context.Context) bool`
+JS: `WindowIsMaximised() bool`
+
 ### WindowToggleMaximise
 
 Toggles between Maximised and UnMaximised.
@@ -178,6 +199,13 @@ Restores the window to the dimensions and position prior to minimising.
 
 Go: `WindowUnminimise(ctx context.Context)`<br/>
 JS: `WindowUnminimise()`
+
+### WindowIsMinimised
+
+Returns true if the window is minimised.
+
+Go: `WindowIsMinimised(ctx context.Context) bool`
+JS: `WindowIsMinimised() bool`
 
 ### WindowSetBackgroundColour
 

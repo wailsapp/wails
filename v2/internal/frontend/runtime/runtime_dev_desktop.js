@@ -230,6 +230,10 @@
     WindowGetPosition: () => WindowGetPosition,
     WindowGetSize: () => WindowGetSize,
     WindowHide: () => WindowHide,
+    WindowIsFullscreen: () => WindowIsFullscreen,
+    WindowIsMaximised: () => WindowIsMaximised,
+    WindowIsMinimised: () => WindowIsMinimised,
+    WindowIsNormal: () => WindowIsNormal,
     WindowMaximise: () => WindowMaximise,
     WindowMinimise: () => WindowMinimise,
     WindowReload: () => WindowReload,
@@ -277,6 +281,9 @@
   function WindowUnfullscreen() {
     window.WailsInvoke("Wf");
   }
+  function WindowIsFullscreen() {
+    return Call(":wails:WindowIsFullscreen");
+  }
   function WindowSetSize(width, height) {
     window.WailsInvoke("Ws:" + width + ":" + height);
   }
@@ -313,11 +320,20 @@
   function WindowUnmaximise() {
     window.WailsInvoke("WU");
   }
+  function WindowIsMaximised() {
+    return Call(":wails:WindowIsMaximised");
+  }
   function WindowMinimise() {
     window.WailsInvoke("Wm");
   }
   function WindowUnminimise() {
     window.WailsInvoke("Wu");
+  }
+  function WindowIsMinimised() {
+    return Call(":wails:WindowIsMinimised");
+  }
+  function WindowIsNormal() {
+    return Call(":wails:WindowIsNormal");
   }
   function WindowSetBackgroundColour(R, G, B, A) {
     let rgba = JSON.stringify({ r: R || 0, g: G || 0, b: B || 0, a: A || 255 });

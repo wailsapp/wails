@@ -13,10 +13,13 @@ import (
 )
 
 const (
+	WS_MINIMIZE = 0x20000000
 	WS_MAXIMIZE = 0x01000000
 	WS_MINIMIZE = 0x20000000
 
 	GWL_STYLE = -16
+
+	MONITOR_DEFAULTTOPRIMARY = 0x00000001
 )
 
 const (
@@ -66,6 +69,19 @@ type MARGINS struct {
 	CxLeftWidth, CxRightWidth, CyTopHeight, CyBottomHeight int32
 }
 
+// http://msdn.microsoft.com/en-us/library/windows/desktop/dd162897.aspx
+type RECT struct {
+	Left, Top, Right, Bottom int32
+}
+
+// http://msdn.microsoft.com/en-us/library/windows/desktop/dd145065.aspx
+type MONITORINFO struct {
+	CbSize    uint32
+	RcMonitor RECT
+	RcWork    RECT
+	DwFlags   uint32
+}
+
 func ExtendFrameIntoClientArea(hwnd uintptr) {
 	// -1: Adds the default frame styling (aero shadow and e.g. rounded corners on Windows 11)
 	//     Also shows the caption buttons if transparent ant translucent but they don't work.
@@ -81,6 +97,20 @@ func ExtendFrameIntoClientArea(hwnd uintptr) {
 func IsVisible(hwnd uintptr) bool {
 	ret, _, _ := procIsWindowVisible.Call(hwnd)
 	return ret != 0
+}
+
+func IsWindowFullScreen(hwnd uintptr) bool {
+	wRect := GetWindowRect(hwnd)
+	m := MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY)
+	var mi MONITORINFO
+	mi.CbSize = uint32(unsafe.Sizeof(mi))
+	if !GetMonitorInfo(m, &mi) {
+		return false
+	}
+	return wRect.Left == mi.RcMonitor.Left &&
+		wRect.Top == mi.RcMonitor.Top &&
+		wRect.Right == mi.RcMonitor.Right &&
+		wRect.Bottom == mi.RcMonitor.Bottom
 }
 
 func IsWindowMaximised(hwnd uintptr) bool {
@@ -111,6 +141,15 @@ func SetBackgroundColour(hwnd uintptr, r, g, b uint8) {
 	col := winc.RGB(r, g, b)
 	hbrush, _, _ := procCreateSolidBrush.Call(uintptr(col))
 	setClassLongPtr(hwnd, GCLP_HBRBACKGROUND, hbrush)
+}
+
+func IsWindowMinimised(hwnd uintptr) bool {
+	style := uint32(getWindowLong(hwnd, GWL_STYLE))
+	return style&WS_MINIMIZE != 0
+}
+
+func IsWindowNormal(hwnd uintptr) bool {
+	return !IsWindowMaximised(hwnd) && !IsWindowMinimised(hwnd) && !IsWindowFullScreen(hwnd)
 }
 
 func dwmExtendFrameIntoClientArea(hwnd uintptr, margins *MARGINS) error {
@@ -158,6 +197,30 @@ func showWindow(hwnd uintptr, cmdshow int) bool {
 	ret, _, _ := procShowWindow.Call(
 		hwnd,
 		uintptr(cmdshow))
+	return ret != 0
+}
 
+func GetWindowRect(hwnd uintptr) *RECT {
+	var rect RECT
+	procGetWindowRect.Call(
+		hwnd,
+		uintptr(unsafe.Pointer(&rect)))
+
+	return &rect
+}
+
+func MonitorFromWindow(hwnd uintptr, dwFlags uint32) HMONITOR {
+	ret, _, _ := procMonitorFromWindow.Call(
+		hwnd,
+		uintptr(dwFlags),
+	)
+	return HMONITOR(ret)
+}
+
+func GetMonitorInfo(hMonitor HMONITOR, lmpi *MONITORINFO) bool {
+	ret, _, _ := procGetMonitorInfo.Call(
+		uintptr(hMonitor),
+		uintptr(unsafe.Pointer(lmpi)),
+	)
 	return ret != 0
 }

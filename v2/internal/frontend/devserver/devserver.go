@@ -210,6 +210,10 @@ func (d *DevWebServer) WindowUnmaximise() {
 	d.desktopFrontend.WindowUnmaximise()
 }
 
+func (d *DevWebServer) WindowIsMaximised() bool {
+	return d.desktopFrontend.WindowIsMaximised()
+}
+
 func (d *DevWebServer) WindowMinimise() {
 	d.desktopFrontend.WindowMinimise()
 }
@@ -219,6 +223,10 @@ func (d *DevWebServer) WindowUnminimise() {
 }
 func (d *DevWebServer) WindowSetAlwaysOnTop(b bool) {
 	d.desktopFrontend.WindowSetAlwaysOnTop(b)
+}
+
+func (d *DevWebServer) WindowIsMinimised() bool {
+	return d.desktopFrontend.WindowIsMinimised()
 }
 
 func (d *DevWebServer) WindowSetPosition(x int, y int) {
@@ -259,6 +267,14 @@ func (d *DevWebServer) WindowSetBackgroundColour(col *options.RGBA) {
 
 func (d *DevWebServer) ScreenGetAll() ([]Screen, error) {
 	return d.desktopFrontend.ScreenGetAll()
+}
+
+func (d *DevWebServer) WindowIsFullscreen() bool {
+	return d.desktopFrontend.WindowIsFullscreen()
+}
+
+func (d *DevWebServer) WindowIsNormal() bool {
+	return d.desktopFrontend.WindowIsNormal()
 }
 
 func (d *DevWebServer) MenuSetApplicationMenu(menu *menu.Menu) {
