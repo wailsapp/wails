@@ -171,10 +171,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			self := os.Args[0]
 			var env []string
 			if flags.obfuscate {
-				println("USING OBFUSCATED MODE")
 				env = append(env, "WAILS_OBFUSCATE=true")
-			} else {
-				println("NOT USING OBFUSCATED MODE")
 			}
 			if flags.tags != "" {
 				err = runCommandWithEnv(cwd, true, env, self, "generate", "module", "-tags", flags.tags)
@@ -343,7 +340,6 @@ func runCommand(dir string, exitOnError bool, command string, args ...string) er
 }
 
 func runCommandWithEnv(dir string, exitOnError bool, env []string, command string, args ...string) error {
-	LogGreen("Executing: " + command + " " + strings.Join(args, " "))
 	cmd := exec.Command(command, args...)
 	cmd.Dir = dir
 	cmd.Env = append(os.Environ(), env...)

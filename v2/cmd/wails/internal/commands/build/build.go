@@ -120,9 +120,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	dryRun := false
 	command.BoolFlag("dryrun", "Dry run, prints the config for the command that would be executed", &dryRun)
 
-	save := false
-	command.BoolFlag("save", "Save flags to project config (wails.json)", &save)
-
 	command.Action(func() error {
 
 		quiet := verbosity == 0
@@ -193,8 +190,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		if err != nil {
 			return err
 		}
-
-		// TODO: Override project options with command line flags
 
 		// Create BuildOptions
 		buildOptions := &build.Options{

@@ -72,9 +72,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
 	} else {
-		bindings := ""
+		var bindings string
+		var err error
 		if _obfuscated, _ := ctx.Value("obfuscated").(bool); !_obfuscated {
-			bindingsJSON, err := appBindings.ToJSON()
+			bindings, err = appBindings.ToJSON()
 			if err != nil {
 				log.Fatal(err)
 			}

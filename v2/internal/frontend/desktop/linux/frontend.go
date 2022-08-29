@@ -83,7 +83,6 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		} else {
 			appBindings.DB().UpdateObfuscatedCallMap()
 		}
-
 		assets, err := assetserver.NewAssetServer(ctx, appoptions, bindings)
 		if err != nil {
 			log.Fatal(err)
