@@ -292,6 +292,14 @@ func (w *Window) IsMinimised() bool {
 	return win32.IsWindowMinimised(w.Handle())
 }
 
+func (w *Window) IsNormal() bool {
+	return win32.IsWindowNormal(w.Handle())
+}
+
+func (w *Window) IsFullScreen() bool {
+	return win32.IsWindowFullScreen(w.Handle())
+}
+
 func (w *Window) SetTheme(theme winoptions.Theme) {
 	w.theme = theme
 	w.themeChanged = true

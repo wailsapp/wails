@@ -116,7 +116,13 @@ int IsFullscreen(GtkWidget *widget) {
 int IsMaximised(GtkWidget *widget) {
 	GdkWindow *gdkwindow = gtk_widget_get_window(widget);
 	GdkWindowState state = gdk_window_get_state(GDK_WINDOW(gdkwindow));
-	return state & GDK_WINDOW_STATE_MAXIMIZED;
+	return state & GDK_WINDOW_STATE_MAXIMIZED && !(state & GDK_WINDOW_STATE_FULLSCREEN);
+}
+
+int IsMinimised(GtkWidget *widget) {
+	GdkWindow *gdkwindow = gtk_widget_get_window(widget);
+	GdkWindowState state = gdk_window_get_state(GDK_WINDOW(gdkwindow));
+	return state & GDK_WINDOW_STATE_ICONIFIED;
 }
 
 
@@ -806,6 +812,15 @@ func (w *Window) IsFullScreen() bool {
 func (w *Window) IsMaximised() bool {
 	result := C.IsMaximised(w.asGTKWidget())
 	return result > 0
+}
+
+func (w *Window) IsMinimised() bool {
+	result := C.IsMinimised(w.asGTKWidget())
+	return result > 0
+}
+
+func (w *Window) IsNormal() bool {
+	return !w.IsMaximised() && !w.IsMinimised() && !w.IsFullScreen()
 }
 
 func (w *Window) SetBackgroundColour(r uint8, g uint8, b uint8, a uint8) {

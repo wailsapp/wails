@@ -71,6 +71,16 @@ export function WindowUnfullscreen() {
 }
 
 /**
+ * Returns the state of the window, i.e. whether the window is in full screen mode or not.
+ *
+ * @export
+ * @return {Promise<boolean>} The state of the window
+ */
+export function WindowIsFullscreen() {
+    return Call(":wails:WindowIsFullscreen");
+}
+
+/**
  * Set the Size of the window
  *
  * @export
@@ -196,6 +206,16 @@ export function WindowUnmaximise() {
 }
 
 /**
+ * Returns the state of the window, i.e. whether the window is maximised or not.
+ *
+ * @export
+ * @return {Promise<boolean>} The state of the window
+ */
+export function WindowIsMaximised() {
+    return Call(":wails:WindowIsMaximised");
+}
+
+/**
  * Minimise the Window
  *
  * @export
@@ -211,6 +231,26 @@ export function WindowMinimise() {
  */
 export function WindowUnminimise() {
     window.WailsInvoke('Wu');
+}
+
+/**
+ * Returns the state of the window, i.e. whether the window is minimised or not.
+ *
+ * @export
+ * @return {Promise<boolean>} The state of the window
+ */
+export function WindowIsMinimised() {
+    return Call(":wails:WindowIsMinimised");
+}
+
+/**
+ * Returns the state of the window, i.e. whether the window is normal or not.
+ *
+ * @export
+ * @return {Promise<boolean>} The state of the window
+ */
+export function WindowIsNormal() {
+    return Call(":wails:WindowIsNormal");
 }
 
 /**
