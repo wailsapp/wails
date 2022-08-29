@@ -95,14 +95,14 @@ our custom assets handler:
 
 <p className="text--center">
   <img
-    src={require("@site/static/img/assetshandler-does-not-exist.png").default}
+    src={require("@site/static/img/assetshandler-does-not-exist.webp").default}
   />
 </p>
 
 However, if we request `go.mod`, we will see the following output:
 
 <p className="text--center">
-  <img src={require("@site/static/img/assetshandler-go-mod.png").default} />
+  <img src={require("@site/static/img/assetshandler-go-mod.webp").default} />
 </p>
 
 This technique can be used to load images directly into the page. If we updated our default vanilla template and
@@ -122,7 +122,7 @@ Then we would see the following:
 
 <p className="text--center">
   <img
-    src={require("@site/static/img/assetshandler-image.png").default}
+    src={require("@site/static/img/assetshandler-image.webp").default}
     style={{ width: "75%" }}
   />
 </p>
