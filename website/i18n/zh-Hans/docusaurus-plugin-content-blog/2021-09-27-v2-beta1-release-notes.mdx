@@ -8,13 +8,15 @@ tags:
   - v2
 ---
 
-
 <div class="text--center">
-    <img src="/img/wails.png" width="40%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/wails.webp").default}
+    width="40%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
-
+<br />
 
 两年多前，在悉尼的火车上，当我第一次在 Reddit 宣布 Wails 时，我没想到它会引起太多关注。 几天后，一位多产的科技视频博主发布了一个教程视频，并给予了正面评价，从那时起，人们对该项目的兴趣猛增。
 
@@ -26,15 +28,19 @@ tags:
 
 ### 没有 CGO 依赖
 
-不，我不是在开玩笑：*没有 CGO 依赖*🤯！ Windows 的问题在于，与 MacOS 和 Linux 不同，它没有默认编译器。 此外，CGO 需要一个 mingw 编译器，并且有大量不同的安装选项。 删除 CGO 的要求大大简化了设置，并使调试变得非常容易。 虽然我已经付出了相当多的努力来完成这项工作，但大部分功劳应该归功于[John Chadwick](https://github.com/jchv)，他不仅启动了几个项目使这成为可能， 而且还对接受这些项目并以此为基础的人持开放态度. 还要归功于[Tad Vizbaras](https://github.com/tadvi)，他的[winc](https://github.com/tadvi/winc)项目让我走上了这条道路。 Credit also to [Tad Vizbaras](https://github.com/tadvi) whose [winc](https://github.com/tadvi/winc) project started me down this path.
+不，我不是在开玩笑：*没有 CGO 依赖*🤯！ Windows 的问题在于，与 MacOS 和 Linux 不同，它没有默认编译器。 此外，CGO 需要一个 mingw 编译器，并且有大量不同的安装选项。 删除 CGO 的要求大大简化了设置，并使调试变得非常容易。 虽然我已经付出了相当多的努力来完成这项工作，但大部分功劳应该归功于[John Chadwick](https://github.com/jchv)，他不仅启动了几个项目使这成为可能， 而且还对接受这些项目并以此为基础的人持开放态度。 还要归功于[Tad Vizbaras](https://github.com/tadvi)，他的[winc](https://github.com/tadvi/winc)项目让我走上了这条道路。
 
 ### WebView2 Chromium 渲染引擎
 
 <div class="text--center">
-    <img src="/img/devtools.png" width="75%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/devtools.png").default}
+    width="75%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 最终，Windows 开发人员为他们的应用程序获得了一流的渲染引擎！ 扭曲前端代码以在 Windows 上工作的日子已经一去不复返了。 最重要的是，您将获得一流的开发者工具体验！
 
@@ -47,10 +53,14 @@ Gophers 欢呼吧！ 单个二进制文件的构想依然存在！
 ### 新功能
 
 <div class="text--center">
-    <img src="/img/wails-menus.png" width="60%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/wails-menus.webp").default}
+    width="60%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 有很多对原生菜单支持的请求。 Wails 终于帮您搞定了。 应用程序菜单现已可用，并且包括对大多数原生菜单功能的支持。 这包括标准菜单项、复选框、单选组、子菜单和分隔符。
 
@@ -59,10 +69,14 @@ Gophers 欢呼吧！ 单个二进制文件的构想依然存在！
 现在可以选择随项目生成 IDE 配置。 这意味着如果您在受支持的 IDE 中打开您的项目，它已经被配置为构建和调试您的应用程序。 目前支持 VSCode，但我们希望尽快支持其他 IDE，例如 Goland。
 
 <div class="text--center">
-    <img src="/img/vscode.png" width="100%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/vscode.webp").default}
+    width="100%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 ### 无需打包资源
 
@@ -79,20 +93,23 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
 ### 全新的开发体验
 
 <div class="text--center">
-    <img src="/img/browser.png" width="60%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/browser.webp").default}
+    width="60%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
-
+<br />
 
 现在不需要打包资源，它启用了全新的开发体验。 新`wails dev`命令将构建并运行您的应用程序，但它不使用`embed.FS`中的资源，而是直接从磁盘加载它们。
 
 它还提供了附加功能：
 
-  - 热重载 - 对前端资源的任何更改都将触发并自动重载应用程序前端
-  - 自动重新构建 - 对 Go 代码的任何更改都将重新构建并重新启动您的应用程序
+- 热重载 - 对前端资源的任何更改都将触发并自动重载应用程序前端
+- 自动重新构建 - 对 Go 代码的任何更改都将重新构建并重新启动您的应用程序
 
-除此之外，网络服务器将在端口 34115 上启动。 这将为您的应用程序提供连接到它的任何浏览器。 所有连接的 Web 浏览器都会响应系统事件，例如资源更改时的热重载。
+除此之外，网络服务器将在端口 34115 上启动。 所有连接的 Web 浏览器都会响应系统事件，例如资源更改时的热重载。 所有连接的 Web 浏览器都会响应系统事件，例如资源更改时的热重载。
 
 在 Go 中，我们习惯于在应用程序中处理结构。 将结构发送到我们的前端并将它们用作我们应用程序中的状态通常很有用。 在 v1 中，这是一个非常需要手动的过程，对开发人员来说有点负担。 我很高兴地宣布，在 v2 中，任何在开发模式下运行的应用程序都将自动为所有结构生成 Typescript 模型，这些结构是绑定方法的输入或输出参数。 这实现了两个世界之间数据模型的无缝交换。
 
@@ -101,12 +118,16 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
 ### 远程模板
 
 <div class="text--center">
-    <img src="/img/remote.png" width="60%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/remote.webp").default}
+    width="60%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
-让应用程序快速启动并运行一直是 Wails 项目的一个关键目标。 当我们推出时，我们试图涵盖当时的很多现代框架：react、vue 和 angular。 前端开发的世界非常固执己见，发展迅速，很难保持领先地位！ 结果，我们发现我们的基本模板很快就过时了，这导致了维护问题。 这也意味着，我们没有为最新和最伟大的技术栈提供酷炫的现代模板。
+让应用程序快速启动并运行一直是 Wails 项目的一个关键目标。 当我们推出时，我们试图涵盖当时的很多现代框架：react、vue 和 angular。 前端开发的世界非常固执己见，发展迅速，很难保持领先地位！ 这也意味着，我们没有为最新和最伟大的技术栈提供酷炫的现代模板。 这也意味着，我们没有为最新和最伟大的技术栈提供酷炫的现代模板。
 
 在 v2 中，我希望通过让您能够自己创建和托管模板来增强社区的能力，而不是依赖于 Wails 项目。 所以现在您可以使用社区支持的模板创建项目！ 我希望这将激励开发人员创建一个充满活力的项目模板生态系统。 我对我们的开发者社区可以创造的东西感到非常兴奋！
 

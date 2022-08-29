@@ -28,27 +28,27 @@ function HomepageHeader() {
           transitionTime={1000}
         >
           <div className="slide-item-box">
-            <img src={useBaseUrl("/img/home-carousel/mac-app.jpg")} />
+            <img src={useBaseUrl("/img/showcase/mac-app.png")}/>
           </div>
           <div className="slide-item-box">
-            <img src={useBaseUrl("/img/showcase/ytd.png")} />
+            <img src={useBaseUrl("/img/showcase/ytd.webp")}/>
           </div>
           <div className="slide-item-box">
-            <img src={useBaseUrl("/img/showcase/wombat.png")} />
+            <img src={useBaseUrl("/img/showcase/wombat.webp")}/>
           </div>
           <div className="slide-item-box">
             <img src={useBaseUrl("/img/showcase/restic-browser-2.png")} />
           </div>
           <div className="slide-item-box">
-            <img src={useBaseUrl("/img/showcase/wally.png")} />
+            <img src={useBaseUrl("/img/showcase/wally.webp")}/>
           </div>
           <div className="slide-item-box">
-            <img src={useBaseUrl("/img/october.png")} />
+            <img src={useBaseUrl("/img/showcase/october.webp")}/>
           </div>
           <div className="slide-item-box">
             <img
-              className="img"
-              src={useBaseUrl("/img/showcase/mollywallet.png")}
+                className="img"
+                src={useBaseUrl("/img/showcase/mollywallet.webp")}
             />
           </div>
         </Carousel>

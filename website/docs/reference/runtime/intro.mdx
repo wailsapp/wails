@@ -7,6 +7,15 @@ sidebar_position: 1
 The runtime is a library that provides utility methods for your application. There is both a Go and Javascript runtime
 and the aim is to try and keep them at parity where possible.
 
+It has utility methods for:
+
+- [Window](window.mdx)
+- [Menu](menu.mdx)
+- [Dialog](dialog.mdx)
+- [Events](events.mdx)
+- [Browser](browser.mdx)
+- [Log](log.mdx)
+
 The Go Runtime is available through importing `github.com/wailsapp/wails/v2/pkg/runtime`. All methods in this package
 take a context as the first parameter. This context should be obtained from the [OnStartup](../options.mdx#onstartup)
 or [OnDomReady](../options.mdx#ondomready) hooks.
@@ -26,7 +35,8 @@ frontend directory.
 
 ### Hide
 
-Go Signature: `Hide(ctx context.Context)`
+Go: `Hide(ctx context.Context)`<br/>
+JS: `Hide()`
 
 Hides the application.
 
@@ -38,8 +48,6 @@ For Windows and Linux, this is currently the same as `WindowHide`.
 
 ### Show
 
-Go Signature: `Show(ctx context.Context)`
-
 Shows the application.
 
 :::info Note
@@ -47,22 +55,38 @@ On Mac, this will bring the application back into the foreground.
 For Windows and Linux, this is currently the same as `WindowShow`.
 :::
 
-### Quit
+Go: `Show(ctx context.Context)`<br/>
+JS: `Show()`
 
-Go Signature: `Quit(ctx context.Context)`
+### Quit
 
 Quits the application.
 
-### Environment
+Go: `Quit(ctx context.Context)`<br/>
+JS: `Quit()`
 
-Go Signature: `Environment(ctx context.Context) EnvironmentInfo`
+### Environment
 
 Returns details of the current environment.
 
+Go: `Environment(ctx context.Context) EnvironmentInfo`<br/>
+JS: `Environment(): Promise<EnvironmentInfo>`
+
 #### EnvironmentInfo
 
+Go:
 ```go
 type EnvironmentInfo struct {
-    BuildType string  // Either "production", "debug" or "dev"
+	BuildType string
+	Platform  string
+	Arch      string
+}
+```
+JS:
+```ts
+interface EnvironmentInfo {
+    buildType: string;
+    platform: string;
+    arch: string;
 }
 ```
