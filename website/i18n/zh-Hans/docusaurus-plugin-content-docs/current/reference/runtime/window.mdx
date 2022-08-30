@@ -24,6 +24,12 @@ Go: `WindowFullscreen(ctx context.Context)`<br/> JS: `WindowFullscreen()`
 
 Go: `WindowUnfullscreen(ctx context.Context)`<br/> JS: `WindowUnfullscreen()`
 
+### WindowIsFullscreen
+
+Returns true if the window is full screen.
+
+Go: `WindowIsFullscreen(ctx context.Context) bool` JS: `WindowIsFullscreen() bool`
+
 ### 窗口居中
 
 使窗口在当前窗口所在的监视器上居中。
@@ -77,6 +83,12 @@ Go: `WindowShow(ctx context.Context)`<br/> JS: `WindowShow()`
 设置窗口的宽度和高度。
 
 Go: `WindowHide(ctx context.Context)`<br/> JS: `WindowHide()`
+
+### WindowIsNormal
+
+Returns true if the window not minimised, maximised or fullscreen.
+
+Go: `WindowIsNormal(ctx context.Context) bool` JS: `WindowIsNormal() bool`
 
 ### 设置窗口最小尺寸
 
@@ -136,6 +148,12 @@ Go: `WindowMaximise(ctx context.Context)`<br/> JS: `WindowMaximise()`
 
 Go: `WindowUnmaximise(ctx context.Context)`<br/> JS: `WindowUnmaximise()`
 
+### WindowIsMaximised
+
+Returns true if the window is maximised.
+
+Go: `WindowIsMaximised(ctx context.Context) bool` JS: `WindowIsMaximised() bool`
+
 ### 窗口设置 RGBA
 
 将窗口恢复到最小化之前的尺寸和位置。
@@ -153,6 +171,12 @@ Go: `WindowMinimise(ctx context.Context)`<br/> JS: `WindowMinimise()`
 Restores the window to the dimensions and position prior to minimising.
 
 Go: `WindowUnminimise(ctx context.Context)`<br/> JS: `WindowUnminimise()`
+
+### WindowIsMinimised
+
+Returns true if the window is minimised.
+
+Go: `WindowIsMinimised(ctx context.Context) bool` JS: `WindowIsMinimised() bool`
 
 ### WindowSetBackgroundColour
 
