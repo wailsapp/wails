@@ -30,6 +30,11 @@ const config = {
         direction: "ltr",
         htmlLang: "zh-Hans",
       },
+      ja: {
+        label: "日本語",
+        direction: "ltr",
+        htmlLang: "ja-JP",
+      },
       ru: {
         label: "Русский",
         direction: "ltr",
@@ -39,11 +44,6 @@ const config = {
         label: "한국어",
         direction: "ltr",
         htmlLang: "ko-KR",
-      },
-      ja: {
-        label: "日本語",
-        direction: "ltr",
-        htmlLang: "ja-JP",
       },
     },
   },
