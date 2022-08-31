@@ -93,6 +93,10 @@ export function WindowUnfullscreen() {
     window.runtime.WindowUnfullscreen();
 }
 
+export function WindowIsFullscreen() {
+    return window.runtime.WindowIsFullscreen();
+}
+
 export function WindowGetSize() {
     return window.runtime.WindowGetSize();
 }
