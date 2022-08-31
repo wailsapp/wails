@@ -34,9 +34,5 @@
   "item.label.Credits": {
     "message": "クレジット",
     "description": "Navbar item with label Credits"
-  },
-  "item.label.Stats": {
-    "message": "統計情報",
-    "description": "Navbar item with label Stats"
   }
 }
