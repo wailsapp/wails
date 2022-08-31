@@ -37,35 +37,27 @@ const config = {
       },
       ko: {
         label: "한국어",
-        direction: "ltr",
-        htmlLang: "ko-KR",
+          direction: "ltr",
+          htmlLang: "ko-KR",
       },
-      ja: {
-        label: "日本語",
-        direction: "ltr",
-        htmlLang: "ja-JP",
-      },
+        ja: {
+            label: "日本語",
+            direction: "ltr",
+            htmlLang: "ja-JP",
+        },
     },
   },
-  plugins: [
-    [
-      "docusaurus-plugin-plausible",
-      {
-        domain: "wails.io",
-      },
-    ],
-  ],
-
-  presets: [
-    [
-      "classic",
-      /** @type {import('@docusaurus/preset-classic').Options} */
-      ({
-        docs: {
-          sidebarPath: require.resolve("./sidebars.js"),
-          // Please change this to your repo.
-          editUrl: "https://github.com/wailsapp/wails/edit/master/website",
-        },
+    plugins: [],
+    presets: [
+        [
+            "classic",
+            /** @type {import('@docusaurus/preset-classic').Options} */
+            ({
+                docs: {
+                    sidebarPath: require.resolve("./sidebars.js"),
+                    // Please change this to your repo.
+                    editUrl: "https://github.com/wailsapp/wails/edit/master/website",
+                },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
@@ -134,10 +126,6 @@ const config = {
               {
                 to: "/credits",
                 label: "Credits",
-              },
-              {
-                to: "/stats",
-                label: "Stats",
               },
             ],
           },
