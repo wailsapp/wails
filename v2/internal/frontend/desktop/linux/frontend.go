@@ -58,8 +58,10 @@ func init() {
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 
-	// Set GDK_BACKEND=x11 to prevent warnings
-	_ = os.Setenv("GDK_BACKEND", "x11")
+	// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE isn't wayland to prevent warnings
+	if os.Getenv("GDK_BACKEND") == "" && os.Getenv("XDG_SESSION_TYPE") != "wayland" {
+		_ = os.Setenv("GDK_BACKEND", "x11")
+	}
 
 	result := &Frontend{
 		frontendOptions: appoptions,
