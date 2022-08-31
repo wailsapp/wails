@@ -34,9 +34,5 @@
   "item.label.Credits": {
     "message": "crwdns35398:0crwdne35398:0",
     "description": "Navbar item with label Credits"
-  },
-  "item.label.Stats": {
-    "message": "crwdns35400:0crwdne35400:0",
-    "description": "Navbar item with label Stats"
   }
 }
