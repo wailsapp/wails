@@ -50,7 +50,7 @@ export function EventsOnce(eventName: string, callback: (...data: any) => void):
 
 // [EventsOff](https://wails.io/docs/reference/runtime/events#eventsff)
 // unregisters the listener for the given event name.
-export function EventsOff(eventName: string): void;
+export function EventsOff(eventName: string, ...additionalEventNames: string[]): void;
 
 // [LogPrint](https://wails.io/docs/reference/runtime/log#logprint)
 // logs the given message as a raw message
