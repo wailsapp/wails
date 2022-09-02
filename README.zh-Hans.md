@@ -1,17 +1,21 @@
+<h1 align="center">Wails</h1>
+
 <p align="center" style="text-align: center">
-   <img src="./assets/images/logo-universal.png" width="55%"><br/>
+  <img src="./assets/images/logo-universal.png" width="55%"><br/>
 </p>
 
 <p align="center">
-  使用 Go 和 Web 技术构建桌面应用程序。<br/><br/>
+  使用 Go 和 Web 技术构建桌面应用程序。
+  <br/>
+  <br/>
   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-blue.svg" />
+    <img alt="GitHub" src="https://img.shields.io/github/license/wailsapp/wails"/>
   </a>
   <a href="https://goreportcard.com/report/github.com/wailsapp/wails">
     <img src="https://goreportcard.com/badge/github.com/wailsapp/wails" />
   </a>
-  <a href="http://godoc.org/github.com/wailsapp/wails">
-    <img src="https://img.shields.io/badge/godoc-reference-blue.svg" />
+  <a href="https://pkg.go.dev/github.com/wailsapp/wails">
+    <img src="https://pkg.go.dev/badge/github.com/wailsapp/wails.svg" alt="Go Reference"/>
   </a>
   <a href="https://www.codefactor.io/repository/github/wailsapp/wails">
     <img src="https://www.codefactor.io/repository/github/wailsapp/wails/badge" alt="CodeFactor" />
@@ -28,7 +32,20 @@
   <a href="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" rel="nofollow">
     <img src="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" alt="Release Pipelines" />
   </a>
+  <a href="https://github.com/misitebao/wails/tags" rel="nofollow">
+    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
+  </a>
 </p>
+
+<div align="center">
+<strong>
+<samp>
+
+[English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md)
+
+</samp>
+</strong>
+</div>
 
 <hr/>
 <h3 align="center">
@@ -38,28 +55,23 @@
 </h3>
 <hr/>
 
-## 国际化
-
-[English](README.md) | [简体中文](README.zh-Hans.md) | [日本語](README.ja.md)
-
 ## 内容目录
 
 <details>
   <summary>点我 打开/关闭 目录列表</summary>
 
-- [1. 国际化](#国际化)
-- [2. 内容目录](#内容目录)
-- [3. 项目介绍](#项目介绍)
-  - [3.1 官方网站](#官方网站)
-  - [3.2 路线图](#路线图)
-- [4. 功能](#功能)
-- [5. 赞助商](#赞助商)
-- [6. 快速入门](#快速入门)
-- [7. 常见问题](#常见问题)
-- [8. 贡献者](#贡献者)
-- [9. 特别提及](#特别提及)
-- [10. 特别感谢](#特别感谢)
-- [11. 许可证](#许可证)
+- [内容目录](#内容目录)
+- [项目介绍](#项目介绍)
+  - [官方网站](#官方网站)
+  - [路线图](#路线图)
+- [功能](#功能)
+- [赞助商](#赞助商)
+- [快速入门](#快速入门)
+- [常见问题](#常见问题)
+- [贡献者](#贡献者)
+- [特别提及](#特别提及)
+- [特别感谢](#特别感谢)
+- [许可证](#许可证)
 
 </details>
 

@@ -1,17 +1,21 @@
+<h1 align="center">Wails</h1>
+
 <p align="center" style="text-align: center">
   <img src="./assets/images/logo-universal.png" width="55%"><br/>
 </p>
 
 <p align="center">
-  GoとWebの技術を用いてデスクトップアプリケーションを構築します。<br/><br/>
+  GoとWebの技術を用いてデスクトップアプリケーションを構築します。
+  <br/>
+  <br/>
   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-blue.svg" />
+    <img alt="GitHub" src="https://img.shields.io/github/license/wailsapp/wails"/>
   </a>
   <a href="https://goreportcard.com/report/github.com/wailsapp/wails">
     <img src="https://goreportcard.com/badge/github.com/wailsapp/wails" />
   </a>
-  <a href="http://godoc.org/github.com/wailsapp/wails">
-    <img src="https://img.shields.io/badge/godoc-reference-blue.svg" />
+  <a href="https://pkg.go.dev/github.com/wailsapp/wails">
+    <img src="https://pkg.go.dev/badge/github.com/wailsapp/wails.svg" alt="Go Reference"/>
   </a>
   <a href="https://www.codefactor.io/repository/github/wailsapp/wails">
     <img src="https://www.codefactor.io/repository/github/wailsapp/wails/badge" alt="CodeFactor" />
@@ -28,7 +32,20 @@
   <a href="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" rel="nofollow">
     <img src="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" alt="Release Pipelines" />
   </a>
+  <a href="https://github.com/misitebao/wails/tags" rel="nofollow">
+    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
+  </a>
 </p>
+
+<div align="center">
+<strong>
+<samp>
+
+[English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md)
+
+</samp>
+</strong>
+</div>
 
 <hr/>
 <h3 align="center">
@@ -38,46 +55,41 @@
 </h3>
 <hr/>
 
-## 国際化
-
-[English](README.md) | [简体中文](README.zh-Hans.md) | [日本語](README.ja.md)
-
 ## 目次
 
 <details>
   <summary>クリックすることで、ディレクトリ一覧の開閉が可能です。</summary>
 
-- [1. 国際化](#国際化)
-- [2. 目次](#目次)
-- [3. はじめに](#はじめに)
-  - [3.1 公式サイト](#公式サイト)
-  - [3.2 ロードマップ](#ロードマップ)
-- [4. 特徴](#特徴)
-- [5. スポンサー](#スポンサー)
-- [6. 始め方](#始め方)
-- [7. FAQ](#faq)
-- [8. コントリビューター](#コントリビューター)
-- [9. 特記事項](#特記事項)
-- [10. スペシャルサンクス](#スペシャルサンクス)
-- [11. ライセンス](#ライセンス)
+- [目次](#目次)
+- [はじめに](#はじめに)
+  - [公式サイト](#公式サイト)
+  - [ロードマップ](#ロードマップ)
+- [特徴](#特徴)
+- [スポンサー](#スポンサー)
+- [始め方](#始め方)
+- [FAQ](#faq)
+- [コントリビューター](#コントリビューター)
+- [特記事項](#特記事項)
+- [スペシャルサンクス](#スペシャルサンクス)
+- [ライセンス](#ライセンス)
 
 </details>
 
 ## はじめに
 
-Goプログラムにウェブインタフェースを提供する従来の方法は内蔵のウェブサーバを経由するものですが、 Wailsでは異なるアプローチを提供します。
-Wailsでは Go のコードとウェブフロントエンドを単一のバイナリにまとめる機能を提供します。
+Go プログラムにウェブインタフェースを提供する従来の方法は内蔵のウェブサーバを経由するものですが、 Wails では異なるアプローチを提供します。
+Wails では Go のコードとウェブフロントエンドを単一のバイナリにまとめる機能を提供します。
 また、プロジェクトの作成、コンパイル、ビルドを行うためのツールが提供されています。あなたがすべきことは創造性を発揮することです！
 
 ### 公式サイト
 
 Version 2:
 
-Wails v2が3つのプラットフォームでベータ版としてリリースされました。興味のある方は[新しいウェブサイト](https://wails.io)をご覧ください。
+Wails v2 が 3 つのプラットフォームでベータ版としてリリースされました。興味のある方は[新しいウェブサイト](https://wails.io)をご覧ください。
 
 レガシー版 v1:
 
-レガシー版 v1のドキュメントは[https://wails.app](https://wails.app)で見ることができます。
+レガシー版 v1 のドキュメントは[https://wails.app](https://wails.app)で見ることができます。
 
 ### ロードマップ
 
@@ -86,18 +98,17 @@ Wails v2が3つのプラットフォームでベータ版としてリリース�
 
 ## 特徴
 
-- バックエンドにはGoを利用しています
-- 使い慣れたフロントエンド技術を利用してUIを構築できます
-- あらかじめ用意されたテンプレートを利用することで、リッチなフロントエンドを備えたGoプログラムを作成できます
-- JavaScriptからGoのメソッドを簡単に呼び出すことができます
-- あなたの書いたGoの構造体やメソットに応じたTypeScriptの定義が自動生成されます
+- バックエンドには Go を利用しています
+- 使い慣れたフロントエンド技術を利用して UI を構築できます
+- あらかじめ用意されたテンプレートを利用することで、リッチなフロントエンドを備えた Go プログラムを作成できます
+- JavaScript から Go のメソッドを簡単に呼び出すことができます
+- あなたの書いた Go の構造体やメソットに応じた TypeScript の定義が自動生成されます
 - ネイティブのダイアログとメニューが利用できます
 - モダンな半透明や「frosted window」エフェクトをサポートしています
-- GoとJavaScript間で統一されたイベント・システムを備えています
-- プロジェクトを素早く生成して構築する強力なcliツールを用意しています
+- Go と JavaScript 間で統一されたイベント・システムを備えています
+- プロジェクトを素早く生成して構築する強力な cli ツールを用意しています
 - マルチプラットフォームに対応しています
 - ネイティブなレンダリングエンジンを使用しています - _つまりブラウザを埋め込んでいるわけではありません！_
-
 
 ## スポンサー
 
@@ -211,19 +222,19 @@ Wails v2が3つのプラットフォームでベータ版としてリリース�
 
 ## FAQ
 
-- Electronの代替品になりますか？
+- Electron の代替品になりますか？
 
-  それはあなたの求める要件によります。WailsはGoプログラマーが簡単に軽量のデスクトップアプリケーションを作成したり、既存のアプリケーションにフロントエンドを追加できるように設計されています。
-  Wails v2ではメニューやダイアログといったネイティブな要素を提供するようになったため、軽量なElectronの代替となりつつあります。
+  それはあなたの求める要件によります。Wails は Go プログラマーが簡単に軽量のデスクトップアプリケーションを作成したり、既存のアプリケーションにフロントエンドを追加できるように設計されています。
+  Wails v2 ではメニューやダイアログといったネイティブな要素を提供するようになったため、軽量な Electron の代替となりつつあります。
 
 - このプロジェクトは誰に向けたものですか？
 
-  HTML/JS/CSSのフロントエンド技術をアプリケーションにバンドルさせることで、サーバーを作成してブラウザ経由で表示させることなくアプリケーションを利用したいGoプログラマにおすすめです。
+  HTML/JS/CSS のフロントエンド技術をアプリケーションにバンドルさせることで、サーバーを作成してブラウザ経由で表示させることなくアプリケーションを利用したい Go プログラマにおすすめです。
 
 - 名前の由来を教えて下さい
 
-  WebViewを見たとき、私はこう思いました。  
-  「私が本当に欲しいのは、WebViewアプリを構築するためのツールであり、Rubyに対するRailsのようなものである」と。  
+  WebView を見たとき、私はこう思いました。  
+  「私が本当に欲しいのは、WebView アプリを構築するためのツールであり、Ruby に対する Rails のようなものである」と。  
   そのため、最初は言葉遊びのつもりでした（Webview on Rails）。  
   また、私の[出身国](https://en.wikipedia.org/wiki/Wales)の英語名と同音異義語でもあります。そしてこの名前が定着しました。
 
@@ -233,7 +244,7 @@ Wails v2が3つのプラットフォームでベータ版としてリリース�
 
 ## コントリビューター
 
-貢献してくれた方のリストが大きくなりすぎて、readmeに入りきらなくなりました！  
+貢献してくれた方のリストが大きくなりすぎて、readme に入りきらなくなりました！  
 このプロジェクトに貢献してくれた素晴らしい方々のページは[こちら](https://wails.io/credits#contributors)です。
 
 ## 特記事項
@@ -241,8 +252,8 @@ Wails v2が3つのプラットフォームでベータ版としてリリース�
 このプロジェクトは以下の方々の協力がなければ、実現しなかったと思います。
 
 - [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - 彼のサポートとフィードバックはとても大きいものでした。
-- [Serge Zaitsev](https://github.com/zserge) - Wailsのウィンドウで使用している[Webview](https://github.com/zserge/webview)の作者です。
-- [Byron](https://github.com/bh90210) - 時にはByronが一人でこのプロジェクトを存続させてくれたこともありました。彼の素晴らしいインプットがなければv1に到達することはなかったでしょう。
+- [Serge Zaitsev](https://github.com/zserge) - Wails のウィンドウで使用している[Webview](https://github.com/zserge/webview)の作者です。
+- [Byron](https://github.com/bh90210) - 時には Byron が一人でこのプロジェクトを存続させてくれたこともありました。彼の素晴らしいインプットがなければ v1 に到達することはなかったでしょう。
 
 プロジェクトを進める際に、以下のアルバムたちも支えてくれています。
 
