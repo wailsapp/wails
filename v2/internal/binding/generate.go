@@ -80,7 +80,7 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 					}
 					returnType += ">"
 				} else {
-					returnType = "void"
+					returnType = "Promise<void>"
 				}
 				tsBody.WriteString(returnType + ";\n")
 			}
