@@ -236,7 +236,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		// create the project files watcher
-		watcher, err := initialiseWatcher(cwd, logger.Fatal)
+		watcher, err := initialiseWatcher(cwd)
 		if err != nil {
 			return err
 		}
@@ -495,44 +495,6 @@ func runFrontendDevWatcherCommand(cwd string, devCommand string, discoverViteSer
 		cancel()
 		wg.Wait()
 	}, viteServerURL, nil
-}
-
-// initialiseWatcher creates the project directory watcher that will trigger recompile
-func initialiseWatcher(cwd string, logFatal func(string, ...interface{})) (*fsnotify.Watcher, error) {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		return nil, err
-	}
-
-	// Get all subdirectories
-	dirs, err := fs.GetSubdirectories(cwd)
-	if err != nil {
-		return nil, err
-	}
-
-	// Setup a watcher for non-node_modules directories
-	dirs.Each(func(dir string) {
-		if strings.Contains(dir, "node_modules") {
-			return
-		}
-		// Ignore build directory
-		if strings.Contains(dir, ".git") {
-			return
-		}
-		// Ignore build directory
-		if strings.HasPrefix(dir, filepath.Join(cwd, "build")) {
-			return
-		}
-		// Ignore dot directories
-		if strings.HasPrefix(dir, ".") {
-			return
-		}
-		err = watcher.Add(dir)
-		if err != nil {
-			logFatal(err.Error())
-		}
-	})
-	return watcher, nil
 }
 
 // restartApp does the actual rebuilding of the application when files change
