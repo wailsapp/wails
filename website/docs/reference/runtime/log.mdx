@@ -4,124 +4,111 @@ sidebar_position: 3
 
 # Log
 
-## Overview
-
 The Wails runtime provides a logging mechanism that may be called from Go or Javascript. Like most
 loggers, there are a number of log levels:
 
-  - Trace
-  - Debug
-  - Info
-  - Warning
-  - Error
-  - Fatal
+- Trace
+- Debug
+- Info
+- Warning
+- Error
+- Fatal
 
 The logger will output any log message at the current, or higher, log level. Example: The `Debug` log
 level will output all messages except `Trace` messages.
 
 ### LogPrint
 
-Go Signature: `LogPrint(ctx context.Context, message string)`
-
-JS Signature: `LogPrint(message: string)`
-
 Logs the given message as a raw message.
+
+Go: `LogPrint(ctx context.Context, message string)`<br/>
+JS: `LogPrint(message: string)`
 
 ### LogPrintf
 
-Go Signature: `LogPrintf(ctx context.Context, format string, args ...interface{})`
-
 Logs the given message as a raw message.
+
+Go: `LogPrintf(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogTrace
 
-Go Signature: `LogTrace(ctx context.Context, message string)`
-
-JS Signature: `LogTrace(message: string)`
-
 Logs the given message at the `Trace` log level.
+
+Go: `LogTrace(ctx context.Context, message string)`<br/>
+JS: `LogTrace(message: string)`
 
 ### LogTracef
 
-Go Signature: `LogTracef(ctx context.Context, format string, args ...interface{})`
-
 Logs the given message at the `Trace` log level.
+
+Go: `LogTracef(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogDebug
 
-Go Signature: `LogDebug(ctx context.Context, message string)`
-
-JS Signature: `LogDebug(message: string)`
-
 Logs the given message at the `Debug` log level.
+
+Go: `LogDebug(ctx context.Context, message string)`<br/>
+JS: `LogDebug(message: string)`
 
 ### LogDebugf
 
-Go Signature: `LogDebugf(ctx context.Context, format string, args ...interface{})`
-
 Logs the given message at the `Debug` log level.
+
+Go: `LogDebugf(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogInfo
 
-Go Signature: `LogInfo(ctx context.Context, message string)`
-
-JS Signature: `LogInfo(message: string)`
-
 Logs the given message at the `Info` log level.
+
+Go: `LogInfo(ctx context.Context, message string)`<br/>
+JS: `LogInfo(message: string)`
 
 ### LogInfof
 
-Go Signature: `LogInfof(ctx context.Context, format string, args ...interface{})`
-
 Logs the given message at the `Info` log level.
+
+Go: `LogInfof(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogWarning
 
-Go Signature: `LogWarning(ctx context.Context, message string)`
-
-JS Signature: `LogWarning(message: string)`
-
 Logs the given message at the `Warning` log level.
+
+Go: `LogWarning(ctx context.Context, message string)`<br/>
+JS: `LogWarning(message: string)`
 
 ### LogWarningf
 
-Go Signature: `LogWarningf(ctx context.Context, format string, args ...interface{})`
-
 Logs the given message at the `Warning` log level.
+
+Go: `LogWarningf(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogError
 
-Go Signature: `LogError(ctx context.Context, message string)`
-
-JS Signature: `LogError(message: string)`
-
 Logs the given message at the `Error` log level.
+
+Go: `LogError(ctx context.Context, message string)`<br/>
+JS: `LogError(message: string)`
 
 ### LogErrorf
 
-Go Signature: `LogErrorf(ctx context.Context, format string, args ...interface{})`
-
 Logs the given message at the `Error` log level.
+
+Go: `LogErrorf(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogFatal
 
-Go Signature: `LogFatal(ctx context.Context, message string)`
-
-JS Signature: `LogFatal(message: string)`
-
 Logs the given message at the `Fatal` log level.
+
+Go: `LogFatal(ctx context.Context, message string)`<br/>
+JS: `LogFatal(message: string)`
 
 ### LogFatalf
 
-Go Signature: `LogFatalf(ctx context.Context, format string, args ...interface{})`
-
 Logs the given message at the `Fatal` log level.
 
+Go: `LogFatalf(ctx context.Context, format string, args ...interface{})`<br/>
+
 ### LogSetLogLevel
-
-Go Signature: `LogSetLogLevel(ctx context.Context, level logger.LogLevel)`
-
-JS Signature: `LogSetLogLevel(level: number)`
 
 Sets the log level. In Javascript, the number relates to the following log levels:
 
@@ -132,6 +119,9 @@ Sets the log level. In Javascript, the number relates to the following log level
 | 3     | Info      |
 | 4     | Warning   |
 | 5     | Error     |
+
+Go: `LogSetLogLevel(ctx context.Context, level logger.LogLevel)`<br/>
+JS: `LogSetLogLevel(level: number)`
 
 ## Using a Custom Logger
 
@@ -150,4 +140,3 @@ type Logger interface {
 	Fatal(message string)
 }
 ```
-

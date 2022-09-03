@@ -8,12 +8,15 @@ tags:
   - v2
 ---
 
-
 <div class="text--center">
-    <img src="/img/wails-mac.png" width="60%" style={{"box-shadow": "rgb(255 255 >
+  <img
+    src={require("@site/static/img/wails-mac.webp").default}
+    width="60%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 今天是 Mac 版 Wails v2 的第一个测试版！ 花了很长时间才走到这一步，我希望今天的版本会给你一些相当有用的东西。 为了达到这一点，经历了许多曲折，我希望在您的帮助下，消除问题并为最终的 v2 版本完善 Mac 端口。
 
@@ -24,10 +27,14 @@ tags:
 ### 新特性
 
 <div class="text--center">
-    <img src="/img/wails-menus-mac.png" width="80%" style={{"box-shadow": "rgb(255 255 >
+  <img
+    src={require("@site/static/img/wails-menus-mac.webp").default}
+    width="80%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 有很多对原生菜单支持的需求。 Wails 终于帮您搞定了。 应用程序菜单现已可用，并且包括对大多数本原生菜单功能的支持。 这包括标准菜单项、复选框、单选组、子菜单和分隔符。
 
@@ -37,10 +44,10 @@ tags:
 
 除了普通的应用程序选项，Wails v2 for Mac 还带来了一些 Mac 附加功能：
 
-  - 让你的窗口变得时髦和半透明，就像所有 Swift 应用程序一样！
-  - 高度可定制的标题栏
-  - 我们支持应用程序的 NSAppearance 选项
-  - 自动创建“关于”菜单的简单配置
+- 让你的窗口变得时髦和半透明，就像所有 Swift 应用程序一样！
+- 高度可定制的标题栏
+- 我们支持应用程序的 NSAppearance 选项
+- 自动创建“关于”菜单的简单配置
 
 ### 无需打包资源
 
@@ -60,10 +67,10 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
 
 它还提供了附加功能：
 
-  - 热重载 - 对前端资源的任何更改都将触发并自动重载应用程序前端
-  - 自动重新构建 - 对 Go 代码的任何更改都将重新构建并重新启动您的应用程序
+- 热重载 - 对前端资源的任何更改都将触发并自动重载应用程序前端
+- 自动重新构建 - 对 Go 代码的任何更改都将重新构建并重新启动您的应用程序
 
-除此之外，网络服务器将在端口 34115 上启动。 这将为您的应用程序提供连接到它的任何浏览器。 所有连接的 Web 浏览器都会响应系统事件，例如资源更改时的热重载。
+除此之外，网络服务器将在端口 34115 上启动。 所有连接的 Web 浏览器都会响应系统事件，例如资源更改时的热重载。 所有连接的 Web 浏览器都会响应系统事件，例如资源更改时的热重载。
 
 在 Go 中，我们习惯于在应用程序中处理结构。 将结构发送到我们的前端并将它们用作我们应用程序中的状态通常很有用。 在 v1 中，这是一个非常需要手动的过程，对开发人员来说有点负担。 我很高兴地宣布，在 v2 中，任何在开发模式下运行的应用程序都将自动为所有结构生成 Typescript 模型，这些结构是绑定方法的输入或输出参数。 这实现了两个世界之间数据模型的无缝交换。
 
@@ -72,12 +79,16 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
 ### 远程模板
 
 <div class="text--center">
-    <img src="/img/remote-mac.png" width="80%" style={{"box-shadow": "rgb(255 255 >
+  <img
+    src={require("@site/static/img/remote-mac.webp").default}
+    width="80%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
-让应用程序快速启动并运行一直是 Wails 项目的一个关键目标。 当我们推出时，我们试图涵盖当时的很多现代框架：react、vue 和 angular。 前端开发的世界非常固执己见，发展迅速，很难保持领先地位！ 结果，我们发现我们的基本模板很快就过时了，这导致了维护问题。 这也意味着，我们没有为最新和最伟大的技术栈提供酷炫的现代模板。
+让应用程序快速启动并运行一直是 Wails 项目的一个关键目标。 当我们推出时，我们试图涵盖当时的很多现代框架：react、vue 和 angular。 前端开发的世界非常固执己见，发展迅速，很难保持领先地位！ 这也意味着，我们没有为最新和最伟大的技术栈提供酷炫的现代模板。 这也意味着，我们没有为最新和最伟大的技术栈提供酷炫的现代模板。
 
 在 v2 中，我希望通过让您能够自己创建和托管模板来增强社区的能力，而不是依赖于 Wails 项目。 所以现在您可以使用社区支持的模板创建项目！ 我希望这将激励开发人员创建一个充满活力的项目模板生态系统。 我对我们的开发者社区可以创造的东西感到非常兴奋！
 
@@ -86,37 +97,52 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
 感谢[Mat Ryer](https://github.com/matryer/)的惊人支持，Wails 项目现在支持 M1 原生构建：
 
 <div class="text--center">
-    <img src="/img/build-darwin-arm.png" width="80%" style={{"box-shadow": "rgb(255 255 >
+  <img
+    src={require("@site/static/img/build-darwin-arm.webp").default}
+    width="80%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 您也可以指定`darwin/amd64`为目标：
 
 <div class="text--center">
-    <img src="/img/build-darwin-amd.png" width="80%" style={{"box-shadow": "rgb(255 255 >
+  <img
+    src={require("@site/static/img/build-darwin-amd.webp").default}
+    width="80%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 哦，我差点忘了....你也可以做`darwin/universal`....😉
 
 <div class="text--center">
-    <img src="/img/build-darwin-universal.png" width="80%" style={{"box-shadow": "rgb(255 255 >
+  <img
+    src={require("@site/static/img/build-darwin-universal.webp").default}
+    width="80%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 ### 交叉编译到 Windows
 
 因为 Windows 的 Wails v2 是纯 Go，所以你可以在没有 docker 的情况下针对 Windows 构建。
 
 <div class="text--center">
-    <img src="/img/build-cross-windows.png" width="80%" style={{"box-shadow": "rgb(255 255 >
+  <img
+    src={require("@site/static/img/build-cross-windows.webp").default}
+    width="80%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
-
+<br />
 
 ### WKWebView 渲染器
 

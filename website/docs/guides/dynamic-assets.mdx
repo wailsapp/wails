@@ -79,6 +79,7 @@ DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico'
 DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico' failed, using AssetHandler
 Requesting file: favicon.ico
 ```
+
 As you can see, the assets handler is called when the default assets server is unable to serve
 the `favicon.ico` file.
 
@@ -88,36 +89,45 @@ this feature out by typing the following into the console:
 ```
 let response = await fetch('does-not-exist.txt');
 ```
+
 This will generate an error in the devtools. We can see that the error is what we expect, returned by
 our custom assets handler:
 
 <p className="text--center">
-    <img src="/img/assetshandler-does-not-exist.png"></img>
+  <img
+    src={require("@site/static/img/assetshandler-does-not-exist.webp").default}
+  />
 </p>
 
 However, if we request `go.mod`, we will see the following output:
 
 <p className="text--center">
-    <img src="/img/assetshandler-go-mod.png"></img>
+  <img src={require("@site/static/img/assetshandler-go-mod.webp").default} />
 </p>
 
 This technique can be used to load images directly into the page. If we updated our default vanilla template and
 replaced the logo image:
+
 ```html
-    <img id="logo" class="logo">
+<img id="logo" class="logo" />
 ```
+
 with:
+
 ```html
-    <img src="build/appicon.png" style="width: 300px">
+<img src="build/appicon.png" style="width: 300px" />
 ```
+
 Then we would see the following:
 
 <p className="text--center">
-    <img src="/img/assetshandler-image.png" style={{"width": "75%"}}></img>
+  <img
+    src={require("@site/static/img/assetshandler-image.webp").default}
+    style={{ width: "75%" }}
+  />
 </p>
 
 :::warning
 Exposing your filesystem in this way is a security risk. It is recommended that you properly manage access
 to your filesystem.
 :::
-

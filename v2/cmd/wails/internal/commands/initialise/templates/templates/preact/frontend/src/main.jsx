@@ -1,14 +1,5 @@
-import React from 'react'
-import {createRoot} from 'react-dom/client'
-import './style.css'
-import App from './App'
+import {render} from 'preact';
+import {App} from './app';
+import './style.css';
 
-const container = document.getElementById('root')
-
-const root = createRoot(container)
-
-root.render(
-    <React.StrictMode>
-        <App/>
-    </React.StrictMode>
-)
+render(<App/>, document.getElementById('app'));

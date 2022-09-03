@@ -18,7 +18,7 @@ const config = {
 
   i18n: {
     defaultLocale: "en",
-    locales: ["en", "zh-Hans", "ja", "ru"],
+    locales: ["en", "zh-Hans", "ja", "ru", "ko"],
     localeConfigs: {
       en: {
         label: "English",
@@ -30,36 +30,34 @@ const config = {
         direction: "ltr",
         htmlLang: "zh-Hans",
       },
+      ja: {
+        label: "日本語",
+        direction: "ltr",
+        htmlLang: "ja-JP",
+      },
       ru: {
         label: "Русский",
         direction: "ltr",
         htmlLang: "ru-RU",
       },
-      "ja": {
-        label: "日本語",
+      ko: {
+        label: "한국어",
         direction: "ltr",
-        htmlLang: "ja-JP",
-      }
+        htmlLang: "ko-KR",
+      },
     },
   },
-  plugins: [
-    ["docusaurus-plugin-plausible",
-      {
-        domain: "wails.io",
-      },
-    ]
-  ],
-
-  presets: [
-    [
-      "classic",
-      /** @type {import('@docusaurus/preset-classic').Options} */
-      ({
-        docs: {
-          sidebarPath: require.resolve("./sidebars.js"),
-          // Please change this to your repo.
-          editUrl: "https://github.com/wailsapp/wails/edit/master/website",
-        },
+    plugins: [],
+    presets: [
+        [
+            "classic",
+            /** @type {import('@docusaurus/preset-classic').Options} */
+            ({
+                docs: {
+                    sidebarPath: require.resolve("./sidebars.js"),
+                    // Please change this to your repo.
+                    editUrl: "https://github.com/wailsapp/wails/edit/master/website",
+                },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
@@ -109,33 +107,38 @@ const config = {
             position: "right",
           },
           {
-            type: 'dropdown',
-            label: 'About',
-            position: 'right',
+            type: "dropdown",
+            label: "About",
+            position: "right",
             items: [
               {
                 to: "/faq",
                 label: "FAQ",
               },
               {
-                to: '/changelog',
+                to: "/changelog",
                 label: "Changelog",
               },
               {
-                to: '/community-guide',
+                to: "/community-guide",
                 label: "Community Guide",
               },
               {
-                to: '/credits',
+                to: "/credits",
                 label: "Credits",
-              },
-              {
-                to: '/stats',
-                label: "Stats",
               },
             ],
           },
-          { type: "localeDropdown", position: "right" },
+          {
+            type: "localeDropdown",
+            position: "right",
+            dropdownItemsAfter: [
+              {
+                to: "/community-guide#documenting",
+                label: "Help Us Translate ❤",
+              },
+            ],
+          },
           {
             href: "https://github.com/wailsapp/wails",
             label: "GitHub",
@@ -211,6 +214,10 @@ const config = {
           },
         ],
         copyright: `Copyright © ${new Date().getFullYear()} Lea Anthony. Built with Docusaurus.`,
+      },
+      tableOfContents: {
+        minHeadingLevel: 2,
+        maxHeadingLevel: 5,
       },
       prism: {
         theme: lightCodeTheme,

@@ -44,8 +44,8 @@ export function EventsOn(eventName, callback) {
     EventsOnMultiple(eventName, callback, -1);
 }
 
-export function EventsOff(eventName) {
-    return window.runtime.EventsOff(eventName);
+export function EventsOff(eventName, ...additionalEventNames) {
+    return window.runtime.EventsOff(eventName, ...additionalEventNames);
 }
 
 export function EventsOnce(eventName, callback) {
@@ -93,6 +93,10 @@ export function WindowUnfullscreen() {
     window.runtime.WindowUnfullscreen();
 }
 
+export function WindowIsFullscreen() {
+    return window.runtime.WindowIsFullscreen();
+}
+
 export function WindowGetSize() {
     return window.runtime.WindowGetSize();
 }
@@ -137,6 +141,10 @@ export function WindowUnmaximise() {
     window.runtime.WindowUnmaximise();
 }
 
+export function WindowIsMaximised() {
+    return window.runtime.WindowIsMaximised();
+}
+
 export function WindowMinimise() {
     window.runtime.WindowMinimise();
 }
@@ -151,6 +159,14 @@ export function WindowSetBackgroundColour(R, G, B, A) {
 
 export function ScreenGetAll() {
     return window.runtime.ScreenGetAll();
+}
+
+export function WindowIsMinimised() {
+    return window.runtime.WindowIsMinimised();
+}
+
+export function WindowIsNormal() {
+    return window.runtime.WindowIsNormal();
 }
 
 export function BrowserOpenURL(url) {

@@ -26,6 +26,13 @@ const (
 	Fullscreen WindowStartState = 3
 )
 
+type Experimental struct {
+	// UseCSSDrag uses the `--wails-draggable` CSS variable to indicate drag regions
+	// Add `style="--wails-draggable:drag"` to your draggable elements
+	// `style="--wails-draggable:no-drag"` will disable dragging for that element + children
+	UseCSSDrag bool
+}
+
 // App contains options for creating the App
 type App struct {
 	Title             string
@@ -64,6 +71,9 @@ type App struct {
 	Windows *windows.Options
 	Mac     *mac.Options
 	Linux   *linux.Options
+
+	// Experimental options
+	Experimental *Experimental
 }
 
 type RGBA struct {

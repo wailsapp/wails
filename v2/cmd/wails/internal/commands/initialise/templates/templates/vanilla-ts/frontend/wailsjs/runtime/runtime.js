@@ -137,6 +137,10 @@ export function WindowUnmaximise() {
     window.runtime.WindowUnmaximise();
 }
 
+export function WindowIsMaximised() {
+    return window.runtime.WindowIsMaximised();
+}
+
 export function WindowMinimise() {
     window.runtime.WindowMinimise();
 }
@@ -147,6 +151,18 @@ export function WindowUnminimise() {
 
 export function WindowSetBackgroundColour(R, G, B, A) {
     window.runtime.WindowSetBackgroundColour(R, G, B, A);
+}
+
+export function ScreenGetAll() {
+    return window.runtime.ScreenGetAll();
+}
+
+export function WindowIsMinimised() {
+    return window.runtime.WindowIsMinimised();
+}
+
+export function WindowIsNormal() {
+    return window.runtime.WindowIsNormal();
 }
 
 export function BrowserOpenURL(url) {
@@ -161,6 +177,10 @@ export function Quit() {
     window.runtime.Quit();
 }
 
-export function ScreenGetAll() {
-    return window.runtime.ScreenGetAll();
+export function Hide() {
+    window.runtime.Hide();
+}
+
+export function Show() {
+    window.runtime.Show();
 }

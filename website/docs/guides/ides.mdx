@@ -1,4 +1,3 @@
-
 # IDEs
 
 Wails aims to provide a great development experience. To that aim, we now support generating IDE specific configuration
@@ -9,7 +8,10 @@ Currently, we support [Visual Studio Code](https://code.visualstudio.com/) but a
 ## Visual Studio Code
 
 <p className="text--center">
-    <img src="/img/vscode.png" style={{"width": "75%"}}></img>
+  <img
+    src={require("@site/static/img/vscode.webp").default}
+    style={{ width: "75%" }}
+  />
 </p>
 
 When generating a project using the `-ide vscode` flags, IDE files will be created alongside the other project files.
@@ -19,36 +21,44 @@ The 2 files generated are `tasks.json` and `launch.json`. Below are the files ge
 
 ```json title="tasks.json"
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build",
-            "type": "shell",
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "command": "go",
-            "args": ["build", "-tags", "dev", "-gcflags", "all=-N -l", "-o", "build/bin/myproject.exe"]
-        },
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "command": "go",
+      "args": [
+        "build",
+        "-tags",
+        "dev",
+        "-gcflags",
+        "all=-N -l",
+        "-o",
+        "build/bin/myproject.exe"
+      ]
+    }
+  ]
 }
 ```
 
 ```json title="launch.json"
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Wails: Debug myproject",
-            "type": "go",
-            "request": "launch",
-            "mode": "exec",
-            "program": "${workspaceFolder}/build/bin/myproject.exe",
-            "preLaunchTask": "build",
-            "cwd": "${workspaceFolder}",
-            "env": {}
-        },
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Wails: Debug myproject",
+      "type": "go",
+      "request": "launch",
+      "mode": "exec",
+      "program": "${workspaceFolder}/build/bin/myproject.exe",
+      "preLaunchTask": "build",
+      "cwd": "${workspaceFolder}",
+      "env": {}
+    }
+  ]
 }
 ```
 
@@ -60,51 +70,55 @@ add the install and build steps:
 
 ```json title="tasks.json"
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "npm install",
-            "type": "npm",
-            "script": "install",
-            "options": {
-                "cwd": "${workspaceFolder}/frontend"
-            },
-            "presentation": {
-              "clear": true,
-              "panel": "shared",
-              "showReuseMessage": false
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "npm run build",
-            "type": "npm",
-            "script": "build",
-            "options": {
-                "cwd": "${workspaceFolder}/frontend"
-            },
-            "presentation": {
-              "clear": true,
-              "panel": "shared",
-              "showReuseMessage": false
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "build",
-            "type": "shell",
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "command": "go",
-            "args": ["build", "-tags", "dev", "-gcflags", "all=-N -l", "-o", "build/bin/vscode.exe"],
-            "dependsOn":[
-                "npm install",
-                "npm run build"
-            ]
-
-        },
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "npm install",
+      "type": "npm",
+      "script": "install",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "presentation": {
+        "clear": true,
+        "panel": "shared",
+        "showReuseMessage": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "npm run build",
+      "type": "npm",
+      "script": "build",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "presentation": {
+        "clear": true,
+        "panel": "shared",
+        "showReuseMessage": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "build",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "command": "go",
+      "args": [
+        "build",
+        "-tags",
+        "dev",
+        "-gcflags",
+        "all=-N -l",
+        "-o",
+        "build/bin/vscode.exe"
+      ],
+      "dependsOn": ["npm install", "npm run build"]
+    }
+  ]
 }
 ```
 
