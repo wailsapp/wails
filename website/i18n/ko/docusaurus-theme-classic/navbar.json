@@ -34,9 +34,5 @@
   "item.label.Credits": {
     "message": "크레딧",
     "description": "Navbar item with label Credits"
-  },
-  "item.label.Stats": {
-    "message": "통계",
-    "description": "Navbar item with label Stats"
   }
 }

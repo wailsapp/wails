@@ -34,9 +34,5 @@
   "item.label.Credits": {
     "message": "Credits",
     "description": "Navbar item with label Credits"
-  },
-  "item.label.Stats": {
-    "message": "Stats",
-    "description": "Navbar item with label Stats"
   }
 }

@@ -34,9 +34,5 @@
   "item.label.Credits": {
     "message": "致谢",
     "description": "Navbar item with label Credits"
-  },
-  "item.label.Stats": {
-    "message": "网站统计",
-    "description": "Navbar item with label Stats"
   }
 }

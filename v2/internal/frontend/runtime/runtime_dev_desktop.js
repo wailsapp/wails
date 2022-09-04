@@ -112,9 +112,17 @@
     notifyListeners(payload);
     window.WailsInvoke("EE" + JSON.stringify(payload));
   }
-  function EventsOff(eventName) {
+  function removeListener(eventName) {
     delete eventListeners[eventName];
     window.WailsInvoke("EX" + eventName);
+  }
+  function EventsOff(eventName, ...additionalEventNames) {
+    removeListener(eventName);
+    if (additionalEventNames.length > 0) {
+      additionalEventNames.forEach((eventName2) => {
+        removeListener(eventName2);
+      });
+    }
   }
 
   // desktop/calls.js
@@ -526,7 +534,7 @@
     else if (rightBorder)
       setResize("e-resize");
   });
-  window.addEventListener("contextmenu", function (e) {
+  window.addEventListener("contextmenu", function(e) {
     if (window.wails.flags.disableWailsDefaultContextMenu) {
       e.preventDefault();
     }
