@@ -291,11 +291,8 @@ func (f *Frontend) processMessage(message string) {
 	}
 
 	if message == "runtime:ready" {
-		if f.frontendOptions.Experimental != nil {
-			if f.frontendOptions.Experimental.UseCSSDrag {
-				f.ExecJS(`window.wails.useCSSDrag();`)
-			}
-		}
+		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
+		f.ExecJS(cmd)
 		return
 	}
 
