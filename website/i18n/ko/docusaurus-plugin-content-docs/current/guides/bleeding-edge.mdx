@@ -10,7 +10,11 @@ Wails is in constant development and new releases are regularly "tagged". This u
 
 NOTE: The directory that you cloned the project into will now be called "clonedir".
 
-The Wails CLI will now be at the very latest version. To update projects to use the latest version, update the project's `go.mod` and ensure the following line is at the bottom of the file:
+The Wails CLI will now be at the very latest version.
+
+### Updating your project
+
+To update projects to use the latest version of the Wails library, update the project's `go.mod` and ensure the following line is at the bottom of the file:
 
 `replace github.com/wailsapp/wails/v2 => <clonedir>`
 
@@ -20,7 +24,7 @@ On Windows: `replace github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wa
 
 On 'nix: `replace github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
 
-To revert back to a stable version, run:
+To revert to a stable version, run:
 
 `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
@@ -34,6 +38,8 @@ If you want to test a branch, follow the instructions above, but ensure you swit
 - `cd v2/cmd/wails`
 - `go install`
 
+Make sure you [update your project](#updating-your-project) as described above.
+
 ## Testing a PR
 
 If you want to test a PR, follow the instructions above, but ensure you fetch the PR and switch the branch before installing. Please replace `[IDofThePR]` with the ID of the PR shown on github.com:
@@ -45,3 +51,5 @@ If you want to test a PR, follow the instructions above, but ensure you fetch th
 - `git reset --hard HEAD`
 - `cd v2/cmd/wails`
 - `go install`
+
+Make sure you [update your project](#updating-your-project) as described above.
