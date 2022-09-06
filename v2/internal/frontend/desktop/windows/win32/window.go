@@ -13,7 +13,6 @@ import (
 )
 
 const (
-	WS_MINIMIZE = 0x20000000
 	WS_MAXIMIZE = 0x01000000
 	WS_MINIMIZE = 0x20000000
 
@@ -141,11 +140,6 @@ func SetBackgroundColour(hwnd uintptr, r, g, b uint8) {
 	col := winc.RGB(r, g, b)
 	hbrush, _, _ := procCreateSolidBrush.Call(uintptr(col))
 	setClassLongPtr(hwnd, GCLP_HBRBACKGROUND, hbrush)
-}
-
-func IsWindowMinimised(hwnd uintptr) bool {
-	style := uint32(getWindowLong(hwnd, GWL_STYLE))
-	return style&WS_MINIMIZE != 0
 }
 
 func IsWindowNormal(hwnd uintptr) bool {
