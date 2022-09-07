@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"github.com/samber/lo"
 	"log"
 	"os"
 	"os/exec"
@@ -134,7 +135,9 @@ func Build(options *Options) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		options.UserTags = append(options.UserTags, "obfuscated")
+		if !lo.Contains(options.UserTags, "obfuscated") {
+			options.UserTags = append(options.UserTags, "obfuscated")
+		}
 	}
 
 	if !options.IgnoreFrontend {
@@ -182,8 +185,9 @@ func generateBindings(options *Options) error {
 	} else {
 	}
 	if len(options.UserTags) > 0 {
-		userTags := strings.Join(options.UserTags, ",")
-		err = runCommandWithEnv(".", true, env, self, "generate", "module", "-tags", userTags)
+		genModuleTags := lo.Without(options.UserTags, "desktop", "production", "debug")
+		genModuleTagsString := strings.Join(genModuleTags, ",")
+		err = runCommandWithEnv(".", true, env, self, "generate", "module", "-tags", genModuleTagsString)
 	} else {
 		err = runCommandWithEnv(".", true, env, self, "generate", "module")
 	}

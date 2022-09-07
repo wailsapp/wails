@@ -109,7 +109,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.BoolFlag("noreload", "Disable reload on asset change", &flags.noReload)
 	command.BoolFlag("nogen", "Disable generate module", &flags.noGen)
 	command.StringFlag("wailsjsdir", "Directory to generate the Wails JS modules", &flags.wailsjsdir)
-	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &flags.tags)
+	command.StringFlag("tags", "Build tags to pass to Go compiler. Must be quoted. Space or comma (but not both) separated", &flags.tags)
 	command.IntFlag("v", "Verbosity level (0 - silent, 1 - standard, 2 - verbose)", &flags.verbosity)
 	command.StringFlag("loglevel", "Loglevel to use - Trace, Debug, Info, Warning, Error", &flags.loglevel)
 	command.BoolFlag("f", "Force build application", &flags.forceBuild)
@@ -127,8 +127,18 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		logger := clilogger.New(w)
 		app.PrintBanner()
 
-		userTags := []string{}
-		for _, tag := range strings.Split(flags.tags, " ") {
+		var userTags []string
+		separator := ""
+		if strings.Contains(flags.tags, ",") {
+			separator = ","
+		}
+		if strings.Contains(flags.tags, " ") {
+			if separator != "" {
+				return errors.New("cannot use both space and comma separated values with `-tags` flag")
+			}
+			separator = ","
+		}
+		for _, tag := range strings.Split(flags.tags, separator) {
 			thisTag := strings.TrimSpace(tag)
 			if thisTag != "" {
 				userTags = append(userTags, thisTag)
@@ -161,7 +171,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
-		// Run go mod tidy to ensure we're up to date
+		// Run go mod tidy to ensure we're up-to-date
 		err = runCommand(cwd, false, "go", "mod", "tidy", "-compat=1.17")
 		if err != nil {
 			return err
@@ -275,7 +285,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
-		// Reset the process and the binary so the defer knows about it and is a nop.
+		// Reset the process and the binary so defer knows about it and is a nop.
 		debugBinaryProcess = nil
 		appBinary = ""
 
@@ -679,7 +689,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			}
 
 			if flags.frontendDevServerURL != "" {
-				// If we are using an external dev server all the reload of the frontend part can be skipped
+				// If we are using an external dev server, the reloading of the frontend part can be skipped
 				continue
 			}
 			if len(changedPaths) != 0 {

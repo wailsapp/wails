@@ -1,6 +1,7 @@
 package build
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -75,7 +76,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	// tags to pass to `go`
 	tags := ""
-	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &tags)
+	command.StringFlag("tags", "Build tags to pass to Go compiler. Must be quoted. Space or comma (but not both) separated", &tags)
 
 	outputFilename := ""
 	command.StringFlag("o", "Output filename", &outputFilename)
@@ -144,8 +145,18 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		}
 
 		// Tags
-		userTags := []string{}
-		for _, tag := range strings.Split(tags, " ") {
+		var userTags []string
+		separator := ""
+		if strings.Contains(tags, ",") {
+			separator = ","
+		}
+		if strings.Contains(tags, " ") {
+			if separator != "" {
+				return errors.New("cannot use both space and comma separated values with `-tags` flag")
+			}
+			separator = ","
+		}
+		for _, tag := range strings.Split(tags, separator) {
 			thisTag := strings.TrimSpace(tag)
 			if thisTag != "" {
 				userTags = append(userTags, thisTag)
