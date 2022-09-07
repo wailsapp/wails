@@ -134,10 +134,10 @@ window.ObfuscatedCall = (id, args, timeout) => {
 
         try {
             const payload = {
-                name: id,
-                args,
-                callbackID,
-            };
+				id,
+				args,
+				callbackID,
+			};
 
             // Make the call
             window.WailsInvoke('c' + JSON.stringify(payload));
