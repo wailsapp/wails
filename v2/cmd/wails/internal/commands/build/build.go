@@ -1,8 +1,8 @@
 package build
 
 import (
-	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/common"
 	"io"
 	"os"
 	"os/exec"
@@ -144,23 +144,10 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			return fmt.Errorf("unable to find compiler: %s", compilerCommand)
 		}
 
-		// Tags
-		var userTags []string
-		separator := ""
-		if strings.Contains(tags, ",") {
-			separator = ","
-		}
-		if strings.Contains(tags, " ") {
-			if separator != "" {
-				return errors.New("cannot use both space and comma separated values with `-tags` flag")
-			}
-			separator = ","
-		}
-		for _, tag := range strings.Split(tags, separator) {
-			thisTag := strings.TrimSpace(tag)
-			if thisTag != "" {
-				userTags = append(userTags, thisTag)
-			}
+		// Process User Tags
+		userTags, err := common.ParseUserTags(tags)
+		if err != nil {
+			return err
 		}
 
 		// Webview2 installer strategy (download by default)

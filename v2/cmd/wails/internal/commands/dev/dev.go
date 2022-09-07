@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/common"
 	"io"
 	"net"
 	"net/http"
@@ -127,24 +129,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		logger := clilogger.New(w)
 		app.PrintBanner()
 
-		var userTags []string
-		separator := ""
-		if strings.Contains(flags.tags, ",") {
-			separator = ","
-		}
-		if strings.Contains(flags.tags, " ") {
-			if separator != "" {
-				return errors.New("cannot use both space and comma separated values with `-tags` flag")
-			}
-			separator = ","
-		}
-		for _, tag := range strings.Split(flags.tags, separator) {
-			thisTag := strings.TrimSpace(tag)
-			if thisTag != "" {
-				userTags = append(userTags, thisTag)
-			}
-		}
-
 		cwd, err := os.Getwd()
 		if err != nil {
 			return err
@@ -177,25 +161,32 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
+		buildOptions := generateBuildOptions(flags)
+		buildOptions.Logger = logger
+
 		if !flags.noGen {
 			self := os.Args[0]
 			var env []string
 			if flags.obfuscate {
 				env = append(env, "WAILS_OBFUSCATE=true")
 			}
-			if flags.tags != "" {
-				err = runCommandWithEnv(cwd, true, env, self, "generate", "module", "-tags", flags.tags)
+
+			userTags, err := common.ParseUserTags(flags.tags)
+			if err != nil {
+				return err
+			}
+			if len(userTags) > 0 {
+				buildOptions.UserTags = userTags
+				genModuleTags := lo.Without(userTags, "desktop", "dev", "debug")
+				genModuleTagsString := strings.Join(genModuleTags, ",")
+				err = runCommandWithEnv(".", true, env, self, "generate", "module", "-tags", genModuleTagsString)
 			} else {
-				err = runCommandWithEnv(cwd, true, env, self, "generate", "module")
+				err = runCommandWithEnv(".", true, env, self, "generate", "module")
 			}
 			if err != nil {
 				return err
 			}
 		}
-
-		buildOptions := generateBuildOptions(flags)
-		buildOptions.Logger = logger
-		buildOptions.UserTags = internal.ParseUserTags(flags.tags)
 
 		// Setup signal handler
 		quitChannel := make(chan os.Signal, 1)

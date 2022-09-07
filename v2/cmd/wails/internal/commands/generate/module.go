@@ -2,6 +2,8 @@ package generate
 
 import (
 	"fmt"
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/common"
 	"io"
 	"os"
 	"path/filepath"
@@ -9,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/leaanthony/clir"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal"
 	"github.com/wailsapp/wails/v2/internal/shell"
 )
 
@@ -35,10 +36,15 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 			return err
 		}
 
-		tagList := internal.ParseUserTags(tags)
+		tagList, err := common.ParseUserTags(tags)
+		if err != nil {
+			return err
+		}
 		tagList = append(tagList, "bindings")
+		genModuleTags := lo.Without(tagList, "desktop", "production", "debug")
+		genModuleTagsString := strings.Join(genModuleTags, ",")
 
-		stdout, stderr, err := shell.RunCommand(cwd, "go", "build", "-tags", strings.Join(tagList, ","), "-o", filename)
+		stdout, stderr, err := shell.RunCommand(cwd, "go", "build", "-tags", genModuleTagsString, "-o", filename)
 		if err != nil {
 			return fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 		}

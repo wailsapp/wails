@@ -170,7 +170,7 @@ func generateBindings(options *Options) error {
 	defer func() {
 		options.Logger.Println("Done.")
 	}()
-	// Run go mod tidy to ensure we're up to date
+	// Run go mod tidy to ensure we're up-to-date
 	stdout, stderr, err := shell.RunCommand(".", "go", "mod", "tidy")
 	if err != nil {
 		options.Logger.Println(stdout)
@@ -182,8 +182,8 @@ func generateBindings(options *Options) error {
 	var env []string
 	if options.Obfuscate {
 		env = append(env, "WAILS_OBFUSCATE=true")
-	} else {
 	}
+
 	if len(options.UserTags) > 0 {
 		genModuleTags := lo.Without(options.UserTags, "desktop", "production", "debug")
 		genModuleTagsString := strings.Join(genModuleTags, ",")
