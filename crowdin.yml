@@ -4,6 +4,8 @@ preserve_hierarchy: true
 commit_message: '[ci skip]'
 files:
   - source: /website/docs/**/*
+    ignore:
+      - '*.json'
     translation: /website/i18n/%two_letters_code%/docusaurus-plugin-content-docs/current/**/%original_file_name%
   - source: /website/blog/**/*
     translation: /website/i18n/%two_letters_code%/docusaurus-plugin-content-blog/**/%original_file_name%
