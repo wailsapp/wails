@@ -171,7 +171,7 @@ func generateBindings(options *Options) error {
 		options.Logger.Println("Done.")
 	}()
 	// Run go mod tidy to ensure we're up-to-date
-	stdout, stderr, err := shell.RunCommand(".", "go", "mod", "tidy")
+	stdout, stderr, err := shell.RunCommand(".", "go", "mod", "tidy", "-compat=1.17")
 	if err != nil {
 		options.Logger.Println(stdout)
 		options.Logger.Println(stderr)
