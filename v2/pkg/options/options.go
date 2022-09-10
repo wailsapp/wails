@@ -2,6 +2,7 @@ package options
 
 import (
 	"context"
+	"html"
 	"io/fs"
 	"log"
 	"net/http"
@@ -27,10 +28,6 @@ const (
 )
 
 type Experimental struct {
-	// UseCSSDrag uses the `--wails-draggable` CSS variable to indicate drag regions
-	// Add `style="--wails-draggable:drag"` to your draggable elements
-	// `style="--wails-draggable:no-drag"` will disable dragging for that element + children
-	UseCSSDrag bool
 }
 
 // App contains options for creating the App
@@ -66,8 +63,12 @@ type App struct {
 	Bind               []interface{}
 	WindowStartState   WindowStartState
 
-	//ContextMenus []*menu.ContextMenu
-	//TrayMenus    []*menu.TrayMenu
+	// CSS property to test for draggable elements. Default "--wails-draggable"
+	CSSDragProperty string
+
+	// The CSS Value that the CSSDragProperty must have to be draggable, EG: "drag"
+	CSSDragValue string
+
 	Windows *windows.Options
 	Mac     *mac.Options
 	Linux   *linux.Options
@@ -105,6 +106,8 @@ func NewRGB(r, g, b uint8) *RGBA {
 
 // MergeDefaults will set the minimum default values for an application
 func MergeDefaults(appoptions *App) {
+
+	// Do default merge
 	err := mergo.Merge(appoptions, Default)
 	if err != nil {
 		log.Fatal(err)
@@ -121,6 +124,25 @@ func MergeDefaults(appoptions *App) {
 	}
 
 	// Ensure max and min are valid
+	processMinMaxConstraints(appoptions)
+
+	// Default menus
+	processMenus(appoptions)
+
+	// Process Drag Options
+	processDragOptions(appoptions)
+}
+
+func processMenus(appoptions *App) {
+	switch runtime.GOOS {
+	case "darwin":
+		if appoptions.Menu == nil {
+			appoptions.Menu = defaultMacMenu
+		}
+	}
+}
+
+func processMinMaxConstraints(appoptions *App) {
 	if appoptions.MinWidth > 0 && appoptions.MaxWidth > 0 {
 		if appoptions.MinWidth > appoptions.MaxWidth {
 			appoptions.MinWidth = appoptions.MaxWidth
@@ -144,12 +166,9 @@ func MergeDefaults(appoptions *App) {
 	if appoptions.MaxHeight > 0 && appoptions.Height > appoptions.MaxHeight {
 		appoptions.Height = appoptions.MaxHeight
 	}
+}
 
-	switch runtime.GOOS {
-	case "darwin":
-		if appoptions.Menu == nil {
-			appoptions.Menu = defaultMacMenu
-		}
-	}
-
+func processDragOptions(appoptions *App) {
+	appoptions.CSSDragProperty = html.EscapeString(appoptions.CSSDragProperty)
+	appoptions.CSSDragValue = html.EscapeString(appoptions.CSSDragValue)
 }

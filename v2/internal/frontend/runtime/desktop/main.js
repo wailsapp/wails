@@ -63,7 +63,9 @@ window.wails = {
         enableResize: false,
         defaultCursor: null,
         borderThickness: 6,
-        shouldDrag: false
+        shouldDrag: false,
+        cssDragProperty: "--wails-draggable",
+        cssDragValue: "drag",
     }
 };
 
@@ -84,38 +86,14 @@ window.addEventListener('mouseup', () => {
     window.wails.flags.shouldDrag = false;
 });
 
-let cssDragTest = function (e) {
-    return window.getComputedStyle(e.target).getPropertyValue('--wails-draggable') === "drag";
+let dragTest = function (e) {
+    return window.getComputedStyle(e.target).getPropertyValue(window.wails.flags.cssDragProperty) === window.wails.flags.cssDragValue;
 };
 
-// Element drag handler
-// Based on code from: https://github.com/patr0nus/DeskGap
-let elementDragTest = function (e) {
-    // Check for dragging
-    let currentElement = e.target;
-    while (currentElement != null) {
-        if (currentElement.hasAttribute('data-wails-no-drag')) {
-            break;
-        } else if (currentElement.hasAttribute('data-wails-drag')) {
-            return true;
-        }
-        currentElement = currentElement.parentElement;
-    }
-    return false;
-};
-
-let dragTest = elementDragTest;
-
-window.wails.useCSSDrag = function (t) {
-    if (t === false) {
-        console.log("Using original drag detection");
-        dragTest = elementDragTest;
-    } else {
-        console.log("Using CSS drag detection");
-        dragTest = cssDragTest;
-    }
-};
-
+window.wails.setCSSDragProperties = function(property, value) {
+    window.wails.flags.cssDragProperty = property;
+    window.wails.flags.cssDragValue = value;
+}
 
 window.addEventListener('mousedown', (e) => {
 

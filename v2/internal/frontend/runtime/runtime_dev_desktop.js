@@ -438,7 +438,9 @@
       enableResize: false,
       defaultCursor: null,
       borderThickness: 6,
-      shouldDrag: false
+      shouldDrag: false,
+      cssDragProperty: "--wails-draggable",
+      cssDragValue: "drag"
     }
   };
   if (window.wailsbindings) {
@@ -451,30 +453,12 @@
   window.addEventListener("mouseup", () => {
     window.wails.flags.shouldDrag = false;
   });
-  var cssDragTest = function (e) {
-    return window.getComputedStyle(e.target).getPropertyValue("--wails-draggable") === "drag";
+  var dragTest = function(e) {
+    return window.getComputedStyle(e.target).getPropertyValue(window.wails.flags.cssDragProperty) === window.wails.flags.cssDragValue;
   };
-  var elementDragTest = function (e) {
-    let currentElement = e.target;
-    while (currentElement != null) {
-      if (currentElement.hasAttribute("data-wails-no-drag")) {
-        break;
-      } else if (currentElement.hasAttribute("data-wails-drag")) {
-        return true;
-      }
-      currentElement = currentElement.parentElement;
-    }
-    return false;
-  };
-  var dragTest = elementDragTest;
-  window.wails.useCSSDrag = function (t) {
-    if (t === false) {
-      console.log("Using original drag detection");
-      dragTest = elementDragTest;
-    } else {
-      console.log("Using CSS drag detection");
-      dragTest = cssDragTest;
-    }
+  window.wails.setCSSDragProperties = function(property, value) {
+    window.wails.flags.cssDragProperty = property;
+    window.wails.flags.cssDragValue = value;
   };
   window.addEventListener("mousedown", (e) => {
     if (window.wails.flags.resizeEdge) {
