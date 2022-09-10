@@ -21,7 +21,7 @@ func ParseUserTags(tags string) ([]string, error) {
 		if separator != "" {
 			return nil, errors.New("cannot use both space and comma separated values with `-tags` flag")
 		}
-		separator = ","
+		separator = " "
 	}
 	for _, tag := range strings.Split(tags, separator) {
 		thisTag := strings.TrimSpace(tag)
