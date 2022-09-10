@@ -163,6 +163,14 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		buildOptions := generateBuildOptions(flags)
 		buildOptions.Logger = logger
 
+		userTags, err := common.ParseUserTags(flags.tags)
+		if err != nil {
+			return err
+		}
+		if len(userTags) > 0 {
+			buildOptions.UserTags = userTags
+		}
+
 		if !flags.noGen {
 			self := os.Args[0]
 			var env []string
@@ -170,12 +178,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				env = append(env, "WAILS_OBFUSCATE=true")
 			}
 
-			userTags, err := common.ParseUserTags(flags.tags)
-			if err != nil {
-				return err
-			}
 			if len(userTags) > 0 {
-				buildOptions.UserTags = userTags
 				err = runCommandWithEnv(".", true, env, self, "generate", "module", "-tags", flags.tags)
 			} else {
 				err = runCommandWithEnv(".", true, env, self, "generate", "module")
