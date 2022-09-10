@@ -1,20 +1,9 @@
 # 无边框应用
 
-Wails 支持无边框应用程序。 这可以通过使用[应用程序参数选项](../reference/options#应用程序参数选项)中的[无边框](../reference/options#无边框)字段来实现。
+Wails supports application that have no frames. 这可以通过使用[应用程序参数选项](../reference/options#应用程序参数选项)中的[无边框](../reference/options#无边框)字段来实现。
 
-:::warning The `data-wails-drag` attribute is being deprecated in favour of the following CSS style: `style="--wails-draggable:drag"`. You can use `style="--wails-draggable:no-drag"` to disable the drag behaviour. For this release only, you can test this by setting the following application option: You can use `style="--wails-draggable:no-drag"` to disable the drag behaviour. For this release only, you can test this by setting the following application option:
+Wails offers a simple solution for dragging the window: Any HTML element that has the CSS style `--wails-draggable:drag` will act as a "drag handle". This property applies to all child elements. If you need to indicate that a nested element should not drag, then use the attribute '--wails-draggable:no-drag' on that element.
 
-```go
-        Experimental: &options.Experimental{
-            UseCSSDrag: true,
-        },
-```
-
-:::
-
-Wails 为拖动窗口提供了一个简单的解决方案：任何具有“data-wails-drag”属性的 HTML 元素都将充当“拖动手柄”。 此属性适用于所有嵌套元素。 如果您需要指定不应该拖动的嵌套元素，请在该元素上使用属性“data-wails-no-drag”。
-
-默认的 vanilla 模板使用它，即使它不是无边框的。 整个 body 元素被标记为可拖动。 `<div id="input" data-wails-no-drag>`元素被标记为不可拖动。
 
 ```html
 <html>
@@ -22,9 +11,9 @@ Wails 为拖动窗口提供了一个简单的解决方案：任何具有“data-
     <link rel="stylesheet" href="/main.css" />
   </head>
 
-  <body data-wails-drag>
+  <body style="--wails-draggable:drag">
     <div id="logo"></div>
-    <div id="input" data-wails-no-drag>
+    <div id="input" style="--wails-draggable:no-drag">
       <input id="name" type="text" />
       <button onclick="greet()">Greet</button>
     </div>
@@ -33,6 +22,61 @@ Wails 为拖动窗口提供了一个简单的解决方案：任何具有“data-
     <script src="/main.js"></script>
   </body>
 </html>
+```
+
+For some projects, using a CSS variable may not be possible due to dynamic styling. In this case, you can use the `CSSDragProperty` and `CSSDragValue` application options to define a property and value that will be used to indicate draggable regions:
+
+```go title=main.go
+package main
+
+import (
+    "embed"
+
+    "github.com/wailsapp/wails/v2"
+    "github.com/wailsapp/wails/v2/pkg/options"
+)
+
+//go:embed frontend/dist
+var assets embed.FS
+
+func main() {
+    // Create an instance of the app structure
+    app := NewApp()
+
+    // Create application with options
+    err := wails.Run(&options.App{
+        Title:           "alwaysontop",
+        Width:           1024,
+        Height:          768,
+        Assets:          assets,
+        Frameless:       true,
+        CSSDragProperty: "widows",
+        CSSDragValue:    "1",
+        Bind: []interface{}{
+            app,
+        },
+    })
+
+    if err != nil {
+        println("Error:", err)
+    }
+}
+```
+
+```html title=index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>alwaysontop</title>
+</head>
+<body style="widows: 1">
+<div id="app"></div>
+<script src="./src/main.js" type="module"></script>
+</body>
+</html>
+
 ```
 
 :::info 全屏
