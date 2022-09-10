@@ -40,7 +40,7 @@ func main() {
         OnShutdown:         app.shutdown,
         OnBeforeClose:      app.beforeClose,
         WindowStartState:   options.Maximised,
-        CSSDragProperty:   "widows",
+        CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "1",
         Bind: []interface{}{
             app,
