@@ -82,7 +82,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 	obfuscate := os.Getenv("WAILS_OBFUSCATE")
 	if obfuscate == "" {
-		obfuscateFlag = devFlags.Bool("obfuscate", false, "Directory to serve assets")
+		obfuscateFlag = devFlags.Bool("obfuscate", false, "Code obfuscation of bound Wails methods")
 	}
 
 	devServer := os.Getenv("devserver")
