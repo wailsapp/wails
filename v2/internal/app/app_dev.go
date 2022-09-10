@@ -117,7 +117,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 			loglevel = *loglevelFlag
 		}
 		if obfuscateFlag != nil && *obfuscateFlag {
-			obfuscate = fmt.Sprintf("%s", *obfuscateFlag)
+			obfuscate = fmt.Sprintf("%t", *obfuscateFlag)
 		}
 	}
 
