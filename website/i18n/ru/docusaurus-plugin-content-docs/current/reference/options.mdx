@@ -39,6 +39,8 @@ func main() {
         OnShutdown:         app.shutdown,
         OnBeforeClose:      app.beforeClose,
         WindowStartState:   options.Maximised,
+        CSSDragProperty:   "--wails-draggable",
+        CSSDragValue:      "drag",
         Bind: []interface{}{
             app,
         },
@@ -286,6 +288,18 @@ Defines how the window should present itself at startup.
 | Minimised  | ✅   | ❌   | ✅   |
 
 Name: Logger
+
+### CSSDragProperty
+
+Indicates the CSS property to use to identify which elements can be used to drag the window. Default: `--wails-draggable`.
+
+Type: string
+
+### CSSDragValue
+
+Indicates what value the `CSSDragProperty` style should have to drag the window. Default: `drag`.
+
+Type: string
 
 ### Bind
 
