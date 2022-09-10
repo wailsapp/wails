@@ -41,7 +41,7 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 			return err
 		}
 		tagList = append(tagList, "bindings")
-		genModuleTags := lo.Without(tagList, "desktop", "production", "debug")
+		genModuleTags := lo.Without(tagList, "desktop", "production", "debug", "dev")
 		genModuleTagsString := strings.Join(genModuleTags, ",")
 
 		stdout, stderr, err := shell.RunCommand(cwd, "go", "build", "-tags", genModuleTagsString, "-o", filename)

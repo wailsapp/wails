@@ -185,8 +185,7 @@ func generateBindings(options *Options) error {
 	}
 
 	if len(options.UserTags) > 0 {
-		genModuleTags := lo.Without(options.UserTags, "desktop", "production", "debug")
-		genModuleTagsString := strings.Join(genModuleTags, ",")
+		genModuleTagsString := strings.Join(options.UserTags, ",")
 		err = runCommandWithEnv(".", true, env, self, "generate", "module", "-tags", genModuleTagsString)
 	} else {
 		err = runCommandWithEnv(".", true, env, self, "generate", "module")

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/common"
 	"io"
 	"net"
@@ -177,9 +176,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			}
 			if len(userTags) > 0 {
 				buildOptions.UserTags = userTags
-				genModuleTags := lo.Without(userTags, "desktop", "dev", "debug")
-				genModuleTagsString := strings.Join(genModuleTags, ",")
-				err = runCommandWithEnv(".", true, env, self, "generate", "module", "-tags", genModuleTagsString)
+				err = runCommandWithEnv(".", true, env, self, "generate", "module", "-tags", flags.tags)
 			} else {
 				err = runCommandWithEnv(".", true, env, self, "generate", "module")
 			}

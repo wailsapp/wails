@@ -170,7 +170,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	compiler := options.Compiler
 	if options.Obfuscate {
 		if !shell.CommandExists("garble") {
-			options.Logger.Print("garble not found. Please install it with `go install mvdan.cc/garble@latest`. Using Go compiler instead.")
+			return fmt.Errorf("the 'garble' command was not found. Please install it with `go install mvdan.cc/garble@latest`")
 		} else {
 			compiler = "garble"
 			if options.GarbleArgs != "" {
