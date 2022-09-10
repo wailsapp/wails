@@ -14,29 +14,33 @@ import "github.com/wailsapp/wails/v2/pkg/options"
 func main() {
 
     err := wails.Run(&options.App{
-        Title:             "Menus Demo",
-        Width:             800,
-        Height:            600,
-        DisableResize:     false,
-        Fullscreen:        false,
-        Frameless:         true,
-        MinWidth:          400,
-        MinHeight:         400,
-        MaxWidth:          1280,
-        MaxHeight:         1024,
-        StartHidden:       false,
-        HideWindowOnClose: false,
-        RGBA:              &options.RGBA{R: 0, G: 0, B: 0, A: 255},
-        AlwaysOnTop:       false,
-        Assets:            assets,
-        Menu:              app.applicationMenu(),
-        Logger:            nil,
-        LogLevel:          logger.DEBUG,
-        OnStartup:         app.startup,
-        OnDomReady:        app.domready,
-        OnShutdown:        app.shutdown,
-        OnBeforeClose:     app.beforeClose,
-        WindowStartState:  options.Maximised,
+        Title:              "Menus Demo",
+        Width:              800,
+        Height:             600,
+        DisableResize:      false,
+        Fullscreen:         false,
+        Frameless:          true,
+        MinWidth:           400,
+        MinHeight:          400,
+        MaxWidth:           1280,
+        MaxHeight:          1024,
+        StartHidden:        false,
+        HideWindowOnClose:  false,
+        BackgroundColour:   &options.RGBA{R: 0, G: 0, B: 0, A: 255},
+        AlwaysOnTop:        false,
+        Assets:             assets,
+        AssetsHandler:      assetsHandler,
+        Menu:               app.applicationMenu(),
+        Logger:             nil,
+        LogLevel:           logger.DEBUG,
+        LogLevelProduction: logger.ERROR,
+        OnStartup:          app.startup,
+        OnDomReady:         app.domready,
+        OnShutdown:         app.shutdown,
+        OnBeforeClose:      app.beforeClose,
+        WindowStartState:   options.Maximised,
+        CSSDragProperty:   "--wails-draggable",
+        CSSDragValue:      "drag",
         Bind: []interface{}{
             app,
         },
@@ -46,6 +50,7 @@ func main() {
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
+            WebviewBrowserPath:                "",
             Theme:                             windows.SystemDefault,
             CustomTheme: &windows.ThemeSettings{
                 DarkModeTitleBar:   windows.RGB(20, 20, 20),
@@ -55,7 +60,7 @@ func main() {
                 LightModeTitleText: windows.RGB(20, 20, 20),
                 LightModeBorder:    windows.RGB(200, 200, 200),
             },
-            // 可以自定义的用户消息
+            // User messages that can be customised
             Messages *windows.Messages
         },
         Mac: &mac.Options{
@@ -284,6 +289,18 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 | Minimised  | ✅   | ❌   | ✅   |
 
 默认值：在开发模式下是`Info`，在生产模式下是`Error`。
+
+### CSSDragProperty
+
+Indicates the CSS property to use to identify which elements can be used to drag the window. Default: `--wails-draggable`.
+
+类型：string
+
+### CSSDragValue
+
+Indicates what value the `CSSDragProperty` style should have to drag the window. Default: `drag`.
+
+类型：string
 
 ### Bind
 
