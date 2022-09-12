@@ -1,6 +1,6 @@
 module github.com/wailsapp/wails/v2
 
-go 1.17
+go 1.19
 
 require (
 	github.com/Masterminds/semver v1.5.0
@@ -18,7 +18,6 @@ require (
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/gosod v1.0.3
-	github.com/leaanthony/idgen v1.0.0
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
@@ -30,11 +29,9 @@ require (
 	github.com/tkrajina/go-reflector v0.5.5
 	github.com/wailsapp/mimetype v1.4.1
 	github.com/wzshiming/ctc v1.2.3
-	github.com/ztrue/tracerr v0.3.0
-	golang.org/x/mod v0.4.1
+	golang.org/x/mod v0.6.0-dev.0.20211013180041-c96bc1413d57
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
-	golang.org/x/tools v0.1.0
 )
 
 require (
@@ -43,6 +40,10 @@ require (
 	github.com/bitfield/script v0.19.0
 	github.com/charmbracelet/glamour v0.5.0
 	github.com/go-ole/go-ole v1.2.6
+	github.com/labstack/gommon v0.3.1
+	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
+	github.com/samber/lo v1.27.1
+	github.com/stretchr/testify v1.7.1
 )
 
 require (
@@ -50,6 +51,7 @@ require (
 	github.com/Microsoft/go-winio v0.4.16 // indirect
 	github.com/alecthomas/chroma v0.10.0 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
@@ -57,8 +59,6 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
-	github.com/labstack/gommon v0.3.1 // indirect
-	github.com/logrusorgru/aurora v0.0.0-20181002194514-a7b3b318ed4e // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.11 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
@@ -68,6 +68,7 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.9.0 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/tidwall/gjson v1.8.0 // indirect
@@ -79,9 +80,11 @@ require (
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	github.com/yuin/goldmark v1.4.4 // indirect
 	github.com/yuin/goldmark-emoji v1.0.1 // indirect
-	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
+	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
 	golang.org/x/image v0.0.0-20201208152932-35266b937fa6 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
