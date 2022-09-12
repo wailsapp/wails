@@ -46,7 +46,7 @@ Wails 是一个开放源码、社区驱动的项目。 我们欢迎任何人加�
 - The purpose of the enhancement
 - What is out of scope for the enhancement
 - What platforms the enhancement targets (most features should be cross-platform unless there's a very specific reason)
-- If the ticket does not include this information, feel free to request the information from the person who opened the ticket. Sometimes placeholder tickets are created and require more details
+- If the ticket does not include this information, feel free to request the information from the person who opened the ticket. Sometimes placeholder tickets are created and require more details Sometimes placeholder tickets are created and require more details
 - Comment on the ticket stating you wish to develop the feature
 - Clone the repository and create a branch with the format `feature/<ticket_number>_<ticket_title>`
 - New features often require documentation so please ensure you have also added or updated the documentation as part of the changes
@@ -57,11 +57,13 @@ Wails 是一个开放源码、社区驱动的项目。 我们欢迎任何人加�
 There is nothing stopping you from opening a ticket and working on it yourself, but please be aware that all
 enhancement requests are reviewed for good fit. Not all ideas will be selected so it's best to have discussion
 on the ticket first.
+::: Not all ideas will be selected so it's best to have discussion
+on the ticket first.
 :::
 
 :::warning
 Any PRs opened without a corresponding ticket may be rejected.
-:::
+::: :::
 
 ### 修复漏洞
 
@@ -70,41 +72,41 @@ The process for fixing bugs are as follows:
 - Check the current [Backlog](https://github.com/orgs/wailsapp/projects/1/views/1) and select a bug to fix
 - Before developing, check that the ticket includes the following information:
 - The scope of the issue including platforms affected
-- The steps to reproduce. Sometimes bugs are opened that are not Wails issues and the onus is on the reporter to prove that it is a Wails issue with a minimal reproducible example
+- The steps to reproduce. The steps to reproduce. Sometimes bugs are opened that are not Wails issues and the onus is on the reporter to prove that it is a Wails issue with a minimal reproducible example
 - The output of `wails doctor`
-- If the ticket does not include this information, feel free to request the information from the person who opened the ticket.
+- If the ticket does not include this information, feel free to request the information from the person who opened the ticket. Sometimes placeholder tickets are created and require more details
 - Comment on the ticket stating you wish to develop a fix
 - Clone the repository and create a branch with the format `bugfix/<ticket_number>_<ticket_title>`
-- Once the fix is ready for testing, create a draft PR. Please ensure the PR description has the test scenarios and test cases listed with checkmarks, so that others can know what still needs to be tested.
+- Once the fix is ready for testing, create a draft PR. Please ensure the PR description has the test scenarios and test cases listed with checkmarks, so that others can know what still needs to be tested. Please ensure the PR description has the test scenarios and test cases listed with checkmarks, so that others can know what still needs to be tested.
 - Once all the testing is completed, please update the status of the PR from draft and leave a message.
 
 :::note
 There is nothing stopping you from opening a ticket and working on it yourself, but please be aware that all
 bugfixes should be discussed as the approach may have unintended side effects.
-:::
+::: :::
 
 :::warning
 Any PRs opened without a corresponding ticket may be rejected.
-:::
+::: :::
 
 ### 测试
 
-Testing is vitally important to ensure quality in the project. There are a couple of scenarios where testing can really help the project:
+Testing is vitally important to ensure quality in the project. Testing is vitally important to ensure quality in the project. There are a couple of scenarios where testing can really help the project:
 
 - Testing if a bug is reproducible on your local system
 - Testing PRs to ensure that they work correctly
 
 If you chose to test if someone's bug report is reproducible on your local system, then feel free to add a comment on the ticket confirming this with the output of `wails doctor`.
 
-To test PRs, choose a PR to test and check if the PR description has the testing scenarios listed. If not, please ask the person who opened the PR to provide that list. Once you have determined a valid test scenario, please report your findings on the PR.
+To test PRs, choose a PR to test and check if the PR description has the testing scenarios listed. If not, please ask the person who opened the PR to provide that list. Once you have determined a valid test scenario, please report your findings on the PR. If not, please ask the person who opened the PR to provide that list. Once you have determined a valid test scenario, please report your findings on the PR.
 
 If you ever need more clarity or help on testing, please ask a question in the [Contributing to Wails](https://github.com/wailsapp/wails/discussions/1520) discussion or on slack.
 
 ### 文档
 
-This website is also the main documentation site for the project. Sometimes this gets out of date and needs some slight adjustments. Some of the documentation isn't written to the best standards either. Developing documentation is hard and so any contribution to this is greatly appreciated. Features without documentation are unfinished so to the project, it's _as important_ as the code.
+This website is also the main documentation site for the project. Sometimes this gets out of date and needs some slight adjustments. Some of the documentation isn't written to the best standards either. Developing documentation is hard and so any contribution to this is greatly appreciated. This website is also the main documentation site for the project. Sometimes this gets out of date and needs some slight adjustments. Some of the documentation isn't written to the best standards either. Developing documentation is hard and so any contribution to this is greatly appreciated. Features without documentation are unfinished so to the project, it's _as important_ as the code.
 
-We generally do not create tickets for updating documentation so if there is text you think should be updated or rephrased then feel free to submit a PR for that. This site is in the main repository under the `website` directory. We use [Docusaurus](https://docusaurus.io/) to create the site so there is plenty of existing documentation and tutorials around to get started.
+We generally do not create tickets for updating documentation so if there is text you think should be updated or rephrased then feel free to submit a PR for that. This site is in the main repository under the `website` directory. We use [Docusaurus](https://docusaurus.io/) to create the site so there is plenty of existing documentation and tutorials around to get started. This site is in the main repository under the `website` directory. We use [Docusaurus](https://docusaurus.io/) to create the site so there is plenty of existing documentation and tutorials around to get started.
 
 To set up a local documentation development environment, do the following:
 
@@ -113,23 +115,23 @@ To set up a local documentation development environment, do the following:
 - `npm install`
 - `npm run start`
 
-After it has all installed and is running, you should see the site at [`http://localhost:3000`](http://localhost:3000). Any changes made to the site text will be immediately reflected in the browser.
+After it has all installed and is running, you should see the site at [`http://localhost:3000`](http://localhost:3000). Any changes made to the site text will be immediately reflected in the browser. Any changes made to the site text will be immediately reflected in the browser.
 
 #### 版本
 
-We employ a versioning system where we have the "latest" documentation AKA "Next Version" which has all the changes that have occurred since the last release. We also keep the last release documentation as well as the version before that.
+We employ a versioning system where we have the "latest" documentation AKA "Next Version" which has all the changes that have occurred since the last release. We also keep the last release documentation as well as the version before that. We also keep the last release documentation as well as the version before that.
 
 There isn't usually a reason to update released documentation so we don't generally update the documents in the `versioned_docs` or `versioned_sidebars` directories.
 
-The "next version" docs are mainly in `website/docs` with some "version independent" documents in `src/pages`. Any updates should be made in the `website/docs` directory.
+The "next version" docs are mainly in `website/docs` with some "version independent" documents in `src/pages`. Any updates should be made in the `website/docs` directory. Any updates should be made in the `website/docs` directory.
 
 #### 语言
 
-The default documents of the Wails project are English documents. We use the "crowdin" tool to translate documents in other languages and synchronize them to the website. You can [join our project](https://crowdin.com/project/wails) and submit your translations to make contributions.
+The default documents of the Wails project are English documents. We use the "crowdin" tool to translate documents in other languages and synchronize them to the website. You can [join our project](https://crowdin.com/project/wails) and submit your translations to make contributions. We use the "crowdin" tool to translate documents in other languages and synchronize them to the website. You can [join our project](https://crowdin.com/project/wails) and submit your translations to make contributions.
 
 ##### 添加新语言
 
-If you want to add a new language to the documentation, please follow the prompts to [fill in and submit an Issue](https://github.com/wailsapp/wails/issues/new?assignees=&labels=documentation&template=documentation.yml). After being confirmed by the maintainer, we will add the language to the "crowdin" and you will then be able to submit your translation.
+If you want to add a new language to the documentation, please follow the prompts to [fill in and submit an Issue](https://github.com/wailsapp/wails/issues/new?assignees=&labels=documentation&template=documentation.yml). After being confirmed by the maintainer, we will add the language to the "crowdin" and you will then be able to submit your translation. After being confirmed by the maintainer, we will add the language to the "crowdin" and you will then be able to submit your translation.
 
 ### 帮助其他人
 

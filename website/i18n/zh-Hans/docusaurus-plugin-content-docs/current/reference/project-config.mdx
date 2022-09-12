@@ -35,6 +35,7 @@ sidebar_position: 5
     "postBuildHooks": {
     "GOOS/GOARCH": "[在构建指定的 GOOS/GOARCH 后将执行的命令：${platform} 替换为'GOOS/GOARCH'，${bin} 替换为编译后的二进制文件的路径。 The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.]",
         "GOOS/*": "[The command that will be executed before a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.]",
+        "GOOS/*": "[The command that will be executed before a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.]",
         "GOOS/*": "[The command that will be executed before a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/*" hook is executed before the "*/*" hook.]",
         "*/*": "[The command that will be executed before every build: ${platform} is replaced with the "GOOS/GOARCH".]"
     "postBuildHooks": {
