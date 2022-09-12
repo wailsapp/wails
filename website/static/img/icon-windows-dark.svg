@@ -1,8 +1,1 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="100%" height="100%" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg"
-     xml:space="preserve"
-     style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-    <path d="M54,10L10,15.984L10,48.016L54,54L54,10ZM50,14.578L50,30L30,30L30,17.301L50,14.578ZM26,17.844L26,30L14,30L14,19.477L26,17.844ZM14,34L26,34L26,46.156L14,44.523L14,34ZM30,34L50,34L50,49.422L30,46.699L30,34Z"
-          style="fill:white;fill-rule:nonzero;"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" version="1.1" viewBox="0 0 64 64" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2"><path d="M54,10L10,15.984L10,48.016L54,54L54,10ZM50,14.578L50,30L30,30L30,17.301L50,14.578ZM26,17.844L26,30L14,30L14,19.477L26,17.844ZM14,34L26,34L26,46.156L14,44.523L14,34ZM30,34L50,34L50,49.422L30,46.699L30,34Z" style="fill:#fff;fill-rule:nonzero"/></svg>
