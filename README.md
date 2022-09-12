@@ -69,6 +69,20 @@ The traditional method of providing web interfaces to Go programs is via a built
 approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to
 make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
 
+## Features
+
+- Use standard Go for the backend
+- Use any frontend technology you are already familiar with to build your UI
+- Quickly create rich frontends for your Go programs using pre-built templates
+- Easily call Go methods from Javascript
+- Auto-generated Typescript definitions for your Go structs and methods
+- Native Dialogs & Menus
+- Supports modern translucency and "frosted window" effects
+- Unified eventing system between Go and Javascript
+- Powerful cli tool to quickly generate and build your projects
+- Multiplatform
+- Uses native rendering engines - _no embedded browser_!
+
 ### Official Website
 
 Version 2:
@@ -84,20 +98,6 @@ The legacy v1 docs can be found at [https://wails.app](https://wails.app).
 
 The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
 this before open up an enhancement request.
-
-## Features
-
-- Use standard Go for the backend
-- Use any frontend technology you are already familiar with to build your UI
-- Quickly create rich frontends for your Go programs using pre-built templates
-- Easily call Go methods from Javascript
-- Auto-generated Typescript definitions for your Go structs and methods
-- Native Dialogs & Menus
-- Supports modern translucency and "frosted window" effects
-- Unified eventing system between Go and Javascript
-- Powerful cli tool to quickly generate and build your projects
-- Multiplatform
-- Uses native rendering engines - _no embedded browser_!
 
 ## Sponsors
 
@@ -200,6 +200,9 @@ This project is supported by these kind people / companies:
 </a>
 <a href="https://github.com/Ilshidur" style="width:50px">
   <img src="https://github.com/Ilshidur.png?size=50" width="50"/>
+</a>
+<a href="https://github.com/KiddoV" style="width:45px">
+  <img src="https://github.com/KiddoV.png?size=45" width="45"/>
 </a>
 
 ## Getting Started

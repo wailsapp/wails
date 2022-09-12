@@ -150,10 +150,27 @@ export function EventsEmit(eventName) {
     window.WailsInvoke('EE' + JSON.stringify(payload));
 }
 
-export function EventsOff(eventName) {
+function removeListener(eventName) {
     // Remove local listeners
     delete eventListeners[eventName];
 
     // Notify Go listeners
     window.WailsInvoke('EX' + eventName);
+}
+
+/**
+ * Off unregisters a listener previously registered with On,
+ * optionally multiple listeneres can be unregistered via `additionalEventNames`
+ *
+ * @param {string} eventName
+ * @param  {...string} additionalEventNames
+ */
+export function EventsOff(eventName, ...additionalEventNames) {
+    removeListener(eventName)
+
+    if (additionalEventNames.length > 0) {
+        additionalEventNames.forEach(eventName => {
+            removeListener(eventName)
+        })
+    }
 }

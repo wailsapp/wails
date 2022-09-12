@@ -186,7 +186,21 @@ const char* GetPosition(void *inctx) {
     y = screenFrame.size.height - y - windowFrame.size.height;
     NSString *result = [NSString stringWithFormat:@"%d,%d",x,y];
     return [result UTF8String];
+}
     
+const bool IsFullScreen(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    return [ctx IsFullScreen];
+}
+
+const bool IsMinimised(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    return [ctx IsMinimised];
+}
+
+const bool IsMaximised(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    return [ctx IsMaximised];
 }
 
 void UnMaximise(void* inctx) {

@@ -366,6 +366,22 @@ func (f *Frontend) Hide() {
 	f.mainWindow.Hide()
 }
 
+func (f *Frontend) WindowIsMaximised() bool {
+	return f.mainWindow.IsMaximised()
+}
+
+func (f *Frontend) WindowIsMinimised() bool {
+	return f.mainWindow.IsMinimised()
+}
+
+func (f *Frontend) WindowIsNormal() bool {
+	return f.mainWindow.IsNormal()
+}
+
+func (f *Frontend) WindowIsFullscreen() bool {
+	return f.mainWindow.IsFullScreen()
+}
+
 func (f *Frontend) Quit() {
 	if f.frontendOptions.OnBeforeClose != nil && f.frontendOptions.OnBeforeClose(f.ctx) {
 		return
@@ -531,11 +547,8 @@ func (f *Frontend) processMessage(message string) {
 	}
 
 	if message == "runtime:ready" {
-		if f.frontendOptions.Experimental != nil {
-			if f.frontendOptions.Experimental.UseCSSDrag {
-				f.ExecJS(`window.wails.useCSSDrag();`)
-			}
-		}
+		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
+		f.ExecJS(cmd)
 		return
 	}
 

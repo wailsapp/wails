@@ -168,12 +168,24 @@ func (w *Window) UnMaximise() {
 	C.UnMaximise(w.context)
 }
 
+func (w *Window) IsMaximised() bool {
+	return (bool)(C.IsMaximised(w.context))
+}
+
 func (w *Window) Minimise() {
 	C.Minimise(w.context)
 }
 
 func (w *Window) UnMinimise() {
 	C.UnMinimise(w.context)
+}
+
+func (w *Window) IsMinimised() bool {
+	return (bool)(C.IsMinimised(w.context))
+}
+
+func (w *Window) IsNormal() bool {
+	return !w.IsMaximised() && !w.IsMinimised() && !w.IsFullScreen()
 }
 
 func (w *Window) SetMinSize(width int, height int) {
@@ -190,6 +202,10 @@ func (w *Window) Fullscreen() {
 
 func (w *Window) UnFullscreen() {
 	C.UnFullscreen(w.context)
+}
+
+func (w *Window) IsFullScreen() bool {
+	return (bool)(C.IsFullScreen(w.context))
 }
 
 func (w *Window) Show() {

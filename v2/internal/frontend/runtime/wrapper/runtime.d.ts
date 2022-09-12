@@ -50,7 +50,7 @@ export function EventsOnce(eventName: string, callback: (...data: any) => void):
 
 // [EventsOff](https://wails.io/docs/reference/runtime/events#eventsff)
 // unregisters the listener for the given event name.
-export function EventsOff(eventName: string): void;
+export function EventsOff(eventName: string, ...additionalEventNames: string[]): void;
 
 // [LogPrint](https://wails.io/docs/reference/runtime/log#logprint)
 // logs the given message as a raw message
@@ -120,6 +120,10 @@ export function WindowFullscreen(): void;
 // Restores the previous window dimensions and position prior to full screen.
 export function WindowUnfullscreen(): void;
 
+// [WindowIsFullscreen](https://wails.io/docs/reference/runtime/window#windowisfullscreen)
+// Returns the state of the window, i.e. whether the window is in full screen mode or not.
+export function WindowIsFullscreen(): Promise<boolean>;
+
 // [WindowSetSize](https://wails.io/docs/reference/runtime/window#windowsetsize)
 // Sets the width and height of the window.
 export function WindowSetSize(width: number, height: number): Promise<Size>;
@@ -166,6 +170,10 @@ export function WindowToggleMaximise(): void;
 // Restores the window to the dimensions and position prior to maximising.
 export function WindowUnmaximise(): void;
 
+// [WindowIsMaximised](https://wails.io/docs/reference/runtime/window#windowismaximised)
+// Returns the state of the window, i.e. whether the window is maximised or not.
+export function WindowIsMaximised(): Promise<boolean>;
+
 // [WindowMinimise](https://wails.io/docs/reference/runtime/window#windowminimise)
 // Minimises the window.
 export function WindowMinimise(): void;
@@ -173,6 +181,14 @@ export function WindowMinimise(): void;
 // [WindowUnminimise](https://wails.io/docs/reference/runtime/window#windowunminimise)
 // Restores the window to the dimensions and position prior to minimising.
 export function WindowUnminimise(): void;
+
+// [WindowIsMinimised](https://wails.io/docs/reference/runtime/window#windowisminimised)
+// Returns the state of the window, i.e. whether the window is minimised or not.
+export function WindowIsMinimised(): Promise<boolean>;
+
+// [WindowIsNormal](https://wails.io/docs/reference/runtime/window#windowisnormal)
+// Returns the state of the window, i.e. whether the window is normal or not.
+export function WindowIsNormal(): Promise<boolean>;
 
 // [WindowSetBackgroundColour](https://wails.io/docs/reference/runtime/window#windowsetbackgroundcolour)
 // Sets the background colour of the window to the given RGBA colour definition. This colour will show through for all transparent pixels.

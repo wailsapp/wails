@@ -12,6 +12,8 @@ var Default = &App{
 	Logger:             logger.NewDefaultLogger(),
 	LogLevel:           logger.INFO,
 	LogLevelProduction: logger.ERROR,
+	CSSDragProperty:    "--wails-draggable",
+	CSSDragValue:       "drag",
 }
 
 var defaultMacMenu = menu.NewMenuFromItems(

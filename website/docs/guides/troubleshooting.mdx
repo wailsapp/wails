@@ -110,7 +110,7 @@ go env -w GOPROXY=https://goproxy.cn,direct
 
 Source: https://github.com/wailsapp/wails/issues/1233
 
-## The generated Typescript doesn''t have the correct types
+## The generated Typescript doesn't have the correct types
 
 Sometimes the generated Typescript doesn''t have the correct types. To mitigate this,
 it is possible to specify what types should be generated using the `ts_type` struct tag. For
@@ -129,3 +129,31 @@ the following imports to the `<head>` section of any new page you navigate to:
 ```
 
 Source: https://github.com/wailsapp/wails/discussions/1512
+
+## I get `too many open files` errors on my Mac when I run `wails dev`
+
+By default, macOS will only allow you to open a maximum of 256 files. This can affect the `wails dev` command. 
+This limit can be increased by running: `ulimit -n 1024` in the terminal.
+
+FSNotify is [looking to move to Apple's fsevents](https://github.com/fsnotify/fsnotify/issues/11) for Mac. 
+If this isn't completed soon, we will create our own implementation, tracked [here](https://github.com/wailsapp/wails/issues/1733).
+
+## My Mac app gives me weird compilation errors
+
+A few users have reported seeing compilation errors such as the following:
+
+```shell
+# github.com/wailsapp/wails/v2/internal/frontend/desktop/darwin
+In file included from ../../pkg/mod/github.com/wailsapp/wails/v2@v2.0.0-beta.44.2/internal/frontend/desktop/darwin/callbacks.go:9:
+In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/System/Library/Frameworks/Foundation.framework/Headers/Foundation.h:12:
+/Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/System/Library/Frameworks/Foundation.framework/Headers/NSBundle.h:91:143: error: function does not return NSString
+- (NSAttributedString *)localizedAttributedStringForKey:(NSString *)key value:(nullable NSString *)value table:(nullable NSString *)tableName NS_FORMAT_ARGUMENT(1) NS_REFINED_FOR_SWIFT API_AVAILABLE(macos(12.0), ios(15.0), watchos(8.0), tvos(15.0));
+                                                         ~~~~~~~~~~~~~~                                                                       ^                  ~
+/Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/System/Library/Frameworks/Foundation.framework/Headers/NSObjCRuntime.h:103:48: note: expanded from macro 'NS_FORMAT_ARGUMENT'
+        #define NS_FORMAT_ARGUMENT(A) __attribute__ ((format_arg(A)))
+```
+
+This is *normally* due to a mismatch with the OS version you are running and the version of the XCode Command Line Tools
+installed. If you see an error like this, try upgrading your XCode Command Line Tools to the latest version.
+
+Source: https://github.com/wailsapp/wails/issues/1806

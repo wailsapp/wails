@@ -58,8 +58,10 @@ func init() {
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 
-	// Set GDK_BACKEND=x11 to prevent warnings
-	_ = os.Setenv("GDK_BACKEND", "x11")
+	// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE is unset, unspecified or x11 to prevent warnings
+	if os.Getenv("GDK_BACKEND") == "" && (os.Getenv("XDG_SESSION_TYPE") == "" || os.Getenv("XDG_SESSION_TYPE") == "unspecified" || os.Getenv("XDG_SESSION_TYPE") == "x11") {
+		_ = os.Setenv("GDK_BACKEND", "x11")
+	}
 
 	result := &Frontend{
 		frontendOptions: appoptions,
@@ -228,6 +230,22 @@ func (f *Frontend) ScreenGetAll() ([]Screen, error) {
 	return GetAllScreens(f.mainWindow.asGTKWindow())
 }
 
+func (f *Frontend) WindowIsMaximised() bool {
+	return f.mainWindow.IsMaximised()
+}
+
+func (f *Frontend) WindowIsMinimised() bool {
+	return f.mainWindow.IsMinimised()
+}
+
+func (f *Frontend) WindowIsNormal() bool {
+	return f.mainWindow.IsNormal()
+}
+
+func (f *Frontend) WindowIsFullscreen() bool {
+	return f.mainWindow.IsFullScreen()
+}
+
 func (f *Frontend) Quit() {
 	if f.frontendOptions.OnBeforeClose != nil {
 		go func() {
@@ -274,11 +292,8 @@ func (f *Frontend) processMessage(message string) {
 	}
 
 	if message == "runtime:ready" {
-		if f.frontendOptions.Experimental != nil {
-			if f.frontendOptions.Experimental.UseCSSDrag {
-				f.ExecJS(`window.wails.useCSSDrag();`)
-			}
-		}
+		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
+		f.ExecJS(cmd)
 		return
 	}
 
