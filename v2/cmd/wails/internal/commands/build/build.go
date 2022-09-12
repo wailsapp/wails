@@ -115,7 +115,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	obfuscated := false
 	command.BoolFlag("obfuscated", "Code obfuscation of bound Wails methods", &obfuscated)
 
-	garbleargs := ""
+	garbleargs := "-literals -tiny -seed=random"
 	command.StringFlag("garbleargs", "Arguments to pass to garble", &garbleargs)
 
 	dryRun := false
@@ -230,6 +230,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			_, _ = fmt.Fprintf(w, "Skip Bindings: \t%t\n", skipBindings)
 			_, _ = fmt.Fprintf(w, "Build Mode: \t%s\n", modeString)
 			_, _ = fmt.Fprintf(w, "Obfuscated: \t%t\n", buildOptions.Obfuscated)
+			if buildOptions.Obfuscated {
+				_, _ = fmt.Fprintf(w, "Garble Args: \t%s\n", buildOptions.GarbleArgs)
+			}
 			_, _ = fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
 			_, _ = fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
 			_, _ = fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)

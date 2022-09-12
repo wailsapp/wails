@@ -79,7 +79,7 @@ type devFlags struct {
 	reloadDirs      string
 	openBrowser     bool
 	noReload        bool
-	noGen           bool
+	skipBindings    bool
 	wailsjsdir      string
 	tags            string
 	verbosity       int
@@ -93,7 +93,6 @@ type devFlags struct {
 
 	frontendDevServerURL string
 	skipFrontend         bool
-	obfuscate            bool
 }
 
 // AddSubcommand adds the `dev` command for the Wails application
@@ -109,7 +108,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("reloaddirs", "Additional directories to trigger reloads (comma separated)", &flags.reloadDirs)
 	command.BoolFlag("browser", "Open application in browser", &flags.openBrowser)
 	command.BoolFlag("noreload", "Disable reload on asset change", &flags.noReload)
-	command.BoolFlag("nogen", "Disable generate module", &flags.noGen)
+	command.BoolFlag("skipbindings", "Skip bindings generation", &flags.skipBindings)
 	command.StringFlag("wailsjsdir", "Directory to generate the Wails JS modules", &flags.wailsjsdir)
 	command.StringFlag("tags", "Build tags to pass to Go compiler. Must be quoted. Space or comma (but not both) separated", &flags.tags)
 	command.IntFlag("v", "Verbosity level (0 - silent, 1 - standard, 2 - verbose)", &flags.verbosity)
@@ -122,7 +121,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
 	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
 	command.BoolFlag("s", "Skips building the frontend", &flags.skipFrontend)
-	command.BoolFlag("obfuscate", "Code obfuscation of bound Wails methods", &flags.obfuscate)
 
 	command.Action(func() error {
 		// Create logger
@@ -156,7 +154,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		// Run go mod tidy to ensure we're up-to-date
-		err = runCommand(cwd, false, "go", "mod", "tidy", "-compat=1.17")
+		err = runCommand(cwd, false, "go", "mod", "tidy")
 		if err != nil {
 			return err
 		}
@@ -169,13 +167,9 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
-		if flags.obfuscate {
-			userTags = append(userTags, "obfuscated")
-		}
-
 		buildOptions.UserTags = userTags
 
-		if !flags.noGen {
+		if !flags.skipBindings {
 			if flags.verbosity == build.VERBOSE {
 				LogGreen("Generating Bindings...")
 			}
@@ -330,22 +324,6 @@ func runCommand(dir string, exitOnError bool, command string, args ...string) er
 	LogGreen("Executing: " + command + " " + strings.Join(args, " "))
 	cmd := exec.Command(command, args...)
 	cmd.Dir = dir
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		println(string(output))
-		println(err.Error())
-		if exitOnError {
-			os.Exit(1)
-		}
-		return err
-	}
-	return nil
-}
-
-func runCommandWithEnv(dir string, exitOnError bool, env []string, command string, args ...string) error {
-	cmd := exec.Command(command, args...)
-	cmd.Dir = dir
-	cmd.Env = append(os.Environ(), env...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		println(string(output))
@@ -561,9 +539,6 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 	os.Setenv("assetdir", flags.assetDir)
 	os.Setenv("devserver", flags.devServer)
 	os.Setenv("frontenddevserverurl", flags.frontendDevServerURL)
-	if flags.obfuscate {
-		os.Setenv("WAILS_OBFUSCATE", "TRUE")
-	}
 
 	// Start up new binary with correct args
 	newProcess := process.NewProcess(appBinary, args...)

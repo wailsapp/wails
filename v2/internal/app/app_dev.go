@@ -73,16 +73,10 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	var devServerFlag *string
 	var frontendDevServerURLFlag *string
 	var loglevelFlag *string
-	var obfuscateFlag *bool
 
 	assetdir := os.Getenv("assetdir")
 	if assetdir == "" {
 		assetdirFlag = devFlags.String("assetdir", "", "Directory to serve assets")
-	}
-
-	obfuscate := os.Getenv("WAILS_OBFUSCATE")
-	if obfuscate == "" {
-		obfuscateFlag = devFlags.Bool("obfuscate", false, "Code obfuscation of bound Wails methods")
 	}
 
 	devServer := os.Getenv("devserver")
@@ -115,9 +109,6 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		}
 		if loglevelFlag != nil {
 			loglevel = *loglevelFlag
-		}
-		if obfuscateFlag != nil && *obfuscateFlag {
-			obfuscate = fmt.Sprintf("%t", *obfuscateFlag)
 		}
 	}
 
@@ -200,7 +191,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		appoptions.OnDomReady,
 		appoptions.OnBeforeClose,
 	}
-	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions, obfuscate != "")
+	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions, false)
 
 	err = generateBindings(appBindings)
 	if err != nil {

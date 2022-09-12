@@ -267,9 +267,6 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	options.CompiledBinary = compiledBinary
 
 	// Build the application
-	if verbose {
-		println("Compiling application with:", compiler, commands.Join(" "))
-	}
 	cmd := exec.Command(compiler, commands.AsSlice()...)
 	cmd.Stderr = os.Stderr
 	if verbose {
