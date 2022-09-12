@@ -21,7 +21,7 @@ const (
 	if (!a) {
 		return a;
 	}
-	if (a.slice) {
+	if (a.map) {
 		return (a as any[]).map(elem => this.convertValues(elem, classs));
 	} else if ("object" === typeof a) {
 		if (asMap) {
