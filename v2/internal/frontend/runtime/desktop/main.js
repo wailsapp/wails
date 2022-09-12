@@ -88,7 +88,7 @@ let dragTest = function (e) {
     return window.getComputedStyle(e.target).getPropertyValue(window.wails.flags.cssDragProperty) === window.wails.flags.cssDragValue;
 };
 
-window.wails.setCSSDragProperties = function(property, value) {
+window.wails.setCSSDragProperties = function (property, value) {
     window.wails.flags.cssDragProperty = property;
     window.wails.flags.cssDragValue = value;
 }

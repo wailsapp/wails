@@ -16,7 +16,24 @@ on:
   workflow_dispatch:
     # This Action only starts when you go to Actions and manually run the workflow.
 
-jobs:
+- name: Get Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+      - name: Build Wails app
+        run: |
+          wails build
+      - name: upload artifacts macOS
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v2
+        with:
+          name: wails-binaries-macos
+          path: build/bin/*
+      - name: upload artifacts windows
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v2
+        with:
+          name: wails-binaries-windows
+          path: build/bin/*
+      jobs:
   package:
     strategy:
       matrix:
@@ -34,23 +51,6 @@ jobs:
         with:
           node-version: 14
       # You may need to manually build you frontend manually here, unless you have configured frontend build and install commands in wails.json.
-      - name: Get Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
-      - name: Build Wails app
-        run: |
-          wails build
-      - name: upload artifacts macOS
-        if: matrix.platform == 'macos-latest'
-        uses: actions/upload-artifact@v2
-        with:
-          name: wails-binaries-macos
-          path: build/bin/*
-      - name: upload artifacts windows
-        if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v2
-        with:
-          name: wails-binaries-windows
-          path: build/bin/*
 ```
 
 Next we need to give the GitHub workflow access to our signing certificate. This is done by encoding your .pfx or .p12 certificate into a base64 string. To do this in PowerShell, you can use the following command assuming your certificate is called 'my-cert.p12':
@@ -59,7 +59,7 @@ Next we need to give the GitHub workflow access to our signing certificate. This
 certutil -encode .\my-cert.p12 my-cert-base64.txt
 ```
 
-You should now have your .txt file with the base64 encoded certificate. It should start with _-----BEGIN CERTIFICATE-----_ and end with _-----END CERTIFICATE-----_. Now you need to make two action secrets on GitHub. Navigate to _Settings -> Secrets -> Actions_ and create the two following secrets:
+You should now have your .txt file with the base64 encoded certificate. Now you need to make two action secrets on GitHub. It should start with _-----BEGIN CERTIFICATE-----_ and end with _-----END CERTIFICATE-----_. Navigate to _Settings -> Secrets -> Actions_ and create the two following secrets:
 
 - **WIN_SIGNING_CERT** with the contents of your base64 encoded certificate text.
 - **WIN_SIGNING_CERT_PASSWORD** with the contents of your certificate password.
@@ -192,23 +192,24 @@ jobs:
         with:
           node-version: 14
       # You may need to manually build you frontend here, unless you have configured frontend build and install commands in wails.json.
-      - name: Get Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
-      - name: Build Wails app
-        run: |
-          wails build
-      - name: upload artifacts macOS
-        if: matrix.platform == 'macos-latest'
-        uses: actions/upload-artifact@v2
+      jobs:
+  package:
+    strategy:
+      matrix:
+        platform: [windows-latest, macos-latest]
+        go-version: [1.18]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
         with:
-          name: wails-binaries-macos
-          path: build/bin/*
-      - name: upload artifacts windows
-        if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v2
+          go-version: ${{ matrix.go-version }}
+      - name: setup node
+        uses: actions/setup-node@v2
         with:
-          name: wails-binaries-windows
-          path: build/bin/*
+          node-version: 14
+      # You may need to manually build you frontend manually here, unless you have configured frontend build and install commands in wails.json.
 ```
 
 For code signing on macOS, [gon](https://github.com/mitchellh/gon) is a very handy tool for code signing and communicating with Apple servers, also written in Go, and will be used in this guide.
@@ -337,7 +338,25 @@ jobs:
         with:
           node-version: 14
       # You may need to manually build you frontend here, unless you have configured frontend build and install commands in wails.json.
-      - name: Get Wails
+      jobs:
+  package:
+    strategy:
+      matrix:
+        platform: [windows-latest, macos-latest]
+        go-version: [1.18]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      # You may need to manually build you frontend here, unless you have configured frontend build and install commands in wails.json.
+          - name: Get Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
       - name: Build Wails app
         run: |
@@ -353,33 +372,6 @@ jobs:
           # The certificates in a PKCS12 file encoded as a base64 string
           p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
           # The password used to import the PKCS12 file.
-          p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
-      - name: Sign our macOS binary
-        if: matrix.platform == 'macos-latest'
-        run: |
-          echo "Signing Package"
-          gon -log-level=info ./build/darwin/gon-sign.json
-      - name: Sign Windows binaries
-        if: matrix.platform == 'windows-latest'
-        run: |
-          echo "Creating certificate file"
-          New-Item -ItemType directory -Path certificate
-          Set-Content -Path certificate\certificate.txt -Value '${{ secrets.WIN_SIGNING_CERT }}'
-          certutil -decode certificate\certificate.txt certificate\certificate.pfx
-          echo "Signing our binaries"
-          & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe' sign /fd sha256 /tr http://ts.ssl.com /f certificate\certificate.pfx /p '${{ secrets.WIN_SIGNING_CERT_PASSWORD }}' .\build\bin\Monitor.exe
-      - name: upload artifacts macOS
-        if: matrix.platform == 'macos-latest'
-        uses: actions/upload-artifact@v2
-        with:
-          name: wails-binaries-macos
-          path: build/bin/*
-      - name: upload artifacts windows
-        if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v2
-        with:
-          name: wails-binaries-windows
-          path: build/bin/*
 ```
 
 # End notes

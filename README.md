@@ -205,8 +205,6 @@ This project is supported by these kind people / companies:
   <img src="https://github.com/KiddoV.png?size=45" width="45"/>
 </a>
 
-
-
 ## Getting Started
 
 The installation instructions are on the [official website](https://wails.io/docs/gettingstarted/installation).

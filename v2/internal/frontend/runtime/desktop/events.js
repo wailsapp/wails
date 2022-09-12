@@ -161,13 +161,13 @@ function removeListener(eventName) {
 /**
  * Off unregisters a listener previously registered with On,
  * optionally multiple listeneres can be unregistered via `additionalEventNames`
- * 
- * @param {string} eventName 
- * @param  {...string} additionalEventNames 
+ *
+ * @param {string} eventName
+ * @param  {...string} additionalEventNames
  */
 export function EventsOff(eventName, ...additionalEventNames) {
     removeListener(eventName)
-    
+
     if (additionalEventNames.length > 0) {
         additionalEventNames.forEach(eventName => {
             removeListener(eventName)
