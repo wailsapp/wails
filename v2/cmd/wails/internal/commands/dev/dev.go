@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/common"
+	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 	"io"
 	"net"
 	"net/http"
@@ -163,28 +164,29 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		buildOptions := generateBuildOptions(flags)
 		buildOptions.Logger = logger
 
-		userTags, err := common.ParseUserTags(flags.tags)
+		userTags, err := buildtags.Parse(flags.tags)
 		if err != nil {
 			return err
 		}
-		if len(userTags) > 0 {
-			buildOptions.UserTags = userTags
+
+		if flags.obfuscate {
+			userTags = append(userTags, "obfuscated")
 		}
 
-		if !flags.noGen {
-			self := os.Args[0]
-			var env []string
-			if flags.obfuscate {
-				env = append(env, "WAILS_OBFUSCATE=true")
-			}
+		buildOptions.UserTags = userTags
 
-			if len(userTags) > 0 {
-				err = runCommandWithEnv(".", true, env, self, "generate", "module", "-tags", flags.tags)
-			} else {
-				err = runCommandWithEnv(".", true, env, self, "generate", "module")
+		if !flags.noGen {
+			if flags.verbosity == build.VERBOSE {
+				LogGreen("Generating Bindings...")
 			}
+			stdout, err := bindings.GenerateBindings(bindings.Options{
+				Tags: buildOptions.UserTags,
+			})
 			if err != nil {
 				return err
+			}
+			if flags.verbosity == build.VERBOSE {
+				LogGreen(stdout)
 			}
 		}
 

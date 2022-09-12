@@ -153,7 +153,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	verbose := options.Verbosity == VERBOSE
 	// Run go mod tidy first
 	if !options.SkipModTidy {
-		cmd := exec.Command(options.Compiler, "mod", "tidy", "-compat=1.17")
+		cmd := exec.Command(options.Compiler, "mod", "tidy")
 		cmd.Stderr = os.Stderr
 		if verbose {
 			println("")
@@ -168,7 +168,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	commands := slicer.String()
 
 	compiler := options.Compiler
-	if options.Obfuscate {
+	if options.Obfuscated {
 		if !shell.CommandExists("garble") {
 			return fmt.Errorf("the 'garble' command was not found. Please install it with `go install mvdan.cc/garble@latest`")
 		} else {
@@ -176,6 +176,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 			if options.GarbleArgs != "" {
 				commands.AddSlice(strings.Split(options.GarbleArgs, " "))
 			}
+			options.UserTags = append(options.UserTags, "obfuscated")
 		}
 	}
 
@@ -217,7 +218,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		tags.Add("debug")
 	}
 
-	if options.Obfuscate {
+	if options.Obfuscated {
 		tags.Add("obfuscated")
 	}
 
@@ -266,6 +267,9 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	options.CompiledBinary = compiledBinary
 
 	// Build the application
+	if verbose {
+		println("Compiling application with:", compiler, commands.Join(" "))
+	}
 	cmd := exec.Command(compiler, commands.AsSlice()...)
 	cmd.Stderr = os.Stderr
 	if verbose {

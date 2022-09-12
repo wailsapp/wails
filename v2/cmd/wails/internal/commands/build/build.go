@@ -2,7 +2,7 @@ package build
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/common"
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 	"io"
 	"os"
 	"os/exec"
@@ -112,14 +112,17 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	windowsConsole := false
 	command.BoolFlag("windowsconsole", "Keep the console when building for Windows", &windowsConsole)
 
-	obfuscate := false
-	command.BoolFlag("obfuscate", "Code obfuscation of bound Wails methods", &obfuscate)
+	obfuscated := false
+	command.BoolFlag("obfuscated", "Code obfuscation of bound Wails methods", &obfuscated)
 
 	garbleargs := ""
 	command.StringFlag("garbleargs", "Arguments to pass to garble", &garbleargs)
 
 	dryRun := false
 	command.BoolFlag("dryrun", "Dry run, prints the config for the command that would be executed", &dryRun)
+
+	skipBindings := false
+	command.BoolFlag("skipbindings", "Skips generation of bindings", &skipBindings)
 
 	command.Action(func() error {
 
@@ -145,7 +148,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		}
 
 		// Process User Tags
-		userTags, err := common.ParseUserTags(tags)
+		userTags, err := buildtags.Parse(tags)
 		if err != nil {
 			return err
 		}
@@ -210,8 +213,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			TrimPath:            trimpath,
 			RaceDetector:        raceDetector,
 			WindowsConsole:      windowsConsole,
-			Obfuscate:           obfuscate,
+			Obfuscated:          obfuscated,
 			GarbleArgs:          garbleargs,
+			SkipBindings:        skipBindings,
 		}
 
 		// Start a new tabwriter
@@ -223,8 +227,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			_, _ = fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
 			_, _ = fmt.Fprintf(w, "Platforms: \t%s\n", platform)
 			_, _ = fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
+			_, _ = fmt.Fprintf(w, "Skip Bindings: \t%t\n", skipBindings)
 			_, _ = fmt.Fprintf(w, "Build Mode: \t%s\n", modeString)
-			_, _ = fmt.Fprintf(w, "Obfuscate: \t%t\n", buildOptions.Obfuscate)
+			_, _ = fmt.Fprintf(w, "Obfuscated: \t%t\n", buildOptions.Obfuscated)
 			_, _ = fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
 			_, _ = fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
 			_, _ = fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
@@ -334,6 +339,11 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 			if outputFilename != "" {
 				buildOptions.OutputFile = outputFilename
+			}
+
+			if obfuscated && skipBindings {
+				logger.Println("Warning: obfuscated flag overrides skipbindings flag.")
+				buildOptions.SkipBindings = false
 			}
 
 			if !dryRun {

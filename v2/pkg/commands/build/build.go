@@ -2,10 +2,9 @@ package build
 
 import (
 	"fmt"
-	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -61,8 +60,9 @@ type Options struct {
 	TrimPath            bool                 // Use Go's trimpath compiler flag
 	RaceDetector        bool                 // Build with Go's race detector
 	WindowsConsole      bool                 // Indicates that the windows console should be kept
-	Obfuscate           bool                 // Indicates that bound methods should be obfuscated
+	Obfuscated          bool                 // Indicates that bound methods should be obfuscated
 	GarbleArgs          string               // The arguments for Garble
+	SkipBindings        bool                 // Skip binding generation
 }
 
 // Build the project!
@@ -130,13 +130,11 @@ func Build(options *Options) (string, error) {
 		}
 	}
 
-	if options.Obfuscate {
-		err := generateBindings(options)
+	// Generate bindings
+	if !options.SkipBindings {
+		err = GenerateBindings(options)
 		if err != nil {
 			return "", err
-		}
-		if !lo.Contains(options.UserTags, "obfuscated") {
-			options.UserTags = append(options.UserTags, "obfuscated")
 		}
 	}
 
@@ -165,47 +163,31 @@ func Build(options *Options) (string, error) {
 	return compileBinary, nil
 }
 
-func generateBindings(options *Options) error {
-	options.Logger.Print("  - Generating obfuscated bindings: ")
-	defer func() {
-		options.Logger.Println("Done.")
-	}()
-	// Run go mod tidy to ensure we're up-to-date
-	stdout, stderr, err := shell.RunCommand(".", "go", "mod", "tidy", "-compat=1.17")
-	if err != nil {
-		options.Logger.Println(stdout)
-		options.Logger.Println(stderr)
-		return err
-	}
+func GenerateBindings(buildOptions *Options) error {
 
-	self := os.Args[0]
-	var env []string
-	if options.Obfuscate {
-		env = append(env, "WAILS_OBFUSCATE=true")
-	}
-
-	if len(options.UserTags) > 0 {
-		genModuleTagsString := strings.Join(options.UserTags, ",")
-		err = runCommandWithEnv(".", true, env, self, "generate", "module", "-tags", genModuleTagsString)
+	obfuscated := buildOptions.Obfuscated
+	if obfuscated {
+		buildOptions.Logger.Print("  - Generating obfuscated bindings: ")
+		buildOptions.UserTags = append(buildOptions.UserTags, "obfuscated")
 	} else {
-		err = runCommandWithEnv(".", true, env, self, "generate", "module")
+		buildOptions.Logger.Print("  - Generating bindings: ")
 	}
-	return err
-}
 
-func runCommandWithEnv(dir string, exitOnError bool, env []string, command string, args ...string) error {
-	cmd := exec.Command(command, args...)
-	cmd.Dir = dir
-	cmd.Env = append(os.Environ(), env...)
-	output, err := cmd.CombinedOutput()
+	// Generate Bindings
+	output, err := bindings.GenerateBindings(bindings.Options{
+		Tags:      buildOptions.UserTags,
+		GoModTidy: !buildOptions.SkipModTidy,
+	})
 	if err != nil {
-		println(string(output))
-		println(err.Error())
-		if exitOnError {
-			os.Exit(1)
-		}
 		return err
 	}
+
+	if buildOptions.Verbosity == VERBOSE {
+		buildOptions.Logger.Println(output)
+	}
+
+	buildOptions.Logger.Println("Done.")
+
 	return nil
 }
 
