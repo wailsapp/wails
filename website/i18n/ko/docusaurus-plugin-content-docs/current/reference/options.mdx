@@ -39,6 +39,8 @@ func main() {
         OnShutdown:         app.shutdown,
         OnBeforeClose:      app.beforeClose,
         WindowStartState:   options.Maximised,
+        CSSDragProperty:   "--wails-draggable",
+        CSSDragValue:      "drag",
         Bind: []interface{}{
             app,
         },
@@ -291,6 +293,18 @@ Defines how the window should present itself at startup.
 
 Type: `options.WindowStartState`
 
+### CSSDragProperty
+
+Indicates the CSS property to use to identify which elements can be used to drag the window. Default: `--wails-draggable`.
+
+Type: `string`
+
+### CSSDragValue
+
+Indicates what value the `CSSDragProperty` style should have to drag the window. Default: `drag`.
+
+Type: `string`
+
 ### Bind
 
 A slice of struct instances defining methods that need to be bound to the frontend.
@@ -513,8 +527,8 @@ type TitleBar struct {
 
 Preconfigured titlebar settings are available:
 
-| Setting                     | Example                                       |
-| --------------------------- | --------------------------------------------- |
+| Setting                     | Example                                        |
+| --------------------------- | ---------------------------------------------- |
 | `mac.TitleBarDefault()`     | ![](/img/reference/titlebar-default.webp)      |
 | `mac.TitleBarHidden()`      | ![](/img/reference/titlebar-hidden.webp)       |
 | `mac.TitleBarHiddenInset()` | ![](/img/reference/titlebar-hidden-inset.webp) |

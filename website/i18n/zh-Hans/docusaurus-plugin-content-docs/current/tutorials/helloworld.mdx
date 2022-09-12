@@ -4,31 +4,25 @@ sidebar_position: 10
 
 # 你好世界
 
-The aim of this tutorial is to get you up and running with the most basic application using Wails. You will be able to: You will be able to: You will be able to:
+本教程的目的是让你使用最基本的 软件来运行和使用Wails。 你将可以:
 
-  - Create a new Wails application
-  - Build the application
-  - Run the application
+- 创建一个新的Wails应用
+- 构建应用
+- 运行应用
 
 :::note
-This tutorial uses Windows as the target platform. Output will vary slightly
-depending on your operating system.
-::: :::note
-This tutorial uses Windows as the target platform. Output will vary slightly
-depending on your operating system.
-::: Output will vary slightly
-depending on your operating system.
-::: :::
+本教程使用 Windows 作为目标平台。 根据您的操作系统，输出会略有不同。
+:::
 
 ## 创建一个新Wails应用
 
-To create a new Wails application using the default vanilla JS template, you need to run the following command:
+使用默认的vanilla JS模板创建新的Wails程序, 您需要运行这个指令:
 
 ```bash
 wails init -n helloworld
 ```
 
-You should see something similar to the following:
+您应该会看到如下输出：
 
 ```
 Wails CLI v2.0.0
@@ -44,7 +38,7 @@ Template Support:  https://wails.io
 Initialised project 'helloworld' in 232ms.
 ```
 
-This will create a new directory called `helloworld` in the current directory. In this directory, you will find a number of files: In this directory, you will find a number of files: In this directory, you will find a number of files:
+这将在当前目录中创建一个名为 `helloworld` 的新目录。 在这个目录中，您会找到一些文件：
 
 ```
 build/       - Contains the build files + compiled application
@@ -58,13 +52,13 @@ go.sum       - The go module checksum file
 
 ## 构建应用
 
-To build the application, change to the new `helloworld` project directory and run the following command:
+要构建应用程序，请切换到新的 `helloword` 项目目录并运行以下命令：
 
 ```bash
 wails build
 ```
 
-You should see something like the following:
+您应该会看到如下输出：
 
 ```
 Wails CLI v2.0.0
@@ -88,37 +82,36 @@ Building target: windows/amd64
   - Generating bundle assets: Done.
   - Compiling application: Done.
 Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
-  - Compiling frontend: Done.
-  - Generating bundle assets: Done.
-  - Compiling application: Done.
-Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
-  - Compiling frontend: Done.
-  - Generating bundle assets: Done.
-  - Compiling application: Done.
-Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
 ```
 
-This has compiled the application and saved it in the `build/bin` directory.
+这有一个已经编译了的应用程序保存在 `build/bin` 目录中。
 
 ## 运行应用
 
-If we view the `build/bin` directory in Windows Explorer, we should see our project binary:
+如果我们在 Windows 文件管理器中查看 `build/bin` 目录，我们应该看到我们的项目二进制文件：
 
 <div class="text--center">
-    <img src="/img/helloworld-app-icon.webp" width="134px"/>
+  <img
+    src={require("@site/static/img/helloworld-app-icon.webp").default}
+    width="134px"
+  />
 </div>
 
-<br/>
+<br />
 
-We can run it by simply double-clicking the `helloworld.exe` file.
+我们可以通过简单的双击 `helloworld.exe` 文件来运行它。
 
-On Mac, Wails generates a `helloworld.app` file which can be run by double-clicking it.
+在 Mac 上，Wails 生成一个 `helloworld.app` 文件，可以通过双击来运行。
 
-On Linux, you can run the application using `./helloworld` from the `build/bin` directory.
+在 Linux 上，您可以从 `build/bin` 目录使用 `/helloword` 运行应用程序。
 
-You should see the application working as expected:
+您应该看到应用程序正常工作：
 
 <div class="text--center">
-    <img src="/img/windows-default-app.webp" width="50%" className="screenshot"/>
+  <img
+    src={require("@site/static/img/windows-default-app.webp").default}
+    width="50%"
+    className="screenshot"
+  />
 </div>
-<br/>
+<br />

@@ -14,29 +14,33 @@ import "github.com/wailsapp/wails/v2/pkg/options"
 func main() {
 
     err := wails.Run(&options.App{
-        Title:             "Menus Demo",
-        Width:             800,
-        Height:            600,
-        DisableResize:     false,
-        Fullscreen:        false,
-        Frameless:         true,
-        MinWidth:          400,
-        MinHeight:         400,
-        MaxWidth:          1280,
-        MaxHeight:         1024,
-        StartHidden:       false,
-        HideWindowOnClose: false,
-        RGBA:              &options.RGBA{R: 0, G: 0, B: 0, A: 255},
-        AlwaysOnTop:       false,
-        Assets:            assets,
-        Menu:              app.applicationMenu(),
-        Logger:            nil,
-        LogLevel:          logger.DEBUG,
-        OnStartup:         app.startup,
-        OnDomReady:        app.domready,
-        OnShutdown:        app.shutdown,
-        OnBeforeClose:     app.beforeClose,
-        WindowStartState:  options.Maximised,
+        Title:              "Menus Demo",
+        Width:              800,
+        Height:             600,
+        DisableResize:      false,
+        Fullscreen:         false,
+        Frameless:          true,
+        MinWidth:           400,
+        MinHeight:          400,
+        MaxWidth:           1280,
+        MaxHeight:          1024,
+        StartHidden:        false,
+        HideWindowOnClose:  false,
+        BackgroundColour:   &options.RGBA{R: 0, G: 0, B: 0, A: 255},
+        AlwaysOnTop:        false,
+        Assets:             assets,
+        AssetsHandler:      assetsHandler,
+        Menu:               app.applicationMenu(),
+        Logger:             nil,
+        LogLevel:           logger.DEBUG,
+        LogLevelProduction: logger.ERROR,
+        OnStartup:          app.startup,
+        OnDomReady:         app.domready,
+        OnShutdown:         app.shutdown,
+        OnBeforeClose:      app.beforeClose,
+        WindowStartState:   options.Maximised,
+        CSSDragProperty:   "--wails-draggable",
+        CSSDragValue:      "drag",
         Bind: []interface{}{
             app,
         },
@@ -46,6 +50,7 @@ func main() {
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
+            WebviewBrowserPath:                "",
             Theme:                             windows.SystemDefault,
             CustomTheme: &windows.ThemeSettings{
                 DarkModeTitleBar:   windows.RGB(20, 20, 20),
@@ -55,7 +60,7 @@ func main() {
                 LightModeTitleText: windows.RGB(20, 20, 20),
                 LightModeBorder:    windows.RGB(200, 200, 200),
             },
-            // 可以自定义的用户消息
+            // User messages that can be customised
             Messages *windows.Messages
         },
         Mac: &mac.Options{
@@ -87,136 +92,100 @@ func main() {
 
 ```
 
-
-
 ### 标题
-
-名称：Title
-
-类型：string
 
 窗口标题栏中显示的文本。
 
+类型：string
+
 ### 宽度
+
+窗口的初始宽度。
 
 名称：Width
 
-类型：int
-
-窗口的初始宽度。 默认值：1024。
-
 ### 高度
 
-名称：Height
+窗口的初始高度。
 
-类型：int
-
-窗口的初始高度。 默认值：768
+类型：`windows.Theme`
 
 ### 禁用调整窗口尺寸
 
-名称：DisableResize
-
-类型：bool
-
 默认情况下，主窗口可调整大小。 将此设置为 `true` 将使其保持固定大小。
+
+类型：int
 
 ### Fullscreen
 
-名称：Fullscreen
-
-类型：bool
-
 将此设置为 `true` 将在启动时使窗口全屏。
+
+类型：int
 
 ### 无边框
 
-名称：Frameless
-
-类型：bool
-
 设置为`true`时，窗口将没有边框或标题栏。 另请参阅[无边框窗口](../guides/frameless)。
+
+类型：int
 
 ### 最小宽度
 
-名称：MinWidth
-
-类型：int
-
 这将设置窗口的最小宽度。 如果给出的值`Width`小于这个值，窗口将被设置为`MinWidth`默认值。
+
+类型：bool
 
 ### 最小高度
 
-名称：MinHeight
-
-类型：int
-
 这将设置窗口的最小高度。 如果给出的值`Height`小于这个值，窗口将被设置为`MinHeight`默认值。
+
+类型：bool
 
 ### 最大宽度
 
-名称：MaxWidth
-
-类型：int
-
 这将设置窗口的最大宽度。 如果给出的值`Width`大于这个值，窗口将被设置为`MaxWidth`默认值。
+
+类型：bool
 
 ### 最大高度
 
-名称：MaxHeight
-
-类型：int
-
 这将设置窗口的最大高度。 如果给出的值`Height`大于这个值，窗口将被设置为`MaxHeight`默认值。
+
+类型：bool
 
 ### 启动时隐藏窗口
 
-名称：StartHidden
-
-类型：bool
-
 设置为`true`时，应用程序将被隐藏，直到调用[显示窗口](../reference/runtime/window#显示窗口)。
 
+类型：int
 ### 关闭时隐藏窗口
-
-名称：HideWindowOnClose
-
-类型：bool
 
 默认情况下，关闭窗口将关闭应用程序。 将此设置为`true`意味着关闭窗口将隐藏窗口。
 
+窗口在失去焦点时应保持在其他窗口之上。
+
+类型：int
+
 ### RGBA
 
-名称：RGBA
+This value is the default background colour of the window. Default: white 类型：int (0xRRGGBBAA) 示例：0xFF000088 - 透明度为 50% 的红色
 
-类型：int (0xRRGGBBAA) 示例：0xFF000088 - 透明度为 50% 的红色
-
-This value is the default background colour of the window. Default: white Default: white
+Type: `*options.RGBA`<br/> Default: white
 
 ### 窗口固定在最顶层
 
-名称：AlwaysOnTop
-
-类型：bool
-
 窗口在失去焦点时应保持在其他窗口之上。
+
+类型：int
 
 ### 资源
 
-名称：Assets
-
-类型：\*embed.FS
-
 应用程序要使用的前端资源。 需要一个`index.html`文件。
+
+名称：StartHidden
 
 ### 菜单
 
 <img src="http://badges.github.io/stability-badges/dist/experimental.svg" />
-
-类型：\*menu.Menu
-
-类型：logger.Logger
-
 
 注意：在 Mac 上，如果未指定菜单，则将创建默认菜单。
 
@@ -239,79 +208,60 @@ NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.
 
 NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html on every path, that does not contain a file extension. NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html on every path, that does not contain a file extension. Vite serves the index.html on every path, that does not contain a file extension.
 
+类型：[AppearanceType](#外观类型)
+
 ### 日志
-
-默认值：Logger to Stdout
-
-名称：Menu
 
 应用程序要使用的菜单。 [菜单参考](../reference/runtime/menu)中有关菜单的更多详细信息。
 
-类型：logger.LogLevel
+:::note
+On Mac, if no menu is specified, a default menu will be created.
+:::
+
+This value is the default background colour of the window. Default: white Default: white
 
 ### 日志级别
 
-默认值：在开发模式下是`Info`，在生产模式下是`Error`。
-
-名称：Logger
-
-名称：OnStartup
-
 应用程序要使用的记录器。 有关日志记录的更多详细信息，请参阅[日志参考](../reference/runtime/log)。
+
+类型：bool
 
 ### 应用启动回调
 
-名称：LogLevel
-
-名称：OnDomReady
-
-类型：func(ctx context.Context)
-
 默认日志级别。 有关日志记录的更多详细信息，请参阅[日志参考](../reference/runtime/log)。
+
+名称：Assets
 
 ### 前端 Dom 加载完成回调
 
-名称：OnShutdown
-
-名称：OnDomReady
-
-Default: `Error`
-
 The default log level for production builds. 有关日志记录的更多详细信息，请参阅[日志参考](../reference/runtime/log)。 有关日志记录的更多详细信息，请参阅[日志参考](../reference/runtime/log)。
+
+类型：logger.Logger
 
 ### 应用退出回调
 
-类型：func(ctx context.Context) bool
-
-类型：func(ctx context.Context)
-
 此回调在前端创建之后调用，但在`index.html`加载之前调用。 它提供了应用程序上下文。
+
+类型：\*menu.Menu
 
 ### 关闭应用程序之前回调
 
-名称：WindowStartState
-
-类型：func(ctx context.Context)
-
 在前端加载完毕`index.html`及其资源后调用此回调。 它提供了应用程序上下文。
+
+类型：\*menu.Menu
 
 ### 窗口启动状态
 
-名称：Bind
-
-类型：func(ctx context.Context)
-
 在前端被销毁之后，应用程序终止之前，调用此回调。 它提供了应用程序上下文。
 
+类型：\*menu.Menu
+
 ### 绑定
-
-名称：Windows
-
-类型：\*windows.Options
 
 如果设置了此回调，它将在通过单击窗口关闭按钮或调用`runtime.Quit`即将退出应用程序时被调用. 返回 `true` 将导致应用程序继续，`false` 将继续正常关闭。 Returning true will cause the application to continue, false will continue shutdown as normal. 这有助于与用户确认他们希望退出程序。 这有助于与用户确认他们希望退出程序。
 
 名称：Mac
+
 ```go title=windowsapp.go
 func (b *App) beforeClose(ctx context.Context) (prevent bool) {
     dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
@@ -326,11 +276,9 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
     return dialog != "Yes"
 ```
 
+类型：func(ctx context.Context)
+
 ### WindowStartState
-
-类型：\*mac.Options
-
-这定义了[Mac 特定的选项](#mac-特定选项)。
 
 名称：Linux
 
@@ -340,119 +288,109 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 | Maximised  | ✅   | ✅   | ✅   |
 | Minimised  | ✅   | ❌   | ✅   |
 
+默认值：在开发模式下是`Info`，在生产模式下是`Error`。
+
+### CSSDragProperty
+
+Indicates the CSS property to use to identify which elements can be used to drag the window. Default: `--wails-draggable`.
+
+类型：string
+
+### CSSDragValue
+
+Indicates what value the `CSSDragProperty` style should have to drag the window. Default: `drag`.
+
+类型：string
+
 ### Bind
-
-类型：\*linux.Options
-
-这定义了[Linux 特定的选项](#linux-特定选项).
 
 名称：WebviewIsTransparent
 
+名称：OnStartup
+
 ### Windows
-
-类型：bool
-
-类型：`*windows.Messages`
 
 名称：WindowIsTranslucent
 
+名称：LogLevel
+
 ### Mac
-
-类型：bool
-
-Type: \*mac.Options
 
 名称：DisableWindowIcon
 
+类型：func(ctx context.Context)
+
 ### Linux
 
-类型：bool
-
-将此设置为 `true` 将删除标题栏左上角的图标。
-
 名称：DisableFramelessWindowDecorations
+
+名称：OnShutdown
 
 ## Windows 特定选项
 
 ### 禁用窗口图标
 
-类型：bool
-
-类型：bool
-
 设置为 `true` 时将使 WebView 背景透明。 这意味着如果你使用`rgba(0,0,0,0)`，主窗口将显示。 通常与[窗口半透明](#窗口半透明)结合使用以制作冰霜效果的应用程序。
+
+类型：int
 
 ### 禁用无边框窗口装饰
 
-类型：string
-
-类型：bool
-
 将此设置为 `true` 将使窗口半透明。 通常与[网页透明](#网页透明) 结合使用以制作冰霜效果的应用程序。
+
+类型：int
 
 ### Webview 用户数据路径
 
-类型：`windows.Theme`
-
-类型：bool
-
 这定义了应用程序应该使用的主题：
+
+类型：int
 
 ### 主题
 
-名称：CustomTheme
-
-类型：bool
-
 将此设置为`true`将移除[无边框](#无边框)模式下的窗口装饰。 这意味着将不会有`Aero 阴影` 和 `圆角`显示在窗口上。 请注意，`圆角`只在 Windows 11 上支持。
+
+类型：int
 
 ### 自定义主题
 
-允许您为浅色和深色模式以及窗口处于活动或非活动状态的 TitleBar、TitleText 和 Border 指定自定义颜色。
-
-类型：string
-
 这定义了 WebView2 存储用户数据的路径。 如果为空将使用`%APPDATA%\[BinaryName.exe]`。
 
-### 消息
-
-示例：
-
 类型：string
+
+### 消息
 
 This defines the path to a directory with WebView2 executable files and libraries. If empty, webview2 installed in the system will be used. If empty, webview2 installed in the system will be used.
 
 Important information about distribution of fixed version runtime:
+
 - [How to get and extract runtime](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode)
 - [Known issues for fixed version](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#known-issues-for-fixed-version)
 - [The path of fixed version of the WebView2 Runtime should not contain \Edge\Application\.](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
 
+类型：string
+
 ### 标题栏
-
-名称：TitleBar
-
-类型：[\*mac.TitleBar](#标题栏结构)
 
 TitleBar 结构提供了配置标题栏外观的能力。
 
 名称：Appearance
 
-| 值             | 描述                                                                                                                                                                                                                   |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| SystemDefault | _默认_. 主题将基于系统默认值。 The theme will be based on the system default. The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 |
-| Dark          | 该应用程序将只使用深色主题                                                                                                                                                                                                        |
-| Light         | 从样式掩码中移除 [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/)。                                                                                     |
+| 值             | 描述                                                                                                                                                                                                                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SystemDefault | _默认_. 主题将基于系统默认值。 The theme will be based on the system default. The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 The theme will be based on the system default. 如果用户更改了他们的主题，应用程序将更新以使用新设置 |
+| Dark          | 该应用程序将只使用深色主题                                                                                                                                                                                                                                                                                  |
+| Light         | 从样式掩码中移除 [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/)。                                                                                                                                                               |
 
+类型：[\*mac.TitleBar](#标题栏结构)
 
 ### 外观
 
-类型：[AppearanceType](#外观类型)
-
-Appearance 用于根据 Apple 的 [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) 名称设置应用程序的样式。
-
-名称：WebviewIsTransparent
+类型：\*mac.Options
 
 类型：bool
+
+Appearance 用于根据 Apple 的 [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) 名称设置应用程序的样式。
 
 #### 外观
 
@@ -478,6 +416,7 @@ type ThemeSettings struct {
 ```
 
 名称：Mac
+
 ```go
     CustomTheme: &windows.ThemeSettings{
         // Theme to use when window is active
@@ -499,79 +438,63 @@ type ThemeSettings struct {
 
 ### 网页透明
 
-名称：Theme
+一个如果找不到有效的 webview2 运行时，webview2 安装程序所使用的字符串结构。
 
 名称：About
 
-一个如果找不到有效的 webview2 运行时，webview2 安装程序所使用的字符串结构。 您可以选择支持的任意语言定制此选项。
+您可以选择支持的任意语言定制此选项。
 
 ### 窗口半透明
 
-此配置允许您为“AppMenu” role 创建的应用程序菜单中的“关于”菜单项设置标题、消息和图标。
-
-可以使用 TitleBar 选项自定义应用程序的标题栏：
-
 ResizeDebounceMS is the amount of time to debounce redraws of webview2 when resizing the window. The default value (0) will perform redraws as fast as it can. The default value (0) will perform redraws as fast as it can.
+
+Type: \*mac.Options
 
 ### 关于
 
-示例：
-
-单击[此处](https://github.com/lukakerr/NSWindowStyles)获取有关自定义标题栏的一些灵感。
-
 您可以指定应用程序的[外观](https://developer.apple.com/documentation/appkit/nsappearance?language=objc)。
+
+类型：bool
 
 ### OnResume
 
-示例：
-
-单击[此处](https://github.com/lukakerr/NSWindowStyles)获取有关自定义标题栏的一些灵感。
-
 “关于”菜单项将出现在应用程序菜单中：
 
-
+类型：bool
 
 ## Mac 特定选项
 
 ### TitleBar
 
-名称：OnBeforeClose
-
-单击后，将打开一个关于消息框：
-
 The TitleBar struct provides the ability to configure the look and feel of the title bar.
+
+类型：bool
+
 
 ### Appearance
 
-名称：Icon
-
-类型：[]byte
-
 Appearance is used to set the style of your app in accordance with Apple's [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) names.
-
-### 禁用窗口图标
-
-类型：bool
-
-类型：bool
-
-设置为 `true` 时将使 WebView 背景透明。 这意味着如果你使用`rgba(0,0,0,0)`，主窗口将显示。 通常与[窗口半透明](#窗口半透明)结合使用以制作冰霜效果的应用程序。
-
-### 禁用无边框窗口装饰
 
 类型：string
 
-类型：bool
+### 禁用窗口图标
+
+设置为 `true` 时将使 WebView 背景透明。 这意味着如果你使用`rgba(0,0,0,0)`，主窗口将显示。 通常与[窗口半透明](#窗口半透明)结合使用以制作冰霜效果的应用程序。
+
+类型：int
+
+### 禁用无边框窗口装饰
 
 将此设置为 `true` 将使窗口半透明。 通常与[网页透明](#网页透明) 结合使用以制作冰霜效果的应用程序。
 
+类型：int
+
 ### About
 
-名称：WebviewUserDataPath
-
-类型：[About](#关于结构)
-
 This configuration lets you set the title, message and icon for the "About" menu item in the app menu created by the "AppMenu" role.
+
+名称：CustomTheme
+
 
 #### 标题栏结构
 
@@ -599,13 +522,14 @@ type TitleBar struct {
 
 Preconfigured titlebar settings are available:
 
-| 值                           | 描述                                            |
-| --------------------------- | --------------------------------------------- |
+| 值                           | 描述                                             |
+| --------------------------- | ---------------------------------------------- |
 | `mac.TitleBarDefault()`     | ![](/img/reference/titlebar-default.webp)      |
 | `mac.TitleBarHidden()`      | ![](/img/reference/titlebar-hidden.webp)       |
 | `mac.TitleBarHiddenInset()` | ![](/img/reference/titlebar-hidden-inset.webp) |
 
 名称：Mac
+
 ```go
 Mac: &mac.Options{
     TitleBar:     mac.TitleBarHiddenInset(),
@@ -630,6 +554,7 @@ You can specify the application's [appearance](https://developer.apple.com/docum
 | NSAppearanceNameAccessibilityHighContrastVibrantDark  | 深色活力外观的高对比度版本   |
 
 名称：Mac
+
 ```go
 Mac: &mac.Options{
     Appearance: mac.NSAppearanceNameDarkAqua,
@@ -645,7 +570,9 @@ type AboutInfo struct {
     Icon    []byte
 }
 ```
+
 如果提供了这些设置，“关于”菜单项将出现在应用程序菜单中（使用`AppMenu` role 时）。 建议这样配置：
+
 ```go
 //go:embed build/appicon.png
 var icon []byte
@@ -678,31 +605,39 @@ func main() {
         },
     })
 ```
+
 The "About" menu item will appear in the app menu:
 
 <div class="text--center">
-    <img src="/img/reference/about-menu.webp" class="screenshot"/>
+  <img
+    src={require("@site/static/img/reference/about-menu.webp").default}
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 When clicked, that will open an about message box:
 
 <div class="text--center">
-    <img src="/img/reference/about-dialog.webp" width="40%" class="screenshot"/>
+  <img
+    src={require("@site/static/img/reference/about-dialog.webp").default}
+    width="40%"
+    class="screenshot"
+  />
 </div>
 
-<br/>
+<br />
 
 ## Linux 特定选项
 
 ### Icon
 
-Name: Icon
+设置代表窗口的图标。 当窗口最小化（也称为图标化）时使用此图标。
 
-Type: []byte
+名称：Appearance
 
-设置代表窗口的图标。 当窗口最小化（也称为图标化）时使用此图标。 一些窗口管理器或桌面环境也可能将其放置在窗口框架中，或在其他上下文中显示。 在其他情况下，根本不使用该图标，因此您的预计情况可能会有所不同。
+一些窗口管理器或桌面环境也可能将其放置在窗口框架中，或在其他上下文中显示。 在其他情况下，根本不使用该图标，因此您的预计情况可能会有所不同。
 
 注意：Wayland 上的 Gnome 至少不显示此图标。 要在那里有一个应用程序图标，必须使用一个`.desktop`文件。 在 KDE 上它应该可以工作。
 
