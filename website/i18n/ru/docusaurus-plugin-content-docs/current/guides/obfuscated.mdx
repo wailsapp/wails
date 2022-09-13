@@ -1,31 +1,31 @@
-# Obfuscated Builds
+# Обфускация кода
 
-Wails includes support for obfuscating your application using [garble](https://github.com/burrowers/garble).
+Wails поддерживает обфускацию вашего приложения с помощью [grable](https://github.com/burrowers/garble).
 
-To produce an obfuscated build, you can use the `-obfuscate` flag with the `wails build` command:
+Чтобы обфусцировать ваше приложение, вы можете добавить флаг `obfuscate` к команде `wails build`:
 
 ```bash
 wails build -obfuscate
 ```
-To customise the obfuscation settings, you can use the `-garbleargs` flag:
+Для изменения настроек обфускации, вы можете использовать флаг `garbleargs`:
 
 ```bash
 wails build -obfuscate -garbleargs "-literals -tiny -seed=myrandomseed"
 ```
 
-These settings may be persisted in your [project config](/guides/reference/project-config).
+Эти настройки можно сохранить в [конфигурации проекта](/guides/reference/project-config).
 
-## How it works
+## Как это работает
 
-In a standard build, all bound methods are available in the frontend under the `window.go` variable. When these methods are called, the corresponding backend method is called using the fully qualified function name. When using an obfuscated build, methods are bound using an ID instead of a name. The bindings generated in the `wailsjs` directory use these IDs to call the backend functions.
+При стандартной сборке, все привязанные методы доступны в фронтенде через переменную `window.go`. При вызове этих методов происходит вызов соответствущих методов в бекенде, для этого используется имя функции. При использовании обфускации, методы привязываются по ID, а не по имени. Биндинги, сгенерированные в папке `wailsjs` используют эти ID для вызова метода в бекенде.
 
 :::note
-To ensure that your application will work in obfuscated mode, you must use the generated bindings under the `wailsjs` directory in your application.  
+Чтобы убедиться, что ваше приложение будет работать в режиме обфускации, вы должны использовать сгенерированные в папке `wailsjs` биндинги.  
 :::
 
-## Example
+## Пример
 
-Importing the "Greet" method from the bindings like this:
+Импортирование метода "Greet" из биндинга:
 
 ```js
 import { Greet } from '../../wailsjs/go/main/App';
@@ -34,4 +34,4 @@ import { Greet } from '../../wailsjs/go/main/App';
 Greet('World');
 ```
 
-will ensure that the method will work correctly in obfuscated mode, as the bindings will be regenerated with IDs and the call mechanism updated.
+обеспечит корректную работу с включенным режимом обфускации, так как биндинги будут сгенерированы заново, используя новый механизм вызова метода по ID.
