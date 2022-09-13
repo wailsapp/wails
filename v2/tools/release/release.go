@@ -36,7 +36,12 @@ func updateVersion() string {
 }
 
 func main() {
-	newVersion := updateVersion()
+	var newVersion string
+	if len(os.Args) > 1 {
+		newVersion = os.Args[1]
+	} else {
+		newVersion = updateVersion()
+	}
 	s.CD("../../../website")
 	s.ECHO("Generating new Docs for version: " + newVersion)
 	cmd := exec.Command("npm", "run", "docusaurus", "docs:version", newVersion)
@@ -65,5 +70,9 @@ func main() {
 	s.CD("../versioned_sidebars")
 	s.RM("version-" + oldestVersion + "-sidebars.json")
 	s.CD("..")
-	s.EXEC("Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; yarn build")
+	cmd = exec.Command("npm", "run", "build")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	checkError(err)
 }

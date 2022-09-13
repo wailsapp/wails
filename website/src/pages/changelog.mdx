@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.0.0-rc.1] - 2022-09-13
+
+### Deprecated
+* The `-noGen` flag for the `wails dev` command has been replaced with `-skipbindings`. This is to
+  align with the `wails build` command.
+
+### Added
+* Add garble support by @leaanthony in https://github.com/wailsapp/wails/pull/1793
+* Make draggable CSS property customisable by @leaanthony in https://github.com/wailsapp/wails/pull/1828
+* Add Some WindowState by @zandercodes in https://github.com/wailsapp/wails/pull/1349
+* Make EventsOff capable of removing multiple listeners by @Lyimmi in https://github.com/wailsapp/wails/pull/1822
+
+### Fixed
+* Use `Promise<void>` when Go routine does not output by @SheetJSDev in https://github.com/wailsapp/wails/pull/1821
+* preact-ts template build fix by @Debdut in https://github.com/wailsapp/wails/pull/1781
+* fix frontend/tsconfig.js by @Lyimmi in https://github.com/wailsapp/wails/pull/1795
+* fix: fix bugs in website by @misitebao in https://github.com/wailsapp/wails/pull/1810
+* Fix vue-ts template by @leaanthony in https://github.com/wailsapp/wails/pull/1813
+* Remove duplicate defs in win32/window.go by @AlbinoDrought in https://github.com/wailsapp/wails/pull/1832
+
+### Changed
+* Upgrade React to use Vite v3 by @leaanthony in https://github.com/wailsapp/wails/pull/1744
+* Upgrade Lit to use Vite v3 by @leaanthony in https://github.com/wailsapp/wails/pull/1745
+* Support vite3 for Vue by @leaanthony in https://github.com/wailsapp/wails/pull/1746
+* Preact templates for vite 3 by @leaanthony in https://github.com/wailsapp/wails/pull/1770
+* Prevent env variables and registry overrides from changing behaviour by @stffabi in https://github.com/wailsapp/wails/pull/1771
+* Use go implementation to retrieve the version of a fixed runtime by @stffabi in https://github.com/wailsapp/wails/pull/1790
+* Change contribution guide type from "doc" to "page" by @misitebao in https://github.com/wailsapp/wails/pull/1777
+* feat(website): repair document content  by @misitebao in https://github.com/wailsapp/wails/pull/1775
+* chore: sort out files by @misitebao in https://github.com/wailsapp/wails/pull/1776
+* Add Korean to doc by @jaesung9507 in https://github.com/wailsapp/wails/pull/1774
+* Add README.ja.md by @shinshin86 in https://github.com/wailsapp/wails/pull/1783
+* Reorganized contribution guidelines page by @misitebao in https://github.com/wailsapp/wails/pull/1784
+* fix(website): fix link by @misitebao in https://github.com/wailsapp/wails/pull/1785
+* Update templates.mdx by @KiddoV in https://github.com/wailsapp/wails/pull/1799
+* Better watcher by @leaanthony in https://github.com/wailsapp/wails/pull/1827
+* Only set GDK_BACKEND to "x11" if GDK_BACKEND is unset and XDG_SESSION_TYPE is not "wayland" by @prurigro in https://github.com/wailsapp/wails/pull/1811
+* Optimize images by @imgbot in https://github.com/wailsapp/wails/pull/1812
+
+### New Contributors
+* @shinshin86 made their first contribution in https://github.com/wailsapp/wails/pull/1783
+* @Debdut made their first contribution in https://github.com/wailsapp/wails/pull/1781
+* @KiddoV made their first contribution in https://github.com/wailsapp/wails/pull/1799
+* @zandercodes made their first contribution in https://github.com/wailsapp/wails/pull/1349
+* @prurigro made their first contribution in https://github.com/wailsapp/wails/pull/1811
+* @SheetJSDev made their first contribution in https://github.com/wailsapp/wails/pull/1821
+* @AlbinoDrought made their first contribution in https://github.com/wailsapp/wails/pull/1832
+* @imgbot made their first contribution in https://github.com/wailsapp/wails/pull/1812
+
+
 ## [v2.0.0-beta.44] - 2022-08-20
 
 ### Deprecated
