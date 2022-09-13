@@ -51,23 +51,21 @@ import TabItem from "@theme/TabItem";
  ]}
 >
   <TabItem value="MacOS">
-    Wails requires that the xcode command line tools are installed. This can be done by running: <br/>
+    Wails требуется установленные инструменты командой строки xcode. Их можно установить запустив: <br/>
         <code>xcode-select --install</code>
   </TabItem>
   <TabItem value="Windows">
-    Wails requires that the <a
-        href="https://developer.microsoft.com/en-us/microsoft-edge/webview2/">WebView2</a>{" "}
-        runtime is installed. Some Windows installations will already have this installed. You can check using
-        the{" "}
-        <code>wails doctor</code> command (see below).
+    Wails требуется установленная среда выполнения <a
+        href="https://developer.microsoft.com/en-us/microsoft-edge/webview2/">WebView2</a>{" "}. Эта зависимость может быть предустановлена на некоторых версиях Windows. Вы можете это проверить используя команду
+        {" "}
+        <code>wails doctor</code> (подробности ниже).
   </TabItem>
   <TabItem value={"Linux"}>
-    Linux required the standard <code>gcc</code> build tools
-        plus <code>libgtk3</code> and <code>libwebkit</code>. Rather than list a ton of commands for different distros, Wails can try to determine
-        what the installation commands are for your specific distribution. Run <code>wails doctor</code> after
-        installation
-        to be shown how to install the dependencies. If your distro/package manager is not supported, please consult the {" "}
-        <a href={"/docs/guides/linux-distro-support"}>Add Linux Distro</a> guide.
+    Для Linux требуются стандартные средства сборка <code>gcc</code>
+        плюс <code>libgtk3</code> и <code>libwebkit</code>. Вместо того чтобы перечислять тонну команд для разных дистрибутивов, Wails может попробовать определить команды установки, специфичные для вашего дистрибутива. Запустите <code>wails doctor</code> после
+        установки,
+        чтобы узнать, как установить зависимости. Если ваш дистрибутив или менеджер пакетов не поддерживается, пожалуйста, обратитесь к руководству {" "}
+        <a href={"/docs/guides/linux-distro-support"}>Добавление дистрибутива Linux</a>.
   </TabItem>
 </Tabs>
 
