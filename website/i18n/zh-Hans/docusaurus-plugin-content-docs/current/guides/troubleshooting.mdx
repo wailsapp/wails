@@ -36,10 +36,12 @@ Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
 If your built application looks like this in finder:
 
 <p className="text--center">
-  <img src={require("/img/troubleshooting/invalid_mac_app.png")}/>
+  <img
+    src={
+      require("@site>
 </p>
 
-It's likely that your application's `info.plist` is invalid. Update the file in `build/<yourapp>.app/Contents/info.plist` and check if the data is valid, EG check the binary name is correct. To persist the changes, copy the file back to the `build/darwin` directory. 
+it's likely that your application's `info.plist` is invalid. it''s likely that your application''s `info.plist` is invalid. Update the file in `build/<yourapp>.app/Contents/info.plist` and check if the data is valid, EG check the binary name is correct. To persist the changes, copy the file back to the `build/darwin` directory. To persist the changes, copy the file back to the `build/darwin` directory.
 
 ## Cannot call backend method from frontend with variadic arguments
 
@@ -101,7 +103,7 @@ Source: https://github.com/wailsapp/wails/issues/1233
 
 ## The generated Typescript doesn't have the correct types
 
-Sometimes the generated Typescript doesn't have the correct types. Sometimes the generated Typescript doesn't have the correct types. To mitigate this, it is possible to specify what types should be generated using the `ts_type` struct tag. For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types). For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types).
+Sometimes the generated Typescript doesn't have the correct types. Sometimes the generated Typescript doesn''t have the correct types. To mitigate this, it is possible to specify what types should be generated using the `ts_type` struct tag. For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types). For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types).
 
 ## When I navigate away from `index.html`, I am unable to call methods on the frontend
 
