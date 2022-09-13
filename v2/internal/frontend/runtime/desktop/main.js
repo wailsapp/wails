@@ -70,13 +70,15 @@ window.wails = {
 };
 
 // Set the bindings
-window.wails.SetBindings(window.wailsbindings);
-delete window.wails.SetBindings;
+if (window.wailsbindings) {
+    window.wails.SetBindings(window.wailsbindings);
+    delete window.wails.SetBindings;
+}
 
 // This is evaluated at build time in package.json
 // const dev = 0;
 // const production = 1;
-if (ENV === 0) {
+if (ENV === 1) {
     delete window.wailsbindings;
 }
 

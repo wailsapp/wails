@@ -16,6 +16,10 @@ import (
 
 func (b *Bindings) GenerateGoBindings(baseDir string) error {
 	store := b.db.store
+	var obfuscatedBindings map[string]int
+	if b.obfuscate {
+		obfuscatedBindings = b.db.UpdateObfuscatedCallMap()
+	}
 	for packageName, structs := range store {
 		packageDir := filepath.Join(baseDir, packageName)
 		err := fs.Mkdir(packageDir)
@@ -54,7 +58,12 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 				argsString := args.Join(", ")
 				jsoutput.WriteString(fmt.Sprintf("\nexport function %s(%s) {", methodName, argsString))
 				jsoutput.WriteString("\n")
-				jsoutput.WriteString(fmt.Sprintf("  return window['go']['%s']['%s']['%s'](%s);", packageName, structName, methodName, argsString))
+				if b.obfuscate {
+					id := obfuscatedBindings[strings.Join([]string{packageName, structName, methodName}, ".")]
+					jsoutput.WriteString(fmt.Sprintf("  return ObfuscatedCall(%d, [%s]);", id, argsString))
+				} else {
+					jsoutput.WriteString(fmt.Sprintf("  return window['go']['%s']['%s']['%s'](%s);", packageName, structName, methodName, argsString))
+				}
 				jsoutput.WriteString("\n")
 				jsoutput.WriteString(fmt.Sprintf("}"))
 				jsoutput.WriteString("\n")

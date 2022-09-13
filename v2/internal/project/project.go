@@ -84,6 +84,10 @@ type Project struct {
 
 	// NSISType to be build
 	NSISType string `json:"nsisType"`
+
+	// Garble
+	Obfuscated bool   `json:"obfuscated"`
+	GarbleArgs string `json:"garbleargs"`
 }
 
 func (p *Project) GetDevBuildCommand() string {

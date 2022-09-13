@@ -153,7 +153,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	verbose := options.Verbosity == VERBOSE
 	// Run go mod tidy first
 	if !options.SkipModTidy {
-		cmd := exec.Command(options.Compiler, "mod", "tidy", "-compat=1.17")
+		cmd := exec.Command(options.Compiler, "mod", "tidy")
 		cmd.Stderr = os.Stderr
 		if verbose {
 			println("")
@@ -165,8 +165,23 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		}
 	}
 
+	commands := slicer.String()
+
+	compiler := options.Compiler
+	if options.Obfuscated {
+		if !shell.CommandExists("garble") {
+			return fmt.Errorf("the 'garble' command was not found. Please install it with `go install mvdan.cc/garble@latest`")
+		} else {
+			compiler = "garble"
+			if options.GarbleArgs != "" {
+				commands.AddSlice(strings.Split(options.GarbleArgs, " "))
+			}
+			options.UserTags = append(options.UserTags, "obfuscated")
+		}
+	}
+
 	// Default go build command
-	commands := slicer.String([]string{"build"})
+	commands.Add("build")
 
 	// Add better debugging flags
 	if options.Mode == Dev || options.Mode == Debug {
@@ -201,6 +216,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	// This mode allows you to debug a production build (not dev build)
 	if options.Mode == Debug {
 		tags.Add("debug")
+	}
+
+	if options.Obfuscated {
+		tags.Add("obfuscated")
 	}
 
 	tags.Deduplicate()
@@ -247,11 +266,11 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	b.projectData.OutputFilename = strings.TrimPrefix(compiledBinary, options.ProjectData.Path)
 	options.CompiledBinary = compiledBinary
 
-	// Create the command
-	cmd := exec.Command(options.Compiler, commands.AsSlice()...)
+	// Build the application
+	cmd := exec.Command(compiler, commands.AsSlice()...)
 	cmd.Stderr = os.Stderr
 	if verbose {
-		println("  Build command:", commands.Join(" "))
+		println("  Build command:", compiler, commands.Join(" "))
 		cmd.Stdout = os.Stdout
 	}
 	// Set the directory

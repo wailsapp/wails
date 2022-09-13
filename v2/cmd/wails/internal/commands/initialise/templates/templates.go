@@ -186,7 +186,7 @@ func Install(options *Options) (bool, *Template, error) {
 		}
 	} else {
 		// Get the absolute path of the given directory
-		targetDir, err := filepath.Abs(filepath.Join(cwd, options.TargetDir))
+		targetDir, err := filepath.Abs(options.TargetDir)
 		if err != nil {
 			return false, nil, err
 		}

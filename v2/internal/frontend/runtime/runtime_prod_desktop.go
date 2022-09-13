@@ -1,5 +1,4 @@
-//go:build production && desktop
-// +build production,desktop
+//go:build production
 
 package runtime
 

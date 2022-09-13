@@ -42,7 +42,9 @@ func NewAssetServer(ctx context.Context, options *options.App, bindingsJSON stri
 
 func NewAssetServerWithHandler(ctx context.Context, handler http.Handler, bindingsJSON string) (*AssetServer, error) {
 	var buffer bytes.Buffer
-	buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")
+	if bindingsJSON != "" {
+		buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")
+	}
 	buffer.Write(runtime.RuntimeDesktopJS)
 
 	result := &AssetServer{

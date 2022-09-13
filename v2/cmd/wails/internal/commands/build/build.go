@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 	"io"
 	"os"
 	"os/exec"
@@ -75,7 +76,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	// tags to pass to `go`
 	tags := ""
-	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &tags)
+	command.StringFlag("tags", "Build tags to pass to Go compiler. Must be quoted. Space or comma (but not both) separated", &tags)
 
 	outputFilename := ""
 	command.StringFlag("o", "Output filename", &outputFilename)
@@ -111,8 +112,17 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	windowsConsole := false
 	command.BoolFlag("windowsconsole", "Keep the console when building for Windows", &windowsConsole)
 
+	obfuscated := false
+	command.BoolFlag("obfuscated", "Code obfuscation of bound Wails methods", &obfuscated)
+
+	garbleargs := "-literals -tiny -seed=random"
+	command.StringFlag("garbleargs", "Arguments to pass to garble", &garbleargs)
+
 	dryRun := false
 	command.BoolFlag("dryrun", "Dry run, prints the config for the command that would be executed", &dryRun)
+
+	skipBindings := false
+	command.BoolFlag("skipbindings", "Skips generation of bindings", &skipBindings)
 
 	command.Action(func() error {
 
@@ -137,13 +147,10 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			return fmt.Errorf("unable to find compiler: %s", compilerCommand)
 		}
 
-		// Tags
-		userTags := []string{}
-		for _, tag := range strings.Split(tags, " ") {
-			thisTag := strings.TrimSpace(tag)
-			if thisTag != "" {
-				userTags = append(userTags, thisTag)
-			}
+		// Process User Tags
+		userTags, err := buildtags.Parse(tags)
+		if err != nil {
+			return err
 		}
 
 		// Webview2 installer strategy (download by default)
@@ -176,6 +183,15 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		targets.AddSlice(strings.Split(platform, ","))
 		targets.Deduplicate()
 
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		projectOptions, err := project.Load(cwd)
+		if err != nil {
+			return err
+		}
+
 		// Create BuildOptions
 		buildOptions := &build.Options{
 			Logger:              logger,
@@ -197,6 +213,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			TrimPath:            trimpath,
 			RaceDetector:        raceDetector,
 			WindowsConsole:      windowsConsole,
+			Obfuscated:          obfuscated,
+			GarbleArgs:          garbleargs,
+			SkipBindings:        skipBindings,
 		}
 
 		// Start a new tabwriter
@@ -208,7 +227,12 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			_, _ = fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
 			_, _ = fmt.Fprintf(w, "Platforms: \t%s\n", platform)
 			_, _ = fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
+			_, _ = fmt.Fprintf(w, "Skip Bindings: \t%t\n", skipBindings)
 			_, _ = fmt.Fprintf(w, "Build Mode: \t%s\n", modeString)
+			_, _ = fmt.Fprintf(w, "Obfuscated: \t%t\n", buildOptions.Obfuscated)
+			if buildOptions.Obfuscated {
+				_, _ = fmt.Fprintf(w, "Garble Args: \t%s\n", buildOptions.GarbleArgs)
+			}
 			_, _ = fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
 			_, _ = fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
 			_, _ = fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
@@ -226,15 +250,6 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			}
 		}
 		err = checkGoModVersion(logger, updateGoMod)
-		if err != nil {
-			return err
-		}
-
-		cwd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		projectOptions, err := project.Load(cwd)
 		if err != nil {
 			return err
 		}
@@ -327,6 +342,11 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 			if outputFilename != "" {
 				buildOptions.OutputFile = outputFilename
+			}
+
+			if obfuscated && skipBindings {
+				logger.Println("Warning: obfuscated flag overrides skipbindings flag.")
+				buildOptions.SkipBindings = false
 			}
 
 			if !dryRun {

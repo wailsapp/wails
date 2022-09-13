@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 	"io"
 	"net"
 	"net/http"
@@ -77,7 +79,7 @@ type devFlags struct {
 	reloadDirs      string
 	openBrowser     bool
 	noReload        bool
-	noGen           bool
+	skipBindings    bool
 	wailsjsdir      string
 	tags            string
 	verbosity       int
@@ -106,9 +108,9 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("reloaddirs", "Additional directories to trigger reloads (comma separated)", &flags.reloadDirs)
 	command.BoolFlag("browser", "Open application in browser", &flags.openBrowser)
 	command.BoolFlag("noreload", "Disable reload on asset change", &flags.noReload)
-	command.BoolFlag("nogen", "Disable generate module", &flags.noGen)
+	command.BoolFlag("skipbindings", "Skip bindings generation", &flags.skipBindings)
 	command.StringFlag("wailsjsdir", "Directory to generate the Wails JS modules", &flags.wailsjsdir)
-	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &flags.tags)
+	command.StringFlag("tags", "Build tags to pass to Go compiler. Must be quoted. Space or comma (but not both) separated", &flags.tags)
 	command.IntFlag("v", "Verbosity level (0 - silent, 1 - standard, 2 - verbose)", &flags.verbosity)
 	command.StringFlag("loglevel", "Loglevel to use - Trace, Debug, Info, Warning, Error", &flags.loglevel)
 	command.BoolFlag("f", "Force build application", &flags.forceBuild)
@@ -124,14 +126,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		// Create logger
 		logger := clilogger.New(w)
 		app.PrintBanner()
-
-		userTags := []string{}
-		for _, tag := range strings.Split(flags.tags, " ") {
-			thisTag := strings.TrimSpace(tag)
-			if thisTag != "" {
-				userTags = append(userTags, thisTag)
-			}
-		}
 
 		cwd, err := os.Getwd()
 		if err != nil {
@@ -159,27 +153,36 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
-		// Run go mod tidy to ensure we're up to date
-		err = runCommand(cwd, false, "go", "mod", "tidy", "-compat=1.17")
+		// Run go mod tidy to ensure we're up-to-date
+		err = runCommand(cwd, false, "go", "mod", "tidy")
 		if err != nil {
 			return err
 		}
 
-		if !flags.noGen {
-			self := os.Args[0]
-			if flags.tags != "" {
-				err = runCommand(cwd, true, self, "generate", "module", "-tags", flags.tags)
-			} else {
-				err = runCommand(cwd, true, self, "generate", "module")
+		buildOptions := generateBuildOptions(flags)
+		buildOptions.Logger = logger
+
+		userTags, err := buildtags.Parse(flags.tags)
+		if err != nil {
+			return err
+		}
+
+		buildOptions.UserTags = userTags
+
+		if !flags.skipBindings {
+			if flags.verbosity == build.VERBOSE {
+				LogGreen("Generating Bindings...")
 			}
+			stdout, err := bindings.GenerateBindings(bindings.Options{
+				Tags: buildOptions.UserTags,
+			})
 			if err != nil {
 				return err
 			}
+			if flags.verbosity == build.VERBOSE {
+				LogGreen(stdout)
+			}
 		}
-
-		buildOptions := generateBuildOptions(flags)
-		buildOptions.Logger = logger
-		buildOptions.UserTags = internal.ParseUserTags(flags.tags)
 
 		// Setup signal handler
 		quitChannel := make(chan os.Signal, 1)
@@ -269,7 +272,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			return err
 		}
 
-		// Reset the process and the binary so the defer knows about it and is a nop.
+		// Reset the process and the binary so defer knows about it and is a nop.
 		debugBinaryProcess = nil
 		appBinary = ""
 
@@ -654,7 +657,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			}
 
 			if flags.frontendDevServerURL != "" {
-				// If we are using an external dev server all the reload of the frontend part can be skipped
+				// If we are using an external dev server, the reloading of the frontend part can be skipped
 				continue
 			}
 			if len(changedPaths) != 0 {

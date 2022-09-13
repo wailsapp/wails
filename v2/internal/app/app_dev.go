@@ -191,7 +191,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		appoptions.OnDomReady,
 		appoptions.OnBeforeClose,
 	}
-	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions)
+	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions, false)
 
 	err = generateBindings(appBindings)
 	if err != nil {
