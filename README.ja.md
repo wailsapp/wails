@@ -29,8 +29,9 @@
   <a href="https://github.com/avelino/awesome-go" rel="nofollow">
     <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome" />
   </a>
-  <a href="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" rel="nofollow">
-    <img src="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" alt="Release Pipelines" />
+  <br/>
+  <a href="https://github.com/wailsapp/wails/actions/workflows/build.yml" rel="nofollow">
+    <img src="https://img.shields.io/github/workflow/status/wailsapp/wails/Build?logo=github" alt="Build" />
   </a>
   <a href="https://github.com/misitebao/wails/tags" rel="nofollow">
     <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
