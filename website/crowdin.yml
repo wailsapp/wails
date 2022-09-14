@@ -1,0 +1,21 @@
+project_id: 531392
+api_token_env: CROWDIN_PERSONAL_TOKEN
+preserve_hierarchy: true
+commit_message: "[ci skip]"
+files:
+  - source: /docs/**/*
+    translation: /i18n/%two_letters_code%/docusaurus-plugin-content-docs/current/**/%original_file_name%
+    ignore:
+      - /**/*.json
+  - source: /blog/**/*
+    translation: /i18n/%two_letters_code%/docusaurus-plugin-content-blog/**/%original_file_name%
+  - source: /src/pages/**/*
+    translation: /i18n/%two_letters_code%/docusaurus-plugin-content-pages/**/%original_file_name%
+    ignore:
+      - /**/*.js
+      - /**/*.jsx
+      - /**/*.ts
+      - /**/*.tsx
+      - /**/*.css
+  - source: /i18n/en/**/*.json
+    translation: /i18n/%two_letters_code%/**/%original_file_name%
