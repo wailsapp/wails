@@ -4,6 +4,7 @@ package wv2installer
 
 import (
 	"fmt"
+
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webviewloader"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
@@ -32,7 +33,7 @@ func Process(appoptions *options.App) (string, error) {
 		webviewPath = opts.WebviewBrowserPath
 	}
 
-	installedVersion, err := webviewloader.GetWebviewVersion(webviewPath)
+	installedVersion, err := webviewloader.GetAvailableCoreWebView2BrowserVersionString(webviewPath)
 	if err != nil {
 		return "", err
 	}
