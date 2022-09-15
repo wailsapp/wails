@@ -166,6 +166,7 @@ When set to `true`, the application will be hidden until [WindowShow](../referen
 is called.
 
 Type: `bool`
+
 ### HideWindowOnClose
 
 By default, closing the window will close the application. Setting this to `true` means closing the window will
@@ -289,7 +290,7 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 	dialog, err := runtime.MessageDialog(ctx, runtime.MessageDialogOptions{
 		Title:         "Quit?",
 		Message:       "Are you sure you want to quit?",
-		
+
 		Type: `         runtime`.QuestionDialog,
 
 	})
@@ -505,7 +506,6 @@ The TitleBar struct provides the ability to configure the look and feel of the t
 
 Type: [`*mac.TitleBar`](#titlebar-struct)
 
-
 ### Appearance
 
 Appearance is used to set the style of your app in accordance with Apple's [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) names.
@@ -533,7 +533,6 @@ This configuration lets you set the title, message and icon for the "About" menu
 
 Type: [`About`](#about-struct)
 
-
 #### Titlebar struct
 
 The titlebar of the application can be customised by using the TitleBar options:
@@ -560,8 +559,8 @@ type TitleBar struct {
 
 Preconfigured titlebar settings are available:
 
-| Setting                     | Example                                       |
-| --------------------------- | --------------------------------------------- |
+| Setting                     | Example                                        |
+| --------------------------- | ---------------------------------------------- |
 | `mac.TitleBarDefault()`     | ![](/img/reference/titlebar-default.webp)      |
 | `mac.TitleBarHidden()`      | ![](/img/reference/titlebar-hidden.webp)       |
 | `mac.TitleBarHiddenInset()` | ![](/img/reference/titlebar-hidden-inset.webp) |
@@ -631,6 +630,7 @@ func main() {
 
 The "About" menu item will appear in the app menu:
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/reference/about-menu.webp").default}
@@ -638,9 +638,11 @@ The "About" menu item will appear in the app menu:
   />
 </div>
 <br />
+```
 
 When clicked, that will open an about message box:
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/reference/about-dialog.webp").default}
@@ -649,6 +651,7 @@ When clicked, that will open an about message box:
   />
 </div>
 <br />
+```
 
 ## Linux Specific Options
 
