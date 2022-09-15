@@ -33,7 +33,7 @@
   <a href="https://github.com/wailsapp/wails/actions/workflows/build.yml" rel="nofollow">
     <img src="https://img.shields.io/github/workflow/status/wailsapp/wails/Build?logo=github" alt="Build" />
   </a>
-  <a href="https://github.com/misitebao/wails/tags" rel="nofollow">
+  <a href="https://github.com/wailsapp/wails/tags" rel="nofollow">
     <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
   </a>
 </p>
