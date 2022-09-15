@@ -1,17 +1,21 @@
+<h1 align="center">Wails</h1>
+
 <p align="center" style="text-align: center">
   <img src="./assets/images/logo-universal.png" width="55%"><br/>
 </p>
 
 <p align="center">
-  Build desktop applications using Go & Web Technologies.<br/><br/>
+  Build desktop applications using Go & Web Technologies.
+  <br/>
+  <br/>
   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-blue.svg" />
+    <img alt="GitHub" src="https://img.shields.io/github/license/wailsapp/wails"/>
   </a>
   <a href="https://goreportcard.com/report/github.com/wailsapp/wails">
     <img src="https://goreportcard.com/badge/github.com/wailsapp/wails" />
   </a>
-  <a href="http://godoc.org/github.com/wailsapp/wails">
-    <img src="https://img.shields.io/badge/godoc-reference-blue.svg" />
+  <a href="https://pkg.go.dev/github.com/wailsapp/wails">
+    <img src="https://pkg.go.dev/badge/github.com/wailsapp/wails.svg" alt="Go Reference"/>
   </a>
   <a href="https://www.codefactor.io/repository/github/wailsapp/wails">
     <img src="https://www.codefactor.io/repository/github/wailsapp/wails/badge" alt="CodeFactor" />
@@ -25,10 +29,24 @@
   <a href="https://github.com/avelino/awesome-go" rel="nofollow">
     <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome" />
   </a>
-  <a href="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" rel="nofollow">
-    <img src="https://github.com/wailsapp/wails/workflows/release/badge.svg?branch=master" alt="Release Pipelines" />
+  <br/>
+  <a href="https://github.com/wailsapp/wails/actions/workflows/build.yml" rel="nofollow">
+    <img src="https://img.shields.io/github/workflow/status/wailsapp/wails/Build?logo=github" alt="Build" />
+  </a>
+  <a href="https://github.com/wailsapp/wails/tags" rel="nofollow">
+    <img alt="GitHub tag (latest SemVer pre-release)" src="https://img.shields.io/github/v/tag/wailsapp/wails?include_prereleases&label=version"/>
   </a>
 </p>
+
+<div align="center">
+<strong>
+<samp>
+
+[English](README.md) · [简体中文](README.zh-Hans.md) · [日本語](README.ja.md)
+
+</samp>
+</strong>
+</div>
 
 <hr/>
 <h3 align="center">
@@ -38,28 +56,23 @@ PLEASE NOTE: As we are approaching the v2 release, we are not accepting any new 
 </h3>
 <hr/>
 
-## Internationalization
-
-[English](README.md) | [简体中文](README.zh-Hans.md) | [日本語](README.ja.md)
-
 ## Table of Contents
 
 <details>
   <summary>Click me to Open/Close the directory listing</summary>
 
-- [1. Internationalization](#internationalization)
-- [2. Table of Contents](#table-of-contents)
-- [3. Introduction](#introduction)
-  - [3.1 Official Website](#official-website)
-  - [3.2 Roadmap](#roadmap)
-- [4. Features](#features)
-- [5. Sponsors](#sponsors)
-- [6. Getting Started](#getting-started)
-- [7. FAQ](#faq)
-- [8. Contributors](#contributors)
-- [9. Special Mentions](#special-mentions)
-- [10. Special Thanks](#special-thanks)
-- [11. License](#license)
+- [Table of Contents](#table-of-contents)
+- [Introduction](#introduction)
+  - [Official Website](#official-website)
+  - [Roadmap](#roadmap)
+- [Features](#features)
+- [Sponsors](#sponsors)
+- [Getting Started](#getting-started)
+- [FAQ](#faq)
+- [Contributors](#contributors)
+- [Special Mentions](#special-mentions)
+- [Special Thanks](#special-thanks)
+- [License](#license)
 
 </details>
 
