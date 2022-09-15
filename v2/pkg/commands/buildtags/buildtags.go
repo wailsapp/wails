@@ -2,20 +2,19 @@ package buildtags
 
 import (
 	"errors"
-	"github.com/samber/lo"
 	"strings"
+
+	"github.com/samber/lo"
 )
 
 // Parse parses the given tags string and returns
 // a cleaned slice of strings. Both comma and space delimeted
 // tags are supported but not mixed. If mixed, an error is returned.
 func Parse(tags string) ([]string, error) {
-
 	if tags == "" {
 		return nil, nil
 	}
 
-	var userTags []string
 	separator := ""
 	if strings.Contains(tags, ",") {
 		separator = ","
@@ -26,6 +25,14 @@ func Parse(tags string) ([]string, error) {
 		}
 		separator = " "
 	}
+	if separator == "" {
+		// We couldn't find any separator, so the whole string is used as user tag
+		// Otherwise we would end up with a list of every single character of the tags string,
+		// e.g.: `t,e,s,t`
+		return []string{tags}, nil
+	}
+
+	var userTags []string
 	for _, tag := range strings.Split(tags, separator) {
 		thisTag := strings.TrimSpace(tag)
 		if thisTag != "" {
