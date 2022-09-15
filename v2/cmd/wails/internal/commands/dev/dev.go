@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
-	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 	"io"
 	"net"
 	"net/http"
@@ -22,9 +20,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
+
 	"github.com/google/shlex"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal"
-	"github.com/wailsapp/wails/v2/internal/gomod"
+	buildcmd "github.com/wailsapp/wails/v2/cmd/wails/internal/commands/build"
 
 	"github.com/wailsapp/wails/v2/internal/project"
 
@@ -148,7 +148,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		// Update go.mod to use current wails version
-		err = syncGoModVersion(cwd)
+		err = buildcmd.SyncGoMod(logger, true)
 		if err != nil {
 			return err
 		}
@@ -297,27 +297,6 @@ func killProcessAndCleanupBinary(process *process.Process, binary string) error 
 		}
 	}
 	return nil
-}
-
-func syncGoModVersion(cwd string) error {
-	gomodFilename := filepath.Join(cwd, "go.mod")
-	gomodData, err := os.ReadFile(gomodFilename)
-	if err != nil {
-		return err
-	}
-	outOfSync, err := gomod.GoModOutOfSync(gomodData, internal.Version)
-	if err != nil {
-		return err
-	}
-	if !outOfSync {
-		return nil
-	}
-	LogGreen("Updating go.mod to use Wails '%s'", internal.Version)
-	newGoData, err := gomod.UpdateGoModVersion(gomodData, internal.Version)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(gomodFilename, newGoData, 0755)
 }
 
 func runCommand(dir string, exitOnError bool, command string, args ...string) error {

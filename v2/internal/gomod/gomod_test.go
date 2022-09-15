@@ -589,3 +589,59 @@ replace (
 	github.com/wailsapp/wails/v2 v2.0.0-beta.20 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2
 )
 `
+
+const basicGo117 string = `module changeme
+
+go 1.17
+
+require github.com/wailsapp/wails/v2 v2.0.0-beta.7
+
+`
+
+const basicGo118 string = `module changeme
+
+go 1.18
+
+require github.com/wailsapp/wails/v2 v2.0.0-beta.7
+`
+
+const basicGo119 string = `module changeme
+
+go 1.19
+
+require github.com/wailsapp/wails/v2 v2.0.0-beta.7
+`
+
+func TestUpdateGoModGoVersion(t *testing.T) {
+	is2 := is.New(t)
+
+	type args struct {
+		goModText      []byte
+		currentVersion string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		updated bool
+	}{
+		{"basic1.17", args{[]byte(basicGo117), "1.18"}, []byte(basicGo118), true},
+		{"basic1.18", args{[]byte(basicGo118), "1.18"}, []byte(basicGo118), false},
+		{"basic1.19", args{[]byte(basicGo119), "1.17"}, []byte(basicGo119), false},
+		{"basic1.19", args{[]byte(basicGo119), "1.18"}, []byte(basicGo119), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, updated, err := SyncGoVersion(tt.args.goModText, tt.args.currentVersion)
+			if err != nil {
+				t.Errorf("UpdateGoModVersion() error = %v", err)
+				return
+			}
+			if updated != tt.updated {
+				t.Errorf("UpdateGoModVersion() updated = %t, want = %t", updated, tt.updated)
+				return
+			}
+			is2.Equal(got, tt.want)
+		})
+	}
+}

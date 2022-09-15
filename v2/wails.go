@@ -4,6 +4,7 @@ package wails
 
 import (
 	"github.com/wailsapp/wails/v2/internal/app"
+	_ "github.com/wailsapp/wails/v2/internal/goversion" // Add Compile-Time version check for minimum go version
 	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
