@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    branches: [ releasetest/* ]
+  pull_request:
+    branches: [ releasetest/* ]
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Release Init
+    if: github.repository == 'wailsapp/wails'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        template: [ svelte ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ">=1.18.0"
+
+
+      - name: Build Wails CLI
+        run: |
+          cd ./v2/cmd/wails
+          go install
+          wails -help
+
+      - name: Install node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.17.0
+          cache: "npm"
+
+      - name: Test template '${{ matrix.template }}'
+        run: |
+          mkdir -p ./test
+          cd ./test
+          wails init -n test-${{ matrix.template }} -t ${{ matrix.template }}
+          cd ./test-${{ matrix.template }}
+          wails build
+
