@@ -41,8 +41,6 @@ jobs:
           mkdir -p ./test
           cd ./test
           wails init -n ${{ matrix.template }} -t ${{ matrix.template }}
-          cd ./${{ matrix.template }}
-          wails build
 
       - name: Install node
         uses: actions/setup-node@v2
