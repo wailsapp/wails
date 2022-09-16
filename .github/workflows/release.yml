@@ -41,15 +41,5 @@ jobs:
           mkdir -p ./test
           cd ./test
           wails init -n ${{ matrix.template }} -t ${{ matrix.template }}
-
-      - name: Install node
-        uses: actions/setup-node@v2
-        with:
-          node-version: 16.17.0
-          cache: "npm"
-          cache-dependency-path: ./test/${{ matrix.template }}/frontend/package-lock.json
-
-      - name: Build app (${{ matrix.template }})
-        run: |
-          cd ./test/${{ matrix.template }}
+          cd ${{ matrix.template }}
           wails build
