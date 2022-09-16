@@ -1,7 +1,9 @@
 package templates
 
 import (
-	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/matryer/is"
@@ -10,29 +12,31 @@ import (
 func TestList(t *testing.T) {
 
 	is2 := is.New(t)
-	templates, err := List()
+	templateList, err := List()
 	is2.NoErr(err)
 
-	println("Found these templates:")
-	for _, template := range templates {
-		fmt.Printf("%+v\n", template)
-	}
+	is2.Equal(len(templateList), 13)
 }
 
 func TestShortname(t *testing.T) {
 
 	is2 := is.New(t)
 
-	template, err := getTemplateByShortname("vanilla")
+	vanillaTemplate, err := getTemplateByShortname("vanilla")
 	is2.NoErr(err)
 
-	println("Found this template:")
-	fmt.Printf("%+v\n", template)
+	is2.Equal(vanillaTemplate.Name, "Vanilla + Vite")
 }
 
 func TestInstall(t *testing.T) {
 
 	is2 := is.New(t)
+
+	// Change to the directory of this file
+	_, filename, _, _ := runtime.Caller(0)
+
+	err := os.Chdir(filepath.Dir(filename))
+	is2.NoErr(err)
 
 	options := &Options{
 		ProjectName:  "test",
@@ -41,6 +45,10 @@ func TestInstall(t *testing.T) {
 		AuthorEmail:  "lea.anthony@gmail.com",
 	}
 
-	_, _, err := Install(options)
+	defer func() {
+		_ = os.RemoveAll(options.ProjectName)
+	}()
+	_, _, err = Install(options)
 	is2.NoErr(err)
+
 }
