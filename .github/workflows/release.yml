@@ -49,7 +49,7 @@ jobs:
         with:
           node-version: 16.17.0
           cache: "npm"
-          cache-dependency-path: "./test/test-${{ matrix.template }}/frontend/package-lock.json"
+          cache-dependency-path: ./test/${{ matrix.template }}/frontend/package-lock.json
 
       - name: Build app (${{ matrix.template }})
         run: |
