@@ -13,8 +13,9 @@ jobs:
     if: github.repository == 'wailsapp/wails'
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ ubuntu-latest, windows-latest ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
         template: [ svelte, svelte-ts, vue, vue-ts, react, react-ts, preact, preact-ts, lit, lit-ts, vanilla, vanilla-ts, plain ]
 
     steps:
