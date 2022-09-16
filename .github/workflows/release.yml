@@ -39,11 +39,23 @@ jobs:
           node-version: 16.17.0
           cache: "npm"
 
-      - name: Test template '${{ matrix.template }}'
+      - name: Generate Project '${{ matrix.template }}'
         run: |
           mkdir -p ./test
           cd ./test
           wails init -n test-${{ matrix.template }} -t ${{ matrix.template }}
-          cd ./test-${{ matrix.template }}
+
+
+      - name: Install node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.17.0
+          cache: "npm"
+          cache-dependency-path: ${{ matrix.template }}/frontend/package-lock.json
+          
+      - name: Generate Project '${{ matrix.template }}'
+        run: |
+          cd ./test
           wails build
+
 
