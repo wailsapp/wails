@@ -14,7 +14,7 @@ import (
 
 	"github.com/wailsapp/wails/v2/pkg/buildassets"
 
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/initialise/templates"
+	"github.com/wailsapp/wails/v2/pkg/templates"
 
 	"github.com/leaanthony/clir"
 	"github.com/pkg/errors"
