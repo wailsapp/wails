@@ -78,7 +78,7 @@ func Test_GetIgnoreDirs(t *testing.T) {
 		},
 		{
 			name:  "Should ignore dotFiles",
-			files: []string{".*"},
+			files: []string{".test1", ".wailsignore"},
 			want:  []string{"testdir/build/*", ".*", "node_modules"},
 		},
 	}

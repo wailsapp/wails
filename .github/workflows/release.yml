@@ -8,8 +8,24 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
-    name: Release Init
+  test:
+    name: Run Go Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [ 1.18, 1.19 ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Go 1.18
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Run tests
+        run: go test -v ./...
+
+  test_templates:
+    name: Test Templates
     if: github.repository == 'wailsapp/wails'
     runs-on: ${{ matrix.os }}
     strategy:
@@ -17,7 +33,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
         template: [ svelte, svelte-ts, vue, vue-ts, react, react-ts, preact, preact-ts, lit, lit-ts, vanilla, vanilla-ts, plain ]
-
+        go-version: [ 1.18, 1.19 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -25,7 +41,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: ">=1.18.0"
+          go-version: ${{ matrix.go-version }}
 
       - name: Build Wails CLI
         run: |

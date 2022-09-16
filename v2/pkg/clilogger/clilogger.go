@@ -34,7 +34,7 @@ func (c *CLILogger) Print(message string, args ...interface{}) {
 
 	_, err := fmt.Fprintf(c.Writer, message, args...)
 	if err != nil {
-		c.Fatal("Fatal: ", err)
+		c.Fatal("FATAL: " + err.Error())
 	}
 }
 
@@ -46,7 +46,7 @@ func (c *CLILogger) Println(message string, args ...interface{}) {
 	temp := fmt.Sprintf(message, args...)
 	_, err := fmt.Fprintln(c.Writer, temp)
 	if err != nil {
-		c.Fatal("Fatal: ", err)
+		c.Fatal("FATAL: " + err.Error())
 	}
 }
 
