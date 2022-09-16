@@ -19,9 +19,11 @@ Go 运行时可通过导入 `github.com/wailsapp/wails/v2/pkg/runtime` 获取。
 
 :::info 注意
 
+
 虽然上下文将提供给 [应用启动回调](../../reference/options#应用启动回调) 方法，但不能保证运行时将在此方法中工作，因为窗口正在不同的线程中初始化。 如果您希望在启动时调用运行时方法，请使用 [前端 Dom 加载完成回调](../../reference/options#前端-dom-加载完成回调) 方法。
 
 :::
+
 
 Javascript 库可通过 `window.runtime` 提供给前端。 使用 `开发` 模式时会生成一个运行时包，该包为运行时提供 Typescript 声明。 这应该位于您的前端目录的`wailsjs`目录中。
 
@@ -33,9 +35,11 @@ Go: `Hide(ctx context.Context)`<br/> JS: `Hide()`
 
 :::info 注意
 
+
 ` Hide` 在 Mac 上，这将以与标准 Mac 应用程序中的菜单项相同的方式隐藏应用程序。 这与隐藏窗口不同，但应用程序仍处于前台。 对于 Windows 和 Linux，这与 `WindowHide` 相同。
 
 :::
+
 
 ### 显示
 
@@ -43,9 +47,11 @@ Go: `Hide(ctx context.Context)`<br/> JS: `Hide()`
 
 :::info 注意
 
+
 在 Mac 上，这会将应用程序带回前台。 对于 Windows 和 Linux，这目前与 `WindowShow` 相同。
 
 :::
+
 
 Go: `Show(ctx context.Context)`<br/> JS: `Show()`
 

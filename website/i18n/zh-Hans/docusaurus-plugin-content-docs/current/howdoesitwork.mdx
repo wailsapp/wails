@@ -108,9 +108,11 @@ var assets embed.FS
 
 :::info 注意
 
+
 Wails 要求您传入结构体的 _实例_ 以使其正确绑定
 
 :::
+
 
 在此示例中，我们创建一个新的 `App` 实例，然后将此实例添加到 `wails.Run` 中的 `Bind` 选项：
 
@@ -228,9 +230,11 @@ export function Greet(arg1: string): Promise<string>;
 
 :::info 注意
 
+
 目前不支持嵌套匿名结构体。
 
 :::
+
 
 也可以将结构体发送回 Go。 作为期望的结构体的参数传递的任何 Javascript map/class 都将转换为该结构体类型。 为了使这个过程更容易，在 `开发` 模式下，会生成一个 TypeScript 模块，声明绑定方法中使用的所有结构体类型。 使用此模块，可以构建原生 Javascript 对象并将其发送到 Go 代码。
 
