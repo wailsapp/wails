@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
-        template: [ svelte ]
+        template: [ svelte, svelte-ts, vue, vue-ts, react, react-ts, preact, preact-ts, lit, lit-ts, vanilla, vanilla-ts, plain ]
 
     steps:
       - name: Checkout
