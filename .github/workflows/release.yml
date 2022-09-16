@@ -33,7 +33,7 @@ jobs:
           wails -help
           
       - name: Install linux dependencies
-        if: ${{ matrix.os }} == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
 
       - name: Generate template '${{ matrix.template }}'
