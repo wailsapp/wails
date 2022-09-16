@@ -27,7 +27,7 @@ import (
     "github.com/wailsapp/wails/v2/pkg/options"
 )
 
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
@@ -84,7 +84,7 @@ A full list of application options can be found in the [Options Reference](refer
 The `Assets` option is mandatory as you can't have a Wails application without frontend assets. Those assets can be any files you would expect to find in a web application - html, js, css, svg, png, etc. **There is no requirement to generate asset bundles** - plain files will do. When the application starts, it will attempt to load `index.html` from your assets and the frontend will essentially work as a browser from that point on. It is worth noting that there is no requirement on where in the `embed.FS` the files live. It is likely that the embed path uses a nested directory relative to your main application code, such as `frontend/dist`:
 
 ```go title="main.go"
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 ```
 
@@ -123,7 +123,7 @@ import (
     "github.com/wailsapp/wails/v2/pkg/options"
 )
 
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
