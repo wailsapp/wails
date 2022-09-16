@@ -17,15 +17,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Install linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
+
       - name: Set up Go 1.18
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
+
       - name: Run tests
         run: go test -v ./...
 
   test_templates:
     name: Test Templates
+    needs: test
     if: github.repository == 'wailsapp/wails'
     runs-on: ${{ matrix.os }}
     strategy:
