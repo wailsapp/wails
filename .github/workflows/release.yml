@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-latest, windows-latest ]
         template: [ svelte ]
 
     steps:
@@ -42,4 +42,4 @@ jobs:
           cd ./test
           wails init -n ${{ matrix.template }} -t ${{ matrix.template }}
           cd ${{ matrix.template }}
-          wails build
+          wails build -v 2
