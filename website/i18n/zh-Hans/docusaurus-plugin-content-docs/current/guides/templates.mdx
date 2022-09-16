@@ -2,20 +2,18 @@
 
 Wails 从预先创建的模板生成项目。 在 v1 中，这是一组难以维护的项目，这些项目可能会过时。 在 v2 中，为了增强社区的能力，为模板添加了一些新功能：
 
-- 能够从[远程模板](../reference/cli#远程模板)生成项目
+- 能够从 [远程模板](../reference/cli#远程模板) 生成项目
 - 帮助创建自己的模板的工具
 
 ## 创建模板
 
-要创建模板，您可以使用`wails generate template`命令。 要生成默认模板，请运行：
+要创建模板，您可以使用 `wails generate template` 命令。 要生成默认模板，请运行：
 
 `wails generate template -name mytemplate`
 
 这将使用默认文件创建“mytemplate”目录：
 
 ```shell title=mytemplate/
-.
-.
 .
 |-- NEXTSTEPS.md
 |-- README.md
@@ -52,7 +50,7 @@ Wails 从预先创建的模板生成项目。 在 v1 中，这是一组难以维
 | template.json   | 模板元数据             |
 | wails.tmpl.json | `wails.json` 模板文件 |
 
-此时，建议按照`NEXTSTEPS.md`中的步骤操作。
+此时，建议按照 `NEXTSTEPS.md` 中的步骤操作。
 
 ## 从现有项目创建模板
 
@@ -71,32 +69,29 @@ Updating package.json data...
 Renaming package.json -> package.tmpl.json...
 Updating package-lock.json data...
 Renaming package-lock.json -> package-lock.tmpl.json...
-Migrating existing project files to frontend directory...
-Updating package.json data...
-Renaming package.json -> package.tmpl.json...
-Updating package-lock.json data...
-Renaming package-lock.json -> package-lock.tmpl.json...
 ```
 
-- 现在可以按照`NEXTSTEPS.md`中指定的方式定制模板。
+- 现在可以按照 `NEXTSTEPS.md` 中指定的方式定制模板。
 - 一旦文件准备完毕，就可以通过运行命令来测试它：`wails init -n my-vue3-project -t .\wails-vue3-template\`
 - 要测试新项目，请运行：`cd my-vue3-project` then `wails build`
 - 项目编译完成后，运行它：`.\build\bin\my-vue3-project.exe`
 - 您应该有了一个功能齐全的 Vue3 应用程序：
 
+```mdx-code-block
 <div className="text--center">
   <img
     src={require("@site/static/img/vue3-template.png").default}
     width="50%"
   />
 </div>
+```
 
 ## 发布模板
 
 发布模板只是将文件推送到 GitHub。 鼓励以下最佳实践：
 
 - 从前端目录中删除任何不需要的文件和目录（例如：.git）
-- 确保`template.json`完整，尤其是`helpurl`
+- 确保 `template.json` 完整，尤其是 `helpurl`
 - 将文件推送到 GitHub
-- 在[社区模板](../community/templates)页面上创建 PR
-- 在[模板公告](https://github.com/wailsapp/wails/discussions/825)讨论板上发布模板
+- 在 [社区模板](../community/templates) 页面上创建 PR
+- 在 [模板公告](https://github.com/wailsapp/wails/discussions/825) 讨论板上发布模板

@@ -1,9 +1,8 @@
 # 无边框应用
 
-Wails supports application that have no frames. 这可以通过使用[应用程序参数选项](../reference/options#应用程序参数选项)中的[无边框](../reference/options#无边框)字段来实现。
+Wails 支持无边框应用程序。 这可以通过使用 [应用程序参数选项](../reference/options#应用程序参数选项) 中的 [无边框](../reference/options#无边框) 字段来实现。
 
-Wails offers a simple solution for dragging the window: Any HTML element that has the CSS style `--wails-draggable:drag` will act as a "drag handle". This property applies to all child elements. If you need to indicate that a nested element should not drag, then use the attribute '--wails-draggable:no-drag' on that element.
-
+Wails 为拖动窗口提供了一个简单的解决方案：任何具有 `--wails-draggable:drag` CSS 样式的 HTML 元素都将充当“拖动句柄”。 此属性适用于所有子元素。 如果您需要指示嵌套元素不应拖动，则在该元素上使用“--wails-draggable:no-drag”属性。
 
 ```html
 <html>
@@ -24,7 +23,7 @@ Wails offers a simple solution for dragging the window: Any HTML element that ha
 </html>
 ```
 
-For some projects, using a CSS variable may not be possible due to dynamic styling. In this case, you can use the `CSSDragProperty` and `CSSDragValue` application options to define a property and value that will be used to indicate draggable regions:
+对于一些项目，由于动态样式，可能无法使用 CSS 变量。 在这种情况下，您可以使用 `CSSDragProperty` 和 `CSSDragValue` 应用程序选项来定义将用于指示可拖动区域的属性和值：
 
 ```go title=main.go
 package main
@@ -66,19 +65,20 @@ func main() {
 ```html title=index.html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>alwaysontop</title>
-</head>
-<body style="widows: 1">
-<div id="app"></div>
-<script src="./src/main.js" type="module"></script>
-</body>
+  </head>
+  <body style="widows: 1">
+    <div id="app"></div>
+    <script src="./src/main.js" type="module"></script>
+  </body>
 </html>
-
 ```
 
 :::info 全屏
-如果您允许应用程序全屏显示，则此拖动功能将被禁用。
+
+如果您允许您的应用程序全屏显示，则此拖动功能将被禁用。
+
 :::

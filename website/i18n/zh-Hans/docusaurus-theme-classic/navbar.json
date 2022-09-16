@@ -34,5 +34,9 @@
   "item.label.Credits": {
     "message": "致谢",
     "description": "Navbar item with label Credits"
+  },
+  "item.label.Code of Conduct": {
+    "message": "行为准则",
+    "description": "Navbar item with label Code of Conduct"
   }
 }

@@ -1,12 +1,12 @@
-# 动态资源
+# 动态资产
 
-If you want to load or generate assets for your frontend dynamically, you can achieve that using the [AssetsHandler](../reference/options#assetshandler) option. The AssetsHandler is a generic `http.Handler` which will be called for any non GET request on the assets server and for GET requests which can not be served from the bundled assets because the file is not found. The AssetsHandler is a generic `http.Handler` which will be called for any non GET request on the assets server and for GET requests which can not be served from the bundled assets because the file is not found. The AssetsHandler is a generic `http.Handler` which will be called for any non GET request on the assets server and for GET requests which can not be served from the bundled assets because the file is not found.
+如果你想为你的前端动态加载或生成资产，你可以使用 [AssetsHandler](../reference/options#assetshandler) 选项来实现。 AssetsHandler 是一个通用的 `http.Handler`，对于资产服务器上的任何非 GET 请求以及由于找不到文件而无法从捆绑资产提供服务的 GET 请求，都会调用它。
 
-By installing a custom AssetsHandler, you can serve your own assets using a custom asset server.
+通过安装自定义 AssetsHandler，您可以使用自定义资产服务器提供您自己的资产。
 
-## Example
+## 示例
 
-In our example project, we will create a simple assets handler which will load files off disk:
+在我们的示例项目中，我们将创建一个简单的资产处理程序，它将从磁盘加载文件：
 
 ```go title=main.go {16-35,49}
 package main
@@ -69,7 +69,7 @@ func main() {
 }
 ```
 
-When we run the application in dev mode using `wails dev`, we will see the following output:
+当我们在开发模式使用 `wails dev` 运行应用程序时，我们将看到以下输出：
 
 ```
 DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico'
@@ -77,54 +77,57 @@ DEB | [ExternalAssetHandler] Loading 'http://localhost:3001/favicon.ico' failed,
 Requesting file: favicon.ico
 ```
 
-As you can see, the assets handler is called when the default assets server is unable to serve the `favicon.ico` file.
+如您所见，当默认资产服务器无法提供 `favicon.ico` 文件时，将调用资产处理程序。
 
-If you right click the main application and select "inspect" to bring up the devtools, you can test this feature out by typing the following into the console:
+如果您右键单击主应用程序并选择“检查”以调出开发工具，您可以通过在控制台中输入以下内容来测试此功能：
 
 ```
 let response = await fetch('does-not-exist.txt');
 ```
 
-This will generate an error in the devtools. This will generate an error in the devtools. This will generate an error in the devtools. We can see that the error is what we expect, returned by our custom assets handler:
+这将在 devtools 中产生错误。 我们可以看到错误是我们所期望的，由我们的自定义资产处理程序返回：
 
+```mdx-code-block
 <p className="text--center">
   <img
     src={require("@site/static/img/assetshandler-does-not-exist.webp").default}
   />
 </p>
+```
 
-However, if we request `go.mod`, we will see the following output:
+但是，如果我们请求 `go.mod`，我们将看到以下输出：
 
+```mdx-code-block
 <p className="text--center">
   <img src={require("@site/static/img/assetshandler-go-mod.webp").default} />
 </p>
-
-This technique can be used to load images directly into the page. This technique can be used to load images directly into the page. If we updated our default vanilla template and replaced the logo image: This technique can be used to load images directly into the page. This technique can be used to load images directly into the page. If we updated our default vanilla template and replaced the logo image: This technique can be used to load images directly into the page. If we updated our default vanilla template and replaced the logo image:
-
-```html
-<img id="logo" class="logo">
 ```
 
-with:
+此技术可用于将图像直接加载到页面中。 如果我们更新了默认的 vanilla 模板并替换了 logo 图像：
 
 ```html
-<img src="build/appicon.png" style="width: 300px">
+<img id="logo" class="logo" />
 ```
 
-Then we would see the following:
+和:
 
+```html
+<img src="build/appicon.png" style="width: 300px" />
+```
+
+然后我们会看到以下内容：
+
+```mdx-code-block
 <p className="text--center">
   <img
     src={require("@site/static/img/assetshandler-image.webp").default}
     style={{ width: "75%" }}
   />
 </p>
+```
 
 :::warning
-Exposing your filesystem in this way is a security risk. It is recommended that you properly manage access
-to your filesystem.
-::: It is recommended that you properly manage access
-to your filesystem.
-::: It is recommended that you properly manage access
-to your filesystem.
+
+以这种方式暴露您的文件系统是一种安全风险。 建议您正确管理对文件系统的访问。
+
 :::

@@ -4,7 +4,7 @@
 
 ## Vue
 
-在 Vue 中推荐的路由方法是[Hash 模式](https://next.router.vuejs.org/guide/essentials/history-mode.html#hash-mode):
+在 Vue 中推荐的路由方法是 [Hash 模式](https://next.router.vuejs.org/guide/essentials/history-mode.html#hash-mode):
 
 ```js
 import { createRouter, createWebHashHistory } from "vue-router";
@@ -12,16 +12,14 @@ import { createRouter, createWebHashHistory } from "vue-router";
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
-      // ....
-  ],
-});
+    //...
   ],
 });
 ```
 
 ## Angular
 
-在 Angular 中推荐的路由方法是[HashLocationStrategy](https://codecraft.tv/courses/angular/routing/routing-strategies/#_hashlocationstrategy):
+在 Angular 中推荐的路由方法是 [HashLocationStrategy](https://codecraft.tv/courses/angular/routing/routing-strategies/#_hashlocationstrategy):
 
 ```ts
 RouterModule.forRoot(routes, { useHash: true });
@@ -29,7 +27,7 @@ RouterModule.forRoot(routes, { useHash: true });
 
 ## React
 
-The recommended approach for routing in React is [HashRouter](https://reactrouter.com/docs/en/v6/routers/hash-router):
+React 中推荐的路由方法是 [HashRouter](https://reactrouter.com/docs/en/v6/routers/hash-router)：
 
 ```jsx
 import { HashRouter } from "react-router-dom";
