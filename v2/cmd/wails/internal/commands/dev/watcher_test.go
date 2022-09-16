@@ -1,6 +1,7 @@
 package dev
 
 import (
+	"github.com/samber/lo"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -60,6 +61,10 @@ func Test_processDirectories(t *testing.T) {
 }
 
 func Test_GetIgnoreDirs(t *testing.T) {
+
+	// Remove testdir if it exists
+	_ = os.RemoveAll("testdir")
+
 	tests := []struct {
 		name      string
 		files     []string
@@ -91,6 +96,11 @@ func Test_GetIgnoreDirs(t *testing.T) {
 			}
 
 			got := getIgnoreDirs("testdir")
+
+			got = lo.Map(got, func(s string, _ int) string {
+				return filepath.ToSlash(s)
+			})
+
 			if (err != nil) != tt.shouldErr {
 				t.Errorf("initialiseWatcher() error = %v, shouldErr %v", err, tt.shouldErr)
 				return
