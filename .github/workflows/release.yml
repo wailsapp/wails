@@ -38,7 +38,7 @@ jobs:
     if: github.repository == 'wailsapp/wails'
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
         template: [ svelte, svelte-ts, vue, vue-ts, react, react-ts, preact, preact-ts, lit, lit-ts, vanilla, vanilla-ts, plain ]
@@ -57,15 +57,15 @@ jobs:
           cd ./v2/cmd/wails
           go install
           wails -help
-          
+
       - name: Install linux dependencies
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
 
       - name: Generate template '${{ matrix.template }}'
         run: |
-          mkdir -p ./test
-          cd ./test
+          mkdir -p ./test-${{ matrix.template }}
+          cd ./test-${{ matrix.template }}
           wails init -n ${{ matrix.template }} -t ${{ matrix.template }}
           cd ${{ matrix.template }}
           wails build -v 2
