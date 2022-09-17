@@ -1,3 +1,4 @@
+//go:build darwin
 //
 //  WailsContext.m
 //  test

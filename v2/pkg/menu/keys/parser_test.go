@@ -32,6 +32,6 @@ func TestParse(t *testing.T) {
 	for _, d := range baddata {
 		result, err := Parse(d)
 		i.True(err != nil)
-		i.Equal(result, "")
+		i.Equal(result, nil)
 	}
 }

@@ -2,9 +2,10 @@ package bindings
 
 import (
 	"github.com/matryer/is"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/initialise/templates"
+	"github.com/wailsapp/wails/v2/pkg/templates"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -31,17 +32,15 @@ func TestGenerateBindings(t *testing.T) {
 
 	i := is.New(t)
 
-	cwd, err := os.Getwd()
-	if err != nil {
-		println(err.Error())
-		t.Fail()
-	}
+	// Get the directory of this file
+	_, filename, _, _ := runtime.Caller(0)
+	workingDirectory := filepath.Dir(filename)
 
-	projectDir := filepath.Join(cwd, "test")
+	projectDir := filepath.Join(workingDirectory, "test")
 
 	_ = os.RemoveAll(projectDir)
 
-	_, _, err = templates.Install(&templates.Options{
+	_, _, err := templates.Install(&templates.Options{
 		ProjectName:  "test",
 		TemplateName: "plain",
 		WailsVersion: "latest",
@@ -52,14 +51,20 @@ func TestGenerateBindings(t *testing.T) {
 	}
 
 	defer func() {
-		_ = os.RemoveAll("test")
+		_ = os.RemoveAll(projectDir)
 	}()
 
 	// Make the go.mod point to local
 	goModPath := filepath.Join(projectDir, "go.mod")
 	goMod, err := os.ReadFile(goModPath)
 	i.NoErr(err)
-	goMod = []byte(strings.ReplaceAll(string(goMod), "// replace", "replace"))
+	pathToRepository := filepath.Join(workingDirectory, "..", "..", "..")
+	absPathToRepo, _ := filepath.Abs(pathToRepository)
+	goModString := string(goMod)
+	goModSplit := strings.Split(goModString, "=>")
+	goModSplit[1] = absPathToRepo
+	goModString = strings.Join(goModSplit, "=> ")
+	goMod = []byte(strings.ReplaceAll(goModString, "// replace", "replace"))
 	// Write file back
 	err = os.WriteFile(goModPath, goMod, 0755)
 	i.NoErr(err)
