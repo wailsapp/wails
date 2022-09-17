@@ -15,7 +15,7 @@ Check that your application includes the assets from the correct directory. In y
 something similar to the following code:
 
 ```go
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 ```
 

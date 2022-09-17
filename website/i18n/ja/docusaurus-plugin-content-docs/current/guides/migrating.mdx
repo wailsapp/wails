@@ -145,7 +145,7 @@ Example: An application has the following project layout. All final assets are p
 Those assets may be used by the application by simply creating an `embed.FS`:
 
 ```go title="Assets Example"
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {

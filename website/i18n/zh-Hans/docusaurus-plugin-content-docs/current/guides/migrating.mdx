@@ -163,7 +163,7 @@ func (a *App) startup(ctx context.Context) {
 应用程序可以通过简单地创建一个`embed.FS`来使用这些资源：
 
 ```go title="Assets Example"
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
