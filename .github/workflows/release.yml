@@ -2,9 +2,9 @@ name: Release
 
 on:
   push:
-    branches: [ releasetest/* ]
+    branches: [ release/* ]
   pull_request:
-    branches: [ releasetest/* ]
+    branches: [ release/* ]
   workflow_dispatch:
 
 jobs:
