@@ -68,8 +68,4 @@ jobs:
           cd ./test-${{ matrix.template }}
           wails init -n ${{ matrix.template }} -t ${{ matrix.template }}
           cd ${{ matrix.template }}
-          ls -l
-          cd frontend
-          ls -l
-          cd ..
           wails build -v 2
