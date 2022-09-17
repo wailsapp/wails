@@ -22,10 +22,10 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
 
-//go:embed templates
+//go:embed all:templates
 var templates embed.FS
 
-//go:embed ides/*
+//go:embed all:ides/*
 var ides embed.FS
 
 // Cahce for the templates
