@@ -66,6 +66,9 @@ jobs:
         run: |
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
+          cd frontend/dist
+          ls -l
+          cd ../..
           wails init -n ${{ matrix.template }} -t ${{ matrix.template }}
           cd ${{ matrix.template }}
           wails build -v 2
