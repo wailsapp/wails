@@ -5,6 +5,7 @@ authors: [leaanthony]
 tags: [wails, v2]
 ---
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/blog/montage.png").default}
@@ -13,16 +14,17 @@ tags: [wails, v2]
   />
 </div>
 <br />
+```
 
 # It's here!
 
 Today marks the release of [Wails](https://wails.io) v2. It's been about 18 months since the first v2 alpha and about a year from the first beta release. I'm truly grateful to everyone involved in the evolution of the project.
 
-Part of the reason it took that long was due to wanting to get to some definition of completeness before officially calling it v2. The truth is, there's never a perfect time to tag a release - there's always outstanding issues or "just one more" feature to squeeze in. What tagging an imperfect major release does do, however, is to provide a bit of stability for users of the project, as well as a bit of a reset for the developers. 
+Part of the reason it took that long was due to wanting to get to some definition of completeness before officially calling it v2. The truth is, there's never a perfect time to tag a release - there's always outstanding issues or "just one more" feature to squeeze in. What tagging an imperfect major release does do, however, is to provide a bit of stability for users of the project, as well as a bit of a reset for the developers.
 
 This release is more than I'd ever expected it to be. I hope it gives you as much pleasure as it has given us to develop it.
 
-# What *is* Wails?
+# What _is_ Wails?
 
 If you are unfamiliar with Wails, it is a project that enables Go programmers to provide rich frontends for their Go programs using familiar web technologies. It's a lightweight, Go alternative to Electron. Much more information can be found on the [official site](https://wails.io/docs/introduction).
 
@@ -30,20 +32,20 @@ If you are unfamiliar with Wails, it is a project that enables Go programmers to
 
 The v2 release is a huge leap forward for the project, addressing many of the pain points of v1. If you have read any of the blog posts on the Beta releases, then you should be across most of the changes but to summarise:
 
-  - Webview2 component for Windows that supports modern web standards and debugging capabilities.
-  - [Dark / Light theme](https://wails.io/docs/reference/options#theme) + [custom theming](https://wails.io/docs/reference/options#customtheme) on Windows.
-  - Windows now has no CGO requirements. 
-  - Out-of-the-box support for Svelte, Vue, React, Preact, Lit & Vanilla project templates.
-  - [Vite](https://vitejs.dev/) integration providing a hot-reload development environment for your application.
-  - Native menus and dialogs.
-  - Native window translucency effects.
-  - Easily generate an [NSIS installer](https://wails.io/docs/guides/windows-installer) for Windows deployments.
-  - A rich [runtime library](https://wails.io/docs/reference/runtime/intro) providing utility methods for window manipulation, eventing, dialogs, menus and logging. 
-  - Support for obfuscating your application using [garble](https://github.com/burrowers/garble).
-  - Support for compressing your application using [UPX](https://upx.github.io/).
-  - Automatic Typescript generation of Go structs.
-  - No extra libraries or DLLs are required to be shipped with your application. For any platform.
-  - No requirement to bundle frontend assets. Just develop your application like any other web application.
+- Webview2 component for Windows that supports modern web standards and debugging capabilities.
+- [Dark / Light theme](https://wails.io/docs/reference/options#theme) + [custom theming](https://wails.io/docs/reference/options#customtheme) on Windows.
+- Windows now has no CGO requirements.
+- Out-of-the-box support for Svelte, Vue, React, Preact, Lit & Vanilla project templates.
+- [Vite](https://vitejs.dev/) integration providing a hot-reload development environment for your application.
+- Native menus and dialogs.
+- Native window translucency effects.
+- Easily generate an [NSIS installer](https://wails.io/docs/guides/windows-installer) for Windows deployments.
+- A rich [runtime library](https://wails.io/docs/reference/runtime/intro) providing utility methods for window manipulation, eventing, dialogs, menus and logging.
+- Support for obfuscating your application using [garble](https://github.com/burrowers/garble).
+- Support for compressing your application using [UPX](https://upx.github.io/).
+- Automatic Typescript generation of Go structs.
+- No extra libraries or DLLs are required to be shipped with your application. For any platform.
+- No requirement to bundle frontend assets. Just develop your application like any other web application.
 
 # Credit & Thanks
 
@@ -55,15 +57,15 @@ Firstly, a **huge** thank you to [@stffabi](https://github.com/stffabi) who has 
 
 I'd also like to give a huge shout-out to [@misitebao](https://github.com/misitebao) who has tirelessly been maintaining the website, as well as providing Chinese translations, managing Crowdin and helping new translators get up to speed. This is a hugely important task, and I'm extremely grateful for all the time and effort put into this! You rock!
 
-Last, but not least, a huge thank you to Mat Ryer who has provided advice and support during the development of v2. Writing xBar together using an early Alpha of v2 was helpful in shaping the direction of v2, as well as give me an understanding of some design flaws in the early releases. I'm happy to announce that as of today, we will start to port xBar to Wails v2, and it will become the flagship application for the project. Cheers Mat! 
+Last, but not least, a huge thank you to Mat Ryer who has provided advice and support during the development of v2. Writing xBar together using an early Alpha of v2 was helpful in shaping the direction of v2, as well as give me an understanding of some design flaws in the early releases. I'm happy to announce that as of today, we will start to port xBar to Wails v2, and it will become the flagship application for the project. Cheers Mat!
 
 # Lessons Learnt
 
-There are a number of lessons learnt in getting to v2 that will shape development moving forward. 
+There are a number of lessons learnt in getting to v2 that will shape development moving forward.
 
 ## Smaller, Quicker, Focused Releases
 
-In the course of developing v2, there were many features and bug fixes that were developed on an ad-hoc basis. This led to longer release cycles and were harder to debug. Moving forward, we are going to create releases more often that will include a reduced number of features. A release will involve updates to documentation as well as thorough testing. Hopefully, these smaller, quicker, focussed releases will lead to fewer regressions and better quality documentation. 
+In the course of developing v2, there were many features and bug fixes that were developed on an ad-hoc basis. This led to longer release cycles and were harder to debug. Moving forward, we are going to create releases more often that will include a reduced number of features. A release will involve updates to documentation as well as thorough testing. Hopefully, these smaller, quicker, focussed releases will lead to fewer regressions and better quality documentation.
 
 ## Encourage Engagement
 
