@@ -151,9 +151,6 @@ Wails v2 已针对所有 3 个平台发布了 Beta 版。如果您有兴趣尝�
 <a href="https://github.com/trea" style="width:50px">
   <img src="https://github.com/trea.png?size=50" width="50"/>
 </a>
-<a href="https://github.com/LanguageAgnostic" style="width:55px">
-  <img src="https://github.com/LanguageAgnostic.png?size=55" width="55"/>
-</a>
 <a href="https://github.com/fcjr" style="width:55px">
   <img src="https://github.com/fcjr.png?size=55" width="55"/>
 </a>
@@ -168,9 +165,6 @@ Wails v2 已针对所有 3 个平台发布了 Beta 版。如果您有兴趣尝�
 </a>
 <a href="https://github.com/bbergshaven" style="width:45px">
   <img src="https://github.com/bbergshaven.png?size=45" width="45"/>
-</a>
-<a href="https://github.com/Gilgames000" style="width:45px">
-  <img src="https://github.com/Gilgames000.png?size=45" width="45"/>
 </a>
 <a href="https://github.com/ilgityildirim" style="width:50px">
   <img src="https://github.com/ilgityildirim.png?size=50" width="50"/>
@@ -195,9 +189,6 @@ Wails v2 已针对所有 3 个平台发布了 Beta 版。如果您有兴趣尝�
 </a>
 <a href="https://github.com/CharlieGo88" style="width:55px">
   <img src="https://github.com/CharlieGo88.png?size=55" width="55"/>
-</a>
-<a href="https://github.com/Bironou" style="width:55px">
-  <img src="https://github.com/Bironou.png?size=55" width="55"/>
 </a>
 <a href="https://github.com/Shackelford-Arden" style="width:55px">
   <img src="https://github.com/Shackelford-Arden.png?size=55" width="55"/>

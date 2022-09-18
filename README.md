@@ -48,14 +48,6 @@
 </strong>
 </div>
 
-<hr/>
-<h3 align="center">
-<strong>
-PLEASE NOTE: As we are approaching the v2 release, we are not accepting any new feature requests or bug reports for v1. If you have a critical issue, please open a ticket and state why it is critical.
-</strong>
-</h3>
-<hr/>
-
 ## Table of Contents
 
 <details>
@@ -63,15 +55,12 @@ PLEASE NOTE: As we are approaching the v2 release, we are not accepting any new 
 
 - [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
-  - [Official Website](#official-website)
   - [Roadmap](#roadmap)
 - [Features](#features)
 - [Sponsors](#sponsors)
 - [Getting Started](#getting-started)
 - [FAQ](#faq)
 - [Contributors](#contributors)
-- [Special Mentions](#special-mentions)
-- [Special Thanks](#special-thanks)
 - [License](#license)
 
 </details>
@@ -90,22 +79,12 @@ make this easy for you by handling project creation, compilation and bundling. A
 - Easily call Go methods from Javascript
 - Auto-generated Typescript definitions for your Go structs and methods
 - Native Dialogs & Menus
+- Native Dark / Light mode support
 - Supports modern translucency and "frosted window" effects
 - Unified eventing system between Go and Javascript
 - Powerful cli tool to quickly generate and build your projects
 - Multiplatform
 - Uses native rendering engines - _no embedded browser_!
-
-### Official Website
-
-Version 2:
-
-Wails v2 has been released in Beta for all 3 platforms. Check out the [new website](https://wails.io) if you are
-interested in trying it out.
-
-Legacy v1 Website:
-
-The legacy v1 docs can be found at [https://wails.app](https://wails.app).
 
 ### Roadmap
 
@@ -117,7 +96,7 @@ this before open up an enhancement request.
 This project is supported by these kind people / companies:
 
 <a href="https://github.com/sponsors/leaanthony" style="width:100px;">
-  <img src="/assets/images/sponsors/silver-sponsor.png" width="100"/>
+  <img src="/website/static/img/silver%20sponsor.webp" width="100"/>
 </a>
 <a href="https://github.com/selvindev" style="width:100px;">
   <img src="https://github.com/selvindev.png?size=100" width="100"/>
@@ -125,7 +104,7 @@ This project is supported by these kind people / companies:
 <br/>
 <br/>
 <a href="https://github.com/sponsors/leaanthony" style="width:100px;">
-  <img src="/assets/images/sponsors/bronze-sponsor.png" width="100"/>
+  <img src="/website/static/img/bronze%20sponsor.webp" width="100"/>
 </a>
 
 <a href="https://github.com/codydbentley" style="width:100px">
@@ -154,9 +133,6 @@ This project is supported by these kind people / companies:
 <a href="https://github.com/trea" style="width:50px">
   <img src="https://github.com/trea.png?size=50" width="50"/>
 </a>
-<a href="https://github.com/LanguageAgnostic" style="width:55px">
-  <img src="https://github.com/LanguageAgnostic.png?size=55" width="55"/>
-</a>
 <a href="https://github.com/fcjr" style="width:55px">
   <img src="https://github.com/fcjr.png?size=55" width="55"/>
 </a>
@@ -171,9 +147,6 @@ This project is supported by these kind people / companies:
 </a>
 <a href="https://github.com/bbergshaven" style="width:45px">
   <img src="https://github.com/bbergshaven.png?size=45" width="45"/>
-</a>
-<a href="https://github.com/Gilgames000" style="width:45px">
-  <img src="https://github.com/Gilgames000.png?size=45" width="45"/>
 </a>
 <a href="https://github.com/ilgityildirim" style="width:50px">
   <img src="https://github.com/ilgityildirim.png?size=50" width="50"/>
@@ -198,9 +171,6 @@ This project is supported by these kind people / companies:
 </a>
 <a href="https://github.com/CharlieGo88" style="width:55px">
   <img src="https://github.com/CharlieGo88.png?size=55" width="55"/>
-</a>
-<a href="https://github.com/Bironou" style="width:55px">
-  <img src="https://github.com/Bironou.png?size=55" width="55"/>
 </a>
 <a href="https://github.com/Shackelford-Arden" style="width:55px">
   <img src="https://github.com/Shackelford-Arden.png?size=55" width="55"/>
@@ -227,8 +197,8 @@ The installation instructions are on the [official website](https://wails.io/doc
 - Is this an alternative to Electron?
 
   Depends on your requirements. It's designed to make it easy for Go programmers to make lightweight desktop
-  applications or add a frontend to their existing applications. Wails v2 does offer native elements such as menus
-  and dialogs, so it is becoming a lightweight electron alternative.
+  applications or add a frontend to their existing applications. Wails does offer native elements such as menus
+  and dialogs, so it could be considered a lightweight electron alternative.
 
 - Who is this project aimed at?
 
@@ -250,16 +220,11 @@ The installation instructions are on the [official website](https://wails.io/doc
 The contributors list is getting too big for the readme! All the amazing people who have contributed to this
 project have their own page [here](https://wails.io/credits#contributors).
 
-## Special Mentions
+## License
 
-Without the following people, this project would never have existed:
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
 
-- [Dustin Krysak](https://wiki.ubuntu.com/bashfulrobot) - His support and feedback has been immense. More patience than
-  you can throw a stick at (Not long now Dustin!).
-- [Serge Zaitsev](https://github.com/zserge) - Creator of [Webview](https://github.com/zserge/webview) which Wails uses
-  for the windowing.
-- [Byron](https://github.com/bh90210) - At times, Byron has single handedly kept this project alive. Without his
-  incredible input, we never would have got to v1.
+## Inspiration
 
 This project was mainly coded to the following albums:
 
@@ -276,21 +241,3 @@ This project was mainly coded to the following albums:
 - [Bloc Party - Silent Alarm](https://open.spotify.com/album/6SsIdN05HQg2GwYLfXuzLB)
 - [Maxthor - Another World](https://open.spotify.com/album/3tklE2Fgw1hCIUstIwPBJF)
 - [Alun Tan Lan - Y Distawrwydd](https://open.spotify.com/album/0c32OywcLpdJCWWMC6vB8v)
-
-## Special Thanks
-
-<p align="center" style="text-align: center">
-   <a href="https://pace.dev"><img src="/assets/images/pace.jpeg"/></a><br/>
-   A <i>huge</i> thanks to <a href="https://pace.dev">Pace</a> for sponsoring the project and helping the efforts to get Wails ported to Apple Silicon!<br/><br/>
-   If you are looking for a Project Management tool that's powerful but quick and easy to use, check them out!<br/><br/>
-</p>
-
-<p align="center" style="text-align: center">
-   A special thank you to JetBrains for donating licenses to us!<br/><br/>
-   Please click the logo to let them know your appreciation!<br/><br/>
-   <a href="https://www.jetbrains.com?from=Wails"><img src="/assets/images/jetbrains-grayscale.png" width="30%"></a>
-</p>
-
-## License
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
