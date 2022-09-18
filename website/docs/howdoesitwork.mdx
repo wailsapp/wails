@@ -10,9 +10,11 @@ window. The frontend is a webkit window that will display the frontend assets. A
 version of the runtime library. Finally, it is possible to bind Go methods to the frontend, and these will appear as
 Javascript methods that can be called, just as if they were local Javascript methods.
 
+```mdx-code-block
 <div className="text--center">
   <img src={require("@site/static/img/architecture.webp").default} width="75%" />
 </div>
+```
 
 ## The Main Application
 
@@ -266,7 +268,9 @@ it will be returned to your frontend as a Javascript class. Note: If you wish to
 `json` struct tags for your fields!
 
 :::info Note
+
 Anonymous nested structs are not supported at this time.
+
 :::
 
 It is possible to send structs back to Go. Any Javascript map/class passed as an argument that

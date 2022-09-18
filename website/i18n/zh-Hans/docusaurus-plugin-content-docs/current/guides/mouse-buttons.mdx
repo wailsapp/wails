@@ -1,9 +1,9 @@
 # 鼠标按钮
 
-The Wails runtime intercepts mouse clicks to determine whether a frameless window needs resizing or a window needs to be moved. It has been asked how to detect when a mouse click has occurred, because `window.onclick` doesn't report the mouse buttons correctly. The following code shows how to detect mouse clicks: It has been asked how to detect when a mouse click has occurred, because `window.onclick` doesn't report the mouse buttons correctly. The following code shows how to detect mouse clicks: It has been asked how to detect when a mouse click has occurred, because `window.onclick` doesn't report the mouse buttons correctly. The following code shows how to detect mouse clicks:
+Wails 运行时拦截鼠标单击以确定无框窗口是否需要调整大小或需要移动窗口。 有人询问如何检测鼠标点击何时发生，因为 `window.onclick` 没有正确报告鼠标按钮。 下面的代码展示了如何检测鼠标点击：
 
 ```javascript
-window.addEventListener('mousedown', handleMouseButtonDown);
+window.addEventListener("mousedown", handleMouseButtonDown);
 
 function handleMouseButtonDown(event) {
   if (event.button === 0) {
@@ -22,4 +22,4 @@ function handleMouseButtonDown(event) {
 }
 ```
 
-Reference: https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
+参考：https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button

@@ -8,13 +8,13 @@ Wails 运行时提供了一个统一的事件系统，其中事件可以由 Go �
 
 ### 添加事件侦听器
 
-此方法为给定的事件名称设置一个侦听器。 当一个`eventName`类型的事件被[触发指定事件](#触发指定事件)时，回调被触发。 与触发事件一起发送的任何其他数据都将传递给回调。
+此方法为给定的事件名称设置一个侦听器。 当 [触发指定事件](#触发指定事件) 名为 `eventName` 类型的事件时，将触发回调。 与触发事件一起发送的任何其他数据都将传递给回调。
 
 Go: `EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`<br/> JS: `EventsOn(eventName string, callback function(optionalData?: any))`
 
 ### 移除事件侦听器
 
-This method unregisters the listener for the given event name, optionally multiple listeneres can be unregistered via `additionalEventNames`.
+此方法取消注册给定事件名称的侦听器，可选地，可以通过 `additionalEventNames` 取消注册多个侦听器。
 
 Go: `EventsOff(ctx context.Context, eventName string, additionalEventNames ...string)`<br/> JS: `EventsOff(eventName string, ...additionalEventNames)`
 
@@ -26,13 +26,12 @@ Go: `EventsOnce(ctx context.Context, eventName string, callback func(optionalDat
 
 ### 添加指定对多触发次数的事件侦听器
 
-此方法为给定的事件名称设置一个侦听器，但最多只能触发`counter`次。
+此方法为给定的事件名称设置一个侦听器，但最多只能触发 `counter` 次。
 
 Go: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int)`<br/> JS: `EventsOnMultiple(eventName string, callback function(optionalData?: any), counter int)`
 
 ### 触发指定事件
 
-此方法触发指定的事件。 可选数据可以与事件一起传递。 这将触发任何事件侦听器。
+此方法触发指定的事件。 可选数据可以与事件一起传递。 这将触发任意事件侦听器。
 
 Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/> JS: `EventsEmit(ctx context, optionalData function(optionalData?: any))`
-

@@ -8,6 +8,7 @@ tags:
   - v2
 ---
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/wails-linux.webp").default}
@@ -15,13 +16,14 @@ tags:
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 我很高兴终于宣布，Wails v2 现在处于 Linux 测试版中！ 有点讽刺的是，v2 的第一次实验是在 Linux 上进行的，但它最终成为了最后一个版本。 话虽如此，我们今天拥有的 v2 与最初的实验非常不同。 因此，事不宜迟，让我们回顾一下新功能：
 
 ### 新功能
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/wails-menus-linux.webp").default}
@@ -29,12 +31,12 @@ tags:
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
-有很多对原生菜单支持的需求。 Wails 终于帮您搞定了。 应用程序菜单现已可用，并且包括对大多数本原生菜单功能的支持。 这包括标准菜单项、复选框、单选组、子菜单和分隔符。
+有很多对原生菜单支持的请求。 Wails 终于帮您搞定了。 应用程序菜单现已可用，并且包括对大多数原生菜单功能的支持。 这包括标准菜单项、复选框、单选组、子菜单和分隔符。
 
-在 v1 中有大量的需求，要求能够更好地控制窗口本身。 我很高兴地宣布，有专门用于此的新运行时 API。 它功能丰富，支持多显示器配置。 还有一个改进的对话框 API：现在，您可以拥有具有丰富配置的现代原生对话框，以满足您所有的对话框需求。
+在 v1 中有大量的请求，要求能够更好地控制窗口本身。 我很高兴地宣布，有专门用于此的新运行时 API。 它功能丰富，支持多显示器配置。 还有一个改进的对话框 API：现在，您可以拥有具有丰富配置的现代原生对话框，以满足您的所有对话框需求。
 
 ### 无需打包资源
 
@@ -65,6 +67,7 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
 
 ### 远程模板
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/remote-linux.webp").default}
@@ -72,8 +75,8 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 让应用程序快速启动并运行一直是 Wails 项目的一个关键目标。 当我们推出时，我们试图涵盖当时的很多现代框架：react、vue 和 angular。 前端开发的世界非常固执己见，发展迅速，很难保持领先地位！ 这也意味着，我们没有为最新和最伟大的技术栈提供酷炫的现代模板。 这也意味着，我们没有为最新和最伟大的技术栈提供酷炫的现代模板。
 
@@ -81,21 +84,22 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
 
 ### 交叉编译到 Windows
 
-因为适用于 Windows 的 Wails v2 是纯 Go，所以您可以在没有 docker 的情况下针对 Windows 构建。
+因为 Windows 的 Wails v2 是纯 Go，所以你可以在没有 docker 的情况下针对 Windows 构建。
 
+```mdx-code-block
 <div class="text--center">
   <img
-    src="/img/linux-build-cross-windows.webp"
+    src={require("@site/static/img/linux-build-cross-windows.webp").default}
     width="80%"
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 ### 结语
 
-正如我在 Windows 发行说明中所说，Wails v2 代表了该项目的新起点。 此版本的目的是获得有关新方式的反馈，并在完整版本发布之前解决所有错误。 非常欢迎您的意见！ 请将任何反馈发送到[v2 测试版](https://github.com/wailsapp/wails/discussions/828)讨论板。
+正如我在 Windows 发行说明中所说，Wails v2 代表了该项目的新起点。 此版本的目的是获得有关新方式的反馈，并在完整版本发布之前解决所有错误。 非常欢迎您的意见！ 请直接反馈到 [v2 测试版](https://github.com/wailsapp/wails/discussions/828)讨论板。
 
 Linux**很难**支持。 我们预计测试版会有一些小毛病。 请通过提交详细的错误报告来帮助我们帮助您！
 
