@@ -58,6 +58,7 @@
 
 .carousel-root {
   outline: none;
+  max-width: 800px;
 }
 
 .carousel {
@@ -288,6 +289,7 @@
 /* Below is the custom css */
 .carousel .slider-wrapper {
   width: 100%;
+  max-width: 2000px;
 }
 
 .slide-item-box {
@@ -305,7 +307,54 @@
   .carousel-root {
     padding-bottom: 5px;
   }
+
   .carousel .slider-wrapper {
-    width: 75%;
+    width: 90%;
   }
+}
+
+@media screen and (max-width: 1920px) {
+  .carousel-root {
+    padding-left: 0;
+    max-width: 800px;
+  }
+
+  .hero__subtitle {
+    margin-top: 2rem;
+    font-size: 1.75rem;
+  }
+}
+
+@media screen and (max-width: 966px) {
+  .carousel-root {
+    padding-left: 0;
+    max-width: 65%;
+    min-width: 200px;
+  }
+
+  .hero__subtitle {
+    font-size: 1.5rem;
+  }
+}
+
+
+@media screen and (max-width: 400px) {
+  .carousel-root {
+    padding-left: 0;
+    max-width: 95%;
+    min-width: 200px;
+  }
+
+  blockquote {
+    margin: 0rem auto 3rem;
+  }
+
+  blockquote h3 {
+    font-size: 1.1rem;
+  }
+
+  blockquote h4 {
+    font-size: 1rem;
+  }
+
 }

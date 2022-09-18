@@ -27,11 +27,11 @@ const (
 type BackdropType int32
 
 const (
-	Auto            BackdropType = 0
-	Disable         BackdropType = 1 // None
-	MainWindow      BackdropType = 2 // Mica
-	TransientWindow BackdropType = 3 // Acrylic
-	TabbedWindow    BackdropType = 4 // Tabbed
+	Auto    BackdropType = 0
+	None    BackdropType = 1
+	Mica    BackdropType = 2
+	Acrylic BackdropType = 3
+	Tabbed  BackdropType = 4
 )
 
 func RGB(r, g, b uint8) int32 {
@@ -81,8 +81,8 @@ type Options struct {
 	// Custom settings for dark/light mode
 	CustomTheme *ThemeSettings
 
-	// Windows 11 22579 minimum
-	TranslucencyType BackdropType
+	// Select the type of translucent backdrop. Requires Windows 11 22621 or later.
+	BackdropType BackdropType
 
 	// User messages that can be customised
 	Messages *Messages

@@ -105,11 +105,10 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		result.OnSuspend = appoptions.Windows.OnSuspend
 		result.OnResume = appoptions.Windows.OnResume
 		if appoptions.Windows.WindowIsTranslucent {
-			// TODO: Migrate to win32 package
-			if !win32.IsWindowsVersionAtLeast(10, 0, 22579) {
+			if !win32.SupportsBackdropTypes() {
 				result.SetTranslucentBackground()
 			} else {
-				win32.EnableTranslucency(result.Handle(), win32.BackdropType(appoptions.Windows.TranslucencyType))
+				win32.EnableTranslucency(result.Handle(), win32.BackdropType(appoptions.Windows.BackdropType))
 			}
 		}
 

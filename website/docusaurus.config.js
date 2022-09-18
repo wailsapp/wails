@@ -18,7 +18,7 @@ const config = {
 
   i18n: {
     defaultLocale: "en",
-    locales: ["en", "zh-Hans", "ja", "ru", "ko"],
+    locales: ["en", "zh-Hans", "ja"],
     localeConfigs: {
       en: {
         label: "English",
@@ -217,7 +217,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Lea Anthony. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Lea Anthony`,
       },
       tableOfContents: {
         minHeadingLevel: 2,
@@ -231,13 +231,6 @@ const config = {
         defaultMode: "light",
         disableSwitch: false,
         respectPrefersColorScheme: true,
-      },
-      announcementBar: {
-        id: "announcement-bar",
-        content: "Wails v2 is currently in Beta",
-        backgroundColor: "#b00",
-        textColor: "#FFF",
-        isCloseable: false,
       },
       algolia: {
         appId: "AWTCNFZ4FF",

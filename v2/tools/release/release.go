@@ -47,6 +47,8 @@ func main() {
 	var newVersion string
 	if len(os.Args) > 1 {
 		newVersion = os.Args[1]
+		err := os.WriteFile(versionFile, []byte(newVersion), 0755)
+		checkError(err)
 	} else {
 		newVersion = updateVersion()
 	}
