@@ -17,9 +17,6 @@
   <a href="https://pkg.go.dev/github.com/wailsapp/wails">
     <img src="https://pkg.go.dev/badge/github.com/wailsapp/wails.svg" alt="Go Reference"/>
   </a>
-  <a href="https://www.codefactor.io/repository/github/wailsapp/wails">
-    <img src="https://www.codefactor.io/repository/github/wailsapp/wails/badge" alt="CodeFactor" />
-  </a>
   <a href="https://github.com/wailsapp/wails/issues">
     <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="CodeFactor" />
   </a>
