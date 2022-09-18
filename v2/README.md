@@ -1,5 +1,3 @@
-<h1 align="center">Wails</h1>
-
 <p align="center" style="text-align: center">
   <img src="../assets/images/logo-universal.png" width="55%"><br/>
 </p>
