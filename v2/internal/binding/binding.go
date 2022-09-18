@@ -83,7 +83,7 @@ func (b *Bindings) ToJSON() (string, error) {
 	return b.db.ToJSON()
 }
 
-func (b *Bindings) WriteModels(modelsDir string) error {
+func (b *Bindings) GenerateModels() ([]byte, error) {
 	models := map[string]string{}
 	var seen slicer.StringSlicer
 	allStructNames := b.getAllStructNames()
@@ -102,7 +102,7 @@ func (b *Bindings) WriteModels(modelsDir string) error {
 		}
 		str, err := w.Convert(nil)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		thisPackageCode += str
 		seen.AddSlice(w.GetGeneratedStructs())
@@ -121,14 +121,22 @@ func (b *Bindings) WriteModels(modelsDir string) error {
 		}
 		modelsData.WriteString("\n}\n\n")
 	}
+	return modelsData.Bytes(), nil
+}
 
+func (b *Bindings) WriteModels(modelsDir string) error {
+
+	modelsData, err := b.GenerateModels()
+	if err != nil {
+		return err
+	}
 	// Don't write if we don't have anything
-	if len(modelsData.Bytes()) == 0 {
+	if len(modelsData) == 0 {
 		return nil
 	}
 
 	filename := filepath.Join(modelsDir, "models.ts")
-	err := os.WriteFile(filename, modelsData.Bytes(), 0755)
+	err = os.WriteFile(filename, modelsData, 0755)
 	if err != nil {
 		return err
 	}
