@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/typescriptify"
@@ -109,8 +110,16 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 		models[packageName] = thisPackageCode
 	}
 
+	// Sort the package names first to make the output deterministic
+	sortedPackageNames := make([]string, 0)
+	for packageName := range models {
+		sortedPackageNames = append(sortedPackageNames, packageName)
+	}
+	sort.Strings(sortedPackageNames)
+
 	var modelsData bytes.Buffer
-	for packageName, modelData := range models {
+	for _, packageName := range sortedPackageNames {
+		modelData := models[packageName]
 		if strings.TrimSpace(modelData) == "" {
 			continue
 		}
