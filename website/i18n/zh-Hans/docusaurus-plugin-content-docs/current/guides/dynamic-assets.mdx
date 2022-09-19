@@ -1,6 +1,6 @@
 # 动态资产
 
-如果你想为你的前端动态加载或生成资产，你可以使用 [AssetsHandler](../reference/options#assetshandler) 选项来实现。 AssetsHandler 是一个通用的 `http.Handler`，对于资产服务器上的任何非 GET 请求以及由于找不到文件而无法从捆绑资产提供服务的 GET 请求，都会调用它。
+如果你想为你的前端动态加载或生成资产，你可以使用 [AssetsHandler 选项](../reference/options#资产处理程序) 来实现。 AssetsHandler 是一个通用的 `http.Handler`，对于资产服务器上的任何非 GET 请求以及由于找不到文件而无法从捆绑资产提供服务的 GET 请求，都会调用它。
 
 通过安装自定义 AssetsHandler，您可以使用自定义资产服务器提供您自己的资产。
 
