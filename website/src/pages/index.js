@@ -73,7 +73,7 @@ function HomepageHeader() {
                     <div className="blockquote">
                         <h1>
                             Wails v2 turns what used to be tedious and painful into a delightfully simple process.
-                            Use the tools you know to create cross platform desktop apps. Everyone wins!
+                            Use the tools you know to create cross-platform desktop apps. Everyone wins!
                         </h1>
                         <h4>&mdash;&nbsp;<Link to="https://www.brian.dev/about">Brian Ketelsen</Link><br/><em>Co-author
                             of "Go In Action"</em></h4>

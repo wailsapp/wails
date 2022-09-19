@@ -93,6 +93,27 @@ html[data-theme="light"] .button--secondary {
     box-shadow: rgb(255 255 255 / 20%) 0 4px 8px 0, rgb(104 104 104) 0 6px 20px 0;
 }
 
+.hero__subtitle {
+    margin-top: 2rem;
+    font-size: 1.5rem;
+}
+
+@media all and (min-width: 600px) {
+    .hero__subtitle {
+        margin-top: 2rem;
+        font-size: 1.65rem;
+    }
+}
+
+
+@media all and (min-width: 1024px) {
+    .hero__subtitle {
+        margin-top: 2rem;
+        font-size: 1.75rem;
+    }
+}
+
+
 /* Blockquote inspired by https://codepen.io/jupago/pen/GPxqLX.
 Copyright (c) 2022 by Juan Pablo (https://codepen.io/jupago/pen/GPxqLX)
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -155,6 +176,18 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
     .blockquote {
         max-width: 75%;
+    }
+}
+
+
+@media all and (min-width: 1024px) {
+    .blockquote h1 {
+        font-size: 1.45rem;
+        line-height: 1.2;
+    }
+
+    .blockquote {
+        max-width: 50%;
     }
 }
 
