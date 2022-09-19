@@ -46,7 +46,7 @@ html[data-theme="light"] .button--secondary {
 }
 
 
-.container {
+.hero .container {
     display: flex;
     flex-direction: row-reverse;
     flex-wrap: wrap;
