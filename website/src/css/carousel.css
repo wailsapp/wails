@@ -310,3 +310,10 @@
     width: 75%;
   }
 }
+
+@media screen and (max-width: 966px) {
+  .carousel-root {
+    padding-left: 0;
+    width: 100%;
+  }
+}

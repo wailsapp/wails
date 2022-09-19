@@ -26,6 +26,8 @@ function HomepageHeader() {
                     infiniteLoop={true}
                     interval={4000}
                     transitionTime={1000}
+                    centerMode={true}
+
                 >
                     <div className="slide-item-box">
                         <img src={useBaseUrl("/img/showcase/mac-app.png")}/>
@@ -34,10 +36,10 @@ function HomepageHeader() {
                         <img src={useBaseUrl("/img/showcase/ytd.webp")}/>
                     </div>
                     <div className="slide-item-box">
-                        <img src={useBaseUrl("/img/showcase/wombat.webp")}/>
+                        <img src={useBaseUrl("/img/showcase/varly2.webp")}/>
                     </div>
                     <div className="slide-item-box">
-                        <img src={useBaseUrl("/img/showcase/restic-browser-2.png")}/>
+                        <img src={useBaseUrl("/img/showcase/wombat.webp")}/>
                     </div>
                     <div className="slide-item-box">
                         <img src={useBaseUrl("/img/showcase/wally.webp")}/>
@@ -46,10 +48,7 @@ function HomepageHeader() {
                         <img src={useBaseUrl("/img/showcase/october.webp")}/>
                     </div>
                     <div className="slide-item-box">
-                        <img
-                            className="img"
-                            src={useBaseUrl("/img/showcase/mollywallet.webp")}
-                        />
+                        <img src={useBaseUrl("/img/showcase/restic-browser-2.png")}/>
                     </div>
                 </Carousel>
 

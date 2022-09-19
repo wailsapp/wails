@@ -232,13 +232,6 @@ const config = {
         disableSwitch: false,
         respectPrefersColorScheme: true,
       },
-      announcementBar: {
-        id: "announcement-bar",
-        content: "Wails v2 is currently in Beta",
-        backgroundColor: "#b00",
-        textColor: "#FFF",
-        isCloseable: false,
-      },
       algolia: {
         appId: "AWTCNFZ4FF",
         apiKey: "a6c0adbe611ee2535f3da5e8fd7b2200",
