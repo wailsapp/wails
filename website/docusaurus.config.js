@@ -217,7 +217,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Lea Anthony. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Lea Anthony`,
       },
       tableOfContents: {
         minHeadingLevel: 2,
