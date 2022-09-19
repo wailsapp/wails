@@ -288,6 +288,7 @@
 /* Below is the custom css */
 .carousel .slider-wrapper {
   width: 100%;
+  max-width: 2000px;
 }
 
 .slide-item-box {

@@ -92,3 +92,84 @@ html[data-theme="light"] .button--secondary {
 .screenshot {
     box-shadow: rgb(255 255 255 / 20%) 0 4px 8px 0, rgb(104 104 104) 0 6px 20px 0;
 }
+
+/* Blockquote inspired by https://codepen.io/jupago/pen/GPxqLX.
+Copyright (c) 2022 by Juan Pablo (https://codepen.io/jupago/pen/GPxqLX)
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+.blockquote-wrapper {
+    display: flex;
+    padding: 0 20px;
+}
+
+.blockquote {
+    position: relative;
+    max-width: 95%;
+    margin: 4rem auto;
+    align-self: center;
+}
+
+.blockquote h1 {
+    position: relative;
+    font-size: 1.5rem;
+    font-weight: normal;
+    line-height: 1;
+    margin: 0;
+    border: solid 2px;
+    border-radius: 10px;
+    padding: 25px;
+}
+
+.blockquote h1:after {
+    content: "";
+    color: var(--ifm-heading-color);
+    position: absolute;
+    border: 2px solid var(--ifm-hero-text-color);
+    border-radius: 0 50px 0 0;
+    width: 60px;
+    height: 60px;
+    bottom: -62px;
+    left: 50px;
+    border-bottom: none;
+    border-left: none;
+    z-index: 3;
+}
+
+.blockquote h1:before {
+    content: "";
+    position: absolute;
+    width: 80px;
+    border: 6px solid var(--ifm-hero-background-color);
+    bottom: -3px;
+    left: 50px;
+    z-index: 2;
+}
+
+@media all and (min-width: 600px) {
+    .blockquote h1 {
+        font-size: 1.45rem;
+        line-height: 1.2;
+    }
+
+    .blockquote {
+        max-width: 75%;
+    }
+}
+
+.blockquote h4 {
+    position: relative;
+    font-size: 1.3rem;
+    font-weight: 400;
+    line-height: 1.2;
+    padding-top: 15px;
+    z-index: 1;
+    margin: 0 0 0 150px;
+    padding-left: 12px;
+}
+
+
+.blockquote h4:first-letter {
+    margin-left: -12px;
+}
