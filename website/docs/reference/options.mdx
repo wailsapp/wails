@@ -64,6 +64,10 @@ func main() {
             },
             // User messages that can be customised
             Messages *windows.Messages
+            // OnSuspend is called when Windows enters low power mode
+            OnSuspend func()
+            // OnResume is called when Windows resumes from low power mode
+            OnResume func()
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -402,10 +406,10 @@ Requires Windows 11 build 22621 or later.
 
 Sets the translucency type of the window. This is only applicable if [WindowIsTranslucent](#WindowIsTranslucent) is set to `true`.
 
-Name: BackdropType
+Name: BackdropType<br/>
 Type `windows.BackdropType`
 
-The Type can be one of the following:
+The value can be one of the following:
 
 | Value   | Description                                                                               |
 |---------|-------------------------------------------------------------------------------------------|
@@ -544,14 +548,14 @@ Type: `uint16`
 
 #### OnSuspend
 
-If set, this function will be called when windows initiates a switch to low power mode (suspend/hibernate)
+If set, this function will be called when Windows initiates a switch to low power mode (suspend/hibernate)
 
 Name: OnSuspend<br/>
 Type: `func()`
 
 #### OnResume
 
-If set, this function will be called when windows resumes from low power mode (suspend/hibernate)
+If set, this function will be called when Windows resumes from low power mode (suspend/hibernate)
 
 Name: OnResume<br/>
 Type: `func()`

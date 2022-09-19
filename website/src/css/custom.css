@@ -219,3 +219,11 @@ cite {
     margin: 0;
     padding: 0;
 }
+
+.docMainContainer_node_modules-\@docusaurus-theme-classic-lib-theme-DocPage-Layout-Main-styles-module .container .row .col {
+    display: inline-flex;
+    width: 50%;
+    align-content: flex-end;
+    flex-direction: column;
+    justify-content: flex-start;
+}
