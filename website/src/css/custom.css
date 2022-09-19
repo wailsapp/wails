@@ -45,16 +45,40 @@ html[data-theme="light"] .button--secondary {
     counter-reset: line-number;
 }
 
+.container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    max-width: none;
+    padding: 2rem;
+}
+
+.col {
+    display: inline-flex;
+    width: 50%;
+    align-content: flex-end;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+
+.hero {
+    height: 500px;
+}
+
 .carousel-root {
     padding-left: 2%;
-    max-width: 1400px;
-    width: 85%;
+    max-width: 600px;
+    width: 100%;
     margin: 0 auto;
+}
+
+.heroBanner_src-pages-index-module {
+    padding-top: 3rem;
 }
 
 @media screen and (max-width: 576px) {
     .carousel-root {
-        padding-left: 2%;
         width: 100%;
     }
 }
@@ -63,7 +87,7 @@ html[data-theme="light"] .button--secondary {
 @media screen and (max-width: 966px) {
     .carousel-root {
         padding-left: 2%;
-        width: 90%;
+        max-width: 50%;
     }
 }
 

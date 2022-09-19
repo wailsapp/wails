@@ -58,7 +58,7 @@
 
 .carousel-root {
   outline: none;
-  max-width: 1024px;
+  max-width: 800px;
 }
 
 .carousel {
@@ -307,8 +307,16 @@
   .carousel-root {
     padding-bottom: 5px;
   }
+
   .carousel .slider-wrapper {
-    width: 75%;
+    width: 90%;
+  }
+}
+
+@media screen and (max-width: 1920px) {
+  .carousel-root {
+    padding-left: 0;
+    max-width: 800px;
   }
 }
 
