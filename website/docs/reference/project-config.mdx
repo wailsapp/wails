@@ -8,16 +8,16 @@ The project config resides in the `wails.json` file in the project directory. Th
 
 ```json
 {
-    "name": "[The project name]",
+	"name": "[The project name]",
 	"assetdir": "[Relative path to the directory containing the compiled assets, this is normally inferred and could be left empty]",
 	"reloaddirs": "[Additional directories to trigger reloads (comma separated), this is only used for some advanced asset configurations]",
 	"frontend:install": "[The command to install node dependencies, run in the frontend directory - often `npm install`]",
 	"frontend:build": "[The command to build the assets, run in the frontend directory - often `npm run build`]",
-	"frontend:dev": "[This command has been replaced by frontend:dev:build. If frontend:dev:build is not specified will falls back to this command. If this command is also not specified will falls back to frontend:build]",
+	"frontend:dev": "[This command has been replaced by frontend:dev:build. If frontend:dev:build is not specified will falls back to this command. \nIf this command is also not specified will falls back to frontend:build]",
 	"frontend:dev:build": "[This command is the dev equivalent of frontend:build. If not specified falls back to frontend:dev]",
 	"frontend:dev:install": "[This command is the dev equivalent of frontend:install. If not specified falls back to frontend:install]",
 	"frontend:dev:watcher": "[This command is run in a separate process on `wails dev`. Useful for 3rd party watchers or starting 3d party dev servers]",
-	"frontend:dev:serverUrl": "[URL to a 3rd party dev server to be used to serve assets, EG Vite. If this is set to 'auto' then the devServerUrl will be inferred from the Vite output]",
+	"frontend:dev:serverUrl": "[URL to a 3rd party dev server to be used to serve assets, EG Vite. \nIf this is set to 'auto' then the devServerUrl will be inferred from the Vite output]",
     "wailsjsdir": "[Relative path to the directory that the auto-generated JS modules will be created]",
 	"version": "[Project config version]",
 	"outputfilename": "[The name of the binary]",

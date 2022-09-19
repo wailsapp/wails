@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://wails.io/schemas/template.v1.json",
+  "required": [],
+  "title": "template",
+  "description": "Defines the schema for a Wails template configuration file",
+  "type": "object",
+  "properties": {
+    "author": {
+      "description": "The author of the template",
+      "type": "string"
+    },
+    "helpurl": {
+      "description": "The URL to the help page for the template",
+      "type": "string"
+    },
+    "name": {
+      "description": "The name of the template",
+      "type": "string"
+    },
+    "description": {
+      "description": "The description of the template",
+      "type": "string"
+    },
+    "shortname": {
+      "description": "The short name of the template",
+      "type": "string"
+    }
+  }
+}

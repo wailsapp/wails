@@ -1,25 +1,25 @@
-# Troubleshooting
+# 故障排除
 
-An assortment of troubleshooting tips.
+各种故障排除技巧。
 
-## The `wails` command appears to be missing?
+## `wails` 命令好像不见了？
 
-If your system is reporting that the `wails` command is missing, make sure you have followed the Go installation guide correctly. Normally, it means that the `go/bin` directory in your User's home directory is not in the `PATH` environment variable. You will also normally need to close and reopen any open command prompts so that changes to the environment made by the installer are reflected at the command prompt.
+如果您的系统报告缺少 `wails` 命令，请确保您已正确遵循 Go 安装指南。 通常，这意味着您的用户 home 目录中的 `go/bin` 目录不在 `PATH` 环境变量中。 通常情况下还需要关闭并重新打开任何已打开的命令提示符，以便安装程序对环境所做的更改反映在命令提示符中。
 
-## My application is displaying a white/blank screen
+## 我的应用程序正在显示白屏/空白屏幕
 
-检查您的应用程序是否在正确目录中包含资源。 Check that your application includes the assets from the correct directory. In your `main.go` file, you will have something similar to the following code:
+检查您的应用程序是否包含正确目录中的资产。 在您的 `main.go` 文件中，您将拥有类似于以下代码的内容：
 
 ```go
 //go:embed all:frontend/dist
 var assets embed.FS
 ```
 
-Check that `frontend/dist` contains your application assets.
+检查它是否 `frontend/dist` 包含您的应用程序资产。
 
 ### Mac
 
-If this happens on Mac, try adding the following to your `Info.plist`:
+如果在 Mac 上发生这种情况，请尝试将以下内容添加到您的 `Info.plist`:
 
 ```xml
 <key>NSAppTransportSecurity</key>
@@ -29,21 +29,27 @@ If this happens on Mac, try adding the following to your `Info.plist`:
 </dict>
 ```
 
-Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
+参考：https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
 
-## Mac application not valid
+## Mac 应用程序无效
 
-If your built application looks like this in finder:
+如果您构建的应用程序在 finder 中如下所示：
 
+```mdx-code-block
 <p className="text--center">
-  <img src={require("/img/troubleshooting/invalid_mac_app.png")}/>
+  <img
+    src={
+      require("@site/static/img/troubleshooting/invalid_mac_app.png").default
+    }
+  />
 </p>
+```
 
-It's likely that your application's `info.plist` is invalid. Update the file in `build/<yourapp>.app/Contents/info.plist` and check if the data is valid, EG check the binary name is correct. To persist the changes, copy the file back to the `build/darwin` directory. 
+您的申请很可能 `info.plist` 是无效的。 更新 `build/<yourapp>.app/Contents/info.plist`文件 并检查数据是否有效，比如：检查二进制名称是否正确。 要保留更改，请将文件复制回 `build/darwin` 目录。
 
-## Cannot call backend method from frontend with variadic arguments
+## 无法使用可变参数
 
-If you have a backend method defined with variadic parameters, eg:
+如果您有使用可变参数定义的后端方法，例如：
 
 ```go
 func (a *App) TestFunc(msg string, args ...interface{}) error {
@@ -51,7 +57,7 @@ func (a *App) TestFunc(msg string, args ...interface{}) error {
 }
 ```
 
-calling this method from the frontend like this will fail:
+像这样从前端调用此方法将失败：
 
 ```js
 var msg = "Hello: ";
@@ -65,7 +71,7 @@ window.go.main.App.TestFunc(msg, ...args)
   });
 ```
 
-Workaround:
+解决方法：
 
 ```js
 var msg = "Hello ";
@@ -80,32 +86,32 @@ window.go.main.App.TestFunc(msg, args)
   });
 ```
 
-Credit: https://github.com/wailsapp/wails/issues/1186
+致谢：https://github.com/wailsapp/wails/issues/1186
 
-## I'm having getting proxy errors when trying to install Wails
+## 我正在尝试安装Wails时获取代理错误
 
-If you are getting errors like this:
+如果您遇到这样的错误：
 
 ```
 "https://proxy.golang.org/github.com/wailsapp/wails/cmd/wails/@v/list": dial tcp 172.217.163.49:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
 ```
 
-it's probably because the official Go Proxy is being blocked (Users in China have reported this). The solution is to set up the proxy manually, eg: 解决方案是手动设置代理，例如：
+这可能是因为官方 Go Proxy 被阻止（中国用户报告了这一点）。 解决方案是手动设置代理，例如：
 
 ```
 go env -w GO111MODULE=on
 go env -w GOPROXY=https://goproxy.cn,direct
 ```
 
-Source: https://github.com/wailsapp/wails/issues/1233
+来源：https://github.com/wailsapp/wails/issues/1233
 
-## The generated Typescript doesn't have the correct types
+## 没有生成正确的 Typescript 类型
 
-Sometimes the generated Typescript doesn't have the correct types. Sometimes the generated Typescript doesn't have the correct types. To mitigate this, it is possible to specify what types should be generated using the `ts_type` struct tag. For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types). For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types).
+有时生成的 Typescript 没有正确的类型。 `ts_type` 为了缓解这种情况，可以使用 struct 标签指定应该生成哪些类型。 有关详细信息，请阅读 [此](https://github.com/tkrajina/typescriptify-golang-structs#custom-types) 内容。
 
-## When I navigate away from `index.html`, I am unable to call methods on the frontend
+## 当我离开 `index.html`时，我无法在前端调用方法
 
-If you navigate away from `index.html` to a new html file, the context will be lost. If you navigate away from `index.html` to a new html file, the context will be lost. This can be fixed by adding the following imports to the `<head>` section of any new page you navigate to:
+如果您导航 `index.html` 到一个新的 html 文件，上下文将会丢失。 这可以通过将以下导入添加到 `<head>` 您导航到的任何新页面的部分来解决：
 
 ```html
 <head>
@@ -114,17 +120,17 @@ If you navigate away from `index.html` to a new html file, the context will be l
 </head>
 ```
 
-Source: https://github.com/wailsapp/wails/discussions/1512
+来源：https://github.com/wailsapp/wails/discussions/1512
 
-## I get `too many open files` errors on my Mac when I run `wails dev`
+## 运行 `wails dev` 出现 `too many open files` 错误
 
-By default, macOS will only allow you to open a maximum of 256 files. This can affect the `wails dev` command. This limit can be increased by running: `ulimit -n 1024` in the terminal. This can affect the `wails dev` command. This limit can be increased by running: `ulimit -n 1024` in the terminal.
+默认情况下，macOS 最多只能打开 256 个文件。 这会影响 `wails dev` 命令 可以通过在终端中运行：`ulimit -n 1024` 来增加此限制。
 
-FSNotify is [looking to move to Apple's fsevents](https://github.com/fsnotify/fsnotify/issues/11) for Mac. If this isn't completed soon, we will create our own implementation, tracked [here](https://github.com/wailsapp/wails/issues/1733). If this isn't completed soon, we will create our own implementation, tracked [here](https://github.com/wailsapp/wails/issues/1733).
+FSNotify 正在 [寻求转移到苹果](https://github.com/fsnotify/fsnotify/issues/11)。 如果这不能很快完成，我们将创建自己的实现，在 [此处](https://github.com/wailsapp/wails/issues/1733) 跟踪。
 
-## My Mac app gives me weird compilation errors
+## 我的 Mac 应用程序给了我奇怪的编译错误
 
-A few users have reported seeing compilation errors such as the following:
+一些用户报告看到编译错误，如下所示：
 
 ```shell
 # github.com/wailsapp/wails/v2/internal/frontend/desktop/darwin
@@ -137,6 +143,6 @@ In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/Sy
         #define NS_FORMAT_ARGUMENT(A) __attribute__ ((format_arg(A)))
 ```
 
-This is *normally* due to a mismatch with the OS version you are running and the version of the XCode Command Line Tools installed. If you see an error like this, try upgrading your XCode Command Line Tools to the latest version.
+这 _通常_ 是由于您正在运行的操作系统版本和安装的 XCode 命令行工具的版本不匹配。 如果您看到这样的错误，请尝试将您的 XCode 命令行工具升级到最新版本。
 
-Source: https://github.com/wailsapp/wails/issues/1806
+来源：https://github.com/wailsapp/wails/issues/1806

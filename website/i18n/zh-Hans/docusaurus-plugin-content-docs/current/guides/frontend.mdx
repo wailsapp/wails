@@ -2,7 +2,7 @@
 
 ## 脚本注入
 
-当 Wails 为您的`index.html`提供服务时，默认情况下，它会将 2 个脚本注入`<body>`标签以加载`/wails/ipc.js`和`/wails/runtime.js`。 这些文件分别安装绑定和运行时。
+当 Wails 为您的 `index.html` 提供服务时，默认情况下，它会将 2 个脚本注入 `<body>` 标签以加载 `/wails/ipc.js` 和 `/wails/runtime.js`。 这些文件分别安装绑定和运行时。
 
 下面的代码显示了这些默认注入的位置：
 
@@ -30,7 +30,7 @@
 
 ### 覆盖默认脚本注入
 
-为了给开发人员提供更大的灵活性，有一个`meta`标签可用于自定义此行为：
+为了给开发人员提供更大的灵活性，有一个 meta 标签可用于自定义此行为：
 
 ```html
 <meta name="wails-options" content="[options]" />

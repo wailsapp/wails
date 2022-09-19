@@ -5,6 +5,7 @@ authors: [leaanthony]
 tags: [wails, v2]
 ---
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/wails-linux.webp").default}
@@ -13,6 +14,7 @@ tags: [wails, v2]
   />
 </div>
 <br />
+```
 
 I'm pleased to finally announce that Wails v2 is now in beta for Linux! It is somewhat ironic that the very first
 experiments with v2 was on Linux and yet it has ended up as the last release. That being said, the v2 we have today
@@ -20,6 +22,7 @@ is very different from those first experiments. So without further ado, let's go
 
 ### New Features
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/wails-menus-linux.webp").default}
@@ -28,6 +31,7 @@ is very different from those first experiments. So without further ado, let's go
   />
 </div>
 <br />
+```
 
 There were a lot of requests for native menu support. Wails has finally got you covered. Application menus are now available
 and include support for most native menu features. This includes standard menu items, checkboxes, radio groups, submenus
@@ -79,6 +83,7 @@ auto-imported when hitting tab in an auto-generated module wrapping your Go code
 
 ### Remote Templates
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/remote-linux.webp").default}
@@ -87,6 +92,7 @@ auto-imported when hitting tab in an auto-generated module wrapping your Go code
   />
 </div>
 <br />
+```
 
 Getting an application up and running quickly was always a key goal for the Wails project. When we launched, we tried
 to cover a lot of the modern frameworks at the time: react, vue and angular. The world of frontend development is very
@@ -103,14 +109,16 @@ community can create!
 
 Because Wails v2 for Windows is pure Go, you can target Windows builds without docker.
 
+```mdx-code-block
 <div class="text--center">
   <img
-    src="/img/linux-build-cross-windows.webp"
+    src={require("@site/static/img/linux-build-cross-windows.webp").default}
     width="80%"
     class="screenshot"
   />
 </div>
 <br />
+```
 
 ### In Conclusion
 

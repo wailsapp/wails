@@ -6,12 +6,11 @@ sidebar_position: 2
 
 ## 项目生成
 
-现在 CLI 已安装，您可以使用`wails init`命令生成一个新项目。
+现在 CLI 已安装，您可以使用 `wails init` 命令生成一个新项目。
 
 选择您最喜欢的框架：
 
-<!-- @formatter:off -->
-
+```mdx-code-block
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
@@ -19,88 +18,87 @@ import TabItem from "@theme/TabItem";
     defaultValue="Svelte"
     values={[
         {label: "Svelte", value: "Svelte"},
- {label: "React", value: "React"},
- {label: "Vue", value: "Vue"},
- {label: "Preact", value: "Preact"},
- {label: "Lit", value: "Lit"},
- {label: "Vanilla", value: "Vanilla"},
- ]}
+        {label: "React", value: "React"},
+        {label: "Vue", value: "Vue"},
+        {label: "Preact", value: "Preact"},
+        {label: "Lit", value: "Lit"},
+        {label: "Vanilla", value: "Vanilla"},
+    ]}
 >
 <TabItem value="Svelte">
-    Generate a <a href={"https://svelte.dev/"}>Svelte</a> project using Javascript with:<br/><br/>
+    使用 Javascript 生成一个 <a href={"https://svelte.dev/"}>Svelte</a> 项目:<br/><br/>
 
     wails init -n myproject -t svelte
-If you would rather use Typescript:<br/>
+
+如果您更愿意使用 Typescript:<br/>
 
     wails init -n myproject -t svelte-ts
 
 </TabItem>
 <TabItem value="React">
-    Generate a <a href={"https://reactjs.org/"}>React</a> project using Javascript with:<br/><br/>
+    使用 Javascript 生成一个 <a href={"https://reactjs.org/"}>React</a> 项目:<br/><br/>
 
     wails init -n myproject -t react
-If you would rather use Typescript:<br/>
+
+如果您更愿意使用 Typescript:<br/>
 
     wails init -n myproject -t react-ts
 
 </TabItem>
 <TabItem value="Vue">
-    Generate a <a href={"https://vuejs.org/"}>Vue</a> project using Javascript with:<br/><br/>
+    使用 Javascript 生成一个 <a href={"https://vuejs.org/"}>Vue</a> 项目:<br/><br/>
 
     wails init -n myproject -t vue
 
-If you would rather use Typescript:<br/>
+如果您更愿意使用 Typescript:<br/>
 
     wails init -n myproject -t vue-ts
 
 </TabItem>
 <TabItem value="Preact">
-    Generate a <a href={"https://preactjs.com/"}>Preact</a> project using Javascript with:<br/><br/>
+    使用 Javascript 生成一个 <a href={"https://preactjs.com/"}>Preact</a> 项目:<br/><br/>
 
     wails init -n myproject -t preact
 
-If you would rather use Typescript:<br/>
+如果您更愿意使用 Typescript:<br/>
 
     wails init -n myproject -t preact-ts
 
 </TabItem>
 <TabItem value="Lit">
-    Generate a <a href={"https://lit.dev/"}>Lit</a> project using Javascript with:<br/><br/>
+    使用 Javascript 生成一个 <a href={"https://lit.dev/"}>Lit</a> 项目:<br/><br/>
 
     wails init -n myproject -t lit
 
-If you would rather use Typescript:<br/>
+如果您更愿意使用 Typescript:<br/>
 
     wails init -n myproject -t lit-ts
 
 </TabItem>
 <TabItem value="Vanilla">
-    Generate a Vanilla project using Javascript with:<br/><br/>
+    使用 Javascript 生成一个 Vanilla 项目:<br/><br/>
 
     wails init -n myproject -t vanilla
 
-If you would rather use Typescript:<br/>
+如果您更愿意使用 Typescript:<br/>
 
     wails init -n myproject -t vanilla-ts
 
 </TabItem>
 </Tabs>
-
-<!-- @formatter:on -->
+```
 
 <hr />
 
-Wails 项目具有以下布局：
+还有提供不同功能和框架的 [社区模板](../community/templates.mdx)。
 
-要查看其他可用选项，您可以运行 `wails init -help`。 更多详细信息可以在 [初始化命令](../reference/cli#初始化)中找到。
+要查看其他可用选项，您可以运行 `wails init -help`。 更多详细信息可以在 [初始化命令](../reference/cli#初始化) 中找到。
 
 ## 项目布局
 
 Wails 项目有以下布局：
 
 ```
-.
-.
 .
 ├── build/
 │   ├── appicon.png
@@ -118,15 +116,15 @@ Wails 项目有以下布局：
 - `/main.go` - 主应用
 - `/frontend/` - 前端项目文件
 - `/build/` - 项目构建目录
-- `/wails.json` - 项目配置
-- `/go.mod` - Go mod 文件
-- `/go.sum` - Go mod 校验文件
-- `/build/windows/` - Windows 特定的项目文件
-- `/go.mod` - Go module file
-- `/go.sum` - Go module checksum file
+- `/wails.json` - 应用程序图标
+- `/go.mod` - Mac 特定的项目文件
+- `/go.sum` - Windows 特定的项目文件
+- `/build/windows/` - 项目配置
+- `/go.mod` - Go module 文件
+- `/go.sum` - Go module 校验文件
 
-`frontend`目录没有特定于 Wails 的内容，可以是您选择的任何前端项目。
+`frontend` 目录没有特定于 Wails 的内容，可以是您选择的任何前端项目。
 
-`build`目录在构建过程中使用。 这些文件可以修改以自定义您的构建。 如果文件从构建目录中删除，将重新生成默认版本。
+`build` 目录在构建过程中使用。 这些文件可以修改以自定义您的构建。 如果从 build 目录中删除文件，将重新生成默认版本。
 
-`go.mod`中的默认模块名称是“changeme”。 您应该将其更改为更合适的内容。
+`go.mod` 中的默认模块名称是“changeme”。 您应该将其更改为更合适的内容。

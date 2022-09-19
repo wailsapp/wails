@@ -18,7 +18,7 @@ func TestParseAnsi16SingleColour(t *testing.T) {
 		{"No formatting", "Hello World", "Hello World", "", false},
 		{"Black", "\u001b[0;30mHello World\033[0m", "Hello World", "Black", false},
 		{"Red", "\u001b[0;31mHello World\033[0m", "Hello World", "Maroon", false},
-		{"Green", "\u001b[0;32m\033[0m", "", "Green", false},
+		{"Green", "\u001b[0;32mHello World\033[0m", "Hello World", "Green", false},
 		{"Yellow", "\u001b[0;33m😀\033[0m", "😀", "Olive", false},
 		{"Blue", "\u001b[0;34m123\033[0m", "123", "Navy", false},
 		{"Purple", "\u001b[0;35m👩🏽‍🔧\u001B[0m", "👩🏽‍🔧", "Purple", false},
@@ -26,7 +26,7 @@ func TestParseAnsi16SingleColour(t *testing.T) {
 		{"White", "\u001b[0;37m[0;37m\033[0m", "[0;37m", "Silver", false},
 		{"Black Bold", "\u001b[1;30mHello World\033[0m", "Hello World", "Grey", false},
 		{"Red Bold", "\u001b[1;31mHello World\033[0m", "Hello World", "Red", false},
-		{"Green Bold", "\u001b[1;32m\033[0m", "", "Lime", false},
+		{"Green Bold", "\u001b[1;32mTest\033[0m", "Test", "Lime", false},
 		{"Yellow Bold", "\u001b[1;33m😀\033[0m", "😀", "Yellow", false},
 		{"Blue Bold", "\u001b[1;34m123\033[0m", "123", "Blue", false},
 		{"Purple Bold", "\u001b[1;35m👩🏽‍🔧\u001B[0m", "👩🏽‍🔧", "Fuchsia", false},
@@ -109,7 +109,7 @@ func TestParseAnsi16MultiColour(t *testing.T) {
 		}, false},
 		{"Green Invisible & Yellow Invisible & Strikethrough", "\u001B[8;32m👩🏽‍🔧\u001B[0m\u001B[9;33m👩🏽‍🔧\u001B[0m", []*StyledText{
 			{Label: "👩🏽‍🔧", FgCol: &Col{Name: "Green"}, Style: Invisible},
-			{Label: "👩🏽‍🔧", FgCol: &Col{Name: "Olive"}, Style: Invisible | Strikethrough},
+			{Label: "👩🏽‍🔧", FgCol: &Col{Name: "Olive"}, Style: Strikethrough},
 		}, false},
 	}
 	for _, tt := range tests {

@@ -41,9 +41,11 @@ JS: `Hide()`
 Hides the application.
 
 :::info Note
+
 On Mac, this will hide the application in the same way as the `Hide` menu item in standard Mac applications.
 This is different to hiding the window, but the application still being in the foreground.
 For Windows and Linux, this is currently the same as `WindowHide`.
+
 :::
 
 ### Show
@@ -51,8 +53,10 @@ For Windows and Linux, this is currently the same as `WindowHide`.
 Shows the application.
 
 :::info Note
+
 On Mac, this will bring the application back into the foreground.
 For Windows and Linux, this is currently the same as `WindowShow`.
+
 :::
 
 Go: `Show(ctx context.Context)`<br/>
@@ -75,6 +79,7 @@ JS: `Environment(): Promise<EnvironmentInfo>`
 #### EnvironmentInfo
 
 Go:
+
 ```go
 type EnvironmentInfo struct {
 	BuildType string
@@ -82,11 +87,13 @@ type EnvironmentInfo struct {
 	Arch      string
 }
 ```
+
 JS:
+
 ```ts
 interface EnvironmentInfo {
-    buildType: string;
-    platform: string;
-    arch: string;
+  buildType: string;
+  platform: string;
+  arch: string;
 }
 ```

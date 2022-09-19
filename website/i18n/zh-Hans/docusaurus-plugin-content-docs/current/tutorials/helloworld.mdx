@@ -4,19 +4,23 @@ sidebar_position: 10
 
 # 你好世界
 
-本教程的目的是让你使用最基本的 软件来运行和使用Wails。 你将可以:
+本教程的目的是让您使用 Wails 启动并运行最基本的应用程序。 你将可以:
 
-- 创建一个新的Wails应用
+- 创建一个新的 Wails 应用
 - 构建应用
 - 运行应用
 
 :::note
+
+
 本教程使用 Windows 作为目标平台。 根据您的操作系统，输出会略有不同。
+
 :::
 
-## 创建一个新Wails应用
 
-使用默认的vanilla JS模板创建新的Wails程序, 您需要运行这个指令:
+## 创建一个新的 Wails 应用
+
+使用默认的 vanilla JS 模板创建新的 Wails 程序, 您需要运行这个指令:
 
 ```bash
 wails init -n helloworld
@@ -38,7 +42,7 @@ Template Support:  https://wails.io
 Initialised project 'helloworld' in 232ms.
 ```
 
-这将在当前目录中创建一个名为 `helloworld` 的新目录。 在这个目录中，您会找到一些文件：
+这将在当前目录中创建一个名为 `helloworld` 的新目录。 在此目录中，您将找到许多文件：
 
 ```
 build/       - Contains the build files + compiled application
@@ -84,29 +88,31 @@ Building target: windows/amd64
 Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
 ```
 
-这有一个已经编译了的应用程序保存在 `build/bin` 目录中。
+这已经编译了应用程序并将其保存在 `build/bin` 目录中。
 
 ## 运行应用
 
 如果我们在 Windows 文件管理器中查看 `build/bin` 目录，我们应该看到我们的项目二进制文件：
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/helloworld-app-icon.webp").default}
     width="134px"
   />
 </div>
-
 <br />
+```
 
 我们可以通过简单的双击 `helloworld.exe` 文件来运行它。
 
 在 Mac 上，Wails 生成一个 `helloworld.app` 文件，可以通过双击来运行。
 
-在 Linux 上，您可以从 `build/bin` 目录使用 `/helloword` 运行应用程序。
+在 Linux 上，您可以从 `build/bin` 目录使用 `./helloword` 运行应用程序。
 
 您应该看到应用程序正常工作：
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/windows-default-app.webp").default}
@@ -115,3 +121,4 @@ Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
   />
 </div>
 <br />
+```

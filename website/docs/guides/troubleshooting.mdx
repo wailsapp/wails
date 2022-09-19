@@ -39,6 +39,7 @@ Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
 
 If your built application looks like this in finder:
 
+```mdx-code-block
 <p className="text--center">
   <img
     src={
@@ -46,6 +47,7 @@ If your built application looks like this in finder:
     }
   />
 </p>
+```
 
 it's likely that your application's `info.plist` is invalid. Update the file in `build/<yourapp>.app/Contents/info.plist`
 and check if the data is valid, EG check the binary name is correct. To persist the changes, copy the file back to
@@ -132,10 +134,10 @@ Source: https://github.com/wailsapp/wails/discussions/1512
 
 ## I get `too many open files` errors on my Mac when I run `wails dev`
 
-By default, macOS will only allow you to open a maximum of 256 files. This can affect the `wails dev` command. 
+By default, macOS will only allow you to open a maximum of 256 files. This can affect the `wails dev` command.
 This limit can be increased by running: `ulimit -n 1024` in the terminal.
 
-FSNotify is [looking to move to Apple's fsevents](https://github.com/fsnotify/fsnotify/issues/11) for Mac. 
+FSNotify is [looking to move to Apple's fsevents](https://github.com/fsnotify/fsnotify/issues/11) for Mac.
 If this isn't completed soon, we will create our own implementation, tracked [here](https://github.com/wailsapp/wails/issues/1733).
 
 ## My Mac app gives me weird compilation errors
@@ -153,7 +155,7 @@ In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/Sy
         #define NS_FORMAT_ARGUMENT(A) __attribute__ ((format_arg(A)))
 ```
 
-This is *normally* due to a mismatch with the OS version you are running and the version of the XCode Command Line Tools
+This is _normally_ due to a mismatch with the OS version you are running and the version of the XCode Command Line Tools
 installed. If you see an error like this, try upgrading your XCode Command Line Tools to the latest version.
 
 Source: https://github.com/wailsapp/wails/issues/1806

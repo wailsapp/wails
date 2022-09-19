@@ -1,3 +1,4 @@
+//go:build darwin
 //
 //  WailsAlert.m
 //  test
