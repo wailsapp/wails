@@ -58,6 +58,7 @@
 
 .carousel-root {
   outline: none;
+  max-width: 1024px;
 }
 
 .carousel {
