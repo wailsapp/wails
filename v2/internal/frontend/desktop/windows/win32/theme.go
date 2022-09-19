@@ -17,13 +17,8 @@ const DwmwaSystemBackdropType DWMWINDOWATTRIBUTE = 38
 const SPI_GETHIGHCONTRAST = 0x0042
 const HCF_HIGHCONTRASTON = 0x00000001
 
+// BackdropType defines the type of translucency we wish to use
 type BackdropType int32
-
-const DwmsbtAuto BackdropType = 0
-const DwmsbtDisable = 1         // None
-const DwmsbtMainWindow = 2      // Mica
-const DwmsbtTransientWindow = 3 // Acrylic
-const DwmsbtTabbedWindow = 4    // Tabbed
 
 func dwmSetWindowAttribute(hwnd uintptr, dwAttribute DWMWINDOWATTRIBUTE, pvAttribute unsafe.Pointer, cbAttribute uintptr) {
 	ret, _, err := procDwmSetWindowAttribute.Call(
@@ -46,10 +41,18 @@ func SupportsCustomThemes() bool {
 	return IsWindowsVersionAtLeast(10, 0, 17763)
 }
 
+func SupportsBackdropTypes() bool {
+	return IsWindowsVersionAtLeast(10, 0, 22621)
+}
+
+func SupportsImmersiveDarkMode() bool {
+	return IsWindowsVersionAtLeast(10, 0, 18985)
+}
+
 func SetTheme(hwnd uintptr, useDarkMode bool) {
-	if IsWindowsVersionAtLeast(10, 0, 17763) {
+	if SupportsThemes() {
 		attr := DwmwaUseImmersiveDarkModeBefore20h1
-		if IsWindowsVersionAtLeast(10, 0, 18985) {
+		if SupportsImmersiveDarkMode() {
 			attr = DwmwaUseImmersiveDarkMode
 		}
 		var winDark int32
@@ -61,10 +64,10 @@ func SetTheme(hwnd uintptr, useDarkMode bool) {
 }
 
 func EnableTranslucency(hwnd uintptr, backdrop BackdropType) {
-	if IsWindowsVersionAtLeast(10, 0, 22579) {
+	if SupportsBackdropTypes() {
 		dwmSetWindowAttribute(hwnd, DwmwaSystemBackdropType, unsafe.Pointer(&backdrop), unsafe.Sizeof(backdrop))
 	} else {
-		println("Warning: Translucency unavailable on Windows < 22579")
+		println("Warning: Translucency type unavailable on Windows < 22621")
 	}
 }
 

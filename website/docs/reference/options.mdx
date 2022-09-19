@@ -48,6 +48,7 @@ func main() {
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
+            BackdropType:                      windows.Mica,
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
@@ -381,10 +382,38 @@ Type: `bool`
 #### WindowIsTranslucent
 
 Setting this to `true` will make the window background translucent. Often combined
-with [WebviewIsTransparent](#WebviewIsTransparent) to make frosty-looking applications.
+with [WebviewIsTransparent](#WebviewIsTransparent).
+
+For Windows 11 versions before build 22621, this will use the [BlurBehind](https://learn.microsoft.com/en-us/windows/win32/dwm/blur-ovw)
+method for translucency, which can be slow. For Windows 11 versions after build 22621, this will enable the
+newer translucency types that are much faster. By default, the type of translucency used will be determined
+by Windows. To configure this, use the [BackdropType](#BackdropType) option.
 
 Name: WindowIsTranslucent<br/>
 Type: `bool`
+
+#### BackdropType 
+
+:::note
+
+Requires Windows 11 build 22621 or later.
+
+:::
+
+Sets the translucency type of the window. This is only applicable if [WindowIsTranslucent](#WindowIsTranslucent) is set to `true`.
+
+Name: BackdropType
+Type `windows.BackdropType`
+
+The Type can be one of the following:
+
+| Value   | Description                                                                               |
+|---------|-------------------------------------------------------------------------------------------|
+| Auto    | Let Windows decide which backdrop to use                                                  |
+| None    | Do not use translucency                                                                   |
+| Acrylic | Use [Acrylic](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) effect |
+| Mica    | Use [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) effect       |
+| Tabbed  | Use Tabbed. This is a backdrop that is similar to Mica.                                   |         
 
 #### DisableWindowIcon
 
