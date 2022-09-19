@@ -107,6 +107,26 @@ html[data-theme="light"] .button--secondary {
 }
 
 
+.features_src-components-HomepageFeatures-module {
+    display: flex;
+    align-items: center;
+    padding: 1rem 0;
+    width: 100%;
+    background-color: var(--ifm-card-background-color);
+}
+
+
+.features_src-components-HomepageFeatures-module .container {
+    padding: 1rem 3rem 0;
+}
+
+
+.features_src-components-HomepageFeatures-module .container .row {
+    display: flex;
+    align-items: baseline;
+}
+
+
 @media screen and (max-width: 966px) {
     .carousel-root {
         padding-left: 2%;
@@ -165,14 +185,14 @@ blockquote {
     max-width: 75rem;
     position: relative;
     padding: 0 5px;
-    margin: 0 auto 4rem;
+    margin: 0 auto 7rem;
 }
 
 blockquote:before, blockquote:after {
     content: "“";
     font-size: 70px;
-    font-family: "Georgia", Serif;
-    color: var(--ifm-link-color);;
+    font-family: "Georgia", serif;
+    color: var(--ifm-link-color);
     position: absolute;
     left: -30px;
     top: 5px;
