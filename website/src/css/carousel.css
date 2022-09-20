@@ -323,6 +323,7 @@
 @media screen and (max-width: 966px) {
   .carousel-root {
     padding-left: 0;
-    width: 100%;
+    max-width: 65%;
+    min-width: 200px;
   }
 }

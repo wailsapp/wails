@@ -10,18 +10,6 @@
   padding: 1rem 0 5px;
 }
 
-@media screen and (max-width: 966px) {
-  .heroBanner {
-    padding: 2rem;
-  }
-}
-
-@media screen and (max-width: 433px) {
-  .heroBanner {
-    padding: 1rem 0 1rem;
-  }
-}
-
 .buttons {
   column-gap: 2rem;
   display: flex;
@@ -36,5 +24,9 @@
     justify-content: center;
     flex-direction: column;
     row-gap: 1rem;
+  }
+
+  .heroBanner {
+    padding: 1rem 0 1rem;
   }
 }

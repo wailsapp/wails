@@ -110,13 +110,6 @@ html[data-theme="light"] .button--secondary {
     padding-top: 3rem;
 }
 
-@media screen and (max-width: 576px) {
-    .carousel-root {
-        width: 100%;
-    }
-}
-
-
 .features_src-components-HomepageFeatures-module {
     display: flex;
     align-items: center;
