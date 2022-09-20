@@ -47,6 +47,7 @@ func main() {
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
+            BackdropType:                      windows.Mica,
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
@@ -62,6 +63,10 @@ func main() {
             },
             // User messages that can be customised
             Messages *windows.Messages
+            // OnSuspend is called when Windows enters low power mode
+            OnSuspend func()
+            // OnResume is called when Windows resumes from low power mode
+            OnResume func()
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -328,9 +333,35 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 
 #### 窗口半透明
 
-将此设置为 `true` 将使窗口半透明。 通常与[Webview 透明](#webview-透明) 结合使用以制作冰霜效果的应用程序。
+将此设置为 `true` 将使窗口半透明。 通常与 [Webview 透明](#webview-透明) 结合使用。
+
+对于 build 22621 之前的 Windows 11 版本，将使用 [BlurBehind](https://learn.microsoft.com/en-us/windows/win32/dwm/blur-ovw) 方法来实现半透明，这可能会很慢。 对于构建 build 22621 之后的 Windows 11 版本，这将启用速度更快的新半透明类型。 默认情况下，使用的半透明类型将由 Windows 确定。 要对此进行配置，请使用 [背景类型](#背景类型) 选项。
 
 名称：WindowIsTranslucent<br/> 类型：`bool`
+
+#### 背景类型
+
+:::note
+
+
+需要 Windows 11 build 22621 或更高版本。
+
+:::
+
+
+设置窗口的半透明类型。 这仅在 [窗口半透明](#窗口半透明) 设置为 `true` 时适用。
+
+名称：BackdropType<br/> 类型：`windows.BackdropType`
+
+值可以是以下之一：
+
+| 值       | 描述                                                                               |
+| ------- | -------------------------------------------------------------------------------- |
+| Auto    | 让 Windows 决定使用哪个背景                                                               |
+| None    | 不要使用半透明                                                                          |
+| Acrylic | 使用 [亚克力](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) 效果 |
+| Mica    | 使用 [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) 效果   |
+| Tabbed  | 使用 Tabbed。 这是一个类似于 Mica 的背景。                                                     |
 
 #### 禁用窗口图标
 
@@ -450,7 +481,7 @@ ResizeDebounceMS 是调整窗口大小时去抖动 webview2 重绘的时间量�
 
 #### 待机回调
 
-如果设置，当 Windows 启动切换到低功耗模式（挂起/休眠）时，将调用此函数
+如果设置，当 Windows 启动切换到低功耗模式（挂起/休眠）时将调用此函数
 
 名称：OnSuspend<br/> 类型：`func()`
 
@@ -551,7 +582,7 @@ Mac: &mac.Options{
 
 #### 窗口半透明
 
-将此设置为 `true` 将使窗口半透明。 通常与[Webview 透明](#webview-透明-1) 结合使用以制作冰霜效果的应用程序。
+将此设置为 `true` 将使窗口半透明。 通常与[Webview 透明](#webview-透明) 结合使用以制作冰霜效果的应用程序。
 
 名称：WindowIsTranslucent<br/> 类型：`bool`
 

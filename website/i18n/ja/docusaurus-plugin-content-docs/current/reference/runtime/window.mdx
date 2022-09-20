@@ -28,7 +28,7 @@ Go: `WindowUnfullscreen(ctx context.Context)`<br/> JS: `WindowUnfullscreen()`
 
 Returns true if the window is full screen.
 
-Go: `WindowCenter(ctx context.Context)`<br/> JS: `WindowCenter()`
+Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen() bool`
 
 ### WindowCenter
 
@@ -88,7 +88,7 @@ Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `Window
 
 Returns true if the window not minimised, maximised or fullscreen.
 
-Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize() : Size`
+Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() bool`
 
 ### WindowSetSize
 
@@ -152,7 +152,7 @@ Go: `WindowMinimise(ctx context.Context)`<br/> JS: `WindowMinimise()`
 
 Returns true if the window is maximised.
 
-Go: `WindowUnminimise(ctx context.Context)`<br/> JS: `WindowUnminimise()`
+Go: `WindowIsMaximised(ctx context.Context) bool`<br/> JS: `WindowIsMaximised() bool`
 
 ### WindowToggleMaximise
 
@@ -176,7 +176,7 @@ Go: `WindowUnminimise(ctx context.Context)`<br/> JS: `WindowUnminimise()`
 
 Returns true if the window is minimised.
 
-Go: `WindowIsMinimised(ctx context.Context) bool` JS: `WindowIsMinimised() bool`
+Go: `WindowIsMinimised(ctx context.Context) bool`<br/> JS: `WindowIsMinimised() bool`
 
 ### WindowSetBackgroundColour
 
@@ -184,7 +184,13 @@ Sets the background colour of the window to the given RGBA colour definition. Th
 
 Valid values for R, G, B and A are 0-255.
 
-Any value that is not 0 will be considered 255. Any value that is not 0 will be considered 255. :::
+:::info Windows
+
+
+On Windows, only alpha values of 0 or 255 are supported. Any value that is not 0 will be considered 255.
+
+:::
+
 
 Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/> JS: `WindowSetBackgroundColour(R, G, B, A)`
 

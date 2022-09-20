@@ -6,9 +6,11 @@ sidebar_position: 20
 
 A Wails application is a standard Go application, with a webkit frontend. The Go part of the application consists of the application code and a runtime library that provides a number of useful operations, like controlling the application window. The frontend is a webkit window that will display the frontend assets. Also available to the frontend is a Javascript version of the runtime library. Finally, it is possible to bind Go methods to the frontend, and these will appear as Javascript methods that can be called, just as if they were local Javascript methods.
 
+```mdx-code-block
 <div className="text--center">
   <img src={require("@site/static/img/architecture.webp").default} width="75%" />
 </div>
+```
 
 ## The Main Application
 
@@ -106,9 +108,11 @@ The `Bind` option is one of the most important options in a Wails application. I
 
 :::info Note
 
+
 Wailsで構造体を正しくバインドするためには、構造体の*インスタンス*をオプションで指定してください。
 
 :::
+
 
 In this example, we create a new `App` instance and then add this instance to the `Bind` option in `wails.Run`:
 
@@ -225,8 +229,12 @@ The generated methods return a Promise. A successful call will result in the fir
 All data types are correctly translated between Go and Javascript. Even structs. If you return a struct from a Go call, it will be returned to your frontend as a Javascript class. Note: If you wish to use structs, you **must** define `json` struct tags for your fields!
 
 :::info Note
+
+
 Anonymous nested structs are not supported at this time.
+
 :::
+
 
 It is possible to send structs back to Go. Any Javascript map/class passed as an argument that is expecting a struct, will be converted to that struct type. To make this process a lot easier, in `dev` mode, a TypeScript module is generated, defining all the struct types used in bound methods. Using this module, it's possible to construct and send native Javascript objects to the Go code.
 

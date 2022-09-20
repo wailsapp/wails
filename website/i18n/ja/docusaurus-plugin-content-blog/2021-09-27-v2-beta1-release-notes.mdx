@@ -8,6 +8,7 @@ tags:
   - v2
 ---
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/wails.webp").default}
@@ -15,8 +16,8 @@ tags:
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 When I first announced Wails on Reddit, just over 2 years ago from a train in Sydney, I did not expect it to get much attention. A few days later, a prolific tech vlogger released a tutorial video, gave it a positive review and from that point on, interest in the project has skyrocketed.
 
@@ -32,6 +33,7 @@ No, I'm not joking: *No* *CGO* *dependency* 🤯! The thing about Windows is tha
 
 ### WebView2 Chromium Renderer
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/devtools.png").default}
@@ -39,8 +41,8 @@ No, I'm not joking: *No* *CGO* *dependency* 🤯! The thing about Windows is tha
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 Finally, Windows developers get a first class rendering engine for their applications! Gone are the days of contorting your frontend code to work on Windows. On top of that, you get a first-class developer tools experience!
 
@@ -52,6 +54,7 @@ Gophers rejoice! The single binary dream lives on!
 
 ### New Features
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/wails-menus.webp").default}
@@ -59,8 +62,8 @@ Gophers rejoice! The single binary dream lives on!
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 There were a lot of requests for native menu support. Wails has finally got you covered. Application menus are now available and include support for most native menu features. This includes standard menu items, checkboxes, radio groups, submenus and separators.
 
@@ -68,6 +71,7 @@ There were a huge number of requests in v1 for the ability to have greater contr
 
 There is now the option to generate IDE configuration along with your project. This means that if you open your project in a supported IDE, it will already be configured for building and debugging your application. Currently VSCode is supported but we hope to support other IDEs such as Goland soon.
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/vscode.webp").default}
@@ -75,8 +79,8 @@ There is now the option to generate IDE configuration along with your project. T
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 ### No requirement to bundle assets
 
@@ -92,6 +96,7 @@ You just pass a single `embed.FS` that contains all your assets into your applic
 
 ### New Development Experience
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/browser.webp").default}
@@ -99,8 +104,8 @@ You just pass a single `embed.FS` that contains all your assets into your applic
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 Now that assets don't need to be bundled, it's enabled a whole new development experience. The new `wails dev` command will build and run your application, but instead of using the assets in the `embed.FS`, it loads them directly from disk.
 
@@ -117,6 +122,7 @@ In addition to this, another JS module is dynamically generated wrapping all you
 
 ### Remote Templates
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/remote.webp").default}
@@ -124,8 +130,8 @@ In addition to this, another JS module is dynamically generated wrapping all you
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 Getting an application up and running quickly was always a key goal for the Wails project. When we launched, we tried to cover a lot of the modern frameworks at the time: react, vue and angular. The world of frontend development is very opinionated, fast moving and hard to keep on top of! It also meant that we didn't have cool modern templates for the latest and greatest tech stacks. It also meant that we didn't have cool modern templates for the latest and greatest tech stacks.
 
@@ -139,7 +145,7 @@ There were many twists and turns, pivots and u-turns to get to this point. This 
 
 I also need to give a huge thank you :pray: to the following people because without them, this release just wouldn't exist:
 
-- [Misitebao](https://github.com/misitebao) - An absolute workhorse on the Chinese translations and an incredible bug finder.
+- [Misite Bao](https://github.com/misitebao) - An absolute workhorse on the Chinese translations and an incredible bug finder.
 - [John Chadwick](https://github.com/jchv) - His amazing work on [go-webview2](https://github.com/jchv/go-webview2) and [go-winloader](https://github.com/jchv/go-winloader) have made the Windows version we have today possible.
 - [Tad Vizbaras](https://github.com/tadvi) - Experimenting with his [winc](https://github.com/tadvi/winc) project was the first step down the path to a pure Go Wails.
 - [Mat Ryer](https://github.com/matryer) - His support, encouragement and feedback has really helped drive the project forward.

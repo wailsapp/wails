@@ -39,11 +39,13 @@ A list of community maintained templates can be found [here](../community/templa
 
 :::warning Attention
 
+
 **The Wails project does not maintain, is not responsible nor liable for 3rd party templates!**
 
 If you are unsure about a template, inspect `package.json` and `wails.json` for what scripts are run and what packages are installed.
 
 :::
+
 
 ## build
 
@@ -59,7 +61,7 @@ If you are unsure about a template, inspect `package.json` and `wails.json` for 
 | -o filename          | Output filename                                                                                                                                                             |                                                                                                                                                     |
 | -s                   | Skip building the frontend                                                                                                                                                  | false                                                                                                                                               |
 | -f                   | Force build application                                                                                                                                                     | false                                                                                                                                               |
-| -tags "extra tags"   | Build tags to pass to compiler (quoted and space separated)                                                                                                                 |                                                                                                                                                     |
+| -tags "extra tags"   | Build tags to pass to Go compiler. Must be quoted. Space or comma (but not both) separated                                                                                  |                                                                                                                                                     |
 | -upx                 | Compress final binary using "upx"                                                                                                                                           |                                                                                                                                                     |
 | -upxflags            | Flags to pass to upx                                                                                                                                                        |                                                                                                                                                     |
 | -v int               | Verbosity level (0 - silent, 1 - default, 2 - verbose)                                                                                                                      | 1                                                                                                                                                   |
@@ -68,7 +70,9 @@ If you are unsure about a template, inspect `package.json` and `wails.json` for 
 | -debug               | Retains debug information in the application. Allows the use of the devtools in the application window                                                                      | false                                                                                                                                               |
 | -trimpath            | Remove all file system paths from the resulting executable.                                                                                                                 | false                                                                                                                                               |
 | -race                | Build with Go's race detector                                                                                                                                               | false                                                                                                                                               |
-| -windowsconsole      | Keep the console window for Windows builds                                                                                                                                  | false                                                                                                                                               |
+| -windowsconsole      | Keep the console window for Windows builds                                                                                                                                  |                                                                                                                                                     |
+| -obfuscate           | Obfuscate the application using [garble](https://github.com/burrowers/garble)                                                                                               | false                                                                                                                                               |
+| -garbleargs          | Arguments to pass to garble                                                                                                                                                 | `-literals -tiny -seed=random`                                                                                                                      |
 
 For a detailed description of the `webview2` flag, please refer to the [Windows](../guides/windows.mdx) Guide.
 
@@ -80,15 +84,19 @@ Example:
 
 :::info UPX on Apple Silicon
 
+
 There are [issues](https://github.com/upx/upx/issues/446) with using UPX with Apple Silicon.
 
 :::
 
+
 :::info UPX on Windows
+
 
 Some Antivirus vendors false positively mark `upx` compressed binaries as virus, see [issue](https://github.com/upx/upx/issues/437).
 
 :::
+
 
 ### Platforms
 

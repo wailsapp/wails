@@ -6,12 +6,14 @@ Currently, we support [Visual Studio Code](https://code.visualstudio.com/) but a
 
 ## Visual Studio Code
 
+```mdx-code-block
 <p className="text--center">
   <img
     src={require("@site/static/img/vscode.webp").default}
     style={{ width: "75%" }}
   />
 </p>
+```
 
 When generating a project using the `-ide vscode` flags, IDE files will be created alongside the other project files. These files are placed into the `.vscode` directory and provide the correct configuration for debugging your application.
 
@@ -107,6 +109,7 @@ The `tasks.json` file is simple for the default project as there is no `npm inst
 ```
 
 :::info Future Enhancement
+
 
 In the future, we hope to generate a `tasks.json` that includes the install and build steps automatically.
 

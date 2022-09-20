@@ -4,7 +4,6 @@ Wails supports application that have no frames. This can be achieved by using th
 
 Wails offers a simple solution for dragging the window: Any HTML element that has the CSS style `--wails-draggable:drag` will act as a "drag handle". This property applies to all child elements. If you need to indicate that a nested element should not drag, then use the attribute '--wails-draggable:no-drag' on that element.
 
-
 ```html
 <html>
   <head>
@@ -66,19 +65,21 @@ func main() {
 ```html title=index.html
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>alwaysontop</title>
-</head>
-<body style="widows: 1">
-<div id="app"></div>
-<script src="./src/main.js" type="module"></script>
-</body>
+  </head>
+  <body style="widows: 1">
+    <div id="app"></div>
+    <script src="./src/main.js" type="module"></script>
+  </body>
 </html>
-
 ```
 
 :::info Fullscreen
-  If you allow your application to go fullscreen, this drag functionality will be disabled.
+
+
+If you allow your application to go fullscreen, this drag functionality will be disabled.
+
 :::

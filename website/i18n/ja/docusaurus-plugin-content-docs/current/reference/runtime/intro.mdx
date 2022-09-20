@@ -6,7 +6,7 @@ sidebar_position: 1
 
 The runtime is a library that provides utility methods for your application. There is both a Go and Javascript runtime and the aim is to try and keep them at parity where possible.
 
-It has utility methods for:
+ユーティリティメソッドには次のようなものがあります:
 
 - [Window](window.mdx)
 - [Menu](menu.mdx)
@@ -19,9 +19,11 @@ The Go Runtime is available through importing `github.com/wailsapp/wails/v2/pkg/
 
 :::info Note
 
+
 Whilst the context will be provided to the [OnStartup](../options.mdx#onstartup) method, there's no guarantee the runtime will work in this method as the window is initialising in a different thread. If you wish to call runtime methods at startup, use [OnDomReady](../options.mdx#ondomready).
 
 :::
+
 
 The Javascript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev` mode that provides Typescript declarations for the runtime. This should be located in the `wailsjs` directory in your frontend directory.
 
@@ -31,13 +33,25 @@ Go: `Hide(ctx context.Context)`<br/> JS: `Hide()`
 
 Hides the application.
 
-:::info Note On Mac, this will hide the application in the same way as the `Hide` menu item in standard Mac applications. This is different to hiding the window, but the application still being in the foreground. For Windows and Linux, this is currently the same as `WindowHide`. :::
+:::info Note
+
+
+Macでこのメソッドを使用すると、標準のMacアプリケーションにおけるメニュー項目の`Hide`と同じ方法で、アプリケーションが非表示になります。 This is different to hiding the window, but the application still being in the foreground. For Windows and Linux, this is currently the same as `WindowHide`.
+
+:::
+
 
 ### Show
 
 Shows the application.
 
-:::info Note On Mac, this will bring the application back into the foreground. For Windows and Linux, this is currently the same as `WindowShow`. :::
+:::info Note
+
+
+Macでこのメソッドを使用すると、アプリケーションがフォアグラウンドに戻ります。 For Windows and Linux, this is currently the same as `WindowShow`.
+
+:::
+
 
 Go: `Show(ctx context.Context)`<br/> JS: `Show()`
 
@@ -56,6 +70,7 @@ Go: `Environment(ctx context.Context) EnvironmentInfo`<br/> JS: `Environment(): 
 #### EnvironmentInfo
 
 Go:
+
 ```go
 type EnvironmentInfo struct {
     BuildType string
@@ -63,11 +78,13 @@ type EnvironmentInfo struct {
     Arch      string
 }
 ```
+
 JS:
+
 ```ts
 interface EnvironmentInfo {
-    buildType: string;
-    platform: string;
-    arch: string;
+  buildType: string;
+  platform: string;
+  arch: string;
 }
 ```

@@ -4,6 +4,7 @@ sidebar_position: 20
 
 # Dogs API
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/tutorials/dogsapi/img.webp").default}
@@ -11,10 +12,16 @@ sidebar_position: 20
     className="screenshot"
   />
 </div>
-
 <br />
+```
 
-:::note This tutorial has been kindly provided by [@tatadan](https://twitter.com/tatadan) and forms part of their [Wails Examples Repository](https://github.com/tataDan/wails-v2-examples). :::
+:::note
+
+
+This tutorial has been kindly provided by [@tatadan](https://twitter.com/tatadan) and forms part of their [Wails Examples Repository](https://github.com/tataDan/wails-v2-examples).
+
+:::
+
 
 In this tutorial we are going to develop an application that retrieves photos of dogs from the web and then displays them.
 
@@ -146,6 +153,7 @@ import (
 
 Add the following lines to `frontend/src/App.svelte`:
 
+<!-- prettier-ignore-start -->
 ```html
 <script>
   import { GetRandomImageUrl } from "../wailsjs/go/main/App.js";
@@ -229,15 +237,13 @@ Add the following lines to `frontend/src/App.svelte`:
 </style>
 ```
 
+
+<!-- prettier-ignore-end -->
+
 ### Testing the application
 
 To generate the bindings and test the application, run `wails dev`.
 
 ### Compiling the application
 
-To compile the application to a single, production grade binary, run `wails build`. 
-
-
-
-
-
+To compile the application to a single, production grade binary, run `wails build`.

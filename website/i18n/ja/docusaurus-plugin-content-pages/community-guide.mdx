@@ -1,4 +1,4 @@
-# Community Guide
+# コミュニティガイド
 
 The number of Wails users is growing at an incredible rate, and if you're reading this, chances are you're ready to join. So... welcome!
 
@@ -6,7 +6,7 @@ The number of Wails users is growing at an incredible rate, and if you're readin
 
 ### Code of Conduct
 
-coming soon...
+This [Code of Conduct](./coc) is an easy guide to develop the technical communities in which we participate.
 
 ### Stay in the Know
 
@@ -43,25 +43,27 @@ We are always keen to add features to Wails and expand on what the project can d
 
 - Pick an enhancement ticket with the "TODO" label. It's preferable to select one from the current [Backlog](https://github.com/orgs/wailsapp/projects/1/views/1) but the choice is yours.
 - Before developing, check that the ticket includes the following information:
-- The purpose of the enhancement
-- What is out of scope for the enhancement
-- What platforms the enhancement targets (most features should be cross-platform unless there's a very specific reason)
+  - The purpose of the enhancement
+  - What is out of scope for the enhancement
+  - What platforms the enhancement targets (most features should be cross-platform unless there's a very specific reason)
 - If the ticket does not include this information, feel free to request the information from the person who opened the ticket. Sometimes placeholder tickets are created and require more details
-- Comment on the ticket stating you wish to develop the feature
+- Comment on the ticket stating if you wish to develop the feature
 - Clone the repository and create a branch with the format `feature/<ticket_number>_<ticket_title>`
 - New features often require documentation so please ensure you have also added or updated the documentation as part of the changes
 - Once the feature is ready for testing, create a draft PR. Please ensure the PR description has the test scenarios and test cases listed with checkmarks, so that others can know what still needs to be tested.
 - Once all the testing is completed, please update the status of the PR from draft and leave a message.
 
 :::note
-There is nothing stopping you from opening a ticket and working on it yourself, but please be aware that all
-enhancement requests are reviewed for good fit. Not all ideas will be selected so it's best to have discussion
-on the ticket first.
+
+There is nothing stopping you from opening a ticket and working on it yourself, but please be aware that all enhancement requests are reviewed for good fit. Not all ideas will be selected, so it's best to have discussion about the enhancement first.
 :::
 
+
 :::warning
+
 Any PRs opened without a corresponding ticket may be rejected.
 :::
+
 
 ### Fixing Bugs
 
@@ -70,7 +72,7 @@ The process for fixing bugs are as follows:
 - Check the current [Backlog](https://github.com/orgs/wailsapp/projects/1/views/1) and select a bug to fix
 - Before developing, check that the ticket includes the following information:
 - The scope of the issue including platforms affected
-- The steps to reproduce. Sometimes bugs are opened that are not Wails issues and the onus is on the reporter to prove that it is a Wails issue with a minimal reproducible example
+- The steps to reproduce. Sometimes bugs are opened that are not Wails issues and the onus is on the reporter to prove that it is a Wails issue with a [minimal reproducible example](https://stackoverflow.com/help/minimal-reproducible-example)
 - The output of `wails doctor`
 - If the ticket does not include this information, feel free to request the information from the person who opened the ticket.
 - Comment on the ticket stating you wish to develop a fix
@@ -79,13 +81,16 @@ The process for fixing bugs are as follows:
 - Once all the testing is completed, please update the status of the PR from draft and leave a message.
 
 :::note
-There is nothing stopping you from opening a ticket and working on it yourself, but please be aware that all
-bugfixes should be discussed as the approach may have unintended side effects.
+
+There is nothing stopping you from opening a ticket and working on it yourself, but please be aware that all bugfixes should be discussed as the approach may have unintended side effects.
 :::
 
+
 :::warning
+
 Any PRs opened without a corresponding ticket may be rejected.
 :::
+
 
 ### Testing
 
@@ -123,7 +128,7 @@ There isn't usually a reason to update released documentation so we don't genera
 
 The "next version" docs are mainly in `website/docs` with some "version independent" documents in `src/pages`. Any updates should be made in the `website/docs` directory.
 
-#### Languages
+#### 言語一覧
 
 The default documents of the Wails project are English documents. We use the "crowdin" tool to translate documents in other languages and synchronize them to the website. You can [join our project](https://crowdin.com/project/wails) and submit your translations to make contributions.
 
@@ -138,5 +143,8 @@ A great way to contribute to the project is to help others who are experiencing 
 To join the Wails slack channel, accept the invite [here](https://gophers.slack.com/join/shared_invite/zt-197vymgt3-sJt4oyakb6nqlVKjXTyeVw#/shared-invite/email) and join us on the channel by following [this link](https://gophers.slack.com/?redir=%2Fmessages%2FCJ4P9F7MZ%2F).
 
 :::note
+
+
 Work In Progress
+
 :::

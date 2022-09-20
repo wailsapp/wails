@@ -1,6 +1,6 @@
 ---
 slug: wails-v2-released
-title: Wails v2 Released
+title: Wails v2 发行版本
 authors:
   - leaanthony
 tags:
@@ -21,7 +21,7 @@ tags:
 
 # 终于发布了！
 
-今天标志着 [Wails](https://wails.io) v2 的发布。 距离发布第一个 v2 alpha 版本大约 18 个月，距离发布第一个 beta 版本大约一年。 我非常感谢参与项目发展的每一个人。
+今天标志着 [Wails](https://wails.io/zh-Hans/) v2 的发布。 距离发布第一个 v2 alpha 版本大约 18 个月，距离发布第一个 beta 版本大约一年。 我非常感谢参与项目发展的每一个人。
 
 花了这么长时间的部分原因是想要在正式将其称为 v2 之前对其进行一些完整性的定义。 事实是，从来没有一个完美的时间来标记一个版本 - 总是有突出的问题或 “只是一个” 功能要加进去。 然而，标记一个不完美的主要版本的确是为项目的用户提供一些稳定性，并为开发人员提供了一些重置。
 
@@ -29,24 +29,24 @@ tags:
 
 # 什么 _是_ Wails?
 
-如果你对 Wails 不熟悉，它是一个让 Go 程序员能够使用熟悉的 Web 技术为其 Go 程序提供丰富的前端的项目。 它是 Electron 的轻量级 Go 替代品。 更多信息可以在 [官方网站 ](https://wails.io/docs/introduction)上找到。
+如果你对 Wails 不熟悉，它是一个让 Go 程序员能够使用熟悉的 Web 技术为其 Go 程序提供丰富的前端的项目。 它是 Electron 的轻量级 Go 替代品。 更多信息可以在 [官方网站 ](https://wails.io/zh-Hans/docs/introduction)上找到。
 
 # 有哪些新东西？
 
-V2 版本是该项目的巨大飞跃，解决了 v1 的许多痛点。 如果您已阅读有关 Beta 版本的任何博客文章，那么您应该了解大部分变更，但总结一下：
+V2 版本是该项目的巨大飞跃，解决了 v1 的许多痛点。 如果您尚未阅读任何有关 [macOS](/blog/wails-v2-beta-for-mac)、[Windows](/blog/wails-v2-beta-for-windows) 或 [Linux](/blog/wails-v2-beta-for-linux) Beta 版本的博客文章，那么我鼓励您阅读，因为它更详细地涵盖了所有主要变更。 总结起来就是：
 
 - 适用于 Windows 的 Webview2 组件，支持现代 Web 标准和调试功能。
-- Windows 上的 [深色/浅色主题](https://wails.io/docs/reference/options#theme) 和 [自定义主题](https://wails.io/docs/reference/options#customtheme)。
+- Windows 上的 [深色/浅色主题](/docs/reference/options#主题) 和 [自定义主题](/docs/reference/options#自定义主题)。
 - Windows 现在没有 CGO 要求。
 - 支持对 Svelte、Vue、React、Preact、Lit 和 Vanilla 项目模板的开箱即用。
 - 集成 [Vite](https://vitejs.dev/) 为您的应用程序提供热重载开发环境。
-- 原生菜单和对话框。
-- 原生窗口半透明
-- 为 Windows 部署轻松生成 [NSIS](https://wails.io/docs/guides/windows-installer) 安装程序。
-- 一个为窗口操作、事件、对话框、菜单和日志记录提供实用方法的丰富的 [运行时库](https://wails.io/docs/reference/runtime/intro)。
-- 支持使用 [garble](https://github.com/burrowers/garble) 混淆您的应用程序。
+- 原生应用的 [菜单](/docs/guides/application-development#应用程序菜单) 和 [对话框](/docs/reference/runtime/dialog)。
+- 适用于 [Windows](/docs/reference/options#窗口半透明) 和 [macOS](/docs/reference/options#窗口半透明-1) 的原生窗口半透明效果。 支持 Mica 和 亚克力 背景。
+- 为 Windows 部署轻松生成 [NSIS](/docs/guides/windows-installer) 安装程序。
+- 一个为窗口操作、事件、对话框、菜单和日志记录提供实用方法的丰富的 [运行时库](/docs/reference/runtime/intro)。
+- 支持使用 [garble](https://github.com/burrowers/garble) [混淆](/docs/guides/obfuscated) 您的应用程序。
 - 支持使用 [UPX](https://upx.github.io/) 压缩您的应用程序。
-- 自动为 Go 结构体的生成 Typescript。
+- 自动为 Go 结构体的生成 Typescript。 更多信息在 [这里](/docs/howdoesitwork#调用绑定的-go-方法)。
 - 您的应用程序不需要附带额外的库或 DLL。 适用于任何平台。
 - 无需打包前端资产。 只需像开发任何其他 Web 应用程序一样开发您的应用程序。
 
@@ -72,7 +72,7 @@ V2 版本是该项目的巨大飞跃，解决了 v1 的许多痛点。 如果您
 
 ## 鼓励参与
 
-在开始这个项目时，我想立即帮助每个有问题的人。 问题是“个人的”，我希望它们尽快得到解决。 这是不可持续的，最终会影响项目的寿命。 未来，我将为人们提供更多空间来参与回答问题和对问题进行分类。 如果能得到一些工具来帮助实现这一点就更好了，因此如果您有任何建议，请加入这里的讨论：https://github.com/wailsapp/wails/discussions/1855
+在开始这个项目时，我想立即帮助每个有问题的人。 问题是“个人的”，我希望它们尽快得到解决。 这是不可持续的，最终会影响项目的寿命。 未来，我将为人们提供更多空间来参与回答问题和对问题进行分类。 通过一些工具来帮助解决这个问题会很好，所以如果您有任何建议，请在 [此处](https://github.com/wailsapp/wails/discussions/1855) 加入讨论。
 
 ## 学会说不
 
@@ -93,5 +93,7 @@ V2 版本是该项目的巨大飞跃，解决了 v1 的许多痛点。 如果您
 这个版本是通过许多贡献者的辛勤工作实现的。 虽然它可以免费下载和使用，但它并不是通过零成本实现的。 毫无疑问，这个项目的成本很大。 这不仅是我的时间和每一个贡献者的时间，也是这些人的朋友和家人缺席的代价。 这就是为什么我非常感谢为实现这个项目而付出的每一秒。 我们拥有的贡献者越多，这种努力就可以分散得越多，我们可以共同实现的目标就越多。 我想鼓励大家选择一件可以贡献的东西，无论是确认某人的错误、提出修复建议、更改文档还是帮助需要它的人。 所有这些小事都有如此巨大的影响！ 如果你也能成为 v3 故事的一部分那就太棒了。
 
 请尽情享用！
+
+&dash; Lea
 
 PPS：如果您或您的公司发现 Wails 有用，可以考虑 [赞助该项目](https://github.com/sponsors/leaanthony)。 谢谢！ 谢谢！

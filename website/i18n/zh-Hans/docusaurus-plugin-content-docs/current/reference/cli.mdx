@@ -70,7 +70,9 @@ Wails CLI 有许多用于管理项目的命令。 所有命令都以此方式运
 | -debug          | 在应用程序中保留调试信息。 允许在应用程序窗口中使用 devtools                                                          | false                                                                                                     |
 | -trimpath       | 从生成的可执行文件中删除所有文件系统路径。                                                                        | false                                                                                                     |
 | -race           | 使用 Go 的竞态检测器构建                                                                               | false                                                                                                     |
-| -windowsconsole | 保留Windows构建控制台窗口                                                                             | false                                                                                                     |
+| -windowsconsole | 保留Windows构建控制台窗口                                                                             |                                                                                                           |
+| -obfuscate      | 使用 [garble](https://github.com/burrowers/garble) 混淆应用程序                                      | false                                                                                                     |
+| -garbleargs     | 传递给 garble 的参数                                                                               | `-literals -tiny -seed=random`                                                                            |
 
 有关 `webview2` 标志的详细描述，请参阅 [Windows 系统指南](../guides/windows)。
 
