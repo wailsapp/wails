@@ -1,0 +1,33 @@
+name: Scheduler
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+  push:
+    branches: [ test1 ]
+
+jobs:
+  update-sponsors:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+
+      - name: Update sponsors
+        run: npx sponsorkit -o website/static/img/
+        env:
+          SPONSORKIT_GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
+          SPONSORKIT_GITHUB_LOGIN: leaanthony
+
+      - name: Commit
+        uses: EndBug/add-and-commit@v4
+        with:
+          message: "chore: update sponsors.svg"
+          add: "sponsors.*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
