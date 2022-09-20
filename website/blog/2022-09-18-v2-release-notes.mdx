@@ -30,20 +30,21 @@ If you are unfamiliar with Wails, it is a project that enables Go programmers to
 
 # What's new?
 
-The v2 release is a huge leap forward for the project, addressing many of the pain points of v1. If you have read any of the blog posts on the Beta releases, then you should be across most of the changes but to summarise:
+The v2 release is a huge leap forward for the project, addressing many of the pain points of v1. If you have not read any of the blog posts on the Beta releases for [macOS](/blog/wails-v2-beta-for-mac), [Windows](/blog/wails-v2-beta-for-windows) or [Linux](/blog/wails-v2-beta-for-linux), then I encourage you to do so
+ as it covers all the major changes in more detail. In summary:
 
 - Webview2 component for Windows that supports modern web standards and debugging capabilities.
 - [Dark / Light theme](https://wails.io/docs/reference/options#theme) + [custom theming](https://wails.io/docs/reference/options#customtheme) on Windows.
 - Windows now has no CGO requirements.
 - Out-of-the-box support for Svelte, Vue, React, Preact, Lit & Vanilla project templates.
 - [Vite](https://vitejs.dev/) integration providing a hot-reload development environment for your application.
-- Native menus and dialogs.
-- Native window translucency effects.
+- Native application [menus](/docs/guides/application-development#application-menu) and [dialogs](/docs/reference/runtime/dialog).
+- Native window translucency effects for [Windows](/docs/reference/options#windowistranslucent) and [macOS](/docs/reference/options#windowistranslucent-1). Support for Mica & Acrylic backdrops.
 - Easily generate an [NSIS installer](https://wails.io/docs/guides/windows-installer) for Windows deployments.
 - A rich [runtime library](https://wails.io/docs/reference/runtime/intro) providing utility methods for window manipulation, eventing, dialogs, menus and logging.
-- Support for obfuscating your application using [garble](https://github.com/burrowers/garble).
+- Support for [obfuscating](/docs/guides/obfuscated) your application using [garble](https://github.com/burrowers/garble).
 - Support for compressing your application using [UPX](https://upx.github.io/).
-- Automatic Typescript generation of Go structs.
+- Automatic Typescript generation of Go structs. More info [here](/docs/next/howdoesitwork#calling-bound-go-methods).
 - No extra libraries or DLLs are required to be shipped with your application. For any platform.
 - No requirement to bundle frontend assets. Just develop your application like any other web application.
 
@@ -69,7 +70,7 @@ In the course of developing v2, there were many features and bug fixes that were
 
 ## Encourage Engagement
 
-When starting this project, I wanted to immediately help everyone who had a problem. Issues were "personal" and I wanted them resolved as quickly as possible. This is unsustainable and ultimately works against the longevity of the project. Moving forward, I will be giving more space for people to get involved in answering questions and triaging issues. It would be good to get some tooling to help with this so if you have any suggestions, please join in the discussion here: https://github.com/wailsapp/wails/discussions/1855
+When starting this project, I wanted to immediately help everyone who had a problem. Issues were "personal" and I wanted them resolved as quickly as possible. This is unsustainable and ultimately works against the longevity of the project. Moving forward, I will be giving more space for people to get involved in answering questions and triaging issues. It would be good to get some tooling to help with this so if you have any suggestions, please join in the discussion [here](https://github.com/wailsapp/wails/discussions/1855). 
 
 ## Learning to say No
 
@@ -85,10 +86,12 @@ A final point I'd like to raise is that of feature parity. It has long been a co
 
 # Final Words
 
-I'm really proud of what we've been able to achieve with the V2 release. It's amazing to see what people have already been able to build using the beta releases. Quality applications like [Varly](https://varly.app/), [Surge](https://getsurge.io/) and [October](https://october.utf9k.net/). I encourage you to check them out.
+I'm really proud of what we've been able to achieve with the V2 release. It's amazing to see what people have already been able to build using the beta releases so far. Quality applications like [Varly](https://varly.app/), [Surge](https://getsurge.io/) and [October](https://october.utf9k.net/). I encourage you to check them out.
 
 This release was achieved through the hard work of many contributors. Whilst it is free to download and use, it has not come about through zero cost. Make no mistakes, this project has come at considerable cost. It has not only been my time and the time of each and every contributor, but also the cost of absence from friends and families of each of those people too. That's why I'm extremely grateful for every second that has been dedicated to making this project happen. The more contributors we have, the more this effort can be spread out and the more we can achieve together. I'd like to encourage you all to pick one thing that you can contribute, whether it is confirming someone's bug, suggesting a fix, making a documentation change or helping out someone who needs it. All of these small things have such a huge impact! It would be so awesome if you too were part of the story in getting to v3.
 
 Enjoy!
+
+&dash; Lea
 
 PS: If you or your company find Wails useful, please consider [sponsoring the project](https://github.com/sponsors/leaanthony). Thanks!

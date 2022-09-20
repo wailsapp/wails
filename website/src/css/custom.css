@@ -227,3 +227,12 @@ cite {
     flex-direction: column;
     justify-content: flex-start;
 }
+
+
+.main-wrapper .container .row .col {
+    display: inline-flex;
+    width: 50%;
+    align-content: flex-end;
+    flex-direction: column;
+    justify-content: flex-start;
+}
