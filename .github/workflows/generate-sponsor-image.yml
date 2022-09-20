@@ -1,11 +1,11 @@
-name: Scheduler
+name: Generate Sponsor Image
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: "0 0 * * *"
   push:
-    branches: [ test1 ]
+    branches: [test1]
 
 jobs:
   update-sponsors:
@@ -18,10 +18,8 @@ jobs:
         with:
           node-version: 16.x
 
-      - run: npx pnpm i
-
       - name: Update sponsors
-        run: npm run build
+        run: ./scripts/generate-sponsor-image.sh
         env:
           SPONSORKIT_GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
           SPONSORKIT_GITHUB_LOGIN: leaanthony
