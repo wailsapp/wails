@@ -128,9 +128,16 @@ html[data-theme="light"] .button--secondary {
 
 
 @media screen and (max-width: 966px) {
+    .hero .container {
+        padding: .5rem;
+    }
+
+    .hero .container .col .hero__subtitle {
+        font-size: 1.2rem;
+    }
+
     .carousel-root {
-        padding-left: 2%;
-        max-width: 50%;
+        max-width: 75%;
     }
 }
 
