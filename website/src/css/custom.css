@@ -64,6 +64,7 @@ html[data-theme="light"] .button--secondary {
     width: 100%;
     justify-content: center;
     flex-direction: row;
+    flex-wrap: wrap;
 }
 
 
@@ -74,6 +75,15 @@ html[data-theme="light"] .button--secondary {
     width: 100%;
     align-content: stretch;
     align-items: flex-start;
+}
+
+.footer .container .footer__bottom {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    align-content: center;
+    flex-wrap: wrap;
 }
 
 
@@ -125,7 +135,6 @@ html[data-theme="light"] .button--secondary {
     display: flex;
     align-items: baseline;
 }
-
 
 @media screen and (max-width: 966px) {
     .hero .container {
