@@ -4,7 +4,7 @@
   "description": "",
   "main": "sponsorkit.config.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx sponsorkit -o website/static/img/"
   },
   "keywords": [],
   "author": "",
