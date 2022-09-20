@@ -135,7 +135,7 @@ html[data-theme="light"] .button--secondary {
     }
 
     .hero .container .col .hero__subtitle {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
     }
 
     .carousel-root {
@@ -174,27 +174,14 @@ html[data-theme="light"] .button--secondary {
     font-size: 1.5rem;
 }
 
-@media all and (min-width: 600px) {
-    .hero__subtitle {
-        margin-top: 2rem;
-        font-size: 1.65rem;
-    }
-}
-
-@media all and (min-width: 1024px) {
-    .hero__subtitle {
-        margin-top: 2rem;
-        font-size: 1.75rem;
-    }
-}
 
 blockquote {
     display: block;
     width: 80%;
     max-width: 75rem;
     position: relative;
-    padding: 0 5px;
-    margin: 0 auto 7rem;
+    padding: 0 1rem;
+    margin: 1rem auto 7rem;
 }
 
 blockquote:before, blockquote:after {

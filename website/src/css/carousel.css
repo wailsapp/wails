@@ -318,6 +318,11 @@
     padding-left: 0;
     max-width: 800px;
   }
+
+  .hero__subtitle {
+    margin-top: 2rem;
+    font-size: 1.75rem;
+  }
 }
 
 @media screen and (max-width: 966px) {
@@ -326,4 +331,30 @@
     max-width: 65%;
     min-width: 200px;
   }
+
+  .hero__subtitle {
+    font-size: 1.5rem;
+  }
+}
+
+
+@media screen and (max-width: 400px) {
+  .carousel-root {
+    padding-left: 0;
+    max-width: 95%;
+    min-width: 200px;
+  }
+
+  blockquote {
+    margin: 0rem auto 3rem;
+  }
+
+  blockquote h3 {
+    font-size: 1.1rem;
+  }
+
+  blockquote h4 {
+    font-size: 1rem;
+  }
+
 }
