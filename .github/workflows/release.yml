@@ -69,7 +69,7 @@ jobs:
           wails init -n ${{ matrix.template }} -t ${{ matrix.template }} -m
           cd ${{ matrix.template }}
           cat go.mod
-          sed -i 's/\/\/ replace/replace/g' go.mod
-          sed -i 's/=>.*/=> ../g' go.mod
+          sed -i -e 's/\/\/ replace/replace/g' go.mod
+          sed -i -e 's/=>.*/=> ../g' go.mod
           cat go.mod
           wails build -v 2
