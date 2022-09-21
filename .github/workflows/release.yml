@@ -70,6 +70,6 @@ jobs:
           cd ${{ matrix.template }}
           cat go.mod
           sed -i -e 's/\/\/ replace/replace/g' go.mod
-          sed -i -e 's/=>.*/=> ../g' go.mod
+          sed -i -e "s/=>.*/=> ${GITHUB_WORKSPACE}\/v2/g" go.mod
           cat go.mod
           wails build -v 2
