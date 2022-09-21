@@ -5,7 +5,7 @@ on:
   schedule:
     - cron: "0 0 * * *"
   push:
-    branches: [test1]
+    branches: [ master ]
 
 jobs:
   update-sponsors:
