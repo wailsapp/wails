@@ -22,7 +22,7 @@ jobs:
         run: cd scripts/sponsors && chmod 755 ./generate-sponsor-image.sh && ./generate-sponsor-image.sh
         env:
           SPONSORKIT_GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
-          SPONSORKIT_GITHUB_LOGIN: leaanthony
+          SPONSORKIT_GITHUB_LOGIN: wailsapp
 
       - name: Commit
         uses: EndBug/add-and-commit@v4
