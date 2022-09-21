@@ -291,7 +291,7 @@ func updateReplaceLine(targetPath string) {
 		if strings.HasPrefix(line, "// replace") {
 			println("Found replace line")
 			splitLine := strings.Split(line, " ")
-			splitLine[5] = targetPath
+			splitLine[5] = targetPath + "/v2"
 			lines[i] = strings.Join(splitLine[1:], " ")
 			continue
 		}
