@@ -36,6 +36,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	projectName := ""
 	command.StringFlag("n", "Name of project", &projectName)
 
+	// Skip mod tidy
+	skipModTidy := false
+	command.BoolFlag("m", "Skip mod tidy", &skipModTidy).Hidden()
+
 	// Setup project directory
 	projectDirectory := ""
 	command.StringFlag("d", "Project directory", &projectDirectory)
@@ -131,14 +135,14 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		// Try to discover author details from git config
 		findAuthorDetails(options)
 
-		return initProject(options, quiet)
+		return initProject(options, quiet, skipModTidy)
 	})
 
 	return nil
 }
 
 // initProject is our main init command
-func initProject(options *templates.Options, quiet bool) error {
+func initProject(options *templates.Options, quiet bool, skipModTidy bool) error {
 
 	// Start Time
 	start := time.Now()
@@ -155,17 +159,19 @@ func initProject(options *templates.Options, quiet bool) error {
 		return err
 	}
 
-	// Run `go mod tidy` to ensure `go.sum` is up to date
-	cmd := exec.Command("go", "mod", "tidy")
-	cmd.Dir = options.TargetDir
-	cmd.Stderr = os.Stderr
-	if !quiet {
-		println("")
-		cmd.Stdout = os.Stdout
-	}
-	err = cmd.Run()
-	if err != nil {
-		return err
+	if !skipModTidy {
+		// Run `go mod tidy` to ensure `go.sum` is up to date
+		cmd := exec.Command("go", "mod", "tidy")
+		cmd.Dir = options.TargetDir
+		cmd.Stderr = os.Stderr
+		if !quiet {
+			println("")
+			cmd.Stdout = os.Stdout
+		}
+		err = cmd.Run()
+		if err != nil {
+			return err
+		}
 	}
 
 	if options.InitGit {
