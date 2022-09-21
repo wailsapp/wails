@@ -1339,6 +1339,15 @@
       "contributions": [
         "financial"
       ]
+    },
+    {
+      "login": "ParvinEyvazov",
+      "name": "Parvin Eyvazov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/32189770?v=4",
+      "profile": "https://github.com/ParvinEyvazov",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 8,

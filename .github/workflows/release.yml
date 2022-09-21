@@ -68,5 +68,4 @@ jobs:
           cd ./test-${{ matrix.template }}
           wails init -n ${{ matrix.template }} -t ${{ matrix.template }} -ci
           cd ${{ matrix.template }}
-          cat go.mod
           wails build -v 2
