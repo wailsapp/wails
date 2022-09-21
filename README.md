@@ -24,6 +24,9 @@
   <a href="https://github.com/avelino/awesome-go" rel="nofollow">
     <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome" />
   </a>
+  <a href="https://app.slack.com/client/T029RQSE6/CJ4P9F7MZ">
+    <img alt="Slack" src="https://img.shields.io/badge/slack-gophers%2Fwails%20-blue?logo=slack"/>
+  </a>
   <br/>
   <a href="https://github.com/wailsapp/wails/actions/workflows/build.yml" rel="nofollow">
     <img src="https://img.shields.io/github/workflow/status/wailsapp/wails/Build?logo=github" alt="Build" />
@@ -45,20 +48,16 @@
 
 ## Table of Contents
 
-<details>
-  <summary>Click me to Open/Close the directory listing</summary>
-
 - [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
-  - [Roadmap](#roadmap)
 - [Features](#features)
-- [Sponsors](#sponsors)
+  - [Roadmap](#roadmap)
 - [Getting Started](#getting-started)
+- [Sponsors](#sponsors)
 - [FAQ](#faq)
 - [Contributors](#contributors)
 - [License](#license)
-
-</details>
+- [Inspiration](#inspiration)
 
 ## Introduction
 
@@ -86,14 +85,14 @@ make this easy for you by handling project creation, compilation and bundling. A
 The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
 this before open up an enhancement request.
 
+## Getting Started
+
+The installation instructions are on the [official website](https://wails.io/docs/gettingstarted/installation).
+
 ## Sponsors
 
 This project is supported by these kind people / companies:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
-
-## Getting Started
-
-The installation instructions are on the [official website](https://wails.io/docs/gettingstarted/installation).
 
 ## FAQ
 

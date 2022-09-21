@@ -17,9 +17,6 @@
   <a href="https://pkg.go.dev/github.com/wailsapp/wails">
     <img src="https://pkg.go.dev/badge/github.com/wailsapp/wails.svg" alt="Go Reference"/>
   </a>
-  <a href="https://www.codefactor.io/repository/github/wailsapp/wails">
-    <img src="https://www.codefactor.io/repository/github/wailsapp/wails/badge" alt="CodeFactor" />
-  </a>
   <a href="https://github.com/wailsapp/wails/issues">
     <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="CodeFactor" />
   </a>
@@ -28,6 +25,9 @@
   </a>
   <a href="https://github.com/avelino/awesome-go" rel="nofollow">
     <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome" />
+  </a>
+  <a href="https://app.slack.com/client/T029RQSE6/CJ4P9F7MZ">
+    <img alt="Slack" src="https://img.shields.io/badge/slack-gophers%2Fwails%20-blue?logo=slack"/>
   </a>
   <br/>
   <a href="https://github.com/wailsapp/wails/actions/workflows/build.yml" rel="nofollow">
@@ -48,18 +48,7 @@
 </strong>
 </div>
 
-<hr/>
-<h3 align="center">
-<strong>
-注意：v2のリリースが近づいているため、v1の新しい機能リクエストやバグレポートは受け付けておりません。重要な問題がある場合はチケットを開き、なぜそれが重要なのかを明記してください。
-</strong>
-</h3>
-<hr/>
-
 ## 目次
-
-<details>
-  <summary>クリックすることで、ディレクトリ一覧の開閉が可能です。</summary>
 
 - [目次](#目次)
 - [はじめに](#はじめに)
@@ -73,8 +62,6 @@
 - [特記事項](#特記事項)
 - [スペシャルサンクス](#スペシャルサンクス)
 - [ライセンス](#ライセンス)
-
-</details>
 
 ## はじめに
 
