@@ -68,4 +68,5 @@ jobs:
           cd ./test-${{ matrix.template }}
           wails init -n ${{ matrix.template }} -t ${{ matrix.template }}
           cd ${{ matrix.template }}
+          sed -i 's/\/\/replace/replace/' go.mod
           wails build -v 2
