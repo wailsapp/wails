@@ -29,15 +29,15 @@ This command starts a local development server and opens up a browser window. Mo
 After the English source file is updated, run the following command to submit the source file to Crowdin:
 
 ```
-npm run crwodin push -- -b <branch>
+npm run crowdin push -- -b <branch>
 ```
 
 branch - Branch name in crowdin project
 
-Run the following command to pull the translated files in crwodin to the local:
+Run the following command to pull the translated files in crowdin to the local:
 
 ```
-npm run crwodin pull -- -b <branch> -l <languageCode>
+npm run crowdin pull -- -b <branch> -l <languageCode>
 ```
 
 languageCode - **Note** that this refers to the language code in the crowdin project.
