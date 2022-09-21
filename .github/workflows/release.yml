@@ -66,10 +66,7 @@ jobs:
         run: |
           mkdir -p ./test-${{ matrix.template }}
           cd ./test-${{ matrix.template }}
-          wails init -n ${{ matrix.template }} -t ${{ matrix.template }} -m
+          wails init -n ${{ matrix.template }} -t ${{ matrix.template }} -ci
           cd ${{ matrix.template }}
-          cat go.mod
-          sed -i -e 's/\/\/ replace/replace/g' go.mod
-          sed -i -e "s/=>.*/=> ${GITHUB_WORKSPACE}\/v2/g" go.mod
           cat go.mod
           wails build -v 2

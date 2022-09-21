@@ -1,8 +1,10 @@
 package initialise
 
 import (
+	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -36,9 +38,9 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	projectName := ""
 	command.StringFlag("n", "Name of project", &projectName)
 
-	// Skip mod tidy
-	skipModTidy := false
-	command.BoolFlag("m", "Skip mod tidy", &skipModTidy).Hidden()
+	// For CI
+	ciMode := false
+	command.BoolFlag("ci", "CI Mode", &ciMode).Hidden()
 
 	// Setup project directory
 	projectDirectory := ""
@@ -135,14 +137,14 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		// Try to discover author details from git config
 		findAuthorDetails(options)
 
-		return initProject(options, quiet, skipModTidy)
+		return initProject(options, quiet, ciMode)
 	})
 
 	return nil
 }
 
 // initProject is our main init command
-func initProject(options *templates.Options, quiet bool, skipModTidy bool) error {
+func initProject(options *templates.Options, quiet bool, ciMode bool) error {
 
 	// Start Time
 	start := time.Now()
@@ -159,7 +161,12 @@ func initProject(options *templates.Options, quiet bool, skipModTidy bool) error
 		return err
 	}
 
-	if !skipModTidy {
+	err = os.Chdir(options.TargetDir)
+	if err != nil {
+		return err
+	}
+
+	if !ciMode {
 		// Run `go mod tidy` to ensure `go.sum` is up to date
 		cmd := exec.Command("go", "mod", "tidy")
 		cmd.Dir = options.TargetDir
@@ -172,6 +179,14 @@ func initProject(options *templates.Options, quiet bool, skipModTidy bool) error
 		if err != nil {
 			return err
 		}
+	} else {
+		// Update go mod
+		workspace := os.Getenv("GITHUB_WORKSPACE")
+		println("GitHub workspace:", workspace)
+		if workspace == "" {
+			os.Exit(1)
+		}
+		updateReplaceLine(workspace)
 	}
 
 	if options.InitGit {
@@ -247,5 +262,43 @@ func findAuthorDetails(options *templates.Options) {
 		if err == nil {
 			options.AuthorEmail = strings.TrimSpace(email)
 		}
+	}
+}
+
+func updateReplaceLine(targetPath string) {
+	file, err := os.Open("go.mod")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	err = file.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	for i, line := range lines {
+		println(line)
+		if strings.HasPrefix(line, "// replace") {
+			println("Found replace line")
+			splitLine := strings.Split(line, " ")
+			splitLine[5] = targetPath
+			lines[i] = strings.Join(splitLine[1:], " ")
+			continue
+		}
+	}
+
+	err = os.WriteFile("go.mod", []byte(strings.Join(lines, "\n")), 0644)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
