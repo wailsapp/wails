@@ -18,8 +18,6 @@ jobs:
         with:
           node-version: 16.x
 
-      - run: npx pnpm i
-
       - name: Update sponsors
         run: cd scripts/sponsors && chmod 755 ./generate-sponsor-image.sh && ./generate-sponsor-image.sh
         env:
