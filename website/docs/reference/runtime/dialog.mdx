@@ -117,19 +117,33 @@ type MessageDialogOptions struct {
 }
 ```
 
-| Field         | Description                                                               | Win | Mac | Lin |
-| ------------- | ------------------------------------------------------------------------- | --- | --- | --- |
-| Type          | The type of message dialog, eg question, info...                          | ✅  | ✅  | ✅  |
-| Title         | Title for the dialog                                                      | ✅  | ✅  | ✅  |
-| Message       | The message to show the user                                              | ✅  | ✅  | ✅  |
-| Buttons       | A list of button titles                                                   |     | ✅  |     |
-| DefaultButton | The button with this text should be treated as default. Bound to `return` |     | ✅  |     |
-| CancelButton  | The button with this text should be treated as cancel. Bound to `escape`  |     | ✅  |     |
+| Field         | Description                                                                | Win            | Mac | Lin |
+|---------------|----------------------------------------------------------------------------|----------------|-----|-----|
+| Type          | The type of message dialog, eg question, info...                           | ✅              | ✅   | ✅   |
+| Title         | Title for the dialog                                                       | ✅              | ✅   | ✅   |
+| Message       | The message to show the user                                               | ✅              | ✅   | ✅   |
+| Buttons       | A list of button titles                                                    |                | ✅   |     |
+| DefaultButton | The button with this text should be treated as default. Bound to `return`. | ✅[*](#windows) | ✅   |     |
+| CancelButton  | The button with this text should be treated as cancel. Bound to `escape`   |                | ✅   |     |
 
 #### Windows
 
 Windows has standard dialog types in which the buttons are not customisable.
-The value returned will be one of: "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "Try Again" or "Continue"
+The value returned will be one of: "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "Try Again" or "Continue".
+
+For Question dialogs, the default button is "Yes" and the cancel button is "No". 
+This can be changed by setting the `DefaultButton` value to `"No"`.
+
+Example:
+```go
+	result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+		Type:          runtime.QuestionDialog,
+		Title:         "Question",
+		Message:       "Do you want to continue?",
+		DefaultButton: "No",
+	})
+
+```
 
 #### Linux
 

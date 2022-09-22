@@ -9,6 +9,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/go-common-file-dialog/cfd"
 	"golang.org/x/sys/windows"
 	"path/filepath"
+	"strings"
 	"syscall"
 )
 
@@ -152,6 +153,26 @@ func (f *Frontend) SaveFileDialog(options frontend.SaveDialogOptions) (string, e
 	return result, nil
 }
 
+func calculateMessageDialogFlags(options frontend.MessageDialogOptions) uint32 {
+	var flags uint32
+
+	switch options.Type {
+	case frontend.InfoDialog:
+		flags = windows.MB_OK | windows.MB_ICONINFORMATION
+	case frontend.ErrorDialog:
+		flags = windows.MB_ICONERROR | windows.MB_OK
+	case frontend.QuestionDialog:
+		flags = windows.MB_YESNO
+		if strings.TrimSpace(strings.ToLower(options.DefaultButton)) == "no" {
+			flags |= windows.MB_DEFBUTTON2
+		}
+	case frontend.WarningDialog:
+		flags = windows.MB_OK | windows.MB_ICONWARNING
+	}
+
+	return flags
+}
+
 // MessageDialog show a message dialog to the user
 func (f *Frontend) MessageDialog(options frontend.MessageDialogOptions) (string, error) {
 
@@ -163,17 +184,8 @@ func (f *Frontend) MessageDialog(options frontend.MessageDialogOptions) (string,
 	if err != nil {
 		return "", err
 	}
-	var flags uint32
-	switch options.Type {
-	case frontend.InfoDialog:
-		flags = windows.MB_OK | windows.MB_ICONINFORMATION
-	case frontend.ErrorDialog:
-		flags = windows.MB_ICONERROR | windows.MB_OK
-	case frontend.QuestionDialog:
-		flags = windows.MB_YESNO
-	case frontend.WarningDialog:
-		flags = windows.MB_OK | windows.MB_ICONWARNING
-	}
+
+	flags := calculateMessageDialogFlags(options)
 
 	button, _ := windows.MessageBox(windows.HWND(f.getHandleForDialog()), message, title, flags|windows.MB_SYSTEMMODAL)
 	// This maps MessageBox return values to strings
