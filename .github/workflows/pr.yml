@@ -3,9 +3,16 @@ on:
   pull_request:
 
 jobs:
+  check_branch_name:
+    runs-on: ubuntu-latest
+    name: Check branch name
+    steps:
+      - uses: knawat/github-actions-gitflow@v1
+
   test:
     name: Run Go Tests
     runs-on: ${{ matrix.os }}
+    needs: check_branch_name
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
