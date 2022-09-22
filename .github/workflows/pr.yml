@@ -8,13 +8,10 @@ jobs:
     name: Check branch name
     steps:
       - name: Get branch names
-        id: branch-name
-        uses: tj-actions/branch-names@v6
         run: if ! [[ "$(echo ${GITHUB_HEAD_REF} | cut -d "/" -f1)" =~ (feature|hotfix|bugfix|release|chore) ]]; then
           echo "Branch name must start with feature/, hotfix/, bugfix/, release/, or chore/"
           exit 1
           fi
-
 
   test:
     name: Run Go Tests
