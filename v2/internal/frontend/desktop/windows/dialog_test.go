@@ -20,7 +20,7 @@ func Test_calculateMessageDialogFlags(t *testing.T) {
 			want: windows.MB_OK | windows.MB_ICONINFORMATION,
 		},
 		{
-			name: "Test Info Dialog",
+			name: "Test Error Dialog",
 			options: frontend.MessageDialogOptions{
 				Type: frontend.ErrorDialog,
 			},
@@ -37,7 +37,15 @@ func Test_calculateMessageDialogFlags(t *testing.T) {
 			name: "Test Question Dialog with default cancel",
 			options: frontend.MessageDialogOptions{
 				Type:          frontend.QuestionDialog,
-				DefaultButton: "Cancel",
+				DefaultButton: "No",
+			},
+			want: windows.MB_YESNO | windows.MB_DEFBUTTON2,
+		},
+		{
+			name: "Test Question Dialog with default cancel (lowercase)",
+			options: frontend.MessageDialogOptions{
+				Type:          frontend.QuestionDialog,
+				DefaultButton: "no",
 			},
 			want: windows.MB_YESNO | windows.MB_DEFBUTTON2,
 		},
