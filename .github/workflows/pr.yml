@@ -1,7 +1,6 @@
 name: PR Checks
 on:
   pull_request:
-    types: [ opened ]
 
 jobs:
   test:
