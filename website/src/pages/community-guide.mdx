@@ -56,8 +56,8 @@ The process for adding new features are as follows:
   person who opened the ticket. Sometimes placeholder tickets are created and require more details
 - Comment on the ticket stating if you wish to develop the feature
 - Clone the repository and create a branch with the format `feature/<ticket_number>_<ticket_title>`
-- New features often require documentation so please ensure you have also added or updated the documentation as part of
-  the changes
+- New features will require documentation so please ensure you have also added or updated the documentation as part of
+  the changes. Feature PRs without changes to the documentation will not be accepted.
 - Once the feature is ready for testing, create a draft PR. Please ensure the PR description has the test scenarios and
   test cases listed with checkmarks, so that others can know what still needs to be tested.
 - Once all the testing is completed, please update the status of the PR from draft and leave a message.
@@ -98,6 +98,23 @@ bugfixes should be discussed as the approach may have unintended side effects.
 :::warning
 Any PRs opened without a corresponding ticket may be rejected.
 :::
+
+### Chores
+
+Chores are tasks that need to be done but are not directly related to the codebase. Examples
+include:
+
+- Updating documentation
+- Writing tutorials / guides
+- Updating GitHub templates or actions
+- Adding scripts to help with development
+
+If you wish to work on a chore, please open a ticket and comment on it stating you wish to do so. 
+Chores are not assigned to anyone and are open to anyone who wishes to work on them. If you have
+any questions, please ask in the [Contributing to Wails](https://github.com/wailsapp/wails/discussions/1520)
+discussion or on slack.
+
+PRs for chores should be done from a `chore/<ticket_number>_<ticket_title>` branch.
 
 ### Testing
 
