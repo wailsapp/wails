@@ -1,5 +1,4 @@
 //go:build !dev && !production && !bindings && windows
-// +build !dev,!production,!bindings,windows
 
 package app
 
@@ -10,14 +9,9 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
-// App defines a Wails application structure
-type App struct{}
-
 func (a *App) Run() error {
 	return nil
 }
-
-func (a *App) Shutdown() {}
 
 // CreateApp creates the app!
 func CreateApp(_ *options.App) (*App, error) {

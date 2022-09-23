@@ -9,6 +9,9 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
+// This is the global application instance
+var application *app.App
+
 // Run creates an application based on the given config and executes it
 func Run(options *options.App) error {
 
@@ -27,16 +30,16 @@ func Run(options *options.App) error {
 		return err
 	}
 
-	mainapp, err := app.CreateApp(options)
+	application, err = app.CreateApp(options)
 	if err != nil {
 		return err
 	}
 
 	signal.OnShutdown(func() {
-		mainapp.Shutdown()
+		application.Shutdown()
 	})
 
 	signal.Start()
 
-	return mainapp.Run()
+	return application.Run()
 }
