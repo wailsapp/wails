@@ -17,6 +17,7 @@
 @property bool startHidden;
 @property bool startFullscreen;
 @property (retain) WailsWindow* mainWindow;
+@property int activationPolicy;
 
 @end
 

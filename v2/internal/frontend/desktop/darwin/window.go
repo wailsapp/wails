@@ -40,6 +40,10 @@ func bool2Cint(value bool) C.int {
 	return C.int(0)
 }
 
+func ScalingFactor(window *Window) int {
+	return int(C.ScalingFactor(window.context))
+}
+
 func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 
 	c := NewCalloc()
@@ -119,9 +123,9 @@ func (w *Window) Center() {
 	C.Center(w.context)
 }
 
-func (w *Window) Run(url string) {
+func (w *Window) Run(url string, activationPolicy C.int) {
 	_url := C.CString(url)
-	C.Run(w.context, _url)
+	C.Run(w.context, _url, activationPolicy)
 	C.free(unsafe.Pointer(_url))
 }
 

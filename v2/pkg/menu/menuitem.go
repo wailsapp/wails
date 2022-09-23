@@ -6,6 +6,11 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 )
 
+type MenuItemImpl interface {
+	SetChecked(bool)
+	SetLabel(string)
+}
+
 // MenuItem represents a menuitem contained in a menu
 type MenuItem struct {
 	// Label is what appears as the menu text
@@ -53,6 +58,9 @@ type MenuItem struct {
 
 	// Used for locking when removing elements
 	removeLock sync.Mutex
+
+	// Implementation of the runtime methods
+	Impl MenuItemImpl
 }
 
 // Parent returns the parent of the menu item.
@@ -214,6 +222,21 @@ func (m *MenuItem) insertItemAtIndex(index int, target *MenuItem) bool {
 	m.SubMenu.Items = append(m.SubMenu.Items[:index+1], m.SubMenu.Items[index:]...)
 	m.SubMenu.Items[index] = target
 	return true
+}
+
+func (m *MenuItem) SetChecked(b bool) {
+	if m.Checked != b {
+		m.Checked = b
+		m.Impl.SetChecked(b)
+	}
+}
+
+func (m *MenuItem) SetLabel(name string) {
+	if m.Label == name {
+		return
+	}
+	m.Label = name
+	m.Impl.SetLabel(name)
 }
 
 // Text is a helper to create basic Text menu items

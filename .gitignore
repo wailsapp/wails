@@ -31,3 +31,5 @@ v2/test/kitchensink/frontend/package.json.md5
 v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
 .env
 /website/static/img/.cache.json
+
+v2/internal/frontend/desktop/darwin/test.xcodeproj

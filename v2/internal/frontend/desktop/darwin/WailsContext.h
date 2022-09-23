@@ -23,6 +23,7 @@
 
 @property NSSize userMinSize;
 @property NSSize userMaxSize;
+@property int activationPolicy;
 
 - (BOOL) canBecomeKeyWindow;
 - (void) applyWindowConstraints;

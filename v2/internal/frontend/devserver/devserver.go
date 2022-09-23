@@ -56,6 +56,10 @@ func (d *DevWebServer) Show() {
 	d.desktopFrontend.Show()
 }
 
+func (d *DevWebServer) TrayMenuAdd(trayMenu *menu.TrayMenu) menu.TrayMenuImpl {
+	return d.desktopFrontend.TrayMenuAdd(trayMenu)
+}
+
 func (d *DevWebServer) WindowSetSystemDefaultTheme() {
 	d.desktopFrontend.WindowSetSystemDefaultTheme()
 }

@@ -12,6 +12,7 @@
 #import "AppDelegate.h"
 #import "WailsMenu.h"
 #import "WailsMenuItem.h"
+#import "message.h"
 
 WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight) {
     
@@ -20,7 +21,7 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     WailsContext *result = [WailsContext new];
 
     result.debug = debug;
-    
+
     if ( windowStartState == WindowStartsFullscreen ) {
         fullscreen = 1;
     }
@@ -28,7 +29,7 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     [result CreateWindow:width :height :frameless :resizable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent :minWidth :minHeight :maxWidth :maxHeight];
     [result SetTitle:safeInit(title)];
     [result Center];
-    
+
     switch( windowStartState ) {
         case WindowStartsMaximised:
             [result.mainWindow zoom:nil];
@@ -170,6 +171,10 @@ void ToggleMaximise(void* inctx) {
     );
 }
 
+void SetMenuItemChecked(void* nsMenuItem, int checked) {
+    [(NSMenuItem*)nsMenuItem setState:(checked == 0 ? NSOffState : NSOnState)];
+}
+
 const char* GetSize(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSRect frame = [ctx.mainWindow frame];
@@ -304,6 +309,55 @@ void AppendRole(void *inctx, void *inMenu, int role) {
     [menu appendRole :ctx :role];
 }
 
+void NewNSStatusItem(int id, int length) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        NSStatusBar *statusBar = [NSStatusBar systemStatusBar];
+        // Map Go to Cocoa length. 0 = NSVariableStatusItemLength.
+        CGFloat length = NSVariableStatusItemLength;
+        if( length == 1 ) {
+            length = NSSquareStatusItemLength;
+        }
+        NSStatusItem *result = [[statusBar statusItemWithLength:length] retain];
+        objectCreated(id,result);
+        
+    });
+}
+
+void DeleteStatusItem(void *_nsStatusItem) {
+    NSStatusItem *nsStatusItem = (NSStatusItem*) _nsStatusItem;
+    [nsStatusItem release];
+}
+
+void on_main_thread(void (^l)(void)) {
+    dispatch_async(dispatch_get_main_queue(), l);
+}
+
+void SetTrayMenuLabel(void *_nsStatusItem, const char *label) {
+    on_main_thread(^{
+        NSStatusItem *nsStatusItem = (NSStatusItem*) _nsStatusItem;
+        nsStatusItem.button.title = safeInit(label);
+        free((void*)label);
+    });
+}
+
+void SetTrayMenu(void *nsStatusItem, void* nsMenu) {
+    ON_MAIN_THREAD(
+       [(NSStatusItem*)nsStatusItem setMenu:(NSMenu *)nsMenu];
+    )
+}
+
+
+/**** Menu Item ****/
+
+void SetMenuItemLabel(void *_nsMenuItem, const char *label) {
+    on_main_thread(^{
+        NSMenuItem *nsMenuItem = (NSMenuItem*) _nsMenuItem;
+        [ nsMenuItem setTitle:safeInit(label) ];
+        free((void*)label);
+    });
+}
+
 void* NewMenu(const char *name) {
     NSString *title = @"";
     if (name != nil) {
@@ -328,8 +382,8 @@ void SetAsApplicationMenu(void *inctx, void *inMenu) {
 void UpdateApplicationMenu(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
-                   NSApplication *app = [NSApplication sharedApplication];
-                   [app setMainMenu:ctx.applicationMenu];
+       NSApplication *app = [NSApplication sharedApplication];
+       [app setMainMenu:ctx.applicationMenu];
     )
 }
 
@@ -354,7 +408,7 @@ void UpdateMenuItem(void* nsmenuitem, int checked) {
     ON_MAIN_THREAD(
         WailsMenuItem *menuItem = (__bridge WailsMenuItem*) nsmenuitem;
         [menuItem setState:(checked == 1?NSControlStateValueOn:NSControlStateValueOff)];
-                   )
+       )
 }
 
 
@@ -363,12 +417,39 @@ void AppendSeparator(void* inMenu) {
     [menu AppendSeparator];
 }
 
+void SetTrayImage(void *nsStatusItem, void *imageData, int imageDataLength, int template, int position) {
+    ON_MAIN_THREAD(
+        NSStatusItem *statusItem = (NSStatusItem*) nsStatusItem;
+        NSData *nsdata = [NSData dataWithBytes:imageData length:imageDataLength];
+        NSImage *image = [[[NSImage alloc] initWithData:nsdata] autorelease];
+        if(template) {
+            image.template = true;
+        }
+        image.size = NSMakeSize(22.0, 22.0);
+        statusItem.button.image = image;
+               
+        // Swap NSNoImage and NSImageLeading because we wanted NSImageLeading to be default in Go
+        int actualPosition = position;
+        if( position == 7) {
+           actualPosition = 0;
+        } else if (position == 0) {
+           actualPosition = 7;
+        }
+        [statusItem.button setImagePosition:actualPosition];
+                   
+    )
+}
 
+int ScalingFactor(void *ctx) {
+    CGFloat scale = [((WailsContext*)ctx).mainWindow backingScaleFactor];
+    return (int)scale;
+}
 
-void Run(void *inctx, const char* url) {
+void Run(void *inctx, const char* url, int activationPolicy) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSApplication *app = [NSApplication sharedApplication];
     AppDelegate* delegate = [AppDelegate new];
+    delegate.activationPolicy = activationPolicy;
     [app setDelegate:(id)delegate];
     ctx.appdelegate = delegate;
     delegate.mainWindow = ctx.mainWindow;

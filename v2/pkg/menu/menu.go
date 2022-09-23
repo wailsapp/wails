@@ -44,16 +44,23 @@ func (m *Menu) AddRadio(label string, checked bool, accelerator *keys.Accelerato
 }
 
 // AddSeparator adds a separator to the menu
-func (m *Menu) AddSeparator() {
+func (m *Menu) AddSeparator() *MenuItem {
 	item := Separator()
 	m.Append(item)
+	return item
 }
 
-func (m *Menu) AddSubmenu(label string) *Menu {
+func (m *Menu) AddSubmenu(label string) *MenuItem {
 	submenu := NewMenu()
 	item := SubMenu(label, submenu)
 	m.Append(item)
-	return submenu
+	return item
+}
+
+func (m *Menu) InsertSubmenu(label string, submenu *Menu) *MenuItem {
+	item := SubMenu(label, submenu)
+	m.Append(item)
+	return item
 }
 
 func (m *Menu) Prepend(item *MenuItem) {

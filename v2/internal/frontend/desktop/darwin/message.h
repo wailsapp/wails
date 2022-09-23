@@ -20,6 +20,8 @@ void processMessageDialogResponse(int);
 void processOpenFileDialogResponse(const char*);
 void processSaveFileDialogResponse(const char*);
 void processCallback(int);
+void processNotification(int);
+void objectCreated(int, void*);
 
 #ifdef __cplusplus
 }

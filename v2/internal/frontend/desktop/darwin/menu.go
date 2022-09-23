@@ -14,11 +14,85 @@ package darwin
 */
 import "C"
 import (
+	"fmt"
+	"sync"
 	"unsafe"
+
+	"github.com/google/uuid"
 
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 )
+
+var createNSObjectMap = make(map[uint32]chan unsafe.Pointer)
+var createNSObjectMapLock sync.RWMutex
+
+func waitNSObjectCreate(id uint32, fn func()) unsafe.Pointer {
+	waitchan := make(chan unsafe.Pointer)
+	createNSObjectMapLock.Lock()
+	createNSObjectMap[id] = waitchan
+	createNSObjectMapLock.Unlock()
+	fn()
+	result := <-waitchan
+	createNSObjectMapLock.Lock()
+	createNSObjectMap[id] = nil
+	createNSObjectMapLock.Unlock()
+	return result
+}
+
+//export objectCreated
+func objectCreated(id uint32, pointer unsafe.Pointer) {
+	createNSObjectMapLock.Lock()
+	createNSObjectMap[id] <- pointer
+	createNSObjectMapLock.Unlock()
+}
+
+func NewNSTrayMenu(context unsafe.Pointer, trayMenu *menu.TrayMenu, scalingFactor int) *NSTrayMenu {
+	c := NewCalloc()
+	defer c.Free()
+
+	id := uuid.New().ID()
+	nsStatusItem := waitNSObjectCreate(id, func() {
+		C.NewNSStatusItem(C.int(id), C.int(trayMenu.Sizing))
+	})
+	result := &NSTrayMenu{
+		context:       context,
+		nsStatusItem:  nsStatusItem,
+		scalingFactor: scalingFactor,
+	}
+
+	result.SetLabel(trayMenu.Label)
+	result.SetMenu(trayMenu.Menu)
+	result.SetImage(trayMenu.Image)
+
+	return result
+}
+
+func (n *NSTrayMenu) SetImage(image *menu.TrayImage) {
+	if image == nil {
+		return
+	}
+	bitmap := image.GetBestBitmap(n.scalingFactor, false)
+	if bitmap == nil {
+		fmt.Printf("[Warning] No TrayMenu Image available for scaling factor %dx\n", n.scalingFactor)
+		return
+	}
+	C.SetTrayImage(n.nsStatusItem,
+		unsafe.Pointer(&bitmap[0]),
+		C.int(len(bitmap)),
+		bool2Cint(image.IsTemplate),
+		C.int(image.Position),
+	)
+}
+
+func (n *NSTrayMenu) SetMenu(menu *menu.Menu) {
+	if menu == nil {
+		return
+	}
+	theMenu := NewNSMenu(n.context, "")
+	processMenu(theMenu, menu)
+	C.SetTrayMenu(n.nsStatusItem, theMenu.nsmenu)
+}
 
 type NSMenu struct {
 	context unsafe.Pointer
@@ -53,6 +127,15 @@ type MenuItem struct {
 	radioGroupMembers []*MenuItem
 }
 
+func (m *MenuItem) SetChecked(value bool) {
+	C.SetMenuItemChecked(m.nsmenuitem, bool2Cint(value))
+}
+
+func (m *MenuItem) SetLabel(label string) {
+	cLabel := C.CString(label)
+	C.SetMenuItemLabel(m.nsmenuitem, cLabel)
+}
+
 func (m *NSMenu) AddMenuItem(menuItem *menu.MenuItem) *MenuItem {
 	c := NewCalloc()
 	defer c.Free()
@@ -69,6 +152,7 @@ func (m *NSMenu) AddMenuItem(menuItem *menu.MenuItem) *MenuItem {
 
 	result.id = createMenuItemID(result)
 	result.nsmenuitem = C.AppendMenuItem(m.context, m.nsmenu, c.String(menuItem.Label), key, modifier, bool2Cint(menuItem.Disabled), bool2Cint(menuItem.Checked), C.int(result.id))
+	menuItem.Impl = result
 	return result
 }
 

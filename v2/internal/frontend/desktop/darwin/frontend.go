@@ -3,15 +3,6 @@
 
 package darwin
 
-/*
-#cgo CFLAGS: -x objective-c
-#cgo LDFLAGS: -framework Foundation -framework Cocoa -framework WebKit
-#import <Foundation/Foundation.h>
-#import "Application.h"
-#import "WailsContext.h"
-
-#include <stdlib.h>
-*/
 import "C"
 import (
 	"bytes"
@@ -31,14 +22,33 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
+/*
+#cgo CFLAGS: -x objective-c
+#cgo LDFLAGS: -framework Foundation -framework Cocoa -framework WebKit
+#import <Foundation/Foundation.h>
+#import "Application.h"
+#import "WailsContext.h"
+
+#include <stdlib.h>
+*/
+import "C"
+
 const startURL = "wails://wails/"
+
+type NotificationType uint8
+
+const (
+	ApplicationDidFinishLaunching NotificationType = 0
+)
 
 var messageBuffer = make(chan string, 100)
 var requestBuffer = make(chan *request, 100)
 var callbackBuffer = make(chan uint, 10)
+var notificationBuffer = make(chan NotificationType, 10)
 
 type Frontend struct {
 
@@ -57,15 +67,22 @@ type Frontend struct {
 	mainWindow *Window
 	bindings   *binding.Bindings
 	dispatcher frontend.Dispatcher
+	trayMenus  map[*menu.TrayMenu]*NSTrayMenu
+
+	applicationDidFinishLaunching bool
+	notificationCallbacks         map[NotificationType][]func()
+	trayMenusBuffer               []*menu.TrayMenu
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 	result := &Frontend{
-		frontendOptions: appoptions,
-		logger:          myLogger,
-		bindings:        appBindings,
-		dispatcher:      dispatcher,
-		ctx:             ctx,
+		frontendOptions:       appoptions,
+		logger:                myLogger,
+		bindings:              appBindings,
+		dispatcher:            dispatcher,
+		ctx:                   ctx,
+		trayMenus:             make(map[*menu.TrayMenu]*NSTrayMenu),
+		notificationCallbacks: make(map[NotificationType][]func()),
 	}
 	result.startURL, _ = url.Parse(startURL)
 
@@ -93,8 +110,15 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	go result.startMessageProcessor()
 	go result.startCallbackProcessor()
+	go result.startNotificationsProcessor()
+
+	result.registerNotificationCallback(ApplicationDidFinishLaunching, result.processTrayMenus)
 
 	return result
+}
+
+func (f *Frontend) registerNotificationCallback(notificationType NotificationType, callback func()) {
+	f.notificationCallbacks[notificationType] = append(f.notificationCallbacks[notificationType], callback)
 }
 
 func (f *Frontend) startMessageProcessor() {
@@ -113,6 +137,11 @@ func (f *Frontend) startCallbackProcessor() {
 		if err != nil {
 			println(err.Error())
 		}
+	}
+}
+func (f *Frontend) startNotificationsProcessor() {
+	for notification := range notificationBuffer {
+		f.handleNotification(notification)
 	}
 }
 
@@ -154,7 +183,11 @@ func (f *Frontend) Run(ctx context.Context) error {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
-	mainWindow.Run(f.startURL.String())
+	var activationPolicy C.int
+	if f.frontendOptions != nil && f.frontendOptions.Mac != nil {
+		activationPolicy = C.int(f.frontendOptions.Mac.ActivationPolicy)
+	}
+	mainWindow.Run(f.startURL.String(), activationPolicy)
 	return nil
 }
 
@@ -438,6 +471,11 @@ func processMessage(message *C.char) {
 	messageBuffer <- goMessage
 }
 
+//export processNotification
+func processNotification(notification NotificationType) {
+	notificationBuffer <- notification
+}
+
 //export processURLRequest
 func processURLRequest(ctx unsafe.Pointer, requestId C.ulonglong, url *C.char, method *C.char, headers *C.char, body unsafe.Pointer, bodyLen C.int) {
 	var goBody []byte
@@ -458,4 +496,20 @@ func processURLRequest(ctx unsafe.Pointer, requestId C.ulonglong, url *C.char, m
 //export processCallback
 func processCallback(callbackID uint) {
 	callbackBuffer <- callbackID
+}
+
+func (f *Frontend) handleNotification(notification NotificationType) {
+	switch notification {
+	case ApplicationDidFinishLaunching:
+		f.applicationDidFinishLaunching = true
+		for _, callback := range f.notificationCallbacks[notification] {
+			go callback()
+		}
+	}
+}
+
+func (f *Frontend) processTrayMenus() {
+	for _, trayMenu := range f.trayMenusBuffer {
+		f.mainWindow.TrayMenuAdd(trayMenu)
+	}
 }

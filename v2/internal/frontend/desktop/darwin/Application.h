@@ -18,7 +18,7 @@
 #define WindowStartsFullscreen 3
 
 WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight);
-void Run(void*, const char* url);
+void Run(void *inctx, const char* url, int activationPolicy);
 
 void SetTitle(void* ctx, const char *title);
 void Center(void* ctx);
@@ -62,6 +62,16 @@ void AppendSubmenu(void* parent, void* child);
 void AppendRole(void *inctx, void *inMenu, int role);
 void SetAsApplicationMenu(void *inctx, void *inMenu);
 void UpdateApplicationMenu(void *inctx);
+void SetMenuItemChecked(void* nsMenuItem, int checked);
+
+/* Tray Menu */
+void NewNSStatusItem(int id, int length);
+void SetTrayMenu(void *nsStatusItem, void* nsMenu);
+void SetTrayMenuLabel(void *nsStatusItem, const char *label);
+void SetTrayImage(void *nsStatusItem, void *imageData, int imageDataLength, int template, int position);
+
+/* MenuItems */
+void SetMenuItemLabel(void *nsStatusItem, const char *label);
 
 void SetAbout(void *inctx, const char* title, const char* description, void* imagedata, int datalen);
 void* AppendMenuItem(void* inctx, void* nsmenu, const char* label, const char* shortcutKey, int modifiers, int disabled, int checked, int menuItemID);
@@ -69,5 +79,8 @@ void AppendSeparator(void* inMenu);
 void UpdateMenuItem(void* nsmenuitem, int checked);
 
 NSString* safeInit(const char* input);
+
+
+int ScalingFactor(void *ctx);
 
 #endif /* Application_h */
