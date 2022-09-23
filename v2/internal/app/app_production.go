@@ -6,7 +6,6 @@ import (
 	"context"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
-	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop"
 	"github.com/wailsapp/wails/v2/internal/frontend/dispatcher"
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
@@ -14,27 +13,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
-
-// App defines a Wails application structure
-type App struct {
-	frontend frontend.Frontend
-	logger   *logger.Logger
-	options  *options.App
-
-	menuManager *menumanager.Manager
-
-	// Indicates if the app is in debug mode
-	debug bool
-
-	// OnStartup/OnShutdown
-	startupCallback  func(ctx context.Context)
-	shutdownCallback func(ctx context.Context)
-	ctx              context.Context
-}
-
-func (a *App) Shutdown() {
-	a.frontend.Quit()
-}
 
 func (a *App) Run() error {
 	err := a.frontend.Run(a.ctx)
