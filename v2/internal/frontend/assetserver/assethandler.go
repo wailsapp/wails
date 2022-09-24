@@ -71,11 +71,11 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			filename = indexHTML
 		}
 
-		d.logDebug("[AssetHandler] Loading file '%s'", filename)
+		d.logDebug("Loading file '%s'", filename)
 		if err := d.serveFSFile(rw, filename); err != nil {
 			if os.IsNotExist(err) {
 				if handler != nil {
-					d.logDebug("[AssetHandler] File '%s' not found, serving '%s' by AssetHandler", filename, req.URL)
+					d.logDebug("File '%s' not found, serving '%s' by AssetHandler", filename, req.URL)
 					handler.ServeHTTP(rw, req)
 					err = nil
 				} else if filename == indexHTML {
@@ -87,12 +87,12 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			}
 
 			if err != nil {
-				d.logError("[AssetHandler] Unable to load file '%s': %s", filename, err)
+				d.logError("Unable to load file '%s': %s", filename, err)
 				http.Error(rw, err.Error(), http.StatusInternalServerError)
 			}
 		}
 	} else if handler != nil {
-		d.logDebug("[AssetHandler] No GET request, serving '%s' by AssetHandler", req.URL)
+		d.logDebug("No GET request, serving '%s' by AssetHandler", req.URL)
 		handler.ServeHTTP(rw, req)
 	} else {
 		rw.WriteHeader(http.StatusMethodNotAllowed)
