@@ -160,6 +160,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		buildOptions := generateBuildOptions(flags)
+		buildOptions.SkipBindings = flags.skipBindings
 		buildOptions.Logger = logger
 
 		userTags, err := buildtags.Parse(flags.tags)
@@ -169,7 +170,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		buildOptions.UserTags = userTags
 
-		if !flags.skipBindings {
+		if !buildOptions.SkipBindings {
 			if flags.verbosity == build.VERBOSE {
 				LogGreen("Generating Bindings...")
 			}
