@@ -5,6 +5,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -29,5 +30,12 @@ type App struct {
 func (a *App) Shutdown() {
 	if a.frontend != nil {
 		a.frontend.Quit()
+	}
+}
+
+// SetApplicationMenu sets the application menu
+func (a *App) SetApplicationMenu(menu *menu.Menu) {
+	if a.frontend != nil {
+		a.frontend.MenuSetApplicationMenu(menu)
 	}
 }

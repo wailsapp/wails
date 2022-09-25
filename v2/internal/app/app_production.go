@@ -16,6 +16,8 @@ import (
 
 func (a *App) Run() error {
 	err := a.frontend.Run(a.ctx)
+	a.frontend.RunMainLoop()
+	a.frontend.WindowClose()
 	if a.shutdownCallback != nil {
 		a.shutdownCallback(a.ctx)
 	}
