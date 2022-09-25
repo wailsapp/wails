@@ -164,7 +164,7 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 
 	// Iterate this struct and add any struct field references
 	structType := reflect.TypeOf(s)
-	if structType.Kind() == reflect.Ptr {
+	if hasElements(structType) {
 		structType = structType.Elem()
 	}
 
@@ -186,11 +186,11 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 				s := reflect.Indirect(a).Interface()
 				b.AddStructToGenerateTS(pName, sName, s)
 			}
-		} else if kind == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct {
+		} else if hasElements(field.Type) && field.Type.Elem().Kind() == reflect.Struct {
 			if !field.IsExported() {
 				continue
 			}
-			fqname := field.Type.String()
+			fqname := field.Type.Elem().String()
 			sName := strings.Split(fqname, ".")[1]
 			pName := getPackageName(fqname)
 			typ := field.Type.Elem()

@@ -165,3 +165,8 @@ func getPackageName(in string) string {
 	result = strings.ReplaceAll(result, "*", "")
 	return result
 }
+
+func hasElements(typ reflect.Type) bool {
+	kind := typ.Kind()
+	return kind == reflect.Ptr || kind == reflect.Array || kind == reflect.Slice || kind == reflect.Map
+}
