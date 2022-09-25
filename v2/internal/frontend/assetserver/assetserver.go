@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	iofs "io/fs"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
-	"github.com/wailsapp/wails/v2/pkg/options"
 
 	"golang.org/x/net/html"
 )
@@ -31,8 +31,8 @@ type AssetServer struct {
 	appendSpinnerToBody bool
 }
 
-func NewAssetServer(ctx context.Context, options *options.App, bindingsJSON string) (*AssetServer, error) {
-	handler, err := NewAssetHandler(ctx, options)
+func NewAssetServer(ctx context.Context, vfs iofs.FS, AssetsHandler http.Handler, bindingsJSON string) (*AssetServer, error) {
+	handler, err := NewAssetHandler(ctx, vfs, AssetsHandler)
 	if err != nil {
 		return nil, err
 	}

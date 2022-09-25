@@ -1,8 +1,8 @@
 //go:build !windows
 // +build !windows
 
-package wails
+package application
 
-func Init() error {
+func applicationInit() error {
 	return nil
 }
