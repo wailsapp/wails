@@ -74,6 +74,14 @@ type Frontend struct {
 	trayMenusBuffer               []*menu.TrayMenu
 }
 
+func (f *Frontend) RunMainLoop() {
+	C.RunMainLoop()
+}
+
+func (f *Frontend) WindowClose() {
+	C.ReleaseContext(f.mainWindow.context)
+}
+
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 	result := &Frontend{
 		frontendOptions:       appoptions,
@@ -99,7 +107,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		} else {
 			appBindings.DB().UpdateObfuscatedCallMap()
 		}
-		assets, err := assetserver.NewAssetServer(ctx, appoptions, bindings)
+		assets, err := assetserver.NewAssetServer(ctx, appoptions.Assets, appoptions.AssetsHandler, bindings)
 		if err != nil {
 			log.Fatal(err)
 		}
