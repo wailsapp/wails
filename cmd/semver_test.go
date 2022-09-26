@@ -21,8 +21,7 @@ func TestSemanticVersion_IsPreRelease(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			semanticversion, err := NewSemanticVersion(tt.version)
 			if err != nil {
-				t.Errorf("Invalid semantic version: %s", semanticversion)
-				return
+				t.Fatalf("Invalid semantic version: %s", semanticversion)
 			}
 			s := &SemanticVersion{
 				Version: semanticversion.Version,
@@ -51,8 +50,7 @@ func TestSemanticVersion_IsRelease(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			semanticversion, err := NewSemanticVersion(tt.version)
 			if err != nil {
-				t.Errorf("Invalid semantic version: %s", semanticversion)
-				return
+				t.Fatalf("Invalid semantic version: %s", semanticversion)
 			}
 			s := &SemanticVersion{
 				Version: semanticversion.Version,

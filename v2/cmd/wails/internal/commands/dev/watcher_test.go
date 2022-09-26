@@ -1,13 +1,12 @@
 package dev
 
 import (
-	"github.com/samber/lo"
 	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/samber/lo"
 
 	"github.com/wailsapp/wails/v2/internal/fs"
 )
@@ -86,10 +85,14 @@ func Test_GetIgnoreDirs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create temporary file
 			err := fs.Mkdir("testdir")
-			require.NoError(t, err)
+			if err != nil {
+				t.Fatal()
+			}
 			defer func() {
 				err := os.RemoveAll("testdir")
-				require.NoError(t, err)
+				if err != nil {
+					t.Fatal()
+				}
 			}()
 			for _, file := range tt.files {
 				fs.MustWriteString(filepath.Join("testdir", file), "")
@@ -102,8 +105,7 @@ func Test_GetIgnoreDirs(t *testing.T) {
 			})
 
 			if (err != nil) != tt.shouldErr {
-				t.Errorf("initialiseWatcher() error = %v, shouldErr %v", err, tt.shouldErr)
-				return
+				t.Fatalf("initialiseWatcher() error = %v, shouldErr %v", err, tt.shouldErr)
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("initialiseWatcher() got = %v, want %v", got, tt.want)

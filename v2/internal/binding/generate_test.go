@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/leaanthony/slicer"
-	"github.com/stretchr/testify/assert"
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
 
@@ -27,13 +26,13 @@ func TestNestedStruct(t *testing.T) {
 	bind := &BindForTest{}
 	testBindings := NewBindings(logger.New(nil), []interface{}{bind}, []interface{}{}, false)
 
-	namesStrSlicer := testBindings.getAllStructNames()
-	names := []string{}
-	namesStrSlicer.Each(func(s string) {
-		names = append(names, s)
-	})
-	assert.Contains(t, names, "binding.A")
-	assert.Contains(t, names, "binding.B")
+	names := testBindings.getAllStructNames()
+	if !names.Contains("binding.A") {
+		t.Errorf("names should contain 'binding.A'")
+	}
+	if !names.Contains("binding.B") {
+		t.Errorf("names should contain 'binding.B'")
+	}
 }
 
 func Test_goTypeToJSDocType(t *testing.T) {

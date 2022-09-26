@@ -56,12 +56,12 @@ func TestGetPrerequisites(t *testing.T) {
 	var linuxDB = NewLinuxDB()
 	result := linuxDB.GetDistro("debian")
 	if result == nil {
-		t.Error("Cannot get distro 'debian'")
+		t.Fatal("Cannot get distro 'debian'")
 	}
 
 	release := result.GetRelease("default")
 	if release == nil {
-		t.Error("Failed to get release 'default' for unknown release version '16.04'")
+		t.Fatal("Failed to get release 'default' for unknown release version '16.04'")
 	}
 
 	if release.Version != "default" {

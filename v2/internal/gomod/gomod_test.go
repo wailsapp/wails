@@ -30,8 +30,7 @@ func TestGetWailsVersion(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := GetWailsVersionFromModFile(tt.goModText)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetWailsVersion() error = %v, wantErr %v", err, tt.wantErr)
-				return
+				t.Fatalf("GetWailsVersion() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetWailsVersion() got = %v, want %v", got, tt.want)
@@ -142,8 +141,7 @@ func TestUpdateGoModVersion(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := UpdateGoModVersion(tt.args.goModText, tt.args.currentVersion)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("UpdateGoModVersion() error = %v, wantErr %v", err, tt.wantErr)
-				return
+				t.Fatalf("UpdateGoModVersion() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			is2.Equal(string(got), string(tt.want))
 		})
@@ -170,8 +168,7 @@ func TestGoModOutOfSync(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := GoModOutOfSync(tt.args.goModData, tt.args.currentVersion)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GoModOutOfSync() error = %v, wantErr %v", err, tt.wantErr)
-				return
+				t.Fatalf("GoModOutOfSync() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			is2.Equal(got, tt.want)
 		})
@@ -259,12 +256,10 @@ func TestUpdateGoModGoVersion(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got, updated, err := SyncGoVersion(tt.args.goModText, tt.args.currentVersion)
 			if err != nil {
-				t.Errorf("UpdateGoModVersion() error = %v", err)
-				return
+				t.Fatalf("UpdateGoModVersion() error = %v", err)
 			}
 			if updated != tt.updated {
-				t.Errorf("UpdateGoModVersion() updated = %t, want = %t", updated, tt.updated)
-				return
+				t.Fatalf("UpdateGoModVersion() updated = %t, want = %t", updated, tt.updated)
 			}
 			is2.Equal(got, tt.want)
 		})
