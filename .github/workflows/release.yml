@@ -8,6 +8,7 @@ on:
 jobs:
   test:
     name: Run Go Tests
+    if: github.repository == 'wailsapp/wails'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -33,7 +34,6 @@ jobs:
   test_templates:
     name: Test Templates
     needs: test
-    if: github.repository == 'wailsapp/wails'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
