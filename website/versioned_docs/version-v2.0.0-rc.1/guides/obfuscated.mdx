@@ -5,12 +5,12 @@ Wails includes support for obfuscating your application using [garble](https://g
 To produce an obfuscated build, you can use the `-obfuscate` flag with the `wails build` command:
 
 ```bash
-wails build -obfuscate
+wails build -obfuscated
 ```
 To customise the obfuscation settings, you can use the `-garbleargs` flag:
 
 ```bash
-wails build -obfuscate -garbleargs "-literals -tiny -seed=myrandomseed"
+wails build -obfuscated -garbleargs "-literals -tiny -seed=myrandomseed"
 ```
 
 These settings may be persisted in your [project config](/guides/reference/project-config).
