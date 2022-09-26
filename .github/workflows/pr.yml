@@ -5,6 +5,7 @@ on:
 jobs:
   check_branch_name:
     runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
     name: Check branch name
     steps:
       - run: |
