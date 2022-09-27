@@ -52,6 +52,14 @@ type Frontend struct {
 	dispatcher frontend.Dispatcher
 }
 
+func (f *Frontend) RunMainLoop() {
+	C.gtk_main()
+}
+
+func (f *Frontend) WindowClose() {
+	f.mainWindow.Destroy()
+}
+
 func init() {
 	runtime.LockOSThread()
 }
@@ -85,7 +93,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		} else {
 			appBindings.DB().UpdateObfuscatedCallMap()
 		}
-		assets, err := assetserver.NewAssetServer(ctx, appoptions, bindings)
+		assets, err := assetserver.NewAssetServer(ctx, appoptions.Assets, appoptions.AssetsHandler, bindings)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -1,4 +1,4 @@
-//go:build unix && !bindings
+//go:build (linux || darwin) && !bindings
 
 package app
 
