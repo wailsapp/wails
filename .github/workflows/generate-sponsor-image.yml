@@ -10,6 +10,7 @@ on:
 jobs:
   update-sponsors:
     runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
     steps:
       - uses: actions/checkout@v2
 

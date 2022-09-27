@@ -7,6 +7,7 @@ on:
 jobs:
   projectcardautolabel_job:
     runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
     steps:
       - name: Run ProjectCard AutoLabel
         id: runprojectcardautolabel
