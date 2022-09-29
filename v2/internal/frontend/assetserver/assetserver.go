@@ -32,7 +32,7 @@ type AssetServer struct {
 }
 
 func NewAssetServer(ctx context.Context, vfs iofs.FS, assetsHandler http.Handler, bindingsJSON string) (*AssetServer, error) {
-	handler, err := NewAssetHandler(ctx, vfs, AssetsHandler)
+	handler, err := NewAssetHandler(ctx, vfs, assetsHandler)
 	if err != nil {
 		return nil, err
 	}
