@@ -2,13 +2,13 @@ name: Build + Test
 
 on:
   push:
-    branches: "*" 
+    branches: [ release/*, master ]
   workflow_dispatch:
 
 jobs:
   test:
     name: Run Go Tests
-    if: github.repository == 'wailsapp/wails' && ((github.branch == 'master' || github.branch == 'release/*') || (github.event_name == 'pull_request' && github.event.review.state == 'approved'))
+    if: github.repository == 'wailsapp/wails'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
