@@ -16,23 +16,24 @@ on:
   workflow_dispatch:
     # This Action only starts when you go to Actions and manually run the workflow.
 
-- name: Get Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
-      - name: Build Wails app
-        run: |
-          wails build
-      - name: upload artifacts macOS
-        if: matrix.platform == 'macos-latest'
-        uses: actions/upload-artifact@v2
+jobs:
+  package:
+    strategy:
+      matrix:
+        platform: [windows-latest, macos-latest]
+        go-version: [1.18]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
         with:
-          name: wails-binaries-macos
-          path: build/bin/*
-      - name: upload artifacts windows
-        if: matrix.platform == 'windows-latest'
-        uses: actions/upload-artifact@v2
+          go-version: ${{ matrix.go-version }}
+      - name: setup node
+        uses: actions/setup-node@v2
         with:
-          name: wails-binaries-windows
-          path: build/bin/*
+          node-version: 14
+      # You may need to manually build you frontend manually here, unless you have configured frontend build and install commands in wails.json.
       - name: Get Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
       - name: Build Wails app
@@ -58,7 +59,7 @@ Next we need to give the GitHub workflow access to our signing certificate. This
 certutil -encode .\my-cert.p12 my-cert-base64.txt
 ```
 
-You should now have your .txt file with the base64 encoded certificate. Now you need to make two action secrets on GitHub. Now you need to make two action secrets on GitHub. Navigate to *Settings -> Secrets -> Actions* and create the two following secrets:
+You should now have your .txt file with the base64 encoded certificate. It should start with _-----BEGIN CERTIFICATE-----_ and end with _-----END CERTIFICATE-----_. Now you need to make two action secrets on GitHub. Navigate to _Settings -> Secrets -> Actions_ and create the two following secrets:
 
 - **WIN_SIGNING_CERT** with the contents of your base64 encoded certificate text.
 - **WIN_SIGNING_CERT_PASSWORD** with the contents of your certificate password.

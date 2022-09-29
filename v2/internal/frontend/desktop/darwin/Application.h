@@ -67,6 +67,8 @@ void SetAbout(void *inctx, const char* title, const char* description, void* ima
 void* AppendMenuItem(void* inctx, void* nsmenu, const char* label, const char* shortcutKey, int modifiers, int disabled, int checked, int menuItemID);
 void AppendSeparator(void* inMenu);
 void UpdateMenuItem(void* nsmenuitem, int checked);
+void RunMainLoop(void);
+void ReleaseContext(void *inctx);
 
 NSString* safeInit(const char* input);
 

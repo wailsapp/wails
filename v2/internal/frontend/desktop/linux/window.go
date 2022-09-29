@@ -861,8 +861,6 @@ func (w *Window) Run(url string) {
 		w.Maximise()
 	}
 
-	C.gtk_main()
-	w.Destroy()
 }
 
 func (w *Window) SetKeepAbove(top bool) {
