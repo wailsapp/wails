@@ -115,7 +115,7 @@ This project is supported by these kind people / companies:
 
 ## Stargazers over time
 
-[![Stargazers over time](https://starchart.cc/wailsapp/wails.svg)](https://starchart.cc/wailsapp/wails)
+[![Star History Chart](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
 
 ## Contributors
 
