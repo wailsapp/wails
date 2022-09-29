@@ -239,6 +239,10 @@ func (m *MenuItem) SetLabel(name string) {
 	m.Impl.SetLabel(name)
 }
 
+func (m *MenuItem) IsSeparator() bool {
+	return m.Type == SeparatorType
+}
+
 // Text is a helper to create basic Text menu items
 func Text(label string, accelerator *keys.Accelerator, click Callback) *MenuItem {
 	return &MenuItem{
