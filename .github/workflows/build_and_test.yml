@@ -8,7 +8,7 @@ on:
 jobs:
   test:
     name: Run Go Tests
-    if: github.repository == 'wailsapp/wails'
+    if: github.repository == 'wailsapp/wails' && ((github.branch == 'master' || github.branch == 'release/*') || (github.event_name == 'pull_request' && github.event.review.state == 'approved'))
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
