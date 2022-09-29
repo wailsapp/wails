@@ -47,9 +47,7 @@ type App struct {
 	AlwaysOnTop       bool
 	// BackgroundColour is the background colour of the window
 	// You can use the options.NewRGB and options.NewRGBA functions to create a new colour
-	BackgroundColour *RGBA
-	// RGBA is deprecated. Please use BackgroundColour
-	RGBA               *RGBA
+	BackgroundColour   *RGBA
 	Assets             fs.FS
 	AssetsHandler      http.Handler
 	Menu               *menu.Menu

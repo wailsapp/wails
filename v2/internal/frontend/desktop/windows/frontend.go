@@ -102,7 +102,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		appBindings.DB().UpdateObfuscatedCallMap()
 	}
 
-	assets, err := assetserver.NewAssetServer(ctx, appoptions, bindings)
+	assets, err := assetserver.NewAssetServer(ctx, appoptions.Assets, appoptions.AssetsHandler, bindings)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -180,9 +180,18 @@ func (f *Frontend) Run(ctx context.Context) error {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
-	mainWindow.Run()
-	mainWindow.Close()
+	mainWindow.UpdateTheme()
 	return nil
+}
+
+func (f *Frontend) WindowClose() {
+	if f.mainWindow != nil {
+		f.mainWindow.Close()
+	}
+}
+
+func (f *Frontend) RunMainLoop() {
+	_ = winc.RunMainLoop()
 }
 
 func (f *Frontend) WindowCenter() {
