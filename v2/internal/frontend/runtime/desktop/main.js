@@ -122,6 +122,11 @@ function setResize(cursor) {
 }
 
 window.addEventListener('mousemove', function (e) {
+    let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
+    if(window.wails.flags.shouldDrag && mousePressed <= 0) {
+        window.wails.flags.shouldDrag = false;
+    }
+    
     if (window.wails.flags.shouldDrag) {
         window.WailsInvoke("drag");
         return;
