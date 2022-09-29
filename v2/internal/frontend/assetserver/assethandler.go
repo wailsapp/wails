@@ -51,7 +51,7 @@ func NewAssetHandler(ctx context.Context, vfs iofs.FS, AssetsHandler http.Handle
 
 	result := &assetHandler{
 		fs:      vfs,
-		handler: AssetsHandler,
+		handler: assetsHandler,
 	}
 
 	if _logger := ctx.Value("logger"); _logger != nil {
