@@ -119,18 +119,30 @@ type MessageDialogOptions struct {
 }
 ```
 
-| 字段            | 描述                             | Win | Mac | Lin |
-| ------------- | ------------------------------ | --- | --- | --- |
-| 类型            | 消息对话框的类型，例如问题、信息...            | ✅   | ✅   | ✅   |
-| Title         | 对话框的标题                         | ✅   | ✅   | ✅   |
-| Message       | 向用户显示的消息                       | ✅   | ✅   | ✅   |
-| Buttons       | 按钮标题列表                         |     | ✅   |     |
-| DefaultButton | 带有此文本的按钮应被视为默认按钮。 绑定到 `return` |     | ✅   |     |
-| CancelButton  | 带有此文本的按钮应被视为取消。 绑定到 `escape`   |     | ✅   |     |
+| 字段            | 描述                             | Win            | Mac | Lin |
+| ------------- | ------------------------------ | -------------- | --- | --- |
+| 类型            | 消息对话框的类型，例如问题、信息...            | ✅              | ✅   | ✅   |
+| Title         | 对话框的标题                         | ✅              | ✅   | ✅   |
+| Message       | 向用户显示的消息                       | ✅              | ✅   | ✅   |
+| Buttons       | 按钮标题列表                         |                | ✅   |     |
+| DefaultButton | 带有此文本的按钮应被视为默认按钮。 必定 `return`。 | ✅[*](#windows) | ✅   |     |
+| CancelButton  | 带有此文本的按钮应被视为取消。 必定 `escape`    |                | ✅   |     |
 
 #### Windows
 
-Windows 具有标准对话框类型，其中的按钮不可自定义。 返回的值将是以下之一："Ok"、"Cancel"、"Abort"、"Retry"、"Ignore"、"Yes"、"No"、"Try Again"或"Continue"
+Windows 具有标准对话框类型，其中的按钮不可自定义。 返回的值将是以下之一："Ok"、"Cancel"、"Abort"、"Retry"、"Ignore"、"Yes"、"No"、"Try Again"或"Continue"。
+
+对于问题对话框，默认按钮是 “是”，取消按钮是 “否”。 可以通过将 `默认按钮` 值设置为 `"否"` 来改变这一点。
+
+示例：
+```go
+    result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+        Type:          runtime.QuestionDialog,
+        Title:         "Question",
+        Message:       "Do you want to continue?",
+        DefaultButton: "No",
+    })
+```
 
 #### Linux
 

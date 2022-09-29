@@ -16,7 +16,7 @@
     "description": "Navbar item with label GitHub"
   },
   "item.label.About": {
-    "message": "About",
+    "message": "概要",
     "description": "Navbar item with label About"
   },
   "item.label.FAQ": {
@@ -32,11 +32,11 @@
     "description": "Navbar item with label Community Guide"
   },
   "item.label.Credits": {
-    "message": "Credits",
+    "message": "クレジット",
     "description": "Navbar item with label Credits"
   },
   "item.label.Code of Conduct": {
-    "message": "Code of Conduct",
+    "message": "行動規範",
     "description": "Navbar item with label Code of Conduct"
   }
 }
