@@ -286,7 +286,7 @@ static gboolean startResize(gpointer data) {
 		return G_SOURCE_REMOVE;
 	}
 
-	gtk_window_begin_resize_drag(options->mainwindow, options->edge, 1, xroot, yroot, dragTime);
+	gtk_window_begin_resize_drag(options->mainwindow, options->edge, mouseButton, xroot, yroot, dragTime);
 	free(data);
 
 	return G_SOURCE_REMOVE;
@@ -623,6 +623,17 @@ void SetWindowIcon(GtkWindow* window, const guchar* buf, gsize len) {
 	g_object_unref(loader);
 }
 
+static void SetWindowTransparency(GtkWidget *widget)
+{
+    GdkScreen *screen = gtk_widget_get_screen(widget);
+    GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
+
+    if (visual != NULL && gdk_screen_is_composited(screen)) {
+		gtk_widget_set_app_paintable(widget, true);
+		gtk_widget_set_visual(widget, visual);
+    }
+}
+
 */
 import "C"
 import (
@@ -713,6 +724,9 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	if appoptions.Linux != nil {
 		if appoptions.Linux.Icon != nil {
 			result.SetWindowIcon(appoptions.Linux.Icon)
+		}
+		if appoptions.Linux.WindowIsTranslucent {
+			C.SetWindowTransparency(gtkWindow)
 		}
 	}
 
