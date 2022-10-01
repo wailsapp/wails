@@ -36,7 +36,7 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 	}
 
 	for _, exemption := range exemptions {
-		if exemptions == nil {
+		if exemption == nil {
 			continue
 		}
 		name := runtime.FuncForPC(reflect.ValueOf(exemption).Pointer()).Name()
