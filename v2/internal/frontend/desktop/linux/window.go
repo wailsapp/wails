@@ -159,11 +159,12 @@ ulong setupInvokeSignal(void* contentManager) {
 	return g_signal_connect((WebKitUserContentManager*)contentManager, "script-message-received::external", G_CALLBACK(sendMessageToBackend), NULL);
 }
 
-// These are the x,y & time of the last mouse down event
+// These are the x,y,time & button of the last mouse down event
 // It's used for window dragging
 float xroot = 0.0f;
 float yroot = 0.0f;
 int dragTime = -1;
+uint mouseButton = 0;
 bool contextMenuDisabled = false;
 
 gboolean buttonPress(GtkWidget *widget, GdkEventButton *event, void* dummy)
@@ -173,7 +174,7 @@ gboolean buttonPress(GtkWidget *widget, GdkEventButton *event, void* dummy)
 		dragTime = -1;
 		return FALSE;
 	}
-
+	mouseButton = event->button;
 	if( event->button == 3 && contextMenuDisabled ) {
 		return TRUE;
 	}
@@ -256,7 +257,7 @@ static gboolean startDrag(gpointer data) {
 		return G_SOURCE_REMOVE;
 	}
 
-	gtk_window_begin_move_drag(options->mainwindow, 1, xroot, yroot, dragTime);
+	gtk_window_begin_move_drag(options->mainwindow, mouseButton, xroot, yroot, dragTime);
 	free(data);
 
 	return G_SOURCE_REMOVE;
@@ -267,6 +268,36 @@ static void StartDrag(void *webview, GtkWindow* mainwindow) {
 	data->webview = webview;
 	data->mainwindow = mainwindow;
 	ExecuteOnMainThread(startDrag, (gpointer)data);
+}
+
+typedef struct ResizeOptions {
+	void *webview;
+	GtkWindow* mainwindow;
+	GdkWindowEdge edge;
+} ResizeOptions;
+
+static gboolean startResize(gpointer data) {
+	ResizeOptions* options = (ResizeOptions*)data;
+
+	// Ignore non-toplevel widgets
+	GtkWidget *window = gtk_widget_get_toplevel(GTK_WIDGET(options->webview));
+	if (!GTK_IS_WINDOW(window)) {
+		free(data);
+		return G_SOURCE_REMOVE;
+	}
+
+	gtk_window_begin_resize_drag(options->mainwindow, options->edge, mouseButton, xroot, yroot, dragTime);
+	free(data);
+
+	return G_SOURCE_REMOVE;
+}
+
+static void StartResize(void *webview, GtkWindow* mainwindow, GdkWindowEdge edge) {
+	ResizeOptions* data = malloc(sizeof(ResizeOptions));
+	data->webview = webview;
+	data->mainwindow = mainwindow;
+	data->edge = edge;
+	ExecuteOnMainThread(startResize, (gpointer)data);
 }
 
 typedef struct JSCallback {
@@ -592,6 +623,17 @@ void SetWindowIcon(GtkWindow* window, const guchar* buf, gsize len) {
 	g_object_unref(loader);
 }
 
+static void SetWindowTransparency(GtkWidget *widget)
+{
+    GdkScreen *screen = gtk_widget_get_screen(widget);
+    GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
+
+    if (visual != NULL && gdk_screen_is_composited(screen)) {
+		gtk_widget_set_app_paintable(widget, true);
+		gtk_widget_set_visual(widget, visual);
+    }
+}
+
 */
 import "C"
 import (
@@ -682,6 +724,9 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	if appoptions.Linux != nil {
 		if appoptions.Linux.Icon != nil {
 			result.SetWindowIcon(appoptions.Linux.Icon)
+		}
+		if appoptions.Linux.WindowIsTranslucent {
+			C.SetWindowTransparency(gtkWindow)
 		}
 	}
 
@@ -861,8 +906,6 @@ func (w *Window) Run(url string) {
 		w.Maximise()
 	}
 
-	C.gtk_main()
-	w.Destroy()
 }
 
 func (w *Window) SetKeepAbove(top bool) {
@@ -895,6 +938,10 @@ func (w *Window) ExecJS(js string) {
 
 func (w *Window) StartDrag() {
 	C.StartDrag(w.webview, w.asGTKWindow())
+}
+
+func (w *Window) StartResize(edge uintptr) {
+	C.StartResize(w.webview, w.asGTKWindow(), C.GdkWindowEdge(edge))
 }
 
 func (w *Window) Quit() {

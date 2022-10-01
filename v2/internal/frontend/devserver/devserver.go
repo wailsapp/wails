@@ -83,7 +83,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		})
 
 		var err error
-		assetHandler, err = assetserver.NewAssetHandler(ctx, d.appoptions)
+		assetHandler, err = assetserver.NewAssetHandler(ctx, d.appoptions.Assets, d.appoptions.AssetsHandler)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -1,8 +1,8 @@
-name: Release
+name: Build + Test
 
 on:
   push:
-    branches: [ release/* ]
+    branches: [ release/*, master ]
   workflow_dispatch:
 
 jobs:

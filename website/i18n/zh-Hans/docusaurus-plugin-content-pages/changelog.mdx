@@ -4,13 +4,28 @@
 
 格式基于 [维护更新日志](https://keepachangelog.com/en/1.0.0/)，并且该项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
-## 即将发布
+## v2.0.0 - 2022-09-22
+
+## 修复
+* Fix buildtags parsing if only one tag is specified by @stffabi in https://github.com/wailsapp/wails/pull/1858
+* Use embed all to include all files in templates by @stffabi in https://github.com/wailsapp/wails/pull/1862
+
+## 变更
+* Bump minimum required Go version to 1.18 by @stffabi in https://github.com/wailsapp/wails/pull/1854
+* Add check for minimum required Go version by @stffabi in https://github.com/wailsapp/wails/pull/1853
+* chore: update README and workflows by @misitebao in https://github.com/wailsapp/wails/pull/1848
+* Add nixpkgs support to doctor command. by @ianmjones in https://github.com/wailsapp/wails/pull/1551 by @ianmjones in https://github.com/wailsapp/wails/pull/1551 by @ianmjones in https://github.com/wailsapp/wails/pull/1551
+* Releasetest/release workflow by @leaanthony in https://github.com/wailsapp/wails/pull/1869
+* Optimize documentation website by @misitebao in https://github.com/wailsapp/wails/pull/1849
+
+## 新贡献者
+* @ParvinEyvazov made their first contribution in https://github.com/wailsapp/wails/pull/1863
 
 ## v2.0.0-rc.1 - 2022-09-13
 
 ### 废弃
 
-- The `-noGen` flag for the `wails dev` command has been replaced with `-skipbindings`. This is to align with the `wails build` command.
+- The `-noGen` flag for the `wails dev` command has been replaced with `-skipbindings`. This is to align with the `wails build` command. This is to align with the `wails build` command.
 
 ### 新增
 
@@ -172,7 +187,7 @@ Experimental: &options.Experimental{
 
 ### 废弃
 
-- The `Fullscreen` application option is deprecated. Please use [`WindowStartState`](https://wails.io/docs/reference/options#windowstartstate) instead.
+- The `Fullscreen` application option is deprecated. The `Fullscreen` application option is deprecated. Please use [`WindowStartState`](https://wails.io/docs/reference/options#windowstartstate) instead.
 
 ### 新贡献者
 
@@ -202,8 +217,8 @@ Experimental: &options.Experimental{
 
 - Fix stack corruption in Windows when using ICoreWebView2HttpHeadersCollectionIterator by @stffabi in https://github.com/wailsapp/wails/pull/1589
 - Move WindowGet\* to main thread by @leaanthony in https://github.com/wailsapp/wails/pull/1464
-- Allow -appargs flag to pass flags to binary. by @ianmjones in https://github.com/wailsapp/wails/pull/1534
-- Fix checking for installed apt package in none English session. by @ianmjones in https://github.com/wailsapp/wails/pull/1548
+- Allow -appargs flag to pass flags to binary. by @ianmjones in https://github.com/wailsapp/wails/pull/1534 by @ianmjones in https://github.com/wailsapp/wails/pull/1534
+- Fix checking for installed apt package in none English session. by @ianmjones in https://github.com/wailsapp/wails/pull/1548 by @ianmjones in https://github.com/wailsapp/wails/pull/1548
 - Fix OnBeforeClose code for Mac by @leaanthony in https://github.com/wailsapp/wails/pull/1558
 - Support Maps in TS conversion by @leaanthony in https://github.com/wailsapp/wails/pull/1435
 - Check for line length when scanning for local devserver url by @leaanthony in https://github.com/wailsapp/wails/pull/1566
@@ -333,14 +348,14 @@ Experimental: &options.Experimental{
 
 ### Breaking Changes
 
-- When data was sent to the `EventsOn` callback, it was being sent as a slice of values, instead of optional parameters to the method. `EventsOn` now works as expected, but you will need to update your code if you currently use this. [More information](https://github.com/wailsapp/wails/issues/1324)
-- The broken `bindings.js` and `bindings.d.ts` files have been replaced by a new JS/TS code generation system. More details [here](https://wails.io/docs/howdoesitwork#calling-bound-go-methods)
+- When data was sent to the `EventsOn` callback, it was being sent as a slice of values, instead of optional parameters to the method. `EventsOn` now works as expected, but you will need to update your code if you currently use this. [More information](https://github.com/wailsapp/wails/issues/1324) `EventsOn` now works as expected, but you will need to update your code if you currently use this. [More information](https://github.com/wailsapp/wails/issues/1324)
+- The broken `bindings.js` and `bindings.d.ts` files have been replaced by a new JS/TS code generation system. More details [here](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) More details [here](https://wails.io/docs/howdoesitwork#calling-bound-go-methods)
 
 ### 新增
 
-- **New Templates**: Svelte, React, Vue, Preact, Lit and Vanilla templates, both JS and TS versions. `wails init -l` for more info.
-- Default templates now powered by [Vite](https://vitejs.dev). This enables lightning fast reloads when you use `wails dev`!
-- Add support for external frontend development servers. See `frontend:dev:serverUrl` in the [project config](https://wails.io/docs/reference/project-config) - [@stffabi](https://github.com/stffabi)
+- **New Templates**: Svelte, React, Vue, Preact, Lit and Vanilla templates, both JS and TS versions. `wails init -l` for more info. `wails init -l` for more info.
+- Default templates now powered by [Vite](https://vitejs.dev). This enables lightning fast reloads when you use `wails dev`! This enables lightning fast reloads when you use `wails dev`!
+- Add support for external frontend development servers. Add support for external frontend development servers. See `frontend:dev:serverUrl` in the [project config](https://wails.io/docs/reference/project-config) - [@stffabi](https://github.com/stffabi)
 - [Fully configurable dark mode](https://wails.io/docs/reference/options#theme) for Windows.
 - Hugely improved [WailsJS generation](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) (both Javascript and Typescript)
 - Wails doctor now reports information about the wails installation - [@stffabi](https://github.com/stffabi)
@@ -390,13 +405,13 @@ Experimental: &options.Experimental{
 - Ensure binary resources can be served by [@napalu](https://github.com/napalu) in #1240
 - Only retry loading assets when loading from disk by [@leaanthony](https://github.com/leaanthony) in #1241
 - [v2, windows] Fix maximised start state by [@stffabi](https://github.com/stffabi) in #1243
-- Ensure Linux IsFullScreen uses GDK_WINDOW_STATE_FULLSCREEN bitmask appropriately. by [@ianmjones](https://github.com/ianmjones) in #1245
+- Ensure Linux IsFullScreen uses GDK_WINDOW_STATE_FULLSCREEN bitmask appropriately. by [@ianmjones](https://github.com/ianmjones) in #1245 by [@ianmjones](https://github.com/ianmjones) in #1245
 - Fix memory leak in ExecJS for Mac by [@leaanthony](https://github.com/leaanthony) in #1230
 - Fix, or at least a workaround, for (#1232) by [@BillBuilt](https://github.com/BillBuilt) in #1247
 - [v2] Use os.Args[0] for self starting wails by [@stffabi](https://github.com/stffabi) in #1258
 - [v2, windows] Windows switch scheme: https -> http by @stefpap in #1255
 - Ensure Focus is regained by Webview2 when tabbing by [@leaanthony](https://github.com/leaanthony) in #1257
-- Try to focus window when Show() is called. by [@leaanthony](https://github.com/leaanthony) in #1212
+- Try to focus window when Show() is called. by [@leaanthony](https://github.com/leaanthony) in #1212 by [@leaanthony](https://github.com/leaanthony) in #1212
 - Check system for user installed Linux dependencies by [@leaanthony](https://github.com/leaanthony) in #1180
 
 ### 变更
