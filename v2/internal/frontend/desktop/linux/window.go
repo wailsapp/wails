@@ -286,7 +286,7 @@ static gboolean startResize(gpointer data) {
 		return G_SOURCE_REMOVE;
 	}
 
-	gtk_window_begin_resize_drag(options->mainwindow, options->edge, 1, xroot, yroot, dragTime);
+	gtk_window_begin_resize_drag(options->mainwindow, options->edge, mouseButton, xroot, yroot, dragTime);
 	free(data);
 
 	return G_SOURCE_REMOVE;
