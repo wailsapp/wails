@@ -226,10 +226,12 @@ export function Greet(arg1: string): Promise<string>;
 
 生成的方法返回一个 Promise 成功的调用将导致 Go 调用的第一个返回值被传递给 `resolve` 处理程序。 不成功的调用是当 Go 方法的第二个返回值具有错误类型时，将错误实例传递回调用者。 这通过 `reject` 处理程序传回的。 在上面的示例中，`Greet` 只返回一个 `string`，因此 Javascript 调用永远不会 reject - 除非将无效数据传递给它。
 
-所有数据类型都在 Go 和 Javascript 之间正确转换。 包括结构体。 如果您从 Go 调用返回一个结构体，它将作为 Javascript 类返回到您的前端。 注意：如果您想使用结构体，您 **必须** 为您的结构体字段定义 `json` 标签！
+所有数据类型都在 Go 和 Javascript 之间正确转换。 包括结构体。 如果您从 Go 调用返回一个结构体，它将作为 Javascript 类返回到您的前端。
 
 :::info 注意
 
+
+结构体字段 *必须* 具有有效的 `json` 标签，以包含在生成的 TypeScript 中。
 
 目前不支持嵌套匿名结构体。
 

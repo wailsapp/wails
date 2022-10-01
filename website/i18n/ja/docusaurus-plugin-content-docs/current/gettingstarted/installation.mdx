@@ -2,18 +2,18 @@
 sidebar_position: 1
 ---
 
-# Installation
+# インストール
 
-## Supported Platforms
+## サポートされているプラットフォーム
 
 - Windows 10/11 AMD64/ARM64
 - MacOS 10.13+ AMD64
 - MacOS 11.0+ ARM64
 - Linux AMD64/ARM64
 
-## Dependencies
+## 依存関係
 
-Wails has a number of common dependencies that are required before installation:
+Wailsをインストールする前に、下記のものを導入しておく必要があります。
 
 - Go 1.18+
 - NPM (Node 15+)
@@ -22,20 +22,20 @@ Wails has a number of common dependencies that are required before installation:
 
 Download Go from the [Go Downloads Page](https://go.dev/dl/).
 
-Ensure that you follow the official [Go installation instructions](https://go.dev/doc/install). You will also need to ensure that your `PATH` environment variable also includes the path to your `~/go/bin` directory. Restart your terminal and do the following checks:
+公式の[Goインストール手順](https://go.dev/doc/install)に従って、Goをインストールしてください。 その際、`PATH`環境変数に`~/go/bin`ディレクトリへのパスが含まれていることも確認してください。 それらが終わったら、ターミナルを再起動し、以下の確認をしてください:
 
-- Check Go is installed correctly: `go version`
-- Check "~/go/bin" is in your PATH variable: `echo $PATH | grep go/bin`
+- Goが正しくインストールされているかを確認する: `go version`
+- "~/go/bin"のディレクトリパスがPATH環境変数に含まれているか確認する: `echo $PATH | grep go/bin`
 
 ### NPM
 
-Download NPM from the [Node Downloads Page](https://nodejs.org/en/download/). It is best to use the latest release as that is what we generally test against.
+[Nodeダウンロードページ](https://nodejs.org/ja/download/)からNPMをダウンロードしてください。 最新版を利用することをお勧めします。なぜなら、私たちは最新版に対してテストを実施しているためです。
 
-Run `npm --version` to verify.
+`npm --version`を実行して、インストールが完了しているかを確認してください。
 
-## Platform Specific Dependencies
+## プラットフォーム固有の依存関係
 
-You will also need to install platform specific dependencies:
+開発作業を行うプラットフォームによって、必要な依存関係が存在します:
 
 ```mdx-code-block
 import Tabs from "@theme/Tabs";
@@ -62,18 +62,18 @@ import TabItem from "@theme/TabItem";
 </Tabs>
 ```
 
-## Optional Dependencies
+## 任意の依存関係
 
-- [UPX](https://upx.github.io/) for compressing your applications.
+- [UPX](https://upx.github.io/)を導入することで、構築したアプリを圧縮できます。
 
-## Installing Wails
+## Wailsのインストール
 
-Run `go install github.com/wailsapp/wails/v2/cmd/wails@latest` to install the Wails CLI.
+`go install github.com/wailsapp/wails/v2/cmd/wails@latest`を実行して、Wails CLIをインストールしてください。
 
-## System Check
+## システムチェック
 
-Running `wails doctor` will check if you have the correct dependencies installed. If not, it will advise on what is missing and help on how to rectify any problems.
+`wails doctor`を実行すると、必要な依存関係が正しくインストールされているかを確認することができます。 正しくインストールされていない場合は、その内容をあなたにお知らせして、どうすれば解決できるかを教えてくれます。
 
-## The `wails` command appears to be missing?
+## `wails`コマンドが見つからないのですが?
 
-If your system is reporting that the `wails` command is missing, make sure you have followed the Go installation guide correctly. Normally, it means that the `go/bin` directory in your User's home directory is not in the `PATH` environment variable. You will also normally need to close and reopen any open command prompts so that changes to the environment made by the installer are reflected at the command prompt.
+`wails`コマンドが見つからないとシステムに怒られた場合は、Goが、公式のGoインストール手順に従って導入されているかを確認してください。 コマンドが見つからないほとんどの理由は、あなたのホームディレクトリ配下にある`go/bin`ディレクトリのパスが、`PATH`環境変数に含まれていないからです。 また、インストールによって行われた環境変更を反映させるために、もともと開いていたコマンドプロンプト(ターミナル)がある場合はそれらをいったん閉じて、再度開きなおしてください。

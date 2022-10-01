@@ -6,6 +6,7 @@ on:
 jobs:
   docs:
     name: Website Updated
+    if: github.repository == 'wailsapp/wails'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

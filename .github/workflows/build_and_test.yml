@@ -1,13 +1,14 @@
-name: Release
+name: Build + Test
 
 on:
   push:
-    branches: [ release/* ]
+    branches: [ release/*, master ]
   workflow_dispatch:
 
 jobs:
   test:
     name: Run Go Tests
+    if: github.repository == 'wailsapp/wails'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -33,7 +34,6 @@ jobs:
   test_templates:
     name: Test Templates
     needs: test
-    if: github.repository == 'wailsapp/wails'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
