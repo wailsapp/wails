@@ -122,30 +122,38 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 	})
 
 	if devServerAddr := d.devServerAddr; devServerAddr != "" {
+		wg := sync.WaitGroup{}
+		wg.Add(1)
 		// Start server
 		go func(server *echo.Echo, log *logger.Logger) {
+			defer wg.Done()
 			err := server.Start(devServerAddr)
 			if err != nil {
 				log.Error(err.Error())
 			}
-			d.LogDebug("Shutdown completed")
 		}(d.server, d.logger)
 
 		d.LogDebug("Serving DevServer at http://%s", devServerAddr)
 
-		defer func() {
+		go func() {
+			wg.Wait()
+			d.LogDebug("Starting shutdown")
 			err := d.server.Shutdown(context.Background())
 			if err != nil {
 				d.logger.Error(err.Error())
 			}
+			d.LogDebug("Shutdown completed")
 		}()
 	}
 
 	// Launch desktop app
 	err = d.desktopFrontend.Run(ctx)
-	d.LogDebug("Starting shutdown")
 
 	return err
+}
+
+func (d *DevWebServer) RunMainLoop() {
+	d.desktopFrontend.RunMainLoop()
 }
 
 func (d *DevWebServer) Quit() {
@@ -184,6 +192,10 @@ func (d *DevWebServer) WindowReloadApp() {
 
 func (d *DevWebServer) WindowSetTitle(title string) {
 	d.desktopFrontend.WindowSetTitle(title)
+}
+
+func (d *DevWebServer) WindowClose() {
+	d.desktopFrontend.WindowClose()
 }
 
 func (d *DevWebServer) WindowShow() {
