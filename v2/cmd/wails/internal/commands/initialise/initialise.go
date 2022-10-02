@@ -189,6 +189,12 @@ func initProject(options *templates.Options, quiet bool, ciMode bool) error {
 		updateReplaceLine(workspace)
 	}
 
+	// Remove the `.git`` directory in the template project
+	err = os.RemoveAll(".git")
+	if err != nil {
+		return err
+	}
+
 	if options.InitGit {
 		err = initGit(options)
 		if err != nil {
