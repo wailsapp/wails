@@ -122,28 +122,28 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 	})
 
 	if devServerAddr := d.devServerAddr; devServerAddr != "" {
-		wg := sync.WaitGroup{}
+		wg := &sync.WaitGroup{}
 		wg.Add(1)
 		// Start server
-		go func(server *echo.Echo, log *logger.Logger) {
+		go func(server *echo.Echo, log *logger.Logger, wg *sync.WaitGroup) {
 			defer wg.Done()
 			err := server.Start(devServerAddr)
 			if err != nil {
 				log.Error(err.Error())
 			}
-		}(d.server, d.logger)
+		}(d.server, d.logger, wg)
 
 		d.LogDebug("Serving DevServer at http://%s", devServerAddr)
 
-		go func() {
+		go func(server *echo.Echo, log *logger.Logger, wg *sync.WaitGroup) {
 			wg.Wait()
 			d.LogDebug("Starting shutdown")
-			err := d.server.Shutdown(context.Background())
+			err := server.Shutdown(context.Background())
 			if err != nil {
-				d.logger.Error(err.Error())
+				log.Error(err.Error())
 			}
 			d.LogDebug("Shutdown completed")
-		}()
+		}(d.server, d.logger, wg)
 	}
 
 	// Launch desktop app
