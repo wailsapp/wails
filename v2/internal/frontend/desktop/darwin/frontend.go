@@ -145,9 +145,7 @@ func (f *Frontend) WindowSetDarkTheme() {
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
-
-	f.ctx = context.WithValue(ctx, "frontend", f)
-
+	f.ctx = ctx
 	var _debug = ctx.Value("debug")
 	if _debug != nil {
 		f.debug = _debug.(bool)

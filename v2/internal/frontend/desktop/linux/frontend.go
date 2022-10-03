@@ -142,8 +142,7 @@ func (f *Frontend) WindowSetDarkTheme() {
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
-
-	f.ctx = context.WithValue(ctx, "frontend", f)
+	f.ctx = ctx
 
 	go func() {
 		if f.frontendOptions.OnStartup != nil {

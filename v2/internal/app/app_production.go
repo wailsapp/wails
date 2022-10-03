@@ -84,6 +84,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	appFrontend := desktop.NewFrontend(ctx, appoptions, myLogger, appBindings, messageDispatcher)
 	eventHandler.AddFrontend(appFrontend)
 
+	ctx = context.WithValue(ctx, "frontend", appFrontend)
 	result := &App{
 		ctx:              ctx,
 		frontend:         appFrontend,

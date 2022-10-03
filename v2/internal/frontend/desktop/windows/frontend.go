@@ -128,8 +128,7 @@ func (f *Frontend) WindowSetDarkTheme() {
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
-
-	f.ctx = context.WithValue(ctx, "frontend", f)
+	f.ctx = ctx
 
 	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo)
 	f.mainWindow = mainWindow
