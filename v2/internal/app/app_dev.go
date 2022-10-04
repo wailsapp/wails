@@ -181,6 +181,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	eventHandler.AddFrontend(appFrontend)
 	eventHandler.AddFrontend(desktopFrontend)
 
+	ctx = context.WithValue(ctx, "frontend", appFrontend)
 	result := &App{
 		ctx:              ctx,
 		frontend:         appFrontend,
