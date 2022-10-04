@@ -88,6 +88,7 @@ func main() {
         },
         Linux: &linux.Options{
             Icon: icon,
+            WindowIsTranslucent: false,
         },
     })
     if err != nil {
@@ -680,3 +681,9 @@ func main() {
 注意：Wayland 上的 Gnome 至少不显示此图标。 要在那里有一个应用程序图标，必须使用一个`.desktop`文件。 在 KDE 上它应该可以工作。
 
 图标应该以自然绘制的任何尺寸提供；也就是说，在传递图像之前不要缩放图像。 缩放将延迟到当所需的最终尺寸已知的最后一刻，以获得最佳质量。
+
+#### 窗口半透明
+
+将此设置为 `true` 将使窗口半透明。 某些窗口管理员可能忽略它，或导致黑窗口。
+
+名称：WindowIsTranslucent<br/> 类型：`bool`
