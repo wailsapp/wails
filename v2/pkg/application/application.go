@@ -50,6 +50,10 @@ func (a *Application) SetApplicationMenu(appMenu *menu.Menu) {
 // Run starts the application
 func (a *Application) Run() error {
 
+	for _, systemtray := range a.systemTrays {
+		go systemtray.run()
+	}
+
 	err := applicationInit()
 	if err != nil {
 		return err

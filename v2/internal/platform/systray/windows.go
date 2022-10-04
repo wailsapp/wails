@@ -20,6 +20,8 @@ var (
 	DefWindowProc   = user32.MustFindProc("DefWindowProcW")
 	RegisterClassEx = user32.MustFindProc("RegisterClassExW")
 	CreateWindowEx  = user32.MustFindProc("CreateWindowExW")
+
+	windowClasses = map[string]win32.HINSTANCE{}
 )
 
 type Systray struct {
@@ -51,7 +53,10 @@ func (p *Systray) Close() {
 func (p *Systray) SetTitle(_ string) {}
 
 func New() (*Systray, error) {
-	ni := &Systray{lclick: func() {}, rclick: func() {}}
+	ni := &Systray{
+		lclick: func() {},
+		rclick: func() {},
+	}
 
 	MainClassName := "WailsSystray"
 	ni.hinst, _ = RegisterWindow(MainClassName, ni.WinProc)
@@ -343,6 +348,10 @@ func (p *Systray) updateIcon() error {
 }
 
 func RegisterWindow(name string, proc win32.WindowProc) (win32.HINSTANCE, error) {
+	instance, exists := windowClasses[name]
+	if exists {
+		return instance, nil
+	}
 	hinst := win32.GetModuleHandle(0)
 	if hinst == 0 {
 		return 0, errors.New("get module handle failed")
@@ -367,9 +376,12 @@ func RegisterWindow(name string, proc win32.WindowProc) (win32.HINSTANCE, error)
 	wc.HbrBackground = win32.COLOR_BTNFACE + 1
 	wc.LpszClassName = win32.MustStringToUTF16Ptr(name)
 
-	atom, _, _ := RegisterClassEx.Call(uintptr(unsafe.Pointer(&wc)))
+	atom, _, e := RegisterClassEx.Call(uintptr(unsafe.Pointer(&wc)))
 	if atom == 0 {
+		println(e.Error())
 		return 0, errors.New("register class failed")
 	}
+
+	windowClasses[name] = hi
 	return hi, nil
 }
