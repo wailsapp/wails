@@ -10,8 +10,8 @@ import (
 type SystemTray struct {
 	title         string
 	hidden        bool
-	lightModeIcon []byte
-	darkModeIcon  []byte
+	lightModeIcon *options.SystemTrayIcon
+	darkModeIcon  *options.SystemTrayIcon
 	tooltip       string
 	startHidden   bool
 

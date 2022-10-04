@@ -3,6 +3,7 @@ package win32
 import (
 	"fmt"
 	"github.com/samber/lo"
+	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
 )
@@ -122,6 +123,10 @@ func MustUTF16FromString(input string) []uint16 {
 		panic(err)
 	}
 	return ret
+}
+
+func UTF16PtrToString(input uintptr) string {
+	return windows.UTF16PtrToString((*uint16)(unsafe.Pointer(input)))
 }
 
 func SetForegroundWindow(wnd HWND) bool {

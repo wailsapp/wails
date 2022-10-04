@@ -170,12 +170,3 @@ func processDragOptions(appoptions *App) {
 	appoptions.CSSDragProperty = html.EscapeString(appoptions.CSSDragProperty)
 	appoptions.CSSDragValue = html.EscapeString(appoptions.CSSDragValue)
 }
-
-// SystemTray contains options for the system tray
-type SystemTray struct {
-	LightModeIcon []byte
-	DarkModeIcon  []byte
-	Title         string
-	Tooltip       string
-	StartHidden   bool
-}

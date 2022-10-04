@@ -6,9 +6,10 @@ package systray
 
 import (
 	"errors"
+	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v2/internal/platform/win32"
 	"github.com/wailsapp/wails/v2/pkg/menu"
-	"golang.org/x/sys/windows"
+	"github.com/wailsapp/wails/v2/pkg/options"
 	"syscall"
 	"unsafe"
 )
@@ -22,17 +23,21 @@ var (
 )
 
 type Systray struct {
-	id            uint32
-	hwnd          win32.HWND
-	hinst         win32.HINSTANCE
-	lclick        func()
-	rclick        func()
+	id     uint32
+	hwnd   win32.HWND
+	hinst  win32.HINSTANCE
+	lclick func()
+	rclick func()
+
+	appIcon       win32.HICON
 	lightModeIcon win32.HICON
 	darkModeIcon  win32.HICON
+	currentIcon   win32.HICON
 
 	Menu []*menu.MenuItem
 
 	quit chan struct{}
+	icon *options.SystemTrayIcon
 }
 
 func (p *Systray) Close() {
@@ -115,6 +120,9 @@ func New() (*Systray, error) {
 		return nil, errors.New("shell notify version failed")
 	}
 
+	ni.appIcon = win32.LoadIconWithResourceID(0, uintptr(win32.IDI_APPLICATION))
+	ni.lightModeIcon = ni.appIcon
+	ni.darkModeIcon = ni.appIcon
 	ni.id = nid.UID
 	return ni, nil
 }
@@ -218,16 +226,23 @@ func (p *Systray) setVisible(visible bool) error {
 	return nil
 }
 
-func (p *Systray) SetIcons(lightModeIcon []byte, darkModeIcon []byte) error {
-	p.lightModeIcon = p.getIcon(lightModeIcon)
-	p.darkModeIcon = p.getIcon(darkModeIcon)
+func (p *Systray) SetIcons(lightModeIcon, darkModeIcon *options.SystemTrayIcon) error {
+	var newLightModeIcon, newDarkModeIcon win32.HICON
+	if lightModeIcon != nil && lightModeIcon.Data != nil {
+		newLightModeIcon = p.getIcon(lightModeIcon.Data)
+	}
+	if darkModeIcon != nil && darkModeIcon.Data != nil {
+		newDarkModeIcon = p.getIcon(darkModeIcon.Data)
+	}
+	p.lightModeIcon, _ = lo.Coalesce(newLightModeIcon, newDarkModeIcon, p.appIcon)
+	p.darkModeIcon, _ = lo.Coalesce(newDarkModeIcon, newLightModeIcon, p.appIcon)
 	return p.updateIcon()
 }
 
 func (p *Systray) getIcon(icon []byte) win32.HICON {
 	result, err := win32.CreateHIconFromPNG(icon)
 	if err != nil {
-		result = win32.LoadIconWithResourceID(0, uintptr(win32.IDI_APPLICATION))
+		result = p.appIcon
 	}
 	return result
 }
@@ -269,7 +284,7 @@ func (p *Systray) WinProc(hwnd win32.HWND, msg uint32, wparam, lparam uintptr) u
 			}
 		}
 	case win32.WM_SETTINGCHANGE:
-		settingChanged := windows.UTF16PtrToString((*uint16)(unsafe.Pointer(lparam)))
+		settingChanged := win32.UTF16PtrToString(lparam)
 		if settingChanged == "ImmersiveColorSet" {
 			err := p.updateIcon()
 			if err != nil {
@@ -313,10 +328,18 @@ func (p *Systray) Run() error {
 }
 
 func (p *Systray) updateIcon() error {
+
+	var newIcon win32.HICON
 	if win32.IsCurrentlyDarkMode() {
-		return p.setIcon(p.darkModeIcon)
+		newIcon = p.darkModeIcon
+	} else {
+		newIcon = p.lightModeIcon
 	}
-	return p.setIcon(p.lightModeIcon)
+	if p.currentIcon == newIcon {
+		return nil
+	}
+	p.currentIcon = newIcon
+	return p.setIcon(newIcon)
 }
 
 func RegisterWindow(name string, proc win32.WindowProc) (win32.HINSTANCE, error) {
