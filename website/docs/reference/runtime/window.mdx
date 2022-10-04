@@ -45,6 +45,9 @@ JS: `WindowCenter()`
 
 Executes arbitrary JS code in the window.
 
+This method runs the code in the browser asynchronously and returns immediately. 
+If the script causes any errors, they will only be available in the browser console.
+
 Go: `WindowExecJS(ctx context.Context, js string)`
 
 ### WindowReload
