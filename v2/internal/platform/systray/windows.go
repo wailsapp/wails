@@ -36,7 +36,7 @@ type Systray struct {
 	darkModeIcon  win32.HICON
 	currentIcon   win32.HICON
 
-	Menu []*menu.MenuItem
+	menu *PopupMenu
 
 	quit chan struct{}
 	icon *options.SystemTrayIcon
@@ -136,19 +136,9 @@ func (p *Systray) HWND() win32.HWND {
 	return p.hwnd
 }
 
-// AppendMenu add menu item.
-func (p *Systray) AppendMenu(label string, onclick menu.Callback) {
-	p.Menu = append(p.Menu, &menu.MenuItem{Type: menu.TextType, Label: label, Click: onclick})
-}
-
-// AppendMenuItem add menu item.
-func (p *Systray) AppendMenuItem(item *menu.MenuItem) {
-	p.Menu = append(p.Menu, item)
-}
-
-// AppendSeparator to the menu.
-func (p *Systray) AppendSeparator() {
-	p.Menu = append(p.Menu, menu.Separator())
+func (p *Systray) SetMenu(popupMenu *menu.Menu) (err error) {
+	p.menu, err = NewPopupMenu(p.hwnd, popupMenu)
+	return
 }
 
 func (p *Systray) Stop() error {
@@ -273,16 +263,16 @@ func (p *Systray) WinProc(hwnd win32.HWND, msg uint32, wparam, lparam uintptr) u
 	case win32.NotifyIconMessageId:
 		if lparam == win32.WM_LBUTTONUP {
 			p.lclick()
-			if len(p.Menu) > 0 {
-				err := displayMenu(p.hwnd, p.Menu)
+			if p.menu != nil {
+				err := p.menu.ShowAtCursor()
 				if err != nil {
 					return 0
 				}
 			}
 		} else if lparam == win32.WM_RBUTTONUP {
 			p.rclick()
-			if len(p.Menu) > 0 {
-				err := displayMenu(p.hwnd, p.Menu)
+			if p.menu != nil {
+				err := p.menu.ShowAtCursor()
 				if err != nil {
 					return 0
 				}
@@ -301,11 +291,7 @@ func (p *Systray) WinProc(hwnd win32.HWND, msg uint32, wparam, lparam uintptr) u
 		cmdMsgID := int(wparam & 0xffff)
 		switch cmdMsgID {
 		default:
-			if cmdMsgID >= win32.MenuItemMsgID && cmdMsgID < (win32.MenuItemMsgID+len(p.Menu)) {
-				itemIndex := cmdMsgID - win32.MenuItemMsgID
-				menuItem := p.Menu[itemIndex]
-				menuItem.Click(nil)
-			}
+			p.menu.ProcessCommand(cmdMsgID)
 		}
 	}
 

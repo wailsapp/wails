@@ -15,9 +15,7 @@ type SysTray interface {
 	Hide() error
 	Run() error
 	Close()
-	AppendMenu(label string, callback menu.Callback)
-	AppendMenuItem(item *menu.MenuItem)
-	AppendSeparator()
+	SetMenu(menu *menu.Menu) error
 	SetIcons(lightModeIcon, darkModeIcon *options.SystemTrayIcon) error
 }
 

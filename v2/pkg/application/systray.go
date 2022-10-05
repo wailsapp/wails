@@ -14,6 +14,7 @@ type SystemTray struct {
 	darkModeIcon  *options.SystemTrayIcon
 	tooltip       string
 	startHidden   bool
+	menu          *menu.Menu
 
 	// The platform specific implementation
 	impl platform.SysTray
@@ -27,6 +28,7 @@ func newSystemTray(options *options.SystemTray) *SystemTray {
 		darkModeIcon:  options.DarkModeIcon,
 		tooltip:       options.Tooltip,
 		startHidden:   options.StartHidden,
+		menu:          options.Menu,
 	}
 }
 
@@ -37,15 +39,13 @@ func (t *SystemTray) run() {
 	if !t.startHidden {
 		t.impl.Show()
 	}
+	t.impl.SetMenu(t.menu)
 	t.impl.Run()
 }
 
 func (t *SystemTray) SetTitle(title string) {
 	t.title = title
 	t.impl.SetTitle(title)
-}
-func (t *SystemTray) AppendMenu(label string, callback menu.Callback) {
-	t.impl.AppendMenu(label, callback)
 }
 
 func (t *SystemTray) Run() error {
@@ -55,12 +55,4 @@ func (t *SystemTray) Run() error {
 
 func (t *SystemTray) Close() {
 	t.impl.Close()
-}
-
-func (t *SystemTray) AppendSeperator() {
-	t.impl.AppendSeparator()
-}
-
-func (t *SystemTray) AppendMenuItem(item *menu.MenuItem) {
-	t.impl.AppendMenuItem(item)
 }
