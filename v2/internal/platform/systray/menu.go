@@ -10,6 +10,7 @@ type PopupMenu struct {
 	menu        win32.HMENU
 	parent      win32.HWND
 	menuMapping map[int]*menu.MenuItem
+	menuData    *menu.Menu
 }
 
 func buildMenu(parentMenu win32.HMENU, inputMenu *menu.Menu) (map[int]*menu.MenuItem, error) {
@@ -40,17 +41,20 @@ func buildMenu(parentMenu win32.HMENU, inputMenu *menu.Menu) (map[int]*menu.Menu
 	return menuMapping, nil
 }
 
+func (p *PopupMenu) Update() error {
+	var err error
+	p.menu = win32.CreatePopupMenu()
+	p.menuMapping, err = buildMenu(p.menu, p.menuData)
+	return err
+}
+
 func NewPopupMenu(parent win32.HWND, inputMenu *menu.Menu) (*PopupMenu, error) {
-	popupMenu := win32.CreatePopupMenu()
-	mappings, err := buildMenu(popupMenu, inputMenu)
-	if err != nil {
-		return nil, err
+	result := &PopupMenu{
+		parent:   parent,
+		menuData: inputMenu,
 	}
-	return &PopupMenu{
-		parent:      parent,
-		menu:        popupMenu,
-		menuMapping: mappings,
-	}, nil
+	err := result.Update()
+	return result, err
 }
 
 func (p *PopupMenu) ShowAtCursor() error {
@@ -79,4 +83,8 @@ func (p *PopupMenu) ProcessCommand(cmdMsgID int) {
 	if item != nil {
 		item.Click(&menu.CallbackData{MenuItem: item})
 	}
+}
+
+func (p *PopupMenu) Destroy() {
+	win32.DestroyMenu(p.menu)
 }

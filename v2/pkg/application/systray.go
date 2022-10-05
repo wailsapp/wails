@@ -22,7 +22,6 @@ type SystemTray struct {
 
 func newSystemTray(options *options.SystemTray) *SystemTray {
 	return &SystemTray{
-		impl:          platform.NewSysTray(),
 		title:         options.Title,
 		lightModeIcon: options.LightModeIcon,
 		darkModeIcon:  options.DarkModeIcon,
@@ -33,6 +32,7 @@ func newSystemTray(options *options.SystemTray) *SystemTray {
 }
 
 func (t *SystemTray) run() {
+	t.impl = platform.NewSysTray()
 	t.impl.SetTitle(t.title)
 	t.impl.SetIcons(t.lightModeIcon, t.darkModeIcon)
 	t.impl.SetTooltip(t.tooltip)
@@ -44,8 +44,11 @@ func (t *SystemTray) run() {
 }
 
 func (t *SystemTray) SetTitle(title string) {
-	t.title = title
-	t.impl.SetTitle(title)
+	if t.impl != nil {
+		t.impl.SetTitle(title)
+	} else {
+		t.title = title
+	}
 }
 
 func (t *SystemTray) Run() error {
@@ -54,5 +57,21 @@ func (t *SystemTray) Run() error {
 }
 
 func (t *SystemTray) Close() {
-	t.impl.Close()
+	if t.impl != nil {
+		t.impl.Close()
+	}
+}
+
+func (t *SystemTray) SetMenu(items *menu.Menu) {
+	if t.impl != nil {
+		t.impl.SetMenu(t.menu)
+	} else {
+		t.menu = items
+	}
+}
+
+func (t *SystemTray) Update() {
+	if t.impl != nil {
+		t.impl.Update()
+	}
 }

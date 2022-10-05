@@ -19,6 +19,7 @@ var (
 	procSetForegroundWindow      = moduser32.NewProc("SetForegroundWindow")
 	procCreatePopupMenu          = moduser32.NewProc("CreatePopupMenu")
 	procTrackPopupMenu           = moduser32.NewProc("TrackPopupMenu")
+	procDestroyMenu              = moduser32.NewProc("DestroyMenu")
 	procAppendMenuW              = moduser32.NewProc("AppendMenuW")
 	procCreateIconFromResourceEx = moduser32.NewProc("CreateIconFromResourceEx")
 	procGetMessageW              = moduser32.NewProc("GetMessageW")

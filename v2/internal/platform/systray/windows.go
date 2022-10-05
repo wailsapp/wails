@@ -49,6 +49,16 @@ func (p *Systray) Close() {
 	}
 }
 
+func (p *Systray) Update() {
+	// Delete old menu
+	if p.menu != nil {
+		p.menu.Destroy()
+	}
+
+	p.menu.Update()
+
+}
+
 // SetTitle is unused on Windows
 func (p *Systray) SetTitle(_ string) {}
 

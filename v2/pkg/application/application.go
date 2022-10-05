@@ -111,6 +111,5 @@ func (a *Application) On(eventType EventType, callback func()) {
 func (a *Application) NewSystemTray(options *options.SystemTray) *SystemTray {
 	systemTray := newSystemTray(options)
 	a.systemTrays = append(a.systemTrays, systemTray)
-	println("created systemTray")
 	return systemTray
 }
