@@ -70,13 +70,15 @@ window.wails = {
 };
 
 // Set the bindings
-window.wails.SetBindings(window.wailsbindings);
-delete window.wails.SetBindings;
+if (window.wailsbindings) {
+    window.wails.SetBindings(window.wailsbindings);
+    delete window.wails.SetBindings;
+}
 
 // This is evaluated at build time in package.json
 // const dev = 0;
 // const production = 1;
-if (ENV === 0) {
+if (ENV === 1) {
     delete window.wailsbindings;
 }
 
@@ -120,6 +122,11 @@ function setResize(cursor) {
 }
 
 window.addEventListener('mousemove', function (e) {
+    let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
+    if(window.wails.flags.shouldDrag && mousePressed <= 0) {
+        window.wails.flags.shouldDrag = false;
+    }
+    
     if (window.wails.flags.shouldDrag) {
         window.WailsInvoke("drag");
         return;

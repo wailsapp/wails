@@ -5,6 +5,7 @@ authors: [leaanthony]
 tags: [wails, v2]
 ---
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/wails-mac.webp").default}
@@ -13,6 +14,7 @@ tags: [wails, v2]
   />
 </div>
 <br />
+```
 
 Today marks the first beta release of Wails v2 for Mac! It's taken quite a while to get to this point and I'm hoping
 that today's release will give you something that's reasonably useful. There have been a number of twists and turns
@@ -27,6 +29,7 @@ So what's new for Wails v2 for Mac vs v1? Hint: It's pretty similar to the Windo
 
 ### New Features
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/wails-menus-mac.webp").default}
@@ -35,6 +38,7 @@ So what's new for Wails v2 for Mac vs v1? Hint: It's pretty similar to the Windo
   />
 </div>
 <br />
+```
 
 There were a lot of requests for native menu support. Wails has finally got you covered. Application menus are now available
 and include support for most native menu features. This includes standard menu items, checkboxes, radio groups, submenus
@@ -95,6 +99,7 @@ auto-imported when hitting tab in an auto-generated module wrapping your Go code
 
 ### Remote Templates
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/remote-mac.webp").default}
@@ -103,6 +108,7 @@ auto-imported when hitting tab in an auto-generated module wrapping your Go code
   />
 </div>
 <br />
+```
 
 Getting an application up and running quickly was always a key goal for the Wails project. When we launched, we tried
 to cover a lot of the modern frameworks at the time: react, vue and angular. The world of frontend development is very
@@ -120,6 +126,7 @@ community can create!
 Thanks to the amazing support of [Mat Ryer](https://github.com/matryer/), the Wails project now supports M1 native
 builds:
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/build-darwin-arm.webp").default}
@@ -128,9 +135,11 @@ builds:
   />
 </div>
 <br />
+```
 
 You can also specify `darwin/amd64` as a target too:
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/build-darwin-amd.webp").default}
@@ -139,9 +148,11 @@ You can also specify `darwin/amd64` as a target too:
   />
 </div>
 <br />
+```
 
 Oh, I almost forgot.... you can also do `darwin/universal`.... :wink:
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/build-darwin-universal.webp").default}
@@ -150,11 +161,13 @@ Oh, I almost forgot.... you can also do `darwin/universal`.... :wink:
   />
 </div>
 <br />
+```
 
 ### Cross Compilation to Windows
 
 Because Wails v2 for Windows is pure Go, you can target Windows builds without docker.
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/build-cross-windows.webp").default}
@@ -163,6 +176,7 @@ Because Wails v2 for Windows is pure Go, you can target Windows builds without d
   />
 </div>
 <br />
+```
 
 ### WKWebView Renderer
 

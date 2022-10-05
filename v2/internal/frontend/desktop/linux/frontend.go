@@ -21,6 +21,7 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 	"text/template"
 	"unsafe"
 
@@ -52,6 +53,14 @@ type Frontend struct {
 	dispatcher frontend.Dispatcher
 }
 
+func (f *Frontend) RunMainLoop() {
+	C.gtk_main()
+}
+
+func (f *Frontend) WindowClose() {
+	f.mainWindow.Destroy()
+}
+
 func init() {
 	runtime.LockOSThread()
 }
@@ -75,12 +84,17 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
 	} else {
-		bindingsJSON, err := appBindings.ToJSON()
-		if err != nil {
-			log.Fatal(err)
+		var bindings string
+		var err error
+		if _obfuscated, _ := ctx.Value("obfuscated").(bool); !_obfuscated {
+			bindings, err = appBindings.ToJSON()
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			appBindings.DB().UpdateObfuscatedCallMap()
 		}
-
-		assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
+		assets, err := assetserver.NewAssetServer(ctx, appoptions.Assets, appoptions.AssetsHandler, bindings)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -128,8 +142,7 @@ func (f *Frontend) WindowSetDarkTheme() {
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
-
-	f.ctx = context.WithValue(ctx, "frontend", f)
+	f.ctx = ctx
 
 	go func() {
 		if f.frontendOptions.OnStartup != nil {
@@ -170,10 +183,16 @@ func (f *Frontend) WindowSetTitle(title string) {
 }
 
 func (f *Frontend) WindowFullscreen() {
+	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
+		f.ExecJS("window.wails.flags.enableResize = false;")
+	}
 	f.mainWindow.Fullscreen()
 }
 
 func (f *Frontend) WindowUnfullscreen() {
+	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
+		f.ExecJS("window.wails.flags.enableResize = true;")
+	}
 	f.mainWindow.UnFullscreen()
 }
 
@@ -276,6 +295,17 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 	f.mainWindow.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
 }
 
+var edgeMap = map[string]uintptr{
+	"n-resize":  C.GDK_WINDOW_EDGE_NORTH,
+	"ne-resize": C.GDK_WINDOW_EDGE_NORTH_EAST,
+	"e-resize":  C.GDK_WINDOW_EDGE_EAST,
+	"se-resize": C.GDK_WINDOW_EDGE_SOUTH_EAST,
+	"s-resize":  C.GDK_WINDOW_EDGE_SOUTH,
+	"sw-resize": C.GDK_WINDOW_EDGE_SOUTH_WEST,
+	"w-resize":  C.GDK_WINDOW_EDGE_WEST,
+	"nw-resize": C.GDK_WINDOW_EDGE_NORTH_WEST,
+}
+
 func (f *Frontend) processMessage(message string) {
 	if message == "DomReady" {
 		if f.frontendOptions.OnDomReady != nil {
@@ -291,9 +321,29 @@ func (f *Frontend) processMessage(message string) {
 		return
 	}
 
+	if strings.HasPrefix(message, "resize:") {
+		if !f.mainWindow.IsFullScreen() {
+			sl := strings.Split(message, ":")
+			if len(sl) != 2 {
+				f.logger.Info("Unknown message returned from dispatcher: %+v", message)
+				return
+			}
+			edge := edgeMap[sl[1]]
+			err := f.startResize(edge)
+			if err != nil {
+				f.logger.Error(err.Error())
+			}
+		}
+		return
+	}
+
 	if message == "runtime:ready" {
 		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
 		f.ExecJS(cmd)
+
+		if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
+			f.ExecJS("window.wails.flags.enableResize = true;")
+		}
 		return
 	}
 
@@ -324,6 +374,11 @@ func (f *Frontend) Callback(message string) {
 
 func (f *Frontend) startDrag() {
 	f.mainWindow.StartDrag()
+}
+
+func (f *Frontend) startResize(edge uintptr) error {
+	f.mainWindow.StartResize(edge)
+	return nil
 }
 
 func (f *Frontend) ExecJS(js string) {

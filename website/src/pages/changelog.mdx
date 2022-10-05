@@ -5,9 +5,78 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## v2.0.0 - 2022-09-22
 
-## [v2.0.0-beta.44] - 2022-08-20
+## Fixed
+* Fix buildtags parsing if only one tag is specified by @stffabi in https://github.com/wailsapp/wails/pull/1858
+* Use embed all to include all files in templates by @stffabi in https://github.com/wailsapp/wails/pull/1862
+
+## Changed
+* Bump minimum required Go version to 1.18 by @stffabi in https://github.com/wailsapp/wails/pull/1854
+* Add check for minimum required Go version by @stffabi in https://github.com/wailsapp/wails/pull/1853
+* chore: update README and workflows by @misitebao in https://github.com/wailsapp/wails/pull/1848
+* Update introduction.mdx by @ParvinEyvazov in https://github.com/wailsapp/wails/pull/1863
+* Releasetest/release workflow by @leaanthony in https://github.com/wailsapp/wails/pull/1869
+* Optimize documentation website by @misitebao in https://github.com/wailsapp/wails/pull/1849
+
+## New Contributors
+* @ParvinEyvazov made their first contribution in https://github.com/wailsapp/wails/pull/1863
+
+## v2.0.0-rc.1 - 2022-09-13
+
+### Deprecated
+
+- The `-noGen` flag for the `wails dev` command has been replaced with `-skipbindings`. This is to
+  align with the `wails build` command.
+
+### Added
+
+- Add garble support by @leaanthony in https://github.com/wailsapp/wails/pull/1793
+- Make draggable CSS property customisable by @leaanthony in https://github.com/wailsapp/wails/pull/1828
+- Add Some WindowState by @zandercodes in https://github.com/wailsapp/wails/pull/1349
+- Make EventsOff capable of removing multiple listeners by @Lyimmi in https://github.com/wailsapp/wails/pull/1822
+
+### Fixed
+
+- Use `Promise<void>` when Go routine does not output by @SheetJSDev in https://github.com/wailsapp/wails/pull/1821
+- preact-ts template build fix by @Debdut in https://github.com/wailsapp/wails/pull/1781
+- fix frontend/tsconfig.js by @Lyimmi in https://github.com/wailsapp/wails/pull/1795
+- fix: fix bugs in website by @misitebao in https://github.com/wailsapp/wails/pull/1810
+- Fix vue-ts template by @leaanthony in https://github.com/wailsapp/wails/pull/1813
+- Remove duplicate defs in win32/window.go by @AlbinoDrought in https://github.com/wailsapp/wails/pull/1832
+
+### Changed
+
+- Upgrade React to use Vite v3 by @leaanthony in https://github.com/wailsapp/wails/pull/1744
+- Upgrade Lit to use Vite v3 by @leaanthony in https://github.com/wailsapp/wails/pull/1745
+- Support vite3 for Vue by @leaanthony in https://github.com/wailsapp/wails/pull/1746
+- Preact templates for vite 3 by @leaanthony in https://github.com/wailsapp/wails/pull/1770
+- Prevent env variables and registry overrides from changing behaviour by @stffabi in https://github.com/wailsapp/wails/pull/1771
+- Use go implementation to retrieve the version of a fixed runtime by @stffabi in https://github.com/wailsapp/wails/pull/1790
+- Change contribution guide type from "doc" to "page" by @misitebao in https://github.com/wailsapp/wails/pull/1777
+- feat(website): repair document content by @misitebao in https://github.com/wailsapp/wails/pull/1775
+- chore: sort out files by @misitebao in https://github.com/wailsapp/wails/pull/1776
+- Add Korean to doc by @jaesung9507 in https://github.com/wailsapp/wails/pull/1774
+- Add README.ja.md by @shinshin86 in https://github.com/wailsapp/wails/pull/1783
+- Reorganized contribution guidelines page by @misitebao in https://github.com/wailsapp/wails/pull/1784
+- fix(website): fix link by @misitebao in https://github.com/wailsapp/wails/pull/1785
+- Update templates.mdx by @KiddoV in https://github.com/wailsapp/wails/pull/1799
+- Better watcher by @leaanthony in https://github.com/wailsapp/wails/pull/1827
+- Only set GDK_BACKEND to "x11" if GDK_BACKEND is unset and XDG_SESSION_TYPE is not "wayland" by @prurigro in https://github.com/wailsapp/wails/pull/1811
+- Optimize images by @imgbot in https://github.com/wailsapp/wails/pull/1812
+
+### New Contributors
+
+- @shinshin86 made their first contribution in https://github.com/wailsapp/wails/pull/1783
+- @Debdut made their first contribution in https://github.com/wailsapp/wails/pull/1781
+- @KiddoV made their first contribution in https://github.com/wailsapp/wails/pull/1799
+- @zandercodes made their first contribution in https://github.com/wailsapp/wails/pull/1349
+- @prurigro made their first contribution in https://github.com/wailsapp/wails/pull/1811
+- @SheetJSDev made their first contribution in https://github.com/wailsapp/wails/pull/1821
+- @AlbinoDrought made their first contribution in https://github.com/wailsapp/wails/pull/1832
+- @imgbot made their first contribution in https://github.com/wailsapp/wails/pull/1812
+
+## v2.0.0-beta.44 - 2022-08-20
 
 ### Deprecated
 
@@ -51,7 +120,7 @@ Experimental: &options.Experimental{
 - @Maicarons2022 made their first contribution in https://github.com/wailsapp/wails/pull/1755
 - @DragoSpiro98 made their first contribution in https://github.com/wailsapp/wails/pull/1765
 
-## [v2.0.0-beta.43] - 2022-08-08
+## v2.0.0-beta.43 - 2022-08-08
 
 ### Added
 
@@ -85,7 +154,7 @@ Experimental: &options.Experimental{
 - @h8gi made their first contribution in https://github.com/wailsapp/wails/pull/1671
 - @SamHennessy made their first contribution in https://github.com/wailsapp/wails/pull/1682
 
-## [v2.0.0-beta.42] - 2022-07-25
+## v2.0.0-beta.42 - 2022-07-25
 
 ### Added
 
@@ -100,7 +169,7 @@ Experimental: &options.Experimental{
 - BackgroundColour documentation fix
 - Generalize manual compile steps [Documentation] by @acheong08 in https://github.com/wailsapp/wails/pull/1644
 
-## [v2.0.0-beta.40] - 2022-07-24
+## v2.0.0-beta.40 - 2022-07-24
 
 ### Added
 
@@ -134,7 +203,7 @@ Experimental: &options.Experimental{
 
 - @MyNameIsAres made their first contribution in https://github.com/wailsapp/wails/pull/1636
 
-## [v2.0.0-beta.39.2] - 2022-07-20
+## v2.0.0-beta.39.2 - 2022-07-20
 
 ### Added
 
@@ -144,7 +213,7 @@ Experimental: &options.Experimental{
 
 - Reinstate Go 1.17 compatibility by @leaanthony in https://github.com/wailsapp/wails/pull/1605
 
-## [v2.0.0-beta.39] - 2022-07-19
+## v2.0.0-beta.39 - 2022-07-19
 
 ### Added
 
@@ -187,7 +256,7 @@ Experimental: &options.Experimental{
 
 **Full Changelog**: https://github.com/wailsapp/wails/compare/v2.0.0-beta.38...v2.0.0-beta.39
 
-## [v2.0.0-beta.38] - 2022-06-27
+## v2.0.0-beta.38 - 2022-06-27
 
 ### Added
 
@@ -241,7 +310,7 @@ Experimental: &options.Experimental{
 - @sidwebworks made their first contribution in https://github.com/wailsapp/wails/pull/1492
 - @tomanagle made their first contribution in https://github.com/wailsapp/wails/pull/1489
 
-## [v2.0.0-beta.37] - 2022-05-26
+## v2.0.0-beta.37 - 2022-05-26
 
 ### Added
 
@@ -285,7 +354,7 @@ Experimental: &options.Experimental{
 - @daodao97 made their first contribution in https://github.com/wailsapp/wails/pull/1423
 - @edwardbrowncross made their first contribution in https://github.com/wailsapp/wails/pull/1419
 
-## [v2.0.0-beta.36] - 2022-04-27
+## v2.0.0-beta.36 - 2022-04-27
 
 ### Fixed
 
@@ -297,7 +366,7 @@ Experimental: &options.Experimental{
 
 - Added `OnStartup` method back to default templates
 
-## [v2.0.0-beta.35] - 2022-04-27
+## v2.0.0-beta.35 - 2022-04-27
 
 ### Breaking Changes
 
@@ -349,7 +418,7 @@ Experimental: &options.Experimental{
   - [@misitebao](https://github.com/misitebao)
 - Website now using Algolia search
 
-## [v2.0.0-beta.34] - 2022-03-26
+## v2.0.0-beta.34 - 2022-03-26
 
 ### Added
 
@@ -390,7 +459,7 @@ Experimental: &options.Experimental{
 - Build added win32 compatibility by [@fengweiqiang](https://github.com/fengweiqiang) in #1238
 - docs: sync documents by [@misitebao](https://github.com/misitebao) in #1260
 
-## [v2.0.0-beta.33] - 2022-03-05
+## v2.0.0-beta.33 - 2022-03-05
 
 ### Added
 
@@ -412,17 +481,3 @@ Experimental: &options.Experimental{
 - The Webview2 bootstrapper is now run as a normal user and doesn't require admin rights
 - The docs have been improved and updated
 - Added troubleshooting guide
-
-[unreleased]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.44...HEAD
-[v2.0.0-beta.44]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.43...v2.0.0-beta.44
-[v2.0.0-beta.43]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.42...v2.0.0-beta.43
-[v2.0.0-beta.42]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.40...v2.0.0-beta.42
-[v2.0.0-beta.40]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.39.2...v2.0.0-beta.40
-[v2.0.0-beta.39.2]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.39...v2.0.0-beta.39.2
-[v2.0.0-beta.39]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.38...v2.0.0-beta.39
-[v2.0.0-beta.38]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.37...v2.0.0-beta.38
-[v2.0.0-beta.37]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.36...v2.0.0-beta.37
-[v2.0.0-beta.36]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.35...v2.0.0-beta.36
-[v2.0.0-beta.35]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.34...v2.0.0-beta.35
-[v2.0.0-beta.34]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.33...v2.0.0-beta.34
-[v2.0.0-beta.33]: https://github.com/wailsapp/wails/compare/v2.0.0-beta.32...v2.0.0-beta.33

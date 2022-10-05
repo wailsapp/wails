@@ -5,7 +5,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
-func (w *Window) updateTheme() {
+func (w *Window) UpdateTheme() {
 
 	// Don't redraw theme if nothing has changed
 	if !w.themeChanged {

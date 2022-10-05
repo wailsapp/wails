@@ -7,12 +7,16 @@ sidebar_position: 5
 运行时的这一部分提供对原生对话框的调用，例如文件选择器和消息框。
 
 :::info Javascript
+
+
 JS 运行时当前不支持对话框。
+
 :::
+
 
 ### 打开选择目录对话框
 
-打开一个对话框，提示用户选择目录。 可以使用 [打开选择文件对话框参数选项](#打开选择文件对话框参数选项)进行自定义。
+打开一个对话框，提示用户选择目录。 可以使用 [ 打开选择文件对话框参数选项](#打开选择文件对话框参数选项) 进行自定义。
 
 Go: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
 
@@ -20,23 +24,23 @@ Go: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (
 
 ### 打开选择文件对话框
 
-打开一个对话框，提示用户选择文件。 可以使用 [打开选择文件对话框参数选项](#打开选择文件对话框参数选项)进行自定义。
+打开一个对话框，提示用户选择文件。 可以使用 [ 打开选择文件对话框参数选项](#打开选择文件对话框参数选项) 进行自定义。
 
 Go: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
 
 返回值: 所选文件（如果用户取消则为空白）或错误
 
-### 打开选择多个文件对话框
+### 打开选择多文件对话框
 
-打开一个对话框，提示用户选择多个文件。 可以使用 [打开选择文件对话框参数选项](#打开选择文件对话框参数选项)进行自定义。
+打开一个对话框，提示用户选择多个文件。 可以使用 [ 打开选择文件对话框参数选项](#打开选择文件对话框参数选项) 进行自定义。
 
 Go: `OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error)`
 
-返回值: 选定的文件（如果用户取消则为零）或错误
+返回值: 选定的文件（如果用户取消则为 nil）或错误
 
 ### 保存文件对话框
 
-打开一个对话框，提示用户选择文件名以进行保存。 可以使用[保存文件对话框参数选项](#保存文件对话框参数选项)自定义。
+打开一个对话框，提示用户选择文件名以进行保存。 可以使用 [保存文件对话框参数选项](#保存文件对话框参数选项) 自定义。
 
 Go: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error)`
 
@@ -44,7 +48,7 @@ Go: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (strin
 
 ### 消息对话框
 
-使用消息对话框显示消息。 可以使用[消息对话框参数选项](#消息对话框参数选项)进行自定义。
+使用消息对话框显示消息。 可以使用 [消息对话框参数选项](#消息对话框参数选项) 进行自定义。
 
 Go: `MessageDialog(ctx context.Context, dialogOptions MessageDialogOptions) (string, error)`
 
@@ -115,18 +119,30 @@ type MessageDialogOptions struct {
 }
 ```
 
-| 字段            | 描述                                  | Win | Mac | Lin |
-| ------------- | ----------------------------------- | --- | --- | --- |
-| Type          | 消息对话框的类型，例如问题、信息...                 | ✅   | ✅   | ✅   |
-| Title         | 对话框的标题                              | ✅   | ✅   | ✅   |
-| Message       | 向用户显示的消息                            | ✅   | ✅   | ✅   |
-| Buttons       | 按钮标题列表                              |     | ✅   |     |
-| DefaultButton | 带有此文本的按钮应被视为默认按钮。 Bound to `return` |     | ✅   |     |
-| CancelButton  | 带有此文本的按钮应被视为取消。 Bound to `escape`   |     | ✅   |     |
+| 字段            | 描述                             | Win            | Mac | Lin |
+| ------------- | ------------------------------ | -------------- | --- | --- |
+| 类型            | 消息对话框的类型，例如问题、信息...            | ✅              | ✅   | ✅   |
+| Title         | 对话框的标题                         | ✅              | ✅   | ✅   |
+| Message       | 向用户显示的消息                       | ✅              | ✅   | ✅   |
+| Buttons       | 按钮标题列表                         |                | ✅   |     |
+| DefaultButton | 带有此文本的按钮应被视为默认按钮。 必定 `return`。 | ✅[*](#windows) | ✅   |     |
+| CancelButton  | 带有此文本的按钮应被视为取消。 必定 `escape`    |                | ✅   |     |
 
 #### Windows
 
-Windows 具有标准对话框类型，其中的按钮不可自定义。 返回的值将是以下之一："Ok"、"Cancel"、"Abort"、"Retry"、"Ignore"、"Yes"、"No"、"Try Again"或"Continue"
+Windows 具有标准对话框类型，其中的按钮不可自定义。 返回的值将是以下之一："Ok"、"Cancel"、"Abort"、"Retry"、"Ignore"、"Yes"、"No"、"Try Again"或"Continue"。
+
+对于问题对话框，默认按钮是 “是”，取消按钮是 “否”。 可以通过将 `默认按钮` 值设置为 `"否"` 来改变这一点。
+
+示例：
+```go
+    result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+        Type:          runtime.QuestionDialog,
+        Title:         "Question",
+        Message:       "Do you want to continue?",
+        DefaultButton: "No",
+    })
+```
 
 #### Linux
 
@@ -134,7 +150,7 @@ Linux 有标准的对话框类型，其中的按钮是不可定制的。 返回�
 
 #### Mac
 
-Mac 上的消息对话框最多可以指定 4 个按钮。 如果没有`DefaultButton`或`CancelButton`给出，第一个按钮被认为是默认的并绑定到`return`键。
+Mac 上的消息对话框最多可以指定 4 个按钮。 如果没有 `DefaultButton` 或 `CancelButton` 给出，第一个按钮被认为是默认的并绑定到 `return` 键。
 
 对于以下代码：
 
@@ -148,17 +164,18 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 
 第一个按钮显示为默认值：
 
+```mdx-code-block
 <div class="text--center">
   <img
-    src="/img/runtime/dialog_no_defaults.png"
+    src={require("@site/static/img/runtime/dialog_no_defaults.png").default} 
     width="30%"
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
-如果我们指定`DefaultButton`为“two”：
+如果我们指定 `DefaultButton` 为“two”：
 
 ```go
 selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
@@ -171,15 +188,16 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 
 第二个按钮显示为默认值。 当 `return` 被按下时，则返回数值“two”。
 
+```mdx-code-block
 <div class="text--center">
   <img
-    src="/img/runtime/dialog_default_button.png"
+    src={require("@site/static/img/runtime/dialog_default_button.png").default} 
     width="30%"
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 如果我们现在指定`CancelButton`为“three”：
 
@@ -193,19 +211,20 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 })
 ```
 
-带有“three”的按钮显示在对话框的底部。 当`escape`被按下时，则返回值“three”：
+带有“three”的按钮显示在对话框的底部。 当 `escape` 被按下时，则返回值“three”：
 
+```mdx-code-block
 <div class="text--center">
   <img
-    src="/img/runtime/dialog_default_cancel.png"
+    src={require("@site/static/img/runtime/dialog_default_cancel.png").default} 
     width="30%"
     class="screenshot"
   />
 </div>
-
 <br />
 <br />
 <br />
+```
 
 #### 对话框类型
 
@@ -231,33 +250,35 @@ type FileFilter struct {
 
 Windows 允许您在对话框中使用多个文件过滤器。 每个 FileFilter 将在对话框中显示为一个单独的条目：
 
+```mdx-code-block
 <div class="text--center">
   <img
-    src="/img/runtime/dialog_win_filters.png"
+    src={require("@site/static/img/runtime/dialog_win_filters.png").default} 
     width="50%"
     class="screenshot"
   />
 </div>
-
 <br />
 <br />
 <br />
+```
 
 #### Linux
 
 Linux 允许您在对话框中使用多个文件过滤器。 每个 FileFilter 将在对话框中显示为一个单独的条目：
 
+```mdx-code-block
 <div class="text--center">
   <img
-    src="/img/runtime/dialog_lin_filters.png"
+    src={require("@site/static/img/runtime/dialog_lin_filters.png").default} 
     width="50%"
     class="screenshot"
   />
 </div>
-
 <br />
 <br />
 <br />
+```
 
 #### Mac
 
@@ -280,4 +301,4 @@ Mac 对话框只有一组模式来过滤文件的概念。 如果提供了多个
     })
 ```
 
-这将导致使用`*.png,*.jpg,*.mov,*.mp4`作为过滤器打开文件对话框。
+这将导致使用 `*.png,*.jpg,*.mov,*.mp4` 作为过滤器打开文件对话框。

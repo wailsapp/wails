@@ -2,10 +2,10 @@ package build
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 	"io"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"text/tabwriter"
@@ -14,9 +14,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/internal/system"
-
-	"github.com/wailsapp/wails/v2/cmd/wails/internal"
-	"github.com/wailsapp/wails/v2/internal/gomod"
 
 	"github.com/leaanthony/clir"
 	"github.com/leaanthony/slicer"
@@ -75,7 +72,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 	// tags to pass to `go`
 	tags := ""
-	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &tags)
+	command.StringFlag("tags", "Build tags to pass to Go compiler. Must be quoted. Space or comma (but not both) separated", &tags)
 
 	outputFilename := ""
 	command.StringFlag("o", "Output filename", &outputFilename)
@@ -93,8 +90,8 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	forceBuild := false
 	command.BoolFlag("f", "Force build application", &forceBuild)
 
-	updateGoMod := false
-	command.BoolFlag("u", "Updates go.mod to use the same Wails version as the CLI", &updateGoMod)
+	updateGoModWailsVersion := false
+	command.BoolFlag("u", "Updates go.mod to use the same Wails version as the CLI", &updateGoModWailsVersion)
 
 	debug := false
 	command.BoolFlag("debug", "Retains debug data in the compiled application", &debug)
@@ -111,8 +108,17 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	windowsConsole := false
 	command.BoolFlag("windowsconsole", "Keep the console when building for Windows", &windowsConsole)
 
+	obfuscated := false
+	command.BoolFlag("obfuscated", "Code obfuscation of bound Wails methods", &obfuscated)
+
+	garbleargs := "-literals -tiny -seed=random"
+	command.StringFlag("garbleargs", "Arguments to pass to garble", &garbleargs)
+
 	dryRun := false
 	command.BoolFlag("dryrun", "Dry run, prints the config for the command that would be executed", &dryRun)
+
+	skipBindings := false
+	command.BoolFlag("skipbindings", "Skips generation of bindings", &skipBindings)
 
 	command.Action(func() error {
 
@@ -137,13 +143,10 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			return fmt.Errorf("unable to find compiler: %s", compilerCommand)
 		}
 
-		// Tags
-		userTags := []string{}
-		for _, tag := range strings.Split(tags, " ") {
-			thisTag := strings.TrimSpace(tag)
-			if thisTag != "" {
-				userTags = append(userTags, thisTag)
-			}
+		// Process User Tags
+		userTags, err := buildtags.Parse(tags)
+		if err != nil {
+			return err
 		}
 
 		// Webview2 installer strategy (download by default)
@@ -176,6 +179,15 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 		targets.AddSlice(strings.Split(platform, ","))
 		targets.Deduplicate()
 
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		projectOptions, err := project.Load(cwd)
+		if err != nil {
+			return err
+		}
+
 		// Create BuildOptions
 		buildOptions := &build.Options{
 			Logger:              logger,
@@ -197,6 +209,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			TrimPath:            trimpath,
 			RaceDetector:        raceDetector,
 			WindowsConsole:      windowsConsole,
+			Obfuscated:          obfuscated,
+			GarbleArgs:          garbleargs,
+			SkipBindings:        skipBindings,
 		}
 
 		// Start a new tabwriter
@@ -208,7 +223,12 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			_, _ = fmt.Fprintf(w, "App Type: \t%s\n", buildOptions.OutputType)
 			_, _ = fmt.Fprintf(w, "Platforms: \t%s\n", platform)
 			_, _ = fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
+			_, _ = fmt.Fprintf(w, "Skip Bindings: \t%t\n", skipBindings)
 			_, _ = fmt.Fprintf(w, "Build Mode: \t%s\n", modeString)
+			_, _ = fmt.Fprintf(w, "Obfuscated: \t%t\n", buildOptions.Obfuscated)
+			if buildOptions.Obfuscated {
+				_, _ = fmt.Fprintf(w, "Garble Args: \t%s\n", buildOptions.GarbleArgs)
+			}
 			_, _ = fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
 			_, _ = fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
 			_, _ = fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
@@ -225,16 +245,8 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 				return err
 			}
 		}
-		err = checkGoModVersion(logger, updateGoMod)
-		if err != nil {
-			return err
-		}
 
-		cwd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		projectOptions, err := project.Load(cwd)
+		err = SyncGoMod(logger, updateGoModWailsVersion)
 		if err != nil {
 			return err
 		}
@@ -329,6 +341,11 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 				buildOptions.OutputFile = outputFilename
 			}
 
+			if obfuscated && skipBindings {
+				logger.Println("Warning: obfuscated flag overrides skipbindings flag.")
+				buildOptions.SkipBindings = false
+			}
+
 			if !dryRun {
 				// Start Time
 				start := time.Now()
@@ -375,58 +392,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	})
 }
 
-func checkGoModVersion(logger *clilogger.CLILogger, updateGoMod bool) error {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	gomodFilename := filepath.Join(cwd, "go.mod")
-	gomodData, err := os.ReadFile(gomodFilename)
-	if err != nil {
-		return err
-	}
-	outOfSync, err := gomod.GoModOutOfSync(gomodData, internal.Version)
-	if err != nil {
-		return err
-	}
-	if !outOfSync {
-		return nil
-	}
-	gomodversion, err := gomod.GetWailsVersionFromModFile(gomodData)
-	if err != nil {
-		return err
-	}
-
-	if updateGoMod {
-		return syncGoModVersion(cwd)
-	}
-
-	logger.Println("Warning: go.mod is using Wails '%s' but the CLI is '%s'. Consider updating your project's `go.mod` file.\n", gomodversion.String(), internal.Version)
-	return nil
-}
-
 func LogGreen(message string, args ...interface{}) {
 	text := fmt.Sprintf(message, args...)
 	println(colour.Green(text))
-}
-
-func syncGoModVersion(cwd string) error {
-	gomodFilename := filepath.Join(cwd, "go.mod")
-	gomodData, err := os.ReadFile(gomodFilename)
-	if err != nil {
-		return err
-	}
-	outOfSync, err := gomod.GoModOutOfSync(gomodData, internal.Version)
-	if err != nil {
-		return err
-	}
-	if !outOfSync {
-		return nil
-	}
-	LogGreen("Updating go.mod to use Wails '%s'", internal.Version)
-	newGoData, err := gomod.UpdateGoModVersion(gomodData, internal.Version)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(gomodFilename, newGoData, 0755)
 }

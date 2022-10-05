@@ -4,20 +4,24 @@ sidebar_position: 6
 
 # Menu
 
-These methods are related to the application menu.
+これらは、アプリケーションメニューに関連したメソッドです。
 
 :::info Javascript
-  Menu is currently unsupported in the JS runtime.
+
+
+現在、Javascriptランタイムではメニューをサポートしていません。
+
 :::
+
 
 ### MenuSetApplicationMenu
 
-Sets the application menu to the given [menu](../menus.mdx).
+指定された[menu](../menus.mdx)をアプリケーションメニューとして設定します。
 
 Go: `MenuSetApplicationMenu(ctx context.Context, menu *menu.Menu)`
 
 ### MenuUpdateApplicationMenu
 
-Updates the application menu, picking up any changes to the menu passed to `MenuSetApplicationMenu`.
+`MenuSetApplicationMenu`に渡されたメニューへの変更を検知し、アプリケーションメニューを更新します。
 
 Go: `MenuUpdateApplicationMenu(ctx context.Context)`

@@ -2,193 +2,199 @@
 sidebar_position: 4
 ---
 
-# Window
+# ウィンドウ
 
-These methods give control of the application window.
+アプリケーションウィンドウを制御できるメソッド群です。
 
 ### WindowSetTitle
 
-Sets the text in the window title bar.
+ウィンドウのタイトルバーにテキストを設定します。
 
 Go: `WindowSetTitle(ctx context.Context, title string)`<br/> JS: `WindowSetTitle(title: string)`
 
 ### WindowFullscreen
 
-Makes the window full screen.
+ウィンドウをフルスクリーンにします。
 
 Go: `WindowFullscreen(ctx context.Context)`<br/> JS: `WindowFullscreen()`
 
 ### WindowUnfullscreen
 
-Restores the previous window dimensions and position prior to full screen.
+フルスクリーンにする前のウィンドウサイズおよび位置に戻します。
 
 Go: `WindowUnfullscreen(ctx context.Context)`<br/> JS: `WindowUnfullscreen()`
 
 ### WindowIsFullscreen
 
-Returns true if the window is full screen.
+ウィンドウがフルスクリーンの場合は、trueを返します。
 
-Go: `WindowCenter(ctx context.Context)`<br/> JS: `WindowCenter()`
+Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen() bool`
 
 ### WindowCenter
 
-Centers the window on the monitor the window is currently on.
+ウィンドウが現在表示されているモニターの中央に、ウィンドウを配置させます。
 
 Go: `WindowReload(ctx context.Context)`<br/> JS: `WindowReload()`
 
 ### WindowReload
 
-Performs a "reload" (Reloads current page).
+リロードします。(現在表示されているページをリロード)
 
 Go: `WindowReloadApp(ctx context.Context)`<br/> JS: `WindowReloadApp()`
 
 ### WindowReloadApp
 
-Reloads the application frontend.
+アプリケーションフロントエンドをリロードします。
 
 Go: `WindowSetSystemDefaultTheme(ctx context.Context)`<br/> JS: `WindowSetSystemDefaultTheme()`
 
 ### WindowSetSystemDefaultTheme
 
-Windows only.
+Windowsのみ使用可能。
 
 Go: `WindowSetDarkTheme(ctx context.Context)`<br/> JS: `WindowSetDarkTheme()`
 
-Sets window theme to system default (dark/light).
+ウィンドウのテーマをシステムデフォルト(ダーク/ライト) に設定します。
 
 ### WindowSetLightTheme
 
-Windows only.
+Windowsのみ使用可能。
 
 Go: `WindowSetLightTheme(ctx context.Context)`<br/> JS: `WindowSetLightTheme()`
 
-Sets window theme to light.
+ウィンドウのテーマをライトに設定します。
 
 ### WindowSetDarkTheme
 
-Windows only.
+Windowsのみ使用可能。
 
 Go: `WindowShow(ctx context.Context)`<br/> JS: `WindowShow()`
 
-Sets window theme to dark.
+ウィンドウのテーマをダークに設定します。
 
 ### WindowShow
 
-Shows the window, if it is currently hidden.
+ウィンドウが非表示になっている場合は、表示させます。
 
 Go: `WindowHide(ctx context.Context)`<br/> JS: `WindowHide()`
 
 ### WindowHide
 
-Hides the window, if it is currently visible.
+現在表示されているウィンドウを非表示にします。
 
 Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetSize(size: Size)`
 
 ### WindowIsNormal
 
-Returns true if the window not minimised, maximised or fullscreen.
+ウィンドウが最小化、最大化、またはフルスクリーンになっていない場合、trueを返します。
 
-Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize() : Size`
+Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() bool`
 
 ### WindowSetSize
 
-Sets the width and height of the window.
+ウィンドウの幅と高さを設定します。
 
 Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMaxSize(size: Size)`
 
 ### WindowGetSize
 
-Gets the width and height of the window.
+ウィンドウの幅と高さを取得します。
 
-Go: `WindowSetMinSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMinSize(size: Size)`
+Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize() : Size`
 
 ### WindowSetMinSize
 
-Sets the minimum window size. Will resize the window if the window is currently smaller than the given dimensions.
+ウィンドウの最小サイズを設定します。 現在のウィンドウサイズが、指定された最小サイズよりも小さい場合、現在のウィンドウサイズは変更されます。
 
-Setting a size of `0,0` will disable this constraint.
+サイズを`0,0`に設定すると、サイズの制約が無効化されます。
 
 Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: Boolen)`
 
 ### WindowSetMaxSize
 
-Sets the maximum window size. Will resize the window if the window is currently larger than the given dimensions.
+ウィンドウの最大サイズを設定します。 現在のウィンドウサイズが、指定された最大サイズよりも大きい場合、現在のウィンドウサイズは変更されます。
 
-Setting a size of `0,0` will disable this constraint.
+サイズを`0,0`に設定すると、サイズの制約が無効化されます。
 
 Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPosition(position: Position)`
 
 ### WindowSetAlwaysOnTop
 
-Sets the window AlwaysOnTop or not on top.
+ウィンドウを常に最前面に表示するかを切り替えます。
 
-Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetPosition() : Position`
+Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: Boolen)`
 
 ### WindowSetPosition
 
-Sets the window position relative to the monitor the window is currently on.
+現在ウィンドウが表示されているモニターに対する、相対的なウィンドウ位置を設定します。
 
 Go: `WindowMaximise(ctx context.Context)`<br/> JS: `WindowMaximise()`
 
 ### WindowGetPosition
 
-Gets the window position relative to the monitor the window is currently on.
+現在ウィンドウが表示されているモニターに対する、相対的なウィンドウ位置を取得します。
 
-Go: `WindowUnmaximise(ctx context.Context)`<br/> JS: `WindowUnmaximise()`
+Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetPosition() : Position`
 
 ### WindowMaximise
 
-Maximises the window to fill the screen.
+ウィンドウを最大化します。
 
 Go: `WindowToggleMaximise(ctx context.Context)`<br/> JS: `WindowToggleMaximise()`
 
 ### WindowUnmaximise
 
-Restores the window to the dimensions and position prior to maximising.
+ウィンドウの最大化を解除し、最大化する前のサイズおよび位置に戻します。
 
 Go: `WindowMinimise(ctx context.Context)`<br/> JS: `WindowMinimise()`
 
 ### WindowIsMaximised
 
-Returns true if the window is maximised.
+ウィンドウが最大化している場合はtrueを返します。
 
-Go: `WindowUnminimise(ctx context.Context)`<br/> JS: `WindowUnminimise()`
+Go: `WindowIsMaximised(ctx context.Context) bool`<br/> JS: `WindowIsMaximised() bool`
 
 ### WindowToggleMaximise
 
-Toggles between Maximised and UnMaximised.
+最大化の状態を切り替えます。
 
 Go: `WindowToggleMaximise(ctx context.Context)`<br/> JS: `WindowToggleMaximise()`
 
 ### WindowMinimise
 
-Minimises the window.
+ウィンドウを最小化します。
 
 Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/> JS: `WindowSetBackgroundColour(R, G, B, A)`
 
 ### WindowUnminimise
 
-Restores the window to the dimensions and position prior to minimising.
+ウィンドウの最小化を解除し、最小化する前のサイズおよび位置に戻します。
 
 Go: `WindowUnminimise(ctx context.Context)`<br/> JS: `WindowUnminimise()`
 
 ### WindowIsMinimised
 
-Returns true if the window is minimised.
+ウィンドウが最小化している場合はtrueを返します。
 
-Go: `WindowIsMinimised(ctx context.Context) bool` JS: `WindowIsMinimised() bool`
+Go: `WindowIsMinimised(ctx context.Context) bool`<br/> JS: `WindowIsMinimised() bool`
 
 ### WindowSetBackgroundColour
 
-Sets the background colour of the window to the given RGBA colour definition. This colour will show through for all transparent pixels.
+ウィンドウの背景色をRGBAカラー定義で設定します。 この色は、すべての透過ピクセルに対して表示されます。
 
-Valid values for R, G, B and A are 0-255.
+R、G、B、Aの有効な値の範囲は0～255です。
 
-Any value that is not 0 will be considered 255. Any value that is not 0 will be considered 255. :::
+:::info Windows
+
+
+Windowsの場合、0または255のアルファ値(A) のみがサポートされています。 0以外の値を指定すると、すべて255とみなされます。
+
+:::
+
 
 Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/> JS: `WindowSetBackgroundColour(R, G, B, A)`
 
-## Typescript Object Definitions
+## Typescript型定義
 
 ### Position
 

@@ -3,13 +3,15 @@ package typescriptify
 import (
 	"bufio"
 	"fmt"
-	"github.com/leaanthony/slicer"
 	"io/ioutil"
 	"os"
 	"path"
 	"reflect"
+	"regexp"
 	"strings"
 	"time"
+
+	"github.com/leaanthony/slicer"
 
 	"github.com/tkrajina/go-reflector/reflector"
 )
@@ -34,6 +36,7 @@ const (
 	}
 	return a;
 }`
+	jsVariableNameRegex = `^([A-Z]|[a-z]|\$|_)([A-Z]|[a-z]|[0-9]|\$|_)*$`
 )
 
 // TypeOptions overrides options set by `ts_*` tags.
@@ -266,20 +269,34 @@ func (t *typeScriptClassBuilder) AddMapField(fieldName string, field reflect.Str
 	if valueType.Kind() == reflect.Ptr {
 		valueTypeName = valueType.Elem().Name()
 	}
+	if valueType.Kind() == reflect.Struct && differentNamespaces(t.namespace, valueType) {
+		valueTypeName = valueType.String()
+	}
 	strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
+	isOptional := strings.HasSuffix(fieldName, "?")
 
-	keyTypeStr := keyType.Name()
-	// Key should always be string, no need for this:
-	// _, isSimple := t.types[keyType.Kind()]
-	// if !isSimple {
-	// 	keyTypeStr = t.prefix + keyType.Name() + t.suffix
-	// }
+	keyTypeStr := ""
+	// Key should always be a JS primitive. JS will read it as a string either way.
+	if typeStr, isSimple := t.types[keyType.Kind()]; isSimple {
+		keyTypeStr = typeStr
+	} else {
+		keyTypeStr = t.types[reflect.String]
+	}
 
+	var dotField string
+	if regexp.MustCompile(jsVariableNameRegex).Match([]byte(strippedFieldName)) {
+		dotField = fmt.Sprintf(".%s", strippedFieldName)
+	} else {
+		dotField = fmt.Sprintf(`["%s"]`, strippedFieldName)
+		if isOptional {
+			fieldName = fmt.Sprintf(`"%s"?`, strippedFieldName)
+		}
+	}
 	t.fields = append(t.fields, fmt.Sprintf("%s%s: {[key: %s]: %s};", t.indent, fieldName, keyTypeStr, valueTypeName))
 	if valueType.Kind() == reflect.Struct {
-		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis.%s = this.convertValues(source[\"%s\"], %s, true);", t.indent, t.indent, strippedFieldName, strippedFieldName, t.prefix+valueTypeName+t.suffix))
+		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = this.convertValues(source[\"%s\"], %s, true);", t.indent, t.indent, dotField, strippedFieldName, t.prefix+valueTypeName+t.suffix))
 	} else {
-		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis.%s = source[\"%s\"];", t.indent, t.indent, strippedFieldName, strippedFieldName))
+		t.constructorBody = append(t.constructorBody, fmt.Sprintf("%s%sthis%s = source[\"%s\"];", t.indent, t.indent, dotField, strippedFieldName))
 	}
 }
 
@@ -571,11 +588,8 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 		return "", nil
 	}
 	t.logf(depth, "Converting type %s", typeOf.String())
-	if strings.ContainsRune(typeOf.String(), '.') {
-		namespace := strings.Split(typeOf.String(), ".")[0]
-		if namespace != t.Namespace {
-			return "", nil
-		}
+	if differentNamespaces(t.Namespace, typeOf) {
+		return "", nil
 	}
 
 	t.alreadyConverted[typeOf.String()] = true
@@ -829,17 +843,34 @@ func (t *typeScriptClassBuilder) AddStructField(fieldName string, field reflect.
 
 func (t *typeScriptClassBuilder) AddArrayOfStructsField(fieldName string, field reflect.StructField, arrayDepth int) {
 	fieldType := field.Type.Elem().Name()
+	if differentNamespaces(t.namespace, field.Type.Elem()) {
+		fieldType = field.Type.Elem().String()
+	}
 	strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
 	t.addField(fieldName, fmt.Sprint(t.prefix+fieldType+t.suffix, strings.Repeat("[]", arrayDepth)), false)
 	t.addInitializerFieldLine(strippedFieldName, fmt.Sprintf("this.convertValues(source[\"%s\"], %s)", strippedFieldName, t.prefix+fieldType+t.suffix))
 }
 
 func (t *typeScriptClassBuilder) addInitializerFieldLine(fld, initializer string) {
-	t.createFromMethodBody = append(t.createFromMethodBody, fmt.Sprint(t.indent, t.indent, "result.", fld, " = ", initializer, ";"))
-	t.constructorBody = append(t.constructorBody, fmt.Sprint(t.indent, t.indent, "this.", fld, " = ", initializer, ";"))
+	var dotField string
+	if regexp.MustCompile(jsVariableNameRegex).Match([]byte(fld)) {
+		dotField = fmt.Sprintf(".%s", fld)
+	} else {
+		dotField = fmt.Sprintf(`["%s"]`, fld)
+	}
+	t.createFromMethodBody = append(t.createFromMethodBody, fmt.Sprint(t.indent, t.indent, "result", dotField, " = ", initializer, ";"))
+	t.constructorBody = append(t.constructorBody, fmt.Sprint(t.indent, t.indent, "this", dotField, " = ", initializer, ";"))
 }
 
 func (t *typeScriptClassBuilder) addField(fld, fldType string, isAnyType bool) {
+	isOptional := strings.HasSuffix(fld, "?")
+	strippedFieldName := strings.ReplaceAll(fld, "?", "")
+	if !regexp.MustCompile(jsVariableNameRegex).Match([]byte(strippedFieldName)) {
+		fld = fmt.Sprintf(`"%s"`, fld)
+		if isOptional {
+			fld += "?"
+		}
+	}
 	if isAnyType {
 		t.fields = append(t.fields, fmt.Sprint(t.indent, "// Go type: ", fldType, "\n", t.indent, fld, ": any;"))
 	} else {
@@ -859,4 +890,14 @@ func getStructFQN(in string) string {
 	result := strings.ReplaceAll(in, "[]", "")
 	result = strings.ReplaceAll(result, "*", "")
 	return result
+}
+
+func differentNamespaces(namespace string, typeOf reflect.Type) bool {
+	if strings.ContainsRune(typeOf.String(), '.') {
+		typeNamespace := strings.Split(typeOf.String(), ".")[0]
+		if namespace != typeNamespace {
+			return true
+		}
+	}
+	return false
 }

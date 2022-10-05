@@ -19,8 +19,8 @@ func checkError(err error) {
 	}
 }
 
+// TODO:This can be replaced with "https://github.com/coreos/go-semver/blob/main/semver/semver.go"
 func updateVersion() string {
-
 	currentVersionData, err := os.ReadFile(versionFile)
 	checkError(err)
 	currentVersion := string(currentVersionData)
@@ -35,17 +35,37 @@ func updateVersion() string {
 	return newVersion
 }
 
-func main() {
-	newVersion := updateVersion()
-	s.CD("../../../website")
-	s.ECHO("Generating new Docs for version: " + newVersion)
-	cmd := exec.Command("npm", "run", "docusaurus", "docs:version", newVersion)
+func runCommand(name string, arg ...string) {
+	cmd := exec.Command(name, arg...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 	checkError(err)
+}
 
-	// Load the version list
+func main() {
+	var newVersion string
+	if len(os.Args) > 1 {
+		newVersion = os.Args[1]
+		err := os.WriteFile(versionFile, []byte(newVersion), 0755)
+		checkError(err)
+	} else {
+		newVersion = updateVersion()
+	}
+
+	s.CD("../../../website")
+	s.ECHO("Generating new Docs for version: " + newVersion)
+
+	runCommand("npm", "run", "docusaurus", "docs:version", newVersion)
+
+	// For the default language identifier, please refer to: https://github.com/facebook/docusaurus/tree/main/packages/docusaurus-theme-translations/locales
+	languages := []string{"en", "ja", "ko", "ru", "zh-Hans"}
+
+	for _, lang := range languages {
+		runCommand("npm", "run", "write-translations", "--", "--locale", lang)
+	}
+
+	// Load the version list/*
 	versionsData, err := os.ReadFile("versions.json")
 	checkError(err)
 	var versions []string
@@ -65,5 +85,6 @@ func main() {
 	s.CD("../versioned_sidebars")
 	s.RM("version-" + oldestVersion + "-sidebars.json")
 	s.CD("..")
-	s.EXEC("Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; yarn build")
+
+	runCommand("npm", "run", "build")
 }

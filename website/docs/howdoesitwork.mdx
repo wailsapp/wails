@@ -10,9 +10,11 @@ window. The frontend is a webkit window that will display the frontend assets. A
 version of the runtime library. Finally, it is possible to bind Go methods to the frontend, and these will appear as
 Javascript methods that can be called, just as if they were local Javascript methods.
 
+```mdx-code-block
 <div className="text--center">
-  <img src={require("@site/static/img/architecture.webp").default} width="75%" />
+  <img src={require("@site/static/img/architecture.webp").default} style={{"width":"75%", "max-width":"800px"}} />
 </div>
+```
 
 ## The Main Application
 
@@ -33,7 +35,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
@@ -95,7 +97,7 @@ there is no requirement on where in the `embed.FS` the files live. It is likely 
 directory relative to your main application code, such as `frontend/dist`:
 
 ```go title="main.go"
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 ```
 
@@ -147,7 +149,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
@@ -262,11 +264,14 @@ In the example above, `Greet` only returns a `string` so the Javascript call wil
 is passed to it.
 
 All data types are correctly translated between Go and Javascript. Even structs. If you return a struct from a Go call,
-it will be returned to your frontend as a Javascript class. Note: If you wish to use structs, you **must** define
-`json` struct tags for your fields!
+it will be returned to your frontend as a Javascript class.
 
 :::info Note
+
+Struct fields *must* have a valid `json` tag to be included in the generated Typescript.
+
 Anonymous nested structs are not supported at this time.
+
 :::
 
 It is possible to send structs back to Go. Any Javascript map/class passed as an argument that

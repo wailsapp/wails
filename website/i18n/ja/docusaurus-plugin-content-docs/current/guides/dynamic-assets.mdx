@@ -21,7 +21,7 @@ import (
     "strings"
 )
 
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 
 type FileLoader struct {
@@ -87,40 +87,48 @@ let response = await fetch('does-not-exist.txt');
 
 This will generate an error in the devtools. We can see that the error is what we expect, returned by our custom assets handler:
 
+```mdx-code-block
 <p className="text--center">
   <img
     src={require("@site/static/img/assetshandler-does-not-exist.webp").default}
   />
 </p>
+```
 
 However, if we request `go.mod`, we will see the following output:
 
+```mdx-code-block
 <p className="text--center">
   <img src={require("@site/static/img/assetshandler-go-mod.webp").default} />
 </p>
+```
 
 This technique can be used to load images directly into the page. If we updated our default vanilla template and replaced the logo image:
 
 ```html
-<img id="logo" class="logo">
+<img id="logo" class="logo" />
 ```
 
 with:
 
 ```html
-<img src="build/appicon.png" style="width: 300px">
+<img src="build/appicon.png" style="width: 300px" />
 ```
 
 Then we would see the following:
 
+```mdx-code-block
 <p className="text--center">
   <img
     src={require("@site/static/img/assetshandler-image.webp").default}
     style={{ width: "75%" }}
   />
 </p>
+```
 
 :::warning
-Exposing your filesystem in this way is a security risk. It is recommended that you properly manage access
-to your filesystem.
+
+
+Exposing your filesystem in this way is a security risk. It is recommended that you properly manage access to your filesystem.
+
 :::

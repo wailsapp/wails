@@ -1,3 +1,4 @@
+//go:build darwin
 //
 //  Application.m
 //
@@ -380,6 +381,14 @@ void Run(void *inctx, const char* url) {
     [_url release];
 
     [app setMainMenu:ctx.applicationMenu];
+}
+
+void RunMainLoop(void) {
+    NSApplication *app = [NSApplication sharedApplication];
     [app run];
+}
+
+void ReleaseContext(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
     [ctx release];
 }

@@ -655,7 +655,6 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/14013111?v=4",
       "profile": "https://github.com/GargantuaX",
       "contributions": [
-        "doc",
         "financial"
       ]
     },
@@ -1316,6 +1315,36 @@
       "name": "Maicarons J",
       "avatar_url": "https://avatars.githubusercontent.com/u/101958587?v=4",
       "profile": "http://mai.car.ons",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "KiddoV",
+      "name": "kiddov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/28552977?v=4",
+      "profile": "https://github.com/KiddoV",
+      "contributions": [
+        "doc",
+        "financial",
+        "test",
+        "ideas"
+      ]
+    },
+    {
+      "login": "Ilshidur",
+      "name": "Nicolas Coutin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6564012?v=4",
+      "profile": "https://nicolas-coutin.com/",
+      "contributions": [
+        "financial"
+      ]
+    },
+    {
+      "login": "ParvinEyvazov",
+      "name": "Parvin Eyvazov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/32189770?v=4",
+      "profile": "https://github.com/ParvinEyvazov",
       "contributions": [
         "doc"
       ]

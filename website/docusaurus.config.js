@@ -18,56 +18,56 @@ const config = {
 
   i18n: {
     defaultLocale: "en",
-    locales: ["en", "zh-Hans", "ja", "ru", "ko"],
+    locales: ["en", "zh-Hans", "ja"],
     localeConfigs: {
-        en: {
-            label: "English",
-            direction: "ltr",
-            htmlLang: "en-US",
-        },
-        "zh-Hans": {
-            label: "简体中文",
-            direction: "ltr",
-            htmlLang: "zh-Hans",
-        },
-        ja: {
-            label: "日本語",
-            direction: "ltr",
-            htmlLang: "ja-JP",
-        },
-        ru: {
-            label: "Русский",
-            direction: "ltr",
-            htmlLang: "ru-RU",
-        },
-        ko: {
-            label: "한국어",
-            direction: "ltr",
-            htmlLang: "ko-KR",
-        },
+      en: {
+        label: "English",
+        direction: "ltr",
+        htmlLang: "en-US",
+      },
+      "zh-Hans": {
+        label: "简体中文",
+        direction: "ltr",
+        htmlLang: "zh-Hans",
+      },
+      ja: {
+        label: "日本語",
+        direction: "ltr",
+        htmlLang: "ja-JP",
+      },
+      ru: {
+        label: "Русский",
+        direction: "ltr",
+        htmlLang: "ru-RU",
+      },
+      ko: {
+        label: "한국어",
+        direction: "ltr",
+        htmlLang: "ko-KR",
+      },
     },
   },
-    plugins: [],
-    presets: [
-        [
-            "classic",
-            /** @type {import('@docusaurus/preset-classic').Options} */
-            ({
-                docs: {
-                    sidebarPath: require.resolve("./sidebars.js"),
-                    // Please change this to your repo.
-                    editUrl: "https://github.com/wailsapp/wails/edit/master/website",
-                },
-                blog: {
-                    showReadingTime: true,
-                    // Please change this to your repo.
-                    editUrl: "https://github.com/wailsapp/wails/edit/master/website/blog",
-                },
-                theme: {
-                    customCss: [
-                        require.resolve("./src/css/custom.css"),
-                        require.resolve("./src/css/carousel.css"),
-                    ],
+  plugins: [],
+  presets: [
+    [
+      "classic",
+      /** @type {import('@docusaurus/preset-classic').Options} */
+      ({
+        docs: {
+          sidebarPath: require.resolve("./sidebars.js"),
+          // Please change this to your repo.
+          editUrl: "https://github.com/wailsapp/wails/edit/master/website",
+        },
+        blog: {
+          showReadingTime: true,
+          // Please change this to your repo.
+          editUrl: "https://github.com/wailsapp/wails/edit/master/website/blog",
+        },
+        theme: {
+          customCss: [
+            require.resolve("./src/css/custom.css"),
+            require.resolve("./src/css/carousel.css"),
+          ],
         },
       }),
     ],
@@ -122,6 +122,10 @@ const config = {
               {
                 to: "/community-guide",
                 label: "Community Guide",
+              },
+              {
+                to: "/coc",
+                label: "Code of Conduct",
               },
               {
                 to: "/credits",
@@ -213,7 +217,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Lea Anthony. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Lea Anthony`,
       },
       tableOfContents: {
         minHeadingLevel: 2,
@@ -227,13 +231,6 @@ const config = {
         defaultMode: "light",
         disableSwitch: false,
         respectPrefersColorScheme: true,
-      },
-      announcementBar: {
-        id: "announcement-bar",
-        content: "Wails v2 is currently in Beta",
-        backgroundColor: "#b00",
-        textColor: "#FFF",
-        isCloseable: false,
       },
       algolia: {
         appId: "AWTCNFZ4FF",

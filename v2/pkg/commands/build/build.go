@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 	"log"
 	"os"
 	"path/filepath"
@@ -59,6 +60,9 @@ type Options struct {
 	TrimPath            bool                 // Use Go's trimpath compiler flag
 	RaceDetector        bool                 // Build with Go's race detector
 	WindowsConsole      bool                 // Indicates that the windows console should be kept
+	Obfuscated          bool                 // Indicates that bound methods should be obfuscated
+	GarbleArgs          string               // The arguments for Garble
+	SkipBindings        bool                 // Skip binding generation
 }
 
 // Build the project!
@@ -126,6 +130,14 @@ func Build(options *Options) (string, error) {
 		}
 	}
 
+	// Generate bindings
+	if !options.SkipBindings {
+		err = GenerateBindings(options)
+		if err != nil {
+			return "", err
+		}
+	}
+
 	if !options.IgnoreFrontend {
 		err = builder.BuildFrontend(outputLogger)
 		if err != nil {
@@ -149,6 +161,34 @@ func Build(options *Options) (string, error) {
 	}
 
 	return compileBinary, nil
+}
+
+func GenerateBindings(buildOptions *Options) error {
+
+	obfuscated := buildOptions.Obfuscated
+	if obfuscated {
+		buildOptions.Logger.Print("  - Generating obfuscated bindings: ")
+		buildOptions.UserTags = append(buildOptions.UserTags, "obfuscated")
+	} else {
+		buildOptions.Logger.Print("  - Generating bindings: ")
+	}
+
+	// Generate Bindings
+	output, err := bindings.GenerateBindings(bindings.Options{
+		Tags:      buildOptions.UserTags,
+		GoModTidy: !buildOptions.SkipModTidy,
+	})
+	if err != nil {
+		return err
+	}
+
+	if buildOptions.Verbosity == VERBOSE {
+		buildOptions.Logger.Println(output)
+	}
+
+	buildOptions.Logger.Println("Done.")
+
+	return nil
 }
 
 func execBuildApplication(builder Builder, options *Options) (string, error) {

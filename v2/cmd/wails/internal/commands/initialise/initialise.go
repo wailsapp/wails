@@ -1,8 +1,10 @@
 package initialise
 
 import (
+	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,7 +16,7 @@ import (
 
 	"github.com/wailsapp/wails/v2/pkg/buildassets"
 
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/initialise/templates"
+	"github.com/wailsapp/wails/v2/pkg/templates"
 
 	"github.com/leaanthony/clir"
 	"github.com/pkg/errors"
@@ -35,6 +37,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	// Setup project name
 	projectName := ""
 	command.StringFlag("n", "Name of project", &projectName)
+
+	// For CI
+	ciMode := false
+	command.BoolFlag("ci", "CI Mode", &ciMode).Hidden()
 
 	// Setup project directory
 	projectDirectory := ""
@@ -131,14 +137,14 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		// Try to discover author details from git config
 		findAuthorDetails(options)
 
-		return initProject(options, quiet)
+		return initProject(options, quiet, ciMode)
 	})
 
 	return nil
 }
 
 // initProject is our main init command
-func initProject(options *templates.Options, quiet bool) error {
+func initProject(options *templates.Options, quiet bool, ciMode bool) error {
 
 	// Start Time
 	start := time.Now()
@@ -155,15 +161,36 @@ func initProject(options *templates.Options, quiet bool) error {
 		return err
 	}
 
-	// Run `go mod tidy` to ensure `go.sum` is up to date
-	cmd := exec.Command("go", "mod", "tidy", "-compat=1.17")
-	cmd.Dir = options.TargetDir
-	cmd.Stderr = os.Stderr
-	if !quiet {
-		println("")
-		cmd.Stdout = os.Stdout
+	err = os.Chdir(options.TargetDir)
+	if err != nil {
+		return err
 	}
-	err = cmd.Run()
+
+	if !ciMode {
+		// Run `go mod tidy` to ensure `go.sum` is up to date
+		cmd := exec.Command("go", "mod", "tidy")
+		cmd.Dir = options.TargetDir
+		cmd.Stderr = os.Stderr
+		if !quiet {
+			println("")
+			cmd.Stdout = os.Stdout
+		}
+		err = cmd.Run()
+		if err != nil {
+			return err
+		}
+	} else {
+		// Update go mod
+		workspace := os.Getenv("GITHUB_WORKSPACE")
+		println("GitHub workspace:", workspace)
+		if workspace == "" {
+			os.Exit(1)
+		}
+		updateReplaceLine(workspace)
+	}
+
+	// Remove the `.git`` directory in the template project
+	err = os.RemoveAll(".git")
 	if err != nil {
 		return err
 	}
@@ -241,5 +268,43 @@ func findAuthorDetails(options *templates.Options) {
 		if err == nil {
 			options.AuthorEmail = strings.TrimSpace(email)
 		}
+	}
+}
+
+func updateReplaceLine(targetPath string) {
+	file, err := os.Open("go.mod")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	err = file.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	for i, line := range lines {
+		println(line)
+		if strings.HasPrefix(line, "// replace") {
+			println("Found replace line")
+			splitLine := strings.Split(line, " ")
+			splitLine[5] = targetPath + "/v2"
+			lines[i] = strings.Join(splitLine[1:], " ")
+			continue
+		}
+	}
+
+	err = os.WriteFile("go.mod", []byte(strings.Join(lines, "\n")), 0644)
+	if err != nil {
+		log.Fatal(err)
 	}
 }

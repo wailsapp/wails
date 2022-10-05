@@ -1,3 +1,4 @@
+//go:build darwin
 //
 //  WailsMenu.m
 //  test

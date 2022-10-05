@@ -5,6 +5,7 @@ authors: [leaanthony]
 tags: [wails, v2]
 ---
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/wails.webp").default}
@@ -13,6 +14,7 @@ tags: [wails, v2]
   />
 </div>
 <br />
+```
 
 When I first announced Wails on Reddit, just over 2 years ago from a train in Sydney, I did not expect it to get much
 attention. A few days later, a prolific tech vlogger released a tutorial video, gave it a positive review and from that
@@ -45,6 +47,7 @@ possible, but also being open to someone taking those projects and building on t
 
 ### WebView2 Chromium Renderer
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/devtools.png").default}
@@ -53,6 +56,7 @@ possible, but also being open to someone taking those projects and building on t
   />
 </div>
 <br />
+```
 
 Finally, Windows developers get a first class rendering engine for their applications! Gone are the days of contorting
 your frontend code to work on Windows. On top of that, you get a first-class developer tools experience!
@@ -69,6 +73,7 @@ Gophers rejoice! The single binary dream lives on!
 
 ### New Features
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/wails-menus.webp").default}
@@ -77,6 +82,7 @@ Gophers rejoice! The single binary dream lives on!
   />
 </div>
 <br />
+```
 
 There were a lot of requests for native menu support. Wails has finally got you covered. Application menus are now available
 and include support for most native menu features. This includes standard menu items, checkboxes, radio groups, submenus
@@ -91,6 +97,7 @@ There is now the option to generate IDE configuration along with your project. T
 in a supported IDE, it will already be configured for building and debugging your application. Currently VSCode is supported
 but we hope to support other IDEs such as Goland soon.
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/vscode.webp").default}
@@ -99,6 +106,7 @@ but we hope to support other IDEs such as Goland soon.
   />
 </div>
 <br />
+```
 
 ### No requirement to bundle assets
 
@@ -117,6 +125,7 @@ They don't even need to be in the top directory - Wails will just work it out fo
 
 ### New Development Experience
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/browser.webp").default}
@@ -125,6 +134,7 @@ They don't even need to be in the top directory - Wails will just work it out fo
   />
 </div>
 <br />
+```
 
 Now that assets don't need to be bundled, it's enabled a whole new development experience. The new `wails dev`
 command will build and run your application, but instead of using the assets in the `embed.FS`, it loads them directly
@@ -150,6 +160,7 @@ auto-imported when hitting tab in an auto-generated module wrapping your Go code
 
 ### Remote Templates
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/remote.webp").default}
@@ -158,6 +169,7 @@ auto-imported when hitting tab in an auto-generated module wrapping your Go code
   />
 </div>
 <br />
+```
 
 Getting an application up and running quickly was always a key goal for the Wails project. When we launched, we tried
 to cover a lot of the modern frameworks at the time: react, vue and angular. The world of frontend development is very
@@ -185,7 +197,7 @@ months ago.
 
 I also need to give a huge thank you :pray: to the following people because without them, this release just wouldn't exist:
 
-- [Misitebao](https://github.com/misitebao) - An absolute workhorse on the Chinese translations and an incredible bug finder.
+- [Misite Bao](https://github.com/misitebao) - An absolute workhorse on the Chinese translations and an incredible bug finder.
 - [John Chadwick](https://github.com/jchv) - His amazing work on [go-webview2](https://github.com/jchv/go-webview2) and
   [go-winloader](https://github.com/jchv/go-winloader) have made the Windows version we have today possible.
 - [Tad Vizbaras](https://github.com/tadvi) - Experimenting with his [winc](https://github.com/tadvi/winc) project was the first step down the path to a pure Go Wails.

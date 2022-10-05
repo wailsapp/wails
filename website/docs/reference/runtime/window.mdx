@@ -31,7 +31,7 @@ JS: `WindowUnfullscreen()`
 
 Returns true if the window is full screen.
 
-Go: `WindowIsFullscreen(ctx context.Context) bool`
+Go: `WindowIsFullscreen(ctx context.Context) bool`<br/>
 JS: `WindowIsFullscreen() bool`
 
 ### WindowCenter
@@ -40,6 +40,15 @@ Centers the window on the monitor the window is currently on.
 
 Go: `WindowCenter(ctx context.Context)`<br/>
 JS: `WindowCenter()`
+
+### WindowExecJS
+
+Executes arbitrary JS code in the window.
+
+This method runs the code in the browser asynchronously and returns immediately. 
+If the script causes any errors, they will only be available in the browser console.
+
+Go: `WindowExecJS(ctx context.Context, js string)`
 
 ### WindowReload
 
@@ -100,7 +109,7 @@ JS: `WindowHide()`
 
 Returns true if the window not minimised, maximised or fullscreen.
 
-Go: `WindowIsNormal(ctx context.Context) bool`
+Go: `WindowIsNormal(ctx context.Context) bool`<br/>
 JS: `WindowIsNormal() bool`
 
 ### WindowSetSize
@@ -176,7 +185,7 @@ JS: `WindowUnmaximise()`
 
 Returns true if the window is maximised.
 
-Go: `WindowIsMaximised(ctx context.Context) bool`
+Go: `WindowIsMaximised(ctx context.Context) bool`<br/>
 JS: `WindowIsMaximised() bool`
 
 ### WindowToggleMaximise
@@ -204,7 +213,7 @@ JS: `WindowUnminimise()`
 
 Returns true if the window is minimised.
 
-Go: `WindowIsMinimised(ctx context.Context) bool`
+Go: `WindowIsMinimised(ctx context.Context) bool`<br/>
 JS: `WindowIsMinimised() bool`
 
 ### WindowSetBackgroundColour
@@ -215,8 +224,10 @@ This colour will show through for all transparent pixels.
 Valid values for R, G, B and A are 0-255.
 
 :::info Windows
+
 On Windows, only alpha values of 0 or 255 are supported.
 Any value that is not 0 will be considered 255.
+
 :::
 
 Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/>

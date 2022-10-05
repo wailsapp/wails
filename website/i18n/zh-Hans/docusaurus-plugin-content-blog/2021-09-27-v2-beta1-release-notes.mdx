@@ -8,6 +8,7 @@ tags:
   - v2
 ---
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/wails.webp").default}
@@ -15,10 +16,10 @@ tags:
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
-两年多前，在悉尼的火车上，当我第一次在 Reddit 宣布 Wails 时，我没想到它会引起太多关注。 几天后，一位多产的科技视频博主发布了一个教程视频，并给予了正面评价，从那时起，人们对该项目的兴趣猛增。
+两年多前，在悉尼的火车上，当我第一次在 Reddit 上宣布 Wails 时，我没想到它会引起太多关注。 几天后，一位多产的科技视频博主发布了一个教程视频，并给予了正面评价，从那时起，人们对该项目的兴趣猛增。
 
 很明显，人们对将 Web 前端添加到他们的 Go 项目感到兴奋，几乎立即将项目推动到超出我创建这个项目的设想。 当时，Wails 使用 [webview](https://github.com/webview/webview) 项目来处理前端， Windows 的唯一选择是 IE11 渲染器。 许多错误报告都因为受到它的限制：糟糕的 JavaScript/CSS 支持并且没有开发工具来调试它。 这是一段令人沮丧的开发经历，但我们也没有采取什么措施去纠正它。
 
@@ -28,10 +29,11 @@ tags:
 
 ### 没有 CGO 依赖
 
-不，我不是在开玩笑：*没有 CGO 依赖*🤯！ Windows 的问题在于，与 MacOS 和 Linux 不同，它没有默认编译器。 此外，CGO 需要一个 mingw 编译器，并且有大量不同的安装选项。 删除 CGO 的要求大大简化了设置，并使调试变得非常容易。 虽然我已经付出了相当多的努力来完成这项工作，但大部分功劳应该归功于[John Chadwick](https://github.com/jchv)，他不仅启动了几个项目使这成为可能， 而且还对接受这些项目并以此为基础的人持开放态度。 还要归功于[Tad Vizbaras](https://github.com/tadvi)，他的[winc](https://github.com/tadvi/winc)项目让我走上了这条道路。
+不，我不是在开玩笑：_没有 CGO 依赖_🤯！ Windows 的问题在于，与 MacOS 和 Linux 不同，它没有默认编译器。 此外，CGO 需要一个 mingw 编译器，并且有大量不同的安装选项。 删除 CGO 的要求大大简化了设置，并使调试变得非常容易。 虽然我已经付出了相当多的努力来完成这项工作，但大部分功劳应该归功于[John Chadwick](https://github.com/jchv)，他不仅启动了几个项目使这成为可能， 而且还对接受这些项目并以此为基础的人持开放态度。 还要感谢[Tad Vizbaras](https://github.com/tadvi)，他的[winc](https://github.com/tadvi/winc)项目让我走上了这条道路。
 
 ### WebView2 Chromium 渲染引擎
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/devtools.png").default}
@@ -39,19 +41,20 @@ tags:
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 最终，Windows 开发人员为他们的应用程序获得了一流的渲染引擎！ 扭曲前端代码以在 Windows 上工作的日子已经一去不复返了。 最重要的是，您将获得一流的开发者工具体验！
 
 但是，WebView2 组件确实需要将其放置`WebView2Loader.dll`在二进制文件旁边。 这使得分发比我们 gophers 习惯的更痛苦。 所有使用 WebView2 的解决方案和库（我知道的）都具有这种依赖性。
 
-然而，我真的很高兴地宣布，Wails 应用程序*没有这样的要求*！ 感谢[John Chadwick](https://github.com/jchv)的魔法，我们能够将这个 dll 打包在二进制文件中，并让 Windows 加载它，就像它存在于磁盘上一样。
+然而，我真的很高兴地宣布，Wails 应用程序_没有这样的要求_！ 感谢[John Chadwick](https://github.com/jchv)的魔法，我们能够将这个 dll 打包在二进制文件中，并让 Windows 加载它，就像它存在于磁盘上一样。
 
 Gophers 欢呼吧！ 单个二进制文件的构想依然存在！
 
 ### 新功能
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/wails-menus.webp").default}
@@ -59,15 +62,16 @@ Gophers 欢呼吧！ 单个二进制文件的构想依然存在！
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
-有很多对原生菜单支持的请求。 Wails 终于帮您搞定了。 应用程序菜单现已可用，并且包括对大多数原生菜单功能的支持。 这包括标准菜单项、复选框、单选组、子菜单和分隔符。
+有很多对原生菜单支持的需求。 Wails 终于帮您搞定了。 应用程序菜单现已可用，并且包括对大多数原生菜单功能的支持。 这包括标准菜单项、复选框、单选组、子菜单和分隔符。
 
-在 v1 中有大量的请求，要求能够更好地控制窗口本身。 我很高兴地宣布，有专门用于此的新运行时 API。 它功能丰富，支持多显示器配置。 还有一个改进的对话框 API：现在，您可以拥有具有丰富配置的现代原生对话框，以满足您的所有对话框需求。
+在 v1 中有大量的需求，要求能够更好地控制窗口本身。 我很高兴地宣布，有专门用于此的新运行时 API。 它功能丰富，支持多显示器配置。 还有一个改进的对话框 API：现在，您可以拥有具有丰富配置的现代原生对话框，以满足您所有的对话框需求。
 
 现在可以选择随项目生成 IDE 配置。 这意味着如果您在受支持的 IDE 中打开您的项目，它已经被配置为构建和调试您的应用程序。 目前支持 VSCode，但我们希望尽快支持其他 IDE，例如 Goland。
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/vscode.webp").default}
@@ -75,8 +79,8 @@ Gophers 欢呼吧！ 单个二进制文件的构想依然存在！
     class="screenshot"
   />
 </div>
-
-<br/>
+<br />
+```
 
 ### 无需打包资源
 
@@ -92,6 +96,7 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
 
 ### 全新的开发体验
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/browser.webp").default}
@@ -99,8 +104,8 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 现在不需要打包资源，它启用了全新的开发体验。 新`wails dev`命令将构建并运行您的应用程序，但它不使用`embed.FS`中的资源，而是直接从磁盘加载它们。
 
@@ -117,6 +122,7 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
 
 ### 远程模板
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/remote.webp").default}
@@ -124,8 +130,8 @@ v1 的一个巨大痛点是需要将整个应用程序压缩为单个 JS 和 CSS
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 让应用程序快速启动并运行一直是 Wails 项目的一个关键目标。 当我们推出时，我们试图涵盖当时的很多现代框架：react、vue 和 angular。 前端开发的世界非常固执己见，发展迅速，很难保持领先地位！ 这也意味着，我们没有为最新和最伟大的技术栈提供酷炫的现代模板。 这也意味着，我们没有为最新和最伟大的技术栈提供酷炫的现代模板。
 
@@ -139,7 +145,7 @@ Wails v2 代表了该项目的新起点。 此版本的目的是获得有关新�
 
 我还需要特别感谢 :pray: 以下人员，因为没有他们，这个版本就不会存在：
 
-- [Misitebao](https://github.com/misitebao) - 中文翻译的主要人员和和令人难以置信的漏洞发现者。
+- [Misite Bao](https://github.com/misitebao) - 中文翻译的主要人员和和令人难以置信的漏洞发现者。
 - [John Chadwick](https://github.com/jchv) - 他在 [go-webview2](https://github.com/jchv/go-webview2) 和 [go-winloader](https://github.com/jchv/go-winloader) 方面的出色工作使 Windows 版本成为可能。
 - [Tad Vizbaras](https://github.com/tadvi) - 他的[winc](https://github.com/tadvi/winc)项目是走向纯粹的 Go Wails 的第一步。
 - [Mat Ryer](https://github.com/matryer) - 他的支持、鼓励和反馈确实推动了项目向前发展。

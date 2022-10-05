@@ -91,12 +91,18 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		return result
 	}
 
-	bindingsJSON, err := appBindings.ToJSON()
-	if err != nil {
-		log.Fatal(err)
+	var bindings string
+	var err error
+	if _obfuscated, _ := ctx.Value("obfuscated").(bool); !_obfuscated {
+		bindings, err = appBindings.ToJSON()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		appBindings.DB().UpdateObfuscatedCallMap()
 	}
 
-	assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
+	assets, err := assetserver.NewAssetServer(ctx, appoptions.Assets, appoptions.AssetsHandler, bindings)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -122,8 +128,7 @@ func (f *Frontend) WindowSetDarkTheme() {
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
-
-	f.ctx = context.WithValue(ctx, "frontend", f)
+	f.ctx = ctx
 
 	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo)
 	f.mainWindow = mainWindow
@@ -174,9 +179,18 @@ func (f *Frontend) Run(ctx context.Context) error {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
-	mainWindow.Run()
-	mainWindow.Close()
+	mainWindow.UpdateTheme()
 	return nil
+}
+
+func (f *Frontend) WindowClose() {
+	if f.mainWindow != nil {
+		f.mainWindow.Close()
+	}
+}
+
+func (f *Frontend) RunMainLoop() {
+	_ = winc.RunMainLoop()
 }
 
 func (f *Frontend) WindowCenter() {

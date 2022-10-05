@@ -1,5 +1,4 @@
 //go:build bindings
-// +build bindings
 
 package app
 
@@ -16,22 +15,17 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
-// App defines a Wails application structure
-type App struct {
-	logger     *logger.Logger
-	appoptions *options.App
-}
-
 func (a *App) Run() error {
 
 	// Create binding exemptions - Ugly hack. There must be a better way
 	bindingExemptions := []interface{}{
-		a.appoptions.OnStartup,
-		a.appoptions.OnShutdown,
-		a.appoptions.OnDomReady,
-		a.appoptions.OnBeforeClose,
+		a.options.OnStartup,
+		a.options.OnShutdown,
+		a.options.OnDomReady,
+		a.options.OnBeforeClose,
 	}
-	appBindings := binding.NewBindings(a.logger, a.appoptions.Bind, bindingExemptions)
+
+	appBindings := binding.NewBindings(a.logger, a.options.Bind, bindingExemptions, IsObfuscated())
 
 	err := generateBindings(appBindings)
 	if err != nil {
@@ -40,8 +34,6 @@ func (a *App) Run() error {
 	return nil
 }
 
-func (a *App) Shutdown() {}
-
 // CreateApp creates the app!
 func CreateApp(appoptions *options.App) (*App, error) {
 	// Set up logger
@@ -49,8 +41,8 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	myLogger.SetLogLevel(appoptions.LogLevel)
 
 	result := &App{
-		logger:     myLogger,
-		appoptions: appoptions,
+		logger:  myLogger,
+		options: appoptions,
 	}
 
 	return result, nil

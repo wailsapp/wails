@@ -3,39 +3,13 @@
 package wails
 
 import (
-	"github.com/wailsapp/wails/v2/internal/app"
-	"github.com/wailsapp/wails/v2/internal/signal"
+	_ "github.com/wailsapp/wails/v2/internal/goversion" // Add Compile-Time version check for minimum go version
+	"github.com/wailsapp/wails/v2/pkg/application"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 // Run creates an application based on the given config and executes it
 func Run(options *options.App) error {
-
-	if options.RGBA != nil {
-		println("---- WARNING ----")
-		println("The `RGBA` option has been deprecated. Please use `BackgroundColour`.")
-
-		if options.BackgroundColour == nil {
-			options.BackgroundColour = options.RGBA
-		}
-	}
-
-	// Call an Init method manually
-	err := Init()
-	if err != nil {
-		return err
-	}
-
-	mainapp, err := app.CreateApp(options)
-	if err != nil {
-		return err
-	}
-
-	signal.OnShutdown(func() {
-		mainapp.Shutdown()
-	})
-
-	signal.Start()
-
-	return mainapp.Run()
+	mainApp := application.NewWithOptions(options)
+	return mainApp.Run()
 }

@@ -2,19 +2,21 @@
 sidebar_position: 20
 ---
 
-# How does it work?
+# どうやって動いているの?
 
-A Wails application is a standard Go application, with a webkit frontend. The Go part of the application consists of the application code and a runtime library that provides a number of useful operations, like controlling the application window. The frontend is a webkit window that will display the frontend assets. Also available to the frontend is a Javascript version of the runtime library. Finally, it is possible to bind Go methods to the frontend, and these will appear as Javascript methods that can be called, just as if they were local Javascript methods.
+Wailsは、webkitフロントエンドを備えた、何の変哲もないGoアプリです。 アプリ全体のうちGoの部分は、アプリのコードと、ウィンドウ制御などの便利な機能を提供するランタイムライブラリで構成されています。 フロントエンドはwebkitウィンドウであり、フロンドエンドアセットをウィンドウ上に表示します。 フロントエンドからも、Javascriptでランタイムライブラリを呼び出すことができます。 そして最終的に、Goのメソッドはフロントエンドにバインドされ、ローカルのJavascriptメソッドであるかのように、フロントエンドから呼び出すことができます。
 
+```mdx-code-block
 <div className="text--center">
-  <img src={require("@site/static/img/architecture.webp").default} width="75%" />
+  <img src={require("@site/static/img/architecture.webp").default} style={{"width":"75%", "max-width":"800px"}} />
 </div>
+```
 
-## The Main Application
+## アプリのメインコード
 
 ### Overview
 
-The main application consists of a single call to `wails.Run()`. It accepts the application configuration which describes the size of the application window, the window title, what assets to use, etc. A basic application might look like this:
+アプリは、`wails.Run()`メソッドを1回呼び出すことで、構成することができます。 このメソッドで、アプリのウィンドウサイズやウィンドウタイトル、使用アセットなどを指定することができます。 基本的なアプリを作るコードは次のとおりです:
 
 ```go title="main.go"
 package main
@@ -27,7 +29,7 @@ import (
     "github.com/wailsapp/wails/v2/pkg/options"
 )
 
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
@@ -66,51 +68,53 @@ func (b *App) Greet(name string) string {
 }
 ```
 
-### Options rundown
+### オプション
 
-This example has the following options set:
+上記のコードでは、次のオプションが指定されています:
 
-- `Title` - The text that should appear in the window's title bar
-- `Width` & `Height` - The dimensions of the window
-- `Assets` - The application's frontend assets
-- `OnStartup` - A callback for when the window is created and is about to start loading the frontend assets
-- `OnShutdown` - A callback for when the application is about to quit
-- `Bind` - A slice of struct instances that we wish to expose to the frontend
+- `Title` - ウィンドウのタイトルバーに表示されるテキスト
+- `Width` & `Height` - ウィンドウの大きさ
+- `Assets` - アプリのフロントエンドアセット
+- `OnStartup` - ウィンドウが作成され、フロントエンドの読み込みを開始しようとする時のコールバック
+- `OnShutdown` - アプリを終了しようとするときのコールバック
+- `Bind` - フロントエンドにバインドさせたい構造体インスタンスのスライス
 
-A full list of application options can be found in the [Options Reference](reference/options).
+設定可能なすべてのオプションについては、[オプションのリファレンス](reference/options)をご覧ください。
 
 #### Assets
 
-The `Assets` option is mandatory as you can't have a Wails application without frontend assets. Those assets can be any files you would expect to find in a web application - html, js, css, svg, png, etc. **There is no requirement to generate asset bundles** - plain files will do. When the application starts, it will attempt to load `index.html` from your assets and the frontend will essentially work as a browser from that point on. It is worth noting that there is no requirement on where in the `embed.FS` the files live. It is likely that the embed path uses a nested directory relative to your main application code, such as `frontend/dist`:
+Wailsでフロントエンドアセット無しのアプリを作成することはできないため、`Assets`オプションは必須オプションです。 アセットには、一般的なWebアプリケーションでよく見かけるような、html、js、css、svg、pngなどのファイルを含めることができます。**アセットバンドルを生成する必要は一切なく**、そのままのファイルを使用できます。 アプリが起動すると、アセット内の`index.html`が読み込まれます。この時点で、フロントエンドはブラウザとして動作するようになります。 `embed.FS`を使ってアセットファイルが格納されたディレクトリを指定しますが、ディレクトリの場所はどこでも構いません。 embedで指定するパスは、`frontend/dist`のように、アプリのメインコードから相対的に見たディレクトリパスになります:
 
 ```go title="main.go"
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 ```
 
-At startup, Wails will iterate the embedded files looking for the directory containing `index.html`. All other assets will be loaded relative to this directory.
+起動時に、Wailsは`index.html`が含まれるディレクトリを再帰的に探します。 他のすべてのアセットは、当該ディレクトリから相対的に読み込まれます。
 
-As production binaries use the files contained in `embed.FS`, there are no external files required to be shipped with the application.
+本番用のバイナリファイルには、`embed.FS`で指定されたアセットファイルが含まれるため、アプリ配布時に、バイナリファイルとは別にアセットファイルを付加させる必要はありません。
 
-When running in development mode using the `wails dev` command, the assets are loaded off disk, and any changes result in a "live reload". The location of the assets will be inferred from the `embed.FS`.
+`wails dev`コマンドを使って開発モードでアプリを起動した場合、アセットはディスクから読み込まれ、アセットファイルが更新されると、自動的にアプリがライブリロードされます。 アセットの場所は、`embed.FS`での指定値から推定されます。
 
-More details can be found in the [Application Development Guide](guides/application-development.mdx).
+詳細は、[アプリ開発ガイド](guides/application-development.mdx)をご覧ください。
 
-#### Application Lifecycle Callbacks
+#### アプリのライフサイクル
 
-Just before the frontend is about to load `index.html`, a callback is made to the function provided in [OnStartup](reference/options.mdx#onstartup). A standard Go context is passed to this method. This context is required when calling the runtime so a standard pattern is to save a reference to in this method. Just before the application shuts down, the [OnShutdown](reference/options.mdx#onshutdown) callback is called in the same way, again with the context. There is also an [OnDomReady](reference/options.mdx#ondomready) callback for when the frontend has completed loading all assets in `index.html` and is equivalent of the [`body onload`](https://www.w3schools.com/jsref/event_onload.asp) event in Javascript. It is also possible to hook into the window close (or application quit) event by setting the option [OnBeforeClose](reference/options.mdx#onbeforeclose).
+フロントエンドが`index.html`を読み込もうとする直前に、[OnStartup](reference/options.mdx#onstartup)で指定されたメソッドがコールバックされます。 A standard Go context is passed to this method. このメソッドに引数で渡されるContextは、今後、Wailsのラインタイムを呼び出すときに必要になるため、通常は、このContextへの参照を保持しておいてください。 同様に、アプリがシャットダウンされる直前には、[OnShutdown](reference/options.mdx#onshutdown)で指定されたコールバックが呼び出され、Contextも渡されます。 `index.html`に含まれるすべてのアセットが読み込み終わったときに呼び出される[OnDomReady](reference/options.mdx#ondomready)コールバックもあります。これは、Javascriptの[`body onload`](https://www.w3schools.com/jsref/event_onload.asp)イベントと同等のものです。 また、[OnBeforeClose](reference/options.mdx#onbeforeclose)を指定すると、ウィンドウを閉じる(またはアプリを終了する)イベントにフックさせることもできます。
 
-#### Method Binding
+#### メソッドのバインド
 
-The `Bind` option is one of the most important options in a Wails application. It specifies which struct methods to expose to the frontend. Think of structs like "controllers" in a traditional web application. When the application starts, it examines the struct instances listed in the `Bind` field in the options, determines which methods are public (starts with an uppercase letter) and will generate Javascript versions of those methods that can be called by the frontend code.
+`Bind`オプションは、Wailsアプリで最も重要なオプションの1つです。 このオプションでは、フロントエンドに公開する、構造体のメソッドを指定することができます。 構造体は、従来のWebアプリにおける"コントローラ"の立ち位置であるとお考えください。 アプリが起動すると、`Bind`オプションで指定されている構造体を対象に、その中にあるパブリックメソッド(大文字で始まるメソッド名)を探します。そして、フロントエンドのコードからそれらのメソッドを呼び出せるJavascriptが生成されます。
 
-:::info Note
+:::info 備考
+
 
 Wailsで構造体を正しくバインドするためには、構造体の*インスタンス*をオプションで指定してください。
 
 :::
 
-In this example, we create a new `App` instance and then add this instance to the `Bind` option in `wails.Run`:
+
+下記のコードでは、新しく`App`インスタンスを作成し、`wails.Run`関数の`Bind`オプションの中で、そのインスタンスを追加しています:
 
 ```go {16,24} title="main.go"
 package main
@@ -123,7 +127,7 @@ import (
     "github.com/wailsapp/wails/v2/pkg/options"
 )
 
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
@@ -154,7 +158,7 @@ func (a *App) Greet(name string) string {
 }
 ```
 
-You may bind as many structs as you like. Just make sure you create an instance of it and pass it in `Bind`:
+構造体は、好きな数だけバインドできます。 `Bind`には、構造体のインスタンスを渡すようにしてください:
 
 ```go {8-10}
     //...
@@ -172,26 +176,26 @@ You may bind as many structs as you like. Just make sure you create an instance 
 
 ```
 
-When you run `wails dev` (or `wails generate module`), a frontend module will be generated containing the following:
+`wails dev`コマンド(または、`wails generate module`コマンド)を実行すると、以下のものを含むフロントエンドモジュールが生成されます:
 
-- Javascript bindings for all bound methods
-- Typescript declarations for all bound methods
-- Typescript definitions for all Go structs used as inputs or outputs by the bound methods
+- バインドされたすべてのメソッドのJavascript
+- バインドされたすべてのメソッドのTypescript宣言
+- バインドされたメソッドの引数または返り値で使用されているGoの構造体のTypescript宣言
 
-This makes it incredibly simple to call Go code from the frontend, using the same strongly typed datastructures.
+これにより、強力な型付けがなされたデータ構造を使用して、フロントエンドから簡単にGoのコードを呼び出すことができます。
 
-## The Frontend
+## フロントエンド
 
 ### Overview
 
-The frontend is a collection of files rendered by webkit. It's like a browser and webserver in one. There is virtually[^1] no limit to which frameworks or libraries you can use. The main points of interaction between the frontend and your Go code are:
+フロントエンドは、webkitによってレンダリングされるファイル群です。 ブラウザとWebサーバが一体となったような動きをします。 使用できるフレームワークやライブラリの制限はほぼありません[^1]。 フロントエンドとGoコードとの相互のやり取りについて、主なポイントは次のとおりです:
 
-- Calling bound Go methods
-- Calling runtime methods
+- バインドされたGoメソッドの呼び出し
+- ランタイムメソッドの呼び出し
 
-### Calling bound Go methods
+### バインドされたGoメソッドの呼び出し
 
-When you run your application with `wails dev`, it will automatically generate Javascript bindings for your structs in a directory called `wailsjs/go` (You can also do this by running `wails generate module`). The generated files mirror the package names in your application. In the example above, we bind `app`, which has one public method `Greet`. This will lead to the generation of the following files:
+`wails dev`コマンドでアプリを起動すると、Go構造体のJavascriptバインディングが`wailsjs/go`ディレクトリに自動的に生成されます(`wails generate module`コマンドでも生成可能)。 生成されたファイルには、アプリ内のGoパッケージ名が反映されています。 先の例では、`Greet`というパブリックメソッドを持つ`app`をバインドしていました。 この場合、次のようなファイルが生成されることになります:
 
 ```bash
 wailsjs
@@ -201,7 +205,7 @@ wailsjs
       └─App.js
 ```
 
-Here we can see that there is a `main` package that contains the Javascript bindings for the bound `App` struct, as well as the Typescript declaration file for those methods. To call `Greet` from our frontend, we simply import the method and call it like a regular Javascript function:
+ご覧のとおり、`main`パッケージ内の`App`構造体Javascriptバインディングが、それらのメソッドのTypescript型定義と並んで生成されていることが分かります。 フロントエンドから`Greet`メソッドを呼び出すには、単純にメソッドをインポートし、通常のJavascript関数と同じように呼び出してください:
 
 ```javascript
 // ...
@@ -214,25 +218,31 @@ import {Greet} from '../wailsjs/go/main/App'
     }
 ```
 
-The Typescript declaration file gives you the correct types for the bound methods:
+Typescript型定義ファイルは、バインドされたメソッドの正しい型を提供します:
 
 ```ts
 export function Greet(arg1:string):Promise<string>;
 ```
 
-The generated methods return a Promise. A successful call will result in the first return value from the Go call to be passed to the `resolve` handler. An unsuccessful call is when a Go method that has an error type as it's second return value, passes an error instance back to the caller. This is passed back via the `reject` handler. In the example above, `Greet` only returns a `string` so the Javascript call will never reject - unless invalid data is passed to it.
+生成されたメソッドはPromiseを返すようになっています。 呼び出しが成功すると、Goからの1番目の返り値が`resolve`ハンドラに渡されます。 呼び出しに失敗したとみなされるのは、Goメソッドの2番目の返り値がerror型で、それがerrorインスタンスを返したときです。 これは、`reject`ハンドラを介して返されます。 先の例では、`Greet`メソッドは`string`型の返り値のみであるため、無効なデータが渡されない限り、Javascript側でrejectハンドラが呼ばれることはありません。
 
-All data types are correctly translated between Go and Javascript. Even structs. If you return a struct from a Go call, it will be returned to your frontend as a Javascript class. Note: If you wish to use structs, you **must** define `json` struct tags for your fields!
+すべてのデータ型は、GoとJavascriptの間で正しく解釈されます。 もちろん構造体も正しく解釈されます。 Goから構造体が返された場合、フロントエンドにはJavascriptのクラスとして返されます。
 
-:::info Note
+:::info 備考
+
+
+Struct fields *must* have a valid `json` tag to be included in the generated Typescript.
+
 Anonymous nested structs are not supported at this time.
+
 :::
 
-It is possible to send structs back to Go. Any Javascript map/class passed as an argument that is expecting a struct, will be converted to that struct type. To make this process a lot easier, in `dev` mode, a TypeScript module is generated, defining all the struct types used in bound methods. Using this module, it's possible to construct and send native Javascript objects to the Go code.
 
-There is also support for Go methods that use structs in their signature. All Go structs specified by a bound method (either as parameters or return types) will have Typescript versions auto generated as part of the Go code wrapper module. Using these, it's possible to share the same data model between Go and Javascript.
+Goに対して引数として構造体を渡すこともできます。 構造体として取り扱ってほしいJavascriptのマップやクラスを渡すと、構造体に変換されます。 あなたが簡単にこれらのことを把握できるように、`dev`モードでは、バウンドされたGoメソッドで使用されている全構造体の型が定義された、Typescriptモジュールが生成されます。 このモジュールを使用すると、Javascriptネイティブなオブジェクトを構築し、Goコードへ送信することができます。
 
-Example: We update our `Greet` method to accept a `Person` instead of a string:
+There is also support for Go methods that use structs in their signature. バインドされたメソッドで、引数または返り値として指定されているすべてのGo構造体は、Goのコードラッパーモジュールの一部として生成されたTypescript定義を持っています。 これらを使用することで、GoとJavascriptの間で、同じデータモデルを共有できます。
+
+例: `Greet`メソッドを更新して、文字列型の代わりに`Person`型を引数で受け付けてみる:
 
 ```go title="main.go"
 type Person struct {
@@ -251,7 +261,7 @@ func (a *App) Greet(p Person) string {
 }
 ```
 
-The `wailsjs/go/main/App.js` file will still have the following code:
+`wailsjs/go/main/App.js`ファイルには、次のコードが出力されます:
 
 ```js title="App.js"
 export function Greet(arg1) {
@@ -259,98 +269,97 @@ export function Greet(arg1) {
 }
 ```
 
-But the `wailsjs/go/main/App.d.ts` file will be updated with the following code:
+しかし、`wailsjs/go/main/App.d.ts`ファイルは次のコードが出力されます:
 
 ```ts title="App.d.ts"
-import {main} from '../models';
+import { main } from "../models";
 
-export function Greet(arg1:main.Person):Promise<string>;
+export function Greet(arg1: main.Person): Promise<string>;
 ```
 
-As we can see, the "main" namespace is imported from a new "models.ts" file. This file contains all the struct definitions used by our bound methods. In this example, this is a `Person` struct. If we look at `models.ts`, we can see how the models are defined:
+見ると分かるように、"main"名前空間は、新しく生成された"models.ts"ファイルからインポートされています。 このファイルには、バインドされたメソッドで使用されるすべての構造体の型定義が含まれています。 この例では、`Person`構造体の型定義が含まれています。 `models.ts`を確認すれば、モデルがどのように定義されているかが分かります。
 
 ```ts title="models.ts"
 export namespace main {
+  export class Address {
+    street: string;
+    postcode: string;
 
-    export class Address {
-        street: string;
-        postcode: string;
-
-        static createFrom(source: any = {}) {
-            return new Address(source);
-        }
-
-        constructor(source: any = {}) {
-            if ('string' === typeof source) source = JSON.parse(source);
-            this.street = source["street"];
-            this.postcode = source["postcode"];
-        }
+    static createFrom(source: any = {}) {
+      return new Address(source);
     }
-    export class Person {
-        name: string;
-        age: number;
-        address?: Address;
 
-        static createFrom(source: any = {}) {
-            return new Person(source);
-        }
-
-        constructor(source: any = {}) {
-            if ('string' === typeof source) source = JSON.parse(source);
-            this.name = source["name"];
-            this.age = source["age"];
-            this.address = this.convertValues(source["address"], Address);
-        }
-
-        convertValues(a: any, classs: any, asMap: boolean = false): any {
-            if (!a) {
-                return a;
-            }
-            if (a.slice) {
-                return (a as any[]).map(elem => this.convertValues(elem, classs));
-            } else if ("object" === typeof a) {
-                if (asMap) {
-                    for (const key of Object.keys(a)) {
-                        a[key] = new classs(a[key]);
-                    }
-                    return a;
-                }
-                return new classs(a);
-            }
-            return a;
-        }
+    constructor(source: any = {}) {
+      if ("string" === typeof source) source = JSON.parse(source);
+      this.street = source["street"];
+      this.postcode = source["postcode"];
     }
+  }
+  export class Person {
+    name: string;
+    age: number;
+    address?: Address;
+
+    static createFrom(source: any = {}) {
+      return new Person(source);
+    }
+
+    constructor(source: any = {}) {
+      if ("string" === typeof source) source = JSON.parse(source);
+      this.name = source["name"];
+      this.age = source["age"];
+      this.address = this.convertValues(source["address"], Address);
+    }
+
+    convertValues(a: any, classs: any, asMap: boolean = false): any {
+      if (!a) {
+        return a;
+      }
+      if (a.slice) {
+        return (a as any[]).map((elem) => this.convertValues(elem, classs));
+      } else if ("object" === typeof a) {
+        if (asMap) {
+          for (const key of Object.keys(a)) {
+            a[key] = new classs(a[key]);
+          }
+          return a;
+        }
+        return new classs(a);
+      }
+      return a;
+    }
+  }
 }
 ```
 
-So long as you have TypeScript as part of your frontend build configuration, you can use these models in the following way:
+フロントエンドのビルド構成にTypescriptを使用している限り、これらのモデルを次のように使用できます:
 
 ```js title="mycode.js"
-import {Greet} from '../wailsjs/go/main/App'
-  import {main} from '../wailsjs/go/models'
+import { Greet } from "../wailsjs/go/main/App";
+import { main } from "../wailsjs/go/models";
 
-  function generate() {
-    let person = new main.Person()
-    person.name = "Peter"
-    person.age = 27
-    Greet(person).then((result) => {
-      console.log(result)
-    })
-  }
+function generate() {
+  let person = new main.Person();
+  person.name = "Peter";
+  person.age = 27;
+  Greet(person).then((result) => {
+    console.log(result);
+  });
+}
 ```
 
-The combination of generated bindings and TypeScript models makes for a powerful development environment.
+生成されたバインディングとTypescriptモデルの組み合わせによって、強力な開発環境を実現させています。
 
-More information on Binding can be found in the [Binding Methods](guides/application-development.mdx#binding-methods) section of the [Application Development Guide](guides/application-development.mdx).
+バインディングの詳細については、[アプリ開発ガイド](guides/application-development.mdx)の[バインディングメソッド](guides/application-development.mdx#binding-methods)をご覧ください。
 
-### Calling runtime methods
+### ランタイムメソッドの呼び出し
 
-The Javascript runtime is located at `window.runtime` and contains many methods to do various tasks such as emit an event or perform logging operations:
+Javascriptランタイムは`window.runtime`に存在し、イベント発行やロギングなど、さまざまなタスクを実行するためのメソッドが含まれています:
 
 ```js title="mycode.js"
 window.runtime.EventsEmit("my-event", 1);
 ```
 
-More details about the JS runtime can be found in the [Runtime Reference](reference/runtime/intro).
+Javascriptランタイムの詳細については、[ランタイムリファレンス](reference/runtime/intro)をご覧ください。
 
-[^1]: There is a very small subset of libraries that use features unsupported in WebViews. There are often alternatives and workarounds for such cases.
+[^1]: まれに、WebViewでサポートされていない機能を使用するライブラリがあります。 ほとんどの場合、それらは代替手段や回避方法がありますので、それらを検討してください。

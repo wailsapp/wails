@@ -1,32 +1,41 @@
-name: pr
+name: PR Checks
 on:
   pull_request:
-    branches:
-    - develop
-jobs:
 
-  build:
-    name: Test Build PR
+jobs:
+  check_branch_name:
+    runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
+    name: Check branch name
+    steps:
+      - run: |
+          if ! [[ "$(echo ${GITHUB_HEAD_REF} | cut -d "/" -f1)" =~ (feature|bugfix|release|chore) ]]; then
+            echo "PRs are only accepted for branches starting with: feature/, bugfix/, chore/ or release/"
+            exit 1
+          fi
+        shell: bash
+
+  test:
+    name: Run Go Tests
     runs-on: ${{ matrix.os }}
+    needs: check_branch_name
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        go-version: [ 1.18, 1.19 ]
+
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Go 1.16
-      uses: actions/setup-go@v1
-      with:
-        go-version: 1.16
-      id: go
+      - name: Install linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v1
+      - name: Set up Go 1.18
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
 
-    - name: Get dependencies
-      run: |
-        go get -v -d ./...
-    - name: Build
-      run: go build -v ./cmd/wails
-
-    - name: Test
-      run: ./wails version
+      - name: Run tests
+        run: go test -v ./...

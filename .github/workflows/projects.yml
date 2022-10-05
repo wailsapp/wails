@@ -1,0 +1,17 @@
+name: Update Project
+
+on:
+  project_card:
+    types: [ moved ]
+
+jobs:
+  projectcardautolabel_job:
+    runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
+    steps:
+      - name: Run ProjectCard AutoLabel
+        id: runprojectcardautolabel
+        uses: Matticusau/projectcard-autolabel@v1.0.0
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          autolabel-config: '[{"column": "TODO", "add_labels":["TODO"], "remove_labels":["In Progress", "Ready For Testing"]},{"column":"In progress", "add_labels":["In Progress"], "remove_labels":["TODO", "Ready For Testing"]},{"column":"In review", "add_labels":["Ready For Testing"], "remove_labels":["TODO", "In Progress"]}, {"column":"Done", "add_labels":["Done"], "remove_labels":["TODO", "In Progress", "Ready For Testing"]}]'

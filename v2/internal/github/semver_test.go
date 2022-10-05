@@ -29,4 +29,15 @@ func TestSemanticVersion_IsGreaterThan(t *testing.T) {
 	result, err = v2.IsGreaterThan(beta1)
 	is2.NoErr(err)
 	is2.True(result)
+
+	beta44, err := NewSemanticVersion("v2.0.0-beta.44.2")
+	is2.NoErr(err)
+
+	rc1, err := NewSemanticVersion("v2.0.0-rc.1")
+	is2.NoErr(err)
+
+	result, err = rc1.IsGreaterThan(beta44)
+	is2.NoErr(err)
+	is2.True(result)
+
 }

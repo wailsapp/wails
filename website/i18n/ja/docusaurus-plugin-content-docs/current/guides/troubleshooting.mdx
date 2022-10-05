@@ -2,16 +2,16 @@
 
 An assortment of troubleshooting tips.
 
-## The `wails` command appears to be missing?
+## `wails`コマンドが見つからないのですが?
 
-If your system is reporting that the `wails` command is missing, make sure you have followed the Go installation guide correctly. Normally, it means that the `go/bin` directory in your User's home directory is not in the `PATH` environment variable. You will also normally need to close and reopen any open command prompts so that changes to the environment made by the installer are reflected at the command prompt.
+`wails`コマンドが見つからないとシステムに怒られた場合は、Goが、公式のGoインストール手順に従って導入されているかを確認してください。 コマンドが見つからないほとんどの理由は、あなたのホームディレクトリ配下にある`go/bin`ディレクトリのパスが、`PATH`環境変数に含まれていないからです。 また、インストールによって行われた環境変更を反映させるために、もともと開いていたコマンドプロンプト(ターミナル)がある場合はそれらをいったん閉じて、再度開きなおしてください。
 
 ## My application is displaying a white/blank screen
 
 Check that your application includes the assets from the correct directory. In your `main.go` file, you will have something similar to the following code:
 
 ```go
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 ```
 
@@ -35,9 +35,15 @@ Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
 
 If your built application looks like this in finder:
 
+```mdx-code-block
 <p className="text--center">
-  <img src={require("/img/troubleshooting/invalid_mac_app.png")}/>
+  <img
+    src={
+      require("@site/static/img/troubleshooting/invalid_mac_app.png").default
+    }
+  />
 </p>
+```
 
 it's likely that your application's `info.plist` is invalid. Update the file in `build/<yourapp>.app/Contents/info.plist` and check if the data is valid, EG check the binary name is correct. To persist the changes, copy the file back to the `build/darwin` directory.
 
@@ -54,25 +60,30 @@ func (a *App) TestFunc(msg string, args ...interface{}) error {
 calling this method from the frontend like this will fail:
 
 ```js
-var msg = "Hello: "
-var args = ["Go", "JS"]
-window.go.main.App.TestFunc(msg, ...args).then((result) => {
+var msg = "Hello: ";
+var args = ["Go", "JS"];
+window.go.main.App.TestFunc(msg, ...args)
+  .then((result) => {
     //do things here
-}).catch((error) => {
+  })
+  .catch((error) => {
     //handle error
-});
+  });
 ```
 
 Workaround:
 
 ```js
-var msg = "Hello "
-var args = ["Go", "JS"]
-window.go.main.App.TestFunc(msg, args).then((result) => { //without the 3 dots
+var msg = "Hello ";
+var args = ["Go", "JS"];
+window.go.main.App.TestFunc(msg, args)
+  .then((result) => {
+    //without the 3 dots
     //do things here
-}).catch((error) => {
+  })
+  .catch((error) => {
     //handle error
-});
+  });
 ```
 
 Credit: https://github.com/wailsapp/wails/issues/1186
@@ -104,8 +115,8 @@ If you navigate away from `index.html` to a new html file, the context will be l
 
 ```html
 <head>
-    <script src="/wails/ipc.js"></script>
-    <script src="/wails/runtime.js"></script>
+  <script src="/wails/ipc.js"></script>
+  <script src="/wails/runtime.js"></script>
 </head>
 ```
 
@@ -132,6 +143,6 @@ In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/Sy
         #define NS_FORMAT_ARGUMENT(A) __attribute__ ((format_arg(A)))
 ```
 
-This is *normally* due to a mismatch with the OS version you are running and the version of the XCode Command Line Tools installed. If you see an error like this, try upgrading your XCode Command Line Tools to the latest version.
+This is _normally_ due to a mismatch with the OS version you are running and the version of the XCode Command Line Tools installed. If you see an error like this, try upgrading your XCode Command Line Tools to the latest version.
 
 Source: https://github.com/wailsapp/wails/issues/1806

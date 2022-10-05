@@ -1,6 +1,6 @@
 module github.com/wailsapp/wails/v2
 
-go 1.19
+go 1.18
 
 require (
 	github.com/Masterminds/semver v1.5.0
@@ -13,7 +13,7 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e
-	github.com/labstack/echo/v4 v4.7.2
+	github.com/labstack/echo/v4 v4.9.0
 	github.com/leaanthony/clir v1.0.4
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1

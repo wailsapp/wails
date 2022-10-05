@@ -2,55 +2,59 @@
 sidebar_position: 5
 ---
 
-# Dialog
+# ダイアログ
 
-This part of the runtime provides access to native dialogs, such as File Selectors and Message boxes.
+ランタイムでは、ファイルセレクターやメッセージボックスといったネイティブダイアログへのアクセスを提供しています。
 
 :::info Javascript
-  Dialog is currently unsupported in the JS runtime.
+
+
+現在、Javascriptランタイムではダイアログをサポートしていません。
+
 :::
+
 
 ### OpenDirectoryDialog
 
-Opens a dialog that prompts the user to select a directory. Can be customised using [OpenDialogOptions](#opendialogoptions).
+ユーザにディレクトリの選択を求めるダイアログを開きます。 [OpenDialogOptions](#opendialogoptions)を使用してカスタマイズできます。
 
 Go: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
 
-Returns: Selected directory (blank if the user cancelled) or an error
+返り値: 選択されたディレクトリ(キャンセルされた場合は空) またはエラー
 
 ### OpenFileDialog
 
-Opens a dialog that prompts the user to select a file. Can be customised using [OpenDialogOptions](#opendialogoptions).
+ユーザにファイルの選択を求めるダイアログを開きます。 [OpenDialogOptions](#opendialogoptions)を使用してカスタマイズできます。
 
 Go: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
 
-Returns: Selected file (blank if the user cancelled) or an error
+返り値: 選択されたファイル(キャンセルされた場合は空) またはエラー
 
 ### OpenMultipleFilesDialog
 
-Opens a dialog that prompts the user to select multiple files. Can be customised using [OpenDialogOptions](#opendialogoptions).
+ユーザに複数ファイルの選択を求めるダイアログを開きます。 [OpenDialogOptions](#opendialogoptions)を使用してカスタマイズできます。
 
 Go: `OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error)`
 
-Returns: Selected files (nil if the user cancelled) or an error
+返り値: 選択された複数ファイル(キャンセルされた場合はnil) またはエラー
 
 ### SaveFileDialog
 
-Opens a dialog that prompts the user to select a filename for the purposes of saving. Can be customised using [SaveDialogOptions](#savedialogoptions).
+保存の目的でユーザにファイル名を入力選択させるダイアログを開きます。 [SaveDialogOptions](#savedialogoptions)を使用してカスタマイズできます。
 
 Go: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error)`
 
-Returns: The selected file (blank if the user cancelled) or an error
+返り値: 入力選択されたファイル(キャンセルされた場合は空) またはエラー
 
 ### MessageDialog
 
-Displays a message using a message dialog. Can be customised using [MessageDialogOptions](#messagedialogoptions).
+メッセージダイアログを使用してメッセージを表示します。 [MessageDialogOptions](#messagedialogoptions)を使用してカスタマイズできます。
 
 Go: `MessageDialog(ctx context.Context, dialogOptions MessageDialogOptions) (string, error)`
 
-Returns: The text of the selected button or an error
+返り値: 選択されたボタンのテキストまたはエラー
 
-## Options
+## オプション
 
 ### OpenDialogOptions
 
@@ -67,16 +71,16 @@ type OpenDialogOptions struct {
 }
 ```
 
-| Field                      | Description                                    | Win | Mac | Lin |
-| -------------------------- | ---------------------------------------------- | --- | --- | --- |
-| DefaultDirectory           | The directory the dialog will show when opened | ✅   | ✅   | ✅   |
-| DefaultFilename            | The default filename                           | ✅   | ✅   | ✅   |
-| Title                      | Title for the dialog                           | ✅   | ✅   | ✅   |
-| [Filters](#filefilter)     | A list of file filters                         | ✅   | ✅   | ✅   |
-| ShowHiddenFiles            | Show files hidden by the system                |     | ✅   | ✅   |
-| CanCreateDirectories       | Allow user to create directories               |     | ✅   |     |
-| ResolvesAliases            | If true, returns the file not the alias        |     | ✅   |     |
-| TreatPackagesAsDirectories | Allow navigating into packages                 |     | ✅   |     |
+| Field                      | Description               | Win | Mac | Lin |
+| -------------------------- | ------------------------- | --- | --- | --- |
+| DefaultDirectory           | ダイアログが開かれたときに初期表示するディレクトリ | ✅   | ✅   | ✅   |
+| DefaultFilename            | デフォルトファイル名                | ✅   | ✅   | ✅   |
+| Title                      | ダイアログのタイトル                | ✅   | ✅   | ✅   |
+| [Filters](#filefilter)     | ファイルフィルタのリスト              | ✅   | ✅   | ✅   |
+| ShowHiddenFiles            | システムの隠しファイルを表示            |     | ✅   | ✅   |
+| CanCreateDirectories       | ユーザによるディレクトリの作成を許可する      |     | ✅   |     |
+| ResolvesAliases            | エイリアスではなくファイルパスを返す        |     | ✅   |     |
+| TreatPackagesAsDirectories | パッケージへのナビゲーションを許可         |     | ✅   |     |
 
 ### SaveDialogOptions
 
@@ -92,15 +96,15 @@ type SaveDialogOptions struct {
 }
 ```
 
-| Field                      | Description                                    | Win | Mac | Lin |
-| -------------------------- | ---------------------------------------------- | --- | --- | --- |
-| DefaultDirectory           | The directory the dialog will show when opened | ✅   | ✅   | ✅   |
-| DefaultFilename            | The default filename                           | ✅   | ✅   | ✅   |
-| Title                      | Title for the dialog                           | ✅   | ✅   | ✅   |
-| [Filters](#filefilter)     | A list of file filters                         | ✅   | ✅   | ✅   |
-| ShowHiddenFiles            | Show files hidden by the system                |     | ✅   | ✅   |
-| CanCreateDirectories       | Allow user to create directories               |     | ✅   |     |
-| TreatPackagesAsDirectories | Allow navigating into packages                 |     | ✅   |     |
+| Field                      | Description               | Win | Mac | Lin |
+| -------------------------- | ------------------------- | --- | --- | --- |
+| DefaultDirectory           | ダイアログが開かれたときに初期表示するディレクトリ | ✅   | ✅   | ✅   |
+| DefaultFilename            | デフォルトファイル名                | ✅   | ✅   | ✅   |
+| Title                      | ダイアログのタイトル                | ✅   | ✅   | ✅   |
+| [Filters](#filefilter)     | ファイルフィルタのリスト              | ✅   | ✅   | ✅   |
+| ShowHiddenFiles            | システムの隠しファイルを表示            |     | ✅   | ✅   |
+| CanCreateDirectories       | ユーザによるディレクトリの作成を許可する      |     | ✅   |     |
+| TreatPackagesAsDirectories | パッケージへのナビゲーションを許可         |     | ✅   |     |
 
 ### MessageDialogOptions
 
@@ -115,18 +119,30 @@ type MessageDialogOptions struct {
 }
 ```
 
-| Field         | Description                                                               | Win | Mac | Lin |
-| ------------- | ------------------------------------------------------------------------- | --- | --- | --- |
-| Type          | The type of message dialog, eg question, info...                          | ✅   | ✅   | ✅   |
-| Title         | Title for the dialog                                                      | ✅   | ✅   | ✅   |
-| Message       | The message to show the user                                              | ✅   | ✅   | ✅   |
-| Buttons       | A list of button titles                                                   |     | ✅   |     |
-| DefaultButton | The button with this text should be treated as default. Bound to `return` |     | ✅   |     |
-| CancelButton  | The button with this text should be treated as cancel. Bound to `escape`  |     | ✅   |     |
+| Field         | Description                                       | Win            | Mac | Lin |
+| ------------- | ------------------------------------------------- | -------------- | --- | --- |
+| Type          | メッセージダイアログの種類 (質問、情報など)                           | ✅              | ✅   | ✅   |
+| Title         | ダイアログのタイトル                                        | ✅              | ✅   | ✅   |
+| Message       | ユーザに表示するメッセージ                                     | ✅              | ✅   | ✅   |
+| Buttons       | ボタンテキストのリスト                                       |                | ✅   |     |
+| DefaultButton | 指定されたテキストのボタンをデフォルトボタンとして扱う。 Bound to `return`.   | ✅[*](#windows) | ✅   |     |
+| CancelButton  | 指定されたテキストのボタンをキャンセルボタンとして扱う。 `escape`キーにバインドされます。 |                | ✅   |     |
 
 #### Windows
 
-Windows has standard dialog types in which the buttons are not customisable. The value returned will be one of: "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "Try Again" or "Continue"
+Windowsでは、ボタンのカスタマイズができない標準ダイアログタイプがあります。 The value returned will be one of: "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "Try Again" or "Continue".
+
+For Question dialogs, the default button is "Yes" and the cancel button is "No". This can be changed by setting the `DefaultButton` value to `"No"`.
+
+Example:
+```go
+    result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+        Type:          runtime.QuestionDialog,
+        Title:         "Question",
+        Message:       "Do you want to continue?",
+        DefaultButton: "No",
+    })
+```
 
 #### Linux
 
@@ -146,17 +162,18 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 })
 ```
 
-the first button is shown as default:
+1番目のボタンがデフォルトになります:
 
+```mdx-code-block
 <div class="text--center">
   <img
-    src="/img/runtime/dialog_no_defaults.png"
+    src={require("@site/static/img/runtime/dialog_no_defaults.png").default} 
     width="30%"
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 And if we specify `DefaultButton` to be "two":
 
@@ -171,15 +188,16 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 
 the second button is shown as default. When `return` is pressed, the value "two" is returned.
 
+```mdx-code-block
 <div class="text--center">
   <img
-    src="/img/runtime/dialog_default_button.png"
+    src={require("@site/static/img/runtime/dialog_default_button.png").default} 
     width="30%"
     class="screenshot"
   />
 </div>
-
 <br />
+```
 
 If we now specify `CancelButton` to be "three":
 
@@ -195,17 +213,18 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 
 the button with "three" is shown at the bottom of the dialog. When `escape` is pressed, the value "three" is returned:
 
+```mdx-code-block
 <div class="text--center">
   <img
-    src="/img/runtime/dialog_default_cancel.png"
+    src={require("@site/static/img/runtime/dialog_default_cancel.png").default} 
     width="30%"
     class="screenshot"
   />
 </div>
-
 <br />
 <br />
 <br />
+```
 
 #### DialogType
 
@@ -231,33 +250,35 @@ type FileFilter struct {
 
 Windows allows you to use multiple file filters in dialog boxes. Each FileFilter will show up as a separate entry in the dialog:
 
+```mdx-code-block
 <div class="text--center">
   <img
-    src="/img/runtime/dialog_win_filters.png"
+    src={require("@site/static/img/runtime/dialog_win_filters.png").default} 
     width="50%"
     class="screenshot"
   />
 </div>
-
 <br />
 <br />
 <br />
+```
 
 #### Linux
 
 Linux allows you to use multiple file filters in dialog boxes. Each FileFilter will show up as a separate entry in the dialog:
 
+```mdx-code-block
 <div class="text--center">
   <img
-    src="/img/runtime/dialog_lin_filters.png"
+    src={require("@site/static/img/runtime/dialog_lin_filters.png").default} 
     width="50%"
     class="screenshot"
   />
 </div>
-
 <br />
 <br />
 <br />
+```
 
 #### Mac
 

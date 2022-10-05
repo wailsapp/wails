@@ -23,7 +23,7 @@ The Wails CLI has a number of commands that are used for managing your projects.
 | -ide               | Generate IDE project files                                                                                              |                     |
 | -f                 | Force build application                                                                                                 |        false        |
 
-Example: `wails init -n test -d mytestproject -g -ide vscode -q`
+例: `wails init -n test -d mytestproject -g -ide vscode -q`
 
 This will generate a a project called "test" in the "mytestproject" directory, initialise git, generate vscode project files and do so silently.
 
@@ -33,17 +33,19 @@ More information on using IDEs with Wails can be found [here](../guides/ides.mdx
 
 Remote templates (hosted on GitHub) are supported and can be installed by using the template's project URL.
 
-Example: `wails init -n test -t https://github.com/leaanthony/testtemplate[@v1.0.0]`
+例: `wails init -n test -t https://github.com/leaanthony/testtemplate[@v1.0.0]`
 
 A list of community maintained templates can be found [here](../community/templates.mdx)
 
 :::warning Attention
+
 
 **The Wails project does not maintain, is not responsible nor liable for 3rd party templates!**
 
 If you are unsure about a template, inspect `package.json` and `wails.json` for what scripts are run and what packages are installed.
 
 :::
+
 
 ## build
 
@@ -59,7 +61,7 @@ If you are unsure about a template, inspect `package.json` and `wails.json` for 
 | -o filename          | Output filename                                                                                                                                                             |                                                                                                                                                     |
 | -s                   | Skip building the frontend                                                                                                                                                  | false                                                                                                                                               |
 | -f                   | Force build application                                                                                                                                                     | false                                                                                                                                               |
-| -tags "extra tags"   | Build tags to pass to compiler (quoted and space separated)                                                                                                                 |                                                                                                                                                     |
+| -tags "extra tags"   | Goコンパイラに渡すビルドタグ。 値は引用符で囲んでください。 また、スペースまたはカンマで区切ってください(両方は使用しないでください)。                                                                                                      |                                                                                                                                                     |
 | -upx                 | Compress final binary using "upx"                                                                                                                                           |                                                                                                                                                     |
 | -upxflags            | Flags to pass to upx                                                                                                                                                        |                                                                                                                                                     |
 | -v int               | Verbosity level (0 - silent, 1 - default, 2 - verbose)                                                                                                                      | 1                                                                                                                                                   |
@@ -68,7 +70,9 @@ If you are unsure about a template, inspect `package.json` and `wails.json` for 
 | -debug               | Retains debug information in the application. Allows the use of the devtools in the application window                                                                      | false                                                                                                                                               |
 | -trimpath            | Remove all file system paths from the resulting executable.                                                                                                                 | false                                                                                                                                               |
 | -race                | Build with Go's race detector                                                                                                                                               | false                                                                                                                                               |
-| -windowsconsole      | Keep the console window for Windows builds                                                                                                                                  | false                                                                                                                                               |
+| -windowsconsole      | Keep the console window for Windows builds                                                                                                                                  |                                                                                                                                                     |
+| -obfuscate           | [garble](https://github.com/burrowers/garble)を使用してアプリケーションを難読化する                                                                                                            | false                                                                                                                                               |
+| -garbleargs          | garbleへ渡す引数                                                                                                                                                                 | `-literals -tiny -seed=random`                                                                                                                      |
 
 For a detailed description of the `webview2` flag, please refer to the [Windows](../guides/windows.mdx) Guide.
 
@@ -80,15 +84,19 @@ Example:
 
 :::info UPX on Apple Silicon
 
+
 There are [issues](https://github.com/upx/upx/issues/446) with using UPX with Apple Silicon.
 
 :::
 
+
 :::info UPX on Windows
+
 
 Some Antivirus vendors false positively mark `upx` compressed binaries as virus, see [issue](https://github.com/upx/upx/issues/437).
 
 :::
+
 
 ### Platforms
 
@@ -123,7 +131,7 @@ System
 OS:             Windows 10 Pro
 Version:        2009 (Build: 19043)
 ID:             21H1
-Go Version:     go1.17
+Go Version:     go1.18
 Platform:       windows
 Architecture:   amd64
 
@@ -164,7 +172,7 @@ Your system is ready for Wails development!
 | -reloaddirs                  | Additional directories to trigger reloads (comma separated)                                                                                                                         | Value in `wails.json` |
 | -ldflags "flags"             | Additional ldflags to pass to the compiler                                                                                                                                          |                       |
 | -tags "extra tags"           | Build tags to pass to compiler (quoted and space separated)                                                                                                                         |                       |
-| -loglevel "loglevel"         | Loglevel to use - Trace, Debug, Info, Warning, Error                                                                                                                                | Debug                 |
+| -loglevel "loglevel"         | Loglevel to use - Trace, Debug, Info, Warning, Error                                                                                                                                | デバッグ                  |
 | -noreload                    | Disable automatic reload when assets change                                                                                                                                         |                       |
 | -nogen                       | Disable generate module                                                                                                                                                             |                       |
 | -v                           | Verbosity level (0 - silent, 1 - standard, 2 - verbose)                                                                                                                             | 1                     |

@@ -2,8 +2,9 @@
 sidebar_position: 20
 ---
 
-# Dogs API
+# 狗狗 API
 
+```mdx-code-block
 <div class="text--center">
   <img
     src={require("@site/static/img/tutorials/dogsapi/img.webp").default}
@@ -11,26 +12,32 @@ sidebar_position: 20
     className="screenshot"
   />
 </div>
-
 <br />
+```
 
-:::note This tutorial has been kindly provided by [@tatadan](https://twitter.com/tatadan) and forms part of their [Wails Examples Repository](https://github.com/tataDan/wails-v2-examples). :::
+:::note
 
-In this tutorial we are going to develop an application that retrieves photos of dogs from the web and then displays them.
 
-### Create the project
+本教程由 [@tatadan](https://twitter.com/tatadan) 友情提供，是他们的 [Wails Examples Repository](https://github.com/tataDan/wails-v2-examples) 的一部分。
 
-Let's create the application. From a terminal enter: `wails init -n dogs-api -t svelte`
+:::
 
-Note: We could optionally add `-ide vscode` or `-ide goland` to the end of this command if you wanted to add IDE support.
 
-Now let's `cd dogs-api` and start editing the project files.
+在本教程中，我们将开发一个应用程序，从网络上检索狗的照片，然后显示它们。
 
-### Remove unused code
+### 创建项目
 
-We will start by removing some elements that we know we will not use:
+让我们创建应用程序。 从终端输入：`wails init -n dogs-api -t svelte`
 
-- Open `app.go` and remove the following lines:
+注意：如果您想添加 IDE 支持，我们可以选择在此命令的末尾添加 `-ide vscode` 或 `-ide goland`。
+
+现在让我们 `cd dogs-api` 开始编辑项目文件。
+
+### 删除未使用的代码
+
+我们将从删除一些我们知道不会使用的元素开始：
+
+- 打开 `app.go` 并删除以下行：
 
 ```go
 // Greet returns a greeting for the given name
@@ -39,14 +46,14 @@ func (a *App) Greet(name string) string {
 }
 ```
 
-- Open `frontend/src/App.svelte` and delete all lines.
-- Delete the `frontend/src/assets/images/logo-universal.png` file
+- 打开 `frontend/src/App.svelte` 并删除所有行。
+- 删除 `frontend/src/assets/images/logo-universal.png` 文件
 
-### Creating our application
+### 创建应用程序
 
-Now let's add our new Go code.
+现在让我们添加新的 Go 代码。
 
-Add the following struct declarations to `app.go` before the function definitions:
+在函数定义之前添加以下结构声明到 `app.go`：
 
 ```go
 type RandomImage struct {
@@ -65,7 +72,7 @@ type ImagesByBreed struct {
 }
 ```
 
-Add the following functions to `app.go` (perhaps after the existing function definitions):
+将以下函数添加到 `app.go`（可能在现有函数定义之后）：
 
 ```go
 func (a *App) GetRandomImageUrl() string {
@@ -130,7 +137,7 @@ func (a *App) GetImageUrlsByBreed(breed string) []string {
 }
 ```
 
-Modify the `import` section of `app.go` to look like this:
+将 `app.go` 的 `import` 部分修改为如下所示：
 
 ```go
 import (
@@ -144,8 +151,9 @@ import (
 )
 ```
 
-Add the following lines to `frontend/src/App.svelte`:
+将以下行添加到 `frontend/src/App.svelte`：
 
+<!-- prettier-ignore-start -->
 ```html
 <script>
   import { GetRandomImageUrl } from "../wailsjs/go/main/App.js";
@@ -229,15 +237,13 @@ Add the following lines to `frontend/src/App.svelte`:
 </style>
 ```
 
-### Testing the application
 
-To generate the bindings and test the application, run `wails dev`.
+<!-- prettier-ignore-end -->
 
-### Compiling the application
+### 创建应用程序
 
-To compile the application to a single, production grade binary, run `wails build`. 
+要生成绑定并测试应用程序，请运行 `wails dev`。
 
+### 编译应用程序
 
-
-
-
+要将应用程序编译为单个可用于生产的二进制文件，请运行 `wails build`。

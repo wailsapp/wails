@@ -45,25 +45,101 @@ html[data-theme="light"] .button--secondary {
     counter-reset: line-number;
 }
 
+
+.hero .container {
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 2rem;
+    max-width: 100rem;
+}
+
+.footer .container {
+    display: flex;
+    margin: 0 auto;
+    text-align: center;
+    max-width: var(--ifm-container-width);
+    padding: 0 var(--ifm-spacing-horizontal);
+    width: 100%;
+    justify-content: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+
+.footer .container .row {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+    width: 100%;
+    align-content: stretch;
+    align-items: flex-start;
+}
+
+.footer .container .footer__bottom {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    align-content: center;
+    flex-wrap: wrap;
+}
+
+
+.col {
+    display: inline-flex;
+    width: 50%;
+    align-content: flex-end;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+
+.hero {
+    background-color: var(--ifm-background-color);
+}
+
 .carousel-root {
     padding-left: 2%;
-    max-width: 1400px;
-    width: 85%;
+    max-width: 600px;
+    width: 100%;
     margin: 0 auto;
 }
 
-@media screen and (max-width: 576px) {
-    .carousel-root {
-        padding-left: 2%;
-        width: 100%;
-    }
+.heroBanner_src-pages-index-module {
+    padding-top: 3rem;
+}
+
+.features_src-components-HomepageFeatures-module {
+    display: flex;
+    align-items: center;
+    padding: 1rem 0;
+    width: 100%;
+    background-color: var(--ifm-card-background-color);
 }
 
 
+.features_src-components-HomepageFeatures-module .container {
+    padding: 1rem 3rem 0;
+}
+
+
+.features_src-components-HomepageFeatures-module .container .row {
+    display: flex;
+    align-items: baseline;
+}
+
 @media screen and (max-width: 966px) {
+    .hero .container {
+        padding: .5rem;
+    }
+
+    .hero .container .col .hero__subtitle {
+        font-size: 1.3rem;
+    }
+
     .carousel-root {
-        padding-left: 2%;
-        width: 90%;
+        max-width: 75%;
     }
 }
 
@@ -91,4 +167,68 @@ html[data-theme="light"] .button--secondary {
 
 .screenshot {
     box-shadow: rgb(255 255 255 / 20%) 0 4px 8px 0, rgb(104 104 104) 0 6px 20px 0;
+}
+
+.hero__subtitle {
+    margin-top: 2rem;
+    font-size: 1.5rem;
+}
+
+
+blockquote {
+    display: block;
+    width: 80%;
+    max-width: 75rem;
+    position: relative;
+    padding: 0 1rem;
+    margin: 1rem auto 7rem;
+}
+
+blockquote:before, blockquote:after {
+    content: "“";
+    font-size: 70px;
+    font-family: "Georgia", serif;
+    color: var(--ifm-link-color);
+    position: absolute;
+    left: -30px;
+    top: 5px;
+}
+
+blockquote:after {
+    content: "”";
+    right: -30px;
+    left: auto;
+}
+
+blockquote h4 {
+    position: absolute;
+    right: -30px;
+    padding-right: 1rem;
+    left: auto;
+}
+
+
+cite {
+    float: right;
+    color: black;
+    font-size: 12px;
+    margin: 0;
+    padding: 0;
+}
+
+.docMainContainer_node_modules-\@docusaurus-theme-classic-lib-theme-DocPage-Layout-Main-styles-module .container .row .col {
+    display: inline-flex;
+    width: 50%;
+    align-content: flex-end;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+
+.main-wrapper .container .row .col {
+    display: inline-flex;
+    width: 50%;
+    align-content: flex-end;
+    flex-direction: column;
+    justify-content: flex-start;
 }
