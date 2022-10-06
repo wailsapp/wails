@@ -121,7 +121,7 @@ func GetModuleHandle(value uintptr) uintptr {
 }
 
 func GetMessage(msg *MSG) uintptr {
-	rt, _, _ := procGetMessageW.Call(uintptr(unsafe.Pointer(&msg)), 0, 0, 0)
+	rt, _, _ := procGetMessageW.Call(uintptr(unsafe.Pointer(msg)), 0, 0, 0)
 	return rt
 }
 
