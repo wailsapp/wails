@@ -13,11 +13,10 @@ type PopupMenu struct {
 	menuData    *menu.Menu
 }
 
-func buildMenu(parentMenu win32.HMENU, inputMenu *menu.Menu) (map[int]*menu.MenuItem, error) {
-	menuMapping := make(map[int]*menu.MenuItem)
+func (p *PopupMenu) buildMenu(parentMenu win32.HMENU, inputMenu *menu.Menu, startindex int) error {
 	for index, item := range inputMenu.Items {
 		var ret bool
-		itemID := win32.MenuItemMsgID + index
+		itemID := index + startindex
 		flags := win32.MF_STRING
 		if item.Disabled {
 			flags = flags | win32.MF_GRAYED
@@ -31,27 +30,39 @@ func buildMenu(parentMenu win32.HMENU, inputMenu *menu.Menu) (map[int]*menu.Menu
 		if item.IsSeparator() {
 			flags = flags | win32.MF_SEPARATOR
 		}
+		if item.SubMenu != nil {
+			flags = flags | win32.MF_POPUP
+			submenu := win32.CreatePopupMenu()
+			err := p.buildMenu(submenu, item.SubMenu, itemID)
+			if err != nil {
+				return err
+			}
+			ret = win32.AppendMenu(parentMenu, uintptr(flags), uintptr(submenu), item.Label)
+			if ret == false {
+				return errors.New("AppendMenu failed")
+			}
+			continue
+		}
 
-		menuMapping[itemID] = item
+		p.menuMapping[itemID] = item
 		ret = win32.AppendMenu(parentMenu, uintptr(flags), uintptr(itemID), item.Label)
 		if ret == false {
-			return nil, errors.New("AppendMenu failed")
+			return errors.New("AppendMenu failed")
 		}
 	}
-	return menuMapping, nil
+	return nil
 }
 
 func (p *PopupMenu) Update() error {
-	var err error
 	p.menu = win32.CreatePopupMenu()
-	p.menuMapping, err = buildMenu(p.menu, p.menuData)
-	return err
+	return p.buildMenu(p.menu, p.menuData, win32.MenuItemMsgID)
 }
 
 func NewPopupMenu(parent win32.HWND, inputMenu *menu.Menu) (*PopupMenu, error) {
 	result := &PopupMenu{
-		parent:   parent,
-		menuData: inputMenu,
+		parent:      parent,
+		menuData:    inputMenu,
+		menuMapping: make(map[int]*menu.MenuItem),
 	}
 	err := result.Update()
 	return result, err
