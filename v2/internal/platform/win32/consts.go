@@ -26,6 +26,7 @@ var (
 	procIsDialogMessage          = moduser32.NewProc("IsDialogMessageW")
 	procTranslateMessage         = moduser32.NewProc("TranslateMessage")
 	procDispatchMessage          = moduser32.NewProc("DispatchMessageW")
+	procPostQuitMessage          = moduser32.NewProc("PostQuitMessage")
 
 	modshell32          = syscall.NewLazyDLL("shell32.dll")
 	procShellNotifyIcon = modshell32.NewProc("Shell_NotifyIconW")
@@ -135,9 +136,9 @@ func PostMessage(hwnd HWND, msg uint32, wParam, lParam uintptr) uintptr {
 	return ret
 }
 
-func ShellNotifyIcon(cmd uintptr, nid *NOTIFYICONDATA) uintptr {
+func ShellNotifyIcon(cmd uintptr, nid *NOTIFYICONDATA) bool {
 	ret, _, _ := procShellNotifyIcon.Call(cmd, uintptr(unsafe.Pointer(nid)))
-	return ret
+	return ret == 1
 }
 
 func IsDialogMessage(hwnd HWND, msg *MSG) uintptr {
@@ -153,4 +154,8 @@ func TranslateMessage(msg *MSG) uintptr {
 func DispatchMessage(msg *MSG) uintptr {
 	ret, _, _ := procDispatchMessage.Call(uintptr(unsafe.Pointer(msg)))
 	return ret
+}
+
+func PostQuitMessage(exitCode int32) {
+	procPostQuitMessage.Call(uintptr(exitCode))
 }

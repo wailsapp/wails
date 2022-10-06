@@ -6,6 +6,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/signal"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"sync"
 )
 
 // Application is the main Wails application
@@ -18,6 +19,8 @@ type Application struct {
 
 	// running flag
 	running bool
+
+	shutdown sync.Once
 }
 
 // NewWithOptions creates a new Application with the given options
@@ -81,10 +84,12 @@ func (a *Application) Run() error {
 
 // Quit will shut down the application
 func (a *Application) Quit() {
-	for _, systray := range a.systemTrays {
-		systray.Close()
-	}
-	a.application.Shutdown()
+	a.shutdown.Do(func() {
+		for _, systray := range a.systemTrays {
+			systray.Close()
+		}
+		a.application.Shutdown()
+	})
 }
 
 // Bind the given struct to the application

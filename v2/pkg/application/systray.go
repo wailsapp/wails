@@ -59,6 +59,7 @@ func (t *SystemTray) Run() error {
 func (t *SystemTray) Close() {
 	if t.impl != nil {
 		t.impl.Close()
+		t.impl = nil
 	}
 }
 
@@ -70,8 +71,9 @@ func (t *SystemTray) SetMenu(items *menu.Menu) {
 	}
 }
 
-func (t *SystemTray) Update() {
+func (t *SystemTray) Update() error {
 	if t.impl != nil {
-		t.impl.Update()
+		return t.impl.Update()
 	}
+	return nil
 }

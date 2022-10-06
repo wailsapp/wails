@@ -49,14 +49,13 @@ func (p *Systray) Close() {
 	}
 }
 
-func (p *Systray) Update() {
+func (p *Systray) Update() error {
 	// Delete old menu
 	if p.menu != nil {
 		p.menu.Destroy()
 	}
 
-	p.menu.Update()
-
+	return p.menu.Update()
 }
 
 // SetTitle is unused on Windows
@@ -123,15 +122,13 @@ func New() (*Systray, error) {
 	}
 	nid.CbSize = uint32(unsafe.Sizeof(nid))
 
-	ret := win32.ShellNotifyIcon(win32.NIM_ADD, &nid)
-	if ret == 0 {
+	if !win32.ShellNotifyIcon(win32.NIM_ADD, &nid) {
 		return nil, errors.New("shell notify create failed")
 	}
 
 	nid.UVersion = win32.NOTIFYICON_VERSION
 
-	ret = win32.ShellNotifyIcon(win32.NIM_SETVERSION, &nid)
-	if ret == 0 {
+	if !win32.ShellNotifyIcon(win32.NIM_SETVERSION, &nid) {
 		return nil, errors.New("shell notify version failed")
 	}
 
@@ -153,8 +150,8 @@ func (p *Systray) SetMenu(popupMenu *menu.Menu) (err error) {
 
 func (p *Systray) Stop() error {
 	nid := p.newNotifyIconData()
-	ret := win32.ShellNotifyIcon(win32.NIM_DELETE, &nid)
-	if ret == 0 {
+	win32.PostQuitMessage(0)
+	if !win32.ShellNotifyIcon(win32.NIM_DELETE, &nid) {
 		return errors.New("shell notify delete failed")
 	}
 	return nil
@@ -173,8 +170,7 @@ func (p *Systray) SetTooltip(tooltip string) error {
 	nid.UFlags = win32.NIF_TIP
 	copy(nid.SzTip[:], win32.MustUTF16FromString(tooltip))
 
-	ret := win32.ShellNotifyIcon(win32.NIM_MODIFY, &nid)
-	if ret == 0 {
+	if !win32.ShellNotifyIcon(win32.NIM_MODIFY, &nid) {
 		return errors.New("shell notify tooltip failed")
 	}
 	return nil
@@ -192,8 +188,7 @@ func (p *Systray) ShowMessage(title, msg string, bigIcon bool) error {
 	copy(nid.SzInfoTitle[:], win32.MustUTF16FromString(title))
 	copy(nid.SzInfo[:], win32.MustUTF16FromString(msg))
 
-	ret := win32.ShellNotifyIcon(win32.NIM_MODIFY, &nid)
-	if ret == 0 {
+	if !win32.ShellNotifyIcon(win32.NIM_MODIFY, &nid) {
 		return errors.New("shell notify tooltip failed")
 	}
 	return nil
@@ -224,8 +219,7 @@ func (p *Systray) setVisible(visible bool) error {
 		nid.DwState = win32.NIS_HIDDEN
 	}
 
-	ret := win32.ShellNotifyIcon(win32.NIM_MODIFY, &nid)
-	if ret == 0 {
+	if !win32.ShellNotifyIcon(win32.NIM_MODIFY, &nid) {
 		return errors.New("shell notify tooltip failed")
 	}
 	return nil
@@ -261,8 +255,7 @@ func (p *Systray) setIcon(hicon win32.HICON) error {
 		nid.HIcon = hicon
 	}
 
-	ret := win32.ShellNotifyIcon(win32.NIM_MODIFY, &nid)
-	if ret == 0 {
+	if !win32.ShellNotifyIcon(win32.NIM_MODIFY, &nid) {
 		return errors.New("shell notify icon failed")
 	}
 	return nil

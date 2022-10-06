@@ -17,7 +17,7 @@ type SysTray interface {
 	Close()
 	SetMenu(menu *menu.Menu) error
 	SetIcons(lightModeIcon, darkModeIcon *options.SystemTrayIcon) error
-	Update()
+	Update() error
 }
 
 func NewSysTray() SysTray {
