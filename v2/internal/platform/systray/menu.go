@@ -16,6 +16,9 @@ type PopupMenu struct {
 
 func (p *PopupMenu) buildMenu(parentMenu win32.PopupMenu, inputMenu *menu.Menu, startindex int) error {
 	for index, item := range inputMenu.Items {
+		if item.Hidden {
+			continue
+		}
 		var ret bool
 		itemID := index + startindex
 		flags := win32.MF_STRING

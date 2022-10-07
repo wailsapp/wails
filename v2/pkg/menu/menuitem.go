@@ -257,6 +257,16 @@ func (m *MenuItem) SetChecked(value bool) *MenuItem {
 	return m
 }
 
+func (m *MenuItem) Hide() *MenuItem {
+	m.Hidden = true
+	return m
+}
+
+func (m *MenuItem) Show() *MenuItem {
+	m.Hidden = false
+	return m
+}
+
 func Label(label string) *MenuItem {
 	return &MenuItem{
 		Type:  TextType,

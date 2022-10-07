@@ -77,3 +77,21 @@ func (t *SystemTray) Update() error {
 	}
 	return nil
 }
+
+func (t *SystemTray) SetTooltip(s string) {
+	if t.impl != nil {
+		t.impl.SetTooltip(s)
+	} else {
+		t.tooltip = s
+	}
+}
+
+func (t *SystemTray) SetIcons(lightModeIcon *options.SystemTrayIcon, darkModeIcon *options.SystemTrayIcon) {
+	if t.impl != nil {
+		t.impl.SetIcons(lightModeIcon, darkModeIcon)
+	} else {
+		t.lightModeIcon = lightModeIcon
+		t.darkModeIcon = darkModeIcon
+	}
+
+}
