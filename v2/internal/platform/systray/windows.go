@@ -336,6 +336,10 @@ func (p *Systray) updateIcon() error {
 	return p.setIcon(newIcon)
 }
 
+func (p *Systray) updateTheme() {
+	//win32.SetTheme(p.hwnd, win32.IsCurrentlyDarkMode())
+}
+
 func RegisterWindow(name string, proc win32.WindowProc) (win32.HINSTANCE, error) {
 	instance, exists := windowClasses[name]
 	if exists {

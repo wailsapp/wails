@@ -1,6 +1,8 @@
 package win32
 
 import (
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
+	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
 )
@@ -28,10 +30,78 @@ var (
 	procTranslateMessage         = moduser32.NewProc("TranslateMessage")
 	procDispatchMessage          = moduser32.NewProc("DispatchMessageW")
 	procPostQuitMessage          = moduser32.NewProc("PostQuitMessage")
+	procSystemParametersInfo     = moduser32.NewProc("SystemParametersInfoW")
 
 	modshell32          = syscall.NewLazyDLL("shell32.dll")
 	procShellNotifyIcon = modshell32.NewProc("Shell_NotifyIconW")
+
+	moddwmapi                 = syscall.NewLazyDLL("dwmapi.dll")
+	procDwmSetWindowAttribute = moddwmapi.NewProc("DwmSetWindowAttribute")
+
+	moduxtheme         = syscall.NewLazyDLL("uxtheme.dll")
+	procSetWindowTheme = moduxtheme.NewProc("SetWindowTheme")
+
+	AllowDarkModeForWindow func(HWND, bool) uintptr
+	SetPreferredAppMode    func(int32) uintptr
 )
+
+type PreferredAppMode = int32
+
+const (
+	PreferredAppModeDefault PreferredAppMode = iota
+	PreferredAppModeAllowDark
+	PreferredAppModeForceDark
+	PreferredAppModeForceLight
+	PreferredAppModeMax
+)
+
+/*
+RtlGetNtVersionNumbers = void (LPDWORD major, LPDWORD minor, LPDWORD build) // 1809 17763
+ShouldAppsUseDarkMode = bool () // ordinal 132
+AllowDarkModeForWindow = bool (HWND hWnd, bool allow) // ordinal 133
+AllowDarkModeForApp = bool (bool allow) // ordinal 135, removed since 18334
+FlushMenuThemes = void () // ordinal 136
+RefreshImmersiveColorPolicyState = void () // ordinal 104
+IsDarkModeAllowedForWindow = bool (HWND hWnd) // ordinal 137
+GetIsImmersiveColorUsingHighContrast = bool (IMMERSIVE_HC_CACHE_MODE mode) // ordinal 106
+OpenNcThemeData = HTHEME (HWND hWnd, LPCWSTR pszClassList) // ordinal 49
+// Insider 18290
+ShouldSystemUseDarkMode = bool () // ordinal 138
+// Insider 18334
+SetPreferredAppMode = PreferredAppMode (PreferredAppMode appMode) // ordinal 135, since 18334
+IsDarkModeAllowedForApp = bool () // ordinal 139
+*/
+func init() {
+	if IsWindowsVersionAtLeast(10, 0, 18334) {
+
+		// AllowDarkModeForWindow is only available on Windows 10+
+		uxtheme, err := windows.LoadLibrary("uxtheme.dll")
+		if err == nil {
+			procAllowDarkModeForWindow, err := windows.GetProcAddressByOrdinal(uxtheme, uintptr(133))
+			if err == nil {
+				AllowDarkModeForWindow = func(hwnd HWND, allow bool) uintptr {
+					var allowInt int32
+					if allow {
+						allowInt = 1
+					}
+					ret, _, _ := syscall.SyscallN(procAllowDarkModeForWindow, uintptr(hwnd), uintptr(allowInt))
+					return ret
+				}
+			}
+		}
+
+		// SetPreferredAppMode is only available on Windows 10+
+		procSetPreferredAppMode, err := windows.GetProcAddressByOrdinal(uxtheme, uintptr(135))
+		if err == nil {
+			SetPreferredAppMode = func(mode int32) uintptr {
+				ret, _, _ := syscall.SyscallN(procSetPreferredAppMode, uintptr(mode))
+				return ret
+			}
+			SetPreferredAppMode(PreferredAppModeAllowDark)
+		}
+	}
+
+}
 
 type HANDLE uintptr
 type HINSTANCE HANDLE
@@ -116,6 +186,14 @@ const (
 	CS_VREDRAW = 0x0001
 	CS_HREDRAW = 0x0002
 )
+
+var windowsVersion, _ = operatingsystem.GetWindowsVersionInfo()
+
+func IsWindowsVersionAtLeast(major, minor, buildNumber int) bool {
+	return windowsVersion.Major >= major &&
+		windowsVersion.Minor >= minor &&
+		windowsVersion.Build >= buildNumber
+}
 
 type WindowProc func(hwnd HWND, msg uint32, wparam, lparam uintptr) uintptr
 
