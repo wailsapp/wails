@@ -7,14 +7,14 @@ import (
 )
 
 type PopupMenu struct {
-	menu          win32.HMENU
+	menu          win32.PopupMenu
 	parent        win32.HWND
 	menuMapping   map[int]*menu.MenuItem
 	checkboxItems map[*menu.MenuItem][]int
 	menuData      *menu.Menu
 }
 
-func (p *PopupMenu) buildMenu(parentMenu win32.HMENU, inputMenu *menu.Menu, startindex int) error {
+func (p *PopupMenu) buildMenu(parentMenu win32.PopupMenu, inputMenu *menu.Menu, startindex int) error {
 	for index, item := range inputMenu.Items {
 		var ret bool
 		itemID := index + startindex
@@ -38,7 +38,7 @@ func (p *PopupMenu) buildMenu(parentMenu win32.HMENU, inputMenu *menu.Menu, star
 			if err != nil {
 				return err
 			}
-			ret = win32.AppendMenu(parentMenu, uintptr(flags), uintptr(submenu), item.Label)
+			ret = parentMenu.Append(uintptr(flags), uintptr(submenu), item.Label)
 			if ret == false {
 				return errors.New("AppendMenu failed")
 			}
@@ -49,7 +49,7 @@ func (p *PopupMenu) buildMenu(parentMenu win32.HMENU, inputMenu *menu.Menu, star
 		if item.IsCheckbox() {
 			p.checkboxItems[item] = append(p.checkboxItems[item], itemID)
 		}
-		ret = win32.AppendMenu(parentMenu, uintptr(flags), uintptr(itemID), item.Label)
+		ret = parentMenu.Append(uintptr(flags), uintptr(itemID), item.Label)
 		if ret == false {
 			return errors.New("AppendMenu failed")
 		}
@@ -83,7 +83,7 @@ func (p *PopupMenu) ShowAtCursor() error {
 		return errors.New("SetForegroundWindow failed")
 	}
 
-	if win32.TrackPopupMenu(p.menu, win32.TPM_LEFTALIGN, x, y-5, p.parent) == false {
+	if p.menu.Track(win32.TPM_LEFTALIGN, x, y-5, p.parent) == false {
 		return errors.New("TrackPopupMenu failed")
 	}
 
@@ -99,12 +99,8 @@ func (p *PopupMenu) ProcessCommand(cmdMsgID int) {
 	if item != nil {
 		if item.Type == menu.CheckboxType {
 			item.Checked = !item.Checked
-			var checkState uint = win32.MF_UNCHECKED
-			if item.Checked {
-				checkState = win32.MF_CHECKED
-			}
 			for _, menuID := range p.checkboxItems[item] {
-				win32.CheckMenuItem(p.menu, int32(menuID), checkState)
+				p.menu.Check(uintptr(menuID), item.Checked)
 			}
 			// TODO: Check duplicate menu items
 		}
@@ -115,5 +111,5 @@ func (p *PopupMenu) ProcessCommand(cmdMsgID int) {
 }
 
 func (p *PopupMenu) Destroy() {
-	win32.DestroyMenu(p.menu)
+	p.menu.Destroy()
 }
