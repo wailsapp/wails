@@ -21,6 +21,7 @@ var (
 	procTrackPopupMenu           = moduser32.NewProc("TrackPopupMenu")
 	procDestroyMenu              = moduser32.NewProc("DestroyMenu")
 	procAppendMenuW              = moduser32.NewProc("AppendMenuW")
+	procCheckMenuItem            = moduser32.NewProc("CheckMenuItem")
 	procCreateIconFromResourceEx = moduser32.NewProc("CreateIconFromResourceEx")
 	procGetMessageW              = moduser32.NewProc("GetMessageW")
 	procIsDialogMessage          = moduser32.NewProc("IsDialogMessageW")
@@ -104,6 +105,7 @@ const (
 	MF_GRAYED       = 0x00000001
 	MF_DISABLED     = 0x00000002
 	MF_SEPARATOR    = 0x00000800
+	MF_UNCHECKED    = 0x00000000
 	MF_CHECKED      = 0x00000008
 	MF_POPUP        = 0x00000010
 	MF_MENUBARBREAK = 0x00000020

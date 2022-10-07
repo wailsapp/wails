@@ -32,3 +32,12 @@ func AppendMenu(menu HMENU, flags uintptr, id uintptr, text string) bool {
 	)
 	return ret != 0
 }
+
+func CheckMenuItem(menu HMENU, id int32, flags uint) uint {
+	ret, _, _ := procCheckMenuItem.Call(
+		uintptr(menu),
+		uintptr(id),
+		uintptr(flags),
+	)
+	return uint(ret)
+}

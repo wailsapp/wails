@@ -6,11 +6,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/menu/keys"
 )
 
-type MenuItemImpl interface {
-	SetChecked(bool)
-	SetLabel(string)
-}
-
 // MenuItem represents a menuitem contained in a menu
 type MenuItem struct {
 	// Label is what appears as the menu text
@@ -58,9 +53,6 @@ type MenuItem struct {
 
 	// Used for locking when removing elements
 	removeLock sync.Mutex
-
-	// Implementation of the runtime methods
-	Impl MenuItemImpl
 }
 
 // Parent returns the parent of the menu item.
@@ -224,23 +216,52 @@ func (m *MenuItem) insertItemAtIndex(index int, target *MenuItem) bool {
 	return true
 }
 
-func (m *MenuItem) SetChecked(b bool) {
-	if m.Checked != b {
-		m.Checked = b
-		m.Impl.SetChecked(b)
-	}
-}
-
 func (m *MenuItem) SetLabel(name string) {
 	if m.Label == name {
 		return
 	}
 	m.Label = name
-	m.Impl.SetLabel(name)
 }
 
 func (m *MenuItem) IsSeparator() bool {
 	return m.Type == SeparatorType
+}
+
+func (m *MenuItem) IsCheckbox() bool {
+	return m.Type == CheckboxType
+}
+
+func (m *MenuItem) Disable() *MenuItem {
+	m.Disabled = true
+	return m
+}
+
+func (m *MenuItem) Enable() *MenuItem {
+	m.Disabled = false
+	return m
+}
+
+func (m *MenuItem) OnClick(click Callback) *MenuItem {
+	m.Click = click
+	return m
+}
+
+func (m *MenuItem) SetAccelerator(acc *keys.Accelerator) *MenuItem {
+	m.Accelerator = acc
+	return m
+}
+
+func (m *MenuItem) SetChecked(value bool) *MenuItem {
+	m.Checked = value
+	m.Type = CheckboxType
+	return m
+}
+
+func Label(label string) *MenuItem {
+	return &MenuItem{
+		Type:  TextType,
+		Label: label,
+	}
 }
 
 // Text is a helper to create basic Text menu items

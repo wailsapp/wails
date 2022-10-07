@@ -7,10 +7,11 @@ import (
 )
 
 type PopupMenu struct {
-	menu        win32.HMENU
-	parent      win32.HWND
-	menuMapping map[int]*menu.MenuItem
-	menuData    *menu.Menu
+	menu          win32.HMENU
+	parent        win32.HWND
+	menuMapping   map[int]*menu.MenuItem
+	checkboxItems map[*menu.MenuItem][]int
+	menuData      *menu.Menu
 }
 
 func (p *PopupMenu) buildMenu(parentMenu win32.HMENU, inputMenu *menu.Menu, startindex int) error {
@@ -45,6 +46,9 @@ func (p *PopupMenu) buildMenu(parentMenu win32.HMENU, inputMenu *menu.Menu, star
 		}
 
 		p.menuMapping[itemID] = item
+		if item.IsCheckbox() {
+			p.checkboxItems[item] = append(p.checkboxItems[item], itemID)
+		}
 		ret = win32.AppendMenu(parentMenu, uintptr(flags), uintptr(itemID), item.Label)
 		if ret == false {
 			return errors.New("AppendMenu failed")
@@ -60,9 +64,10 @@ func (p *PopupMenu) Update() error {
 
 func NewPopupMenu(parent win32.HWND, inputMenu *menu.Menu) (*PopupMenu, error) {
 	result := &PopupMenu{
-		parent:      parent,
-		menuData:    inputMenu,
-		menuMapping: make(map[int]*menu.MenuItem),
+		parent:        parent,
+		menuData:      inputMenu,
+		menuMapping:   make(map[int]*menu.MenuItem),
+		checkboxItems: make(map[*menu.MenuItem][]int),
 	}
 	err := result.Update()
 	return result, err
@@ -92,7 +97,20 @@ func (p *PopupMenu) ShowAtCursor() error {
 func (p *PopupMenu) ProcessCommand(cmdMsgID int) {
 	item := p.menuMapping[cmdMsgID]
 	if item != nil {
-		item.Click(&menu.CallbackData{MenuItem: item})
+		if item.Type == menu.CheckboxType {
+			item.Checked = !item.Checked
+			var checkState uint = win32.MF_UNCHECKED
+			if item.Checked {
+				checkState = win32.MF_CHECKED
+			}
+			for _, menuID := range p.checkboxItems[item] {
+				win32.CheckMenuItem(p.menu, int32(menuID), checkState)
+			}
+			// TODO: Check duplicate menu items
+		}
+		if item.Click != nil {
+			item.Click(&menu.CallbackData{MenuItem: item})
+		}
 	}
 }
 
