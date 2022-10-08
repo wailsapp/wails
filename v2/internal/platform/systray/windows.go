@@ -26,6 +26,7 @@ var (
 
 type Systray struct {
 	id     uint32
+	mhwnd  win32.HWND // main window handle
 	hwnd   win32.HWND
 	hinst  win32.HINSTANCE
 	lclick func()
@@ -70,7 +71,7 @@ func New() (*Systray, error) {
 	MainClassName := "WailsSystray"
 	ni.hinst, _ = RegisterWindow(MainClassName, ni.WinProc)
 
-	mhwnd := win32.CreateWindowEx(
+	ni.mhwnd = win32.CreateWindowEx(
 		win32.WS_EX_CONTROLPARENT,
 		win32.MustStringToUTF16Ptr(MainClassName),
 		win32.MustStringToUTF16Ptr(""),
@@ -84,7 +85,7 @@ func New() (*Systray, error) {
 		0,
 		unsafe.Pointer(nil))
 
-	if mhwnd == 0 {
+	if ni.mhwnd == 0 {
 		return nil, errors.New("create main win failed")
 	}
 
@@ -296,6 +297,7 @@ func (p *Systray) WinProc(hwnd win32.HWND, msg uint32, wparam, lparam uintptr) u
 		default:
 			p.menu.ProcessCommand(cmdMsgID)
 		}
+
 	}
 
 	result, _, _ := DefWindowProc.Call(uintptr(hwnd), uintptr(msg), wparam, lparam)

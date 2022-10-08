@@ -16,9 +16,45 @@ const DwmwaSystemBackdropType DWMWINDOWATTRIBUTE = 38
 
 const SPI_GETHIGHCONTRAST = 0x0042
 const HCF_HIGHCONTRASTON = 0x00000001
+const WCA_ACCENT_POLICY WINDOWCOMPOSITIONATTRIB = 19
+
+type ACCENT_STATE DWORD
+
+const (
+	ACCENT_DISABLED                   ACCENT_STATE = 0
+	ACCENT_ENABLE_GRADIENT            ACCENT_STATE = 1
+	ACCENT_ENABLE_TRANSPARENTGRADIENT ACCENT_STATE = 2
+	ACCENT_ENABLE_BLURBEHIND          ACCENT_STATE = 3
+	ACCENT_ENABLE_ACRYLICBLURBEHIND   ACCENT_STATE = 4 // RS4 1803
+	ACCENT_ENABLE_HOSTBACKDROP        ACCENT_STATE = 5 // RS5 1809
+	ACCENT_INVALID_STATE              ACCENT_STATE = 6
+)
+
+type ACCENT_POLICY struct {
+	AccentState   ACCENT_STATE
+	AccentFlags   DWORD
+	GradientColor DWORD
+	AnimationId   DWORD
+}
+
+type WINDOWCOMPOSITIONATTRIBDATA struct {
+	Attrib WINDOWCOMPOSITIONATTRIB
+	PvData unsafe.Pointer
+	CbData uintptr
+}
+
+type WINDOWCOMPOSITIONATTRIB DWORD
 
 // BackdropType defines the type of translucency we wish to use
 type BackdropType int32
+
+const (
+	BackdropTypeAuto    BackdropType = 0
+	BackdropTypeNone    BackdropType = 1
+	BackdropTypeMica    BackdropType = 2
+	BackdropTypeAcrylic BackdropType = 3
+	BackdropTypeTabbed  BackdropType = 4
+)
 
 func dwmSetWindowAttribute(hwnd HWND, dwAttribute DWMWINDOWATTRIBUTE, pvAttribute unsafe.Pointer, cbAttribute uintptr) {
 	ret, _, err := procDwmSetWindowAttribute.Call(
@@ -61,6 +97,30 @@ func SetTheme(hwnd HWND, useDarkMode bool) {
 		}
 		dwmSetWindowAttribute(hwnd, attr, unsafe.Pointer(&winDark), unsafe.Sizeof(winDark))
 	}
+}
+
+func EnableBlurBehind(hwnd HWND) {
+	var accent = ACCENT_POLICY{
+		AccentState: ACCENT_ENABLE_ACRYLICBLURBEHIND,
+		AccentFlags: 0x2,
+	}
+	var data WINDOWCOMPOSITIONATTRIBDATA
+	data.Attrib = WCA_ACCENT_POLICY
+	data.PvData = unsafe.Pointer(&accent)
+	data.CbData = unsafe.Sizeof(accent)
+
+	SetWindowCompositionAttribute(hwnd, &data)
+}
+
+func SetWindowCompositionAttribute(hwnd HWND, data *WINDOWCOMPOSITIONATTRIBDATA) bool {
+	if procSetWindowCompositionAttribute != nil {
+		ret, _, _ := procSetWindowCompositionAttribute.Call(
+			uintptr(hwnd),
+			uintptr(unsafe.Pointer(data)),
+		)
+		return ret != 0
+	}
+	return false
 }
 
 func EnableTranslucency(hwnd HWND, backdrop BackdropType) {

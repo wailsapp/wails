@@ -11,26 +11,27 @@ var (
 	modKernel32         = syscall.NewLazyDLL("kernel32.dll")
 	procGetModuleHandle = modKernel32.NewProc("GetModuleHandleW")
 
-	moduser32                    = syscall.NewLazyDLL("user32.dll")
-	procRegisterClassEx          = moduser32.NewProc("RegisterClassExW")
-	procLoadIcon                 = moduser32.NewProc("LoadIconW")
-	procLoadCursor               = moduser32.NewProc("LoadCursorW")
-	procCreateWindowEx           = moduser32.NewProc("CreateWindowExW")
-	procPostMessage              = moduser32.NewProc("PostMessageW")
-	procGetCursorPos             = moduser32.NewProc("GetCursorPos")
-	procSetForegroundWindow      = moduser32.NewProc("SetForegroundWindow")
-	procCreatePopupMenu          = moduser32.NewProc("CreatePopupMenu")
-	procTrackPopupMenu           = moduser32.NewProc("TrackPopupMenu")
-	procDestroyMenu              = moduser32.NewProc("DestroyMenu")
-	procAppendMenuW              = moduser32.NewProc("AppendMenuW")
-	procCheckMenuItem            = moduser32.NewProc("CheckMenuItem")
-	procCreateIconFromResourceEx = moduser32.NewProc("CreateIconFromResourceEx")
-	procGetMessageW              = moduser32.NewProc("GetMessageW")
-	procIsDialogMessage          = moduser32.NewProc("IsDialogMessageW")
-	procTranslateMessage         = moduser32.NewProc("TranslateMessage")
-	procDispatchMessage          = moduser32.NewProc("DispatchMessageW")
-	procPostQuitMessage          = moduser32.NewProc("PostQuitMessage")
-	procSystemParametersInfo     = moduser32.NewProc("SystemParametersInfoW")
+	moduser32                         = syscall.NewLazyDLL("user32.dll")
+	procRegisterClassEx               = moduser32.NewProc("RegisterClassExW")
+	procLoadIcon                      = moduser32.NewProc("LoadIconW")
+	procLoadCursor                    = moduser32.NewProc("LoadCursorW")
+	procCreateWindowEx                = moduser32.NewProc("CreateWindowExW")
+	procPostMessage                   = moduser32.NewProc("PostMessageW")
+	procGetCursorPos                  = moduser32.NewProc("GetCursorPos")
+	procSetForegroundWindow           = moduser32.NewProc("SetForegroundWindow")
+	procCreatePopupMenu               = moduser32.NewProc("CreatePopupMenu")
+	procTrackPopupMenu                = moduser32.NewProc("TrackPopupMenu")
+	procDestroyMenu                   = moduser32.NewProc("DestroyMenu")
+	procAppendMenuW                   = moduser32.NewProc("AppendMenuW")
+	procCheckMenuItem                 = moduser32.NewProc("CheckMenuItem")
+	procCreateIconFromResourceEx      = moduser32.NewProc("CreateIconFromResourceEx")
+	procGetMessageW                   = moduser32.NewProc("GetMessageW")
+	procIsDialogMessage               = moduser32.NewProc("IsDialogMessageW")
+	procTranslateMessage              = moduser32.NewProc("TranslateMessage")
+	procDispatchMessage               = moduser32.NewProc("DispatchMessageW")
+	procPostQuitMessage               = moduser32.NewProc("PostQuitMessage")
+	procSystemParametersInfo          = moduser32.NewProc("SystemParametersInfoW")
+	procSetWindowCompositionAttribute = moduser32.NewProc("SetWindowCompositionAttribute")
 
 	modshell32          = syscall.NewLazyDLL("shell32.dll")
 	procShellNotifyIcon = modshell32.NewProc("Shell_NotifyIconW")
@@ -104,15 +105,18 @@ func init() {
 }
 
 type HANDLE uintptr
-type HINSTANCE HANDLE
-type HICON HANDLE
-type HCURSOR HANDLE
-type HBRUSH HANDLE
-type HWND HANDLE
-type HMENU HANDLE
+type HINSTANCE = HANDLE
+type HICON = HANDLE
+type HCURSOR = HANDLE
+type HBRUSH = HANDLE
+type HWND = HANDLE
+type HMENU = HANDLE
+type DWORD = uint32
 type ATOM uint16
 
 const (
+	WM_ACTIVATE      = 0x0006
+	WM_ACTIVATEAPP   = 0x001C
 	WM_LBUTTONUP     = 0x0202
 	WM_LBUTTONDBLCLK = 0x0203
 	WM_RBUTTONUP     = 0x0205
@@ -120,9 +124,10 @@ const (
 	WM_TRAYICON      = WM_USER + 69
 	WM_SETTINGCHANGE = 0x001A
 
-	WS_EX_APPWINDOW     = 0x00040000
-	WS_OVERLAPPEDWINDOW = 0x00000000 | 0x00C00000 | 0x00080000 | 0x00040000 | 0x00020000 | 0x00010000
-	CW_USEDEFAULT       = 0x80000000
+	WS_EX_APPWINDOW           = 0x00040000
+	WS_OVERLAPPEDWINDOW       = 0x00000000 | 0x00C00000 | 0x00080000 | 0x00040000 | 0x00020000 | 0x00010000
+	WS_EX_NOREDIRECTIONBITMAP = 0x00200000
+	CW_USEDEFAULT             = 0x80000000
 
 	NIM_ADD        = 0x00000000
 	NIM_MODIFY     = 0x00000001
