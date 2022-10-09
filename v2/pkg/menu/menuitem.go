@@ -269,6 +269,10 @@ func (m *MenuItem) Show() *MenuItem {
 	return m
 }
 
+func (m *MenuItem) IsRadio() bool {
+	return m.Type == RadioType
+}
+
 func Label(label string) *MenuItem {
 	return &MenuItem{
 		Type:  TextType,

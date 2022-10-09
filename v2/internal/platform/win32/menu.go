@@ -56,6 +56,16 @@ func (m Menu) Check(id uintptr, check bool) bool {
 	return CheckMenuItem(HMENU(m), id, checkState) != 0
 }
 
+func (m Menu) CheckRadio(startID int, endID int, selectedID int) bool {
+	ret, _, _ := procCheckMenuRadioItem.Call(
+		uintptr(m),
+		uintptr(startID),
+		uintptr(endID),
+		uintptr(selectedID),
+		MF_BYCOMMAND)
+	return ret != 0
+}
+
 func CheckMenuItem(menu HMENU, id uintptr, flags uint) uint {
 	ret, _, _ := procCheckMenuItem.Call(
 		uintptr(menu),
@@ -63,4 +73,8 @@ func CheckMenuItem(menu HMENU, id uintptr, flags uint) uint {
 		uintptr(flags),
 	)
 	return uint(ret)
+}
+
+func (p PopupMenu) CheckRadio(startID, endID, selectedID int) bool {
+	return Menu(p).CheckRadio(startID, endID, selectedID)
 }

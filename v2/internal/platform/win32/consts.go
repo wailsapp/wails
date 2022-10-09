@@ -24,6 +24,7 @@ var (
 	procDestroyMenu                   = moduser32.NewProc("DestroyMenu")
 	procAppendMenuW                   = moduser32.NewProc("AppendMenuW")
 	procCheckMenuItem                 = moduser32.NewProc("CheckMenuItem")
+	procCheckMenuRadioItem            = moduser32.NewProc("CheckMenuRadioItem")
 	procCreateIconFromResourceEx      = moduser32.NewProc("CreateIconFromResourceEx")
 	procGetMessageW                   = moduser32.NewProc("GetMessageW")
 	procIsDialogMessage               = moduser32.NewProc("IsDialogMessageW")
@@ -113,6 +114,7 @@ type HWND = HANDLE
 type HMENU = HANDLE
 type DWORD = uint32
 type ATOM uint16
+type MenuID uint16
 
 const (
 	WM_ACTIVATE      = 0x0006
@@ -184,6 +186,7 @@ const (
 	MF_CHECKED      = 0x00000008
 	MF_POPUP        = 0x00000010
 	MF_MENUBARBREAK = 0x00000020
+	MF_BYCOMMAND    = 0x00000000
 
 	TPM_LEFTALIGN = 0x0000
 	WM_NULL       = 0
