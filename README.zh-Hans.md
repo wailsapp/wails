@@ -111,7 +111,7 @@
 
 ## 星星增长趋势
 
-[![星星增长趋势](https://starchart.cc/wailsapp/wails.svg)](https://starchart.cc/wailsapp/wails)
+[![星星增长趋势](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
 
 ## 贡献者
 
