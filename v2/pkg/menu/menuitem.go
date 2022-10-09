@@ -253,7 +253,9 @@ func (m *MenuItem) SetAccelerator(acc *keys.Accelerator) *MenuItem {
 
 func (m *MenuItem) SetChecked(value bool) *MenuItem {
 	m.Checked = value
-	m.Type = CheckboxType
+	if m.Type != RadioType {
+		m.Type = CheckboxType
+	}
 	return m
 }
 
