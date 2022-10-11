@@ -218,3 +218,10 @@ func GetMonitorInfo(hMonitor HMONITOR, lmpi *MONITORINFO) bool {
 	)
 	return ret != 0
 }
+
+func BringWindowToTop(hwnd uintptr) bool {
+	ret, _, _ := procBringWindowToTop.Call(
+		hwnd,
+	)
+	return ret != 0
+}

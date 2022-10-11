@@ -374,11 +374,11 @@ func (f *Frontend) ScreenGetAll() ([]Screen, error) {
 }
 
 func (f *Frontend) Show() {
-	f.mainWindow.Show()
+	f.WindowShow()
 }
 
 func (f *Frontend) Hide() {
-	f.mainWindow.Hide()
+	f.WindowHide()
 }
 
 func (f *Frontend) WindowIsMaximised() bool {

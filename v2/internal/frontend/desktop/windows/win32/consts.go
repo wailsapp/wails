@@ -13,20 +13,21 @@ type HANDLE uintptr
 type HMONITOR HANDLE
 
 var (
-	moduser32                = syscall.NewLazyDLL("user32.dll")
-	procSystemParametersInfo = moduser32.NewProc("SystemParametersInfoW")
-	procGetWindowLong        = moduser32.NewProc("GetWindowLongW")
-	procSetClassLong         = moduser32.NewProc("SetClassLongW")
-	procSetClassLongPtr      = moduser32.NewProc("SetClassLongPtrW")
-	procShowWindow           = moduser32.NewProc("ShowWindow")
-	procIsWindowVisible      = moduser32.NewProc("IsWindowVisible")
-	procGetWindowRect        = moduser32.NewProc("GetWindowRect")
-	procGetMonitorInfo       = moduser32.NewProc("GetMonitorInfoW")
-	procMonitorFromWindow    = moduser32.NewProc("MonitorFromWindow")
+	moduser32                       = syscall.NewLazyDLL("user32.dll")
+	procSystemParametersInfo        = moduser32.NewProc("SystemParametersInfoW")
+	procGetWindowLong               = moduser32.NewProc("GetWindowLongW")
+	procSetClassLong                = moduser32.NewProc("SetClassLongW")
+	procSetClassLongPtr             = moduser32.NewProc("SetClassLongPtrW")
+	procShowWindow                  = moduser32.NewProc("ShowWindow")
+	procIsWindowVisible             = moduser32.NewProc("IsWindowVisible")
+	procGetWindowRect               = moduser32.NewProc("GetWindowRect")
+	procGetMonitorInfo              = moduser32.NewProc("GetMonitorInfoW")
+	procMonitorFromWindow           = moduser32.NewProc("MonitorFromWindow")
 	procLookupIconIdFromDirectoryEx = moduser32.NewProc("LookupIconIdFromDirectoryEx")
 	procCreateIconFromResourceEx    = moduser32.NewProc("CreateIconFromResourceEx")
 	procCreateIconIndirect          = moduser32.NewProc("CreateIconIndirect")
 	procLoadImageW                  = moduser32.NewProc("LoadImageW")
+	procBringWindowToTop            = moduser32.NewProc("BringWindowToTop")
 )
 
 var (

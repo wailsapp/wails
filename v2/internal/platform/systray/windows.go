@@ -314,7 +314,6 @@ func (p *Systray) Run() error {
 		rt := win32.GetMessage(&msg)
 		switch int(rt) {
 		case 0:
-			println("Quitting Run()")
 			return nil
 		case -1:
 			return errors.New("run failed")
