@@ -55,12 +55,25 @@ func main() {
 		},
 		Tooltip: "Systray Example",
 		OnLeftClick: func() {
+			// Show the window
+			// In a future version of this API, it will be possible to
+			// create windows programmatically and be able to show/hide
+			// them from the systray with something like:
+			//
+			// myWindow := mainApp.NewWindow(...)
+			// mainApp.NewSystemTray(&options.SystemTray{
+			//   OnLeftClick: func() {
+			//      myWindow.SetVisibility(!myWindow.IsVisible())
+			//   }
+			// })
 			runtime.Show(runtimeContext)
 		},
 	})
 
 	// ---------------------------------------------------
-	// Create a ton of menu items to show what can be done
+	// Menu items are created in the order they are added.
+	// This is a contrived example to show what can be done
+	// with menus.
 
 	// This is a menuitem we will show/hide at runtime
 	visibleNotVisible := menu.Label("visible?").Show()
@@ -81,7 +94,7 @@ func main() {
 	})
 
 	// This radio callback will be used by all the radio items.
-	// The CallbackData has a pointer back to the menuitem so we can determine
+	// The CallbackData has a pointer back to the menuitem, so we can determine
 	// which item was selected
 	radioCallback := func(data *menu.CallbackData) {
 		println("Radio item clicked:", data.MenuItem.Label)
@@ -92,8 +105,10 @@ func main() {
 	radio2 := menu.Radio("Radio 2", false, nil, radioCallback)
 	radio3 := menu.Radio("Radio 3", false, nil, radioCallback)
 
-	// Now we set the menu of the systray
+	// Now we set the menu of the systray.
+	// This would likely be created in a different function/file
 	systray.SetMenu(menu.NewMenuFromItems(
+
 		visibleNotVisible,
 		// This menu item changes its label when clicked.
 		menu.Label("Click Me!").OnClick(func(c *menu.CallbackData) {
