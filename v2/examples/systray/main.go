@@ -59,15 +59,15 @@ func main() {
 		},
 	})
 
-	// ------------------------------------
-	// Create some menus items that will be reused
+	// ---------------------------------------------------
+	// Create a ton of menu items to show what can be done
 
 	// This is a menuitem we will show/hide at runtime
 	visibleNotVisible := menu.Label("visible?").Show()
 
 	var counter int
 	icons := [][]byte{lightModeIcon, darkModeIcon}
-	iconCounter := 0
+	iconCounter := 1
 
 	disabledEnabledMenu := menu.Label("disabled").Disable().OnClick(func(c *menu.CallbackData) {
 		println("Disabled item clicked!")
