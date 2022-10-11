@@ -18,6 +18,8 @@ type SysTray interface {
 	SetMenu(menu *menu.Menu) error
 	SetIcons(lightModeIcon, darkModeIcon *options.SystemTrayIcon) error
 	Update() error
+	OnLeftClick(func())
+	OnRightClick(func())
 }
 
 func NewSysTray() SysTray {

@@ -15,6 +15,8 @@ type SystemTray struct {
 	tooltip       string
 	startHidden   bool
 	menu          *menu.Menu
+	onLeftClick   func()
+	onRightClick  func()
 
 	// The platform specific implementation
 	impl platform.SysTray
@@ -28,6 +30,8 @@ func newSystemTray(options *options.SystemTray) *SystemTray {
 		tooltip:       options.Tooltip,
 		startHidden:   options.StartHidden,
 		menu:          options.Menu,
+		onLeftClick:   options.OnLeftClick,
+		onRightClick:  options.OnRightClick,
 	}
 }
 
@@ -36,6 +40,8 @@ func (t *SystemTray) run() {
 	t.impl.SetTitle(t.title)
 	t.impl.SetIcons(t.lightModeIcon, t.darkModeIcon)
 	t.impl.SetTooltip(t.tooltip)
+	t.impl.OnLeftClick(t.onLeftClick)
+	t.impl.OnRightClick(t.onRightClick)
 	if !t.startHidden {
 		t.impl.Show()
 	}

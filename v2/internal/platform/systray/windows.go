@@ -63,9 +63,17 @@ func (p *Systray) Update() error {
 func (p *Systray) SetTitle(_ string) {}
 
 func New() (*Systray, error) {
-	ni := &Systray{
-		lclick: func() {},
-		rclick: func() {},
+	ni := &Systray{}
+
+	ni.lclick = func() {
+		if ni.menu != nil {
+			_ = ni.menu.ShowAtCursor()
+		}
+	}
+	ni.rclick = func() {
+		if ni.menu != nil {
+			_ = ni.menu.ShowAtCursor()
+		}
 	}
 
 	MainClassName := "WailsSystray"
@@ -158,12 +166,16 @@ func (p *Systray) Stop() error {
 	return nil
 }
 
-func (p *Systray) Click(fn func()) {
-	p.lclick = fn
+func (p *Systray) OnLeftClick(fn func()) {
+	if fn != nil {
+		p.lclick = fn
+	}
 }
 
 func (p *Systray) OnRightClick(fn func()) {
-	p.rclick = fn
+	if fn != nil {
+		p.rclick = fn
+	}
 }
 
 func (p *Systray) SetTooltip(tooltip string) error {
@@ -266,20 +278,12 @@ func (p *Systray) WinProc(hwnd win32.HWND, msg uint32, wparam, lparam uintptr) u
 	switch msg {
 	case win32.NotifyIconMessageId:
 		if lparam == win32.WM_LBUTTONUP {
-			p.lclick()
-			if p.menu != nil {
-				err := p.menu.ShowAtCursor()
-				if err != nil {
-					return 0
-				}
+			if p.lclick != nil {
+				p.lclick()
 			}
 		} else if lparam == win32.WM_RBUTTONUP {
-			p.rclick()
-			if p.menu != nil {
-				err := p.menu.ShowAtCursor()
-				if err != nil {
-					return 0
-				}
+			if p.rclick != nil {
+				p.rclick()
 			}
 		}
 	case win32.WM_SETTINGCHANGE:

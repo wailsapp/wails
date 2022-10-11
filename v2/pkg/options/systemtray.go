@@ -1,6 +1,8 @@
 package options
 
-import "github.com/wailsapp/wails/v2/pkg/menu"
+import (
+	"github.com/wailsapp/wails/v2/pkg/menu"
+)
 
 // SystemTray contains options for the system tray
 type SystemTray struct {
@@ -10,6 +12,8 @@ type SystemTray struct {
 	Tooltip       string
 	StartHidden   bool
 	Menu          *menu.Menu
+	OnLeftClick   func()
+	OnRightClick  func()
 }
 
 // SystemTrayIcon represents a system tray icon
