@@ -2,6 +2,8 @@ package systray
 
 import (
 	"errors"
+	"fmt"
+	"github.com/samber/lo"
 	platformMenu "github.com/wailsapp/wails/v2/internal/platform/menu"
 	"github.com/wailsapp/wails/v2/internal/platform/win32"
 	"github.com/wailsapp/wails/v2/pkg/menu"
@@ -36,12 +38,14 @@ func (r *RadioGroup) MenuID(item *menu.MenuItem) int {
 }
 
 type PopupMenu struct {
-	menu          win32.PopupMenu
-	parent        win32.HWND
-	menuMapping   map[int]*menu.MenuItem
-	checkboxItems map[*menu.MenuItem][]int
-	radioGroups   map[*menu.MenuItem][]*RadioGroup
-	menuData      *menu.Menu
+	menu             win32.PopupMenu
+	parent           win32.HWND
+	menuMapping      map[int]*menu.MenuItem
+	checkboxItems    map[*menu.MenuItem][]int
+	radioGroups      map[*menu.MenuItem][]*RadioGroup
+	menuData         *menu.Menu
+	shortcuts        map[*menu.MenuItem]win32.Accelerator
+	acceleratorTable uintptr
 }
 
 func (p *PopupMenu) buildMenu(parentMenu win32.PopupMenu, inputMenu *menu.Menu, startindex int) error {
@@ -93,7 +97,20 @@ func (p *PopupMenu) buildMenu(parentMenu win32.PopupMenu, inputMenu *menu.Menu, 
 			itemID = int(submenu)
 		}
 
-		ret = parentMenu.Append(uintptr(flags), uintptr(itemID), item.Label)
+		var menuText = item.Label
+		if item.Accelerator != nil {
+			shortcut := win32.AcceleratorToShortcut(item.Accelerator)
+			menuText = fmt.Sprintf("%s\t%s", menuText, shortcut)
+			if _, exists := p.shortcuts[item]; !exists {
+				p.shortcuts[item] = win32.Accelerator{
+					Virtual: byte(shortcut.Modifiers),
+					Key:     uint16(shortcut.Key),
+					Cmd:     uint16(itemID),
+				}
+			}
+		}
+
+		ret = parentMenu.Append(uintptr(flags), uintptr(itemID), menuText)
 		if ret == false {
 			return errors.New("AppendMenu failed")
 		}
@@ -108,6 +125,7 @@ func (p *PopupMenu) Update() error {
 	if err != nil {
 		return err
 	}
+	p.updateAccelerators()
 	p.updateRadioGroups()
 	return nil
 }
@@ -118,6 +136,7 @@ func NewPopupMenu(parent win32.HWND, inputMenu *menu.Menu) (*PopupMenu, error) {
 		menuData:      inputMenu,
 		checkboxItems: make(map[*menu.MenuItem][]int),
 		radioGroups:   make(map[*menu.MenuItem][]*RadioGroup),
+		shortcuts:     make(map[*menu.MenuItem]win32.Accelerator),
 	}
 	err := result.Update()
 	platformMenu.MenuManager.AddMenu(inputMenu, result.UpdateMenuItem)
@@ -180,4 +199,8 @@ func (p *PopupMenu) updateRadioGroup(item *menu.MenuItem) {
 		startID, endID := radioGroup.Bounds()
 		p.menu.CheckRadio(startID, endID, thisMenuID)
 	}
+}
+
+func (p *PopupMenu) updateAccelerators() {
+	p.acceleratorTable = win32.CreateAcceleratorTable(lo.Values(p.shortcuts))
 }

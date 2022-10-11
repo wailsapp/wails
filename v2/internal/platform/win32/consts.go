@@ -33,6 +33,9 @@ var (
 	procPostQuitMessage               = moduser32.NewProc("PostQuitMessage")
 	procSystemParametersInfo          = moduser32.NewProc("SystemParametersInfoW")
 	procSetWindowCompositionAttribute = moduser32.NewProc("SetWindowCompositionAttribute")
+	procGetKeyState                   = moduser32.NewProc("GetKeyState")
+	procCreateAcceleratorTable        = moduser32.NewProc("CreateAcceleratorTableW")
+	procTranslateAccelerator          = moduser32.NewProc("TranslateAcceleratorW")
 
 	modshell32          = syscall.NewLazyDLL("shell32.dll")
 	procShellNotifyIcon = modshell32.NewProc("Shell_NotifyIconW")
@@ -125,6 +128,11 @@ const (
 	WM_USER          = 0x0400
 	WM_TRAYICON      = WM_USER + 69
 	WM_SETTINGCHANGE = 0x001A
+	WM_KEYDOWN       = 256
+	WM_KEYUP         = 257
+	WM_SYSKEYDOWN    = 260
+	WM_SYSKEYUP      = 261
+	WM_MENUCHAR      = 288
 
 	WS_EX_APPWINDOW           = 0x00040000
 	WS_OVERLAPPEDWINDOW       = 0x00000000 | 0x00C00000 | 0x00080000 | 0x00040000 | 0x00020000 | 0x00010000
@@ -173,6 +181,7 @@ const (
 	IDI_APPLICATION = 32512
 	WM_APP          = 32768
 	WM_COMMAND      = 273
+	WM_SYSCOMMAND   = 274
 
 	MenuItemMsgID       = WM_APP + 1024
 	NotifyIconMessageId = WM_APP + iota
@@ -247,4 +256,8 @@ func DispatchMessage(msg *MSG) uintptr {
 
 func PostQuitMessage(exitCode int32) {
 	procPostQuitMessage.Call(uintptr(exitCode))
+}
+
+func LoHiWords(input uint32) (uint16, uint16) {
+	return uint16(input & 0xffff), uint16(input >> 16 & 0xffff)
 }
