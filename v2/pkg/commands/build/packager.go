@@ -114,8 +114,15 @@ func packageApplicationForDarwin(options *Options) error {
 }
 
 func processPList(options *Options, contentsDirectory string) error {
+
+	sourcePList := "Info.plist"
+	if options.Mode == Dev {
+		// Use Info.dev.plist if using build mode
+		sourcePList = "Info.dev.plist"
+	}
+
 	// Read the resolved BuildAssets file and copy it to the destination
-	content, err := buildassets.ReadFileWithProjectData(options.ProjectData, "darwin/Info.plist")
+	content, err := buildassets.ReadFileWithProjectData(options.ProjectData, "darwin/"+sourcePList)
 	if err != nil {
 		return err
 	}
