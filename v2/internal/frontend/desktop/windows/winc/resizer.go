@@ -50,7 +50,7 @@ func (sp *VResizer) SetControl(control1, control2 Dockable, dir Direction, minSi
 		if sp.drag {
 			x := e.Data.(*MouseEventData).X
 			sp.update(x)
-			w32.SetCursor(w32.LoadCursor(0, w32.MakeIntResource(w32.IDC_SIZEWE)))
+			w32.SetCursor(w32.LoadCursorWithResourceID(0, w32.IDC_SIZEWE))
 
 		}
 		fmt.Println("control1.OnMouseMove")
@@ -60,7 +60,7 @@ func (sp *VResizer) SetControl(control1, control2 Dockable, dir Direction, minSi
 		if sp.drag {
 			x := e.Data.(*MouseEventData).X
 			sp.update(x)
-			w32.SetCursor(w32.LoadCursor(0, w32.MakeIntResource(w32.IDC_SIZEWE)))
+			w32.SetCursor(w32.LoadCursorWithResourceID(0, w32.IDC_SIZEWE))
 
 		}
 		fmt.Println("control2.OnMouseMove")
@@ -95,7 +95,7 @@ func (sp *VResizer) update(x int) {
 	fm := sp.parent.(*Form)
 	fm.UpdateLayout()
 
-	w32.SetCursor(w32.LoadCursor(0, w32.MakeIntResource(w32.IDC_ARROW)))
+	w32.SetCursor(w32.LoadCursorWithResourceID(0, w32.IDC_ARROW))
 }
 
 func (sp *VResizer) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
@@ -108,7 +108,7 @@ func (sp *VResizer) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			x, _ := genPoint(lparam)
 			sp.update(x)
 		} else {
-			w32.SetCursor(w32.LoadCursor(0, w32.MakeIntResource(w32.IDC_SIZEWE)))
+			w32.SetCursor(w32.LoadCursorWithResourceID(0, w32.IDC_SIZEWE))
 		}
 
 		if sp.mouseLeft {
@@ -179,7 +179,7 @@ func (sp *HResizer) update(y int) {
 	fm := sp.parent.(*Form)
 	fm.UpdateLayout()
 
-	w32.SetCursor(w32.LoadCursor(0, w32.MakeIntResource(w32.IDC_ARROW)))
+	w32.SetCursor(w32.LoadCursorWithResourceID(0, w32.IDC_ARROW))
 }
 
 func (sp *HResizer) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
@@ -192,7 +192,7 @@ func (sp *HResizer) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			_, y := genPoint(lparam)
 			sp.update(y)
 		} else {
-			w32.SetCursor(w32.LoadCursor(0, w32.MakeIntResource(w32.IDC_SIZENS)))
+			w32.SetCursor(w32.LoadCursorWithResourceID(0, w32.IDC_SIZENS))
 		}
 
 		if sp.mouseLeft {

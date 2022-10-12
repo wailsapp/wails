@@ -1,16 +1,10 @@
 package generate
 
 import (
-	"fmt"
-	"io"
-	"os"
-	"path/filepath"
-	"runtime"
-	"strings"
-
 	"github.com/leaanthony/clir"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal"
-	"github.com/wailsapp/wails/v2/internal/shell"
+	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
+	"io"
 )
 
 // AddModuleCommand adds the `module` subcommand for the `generate` command
@@ -22,36 +16,17 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 
 	command.Action(func() error {
 
-		filename := "wailsbindings"
-		if runtime.GOOS == "windows" {
-			filename += ".exe"
-		}
-		// go build -tags bindings -o bindings.exe
-		tempDir := os.TempDir()
-		filename = filepath.Join(tempDir, filename)
-
-		cwd, err := os.Getwd()
+		buildTags, err := buildtags.Parse(tags)
 		if err != nil {
 			return err
 		}
 
-		tagList := internal.ParseUserTags(tags)
-		tagList = append(tagList, "bindings")
-
-		stdout, stderr, err := shell.RunCommand(cwd, "go", "build", "-tags", strings.Join(tagList, ","), "-o", filename)
+		_, err = bindings.GenerateBindings(bindings.Options{
+			Tags: buildTags,
+		})
 		if err != nil {
-			return fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
+			return err
 		}
-
-		stdout, stderr, err = shell.RunCommand(cwd, filename)
-		println(stdout)
-		println(stderr)
-		if err != nil {
-			return fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
-		}
-
-		// Best effort removal of temp file
-		_ = os.Remove(filename)
 
 		return nil
 	})

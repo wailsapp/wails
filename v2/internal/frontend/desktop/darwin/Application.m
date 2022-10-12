@@ -1,3 +1,4 @@
+//go:build darwin
 //
 //  Application.m
 //
@@ -51,16 +52,13 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     return result;
 }
 
-void ProcessURLResponse(void *inctx, const char *url, int statusCode, void *headersString, int headersStringLength, void* data, int datalength) {
+void ProcessURLResponse(void *inctx, unsigned long long requestId, int statusCode, void *headersString, int headersStringLength, void* data, int datalength) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
-    NSString *nsurl = safeInit(url);
-    NSData *nsHeadersJSON = [NSData dataWithBytes:headersString length:headersStringLength];
-    NSData *nsdata = [NSData dataWithBytes:data length:datalength];
-    
-    [ctx processURLResponse:nsurl :statusCode :nsHeadersJSON :nsdata];
-
-    [nsdata release];
-    [nsHeadersJSON release];
+    @autoreleasepool {
+        NSData *nsHeadersJSON = [NSData dataWithBytes:headersString length:headersStringLength];
+        NSData *nsdata = [NSData dataWithBytes:data length:datalength];
+        [ctx processURLResponse:requestId :statusCode :nsHeadersJSON :nsdata];
+    }
 }
 
 void ExecJS(void* inctx, const char *script) {
@@ -189,7 +187,21 @@ const char* GetPosition(void *inctx) {
     y = screenFrame.size.height - y - windowFrame.size.height;
     NSString *result = [NSString stringWithFormat:@"%d,%d",x,y];
     return [result UTF8String];
+}
     
+const bool IsFullScreen(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    return [ctx IsFullScreen];
+}
+
+const bool IsMinimised(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    return [ctx IsMinimised];
+}
+
+const bool IsMaximised(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    return [ctx IsMaximised];
 }
 
 void UnMaximise(void* inctx) {
@@ -216,6 +228,21 @@ void Show(void *inctx) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     ON_MAIN_THREAD(
        [ctx Show];
+    );
+}
+
+
+void HideApplication(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx HideApplication];
+    );
+}
+
+void ShowApplication(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    ON_MAIN_THREAD(
+       [ctx ShowApplication];
     );
 }
 
@@ -354,6 +381,14 @@ void Run(void *inctx, const char* url) {
     [_url release];
 
     [app setMainMenu:ctx.applicationMenu];
+}
+
+void RunMainLoop(void) {
+    NSApplication *app = [NSApplication sharedApplication];
     [app run];
+}
+
+void ReleaseContext(void *inctx) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
     [ctx release];
 }

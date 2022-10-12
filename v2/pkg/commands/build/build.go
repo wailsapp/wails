@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 	"log"
 	"os"
 	"path/filepath"
@@ -42,6 +43,7 @@ type Options struct {
 	Compiler            string               // The compiler command to use
 	SkipModTidy         bool                 //  Skip mod tidy before compile
 	IgnoreFrontend      bool                 // Indicates if the frontend does not need building
+	IgnoreApplication   bool                 // Indicates if the application does not need building
 	OutputFile          string               // Override the output filename
 	BuildDirectory      string               // Directory to use for building the application
 	CleanBuildDirectory bool                 // Indicates if the build directory should be cleaned before building
@@ -57,6 +59,10 @@ type Options struct {
 	BundleName          string               // Bundlename for Mac
 	TrimPath            bool                 // Use Go's trimpath compiler flag
 	RaceDetector        bool                 // Build with Go's race detector
+	WindowsConsole      bool                 // Indicates that the windows console should be kept
+	Obfuscated          bool                 // Indicates that bound methods should be obfuscated
+	GarbleArgs          string               // The arguments for Garble
+	SkipBindings        bool                 // Skip binding generation
 }
 
 // Build the project!
@@ -114,12 +120,80 @@ func Build(options *Options) (string, error) {
 	// Initialise Builder
 	builder.SetProjectData(projectData)
 
-	if !options.IgnoreFrontend || options.ForceBuild {
+	hookArgs := map[string]string{
+		"${platform}": options.Platform + "/" + options.Arch,
+	}
+
+	for _, hook := range []string{options.Platform + "/" + options.Arch, options.Platform + "/*", "*/*"} {
+		if err := execPreBuildHook(outputLogger, options, hook, hookArgs); err != nil {
+			return "", err
+		}
+	}
+
+	// Generate bindings
+	if !options.SkipBindings {
+		err = GenerateBindings(options)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if !options.IgnoreFrontend {
 		err = builder.BuildFrontend(outputLogger)
 		if err != nil {
 			return "", err
 		}
 	}
+
+	compileBinary := ""
+	if !options.IgnoreApplication {
+		compileBinary, err = execBuildApplication(builder, options)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	hookArgs["${bin}"] = compileBinary
+	for _, hook := range []string{options.Platform + "/" + options.Arch, options.Platform + "/*", "*/*"} {
+		if err := execPostBuildHook(outputLogger, options, hook, hookArgs); err != nil {
+			return "", err
+		}
+	}
+
+	return compileBinary, nil
+}
+
+func GenerateBindings(buildOptions *Options) error {
+
+	obfuscated := buildOptions.Obfuscated
+	if obfuscated {
+		buildOptions.Logger.Print("  - Generating obfuscated bindings: ")
+		buildOptions.UserTags = append(buildOptions.UserTags, "obfuscated")
+	} else {
+		buildOptions.Logger.Print("  - Generating bindings: ")
+	}
+
+	// Generate Bindings
+	output, err := bindings.GenerateBindings(bindings.Options{
+		Tags:      buildOptions.UserTags,
+		GoModTidy: !buildOptions.SkipModTidy,
+	})
+	if err != nil {
+		return err
+	}
+
+	if buildOptions.Verbosity == VERBOSE {
+		buildOptions.Logger.Println(output)
+	}
+
+	buildOptions.Logger.Println("Done.")
+
+	return nil
+}
+
+func execBuildApplication(builder Builder, options *Options) (string, error) {
+	// Extract logger
+	outputLogger := options.Logger
 
 	// If we are building for windows, we will need to generate the asset bundle before
 	// compilation. This will be a .syso file in the project root
@@ -153,10 +227,9 @@ func Build(options *Options) (string, error) {
 		options.OutputFile = amd64Filename
 		options.CleanBuildDirectory = false
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("\nBuilding AMD64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
+			outputLogger.Println("\nBuilding AMD64 Target: %s", filepath.Join(options.BuildDirectory, options.OutputFile))
 		}
-		err = builder.CompileProject(options)
-
+		err := builder.CompileProject(options)
 		if err != nil {
 			return "", err
 		}
@@ -165,7 +238,7 @@ func Build(options *Options) (string, error) {
 		options.OutputFile = arm64Filename
 		options.CleanBuildDirectory = false
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("Building ARM64 Target:", filepath.Join(options.BuildDirectory, options.OutputFile))
+			outputLogger.Println("Building ARM64 Target: %s", filepath.Join(options.BuildDirectory, options.OutputFile))
 		}
 		err = builder.CompileProject(options)
 
@@ -174,7 +247,7 @@ func Build(options *Options) (string, error) {
 		}
 		// Run lipo
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("  Running lipo: ", "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
+			outputLogger.Println("  Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename)
 		}
 		_, stderr, err := shell.RunCommand(options.BuildDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
 		if err != nil {
@@ -189,10 +262,10 @@ func Build(options *Options) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		projectData.OutputFilename = outputFile
+		options.ProjectData.OutputFilename = outputFile
 		options.CompiledBinary = filepath.Join(options.BuildDirectory, outputFile)
 	} else {
-		err = builder.CompileProject(options)
+		err := builder.CompileProject(options)
 		if err != nil {
 			return "", err
 		}
@@ -206,26 +279,23 @@ func Build(options *Options) (string, error) {
 		outputLogger.Print("  - Packaging application: ")
 
 		// TODO: Allow cross platform build
-		err = packageProject(options, runtime.GOOS)
+		err := packageProject(options, runtime.GOOS)
 		if err != nil {
 			return "", err
 		}
 		outputLogger.Println("Done.")
 	}
 
-	compileBinary := options.CompiledBinary
-	hookArgs := map[string]string{
-		"${platform}": options.Platform + "/" + options.Arch,
-		"${bin}":      compileBinary,
+	return options.CompiledBinary, nil
+}
+
+func execPreBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string) error {
+	preBuildHook := options.ProjectData.PreBuildHooks[hookIdentifier]
+	if preBuildHook == "" {
+		return nil
 	}
 
-	for _, hook := range []string{options.Platform + "/" + options.Arch, options.Platform + "/*", "*/*"} {
-		if err := execPostBuildHook(outputLogger, options, hook, hookArgs); err != nil {
-			return "", err
-		}
-	}
-
-	return compileBinary, nil
+	return executeBuildHook(outputLogger, options, hookIdentifier, argReplacements, preBuildHook, "pre")
 }
 
 func execPostBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string) error {
@@ -234,13 +304,18 @@ func execPostBuildHook(outputLogger *clilogger.CLILogger, options *Options, hook
 		return nil
 	}
 
+	return executeBuildHook(outputLogger, options, hookIdentifier, argReplacements, postBuildHook, "post")
+
+}
+
+func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookIdentifier string, argReplacements map[string]string, buildHook string, hookName string) error {
 	if !options.ProjectData.RunNonNativeBuildHooks {
 		if hookIdentifier == "" {
 			// That's the global hook
 		} else {
 			platformOfHook := strings.Split(hookIdentifier, "/")[0]
 			if platformOfHook == "*" {
-				// Thats OK, we don't have a specific platform of the hook
+				// That's OK, we don't have a specific platform of the hook
 			} else if platformOfHook == runtime.GOOS {
 				// The hook is for host platform
 			} else {
@@ -251,8 +326,8 @@ func execPostBuildHook(outputLogger *clilogger.CLILogger, options *Options, hook
 		}
 	}
 
-	outputLogger.Print("  - Executing post build hook '%s': ", hookIdentifier)
-	args := strings.Split(postBuildHook, " ")
+	outputLogger.Print("  - Executing %s build hook '%s': ", hookName, hookIdentifier)
+	args := strings.Split(buildHook, " ")
 	for i, arg := range args {
 		newArg := argReplacements[arg]
 		if newArg == "" {
@@ -265,7 +340,10 @@ func execPostBuildHook(outputLogger *clilogger.CLILogger, options *Options, hook
 		outputLogger.Println("%s", strings.Join(args, " "))
 	}
 
-	_, stderr, err := shell.RunCommand(options.BuildDirectory, args[0], args[1:]...)
+	stdout, stderr, err := shell.RunCommand(options.BuildDirectory, args[0], args[1:]...)
+	if options.Verbosity == VERBOSE {
+		println(stdout)
+	}
 	if err != nil {
 		return fmt.Errorf("%s - %s", err.Error(), stderr)
 	}

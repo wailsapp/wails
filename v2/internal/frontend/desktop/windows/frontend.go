@@ -7,6 +7,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"runtime"
+	"strconv"
+	"strings"
+	"sync"
+	"text/template"
+	"time"
+
 	"github.com/bep/debounce"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -19,19 +31,11 @@ import (
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
-	"io"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"runtime"
-	"strconv"
-	"strings"
-	"text/template"
-	"time"
 )
 
 const startURL = "http://wails.localhost/"
+
+type Screen = frontend.Screen
 
 type Frontend struct {
 
@@ -87,12 +91,18 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		return result
 	}
 
-	bindingsJSON, err := appBindings.ToJSON()
-	if err != nil {
-		log.Fatal(err)
+	var bindings string
+	var err error
+	if _obfuscated, _ := ctx.Value("obfuscated").(bool); !_obfuscated {
+		bindings, err = appBindings.ToJSON()
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		appBindings.DB().UpdateObfuscatedCallMap()
 	}
 
-	assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
+	assets, err := assetserver.NewAssetServer(ctx, appoptions.Assets, appoptions.AssetsHandler, bindings)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -118,8 +128,7 @@ func (f *Frontend) WindowSetDarkTheme() {
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
-
-	f.ctx = context.WithValue(ctx, "frontend", f)
+	f.ctx = ctx
 
 	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo)
 	f.mainWindow = mainWindow
@@ -170,9 +179,18 @@ func (f *Frontend) Run(ctx context.Context) error {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
-	mainWindow.Run()
-	mainWindow.Close()
+	mainWindow.UpdateTheme()
 	return nil
+}
+
+func (f *Frontend) WindowClose() {
+	if f.mainWindow != nil {
+		f.mainWindow.Close()
+	}
+}
+
+func (f *Frontend) RunMainLoop() {
+	_ = winc.RunMainLoop()
 }
 
 func (f *Frontend) WindowCenter() {
@@ -340,6 +358,44 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 
 }
 
+func (f *Frontend) ScreenGetAll() ([]Screen, error) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	screens := []Screen{}
+	err := error(nil)
+	f.mainWindow.Invoke(func() {
+		screens, err = GetAllScreens(f.mainWindow.Handle())
+		wg.Done()
+
+	})
+	wg.Wait()
+	return screens, err
+}
+
+func (f *Frontend) Show() {
+	f.mainWindow.Show()
+}
+
+func (f *Frontend) Hide() {
+	f.mainWindow.Hide()
+}
+
+func (f *Frontend) WindowIsMaximised() bool {
+	return f.mainWindow.IsMaximised()
+}
+
+func (f *Frontend) WindowIsMinimised() bool {
+	return f.mainWindow.IsMinimised()
+}
+
+func (f *Frontend) WindowIsNormal() bool {
+	return f.mainWindow.IsNormal()
+}
+
+func (f *Frontend) WindowIsFullscreen() bool {
+	return f.mainWindow.IsFullScreen()
+}
+
 func (f *Frontend) Quit() {
 	if f.frontendOptions.OnBeforeClose != nil && f.frontendOptions.OnBeforeClose(f.ctx) {
 		return
@@ -365,6 +421,7 @@ func (f *Frontend) setupChromium() {
 	}
 	chromium.Embed(f.mainWindow.Handle())
 	chromium.Resize()
+	f.mainWindow.chromium = chromium
 	settings, err := chromium.GetSettings()
 	if err != nil {
 		log.Fatal(err)
@@ -511,6 +568,13 @@ func (f *Frontend) processMessage(message string) {
 		}
 		return
 	}
+
+	if message == "runtime:ready" {
+		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
+		f.ExecJS(cmd)
+		return
+	}
+
 	if strings.HasPrefix(message, "resize:") {
 		if !f.mainWindow.IsFullScreen() {
 			sl := strings.Split(message, ":")
@@ -555,6 +619,7 @@ func (f *Frontend) Callback(message string) {
 }
 
 func (f *Frontend) startDrag() error {
+	f.mainWindow.dragging = true
 	if !w32.ReleaseCapture() {
 		return fmt.Errorf("unable to release mouse capture")
 	}

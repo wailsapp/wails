@@ -92,15 +92,61 @@ export function Call(name, args, timeout) {
 				callbackID,
 			};
 
-			// Make the call
-			window.WailsInvoke('C' + JSON.stringify(payload));
-		} catch (e) {
-			// eslint-disable-next-line
-			console.error(e);
-		}
-	});
+            // Make the call
+            window.WailsInvoke('C' + JSON.stringify(payload));
+        } catch (e) {
+            // eslint-disable-next-line
+            console.error(e);
+        }
+    });
 }
 
+window.ObfuscatedCall = (id, args, timeout) => {
+
+    // Timeout infinite by default
+    if (timeout == null) {
+        timeout = 0;
+    }
+
+    // Create a promise
+    return new Promise(function (resolve, reject) {
+
+        // Create a unique callbackID
+        var callbackID;
+        do {
+            callbackID = id + '-' + randomFunc();
+        } while (callbacks[callbackID]);
+
+        var timeoutHandle;
+        // Set timeout
+        if (timeout > 0) {
+            timeoutHandle = setTimeout(function () {
+                reject(Error('Call to method ' + id + ' timed out. Request ID: ' + callbackID));
+            }, timeout);
+        }
+
+        // Store callback
+        callbacks[callbackID] = {
+            timeoutHandle: timeoutHandle,
+            reject: reject,
+            resolve: resolve
+        };
+
+        try {
+            const payload = {
+				id,
+				args,
+				callbackID,
+			};
+
+            // Make the call
+            window.WailsInvoke('c' + JSON.stringify(payload));
+        } catch (e) {
+            // eslint-disable-next-line
+            console.error(e);
+        }
+    });
+};
 
 
 /**

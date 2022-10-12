@@ -1,7 +1,7 @@
 name: Bug Report
 description: Create a report to help us improve
 # title: ""
-labels: ["bug"]
+labels: ["Bug"]
 
 body:
   - type: markdown
@@ -11,7 +11,9 @@ body:
         Before submitting this issue, please do the following:
         - Do a web search for your error. This usually leads to a much better understanding of the issue.
         - Prove that the error is indeed a Wails bug and not an application bug, with a specific set of steps to reproduce. 
-        - Search both the issue tracker (even closed issues) and discussion forums.
+        - Search the issue tracker using [this link](https://github.com/wailsapp/wails/issues?q=is%3Aissue+).
+        - Search the [discussion forums](https://github.com/wailsapp/wails/discussions?discussions_q=type+your+issue+here).
+        - Read the [Troubleshooting Guide](https://wails.io/docs/next/guides/troubleshooting).
         - Try to fix it yourself. Keep a list of things you have done to fix the problem.   
 
         If after doing all the above, the problem remains, please continue with this ticket providing *all* the information requested.

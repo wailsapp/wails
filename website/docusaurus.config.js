@@ -18,7 +18,7 @@ const config = {
 
   i18n: {
     defaultLocale: "en",
-    locales: ["en", "zh-Hans"],
+    locales: ["en", "zh-Hans", "ja"],
     localeConfigs: {
       en: {
         label: "English",
@@ -30,16 +30,24 @@ const config = {
         direction: "ltr",
         htmlLang: "zh-Hans",
       },
+      ja: {
+        label: "日本語",
+        direction: "ltr",
+        htmlLang: "ja-JP",
+      },
+      ru: {
+        label: "Русский",
+        direction: "ltr",
+        htmlLang: "ru-RU",
+      },
+      ko: {
+        label: "한국어",
+        direction: "ltr",
+        htmlLang: "ko-KR",
+      },
     },
   },
-  plugins: [
-    ["docusaurus-plugin-plausible",
-      {
-        domain: "wails.io",
-      },
-    ]
-  ],
-
+  plugins: [],
   presets: [
     [
       "classic",
@@ -99,33 +107,42 @@ const config = {
             position: "right",
           },
           {
-            type: 'dropdown',
-            label: 'About',
-            position: 'right',
+            type: "dropdown",
+            label: "About",
+            position: "right",
             items: [
               {
                 to: "/faq",
                 label: "FAQ",
               },
               {
-                to: '/changelog',
+                to: "/changelog",
                 label: "Changelog",
               },
               {
-                to: '/community-guide',
+                to: "/community-guide",
                 label: "Community Guide",
               },
               {
-                to: '/credits',
-                label: "Credits",
+                to: "/coc",
+                label: "Code of Conduct",
               },
               {
-                to: '/stats',
-                label: "Stats",
+                to: "/credits",
+                label: "Credits",
               },
             ],
           },
-          { type: "localeDropdown", position: "right" },
+          {
+            type: "localeDropdown",
+            position: "right",
+            dropdownItemsAfter: [
+              {
+                to: "/community-guide#documenting",
+                label: "Help Us Translate ❤",
+              },
+            ],
+          },
           {
             href: "https://github.com/wailsapp/wails",
             label: "GitHub",
@@ -200,7 +217,11 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Lea Anthony. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Lea Anthony`,
+      },
+      tableOfContents: {
+        minHeadingLevel: 2,
+        maxHeadingLevel: 5,
       },
       prism: {
         theme: lightCodeTheme,
@@ -210,13 +231,6 @@ const config = {
         defaultMode: "light",
         disableSwitch: false,
         respectPrefersColorScheme: true,
-      },
-      announcementBar: {
-        id: "announcement-bar",
-        content: "Wails v2 is currently in Beta",
-        backgroundColor: "#b00",
-        textColor: "#FFF",
-        isCloseable: false,
       },
       algolia: {
         appId: "AWTCNFZ4FF",

@@ -1,3 +1,4 @@
+//go:build darwin
 //
 //  WailsContext.m
 //  test
@@ -106,6 +107,7 @@
     [self.mouseEvent release];
     [self.userContentController release];
     [self.urlRequests release];
+    [self.urlRequestsLock release];
     [self.applicationMenu release];
     [super dealloc];
 }
@@ -135,7 +137,8 @@
 }
 
 - (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight {
-    
+    self.urlRequestsId = 0;
+    self.urlRequestsLock = [NSLock new];
     self.urlRequests = [NSMutableDictionary new];
     
     NSWindowStyleMask styleMask = 0;
@@ -144,8 +147,10 @@
         if (!hideTitleBar) {
             styleMask |= NSWindowStyleMaskTitled;
         }
-        styleMask |= NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
+        styleMask |= NSWindowStyleMaskClosable;
     }
+    
+    styleMask |= NSWindowStyleMaskMiniaturizable;
 
     if( fullSizeContent || frameless || titlebarAppearsTransparent ) {
         styleMask |= NSWindowStyleMaskFullSizeContentView;
@@ -318,14 +323,14 @@
     [NSCursor unhide];
 }
 
-- (bool) isFullScreen {
+- (bool) IsFullScreen {
     long mask = [self.mainWindow styleMask];
     return (mask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen;
 }
 
 // Fullscreen sets the main window to be fullscreen
 - (void) Fullscreen {
-    if( ! [self isFullScreen] ) {
+    if( ! [self IsFullScreen] ) {
         [self.mainWindow disableWindowConstraints];
         [self.mainWindow toggleFullScreen:nil];
     }
@@ -333,7 +338,7 @@
 
 // UnFullscreen resets the main window after a fullscreen
 - (void) UnFullscreen {
-    if( [self isFullScreen] ) {
+    if( [self IsFullScreen] ) {
         [self.mainWindow applyWindowConstraints];
         [self.mainWindow toggleFullScreen:nil];
     }
@@ -347,6 +352,10 @@
     [self.mainWindow deminiaturize:nil];
 }
 
+- (bool) IsMinimised {
+    return [self.mainWindow isMiniaturized];
+}
+
 - (void) Hide {
     [self.mainWindow orderOut:nil];
 }
@@ -354,6 +363,16 @@
 - (void) Show {
     [self.mainWindow makeKeyAndOrderFront:nil];
     [NSApp activateIgnoringOtherApps:YES];
+}
+
+- (void) HideApplication {
+    [[NSApplication sharedApplication] hide:self];
+}
+
+- (void) ShowApplication {
+    [[NSApplication sharedApplication] unhide:self];
+    [[NSApplication sharedApplication] activateIgnoringOtherApps:TRUE];
+
 }
 
 - (void) Maximise {
@@ -380,28 +399,49 @@
     }
 }
 
+- (bool) IsMaximised {
+    return [self.mainWindow isZoomed];
+}
+
 - (void) ExecJS:(NSString*)script {
    [self.webview evaluateJavaScript:script completionHandler:nil];
 }
 
-- (void) processURLResponse:(NSString *)url :(int)statusCode :(NSData *)headersJSON :(NSData *)data {
-    id<WKURLSchemeTask> urlSchemeTask = self.urlRequests[url];
-    NSURL *nsurl = [NSURL URLWithString:url];
-    NSDictionary *headerFields = [NSJSONSerialization JSONObjectWithData: headersJSON options: NSJSONReadingMutableContainers error: nil];
-    NSHTTPURLResponse *response = [[NSHTTPURLResponse new] initWithURL:nsurl statusCode:statusCode HTTPVersion:@"HTTP/1.1" headerFields:headerFields];
-    [urlSchemeTask didReceiveResponse:response];
-    [urlSchemeTask didReceiveData:data];
-    [urlSchemeTask didFinish];
-    [self.urlRequests removeObjectForKey:url];
-    [response release];
-    if (headerFields != nil) {
-        [headerFields release];
+- (void) processURLResponse:(unsigned long long)requestId :(int)statusCode :(NSData *)headersJSON :(NSData *)data {
+    NSNumber *key = [NSNumber numberWithUnsignedLongLong:requestId];
+
+    [self.urlRequestsLock lock];
+    id<WKURLSchemeTask> urlSchemeTask = self.urlRequests[key];
+    [self.urlRequestsLock unlock];
+    
+    @try {
+        if (urlSchemeTask == nil) {
+            return;
+        }
+
+        NSDictionary *headerFields = [NSJSONSerialization JSONObjectWithData: headersJSON options: NSJSONReadingMutableContainers error: nil];
+        NSHTTPURLResponse *response = [[[NSHTTPURLResponse alloc] initWithURL:urlSchemeTask.request.URL statusCode:statusCode HTTPVersion:@"HTTP/1.1" headerFields:headerFields] autorelease];
+
+        @try {
+            [urlSchemeTask didReceiveResponse:response];
+            [urlSchemeTask didReceiveData:data];
+            [urlSchemeTask didFinish];
+        } @catch (NSException *exception) {
+            // This is very bad to detect a stopped schemeTask this should be implemented in a better way
+            // See todo in stopURLSchemeTask...
+            if (![exception.reason isEqualToString: @"This task has already been stopped"]) {
+                @throw exception;
+            }
+        }
+    } @finally {
+        [self.urlRequestsLock lock];
+        [self.urlRequests removeObjectForKey:key]; // This will release the urlSchemeTask which was retained from the dictionary
+        [self.urlRequestsLock unlock];
     }
 }
 
 - (void)webView:(nonnull WKWebView *)webView startURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
     // This callback is run with an autorelease pool
-    self.urlRequests[urlSchemeTask.request.URL.absoluteString] = urlSchemeTask;
     const char *url = [urlSchemeTask.request.URL.absoluteString UTF8String];
     const char *method = [urlSchemeTask.request.HTTPMethod UTF8String];
     const char *headerJSON = "";
@@ -421,11 +461,19 @@
         // TODO handle HTTPBodyStream
     }
 
-    processURLRequest(self, url, method, headerJSON, body, bodyLen);
+    [self.urlRequestsLock lock];
+    self.urlRequestsId++;
+    unsigned long long requestId = self.urlRequestsId;
+    NSNumber *key = [NSNumber numberWithUnsignedLongLong:requestId];
+    self.urlRequests[key] = urlSchemeTask;
+    [self.urlRequestsLock  unlock];
+
+    processURLRequest(self, requestId, url, method, headerJSON, body, bodyLen);
 }
 
 - (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
-    
+    // TODO implement the stopping process here in a better way...
+    // As soon as we introduce response body streaming we need to rewrite this nevertheless.
 }
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
@@ -437,7 +485,7 @@
     
     // Check for drag
     if ( [m isEqualToString:@"drag"] ) {
-        if( [self isFullScreen] ) {
+        if( [self IsFullScreen] ) {
             return;
         }
         if( self.mouseEvent != nil ) {

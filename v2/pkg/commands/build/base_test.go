@@ -14,9 +14,12 @@ func TestUpdateEnv(t *testing.T) {
 	newEnv = upsertEnv(newEnv, "three", func(v string) string {
 		return "3"
 	})
+	newEnv = upsertEnv(newEnv, "GOARCH", func(v string) string {
+		return "amd64"
+	})
 
-	if len(newEnv) != 4 {
-		t.Errorf("expected: 4, got: %d", len(newEnv))
+	if len(newEnv) != 5 {
+		t.Errorf("expected: 5, got: %d", len(newEnv))
 	}
 	if newEnv[1] != "two=a=b+added" {
 		t.Errorf("expected: \"two=a=b+added\", got: %q", newEnv[1])
@@ -27,5 +30,39 @@ func TestUpdateEnv(t *testing.T) {
 	if newEnv[3] != "newVar=added" {
 		t.Errorf("expected: \"newVar=added\", got: %q", newEnv[3])
 	}
+	if newEnv[4] != "GOARCH=amd64" {
+		t.Errorf("expected: \"newVar=added\", got: %q", newEnv[4])
+	}
 
+}
+
+func Test_commandPrettifier(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []string
+		want  string
+	}{
+		{
+			name:  "empty",
+			input: []string{},
+			want:  "",
+		},
+		{
+			name:  "one arg",
+			input: []string{"one"},
+			want:  "one",
+		},
+		{
+			name:  "args where one has spaces",
+			input: []string{"one", "two three"},
+			want:  `one "two three"`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := commandPrettifier(tt.input); got != tt.want {
+				t.Errorf("commandPrettifier() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

@@ -8,11 +8,11 @@ import (
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 )
 
-func checkGCC() *packagemanager.Dependancy {
+func checkGCC() *packagemanager.Dependency {
 
 	version := packagemanager.AppVersion("gcc")
 
-	return &packagemanager.Dependancy{
+	return &packagemanager.Dependency{
 		Name:           "gcc ",
 		PackageName:    "N/A",
 		Installed:      version != "",
@@ -23,11 +23,11 @@ func checkGCC() *packagemanager.Dependancy {
 	}
 }
 
-func checkPkgConfig() *packagemanager.Dependancy {
+func checkPkgConfig() *packagemanager.Dependency {
 
 	version := packagemanager.AppVersion("pkg-config")
 
-	return &packagemanager.Dependancy{
+	return &packagemanager.Dependency{
 		Name:           "pkg-config ",
 		PackageName:    "N/A",
 		Installed:      version != "",
@@ -38,7 +38,7 @@ func checkPkgConfig() *packagemanager.Dependancy {
 	}
 }
 
-func checkLocallyInstalled(checker func() *packagemanager.Dependancy, dependency *packagemanager.Dependancy) {
+func checkLocallyInstalled(checker func() *packagemanager.Dependency, dependency *packagemanager.Dependency) {
 	if !dependency.Installed {
 		locallyInstalled := checker()
 		if locallyInstalled.Installed {
@@ -48,7 +48,7 @@ func checkLocallyInstalled(checker func() *packagemanager.Dependancy, dependency
 	}
 }
 
-var checkerFunctions = map[string]func() *packagemanager.Dependancy{
+var checkerFunctions = map[string]func() *packagemanager.Dependency{
 	"npm":        checkNPM,
 	"docker":     checkDocker,
 	"upx":        checkUPX,
@@ -69,7 +69,7 @@ func (i *Info) discover() error {
 
 	i.PM = packagemanager.Find(osinfo.ID)
 	if i.PM != nil {
-		dependencies, err := packagemanager.Dependancies(i.PM)
+		dependencies, err := packagemanager.Dependencies(i.PM)
 		if err != nil {
 			return err
 		}

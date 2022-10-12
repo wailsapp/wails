@@ -2,6 +2,7 @@ package binding
 
 import (
 	"encoding/json"
+	"sort"
 	"sync"
 	"unsafe"
 )
@@ -15,14 +16,18 @@ type DB struct {
 	// It used for performance gains at runtime
 	methodMap map[string]*BoundMethod
 
+	// This uses ids to reference bound methods at runtime
+	obfuscatedMethodMap map[int]*BoundMethod
+
 	// Lock to ensure sync access to the data
 	lock sync.RWMutex
 }
 
 func newDB() *DB {
 	return &DB{
-		store:     make(map[string]map[string]map[string]*BoundMethod),
-		methodMap: make(map[string]*BoundMethod),
+		store:               make(map[string]map[string]map[string]*BoundMethod),
+		methodMap:           make(map[string]*BoundMethod),
+		obfuscatedMethodMap: make(map[int]*BoundMethod),
 	}
 }
 
@@ -56,10 +61,17 @@ func (d *DB) GetMethod(qualifiedMethodName string) *BoundMethod {
 	return d.methodMap[qualifiedMethodName]
 }
 
+// GetObfuscatedMethod returns the method for the given ID
+func (d *DB) GetObfuscatedMethod(id int) *BoundMethod {
+	// Lock the db whilst processing and unlock on return
+	d.lock.RLock()
+	defer d.lock.RUnlock()
+
+	return d.obfuscatedMethodMap[id]
+}
+
 // AddMethod adds the given method definition to the db using the given qualified path: packageName.structName.methodName
 func (d *DB) AddMethod(packageName string, structName string, methodName string, methodDefinition *BoundMethod) {
-
-	// TODO: Validate inputs?
 
 	// Lock the db whilst processing and unlock on return
 	d.lock.Lock()
@@ -97,8 +109,31 @@ func (d *DB) ToJSON() (string, error) {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 
+	d.UpdateObfuscatedCallMap()
+
 	bytes, err := json.Marshal(&d.store)
 
 	// Return zero copy string as this string will be read only
-	return *(*string)(unsafe.Pointer(&bytes)), err
+	result := *(*string)(unsafe.Pointer(&bytes))
+	return result, err
+}
+
+// UpdateObfuscatedCallMap sets up the secure call mappings
+func (d *DB) UpdateObfuscatedCallMap() map[string]int {
+
+	var mappings = make(map[string]int)
+
+	// Iterate map keys and sort them
+	keys := make([]string, 0, len(d.methodMap))
+	for k := range d.methodMap {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	// Iterate sorted keys and add to obfuscated method map
+	for id, k := range keys {
+		mappings[k] = id
+		d.obfuscatedMethodMap[id] = d.methodMap[k]
+	}
+	return mappings
 }

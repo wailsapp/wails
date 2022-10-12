@@ -3,6 +3,7 @@
 package windows
 
 import (
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
@@ -30,8 +31,11 @@ type Window struct {
 	theme        winoptions.Theme
 	themeChanged bool
 
-	OnSuspend                                func()
-	OnResume                                 func()
+	OnSuspend func()
+	OnResume  func()
+	dragging  bool
+
+	chromium *edge.Chromium
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo) *Window {
@@ -95,17 +99,16 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
 	}
 
-	result.updateTheme()
+	result.UpdateTheme()
 
 	if appoptions.Windows != nil {
 		result.OnSuspend = appoptions.Windows.OnSuspend
 		result.OnResume = appoptions.Windows.OnResume
 		if appoptions.Windows.WindowIsTranslucent {
-			// TODO: Migrate to win32 package
-			if !win32.IsWindowsVersionAtLeast(10, 0, 22579) {
+			if !win32.SupportsBackdropTypes() {
 				result.SetTranslucentBackground()
 			} else {
-				win32.EnableTranslucency(result.Handle(), win32.BackdropType(appoptions.Windows.TranslucencyType))
+				win32.EnableTranslucency(result.Handle(), win32.BackdropType(appoptions.Windows.BackdropType))
 			}
 		}
 
@@ -124,11 +127,6 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 	}
 
 	return result
-}
-
-func (w *Window) Run() int {
-	w.updateTheme()
-	return winc.RunMainLoop()
 }
 
 func (w *Window) Fullscreen() {
@@ -158,9 +156,20 @@ func (w *Window) SetMaxSize(maxWidth int, maxHeight int) {
 	w.Form.SetMaxSize(maxWidth, maxHeight)
 }
 
+func (w *Window) IsVisible() bool {
+	return win32.IsVisible(w.Handle())
+}
+
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 	switch msg {
+	case w32.WM_EXITSIZEMOVE:
+		if w.dragging {
+			w.dragging = false
+			w.Invoke(func() {
+				w.chromium.Eval("wails.flags.shouldDrag = false;")
+			})
+		}
 	case win32.WM_POWERBROADCAST:
 		switch wparam {
 		case win32.PBT_APMSUSPEND:
@@ -172,12 +181,11 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 				w.OnResume()
 			}
 		}
-
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lparam)))
 		if settingChanged == "ImmersiveColorSet" {
 			w.themeChanged = true
-			w.updateTheme()
+			w.UpdateTheme()
 		}
 		return 0
 	case w32.WM_NCLBUTTONDOWN:
@@ -191,10 +199,10 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 		w.themeChanged = true
 		if int(wparam) == w32.WA_INACTIVE {
 			w.isActive = false
-			w.updateTheme()
+			w.UpdateTheme()
 		} else {
 			w.isActive = true
-			w.updateTheme()
+			w.UpdateTheme()
 			//}
 		}
 
@@ -278,10 +286,18 @@ func (w *Window) IsMinimised() bool {
 	return win32.IsWindowMinimised(w.Handle())
 }
 
+func (w *Window) IsNormal() bool {
+	return win32.IsWindowNormal(w.Handle())
+}
+
+func (w *Window) IsFullScreen() bool {
+	return win32.IsWindowFullScreen(w.Handle())
+}
+
 func (w *Window) SetTheme(theme winoptions.Theme) {
 	w.theme = theme
 	w.themeChanged = true
 	w.Invoke(func() {
-		w.updateTheme()
+		w.UpdateTheme()
 	})
 }

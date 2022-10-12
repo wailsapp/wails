@@ -42,7 +42,7 @@ func (i *Info) discover() error {
 		version = strings.TrimSpace(version)
 		version = strings.TrimSuffix(version, ".")
 	}
-	xcodeDep := &packagemanager.Dependancy{
+	xcodeDep := &packagemanager.Dependency{
 		Name:           "xcode command line tools ",
 		PackageName:    "N/A",
 		Installed:      installed,

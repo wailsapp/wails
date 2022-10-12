@@ -2,11 +2,11 @@ package update
 
 import (
 	"fmt"
+	"github.com/labstack/gommon/color"
+	"github.com/wailsapp/wails/v2/internal/shell"
 	"io"
 	"log"
 	"os"
-
-	"github.com/wailsapp/wails/v2/internal/shell"
 
 	"github.com/wailsapp/wails/v2/internal/github"
 
@@ -55,6 +55,12 @@ func AddSubcommand(app *clir.Cli, w io.Writer, currentVersion string) error {
 				desiredVersion, err = github.GetLatestPreRelease()
 			} else {
 				desiredVersion, err = github.GetLatestStableRelease()
+				if err != nil {
+					println("")
+					println("No stable release found for this major version. To update to the latest pre-release (eg beta), run:")
+					println("   wails update -pre")
+					return nil
+				}
 			}
 		}
 		if err != nil {
@@ -157,10 +163,10 @@ func updateToVersion(logger *clilogger.CLILogger, targetVersion *github.Semantic
 		logger.Println(sout + `\n` + serr)
 		return err
 	}
-	logger.Println("\n")
-	logger.Println("Wails CLI updated to " + desiredVersion)
-	logger.Println("Make sure you update your project go.mod file to use " + desiredVersion + ":")
-	logger.Println("  require github.com/wailsapp/wails/v2 " + desiredVersion)
+	logger.Println("Done.")
+	logger.Println(color.Green("\nMake sure you update your project go.mod file to use " + desiredVersion + ":"))
+	logger.Println(color.Green("  require github.com/wailsapp/wails/v2 " + desiredVersion))
+	logger.Println(color.Red("\nTo view the release notes, please run `wails show releasenotes`"))
 
 	return nil
 }

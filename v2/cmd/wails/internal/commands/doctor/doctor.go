@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"runtime/debug"
 	"strings"
 	"text/tabwriter"
 
@@ -68,7 +69,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		// Output Dependencies Status
 		var dependenciesMissing = []string{}
-		var externalPackages = []*packagemanager.Dependancy{}
+		var externalPackages = []*packagemanager.Dependency{}
 		var dependenciesAvailableRequired = 0
 		var dependenciesAvailableOptional = 0
 		fmt.Fprintf(w, "\n")
@@ -115,7 +116,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				}
 			}
 
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", name, packageName, status, dependency.Version)
+			fmt.Fprintf(w, "%s \t%s \t%s \t%s\n", name, packageName, status, dependency.Version)
 		}
 		if hasOptionalDependencies {
 			fmt.Fprintf(w, "\n")
@@ -153,4 +154,21 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	})
 
 	return nil
+}
+
+func printBuildSettings(w *tabwriter.Writer) {
+	if buildInfo, _ := debug.ReadBuildInfo(); buildInfo != nil {
+		buildSettingToName := map[string]string{
+			"vcs.revision": "Revision",
+			"vcs.modified": "Modified",
+		}
+		for _, buildSetting := range buildInfo.Settings {
+			name := buildSettingToName[buildSetting.Key]
+			if name == "" {
+				continue
+			}
+
+			_, _ = fmt.Fprintf(w, "%s:\t%s\n", name, buildSetting.Value)
+		}
+	}
 }

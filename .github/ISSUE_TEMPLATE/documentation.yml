@@ -1,0 +1,40 @@
+name: Documentation
+description: Report an issue related to documentation.
+# title: ""
+labels: ["Documentation"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is only used for documentation related requests, including:
+
+        - Log undocumented APIs
+        - Update link
+        - Documentation other than non-project code
+        - Add new language
+
+        If you followed the documentation but things don't work, take some time to consider if it's the documentation or the code that's wrong. In the latter, prefer using the "[Bug Report](https://github.com/wailsapp/wails/issues/new?assignees=&labels=bug&template=bug_report.yml)" template.
+
+  - type: checkboxes
+    attributes:
+      label: Have you read the Documentation Contribution Guidelines?
+      options:
+        - label: I have read the [Documentation Contribution Guidelines](https://wails.io/community-guide#ways-of-contributing).
+          required: true
+
+  - type: textarea
+    attributes:
+      label: Description
+      description: A clear and concise description of what the issue is.
+    validations:
+      required: true
+
+  - type: checkboxes
+    attributes:
+      label: Self-service
+      description: |
+        If you feel like you could contribute to this issue, please check the box below. This would tell us and other people looking for contributions that someone's working on it.
+        If you do check this box, please send a pull request within 7 days so we can still delegate this to someone else.
+      options:
+        - label: I'd be willing to address this documentation request myself.

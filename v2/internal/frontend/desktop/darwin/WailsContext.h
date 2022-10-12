@@ -47,6 +47,8 @@
 @property bool debug;
 
 @property (retain) WKUserContentController* userContentController;
+@property (retain) NSLock *urlRequestsLock;
+@property unsigned long long urlRequestsId;
 @property (retain) NSMutableDictionary *urlRequests;
 
 @property (retain) NSMenu* applicationMenu;
@@ -65,16 +67,21 @@
 - (void) Center;
 - (void) Fullscreen;
 - (void) UnFullscreen;
+- (bool) IsFullScreen;
 - (void) Minimise;
 - (void) UnMinimise;
+- (bool) IsMinimised;
 - (void) Maximise;
 - (void) ToggleMaximise;
 - (void) UnMaximise;
+- (bool) IsMaximised;
 - (void) SetBackgroundColour:(int)r :(int)g :(int)b :(int)a;
 - (void) HideMouse;
 - (void) ShowMouse;
 - (void) Hide;
 - (void) Show;
+- (void) HideApplication;
+- (void) ShowApplication;
 - (void) Quit;
 
 -(void) MessageDialog :(NSString*)dialogType :(NSString*)title :(NSString*)message :(NSString*)button1 :(NSString*)button2 :(NSString*)button3 :(NSString*)button4 :(NSString*)defaultButton :(NSString*)cancelButton :(void*)iconData :(int)iconDataLength;
@@ -82,7 +89,7 @@
 - (void) SaveFileDialog :(NSString*)title :(NSString*)defaultFilename :(NSString*)defaultDirectory :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)showHiddenFiles :(NSString*)filters;
 
 - (void) loadRequest:(NSString*)url;
-- (void) processURLResponse:(NSString *)url :(int)statusCode :(NSData *)headersString :(NSData*)data;
+- (void) processURLResponse:(unsigned long long)requestId :(int)statusCode :(NSData *)headersString :(NSData*)data;
 - (void) ExecJS:(NSString*)script;
 - (NSScreen*) getCurrentScreen;
 

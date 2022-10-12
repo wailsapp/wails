@@ -1,0 +1,32 @@
+name: Generate Sponsor Image
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  update-sponsors:
+    runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+
+      - name: Update sponsors
+        run: cd scripts/sponsors && chmod 755 ./generate-sponsor-image.sh && ./generate-sponsor-image.sh
+        env:
+          SPONSORKIT_GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
+          SPONSORKIT_GITHUB_LOGIN: wailsapp
+
+      - name: Commit
+        uses: EndBug/add-and-commit@v4
+        with:
+          message: "chore: update sponsors.svg"
+          add: "website/static/img/sponsors.svg"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

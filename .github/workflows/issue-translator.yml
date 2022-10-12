@@ -1,0 +1,16 @@
+name: 'issue-translator'
+on:
+  issue_comment:
+    types: [ created ]
+  issues:
+    types: [ opened ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
+    steps:
+      - uses: tomsun28/issues-translate-action@v2.6
+        with:
+          IS_MODIFY_TITLE: false
+          CUSTOM_BOT_NOTE: The issue body's language is not English, translating it automatically...

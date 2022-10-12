@@ -1,8 +1,0 @@
-{
-  "go.formatTool": "goimports",
-  "eslint.alwaysShowStatus": true,
-  "files.associations": {
-    "__locale": "c",
-    "ios": "c"
-  }
-}

@@ -1,0 +1,111 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CGO_ENABLED": "1"
+        }
+      },
+      "osx": {
+        "options": {
+          "env": {
+            "CGO_CFLAGS": "-mmacosx-version-min=10.13",
+            "CGO_LDFLAGS": "-framework UniformTypeIdentifiers -mmacosx-version-min=10.13"
+          }
+        }
+      },
+      "windows": {
+        "options": {
+          "env": {
+            "CGO_ENABLED": "0"
+          }
+        }
+      },
+      "command": "go",
+      "args": [
+        "build",
+        "-tags",
+        "production,desktop",
+        "-gcflags",
+        "all=-N -l",
+        "-o",
+        "{{.PathToDesktopBinary}}"
+      ]
+    },
+    {
+      "label": "build debug",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CGO_ENABLED": "1"
+        }
+      },
+      "osx": {
+        "options": {
+          "env": {
+            "CGO_CFLAGS": "-mmacosx-version-min=10.13",
+            "CGO_LDFLAGS": "-framework UniformTypeIdentifiers -mmacosx-version-min=10.13"
+          }
+        }
+      },
+      "windows": {
+        "options": {
+          "env": {
+            "CGO_ENABLED": "0"
+          }
+        }
+      },
+      "command": "go",
+      "args": [
+        "build",
+        "-tags",
+        "production,desktop,debug",
+        "-gcflags",
+        "all=-N -l",
+        "-o",
+        "{{.PathToDesktopBinary}}"
+      ]
+    },
+    {
+      "label": "build dev",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CGO_ENABLED": "1"
+        }
+      },
+      "osx": {
+        "options": {
+          "env": {
+            "CGO_CFLAGS": "-mmacosx-version-min=10.13",
+            "CGO_LDFLAGS": "-framework UniformTypeIdentifiers -mmacosx-version-min=10.13"
+          }
+        }
+      },
+      "windows": {
+        "options": {
+          "env": {
+            "CGO_ENABLED": "0"
+          }
+        }
+      },
+      "command": "go",
+      "args": [
+        "build",
+        "-tags",
+        "dev",
+        "-gcflags",
+        "all=-N -l",
+        "-o",
+        "{{.PathToDesktopBinary}}"
+      ]
+    }
+  ]
+}
+  

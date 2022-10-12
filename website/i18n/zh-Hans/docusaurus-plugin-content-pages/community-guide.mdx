@@ -1,0 +1,150 @@
+# 社区指南
+
+Wails 用户量正在以惊人的速度增长，如果您正在阅读本文，那么您很有可能已经准备好加入它。 那么……欢迎加入！
+
+## 资源
+
+### 行为准则
+
+这份 [行为准则](./coc) 是一个易于发展我们所参与的技术社区的指南。
+
+### 保持掌握最新消息
+
+- 关注我们的 [官方Twitter 账户](https://twitter.com/wailsapp)。
+
+### 寻求帮助
+
+- [GitHub](https://github.com/wailsapp/wails) - 如果您有要报告的错误或要请求的功能，这就是 GitHub Issue 的用途。 请遵守每个存储库的问题模板中指定的规则。
+- [Slack](https://gophers.slack.com/messages/CJ4P9F7MZ/) - Wails 开发人员实时见面和聊天的地方。
+- [QQ Group(中文)](https://qm.qq.com/cgi-bin/qm/qr?k=PmIURne5hFGNd7QWzW5qd6FV-INEjNJv&jump_from=webapi) - 中文开发者交流的 Wails 群组，在这里你可以得到其他开发者的帮助。
+
+### 探索生态系统
+
+- [The Awesome Wails Page](https://github.com/wailsapp/awesome-wails) - 看看其他人发布的精彩资源。
+
+## 贡献方式
+
+Wails 是一个开放源码、社区驱动的项目。 我们欢迎任何人加入我们 ，为该项目做出贡献。 此文档面向希望熟悉项目和开发过程的人。
+
+有多种为该项目做出贡献的方式：
+
+- 开发新功能
+- 修复漏洞
+- 测试
+- 文档功能
+- 编写教程/指南
+- 在 issues 和 discussions boards 上帮助他人
+
+这些指南已在各自的部分中创建。 在开始之前，请在 [Contributing to Wails](https://github.com/wailsapp/wails/discussions/1520) 讨论中介绍自己
+
+### 开发新功能
+
+我们总是热衷于为 Wails 添加功能并扩展项目的功能。 添加新功能的过程如下：
+
+- 选择 "TODO" 标签的增强（enhancement） Issue。 最好从当前的 [待办列表](https://github.com/orgs/wailsapp/projects/1/views/1) 中选择一个，但选择权在你。
+- 在开发之前，请检查 Issue 是否包含以下信息：
+  - 增强的目的
+  - 增强的范围
+  - 增强的目标平台 (大多数功能应该是跨平台的，除非有非常具体的理由)
+- 如果 Issue 没有包含此信息，请随时向打开 Issue 的 个人获取信息。 有时创建占位符 Issue ，需要更多详细信息
+- 对 Issue 发表评论，说明您是否希望开发该功能
+- 克隆仓库并使用 `feature/<ticket_number>_<ticket_title>` 格式创建一个分支
+- 新功能通常需要文档，因此请确保您还添加或更新了文档作为更新的一部分
+- 一旦功能准备好进行测试，请创建 PR 草案。 请确保 PR 描述中列出了带有复选框标记的测试场景和测试用例，以便其他人知道需要测试什么。
+- 完成所有测试后，请从草稿更新 PR 的状态并留言。
+
+:::note
+
+没有什么可以阻止您新开 Issue 并自己处理，但请注意，所有增强请求都经过审核以确保合适。 并非所有的想法都会被选中，因此最好先对新功能讨论一下。
+:::
+
+
+:::warning
+
+任何没有相应 Issue 的 PR 都可能被拒绝。
+:::
+
+
+### 修复漏洞
+
+修复bug的流程如下：
+
+- 检查当前的 [待办事项](https://github.com/orgs/wailsapp/projects/1/views/1) 并选择要修复的错误
+- 在开发之前，请检查 Issue 是否包含以下信息：
+- 问题的范围包括受影响的平台
+- 重现的步骤。 有时会打开不是Wails 问题的错误，报告者有责任用 [最小的可重现示例](https://stackoverflow.com/help/minimal-reproducible-example) 证明这是Wails 问题
+- `wails doctor` 的输出
+- 如果 Issue 没有包含此信息，请随时向打开 Issue 的 个人获取信息。
+- 对 Issue 发表评论，说明您希望开发修复程序
+- 克隆存储库并使用 `bugfix/<ticket_number>_<ticket_title>` 格式创建一个分支
+- 一旦修复准备好进行测试，请创建 PR 草案。 请确保 PR 描述中列出了带有复选框标记的测试场景和测试用例，以便其他人知道需要测试什么。
+- 完成所有测试后，请从草稿更新 PR 的状态并留言。
+
+:::note
+
+没有什么可以阻止您开 Issue 并自己处理，但请注意，所有错误修复都应该讨论，因为该方法可能会产生意想不到的副作用。
+:::
+
+
+:::warning
+
+任何没有相应 Issue 的 PR 都可能被拒绝。
+:::
+
+
+### 测试
+
+测试对于确保项目的质量至关重要。 有几个场景可以让测试真正帮助项目：
+
+- 测试错误是否可在您的本地系统上重现
+- 测试 PR 以确保它们正常工作
+
+如果您选择测试某人的错误报告是否可以在您的本地系统上重现，那么请随时带着 `wails doctor` 的输出在 Issue 上添加评论以确认这一点。
+
+要测试 PR，请选择要测试的 PR，并检查 PR 描述是否列出了测试场景。 如果没有，请让打开 PR 的人提供该列表。 一旦你确定了一个有效的测试场景，请在 PR 上报告你的发现。
+
+如果您需要更清晰的测试或测试帮助，请在 [Contributing to Wails](https://github.com/wailsapp/wails/discussions/1520) 讨论中或在 slack 上提问。
+
+### 文档
+
+这个网站也是该项目的主要文档网站。 有时这会过时，需要一些细微的调整。 一些文档也没有按照最佳标准编写。 开发文档很困难，因此非常感谢您对此做出的任何贡献。 没有文档的功能是未完成的，所以对于项目来说，它和代码 _一样重要_。
+
+我们通常不会为更新文档创建 Issue，因此如果有您认为应该更新或改写的文本，请随时为此提交 PR。 该站点位于 `website` 目录下的主存储库中。 我们使用 [Docusaurus](https://docusaurus.io/) 创建网站，因此有大量现有的文档和教程可供您开始使用。
+
+要设置本地文档开发环境，请执行以下操作：
+
+- [Install npm](https://docs.npmjs.com/cli/v8/configuring-npm/install)
+- `cd website`
+- `npm install`
+- `npm run start`
+
+全部安装并运行后，您应该会在 [`http://localhost:3000`](http://localhost:3000) 看到。 对站点文本所做的任何更改都将立即反映在浏览器中。
+
+#### 版本控制
+
+我们采用了一个版本控制系统，我们拥有“最新”文档又名“下一个版本”，其中包含自上次发布以来发生的所有更改。 我们还保留了最后一个发布文档以及之前的版本。
+
+通常没有理由更新已发布的文档，因此我们不会更新 `versioned_docs` 或 `versioned_sidebars` 目录中的文档。
+
+“下一个版本”文档包含 `website/docs` 和以及`src/pages` 中一些版本无关的文档。 任何更新都应在 `website/docs` 目录中进行。
+
+#### 语言
+
+Wails 项目的默认文档是英文文档。 我们使用“crowdin”工具将文件翻译成其他语言并同步到网站。 您可以 [加入我们的项目](https://crowdin.com/project/wails) 并提交您的翻译以做出贡献。
+
+##### 添加新语言
+
+如果您想在文档中添加新语言，请 [按照提示填写并提交问题](https://github.com/wailsapp/wails/issues/new?assignees=&labels=documentation&template=documentation.yml)。 得到维护者确认后，我们会将语言添加到“crowdin”中，然后您就可以提交翻译了。
+
+### 帮助其他人
+
+为项目做出贡献的一个好方法是帮助遇到困难的其他人。 这通常在 Wails slack 频道上报告为 Issue 或消息。 即使只是澄清问题也能真正有所帮助。 有时，当一个问题被讨论并得到解决时，我们会根据它创建一个指南来帮助面临同样问题的其他人。
+
+要加入 Wails slack 频道，请在 [此处](https://gophers.slack.com/join/shared_invite/zt-197vymgt3-sJt4oyakb6nqlVKjXTyeVw#/shared-invite/email) 接受邀请并通过点击 [此链接](https://gophers.slack.com/?redir=%2Fmessages%2FCJ4P9F7MZ%2F) 加入我们的频道。
+
+:::note
+
+
+正在开发
+
+:::

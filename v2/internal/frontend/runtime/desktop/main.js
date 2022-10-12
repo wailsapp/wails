@@ -13,11 +13,20 @@ import {eventListeners, EventsEmit, EventsNotify, EventsOff, EventsOn, EventsOnc
 import {Call, Callback, callbacks} from './calls';
 import {SetBindings} from "./bindings";
 import * as Window from "./window";
+import * as Screen from "./screen";
 import * as Browser from "./browser";
 
 
 export function Quit() {
     window.WailsInvoke('Q');
+}
+
+export function Show() {
+    window.WailsInvoke('S');
+}
+
+export function Hide() {
+    window.WailsInvoke('H');
 }
 
 export function Environment() {
@@ -29,12 +38,15 @@ window.runtime = {
     ...Log,
     ...Window,
     ...Browser,
+    ...Screen,
     EventsOn,
     EventsOnce,
     EventsOnMultiple,
     EventsEmit,
     EventsOff,
     Environment,
+    Show,
+    Hide,
     Quit
 };
 
@@ -51,30 +63,38 @@ window.wails = {
         enableResize: false,
         defaultCursor: null,
         borderThickness: 6,
-        dbClickInterval: 100,
+        shouldDrag: false,
+        cssDragProperty: "--wails-draggable",
+        cssDragValue: "drag",
     }
 };
 
 // Set the bindings
-window.wails.SetBindings(window.wailsbindings);
-delete window.wails.SetBindings;
+if (window.wailsbindings) {
+    window.wails.SetBindings(window.wailsbindings);
+    delete window.wails.SetBindings;
+}
 
 // This is evaluated at build time in package.json
 // const dev = 0;
 // const production = 1;
-if (ENV === 0) {
+if (ENV === 1) {
     delete window.wailsbindings;
 }
 
-var dragTimeOut;
-var dragLastTime = 0;
+window.addEventListener('mouseup', () => {
+    window.wails.flags.shouldDrag = false;
+});
 
-function drag() {
-    window.WailsInvoke("drag");
+let dragTest = function (e) {
+    return window.getComputedStyle(e.target).getPropertyValue(window.wails.flags.cssDragProperty) === window.wails.flags.cssDragValue;
+};
+
+window.wails.setCSSDragProperties = function (property, value) {
+    window.wails.flags.cssDragProperty = property;
+    window.wails.flags.cssDragValue = value;
 }
 
-// Setup drag handler
-// Based on code from: https://github.com/patr0nus/DeskGap
 window.addEventListener('mousedown', (e) => {
 
     // Check for resizing
@@ -84,29 +104,16 @@ window.addEventListener('mousedown', (e) => {
         return;
     }
 
-    // Check for dragging
-    let currentElement = e.target;
-    while (currentElement != null) {
-        if (currentElement.hasAttribute('data-wails-no-drag')) {
-            break;
-        } else if (currentElement.hasAttribute('data-wails-drag')) {
-            if (window.wails.flags.disableScrollbarDrag) {
-                // This checks for clicks on the scroll bar
-                if (e.offsetX > e.target.clientWidth || e.offsetY > e.target.clientHeight) {
-                    break;
-                }
+    if (dragTest(e)) {
+        if (window.wails.flags.disableScrollbarDrag) {
+            // This checks for clicks on the scroll bar
+            if (e.offsetX > e.target.clientWidth || e.offsetY > e.target.clientHeight) {
+                return;
             }
-            if (new Date().getTime() - dragLastTime < window.wails.flags.dbClickInterval) {
-                clearTimeout(dragTimeOut);
-                break;
-            }
-            dragTimeOut = setTimeout(drag, window.wails.flags.dbClickInterval);
-            dragLastTime = new Date().getTime();
-            e.preventDefault();
-            break;
         }
-        currentElement = currentElement.parentElement;
+        window.wails.flags.shouldDrag = true;
     }
+
 });
 
 function setResize(cursor) {
@@ -115,6 +122,15 @@ function setResize(cursor) {
 }
 
 window.addEventListener('mousemove', function (e) {
+    let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
+    if(window.wails.flags.shouldDrag && mousePressed <= 0) {
+        window.wails.flags.shouldDrag = false;
+    }
+    
+    if (window.wails.flags.shouldDrag) {
+        window.WailsInvoke("drag");
+        return;
+    }
     if (!window.wails.flags.enableResize) {
         return;
     }
@@ -149,3 +165,5 @@ window.addEventListener('contextmenu', function (e) {
         e.preventDefault();
     }
 });
+
+window.WailsInvoke("runtime:ready");

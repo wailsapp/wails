@@ -1,1 +1,0 @@
-The version of WebView2 SDK used: 1.0.992.28 

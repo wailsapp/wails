@@ -4,20 +4,30 @@
  */
 
 .heroBanner {
-  padding: 1rem 0;
   text-align: center;
   position: relative;
   overflow: hidden;
-}
-
-@media screen and (max-width: 966px) {
-  .heroBanner {
-    padding: 2rem;
-  }
+  padding: 1rem 0 5px;
 }
 
 .buttons {
+  column-gap: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@media screen and (max-width: 450px) {
+  .buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    row-gap: 1rem;
+  }
+
+  .heroBanner {
+    padding: 1rem 0 1rem;
+  }
+
 }

@@ -10,9 +10,11 @@ window. The frontend is a webkit window that will display the frontend assets. A
 version of the runtime library. Finally, it is possible to bind Go methods to the frontend, and these will appear as
 Javascript methods that can be called, just as if they were local Javascript methods.
 
+```mdx-code-block
 <div className="text--center">
-  <img src="/img/architecture.svg" width="75%" />
+  <img src={require("@site/static/img/architecture.webp").default} style={{"width":"75%", "max-width":"800px"}} />
 </div>
+```
 
 ## The Main Application
 
@@ -33,7 +35,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
@@ -95,7 +97,7 @@ there is no requirement on where in the `embed.FS` the files live. It is likely 
 directory relative to your main application code, such as `frontend/dist`:
 
 ```go title="main.go"
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 ```
 
@@ -130,7 +132,7 @@ by the frontend code.
 
 :::info Note
 
-  Wails requires that you pass in an *instance* of the struct for it to bind it correctly
+Wails requires that you pass in an _instance_ of the struct for it to bind it correctly
 
 :::
 
@@ -147,7 +149,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
-//go:embed frontend/dist
+//go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
@@ -197,9 +199,10 @@ You may bind as many structs as you like. Just make sure you create an instance 
 ```
 
 When you run `wails dev` (or `wails generate module`), a frontend module will be generated containing the following:
-  - Javascript bindings for all bound methods
-  - Typescript declarations for all bound methods
-  - Typescript definitions for all Go structs used as inputs or outputs by the bound methods
+
+- Javascript bindings for all bound methods
+- Typescript declarations for all bound methods
+- Typescript definitions for all Go structs used as inputs or outputs by the bound methods
 
 This makes it incredibly simple to call Go code from the frontend, using the same strongly typed datastructures.
 
@@ -207,7 +210,7 @@ This makes it incredibly simple to call Go code from the frontend, using the sam
 
 ### Overview
 
-The frontend is a collection of files rendered by webkit. It''s like a browser and webserver in one.
+The frontend is a collection of files rendered by webkit. It's like a browser and webserver in one.
 There is virtually[^1] no limit to which frameworks or libraries you can use. The main points of interaction between
 the frontend and your Go code are:
 
@@ -232,48 +235,53 @@ wailsjs
       ├─App.d.ts
       └─App.js
 ```
+
 Here we can see that there is a `main` package that contains the Javascript bindings for the bound `App` struct, as well
 as the Typescript declaration file for those methods. To call `Greet` from our frontend, we simply import the method and
 call it like a regular Javascript function:
 
 ```javascript
-    // ...
-    import {Greet} from '../wailsjs/go/main/App'
+// ...
+import { Greet } from "../wailsjs/go/main/App";
 
-    function doGreeting(name) {
-        Greet(name).then((result) => {
-            // Do something with result
-        })
-    }
+function doGreeting(name) {
+  Greet(name).then((result) => {
+    // Do something with result
+  });
+}
 ```
+
 The Typescript declaration file gives you the correct types for the bound methods:
 
 ```ts
-export function Greet(arg1:string):Promise<string>;
+export function Greet(arg1: string): Promise<string>;
 ```
 
 The generated methods return a Promise. A successful call will result in the first return value from the Go call to be passed
-to the `resolve` handler. An unsuccessful call is when a Go method that has an error type as it''s second return value,
+to the `resolve` handler. An unsuccessful call is when a Go method that has an error type as it's second return value,
 passes an error instance back to the caller. This is passed back via the `reject` handler.
 In the example above, `Greet` only returns a `string` so the Javascript call will never reject - unless invalid data
 is passed to it.
 
 All data types are correctly translated between Go and Javascript. Even structs. If you return a struct from a Go call,
-it will be returned to your frontend as a Javascript class. Note: If you wish to use structs, you **must** define
-`json` struct tags for your fields!
+it will be returned to your frontend as a Javascript class.
 
 :::info Note
+
+Struct fields *must* have a valid `json` tag to be included in the generated Typescript.
+
 Anonymous nested structs are not supported at this time.
+
 :::
 
 It is possible to send structs back to Go. Any Javascript map/class passed as an argument that
 is expecting a struct, will be converted to that struct type. To make this process a lot easier, in `dev` mode,
-a TypeScript module is generated, defining all the struct types used in bound methods. Using this module, it''s possible
+a TypeScript module is generated, defining all the struct types used in bound methods. Using this module, it's possible
 to construct and send native Javascript objects to the Go code.
 
 There is also support for Go methods that use structs in their signature. All Go structs
 specified by a bound method (either as parameters or return types) will have Typescript versions auto
-generated as part of the Go code wrapper module. Using these, it''s possible to share the same data
+generated as part of the Go code wrapper module. Using these, it's possible to share the same data
 model between Go and Javascript.
 
 Example: We update our `Greet` method to accept a `Person` instead of a string:
@@ -299,16 +307,16 @@ The `wailsjs/go/main/App.js` file will still have the following code:
 
 ```js title="App.js"
 export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
+  return window["go"]["main"]["App"]["Greet"](arg1);
 }
 ```
 
 But the `wailsjs/go/main/App.d.ts` file will be updated with the following code:
 
 ```ts title="App.d.ts"
-import {main} from '../models';
+import { main } from "../models";
 
-export function Greet(arg1:main.Person):Promise<string>;
+export function Greet(arg1: main.Person): Promise<string>;
 ```
 
 As we can see, the "main" namespace is imported from a new "models.ts" file. This file contains all the struct definitions
@@ -317,55 +325,54 @@ are defined:
 
 ```ts title="models.ts"
 export namespace main {
+  export class Address {
+    street: string;
+    postcode: string;
 
-	export class Address {
-	    street: string;
-	    postcode: string;
+    static createFrom(source: any = {}) {
+      return new Address(source);
+    }
 
-	    static createFrom(source: any = {}) {
-	        return new Address(source);
-	    }
+    constructor(source: any = {}) {
+      if ("string" === typeof source) source = JSON.parse(source);
+      this.street = source["street"];
+      this.postcode = source["postcode"];
+    }
+  }
+  export class Person {
+    name: string;
+    age: number;
+    address?: Address;
 
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.street = source["street"];
-	        this.postcode = source["postcode"];
-	    }
-	}
-	export class Person {
-	    name: string;
-	    age: number;
-	    address?: Address;
+    static createFrom(source: any = {}) {
+      return new Person(source);
+    }
 
-	    static createFrom(source: any = {}) {
-	        return new Person(source);
-	    }
+    constructor(source: any = {}) {
+      if ("string" === typeof source) source = JSON.parse(source);
+      this.name = source["name"];
+      this.age = source["age"];
+      this.address = this.convertValues(source["address"], Address);
+    }
 
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.name = source["name"];
-	        this.age = source["age"];
-	        this.address = this.convertValues(source["address"], Address);
-	    }
-
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
+    convertValues(a: any, classs: any, asMap: boolean = false): any {
+      if (!a) {
+        return a;
+      }
+      if (a.slice) {
+        return (a as any[]).map((elem) => this.convertValues(elem, classs));
+      } else if ("object" === typeof a) {
+        if (asMap) {
+          for (const key of Object.keys(a)) {
+            a[key] = new classs(a[key]);
+          }
+          return a;
+        }
+        return new classs(a);
+      }
+      return a;
+    }
+  }
 }
 ```
 
@@ -373,17 +380,17 @@ So long as you have TypeScript as part of your frontend build configuration, you
 the following way:
 
 ```js title="mycode.js"
-  import {Greet} from '../wailsjs/go/main/App'
-  import {main} from '../wailsjs/go/models'
+import { Greet } from "../wailsjs/go/main/App";
+import { main } from "../wailsjs/go/models";
 
-  function generate() {
-    let person = new main.Person()
-    person.name = "Peter"
-    person.age = 27
-    Greet(person).then((result) => {
-      console.log(result)
-    })
-  }
+function generate() {
+  let person = new main.Person();
+  person.name = "Peter";
+  person.age = 27;
+  Greet(person).then((result) => {
+    console.log(result);
+  });
+}
 ```
 
 The combination of generated bindings and TypeScript models makes for a powerful development environment.

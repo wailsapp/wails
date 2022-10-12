@@ -2,6 +2,7 @@ package dispatcher
 
 import (
 	"context"
+
 	"github.com/pkg/errors"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -37,12 +38,20 @@ func (d *Dispatcher) ProcessMessage(message string, sender frontend.Frontend) (s
 		return d.processEventMessage(message, sender)
 	case 'C':
 		return d.processCallMessage(message, sender)
+	case 'c':
+		return d.processSecureCallMessage(message, sender)
 	case 'W':
 		return d.processWindowMessage(message, sender)
 	case 'B':
 		return d.processBrowserMessage(message, sender)
 	case 'Q':
 		sender.Quit()
+		return "", nil
+	case 'S':
+		sender.Show()
+		return "", nil
+	case 'H':
+		sender.Hide()
 		return "", nil
 	default:
 		return "", errors.New("Unknown message from front end: " + message)

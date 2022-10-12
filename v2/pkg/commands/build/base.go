@@ -108,6 +108,20 @@ func (b *BaseBuilder) CleanUp() {
 	})
 }
 
+func commandPrettifier(args []string) string {
+	// If we have a single argument, just return it
+	if len(args) == 1 {
+		return args[0]
+	}
+	// If an argument contains a space, quote it
+	for i, arg := range args {
+		if strings.Contains(arg, " ") {
+			args[i] = fmt.Sprintf("\"%s\"", arg)
+		}
+	}
+	return strings.Join(args, " ")
+}
+
 func (b *BaseBuilder) OutputFilename(options *Options) string {
 	outputFile := options.OutputFile
 	if outputFile == "" {
@@ -153,7 +167,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	verbose := options.Verbosity == VERBOSE
 	// Run go mod tidy first
 	if !options.SkipModTidy {
-		cmd := exec.Command(options.Compiler, "mod", "tidy", "-compat=1.17")
+		cmd := exec.Command(options.Compiler, "mod", "tidy")
 		cmd.Stderr = os.Stderr
 		if verbose {
 			println("")
@@ -165,13 +179,28 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		}
 	}
 
+	commands := slicer.String()
+
+	compiler := options.Compiler
+	if options.Obfuscated {
+		if !shell.CommandExists("garble") {
+			return fmt.Errorf("the 'garble' command was not found. Please install it with `go install mvdan.cc/garble@latest`")
+		} else {
+			compiler = "garble"
+			if options.GarbleArgs != "" {
+				commands.AddSlice(strings.Split(options.GarbleArgs, " "))
+			}
+			options.UserTags = append(options.UserTags, "obfuscated")
+		}
+	}
+
 	// Default go build command
-	commands := slicer.String([]string{"build"})
+	commands.Add("build")
 
 	// Add better debugging flags
 	if options.Mode == Dev || options.Mode == Debug {
 		commands.Add("-gcflags")
-		commands.Add(`"all=-N -l"`)
+		commands.Add("all=-N -l")
 	}
 
 	if options.ForceBuild {
@@ -203,6 +232,10 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		tags.Add("debug")
 	}
 
+	if options.Obfuscated {
+		tags.Add("obfuscated")
+	}
+
 	tags.Deduplicate()
 
 	// Add the output type build tag
@@ -217,7 +250,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 
 	if options.Mode == Production {
 		ldflags.Add("-w", "-s")
-		if options.Platform == "windows" {
+		if options.Platform == "windows" && !options.WindowsConsole {
 			ldflags.Add("-H windowsgui")
 		}
 	}
@@ -247,11 +280,11 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	b.projectData.OutputFilename = strings.TrimPrefix(compiledBinary, options.ProjectData.Path)
 	options.CompiledBinary = compiledBinary
 
-	// Create the command
-	cmd := exec.Command(options.Compiler, commands.AsSlice()...)
+	// Build the application
+	cmd := exec.Command(compiler, commands.AsSlice()...)
 	cmd.Stderr = os.Stderr
 	if verbose {
-		println("  Build command:", commands.Join(" "))
+		println("  Build command:", compiler, commandPrettifier(commands.AsSlice()))
 		cmd.Stdout = os.Stdout
 	}
 	// Set the directory
@@ -513,7 +546,11 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 	frontendDir := filepath.Join(b.projectData.Path, "frontend")
 
 	// Check there is an 'InstallCommand' provided in wails.json
-	if b.projectData.InstallCommand == "" {
+	installCommand := b.projectData.InstallCommand
+	if b.projectData.OutputType == "dev" {
+		installCommand = b.projectData.GetDevInstallerCommand()
+	}
+	if installCommand == "" {
 		// No - don't install
 		outputLogger.Println("  - No Install command. Skipping.")
 	} else {
@@ -521,24 +558,18 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 		outputLogger.Print("  - Installing frontend dependencies: ")
 		if verbose {
 			outputLogger.Println("")
-			outputLogger.Println("  Install command: '" + b.projectData.InstallCommand + "'")
+			outputLogger.Println("  Install command: '" + installCommand + "'")
 		}
-		if err := b.NpmInstallUsingCommand(frontendDir, b.projectData.InstallCommand, verbose); err != nil {
+		if err := b.NpmInstallUsingCommand(frontendDir, installCommand, verbose); err != nil {
 			return err
 		}
 		outputLogger.Println("Done.")
 	}
 
 	// Check if there is a build command
-	var buildCommand string
-	switch b.projectData.OutputType {
-	case "dev":
-		buildCommand = b.projectData.DevCommand
-		if buildCommand == "" {
-			buildCommand = b.projectData.BuildCommand
-		}
-	default:
-		buildCommand = b.projectData.BuildCommand
+	buildCommand := b.projectData.BuildCommand
+	if b.projectData.OutputType == "dev" {
+		buildCommand = b.projectData.GetDevBuildCommand()
 	}
 	if buildCommand == "" {
 		outputLogger.Println("  - No Build command. Skipping.")

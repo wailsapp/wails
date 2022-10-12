@@ -22,16 +22,16 @@ func (i *Info) discover() error {
 	i.Dependencies = append(i.Dependencies, checkNPM())
 	i.Dependencies = append(i.Dependencies, checkUPX())
 	i.Dependencies = append(i.Dependencies, checkNSIS())
-	//i.Dependencies = append(i.Dependencies, checkDocker())
+	// i.Dependencies = append(i.Dependencies, checkDocker())
 
 	return nil
 }
 
-func checkWebView2() *packagemanager.Dependancy {
+func checkWebView2() *packagemanager.Dependency {
 	version, _ := webviewloader.GetWebviewVersion("")
 	installed := version != ""
 
-	return &packagemanager.Dependancy{
+	return &packagemanager.Dependency{
 		Name:           "WebView2 ",
 		PackageName:    "N/A",
 		Installed:      installed,

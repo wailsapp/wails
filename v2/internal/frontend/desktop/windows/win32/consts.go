@@ -10,6 +10,7 @@ import (
 
 type HRESULT int32
 type HANDLE uintptr
+type HMONITOR HANDLE
 
 var (
 	moduser32                = syscall.NewLazyDLL("user32.dll")
@@ -18,6 +19,10 @@ var (
 	procSetClassLong         = moduser32.NewProc("SetClassLongW")
 	procSetClassLongPtr      = moduser32.NewProc("SetClassLongPtrW")
 	procShowWindow           = moduser32.NewProc("ShowWindow")
+	procIsWindowVisible      = moduser32.NewProc("IsWindowVisible")
+	procGetWindowRect        = moduser32.NewProc("GetWindowRect")
+	procGetMonitorInfo       = moduser32.NewProc("GetMonitorInfoW")
+	procMonitorFromWindow    = moduser32.NewProc("MonitorFromWindow")
 )
 var (
 	moddwmapi                        = syscall.NewLazyDLL("dwmapi.dll")

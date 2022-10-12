@@ -10,10 +10,16 @@ func EventsOn(ctx context.Context, eventName string, callback func(optionalData 
 	events.On(eventName, callback)
 }
 
-// EventsOff unregisters a listener for the given event name
-func EventsOff(ctx context.Context, eventName string) {
+// EventsOff unregisters a listener for the given event name, optionally multiple listeneres can be unregistered via `additionalEventNames`
+func EventsOff(ctx context.Context, eventName string, additionalEventNames ...string) {
 	events := getEvents(ctx)
 	events.Off(eventName)
+
+	if len(additionalEventNames) > 0 {
+		for _, eventName := range additionalEventNames {
+			events.Off(eventName)
+		}
+	}
 }
 
 // EventsOnce registers a listener for the given event name. After the first callback, the

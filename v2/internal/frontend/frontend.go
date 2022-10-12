@@ -10,7 +10,7 @@ import (
 // FileFilter defines a filter for dialog boxes
 type FileFilter struct {
 	DisplayName string // Filter information EG: "Image Files (*.jpg, *.png)"
-	Pattern     string // semi-colon separated list of extensions, EG: "*.jpg;*.png"
+	Pattern     string // semicolon separated list of extensions, EG: "*.jpg;*.png"
 }
 
 // OpenDialogOptions contains the options for the OpenDialogOptions runtime method
@@ -45,6 +45,13 @@ const (
 	QuestionDialog DialogType = "question"
 )
 
+type Screen struct {
+	IsCurrent bool `json:"isCurrent"`
+	IsPrimary bool `json:"isPrimary"`
+	Width     int  `json:"width"`
+	Height    int  `json:"height"`
+}
+
 // MessageDialogOptions contains the options for the Message dialogs, EG Info, Warning, etc runtime methods
 type MessageDialogOptions struct {
 	Type          DialogType
@@ -58,6 +65,10 @@ type MessageDialogOptions struct {
 
 type Frontend interface {
 	Run(context.Context) error
+	RunMainLoop()
+	ExecJS(js string)
+	Hide()
+	Show()
 	Quit()
 
 	// Dialog
@@ -92,6 +103,14 @@ type Frontend interface {
 	WindowSetSystemDefaultTheme()
 	WindowSetLightTheme()
 	WindowSetDarkTheme()
+	WindowIsMaximised() bool
+	WindowIsMinimised() bool
+	WindowIsNormal() bool
+	WindowIsFullscreen() bool
+	WindowClose()
+
+	//Screen
+	ScreenGetAll() ([]Screen, error)
 
 	// Menus
 	MenuSetApplicationMenu(menu *menu.Menu)

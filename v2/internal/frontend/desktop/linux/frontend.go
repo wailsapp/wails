@@ -21,6 +21,7 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 	"text/template"
 	"unsafe"
 
@@ -52,14 +53,24 @@ type Frontend struct {
 	dispatcher frontend.Dispatcher
 }
 
+func (f *Frontend) RunMainLoop() {
+	C.gtk_main()
+}
+
+func (f *Frontend) WindowClose() {
+	f.mainWindow.Destroy()
+}
+
 func init() {
 	runtime.LockOSThread()
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 
-	// Set GDK_BACKEND=x11 to prevent warnings
-	_ = os.Setenv("GDK_BACKEND", "x11")
+	// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE is unset, unspecified or x11 to prevent warnings
+	if os.Getenv("GDK_BACKEND") == "" && (os.Getenv("XDG_SESSION_TYPE") == "" || os.Getenv("XDG_SESSION_TYPE") == "unspecified" || os.Getenv("XDG_SESSION_TYPE") == "x11") {
+		_ = os.Setenv("GDK_BACKEND", "x11")
+	}
 
 	result := &Frontend{
 		frontendOptions: appoptions,
@@ -73,12 +84,17 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
 	} else {
-		bindingsJSON, err := appBindings.ToJSON()
-		if err != nil {
-			log.Fatal(err)
+		var bindings string
+		var err error
+		if _obfuscated, _ := ctx.Value("obfuscated").(bool); !_obfuscated {
+			bindings, err = appBindings.ToJSON()
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			appBindings.DB().UpdateObfuscatedCallMap()
 		}
-
-		assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
+		assets, err := assetserver.NewAssetServer(ctx, appoptions.Assets, appoptions.AssetsHandler, bindings)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -126,8 +142,7 @@ func (f *Frontend) WindowSetDarkTheme() {
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
-
-	f.ctx = context.WithValue(ctx, "frontend", f)
+	f.ctx = ctx
 
 	go func() {
 		if f.frontendOptions.OnStartup != nil {
@@ -168,10 +183,16 @@ func (f *Frontend) WindowSetTitle(title string) {
 }
 
 func (f *Frontend) WindowFullscreen() {
+	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
+		f.ExecJS("window.wails.flags.enableResize = false;")
+	}
 	f.mainWindow.Fullscreen()
 }
 
 func (f *Frontend) WindowUnfullscreen() {
+	if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
+		f.ExecJS("window.wails.flags.enableResize = true;")
+	}
 	f.mainWindow.UnFullscreen()
 }
 
@@ -184,6 +205,14 @@ func (f *Frontend) WindowShow() {
 }
 
 func (f *Frontend) WindowHide() {
+	f.mainWindow.Hide()
+}
+
+func (f *Frontend) Show() {
+	f.mainWindow.Show()
+}
+
+func (f *Frontend) Hide() {
 	f.mainWindow.Hide()
 }
 func (f *Frontend) WindowMaximise() {
@@ -216,8 +245,33 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 	f.mainWindow.SetBackgroundColour(col.R, col.G, col.B, col.A)
 }
 
+func (f *Frontend) ScreenGetAll() ([]Screen, error) {
+	return GetAllScreens(f.mainWindow.asGTKWindow())
+}
+
+func (f *Frontend) WindowIsMaximised() bool {
+	return f.mainWindow.IsMaximised()
+}
+
+func (f *Frontend) WindowIsMinimised() bool {
+	return f.mainWindow.IsMinimised()
+}
+
+func (f *Frontend) WindowIsNormal() bool {
+	return f.mainWindow.IsNormal()
+}
+
+func (f *Frontend) WindowIsFullscreen() bool {
+	return f.mainWindow.IsFullScreen()
+}
+
 func (f *Frontend) Quit() {
-	if f.frontendOptions.OnBeforeClose != nil && f.frontendOptions.OnBeforeClose(f.ctx) {
+	if f.frontendOptions.OnBeforeClose != nil {
+		go func() {
+			if !f.frontendOptions.OnBeforeClose(f.ctx) {
+				f.mainWindow.Quit()
+			}
+		}()
 		return
 	}
 	f.mainWindow.Quit()
@@ -241,6 +295,17 @@ func (f *Frontend) Notify(name string, data ...interface{}) {
 	f.mainWindow.ExecJS(`window.wails.EventsNotify('` + template.JSEscapeString(string(payload)) + `');`)
 }
 
+var edgeMap = map[string]uintptr{
+	"n-resize":  C.GDK_WINDOW_EDGE_NORTH,
+	"ne-resize": C.GDK_WINDOW_EDGE_NORTH_EAST,
+	"e-resize":  C.GDK_WINDOW_EDGE_EAST,
+	"se-resize": C.GDK_WINDOW_EDGE_SOUTH_EAST,
+	"s-resize":  C.GDK_WINDOW_EDGE_SOUTH,
+	"sw-resize": C.GDK_WINDOW_EDGE_SOUTH_WEST,
+	"w-resize":  C.GDK_WINDOW_EDGE_WEST,
+	"nw-resize": C.GDK_WINDOW_EDGE_NORTH_WEST,
+}
+
 func (f *Frontend) processMessage(message string) {
 	if message == "DomReady" {
 		if f.frontendOptions.OnDomReady != nil {
@@ -252,6 +317,32 @@ func (f *Frontend) processMessage(message string) {
 	if message == "drag" {
 		if !f.mainWindow.IsFullScreen() {
 			f.startDrag()
+		}
+		return
+	}
+
+	if strings.HasPrefix(message, "resize:") {
+		if !f.mainWindow.IsFullScreen() {
+			sl := strings.Split(message, ":")
+			if len(sl) != 2 {
+				f.logger.Info("Unknown message returned from dispatcher: %+v", message)
+				return
+			}
+			edge := edgeMap[sl[1]]
+			err := f.startResize(edge)
+			if err != nil {
+				f.logger.Error(err.Error())
+			}
+		}
+		return
+	}
+
+	if message == "runtime:ready" {
+		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
+		f.ExecJS(cmd)
+
+		if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
+			f.ExecJS("window.wails.flags.enableResize = true;")
 		}
 		return
 	}
@@ -283,6 +374,11 @@ func (f *Frontend) Callback(message string) {
 
 func (f *Frontend) startDrag() {
 	f.mainWindow.StartDrag()
+}
+
+func (f *Frontend) startResize(edge uintptr) error {
+	f.mainWindow.StartResize(edge)
+	return nil
 }
 
 func (f *Frontend) ExecJS(js string) {
@@ -338,7 +434,7 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 					req.Body.Close()
 				}
 
-				return nil, fmt.Errorf("Expected host '%d' in request, but was '%s'", f.startURL.Host, req.URL.Host)
+				return nil, fmt.Errorf("Expected host '%s' in request, but was '%s'", f.startURL.Host, req.URL.Host)
 			}
 
 			return req, nil

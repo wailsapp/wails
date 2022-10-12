@@ -59,6 +59,14 @@ type Frontend struct {
 	dispatcher frontend.Dispatcher
 }
 
+func (f *Frontend) RunMainLoop() {
+	C.RunMainLoop()
+}
+
+func (f *Frontend) WindowClose() {
+	C.ReleaseContext(f.mainWindow.context)
+}
+
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 	result := &Frontend{
 		frontendOptions: appoptions,
@@ -72,12 +80,17 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
 	} else {
-		bindingsJSON, err := appBindings.ToJSON()
-		if err != nil {
-			log.Fatal(err)
+		var bindings string
+		var err error
+		if _obfuscated, _ := ctx.Value("obfuscated").(bool); !_obfuscated {
+			bindings, err = appBindings.ToJSON()
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			appBindings.DB().UpdateObfuscatedCallMap()
 		}
-
-		assets, err := assetserver.NewAssetServer(ctx, appoptions, bindingsJSON)
+		assets, err := assetserver.NewAssetServer(ctx, appoptions.Assets, appoptions.AssetsHandler, bindings)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -132,9 +145,7 @@ func (f *Frontend) WindowSetDarkTheme() {
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
-
-	f.ctx = context.WithValue(ctx, "frontend", f)
-
+	f.ctx = ctx
 	var _debug = ctx.Value("debug")
 	if _debug != nil {
 		f.debug = _debug.(bool)
@@ -194,6 +205,13 @@ func (f *Frontend) WindowShow() {
 func (f *Frontend) WindowHide() {
 	f.mainWindow.Hide()
 }
+func (f *Frontend) Show() {
+	f.mainWindow.ShowApplication()
+}
+
+func (f *Frontend) Hide() {
+	f.mainWindow.HideApplication()
+}
 func (f *Frontend) WindowMaximise() {
 	f.mainWindow.Maximise()
 }
@@ -224,8 +242,33 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 	f.mainWindow.SetBackgroundColour(col.R, col.G, col.B, col.A)
 }
 
+func (f *Frontend) ScreenGetAll() ([]frontend.Screen, error) {
+	return GetAllScreens(f.mainWindow.context)
+}
+
+func (f *Frontend) WindowIsMaximised() bool {
+	return f.mainWindow.IsMaximised()
+}
+
+func (f *Frontend) WindowIsMinimised() bool {
+	return f.mainWindow.IsMinimised()
+}
+
+func (f *Frontend) WindowIsNormal() bool {
+	return f.mainWindow.IsNormal()
+}
+
+func (f *Frontend) WindowIsFullscreen() bool {
+	return f.mainWindow.IsFullScreen()
+}
+
 func (f *Frontend) Quit() {
-	if f.frontendOptions.OnBeforeClose != nil && f.frontendOptions.OnBeforeClose(f.ctx) {
+	if f.frontendOptions.OnBeforeClose != nil {
+		go func() {
+			if !f.frontendOptions.OnBeforeClose(f.ctx) {
+				f.mainWindow.Quit()
+			}
+		}()
 		return
 	}
 	f.mainWindow.Quit()
@@ -255,6 +298,12 @@ func (f *Frontend) processMessage(message string) {
 		if f.frontendOptions.OnDomReady != nil {
 			f.frontendOptions.OnDomReady(f.ctx)
 		}
+		return
+	}
+
+	if message == "runtime:ready" {
+		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
+		f.ExecJS(cmd)
 		return
 	}
 
@@ -294,11 +343,9 @@ func (f *Frontend) ExecJS(js string) {
 }
 
 func (f *Frontend) processRequest(r *request) {
-	uri := C.GoString(r.url)
-
 	rw := httptest.NewRecorder()
 	f.assets.ProcessHTTPRequest(
-		uri,
+		r.url,
 		rw,
 		func() (*http.Request, error) {
 			req, err := r.GetHttpRequest()
@@ -311,7 +358,7 @@ func (f *Frontend) processRequest(r *request) {
 					req.Body.Close()
 				}
 
-				return nil, fmt.Errorf("Expected host '%d' in request, but was '%s'", f.startURL.Host, req.URL.Host)
+				return nil, fmt.Errorf("Expected host '%s' in request, but was '%s'", f.startURL.Host, req.URL.Host)
 			}
 			return req, nil
 		},
@@ -337,7 +384,7 @@ func (f *Frontend) processRequest(r *request) {
 		headersLen = len(headerData)
 	}
 
-	C.ProcessURLResponse(r.ctx, r.url, C.int(rw.Code), headers, C.int(headersLen), content, C.int(contentLen))
+	C.ProcessURLResponse(r.ctx, r.id, C.int(rw.Code), headers, C.int(headersLen), content, C.int(contentLen))
 }
 
 //func (f *Frontend) processSystemEvent(message string) {
@@ -357,7 +404,8 @@ func (f *Frontend) processRequest(r *request) {
 //}
 
 type request struct {
-	url     *C.char
+	id      C.ulonglong
+	url     string
 	method  string
 	headers string
 	body    []byte
@@ -371,7 +419,7 @@ func (r *request) GetHttpRequest() (*http.Request, error) {
 		body = bytes.NewReader(r.body)
 	}
 
-	req, err := http.NewRequest(r.method, C.GoString(r.url), body)
+	req, err := http.NewRequest(r.method, r.url, body)
 	if err != nil {
 		return nil, err
 	}
@@ -397,14 +445,15 @@ func processMessage(message *C.char) {
 }
 
 //export processURLRequest
-func processURLRequest(ctx unsafe.Pointer, url *C.char, method *C.char, headers *C.char, body unsafe.Pointer, bodyLen C.int) {
+func processURLRequest(ctx unsafe.Pointer, requestId C.ulonglong, url *C.char, method *C.char, headers *C.char, body unsafe.Pointer, bodyLen C.int) {
 	var goBody []byte
 	if body != nil && bodyLen != 0 {
 		goBody = C.GoBytes(body, bodyLen)
 	}
 
 	requestBuffer <- &request{
-		url:     url,
+		id:      requestId,
+		url:     C.GoString(url),
 		method:  C.GoString(method),
 		headers: C.GoString(headers),
 		body:    goBody,

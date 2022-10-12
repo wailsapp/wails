@@ -36,14 +36,19 @@ void Maximise(void* ctx);
 void UnMaximise(void* ctx);
 void Hide(void* ctx);
 void Show(void* ctx);
+void HideApplication(void* ctx);
+void ShowApplication(void* ctx);
 void SetBackgroundColour(void* ctx, int r, int g, int b, int a);
 void ExecJS(void* ctx, const char*);
 void Quit(void*);
 
 const char* GetSize(void *ctx);
 const char* GetPosition(void *ctx);
+const bool IsFullScreen(void *ctx);
+const bool IsMinimised(void *ctx);
+const bool IsMaximised(void *ctx);
 
-void ProcessURLResponse(void *inctx, const char *url, int statusCode, void *headersString, int headersStringLength, void* data, int datalength);
+void ProcessURLResponse(void *inctx, unsigned long long requestId, int statusCode, void *headersString, int headersStringLength, void* data, int datalength);
 
 /* Dialogs */
 
@@ -62,6 +67,8 @@ void SetAbout(void *inctx, const char* title, const char* description, void* ima
 void* AppendMenuItem(void* inctx, void* nsmenu, const char* label, const char* shortcutKey, int modifiers, int disabled, int checked, int menuItemID);
 void AppendSeparator(void* inMenu);
 void UpdateMenuItem(void* nsmenuitem, int checked);
+void RunMainLoop(void);
+void ReleaseContext(void *inctx);
 
 NSString* safeInit(const char* input);
 
