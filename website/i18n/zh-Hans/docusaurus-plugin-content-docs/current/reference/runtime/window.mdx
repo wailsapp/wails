@@ -36,6 +36,14 @@ Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen(
 
 Go: `WindowCenter(ctx context.Context)`<br/> JS: `WindowCenter()`
 
+### 窗口执行JS代码
+
+在窗口中执行任意 JS 代码。
+
+此方法在浏览器中异步运行代码并立即返回。 如果脚本导致任何错误，它们将只在浏览器控制台中可用。
+
+Go: `WindowExecJS(ctx context.Context, js string)`
+
 ### 窗口重新加载
 
 执行“重新加载”（重新加载当前页面）。
