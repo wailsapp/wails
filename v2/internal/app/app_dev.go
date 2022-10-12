@@ -20,7 +20,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
-	"github.com/wailsapp/wails/v2/internal/project"
 	pkglogger "github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
@@ -172,10 +171,6 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	}
 	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions, false)
 
-	err = generateBindings(appBindings)
-	if err != nil {
-		return nil, err
-	}
 	eventHandler := runtime.NewEvents(myLogger)
 	ctx = context.WithValue(ctx, "events", eventHandler)
 	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler)
@@ -186,6 +181,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	eventHandler.AddFrontend(appFrontend)
 	eventHandler.AddFrontend(desktopFrontend)
 
+	ctx = context.WithValue(ctx, "frontend", appFrontend)
 	result := &App{
 		ctx:              ctx,
 		frontend:         appFrontend,
@@ -199,37 +195,6 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	result.options = appoptions
 
 	return result, nil
-
-}
-
-func generateBindings(bindings *binding.Bindings) error {
-
-	cwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	projectConfig, err := project.Load(cwd)
-	if err != nil {
-		return err
-	}
-
-	if projectConfig.WailsJSDir == "" {
-		projectConfig.WailsJSDir = filepath.Join(cwd, "frontend")
-	}
-
-	targetDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs", "go")
-	err = os.RemoveAll(targetDir)
-	if err != nil {
-		return err
-	}
-	_ = fs.MkDirs(targetDir)
-
-	err = bindings.GenerateGoBindings(targetDir)
-	if err != nil {
-		return err
-	}
-
-	return nil
 
 }
 

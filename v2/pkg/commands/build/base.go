@@ -108,6 +108,20 @@ func (b *BaseBuilder) CleanUp() {
 	})
 }
 
+func commandPrettifier(args []string) string {
+	// If we have a single argument, just return it
+	if len(args) == 1 {
+		return args[0]
+	}
+	// If an argument contains a space, quote it
+	for i, arg := range args {
+		if strings.Contains(arg, " ") {
+			args[i] = fmt.Sprintf("\"%s\"", arg)
+		}
+	}
+	return strings.Join(args, " ")
+}
+
 func (b *BaseBuilder) OutputFilename(options *Options) string {
 	outputFile := options.OutputFile
 	if outputFile == "" {
@@ -270,7 +284,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	cmd := exec.Command(compiler, commands.AsSlice()...)
 	cmd.Stderr = os.Stderr
 	if verbose {
-		println("  Build command:", compiler, commands.Join(" "))
+		println("  Build command:", compiler, commandPrettifier(commands.AsSlice()))
 		cmd.Stdout = os.Stdout
 	}
 	// Set the directory

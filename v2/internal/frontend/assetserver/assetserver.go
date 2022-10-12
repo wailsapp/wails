@@ -31,8 +31,8 @@ type AssetServer struct {
 	appendSpinnerToBody bool
 }
 
-func NewAssetServer(ctx context.Context, vfs iofs.FS, AssetsHandler http.Handler, bindingsJSON string) (*AssetServer, error) {
-	handler, err := NewAssetHandler(ctx, vfs, AssetsHandler)
+func NewAssetServer(ctx context.Context, vfs iofs.FS, assetsHandler http.Handler, bindingsJSON string) (*AssetServer, error) {
+	handler, err := NewAssetHandler(ctx, vfs, assetsHandler)
 	if err != nil {
 		return nil, err
 	}

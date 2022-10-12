@@ -2,7 +2,7 @@
 sidebar_position: 3
 ---
 
-# Options
+# オプション
 
 ## Application Options
 
@@ -88,6 +88,7 @@ func main() {
         },
         Linux: &linux.Options{
             Icon: icon,
+            WindowIsTranslucent: false,
         },
     })
     if err != nil {
@@ -101,93 +102,93 @@ func main() {
 
 The text shown in the window's title bar.
 
-Name: Title<br/> Type: `string`
+名前: Title<br/> データ型: `string`
 
 ### Width
 
 The initial width of the window.
 
-Name: Width<br/> Type: `int`<br/> Default: 1024.
+名前: Width<br/> データ型: `int`<br/> デフォルト値: 1024
 
 ### Height
 
 The initial height of the window.
 
-Name: Height<br/> Type: `int`<br/> Default: 768
+名前: Height<br/> データ型: `int`<br/> デフォルト値: 768
 
 ### DisableResize
 
 By default, the main window is resizable. Setting this to `true` will keep it a fixed size.
 
-Name: DisableResize<br/> Type: `bool`
+名前: DisableResize<br/> データ型: `bool`
 
 ### Fullscreen
 
 Setting this to `true` will make the window fullscreen at startup.
 
-Name: Fullscreen<br/> Type: `bool`
+名前: Fullscreen<br/> データ型: `bool`
 
 ### Frameless
 
 When set to `true`, the window will have no borders or title bar. Also see [Frameless Windows](../guides/frameless.mdx).
 
-Name: Frameless<br/> Type: `bool`
+名前: Frameless<br/> データ型: `bool`
 
 ### MinWidth
 
 This sets the minimum width for the window. If the value given in `Width` is less than this value, the window will be set to `MinWidth` by default.
 
-Name: MinWidth<br/> Type: `int`
+名前: MinWidth<br/> データ型: `int`
 
 ### MinHeight
 
 This sets the minimum height for the window. If the value given in `Height` is less than this value, the window will be set to `MinHeight` by default.
 
-Name: MinHeight<br/> Type: `int`
+名前: MinHeight<br/> データ型: `int`
 
 ### MaxWidth
 
 This sets the maximum width for the window. If the value given in `Width` is more than this value, the window will be set to `MaxWidth` by default.
 
-Name: MaxWidth<br/> Type: `int`
+名前: MaxWidth<br/> データ型: `int`
 
 ### MaxHeight
 
 This sets the maximum height for the window. If the value given in `Height` is more than this value, the window will be set to `MaxHeight` by default.
 
-Name: MaxHeight<br/> Type: `int`
+名前: MaxHeight<br/> データ型: `int`
 
 ### StartHidden
 
 When set to `true`, the application will be hidden until [WindowShow](../reference/runtime/window.mdx#windowshow) is called.
 
-Name: StartHidden<br/> Type: `bool`
+名前: StartHidden<br/> データ型: `bool`
 
 ### HideWindowOnClose
 
-By default, closing the window will close the application. Setting this to `true` means closing the window will hide the window instead.
+By default, closing the window will close the application. この設定を`true`にすると、ウィンドウを閉じる操作をした際に、
 
-hide the window instead.
+ウィンドウが非表示の状態になります。
 
-Name: HideWindowOnClose<br/> Type: `bool`
+名前: HideWindowOnClose<br/> データ型: `bool`
 
 ### BackgroundColour
 
-This value is the default background colour of the window. Default: white
+This value is the default background colour of the window. 例: options.NewRGBA(255,0,0,128) - 50%透過された赤色
 
-Name: BackgroundColour<br/> Type: `*options.RGBA`<br/> Default: white
+名前: BackgroundColour<br/> データ型: `*options.RGBA`<br/> デフォルト値: white
 
 ### AlwaysOnTop
 
 Indicates that the window should stay above other windows when losing focus.
 
-Name: AlwaysOnTop<br/> Type: `bool`
+名前: AlwaysOnTop<br/> データ型: `bool`
 
 ### Assets
 
 The frontend assets to be used by the application. Requires an `index.html` file.
 
-Name: Assets<br/> Type: `embed.FS`
+名前: Assets<br/> データ型: `embed.FS`
 
 ### AssetsHandler
 
@@ -195,7 +196,7 @@ Name: Assets<br/> Type: `embed.FS`
 
 The assets handler is a generic `http.Handler` which will be called for any non GET request on the assets server and for GET requests which can not be served from the `assets` because the file is not found.
 
-| Value                   | Win | Mac | Lin |
+| 値                       | Win | Mac | Lin |
 | ----------------------- | --- | --- | --- |
 | GET                     | ✅   | ✅   | ✅   |
 | POST                    | ✅   | ✅   | ❌   |
@@ -214,7 +215,7 @@ NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.
 
 NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html on every path, that does not contain a file extension.
 
-Name: AssetsHandler<br/> Type: `http.Handler`
+名前: AssetsHandler<br/> データ型: `http.Handler`
 
 ### Menu
 
@@ -223,48 +224,48 @@ The menu to be used by the application. More details about Menus in the [Menu Re
 :::note
 
 
-On Mac, if no menu is specified, a default menu will be created.
+Macでは、メニューが指定されていない場合、デフォルトメニューが作成されます。
 
 :::
 
 
-Name: Menu<br/> Type: `*menu.Menu`
+名前: Menu<br/> データ型: `*menu.Menu`
 
 ### Logger
 
 The logger to be used by the application. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
 
-Name: Logger<br/> Type: `logger.Logger`<br/> Default: Logs to Stdout
+名前: Logger<br/> データ型: `logger.Logger`<br/> デフォルト値: 標準出力へのロガー
 
 ### LogLevel
 
 The default log level. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
 
-Name: LogLevel<br/> Type: `logger.LogLevel`<br/> Default: `Info` in dev mode, `Error` in production mode
+名前: LogLevel<br/> データ型: `logger.LogLevel`<br/> デフォルト値: 開発モードの場合は`Info`、本番モードの場合は`Error`
 
 ### LogLevelProduction
 
 The default log level for production builds. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
 
-Name: LogLevelProduction<br/> Type: `logger.LogLevel`<br/> Default: `Error`
+名前: LogLevelProduction<br/> データ型: `logger.LogLevel`<br/> デフォルト値: `Error`
 
 ### OnStartup
 
 This callback is called after the frontend has been created, but before `index.html` has been loaded. It is given the application context.
 
-Name: OnStartup<br/> Type: `func(ctx context.Context)`
+名前: OnStartup<br/> データ型: `func(ctx context.Context)`
 
 ### OnDomReady
 
 This callback is called after the frontend has loaded `index.html` and its resources. It is given the application context.
 
-Name: OnDomReady<br/> Type: `func(ctx context.Context)`
+名前: OnDomReady<br/> データ型: `func(ctx context.Context)`
 
 ### OnShutdown
 
 This callback is called after the frontend has been destroyed, just before the application terminates. It is given the application context.
 
-Name: OnShutdown<br/> Type: `func(ctx context.Context)`
+名前: OnShutdown<br/> データ型: `func(ctx context.Context)`
 
 ### OnBeforeClose
 
@@ -287,99 +288,99 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 }
 ```
 
-Name: OnBeforeClose<br/> Type: `func(ctx context.Context) bool`
+名前: OnBeforeClose<br/> データ型: `func(ctx context.Context) bool`
 
 ### WindowStartState
 
 Defines how the window should present itself at startup.
 
-| Value      | Win | Mac | Lin |
+| 値          | Win | Mac | Lin |
 | ---------- | --- | --- | --- |
 | Fullscreen | ✅   | ✅   | ✅   |
 | Maximised  | ✅   | ✅   | ✅   |
 | Minimised  | ✅   | ❌   | ✅   |
 
-Name: WindowStartState<br/> Type: `options.WindowStartState`
+名前: WindowStartState<br/> データ型: `options.WindowStartState`
 
 ### CSSDragProperty
 
-Indicates the CSS property to use to identify which elements can be used to drag the window. Default: `--wails-draggable`.
+ウィンドウをドラッグできる要素を特定するためのCSSプロパティ名を設定します。 デフォルト値: `--wails-draggable`
 
-Name: CSSDragProperty<br/> Type: `string`
+名前: CSSDragProperty<br/> データ型: `string`
 
 ### CSSDragValue
 
-Indicates what value the `CSSDragProperty` style should have to drag the window. Default: `drag`.
+Indicates what value the `CSSDragProperty` style should have to drag the window. デフォルト値: `drag`
 
-Name: CSSDragValue<br/> Type: `string`
+名前: CSSDragValue<br/> データ型: `string`
 
 ### Bind
 
 A slice of struct instances defining methods that need to be bound to the frontend.
 
-Name: Bind<br/> Type: `[]interface{}`
+名前: Bind<br/> データ型: `[]interface{}`
 
 ### Windows
 
-This defines [Windows specific options](#windows).
+[Windows固有のオプション](#windows)を定義します。
 
-Name: Windows<br/> Type: `*windows.Options`
+名前: Windows<br/> データ型: `*windows.Options`
 
 #### WebviewIsTransparent
 
 Setting this to `true` will make the webview background transparent when an alpha value of `0` is used. This means that if you use `rgba(0,0,0,0)` for `background-color` in your CSS, the host window will show through. Often combined with [WindowIsTranslucent](#WindowIsTranslucent) to make frosty-looking applications.
 
-Name: WebviewIsTransparent<br/> Type: `bool`
+名前: WebviewIsTransparent<br/> データ型: `bool`
 
 #### WindowIsTranslucent
 
-Setting this to `true` will make the window background translucent. Often combined with [WebviewIsTransparent](#WebviewIsTransparent).
+Setting this to `true` will make the window background translucent. 多くの場合、[WebviewIsTransparent](#WebviewIsTransparent)と組み合わせて使用されます。
 
-For Windows 11 versions before build 22621, this will use the [BlurBehind](https://learn.microsoft.com/en-us/windows/win32/dwm/blur-ovw) method for translucency, which can be slow. For Windows 11 versions after build 22621, this will enable the newer translucency types that are much faster. By default, the type of translucency used will be determined by Windows. To configure this, use the [BackdropType](#BackdropType) option.
+ビルド22621より前のWindows 11の場合、半透明を実現させるために[BlurBehind](https://learn.microsoft.com/ja-jp/windows/win32/dwm/blur-ovw)メソッドを使用するため、処理が遅くなる可能性があります。 ビルド22621以降のWindows 11では、より高速な、新しい半透明タイプが有効になります。 デフォルトで使用される半透明タイプは、Windowsにより決定されます。 このタイプを設定するには、[BackdropType](#BackdropType)オプションを使用してください。
 
-Name: WindowIsTranslucent<br/> Type: `bool`
+名前: WindowIsTranslucent<br/> データ型: `bool`
 
 #### BackdropType
 
 :::note
 
 
-Requires Windows 11 build 22621 or later.
+この設定を適用するには、Windows 11 ビルド22621以降が必要です。
 
 :::
 
 
-Sets the translucency type of the window. This is only applicable if [WindowIsTranslucent](#WindowIsTranslucent) is set to `true`.
+ウィンドウの半透明タイプを設定します。 この設定は、[WindowIsTranslucent](#WindowIsTranslucent)が`true`に設定されている場合にのみ適用されます。
 
-Name: BackdropType<br/> Type `windows.BackdropType`
+名前: BackdropType<br/> データ型: `windows.BackdropType`
 
-The value can be one of the following:
+値は次のいずれかを指定してください:
 
-| Value   | Description                                                                               |
-| ------- | ----------------------------------------------------------------------------------------- |
-| Auto    | Let Windows decide which backdrop to use                                                  |
-| None    | Do not use translucency                                                                   |
-| Acrylic | Use [Acrylic](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) effect |
-| Mica    | Use [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) effect       |
-| Tabbed  | Use Tabbed. This is a backdrop that is similar to Mica.                                   |
+| 値       | Description                                                                         |
+| ------- | ----------------------------------------------------------------------------------- |
+| Auto    | Windowsに背景を決定させる                                                                    |
+| None    | 半透明にしない                                                                             |
+| Acrylic | [アクリル](https://learn.microsoft.com/ja-jp/windows/apps/design/style/acrylic)の効果を使用する |
+| Mica    | [マイカ](https://learn.microsoft.com/ja-jp/windows/apps/design/style/mica)の効果を使用する     |
+| Tabbed  | タブを使用する。 これはマイカに似ている背景です。                                                           |
 
 #### DisableWindowIcon
 
 Setting this to `true` will remove the icon in the top left corner of the title bar.
 
-Name: DisableWindowIcon<br/> Type: `bool`
+名前: DisableWindowIcon<br/> データ型: `bool`
 
 #### DisableFramelessWindowDecorations
 
 Setting this to `true` will remove the window decorations in [Frameless](#Frameless) mode. This means there will be no 'Aero Shadow' and no 'Rounded Corners' shown for the window. Please note that 'Rounded Corners' are only supported on Windows 11.
 
-Name: DisableFramelessWindowDecorations<br/> Type: `bool`
+名前: DisableFramelessWindowDecorations<br/> データ型: `bool`
 
 #### WebviewUserDataPath
 
 This defines the path where the WebView2 stores the user data. If empty `%APPDATA%\[BinaryName.exe]` will be used.
 
-Name: WebviewUserDataPath<br/> Type: `string`
+名前: WebviewUserDataPath<br/> データ型: `string`
 
 #### WebviewBrowserPath
 
@@ -391,7 +392,7 @@ Important information about distribution of fixed version runtime:
 - [Known issues for fixed version](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#known-issues-for-fixed-version)
 - [The path of fixed version of the WebView2 Runtime should not contain \Edge\Application\.](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
 
-Name: WebviewBrowserPath<br/> Type: `string`
+名前: WebviewBrowserPath<br/> データ型: `string`
 
 #### Theme
 
@@ -399,29 +400,29 @@ Minimum Windows Version: Windows 10 2004/20H1
 
 This defines the theme that the application should use:
 
-| Value         | Description                                                                                                                                   |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| SystemDefault | *Default*. The theme will be based on the system default. If the user changes their theme, the application will update to use the new setting |
-| Dark          | The application will use a dark theme exclusively                                                                                             |
-| Light         | The application will use a light theme exclusively                                                                                            |
+| 値             | Description                                                                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| SystemDefault | _デフォルト値_です。 The theme will be based on the system default. If the user changes their theme, the application will update to use the new setting |
+| Dark          | The application will use a dark theme exclusively                                                                                              |
+| Light         | The application will use a light theme exclusively                                                                                             |
 
-Name: Theme<br/> Type: `windows.Theme`
+名前: Theme<br/> データ型: `windows.Theme`
 
 #### CustomTheme
 
 :::note
 
 
-Minimum Windows Version: Windows 10/11 2009/21H2 Build 22000
+サポートされるWindowsの最小バージョン: Windows 10/11 2009/21H2 ビルド22000
 
 :::
 
 
 Allows you to specify custom colours for TitleBar, TitleText and Border for both light and dark mode, as well as when the window is active or inactive.
 
-Name: CustomTheme<br/> Type: `windows.CustomTheme`
+名前: CustomTheme<br/> データ型: `windows.CustomTheme`
 
-##### CustomTheme type
+##### CustomTheme 型
 
 The CustomTheme struct uses `int32` to specify the colour values. These are in the standard(!) Windows format of: `0x00BBGGAA`. A helper function is provided to do RGB conversions into this format: `windows.RGB(r,g,b uint8)`.
 
@@ -469,7 +470,7 @@ Example:
 
 A struct of strings used by the webview2 installer if a valid webview2 runtime is not found.
 
-Name: Messages<br/> Type: `*windows.Messages`
+名前: Messages<br/> データ型: `*windows.Messages`
 
 Customise this for any language you choose to support.
 
@@ -477,31 +478,31 @@ Customise this for any language you choose to support.
 
 ResizeDebounceMS is the amount of time to debounce redraws of webview2 when resizing the window. The default value (0) will perform redraws as fast as it can.
 
-Name: ResizeDebounceMS<br/> Type: `uint16`
+名前: ResizeDebounceMS<br/> データ型: `uint16`
 
 #### OnSuspend
 
-If set, this function will be called when Windows initiates a switch to low power mode (suspend/hibernate)
+Windowsがローパワーモード(サスペンド/休止状態) に切り替わると呼び出されるコールバックを設定します。
 
-Name: OnSuspend<br/> Type: `func()`
+名前: OnSuspend<br/> データ型: `func()`
 
 #### OnResume
 
-If set, this function will be called when Windows resumes from low power mode (suspend/hibernate)
+Windowsがローパワーモード(サスペンド/休止状態) から復帰したときに呼び出されるコールバックを設定します。
 
-Name: OnResume<br/> Type: `func()`
+名前: OnResume<br/> データ型: `func()`
 
 ### Mac
 
-This defines [Mac specific options](#mac).
+[Mac固有のオプション](#mac)を定義します。
 
-Name: Mac<br/> Type: `*mac.Options`
+名前: Mac<br/> データ定義: `*mac.Options`
 
 #### TitleBar
 
 The TitleBar struct provides the ability to configure the look and feel of the title bar.
 
-Name: TitleBar<br/> Type: [`*mac.TitleBar`](#titlebar-struct)
+名前: TitleBar<br/> データ型: [`*mac.TitleBar`](#titlebar-struct)
 
 ##### Titlebar struct
 
@@ -549,13 +550,13 @@ Click [here](https://github.com/lukakerr/NSWindowStyles) for some inspiration on
 
 Appearance is used to set the style of your app in accordance with Apple's [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) names.
 
-Name: Appearance<br/> Type: [`mac.AppearanceType`](#appearance-type)
+名前: Appearance<br/> データ型: [`mac.AppearanceType`](#appearance-type)
 
-##### Appearance type
+##### Appearance 型
 
 You can specify the application's [appearance](https://developer.apple.com/documentation/appkit/nsappearance?language=objc).
 
-| Value                                                 | Description                                                     |
+| 値                                                     | Description                                                     |
 | ----------------------------------------------------- | --------------------------------------------------------------- |
 | DefaultAppearance                                     | DefaultAppearance uses the default system value                 |
 | NSAppearanceNameAqua                                  | The standard light system appearance                            |
@@ -578,19 +579,19 @@ Mac: &mac.Options{
 
 Setting this to `true` will make the webview background transparent when an alpha value of `0` is used. This means that if you use `rgba(0,0,0,0)` for `background-color` in your CSS, the host window will show through. Often combined with [WindowIsTranslucent](#WindowIsTranslucent) to make frosty-looking applications.
 
-Name: WebviewIsTransparent<br/> Type: `bool`
+名前: WebviewIsTransparent<br/> データ型: `bool`
 
 #### WindowIsTranslucent
 
 Setting this to `true` will make the window background translucent. Often combined with [WebviewIsTransparent](#WebviewIsTransparent) to make frosty-looking applications.
 
-Name: WindowIsTranslucent<br/> Type: `bool`
+名前: WindowIsTranslucent<br/> データ型: `bool`
 
 #### About
 
 This configuration lets you set the title, message and icon for the "About" menu item in the app menu created by the "AppMenu" role.
 
-Name: About<br/> Type: [`*mac.AboutInfo`](#about-struct)
+名前: About<br/> データ型: [`*mac.AboutInfo`](#about-struct)
 
 ##### About struct
 
@@ -649,18 +650,24 @@ When clicked, that will open an about message box:
 
 ### Linux
 
-This defines [Linux specific options](#linux).
+[Linux固有のオプション](#linux)を定義します。
 
-Name: Linux<br/> Type: `*linux.Options`
+名前: Linux<br/> データ型: `*linux.Options`
 
 #### Icon
 
 Sets up the icon representing the window. This icon is used when the window is minimized (also known as iconified).
 
-Name: Icon<br/> Type: `[]byte`
+名前: Icon<br/> データ型: `[]byte`
 
 Some window managers or desktop environments may also place it in the window frame, or display it in other contexts. On others, the icon is not used at all, so your mileage may vary.
 
 NOTE: Gnome on Wayland at least does not display this icon. To have a application icon there, a `.desktop` file has to be used. On KDE it should work.
 
 The icon should be provided in whatever size it was naturally drawn; that is, don’t scale the image before passing it. Scaling is postponed until the last minute, when the desired final size is known, to allow best quality.
+
+#### WindowIsTranslucent
+
+Setting this to `true` will make the window background translucent. Some window managers may ignore it, or result in a black window.
+
+名前: WindowIsTranslucent<br/> データ型: `bool`

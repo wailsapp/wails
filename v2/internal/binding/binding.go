@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/typescriptify"
@@ -35,7 +36,7 @@ func NewBindings(logger *logger.Logger, structPointersToBind []interface{}, exem
 	}
 
 	for _, exemption := range exemptions {
-		if exemptions == nil {
+		if exemption == nil {
 			continue
 		}
 		name := runtime.FuncForPC(reflect.ValueOf(exemption).Pointer()).Name()
@@ -83,7 +84,7 @@ func (b *Bindings) ToJSON() (string, error) {
 	return b.db.ToJSON()
 }
 
-func (b *Bindings) WriteModels(modelsDir string) error {
+func (b *Bindings) GenerateModels() ([]byte, error) {
 	models := map[string]string{}
 	var seen slicer.StringSlicer
 	allStructNames := b.getAllStructNames()
@@ -102,15 +103,23 @@ func (b *Bindings) WriteModels(modelsDir string) error {
 		}
 		str, err := w.Convert(nil)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		thisPackageCode += str
 		seen.AddSlice(w.GetGeneratedStructs())
 		models[packageName] = thisPackageCode
 	}
 
+	// Sort the package names first to make the output deterministic
+	sortedPackageNames := make([]string, 0)
+	for packageName := range models {
+		sortedPackageNames = append(sortedPackageNames, packageName)
+	}
+	sort.Strings(sortedPackageNames)
+
 	var modelsData bytes.Buffer
-	for packageName, modelData := range models {
+	for _, packageName := range sortedPackageNames {
+		modelData := models[packageName]
 		if strings.TrimSpace(modelData) == "" {
 			continue
 		}
@@ -121,14 +130,22 @@ func (b *Bindings) WriteModels(modelsDir string) error {
 		}
 		modelsData.WriteString("\n}\n\n")
 	}
+	return modelsData.Bytes(), nil
+}
 
+func (b *Bindings) WriteModels(modelsDir string) error {
+
+	modelsData, err := b.GenerateModels()
+	if err != nil {
+		return err
+	}
 	// Don't write if we don't have anything
-	if len(modelsData.Bytes()) == 0 {
+	if len(modelsData) == 0 {
 		return nil
 	}
 
 	filename := filepath.Join(modelsDir, "models.ts")
-	err := os.WriteFile(filename, modelsData.Bytes(), 0755)
+	err = os.WriteFile(filename, modelsData, 0755)
 	if err != nil {
 		return err
 	}
@@ -147,7 +164,7 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 
 	// Iterate this struct and add any struct field references
 	structType := reflect.TypeOf(s)
-	if structType.Kind() == reflect.Ptr {
+	if hasElements(structType) {
 		structType = structType.Elem()
 	}
 
@@ -169,11 +186,11 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 				s := reflect.Indirect(a).Interface()
 				b.AddStructToGenerateTS(pName, sName, s)
 			}
-		} else if kind == reflect.Ptr && field.Type.Elem().Kind() == reflect.Struct {
+		} else if hasElements(field.Type) && field.Type.Elem().Kind() == reflect.Struct {
 			if !field.IsExported() {
 				continue
 			}
-			fqname := field.Type.String()
+			fqname := field.Type.Elem().String()
 			sName := strings.Split(fqname, ".")[1]
 			pName := getPackageName(fqname)
 			typ := field.Type.Elem()

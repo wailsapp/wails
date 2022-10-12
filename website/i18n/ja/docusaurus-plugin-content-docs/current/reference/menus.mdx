@@ -33,18 +33,13 @@ An example of how to create a menu:
     // ...
 ```
 
-```` It is also possible to dynamically update the menu, by updating the menu struct and calling \[MenuUpdateApplicationMenu\](../reference/runtime/menu.mdx#menuupdateapplicationmenu).
+Menu構造体を更新し、[MenuUpdateApplicationMenu](../reference/runtime/menu.mdx#menuupdateapplicationmenu)メソッドを呼び出すことで、メニューを動的に更新することも可能です。
 
 The example above uses helper methods, however it's possible to build the menu structs manually.
 
 ## Menu
 
-A Menu is a collection of MenuItems:
-
-```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
-## Menu
-
-A Menu is a collection of MenuItems:
+Menuは、MenuItemのコレクションです。
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
 type Menu struct {
@@ -126,7 +121,7 @@ Keys are any single character on a keyboard with the exception of `+`, which is 
 
 Wails also supports parsing accelerators using the same syntax as Electron. This is useful for storing accelerators in config files.
 
-Example:
+例:
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
     // Defines cmd+o on Mac and ctrl-o on Window/Linux
@@ -228,7 +223,7 @@ Roles are currently supported on Mac only.
 
 A menu item may have a role, which is essentially a pre-defined menu item. We currently support the following roles:
 
-| Role         | Description                                                              |
+| ロール          | Description                                                              |
 | ------------ | ------------------------------------------------------------------------ |
 | AppMenuRole  | The standard Mac application menu. Can be created using `menu.AppMenu()` |
 | EditMenuRole | The standard Mac edit menu. Can be created using `menu.EditMenu()`       |

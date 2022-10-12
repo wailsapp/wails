@@ -4,12 +4,11 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
-  push:
-    branches: [ master ]
 
 jobs:
   update-sponsors:
     runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
     steps:
       - uses: actions/checkout@v2
 

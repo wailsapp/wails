@@ -89,6 +89,7 @@ func main() {
         },
         Linux: &linux.Options{
             Icon: icon,
+            WindowIsTranslucent: false,
         },
     })
     if err != nil {
@@ -748,3 +749,10 @@ On KDE it should work.
 
 The icon should be provided in whatever size it was naturally drawn; that is, don’t scale the image before passing it.
 Scaling is postponed until the last minute, when the desired final size is known, to allow best quality.
+
+#### WindowIsTranslucent
+
+Setting this to `true` will make the window background translucent. Some window managers may ignore it, or result in a black window.
+
+Name: WindowIsTranslucent<br/>
+Type: `bool`
