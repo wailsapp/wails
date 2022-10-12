@@ -78,9 +78,9 @@ func main() {
 	// This is a menuitem we will show/hide at runtime
 	visibleNotVisible := menu.Label("visible?").Show()
 
-	var counter int
+	counter := 0
 	icons := [][]byte{lightModeIcon, darkModeIcon}
-	iconCounter := 1
+	iconCounter := 0
 
 	disabledEnabledMenu := menu.Label("disabled").Disable().OnClick(func(c *menu.CallbackData) {
 		println("Disabled item clicked!")
@@ -112,8 +112,8 @@ func main() {
 		visibleNotVisible,
 		// This menu item changes its label when clicked.
 		menu.Label("Click Me!").OnClick(func(c *menu.CallbackData) {
-			c.MenuItem.SetLabel(fmt.Sprintf("Clicked %d times", counter))
 			counter++
+			c.MenuItem.SetLabel(fmt.Sprintf("Clicked %d times", counter))
 			systray.Update()
 		}),
 
