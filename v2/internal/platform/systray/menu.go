@@ -107,6 +107,13 @@ func (p *PopupMenu) buildMenu(parentMenu win32.PopupMenu, inputMenu *menu.Menu, 
 			return errors.New("AppendMenu failed")
 		}
 	}
+	if len(currentRadioGroup) > 0 {
+		for _, radioMember := range currentRadioGroup {
+			currentRadioGroup := currentRadioGroup
+			p.radioGroups[radioMember.MenuItem] = append(p.radioGroups[radioMember.MenuItem], &currentRadioGroup)
+		}
+		currentRadioGroup = RadioGroup{}
+	}
 	return nil
 }
 
