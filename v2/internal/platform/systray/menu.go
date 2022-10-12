@@ -43,16 +43,18 @@ type PopupMenu struct {
 	checkboxItems map[*menu.MenuItem][]int
 	radioGroups   map[*menu.MenuItem][]*RadioGroup
 	menuData      *menu.Menu
+	currentMenuID int
 }
 
-func (p *PopupMenu) buildMenu(parentMenu win32.PopupMenu, inputMenu *menu.Menu, startindex int) error {
+func (p *PopupMenu) buildMenu(parentMenu win32.PopupMenu, inputMenu *menu.Menu) error {
 	var currentRadioGroup RadioGroup
-	for index, item := range inputMenu.Items {
+	for _, item := range inputMenu.Items {
 		if item.Hidden {
 			continue
 		}
 		var ret bool
-		itemID := index + startindex
+		p.currentMenuID++
+		itemID := p.currentMenuID
 		p.menuMapping[itemID] = item
 
 		flags := win32.MF_STRING
@@ -87,7 +89,7 @@ func (p *PopupMenu) buildMenu(parentMenu win32.PopupMenu, inputMenu *menu.Menu, 
 		if item.SubMenu != nil {
 			flags = flags | win32.MF_POPUP
 			submenu := win32.CreatePopupMenu()
-			err := p.buildMenu(submenu, item.SubMenu, itemID)
+			err := p.buildMenu(submenu, item.SubMenu)
 			if err != nil {
 				return err
 			}
@@ -120,7 +122,8 @@ func (p *PopupMenu) buildMenu(parentMenu win32.PopupMenu, inputMenu *menu.Menu, 
 func (p *PopupMenu) Update() error {
 	p.menu = win32.CreatePopupMenu()
 	p.menuMapping = make(map[int]*menu.MenuItem)
-	err := p.buildMenu(p.menu, p.menuData, win32.MenuItemMsgID)
+	p.currentMenuID = win32.MenuItemMsgID
+	err := p.buildMenu(p.menu, p.menuData)
 	if err != nil {
 		return err
 	}
