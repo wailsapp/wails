@@ -88,17 +88,25 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 	models := map[string]string{}
 	var seen slicer.StringSlicer
 	allStructNames := b.getAllStructNames()
+	allStructNames.Sort()
 	for packageName, structsToGenerate := range b.structsToGenerateTS {
 		thisPackageCode := ""
 		w := typescriptify.New()
 		w.Namespace = packageName
 		w.WithBackupDir("")
 		w.KnownStructs = allStructNames
-		for structName, structInterface := range structsToGenerate {
+		// sort the structs
+		var structNames []string
+		for structName := range structsToGenerate {
+			structNames = append(structNames, structName)
+		}
+		sort.Strings(structNames)
+		for _, structName := range structNames {
 			fqstructname := packageName + "." + structName
 			if seen.Contains(fqstructname) {
 				continue
 			}
+			structInterface := structsToGenerate[structName]
 			w.Add(structInterface)
 		}
 		str, err := w.Convert(nil)
