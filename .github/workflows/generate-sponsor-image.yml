@@ -31,3 +31,4 @@ jobs:
           title: Update Sponsor Image
           body: Generated new image
           branch: update-sponsors
+          delete-branch: true
