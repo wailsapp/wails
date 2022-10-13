@@ -23,10 +23,12 @@ jobs:
           SPONSORKIT_GITHUB_TOKEN: ${{ secrets.SPONSORS_TOKEN }}
           SPONSORKIT_GITHUB_LOGIN: wailsapp
 
-      - name: Commit
-        uses: EndBug/add-and-commit@v4
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
         with:
-          message: "chore: update sponsors.svg"
-          add: "website/static/img/sponsors.svg"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update sponsors.svg"
+          add-paths: "website/static/img/sponsors.svg"
+          title: Update Sponsor Image
+          body: Generated new image
+          branch: update-sponsors
+          delete-branch: true
