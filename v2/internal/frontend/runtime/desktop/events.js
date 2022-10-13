@@ -19,11 +19,13 @@ The electron alternative for Go
 class Listener {
     /**
      * Creates an instance of Listener.
+     * @param {string} eventName
      * @param {function} callback
      * @param {number} maxCallbacks
      * @memberof Listener
      */
-    constructor(callback, maxCallbacks) {
+    constructor(eventName, callback, maxCallbacks) {
+        this.eventName = eventName;
         // Default of -1 means infinite
         maxCallbacks = maxCallbacks || -1;
         // Callback invokes the callback with the given data
@@ -50,11 +52,13 @@ export const eventListeners = {};
  * @param {string} eventName
  * @param {function} callback
  * @param {number} maxCallbacks
+ * @returns {Listener}
  */
 export function EventsOnMultiple(eventName, callback, maxCallbacks) {
     eventListeners[eventName] = eventListeners[eventName] || [];
-    const thisListener = new Listener(callback, maxCallbacks);
+    const thisListener = new Listener(eventName, callback, maxCallbacks);
     eventListeners[eventName].push(thisListener);
+    return thisListener;
 }
 
 /**
@@ -63,6 +67,7 @@ export function EventsOnMultiple(eventName, callback, maxCallbacks) {
  * @export
  * @param {string} eventName
  * @param {function} callback
+ * @returns {Listener}
  */
 export function EventsOn(eventName, callback) {
     EventsOnMultiple(eventName, callback, -1);
@@ -74,6 +79,7 @@ export function EventsOn(eventName, callback) {
  * @export
  * @param {string} eventName
  * @param {function} callback
+ * @returns {Listener}
  */
 export function EventsOnce(eventName, callback) {
     EventsOnMultiple(eventName, callback, 1);
@@ -172,5 +178,22 @@ export function EventsOff(eventName, ...additionalEventNames) {
         additionalEventNames.forEach(eventName => {
             removeListener(eventName)
         })
+    }
+}
+
+/**
+ * ListenerOff unregisters a listener previously registered with EventsOn
+ *
+ * @param {Listener} listener
+ */
+ export function ListenerOff(listener) {
+    // Remove local listener
+    eventListeners[eventName] = eventListeners[eventName].filter(l => l !== listener);
+
+    // Clean up if there are no event listeners left
+    if (eventListeners[eventName].length === 0) {
+        delete eventListeners[eventName];
+        // Notify Go listeners
+        window.WailsInvoke('EX' + eventName);
     }
 }
