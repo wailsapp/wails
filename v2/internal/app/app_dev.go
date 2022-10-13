@@ -90,14 +90,6 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		}
 	}
 
-	if assetdir == "" {
-		// If no assetdir has been defined, let's try to infer it from the project root and the asset FS.
-		assetdir, err = tryInferAssetDirFromFS(appoptions.Assets)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	if frontendDevServerURL != "" {
 		if devServer == "" {
 			return nil, fmt.Errorf("Unable to use FrontendDevServerUrl without a DevServer address")
@@ -112,17 +104,27 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		ctx = context.WithValue(ctx, "frontenddevserverurl", frontendDevServerURL)
 
 		myLogger.Info("Serving assets from frontend DevServer URL: %s", frontendDevServerURL)
-	} else if assetdir != "" {
-		// Let's override the assets to serve from on disk, if needed
-		absdir, err := filepath.Abs(assetdir)
-		if err != nil {
-			return nil, err
+	} else {
+		if assetdir == "" {
+			// If no assetdir has been defined, let's try to infer it from the project root and the asset FS.
+			assetdir, err = tryInferAssetDirFromFS(appoptions.Assets)
+			if err != nil {
+				return nil, err
+			}
 		}
 
-		myLogger.Info("Serving assets from disk: %s", absdir)
-		appoptions.Assets = os.DirFS(absdir)
+		if assetdir != "" {
+			// Let's override the assets to serve from on disk, if needed
+			absdir, err := filepath.Abs(assetdir)
+			if err != nil {
+				return nil, err
+			}
 
-		ctx = context.WithValue(ctx, "assetdir", assetdir)
+			myLogger.Info("Serving assets from disk: %s", absdir)
+			appoptions.Assets = os.DirFS(absdir)
+
+			ctx = context.WithValue(ctx, "assetdir", assetdir)
+		}
 	}
 
 	if devServer != "" {
