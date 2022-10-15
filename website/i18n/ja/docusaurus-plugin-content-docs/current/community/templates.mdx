@@ -2,53 +2,54 @@
 sidebar_position: 1
 ---
 
-# Templates
+# テンプレート
 
-This page serves as a list for community supported templates. Please submit a PR (click `Edit this page` at the bottom) to include your templates. To build your own template, please see the [Templates](../guides/templates.mdx) guide.
+このページでは、コミュニティがサポートしているテンプレートを紹介しています。 このページに新たにテンプレートを含めたい場合は、このページの下側にある`このページを編集`をクリックして、プルリクエストを出してください。 独自テンプレートの作成方法については、[テンプレート](../guides/templates.mdx)ガイドをご覧ください。
 
-To use these templates, run `wails init -n "Your Project Name" -t [the link below[@version]]`
+これらのテンプレートを使用するには、`wails init -n "プロジェクト名" -t [テンプレートのリンク[@バージョン]]`コマンドを実行してください。
 
-If there is no version suffix, the main branch code template is used by default. If there is a version suffix, the code template corresponding to the tag of this version is used.
+バージョンサフィックスが無い場合は、デフォルトで、メインブランチのコードテンプレートが使用されます。 バージョンサフィックスがある場合は、当該バージョンのタグに対応するコードテンプレートが使用されます。
 
-Example: `wails init -n "Your Project Name" -t https://github.com/misitebao/wails-template-vue`
+例: `wails init -n "プロジェクト名" -t https://github.com/misitebao/wails-template-vue`
 
-:::warning Attention
+:::warning 注意
 
 
-**The Wails project does not maintain, is not responsible nor liable for 3rd party templates!**
+**Wailsプロジェクトでは、サードパーティ製テンプレートのメンテナンスは行っておらず、責任も負いません!**
 
-If you are unsure about a template, inspect `package.json` and `wails.json` for what scripts are run and what packages are installed.
+テンプレートについてよく分からない場合は、`package.json`および`wails.json`を確認し、どのようなスクリプトが実行されるのかや、どのようなパッケージがインストールされるのかを調べてください。
 
 :::
 
 
 ## Vue
 
-- [wails-template-vue](https://github.com/misitebao/wails-template-vue) - A template using Vite,Vue and Vue-Router(Support both JavaScript and TypeScript)
-- [wails-vite-vue-ts](https://github.com/codydbentley/wails-vite-vue-ts) - Vue 3 TypeScript with Vite (and instructions to add features)
-- [wails-vite-vue-the-works](https://github.com/codydbentley/wails-vite-vue-the-works) - Vue 3 TypeScript with Vite, Vuex, Vue Router, Sass, and ESLint + Prettier
+- [wails-template-vue](https://github.com/misitebao/wails-template-vue) - Wails template based on Vue ecology (Integrated TypeScript, Dark theme, Internationalization, Single page routing, TailwindCSS)
+- [wails-vite-vue-ts](https://github.com/codydbentley/wails-vite-vue-ts) - Viteを使用したVue 3 TypeScript (および機能を追加する手順)
+- [wails-vite-vue-the-works](https://github.com/codydbentley/wails-vite-vue-the-works) - Vite、Vuex、Vue Router、SaaS、ESLint + Prettier を使用した Vue 3 TypeScript
 
 ## Angular
 
-- [wails-angular-template](https://github.com/TAINCER/wails-angular-template) - Angular with TypeScript, Sass, Hot-Reload, Code-Splitting and i18n
+- [wails-angular-template](https://github.com/TAINCER/wails-angular-template) - TypeScript、Sass、ホットリロード、コード分割、i18n を使用した Angular
 
 ## React
 
-- [wails-react-template](https://github.com/AlienRecall/wails-react-template) - A template using reactjs
-- [wails-react-template](https://github.com/flin7/wails-react-template) - A minimal template for React that supports live development
-- [wails-template-nextjs](https://github.com/LGiki/wails-template-nextjs) - A template using Next.js and TypeScript
+- [wails-react-template](https://github.com/AlienRecall/wails-react-template) - reactjsを使用したテンプレート
+- [wails-react-template](https://github.com/flin7/wails-react-template) - ライブ開発をサポートしたReactの最小テンプレート
+- [wails-template-nextjs](https://github.com/LGiki/wails-template-nextjs) - Next.js、TypeScript を使用したテンプレート
 - [wails-vite-react-ts-tailwind-template](https://github.com/hotafrika/wails-vite-react-ts-tailwind-template) - A template for React + TypeScript + Vite + TailwindCSS
 
 ## Svelte
 
-- [wails-svelte-template](https://github.com/raitonoberu/wails-svelte-template) - A template using Svelte
-- [wails-vite-svelte-template](https://github.com/BillBuilt/wails-vite-svelte-template) - A template using Svelte and Vite
-- [wails-vite-svelte-tailwind-template](https://github.com/BillBuilt/wails-vite-svelte-tailwind-template) - A template using Svelte and Vite with TailwindCSS v3
-- [wails-sveltekit-template](https://github.com/h8gi/wails-sveltekit-template) - A template using SvelteKit
+- [wails-svelte-template](https://github.com/raitonoberu/wails-svelte-template) - Svelteを使用したテンプレート
+- [wails-vite-svelte-template](https://github.com/BillBuilt/wails-vite-svelte-template) - SvelteおよびViteを使用したテンプレート
+- [wails-vite-svelte-tailwind-template](https://github.com/BillBuilt/wails-vite-svelte-tailwind-template) - TailwindCSS v3を含んだ、SvelteおよびViteを使用したテンプレート
+- [wails-sveltekit-template](https://github.com/h8gi/wails-sveltekit-template) - SvelteKitを使用したテンプレート
 
 ## Elm
 
-- [wails-elm-template](https://github.com/benjamin-thomas/wails-elm-template) - Develop your GUI app with functional programming and a **snappy** hot-reload setup :tada: :rocket:
+- [wails-elm-template](https://github.com/benjamin-thomas/wails-elm-template) - 関数型プログラミングと**高速な**ホットリロードを使ったGUIアプリ開発 :tada: :rocket:
+- [wails-template-elm-tailwind](https://github.com/rnice01/wails-template-elm-tailwind) - Combine the powers :muscle: of Elm + Tailwind CSS + Wails! Hot reloading supported.
 
 ## ピュアJavaScript (バニラ)
 

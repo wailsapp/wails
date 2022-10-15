@@ -28,6 +28,7 @@ func TestBindings_GenerateModels(t *testing.T) {
 		NestedFieldTest,
 		NonStringMapKeyTest,
 		SingleFieldTest,
+		MultistructTest,
 	}
 
 	testLogger := &logger.Logger{}

@@ -434,10 +434,19 @@ func (f *Frontend) setupChromium() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = settings.PutIsZoomControlEnabled(false)
-	if err != nil {
-		log.Fatal(err)
+
+
+	if opts := f.frontendOptions.Windows; opts != nil  {
+		if  opts.ZoomFactor > 0.0 {
+			chromium.PutZoomFactor(opts.ZoomFactor)
+		}
+		err = settings.PutIsZoomControlEnabled(opts.IsZoomControlEnabled)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	}
+
 	err = settings.PutIsStatusBarEnabled(false)
 	if err != nil {
 		log.Fatal(err)

@@ -55,6 +55,7 @@ func main() {
 			DisableWindowIcon:    false,
 			// DisableFramelessWindowDecorations: false,
 			WebviewUserDataPath: "",
+			ZoomFactor: 1.0,
 		},
 		// Mac platform specific options
 		Mac: &mac.Options{
