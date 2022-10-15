@@ -40,7 +40,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 	// For CI
 	ciMode := false
-	command.BoolFlag("ci", "CI Mode", &ciMode).Hidden()
+	command.BoolFlag("ci", "CI Mode", &ciMode)
 
 	// Setup project directory
 	projectDirectory := ""
