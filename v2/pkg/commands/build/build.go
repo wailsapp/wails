@@ -132,7 +132,7 @@ func Build(options *Options) (string, error) {
 	}
 
 	// Create embed directories if they don't exist
-	if err := CreateEmbedDirectories(options); err != nil {
+	if err := CreateEmbedDirectories(cwd, options); err != nil {
 		return "", err
 	}
 
@@ -169,10 +169,12 @@ func Build(options *Options) (string, error) {
 	return compileBinary, nil
 }
 
-func CreateEmbedDirectories(buildOptions *Options) error {
-	println()
-	print("  - Validating embed directories: ")
-	embedDetails, err := staticanalysis.GetEmbedDetails(buildOptions.ProjectData.Path)
+func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
+	path := cwd
+	if buildOptions.ProjectData != nil {
+		path = buildOptions.ProjectData.Path
+	}
+	embedDetails, err := staticanalysis.GetEmbedDetails(path)
 	if err != nil {
 		return err
 	}
@@ -191,8 +193,6 @@ func CreateEmbedDirectories(buildOptions *Options) error {
 			_ = f.Close()
 		}
 	}
-
-	println("Done.")
 
 	return nil
 
