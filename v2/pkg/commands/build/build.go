@@ -184,7 +184,7 @@ func CreateEmbedDirectories(buildOptions *Options) error {
 			if err != nil {
 				return err
 			}
-			f, err := os.Create(filepath.Join(fullPath, ".gitkeep"))
+			f, err := os.Create(filepath.Join(fullPath, "gitkeep"))
 			if err != nil {
 				return err
 			}
