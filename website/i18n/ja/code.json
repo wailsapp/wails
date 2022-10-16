@@ -3,7 +3,7 @@
     "message": "豊富な機能"
   },
   "homepage.Features.Description1": {
-    "message": "メニューやダイアログなどのネイティブUI要素を使用して、クロスプラットフォームアプリを構築しましょう。"
+    "message": "メニューやダイアログといったネイティブUI要素を使用して、クロスプラットフォームアプリを構築しましょう。"
   },
   "homepage.Features.Title2": {
     "message": "使い慣れた技術"
@@ -147,7 +147,7 @@
     "description": "The ARIA label and title attribute for expand button of doc sidebar"
   },
   "theme.docs.sidebar.expandButtonAriaLabel": {
-    "message": "サイドバーを展開",
+    "message": "サイドバーを開く",
     "description": "The ARIA label and title attribute for expand button of doc sidebar"
   },
   "theme.docs.paginator.navAriaLabel": {
@@ -167,7 +167,7 @@
     "description": "The title attribute for collapse button of doc sidebar"
   },
   "theme.docs.sidebar.collapseButtonAriaLabel": {
-    "message": "サイドバーを折りたたむ",
+    "message": "サイドバーをたたむ",
     "description": "The title attribute for collapse button of doc sidebar"
   },
   "theme.DocSidebarItem.toggleCollapsedCategoryAriaLabel": {
@@ -242,7 +242,7 @@
     "description": "The label used by the button on the collapsible TOC component"
   },
   "theme.navbar.mobileLanguageDropdown.label": {
-    "message": "言語一覧",
+    "message": "言語",
     "description": "The label for the mobile language switcher dropdown"
   },
   "theme.SearchBar.seeAll": {

@@ -2,37 +2,36 @@
 sidebar_position: 2
 ---
 
-# Events
+# イベント
 
-The Wails runtime provides a unified events system, where events can be emitted or received by either Go or Javascript. Optionally, data may be passed with the events. Listeners will receive the data in the local data types.
+Wailsでは、GoまたはJavascriptによって発行および受信できる、一元化されたイベントシステムが用意されています。 必要に応じて、イベント発行時にデータを渡すことも可能です。 イベントリスナーは、そのデータをローカルデータ型で受け取ります。
 
 ### EventsOn
 
-This method sets up a listener for the given event name. When an event of type `eventName` is [emitted](#EventsEmit), the callback is triggered. Any additional data sent with the emitted event will be passed to the callback.
+このメソッドは、指定されたイベント名のイベントリスナーを新たに設定します。 `eventName`という名前のイベントが[発行](#EventsEmit)されると、コールバックがトリガーされます。 イベント発行時にデータも付与されていた場合、そのデータはコールバックに渡されます。
 
 Go: `EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`<br/> JS: `EventsOn(eventName string, callback function(optionalData?: any))`
 
 ### EventsOff
 
-This method unregisters the listener for the given event name, optionally multiple listeneres can be unregistered via `additionalEventNames`.
+このメソッドは、指定されたイベント名のイベントリスナー設定を解除します。引数の`additionalEventNames`を使用することで、複数のリスナーを一度に解除できます。
 
 Go: `EventsOff(ctx context.Context, eventName string, additionalEventNames ...string)`<br/> JS: `EventsOff(eventName string, ...additionalEventNames)`
 
 ### EventsOnce
 
-This method sets up a listener for the given event name, but will only trigger once.
+このメソッドは、指定されたイベント名のイベントリスナーを新たに設定し、一度だけトリガーさせます。
 
 Go: `EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`<br/> JS: `EventsOnce(eventName string, callback function(optionalData?: any))`
 
 ### EventsOnMultiple
 
-This method sets up a listener for the given event name, but will only trigger a maximum of `counter` times.
+このメソッドは、指定されたイベント名のイベントリスナーを新たに設定し、最大`counter`回だけトリガーします。
 
 Go: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int)`<br/> JS: `EventsOnMultiple(eventName string, callback function(optionalData?: any), counter int)`
 
 ### EventsEmit
 
-This method emits the given event. Optional data may be passed with the event. This will trigger any event listeners.
+このメソッドは、指定されたイベントを発行します。 必要に応じて、イベント発行時にデータを渡すこともできます。 このメソッドによって、任意のイベントリスナーをトリガーさせることができます。
 
 Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/> JS: `EventsEmit(ctx context, optionalData function(optionalData?: any))`
-

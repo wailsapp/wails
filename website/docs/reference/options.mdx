@@ -42,12 +42,15 @@ func main() {
         WindowStartState:   options.Maximised,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        ZoomFactor:           1.0,
+        IsZoomControlEnabled: false,
         Bind: []interface{}{
             app,
         },
         Windows: &windows.Options{
             WebviewIsTransparent:              false,
             WindowIsTranslucent:               false,
+            BackdropType:                      windows.Mica,
             DisableWindowIcon:                 false,
             DisableFramelessWindowDecorations: false,
             WebviewUserDataPath:               "",
@@ -63,6 +66,10 @@ func main() {
             },
             // User messages that can be customised
             Messages *windows.Messages
+            // OnSuspend is called when Windows enters low power mode
+            OnSuspend func()
+            // OnResume is called when Windows resumes from low power mode
+            OnResume func()
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -84,6 +91,7 @@ func main() {
         },
         Linux: &linux.Options{
             Icon: icon,
+            WindowIsTranslucent: false,
         },
     })
     if err != nil {
@@ -355,6 +363,21 @@ Indicates what value the `CSSDragProperty` style should have to drag the window.
 Name: CSSDragValue<br/>
 Type: `string`
 
+### ZoomFactor
+
+Name: ZoomFactor<br/>
+Type: `float64`
+
+This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
+
+### IsZoomControlEnabled
+
+Name: IsZoomControlEnabled<br/>
+Type: `bool`
+
+This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while
+disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
+
 ### Bind
 
 A slice of struct instances defining methods that need to be bound to the frontend.
@@ -364,7 +387,7 @@ Type: `[]interface{}`
 
 ### Windows
 
-This defines [Windows specific options](#windows-specific-options).
+This defines [Windows specific options](#windows).
 
 Name: Windows<br/>
 Type: `*windows.Options`
@@ -381,10 +404,38 @@ Type: `bool`
 #### WindowIsTranslucent
 
 Setting this to `true` will make the window background translucent. Often combined
-with [WebviewIsTransparent](#WebviewIsTransparent) to make frosty-looking applications.
+with [WebviewIsTransparent](#WebviewIsTransparent).
+
+For Windows 11 versions before build 22621, this will use the [BlurBehind](https://learn.microsoft.com/en-us/windows/win32/dwm/blur-ovw)
+method for translucency, which can be slow. For Windows 11 versions after build 22621, this will enable the
+newer translucency types that are much faster. By default, the type of translucency used will be determined
+by Windows. To configure this, use the [BackdropType](#BackdropType) option.
 
 Name: WindowIsTranslucent<br/>
 Type: `bool`
+
+#### BackdropType 
+
+:::note
+
+Requires Windows 11 build 22621 or later.
+
+:::
+
+Sets the translucency type of the window. This is only applicable if [WindowIsTranslucent](#WindowIsTranslucent) is set to `true`.
+
+Name: BackdropType<br/>
+Type `windows.BackdropType`
+
+The value can be one of the following:
+
+| Value   | Description                                                                               |
+|---------|-------------------------------------------------------------------------------------------|
+| Auto    | Let Windows decide which backdrop to use                                                  |
+| None    | Do not use translucency                                                                   |
+| Acrylic | Use [Acrylic](https://learn.microsoft.com/en-us/windows/apps/design/style/acrylic) effect |
+| Mica    | Use [Mica](https://learn.microsoft.com/en-us/windows/apps/design/style/mica) effect       |
+| Tabbed  | Use Tabbed. This is a backdrop that is similar to Mica.                                   |         
 
 #### DisableWindowIcon
 
@@ -515,21 +566,21 @@ Type: `uint16`
 
 #### OnSuspend
 
-If set, this function will be called when windows initiates a switch to low power mode (suspend/hibernate)
+If set, this function will be called when Windows initiates a switch to low power mode (suspend/hibernate)
 
 Name: OnSuspend<br/>
 Type: `func()`
 
 #### OnResume
 
-If set, this function will be called when windows resumes from low power mode (suspend/hibernate)
+If set, this function will be called when Windows resumes from low power mode (suspend/hibernate)
 
 Name: OnResume<br/>
 Type: `func()`
 
 ### Mac
 
-This defines [Mac specific options](#mac-specific-options).
+This defines [Mac specific options](#mac).
 
 Name: Mac<br/>
 Type: `*mac.Options`
@@ -695,7 +746,7 @@ When clicked, that will open an about message box:
 
 ### Linux
 
-This defines [Linux specific options](#linux-specific-options).
+This defines [Linux specific options](#linux).
 
 Name: Linux<br/>
 Type: `*linux.Options`
@@ -715,3 +766,10 @@ On KDE it should work.
 
 The icon should be provided in whatever size it was naturally drawn; that is, don’t scale the image before passing it.
 Scaling is postponed until the last minute, when the desired final size is known, to allow best quality.
+
+#### WindowIsTranslucent
+
+Setting this to `true` will make the window background translucent. Some window managers may ignore it, or result in a black window.
+
+Name: WindowIsTranslucent<br/>
+Type: `bool`

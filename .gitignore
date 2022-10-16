@@ -29,3 +29,5 @@ v2/test/kitchensink/build/darwin/desktop/kitchensink
 v2/test/kitchensink/frontend/package.json.md5
 .idea/
 v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
+.env
+/website/static/img/.cache.json

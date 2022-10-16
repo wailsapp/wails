@@ -17,9 +17,6 @@
   <a href="https://pkg.go.dev/github.com/wailsapp/wails">
     <img src="https://pkg.go.dev/badge/github.com/wailsapp/wails.svg" alt="Go Reference"/>
   </a>
-  <a href="https://www.codefactor.io/repository/github/wailsapp/wails">
-    <img src="https://www.codefactor.io/repository/github/wailsapp/wails/badge" alt="CodeFactor" />
-  </a>
   <a href="https://github.com/wailsapp/wails/issues">
     <img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="CodeFactor" />
   </a>
@@ -28,6 +25,9 @@
   </a>
   <a href="https://github.com/avelino/awesome-go" rel="nofollow">
     <img src="https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg" alt="Awesome" />
+  </a>
+  <a href="https://app.slack.com/client/T029RQSE6/CJ4P9F7MZ">
+    <img alt="Slack" src="https://img.shields.io/badge/slack-gophers%2Fwails%20-blue?logo=slack"/>
   </a>
   <br/>
   <a href="https://github.com/wailsapp/wails/actions/workflows/build.yml" rel="nofollow">
@@ -48,18 +48,7 @@
 </strong>
 </div>
 
-<hr/>
-<h3 align="center">
-<strong>
-注意：v2のリリースが近づいているため、v1の新しい機能リクエストやバグレポートは受け付けておりません。重要な問題がある場合はチケットを開き、なぜそれが重要なのかを明記してください。
-</strong>
-</h3>
-<hr/>
-
 ## 目次
-
-<details>
-  <summary>クリックすることで、ディレクトリ一覧の開閉が可能です。</summary>
 
 - [目次](#目次)
 - [はじめに](#はじめに)
@@ -73,8 +62,6 @@
 - [特記事項](#特記事項)
 - [スペシャルサンクス](#スペシャルサンクス)
 - [ライセンス](#ライセンス)
-
-</details>
 
 ## はじめに
 
@@ -114,108 +101,7 @@ Wails v2 が 3 つのプラットフォームでベータ版としてリリー�
 ## スポンサー
 
 このプロジェクトは、以下の方々・企業によって支えられています。
-
-<a href="https://github.com/sponsors/leaanthony" style="width:100px;">
-  <img src="/assets/images/sponsors/silver-sponsor.png" width="100"/>
-</a>
-<a href="https://github.com/selvindev" style="width:100px;">
-  <img src="https://github.com/selvindev.png?size=100" width="100"/>
-</a>
-<br/>
-<br/>
-<a href="https://github.com/sponsors/leaanthony" style="width:100px;">
-  <img src="/assets/images/sponsors/bronze-sponsor.png" width="100"/>
-</a>
-
-<a href="https://github.com/codydbentley" style="width:100px">
-  <img src="https://github.com/codydbentley.png?size=100" width="100"/>
-</a>
-<a href="https://www.easywebadv.it/" style="width:100px">
-  <img src="website/static/img/easyweb.png" width="100"/>
-</a>
-<br/>
-<br/>
-<a href="https://github.com/matryer" style="width:100px">
-  <img src="https://github.com/matryer.png" width="100"/>
-</a>
-<a href="https://github.com/tc-hib" style="width:55px">
- <img src="https://github.com/tc-hib.png?size=55" width="55"/>
-</a>
-<a href="https://github.com/picatz" style="width:50px">
-  <img src="https://github.com/picatz.png?size=50" width="50"/>
-</a>
-<a href="https://github.com/tylertravisty" style="width:50px">
-  <img src="https://github.com/tylertravisty.png?size=50" width="50"/>
-</a>
-<a href="https://github.com/akhudek" style="width:50px">
-  <img src="https://github.com/akhudek.png?size=50" width="50"/>
-</a>
-<a href="https://github.com/trea" style="width:50px">
-  <img src="https://github.com/trea.png?size=50" width="50"/>
-</a>
-<a href="https://github.com/LanguageAgnostic" style="width:55px">
-  <img src="https://github.com/LanguageAgnostic.png?size=55" width="55"/>
-</a>
-<a href="https://github.com/fcjr" style="width:55px">
-  <img src="https://github.com/fcjr.png?size=55" width="55"/>
-</a>
-<a href="https://github.com/nickarellano" style="width:60px">
-  <img src="https://github.com/nickarellano.png?size=60" width="60"/>
-</a>
-<a href="https://github.com/bglw" style="width:65px">
-  <img src="https://github.com/bglw.png?size=65" width="65"/>
-</a>
-<a href="https://github.com/marcus-crane" style="width:65px">
-  <img src="https://github.com/marcus-crane.png?size=65" width="65"/>
-</a>
-<a href="https://github.com/bbergshaven" style="width:45px">
-  <img src="https://github.com/bbergshaven.png?size=45" width="45"/>
-</a>
-<a href="https://github.com/Gilgames000" style="width:45px">
-  <img src="https://github.com/Gilgames000.png?size=45" width="45"/>
-</a>
-<a href="https://github.com/ilgityildirim" style="width:50px">
-  <img src="https://github.com/ilgityildirim.png?size=50" width="50"/>
-</a>
-<a href="https://github.com/questrail" style="width:50px">
-  <img src="https://github.com/questrail.png?size=50" width="50"/>
-</a>
-<a href="https://github.com/DonTomato" style="width:45px">
-  <img src="https://github.com/DonTomato.png?size=45" width="45"/>
-</a>
-<a href="https://github.com/taigrr" style="width:55px">
-  <img src="https://github.com/taigrr.png?size=55" width="55"/>
-</a>
-<a href="https://github.com/charlie-dee" style="width:55px">
-  <img src="https://github.com/charlie-dee.png?size=55" width="55"/>
-</a>
-<a href="https://github.com/michaelolson1996" style="width:55px">
-  <img src="https://github.com/michaelolson1996.png?size=55" width="55"/>
-</a>
-<a href="https://github.com/GargantuaX" style="width:45px">
-  <img src="https://github.com/GargantuaX.png?size=45" width="45"/>
-</a>
-<a href="https://github.com/CharlieGo88" style="width:55px">
-  <img src="https://github.com/CharlieGo88.png?size=55" width="55"/>
-</a>
-<a href="https://github.com/Bironou" style="width:55px">
-  <img src="https://github.com/Bironou.png?size=55" width="55"/>
-</a>
-<a href="https://github.com/Shackelford-Arden" style="width:55px">
-  <img src="https://github.com/Shackelford-Arden.png?size=55" width="55"/>
-</a>
-<a href="https://github.com/boostchicken" style="width:65px">
-  <img src="https://github.com/boostchicken.png?size=65" width="65"/>
-</a>
-<a href="https://github.com/iansinnott" style="width:55px">
-  <img src="https://github.com/iansinnott.png?size=55" width="55"/>
-</a>
-<a href="https://github.com/Ilshidur" style="width:50px">
-  <img src="https://github.com/Ilshidur.png?size=50" width="50"/>
-</a>
-<a href="https://github.com/KiddoV" style="width:45px">
-  <img src="https://github.com/KiddoV.png?size=45" width="45"/>
-</a>
+<img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 ## 始め方
 

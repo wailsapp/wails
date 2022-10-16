@@ -1,5 +1,4 @@
 //go:build dev
-// +build dev
 
 package app
 
@@ -14,7 +13,6 @@ import (
 	"path/filepath"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
-	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop"
 	"github.com/wailsapp/wails/v2/internal/frontend/devserver"
 	"github.com/wailsapp/wails/v2/internal/frontend/dispatcher"
@@ -22,34 +20,14 @@ import (
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
-	"github.com/wailsapp/wails/v2/internal/project"
 	pkglogger "github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
-// App defines a Wails application structure
-type App struct {
-	frontend frontend.Frontend
-	logger   *logger.Logger
-	options  *options.App
-
-	menuManager *menumanager.Manager
-
-	// Indicates if the app is in debug mode
-	debug bool
-
-	// OnStartup/OnShutdown
-	startupCallback  func(ctx context.Context)
-	shutdownCallback func(ctx context.Context)
-	ctx              context.Context
-}
-
-func (a *App) Shutdown() {
-	a.frontend.Quit()
-}
-
 func (a *App) Run() error {
 	err := a.frontend.Run(a.ctx)
+	a.frontend.RunMainLoop()
+	a.frontend.WindowClose()
 	if a.shutdownCallback != nil {
 		a.shutdownCallback(a.ctx)
 	}
@@ -112,14 +90,6 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		}
 	}
 
-	if assetdir == "" {
-		// If no assetdir has been defined, let's try to infer it from the project root and the asset FS.
-		assetdir, err = tryInferAssetDirFromFS(appoptions.Assets)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	if frontendDevServerURL != "" {
 		if devServer == "" {
 			return nil, fmt.Errorf("Unable to use FrontendDevServerUrl without a DevServer address")
@@ -134,17 +104,27 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		ctx = context.WithValue(ctx, "frontenddevserverurl", frontendDevServerURL)
 
 		myLogger.Info("Serving assets from frontend DevServer URL: %s", frontendDevServerURL)
-	} else if assetdir != "" {
-		// Let's override the assets to serve from on disk, if needed
-		absdir, err := filepath.Abs(assetdir)
-		if err != nil {
-			return nil, err
+	} else {
+		if assetdir == "" {
+			// If no assetdir has been defined, let's try to infer it from the project root and the asset FS.
+			assetdir, err = tryInferAssetDirFromFS(appoptions.Assets)
+			if err != nil {
+				return nil, err
+			}
 		}
 
-		myLogger.Info("Serving assets from disk: %s", absdir)
-		appoptions.Assets = os.DirFS(absdir)
+		if assetdir != "" {
+			// Let's override the assets to serve from on disk, if needed
+			absdir, err := filepath.Abs(assetdir)
+			if err != nil {
+				return nil, err
+			}
 
-		ctx = context.WithValue(ctx, "assetdir", assetdir)
+			myLogger.Info("Serving assets from disk: %s", absdir)
+			appoptions.Assets = os.DirFS(absdir)
+
+			ctx = context.WithValue(ctx, "assetdir", assetdir)
+		}
 	}
 
 	if devServer != "" {
@@ -193,10 +173,6 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	}
 	appBindings := binding.NewBindings(myLogger, appoptions.Bind, bindingExemptions, false)
 
-	err = generateBindings(appBindings)
-	if err != nil {
-		return nil, err
-	}
 	eventHandler := runtime.NewEvents(myLogger)
 	ctx = context.WithValue(ctx, "events", eventHandler)
 	messageDispatcher := dispatcher.NewDispatcher(ctx, myLogger, appBindings, eventHandler)
@@ -207,6 +183,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	eventHandler.AddFrontend(appFrontend)
 	eventHandler.AddFrontend(desktopFrontend)
 
+	ctx = context.WithValue(ctx, "frontend", appFrontend)
 	result := &App{
 		ctx:              ctx,
 		frontend:         appFrontend,
@@ -220,37 +197,6 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	result.options = appoptions
 
 	return result, nil
-
-}
-
-func generateBindings(bindings *binding.Bindings) error {
-
-	cwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	projectConfig, err := project.Load(cwd)
-	if err != nil {
-		return err
-	}
-
-	if projectConfig.WailsJSDir == "" {
-		projectConfig.WailsJSDir = filepath.Join(cwd, "frontend")
-	}
-
-	targetDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs", "go")
-	err = os.RemoveAll(targetDir)
-	if err != nil {
-		return err
-	}
-	_ = fs.MkDirs(targetDir)
-
-	err = bindings.GenerateGoBindings(targetDir)
-	if err != nil {
-		return err
-	}
-
-	return nil
 
 }
 

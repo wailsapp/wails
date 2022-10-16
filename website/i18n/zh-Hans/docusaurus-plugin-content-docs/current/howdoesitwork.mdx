@@ -8,7 +8,7 @@ Wails 应用程序是一个带有一个 webkit 前端的标准的 Go 应用程�
 
 ```mdx-code-block
 <div className="text--center">
-  <img src={require("@site/static/img/architecture.webp").default} width="75%" />
+  <img src={require("@site/static/img/architecture.webp").default} style={{"width":"75%", "max-width":"800px"}} />
 </div>
 ```
 
@@ -96,11 +96,11 @@ var assets embed.FS
 
 在开发模式下使用 `wails dev` 命令，资产从磁盘加载，任何更改都会导致“实时重新加载”。 资产的位置将从 `embed.FS` 推断。
 
-更多细节可以在 [应用程序开发指南](./guides/application-development) 中找到。
+更多细节可以在 [应用开发指南](./guides/application-development) 中找到。
 
 #### 应用程序生命周期回调
 
-在即将加载前端 `index.html` 之前，会对 [应用启动回调](./reference/options#应用启动回调) 中提供的函数进行调用。 一个标准的 Go context 被传递给这个方法。 调用运行时需要此 context ，因此标准模式是在此方法中保存对它的引用。 在应用程序关闭之前，以同样的方式调用 [应用退出回调](./reference/options#应用退出回调)，并再次使用上下文 当前端加载完 `index.html` 中所有资源时，还有一个 [前端 Dom 加载完成回调](./reference/options#前端-dom-加载完成回调) ，相当于 Javascript 中的 [`body onload`](https://www.w3schools.com/jsref/event_onload.asp) 事件。 还可以通过设置 [关闭应用程序之前回调](./reference/options#关闭应用程序之前回调) 选项来控制窗口关闭（或应用程序退出）事件。
+在即将加载前端 `index.html` 之前，会对 [应用启动回调](./reference/options#应用启动回调) 中提供的函数进行调用。 一个标准的 Go context 被传递给这个方法。 调用运行时需要此 context ，因此标准模式是在此方法中保存对它的引用。 在应用程序关闭之前，以同样的方式调用 [应用退出回调](./reference/options#应用退出回调)，并再次使用上下文 当前端加载完 `index.html` 中所有资源时，还有一个 [前端 Dom 加载完成回调](./reference/options#前端-dom-加载完成回调) ，相当于 Javascript 中的 [`body onload`](https://www.w3schools.com/jsref/event_onload.asp) 事件。 还可以通过设置 [应用关闭前回调](./reference/options#应用关闭前回调) 选项来控制窗口关闭（或应用程序退出）事件。
 
 #### 方法绑定
 
@@ -226,10 +226,12 @@ export function Greet(arg1: string): Promise<string>;
 
 生成的方法返回一个 Promise 成功的调用将导致 Go 调用的第一个返回值被传递给 `resolve` 处理程序。 不成功的调用是当 Go 方法的第二个返回值具有错误类型时，将错误实例传递回调用者。 这通过 `reject` 处理程序传回的。 在上面的示例中，`Greet` 只返回一个 `string`，因此 Javascript 调用永远不会 reject - 除非将无效数据传递给它。
 
-所有数据类型都在 Go 和 Javascript 之间正确转换。 包括结构体。 如果您从 Go 调用返回一个结构体，它将作为 Javascript 类返回到您的前端。 注意：如果您想使用结构体，您 **必须** 为您的结构体字段定义 `json` 标签！
+所有数据类型都在 Go 和 Javascript 之间正确转换。 包括结构体。 如果您从 Go 调用返回一个结构体，它将作为 Javascript 类返回到您的前端。
 
 :::info 注意
 
+
+结构体字段 *必须* 具有有效的 `json` 标签，以包含在生成的 TypeScript 中。
 
 目前不支持嵌套匿名结构体。
 

@@ -1,0 +1,24 @@
+name: Check Docs
+on:
+  pull_request:
+    branches: [ 'feature/*' ]
+
+jobs:
+  docs:
+    name: Website Updated
+    if: github.repository == 'wailsapp/wails'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Verify Changed files
+        uses: tj-actions/verify-changed-files@v11.1
+        id: verify-changed-files
+        with:
+          files: |
+            v2/website/*.mdx
+
+      - name: Run step only when files change.
+        if: steps.verify-changed-files.outputs.files_changed != 'true'
+        run: |
+          echo "Feature branch does not contain any changes to the website."

@@ -120,6 +120,16 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 }
 
 func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) string {
+	// Verifying this first to ensure we are not converting a type
+	// coming from a package that has a name matching a golang type, such as:
+	// - interactor -> int
+	// - mapper -> map
+	if strings.ContainsRune(input, '.') {
+		namespace := getPackageName(input)
+		importNamespaces.Add(namespace)
+		return namespace + "." + strings.Split(input, ".")[1]
+	}
+
 	switch true {
 	case input == "interface {}" || input == "interface{}":
 		return "any"
@@ -150,11 +160,6 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 		arrayType := goTypeToJSDocType(input[2:], importNamespaces)
 		return "Array<" + arrayType + ">"
 	default:
-		if strings.ContainsRune(input, '.') {
-			namespace := getPackageName(input)
-			importNamespaces.Add(namespace)
-			return namespace + "." + strings.Split(input, ".")[1]
-		}
 		return "any"
 	}
 }

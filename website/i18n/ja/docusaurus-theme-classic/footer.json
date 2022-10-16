@@ -44,7 +44,7 @@
     "description": "The label of footer link with label=Blog linking to /blog"
   },
   "copyright": {
-    "message": "Copyright © 2022 Lea Anthony. このサイトはDocusaurusで生成されました。",
+    "message": "Copyright © 2022 Lea Anthony",
     "description": "The footer copyright"
   },
   "link.item.label.Awesome": {

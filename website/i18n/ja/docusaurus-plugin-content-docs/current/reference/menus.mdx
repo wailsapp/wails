@@ -33,18 +33,13 @@ An example of how to create a menu:
     // ...
 ```
 
-```` It is also possible to dynamically update the menu, by updating the menu struct and calling \[MenuUpdateApplicationMenu\](../reference/runtime/menu.mdx#menuupdateapplicationmenu).
+Menu構造体を更新し、[MenuUpdateApplicationMenu](../reference/runtime/menu.mdx#menuupdateapplicationmenu)メソッドを呼び出すことで、メニューを動的に更新することも可能です。
 
 The example above uses helper methods, however it's possible to build the menu structs manually.
 
 ## Menu
 
-A Menu is a collection of MenuItems:
-
-```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
-## Menu
-
-A Menu is a collection of MenuItems:
+Menuは、MenuItemのコレクションです。
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
 type Menu struct {
@@ -106,61 +101,27 @@ Example:
 
 Keys are any single character on a keyboard with the exception of `+`, which is defined as `plus`. Some keys cannot be represented as characters so there are a set of named characters that may be used:
 
-- `backspace`
-- `tab`
-- `return`
-- `enter`
-- `escape`
-- `left`
-- `right`
-- `up`
-- `down`
-- `space`
-- `delete`
-- `home`
-- `end`
-- `page up`
-- `page down`
-- `f1`
-- `f2`
-- `f3`
-- `f4`
-- `f5`
-- `f6`
-- `f7`
-- `f8`
-- `f9`
-- `f10`
-- `f11`
-- `f12`
-- `f13`
-- `f14`
-- `f15`
-- `f16`
-- `f17`
-- `f18`
-- `f19`
-- `f20`
-- `f21`
-- `f22`
-- `f23`
-- `f24`
-- `f25`
-- `f26`
-- `f27`
-- `f28`
-- `f29`
-- `f30`
-- `f31`
-- `f32`
-- `f33`
-- `f34`
-- `f35`
-- `numlock`
+|             |       |       |           |
+|:-----------:|:-----:|:-----:|:---------:|
+| `backspace` | `f1`  | `f16` |   `f31`   |
+|    `tab`    | `f2`  | `f17` |   `f32`   |
+|  `return`   | `f3`  | `f18` |   `f33`   |
+|   `enter`   | `f4`  | `f19` |   `f34`   |
+|  `escape`   | `f5`  | `f20` |   `f35`   |
+|   `left`    | `f6`  | `f21` | `numlock` |
+|   `right`   | `f7`  | `f22` |           |
+|    `up`     | `f8`  | `f23` |           |
+|   `down`    | `f9`  | `f24` |           |
+|   `space`   | `f10` | `f25` |           |
+|  `delete`   | `f11` | `f36` |           |
+|   `home`    | `f12` | `f37` |           |
+|    `end`    | `f13` | `f38` |           |
+|  `page up`  | `f14` | `f39` |           |
+| `page down` | `f15` | `f30` |           |
 
 Wails also supports parsing accelerators using the same syntax as Electron. This is useful for storing accelerators in config files.
 
-Example:
+例:
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
     // Defines cmd+o on Mac and ctrl-o on Window/Linux
@@ -254,13 +215,15 @@ The function is given a `CallbackData` struct which indicates which menu item tr
 
 :::info Roles
 
+
 Roles are currently supported on Mac only.
 
 :::
 
+
 A menu item may have a role, which is essentially a pre-defined menu item. We currently support the following roles:
 
-| Role         | Description                                                              |
+| ロール          | Description                                                              |
 | ------------ | ------------------------------------------------------------------------ |
 | AppMenuRole  | The standard Mac application menu. Can be created using `menu.AppMenu()` |
 | EditMenuRole | The standard Mac edit menu. Can be created using `menu.EditMenu()`       |

@@ -23,7 +23,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
-	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"golang.org/x/net/websocket"
 )
@@ -43,29 +42,9 @@ type DevWebServer struct {
 	starttime        string
 
 	// Desktop frontend
-	desktopFrontend frontend.Frontend
+	frontend.Frontend
 
 	devServerAddr string
-}
-
-func (d *DevWebServer) Hide() {
-	d.desktopFrontend.Hide()
-}
-
-func (d *DevWebServer) Show() {
-	d.desktopFrontend.Show()
-}
-
-func (d *DevWebServer) WindowSetSystemDefaultTheme() {
-	d.desktopFrontend.WindowSetSystemDefaultTheme()
-}
-
-func (d *DevWebServer) WindowSetLightTheme() {
-	d.desktopFrontend.WindowSetLightTheme()
-}
-
-func (d *DevWebServer) WindowSetDarkTheme() {
-	d.desktopFrontend.WindowSetDarkTheme()
 }
 
 func (d *DevWebServer) Run(ctx context.Context) error {
@@ -83,7 +62,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		})
 
 		var err error
-		assetHandler, err = assetserver.NewAssetHandler(ctx, d.appoptions)
+		assetHandler, err = assetserver.NewAssetHandler(ctx, d.appoptions.Assets, d.appoptions.AssetsHandler)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -132,162 +111,22 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		}(d.server, d.logger)
 
 		d.LogDebug("Serving DevServer at http://%s", devServerAddr)
-
-		defer func() {
-			err := d.server.Shutdown(context.Background())
-			if err != nil {
-				d.logger.Error(err.Error())
-			}
-		}()
 	}
 
 	// Launch desktop app
-	err = d.desktopFrontend.Run(ctx)
-	d.LogDebug("Starting shutdown")
+	err = d.Frontend.Run(ctx)
 
 	return err
 }
 
-func (d *DevWebServer) Quit() {
-	d.desktopFrontend.Quit()
-}
-
-func (d *DevWebServer) OpenFileDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
-	return d.desktopFrontend.OpenFileDialog(dialogOptions)
-}
-
-func (d *DevWebServer) OpenMultipleFilesDialog(dialogOptions frontend.OpenDialogOptions) ([]string, error) {
-	return d.OpenMultipleFilesDialog(dialogOptions)
-}
-
-func (d *DevWebServer) OpenDirectoryDialog(dialogOptions frontend.OpenDialogOptions) (string, error) {
-	return d.OpenDirectoryDialog(dialogOptions)
-}
-
-func (d *DevWebServer) SaveFileDialog(dialogOptions frontend.SaveDialogOptions) (string, error) {
-	return d.desktopFrontend.SaveFileDialog(dialogOptions)
-}
-
-func (d *DevWebServer) MessageDialog(dialogOptions frontend.MessageDialogOptions) (string, error) {
-	return d.desktopFrontend.MessageDialog(dialogOptions)
-}
-
 func (d *DevWebServer) WindowReload() {
 	d.broadcast("reload")
-	d.desktopFrontend.WindowReload()
+	d.Frontend.WindowReload()
 }
 
 func (d *DevWebServer) WindowReloadApp() {
 	d.broadcast("reloadapp")
-	d.desktopFrontend.WindowReloadApp()
-}
-
-func (d *DevWebServer) WindowSetTitle(title string) {
-	d.desktopFrontend.WindowSetTitle(title)
-}
-
-func (d *DevWebServer) WindowShow() {
-	d.desktopFrontend.WindowShow()
-}
-
-func (d *DevWebServer) WindowHide() {
-	d.desktopFrontend.WindowHide()
-}
-
-func (d *DevWebServer) WindowCenter() {
-	d.desktopFrontend.WindowCenter()
-}
-
-func (d *DevWebServer) WindowMaximise() {
-	d.desktopFrontend.WindowMaximise()
-}
-
-func (d *DevWebServer) WindowToggleMaximise() {
-	d.desktopFrontend.WindowToggleMaximise()
-}
-
-func (d *DevWebServer) WindowUnmaximise() {
-	d.desktopFrontend.WindowUnmaximise()
-}
-
-func (d *DevWebServer) WindowIsMaximised() bool {
-	return d.desktopFrontend.WindowIsMaximised()
-}
-
-func (d *DevWebServer) WindowMinimise() {
-	d.desktopFrontend.WindowMinimise()
-}
-
-func (d *DevWebServer) WindowUnminimise() {
-	d.desktopFrontend.WindowUnminimise()
-}
-func (d *DevWebServer) WindowSetAlwaysOnTop(b bool) {
-	d.desktopFrontend.WindowSetAlwaysOnTop(b)
-}
-
-func (d *DevWebServer) WindowIsMinimised() bool {
-	return d.desktopFrontend.WindowIsMinimised()
-}
-
-func (d *DevWebServer) WindowSetPosition(x int, y int) {
-	d.desktopFrontend.WindowSetPosition(x, y)
-}
-
-func (d *DevWebServer) WindowGetPosition() (int, int) {
-	return d.desktopFrontend.WindowGetPosition()
-}
-
-func (d *DevWebServer) WindowSetSize(width int, height int) {
-	d.desktopFrontend.WindowSetSize(width, height)
-}
-
-func (d *DevWebServer) WindowGetSize() (int, int) {
-	return d.desktopFrontend.WindowGetSize()
-}
-
-func (d *DevWebServer) WindowSetMinSize(width int, height int) {
-	d.desktopFrontend.WindowSetMinSize(width, height)
-}
-
-func (d *DevWebServer) WindowSetMaxSize(width int, height int) {
-	d.desktopFrontend.WindowSetMaxSize(width, height)
-}
-
-func (d *DevWebServer) WindowFullscreen() {
-	d.desktopFrontend.WindowFullscreen()
-}
-
-func (d *DevWebServer) WindowUnfullscreen() {
-	d.desktopFrontend.WindowUnfullscreen()
-}
-
-func (d *DevWebServer) WindowSetBackgroundColour(col *options.RGBA) {
-	d.desktopFrontend.WindowSetBackgroundColour(col)
-}
-
-func (d *DevWebServer) ScreenGetAll() ([]Screen, error) {
-	return d.desktopFrontend.ScreenGetAll()
-}
-
-func (d *DevWebServer) WindowIsFullscreen() bool {
-	return d.desktopFrontend.WindowIsFullscreen()
-}
-
-func (d *DevWebServer) WindowIsNormal() bool {
-	return d.desktopFrontend.WindowIsNormal()
-}
-
-func (d *DevWebServer) MenuSetApplicationMenu(menu *menu.Menu) {
-	d.desktopFrontend.MenuSetApplicationMenu(menu)
-}
-
-func (d *DevWebServer) MenuUpdateApplicationMenu() {
-	d.desktopFrontend.MenuUpdateApplicationMenu()
-}
-
-// BrowserOpenURL uses the system default browser to open the url
-func (d *DevWebServer) BrowserOpenURL(url string) {
-	d.desktopFrontend.BrowserOpenURL(url)
+	d.Frontend.WindowReloadApp()
 }
 
 func (d *DevWebServer) Notify(name string, data ...interface{}) {
@@ -298,6 +137,7 @@ func (d *DevWebServer) handleReload(c echo.Context) error {
 	d.WindowReload()
 	return c.NoContent(http.StatusNoContent)
 }
+
 func (d *DevWebServer) handleReloadApp(c echo.Context) error {
 	d.WindowReloadApp()
 	return c.NoContent(http.StatusNoContent)
@@ -426,13 +266,13 @@ func (d *DevWebServer) notifyExcludingSender(eventMessage []byte, sender *websoc
 		d.logger.Error(err.Error())
 		return
 	}
-	d.desktopFrontend.Notify(notifyMessage.Name, notifyMessage.Data...)
+	d.Frontend.Notify(notifyMessage.Name, notifyMessage.Data...)
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher, menuManager *menumanager.Manager, desktopFrontend frontend.Frontend) *DevWebServer {
 	result := &DevWebServer{
 		ctx:              ctx,
-		desktopFrontend:  desktopFrontend,
+		Frontend:         desktopFrontend,
 		appoptions:       appoptions,
 		logger:           myLogger,
 		appBindings:      appBindings,

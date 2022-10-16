@@ -102,7 +102,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		appBindings.DB().UpdateObfuscatedCallMap()
 	}
 
-	assets, err := assetserver.NewAssetServer(ctx, appoptions, bindings)
+	assets, err := assetserver.NewAssetServer(ctx, appoptions.Assets, appoptions.AssetsHandler, bindings)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -128,8 +128,7 @@ func (f *Frontend) WindowSetDarkTheme() {
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
-
-	f.ctx = context.WithValue(ctx, "frontend", f)
+	f.ctx = ctx
 
 	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo)
 	f.mainWindow = mainWindow
@@ -180,9 +179,18 @@ func (f *Frontend) Run(ctx context.Context) error {
 			f.frontendOptions.OnStartup(f.ctx)
 		}
 	}()
-	mainWindow.Run()
-	mainWindow.Close()
+	mainWindow.UpdateTheme()
 	return nil
+}
+
+func (f *Frontend) WindowClose() {
+	if f.mainWindow != nil {
+		f.mainWindow.Close()
+	}
+}
+
+func (f *Frontend) RunMainLoop() {
+	_ = winc.RunMainLoop()
 }
 
 func (f *Frontend) WindowCenter() {
@@ -426,10 +434,19 @@ func (f *Frontend) setupChromium() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = settings.PutIsZoomControlEnabled(false)
-	if err != nil {
-		log.Fatal(err)
+
+
+	if opts := f.frontendOptions.Windows; opts != nil  {
+		if  opts.ZoomFactor > 0.0 {
+			chromium.PutZoomFactor(opts.ZoomFactor)
+		}
+		err = settings.PutIsZoomControlEnabled(opts.IsZoomControlEnabled)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	}
+
 	err = settings.PutIsStatusBarEnabled(false)
 	if err != nil {
 		log.Fatal(err)

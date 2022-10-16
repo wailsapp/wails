@@ -1,7 +1,7 @@
 name: Documentation
 description: Report an issue related to documentation.
 # title: ""
-labels: ["documentation"]
+labels: ["Documentation"]
 
 body:
   - type: markdown

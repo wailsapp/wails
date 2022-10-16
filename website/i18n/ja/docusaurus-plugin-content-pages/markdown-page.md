@@ -4,4 +4,4 @@ title: Markdown page example
 
 # Markdown page example
 
-You don't need React to write simple standalone pages.
+シンプルな単一ページを作成する場合、Reactは必要ありません。

@@ -2,16 +2,15 @@
 sidebar_position: 2
 ---
 
-# Creating a Project
+# プロジェクトの開始
 
-## Project Generation
+## プロジェクトの生成
 
-Now that the CLI is installed, you can generate a new project by using the `wails init` command.
+CLIのインストールが終わったら、`wails init`コマンドで新しいプロジェクトを生成しましょう。
 
-Pick your favourite framework:
+好きなフレームワークを選択してください:
 
-<!-- @formatter:off -->
-
+```mdx-code-block
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
@@ -19,17 +18,18 @@ import TabItem from "@theme/TabItem";
     defaultValue="Svelte"
     values={[
         {label: "Svelte", value: "Svelte"},
- {label: "React", value: "React"},
- {label: "Vue", value: "Vue"},
- {label: "Preact", value: "Preact"},
- {label: "Lit", value: "Lit"},
- {label: "Vanilla", value: "Vanilla"},
- ]}
+        {label: "React", value: "React"},
+        {label: "Vue", value: "Vue"},
+        {label: "Preact", value: "Preact"},
+        {label: "Lit", value: "Lit"},
+        {label: "Vanilla", value: "Vanilla"},
+    ]}
 >
 <TabItem value="Svelte">
     Generate a <a href={"https://svelte.dev/"}>Svelte</a> project using Javascript with:<br/><br/>
 
     wails init -n myproject -t svelte
+
 If you would rather use Typescript:<br/>
 
     wails init -n myproject -t svelte-ts
@@ -39,64 +39,64 @@ If you would rather use Typescript:<br/>
     Generate a <a href={"https://reactjs.org/"}>React</a> project using Javascript with:<br/><br/>
 
     wails init -n myproject -t react
+
 If you would rather use Typescript:<br/>
 
     wails init -n myproject -t react-ts
 
 </TabItem>
 <TabItem value="Vue">
-    <a href={"https://vuejs.org/"}>Vue</a>用のJavascriptプロジェクトを生成する場合:<br/><br/>
+    Generate a <a href={"https://vuejs.org/"}>Vue</a> project using Javascript with:<br/><br/>
 
     wails init -n myproject -t vue
 
-Typescriptプロジェクトを生成する場合:<br/>
+If you would rather use Typescript:<br/>
 
     wails init -n myproject -t vue-ts
 
 </TabItem>
 <TabItem value="Preact">
-    <a href={"https://preactjs.com/"}>Preact</a>用のJavascriptプロジェクトを生成する場合:<br/><br/>
+    Generate a <a href={"https://preactjs.com/"}>Preact</a> project using Javascript with:<br/><br/>
 
     wails init -n myproject -t preact
 
-Typescriptプロジェクトを生成する場合:<br/>
+If you would rather use Typescript:<br/>
 
     wails init -n myproject -t preact-ts
 
 </TabItem>
 <TabItem value="Lit">
-    <a href={"https://lit.dev/"}>Lit</a>用のJavascriptプロジェクトを生成する場合:<br/><br/>
+    Generate a <a href={"https://lit.dev/"}>Lit</a> project using Javascript with:<br/><br/>
 
     wails init -n myproject -t lit
 
-Typescriptプロジェクトを生成する場合:<br/>
+If you would rather use Typescript:<br/>
 
     wails init -n myproject -t lit-ts
 
 </TabItem>
 <TabItem value="Vanilla">
-    Vanilla用のJavascriptプロジェクトを生成する場合:<br/><br/>
+    Generate a Vanilla project using Javascript with:<br/><br/>
 
     wails init -n myproject -t vanilla
 
-Typescriptプロジェクトを生成する場合:<br/>
+If you would rather use Typescript:<br/>
 
     wails init -n myproject -t vanilla-ts
 
 </TabItem>
 </Tabs>
-
-<!-- @formatter:on -->
+```
 
 <hr />
 
-There are also [community templates](../community/templates.mdx) available that offer different capabilities and frameworks.
+様々な機能やフレームワークを提供する[コミュニティテンプレート](../community/templates.mdx)を利用することもできます。
 
-To see the other options available, you can run `wails init -help`. More details can be found in the [CLI Reference](../reference/cli.mdx#init).
+プロジェクト生成時に使用可能なオプションを確認するには、`wails init -help`を実行してください。 詳しくは、[CLIリファレンス](../reference/cli.mdx#init)を参照してください。
 
-## Project Layout
+## プロジェクトのディレクトリ構成
 
-Wails projects have the following layout:
+Wailsのプロジェクトディレクトリの構成は次のとおりです:
 
 ```
 .
@@ -111,20 +111,20 @@ Wails projects have the following layout:
 └── wails.json
 ```
 
-### Project structure rundown
+### プロジェクトの構造
 
-- `/main.go` - The main application
-- `/frontend/` - Frontend project files
-- `/build/` - Project build directory
-- `/build/appicon.png` - The application icon
-- `/build/darwin/` - Mac specific project files
-- `/build/windows/` - Windows specific project files
-- `/wails.json` - The project configuration
-- `/go.mod` - Go module file
-- `/go.sum` - Go module checksum file
+- `/main.go` - アプリのメインコード
+- `/frontend/` - フロントエンドのプロジェクトディレクトリ
+- `/build/` - ビルドディレクトリ
+- `/build/appicon.png` - アプリアイコン
+- `/build/darwin/` - Mac固有のプロジェクトディレクトリ
+- `/build/windows/` - Windows固有のプロジェクトディレクトリ
+- `/wails.json` - プロジェクト構成ファイル
+- `/go.mod` - Goモジュール定義ファイル
+- `/go.sum` - Goモジュールチェックサムファイル
 
-The `frontend` directory has nothing specific to Wails and can be any frontend project of your choosing.
+`frontend`ディレクトリ内は、Wailsで決まったファイル構成等は無く、お好きなフロントエンドプロジェクトを配置することができます。
 
-The `build` directory is used during the build process. These files may be updated to customise your builds. If files are removed from the build directory, default versions will be regenerated.
+`build`ディレクトリは、アプリのビルド時に使用されます。 この中のファイルは、ビルドの挙動をカスタマイズするために、適宜ファイル内容を書き換えることができます。 buildディレクトリ内のファイルを削除すると、デフォルトのファイルが再生成されます。
 
-The default module name in `go.mod` is "changeme". You should change this to something more appropriate.
+`go.mod`のモジュール名は、最初は"changeme"になっています。 このモジュール名は、あなたのプロジェクトに適切な名前に変更しましょう。

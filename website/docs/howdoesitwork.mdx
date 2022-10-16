@@ -12,7 +12,7 @@ Javascript methods that can be called, just as if they were local Javascript met
 
 ```mdx-code-block
 <div className="text--center">
-  <img src={require("@site/static/img/architecture.webp").default} width="75%" />
+  <img src={require("@site/static/img/architecture.webp").default} style={{"width":"75%", "max-width":"800px"}} />
 </div>
 ```
 
@@ -264,10 +264,11 @@ In the example above, `Greet` only returns a `string` so the Javascript call wil
 is passed to it.
 
 All data types are correctly translated between Go and Javascript. Even structs. If you return a struct from a Go call,
-it will be returned to your frontend as a Javascript class. Note: If you wish to use structs, you **must** define
-`json` struct tags for your fields!
+it will be returned to your frontend as a Javascript class.
 
 :::info Note
+
+Struct fields *must* have a valid `json` tag to be included in the generated Typescript.
 
 Anonymous nested structs are not supported at this time.
 

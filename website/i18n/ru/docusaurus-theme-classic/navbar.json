@@ -1,6 +1,6 @@
 {
   "item.label.Sponsor": {
-    "message": "Sponsor ❤",
+    "message": "Sponsor",
     "description": "Navbar item with label Sponsor"
   },
   "item.label.Docs": {
@@ -11,13 +11,13 @@
     "message": "Blog",
     "description": "Navbar item with label Blog"
   },
-  "item.label.GitHub": {
-    "message": "GitHub",
-    "description": "Navbar item with label GitHub"
-  },
   "item.label.About": {
     "message": "About",
     "description": "Navbar item with label About"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
   },
   "item.label.FAQ": {
     "message": "FAQ",
@@ -30,6 +30,10 @@
   "item.label.Community Guide": {
     "message": "Community Guide",
     "description": "Navbar item with label Community Guide"
+  },
+  "item.label.Code of Conduct": {
+    "message": "Code of Conduct",
+    "description": "Navbar item with label Code of Conduct"
   },
   "item.label.Credits": {
     "message": "Credits",

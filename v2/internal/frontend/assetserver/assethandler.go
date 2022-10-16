@@ -14,7 +14,6 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/logger"
-	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
 //go:embed defaultindex.html
@@ -33,8 +32,7 @@ type assetHandler struct {
 	retryMissingFiles bool
 }
 
-func NewAssetHandler(ctx context.Context, options *options.App) (http.Handler, error) {
-	vfs := options.Assets
+func NewAssetHandler(ctx context.Context, vfs iofs.FS, assetsHandler http.Handler) (http.Handler, error) {
 	if vfs != nil {
 		if _, err := vfs.Open("."); err != nil {
 			return nil, err
@@ -53,7 +51,7 @@ func NewAssetHandler(ctx context.Context, options *options.App) (http.Handler, e
 
 	result := &assetHandler{
 		fs:      vfs,
-		handler: options.AssetsHandler,
+		handler: assetsHandler,
 	}
 
 	if _logger := ctx.Value("logger"); _logger != nil {
@@ -71,11 +69,11 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			filename = indexHTML
 		}
 
-		d.logDebug("[AssetHandler] Loading file '%s'", filename)
+		d.logDebug("Loading file '%s'", filename)
 		if err := d.serveFSFile(rw, filename); err != nil {
 			if os.IsNotExist(err) {
 				if handler != nil {
-					d.logDebug("[AssetHandler] File '%s' not found, serving '%s' by AssetHandler", filename, req.URL)
+					d.logDebug("File '%s' not found, serving '%s' by AssetHandler", filename, req.URL)
 					handler.ServeHTTP(rw, req)
 					err = nil
 				} else if filename == indexHTML {
@@ -87,12 +85,12 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			}
 
 			if err != nil {
-				d.logError("[AssetHandler] Unable to load file '%s': %s", filename, err)
+				d.logError("Unable to load file '%s': %s", filename, err)
 				http.Error(rw, err.Error(), http.StatusInternalServerError)
 			}
 		}
 	} else if handler != nil {
-		d.logDebug("[AssetHandler] No GET request, serving '%s' by AssetHandler", req.URL)
+		d.logDebug("No GET request, serving '%s' by AssetHandler", req.URL)
 		handler.ServeHTTP(rw, req)
 	} else {
 		rw.WriteHeader(http.StatusMethodNotAllowed)

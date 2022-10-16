@@ -59,6 +59,14 @@ type Frontend struct {
 	dispatcher frontend.Dispatcher
 }
 
+func (f *Frontend) RunMainLoop() {
+	C.RunMainLoop()
+}
+
+func (f *Frontend) WindowClose() {
+	C.ReleaseContext(f.mainWindow.context)
+}
+
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 	result := &Frontend{
 		frontendOptions: appoptions,
@@ -82,7 +90,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		} else {
 			appBindings.DB().UpdateObfuscatedCallMap()
 		}
-		assets, err := assetserver.NewAssetServer(ctx, appoptions, bindings)
+		assets, err := assetserver.NewAssetServer(ctx, appoptions.Assets, appoptions.AssetsHandler, bindings)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -137,9 +145,7 @@ func (f *Frontend) WindowSetDarkTheme() {
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
-
-	f.ctx = context.WithValue(ctx, "frontend", f)
-
+	f.ctx = ctx
 	var _debug = ctx.Value("debug")
 	if _debug != nil {
 		f.debug = _debug.(bool)

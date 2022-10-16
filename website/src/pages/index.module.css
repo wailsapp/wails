@@ -4,17 +4,10 @@
  */
 
 .heroBanner {
-  padding: 1rem 0;
   text-align: center;
   position: relative;
   overflow: hidden;
-  padding-bottom: 35px;
-}
-
-@media screen and (max-width: 966px) {
-  .heroBanner {
-    padding: 2rem;
-  }
+  padding: 1rem 0 5px;
 }
 
 .buttons {
@@ -32,4 +25,9 @@
     flex-direction: column;
     row-gap: 1rem;
   }
+
+  .heroBanner {
+    padding: 1rem 0 1rem;
+  }
+
 }

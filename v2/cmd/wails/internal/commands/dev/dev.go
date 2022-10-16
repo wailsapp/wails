@@ -160,6 +160,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		buildOptions := generateBuildOptions(flags)
+		buildOptions.SkipBindings = flags.skipBindings
 		buildOptions.Logger = logger
 
 		userTags, err := buildtags.Parse(flags.tags)
@@ -169,7 +170,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		buildOptions.UserTags = userTags
 
-		if !flags.skipBindings {
+		if !buildOptions.SkipBindings {
 			if flags.verbosity == build.VERBOSE {
 				LogGreen("Generating Bindings...")
 			}
@@ -573,7 +574,19 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 		case err := <-watcher.Errors:
 			LogDarkYellow(err.Error())
 		case item := <-watcher.Events:
-			// Check for file writes
+			isEligibleFile := func(fileName string) bool {
+				// Iterate all file patterns
+				ext := filepath.Ext(fileName)
+				if ext != "" {
+					ext = ext[1:]
+					if _, exists := extensionsThatTriggerARebuild[ext]; exists {
+						return true
+					}
+				}
+				return false
+			}
+
+			// Handle write operations
 			if item.Op&fsnotify.Write == fsnotify.Write {
 				// Ignore directories
 				itemName := item.Name
@@ -581,15 +594,10 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 					continue
 				}
 
-				// Iterate all file patterns
-				ext := filepath.Ext(itemName)
-				if ext != "" {
-					ext = ext[1:]
-					if _, exists := extensionsThatTriggerARebuild[ext]; exists {
-						rebuild = true
-						timer.Reset(interval)
-						continue
-					}
+				if isEligibleFile(itemName) {
+					rebuild = true
+					timer.Reset(interval)
+					continue
 				}
 
 				for _, reloadDir := range dirsThatTriggerAReload {
@@ -605,7 +613,8 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 
 				timer.Reset(interval)
 			}
-			// Check for new directories
+
+			// Handle new fs entries that are created
 			if item.Op&fsnotify.Create == fsnotify.Create {
 				// If this is a folder, add it to our watch list
 				if fs.DirExists(item.Name) {
@@ -617,6 +626,14 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 						}
 						LogGreen("Added new directory to watcher: %s", item.Name)
 					}
+				} else if isEligibleFile(item.Name) {
+					// Handle creation of new file.
+					// Note: On some platforms an update to a file is represented as
+					// REMOVE -> CREATE instead of WRITE, so this is not only new files
+					// but also updates to existing files
+					rebuild = true
+					timer.Reset(interval)
+					continue
 				}
 			}
 		case <-timer.C:

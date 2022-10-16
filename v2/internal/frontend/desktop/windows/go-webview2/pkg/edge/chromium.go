@@ -372,3 +372,10 @@ func (e *Chromium) Focus() {
 		log.Fatal(err)
 	}
 }
+
+func (e *Chromium) PutZoomFactor(zoomFactor float64) {
+	err := e.controller.PutZoomFactor(zoomFactor)
+	if err != nil {
+		log.Fatal(err)
+	}
+}

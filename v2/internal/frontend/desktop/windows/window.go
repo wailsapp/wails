@@ -99,17 +99,16 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		result.SetMaxSize(appoptions.MaxWidth, appoptions.MaxHeight)
 	}
 
-	result.updateTheme()
+	result.UpdateTheme()
 
 	if appoptions.Windows != nil {
 		result.OnSuspend = appoptions.Windows.OnSuspend
 		result.OnResume = appoptions.Windows.OnResume
 		if appoptions.Windows.WindowIsTranslucent {
-			// TODO: Migrate to win32 package
-			if !win32.IsWindowsVersionAtLeast(10, 0, 22579) {
+			if !win32.SupportsBackdropTypes() {
 				result.SetTranslucentBackground()
 			} else {
-				win32.EnableTranslucency(result.Handle(), win32.BackdropType(appoptions.Windows.TranslucencyType))
+				win32.EnableTranslucency(result.Handle(), win32.BackdropType(appoptions.Windows.BackdropType))
 			}
 		}
 
@@ -128,11 +127,6 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 	}
 
 	return result
-}
-
-func (w *Window) Run() int {
-	w.updateTheme()
-	return winc.RunMainLoop()
 }
 
 func (w *Window) Fullscreen() {
@@ -191,7 +185,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lparam)))
 		if settingChanged == "ImmersiveColorSet" {
 			w.themeChanged = true
-			w.updateTheme()
+			w.UpdateTheme()
 		}
 		return 0
 	case w32.WM_NCLBUTTONDOWN:
@@ -205,10 +199,10 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 		w.themeChanged = true
 		if int(wparam) == w32.WA_INACTIVE {
 			w.isActive = false
-			w.updateTheme()
+			w.UpdateTheme()
 		} else {
 			w.isActive = true
-			w.updateTheme()
+			w.UpdateTheme()
 			//}
 		}
 
@@ -304,6 +298,6 @@ func (w *Window) SetTheme(theme winoptions.Theme) {
 	w.theme = theme
 	w.themeChanged = true
 	w.Invoke(func() {
-		w.updateTheme()
+		w.UpdateTheme()
 	})
 }
