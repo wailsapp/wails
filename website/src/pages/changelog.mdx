@@ -5,6 +5,64 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.1.0 - 2022-10-XX
+
+### Added
+* [Support for defaulting to No button in Windows dialogs](https://wails.io/docs/reference/runtime/dialog/#windows) - @leaanthony in https://github.com/wailsapp/wails/pull/1875
+* Add missing resize for frameless window on Linux - @Lyimmi in https://github.com/wailsapp/wails/pull/1918
+* [Add window transparency for linux](https://wails.io/docs/reference/options#windowistranslucent-2) - @Lyimmi in https://github.com/wailsapp/wails/pull/1926
+* [Add WindowExecJS method](https://wails.io/docs/reference/runtime/window#windowexecjs) - @leaanthony in https://github.com/wailsapp/wails/pull/1927
+* [Add support for `Info.dev.plist` on macOS](https://wails.io/docs//reference/cli#dev) - @leaanthony in https://github.com/wailsapp/wails/pull/1960
+* [Add ZoomFactor get/set and add the respective windows only options](https://wails.io/docs/reference/options#zoomfactor) - @pierrejoye in https://github.com/wailsapp/wails/pull/1463
+
+### Fixed
+* Quote command arguments if they have a space - @leaanthony in https://github.com/wailsapp/wails/pull/1892
+* Fixed Linux frameless window drag - @Lyimmi in https://github.com/wailsapp/wails/pull/1916
+* Fix gtk_window_begin_resize_drag's mouse button - @Lyimmi in https://github.com/wailsapp/wails/pull/1920
+* Fix binding generation special cases - @JulioDRF in https://github.com/wailsapp/wails/pull/1902
+* Remove the `.git` directory in the template - @misitebao in https://github.com/wailsapp/wails/pull/1929
+* Fix wails dev - @JulioDRF in https://github.com/wailsapp/wails/pull/1931
+* Fix for considering new `go` files in dev filesystem watcher - @scottopell in https://github.com/wailsapp/wails/pull/1946
+* Prevent type parsing to interfere with Typescript package name - @ValentinTrinque in https://github.com/wailsapp/wails/pull/1942
+* [dev] Do not try to infer assetdir from fs.FS when a frontend dev server is in use - @stffabi in https://github.com/wailsapp/wails/pull/1972
+
+### Changed
+* Add PR checks - @leaanthony in https://github.com/wailsapp/wails/pull/1879
+* Auto label project cards - @leaanthony in https://github.com/wailsapp/wails/pull/1881
+* Add issue translator - @leaanthony in https://github.com/wailsapp/wails/pull/1891
+* Update label names in the issue template - @misitebao in https://github.com/wailsapp/wails/pull/1893
+* obfuscated instead of obfuscate in the docs - @arifali123 in https://github.com/wailsapp/wails/pull/1895
+* [assetHandler] Remove redundant log prefix - @stffabi in https://github.com/wailsapp/wails/pull/1896
+* [dev] Do not generate bindings in the dev app itself - @stffabi in https://github.com/wailsapp/wails/pull/1899
+* Update Chinese translation - @almas1992 in https://github.com/wailsapp/wails/pull/1894
+* Refactor app - @leaanthony in https://github.com/wailsapp/wails/pull/1909
+* Update documents - @misitebao in https://github.com/wailsapp/wails/pull/1907 https://github.com/wailsapp/wails/pull/1936
+* Adding Tutorial link - @raguay in https://github.com/wailsapp/wails/pull/1903
+* Add react-ts-vite-tailwind template - @hotafrika in https://github.com/wailsapp/wails/pull/1930
+* Update README.zh-Hans.md - @o8x in https://github.com/wailsapp/wails/pull/1949
+* Add Elm Tailwind CSS community template - @rnice01 in https://github.com/wailsapp/wails/pull/1939
+* Chore/generate sponsors - @leaanthony in https://github.com/wailsapp/wails/pull/1965
+* Use swc + pnpm for website - @leaanthony in https://github.com/wailsapp/wails/pull/1966
+* Sort structs in models.ts - @leaanthony in https://github.com/wailsapp/wails/pull/1961
+
+## What's Changed
+
+* Update Sponsor Image - @github-actions in https://github.com/wailsapp/wails/pull/1973
+* docs: sync documents - @misitebao in https://github.com/wailsapp/wails/pull/1968
+* Update events.mdx  - @cuigege in https://github.com/wailsapp/wails/pull/1979
+* fix: init command not listed in wails help message - @lyon-lee-dev in https://github.com/wailsapp/wails/pull/1976
+
+## New Contributors
+* @arifali123 made their first contribution in https://github.com/wailsapp/wails/pull/1895
+* @almas1992 made their first contribution in https://github.com/wailsapp/wails/pull/1894
+* @JulioDRF made their first contribution in https://github.com/wailsapp/wails/pull/1902
+* @hotafrika made their first contribution in https://github.com/wailsapp/wails/pull/1930
+* @scottopell made their first contribution in https://github.com/wailsapp/wails/pull/1946
+* @o8x made their first contribution in https://github.com/wailsapp/wails/pull/1949
+* @rnice01 made their first contribution in https://github.com/wailsapp/wails/pull/1939
+* @cuigege made their first contribution in https://github.com/wailsapp/wails/pull/1979
+* @lyon-lee-dev made their first contribution in https://github.com/wailsapp/wails/pull/1976
+
 ## v2.0.0 - 2022-09-22
 
 ## Fixed

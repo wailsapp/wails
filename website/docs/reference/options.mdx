@@ -363,21 +363,6 @@ Indicates what value the `CSSDragProperty` style should have to drag the window.
 Name: CSSDragValue<br/>
 Type: `string`
 
-### ZoomFactor
-
-Name: ZoomFactor<br/>
-Type: `float64`
-
-This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
-
-### IsZoomControlEnabled
-
-Name: IsZoomControlEnabled<br/>
-Type: `bool`
-
-This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while
-disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
-
 ### Bind
 
 A slice of struct instances defining methods that need to be bound to the frontend.
@@ -472,6 +457,21 @@ Important information about distribution of fixed version runtime:
 
 Name: WebviewBrowserPath<br/>
 Type: `string`
+
+### ZoomFactor
+
+Name: ZoomFactor<br/>
+Type: `float64`
+
+This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
+
+### IsZoomControlEnabled
+
+Name: IsZoomControlEnabled<br/>
+Type: `bool`
+
+This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while
+disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
 
 #### Theme
 
