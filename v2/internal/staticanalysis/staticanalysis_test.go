@@ -1,7 +1,7 @@
 package staticanalysis
 
 import (
-	"reflect"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -22,8 +22,8 @@ func TestGetEmbedDetails(t *testing.T) {
 			},
 			want: []*EmbedDetails{
 				{
-					SourcePath: "frontend/dist",
-					All:        true,
+					EmbedPath: "frontend/dist",
+					All:       true,
 				},
 			},
 			wantErr: false,
@@ -36,8 +36,10 @@ func TestGetEmbedDetails(t *testing.T) {
 				t.Errorf("GetEmbedDetails() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetEmbedDetails() got = %v, want %v", got, tt.want)
+			require.Equal(t, len(tt.want), len(got))
+			for index, g := range got {
+				require.Equal(t, tt.want[index].EmbedPath, g.EmbedPath)
+				require.Equal(t, tt.want[index].All, g.All)
 			}
 		})
 	}

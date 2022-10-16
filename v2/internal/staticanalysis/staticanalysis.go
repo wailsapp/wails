@@ -8,8 +8,13 @@ import (
 )
 
 type EmbedDetails struct {
-	SourcePath string
-	All        bool
+	BaseDir   string
+	EmbedPath string
+	All       bool
+}
+
+func (e *EmbedDetails) GetFullPath() string {
+	return filepath.Join(e.BaseDir, e.EmbedPath)
 }
 
 func GetEmbedDetails(sourcePath string) ([]*EmbedDetails, error) {
@@ -21,7 +26,7 @@ func GetEmbedDetails(sourcePath string) ([]*EmbedDetails, error) {
 		return nil, err
 	}
 	pkgs, err := packages.Load(&packages.Config{
-		Mode: packages.NeedName | packages.NeedSyntax | packages.NeedTypes | packages.NeedTypesInfo,
+		Mode: packages.NeedName | packages.NeedSyntax | packages.NeedTypes | packages.NeedTypesInfo | packages.NeedCompiledGoFiles,
 		Dir:  absPath,
 	}, "./...")
 	if err != nil {
@@ -29,14 +34,18 @@ func GetEmbedDetails(sourcePath string) ([]*EmbedDetails, error) {
 	}
 	var result []*EmbedDetails
 	for _, pkg := range pkgs {
-		for _, file := range pkg.Syntax {
-			result = append(result, GetEmbedDetailsForFile(file)...)
+		for index, file := range pkg.Syntax {
+			baseDir := filepath.Dir(pkg.CompiledGoFiles[index])
+			embedPaths := GetEmbedDetailsForFile(file, baseDir)
+			if len(embedPaths) > 0 {
+				result = append(result, embedPaths...)
+			}
 		}
 	}
 	return result, nil
 }
 
-func GetEmbedDetailsForFile(file *ast.File) []*EmbedDetails {
+func GetEmbedDetailsForFile(file *ast.File, baseDir string) []*EmbedDetails {
 	var result []*EmbedDetails
 	for _, comment := range file.Comments {
 		for _, c := range comment.List {
@@ -56,8 +65,9 @@ func GetEmbedDetailsForFile(file *ast.File) []*EmbedDetails {
 					path = embedPath
 				}
 				result = append(result, &EmbedDetails{
-					SourcePath: path,
-					All:        all,
+					EmbedPath: path,
+					All:       all,
+					BaseDir:   baseDir,
 				})
 			}
 		}
