@@ -2,6 +2,7 @@ package build
 
 import (
 	"fmt"
+	"github.com/wailsapp/wails/v2/internal/staticanalysis"
 	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 	"log"
 	"os"
@@ -130,6 +131,11 @@ func Build(options *Options) (string, error) {
 		}
 	}
 
+	// Create embed directories if they don't exist
+	if err := CreateEmbedDirectories(cwd, options); err != nil {
+		return "", err
+	}
+
 	// Generate bindings
 	if !options.SkipBindings {
 		err = GenerateBindings(options)
@@ -161,6 +167,35 @@ func Build(options *Options) (string, error) {
 	}
 
 	return compileBinary, nil
+}
+
+func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
+	path := cwd
+	if buildOptions.ProjectData != nil {
+		path = buildOptions.ProjectData.Path
+	}
+	embedDetails, err := staticanalysis.GetEmbedDetails(path)
+	if err != nil {
+		return err
+	}
+
+	for _, embedDetail := range embedDetails {
+		fullPath := embedDetail.GetFullPath()
+		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+			err := os.MkdirAll(fullPath, 0755)
+			if err != nil {
+				return err
+			}
+			f, err := os.Create(filepath.Join(fullPath, "gitkeep"))
+			if err != nil {
+				return err
+			}
+			_ = f.Close()
+		}
+	}
+
+	return nil
+
 }
 
 func GenerateBindings(buildOptions *Options) error {
