@@ -52,13 +52,13 @@ export const eventListeners = {};
  * @param {string} eventName
  * @param {function} callback
  * @param {number} maxCallbacks
- * @returns {Listener}
+ * @returns {function}
  */
 export function EventsOnMultiple(eventName, callback, maxCallbacks) {
     eventListeners[eventName] = eventListeners[eventName] || [];
     const thisListener = new Listener(eventName, callback, maxCallbacks);
     eventListeners[eventName].push(thisListener);
-    return thisListener;
+    return () => ListenerOff(thisListener);
 }
 
 /**
@@ -67,7 +67,7 @@ export function EventsOnMultiple(eventName, callback, maxCallbacks) {
  * @export
  * @param {string} eventName
  * @param {function} callback
- * @returns {Listener}
+ * @returns {function}
  */
 export function EventsOn(eventName, callback) {
     EventsOnMultiple(eventName, callback, -1);
@@ -79,7 +79,7 @@ export function EventsOn(eventName, callback) {
  * @export
  * @param {string} eventName
  * @param {function} callback
- * @returns {Listener}
+ * @returns {function}
  */
 export function EventsOnce(eventName, callback) {
     EventsOnMultiple(eventName, callback, 1);
@@ -186,7 +186,7 @@ export function EventsOff(eventName, ...additionalEventNames) {
  *
  * @param {Listener} listener
  */
- export function ListenerOff(listener) {
+ function ListenerOff(listener) {
     // Remove local listener
     eventListeners[eventName] = eventListeners[eventName].filter(l => l !== listener);
 
