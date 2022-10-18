@@ -87,7 +87,11 @@ window.addEventListener('mouseup', () => {
 });
 
 let dragTest = function (e) {
-    return window.getComputedStyle(e.target).getPropertyValue(window.wails.flags.cssDragProperty) === window.wails.flags.cssDragValue;
+    var val = window.getComputedStyle(e.target).getPropertyValue(window.wails.flags.cssDragProperty);
+    if (val) {
+      val = val.trim();
+    }
+    return val === window.wails.flags.cssDragValue;
 };
 
 window.wails.setCSSDragProperties = function (property, value) {
