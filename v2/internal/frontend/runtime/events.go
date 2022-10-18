@@ -1,9 +1,10 @@
 package runtime
 
 import (
+	"sync"
+
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/logger"
-	"sync"
 )
 
 // eventListener holds a callback function which is invoked when
@@ -36,16 +37,16 @@ func (e *Events) Notify(sender frontend.Frontend, name string, data ...interface
 	}
 }
 
-func (e *Events) On(eventName string, callback func(...interface{})) {
-	e.registerListener(eventName, callback, -1)
+func (e *Events) On(eventName string, callback func(...interface{})) func() {
+	return e.registerListener(eventName, callback, -1)
 }
 
-func (e *Events) OnMultiple(eventName string, callback func(...interface{}), counter int) {
-	e.registerListener(eventName, callback, counter)
+func (e *Events) OnMultiple(eventName string, callback func(...interface{}), counter int) func() {
+	return e.registerListener(eventName, callback, counter)
 }
 
-func (e *Events) Once(eventName string, callback func(...interface{})) {
-	e.registerListener(eventName, callback, 1)
+func (e *Events) Once(eventName string, callback func(...interface{})) func() {
+	return e.registerListener(eventName, callback, 1)
 }
 
 func (e *Events) Emit(eventName string, data ...interface{}) {
@@ -69,7 +70,7 @@ func NewEvents(log *logger.Logger) *Events {
 }
 
 // registerListener provides a means of subscribing to events of type "eventName"
-func (e *Events) registerListener(eventName string, callback func(...interface{}), counter int) {
+func (e *Events) registerListener(eventName string, callback func(...interface{}), counter int) func() {
 	// Create new eventListener
 	thisListener := &eventListener{
 		callback: callback,
@@ -80,6 +81,22 @@ func (e *Events) registerListener(eventName string, callback func(...interface{}
 	// Append the new listener to the listeners slice
 	e.listeners[eventName] = append(e.listeners[eventName], thisListener)
 	e.notifyLock.Unlock()
+	return func() {
+		e.notifyLock.Lock()
+		defer e.notifyLock.Unlock()
+
+		if _, ok := e.listeners[eventName]; !ok {
+			return
+		}
+		newListeners := make([]*eventListener, 0, len(e.listeners[eventName])-1)
+		for i := 0; i != len(e.listeners[eventName]); i++ {
+			if e.listeners[eventName][i] == thisListener {
+				continue
+			}
+			newListeners = append(newListeners, e.listeners[eventName][i])
+		}
+		e.listeners[eventName] = newListeners
+	}
 }
 
 // unRegisterListener provides a means of unsubscribing to events of type "eventName"
