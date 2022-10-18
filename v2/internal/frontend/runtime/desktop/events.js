@@ -52,7 +52,7 @@ export const eventListeners = {};
  * @param {string} eventName
  * @param {function} callback
  * @param {number} maxCallbacks
- * @returns {function}
+ * @returns {function} A function to cancel the listener
  */
 export function EventsOnMultiple(eventName, callback, maxCallbacks) {
     eventListeners[eventName] = eventListeners[eventName] || [];
@@ -67,10 +67,10 @@ export function EventsOnMultiple(eventName, callback, maxCallbacks) {
  * @export
  * @param {string} eventName
  * @param {function} callback
- * @returns {function}
+ * @returns {function} A function to cancel the listener
  */
 export function EventsOn(eventName, callback) {
-    EventsOnMultiple(eventName, callback, -1);
+    return EventsOnMultiple(eventName, callback, -1);
 }
 
 /**
@@ -79,10 +79,10 @@ export function EventsOn(eventName, callback) {
  * @export
  * @param {string} eventName
  * @param {function} callback
- * @returns {function}
+ * @returns {function} A function to cancel the listener
  */
 export function EventsOnce(eventName, callback) {
-    EventsOnMultiple(eventName, callback, 1);
+    return EventsOnMultiple(eventName, callback, 1);
 }
 
 function notifyListeners(eventData) {
