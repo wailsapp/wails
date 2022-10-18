@@ -3,6 +3,7 @@ package runtime
 import (
 	"sync"
 
+	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
@@ -88,14 +89,9 @@ func (e *Events) registerListener(eventName string, callback func(...interface{}
 		if _, ok := e.listeners[eventName]; !ok {
 			return
 		}
-		newListeners := make([]*eventListener, 0, len(e.listeners[eventName])-1)
-		for i := 0; i != len(e.listeners[eventName]); i++ {
-			if e.listeners[eventName][i] == thisListener {
-				continue
-			}
-			newListeners = append(newListeners, e.listeners[eventName][i])
-		}
-		e.listeners[eventName] = newListeners
+		e.listeners[eventName] = lo.Filter(e.listeners[eventName], func(l *eventListener, i int) bool {
+			return l != thisListener
+		})
 	}
 }
 
