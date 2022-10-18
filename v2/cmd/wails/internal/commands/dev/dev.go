@@ -170,6 +170,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		buildOptions.UserTags = userTags
 
+		err = build.CreateEmbedDirectories(cwd, buildOptions)
+		if err != nil {
+			return err
+		}
+
 		if !buildOptions.SkipBindings {
 			if flags.verbosity == build.VERBOSE {
 				LogGreen("Generating Bindings...")
@@ -193,7 +198,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		// Build the frontend if requested, but ignore building the application itself.
 		ignoreFrontend := buildOptions.IgnoreFrontend
 		if !ignoreFrontend {
-			logger.Println("Building frontend for development...")
 			buildOptions.IgnoreApplication = true
 			if _, err := build.Build(buildOptions); err != nil {
 				return err

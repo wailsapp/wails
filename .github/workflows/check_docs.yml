@@ -9,7 +9,7 @@ jobs:
     if: github.repository == 'wailsapp/wails'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Verify Changed files
         uses: tj-actions/verify-changed-files@v11.1
