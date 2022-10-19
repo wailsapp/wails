@@ -1,13 +1,13 @@
 package build
 
 import (
-	"os"
-	"path/filepath"
-
+	"fmt"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal"
+	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/gomod"
 	"github.com/wailsapp/wails/v2/internal/goversion"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
+	"os"
 )
 
 func SyncGoMod(logger *clilogger.CLILogger, updateWailsVersion bool) error {
@@ -15,7 +15,10 @@ func SyncGoMod(logger *clilogger.CLILogger, updateWailsVersion bool) error {
 	if err != nil {
 		return err
 	}
-	gomodFilename := filepath.Join(cwd, "go.mod")
+	gomodFilename := fs.FindFileInParents(cwd, "go.mod")
+	if gomodFilename == "" {
+		return fmt.Errorf("no go.mod file found")
+	}
 	gomodData, err := os.ReadFile(gomodFilename)
 	if err != nil {
 		return err
