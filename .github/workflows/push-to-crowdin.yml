@@ -30,7 +30,7 @@ jobs:
 
       - name: Push files
         env:
-          GITHUB_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
         run: |
           cd website
           corepack enable
