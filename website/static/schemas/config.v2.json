@@ -156,7 +156,7 @@
             "description": "Whether the binary should be obfuscated. Uses <https://github.com/burrowers/garble>."
         },
         "garbleargs": {
-            "type": "boolean",
+            "type": "string",
             "description": "The arguments to pass to the garble command when using the obfuscated flag"
         }
     },
