@@ -5,8 +5,11 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/logger"
 )
+
+type Logger interface {
+	Trace(format string, v ...interface{})
+}
 
 // eventListener holds a callback function which is invoked when
 // the event listened for is emitted. It has a counter which indicates
@@ -20,7 +23,7 @@ type eventListener struct {
 
 // Events handles eventing
 type Events struct {
-	log      *logger.Logger
+	log      Logger
 	frontend []frontend.Frontend
 
 	// Go event listeners
@@ -62,7 +65,7 @@ func (e *Events) Off(eventName string) {
 }
 
 // NewEvents creates a new log subsystem
-func NewEvents(log *logger.Logger) *Events {
+func NewEvents(log Logger) *Events {
 	result := &Events{
 		log:       log,
 		listeners: make(map[string][]*eventListener),
