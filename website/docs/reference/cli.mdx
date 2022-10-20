@@ -167,7 +167,7 @@ Your system is ready for Wails development!
 - On macOS, it will bundle the application into a `.app` file and run it. It will use a `build/darwin/Info.dev.plist` for development.
 
 | Flag                         | Description                                                                                                                                                                         | Default               |
-| :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------- |
+|:-----------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------|
 | -assetdir "./path/to/assets" | Serve assets from the given directory instead of using the provided asset FS                                                                                                        | Value in `wails.json` |
 | -browser                     | Opens a browser to `http://localhost:34115` on startup                                                                                                                              |                       |
 | -compiler "compiler"         | Use a different go compiler to build, eg go1.15beta1                                                                                                                                | go                    |
@@ -177,6 +177,7 @@ Your system is ready for Wails development!
 | -tags "extra tags"           | Build tags to pass to compiler (quoted and space separated)                                                                                                                         |                       |
 | -loglevel "loglevel"         | Loglevel to use - Trace, Debug, Info, Warning, Error                                                                                                                                | Debug                 |
 | -noreload                    | Disable automatic reload when assets change                                                                                                                                         |                       |
+| -nocolour                    | Turn off colour cli output                                                                                                                                                          | false                 |
 | -nogen                       | Disable generate module                                                                                                                                                             |                       |
 | -v                           | Verbosity level (0 - silent, 1 - standard, 2 - verbose)                                                                                                                             | 1                     |
 | -wailsjsdir                  | The directory to generate the generated Wails JS modules                                                                                                                            | Value in `wails.json` |
