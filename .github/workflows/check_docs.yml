@@ -16,7 +16,8 @@ jobs:
         id: verify-changed-files
         with:
           files: |
-            v2/website/*.mdx
+            website/**/*.mdx
+            website/**/*.md
 
       - name: Run step only when files change.
         if: steps.verify-changed-files.outputs.files_changed != 'true'
