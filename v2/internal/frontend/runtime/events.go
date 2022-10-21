@@ -64,6 +64,13 @@ func (e *Events) Off(eventName string) {
 	e.unRegisterListener(eventName)
 }
 
+func (e *Events) OffAll() {
+	e.notifyLock.Lock()
+	for eventName := range e.listeners {
+		delete(e.listeners, eventName)
+	}
+}
+
 // NewEvents creates a new log subsystem
 func NewEvents(log Logger) *Events {
 	result := &Events{

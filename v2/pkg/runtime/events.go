@@ -22,6 +22,12 @@ func EventsOff(ctx context.Context, eventName string, additionalEventNames ...st
 	}
 }
 
+// EventsOff unregisters a listener for the given event name, optionally multiple listeneres can be unregistered via `additionalEventNames`
+func EventsOffAll(ctx context.Context) {
+	events := getEvents(ctx)
+	events.OffAll()
+}
+
 // EventsOnce registers a listener for the given event name. After the first callback, the
 // listener is deleted.
 func EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{})) func() {

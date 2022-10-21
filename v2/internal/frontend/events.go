@@ -6,5 +6,6 @@ type Events interface {
 	Once(eventName string, callback func(...interface{})) func()
 	Emit(eventName string, data ...interface{})
 	Off(eventName string)
+	OffAll()
 	Notify(sender Frontend, name string, data ...interface{})
 }
