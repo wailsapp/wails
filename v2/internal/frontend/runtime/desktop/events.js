@@ -27,18 +27,18 @@ class Listener {
     constructor(eventName, callback, maxCallbacks) {
         this.eventName = eventName;
         // Default of -1 means infinite
-        maxCallbacks = maxCallbacks || -1;
+        this.maxCallbacks = maxCallbacks || -1;
         // Callback invokes the callback with the given data
         // Returns true if this listener should be destroyed
         this.Callback = (data) => {
             callback.apply(null, data);
             // If maxCallbacks is infinite, return false (do not destroy)
-            if (maxCallbacks === -1) {
+            if (this.maxCallbacks === -1) {
                 return false;
             }
             // Decrement maxCallbacks. Return true if now 0, otherwise false
-            maxCallbacks -= 1;
-            return maxCallbacks === 0;
+            this.maxCallbacks -= 1;
+            return this.maxCallbacks === 0;
         };
     }
 }
@@ -58,7 +58,7 @@ export function EventsOnMultiple(eventName, callback, maxCallbacks) {
     eventListeners[eventName] = eventListeners[eventName] || [];
     const thisListener = new Listener(eventName, callback, maxCallbacks);
     eventListeners[eventName].push(thisListener);
-    return () => ListenerOff(thisListener);
+    return () => listenerOff(thisListener);
 }
 
 /**
@@ -113,7 +113,11 @@ function notifyListeners(eventData) {
         }
 
         // Update callbacks with new list of listeners
-        eventListeners[eventName] = newEventListenerList;
+        if (newEventListenerList.length === 0) {
+            removeListener(eventName);
+        } else {
+            eventListeners[eventName] = newEventListenerList;
+        }
     }
 }
 
@@ -182,19 +186,27 @@ export function EventsOff(eventName, ...additionalEventNames) {
 }
 
 /**
- * ListenerOff unregisters a listener previously registered with EventsOn
+ * Off unregisters all event listeners previously registered with On
+ */
+ export function EventsOffAll() {
+    const eventNames = Object.keys(eventListeners);
+    for (let i = 0; i !== eventNames.length; i++) {
+        removeListener(eventNames[i]);
+    }
+}
+
+/**
+ * listenerOff unregisters a listener previously registered with EventsOn
  *
  * @param {Listener} listener
  */
- function ListenerOff(listener) {
+ function listenerOff(listener) {
     const eventName = listener.eventName;
     // Remove local listener
     eventListeners[eventName] = eventListeners[eventName].filter(l => l !== listener);
 
     // Clean up if there are no event listeners left
     if (eventListeners[eventName].length === 0) {
-        delete eventListeners[eventName];
-        // Notify Go listeners
-        window.WailsInvoke('EX' + eventName);
+        removeListener(eventName);
     }
 }
