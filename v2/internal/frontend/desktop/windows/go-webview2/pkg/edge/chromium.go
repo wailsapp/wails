@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync/atomic"
+	"syscall"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/internal/w32"
@@ -86,34 +87,18 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 		dataPath = filepath.Join(os.Getenv("AppData"), currentExeName)
 	}
 
-	var browserPathPtr *uint16 = nil
 	if e.BrowserPath != "" {
-		if _, err := os.Stat(e.BrowserPath); !errors.Is(err, os.ErrNotExist) {
-			browserPathPtr, err = windows.UTF16PtrFromString(e.BrowserPath)
-			if err != nil {
-				log.Printf("Error calling UTF16PtrFromString for %s: %v", e.BrowserPath, err)
-				return false
-			}
-		} else {
+		if _, err := os.Stat(e.BrowserPath); errors.Is(err, os.ErrNotExist) {
 			log.Printf("Browser path %s does not exist", e.BrowserPath)
 			return false
 		}
 	}
 
-	dataPathPtr, err := windows.UTF16PtrFromString(dataPath)
-	if err != nil {
-		log.Printf("Error calling UTF16PtrFromString for %s: %v", dataPath, err)
+	if err := createCoreWebView2EnvironmentWithOptions(e.BrowserPath, dataPath, e.envCompleted); err != nil {
+		log.Printf("Error calling Webview2Loader: %v", err)
 		return false
 	}
 
-	res, err := createCoreWebView2EnvironmentWithOptions(browserPathPtr, dataPathPtr, 0, e.envCompleted)
-	if err != nil {
-		log.Printf("Error calling Webview2Loader: %v", err)
-		return false
-	} else if res != 0 {
-		log.Printf("Result: %08x", res)
-		return false
-	}
 	var msg w32.Msg
 	for {
 		if atomic.LoadUintptr(&e.inited) != 0 {
@@ -185,8 +170,8 @@ func (e *Chromium) Release() uintptr {
 }
 
 func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environment) uintptr {
-	if int64(res) < 0 {
-		log.Fatalf("Creating environment failed with %08x", res)
+	if int32(res) < 0 {
+		log.Fatalf("Creating environment failed with %08x: %s", res, syscall.Errno(res))
 	}
 	env.vtbl.AddRef.Call(uintptr(unsafe.Pointer(env)))
 	e.environment = env
@@ -200,8 +185,8 @@ func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environme
 }
 
 func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller *ICoreWebView2Controller) uintptr {
-	if int64(res) < 0 {
-		log.Fatalf("Creating controller failed with %08x", res)
+	if int32(res) < 0 {
+		log.Fatalf("Creating controller failed with %08x: %s", res, syscall.Errno(res))
 	}
 	controller.vtbl.AddRef.Call(uintptr(unsafe.Pointer(controller)))
 	e.controller = controller
