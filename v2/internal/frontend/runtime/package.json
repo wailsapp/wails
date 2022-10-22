@@ -9,13 +9,15 @@
     "build:ipc-dev": "cd dev && npm install && npm run build",
     "build:runtime-desktop-prod": "npx esbuild desktop/main.js --bundle --minify --outfile=runtime_prod_desktop.js --define:ENV=1",
     "build:runtime-desktop-dev": "npx esbuild desktop/main.js --bundle --sourcemap=inline --outfile=runtime_dev_desktop.js --define:ENV=0",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest"
   },
   "author": "Lea Anthony <lea.anthony@gmail.com>",
   "license": "ISC",
   "devDependencies": {
     "esbuild": "^0.15.6",
+    "happy-dom": "^7.6.0",
     "npm-run-all": "^4.1.5",
-    "svelte": "^3.49.0"
+    "svelte": "^3.49.0",
+    "vitest": "^0.24.3"
   }
 }
