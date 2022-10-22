@@ -1,4 +1,5 @@
 {
+  "$schema": "https://wails.io/schemas/config.v2.json",
   "name": "{{.ProjectName}}",
   "outputfilename": "{{.BinaryName}}",
   "frontend:install": "npm install",
