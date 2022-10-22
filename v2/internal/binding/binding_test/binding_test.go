@@ -29,6 +29,7 @@ func TestBindings_GenerateModels(t *testing.T) {
 		NonStringMapKeyTest,
 		SingleFieldTest,
 		MultistructTest,
+		EmptyStructTest,
 	}
 
 	testLogger := &logger.Logger{}
