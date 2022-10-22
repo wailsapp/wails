@@ -93,6 +93,7 @@ type devFlags struct {
 
 	frontendDevServerURL string
 	skipFrontend         bool
+	noColour             bool
 }
 
 // AddSubcommand adds the `dev` command for the Wails application
@@ -108,6 +109,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.StringFlag("reloaddirs", "Additional directories to trigger reloads (comma separated)", &flags.reloadDirs)
 	command.BoolFlag("browser", "Open application in browser", &flags.openBrowser)
 	command.BoolFlag("noreload", "Disable reload on asset change", &flags.noReload)
+	command.BoolFlag("nocolour", "Turn off colour cli output", &flags.noColour)
 	command.BoolFlag("skipbindings", "Skip bindings generation", &flags.skipBindings)
 	command.StringFlag("wailsjsdir", "Directory to generate the Wails JS modules", &flags.wailsjsdir)
 	command.StringFlag("tags", "Build tags to pass to Go compiler. Must be quoted. Space or comma (but not both) separated", &flags.tags)
@@ -123,6 +125,10 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.BoolFlag("s", "Skips building the frontend", &flags.skipFrontend)
 
 	command.Action(func() error {
+		if flags.noColour {
+			colour.ColourEnabled = false
+		}
+
 		// Create logger
 		logger := clilogger.New(w)
 		app.PrintBanner()
@@ -170,6 +176,11 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		buildOptions.UserTags = userTags
 
+		err = build.CreateEmbedDirectories(cwd, buildOptions)
+		if err != nil {
+			return err
+		}
+
 		if !buildOptions.SkipBindings {
 			if flags.verbosity == build.VERBOSE {
 				LogGreen("Generating Bindings...")
@@ -193,7 +204,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		// Build the frontend if requested, but ignore building the application itself.
 		ignoreFrontend := buildOptions.IgnoreFrontend
 		if !ignoreFrontend {
-			logger.Println("Building frontend for development...")
 			buildOptions.IgnoreApplication = true
 			if _, err := build.Build(buildOptions); err != nil {
 				return err

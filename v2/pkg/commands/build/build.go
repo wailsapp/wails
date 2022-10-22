@@ -2,12 +2,16 @@ package build
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v2/internal/colour"
+	"github.com/wailsapp/wails/v2/internal/staticanalysis"
+	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 
 	"github.com/wailsapp/wails/v2/internal/fs"
 
@@ -130,6 +134,11 @@ func Build(options *Options) (string, error) {
 		}
 	}
 
+	// Create embed directories if they don't exist
+	if err := CreateEmbedDirectories(cwd, options); err != nil {
+		return "", err
+	}
+
 	// Generate bindings
 	if !options.SkipBindings {
 		err = GenerateBindings(options)
@@ -161,6 +170,35 @@ func Build(options *Options) (string, error) {
 	}
 
 	return compileBinary, nil
+}
+
+func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
+	path := cwd
+	if buildOptions.ProjectData != nil {
+		path = buildOptions.ProjectData.Path
+	}
+	embedDetails, err := staticanalysis.GetEmbedDetails(path)
+	if err != nil {
+		return err
+	}
+
+	for _, embedDetail := range embedDetails {
+		fullPath := embedDetail.GetFullPath()
+		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+			err := os.MkdirAll(fullPath, 0755)
+			if err != nil {
+				return err
+			}
+			f, err := os.Create(filepath.Join(fullPath, "gitkeep"))
+			if err != nil {
+				return err
+			}
+			_ = f.Close()
+		}
+	}
+
+	return nil
+
 }
 
 func GenerateBindings(buildOptions *Options) error {
@@ -284,6 +322,20 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 			return "", err
 		}
 		outputLogger.Println("Done.")
+	}
+
+	if options.Platform == "windows" {
+		const expWebView2Loader = "exp_gowebview2loader"
+
+		message := ""
+		tags := options.UserTags
+		if lo.Contains(tags, expWebView2Loader) {
+			message = "Thanks for testing the new experimental Go native WebView2Loader. Please report your feedback and any bugs you think might be related to using the new loader: https://github.com/wailsapp/wails/issues/2004"
+		} else {
+			tags = append(tags, expWebView2Loader)
+			message = fmt.Sprintf("An experimental Go native WebView2Loader is available. We would love to hear your feedback about it and invite you to test it by building with `-tags %s`", strings.Join(tags, ","))
+		}
+		println(colour.Green("  - " + message))
 	}
 
 	return options.CompiledBinary, nil

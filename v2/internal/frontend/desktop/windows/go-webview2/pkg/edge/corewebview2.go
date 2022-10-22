@@ -11,7 +11,6 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/internal/w32"
 
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webviewloader"
 	"golang.org/x/sys/windows"
 )
 
@@ -48,15 +47,6 @@ const (
 	CoreWebView2PermissionStateDeny
 )
 
-func createCoreWebView2EnvironmentWithOptions(browserExecutableFolder, userDataFolder *uint16, environmentOptions uintptr, environmentCompletedHandle *iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler) (uintptr, error) {
-	return webviewloader.CreateCoreWebView2EnvironmentWithOptions(
-		browserExecutableFolder,
-		userDataFolder,
-		environmentOptions,
-		uintptr(unsafe.Pointer(environmentCompletedHandle)),
-	)
-}
-
 // ComProc stores a COM procedure.
 type ComProc uintptr
 
@@ -65,8 +55,9 @@ func NewComProc(fn interface{}) ComProc {
 	return ComProc(windows.NewCallback(fn))
 }
 
-//go:uintptrescapes
 // Call calls a COM procedure.
+//
+//go:uintptrescapes
 func (p ComProc) Call(a ...uintptr) (r1, r2 uintptr, lastErr error) {
 	// The magic uintptrescapes comment is needed to prevent moving uintptr(unsafe.Pointer(p)) so calls to .Call() also
 	// satisfy the unsafe.Pointer rule "(4) Conversion of a Pointer to a uintptr when calling syscall.Syscall."

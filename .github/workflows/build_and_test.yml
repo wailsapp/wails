@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install linux dependencies
         if: matrix.os == 'ubuntu-latest'
@@ -43,7 +43,7 @@ jobs:
         go-version: [ 1.18, 1.19 ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Go
         uses: actions/setup-go@v3
