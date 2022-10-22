@@ -187,7 +187,11 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 				continue
 			}
 			fqname := field.Type.String()
-			sName := strings.Split(fqname, ".")[1]
+			sNameSplit := strings.Split(fqname, ".")
+			if len(sNameSplit) < 2 {
+				continue
+			}
+			sName := sNameSplit[1]
 			pName := getPackageName(fqname)
 			a := reflect.New(field.Type)
 			if b.hasExportedJSONFields(field.Type) {
@@ -199,7 +203,11 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 				continue
 			}
 			fqname := field.Type.Elem().String()
-			sName := strings.Split(fqname, ".")[1]
+			sNameSplit := strings.Split(fqname, ".")
+			if len(sNameSplit) < 2 {
+				continue
+			}
+			sName := sNameSplit[1]
 			pName := getPackageName(fqname)
 			typ := field.Type.Elem()
 			a := reflect.New(typ)
