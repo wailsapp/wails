@@ -28,7 +28,7 @@ func (i *Info) discover() error {
 }
 
 func checkWebView2() *packagemanager.Dependency {
-	version, _ := webviewloader.GetWebviewVersion("")
+	version, _ := webviewloader.GetAvailableCoreWebView2BrowserVersionString("")
 	installed := version != ""
 
 	return &packagemanager.Dependency{
