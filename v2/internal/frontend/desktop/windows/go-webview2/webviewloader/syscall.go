@@ -1,4 +1,4 @@
-package webview2loader
+package webviewloader
 
 import (
 	"fmt"
@@ -18,6 +18,9 @@ var (
 	procGetFileVersionInfoSize = modversion.NewProc("GetFileVersionInfoSizeW")
 	procGetFileVersionInfo     = modversion.NewProc("GetFileVersionInfoW")
 	procVerQueryValue          = modversion.NewProc("VerQueryValueW")
+
+	modole32           = windows.NewLazySystemDLL("ole32.dll")
+	procCoTaskMemAlloc = modole32.NewProc("CoTaskMemAlloc")
 )
 
 func getFileVersionInfo(path string) ([]byte, error) {
@@ -125,4 +128,14 @@ func maskErrorSuccess(err error) error {
 		return nil
 	}
 	return err
+}
+
+func coTaskMemAlloc(size int) unsafe.Pointer {
+	ret, _, _ := procCoTaskMemAlloc.Call(
+		uintptr(size))
+
+	if ret == 0 {
+		panic("coTaskMemAlloc failed")
+	}
+	return unsafe.Pointer(ret)
 }

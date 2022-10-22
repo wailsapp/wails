@@ -1,3 +1,5 @@
+//go:build !exp_gowebview2loader
+
 package webviewloader
 
 import (
@@ -8,7 +10,6 @@ import (
 	"unsafe"
 
 	"github.com/jchv/go-winloader"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webview2loader"
 
 	"golang.org/x/sys/windows"
 )
@@ -63,20 +64,23 @@ func CompareBrowserVersions(v1 string, v2 string) (int, error) {
 	return int(result), nil
 }
 
-// GetWebviewVersion returns version of the webview2 runtime.
+// GetAvailableCoreWebView2BrowserVersionString returns version of the webview2 runtime.
 // If path is empty, it will try to find installed webview2 is the system.
 // If there is no version installed, a blank string is returned.
-func GetWebviewVersion(path string) (string, error) {
+func GetAvailableCoreWebView2BrowserVersionString(path string) (string, error) {
 	if path != "" {
 		// The default implementation fails if CGO and a fixed browser path is used. It's caused by the go-winloader
 		// which loads the native DLL from memory.
 		// Use the new GoWebView2Loader in this case, in the future we will make GoWebView2Loader
 		// feature-complete and remove the use of the native DLL and go-winloader.
-		version, err := webview2loader.GetAvailableCoreWebView2BrowserVersionString(path)
-		if errors.Is(err, os.ErrNotExist) {
+		version, err := goGetAvailableCoreWebView2BrowserVersionString(path)
+		if errors.Is(err, errNoClientDLLFound) {
 			// Webview2 is not found
 			return "", nil
+		} else if err != nil {
+			return "", err
 		}
+
 		return version, nil
 	}
 
@@ -157,4 +161,13 @@ func preventEnvAndRegistryOverrides(browserFolder, userDataFolder *uint16) {
 	os.Setenv("WEBVIEW2_RELEASE_CHANNEL_PREFERENCE", "0")
 	os.Setenv("WEBVIEW2_BROWSER_EXECUTABLE_FOLDER", windows.UTF16PtrToString(browserFolder))
 	os.Setenv("WEBVIEW2_USER_DATA_FOLDER", windows.UTF16PtrToString(userDataFolder))
+}
+
+func goGetAvailableCoreWebView2BrowserVersionString(browserExecutableFolder string) (string, error) {
+	clientPath, err := findEmbeddedClientDll(browserExecutableFolder)
+	if err != nil {
+		return "", err
+	}
+
+	return findEmbeddedBrowserVersion(clientPath)
 }
