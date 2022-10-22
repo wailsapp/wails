@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-// EventsOn registers a listener for the given event name
+// EventsOn registers a listener for the given event name. It returns a function to cancel the listener
 func EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{})) func() {
 	events := getEvents(ctx)
 	return events.On(eventName, callback)
@@ -29,13 +29,14 @@ func EventsOffAll(ctx context.Context) {
 }
 
 // EventsOnce registers a listener for the given event name. After the first callback, the
-// listener is deleted.
+// listener is deleted. It returns a function to cancel the listener
 func EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{})) func() {
 	events := getEvents(ctx)
 	return events.Once(eventName, callback)
 }
 
-// EventsOnMultiple registers a listener for the given event name, that may be called a maximum of 'counter' times
+// EventsOnMultiple registers a listener for the given event name, that may be called a maximum of 'counter' times. It returns a function
+// to cancel the listener
 func EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int) func() {
 	events := getEvents(ctx)
 	return events.OnMultiple(eventName, callback, counter)
