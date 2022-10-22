@@ -1,3 +1,5 @@
+//go:build !exp_gowebview2loader
+
 package webviewloader
 
 import _ "embed"

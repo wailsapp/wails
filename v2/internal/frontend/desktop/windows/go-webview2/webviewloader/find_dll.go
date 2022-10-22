@@ -1,25 +1,18 @@
-package webview2loader
+package webviewloader
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"golang.org/x/sys/windows/registry"
 )
 
-// GetAvailableCoreWebView2BrowserVersionString get the browser version info including channel name.
-func GetAvailableCoreWebView2BrowserVersionString(browserExecutableFolder string) (string, error) {
-	if browserExecutableFolder != "" {
-		clientPath, err := findEmbeddedClientDll(browserExecutableFolder)
-		if err != nil {
-			return "", err
-		}
-
-		return findEmbeddedBrowserVersion(clientPath)
-	}
-
-	return "", fmt.Errorf("not implemented yet for empty browserExecutableFolder ")
-}
+var (
+	errNoClientDLLFound = errors.New("no webview2 found")
+)
 
 func findEmbeddedBrowserVersion(filename string) (string, error) {
 	block, err := getFileVersionInfo(filename)
@@ -63,7 +56,17 @@ func findClientDllInFolder(folder string) (string, error) {
 
 	dllPath := filepath.Join(folder, "EBWebView", arch, "EmbeddedBrowserWebView.dll")
 	if _, err := os.Stat(dllPath); err != nil {
-		return "", err
+		return "", mapFindErr(err)
 	}
 	return dllPath, nil
+}
+
+func mapFindErr(err error) error {
+	if errors.Is(err, registry.ErrNotExist) {
+		return errNoClientDLLFound
+	}
+	if errors.Is(err, os.ErrNotExist) {
+		return errNoClientDLLFound
+	}
+	return err
 }
