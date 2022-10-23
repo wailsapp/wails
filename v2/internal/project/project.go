@@ -105,7 +105,7 @@ func (p *Project) GetWailsJSDir() string {
 	if filepath.IsAbs(p.WailsJSDir) {
 		return p.WailsJSDir
 	}
-	return filepath.Join(p.GetFrontendDir(), p.WailsJSDir)
+	return filepath.Join(p.Path, p.WailsJSDir)
 }
 
 func (p *Project) GetDevBuildCommand() string {
