@@ -105,7 +105,7 @@ func (p *Project) GetWailsJSDir() string {
 	if filepath.IsAbs(p.WailsJSDir) {
 		return p.WailsJSDir
 	}
-	return filepath.Join(p.Path, p.WailsJSDir)
+	return filepath.Join(p.GetFrontendDir(), p.WailsJSDir)
 }
 
 func (p *Project) GetDevBuildCommand() string {
@@ -159,7 +159,7 @@ func (p *Project) setDefaults() {
 		p.FrontendDir = "frontend"
 	}
 	if p.WailsJSDir == "" {
-		p.WailsJSDir = p.FrontendDir
+		p.WailsJSDir = "wailsjs"
 	}
 	if p.DebounceMS == 0 {
 		p.DebounceMS = 100
