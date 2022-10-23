@@ -36,7 +36,7 @@ type Project struct {
 	/*** Internal Data ***/
 
 	// The path to the project directory
-	Path string
+	Path string `json:"projectdir"`
 
 	// Build directory
 	BuildDir string
@@ -88,6 +88,17 @@ type Project struct {
 	// Garble
 	Obfuscated bool   `json:"obfuscated"`
 	GarbleArgs string `json:"garbleargs"`
+
+	// Frontend directory
+	FrontendDir string `json:"frontenddir"`
+}
+
+func (p *Project) GetFrontendDir() string {
+	if filepath.IsAbs(p.FrontendDir) {
+		return p.FrontendDir
+	}
+	return filepath.Join(p.Path, p.FrontendDir)
+
 }
 
 func (p *Project) GetDevBuildCommand() string {
@@ -119,6 +130,72 @@ func (p *Project) Save() error {
 	return os.WriteFile(p.filename, data, 0755)
 }
 
+func (p *Project) setDefaults() {
+	if p.Version == "" {
+		p.Version = "2"
+	}
+	// Create default name if not given
+	if p.Name == "" {
+		p.Name = "wailsapp"
+	}
+	if p.AssetDirectory == "" {
+		p.AssetDirectory = "assets"
+	}
+	if p.WailsJSDir == "" {
+		p.WailsJSDir = "wailsjs"
+	}
+	if p.OutputFilename == "" {
+		p.OutputFilename = p.Name
+	}
+	if p.FrontendDir == "" {
+		p.FrontendDir = "frontend"
+	}
+	if p.DebounceMS == 0 {
+		p.DebounceMS = 100
+	}
+	if p.DevServer == "" {
+		p.DevServer = "localhost:34115"
+	}
+	if p.NSISType == "" {
+		p.NSISType = "portable"
+	}
+	if p.Info.CompanyName == "" {
+		p.Info.CompanyName = p.Name
+	}
+	if p.Info.ProductName == "" {
+		p.Info.ProductName = p.Name
+	}
+	if p.Info.ProductVersion == "" {
+		p.Info.ProductVersion = "1.0.0"
+	}
+	if p.Info.Copyright == nil {
+		v := "Copyright........."
+		p.Info.Copyright = &v
+	}
+	if p.Info.Comments == nil {
+		v := "Built using Wails (https://wails.io)"
+		p.Info.Comments = &v
+	}
+	if p.DevServer == "" {
+		p.DevServer = "localhost:34115"
+	}
+	if p.Path == "" {
+		p.Path = "."
+	}
+
+	// Fix up OutputFilename
+	switch runtime.GOOS {
+	case "windows":
+		if !strings.HasSuffix(p.OutputFilename, ".exe") {
+			p.OutputFilename += ".exe"
+		}
+	case "darwin", "linux":
+		if strings.HasSuffix(p.OutputFilename, ".exe") {
+			p.OutputFilename = strings.TrimSuffix(p.OutputFilename, ".exe")
+		}
+	}
+}
+
 // Author stores details about the application author
 type Author struct {
 	Name  string `json:"name"`
@@ -133,69 +210,28 @@ type Info struct {
 	Comments       *string `json:"comments"`
 }
 
+// Parse the given JSON data into a Project struct
+func Parse(projectData []byte) (*Project, error) {
+	project := &Project{}
+	err := json.Unmarshal(projectData, project)
+	if err != nil {
+		return nil, err
+	}
+	project.setDefaults()
+	return project, nil
+}
+
 // Load the project from the current working directory
 func Load(projectPath string) (*Project, error) {
-
-	// Attempt to load project.json
 	projectFile := filepath.Join(projectPath, "wails.json")
 	rawBytes, err := os.ReadFile(projectFile)
 	if err != nil {
 		return nil, err
 	}
-
-	// Unmarshal JSON
-	var result Project
-	err = json.Unmarshal(rawBytes, &result)
+	result, err := Parse(rawBytes)
 	if err != nil {
 		return nil, err
 	}
-
-	// Fix up our project paths
 	result.filename = projectFile
-
-	if result.Version == "" {
-		result.Version = "2"
-	}
-
-	// Create default name if not given
-	if result.Name == "" {
-		result.Name = "wailsapp"
-	}
-
-	// Fix up OutputFilename
-	switch runtime.GOOS {
-	case "windows":
-		if !strings.HasSuffix(result.OutputFilename, ".exe") {
-			result.OutputFilename += ".exe"
-		}
-	case "darwin", "linux":
-		if strings.HasSuffix(result.OutputFilename, ".exe") {
-			result.OutputFilename = strings.TrimSuffix(result.OutputFilename, ".exe")
-		}
-	}
-
-	if result.Info.CompanyName == "" {
-		result.Info.CompanyName = result.Name
-	}
-	if result.Info.ProductName == "" {
-		result.Info.ProductName = result.Name
-	}
-	if result.Info.ProductVersion == "" {
-		result.Info.ProductVersion = "1.0.0"
-	}
-	if result.Info.Copyright == nil {
-		v := "Copyright........."
-		result.Info.Copyright = &v
-	}
-	if result.Info.Comments == nil {
-		v := "Built using Wails (https://wails.io)"
-		result.Info.Comments = &v
-	}
-
-	if result.DevServer == "" {
-		result.DevServer = "localhost:34115"
-	}
-
-	// Return our project data
-	return &result, nil
+	return result, nil
 }
