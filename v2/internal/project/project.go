@@ -178,7 +178,7 @@ func (p *Project) setDefaults() {
 		p.DevServer = "localhost:34115"
 	}
 	if p.NSISType == "" {
-		p.NSISType = "portable"
+		p.NSISType = "multiple"
 	}
 	if p.Info.CompanyName == "" {
 		p.Info.CompanyName = p.Name
