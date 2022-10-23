@@ -212,6 +212,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			Obfuscated:          obfuscated,
 			GarbleArgs:          garbleargs,
 			SkipBindings:        skipBindings,
+			ProjectData:         projectOptions,
 		}
 
 		// Start a new tabwriter
@@ -225,6 +226,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			_, _ = fmt.Fprintf(w, "Compiler: \t%s\n", compilerPath)
 			_, _ = fmt.Fprintf(w, "Skip Bindings: \t%t\n", skipBindings)
 			_, _ = fmt.Fprintf(w, "Build Mode: \t%s\n", modeString)
+			_, _ = fmt.Fprintf(w, "Frontend Directory: \t%s\n", projectOptions.GetFrontendDir())
 			_, _ = fmt.Fprintf(w, "Obfuscated: \t%t\n", buildOptions.Obfuscated)
 			if buildOptions.Obfuscated {
 				_, _ = fmt.Fprintf(w, "Garble Args: \t%s\n", buildOptions.GarbleArgs)

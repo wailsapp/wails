@@ -487,6 +487,9 @@ func (b *BaseBuilder) NpmInstallUsingCommand(sourceDir string, installCommand st
 
 	// Shortcut installation
 	if install == false {
+		if verbose {
+			println("Skipping npm install")
+		}
 		return nil
 	}
 
@@ -543,7 +546,10 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 
 	verbose := b.options.Verbosity == VERBOSE
 
-	frontendDir := filepath.Join(b.projectData.Path, "frontend")
+	frontendDir := b.projectData.GetFrontendDir()
+	if !fs.DirExists(frontendDir) {
+		return fmt.Errorf("frontend directory '%s' does not exist", frontendDir)
+	}
 
 	// Check there is an 'InstallCommand' provided in wails.json
 	installCommand := b.projectData.InstallCommand

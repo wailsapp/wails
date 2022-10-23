@@ -2,6 +2,7 @@ package project
 
 import (
 	"encoding/json"
+	"github.com/samber/lo"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -98,7 +99,13 @@ func (p *Project) GetFrontendDir() string {
 		return p.FrontendDir
 	}
 	return filepath.Join(p.Path, p.FrontendDir)
+}
 
+func (p *Project) GetWailsJSDir() string {
+	if filepath.IsAbs(p.WailsJSDir) {
+		return p.WailsJSDir
+	}
+	return filepath.Join(p.Path, p.WailsJSDir)
 }
 
 func (p *Project) GetDevBuildCommand() string {
@@ -131,6 +138,10 @@ func (p *Project) Save() error {
 }
 
 func (p *Project) setDefaults() {
+
+	if p.Path == "" {
+		p.Path = lo.Must(os.Getwd())
+	}
 	if p.Version == "" {
 		p.Version = "2"
 	}
@@ -141,14 +152,14 @@ func (p *Project) setDefaults() {
 	if p.AssetDirectory == "" {
 		p.AssetDirectory = "assets"
 	}
-	if p.WailsJSDir == "" {
-		p.WailsJSDir = "wailsjs"
-	}
 	if p.OutputFilename == "" {
 		p.OutputFilename = p.Name
 	}
 	if p.FrontendDir == "" {
 		p.FrontendDir = "frontend"
+	}
+	if p.WailsJSDir == "" {
+		p.WailsJSDir = p.FrontendDir
 	}
 	if p.DebounceMS == 0 {
 		p.DebounceMS = 100
@@ -178,9 +189,6 @@ func (p *Project) setDefaults() {
 	}
 	if p.DevServer == "" {
 		p.DevServer = "localhost:34115"
-	}
-	if p.Path == "" {
-		p.Path = "."
 	}
 
 	// Fix up OutputFilename

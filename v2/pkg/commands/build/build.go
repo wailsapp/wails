@@ -81,48 +81,32 @@ func Build(options *Options) (string, error) {
 		return "", err
 	}
 
-	// Load project
-	projectData, err := project.Load(cwd)
-	if err != nil {
-		return "", err
-	}
-	options.ProjectData = projectData
-
-	// Add default path if it doesn't exist
-	if projectData.Path == "" {
-		projectData.Path = cwd
-	}
-
 	// wails js dir
-	if projectData.WailsJSDir != "" {
-		options.WailsJSDir = projectData.WailsJSDir
-	} else {
-		options.WailsJSDir = filepath.Join(cwd, "frontend")
-	}
+	options.WailsJSDir = options.ProjectData.GetWailsJSDir()
 
 	// Set build directory
 	options.BuildDirectory = filepath.Join(options.ProjectData.Path, "build", "bin")
 
 	// Save the project type
-	projectData.OutputType = options.OutputType
+	options.ProjectData.OutputType = options.OutputType
 
 	// Create builder
 	var builder Builder
 
-	switch projectData.OutputType {
+	switch options.OutputType {
 	case "desktop":
 		builder = newDesktopBuilder(options)
 	case "dev":
 		builder = newDesktopBuilder(options)
 	default:
-		return "", fmt.Errorf("cannot build assets for output type %s", projectData.OutputType)
+		return "", fmt.Errorf("cannot build assets for output type %s", options.ProjectData.OutputType)
 	}
 
 	// Set up our clean up method
 	defer builder.CleanUp()
 
 	// Initialise Builder
-	builder.SetProjectData(projectData)
+	builder.SetProjectData(options.ProjectData)
 
 	hookArgs := map[string]string{
 		"${platform}": options.Platform + "/" + options.Arch,
