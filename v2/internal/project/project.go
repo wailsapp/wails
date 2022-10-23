@@ -37,7 +37,7 @@ type Project struct {
 	/*** Internal Data ***/
 
 	// The path to the project directory
-	Path string `json:"projectdir"`
+	Path string
 
 	// Build directory
 	BuildDir string `json:"build:dir"`
@@ -196,9 +196,6 @@ func (p *Project) setDefaults() {
 	if p.Info.Comments == nil {
 		v := "Built using Wails (https://wails.io)"
 		p.Info.Comments = &v
-	}
-	if p.DevServer == "" {
-		p.DevServer = "localhost:34115"
 	}
 
 	// Fix up OutputFilename
