@@ -2,6 +2,7 @@
   "$schema": "https://wails.io/schemas/config.v2.json",
   "name": "customlayout",
   "outputfilename": "customlayout",
+  "build:dir": "../../build",
   "frontend:dir": "../../myfrontend",
   "frontend:install": "npm install",
   "frontend:build": "npm run build",

@@ -19,10 +19,6 @@ import (
 //go:embed build
 var assets embed.FS
 
-const (
-	rootFolder = "build"
-)
-
 // Install will install all default project assets
 func Install(targetDir string) error {
 	templateDir := gosod.New(assets)
@@ -36,17 +32,18 @@ func Install(targetDir string) error {
 
 // GetLocalPath returns the local path of the requested build asset file
 func GetLocalPath(projectData *project.Project, file string) string {
-	return filepath.Clean(filepath.Join(projectData.Path, rootFolder, filepath.FromSlash(file)))
+	return filepath.Clean(filepath.Join(projectData.GetBuildDir(), filepath.FromSlash(file)))
 }
 
 // ReadFile reads the file from the project build folder.
 // If the file does not exist it falls back to the embedded file and the file will be written
 // to the disk for customisation.
 func ReadFile(projectData *project.Project, file string) ([]byte, error) {
-	fs := os.DirFS(filepath.ToSlash(projectData.Path)) // os.DirFs always operates on "/" as separatator
+	rootFolder := filepath.Base(projectData.GetBuildDir())
+	dirFS := os.DirFS(filepath.Dir(projectData.GetBuildDir())) // os.DirFs always operates on "/" as separatator
 	file = path.Join(rootFolder, file)
 
-	content, err := iofs.ReadFile(fs, file)
+	content, err := iofs.ReadFile(dirFS, file)
 	if errors.Is(err, iofs.ErrNotExist) {
 		// The file does not exist, let's read it from the assets FS and write it to disk
 		content, err := iofs.ReadFile(assets, file)
@@ -83,6 +80,7 @@ func ReadFileWithProjectData(projectData *project.Project, file string) ([]byte,
 // ProjectInfo if necessary.
 // It will also write the resolved final file back to the project build folder.
 func ReadOriginalFileWithProjectDataAndSave(projectData *project.Project, file string) ([]byte, error) {
+	rootFolder := filepath.Base(projectData.GetBuildDir())
 	file = path.Join(rootFolder, file)
 	content, err := iofs.ReadFile(assets, file)
 	if err != nil {
@@ -124,15 +122,16 @@ func resolveProjectData(content []byte, projectData *project.Project) ([]byte, e
 }
 
 func writeFileSystemFile(projectData *project.Project, file string, content []byte) error {
-	path := filepath.Clean(filepath.Join(projectData.Path, filepath.FromSlash(file)))
+	baseDir := filepath.Dir(projectData.GetBuildDir())
+	targetPath := filepath.Clean(filepath.Join(baseDir, filepath.FromSlash(file)))
 
-	if dir := filepath.Dir(path); !fs.DirExists(dir) {
+	if dir := filepath.Dir(targetPath); !fs.DirExists(dir) {
 		if err := fs.MkDirs(dir, 0755); err != nil {
 			return fmt.Errorf("Unable to create directory: %w", err)
 		}
 	}
 
-	if err := os.WriteFile(path, content, 0644); err != nil {
+	if err := os.WriteFile(targetPath, content, 0644); err != nil {
 		return err
 	}
 	return nil

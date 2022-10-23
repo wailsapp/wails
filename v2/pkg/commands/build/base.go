@@ -263,9 +263,9 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	}
 
 	// Get application build directory
-	appDir := options.BuildDirectory
-	if options.CleanBuildDirectory {
-		err = cleanBuildDirectory(options)
+	appDir := options.BinDirectory
+	if options.CleanBinDirectory {
+		err = cleanBinDirectory(options)
 		if err != nil {
 			return err
 		}
@@ -291,6 +291,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	cmd.Dir = b.projectData.Path
 
 	// Add CGO flags
+	// TODO: Remove this as we don't generate headers any more
 	// We use the project/build dir as a temporary place for our generated c headers
 	buildBaseDir, err := fs.RelativeToCwd("build")
 	if err != nil {

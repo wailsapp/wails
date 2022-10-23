@@ -3,14 +3,12 @@ package build
 import (
 	"bytes"
 	"fmt"
-	"image"
-	"os"
-	"path/filepath"
-	"runtime"
-
 	"github.com/leaanthony/winicon"
 	"github.com/tc-hib/winres"
 	"github.com/tc-hib/winres/version"
+	"image"
+	"os"
+	"path/filepath"
 
 	"github.com/jackmordaunt/icns"
 	"github.com/pkg/errors"
@@ -41,10 +39,10 @@ func packageProject(options *Options, platform string) error {
 	return nil
 }
 
-// cleanBuildDirectory will remove an existing build directory and recreate it
-func cleanBuildDirectory(options *Options) error {
+// cleanBinDirectory will remove an existing bin directory and recreate it
+func cleanBinDirectory(options *Options) error {
 
-	buildDirectory := options.BuildDirectory
+	buildDirectory := options.BinDirectory
 
 	// Clear out old builds
 	if fs.DirExists(buildDirectory) {
@@ -63,11 +61,6 @@ func cleanBuildDirectory(options *Options) error {
 	return nil
 }
 
-// Gets the platform dependent package assets directory
-func getPackageAssetsDirectory() string {
-	return fs.RelativePath("internal/packager", runtime.GOOS)
-}
-
 func packageApplicationForDarwin(options *Options) error {
 
 	var err error
@@ -78,7 +71,7 @@ func packageApplicationForDarwin(options *Options) error {
 		bundlename = options.ProjectData.Name + ".app"
 	}
 
-	contentsDirectory := filepath.Join(options.BuildDirectory, bundlename, "/Contents")
+	contentsDirectory := filepath.Join(options.BinDirectory, bundlename, "/Contents")
 	exeDir := filepath.Join(contentsDirectory, "/MacOS")
 	err = fs.MkDirs(exeDir, 0755)
 	if err != nil {
@@ -174,30 +167,7 @@ func packageApplicationForWindows(options *Options) error {
 	return nil
 }
 
-func packageApplicationForLinux(options *Options) error {
-	// Generate icon
-	//var err error
-	//err = generateIcoFile(options)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//// Ensure Manifest is present
-	//err = generateManifest(options)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//// Create syso file
-	//err = compileResources(options)
-	//if err != nil {
-	//	return err
-	//}
-
-	return nil
-}
-
-func generateManifest(options *Options) error {
+func packageApplicationForLinux(_ *Options) error {
 	return nil
 }
 
@@ -238,7 +208,7 @@ func compileResources(options *Options) error {
 	defer func() {
 		os.Chdir(currentDir)
 	}()
-	windowsDir := filepath.Join(options.ProjectData.Path, "build", "windows")
+	windowsDir := filepath.Join(options.ProjectData.GetBuildDir(), "windows")
 	err = os.Chdir(windowsDir)
 	if err != nil {
 		return err

@@ -77,9 +77,9 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	outputFilename := ""
 	command.StringFlag("o", "Output filename", &outputFilename)
 
-	// Clean build directory
-	cleanBuildDirectory := false
-	command.BoolFlag("clean", "Clean the build directory before building", &cleanBuildDirectory)
+	// Clean bin directory
+	cleanBinDirectory := false
+	command.BoolFlag("clean", "Clean the bin directory before building", &cleanBinDirectory)
 
 	webview2 := "download"
 	command.StringFlag("webview2", "WebView2 installer strategy: download,embed,browser,error.", &webview2)
@@ -190,29 +190,29 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 
 		// Create BuildOptions
 		buildOptions := &build.Options{
-			Logger:              logger,
-			OutputType:          outputType,
-			OutputFile:          outputFilename,
-			CleanBuildDirectory: cleanBuildDirectory,
-			Mode:                mode,
-			Pack:                !noPackage,
-			LDFlags:             ldflags,
-			Compiler:            compilerCommand,
-			SkipModTidy:         skipModTidy,
-			Verbosity:           verbosity,
-			ForceBuild:          forceBuild,
-			IgnoreFrontend:      skipFrontend,
-			Compress:            compress,
-			CompressFlags:       compressFlags,
-			UserTags:            userTags,
-			WebView2Strategy:    wv2rtstrategy,
-			TrimPath:            trimpath,
-			RaceDetector:        raceDetector,
-			WindowsConsole:      windowsConsole,
-			Obfuscated:          obfuscated,
-			GarbleArgs:          garbleargs,
-			SkipBindings:        skipBindings,
-			ProjectData:         projectOptions,
+			Logger:            logger,
+			OutputType:        outputType,
+			OutputFile:        outputFilename,
+			CleanBinDirectory: cleanBinDirectory,
+			Mode:              mode,
+			Pack:              !noPackage,
+			LDFlags:           ldflags,
+			Compiler:          compilerCommand,
+			SkipModTidy:       skipModTidy,
+			Verbosity:         verbosity,
+			ForceBuild:        forceBuild,
+			IgnoreFrontend:    skipFrontend,
+			Compress:          compress,
+			CompressFlags:     compressFlags,
+			UserTags:          userTags,
+			WebView2Strategy:  wv2rtstrategy,
+			TrimPath:          trimpath,
+			RaceDetector:      raceDetector,
+			WindowsConsole:    windowsConsole,
+			Obfuscated:        obfuscated,
+			GarbleArgs:        garbleargs,
+			SkipBindings:      skipBindings,
+			ProjectData:       projectOptions,
 		}
 
 		// Start a new tabwriter
@@ -234,7 +234,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			_, _ = fmt.Fprintf(w, "Skip Frontend: \t%t\n", skipFrontend)
 			_, _ = fmt.Fprintf(w, "Compress: \t%t\n", buildOptions.Compress)
 			_, _ = fmt.Fprintf(w, "Package: \t%t\n", buildOptions.Pack)
-			_, _ = fmt.Fprintf(w, "Clean Build Dir: \t%t\n", buildOptions.CleanBuildDirectory)
+			_, _ = fmt.Fprintf(w, "Clean Bin Dir: \t%t\n", buildOptions.CleanBinDirectory)
 			_, _ = fmt.Fprintf(w, "LDFlags: \t\"%s\"\n", buildOptions.LDFlags)
 			_, _ = fmt.Fprintf(w, "Tags: \t[%s]\n", strings.Join(buildOptions.UserTags, ","))
 			_, _ = fmt.Fprintf(w, "Race Detector: \t%t\n", buildOptions.RaceDetector)
@@ -360,7 +360,7 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 				}
 
 				buildOptions.IgnoreFrontend = true
-				buildOptions.CleanBuildDirectory = false
+				buildOptions.CleanBinDirectory = false
 
 				// Output stats
 				buildOptions.Logger.Println(fmt.Sprintf("Built '%s' in %s.\n", compiledBinary, time.Since(start).Round(time.Millisecond).String()))

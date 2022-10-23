@@ -35,38 +35,38 @@ const (
 
 // Options contains all the build options as well as the project data
 type Options struct {
-	LDFlags             string               // Optional flags to pass to linker
-	UserTags            []string             // Tags to pass to the Go compiler
-	Logger              *clilogger.CLILogger // All output to the logger
-	OutputType          string               // EG: desktop, server....
-	Mode                Mode                 // release or dev
-	ProjectData         *project.Project     // The project data
-	Pack                bool                 // Create a package for the app after building
-	Platform            string               // The platform to build for
-	Arch                string               // The architecture to build for
-	Compiler            string               // The compiler command to use
-	SkipModTidy         bool                 //  Skip mod tidy before compile
-	IgnoreFrontend      bool                 // Indicates if the frontend does not need building
-	IgnoreApplication   bool                 // Indicates if the application does not need building
-	OutputFile          string               // Override the output filename
-	BuildDirectory      string               // Directory to use for building the application
-	CleanBuildDirectory bool                 // Indicates if the build directory should be cleaned before building
-	CompiledBinary      string               // Fully qualified path to the compiled binary
-	KeepAssets          bool                 // Keep the generated assets/files
-	Verbosity           int                  // Verbosity level (0 - silent, 1 - default, 2 - verbose)
-	Compress            bool                 // Compress the final binary
-	CompressFlags       string               // Flags to pass to UPX
-	WebView2Strategy    string               // WebView2 installer strategy
-	RunDelve            bool                 // Indicates if we should run delve after the build
-	WailsJSDir          string               // Directory to generate the wailsjs module
-	ForceBuild          bool                 // Force
-	BundleName          string               // Bundlename for Mac
-	TrimPath            bool                 // Use Go's trimpath compiler flag
-	RaceDetector        bool                 // Build with Go's race detector
-	WindowsConsole      bool                 // Indicates that the windows console should be kept
-	Obfuscated          bool                 // Indicates that bound methods should be obfuscated
-	GarbleArgs          string               // The arguments for Garble
-	SkipBindings        bool                 // Skip binding generation
+	LDFlags           string               // Optional flags to pass to linker
+	UserTags          []string             // Tags to pass to the Go compiler
+	Logger            *clilogger.CLILogger // All output to the logger
+	OutputType        string               // EG: desktop, server....
+	Mode              Mode                 // release or dev
+	ProjectData       *project.Project     // The project data
+	Pack              bool                 // Create a package for the app after building
+	Platform          string               // The platform to build for
+	Arch              string               // The architecture to build for
+	Compiler          string               // The compiler command to use
+	SkipModTidy       bool                 //  Skip mod tidy before compile
+	IgnoreFrontend    bool                 // Indicates if the frontend does not need building
+	IgnoreApplication bool                 // Indicates if the application does not need building
+	OutputFile        string               // Override the output filename
+	BinDirectory      string               // Directory to use to write the built applications
+	CleanBinDirectory bool                 // Indicates if the bin output directory should be cleaned before building
+	CompiledBinary    string               // Fully qualified path to the compiled binary
+	KeepAssets        bool                 // Keep the generated assets/files
+	Verbosity         int                  // Verbosity level (0 - silent, 1 - default, 2 - verbose)
+	Compress          bool                 // Compress the final binary
+	CompressFlags     string               // Flags to pass to UPX
+	WebView2Strategy  string               // WebView2 installer strategy
+	RunDelve          bool                 // Indicates if we should run delve after the build
+	WailsJSDir        string               // Directory to generate the wailsjs module
+	ForceBuild        bool                 // Force
+	BundleName        string               // Bundlename for Mac
+	TrimPath          bool                 // Use Go's trimpath compiler flag
+	RaceDetector      bool                 // Build with Go's race detector
+	WindowsConsole    bool                 // Indicates that the windows console should be kept
+	Obfuscated        bool                 // Indicates that bound methods should be obfuscated
+	GarbleArgs        string               // The arguments for Garble
+	SkipBindings      bool                 // Skip binding generation
 }
 
 // Build the project!
@@ -85,7 +85,7 @@ func Build(options *Options) (string, error) {
 	options.WailsJSDir = options.ProjectData.GetWailsJSDir()
 
 	// Set build directory
-	options.BuildDirectory = filepath.Join(options.ProjectData.Path, "build", "bin")
+	options.BinDirectory = filepath.Join(options.ProjectData.GetBuildDir(), "bin")
 
 	// Save the project type
 	options.ProjectData.OutputType = options.OutputType
@@ -247,9 +247,9 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		// Build amd64 first
 		options.Arch = "amd64"
 		options.OutputFile = amd64Filename
-		options.CleanBuildDirectory = false
+		options.CleanBinDirectory = false
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("\nBuilding AMD64 Target: %s", filepath.Join(options.BuildDirectory, options.OutputFile))
+			outputLogger.Println("\nBuilding AMD64 Target: %s", filepath.Join(options.BinDirectory, options.OutputFile))
 		}
 		err := builder.CompileProject(options)
 		if err != nil {
@@ -258,9 +258,9 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		// Build arm64
 		options.Arch = "arm64"
 		options.OutputFile = arm64Filename
-		options.CleanBuildDirectory = false
+		options.CleanBinDirectory = false
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("Building ARM64 Target: %s", filepath.Join(options.BuildDirectory, options.OutputFile))
+			outputLogger.Println("Building ARM64 Target: %s", filepath.Join(options.BinDirectory, options.OutputFile))
 		}
 		err = builder.CompileProject(options)
 
@@ -271,21 +271,21 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		if options.Verbosity == VERBOSE {
 			outputLogger.Println("  Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename)
 		}
-		_, stderr, err := shell.RunCommand(options.BuildDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
+		_, stderr, err := shell.RunCommand(options.BinDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
 		if err != nil {
 			return "", fmt.Errorf("%s - %s", err.Error(), stderr)
 		}
 		// Remove temp binaries
-		err = fs.DeleteFile(filepath.Join(options.BuildDirectory, amd64Filename))
+		err = fs.DeleteFile(filepath.Join(options.BinDirectory, amd64Filename))
 		if err != nil {
 			return "", err
 		}
-		err = fs.DeleteFile(filepath.Join(options.BuildDirectory, arm64Filename))
+		err = fs.DeleteFile(filepath.Join(options.BinDirectory, arm64Filename))
 		if err != nil {
 			return "", err
 		}
 		options.ProjectData.OutputFilename = outputFile
-		options.CompiledBinary = filepath.Join(options.BuildDirectory, outputFile)
+		options.CompiledBinary = filepath.Join(options.BinDirectory, outputFile)
 	} else {
 		err := builder.CompileProject(options)
 		if err != nil {
@@ -376,7 +376,7 @@ func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookI
 		outputLogger.Println("%s", strings.Join(args, " "))
 	}
 
-	stdout, stderr, err := shell.RunCommand(options.BuildDirectory, args[0], args[1:]...)
+	stdout, stderr, err := shell.RunCommand(options.BinDirectory, args[0], args[1:]...)
 	if options.Verbosity == VERBOSE {
 		println(stdout)
 	}

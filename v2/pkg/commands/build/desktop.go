@@ -20,9 +20,10 @@ func newDesktopBuilder(options *Options) *DesktopBuilder {
 func (d *DesktopBuilder) BuildAssets(options *Options) error {
 
 	// Check assets directory exists
-	if !fs.DirExists(options.ProjectData.BuildDir) {
+	buildDir := options.ProjectData.GetBuildDir()
+	if !fs.DirExists(buildDir) {
 		// Path to default assets
-		err := buildassets.Install(options.ProjectData.Path)
+		err := buildassets.Install(buildDir)
 		if err != nil {
 			return err
 		}

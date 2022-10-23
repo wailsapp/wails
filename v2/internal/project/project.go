@@ -40,7 +40,7 @@ type Project struct {
 	Path string `json:"projectdir"`
 
 	// Build directory
-	BuildDir string
+	BuildDir string `json:"build:dir"`
 
 	// The output filename
 	OutputFilename string `json:"outputfilename"`
@@ -108,6 +108,13 @@ func (p *Project) GetWailsJSDir() string {
 	return filepath.Join(p.Path, p.WailsJSDir)
 }
 
+func (p *Project) GetBuildDir() string {
+	if filepath.IsAbs(p.BuildDir) {
+		return p.BuildDir
+	}
+	return filepath.Join(p.Path, p.BuildDir)
+}
+
 func (p *Project) GetDevBuildCommand() string {
 	if p.DevBuildCommand != "" {
 		return p.DevBuildCommand
@@ -160,6 +167,9 @@ func (p *Project) setDefaults() {
 	}
 	if p.WailsJSDir == "" {
 		p.WailsJSDir = p.FrontendDir
+	}
+	if p.BuildDir == "" {
+		p.BuildDir = "build"
 	}
 	if p.DebounceMS == 0 {
 		p.DebounceMS = 100

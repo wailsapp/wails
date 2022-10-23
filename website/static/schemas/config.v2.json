@@ -19,9 +19,20 @@
             "type": "string",
             "description": "Additional directories to trigger reloads (comma separated). Often, this is only used for advanced asset configurations."
         },
+        "build:dir": {
+            "type": "string",
+            "description": "The directory where the build files reside.",
+            "default": "build",
+            "examples": [
+                "./build",
+                "/absolute/path/to/build",
+                "C:\\absolute\\path\\to\\build"
+            ]
+        },
         "frontend:dir": {
             "type": "string",
             "description": "The directory where the frontend files reside.",
+            "default": "frontend",
             "examples": [
                 "./src",
                 "/absolute/path/to/frontend",
@@ -71,7 +82,7 @@
             "type": "string",
             "description": "Relative path to the directory where the auto-generated JS modules will be created.",
             "format": "uri-reference",
-            "default": "./frontend"
+            "default": "The value of frontend:dir"
         },
         "version": {
             "description": "Project config version",
