@@ -25,12 +25,16 @@ var (
 )
 
 type Systray struct {
-	id     uint32
-	mhwnd  win32.HWND // main window handle
-	hwnd   win32.HWND
-	hinst  win32.HINSTANCE
-	lclick func()
-	rclick func()
+	id          uint32
+	mhwnd       win32.HWND // main window handle
+	hwnd        win32.HWND
+	hinst       win32.HINSTANCE
+	lclick      func()
+	rclick      func()
+	ldblclick   func()
+	rdblclick   func()
+	onMenuClose func()
+	onMenuOpen  func()
 
 	appIcon       win32.HICON
 	lightModeIcon win32.HICON
@@ -154,6 +158,8 @@ func (p *Systray) HWND() win32.HWND {
 
 func (p *Systray) SetMenu(popupMenu *menu.Menu) (err error) {
 	p.menu, err = NewPopupMenu(p.hwnd, popupMenu)
+	p.menu.OnMenuClose(p.onMenuClose)
+	p.menu.OnMenuOpen(p.onMenuOpen)
 	return
 }
 
@@ -175,6 +181,30 @@ func (p *Systray) OnLeftClick(fn func()) {
 func (p *Systray) OnRightClick(fn func()) {
 	if fn != nil {
 		p.rclick = fn
+	}
+}
+
+func (p *Systray) OnLeftDoubleClick(fn func()) {
+	if fn != nil {
+		p.ldblclick = fn
+	}
+}
+
+func (p *Systray) OnRightDoubleClick(fn func()) {
+	if fn != nil {
+		p.rdblclick = fn
+	}
+}
+
+func (p *Systray) OnMenuClose(fn func()) {
+	if fn != nil {
+		p.onMenuClose = fn
+	}
+}
+
+func (p *Systray) OnMenuOpen(fn func()) {
+	if fn != nil {
+		p.onMenuOpen = fn
 	}
 }
 
@@ -277,14 +307,27 @@ func (p *Systray) setIcon(hicon win32.HICON) error {
 func (p *Systray) WinProc(hwnd win32.HWND, msg uint32, wparam, lparam uintptr) uintptr {
 	switch msg {
 	case win32.NotifyIconMessageId:
-		if lparam == win32.WM_LBUTTONUP {
+		switch lparam {
+		case win32.WM_LBUTTONUP:
 			if p.lclick != nil {
+				println("left click")
 				p.lclick()
 			}
-		} else if lparam == win32.WM_RBUTTONUP {
+		case win32.WM_RBUTTONUP:
 			if p.rclick != nil {
+				println("right click")
 				p.rclick()
 			}
+		case win32.WM_LBUTTONDBLCLK:
+			if p.ldblclick != nil {
+				p.ldblclick()
+			}
+		case win32.WM_RBUTTONDBLCLK:
+			if p.rdblclick != nil {
+				p.rdblclick()
+			}
+		default:
+			//println(win32.WMMessageToString(lparam))
 		}
 	case win32.WM_SETTINGCHANGE:
 		settingChanged := win32.UTF16PtrToString(lparam)
@@ -301,7 +344,9 @@ func (p *Systray) WinProc(hwnd win32.HWND, msg uint32, wparam, lparam uintptr) u
 		default:
 			p.menu.ProcessCommand(cmdMsgID)
 		}
-
+	default:
+		//msg := int(wparam & 0xffff)
+		//println(win32.WMMessageToString(uintptr(msg)))
 	}
 
 	result, _, _ := DefWindowProc.Call(uintptr(hwnd), uintptr(msg), wparam, lparam)

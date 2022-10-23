@@ -44,6 +44,8 @@ type PopupMenu struct {
 	radioGroups   map[*menu.MenuItem][]*RadioGroup
 	menuData      *menu.Menu
 	currentMenuID int
+	onMenuClose   func()
+	onMenuOpen    func()
 }
 
 func (p *PopupMenu) buildMenu(parentMenu win32.PopupMenu, inputMenu *menu.Menu) error {
@@ -153,8 +155,16 @@ func (p *PopupMenu) ShowAtCursor() error {
 		return errors.New("SetForegroundWindow failed")
 	}
 
+	if p.onMenuOpen != nil {
+		p.onMenuOpen()
+	}
+
 	if p.menu.Track(win32.TPM_LEFTALIGN, x, y-5, p.parent) == false {
 		return errors.New("TrackPopupMenu failed")
+	}
+
+	if p.onMenuClose != nil {
+		p.onMenuClose()
 	}
 
 	if win32.PostMessage(p.parent, win32.WM_NULL, 0, 0) == 0 {
@@ -199,4 +209,12 @@ func (p *PopupMenu) updateRadioGroup(item *menu.MenuItem) {
 		startID, endID := radioGroup.Bounds()
 		p.menu.CheckRadio(startID, endID, thisMenuID)
 	}
+}
+
+func (p *PopupMenu) OnMenuOpen(fn func()) {
+	p.onMenuOpen = fn
+}
+
+func (p *PopupMenu) OnMenuClose(fn func()) {
+	p.onMenuClose = fn
 }

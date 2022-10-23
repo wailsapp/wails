@@ -20,6 +20,10 @@ type SysTray interface {
 	Update() error
 	OnLeftClick(func())
 	OnRightClick(func())
+	OnLeftDoubleClick(func())
+	OnRightDoubleClick(func())
+	OnMenuClose(func())
+	OnMenuOpen(func())
 }
 
 func NewSysTray() SysTray {

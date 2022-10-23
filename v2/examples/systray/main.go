@@ -9,6 +9,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"time"
 )
 
 //go:embed all:frontend/dist
@@ -44,7 +45,22 @@ func main() {
 	// Create a systray for the application
 	// Currently we only support PNG for icons
 
-	systray := mainApp.NewSystemTray(&options.SystemTray{
+	var systray *application.SystemTray
+	var showWindow = func() {
+		// Show the window
+		// In a future version of this API, it will be possible to
+		// create windows programmatically and be able to show/hide
+		// them from the systray with something like:
+		//
+		// myWindow := mainApp.NewWindow(...)
+		// mainApp.NewSystemTray(&options.SystemTray{
+		//   OnLeftClick: func() {
+		//      myWindow.SetVisibility(!myWindow.IsVisible())
+		//   }
+		// })
+		runtime.Show(runtimeContext)
+	}
+	systray = mainApp.NewSystemTray(&options.SystemTray{
 		// This is the icon used when the system in using light mode
 		LightModeIcon: &options.SystemTrayIcon{
 			Data: lightModeIcon,
@@ -53,20 +69,21 @@ func main() {
 		DarkModeIcon: &options.SystemTrayIcon{
 			Data: darkModeIcon,
 		},
-		Tooltip: "Systray Example",
-		OnLeftClick: func() {
-			// Show the window
-			// In a future version of this API, it will be possible to
-			// create windows programmatically and be able to show/hide
-			// them from the systray with something like:
-			//
-			// myWindow := mainApp.NewWindow(...)
-			// mainApp.NewSystemTray(&options.SystemTray{
-			//   OnLeftClick: func() {
-			//      myWindow.SetVisibility(!myWindow.IsVisible())
-			//   }
-			// })
-			runtime.Show(runtimeContext)
+		Tooltip:     "Systray Example",
+		OnLeftClick: showWindow,
+		OnMenuClose: func() {
+			// Add the left click call after 500ms
+			// We do this because the left click fires right
+			// after the menu closes, and we don't want to show
+			// the window on menu close.
+			go func() {
+				time.Sleep(500 * time.Millisecond)
+				systray.OnLeftClick(showWindow)
+			}()
+		},
+		OnMenuOpen: func() {
+			// Remove the left click callback
+			systray.OnLeftClick(func() {})
 		},
 	})
 
