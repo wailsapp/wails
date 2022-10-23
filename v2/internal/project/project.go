@@ -159,7 +159,7 @@ func (p *Project) setDefaults() {
 		p.FrontendDir = "frontend"
 	}
 	if p.WailsJSDir == "" {
-		p.WailsJSDir = "wailsjs"
+		p.WailsJSDir = p.FrontendDir
 	}
 	if p.DebounceMS == 0 {
 		p.DebounceMS = 100

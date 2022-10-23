@@ -60,7 +60,7 @@ func generateBindings(bindings *binding.Bindings) error {
 		return err
 	}
 
-	wailsjsbasedir := projectConfig.GetWailsJSDir()
+	wailsjsbasedir := filepath.Join(projectConfig.GetWailsJSDir(), "wailsjs")
 
 	runtimeDir := filepath.Join(wailsjsbasedir, "runtime")
 	_ = os.RemoveAll(runtimeDir)
