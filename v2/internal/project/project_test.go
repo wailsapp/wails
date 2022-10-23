@@ -22,13 +22,13 @@ func TestProject_GetFrontendDir(t *testing.T) {
 		},
 		{
 			name:      "Should resolve a relative path with no project path",
-			inputJSON: `{"frontenddir": "./frontend"}`,
+			inputJSON: `{"frontend:dir": "./frontend"}`,
 			want:      "frontend",
 			wantError: false,
 		},
 		{
 			name:      "Should resolve a relative path with project path set",
-			inputJSON: `{"frontenddir": "./frontend", "projectdir": "/home/user/project"}`,
+			inputJSON: `{"frontend:dir": "./frontend", "projectdir": "/home/user/project"}`,
 			want:      "/home/user/project/frontend",
 			wantError: false,
 		},
@@ -36,9 +36,9 @@ func TestProject_GetFrontendDir(t *testing.T) {
 			name: "Should honour an absolute path",
 			inputJSON: func() string {
 				if runtime.GOOS == "windows" {
-					return `{"frontenddir": "C:\\frontend", "projectdir": "C:\\project"}`
+					return `{"frontend:dir": "C:\\frontend", "projectdir": "C:\\project"}`
 				} else {
-					return `{"frontenddir": "/home/myproject/frontend", "projectdir": "/home/user/project"}`
+					return `{"frontend:dir": "/home/myproject/frontend", "projectdir": "/home/user/project"}`
 				}
 			}(),
 			want: func() string {

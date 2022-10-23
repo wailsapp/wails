@@ -90,7 +90,7 @@ type Project struct {
 	GarbleArgs string `json:"garbleargs"`
 
 	// Frontend directory
-	FrontendDir string `json:"frontenddir"`
+	FrontendDir string `json:"frontend:dir"`
 }
 
 func (p *Project) GetFrontendDir() string {

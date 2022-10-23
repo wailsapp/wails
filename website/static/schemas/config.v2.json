@@ -19,15 +19,28 @@
             "type": "string",
             "description": "Additional directories to trigger reloads (comma separated). Often, this is only used for advanced asset configurations."
         },
+        "frontend:dir": {
+            "type": "string",
+            "description": "The directory where the frontend files reside.",
+            "examples": [
+                "./src",
+                "/absolute/path/to/frontend",
+                "C:\\absolute\\path\\to\\frontend"
+            ]
+        },
         "frontend:install": {
             "type": "string",
             "description": "The command to install dependencies. Run in the frontend directory.",
-            "examples": [ "npm install" ]
+            "examples": [
+                "npm install"
+            ]
         },
         "frontend:build": {
             "type": "string",
             "description": "The command to build the assets. Run in the frontend directory.",
-            "examples": ["npm run build"]
+            "examples": [
+                "npm run build"
+            ]
         },
         "frontend:dev": {
             "type": "string",
