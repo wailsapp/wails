@@ -11,10 +11,22 @@ import (
 	"net/url"
 
 	"github.com/labstack/echo/v4"
+
 	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
-func newExternalDevServerAssetHandler(logger *logger.Logger, url *url.URL, handler http.Handler) http.Handler {
+func newExternalDevServerAssetHandler(logger *logger.Logger, url *url.URL, options assetserver.Options) http.Handler {
+	handler := newExternalAssetsHandler(logger, url, options.Handler)
+
+	if middleware := options.Middleware; middleware != nil {
+		handler = middleware(handler)
+	}
+
+	return handler
+}
+
+func newExternalAssetsHandler(logger *logger.Logger, url *url.URL, handler http.Handler) http.Handler {
 	errSkipProxy := fmt.Errorf("skip proxying")
 
 	proxy := httputil.NewSingleHostReverseProxy(url)

@@ -53,6 +53,8 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 	d.server.GET("/wails/reload", d.handleReload)
 	d.server.GET("/wails/ipc", d.handleIPCWebSocket)
 
+	assetServerConfig := assetserver.BuildAssetServerConfig(d.appoptions)
+
 	var assetHandler http.Handler
 	_fronendDevServerURL, _ := ctx.Value("frontenddevserverurl").(string)
 	if _fronendDevServerURL == "" {
@@ -62,7 +64,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		})
 
 		var err error
-		assetHandler, err = assetserver.NewAssetHandler(ctx, d.appoptions.Assets, d.appoptions.AssetsHandler)
+		assetHandler, err = assetserver.NewAssetHandler(ctx, assetServerConfig)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -81,7 +83,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 			d.logger.Error("Timeout waiting for frontend DevServer")
 		}
 
-		assetHandler = newExternalDevServerAssetHandler(d.logger, externalURL, d.appoptions.AssetsHandler)
+		assetHandler = newExternalDevServerAssetHandler(d.logger, externalURL, assetServerConfig)
 	}
 
 	// Setup internal dev server
