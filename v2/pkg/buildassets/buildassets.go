@@ -7,17 +7,24 @@ import (
 	"fmt"
 	iofs "io/fs"
 	"os"
-	"path"
 	"path/filepath"
 	"text/template"
 
 	"github.com/leaanthony/gosod"
+	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/project"
 )
 
 //go:embed build
 var assets embed.FS
+
+// Same as assets but chrooted into /build/
+var buildAssets iofs.FS
+
+func init() {
+	buildAssets = lo.Must(iofs.Sub(assets, "build"))
+}
 
 // Install will install all default project assets
 func Install(targetDir string) error {
@@ -39,14 +46,12 @@ func GetLocalPath(projectData *project.Project, file string) string {
 // If the file does not exist it falls back to the embedded file and the file will be written
 // to the disk for customisation.
 func ReadFile(projectData *project.Project, file string) ([]byte, error) {
-	rootFolder := filepath.Base(projectData.GetBuildDir())
-	dirFS := os.DirFS(filepath.Dir(projectData.GetBuildDir())) // os.DirFs always operates on "/" as separatator
-	file = path.Join(rootFolder, file)
+	localFilePath := GetLocalPath(projectData, file)
 
-	content, err := iofs.ReadFile(dirFS, file)
+	content, err := os.ReadFile(localFilePath)
 	if errors.Is(err, iofs.ErrNotExist) {
 		// The file does not exist, let's read it from the assets FS and write it to disk
-		content, err := iofs.ReadFile(assets, file)
+		content, err := iofs.ReadFile(buildAssets, file)
 		if err != nil {
 			return nil, err
 		}
@@ -80,9 +85,7 @@ func ReadFileWithProjectData(projectData *project.Project, file string) ([]byte,
 // ProjectInfo if necessary.
 // It will also write the resolved final file back to the project build folder.
 func ReadOriginalFileWithProjectDataAndSave(projectData *project.Project, file string) ([]byte, error) {
-	rootFolder := filepath.Base(projectData.GetBuildDir())
-	file = path.Join(rootFolder, file)
-	content, err := iofs.ReadFile(assets, file)
+	content, err := iofs.ReadFile(buildAssets, file)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to read file %s: %w", file, err)
 	}
@@ -122,8 +125,7 @@ func resolveProjectData(content []byte, projectData *project.Project) ([]byte, e
 }
 
 func writeFileSystemFile(projectData *project.Project, file string, content []byte) error {
-	baseDir := filepath.Dir(projectData.GetBuildDir())
-	targetPath := filepath.Clean(filepath.Join(baseDir, filepath.FromSlash(file)))
+	targetPath := GetLocalPath(projectData, file)
 
 	if dir := filepath.Dir(targetPath); !fs.DirExists(dir) {
 		if err := fs.MkDirs(dir, 0755); err != nil {
