@@ -108,11 +108,9 @@ var assets embed.FS
 
 :::info 備考
 
-
 Wailsで構造体を正しくバインドするためには、構造体の*インスタンス*をオプションで指定してください。
 
 :::
-
 
 下記のコードでは、新しく`App`インスタンスを作成し、`wails.Run`関数の`Bind`オプションの中で、そのインスタンスを追加しています:
 
@@ -230,13 +228,11 @@ export function Greet(arg1:string):Promise<string>;
 
 :::info 備考
 
-
 Struct fields *must* have a valid `json` tag to be included in the generated Typescript.
 
 Anonymous nested structs are not supported at this time.
 
 :::
-
 
 Goに対して引数として構造体を渡すこともできます。 構造体として取り扱ってほしいJavascriptのマップやクラスを渡すと、構造体に変換されます。 あなたが簡単にこれらのことを把握できるように、`dev`モードでは、バウンドされたGoメソッドで使用されている全構造体の型が定義された、Typescriptモジュールが生成されます。 このモジュールを使用すると、Javascriptネイティブなオブジェクトを構築し、Goコードへ送信することができます。
 

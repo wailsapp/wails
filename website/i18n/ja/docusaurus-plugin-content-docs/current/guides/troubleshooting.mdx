@@ -146,3 +146,9 @@ In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/Sy
 This is _normally_ due to a mismatch with the OS version you are running and the version of the XCode Command Line Tools installed. If you see an error like this, try upgrading your XCode Command Line Tools to the latest version.
 
 Source: https://github.com/wailsapp/wails/issues/1806
+
+## Cannot start service: Host version "x.x.x does not match binary version "x.x.x"
+
+It's preferable to add `frontend/node_modules` and `frontend/package-lock.json` to your `.gitignore`. Otherwise when opening your repository on another machine that may have different versions of Node installed, you may not be able to run your application.
+
+If this does happen, simply delete `frontend/node_modules` and `frontend/package-lock.json` and run your `wails build` or `wails dev` command again. 
