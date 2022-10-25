@@ -12,6 +12,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strings"
 	"sync"
@@ -56,6 +57,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 	assetServerConfig := assetserver.BuildAssetServerConfig(d.appoptions)
 
 	var assetHandler http.Handler
+	var wsHandler http.Handler
 	_fronendDevServerURL, _ := ctx.Value("frontenddevserverurl").(string)
 	if _fronendDevServerURL == "" {
 		assetdir, _ := ctx.Value("assetdir").(string)
@@ -84,6 +86,10 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		}
 
 		assetHandler = newExternalDevServerAssetHandler(d.logger, externalURL, assetServerConfig)
+		// WebSockets aren't currently supported in prod mode, so a WebSocket connection is the result of the
+		// FrontendDevServer e.g. Vite to support auto reloads.
+		// Therefore we direct WebSockets directly to the FrontendDevServer instead of returning a NotImplementedStatus.
+		wsHandler = httputil.NewSingleHostReverseProxy(externalURL)
 	}
 
 	// Setup internal dev server
@@ -92,7 +98,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		log.Fatal(err)
 	}
 
-	assetServer, err := assetserver.NewBrowserAssetServer(ctx, assetHandler, bindingsJSON)
+	assetServer, err := assetserver.NewDevAssetServer(ctx, assetHandler, wsHandler, bindingsJSON)
 	if err != nil {
 		log.Fatal(err)
 	}

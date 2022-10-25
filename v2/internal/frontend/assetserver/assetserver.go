@@ -23,6 +23,7 @@ const (
 
 type AssetServer struct {
 	handler   http.Handler
+	wsHandler http.Handler
 	runtimeJS []byte
 	ipcJS     func(*http.Request) []byte
 
@@ -71,15 +72,19 @@ func NewAssetServerWithHandler(ctx context.Context, handler http.Handler, bindin
 }
 
 func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if isWebSocket(req) {
+		// Forward WebSockets to the distinct websocket handler if it exists
+		if wsHandler := d.wsHandler; wsHandler != nil {
+			wsHandler.ServeHTTP(rw, req)
+		} else {
+			rw.WriteHeader(http.StatusNotImplemented)
+		}
+		return
+	}
+
 	header := rw.Header()
 	if d.servingFromDisk {
 		header.Add(HeaderCacheControl, "no-cache")
-	}
-
-	if isWebSocket(req) {
-		// WebSockets can always directly be forwarded to the handler
-		d.handler.ServeHTTP(rw, req)
-		return
 	}
 
 	path := req.URL.Path

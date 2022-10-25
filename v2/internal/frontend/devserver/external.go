@@ -10,8 +10,6 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/labstack/echo/v4"
-
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
@@ -68,23 +66,18 @@ func newExternalAssetsHandler(logger *logger.Logger, url *url.URL, handler http.
 		}
 	}
 
-	e := echo.New()
-	e.Any("/*",
-		func(c echo.Context) error {
-			req := c.Request()
-			rw := c.Response()
-			if c.IsWebSocket() || req.Method == http.MethodGet {
+	return http.HandlerFunc(
+		func(rw http.ResponseWriter, req *http.Request) {
+			if req.Method == http.MethodGet {
 				proxy.ServeHTTP(rw, req)
-				return nil
+				return
 			}
 
 			if handler != nil {
 				handler.ServeHTTP(rw, req)
-				return nil
+				return
 			}
 
-			return c.NoContent(http.StatusMethodNotAllowed)
+			rw.WriteHeader(http.StatusMethodNotAllowed)
 		})
-
-	return e
 }

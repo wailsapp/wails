@@ -12,15 +12,17 @@ import (
 )
 
 /*
-The assetserver for dev serves assets from disk.
-It injects a websocket based IPC script into `index.html`.
+The assetserver for the dev mode.
+Depending on the UserAgent it injects a websocket based IPC script into `index.html` or the default desktop IPC. The
+default desktop IPC is injected when the webview accesses the devserver.
 */
-func NewBrowserAssetServer(ctx context.Context, handler http.Handler, bindingsJSON string) (*AssetServer, error) {
+func NewDevAssetServer(ctx context.Context, handler http.Handler, wsHandler http.Handler, bindingsJSON string) (*AssetServer, error) {
 	result, err := NewAssetServerWithHandler(ctx, handler, bindingsJSON)
 	if err != nil {
 		return nil, err
 	}
 
+	result.wsHandler = wsHandler
 	result.appendSpinnerToBody = true
 	result.ipcJS = func(req *http.Request) []byte {
 		if strings.Contains(req.UserAgent(), WailsUserAgentValue) {
