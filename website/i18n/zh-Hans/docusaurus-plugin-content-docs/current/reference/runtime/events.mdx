@@ -8,9 +8,9 @@ Wails 运行时提供了一个统一的事件系统，其中事件可以由 Go �
 
 ### 添加事件侦听器
 
-此方法为给定的事件名称设置一个侦听器。 当 [触发指定事件](#触发指定事件) 名为 `eventName` 类型的事件时，将触发回调。 与触发事件一起发送的任何其他数据都将传递给回调。
+此方法为给定的事件名称设置一个侦听器。 当 [触发指定事件](#触发指定事件) 名为 `eventName` 类型的事件时，将触发回调。 与触发事件一起发送的任何其他数据都将传递给回调。 它返回 一个函数来取消侦听器。
 
-Go: `EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`<br/> JS: `EventsOn(eventName string, callback function(optionalData?: any))`
+Go: `EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{})) func()`<br/> JS: `EventsOn(eventName string, callback function(optionalData?: any)): () => void`
 
 ### 移除事件侦听器
 
@@ -20,15 +20,15 @@ Go: `EventsOff(ctx context.Context, eventName string, additionalEventNames ...st
 
 ### 添加只触发一次的事件侦听器
 
-此方法为给定的事件名称设置一个侦听器，但只会触发一次。
+此方法为给定的事件名称设置一个侦听器，但只会触发一次。 它返回 一个函数来取消侦听器。
 
-Go: `EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`<br/> JS: `EventsOnce(eventName string, callback function(optionalData?: any))`
+Go: `EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{})) func()`<br/> JS: `EventsOnce(eventName string, callback function(optionalData?: any)): () => void`
 
 ### 添加指定对多触发次数的事件侦听器
 
-此方法为给定的事件名称设置一个侦听器，但最多只能触发 `counter` 次。
+此方法为给定的事件名称设置一个侦听器，但最多只能触发 `counter` 次。 它返回 一个函数来取消侦听器。
 
-Go: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int)`<br/> JS: `EventsOnMultiple(eventName string, callback function(optionalData?: any), counter int)`
+Go: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int) func()`<br/> JS: `EventsOnMultiple(eventName string, callback function(optionalData?: any), counter int): () => void`
 
 ### 触发指定事件
 

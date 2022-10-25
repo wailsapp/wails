@@ -146,3 +146,9 @@ In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/Sy
 这 _通常_ 是由于您正在运行的操作系统版本和安装的 XCode 命令行工具的版本不匹配。 如果您看到这样的错误，请尝试将您的 XCode 命令行工具升级到最新版本。
 
 来源：https://github.com/wailsapp/wails/issues/1806
+
+## 无法启动服务：主机版本“x.x.x”与二进制版本“x.x.x”不匹配
+
+最好将 `frontend/node_modules` 和 `frontend/package-lock.json` 添加到您的 `.gitignore` 中。 否则，当在另一台可能安装了不同版本 Node 的机器上打开您的存储库时，您可能无法运行您的应用程序。
+
+如果发生这种情况，只需删除 `frontend/node_modules` 和 `frontend/package-lock.json` 并再次运行 `wails build` 或 `wails dev` 命令。 
