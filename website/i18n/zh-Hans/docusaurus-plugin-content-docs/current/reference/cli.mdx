@@ -39,13 +39,11 @@ Wails CLI 有许多用于管理项目的命令。 所有命令都以此方式运
 
 :::warning 注意
 
-
 **Wails 项目不维护也不对第 3 方模板负责**
 
 如果您不确定某个模板，请检查 `package.json` 和 `wails.json` 中安装的模块和运行的脚本。
 
 :::
-
 
 ## 构建
 
@@ -82,21 +80,21 @@ Wails CLI 有许多用于管理项目的命令。 所有命令都以此方式运
 
 `wails build -clean -o myproject.exe`
 
-:::info 苹果芯片上的 UPX
+:::Info
+在 Mac 上，应用程序将与 `Info.plist` 捆绑在一起，而不是 `Info.dev.plist`。
+:::
 
+:::info 苹果芯片上的 UPX
 
 在苹果芯片上使用 UPX 相关的 [问题](https://github.com/upx/upx/issues/446)。
 
 :::
 
-
 :::info Windows 上的 UPX
-
 
 一些防病毒软件供应商误将 `upx` 压缩的二进制文件标记为病毒，请查看相关 [问题](https://github.com/upx/upx/issues/437)。
 
 :::
-
 
 ### 平台
 
@@ -162,6 +160,7 @@ Your system is ready for Wails development!
   - 带有自动生成的 JSDoc 的 Go 方法的 Javascript 包装器，提供代码提示
   - 您的 Go 结构体的 TypeScript 版本，可以构造并传递给您的 Go 方法
 - 生成的第二个 JS 模块，为运行时提供包装器 + TS 声明
+- 在 macOS 上，它会将应用程序打包到一个 `.app` 文件并运行它。 开发模式它将使用 `build/darwin/Info.dev.plist` 。
 
 | 标志                           | 描述                                                                                                                               | 默认                |
 |:---------------------------- |:-------------------------------------------------------------------------------------------------------------------------------- |:----------------- |
@@ -174,6 +173,7 @@ Your system is ready for Wails development!
 | -tags "额外标签"                 | 传递给编译器的构建标签（引号和空格分隔）                                                                                                             |                   |
 | -loglevel "日志级别"             | 要使用的日志级别 - Trace, Debug, Info, Warning, Error                                                                                    | Debug（调试）         |
 | -noreload                    | 资产更改时禁用自动重新加载                                                                                                                    |                   |
+| -nocolour                    | 关闭彩色命令行输出                                                                                                                        | false             |
 | -nogen                       | 禁用生成模块                                                                                                                           |                   |
 | -v                           | 详细级别 (0 - silent, 1 - standard, 2 - verbose)                                                                                     | 1                 |
 | -wailsjsdir                  | 生成生成的Wails JS模块的目录                                                                                                               | `wails.json` 中的值  |

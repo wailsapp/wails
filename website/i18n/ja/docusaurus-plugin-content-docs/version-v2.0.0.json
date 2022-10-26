@@ -12,7 +12,7 @@
     "description": "The label for category Reference in sidebar docs"
   },
   "sidebar.docs.category.Runtime": {
-    "message": "Runtime",
+    "message": "ランタイム",
     "description": "The label for category Runtime in sidebar docs"
   },
   "sidebar.docs.category.Community": {

@@ -41,6 +41,8 @@ func main() {
         WindowStartState:   options.Maximised,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        ZoomFactor:           1.0,
+        IsZoomControlEnabled: false,
         Bind: []interface{}{
             app,
         },
@@ -223,11 +225,9 @@ The menu to be used by the application. More details about Menus in the [Menu Re
 
 :::note
 
-
 Macでは、メニューが指定されていない場合、デフォルトメニューが作成されます。
 
 :::
-
 
 名前: Menu<br/> データ型: `*menu.Menu`
 
@@ -344,11 +344,9 @@ Setting this to `true` will make the window background translucent. 多くの場
 
 :::note
 
-
 この設定を適用するには、Windows 11 ビルド22621以降が必要です。
 
 :::
-
 
 ウィンドウの半透明タイプを設定します。 この設定は、[WindowIsTranslucent](#WindowIsTranslucent)が`true`に設定されている場合にのみ適用されます。
 
@@ -394,6 +392,18 @@ Important information about distribution of fixed version runtime:
 
 名前: WebviewBrowserPath<br/> データ型: `string`
 
+### ZoomFactor
+
+Name: ZoomFactor<br/> Type: `float64`
+
+This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
+
+### IsZoomControlEnabled
+
+Name: IsZoomControlEnabled<br/> Type: `bool`
+
+This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
+
 #### Theme
 
 Minimum Windows Version: Windows 10 2004/20H1
@@ -412,11 +422,9 @@ This defines the theme that the application should use:
 
 :::note
 
-
 サポートされるWindowsの最小バージョン: Windows 10/11 2009/21H2 ビルド22000
 
 :::
-
 
 Allows you to specify custom colours for TitleBar, TitleText and Border for both light and dark mode, as well as when the window is active or inactive.
 

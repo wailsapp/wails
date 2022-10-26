@@ -8,9 +8,9 @@ Wailsでは、GoまたはJavascriptによって発行および受信できる、
 
 ### EventsOn
 
-このメソッドは、指定されたイベント名のイベントリスナーを新たに設定します。 `eventName`という名前のイベントが[発行](#EventsEmit)されると、コールバックがトリガーされます。 イベント発行時にデータも付与されていた場合、そのデータはコールバックに渡されます。
+このメソッドは、指定されたイベント名のイベントリスナーを新たに設定します。 `eventName`という名前のイベントが[発行](#EventsEmit)されると、コールバックがトリガーされます。 イベント発行時にデータも付与されていた場合、そのデータはコールバックに渡されます。 It returns a function to cancel the listener.
 
-Go: `EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`<br/> JS: `EventsOn(eventName string, callback function(optionalData?: any))`
+Go: `EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{})) func()`<br/> JS: `EventsOn(eventName string, callback function(optionalData?: any)): () => void`
 
 ### EventsOff
 
@@ -20,15 +20,15 @@ Go: `EventsOff(ctx context.Context, eventName string, additionalEventNames ...st
 
 ### EventsOnce
 
-このメソッドは、指定されたイベント名のイベントリスナーを新たに設定し、一度だけトリガーさせます。
+このメソッドは、指定されたイベント名のイベントリスナーを新たに設定し、一度だけトリガーさせます。 It returns a function to cancel the listener.
 
-Go: `EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{}))`<br/> JS: `EventsOnce(eventName string, callback function(optionalData?: any))`
+Go: `EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{})) func()`<br/> JS: `EventsOnce(eventName string, callback function(optionalData?: any)): () => void`
 
 ### EventsOnMultiple
 
-このメソッドは、指定されたイベント名のイベントリスナーを新たに設定し、最大`counter`回だけトリガーします。
+このメソッドは、指定されたイベント名のイベントリスナーを新たに設定し、最大`counter`回だけトリガーします。 It returns a function to cancel the listener.
 
-Go: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int)`<br/> JS: `EventsOnMultiple(eventName string, callback function(optionalData?: any), counter int)`
+Go: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int) func()`<br/> JS: `EventsOnMultiple(eventName string, callback function(optionalData?: any), counter int): () => void`
 
 ### EventsEmit
 

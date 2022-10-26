@@ -158,7 +158,15 @@ In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/Sy
 This is _normally_ due to a mismatch with the OS version you are running and the version of the XCode Command Line Tools
 installed. If you see an error like this, try upgrading your XCode Command Line Tools to the latest version.
 
-Source: https://github.com/wailsapp/wails/issues/1806
+If reinstalling Xcode Command Tools still fails, you can check the path where the toolkit is located using:
+
+`xcode-select -p`
+
+If `/Applications/Xcode.app/Contents/Developer` is displayed, run `sudo xcode-select --switch /Library/Developer/CommandLineTools`
+
+Sources: https://github.com/wailsapp/wails/issues/1806 and https://github.com/wailsapp/wails/issues/1140#issuecomment-1290446496
+
+--
 
 ## Cannot start service: Host version "x.x.x does not match binary version "x.x.x"
 
