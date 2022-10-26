@@ -41,6 +41,8 @@ func main() {
         WindowStartState:   options.Maximised,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        ZoomFactor:           1.0,
+        IsZoomControlEnabled: false,
         Bind: []interface{}{
             app,
         },
@@ -223,11 +225,9 @@ func main() {
 
 :::note
 
-
 在 Mac 上，如果未指定菜单，将创建一个默认菜单。
 
 :::
-
 
 名称：Menu<br/> 类型：`*menu.Menu`
 
@@ -344,11 +344,9 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 
 :::note
 
-
 需要 Windows 11 build 22621 或更高版本。
 
 :::
-
 
 设置窗口的半透明类型。 这仅在 [窗口半透明](#窗口半透明) 设置为 `true` 时适用。
 
@@ -394,6 +392,18 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 
 名称：WebviewBrowserPath<br/> 类型：`string`
 
+### 缩放比例
+
+名称：ZoomFactor<br/> 类型：`float64`
+
+这定义了 WebView2 的缩放比例。 这是匹配 Edge 用户激活放大或缩小的选项
+
+### 启用缩放比例
+
+名称：IsZoomControlEnabled<br/> 类型：`bool`
+
+这将允许用户更改缩放比例。 请注意，可以在选项中设置缩放比例，但不允许在运行时更改它。 适用于屏幕固定的或类似的应用程序。
+
 #### 主题
 
 最低 Windows 版本：Windows 10 2004/20H1
@@ -412,11 +422,9 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 
 :::note
 
-
 最低 Windows 版本：Windows 10/11 2009/21H2 Build 22000
 
 :::
-
 
 允许您为浅色和深色模式以及窗口处于活动或非活动状态的 TitleBar、TitleText 和 Border 指定自定义颜色。
 

@@ -69,6 +69,16 @@ import TabItem from "@theme/TabItem";
 
 运行 `go install github.com/wailsapp/wails/v2/cmd/wails@latest` 安装 Wails CLI。
 
+注意：如果您遇到了类似于以下内容的错误：
+
+```shell
+....\Go\pkg\mod\github.com\wailsapp\wails\v2@v2.1.0\pkg\templates\templates.go:28:12: pattern all:ides/*: no matching files found
+```
+请检查您是否已安装 Go 1.18+ ︰
+```shell
+go version
+```
+
 ## 系统检查
 
 运行 `wails doctor` 将检查您是否安装了正确的依赖项。 如果没有，它会就缺少的内容提供建议以帮助纠正问题。

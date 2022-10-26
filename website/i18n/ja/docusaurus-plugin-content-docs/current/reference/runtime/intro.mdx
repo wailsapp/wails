@@ -19,11 +19,9 @@ Goのランタイムは、`github.com/wailsapp/wails/v2/pkg/runtime`をインポ
 
 :::info 備考
 
-
 [OnStartup](../options.mdx#onstartup)で提供されるContextは、ウィンドウが別のスレッドで初期化されているため、ランタイムが機能する保証がありません。 起動時にランタイムメソッドを呼び出したい場合は、[OnDomReady](../options.mdx#ondomready)を使用してください。
 
 :::
-
 
 Javascriptのランタイムは、`window.runtime`マップを介してフロントエンド上で利用できます。 `dev`モードでは、Typescript型定義を提供するランタイムパッケージが生成されます。 これらは、フロントエンドディレクトリの`wailsjs`ディレクトリに配置しておく必要があります。
 
@@ -35,11 +33,9 @@ Go: `Hide(ctx context.Context)`<br/> JS: `Hide()`
 
 :::info 備考
 
-
 Macでこのメソッドを使用すると、標準のMacアプリケーションにおけるメニュー項目の`Hide`と同じ方法で、アプリケーションが非表示になります。 これはウィンドウの非表示とは異なりますが、アプリケーションはフォアグラウンドに残ったままになります。 WindowsおよびLinuxでは、`WindowHide`メソッドと同等です。
 
 :::
-
 
 ### 表示
 
@@ -47,11 +43,9 @@ Macでこのメソッドを使用すると、標準のMacアプリケーショ�
 
 :::info 備考
 
-
 Macでこのメソッドを使用すると、アプリケーションがフォアグラウンドに戻ります。 WindowsおよびLinuxでは、`WindowShow`メソッドと同等です。
 
 :::
-
 
 Go: `Show(ctx context.Context)`<br/> JS: `Show()`
 
