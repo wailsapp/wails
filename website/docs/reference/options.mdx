@@ -10,7 +10,13 @@ The `Options.App` struct contains the application configuration.
 It is passed to the `wails.Run()` method:
 
 ```go title="Example"
-import "github.com/wailsapp/wails/v2/pkg/options"
+import (
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "github.com/wailsapp/wails/v2/pkg/options/linux"
+    "github.com/wailsapp/wails/v2/pkg/options/mac"
+    "github.com/wailsapp/wails/v2/pkg/options/windows"
+)
 
 func main() {
 
@@ -29,8 +35,11 @@ func main() {
         HideWindowOnClose:  false,
         BackgroundColour:   &options.RGBA{R: 0, G: 0, B: 0, A: 255},
         AlwaysOnTop:        false,
-        Assets:             assets,
-        AssetsHandler:      assetsHandler,
+        AssetServer: &assetserver.Options{
+            Assets:     assets,
+            Handler:    assetsHandler,
+            Middleware: assetsMidldeware,
+		},
         Menu:               app.applicationMenu(),
         Logger:             nil,
         LogLevel:           logger.DEBUG,
@@ -213,19 +222,20 @@ Type: `bool`
 
 ### Assets
 
-The frontend assets to be used by the application. Requires an `index.html` file.
-
-Name: Assets<br/>
-Type: `embed.FS`
+Deprecated: Please use Assets on [AssetServer specific options](#assetserver).
 
 ### AssetsHandler
 
-<img src="http://badges.github.io/stability-badges/dist/experimental.svg" />
+Deprecated: Please use AssetsHandler on [AssetServer specific options](#assetserver).
 
-The assets handler is a generic `http.Handler` which will be called for any non GET request on the assets server
-and for GET requests which can not be served from the `assets` because the file is not found.
+### AssetServer
 
-| Value                   | Win | Mac | Lin |
+This defines AssetServer specific options. It allows to customize the AssetServer with static assets, serving assets
+dynamically with an `http.Handler` or hook into the request chain with an `assetserver.Middleware`.
+
+Not all features of an `http.Request` are currently supported, please see the following feature matrix:
+
+| Feature                 | Win | Mac | Lin |
 | ----------------------- | --- | --- | --- |
 | GET                     | ✅  | ✅  | ✅  |
 | POST                    | ✅  | ✅  | ❌  |
@@ -239,15 +249,54 @@ and for GET requests which can not be served from the `assets` because the file 
 | Response Headers        | ✅  | ✅  | ❌  |
 | Response Body           | ✅  | ✅  | ✅  |
 | Response Body Streaming | ❌  | ❌  | ✅  |
+| WebSockets              | ❌  | ❌  | ❌  |
 
 NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.36.0. In the future some features will be
 supported by the introduction of WebKit2GTK 2.36.0+ support.
+
+Name: AssetServer<br/>
+Type: `*assetserver.Options`
+
+#### Assets
+
+The static frontend assets to be used by the application. 
+
+A GET request is first tried to be served from this `fs.FS`. If the `fs.FS` returns `os.ErrNotExist` for that file, 
+the request handling will fallback to the [Handler](#handler) and tries to serve the GET request from it.
+
+If set to nil, all GET requests will be forwarded to [Handler](#handler).
+
+Name: Assets<br/>
+Type: `fs.FS`
+
+#### Handler
+
+The assets handler is a generic `http.Handler` for fallback handling of assets that can't be found.
+
+The handler will be called for every GET request that can't be served from [Assets](#assets), due to `os.ErrNotExist`.
+Furthermore all non GET requests will always be served from this Handler.
+	
+If not defined, the result is the following in cases where the Handler would have been called:
+- GET request:   `http.StatusNotFound`
+- Other request: `http.StatusMethodNotAllowed`
 
 NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html
 on every path, that does not contain a file extension.
 
 Name: AssetsHandler<br/>
 Type: `http.Handler`
+
+#### Middleware
+
+Middleware is a HTTP Middleware which allows to hook into the AssetServer request chain. It allows to skip the default
+request handler dynamically, e.g. implement specialized Routing etc.
+The Middleware is called to build a new `http.Handler` used by the AssetSever and it also receives the default
+handler used by the AssetServer as an argument.
+
+If not defined, the default AssetServer request chain is executed.
+
+Name: Middleware<br/>
+Type: `assetserver.Middleware`
 
 ### Menu
 
