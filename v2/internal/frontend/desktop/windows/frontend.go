@@ -102,7 +102,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		appBindings.DB().UpdateObfuscatedCallMap()
 	}
 
-	assets, err := assetserver.NewAssetServer(ctx, appoptions.Assets, appoptions.AssetsHandler, bindings)
+	assets, err := assetserver.NewAssetServerMainPage(ctx, bindings, appoptions)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -435,9 +435,8 @@ func (f *Frontend) setupChromium() {
 		log.Fatal(err)
 	}
 
-
-	if opts := f.frontendOptions.Windows; opts != nil  {
-		if  opts.ZoomFactor > 0.0 {
+	if opts := f.frontendOptions.Windows; opts != nil {
+		if opts.ZoomFactor > 0.0 {
 			chromium.PutZoomFactor(opts.ZoomFactor)
 		}
 		err = settings.PutIsZoomControlEnabled(opts.IsZoomControlEnabled)

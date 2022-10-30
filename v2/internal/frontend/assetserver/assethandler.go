@@ -14,6 +14,7 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
 //go:embed defaultindex.html
@@ -32,7 +33,13 @@ type assetHandler struct {
 	retryMissingFiles bool
 }
 
-func NewAssetHandler(ctx context.Context, vfs iofs.FS, assetsHandler http.Handler) (http.Handler, error) {
+func NewAssetHandler(ctx context.Context, options assetserver.Options) (http.Handler, error) {
+	var log *logger.Logger
+	if _logger := ctx.Value("logger"); _logger != nil {
+		log = _logger.(*logger.Logger)
+	}
+
+	vfs := options.Assets
 	if vfs != nil {
 		if _, err := vfs.Open("."); err != nil {
 			return nil, err
@@ -49,13 +56,14 @@ func NewAssetHandler(ctx context.Context, vfs iofs.FS, assetsHandler http.Handle
 		}
 	}
 
-	result := &assetHandler{
+	var result http.Handler = &assetHandler{
 		fs:      vfs,
-		handler: assetsHandler,
+		handler: options.Handler,
+		logger:  log,
 	}
 
-	if _logger := ctx.Value("logger"); _logger != nil {
-		result.logger = _logger.(*logger.Logger)
+	if middleware := options.Middleware; middleware != nil {
+		result = middleware(result)
 	}
 
 	return result, nil
