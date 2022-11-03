@@ -3,8 +3,9 @@
 package windows
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
@@ -241,11 +242,14 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 				if style&w32.WS_MAXIMIZE != 0 {
 					// If the window is maximized we must adjust the client area to the work area of the monitor. Otherwise
 					// some content goes beyond the visible part of the monitor.
-					monitor := w32.MonitorFromWindow(w.Handle(), w32.MONITOR_DEFAULTTONEAREST)
+					// Make sure to use the provided RECT to get the monitor, because during maximizig there might be
+					// a wrong monitor returned in multi screen mode when using MonitorFromWindow.
+					// See: https://github.com/MicrosoftEdge/WebView2Feedback/issues/2549
+					monitor := w32.MonitorFromRect(rgrc, w32.MONITOR_DEFAULTTONULL)
 
 					var monitorInfo w32.MONITORINFO
 					monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
-					if w32.GetMonitorInfo(monitor, &monitorInfo) {
+					if monitor != 0 && w32.GetMonitorInfo(monitor, &monitorInfo) {
 						*rgrc = monitorInfo.RcWork
 
 						maxWidth := w.frontendOptions.MaxWidth
