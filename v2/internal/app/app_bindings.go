@@ -60,29 +60,27 @@ func generateBindings(bindings *binding.Bindings) error {
 		return err
 	}
 
-	if projectConfig.WailsJSDir == "" {
-		projectConfig.WailsJSDir = filepath.Join(cwd, "frontend")
-	}
-	wrapperDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs", "runtime")
-	_ = os.RemoveAll(wrapperDir)
+	wailsjsbasedir := filepath.Join(projectConfig.GetWailsJSDir(), "wailsjs")
+
+	runtimeDir := filepath.Join(wailsjsbasedir, "runtime")
+	_ = os.RemoveAll(runtimeDir)
 	extractor := gosod.New(wrapper.RuntimeWrapper)
-	err = extractor.Extract(wrapperDir, nil)
+	err = extractor.Extract(runtimeDir, nil)
 	if err != nil {
 		return err
 	}
 
-	targetDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs", "go")
-	err = os.RemoveAll(targetDir)
+	goBindingsDir := filepath.Join(wailsjsbasedir, "go")
+	err = os.RemoveAll(goBindingsDir)
 	if err != nil {
 		return err
 	}
-	_ = fs.MkDirs(targetDir)
+	_ = fs.MkDirs(goBindingsDir)
 
-	err = bindings.GenerateGoBindings(targetDir)
+	err = bindings.GenerateGoBindings(goBindingsDir)
 	if err != nil {
 		return err
 	}
 
-	wailsJSDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs")
-	return fs.SetPermissions(wailsJSDir, 0755)
+	return fs.SetPermissions(wailsjsbasedir, 0755)
 }

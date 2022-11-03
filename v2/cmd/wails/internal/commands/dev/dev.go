@@ -166,6 +166,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		buildOptions := generateBuildOptions(flags)
+		buildOptions.ProjectData = projectConfig
 		buildOptions.SkipBindings = flags.skipBindings
 		buildOptions.Logger = logger
 
@@ -214,7 +215,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		// frontend:dev:watcher command.
 		frontendDevAutoDiscovery := projectConfig.IsFrontendDevServerURLAutoDiscovery()
 		if command := projectConfig.DevWatcherCommand; command != "" {
-			closer, devServerURL, err := runFrontendDevWatcherCommand(cwd, command, frontendDevAutoDiscovery)
+			closer, devServerURL, err := runFrontendDevWatcherCommand(projectConfig.GetFrontendDir(), command, frontendDevAutoDiscovery)
 			if err != nil {
 				return err
 			}
@@ -358,8 +359,8 @@ func generateBuildOptions(flags devFlags) *build.Options {
 
 // loadAndMergeProjectConfig reconciles flags passed to the CLI with project config settings and updates
 // the project config if necessary
-func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, error) {
-	projectConfig, err := project.Load(cwd)
+func loadAndMergeProjectConfig(projectFileDirectory string, flags *devFlags) (*project.Project, error) {
+	projectConfig, err := project.Load(projectFileDirectory)
 	if err != nil {
 		return nil, err
 	}
@@ -396,11 +397,11 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 	}
 
 	if flags.wailsjsdir == "" && projectConfig.WailsJSDir != "" {
-		flags.wailsjsdir = projectConfig.WailsJSDir
+		flags.wailsjsdir = projectConfig.GetWailsJSDir()
 	}
 
 	if flags.wailsjsdir == "" {
-		flags.wailsjsdir = "./frontend"
+		flags.wailsjsdir = projectConfig.GetFrontendDir()
 	}
 
 	if flags.wailsjsdir != projectConfig.WailsJSDir {
@@ -433,15 +434,14 @@ func loadAndMergeProjectConfig(cwd string, flags *devFlags) (*project.Project, e
 }
 
 // runFrontendDevWatcherCommand will run the `frontend:dev:watcher` command if it was given, ex- `npm run dev`
-func runFrontendDevWatcherCommand(cwd string, devCommand string, discoverViteServerURL bool) (func(), string, error) {
+func runFrontendDevWatcherCommand(frontendDirectory string, devCommand string, discoverViteServerURL bool) (func(), string, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	scanner := NewStdoutScanner()
-	dir := filepath.Join(cwd, "frontend")
 	cmdSlice := strings.Split(devCommand, " ")
 	cmd := exec.CommandContext(ctx, cmdSlice[0], cmdSlice[1:]...)
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = scanner
-	cmd.Dir = dir
+	cmd.Dir = frontendDirectory
 	setParentGID(cmd)
 
 	if err := cmd.Start(); err != nil {
