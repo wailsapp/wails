@@ -24,6 +24,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webviewloader"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
@@ -61,12 +62,22 @@ type Frontend struct {
 	// Windows build number
 	versionInfo     *operatingsystem.WindowsVersionInfo
 	resizeDebouncer func(f func())
+
+	// Version of the installed webview lib
+	webviewVersion string
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 
 	// Get Windows build number
 	versionInfo, _ := operatingsystem.GetWindowsVersionInfo()
+
+	// Get the installed webview version
+	var webviewPath = ""
+	if opts := appoptions.Windows; opts != nil && opts.WebviewBrowserPath != "" {
+		webviewPath = opts.WebviewBrowserPath
+	}
+	webviewVersion, _ := webviewloader.GetWebviewVersion(webviewPath)
 
 	result := &Frontend{
 		frontendOptions: appoptions,
@@ -75,6 +86,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		dispatcher:      dispatcher,
 		ctx:             ctx,
 		versionInfo:     versionInfo,
+		webviewVersion:  webviewVersion,
 	}
 
 	if appoptions.Windows != nil {
@@ -109,6 +121,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	result.assets = assets
 
 	return result
+}
+
+func (f *Frontend) PopulateVersionMap(versions map[string]string) {
+	versions["webview2"] = f.webviewVersion
 }
 
 func (f *Frontend) WindowReload() {

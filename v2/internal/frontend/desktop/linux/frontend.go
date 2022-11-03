@@ -9,6 +9,14 @@ package linux
 #include "gtk/gtk.h"
 #include "webkit2/webkit2.h"
 
+static guint get_compiled_gtk_major_version() { return GTK_MAJOR_VERSION; }
+static guint get_compiled_gtk_minor_version() { return GTK_MINOR_VERSION; }
+static guint get_compiled_gtk_micro_version() { return GTK_MICRO_VERSION; }
+
+static guint get_compiled_webkit_major_version() { return WEBKIT_MAJOR_VERSION; }
+static guint get_compiled_webkit_minor_version() { return WEBKIT_MINOR_VERSION; }
+static guint get_compiled_webkit_micro_version() { return WEBKIT_MICRO_VERSION; }
+
 */
 import "C"
 import (
@@ -108,6 +116,34 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	result.mainWindow = NewWindow(appoptions, result.debug)
 
 	return result
+}
+
+func buildVersionString(major, minor, micro C.uint) string {
+	return fmt.Sprintf("%d.%d.%d", uint(major), uint(minor), uint(micro))
+}
+
+func (f *Frontend) PopulateVersionMap(versions map[string]string) {
+	versions["gtk3-compiled"] = buildVersionString(
+		C.get_compiled_gtk_major_version(),
+		C.get_compiled_gtk_minor_version(),
+		C.get_compiled_gtk_micro_version(),
+	)
+	versions["gtk3-runtime"] = buildVersionString(
+		C.gtk_get_major_version(),
+		C.gtk_get_minor_version(),
+		C.gtk_get_micro_version(),
+	)
+
+	versions["webkit2gtk-compiled"] = buildVersionString(
+		C.get_compiled_webkit_major_version(),
+		C.get_compiled_webkit_minor_version(),
+		C.get_compiled_webkit_micro_version(),
+	)
+	versions["webkit2gtk-runtime"] = buildVersionString(
+		C.webkit_get_major_version(),
+		C.webkit_get_minor_version(),
+		C.webkit_get_micro_version(),
+	)
 }
 
 func (f *Frontend) startMessageProcessor() {

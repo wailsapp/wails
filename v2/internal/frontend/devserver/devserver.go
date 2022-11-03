@@ -48,6 +48,9 @@ type DevWebServer struct {
 	devServerAddr string
 }
 
+func (f *DevWebServer) PopulateVersionMap(versions map[string]string) {
+}
+
 func (d *DevWebServer) Hide() {
 	d.desktopFrontend.Hide()
 }

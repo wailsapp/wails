@@ -97,6 +97,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	return result
 }
 
+func (f *Frontend) PopulateVersionMap(versions map[string]string) {
+	// No version to populate currently
+}
+
 func (f *Frontend) startMessageProcessor() {
 	for message := range messageBuffer {
 		f.processMessage(message)

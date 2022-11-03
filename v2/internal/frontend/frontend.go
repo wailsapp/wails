@@ -118,4 +118,7 @@ type Frontend interface {
 
 	// Browser
 	BrowserOpenURL(url string)
+
+	// Version discovery
+	PopulateVersionMap(versions map[string]string)
 }
