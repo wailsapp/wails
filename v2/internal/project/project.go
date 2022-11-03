@@ -156,9 +156,6 @@ func (p *Project) setDefaults() {
 	if p.Name == "" {
 		p.Name = "wailsapp"
 	}
-	if p.AssetDirectory == "" {
-		p.AssetDirectory = "assets"
-	}
 	if p.OutputFilename == "" {
 		p.OutputFilename = p.Name
 	}
