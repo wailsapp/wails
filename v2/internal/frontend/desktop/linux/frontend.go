@@ -29,6 +29,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/wailsapp/wails/v2/internal/notification"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
 
@@ -51,6 +52,9 @@ type Frontend struct {
 	mainWindow *Window
 	bindings   *binding.Bindings
 	dispatcher frontend.Dispatcher
+
+	// notifications
+	notifier *notification.Notifier
 }
 
 func (f *Frontend) RunMainLoop() {
@@ -78,8 +82,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
+		notifier:        &notification.Notifier{},
 	}
 	result.startURL, _ = url.Parse(startURL)
+	result.notifier.Logger = myLogger
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
@@ -104,6 +110,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		for i := 0; i < 10; i++ {
 			go result.startRequestProcessor()
 		}
+
 	}
 
 	go result.startMessageProcessor()
@@ -116,7 +123,13 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 	result.mainWindow = NewWindow(appoptions, result.debug)
 
+	result.notifier.Init()
+
 	return result
+}
+
+func (f *Frontend) AppID() string {
+	return f.frontendOptions.AppID
 }
 
 func (f *Frontend) startMessageProcessor() {

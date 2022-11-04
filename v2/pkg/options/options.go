@@ -33,6 +33,7 @@ type Experimental struct {
 
 // App contains options for creating the App
 type App struct {
+	AppID             string
 	Title             string
 	Width             int
 	Height            int

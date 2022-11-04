@@ -40,11 +40,13 @@ require (
 	github.com/bitfield/script v0.19.0
 	github.com/charmbracelet/glamour v0.5.0
 	github.com/go-ole/go-ole v1.2.6
+	github.com/godbus/dbus/v5 v5.1.0
 	github.com/labstack/gommon v0.3.1
 	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
 	github.com/samber/lo v1.27.1
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/tools v0.1.12
+	gopkg.in/toast.v1 v1.0.0-20180812000517-0a84660828b2
 )
 
 require (
@@ -69,6 +71,7 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.9.0 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
+	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect

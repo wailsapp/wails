@@ -4,8 +4,9 @@
 package linux
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v2/internal/frontend"
 )
 
 /*

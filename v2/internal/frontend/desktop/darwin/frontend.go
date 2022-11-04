@@ -105,6 +105,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	return result
 }
 
+func (f *Frontend) AppID() string {
+	return f.frontendOptions.AppID
+}
+
 func (f *Frontend) startMessageProcessor() {
 	for message := range messageBuffer {
 		f.processMessage(message)

@@ -111,6 +111,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	return result
 }
 
+func (f *Frontend) AppID() string {
+	return f.frontendOptions.AppID
+}
+
 func (f *Frontend) WindowReload() {
 	f.ExecJS("runtime.WindowReload();")
 }

@@ -7,6 +7,7 @@ import (
 
 // Default options for creating the App
 var Default = &App{
+	AppID:              "wails",
 	Width:              1024,
 	Height:             768,
 	Logger:             logger.NewDefaultLogger(),
