@@ -1,0 +1,394 @@
+---
+sidebar_position: 8
+---
+
+# Notifications
+
+This part of the runtime provides access to native notifications.
+
+:::info Javascript
+
+Notifications are currently unsupported in the JS runtime.
+
+:::
+
+
+## Notification Options
+
+```go title="Simple Example"
+import (
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+)
+
+//go:embed build/appicon.png
+var appicon []byte
+
+//go:embed notify.wav
+var notisound []byte
+
+func (a *App) Notify(name string) string {
+
+    err := runtime.SendNotification(a.ctx, runtime.NotificationOptions{
+		AppID:   "wails",
+		AppIcon: appicon,
+		Title:   "Wails notification",
+		Message: name,
+		Timeout: 30 * time.Second,
+	})
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+```
+
+```go title="Advanced Example"
+import (
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+)
+
+//go:embed build/appicon.png
+var appicon []byte
+
+//go:embed notify.wav
+var notisound []byte
+
+func (a *App) Notify(name string) string {
+
+    err := runtime.SendNotification(a.ctx, runtime.NotificationOptions{
+		AppID:   "wails",
+		AppIcon: appicon,
+		Title:   "Wails notification",
+		Message: name,
+		Timeout: 30 * time.Second,
+		WindowsOptions: &runtime.WindowsNotificationOptions{
+			Actions: []runtime.WindowsNotificationAction{
+				{
+					Type:      "protocol",
+					Label:     "Button 1",
+					Arguments: "",
+				},
+				{
+					Type:      "protocol",
+					Label:     "Button 2",
+					Arguments: "",
+				},
+			},
+		},
+		MacOptions: &runtime.MacNotificationOptions{
+			SubTitle: "Mac subtitle",
+			Actions: []runtime.MacNotificationAction{
+				{
+					Label: "Button 1",
+					OnAction: func(ActivationType, ActivationValue string) {
+						log.Println(ActivationType, ActivationValue)
+					},
+				},
+				{
+					Label: "Button 2",
+					OnAction: func(ActivationType, ActivationValue string) {
+						log.Println(ActivationType, ActivationValue)
+					},
+				},
+			},
+		},
+		LinuxOptions: &runtime.LinuxNotificationOptions{
+			Urgency: 1,
+			Sound: &runtime.LinuxNotificationSound{
+				Name: "message-new-instant",
+				File: notisound,
+			},
+			Actions: []runtime.LinuxNotificationAction{
+				{
+					Key:   "btn-1",
+					Label: "Button 1",
+					OnAction: func(notificationID uint32) {
+						log.Println(notificationID)
+					},
+				},
+				{
+					Key:   "btn-2",
+					Label: "Button 2",
+					OnAction: func(notificationID uint32) {
+						log.Println(notificationID)
+					},
+				},
+			},
+			OnClose: func(notificationID uint32, reason string) {
+				log.Println(notificationID, reason)
+			},
+			OnShow: func(notificationID uint32) {
+				log.Println(notificationID)
+			},
+		},
+	})
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+```
+
+### AppID
+
+This is the application's ID for the operating system used by notifications.
+
+Name: AppID<br/>
+Type: `string`<br/>
+Default: wails
+
+### AppIcon
+
+Icon to be shown in the notification as an icon,
+
+Name: AppIcon<br/>
+Type: `[]byte`<br/>
+
+### Title
+
+The notification's title.
+
+Name: Title<br/>
+Type: `string`<br/>
+
+### Message
+
+The notification's main content.
+
+Name: Message<br/>
+Type: `string`<br/>
+
+### Timeout
+
+Timeout determines how long a notification will be visible. If set to 0 the notification will not disappear until a user interacts whit it.
+
+Name: Timeout<br/>
+Type: `time.Duration`<br/>
+Default: 0
+
+### WindowsOptions
+
+WindowsNotificationOptions contains options that are specific to Windows.
+
+Name: WindowsOptions<br/>
+Type: `*runtime.WindowsOptions`
+
+#### Actions
+
+Actions show up as buttons in notifications. eg. "protocol"
+
+Name: Actions<br/>
+Type: `[]runtime.WindowsNotificationAction`
+
+##### Action Type
+
+Type is the action's type.
+
+Name: Type<br/>
+Type: `string`
+
+##### Action Label
+
+This is the actions label, this will be shown as a button. eg. "Open Maps"
+
+Name: Label<br/>
+Type: `string`
+
+##### Action Arguments
+
+Arguments to be interpreted by the notification server. eg. "bingmaps:?q=sushi"
+
+Name: Arguments<br/>
+Type: `string`
+
+#### Sound
+
+The media file to play in place of the default sound. On Windows, this attribute can have one of the following string values:
+
+- ms-winsoundevent:Notification.Default
+- ms-winsoundevent:Notification.IM
+- ms-winsoundevent:Notification.Mail
+- ms-winsoundevent:Notification.Reminder
+- ms-winsoundevent:Notification.SMS
+- ms-winsoundevent:Notification.Looping.Alarm
+- ms-winsoundevent:Notification.Looping.Alarm2
+- ms-winsoundevent:Notification.Looping.Alarm3
+- ms-winsoundevent:Notification.Looping.Alarm4
+- ms-winsoundevent:Notification.Looping.Alarm5
+- ms-winsoundevent:Notification.Looping.Alarm6
+- ms-winsoundevent:Notification.Looping.Alarm7
+- ms-winsoundevent:Notification.Looping.Alarm8
+- ms-winsoundevent:Notification.Looping.Alarm9
+- ms-winsoundevent:Notification.Looping.Alarm10
+- ms-winsoundevent:Notification.Looping.Call
+- ms-winsoundevent:Notification.Looping.Call2
+- ms-winsoundevent:Notification.Looping.Call3
+- ms-winsoundevent:Notification.Looping.Call4
+- ms-winsoundevent:Notification.Looping.Call5
+- ms-winsoundevent:Notification.Looping.Call6
+- ms-winsoundevent:Notification.Looping.Call7
+- ms-winsoundevent:Notification.Looping.Call8
+- ms-winsoundevent:Notification.Looping.Call9
+- ms-winsoundevent:Notification.Looping.Call10
+
+Name: Sound<br/>
+Type: `string`
+
+### MacOptions
+
+MacOptions contains options that are specific to macOS.
+
+Name: MacOptions<br/>
+Type: `*runtime.MacNotificationOptions`
+
+#### SubTitle
+
+The subtitle of the notification.
+
+Name: SubTitle<br/>
+Type: `string`
+
+#### Actions
+
+Items to be shown in the dropdown input on the notifications.
+
+Name: Actions<br/>
+Type: `[]MacNotificationAction`
+
+##### Action Label
+
+This is the content of the dropdown list item.
+
+Name: Label<br/>
+Type: `string`
+
+##### Action OnAction
+
+OnAction handles the activated action's signal. This function is called when the user selects on option.
+
+Name: OnAction<br/>
+Type: `func(ActivationType string, ActivationValue string)`
+
+#### CloseText
+
+The notification's "Close" button label
+
+Name: CloseText<br/>
+Type: `string`
+
+#### ContentImage
+
+An image to be displayed attached inside the notification.
+
+Name: ContentImage<br/>
+Type: `[]byte`
+
+### LinuxOptions
+
+LinuxOptions contains options that are specific to Linux.
+
+Name: LinuxOptions<br/>
+Type: `*runtime.LinuxNotificationOptions`
+
+#### Urgency
+
+Urgency represents the notifications urgency.
+	
+For low and normal urgencies, server implementations may display the notifications how they choose.
+They should, however, have a sane expiration timeout dependent on the urgency level.
+	
+Critical notifications should not automatically expire, as they are things that the user will most
+likely want to know about. They should only be closed when the user dismisses them, for example,
+by clicking on the notification.
+ - 0 = low
+ - 1 = normal
+ - 2 = critical
+
+Name: Urgency<br/>
+Type: `int`
+
+#### ReplacesID
+
+ReplacesID is used to replace an existing notification.
+
+Name: ReplacesID<br/>
+Type: `uint32`
+
+#### Actions
+
+Actions to be shown as buttons on the notification. Some notification servers may ignore actions.
+
+Name: Actions<br/>
+Type: `[]LinuxNotificationAction`
+
+##### Action Key
+
+Key is the actions's identifier.
+
+Name: Key<br/>
+Type: `string`
+
+##### Action Label
+
+Label is the button's text.
+
+Name: Label<br/>
+Type: `string`
+
+##### Action OnAction
+
+OnAction handles the activated action's signal. This function is called when the user clicks on a button.
+
+Name: OnAction<br/>
+Type: `func(notificationID uint32)`
+
+#### Sound
+
+Setting this will play a sound when a notification pops up. Some notification servers may ignore sounds.
+
+Name: Actions<br/>
+Type: `*LinuxNotificationSound`
+
+##### Sound Name
+
+Name is a themeable named sound from the freedesktop.org sound naming specification to play
+when the notification pops up. An example would be "message-new-instant".
+Sound names can be found here: http://0pointer.de/public/sound-naming-spec.html
+
+Name: Name<br/>
+Type: `string`
+
+##### Sound File
+
+File to play when the notification pops up. Most notification servers only handle *.wav files. Sound `File` is preferred over `Name` when both are set. 
+
+Name: File<br/>
+Type: `[]byte`
+
+##### Sound Suppress
+
+Causes the server to suppress playing any sounds, if it has that ability.
+This is usually set when the client itself is going to play its own sound.
+
+Name: Suppress<br/>
+Type: `bool`
+
+#### OnClose
+
+OnClose handles the closed notification's signal.
+ - expired
+ - dismissed-by-user
+ - activated-by-user
+ - closed-by-call
+ - unknown
+ - other
+
+Name: OnClose<br/>
+Type: `func(notificationID uint32, reason string)`
+
+#### OnShow
+
+OnShow is called when the notification pops up.
+
+Name: OnShow<br/>
+Type: `func(notificationID uint32)`

@@ -21,6 +21,7 @@ import (
 func main() {
 
     err := wails.Run(&options.App{
+	    AppID               string,
         Title:              "Menus Demo",
         Width:              800,
         Height:             600,
@@ -109,6 +110,13 @@ func main() {
 }
 
 ```
+### AppID
+
+This is the application's ID for the operating system used by notifications.
+
+Name: AppID<br/>
+Type: `string`<br/>
+Default: wails
 
 ### Title
 

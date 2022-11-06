@@ -121,7 +121,7 @@ func (u LinuxNotificationUrgency) Uint() uint {
 	return uint(u)
 }
 
-// LinuxNotificationOptions contains the options for the linux specific notification options
+// LinuxNotificationOptions contains options that are specific to linux
 type LinuxNotificationOptions struct {
 
 	// Urgency represents the notifications urgency.
@@ -172,7 +172,7 @@ type WindowsNotificationAction struct {
 	Arguments string
 }
 
-// WindowsNotificationOptions contains the options for the Windows specific notification options
+// WindowsNotificationOptions contains options that are specific to Windows.
 type WindowsNotificationOptions struct {
 	Actions []WindowsNotificationAction
 	Sound   string
@@ -191,7 +191,7 @@ type MacNotificationAction struct {
 // MacNotificationOptions contains the options for the MacOS specific notification options
 type MacNotificationOptions struct {
 
-	// SubTitle The sub title of the notification.
+	// SubTitle The subtitle of the notification.
 	SubTitle string
 
 	// Actions to be shown.
