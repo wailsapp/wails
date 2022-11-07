@@ -4,9 +4,11 @@
 package notification
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os/exec"
+	"sync"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -48,32 +50,21 @@ func (r closedReason) string() string {
 }
 
 type Notifier struct {
-	Logger   *logger.Logger
-	method   string
-	dbusConn *dbus.Conn
-	sendPath string
+	logger       *logger.Logger
+	method       string
+	dbusConn     *dbus.Conn
+	sendPath     string
+	intitialized bool
 }
 
-// GetMethod retruns the determined notification method
-func (n *Notifier) GetMethod() string {
-	if n.method == "" {
-		panic("notification called before initialization")
+// NewNotifier returns a new Notifier
+func NewNotifier(myLogger *logger.Logger) *Notifier {
+	return &Notifier{
+		logger: myLogger,
 	}
-
-	return n.method
 }
 
-// GetDbusConn returns the dbus connection
-func (n *Notifier) GetDbusConn() *dbus.Conn {
-	return n.dbusConn
-}
-
-// GetSendPath returns the path for notify-send executable
-func (n *Notifier) GetSendPath() string {
-	return n.sendPath
-}
-
-func (n *Notifier) Init() {
+func (n *Notifier) init() error {
 	var err error
 
 	checkDbus := func() (*dbus.Conn, error) {
@@ -107,7 +98,7 @@ func (n *Notifier) Init() {
 	n.dbusConn, err = checkDbus()
 	if err == nil {
 		n.method = MethodDbus
-		return
+		return nil
 	}
 	n.dbusConn.Close()
 	n.dbusConn = nil
@@ -116,14 +107,14 @@ func (n *Notifier) Init() {
 	if err == nil {
 		n.sendPath = send
 		n.method = MethodNotifySend
-		return
+		return nil
 	}
 
 	send, err = exec.LookPath("sw-notify-send")
 	if err == nil {
 		n.sendPath = send
 		n.method = MethodNotifySend
-		return
+		return nil
 	}
 
 	// send, err = exec.LookPath("kdialog")
@@ -135,16 +126,49 @@ func (n *Notifier) Init() {
 
 	n.method = "none"
 	n.sendPath = ""
+
+	return err
 }
 
-func (n *Notifier) dbusListener(notificationID *uint32, options frontend.NotificationOptions) {
+var initOnce sync.Once
+
+// SendNotification sends notifications
+func (n *Notifier) SendNotification(options frontend.NotificationOptions) error {
+	initOnce.Do(func() {
+		n.init()
+	})
+
+	switch n.method {
+	case MethodDbus:
+		ID, err := n.sendViaDbus(options)
+		if options.LinuxOptions.OnShow != nil {
+			options.LinuxOptions.OnShow(ID)
+		}
+		return err
+	case MethodNotifySend:
+		ID, err := n.sendViaNotifySend(options)
+		if options.LinuxOptions.OnShow != nil {
+			options.LinuxOptions.OnShow(ID)
+		}
+		return err
+	case MethodKdialog:
+		ID, err := n.sendViaKnotify(options)
+		if options.LinuxOptions.OnShow != nil {
+			options.LinuxOptions.OnShow(ID)
+		}
+		return err
+	}
+	return errors.New("no notification method is available")
+}
+
+func (n *Notifier) dbusListener(notificationID uint32, options frontend.NotificationOptions) {
 	// add a listener (matcher) in dbus for signals to Notification interface.
 	err := n.dbusConn.AddMatchSignal(
 		dbus.WithMatchObjectPath(dbusObjectPath),
 		dbus.WithMatchInterface(dbusNotificationsInterface),
 	)
 	if err != nil {
-		n.Logger.Error("runtime dbus notification err: %v", err)
+		n.logger.Error("runtime dbus notification err: %v", err)
 		return
 	}
 
@@ -166,14 +190,14 @@ func (n *Notifier) dbusListener(notificationID *uint32, options frontend.Notific
 			switch signal.Name {
 			case signalNotificationClosed:
 				signalID = signal.Body[0].(uint32)
-				if options.LinuxOptions.OnClose != nil && *notificationID == signalID {
+				if options.LinuxOptions.OnClose != nil && notificationID == signalID {
 					options.LinuxOptions.OnClose(signalID, closedReason(signal.Body[1].(uint32)).string())
 					return
 				}
 			case signalActionInvoked:
 				signalID = signal.Body[0].(uint32)
 				signalActionKey = signal.Body[1].(string)
-				if *notificationID != signalID {
+				if notificationID != signalID {
 					continue
 				}
 				for i := 0; i < len(options.LinuxOptions.Actions); i++ {
@@ -190,16 +214,13 @@ func (n *Notifier) dbusListener(notificationID *uint32, options frontend.Notific
 	}
 }
 
-func (n *Notifier) SendViaDbus(options frontend.NotificationOptions) (result uint32, err error) {
+func (n *Notifier) sendViaDbus(options frontend.NotificationOptions) (result uint32, err error) {
+
 	actions := []string{}
 	if options.LinuxOptions.Actions != nil {
 		for i := range options.LinuxOptions.Actions {
 			actions = append(actions, options.LinuxOptions.Actions[i].Key, options.LinuxOptions.Actions[i].Label)
 		}
-	}
-
-	if len(actions) > 0 || options.LinuxOptions.OnClose != nil {
-		go n.dbusListener(&result, options)
 	}
 
 	timeout := int32(-1)
@@ -215,7 +236,7 @@ func (n *Notifier) SendViaDbus(options frontend.NotificationOptions) (result uin
 		if options.LinuxOptions.Sound.File != nil {
 			s, err := SoundPath(options.LinuxOptions.Sound.File)
 			if err != nil {
-				n.Logger.Error("Notification sound error: %v")
+				n.logger.Error("Notification sound error: %v")
 			} else {
 				hints["sound-file"] = dbus.MakeVariant(s)
 			}
@@ -232,7 +253,7 @@ func (n *Notifier) SendViaDbus(options frontend.NotificationOptions) (result uin
 	if options.AppIcon != nil {
 		appIcon, err = AppIconPath(options.AppIcon)
 		if err != nil {
-			n.Logger.Error("Notification app icon err: %v", err)
+			n.logger.Error("Notification app icon err: %v", err)
 		}
 	}
 
@@ -254,10 +275,17 @@ func (n *Notifier) SendViaDbus(options frontend.NotificationOptions) (result uin
 	}
 
 	err = call.Store(&result)
+	if err != nil {
+		return 0, err
+	}
+
+	if len(actions) > 0 || options.LinuxOptions.OnClose != nil {
+		go n.dbusListener(result, options)
+	}
 	return
 }
 
-func (n *Notifier) SendViaNotifySend(options frontend.NotificationOptions) (uint32, error) {
+func (n *Notifier) sendViaNotifySend(options frontend.NotificationOptions) (uint32, error) {
 
 	args := []string{
 		options.Title,
@@ -282,7 +310,7 @@ func (n *Notifier) SendViaNotifySend(options frontend.NotificationOptions) (uint
 		if options.LinuxOptions.Sound.File != nil {
 			s, err := SoundPath(options.LinuxOptions.Sound.File)
 			if err != nil {
-				n.Logger.Error("Notification sound error: %v")
+				n.logger.Error("Notification sound error: %v")
 			} else {
 				args = append(args, fmt.Sprintf("--hint=string:sound-file:%s", s))
 			}
@@ -302,7 +330,8 @@ func (n *Notifier) SendViaNotifySend(options frontend.NotificationOptions) (uint
 	return 0, nil
 }
 
-func (n *Notifier) SendViaKnotify(options frontend.NotificationOptions) (uint32, error) {
+func (n *Notifier) sendViaKnotify(options frontend.NotificationOptions) (uint32, error) {
+
 	c := exec.Command(n.sendPath, "--title", options.Title, "--passivepopup", options.Message, "10", "--icon", "")
 	err := c.Run()
 	if err != nil {

@@ -82,10 +82,9 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		bindings:        appBindings,
 		dispatcher:      dispatcher,
 		ctx:             ctx,
-		notifier:        &notification.Notifier{},
+		notifier:        notification.NewNotifier(myLogger),
 	}
 	result.startURL, _ = url.Parse(startURL)
-	result.notifier.Logger = myLogger
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
@@ -122,8 +121,6 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		result.debug = _debug.(bool)
 	}
 	result.mainWindow = NewWindow(appoptions, result.debug)
-
-	result.notifier.Init()
 
 	return result
 }
