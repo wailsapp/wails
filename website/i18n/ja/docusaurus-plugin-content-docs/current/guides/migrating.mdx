@@ -30,7 +30,9 @@ In v2, there is just a single method, `wails.Run()`, that accepts [application o
         Title:  "MyApp",
         Width:  800,
         Height: 600,
-        Assets: assets,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
         Bind:   []interface{}{
             basic,
         },
@@ -151,7 +153,9 @@ var assets embed.FS
 func main() {
     err := wails.Run(&options.App{
         /* Other Options */
-        Assets: assets,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
     })
 }
 ```

@@ -145,7 +145,15 @@ In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/Sy
 
 这 _通常_ 是由于您正在运行的操作系统版本和安装的 XCode 命令行工具的版本不匹配。 如果您看到这样的错误，请尝试将您的 XCode 命令行工具升级到最新版本。
 
-来源：https://github.com/wailsapp/wails/issues/1806
+如果重新安装 Xcode 命令工具仍然失败，您可以通过以下方式检查工具包所在的路径：
+
+`xcode-select -p`
+
+如果显示 `/Applications/Xcode.app/Contents/Developer` ，运行 `sudo xcode-select --twitter /Library/Developer/CommandLineTools`
+
+来源：https://github.com/wailsapp/wails/issues/1806 和 https://github.com/wailsapp/wails/issues/1140#issuecomment-1290446496
+
+--
 
 ## 无法启动服务：主机版本“x.x.x”与二进制版本“x.x.x”不匹配
 

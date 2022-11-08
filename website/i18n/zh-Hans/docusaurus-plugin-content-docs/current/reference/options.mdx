@@ -9,7 +9,13 @@ sidebar_position: 3
 该 `Options.App` 结构包含应用程序配置。 它被传递给 `wails.Run()` 方法：
 
 ```go title="Example"
-import "github.com/wailsapp/wails/v2/pkg/options"
+import (
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "github.com/wailsapp/wails/v2/pkg/options/linux"
+    "github.com/wailsapp/wails/v2/pkg/options/mac"
+    "github.com/wailsapp/wails/v2/pkg/options/windows"
+)
 
 func main() {
 
@@ -28,8 +34,11 @@ func main() {
         HideWindowOnClose:  false,
         BackgroundColour:   &options.RGBA{R: 0, G: 0, B: 0, A: 255},
         AlwaysOnTop:        false,
-        Assets:             assets,
-        AssetsHandler:      assetsHandler,
+        AssetServer: &assetserver.Options{
+            Assets:     assets,
+            Handler:    assetsHandler,
+            Middleware: assetsMidldeware,
+        },
         Menu:               app.applicationMenu(),
         Logger:             nil,
         LogLevel:           logger.DEBUG,
@@ -188,17 +197,19 @@ func main() {
 
 ### 资产
 
-应用程序要使用的前端资源。 需要一个 `index.html` 文件。
-
-名称：Assets<br/> 类型：`embed.FS`
+已弃用：请在 [AssetServer 特定选项](#资产服务器) 上使用资产。
 
 ### 资产处理程序
 
-<img src="http://badges.github.io/stability-badges/dist/experimental.svg" />
+已弃用：请在 [AssetServer 特定选项](#资产服务器) 上使用资产处理程序。
 
-资产处理程序是一个通用的 `http.Handler` ，对于资产服务器上的任何非 GET 请求和 `assets` 由于找不到文件而无法从 GET 请求提供服务的 GET 请求都将被调用。
+### 资产服务器
 
-| 值                       | Win | Mac | Lin |
+这定义了资产服务器特定的选项。 它允许使用静态资产自定义资产服务器，使用 `http.Handler` 动态地提供资产或使用 `assetsserver.Middleware` 钩到请求链。
+
+并非当前支持 `http.Request` 的所有功能，请参阅以下功能矩阵：
+
+| 功能                      | Win | Mac | Lin |
 | ----------------------- | --- | --- | --- |
 | GET                     | ✅   | ✅   | ✅   |
 | POST                    | ✅   | ✅   | ❌   |
@@ -212,12 +223,43 @@ func main() {
 | Response Headers        | ✅   | ✅   | ❌   |
 | Response Body           | ✅   | ✅   | ✅   |
 | Response Body Streaming | ❌   | ❌   | ✅   |
+| WebSockets              | ❌   | ❌   | ❌   |
 
 注意：Linux 当前非常有限，因为目标是 WebKit2GTK 版本 < 2.36.0。 将来，一些特性将通过引入 WebKit2GTK 2.36.0+ 支持来支持。
+
+名称: AssetServer<br/> 类型: `*assetserver.Options`
+
+#### 资产
+
+应用程序要使用的静态前端资产。
+
+首先尝试从 `fs.FS` 提供 GET 请求。 如果 `fs.FS` 为该文件返回 `os.ErrNotExist`，则请求处理将回退到 [处理程序](#处理程序) 并尝试服务来自它的 GET 请求。
+
+如果设置为 nil，则所有 GET 请求都将转发给 [处理程序](#处理程序)。
+
+名称: Assets<br/> 类型: `fs.FS`
+
+#### 处理程序
+
+资产处理程序是一个通用的 `http.Handler`，用于对无法找到的资产进行后备处理。
+
+由于 `os.ErrNotExist`，对于每个无法从 [资产](#资产) 提供服务的 GET 请求，都会调用该处理程序。 此外，所有非 GET 请求将始终从此处理程序提供服务。
+
+如果未定义，则调用处理程序的结果如下：
+- GET 请求:   `http.StatusNotFound`
+- 其他请求: `http.StatusMethodNotAllowed`
 
 注意：当与前端 DevServer 结合使用时，可能会有一些限制，例如。 Vite 在不包含文件扩展名的每个路径上提供 index.html。
 
 名称：AssetsHandler<br/> 类型：`http.Handler`
+
+#### 中间件
+
+中间件是一个 HTTP 中间件，它允许挂钩到资产服务器请求链。 它允许动态跳过默认请求处理程序，例如实现专门的路由等。 调用中间件来构建资产服务器使用的新 `http.Handler`，它还接收资产服务器使用的默认处理程序作为参数。
+
+如果未定义，则执行默认的资产服务器请求链。
+
+名称: Middleware<br/> 类型: `assetserver.Middleware`
 
 ### 菜单
 

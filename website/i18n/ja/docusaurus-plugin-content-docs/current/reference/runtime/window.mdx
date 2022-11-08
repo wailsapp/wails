@@ -38,9 +38,9 @@ Go: `WindowReload(ctx context.Context)`<br/> JS: `WindowReload()`
 
 ### WindowExecJS
 
-Executes arbitrary JS code in the window.
+ウィンドウ内で、任意のJSコードを実行します。
 
-This method runs the code in the browser asynchronously and returns immediately. If the script causes any errors, they will only be available in the browser console.
+このメソッドは、ブラウザ上で非同期にコードを実行し、すぐにリターンされます。 スクリプトでエラーが発生した場合、エラーログはブラウザコンソールでのみ確認できます。
 
 Go: `WindowExecJS(ctx context.Context, js string)`
 
