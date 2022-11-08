@@ -6,7 +6,6 @@ package notification
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os/exec"
 	"sync"
 
@@ -138,27 +137,27 @@ func (n *Notifier) SendNotification(options frontend.NotificationOptions) error 
 		n.init()
 	})
 
+	var (
+		ID  uint32
+		err error
+	)
+
 	switch n.method {
 	case MethodDbus:
-		ID, err := n.sendViaDbus(options)
-		if options.LinuxOptions.OnShow != nil {
-			options.LinuxOptions.OnShow(ID)
-		}
-		return err
+		ID, err = n.sendViaDbus(options)
 	case MethodNotifySend:
-		ID, err := n.sendViaNotifySend(options)
-		if options.LinuxOptions.OnShow != nil {
-			options.LinuxOptions.OnShow(ID)
-		}
-		return err
+		ID, err = n.sendViaNotifySend(options)
 	case MethodKdialog:
-		ID, err := n.sendViaKnotify(options)
-		if options.LinuxOptions.OnShow != nil {
-			options.LinuxOptions.OnShow(ID)
-		}
-		return err
+		ID, err = n.sendViaKnotify(options)
+	default:
+		err = errors.New("no notification method is available")
 	}
-	return errors.New("no notification method is available")
+
+	if err == nil && options.LinuxOptions.OnShow != nil {
+		options.LinuxOptions.OnShow(ID)
+	}
+
+	return err
 }
 
 func (n *Notifier) dbusListener(notificationID uint32, options frontend.NotificationOptions) {
@@ -241,7 +240,6 @@ func (n *Notifier) sendViaDbus(options frontend.NotificationOptions) (result uin
 				hints["sound-file"] = dbus.MakeVariant(s)
 			}
 		} else if options.LinuxOptions.Sound.Name != "" {
-			log.Println("sound name")
 			hints["sound-name"] = dbus.MakeVariant(options.LinuxOptions.Sound.Name)
 		}
 		if options.LinuxOptions.Sound.Suppress {
@@ -279,7 +277,7 @@ func (n *Notifier) sendViaDbus(options frontend.NotificationOptions) (result uin
 		return 0, err
 	}
 
-	if len(actions) > 0 || options.LinuxOptions.OnClose != nil {
+	if result != options.LinuxOptions.ReplacesID && (len(actions) > 0 || options.LinuxOptions.OnClose != nil) {
 		go n.dbusListener(result, options)
 	}
 	return
