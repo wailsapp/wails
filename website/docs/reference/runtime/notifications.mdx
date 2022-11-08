@@ -12,9 +12,6 @@ Notifications are currently unsupported in the JS runtime.
 
 :::
 
-
-## Notification Options
-
 ```go title="Simple Example"
 import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -31,8 +28,8 @@ func (a *App) Notify(name string) string {
     err := runtime.SendNotification(a.ctx, runtime.NotificationOptions{
 		AppID:   "wails",
 		AppIcon: appicon,
-		Title:   "Wails notification",
-		Message: name,
+		Title:   "Wails title",
+		Message: "Your message goes here...",
 		Timeout: 30 * time.Second,
 	})
 	if err != nil {
@@ -41,6 +38,8 @@ func (a *App) Notify(name string) string {
 }
 
 ```
+
+## Notification Options
 
 ```go title="Advanced Example"
 import (
@@ -58,8 +57,8 @@ func (a *App) Notify(name string) string {
     err := runtime.SendNotification(a.ctx, runtime.NotificationOptions{
 		AppID:   "wails",
 		AppIcon: appicon,
-		Title:   "Wails notification",
-		Message: name,
+		Title:   "Wails title",
+		Message: "Your message goes here...",
 		Timeout: 30 * time.Second,
 		WindowsOptions: &runtime.WindowsNotificationOptions{
 			Actions: []runtime.WindowsNotificationAction{
@@ -133,6 +132,9 @@ func (a *App) Notify(name string) string {
 
 This is the application's ID for the operating system used by notifications.
 
+The AppID can be omitted the default value is "wails", but it can be set globally in 
+[Application options](options#appid). 
+
 Name: AppID<br/>
 Type: `string`<br/>
 Default: wails
@@ -175,7 +177,7 @@ Type: `*runtime.WindowsOptions`
 
 #### Actions
 
-Actions show up as buttons in notifications. eg. "protocol"
+Actions show up as buttons in notifications.
 
 Name: Actions<br/>
 Type: `[]runtime.WindowsNotificationAction`
@@ -309,28 +311,38 @@ Type: `int`
 
 #### ReplacesID
 
-ReplacesID is used to replace an existing notification.
+An optional ID of an existing notification that this notification is intended to replace.
 
 Name: ReplacesID<br/>
 Type: `uint32`
 
 #### Actions
 
-Actions to be shown as buttons on the notification. Some notification servers may ignore actions.
+:::note
+
+Some notification servers may ignore actions.
+
+:::
+
+The actions send a request message back to the notification client when invoked. This functionality may not be implemented by the notification server.
+An implementation is free to ignore any requested by the client. 
+As an example one possible rendering of actions would be as buttons in the notification popup.
+
+The default action (usually invoked my clicking the notification) should have a key named "default". The name can be anything, though implementations are free not to display it.
 
 Name: Actions<br/>
 Type: `[]LinuxNotificationAction`
 
 ##### Action Key
 
-Key is the actions's identifier.
+Key is the actions's identifier used by the notification server.
 
 Name: Key<br/>
 Type: `string`
 
 ##### Action Label
 
-Label is the button's text.
+Label is the button's text shown to the user.
 
 Name: Label<br/>
 Type: `string`
@@ -375,7 +387,9 @@ Type: `bool`
 
 #### OnClose
 
-OnClose handles the closed notification's signal.
+The OnClose handler is called when the notification is closed.
+
+Possible reasons:
  - expired
  - dismissed-by-user
  - activated-by-user

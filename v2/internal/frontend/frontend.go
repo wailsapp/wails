@@ -64,7 +64,7 @@ type MessageDialogOptions struct {
 	Icon          []byte
 }
 
-// LinuxNotificationAction represents a Notification action for a notification
+// LinuxNotificationAction represents a clickable action on a notification
 type LinuxNotificationAction struct {
 
 	// Key is the actions's identifier
@@ -140,7 +140,10 @@ type LinuxNotificationOptions struct {
 	// ReplacesID is used to replace an existing notification.
 	ReplacesID uint32
 
-	// Actions to be shown.
+	// Actions to be shown as buttons on the notification.
+	//
+	// If an action's key is set to "default" the whole notification becomes clickable instead of creating a button.
+	// Additional actions will be shown as buttons.
 	Actions []LinuxNotificationAction
 
 	// Sound represents a sound to be played when a notification shows up
@@ -188,7 +191,7 @@ type MacNotificationAction struct {
 	OnAction func(ActivationType string, ActivationValue string)
 }
 
-// MacNotificationOptions contains the options for the MacOS specific notification options
+// MacOptions contains options that are specific to macOS.
 type MacNotificationOptions struct {
 
 	// SubTitle The subtitle of the notification.

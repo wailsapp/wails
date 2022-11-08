@@ -9,7 +9,7 @@ import (
 // LinuxNotificationSound represents a sound to be played when a notification shows up
 type LinuxNotificationSound = frontend.LinuxNotificationSound
 
-// LinuxNotificationAction represents a Notification action for a notification
+// LinuxNotificationAction represents a clickable action on a notification
 type LinuxNotificationAction = frontend.LinuxNotificationAction
 
 // LinuxNotificationOptions contains the options for the linux specific notification options
