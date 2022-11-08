@@ -27,6 +27,7 @@ import (
 
     "github.com/wailsapp/wails/v2"
     "github.com/wailsapp/wails/v2/pkg/options"
+  "github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
 //go:embed all:frontend/dist
@@ -37,12 +38,14 @@ func main() {
     app := &App{}
 
     err := wails.Run(&options.App{
-        Title:             "Basic Demo",
-        Width:             1024,
-        Height:            768,
-        Assets:            &assets,
-        OnStartup:         app.startup,
-        OnShutdown:        app.shutdown,
+        Title:  "Basic Demo",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
+        OnStartup:  app.startup,
+        OnShutdown: app.shutdown,
         Bind: []interface{}{
             app,
         },
@@ -123,6 +126,7 @@ import (
 
     "github.com/wailsapp/wails/v2"
     "github.com/wailsapp/wails/v2/pkg/options"
+  "github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
 //go:embed all:frontend/dist
@@ -133,10 +137,12 @@ func main() {
     app := &App{}
 
     err := wails.Run(&options.App{
-        Title:             "Basic Demo",
-        Width:             1024,
-        Height:            768,
-        Assets:            &assets,
+        Title:  "Basic Demo",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
         Bind: []interface{}{
             app,
         },
@@ -161,10 +167,12 @@ func (a *App) Greet(name string) string {
 ```go {8-10}
     //...
     err := wails.Run(&options.App{
-        Title:             "Basic Demo",
-        Width:             1024,
-        Height:            768,
-        Assets:            &assets,
+        Title:  "Basic Demo",
+        Width:  1024,
+        Height: 768,
+        AssetServer: &assetserver.Options{
+            Assets: assets,
+        },
         Bind: []interface{}{
             app,
             &mystruct1{},
