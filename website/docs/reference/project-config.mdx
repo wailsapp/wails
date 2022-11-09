@@ -11,6 +11,8 @@ The project config resides in the `wails.json` file in the project directory. Th
 	"name": "[The project name]",
 	"assetdir": "[Relative path to the directory containing the compiled assets, this is normally inferred and could be left empty]",
 	"reloaddirs": "[Additional directories to trigger reloads (comma separated), this is only used for some advanced asset configurations]",
+	"build:dir": "[The directory where the build files reside. Defaults to 'build']",
+	"frontend:dir": "[Relative path to the frontend directory. Defaults to 'frontend']",
 	"frontend:install": "[The command to install node dependencies, run in the frontend directory - often `npm install`]",
 	"frontend:build": "[The command to build the assets, run in the frontend directory - often `npm run build`]",
 	"frontend:dev": "[This command has been replaced by frontend:dev:build. If frontend:dev:build is not specified will falls back to this command. \nIf this command is also not specified will falls back to frontend:build]",
