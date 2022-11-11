@@ -78,6 +78,9 @@ type App struct {
 
 	// Experimental options
 	Experimental *Experimental
+
+	// Debug options for debug builds. These options will be ignored in a production build.
+	Debug Debug
 }
 
 type RGBA struct {
