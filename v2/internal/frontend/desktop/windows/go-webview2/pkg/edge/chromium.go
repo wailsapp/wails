@@ -364,3 +364,7 @@ func (e *Chromium) PutZoomFactor(zoomFactor float64) {
 		log.Fatal(err)
 	}
 }
+
+func (e *Chromium) OpenDevToolsWindow() {
+	e.webview.OpenDevToolsWindow()
+}
