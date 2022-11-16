@@ -221,6 +221,16 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 	}
 }
 
+func (b *Bindings) SetTsPrefix(prefix string) *Bindings {
+	b.tsPrefix = prefix
+	return b
+}
+
+func (b *Bindings) SetTsPostfix(postfix string) *Bindings {
+	b.tsSuffix = postfix
+	return b
+}
+
 func (b *Bindings) getAllStructNames() *slicer.StringSlicer {
 	var result slicer.StringSlicer
 	for packageName, structsToGenerate := range b.structsToGenerateTS {

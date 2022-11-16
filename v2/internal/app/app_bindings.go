@@ -52,6 +52,9 @@ func (a *App) Run() error {
 
 	appBindings := binding.NewBindings(a.logger, a.options.Bind, bindingExemptions, IsObfuscated())
 
+	appBindings.SetTsPrefix(tsPrefix)
+	appBindings.SetTsPostfix(tsSuffix)
+
 	err := generateBindings(appBindings)
 	if err != nil {
 		return err
