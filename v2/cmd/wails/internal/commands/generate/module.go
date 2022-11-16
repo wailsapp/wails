@@ -4,6 +4,7 @@ import (
 	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/flags"
 	"io"
 )
 
@@ -20,8 +21,8 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 	genFlags := generateFlags{}
 	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &genFlags.tags)
 
-	command.StringFlag("tsprefix", "prefix for generated typescript entities", &genFlags.prefix)
-	command.StringFlag("tssuffix", "suffix for generated typescript entities", &genFlags.suffix)
+	command.StringFlag(flags.TsPrefix.Flag, flags.TsPrefix.Description, &genFlags.prefix)
+	command.StringFlag(flags.TsSuffix.Flag, flags.TsSuffix.Description, &genFlags.suffix)
 
 	command.Action(func() error {
 
