@@ -94,6 +94,8 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 	for packageName, structsToGenerate := range b.structsToGenerateTS {
 		thisPackageCode := ""
 		w := typescriptify.New()
+		w.WithPrefix(b.tsPrefix)
+		w.WithSuffix(b.tsSuffix)
 		w.Namespace = packageName
 		w.WithBackupDir("")
 		w.KnownStructs = allStructNames
