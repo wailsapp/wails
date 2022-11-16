@@ -95,8 +95,6 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 					d.logDebug("File '%s' not found, serving '%s' by AssetHandler", filename, req.URL)
 					handler.ServeHTTP(rw, req)
 					err = nil
-				} else if filename == indexHTML {
-					err = serveFile(rw, filename, defaultHTML)
 				} else {
 					rw.WriteHeader(http.StatusNotFound)
 					err = nil
