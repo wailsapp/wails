@@ -67,6 +67,8 @@ type Options struct {
 	Obfuscated        bool                 // Indicates that bound methods should be obfuscated
 	GarbleArgs        string               // The arguments for Garble
 	SkipBindings      bool                 // Skip binding generation
+	TsPrefix          string               // Used for generating module bindings - prefix generated entity name
+	TsSuffix          string               // Used for generating module bindings - suffix generated entity name
 }
 
 // Build the project!
@@ -199,6 +201,8 @@ func GenerateBindings(buildOptions *Options) error {
 	output, err := bindings.GenerateBindings(bindings.Options{
 		Tags:      buildOptions.UserTags,
 		GoModTidy: !buildOptions.SkipModTidy,
+		TsPrefix:  buildOptions.TsPrefix,
+		TsSuffix:  buildOptions.TsSuffix,
 	})
 	if err != nil {
 		return err
