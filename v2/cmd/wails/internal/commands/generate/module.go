@@ -10,7 +10,7 @@ import (
 type generateFlags struct {
 	tags    string
 	prefix  string
-	postfix string
+	suffix string
 }
 
 // AddModuleCommand adds the `module` subcommand for the `generate` command
@@ -21,7 +21,7 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &genFlags.tags)
 
 	command.StringFlag("tsprefix", "prefix for generated typescript entities", &genFlags.prefix)
-	command.StringFlag("tspostfix", "postfix for generated typescript entities", &genFlags.postfix)
+	command.StringFlag("tssuffix", "suffix for generated typescript entities", &genFlags.suffix)
 
 	command.Action(func() error {
 
