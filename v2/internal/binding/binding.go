@@ -23,6 +23,8 @@ type Bindings struct {
 	exemptions slicer.StringSlicer
 
 	structsToGenerateTS map[string]map[string]interface{}
+	tsPrefix            string
+	tsSuffix            string
 	obfuscate           bool
 }
 

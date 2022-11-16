@@ -32,6 +32,8 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 
 		_, err = bindings.GenerateBindings(bindings.Options{
 			Tags: buildTags,
+			TsPrefix: genFlags.prefix,
+			TsSuffix: genFlags.suffix,
 		})
 		if err != nil {
 			return err
