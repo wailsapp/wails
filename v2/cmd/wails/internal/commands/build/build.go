@@ -2,7 +2,6 @@ package build
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 	"io"
 	"os"
 	"os/exec"
@@ -10,6 +9,9 @@ import (
 	"strings"
 	"text/tabwriter"
 	"time"
+
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/flags"
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 
 	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/project"
@@ -120,6 +122,12 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 	skipBindings := false
 	command.BoolFlag("skipbindings", "Skips generation of bindings", &skipBindings)
 
+	tsPrefix := ""
+	command.StringFlag(flags.TsPrefix.Flag, flags.TsPrefix.Description, &tsPrefix)
+
+	tsSuffix := ""
+	command.StringFlag(flags.TsSuffix.Flag, flags.TsSuffix.Description, &tsSuffix)
+
 	command.Action(func() error {
 
 		quiet := verbosity == 0
@@ -213,6 +221,8 @@ func AddBuildSubcommand(app *clir.Cli, w io.Writer) {
 			GarbleArgs:        garbleargs,
 			SkipBindings:      skipBindings,
 			ProjectData:       projectOptions,
+			TsPrefix:          tsPrefix,
+			TsSuffix:          tsSuffix,
 		}
 
 		// Start a new tabwriter
