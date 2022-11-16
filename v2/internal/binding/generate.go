@@ -79,11 +79,13 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 				tsBody.WriteString(args.Join(",") + "):")
 				returnType := "Promise"
 				if methodDetails.OutputCount() > 0 {
-					firstType := goTypeToTypescriptType(methodDetails.Outputs[0].TypeName, &importNamespaces)
+					outputTypeName := entityFullReturnType(methodDetails.Outputs[0].TypeName, b.tsPrefix, b.tsSuffix, &importNamespaces)
+					firstType := goTypeToTypescriptType(outputTypeName, &importNamespaces)
 					returnType += "<" + firstType
 					if methodDetails.OutputCount() == 2 {
 						if methodDetails.Outputs[1].TypeName != "error" {
-							secondType := goTypeToTypescriptType(methodDetails.Outputs[1].TypeName, &importNamespaces)
+							outputTypeName = entityFullReturnType(methodDetails.Outputs[1].TypeName, b.tsPrefix, b.tsSuffix, &importNamespaces)
+							secondType := goTypeToTypescriptType(outputTypeName, &importNamespaces)
 							returnType += "|" + secondType
 						}
 					}
@@ -170,4 +172,13 @@ func goTypeToTypescriptType(input string, importNamespaces *slicer.StringSlicer)
 		return "Array<" + arrayType + ">"
 	}
 	return goTypeToJSDocType(input, importNamespaces)
+}
+
+func entityFullReturnType(input, prefix, suffix string, importNamespaces *slicer.StringSlicer) string {
+	if strings.ContainsRune(input, '.') {
+		nameSpace, returnType := getSplitReturn(input)
+		return nameSpace + "." + prefix + returnType + suffix
+	}
+
+	return input
 }
