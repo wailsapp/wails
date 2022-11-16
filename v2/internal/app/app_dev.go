@@ -91,7 +91,10 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		}
 	}
 
-	assetConfig := assetserver.BuildAssetServerConfig(appoptions)
+	assetConfig, err := assetserver.BuildAssetServerConfig(appoptions)
+	if err != nil {
+		return nil, err
+	}
 
 	if assetConfig.Assets == nil && frontendDevServerURL != "" {
 		myLogger.Warning("No AssetServer.Assets has been defined but a frontend DevServer, the frontend DevServer will not be used.")

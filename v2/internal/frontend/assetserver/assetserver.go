@@ -34,7 +34,11 @@ type AssetServer struct {
 }
 
 func NewAssetServerMainPage(ctx context.Context, bindingsJSON string, options *options.App) (*AssetServer, error) {
-	return NewAssetServer(ctx, bindingsJSON, BuildAssetServerConfig(options))
+	assetOptions, err := BuildAssetServerConfig(options)
+	if err != nil {
+		return nil, err
+	}
+	return NewAssetServer(ctx, bindingsJSON, assetOptions)
 }
 
 func NewAssetServer(ctx context.Context, bindingsJSON string, options assetserver.Options) (*AssetServer, error) {
