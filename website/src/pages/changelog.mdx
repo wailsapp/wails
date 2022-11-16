@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added `OpenInspectorOnStartup` to debug options to allow opening the WebInspector during startup of the application in debug mode. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2080)
 - On macOS `wails doctor` now also shows the version of Xcode installed. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2089)
+- The [AssetServer](https://wails.io/docs/reference/options#assetserver) now supports handling range-requests if the [Assets](https://wails.io/docs/reference/options/#assets-1) `fs.FS` provides an `io.ReadSeeker`. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2091)
 
 ### Fixed
 - The `noreload` flag in wails dev wasn't applied. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2081)
