@@ -38,31 +38,8 @@ import (
 	"github.com/wailsapp/wails/v2/internal/process"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/commands/build"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/utils"
 )
-
-func LogGreen(message string, args ...interface{}) {
-	if len(message) == 0 {
-		return
-	}
-	text := fmt.Sprintf(message, args...)
-	println(colour.Green(text))
-}
-
-func LogRed(message string, args ...interface{}) {
-	if len(message) == 0 {
-		return
-	}
-	text := fmt.Sprintf(message, args...)
-	println(colour.Red(text))
-}
-
-func LogDarkYellow(message string, args ...interface{}) {
-	if len(message) == 0 {
-		return
-	}
-	text := fmt.Sprintf(message, args...)
-	println(colour.DarkYellow(text))
-}
 
 func sliceToMap(input []string) map[string]struct{} {
 	result := map[string]struct{}{}
@@ -189,7 +166,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 
 		if !buildOptions.SkipBindings {
 			if flags.verbosity == build.VERBOSE {
-				LogGreen("Generating Bindings...")
+				utils.LogGreen("Generating Bindings...")
 			}
 			stdout, err := bindings.GenerateBindings(bindings.Options{
 				Tags:     buildOptions.UserTags,
@@ -200,7 +177,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 				return err
 			}
 			if flags.verbosity == build.VERBOSE {
-				LogGreen(stdout)
+				utils.LogGreen(stdout)
 			}
 		}
 
@@ -245,7 +222,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 		defer func() {
 			if err := killProcessAndCleanupBinary(debugBinaryProcess, appBinary); err != nil {
-				LogDarkYellow("Unable to kill process and cleanup binary: %s", err)
+				utils.LogDarkYellow("Unable to kill process and cleanup binary: %s", err)
 			}
 		}()
 
@@ -270,17 +247,17 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			}
 		}(watcher)
 
-		LogGreen("Watching (sub)/directory: %s", cwd)
-		LogGreen("Using DevServer URL: %s", devServerURL)
+		utils.LogGreen("Watching (sub)/directory: %s", cwd)
+		utils.LogGreen("Using DevServer URL: %s", devServerURL)
 		if flags.frontendDevServerURL != "" {
-			LogGreen("Using Frontend DevServer URL: %s", flags.frontendDevServerURL)
+			utils.LogGreen("Using Frontend DevServer URL: %s", flags.frontendDevServerURL)
 		}
-		LogGreen("Using reload debounce setting of %d milliseconds", flags.debounceMS)
+		utils.LogGreen("Using reload debounce setting of %d milliseconds", flags.debounceMS)
 
 		// Show dev server URL in terminal after 3 seconds
 		go func() {
 			time.Sleep(3 * time.Second)
-			LogGreen("\n\nTo develop in the browser and call your bound Go methods from Javascript, navigate to: %s", devServerURL)
+			utils.LogGreen("\n\nTo develop in the browser and call your bound Go methods from Javascript, navigate to: %s", devServerURL)
 		}()
 
 		// Watch for changes and trigger restartApp()
@@ -295,7 +272,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		debugBinaryProcess = nil
 		appBinary = ""
 
-		LogGreen("Development mode exited")
+		utils.LogGreen("Development mode exited")
 
 		return nil
 	})
@@ -319,7 +296,7 @@ func killProcessAndCleanupBinary(process *process.Process, binary string) error 
 }
 
 func runCommand(dir string, exitOnError bool, command string, args ...string) error {
-	LogGreen("Executing: " + command + " " + strings.Join(args, " "))
+	utils.LogGreen("Executing: " + command + " " + strings.Join(args, " "))
 	cmd := exec.Command(command, args...)
 	cmd.Dir = dir
 	output, err := cmd.CombinedOutput()
@@ -469,7 +446,7 @@ func runFrontendDevWatcherCommand(frontendDirectory string, devCommand string, d
 		}
 	}
 
-	LogGreen("Running frontend DevWatcher command: '%s'", devCommand)
+	utils.LogGreen("Running frontend DevWatcher command: '%s'", devCommand)
 	var wg sync.WaitGroup
 	wg.Add(1)
 
@@ -483,7 +460,7 @@ func runFrontendDevWatcherCommand(frontendDirectory string, devCommand string, d
 		if err := cmd.Wait(); err != nil {
 			wasRunning := atomic.CompareAndSwapInt32(&state, stateRunning, stateStopped)
 			if err.Error() != "exit status 1" && wasRunning {
-				LogRed("Error from DevWatcher '%s': %s", devCommand, err.Error())
+				utils.LogRed("Error from DevWatcher '%s': %s", devCommand, err.Error())
 			}
 		}
 		atomic.StoreInt32(&state, stateStopped)
@@ -505,13 +482,13 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 	appBinary, err := build.Build(buildOptions)
 	println()
 	if err != nil {
-		LogRed("Build error - " + err.Error())
+		utils.LogRed("Build error - " + err.Error())
 
 		msg := "Continuing to run current version"
 		if debugBinaryProcess == nil {
 			msg = "No version running, build will be retriggered as soon as changes have been detected"
 		}
-		LogDarkYellow(msg)
+		utils.LogDarkYellow(msg)
 		return nil, "", nil
 	}
 
@@ -567,7 +544,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 		}
 		thePath, err := filepath.Abs(dir)
 		if err != nil {
-			LogRed("Unable to expand reloadDir '%s': %s", dir, err)
+			utils.LogRed("Unable to expand reloadDir '%s': %s", dir, err)
 			continue
 		}
 		dirsThatTriggerAReload = append(dirsThatTriggerAReload, thePath)
@@ -594,7 +571,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 				quit = true
 			}
 		case err := <-watcher.Errors:
-			LogDarkYellow(err.Error())
+			utils.LogDarkYellow(err.Error())
 		case item := <-watcher.Events:
 			isEligibleFile := func(fileName string) bool {
 				// Iterate all file patterns
@@ -646,7 +623,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 						if err != nil {
 							buildOptions.Logger.Fatal("%s", err.Error())
 						}
-						LogGreen("Added new directory to watcher: %s", item.Name)
+						utils.LogGreen("Added new directory to watcher: %s", item.Name)
 					}
 				} else if isEligibleFile(item.Name) {
 					// Handle creation of new file.
@@ -661,11 +638,11 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 		case <-timer.C:
 			if rebuild {
 				rebuild = false
-				LogGreen("[Rebuild triggered] files updated")
+				utils.LogGreen("[Rebuild triggered] files updated")
 				// Try and build the app
 				newBinaryProcess, _, err := restartApp(buildOptions, debugBinaryProcess, flags, exitCodeChannel)
 				if err != nil {
-					LogRed("Error during build: %s", err.Error())
+					utils.LogRed("Error during build: %s", err.Error())
 					continue
 				}
 				// If we have a new process, saveConfig it
@@ -678,11 +655,11 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 				if assetDir == "" {
 					resp, err := http.Get(assetDirURL)
 					if err != nil {
-						LogRed("Error during retrieving assetdir: %s", err.Error())
+						utils.LogRed("Error during retrieving assetdir: %s", err.Error())
 					} else {
 						content, err := io.ReadAll(resp.Body)
 						if err != nil {
-							LogRed("Error reading assetdir from devserver: %s", err.Error())
+							utils.LogRed("Error reading assetdir from devserver: %s", err.Error())
 						} else {
 							assetDir = string(content)
 						}
@@ -698,19 +675,19 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 						}
 					}
 				} else if len(dirsThatTriggerAReload) == 0 {
-					LogRed("Reloading couldn't be triggered: Please specify -assetdir or -reloaddirs")
+					utils.LogRed("Reloading couldn't be triggered: Please specify -assetdir or -reloaddirs")
 				}
 			}
 			if reload {
 				reload = false
 				_, err := http.Get(reloadURL)
 				if err != nil {
-					LogRed("Error during refresh: %s", err.Error())
+					utils.LogRed("Error during refresh: %s", err.Error())
 				}
 			}
 			changedPaths = map[string]struct{}{}
 		case <-quitChannel:
-			LogGreen("\nCaught quit")
+			utils.LogGreen("\nCaught quit")
 			quit = true
 		}
 	}
