@@ -118,7 +118,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 			// If no assetdir has been defined, let's try to infer it from the project root and the asset FS.
 			assetdir, err = tryInferAssetDirFromFS(assetConfig.Assets)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("unable to infer the AssetDir from your Assets fs.FS: %w", err)
 			}
 		}
 

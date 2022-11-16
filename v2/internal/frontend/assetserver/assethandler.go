@@ -3,7 +3,8 @@ package assetserver
 import (
 	"bytes"
 	"context"
-	_ "embed"
+	"embed"
+	"errors"
 	"fmt"
 	"io"
 	iofs "io/fs"
@@ -47,6 +48,16 @@ func NewAssetHandler(ctx context.Context, options assetserver.Options) (http.Han
 
 		subDir, err := fs.FindPathToFile(vfs, indexHTML)
 		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				msg := "no `index.html` could be found in your Assets fs.FS"
+				if embedFs, isEmbedFs := vfs.(embed.FS); isEmbedFs {
+					rootFolder, _ := fs.FindEmbedRootPath(embedFs)
+					msg += fmt.Sprintf(", please make sure the embedded directory '%s' is correct and contains your assets", rootFolder)
+				}
+
+				return nil, fmt.Errorf(msg)
+			}
+
 			return nil, err
 		}
 

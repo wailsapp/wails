@@ -2,6 +2,7 @@ package fs
 
 import (
 	"crypto/md5"
+	"embed"
 	"fmt"
 	"io"
 	"io/fs"
@@ -376,7 +377,7 @@ func FindPathToFile(fsys fs.FS, file string) (string, error) {
 		path, _ := filepath.Split(indexFiles.AsSlice()[0])
 		return path, nil
 	}
-	return "", fmt.Errorf("no index.html found")
+	return "", fmt.Errorf("%s: %w", file, os.ErrNotExist)
 }
 
 // FindFileInParents searches for a file in the current directory and all parent directories.
@@ -401,4 +402,33 @@ func FindFileInParents(path string, filename string) string {
 		path = parent
 	}
 	return pathToFile
+}
+
+// FindEmbedRootPath finds the root path in the embed FS. It's the directory which contains all the files.
+func FindEmbedRootPath(fsys embed.FS) (string, error) {
+	stopErr := fmt.Errorf("files or multiple dirs found")
+
+	fPath := ""
+	err := fs.WalkDir(fsys, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if d.IsDir() {
+			fPath = path
+			if entries, dErr := fs.ReadDir(fsys, path); dErr != nil {
+				return dErr
+			} else if len(entries) <= 1 {
+				return nil
+			}
+		}
+
+		return stopErr
+	})
+
+	if err != nil && err != stopErr {
+		return "", err
+	}
+
+	return fPath, nil
 }
