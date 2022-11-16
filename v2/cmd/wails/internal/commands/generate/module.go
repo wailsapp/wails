@@ -1,16 +1,17 @@
 package generate
 
 import (
+	"io"
+
 	"github.com/leaanthony/clir"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/flags"
 	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/flags"
-	"io"
 )
 
 type generateFlags struct {
-	tags    string
-	prefix  string
+	tags   string
+	prefix string
 	suffix string
 }
 
@@ -32,7 +33,7 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 		}
 
 		_, err = bindings.GenerateBindings(bindings.Options{
-			Tags: buildTags,
+			Tags:     buildTags,
 			TsPrefix: genFlags.prefix,
 			TsSuffix: genFlags.suffix,
 		})
