@@ -16,3 +16,15 @@ Generate a starter template for you to customise.
 | :------------- | :----------- | 
 | -frontend  | Copies all the files from the current directory into the template's `frontend` directory. Useful for converting frontend projects created by boilerplate generators. |
 | -q | Suppress output | 
+
+
+## Module
+
+`wails generate module [-tsprefix <prefix>] [-suffix <suffix>]`
+
+Generate TS module for your frontend
+
+| Flag           | Details      | 
+| :------------- | :----------- | 
+| -tsprefix  | All generated JavaScript entities will be prefixed with provided prefix |
+| -tssuffix | All generated JavaScript entities witl be suffixed with provided suffix | 
