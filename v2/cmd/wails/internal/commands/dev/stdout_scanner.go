@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/acarl005/stripansi"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/utils"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/logutils"
 )
 
 // stdoutScanner acts as a stdout target that will scan the incoming
@@ -36,10 +36,10 @@ func (s *stdoutScanner) Write(data []byte) (n int, err error) {
 				continue
 			}
 			viteServerURL := strings.TrimSpace(line[index+6:])
-			utils.LogGreen("Vite Server URL: %s", viteServerURL)
+			logutils.LogGreen("Vite Server URL: %s", viteServerURL)
 			_, err := url.Parse(viteServerURL)
 			if err != nil {
-				utils.LogRed(err.Error())
+				logutils.LogRed(err.Error())
 			} else {
 				s.ViteServerURLChan <- viteServerURL
 			}
