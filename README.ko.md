@@ -1,9 +1,11 @@
+<h1 align="center">Wails</h1>
+
 <p align="center" style="text-align: center">
   <img src="./assets/images/logo-universal.png" width="55%"><br/>
 </p>
 
 <p align="center">
-  Build desktop applications using Go & Web Technologies.
+  Go & Web 기술을 사용하여 데스크탑 애플리케이션을 빌드하세요.
   <br/>
   <br/>
   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
@@ -46,89 +48,93 @@
 </strong>
 </div>
 
-## Table of Contents
+## 목차
 
-- [Table of Contents](#table-of-contents)
-- [Introduction](#introduction)
-- [Features](#features)
-  - [Roadmap](#roadmap)
-- [Getting Started](#getting-started)
-- [Sponsors](#sponsors)
+- [목차](#목차)
+- [소개](#소개)
+- [기능](#기능)
+  - [로드맵](#로드맵)
+- [시작하기](#시작하기)
+- [스폰서](#스폰서)
 - [FAQ](#faq)
-- [Contributors](#contributors)
-- [License](#license)
-- [Inspiration](#inspiration)
+- [기여자](#기여자)
+- [라이센스](#라이센스)
+- [영감](#영감)
 
-## Introduction
+## 소개
 
-The traditional method of providing web interfaces to Go programs is via a built-in web server. Wails offers a different
-approach: it provides the ability to wrap both Go code and a web frontend into a single binary. Tools are provided to
-make this easy for you by handling project creation, compilation and bundling. All you have to do is get creative!
+Go 프로그램에 웹 인터페이스를 제공하는 전통적인 방법은 내장 웹 서버를 이용하는 것입니다. 
+Wails는 다르게 접근합니다: Go 코드와 웹 프론트엔드를 단일 바이너리로 래핑하는 기능을 제공합니다.
+프로젝트 생성, 컴파일 및 번들링을 처리하여 이를 쉽게 수행할 수 있도록 도구가 제공됩니다. 
+창의력을 발휘하기만 하면 됩니다!
 
-## Features
+## 기능
 
-- Use standard Go for the backend
-- Use any frontend technology you are already familiar with to build your UI
-- Quickly create rich frontends for your Go programs using pre-built templates
-- Easily call Go methods from Javascript
-- Auto-generated Typescript definitions for your Go structs and methods
-- Native Dialogs & Menus
-- Native Dark / Light mode support
-- Supports modern translucency and "frosted window" effects
-- Unified eventing system between Go and Javascript
-- Powerful cli tool to quickly generate and build your projects
-- Multiplatform
-- Uses native rendering engines - _no embedded browser_!
+- 백엔드에 표준 Go 사용
+- 이미 익숙한 프론트엔드 기술을 사용하여 UI 구축
+- 사전 구축된 템플릿을 사용하여 Go 프로그램을 위한 풍부한 프론트엔드를 빠르게 생성
+- Javascript에서 Go 메서드를 쉽게 호출
+- Go 구조체 및 메서드에 대한 자동 생성된 Typescript 정의
+- 기본 대화 및 메뉴
+- 네이티브 다크/라이트 모드 지원
+- 최신 반투명도 및 "반투명 창" 효과 지원
+- Go와 Javascript 간의 통합 이벤트 시스템
+- 프로젝트를 빠르게 생성하고 구축하는 강력한 CLI 도구
+- 멀티플랫폼
+- 기본 렌더링 엔진 사용 - _내장 브라우저 없음_!
 
-### Roadmap
+### 로드맵
 
-The project roadmap may be found [here](https://github.com/wailsapp/wails/discussions/1484). Please consult
-this before open up an enhancement request.
+프로젝트 로드맵은 [여기](https://github.com/wailsapp/wails/discussions/1484)에서 
+확인할 수 있습니다. 개선 요청을 하기 전에 이것을 참조하십시오.
 
-## Getting Started
+## 시작하기
 
-The installation instructions are on the [official website](https://wails.io/docs/gettingstarted/installation).
+설치 지침은 
+[공식 웹사이트](https://wails.io/docs/gettingstarted/installation)에 있습니다.
 
-## Sponsors
+## 스폰서
 
-This project is supported by these kind people / companies:
+이 프로젝트는 친절한 사람들 / 회사들이 지원합니다.
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
 
 ## FAQ
 
-- Is this an alternative to Electron?
+- 이것은 Electron의 대안인가요?
 
-  Depends on your requirements. It's designed to make it easy for Go programmers to make lightweight desktop
-  applications or add a frontend to their existing applications. Wails does offer native elements such as menus
-  and dialogs, so it could be considered a lightweight electron alternative.
+  요구 사항에 따라 다릅니다. Go 프로그래머가 쉽게 가벼운 데스크톱 애플리케이션을 
+  만들거나 기존 애플리케이션에 프론트엔드를 추가할 수 있도록 설계되었습니다. 
+  Wails는 메뉴 및 대화 상자와 같은 기본 요소를 제공하므로 가벼운 Electron 대안으로 
+  간주될 수 있습니다.
 
-- Who is this project aimed at?
+- 이 프로젝트는 누구를 대상으로 하나요?
 
-  Go programmers who want to bundle an HTML/JS/CSS frontend with their applications, without resorting to creating a
-  server and opening a browser to view it.
+  서버를 생성하고 이를 보기 위해 브라우저를 열 필요 없이 HTML/JS/CSS 프런트엔드를 
+  애플리케이션과 함께 묶고자 하는 프로그래머를 대상으로 합니다.
 
-- What's with the name?
+- Wails 이름의 의미는 무엇인가요?
 
-  When I saw WebView, I thought "What I really want is tooling around building a WebView app, a bit like Rails is to
-  Ruby". So initially it was a play on words (Webview on Rails). It just so happened to also be a homophone of the
-  English name for the [Country](https://en.wikipedia.org/wiki/Wales) I am from. So it stuck.
+  WebView를 보았을 때 저는 "내가 정말로 원하는 것은 WebView 앱을 구축하기 위한 
+  도구를 사용하는거야. 마치 Ruby on Rails 처럼 말이야."라고 생각했습니다. 
+  그래서 처음에는 말장난(Webview on Rails)이었습니다. 
+  [국가](https://en.wikipedia.org/wiki/Wales)에 대한 영어 이름의 동음이의어이기도 하여 정했습니다.
 
-## Stargazers over time
+## Stargazers 성장 추세
 
 [![Star History Chart](https://api.star-history.com/svg?repos=wailsapp/wails&type=Date)](https://star-history.com/#wailsapp/wails&Date)
 
-## Contributors
+## 기여자
 
-The contributors list is getting too big for the readme! All the amazing people who have contributed to this
-project have their own page [here](https://wails.io/credits#contributors).
+기여자 목록이 추가 정보에 비해 너무 커지고 있습니다! 이 프로젝트에 기여한 모든 놀라운 사람들은 
+[여기](https://wails.io/credits#contributors)에 자신의 페이지를 가지고 있습니다.
 
-## License
+## 라이센스
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwailsapp%2Fwails.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwailsapp%2Fwails?ref=badge_large)
 
-## Inspiration
+## 영감
 
-This project was mainly coded to the following albums:
+이 프로젝트는 주로 다음 앨범을 들으며 코딩되었습니다.
 
 - [Manic Street Preachers - Resistance Is Futile](https://open.spotify.com/album/1R2rsEUqXjIvAbzM0yHrxA)
 - [Manic Street Preachers - This Is My Truth, Tell Me Yours](https://open.spotify.com/album/4VzCL9kjhgGQeKCiojK1YN)
