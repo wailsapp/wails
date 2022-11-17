@@ -911,8 +911,9 @@ func differentNamespaces(namespace string, typeOf reflect.Type) bool {
 }
 
 func typeClashWithReservedKeyword(input string) bool {
+	in := strings.ToLower(strings.TrimSpace(input))
 	for _, v := range jsReservedKeywords {
-		if strings.ToLower(input) == v {
+		if in == v {
 			return true
 		}
 	}
