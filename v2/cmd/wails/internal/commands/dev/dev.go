@@ -572,6 +572,9 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 	assetDir := ""
 	changedPaths := map[string]struct{}{}
 
+	// If we are using an external dev server, the reloading of the frontend part can be skipped or if the user requested it
+	skipAssetsReload := (flags.frontendDevServerURL != "" || flags.noReload)
+
 	assetDirURL := joinPath(devServerURL, "/wails/assetdir")
 	reloadURL := joinPath(devServerURL, "/wails/reload")
 	for quit == false {
@@ -662,11 +665,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 				}
 			}
 
-			if flags.frontendDevServerURL != "" {
-				// If we are using an external dev server, the reloading of the frontend part can be skipped
-				continue
-			}
-			if len(changedPaths) != 0 {
+			if !skipAssetsReload && len(changedPaths) != 0 {
 				if assetDir == "" {
 					resp, err := http.Get(assetDirURL)
 					if err != nil {
@@ -692,8 +691,6 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 				} else if len(dirsThatTriggerAReload) == 0 {
 					LogRed("Reloading couldn't be triggered: Please specify -assetdir or -reloaddirs")
 				}
-
-				changedPaths = map[string]struct{}{}
 			}
 			if reload {
 				reload = false
@@ -702,6 +699,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 					LogRed("Error during refresh: %s", err.Error())
 				}
 			}
+			changedPaths = map[string]struct{}{}
 		case <-quitChannel:
 			LogGreen("\nCaught quit")
 			quit = true

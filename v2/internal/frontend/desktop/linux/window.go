@@ -232,10 +232,15 @@ GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowO
 	return webview;
 }
 
-void devtoolsEnabled(void* webview, int enabled) {
+void devtoolsEnabled(void* webview, int enabled, bool showInspector) {
 	WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
 	gboolean genabled = enabled == 1 ? true : false;
 	webkit_settings_set_enable_developer_extras(settings, genabled);
+
+	if (genabled && showInspector) {
+		WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(webview));
+		webkit_web_inspector_show(WEBKIT_WEB_INSPECTOR(inspector));
+	}
 }
 
 void loadIndex(void* webview, char* url) {
@@ -704,7 +709,7 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	C.connectButtons(unsafe.Pointer(webview))
 
 	if debug {
-		C.devtoolsEnabled(unsafe.Pointer(webview), C.int(1))
+		C.devtoolsEnabled(unsafe.Pointer(webview), C.int(1), C.bool(appoptions.Debug.OpenInspectorOnStartup))
 	} else {
 		C.DisableContextMenu(unsafe.Pointer(webview))
 	}

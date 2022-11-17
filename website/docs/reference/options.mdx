@@ -102,6 +102,9 @@ func main() {
             Icon: icon,
             WindowIsTranslucent: false,
         },
+        Debug: options.Debug{
+            OpenInspectorOnStartup: false,
+        },
     })
     if err != nil {
         log.Fatal(err)
@@ -821,4 +824,18 @@ Scaling is postponed until the last minute, when the desired final size is known
 Setting this to `true` will make the window background translucent. Some window managers may ignore it, or result in a black window.
 
 Name: WindowIsTranslucent<br/>
+Type: `bool`
+
+### Debug
+
+This defines [Debug specific options](#Debug) that apply to debug builds.
+
+Name: Debug<br/>
+Type: `options.Debug`
+
+#### OpenInspectorOnStartup
+
+Setting this to `true` will open the WebInspector on startup of the application.
+
+Name: OpenInspectorOnStartup<br/>
 Type: `bool`
