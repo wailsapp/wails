@@ -226,5 +226,25 @@
                 }
             }
         }
-    }
+    },
+		"bindings": {
+				"type": "object",
+				"description": "Bindings configurations",
+				"properties": {
+						"ts_generation": { 
+								"type": "object",
+								"description": "model.ts file generation config",
+								"properties": {
+										"prefix": {
+												"type": "string",
+												"description": "All generated JavaScript entities will be prefixed"
+										},
+										"suffix": {
+												"type": "string",
+												"description": "All generated JavaScript entities will be suffixed"
+										}
+								}
+						}
+				}
+		}
 }
