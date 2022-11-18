@@ -2,17 +2,16 @@ package generate
 
 import (
 	"io"
+	"os"
 
 	"github.com/leaanthony/clir"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/flags"
+	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 )
 
 type generateFlags struct {
-	tags   string
-	prefix string
-	suffix string
+	tags string
 }
 
 // AddModuleCommand adds the `module` subcommand for the `generate` command
@@ -22,10 +21,15 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 	genFlags := generateFlags{}
 	command.StringFlag("tags", "tags to pass to Go compiler (quoted and space separated)", &genFlags.tags)
 
-	command.StringFlag(flags.TsPrefix.Flag, flags.TsPrefix.Description, &genFlags.prefix)
-	command.StringFlag(flags.TsSuffix.Flag, flags.TsSuffix.Description, &genFlags.suffix)
-
 	command.Action(func() error {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		projectConfig, err := project.Load(cwd)
+		if err != nil {
+			return err
+		}
 
 		buildTags, err := buildtags.Parse(genFlags.tags)
 		if err != nil {
@@ -34,8 +38,8 @@ func AddModuleCommand(app *clir.Cli, parent *clir.Command, w io.Writer) error {
 
 		_, err = bindings.GenerateBindings(bindings.Options{
 			Tags:     buildTags,
-			TsPrefix: genFlags.prefix,
-			TsSuffix: genFlags.suffix,
+			TsPrefix: projectConfig.Bindings.TsGeneration.Prefix,
+			TsSuffix: projectConfig.Bindings.TsGeneration.Suffix,
 		})
 		if err != nil {
 			return err

@@ -33,12 +33,11 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/leaanthony/clir"
-	commonFlags "github.com/wailsapp/wails/v2/cmd/wails/internal/flags"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/logutils"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/process"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/commands/build"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/logutils"
 )
 
 func sliceToMap(input []string) map[string]struct{} {
@@ -68,8 +67,6 @@ type devFlags struct {
 	appargs         string
 	saveConfig      bool
 	raceDetector    bool
-	tsPrefix        string
-	tsSuffix        string
 
 	frontendDevServerURL string
 	skipFrontend         bool
@@ -103,8 +100,6 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
 	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
 	command.BoolFlag("s", "Skips building the frontend", &flags.skipFrontend)
-	command.StringFlag(commonFlags.TsPrefix.Flag, commonFlags.TsPrefix.Description, &flags.tsPrefix)
-	command.StringFlag(commonFlags.TsSuffix.Flag, commonFlags.TsSuffix.Description, &flags.tsSuffix)
 
 	command.Action(func() error {
 		if flags.noColour {
@@ -170,8 +165,8 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 			}
 			stdout, err := bindings.GenerateBindings(bindings.Options{
 				Tags:     buildOptions.UserTags,
-				TsPrefix: flags.tsPrefix,
-				TsSuffix: flags.tsSuffix,
+				TsPrefix: projectConfig.Bindings.TsGeneration.Prefix,
+				TsSuffix: projectConfig.Bindings.TsGeneration.Suffix,
 			})
 			if err != nil {
 				return err
@@ -336,8 +331,6 @@ func generateBuildOptions(flags devFlags) *build.Options {
 		Verbosity:      flags.verbosity,
 		WailsJSDir:     flags.wailsjsdir,
 		RaceDetector:   flags.raceDetector,
-		TsPrefix:       flags.tsPrefix,
-		TsSuffix:       flags.tsSuffix,
 	}
 
 	return result
