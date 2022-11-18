@@ -228,16 +228,16 @@ Now we need to configure some gon config files in our `build/darwin` directory:
 
 ```json
 {
-    "source" : ["./build/bin/app.app"],
-    "bundle_id" : "app.myapp",
-    "apple_id": {
-      "username": "my-appleid@email.com",
-      "password": "@env:APPLE_PASSWORD"
-    },
-    "sign" :{
-      "application_identity" : "Developer ID Application: My Name"
-    }
+  "source": ["./build/bin/app.app"],
+  "bundle_id": "app.myapp",
+  "apple_id": {
+    "username": "my-appleid@email.com",
+    "password": "@env:APPLE_PASSWORD"
+  },
+  "sign": {
+    "application_identity": "Developer ID Application: My Name"
   }
+}
 ```
 
 Where `source` is your Wails binary, `bundle_id` is your bundle ID, `apple_id` contains your Apple ID username and App-Specific password which you created earlier, and `sign.application_identity` is your identity which you can find by running the following command:
@@ -253,16 +253,16 @@ security find-identity -v -p codesigning
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>com.apple.security.app-sandbox</key>
-    <true/>
-    <key>com.apple.security.network.client</key>
-    <true/>
-    <key>com.apple.security.network.server</key>
-    <true/>
-    <key>com.apple.security.files.user-selected.read-write</key>
-    <true/>
-    <key>com.apple.security.files.downloads.read-write</key>
-    <true/>
+  <key>com.apple.security.app-sandbox</key>
+  <true/>
+  <key>com.apple.security.network.client</key>
+  <true/>
+  <key>com.apple.security.network.server</key>
+  <true/>
+  <key>com.apple.security.files.user-selected.read-write</key>
+  <true/>
+  <key>com.apple.security.files.downloads.read-write</key>
+  <true/>
 </dict>
 </plist>
 ```

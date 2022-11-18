@@ -101,6 +101,9 @@ func main() {
             Icon: icon,
             WindowIsTranslucent: false,
         },
+        Debug: options.Debug{
+            OpenInspectorOnStartup: false,
+        },
     })
     if err != nil {
         log.Fatal(err)
@@ -737,3 +740,15 @@ func main() {
 将此设置为 `true` 将使窗口半透明。 某些窗口管理员可能忽略它，或导致黑窗口。
 
 名称：WindowIsTranslucent<br/> 类型：`bool`
+
+### 调试
+
+这定义了用于调试构建的 [调试特定选项](#调试)。
+
+名称: Debug<br/> 类型: `options.Debug`
+
+#### 启动时打开检查器
+
+设置为 `true` 将在应用程序启动时打开 Web 检查器。
+
+名称: OpenInspectorOnStartup<br/> 类型: `bool`

@@ -227,7 +227,7 @@ import {Greet} from '../wailsjs/go/main/App'
 Typescript型定義ファイルは、バインドされたメソッドの正しい型を提供します:
 
 ```ts
-export function Greet(arg1:string):Promise<string>;
+export function Greet(arg1: string): Promise<string>;
 ```
 
 生成されたメソッドはPromiseを返すようになっています。 呼び出しが成功すると、Goからの1番目の返り値が`resolve`ハンドラに渡されます。 呼び出しに失敗したとみなされるのは、Goメソッドの2番目の返り値がerror型で、それがerrorインスタンスを返したときです。 これは、`reject`ハンドラを介して返されます。 先の例では、`Greet`メソッドは`string`型の返り値のみであるため、無効なデータが渡されない限り、Javascript側でrejectハンドラが呼ばれることはありません。
@@ -269,7 +269,7 @@ func (a *App) Greet(p Person) string {
 
 ```js title="App.js"
 export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
+  return window["go"]["main"]["App"]["Greet"](arg1);
 }
 ```
 
