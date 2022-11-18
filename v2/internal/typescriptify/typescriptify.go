@@ -598,9 +598,7 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 	entityName := t.Prefix + typeOf.Name() + t.Suffix
 
 	if typeClashWithReservedKeyword(entityName) {
-		l := log.New(os.Stderr, "", 0)
-		l.Println(fmt.Sprintf("Usage of reserved keyword found and not supported: %s", entityName))
-		log.Println("Please rename returned type or consider using -tsprefix / -tssuffix")
+		warnAboutTypesClash(entityName)
 	}
 
 	result := ""
@@ -919,4 +917,10 @@ func typeClashWithReservedKeyword(input string) bool {
 	}
 
 	return false
+}
+
+func warnAboutTypesClash(entity string) {
+	l := log.New(os.Stderr, "", 0)
+	l.Println(fmt.Sprintf("Usage of reserved keyword found and not supported: %s", entity))
+	log.Println("Please rename returned type or consider adding bindings config to your wails.json")
 }
