@@ -78,7 +78,7 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 
 		d.logDebug("Loading file '%s'", filename)
-		if err := d.serveFSFile(rw, filename); err != nil {
+		if err := d.serveFSFile(rw, req, filename); err != nil {
 			if os.IsNotExist(err) {
 				if handler != nil {
 					d.logDebug("File '%s' not found, serving '%s' by AssetHandler", filename, req.URL)
@@ -106,7 +106,7 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 }
 
 // serveFile will try to load the file from the fs.FS and write it to the response
-func (d *assetHandler) serveFSFile(rw http.ResponseWriter, filename string) error {
+func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, filename string) error {
 	if d.fs == nil {
 		return os.ErrNotExist
 	}
@@ -122,8 +122,6 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, filename string) erro
 		return err
 	}
 
-	rw.Header().Set(HeaderContentLength, fmt.Sprintf("%d", statInfo.Size()))
-
 	var buf [512]byte
 	n, err := file.Read(buf[:])
 	if err != nil && err != io.EOF {
@@ -131,11 +129,24 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, filename string) erro
 	}
 
 	// Detect MimeType by sniffing the first 512 bytes
+	// Do the custom MimeType sniffing even though http.ServeContent would do it in case
+	// of an io.ReadSeeker. We would like to have a consistent behaviour in both cases.
 	if contentType := GetMimetype(filename, buf[:n]); contentType != "" {
 		rw.Header().Set(HeaderContentType, contentType)
 	}
 
-	// Write the first bytes
+	if fileSeeker, _ := file.(io.ReadSeeker); fileSeeker != nil {
+		if _, err := fileSeeker.Seek(0, io.SeekStart); err != nil {
+			return fmt.Errorf("seeker can't seek")
+		}
+
+		http.ServeContent(rw, req, statInfo.Name(), statInfo.ModTime(), fileSeeker)
+		return nil
+	}
+
+	rw.Header().Set(HeaderContentLength, fmt.Sprintf("%d", statInfo.Size()))
+
+	// Write the first 512 bytes used for MimeType sniffing
 	_, err = io.Copy(rw, bytes.NewReader(buf[:n]))
 	if err != nil {
 		return err
