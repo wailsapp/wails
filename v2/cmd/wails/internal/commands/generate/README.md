@@ -20,11 +20,6 @@ Generate a starter template for you to customise.
 
 ## Module
 
-`wails generate module [-tsprefix <prefix>] [-suffix <suffix>]`
+`wails generate module [-h]`
 
 Generate TS module for your frontend
-
-| Flag           | Details      | 
-| :------------- | :----------- | 
-| -tsprefix  | All generated JavaScript entities will be prefixed with provided prefix |
-| -tssuffix | All generated JavaScript entities witl be suffixed with provided suffix | 
