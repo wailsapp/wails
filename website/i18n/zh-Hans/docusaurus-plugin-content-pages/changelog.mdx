@@ -4,14 +4,22 @@
 
 格式基于 [维护更新日志](https://keepachangelog.com/en/1.0.0/)，并且该项目遵循 [语义化版本](https://semver.org/spec/v2.0.0.html)。
 
-- `Added` for new features.
-- `Changed` for changes in existing functionality.
-- `Deprecated` for soon-to-be removed features.
-- `Removed` for now removed features.
-- `Fixed` for any bug fixes.
-- `Security` in case of vulnerabilities.
+- `Added` 新添加的功能。
+- `Changed` 对现有功能的变更。
+- `Deprecated` 已经不建议使用，即将移除的功能。
+- `Removed` 已经移除的功能。
+- `Fixed` 对 bug 的修复。
+- `Security` 对安全性的改进。
 
-## [Unreleased]
+## [即将发布]
+
+### 新增
+- 添加 `OpenInspectorOnStartup` 到调试选项以允许在调试模式下启动应用程序期间打开 Web 检查器。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2080) 中添加。
+- 在 macOS 上的 `wails doctor`，现在也会显示安装的 Xcode 版本。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2089) 中添加。
+- 如果 [Assets](/docs/reference/options/#资产-1) `fs.FS` 提供 `io.ReadSeeker`，[AssetServer](/docs/reference/options#资产服务器) 现在支持处理范围请求。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2091) 中添加。
+
+### 修复
+- wails dev 中 `noreload` 标志未被应用。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2081) 中修复。
 
 ## v2.2.0 - 2022-11-09
 
