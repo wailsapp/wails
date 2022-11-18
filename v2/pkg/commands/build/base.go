@@ -277,7 +277,6 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	commands.Add("-o")
 	commands.Add(compiledBinary)
 
-	b.projectData.OutputFilename = strings.TrimPrefix(compiledBinary, options.ProjectData.Path)
 	options.CompiledBinary = compiledBinary
 
 	// Build the application
