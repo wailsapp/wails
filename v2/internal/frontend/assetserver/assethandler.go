@@ -81,18 +81,16 @@ func NewAssetHandler(ctx context.Context, options assetserver.Options) (http.Han
 }
 
 func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	url := req.URL.Path
 	handler := d.handler
 	if strings.EqualFold(req.Method, http.MethodGet) {
-		filename := strings.TrimPrefix(req.URL.Path, "/")
-		if filename == "" {
-			filename = indexHTML
-		}
+		filename := path.Clean(strings.TrimPrefix(url, "/"))
 
-		d.logDebug("Loading file '%s'", filename)
+		d.logDebug("Handling request '%s' (file='%s')", url, filename)
 		if err := d.serveFSFile(rw, req, filename); err != nil {
 			if os.IsNotExist(err) {
 				if handler != nil {
-					d.logDebug("File '%s' not found, serving '%s' by AssetHandler", filename, req.URL)
+					d.logDebug("File '%s' not found, serving '%s' by AssetHandler", filename, url)
 					handler.ServeHTTP(rw, req)
 					err = nil
 				} else {
@@ -107,7 +105,7 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			}
 		}
 	} else if handler != nil {
-		d.logDebug("No GET request, serving '%s' by AssetHandler", req.URL)
+		d.logDebug("No GET request, serving '%s' by AssetHandler", url)
 		handler.ServeHTTP(rw, req)
 	} else {
 		rw.WriteHeader(http.StatusMethodNotAllowed)
@@ -129,6 +127,29 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, fi
 	statInfo, err := file.Stat()
 	if err != nil {
 		return err
+	}
+
+	if statInfo.IsDir() {
+		url := req.URL.Path
+		if url != "" && url[len(url)-1] != '/' {
+			// If the URL doesn't end in a slash normally a http.redirect should be done, but that currently doesn't work on
+			// WebKit WebVies (macOS/Linux).
+			// So we handle this as a file that could not be found.
+			return os.ErrNotExist
+		}
+
+		filename = path.Join(filename, indexHTML)
+
+		file, err = d.fs.Open(filename)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		statInfo, err = file.Stat()
+		if err != nil {
+			return err
+		}
 	}
 
 	var buf [512]byte
