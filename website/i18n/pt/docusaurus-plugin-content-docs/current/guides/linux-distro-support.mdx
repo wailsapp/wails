@@ -1,0 +1,103 @@
+# Suporte a Distros Linux
+
+## Visão geral
+
+O Wails oferece suporte Linux, mas fornecer instruções de instalação para todas as distribuições disponíveis é uma tarefa impossível. Em vez disso, a Wails tenta determinar se os pacotes que você precisa para desenvolver aplicações estão disponíveis através do gerenciador de pacote do seu sistema. Atualmente, suportamos os seguintes gestores de pacotes:
+
+- apt
+- dnf
+- emerge
+- eopkg
+- nixpkgs
+- pacman
+- zypper
+
+## Adicionando nomes de pacotes
+
+Pode haver circunstâncias em que sua distro use um dos gerentes de pacote suportados, mas o nome do pacote é diferente. Por exemplo, você pode usar um derivado de Ubuntu, mas o nome do pacote para gtk pode ser diferente. Wails tenta encontrar o pacote correto iterando por meio de uma lista de nomes de pacotes. A lista de pacotes é armazenada no arquivo específico do gerenciador de pacotes no diretório `v2/internal/system/packagemanager`. No nosso exemplo, isso seria `v2/internal/system/packagemanager/apt.go`.
+
+Neste arquivo, a lista de pacotes são definidos pelo método `Packages()`:
+
+```go
+func (a *Apt) Packages() packagemap {
+    return packagemap{
+        "libgtk-3": []*Package{
+            {Name: "libgtk-3-dev", SystemPackage: true, Library: true},
+        },
+        "libwebkit": []*Package{
+            {Name: "libwebkit2gtk-4.0-dev", SystemPackage: true, Library: true},
+        },
+        "gcc": []*Package{
+            {Name: "build-essential", SystemPackage: true},
+        },
+        "pkg-config": []*Package{
+            {Name: "pkg-config", SystemPackage: true},
+        },
+        "npm": []*Package{
+            {Name: "npm", SystemPackage: true},
+        },
+        "docker": []*Package{
+            {Name: "docker.io", SystemPackage: true, Optional: true},
+        },
+    }
+}
+```
+
+Vamos supor que na nossa distração em linux, a `libgtk-3` é empacotada com o nome `lib-gtk3-dev`. Podemos adicionar suporte para isso adicionando a seguinte linha:
+
+```go {5}
+func (a *Apt) Packages() packagemap {
+    return packagemap{
+        "libgtk-3": []*Package{
+            {Name: "libgtk-3-dev", SystemPackage: true, Library: true},
+            {Name: "lib-gtk3-dev", SystemPackage: true, Library: true},
+        },
+        "libwebkit": []*Package{
+            {Name: "libwebkit2gtk-4.0-dev", SystemPackage: true, Library: true},
+        },
+        "gcc": []*Package{
+            {Name: "build-essential", SystemPackage: true},
+        },
+        "pkg-config": []*Package{
+            {Name: "pkg-config", SystemPackage: true},
+        },
+        "npm": []*Package{
+            {Name: "npm", SystemPackage: true},
+        },
+        "docker": []*Package{
+            {Name: "docker.io", SystemPackage: true, Optional: true},
+        },
+    }
+}
+```
+
+## Adicionando novos gerenciadores de pacotes
+
+Para adicionar um novo gerenciador de pacotes, execute os seguintes passos:
+
+- Crie um novo arquivo em `v2/internal/system/packagemanager` chamado `<pm>.go`, onde `<pm>` é o nome do gerenciador de pacote.
+- Defina uma struct que esteja em conformidade com a interface de gerenciador de pacotes definida em `pm.go`:
+
+```go
+type PackageManager interface {
+    Name() string
+    Packages() packagemap
+    PackageInstalled(*Package) (bool, error)
+    PackageAvailable(*Package) (bool, error)
+    InstallCommand(*Package) string
+}
+```
+
+- `Name()` deve retornar o nome do gerenciador de pacotes
+- `Packages()` deve retornar um `packagemap`, que fornece nomes de arquivo de candidatos para dependências
+- `PackageInstalled()` deve retornar `true` se o pacote for instalado
+- `PackageAvailable()` deve retornar `true` se o pacote fornecido não estiver instalado, mas disponível para instalação
+- `InstallCommand()` deve retornar o comando exato para instalar o nome do pacote dado
+
+Dê uma olhada no código de outros gerenciadores de pacotes para ter uma ideia de como isto funciona.
+
+:::info Lembre-se
+
+Se você adicionar suporte para um novo gerenciador de pacotes, não se esqueça de também atualizar esta página!
+
+:::
