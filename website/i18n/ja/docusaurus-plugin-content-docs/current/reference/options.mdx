@@ -25,6 +25,7 @@ func main() {
         Height:             600,
         DisableResize:      false,
         Fullscreen:         false,
+        WindowStartState:   options.Maximised,
         Frameless:          true,
         MinWidth:           400,
         MinHeight:          400,
@@ -47,7 +48,6 @@ func main() {
         OnDomReady:         app.domready,
         OnShutdown:         app.shutdown,
         OnBeforeClose:      app.beforeClose,
-        WindowStartState:   options.Maximised,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
         ZoomFactor:           1.0,
@@ -105,6 +105,7 @@ func main() {
             OpenInspectorOnStartup: false,
         },
     })
+
     if err != nil {
         log.Fatal(err)
     }
@@ -138,9 +139,19 @@ By default, the main window is resizable. Setting this to `true` will keep it a 
 
 ### Fullscreen
 
-Setting this to `true` will make the window fullscreen at startup.
+Deprecated: Please use [WindowStartState](#windowstartstate).
 
-名前: Fullscreen<br/> データ型: `bool`
+### WindowStartState
+
+Defines how the window should present itself at startup.
+
+| 値          | Win | Mac | Lin |
+| ---------- | --- | --- | --- |
+| Fullscreen | ✅   | ✅   | ✅   |
+| Maximised  | ✅   | ✅   | ✅   |
+| Minimised  | ✅   | ❌   | ✅   |
+
+名前: WindowStartState<br/> データ型: `options.WindowStartState`
 
 ### Frameless
 
@@ -246,10 +257,9 @@ Name: Assets<br/> Type: `fs.FS`
 
 The assets handler is a generic `http.Handler` for fallback handling of assets that can't be found.
 
-The handler will be called for every GET request that can't be served from [Assets](#assets), due to `os.ErrNotExist`. Furthermore all non GET requests will always be served from this Handler.
+The handler will be called for every GET request that can't be served from [Assets](#assets), due to `os.ErrNotExist`. Furthermore all non GET requests will always be served from this Handler. If not defined, the result is the following in cases where the Handler would have been called:
 
-If not defined, the result is the following in cases where the Handler would have been called:
-- GET request:   `http.StatusNotFound`
+- GET request: `http.StatusNotFound`
 - Other request: `http.StatusMethodNotAllowed`
 
 NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html on every path, that does not contain a file extension.
@@ -335,18 +345,6 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 
 名前: OnBeforeClose<br/> データ型: `func(ctx context.Context) bool`
 
-### WindowStartState
-
-Defines how the window should present itself at startup.
-
-| 値          | Win | Mac | Lin |
-| ---------- | --- | --- | --- |
-| Fullscreen | ✅   | ✅   | ✅   |
-| Maximised  | ✅   | ✅   | ✅   |
-| Minimised  | ✅   | ❌   | ✅   |
-
-名前: WindowStartState<br/> データ型: `options.WindowStartState`
-
 ### CSSDragProperty
 
 ウィンドウをドラッグできる要素を特定するためのCSSプロパティ名を設定します。 デフォルト値: `--wails-draggable`
@@ -358,6 +356,18 @@ Defines how the window should present itself at startup.
 Indicates what value the `CSSDragProperty` style should have to drag the window. デフォルト値: `drag`
 
 名前: CSSDragValue<br/> データ型: `string`
+
+### ZoomFactor
+
+Name: ZoomFactor<br/> Type: `float64`
+
+This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
+
+### IsZoomControlEnabled
+
+Name: IsZoomControlEnabled<br/> Type: `bool`
+
+This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
 
 ### Bind
 
@@ -436,18 +446,6 @@ Important information about distribution of fixed version runtime:
 - [The path of fixed version of the WebView2 Runtime should not contain \Edge\Application\.](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
 
 名前: WebviewBrowserPath<br/> データ型: `string`
-
-### ZoomFactor
-
-Name: ZoomFactor<br/> Type: `float64`
-
-This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
-
-### IsZoomControlEnabled
-
-Name: IsZoomControlEnabled<br/> Type: `bool`
-
-This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
 
 #### Theme
 
