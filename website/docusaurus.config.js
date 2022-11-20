@@ -38,7 +38,7 @@ module.exports = async function configCreatorAsync() {
     },
     i18n: {
       defaultLocale: "en",
-      locales: ["en", "zh-Hans", "ja"],
+      locales: ["en", "zh-Hans", "ja", "ru", "ko", "fr", "pt"],
       localeConfigs: {
         en: {
           label: "English",
@@ -64,6 +64,16 @@ module.exports = async function configCreatorAsync() {
           label: `한국어 (${translationProgress["ko"]}%)`,
           direction: "ltr",
           htmlLang: "ko-KR",
+        },
+        fr: {
+          label: `Français (${translationProgress["fr"]}%)`,
+          direction: "ltr",
+          htmlLang: "fr",
+        },
+        pt: {
+          label: `Português (${translationProgress["pt-PT"]}%)`,
+          direction: "ltr",
+          htmlLang: "pt-PT",
         },
       },
     },
