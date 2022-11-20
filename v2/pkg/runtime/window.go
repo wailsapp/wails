@@ -109,6 +109,11 @@ func WindowGetPosition(ctx context.Context) (int, int) {
 	return appFrontend.WindowGetPosition()
 }
 
+func WindowGetNativeHandler(ctx context.Context) uintptr {
+	appFrontend := getFrontend(ctx)
+	return appFrontend.WindowGetNativeHandler()
+}
+
 // WindowMaximise the window
 func WindowMaximise(ctx context.Context) {
 	appFrontend := getFrontend(ctx)

@@ -4,10 +4,11 @@
 package linux
 
 /*
-#cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
+#cgo linux pkg-config: gtk+-3.0 gdk-3.0 webkit2gtk-4.0
 
 #include <JavaScriptCore/JavaScript.h>
 #include "gtk/gtk.h"
+#include <gdk/gdkx.h>
 #include "webkit2/webkit2.h"
 #include <stdio.h>
 #include <limits.h>
@@ -923,6 +924,10 @@ func (w *Window) SetResizable(resizable bool) {
 
 func (w *Window) SetSize(width int, height int) {
 	C.gtk_window_resize(w.asGTKWindow(), C.gint(width), C.gint(height))
+}
+
+func (w *Window) NativeHandler() uintptr {
+	return uintptr(C.gdk_x11_window_get_xid(C.gtk_widget_get_window(w.asGTKWidget())))
 }
 
 func (w *Window) SetDecorated(frameless bool) {

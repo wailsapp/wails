@@ -91,6 +91,7 @@ type Frontend interface {
 	WindowSetAlwaysOnTop(b bool)
 	WindowSetPosition(x int, y int)
 	WindowGetPosition() (int, int)
+	WindowGetNativeHandler() uintptr
 	WindowSetSize(width int, height int)
 	WindowGetSize() (int, int)
 	WindowSetMinSize(width int, height int)

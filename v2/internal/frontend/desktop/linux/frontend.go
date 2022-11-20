@@ -178,6 +178,10 @@ func (f *Frontend) WindowGetSize() (int, int) {
 	return f.mainWindow.Size()
 }
 
+func (f *Frontend) WindowGetNativeHandler() uintptr {
+	return f.mainWindow.NativeHandler()
+}
+
 func (f *Frontend) WindowSetTitle(title string) {
 	f.mainWindow.SetTitle(title)
 }
