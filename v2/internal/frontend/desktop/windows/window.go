@@ -298,6 +298,10 @@ func (w *Window) IsFullScreen() bool {
 	return win32.IsWindowFullScreen(w.Handle())
 }
 
+func (w *Window) NativeHandler() uintptr {
+	return w.Handle()
+}
+
 func (w *Window) SetTheme(theme winoptions.Theme) {
 	w.theme = theme
 	w.themeChanged = true

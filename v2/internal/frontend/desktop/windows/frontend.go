@@ -233,6 +233,12 @@ func (f *Frontend) WindowSetTitle(title string) {
 	f.mainWindow.SetText(title)
 }
 
+func (f *Frontend) WindowGetNativeHandler()uintptr {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	return f.mainWindow.NativeHandler()
+}
+
 func (f *Frontend) WindowFullscreen() {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
