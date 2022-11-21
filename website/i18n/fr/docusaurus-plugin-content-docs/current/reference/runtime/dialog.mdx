@@ -2,7 +2,7 @@
 sidebar_position: 5
 ---
 
-# Dialog
+# Boîte de dialogue
 
 This part of the runtime provides access to native dialogs, such as File Selectors and Message boxes.
 
@@ -28,7 +28,7 @@ Go: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (strin
 
 Returns: Selected file (blank if the user cancelled) or an error
 
-### OpenMultipleFilesDialog
+### OpenFileDialog
 
 Opens a dialog that prompts the user to select multiple files. Can be customised using [OpenDialogOptions](#opendialogoptions).
 
@@ -69,7 +69,7 @@ type OpenDialogOptions struct {
 }
 ```
 
-| Field                      | Description                                    | Win | Mac | Lin |
+| Champ                      | Description                                    | Win | Mac | Lin |
 | -------------------------- | ---------------------------------------------- | --- | --- | --- |
 | DefaultDirectory           | The directory the dialog will show when opened | ✅   | ✅   | ✅   |
 | DefaultFilename            | The default filename                           | ✅   | ✅   | ✅   |
@@ -94,7 +94,7 @@ type SaveDialogOptions struct {
 }
 ```
 
-| Field                      | Description                                    | Win | Mac | Lin |
+| Champ                      | Description                                    | Win | Mac | Lin |
 | -------------------------- | ---------------------------------------------- | --- | --- | --- |
 | DefaultDirectory           | The directory the dialog will show when opened | ✅   | ✅   | ✅   |
 | DefaultFilename            | The default filename                           | ✅   | ✅   | ✅   |
@@ -117,7 +117,7 @@ type MessageDialogOptions struct {
 }
 ```
 
-| Field         | Description                                                                | Win            | Mac | Lin |
+| Champ         | Description                                                                | Win            | Mac | Lin |
 | ------------- | -------------------------------------------------------------------------- | -------------- | --- | --- |
 | Type          | The type of message dialog, eg question, info...                           | ✅              | ✅   | ✅   |
 | Title         | Title for the dialog                                                       | ✅              | ✅   | ✅   |
@@ -282,7 +282,7 @@ Linux allows you to use multiple file filters in dialog boxes. Each FileFilter w
 
 Mac dialogs only have the concept of a single set of patterns to filter files. If multiple FileFilters are provided, Wails will use all the Patterns defined.
 
-Example:
+Exemple:
 
 ```go
     selection, err := runtime.OpenFileDialog(b.ctx, runtime.OpenDialogOptions{
