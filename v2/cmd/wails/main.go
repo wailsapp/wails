@@ -11,11 +11,9 @@ import (
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/update"
 
 	"github.com/leaanthony/clir"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/build"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/dev"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/doctor"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/generate"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/initialise"
 )
 
 func fatal(message string) {
@@ -33,20 +31,25 @@ func printFooter() {
 	println(colour.Green("\nIf Wails is useful to you or your company, please consider sponsoring the project:\nhttps://github.com/sponsors/leaanthony\n"))
 }
 
+func bool2Str(b bool) string {
+	if b {
+		return "true"
+	}
+	return "false"
+}
+
+var app *clir.Cli
+
 func main() {
 
 	var err error
 
-	app := clir.NewCli("Wails", "Go/HTML Appkit", internal.Version)
+	app = clir.NewCli("Wails", "Go/HTML Appkit", internal.Version)
 
 	app.SetBannerFunction(banner)
 	defer printFooter()
 
-	build.AddBuildSubcommand(app, os.Stdout)
-	err = initialise.AddSubcommand(app, os.Stdout)
-	if err != nil {
-		fatal(err.Error())
-	}
+	app.NewSubCommandFunction("build", "Builds the application", buildApplication)
 
 	err = doctor.AddSubcommand(app, os.Stdout)
 	if err != nil {

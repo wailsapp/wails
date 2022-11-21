@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/gomod"
 	"io"
 	"net"
 	"net/http"
@@ -24,7 +25,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 
 	"github.com/google/shlex"
-	buildcmd "github.com/wailsapp/wails/v2/cmd/wails/internal/commands/build"
 
 	"github.com/wailsapp/wails/v2/internal/project"
 
@@ -154,7 +154,7 @@ func AddSubcommand(app *clir.Cli, w io.Writer) error {
 		}
 
 		// Update go.mod to use current wails version
-		err = buildcmd.SyncGoMod(logger, true)
+		err = gomod.SyncGoMod(logger, true)
 		if err != nil {
 			return err
 		}

@@ -35,7 +35,7 @@ func GetAvailableCoreWebView2BrowserVersionString(browserExecutableFolder string
 	if browserExecutableFolder != "" {
 		clientPath, err := findEmbeddedClientDll(browserExecutableFolder)
 		if errors.Is(err, errNoClientDLLFound) {
-			// Webview2 is not found
+			// WebView2 is not found
 			return "", nil
 		} else if err != nil {
 			return "", err
