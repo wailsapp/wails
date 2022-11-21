@@ -1,12 +1,12 @@
-# Application Development
+# 애플리케이션 개발
 
-There are no hard and fast rules for developing applications with Wails, but there are some basic guidelines.
+Wails로 애플리케이션을 개발하기 위한 엄격한 규칙은 없으나 몇 가지의 기본 가이드가 있습니다.
 
-## Application Setup
+## 애플리케이션 셋업
 
-The pattern used by the default templates are that `main.go` is used for configuring and running the application, whilst `app.go` is used for defining the application logic.
+기본 템플릿에서 사용되는 패턴은 `main.go`가 애플리케이션 구성 및 실행에 사용되는 반면 `app.go`는 애플리케이션 로직 정의에 사용된다는 것입니다.
 
-The `app.go` file will define a struct that has 2 methods which act as hooks into the main application:
+`app.go` 파일은 기본 애플리케이션에 hook 역할을 하는 2개의 메소드가 있는 구조체를 정의합니다.
 
 ```go title="app.go"
 type App struct {
@@ -25,11 +25,11 @@ func (a *App) shutdown(ctx context.Context) {
 }
 ```
 
-- The startup method is called as soon as Wails allocates the resources it needs and is a good place for creating resources, setting up event listeners and anything else the application needs at startup. It is given a `context.Context` which is usually saved in a struct field. This context is needed for calling the [runtime](../reference/runtime/intro.mdx). If this method returns an error, the application will terminate. In dev mode, the error will be output to the console.
+- 시작 메서드는 Wails가 필요한 리소스를 할당하는 즉시 호출되며 리소스 생성, 이벤트 리스너 설정 및 시작 시 응용 프로그램에 필요한 모든 것을 설정하기에 좋은 위치입니다. 일반적으로 구조체 필드에 저장되는 `context.Context`가 제공됩니다. 이 컨텍스트는 [런타임](../reference/runtime/intro.mdx)을 호출하는 데 필요합니다. 이 메서드가 오류를 반환하면 응용 프로그램이 종료됩니다. 개발 모드에서는 오류가 콘솔에 출력됩니다.
 
-- The shutdown method will be called by Wails right at the end of the shutdown process. This is a good place to deallocate memory and perform any shutdown tasks.
+- Shutdown 메소드는 shutdown 프로세스가 끝날 때 바로 Wails에 의해 호출됩니다. 이것은 메모리 할당을 해제하고 모든 shutodown 작업을 수행하기에 좋은 위치입니다.
 
-The `main.go` file generally consists of a single call to `wails.Run()`, which accepts the application configuration. The pattern used by the templates is that before the call to `wails.Run()`, an instance of the struct we defined in `app.go` is created and saved in a variable called `app`. This configuration is where we add our callbacks:
+`main.go` 파일은 일반적으로 애플리케이션 구성을 허용하는 `wails.Run()`에 대한 단일 호출로 구성됩니다. 템플릿에서 사용하는 패턴은 `wails.Run()`을 호출하기 전에 `app.go`에서 정의한 구조체의 인스턴스가 생성되어 변수에 저장된다는 것입니다. 이것은 `app`이라고 합니다. 이 configuration 은 콜백을 추가하는 위치입니다:
 
 ```go {3,9,10} title="main.go"
 func main() {
@@ -50,11 +50,11 @@ func main() {
 
 ```
 
-More information on application lifecycle hooks can be found [here](../howdoesitwork.mdx#application-lifecycle-callbacks).
+애플리케이션 lifecycle hook에 대한 자세한 내용은 [여기](../howdoesitwork.mdx#application-lifecycle-callbacks)에서 확인할 수 있습니다.
 
-## Binding Methods
+## 바인딩 메소드
 
-It is likely that you will want to call Go methods from the frontend. This is normally done by adding public methods to the already defined struct in `app.go`:
+프론트엔드에서 Go 메서드를 호출할 가능성이 높습니다. 이는 일반적으로 `app.go`에서 이미 정의된 구조체에 public method를 추가하여 수행됩니다.
 
 ```go {16-18} title="app.go"
 type App struct {

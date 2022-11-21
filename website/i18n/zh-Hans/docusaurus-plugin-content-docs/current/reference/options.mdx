@@ -72,11 +72,11 @@ func main() {
                 LightModeTitleText: windows.RGB(20, 20, 20),
                 LightModeBorder:    windows.RGB(200, 200, 200),
             },
-            // User messages that can be customised
+            // 可自定义的用户消息
             Messages *windows.Messages
-            // OnSuspend is called when Windows enters low power mode
+            // Windows 进入低功耗模式时调用 OnSuspend
             OnSuspend func()
-            // OnResume is called when Windows resumes from low power mode
+            // Windows 从低功耗模式恢复时调用 OnResume
             OnResume func()
         },
         Mac: &mac.Options{
