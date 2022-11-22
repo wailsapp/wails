@@ -123,14 +123,14 @@ type MessageDialogOptions struct {
 | Title         | ダイアログのタイトル                                        | ✅              | ✅   | ✅   |
 | Message       | ユーザに表示するメッセージ                                     | ✅              | ✅   | ✅   |
 | Buttons       | ボタンテキストのリスト                                       |                | ✅   |     |
-| DefaultButton | 指定されたテキストのボタンをデフォルトボタンとして扱う。 Bound to `return`.   | ✅[*](#windows) | ✅   |     |
+| DefaultButton | 指定されたテキストのボタンをデフォルトボタンとして扱う。 `return`キーにバインドされます。 | ✅[*](#windows) | ✅   |     |
 | CancelButton  | 指定されたテキストのボタンをキャンセルボタンとして扱う。 `escape`キーにバインドされます。 |                | ✅   |     |
 
 #### Windows
 
-Windowsでは、ボタンのカスタマイズができない標準ダイアログタイプがあります。 The value returned will be one of: "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "Try Again" or "Continue".
+Windowsでは、ボタンのカスタマイズができない標準ダイアログタイプがあります。 返却される値は次のいずれかとなります: "Ok"、"Cancel"、"Abort"、"Retry"、"Ignore"、"Yes"、"No"、"Try Again"、"Continue"。
 
-For Question dialogs, the default button is "Yes" and the cancel button is "No". This can be changed by setting the `DefaultButton` value to `"No"`.
+質問ダイアログの場合、デフォルトボタンは"Yes"、キャンセルボタンは"No"となります。 この設定は、`DefaultButton`の値を`"No"`にすることで、変更できます。
 
 Example:
 ```go
