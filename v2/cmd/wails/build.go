@@ -195,7 +195,7 @@ func buildApplication(f *flags.Build) error {
 			buildOptions.OutputFile = f.OutputFilename
 		}
 
-		if f.Upx && f.SkipBindings {
+		if f.Obfuscated && f.SkipBindings {
 			logger.Println("Warning: obfuscated flag overrides skipbindings flag.")
 			buildOptions.SkipBindings = false
 		}
