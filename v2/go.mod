@@ -14,7 +14,7 @@ require (
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e
 	github.com/labstack/echo/v4 v4.9.0
-	github.com/leaanthony/clir v1.2.1
+	github.com/leaanthony/clir v1.3.0
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
 	github.com/leaanthony/gosod v1.0.3

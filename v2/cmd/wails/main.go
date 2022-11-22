@@ -50,6 +50,7 @@ func main() {
 	defer printFooter()
 
 	app.NewSubCommandFunction("build", "Builds the application", buildApplication)
+	//app.NewSubCommandFunction("dev", "Runs the application in development mode", devApplication)
 
 	err = doctor.AddSubcommand(app, os.Stdout)
 	if err != nil {

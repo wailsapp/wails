@@ -20,30 +20,27 @@ const (
 
 // TODO: unify this and `build.Options`
 type Build struct {
+	BuildCommon
+
 	NoPackage               bool   `name:"noPackage" description:"Skips platform specific packaging"`
-	Compiler                string `description:"Use a different go compiler to build, eg go1.15beta1"`
 	SkipModTidy             bool   `name:"m" description:"Skip mod tidy before compile"`
 	Upx                     bool   `description:"Compress final binary with UPX (if installed)"`
 	UpxFlags                string `description:"Flags to pass to upx"`
 	Platform                string `description:"Platform to target. Comma separate multiple platforms"`
-	Verbosity               int    `name:"v" description:"Verbosity level (0 = quiet, 1 = normal, 2 = verbose)"`
-	LdFlags                 string `description:"Additional ldflags to pass to the compiler"`
-	Tags                    string `description:"Build tags to pass to Go compiler. Must be quoted. Space or comma (but not both) separated"`
 	OutputFilename          string `name:"o" description:"Output filename"`
 	Clean                   bool   `description:"Clean the bin directory before building"`
 	WebView2                string `description:"WebView2 installer strategy: download,embed,browser,error"`
-	SkipFrontend            bool   `name:"s" description:"Skips building the frontend"`
 	ForceBuild              bool   `name:"f" description:"Force build of application"`
 	UpdateWailsVersionGoMod bool   `name:"u" description:"Updates go.mod to use the same Wails version as the CLI"`
 	Debug                   bool   `description:"Builds the application in debug mode"`
 	NSIS                    bool   `description:"Generate NSIS installer for Windows"`
 	TrimPath                bool   `description:"Remove all file system paths from the resulting executable"`
-	RaceDetector            bool   `description:"Build with Go's race detector"`
 	WindowsConsole          bool   `description:"Keep the console when building for Windows"`
 	Obfuscated              bool   `description:"Code obfuscation of bound Wails methods"`
 	GarbleArgs              string `description:"Arguments to pass to garble"`
 	DryRun                  bool   `description:"Prints the build command without executing it"`
-	SkipBindings            bool   `description:"Skips generation of bindings"`
+
+	// Build Specific
 
 	// Internal state
 	compilerPath  string
@@ -69,13 +66,13 @@ func (b *Build) Default() *Build {
 	b.defaultArch = defaultArch
 	platform := defaultPlatform + "/" + defaultArch
 
-	return &Build{
-		Compiler:   "go",
+	result := &Build{
 		Platform:   platform,
-		Verbosity:  Normal,
 		WebView2:   "download",
 		GarbleArgs: "-literals -tiny -seed=random",
 	}
+	result.BuildCommon = result.BuildCommon.Default()
+	return result
 }
 
 func (b *Build) GetBuildMode() build.Mode {
