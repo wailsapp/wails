@@ -8,12 +8,11 @@ import (
 	"unsafe"
 )
 
-func (e *Chromium) Resize() {
+func (e *Chromium) SetSize(bounds w32.Rect) {
 	if e.controller == nil {
 		return
 	}
-	var bounds w32.Rect
-	w32.User32GetClientRect.Call(e.hwnd, uintptr(unsafe.Pointer(&bounds)))
+
 	e.controller.vtbl.PutBounds.Call(
 		uintptr(unsafe.Pointer(e.controller)),
 		uintptr(unsafe.Pointer(&bounds)),
