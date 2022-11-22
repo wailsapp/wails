@@ -4,11 +4,11 @@
     "description": "The label for version v2.0.0-rc.1"
   },
   "sidebar.docs.category.Getting Started": {
-    "message": "Getting Started",
+    "message": "Приступая к работе",
     "description": "The label for category Getting Started in sidebar docs"
   },
   "sidebar.docs.category.Reference": {
-    "message": "Reference",
+    "message": "Справочник",
     "description": "The label for category Reference in sidebar docs"
   },
   "sidebar.docs.category.Runtime": {
@@ -16,23 +16,23 @@
     "description": "The label for category Runtime in sidebar docs"
   },
   "sidebar.docs.category.Community": {
-    "message": "Community",
+    "message": "Сообщество",
     "description": "The label for category Community in sidebar docs"
   },
   "sidebar.docs.category.Showcase": {
-    "message": "Showcase",
+    "message": "Примеры",
     "description": "The label for category Showcase in sidebar docs"
   },
   "sidebar.docs.category.Guides": {
-    "message": "Guides",
+    "message": "Инструкции",
     "description": "The label for category Guides in sidebar docs"
   },
   "sidebar.docs.category.Tutorials": {
-    "message": "Tutorials",
+    "message": "Учебные материалы",
     "description": "The label for category Tutorials in sidebar docs"
   },
   "sidebar.docs.link.Contributing": {
-    "message": "Contributing",
+    "message": "Помощь проекту",
     "description": "The label for link Contributing in sidebar docs, linking to /community-guide#ways-of-contributing"
   }
 }
