@@ -228,7 +228,7 @@ func (b *Bindings) SetTsPrefix(prefix string) *Bindings {
 	return b
 }
 
-func (b *Bindings) SetTsPostfix(postfix string) *Bindings {
+func (b *Bindings) SetTsSuffix(postfix string) *Bindings {
 	b.tsSuffix = postfix
 	return b
 }

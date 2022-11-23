@@ -50,7 +50,7 @@ func TestBindings_GenerateModels(t *testing.T) {
 			b.SetTsPrefix(tt.TsPrefix)
 
 			// TODO - rename this to  SetTsSuffix
-			b.SetTsPostfix(tt.TsSuffix)
+			b.SetTsSuffix(tt.TsSuffix)
 			got, err := b.GenerateModels()
 			if (err != nil) != tt.shouldError {
 				t.Errorf("GenerateModels() error = %v, shouldError %v", err, tt.shouldError)
