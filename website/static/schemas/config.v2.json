@@ -241,7 +241,7 @@
 										},
 										"suffix": {
 												"type": "string",
-												"description": "All generated JavaScript entities will be suffixed"
+												"description": "All generated JavaScript entities will be suffixed with this value"
 										}
 								}
 						}
