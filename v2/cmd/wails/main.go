@@ -12,7 +12,6 @@ import (
 
 	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/dev"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/doctor"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/generate"
 )
 
@@ -51,11 +50,7 @@ func main() {
 
 	app.NewSubCommandFunction("build", "Builds the application", buildApplication)
 	//app.NewSubCommandFunction("dev", "Runs the application in development mode", devApplication)
-
-	err = doctor.AddSubcommand(app, os.Stdout)
-	if err != nil {
-		fatal(err.Error())
-	}
+	app.NewSubCommandFunction("doctor", "Diagnose your environment", diagnoseEnvironment)
 
 	err = dev.AddSubcommand(app, os.Stdout)
 	if err != nil {
