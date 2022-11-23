@@ -237,7 +237,7 @@
 								"properties": {
 										"prefix": {
 												"type": "string",
-												"description": "All generated JavaScript entities will be prefixed"
+												"description": "All generated JavaScript entities will be prefixed with this value"
 										},
 										"suffix": {
 												"type": "string",
