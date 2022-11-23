@@ -65,6 +65,10 @@ export function WindowReloadApp() {
     window.runtime.WindowReloadApp();
 }
 
+export function WindowSetAlwaysOnTop(b) {
+    window.runtime.WindowSetAlwaysOnTop(b);
+}
+
 export function WindowSetSystemDefaultTheme() {
     window.runtime.WindowSetSystemDefaultTheme();
 }
