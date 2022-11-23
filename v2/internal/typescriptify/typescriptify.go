@@ -920,6 +920,7 @@ func typeClashWithReservedKeyword(input string) bool {
 }
 
 func warnAboutTypesClash(entity string) {
+	// TODO: Refactor logging
 	l := log.New(os.Stderr, "", 0)
 	l.Println(fmt.Sprintf("Usage of reserved keyword found and not supported: %s", entity))
 	log.Println("Please rename returned type or consider adding bindings config to your wails.json")
