@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/gomod"
@@ -26,8 +25,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 
 	"github.com/google/shlex"
-
-	"github.com/wailsapp/wails/v2/internal/project"
 
 	"github.com/pkg/browser"
 	"github.com/wailsapp/wails/v2/internal/colour"
@@ -98,11 +95,6 @@ type devFlags struct {
 
 // Application runs the application in dev mode
 func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
-
-	if f.NoColour {
-		colour.ColourEnabled = false
-		pterm.DisableColor()
-	}
 
 	cwd := lo.Must(os.Getwd())
 
@@ -275,92 +267,6 @@ func runCommand(dir string, exitOnError bool, command string, args ...string) er
 		return err
 	}
 	return nil
-}
-
-// defaultDevFlags generates devFlags with default options
-func defaultDevFlags() devFlags {
-	return devFlags{
-		compilerCommand: "go",
-		verbosity:       1,
-		extensions:      "go",
-		debounceMS:      100,
-	}
-}
-
-// loadAndMergeProjectConfig reconciles flags passed to the CLI with project config settings and updates
-// the project config if necessary
-func loadAndMergeProjectConfig(projectFileDirectory string, flags *devFlags) (*project.Project, error) {
-	projectConfig, err := project.Load(projectFileDirectory)
-	if err != nil {
-		return nil, err
-	}
-
-	if flags.assetDir == "" && projectConfig.AssetDirectory != "" {
-		flags.assetDir = projectConfig.AssetDirectory
-	}
-
-	if flags.assetDir != projectConfig.AssetDirectory {
-		projectConfig.AssetDirectory = filepath.ToSlash(flags.assetDir)
-	}
-
-	if flags.assetDir != "" {
-		flags.assetDir, err = filepath.Abs(flags.assetDir)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if flags.reloadDirs == "" && projectConfig.ReloadDirectories != "" {
-		flags.reloadDirs = projectConfig.ReloadDirectories
-	}
-
-	if flags.reloadDirs != projectConfig.ReloadDirectories {
-		projectConfig.ReloadDirectories = filepath.ToSlash(flags.reloadDirs)
-	}
-
-	if flags.devServer == "" && projectConfig.DevServer != "" {
-		flags.devServer = projectConfig.DevServer
-	}
-
-	if flags.frontendDevServerURL == "" && projectConfig.FrontendDevServerURL != "" {
-		flags.frontendDevServerURL = projectConfig.FrontendDevServerURL
-	}
-
-	if flags.wailsjsdir == "" && projectConfig.WailsJSDir != "" {
-		flags.wailsjsdir = projectConfig.GetWailsJSDir()
-	}
-
-	if flags.wailsjsdir == "" {
-		flags.wailsjsdir = projectConfig.GetFrontendDir()
-	}
-
-	if flags.wailsjsdir != projectConfig.WailsJSDir {
-		projectConfig.WailsJSDir = filepath.ToSlash(flags.wailsjsdir)
-	}
-
-	if flags.debounceMS == 100 && projectConfig.DebounceMS != 100 {
-		if projectConfig.DebounceMS == 0 {
-			projectConfig.DebounceMS = 100
-		}
-		flags.debounceMS = projectConfig.DebounceMS
-	}
-
-	if flags.debounceMS != projectConfig.DebounceMS {
-		projectConfig.DebounceMS = flags.debounceMS
-	}
-
-	if flags.appargs == "" && projectConfig.AppArgs != "" {
-		flags.appargs = projectConfig.AppArgs
-	}
-
-	if flags.saveConfig {
-		err = projectConfig.Save()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return projectConfig, nil
 }
 
 // runFrontendDevWatcherCommand will run the `frontend:dev:watcher` command if it was given, ex- `npm run dev`
