@@ -2,23 +2,15 @@ package main
 
 import (
 	"fmt"
+	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/show"
 	"os"
+	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/colour"
 
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/update"
-
 	"github.com/leaanthony/clir"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/dev"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/commands/generate"
 )
-
-func fatal(message string) {
-	println(message)
-	os.Exit(1)
-}
 
 func banner(_ *clir.Cli) string {
 	return fmt.Sprintf("%s %s",
@@ -26,8 +18,41 @@ func banner(_ *clir.Cli) string {
 		colour.DarkRed(internal.Version))
 }
 
+func fatal(message string) {
+	printer := pterm.PrefixPrinter{
+		MessageStyle: &pterm.ThemeDefault.FatalMessageStyle,
+		Prefix: pterm.Prefix{
+			Style: &pterm.ThemeDefault.FatalPrefixStyle,
+			Text:  " FATAL ",
+		},
+	}
+	printer.Println(message)
+	os.Exit(1)
+}
+
+func printBulletPoint(text string, args ...any) {
+	item := pterm.BulletListItem{
+		Level: 2,
+		Text:  text,
+	}
+	t, err := pterm.DefaultBulletList.WithItems([]pterm.BulletListItem{item}).Srender()
+	if err != nil {
+		fatal(err.Error())
+	}
+	t = strings.Trim(t, "\n\r")
+	pterm.Printf(t, args...)
+}
+
 func printFooter() {
-	println(colour.Green("\nIf Wails is useful to you or your company, please consider sponsoring the project:\nhttps://github.com/sponsors/leaanthony\n"))
+	printer := pterm.PrefixPrinter{
+		MessageStyle: pterm.NewStyle(pterm.FgLightGreen),
+		Prefix: pterm.Prefix{
+			Style: pterm.NewStyle(pterm.FgRed, pterm.BgLightWhite),
+			Text:  "♥ ",
+		},
+	}
+	printer.Println("If Wails is useful to you or your company, please consider sponsoring the project:")
+	pterm.Println("https://github.com/sponsors/leaanthony\n")
 }
 
 func bool2Str(b bool) string {
@@ -49,35 +74,28 @@ func main() {
 	defer printFooter()
 
 	app.NewSubCommandFunction("build", "Builds the application", buildApplication)
-	//app.NewSubCommandFunction("dev", "Runs the application in development mode", devApplication)
+	app.NewSubCommandFunction("dev", "Runs the application in development mode", devApplication)
 	app.NewSubCommandFunction("doctor", "Diagnose your environment", diagnoseEnvironment)
+	app.NewSubCommandFunction("init", "Initialises a new Wails project", initProject)
+	app.NewSubCommandFunction("update", "Update the Wails CLI", update)
 
-	err = dev.AddSubcommand(app, os.Stdout)
-	if err != nil {
-		fatal(err.Error())
-	}
+	show := app.NewSubCommand("show", "Shows various information")
+	show.NewSubCommandFunction("releasenotes", "Shows the release notes for the current version", showReleaseNotes)
 
-	err = generate.AddSubcommand(app, os.Stdout)
-	if err != nil {
-		fatal(err.Error())
-	}
-
-	show.AddSubcommand(app, os.Stdout)
-
-	err = update.AddSubcommand(app, os.Stdout, internal.Version)
-	if err != nil {
-		fatal(err.Error())
-	}
+	generate := app.NewSubCommand("generate", "Code Generation Tools")
+	generate.NewSubCommandFunction("module", "Generates a new Wails module", generateModule)
+	generate.NewSubCommandFunction("template", "Generates a new Wails template", generateTemplate)
 
 	command := app.NewSubCommand("version", "The Wails CLI version")
 	command.Action(func() error {
-		println(internal.Version)
+		pterm.Println(internal.Version)
 		return nil
 	})
 
 	err = app.Run()
 	if err != nil {
-		println("\n\nERROR: " + err.Error())
+		pterm.Println()
+		pterm.Error.Println(err.Error())
 		printFooter()
 		os.Exit(1)
 	}

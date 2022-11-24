@@ -21,7 +21,6 @@ require (
 	github.com/leaanthony/slicer v1.5.0
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
-	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2
 	github.com/pkg/errors v0.9.1
 	github.com/tc-hib/winres v0.1.5

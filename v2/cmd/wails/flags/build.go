@@ -20,6 +20,7 @@ const (
 
 // TODO: unify this and `build.Options`
 type Build struct {
+	Common
 	BuildCommon
 
 	NoPackage               bool   `name:"noPackage" description:"Skips platform specific packaging"`

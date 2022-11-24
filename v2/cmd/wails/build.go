@@ -6,6 +6,7 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/gomod"
+	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/commands/build"
@@ -17,13 +18,20 @@ import (
 
 func buildApplication(f *flags.Build) error {
 
+	if f.NoColour {
+		pterm.DisableColor()
+		colour.ColourEnabled = false
+	}
+
 	quiet := f.Verbosity == flags.Quiet
 
 	// Create logger
 	logger := clilogger.New(os.Stdout)
 	logger.Mute(quiet)
 
-	if !quiet {
+	if quiet {
+		pterm.DisableOutput()
+	} else {
 		app.PrintBanner()
 	}
 
@@ -68,35 +76,34 @@ func buildApplication(f *flags.Build) error {
 		ProjectData:       projectOptions,
 	}
 
-	if !quiet {
-		tableData := pterm.TableData{
-			{"Platform(s)", f.Platform},
-			{"Compiler", f.GetCompilerPath()},
-			{"Skip Bindings", bool2Str(f.SkipBindings)},
-			{"Build Mode", f.GetBuildModeAsString()},
-			{"Frontend Directory", projectOptions.GetFrontendDir()},
-			{"Obfuscated", bool2Str(f.Obfuscated)},
-		}
-		if f.Obfuscated {
-			tableData = append(tableData, []string{"Garble Args", f.GarbleArgs})
-		}
-		tableData = append(tableData, pterm.TableData{
-			{"Skip Frontend", bool2Str(f.SkipFrontend)},
-			{"Compress", bool2Str(f.Upx)},
-			{"Package", bool2Str(!f.NoPackage)},
-			{"Clean Bin Dir", bool2Str(f.Clean)},
-			{"LDFlags", f.LdFlags},
-			{"Tags", "[" + strings.Join(f.GetTags(), ",") + "]"},
-			{"Race Detector", bool2Str(f.RaceDetector)},
-		}...)
-		if len(buildOptions.OutputFile) > 0 && f.GetTargets().Length() == 1 {
-			tableData = append(tableData, []string{"Output File", f.OutputFilename})
-		}
-		err = pterm.DefaultTable.WithBoxed(true).WithData(tableData).Render()
-		if err != nil {
-			return err
-		}
-		println()
+	tableData := pterm.TableData{
+		{"Platform(s)", f.Platform},
+		{"Compiler", f.GetCompilerPath()},
+		{"Skip Bindings", bool2Str(f.SkipBindings)},
+		{"Build Mode", f.GetBuildModeAsString()},
+		{"Frontend Directory", projectOptions.GetFrontendDir()},
+		{"Obfuscated", bool2Str(f.Obfuscated)},
+	}
+	if f.Obfuscated {
+		tableData = append(tableData, []string{"Garble Args", f.GarbleArgs})
+	}
+	tableData = append(tableData, pterm.TableData{
+		{"Skip Frontend", bool2Str(f.SkipFrontend)},
+		{"Compress", bool2Str(f.Upx)},
+		{"Package", bool2Str(!f.NoPackage)},
+		{"Clean Bin Dir", bool2Str(f.Clean)},
+		{"LDFlags", f.LdFlags},
+		{"Tags", "[" + strings.Join(f.GetTags(), ",") + "]"},
+		{"Race Detector", bool2Str(f.RaceDetector)},
+	}...)
+	if len(buildOptions.OutputFile) > 0 && f.GetTargets().Length() == 1 {
+		tableData = append(tableData, []string{"Output File", f.OutputFilename})
+	}
+	pterm.DefaultSection.Println("Build Options")
+
+	err = pterm.DefaultTable.WithData(tableData).Render()
+	if err != nil {
+		return err
 	}
 
 	err = gomod.SyncGoMod(logger, f.UpdateWailsVersionGoMod)
@@ -150,23 +157,22 @@ func buildApplication(f *flags.Build) error {
 			buildOptions.Arch = platformSplit[1]
 		}
 		banner := "Building target: " + buildOptions.Platform + "/" + buildOptions.Arch
-		logger.Println(banner)
-		logger.Println(strings.Repeat("-", len(banner)))
+		pterm.DefaultSection.Println(banner)
 
 		if f.Upx && platform == "darwin/universal" {
-			logger.Println("Warning: compress flag unsupported for universal binaries. Ignoring.")
+			pterm.Warning.Println("Warning: compress flag unsupported for universal binaries. Ignoring.")
 			f.Upx = false
 		}
 
 		switch buildOptions.Platform {
 		case "linux":
 			if runtime.GOOS != "linux" {
-				logger.Println("Crosscompiling to Linux not currently supported.\n")
+				pterm.Warning.Println("Crosscompiling to Linux not currently supported.\n")
 				return
 			}
 		case "darwin":
 			if runtime.GOOS != "darwin" {
-				logger.Println("Crosscompiling to Mac not currently supported.\n")
+				pterm.Warning.Println("Crosscompiling to Mac not currently supported.\n")
 				return
 			}
 			macTargets := targets.Filter(func(platform string) bool {
@@ -196,7 +202,7 @@ func buildApplication(f *flags.Build) error {
 		}
 
 		if f.Obfuscated && f.SkipBindings {
-			logger.Println("Warning: obfuscated flag overrides skipbindings flag.")
+			pterm.Warning.Println("obfuscated flag overrides skipbindings flag.")
 			buildOptions.SkipBindings = false
 		}
 
@@ -206,7 +212,7 @@ func buildApplication(f *flags.Build) error {
 
 			compiledBinary, err := build.Build(buildOptions)
 			if err != nil {
-				logger.Println("Error: %s", err.Error())
+				pterm.Error.Println(err.Error())
 				targetErr = err
 				return
 			}
@@ -219,7 +225,7 @@ func buildApplication(f *flags.Build) error {
 
 			outputBinaries[buildOptions.Platform+"/"+buildOptions.Arch] = compiledBinary
 		} else {
-			logger.Println("Dry run: skipped build.")
+			pterm.Info.Println("Dry run: skipped build.")
 		}
 	})
 

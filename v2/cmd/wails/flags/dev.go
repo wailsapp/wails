@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v2/internal/project"
+	"github.com/wailsapp/wails/v2/pkg/commands/build"
 	"net"
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 type Dev struct {
@@ -29,10 +31,11 @@ type Dev struct {
 	FrontendDevServerURL string `flag:"frontenddevserverurl" description:"The url of the external frontend dev server to use"`
 
 	// Internal state
-	devServerURL *url.URL
+	devServerURL  *url.URL
+	projectConfig *project.Project
 }
 
-func Default() *Dev {
+func (*Dev) Default() *Dev {
 	result := &Dev{
 		Extensions: "go",
 		Debounce:   100,
@@ -62,17 +65,18 @@ func (d *Dev) Process() error {
 }
 
 func (d *Dev) loadAndMergeProjectConfig() error {
+	var err error
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
 	}
-	projectConfig, err := project.Load(cwd)
+	d.projectConfig, err = project.Load(cwd)
 	if err != nil {
 		return err
 	}
 
-	d.AssetDir, _ = lo.Coalesce(d.AssetDir, projectConfig.AssetDirectory)
-	projectConfig.AssetDirectory = filepath.ToSlash(d.AssetDir)
+	d.AssetDir, _ = lo.Coalesce(d.AssetDir, d.projectConfig.AssetDirectory)
+	d.projectConfig.AssetDirectory = filepath.ToSlash(d.AssetDir)
 	if d.AssetDir != "" {
 		d.AssetDir, err = filepath.Abs(d.AssetDir)
 		if err != nil {
@@ -80,27 +84,27 @@ func (d *Dev) loadAndMergeProjectConfig() error {
 		}
 	}
 
-	d.ReloadDirs, _ = lo.Coalesce(d.ReloadDirs, projectConfig.ReloadDirectories)
-	projectConfig.ReloadDirectories = filepath.ToSlash(d.ReloadDirs)
-	d.DevServer, _ = lo.Coalesce(d.DevServer, projectConfig.DevServer)
-	projectConfig.DevServer = d.DevServer
-	d.FrontendDevServerURL, _ = lo.Coalesce(d.FrontendDevServerURL, projectConfig.FrontendDevServerURL)
-	projectConfig.FrontendDevServerURL = d.FrontendDevServerURL
-	d.WailsJSDir, _ = lo.Coalesce(d.WailsJSDir, projectConfig.GetWailsJSDir(), projectConfig.GetFrontendDir())
-	projectConfig.WailsJSDir = filepath.ToSlash(d.WailsJSDir)
+	d.ReloadDirs, _ = lo.Coalesce(d.ReloadDirs, d.projectConfig.ReloadDirectories)
+	d.projectConfig.ReloadDirectories = filepath.ToSlash(d.ReloadDirs)
+	d.DevServer, _ = lo.Coalesce(d.DevServer, d.projectConfig.DevServer)
+	d.projectConfig.DevServer = d.DevServer
+	d.FrontendDevServerURL, _ = lo.Coalesce(d.FrontendDevServerURL, d.projectConfig.FrontendDevServerURL)
+	d.projectConfig.FrontendDevServerURL = d.FrontendDevServerURL
+	d.WailsJSDir, _ = lo.Coalesce(d.WailsJSDir, d.projectConfig.GetWailsJSDir(), d.projectConfig.GetFrontendDir())
+	d.projectConfig.WailsJSDir = filepath.ToSlash(d.WailsJSDir)
 
-	if d.Debounce == 100 && projectConfig.DebounceMS != 100 {
-		if projectConfig.DebounceMS == 0 {
-			projectConfig.DebounceMS = 100
+	if d.Debounce == 100 && d.projectConfig.DebounceMS != 100 {
+		if d.projectConfig.DebounceMS == 0 {
+			d.projectConfig.DebounceMS = 100
 		}
-		d.Debounce = projectConfig.DebounceMS
+		d.Debounce = d.projectConfig.DebounceMS
 	}
-	projectConfig.DebounceMS = d.Debounce
+	d.projectConfig.DebounceMS = d.Debounce
 
-	d.AppArgs, _ = lo.Coalesce(d.AppArgs, projectConfig.AppArgs)
+	d.AppArgs, _ = lo.Coalesce(d.AppArgs, d.projectConfig.AppArgs)
 
 	if d.Save {
-		err = projectConfig.Save()
+		err = d.projectConfig.Save()
 		if err != nil {
 			return err
 		}
@@ -108,4 +112,33 @@ func (d *Dev) loadAndMergeProjectConfig() error {
 
 	return nil
 
+}
+
+// GenerateBuildOptions creates a build.Options using the flags
+func (d *Dev) GenerateBuildOptions() *build.Options {
+	result := &build.Options{
+		OutputType:     "dev",
+		Mode:           build.Dev,
+		Arch:           runtime.GOARCH,
+		Pack:           true,
+		Platform:       runtime.GOOS,
+		LDFlags:        d.LdFlags,
+		Compiler:       d.Compiler,
+		ForceBuild:     d.ForceBuild,
+		IgnoreFrontend: d.SkipFrontend,
+		Verbosity:      d.Verbosity,
+		WailsJSDir:     d.WailsJSDir,
+		RaceDetector:   d.RaceDetector,
+		ProjectData:    d.projectConfig,
+	}
+
+	return result
+}
+
+func (d *Dev) ProjectConfig() *project.Project {
+	return d.projectConfig
+}
+
+func (d *Dev) DevServerURL() *url.URL {
+	return d.devServerURL
 }

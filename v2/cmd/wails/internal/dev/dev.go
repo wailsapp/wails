@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/pterm/pterm"
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/gomod"
 	"io"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -14,7 +16,6 @@ import (
 	"os/signal"
 	"path"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -32,7 +33,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/colour"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/leaanthony/clir"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/process"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
@@ -96,202 +96,152 @@ type devFlags struct {
 	noColour             bool
 }
 
-// AddSubcommand adds the `dev` command for the Wails application
-func AddSubcommand(app *clir.Cli, w io.Writer) error {
+// Application runs the application in dev mode
+func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 
-	command := app.NewSubCommand("dev", "Development mode")
+	if f.NoColour {
+		colour.ColourEnabled = false
+		pterm.DisableColor()
+	}
 
-	flags := defaultDevFlags()
-	command.StringFlag("ldflags", "optional ldflags", &flags.ldflags)
-	command.StringFlag("compiler", "Use a different go compiler to build, eg go1.15beta1", &flags.compilerCommand)
-	command.StringFlag("assetdir", "Serve assets from the given directory instead of using the provided asset FS", &flags.assetDir)
-	command.StringFlag("e", "Extensions to trigger rebuilds (comma separated) eg go", &flags.extensions)
-	command.StringFlag("reloaddirs", "Additional directories to trigger reloads (comma separated)", &flags.reloadDirs)
-	command.BoolFlag("browser", "Open application in browser", &flags.openBrowser)
-	command.BoolFlag("noreload", "Disable reload on asset change", &flags.noReload)
-	command.BoolFlag("nocolour", "Turn off colour cli output", &flags.noColour)
-	command.BoolFlag("skipbindings", "Skip bindings generation", &flags.skipBindings)
-	command.StringFlag("wailsjsdir", "Directory to generate the Wails JS modules", &flags.wailsjsdir)
-	command.StringFlag("tags", "Build tags to pass to Go compiler. Must be quoted. Space or comma (but not both) separated", &flags.tags)
-	command.IntFlag("v", "Verbosity level (0 - silent, 1 - standard, 2 - verbose)", &flags.verbosity)
-	command.StringFlag("loglevel", "Loglevel to use - Trace, Debug, Info, Warning, Error", &flags.loglevel)
-	command.BoolFlag("f", "Force build application", &flags.forceBuild)
-	command.IntFlag("debounce", "The amount of time to wait to trigger a reload on change", &flags.debounceMS)
-	command.StringFlag("devserver", "The address of the wails dev server", &flags.devServer)
-	command.StringFlag("frontenddevserverurl", "The url of the external frontend dev server to use", &flags.frontendDevServerURL)
-	command.StringFlag("appargs", "arguments to pass to the underlying app (quoted and space separated)", &flags.appargs)
-	command.BoolFlag("save", "Save given flags as defaults", &flags.saveConfig)
-	command.BoolFlag("race", "Build with Go's race detector", &flags.raceDetector)
-	command.BoolFlag("s", "Skips building the frontend", &flags.skipFrontend)
+	cwd := lo.Must(os.Getwd())
 
-	command.Action(func() error {
-		if flags.noColour {
-			colour.ColourEnabled = false
+	// Update go.mod to use current wails version
+	err := gomod.SyncGoMod(logger, true)
+	if err != nil {
+		return err
+	}
+
+	// Run go mod tidy to ensure we're up-to-date
+	err = runCommand(cwd, false, "go", "mod", "tidy")
+	if err != nil {
+		return err
+	}
+
+	buildOptions := f.GenerateBuildOptions()
+	buildOptions.Logger = logger
+
+	userTags, err := buildtags.Parse(f.Tags)
+	if err != nil {
+		return err
+	}
+
+	buildOptions.UserTags = userTags
+
+	err = build.CreateEmbedDirectories(cwd, buildOptions)
+	if err != nil {
+		return err
+	}
+
+	if !buildOptions.SkipBindings {
+		if f.Verbosity == build.VERBOSE {
+			LogGreen("Generating Bindings...")
 		}
-
-		// Create logger
-		logger := clilogger.New(w)
-		app.PrintBanner()
-
-		cwd, err := os.Getwd()
+		stdout, err := bindings.GenerateBindings(bindings.Options{
+			Tags: buildOptions.UserTags,
+		})
 		if err != nil {
 			return err
 		}
+		if f.Verbosity == build.VERBOSE {
+			LogGreen(stdout)
+		}
+	}
 
-		projectConfig, err := loadAndMergeProjectConfig(cwd, &flags)
+	// Setup signal handler
+	quitChannel := make(chan os.Signal, 1)
+	signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
+	exitCodeChannel := make(chan int, 1)
+
+	// Build the frontend if requested, but ignore building the application itself.
+	ignoreFrontend := buildOptions.IgnoreFrontend
+	if !ignoreFrontend {
+		buildOptions.IgnoreApplication = true
+		if _, err := build.Build(buildOptions); err != nil {
+			return err
+		}
+		buildOptions.IgnoreApplication = false
+	}
+
+	// frontend:dev:watcher command.
+	projectConfig := f.ProjectConfig()
+	frontendDevAutoDiscovery := projectConfig.IsFrontendDevServerURLAutoDiscovery()
+	if command := projectConfig.DevWatcherCommand; command != "" {
+		closer, devServerURL, err := runFrontendDevWatcherCommand(projectConfig.GetFrontendDir(), command, frontendDevAutoDiscovery)
 		if err != nil {
 			return err
 		}
-
-		devServer := flags.devServer
-		if _, _, err := net.SplitHostPort(devServer); err != nil {
-			return fmt.Errorf("DevServer is not of the form 'host:port', please check your wails.json")
+		if devServerURL != "" {
+			projectConfig.FrontendDevServerURL = devServerURL
+			f.FrontendDevServerURL = devServerURL
 		}
+		defer closer()
+	} else if frontendDevAutoDiscovery {
+		return fmt.Errorf("unable to auto discover frontend:dev:serverUrl without a frontend:dev:watcher command, please either set frontend:dev:watcher or remove the auto discovery from frontend:dev:serverUrl")
+	}
 
-		devServerURL, err := url.Parse("http://" + devServer)
-		if err != nil {
-			return err
-		}
-
-		// Update go.mod to use current wails version
-		err = gomod.SyncGoMod(logger, true)
-		if err != nil {
-			return err
-		}
-
-		// Run go mod tidy to ensure we're up-to-date
-		err = runCommand(cwd, false, "go", "mod", "tidy")
-		if err != nil {
-			return err
-		}
-
-		buildOptions := generateBuildOptions(flags)
-		buildOptions.ProjectData = projectConfig
-		buildOptions.SkipBindings = flags.skipBindings
-		buildOptions.Logger = logger
-
-		userTags, err := buildtags.Parse(flags.tags)
-		if err != nil {
-			return err
-		}
-
-		buildOptions.UserTags = userTags
-
-		err = build.CreateEmbedDirectories(cwd, buildOptions)
-		if err != nil {
-			return err
-		}
-
-		if !buildOptions.SkipBindings {
-			if flags.verbosity == build.VERBOSE {
-				LogGreen("Generating Bindings...")
-			}
-			stdout, err := bindings.GenerateBindings(bindings.Options{
-				Tags: buildOptions.UserTags,
-			})
-			if err != nil {
-				return err
-			}
-			if flags.verbosity == build.VERBOSE {
-				LogGreen(stdout)
-			}
-		}
-
-		// Setup signal handler
-		quitChannel := make(chan os.Signal, 1)
-		signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
-		exitCodeChannel := make(chan int, 1)
-
-		// Build the frontend if requested, but ignore building the application itself.
-		ignoreFrontend := buildOptions.IgnoreFrontend
-		if !ignoreFrontend {
-			buildOptions.IgnoreApplication = true
-			if _, err := build.Build(buildOptions); err != nil {
-				return err
-			}
-			buildOptions.IgnoreApplication = false
-		}
-
-		// frontend:dev:watcher command.
-		frontendDevAutoDiscovery := projectConfig.IsFrontendDevServerURLAutoDiscovery()
-		if command := projectConfig.DevWatcherCommand; command != "" {
-			closer, devServerURL, err := runFrontendDevWatcherCommand(projectConfig.GetFrontendDir(), command, frontendDevAutoDiscovery)
-			if err != nil {
-				return err
-			}
-			if devServerURL != "" {
-				projectConfig.FrontendDevServerURL = devServerURL
-				flags.frontendDevServerURL = devServerURL
-			}
-			defer closer()
-		} else if frontendDevAutoDiscovery {
-			return fmt.Errorf("Unable to auto discover frontend:dev:serverUrl without a frontend:dev:watcher command, please either set frontend:dev:watcher or remove the auto discovery from frontend:dev:serverUrl")
-		}
-
-		// Do initial build but only for the application.
-		logger.Println("Building application for development...")
-		buildOptions.IgnoreFrontend = true
-		debugBinaryProcess, appBinary, err := restartApp(buildOptions, nil, flags, exitCodeChannel)
-		buildOptions.IgnoreFrontend = ignoreFrontend || flags.frontendDevServerURL != ""
-		if err != nil {
-			return err
-		}
-		defer func() {
-			if err := killProcessAndCleanupBinary(debugBinaryProcess, appBinary); err != nil {
-				LogDarkYellow("Unable to kill process and cleanup binary: %s", err)
-			}
-		}()
-
-		// open browser
-		if flags.openBrowser {
-			err = browser.OpenURL(devServerURL.String())
-			if err != nil {
-				return err
-			}
-		}
-
-		// create the project files watcher
-		watcher, err := initialiseWatcher(cwd)
-		if err != nil {
-			return err
-		}
-
-		defer func(watcher *fsnotify.Watcher) {
-			err := watcher.Close()
-			if err != nil {
-				logger.Fatal(err.Error())
-			}
-		}(watcher)
-
-		LogGreen("Watching (sub)/directory: %s", cwd)
-		LogGreen("Using DevServer URL: %s", devServerURL)
-		if flags.frontendDevServerURL != "" {
-			LogGreen("Using Frontend DevServer URL: %s", flags.frontendDevServerURL)
-		}
-		LogGreen("Using reload debounce setting of %d milliseconds", flags.debounceMS)
-
-		// Show dev server URL in terminal after 3 seconds
-		go func() {
-			time.Sleep(3 * time.Second)
-			LogGreen("\n\nTo develop in the browser and call your bound Go methods from Javascript, navigate to: %s", devServerURL)
-		}()
-
-		// Watch for changes and trigger restartApp()
-		debugBinaryProcess = doWatcherLoop(buildOptions, debugBinaryProcess, flags, watcher, exitCodeChannel, quitChannel, devServerURL)
-
-		// Kill the current program if running and remove dev binary
+	// Do initial build but only for the application.
+	logger.Println("Building application for development...")
+	buildOptions.IgnoreFrontend = true
+	debugBinaryProcess, appBinary, err := restartApp(buildOptions, nil, f, exitCodeChannel)
+	buildOptions.IgnoreFrontend = ignoreFrontend || f.FrontendDevServerURL != ""
+	if err != nil {
+		return err
+	}
+	defer func() {
 		if err := killProcessAndCleanupBinary(debugBinaryProcess, appBinary); err != nil {
+			LogDarkYellow("Unable to kill process and cleanup binary: %s", err)
+		}
+	}()
+
+	// open browser
+	if f.Browser {
+		err = browser.OpenURL(f.DevServerURL().String())
+		if err != nil {
 			return err
 		}
+	}
 
-		// Reset the process and the binary so defer knows about it and is a nop.
-		debugBinaryProcess = nil
-		appBinary = ""
+	// create the project files watcher
+	watcher, err := initialiseWatcher(cwd)
+	if err != nil {
+		return err
+	}
 
-		LogGreen("Development mode exited")
+	defer func(watcher *fsnotify.Watcher) {
+		err := watcher.Close()
+		if err != nil {
+			logger.Fatal(err.Error())
+		}
+	}(watcher)
 
-		return nil
-	})
+	LogGreen("Watching (sub)/directory: %s", cwd)
+	LogGreen("Using DevServer URL: %s", f.DevServerURL())
+	if f.FrontendDevServerURL != "" {
+		LogGreen("Using Frontend DevServer URL: %s", f.FrontendDevServerURL)
+	}
+	LogGreen("Using reload debounce setting of %d milliseconds", f.Debounce)
+
+	// Show dev server URL in terminal after 3 seconds
+	go func() {
+		time.Sleep(3 * time.Second)
+		LogGreen("\n\nTo develop in the browser and call your bound Go methods from Javascript, navigate to: %s", f.DevServerURL())
+	}()
+
+	// Watch for changes and trigger restartApp()
+	debugBinaryProcess = doWatcherLoop(buildOptions, debugBinaryProcess, f, watcher, exitCodeChannel, quitChannel, f.DevServerURL())
+
+	// Kill the current program if running and remove dev binary
+	if err := killProcessAndCleanupBinary(debugBinaryProcess, appBinary); err != nil {
+		return err
+	}
+
+	// Reset the process and the binary so defer knows about it and is a nop.
+	debugBinaryProcess = nil
+	appBinary = ""
+
+	LogGreen("Development mode exited")
+
 	return nil
 }
 
@@ -335,26 +285,6 @@ func defaultDevFlags() devFlags {
 		extensions:      "go",
 		debounceMS:      100,
 	}
-}
-
-// generateBuildOptions creates a build.Options using the flags
-func generateBuildOptions(flags devFlags) *build.Options {
-	result := &build.Options{
-		OutputType:     "dev",
-		Mode:           build.Dev,
-		Arch:           runtime.GOARCH,
-		Pack:           true,
-		Platform:       runtime.GOOS,
-		LDFlags:        flags.ldflags,
-		Compiler:       flags.compilerCommand,
-		ForceBuild:     flags.forceBuild,
-		IgnoreFrontend: flags.skipFrontend,
-		Verbosity:      flags.verbosity,
-		WailsJSDir:     flags.wailsjsdir,
-		RaceDetector:   flags.raceDetector,
-	}
-
-	return result
 }
 
 // loadAndMergeProjectConfig reconciles flags passed to the CLI with project config settings and updates
@@ -491,7 +421,7 @@ func runFrontendDevWatcherCommand(frontendDirectory string, devCommand string, d
 }
 
 // restartApp does the actual rebuilding of the application when files change
-func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process, flags devFlags, exitCodeChannel chan int) (*process.Process, string, error) {
+func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process, f *flags.Dev, exitCodeChannel chan int) (*process.Process, string, error) {
 
 	appBinary, err := build.Build(buildOptions)
 	println()
@@ -518,17 +448,17 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 	}
 
 	// parse appargs if any
-	args, err := shlex.Split(flags.appargs)
+	args, err := shlex.Split(f.AppArgs)
 
 	if err != nil {
 		buildOptions.Logger.Fatal("Unable to parse appargs: %s", err.Error())
 	}
 
 	// Set environment variables accordingly
-	os.Setenv("loglevel", flags.loglevel)
-	os.Setenv("assetdir", flags.assetDir)
-	os.Setenv("devserver", flags.devServer)
-	os.Setenv("frontenddevserverurl", flags.frontendDevServerURL)
+	os.Setenv("loglevel", f.LogLevel)
+	os.Setenv("assetdir", f.AssetDir)
+	os.Setenv("devserver", f.DevServer)
+	os.Setenv("frontenddevserverurl", f.FrontendDevServerURL)
 
 	// Start up new binary with correct args
 	newProcess := process.NewProcess(appBinary, args...)
@@ -548,11 +478,11 @@ func restartApp(buildOptions *build.Options, debugBinaryProcess *process.Process
 }
 
 // doWatcherLoop is the main watch loop that runs while dev is active
-func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Process, flags devFlags, watcher *fsnotify.Watcher, exitCodeChannel chan int, quitChannel chan os.Signal, devServerURL *url.URL) *process.Process {
+func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Process, f *flags.Dev, watcher *fsnotify.Watcher, exitCodeChannel chan int, quitChannel chan os.Signal, devServerURL *url.URL) *process.Process {
 	// Main Loop
-	var extensionsThatTriggerARebuild = sliceToMap(strings.Split(flags.extensions, ","))
+	var extensionsThatTriggerARebuild = sliceToMap(strings.Split(f.Extensions, ","))
 	var dirsThatTriggerAReload []string
-	for _, dir := range strings.Split(flags.reloadDirs, ",") {
+	for _, dir := range strings.Split(f.ReloadDirs, ",") {
 		if dir == "" {
 			continue
 		}
@@ -565,7 +495,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 	}
 
 	quit := false
-	interval := time.Duration(flags.debounceMS) * time.Millisecond
+	interval := time.Duration(f.Debounce) * time.Millisecond
 	timer := time.NewTimer(interval)
 	rebuild := false
 	reload := false
@@ -573,7 +503,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 	changedPaths := map[string]struct{}{}
 
 	// If we are using an external dev server, the reloading of the frontend part can be skipped or if the user requested it
-	skipAssetsReload := (flags.frontendDevServerURL != "" || flags.noReload)
+	skipAssetsReload := f.FrontendDevServerURL != "" || f.NoReload
 
 	assetDirURL := joinPath(devServerURL, "/wails/assetdir")
 	reloadURL := joinPath(devServerURL, "/wails/reload")
@@ -654,7 +584,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 				rebuild = false
 				LogGreen("[Rebuild triggered] files updated")
 				// Try and build the app
-				newBinaryProcess, _, err := restartApp(buildOptions, debugBinaryProcess, flags, exitCodeChannel)
+				newBinaryProcess, _, err := restartApp(buildOptions, debugBinaryProcess, f, exitCodeChannel)
 				if err != nil {
 					LogRed("Error during build: %s", err.Error())
 					continue
