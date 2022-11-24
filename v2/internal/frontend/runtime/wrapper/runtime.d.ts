@@ -93,6 +93,10 @@ export function WindowReload(): void;
 // Reloads the application frontend.
 export function WindowReloadApp(): void;
 
+// [WindowSetAlwaysOnTop](https://wails.io/docs/reference/runtime/window#windowsetalwaysontop)
+// Sets the window AlwaysOnTop or not on top.
+export function WindowSetAlwaysOnTop(b: boolean): void;
+
 // [WindowSetSystemDefaultTheme](https://wails.io/docs/next/reference/runtime/window#windowsetsystemdefaulttheme)
 // *Windows only*
 // Sets window theme to system default (dark/light).
