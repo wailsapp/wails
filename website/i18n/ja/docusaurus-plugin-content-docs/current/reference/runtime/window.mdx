@@ -34,13 +34,13 @@ Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen(
 
 ウィンドウが現在表示されているモニターの中央に、ウィンドウを配置させます。
 
-Go: `WindowReload(ctx context.Context)`<br/> JS: `WindowReload()`
+Go: `WindowCenter(ctx context.Context)`<br/> JS: `WindowCenter()`
 
 ### WindowExecJS
 
-Executes arbitrary JS code in the window.
+ウィンドウ内で、任意のJSコードを実行します。
 
-This method runs the code in the browser asynchronously and returns immediately. If the script causes any errors, they will only be available in the browser console.
+このメソッドは、ブラウザ上で非同期にコードを実行し、すぐにリターンされます。 スクリプトでエラーが発生した場合、エラーログはブラウザコンソールでのみ確認できます。
 
 Go: `WindowExecJS(ctx context.Context, js string)`
 
@@ -48,19 +48,19 @@ Go: `WindowExecJS(ctx context.Context, js string)`
 
 リロードします。(現在表示されているページをリロード)
 
-Go: `WindowReloadApp(ctx context.Context)`<br/> JS: `WindowReloadApp()`
+Go: `WindowReload(ctx context.Context)`<br/> JS: `WindowReload()`
 
 ### WindowReloadApp
 
 アプリケーションフロントエンドをリロードします。
 
-Go: `WindowSetSystemDefaultTheme(ctx context.Context)`<br/> JS: `WindowSetSystemDefaultTheme()`
+Go: `WindowReloadApp(ctx context.Context)`<br/> JS: `WindowReloadApp()`
 
 ### WindowSetSystemDefaultTheme
 
 Windowsのみ使用可能。
 
-Go: `WindowSetDarkTheme(ctx context.Context)`<br/> JS: `WindowSetDarkTheme()`
+Go: `WindowSetSystemDefaultTheme(ctx context.Context)`<br/> JS: `WindowSetSystemDefaultTheme()`
 
 ウィンドウのテーマをシステムデフォルト(ダーク/ライト) に設定します。
 
@@ -76,7 +76,7 @@ Go: `WindowSetLightTheme(ctx context.Context)`<br/> JS: `WindowSetLightTheme()`
 
 Windowsのみ使用可能。
 
-Go: `WindowShow(ctx context.Context)`<br/> JS: `WindowShow()`
+Go: `WindowSetDarkTheme(ctx context.Context)`<br/> JS: `WindowSetDarkTheme()`
 
 ウィンドウのテーマをダークに設定します。
 
@@ -84,13 +84,13 @@ Go: `WindowShow(ctx context.Context)`<br/> JS: `WindowShow()`
 
 ウィンドウが非表示になっている場合は、表示させます。
 
-Go: `WindowHide(ctx context.Context)`<br/> JS: `WindowHide()`
+Go: `WindowShow(ctx context.Context)`<br/> JS: `WindowShow()`
 
 ### WindowHide
 
 現在表示されているウィンドウを非表示にします。
 
-Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetSize(size: Size)`
+Go: `WindowHide(ctx context.Context)`<br/> JS: `WindowHide()`
 
 ### WindowIsNormal
 
@@ -102,7 +102,7 @@ Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() bool`
 
 ウィンドウの幅と高さを設定します。
 
-Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMaxSize(size: Size)`
+Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetSize(size: Size)`
 
 ### WindowGetSize
 
@@ -116,7 +116,7 @@ Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `Windo
 
 サイズを`0,0`に設定すると、サイズの制約が無効化されます。
 
-Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: Boolen)`
+Go: `WindowSetMinSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMinSize(size: Size)`
 
 ### WindowSetMaxSize
 
@@ -124,7 +124,7 @@ Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlway
 
 サイズを`0,0`に設定すると、サイズの制約が無効化されます。
 
-Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPosition(position: Position)`
+Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMaxSize(size: Size)`
 
 ### WindowSetAlwaysOnTop
 
@@ -136,7 +136,7 @@ Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlway
 
 現在ウィンドウが表示されているモニターに対する、相対的なウィンドウ位置を設定します。
 
-Go: `WindowMaximise(ctx context.Context)`<br/> JS: `WindowMaximise()`
+Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPosition(position: Position)`
 
 ### WindowGetPosition
 
@@ -148,13 +148,13 @@ Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetP
 
 ウィンドウを最大化します。
 
-Go: `WindowToggleMaximise(ctx context.Context)`<br/> JS: `WindowToggleMaximise()`
+Go: `WindowMaximise(ctx context.Context)`<br/> JS: `WindowMaximise()`
 
 ### WindowUnmaximise
 
 ウィンドウの最大化を解除し、最大化する前のサイズおよび位置に戻します。
 
-Go: `WindowMinimise(ctx context.Context)`<br/> JS: `WindowMinimise()`
+Go: `WindowUnmaximise(ctx context.Context)`<br/> JS: `WindowUnmaximise()`
 
 ### WindowIsMaximised
 
@@ -172,7 +172,7 @@ Go: `WindowToggleMaximise(ctx context.Context)`<br/> JS: `WindowToggleMaximise()
 
 ウィンドウを最小化します。
 
-Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/> JS: `WindowSetBackgroundColour(R, G, B, A)`
+Go: `WindowMinimise(ctx context.Context)`<br/> JS: `WindowMinimise()`
 
 ### WindowUnminimise
 
@@ -206,8 +206,8 @@ Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/> JS: 
 
 ```ts
 interface Position {
-    x: number;
-    y: number;
+  x: number;
+  y: number;
 }
 ```
 
@@ -215,7 +215,7 @@ interface Position {
 
 ```ts
 interface Size {
-    w: number;
-    h: number;
+  w: number;
+  h: number;
 }
 ```

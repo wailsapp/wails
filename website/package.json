@@ -16,6 +16,7 @@
     "crowdin:sync": "docusaurus write-translations && crowdin upload && crowdin download"
   },
   "dependencies": {
+    "@crowdin/crowdin-api-client": "^1.19.2",
     "@docusaurus/core": "^2.1.0",
     "@docusaurus/preset-classic": "^2.1.0",
     "@docusaurus/theme-search-algolia": "^2.1.0",

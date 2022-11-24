@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"reflect"
@@ -595,6 +596,11 @@ func (t *TypeScriptify) convertType(depth int, typeOf reflect.Type, customCode m
 	t.alreadyConverted[typeOf.String()] = true
 
 	entityName := t.Prefix + typeOf.Name() + t.Suffix
+
+	if typeClashWithReservedKeyword(entityName) {
+		warnAboutTypesClash(entityName)
+	}
+
 	result := ""
 	if t.CreateInterface {
 		result += fmt.Sprintf("interface %s {\n", entityName)
@@ -900,4 +906,22 @@ func differentNamespaces(namespace string, typeOf reflect.Type) bool {
 		}
 	}
 	return false
+}
+
+func typeClashWithReservedKeyword(input string) bool {
+	in := strings.ToLower(strings.TrimSpace(input))
+	for _, v := range jsReservedKeywords {
+		if in == v {
+			return true
+		}
+	}
+
+	return false
+}
+
+func warnAboutTypesClash(entity string) {
+	// TODO: Refactor logging
+	l := log.New(os.Stderr, "", 0)
+	l.Println(fmt.Sprintf("Usage of reserved keyword found and not supported: %s", entity))
+	log.Println("Please rename returned type or consider adding bindings config to your wails.json")
 }

@@ -16,6 +16,8 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+type Rect = w32.Rect
+
 type Chromium struct {
 	hwnd                  uintptr
 	controller            *ICoreWebView2Controller
@@ -30,6 +32,8 @@ type Chromium struct {
 	navigationCompleted   *ICoreWebView2NavigationCompletedEventHandler
 
 	environment *ICoreWebView2Environment
+
+	padding Rect
 
 	// Settings
 	Debug       bool
@@ -118,6 +122,33 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 	}
 	e.Init("window.external={invoke:s=>window.chrome.webview.postMessage(s)}")
 	return true
+}
+
+func (e *Chromium) SetPadding(padding Rect) {
+	if e.padding.Top == padding.Top && e.padding.Bottom == padding.Bottom &&
+		e.padding.Left == padding.Left && e.padding.Right == padding.Right {
+
+		return
+	}
+
+	e.padding = padding
+	e.Resize()
+}
+
+func (e *Chromium) Resize() {
+	if e.hwnd == 0 {
+		return
+	}
+
+	var bounds w32.Rect
+	w32.User32GetClientRect.Call(e.hwnd, uintptr(unsafe.Pointer(&bounds)))
+
+	bounds.Top += e.padding.Top
+	bounds.Bottom -= e.padding.Bottom
+	bounds.Left += e.padding.Left
+	bounds.Right -= e.padding.Right
+
+	e.SetSize(bounds)
 }
 
 func (e *Chromium) Navigate(url string) {
@@ -363,4 +394,8 @@ func (e *Chromium) PutZoomFactor(zoomFactor float64) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (e *Chromium) OpenDevToolsWindow() {
+	e.webview.OpenDevToolsWindow()
 }

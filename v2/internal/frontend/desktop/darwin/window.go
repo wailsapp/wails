@@ -116,6 +116,9 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 		result.SetApplicationMenu(frontendOptions.Menu)
 	}
 
+	if debugMode && frontendOptions.Debug.OpenInspectorOnStartup {
+		showInspector(result.context)
+	}
 	return result
 }
 

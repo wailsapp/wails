@@ -9,7 +9,13 @@ sidebar_position: 3
 The `Options.App` struct contains the application configuration. It is passed to the `wails.Run()` method:
 
 ```go title="Example"
-import "github.com/wailsapp/wails/v2/pkg/options"
+import (
+    "github.com/wailsapp/wails/v2/pkg/options"
+    "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+    "github.com/wailsapp/wails/v2/pkg/options/linux"
+    "github.com/wailsapp/wails/v2/pkg/options/mac"
+    "github.com/wailsapp/wails/v2/pkg/options/windows"
+)
 
 func main() {
 
@@ -19,6 +25,7 @@ func main() {
         Height:             600,
         DisableResize:      false,
         Fullscreen:         false,
+        WindowStartState:   options.Maximised,
         Frameless:          true,
         MinWidth:           400,
         MinHeight:          400,
@@ -28,8 +35,11 @@ func main() {
         HideWindowOnClose:  false,
         BackgroundColour:   &options.RGBA{R: 0, G: 0, B: 0, A: 255},
         AlwaysOnTop:        false,
-        Assets:             assets,
-        AssetsHandler:      assetsHandler,
+        AssetServer: &assetserver.Options{
+            Assets:     assets,
+            Handler:    assetsHandler,
+            Middleware: assetsMidldeware,
+        },
         Menu:               app.applicationMenu(),
         Logger:             nil,
         LogLevel:           logger.DEBUG,
@@ -38,7 +48,6 @@ func main() {
         OnDomReady:         app.domready,
         OnShutdown:         app.shutdown,
         OnBeforeClose:      app.beforeClose,
-        WindowStartState:   options.Maximised,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
         ZoomFactor:           1.0,
@@ -63,11 +72,11 @@ func main() {
                 LightModeTitleText: windows.RGB(20, 20, 20),
                 LightModeBorder:    windows.RGB(200, 200, 200),
             },
-            // User messages that can be customised
+            // ユーザへのメッセージをカスタマイズします
             Messages *windows.Messages
-            // OnSuspend is called when Windows enters low power mode
+            // OnSuspendはWindowsが省電力モードに移行した場合に呼び出されます
             OnSuspend func()
-            // OnResume is called when Windows resumes from low power mode
+            // OnResumeはWindowsが省電力モードから復帰した場合に呼び出されます
             OnResume func()
         },
         Mac: &mac.Options{
@@ -92,7 +101,11 @@ func main() {
             Icon: icon,
             WindowIsTranslucent: false,
         },
+        Debug: options.Debug{
+            OpenInspectorOnStartup: false,
+        },
     })
+
     if err != nil {
         log.Fatal(err)
     }
@@ -126,9 +139,19 @@ By default, the main window is resizable. Setting this to `true` will keep it a 
 
 ### Fullscreen
 
-Setting this to `true` will make the window fullscreen at startup.
+非推奨: 代わりに[WindowStartState](#windowstartstate)を使用してください。
 
-名前: Fullscreen<br/> データ型: `bool`
+### WindowStartState
+
+Defines how the window should present itself at startup.
+
+| 値          | Win | Mac | Lin |
+| ---------- | --- | --- | --- |
+| Fullscreen | ✅   | ✅   | ✅   |
+| Maximised  | ✅   | ✅   | ✅   |
+| Minimised  | ✅   | ❌   | ✅   |
+
+名前: WindowStartState<br/> データ型: `options.WindowStartState`
 
 ### Frameless
 
@@ -188,17 +211,19 @@ Indicates that the window should stay above other windows when losing focus.
 
 ### Assets
 
-The frontend assets to be used by the application. Requires an `index.html` file.
-
-名前: Assets<br/> データ型: `embed.FS`
+非推奨: 代わりに[AssetServerの固有オプション](#assetserver)であるAssetsオプションを使用してください。
 
 ### AssetsHandler
 
-<img src="http://badges.github.io/stability-badges/dist/experimental.svg" />
+非推奨: 代わりに[AssetServerの固有オプション](#assetserver)であるAssetsHandlerオプションを使用してください。
 
-The assets handler is a generic `http.Handler` which will be called for any non GET request on the assets server and for GET requests which can not be served from the `assets` because the file is not found.
+### AssetServer
 
-| 値                       | Win | Mac | Lin |
+AssetServerの固有オプションを定義します。 静的なアセットでAssetServerをカスタマイズしたり、`http.Handler`で動的なアセットを提供したり、`assetserver.Middleware`でリクエストチェーンにフックしたりすることができます。
+
+現在のところ、`http.Request`のすべての機能がサポートされているわけではありません。次の機能マトリクスを確認してください:
+
+| 機能                      | Win | Mac | Lin |
 | ----------------------- | --- | --- | --- |
 | GET                     | ✅   | ✅   | ✅   |
 | POST                    | ✅   | ✅   | ❌   |
@@ -212,12 +237,42 @@ The assets handler is a generic `http.Handler` which will be called for any non 
 | Response Headers        | ✅   | ✅   | ❌   |
 | Response Body           | ✅   | ✅   | ✅   |
 | Response Body Streaming | ❌   | ❌   | ✅   |
+| WebSockets              | ❌   | ❌   | ❌   |
 
 NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.36.0. In the future some features will be supported by the introduction of WebKit2GTK 2.36.0+ support.
+
+名前: AssetServer<br/> データ型: `*assetserver.Options`
+
+#### Assets
+
+アプリケーションのフロントエンドで使用される静的アセットです。
+
+GETリクエストが要求された場合、まず初めに、この`fs.FS`からのアセット提供を試みます。 `fs.FS`から、当該ファイルが存在しない旨の`os.ErrNotExist`エラーが返された場合、このリクエストは[Handler](#handler)へフォールバックされ、ハンドラ側でGETリクエストへの応答を試みます。
+
+nilがセットされている場合、GETリクエストに常に[Handler](#handler)へ転送されます。
+
+名前: Assets<br/> データ型: `fs.FS`
+
+#### Handler
+
+アセットハンドラは、アセットが見つからなかった場合のフォールバック処理を担う、ジェネリックな`http.Handler`です。
+
+[Assets](#assets)内で`os.ErrNotExist`エラーが発生したことにより、アセットを提供できないと判断されたすべてのGETリクエストによって、このハンドラが呼び出されます。 また、GET以外のすべての種類のリクエストは、常にこのハンドラから応答が返されます。 ハンドラが定義されていない状態で、ハンドラが呼び出された場合、次の応答が返されます:
+
+- GETリクエスト: `http.StatusNotFound`
+- その他のリクエスト: `http.StatusMethodNotAllowed`
 
 NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html on every path, that does not contain a file extension.
 
 名前: AssetsHandler<br/> データ型: `http.Handler`
+
+#### Middleware
+
+MiddlewareはHTTPミドルウェアで、AssetServerのリクエストチェーンをフックすることができます。 例えば、特殊なルーティングを実装したいときなど、デフォルトのリクエストハンドラを動的にスキップさせることができます。 Middlewareは、AssetSeverが使用する新しい`http.Handler`を生成するために呼び出されます。引数では、AssetServerがデフォルトで使用するハンドラを受け取ります。
+
+Middlewareが定義されていない場合、デフォルトのAssetServerのリクエストチェーンが実行されます。
+
+名前: Middleware<br/> データ型: `assetserver.Middleware`
 
 ### Menu
 
@@ -290,18 +345,6 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 
 名前: OnBeforeClose<br/> データ型: `func(ctx context.Context) bool`
 
-### WindowStartState
-
-Defines how the window should present itself at startup.
-
-| 値          | Win | Mac | Lin |
-| ---------- | --- | --- | --- |
-| Fullscreen | ✅   | ✅   | ✅   |
-| Maximised  | ✅   | ✅   | ✅   |
-| Minimised  | ✅   | ❌   | ✅   |
-
-名前: WindowStartState<br/> データ型: `options.WindowStartState`
-
 ### CSSDragProperty
 
 ウィンドウをドラッグできる要素を特定するためのCSSプロパティ名を設定します。 デフォルト値: `--wails-draggable`
@@ -310,9 +353,21 @@ Defines how the window should present itself at startup.
 
 ### CSSDragValue
 
-Indicates what value the `CSSDragProperty` style should have to drag the window. デフォルト値: `drag`
+ウィンドウのドラッグを有効にするために、`CSSDragProperty`スタイルが持つべき値を設定します。 デフォルト値: `drag`
 
 名前: CSSDragValue<br/> データ型: `string`
+
+### ZoomFactor
+
+名前: ZoomFactor<br/> データ型: `float64`
+
+WebView2の拡大率を定義します。 これは、Edgeのユーザによるズームインまたはズームアウトに対応するオプションです。
+
+### IsZoomControlEnabled
+
+名前: IsZoomControlEnabled<br/> データ型: `bool`
+
+このオプションを有効にすると、拡大率をユーザによって変更することができます。 拡大率の変更がユーザに許可されていない間は、オプションで拡大率を設定することができますのでご注意ください (例:  キオスクアプリケーションなど)。
 
 ### Bind
 
@@ -391,18 +446,6 @@ Important information about distribution of fixed version runtime:
 - [The path of fixed version of the WebView2 Runtime should not contain \Edge\Application\.](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
 
 名前: WebviewBrowserPath<br/> データ型: `string`
-
-### ZoomFactor
-
-Name: ZoomFactor<br/> Type: `float64`
-
-This defines the zoom factor for the WebView2. This is the option matching the Edge user activated zoom in or out.
-
-### IsZoomControlEnabled
-
-Name: IsZoomControlEnabled<br/> Type: `bool`
-
-This enables the zoom factor to be changed by the user. Please note that the zoom factor can be set in the options while disallowing the user to change it at runtime (f.e. for a kiosk application or similar).
 
 #### Theme
 
@@ -538,7 +581,7 @@ type TitleBar struct {
 
 Preconfigured titlebar settings are available:
 
-| Setting                     | Example                                        |
+| Setting                     | 例                                              |
 | --------------------------- | ---------------------------------------------- |
 | `mac.TitleBarDefault()`     | ![](/img/reference/titlebar-default.webp)      |
 | `mac.TitleBarHidden()`      | ![](/img/reference/titlebar-hidden.webp)       |
@@ -676,6 +719,18 @@ The icon should be provided in whatever size it was naturally drawn; that is, do
 
 #### WindowIsTranslucent
 
-Setting this to `true` will make the window background translucent. Some window managers may ignore it, or result in a black window.
+Setting this to `true` will make the window background translucent. ウィンドウマネージャによっては、この設定を無視したり、ブラックウィンドウになる場合があります。
 
 名前: WindowIsTranslucent<br/> データ型: `bool`
+
+### デバッグ
+
+デバッグビルド時に適用される[デバッグ固有のオプション](#Debug)を定義します。
+
+名前: Debug<br/> データ型: `options.Debug`
+
+#### OpenInspectorOnStartup
+
+このオプションを`true`に設定すると、アプリケーション起動時にWeb開発者ツールが表示されます。
+
+名前: OpenInspectorOnStartup<br/> データ型: `bool`

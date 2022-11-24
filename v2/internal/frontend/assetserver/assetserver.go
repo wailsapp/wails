@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	iofs "io/fs"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 
+	"golang.org/x/net/html"
+
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
-
-	"golang.org/x/net/html"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
 const (
@@ -22,6 +23,7 @@ const (
 
 type AssetServer struct {
 	handler   http.Handler
+	wsHandler http.Handler
 	runtimeJS []byte
 	ipcJS     func(*http.Request) []byte
 
@@ -31,8 +33,12 @@ type AssetServer struct {
 	appendSpinnerToBody bool
 }
 
-func NewAssetServer(ctx context.Context, vfs iofs.FS, assetsHandler http.Handler, bindingsJSON string) (*AssetServer, error) {
-	handler, err := NewAssetHandler(ctx, vfs, assetsHandler)
+func NewAssetServerMainPage(ctx context.Context, bindingsJSON string, options *options.App) (*AssetServer, error) {
+	return NewAssetServer(ctx, bindingsJSON, BuildAssetServerConfig(options))
+}
+
+func NewAssetServer(ctx context.Context, bindingsJSON string, options assetserver.Options) (*AssetServer, error) {
+	handler, err := NewAssetHandler(ctx, options)
 	if err != nil {
 		return nil, err
 	}
@@ -66,15 +72,19 @@ func NewAssetServerWithHandler(ctx context.Context, handler http.Handler, bindin
 }
 
 func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if isWebSocket(req) {
+		// Forward WebSockets to the distinct websocket handler if it exists
+		if wsHandler := d.wsHandler; wsHandler != nil {
+			wsHandler.ServeHTTP(rw, req)
+		} else {
+			rw.WriteHeader(http.StatusNotImplemented)
+		}
+		return
+	}
+
 	header := rw.Header()
 	if d.servingFromDisk {
 		header.Add(HeaderCacheControl, "no-cache")
-	}
-
-	if isWebSocket(req) {
-		// WebSockets can always directly be forwarded to the handler
-		d.handler.ServeHTTP(rw, req)
-		return
 	}
 
 	path := req.URL.Path

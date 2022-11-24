@@ -8,9 +8,11 @@ The project config resides in the `wails.json` file in the project directory. Th
 
 ```json
 {
-    "name": "[The project name]",
-    "assetdir": "[Relative path to the directory containing the compiled assets, this is normally inferred and could be left empty]",
-    "reloaddirs": "[Additional directories to trigger reloads (comma separated), this is only used for some advanced asset configurations]",
+    "name": "[プロジェクト名。]",
+    "assetdir": "[コンパイルされたアセットディレクトリへの相対パス。通常は自動的に推測されるため、空で構いません。]",
+    "reloaddirs": "[再読み込みのトリガーとなる追加のディレクトリ(カンマ区切り)。高度なアセット構成をとる場合にのみ使用します。]",
+    "build:dir": "[ビルドファイルが存在するディレクトリ。 Defaults to 'build']",
+    "frontend:dir": "[Relative path to the frontend directory. Defaults to 'frontend']",
     "frontend:install": "[The command to install node dependencies, run in the frontend directory - often `npm install`]",
     "frontend:build": "[The command to build the assets, run in the frontend directory - often `npm run build`]",
     "frontend:dev": "[This command has been replaced by frontend:dev:build. If frontend:dev:build is not specified will falls back to this command. \nIf this command is also not specified will falls back to frontend:build]",
@@ -52,4 +54,4 @@ This file is read by the Wails CLI when running `wails build` or `wails dev`.
 
 The `assetdir`, `reloaddirs`, `wailsjsdir`, `debounceMS`, `devserver` and `frontenddevserverurl` flags in `wails build/dev` will update the project config and thus become defaults for subsequent runs.
 
-The JSON Schema for this file is located [here](https://wails.io/schemas/config.v2.json).
+このファイルのJSONスキーマは、[こちら](https://wails.io/schemas/config.v2.json)にあります。

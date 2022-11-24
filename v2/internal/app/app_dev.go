@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
+	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop"
 	"github.com/wailsapp/wails/v2/internal/frontend/devserver"
 	"github.com/wailsapp/wails/v2/internal/frontend/dispatcher"
@@ -90,6 +91,14 @@ func CreateApp(appoptions *options.App) (*App, error) {
 		}
 	}
 
+	assetConfig := assetserver.BuildAssetServerConfig(appoptions)
+
+	if assetConfig.Assets == nil && frontendDevServerURL != "" {
+		myLogger.Warning("No AssetServer.Assets has been defined but a frontend DevServer, the frontend DevServer will not be used.")
+		frontendDevServerURL = ""
+		assetdir = ""
+	}
+
 	if frontendDevServerURL != "" {
 		if devServer == "" {
 			return nil, fmt.Errorf("Unable to use FrontendDevServerUrl without a DevServer address")
@@ -107,7 +116,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	} else {
 		if assetdir == "" {
 			// If no assetdir has been defined, let's try to infer it from the project root and the asset FS.
-			assetdir, err = tryInferAssetDirFromFS(appoptions.Assets)
+			assetdir, err = tryInferAssetDirFromFS(assetConfig.Assets)
 			if err != nil {
 				return nil, err
 			}
@@ -121,11 +130,16 @@ func CreateApp(appoptions *options.App) (*App, error) {
 			}
 
 			myLogger.Info("Serving assets from disk: %s", absdir)
-			appoptions.Assets = os.DirFS(absdir)
+			assetConfig.Assets = os.DirFS(absdir)
 
 			ctx = context.WithValue(ctx, "assetdir", assetdir)
 		}
 	}
+
+	// Migrate deprecated options to the new AssetServer option
+	appoptions.Assets = nil
+	appoptions.AssetsHandler = nil
+	appoptions.AssetServer = &assetConfig
 
 	if devServer != "" {
 		ctx = context.WithValue(ctx, "devserver", devServer)

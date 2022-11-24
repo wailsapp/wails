@@ -2,12 +2,15 @@ package bindings
 
 import (
 	"fmt"
-	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v2/internal/shell"
-	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v2/internal/colour"
+	"github.com/wailsapp/wails/v2/internal/shell"
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 )
 
 // Options for generating bindings
@@ -16,6 +19,8 @@ type Options struct {
 	Tags             []string
 	ProjectDirectory string
 	GoModTidy        bool
+	TsPrefix         string
+	TsSuffix         string
 }
 
 // GenerateBindings generates bindings for the Wails project in the given ProjectDirectory.
@@ -57,9 +62,13 @@ func GenerateBindings(options Options) (string, error) {
 		_ = os.Remove(filename)
 	}()
 
-	stdout, stderr, err = shell.RunCommand(workingDirectory, filename)
+	stdout, stderr, err = shell.RunCommand(workingDirectory, filename, "-tsprefix", options.TsPrefix, "-tssuffix", options.TsSuffix)
 	if err != nil {
 		return stdout, fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
+	}
+
+	if stderr != "" {
+		log.Println(colour.DarkYellow(stderr))
 	}
 
 	return stdout, nil

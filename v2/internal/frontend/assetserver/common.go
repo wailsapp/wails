@@ -8,8 +8,25 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"golang.org/x/net/html"
 )
+
+func BuildAssetServerConfig(options *options.App) assetserver.Options {
+	if opts := options.AssetServer; opts != nil {
+		if options.Assets != nil || options.AssetsHandler != nil {
+			panic("It's not possible to use the deprecated Assets and AssetsHandler options and the new AssetServer option at the same time. Please migrate all your Assets options to the AssetServer option.")
+		}
+
+		return *opts
+	}
+
+	return assetserver.Options{
+		Assets:  options.Assets,
+		Handler: options.AssetsHandler,
+	}
+}
 
 const (
 	HeaderHost          = "Host"

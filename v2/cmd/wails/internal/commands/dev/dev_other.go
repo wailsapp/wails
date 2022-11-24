@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"syscall"
 
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/logutils"
 	"golang.org/x/sys/unix"
 )
 
@@ -30,7 +31,7 @@ func killProc(cmd *exec.Cmd, devCommand string) {
 	if err == nil {
 		err := syscall.Kill(-pgid, unix.SIGTERM) // note the minus sign
 		if err != nil {
-			LogRed("Error from '%s' when attempting to kill the process: %s", devCommand, err.Error())
+			logutils.LogRed("Error from '%s' when attempting to kill the process: %s", devCommand, err.Error())
 		}
 	}
 }

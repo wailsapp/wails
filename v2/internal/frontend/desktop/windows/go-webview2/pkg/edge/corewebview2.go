@@ -469,3 +469,14 @@ func (i *ICoreWebView2) AddNavigationCompleted(eventHandler *ICoreWebView2Naviga
 	}
 	return nil
 }
+
+func (i *ICoreWebView2) OpenDevToolsWindow() error {
+	var err error
+	_, _, err = i.vtbl.OpenDevToolsWindow.Call(
+		uintptr(unsafe.Pointer(i)),
+	)
+	if err != windows.ERROR_SUCCESS {
+		return err
+	}
+	return nil
+}

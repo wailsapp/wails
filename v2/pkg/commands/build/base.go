@@ -263,9 +263,9 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	}
 
 	// Get application build directory
-	appDir := options.BuildDirectory
-	if options.CleanBuildDirectory {
-		err = cleanBuildDirectory(options)
+	appDir := options.BinDirectory
+	if options.CleanBinDirectory {
+		err = cleanBinDirectory(options)
 		if err != nil {
 			return err
 		}
@@ -277,7 +277,6 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	commands.Add("-o")
 	commands.Add(compiledBinary)
 
-	b.projectData.OutputFilename = strings.TrimPrefix(compiledBinary, options.ProjectData.Path)
 	options.CompiledBinary = compiledBinary
 
 	// Build the application
@@ -291,6 +290,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	cmd.Dir = b.projectData.Path
 
 	// Add CGO flags
+	// TODO: Remove this as we don't generate headers any more
 	// We use the project/build dir as a temporary place for our generated c headers
 	buildBaseDir, err := fs.RelativeToCwd("build")
 	if err != nil {
@@ -487,6 +487,9 @@ func (b *BaseBuilder) NpmInstallUsingCommand(sourceDir string, installCommand st
 
 	// Shortcut installation
 	if install == false {
+		if verbose {
+			println("Skipping npm install")
+		}
 		return nil
 	}
 
@@ -543,7 +546,10 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 
 	verbose := b.options.Verbosity == VERBOSE
 
-	frontendDir := filepath.Join(b.projectData.Path, "frontend")
+	frontendDir := b.projectData.GetFrontendDir()
+	if !fs.DirExists(frontendDir) {
+		return fmt.Errorf("frontend directory '%s' does not exist", frontendDir)
+	}
 
 	// Check there is an 'InstallCommand' provided in wails.json
 	installCommand := b.projectData.InstallCommand
