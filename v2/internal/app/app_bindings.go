@@ -5,6 +5,7 @@ package app
 import (
 	"os"
 	"path/filepath"
+	"flag"
 
 	"github.com/leaanthony/gosod"
 	"github.com/wailsapp/wails/v2/internal/binding"
@@ -24,8 +25,35 @@ func (a *App) Run() error {
 		a.options.OnDomReady,
 		a.options.OnBeforeClose,
 	}
+	
+	// Check for CLI Flags
+	bindingFlags := flag.NewFlagSet("bindings", flag.ContinueOnError)
+
+	var tsPrefixFlag *string
+	var tsPostfixFlag *string
+
+	tsPrefix := os.Getenv("tsprefix")
+	if tsPrefix == "" {
+		tsPrefixFlag = bindingFlags.String("tsprefix", "", "Prefix for generated typescript entities")
+	}
+
+	tsSuffix := os.Getenv("tssuffix")
+	if tsSuffix == "" {
+		tsPostfixFlag = bindingFlags.String("tssuffix", "", "Suffix for generated typescript entities")
+	}
+
+	_ = bindingFlags.Parse(os.Args[1:])
+	if tsPrefixFlag != nil {
+		tsPrefix = *tsPrefixFlag
+	}
+	if tsPostfixFlag != nil {
+		tsSuffix = *tsPostfixFlag
+	}
 
 	appBindings := binding.NewBindings(a.logger, a.options.Bind, bindingExemptions, IsObfuscated())
+
+	appBindings.SetTsPrefix(tsPrefix)
+	appBindings.SetTsPostfix(tsSuffix)
 
 	err := generateBindings(appBindings)
 	if err != nil {

@@ -16,3 +16,10 @@ Generate a starter template for you to customise.
 | :------------- | :----------- | 
 | -frontend  | Copies all the files from the current directory into the template's `frontend` directory. Useful for converting frontend projects created by boilerplate generators. |
 | -q | Suppress output | 
+
+
+## Module
+
+`wails generate module [-h]`
+
+Generate TS module for your frontend

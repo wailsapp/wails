@@ -2,7 +2,6 @@ package build
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 	"io"
 	"os"
 	"os/exec"
@@ -10,6 +9,8 @@ import (
 	"strings"
 	"text/tabwriter"
 	"time"
+
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 
 	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/project"
