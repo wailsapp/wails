@@ -1,6 +1,9 @@
 package win32
 
-import "unsafe"
+import (
+	"golang.org/x/sys/windows"
+	"unsafe"
+)
 
 const (
 	NIF_MESSAGE             = 0x00000001
@@ -46,7 +49,7 @@ type NOTIFYICONDATA struct {
 	UVersion         uint32
 	SzInfoTitle      [64]uint16
 	DwInfoFlags      uint32
-	GUIDItem         GUID
+	GUIDItem         windows.GUID
 	HBalloonIcon     uintptr
 }
 

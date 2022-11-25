@@ -1,3 +1,5 @@
+//go:build windows
+
 /*
  * Based on code originally from https://github.com/tadvi/systray. Copyright (C) 2019 The Systray Authors. All Rights Reserved.
  */
