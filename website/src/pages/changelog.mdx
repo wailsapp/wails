@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Webview2 on Windows returns a potential whitespace when defining the style like this style="--wails-draggable: drag". Fixed by @stffabi in https://github.com/wailsapp/wails/pull/1989
-- Bound structs that had `struct{}` field types would cause the Typescript generation to fail. Thanks to @ParkourLiu for the [PR](https://github.com/wailsapp/wails/pull/1999)
+- Bound structs that had `struct{}` field types would cause the TypeScript generation to fail. Thanks to @ParkourLiu for the [PR](https://github.com/wailsapp/wails/pull/1999)
 - When maximising a frameless window on Windows with multiple monitors, the window could sometimes become blank. Thanks to @stffabi for the [fix](https://github.com/wailsapp/wails/pull/2043)
 
 ### Changed
@@ -88,7 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove the `.git` directory in the template - @misitebao in https://github.com/wailsapp/wails/pull/1929
 - Fix wails dev - @JulioDRF in https://github.com/wailsapp/wails/pull/1931
 - Fix for considering new `go` files in dev filesystem watcher - @scottopell in https://github.com/wailsapp/wails/pull/1946
-- Prevent type parsing to interfere with Typescript package name - @ValentinTrinque in https://github.com/wailsapp/wails/pull/1942
+- Prevent type parsing to interfere with TypeScript package name - @ValentinTrinque in https://github.com/wailsapp/wails/pull/1942
 - [dev] Do not try to infer assetdir from fs.FS when a frontend dev server is in use - @stffabi in https://github.com/wailsapp/wails/pull/1972
 - Fix init command not listed in wails help message - @lyon-lee-dev in https://github.com/wailsapp/wails/pull/1976
 
@@ -511,8 +511,8 @@ Experimental: &options.Experimental{
 - Add support for external frontend development servers. See `frontend:dev:serverUrl` in
   the [project config](https://wails.io/docs/reference/project-config) - [@stffabi](https://github.com/stffabi)
 - [Fully configurable dark mode](https://wails.io/docs/reference/options#theme) for Windows.
-- Hugely improved [WailsJS generation](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) (both Javascript
-  and Typescript)
+- Hugely improved [WailsJS generation](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) (both JavaScript
+  and TypeScript)
 - Wails doctor now reports information about the wails installation - [@stffabi](https://github.com/stffabi)
 - Added docs for [code-signing](https://wails.io/docs/guides/signing)
   and [NSIS installer](https://wails.io/docs/guides/windows-installer) - [@gardc](https://github.com/gardc)
@@ -523,7 +523,7 @@ Experimental: &options.Experimental{
 
 - Improved mimetype detection for BOM marker and comments - [@napalu](https://github.com/napalu)
 - Remove duplicate mimetype entries - [@napalu](https://github.com/napalu)
-- Remove duplicate Typescript imports in generated definition files - [@adalessa](https://github.com/adalessa)
+- Remove duplicate TypeScript imports in generated definition files - [@adalessa](https://github.com/adalessa)
 - Add missing method declaration - [@adalessa](https://github.com/adalessa)
 - Fix Linux sigabrt on start - [@napalu](https://github.com/napalu)
 - Double Click event now works on elements with `data-wails-drag` attribute - [@jicg](https://github.com/jicg)
