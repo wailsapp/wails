@@ -2,9 +2,9 @@
 sidebar_position: 3
 ---
 
-# ログ
+# Log
 
-Wailsでは、GoまたはJavascriptから呼び出すことのできるロギングメカニズムを用意しています。 一般的なロガーと同じように、ログにはいくつかのログレベルがあります:
+The Wails runtime provides a logging mechanism that may be called from Go or JavaScript. 一般的なロガーと同じように、ログにはいくつかのログレベルがあります:
 
 - トレース
 - デバッグ
@@ -101,7 +101,7 @@ Go: `LogFatalf(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogSetLogLevel
 
-出力ログレベルを設定します。 Javascriptでは、数値が次のログレベルに対応しています:
+出力ログレベルを設定します。 In JavaScript, the number relates to the following log levels:
 
 | 値 | ログレベル |
 | - | ----- |

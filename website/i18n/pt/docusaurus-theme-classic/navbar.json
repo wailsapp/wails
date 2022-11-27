@@ -4,7 +4,7 @@
     "description": "Navbar item with label Sponsor"
   },
   "item.label.Docs": {
-    "message": "Documentação",
+    "message": "Docs",
     "description": "Navbar item with label Docs"
   },
   "item.label.Blog": {

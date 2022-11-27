@@ -1,206 +1,206 @@
 ---
-sidebar_position: 4
+sidebar_position: Fenêtre
 ---
 
-# Window
+# Fenêtre
 
-These methods give control of the application window.
+Ces méthodes donnent le contrôle de la fenêtre de l'application.
 
 ### WindowSetTitle
 
-Sets the text in the window title bar.
+Définit le texte dans la barre de titre de la fenêtre.
 
 Go: `WindowSetTitle(ctx context.Context, title string)`<br/> JS: `WindowSetTitle(title: string)`
 
 ### WindowFullscreen
 
-Makes the window full screen.
+Mets la fenêtre en plein écran.
 
 Go: `WindowFullscreen(ctx context.Context)`<br/> JS: `WindowFullscreen()`
 
 ### WindowUnfullscreen
 
-Restores the previous window dimensions and position prior to full screen.
+Restaure les dimensions et la position de la fenêtre avant le plein écran.
 
 Go: `WindowUnfullscreen(ctx context.Context)`<br/> JS: `WindowUnfullscreen()`
 
 ### WindowIsFullscreen
 
-Returns true if the window is full screen.
+Renvoie vrai si la fenêtre est en plein écran.
 
 Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen() bool`
 
 ### WindowCenter
 
-Centers the window on the monitor the window is currently on.
+Centre la fenêtre sur le moniteur sur laquelle la fenêtre est actuellement ouverte.
 
 Go: `WindowCenter(ctx context.Context)`<br/> JS: `WindowCenter()`
 
 ### WindowExecJS
 
-Executes arbitrary JS code in the window.
+Exécute du code JS dans la fenêtre.
 
-This method runs the code in the browser asynchronously and returns immediately. If the script causes any errors, they will only be available in the browser console.
+Cette méthode exécute le code dans le navigateur de manière asynchrone et retourne immédiatement le résultat. Si le script cause des erreurs, elles ne seront disponibles que dans la console du navigateur.
 
 Go: `WindowExecJS(ctx context.Context, js string)`
 
 ### WindowReload
 
-Performs a "reload" (Reloads current page).
+Effectue un "rechargement" (Recharge la page courante).
 
 Go: `WindowReload(ctx context.Context)`<br/> JS: `WindowReload()`
 
 ### WindowReloadApp
 
-Reloads the application frontend.
+Recharge le frontend de l'application.
 
 Go: `WindowReloadApp(ctx context.Context)`<br/> JS: `WindowReloadApp()`
 
 ### WindowSetSystemDefaultTheme
 
-Windows only.
+Windows seulement.
 
 Go: `WindowSetSystemDefaultTheme(ctx context.Context)`<br/> JS: `WindowSetSystemDefaultTheme()`
 
-Sets window theme to system default (dark/light).
+Définit le thème de fenêtre à la valeur par défaut du système (sombre/clair).
 
 ### WindowSetLightTheme
 
-Windows only.
+Windows seulement.
 
 Go: `WindowSetLightTheme(ctx context.Context)`<br/> JS: `WindowSetLightTheme()`
 
-Sets window theme to light.
+Définit le thème clair à la fenêtre.
 
 ### WindowSetDarkTheme
 
-Windows only.
+Windows seulement.
 
 Go: `WindowSetDarkTheme(ctx context.Context)`<br/> JS: `WindowSetDarkTheme()`
 
-Sets window theme to dark.
+Définit le thème sombre à la fenêtre.
 
 ### WindowShow
 
-Shows the window, if it is currently hidden.
+Affiche la fenêtre, si elle est actuellement masquée.
 
 Go: `WindowShow(ctx context.Context)`<br/> JS: `WindowShow()`
 
 ### WindowHide
 
-Hides the window, if it is currently visible.
+Masque la fenêtre, si elle est actuellement visible.
 
 Go: `WindowHide(ctx context.Context)`<br/> JS: `WindowHide()`
 
 ### WindowIsNormal
 
-Returns true if the window not minimised, maximised or fullscreen.
+Renvoie vrai si la fenêtre n'est pas minimisée, maximisée ou plein écran.
 
 Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() bool`
 
 ### WindowSetSize
 
-Sets the width and height of the window.
+Définit la largeur et la hauteur de la fenêtre.
 
 Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetSize(size: Size)`
 
 ### WindowGetSize
 
-Gets the width and height of the window.
+Retourne la largeur et la hauteur de la fenêtre.
 
 Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize() : Size`
 
 ### WindowSetMinSize
 
-Sets the minimum window size. Will resize the window if the window is currently smaller than the given dimensions.
+Définit la taille minimale de la fenêtre. Redimensionnera la fenêtre si la fenêtre est actuellement plus petite que les dimensions données.
 
-Setting a size of `0,0` will disable this constraint.
+Définir une taille de `0,0` désactivera cette contrainte.
 
 Go: `WindowSetMinSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMinSize(size: Size)`
 
 ### WindowSetMaxSize
 
-Sets the maximum window size. Will resize the window if the window is currently larger than the given dimensions.
+Définit la taille maximale de la fenêtre. Redimensionnera la fenêtre si la fenêtre est actuellement plus grande que les dimensions données.
 
-Setting a size of `0,0` will disable this constraint.
+Définir une taille de `0,0` désactivera cette contrainte.
 
 Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMaxSize(size: Size)`
 
 ### WindowSetAlwaysOnTop
 
-Sets the window AlwaysOnTop or not on top.
+Paramètre pour faire en sorte que la fenêtre soit toujours au dessus des autres ou non.
 
 Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: Boolen)`
 
 ### WindowSetPosition
 
-Sets the window position relative to the monitor the window is currently on.
+Définit la position de la fenêtre par rapport au moniteur sur lequel la fenêtre est activée.
 
 Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPosition(position: Position)`
 
 ### WindowGetPosition
 
-Gets the window position relative to the monitor the window is currently on.
+Récupère la position de la fenêtre relative au moniteur sur lequel la fenêtre est activée.
 
 Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetPosition() : Position`
 
-### WindowMaximise
+### WindowMaximiseWindowMaximise
 
-Maximises the window to fill the screen.
+Maximise la fenêtre pour remplir l'écran.
 
 Go: `WindowMaximise(ctx context.Context)`<br/> JS: `WindowMaximise()`
 
 ### WindowUnmaximise
 
-Restores the window to the dimensions and position prior to maximising.
+Restaure la fenêtre aux dimensions et à la position avant qu'elle soit maximisée.
 
 Go: `WindowUnmaximise(ctx context.Context)`<br/> JS: `WindowUnmaximise()`
 
 ### WindowIsMaximised
 
-Returns true if the window is maximised.
+Renvoie vrai si la fenêtre est maximisée.
 
 Go: `WindowIsMaximised(ctx context.Context) bool`<br/> JS: `WindowIsMaximised() bool`
 
 ### WindowToggleMaximise
 
-Toggles between Maximised and UnMaximised.
+Option permettant de basculer entre la maximisation de la fenêtre et sa non maximisation.
 
 Go: `WindowToggleMaximise(ctx context.Context)`<br/> JS: `WindowToggleMaximise()`
 
 ### WindowMinimise
 
-Minimises the window.
+Minimise la fenêtre.
 
 Go: `WindowMinimise(ctx context.Context)`<br/> JS: `WindowMinimise()`
 
 ### WindowUnminimise
 
-Restores the window to the dimensions and position prior to minimising.
+Restaure la fenêtre aux dimensions et à la position avant qu'elle soit minimisée.
 
 Go: `WindowUnminimise(ctx context.Context)`<br/> JS: `WindowUnminimise()`
 
 ### WindowIsMinimised
 
-Returns true if the window is minimised.
+Renvoie vrai si la fenêtre est minimisée.
 
 Go: `WindowIsMinimised(ctx context.Context) bool`<br/> JS: `WindowIsMinimised() bool`
 
 ### WindowSetBackgroundColour
 
-Sets the background colour of the window to the given RGBA colour definition. This colour will show through for all transparent pixels.
+Définit la couleur de fond de la fenêtre avec la couleur RGBA donnée. Cette couleur sera visible au travers de tous les pixels transparents.
 
-Valid values for R, G, B and A are 0-255.
+Les valeurs valides pour R, G, B et A sont entre 0 et 255 inclus.
 
 :::info Windows
 
-On Windows, only alpha values of 0 or 255 are supported. Any value that is not 0 will be considered 255.
+Sous Windows, seules les valeurs 0 et 255 sont prises en charge pour A. Toute valeur qui n'est pas 0 sera considérée comme 255.
 
 :::
 
 Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/> JS: `WindowSetBackgroundColour(R, G, B, A)`
 
-## Typescript Object Definitions
+## TypeScript Object Definitions
 
 ### Position
 
@@ -211,7 +211,7 @@ interface Position {
 }
 ```
 
-### Size
+### Size (taille)
 
 ```ts
 interface Size {

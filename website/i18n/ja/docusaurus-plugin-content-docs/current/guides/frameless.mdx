@@ -1,8 +1,8 @@
 # Frameless Applications
 
-Wails supports application that have no frames. This can be achieved by using the [frameless](../reference/options.mdx#frameless) field in [Application Options](../reference/options.mdx#application-options).
+Wailsでは、フレームのないアプリケーションの作成をサポートしています。 This can be achieved by using the [frameless](../reference/options.mdx#frameless) field in [Application Options](../reference/options.mdx#application-options).
 
-Wails offers a simple solution for dragging the window: Any HTML element that has the CSS style `--wails-draggable:drag` will act as a "drag handle". This property applies to all child elements. If you need to indicate that a nested element should not drag, then use the attribute '--wails-draggable:no-drag' on that element.
+Wailsでは、フレームレスウィンドウをドラッグできるようにするための簡単な仕組みを提供しています。`--wails-draggable:drag`というCSSスタイルをもつ任意のHTML要素は、"ドラッグハンドル"として機能します。 このプロパティは、すべての子要素にも継承されます。 ネストされている子要素で、ドラッグを明示的に無効化したい場合は、当該子要素で'--wails-draggable:no-drag'を指定します。
 
 ```html
 <html>
@@ -23,7 +23,7 @@ Wails offers a simple solution for dragging the window: Any HTML element that ha
 </html>
 ```
 
-For some projects, using a CSS variable may not be possible due to dynamic styling. In this case, you can use the `CSSDragProperty` and `CSSDragValue` application options to define a property and value that will be used to indicate draggable regions:
+一部のプロジェクトでは、動的なスタイリングが原因で、これらのCSSプロパティが使用できない場合があるでしょう。 そのような場合、アプリケーションオプションの`CSSDragProperty`および`CSSDragValue`を使用して、ドラッグ可能な領域を示すプロパティ名と値を独自に定義することができます。
 
 ```go title=main.go
 package main
@@ -40,10 +40,10 @@ import (
 var assets embed.FS
 
 func main() {
-    // Create an instance of the app structure
+    // アプリケーション構造体のインスタンスを作成
     app := NewApp()
 
-    // Create application with options
+    // オプション付きでアプリケーションを作成
     err := wails.Run(&options.App{
         Title:  "alwaysontop",
         Width:  1024,
@@ -80,8 +80,8 @@ func main() {
 </html>
 ```
 
-:::info Fullscreen
+:::info フルスクリーン
 
-If you allow your application to go fullscreen, this drag functionality will be disabled.
+アプリケーションをフルスクリーン状態にすると、このドラッグ機能は無効になります。
 
 :::

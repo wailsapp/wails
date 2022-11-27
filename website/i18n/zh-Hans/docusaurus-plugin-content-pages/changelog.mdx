@@ -17,10 +17,13 @@
 - 添加 `OpenInspectorOnStartup` 到调试选项以允许在调试模式下启动应用程序期间打开 Web 检查器。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2080) 中添加。
 - 在 macOS 上的 `wails doctor`，现在也会显示安装的 Xcode 版本。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2089) 中添加。
 - 如果 [Assets](/docs/reference/options/#资产-1) `fs.FS` 提供 `io.ReadSeeker`，[AssetServer](/docs/reference/options#资产服务器) 现在支持处理范围请求。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2091) 中添加。
+- 为 `wails.json` 配置文件添加新属性 - `bindings`。 可以在更新的 [schema](static/schemas/config.v2.json) 中找到有关新属性的更多信息。 属性 `前缀` 和 `后缀` 允许您控制在 `model.ts` 文件中生成的 TypeScript 实体名称。 由 @OlegGulevskyy 在这个 [PR](https://github.com/wailsapp/wails/pull/2101) 中修复。
+- `WindowSetAlwaysOnTop` 方法现在在 JS 运行时中公开。 由 @gotid 在这个 [PR](https://github.com/wailsapp/wails/pull/2128) 中修复。
 
 ### 修复
 - wails dev 中 `noreload` 标志未被应用。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2081) 中修复。
 - `build/bin` 文件夹在 `wails dev` 模式下每次重新加载时都会复制自身。 由 @OlegGulevskyy 在这个 [PR](https://github.com/wailsapp/wails/pull/2103) 中修复。
+- 防止 Windows 上的无边框窗口底部出现细白线。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2111) 中修复。
 
 ## v2.2.0 - 2022-11-09
 
@@ -39,7 +42,7 @@
 ### 修复
 
 - Webview2 on Windows returns a potential whitespace when defining the style like this style="--wails-draggable: drag". Fixed by @stffabi in https://github.com/wailsapp/wails/pull/1989
-- Bound structs that had `struct{}` field types would cause the Typescript generation to fail. Thanks to @ParkourLiu for the [PR](https://github.com/wailsapp/wails/pull/1999)
+- Bound structs that had `struct{}` field types would cause the TypeScript generation to fail. Thanks to @ParkourLiu for the [PR](https://github.com/wailsapp/wails/pull/1999)
 - When maximising a frameless window on Windows with multiple monitors, the window could sometimes become blank. Thanks to @stffabi for the [fix](https://github.com/wailsapp/wails/pull/2043)
 
 ### 变更
@@ -84,7 +87,7 @@
 - Remove the `.git` directory in the template - @misitebao in https://github.com/wailsapp/wails/pull/1929
 - Fix wails dev - @JulioDRF in https://github.com/wailsapp/wails/pull/1931
 - Fix for considering new `go` files in dev filesystem watcher - @scottopell in https://github.com/wailsapp/wails/pull/1946
-- Prevent type parsing to interfere with Typescript package name - @ValentinTrinque in https://github.com/wailsapp/wails/pull/1942
+- Prevent type parsing to interfere with TypeScript package name - @ValentinTrinque in https://github.com/wailsapp/wails/pull/1942
 - [dev] Do not try to infer assetdir from fs.FS when a frontend dev server is in use - @stffabi in https://github.com/wailsapp/wails/pull/1972
 - Fix init command not listed in wails help message - @lyon-lee-dev in https://github.com/wailsapp/wails/pull/1976
 
@@ -479,7 +482,7 @@ Experimental: &options.Experimental{
 - Default templates now powered by [Vite](https://vitejs.dev). This enables lightning fast reloads when you use `wails dev`! This enables lightning fast reloads when you use `wails dev`!
 - Add support for external frontend development servers. Add support for external frontend development servers. See `frontend:dev:serverUrl` in the [project config](https://wails.io/docs/reference/project-config) - [@stffabi](https://github.com/stffabi)
 - [Fully configurable dark mode](https://wails.io/docs/reference/options#theme) for Windows.
-- Hugely improved [WailsJS generation](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) (both Javascript and Typescript)
+- Hugely improved [WailsJS generation](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) (both JavaScript and TypeScript)
 - Wails doctor now reports information about the wails installation - [@stffabi](https://github.com/stffabi)
 - Added docs for [code-signing](https://wails.io/docs/guides/signing) and [NSIS installer](https://wails.io/docs/guides/windows-installer) - [@gardc](https://github.com/gardc)
 - Add support for `-trimpath` [build flag](https://wails.io/docs/reference/cli#build)
@@ -489,7 +492,7 @@ Experimental: &options.Experimental{
 
 - Improved mimetype detection for BOM marker and comments - [@napalu](https://github.com/napalu)
 - Remove duplicate mimetype entries - [@napalu](https://github.com/napalu)
-- Remove duplicate Typescript imports in generated definition files - [@adalessa](https://github.com/adalessa)
+- Remove duplicate TypeScript imports in generated definition files - [@adalessa](https://github.com/adalessa)
 - Add missing method declaration - [@adalessa](https://github.com/adalessa)
 - Fix Linux sigabrt on start - [@napalu](https://github.com/napalu)
 - Double Click event now works on elements with `data-wails-drag` attribute - [@jicg](https://github.com/jicg)
