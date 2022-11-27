@@ -17,7 +17,7 @@
 - 添加 `OpenInspectorOnStartup` 到调试选项以允许在调试模式下启动应用程序期间打开 Web 检查器。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2080) 中添加。
 - 在 macOS 上的 `wails doctor`，现在也会显示安装的 Xcode 版本。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2089) 中添加。
 - 如果 [Assets](/docs/reference/options/#资产-1) `fs.FS` 提供 `io.ReadSeeker`，[AssetServer](/docs/reference/options#资产服务器) 现在支持处理范围请求。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2091) 中添加。
-- 为 `wails.json` 配置文件添加新属性 - `bindings`。 可以在更新的 [schema](static/schemas/config.v2.json) 中找到有关新属性的更多信息。 属性 `前缀` 和 `后缀` 允许您控制在 `model.ts` 文件中生成的 TypeScript 实体名称。 由 @OlegGulevskyy 在这个 [PR](https://github.com/wailsapp/wails/pull/2101) 中修复。
+- 为 `wails.json` 配置文件添加新属性 - `bindings`。 关于新属性的更多信息可以在更新的 [schema](/schemas/config.v2.json) 中找到。 属性 `prefix` 和 `suffix` 允许您控制在 `model.ts` 文件中生成的 TypeScript 实体名称。 由 @OlegGulevskyy 在这个 [PR](https://github.com/wailsapp/wails/pull/2101) 中修复。
 - `WindowSetAlwaysOnTop` 方法现在在 JS 运行时中公开。 由 @gotid 在这个 [PR](https://github.com/wailsapp/wails/pull/2128) 中修复。
 
 ### 修复

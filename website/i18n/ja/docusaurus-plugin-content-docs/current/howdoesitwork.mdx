@@ -14,7 +14,7 @@ Wailsは、webkitフロントエンドを備えた、何の変哲もないGoア�
 
 ## アプリのメインコード
 
-### Overview
+### 概要
 
 アプリは、`wails.Run()`メソッドを1回呼び出すことで、構成することができます。 このメソッドで、アプリのウィンドウサイズやウィンドウタイトル、使用アセットなどを指定することができます。 基本的なアプリを作るコードは次のとおりです:
 
@@ -84,7 +84,7 @@ func (b *App) Greet(name string) string {
 
 設定可能なすべてのオプションについては、[オプションのリファレンス](reference/options)をご覧ください。
 
-#### Assets
+#### アセット
 
 Wailsでフロントエンドアセット無しのアプリを作成することはできないため、`Assets`オプションは必須オプションです。 アセットには、一般的なWebアプリケーションでよく見かけるような、html、js、css、svg、pngなどのファイルを含めることができます。**アセットバンドルを生成する必要は一切なく**、そのままのファイルを使用できます。 アプリが起動すると、アセット内の`index.html`が読み込まれます。この時点で、フロントエンドはブラウザとして動作するようになります。 `embed.FS`を使ってアセットファイルが格納されたディレクトリを指定しますが、ディレクトリの場所はどこでも構いません。 embedで指定するパスは、`frontend/dist`のように、アプリのメインコードから相対的に見たディレクトリパスになります:
 
@@ -192,7 +192,7 @@ func (a *App) Greet(name string) string {
 
 ## フロントエンド
 
-### Overview
+### 概要
 
 フロントエンドは、webkitによってレンダリングされるファイル群です。 ブラウザとWebサーバが一体となったような動きをします。 使用できるフレームワークやライブラリの制限はほぼありません[^1]。 フロントエンドとGoコードとの相互のやり取りについて、主なポイントは次のとおりです:
 
@@ -244,7 +244,7 @@ Struct fields *must* have a valid `json` tag to be included in the generated Typ
 
 Goに対して引数として構造体を渡すこともできます。 Any JavaScript map/class passed as an argument that is expecting a struct, will be converted to that struct type. あなたが簡単にこれらのことを把握できるように、`dev`モードでは、バウンドされたGoメソッドで使用されている全構造体の型が定義された、Typescriptモジュールが生成されます。 Using this module, it's possible to construct and send native JavaScript objects to the Go code.
 
-There is also support for Go methods that use structs in their signature. All Go structs specified by a bound method (either as parameters or return types) will have TypeScript versions auto generated as part of the Go code wrapper module. Using these, it's possible to share the same data model between Go and JavaScript.
+また、シグネチャに構造体を使用するGoメソッドもサポートされています。 All Go structs specified by a bound method (either as parameters or return types) will have TypeScript versions auto generated as part of the Go code wrapper module. Using these, it's possible to share the same data model between Go and JavaScript.
 
 例: `Greet`メソッドを更新して、文字列型の代わりに`Person`型を引数で受け付けてみる:
 

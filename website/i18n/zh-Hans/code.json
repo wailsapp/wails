@@ -18,7 +18,7 @@
     "message": "使用Wails CLI快速生成、构建和打包项目。"
   },
   "homepage.Tagline": {
-    "message": "使用 Go + HTML + CSS + JS 构建漂亮的跨平台桌面应用"
+    "message": "使用 Go 构建漂亮的跨平台应用程序"
   },
   "homepage.ButtonText": {
     "message": "快速入门"

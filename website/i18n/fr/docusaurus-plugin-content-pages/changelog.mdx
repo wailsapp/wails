@@ -17,13 +17,13 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Ajout de l'option `OpenInspectorOnStartup` au débogage pour permettre d'ouvrir le WebInspector au démarrage de l'application en mode débogage . Ajouté par @stffabi : [PR](https://github.com/wailsapp/wails/pull/2080)
 - Sur MacOS, `wails doctor` affiche à présent la version de Xcode installée. Ajouté par @stffabi : [PR](https://github.com/wailsapp/wails/pull/2089)
 - L'[AssetServer](/docs/reference/options#assetserver) supporte à présent les range-requests si l' [Assets](/docs/reference/options/#assets-1) `fs.FS` importe `io.ReadSeeker`. Ajouté par @stffabi : [PR](https://github.com/wailsapp/wails/pull/2091)
-- Add new property for the `wails.json` config file - `bindings`. More information on the new property can be found in the updated [schema](static/schemas/config.v2.json). Properties `prefix` and `suffix` allow you to control the generated TypeScript entity name in the `model.ts` file. Added by @OlegGulevskyy in [PR](https://github.com/wailsapp/wails/pull/2101)
-- The `WindowSetAlwaysOnTop` method is now exposed in the JS runtime. Fixed by @gotid in [PR](https://github.com/wailsapp/wails/pull/2128)
+- Ajouter une nouvelle propriété `bindings` dans le fichier de configuration `wails.json`. Plus d'informations sur la nouvelle propriété peuvent être trouvées dans le [schéma](/schemas/config.v2.json) mis à jour. Les propriétés `prefix` et `suffix` vous permettent de contrôler le nom d'entité TypeScript généré dans le fichier `model.ts`. Ajouté par @OlegGulevskyy dans [PR](https://github.com/wailsapp/wails/pull/2101)
+- La méthode `WindowSetAlwaysOnTop` est maintenant exposée dans l'exécutable JS. Fixé par @gotid dans la [PR](https://github.com/wailsapp/wails/pull/2128)
 
 ### Corrections
 - Le booléen activant la fonctionnalité `noreload` n'était pas utilisable dans le mode développement de wails. Corrigé par @stffabi dans cette [PR](https://github.com/wailsapp/wails/pull/2081)
-- `build/bin` folder was duplicating itself on each reload in `wails dev` mode. Corrigé par @OlegGulevskyy dans cette [PR](https://github.com/wailsapp/wails/pull/2103)
-- Prevent a thin white line at the bottom of a frameless window on Windows. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2111)
+- `le dossier build/bin` se dupliquait sur chaque rechargement en mode `wails dev`. Corrigé par @OlegGulevskyy dans cette [PR](https://github.com/wailsapp/wails/pull/2103)
+- Empêcher une fine ligne blanche au bas d'une fenêtre sans cadre sous Windows. Correction par @stffabi dans cette [PR](https://github.com/wailsapp/wails/pull/2111)
 
 ## v2.2.0 - 2022-11-09
 
@@ -37,7 +37,7 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
   - Si `go.mod` n'est pas trouvé dans le même répertoire que `wails.json`, le cli va chercher les répertoires parents pour le trouver. Corrigé par @leaanthony dans cette [PR](https://github.com/wailsapp/wails/pull/2009)
 - La sortie de couleur dans le CLI peut maintenant être désactivée en utilisant l'option `--nocolor`. Ceci est utile pour les pipelines CI/CD. Merci à @scottopell pour cette [PR](https://github.com/wailsapp/wails/pull/1947)
 - Une définition de schéma JSON pour le fichier `wails.json` a été ajoutée. Les IDEs devraient maintenant fournir le code complet lors de l'édition de `wails.json`. Merci à @binyamin pour cette [PR](https://github.com/wailsapp/wails/pull/1864)
-- Les méthodes `EventsOn*` retournent maintenant une fonction qui peut être appelée pour désenregistrer l'auditeur. Thanks to @joshbuddy for the [PR](https://github.com/wailsapp/wails/pull/1969)
+- Les méthodes `EventsOn*` retournent maintenant une fonction qui peut être appelée pour désenregistrer l'auditeur. Merci à @joshbuddy pour la [PR](https://github.com/wailsapp/wails/pull/1969)
 
 ### Corrections
 
@@ -70,12 +70,12 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Ajouts
 
-- [Support for defaulting to No button in Windows dialogs](https://wails.io/docs/reference/runtime/dialog/#windows) - @leaanthony in https://github.com/wailsapp/wails/pull/1875
-- Add missing resize for frameless window on Linux - @Lyimmi in https://github.com/wailsapp/wails/pull/1918
-- [Add window transparency for linux](https://wails.io/docs/reference/options#windowistranslucent-2) - @Lyimmi in https://github.com/wailsapp/wails/pull/1926
-- [Add WindowExecJS method](https://wails.io/docs/reference/runtime/window#windowexecjs) - @leaanthony in https://github.com/wailsapp/wails/pull/1927
-- [Add support for `Info.dev.plist` on macOS](https://wails.io/docs//reference/cli#dev) - @leaanthony in https://github.com/wailsapp/wails/pull/1960
-- [Add ZoomFactor get/set and add the respective windows only options](https://wails.io/docs/reference/options#zoomfactor) - @pierrejoye in https://github.com/wailsapp/wails/pull/1463
+- [Prise en charge du bouton Non par défaut dans les boîtes de dialogue Windows](https://wails.io/docs/reference/runtime/dialog/#windows) - @leaanthony dans https://github.com/wailsapp/wails/pull/1875
+- Ajout de la possibilité de redimensionner la fenêtre sans cadre sur Linux - @Lyimmi dans https://github.com/wailsapp/wails/pull/1918
+- [Ajout de la transparence de la fenêtre pour linux](https://wails.io/docs/reference/options#windowistranslucent-2) - @Lyimmi dans https://github.com/wailsapp/wails/pull/1926
+- [Ajout de la méthode WindowExecJS](https://wails.io/docs/reference/runtime/window#windowexecjs) - @leaanthony dans https://github.com/wailsapp/wails/pull/1927
+- [Ajout de support pour `Info.dev.plist` sur macOS](https://wails.io/docs//reference/cli#dev) - @leaanthony dans https://github.com/wailsapp/wails/pull/1960
+- [Ajout de ZoomFactor get/set et ajout des options Windows respectives](https://wails.io/docs/reference/options#zoomfactor) - @pierrejoye sur https://github.com/wailsapp/wails/pull/1463
 
 ### Corrections
 
