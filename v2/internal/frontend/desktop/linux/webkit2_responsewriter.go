@@ -55,27 +55,6 @@ func (rw *webKitResponseWriter) WriteHeader(code int) {
 	}
 	rw.wroteHeader = true
 
-	if code != http.StatusOK {
-		// WebKitGTK stable < 2.36 API does not support response headers and response statuscodes
-		rw.w = &nopCloser{io.Discard}
-		rw.finishWithError(http.StatusText(code), code)
-		return
-	}
-
-	// We can't use os.Pipe here, because that returns files with a finalizer for closing the FD. But the control over the
-	// read FD is given to the InputStream and will be closed there.
-	// Furthermore we especially don't want to have the FD_CLOEXEC
-	rFD, w, err := pipe()
-	if err != nil {
-		rw.wErr = fmt.Errorf("Unable opening pipe: %s", err)
-		rw.finishWithError(rw.wErr.Error(), http.StatusInternalServerError)
-		return
-	}
-	rw.w = w
-
-	cMimeType := C.CString(rw.Header().Get(assetserver.HeaderContentType))
-	defer C.free(unsafe.Pointer(cMimeType))
-
 	contentLength := int64(-1)
 	if sLen := rw.Header().Get(assetserver.HeaderContentLength); sLen != "" {
 		if pLen, _ := strconv.ParseInt(sLen, 10, 64); pLen > 0 {
@@ -83,9 +62,23 @@ func (rw *webKitResponseWriter) WriteHeader(code int) {
 		}
 	}
 
+	// We can't use os.Pipe here, because that returns files with a finalizer for closing the FD. But the control over the
+	// read FD is given to the InputStream and will be closed there.
+	// Furthermore we especially don't want to have the FD_CLOEXEC
+	rFD, w, err := pipe()
+	if err != nil {
+		rw.finishWithError(http.StatusInternalServerError, fmt.Errorf("unable to open pipe: %s", err))
+		return
+	}
+	rw.w = w
+
 	stream := C.g_unix_input_stream_new(C.int(rFD), gtkBool(true))
-	C.webkit_uri_scheme_request_finish(rw.req, stream, C.gint64(contentLength), cMimeType)
-	C.g_object_unref(C.gpointer(stream))
+	defer C.g_object_unref(C.gpointer(stream))
+
+	if err := webkit_uri_scheme_request_finish(rw.req, code, rw.Header(), stream, contentLength); err != nil {
+		rw.finishWithError(http.StatusInternalServerError, fmt.Errorf("unable to finish request: %s", err))
+		return
+	}
 }
 
 func (rw *webKitResponseWriter) Close() {
@@ -94,8 +87,14 @@ func (rw *webKitResponseWriter) Close() {
 	}
 }
 
-func (rw *webKitResponseWriter) finishWithError(message string, code int) {
-	msg := C.CString(http.StatusText(code))
+func (rw *webKitResponseWriter) finishWithError(code int, err error) {
+	if rw.w != nil {
+		rw.w.Close()
+		rw.w = &nopCloser{io.Discard}
+	}
+	rw.wErr = err
+
+	msg := C.CString(err.Error())
 	gerr := C.g_error_new_literal(C.g_quark_from_string(msg), C.int(code), msg)
 	C.webkit_uri_scheme_request_finish_error(rw.req, gerr)
 	C.g_error_free(gerr)
