@@ -74,11 +74,11 @@ It also provides the additional features:
 
 In addition to this, a webserver will start on port 34115. This will serve your application to any browser that connects to it. All connected web browsers will respond to system events like hot reload on asset change.
 
-In Go, we are used to dealing with structs in our applications. It's often useful to send structs to our frontend and use them as state in our application. In v1, this was a very manual process and a bit of a burden on the developer. I'm happy to announce that in v2, any application run in dev mode will automatically generate Typescript models for all structs that are input or output parameters to bound methods. This enables seamless interchange of data models between the two worlds.
+In Go, we are used to dealing with structs in our applications. It's often useful to send structs to our frontend and use them as state in our application. In v1, this was a very manual process and a bit of a burden on the developer. I'm happy to announce that in v2, any application run in dev mode will automatically generate TypeScript models for all structs that are input or output parameters to bound methods. This enables seamless interchange of data models between the two worlds.
 
 In addition to this, another JS module is dynamically generated wrapping all your bound methods. This provides JSDoc for your methods, providing code completion and hinting in your IDE. It's really cool when you get data models auto-imported when hitting tab in an auto-generated module wrapping your Go code!
 
-### Modelos Remotos
+### Remote Templates
 
 ```mdx-code-block
 <div class="text--center">

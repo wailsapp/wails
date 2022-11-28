@@ -4,7 +4,7 @@
     "description": "Navbar item with label Sponsor"
   },
   "item.label.Docs": {
-    "message": "Documents",
+    "message": "Docs",
     "description": "Navbar item with label Docs"
   },
   "item.label.Blog": {
@@ -20,7 +20,7 @@
     "description": "Navbar item with label About"
   },
   "item.label.FAQ": {
-    "message": "Foire aux questions",
+    "message": "FAQ",
     "description": "Navbar item with label FAQ"
   },
   "item.label.Changelog": {

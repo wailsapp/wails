@@ -4,14 +4,14 @@ sidebar_position: 1
 
 # Introduction
 
-The runtime is a library that provides utility methods for your application. There is both a Go and Javascript runtime and the aim is to try and keep them at parity where possible.
+The runtime is a library that provides utility methods for your application. There is both a Go and JavaScript runtime and the aim is to try and keep them at parity where possible.
 
 It has utility methods for:
 
 - [Window](window.mdx)
 - [Menu](menu.mdx)
-- [Dialog](dialog.mdx)
-- [Events](events.mdx)
+- [Boîte de dialogue](dialog.mdx)
+- [Événements](events.mdx)
 - [Browser](browser.mdx)
 - [Log](log.mdx)
 
@@ -23,13 +23,13 @@ Whilst the context will be provided to the [OnStartup](../options.mdx#onstartup)
 
 :::
 
-The Javascript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev` mode that provides Typescript declarations for the runtime. This should be located in the `wailsjs` directory in your frontend directory.
+The JavaScript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev` mode that provides TypeScript declarations for the runtime. This should be located in the `wailsjs` directory in your frontend directory.
 
-### Hide
+### Cacher
 
 Go: `Hide(ctx context.Context)`<br/> JS: `Hide()`
 
-Hides the application.
+Cache l'application.
 
 :::info Note
 
@@ -37,9 +37,9 @@ On Mac, this will hide the application in the same way as the `Hide` menu item i
 
 :::
 
-### Show
+### Afficher
 
-Shows the application.
+Affiche l'application.
 
 :::info Note
 
@@ -49,15 +49,15 @@ On Mac, this will bring the application back into the foreground. For Windows an
 
 Go: `Show(ctx context.Context)`<br/> JS: `Show()`
 
-### Quit
+### Quitter
 
-Quits the application.
+Quitte l'application.
 
 Go: `Quit(ctx context.Context)`<br/> JS: `Quit()`
 
-### Environment
+### Environnement
 
-Returns details of the current environment.
+Renvoie les détails de l'environnement actuel.
 
 Go: `Environment(ctx context.Context) EnvironmentInfo`<br/> JS: `Environment(): Promise<EnvironmentInfo>`
 
