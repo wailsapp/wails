@@ -3,9 +3,9 @@
 package app
 
 import (
+	"flag"
 	"os"
 	"path/filepath"
-	"flag"
 
 	"github.com/leaanthony/gosod"
 	"github.com/wailsapp/wails/v2/internal/binding"
@@ -25,7 +25,7 @@ func (a *App) Run() error {
 		a.options.OnDomReady,
 		a.options.OnBeforeClose,
 	}
-	
+
 	// Check for CLI Flags
 	bindingFlags := flag.NewFlagSet("bindings", flag.ContinueOnError)
 
@@ -53,7 +53,7 @@ func (a *App) Run() error {
 	appBindings := binding.NewBindings(a.logger, a.options.Bind, bindingExemptions, IsObfuscated())
 
 	appBindings.SetTsPrefix(tsPrefix)
-	appBindings.SetTsPostfix(tsSuffix)
+	appBindings.SetTsSuffix(tsSuffix)
 
 	err := generateBindings(appBindings)
 	if err != nil {
