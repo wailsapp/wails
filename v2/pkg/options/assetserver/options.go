@@ -1,6 +1,7 @@
 package assetserver
 
 import (
+	"fmt"
 	"io/fs"
 	"net/http"
 )
@@ -32,4 +33,13 @@ type Options struct {
 	// Multiple Middlewares can be chained together with:
 	//   ChainMiddleware(middleware ...Middleware) Middleware
 	Middleware Middleware
+}
+
+// Validate the options
+func (o Options) Validate() error {
+	if o.Assets == nil && o.Handler == nil && o.Middleware == nil {
+		return fmt.Errorf("AssetServer options invalid: either Assets, Handler or Middleware must be set")
+	}
+
+	return nil
 }
