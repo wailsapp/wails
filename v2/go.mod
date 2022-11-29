@@ -74,6 +74,7 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.9.0 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
+	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect

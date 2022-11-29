@@ -10,6 +10,7 @@ import (
 	"github.com/wailsapp/wails/v2/cmd/wails/internal/template"
 	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/fs"
+	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
@@ -33,8 +34,19 @@ func generateModule(f *flags.GenerateModule) error {
 		return err
 	}
 
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	projectConfig, err := project.Load(cwd)
+	if err != nil {
+		return err
+	}
+
 	_, err = bindings.GenerateBindings(bindings.Options{
-		Tags: buildTags,
+		Tags:     buildTags,
+		TsPrefix: projectConfig.Bindings.TsGeneration.Prefix,
+		TsSuffix: projectConfig.Bindings.TsGeneration.Suffix,
 	})
 	if err != nil {
 		return err
