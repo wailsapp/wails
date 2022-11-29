@@ -4,13 +4,13 @@ sidebar_position: 3
 
 # Registro
 
-O runtime do Wails fornece um mecanismo de registro que pode ser chamado de Go ou Javascript. Como a maioria dos registros de, há um número de níveis de log:
+The Wails runtime provides a logging mechanism that may be called from Go or JavaScript. Como a maioria dos registros de, há um número de níveis de log:
 
 - Trace
 - Debug
 - Info
 - Warning
-- Erro
+- Error
 - Fatal
 
 O logger irá gerar qualquer mensagem de log no nível atual, ou superior, de log. Exemplo: O `Debug` log level irá retornar todas as mensagens exceto `Trace` mensagens.
@@ -101,7 +101,7 @@ Go: `LogFatalf(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogSetLogLevel
 
-Define o nível de log. Em Javascript, o número diz respeito aos seguintes níveis de log:
+Define o nível de log. In JavaScript, the number relates to the following log levels:
 
 | Valor | Nível de Log |
 | ----- | ------------ |

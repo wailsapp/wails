@@ -7,6 +7,8 @@ import (
 	"bytes"
 	"os/exec"
 	"strconv"
+
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/logutils"
 )
 
 func setParentGID(_ *exec.Cmd) {}
@@ -25,7 +27,7 @@ func killProc(cmd *exec.Cmd, devCommand string) {
 			if err.Error() != "exit status 1" {
 				println(stdoutBuffer.String())
 				println(errorBuffer.String())
-				LogRed("Error from '%s': %s", devCommand, err.Error())
+				logutils.LogRed("Error from '%s': %s", devCommand, err.Error())
 			}
 		}
 	}

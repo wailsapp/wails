@@ -223,6 +223,8 @@ func GenerateBindings(buildOptions *Options) error {
 	output, err := bindings.GenerateBindings(bindings.Options{
 		Tags:      buildOptions.UserTags,
 		GoModTidy: !buildOptions.SkipModTidy,
+		TsPrefix:  buildOptions.ProjectData.Bindings.TsGeneration.Prefix,
+		TsSuffix:  buildOptions.ProjectData.Bindings.TsGeneration.Suffix,
 	})
 	if err != nil {
 		return err

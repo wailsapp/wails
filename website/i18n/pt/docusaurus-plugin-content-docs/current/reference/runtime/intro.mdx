@@ -2,9 +2,9 @@
 sidebar_position: 1
 ---
 
-# Introdução
+# Introduction
 
-O runtime é uma biblioteca que fornece métodos utilitários para sua aplicação. Existe tanto um tempo de execução Go quanto Javascript e o objetivo é tentar mantê-los na paridade quando possível.
+O runtime é uma biblioteca que fornece métodos utilitários para sua aplicação. There is both a Go and JavaScript runtime and the aim is to try and keep them at parity where possible.
 
 Ele tem métodos de utilitário para:
 
@@ -12,7 +12,7 @@ Ele tem métodos de utilitário para:
 - [Menus](menu.mdx)
 - [Caixa de diálogo](dialog.mdx)
 - [Eventos](events.mdx)
-- [Navegador](browser.mdx)
+- [Browser](browser.mdx)
 - [Registro](log.mdx)
 
 O runtime do Go está disponível através da importação de `github.com/wailsapp/wails/v2/pkg/runtime`. Todos os métodos neste pacote assumem um contexto como o primeiro parâmetro. Este contexto deve ser obtido a partir dos ganchos [OnStartup](../options.mdx#onstartup) ou [OnDomReady](../options.mdx#ondomready).
@@ -23,7 +23,7 @@ Embora o contexto seja fornecido para o método [Inicialização](../options.mdx
 
 :::
 
-A biblioteca Javascript está disponível no frontend através do map `window.runtime`. Há um pacote de runtime gerado ao usar o modo `dev` que fornece declarações de Typescript para o tempo de execução. Isso deve ser localizado no diretório `wailsjs` em seu diretório frontend.
+The JavaScript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev` mode that provides TypeScript declarations for the runtime. Isso deve ser localizado no diretório `wailsjs` em seu diretório frontend.
 
 ### Hide
 

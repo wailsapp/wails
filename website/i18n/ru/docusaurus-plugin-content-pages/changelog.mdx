@@ -17,10 +17,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added `OpenInspectorOnStartup` to debug options to allow opening the WebInspector during startup of the application in debug mode. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2080)
 - On macOS `wails doctor` now also shows the version of Xcode installed. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2089)
 - The [AssetServer](/docs/reference/options#assetserver) now supports handling range-requests if the [Assets](/docs/reference/options/#assets-1) `fs.FS` provides an `io.ReadSeeker`. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2091)
+- Add new property for the `wails.json` config file - `bindings`. More information on the new property can be found in the updated [schema](/schemas/config.v2.json). Properties `prefix` and `suffix` allow you to control the generated TypeScript entity name in the `model.ts` file. Added by @OlegGulevskyy in [PR](https://github.com/wailsapp/wails/pull/2101)
+- The `WindowSetAlwaysOnTop` method is now exposed in the JS runtime. Fixed by @gotid in [PR](https://github.com/wailsapp/wails/pull/2128)
 
 ### Fixed
 - The `noreload` flag in wails dev wasn't applied. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2081)
 - `build/bin` folder was duplicating itself on each reload in `wails dev` mode. Fixed by @OlegGulevskyy in this [PR](https://github.com/wailsapp/wails/pull/2103)
+- Prevent a thin white line at the bottom of a frameless window on Windows. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2111)
 
 ## v2.2.0 - 2022-11-09
 
@@ -39,7 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - Webview2 on Windows returns a potential whitespace when defining the style like this style="--wails-draggable: drag". Fixed by @stffabi in https://github.com/wailsapp/wails/pull/1989
-- Bound structs that had `struct{}` field types would cause the Typescript generation to fail. Thanks to @ParkourLiu for the [PR](https://github.com/wailsapp/wails/pull/1999)
+- Bound structs that had `struct{}` field types would cause the TypeScript generation to fail. Thanks to @ParkourLiu for the [PR](https://github.com/wailsapp/wails/pull/1999)
 - When maximising a frameless window on Windows with multiple monitors, the window could sometimes become blank. Thanks to @stffabi for the [fix](https://github.com/wailsapp/wails/pull/2043)
 
 ### Changed
@@ -84,7 +87,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Remove the `.git` directory in the template - @misitebao in https://github.com/wailsapp/wails/pull/1929
 - Fix wails dev - @JulioDRF in https://github.com/wailsapp/wails/pull/1931
 - Fix for considering new `go` files in dev filesystem watcher - @scottopell in https://github.com/wailsapp/wails/pull/1946
-- Prevent type parsing to interfere with Typescript package name - @ValentinTrinque in https://github.com/wailsapp/wails/pull/1942
+- Prevent type parsing to interfere with TypeScript package name - @ValentinTrinque in https://github.com/wailsapp/wails/pull/1942
 - [dev] Do not try to infer assetdir from fs.FS when a frontend dev server is in use - @stffabi in https://github.com/wailsapp/wails/pull/1972
 - Fix init command not listed in wails help message - @lyon-lee-dev in https://github.com/wailsapp/wails/pull/1976
 
@@ -479,7 +482,7 @@ Experimental: &options.Experimental{
 - Default templates now powered by [Vite](https://vitejs.dev). This enables lightning fast reloads when you use `wails dev`!
 - Add support for external frontend development servers. See `frontend:dev:serverUrl` in the [project config](https://wails.io/docs/reference/project-config) - [@stffabi](https://github.com/stffabi)
 - [Fully configurable dark mode](https://wails.io/docs/reference/options#theme) for Windows.
-- Hugely improved [WailsJS generation](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) (both Javascript and Typescript)
+- Hugely improved [WailsJS generation](https://wails.io/docs/howdoesitwork#calling-bound-go-methods) (both JavaScript and TypeScript)
 - Wails doctor now reports information about the wails installation - [@stffabi](https://github.com/stffabi)
 - Added docs for [code-signing](https://wails.io/docs/guides/signing) and [NSIS installer](https://wails.io/docs/guides/windows-installer) - [@gardc](https://github.com/gardc)
 - Add support for `-trimpath` [build flag](https://wails.io/docs/reference/cli#build)
@@ -489,7 +492,7 @@ Experimental: &options.Experimental{
 
 - Improved mimetype detection for BOM marker and comments - [@napalu](https://github.com/napalu)
 - Remove duplicate mimetype entries - [@napalu](https://github.com/napalu)
-- Remove duplicate Typescript imports in generated definition files - [@adalessa](https://github.com/adalessa)
+- Remove duplicate TypeScript imports in generated definition files - [@adalessa](https://github.com/adalessa)
 - Add missing method declaration - [@adalessa](https://github.com/adalessa)
 - Fix Linux sigabrt on start - [@napalu](https://github.com/napalu)
 - Double Click event now works on elements with `data-wails-drag` attribute - [@jicg](https://github.com/jicg)

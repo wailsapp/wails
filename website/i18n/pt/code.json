@@ -1,37 +1,37 @@
 {
   "homepage.Features.Title1": {
-    "message": "homepage.Features.Title1"
+    "message": "Feature Rich"
   },
   "homepage.Features.Description1": {
-    "message": "homepage.Features.Description1"
+    "message": "Construa aplicativos abrangentes multiplataformas usando elementos de interface nativos como menus e diálogos."
   },
   "homepage.Features.Title2": {
-    "message": "homepage.Features.Title2"
+    "message": "Familiar"
   },
   "homepage.Features.Description2": {
-    "message": "homepage.Features.Description2"
+    "message": "Use as tecnologias que você já sabe para construir aplicativos incríveis."
   },
   "homepage.Features.Title3": {
-    "message": "homepage.Features.Title3"
+    "message": "Rápido"
   },
   "homepage.Features.Description3": {
-    "message": "homepage.Features.Description3"
+    "message": "Gere rapidamente, construa e empacote seus projetos usando a CLI Wails."
   },
   "homepage.Tagline": {
-    "message": "homepage.Tagline"
+    "message": "Crie belos aplicativos multiplataforma usando Go"
   },
   "homepage.ButtonText": {
-    "message": "homepage.ButtonText"
+    "message": "Guia de Introdução"
   },
   "homepage.LearnMoreButtonText": {
-    "message": "homepage.LearnMoreButtonText"
+    "message": "Saiba Mais"
   },
   "theme.ErrorPageContent.title": {
-    "message": "This page crashed.",
+    "message": "Esta página parou de funcionar.",
     "description": "The title of the fallback page when the page crashed"
   },
   "theme.ErrorPageContent.tryAgain": {
-    "message": "Try again",
+    "message": "Tente novamente",
     "description": "The label of the button to try again when the page crashed"
   },
   "theme.NotFound.title": {
@@ -39,11 +39,11 @@
     "description": "The title of the 404 page"
   },
   "theme.NotFound.p1": {
-    "message": "Não foi possível encontrar o que você está procurando.",
+    "message": "Não foi possível encontrar aquilo que procura.",
     "description": "The first paragraph of the 404 page"
   },
   "theme.NotFound.p2": {
-    "message": "Entre em contato com o proprietário do site que lhe trouxe para cá e lhe informe que o link está quebrado.",
+    "message": "Por favor entre em contato com o proprietário do site que o vinculou à URL original e informe que o link não funciona.",
     "description": "The 2nd paragraph of the 404 page"
   },
   "theme.AnnouncementBar.closeButtonAriaLabel": {
@@ -51,7 +51,7 @@
     "description": "The ARIA label for close button of announcement bar"
   },
   "theme.blog.archive.title": {
-    "message": "Arquivo",
+    "message": "Arquivar",
     "description": "The page & hero title of the blog archive page"
   },
   "theme.blog.archive.description": {
@@ -59,39 +59,39 @@
     "description": "The page & hero description of the blog archive page"
   },
   "theme.BackToTopButton.buttonAriaLabel": {
-    "message": "Volte para o topo",
+    "message": "Voltar ao topo",
     "description": "The ARIA label for the back to top button"
   },
   "theme.blog.paginator.navAriaLabel": {
-    "message": "Navegação da página de listagem do blog",
+    "message": "Navegação da página blog",
     "description": "The ARIA label for the blog pagination"
   },
   "theme.blog.paginator.newerEntries": {
-    "message": "Conteúdo mais novo",
+    "message": "Entradas mais recentes",
     "description": "The label used to navigate to the newer blog posts page (previous page)"
   },
   "theme.blog.paginator.olderEntries": {
-    "message": "Conteúdo mais antigo",
+    "message": "Entradas mais antigas",
     "description": "The label used to navigate to the older blog posts page (next page)"
   },
   "theme.blog.post.readingTime.plurals": {
-    "message": "Leitura de um minuto|Leitura de {readingTime} minutos",
+    "message": "Leitura de min|{readingTime} min",
     "description": "Pluralized label for \"{readingTime} min read\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
   },
   "theme.blog.post.readMoreLabel": {
-    "message": "Read more about {title}",
+    "message": "Leia mais sobre {title}",
     "description": "The ARIA label for the link to full blog posts from excerpts"
   },
   "theme.blog.post.readMore": {
-    "message": "Leia Mais",
+    "message": "Ler Mais",
     "description": "The label used in blog post item excerpts to link to full blog posts"
   },
   "theme.blog.post.paginator.navAriaLabel": {
-    "message": "Navegação da página de postagem do blog",
+    "message": "Página de navegação do blog",
     "description": "The ARIA label for the blog posts pagination"
   },
   "theme.blog.post.paginator.newerPost": {
-    "message": "Postagem mais nova",
+    "message": "Publicação mais recente",
     "description": "The blog post button label to navigate to the newer/previous post"
   },
   "theme.blog.post.paginator.olderPost": {
@@ -99,11 +99,11 @@
     "description": "The blog post button label to navigate to the older/next post"
   },
   "theme.blog.sidebar.navAriaLabel": {
-    "message": "Blog recent posts navigation",
+    "message": "Navegação nas postagens recentes do blog",
     "description": "The ARIA label for recent posts in the blog sidebar"
   },
   "theme.blog.post.plurals": {
-    "message": "Uma postagem|{count} postagens",
+    "message": "Uma publicação|{count} publicações",
     "description": "Pluralized label for \"{count} posts\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
   },
   "theme.blog.tagTitle": {
@@ -111,11 +111,11 @@
     "description": "The title of the page for a blog tag"
   },
   "theme.tags.tagsPageLink": {
-    "message": "Ver todas os Marcadores",
+    "message": "Ver Todas as Tags",
     "description": "The label of the link targeting the tag list page"
   },
   "theme.CodeBlock.copyButtonAriaLabel": {
-    "message": "Copiar código para a área de transferência",
+    "message": "Copiar código para área de transferência",
     "description": "The ARIA label for copy code blocks button"
   },
   "theme.CodeBlock.copied": {
@@ -127,15 +127,15 @@
     "description": "The copy button label on code blocks"
   },
   "theme.colorToggle.ariaLabel": {
-    "message": "Switch between dark and light mode (currently {mode})",
+    "message": "Alternar entre modo escuro e claro (atualmente {mode})",
     "description": "The ARIA label for the navbar color mode toggle"
   },
   "theme.colorToggle.ariaLabel.mode.dark": {
-    "message": "dark mode",
+    "message": "modo escuro",
     "description": "The name for the dark color mode"
   },
   "theme.colorToggle.ariaLabel.mode.light": {
-    "message": "light mode",
+    "message": "modo claro",
     "description": "The name for the light color mode"
   },
   "theme.docs.DocCard.categoryDescription": {
@@ -143,7 +143,7 @@
     "description": "The default description for a category card in the generated index about how many items this category includes"
   },
   "theme.docs.sidebar.expandButtonTitle": {
-    "message": "Expandir painel lateral",
+    "message": "Expandir barra lateral",
     "description": "The ARIA label and title attribute for expand button of doc sidebar"
   },
   "theme.docs.sidebar.expandButtonAriaLabel": {
@@ -151,7 +151,7 @@
     "description": "The ARIA label and title attribute for expand button of doc sidebar"
   },
   "theme.docs.paginator.navAriaLabel": {
-    "message": "Navigação das páginas de documentação",
+    "message": "Navegação de páginas da documentação",
     "description": "The ARIA label for the docs pagination"
   },
   "theme.docs.paginator.previous": {
@@ -159,11 +159,11 @@
     "description": "The label used to navigate to the previous doc"
   },
   "theme.docs.paginator.next": {
-    "message": "Próxima",
+    "message": "Próximo",
     "description": "The label used to navigate to the next doc"
   },
   "theme.docs.sidebar.collapseButtonTitle": {
-    "message": "Fechar painel lateral",
+    "message": "Recolher barra lateral",
     "description": "The title attribute for collapse button of doc sidebar"
   },
   "theme.docs.sidebar.collapseButtonAriaLabel": {
@@ -171,11 +171,11 @@
     "description": "The title attribute for collapse button of doc sidebar"
   },
   "theme.DocSidebarItem.toggleCollapsedCategoryAriaLabel": {
-    "message": "Toggle the collapsible sidebar category '{label}'",
+    "message": "Alternar a categoria da barra lateral oculta '{label}'",
     "description": "The ARIA label to toggle the collapsible sidebar category"
   },
   "theme.docs.tagDocListPageTitle.nDocsTagged": {
-    "message": "Um documento selecionado|{count} documentos selecionados",
+    "message": "Um documento marcado {count} documentos marcados",
     "description": "Pluralized label for \"{count} docs tagged\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
   },
   "theme.docs.tagDocListPageTitle": {
@@ -183,10 +183,10 @@
     "description": "The title of the page for a docs tag"
   },
   "theme.docs.versionBadge.label": {
-    "message": "Version: {versionLabel}"
+    "message": "Versão: {versionLabel}"
   },
   "theme.docs.versions.unreleasedVersionLabel": {
-    "message": "Esta é uma documentação não lançada para {siteTitle} {versionLabel}.",
+    "message": "Essa documentação não foi lançada para a versão {siteTitle} {versionLabel}.",
     "description": "The label used to tell the user that he's browsing an unreleased doc version"
   },
   "theme.docs.versions.unmaintainedVersionLabel": {

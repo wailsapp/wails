@@ -4,7 +4,7 @@ sidebar_position: 20
 
 # How does it work?
 
-A Wails application is a standard Go application, with a webkit frontend. The Go part of the application consists of the application code and a runtime library that provides a number of useful operations, like controlling the application window. The frontend is a webkit window that will display the frontend assets. Also available to the frontend is a Javascript version of the runtime library. Finally, it is possible to bind Go methods to the frontend, and these will appear as Javascript methods that can be called, just as if they were local Javascript methods.
+A Wails application is a standard Go application, with a webkit frontend. The Go part of the application consists of the application code and a runtime library that provides a number of useful operations, like controlling the application window. The frontend is a webkit window that will display the frontend assets. Also available to the frontend is a JavaScript version of the runtime library. Finally, it is possible to bind Go methods to the frontend, and these will appear as JavaScript methods that can be called, just as if they were local JavaScript methods.
 
 ```mdx-code-block
 <div className="text--center">
@@ -14,7 +14,7 @@ A Wails application is a standard Go application, with a webkit frontend. The Go
 
 ## The Main Application
 
-### Visão geral
+### Overview
 
 The main application consists of a single call to `wails.Run()`. It accepts the application configuration which describes the size of the application window, the window title, what assets to use, etc. A basic application might look like this:
 
@@ -103,13 +103,13 @@ More details can be found in the [Application Development Guide](guides/applicat
 
 #### Application Lifecycle Callbacks
 
-Just before the frontend is about to load `index.html`, a callback is made to the function provided in [OnStartup](reference/options.mdx#onstartup). A standard Go context is passed to this method. This context is required when calling the runtime so a standard pattern is to save a reference to in this method. Just before the application shuts down, the [OnShutdown](reference/options.mdx#onshutdown) callback is called in the same way, again with the context. There is also an [OnDomReady](reference/options.mdx#ondomready) callback for when the frontend has completed loading all assets in `index.html` and is equivalent of the [`body onload`](https://www.w3schools.com/jsref/event_onload.asp) event in Javascript. It is also possible to hook into the window close (or application quit) event by setting the option [OnBeforeClose](reference/options.mdx#onbeforeclose).
+Just before the frontend is about to load `index.html`, a callback is made to the function provided in [OnStartup](reference/options.mdx#onstartup). A standard Go context is passed to this method. This context is required when calling the runtime so a standard pattern is to save a reference to in this method. Just before the application shuts down, the [OnShutdown](reference/options.mdx#onshutdown) callback is called in the same way, again with the context. There is also an [OnDomReady](reference/options.mdx#ondomready) callback for when the frontend has completed loading all assets in `index.html` and is equivalent of the [`body onload`](https://www.w3schools.com/jsref/event_onload.asp) event in JavaScript. It is also possible to hook into the window close (or application quit) event by setting the option [OnBeforeClose](reference/options.mdx#onbeforeclose).
 
 #### Method Binding
 
-The `Bind` option is one of the most important options in a Wails application. It specifies which struct methods to expose to the frontend. Think of structs like "controllers" in a traditional web application. When the application starts, it examines the struct instances listed in the `Bind` field in the options, determines which methods are public (starts with an uppercase letter) and will generate Javascript versions of those methods that can be called by the frontend code.
+The `Bind` option is one of the most important options in a Wails application. It specifies which struct methods to expose to the frontend. Think of structs like "controllers" in a traditional web application. When the application starts, it examines the struct instances listed in the `Bind` field in the options, determines which methods are public (starts with an uppercase letter) and will generate JavaScript versions of those methods that can be called by the frontend code.
 
-:::info Nota
+:::info Note
 
 Wails requires that you pass in an _instance_ of the struct for it to bind it correctly
 
@@ -184,15 +184,15 @@ You may bind as many structs as you like. Just make sure you create an instance 
 
 When you run `wails dev` (or `wails generate module`), a frontend module will be generated containing the following:
 
-- Javascript bindings for all bound methods
-- Typescript declarations for all bound methods
-- Typescript definitions for all Go structs used as inputs or outputs by the bound methods
+- JavaScript bindings for all bound methods
+- TypeScript declarations for all bound methods
+- TypeScript definitions for all Go structs used as inputs or outputs by the bound methods
 
 This makes it incredibly simple to call Go code from the frontend, using the same strongly typed datastructures.
 
 ## The Frontend
 
-### Visão geral
+### Overview
 
 The frontend is a collection of files rendered by webkit. It's like a browser and webserver in one. There is virtually[^1] no limit to which frameworks or libraries you can use. The main points of interaction between the frontend and your Go code are:
 
@@ -201,7 +201,7 @@ The frontend is a collection of files rendered by webkit. It's like a browser an
 
 ### Calling bound Go methods
 
-When you run your application with `wails dev`, it will automatically generate Javascript bindings for your structs in a directory called `wailsjs/go` (You can also do this by running `wails generate module`). The generated files mirror the package names in your application. In the example above, we bind `app`, which has one public method `Greet`. This will lead to the generation of the following files:
+When you run your application with `wails dev`, it will automatically generate JavaScript bindings for your structs in a directory called `wailsjs/go` (You can also do this by running `wails generate module`). The generated files mirror the package names in your application. In the example above, we bind `app`, which has one public method `Greet`. This will lead to the generation of the following files:
 
 ```bash
 wailsjs
@@ -211,7 +211,7 @@ wailsjs
       └─App.js
 ```
 
-Here we can see that there is a `main` package that contains the Javascript bindings for the bound `App` struct, as well as the Typescript declaration file for those methods. To call `Greet` from our frontend, we simply import the method and call it like a regular Javascript function:
+Here we can see that there is a `main` package that contains the JavaScript bindings for the bound `App` struct, as well as the TypeScript declaration file for those methods. To call `Greet` from our frontend, we simply import the method and call it like a regular JavaScript function:
 
 ```javascript
 // ...
@@ -224,27 +224,27 @@ function doGreeting(name) {
 }
 ```
 
-The Typescript declaration file gives you the correct types for the bound methods:
+The TypeScript declaration file gives you the correct types for the bound methods:
 
 ```ts
 export function Greet(arg1: string): Promise<string>;
 ```
 
-The generated methods return a Promise. A successful call will result in the first return value from the Go call to be passed to the `resolve` handler. An unsuccessful call is when a Go method that has an error type as it's second return value, passes an error instance back to the caller. This is passed back via the `reject` handler. In the example above, `Greet` only returns a `string` so the Javascript call will never reject - unless invalid data is passed to it.
+The generated methods return a Promise. A successful call will result in the first return value from the Go call to be passed to the `resolve` handler. An unsuccessful call is when a Go method that has an error type as it's second return value, passes an error instance back to the caller. This is passed back via the `reject` handler. In the example above, `Greet` only returns a `string` so the JavaScript call will never reject - unless invalid data is passed to it.
 
-All data types are correctly translated between Go and Javascript. Even structs. If you return a struct from a Go call, it will be returned to your frontend as a Javascript class.
+All data types are correctly translated between Go and JavaScript. Even structs. If you return a struct from a Go call, it will be returned to your frontend as a JavaScript class.
 
-:::info Nota
+:::info Note
 
-Struct fields *must* have a valid `json` tag to be included in the generated Typescript.
+Struct fields *must* have a valid `json` tag to be included in the generated TypeScript.
 
 Anonymous nested structs are not supported at this time.
 
 :::
 
-It is possible to send structs back to Go. Any Javascript map/class passed as an argument that is expecting a struct, will be converted to that struct type. To make this process a lot easier, in `dev` mode, a TypeScript module is generated, defining all the struct types used in bound methods. Using this module, it's possible to construct and send native Javascript objects to the Go code.
+It is possible to send structs back to Go. Any JavaScript map/class passed as an argument that is expecting a struct, will be converted to that struct type. To make this process a lot easier, in `dev` mode, a TypeScript module is generated, defining all the struct types used in bound methods. Using this module, it's possible to construct and send native JavaScript objects to the Go code.
 
-There is also support for Go methods that use structs in their signature. All Go structs specified by a bound method (either as parameters or return types) will have Typescript versions auto generated as part of the Go code wrapper module. Using these, it's possible to share the same data model between Go and Javascript.
+There is also support for Go methods that use structs in their signature. All Go structs specified by a bound method (either as parameters or return types) will have TypeScript versions auto generated as part of the Go code wrapper module. Using these, it's possible to share the same data model between Go and JavaScript.
 
 Example: We update our `Greet` method to accept a `Person` instead of a string:
 
@@ -358,7 +358,7 @@ More information on Binding can be found in the [Binding Methods](guides/applica
 
 ### Calling runtime methods
 
-The Javascript runtime is located at `window.runtime` and contains many methods to do various tasks such as emit an event or perform logging operations:
+The JavaScript runtime is located at `window.runtime` and contains many methods to do various tasks such as emit an event or perform logging operations:
 
 ```js title="mycode.js"
 window.runtime.EventsEmit("my-event", 1);

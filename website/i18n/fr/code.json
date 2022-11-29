@@ -1,30 +1,30 @@
 {
   "homepage.Features.Title1": {
-    "message": "homepage.Features.Title1"
+    "message": "Riche en fonctionnalités"
   },
   "homepage.Features.Description1": {
-    "message": "homepage.Features.Description1"
+    "message": "Construisez des applications multiplateformes complètes en utilisant des éléments natifs du UI tels que les menus et les boîtes de dialogue."
   },
   "homepage.Features.Title2": {
-    "message": "homepage.Features.Title2"
+    "message": "Familier"
   },
   "homepage.Features.Description2": {
-    "message": "homepage.Features.Description2"
+    "message": "Utilisez les technologies que vous connaissez déjà pour construire des applications étonnantes."
   },
   "homepage.Features.Title3": {
-    "message": "homepage.Features.Title3"
+    "message": "Fast"
   },
   "homepage.Features.Description3": {
-    "message": "homepage.Features.Description3"
+    "message": "Générez, construisez et empaquetez rapidement vos projets en utilisant le CLI Wails."
   },
   "homepage.Tagline": {
-    "message": "homepage.Tagline"
+    "message": "Créez de belles applications multi-plateformes en utilisant Go"
   },
   "homepage.ButtonText": {
-    "message": "homepage.ButtonText"
+    "message": "Premiers Pas"
   },
   "homepage.LearnMoreButtonText": {
-    "message": "homepage.LearnMoreButtonText"
+    "message": "En savoir plus"
   },
   "theme.ErrorPageContent.title": {
     "message": "Cette page a planté.",
@@ -35,7 +35,7 @@
     "description": "The label of the button to try again when the page crashed"
   },
   "theme.NotFound.title": {
-    "message": "Page introuvable",
+    "message": "Page non trouvée",
     "description": "The title of the 404 page"
   },
   "theme.NotFound.p1": {
@@ -43,7 +43,7 @@
     "description": "The first paragraph of the 404 page"
   },
   "theme.NotFound.p2": {
-    "message": "Veuillez contacter le propriétaire du site qui vous a lié à l'URL d'origine et leur faire savoir que leur lien est cassé.",
+    "message": "Veuillez contacter le propriétaire du site qui vous a dirigé vers cette URL et lui faire savoir que son lien est rompu.",
     "description": "The 2nd paragraph of the 404 page"
   },
   "theme.AnnouncementBar.closeButtonAriaLabel": {
@@ -59,7 +59,7 @@
     "description": "The page & hero description of the blog archive page"
   },
   "theme.BackToTopButton.buttonAriaLabel": {
-    "message": "Retour au début de la page",
+    "message": "Retour en haut de la page",
     "description": "The ARIA label for the back to top button"
   },
   "theme.blog.paginator.navAriaLabel": {
@@ -71,7 +71,7 @@
     "description": "The label used to navigate to the newer blog posts page (previous page)"
   },
   "theme.blog.paginator.olderEntries": {
-    "message": "Anciennes entrées",
+    "message": "Anciennes Entrées",
     "description": "The label used to navigate to the older blog posts page (next page)"
   },
   "theme.blog.post.readingTime.plurals": {
@@ -79,11 +79,11 @@
     "description": "Pluralized label for \"{readingTime} min read\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
   },
   "theme.blog.post.readMoreLabel": {
-    "message": "En savoir plus sur {title}",
+    "message": "Lire la suite de {title}",
     "description": "The ARIA label for the link to full blog posts from excerpts"
   },
   "theme.blog.post.readMore": {
-    "message": "Lire plus",
+    "message": "Lire la suite",
     "description": "The label used in blog post item excerpts to link to full blog posts"
   },
   "theme.blog.post.paginator.navAriaLabel": {
@@ -115,7 +115,7 @@
     "description": "The label of the link targeting the tag list page"
   },
   "theme.CodeBlock.copyButtonAriaLabel": {
-    "message": "Copier le code",
+    "message": "Copier le code dans le presse-papiers",
     "description": "The ARIA label for copy code blocks button"
   },
   "theme.CodeBlock.copied": {
@@ -127,7 +127,7 @@
     "description": "The copy button label on code blocks"
   },
   "theme.colorToggle.ariaLabel": {
-    "message": "Basculer entre le mode sombre et clair (actuellement {mode})",
+    "message": "Passer du mode sombre au mode clair (actuellement {mode})",
     "description": "The ARIA label for the navbar color mode toggle"
   },
   "theme.colorToggle.ariaLabel.mode.dark": {
@@ -143,7 +143,7 @@
     "description": "The default description for a category card in the generated index about how many items this category includes"
   },
   "theme.docs.sidebar.expandButtonTitle": {
-    "message": "Déplier le menu latéral",
+    "message": "Étendre la barre latérale",
     "description": "The ARIA label and title attribute for expand button of doc sidebar"
   },
   "theme.docs.sidebar.expandButtonAriaLabel": {
@@ -163,7 +163,7 @@
     "description": "The label used to navigate to the next doc"
   },
   "theme.docs.sidebar.collapseButtonTitle": {
-    "message": "Réduire le menu latéral",
+    "message": "Réduire la barre latérale",
     "description": "The title attribute for collapse button of doc sidebar"
   },
   "theme.docs.sidebar.collapseButtonAriaLabel": {
@@ -230,11 +230,11 @@
     "description": "The label for the navbar versions dropdown on mobile view"
   },
   "theme.common.skipToMainContent": {
-    "message": "Aller au contenu principal",
+    "message": "Passer au contenu principal",
     "description": "The skip to content label used for accessibility, allowing to rapidly navigate to main content with keyboard tab/enter navigation"
   },
   "theme.tags.tagsListLabel": {
-    "message": "Tags :",
+    "message": "Tags :",
     "description": "The label alongside a tag list"
   },
   "theme.TOCCollapsible.toggleButtonLabel": {
@@ -249,15 +249,15 @@
     "message": "Voir les {count} résultats"
   },
   "theme.SearchBar.label": {
-    "message": "Chercher",
+    "message": "Recherche",
     "description": "The ARIA label and placeholder for search button"
   },
   "theme.SearchPage.documentsFound.plurals": {
-    "message": "Un document trouvé|{count} documents trouvés",
+    "message": "Un document trouvé |{count} documents trouvés",
     "description": "Pluralized label for \"{count} documents found\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
   },
   "theme.SearchPage.existingResultsTitle": {
-    "message": "Résultats de recherche pour « {query} »",
+    "message": "Résultats de la recherche pour \"{query}\"",
     "description": "The search page title for non-empty query"
   },
   "theme.SearchPage.emptyResultsTitle": {
@@ -265,7 +265,7 @@
     "description": "The search page title for empty query"
   },
   "theme.SearchPage.inputPlaceholder": {
-    "message": "Tapez votre recherche ici",
+    "message": "Saisissez votre recherche ici",
     "description": "The placeholder for search page input"
   },
   "theme.SearchPage.inputLabel": {
@@ -281,15 +281,15 @@
     "description": "The paragraph for empty search result"
   },
   "theme.SearchPage.fetchingNewResults": {
-    "message": "Chargement de nouveaux résultats...",
+    "message": "Récupération des nouveaux résultats...",
     "description": "The paragraph for fetching new search results"
   },
   "theme.tags.tagsPageTitle": {
-    "message": "Tags",
+    "message": "Tags ",
     "description": "The title of the tag list page"
   },
   "theme.docs.breadcrumbs.home": {
-    "message": "Page d'accueil",
+    "message": "Page d’accueil",
     "description": "The ARIA label for the home page in the breadcrumbs"
   },
   "theme.docs.breadcrumbs.navAriaLabel": {
@@ -301,7 +301,7 @@
     "description": "The title attribute for toggle word wrapping button of code block lines"
   },
   "theme.admonition.note": {
-    "message": "remarque",
+    "message": "note",
     "description": "The default label used for the Note admonition (:::note)"
   },
   "theme.admonition.tip": {
@@ -329,7 +329,7 @@
     "description": "The label and ARIA label for search box cancel button"
   },
   "theme.SearchModal.startScreen.recentSearchesTitle": {
-    "message": "Récemment",
+    "message": "Récents",
     "description": "The title for recent searches"
   },
   "theme.SearchModal.startScreen.noRecentSearchesText": {
@@ -337,7 +337,7 @@
     "description": "The text when no recent searches"
   },
   "theme.SearchModal.startScreen.saveRecentSearchButtonTitle": {
-    "message": "Sauvegarder cette recherche",
+    "message": "Enregistrer cette recherche",
     "description": "The label for save recent search button"
   },
   "theme.SearchModal.startScreen.removeRecentSearchButtonTitle": {
@@ -357,7 +357,7 @@
     "description": "The title for error screen of search modal"
   },
   "theme.SearchModal.errorScreen.helpText": {
-    "message": "Vous pouvez vérifier votre connexion réseau.",
+    "message": "Vous devriez vérifier votre connexion réseau.",
     "description": "The help text for error screen of search modal"
   },
   "theme.SearchModal.footer.selectText": {
@@ -365,7 +365,7 @@
     "description": "The explanatory text of the action for the enter key"
   },
   "theme.SearchModal.footer.selectKeyAriaLabel": {
-    "message": "Touche Entrée",
+    "message": "La touche Entrée",
     "description": "The ARIA label for the Enter key button that makes the selection"
   },
   "theme.SearchModal.footer.navigateText": {
@@ -389,7 +389,7 @@
     "description": "The ARIA label for the Escape key button that close the modal"
   },
   "theme.SearchModal.footer.searchByText": {
-    "message": "Recherche via",
+    "message": "Rechercher par",
     "description": "The text explain that the search is making by Algolia"
   },
   "theme.SearchModal.noResultsScreen.noResultsText": {

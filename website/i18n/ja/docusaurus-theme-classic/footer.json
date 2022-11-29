@@ -1,6 +1,6 @@
 {
   "link.title.Docs": {
-    "message": "ドキュメント",
+    "message": "Docs",
     "description": "The title of the footer links column with title=Docs in the footer"
   },
   "link.title.Community": {
@@ -8,7 +8,7 @@
     "description": "The title of the footer links column with title=Community in the footer"
   },
   "link.title.More": {
-    "message": "その他",
+    "message": "More",
     "description": "The title of the footer links column with title=More in the footer"
   },
   "link.item.label.Introduction": {
@@ -36,11 +36,11 @@
     "description": "The label of footer link with label=Slack linking to https://gophers.slack.com/messages/CJ4P9F7MZ/"
   },
   "link.item.label.Slack invite": {
-    "message": "Slackへの招待",
+    "message": "Slack invite",
     "description": "The label of footer link with label=Slack invite linking to https://invite.slack.golangbridge.org/"
   },
   "link.item.label.Blog": {
-    "message": "ブログ",
+    "message": "Blog",
     "description": "The label of footer link with label=Blog linking to /blog"
   },
   "copyright": {

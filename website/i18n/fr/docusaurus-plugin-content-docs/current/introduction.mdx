@@ -6,22 +6,22 @@ sidebar_position: 1
 
 Wails est un projet qui vous permet d'écrire des applications de bureau en utilisant les technologies Go et web.
 
-Consider it a lightweight and fast Electron alternative for Go. You can easily build applications with the flexibility and power of Go, combined with a rich, modern frontend.
+Considérez cela comme une alternative légère et rapide d'Electron pour Go. Vous pouvez facilement construire des applications avec la flexibilité et la puissance de Go, combinée à un frontend riche et moderne.
 
-### Features
+### Fonctionnalités
 
-- Native Menus, Dialogs, Theming and Translucency
-- Windows, macOS and linux support
-- Built in templates for Svelte, React, Preact, Vue, Lit and Vanilla JS
-- Easily call Go methods from Javascript
-- Automatic Go struct to Typescript model generation
-- No CGO or external DLLs required on Windows
-- Live development mode using the power of [Vite](https://vitejs.dev/)
-- Powerful CLI to easily Create, Build and Package applications
-- A rich [runtime library](/docs/reference/runtime/intro)
-- Applications built with Wails are Apple & Microsoft Store compliant
+- Menus natifs, Boîtes de dialogues, Thèmes et Translucidité
+- Prise en charge de Windows, macOS et Linux
+- Modèles intégrés pour Svelte, React, Preact, Vue, Lit et Vanilla JS
+- Easily call Go methods from JavaScript
+- Génération automatique du modèle TypeScript à partir de struct Go
+- Aucun CGO ou DLL externe requis sous Windows
+- Mode développement en direct en utilisant la puissance de [Vite](https://vitejs.dev/)
+- CLI puissant pour créer, construire et empaqueter facilement des applications
+- Une riche bibliothèque [runtime](/docs/reference/runtime/intro)
+- Les applications construites avec Wails sont conformes aux Stores Apple & Microsoft
 
-This is [varly](https://varly.app) - a desktop application for MacOS & Windows written using Wails. Not only does it look great, it uses native menus and translucency - everything you'd expect from a modern native app.
+Ceci est [varly](https://varly.app) - une application de bureau pour MacOS & Windows écrite à l'aide de Wails. Non seulement elle est belle, elle utilise les menus natifs et la translucidité - tout ce que vous pouvez attendre d'une application native moderne.
 
 ```mdx-code-block
 <p class="text--center">
@@ -34,42 +34,42 @@ This is [varly](https://varly.app) - a desktop application for MacOS & Windows w
 </p>
 ```
 
-### Quick Start Templates
+### Modèles de créations rapides
 
-Wails comes with a number of pre-configured templates that allow you to get your application up and running quickly. There are templates for the following frameworks: Svelte, React, Vue, Preact, Lit and Vanilla. There are both Javascript and Typescript versions for each template.
+Wails est livré avec un certain nombre de modèles préconfigurés qui vous permettent de faire fonctionner votre application rapidement. Il y a des modèles pour les frameworks suivants : Svelte, React, Vue, Preact, Lit et Vanilla. Il existe à la fois des versions JavaScript et TypeScript pour chaque modèle.
 
-### Native Elements
+### Éléments natifs
 
-Wails uses a purpose built library for handling native elements such as Window, Menus, Dialogs, etc, so you can build good-looking, feature rich desktop applications.
+Wails utilise une bibliothèque conçue pour gérer les éléments natifs tels que les fenêtres, menus, boîtes de dialogues, etc, pour que vous puissiez construire des applications de bureau riches en fonctionnalités.
 
-**It does not embed a browser**, so it is resource efficient. Instead, it uses the native rendering engine for the platform. On Windows, this is the new Microsoft Webview2 library, built on Chromium.
+**Il n'embarque pas de navigateur**, il est donc efficace sur les ressources. Au lieu de cela, il utilise le moteur de rendu natif de la plate-forme. Sous Windows, c'est la nouvelle bibliothèque Microsoft Webview2, construite sur Chromium.
 
-### Go & Javascript Interoperability
+### Go & JavaScript Interoperability
 
-Wails automatically makes your Go methods available to Javascript, so you can call them by name from your frontend! It even generates Typescript models for the structs used by your Go methods, so you can pass the same data structures between Go and Javascript.
+Wails automatically makes your Go methods available to JavaScript, so you can call them by name from your frontend! It even generates TypeScript models for the structs used by your Go methods, so you can pass the same data structures between Go and JavaScript.
 
-### Runtime Library
+### Librairie d'exécution
 
-Wails provides a runtime library, for both Go and Javascript, that handles a lot of the things modern applications need, like Eventing, Logging, Dialogs, etc.
+Wails provides a runtime library, for both Go and JavaScript, that handles a lot of the things modern applications need, like Eventing, Logging, Dialogs, etc.
 
-### Live Development Experience
+### Expérience de développement en direct
 
-#### Automatic Rebuilds
+#### Reconstructions automatiques
 
-When you run your application in "dev" mode, Wails will build your application as a native desktop application, but will read your assets from disk. It will detect any changes to your Go code and automatically rebuild and relaunch your application.
+Lorsque vous exécutez votre application en mode "dev", Wails construira votre application en tant qu'application de bureau native, mais lira vos ressources depuis le disque. Il détectera toutes les modifications apportées à votre code Go, puis reconstruira et relancera automatiquement votre application .
 
-#### Automatic Reloads
+#### Rechargement automatique
 
-When changes to your application assets are detected, your running application will "reload", reflecting your changes almost immediately.
+Lorsque des changements sont détectés dans les ressources de votre application, votre application en cours d'exécution sera "rechargée", reflétant presque immédiatement vos modifications .
 
-#### Develop your application in a Browser
+#### Développez votre application dans un navigateur
 
-If you prefer to debug and develop in a browser then Wails has you covered. The running application also has a webserver that will run your application in any browser that connects to it. It will even refresh when your assets change on disk.
+Si vous préférez déboguer et vous développer dans un navigateur, Wails vous couvre. L'application en cours d'exécution a également un serveur web qui exécutera votre application depuis n'importe quel navigateur qui s'y connecte. Il sera aussi actualisé lorsque vos fichiers seront modifiés.
 
-### Production-ready Native Binaries
+### Binaires natifs prêts à la production
 
-When you're ready to do the final build of your application, the CLI will compile it down to a single executable, with all the assets bundled into it. On Windows and MacOS, it is possible to create a native package for distribution. The assets used in packaging (icon, info.plist, manifest file, etc) are part of your project and may be customised, giving you total control over how your applications are built.
+Lorsque vous êtes prêt à faire une version finale de votre application, le CLI le compilera en un seul exécutable, avec tous les actifs qui y sont intégrés. Sous Windows et MacOS, il est possible de créer un paquet natif pour la distribution. Les ressources utilisées dans la compilation de l'application (icône, info. list, fichier manifest, etc) font partie de votre projet et peuvent être personnalisés, ce qui vous donne le contrôle total sur la façon dont vos applications sont construites.
 
-### Tooling
+### Outils
 
-The Wails CLI provides a hassle-free way to generate, build and bundle your applications. It will do the heavy lifting of creating icons, compiling your application with optimal settings and delivering a distributable, production ready binary. Choose from a number of starter templates to get up and running quickly!
+Le CLI Wails fournit un moyen sans tracas de générer, de construire et de regrouper vos applications. Il s'occupera de la lourde tâche de créer des icônes, de compiler votre application avec des paramètres optimaux et de fournir un binaire distribuable et prêt à la production. Choisissez parmi un certain nombre de modèles de démarrage pour démarrer rapidement !

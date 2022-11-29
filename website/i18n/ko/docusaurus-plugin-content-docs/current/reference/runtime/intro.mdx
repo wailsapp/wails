@@ -4,9 +4,9 @@ sidebar_position: 1
 
 # 소개
 
-The runtime is a library that provides utility methods for your application. There is both a Go and Javascript runtime and the aim is to try and keep them at parity where possible.
+런타임은 애플리케이션에 유틸리티 메서드를 제공하는 라이브러리입니다. There is both a Go and JavaScript runtime and the aim is to try and keep them at parity where possible.
 
-It has utility methods for:
+다음에 대한 유틸리티 메서드가 있습니다:
 
 - [Window](window.mdx)
 - [Menu](menu.mdx)
@@ -15,23 +15,23 @@ It has utility methods for:
 - [Browser](browser.mdx)
 - [Log](log.mdx)
 
-The Go Runtime is available through importing `github.com/wailsapp/wails/v2/pkg/runtime`. All methods in this package take a context as the first parameter. This context should be obtained from the [OnStartup](../options.mdx#onstartup) or [OnDomReady](../options.mdx#ondomready) hooks.
+Go 런타임은 `github.com/wailsapp/wails/v2/pkg/runtime` 가져오기를 통해 사용할 수 있습니다. 이 패키지의 모든 메소드는 컨텍스트를 첫 번째 매개변수로 사용합니다. 이 컨텍스트는 [OnStartup](../options.mdx#onstartup) 또는 [OnDomReady](../options.mdx#ondomready) 후크에서 가져와야 합니다.
 
-:::info Note
+:::참고
 
-Whilst the context will be provided to the [OnStartup](../options.mdx#onstartup) method, there's no guarantee the runtime will work in this method as the window is initialising in a different thread. If you wish to call runtime methods at startup, use [OnDomReady](../options.mdx#ondomready).
+컨텍스트는 [OnStartup](../options.mdx#onstartup) 메서드를 사용할 경우 런타임이 이 메서드에서 다음과 같이 작동할 것이라는 보장은 없습니다. 창이 다른 스레드에서 초기화되고 있습니다. 시작 시 런타임 메서드를 호출하려면 [OnDomReady](../options.mdx#ondomready)를 사용하세요.
 
 :::
 
-The Javascript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev` mode that provides Typescript declarations for the runtime. This should be located in the `wailsjs` directory in your frontend directory.
+The JavaScript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev` mode that provides TypeScript declarations for the runtime. 이것은 프론트엔드 디렉토리의 `wailsjs` 디렉토리에 있어야 합니다.
 
 ### Hide
 
 Go: `Hide(ctx context.Context)`<br/> JS: `Hide()`
 
-Hides the application.
+애플리케이션을 숨깁니다.
 
-:::info Note
+:::참고
 
 On Mac, this will hide the application in the same way as the `Hide` menu item in standard Mac applications. This is different to hiding the window, but the application still being in the foreground. For Windows and Linux, this is currently the same as `WindowHide`.
 
@@ -41,7 +41,7 @@ On Mac, this will hide the application in the same way as the `Hide` menu item i
 
 Shows the application.
 
-:::info Note
+:::참고
 
 On Mac, this will bring the application back into the foreground. For Windows and Linux, this is currently the same as `WindowShow`.
 

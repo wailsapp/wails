@@ -4,9 +4,9 @@ sidebar_position: 3
 
 # オプション
 
-## Application Options
+## アプリケーションオプション
 
-The `Options.App` struct contains the application configuration. It is passed to the `wails.Run()` method:
+`Options.App`構造体には、アプリケーションの構成設定が含まれています。 これを`wails.Run()`メソッドに渡してください:
 
 ```go title="Example"
 import (
@@ -115,25 +115,25 @@ func main() {
 
 ### Title
 
-The text shown in the window's title bar.
+ウィンドウのタイトルバーに表示されるテキストです。
 
 名前: Title<br/> データ型: `string`
 
 ### Width
 
-The initial width of the window.
+ウィンドウの初期幅です。
 
 名前: Width<br/> データ型: `int`<br/> デフォルト値: 1024
 
 ### Height
 
-The initial height of the window.
+ウィンドウの初期の高さです。
 
 名前: Height<br/> データ型: `int`<br/> デフォルト値: 768
 
 ### DisableResize
 
-By default, the main window is resizable. Setting this to `true` will keep it a fixed size.
+デフォルトでは、メインウィンドウのサイズは自在に変更することができます。 この設定を`true`にすると、サイズが固定されます。
 
 名前: DisableResize<br/> データ型: `bool`
 
@@ -143,7 +143,7 @@ By default, the main window is resizable. Setting this to `true` will keep it a 
 
 ### WindowStartState
 
-Defines how the window should present itself at startup.
+起動時にウィンドウをどのように表示させるかを定義します。
 
 | 値          | Win | Mac | Lin |
 | ---------- | --- | --- | --- |
@@ -155,43 +155,43 @@ Defines how the window should present itself at startup.
 
 ### Frameless
 
-When set to `true`, the window will have no borders or title bar. Also see [Frameless Windows](../guides/frameless.mdx).
+この設定を`true`にすると、ウィンドウに境界線やタイトルバーが表示されなくなります。 詳しくは[フレームレスウィンドウ](../guides/frameless.mdx)をご覧ください。
 
 名前: Frameless<br/> データ型: `bool`
 
 ### MinWidth
 
-This sets the minimum width for the window. If the value given in `Width` is less than this value, the window will be set to `MinWidth` by default.
+ウィンドウの最小幅を設定します。 `Width`の値がこの値より小さい場合、ウィンドウ幅はデフォルトで`MinWidth`の値となります。
 
 名前: MinWidth<br/> データ型: `int`
 
 ### MinHeight
 
-This sets the minimum height for the window. If the value given in `Height` is less than this value, the window will be set to `MinHeight` by default.
+ウィンドウの最小の高さを設定します。 `Height`の値がこの値より小さい場合、ウィンドウの高さはデフォルトで`MinHeight`の値となります。
 
 名前: MinHeight<br/> データ型: `int`
 
 ### MaxWidth
 
-This sets the maximum width for the window. If the value given in `Width` is more than this value, the window will be set to `MaxWidth` by default.
+ウィンドウの最大幅を設定します。 `Width`の値がこの値より大きい場合、ウィンドウ幅はデフォルトで`MaxWidth`の値となります。
 
 名前: MaxWidth<br/> データ型: `int`
 
 ### MaxHeight
 
-This sets the maximum height for the window. If the value given in `Height` is more than this value, the window will be set to `MaxHeight` by default.
+ウィンドウの最大の高さを設定します。 `Height`の値がこの値より大きい場合、ウィンドウの高さはデフォルトで`MaxHeight`の値となります。
 
 名前: MaxHeight<br/> データ型: `int`
 
 ### StartHidden
 
-When set to `true`, the application will be hidden until [WindowShow](../reference/runtime/window.mdx#windowshow) is called.
+`true`に設定すると、アプリケーションは[WindowShow](../reference/runtime/window.mdx#windowshow)が呼び出されるまで非表示となります。
 
 名前: StartHidden<br/> データ型: `bool`
 
 ### HideWindowOnClose
 
-By default, closing the window will close the application. この設定を`true`にすると、ウィンドウを閉じる操作をした際に、
+デフォルトでは、ウィンドウを閉じるとアプリケーションが終了します。 この設定を`true`にすると、ウィンドウを閉じる操作をした際に、
 
 ウィンドウが非表示の状態になります。
 
@@ -199,13 +199,13 @@ By default, closing the window will close the application. この設定を`true`
 
 ### BackgroundColour
 
-This value is the default background colour of the window. 例: options.NewRGBA(255,0,0,128) - 50%透過された赤色
+ウィンドウのデフォルトの背景色です。 例: options.NewRGBA(255,0,0,128) - 50%透過された赤色
 
 名前: BackgroundColour<br/> データ型: `*options.RGBA`<br/> デフォルト値: white
 
 ### AlwaysOnTop
 
-Indicates that the window should stay above other windows when losing focus.
+ウィンドウへのフォーカスが無くなっても、他ウィンドウより手前側にウィンドウを表示させるかを設定します。
 
 名前: AlwaysOnTop<br/> データ型: `bool`
 
@@ -239,7 +239,7 @@ AssetServerの固有オプションを定義します。 静的なアセット�
 | Response Body Streaming | ❌   | ❌   | ✅   |
 | WebSockets              | ❌   | ❌   | ❌   |
 
-NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.36.0. In the future some features will be supported by the introduction of WebKit2GTK 2.36.0+ support.
+注意: 現在、LinuxはWebKit2GTKバージョン2.36.0未満をターゲットにしているため、使用できる機能が非常に限られています。 将来的に、WebKit2GTK 2.36.0以降の導入を予定しており、それによりいくつかの機能が新たにサポートされる予定です。
 
 名前: AssetServer<br/> データ型: `*assetserver.Options`
 
@@ -262,7 +262,7 @@ nilがセットされている場合、GETリクエストに常に[Handler](#han
 - GETリクエスト: `http.StatusNotFound`
 - その他のリクエスト: `http.StatusMethodNotAllowed`
 
-NOTE: When used in combination with a Frontend DevServer there might be limitations, eg. Vite serves the index.html on every path, that does not contain a file extension.
+注意: フロントエンド側の開発サーバと組み合わせて使用すると、一部制限がかかる場合があります。 Viteは、拡張子を含まないパスに対して、常にindex.htmlを返します。
 
 名前: AssetsHandler<br/> データ型: `http.Handler`
 
@@ -276,7 +276,7 @@ Middlewareが定義されていない場合、デフォルトのAssetServerの�
 
 ### Menu
 
-The menu to be used by the application. More details about Menus in the [Menu Reference](../reference/runtime/menu.mdx).
+アプリケーションで使用されるメニューです。 メニューについて詳しくは、[メニューのリファレンス](../reference/runtime/menu.mdx)をご覧ください。
 
 :::note
 
@@ -288,45 +288,45 @@ Macでは、メニューが指定されていない場合、デフォルトメ�
 
 ### Logger
 
-The logger to be used by the application. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
+アプリケーションで使用するロガーです。 ロギングについて詳しくは、[ログのリファレンス](../reference/runtime/log.mdx)をご覧ください。
 
 名前: Logger<br/> データ型: `logger.Logger`<br/> デフォルト値: 標準出力へのロガー
 
 ### LogLevel
 
-The default log level. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
+デフォルトのログレベルです。 ロギングについて詳しくは、[ログのリファレンス](../reference/runtime/log.mdx)をご覧ください。
 
 名前: LogLevel<br/> データ型: `logger.LogLevel`<br/> デフォルト値: 開発モードの場合は`Info`、本番モードの場合は`Error`
 
 ### LogLevelProduction
 
-The default log level for production builds. More details about logging in the [Log Reference](../reference/runtime/log.mdx).
+本番ビルド時のデフォルトのログレベルです。 ロギングについて詳しくは、[ログのリファレンス](../reference/runtime/log.mdx)をご覧ください。
 
 名前: LogLevelProduction<br/> データ型: `logger.LogLevel`<br/> デフォルト値: `Error`
 
 ### OnStartup
 
-This callback is called after the frontend has been created, but before `index.html` has been loaded. It is given the application context.
+フロントエンド作成後、`index.html`が読み込まれる前に呼び出されるコールバックです。 アプリケーションのcontextが渡されます。
 
 名前: OnStartup<br/> データ型: `func(ctx context.Context)`
 
 ### OnDomReady
 
-This callback is called after the frontend has loaded `index.html` and its resources. It is given the application context.
+フロントエンドが`index.html`とそのリソースを読み込んだ後に呼び出されるコールバックです。 アプリケーションのcontextが渡されます。
 
 名前: OnDomReady<br/> データ型: `func(ctx context.Context)`
 
 ### OnShutdown
 
-This callback is called after the frontend has been destroyed, just before the application terminates. It is given the application context.
+フロントエンドが破棄され、アプリケーションが終了する直前に呼び出されるコールバックです。 アプリケーションのcontextが渡されます。
 
 名前: OnShutdown<br/> データ型: `func(ctx context.Context)`
 
 ### OnBeforeClose
 
-If this callback is set, it will be called when the application is about to quit, either by clicking the window close button or calling `runtime.Quit`. Returning true will cause the application to continue, false will continue shutdown as normal. This is good for confirming with the user that they wish to exit the program.
+ウィンドウの閉じるボタンをクリックするか、`runtime.Quit`が呼ばれて、アプリケーションが終了されそうになっているときに呼び出されるコールバックです。 trueを返すとアプリケーションはそのまま維持され、falseを返すと通常どおりシャットダウンされます。 ユーザに対してプログラムの終了を確認したいときは、このコールバックを使うのが良いでしょう。
 
-Example:
+例:
 
 ```go title=windowsapp.go
 func (b *App) beforeClose(ctx context.Context) (prevent bool) {
@@ -371,7 +371,7 @@ WebView2の拡大率を定義します。 これは、Edgeのユーザによる�
 
 ### Bind
 
-A slice of struct instances defining methods that need to be bound to the frontend.
+フロントエンドにバインドする必要があるメソッドが定義された、構造体インスタンスのスライスです。
 
 名前: Bind<br/> データ型: `[]interface{}`
 
@@ -383,13 +383,13 @@ A slice of struct instances defining methods that need to be bound to the fronte
 
 #### WebviewIsTransparent
 
-Setting this to `true` will make the webview background transparent when an alpha value of `0` is used. This means that if you use `rgba(0,0,0,0)` for `background-color` in your CSS, the host window will show through. Often combined with [WindowIsTranslucent](#WindowIsTranslucent) to make frosty-looking applications.
+この値を`true`に設定すると、アルファ値が`0`の際に、WebViewの背景が透明になります。 つまり、CSSで`background-color`に`rgba(0,0,0,0)`を設定すると、ホストウィンドウが透けて見えるようになります。 多くの場合、[WindowIsTranslucent](#WindowIsTranslucent)と組み合わて、霜のように見えるアプリケーションを作成する際に使用します。
 
 名前: WebviewIsTransparent<br/> データ型: `bool`
 
 #### WindowIsTranslucent
 
-Setting this to `true` will make the window background translucent. 多くの場合、[WebviewIsTransparent](#WebviewIsTransparent)と組み合わせて使用されます。
+この値を`true`に設定すると、ウィンドウの背景が半透明になります。 多くの場合、[WebviewIsTransparent](#WebviewIsTransparent)と組み合わせて使用されます。
 
 ビルド22621より前のWindows 11の場合、半透明を実現させるために[BlurBehind](https://learn.microsoft.com/ja-jp/windows/win32/dwm/blur-ovw)メソッドを使用するため、処理が遅くなる可能性があります。 ビルド22621以降のWindows 11では、より高速な、新しい半透明タイプが有効になります。 デフォルトで使用される半透明タイプは、Windowsにより決定されます。 このタイプを設定するには、[BackdropType](#BackdropType)オプションを使用してください。
 
@@ -409,7 +409,7 @@ Setting this to `true` will make the window background translucent. 多くの場
 
 値は次のいずれかを指定してください:
 
-| 値       | Description                                                                         |
+| 値       | 説明                                                                                  |
 | ------- | ----------------------------------------------------------------------------------- |
 | Auto    | Windowsに背景を決定させる                                                                    |
 | None    | 半透明にしない                                                                             |
@@ -419,45 +419,45 @@ Setting this to `true` will make the window background translucent. 多くの場
 
 #### DisableWindowIcon
 
-Setting this to `true` will remove the icon in the top left corner of the title bar.
+この設定を`true`にすると、タイトルバーの左上隅のアイコンが消去されます。
 
 名前: DisableWindowIcon<br/> データ型: `bool`
 
 #### DisableFramelessWindowDecorations
 
-Setting this to `true` will remove the window decorations in [Frameless](#Frameless) mode. This means there will be no 'Aero Shadow' and no 'Rounded Corners' shown for the window. Please note that 'Rounded Corners' are only supported on Windows 11.
+この設定を`true`にすると、[フレームレス](#Frameless)モードでのウィンドウデコレーションが消去されます。 つまり、'Aero Shadow'および'Rounded Corners'がウィンドウに適用されなくなります。 なお、'Rounded Corners'はWindows 11でのみサポートされていますのでご注意ください。
 
 名前: DisableFramelessWindowDecorations<br/> データ型: `bool`
 
 #### WebviewUserDataPath
 
-This defines the path where the WebView2 stores the user data. If empty `%APPDATA%\[BinaryName.exe]` will be used.
+WebView2が、ユーザデータを格納するパスを設定します。 空の場合は、`%APPDATA%\[BinaryName.exe]`が使用されます。
 
 名前: WebviewUserDataPath<br/> データ型: `string`
 
 #### WebviewBrowserPath
 
-This defines the path to a directory with WebView2 executable files and libraries. If empty, webview2 installed in the system will be used.
+WebView2の実行ファイルおよびライブラリが存在するディレクトリへのパスを設定します。 空の場合、システムにインストールされているWebView2が使用されます。
 
-Important information about distribution of fixed version runtime:
+固定バージョンランタイムディストリビューションに関する重要情報:
 
-- [How to get and extract runtime](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode)
-- [Known issues for fixed version](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#known-issues-for-fixed-version)
-- [The path of fixed version of the WebView2 Runtime should not contain \Edge\Application\.](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
+- [ランタイムの取得および展開方法](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#details-about-the-fixed-version-runtime-distribution-mode)
+- [固定バージョンに関する既知の問題](https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#known-issues-for-fixed-version)
+- [WenView2ランタイムの固定バージョンのパスに、\Edge\Application\ を含めてはいけません](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
 
 名前: WebviewBrowserPath<br/> データ型: `string`
 
 #### Theme
 
-Minimum Windows Version: Windows 10 2004/20H1
+サポートされるWindowsの最小バージョン: Windows 10 2004/20H1
 
-This defines the theme that the application should use:
+アプリケーションが使用するテーマを設定します:
 
-| 値             | Description                                                                                                                                    |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| SystemDefault | _デフォルト値_です。 The theme will be based on the system default. If the user changes their theme, the application will update to use the new setting |
-| Dark          | The application will use a dark theme exclusively                                                                                              |
-| Light         | The application will use a light theme exclusively                                                                                             |
+| 値             | 説明                                                                                       |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| SystemDefault | _デフォルト値_です。 テーマは、システムのデフォルト設定に基づきます。 ユーザがシステムのテーマ設定を変更した場合、アプリケーションは新しい設定を使用するように更新されます。 |
+| Dark          | アプリケーションはダークテーマのみを使用します。                                                                 |
+| Light         | アプリケーションはライトテーマのみを使用します。                                                                 |
 
 名前: Theme<br/> データ型: `windows.Theme`
 
@@ -469,15 +469,15 @@ This defines the theme that the application should use:
 
 :::
 
-Allows you to specify custom colours for TitleBar, TitleText and Border for both light and dark mode, as well as when the window is active or inactive.
+ウィンドウがアクティブまたは非アクティブのときに、ライトモード・ダークモードのそれぞれにおいて、タイトルバー、タイトルテキスト、ボーダーのカスタムカラーを設定できます。
 
 名前: CustomTheme<br/> データ型: `windows.CustomTheme`
 
 ##### CustomTheme 型
 
-The CustomTheme struct uses `int32` to specify the colour values. These are in the standard(!) Windows format of: `0x00BBGGAA`. A helper function is provided to do RGB conversions into this format: `windows.RGB(r,g,b uint8)`.
+CustomTheme構造体は、`int32`型で色の値を指定します。 これは`0x00BBGGAA`で表されるWindowsの標準フォーマットで指定します。 RGBの値をこのフォーマットに変換するために、`windows.RGB(r,g,b uint8)`のようなヘルパー関数が用意されています。
 
-NOTE: Any value not provided will default to black.
+注意: 指定されていない値はデフォルトで黒色になります。
 
 ```go
 type ThemeSettings struct {
@@ -496,7 +496,7 @@ type ThemeSettings struct {
 }
 ```
 
-Example:
+例:
 
 ```go
     CustomTheme: &windows.ThemeSettings{
@@ -519,15 +519,15 @@ Example:
 
 #### Messages
 
-A struct of strings used by the webview2 installer if a valid webview2 runtime is not found.
+利用可能なWebView2ランタイムが見つからなかったときに表示する、WebView2インストーラに関するメッセージ文字列を設定します。
 
 名前: Messages<br/> データ型: `*windows.Messages`
 
-Customise this for any language you choose to support.
+プロジェクトがサポートする言語にあわせて、この設定をカスタマイズしてください。
 
 #### ResizeDebounceMS
 
-ResizeDebounceMS is the amount of time to debounce redraws of webview2 when resizing the window. The default value (0) will perform redraws as fast as it can.
+ResizeDebounceMSは、ウィンドウサイズが変更されたときに、WebView2の再描画を実行するまでの時間です。 デフォルト値(0) は、できるだけ早く再描画を実行します。
 
 名前: ResizeDebounceMS<br/> データ型: `uint16`
 
@@ -551,13 +551,13 @@ Windowsがローパワーモード(サスペンド/休止状態) から復帰し
 
 #### TitleBar
 
-The TitleBar struct provides the ability to configure the look and feel of the title bar.
+TitleBar構造体は、タイトルバーのルック・アンド・フィールを設定する機能を提供します。
 
 名前: TitleBar<br/> データ型: [`*mac.TitleBar`](#titlebar-struct)
 
-##### Titlebar struct
+##### Titlebar 構造体
 
-The titlebar of the application can be customised by using the TitleBar options:
+アプリケーションのタイトルバーは、TitleBarオプションを使用することでカスタマイズできます:
 
 ```go
 type TitleBar struct {
@@ -570,24 +570,24 @@ type TitleBar struct {
 }
 ```
 
-| Name                       | Description                                                                                                                                                                                                                          |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| TitlebarAppearsTransparent | Makes the titlebar transparent. This has the effect of hiding the titlebar and the content fill the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindow/1419167-titlebarappearstransparent?language=objc) |
-| HideTitle                  | Hides the title of the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowtitlevisibility?language=objc)                                                                                                  |
-| HideTitleBar               | Removes [NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/) from the style mask                                                                                   |
-| FullSizeContent            | Makes the webview fill the entire window. [Apple Docs](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemaskfullsizecontentview)                                                                      |
-| UseToolbar                 | Adds a default toolbar to the window. [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar?language=objc)                                                                                                         |
-| HideToolbarSeparator       | Removes the line beneath the toolbar. [Apple Docs](https://developer.apple.com/documentation/appkit/nstoolbar/1516954-showsbaselineseparator?language=objc)                                                                          |
+| 名前                         | 説明                                                                                                                                                                                 |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TitlebarAppearsTransparent | タイトルバーを透明にします。 これにより、タイトルバーが非表示になり、コンテンツがウィンドウ全体に表示されます。 [Appleドキュメント](https://developer.apple.com/documentation/appkit/nswindow/1419167-titlebarappearstransparent?language=objc) |
+| HideTitle                  | ウィンドウタイトルを非表示にします。 [Appleドキュメント](https://developer.apple.com/documentation/appkit/nswindowtitlevisibility?language=objc)                                                           |
+| HideTitleBar               | スタイルマスクから[NSWindowStyleMaskTitled](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemasktitled/)を消去します。                                             |
+| FullSizeContent            | WebViewをウィンドウ全体に表示します。 [Appleドキュメント](https://developer.apple.com/documentation/appkit/nswindowstylemask/nswindowstylemaskfullsizecontentview)                                      |
+| UseToolbar                 | ウィンドウにデフォルトツールバーを追加します。 [Appleドキュメント](https://developer.apple.com/documentation/appkit/nstoolbar?language=objc)                                                                    |
+| HideToolbarSeparator       | ツールバーの下側の線を消去します。 [Appleドキュメント](https://developer.apple.com/documentation/appkit/nstoolbar/1516954-showsbaselineseparator?language=objc)                                           |
 
-Preconfigured titlebar settings are available:
+事前設定されたタイトルバー構成を利用することも可能です:
 
-| Setting                     | 例                                              |
+| 設定                          | 例                                              |
 | --------------------------- | ---------------------------------------------- |
 | `mac.TitleBarDefault()`     | ![](/img/reference/titlebar-default.webp)      |
 | `mac.TitleBarHidden()`      | ![](/img/reference/titlebar-hidden.webp)       |
 | `mac.TitleBarHiddenInset()` | ![](/img/reference/titlebar-hidden-inset.webp) |
 
-Example:
+例:
 
 ```go
 Mac: &mac.Options{
@@ -595,30 +595,30 @@ Mac: &mac.Options{
 }
 ```
 
-Click [here](https://github.com/lukakerr/NSWindowStyles) for some inspiration on customising the titlebar.
+タイトルバーのカスタマイズに関してインスピレーションを得たい場合は[こちら](https://github.com/lukakerr/NSWindowStyles)をご覧ください。
 
 #### Appearance
 
-Appearance is used to set the style of your app in accordance with Apple's [NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc) names.
+Appearanceは、Appleの[NSAppearance](https://developer.apple.com/documentation/appkit/nsappearancename?language=objc)Nameに従って、アプリケーションのスタイルを設定するために使用します。
 
 名前: Appearance<br/> データ型: [`mac.AppearanceType`](#appearance-type)
 
 ##### Appearance 型
 
-You can specify the application's [appearance](https://developer.apple.com/documentation/appkit/nsappearance?language=objc).
+アプリケーションの[外観](https://developer.apple.com/documentation/appkit/nsappearance?language=objc)を指定します。
 
-| 値                                                     | Description                                                     |
-| ----------------------------------------------------- | --------------------------------------------------------------- |
-| DefaultAppearance                                     | DefaultAppearance uses the default system value                 |
-| NSAppearanceNameAqua                                  | The standard light system appearance                            |
-| NSAppearanceNameDarkAqua                              | The standard dark system appearance                             |
-| NSAppearanceNameVibrantLight                          | The light vibrant appearance                                    |
-| NSAppearanceNameAccessibilityHighContrastAqua         | A high-contrast version of the standard light system appearance |
-| NSAppearanceNameAccessibilityHighContrastDarkAqua     | A high-contrast version of the standard dark system appearance  |
-| NSAppearanceNameAccessibilityHighContrastVibrantLight | A high-contrast version of the light vibrant appearance         |
-| NSAppearanceNameAccessibilityHighContrastVibrantDark  | A high-contrast version of the dark vibrant appearance          |
+| 値                                                     | 説明                                    |
+| ----------------------------------------------------- | ------------------------------------- |
+| DefaultAppearance                                     | DefaultAppearanceは、システムのデフォルト値を使用します。 |
+| NSAppearanceNameAqua                                  | システムの標準的なライト外観                        |
+| NSAppearanceNameDarkAqua                              | システムの標準的なダーク外観                        |
+| NSAppearanceNameVibrantLight                          | より鮮やかなライト外観                           |
+| NSAppearanceNameAccessibilityHighContrastAqua         | システムの標準的なライト外観のハイコントラスト版              |
+| NSAppearanceNameAccessibilityHighContrastDarkAqua     | システムの標準的なダーク外観のハイコントラスト版              |
+| NSAppearanceNameAccessibilityHighContrastVibrantLight | より鮮やかなライト外観のハイコントラスト版                 |
+| NSAppearanceNameAccessibilityHighContrastVibrantDark  | より鮮やかなダーク外観のハイコントラスト版                 |
 
-Example:
+例:
 
 ```go
 Mac: &mac.Options{
@@ -628,23 +628,23 @@ Mac: &mac.Options{
 
 #### WebviewIsTransparent
 
-Setting this to `true` will make the webview background transparent when an alpha value of `0` is used. This means that if you use `rgba(0,0,0,0)` for `background-color` in your CSS, the host window will show through. Often combined with [WindowIsTranslucent](#WindowIsTranslucent) to make frosty-looking applications.
+この値を`true`に設定すると、アルファ値が`0`の際に、WebViewの背景が透明になります。 つまり、CSSで`background-color`に`rgba(0,0,0,0)`を設定すると、ホストウィンドウが透けて見えるようになります。 多くの場合、[WindowIsTranslucent](#WindowIsTranslucent)と組み合わて、霜のように見えるアプリケーションを作成する際に使用します。
 
 名前: WebviewIsTransparent<br/> データ型: `bool`
 
 #### WindowIsTranslucent
 
-Setting this to `true` will make the window background translucent. Often combined with [WebviewIsTransparent](#WebviewIsTransparent) to make frosty-looking applications.
+この値を`true`に設定すると、ウィンドウの背景が半透明になります。 多くの場合、[WebviewIsTransparent](#WebviewIsTransparent)と組み合わて、霜のように見えるアプリケーションを作成する際に使用します。
 
 名前: WindowIsTranslucent<br/> データ型: `bool`
 
 #### About
 
-This configuration lets you set the title, message and icon for the "About" menu item in the app menu created by the "AppMenu" role.
+"AppMenu"ロールで作成されたアプリケーションメニューの中にある"About"メニュー項目において、タイトル、メッセージ、アイコンを設定できます。
 
 名前: About<br/> データ型: [`*mac.AboutInfo`](#about-struct)
 
-##### About struct
+##### About 構造体
 
 ```go
 
@@ -655,7 +655,7 @@ type AboutInfo struct {
 }
 ```
 
-If these settings are provided, an "About" menu item will appear in the app menu (when using the `AppMenu` role). Given this configuration:
+これらの設定が定義されている場合、`AppMenu`ロールが使用されていれば、アプリケーションメニュー内に"About"メニューが表示されます。 例えば以下のように設定すると:
 
 ```go
 //go:embed build/appicon.png
@@ -674,7 +674,7 @@ func main() {
     })
 ```
 
-The "About" menu item will appear in the app menu:
+アプリケーションメニューに"About"メニュー項目が表示されます:
 
 ```mdx-code-block
 <div class="text--center">
@@ -686,7 +686,7 @@ The "About" menu item will appear in the app menu:
 <br />
 ```
 
-When clicked, that will open an about message box:
+クリックすると、アプリケーション概要メッセージボックスが開かれます:
 
 ```mdx-code-block
 <div class="text--center">
@@ -707,23 +707,23 @@ When clicked, that will open an about message box:
 
 #### Icon
 
-Sets up the icon representing the window. This icon is used when the window is minimized (also known as iconified).
+ウィンドウを示すアイコンを設定します。 このアイコンは、ウィンドウが最小化されたときに使用されます(iconifiedと呼ばれます)。
 
 名前: Icon<br/> データ型: `[]byte`
 
-Some window managers or desktop environments may also place it in the window frame, or display it in other contexts. On others, the icon is not used at all, so your mileage may vary.
+一部のウィンドウマネージャやデスクトップ環境では、ウィンドウフレームに配置されたり、他のコンテキストで表示される場合もあります。 On others, the icon is not used at all, so your mileage may vary.
 
-NOTE: Gnome on Wayland at least does not display this icon. To have a application icon there, a `.desktop` file has to be used. On KDE it should work.
+注意: 少なくともWayland上のGnomeでは、このアイコンは表示されません。 アプリケーションアイコンを表示させるには、`.desktop`ファイルを使用する必要があります。 KDEの場合は正常に表示されるはずです。
 
-The icon should be provided in whatever size it was naturally drawn; that is, don’t scale the image before passing it. Scaling is postponed until the last minute, when the desired final size is known, to allow best quality.
+アイコンは、何の加工もされていないサイズで用意してください。つまり、拡大/縮小された画像は使用しないでください。 Scaling is postponed until the last minute, when the desired final size is known, to allow best quality.
 
 #### WindowIsTranslucent
 
-Setting this to `true` will make the window background translucent. ウィンドウマネージャによっては、この設定を無視したり、ブラックウィンドウになる場合があります。
+この値を`true`に設定すると、ウィンドウの背景が半透明になります。 ウィンドウマネージャによっては、この設定を無視したり、ブラックウィンドウになる場合があります。
 
 名前: WindowIsTranslucent<br/> データ型: `bool`
 
-### デバッグ
+### Debug
 
 デバッグビルド時に適用される[デバッグ固有のオプション](#Debug)を定義します。
 

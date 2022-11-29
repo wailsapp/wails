@@ -54,7 +54,10 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 	d.server.GET("/wails/reload", d.handleReload)
 	d.server.GET("/wails/ipc", d.handleIPCWebSocket)
 
-	assetServerConfig := assetserver.BuildAssetServerConfig(d.appoptions)
+	assetServerConfig, err := assetserver.BuildAssetServerConfig(d.appoptions)
+	if err != nil {
+		return err
+	}
 
 	var assetHandler http.Handler
 	var wsHandler http.Handler

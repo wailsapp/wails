@@ -2,17 +2,17 @@
 sidebar_position: 1
 ---
 
-# イントロダクション
+# Introduction
 
-ランタイムは、アプリケーションにユーティリティメソッドを提供するライブラリです。 GoとJavascriptの両方にランタイムがあり、どちらにもほぼ同じメソッドが提供されています。
+ランタイムは、アプリケーションにユーティリティメソッドを提供するライブラリです。 There is both a Go and JavaScript runtime and the aim is to try and keep them at parity where possible.
 
 ユーティリティメソッドには次のようなものがあります:
 
-- [ウィンドウ](window.mdx)
-- [Menu](menu.mdx)
+- [Window](window.mdx)
+- [メニュー](menu.mdx)
 - [ダイアログ](dialog.mdx)
 - [イベント](events.mdx)
-- [Browser](browser.mdx)
+- [ブラウザ](browser.mdx)
 - [ログ](log.mdx)
 
 Goのランタイムは、`github.com/wailsapp/wails/v2/pkg/runtime`をインポートすることで利用できます。 このパッケージのすべてのメソッドは、1番目の引数でContextを渡す必要があります。 このContextは、[OnStartup](../options.mdx#onstartup)フック、または[OnDomReady](../options.mdx#ondomready)フックからあらかじめ取得しておいてください。
@@ -23,7 +23,7 @@ Goのランタイムは、`github.com/wailsapp/wails/v2/pkg/runtime`をインポ
 
 :::
 
-Javascriptのランタイムは、`window.runtime`マップを介してフロントエンド上で利用できます。 `dev`モードでは、Typescript型定義を提供するランタイムパッケージが生成されます。 これらは、フロントエンドディレクトリの`wailsjs`ディレクトリに配置しておく必要があります。
+The JavaScript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev` mode that provides TypeScript declarations for the runtime. これらは、フロントエンドディレクトリの`wailsjs`ディレクトリに配置しておく必要があります。
 
 ### 非表示
 
