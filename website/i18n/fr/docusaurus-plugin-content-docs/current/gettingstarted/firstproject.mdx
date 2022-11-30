@@ -2,13 +2,13 @@
 sidebar_position: 2
 ---
 
-# Creating a Project
+# Créer un projet
 
-## Project Generation
+## Génération de projet
 
-Now that the CLI is installed, you can generate a new project by using the `wails init` command.
+Maintenant que le CLI est installé, vous pouvez générer un nouveau projet en utilisant la commande `wails init`.
 
-Pick your favourite framework:
+Choisissez votre framework favori :
 
 ```mdx-code-block
 import Tabs from "@theme/Tabs";
@@ -90,13 +90,13 @@ If you would rather use TypeScript:<br/>
 
 <hr />
 
-There are also [community templates](../community/templates.mdx) available that offer different capabilities and frameworks.
+Il y a aussi [des modèles créés par la communauté](../community/templates.mdx) qui sont disponibles et qui offrent différentes possibilités.
 
-To see the other options available, you can run `wails init -help`. More details can be found in the [CLI Reference](../reference/cli.mdx#init).
+Pour voir les autres options disponibles, vous pouvez exécuter `wails init -help`. Plus de détails peuvent être trouvés dans la [documentation du CLI](../reference/cli.mdx#init).
 
-## Project Layout
+## Structure du projet
 
-Wails projects have the following layout:
+Les projets Wails ont la structure suivante:
 
 ```
 .
@@ -111,20 +111,20 @@ Wails projects have the following layout:
 └── wails.json
 ```
 
-### Project structure rundown
+### Récapitulatif de la structure du projet
 
-- `/main.go` - The main application
-- `/frontend/` - Frontend project files
-- `/build/` - Project build directory
-- `/build/appicon.png` - The application icon
-- `/build/darwin/` - Mac specific project files
-- `/build/windows/` - Windows specific project files
-- `/wails.json` - The project configuration
-- `/go.mod` - Go module file
-- `/go.sum` - Go module checksum file
+- `/main.go` - L'application principale
+- `/frontend/` - Fichiers de la partie frontend
+- `/build/` - Répertoire de construction du projet
+- `/build/appicon.png` - L'icône de l'application
+- `/build/darwin/` - Fichiers spécifiques pour Mac
+- `/build/windows/` - Fichiers spécifiques pour Windows
+- `/wails.json` - La configuration du projet
+- `/go.mod` - Le fichier du module Go
+- `/go.sum` - Le checksum du fichier du module Go
 
-The `frontend` directory has nothing specific to Wails and can be any frontend project of your choosing.
+Le répertoire `frontend` n'a rien de spécifique à Wails et n'importe quel outil de frontend peut être utilisé.
 
-The `build` directory is used during the build process. These files may be updated to customise your builds. If files are removed from the build directory, default versions will be regenerated.
+Le répertoire `build` est utilisé pendant le processus de compilation. Ces fichiers peuvent être mis à jour pour personnaliser vos builds. Si fichiers sont supprimés du répertoire de compilation, les versions par défaut seront régénérées.
 
-The default module name in `go.mod` is "changeme". You should change this to something more appropriate.
+Le nom du module par défaut dans `go.mod` est "changeme". Vous devriez changer cela pour quelque chose de plus approprié.

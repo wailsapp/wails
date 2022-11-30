@@ -2,16 +2,16 @@
 sidebar_position: 3
 ---
 
-# Log
+# ログ
 
-The Wails runtime provides a logging mechanism that may be called from Go or JavaScript. 一般的なロガーと同じように、ログにはいくつかのログレベルがあります:
+Wailsでは、GoまたはJavaScriptから呼び出すことのできるロギングメカニズムを用意しています。 一般的なロガーと同じように、ログにはいくつかのログレベルがあります:
 
-- トレース
-- デバッグ
-- 情報
-- 警告
+- Trace
+- Debug
+- Info
+- Warning
 - Error
-- 致命的
+- Fatal
 
 ロガーは、設定されている出力ログレベル以上のログメッセージを出力します。 例えば、出力ログレベルを`Debug`に設定した場合、`Trace`以外のすべてのレベルのメッセージが出力されます。
 
@@ -101,15 +101,15 @@ Go: `LogFatalf(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### LogSetLogLevel
 
-出力ログレベルを設定します。 In JavaScript, the number relates to the following log levels:
+出力ログレベルを設定します。 JavaScriptでは、数値が次のログレベルに対応しています:
 
-| 値 | ログレベル |
-| - | ----- |
-| 1 | トレース  |
-| 2 | デバッグ  |
-| 3 | 情報    |
-| 4 | 警告    |
-| 5 | Error |
+| 値 | ログレベル   |
+| - | ------- |
+| 1 | Trace   |
+| 2 | Debug   |
+| 3 | Info    |
+| 4 | Warning |
+| 5 | Error   |
 
 Go: `LogSetLogLevel(ctx context.Context, level logger.LogLevel)`<br/> JS: `LogSetLogLevel(level: number)`
 
