@@ -249,21 +249,25 @@ dynamically with an `http.Handler` or hook into the request chain with an `asset
 
 Not all features of an `http.Request` are currently supported, please see the following feature matrix:
 
-| Feature                 | Win | Mac | Lin |
-| ----------------------- | --- | --- | --- |
-| GET                     | ✅  | ✅  | ✅  |
-| POST                    | ✅  | ✅  | ❌  |
-| PUT                     | ✅  | ✅  | ❌  |
-| PATCH                   | ✅  | ✅  | ❌  |
-| DELETE                  | ✅  | ✅  | ❌  |
-| Request Headers         | ✅  | ✅  | ❌  |
-| Request Body            | ✅  | ✅  | ❌  |
-| Request Body Streaming  | ❌  | ❌  | ❌  |
-| Response StatusCodes    | ✅  | ✅  | ❌  |
-| Response Headers        | ✅  | ✅  | ❌  |
-| Response Body           | ✅  | ✅  | ✅  |
-| Response Body Streaming | ❌  | ❌  | ✅  |
-| WebSockets              | ❌  | ❌  | ❌  |
+| Feature                 | Win | Mac | Lin    |
+| ----------------------- | --- | --- | ------ |
+| GET                     | ✅  | ✅  | ✅      |
+| POST                    | ✅  | ✅  | ✅ [^1] |
+| PUT                     | ✅  | ✅  | ✅ [^1] |
+| PATCH                   | ✅  | ✅  | ✅ [^1] |
+| DELETE                  | ✅  | ✅  | ✅ [^1] |
+| Request Headers         | ✅  | ✅  | ✅ [^1] |
+| Request Body            | ✅  | ✅  | ❌      |
+| Request Body Streaming  | ❌  | ❌  | ❌      |
+| Response StatusCodes    | ✅  | ✅  | ✅ [^1] |
+| Response Headers        | ✅  | ✅  | ✅ [^1] |
+| Response Body           | ✅  | ✅  | ✅      |
+| Response Body Streaming | ❌  | ❌  | ✅      |
+| WebSockets              | ❌  | ❌  | ❌      |
+| HTTP Redirects 30x      | ✅  | ❌  | ❌      |
+
+[^1]: This requires WebKit2GTK 2.36+ support and your app needs to be build with the  build tag `webkit2_36` to activate support for this feature. This also bumps the minimum requirement of WebKit2GTK to 2.36 for your app.
+
 
 NOTE: Linux is currently very limited due to targeting a WebKit2GTK Version < 2.36.0. In the future some features will be
 supported by the introduction of WebKit2GTK 2.36.0+ support.
