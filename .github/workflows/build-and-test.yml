@@ -2,18 +2,18 @@ name: Build + Test
 
 on:
   push:
-    branches: [ release/*, master ]
+    branches: [release/*, master]
   workflow_dispatch:
 
 jobs:
-  test:
+  test_go:
     name: Run Go Tests
     if: github.repository == 'wailsapp/wails'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
-        go-version: [ 1.18, 1.19 ]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        go-version: [1.18, 1.19]
 
     steps:
       - name: Checkout code
@@ -23,7 +23,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
 
-      - name: Set up Go 1.18
+      - name: Setup Go
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
@@ -32,6 +32,31 @@ jobs:
         working-directory: ./v2
         run: go test -v ./...
 
+  test_js:
+    name: Run JS Tests
+    if: github.repository == 'wailsapp/wails'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: v2/internal/frontend/runtime
+
+      - name: Run tests
+        run: npm test
+        working-directory: v2/internal/frontend/runtime
+
   test_templates:
     name: Test Templates
     needs: test
@@ -39,9 +64,24 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
-        template: [ svelte, svelte-ts, vue, vue-ts, react, react-ts, preact, preact-ts, lit, lit-ts, vanilla, vanilla-ts, plain ]
-        go-version: [ 1.18, 1.19 ]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        template:
+          [
+            svelte,
+            svelte-ts,
+            vue,
+            vue-ts,
+            react,
+            react-ts,
+            preact,
+            preact-ts,
+            lit,
+            lit-ts,
+            vanilla,
+            vanilla-ts,
+            plain,
+          ]
+        go-version: [1.18, 1.19]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
