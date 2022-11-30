@@ -642,6 +642,7 @@ static void SetWindowTransparency(GtkWidget *widget)
 */
 import "C"
 import (
+	"log"
 	"strings"
 	"sync"
 	"unsafe"
@@ -679,6 +680,7 @@ func bool2Cint(value bool) C.int {
 }
 
 func NewWindow(appoptions *options.App, debug bool) *Window {
+	validateWebKit2Version(appoptions)
 
 	result := &Window{
 		appoptions: appoptions,
@@ -1033,4 +1035,20 @@ func (w *Window) ToggleMaximise() {
 	} else {
 		w.Maximise()
 	}
+}
+
+// showModalDialogAndExit shows a modal dialog and exits the app.
+func showModalDialogAndExit(title, message string) {
+	go func() {
+		data := C.MessageDialogOptions{
+			title:       C.CString(title),
+			message:     C.CString(message),
+			messageType: C.int(1),
+		}
+
+		C.messageDialog(unsafe.Pointer(&data))
+	}()
+
+	<-messageDialogResult
+	log.Fatal(message)
 }
