@@ -1,8 +1,8 @@
-# Linux Distro Support
+# Linuxディストリビューションサポート
 
-## Overview
+## 概要
 
-Wails offers Linux support but providing installation instructions for all available distributions is an impossible task. Instead, Wails tries to determine if the packages you need to develop applications are available via your system's package manager. Currently, we support the following package managers:
+WailsはLinuxをサポートしていますが、すべてのLinuxディストリビューションに対してインストール手段を提供することは困難であるため、行っていません。 その代わりにWailsでは、アプリケーション開発に必要なパッケージが、システムのパッケージマネージャを介して利用可能かどうかを判断します。 現在、以下のパッケージマネージャをサポートしています:
 
 - apt
 - dnf
@@ -12,11 +12,11 @@ Wails offers Linux support but providing installation instructions for all avail
 - pacman
 - zypper
 
-## Adding package names
+## パッケージ名の追加
 
-There may be circumstances where your distro uses one of the supported package managers but the package name is different. For example, you may use an Ubuntu derivative, but the package name for gtk may be different. Wails attempts to find the correct package by iterating through a list of package names. The list of packages are stored in the packagemanager specific file in the `v2/internal/system/packagemanager` directory. In our example, this would be `v2/internal/system/packagemanager/apt.go`.
+あなたが使用しているディストリビューションが、Wailsがサポートしているパッケージマネージャを使用していたとしても、パッケージ名が想定と異なっている場合があります。 例えば、Ubuntuの派生ディストリビューションを使用している場合、gtkのパッケージ名が異なる場合があります。 Wailsは、パッケージ名のリストを繰り返し処理することで、正しいパッケージを見つけようと試みます。 パッケージ名のリストは、`v2/internal/system/packagemanager`ディレクトリ内に、パッケージマネージャごとのファイルで格納されています。 下記は、`v2/internal/system/packagemanager/apt.go`の例です。
 
-In this file, the list of packages are defined by the `Packages()` method:
+このファイルでは、パッケージのリストは`Packages()`メソッドによって定義されています:
 
 ```go
 func (a *Apt) Packages() packagemap {
@@ -43,7 +43,7 @@ func (a *Apt) Packages() packagemap {
 }
 ```
 
-Let's assume that in our linux distro, `libgtk-3` is packaged under the name `lib-gtk3-dev`. We could add support for this by adding the following line:
+お使いのLinuxディストリビューションが、`libgtk-3`パッケージが`lib-gtk3-dev`という名前で配布されていると仮定しましょう。 その場合、次の行を追加することで、対応することができます:
 
 ```go {5}
 func (a *Apt) Packages() packagemap {
@@ -71,12 +71,12 @@ func (a *Apt) Packages() packagemap {
 }
 ```
 
-## Adding new package managers
+## パッケージマネージャの追加
 
-To add a new package manager, perform the following steps:
+新しいパッケージマネージャを追加するには、次の手順を実行します:
 
-- Create a new file in `v2/internal/system/packagemanager` called `<pm>.go`, where `<pm>` is the name of the package manager.
-- Define a struct that conforms to the package manager interface defined in `pm.go`:
+- `v2/internal/system/packagemanager`に、`<pm>.go`という名前の新しいファイルを作成します。`<pm>`はパッケージマネージャの名前です。
+- `pm.go`の中で、PackageManagerインターフェースを実装した構造体を定義します:
 
 ```go
 type PackageManager interface {
@@ -88,13 +88,13 @@ type PackageManager interface {
 }
 ```
 
-- `Name()` should return the name of the package manager
-- `Packages()` should return a `packagemap`, that provides candidate filenames for dependencies
-- `PackageInstalled()` should return `true` if the given package is installed
-- `PackageAvailable()` should return `true` if the given package is not installed but available for installation
-- `InstallCommand()` should return the exact command to install the given package name
+- `Name()`メソッドで、パッケージマネージャの名前を返すように実装します。
+- `Packages()`メソッドで、依存関係の候補ファイル名を提供する`packagemap`を返すように実装します。
+- `PackageInstalled()`メソッドで、引数で渡されたパッケージがすでにインストールされている場合は`true`を返すように実装します。
+- `PackageAvailable()`メソッドで、引数で指定されたパッケージがインストールはされていないけれどもインストール可能であるなら`true`を返すように実装します。
+- `InstallCommand()`メソッドで、引数で指定されたパッケージをインストールするための正確なコマンドを返すように実装します。
 
-Take a look at the other package managers code to get an idea how this works.
+他のパッケージマネージャのコードを参考にして、これらのコードがどのように動作するか把握してください。
 
 :::info リマインド
 

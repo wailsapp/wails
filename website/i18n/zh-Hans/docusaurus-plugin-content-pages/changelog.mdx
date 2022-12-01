@@ -19,11 +19,17 @@
 - 如果 [Assets](/docs/reference/options/#资产-1) `fs.FS` 提供 `io.ReadSeeker`，[AssetServer](/docs/reference/options#资产服务器) 现在支持处理范围请求。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2091) 中添加。
 - 为 `wails.json` 配置文件添加新属性 - `bindings`。 关于新属性的更多信息可以在更新的 [schema](/schemas/config.v2.json) 中找到。 属性 `prefix` 和 `suffix` 允许您控制在 `model.ts` 文件中生成的 TypeScript 实体名称。 由 @OlegGulevskyy 在这个 [PR](https://github.com/wailsapp/wails/pull/2101) 中修复。
 - `WindowSetAlwaysOnTop` 方法现在在 JS 运行时中公开。 由 @gotid 在这个 [PR](https://github.com/wailsapp/wails/pull/2128) 中修复。
+- [AssetServer](/docs/reference/options#资产服务器) 现在支持在请求目录时提供 index.html 文件。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2110) 中添加
+- 在 Linux 上添加了对 WebKit2GTK 2.36+ 的支持。 这为 [AssetServer](/docs/reference/options#资产服务器) 带来了额外的特性，例如对 HTTP 方法和标头的支持。 该应用程序必须使用 Go 构建标签 `webkit2_36` 进行编译，以激活对此功能的支持。 这也会将您应用程序的 WebKit2GTK 最低要求提高到 2.36。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2151) 中修复
 
 ### 修复
 - wails dev 中 `noreload` 标志未被应用。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2081) 中修复。
 - `build/bin` 文件夹在 `wails dev` 模式下每次重新加载时都会复制自身。 由 @OlegGulevskyy 在这个 [PR](https://github.com/wailsapp/wails/pull/2103) 中修复。
 - 防止 Windows 上的无边框窗口底部出现细白线。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2111) 中修复。
+- 更好的 Linux 信号处理。 由 @leaanthony 在这个 [PR](https://github.com/wailsapp/wails/pull/2152) 中修复
+
+### 变更
+- 如果在资产中找不到 `index.html` 并且验证资产服务器选项，则改进错误消息。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2110) 中变更
 
 ## v2.2.0 - 2022-11-09
 
