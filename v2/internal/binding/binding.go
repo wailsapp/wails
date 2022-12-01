@@ -23,6 +23,8 @@ type Bindings struct {
 	exemptions slicer.StringSlicer
 
 	structsToGenerateTS map[string]map[string]interface{}
+	tsPrefix            string
+	tsSuffix            string
 	obfuscate           bool
 }
 
@@ -92,6 +94,8 @@ func (b *Bindings) GenerateModels() ([]byte, error) {
 	for packageName, structsToGenerate := range b.structsToGenerateTS {
 		thisPackageCode := ""
 		w := typescriptify.New()
+		w.WithPrefix(b.tsPrefix)
+		w.WithSuffix(b.tsSuffix)
 		w.Namespace = packageName
 		w.WithBackupDir("")
 		w.KnownStructs = allStructNames
@@ -217,6 +221,16 @@ func (b *Bindings) AddStructToGenerateTS(packageName string, structName string, 
 			}
 		}
 	}
+}
+
+func (b *Bindings) SetTsPrefix(prefix string) *Bindings {
+	b.tsPrefix = prefix
+	return b
+}
+
+func (b *Bindings) SetTsSuffix(postfix string) *Bindings {
+	b.tsSuffix = postfix
+	return b
 }
 
 func (b *Bindings) getAllStructNames() *slicer.StringSlicer {

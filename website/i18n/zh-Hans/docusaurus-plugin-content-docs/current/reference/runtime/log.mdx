@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # 日志
 
-Wails 运行时提供了一种可以从 Go 或 Javascript 调用的日志记录机制。 像大多数记录器一样，有许多日志级别：
+Wails 运行时提供了一种可以从 Go 或 JavaScript 调用日志记录的机制。 像大多数记录器一样，有许多日志级别：
 
 - Trace（追踪）
 - Debug（调试）
@@ -101,7 +101,7 @@ Go: `LogFatalf(ctx context.Context, format string, args ...interface{})`<br/>
 
 ### 设置日志级别
 
-设置日志级别。 在 Javascript 中，该数字与以下日志级别有关：
+设置日志级别。 在 JavaScript 中，该数字与以下日志级别有关：
 
 | 值 | 日志等级        |
 | - | ----------- |
@@ -109,7 +109,7 @@ Go: `LogFatalf(ctx context.Context, format string, args ...interface{})`<br/>
 | 2 | Debug（调试）   |
 | 3 | Info（信息）    |
 | 4 | Warning（警告） |
-| 5 | Error（报错）   |
+| 5 | Error（错误）   |
 
 Go: `LogSetLogLevel(ctx context.Context, level logger.LogLevel)`<br/> JS: `LogSetLogLevel(level: number)`
 

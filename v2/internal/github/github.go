@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func GetReleaseNotes(tagVersion string) string {
+func GetReleaseNotes(tagVersion string, noColour bool) string {
 	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/releases/tags/" + url.PathEscape(tagVersion))
 	if err != nil {
 		return "Unable to retrieve release notes. Please check your network connection"
@@ -34,11 +34,16 @@ func GetReleaseNotes(tagVersion string) string {
 
 	result := "# Release Notes for " + tagVersion + "\n" + data["body"].(string)
 	var renderer *glamour.TermRenderer
-	if runtime.GOOS == "windows" {
-		renderer, err = glamour.NewTermRenderer(glamour.WithStyles(glamour.NoTTYStyleConfig))
+
+	var termRendererOpts []glamour.TermRendererOption
+
+	if runtime.GOOS == "windows" || noColour {
+		termRendererOpts = append(termRendererOpts, glamour.WithStyles(glamour.NoTTYStyleConfig))
 	} else {
-		renderer, err = glamour.NewTermRenderer(glamour.WithAutoStyle())
+		termRendererOpts = append(termRendererOpts, glamour.WithAutoStyle())
 	}
+
+	renderer, err = glamour.NewTermRenderer(termRendererOpts...)
 	if err != nil {
 		return result
 	}

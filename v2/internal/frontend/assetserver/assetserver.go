@@ -34,7 +34,11 @@ type AssetServer struct {
 }
 
 func NewAssetServerMainPage(ctx context.Context, bindingsJSON string, options *options.App) (*AssetServer, error) {
-	return NewAssetServer(ctx, bindingsJSON, BuildAssetServerConfig(options))
+	assetOptions, err := BuildAssetServerConfig(options)
+	if err != nil {
+		return nil, err
+	}
+	return NewAssetServer(ctx, bindingsJSON, assetOptions)
 }
 
 func NewAssetServer(ctx context.Context, bindingsJSON string, options assetserver.Options) (*AssetServer, error) {
@@ -96,18 +100,22 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			header[k] = v
 		}
 
-		if recorder.Code != http.StatusOK {
+		switch recorder.Code {
+		case http.StatusOK:
+			content, err := d.processIndexHTML(recorder.Body.Bytes())
+			if err != nil {
+				d.serveError(rw, err, "Unable to processIndexHTML")
+				return
+			}
+			d.writeBlob(rw, indexHTML, content)
+
+		case http.StatusNotFound:
+			d.writeBlob(rw, indexHTML, defaultHTML)
+
+		default:
 			rw.WriteHeader(recorder.Code)
-			return
-		}
 
-		content, err := d.processIndexHTML(recorder.Body.Bytes())
-		if err != nil {
-			d.serveError(rw, err, "Unable to processIndexHTML")
-			return
 		}
-
-		d.writeBlob(rw, "/index.html", content)
 
 	case runtimeJSPath:
 		d.writeBlob(rw, path, d.runtimeJS)

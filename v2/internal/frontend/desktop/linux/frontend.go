@@ -9,6 +9,69 @@ package linux
 #include "gtk/gtk.h"
 #include "webkit2/webkit2.h"
 
+// CREDIT: https://github.com/rainycape/magick
+#include <errno.h>
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
+
+static void fix_signal(int signum)
+{
+    struct sigaction st;
+
+    if (sigaction(signum, NULL, &st) < 0) {
+        goto fix_signal_error;
+    }
+    st.sa_flags |= SA_ONSTACK;
+    if (sigaction(signum, &st,  NULL) < 0) {
+        goto fix_signal_error;
+    }
+    return;
+fix_signal_error:
+        fprintf(stderr, "error fixing handler for signal %d, please "
+                "report this issue to "
+                "https://github.com/wailsapp/wails: %s\n",
+                signum, strerror(errno));
+}
+
+static void install_signal_handlers()
+{
+#if defined(SIGCHLD)
+    fix_signal(SIGCHLD);
+#endif
+#if defined(SIGHUP)
+    fix_signal(SIGHUP);
+#endif
+#if defined(SIGINT)
+    fix_signal(SIGINT);
+#endif
+#if defined(SIGQUIT)
+    fix_signal(SIGQUIT);
+#endif
+#if defined(SIGABRT)
+    fix_signal(SIGABRT);
+#endif
+#if defined(SIGFPE)
+    fix_signal(SIGFPE);
+#endif
+#if defined(SIGTERM)
+    fix_signal(SIGTERM);
+#endif
+#if defined(SIGBUS)
+    fix_signal(SIGBUS);
+#endif
+#if defined(SIGSEGV)
+    fix_signal(SIGSEGV);
+#endif
+#if defined(SIGXCPU)
+    fix_signal(SIGXCPU);
+#endif
+#if defined(SIGXFSZ)
+    fix_signal(SIGXFSZ);
+#endif
+}
+
+
 */
 import "C"
 import (
@@ -63,14 +126,16 @@ func (f *Frontend) WindowClose() {
 
 func init() {
 	runtime.LockOSThread()
-}
-
-func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 
 	// Set GDK_BACKEND=x11 if currently unset and XDG_SESSION_TYPE is unset, unspecified or x11 to prevent warnings
 	if os.Getenv("GDK_BACKEND") == "" && (os.Getenv("XDG_SESSION_TYPE") == "" || os.Getenv("XDG_SESSION_TYPE") == "unspecified" || os.Getenv("XDG_SESSION_TYPE") == "x11") {
 		_ = os.Setenv("GDK_BACKEND", "x11")
 	}
+
+	C.gtk_init(nil, nil)
+}
+
+func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
 
 	result := &Frontend{
 		frontendOptions: appoptions,
@@ -108,13 +173,13 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 
 	go result.startMessageProcessor()
 
-	C.gtk_init(nil, nil)
-
 	var _debug = ctx.Value("debug")
 	if _debug != nil {
 		result.debug = _debug.(bool)
 	}
 	result.mainWindow = NewWindow(appoptions, result.debug)
+
+	C.install_signal_handlers()
 
 	return result
 }
@@ -415,8 +480,6 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	uri := C.webkit_uri_scheme_request_get_uri(req)
 	goURI := C.GoString(uri)
 
-	// WebKitGTK stable < 2.36 API does not support request method, request headers and request.
-	// Apart from request bodies, this is only available beginning with 2.36: https://webkitgtk.org/reference/webkit2gtk/stable/WebKitURISchemeResponse.html
 	rw := &webKitResponseWriter{req: req}
 	defer rw.Close()
 
@@ -424,20 +487,22 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 		goURI,
 		rw,
 		func() (*http.Request, error) {
-			req, err := http.NewRequest(http.MethodGet, goURI, nil)
+			method := webkit_uri_scheme_request_get_http_method(req)
+			r, err := http.NewRequest(method, goURI, nil)
 			if err != nil {
 				return nil, err
 			}
+			r.Header = webkit_uri_scheme_request_get_http_headers(req)
 
-			if req.URL.Host != f.startURL.Host {
-				if req.Body != nil {
-					req.Body.Close()
+			if r.URL.Host != f.startURL.Host {
+				if r.Body != nil {
+					r.Body.Close()
 				}
 
-				return nil, fmt.Errorf("Expected host '%s' in request, but was '%s'", f.startURL.Host, req.URL.Host)
+				return nil, fmt.Errorf("Expected host '%s' in request, but was '%s'", f.startURL.Host, r.URL.Host)
 			}
 
-			return req, nil
+			return r, nil
 		})
 
 }

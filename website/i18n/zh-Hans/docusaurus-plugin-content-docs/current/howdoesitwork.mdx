@@ -4,7 +4,7 @@ sidebar_position: 20
 
 # 它是如何工作的？
 
-Wails 应用程序是一个带有一个 webkit 前端的标准的 Go 应用程序。 应用程序的 Go 部分由应用程序代码和一个运行时库组成， 该库提供了许多有用的操作，例如控制应用程序窗口。 前端是一个 webkit 窗口，将显示前端资源。 前端还可以使用运行时库的 Javascript 版本。 最后，可以将 Go 方法绑定到前端，这些将显示为可以调用的 Javascript 方法，就像它们是原生 Javascript 方法一样。
+Wails 应用程序是一个带有一个 webkit 前端的标准的 Go 应用程序。 应用程序的 Go 部分由应用程序代码和一个运行时库组成， 该库提供了许多有用的操作，例如控制应用程序窗口。 前端是一个 webkit 窗口，将显示前端资源。 前端还可以使用运行时库的 JavaScript 版本。 最后，可以将 Go 方法绑定到前端，这些将显示为可以调用的 JavaScript 方法，就像它们是原生 JavaScript 方法一样。
 
 ```mdx-code-block
 <div className="text--center">
@@ -103,11 +103,11 @@ var assets embed.FS
 
 #### 应用程序生命周期回调
 
-在即将加载前端 `index.html` 之前，会对 [应用启动回调](./reference/options#应用启动回调) 中提供的函数进行调用。 一个标准的 Go context 被传递给这个方法。 调用运行时需要此 context ，因此标准模式是在此方法中保存对它的引用。 在应用程序关闭之前，以同样的方式调用 [应用退出回调](./reference/options#应用退出回调)，并再次使用上下文 当前端加载完 `index.html` 中所有资源时，还有一个 [前端 Dom 加载完成回调](./reference/options#前端-dom-加载完成回调) ，相当于 Javascript 中的 [`body onload`](https://www.w3schools.com/jsref/event_onload.asp) 事件。 还可以通过设置 [应用关闭前回调](./reference/options#应用关闭前回调) 选项来控制窗口关闭（或应用程序退出）事件。
+在即将加载前端 `index.html` 之前，会对 [应用启动回调](./reference/options#应用启动回调) 中提供的函数进行调用。 一个标准的 Go context 被传递给这个方法。 调用运行时需要此 context ，因此标准模式是在此方法中保存对它的引用。 在应用程序关闭之前，以同样的方式调用 [应用退出回调](./reference/options#应用退出回调)，并再次使用上下文 在应用程序关闭之前，以同样的方式调用 [应用退出回调](./reference/options#应用退出回调)，并再次使用上下文 当前端加载完 `index.html` 中所有资源时，还有一个 [前端 Dom 加载完成回调](./reference/options#前端-dom-加载完成回调) ，相当于 JavaScript 中的 [`body onload`](https://www.w3schools.com/jsref/event_onload.asp) 事件。 还可以通过设置 [应用关闭前回调](./reference/options#应用关闭前回调) 选项来控制窗口关闭（或应用程序退出）事件。
 
 #### 方法绑定
 
-`Bind` 选项是 Wails 应用程序中最重要的参数选项之一。 它指定向前端暴露哪些结构体方法。 想想传统 web 应用程序中的 "Controllers" 之类的结构 。 当应用程序启动时，它会检查 `Bind` 字段中列出的结构体实例， 确定哪些方法是公开的（以大写字母开头），并生成前端可以调用的这些方法的 Javascript 版本。
+`Bind` 选项是 Wails 应用程序中最重要的参数选项之一。 它指定向前端暴露哪些结构体方法。 想想传统 web 应用程序中的 "Controllers" 之类的结构 。 当应用程序启动时，它会检查 `Bind` 字段中列出的结构体实例， 确定哪些方法是公开的（以大写字母开头），并生成前端可以调用的这些方法的 JavaScript 版本。
 
 :::info 注意
 
@@ -184,9 +184,9 @@ func (a *App) Greet(name string) string {
 
 当您运行 `wails dev`（或 `wails generate module`）时，将生成一个前端模块，其中包含以下内容：
 
-- 所有绑定方法的 Javascript 绑定
-- 所有绑定方法的 Typescript 声明
-- 绑定方法用作输入或输出的所有 Go 结构的 Typescript 声明
+- 所有绑定方法的 JavaScript 绑定
+- 所有绑定方法的 TypeScript 声明
+- 绑定方法用作输入或输出的所有 Go 结构的 TypeScript 声明
 
 这使得使用相同的强类型数据结构从前端调用 Go 代码变得异常简单。
 
@@ -201,7 +201,7 @@ func (a *App) Greet(name string) string {
 
 ### 调用绑定的 Go 方法
 
-当您使用 `wails dev` 运行应用程序时，它将自动在名为 `wailsjs/go` 的目录中为您的结构体生成 Javascript 绑定（您也可以通过运行 `wails generate module` 来执行此操作）。 生成的文件反映了应用程序中的包名称。 在上面的例子中，我们绑定了有公开方法 `Greet` 的 `app`。 这将导致生成以下文件：
+当您使用 `wails dev` 运行应用程序时，它将自动在名为 `wailsjs/go` 的目录中为您的结构体生成 JavaScript 绑定（您也可以通过运行 `wails generate module` 来执行此操作）。 生成的文件反映了应用程序中的包名称。 在上面的例子中，我们绑定了有公开方法 `Greet` 的 `app`。 这将导致生成以下文件：
 
 ```bash
 wailsjs
@@ -211,7 +211,7 @@ wailsjs
       └─App.js
 ```
 
-在这里我们可以看到有一个 `main` 包，其中包含绑定 `App` 结构体的 Javascript 绑定，以及这些方法的 Typescript 声明文件。 要从我们的前端调用 `Greet`，我们只需导入该方法并像普通的 Javascript 函数一样调用它：
+在这里我们可以看到有一个 `main` 包，其中包含绑定 `App` 结构体的 JavaScript 绑定，以及这些方法的 TypeScript 声明文件。 要从我们的前端调用 `Greet`，我们只需导入该方法并像普通的 JavaScript 函数一样调用它：
 
 ```javascript
 // ...
@@ -224,15 +224,15 @@ function doGreeting(name) {
 }
 ```
 
-Typescript 声明文件为您提供了绑定方法的正确类型：
+TypeScript 声明文件为您提供了绑定方法的正确类型：
 
 ```ts
 export function Greet(arg1: string): Promise<string>;
 ```
 
-生成的方法返回一个 Promise 成功的调用将导致 Go 调用的第一个返回值被传递给 `resolve` 处理程序。 不成功的调用是当 Go 方法的第二个返回值具有错误类型时，将错误实例传递回调用者。 这通过 `reject` 处理程序传回的。 在上面的示例中，`Greet` 只返回一个 `string`，因此 Javascript 调用永远不会 reject - 除非将无效数据传递给它。
+生成的方法返回一个 Promise 成功的调用将导致 Go 调用的第一个返回值被传递给 `resolve` 处理程序。 不成功的调用是当 Go 方法的第二个返回值具有错误类型时，将错误实例传递回调用者。 这通过 `reject` 处理程序传回的。 在上面的示例中，`Greet` 只返回一个 `string`，因此 JavaScript 调用永远不会 reject - 除非将无效数据传递给它。
 
-所有数据类型都在 Go 和 Javascript 之间正确转换。 包括结构体。 如果您从 Go 调用返回一个结构体，它将作为 Javascript 类返回到您的前端。
+所有数据类型都在 Go 和 JavaScript 之间正确转换。 包括结构体。 如果您从 Go 调用返回一个结构体，它将作为 JavaScript 类返回到您的前端。
 
 :::info 注意
 
@@ -242,9 +242,9 @@ export function Greet(arg1: string): Promise<string>;
 
 :::
 
-也可以将结构体发送回 Go。 作为期望的结构体的参数传递的任何 Javascript map/class 都将转换为该结构体类型。 为了使这个过程更容易，在 `开发` 模式下，会生成一个 TypeScript 模块，声明绑定方法中使用的所有结构体类型。 使用此模块，可以构建原生 Javascript 对象并将其发送到 Go 代码。
+也可以将结构体发送回 Go。 作为期望的结构体的参数传递的任何 JavaScript map/class 都将转换为该结构体类型。 为了使这个过程更容易，在 `开发` 模式下，会生成一个 TypeScript 模块，声明绑定方法中使用的所有结构体类型。 使用此模块，可以构建原生 JavaScript 对象并将其发送到 Go 代码。
 
-还支持在其签名中使用结构的 Go 方法。 绑定方法（作为参数或返回类型）指定的所有 Go 结构体都将作为 Go 代码包装器模块的一部分自动生成 Typescript 版本。 使用这些，可以在 Go 和 Javascript 之间共享相同的数据模型。
+还支持在其签名中使用结构的 Go 方法。 绑定方法（作为参数或返回类型）指定的所有 Go 结构体都将作为 Go 代码包装器模块的一部分自动生成 TypeScript 版本。 使用这些，可以在 Go 和 JavaScript 之间共享相同的数据模型。
 
 示例：我们更新 `Greet` 方法以接受一个 `Person` 而不是字符串：
 
@@ -358,7 +358,7 @@ function generate() {
 
 ### 调用运行时方法
 
-Javascript 运行时位于`window.runtime`并包含许多方法来执行各种任务，例如发出事件或执行日志记录操作：
+JavaScript 运行时位于`window.runtime`并包含许多方法来执行各种任务，例如发出事件或执行日志记录操作：
 
 ```js title="mycode.js"
 window.runtime.EventsEmit("my-event", 1);

@@ -21,7 +21,6 @@ type Window struct {
 	winc.Form
 	frontendOptions                          *options.App
 	applicationMenu                          *menu.Menu
-	notifyParentWindowPositionChanged        func() error
 	minWidth, minHeight, maxWidth, maxHeight int
 	versionInfo                              *operatingsystem.WindowsVersionInfo
 	isDarkMode                               bool
@@ -39,7 +38,7 @@ type Window struct {
 	chromium *edge.Chromium
 }
 
-func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo) *Window {
+func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo, chromium *edge.Chromium) *Window {
 	result := &Window{
 		frontendOptions: appoptions,
 		minHeight:       appoptions.MinHeight,
@@ -49,6 +48,7 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		versionInfo:     versionInfo,
 		isActive:        true,
 		themeChanged:    true,
+		chromium:        chromium,
 	}
 	result.SetIsForm(true)
 
@@ -192,9 +192,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	case w32.WM_NCLBUTTONDOWN:
 		w32.SetFocus(w.Handle())
 	case w32.WM_MOVE, w32.WM_MOVING:
-		if w.notifyParentWindowPositionChanged != nil {
-			_ = w.notifyParentWindowPositionChanged()
-		}
+		w.chromium.NotifyParentWindowPositionChanged()
 	case w32.WM_ACTIVATE:
 		//if !w.frontendOptions.Frameless {
 		w.themeChanged = true
@@ -269,10 +267,16 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 							}
 						}
 					}
+					w.chromium.SetPadding(edge.Rect{})
 				} else {
 					// This is needed to workaround the resize flickering in frameless mode with WindowDecorations
 					// See: https://stackoverflow.com/a/6558508
-					rgrc.Bottom -= 1
+					// The workaround originally suggests to decrese the bottom 1px, but that seems to bring up a thin
+					// white line on some Windows-Versions, due to DrawBackground using also this reduces ClientSize.
+					// Increasing the bottom also worksaround the flickering but we would loose 1px of the WebView content
+					// therefore let's pad the content with 1px at the bottom.
+					rgrc.Bottom += 1
+					w.chromium.SetPadding(edge.Rect{Bottom: 1})
 				}
 
 				return 0

@@ -25,6 +25,7 @@ func main() {
         Height:             600,
         DisableResize:      false,
         Fullscreen:         false,
+        WindowStartState:   options.Maximised,
         Frameless:          true,
         MinWidth:           400,
         MinHeight:          400,
@@ -47,7 +48,6 @@ func main() {
         OnDomReady:         app.domready,
         OnShutdown:         app.shutdown,
         OnBeforeClose:      app.beforeClose,
-        WindowStartState:   options.Maximised,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
         ZoomFactor:           1.0,
@@ -105,6 +105,7 @@ func main() {
             OpenInspectorOnStartup: false,
         },
     })
+
     if err != nil {
         log.Fatal(err)
     }
@@ -138,9 +139,19 @@ func main() {
 
 ### 全屏
 
-将此设置为 `true` 将在启动时使窗口全屏。
+已弃用：请使用 [窗口启动状态](#窗口启动状态).
 
-名称：Fullscreen<br/> 类型：`bool`
+### 窗口启动状态
+
+定义窗口在启动时应如何呈现。
+
+| 值              | Win | Mac | Lin |
+| -------------- | --- | --- | --- |
+| Fullscreen（全屏） | ✅   | ✅   | ✅   |
+| Maximised（最大化） | ✅   | ✅   | ✅   |
+| Minimised（最小化） | ✅   | ❌   | ✅   |
+
+名称：WindowStartState<br/> 类型：`options.WindowStartState`
 
 ### 无边框
 
@@ -212,23 +223,22 @@ func main() {
 
 并非当前支持 `http.Request` 的所有功能，请参阅以下功能矩阵：
 
-| 功能                      | Win | Mac | Lin |
-| ----------------------- | --- | --- | --- |
-| GET                     | ✅   | ✅   | ✅   |
-| POST                    | ✅   | ✅   | ❌   |
-| PUT                     | ✅   | ✅   | ❌   |
-| PATCH                   | ✅   | ✅   | ❌   |
-| DELETE                  | ✅   | ✅   | ❌   |
-| Request Headers         | ✅   | ✅   | ❌   |
-| Request Body            | ✅   | ✅   | ❌   |
-| Request Body Streaming  | ❌   | ❌   | ❌   |
-| Response StatusCodes    | ✅   | ✅   | ❌   |
-| Response Headers        | ✅   | ✅   | ❌   |
-| Response Body           | ✅   | ✅   | ✅   |
-| Response Body Streaming | ❌   | ❌   | ✅   |
-| WebSockets              | ❌   | ❌   | ❌   |
-
-注意：Linux 当前非常有限，因为目标是 WebKit2GTK 版本 < 2.36.0。 将来，一些特性将通过引入 WebKit2GTK 2.36.0+ 支持来支持。
+| 功能                      | Win | Mac | Lin    |
+| ----------------------- | --- | --- | ------ |
+| GET                     | ✅   | ✅   | ✅      |
+| POST                    | ✅   | ✅   | ✅ [^1] |
+| PUT                     | ✅   | ✅   | ✅ [^1] |
+| PATCH                   | ✅   | ✅   | ✅ [^1] |
+| DELETE                  | ✅   | ✅   | ✅ [^1] |
+| Request Headers         | ✅   | ✅   | ✅ [^1] |
+| Request Body            | ✅   | ✅   | ❌      |
+| Request Body Streaming  | ❌   | ❌   | ❌      |
+| Response StatusCodes    | ✅   | ✅   | ✅ [^1] |
+| Response Headers        | ✅   | ✅   | ✅ [^1] |
+| Response Body           | ✅   | ✅   | ✅      |
+| Response Body Streaming | ❌   | ❌   | ✅      |
+| WebSockets              | ❌   | ❌   | ❌      |
+| HTTP Redirects 30x      | ✅   | ❌   | ❌      |
 
 名称: AssetServer<br/> 类型: `*assetserver.Options`
 
@@ -246,10 +256,9 @@ func main() {
 
 资产处理程序是一个通用的 `http.Handler`，用于对无法找到的资产进行后备处理。
 
-由于 `os.ErrNotExist`，对于每个无法从 [资产](#资产) 提供服务的 GET 请求，都会调用该处理程序。 此外，所有非 GET 请求将始终从此处理程序提供服务。
+由于 `os.ErrNotExist`，对于每个无法从 [资产](#资产) 提供服务的 GET 请求，都会调用该处理程序。 此外，所有非 GET 请求将始终从此处理程序提供服务。 如果未定义，则调用处理程序的结果如下：
 
-如果未定义，则调用处理程序的结果如下：
-- GET 请求:   `http.StatusNotFound`
+- GET 请求: `http.StatusNotFound`
 - 其他请求: `http.StatusMethodNotAllowed`
 
 注意：当与前端 DevServer 结合使用时，可能会有一些限制，例如。 Vite 在不包含文件扩展名的每个路径上提供 index.html。
@@ -335,29 +344,29 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 
 名称：OnBeforeClose<br/> 类型：`func(ctx context.Context) bool`
 
-### 窗口启动状态
-
-定义窗口在启动时应如何呈现。
-
-| 值          | Win | Mac | Lin |
-| ---------- | --- | --- | --- |
-| Fullscreen | ✅   | ✅   | ✅   |
-| Maximised  | ✅   | ✅   | ✅   |
-| Minimised  | ✅   | ❌   | ✅   |
-
-名称：WindowStartState<br/> 类型：`options.WindowStartState`
-
-### CSSDragProperty
+### CSS 拖动属性
 
 指示用于标识哪些元素可用于拖动窗口的 CSS 属性。 默认值：`--wails-draggable`
 
 名称：CSSDragProperty<br/> 类型：`string`
 
-### CSSDragValue
+### CSS 拖动值
 
 指示 `CSSDragProperty` 样式应该具有什么值才能拖动窗口。 默认值：`drag`
 
 名称：CSSDragValue<br/> 类型：`string`
+
+### 缩放比例
+
+名称：ZoomFactor<br/> 类型：`float64`
+
+这定义了 WebView2 的缩放比例。 这是匹配 Edge 用户激活放大或缩小的选项
+
+### 启用缩放比例
+
+名称：IsZoomControlEnabled<br/> 类型：`bool`
+
+这将允许用户更改缩放比例。 请注意，可以在选项中设置缩放比例，但不允许在运行时更改它。 适用于屏幕固定的或类似的应用程序。
 
 ### 绑定
 
@@ -436,18 +445,6 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 - [WebView2 Runtime 固定版本的路径不应包含 \Edge\Application](https://docs.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/webview2-idl?view=webview2-1.0.1245.22#createcorewebview2environmentwithoptions)
 
 名称：WebviewBrowserPath<br/> 类型：`string`
-
-### 缩放比例
-
-名称：ZoomFactor<br/> 类型：`float64`
-
-这定义了 WebView2 的缩放比例。 这是匹配 Edge 用户激活放大或缩小的选项
-
-### 启用缩放比例
-
-名称：IsZoomControlEnabled<br/> 类型：`bool`
-
-这将允许用户更改缩放比例。 请注意，可以在选项中设置缩放比例，但不允许在运行时更改它。 适用于屏幕固定的或类似的应用程序。
 
 #### 主题
 
@@ -752,3 +749,5 @@ func main() {
 设置为 `true` 将在应用程序启动时打开 Web 检查器。
 
 名称: OpenInspectorOnStartup<br/> 类型: `bool`
+
+[^1]: 这需要 WebKit2GTK 2.36+ 支持，并且您的应用程序需要使用构建标签 `webkit2_36` 来构建以激活对此功能的支持。 这也会将您应用程序的 WebKit2GTK 最低要求提高到 2.36。

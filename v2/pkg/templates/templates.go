@@ -17,7 +17,6 @@ import (
 
 	"github.com/leaanthony/debme"
 	"github.com/leaanthony/gosod"
-	"github.com/olekukonko/tablewriter"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 )
@@ -311,33 +310,6 @@ func gitclone(options *Options) (string, error) {
 
 	return dirname, err
 
-}
-
-// OutputList prints the list of available tempaltes to the given logger
-func OutputList(logger *clilogger.CLILogger) error {
-	templates, err := List()
-	if err != nil {
-		return err
-	}
-
-	table := tablewriter.NewWriter(logger.Writer)
-	table.SetHeader([]string{"Template", "Short Name", "Description"})
-	table.SetAutoWrapText(false)
-	table.SetAutoFormatHeaders(true)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetHeaderLine(false)
-	table.SetBorder(false)
-	table.SetTablePadding("\t") // pad with tabs
-	table.SetNoWhiteSpace(true)
-	for _, template := range templates {
-		table.Append([]string{template.Name, template.ShortName, template.Description})
-	}
-	table.Render()
-	return nil
 }
 
 func generateIDEFiles(options *Options) error {
