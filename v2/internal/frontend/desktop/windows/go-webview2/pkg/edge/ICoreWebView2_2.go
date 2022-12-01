@@ -1,3 +1,5 @@
+//go:build windows
+
 package edge
 
 type iCoreWebView2_2Vtbl struct {

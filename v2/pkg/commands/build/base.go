@@ -379,8 +379,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 NOTE: It would appear that you do not have the latest Xcode cli tools installed.
 Please reinstall by doing the following:
   1. Remove the current installation located at "xcode-select -p", EG: sudo rm -rf /Library/Developer/CommandLineTools
-  2. Install latest Xcode tools: xcode-select --install
-`)
+  2. Install latest Xcode tools: xcode-select --install`)
 			}
 		}
 		return err

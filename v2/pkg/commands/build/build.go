@@ -293,7 +293,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		}
 		// Run lipo
 		if options.Verbosity == VERBOSE {
-			pterm.Println("Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename)
+			pterm.Println(fmt.Sprintf("Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename))
 		}
 		_, stderr, err := shell.RunCommand(options.BinDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
 		if err != nil {
@@ -401,7 +401,8 @@ func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookI
 	}
 
 	if options.Verbosity == VERBOSE {
-		pterm.Info.Println("%s", strings.Join(args, " "))
+		pterm.Info.Println(strings.Join(args, " "))
+
 	}
 
 	stdout, stderr, err := shell.RunCommand(options.BinDirectory, args[0], args[1:]...)
