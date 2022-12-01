@@ -341,7 +341,7 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 			B: col.B,
 		}
 
-		// Webview2 only has 0 and 255 as valid values.
+		// WebView2 only has 0 and 255 as valid values.
 		if backgroundCol.A > 0 && backgroundCol.A < 255 {
 			backgroundCol.A = 255
 		}

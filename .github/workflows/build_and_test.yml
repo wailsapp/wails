@@ -29,6 +29,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Run tests
+        working-directory: ./v2
         run: go test -v ./...
 
   test_templates:

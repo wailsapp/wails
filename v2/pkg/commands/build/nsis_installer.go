@@ -47,7 +47,7 @@ func GenerateNSISInstaller(options *Options, amd64Binary string, arm64Binary str
 	}
 
 	if err := webview2runtime.WriteInstallerToFile(webviewSetup); err != nil {
-		return fmt.Errorf("Unable to write Webview2 Bootstrapper Setup: %w", err)
+		return fmt.Errorf("Unable to write WebView2 Bootstrapper Setup: %w", err)
 	}
 
 	if !shell.CommandExists("makensis") {

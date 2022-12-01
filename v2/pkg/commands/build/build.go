@@ -2,14 +2,13 @@ package build
 
 import (
 	"fmt"
-	"log"
+	"github.com/pterm/pterm"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
 	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/staticanalysis"
 	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 
@@ -185,14 +184,39 @@ func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
 
 }
 
+func fatal(message string) {
+	printer := pterm.PrefixPrinter{
+		MessageStyle: &pterm.ThemeDefault.FatalMessageStyle,
+		Prefix: pterm.Prefix{
+			Style: &pterm.ThemeDefault.FatalPrefixStyle,
+			Text:  " FATAL ",
+		},
+	}
+	printer.Println(message)
+	os.Exit(1)
+}
+
+func printBulletPoint(text string, args ...any) {
+	item := pterm.BulletListItem{
+		Level: 2,
+		Text:  text,
+	}
+	t, err := pterm.DefaultBulletList.WithItems([]pterm.BulletListItem{item}).Srender()
+	if err != nil {
+		fatal(err.Error())
+	}
+	t = strings.Trim(t, "\n\r")
+	pterm.Printf(t, args...)
+}
+
 func GenerateBindings(buildOptions *Options) error {
 
 	obfuscated := buildOptions.Obfuscated
 	if obfuscated {
-		buildOptions.Logger.Print("  - Generating obfuscated bindings: ")
+		printBulletPoint("Generating obfuscated bindings: ")
 		buildOptions.UserTags = append(buildOptions.UserTags, "obfuscated")
 	} else {
-		buildOptions.Logger.Print("  - Generating bindings: ")
+		printBulletPoint("Generating bindings: ")
 	}
 
 	// Generate Bindings
@@ -207,39 +231,36 @@ func GenerateBindings(buildOptions *Options) error {
 	}
 
 	if buildOptions.Verbosity == VERBOSE {
-		buildOptions.Logger.Println(output)
+		pterm.Info.Println(output)
 	}
 
-	buildOptions.Logger.Println("Done.")
+	pterm.Println("Done.")
 
 	return nil
 }
 
 func execBuildApplication(builder Builder, options *Options) (string, error) {
-	// Extract logger
-	outputLogger := options.Logger
-
 	// If we are building for windows, we will need to generate the asset bundle before
 	// compilation. This will be a .syso file in the project root
 	if options.Pack && options.Platform == "windows" {
-		outputLogger.Print("  - Generating bundle assets: ")
+		printBulletPoint("Generating application assets: ")
 		err := packageApplicationForWindows(options)
 		if err != nil {
 			return "", err
 		}
-		outputLogger.Println("Done.")
+		pterm.Println("Done.")
 
 		// When we finish, we will want to remove the syso file
 		defer func() {
 			err := os.Remove(filepath.Join(options.ProjectData.Path, options.ProjectData.Name+"-res.syso"))
 			if err != nil {
-				log.Fatal(err)
+				fatal(err.Error())
 			}
 		}()
 	}
 
 	// Compile the application
-	outputLogger.Print("  - Compiling application: ")
+	printBulletPoint("Compiling application: ")
 
 	if options.Platform == "darwin" && options.Arch == "universal" {
 		outputFile := builder.OutputFilename(options)
@@ -251,7 +272,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		options.OutputFile = amd64Filename
 		options.CleanBinDirectory = false
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("\nBuilding AMD64 Target: %s", filepath.Join(options.BinDirectory, options.OutputFile))
+			pterm.Println("Building AMD64 Target: " + filepath.Join(options.BinDirectory, options.OutputFile))
 		}
 		err := builder.CompileProject(options)
 		if err != nil {
@@ -262,7 +283,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		options.OutputFile = arm64Filename
 		options.CleanBinDirectory = false
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("Building ARM64 Target: %s", filepath.Join(options.BinDirectory, options.OutputFile))
+			pterm.Println("Building ARM64 Target: " + filepath.Join(options.BinDirectory, options.OutputFile))
 		}
 		err = builder.CompileProject(options)
 
@@ -271,7 +292,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		}
 		// Run lipo
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("  Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename)
+			pterm.Println("Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename)
 		}
 		_, stderr, err := shell.RunCommand(options.BinDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
 		if err != nil {
@@ -295,19 +316,19 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		}
 	}
 
-	outputLogger.Println("Done.")
+	pterm.Println("Done.")
 
 	// Do we need to pack the app for non-windows?
 	if options.Pack && options.Platform != "windows" {
 
-		outputLogger.Print("  - Packaging application: ")
+		printBulletPoint("Packaging application: ")
 
 		// TODO: Allow cross platform build
 		err := packageProject(options, runtime.GOOS)
 		if err != nil {
 			return "", err
 		}
-		outputLogger.Println("Done.")
+		pterm.Println("Done.")
 	}
 
 	if options.Platform == "windows" {
@@ -321,7 +342,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 			tags = append(tags, expWebView2Loader)
 			message = fmt.Sprintf("An experimental Go native WebView2Loader is available. We would love to hear your feedback about it and invite you to test it by building with `-tags %s`", strings.Join(tags, ","))
 		}
-		println(colour.Green("  - " + message))
+		pterm.Info.Println(message)
 	}
 
 	return options.CompiledBinary, nil
@@ -358,13 +379,13 @@ func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookI
 				// The hook is for host platform
 			} else {
 				// Skip a hook which is not native
-				outputLogger.Println("  - Non native build hook '%s': Skipping.", hookIdentifier)
+				printBulletPoint(fmt.Sprintf("Non native build hook '%s': Skipping.", hookIdentifier))
 				return nil
 			}
 		}
 	}
 
-	outputLogger.Print("  - Executing %s build hook '%s': ", hookName, hookIdentifier)
+	printBulletPoint("Executing %s build hook '%s': ", hookName, hookIdentifier)
 	args := strings.Split(buildHook, " ")
 	for i, arg := range args {
 		newArg := argReplacements[arg]
@@ -375,17 +396,17 @@ func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookI
 	}
 
 	if options.Verbosity == VERBOSE {
-		outputLogger.Println("%s", strings.Join(args, " "))
+		pterm.Info.Println("%s", strings.Join(args, " "))
 	}
 
 	stdout, stderr, err := shell.RunCommand(options.BinDirectory, args[0], args[1:]...)
 	if options.Verbosity == VERBOSE {
-		println(stdout)
+		pterm.Info.Println(stdout)
 	}
 	if err != nil {
 		return fmt.Errorf("%s - %s", err.Error(), stderr)
 	}
-	outputLogger.Println("Done.")
+	pterm.Println("Done.")
 
 	return nil
 }

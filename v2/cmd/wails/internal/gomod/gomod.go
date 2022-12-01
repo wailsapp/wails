@@ -1,8 +1,9 @@
-package build
+package gomod
 
 import (
 	"fmt"
 	"github.com/wailsapp/wails/v2/cmd/wails/internal"
+	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/gomod"
 	"github.com/wailsapp/wails/v2/internal/goversion"
@@ -56,4 +57,9 @@ func SyncGoMod(logger *clilogger.CLILogger, updateWailsVersion bool) error {
 	}
 
 	return nil
+}
+
+func LogGreen(message string, args ...interface{}) {
+	text := fmt.Sprintf(message, args...)
+	println(colour.Green(text))
 }
