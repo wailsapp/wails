@@ -59,7 +59,7 @@ jobs:
 
   test_templates:
     name: Test Templates
-    needs: test
+    needs: test_go
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
