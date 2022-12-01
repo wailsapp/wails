@@ -1,12 +1,11 @@
-name: Push files to Crowdin
+name: Push
 
 on:
   push:
     branches: [master]
-  workflow_dispatch:
 
 jobs:
-  docs:
+  push_files_to_crowdin:
     name: Push files to Crowdin
     if: github.repository == 'wailsapp/wails'
     runs-on: ubuntu-latest

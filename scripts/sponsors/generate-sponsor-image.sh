@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-npm install
-npx sponsorkit -o ../../website/static/img/
+
+npx sponsorkit@0.6.1 -o ../../website/static/img/

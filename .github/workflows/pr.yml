@@ -1,30 +1,39 @@
 name: PR Checks
+
 on:
   pull_request:
   pull_request_review:
-    types: [ submitted ]
+    types: [submitted]
 
 jobs:
-  check_branch_name:
+  check_docs:
+    name: Check Docs
+    if: ${{github.repository == 'wailsapp/wails' && contains(github.head_ref,'feature/')}}
     runs-on: ubuntu-latest
-    if: github.repository == 'wailsapp/wails'
-    name: Check branch name
     steps:
-      - run: |
-          if ! [[ "$(echo ${GITHUB_HEAD_REF} | cut -d "/" -f1)" =~ (feature|bugfix|release|chore) ]]; then
-            echo "PRs are only accepted for branches starting with: feature/, bugfix/, chore/ or release/"
-            exit 1
-          fi
-        shell: bash
+      - uses: actions/checkout@v3
 
-  test:
+      - name: Verify Changed files
+        uses: tj-actions/verify-changed-files@v11.1
+        id: verify-changed-files
+        with:
+          files: |
+            website/**/*.mdx
+            website/**/*.md
+
+      - name: Run step only when files change.
+        if: steps.verify-changed-files.outputs.files_changed != 'true'
+        run: |
+          echo "::warning::Feature branch does not contain any changes to the website."
+
+  test_go:
     name: Run Go Tests
     runs-on: ${{ matrix.os }}
     if: github.event.review.state == 'approved'
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
-        go-version: [ 1.18, 1.19 ]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        go-version: [1.18, 1.19]
 
     steps:
       - name: Checkout code
@@ -34,10 +43,12 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
 
-      - name: Set up Go 1.18
+      - name: Setup Go
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
 
       - name: Run tests
-        run: go test -v ./...
+        working-directory: ./v2
+        run: |
+          go test -v ./...
