@@ -3,13 +3,14 @@ package build
 import (
 	"bytes"
 	"fmt"
-	"github.com/pterm/pterm"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/pterm/pterm"
 
 	"github.com/wailsapp/wails/v2/internal/system"
 
@@ -560,6 +561,7 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 	if installCommand == "" {
 		// No - don't install
 		printBulletPoint("No Install command. Skipping.")
+		pterm.Println("")
 	} else {
 		// Do install if needed
 		printBulletPoint("Installing frontend dependencies: ")
@@ -580,6 +582,7 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 	}
 	if buildCommand == "" {
 		printBulletPoint("No Build command. Skipping.")
+		pterm.Println("")
 		// No - ignore
 		return nil
 	}
