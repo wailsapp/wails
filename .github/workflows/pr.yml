@@ -6,18 +6,6 @@ on:
     types: [submitted]
 
 jobs:
-  check_branch_name:
-    name: Check branch name
-    runs-on: ubuntu-latest
-    if: github.repository == 'wailsapp/wails'
-    steps:
-      - shell: bash
-        run: |
-          if ! [[ "$(echo ${GITHUB_HEAD_REF} | cut -d "/" -f1)" =~ (feature|bugfix|release|chore) ]]; then
-            echo "PRs are only accepted for branches starting with: feature/, bugfix/, chore/ or release/"
-            exit 1
-          fi
-
   check_docs:
     name: Check Docs
     if: ${{github.repository == 'wailsapp/wails' && contains(github.head_ref,'feature/')}}
