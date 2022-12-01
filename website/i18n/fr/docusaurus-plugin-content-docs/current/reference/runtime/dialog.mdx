@@ -4,53 +4,53 @@ sidebar_position: 5
 
 # Boîte de dialogue
 
-This part of the runtime provides access to native dialogs, such as File Selectors and Message boxes.
+Cette partie du runtime fournit un accès aux boîtes de dialogue natives, telles que les sélecteurs de fichiers et les boîtes de messages.
 
 :::info JavaScript
 
-Dialog is currently unsupported in the JS runtime.
+La boîte de dialogue n'est actuellement pas prise en charge dans l'exécuteur JS.
 
 :::
 
 ### OpenDirectoryDialog
 
-Opens a dialog that prompts the user to select a directory. Can be customised using [OpenDialogOptions](#opendialogoptions).
+Ouvre une boîte de dialogue qui invite l'utilisateur à sélectionner un répertoire. Peut être personnalisé en utilisant [OpenDialogOptions](#opendialogoptions).
 
 Go: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
 
-Returns: Selected directory (blank if the user cancelled) or an error
+Renvoie : le répertoire sélectionné (vide si l'utilisateur a annulé) ou une erreur
 
 ### OpenFileDialog
 
-Opens a dialog that prompts the user to select a file. Can be customised using [OpenDialogOptions](#opendialogoptions).
+Ouvre une boîte de dialogue qui invite l'utilisateur à sélectionner un fichier. Peut être personnalisé en utilisant [OpenDialogOptions](#opendialogoptions).
 
 Go: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (string, error)`
 
-Returns: Selected file (blank if the user cancelled) or an error
+Renvoie : le fichier sélectionné (vide si l'utilisateur a annulé) ou une erreur
 
 ### OpenFileDialog
 
-Opens a dialog that prompts the user to select multiple files. Can be customised using [OpenDialogOptions](#opendialogoptions).
+Ouvre une boîte de dialogue qui invite l'utilisateur à sélectionner plusieurs fichiers. Peut être personnalisé en utilisant [OpenDialogOptions](#opendialogoptions).
 
 Go: `OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOptions) ([]string, error)`
 
-Returns: Selected files (nil if the user cancelled) or an error
+Renvoie : les fichiers sélectionnés (nil si l'utilisateur a annulé) ou une erreur
 
 ### SaveFileDialog
 
-Opens a dialog that prompts the user to select a filename for the purposes of saving. Can be customised using [SaveDialogOptions](#savedialogoptions).
+Ouvre une boîte de dialogue qui invite l'utilisateur à saisir un nom pour le fichier à enregistrer. Peut être personnalisé en utilisant [SaveDialogOptions](#savedialogoptions).
 
 Go: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (string, error)`
 
-Returns: The selected file (blank if the user cancelled) or an error
+Renvoie : le fichier sélectionné (vide si l'utilisateur a annulé) ou une erreur
 
 ### MessageDialog
 
-Displays a message using a message dialog. Can be customised using [MessageDialogOptions](#messagedialogoptions).
+Affiche un message en utilisant une boîte de dialogue. Peut être personnalisé en utilisant [MessageDialogOptions](#messagedialogoptions).
 
 Go: `MessageDialog(ctx context.Context, dialogOptions MessageDialogOptions) (string, error)`
 
-Returns: The text of the selected button or an error
+Renvoie : Le texte du bouton sélectionné ou une erreur
 
 ## Options
 
@@ -69,16 +69,16 @@ type OpenDialogOptions struct {
 }
 ```
 
-| Champ                      | Description                                    | Win | Mac | Lin |
-| -------------------------- | ---------------------------------------------- | --- | --- | --- |
-| DefaultDirectory           | The directory the dialog will show when opened | ✅   | ✅   | ✅   |
-| DefaultFilename            | The default filename                           | ✅   | ✅   | ✅   |
-| Title                      | Title for the dialog                           | ✅   | ✅   | ✅   |
-| [Filters](#filefilter)     | A list of file filters                         | ✅   | ✅   | ✅   |
-| ShowHiddenFiles            | Show files hidden by the system                |     | ✅   | ✅   |
-| CanCreateDirectories       | Allow user to create directories               |     | ✅   |     |
-| ResolvesAliases            | If true, returns the file not the alias        |     | ✅   |     |
-| TreatPackagesAsDirectories | Allow navigating into packages                 |     | ✅   |     |
+| Champ                      | Description                                                    | Win | Mac | Lin |
+| -------------------------- | -------------------------------------------------------------- | --- | --- | --- |
+| DefaultDirectory           | Le répertoire que la boîte de dialogue affichera à l'ouverture | ✅   | ✅   | ✅   |
+| DefaultFilename            | Le nom du fichier par défaut                                   | ✅   | ✅   | ✅   |
+| Title                      | Titre pour la boite de dialogue                                | ✅   | ✅   | ✅   |
+| [Filters](#filefilter)     | Une liste de filtres de fichiers                               | ✅   | ✅   | ✅   |
+| ShowHiddenFiles            | Afficher les fichiers cachés par le système                    |     | ✅   | ✅   |
+| CanCreateDirectories       | Autoriser l'utilisateur de créer des dossiers                  |     | ✅   |     |
+| ResolvesAliases            | Si vrai, retourne le fichier et non l'alias                    |     | ✅   |     |
+| TreatPackagesAsDirectories | Autoriser la navigation dans les dossiers                      |     | ✅   |     |
 
 ### SaveDialogOptions
 
@@ -94,15 +94,15 @@ type SaveDialogOptions struct {
 }
 ```
 
-| Champ                      | Description                                    | Win | Mac | Lin |
-| -------------------------- | ---------------------------------------------- | --- | --- | --- |
-| DefaultDirectory           | The directory the dialog will show when opened | ✅   | ✅   | ✅   |
-| DefaultFilename            | The default filename                           | ✅   | ✅   | ✅   |
-| Title                      | Title for the dialog                           | ✅   | ✅   | ✅   |
-| [Filters](#filefilter)     | A list of file filters                         | ✅   | ✅   | ✅   |
-| ShowHiddenFiles            | Show files hidden by the system                |     | ✅   | ✅   |
-| CanCreateDirectories       | Allow user to create directories               |     | ✅   |     |
-| TreatPackagesAsDirectories | Allow navigating into packages                 |     | ✅   |     |
+| Champ                      | Description                                                    | Win | Mac | Lin |
+| -------------------------- | -------------------------------------------------------------- | --- | --- | --- |
+| DefaultDirectory           | Le répertoire que la boîte de dialogue affichera à l'ouverture | ✅   | ✅   | ✅   |
+| DefaultFilename            | Le nom du fichier par défaut                                   | ✅   | ✅   | ✅   |
+| Title                      | Titre pour la boite de dialogue                                | ✅   | ✅   | ✅   |
+| [Filters](#filefilter)     | Une liste de filtres de fichiers                               | ✅   | ✅   | ✅   |
+| ShowHiddenFiles            | Afficher les fichiers cachés par le système                    |     | ✅   | ✅   |
+| CanCreateDirectories       | Autoriser l'utilisateur de créer des dossiers                  |     | ✅   |     |
+| TreatPackagesAsDirectories | Autoriser la navigation dans les dossiers                      |     | ✅   |     |
 
 ### MessageDialogOptions
 
@@ -117,14 +117,14 @@ type MessageDialogOptions struct {
 }
 ```
 
-| Champ         | Description                                                                | Win            | Mac | Lin |
-| ------------- | -------------------------------------------------------------------------- | -------------- | --- | --- |
-| Type          | The type of message dialog, eg question, info...                           | ✅              | ✅   | ✅   |
-| Title         | Title for the dialog                                                       | ✅              | ✅   | ✅   |
-| Message       | The message to show the user                                               | ✅              | ✅   | ✅   |
-| Buttons       | A list of button titles                                                    |                | ✅   |     |
-| DefaultButton | The button with this text should be treated as default. Bound to `return`. | ✅[*](#windows) | ✅   |     |
-| CancelButton  | The button with this text should be treated as cancel. Bound to `escape`   |                | ✅   |     |
+| Champ         | Description                                                                                    | Win            | Mac | Lin |
+| ------------- | ---------------------------------------------------------------------------------------------- | -------------- | --- | --- |
+| Type          | Le type de boîte de dialogue de message: question, info...                                     | ✅              | ✅   | ✅   |
+| Title         | Titre pour la boite de dialogue                                                                | ✅              | ✅   | ✅   |
+| Message       | Le message à afficher à l'utilisateur                                                          | ✅              | ✅   | ✅   |
+| Buttons       | La liste des noms des boutons                                                                  |                | ✅   |     |
+| DefaultButton | Le bouton avec ce texte doit être traité comme le bouton par défaut. Lié à la touche `entrée`. | ✅[*](#windows) | ✅   |     |
+| CancelButton  | Le bouton avec ce texte doit être traité permettant d'annuler. Lié à la touche `echap`         |                | ✅   |     |
 
 #### Windows
 
