@@ -1,4 +1,4 @@
-//go:build darwin && !dev
+//go:build darwin && !(dev || debug)
 
 package darwin
 

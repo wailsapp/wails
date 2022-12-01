@@ -1,8 +1,8 @@
-//go:build darwin && dev
+//go:build darwin && (dev || debug)
 
 package darwin
 
-// We are using private APIs here, make sure this is only included in a dev build and not in a production build.
+// We are using private APIs here, make sure this is only included in a dev/debug build and not in a production build.
 // Otherwise the binary might get rejected by the AppReview-Team when pushing it to the AppStore.
 
 /*
