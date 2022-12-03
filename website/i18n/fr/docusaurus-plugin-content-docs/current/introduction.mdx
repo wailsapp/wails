@@ -13,8 +13,8 @@ Considérez cela comme une alternative légère et rapide d'Electron pour Go. Vo
 - Menus natifs, Boîtes de dialogues, Thèmes et Translucidité
 - Prise en charge de Windows, macOS et Linux
 - Modèles intégrés pour Svelte, React, Preact, Vue, Lit et Vanilla JS
-- Easily call Go methods from JavaScript
-- Automatic Go struct to TypeScript model generation
+- Appeler facilement les méthodes Go depuis JavaScript
+- Génération automatique du modèle TypeScript à partir des struct Go
 - Aucun CGO ou DLL externe requis sous Windows
 - Mode développement en direct en utilisant la puissance de [Vite](https://vitejs.dev/)
 - CLI puissant pour créer, construire et empaqueter facilement des applications
@@ -36,7 +36,7 @@ Ceci est [varly](https://varly.app) - une application de bureau pour MacOS & Win
 
 ### Modèles de créations rapides
 
-Wails est livré avec un certain nombre de modèles préconfigurés qui vous permettent de faire fonctionner votre application rapidement. Il y a des modèles pour les frameworks suivants : Svelte, React, Vue, Preact, Lit et Vanilla. There are both JavaScript and TypeScript versions for each template.
+Wails est livré avec un certain nombre de modèles préconfigurés qui vous permettent de faire fonctionner votre application rapidement. Il y a des modèles pour les frameworks suivants : Svelte, React, Vue, Preact, Lit et Vanilla. Il existe à la fois des versions JavaScript et TypeScript pour chaque modèle.
 
 ### Éléments natifs
 
@@ -44,13 +44,13 @@ Wails utilise une bibliothèque conçue pour gérer les éléments natifs tels q
 
 **Il n'embarque pas de navigateur**, il est donc efficace sur les ressources. Au lieu de cela, il utilise le moteur de rendu natif de la plate-forme. Sous Windows, c'est la nouvelle bibliothèque Microsoft Webview2, construite sur Chromium.
 
-### Go & JavaScript Interoperability
+### Interopérabilité Go & Javascript
 
-Wails automatically makes your Go methods available to JavaScript, so you can call them by name from your frontend! It even generates TypeScript models for the structs used by your Go methods, so you can pass the same data structures between Go and JavaScript.
+Wails met automatiquement vos méthodes Go à la disposition de Javascript, afin que vous puissiez les appeler par nom depuis votre frontend ! Il génère même des modèles Typescript pour les structures utilisées par vos méthodes Go, pour que vous puissiez passer les mêmes structures de données entre Go et Javascript.
 
 ### Librairie d'exécution
 
-Wails provides a runtime library, for both Go and JavaScript, that handles a lot of the things modern applications need, like Eventing, Logging, Dialogs, etc.
+Wails fournit une bibliothèque runtime, pour Go et Javascript, qui gère beaucoup de choses dont les applications modernes ont besoin, comme Logging, Boîtes de dialogue, etc.
 
 ### Expérience de développement en direct
 

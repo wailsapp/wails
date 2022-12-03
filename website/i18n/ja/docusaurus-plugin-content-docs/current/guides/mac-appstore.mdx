@@ -1,6 +1,6 @@
-# Mac向けApp Storeガイド
+# Mac App Storeガイド
 
-このページでは、WailsアプリをMac向けApp Storeで公開する方法について、概要を説明します。
+このページでは、WailsアプリをMac App Storeで公開する方法について、概要を説明します。
 
 ## 前提条件
 
@@ -8,29 +8,29 @@
 - 開発者ポータルで、証明書、ID、アプリを作成しておく必要があります。 詳しくは以下の手順に従ってください。
 - Xcodeコマンドラインツールを、あなたのローカルマシンにインストールしておく必要があります。
 
-#### Create Certificates and Identifiers
+#### 証明書とIDの作成
 
-1. Go to your [Apple Developer Account](https://developer.apple.com/account/)
-2. Under `Certificates, Identifiers & Profiles`, click `Identifiers` and Register a New App ID. Use the format (com.example.app)
-3. Under the same page click `Certificates` and generate new Certificates for Mac App Store Distribution.  Download them and import the certificates into Keychain on your local machine.
+1. [Apple Developerアカウント](https://developer.apple.com/account/)へアクセスします。
+2. `Certificates, Identifiers & Profiles`内にある`Identifiers`をクリックし、新しいApp IDを登録します。 (com.example.app) のような形式にしてください。
+3. 同じページで`Certificates`をクリックし、Mac App Storeディストリビューション用の新しい証明書を生成します。  それらの証明書をダウンロードし、ローカルマシンのKeychainにインポートしてください。
 
-#### Create App Submission
+#### アプリ提出物の作成
 
-1. Go to the [App Store Connect Site](https://appstoreconnect.apple.com/apps)
-2. Register a new application and link the bundle ID that you created in the previous step
-3. Populate your app with the correct screen shots, descriptions, etc. as required by Apple
-4. Create a new version of your app
+1. [App Store Connectサイト](https://appstoreconnect.apple.com/apps)へアクセスします。
+2. 新しいアプリケーションを登録し、前のステップで作成済みのバンドルIDをリンクします。
+3. Appleの要求する正規のスクリーンショットや説明文などを、アプリに追加します。
+4. アプリの新しいバージョンを作成します。
 
 
-## Mac App Store Process
+## Mac App Storeへの公開手順
 
-#### Enable Apple's App Sandbox
+#### AppleのApp Sandboxの有効化
 
-Apps submitted to the Mac App Store must run under Apple's [App Sandbox](https://developer.apple.com/app-sandboxing/). You must create an `entitlements.plist` file for this to work. The recommendation is to create this file under this path `{PROJECT_DIR}/build/darwin/entitlements.plist`.
+Mac App Storeへ提出されるアプリは、Appleの[App Sandbox](https://developer.apple.com/app-sandboxing/)内で動作する必要があります。 そのためには、`entitlements.plist`ファイルを作成しておく必要があります。 ファイルは、`{PROJECT_DIR}/build/darwin/entitlements.plist`配下に作成することを推奨します。
 
-**Example Entitlements File**
+**entitlementsファイルの例**
 
-This is an example entitlements file from the [RiftShare](https://github.com/achhabra2/riftshare) app. For reference please put in the entitlements your app requires. Refer to [this site](https://developer.apple.com/documentation/bundleresources/entitlements) for more information.
+ここでは、[RiftShare](https://github.com/achhabra2/riftshare)というアプリのentitlementsファイルを例として示します。 参考として、アプリが必要とする権限を入力してください。 詳しくは、[こちらのサイト](https://developer.apple.com/documentation/bundleresources/entitlements)をご覧ください。
 
 ```xml title="entitlements.plist"
 <?xml version="1.0" encoding="UTF-8"?>
@@ -51,11 +51,11 @@ This is an example entitlements file from the [RiftShare](https://github.com/ach
 </plist>
 ```
 
-#### Build and Sign the App Package
+#### アプリパッケージのビルドと署名
 
-The following is an example script for building and signing your app for Mac App Store submission. It assumes you are running the script from your root project directory.
+以下は、Mac App Storeへの提出用に、アプリをビルドおよび署名するスクリプトの例です。 プロジェクトのルートディレクトリからスクリプトを実行することを前提としています。
 
-Note the certificates for signing the app and signing the installer are different. Please make sure both are imported into Keychain. Find the strings in Keychain and insert them below. Populate your certificate names, and app name below. Running the following script will generate a signed `app.pkg` file in the root directory of your app.
+アプリへ署名するための証明書と、インストーラへ署名するための証明書は異なりますので、ご注意ください。 両方の証明書がKeychainにインポートされていることを確認してください。 Keychainで文字列を探し、下記スクリプトに挿入してください。 具体的には、証明書名およびアプリ名を入力します。 以下のスクリプトを実行すると、アプリケーションのルートディレクトリに、署名済みの`app.pkg`ファイルが生成されます。
 
 ```bash title="macappstore-build.sh"
 #!/bin/bash
@@ -71,13 +71,13 @@ codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements .
 productbuild --sign "$PKG_CERTIFICATE" --component ./build/bin/$APP_NAME.app /Applications ./$APP_NAME.pkg
 ```
 
-#### Upload App Bundle
+#### アプリバンドルのアップロード
 
-You will need to upload the generated package file and associate it to your Application before you will be able to submit it for review.
+審査向けに提出が可能となる前に、生成されたパッケージファイルをアップロードし、アプリケーションに関連付ける必要があります。
 
-1. Download the [Transporter App](https://apps.apple.com/us/app/transporter/id1450874784) from the Mac App Store
-2. Open it and sign in with your Apple ID
-3. Click the + sign and select the `APP_NAME.pkg` file that you generated in the previous step. Upload it
-4. Go back to the [App Store Connect](https://appstoreconnect.apple.com/apps) site and navigate back into your app submission. Select the version that you are ready to make available on the App Store. Under `Build` select the package that you uploaded via Transporter.
+1. Mac App Storeから[Transporter App](https://apps.apple.com/us/app/transporter/id1450874784)をダウンロードします。
+2. アプリを起動し、Apple IDでサインインします。
+3. +マークをクリックし、前のステップで生成済みの`APP_NAME.pkg`ファイルを選択します。 そしてアップロードします。
+4. [App Store Connect](https://appstoreconnect.apple.com/apps)サイトへ戻り、アプリ提出物ページへ戻ります。 App Storeで公開する準備できているバージョンを選択します。 `Build`内で、Transporter経由でアップロードしたパッケージを選択します。
 
-That's it! You can now use the site to submit your App for review. After a few business days if all goes well you should see your App live on the Mac App Store. 
+以上で終了です! サイトで、アプリを審査のために提出できるようになりました。 数営業日後、審査結果に問題が無ければ、アプリがMac App Storeに公開されます。 
