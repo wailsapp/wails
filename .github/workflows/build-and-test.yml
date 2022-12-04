@@ -2,7 +2,7 @@ name: Build + Test
 
 on:
   push:
-    branches: [*]
+    branches: '*'
   workflow_dispatch:
 
 jobs:
