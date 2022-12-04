@@ -2,7 +2,7 @@ name: Build + Test
 
 on:
   push:
-    branches: '*'
+    branches: [release/*, master]
   workflow_dispatch:
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
         run: go test -v ./...
 
       - name: Run tests
-        if: matrix.os == 'macos-latest'
+        if: matrix.os != 'macos-latest'
         working-directory: ./v2
         run: go test -v ./...
 
