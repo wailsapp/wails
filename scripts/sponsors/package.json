@@ -1,0 +1,15 @@
+{
+  "name": "sponsors",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "sponsorkit": "^0.6.1"
+  }
+}
