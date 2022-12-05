@@ -1,3 +1,5 @@
+//go:build windows
+
 /*
  * Copyright (C) 2019 The Winc Authors. All Rights Reserved.
  * Copyright (C) 2010-2013 Allen Dang. All Rights Reserved.
@@ -411,7 +413,7 @@ func (cba *ControlBase) PreTranslateMessage(msg *w32.MSG) bool {
 	return false
 }
 
-//Events
+// Events
 func (cba *ControlBase) OnCreate() *EventManager {
 	return &cba.onCreate
 }

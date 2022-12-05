@@ -1,8 +1,9 @@
+//go:build windows
+
 /*
  * Copyright (C) 2019 The Winc Authors. All Rights Reserved.
  * Copyright (C) 2010-2012 The W32 Authors. All Rights Reserved.
  */
-
 package w32
 
 const (
@@ -1099,7 +1100,7 @@ const (
 	OFN_SHOWHELP             = 0x00000010
 )
 
-//SHBrowseForFolder flags
+// SHBrowseForFolder flags
 const (
 	BIF_RETURNONLYFSDIRS    = 0x00000001
 	BIF_DONTGOBELOWDOMAIN   = 0x00000002
@@ -1120,7 +1121,7 @@ const (
 	BIF_BROWSEFILEJUNCTIONS = 0x00010000
 )
 
-//MessageBox flags
+// MessageBox flags
 const (
 	MB_OK                = 0x00000000
 	MB_OKCANCEL          = 0x00000001
@@ -1144,7 +1145,7 @@ const (
 	MB_DEFBUTTON4        = 0x00000300
 )
 
-//COM
+// COM
 const (
 	E_INVALIDARG  = 0x80070057
 	E_OUTOFMEMORY = 0x8007000E

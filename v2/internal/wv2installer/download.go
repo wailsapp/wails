@@ -1,10 +1,11 @@
-//go:build !wv2runtime.error && !wv2runtime.browser && !wv2runtime.embed
-// +build !wv2runtime.error,!wv2runtime.browser,!wv2runtime.embed
+//go:build windows && !wv2runtime.error && !wv2runtime.browser && !wv2runtime.embed
+// +build windows,!wv2runtime.error,!wv2runtime.browser,!wv2runtime.embed
 
 package wv2installer
 
 import (
 	"fmt"
+
 	"github.com/wailsapp/wails/v2/internal/webview2runtime"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
