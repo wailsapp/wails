@@ -2,6 +2,8 @@
 
 package win32
 
+import "golang.org/x/sys/windows"
+
 type NOTIFYICONDATA struct {
 	CbSize           uint32
 	HWnd             HWND
@@ -16,15 +18,8 @@ type NOTIFYICONDATA struct {
 	UVersion         uint32
 	SzInfoTitle      [64]uint16
 	DwInfoFlags      uint32
-	GuidItem         GUID
+	GuidItem         windows.GUID
 	HBalloonIcon     HICON
-}
-
-type GUID struct {
-	Data1 uint32
-	Data2 uint16
-	Data3 uint16
-	Data4 [8]byte
 }
 
 type WNDCLASSEX struct {
