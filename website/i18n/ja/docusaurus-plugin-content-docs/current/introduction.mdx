@@ -13,8 +13,8 @@ Wailsは、Go言語とWeb技術を使用して、デスクトップアプリの�
 - ネイティブなメニュー、ダイアログ、テーマ、透過処理を使用可能です
 - Windows、macOS、Linuxをサポートしています
 - Svelte、React、Preact、Vue、Lit、バニラJS向けにビルトインテンプレートを用意しています
-- Easily call Go methods from JavaScript
-- Automatic Go struct to TypeScript model generation
+- GoメソッドをJavaScriptから簡単に呼び出せます
+- Go構造体に対応するTypeScript型定義を自動生成します
 - WindowsにおいてCGOや外部DLLは必要ありません
 - [Vite](https://vitejs.dev/)の力を利用したライブ開発が可能です
 - アプリケーションを簡単に作成、ビルド、パッケージングするための強力なCLIを備えています
@@ -36,7 +36,7 @@ Wailsは、Go言語とWeb技術を使用して、デスクトップアプリの�
 
 ### クイックスタートテンプレート
 
-Wailsには、アプリの開発をすばやく始められるように、多数のテンプレートが用意されています。 Svelte、React、Vue、Preact、LitおよびVanilla用で、それぞれのテンプレートがあります。 There are both JavaScript and TypeScript versions for each template.
+Wailsには、アプリの開発をすばやく始められるように、多数のテンプレートが用意されています。 Svelte、React、Vue、Preact、Lit向け、およびバニラなJavaScript用で、それぞれのテンプレートがあります。 各テンプレートには、Javascript版とTypescript版が用意されています。
 
 ### ネイティブ要素
 
@@ -44,13 +44,13 @@ Wailsは、ウィンドウ、メニュー、ダイアログなどのネイティ
 
 **ブラウザを埋め込まないため**、無駄なリソースを割きません。 ブラウザを埋め込まない代わりに、OSプラットフォームのネイティブなレンダリングエンジンを使用します。 例えばWindowsの場合、Chromium上でビルトされているMicrosoft Webview2ライブラリを使用します。
 
-### Go & JavaScript Interoperability
+### GoとJavascriptのやり取り
 
-Wails automatically makes your Go methods available to JavaScript, so you can call them by name from your frontend! It even generates TypeScript models for the structs used by your Go methods, so you can pass the same data structures between Go and JavaScript.
+Wailsは自動的に、GoのメソッドをJavascriptから利用できるようにするので、フロントエンドからGoのメソッド名を呼び出すことができます。 Goメソッドが使用する構造体を表すTypeScritpt型定義も自動生成されるため、GoとJavaScriptの間で同じデータ構造をやり取りすることができます。
 
 ### ランタイムライブラリ
 
-Wails provides a runtime library, for both Go and JavaScript, that handles a lot of the things modern applications need, like Eventing, Logging, Dialogs, etc.
+WailsはGoとJavascriptの両方にランタイムライブラリを提供し、イベント、ロギング、ダイアログなど、モダンなアプリに必要な多くの機能を使うことができます。
 
 ### ライブ開発
 

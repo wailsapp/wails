@@ -223,23 +223,22 @@ AssetServerの固有オプションを定義します。 静的なアセット�
 
 現在のところ、`http.Request`のすべての機能がサポートされているわけではありません。次の機能マトリクスを確認してください:
 
-| 機能                      | Win | Mac | Lin |
-| ----------------------- | --- | --- | --- |
-| GET                     | ✅   | ✅   | ✅   |
-| POST                    | ✅   | ✅   | ❌   |
-| PUT                     | ✅   | ✅   | ❌   |
-| PATCH                   | ✅   | ✅   | ❌   |
-| DELETE                  | ✅   | ✅   | ❌   |
-| Request Headers         | ✅   | ✅   | ❌   |
-| Request Body            | ✅   | ✅   | ❌   |
-| Request Body Streaming  | ❌   | ❌   | ❌   |
-| Response StatusCodes    | ✅   | ✅   | ❌   |
-| Response Headers        | ✅   | ✅   | ❌   |
-| Response Body           | ✅   | ✅   | ✅   |
-| Response Body Streaming | ❌   | ❌   | ✅   |
-| WebSockets              | ❌   | ❌   | ❌   |
-
-注意: 現在、LinuxはWebKit2GTKバージョン2.36.0未満をターゲットにしているため、使用できる機能が非常に限られています。 将来的に、WebKit2GTK 2.36.0以降の導入を予定しており、それによりいくつかの機能が新たにサポートされる予定です。
+| 機能                      | Win | Mac | Lin    |
+| ----------------------- | --- | --- | ------ |
+| GET                     | ✅   | ✅   | ✅      |
+| POST                    | ✅   | ✅   | ✅ [^1] |
+| PUT                     | ✅   | ✅   | ✅ [^1] |
+| PATCH                   | ✅   | ✅   | ✅ [^1] |
+| DELETE                  | ✅   | ✅   | ✅ [^1] |
+| Request Headers         | ✅   | ✅   | ✅ [^1] |
+| Request Body            | ✅   | ✅   | ❌      |
+| Request Body Streaming  | ❌   | ❌   | ❌      |
+| Response StatusCodes    | ✅   | ✅   | ✅ [^1] |
+| Response Headers        | ✅   | ✅   | ✅ [^1] |
+| Response Body           | ✅   | ✅   | ✅      |
+| Response Body Streaming | ❌   | ❌   | ✅      |
+| WebSockets              | ❌   | ❌   | ❌      |
+| HTTP Redirects 30x      | ✅   | ❌   | ❌      |
 
 名前: AssetServer<br/> データ型: `*assetserver.Options`
 
@@ -711,11 +710,11 @@ func main() {
 
 名前: Icon<br/> データ型: `[]byte`
 
-一部のウィンドウマネージャやデスクトップ環境では、ウィンドウフレームに配置されたり、他のコンテキストで表示される場合もあります。 On others, the icon is not used at all, so your mileage may vary.
+一部のウィンドウマネージャやデスクトップ環境では、ウィンドウフレームに配置されたり、他のコンテキストで表示される場合もあります。 反対に、環境によっては全くアイコンが使用されないこともありますのでご注意ください。
 
 注意: 少なくともWayland上のGnomeでは、このアイコンは表示されません。 アプリケーションアイコンを表示させるには、`.desktop`ファイルを使用する必要があります。 KDEの場合は正常に表示されるはずです。
 
-アイコンは、何の加工もされていないサイズで用意してください。つまり、拡大/縮小された画像は使用しないでください。 Scaling is postponed until the last minute, when the desired final size is known, to allow best quality.
+アイコンは、何の加工もされていないサイズで用意してください。つまり、拡大/縮小された画像は使用しないでください。 最高品質を確保するために、拡大/縮小は、最終的な目的サイズがはっきりするまで待ってください。
 
 #### WindowIsTranslucent
 
@@ -734,3 +733,5 @@ func main() {
 このオプションを`true`に設定すると、アプリケーション起動時にWeb開発者ツールが表示されます。
 
 名前: OpenInspectorOnStartup<br/> データ型: `bool`
+
+[^1]: この機能の動作には、WebKit2GTK 2.36以上が必要となるため、機能を確実に対応させたい場合は、アプリビルド時にビルドタグ`webkit2_36`を付与してください。 これにより、アプリに必要なWebKit2GTKの最小バージョン要件が2.36に引き上げられます。

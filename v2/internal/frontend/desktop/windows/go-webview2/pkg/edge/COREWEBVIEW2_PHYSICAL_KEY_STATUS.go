@@ -1,3 +1,5 @@
+//go:build windows
+
 package edge
 
 type COREWEBVIEW2_PHYSICAL_KEY_STATUS struct {

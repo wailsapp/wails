@@ -1,3 +1,5 @@
+//go:build windows
+
 package edge
 
 type COREWEBVIEW2_MOVE_FOCUS_REASON uint32

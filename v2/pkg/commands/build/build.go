@@ -2,11 +2,12 @@ package build
 
 import (
 	"fmt"
-	"github.com/pterm/pterm"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/pterm/pterm"
 
 	"github.com/samber/lo"
 	"github.com/wailsapp/wails/v2/internal/staticanalysis"
@@ -292,7 +293,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		}
 		// Run lipo
 		if options.Verbosity == VERBOSE {
-			pterm.Println("Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename)
+			pterm.Println(fmt.Sprintf("Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename))
 		}
 		_, stderr, err := shell.RunCommand(options.BinDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
 		if err != nil {
@@ -343,6 +344,10 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 			message = fmt.Sprintf("An experimental Go native WebView2Loader is available. We would love to hear your feedback about it and invite you to test it by building with `-tags %s`", strings.Join(tags, ","))
 		}
 		pterm.Info.Println(message)
+	}
+
+	if options.Platform == "darwin" && options.Mode == Debug {
+		pterm.Warning.Println("A darwin debug build contains private APIs, please don't distribute this build. Please use it only as a test build for testing and debug purposes.")
 	}
 
 	return options.CompiledBinary, nil
@@ -396,7 +401,8 @@ func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookI
 	}
 
 	if options.Verbosity == VERBOSE {
-		pterm.Info.Println("%s", strings.Join(args, " "))
+		pterm.Info.Println(strings.Join(args, " "))
+
 	}
 
 	stdout, stderr, err := shell.RunCommand(options.BinDirectory, args[0], args[1:]...)

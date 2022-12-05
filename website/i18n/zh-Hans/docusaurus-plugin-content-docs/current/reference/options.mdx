@@ -72,11 +72,11 @@ func main() {
                 LightModeTitleText: windows.RGB(20, 20, 20),
                 LightModeBorder:    windows.RGB(200, 200, 200),
             },
-            // 可自定义的用户消息
+            // User messages that can be customised
             Messages *windows.Messages
-            // Windows 进入低功耗模式时调用 OnSuspend
+            // OnSuspend is called when Windows enters low power mode
             OnSuspend func()
-            // Windows 从低功耗模式恢复时调用 OnResume
+            // OnResume is called when Windows resumes from low power mode
             OnResume func()
         },
         Mac: &mac.Options{
@@ -223,23 +223,22 @@ func main() {
 
 并非当前支持 `http.Request` 的所有功能，请参阅以下功能矩阵：
 
-| 功能                      | Win | Mac | Lin |
-| ----------------------- | --- | --- | --- |
-| GET                     | ✅   | ✅   | ✅   |
-| POST                    | ✅   | ✅   | ❌   |
-| PUT                     | ✅   | ✅   | ❌   |
-| PATCH                   | ✅   | ✅   | ❌   |
-| DELETE                  | ✅   | ✅   | ❌   |
-| Request Headers         | ✅   | ✅   | ❌   |
-| Request Body            | ✅   | ✅   | ❌   |
-| Request Body Streaming  | ❌   | ❌   | ❌   |
-| Response StatusCodes    | ✅   | ✅   | ❌   |
-| Response Headers        | ✅   | ✅   | ❌   |
-| Response Body           | ✅   | ✅   | ✅   |
-| Response Body Streaming | ❌   | ❌   | ✅   |
-| WebSockets              | ❌   | ❌   | ❌   |
-
-注意：Linux 当前非常有限，因为目标是 WebKit2GTK 版本 < 2.36.0。 将来，一些特性将通过引入 WebKit2GTK 2.36.0+ 支持来支持。
+| 功能                      | Win | Mac | Lin    |
+| ----------------------- | --- | --- | ------ |
+| GET                     | ✅   | ✅   | ✅      |
+| POST                    | ✅   | ✅   | ✅ [^1] |
+| PUT                     | ✅   | ✅   | ✅ [^1] |
+| PATCH                   | ✅   | ✅   | ✅ [^1] |
+| DELETE                  | ✅   | ✅   | ✅ [^1] |
+| Request Headers         | ✅   | ✅   | ✅ [^1] |
+| Request Body            | ✅   | ✅   | ❌      |
+| Request Body Streaming  | ❌   | ❌   | ❌      |
+| Response StatusCodes    | ✅   | ✅   | ✅ [^1] |
+| Response Headers        | ✅   | ✅   | ✅ [^1] |
+| Response Body           | ✅   | ✅   | ✅      |
+| Response Body Streaming | ❌   | ❌   | ✅      |
+| WebSockets              | ❌   | ❌   | ❌      |
+| HTTP Redirects 30x      | ✅   | ❌   | ❌      |
 
 名称: AssetServer<br/> 类型: `*assetserver.Options`
 
@@ -750,3 +749,5 @@ func main() {
 设置为 `true` 将在应用程序启动时打开 Web 检查器。
 
 名称: OpenInspectorOnStartup<br/> 类型: `bool`
+
+[^1]: 这需要 WebKit2GTK 2.36+ 支持，并且您的应用程序需要使用构建标签 `webkit2_36` 来构建以激活对此功能的支持。 这也会将您应用程序的 WebKit2GTK 最低要求提高到 2.36。

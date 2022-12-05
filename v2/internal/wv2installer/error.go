@@ -1,5 +1,5 @@
-//go:build wv2runtime.error
-// +build wv2runtime.error
+//go:build windows && wv2runtime.error
+// +build windows,wv2runtime.error
 
 package wv2installer
 

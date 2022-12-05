@@ -1,36 +1,36 @@
-# Local Development
+# ローカル開発
 
-## Overview
+## 概要
 
-Wails is in constant development and new releases are regularly "tagged". This usually happens when all the newer code on `master` has been tested and confirmed working. If you need a bugfix or feature that has not yet made it to a release, it's possible to use the latest "bleeding edge" version using the following steps:
+Wailsは現在も継続的に開発されており、定期的に、新しいリリースに対して"タグ付け"が行われています。 "タグ付け"は通常、`master`ブランチに存在する新しいコードがすべてテストされ、正常な動作が確認されたときに行われます。 まだリリースされていない新機能やバグフィックスを利用したい場合、以下の手順で"ブリーディング・エッジ"版を使用できます:
 
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails/v2/cmd/wails`
 - `go install`
 
-NOTE: The directory that you cloned the project into will now be called "clonedir".
+注意: このページでは、Wailsプロジェクトをクローンしたディレクトリのことを"clonedir"と記します。
 
-The Wails CLI will now be at the very latest version.
+この手順により、Wails CLIは一番最新のバージョンとなります。
 
-### Updating your project
+### 自身のプロジェクトの更新
 
-To update projects to use the latest version of the Wails library, update the project's `go.mod` and ensure the following line is at the bottom of the file:
+クローンした最新バージョンのWailsライブラリを自身のプロジェクトで使用させたい場合、`go.mod`ファイルの末尾に次の行を追記してください:
 
 `replace github.com/wailsapp/wails/v2 => <clonedir>`
 
-Example:
+例:
 
-On Windows: `replace github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
+Windowsの場合: `replace github.com/wailsapp/wails/v2 => C:\Users\leaan\Documents\wails-v2-beta\wails\v2`
 
-On 'nix: `replace github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
+'nixの場合: `replace github.com/wailsapp/wails/v2 => /home/me/projects/wails/v2`
 
-To revert to a stable version, run:
+安定バージョンに戻す場合は、次のコマンドを実行します:
 
 `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
-## Testing a Branch
+## ブランチのテスト
 
-If you want to test a branch, follow the instructions above, but ensure you switch the branch you want to test before installing:
+先述の手順に従えば、ブランチをテストすることができますが、インストールを実行する前に、テスト対象のブランチに切り替えるようにしてください:
 
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails`
@@ -38,11 +38,11 @@ If you want to test a branch, follow the instructions above, but ensure you swit
 - `cd v2/cmd/wails`
 - `go install`
 
-Make sure you [update your project](#updating-your-project) as described above.
+そして、先述のとおり[自身のプロジェクトを更新](#updating-your-project)してください。
 
-## Testing a PR
+## プルリクエストのテスト
 
-If you want to test a PR, follow the instructions above, but ensure you fetch the PR and switch the branch before installing. Please replace `[IDofThePR]` with the ID of the PR shown on github.com:
+先述の手順に従えば、プルリクエストをテストすることができますが、インストールを実行する前に、テスト対象のプルリクエストを取得してブランチを切り替えるようにしてください。 下記手順の`[IDofThePR]`の部分は、github.comで表示されているプルリクエストのIDに置き換えてください:
 
 - `git clone https://github.com/wailsapp/wails`
 - `cd wails`
@@ -52,4 +52,4 @@ If you want to test a PR, follow the instructions above, but ensure you fetch th
 - `cd v2/cmd/wails`
 - `go install`
 
-Make sure you [update your project](#updating-your-project) as described above.
+そして、先述のとおり[自身のプロジェクトを更新](#updating-your-project)してください。

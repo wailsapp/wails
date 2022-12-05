@@ -1,3 +1,5 @@
+//go:build windows
+
 package edge
 
 type _ICoreWebView2NavigationCompletedEventArgsVtbl struct {

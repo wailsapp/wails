@@ -1,10 +1,10 @@
-# Frontend
+# フロントエンド
 
-## Script Injection
+## スクリプトの注入
 
-When Wails serves your `index.html`, by default, it will inject 2 script entries into the `<body>` tag to load `/wails/ipc.js` and `/wails/runtime.js`. These files install the bindings and runtime respectively.
+Wailsが`index.html`を提供するとき、デフォルトでは、`<body>`タグ内に`/wails/ipc.js`および`/wails/runtime.js`の2つのスクリプトを読み込む行を注入します。 これらのスクリプトファイルは、バインディングおよびランタイムを提供しています。
 
-The code below shows where these are injected by default:
+デフォルトでどの位置にスクリプトが注入されるかを、下記のコードに示します:
 
 ```html
 <html>
@@ -28,25 +28,25 @@ The code below shows where these are injected by default:
 </html>
 ```
 
-### Overriding Default Script Injection
+### デフォルトのスクリプト注入の上書き
 
-To provide more flexibility to developers, there is a meta tag that may be used to customise this behaviour:
+開発者がより柔軟に対応できるように、これらの動作をカスタマイズするためのメタタグが用意されています:
 
 ```html
 <meta name="wails-options" content="[options]" />
 ```
 
-The options are as follows:
+オプションは次のとおりです:
 
-| Value               | Description                                      |
-| ------------------- | ------------------------------------------------ |
-| noautoinjectruntime | Disable the autoinjection of `/wails/runtime.js` |
-| noautoinjectipc     | Disable the autoinjection of `/wails/ipc.js`     |
-| noautoinject        | Disable all autoinjection of scripts             |
+| 値                   | 説明                              |
+| ------------------- | ------------------------------- |
+| noautoinjectruntime | `/wails/runtime.js`の自動注入を無効化します |
+| noautoinjectipc     | `/wails/ipc.js`の自動注入を無効化します     |
+| noautoinject        | すべてのスクリプトの自動注入を無効化します           |
 
-Multiple options may be used provided they are comma seperated.
+カンマで区切ることで、複数のオプションを指定できます。
 
-This code is perfectly valid and operates the same as the autoinjection version:
+次のコードは、自動注入版のコードと完全に同じ挙動となります:
 
 ```html
 <html>

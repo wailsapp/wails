@@ -17,13 +17,19 @@ Le format est basé sur [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Ajout de l'option `OpenInspectorOnStartup` au débogage pour permettre d'ouvrir le WebInspector au démarrage de l'application en mode débogage . Ajouté par @stffabi : [PR](https://github.com/wailsapp/wails/pull/2080)
 - Sur MacOS, `wails doctor` affiche à présent la version de Xcode installée. Ajouté par @stffabi : [PR](https://github.com/wailsapp/wails/pull/2089)
 - L'[AssetServer](/docs/reference/options#assetserver) supporte à présent les range-requests si l' [Assets](/docs/reference/options/#assets-1) `fs.FS` importe `io.ReadSeeker`. Ajouté par @stffabi : [PR](https://github.com/wailsapp/wails/pull/2091)
-- Ajouter une nouvelle propriété `bindings` dans le fichier de configuration `wails.json`. Plus d'informations sur la nouvelle propriété peuvent être trouvées dans le [schéma](/schemas/config.v2.json) mis à jour. Les propriétés `prefix` et `suffix` vous permettent de contrôler le nom d'entité TypeScript généré dans le fichier `model.ts`. Ajouté par @OlegGulevskyy dans [PR](https://github.com/wailsapp/wails/pull/2101)
+- Ajouter une nouvelle propriété `bindings` dans le fichier de configuration `wails.json`. More information on the new property can be found in the updated [schema](/schemas/config.v2.json). Les propriétés `prefix` et `suffix` vous permettent de contrôler le nom d'entité TypeScript généré dans le fichier `model.ts`. Ajouté par @OlegGulevskyy dans [PR](https://github.com/wailsapp/wails/pull/2101)
 - La méthode `WindowSetAlwaysOnTop` est maintenant exposée dans l'exécutable JS. Fixé par @gotid dans la [PR](https://github.com/wailsapp/wails/pull/2128)
+- The [AssetServer](/docs/reference/options#assetserver) now supports serving the index.html file when requesting a directory. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2110)
+- Added support for WebKit2GTK 2.36+ on Linux. This brings additional features for the [AssetServer](/docs/reference/options#assetserver), like support for HTTP methods and Headers. The app must be compiled with the Go build tag `webkit2_36` to activate support for this features. This also bumps the minimum requirement of WebKit2GTK to 2.36 for your app. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2151)
 
 ### Corrections
 - Le booléen activant la fonctionnalité `noreload` n'était pas utilisable dans le mode développement de wails. Corrigé par @stffabi dans cette [PR](https://github.com/wailsapp/wails/pull/2081)
 - `le dossier build/bin` se dupliquait sur chaque rechargement en mode `wails dev`. Corrigé par @OlegGulevskyy dans cette [PR](https://github.com/wailsapp/wails/pull/2103)
 - Empêcher une fine ligne blanche au bas d'une fenêtre sans cadre sous Windows. Correction par @stffabi dans cette [PR](https://github.com/wailsapp/wails/pull/2111)
+- Better signal handling for Linux. Fixed by @leaanthony in this [PR](https://github.com/wailsapp/wails/pull/2152)
+
+### Changements
+- Improve error message if no `index.html` could be found in the assets and validate assetserver options. Changed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2110)
 
 ## v2.2.0 - 2022-11-09
 

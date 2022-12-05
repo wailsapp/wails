@@ -1,14 +1,15 @@
 package main
 
 import (
+	"runtime"
+	"runtime/debug"
+	"strings"
+
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/system"
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
-	"runtime"
-	"runtime/debug"
-	"strings"
 )
 
 func diagnoseEnvironment(f *flags.Doctor) error {
@@ -144,7 +145,7 @@ func diagnoseEnvironment(f *flags.Doctor) error {
 	if len(dependenciesMissing) == 0 && dependenciesAvailableRequired == 0 {
 		pterm.Println("Your system is ready for Wails development!")
 	} else {
-		pterm.Println("Your system has missing dependencies!\n")
+		pterm.Println("Your system has missing dependencies!")
 	}
 
 	if dependenciesAvailableRequired != 0 {

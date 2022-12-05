@@ -2,7 +2,7 @@
 sidebar_position: 5
 ---
 
-# Dialog
+# ダイアログ
 
 ランタイムでは、ファイルセレクターやメッセージボックスといったネイティブダイアログへのアクセスを提供しています。
 
@@ -69,7 +69,7 @@ type OpenDialogOptions struct {
 }
 ```
 
-| Field                      | Description               | Win | Mac | Lin |
+| フィールド                      | 説明                        | Win | Mac | Lin |
 | -------------------------- | ------------------------- | --- | --- | --- |
 | DefaultDirectory           | ダイアログが開かれたときに初期表示するディレクトリ | ✅   | ✅   | ✅   |
 | DefaultFilename            | デフォルトファイル名                | ✅   | ✅   | ✅   |
@@ -94,7 +94,7 @@ type SaveDialogOptions struct {
 }
 ```
 
-| Field                      | Description               | Win | Mac | Lin |
+| フィールド                      | 説明                        | Win | Mac | Lin |
 | -------------------------- | ------------------------- | --- | --- | --- |
 | DefaultDirectory           | ダイアログが開かれたときに初期表示するディレクトリ | ✅   | ✅   | ✅   |
 | DefaultFilename            | デフォルトファイル名                | ✅   | ✅   | ✅   |
@@ -117,7 +117,7 @@ type MessageDialogOptions struct {
 }
 ```
 
-| Field         | Description                                       | Win            | Mac | Lin |
+| フィールド         | 説明                                                | Win            | Mac | Lin |
 | ------------- | ------------------------------------------------- | -------------- | --- | --- |
 | Type          | メッセージダイアログの種類 (質問、情報など)                           | ✅              | ✅   | ✅   |
 | Title         | ダイアログのタイトル                                        | ✅              | ✅   | ✅   |
@@ -132,7 +132,7 @@ Windowsでは、ボタンのカスタマイズができない標準ダイアロ�
 
 質問ダイアログの場合、デフォルトボタンは"Yes"、キャンセルボタンは"No"となります。 この設定は、`DefaultButton`の値を`"No"`にすることで、変更できます。
 
-Example:
+例:
 ```go
     result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
         Type:          runtime.QuestionDialog,
@@ -144,13 +144,13 @@ Example:
 
 #### Linux
 
-Linux has standard dialog types in which the buttons are not customisable. The value returned will be one of: "Ok", "Cancel", "Yes", "No"
+Linuxでは、ボタンのカスタマイズができない標準ダイアログタイプがあります。 返り値は次のいずれかになります: "Ok"、"Cancel"、"Yes"、"No"
 
 #### Mac
 
-A message dialog on Mac may specify up to 4 buttons. If no `DefaultButton` or `CancelButton` is given, the first button is considered default and is bound to the `return` key.
+Macのメッセージダイアログでは、最大4つまでのボタンを指定できます。 `DefaultButton`や`CancelButton`が指定されていない場合、1番目のボタンがデフォルトボタンとして扱われ、`return`キーにバインドされます。
 
-For the following code:
+例えば次のようなコードの場合:
 
 ```go
 selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
@@ -173,7 +173,7 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 <br />
 ```
 
-And if we specify `DefaultButton` to be "two":
+そして`DefaultButton`を"two"に設定した場合:
 
 ```go
 selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
@@ -184,7 +184,7 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 })
 ```
 
-the second button is shown as default. When `return` is pressed, the value "two" is returned.
+2番目のボタンがデフォルトになります。 このとき`return`キーが押されると、返り値として"two"が返却されます:
 
 ```mdx-code-block
 <div class="text--center">
@@ -197,7 +197,7 @@ the second button is shown as default. When `return` is pressed, the value "two"
 <br />
 ```
 
-If we now specify `CancelButton` to be "three":
+また、`CancelButton`を"three"に設定した場合
 
 ```go
 selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
@@ -209,7 +209,7 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 })
 ```
 
-the button with "three" is shown at the bottom of the dialog. When `escape` is pressed, the value "three" is returned:
+ダイアログの下部に"three"ボタンが表示されるようになります。 このとき`escape`キーが押されると、返り値として"three"が返却されます:
 
 ```mdx-code-block
 <div class="text--center">
@@ -246,7 +246,7 @@ type FileFilter struct {
 
 #### Windows
 
-Windows allows you to use multiple file filters in dialog boxes. Each FileFilter will show up as a separate entry in the dialog:
+Windowsでは、ダイアログボックスで複数のファイルフィルタを使用できます。 それぞれのFileFiltersは、ダイアログ上で個別のエントリーとして表示されます:
 
 ```mdx-code-block
 <div class="text--center">
@@ -263,7 +263,7 @@ Windows allows you to use multiple file filters in dialog boxes. Each FileFilter
 
 #### Linux
 
-Linux allows you to use multiple file filters in dialog boxes. Each FileFilter will show up as a separate entry in the dialog:
+Linuxでは、ダイアログボックスで複数のファイルフィルタを使用できます。 それぞれのFileFiltersは、ダイアログ上で個別のエントリーとして表示されます:
 
 ```mdx-code-block
 <div class="text--center">
@@ -280,9 +280,9 @@ Linux allows you to use multiple file filters in dialog boxes. Each FileFilter w
 
 #### Mac
 
-Mac dialogs only have the concept of a single set of patterns to filter files. If multiple FileFilters are provided, Wails will use all the Patterns defined.
+Macのダイアログでは、ファイルをフィルタするためのパターンセットは1つしか持たせることができません。 もし複数のFileFiltersを定義した場合、Wailsはそれらすべてのパターンを使用します。
 
-Example:
+例:
 
 ```go
     selection, err := runtime.OpenFileDialog(b.ctx, runtime.OpenDialogOptions{
@@ -299,4 +299,4 @@ Example:
     })
 ```
 
-This will result in the Open File dialog using `*.png,*.jpg,*.mov,*.mp4` as a filter.
+このとき、ファイル選択ダイアログを開くと、`*.png,*.jpg,*.mov,*.mp4`がフィルタとして使用されます。

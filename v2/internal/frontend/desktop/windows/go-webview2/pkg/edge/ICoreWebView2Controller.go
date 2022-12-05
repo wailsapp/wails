@@ -1,10 +1,13 @@
+//go:build windows
+
 package edge
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/internal/w32"
-	"golang.org/x/sys/windows"
 	"math"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/internal/w32"
+	"golang.org/x/sys/windows"
 )
 
 type _ICoreWebView2ControllerVtbl struct {
