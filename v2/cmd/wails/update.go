@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/labstack/gommon/color"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
 	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/shell"
-	"os"
 
 	"github.com/wailsapp/wails/v2/internal/github"
 )
@@ -76,7 +77,7 @@ func updateToVersion(targetVersion *github.SemanticVersion, force bool, currentV
 	var targetVersionString = "v" + targetVersion.String()
 
 	if targetVersionString == currentVersion {
-		pterm.Println("\nLooks like you're up to date!\n")
+		pterm.Println("\nLooks like you're up to date!")
 		return nil
 	}
 
@@ -122,7 +123,8 @@ func updateToVersion(targetVersion *github.SemanticVersion, force bool, currentV
 		// Compare
 		if !success {
 			pterm.Println("Error: The requested version is lower than the current version.")
-			pterm.Println("If this is what you really want to do, use `wails update -version %s`", targetVersionString)
+			pterm.Println(fmt.Sprintf("If this is what you really want to do, use `wails update -version "+"%s`", targetVersionString))
+
 			return nil
 		}
 

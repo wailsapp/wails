@@ -1,5 +1,5 @@
-//go:build wv2runtime.embed
-// +build wv2runtime.embed
+//go:build windows && wv2runtime.embed
+// +build windows,wv2runtime.embed
 
 package wv2installer
 

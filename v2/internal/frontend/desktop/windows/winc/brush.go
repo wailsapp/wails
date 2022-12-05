@@ -1,3 +1,5 @@
+//go:build windows
+
 /*
  * Copyright (C) 2019 The Winc Authors. All Rights Reserved.
  * Copyright (C) 2010-2013 Allen Dang. All Rights Reserved.
