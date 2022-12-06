@@ -48,7 +48,14 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
-      - name: Run tests
+      - name: Run tests (mac)
+        if: matrix.os == 'macos-latest'
+        env:
+          CGO_LDFLAGS: -framework UniformTypeIdentifiers -mmacosx-version-min=10.13
         working-directory: ./v2
-        run: |
-          go test -v ./...
+        run: go test -v ./...
+
+      - name: Run tests (!mac)
+        if: matrix.os != 'macos-latest'
+        working-directory: ./v2
+        run: go test -v ./...

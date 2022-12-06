@@ -1,5 +1,5 @@
-//go:build wv2runtime.browser
-// +build wv2runtime.browser
+//go:build windows && wv2runtime.browser
+// +build windows,wv2runtime.browser
 
 package wv2installer
 

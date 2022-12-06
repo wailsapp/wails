@@ -38,7 +38,7 @@ type Project struct {
 	/*** Internal Data ***/
 
 	// The path to the project directory
-	Path string
+	Path string `json:"projectdir"`
 
 	// Build directory
 	BuildDir string `json:"build:dir"`
@@ -205,9 +205,7 @@ func (p *Project) setDefaults() {
 			p.OutputFilename += ".exe"
 		}
 	case "darwin", "linux":
-		if strings.HasSuffix(p.OutputFilename, ".exe") {
-			p.OutputFilename = strings.TrimSuffix(p.OutputFilename, ".exe")
-		}
+		p.OutputFilename = strings.TrimSuffix(p.OutputFilename, ".exe")
 	}
 }
 
