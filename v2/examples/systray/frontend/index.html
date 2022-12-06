@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Systray Example</title>
+    <style>
+        html {
+            background-color: rgba(27, 38, 54, 0.75);
+            text-align: center;
+            color: white;
+        }
+
+
+        @font-face {
+            font-family: "Nunito";
+            font-style: normal;
+            font-weight: 400;
+            src: local(""),
+            url("../../common/fonts/nunito-v16-latin-regular.woff2") format("woff2");
+        }
+
+        body {
+            margin: 0;
+            color: white;
+            font-family: "Nunito", sans-serif;
+        }
+
+        .logo {
+            display: block;
+            width: 50%;
+            height: 50%;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-image: url("../../common/images/logo-universal.png");
+            background-size: 100% 100%;
+            background-origin: content-box;
+        }
+
+        #app {
+            height: 100vh;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-content: center;
+            align-items: center;
+        }
+
+
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="logo"></div>
+    <p>Systray Example</p>
+</div>
+</body>
+</html>
