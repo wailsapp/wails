@@ -27,4 +27,8 @@ type Window struct {
 	URL           string
 	DisableResize bool
 	Resizable     bool
+	MinWidth      int
+	MinHeight     int
+	MaxWidth      int
+	MaxHeight     int
 }

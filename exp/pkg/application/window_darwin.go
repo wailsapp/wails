@@ -95,6 +95,36 @@ void windowSetResizable(void* nsWindow, bool resizable) {
 	});
 }
 
+// Set NSWindow min size
+void windowSetMinSize(void* nsWindow, int width, int height) {
+	// Set window min size on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)nsWindow setContentMinSize:NSMakeSize(width, height)];
+	});
+}
+
+// Set NSWindow max size
+void windowSetMaxSize(void* nsWindow, int width, int height) {
+	// Set window max size on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)nsWindow setContentMaxSize:NSMakeSize(width, height)];
+	});
+}
+
+// Reset NSWindow min and max size
+void windowResetMinSize(void* nsWindow) {
+	// Reset window min size on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)nsWindow setContentMinSize:NSMakeSize(0, 0)];
+	});
+}
+
+void windowResetMaxSize(void* nsWindow) {
+	// Reset window max size on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)nsWindow setContentMaxSize:NSMakeSize(0, 0)];
+	});
+}
 
 */
 import "C"
@@ -133,6 +163,13 @@ func (w *macosWindow) setSize(width, height int) {
 	C.windowSetSize(w.nsWindow, C.int(width), C.int(height))
 }
 
+func (w *macosWindow) setMinSize(width, height int) {
+	C.windowSetMinSize(w.nsWindow, C.int(width), C.int(height))
+}
+func (w *macosWindow) setMaxSize(width, height int) {
+	C.windowSetMaxSize(w.nsWindow, C.int(width), C.int(height))
+}
+
 func (w *macosWindow) setResizable(resizable bool) {
 	C.windowSetResizable(w.nsWindow, C.bool(resizable))
 }
@@ -142,7 +179,11 @@ func (w *macosWindow) run() error {
 	w.setTitle(w.options.Title)
 	w.setAlwaysOnTop(w.options.AlwaysOnTop)
 	w.setResizable(!w.options.DisableResize)
+	w.setMinSize(w.options.MinWidth, w.options.MinHeight)
+	w.setMaxSize(w.options.MaxWidth, w.options.MaxHeight)
+	if w.options.URL != "" {
+		w.navigateToURL(w.options.URL)
+	}
 	C.windowShow(w.nsWindow)
-	C.navigationLoadURL(w.nsWindow, C.CString(w.options.URL))
 	return nil
 }

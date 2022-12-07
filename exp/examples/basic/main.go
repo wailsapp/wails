@@ -28,6 +28,10 @@ func main() {
 		AlwaysOnTop:   false,
 		URL:           "https://google.com",
 		DisableResize: false,
+		MinWidth:      100,
+		MinHeight:     100,
+		MaxWidth:      1000,
+		MaxHeight:     1000,
 	})
 
 	myWindow2 := app.NewWindow(&options.Window{
@@ -45,6 +49,8 @@ func main() {
 		myWindow.SetAlwaysOnTop(true)
 		myWindow2.SetTitle("OMFG")
 		myWindow2.NavigateToURL("https://wails.io")
+		myWindow.SetMinSize(600, 600)
+		myWindow.SetMaxSize(650, 650)
 	}()
 
 	err := app.Run()

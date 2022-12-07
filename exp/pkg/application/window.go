@@ -9,6 +9,8 @@ type windowImpl interface {
 	run() error
 	navigateToURL(url string)
 	setResizable(resizable bool)
+	setMinSize(width, height int)
+	setMaxSize(width, height int)
 }
 
 type Window struct {
@@ -66,4 +68,35 @@ func (w *Window) SetResizable(b bool) {
 		return
 	}
 	w.impl.setResizable(b)
+}
+
+func (w *Window) SetMinSize(minWidth, minHeight int) {
+	if w.impl == nil {
+		w.options.MinWidth = minWidth
+		if w.options.Width < minWidth {
+			w.options.Width = minWidth
+		}
+		w.options.MinHeight = minHeight
+		if w.options.Height < minHeight {
+			w.options.Height = minHeight
+		}
+		return
+	}
+	w.impl.setSize(w.options.Width, w.options.Height)
+	w.impl.setMinSize(minWidth, minHeight)
+}
+func (w *Window) SetMaxSize(maxWidth, maxHeight int) {
+	if w.impl == nil {
+		w.options.MinWidth = maxWidth
+		if w.options.Width > maxWidth {
+			w.options.Width = maxWidth
+		}
+		w.options.MinHeight = maxHeight
+		if w.options.Height > maxHeight {
+			w.options.Height = maxHeight
+		}
+		return
+	}
+	w.impl.setSize(w.options.Width, w.options.Height)
+	w.impl.setMaxSize(maxWidth, maxHeight)
 }
