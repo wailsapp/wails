@@ -19,20 +19,36 @@ void* windowNew(int width, int height) {
 		styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask
 		backing:NSBackingStoreBuffered
 		defer:NO];
+
 	// Create delegate
 	WindowDelegate* delegate = [[WindowDelegate alloc] init];
 	// Set delegate
 	[window setDelegate:delegate];
 
+	// Add NSView to window
+	NSView* view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
+	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+	[window setContentView:view];
+
 	// Embed wkwebview in window
 	NSRect frame = NSMakeRect(0, 0, width, height);
 	WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
-	[window setContentView:webView];
+	[view addSubview:webView];
 	delegate.webView = webView;
 
 	delegate.hideOnClose = false;
 	return window;
+}
+
+// Make NSWindow transparent
+void windowSetTransparent(void* nsWindow) {
+    // On main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+	NSWindow* window = (NSWindow*)nsWindow;
+	[window setOpaque:NO];
+	[window setBackgroundColor:[NSColor clearColor]];
+	});
 }
 
 // Set the title of the NSWindow
@@ -60,12 +76,18 @@ void windowSetSize(void* nsWindow, int width, int height) {
 
 // Show the NSWindow
 void windowShow(void* nsWindow) {
-	[(NSWindow*)nsWindow makeKeyAndOrderFront:nil];
+	// Show window on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)nsWindow makeKeyAndOrderFront:nil];
+	});
 }
 
 // Hide the NSWindow
 void windowHide(void* nsWindow) {
-	[(NSWindow*)nsWindow orderOut:nil];
+	// Hide window on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)nsWindow orderOut:nil];
+	});
 }
 
 // Set NSWindow always on top
@@ -149,6 +171,41 @@ void windowExecJS(void* nsWindow, char* js) {
 	});
 }
 
+// Make NSWindow backdrop translucent
+void windowSetTranslucent(void* nsWindow) {
+	// Set window transparent on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+
+		// Get window
+		NSWindow* window = (NSWindow*)nsWindow;
+
+		// Get window delegate
+		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+
+		id contentView = [window contentView];
+		NSVisualEffectView *effectView = [NSVisualEffectView alloc];
+		NSRect bounds = [contentView bounds];
+		[effectView initWithFrame:bounds];
+		[effectView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+		[effectView setBlendingMode:NSVisualEffectBlendingModeBehindWindow];
+		[effectView setState:NSVisualEffectStateActive];
+		[contentView addSubview:effectView positioned:NSWindowBelow relativeTo:nil];
+	});
+}
+
+// Make webview background transparent
+void webviewSetTransparent(void* nsWindow) {
+	// Set webview transparent on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Get window delegate
+		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		// Set webview background transparent
+		[delegate.webView setValue:@YES forKey:@"drawsTransparentBackground"];
+	});
+}
+
+
+
 */
 import "C"
 import (
@@ -216,6 +273,16 @@ func (w *macosWindow) run() error {
 	}
 	if w.options.EnableDevTools {
 		w.enableDevTools()
+	}
+	if w.options.Mac != nil {
+		switch w.options.Mac.Backdrop {
+		case options.MacBackdropTransparent:
+			C.windowSetTransparent(w.nsWindow)
+			C.webviewSetTransparent(w.nsWindow)
+		case options.MacBackdropTranslucent:
+			C.windowSetTranslucent(w.nsWindow)
+			C.webviewSetTransparent(w.nsWindow)
+		}
 	}
 	C.windowShow(w.nsWindow)
 	return nil

@@ -32,4 +32,18 @@ type Window struct {
 	MaxWidth       int
 	MaxHeight      int
 	EnableDevTools bool
+	Mac            *MacWindow
+}
+
+type MacBackdrop int
+
+const (
+	MacBackdropNormal MacBackdrop = iota
+	MacBackdropTransparent
+	MacBackdropTranslucent
+)
+
+// MacWindow contains macOS specific options
+type MacWindow struct {
+	Backdrop MacBackdrop
 }
