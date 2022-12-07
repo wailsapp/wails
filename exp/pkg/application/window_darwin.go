@@ -136,6 +136,19 @@ void windowEnableDevTools(void* nsWindow) {
 		[delegate.webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
 	});
 }
+
+// Execute JS in NSWindow
+void windowExecJS(void* nsWindow, char* js) {
+	// Execute JS on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Get window delegate
+		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		// Execute JS in webview
+		[delegate.webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
+		free(js);
+	});
+}
+
 */
 import "C"
 import (
@@ -147,6 +160,10 @@ import (
 type macosWindow struct {
 	nsWindow unsafe.Pointer
 	options  *options.Window
+}
+
+func (w *macosWindow) execJS(js string) {
+	C.windowExecJS(w.nsWindow, C.CString(js))
 }
 
 func (w *macosWindow) navigateToURL(url string) {

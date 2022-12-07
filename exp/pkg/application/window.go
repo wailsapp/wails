@@ -12,6 +12,7 @@ type windowImpl interface {
 	setMinSize(width, height int)
 	setMaxSize(width, height int)
 	enableDevTools()
+	execJS(js string)
 }
 
 type Window struct {
@@ -108,4 +109,11 @@ func (w *Window) EnableDevTools() {
 		return
 	}
 	w.impl.enableDevTools()
+}
+
+func (w *Window) ExecJS(js string) {
+	if w.impl == nil {
+		return
+	}
+	w.impl.execJS(js)
 }

@@ -53,6 +53,9 @@ func main() {
 		myWindow2.NavigateToURL("https://wails.io")
 		myWindow.SetMinSize(600, 600)
 		myWindow.SetMaxSize(650, 650)
+		time.Sleep(3 * time.Second)
+		myWindow.ExecJS("window.location.href = 'https://duckduckgo.com'")
+
 	}()
 
 	err := app.Run()
