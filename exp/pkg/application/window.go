@@ -11,6 +11,7 @@ type windowImpl interface {
 	setResizable(resizable bool)
 	setMinSize(width, height int)
 	setMaxSize(width, height int)
+	enableDevTools()
 }
 
 type Window struct {
@@ -99,4 +100,12 @@ func (w *Window) SetMaxSize(maxWidth, maxHeight int) {
 	}
 	w.impl.setSize(w.options.Width, w.options.Height)
 	w.impl.setMaxSize(maxWidth, maxHeight)
+}
+
+func (w *Window) EnableDevTools() {
+	if w.impl == nil {
+		w.options.EnableDevTools = true
+		return
+	}
+	w.impl.enableDevTools()
 }

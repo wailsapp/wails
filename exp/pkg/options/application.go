@@ -21,14 +21,15 @@ type Mac struct {
 }
 
 type Window struct {
-	Title         string
-	Width, Height int
-	AlwaysOnTop   bool
-	URL           string
-	DisableResize bool
-	Resizable     bool
-	MinWidth      int
-	MinHeight     int
-	MaxWidth      int
-	MaxHeight     int
+	Title          string
+	Width, Height  int
+	AlwaysOnTop    bool
+	URL            string
+	DisableResize  bool
+	Resizable      bool
+	MinWidth       int
+	MinHeight      int
+	MaxWidth       int
+	MaxHeight      int
+	EnableDevTools bool
 }

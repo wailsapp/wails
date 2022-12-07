@@ -22,16 +22,17 @@ func main() {
 		println("TERMINATION!!")
 	})
 	myWindow := app.NewWindow(&options.Window{
-		Title:         "Basic",
-		Width:         600,
-		Height:        400,
-		AlwaysOnTop:   false,
-		URL:           "https://google.com",
-		DisableResize: false,
-		MinWidth:      100,
-		MinHeight:     100,
-		MaxWidth:      1000,
-		MaxHeight:     1000,
+		Title:          "Basic",
+		Width:          600,
+		Height:         400,
+		AlwaysOnTop:    false,
+		URL:            "https://google.com",
+		DisableResize:  false,
+		MinWidth:       100,
+		MinHeight:      100,
+		MaxWidth:       1000,
+		MaxHeight:      1000,
+		EnableDevTools: true,
 	})
 
 	myWindow2 := app.NewWindow(&options.Window{
@@ -47,6 +48,7 @@ func main() {
 		time.Sleep(5 * time.Second)
 		myWindow.SetTitle("Wooooo")
 		myWindow.SetAlwaysOnTop(true)
+		myWindow2.EnableDevTools()
 		myWindow2.SetTitle("OMFG")
 		myWindow2.NavigateToURL("https://wails.io")
 		myWindow.SetMinSize(600, 600)

@@ -126,6 +126,16 @@ void windowResetMaxSize(void* nsWindow) {
 	});
 }
 
+// Enable NSWindow devtools
+void windowEnableDevTools(void* nsWindow) {
+	// Enable devtools on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Get window delegate
+		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		// Enable devtools in webview
+		[delegate.webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
+	});
+}
 */
 import "C"
 import (
@@ -173,6 +183,9 @@ func (w *macosWindow) setMaxSize(width, height int) {
 func (w *macosWindow) setResizable(resizable bool) {
 	C.windowSetResizable(w.nsWindow, C.bool(resizable))
 }
+func (w *macosWindow) enableDevTools() {
+	C.windowEnableDevTools(w.nsWindow)
+}
 
 func (w *macosWindow) run() error {
 	w.nsWindow = C.windowNew(C.int(w.options.Width), C.int(w.options.Height))
@@ -183,6 +196,9 @@ func (w *macosWindow) run() error {
 	w.setMaxSize(w.options.MaxWidth, w.options.MaxHeight)
 	if w.options.URL != "" {
 		w.navigateToURL(w.options.URL)
+	}
+	if w.options.EnableDevTools {
+		w.enableDevTools()
 	}
 	C.windowShow(w.nsWindow)
 	return nil
