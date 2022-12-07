@@ -1,0 +1,2 @@
+mac:ApplicationDidFinishLaunching
+mac:ApplicationWillTerminate
