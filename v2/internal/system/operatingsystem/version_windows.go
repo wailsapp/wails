@@ -1,8 +1,11 @@
+//go:build windows
+
 package operatingsystem
 
 import (
-	"golang.org/x/sys/windows/registry"
 	"strconv"
+
+	"golang.org/x/sys/windows/registry"
 )
 
 type WindowsVersionInfo struct {

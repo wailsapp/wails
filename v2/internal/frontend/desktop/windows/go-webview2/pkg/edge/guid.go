@@ -1,3 +1,5 @@
+//go:build windows
+
 package edge
 
 // This code has been adapted from: https://github.com/go-ole/go-ole
@@ -47,9 +49,9 @@ type GUID struct {
 //
 // The supplied string may be in any of these formats:
 //
-//  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-//  XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-//  {XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
+//	XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+//	XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+//	{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
 //
 // The conversion of the supplied string is not case-sensitive.
 func NewGUID(guid string) *GUID {
@@ -155,11 +157,11 @@ func decodeHexChar(c byte) (byte, bool) {
 
 // String converts the GUID to string form. It will adhere to this pattern:
 //
-//  {XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
+//	{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
 //
 // If the GUID is nil, the string representation of an empty GUID is returned:
 //
-//  {00000000-0000-0000-0000-000000000000}
+//	{00000000-0000-0000-0000-000000000000}
 func (guid *GUID) String() string {
 	if guid == nil {
 		return emptyGUID

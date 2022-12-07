@@ -1,9 +1,12 @@
+//go:build windows
+
 package windows
 
 import (
+	"testing"
+
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"golang.org/x/sys/windows"
-	"testing"
 )
 
 func Test_calculateMessageDialogFlags(t *testing.T) {

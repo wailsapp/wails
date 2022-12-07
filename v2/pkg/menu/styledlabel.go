@@ -251,6 +251,4 @@ func ParseANSI(input string) ([]*StyledText, error) {
 			}
 		}
 	}
-
-	return result, nil
 }

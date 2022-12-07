@@ -1,0 +1,31 @@
+name: Sync Translated Documents
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync-translated-documents:
+    runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+
+      - name: Sync Translated Documents
+        run: cd scripts && chmod 755 ./sync-translated-documents.sh && ./sync-translated-documents.sh
+        env:
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: "docs: sync documents"
+          title: "docs: sync documents"
+          body: "- [x] Sync translated documents"
+          branch: feature/documents
+          delete-branch: true
+          draft: true

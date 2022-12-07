@@ -2,6 +2,11 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"runtime"
+	"strings"
+	"time"
+
 	"github.com/leaanthony/slicer"
 	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v2/cmd/wails/flags"
@@ -10,10 +15,6 @@ import (
 	"github.com/wailsapp/wails/v2/internal/project"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
 	"github.com/wailsapp/wails/v2/pkg/commands/build"
-	"os"
-	"runtime"
-	"strings"
-	"time"
 )
 
 func buildApplication(f *flags.Build) error {
@@ -167,12 +168,12 @@ func buildApplication(f *flags.Build) error {
 		switch buildOptions.Platform {
 		case "linux":
 			if runtime.GOOS != "linux" {
-				pterm.Warning.Println("Crosscompiling to Linux not currently supported.\n")
+				pterm.Warning.Println("Crosscompiling to Linux not currently supported.")
 				return
 			}
 		case "darwin":
 			if runtime.GOOS != "darwin" {
-				pterm.Warning.Println("Crosscompiling to Mac not currently supported.\n")
+				pterm.Warning.Println("Crosscompiling to Mac not currently supported.")
 				return
 			}
 			macTargets := targets.Filter(func(platform string) bool {

@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/pterm/pterm"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal"
 	"os"
 	"strings"
+
+	"github.com/pterm/pterm"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal"
 
 	"github.com/wailsapp/wails/v2/internal/colour"
 
@@ -52,7 +53,7 @@ func printFooter() {
 		},
 	}
 	printer.Println("If Wails is useful to you or your company, please consider sponsoring the project:")
-	pterm.Println("https://github.com/sponsors/leaanthony\n")
+	pterm.Println("https://github.com/sponsors/leaanthony")
 }
 
 func bool2Str(b bool) string {

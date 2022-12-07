@@ -216,6 +216,70 @@ func (m *MenuItem) insertItemAtIndex(index int, target *MenuItem) bool {
 	return true
 }
 
+func (m *MenuItem) SetLabel(name string) {
+	if m.Label == name {
+		return
+	}
+	m.Label = name
+}
+
+func (m *MenuItem) IsSeparator() bool {
+	return m.Type == SeparatorType
+}
+
+func (m *MenuItem) IsCheckbox() bool {
+	return m.Type == CheckboxType
+}
+
+func (m *MenuItem) Disable() *MenuItem {
+	m.Disabled = true
+	return m
+}
+
+func (m *MenuItem) Enable() *MenuItem {
+	m.Disabled = false
+	return m
+}
+
+func (m *MenuItem) OnClick(click Callback) *MenuItem {
+	m.Click = click
+	return m
+}
+
+func (m *MenuItem) SetAccelerator(acc *keys.Accelerator) *MenuItem {
+	m.Accelerator = acc
+	return m
+}
+
+func (m *MenuItem) SetChecked(value bool) *MenuItem {
+	m.Checked = value
+	if m.Type != RadioType {
+		m.Type = CheckboxType
+	}
+	return m
+}
+
+func (m *MenuItem) Hide() *MenuItem {
+	m.Hidden = true
+	return m
+}
+
+func (m *MenuItem) Show() *MenuItem {
+	m.Hidden = false
+	return m
+}
+
+func (m *MenuItem) IsRadio() bool {
+	return m.Type == RadioType
+}
+
+func Label(label string) *MenuItem {
+	return &MenuItem{
+		Type:  TextType,
+		Label: label,
+	}
+}
+
 // Text is a helper to create basic Text menu items
 func Text(label string, accelerator *keys.Accelerator, click Callback) *MenuItem {
 	return &MenuItem{

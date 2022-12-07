@@ -1,15 +1,15 @@
 {
-  "name": "scripts",
+  "name": "sponsors",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "sponsorkit": "^0.5.2"
+  "dependencies": {
+    "sponsorkit": "^0.6.1"
   }
 }
