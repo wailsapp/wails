@@ -31,7 +31,7 @@ func (a *App) Run() error {
 		}
 	}()
 
-	// Run windows
+	// run windows
 	for _, window := range a.windows {
 		err := window.Run()
 		if err != nil {

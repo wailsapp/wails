@@ -6,7 +6,9 @@ type windowImpl interface {
 	setTitle(title string)
 	setSize(width, height int)
 	setAlwaysOnTop(alwaysOnTop bool)
-	Run() error
+	run() error
+	navigateToURL(url string)
+	setResizable(resizable bool)
 }
 
 type Window struct {
@@ -39,7 +41,7 @@ func (w *Window) SetSize(width, height int) {
 
 func (w *Window) Run() error {
 	w.impl = newWindowImpl(w.options)
-	return w.impl.Run()
+	return w.impl.run()
 }
 
 func (w *Window) SetAlwaysOnTop(b bool) {
@@ -48,4 +50,20 @@ func (w *Window) SetAlwaysOnTop(b bool) {
 		return
 	}
 	w.impl.setAlwaysOnTop(b)
+}
+
+func (w *Window) NavigateToURL(s string) {
+	if w.impl == nil {
+		w.options.URL = s
+		return
+	}
+	w.impl.navigateToURL(s)
+}
+
+func (w *Window) SetResizable(b bool) {
+	if w.impl == nil {
+		w.options.DisableResize = !b
+		return
+	}
+	w.impl.setResizable(b)
 }

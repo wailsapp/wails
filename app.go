@@ -141,7 +141,7 @@ func (a *App) start() error {
 	// Defer the shutdown
 	defer a.shutdown()
 
-	// Run the renderer
+	// run the renderer
 	err = a.renderer.Run()
 	if err != nil {
 		return err

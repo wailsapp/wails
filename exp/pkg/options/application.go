@@ -24,4 +24,7 @@ type Window struct {
 	Title         string
 	Width, Height int
 	AlwaysOnTop   bool
+	URL           string
+	DisableResize bool
+	Resizable     bool
 }

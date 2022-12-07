@@ -4,12 +4,14 @@ package application
 
 /*
 #cgo CFLAGS: -mmacosx-version-min=10.10 -x objective-c
-#cgo LDFLAGS: -framework Cocoa
+#cgo LDFLAGS: -framework Cocoa -framework WebKit
 
 #include "application.h"
 #include "window_delegate.h"
 #include <stdlib.h>
 #include "Cocoa/Cocoa.h"
+#import <WebKit/WebKit.h>
+
 
 // Create a new Window
 void* windowNew(int width, int height) {
@@ -21,6 +23,13 @@ void* windowNew(int width, int height) {
 	WindowDelegate* delegate = [[WindowDelegate alloc] init];
 	// Set delegate
 	[window setDelegate:delegate];
+
+	// Embed wkwebview in window
+	NSRect frame = NSMakeRect(0, 0, width, height);
+	WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
+	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
+	[window setContentView:webView];
+	delegate.webView = webView;
 
 	delegate.hideOnClose = false;
 	return window;
@@ -67,6 +76,26 @@ void windowSetAlwaysOnTop(void* nsWindow, bool alwaysOnTop) {
 	});
 }
 
+// Load URL in NSWindow
+void navigationLoadURL(void* nsWindow, char* url) {
+	// Load URL on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSURL* nsURL = [NSURL URLWithString:[NSString stringWithUTF8String:url]];
+		NSURLRequest* request = [NSURLRequest requestWithURL:nsURL];
+		[[(WindowDelegate*)[(NSWindow*)nsWindow delegate] webView] loadRequest:request];
+		free(url);
+	});
+}
+
+// Set NSWindow resizable
+void windowSetResizable(void* nsWindow, bool resizable) {
+	// Set window resizable on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)nsWindow setStyleMask:resizable ? NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask : NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask];
+	});
+}
+
+
 */
 import "C"
 import (
@@ -78,6 +107,10 @@ import (
 type macosWindow struct {
 	nsWindow unsafe.Pointer
 	options  *options.Window
+}
+
+func (w *macosWindow) navigateToURL(url string) {
+	C.navigationLoadURL(w.nsWindow, C.CString(url))
 }
 
 func (w *macosWindow) setAlwaysOnTop(alwaysOnTop bool) {
@@ -100,10 +133,16 @@ func (w *macosWindow) setSize(width, height int) {
 	C.windowSetSize(w.nsWindow, C.int(width), C.int(height))
 }
 
-func (w *macosWindow) Run() error {
+func (w *macosWindow) setResizable(resizable bool) {
+	C.windowSetResizable(w.nsWindow, C.bool(resizable))
+}
+
+func (w *macosWindow) run() error {
 	w.nsWindow = C.windowNew(C.int(w.options.Width), C.int(w.options.Height))
 	w.setTitle(w.options.Title)
 	w.setAlwaysOnTop(w.options.AlwaysOnTop)
+	w.setResizable(!w.options.DisableResize)
 	C.windowShow(w.nsWindow)
+	C.navigationLoadURL(w.nsWindow, C.CString(w.options.URL))
 	return nil
 }
