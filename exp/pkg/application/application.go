@@ -33,6 +33,14 @@ func (a *App) On(s string, callback func()) {
 }
 
 func (a *App) NewWindow(options *options.Window) *Window {
+	// Ensure we have sane defaults
+	if options.Width == 0 {
+		options.Width = 1024
+	}
+	if options.Height == 0 {
+		options.Height = 768
+	}
+
 	newWindow := NewWindow(options)
 	id := newWindow.id
 	if a.windows == nil {

@@ -1,4 +1,2 @@
-github.com/gofrs/uuid v4.3.1+incompatible h1:0/KbAdpx3UXAx1kEOWHJeOkpbgRFGHVgv+CFIY7dBJI=
-github.com/gofrs/uuid v4.3.1+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/leaanthony/clir v1.3.0 h1:L9nPDWrmc/qU9UWZZvRaFajWYuO0np9V5p+5gxyYno0=
 github.com/leaanthony/clir v1.3.0/go.mod h1:k/RBkdkFl18xkkACMCLt09bhiZnrGORoxmomeMvDpE0=

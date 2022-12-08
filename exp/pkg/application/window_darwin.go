@@ -497,9 +497,6 @@ func (w *macosWindow) run() {
 		w.setResizable(!w.options.DisableResize)
 		w.setMinSize(w.options.MinWidth, w.options.MinHeight)
 		w.setMaxSize(w.options.MaxWidth, w.options.MaxHeight)
-		if w.options.URL != "" {
-			w.navigateToURL(w.options.URL)
-		}
 		if w.options.EnableDevTools {
 			w.enableDevTools()
 		}
@@ -539,6 +536,9 @@ func (w *macosWindow) run() {
 
 			}
 
+		}
+		if w.options.URL != "" {
+			w.navigateToURL(w.options.URL)
 		}
 		C.windowShow(w.nsWindow)
 	})
