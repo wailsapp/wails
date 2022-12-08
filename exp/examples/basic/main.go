@@ -22,18 +22,25 @@ func main() {
 		println("TERMINATION!!")
 	})
 	myWindow := app.NewWindow(&options.Window{
-		Title:          "Basic",
-		Width:          600,
-		Height:         400,
-		AlwaysOnTop:    false,
-		DisableResize:  false,
-		MinWidth:       100,
-		MinHeight:      100,
-		MaxWidth:       1000,
-		MaxHeight:      1000,
+		Title:         "Basic",
+		Width:         600,
+		Height:        400,
+		AlwaysOnTop:   false,
+		DisableResize: false,
+		//MinWidth:       100,
+		//MinHeight:      100,
+		//MaxWidth:       1000,
+		//MaxHeight:      1000,
 		EnableDevTools: true,
+		BackgroundColour: &options.RGBA{
+			Red:   255,
+			Green: 255,
+			Blue:  255,
+			Alpha: 30,
+		},
+		StartState: options.WindowStateMaximised,
 		Mac: &options.MacWindow{
-			Backdrop: options.MacBackdropNormal,
+			Backdrop: options.MacBackdropTranslucent,
 		},
 	})
 

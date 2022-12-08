@@ -21,18 +21,24 @@ type Mac struct {
 }
 
 type Window struct {
-	Title          string
-	Width, Height  int
-	AlwaysOnTop    bool
-	URL            string
-	DisableResize  bool
-	Resizable      bool
-	MinWidth       int
-	MinHeight      int
-	MaxWidth       int
-	MaxHeight      int
-	EnableDevTools bool
-	Mac            *MacWindow
+	Title            string
+	Width, Height    int
+	AlwaysOnTop      bool
+	URL              string
+	DisableResize    bool
+	Resizable        bool
+	MinWidth         int
+	MinHeight        int
+	MaxWidth         int
+	MaxHeight        int
+	EnableDevTools   bool
+	StartState       WindowState
+	Mac              *MacWindow
+	BackgroundColour *RGBA
+}
+
+type RGBA struct {
+	Red, Green, Blue, Alpha uint8
 }
 
 type MacBackdrop int
@@ -41,6 +47,15 @@ const (
 	MacBackdropNormal MacBackdrop = iota
 	MacBackdropTransparent
 	MacBackdropTranslucent
+)
+
+type WindowState int
+
+const (
+	WindowStateNormal WindowState = iota
+	WindowStateMinimised
+	WindowStateMaximised
+	WindowStateFullscreen
 )
 
 // MacWindow contains macOS specific options

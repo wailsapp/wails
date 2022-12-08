@@ -22,23 +22,7 @@ func New(options *options.Application) *App {
 	}
 }
 
-func (a *App) Run() error {
-
-	go func() {
-		for {
-			event := <-systemEvents
-			a.handleSystemEvent(event)
-		}
-	}()
-
-	// run windows
-	for _, window := range a.windows {
-		err := window.Run()
-		if err != nil {
-			return err
-		}
-	}
-
+func (a *App) run() error {
 	C.Run()
 	return nil
 }

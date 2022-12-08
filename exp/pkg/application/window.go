@@ -1,6 +1,10 @@
 package application
 
-import "github.com/wailsapp/wails/exp/pkg/options"
+import (
+	"sync/atomic"
+
+	"github.com/wailsapp/wails/exp/pkg/options"
+)
 
 type windowImpl interface {
 	setTitle(title string)
@@ -13,15 +17,29 @@ type windowImpl interface {
 	setMaxSize(width, height int)
 	enableDevTools()
 	execJS(js string)
+	setMaximised()
+	setMinimised()
+	setFullscreen()
+	isMinimised() bool
+	isMaximised() bool
+	isFullscreen() bool
+	restore()
+	setBackgroundColor(color *options.RGBA)
 }
 
 type Window struct {
 	options *options.Window
 	impl    windowImpl
+	id      uint64
 }
 
+var windowID atomic.Uint64
+
 func NewWindow(options *options.Window) *Window {
+	id := windowID.Load()
+	windowID.Add(1)
 	return &Window{
+		id:      id,
 		options: options,
 	}
 }
@@ -116,4 +134,63 @@ func (w *Window) ExecJS(js string) {
 		return
 	}
 	w.impl.execJS(js)
+}
+
+// Set Maximized
+func (w *Window) SetMaximized() {
+	if w.impl == nil {
+		w.options.StartState = options.WindowStateMaximised
+		return
+	}
+	w.impl.setMaximised()
+}
+
+// Set Minimized
+func (w *Window) SetMinimized() {
+	if w.impl == nil {
+		w.options.StartState = options.WindowStateMinimised
+		return
+	}
+	w.impl.setMinimised()
+}
+
+// Set Fullscreen
+func (w *Window) SetFullscreen() {
+	if w.impl == nil {
+		w.options.StartState = options.WindowStateFullscreen
+		return
+	}
+	w.impl.setFullscreen()
+}
+
+// IsMinimised returns true if the window is minimised
+func (w *Window) IsMinimised() bool {
+	if w.impl == nil {
+		return false
+	}
+	return w.impl.isMinimised()
+}
+
+// IsMaximised returns true if the window is maximised
+func (w *Window) IsMaximised() bool {
+	if w.impl == nil {
+		return false
+	}
+	return w.impl.isMaximised()
+}
+
+// IsFullscreen returns true if the window is fullscreen
+func (w *Window) IsFullscreen() bool {
+	if w.impl == nil {
+		return false
+	}
+	return w.impl.isFullscreen()
+}
+
+func (w *Window) SetBackgroundColor(color *options.RGBA) {
+	if w.impl == nil {
+		w.options.BackgroundColour = color
+		return
+	}
+	w.impl.setBackgroundColor(color)
 }

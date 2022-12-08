@@ -200,10 +200,94 @@ void webviewSetTransparent(void* nsWindow) {
 		// Get window delegate
 		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
 		// Set webview background transparent
-		[delegate.webView setValue:@YES forKey:@"drawsTransparentBackground"];
+		[delegate.webView setValue:@NO forKey:@"drawsBackground"];
 	});
 }
 
+// Set webview background color
+void webviewSetBackgroundColor(void* nsWindow, int r, int g, int b, int alpha) {
+	// Set webview background color on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Get window delegate
+		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		// Set webview background color
+		[delegate.webView setValue:[NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:alpha/255.0] forKey:@"backgroundColor"];
+	});
+}
+
+// Set Window maximised
+void windowSetMaximised(void* nsWindow) {
+	// Set window maximized on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)nsWindow zoom:nil];
+	});
+}
+
+// Set Window fullscreen
+void windowSetFullscreen(void* nsWindow) {
+	// Set window fullscreen on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)nsWindow toggleFullScreen:nil];
+	});
+}
+
+// Set Window Minimised
+void windowSetMinimised(void* nsWindow) {
+	// Set window minimised on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Get screen that the window is on
+		NSScreen* screen = [(NSWindow*)nsWindow screen];
+		NSRect screenRect = [screen frame];
+		// Set window to top left corner
+		[(NSWindow*)nsWindow setFrame:NSMakeRect(0, screenRect.size.height, 0, 0) display:YES];
+	});
+}
+
+// restore window to normal size
+void windowRestore(void* nsWindow) {
+	// Set window normal on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// If window is fullscreen
+		if([(NSWindow*)nsWindow styleMask] & NSFullScreenWindowMask) {
+			[(NSWindow*)nsWindow toggleFullScreen:nil];
+		}
+		// If window is maximised
+		if([(NSWindow*)nsWindow isZoomed]) {
+			[(NSWindow*)nsWindow zoom:nil];
+		}
+		// If window in minimised
+		if([(NSWindow*)nsWindow isMiniaturized]) {
+			[(NSWindow*)nsWindow deminiaturize:nil];
+		}
+	});
+}
+
+bool windowIsMaximised(void* nsWindow) {
+	// Get window maximized on main thread
+	__block bool maximized = false;
+	dispatch_sync(dispatch_get_main_queue(), ^{
+		maximized = [(NSWindow*)nsWindow isZoomed];
+	});
+	return maximized;
+}
+
+bool windowIsFullscreen(void* nsWindow) {
+	// Get window fullscreen on main thread
+	__block bool fullscreen = false;
+	dispatch_sync(dispatch_get_main_queue(), ^{
+		fullscreen = [(NSWindow*)nsWindow styleMask] & NSFullScreenWindowMask;
+	});
+	return fullscreen;
+}
+
+bool windowIsMinimised(void* nsWindow) {
+	// Get window minimised on main thread
+	__block bool minimised = false;
+	dispatch_sync(dispatch_get_main_queue(), ^{
+		minimised = [(NSWindow*)nsWindow isMiniaturized];
+	});
+	return minimised;
+}
 
 
 */
@@ -215,8 +299,42 @@ import (
 )
 
 type macosWindow struct {
+	id       uint64
 	nsWindow unsafe.Pointer
 	options  *options.Window
+}
+
+func (w *macosWindow) isMinimised() bool {
+	return C.windowIsMinimised(w.nsWindow) == C.bool(true)
+}
+
+func (w *macosWindow) isMaximised() bool {
+	return C.windowIsMaximised(w.nsWindow) == C.bool(true)
+}
+
+func (w *macosWindow) isFullscreen() bool {
+	return C.windowIsFullscreen(w.nsWindow) == C.bool(true)
+}
+
+func (w *macosWindow) restore() {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (w *macosWindow) setMaximised() {
+	C.windowSetMaximised(w.nsWindow)
+}
+
+func (w *macosWindow) setMinimised() {
+	C.windowSetMinimised(w.nsWindow)
+}
+
+func (w *macosWindow) setFullscreen() {
+	C.windowSetFullscreen(w.nsWindow)
+}
+
+func (w *macosWindow) restoreWindow() {
+	C.windowRestore(w.nsWindow)
 }
 
 func (w *macosWindow) execJS(js string) {
@@ -274,6 +392,7 @@ func (w *macosWindow) run() error {
 	if w.options.EnableDevTools {
 		w.enableDevTools()
 	}
+	w.setBackgroundColor(w.options.BackgroundColour)
 	if w.options.Mac != nil {
 		switch w.options.Mac.Backdrop {
 		case options.MacBackdropTransparent:
@@ -283,7 +402,26 @@ func (w *macosWindow) run() error {
 			C.windowSetTranslucent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
 		}
+
+		switch w.options.StartState {
+		case options.WindowStateMaximised:
+			w.setMaximised()
+		case options.WindowStateMinimised:
+			w.setMinimised()
+		case options.WindowStateFullscreen:
+			w.setFullscreen()
+
+		}
+
 	}
 	C.windowShow(w.nsWindow)
+
 	return nil
+}
+
+func (w *macosWindow) setBackgroundColor(colour *options.RGBA) {
+	if colour == nil {
+		return
+	}
+	C.webviewSetBackgroundColor(w.nsWindow, C.int(colour.Red), C.int(colour.Green), C.int(colour.Blue), C.int(colour.Alpha))
 }
