@@ -11,7 +11,6 @@ type windowImpl interface {
 	setTitle(title string)
 	setSize(width, height int)
 	setAlwaysOnTop(alwaysOnTop bool)
-	run() error
 	navigateToURL(url string)
 	setResizable(resizable bool)
 	setMinSize(width, height int)
@@ -26,6 +25,7 @@ type windowImpl interface {
 	isFullscreen() bool
 	restore()
 	setBackgroundColor(color *options.RGBA)
+	run()
 }
 
 type Window struct {
@@ -68,9 +68,9 @@ func (w *Window) SetSize(width, height int) {
 	w.impl.setSize(width, height)
 }
 
-func (w *Window) Run() error {
+func (w *Window) Run() {
 	w.impl = newWindowImpl(w.id, w.options)
-	return w.impl.run()
+	w.impl.run()
 }
 
 func (w *Window) SetAlwaysOnTop(b bool) {

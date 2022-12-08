@@ -489,59 +489,59 @@ func (w *macosWindow) enableDevTools() {
 	C.windowEnableDevTools(w.nsWindow)
 }
 
-func (w *macosWindow) run() error {
-	w.nsWindow = C.windowNew(C.uint(w.id), C.int(w.options.Width), C.int(w.options.Height))
-	w.setTitle(w.options.Title)
-	w.setAlwaysOnTop(w.options.AlwaysOnTop)
-	w.setResizable(!w.options.DisableResize)
-	w.setMinSize(w.options.MinWidth, w.options.MinHeight)
-	w.setMaxSize(w.options.MaxWidth, w.options.MaxHeight)
-	if w.options.URL != "" {
-		w.navigateToURL(w.options.URL)
-	}
-	if w.options.EnableDevTools {
-		w.enableDevTools()
-	}
-	w.setBackgroundColor(w.options.BackgroundColour)
-	if w.options.Mac != nil {
-		macOptions := w.options.Mac
-		switch macOptions.Backdrop {
-		case options.MacBackdropTransparent:
-			C.windowSetTransparent(w.nsWindow)
-			C.webviewSetTransparent(w.nsWindow)
-		case options.MacBackdropTranslucent:
-			C.windowSetTranslucent(w.nsWindow)
-			C.webviewSetTransparent(w.nsWindow)
+func (w *macosWindow) run() {
+	Dispatch(func() {
+		w.nsWindow = C.windowNew(C.uint(w.id), C.int(w.options.Width), C.int(w.options.Height))
+		w.setTitle(w.options.Title)
+		w.setAlwaysOnTop(w.options.AlwaysOnTop)
+		w.setResizable(!w.options.DisableResize)
+		w.setMinSize(w.options.MinWidth, w.options.MinHeight)
+		w.setMaxSize(w.options.MaxWidth, w.options.MaxHeight)
+		if w.options.URL != "" {
+			w.navigateToURL(w.options.URL)
 		}
-
-		if macOptions.TitleBar != nil {
-			titleBarOptions := macOptions.TitleBar
-			C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(titleBarOptions.AppearsTransparent))
-			C.windowSetHideTitleBar(w.nsWindow, C.bool(titleBarOptions.Hide))
-			C.windowSetHideTitle(w.nsWindow, C.bool(titleBarOptions.HideTitle))
-			C.windowSetFullSizeContent(w.nsWindow, C.bool(titleBarOptions.FullSizeContent))
-			C.windowSetUseToolbar(w.nsWindow, C.bool(titleBarOptions.UseToolbar))
-			C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBarOptions.HideToolbarSeparator))
+		if w.options.EnableDevTools {
+			w.enableDevTools()
 		}
+		w.setBackgroundColor(w.options.BackgroundColour)
+		if w.options.Mac != nil {
+			macOptions := w.options.Mac
+			switch macOptions.Backdrop {
+			case options.MacBackdropTransparent:
+				C.windowSetTransparent(w.nsWindow)
+				C.webviewSetTransparent(w.nsWindow)
+			case options.MacBackdropTranslucent:
+				C.windowSetTranslucent(w.nsWindow)
+				C.webviewSetTransparent(w.nsWindow)
+			}
 
-		if macOptions.Appearance != "" {
-			C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
+			if macOptions.TitleBar != nil {
+				titleBarOptions := macOptions.TitleBar
+				C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(titleBarOptions.AppearsTransparent))
+				C.windowSetHideTitleBar(w.nsWindow, C.bool(titleBarOptions.Hide))
+				C.windowSetHideTitle(w.nsWindow, C.bool(titleBarOptions.HideTitle))
+				C.windowSetFullSizeContent(w.nsWindow, C.bool(titleBarOptions.FullSizeContent))
+				C.windowSetUseToolbar(w.nsWindow, C.bool(titleBarOptions.UseToolbar))
+				C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBarOptions.HideToolbarSeparator))
+			}
+
+			if macOptions.Appearance != "" {
+				C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
+			}
+
+			switch w.options.StartState {
+			case options.WindowStateMaximised:
+				w.setMaximised()
+			case options.WindowStateMinimised:
+				w.setMinimised()
+			case options.WindowStateFullscreen:
+				w.setFullscreen()
+
+			}
+
 		}
-
-		switch w.options.StartState {
-		case options.WindowStateMaximised:
-			w.setMaximised()
-		case options.WindowStateMinimised:
-			w.setMinimised()
-		case options.WindowStateFullscreen:
-			w.setFullscreen()
-
-		}
-
-	}
-	C.windowShow(w.nsWindow)
-
-	return nil
+		C.windowShow(w.nsWindow)
+	})
 }
 
 func (w *macosWindow) setBackgroundColor(colour *options.RGBA) {

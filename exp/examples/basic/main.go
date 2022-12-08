@@ -45,17 +45,22 @@ func main() {
 		},
 	})
 
-	myWindow2 := app.NewWindow(&options.Window{
-		Title:         "#2",
-		Width:         1024,
-		Height:        768,
-		AlwaysOnTop:   false,
-		URL:           "https://google.com",
-		DisableResize: true,
-		Mac: &options.MacWindow{
-			Backdrop: options.MacBackdropTranslucent,
-		},
-	})
+	var myWindow2 *application.Window
+	go func() {
+		time.Sleep(2 * time.Second)
+		myWindow2 = app.NewWindow(&options.Window{
+			Title:         "#2",
+			Width:         1024,
+			Height:        768,
+			AlwaysOnTop:   false,
+			URL:           "https://google.com",
+			DisableResize: true,
+			Mac: &options.MacWindow{
+				Backdrop: options.MacBackdropTranslucent,
+			},
+		})
+
+	}()
 
 	go func() {
 		time.Sleep(5 * time.Second)

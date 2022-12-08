@@ -40,10 +40,7 @@ func (a *App) NewWindow(options *options.Window) *Window {
 	}
 	a.windows[id] = newWindow
 	if a.running {
-		err := newWindow.Run()
-		if err != nil {
-			panic(err)
-		}
+		newWindow.Run()
 	}
 
 	return newWindow
@@ -67,10 +64,7 @@ func (a *App) Run() error {
 
 	// run windows
 	for _, window := range a.windows {
-		err := window.Run()
-		if err != nil {
-			return err
-		}
+		go window.Run()
 	}
 
 	return a.run()
