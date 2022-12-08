@@ -289,6 +289,90 @@ bool windowIsMinimised(void* nsWindow) {
 	return minimised;
 }
 
+// Set the titlebar style
+void windowSetTitleBarAppearsTransparent(void* nsWindow, bool transparent) {
+	// Set window titlebar style on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if( transparent ) {
+			[(NSWindow*)nsWindow setTitlebarAppearsTransparent:true];
+		} else {
+			[(NSWindow*)nsWindow setTitlebarAppearsTransparent:false];
+		}
+	});
+}
+
+// Set window fullsize content view
+void windowSetFullSizeContent(void* nsWindow, bool fullSize) {
+	// Set window fullsize content view on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if( fullSize ) {
+			[(NSWindow*)nsWindow setStyleMask:[(NSWindow*)nsWindow styleMask] | NSWindowStyleMaskFullSizeContentView];
+		} else {
+			[(NSWindow*)nsWindow setStyleMask:[(NSWindow*)nsWindow styleMask] & ~NSWindowStyleMaskFullSizeContentView];
+		}
+	});
+}
+
+// Set Hide Titlebar
+void windowSetHideTitleBar(void* nsWindow, bool hideTitlebar) {
+	// Set window titlebar hidden on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if( hideTitlebar ) {
+			[(NSWindow*)nsWindow setStyleMask:[(NSWindow*)nsWindow styleMask] & ~NSWindowStyleMaskTitled];
+		} else {
+			[(NSWindow*)nsWindow setStyleMask:[(NSWindow*)nsWindow styleMask] | NSWindowStyleMaskTitled];
+		}
+	});
+}
+
+// Set Hide Title in Titlebar
+void windowSetHideTitle(void* nsWindow, bool hideTitle) {
+	// Set window titlebar hidden on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if( hideTitle ) {
+			[(NSWindow*)nsWindow setTitleVisibility:NSWindowTitleHidden];
+		} else {
+			[(NSWindow*)nsWindow setTitleVisibility:NSWindowTitleVisible];
+		}
+	});
+}
+
+// Set Window use toolbar
+void windowSetUseToolbar(void* nsWindow, bool useToolbar) {
+	// Set window use toolbar on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// get main window
+		NSWindow* window = (NSWindow*)nsWindow;
+		if( useToolbar ) {
+			NSToolbar *toolbar = [[NSToolbar alloc] initWithIdentifier:@"wails.toolbar"];
+			[toolbar autorelease];
+			[window setToolbar:toolbar];
+		} else {
+			[window setToolbar:nil];
+		}
+	});
+}
+
+// Set Hide Toolbar Separator
+void windowSetHideToolbarSeparator(void* nsWindow, bool hideSeparator) {
+	// Set window hide toolbar separator on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// get main window
+		NSWindow* window = (NSWindow*)nsWindow;
+		// get toolbar
+		NSToolbar* toolbar = [window toolbar];
+		// Return if toolbar nil
+		if( toolbar == nil ) {
+			return;
+		}
+		if( hideSeparator ) {
+			[toolbar setShowsBaselineSeparator:false];
+		} else {
+			[toolbar setShowsBaselineSeparator:true];
+		}
+	});
+}
+
 
 */
 import "C"
@@ -394,13 +478,24 @@ func (w *macosWindow) run() error {
 	}
 	w.setBackgroundColor(w.options.BackgroundColour)
 	if w.options.Mac != nil {
-		switch w.options.Mac.Backdrop {
+		macOptions := w.options.Mac
+		switch macOptions.Backdrop {
 		case options.MacBackdropTransparent:
 			C.windowSetTransparent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
 		case options.MacBackdropTranslucent:
 			C.windowSetTranslucent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
+		}
+
+		if macOptions.TitleBar != nil {
+			titleBarOptions := macOptions.TitleBar
+			C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(titleBarOptions.AppearsTransparent))
+			C.windowSetHideTitleBar(w.nsWindow, C.bool(titleBarOptions.Hide))
+			C.windowSetHideTitle(w.nsWindow, C.bool(titleBarOptions.HideTitle))
+			C.windowSetFullSizeContent(w.nsWindow, C.bool(titleBarOptions.FullSizeContent))
+			C.windowSetUseToolbar(w.nsWindow, C.bool(titleBarOptions.UseToolbar))
+			C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBarOptions.HideToolbarSeparator))
 		}
 
 		switch w.options.StartState {

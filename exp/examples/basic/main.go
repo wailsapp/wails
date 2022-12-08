@@ -25,7 +25,7 @@ func main() {
 		Title:         "Basic",
 		Width:         600,
 		Height:        400,
-		AlwaysOnTop:   false,
+		AlwaysOnTop:   true,
 		DisableResize: false,
 		//MinWidth:       100,
 		//MinHeight:      100,
@@ -41,6 +41,7 @@ func main() {
 		StartState: options.WindowStateMaximised,
 		Mac: &options.MacWindow{
 			Backdrop: options.MacBackdropTranslucent,
+			TitleBar: options.TitleBarHiddenInset(),
 		},
 	})
 
@@ -51,6 +52,10 @@ func main() {
 		AlwaysOnTop:   false,
 		URL:           "https://google.com",
 		DisableResize: true,
+		Mac: &options.MacWindow{
+			Backdrop: options.MacBackdropTranslucent,
+			TitleBar: options.TitleBarHidden(),
+		},
 	})
 
 	go func() {
