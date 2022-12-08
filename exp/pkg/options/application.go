@@ -60,8 +60,9 @@ const (
 
 // MacWindow contains macOS specific options
 type MacWindow struct {
-	Backdrop MacBackdrop
-	TitleBar *TitleBar
+	Backdrop   MacBackdrop
+	TitleBar   *TitleBar
+	Appearance MacAppearanceType
 }
 
 // TitleBar contains options for the Mac titlebar
@@ -116,3 +117,25 @@ func TitleBarHiddenInset() *TitleBar {
 	}
 
 }
+
+// MacAppearanceType is a type of Appearance for Cocoa windows
+type MacAppearanceType string
+
+const (
+	// DefaultAppearance uses the default system value
+	DefaultAppearance MacAppearanceType = ""
+	// NSAppearanceNameAqua - The standard light system appearance.
+	NSAppearanceNameAqua MacAppearanceType = "NSAppearanceNameAqua"
+	// NSAppearanceNameDarkAqua - The standard dark system appearance.
+	NSAppearanceNameDarkAqua MacAppearanceType = "NSAppearanceNameDarkAqua"
+	// NSAppearanceNameVibrantLight - The light vibrant appearance
+	NSAppearanceNameVibrantLight MacAppearanceType = "NSAppearanceNameVibrantLight"
+	// NSAppearanceNameAccessibilityHighContrastAqua - A high-contrast version of the standard light system appearance.
+	NSAppearanceNameAccessibilityHighContrastAqua MacAppearanceType = "NSAppearanceNameAccessibilityHighContrastAqua"
+	// NSAppearanceNameAccessibilityHighContrastDarkAqua - A high-contrast version of the standard dark system appearance.
+	NSAppearanceNameAccessibilityHighContrastDarkAqua MacAppearanceType = "NSAppearanceNameAccessibilityHighContrastDarkAqua"
+	// NSAppearanceNameAccessibilityHighContrastVibrantLight - A high-contrast version of the light vibrant appearance.
+	NSAppearanceNameAccessibilityHighContrastVibrantLight MacAppearanceType = "NSAppearanceNameAccessibilityHighContrastVibrantLight"
+	// NSAppearanceNameAccessibilityHighContrastVibrantDark - A high-contrast version of the dark vibrant appearance.
+	NSAppearanceNameAccessibilityHighContrastVibrantDark MacAppearanceType = "NSAppearanceNameAccessibilityHighContrastVibrantDark"
+)

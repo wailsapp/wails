@@ -373,6 +373,21 @@ void windowSetHideToolbarSeparator(void* nsWindow, bool hideSeparator) {
 	});
 }
 
+// Set Window appearance type
+void windowSetAppearanceTypeByName(void* nsWindow, const char *appearanceName) {
+	// Set window appearance type on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// get main window
+		NSWindow* window = (NSWindow*)nsWindow;
+		// set window appearance type by name
+		// Convert appearance name to NSString
+		NSString* appearanceNameString = [NSString stringWithUTF8String:appearanceName];
+		// Set appearance
+		[window setAppearance:[NSAppearance appearanceNamed:appearanceNameString]];
+
+		free((void*)appearanceName);
+	});
+}
 
 */
 import "C"
@@ -496,6 +511,10 @@ func (w *macosWindow) run() error {
 			C.windowSetFullSizeContent(w.nsWindow, C.bool(titleBarOptions.FullSizeContent))
 			C.windowSetUseToolbar(w.nsWindow, C.bool(titleBarOptions.UseToolbar))
 			C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBarOptions.HideToolbarSeparator))
+		}
+
+		if macOptions.Appearance != "" {
+			C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
 		}
 
 		switch w.options.StartState {

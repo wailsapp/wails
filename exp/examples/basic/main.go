@@ -40,8 +40,9 @@ func main() {
 		},
 		StartState: options.WindowStateMaximised,
 		Mac: &options.MacWindow{
-			Backdrop: options.MacBackdropTranslucent,
-			TitleBar: options.TitleBarHiddenInset(),
+			Backdrop:   options.MacBackdropTranslucent,
+			TitleBar:   options.TitleBarHiddenInset(),
+			Appearance: options.NSAppearanceNameDarkAqua,
 		},
 	})
 
