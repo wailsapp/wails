@@ -1,7 +1,8 @@
 package application
 
 import (
-	"sync/atomic"
+	"fmt"
+	"sync"
 
 	"github.com/wailsapp/wails/exp/pkg/options"
 )
@@ -30,16 +31,22 @@ type windowImpl interface {
 type Window struct {
 	options *options.Window
 	impl    windowImpl
-	id      uint64
+	id      uint
 }
 
-var windowID atomic.Uint64
+var windowID uint
+var windowIDLock sync.RWMutex
+
+func getWindowID() uint {
+	windowIDLock.Lock()
+	defer windowIDLock.Unlock()
+	windowID++
+	return windowID
+}
 
 func NewWindow(options *options.Window) *Window {
-	id := windowID.Load()
-	windowID.Add(1)
 	return &Window{
-		id:      id,
+		id:      getWindowID(),
 		options: options,
 	}
 }
@@ -62,7 +69,7 @@ func (w *Window) SetSize(width, height int) {
 }
 
 func (w *Window) Run() error {
-	w.impl = newWindowImpl(w.options)
+	w.impl = newWindowImpl(w.id, w.options)
 	return w.impl.run()
 }
 
@@ -193,4 +200,12 @@ func (w *Window) SetBackgroundColor(color *options.RGBA) {
 		return
 	}
 	w.impl.setBackgroundColor(color)
+}
+
+func (w *Window) handleMessage(message string) {
+	fmt.Printf("[window %d] %s", w.id, message)
+	// Check for special messages
+	if message == "test" {
+		w.SetTitle("Hello World")
+	}
 }

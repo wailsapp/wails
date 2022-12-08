@@ -14,7 +14,7 @@ package application
 
 
 // Create a new Window
-void* windowNew(int width, int height) {
+void* windowNew(unsigned int id, int width, int height) {
 	NSWindow* window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
 		styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask
 		backing:NSBackingStoreBuffered
@@ -24,6 +24,7 @@ void* windowNew(int width, int height) {
 	WindowDelegate* delegate = [[WindowDelegate alloc] init];
 	// Set delegate
 	[window setDelegate:delegate];
+	delegate.windowId = id;
 
 	// Add NSView to window
 	NSView* view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
@@ -33,9 +34,18 @@ void* windowNew(int width, int height) {
 	// Embed wkwebview in window
 	NSRect frame = NSMakeRect(0, 0, width, height);
 	WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
+	config.suppressesIncrementalRendering = true;
+    config.applicationNameForUserAgent = @"wails.io";
+
+	// Setup user content controller
+    WKUserContentController* userContentController = [WKUserContentController new];
+    [userContentController addScriptMessageHandler:delegate name:@"external"];
+    config.userContentController = userContentController;
+
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[view addSubview:webView];
 	delegate.webView = webView;
+
 
 	delegate.hideOnClose = false;
 	return window;
@@ -398,7 +408,7 @@ import (
 )
 
 type macosWindow struct {
-	id       uint64
+	id       uint
 	nsWindow unsafe.Pointer
 	options  *options.Window
 }
@@ -448,8 +458,9 @@ func (w *macosWindow) setAlwaysOnTop(alwaysOnTop bool) {
 	C.windowSetAlwaysOnTop(w.nsWindow, C.bool(alwaysOnTop))
 }
 
-func newWindowImpl(options *options.Window) *macosWindow {
+func newWindowImpl(id uint, options *options.Window) *macosWindow {
 	result := &macosWindow{
+		id:      id,
 		options: options,
 	}
 	return result
@@ -479,7 +490,7 @@ func (w *macosWindow) enableDevTools() {
 }
 
 func (w *macosWindow) run() error {
-	w.nsWindow = C.windowNew(C.int(w.options.Width), C.int(w.options.Height))
+	w.nsWindow = C.windowNew(C.uint(w.id), C.int(w.options.Width), C.int(w.options.Height))
 	w.setTitle(w.options.Title)
 	w.setAlwaysOnTop(w.options.AlwaysOnTop)
 	w.setResizable(!w.options.DisableResize)

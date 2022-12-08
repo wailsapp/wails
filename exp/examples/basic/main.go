@@ -41,7 +41,6 @@ func main() {
 		StartState: options.WindowStateMaximised,
 		Mac: &options.MacWindow{
 			Backdrop:   options.MacBackdropTranslucent,
-			TitleBar:   options.TitleBarHiddenInset(),
 			Appearance: options.NSAppearanceNameDarkAqua,
 		},
 	})
@@ -55,7 +54,6 @@ func main() {
 		DisableResize: true,
 		Mac: &options.MacWindow{
 			Backdrop: options.MacBackdropTranslucent,
-			TitleBar: options.TitleBarHidden(),
 		},
 	})
 

@@ -7,10 +7,13 @@
 #import <Cocoa/Cocoa.h>
 #import <WebKit/WebKit.h>
 
-@interface WindowDelegate : NSObject <NSWindowDelegate>
+extern void processMessage(unsigned int, const char*);
+
+@interface WindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler>
 
 @property bool hideOnClose;
 @property (retain) WKWebView* webView;
+@property unsigned int windowId;
 
 @end
 

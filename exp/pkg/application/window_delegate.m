@@ -19,5 +19,28 @@
     return true;
 }
 
+// Handle script messages from the external bridge
+- (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
+    NSString *m = message.body;
+
+    /*
+    // TODO: Check for drag
+    if ( [m isEqualToString:@"drag"] ) {
+        if( [self IsFullScreen] ) {
+            return;
+        }
+        if( self.mouseEvent != nil ) {
+           [self.mainWindow performWindowDragWithEvent:self.mouseEvent];
+        }
+        return;
+    }
+    */
+
+    const char *_m = [m UTF8String];
+
+    processMessage(self.windowId, _m);
+}
+
+
 
 @end
