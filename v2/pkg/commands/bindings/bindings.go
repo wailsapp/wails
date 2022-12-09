@@ -62,7 +62,12 @@ func GenerateBindings(options Options) (string, error) {
 		_ = os.Remove(filename)
 	}()
 
-	stdout, stderr, err = shell.RunCommand(workingDirectory, filename, "-tsprefix", options.TsPrefix, "-tssuffix", options.TsSuffix)
+	// Set environment variables accordingly
+	env := os.Environ()
+	env = shell.SetEnv(env, "tsprefix", options.TsPrefix)
+	env = shell.SetEnv(env, "tssuffix", options.TsSuffix)
+
+	stdout, stderr, err = shell.RunCommandWithEnv(env, workingDirectory, filename)
 	if err != nil {
 		return stdout, fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 	}
