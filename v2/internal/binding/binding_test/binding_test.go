@@ -37,6 +37,8 @@ func TestBindings_GenerateModels(t *testing.T) {
 		MultistructTest,
 		EmptyStructTest,
 		GeneratedJsEntityTest,
+		AnonymousSubStructTest,
+		AnonymousSubStructMultiLevelTest,
 	}
 
 	testLogger := &logger.Logger{}
