@@ -30,6 +30,34 @@
     systemEventHandler(EventApplicationWillTerminate);
 }
 
+- (void)applicationDidBecomeActive:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationDidBecomeActive);
+}
+
+- (void)applicationWillHide:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationWillHide);
+}
+
+- (void)applicationDidHide:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationDidHide);
+}
+
+- (void)applicationWillUnhide:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationWillUnhide);
+}
+
+- (void)applicationDidUnhide:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationDidUnhide);
+}
+
+
+
+
 
 
 @end

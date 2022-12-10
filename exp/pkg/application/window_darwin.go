@@ -399,6 +399,20 @@ void windowSetAppearanceTypeByName(void* nsWindow, const char *appearanceName) {
 	});
 }
 
+// Center window on current monitor
+void windowCenter(void* nsWindow) {
+	// Center window on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// get main window
+		NSWindow* window = (NSWindow*)nsWindow;
+		[window center];
+	});
+}
+
+
+
+
+
 */
 import "C"
 import (
@@ -411,6 +425,10 @@ type macosWindow struct {
 	id       uint
 	nsWindow unsafe.Pointer
 	options  *options.Window
+}
+
+func (w *macosWindow) center() {
+	C.windowCenter(w.nsWindow)
 }
 
 func (w *macosWindow) isMinimised() bool {
@@ -537,6 +555,8 @@ func (w *macosWindow) run() {
 			}
 
 		}
+		C.windowCenter(w.nsWindow)
+
 		if w.options.URL != "" {
 			w.navigateToURL(w.options.URL)
 		}
@@ -549,4 +569,8 @@ func (w *macosWindow) setBackgroundColor(colour *options.RGBA) {
 		return
 	}
 	C.webviewSetBackgroundColor(w.nsWindow, C.int(colour.Red), C.int(colour.Green), C.int(colour.Blue), C.int(colour.Alpha))
+}
+
+func (w *macosWindow) Center() {
+	C.windowCenter(w.nsWindow)
 }

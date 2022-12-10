@@ -71,6 +71,7 @@ func main() {
 		myWindow2.NavigateToURL("https://wails.io")
 		myWindow.SetMinSize(600, 600)
 		myWindow.SetMaxSize(650, 650)
+		myWindow.Center()
 
 	}()
 

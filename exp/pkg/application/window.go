@@ -26,6 +26,7 @@ type windowImpl interface {
 	restore()
 	setBackgroundColor(color *options.RGBA)
 	run()
+	center()
 }
 
 type Window struct {
@@ -208,4 +209,11 @@ func (w *Window) handleMessage(message string) {
 	if message == "test" {
 		w.SetTitle("Hello World")
 	}
+}
+
+func (w *Window) Center() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.center()
 }
