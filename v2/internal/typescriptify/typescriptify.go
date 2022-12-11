@@ -891,6 +891,7 @@ func (t *typeScriptClassBuilder) addField(fld, fldType string, isAnyType bool) {
 		}
 	}
 	if isAnyType {
+		fldType = strings.Split(fldType, ".")[0]
 		t.fields = append(t.fields, fmt.Sprint(t.indent, "// Go type: ", fldType, "\n", t.indent, fld, ": any;"))
 	} else {
 		t.fields = append(t.fields, fmt.Sprint(t.indent, fld, ": ", fldType, ";"))
