@@ -844,7 +844,7 @@ func (t *typeScriptClassBuilder) AddStructField(fieldName string, field reflect.
 	namespace := strings.Split(field.Type.String(), ".")[0]
 	fqname = t.prefix + field.Type.Name() + t.suffix
 	if namespace != t.namespace {
-		fqname = field.Type.String()
+		fqname = namespace + "." + fqname
 	}
 
 	if !isAnyType {
