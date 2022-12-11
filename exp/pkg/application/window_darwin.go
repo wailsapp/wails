@@ -394,8 +394,47 @@ void windowCenter(void* nsWindow) {
 	});
 }
 
+// Get the current size of the window
+void windowGetSize(void* nsWindow, int* width, int* height) {
+	// get main window
+	NSWindow* window = (NSWindow*)nsWindow;
+	// get window frame
+	NSRect frame = [window frame];
+	// set width and height
+	*width = frame.size.width;
+	*height = frame.size.height;
+}
 
+// Get window width
+int windowGetWidth(void* nsWindow) {
+	// get main window
+	NSWindow* window = (NSWindow*)nsWindow;
+	// get window frame
+	NSRect frame = [window frame];
+	// return width
+	return frame.size.width;
+}
 
+// Get window height
+int windowGetHeight(void* nsWindow) {
+	// get main window
+	NSWindow* window = (NSWindow*)nsWindow;
+	// get window frame
+	NSRect frame = [window frame];
+	// return height
+	return frame.size.height;
+}
+
+// Get window position
+void windowGetPosition(void* nsWindow, int* x, int* y) {
+	// get main window
+	NSWindow* window = (NSWindow*)nsWindow;
+	// get window frame
+	NSRect frame = [window frame];
+	// set x and y
+	*x = frame.origin.x;
+	*y = frame.origin.y;
+}
 
 
 */
@@ -511,6 +550,41 @@ func (w *macosWindow) enableDevTools() {
 	C.windowEnableDevTools(w.nsWindow)
 }
 
+func (w *macosWindow) size() (int, int) {
+	var width, height C.int
+	var wg sync.WaitGroup
+	wg.Add(1)
+	Dispatch(func() {
+		C.windowGetSize(w.nsWindow, &width, &height)
+		wg.Done()
+	})
+	wg.Wait()
+	return int(width), int(height)
+}
+
+func (w *macosWindow) width() int {
+	var width C.int
+	var wg sync.WaitGroup
+	wg.Add(1)
+	Dispatch(func() {
+		width = C.windowGetWidth(w.nsWindow)
+		wg.Done()
+	})
+	wg.Wait()
+	return int(width)
+}
+func (w *macosWindow) height() int {
+	var height C.int
+	var wg sync.WaitGroup
+	wg.Add(1)
+	Dispatch(func() {
+		height = C.windowGetHeight(w.nsWindow)
+		wg.Done()
+	})
+	wg.Wait()
+	return int(height)
+}
+
 func (w *macosWindow) run() {
 	Dispatch(func() {
 		w.nsWindow = C.windowNew(C.uint(w.id), C.int(w.options.Width), C.int(w.options.Height))
@@ -575,6 +649,14 @@ func (w *macosWindow) setBackgroundColor(colour *options.RGBA) {
 	C.webviewSetBackgroundColor(w.nsWindow, C.int(colour.Red), C.int(colour.Green), C.int(colour.Blue), C.int(colour.Alpha))
 }
 
-func (w *macosWindow) Center() {
-	C.windowCenter(w.nsWindow)
+func (w *macosWindow) position() (int, int) {
+	var x, y C.int
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go Dispatch(func() {
+		C.windowGetPosition(w.nsWindow, &x, &y)
+		wg.Done()
+	})
+	wg.Wait()
+	return int(x), int(y)
 }

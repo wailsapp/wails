@@ -2,9 +2,15 @@ package application
 
 import (
 	"log"
+	"runtime"
+	"sync"
 
 	"github.com/wailsapp/wails/exp/pkg/options"
 )
+
+func init() {
+	runtime.LockOSThread()
+}
 
 // Messages sent from javascript get routed here
 type windowMessage struct {
@@ -22,8 +28,10 @@ type App struct {
 	options                   *options.Application
 	applicationEventListeners map[uint][]func()
 
-	windows       map[uint]*Window
-	windowAliases map[string]uint
+	windows           map[uint]*Window
+	windowsLock       sync.Mutex
+	windowAliases     map[string]uint
+	windowAliasesLock sync.Mutex
 
 	// Running
 	running bool
@@ -47,12 +55,17 @@ func (a *App) NewWindow(options *options.Window) *Window {
 	if a.windows == nil {
 		a.windows = make(map[uint]*Window)
 	}
+	a.windowsLock.Lock()
 	a.windows[id] = newWindow
+	a.windowsLock.Unlock()
+
 	if options.Alias != "" {
 		if a.windowAliases == nil {
 			a.windowAliases = make(map[string]uint)
 		}
+		a.windowAliasesLock.Lock()
 		a.windowAliases[options.Alias] = id
+		a.windowAliasesLock.Unlock()
 	}
 	if a.running {
 		newWindow.Run()
@@ -93,7 +106,9 @@ func (a *App) Run() error {
 
 func (a *App) handleMessage(event *windowMessage) {
 	// Get window from window map
+	a.windowsLock.Lock()
 	window, ok := a.windows[event.windowId]
+	a.windowsLock.Unlock()
 	if !ok {
 		log.Printf("Window #%d not found", event.windowId)
 		return
@@ -104,7 +119,9 @@ func (a *App) handleMessage(event *windowMessage) {
 
 func (a *App) handleWindowEvent(event *WindowEvent) {
 	// Get window from window map
+	a.windowsLock.Lock()
 	window, ok := a.windows[event.WindowID]
+	a.windowsLock.Unlock()
 	if !ok {
 		log.Printf("Window #%d not found", event.WindowID)
 		return

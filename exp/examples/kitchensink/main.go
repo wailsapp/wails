@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"sync"
 	"time"
 
 	"github.com/wailsapp/wails/exp/pkg/application"
@@ -63,10 +64,12 @@ func main() {
 		println(myWindow.ID(), "WindowWillClose")
 	})
 	myWindow.On(events.Mac.WindowDidResize, func() {
-		println(myWindow.ID(), "WindowDidResize")
+		w, h := myWindow.Size()
+		println(myWindow.ID(), "WindowDidResize", w, h)
 	})
 	myWindow.On(events.Mac.WindowDidMove, func() {
-		println(myWindow.ID(), "WindowDidMove")
+		x, y := myWindow.Position()
+		println(myWindow.ID(), "WindowDidMove", x, y)
 	})
 	myWindow.On(events.Mac.WindowDidMiniaturize, func() {
 		println(myWindow.ID(), "WindowDidMiniaturize")
@@ -112,36 +115,28 @@ func main() {
 	})
 
 	var myWindow2 *application.Window
-	go func() {
-		time.Sleep(2 * time.Second)
-		myWindow2 = app.NewWindow(&options.Window{
-			Title:         "#2",
-			Width:         1024,
-			Height:        768,
-			AlwaysOnTop:   false,
-			URL:           "https://google.com",
-			DisableResize: true,
-			Mac: &options.MacWindow{
-				Backdrop: options.MacBackdropTranslucent,
-			},
-		})
-
-	}()
-
-	go func() {
-		for {
-			time.Sleep(5 * time.Second)
-			println("window 1 is fullscreen?", myWindow.IsFullscreen())
-			println("window 2 is fullscreen?", myWindow2.IsFullscreen())
-			println("window 1 is maximised?", myWindow.IsMaximised())
-			println("window 2 is maximised?", myWindow2.IsMaximised())
-			println("window 1 is minimised?", myWindow.IsMinimised())
-			println("window 2 is minimised?", myWindow2.IsMinimised())
-		}
-	}()
+	var myWindow2Lock sync.RWMutex
+	myWindow2 = app.NewWindow(&options.Window{
+		Title:       "#2",
+		Width:       1024,
+		Height:      768,
+		AlwaysOnTop: false,
+		URL:         "https://google.com",
+		Mac: &options.MacWindow{
+			Backdrop: options.MacBackdropTranslucent,
+		},
+	})
+	//myWindow2.On(events.Mac.WindowDidMove, func() {
+	//	myWindow2Lock.RLock()
+	//	x, y := myWindow2.Position()
+	//	println(myWindow2.ID(), "WindowDidMove: ", x, y)
+	//	myWindow2Lock.RUnlock()
+	//})
+	//
 
 	go func() {
 		time.Sleep(5 * time.Second)
+		myWindow2Lock.RLock()
 		myWindow.SetTitle("Wooooo")
 		myWindow.SetAlwaysOnTop(true)
 		myWindow2.EnableDevTools()
@@ -150,6 +145,7 @@ func main() {
 		myWindow.SetMinSize(600, 600)
 		myWindow.SetMaxSize(650, 650)
 		myWindow.Center()
+		myWindow2Lock.RUnlock()
 
 	}()
 

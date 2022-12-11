@@ -6,9 +6,13 @@ package application
 extern void dispatch(unsigned int id);
 */
 import "C"
-import "strconv"
+import (
+	"os"
+	"sync"
+)
 
 var mainThreadFuntionStore = make(map[uint]func())
+var mainThreadFuntionStoreLock sync.RWMutex
 
 func generateFunctionStoreID() uint {
 	startID := 0
@@ -24,18 +28,23 @@ func generateFunctionStoreID() uint {
 }
 
 func Dispatch(fn func()) {
+	mainThreadFuntionStoreLock.Lock()
 	id := generateFunctionStoreID()
 	mainThreadFuntionStore[id] = fn
+	mainThreadFuntionStoreLock.Unlock()
 	C.dispatch(C.uint(id))
 }
 
 //export dispatchCallback
-func dispatchCallback(id C.uint) {
-
-	fn := mainThreadFuntionStore[uint(id)]
+func dispatchCallback(callbackID C.uint) {
+	mainThreadFuntionStoreLock.RLock()
+	id := uint(callbackID)
+	fn := mainThreadFuntionStore[id]
 	if fn == nil {
-		panic("dispatchCallback called with invalid id " + strconv.Itoa(int(id)))
+		println("***** dispatchCallback called with invalid id: ", id)
+		os.Exit(1)
 	}
+	delete(mainThreadFuntionStore, id)
+	mainThreadFuntionStoreLock.RUnlock()
 	fn()
-	delete(mainThreadFuntionStore, uint(id))
 }

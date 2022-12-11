@@ -27,14 +27,20 @@ type windowImpl interface {
 	setBackgroundColor(color *options.RGBA)
 	run()
 	center()
+	size() (int, int)
+	width() int
+	height() int
+	position() (int, int)
 }
 
 type Window struct {
-	options *options.Window
-	impl    windowImpl
-	id      uint
+	options  *options.Window
+	impl     windowImpl
+	implLock sync.RWMutex
+	id       uint
 
-	eventListeners map[uint][]func()
+	eventListeners     map[uint][]func()
+	eventListenersLock sync.RWMutex
 }
 
 var windowID uint
@@ -48,7 +54,6 @@ func getWindowID() uint {
 }
 
 func NewWindow(options *options.Window) *Window {
-
 	return &Window{
 		id:             getWindowID(),
 		options:        options,
@@ -57,6 +62,8 @@ func NewWindow(options *options.Window) *Window {
 }
 
 func (w *Window) SetTitle(title string) {
+	w.implLock.RLock()
+	defer w.implLock.RUnlock()
 	if w.impl == nil {
 		w.options.Title = title
 		return
@@ -74,7 +81,9 @@ func (w *Window) SetSize(width, height int) {
 }
 
 func (w *Window) Run() {
+	w.implLock.Lock()
 	w.impl = newWindowImpl(w.id, w.options)
+	w.implLock.Unlock()
 	w.impl.run()
 }
 
@@ -191,8 +200,18 @@ func (w *Window) IsMaximised() bool {
 	return w.impl.isMaximised()
 }
 
+// Size returns the current size of the window
+func (w *Window) Size() (int, int) {
+	if w.impl == nil {
+		return 0, 0
+	}
+	return w.impl.size()
+}
+
 // IsFullscreen returns true if the window is fullscreen
 func (w *Window) IsFullscreen() bool {
+	w.implLock.RLock()
+	defer w.implLock.RUnlock()
 	if w.impl == nil {
 		return false
 	}
@@ -223,15 +242,42 @@ func (w *Window) Center() {
 }
 
 func (w *Window) On(eventID uint, callback func()) {
+	w.eventListenersLock.Lock()
 	w.eventListeners[eventID] = append(w.eventListeners[eventID], callback)
+	w.eventListenersLock.Unlock()
 }
 
 func (w *Window) handleWindowEvent(id uint) {
+	w.eventListenersLock.RLock()
 	for _, callback := range w.eventListeners[id] {
-		callback()
+		go callback()
 	}
+	w.eventListenersLock.RUnlock()
 }
 
 func (w *Window) ID() uint {
 	return w.id
+}
+
+func (w *Window) Width() int {
+	if w.impl == nil {
+		return 0
+	}
+	return w.impl.width()
+}
+
+func (w *Window) Height() int {
+	if w.impl == nil {
+		return 0
+	}
+	return w.impl.height()
+}
+
+func (w *Window) Position() (int, int) {
+	w.implLock.RLock()
+	defer w.implLock.RUnlock()
+	if w.impl == nil {
+		return 0, 0
+	}
+	return w.impl.position()
 }
