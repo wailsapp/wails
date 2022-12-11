@@ -55,9 +55,55 @@
     systemEventHandler(EventApplicationDidUnhide);
 }
 
+- (void)applicationWillResignActive:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationWillResignActive);
+}
 
+- (void)applicationWillUpdate:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationWillUpdate);
+}
 
+- (void)applicationDidUpdate:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationDidUpdate);
+}
 
+- (void)applicationDidChangeScreenParameters:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationDidChangeScreenParameters);
+}
+
+- (void)applicationDidChangeOcclusionState:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationDidChangeOcclusionState);
+}
+
+- (void)applicationDidChangeBackingProperties:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationDidChangeBackingProperties);
+}
+
+- (void)applicationDidChangeIcon:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationDidChangeIcon);
+}
+
+- (void)applicationDidChangeEffectiveAppearance:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationDidChangeEffectiveAppearance);
+}
+
+- (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationDidChangeStatusBarOrientation);
+}
+
+- (void)applicationDidChangeStatusBarFrame:(NSNotification *)aNotification
+{
+    systemEventHandler(EventApplicationDidChangeStatusBarFrame);
+}
 
 
 @end

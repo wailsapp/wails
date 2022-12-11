@@ -3,29 +3,49 @@ package events
 var Mac = newMacEvents()
 
 type macEvents struct {
-	ApplicationDidFinishLaunching  string
-	ApplicationWillTerminate       string
-	ApplicationDidBecomeActive     string
-	ApplicationWillUpdate          string
-	ApplicationDidUpdate           string
-	ApplicationWillFinishLaunching string
-	ApplicationWillHide            string
-	ApplicationWillUnhide          string
-	ApplicationDidHide             string
-	ApplicationDidUnhide           string
+	ApplicationWillFinishLaunching           string
+	ApplicationDidFinishLaunching            string
+	ApplicationWillBecomeActive              string
+	ApplicationDidBecomeActive               string
+	ApplicationWillUpdate                    string
+	ApplicationDidUpdate                     string
+	ApplicationWillHide                      string
+	ApplicationDidHide                       string
+	ApplicationWillUnhide                    string
+	ApplicationDidUnhide                     string
+	ApplicationWillResignActive              string
+	ApplicationDidResignActive               string
+	ApplicationWillTerminate                 string
+	ApplicationDidChangeOcclusionState       string
+	ApplicationDidChangeScreenParameters     string
+	ApplicationDidChangeBackingProperties    string
+	ApplicationDidChangeIcon                 string
+	ApplicationDidChangeStatusBarOrientation string
+	ApplicationDidChangeStatusBarFrame       string
+	ApplicationDidChangeEffectiveAppearance  string
 }
 
 func newMacEvents() macEvents {
 	return macEvents{
-		ApplicationDidFinishLaunching:  "mac:ApplicationDidFinishLaunching",
-		ApplicationWillTerminate:       "mac:ApplicationWillTerminate",
-		ApplicationDidBecomeActive:     "mac:ApplicationDidBecomeActive",
-		ApplicationWillUpdate:          "mac:ApplicationWillUpdate",
-		ApplicationDidUpdate:           "mac:ApplicationDidUpdate",
-		ApplicationWillFinishLaunching: "mac:ApplicationWillFinishLaunching",
-		ApplicationWillHide:            "mac:ApplicationWillHide",
-		ApplicationWillUnhide:          "mac:ApplicationWillUnhide",
-		ApplicationDidHide:             "mac:ApplicationDidHide",
-		ApplicationDidUnhide:           "mac:ApplicationDidUnhide",
+		ApplicationWillFinishLaunching:           "mac:ApplicationWillFinishLaunching",
+		ApplicationDidFinishLaunching:            "mac:ApplicationDidFinishLaunching",
+		ApplicationWillBecomeActive:              "mac:ApplicationWillBecomeActive",
+		ApplicationDidBecomeActive:               "mac:ApplicationDidBecomeActive",
+		ApplicationWillUpdate:                    "mac:ApplicationWillUpdate",
+		ApplicationDidUpdate:                     "mac:ApplicationDidUpdate",
+		ApplicationWillHide:                      "mac:ApplicationWillHide",
+		ApplicationDidHide:                       "mac:ApplicationDidHide",
+		ApplicationWillUnhide:                    "mac:ApplicationWillUnhide",
+		ApplicationDidUnhide:                     "mac:ApplicationDidUnhide",
+		ApplicationWillResignActive:              "mac:ApplicationWillResignActive",
+		ApplicationDidResignActive:               "mac:ApplicationDidResignActive",
+		ApplicationWillTerminate:                 "mac:ApplicationWillTerminate",
+		ApplicationDidChangeOcclusionState:       "mac:ApplicationDidChangeOcclusionState",
+		ApplicationDidChangeScreenParameters:     "mac:ApplicationDidChangeScreenParameters",
+		ApplicationDidChangeBackingProperties:    "mac:ApplicationDidChangeBackingProperties",
+		ApplicationDidChangeIcon:                 "mac:ApplicationDidChangeIcon",
+		ApplicationDidChangeStatusBarOrientation: "mac:ApplicationDidChangeStatusBarOrientation",
+		ApplicationDidChangeStatusBarFrame:       "mac:ApplicationDidChangeStatusBarFrame",
+		ApplicationDidChangeEffectiveAppearance:  "mac:ApplicationDidChangeEffectiveAppearance",
 	}
 }

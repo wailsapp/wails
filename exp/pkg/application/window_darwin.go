@@ -3,7 +3,7 @@
 package application
 
 /*
-#cgo CFLAGS: -mmacosx-version-min=10.10 -x objective-c
+#cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
 #cgo LDFLAGS: -framework Cocoa -framework WebKit
 
 #include "application.h"
@@ -16,7 +16,7 @@ package application
 // Create a new Window
 void* windowNew(unsigned int id, int width, int height) {
 	NSWindow* window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
-		styleMask:NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask
+		styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskMiniaturizable
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
@@ -123,7 +123,7 @@ void navigationLoadURL(void* nsWindow, char* url) {
 void windowSetResizable(void* nsWindow, bool resizable) {
 	// Set window resizable on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[(NSWindow*)nsWindow setStyleMask:resizable ? NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | NSResizableWindowMask : NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask];
+		[(NSWindow*)nsWindow setStyleMask:resizable ? NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskMiniaturizable : NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable];
 	});
 }
 
@@ -258,7 +258,7 @@ void windowRestore(void* nsWindow) {
 	// Set window normal on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		// If window is fullscreen
-		if([(NSWindow*)nsWindow styleMask] & NSFullScreenWindowMask) {
+		if([(NSWindow*)nsWindow styleMask] & NSWindowStyleMaskFullScreen) {
 			[(NSWindow*)nsWindow toggleFullScreen:nil];
 		}
 		// If window is maximised
@@ -273,30 +273,16 @@ void windowRestore(void* nsWindow) {
 }
 
 bool windowIsMaximised(void* nsWindow) {
-	// Get window maximized on main thread
-	__block bool maximized = false;
-	dispatch_sync(dispatch_get_main_queue(), ^{
-		maximized = [(NSWindow*)nsWindow isZoomed];
-	});
-	return maximized;
+	return [(NSWindow*)nsWindow isZoomed];
 }
 
 bool windowIsFullscreen(void* nsWindow) {
 	// Get window fullscreen on main thread
-	__block bool fullscreen = false;
-	dispatch_sync(dispatch_get_main_queue(), ^{
-		fullscreen = [(NSWindow*)nsWindow styleMask] & NSFullScreenWindowMask;
-	});
-	return fullscreen;
+	return [(NSWindow*)nsWindow styleMask] & NSWindowStyleMaskFullScreen;
 }
 
 bool windowIsMinimised(void* nsWindow) {
-	// Get window minimised on main thread
-	__block bool minimised = false;
-	dispatch_sync(dispatch_get_main_queue(), ^{
-		minimised = [(NSWindow*)nsWindow isMiniaturized];
-	});
-	return minimised;
+	return [(NSWindow*)nsWindow isMiniaturized];
 }
 
 // Set the titlebar style
@@ -416,6 +402,7 @@ void windowCenter(void* nsWindow) {
 */
 import "C"
 import (
+	"sync"
 	"unsafe"
 
 	"github.com/wailsapp/wails/exp/pkg/options"
@@ -432,20 +419,38 @@ func (w *macosWindow) center() {
 }
 
 func (w *macosWindow) isMinimised() bool {
-	return C.windowIsMinimised(w.nsWindow) == C.bool(true)
+	return w.syncMainThreadReturningBool(func() bool {
+		return C.windowIsMinimised(w.nsWindow) == C.bool(true)
+	})
 }
 
 func (w *macosWindow) isMaximised() bool {
-	return C.windowIsMaximised(w.nsWindow) == C.bool(true)
+	return w.syncMainThreadReturningBool(func() bool {
+		return C.windowIsMaximised(w.nsWindow) == C.bool(true)
+	})
 }
 
 func (w *macosWindow) isFullscreen() bool {
-	return C.windowIsFullscreen(w.nsWindow) == C.bool(true)
+	return w.syncMainThreadReturningBool(func() bool {
+		return C.windowIsFullscreen(w.nsWindow) == C.bool(true)
+	})
+}
+
+func (w *macosWindow) syncMainThreadReturningBool(fn func() bool) bool {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	var result bool
+	Dispatch(func() {
+		result = fn()
+		wg.Done()
+	})
+	wg.Done()
+	return result
 }
 
 func (w *macosWindow) restore() {
-	//TODO implement me
-	panic("implement me")
+	// restore window to normal size
+	C.windowRestore(w.nsWindow)
 }
 
 func (w *macosWindow) setMaximised() {
