@@ -16,94 +16,96 @@
     [NSApp activateIgnoringOtherApps:YES];
 
     //callOnApplicationDidFinishLaunchingHandler();
-    systemEventHandler(EventApplicationDidFinishLaunching);
+    applicationEventHandler(EventApplicationDidFinishLaunching);
 
 }
+
 
 - (void)setApplicationActivationPolicy:(NSApplicationActivationPolicy)policy
 {
     self.activationPolicy = policy;
 }
 
-- (void)applicationWillTerminate:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationWillTerminate);
+// GENERATED EVENTS START
+- (void)applicationDidBecomeActive:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationDidBecomeActive);
 }
 
-- (void)applicationDidBecomeActive:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationDidBecomeActive);
+- (void)applicationDidChangeBackingProperties:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationDidChangeBackingProperties);
 }
 
-- (void)applicationWillHide:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationWillHide);
+- (void)applicationDidChangeEffectiveAppearance:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationDidChangeEffectiveAppearance);
 }
 
-- (void)applicationDidHide:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationDidHide);
+- (void)applicationDidChangeIcon:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationDidChangeIcon);
 }
 
-- (void)applicationWillUnhide:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationWillUnhide);
+- (void)applicationDidChangeOcclusionState:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationDidChangeOcclusionState);
 }
 
-- (void)applicationDidUnhide:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationDidUnhide);
+- (void)applicationDidChangeScreenParameters:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationDidChangeScreenParameters);
 }
 
-- (void)applicationWillResignActive:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationWillResignActive);
+- (void)applicationDidChangeStatusBarFrame:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationDidChangeStatusBarFrame);
 }
 
-- (void)applicationWillUpdate:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationWillUpdate);
+- (void)applicationDidChangeStatusBarOrientation:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationDidChangeStatusBarOrientation);
 }
 
-- (void)applicationDidUpdate:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationDidUpdate);
+- (void)applicationDidHide:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationDidHide);
 }
 
-- (void)applicationDidChangeScreenParameters:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationDidChangeScreenParameters);
+- (void)applicationDidResignActive:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationDidResignActive);
 }
 
-- (void)applicationDidChangeOcclusionState:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationDidChangeOcclusionState);
+- (void)applicationDidUnhide:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationDidUnhide);
 }
 
-- (void)applicationDidChangeBackingProperties:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationDidChangeBackingProperties);
+- (void)applicationDidUpdate:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationDidUpdate);
 }
 
-- (void)applicationDidChangeIcon:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationDidChangeIcon);
+- (void)applicationWillBecomeActive:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationWillBecomeActive);
 }
 
-- (void)applicationDidChangeEffectiveAppearance:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationDidChangeEffectiveAppearance);
+- (void)applicationWillFinishLaunching:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationWillFinishLaunching);
 }
 
-- (void)applicationDidChangeStatusBarOrientation:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationDidChangeStatusBarOrientation);
+- (void)applicationWillHide:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationWillHide);
 }
 
-- (void)applicationDidChangeStatusBarFrame:(NSNotification *)aNotification
-{
-    systemEventHandler(EventApplicationDidChangeStatusBarFrame);
+- (void)applicationWillResignActive:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationWillResignActive);
 }
 
+- (void)applicationWillTerminate:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationWillTerminate);
+}
+
+- (void)applicationWillUnhide:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationWillUnhide);
+}
+
+- (void)applicationWillUpdate:(NSNotification *)notification {
+    applicationEventHandler(EventApplicationWillUpdate);
+}
+
+// GENERATED EVENTS END
 
 @end
+
+
+

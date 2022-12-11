@@ -20,8 +20,8 @@ func New(options *options.Application) *App {
 		C.SetActivationPolicy(C.int(options.Mac.ActivationPolicy))
 	}
 	return &App{
-		options:              options,
-		systemEventListeners: make(map[string][]func()),
+		options:                   options,
+		applicationEventListeners: make(map[uint][]func()),
 	}
 }
 
@@ -30,8 +30,8 @@ func (a *App) run() error {
 	return nil
 }
 
-func (a *App) handleSystemEvent(event string) {
-	listeners, ok := a.systemEventListeners[event]
+func (a *App) handleApplicationEvent(event uint) {
+	listeners, ok := a.applicationEventListeners[event]
 	if !ok {
 		return
 	}
@@ -40,10 +40,17 @@ func (a *App) handleSystemEvent(event string) {
 	}
 }
 
-//export systemEventHandler
-func systemEventHandler(name *C.char) {
-	goString := C.GoString(name)
-	systemEvents <- goString
+//export applicationEventHandler
+func applicationEventHandler(eventID C.uint) {
+	applicationEvents <- uint(eventID)
+}
+
+//export windowEventHandler
+func windowEventHandler(windowID C.uint, eventID C.uint) {
+	windowEvents <- &WindowEvent{
+		WindowID: uint(windowID),
+		EventID:  uint(eventID),
+	}
 }
 
 //export processMessage

@@ -1,3 +1,10 @@
 package application
 
-var systemEvents = make(chan string)
+var applicationEvents = make(chan uint)
+
+type WindowEvent struct {
+	WindowID uint
+	EventID  uint
+}
+
+var windowEvents = make(chan *WindowEvent)

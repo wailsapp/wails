@@ -19,8 +19,8 @@ type Application interface {
 }
 
 type App struct {
-	options              *options.Application
-	systemEventListeners map[string][]func()
+	options                   *options.Application
+	applicationEventListeners map[uint][]func()
 
 	windows map[uint]*Window
 
@@ -28,8 +28,8 @@ type App struct {
 	running bool
 }
 
-func (a *App) On(s string, callback func()) {
-	a.systemEventListeners[s] = append(a.systemEventListeners[s], callback)
+func (a *App) On(eventID uint, callback func()) {
+	a.applicationEventListeners[eventID] = append(a.applicationEventListeners[eventID], callback)
 }
 
 func (a *App) NewWindow(options *options.Window) *Window {
@@ -59,8 +59,14 @@ func (a *App) Run() error {
 	a.running = true
 	go func() {
 		for {
-			event := <-systemEvents
-			a.handleSystemEvent(event)
+			event := <-applicationEvents
+			a.handleApplicationEvent(event)
+		}
+	}()
+	go func() {
+		for {
+			event := <-windowEvents
+			a.handleWindowEvent(event)
 		}
 	}()
 	go func() {
@@ -87,4 +93,14 @@ func (a *App) handleMessage(event *windowMessage) {
 	}
 	// Get callback from window
 	window.handleMessage(event.message)
+}
+
+func (a *App) handleWindowEvent(event *WindowEvent) {
+	// Get window from window map
+	window, ok := a.windows[event.WindowID]
+	if !ok {
+		log.Printf("Window #%d not found", event.WindowID)
+		return
+	}
+	window.handleWindowEvent(event.EventID)
 }

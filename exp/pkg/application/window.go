@@ -33,6 +33,8 @@ type Window struct {
 	options *options.Window
 	impl    windowImpl
 	id      uint
+
+	eventListeners map[uint][]func()
 }
 
 var windowID uint
@@ -47,8 +49,9 @@ func getWindowID() uint {
 
 func NewWindow(options *options.Window) *Window {
 	return &Window{
-		id:      getWindowID(),
-		options: options,
+		id:             getWindowID(),
+		options:        options,
+		eventListeners: make(map[uint][]func()),
 	}
 }
 
@@ -216,4 +219,18 @@ func (w *Window) Center() {
 		return
 	}
 	w.impl.center()
+}
+
+func (w *Window) On(eventID uint, callback func()) {
+	w.eventListeners[eventID] = append(w.eventListeners[eventID], callback)
+}
+
+func (w *Window) handleWindowEvent(id uint) {
+	for _, callback := range w.eventListeners[id] {
+		callback()
+	}
+}
+
+func (w *Window) ID() uint {
+	return w.id
 }
