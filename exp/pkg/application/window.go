@@ -48,6 +48,7 @@ func getWindowID() uint {
 }
 
 func NewWindow(options *options.Window) *Window {
+
 	return &Window{
 		id:             getWindowID(),
 		options:        options,

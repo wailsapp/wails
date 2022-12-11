@@ -22,7 +22,8 @@ type App struct {
 	options                   *options.Application
 	applicationEventListeners map[uint][]func()
 
-	windows map[uint]*Window
+	windows       map[uint]*Window
+	windowAliases map[string]uint
 
 	// Running
 	running bool
@@ -47,6 +48,12 @@ func (a *App) NewWindow(options *options.Window) *Window {
 		a.windows = make(map[uint]*Window)
 	}
 	a.windows[id] = newWindow
+	if options.Alias != "" {
+		if a.windowAliases == nil {
+			a.windowAliases = make(map[string]uint)
+		}
+		a.windowAliases[options.Alias] = id
+	}
 	if a.running {
 		newWindow.Run()
 	}
