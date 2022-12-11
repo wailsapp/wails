@@ -63,6 +63,18 @@ func main() {
 	}()
 
 	go func() {
+		for {
+			time.Sleep(5 * time.Second)
+			println("window 1 is fullscreen?", myWindow.IsFullscreen())
+			println("window 2 is fullscreen?", myWindow2.IsFullscreen())
+			println("window 1 is maximised?", myWindow.IsMaximised())
+			println("window 2 is maximised?", myWindow2.IsMaximised())
+			println("window 1 is minimised?", myWindow.IsMinimised())
+			println("window 2 is minimised?", myWindow2.IsMinimised())
+		}
+	}()
+
+	go func() {
 		time.Sleep(5 * time.Second)
 		myWindow.SetTitle("Wooooo")
 		myWindow.SetAlwaysOnTop(true)

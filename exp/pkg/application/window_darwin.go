@@ -16,7 +16,7 @@ package application
 // Create a new Window
 void* windowNew(unsigned int id, int width, int height) {
 	NSWindow* window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
-		styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskMiniaturizable
+		styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
 		backing:NSBackingStoreBuffered
 		defer:NO];
 
@@ -123,7 +123,7 @@ void navigationLoadURL(void* nsWindow, char* url) {
 void windowSetResizable(void* nsWindow, bool resizable) {
 	// Set window resizable on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[(NSWindow*)nsWindow setStyleMask:resizable ? NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskMiniaturizable : NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable];
+		[(NSWindow*)nsWindow setStyleMask:resizable ? NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable : NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable];
 	});
 }
 
@@ -277,7 +277,6 @@ bool windowIsMaximised(void* nsWindow) {
 }
 
 bool windowIsFullscreen(void* nsWindow) {
-	// Get window fullscreen on main thread
 	return [(NSWindow*)nsWindow styleMask] & NSWindowStyleMaskFullScreen;
 }
 
@@ -444,7 +443,7 @@ func (w *macosWindow) syncMainThreadReturningBool(fn func() bool) bool {
 		result = fn()
 		wg.Done()
 	})
-	wg.Done()
+	wg.Wait()
 	return result
 }
 
