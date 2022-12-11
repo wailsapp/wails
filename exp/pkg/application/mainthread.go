@@ -7,7 +7,6 @@ extern void dispatch(unsigned int id);
 */
 import "C"
 import (
-	"os"
 	"sync"
 )
 
@@ -22,7 +21,7 @@ func generateFunctionStoreID() uint {
 		}
 		startID++
 		if startID == 0 {
-			panic("Too many functions stored")
+			Fatal("Too many functions have been dispatched to the main thread")
 		}
 	}
 }
@@ -41,8 +40,7 @@ func dispatchCallback(callbackID C.uint) {
 	id := uint(callbackID)
 	fn := mainThreadFuntionStore[id]
 	if fn == nil {
-		println("***** dispatchCallback called with invalid id: ", id)
-		os.Exit(1)
+		Fatal("dispatchCallback called with invalid id: ", id)
 	}
 	delete(mainThreadFuntionStore, id)
 	mainThreadFuntionStoreLock.RUnlock()
