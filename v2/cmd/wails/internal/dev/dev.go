@@ -96,11 +96,6 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 
 	buildOptions.UserTags = userTags
 
-	err = build.CreateEmbedDirectories(cwd, buildOptions)
-	if err != nil {
-		return err
-	}
-
 	projectConfig := f.ProjectConfig()
 
 	// Setup signal handler
