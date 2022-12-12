@@ -4,10 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v2/cmd/wails/flags"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/gomod"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/logutils"
 	"io"
 	"net/http"
 	"net/url"
@@ -22,7 +18,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v2/cmd/wails/flags"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/gomod"
+	"github.com/wailsapp/wails/v2/cmd/wails/internal/logutils"
+
 	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 
 	"github.com/google/shlex"
@@ -102,23 +102,6 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 	}
 
 	projectConfig := f.ProjectConfig()
-
-	if !buildOptions.SkipBindings {
-		if f.Verbosity == build.VERBOSE {
-			logutils.LogGreen("Generating Bindings...")
-		}
-		stdout, err := bindings.GenerateBindings(bindings.Options{
-			Tags:     buildOptions.UserTags,
-			TsPrefix: projectConfig.Bindings.TsGeneration.Prefix,
-			TsSuffix: projectConfig.Bindings.TsGeneration.Suffix,
-		})
-		if err != nil {
-			return err
-		}
-		if f.Verbosity == build.VERBOSE {
-			logutils.LogGreen(stdout)
-		}
-	}
 
 	// Setup signal handler
 	quitChannel := make(chan os.Signal, 1)
