@@ -2,13 +2,15 @@ package gomod
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/wailsapp/wails/v2/cmd/wails/internal"
 	"github.com/wailsapp/wails/v2/internal/colour"
 	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/internal/gomod"
 	"github.com/wailsapp/wails/v2/internal/goversion"
 	"github.com/wailsapp/wails/v2/pkg/clilogger"
-	"os"
 )
 
 func SyncGoMod(logger *clilogger.CLILogger, updateWailsVersion bool) error {
@@ -32,12 +34,13 @@ func SyncGoMod(logger *clilogger.CLILogger, updateWailsVersion bool) error {
 		LogGreen("Updated go.mod to use Go '%s'", goversion.MinRequirement)
 	}
 
-	if outOfSync, err := gomod.GoModOutOfSync(gomodData, internal.Version); err != nil {
+	internalVersion := strings.TrimSpace(internal.Version)
+	if outOfSync, err := gomod.GoModOutOfSync(gomodData, strings.TrimSpace(internalVersion)); err != nil {
 		return err
 	} else if outOfSync {
 		if updateWailsVersion {
-			LogGreen("Updating go.mod to use Wails '%s'", internal.Version)
-			gomodData, err = gomod.UpdateGoModVersion(gomodData, internal.Version)
+			LogGreen("Updating go.mod to use Wails '%s'", internalVersion)
+			gomodData, err = gomod.UpdateGoModVersion(gomodData, internalVersion)
 			if err != nil {
 				return err
 			}
