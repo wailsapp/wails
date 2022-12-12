@@ -35,7 +35,7 @@ func SyncGoMod(logger *clilogger.CLILogger, updateWailsVersion bool) error {
 	}
 
 	internalVersion := strings.TrimSpace(internal.Version)
-	if outOfSync, err := gomod.GoModOutOfSync(gomodData, strings.TrimSpace(internalVersion)); err != nil {
+	if outOfSync, err := gomod.GoModOutOfSync(gomodData, internalVersion); err != nil {
 		return err
 	} else if outOfSync {
 		if updateWailsVersion {
