@@ -62,7 +62,19 @@ func CreateCommand(directory string, command string, args ...string) *exec.Cmd {
 // RunCommand will run the given command + args in the given directory
 // Will return stdout, stderr and error
 func RunCommand(directory string, command string, args ...string) (string, string, error) {
+	return RunCommandWithEnv(nil, directory, command, args...)
+}
+
+// RunCommandWithEnv will run the given command + args in the given directory and using the specified env.
+//
+// Env specifies the environment of the process. Each entry is of the form "key=value".
+// If Env is nil, the new process uses the current process's environment.
+//
+// Will return stdout, stderr and error
+func RunCommandWithEnv(env []string, directory string, command string, args ...string) (string, string, error) {
 	cmd := CreateCommand(directory, command, args...)
+	cmd.Env = env
+
 	var stdo, stde bytes.Buffer
 	cmd.Stdout = &stdo
 	cmd.Stderr = &stde
