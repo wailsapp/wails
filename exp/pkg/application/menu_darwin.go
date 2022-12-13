@@ -57,6 +57,10 @@ func (m *macosMenu) update() {
 	} else {
 		C.clearMenu(m.nsMenu)
 	}
+	m.processMenu(m.nsMenu, m.menu)
+}
+
+func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 	for _, item := range m.menu.items {
 		switch item.itemType {
 		case text, checkbox:
@@ -68,4 +72,5 @@ func (m *macosMenu) update() {
 		}
 
 	}
+	//C.setMenu(parent, m.nsMenu)
 }

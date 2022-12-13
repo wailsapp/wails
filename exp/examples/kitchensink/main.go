@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"log"
+	"runtime"
 	"sync"
 	"time"
 
@@ -12,6 +13,9 @@ import (
 
 //go:embed icon.png
 var icon []byte
+
+//go:embed macos_icon.png
+var macosIcon []byte
 
 func main() {
 	app := application.New(&options.Application{
@@ -58,9 +62,15 @@ func main() {
 	myMenu.Add("File 4").OnClick(menuCallback)
 	myMenu.Add("File 5").OnClick(menuCallback)
 
+	//myMenu.AddSubmenu("File 6").OnClick(menuCallback)
+
 	mySystray := app.NewSystemTray()
 	mySystray.SetLabel("Wails is awesome")
-	mySystray.SetIcon(icon)
+	if runtime.GOOS == "darwin" {
+		mySystray.SetTemplateIcon(macosIcon)
+	} else {
+		mySystray.SetIcon(icon)
+	}
 	mySystray.SetMenu(myMenu)
 	mySystray.SetIconPosition(application.NSImageLeading)
 

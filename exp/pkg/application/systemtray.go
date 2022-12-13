@@ -20,6 +20,7 @@ type systemTrayImpl interface {
 	setIcon(icon []byte)
 	setMenu(menu *Menu)
 	setIconPosition(position int)
+	setTemplateIcon(icon []byte)
 }
 
 type SystemTray struct {
@@ -29,8 +30,9 @@ type SystemTray struct {
 	iconPosition int
 
 	// Platform specific implementation
-	impl systemTrayImpl
-	menu *Menu
+	impl           systemTrayImpl
+	menu           *Menu
+	isTemplateIcon bool
 }
 
 func NewSystemTray(id uint) *SystemTray {
@@ -81,6 +83,16 @@ func (s *SystemTray) SetIconPosition(iconPosition int) *SystemTray {
 		s.iconPosition = iconPosition
 	} else {
 		s.impl.setIconPosition(iconPosition)
+	}
+	return s
+}
+
+func (s *SystemTray) SetTemplateIcon(icon []byte) *SystemTray {
+	if s.impl == nil {
+		s.icon = icon
+		s.isTemplateIcon = true
+	} else {
+		s.impl.setTemplateIcon(icon)
 	}
 	return s
 }

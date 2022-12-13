@@ -35,7 +35,7 @@ NSImage* imageFromBytes(const unsigned char *bytes, int length) {
 }
 
 // Set the icon on the system tray
-void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position) {
+void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position, bool isTemplate) {
 	// Set the icon on the main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
@@ -44,6 +44,9 @@ void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position) {
 		NSStatusBar *statusBar = [NSStatusBar systemStatusBar];
 		CGFloat thickness = [statusBar thickness];
 		[image setSize:NSMakeSize(thickness, thickness)];
+		if( isTemplate ) {
+			[image setTemplate:YES];
+		}
 		statusItem.button.image = image;
 		statusItem.button.imagePosition = position;
 	});
@@ -71,10 +74,11 @@ type macosSystemTray struct {
 	icon  []byte
 	menu  *Menu
 
-	nsStatusItem unsafe.Pointer
-	nsImage      unsafe.Pointer
-	nsMenu       unsafe.Pointer
-	iconPosition int
+	nsStatusItem   unsafe.Pointer
+	nsImage        unsafe.Pointer
+	nsMenu         unsafe.Pointer
+	iconPosition   int
+	isTemplateIcon bool
 }
 
 func (s *macosSystemTray) setIconPosition(position int) {
@@ -96,7 +100,7 @@ func (s *macosSystemTray) run() {
 		}
 		if s.icon != nil {
 			s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&s.icon[0]), C.int(len(s.icon))))
-			C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition))
+			C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
 		}
 		if s.menu != nil {
 			s.menu.Update()
@@ -112,17 +116,27 @@ func (s *macosSystemTray) setIcon(icon []byte) {
 	s.icon = icon
 	DispatchOnMainThread(func() {
 		s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&icon[0]), C.int(len(icon))))
-		C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition))
+		C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
+	})
+}
+
+func (s *macosSystemTray) setTemplateIcon(icon []byte) {
+	s.icon = icon
+	s.isTemplateIcon = true
+	DispatchOnMainThread(func() {
+		s.nsImage = unsafe.Pointer(C.imageFromBytes((*C.uchar)(&icon[0]), C.int(len(icon))))
+		C.systemTraySetIcon(s.nsStatusItem, s.nsImage, C.int(s.iconPosition), C.bool(s.isTemplateIcon))
 	})
 }
 
 func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 	return &macosSystemTray{
-		id:           s.id,
-		label:        s.label,
-		icon:         s.icon,
-		menu:         s.menu,
-		iconPosition: s.iconPosition,
+		id:             s.id,
+		label:          s.label,
+		icon:           s.icon,
+		menu:           s.menu,
+		iconPosition:   s.iconPosition,
+		isTemplateIcon: s.isTemplateIcon,
 	}
 }
 
