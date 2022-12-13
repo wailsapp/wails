@@ -341,7 +341,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 			pterm.Warning.Println(message)
 		} else {
 			tags = append(tags, nativeWebView2Loader)
-			message := fmt.Sprintf("Wails is now using th new Go WebView2Loader. If you encounter any issues with it, please report them to https://github.com/wailsapp/wails/issues/2004. You could also use the old legacy loader with `-tags %s`, but keep in mind this will be deprecated in the near future.", strings.Join(tags, ","))
+			message := fmt.Sprintf("Wails is now using the new Go WebView2Loader. If you encounter any issues with it, please report them to https://github.com/wailsapp/wails/issues/2004. You could also use the old legacy loader with `-tags %s`, but keep in mind this will be deprecated in the near future.", strings.Join(tags, ","))
 			pterm.Info.Println(message)
 		}
 	}
