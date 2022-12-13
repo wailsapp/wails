@@ -1,22 +1,16 @@
-//go:build darwin
-
 package application
 
-/*
-extern void dispatch(unsigned int id);
-*/
-import "C"
 import (
 	"sync"
 )
 
-var mainThreadFuntionStore = make(map[uint]func())
-var mainThreadFuntionStoreLock sync.RWMutex
+var mainThreadFunctionStore = make(map[uint]func())
+var mainThreadFunctionStoreLock sync.RWMutex
 
 func generateFunctionStoreID() uint {
 	startID := 0
 	for {
-		if _, ok := mainThreadFuntionStore[uint(startID)]; !ok {
+		if _, ok := mainThreadFunctionStore[uint(startID)]; !ok {
 			return uint(startID)
 		}
 		startID++
@@ -26,23 +20,11 @@ func generateFunctionStoreID() uint {
 	}
 }
 
-func Dispatch(fn func()) {
-	mainThreadFuntionStoreLock.Lock()
+func DispatchOnMainThread(fn func()) {
+	mainThreadFunctionStoreLock.Lock()
 	id := generateFunctionStoreID()
-	mainThreadFuntionStore[id] = fn
-	mainThreadFuntionStoreLock.Unlock()
-	C.dispatch(C.uint(id))
-}
-
-//export dispatchCallback
-func dispatchCallback(callbackID C.uint) {
-	mainThreadFuntionStoreLock.RLock()
-	id := uint(callbackID)
-	fn := mainThreadFuntionStore[id]
-	if fn == nil {
-		Fatal("dispatchCallback called with invalid id: ", id)
-	}
-	delete(mainThreadFuntionStore, id)
-	mainThreadFuntionStoreLock.RUnlock()
-	fn()
+	mainThreadFunctionStore[id] = fn
+	mainThreadFunctionStoreLock.Unlock()
+	// Call platform specific dispatch function
+	platformDispatch(id)
 }

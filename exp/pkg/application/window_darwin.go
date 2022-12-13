@@ -493,7 +493,7 @@ func (w *macosWindow) syncMainThreadReturningBool(fn func() bool) bool {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	var result bool
-	Dispatch(func() {
+	DispatchOnMainThread(func() {
 		result = fn()
 		wg.Done()
 	})
@@ -569,7 +569,7 @@ func (w *macosWindow) size() (int, int) {
 	var width, height C.int
 	var wg sync.WaitGroup
 	wg.Add(1)
-	Dispatch(func() {
+	DispatchOnMainThread(func() {
 		C.windowGetSize(w.nsWindow, &width, &height)
 		wg.Done()
 	})
@@ -581,7 +581,7 @@ func (w *macosWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
 	wg.Add(1)
-	Dispatch(func() {
+	DispatchOnMainThread(func() {
 		width = C.windowGetWidth(w.nsWindow)
 		wg.Done()
 	})
@@ -592,7 +592,7 @@ func (w *macosWindow) height() int {
 	var height C.int
 	var wg sync.WaitGroup
 	wg.Add(1)
-	Dispatch(func() {
+	DispatchOnMainThread(func() {
 		height = C.windowGetHeight(w.nsWindow)
 		wg.Done()
 	})
@@ -601,7 +601,7 @@ func (w *macosWindow) height() int {
 }
 
 func (w *macosWindow) run() {
-	Dispatch(func() {
+	DispatchOnMainThread(func() {
 		w.nsWindow = C.windowNew(C.uint(w.id), C.int(w.options.Width), C.int(w.options.Height))
 		w.setTitle(w.options.Title)
 		w.setAlwaysOnTop(w.options.AlwaysOnTop)
@@ -668,7 +668,7 @@ func (w *macosWindow) position() (int, int) {
 	var x, y C.int
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go Dispatch(func() {
+	go DispatchOnMainThread(func() {
 		C.windowGetPosition(w.nsWindow, &x, &y)
 		wg.Done()
 	})

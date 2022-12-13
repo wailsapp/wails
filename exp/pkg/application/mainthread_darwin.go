@@ -10,7 +10,7 @@ package application
 
 extern void dispatchCallback(unsigned int);
 
-void dispatch(unsigned int id) {
+static void dispatch(unsigned int id) {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		dispatchCallback(id);
 	});
@@ -18,3 +18,20 @@ void dispatch(unsigned int id) {
 
 */
 import "C"
+
+func platformDispatch(id uint) {
+	C.dispatch(C.uint(id))
+}
+
+//export dispatchCallback
+func dispatchCallback(callbackID C.uint) {
+	mainThreadFunctionStoreLock.RLock()
+	id := uint(callbackID)
+	fn := mainThreadFunctionStore[id]
+	if fn == nil {
+		Fatal("dispatchCallback called with invalid id: ", id)
+	}
+	delete(mainThreadFunctionStore, id)
+	mainThreadFunctionStoreLock.RUnlock()
+	fn()
+}
