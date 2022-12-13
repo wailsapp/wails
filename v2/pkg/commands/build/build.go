@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/pterm/pterm"
-
 	"github.com/samber/lo"
+
 	"github.com/wailsapp/wails/v2/internal/staticanalysis"
 	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 
@@ -333,17 +333,17 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 	}
 
 	if options.Platform == "windows" {
-		const expWebView2Loader = "exp_gowebview2loader"
+		const nativeWebView2Loader = "native_webview2loader"
 
-		message := ""
 		tags := options.UserTags
-		if lo.Contains(tags, expWebView2Loader) {
-			message = "Thanks for testing the new experimental Go native WebView2Loader. Please report your feedback and any bugs you think might be related to using the new loader: https://github.com/wailsapp/wails/issues/2004"
+		if lo.Contains(tags, nativeWebView2Loader) {
+			message := "You are using the legacy native WebView2Loader. This loader will be deprecated in the near future. Please report any bugs related to the new loader: https://github.com/wailsapp/wails/issues/2004"
+			pterm.Warning.Println(message)
 		} else {
-			tags = append(tags, expWebView2Loader)
-			message = fmt.Sprintf("An experimental Go native WebView2Loader is available. We would love to hear your feedback about it and invite you to test it by building with `-tags %s`", strings.Join(tags, ","))
+			tags = append(tags, nativeWebView2Loader)
+			message := fmt.Sprintf("Wails is now using th new Go WebView2Loader. If you encounter any issues with it, please report them to https://github.com/wailsapp/wails/issues/2004. You could also use the old legacy loader with `-tags %s`, but keep in mind this will be deprecated in the near future.", strings.Join(tags, ","))
+			pterm.Info.Println(message)
 		}
-		pterm.Info.Println(message)
 	}
 
 	if options.Platform == "darwin" && options.Mode == Debug {

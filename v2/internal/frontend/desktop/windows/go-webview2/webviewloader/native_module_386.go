@@ -1,4 +1,4 @@
-//go:build !exp_gowebview2loader
+//go:build native_webview2loader
 
 package webviewloader
 
