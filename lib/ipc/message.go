@@ -55,7 +55,7 @@ func newIPCMessage(incomingMessage string, responseFunction func(*ipcResponse) e
 // hasCallbackID checks if the message can send an error back to the frontend
 func (m *ipcMessage) hasCallbackID() error {
 	if m.CallbackID == "" {
-		return fmt.Errorf("attempted to return error to message with no Callback ID")
+		return fmt.Errorf("attempted to return error to message with no callback ID")
 	}
 	return nil
 }

@@ -129,7 +129,7 @@ func (e *Events) notifyBackend(eventName string, data ...interface{}) {
 	// We have a dirty flag to indicate that there are items to delete
 	itemsToDelete := false
 
-	// Callback in goroutine
+	// callback in goroutine
 	for _, listener := range listeners {
 		if listener.counter > 0 {
 			listener.counter--

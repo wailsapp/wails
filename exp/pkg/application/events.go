@@ -8,3 +8,5 @@ type WindowEvent struct {
 }
 
 var windowEvents = make(chan *WindowEvent)
+
+var menuItemClicked = make(chan uint)

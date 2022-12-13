@@ -22,6 +22,7 @@ func New(options *options.Application) *App {
 	return &App{
 		options:                   options,
 		applicationEventListeners: make(map[uint][]func()),
+		systemTrays:               make(map[uint]*SystemTray),
 	}
 }
 
@@ -59,4 +60,9 @@ func processMessage(windowID C.uint, message *C.char) {
 		windowId: uint(windowID),
 		message:  C.GoString(message),
 	}
+}
+
+//export processMenuItemClick
+func processMenuItemClick(menuID C.uint) {
+	menuItemClicked <- uint(menuID)
 }

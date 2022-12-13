@@ -605,7 +605,7 @@ func (f *Frontend) processMessage(message string) {
 
 		switch result[0] {
 		case 'c':
-			// Callback from a method call
+			// callback from a method call
 			f.Callback(result[1:])
 		default:
 			f.logger.Info("Unknown message returned from dispatcher: %+v", result)
@@ -615,7 +615,7 @@ func (f *Frontend) processMessage(message string) {
 
 func (f *Frontend) Callback(message string) {
 	f.mainWindow.Invoke(func() {
-		f.chromium.Eval(`window.wails.Callback(` + strconv.Quote(message) + `);`)
+		f.chromium.Eval(`window.wails.callback(` + strconv.Quote(message) + `);`)
 	})
 }
 

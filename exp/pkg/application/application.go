@@ -28,15 +28,32 @@ type App struct {
 	options                   *options.Application
 	applicationEventListeners map[uint][]func()
 
+	// Windows
 	windows           map[uint]*Window
 	windowsLock       sync.Mutex
 	windowAliases     map[string]uint
 	windowAliasesLock sync.Mutex
 
+	// System Trays
+	systemTrays      map[uint]*SystemTray
+	systemTraysLock  sync.Mutex
+	systemTrayID     uint
+	systemTrayIDLock sync.RWMutex
+
+	// MenuItems
+	menuItems     map[uint]*MenuItem
+	menuItemsLock sync.Mutex
+
 	// Running
 	running bool
 }
 
+func (a *App) getSystemTrayID() uint {
+	a.systemTrayIDLock.Lock()
+	defer a.systemTrayIDLock.Unlock()
+	a.systemTrayID++
+	return a.systemTrayID
+}
 func (a *App) On(eventID uint, callback func()) {
 	a.applicationEventListeners[eventID] = append(a.applicationEventListeners[eventID], callback)
 }
@@ -74,6 +91,20 @@ func (a *App) NewWindow(options *options.Window) *Window {
 	return newWindow
 }
 
+func (a *App) NewSystemTray() *SystemTray {
+
+	id := a.getSystemTrayID()
+	newSystemTray := NewSystemTray(id)
+	a.systemTraysLock.Lock()
+	a.systemTrays[id] = newSystemTray
+	a.systemTraysLock.Unlock()
+
+	if a.running {
+		newSystemTray.Run()
+	}
+	return newSystemTray
+}
+
 func (a *App) Run() error {
 
 	a.running = true
@@ -96,9 +127,21 @@ func (a *App) Run() error {
 		}
 	}()
 
+	go func() {
+		for {
+			menuItemID := <-menuItemClicked
+			a.handleMenuItemClicked(menuItemID)
+		}
+	}()
+
 	// run windows
 	for _, window := range a.windows {
 		go window.Run()
+	}
+
+	// run system trays
+	for _, systray := range a.systemTrays {
+		go systray.Run()
 	}
 
 	return a.run()
@@ -127,4 +170,13 @@ func (a *App) handleWindowEvent(event *WindowEvent) {
 		return
 	}
 	window.handleWindowEvent(event.EventID)
+}
+
+func (a *App) handleMenuItemClicked(menuItemID uint) {
+	menuItem := getMenuItemByID(menuItemID)
+	if menuItem == nil {
+		log.Printf("MenuItem #%d not found", menuItemID)
+		return
+	}
+	menuItem.handleClick()
 }

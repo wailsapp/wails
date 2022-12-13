@@ -2,6 +2,7 @@ package menumanager
 
 import (
 	"fmt"
+
 	"github.com/wailsapp/wails/v2/pkg/menu"
 )
 
@@ -90,7 +91,7 @@ func (m *Manager) ProcessClick(menuID string, data string, menuType string, pare
 		return fmt.Errorf("No callback for menu '%s'", menuItem.Label)
 	}
 
-	// Create new Callback struct
+	// Create new callback struct
 	callbackData := &menu.CallbackData{
 		MenuItem: menuItem,
 		//ContextData: data,

@@ -1,5 +1,10 @@
 package options
 
+import (
+	"io/fs"
+	"net/http"
+)
+
 type WindowState int
 
 const (
@@ -17,6 +22,7 @@ type Window struct {
 	AlwaysOnTop      bool
 	URL              string
 	DisableResize    bool
+	Frameless        bool
 	MinWidth         int
 	MinHeight        int
 	MaxWidth         int
@@ -25,6 +31,18 @@ type Window struct {
 	StartState       WindowState
 	Mac              *MacWindow
 	BackgroundColour *RGBA
+	Assets           Assets
+}
+
+type Assets struct {
+	// URL to load the `index.html` file from. If this is a relative path, it will be resolved relative to the `FS` filesystem
+	URL string
+	// FS to use for loading assets from
+	FS fs.FS
+	// Handler is a custom handler to use for serving assets. If this is set, the `URL` and `FS` fields are ignored.
+	Handler http.Handler
+	// Middleware is a custom middleware to use for serving assets. If this is set, the `URL` and `FS` fields are ignored.
+	Middleware func(http.Handler) http.Handler
 }
 
 type RGBA struct {

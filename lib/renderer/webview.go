@@ -186,7 +186,7 @@ func (w *WebView) evalJSSync(js string) error {
 
 	go func() {
 		exit := false
-		// We are done when we receive the Callback ID
+		// We are done when we receive the callback ID
 		w.log.Debug("SyncJS: sending with ID = " + ID)
 		w.eventManager.On(ID, func(...interface{}) {
 			w.log.Debug("SyncJS: Got callback ID = " + ID)
@@ -361,7 +361,7 @@ func (w *WebView) focus() {
 
 // callback sends a callback to the frontend
 func (w *WebView) callback(data string) error {
-	callbackCMD := fmt.Sprintf("window.wails._.Callback('%s');", data)
+	callbackCMD := fmt.Sprintf("window.wails._.callback('%s');", data)
 	return w.evalJS(callbackCMD)
 }
 

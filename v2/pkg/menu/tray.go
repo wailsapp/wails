@@ -26,8 +26,8 @@ type TrayMenu struct {
 	// Tooltip
 	Tooltip string
 
-	// Callback function when menu clicked
-	//Click Callback `json:"-"`
+	// callback function when menu clicked
+	//Click callback `json:"-"`
 
 	// Disabled makes the item unselectable
 	Disabled bool

@@ -51,6 +51,21 @@ void* windowNew(unsigned int id, int width, int height) {
 	return window;
 }
 
+//// Make window toggle frameless
+//void windowSetFrameless(void* window, bool frameless) {
+//	NSWindow* nsWindow = (NSWindow*)window;
+//	if (frameless) {
+//		[nsWindow setStyleMask:NSWindowStyleMaskBorderless];
+//	} else {
+//		[nsWindow setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable];
+//	}
+//}
+
+void windowSetFrameless(void* window) {
+	NSWindow* nsWindow = (NSWindow*)window;
+	[nsWindow setStyleMask:NSWindowStyleMaskBorderless];
+}
+
 // Make NSWindow transparent
 void windowSetTransparent(void* nsWindow) {
     // On main thread
