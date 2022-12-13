@@ -34,6 +34,13 @@ void addMenuSeparator(void* nsMenu) {
 	[menu addItem:[NSMenuItem separatorItem]];
 }
 
+// Set the submenu of a menu item
+void setMenuItemSubmenu(void* nsMenuItem, void* nsMenu) {
+	NSMenuItem *menuItem = (NSMenuItem *)nsMenuItem;
+	NSMenu *menu = (NSMenu *)nsMenu;
+	[menuItem setSubmenu:menu];
+}
+
 */
 import "C"
 import "unsafe"
@@ -61,14 +68,22 @@ func (m *macosMenu) update() {
 }
 
 func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
-	for _, item := range m.menu.items {
+	for _, item := range menu.items {
 		switch item.itemType {
+		case submenu:
+			submenu := item.submenu
+			nsSubmenu := C.createNSMenu()
+			m.processMenu(nsSubmenu, submenu)
+			menuItem := newMenuItemImpl(item)
+			item.impl = menuItem
+			C.addMenuItem(parent, menuItem.nsMenuItem)
+			C.setMenuItemSubmenu(menuItem.nsMenuItem, nsSubmenu)
 		case text, checkbox:
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem
-			C.addMenuItem(m.nsMenu, menuItem.nsMenuItem)
+			C.addMenuItem(parent, menuItem.nsMenuItem)
 		case separator:
-			C.addMenuSeparator(m.nsMenu)
+			C.addMenuSeparator(parent)
 		}
 
 	}

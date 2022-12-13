@@ -44,6 +44,7 @@ type MenuItem struct {
 	tooltip  string
 	disabled bool
 	checked  bool
+	submenu  *Menu
 	callback func(*Context)
 	itemType menuItemType
 
@@ -73,6 +74,17 @@ func newMenuItemCheckbox(label string, checked bool) *MenuItem {
 		label:    label,
 		checked:  checked,
 		itemType: checkbox,
+	}
+	addToMenuItemMap(result)
+	return result
+}
+
+func newSubMenuItem(label string) *MenuItem {
+	result := &MenuItem{
+		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
+		label:    label,
+		itemType: submenu,
+		submenu:  &Menu{},
 	}
 	addToMenuItemMap(result)
 	return result

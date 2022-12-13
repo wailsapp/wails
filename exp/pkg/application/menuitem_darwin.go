@@ -89,7 +89,7 @@ func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 		menuItem: item,
 	}
 	switch item.itemType {
-	case text, checkbox:
+	case text, checkbox, submenu:
 		result.nsMenuItem = unsafe.Pointer(C.newMenuItem(C.uint(item.id), C.CString(item.label), C.bool(item.disabled), C.CString(item.tooltip)))
 		if item.itemType == checkbox {
 			C.setMenuItemChecked(result.nsMenuItem, C.bool(item.checked))

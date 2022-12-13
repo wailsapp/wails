@@ -16,7 +16,7 @@ func (m *Menu) Add(label string) *MenuItem {
 	return result
 }
 
-func (m *Menu) AddSeperator() {
+func (m *Menu) AddSeparator() {
 	result := newMenuItemSeperator()
 	m.items = append(m.items, result)
 }
@@ -32,6 +32,12 @@ func (m *Menu) Update() {
 		m.impl = newMenuImpl(m)
 	}
 	m.impl.update()
+}
+
+func (m *Menu) AddSubmenu(s string) *Menu {
+	result := newSubMenuItem(s)
+	m.items = append(m.items, result)
+	return result.submenu
 }
 
 func (a *App) NewMenu() *Menu {
