@@ -36,17 +36,19 @@ type menuItemImpl interface {
 	setLabel(s string)
 	setDisabled(disabled bool)
 	setChecked(checked bool)
+	setAccelerator(accelerator *accelerator)
 }
 
 type MenuItem struct {
-	id       uint
-	label    string
-	tooltip  string
-	disabled bool
-	checked  bool
-	submenu  *Menu
-	callback func(*Context)
-	itemType menuItemType
+	id          uint
+	label       string
+	tooltip     string
+	disabled    bool
+	checked     bool
+	submenu     *Menu
+	callback    func(*Context)
+	itemType    menuItemType
+	accelerator *accelerator
 
 	impl              menuItemImpl
 	radioGroupMembers []*MenuItem
@@ -123,6 +125,19 @@ func (m *MenuItem) handleClick() {
 	}
 }
 
+func (m *MenuItem) SetAccelerator(shortcut string) *MenuItem {
+	accelerator, err := parseAccelerator(shortcut)
+	if err != nil {
+		println("ERROR: invalid accelerator", err)
+		return m
+	}
+	m.accelerator = accelerator
+	if m.impl != nil {
+		m.impl.setAccelerator(accelerator)
+	}
+	return m
+}
+
 func (m *MenuItem) SetTooltip(s string) *MenuItem {
 	m.tooltip = s
 	if m.impl != nil {
@@ -145,6 +160,18 @@ func (m *MenuItem) SetEnabled(enabled bool) *MenuItem {
 		m.impl.setDisabled(m.disabled)
 	}
 	return m
+}
+
+func (m *MenuItem) SetChecked(checked bool) *MenuItem {
+	m.checked = checked
+	if m.impl != nil {
+		m.impl.setChecked(m.checked)
+	}
+	return m
+}
+
+func (m *MenuItem) Checked() bool {
+	return m.checked
 }
 
 func (m *MenuItem) OnClick(f func(*Context)) *MenuItem {

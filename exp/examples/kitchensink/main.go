@@ -18,7 +18,7 @@ var icon []byte
 var macosIcon []byte
 
 func main() {
-	app := application.New(&options.Application{
+	app := application.NewWithOptions(&options.Application{
 		Mac: &options.Mac{
 			//ActivationPolicy: options.ActivationPolicyAccessory,
 		},
@@ -60,23 +60,26 @@ func main() {
 	file1 := myMenu.Add("File")
 	file1.SetTooltip("Create New Tray Menu")
 	file1.OnClick(menuCallback)
-	myMenu.Add("Create New Tray Menu").SetTooltip("ROFLCOPTER!!!!").OnClick(func(ctx *application.Context) {
-		mySystray := app.NewSystemTray()
-		mySystray.SetLabel("Wails")
-		if runtime.GOOS == "darwin" {
-			mySystray.SetTemplateIcon(macosIcon)
-		} else {
-			mySystray.SetIcon(icon)
-		}
-		myMenu := app.NewMenu()
-		myMenu.Add("Item 1")
-		myMenu.AddSeparator()
-		myMenu.Add("Kill this menu").OnClick(func(ctx *application.Context) {
-			mySystray.Destroy()
-		})
-		mySystray.SetMenu(myMenu)
+	myMenu.Add("Create New Tray Menu").
+		SetAccelerator("CmdOrCtrl+N").
+		SetTooltip("ROFLCOPTER!!!!").
+		OnClick(func(ctx *application.Context) {
+			mySystray := app.NewSystemTray()
+			mySystray.SetLabel("Wails")
+			if runtime.GOOS == "darwin" {
+				mySystray.SetTemplateIcon(macosIcon)
+			} else {
+				mySystray.SetIcon(icon)
+			}
+			myMenu := app.NewMenu()
+			myMenu.Add("Item 1")
+			myMenu.AddSeparator()
+			myMenu.Add("Kill this menu").OnClick(func(ctx *application.Context) {
+				mySystray.Destroy()
+			})
+			mySystray.SetMenu(myMenu)
 
-	})
+		})
 	myMenu.Add("Not Enabled").SetEnabled(false)
 	myMenu.AddSeparator()
 	myMenu.AddCheckbox("My checkbox", true).OnClick(menuCallback)

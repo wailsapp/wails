@@ -69,6 +69,15 @@ void setMenuItemChecked(void* nsMenuItem, bool checked) {
 	menuItem.state = checked ? NSControlStateValueOn : NSControlStateValueOff;
 }
 
+// Set the menuitem key equivalent
+void setMenuItemKeyEquivalent(void* nsMenuItem, char *key, int modifier) {
+	MenuItem *menuItem = (MenuItem *)nsMenuItem;
+	menuItem.keyEquivalent = [NSString stringWithUTF8String:key];
+	menuItem.keyEquivalentModifierMask = modifier;
+	free(key);
+}
+
+
 */
 import "C"
 import (
@@ -97,6 +106,20 @@ func (m macosMenuItem) setChecked(checked bool) {
 	C.setMenuItemChecked(m.nsMenuItem, C.bool(checked))
 }
 
+func (m macosMenuItem) setAccelerator(accelerator *accelerator) {
+	// Set the keyboard shortcut of the menu item
+	var modifier C.int
+	var key *C.char
+	if accelerator != nil {
+		modifier = C.int(toMacModifier(accelerator.Modifiers))
+		key = C.CString(accelerator.Key)
+	}
+
+	// Convert the key to a string
+	C.setMenuItemKeyEquivalent(m.nsMenuItem, key, modifier)
+
+}
+
 func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 	result := &macosMenuItem{
 		menuItem: item,
@@ -106,6 +129,9 @@ func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 		result.nsMenuItem = unsafe.Pointer(C.newMenuItem(C.uint(item.id), C.CString(item.label), C.bool(item.disabled), C.CString(item.tooltip)))
 		if item.itemType == checkbox || item.itemType == radio {
 			C.setMenuItemChecked(result.nsMenuItem, C.bool(item.checked))
+		}
+		if item.accelerator != nil {
+			result.setAccelerator(item.accelerator)
 		}
 	default:
 		panic("WTF")
