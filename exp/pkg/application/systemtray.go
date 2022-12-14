@@ -21,6 +21,7 @@ type systemTrayImpl interface {
 	setMenu(menu *Menu)
 	setIconPosition(position int)
 	setTemplateIcon(icon []byte)
+	destroy()
 }
 
 type SystemTray struct {
@@ -95,4 +96,11 @@ func (s *SystemTray) SetTemplateIcon(icon []byte) *SystemTray {
 		s.impl.setTemplateIcon(icon)
 	}
 	return s
+}
+
+func (s *SystemTray) Destroy() {
+	if s.impl == nil {
+		return
+	}
+	s.impl.destroy()
 }

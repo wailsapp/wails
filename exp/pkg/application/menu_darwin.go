@@ -78,7 +78,7 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 			item.impl = menuItem
 			C.addMenuItem(parent, menuItem.nsMenuItem)
 			C.setMenuItemSubmenu(menuItem.nsMenuItem, nsSubmenu)
-		case text, checkbox:
+		case text, checkbox, radio:
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem
 			C.addMenuItem(parent, menuItem.nsMenuItem)

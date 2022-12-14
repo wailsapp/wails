@@ -48,7 +48,8 @@ type MenuItem struct {
 	callback func(*Context)
 	itemType menuItemType
 
-	impl menuItemImpl
+	impl              menuItemImpl
+	radioGroupMembers []*MenuItem
 }
 
 func newMenuItem(label string) *MenuItem {
@@ -79,6 +80,17 @@ func newMenuItemCheckbox(label string, checked bool) *MenuItem {
 	return result
 }
 
+func newMenuItemRadio(label string, checked bool) *MenuItem {
+	result := &MenuItem{
+		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
+		label:    label,
+		checked:  checked,
+		itemType: radio,
+	}
+	addToMenuItemMap(result)
+	return result
+}
+
 func newSubMenuItem(label string) *MenuItem {
 	result := &MenuItem{
 		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
@@ -96,6 +108,15 @@ func (m *MenuItem) handleClick() {
 		m.checked = !m.checked
 		ctx.withChecked(m.checked)
 		m.impl.setChecked(m.checked)
+	}
+	if m.itemType == radio {
+		for _, member := range m.radioGroupMembers {
+			member.checked = false
+			member.impl.setChecked(false)
+		}
+		m.checked = true
+		ctx.withChecked(true)
+		m.impl.setChecked(true)
 	}
 	if m.callback != nil {
 		go m.callback(ctx)

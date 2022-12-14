@@ -51,14 +51,39 @@ func main() {
 		menuItem.SetLabel("Clicked!")
 	}
 
+	radioCallback := func(ctx *application.Context) {
+		menuItem := ctx.ClickedMenuItem()
+		menuItem.SetLabel(menuItem.Label() + "!")
+	}
+
 	myMenu := app.NewMenu()
 	file1 := myMenu.Add("File")
-	file1.SetTooltip("File Menu")
+	file1.SetTooltip("Create New Tray Menu")
 	file1.OnClick(menuCallback)
-	myMenu.Add("File 2").SetTooltip("ROFLCOPTER!!!!").OnClick(menuCallback)
+	myMenu.Add("Create New Tray Menu").SetTooltip("ROFLCOPTER!!!!").OnClick(func(ctx *application.Context) {
+		mySystray := app.NewSystemTray()
+		mySystray.SetLabel("Wails")
+		if runtime.GOOS == "darwin" {
+			mySystray.SetTemplateIcon(macosIcon)
+		} else {
+			mySystray.SetIcon(icon)
+		}
+		myMenu := app.NewMenu()
+		myMenu.Add("Item 1")
+		myMenu.AddSeparator()
+		myMenu.Add("Kill this menu").OnClick(func(ctx *application.Context) {
+			mySystray.Destroy()
+		})
+		mySystray.SetMenu(myMenu)
+
+	})
 	myMenu.AddSeparator()
 	myMenu.AddCheckbox("My checkbox", true).OnClick(menuCallback)
 	myMenu.AddSeparator()
+	myMenu.AddRadio("Radio 1", true).OnClick(radioCallback)
+	myMenu.AddRadio("Radio 2", false).OnClick(radioCallback)
+	myMenu.AddRadio("Radio 3", false).OnClick(radioCallback)
+
 	submenu := myMenu.AddSubmenu("Submenu")
 	submenu.Add("Submenu item 1").OnClick(menuCallback)
 	submenu.Add("Submenu item 2").OnClick(menuCallback)

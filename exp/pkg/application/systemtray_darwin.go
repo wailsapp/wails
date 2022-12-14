@@ -62,6 +62,16 @@ void systemTraySetMenu(void* nsStatusItem, void* nsMenu) {
 	});
 }
 
+// Destroy system tray
+void systemTrayDestroy(void* nsStatusItem) {
+	// Remove the status item from the status bar and its associated menu
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSStatusItem *statusItem = (NSStatusItem *)nsStatusItem;
+		[[NSStatusBar systemStatusBar] removeStatusItem:statusItem];
+		[statusItem release];
+	});
+}
+
 */
 import "C"
 import (
@@ -143,4 +153,9 @@ func newSystemTrayImpl(s *SystemTray) systemTrayImpl {
 func (s *macosSystemTray) setLabel(label string) {
 	s.label = label
 	C.systemTraySetLabel(s.nsStatusItem, C.CString(label))
+}
+
+func (s *macosSystemTray) destroy() {
+	// Remove the status item from the status bar and its associated menu
+	C.systemTrayDestroy(s.nsStatusItem)
 }
