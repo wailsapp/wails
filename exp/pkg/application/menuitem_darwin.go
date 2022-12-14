@@ -14,10 +14,13 @@ void* newMenuItem(unsigned int menuItemID, char *label, bool disabled, char* too
     // Label
     menuItem.title = [NSString stringWithUTF8String:label];
 
-    // Process callback
+	if( disabled ) {
+		[menuItem setTarget:nil];
+	} else {
+		[menuItem setTarget:menuItem];
+	}
     menuItem.menuItemID = menuItemID;
     menuItem.action = @selector(handleClick);
-    menuItem.target = menuItem;
 	menuItem.enabled = !disabled;
 
 	// Tooltip
@@ -38,10 +41,20 @@ void setMenuItemLabel(void* nsMenuItem, char *label) {
 	menuItem.title = [NSString stringWithUTF8String:label];
 }
 
+
 // set menu item disabled
 void setMenuItemDisabled(void* nsMenuItem, bool disabled) {
-	MenuItem *menuItem = (MenuItem *)nsMenuItem;
-	menuItem.enabled = !disabled;
+	dispatch_async(dispatch_get_main_queue(), ^{
+		MenuItem *menuItem = (MenuItem *)nsMenuItem;
+		printf("setMenuItemDisabled: %d\n", disabled);
+		[menuItem setEnabled:!disabled];
+		// remove target
+		if( disabled ) {
+			[menuItem setTarget:nil];
+		} else {
+			[menuItem setTarget:menuItem];
+		}
+	});
 }
 
 // set menu item tooltip

@@ -77,6 +77,7 @@ func main() {
 		mySystray.SetMenu(myMenu)
 
 	})
+	myMenu.Add("Not Enabled").SetEnabled(false)
 	myMenu.AddSeparator()
 	myMenu.AddCheckbox("My checkbox", true).OnClick(menuCallback)
 	myMenu.AddSeparator()
@@ -89,12 +90,16 @@ func main() {
 	submenu.Add("Submenu item 2").OnClick(menuCallback)
 	submenu.Add("Submenu item 3").OnClick(menuCallback)
 	myMenu.AddSeparator()
+	file4 := myMenu.Add("File 4").OnClick(func(*application.Context) {
+		println("File 4 clicked")
+	})
 
-	myMenu.Add("File 3").OnClick(menuCallback).SetTooltip("sdfsdfsdfsdf")
-	myMenu.Add("File 4").OnClick(menuCallback)
+	myMenu.Add("Click to toggle").OnClick(func(*application.Context) {
+		enabled := file4.Enabled()
+		println("Enabled: ", enabled)
+		file4.SetEnabled(!enabled)
+	})
 	myMenu.Add("File 5").OnClick(menuCallback)
-
-	//myMenu.AddSubmenu("File 6").OnClick(menuCallback)
 
 	mySystray := app.NewSystemTray()
 	mySystray.SetLabel("Wails is awesome")
