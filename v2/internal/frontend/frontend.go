@@ -124,7 +124,7 @@ func (u LinuxNotificationUrgency) Uint() uint {
 // LinuxNotificationOptions contains options that are specific to linux
 type LinuxNotificationOptions struct {
 
-	// Urgency represents the notifications urgency.
+	// Urgency represents the notifications' urgency.
 	//
 	// For low and normal urgencies, server implementations may display the notifications how they choose.
 	// They should, however, have a sane expiration timeout dependent on the urgency level.
@@ -224,6 +224,9 @@ type NotificationOptions struct {
 
 	// Timeout is the duration for how long a notification is shown.
 	Timeout time.Duration
+
+	// Close is a channel that clears an active notification
+	Close <-chan bool
 
 	// LinuxOptions holds the linux specific options for a notification.
 	LinuxOptions *LinuxNotificationOptions

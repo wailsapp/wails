@@ -1,5 +1,4 @@
 //go:build linux
-// +build linux
 
 package notification
 
@@ -20,7 +19,8 @@ const (
 	signalNotificationClosed   = "org.freedesktop.Notifications.NotificationClosed"
 	signalActionInvoked        = "org.freedesktop.Notifications.ActionInvoked"
 	callGetCapabilities        = "org.freedesktop.Notifications.GetCapabilities"
-	signalActivationToken      = "org.freedesktop.Notifications.ActivationToken"
+	//signalActivationToken      = "org.freedesktop.Notifications.ActivationToken"
+	callCloseNotification = "org.freedesktop.Notifications.CloseNotification"
 
 	MethodNotifySend = "notify-send"
 	MethodDbus       = "dbus"
@@ -49,6 +49,7 @@ func (r closedReason) string() string {
 }
 
 type Notifier struct {
+	*sync.Mutex
 	logger       *logger.Logger
 	method       string
 	dbusConn     *dbus.Conn
@@ -59,6 +60,7 @@ type Notifier struct {
 // NewNotifier returns a new Notifier
 func NewNotifier(myLogger *logger.Logger) *Notifier {
 	return &Notifier{
+		Mutex:  &sync.Mutex{},
 		logger: myLogger,
 	}
 }
@@ -116,13 +118,6 @@ func (n *Notifier) init() error {
 		return nil
 	}
 
-	// send, err = exec.LookPath("kdialog")
-	// if err == nil {
-	// 	n.method = MethodKdialog
-	// 	n.sendPath = send
-	// 	return
-	// }
-
 	n.method = "none"
 	n.sendPath = ""
 
@@ -133,14 +128,21 @@ var initOnce sync.Once
 
 // SendNotification sends notifications
 func (n *Notifier) SendNotification(options frontend.NotificationOptions) error {
-	initOnce.Do(func() {
-		n.init()
-	})
+	n.Lock()
+	defer n.Unlock()
 
 	var (
 		ID  uint32
 		err error
 	)
+
+	initOnce.Do(func() {
+		err = n.init()
+	})
+
+	if err != nil {
+		return errors.New("notification: could not initialize notifications")
+	}
 
 	switch n.method {
 	case MethodDbus:
@@ -160,62 +162,9 @@ func (n *Notifier) SendNotification(options frontend.NotificationOptions) error 
 	return err
 }
 
-func (n *Notifier) dbusListener(notificationID uint32, options frontend.NotificationOptions) {
-	// add a listener (matcher) in dbus for signals to Notification interface.
-	err := n.dbusConn.AddMatchSignal(
-		dbus.WithMatchObjectPath(dbusObjectPath),
-		dbus.WithMatchInterface(dbusNotificationsInterface),
-	)
-	if err != nil {
-		n.logger.Error("runtime dbus notification err: %v", err)
-		return
-	}
-
-	// register in dbus for signal delivery
-	signal := make(chan *dbus.Signal, notifyChannelBufferSize)
-	n.dbusConn.Signal(signal)
-
-	var (
-		signalID        uint32
-		signalActionKey string
-	)
-
-	for {
-		select {
-		case signal := <-signal:
-			if signal == nil {
-				return
-			}
-			switch signal.Name {
-			case signalNotificationClosed:
-				signalID = signal.Body[0].(uint32)
-				if options.LinuxOptions.OnClose != nil && notificationID == signalID {
-					options.LinuxOptions.OnClose(signalID, closedReason(signal.Body[1].(uint32)).string())
-					return
-				}
-			case signalActionInvoked:
-				signalID = signal.Body[0].(uint32)
-				signalActionKey = signal.Body[1].(string)
-				if notificationID != signalID {
-					continue
-				}
-				for i := 0; i < len(options.LinuxOptions.Actions); i++ {
-					if options.LinuxOptions.Actions[i].OnAction != nil && options.LinuxOptions.Actions[i].Key == signalActionKey {
-						options.LinuxOptions.Actions[i].OnAction(signalID)
-						if options.LinuxOptions.OnClose != nil {
-							options.LinuxOptions.OnClose(signalID, closedReason(5).string())
-						}
-						return
-					}
-				}
-			}
-		}
-	}
-}
-
 func (n *Notifier) sendViaDbus(options frontend.NotificationOptions) (result uint32, err error) {
 
-	actions := []string{}
+	var actions []string
 	if options.LinuxOptions.Actions != nil {
 		for i := range options.LinuxOptions.Actions {
 			actions = append(actions, options.LinuxOptions.Actions[i].Key, options.LinuxOptions.Actions[i].Label)
@@ -255,7 +204,7 @@ func (n *Notifier) sendViaDbus(options frontend.NotificationOptions) (result uin
 		}
 	}
 
-	obj := n.dbusConn.Object(dbusNotificationsInterface, dbus.ObjectPath(dbusObjectPath))
+	obj := n.dbusConn.Object(dbusNotificationsInterface, dbusObjectPath)
 	dbusArgs := []interface{}{
 		options.AppID,
 		options.LinuxOptions.ReplacesID,
@@ -278,7 +227,7 @@ func (n *Notifier) sendViaDbus(options frontend.NotificationOptions) (result uin
 	}
 
 	if result != options.LinuxOptions.ReplacesID && (len(actions) > 0 || options.LinuxOptions.OnClose != nil) {
-		go n.dbusListener(result, options)
+		go dbusListener(n.dbusConn, n.logger, result, options)
 	}
 	return
 }
@@ -336,4 +285,74 @@ func (n *Notifier) sendViaKnotify(options frontend.NotificationOptions) (uint32,
 		return 0, fmt.Errorf("runtime knotify notification err: %v", err)
 	}
 	return 0, nil
+}
+
+func dbusListener(conn *dbus.Conn, logger *logger.Logger, notificationID uint32, options frontend.NotificationOptions) {
+	// add a listener (matcher) in dbus for signals to Notification interface.
+	err := conn.AddMatchSignal(
+		dbus.WithMatchObjectPath(dbusObjectPath),
+		dbus.WithMatchInterface(dbusNotificationsInterface),
+	)
+	if err != nil {
+		logger.Error("runtime dbus notification err: %v", err)
+		return
+	}
+
+	// register in dbus for signal delivery
+	signal := make(chan *dbus.Signal, notifyChannelBufferSize)
+	conn.Signal(signal)
+
+	var (
+		signalID        uint32
+		signalActionKey string
+	)
+
+	for {
+		select {
+		case c := <-options.Close:
+			if c {
+				obj := conn.Object(dbusNotificationsInterface, dbusObjectPath)
+				call := obj.Call(callCloseNotification, 0, notificationID)
+				if call.Err != nil {
+					logger.Error("Notification cancel error %v", err)
+				}
+				if options.LinuxOptions.OnClose != nil {
+					options.LinuxOptions.OnClose(notificationID, "closed-by-call")
+					return
+				}
+				return
+			}
+		case s := <-signal:
+			if s == nil {
+				logger.Error("Notification signal error: empty signal received")
+				return
+			}
+			if len(s.Body) < 2 {
+				logger.Error("Notification signal error: incomplete signal received")
+			}
+			switch s.Name {
+			case signalNotificationClosed:
+				signalID = s.Body[0].(uint32)
+				if options.LinuxOptions.OnClose != nil && notificationID == signalID {
+					options.LinuxOptions.OnClose(signalID, closedReason(s.Body[1].(uint32)).string())
+					return
+				}
+			case signalActionInvoked:
+				signalID = s.Body[0].(uint32)
+				signalActionKey = s.Body[1].(string)
+				if notificationID != signalID {
+					continue
+				}
+				for i := 0; i < len(options.LinuxOptions.Actions); i++ {
+					if options.LinuxOptions.Actions[i].OnAction != nil && options.LinuxOptions.Actions[i].Key == signalActionKey {
+						options.LinuxOptions.Actions[i].OnAction(signalID)
+						if options.LinuxOptions.OnClose != nil {
+							options.LinuxOptions.OnClose(signalID, closedReason(5).string())
+						}
+						return
+					}
+				}
+			}
+		}
+	}
 }
