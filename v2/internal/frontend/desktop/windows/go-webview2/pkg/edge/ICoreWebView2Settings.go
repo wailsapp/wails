@@ -1,8 +1,11 @@
+//go:build windows
+
 package edge
 
 import (
-	"golang.org/x/sys/windows"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 type _ICoreWebView2SettingsVtbl struct {

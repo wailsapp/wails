@@ -1,12 +1,13 @@
 package project_test
 
 import (
-	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v2/internal/project"
 	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
+
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v2/internal/project"
 )
 
 func TestProject_GetFrontendDir(t *testing.T) {
@@ -30,9 +31,21 @@ func TestProject_GetFrontendDir(t *testing.T) {
 			wantError: false,
 		},
 		{
-			name:      "Should resolve a relative path with project path set",
-			inputJSON: `{"frontend:dir": "./frontend", "projectdir": "/home/user/project"}`,
-			want:      "/home/user/project/frontend",
+			name: "Should resolve a relative path with project path set",
+			inputJSON: func() string {
+				if runtime.GOOS == "windows" {
+					return `{"frontend:dir": "./frontend", "projectdir": "C:\\project"}`
+				} else {
+					return `{"frontend:dir": "./frontend", "projectdir": "/home/user/project"}`
+				}
+			}(),
+			want: func() string {
+				if runtime.GOOS == "windows" {
+					return `C:/project/frontend`
+				} else {
+					return `/home/user/project/frontend`
+				}
+			}(),
 			wantError: false,
 		},
 		{

@@ -1,12 +1,12 @@
-# Application Development
+# アプリケーション開発
 
-There are no hard and fast rules for developing applications with Wails, but there are some basic guidelines.
+Wailsでアプリケーションを作成する際に、厳格なルールはありませんが、基本的なガイドラインがいくつかあります。
 
-## Application Setup
+## アプリケーションセットアップ
 
-The pattern used by the default templates are that `main.go` is used for configuring and running the application, whilst `app.go` is used for defining the application logic.
+デフォルトのテンプレートを使用した場合、`main.go`にはアプリケーションの構成および起動コードが記述され、`app.go`にはアプリケーションのロジック定義が記述されています。
 
-The `app.go` file will define a struct that has 2 methods which act as hooks into the main application:
+`app.go`ファイルには、メインアプリケーションのフックとして機能する2つのメソッドを持った構造体を定義します。
 
 ```go title="app.go"
 type App struct {
@@ -25,11 +25,11 @@ func (a *App) shutdown(ctx context.Context) {
 }
 ```
 
-- The startup method is called as soon as Wails allocates the resources it needs and is a good place for creating resources, setting up event listeners and anything else the application needs at startup. It is given a `context.Context` which is usually saved in a struct field. This context is needed for calling the [runtime](../reference/runtime/intro.mdx). If this method returns an error, the application will terminate. In dev mode, the error will be output to the console.
+- startupメソッドは、Wailsが起動時に、必要リソースの割り当てが完了した際にすぐに呼び出されます。このメソッド内は、リソースの作成、イベントリスナーの設定、その他アプリケーションに必要な初期処理を実施するのに適しています。 メソッド呼び出し時に与えられる`context.Context`は、通常は、構造体のフィールドに格納するようにしてください。 なぜならば、このcontextは[runtime](../reference/runtime/intro.mdx)を呼び出す際に必要なためです。 このstartupメソッドがエラーを返却した場合、アプリケーションは終了します。 開発モードの場合、コンソールにエラーが出力されます。
 
-- The shutdown method will be called by Wails right at the end of the shutdown process. This is a good place to deallocate memory and perform any shutdown tasks.
+- shutdownメソッドは、シャットダウンプロセスの最後に、Wailsによって呼び出されます。 このメソッド内は、メモリを解放し、任意のシャットダウンタスクを実施するのに適しています。
 
-The `main.go` file generally consists of a single call to `wails.Run()`, which accepts the application configuration. The pattern used by the templates is that before the call to `wails.Run()`, an instance of the struct we defined in `app.go` is created and saved in a variable called `app`. This configuration is where we add our callbacks:
+通常、`main.go`ファイルでは、アプリケーション構成を受け取る`wails.Run()`メソッドを1回だけ呼び出すようにします。 テンプレートでは、`wails.Run()`を呼び出す前に、`app.go`で定義した構造体のインスタンスを作成して、`app`に格納しています。 アプリケーション構成では、コールバックを追加できます:
 
 ```go {3,9,10} title="main.go"
 func main() {
@@ -50,11 +50,11 @@ func main() {
 
 ```
 
-More information on application lifecycle hooks can be found [here](../howdoesitwork.mdx#application-lifecycle-callbacks).
+アプリケーションのライフサイクルフックについて詳しくは、[こちら](../howdoesitwork.mdx#application-lifecycle-callbacks)をご覧ください。
 
-## Binding Methods
+## メソッドのバインディング
 
-It is likely that you will want to call Go methods from the frontend. This is normally done by adding public methods to the already defined struct in `app.go`:
+フロントエンドからGoのメソッドを呼び出したいことがありますよね。 そのようなときは、`app.go`ですでに定義している構造体に、パブリックメソッドを追加しましょう:
 
 ```go {16-18} title="app.go"
 type App struct {
@@ -77,7 +77,7 @@ func (a *App) Greet(name string) string {
 }
 ```
 
-In the main application configuration, the `Bind` key is where we can tell Wails what we want to bind:
+アプリケーション構成の`Bind`キーで、Wailsに何をバインドさせたいかを指定できます:
 
 ```go {11-13} title="main.go"
 func main() {
@@ -101,11 +101,11 @@ func main() {
 
 ```
 
-This will bind all public methods in our `App` struct (it will never bind the startup and shutdown methods).
+これにより、`App`構造体のすべてのパブリックメソッドがバインドされます（startupメソッド・shutdownメソッドはバインドされません）。
 
-### Dealing with context when binding multiple structs
+### 複数の構造体をバインドするときのcontextの扱い
 
-If you want to bind methods for multiple structs but want each struct to keep a reference to the context so that you can use the runtime functions, a good pattern is to pass the context from the `OnStartup` method to your struct instances :
+もし、複数の構造体のメソッドをバインドしたくて、かつ、各構造体でランタイム関数を呼び出せるようにcontextを共有したい場合は、`OnStartup`のコールバック内で、各構造体にcontextを渡してあげるのが良いでしょう:
 
 ```go
 func main() {
@@ -133,11 +133,11 @@ func main() {
 }
 ```
 
-More information on Binding can be found [here](../howdoesitwork.mdx#method-binding).
+バインディングの詳細については、[こちら](../howdoesitwork.mdx#method-binding)をご覧ください。
 
-## Application Menu
+## アプリケーションメニュー
 
-Wails supports adding a menu to your application. This is done by passing a [Menu](../reference/menus.mdx#menu) struct to application config. It's common to use a method that returns a Menu, and even more common for that to be a method on the `App` struct used for the lifecycle hooks.
+Wailsでは、アプリケーションにメニューを追加することができます。 追加したい場合は、アプリケーション構成に[Menu](../reference/menus.mdx#menu)構造体を渡してください。 通常は、Menuを返すようなメソッドを使用するようにします。ライフサイクルフックに使用される`App`構造体のメソッドとして用意するのが良いでしょう。
 
 ```go {11} title="main.go"
 func main() {
@@ -162,33 +162,33 @@ func main() {
 
 ```
 
-## Assets
+## アセット
 
-The great thing about the way Wails v2 handles assets is that it doesn't! The only thing you need to give Wails is an `embed.FS`. How you get to that is entirely up to you. You can use vanilla html/css/js files like the vanilla template. You could have some complicated build system, it doesn't matter.
+Wails v2にアセットを処理させるための方法は複雑ではありません。 Wailsに与える必要があるのは、`embed.FS`だけです。 任意の方法で与えてあげてください。 バニラテンプレートで使用されているように、素のhtml/css/jsファイルをアセットとして使用できます。 もちろん、複雑なビルドシステムを使用することも可能ですが、必須要件ではありません。
 
-When `wails build` is run, it will check the `wails.json` project file at the project root. There are 2 keys in the project file that are read:
+`wails build`コマンドを実行すると、プロジェクトルートディレクトリに存在するプロジェクト構成ファイルである`wails.json`のチェックが行われます。 プロジェクトファイルには、次の2つのキーを含めることができます:
 
 - "frontend:install"
 - "frontend:build"
 
-The first, if given, will be executed in the `frontend` directory to install the node modules. The second, if given, will be executed in the `frontend` directory to build the frontend project.
+1番目のキーは、`frontend`ディレクトリにおいて、nodeモジュールをインストールするためのコマンドを指定します。 2番目のキーは、`frontend`ディレクトリにおいて、フロントエンドをビルドするためのコマンドを指定します。
 
-If these 2 keys aren't given, then Wails does absolutely nothing with the frontend. It is only expecting that `embed.FS`.
+2つのキーのどちらともが指定されていない場合、Wailsはフロントエンドプロジェクトに対する操作を一切行いません。 `embed.FS`で指定されたディレクトリを参照するのみとなります。
 
-### AssetsHandler
+### アセットハンドラ
 
-A Wails v2 app can optionally define a `http.Handler` in the `options.App`, which allows hooking into the AssetServer to create files on the fly or process POST/PUT requests. GET requests are always first handled by the `assets` FS. If the FS doesn't find the requested file the request will be forwarded to the `http.Handler` for serving. Any requests other than GET will be directly processed by the `AssetsHandler` if specified. It's also possible to only use the `AssetsHandler` by specifiy `nil` as the `Assets` option.
+Wails v2では必要に応じて、`options.App`の中に`http.Handler`を定義することができます。これにより、アセットサーバにフックして、その場でファイルを作成したり、POST/PUTリクエストを処理したりすることができます。 GETリクエストが要求されたときは、まず初めに、`assets` FSにハンドリングされます。 リクエストされたファイルをFSが見つけられなかった場合、そのリクエストは`http.Handler`に転送されます。 GET以外のリクエストは、`AssetsHandler`が指定されていれば、当該ハンドラによって直接処理されます。 なお、`Assets`オプションに`nil`を指定することで、`AssetsHandler`のみを使用することも可能です。
 
-## Built in Dev Server
+## ビルトイン開発サーバ
 
-Running `wails dev` will start the built in dev server which will start a file watcher in your project directory. By default, if any file changes, wails checks if it was an application file (default: `.go`, configurable with `-e` flag). If it was, then it will rebuild your application and relaunch it. If the changed file was in the assets, it will issue a reload after a short amount of time.
+`wails dev`コマンドを実行すると、ビルトイン開発サーバが起動し、プロジェクトディレクトリ内のファイル監視が開始されます。 デフォルトでは、ファイルの中身が変更された場合、Wailsはそのファイルがアプリケーションファイルであるかどうかをチェックします(デフォルト: `.go`、 `-e`フラグで制御可能)。 アプリケーションファイルであった場合は、アプリケーションをリビルドして再起動します。 アセットディレクトリ内でファイルが変更された場合は、少し経ってからリロードが実行されます。
 
-The dev server uses a technique called "debouncing" which means it doesn't reload straight away, as there may be multiple files changed in a short amount of time. When a trigger occurs, it waits for a set amount of time before issuing a reload. If another trigger happens, it resets to the wait time again. By default this value is `100ms`. If this value doesn't work for your project, it can be configured using the `-debounce` flag. If used, this value will be saved to your project config and become the default.
+開発サーバは"デバウンシング"と呼ばれるテクニックを使用しています。これにより、短時間で複数のファイルが更新されたとしても、すぐに再読み込みされることはありません。 トリガーが起動すると、再読み込みを実行する前に一定時間待機します。 待機中に別のトリガーが起動した場合、待機時間はリセットされます。 デフォルトでは、待機時間は`100ms`です。 この待機時間の値があなたのプロジェクトで適切ではない場合、`-debounce`フラグを使用して変更することができます。 このフラグを使用すると、値がプロジェクト構成ファイルに保存され、次回以降のデフォルト値となります。
 
-## External Dev Server
+## 外部開発サーバ
 
-Some frameworks come with their own live-reloading server, however they will not be able to take advantage of the Wails Go bindings. In this scenario, it is best to run a watcher script that rebuilds the project into the build directory, which Wails will be watching. For an example, see the default svelte template that uses [rollup](https://rollupjs.org/guide/en/). For [create-react-app](https://create-react-app.dev/), it's possible to use [this script](https://gist.github.com/int128/e0cdec598c5b3db728ff35758abdbafd) to achieve a similar result.
+フレームワークによっては独自のライブリロードサーバが付属しているものがありますが、それらはWailsのGoバインディングを使用することができません。 このような場面では、Wailsが監視するビルドディレクトリ内で、プロジェクトをリビルドする監視スクリプトを実行すると良いでしょう。 例としては、[rollup](https://rollupjs.org/guide/en/)を使用するデフォルトのsvelteテンプレートをご覧ください。 また[create-react-app](https://create-react-app.dev/)を使用する場合、[このスクリプト](https://gist.github.com/int128/e0cdec598c5b3db728ff35758abdbafd)を使用すると同様の結果を得ることができます。
 
-## Go Module
+## Goモジュール
 
-The default Wails templates generate a `go.mod` file that contains the module name "changeme". You should change this to something more appropriate after project generation.
+デフォルトのWailsテンプレートは、モジュール名が"changeme"となっている`go.mod`ファイルを生成します。 プロジェクトの生成が完了したら、適切なモジュール名に変更してください。

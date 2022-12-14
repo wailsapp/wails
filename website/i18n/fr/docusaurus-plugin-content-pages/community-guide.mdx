@@ -1,0 +1,142 @@
+# Guide communautaire
+
+Le nombre d'utilisateurs de Wails augmente à un rythme incroyable, et si vous lisez ça, il y a des chances que vous soyez prêt à nous rejoindre. Alors... Bienvenue !
+
+## Ressources
+
+### Code de Conduite
+
+Le [Code de Conduite](./coc) est un guide facile à suivre pour développer les communautés techniques auxquelles nous participons.
+
+### Restez informé
+
+- Suivez notre [compte Twitter officiel](https://twitter.com/wailsapp).
+
+### Obtenir de l'aide
+
+- [GitHub](https://github.com/wailsapp/wails) - Si vous avez un bug à signaler ou une fonctionnalité à demander, c'est ce à quoi les GitHub issues servent. Merci de respecter les règles définies dans les modèles de chaque dépôt de code.
+- [Slack](https://gophers.slack.com/messages/CJ4P9F7MZ/) - Un endroit où les développeurs de Wails peuvent se rencontrer et discuter en temps réel.
+- [QQ Group(中文)](https://qm.qq.com/cgi-bin/qm/qr?k=PmIURne5hFGNd7QWzW5qd6FV-INEjNJv&jump_from=webapi) - Un groupe Wails pour permettre aux développeurs chinois de communiquer, et où vous pourrez trouver de l'aide d'autres développeurs.
+
+### Explorez l'écosystème
+
+- [L'incroyable page Wails](https://github.com/wailsapp/awesome-wails) - Voyez quelles autres ressources géniales ont été publiées par d'autres personnes géniales.
+
+## Comment contribuer
+
+Wails est un projet open source, orienté par la communauté. Nous souhaitons la bienvenue à tous ceux qui veulent nous rejoindre pour contribuer au projet. Cette documentation s'adresse à toute personne souhaitant se familiariser avec le projet et les processus de développement.
+
+Il y a plusieurs façons de contribuer au projet :
+
+- Développer de nouvelles fonctionnalités
+- Corriger des Bugs
+- Tester
+- Documenter les fonctionnalités
+- Écrire des tutoriaux / guides
+- Aider les autres avec leurs soucis + participer aux discussions
+
+Des guides ont été créés dans leurs propres sections. Avant de commencer, veuillez vous présenter dans la discussion [Contribuer à Wails](https://github.com/wailsapp/wails/discussions/1520).
+
+### Développement de nouvelles fonctionnalités
+
+Nous sommes toujours désireux d'ajouter des fonctionnalités à Wails et de développer ce que le projet peut faire. Le processus d’ajout de nouvelles fonctionnalités est le suivant :
+
+- Choisissez un ticket d'amélioration avec l'étiquette "TODO". Il est préférable d'en sélectionner un dans le [Backlog](https://github.com/orgs/wailsapp/projects/1/views/1) mais le choix vous appartient.
+- Avant de développer, vérifiez que le ticket inclut les informations suivantes :
+  - Le but de l'amélioration
+  - Qu'est-ce qui est hors de portée pour l'amélioration
+  - Quelles plateformes vont bénéficier de l'amélioration (la plupart des fonctionnalités sont cross-plateforme à part pour des raisons spécifiques)
+- Si le ticket n'inclut pas ces informations, n'hésitez pas à demander les informations à la personne qui a ouvert le ticket. Parfois, des tickets d'initiatives sont créés et nécessitent plus de détails
+- Commenter sur le ticket en précisant que vous souhaitez développer la fonctionnalité
+- Clonez le dépôt et créez une branche au format `feature/<ticket_number>_<ticket_title>`
+- Les nouvelles fonctionnalités nécessitent souvent de la documentation, donc assurez-vous que vous avez également ajouté ou mis à jour la documentation impactés par vos modifications
+- Une fois que la fonctionnalité est prête à être testée, créez un brouillon de PR. Veuillez vous assurer que la description de la PR contient les scénarios de test et les cas de test listés avec les coches, afin que les autres puissent savoir ce qui doit encore être testé.
+- Une fois que tous les tests sont terminés, veuillez mettre à jour le statut de la PR à partir du brouillon et laisser un message.
+
+:::note
+Il n'y a rien qui vous empêche d'ouvrir un ticket et d'y travailler vous-même, mais soyez conscient que toutes les demandes d'amélioration sont examinées pour être en bon état. Toutes les idées ne seront pas sélectionnées, il est donc préférable d'avoir une discussion sur l'amélioration en premier.
+:::
+
+:::warning
+Toute PRs ouverte sans ticket correspondant peut être rejetée.
+:::
+
+### Corriger des Bugs
+
+Le processus de correction des bugs est le suivant :
+
+- Vérifiez le [backlog](https://github.com/orgs/wailsapp/projects/1/views/1) actuel et sélectionnez un bug à corriger
+- Avant de développer, vérifiez que le ticket inclut les informations suivantes :
+- La portée du problème, y compris les plateformes affectées
+- Les étapes pour reproduire le soucis. Parfois, des bugs sont ouverts mais ne sont pas liés à Wails. C'est au rapporteur du bug de prouver que le souci provient de Wails avec un [exemple minimum pouvant être reproduit](https://stackoverflow.com/help/minimal-reproducible-example)
+- Le résultat de `wails doctor`
+- Un test permettant de reproduire le bug
+- Si le ticket n'inclut pas ces informations, n'hésitez pas à demander les informations à la personne qui a ouvert le ticket.
+- Commenter sur le ticket indiquant que vous souhaitez développer un correctif
+- Clonez le dépôt et créez une branche au format `bugfix/<ticket_number>_<ticket_title>`
+- Une fois que le correctif est prêt à être testé, créez un brouillon de PR. Veuillez vous assurer que la description de la PR contient les scénarios de test et les cas de test listés avec les coches, afin que les autres puissent savoir ce qui doit encore être testé.
+- Une fois que tous les tests sont terminés, veuillez mettre à jour le statut de la PR à partir du brouillon et laisser un message.
+
+:::note
+Il n'y a rien qui vous empêche d'ouvrir un ticket et d'y travailler vous-même, mais veuillez noter que toutes les corrections de bugs devraient être discutées afin d'éviter des effets secondaires non prévus.
+:::
+
+:::warning
+Toute PRs ouverte sans ticket correspondant peut être rejetée.
+:::
+
+### Tester
+
+Les tests sont d'une importance vitale pour assurer la qualité du projet. Il y a quelques scénarios où les tests peuvent vraiment aider le projet :
+
+- Tester si un bug est reproductible sur votre système local
+- Tester les PRs pour s'assurer qu'elles fonctionnent correctement
+
+Si vous avez choisi de tester si le bug de quelqu'un est reproductible sur votre système local, alors n'hésitez pas à ajouter un commentaire dans le ticket le confirmant avec le résultat de `wails doctor`.
+
+Pour tester les PR, choisissez une PR et vérifiez si sa description contient les scénarios de test listés. Dans le cas contraire, veuillez demander à la personne qui a ouvert la PR de fournir cette liste. Une fois que vous avez un scénario de test valide, veuillez signaler vos conclusions en commentaire de la PR.
+
+Si vous avez besoin de plus de clarté ou d'aide lors des tests, veuillez poser une question dans la discussion [Contribuer à Wails](https://github.com/wailsapp/wails/discussions/1520) ou sur slack.
+
+### Documenter
+
+Ce site est également la documentation principale du projet. Parfois, elle devient obsolète et nécessite de légers ajustements. Une partie de la documentation n'est pas non plus écrite selon les meilleures normes. Construire une documentation est compliquée, alors toute contribution est grandement appréciée. Sans documentation, les fonctionnalités ne sont pas considérées comme terminées, donc pour le projet c'est _aussi important_ que le code.
+
+Généralement nous ne créons pas de tickets pour la mise à jour de la documentation. Si vous pensez que quelque chose doit être mis à jour ou réécrit, alors n'hésitez pas à soumettre une PR pour cela. Ce site se trouve dans le dépôt principal sous le répertoire `website`. Nous utilisons [Docusaurus](https://docusaurus.io/) pour créer le site afin qu'il y ait beaucoup de documentation et de tutoriels existants pour aider à l'utiliser.
+
+Pour mettre en place un environnement de développement local pour la documentation, effectuez les commandes suivantes :
+
+- [Install npm](https://docs.npmjs.com/cli/v8/configuring-npm/install)
+- `cd website`
+- `npm install`
+- `npm run start`
+
+Après avoir tout installé et démarré, vous devriez voir le site à l'URL suivante : [`http://localhost:3000`](http://localhost:3000). Toute modification apportée au texte du site sera immédiatement reflétée dans le navigateur.
+
+#### Gestion de version
+
+Nous employons un système de gestion de version où nous avons la "dernière" documentation (alias "prochaine version") qui contient toutes les modifications qui ont été faites depuis la dernière version. Et seules les deux versions précédentes de la documentation sont conservées.
+
+Il n'y a généralement pas de raison de mettre à jour la documentation déjà publiée, alors généralement nous ne mettons pas à jour les documents se trouvant dans les dossiers `versioned_docs` et `versioned_sidebars`.
+
+La documentation de la "prochaine version" sont principalement dans `website/docs` avec quelques éléments "indépendants des versions" dans `src/pages`. Toute mise à jour doit être effectuée dans le dossier `website/docs`.
+
+#### Langues
+
+Par défaut, la documentation de Wails est en anglais. Nous utilisons l'outil "crowdin" pour traduire l'ensemble de la documentation dans d'autres langues et synchroniser le tout sur le site. Vous pouvez [rejoindre notre projet](https://crowdin.com/project/wails) et contribuer en soumettant vos traductions.
+
+##### Ajouter une nouvelle langue
+
+Si vous souhaitez ajouter une nouvelle langue à la documentation, veuillez suivre les instructions pour [remplir et soumettre un problème](https://github.com/wailsapp/wails/issues/new?assignees=&labels=documentation&template=documentation.yml). Après avoir été approuvé par le mainteneur, nous ajouterons la langue dans « crowdin » et vous pourrez ensuite soumettre votre traduction.
+
+### Aider les autres
+
+Une bonne façon de contribuer au projet est d'aider ceux qui éprouvent des difficultés. Ils ouvrent généralement un ticket ou envoient un message sur le canal Slack de Wails. Même clarifier le problème peut vraiment aider. Parfois, quand un problème est discuté et résolu, nous créons un guide pour aider ceux qui sont confrontés aux mêmes problèmes.
+
+Pour rejoindre le canal de slack de Wails, acceptez l'invitation [ici](https://gophers.slack.com/join/shared_invite/zt-197vymgt3-sJt4oyakb6nqlVKjXTyeVw#/shared-invite/email) et rejoignez-nous sur le canal en suivant [ce lien](https://gophers.slack.com/?redir=%2Fmessages%2FCJ4P9F7MZ%2F).
+
+:::note
+
+Travail en cours
+
+:::

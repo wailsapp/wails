@@ -1,4 +1,4 @@
-//go:build !exp_gowebview2loader
+//go:build windows && native_webview2loader
 
 package webviewloader
 
@@ -75,7 +75,7 @@ func GetAvailableCoreWebView2BrowserVersionString(path string) (string, error) {
 		// feature-complete and remove the use of the native DLL and go-winloader.
 		version, err := goGetAvailableCoreWebView2BrowserVersionString(path)
 		if errors.Is(err, errNoClientDLLFound) {
-			// Webview2 is not found
+			// WebView2 is not found
 			return "", nil
 		} else if err != nil {
 			return "", err
@@ -105,7 +105,7 @@ func GetAvailableCoreWebView2BrowserVersionString(path string) (string, error) {
 
 	if res != 0 {
 		if res == E_FILENOTFOUND {
-			// Webview2 is not installed
+			// WebView2 is not installed
 			return "", nil
 		}
 

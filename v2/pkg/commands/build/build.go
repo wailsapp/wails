@@ -2,14 +2,14 @@ package build
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
+	"github.com/pterm/pterm"
 	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v2/internal/colour"
+
 	"github.com/wailsapp/wails/v2/internal/staticanalysis"
 	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
 
@@ -185,59 +185,83 @@ func CreateEmbedDirectories(cwd string, buildOptions *Options) error {
 
 }
 
+func fatal(message string) {
+	printer := pterm.PrefixPrinter{
+		MessageStyle: &pterm.ThemeDefault.FatalMessageStyle,
+		Prefix: pterm.Prefix{
+			Style: &pterm.ThemeDefault.FatalPrefixStyle,
+			Text:  " FATAL ",
+		},
+	}
+	printer.Println(message)
+	os.Exit(1)
+}
+
+func printBulletPoint(text string, args ...any) {
+	item := pterm.BulletListItem{
+		Level: 2,
+		Text:  text,
+	}
+	t, err := pterm.DefaultBulletList.WithItems([]pterm.BulletListItem{item}).Srender()
+	if err != nil {
+		fatal(err.Error())
+	}
+	t = strings.Trim(t, "\n\r")
+	pterm.Printf(t, args...)
+}
+
 func GenerateBindings(buildOptions *Options) error {
 
 	obfuscated := buildOptions.Obfuscated
 	if obfuscated {
-		buildOptions.Logger.Print("  - Generating obfuscated bindings: ")
+		printBulletPoint("Generating obfuscated bindings: ")
 		buildOptions.UserTags = append(buildOptions.UserTags, "obfuscated")
 	} else {
-		buildOptions.Logger.Print("  - Generating bindings: ")
+		printBulletPoint("Generating bindings: ")
 	}
 
 	// Generate Bindings
 	output, err := bindings.GenerateBindings(bindings.Options{
 		Tags:      buildOptions.UserTags,
 		GoModTidy: !buildOptions.SkipModTidy,
+		TsPrefix:  buildOptions.ProjectData.Bindings.TsGeneration.Prefix,
+		TsSuffix:  buildOptions.ProjectData.Bindings.TsGeneration.Suffix,
 	})
 	if err != nil {
 		return err
 	}
 
 	if buildOptions.Verbosity == VERBOSE {
-		buildOptions.Logger.Println(output)
+		pterm.Info.Println(output)
 	}
 
-	buildOptions.Logger.Println("Done.")
+	pterm.Println("Done.")
 
 	return nil
 }
 
 func execBuildApplication(builder Builder, options *Options) (string, error) {
-	// Extract logger
-	outputLogger := options.Logger
-
 	// If we are building for windows, we will need to generate the asset bundle before
 	// compilation. This will be a .syso file in the project root
 	if options.Pack && options.Platform == "windows" {
-		outputLogger.Print("  - Generating bundle assets: ")
+		printBulletPoint("Generating application assets: ")
 		err := packageApplicationForWindows(options)
 		if err != nil {
 			return "", err
 		}
-		outputLogger.Println("Done.")
+		pterm.Println("Done.")
 
 		// When we finish, we will want to remove the syso file
 		defer func() {
 			err := os.Remove(filepath.Join(options.ProjectData.Path, options.ProjectData.Name+"-res.syso"))
 			if err != nil {
-				log.Fatal(err)
+				fatal(err.Error())
 			}
 		}()
 	}
 
 	// Compile the application
-	outputLogger.Print("  - Compiling application: ")
+	printBulletPoint("Compiling application: ")
 
 	if options.Platform == "darwin" && options.Arch == "universal" {
 		outputFile := builder.OutputFilename(options)
@@ -249,7 +273,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		options.OutputFile = amd64Filename
 		options.CleanBinDirectory = false
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("\nBuilding AMD64 Target: %s", filepath.Join(options.BinDirectory, options.OutputFile))
+			pterm.Println("Building AMD64 Target: " + filepath.Join(options.BinDirectory, options.OutputFile))
 		}
 		err := builder.CompileProject(options)
 		if err != nil {
@@ -260,7 +284,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		options.OutputFile = arm64Filename
 		options.CleanBinDirectory = false
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("Building ARM64 Target: %s", filepath.Join(options.BinDirectory, options.OutputFile))
+			pterm.Println("Building ARM64 Target: " + filepath.Join(options.BinDirectory, options.OutputFile))
 		}
 		err = builder.CompileProject(options)
 
@@ -269,7 +293,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		}
 		// Run lipo
 		if options.Verbosity == VERBOSE {
-			outputLogger.Println("  Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename)
+			pterm.Println(fmt.Sprintf("Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename))
 		}
 		_, stderr, err := shell.RunCommand(options.BinDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
 		if err != nil {
@@ -293,33 +317,37 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 		}
 	}
 
-	outputLogger.Println("Done.")
+	pterm.Println("Done.")
 
 	// Do we need to pack the app for non-windows?
 	if options.Pack && options.Platform != "windows" {
 
-		outputLogger.Print("  - Packaging application: ")
+		printBulletPoint("Packaging application: ")
 
 		// TODO: Allow cross platform build
 		err := packageProject(options, runtime.GOOS)
 		if err != nil {
 			return "", err
 		}
-		outputLogger.Println("Done.")
+		pterm.Println("Done.")
 	}
 
 	if options.Platform == "windows" {
-		const expWebView2Loader = "exp_gowebview2loader"
+		const nativeWebView2Loader = "native_webview2loader"
 
-		message := ""
 		tags := options.UserTags
-		if lo.Contains(tags, expWebView2Loader) {
-			message = "Thanks for testing the new experimental Go native WebView2Loader. Please report your feedback and any bugs you think might be related to using the new loader: https://github.com/wailsapp/wails/issues/2004"
+		if lo.Contains(tags, nativeWebView2Loader) {
+			message := "You are using the legacy native WebView2Loader. This loader will be deprecated in the near future. Please report any bugs related to the new loader: https://github.com/wailsapp/wails/issues/2004"
+			pterm.Warning.Println(message)
 		} else {
-			tags = append(tags, expWebView2Loader)
-			message = fmt.Sprintf("An experimental Go native WebView2Loader is available. We would love to hear your feedback about it and invite you to test it by building with `-tags %s`", strings.Join(tags, ","))
+			tags = append(tags, nativeWebView2Loader)
+			message := fmt.Sprintf("Wails is now using the new Go WebView2Loader. If you encounter any issues with it, please report them to https://github.com/wailsapp/wails/issues/2004. You could also use the old legacy loader with `-tags %s`, but keep in mind this will be deprecated in the near future.", strings.Join(tags, ","))
+			pterm.Info.Println(message)
 		}
-		println(colour.Green("  - " + message))
+	}
+
+	if options.Platform == "darwin" && options.Mode == Debug {
+		pterm.Warning.Println("A darwin debug build contains private APIs, please don't distribute this build. Please use it only as a test build for testing and debug purposes.")
 	}
 
 	return options.CompiledBinary, nil
@@ -356,13 +384,13 @@ func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookI
 				// The hook is for host platform
 			} else {
 				// Skip a hook which is not native
-				outputLogger.Println("  - Non native build hook '%s': Skipping.", hookIdentifier)
+				printBulletPoint(fmt.Sprintf("Non native build hook '%s': Skipping.", hookIdentifier))
 				return nil
 			}
 		}
 	}
 
-	outputLogger.Print("  - Executing %s build hook '%s': ", hookName, hookIdentifier)
+	printBulletPoint("Executing %s build hook '%s': ", hookName, hookIdentifier)
 	args := strings.Split(buildHook, " ")
 	for i, arg := range args {
 		newArg := argReplacements[arg]
@@ -373,17 +401,18 @@ func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookI
 	}
 
 	if options.Verbosity == VERBOSE {
-		outputLogger.Println("%s", strings.Join(args, " "))
+		pterm.Info.Println(strings.Join(args, " "))
+
 	}
 
 	stdout, stderr, err := shell.RunCommand(options.BinDirectory, args[0], args[1:]...)
 	if options.Verbosity == VERBOSE {
-		println(stdout)
+		pterm.Info.Println(stdout)
 	}
 	if err != nil {
 		return fmt.Errorf("%s - %s", err.Error(), stderr)
 	}
-	outputLogger.Println("Done.")
+	pterm.Println("Done.")
 
 	return nil
 }

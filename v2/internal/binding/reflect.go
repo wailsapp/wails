@@ -166,6 +166,12 @@ func getPackageName(in string) string {
 	return result
 }
 
+func getSplitReturn(in string) (string, string) {
+	result := strings.Split(in, ".")
+	return result[0], result[1]
+
+}
+
 func hasElements(typ reflect.Type) bool {
 	kind := typ.Kind()
 	return kind == reflect.Ptr || kind == reflect.Array || kind == reflect.Slice || kind == reflect.Map

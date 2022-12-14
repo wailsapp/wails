@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pterm/pterm"
+
 	"github.com/wailsapp/wails/v2/internal/system"
 
 	"github.com/leaanthony/gosod"
@@ -277,14 +279,13 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	commands.Add("-o")
 	commands.Add(compiledBinary)
 
-	b.projectData.OutputFilename = strings.TrimPrefix(compiledBinary, options.ProjectData.Path)
 	options.CompiledBinary = compiledBinary
 
 	// Build the application
 	cmd := exec.Command(compiler, commands.AsSlice()...)
 	cmd.Stderr = os.Stderr
 	if verbose {
-		println("  Build command:", compiler, commandPrettifier(commands.AsSlice()))
+		pterm.Info.Println("Build command:", compiler, commandPrettifier(commands.AsSlice()))
 		cmd.Stdout = os.Stdout
 	}
 	// Set the directory
@@ -301,8 +302,8 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	cmd.Env = os.Environ() // inherit env
 
 	if options.Platform != "windows" {
-		// Use upsertEnv so we don't overwrite user's CGO_CFLAGS
-		cmd.Env = upsertEnv(cmd.Env, "CGO_CFLAGS", func(v string) string {
+		// Use shell.UpsertEnv so we don't overwrite user's CGO_CFLAGS
+		cmd.Env = shell.UpsertEnv(cmd.Env, "CGO_CFLAGS", func(v string) string {
 			if options.Platform == "darwin" {
 				if v != "" {
 					v += " "
@@ -311,8 +312,8 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 			}
 			return v
 		})
-		// Use upsertEnv so we don't overwrite user's CGO_CXXFLAGS
-		cmd.Env = upsertEnv(cmd.Env, "CGO_CXXFLAGS", func(v string) string {
+		// Use shell.UpsertEnv so we don't overwrite user's CGO_CXXFLAGS
+		cmd.Env = shell.UpsertEnv(cmd.Env, "CGO_CXXFLAGS", func(v string) string {
 			if v != "" {
 				v += " "
 			}
@@ -320,7 +321,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 			return v
 		})
 
-		cmd.Env = upsertEnv(cmd.Env, "CGO_ENABLED", func(v string) string {
+		cmd.Env = shell.UpsertEnv(cmd.Env, "CGO_ENABLED", func(v string) string {
 			return "1"
 		})
 		if options.Platform == "darwin" {
@@ -337,7 +338,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 			}
 			addUTIFramework := majorVersion >= 11
 			// Set the minimum Mac SDK to 10.13
-			cmd.Env = upsertEnv(cmd.Env, "CGO_LDFLAGS", func(v string) string {
+			cmd.Env = shell.UpsertEnv(cmd.Env, "CGO_LDFLAGS", func(v string) string {
 				if v != "" {
 					v += " "
 				}
@@ -351,16 +352,16 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		}
 	}
 
-	cmd.Env = upsertEnv(cmd.Env, "GOOS", func(v string) string {
+	cmd.Env = shell.UpsertEnv(cmd.Env, "GOOS", func(v string) string {
 		return options.Platform
 	})
 
-	cmd.Env = upsertEnv(cmd.Env, "GOARCH", func(v string) string {
+	cmd.Env = shell.UpsertEnv(cmd.Env, "GOARCH", func(v string) string {
 		return options.Arch
 	})
 
 	if verbose {
-		println("  Environment:", strings.Join(cmd.Env, " "))
+		printBulletPoint("Environment:", strings.Join(cmd.Env, " "))
 	}
 
 	// Run command
@@ -374,12 +375,11 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 			stdErr := string(output)
 			if strings.Contains(err.Error(), "ld: framework not found UniformTypeIdentifiers") ||
 				strings.Contains(stdErr, "ld: framework not found UniformTypeIdentifiers") {
-				println(`
+				pterm.Warning.Println(`
 NOTE: It would appear that you do not have the latest Xcode cli tools installed.
 Please reinstall by doing the following:
   1. Remove the current installation located at "xcode-select -p", EG: sudo rm -rf /Library/Developer/CommandLineTools
-  2. Install latest Xcode tools: xcode-select --install
-`)
+  2. Install latest Xcode tools: xcode-select --install`)
 			}
 		}
 		return err
@@ -389,11 +389,11 @@ Please reinstall by doing the following:
 		return nil
 	}
 
-	fmt.Printf("Compressing application: ")
+	printBulletPoint("Compressing application: ")
 
 	// Do we have upx installed?
 	if !shell.CommandExists("upx") {
-		println("Warning: Cannot compress binary: upx not found")
+		pterm.Warning.Println("Warning: Cannot compress binary: upx not found")
 		return nil
 	}
 
@@ -405,16 +405,16 @@ Please reinstall by doing the following:
 	}
 
 	if verbose {
-		println("upx", strings.Join(args, " "))
+		pterm.Info.Println("upx", strings.Join(args, " "))
 	}
 
 	output, err := exec.Command("upx", args...).Output()
 	if err != nil {
 		return errors.Wrap(err, "Error during compression:")
 	}
-	println("Done.")
+	pterm.Println("Done.")
 	if verbose {
-		println(string(output))
+		pterm.Info.Println(string(output))
 	}
 
 	return nil
@@ -489,7 +489,7 @@ func (b *BaseBuilder) NpmInstallUsingCommand(sourceDir string, installCommand st
 	// Shortcut installation
 	if install == false {
 		if verbose {
-			println("Skipping npm install")
+			pterm.Println("Skipping npm install")
 		}
 		return nil
 	}
@@ -499,10 +499,10 @@ func (b *BaseBuilder) NpmInstallUsingCommand(sourceDir string, installCommand st
 	stdout, stderr, err := shell.RunCommand(sourceDir, cmd[0], cmd[1:]...)
 	if verbose || err != nil {
 		for _, l := range strings.Split(stdout, "\n") {
-			fmt.Printf("    %s\n", l)
+			pterm.Printf("    %s\n", l)
 		}
 		for _, l := range strings.Split(stderr, "\n") {
-			fmt.Printf("    %s\n", l)
+			pterm.Printf("    %s\n", l)
 		}
 	}
 
@@ -514,10 +514,10 @@ func (b *BaseBuilder) NpmRun(projectDir, buildTarget string, verbose bool) error
 	stdout, stderr, err := shell.RunCommand(projectDir, "npm", "run", buildTarget)
 	if verbose || err != nil {
 		for _, l := range strings.Split(stdout, "\n") {
-			fmt.Printf("    %s\n", l)
+			pterm.Printf("    %s\n", l)
 		}
 		for _, l := range strings.Split(stderr, "\n") {
-			fmt.Printf("    %s\n", l)
+			pterm.Printf("    %s\n", l)
 		}
 	}
 	return err
@@ -533,10 +533,10 @@ func (b *BaseBuilder) NpmRunWithEnvironment(projectDir, buildTarget string, verb
 	err := cmd.Run()
 	if verbose || err != nil {
 		for _, l := range strings.Split(stdo.String(), "\n") {
-			fmt.Printf("    %s\n", l)
+			pterm.Printf("    %s\n", l)
 		}
 		for _, l := range strings.Split(stde.String(), "\n") {
-			fmt.Printf("    %s\n", l)
+			pterm.Printf("    %s\n", l)
 		}
 	}
 	return err
@@ -559,13 +559,14 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 	}
 	if installCommand == "" {
 		// No - don't install
-		outputLogger.Println("  - No Install command. Skipping.")
+		printBulletPoint("No Install command. Skipping.")
+		pterm.Println("")
 	} else {
 		// Do install if needed
-		outputLogger.Print("  - Installing frontend dependencies: ")
+		printBulletPoint("Installing frontend dependencies: ")
 		if verbose {
-			outputLogger.Println("")
-			outputLogger.Println("  Install command: '" + installCommand + "'")
+			pterm.Println("")
+			pterm.Info.Println("Install command: '" + installCommand + "'")
 		}
 		if err := b.NpmInstallUsingCommand(frontendDir, installCommand, verbose); err != nil {
 			return err
@@ -579,49 +580,31 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 		buildCommand = b.projectData.GetDevBuildCommand()
 	}
 	if buildCommand == "" {
-		outputLogger.Println("  - No Build command. Skipping.")
+		printBulletPoint("No Build command. Skipping.")
+		pterm.Println("")
 		// No - ignore
 		return nil
 	}
 
-	outputLogger.Print("  - Compiling frontend: ")
+	printBulletPoint("Compiling frontend: ")
 	cmd := strings.Split(buildCommand, " ")
 	if verbose {
-		outputLogger.Println("")
-		outputLogger.Println("  Build command: '" + buildCommand + "'")
+		pterm.Println("")
+		pterm.Info.Println("Build command: '" + buildCommand + "'")
 	}
 	stdout, stderr, err := shell.RunCommand(frontendDir, cmd[0], cmd[1:]...)
 	if verbose || err != nil {
 		for _, l := range strings.Split(stdout, "\n") {
-			fmt.Printf("    %s\n", l)
+			pterm.Printf("    %s\n", l)
 		}
 		for _, l := range strings.Split(stderr, "\n") {
-			fmt.Printf("    %s\n", l)
+			pterm.Printf("    %s\n", l)
 		}
 	}
 	if err != nil {
 		return err
 	}
 
-	outputLogger.Println("Done.")
+	pterm.Println("Done.")
 	return nil
-}
-
-func upsertEnv(env []string, key string, update func(v string) string) []string {
-	newEnv := make([]string, len(env), len(env)+1)
-	found := false
-	for i := range env {
-		if strings.HasPrefix(env[i], key+"=") {
-			eqIndex := strings.Index(env[i], "=")
-			val := env[i][eqIndex+1:]
-			newEnv[i] = fmt.Sprintf("%s=%v", key, update(val))
-			found = true
-			continue
-		}
-		newEnv[i] = env[i]
-	}
-	if !found {
-		newEnv = append(newEnv, fmt.Sprintf("%s=%v", key, update("")))
-	}
-	return newEnv
 }

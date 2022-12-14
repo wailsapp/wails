@@ -134,7 +134,9 @@ func (f *Frontend) WindowSetDarkTheme() {
 func (f *Frontend) Run(ctx context.Context) error {
 	f.ctx = ctx
 
-	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo)
+	f.chromium = edge.NewChromium()
+
+	mainWindow := NewWindow(nil, f.frontendOptions, f.versionInfo, f.chromium)
 	f.mainWindow = mainWindow
 
 	var _debug = ctx.Value("debug")
@@ -144,8 +146,6 @@ func (f *Frontend) Run(ctx context.Context) error {
 
 	f.WindowCenter()
 	f.setupChromium()
-
-	f.mainWindow.notifyParentWindowPositionChanged = f.chromium.NotifyParentWindowPositionChanged
 
 	mainWindow.OnSize().Bind(func(arg *winc.Event) {
 		if f.frontendOptions.Frameless {
@@ -345,7 +345,7 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 			B: col.B,
 		}
 
-		// Webview2 only has 0 and 255 as valid values.
+		// WebView2 only has 0 and 255 as valid values.
 		if backgroundCol.A > 0 && backgroundCol.A < 255 {
 			backgroundCol.A = 255
 		}
@@ -410,8 +410,8 @@ func (f *Frontend) Quit() {
 }
 
 func (f *Frontend) setupChromium() {
-	chromium := edge.NewChromium()
-	f.chromium = chromium
+	chromium := f.chromium
+
 	if opts := f.frontendOptions.Windows; opts != nil {
 		chromium.DataPath = opts.WebviewUserDataPath
 		chromium.BrowserPath = opts.WebviewBrowserPath
@@ -425,7 +425,6 @@ func (f *Frontend) setupChromium() {
 	}
 	chromium.Embed(f.mainWindow.Handle())
 	chromium.Resize()
-	f.mainWindow.chromium = chromium
 	settings, err := chromium.GetSettings()
 	if err != nil {
 		log.Fatal(err)
@@ -447,7 +446,6 @@ func (f *Frontend) setupChromium() {
 		if err != nil {
 			log.Fatal(err)
 		}
-
 	}
 
 	err = settings.PutIsStatusBarEnabled(false)
@@ -461,6 +459,10 @@ func (f *Frontend) setupChromium() {
 	err = settings.PutIsSwipeNavigationEnabled(false)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if f.debug && f.frontendOptions.Debug.OpenInspectorOnStartup {
+		chromium.OpenDevToolsWindow()
 	}
 
 	// Setup focus event handler

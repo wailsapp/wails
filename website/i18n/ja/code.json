@@ -186,11 +186,11 @@
     "message": "バージョン: {versionLabel}"
   },
   "theme.docs.versions.unreleasedVersionLabel": {
-    "message": "これは、{siteTitle} {versionLabel}のまだ未公開なドキュメントです。",
+    "message": "これは、{siteTitle} {versionLabel}のまだ未公開となっているドキュメントです。",
     "description": "The label used to tell the user that he's browsing an unreleased doc version"
   },
   "theme.docs.versions.unmaintainedVersionLabel": {
-    "message": "これは、{siteTitle} {versionLabel}のドキュメントで、長期間更新されていません。",
+    "message": "これは、{siteTitle} {versionLabel}のドキュメントで、現在はメンテナンスされていません。",
     "description": "The label used to tell the user that he's browsing an unmaintained doc version"
   },
   "theme.docs.versions.latestVersionSuggestionLabel": {
@@ -297,7 +297,7 @@
     "description": "The ARIA label for the breadcrumbs"
   },
   "theme.CodeBlock.wordWrapToggle": {
-    "message": "Toggle word wrap 文字列の折り返しの切替",
+    "message": "文字列の折り返しの切替",
     "description": "The title attribute for toggle word wrapping button of code block lines"
   },
   "theme.admonition.note": {

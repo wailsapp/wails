@@ -2,11 +2,12 @@ package project
 
 import (
 	"encoding/json"
-	"github.com/samber/lo"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/samber/lo"
 )
 
 // Project holds the data related to a Wails project
@@ -37,7 +38,7 @@ type Project struct {
 	/*** Internal Data ***/
 
 	// The path to the project directory
-	Path string
+	Path string `json:"projectdir"`
 
 	// Build directory
 	BuildDir string `json:"build:dir"`
@@ -92,6 +93,8 @@ type Project struct {
 
 	// Frontend directory
 	FrontendDir string `json:"frontend:dir"`
+
+	Bindings Bindings `json:"bindings"`
 }
 
 func (p *Project) GetFrontendDir() string {
@@ -202,9 +205,7 @@ func (p *Project) setDefaults() {
 			p.OutputFilename += ".exe"
 		}
 	case "darwin", "linux":
-		if strings.HasSuffix(p.OutputFilename, ".exe") {
-			p.OutputFilename = strings.TrimSuffix(p.OutputFilename, ".exe")
-		}
+		p.OutputFilename = strings.TrimSuffix(p.OutputFilename, ".exe")
 	}
 }
 
@@ -220,6 +221,15 @@ type Info struct {
 	ProductVersion string  `json:"productVersion"`
 	Copyright      *string `json:"copyright"`
 	Comments       *string `json:"comments"`
+}
+
+type Bindings struct {
+	TsGeneration TsGeneration `json:"ts_generation"`
+}
+
+type TsGeneration struct {
+	Prefix string `json:"prefix"`
+	Suffix string `json:"suffix"`
 }
 
 // Parse the given JSON data into a Project struct

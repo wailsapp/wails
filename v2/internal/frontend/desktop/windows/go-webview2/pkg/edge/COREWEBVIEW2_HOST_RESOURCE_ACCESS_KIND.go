@@ -1,3 +1,5 @@
+//go:build windows
+
 package edge
 
 type COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND uint32

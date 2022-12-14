@@ -1,3 +1,5 @@
+//go:build windows
+
 package edge
 
 type COREWEBVIEW2_KEY_EVENT_KIND uint32

@@ -165,7 +165,6 @@ float xroot = 0.0f;
 float yroot = 0.0f;
 int dragTime = -1;
 uint mouseButton = 0;
-bool contextMenuDisabled = false;
 
 gboolean buttonPress(GtkWidget *widget, GdkEventButton *event, void* dummy)
 {
@@ -175,8 +174,8 @@ gboolean buttonPress(GtkWidget *widget, GdkEventButton *event, void* dummy)
 		return FALSE;
 	}
 	mouseButton = event->button;
-	if( event->button == 3 && contextMenuDisabled ) {
-		return TRUE;
+	if( event->button == 3 ) {
+		return FALSE;
 	}
 
 	if (event->type == GDK_BUTTON_PRESS && event->button == 1)
@@ -232,10 +231,15 @@ GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowO
 	return webview;
 }
 
-void devtoolsEnabled(void* webview, int enabled) {
+void devtoolsEnabled(void* webview, int enabled, bool showInspector) {
 	WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
 	gboolean genabled = enabled == 1 ? true : false;
 	webkit_settings_set_enable_developer_extras(settings, genabled);
+
+	if (genabled && showInspector) {
+		WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(webview));
+		webkit_web_inspector_show(WEBKIT_WEB_INSPECTOR(inspector));
+	}
 }
 
 void loadIndex(void* webview, char* url) {
@@ -600,12 +604,15 @@ gboolean UnFullscreen(gpointer data) {
 	return G_SOURCE_REMOVE;
 }
 
-bool disableContextMenu(GtkWindow* window) {
+
+// function to disable the context menu but propogate the event
+gboolean disableContextMenu(GtkWidget *widget, WebKitContextMenu *context_menu, GdkEvent *event, WebKitHitTestResult *hit_test_result, gpointer data) {
+	// return true to disable the context menu
 	return TRUE;
 }
 
 void DisableContextMenu(void* webview) {
-	contextMenuDisabled = TRUE;
+	// Disable the context menu but propogate the event
 	g_signal_connect(WEBKIT_WEB_VIEW(webview), "context-menu", G_CALLBACK(disableContextMenu), NULL);
 }
 
@@ -637,6 +644,7 @@ static void SetWindowTransparency(GtkWidget *widget)
 */
 import "C"
 import (
+	"log"
 	"strings"
 	"sync"
 	"unsafe"
@@ -674,6 +682,7 @@ func bool2Cint(value bool) C.int {
 }
 
 func NewWindow(appoptions *options.App, debug bool) *Window {
+	validateWebKit2Version(appoptions)
 
 	result := &Window{
 		appoptions: appoptions,
@@ -704,7 +713,7 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	C.connectButtons(unsafe.Pointer(webview))
 
 	if debug {
-		C.devtoolsEnabled(unsafe.Pointer(webview), C.int(1))
+		C.devtoolsEnabled(unsafe.Pointer(webview), C.int(1), C.bool(appoptions.Debug.OpenInspectorOnStartup))
 	} else {
 		C.DisableContextMenu(unsafe.Pointer(webview))
 	}
@@ -1028,4 +1037,20 @@ func (w *Window) ToggleMaximise() {
 	} else {
 		w.Maximise()
 	}
+}
+
+// showModalDialogAndExit shows a modal dialog and exits the app.
+func showModalDialogAndExit(title, message string) {
+	go func() {
+		data := C.MessageDialogOptions{
+			title:       C.CString(title),
+			message:     C.CString(message),
+			messageType: C.int(1),
+		}
+
+		C.messageDialog(unsafe.Pointer(&data))
+	}()
+
+	<-messageDialogResult
+	log.Fatal(message)
 }

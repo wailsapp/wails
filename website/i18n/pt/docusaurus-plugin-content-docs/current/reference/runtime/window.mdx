@@ -1,0 +1,221 @@
+---
+sidebar_position: 4
+---
+
+# Janela
+
+Esses métodos dão controle da janela do aplicativo.
+
+### WindowSetTitle
+
+Define o texto na barra de título da janela.
+
+Go: `WindowSetTitle(ctx context.Context, title string)`<br/> JS: `WindowSetTitle(title: string)`
+
+### WindowFullscreen
+
+Faz a janela estar em tela cheia.
+
+Go: `WindowFullscreen(ctx context.Context)`<br/> JS: `WindowFullscreen()`
+
+### WindowUnfullscreen
+
+Restaura as dimensões e a posição anteriores da janela antes da tela cheia.
+
+Go: `WindowUnfullscreen(ctx context.Context)`<br/> JS: `WindowUnfullscreen()`
+
+### WindowIsFullscreen
+
+Retorna verdadeiro se a janela estiver em tela cheia.
+
+Go: `WindowIsFullscreen(ctx context.Context) bool`<br/> JS: `WindowIsFullscreen() bool`
+
+### WindowCenter
+
+Centraliza a janela no monitor que a janela está ativada.
+
+Go: `WindowCenter(ctx context.Context)`<br/> JS: `WindowCenter()`
+
+### WindowExecJS
+
+Executa código JS arbitrário na janela.
+
+Este método executa o código no navegador de forma assíncrona e retorna imediatamente. Se o script causar quaisquer erros, eles só estarão disponíveis no console do navegador.
+
+Go: `WindowExecJS(ctx context.Context, js string)`
+
+### WindowReload
+
+Executa um "recarregar" (Recarrega a página atual).
+
+Go: `WindowReload(ctx context.Context)`<br/> JS: `WindowReload()`
+
+### WindowReloadApp
+
+Recarrega o front-end do aplicativo.
+
+Go: `WindowReloadApp(ctx context.Context)`<br/> JS: `WindowReloadApp()`
+
+### WindowSetSystemDefaultTheme
+
+Somente para Windows.
+
+Go: `WindowSetSystemDefaultTheme(ctx context.Context)`<br/> JS: `WindowSetSystemDefaultTheme()`
+
+Define o tema da janela para padrão do sistema (escuro/claro).
+
+### WindowSetLightTheme
+
+Somente para Windows.
+
+Go: `WindowSetLightTheme(ctx context.Context)`<br/> JS: `WindowSetLightTheme()`
+
+Define o tema da janela como claro.
+
+### WindowSetDarkTheme
+
+Somente para Windows.
+
+Go: `WindowSetDarkTheme(ctx context.Context)`<br/> JS: `WindowSetDarkTheme()`
+
+Define o tema da janela como escuro.
+
+### WindowShow
+
+Mostra a janela, se ela estiver oculta no momento.
+
+Go: `WindowShow(ctx context.Context)`<br/> JS: `WindowShow()`
+
+### WindowHide
+
+Oculta a janela, se ela estiver visível no momento.
+
+Go: `WindowHide(ctx context.Context)`<br/> JS: `WindowHide()`
+
+### WindowIsNormal
+
+Retorna verdadeiro se a janela não for minimizada, maximizada ou tela inteira.
+
+Go: `WindowIsNormal(ctx context.Context) bool`<br/> JS: `WindowIsNormal() bool`
+
+### WindowSetSize
+
+Define a largura e a altura da janela.
+
+Go: `WindowSetSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetSize(size: Size)`
+
+### WindowGetSize
+
+Obtém a largura e a altura da janela.
+
+Go: `WindowGetSize(ctx context.Context) (width int, height int)`<br/> JS: `WindowGetSize() : Size`
+
+### WindowSetMinSize
+
+Define o tamanho mínimo da janela. Será redimensionada a janela se a janela for atualmente menor do que as dimensões fornecidas.
+
+Definir um tamanho de `0,0` irá desativar esta restrição.
+
+Go: `WindowSetMinSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMinSize(size: Size)`
+
+### WindowSetMaxSize
+
+Define o tamanho máximo da janela. Será redimensionada a janela se a janela for atualmente maior do que as dimensões fornecidas.
+
+Definir um tamanho de `0,0` irá desativar esta restrição.
+
+Go: `WindowSetMaxSize(ctx context.Context, width int, height int)`<br/> JS: `WindowSetMaxSize(size: Size)`
+
+### WindowSetAlwaysOnTop
+
+Define a janela sempreOnTop ou não no topo.
+
+Go: `WindowSetAlwaysOnTop(ctx context.Context, b bool)`<br/> JS: `WindowSetAlwaysOnTop(b: Boolen)`
+
+### WindowSetPosition
+
+Define a posição da janela em relação ao monitor da janela ativada.
+
+Go: `WindowSetPosition(ctx context.Context, x int, y int)`<br/> JS: `WindowSetPosition(position: Position)`
+
+### WindowGetPosition
+
+Obtém a posição da janela em relação ao monitor que a janela está ativada.
+
+Go: `WindowGetPosition(ctx context.Context) (x int, y int)`<br/> JS: `WindowGetPosition() : Position`
+
+### WindowMaximise
+
+Maximiza a janela para preencher a tela.
+
+Go: `WindowMaximise(ctx context.Context)`<br/> JS: `WindowMaximise()`
+
+### WindowUnmaximise
+
+Restaurar a janela para as dimensões e a posição antes de maximizar.
+
+Go: `WindowUnmaximise(ctx context.Context)`<br/> JS: `WindowUnmaximise()`
+
+### WindowIsMaximised
+
+Retorna verdadeiro se a janela for maximizada.
+
+Go: `WindowIsMaximised(ctx context.Context) bool`<br/> JS: `WindowIsMaximised() bool`
+
+### WindowToggleMaximise
+
+Alterna entre Maximizado e Não Maximizado.
+
+Go: `WindowToggleMaximise(ctx context.Context)`<br/> JS: `WindowToggleMaximise()`
+
+### WindowMinimise
+
+Minimiza a janela.
+
+Go: `WindowMinimise(ctx context.Context)`<br/> JS: `WindowMinimise()`
+
+### WindowUnminimise
+
+Restaura a janela para as dimensões e a posição antes de minimizar.
+
+Go: `WindowUnminimise(ctx context.Context)`<br/> JS: `WindowUnminimise()`
+
+### WindowIsMinimised
+
+Retorna verdadeiro se a janela estiver minimizada.
+
+Go: `WindowIsMinimised(ctx context.Context) bool`<br/> JS: `WindowIsMinimised() bool`
+
+### WindowSetBackgroundColour
+
+Define a cor de fundo da janela para a definição de cores RGBA fornecida. Esta cor será exibida para todos os pixels transparentes.
+
+Valores válidos para R, G, B e A são 0-255.
+
+:::info Windows
+
+No Windows, apenas valores alfa de 0 ou 255 são suportados. Qualquer valor que não for 0 será considerado 255.
+
+:::
+
+Go: `WindowSetBackgroundColour(ctx context.Context, R, G, B, A uint8)`<br/> JS: `WindowSetBackgroundColour(R, G, B, A)`
+
+## TypeScript Object Definitions
+
+### Position
+
+```ts
+interface Position {
+  x: number;
+  y: number;
+}
+```
+
+### Size
+
+```ts
+interface Size {
+  w: number;
+  h: number;
+}
+```

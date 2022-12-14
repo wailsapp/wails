@@ -8,16 +8,16 @@ Wailsは、Go言語とWeb技術を使用して、デスクトップアプリの�
 
 "Goの力によって、Electronが軽量かつ高速になったようなもの"、と考えるとよいでしょう。 Goの柔軟性とパワーに、リッチでモダンなフロントエンドを組み合わせたアプリを、簡単に構築することができます。
 
-### Features
+### 特徴
 
-- Native Menus, Dialogs, Theming and Translucency
-- Windows, macOS and linux support
-- Built in templates for Svelte, React, Preact, Vue, Lit and Vanilla JS
-- Easily call Go methods from Javascript
-- Automatic Go struct to Typescript model generation
-- No CGO or external DLLs required on Windows
+- ネイティブなメニュー、ダイアログ、テーマ、透過処理を使用可能です
+- Windows、macOS、Linuxをサポートしています
+- Svelte、React、Preact、Vue、Lit、バニラJS向けにビルトインテンプレートを用意しています
+- GoメソッドをJavaScriptから簡単に呼び出せます
+- Go構造体に対応するTypeScript型定義を自動生成します
+- WindowsにおいてCGOや外部DLLは必要ありません
 - [Vite](https://vitejs.dev/)の力を利用したライブ開発が可能です
-- Powerful CLI to easily Create, Build and Package applications
+- アプリケーションを簡単に作成、ビルド、パッケージングするための強力なCLIを備えています
 - 豊富な[ランタイムライブラリ](/docs/reference/runtime/intro)を用意しています
 - Wailsで構築されたアプリケーションは、Apple StoreおよびMicrosoft Storeに準拠しています
 
@@ -36,7 +36,7 @@ Wailsは、Go言語とWeb技術を使用して、デスクトップアプリの�
 
 ### クイックスタートテンプレート
 
-Wailsには、アプリの開発をすばやく始められるように、多数のテンプレートが用意されています。 Svelte、React、Vue、Preact、LitおよびVanilla用で、それぞれのテンプレートがあります。 各テンプレートには、Javascript版とTypescript版が用意されています。
+Wailsには、アプリの開発をすばやく始められるように、多数のテンプレートが用意されています。 Svelte、React、Vue、Preact、Lit向け、およびバニラなJavaScript用で、それぞれのテンプレートがあります。 各テンプレートには、Javascript版とTypescript版が用意されています。
 
 ### ネイティブ要素
 
@@ -46,7 +46,7 @@ Wailsは、ウィンドウ、メニュー、ダイアログなどのネイティ
 
 ### GoとJavascriptのやり取り
 
-Wailsは自動的に、GoのメソッドをJavascriptから利用できるようにするので、フロントエンドからGoのメソッド名を呼び出すことができます。 It even generates Typescript models for the structs used by your Go methods, so you can pass the same data structures between Go and Javascript.
+Wailsは自動的に、GoのメソッドをJavascriptから利用できるようにするので、フロントエンドからGoのメソッド名を呼び出すことができます。 Goメソッドが使用する構造体を表すTypeScritpt型定義も自動生成されるため、GoとJavaScriptの間で同じデータ構造をやり取りすることができます。
 
 ### ランタイムライブラリ
 
@@ -64,7 +64,7 @@ WailsはGoとJavascriptの両方にランタイムライブラリを提供し、
 
 #### ブラウザを使った開発
 
-If you prefer to debug and develop in a browser then Wails has you covered. ブラウザでのデバッグや開発も、Wailsにお任せください。 起動中のアプリはWebサーバを兼ねており、お好きなブラウザから接続してアプリを操作することができます。 プログラムアセットが書き換わった時はすぐに更新されます。
+ブラウザでのデバッグや開発も、Wailsにお任せください。 起動中のアプリはWebサーバを兼ねており、お好きなブラウザから接続してアプリを操作することができます。 プログラムアセットが書き換わった時はすぐに更新されます。
 
 ### 本番用のネイティブバイナリ
 

@@ -1,4 +1,4 @@
-//go:build exp_gowebview2loader
+//go:build windows && !native_webview2loader
 
 package webviewloader
 
@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	fmt.Println("DEB | Using experimental go webview2loader")
+	fmt.Println("DEB | Using go webview2loader")
 }
 
 type webView2RunTimeType int32

@@ -4,10 +4,12 @@
 package system
 
 import (
-	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
+	"fmt"
 	"os/exec"
 	"strings"
 	"syscall"
+
+	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 )
@@ -31,6 +33,15 @@ func (i *Info) discover() error {
 	}
 	i.OS = osinfo
 
+	i.Dependencies = append(i.Dependencies, checkXCodeSelect())
+	i.Dependencies = append(i.Dependencies, checkNPM())
+	i.Dependencies = append(i.Dependencies, checkXCodeBuild())
+	i.Dependencies = append(i.Dependencies, checkUPX())
+	i.Dependencies = append(i.Dependencies, checkNSIS())
+	return nil
+}
+
+func checkXCodeSelect() *packagemanager.Dependency {
 	// Check for xcode command line tools
 	output, err := exec.Command("xcode-select", "-v").Output()
 	installed := true
@@ -42,8 +53,8 @@ func (i *Info) discover() error {
 		version = strings.TrimSpace(version)
 		version = strings.TrimSuffix(version, ".")
 	}
-	xcodeDep := &packagemanager.Dependency{
-		Name:           "xcode command line tools ",
+	return &packagemanager.Dependency{
+		Name:           "Xcode command line tools ",
 		PackageName:    "N/A",
 		Installed:      installed,
 		InstallCommand: "xcode-select --install",
@@ -51,9 +62,30 @@ func (i *Info) discover() error {
 		Optional:       false,
 		External:       false,
 	}
-	i.Dependencies = append(i.Dependencies, xcodeDep)
-	i.Dependencies = append(i.Dependencies, checkNPM())
-	i.Dependencies = append(i.Dependencies, checkUPX())
-	i.Dependencies = append(i.Dependencies, checkNSIS())
-	return nil
+}
+
+func checkXCodeBuild() *packagemanager.Dependency {
+	// Check for xcode
+	output, err := exec.Command("xcodebuild", "-version").Output()
+	installed := true
+	version := ""
+	if err != nil {
+		installed = false
+	} else if l := strings.Split(string(output), "\n"); len(l) >= 2 {
+		version = fmt.Sprintf("%s (%s)",
+			strings.TrimPrefix(l[0], "Xcode "),
+			strings.TrimPrefix(l[1], "Build version "))
+	} else {
+		version = "N/A"
+	}
+
+	return &packagemanager.Dependency{
+		Name:           "Xcode",
+		PackageName:    "N/A",
+		Installed:      installed,
+		InstallCommand: "Available at https://apps.apple.com/us/app/xcode/id497799835",
+		Version:        version,
+		Optional:       true,
+		External:       false,
+	}
 }

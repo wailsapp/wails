@@ -166,6 +166,25 @@ If `/Applications/Xcode.app/Contents/Developer` is displayed, run `sudo xcode-se
 
 Sources: https://github.com/wailsapp/wails/issues/1806 and https://github.com/wailsapp/wails/issues/1140#issuecomment-1290446496
 
+If this doesn't work, try the following "hard reset" approach:
+
+```shell
+# cleanup cli tools
+sudo rm -rf /Library/Developer/CommandLineTools
+
+# switch to xcode one
+sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+# clear out go cache (go env will show you your patrh)
+rm -rf ~/Library/Caches/go-build
+
+# set CC to `gcc`
+export CC=gcc
+
+# now wails build works
+wails build
+```
+
 --
 
 ## Cannot start service: Host version "x.x.x does not match binary version "x.x.x"

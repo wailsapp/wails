@@ -10,7 +10,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
-const MinimumRuntimeVersion string = "94.0.992.31" // Webview2 SDK 1.0.992.28
+const MinimumRuntimeVersion string = "94.0.992.31" // WebView2 SDK 1.0.992.28
 
 type installationStatus int
 
