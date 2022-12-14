@@ -451,6 +451,17 @@ void windowGetPosition(void* nsWindow, int* x, int* y) {
 	*y = frame.origin.y;
 }
 
+// Destroy window
+void windowDestroy(void* nsWindow) {
+	// Destroy window on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// get main window
+		NSWindow* window = (NSWindow*)nsWindow;
+		// close window
+		[window close];
+	});
+}
+
 
 */
 import "C"
@@ -674,4 +685,8 @@ func (w *macosWindow) position() (int, int) {
 	})
 	wg.Wait()
 	return int(x), int(y)
+}
+
+func (w *macosWindow) destroy() {
+	C.windowDestroy(w.nsWindow)
 }

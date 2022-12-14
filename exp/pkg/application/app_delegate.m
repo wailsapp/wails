@@ -16,7 +16,7 @@
     [NSApp activateIgnoringOtherApps:YES];
 
     //callOnApplicationDidFinishLaunchingHandler();
-    applicationEventHandler(EventApplicationDidFinishLaunching);
+    processApplicationEvent(EventApplicationDidFinishLaunching);
 
 }
 
@@ -28,79 +28,79 @@
 
 // GENERATED EVENTS START
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationDidBecomeActive);
+    processApplicationEvent(EventApplicationDidBecomeActive);
 }
 
 - (void)applicationDidChangeBackingProperties:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationDidChangeBackingProperties);
+    processApplicationEvent(EventApplicationDidChangeBackingProperties);
 }
 
 - (void)applicationDidChangeEffectiveAppearance:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationDidChangeEffectiveAppearance);
+    processApplicationEvent(EventApplicationDidChangeEffectiveAppearance);
 }
 
 - (void)applicationDidChangeIcon:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationDidChangeIcon);
+    processApplicationEvent(EventApplicationDidChangeIcon);
 }
 
 - (void)applicationDidChangeOcclusionState:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationDidChangeOcclusionState);
+    processApplicationEvent(EventApplicationDidChangeOcclusionState);
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationDidChangeScreenParameters);
+    processApplicationEvent(EventApplicationDidChangeScreenParameters);
 }
 
 - (void)applicationDidChangeStatusBarFrame:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationDidChangeStatusBarFrame);
+    processApplicationEvent(EventApplicationDidChangeStatusBarFrame);
 }
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationDidChangeStatusBarOrientation);
+    processApplicationEvent(EventApplicationDidChangeStatusBarOrientation);
 }
 
 - (void)applicationDidHide:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationDidHide);
+    processApplicationEvent(EventApplicationDidHide);
 }
 
 - (void)applicationDidResignActive:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationDidResignActive);
+    processApplicationEvent(EventApplicationDidResignActive);
 }
 
 - (void)applicationDidUnhide:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationDidUnhide);
+    processApplicationEvent(EventApplicationDidUnhide);
 }
 
 - (void)applicationDidUpdate:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationDidUpdate);
+    processApplicationEvent(EventApplicationDidUpdate);
 }
 
 - (void)applicationWillBecomeActive:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationWillBecomeActive);
+    processApplicationEvent(EventApplicationWillBecomeActive);
 }
 
 - (void)applicationWillFinishLaunching:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationWillFinishLaunching);
+    processApplicationEvent(EventApplicationWillFinishLaunching);
 }
 
 - (void)applicationWillHide:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationWillHide);
+    processApplicationEvent(EventApplicationWillHide);
 }
 
 - (void)applicationWillResignActive:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationWillResignActive);
+    processApplicationEvent(EventApplicationWillResignActive);
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationWillTerminate);
+    processApplicationEvent(EventApplicationWillTerminate);
 }
 
 - (void)applicationWillUnhide:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationWillUnhide);
+    processApplicationEvent(EventApplicationWillUnhide);
 }
 
 - (void)applicationWillUpdate:(NSNotification *)notification {
-    applicationEventHandler(EventApplicationWillUpdate);
+    processApplicationEvent(EventApplicationWillUpdate);
 }
 
 // GENERATED EVENTS END

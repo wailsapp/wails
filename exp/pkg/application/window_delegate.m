@@ -44,295 +44,295 @@
 
 // GENERATED EVENTS START
 - (void)windowDidBecomeKey:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidBecomeKey);
+    processWindowEvent(self.windowId, EventWindowDidBecomeKey);
 }
 
 - (void)windowDidBecomeMain:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidBecomeMain);
+    processWindowEvent(self.windowId, EventWindowDidBecomeMain);
 }
 
 - (void)windowDidBeginSheet:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidBeginSheet);
+    processWindowEvent(self.windowId, EventWindowDidBeginSheet);
 }
 
 - (void)windowDidChangeAlpha:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeAlpha);
+    processWindowEvent(self.windowId, EventWindowDidChangeAlpha);
 }
 
 - (void)windowDidChangeBackingLocation:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeBackingLocation);
+    processWindowEvent(self.windowId, EventWindowDidChangeBackingLocation);
 }
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeBackingProperties);
+    processWindowEvent(self.windowId, EventWindowDidChangeBackingProperties);
 }
 
 - (void)windowDidChangeCollectionBehavior:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeCollectionBehavior);
+    processWindowEvent(self.windowId, EventWindowDidChangeCollectionBehavior);
 }
 
 - (void)windowDidChangeEffectiveAppearance:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeEffectiveAppearance);
+    processWindowEvent(self.windowId, EventWindowDidChangeEffectiveAppearance);
 }
 
 - (void)windowDidChangeOcclusionState:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeOcclusionState);
+    processWindowEvent(self.windowId, EventWindowDidChangeOcclusionState);
 }
 
 - (void)windowDidChangeOrderingMode:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeOrderingMode);
+    processWindowEvent(self.windowId, EventWindowDidChangeOrderingMode);
 }
 
 - (void)windowDidChangeScreen:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeScreen);
+    processWindowEvent(self.windowId, EventWindowDidChangeScreen);
 }
 
 - (void)windowDidChangeScreenParameters:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeScreenParameters);
+    processWindowEvent(self.windowId, EventWindowDidChangeScreenParameters);
 }
 
 - (void)windowDidChangeScreenProfile:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeScreenProfile);
+    processWindowEvent(self.windowId, EventWindowDidChangeScreenProfile);
 }
 
 - (void)windowDidChangeScreenSpace:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeScreenSpace);
+    processWindowEvent(self.windowId, EventWindowDidChangeScreenSpace);
 }
 
 - (void)windowDidChangeScreenSpaceProperties:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeScreenSpaceProperties);
+    processWindowEvent(self.windowId, EventWindowDidChangeScreenSpaceProperties);
 }
 
 - (void)windowDidChangeSharingType:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeSharingType);
+    processWindowEvent(self.windowId, EventWindowDidChangeSharingType);
 }
 
 - (void)windowDidChangeSpace:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeSpace);
+    processWindowEvent(self.windowId, EventWindowDidChangeSpace);
 }
 
 - (void)windowDidChangeSpaceOrderingMode:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeSpaceOrderingMode);
+    processWindowEvent(self.windowId, EventWindowDidChangeSpaceOrderingMode);
 }
 
 - (void)windowDidChangeTitle:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeTitle);
+    processWindowEvent(self.windowId, EventWindowDidChangeTitle);
 }
 
 - (void)windowDidChangeToolbar:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeToolbar);
+    processWindowEvent(self.windowId, EventWindowDidChangeToolbar);
 }
 
 - (void)windowDidChangeVisibility:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidChangeVisibility);
+    processWindowEvent(self.windowId, EventWindowDidChangeVisibility);
 }
 
 - (void)windowDidClose:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidClose);
+    processWindowEvent(self.windowId, EventWindowDidClose);
 }
 
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidDeminiaturize);
+    processWindowEvent(self.windowId, EventWindowDidDeminiaturize);
 }
 
 - (void)windowDidEndSheet:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidEndSheet);
+    processWindowEvent(self.windowId, EventWindowDidEndSheet);
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidEnterFullScreen);
+    processWindowEvent(self.windowId, EventWindowDidEnterFullScreen);
 }
 
 - (void)windowDidEnterVersionBrowser:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidEnterVersionBrowser);
+    processWindowEvent(self.windowId, EventWindowDidEnterVersionBrowser);
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidExitFullScreen);
+    processWindowEvent(self.windowId, EventWindowDidExitFullScreen);
 }
 
 - (void)windowDidExitVersionBrowser:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidExitVersionBrowser);
+    processWindowEvent(self.windowId, EventWindowDidExitVersionBrowser);
 }
 
 - (void)windowDidExpose:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidExpose);
+    processWindowEvent(self.windowId, EventWindowDidExpose);
 }
 
 - (void)windowDidFocus:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidFocus);
+    processWindowEvent(self.windowId, EventWindowDidFocus);
 }
 
 - (void)windowDidMiniaturize:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidMiniaturize);
+    processWindowEvent(self.windowId, EventWindowDidMiniaturize);
 }
 
 - (void)windowDidMove:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidMove);
+    processWindowEvent(self.windowId, EventWindowDidMove);
 }
 
 - (void)windowDidOrderOffScreen:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidOrderOffScreen);
+    processWindowEvent(self.windowId, EventWindowDidOrderOffScreen);
 }
 
 - (void)windowDidOrderOnScreen:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidOrderOnScreen);
+    processWindowEvent(self.windowId, EventWindowDidOrderOnScreen);
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidResignKey);
+    processWindowEvent(self.windowId, EventWindowDidResignKey);
 }
 
 - (void)windowDidResignMain:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidResignMain);
+    processWindowEvent(self.windowId, EventWindowDidResignMain);
 }
 
 - (void)windowDidResize:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidResize);
+    processWindowEvent(self.windowId, EventWindowDidResize);
 }
 
 - (void)windowDidUnfocus:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidUnfocus);
+    processWindowEvent(self.windowId, EventWindowDidUnfocus);
 }
 
 - (void)windowDidUpdate:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidUpdate);
+    processWindowEvent(self.windowId, EventWindowDidUpdate);
 }
 
 - (void)windowDidUpdateAlpha:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidUpdateAlpha);
+    processWindowEvent(self.windowId, EventWindowDidUpdateAlpha);
 }
 
 - (void)windowDidUpdateCollectionBehavior:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidUpdateCollectionBehavior);
+    processWindowEvent(self.windowId, EventWindowDidUpdateCollectionBehavior);
 }
 
 - (void)windowDidUpdateCollectionProperties:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidUpdateCollectionProperties);
+    processWindowEvent(self.windowId, EventWindowDidUpdateCollectionProperties);
 }
 
 - (void)windowDidUpdateShadow:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidUpdateShadow);
+    processWindowEvent(self.windowId, EventWindowDidUpdateShadow);
 }
 
 - (void)windowDidUpdateTitle:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidUpdateTitle);
+    processWindowEvent(self.windowId, EventWindowDidUpdateTitle);
 }
 
 - (void)windowDidUpdateToolbar:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidUpdateToolbar);
+    processWindowEvent(self.windowId, EventWindowDidUpdateToolbar);
 }
 
 - (void)windowDidUpdateVisibility:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowDidUpdateVisibility);
+    processWindowEvent(self.windowId, EventWindowDidUpdateVisibility);
 }
 
 - (void)windowWillBecomeKey:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillBecomeKey);
+    processWindowEvent(self.windowId, EventWindowWillBecomeKey);
 }
 
 - (void)windowWillBecomeMain:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillBecomeMain);
+    processWindowEvent(self.windowId, EventWindowWillBecomeMain);
 }
 
 - (void)windowWillBeginSheet:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillBeginSheet);
+    processWindowEvent(self.windowId, EventWindowWillBeginSheet);
 }
 
 - (void)windowWillChangeOrderingMode:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillChangeOrderingMode);
+    processWindowEvent(self.windowId, EventWindowWillChangeOrderingMode);
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillClose);
+    processWindowEvent(self.windowId, EventWindowWillClose);
 }
 
 - (void)windowWillDeminiaturize:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillDeminiaturize);
+    processWindowEvent(self.windowId, EventWindowWillDeminiaturize);
 }
 
 - (void)windowWillEnterFullScreen:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillEnterFullScreen);
+    processWindowEvent(self.windowId, EventWindowWillEnterFullScreen);
 }
 
 - (void)windowWillEnterVersionBrowser:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillEnterVersionBrowser);
+    processWindowEvent(self.windowId, EventWindowWillEnterVersionBrowser);
 }
 
 - (void)windowWillExitFullScreen:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillExitFullScreen);
+    processWindowEvent(self.windowId, EventWindowWillExitFullScreen);
 }
 
 - (void)windowWillExitVersionBrowser:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillExitVersionBrowser);
+    processWindowEvent(self.windowId, EventWindowWillExitVersionBrowser);
 }
 
 - (void)windowWillFocus:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillFocus);
+    processWindowEvent(self.windowId, EventWindowWillFocus);
 }
 
 - (void)windowWillMiniaturize:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillMiniaturize);
+    processWindowEvent(self.windowId, EventWindowWillMiniaturize);
 }
 
 - (void)windowWillMove:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillMove);
+    processWindowEvent(self.windowId, EventWindowWillMove);
 }
 
 - (void)windowWillOrderOffScreen:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillOrderOffScreen);
+    processWindowEvent(self.windowId, EventWindowWillOrderOffScreen);
 }
 
 - (void)windowWillOrderOnScreen:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillOrderOnScreen);
+    processWindowEvent(self.windowId, EventWindowWillOrderOnScreen);
 }
 
 - (void)windowWillResignMain:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillResignMain);
+    processWindowEvent(self.windowId, EventWindowWillResignMain);
 }
 
 - (void)windowWillResize:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillResize);
+    processWindowEvent(self.windowId, EventWindowWillResize);
 }
 
 - (void)windowWillUnfocus:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillUnfocus);
+    processWindowEvent(self.windowId, EventWindowWillUnfocus);
 }
 
 - (void)windowWillUpdate:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillUpdate);
+    processWindowEvent(self.windowId, EventWindowWillUpdate);
 }
 
 - (void)windowWillUpdateAlpha:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillUpdateAlpha);
+    processWindowEvent(self.windowId, EventWindowWillUpdateAlpha);
 }
 
 - (void)windowWillUpdateCollectionBehavior:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillUpdateCollectionBehavior);
+    processWindowEvent(self.windowId, EventWindowWillUpdateCollectionBehavior);
 }
 
 - (void)windowWillUpdateCollectionProperties:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillUpdateCollectionProperties);
+    processWindowEvent(self.windowId, EventWindowWillUpdateCollectionProperties);
 }
 
 - (void)windowWillUpdateShadow:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillUpdateShadow);
+    processWindowEvent(self.windowId, EventWindowWillUpdateShadow);
 }
 
 - (void)windowWillUpdateTitle:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillUpdateTitle);
+    processWindowEvent(self.windowId, EventWindowWillUpdateTitle);
 }
 
 - (void)windowWillUpdateToolbar:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillUpdateToolbar);
+    processWindowEvent(self.windowId, EventWindowWillUpdateToolbar);
 }
 
 - (void)windowWillUpdateVisibility:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillUpdateVisibility);
+    processWindowEvent(self.windowId, EventWindowWillUpdateVisibility);
 }
 
 - (void)windowWillUseStandardFrame:(NSNotification *)notification {
-    windowEventHandler(self.windowId, EventWindowWillUseStandardFrame);
+    processWindowEvent(self.windowId, EventWindowWillUseStandardFrame);
 }
 
 // GENERATED EVENTS END

@@ -25,8 +25,8 @@ var eventsH = `//go:build darwin
 #ifndef _events_h
 #define _events_h
 
-extern void applicationEventHandler(unsigned int);
-extern void windowEventHandler(unsigned int, unsigned int);
+extern void processApplicationEvent(unsigned int);
+extern void processWindowEvent(unsigned int, unsigned int);
 
 $$CHEADEREVENTS
 
@@ -80,14 +80,14 @@ func main() {
 			// Check if this is a window event
 			if strings.HasPrefix(event, "Window") {
 				windowDelegateEvents.WriteString(`- (void)` + delegateEventFunction + `:(NSNotification *)notification {
-    windowEventHandler(self.windowId, Event` + eventTitle + `);
+    processWindowEvent(self.windowId, Event` + eventTitle + `);
 }
 
 `)
 			}
 			if strings.HasPrefix(event, "Application") {
 				applicationDelegateEvents.WriteString(`- (void)` + delegateEventFunction + `:(NSNotification *)notification {
-    applicationEventHandler(Event` + eventTitle + `);
+    processApplicationEvent(Event` + eventTitle + `);
 }
 
 `)

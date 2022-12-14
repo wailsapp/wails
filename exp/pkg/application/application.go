@@ -12,17 +12,18 @@ func init() {
 	runtime.LockOSThread()
 }
 
+type platformApp interface {
+	run() error
+	destroy()
+}
+
 // Messages sent from javascript get routed here
 type windowMessage struct {
 	windowId uint
 	message  string
 }
 
-var messageBuffer = make(chan *windowMessage)
-
-type Application interface {
-	Run() error
-}
+var windowMessageBuffer = make(chan *windowMessage)
 
 type App struct {
 	options                   *options.Application
@@ -46,6 +47,9 @@ type App struct {
 
 	// Running
 	running bool
+
+	// platform app
+	app platformApp
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -122,8 +126,8 @@ func (a *App) Run() error {
 	}()
 	go func() {
 		for {
-			event := <-messageBuffer
-			a.handleMessage(event)
+			event := <-windowMessageBuffer
+			a.handleWindowMessage(event)
 		}
 	}()
 
@@ -147,7 +151,17 @@ func (a *App) Run() error {
 	return a.run()
 }
 
-func (a *App) handleMessage(event *windowMessage) {
+func (a *App) handleApplicationEvent(event uint) {
+	listeners, ok := a.applicationEventListeners[event]
+	if !ok {
+		return
+	}
+	for _, listener := range listeners {
+		go listener()
+	}
+}
+
+func (a *App) handleWindowMessage(event *windowMessage) {
 	// Get window from window map
 	a.windowsLock.Lock()
 	window, ok := a.windows[event.windowId]
@@ -179,4 +193,27 @@ func (a *App) handleMenuItemClicked(menuItemID uint) {
 		return
 	}
 	menuItem.handleClick()
+}
+
+func (a *App) Quit() {
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		a.windowsLock.Lock()
+		for _, window := range a.windows {
+			window.Destroy()
+		}
+		a.windowsLock.Unlock()
+		wg.Done()
+	}()
+	go func() {
+		a.systemTraysLock.Lock()
+		for _, systray := range a.systemTrays {
+			systray.Destroy()
+		}
+		a.systemTraysLock.Unlock()
+		wg.Done()
+	}()
+	wg.Wait()
+
 }

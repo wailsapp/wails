@@ -14,7 +14,19 @@ import (
 	"github.com/wailsapp/wails/exp/pkg/options"
 )
 
-func New(options *options.Application) *App {
+func New() *App {
+	C.Init()
+	return newApp()
+}
+
+func newApp() *App {
+	return &App{
+		applicationEventListeners: make(map[uint][]func()),
+		systemTrays:               make(map[uint]*SystemTray),
+	}
+}
+
+func NewWithOptions(options *options.Application) *App {
 	C.Init()
 	if options.Mac != nil {
 		C.SetActivationPolicy(C.int(options.Mac.ActivationPolicy))
@@ -31,23 +43,13 @@ func (a *App) run() error {
 	return nil
 }
 
-func (a *App) handleApplicationEvent(event uint) {
-	listeners, ok := a.applicationEventListeners[event]
-	if !ok {
-		return
-	}
-	for _, listener := range listeners {
-		go listener()
-	}
-}
-
-//export applicationEventHandler
-func applicationEventHandler(eventID C.uint) {
+//export processApplicationEvent
+func processApplicationEvent(eventID C.uint) {
 	applicationEvents <- uint(eventID)
 }
 
-//export windowEventHandler
-func windowEventHandler(windowID C.uint, eventID C.uint) {
+//export processWindowEvent
+func processWindowEvent(windowID C.uint, eventID C.uint) {
 	windowEvents <- &WindowEvent{
 		WindowID: uint(windowID),
 		EventID:  uint(eventID),
@@ -56,7 +58,7 @@ func windowEventHandler(windowID C.uint, eventID C.uint) {
 
 //export processMessage
 func processMessage(windowID C.uint, message *C.char) {
-	messageBuffer <- &windowMessage{
+	windowMessageBuffer <- &windowMessage{
 		windowId: uint(windowID),
 		message:  C.GoString(message),
 	}

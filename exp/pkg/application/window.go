@@ -31,6 +31,7 @@ type windowImpl interface {
 	width() int
 	height() int
 	position() (int, int)
+	destroy()
 }
 
 type Window struct {
@@ -280,4 +281,11 @@ func (w *Window) Position() (int, int) {
 		return 0, 0
 	}
 	return w.impl.position()
+}
+
+func (w *Window) Destroy() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.destroy()
 }
