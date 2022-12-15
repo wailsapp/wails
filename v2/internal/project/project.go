@@ -17,7 +17,8 @@ type Project struct {
 	Name           string `json:"name"`
 	AssetDirectory string `json:"assetdir,omitempty"`
 
-	ReloadDirectories string `json:"reloaddirs,omitempty"`
+	ReloadDirectories string   `json:"reloaddirs,omitempty"`
+	IgnoreReloadPaths []string `json:"ignorereloadpaths,omitempty"`
 
 	BuildCommand   string `json:"frontend:build"`
 	InstallCommand string `json:"frontend:install"`
