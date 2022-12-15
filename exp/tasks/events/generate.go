@@ -9,6 +9,9 @@ import (
 
 var eventsGo = `package events
 
+type ApplicationEventType uint
+type WindowEventType      uint
+
 var Mac = newMacEvents()
 
 type macEvents struct {
@@ -71,7 +74,11 @@ func main() {
 		// Add to buffer
 		switch platform {
 		case "mac":
-			macEventsDecl.WriteString("\t" + eventTitle + " uint\n")
+			eventType := "ApplicationEventType"
+			if strings.HasPrefix(event, "Window") {
+				eventType = "WindowEventType"
+			}
+			macEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			macEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			cHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
 			if ignoreEvent {

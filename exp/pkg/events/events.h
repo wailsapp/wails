@@ -3,8 +3,8 @@
 #ifndef _events_h
 #define _events_h
 
-extern void applicationEventHandler(unsigned int);
-extern void windowEventHandler(unsigned int, unsigned int);
+extern void processApplicationEvent(unsigned int);
+extern void processWindowEvent(unsigned int, unsigned int);
 
 #define EventApplicationDidBecomeActive 0
 #define EventApplicationDidChangeBackingProperties 1
@@ -99,6 +99,29 @@ extern void windowEventHandler(unsigned int, unsigned int);
 #define EventWindowWillUpdateToolbar 90
 #define EventWindowWillUpdateVisibility 91
 #define EventWindowWillUseStandardFrame 92
+#define EventMenuWillOpen 93
+#define EventMenuDidOpen 94
+#define EventMenuDidClose 95
+#define EventMenuWillSendAction 96
+#define EventMenuDidSendAction 97
+#define EventMenuWillHighlightItem 98
+#define EventMenuDidHighlightItem 99
+#define EventMenuWillDisplayItem 100
+#define EventMenuDidDisplayItem 101
+#define EventMenuWillAddItem 102
+#define EventMenuDidAddItem 103
+#define EventMenuWillRemoveItem 104
+#define EventMenuDidRemoveItem 105
+#define EventMenuWillBeginTracking 106
+#define EventMenuDidBeginTracking 107
+#define EventMenuWillEndTracking 108
+#define EventMenuDidEndTracking 109
+#define EventMenuWillUpdate 110
+#define EventMenuDidUpdate 111
+#define EventMenuWillPopUp 112
+#define EventMenuDidPopUp 113
+#define EventMenuWillSendActionToItem 114
+#define EventMenuDidSendActionToItem 115
 
 
 #endif

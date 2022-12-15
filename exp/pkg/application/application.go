@@ -58,7 +58,8 @@ func (a *App) getSystemTrayID() uint {
 	a.systemTrayID++
 	return a.systemTrayID
 }
-func (a *App) On(eventID uint, callback func()) {
+func (a *App) On(eventType events.ApplicationEventType, callback func()) {
+	eventID := uint(eventType)
 	a.applicationEventListeners[eventID] = append(a.applicationEventListeners[eventID], callback)
 }
 

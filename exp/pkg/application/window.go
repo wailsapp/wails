@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/wailsapp/wails/exp/pkg/events"
 	"github.com/wailsapp/wails/exp/pkg/options"
 )
 
@@ -242,7 +243,8 @@ func (w *Window) Center() {
 	w.impl.center()
 }
 
-func (w *Window) On(eventID uint, callback func()) {
+func (w *Window) On(eventType events.WindowEventType, callback func()) {
+	eventID := uint(eventType)
 	w.eventListenersLock.Lock()
 	w.eventListeners[eventID] = append(w.eventListeners[eventID], callback)
 	w.eventListenersLock.Unlock()
