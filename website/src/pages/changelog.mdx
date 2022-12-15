@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `WindowSetAlwaysOnTop` method is now exposed in the JS runtime. Fixed by @gotid in [PR](https://github.com/wailsapp/wails/pull/2128)
 - The [AssetServer](/docs/reference/options#assetserver) now supports serving the index.html file when requesting a directory. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2110)
 - Added support for WebKit2GTK 2.36+ on Linux. This brings additional features for the [AssetServer](/docs/reference/options#assetserver), like support for HTTP methods and Headers. The app must be compiled with the Go build tag `webkit2_36` to activate support for this features. This also bumps the minimum requirement of WebKit2GTK to 2.36 for your app. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2151)
+- Added support for file input selection on macOS. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2209)
 
 ### Fixed
 - The `noreload` flag in wails dev wasn't applied. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2081)
