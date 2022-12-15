@@ -6,41 +6,81 @@ package application
 
 #cgo CFLAGS:  -x objective-c
 #cgo LDFLAGS: -framework Cocoa -mmacosx-version-min=10.13
+
 #include "application.h"
+#include "app_delegate.h"
 #include <stdlib.h>
+
+#import <Cocoa/Cocoa.h>
+
+static AppDelegate *appDelegate = nil;
+
+static void init(void) {
+    [NSApplication sharedApplication];
+    appDelegate = [[AppDelegate alloc] init];
+    [NSApp setDelegate:appDelegate];
+}
+
+static void setActivationPolicy(int policy) {
+    [appDelegate setApplicationActivationPolicy:policy];
+}
+
+static void run(void) {
+    @autoreleasepool {
+        [NSApp run];
+        [appDelegate release];
+    }
+}
+
+// Destroy application
+static void destroyApp(void) {
+	[NSApp terminate:nil];
+}
+
+// Set the application menu
+static void setApplicationMenu(void *menu) {
+	NSMenu *nsMenu = (__bridge NSMenu *)menu;
+	[NSApp setMainMenu:menu];
+}
+
 */
 import "C"
 import (
+	"unsafe"
+
 	"github.com/wailsapp/wails/exp/pkg/options"
 )
 
-func New() *App {
-	C.Init()
-	return newApp()
+type macosApp struct {
+	options         *options.Application
+	applicationMenu unsafe.Pointer
 }
 
-func newApp() *App {
-	return &App{
-		applicationEventListeners: make(map[uint][]func()),
-		systemTrays:               make(map[uint]*SystemTray),
-	}
+func (m macosApp) setApplicationMenu(menu *Menu) {
+	menu.Update()
+	// Convert impl to macosMenu object
+	m.applicationMenu = (menu.impl).(*macosMenu).nsMenu
+	C.setApplicationMenu(m.applicationMenu)
 }
 
-func NewWithOptions(options *options.Application) *App {
-	C.Init()
-	if options.Mac != nil {
-		C.SetActivationPolicy(C.int(options.Mac.ActivationPolicy))
-	}
-	return &App{
-		options:                   options,
-		applicationEventListeners: make(map[uint][]func()),
-		systemTrays:               make(map[uint]*SystemTray),
-	}
-}
-
-func (a *App) run() error {
-	C.Run()
+func (m macosApp) run() error {
+	C.run()
 	return nil
+}
+
+func (m macosApp) destroy() {
+	C.destroyApp()
+}
+
+func newPlatformApp(appOptions *options.Application) *macosApp {
+	if appOptions == nil {
+		appOptions = options.ApplicationDefaults
+	}
+	C.init()
+	C.setActivationPolicy(C.int(appOptions.Mac.ActivationPolicy))
+	return &macosApp{
+		options: appOptions,
+	}
 }
 
 //export processApplicationEvent

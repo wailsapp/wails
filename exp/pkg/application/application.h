@@ -3,8 +3,8 @@
 #ifndef application_h
 #define application_h
 
-void Init(void);
-void Run(void);
-void SetActivationPolicy(int policy);
+static void init(void);
+static void run(void);
+static void setActivationPolicy(int policy);
 
 #endif

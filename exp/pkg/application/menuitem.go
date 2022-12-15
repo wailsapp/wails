@@ -98,7 +98,9 @@ func newSubMenuItem(label string) *MenuItem {
 		id:       uint(atomic.AddUintptr(&menuItemID, 1)),
 		label:    label,
 		itemType: submenu,
-		submenu:  &Menu{},
+		submenu: &Menu{
+			label: label,
+		},
 	}
 	addToMenuItemMap(result)
 	return result

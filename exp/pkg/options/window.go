@@ -34,6 +34,14 @@ type Window struct {
 	Assets           Assets
 }
 
+var WindowDefaults = &Window{
+	Title:          "",
+	Width:          1024,
+	Height:         768,
+	URL:            "https://wails.io",
+	EnableDevTools: true,
+}
+
 type Assets struct {
 	// URL to load the `index.html` file from. If this is a relative path, it will be resolved relative to the `FS` filesystem
 	URL string

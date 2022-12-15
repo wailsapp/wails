@@ -1,9 +1,12 @@
 package application
 
+import "C"
 import (
 	"log"
 	"runtime"
 	"sync"
+
+	"github.com/wailsapp/wails/exp/pkg/events"
 
 	"github.com/wailsapp/wails/exp/pkg/options"
 )
@@ -12,9 +15,25 @@ func init() {
 	runtime.LockOSThread()
 }
 
+func New() *App {
+	return NewWithOptions(nil)
+}
+
+func NewWithOptions(appOptions *options.Application) *App {
+	if appOptions == nil {
+		appOptions = options.ApplicationDefaults
+	}
+	return &App{
+		options:                   appOptions,
+		applicationEventListeners: make(map[uint][]func()),
+		systemTrays:               make(map[uint]*SystemTray),
+	}
+}
+
 type platformApp interface {
 	run() error
 	destroy()
+	setApplicationMenu(menu *Menu)
 }
 
 // Messages sent from javascript get routed here
@@ -49,7 +68,10 @@ type App struct {
 	running bool
 
 	// platform app
-	app platformApp
+	impl platformApp
+
+	// The main application menu
+	ApplicationMenu *Menu
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -62,17 +84,17 @@ func (a *App) On(eventType events.ApplicationEventType, callback func()) {
 	eventID := uint(eventType)
 	a.applicationEventListeners[eventID] = append(a.applicationEventListeners[eventID], callback)
 }
+func (a *App) NewWindow() *Window {
+	return a.NewWindowWithOptions(nil)
+}
 
-func (a *App) NewWindow(options *options.Window) *Window {
+func (a *App) NewWindowWithOptions(windowOptions *options.Window) *Window {
 	// Ensure we have sane defaults
-	if options.Width == 0 {
-		options.Width = 1024
-	}
-	if options.Height == 0 {
-		options.Height = 768
+	if windowOptions == nil {
+		windowOptions = options.WindowDefaults
 	}
 
-	newWindow := NewWindow(options)
+	newWindow := NewWindow(windowOptions)
 	id := newWindow.id
 	if a.windows == nil {
 		a.windows = make(map[uint]*Window)
@@ -81,12 +103,12 @@ func (a *App) NewWindow(options *options.Window) *Window {
 	a.windows[id] = newWindow
 	a.windowsLock.Unlock()
 
-	if options.Alias != "" {
+	if windowOptions.Alias != "" {
 		if a.windowAliases == nil {
 			a.windowAliases = make(map[string]uint)
 		}
 		a.windowAliasesLock.Lock()
-		a.windowAliases[options.Alias] = id
+		a.windowAliases[windowOptions.Alias] = id
 		a.windowAliasesLock.Unlock()
 	}
 	if a.running {
@@ -111,6 +133,7 @@ func (a *App) NewSystemTray() *SystemTray {
 }
 
 func (a *App) Run() error {
+	a.impl = newPlatformApp(a.options)
 
 	a.running = true
 	go func() {
@@ -149,7 +172,11 @@ func (a *App) Run() error {
 		go systray.Run()
 	}
 
-	return a.run()
+	if a.ApplicationMenu != nil {
+		a.impl.setApplicationMenu(a.ApplicationMenu)
+	}
+
+	return a.impl.run()
 }
 
 func (a *App) handleApplicationEvent(event uint) {
@@ -216,5 +243,16 @@ func (a *App) Quit() {
 		wg.Done()
 	}()
 	wg.Wait()
+	a.impl.destroy()
+}
 
+func (a *App) SetActivationPolicy(accessory options.ActivationPolicy) {
+	a.options.Mac.ActivationPolicy = accessory
+}
+
+func (a *App) SetMenu(menu *Menu) {
+	a.ApplicationMenu = menu
+	if a.impl != nil {
+		a.impl.setApplicationMenu(menu)
+	}
 }

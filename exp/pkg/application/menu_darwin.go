@@ -18,8 +18,12 @@ void clearMenu(void* nsMenu) {
 
 
 // Create a new NSMenu
-void* createNSMenu() {
+void* createNSMenu(char* label) {
 	NSMenu *menu = [[NSMenu alloc] init];
+	if( label != NULL && strlen(label) > 0 ) {
+		menu.title = [NSString stringWithUTF8String:label];
+		free(label);
+	}
 	return (void*)menu;
 }
 
@@ -60,7 +64,7 @@ func newMenuImpl(menu *Menu) *macosMenu {
 
 func (m *macosMenu) update() {
 	if m.nsMenu == nil {
-		m.nsMenu = C.createNSMenu()
+		m.nsMenu = C.createNSMenu(C.CString(m.menu.label))
 	} else {
 		C.clearMenu(m.nsMenu)
 	}
@@ -72,7 +76,7 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 		switch item.itemType {
 		case submenu:
 			submenu := item.submenu
-			nsSubmenu := C.createNSMenu()
+			nsSubmenu := C.createNSMenu(C.CString(submenu.label))
 			m.processMenu(nsSubmenu, submenu)
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem
@@ -87,5 +91,4 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 		}
 
 	}
-	//C.setMenu(parent, m.nsMenu)
 }

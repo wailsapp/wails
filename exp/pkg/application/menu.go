@@ -6,6 +6,7 @@ type menuImpl interface {
 
 type Menu struct {
 	items []*MenuItem
+	label string
 
 	impl menuImpl
 }
@@ -66,6 +67,10 @@ func (m *Menu) processRadioGroups() {
 			item.radioGroupMembers = radioGroup
 		}
 	}
+}
+
+func (m *Menu) SetLabel(label string) {
+	m.label = label
 }
 
 func (a *App) NewMenu() *Menu {
