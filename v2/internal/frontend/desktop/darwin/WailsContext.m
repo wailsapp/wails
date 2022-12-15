@@ -250,7 +250,8 @@
     }
     
     [self.webview setNavigationDelegate:self];
-    
+    self.webview.UIDelegate = self;
+
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:FALSE forKey:@"NSAutomaticQuoteSubstitutionEnabled"];
     
@@ -405,6 +406,25 @@
 
 - (void) ExecJS:(NSString*)script {
    [self.webview evaluateJavaScript:script completionHandler:nil];
+}
+
+- (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters 
+    initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSArray<NSURL *> * URLs))completionHandler {
+    
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection;
+    if (@available(macOS 10.14, *)) {
+        openPanel.canChooseDirectories = parameters.allowsDirectories;
+    }
+    
+    [openPanel 
+        beginSheetModalForWindow:webView.window
+        completionHandler:^(NSInteger result) {
+            if (result == NSModalResponseOK)
+                completionHandler(openPanel.URLs);
+            else
+                completionHandler(nil);
+        }];
 }
 
 - (void) processURLResponse:(unsigned long long)requestId :(int)statusCode :(NSData *)headersJSON :(NSData *)data {

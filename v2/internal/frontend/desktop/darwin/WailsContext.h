@@ -29,7 +29,7 @@
 - (void) disableWindowConstraints;
 @end
 
-@interface WailsContext : NSObject <WKURLSchemeHandler,WKScriptMessageHandler,WKNavigationDelegate>
+@interface WailsContext : NSObject <WKURLSchemeHandler,WKScriptMessageHandler,WKNavigationDelegate,WKUIDelegate>
 
 @property (retain) WailsWindow* mainWindow;
 @property (retain) WKWebView* webview;
