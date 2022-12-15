@@ -152,7 +152,7 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 	}
 
 	// create the project files watcher
-	watcher, err := initialiseWatcher(cwd)
+	watcher, err := initialiseWatcher(cwd, f.ProjectConfig().IgnoreReloadPaths)
 	if err != nil {
 		return err
 	}
@@ -364,6 +364,7 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 	reload := false
 	assetDir := ""
 	changedPaths := map[string]struct{}{}
+	cwd := lo.Must(os.Getwd())
 
 	// If we are using an external dev server, the reloading of the frontend part can be skipped or if the user requested it
 	skipAssetsReload := f.FrontendDevServerURL != "" || f.NoReload
@@ -383,13 +384,24 @@ func doWatcherLoop(buildOptions *build.Options, debugBinaryProcess *process.Proc
 			isEligibleFile := func(fileName string) bool {
 				// Iterate all file patterns
 				ext := filepath.Ext(fileName)
+				eligibleExt := false
 				if ext != "" {
 					ext = ext[1:]
 					if _, exists := extensionsThatTriggerARebuild[ext]; exists {
-						return true
+						eligibleExt = true
 					}
 				}
-				return false
+				if !eligibleExt {
+					return false
+				}
+				
+				for _, path := range f.ProjectConfig().IgnoreReloadPaths {
+					if filepath.Join(cwd, path) == fileName {
+						return false
+					}
+				}
+
+				return true
 			}
 
 			// Handle write operations
