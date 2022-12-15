@@ -12,13 +12,6 @@ import (
 func main() {
 	app := application.New()
 
-	// Create menu
-	appMenu := app.NewMenu()
-	appMenu.AddSubmenu("")
-	fileMenu := appMenu.AddSubmenu("File")
-	fileMenu.Add("New")
-	app.SetMenu(appMenu)
-
 	// Create window
 	myWindow := app.NewWindow()
 	myWindow.On(events.Mac.WindowDidBecomeMain, func() {

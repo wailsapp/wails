@@ -11,6 +11,10 @@ type Menu struct {
 	impl menuImpl
 }
 
+func NewMenu() *Menu {
+	return &Menu{}
+}
+
 func (m *Menu) Add(label string) *MenuItem {
 	result := newMenuItem(label)
 	m.items = append(m.items, result)

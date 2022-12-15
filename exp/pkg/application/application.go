@@ -11,23 +11,33 @@ import (
 	"github.com/wailsapp/wails/exp/pkg/options"
 )
 
+var globalApplication *App
+
 func init() {
 	runtime.LockOSThread()
 }
 
 func New() *App {
+	if globalApplication != nil {
+		return globalApplication
+	}
 	return NewWithOptions(nil)
 }
 
 func NewWithOptions(appOptions *options.Application) *App {
+	if globalApplication != nil {
+		return globalApplication
+	}
 	if appOptions == nil {
 		appOptions = options.ApplicationDefaults
 	}
-	return &App{
+	result := &App{
 		options:                   appOptions,
 		applicationEventListeners: make(map[uint][]func()),
 		systemTrays:               make(map[uint]*SystemTray),
 	}
+	globalApplication = result
+	return result
 }
 
 type platformApp interface {
@@ -172,9 +182,8 @@ func (a *App) Run() error {
 		go systray.Run()
 	}
 
-	if a.ApplicationMenu != nil {
-		a.impl.setApplicationMenu(a.ApplicationMenu)
-	}
+	// set the application menu
+	a.impl.setApplicationMenu(a.ApplicationMenu)
 
 	return a.impl.run()
 }

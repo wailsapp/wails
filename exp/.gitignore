@@ -1,3 +1,4 @@
 examples/kitchensink/kitchensink
 cmd/wails/wails
 /examples/systray/systray
+/examples/window/window
