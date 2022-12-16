@@ -601,3 +601,37 @@ func newToggleDevToolsMenuItem() *MenuItem {
 			}
 		})
 }
+
+func newResetZoomMenuItem() *MenuItem {
+	// reset zoom menu item
+	return newMenuItem("Actual Size").
+		SetAccelerator("CmdOrCtrl+0").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.GetCurrentWindow()
+			if currentWindow != nil {
+				currentWindow.ResetZoom()
+			}
+		})
+}
+
+func newZoomInMenuItem() *MenuItem {
+	return newMenuItem("Zoom In").
+		SetAccelerator("CmdOrCtrl+plus").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.GetCurrentWindow()
+			if currentWindow != nil {
+				currentWindow.ZoomIn()
+			}
+		})
+}
+
+func newZoomOutMenuItem() *MenuItem {
+	return newMenuItem("Zoom Out").
+		SetAccelerator("CmdOrCtrl+-").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.GetCurrentWindow()
+			if currentWindow != nil {
+				currentWindow.ZoomOut()
+			}
+		})
+}

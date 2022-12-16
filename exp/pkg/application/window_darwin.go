@@ -184,6 +184,43 @@ void windowEnableDevTools(void* nsWindow) {
 	});
 }
 
+// windowResetZoom
+void windowResetZoom(void* nsWindow) {
+	// Reset zoom on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Get window delegate
+		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		// Reset zoom
+		[delegate.webView setMagnification:1.0];
+	});
+}
+
+// windowZoomIn
+void windowZoomIn(void* nsWindow) {
+	// Zoom in on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Get window delegate
+		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		// Zoom in
+		[delegate.webView setMagnification:delegate.webView.magnification + 0.05];
+	});
+}
+
+// windowZoomOut
+void windowZoomOut(void* nsWindow) {
+	// Zoom out on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Get window delegate
+		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		// Zoom out
+		if( delegate.webView.magnification > 1.05 ) {
+			[delegate.webView setMagnification:delegate.webView.magnification - 0.05];
+		} else {
+			[delegate.webView setMagnification:1.0];
+		}
+	});
+}
+
 // Execute JS in NSWindow
 void windowExecJS(void* nsWindow, char* js) {
 	// Execute JS on main thread
@@ -487,6 +524,18 @@ type macosWindow struct {
 	options  *options.Window
 
 	// devtools
+}
+
+func (w *macosWindow) zoomIn() {
+	C.windowZoomIn(w.nsWindow)
+}
+
+func (w *macosWindow) zoomOut() {
+	C.windowZoomOut(w.nsWindow)
+}
+
+func (w *macosWindow) resetZoom() {
+	C.windowResetZoom(w.nsWindow)
 }
 
 func (w *macosWindow) toggleDevTools() {

@@ -158,12 +158,12 @@ func newRole(role Role) *MenuItem {
 		return newToggleFullscreenMenuItem()
 	case ToggleDevTools:
 		return newToggleDevToolsMenuItem()
-	//case ResetZoom:
-	//	return newResetZoomMenuItem()
-	//case ZoomIn:
-	//	return newZoomInMenuItem()
-	//case ZoomOut:
-	//	return newZoomOutMenuItem()
+	case ResetZoom:
+		return newResetZoomMenuItem()
+	case ZoomIn:
+		return newZoomInMenuItem()
+	case ZoomOut:
+		return newZoomOutMenuItem()
 
 	default:
 		println("No support for role:", role)

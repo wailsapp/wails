@@ -37,6 +37,9 @@ type windowImpl interface {
 	forceReload()
 	toggleFullscreen()
 	toggleDevTools()
+	resetZoom()
+	zoomIn()
+	zoomOut()
 }
 
 type Window struct {
@@ -322,4 +325,25 @@ func (w *Window) ToggleDevTools() {
 		return
 	}
 	w.impl.toggleDevTools()
+}
+
+func (w *Window) ResetZoom() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.resetZoom()
+}
+
+func (w *Window) ZoomIn() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.zoomIn()
+}
+
+func (w *Window) ZoomOut() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.zoomOut()
 }
