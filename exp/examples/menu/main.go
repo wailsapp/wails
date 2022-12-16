@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "embed"
 	"log"
 
 	"github.com/wailsapp/wails/exp/pkg/application"
@@ -10,15 +9,12 @@ import (
 func main() {
 	app := application.New()
 
-	myMenu := app.NewMenu()
-	myMenu.AddRole(application.AppMenu)
-	myMenu.AddRole(application.EditMenu)
-
-	app.SetMenu(myMenu)
+	app.NewWindow()
+	app.NewWindow()
 
 	err := app.Run()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 }

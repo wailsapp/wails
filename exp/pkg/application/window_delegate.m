@@ -11,6 +11,8 @@
 #import "window_delegate.h"
 #import "../events/events.h"
 
+extern void processMessage(unsigned int, const char*);
+
 @implementation WindowDelegate
 - (BOOL)windowShouldClose:(NSWindow *)sender {
     if( self.hideOnClose ) {

@@ -83,7 +83,7 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 		switch item.itemType {
 		case submenu:
 			submenu := item.submenu
-			nsSubmenu := C.createNSMenu(C.CString(submenu.label))
+			nsSubmenu := C.createNSMenu(C.CString(item.label))
 			m.processMenu(nsSubmenu, submenu)
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem

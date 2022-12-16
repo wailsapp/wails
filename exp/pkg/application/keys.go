@@ -26,10 +26,14 @@ const (
 
 var modifierMap = map[string]modifier{
 	"cmdorctrl":   CmdOrCtrlKey,
+	"cmd":         CmdOrCtrlKey,
+	"command":     CmdOrCtrlKey,
+	"ctrl":        CmdOrCtrlKey,
 	"optionoralt": OptionOrAltKey,
+	"alt":         OptionOrAltKey,
+	"option":      OptionOrAltKey,
 	"shift":       ShiftKey,
 	"super":       SuperKey,
-	"ctrl":        ControlKey,
 }
 
 // accelerator holds the keyboard shortcut for a menu item

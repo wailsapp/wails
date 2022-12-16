@@ -7,7 +7,6 @@ import (
 	"sync"
 
 	"github.com/wailsapp/wails/exp/pkg/events"
-
 	"github.com/wailsapp/wails/exp/pkg/options"
 )
 
@@ -45,6 +44,7 @@ type platformApp interface {
 	destroy()
 	setApplicationMenu(menu *Menu)
 	name() string
+	getCurrentWindowID() uint
 }
 
 // Messages sent from javascript get routed here
@@ -232,6 +232,16 @@ func (a *App) handleMenuItemClicked(menuItemID uint) {
 		return
 	}
 	menuItem.handleClick()
+}
+
+func (a *App) GetCurrentWindow() *Window {
+	if a.impl == nil {
+		return nil
+	}
+	id := a.impl.getCurrentWindowID()
+	a.windowsLock.Lock()
+	defer a.windowsLock.Unlock()
+	return a.windows[id]
 }
 
 func (a *App) Quit() {

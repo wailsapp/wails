@@ -1,6 +1,7 @@
 package application
 
 import (
+	"os"
 	"sync"
 	"sync/atomic"
 )
@@ -107,34 +108,74 @@ func newSubMenuItem(label string) *MenuItem {
 	return result
 }
 
-func newRole(parentMenu *Menu, role Role) *MenuItem {
-	var roleMenu *Menu
+func newRole(role Role) *MenuItem {
 	switch role {
 	case AppMenu:
-		roleMenu = newAppMenu(parentMenu)
+		return newAppMenu()
 	case EditMenu:
-		roleMenu = newEditMenu(parentMenu)
+		return newEditMenu()
+	case FileMenu:
+		return newFileMenu()
+	case ViewMenu:
+		return newViewMenu()
 	case ServicesMenu:
-		roleMenu = newServicesMenu()
+		return newServicesMenu()
+	case SpeechMenu:
+		return newSpeechMenu()
 	case Hide:
 		return newHideMenuItem()
 	case HideOthers:
 		return newHideOthersMenuItem()
 	case UnHide:
 		return newUnhideMenuItem()
+	case Undo:
+		return newUndoMenuItem()
+	case Redo:
+		return newRedoMenuItem()
+	case Cut:
+		return newCutMenuItem()
+	case Copy:
+		return newCopyMenuItem()
+	case Paste:
+		return newPasteMenuItem()
+	case PasteAndMatchStyle:
+		return newPasteAndMatchStyleMenuItem()
+	case SelectAll:
+		return newSelectAllMenuItem()
+	case Delete:
+		return newDeleteMenuItem()
+	case Quit:
+		return newQuitMenuItem()
+	case Close:
+		return newCloseMenuItem()
+	case About:
+		return newAboutMenuItem()
+	case Reload:
+		return newReloadMenuItem()
+	case ForceReload:
+		return newForceReloadMenuItem()
+	case ToggleFullscreen:
+		return newToggleFullscreenMenuItem()
+	case ToggleDevTools:
+		return newToggleDevToolsMenuItem()
+	//case ResetZoom:
+	//	return newResetZoomMenuItem()
+	//case ZoomIn:
+	//	return newZoomInMenuItem()
+	//case ZoomOut:
+	//	return newZoomOutMenuItem()
+
+	default:
+		println("No support for role:", role)
+		os.Exit(1)
 	}
-	return roleMenu.items[0]
+	return nil
 }
 
-func newServicesMenu() *Menu {
+func newServicesMenu() *MenuItem {
 	serviceMenu := newSubMenuItem("Services")
 	serviceMenu.role = ServicesMenu
-	return &Menu{
-		label: "Services",
-		items: []*MenuItem{
-			serviceMenu,
-		},
-	}
+	return serviceMenu
 }
 
 func (m *MenuItem) handleClick() {

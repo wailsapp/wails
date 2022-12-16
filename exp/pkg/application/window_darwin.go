@@ -248,6 +248,14 @@ void windowSetMaximised(void* nsWindow) {
 	});
 }
 
+// toggle fullscreen
+void windowToggleFullscreen(void* nsWindow) {
+	// Toggle fullscreen on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)nsWindow toggleFullScreen:nil];
+	});
+}
+
 // Set Window fullscreen
 void windowSetFullscreen(void* nsWindow) {
 	// Set window fullscreen on main thread
@@ -462,7 +470,6 @@ void windowDestroy(void* nsWindow) {
 	});
 }
 
-
 */
 import "C"
 import (
@@ -472,10 +479,32 @@ import (
 	"github.com/wailsapp/wails/exp/pkg/options"
 )
 
+var showDevTools = func(window unsafe.Pointer) {}
+
 type macosWindow struct {
 	id       uint
 	nsWindow unsafe.Pointer
 	options  *options.Window
+
+	// devtools
+}
+
+func (w *macosWindow) toggleDevTools() {
+	showDevTools(w.nsWindow)
+}
+
+func (w *macosWindow) toggleFullscreen() {
+	C.windowToggleFullscreen(w.nsWindow)
+}
+
+func (w *macosWindow) reload() {
+	//TODO: Implement
+	println("reload called on Window", w.id)
+}
+
+func (w *macosWindow) forceReload() {
+	//TODO: Implement
+	println("forceReload called on Window", w.id)
 }
 
 func (w *macosWindow) center() {

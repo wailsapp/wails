@@ -53,7 +53,7 @@ func (m *Menu) AddSubmenu(s string) *Menu {
 }
 
 func (m *Menu) AddRole(role Role) *Menu {
-	result := newRole(m, role)
+	result := newRole(role)
 	m.items = append(m.items, result)
 	return m
 }

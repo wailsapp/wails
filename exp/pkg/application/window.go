@@ -33,6 +33,10 @@ type windowImpl interface {
 	height() int
 	position() (int, int)
 	destroy()
+	reload()
+	forceReload()
+	toggleFullscreen()
+	toggleDevTools()
 }
 
 type Window struct {
@@ -290,4 +294,32 @@ func (w *Window) Destroy() {
 		return
 	}
 	w.impl.destroy()
+}
+
+func (w *Window) Reload() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.reload()
+}
+
+func (w *Window) ForceReload() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.forceReload()
+}
+
+func (w *Window) ToggleFullscreen() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.toggleFullscreen()
+}
+
+func (w *Window) ToggleDevTools() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.toggleDevTools()
 }

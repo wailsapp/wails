@@ -9,6 +9,7 @@ package application
 
 #include "application.h"
 #include "app_delegate.h"
+#include "window_delegate.h"
 #include <stdlib.h>
 
 #import <Cocoa/Cocoa.h>
@@ -52,6 +53,14 @@ static char* getAppName(void) {
 	return strdup([appName UTF8String]);
 }
 
+// get the current window ID
+static unsigned int getCurrentWindowID(void) {
+	NSWindow *window = [NSApp keyWindow];
+	// Get the window delegate
+	WindowDelegate *delegate = (WindowDelegate*)[window delegate];
+	return delegate.windowId;
+}
+
 */
 import "C"
 import (
@@ -69,6 +78,10 @@ func (m *macosApp) name() string {
 	appName := C.getAppName()
 	defer C.free(unsafe.Pointer(appName))
 	return C.GoString(appName)
+}
+
+func (m *macosApp) getCurrentWindowID() uint {
+	return uint(C.getCurrentWindowID())
 }
 
 func (m *macosApp) setApplicationMenu(menu *Menu) {
@@ -94,8 +107,10 @@ func (m *macosApp) destroy() {
 func (m *macosApp) createDefaultApplicationMenu() *Menu {
 	// Create a default menu for mac
 	menu := NewMenu()
-	newAppMenu(menu)
-	newEditMenu(menu)
+	menu.AddRole(AppMenu)
+	menu.AddRole(FileMenu)
+	menu.AddRole(EditMenu)
+	menu.AddRole(ViewMenu)
 
 	return menu
 }

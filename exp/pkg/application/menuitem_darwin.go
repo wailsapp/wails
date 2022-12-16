@@ -44,7 +44,6 @@ void setMenuItemLabel(void* nsMenuItem, char *label) {
 	menuItem.title = [NSString stringWithUTF8String:label];
 }
 
-
 // set menu item disabled
 void setMenuItemDisabled(void* nsMenuItem, bool disabled) {
 	dispatch_async(dispatch_get_main_queue(), ^{
@@ -324,9 +323,16 @@ static void showAll(void) {
 	[[NSApplication sharedApplication] unhideAllApplications:nil];
 }
 
+// closeWindow closes the current window
+static void closeWindow(void) {
+	[NSApp sendAction:@selector(performClose:) to:nil from:nil];
+}
+
+
 */
 import "C"
 import (
+	"runtime"
 	"unsafe"
 )
 
@@ -385,12 +391,9 @@ func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 	return result
 }
 
-func newAppMenu(menu *Menu) *Menu {
-	appName := globalApplication.Name()
-	appMenu := menu.AddSubmenu(appName)
-	appMenu.Add("About " + appName).OnClick(func(*Context) {
-		//TODO: implement
-	})
+func newAppMenu() *MenuItem {
+	appMenu := NewMenu()
+	appMenu.AddRole(About)
 	appMenu.AddSeparator()
 	appMenu.AddRole(ServicesMenu)
 	appMenu.AddSeparator()
@@ -398,49 +401,45 @@ func newAppMenu(menu *Menu) *Menu {
 	appMenu.AddRole(HideOthers)
 	appMenu.AddRole(UnHide)
 	appMenu.AddSeparator()
-
-	appMenu.Add("Quit " + appName).SetAccelerator("CmdOrCtrl+q").OnClick(func(ctx *Context) {
-		globalApplication.Quit()
-	})
-	return appMenu
+	appMenu.AddRole(Quit)
+	subMenu := newSubMenuItem(globalApplication.Name())
+	subMenu.submenu = appMenu
+	return subMenu
 }
 
-func newEditMenu(menu *Menu) *Menu {
-	editMenu := menu.AddSubmenu("Edit")
-	editMenu.Add("Undo").SetAccelerator("CmdOrCtrl+z").OnClick(func(ctx *Context) {
-		C.undo()
-	})
-	editMenu.Add("Redo").SetAccelerator("CmdOrCtrl+Shift+z").OnClick(func(ctx *Context) {
-		C.redo()
-	})
+func newEditMenu() *MenuItem {
+	editMenu := NewMenu()
+	editMenu.AddRole(Undo)
+	editMenu.AddRole(Redo)
 	editMenu.AddSeparator()
-	editMenu.Add("Cut").SetAccelerator("CmdOrCtrl+x").OnClick(func(ctx *Context) {
-		C.cut()
-	})
-	editMenu.Add("Copy").SetAccelerator("CmdOrCtrl+c").OnClick(func(ctx *Context) {
-		C.copy()
-	})
-	editMenu.Add("Paste").SetAccelerator("CmdOrCtrl+v").OnClick(func(ctx *Context) {
-		C.paste()
-	})
-	editMenu.Add("Paste and Match Style").SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+v").OnClick(func(ctx *Context) {
-		C.pasteAndMatchStyle()
-	})
-	editMenu.Add("Delete").SetAccelerator("backspace").OnClick(func(ctx *Context) {
-		C.delete()
-	})
-	editMenu.Add("Select All").SetAccelerator("CmdOrCtrl+a").OnClick(func(ctx *Context) {
-		C.selectAll()
-	})
+	editMenu.AddRole(Cut)
+	editMenu.AddRole(Copy)
+	editMenu.AddRole(Paste)
+	editMenu.AddRole(PasteAndMatchStyle)
+	editMenu.AddRole(Delete)
+	editMenu.AddRole(SelectAll)
 	editMenu.AddSeparator()
-	speechMenu := editMenu.AddSubmenu("Speech")
-	speechMenu.Add("Start Speaking").SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+.").OnClick(func(ctx *Context) {
-		C.startSpeaking()
-	})
-	speechMenu.Add("Stop Speaking").SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+,").OnClick(func(ctx *Context) {
-		C.stopSpeaking()
-	})
-	return editMenu
+	editMenu.AddRole(SpeechMenu)
+	subMenu := newSubMenuItem("Edit")
+	subMenu.submenu = editMenu
+	return subMenu
+}
+
+func newSpeechMenu() *MenuItem {
+	speechMenu := NewMenu()
+	speechMenu.Add("Start Speaking").
+		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+.").
+		OnClick(func(ctx *Context) {
+			C.startSpeaking()
+		})
+	speechMenu.Add("Stop Speaking").
+		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+,").
+		OnClick(func(ctx *Context) {
+			C.stopSpeaking()
+		})
+	subMenu := newSubMenuItem("Speech")
+	subMenu.submenu = speechMenu
+	return subMenu
 }
 
 func newHideMenuItem() *MenuItem {
@@ -463,5 +462,142 @@ func newUnhideMenuItem() *MenuItem {
 	return newMenuItem("Show All").
 		OnClick(func(ctx *Context) {
 			C.showAll()
+		})
+}
+
+func newUndoMenuItem() *MenuItem {
+	return newMenuItem("Undo").
+		SetAccelerator("CmdOrCtrl+z").
+		OnClick(func(ctx *Context) {
+			C.undo()
+		})
+}
+
+// newRedoMenuItem creates a new menu item for redoing the last action
+func newRedoMenuItem() *MenuItem {
+	return newMenuItem("Redo").
+		SetAccelerator("CmdOrCtrl+Shift+z").
+		OnClick(func(ctx *Context) {
+			C.redo()
+		})
+}
+
+func newCutMenuItem() *MenuItem {
+	return newMenuItem("Cut").
+		SetAccelerator("CmdOrCtrl+x").
+		OnClick(func(ctx *Context) {
+			C.cut()
+		})
+}
+
+func newCopyMenuItem() *MenuItem {
+	return newMenuItem("Copy").
+		SetAccelerator("CmdOrCtrl+c").
+		OnClick(func(ctx *Context) {
+			C.copy()
+		})
+}
+
+func newPasteMenuItem() *MenuItem {
+	return newMenuItem("Paste").
+		SetAccelerator("CmdOrCtrl+v").
+		OnClick(func(ctx *Context) {
+			C.paste()
+		})
+}
+
+func newPasteAndMatchStyleMenuItem() *MenuItem {
+	return newMenuItem("Paste and Match Style").
+		SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+v").
+		OnClick(func(ctx *Context) {
+			C.pasteAndMatchStyle()
+		})
+}
+
+func newDeleteMenuItem() *MenuItem {
+	return newMenuItem("Delete").
+		SetAccelerator("backspace").
+		OnClick(func(ctx *Context) {
+			C.delete()
+		})
+}
+
+func newQuitMenuItem() *MenuItem {
+	return newMenuItem("Quit " + globalApplication.Name()).
+		SetAccelerator("CmdOrCtrl+q").
+		OnClick(func(ctx *Context) {
+			globalApplication.Quit()
+		})
+}
+
+func newSelectAllMenuItem() *MenuItem {
+	return newMenuItem("Select All").
+		SetAccelerator("CmdOrCtrl+a").
+		OnClick(func(ctx *Context) {
+			C.selectAll()
+		})
+}
+
+func newAboutMenuItem() *MenuItem {
+	return newMenuItem("About " + globalApplication.Name()).
+		OnClick(func(ctx *Context) {
+			// globalApplication.About()
+		})
+}
+
+func newCloseMenuItem() *MenuItem {
+	return newMenuItem("Close").
+		SetAccelerator("CmdOrCtrl+w").
+		OnClick(func(ctx *Context) {
+			C.closeWindow()
+		})
+}
+
+func newReloadMenuItem() *MenuItem {
+	return newMenuItem("Reload").
+		SetAccelerator("CmdOrCtrl+r").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.GetCurrentWindow()
+			if currentWindow != nil {
+				currentWindow.Reload()
+			}
+		})
+}
+
+func newForceReloadMenuItem() *MenuItem {
+	return newMenuItem("Force Reload").
+		SetAccelerator("CmdOrCtrl+Shift+r").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.GetCurrentWindow()
+			if currentWindow != nil {
+				currentWindow.ForceReload()
+			}
+		})
+}
+
+func newToggleFullscreenMenuItem() *MenuItem {
+	result := newMenuItem("Toggle Full Screen").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.GetCurrentWindow()
+			if currentWindow != nil {
+				currentWindow.ToggleFullscreen()
+			}
+		})
+	if runtime.GOOS == "darwin" {
+		result.SetAccelerator("Ctrl+Command+F")
+	} else {
+		result.SetAccelerator("F11")
+	}
+	return result
+}
+
+func newToggleDevToolsMenuItem() *MenuItem {
+	return newMenuItem("Toggle Developer Tools").
+		SetAccelerator("Alt+Command+I").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.GetCurrentWindow()
+			if currentWindow != nil {
+				currentWindow.ToggleDevTools()
+			}
 		})
 }
