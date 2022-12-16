@@ -92,6 +92,7 @@
 - (void) processURLDidReceiveResponse:(unsigned long long)requestId :(int)statusCode :(NSData *)headersJSON;
 - (bool) processURLDidReceiveData:(unsigned long long)requestId :(NSData *)data;
 - (void) processURLDidFinish:(unsigned long long)requestId;
+- (int)  processURLRequestReadBodyStream:(unsigned long long)requestId :(void *)buf :(int)bufLen;
 - (void) ExecJS:(NSString*)script;
 - (NSScreen*) getCurrentScreen;
 

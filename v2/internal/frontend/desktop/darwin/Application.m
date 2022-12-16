@@ -75,6 +75,13 @@ void ProcessURLDidFinish(void *inctx, unsigned long long requestId) {
     }
 }
 
+int ProcessURLRequestReadBodyStream(void *inctx, unsigned long long requestId, void *buf, int bufLen) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    @autoreleasepool {
+        return [ctx processURLRequestReadBodyStream:requestId :buf :bufLen];
+    }
+}
+
 void ExecJS(void* inctx, const char *script) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSString *nsscript = safeInit(script);

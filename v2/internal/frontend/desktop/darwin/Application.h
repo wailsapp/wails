@@ -51,6 +51,7 @@ const bool IsMaximised(void *ctx);
 void ProcessURLDidReceiveResponse(void *inctx, unsigned long long requestId, int statusCode, void *headersString, int headersStringLength);
 bool ProcessURLDidReceiveData(void *inctx, unsigned long long requestId, void* data, int datalength);
 void ProcessURLDidFinish(void *inctx, unsigned long long requestId);
+int ProcessURLRequestReadBodyStream(void *inctx, unsigned long long requestId, void *buf, int bufLen);
 
 /* Dialogs */
 

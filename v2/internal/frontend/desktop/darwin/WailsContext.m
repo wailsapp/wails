@@ -447,10 +447,37 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         [urlSchemeTask didFinish];
     }];
 
-    @synchronized(self.urlRequests) {
-        NSNumber *key = [NSNumber numberWithUnsignedLongLong:requestId];
-        [self.urlRequests removeObjectForKey:key]; // This will release the urlSchemeTask which was retained from the dictionary
+    NSNumber *key = [NSNumber numberWithUnsignedLongLong:requestId];
+    [self removeURLSchemeTask:key];
+}
+
+- (int) processURLRequestReadBodyStream:(unsigned long long)requestId :(void *)buf :(int)bufLen {
+    int res = 0;
+    int *pRes = &res;
+
+    bool hasRequest = [self processURLSchemeTaskCall:requestId :^(id<WKURLSchemeTask> urlSchemeTask) {
+        NSInputStream *stream = urlSchemeTask.request.HTTPBodyStream;
+        if (!stream) {
+            *pRes = -3;
+        } else {
+            NSStreamStatus status = stream.streamStatus;
+             if (status == NSStreamStatusAtEnd) {
+                *pRes = 0;
+            } else if (status != NSStreamStatusOpen) {
+                *pRes = -4;
+            } else if (!stream.hasBytesAvailable) {
+                *pRes = 0;
+            } else {
+                *pRes = [stream read:buf maxLength:bufLen];
+            }
+        }
+    }];
+
+    if (!hasRequest) {
+        res = -2;
     }
+
+    return res;
 }
 
 - (void)webView:(nonnull WKWebView *)webView startURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
@@ -460,6 +487,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     const char *headerJSON = "";
     const void *body = nil;
     int bodyLen = 0;
+    int hasBodyStream = 0;
 
     NSData *headers = [NSJSONSerialization dataWithJSONObject: urlSchemeTask.request.allHTTPHeaderFields options:0 error: nil];
     if (headers) {
@@ -470,8 +498,9 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     if (urlSchemeTask.request.HTTPBody) {
         body = urlSchemeTask.request.HTTPBody.bytes;
         bodyLen = urlSchemeTask.request.HTTPBody.length;
-    } else {
-        // TODO handle HTTPBodyStream
+    } else if (urlSchemeTask.request.HTTPBodyStream) {
+        hasBodyStream = 1;
+        [urlSchemeTask.request.HTTPBodyStream open];
     }
 
     unsigned long long requestId;
@@ -482,16 +511,39 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
         self.urlRequests[key] = urlSchemeTask;
     }
 
-    processURLRequest(self, requestId, url, method, headerJSON, body, bodyLen);
+    processURLRequest(self, requestId, url, method, headerJSON, body, bodyLen, hasBodyStream);
 }
 
 - (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
+    NSArray<NSNumber*> *keys;
     @synchronized(self.urlRequests) {
-        for (NSNumber *key in [self.urlRequests allKeys]) {
-            if (self.urlRequests[key] == urlSchemeTask) {
-                [self.urlRequests removeObjectForKey:key];
-            }
+        keys = [self.urlRequests allKeys];
+    }
+
+    for (NSNumber *key in keys) {
+        if (self.urlRequests[key] == urlSchemeTask) {
+            [self removeURLSchemeTask:key];
         }
+    }
+}
+
+- (void) removeURLSchemeTask:(NSNumber *)urlSchemeTaskKey {
+    id<WKURLSchemeTask> urlSchemeTask = nil;
+    @synchronized(self.urlRequests) {
+        urlSchemeTask = self.urlRequests[urlSchemeTaskKey];
+    }
+
+    if (!urlSchemeTask) {
+        return;
+    }
+
+    NSInputStream *stream = urlSchemeTask.request.HTTPBodyStream;
+    if (stream) {
+        [stream close];
+    }
+
+    @synchronized(self.urlRequests) {
+        [self.urlRequests removeObjectForKey:urlSchemeTaskKey]; 
     }
 }
 
@@ -511,9 +563,7 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
     @try {
         fn(urlSchemeTask);
     } @catch (NSException *exception) {
-        @synchronized(self.urlRequests) {
-            [self.urlRequests removeObjectForKey:key]; // This will release the urlSchemeTask which was retained from the dictionary
-        }
+        [self removeURLSchemeTask:key];
 
         // This is very bad to detect a stopped schemeTask this should be implemented in a better way
         // But it seems to be very tricky to not deadlock when keeping a lock curing executing fn()
