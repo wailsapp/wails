@@ -44,6 +44,7 @@ type platformApp interface {
 	run() error
 	destroy()
 	setApplicationMenu(menu *Menu)
+	name() string
 }
 
 // Messages sent from javascript get routed here
@@ -55,6 +56,7 @@ type windowMessage struct {
 var windowMessageBuffer = make(chan *windowMessage)
 
 type App struct {
+	name                      string
 	options                   *options.Application
 	applicationEventListeners map[uint][]func()
 
@@ -264,4 +266,11 @@ func (a *App) SetMenu(menu *Menu) {
 	if a.impl != nil {
 		a.impl.setApplicationMenu(menu)
 	}
+}
+
+func (a *App) Name() string {
+	if a.impl != nil && a.name == "" {
+		a.name = a.impl.name()
+	}
+	return a.name
 }

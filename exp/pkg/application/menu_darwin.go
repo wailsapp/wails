@@ -45,6 +45,13 @@ void setMenuItemSubmenu(void* nsMenuItem, void* nsMenu) {
 	[menuItem setSubmenu:menu];
 }
 
+// Add services menu
+static void addServicesMenu(void* menu) {
+	NSMenu *nsMenu = (__bridge NSMenu *)menu;
+	[NSApp setServicesMenu:nsMenu];
+}
+
+
 */
 import "C"
 import "unsafe"
@@ -82,6 +89,9 @@ func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
 			item.impl = menuItem
 			C.addMenuItem(parent, menuItem.nsMenuItem)
 			C.setMenuItemSubmenu(menuItem.nsMenuItem, nsSubmenu)
+			if item.role == ServicesMenu {
+				C.addServicesMenu(nsSubmenu)
+			}
 		case text, checkbox, radio:
 			menuItem := newMenuItemImpl(item)
 			item.impl = menuItem

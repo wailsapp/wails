@@ -6,6 +6,7 @@ package application
 
 #include "Cocoa/Cocoa.h"
 #include "menuitem.h"
+#include "application.h"
 
 #define unicode(input) [NSString stringWithFormat:@"%C", input]
 
@@ -243,6 +244,85 @@ void setMenuItemKeyEquivalent(void* nsMenuItem, char *key, int modifier) {
 	free(key);
 }
 
+// Call the copy selector on the pasteboard
+static void copyToPasteboard(char *text) {
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	[pasteboard clearContents];
+	[pasteboard setString:[NSString stringWithUTF8String:text] forType:NSPasteboardTypeString];
+}
+
+// Call the paste selector on the pasteboard
+static char *pasteFromPasteboard(void) {
+	NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+	NSString *text = [pasteboard stringForType:NSPasteboardTypeString];
+	if( text == nil ) {
+		return NULL;
+	}
+	return strdup([text UTF8String]);
+}
+
+// Call paste selector to paste text
+static void paste(void) {
+	[NSApp sendAction:@selector(paste:) to:nil from:nil];
+}
+
+// Call copy selector to copy text
+static void copy(void) {
+	[NSApp sendAction:@selector(copy:) to:nil from:nil];
+}
+
+// Call cut selector to cut text
+static void cut(void) {
+	[NSApp sendAction:@selector(cut:) to:nil from:nil];
+}
+
+// Call selectAll selector to select all text
+static void selectAll(void) {
+	[NSApp sendAction:@selector(selectAll:) to:nil from:nil];
+}
+
+// Call delete selector to delete text
+static void delete(void) {
+	[NSApp sendAction:@selector(delete:) to:nil from:nil];
+}
+
+// Call undo selector to undo text
+static void undo(void) {
+	[NSApp sendAction:@selector(undo:) to:nil from:nil];
+}
+
+// Call redo selector to redo text
+static void redo(void) {
+	[NSApp sendAction:@selector(redo:) to:nil from:nil];
+}
+
+// Call startSpeaking selector to start speaking text
+static void startSpeaking(void) {
+	[NSApp sendAction:@selector(startSpeaking:) to:nil from:nil];
+}
+
+// Call stopSpeaking selector to stop speaking text
+static void stopSpeaking(void) {
+	[NSApp sendAction:@selector(stopSpeaking:) to:nil from:nil];
+}
+
+static void pasteAndMatchStyle(void) {
+	[NSApp sendAction:@selector(pasteAndMatchStyle:) to:nil from:nil];
+}
+
+static void hideApplication(void) {
+    [[NSApplication sharedApplication] hide:nil];
+}
+
+// hideOthers hides all other applications
+static void hideOthers(void) {
+	[[NSApplication sharedApplication] hideOtherApplications:nil];
+}
+
+// showAll shows all hidden applications
+static void showAll(void) {
+	[[NSApplication sharedApplication] unhideAllApplications:nil];
+}
 
 */
 import "C"
@@ -283,13 +363,13 @@ func (m macosMenuItem) setAccelerator(accelerator *accelerator) {
 
 	// Convert the key to a string
 	C.setMenuItemKeyEquivalent(m.nsMenuItem, key, modifier)
-
 }
 
 func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 	result := &macosMenuItem{
 		menuItem: item,
 	}
+
 	switch item.itemType {
 	case text, checkbox, submenu, radio:
 		result.nsMenuItem = unsafe.Pointer(C.newMenuItem(C.uint(item.id), C.CString(item.label), C.bool(item.disabled), C.CString(item.tooltip)))
@@ -303,4 +383,85 @@ func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 		panic("WTF")
 	}
 	return result
+}
+
+func newAppMenu(menu *Menu) *Menu {
+	appName := globalApplication.Name()
+	appMenu := menu.AddSubmenu(appName)
+	appMenu.Add("About " + appName).OnClick(func(*Context) {
+		//TODO: implement
+	})
+	appMenu.AddSeparator()
+	appMenu.AddRole(ServicesMenu)
+	appMenu.AddSeparator()
+	appMenu.AddRole(Hide)
+	appMenu.AddRole(HideOthers)
+	appMenu.AddRole(UnHide)
+	appMenu.AddSeparator()
+
+	appMenu.Add("Quit " + appName).SetAccelerator("CmdOrCtrl+q").OnClick(func(ctx *Context) {
+		globalApplication.Quit()
+	})
+	return appMenu
+}
+
+func newEditMenu(menu *Menu) *Menu {
+	editMenu := menu.AddSubmenu("Edit")
+	editMenu.Add("Undo").SetAccelerator("CmdOrCtrl+z").OnClick(func(ctx *Context) {
+		C.undo()
+	})
+	editMenu.Add("Redo").SetAccelerator("CmdOrCtrl+Shift+z").OnClick(func(ctx *Context) {
+		C.redo()
+	})
+	editMenu.AddSeparator()
+	editMenu.Add("Cut").SetAccelerator("CmdOrCtrl+x").OnClick(func(ctx *Context) {
+		C.cut()
+	})
+	editMenu.Add("Copy").SetAccelerator("CmdOrCtrl+c").OnClick(func(ctx *Context) {
+		C.copy()
+	})
+	editMenu.Add("Paste").SetAccelerator("CmdOrCtrl+v").OnClick(func(ctx *Context) {
+		C.paste()
+	})
+	editMenu.Add("Paste and Match Style").SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+v").OnClick(func(ctx *Context) {
+		C.pasteAndMatchStyle()
+	})
+	editMenu.Add("Delete").SetAccelerator("backspace").OnClick(func(ctx *Context) {
+		C.delete()
+	})
+	editMenu.Add("Select All").SetAccelerator("CmdOrCtrl+a").OnClick(func(ctx *Context) {
+		C.selectAll()
+	})
+	editMenu.AddSeparator()
+	speechMenu := editMenu.AddSubmenu("Speech")
+	speechMenu.Add("Start Speaking").SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+.").OnClick(func(ctx *Context) {
+		C.startSpeaking()
+	})
+	speechMenu.Add("Stop Speaking").SetAccelerator("CmdOrCtrl+OptionOrAlt+Shift+,").OnClick(func(ctx *Context) {
+		C.stopSpeaking()
+	})
+	return editMenu
+}
+
+func newHideMenuItem() *MenuItem {
+	return newMenuItem("Hide " + globalApplication.Name()).
+		SetAccelerator("CmdOrCtrl+h").
+		OnClick(func(ctx *Context) {
+			C.hideApplication()
+		})
+}
+
+func newHideOthersMenuItem() *MenuItem {
+	return newMenuItem("Hide Others").
+		SetAccelerator("CmdOrCtrl+OptionOrAlt+h").
+		OnClick(func(ctx *Context) {
+			C.hideOthers()
+		})
+}
+
+func newUnhideMenuItem() *MenuItem {
+	return newMenuItem("Show All").
+		OnClick(func(ctx *Context) {
+			C.showAll()
+		})
 }

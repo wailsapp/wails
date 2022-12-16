@@ -49,6 +49,7 @@ type MenuItem struct {
 	callback    func(*Context)
 	itemType    menuItemType
 	accelerator *accelerator
+	role        Role
 
 	impl              menuItemImpl
 	radioGroupMembers []*MenuItem
@@ -104,6 +105,36 @@ func newSubMenuItem(label string) *MenuItem {
 	}
 	addToMenuItemMap(result)
 	return result
+}
+
+func newRole(parentMenu *Menu, role Role) *MenuItem {
+	var roleMenu *Menu
+	switch role {
+	case AppMenu:
+		roleMenu = newAppMenu(parentMenu)
+	case EditMenu:
+		roleMenu = newEditMenu(parentMenu)
+	case ServicesMenu:
+		roleMenu = newServicesMenu()
+	case Hide:
+		return newHideMenuItem()
+	case HideOthers:
+		return newHideOthersMenuItem()
+	case UnHide:
+		return newUnhideMenuItem()
+	}
+	return roleMenu.items[0]
+}
+
+func newServicesMenu() *Menu {
+	serviceMenu := newSubMenuItem("Services")
+	serviceMenu.role = ServicesMenu
+	return &Menu{
+		label: "Services",
+		items: []*MenuItem{
+			serviceMenu,
+		},
+	}
 }
 
 func (m *MenuItem) handleClick() {

@@ -6,5 +6,6 @@
 static void init(void);
 static void run(void);
 static void setActivationPolicy(int policy);
+static char *getAppName(void);
 
 #endif

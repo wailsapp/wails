@@ -52,6 +52,12 @@ func (m *Menu) AddSubmenu(s string) *Menu {
 	return result.submenu
 }
 
+func (m *Menu) AddRole(role Role) *Menu {
+	result := newRole(m, role)
+	m.items = append(m.items, result)
+	return m
+}
+
 func (m *Menu) processRadioGroups() {
 	var radioGroup []*MenuItem
 	for _, item := range m.items {
