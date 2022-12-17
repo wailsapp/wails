@@ -140,7 +140,12 @@ void navigationLoadURL(void* nsWindow, char* url) {
 void windowSetResizable(void* nsWindow, bool resizable) {
 	// Set window resizable on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[(NSWindow*)nsWindow setStyleMask:resizable ? NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable : NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable];
+		NSWindow* window = (NSWindow*)nsWindow;
+		if (resizable) {
+			[window setStyleMask:[window styleMask] | NSWindowStyleMaskResizable];
+		} else {
+			[window setStyleMask:[window styleMask] & ~NSWindowStyleMaskResizable];
+		}
 	});
 }
 

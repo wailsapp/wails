@@ -116,11 +116,15 @@ func (w *Window) NavigateToURL(s string) {
 }
 
 func (w *Window) SetResizable(b bool) {
+	w.options.DisableResize = !b
 	if w.impl == nil {
-		w.options.DisableResize = !b
 		return
 	}
 	w.impl.setResizable(b)
+}
+
+func (w *Window) Resizable() bool {
+	return !w.options.DisableResize
 }
 
 func (w *Window) SetMinSize(minWidth, minHeight int) {
@@ -171,8 +175,8 @@ func (w *Window) ExecJS(js string) {
 
 // Set Maximized
 func (w *Window) SetMaximized() {
+	w.options.StartState = options.WindowStateMaximised
 	if w.impl == nil {
-		w.options.StartState = options.WindowStateMaximised
 		return
 	}
 	w.impl.setMaximised()
@@ -180,8 +184,8 @@ func (w *Window) SetMaximized() {
 
 // Set Minimized
 func (w *Window) SetMinimized() {
+	w.options.StartState = options.WindowStateMinimised
 	if w.impl == nil {
-		w.options.StartState = options.WindowStateMinimised
 		return
 	}
 	w.impl.setMinimised()
@@ -189,8 +193,8 @@ func (w *Window) SetMinimized() {
 
 // Set Fullscreen
 func (w *Window) SetFullscreen() {
+	w.options.StartState = options.WindowStateFullscreen
 	if w.impl == nil {
-		w.options.StartState = options.WindowStateFullscreen
 		return
 	}
 	w.impl.setFullscreen()
@@ -231,8 +235,8 @@ func (w *Window) IsFullscreen() bool {
 }
 
 func (w *Window) SetBackgroundColor(color *options.RGBA) {
+	w.options.BackgroundColour = color
 	if w.impl == nil {
-		w.options.BackgroundColour = color
 		return
 	}
 	w.impl.setBackgroundColor(color)
