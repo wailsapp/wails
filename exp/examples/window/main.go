@@ -16,12 +16,13 @@ func main() {
 
 	// Create window
 	myWindow := app.NewWindowWithOptions(&options.Window{
-		Title:  "My Window",
-		Width:  800,
-		Height: 600,
-		URL:    "https://www.google.com",
+		Title:          "My Window",
+		Width:          800,
+		Height:         600,
+		URL:            "https://wails.io",
+		EnableDevTools: true,
 		Mac: &options.MacWindow{
-			//Backdrop: options.MacBackdropTranslucent,
+			Backdrop: options.MacBackdropTranslucent,
 			TitleBar: options.TitleBarHiddenInset,
 		},
 	})
