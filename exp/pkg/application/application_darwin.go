@@ -87,7 +87,7 @@ func (m *macosApp) getCurrentWindowID() uint {
 func (m *macosApp) setApplicationMenu(menu *Menu) {
 	if menu == nil {
 		// Create a default menu for mac
-		menu = m.createDefaultApplicationMenu()
+		menu = defaultApplicationMenu()
 	}
 	menu.Update()
 	// Convert impl to macosMenu object
@@ -102,17 +102,6 @@ func (m *macosApp) run() error {
 
 func (m *macosApp) destroy() {
 	C.destroyApp()
-}
-
-func (m *macosApp) createDefaultApplicationMenu() *Menu {
-	// Create a default menu for mac
-	menu := NewMenu()
-	menu.AddRole(AppMenu)
-	menu.AddRole(FileMenu)
-	menu.AddRole(EditMenu)
-	menu.AddRole(ViewMenu)
-
-	return menu
 }
 
 func newPlatformApp(appOptions *options.Application) *macosApp {

@@ -323,12 +323,6 @@ static void showAll(void) {
 	[[NSApplication sharedApplication] unhideAllApplications:nil];
 }
 
-// closeWindow closes the current window
-static void closeWindow(void) {
-	[NSApp sendAction:@selector(performClose:) to:nil from:nil];
-}
-
-
 */
 import "C"
 import (
@@ -389,40 +383,6 @@ func newMenuItemImpl(item *MenuItem) *macosMenuItem {
 		panic("WTF")
 	}
 	return result
-}
-
-func newAppMenu() *MenuItem {
-	appMenu := NewMenu()
-	appMenu.AddRole(About)
-	appMenu.AddSeparator()
-	appMenu.AddRole(ServicesMenu)
-	appMenu.AddSeparator()
-	appMenu.AddRole(Hide)
-	appMenu.AddRole(HideOthers)
-	appMenu.AddRole(UnHide)
-	appMenu.AddSeparator()
-	appMenu.AddRole(Quit)
-	subMenu := newSubMenuItem(globalApplication.Name())
-	subMenu.submenu = appMenu
-	return subMenu
-}
-
-func newEditMenu() *MenuItem {
-	editMenu := NewMenu()
-	editMenu.AddRole(Undo)
-	editMenu.AddRole(Redo)
-	editMenu.AddSeparator()
-	editMenu.AddRole(Cut)
-	editMenu.AddRole(Copy)
-	editMenu.AddRole(Paste)
-	editMenu.AddRole(PasteAndMatchStyle)
-	editMenu.AddRole(Delete)
-	editMenu.AddRole(SelectAll)
-	editMenu.AddSeparator()
-	editMenu.AddRole(SpeechMenu)
-	subMenu := newSubMenuItem("Edit")
-	subMenu.submenu = editMenu
-	return subMenu
 }
 
 func newSpeechMenu() *MenuItem {
@@ -549,7 +509,10 @@ func newCloseMenuItem() *MenuItem {
 	return newMenuItem("Close").
 		SetAccelerator("CmdOrCtrl+w").
 		OnClick(func(ctx *Context) {
-			C.closeWindow()
+			currentWindow := globalApplication.GetCurrentWindow()
+			if currentWindow != nil {
+				currentWindow.Close()
+			}
 		})
 }
 
@@ -632,6 +595,27 @@ func newZoomOutMenuItem() *MenuItem {
 			currentWindow := globalApplication.GetCurrentWindow()
 			if currentWindow != nil {
 				currentWindow.ZoomOut()
+			}
+		})
+}
+
+func newMinimizeMenuItem() *MenuItem {
+	return newMenuItem("Minimize").
+		SetAccelerator("CmdOrCtrl+M").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.GetCurrentWindow()
+			if currentWindow != nil {
+				currentWindow.Minimize()
+			}
+		})
+}
+
+func newZoomMenuItem() *MenuItem {
+	return newMenuItem("Zoom").
+		OnClick(func(ctx *Context) {
+			currentWindow := globalApplication.GetCurrentWindow()
+			if currentWindow != nil {
+				currentWindow.Zoom()
 			}
 		})
 }

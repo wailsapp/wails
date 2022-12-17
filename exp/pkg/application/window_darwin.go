@@ -44,9 +44,11 @@ void* windowNew(unsigned int id, int width, int height) {
 
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[view addSubview:webView];
+
+	// Ensure webview resizes with the window
+	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+
 	delegate.webView = webView;
-
-
 	delegate.hideOnClose = false;
 	return window;
 }
@@ -507,6 +509,38 @@ void windowDestroy(void* nsWindow) {
 	});
 }
 
+
+// windowClose closes the current window
+static void windowClose(void *window) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// close window
+		[(NSWindow*)window close];
+	});
+}
+
+// windowZoom
+static void windowZoom(void *window) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// zoom window
+		[(NSWindow*)window zoom:nil];
+	});
+}
+
+// miniaturize
+static void windowMiniaturize(void *window) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// miniaturize window
+		[(NSWindow*)window miniaturize:nil];
+	});
+}
+
+// zoom maximizes the window to the screen dimensions
+static void windowMaximize(void *window) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// maximize window
+		[(NSWindow*)window zoom:nil];
+	});
+}
 */
 import "C"
 import (
@@ -524,6 +558,22 @@ type macosWindow struct {
 	options  *options.Window
 
 	// devtools
+}
+
+func (w *macosWindow) zoom() {
+	C.windowZoom(w.nsWindow)
+}
+
+func (w *macosWindow) minimize() {
+	C.windowMiniaturize(w.nsWindow)
+}
+
+func (w *macosWindow) windowZoom() {
+	C.windowZoom(w.nsWindow)
+}
+
+func (w *macosWindow) close() {
+	C.windowClose(w.nsWindow)
 }
 
 func (w *macosWindow) zoomIn() {
@@ -695,8 +745,12 @@ func (w *macosWindow) run() {
 		w.setTitle(w.options.Title)
 		w.setAlwaysOnTop(w.options.AlwaysOnTop)
 		w.setResizable(!w.options.DisableResize)
-		w.setMinSize(w.options.MinWidth, w.options.MinHeight)
-		w.setMaxSize(w.options.MaxWidth, w.options.MaxHeight)
+		if w.options.MinWidth != 0 || w.options.MinHeight != 0 {
+			w.setMinSize(w.options.MinWidth, w.options.MinHeight)
+		}
+		if w.options.MaxWidth != 0 || w.options.MaxHeight != 0 {
+			w.setMaxSize(w.options.MaxWidth, w.options.MaxHeight)
+		}
 		if w.options.EnableDevTools {
 			w.enableDevTools()
 		}

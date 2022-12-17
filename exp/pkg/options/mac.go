@@ -40,15 +40,13 @@ type TitleBar struct {
 }
 
 // TitleBarDefault results in the default Mac Titlebar
-func TitleBarDefault() *TitleBar {
-	return &TitleBar{
-		AppearsTransparent:   false,
-		Hide:                 false,
-		HideTitle:            false,
-		FullSizeContent:      false,
-		UseToolbar:           false,
-		HideToolbarSeparator: false,
-	}
+var TitleBarDefault = &TitleBar{
+	AppearsTransparent:   false,
+	Hide:                 false,
+	HideTitle:            false,
+	FullSizeContent:      false,
+	UseToolbar:           false,
+	HideToolbarSeparator: false,
 }
 
 // Credit: Comments from Electron site
@@ -56,30 +54,24 @@ func TitleBarDefault() *TitleBar {
 // TitleBarHidden results in a hidden title bar and a full size content window,
 // yet the title bar still has the standard window controls (“traffic lights”)
 // in the top left.
-func TitleBarHidden() *TitleBar {
-	return &TitleBar{
-		AppearsTransparent:   true,
-		Hide:                 false,
-		HideTitle:            true,
-		FullSizeContent:      true,
-		UseToolbar:           false,
-		HideToolbarSeparator: false,
-	}
+var TitleBarHidden = &TitleBar{
+	AppearsTransparent:   true,
+	Hide:                 false,
+	HideTitle:            true,
+	FullSizeContent:      true,
+	UseToolbar:           false,
+	HideToolbarSeparator: false,
 }
 
 // TitleBarHiddenInset results in a hidden title bar with an alternative look where
 // the traffic light buttons are slightly more inset from the window edge.
-func TitleBarHiddenInset() *TitleBar {
-
-	return &TitleBar{
-		AppearsTransparent:   true,
-		Hide:                 false,
-		HideTitle:            true,
-		FullSizeContent:      true,
-		UseToolbar:           true,
-		HideToolbarSeparator: true,
-	}
-
+var TitleBarHiddenInset = &TitleBar{
+	AppearsTransparent:   true,
+	Hide:                 false,
+	HideTitle:            true,
+	FullSizeContent:      true,
+	UseToolbar:           true,
+	HideToolbarSeparator: true,
 }
 
 // MacAppearanceType is a type of Appearance for Cocoa windows

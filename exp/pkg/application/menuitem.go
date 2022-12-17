@@ -122,6 +122,10 @@ func newRole(role Role) *MenuItem {
 		return newServicesMenu()
 	case SpeechMenu:
 		return newSpeechMenu()
+	case WindowMenu:
+		return newWindowMenu()
+	case HelpMenu:
+		return newHelpMenu()
 	case Hide:
 		return newHideMenuItem()
 	case HideOthers:
@@ -164,6 +168,10 @@ func newRole(role Role) *MenuItem {
 		return newZoomInMenuItem()
 	case ZoomOut:
 		return newZoomOutMenuItem()
+	case Minimize:
+		return newMinimizeMenuItem()
+	case Zoom:
+		return newZoomMenuItem()
 
 	default:
 		println("No support for role:", role)

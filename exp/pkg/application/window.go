@@ -40,6 +40,9 @@ type windowImpl interface {
 	resetZoom()
 	zoomIn()
 	zoomOut()
+	close()
+	zoom()
+	minimize()
 }
 
 type Window struct {
@@ -346,4 +349,25 @@ func (w *Window) ZoomOut() {
 		return
 	}
 	w.impl.zoomOut()
+}
+
+func (w *Window) Close() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.close()
+}
+
+func (w *Window) Minimize() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.minimize()
+}
+
+func (w *Window) Zoom() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.zoom()
 }
