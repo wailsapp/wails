@@ -61,6 +61,10 @@ func (m *Menu) AddRole(role Role) *Menu {
 func (m *Menu) processRadioGroups() {
 	var radioGroup []*MenuItem
 	for _, item := range m.items {
+		if item.itemType == submenu {
+			item.submenu.processRadioGroups()
+			continue
+		}
 		if item.itemType == radio {
 			radioGroup = append(radioGroup, item)
 		} else {
