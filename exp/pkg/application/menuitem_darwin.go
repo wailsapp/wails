@@ -501,7 +501,7 @@ func newSelectAllMenuItem() *MenuItem {
 func newAboutMenuItem() *MenuItem {
 	return newMenuItem("About " + globalApplication.Name()).
 		OnClick(func(ctx *Context) {
-			// globalApplication.About()
+			globalApplication.ShowAboutDialog()
 		})
 }
 

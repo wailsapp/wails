@@ -45,6 +45,8 @@ type platformApp interface {
 	setApplicationMenu(menu *Menu)
 	name() string
 	getCurrentWindowID() uint
+	showAboutDialog(name string, description string, icon []byte)
+	setIcon(icon []byte)
 }
 
 // Messages sent from javascript get routed here
@@ -56,7 +58,6 @@ type windowMessage struct {
 var windowMessageBuffer = make(chan *windowMessage)
 
 type App struct {
-	name                      string
 	options                   *options.Application
 	applicationEventListeners map[uint][]func()
 
@@ -84,6 +85,11 @@ type App struct {
 
 	// The main application menu
 	ApplicationMenu *Menu
+
+	// About Dialog
+	name        string
+	description string
+	icon        []byte
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -187,6 +193,9 @@ func (a *App) Run() error {
 	// set the application menu
 	a.impl.setApplicationMenu(a.ApplicationMenu)
 
+	// set the application icon
+	a.impl.setIcon(a.icon)
+
 	return a.impl.run()
 }
 
@@ -278,9 +287,35 @@ func (a *App) SetMenu(menu *Menu) {
 	}
 }
 
+func (a *App) SetName(name string) {
+	a.name = name
+}
+
 func (a *App) Name() string {
-	if a.impl != nil && a.name == "" {
-		a.name = a.impl.name()
-	}
 	return a.name
+}
+
+func (a *App) SetIcon(icon []byte) {
+	a.icon = icon
+	if a.impl != nil {
+		a.impl.setIcon(icon)
+	}
+}
+
+func (a *App) Icon() []byte {
+	return a.icon
+}
+
+func (a *App) SetDescription(description string) {
+	a.description = description
+}
+
+func (a *App) Description() string {
+	return a.description
+}
+
+func (a *App) ShowAboutDialog() {
+	if a.impl != nil {
+		a.impl.showAboutDialog(a.name, a.description, a.icon)
+	}
 }

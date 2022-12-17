@@ -61,6 +61,15 @@ static unsigned int getCurrentWindowID(void) {
 	return delegate.windowId;
 }
 
+// Set the application icon
+static void setApplicationIcon(void *icon, int length) {
+    // On main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:icon length:length]];
+		[NSApp setApplicationIconImage:image];
+	});
+}
+
 */
 import "C"
 import (
@@ -72,6 +81,10 @@ import (
 type macosApp struct {
 	options         *options.Application
 	applicationMenu unsafe.Pointer
+}
+
+func (m *macosApp) setIcon(icon []byte) {
+	C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
 }
 
 func (m *macosApp) name() string {
@@ -139,4 +152,11 @@ func processMessage(windowID C.uint, message *C.char) {
 //export processMenuItemClick
 func processMenuItemClick(menuID C.uint) {
 	menuItemClicked <- uint(menuID)
+}
+
+func setIcon(icon []byte) {
+	if icon == nil {
+		return
+	}
+	C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
 }
