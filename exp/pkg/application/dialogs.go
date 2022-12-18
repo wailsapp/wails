@@ -124,6 +124,7 @@ type OpenFileDialog struct {
 	canCreateDirectories    bool
 	showHiddenFiles         bool
 	allowsMultipleSelection bool
+	window                  *Window
 
 	impl openFileDialogImpl
 }
@@ -148,12 +149,31 @@ func (d *OpenFileDialog) ShowHiddenFiles(showHiddenFiles bool) *OpenFileDialog {
 	return d
 }
 
-func (d *OpenFileDialog) Show() (string, error) {
+func (d *OpenFileDialog) AttachToWindow(window *Window) *OpenFileDialog {
+	d.window = window
+	return d
+}
+
+func (d *OpenFileDialog) PromptForSingleFile() (string, error) {
+	d.allowsMultipleSelection = false
 	if d.impl == nil {
 		d.impl = newOpenFileDialogImpl(d)
 	}
-	result, err := d.impl.show()
-	return result[0], err
+	selection, err := d.impl.show()
+	var result string
+	if len(selection) > 0 {
+		result = selection[0]
+	}
+
+	return result, err
+}
+
+func (d *OpenFileDialog) PromptForMultipleFiles() ([]string, error) {
+	d.allowsMultipleSelection = true
+	if d.impl == nil {
+		d.impl = newOpenFileDialogImpl(d)
+	}
+	return d.impl.show()
 }
 
 func newOpenFileDialog() *OpenFileDialog {

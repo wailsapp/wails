@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"log"
+	"strings"
 
 	"github.com/wailsapp/wails/exp/pkg/application"
 )
@@ -139,7 +140,7 @@ func main() {
 	openMenu.Add("Open File").OnClick(func(ctx *application.Context) {
 		result, _ := app.NewOpenFileDialog().
 			CanChooseFiles(true).
-			Show()
+			PromptForSingleFile()
 		if result != "" {
 			app.NewInfoDialog().SetMessage(result).Show()
 		} else {
@@ -151,29 +152,42 @@ func main() {
 			CanChooseFiles(true).
 			CanCreateDirectories(true).
 			ShowHiddenFiles(true).
-			Show()
+			PromptForSingleFile()
 		if result != "" {
 			app.NewInfoDialog().SetMessage(result).Show()
 		} else {
 			app.NewInfoDialog().SetMessage("No file selected").Show()
 		}
 	})
-	//openMenu.Add("Open Multiple Files (Show Hidden Files)").OnClick(func(ctx *application.Context) {
-	//	result, _ := app.NewOpenMultipleFilesDialog().
-	//		CanChooseFiles(true).
-	//		CanCreateDirectories(true).
-	//		ShowHiddenFiles(true).
-	//		Show()
-	//	if len(result) > 0 {
-	//		app.NewInfoDialog().SetMessage(strings.Join(result, ",")).Show()
-	//	} else {
-	//		app.NewInfoDialog().SetMessage("No file selected").Show()
-	//	}
-	//})
+	openMenu.Add("Open File (Attach to window)").OnClick(func(ctx *application.Context) {
+		result, _ := app.NewOpenFileDialog().
+			CanChooseFiles(true).
+			CanCreateDirectories(true).
+			ShowHiddenFiles(true).
+			AttachToWindow(app.GetCurrentWindow()).
+			PromptForSingleFile()
+		if result != "" {
+			app.NewInfoDialog().SetMessage(result).Show()
+		} else {
+			app.NewInfoDialog().SetMessage("No file selected").Show()
+		}
+	})
+	openMenu.Add("Open Multiple Files (Show Hidden Files)").OnClick(func(ctx *application.Context) {
+		result, _ := app.NewOpenFileDialog().
+			CanChooseFiles(true).
+			CanCreateDirectories(true).
+			ShowHiddenFiles(true).
+			PromptForMultipleFiles()
+		if len(result) > 0 {
+			app.NewInfoDialog().SetMessage(strings.Join(result, ",")).Show()
+		} else {
+			app.NewInfoDialog().SetMessage("No file selected").Show()
+		}
+	})
 	openMenu.Add("Open Directory").OnClick(func(ctx *application.Context) {
 		result, _ := app.NewOpenFileDialog().
 			CanChooseDirectories(true).
-			Show()
+			PromptForSingleFile()
 		if result != "" {
 			app.NewInfoDialog().SetMessage(result).Show()
 		} else {
@@ -184,7 +198,7 @@ func main() {
 		result, _ := app.NewOpenFileDialog().
 			CanChooseDirectories(true).
 			CanCreateDirectories(true).
-			Show()
+			PromptForSingleFile()
 		if result != "" {
 			app.NewInfoDialog().SetMessage(result).Show()
 		} else {
@@ -194,6 +208,7 @@ func main() {
 
 	app.SetMenu(menu)
 
+	app.NewWindow()
 	app.NewWindow()
 
 	err := app.Run()

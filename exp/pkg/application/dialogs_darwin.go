@@ -102,7 +102,27 @@ static void alertAddButton(void *dialog, char *label, bool isDefault, bool isCan
     }
 }
 
-static void showOpenFileDialog(unsigned int dialogID, bool canChooseFiles, bool canChooseDirectories, bool canCreateDirectories, bool showHiddenFiles, bool allowsMultipleSelection) {
+static void processOpenFileDialogResults(NSOpenPanel *panel, NSInteger result, bool allowsMultipleSelection, uint dialogID) {
+	const char *path = NULL;
+	if (result == NSModalResponseOK) {
+		if (allowsMultipleSelection) {
+			NSArray *urls = [panel URLs];
+			for (NSURL *url in urls) {
+				path = [[url path] UTF8String];
+				openFileDialogCallback(dialogID, (char *)path);
+			}
+
+		} else {
+			NSURL *url = [panel URL];
+			path = [[url path] UTF8String];
+			openFileDialogCallback(dialogID, (char *)path);
+		}
+	}
+	openFileDialogCallbackEnd(dialogID);
+}
+
+
+static void showOpenFileDialog(unsigned int dialogID, bool canChooseFiles, bool canChooseDirectories, bool canCreateDirectories, bool showHiddenFiles, bool allowsMultipleSelection, void *window) {
 
 	// run on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
@@ -114,26 +134,15 @@ static void showOpenFileDialog(unsigned int dialogID, bool canChooseFiles, bool 
 		[panel setShowsHiddenFiles:showHiddenFiles];
 		[panel setAllowsMultipleSelection:allowsMultipleSelection];
 
-
-		// Show panel
-		[panel beginWithCompletionHandler:^(NSInteger result) {
-			const char *path = NULL;
-			if (result == NSModalResponseOK) {
-				if (allowsMultipleSelection) {
-					NSArray *urls = [panel URLs];
-					for (NSURL *url in urls) {
-						path = [[url path] UTF8String];
-						openFileDialogCallback(dialogID, (char *)path);
-					}
-
-				} else {
-					NSURL *url = [panel URL];
-					path = [[url path] UTF8String];
-					openFileDialogCallback(dialogID, (char *)path);
-				}
-			}
-			openFileDialogCallbackEnd(dialogID);
-		}];
+		if (window != NULL) {
+			[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
+				processOpenFileDialogResults(panel, result, allowsMultipleSelection, dialogID);
+			}];
+		} else {
+			[panel beginWithCompletionHandler:^(NSInteger result) {
+				processOpenFileDialogResults(panel, result, allowsMultipleSelection, dialogID);
+			}];
+		}
 	});
 }
 
@@ -246,12 +255,18 @@ func newOpenFileDialogImpl(d *OpenFileDialog) *macosOpenFileDialog {
 
 func (m *macosOpenFileDialog) show() ([]string, error) {
 	openFileResponses[dialogID] = make(chan string)
+	nsWindow := unsafe.Pointer(nil)
+	if m.dialog.window != nil {
+		// get NSWindow from window
+		nsWindow = m.dialog.window.impl.(*macosWindow).nsWindow
+	}
 	C.showOpenFileDialog(C.uint(m.dialog.id),
 		C.bool(m.dialog.canChooseFiles),
 		C.bool(m.dialog.canChooseDirectories),
 		C.bool(m.dialog.canCreateDirectories),
 		C.bool(m.dialog.showHiddenFiles),
-		C.bool(m.dialog.allowsMultipleSelection))
+		C.bool(m.dialog.allowsMultipleSelection),
+		nsWindow)
 	var result []string
 	for filename := range openFileResponses[m.dialog.id] {
 		result = append(result, filename)
