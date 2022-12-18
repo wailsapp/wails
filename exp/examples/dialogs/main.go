@@ -135,6 +135,63 @@ func main() {
 		dialog.Show()
 	})
 
+	openMenu := menu.AddSubmenu("Open")
+	openMenu.Add("Open File").OnClick(func(ctx *application.Context) {
+		result, _ := app.NewOpenFileDialog().
+			CanChooseFiles(true).
+			Show()
+		if result != "" {
+			app.NewInfoDialog().SetMessage(result).Show()
+		} else {
+			app.NewInfoDialog().SetMessage("No file selected").Show()
+		}
+	})
+	openMenu.Add("Open File (Show Hidden Files)").OnClick(func(ctx *application.Context) {
+		result, _ := app.NewOpenFileDialog().
+			CanChooseFiles(true).
+			CanCreateDirectories(true).
+			ShowHiddenFiles(true).
+			Show()
+		if result != "" {
+			app.NewInfoDialog().SetMessage(result).Show()
+		} else {
+			app.NewInfoDialog().SetMessage("No file selected").Show()
+		}
+	})
+	//openMenu.Add("Open Multiple Files (Show Hidden Files)").OnClick(func(ctx *application.Context) {
+	//	result, _ := app.NewOpenMultipleFilesDialog().
+	//		CanChooseFiles(true).
+	//		CanCreateDirectories(true).
+	//		ShowHiddenFiles(true).
+	//		Show()
+	//	if len(result) > 0 {
+	//		app.NewInfoDialog().SetMessage(strings.Join(result, ",")).Show()
+	//	} else {
+	//		app.NewInfoDialog().SetMessage("No file selected").Show()
+	//	}
+	//})
+	openMenu.Add("Open Directory").OnClick(func(ctx *application.Context) {
+		result, _ := app.NewOpenFileDialog().
+			CanChooseDirectories(true).
+			Show()
+		if result != "" {
+			app.NewInfoDialog().SetMessage(result).Show()
+		} else {
+			app.NewInfoDialog().SetMessage("No directory selected").Show()
+		}
+	})
+	openMenu.Add("Open Directory (Create Directories)").OnClick(func(ctx *application.Context) {
+		result, _ := app.NewOpenFileDialog().
+			CanChooseDirectories(true).
+			CanCreateDirectories(true).
+			Show()
+		if result != "" {
+			app.NewInfoDialog().SetMessage(result).Show()
+		} else {
+			app.NewInfoDialog().SetMessage("No directory selected").Show()
+		}
+	})
+
 	app.SetMenu(menu)
 
 	app.NewWindow()

@@ -8,6 +8,9 @@ package application
 
 #import <Cocoa/Cocoa.h>
 
+extern void openFileDialogCallback(uint id, char* path);
+extern void openFileDialogCallbackEnd(uint id);
+
 static void showAboutBox(char* title, char *message, void *icon, int length) {
 
 	// run on main thread
@@ -99,9 +102,46 @@ static void alertAddButton(void *dialog, char *label, bool isDefault, bool isCan
     }
 }
 
+static void showOpenFileDialog(unsigned int dialogID, bool canChooseFiles, bool canChooseDirectories, bool canCreateDirectories, bool showHiddenFiles, bool allowsMultipleSelection) {
+
+	// run on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+		[panel setCanChooseFiles:canChooseFiles];
+		[panel setCanChooseDirectories:canChooseDirectories];
+		[panel setCanCreateDirectories:canCreateDirectories];
+		[panel setShowsHiddenFiles:showHiddenFiles];
+		[panel setAllowsMultipleSelection:allowsMultipleSelection];
+
+
+		// Show panel
+		[panel beginWithCompletionHandler:^(NSInteger result) {
+			const char *path = NULL;
+			if (result == NSModalResponseOK) {
+				if (allowsMultipleSelection) {
+					NSArray *urls = [panel URLs];
+					for (NSURL *url in urls) {
+						path = [[url path] UTF8String];
+						openFileDialogCallback(dialogID, (char *)path);
+					}
+
+				} else {
+					NSURL *url = [panel URL];
+					path = [[url path] UTF8String];
+					openFileDialogCallback(dialogID, (char *)path);
+				}
+			}
+			openFileDialogCallbackEnd(dialogID);
+		}];
+	});
+}
+
 */
 import "C"
-import "unsafe"
+import (
+	"unsafe"
+)
 
 const NSAlertStyleWarning = C.int(0)
 const NSAlertStyleInformational = C.int(1)
@@ -123,7 +163,7 @@ func (m *macosApp) showAboutDialog(title string, message string, icon []byte) {
 }
 
 type macosDialog struct {
-	dialog *Dialog
+	dialog *MessageDialog
 
 	nsDialog unsafe.Pointer
 }
@@ -188,8 +228,56 @@ func (m *macosDialog) show() {
 
 }
 
-func newDialogImpl(d *Dialog) *macosDialog {
+func newDialogImpl(d *MessageDialog) *macosDialog {
 	return &macosDialog{
 		dialog: d,
+	}
+}
+
+type macosOpenFileDialog struct {
+	dialog *OpenFileDialog
+}
+
+func newOpenFileDialogImpl(d *OpenFileDialog) *macosOpenFileDialog {
+	return &macosOpenFileDialog{
+		dialog: d,
+	}
+}
+
+func (m *macosOpenFileDialog) show() ([]string, error) {
+	openFileResponses[dialogID] = make(chan string)
+	C.showOpenFileDialog(C.uint(m.dialog.id),
+		C.bool(m.dialog.canChooseFiles),
+		C.bool(m.dialog.canChooseDirectories),
+		C.bool(m.dialog.canCreateDirectories),
+		C.bool(m.dialog.showHiddenFiles),
+		C.bool(m.dialog.allowsMultipleSelection))
+	var result []string
+	for filename := range openFileResponses[m.dialog.id] {
+		result = append(result, filename)
+	}
+	return result, nil
+}
+
+//export openFileDialogCallback
+func openFileDialogCallback(id C.uint, path *C.char) {
+	// Covert the path to a string
+	filePath := C.GoString(path)
+	// put response on channel
+	channel, ok := openFileResponses[uint(id)]
+	if ok {
+		channel <- filePath
+	} else {
+		panic("No channel found for open file dialog")
+	}
+}
+
+//export openFileDialogCallbackEnd
+func openFileDialogCallbackEnd(id C.uint) {
+	channel, ok := openFileResponses[uint(id)]
+	if ok {
+		close(channel)
+	} else {
+		panic("No channel found for open file dialog")
 	}
 }

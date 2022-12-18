@@ -11,12 +11,6 @@ import (
 	"github.com/wailsapp/wails/exp/pkg/options"
 )
 
-//go:embed icon.png
-var icon []byte
-
-//go:embed macos_icon.png
-var macosIcon []byte
-
 func main() {
 	app := application.NewWithOptions(&options.Application{
 		Mac: &options.Mac{
@@ -67,9 +61,9 @@ func main() {
 			mySystray := app.NewSystemTray()
 			mySystray.SetLabel("Wails")
 			if runtime.GOOS == "darwin" {
-				mySystray.SetTemplateIcon(macosIcon)
+				mySystray.SetTemplateIcon(application.DefaultMacTemplateIcon)
 			} else {
-				mySystray.SetIcon(icon)
+				mySystray.SetIcon(application.DefaultApplicationIcon)
 			}
 			myMenu := app.NewMenu()
 			myMenu.Add("Item 1")
@@ -107,9 +101,9 @@ func main() {
 	mySystray := app.NewSystemTray()
 	mySystray.SetLabel("Wails is awesome")
 	if runtime.GOOS == "darwin" {
-		mySystray.SetTemplateIcon(macosIcon)
+		mySystray.SetTemplateIcon(application.DefaultMacTemplateIcon)
 	} else {
-		mySystray.SetIcon(icon)
+		mySystray.SetIcon(application.DefaultApplicationIcon)
 	}
 	mySystray.SetMenu(myMenu)
 	mySystray.SetIconPosition(application.NSImageLeading)

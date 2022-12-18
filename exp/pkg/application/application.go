@@ -87,7 +87,7 @@ type App struct {
 	// The main application menu
 	ApplicationMenu *Menu
 
-	// About Dialog
+	// About MessageDialog
 	name        string
 	description string
 	icon        []byte
@@ -321,18 +321,26 @@ func (a *App) ShowAboutDialog() {
 	}
 }
 
-func (a *App) NewInfoDialog() *Dialog {
-	return newDialog(InfoDialog)
+func (a *App) NewInfoDialog() *MessageDialog {
+	return newMessageDialog(InfoDialog)
 }
 
-func (a *App) NewQuestionDialog() *Dialog {
-	return newDialog(QuestionDialog)
+func (a *App) NewQuestionDialog() *MessageDialog {
+	return newMessageDialog(QuestionDialog)
 }
 
-func (a *App) NewWarningDialog() *Dialog {
-	return newDialog(WarningDialog)
+func (a *App) NewWarningDialog() *MessageDialog {
+	return newMessageDialog(WarningDialog)
 }
 
-func (a *App) NewErrorDialog() *Dialog {
-	return newDialog(ErrorDialog)
+func (a *App) NewErrorDialog() *MessageDialog {
+	return newMessageDialog(ErrorDialog)
+}
+
+func (a *App) NewOpenDirectoryDialog() *MessageDialog {
+	return newMessageDialog(OpenDirectoryDialog)
+}
+
+func (a *App) NewOpenFileDialog() *OpenFileDialog {
+	return newOpenFileDialog()
 }
