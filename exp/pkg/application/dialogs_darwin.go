@@ -30,14 +30,166 @@ static void showAboutBox(char* title, char *message, void *icon, int length) {
 	});
 }
 
+
+// Create an NSAlert
+static void* createAlert(int alertType, char* title, char *message, void *icon, int length) {
+	NSAlert *alert = [[NSAlert alloc] init];
+	[alert setAlertStyle:alertType];
+	if (title != NULL) {
+		[alert setMessageText:[NSString stringWithUTF8String:title]];
+		free(title);
+	}
+	if (message != NULL) {
+		[alert setInformativeText:[NSString stringWithUTF8String:message]];
+		free(message);
+	}
+	if (icon != NULL) {
+		NSImage *image = [[NSImage alloc] initWithData:[NSData dataWithBytes:icon length:length]];
+		[alert setIcon:image];
+	} else {
+		if(alertType == NSAlertStyleCritical || alertType == NSAlertStyleWarning) {
+			NSImage *image = [NSImage imageNamed:NSImageNameCaution];
+			[alert setIcon:image];
+		} else {
+			NSImage *image = [NSImage imageNamed:NSImageNameInfo];
+			[alert setIcon:image];
+		}
+}
+	return alert;
+
+}
+
+// Run the dialog
+static int dialogRunModal(void *dialog) {
+	NSAlert *alert = (__bridge NSAlert *)dialog;
+    long response = [alert runModal];
+    int result;
+
+    if( response == NSAlertFirstButtonReturn ) {
+        result = 0;
+    }
+    else if( response == NSAlertSecondButtonReturn ) {
+        result = 1;
+    }
+    else if( response == NSAlertThirdButtonReturn ) {
+        result = 2;
+    } else {
+        result = 3;
+    }
+	return result;
+}
+
+// Release the dialog
+static void releaseDialog(void *dialog) {
+	NSAlert *alert = (__bridge NSAlert *)dialog;
+	[alert release];
+}
+
+// Add a button to the dialog
+static void alertAddButton(void *dialog, char *label, bool isDefault, bool isCancel) {
+	NSAlert *alert = (__bridge NSAlert *)dialog;
+	NSButton *button = [alert addButtonWithTitle:[NSString stringWithUTF8String:label]];
+	free(label);
+    if( isDefault ) {
+        [button setKeyEquivalent:@"\r"];
+    } else if( isCancel ) {
+        [button setKeyEquivalent:@"\033"];
+    } else {
+        [button setKeyEquivalent:@""];
+    }
+}
+
 */
 import "C"
 import "unsafe"
 
-func (a *macosApp) showAboutDialog(title string, message string, icon []byte) {
+const NSAlertStyleWarning = C.int(0)
+const NSAlertStyleInformational = C.int(1)
+const NSAlertStyleCritical = C.int(2)
+
+var alertTypeMap = map[DialogType]C.int{
+	WarningDialog:  NSAlertStyleWarning,
+	InfoDialog:     NSAlertStyleInformational,
+	ErrorDialog:    NSAlertStyleCritical,
+	QuestionDialog: NSAlertStyleInformational,
+}
+
+func (m *macosApp) showAboutDialog(title string, message string, icon []byte) {
 	var iconData unsafe.Pointer
 	if icon != nil {
 		iconData = unsafe.Pointer(&icon[0])
 	}
 	C.showAboutBox(C.CString(title), C.CString(message), iconData, C.int(len(icon)))
+}
+
+type macosDialog struct {
+	dialog *Dialog
+
+	nsDialog unsafe.Pointer
+}
+
+func (m *macosDialog) show() {
+	DispatchOnMainThread(func() {
+
+		// Mac can only have 4 buttons on a dialog
+		if len(m.dialog.buttons) > 4 {
+			m.dialog.buttons = m.dialog.buttons[:4]
+		}
+
+		if m.nsDialog != nil {
+			C.releaseDialog(m.nsDialog)
+		}
+		var title *C.char
+		if m.dialog.title != "" {
+			title = C.CString(m.dialog.title)
+		}
+		var message *C.char
+		if m.dialog.message != "" {
+			message = C.CString(m.dialog.message)
+		}
+		var iconData unsafe.Pointer
+		var iconLength C.int
+		if m.dialog.icon != nil {
+			iconData = unsafe.Pointer(&m.dialog.icon[0])
+			iconLength = C.int(len(m.dialog.icon))
+		} else {
+			// if it's an error, use the application icon
+			if m.dialog.dialogType == ErrorDialog {
+				iconData = unsafe.Pointer(&globalApplication.icon[0])
+				iconLength = C.int(len(globalApplication.icon))
+			}
+		}
+
+		alertType, ok := alertTypeMap[m.dialog.dialogType]
+		if !ok {
+			alertType = C.NSAlertStyleInformational
+		}
+
+		m.nsDialog = C.createAlert(alertType, title, message, iconData, iconLength)
+
+		// Reverse the buttons so that the default is on the right
+		reversedButtons := make([]*Button, len(m.dialog.buttons))
+		var count = 0
+		for i := len(m.dialog.buttons) - 1; i >= 0; i-- {
+			button := m.dialog.buttons[i]
+			C.alertAddButton(m.nsDialog, C.CString(button.label), C.bool(button.isDefault), C.bool(button.isCancel))
+			reversedButtons[count] = m.dialog.buttons[i]
+			count++
+		}
+
+		buttonPressed := int(C.dialogRunModal(m.nsDialog))
+		if len(m.dialog.buttons) > buttonPressed {
+			button := reversedButtons[buttonPressed]
+			if button.callback != nil {
+				button.callback()
+			}
+		}
+	})
+
+}
+
+func newDialogImpl(d *Dialog) *macosDialog {
+	return &macosDialog{
+		dialog: d,
+	}
 }

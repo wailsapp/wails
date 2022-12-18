@@ -7,15 +7,11 @@ import (
 	"github.com/wailsapp/wails/exp/pkg/application"
 )
 
-//go:embed icon.png
-var icon []byte
-
 func main() {
 
 	app := application.New()
 	app.SetName("Menu Demo")
 	app.SetDescription("A demo of the menu system")
-	app.SetIcon(icon)
 
 	// Create a custom menu
 	menu := app.NewMenu()

@@ -114,7 +114,7 @@ func main() {
 	mySystray.SetMenu(myMenu)
 	mySystray.SetIconPosition(application.NSImageLeading)
 
-	myWindow := app.NewWindow(&options.Window{
+	myWindow := app.NewWindowWithOptions(&options.Window{
 		Title:          "Kitchen Sink",
 		Width:          600,
 		Height:         400,
@@ -190,7 +190,7 @@ func main() {
 	*/
 	var myWindow2 *application.Window
 	var myWindow2Lock sync.RWMutex
-	myWindow2 = app.NewWindow(&options.Window{
+	myWindow2 = app.NewWindowWithOptions(&options.Window{
 		Title:       "#2",
 		Width:       1024,
 		Height:      768,

@@ -9,14 +9,11 @@ import (
 	"github.com/wailsapp/wails/exp/pkg/application"
 )
 
-//go:embed macos_template_icon.png
-var macosIcon []byte
-
 func main() {
 	app := application.New()
 	app.SetActivationPolicy(options.ActivationPolicyAccessory)
 
-	systemTray := app.NewSystemTray().SetIcon(macosIcon)
+	systemTray := app.NewSystemTray().SetIcon(application.DefaultMacTemplateIcon)
 
 	myMenu := app.NewMenu()
 	myMenu.Add("Hello World!").OnClick(func(ctx *application.Context) {

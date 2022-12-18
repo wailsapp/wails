@@ -34,6 +34,7 @@ func NewWithOptions(appOptions *options.Application) *App {
 		options:                   appOptions,
 		applicationEventListeners: make(map[uint][]func()),
 		systemTrays:               make(map[uint]*SystemTray),
+		icon:                      DefaultApplicationIcon,
 	}
 	globalApplication = result
 	return result
@@ -318,4 +319,20 @@ func (a *App) ShowAboutDialog() {
 	if a.impl != nil {
 		a.impl.showAboutDialog(a.name, a.description, a.icon)
 	}
+}
+
+func (a *App) NewInfoDialog() *Dialog {
+	return newDialog(InfoDialog)
+}
+
+func (a *App) NewQuestionDialog() *Dialog {
+	return newDialog(QuestionDialog)
+}
+
+func (a *App) NewWarningDialog() *Dialog {
+	return newDialog(WarningDialog)
+}
+
+func (a *App) NewErrorDialog() *Dialog {
+	return newDialog(ErrorDialog)
 }
