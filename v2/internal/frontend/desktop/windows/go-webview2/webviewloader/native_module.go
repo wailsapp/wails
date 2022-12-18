@@ -1,4 +1,4 @@
-//go:build windows && !exp_gowebview2loader
+//go:build windows && native_webview2loader
 
 package webviewloader
 
