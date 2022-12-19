@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/samber/lo"
 )
 
 // modifier is actually a string
@@ -42,7 +40,59 @@ type accelerator struct {
 	Modifiers []modifier
 }
 
-var namedKeys = []string{"backspace", "tab", "return", "enter", "escape", "left", "right", "up", "down", "space", "delete", "home", "end", "page up", "page down", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31", "f32", "f33", "f34", "f35", "numlock"}
+var namedKeys = map[string]struct{}{
+	"backspace": {},
+	"tab":       {},
+	"return":    {},
+	"enter":     {},
+	"escape":    {},
+	"left":      {},
+	"right":     {},
+	"up":        {},
+	"down":      {},
+	"space":     {},
+	"delete":    {},
+	"home":      {},
+	"end":       {},
+	"page up":   {},
+	"page down": {},
+	"f1":        {},
+	"f2":        {},
+	"f3":        {},
+	"f4":        {},
+	"f5":        {},
+	"f6":        {},
+	"f7":        {},
+	"f8":        {},
+	"f9":        {},
+	"f10":       {},
+	"f11":       {},
+	"f12":       {},
+	"f13":       {},
+	"f14":       {},
+	"f15":       {},
+	"f16":       {},
+	"f17":       {},
+	"f18":       {},
+	"f19":       {},
+	"f20":       {},
+	"f21":       {},
+	"f22":       {},
+	"f23":       {},
+	"f24":       {},
+	"f25":       {},
+	"f26":       {},
+	"f27":       {},
+	"f28":       {},
+	"f29":       {},
+	"f30":       {},
+	"f31":       {},
+	"f32":       {},
+	"f33":       {},
+	"f34":       {},
+	"f35":       {},
+	"numlock":   {},
+}
 
 func parseKey(key string) (string, bool) {
 
@@ -55,7 +105,8 @@ func parseKey(key string) (string, bool) {
 	}
 
 	// Handle named keys
-	if lo.Contains(namedKeys, key) {
+	_, namedKey := namedKeys[key]
+	if namedKey {
 		return key, true
 	}
 
@@ -89,6 +140,8 @@ func parseAccelerator(shortcut string) (*accelerator, error) {
 		return nil, fmt.Errorf("no components given to validateComponents")
 	}
 
+	modifiers := map[modifier]struct{}{}
+
 	// Check components
 	for index, component := range components {
 
@@ -109,10 +162,11 @@ func parseAccelerator(shortcut string) (*accelerator, error) {
 			return nil, fmt.Errorf("'%s' is not a valid modifier", component)
 		}
 		// Save this data
+		modifiers[thisModifier] = struct{}{}
+	}
+	// return the keys as a slice
+	for thisModifier := range modifiers {
 		result.Modifiers = append(result.Modifiers, thisModifier)
 	}
-
-	result.Modifiers = lo.Uniq(result.Modifiers)
-
 	return &result, nil
 }

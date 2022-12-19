@@ -45,6 +45,9 @@ void* windowNew(unsigned int id, int width, int height) {
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
 	[view addSubview:webView];
 
+    // support webview events
+    [webView setNavigationDelegate:delegate];
+
 	// Ensure webview resizes with the window
 	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
@@ -229,14 +232,18 @@ void windowZoomOut(void* nsWindow) {
 }
 
 // Execute JS in NSWindow
-void windowExecJS(void* nsWindow, char* js) {
+void windowExecJS(void* nsWindow, const char* js) {
+printf("windowExecJS\n");
 	// Execute JS on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
+printf("windowExecJS 2\n");
+
 		// Get window delegate
 		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
 		// Execute JS in webview
+        printf("windowExecJS: %s\n", js);
 		[delegate.webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
-		free(js);
+		free((void*)js);
 	});
 }
 
@@ -546,11 +553,38 @@ static void windowMaximize(void *window) {
 		[(NSWindow*)window zoom:nil];
 	});
 }
+
+// webviewRenderHTML renders the given HTML
+static void windowRenderHTML(void *window, const char *html) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// get main window
+		NSWindow* nsWindow = (NSWindow*)window;
+		// get window delegate
+		WindowDelegate* windowDelegate = (WindowDelegate*)[nsWindow delegate];
+		// render html
+		[(WKWebView*)windowDelegate.webView loadHTMLString:[NSString stringWithUTF8String:html] baseURL:nil];
+	});
+}
+
+static void windowInjectCSS(void *window, const char *css) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// get main window
+		NSWindow* nsWindow = (NSWindow*)window;
+		// get window delegate
+		WindowDelegate* windowDelegate = (WindowDelegate*)[nsWindow delegate];
+		// inject css
+		[(WKWebView*)windowDelegate.webView evaluateJavaScript:[NSString stringWithFormat:@"(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%@')); document.head.appendChild(style); })();", [NSString stringWithUTF8String:css]] completionHandler:nil];
+        free((void*)css);
+	});
+}
+
 */
 import "C"
 import (
 	"sync"
 	"unsafe"
+
+	"github.com/wailsapp/wails/exp/pkg/events"
 
 	"github.com/wailsapp/wails/exp/pkg/options"
 )
@@ -558,11 +592,8 @@ import (
 var showDevTools = func(window unsafe.Pointer) {}
 
 type macosWindow struct {
-	id       uint
 	nsWindow unsafe.Pointer
-	options  *options.Window
-
-	// devtools
+	parent   *Window
 }
 
 func (w *macosWindow) zoom() {
@@ -603,12 +634,12 @@ func (w *macosWindow) toggleFullscreen() {
 
 func (w *macosWindow) reload() {
 	//TODO: Implement
-	println("reload called on Window", w.id)
+	println("reload called on Window", w.parent.id)
 }
 
 func (w *macosWindow) forceReload() {
 	//TODO: Implement
-	println("forceReload called on Window", w.id)
+	println("forceReload called on Window", w.parent.id)
 }
 
 func (w *macosWindow) center() {
@@ -667,6 +698,7 @@ func (w *macosWindow) restoreWindow() {
 }
 
 func (w *macosWindow) execJS(js string) {
+	println("execJS called on Window", w.parent.id)
 	C.windowExecJS(w.nsWindow, C.CString(js))
 }
 
@@ -678,10 +710,9 @@ func (w *macosWindow) setAlwaysOnTop(alwaysOnTop bool) {
 	C.windowSetAlwaysOnTop(w.nsWindow, C.bool(alwaysOnTop))
 }
 
-func newWindowImpl(id uint, options *options.Window) *macosWindow {
+func newWindowImpl(parent *Window) *macosWindow {
 	result := &macosWindow{
-		id:      id,
-		options: options,
+		parent: parent,
 	}
 	return result
 }
@@ -746,22 +777,22 @@ func (w *macosWindow) height() int {
 
 func (w *macosWindow) run() {
 	DispatchOnMainThread(func() {
-		w.nsWindow = C.windowNew(C.uint(w.id), C.int(w.options.Width), C.int(w.options.Height))
-		w.setTitle(w.options.Title)
-		w.setAlwaysOnTop(w.options.AlwaysOnTop)
-		w.setResizable(!w.options.DisableResize)
-		if w.options.MinWidth != 0 || w.options.MinHeight != 0 {
-			w.setMinSize(w.options.MinWidth, w.options.MinHeight)
+		w.nsWindow = C.windowNew(C.uint(w.parent.id), C.int(w.parent.options.Width), C.int(w.parent.options.Height))
+		w.setTitle(w.parent.options.Title)
+		w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
+		w.setResizable(!w.parent.options.DisableResize)
+		if w.parent.options.MinWidth != 0 || w.parent.options.MinHeight != 0 {
+			w.setMinSize(w.parent.options.MinWidth, w.parent.options.MinHeight)
 		}
-		if w.options.MaxWidth != 0 || w.options.MaxHeight != 0 {
-			w.setMaxSize(w.options.MaxWidth, w.options.MaxHeight)
+		if w.parent.options.MaxWidth != 0 || w.parent.options.MaxHeight != 0 {
+			w.setMaxSize(w.parent.options.MaxWidth, w.parent.options.MaxHeight)
 		}
-		if w.options.EnableDevTools {
+		if w.parent.options.EnableDevTools {
 			w.enableDevTools()
 		}
-		w.setBackgroundColor(w.options.BackgroundColour)
-		if w.options.Mac != nil {
-			macOptions := w.options.Mac
+		w.setBackgroundColor(w.parent.options.BackgroundColour)
+		if w.parent.options.Mac != nil {
+			macOptions := w.parent.options.Mac
 			switch macOptions.Backdrop {
 			case options.MacBackdropTransparent:
 				C.windowSetTransparent(w.nsWindow)
@@ -785,7 +816,7 @@ func (w *macosWindow) run() {
 				C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
 			}
 
-			switch w.options.StartState {
+			switch w.parent.options.StartState {
 			case options.WindowStateMaximised:
 				w.setMaximised()
 			case options.WindowStateMinimised:
@@ -798,9 +829,22 @@ func (w *macosWindow) run() {
 		}
 		C.windowCenter(w.nsWindow)
 
-		if w.options.URL != "" {
-			w.navigateToURL(w.options.URL)
+		if w.parent.options.URL != "" {
+			w.navigateToURL(w.parent.options.URL)
 		}
+		// Ee need to wait for the HTML to load before we can execute the javascript
+		w.parent.On(events.Mac.WebViewDidFinishNavigation, func() {
+			if w.parent.options.JS != "" {
+				w.execJS(w.parent.options.JS)
+			}
+			if w.parent.options.CSS != "" {
+				C.windowInjectCSS(w.nsWindow, C.CString(w.parent.options.CSS))
+			}
+		})
+		if w.parent.options.HTML != "" {
+			w.renderHTML(w.parent.options.HTML)
+		}
+
 		C.windowShow(w.nsWindow)
 	})
 }
@@ -826,4 +870,11 @@ func (w *macosWindow) position() (int, int) {
 
 func (w *macosWindow) destroy() {
 	C.windowDestroy(w.nsWindow)
+}
+
+func (w *macosWindow) renderHTML(html string) {
+	// Convert HTML to C string
+	cHTML := C.CString(html)
+	// Render HTML
+	C.windowRenderHTML(w.nsWindow, cHTML)
 }

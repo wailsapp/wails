@@ -1,29 +1,10 @@
 //go:build darwin
-
 #import "app_delegate.h"
 #import "../events/events.h"
-
 @implementation AppDelegate
-
 - (void)dealloc
 {
     [super dealloc];
-}
-
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
-{
-    [NSApp setActivationPolicy:self.activationPolicy];
-    [NSApp activateIgnoringOtherApps:YES];
-
-    //callOnApplicationDidFinishLaunchingHandler();
-    processApplicationEvent(EventApplicationDidFinishLaunching);
-
-}
-
-
-- (void)setApplicationActivationPolicy:(NSApplicationActivationPolicy)policy
-{
-    self.activationPolicy = policy;
 }
 
 // GENERATED EVENTS START
@@ -57,6 +38,10 @@
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)notification {
     processApplicationEvent(EventApplicationDidChangeStatusBarOrientation);
+}
+
+- (void)applicationDidFinishLaunching:(NSNotification *)notification {
+    processApplicationEvent(EventApplicationDidFinishLaunching);
 }
 
 - (void)applicationDidHide:(NSNotification *)notification {
@@ -104,8 +89,4 @@
 }
 
 // GENERATED EVENTS END
-
 @end
-
-
-

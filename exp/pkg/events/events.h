@@ -122,6 +122,10 @@ extern void processWindowEvent(unsigned int, unsigned int);
 #define EventMenuDidPopUp 113
 #define EventMenuWillSendActionToItem 114
 #define EventMenuDidSendActionToItem 115
+#define EventWebViewDidStartProvisionalNavigation 116
+#define EventWebViewDidReceiveServerRedirectForProvisionalNavigation 117
+#define EventWebViewDidFinishNavigation 118
+#define EventWebViewDidCommitNavigation 119
 
 
 #endif

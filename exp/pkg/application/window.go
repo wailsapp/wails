@@ -43,6 +43,7 @@ type windowImpl interface {
 	close()
 	zoom()
 	minimize()
+	renderHTML(html string)
 }
 
 type Window struct {
@@ -66,6 +67,12 @@ func getWindowID() uint {
 }
 
 func NewWindow(options *options.Window) *Window {
+	if options.Width == 0 {
+		options.Width = 800
+	}
+	if options.Height == 0 {
+		options.Height = 600
+	}
 	return &Window{
 		id:             getWindowID(),
 		options:        options,
@@ -94,7 +101,7 @@ func (w *Window) SetSize(width, height int) {
 
 func (w *Window) Run() {
 	w.implLock.Lock()
-	w.impl = newWindowImpl(w.id, w.options)
+	w.impl = newWindowImpl(w)
 	w.implLock.Unlock()
 	w.impl.run()
 }
@@ -173,7 +180,6 @@ func (w *Window) ExecJS(js string) {
 	w.impl.execJS(js)
 }
 
-// Set Maximized
 func (w *Window) SetMaximized() {
 	w.options.StartState = options.WindowStateMaximised
 	if w.impl == nil {
@@ -374,4 +380,11 @@ func (w *Window) Zoom() {
 		return
 	}
 	w.impl.zoom()
+}
+
+func (w *Window) RenderHTML(html string) {
+	if w.impl == nil {
+		return
+	}
+	w.impl.renderHTML(html)
 }

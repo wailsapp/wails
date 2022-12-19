@@ -5,14 +5,11 @@
 //
 //  Created by Lea Anthony on 10/10/21.
 //
-
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 #import "window_delegate.h"
 #import "../events/events.h"
-
 extern void processMessage(unsigned int, const char*);
-
 @implementation WindowDelegate
 - (BOOL)windowShouldClose:(NSWindow *)sender {
     if( self.hideOnClose ) {
@@ -21,11 +18,9 @@ extern void processMessage(unsigned int, const char*);
     }
     return true;
 }
-
 // Handle script messages from the external bridge
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
     NSString *m = message.body;
-
     /*
     // TODO: Check for drag
     if ( [m isEqualToString:@"drag"] ) {
@@ -38,10 +33,12 @@ extern void processMessage(unsigned int, const char*);
         return;
     }
     */
-
     const char *_m = [m UTF8String];
-
     processMessage(self.windowId, _m);
+}
+
+- (void) mouseDown:(NSEvent*)someEvent {
+    NSLog(@"MOUSE DOWN!!!");
 }
 
 // GENERATED EVENTS START
@@ -337,19 +334,21 @@ extern void processMessage(unsigned int, const char*);
     processWindowEvent(self.windowId, EventWindowWillUseStandardFrame);
 }
 
+- (void)webView:(WKWebView *)webview didStartProvisionalNavigation:(WKNavigation *)navigation {
+	processWindowEvent(self.windowId, EventWebViewDidStartProvisionalNavigation);
+}
+
+- (void)webView:(WKWebView *)webview didReceiveServerRedirectForProvisionalNavigation:(WKNavigation *)navigation {
+	processWindowEvent(self.windowId, EventWebViewDidReceiveServerRedirectForProvisionalNavigation);
+}
+
+- (void)webView:(WKWebView *)webview didFinishNavigation:(WKNavigation *)navigation {
+	processWindowEvent(self.windowId, EventWebViewDidFinishNavigation);
+}
+
+- (void)webView:(WKWebView *)webview didCommitNavigation:(WKNavigation *)navigation {
+	processWindowEvent(self.windowId, EventWebViewDidCommitNavigation);
+}
+
 // GENERATED EVENTS END
-
 @end
-
-
-
-
-
-
-
-
-
-
-
-
-

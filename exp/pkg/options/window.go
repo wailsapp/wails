@@ -32,6 +32,9 @@ type Window struct {
 	Mac              *MacWindow
 	BackgroundColour *RGBA
 	Assets           Assets
+	HTML             string
+	JS               string
+	CSS              string
 }
 
 var WindowDefaults = &Window{

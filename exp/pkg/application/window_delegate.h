@@ -6,7 +6,7 @@
 #import <Cocoa/Cocoa.h>
 #import <WebKit/WebKit.h>
 
-@interface WindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler>
+@interface WindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate>
 
 @property bool hideOnClose;
 @property (retain) WKWebView* webView;

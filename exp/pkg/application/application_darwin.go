@@ -23,7 +23,11 @@ static void init(void) {
 }
 
 static void setActivationPolicy(int policy) {
-    [appDelegate setApplicationActivationPolicy:policy];
+    [NSApp setActivationPolicy:policy];
+}
+
+static void activateIgnoringOtherApps() {
+	[NSApp activateIgnoringOtherApps:YES];
 }
 
 static void run(void) {
@@ -123,6 +127,7 @@ func newPlatformApp(appOptions *options.Application) *macosApp {
 	}
 	C.init()
 	C.setActivationPolicy(C.int(appOptions.Mac.ActivationPolicy))
+	C.activateIgnoringOtherApps()
 	return &macosApp{
 		options: appOptions,
 	}

@@ -6,7 +6,7 @@ mac:ApplicationDidChangeOcclusionState
 mac:ApplicationDidChangeScreenParameters
 mac:ApplicationDidChangeStatusBarFrame
 mac:ApplicationDidChangeStatusBarOrientation
-mac:ApplicationDidFinishLaunching!
+mac:ApplicationDidFinishLaunching
 mac:ApplicationDidHide
 mac:ApplicationDidResignActive
 mac:ApplicationDidUnhide
@@ -114,3 +114,8 @@ mac:MenuWillPopUp
 mac:MenuDidPopUp
 mac:MenuWillSendActionToItem
 mac:MenuDidSendActionToItem
+mac:WebViewDidStartProvisionalNavigation
+mac:WebViewDidReceiveServerRedirectForProvisionalNavigation
+mac:WebViewDidFinishNavigation
+mac:WebViewDidCommitNavigation
+
