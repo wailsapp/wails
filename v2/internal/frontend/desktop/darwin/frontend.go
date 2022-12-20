@@ -14,18 +14,14 @@ package darwin
 */
 import "C"
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"io"
 	"log"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"strconv"
-	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -37,7 +33,7 @@ import (
 const startURL = "wails://wails/"
 
 var messageBuffer = make(chan string, 100)
-var requestBuffer = make(chan *request, 100)
+var requestBuffer = make(chan *wkWebViewRequest, 100)
 var callbackBuffer = make(chan uint, 10)
 
 type Frontend struct {
@@ -96,7 +92,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		}
 		result.assets = assets
 
-		go result.startRequestProcessor()
+		// Start 10 processors to handle requests in parallel
+		for i := 0; i < 10; i++ {
+			go result.startRequestProcessor()
+		}
 	}
 
 	go result.startMessageProcessor()
@@ -342,8 +341,10 @@ func (f *Frontend) ExecJS(js string) {
 	f.mainWindow.ExecJS(js)
 }
 
-func (f *Frontend) processRequest(r *request) {
-	rw := httptest.NewRecorder()
+func (f *Frontend) processRequest(r *wkWebViewRequest) {
+	rw := &wkWebViewResponseWriter{r: r}
+	defer rw.Close()
+
 	f.assets.ProcessHTTPRequest(
 		r.url,
 		rw,
@@ -363,28 +364,6 @@ func (f *Frontend) processRequest(r *request) {
 			return req, nil
 		},
 	)
-
-	header := map[string]string{}
-	for k := range rw.Header() {
-		header[k] = rw.Header().Get(k)
-	}
-	headerData, _ := json.Marshal(header)
-
-	var content unsafe.Pointer
-	var contentLen int
-	if _contents := rw.Body.Bytes(); _contents != nil {
-		content = unsafe.Pointer(&_contents[0])
-		contentLen = len(_contents)
-	}
-
-	var headers unsafe.Pointer
-	var headersLen int
-	if len(headerData) != 0 {
-		headers = unsafe.Pointer(&headerData[0])
-		headersLen = len(headerData)
-	}
-
-	C.ProcessURLResponse(r.ctx, r.id, C.int(rw.Code), headers, C.int(headersLen), content, C.int(contentLen))
 }
 
 //func (f *Frontend) processSystemEvent(message string) {
@@ -403,62 +382,10 @@ func (f *Frontend) processRequest(r *request) {
 //	}
 //}
 
-type request struct {
-	id      C.ulonglong
-	url     string
-	method  string
-	headers string
-	body    []byte
-
-	ctx unsafe.Pointer
-}
-
-func (r *request) GetHttpRequest() (*http.Request, error) {
-	var body io.Reader
-	if len(r.body) != 0 {
-		body = bytes.NewReader(r.body)
-	}
-
-	req, err := http.NewRequest(r.method, r.url, body)
-	if err != nil {
-		return nil, err
-	}
-
-	if r.headers != "" {
-		var h map[string]string
-		if err := json.Unmarshal([]byte(r.headers), &h); err != nil {
-			return nil, fmt.Errorf("Unable to unmarshal request headers: %s", err)
-		}
-
-		for k, v := range h {
-			req.Header.Add(k, v)
-		}
-	}
-
-	return req, nil
-}
-
 //export processMessage
 func processMessage(message *C.char) {
 	goMessage := C.GoString(message)
 	messageBuffer <- goMessage
-}
-
-//export processURLRequest
-func processURLRequest(ctx unsafe.Pointer, requestId C.ulonglong, url *C.char, method *C.char, headers *C.char, body unsafe.Pointer, bodyLen C.int) {
-	var goBody []byte
-	if body != nil && bodyLen != 0 {
-		goBody = C.GoBytes(body, bodyLen)
-	}
-
-	requestBuffer <- &request{
-		id:      requestId,
-		url:     C.GoString(url),
-		method:  C.GoString(method),
-		headers: C.GoString(headers),
-		body:    goBody,
-		ctx:     ctx,
-	}
 }
 
 //export processCallback

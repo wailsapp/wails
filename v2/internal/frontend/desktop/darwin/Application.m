@@ -52,12 +52,33 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     return result;
 }
 
-void ProcessURLResponse(void *inctx, unsigned long long requestId, int statusCode, void *headersString, int headersStringLength, void* data, int datalength) {
+void ProcessURLDidReceiveResponse(void *inctx, unsigned long long requestId, int statusCode, void *headersString, int headersStringLength) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     @autoreleasepool {
         NSData *nsHeadersJSON = [NSData dataWithBytes:headersString length:headersStringLength];
+        [ctx processURLDidReceiveResponse:requestId :statusCode :nsHeadersJSON];
+    }
+}
+
+bool ProcessURLDidReceiveData(void *inctx, unsigned long long requestId, void* data, int datalength) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    @autoreleasepool {
         NSData *nsdata = [NSData dataWithBytes:data length:datalength];
-        [ctx processURLResponse:requestId :statusCode :nsHeadersJSON :nsdata];
+        return [ctx processURLDidReceiveData:requestId :nsdata];
+    }
+}
+
+void ProcessURLDidFinish(void *inctx, unsigned long long requestId) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    @autoreleasepool {
+        [ctx processURLDidFinish:requestId];
+    }
+}
+
+int ProcessURLRequestReadBodyStream(void *inctx, unsigned long long requestId, void *buf, int bufLen) {
+    WailsContext *ctx = (__bridge WailsContext*) inctx;
+    @autoreleasepool {
+        return [ctx processURLRequestReadBodyStream:requestId :buf :bufLen];
     }
 }
 
