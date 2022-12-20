@@ -10,6 +10,7 @@ package application
 
 extern void openFileDialogCallback(uint id, char* path);
 extern void openFileDialogCallbackEnd(uint id);
+extern void saveFileDialogCallback(uint id, char* path);
 
 static void showAboutBox(char* title, char *message, void *icon, int length) {
 
@@ -145,6 +146,52 @@ static void showOpenFileDialog(unsigned int dialogID, bool canChooseFiles, bool 
 		}
 	});
 }
+
+static void showSaveFileDialog(unsigned int dialogID, bool canCreateDirectories, bool showHiddenFiles, void *window) {
+	// run on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSSavePanel *panel = [NSSavePanel savePanel];
+
+		[panel setCanCreateDirectories:canCreateDirectories];
+		[panel setShowsHiddenFiles:showHiddenFiles];
+
+		//if (title != NULL) {
+		//	[panel setTitle:[NSString stringWithUTF8String:title]];
+		//	free(title);
+		//}
+
+		//if (defaultFilename != NULL) {
+		//	[panel setNameFieldStringValue:[NSString stringWithUTF8String:defaultFilename]];
+		//	free(defaultFilename);
+		//}
+		//
+		//if (defaultDirectory != NULL) {
+		//	[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:defaultDirectory]]];
+		//	free(defaultDirectory);
+		//}
+
+		if (window != NULL) {
+			[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
+				const char *path = NULL;
+				if (result == NSModalResponseOK) {
+					NSURL *url = [panel URL];
+					const char *path = [[url path] UTF8String];
+				}
+				saveFileDialogCallback(dialogID, (char *)path);
+			}];
+		} else {
+			[panel beginWithCompletionHandler:^(NSInteger result) {
+				const char *path = NULL;
+				if (result == NSModalResponseOK) {
+					NSURL *url = [panel URL];
+					const char *path = [[url path] UTF8String];
+				}
+				saveFileDialogCallback(dialogID, (char *)path);
+			}];
+		}
+	});
+}
+
 
 */
 import "C"
@@ -294,5 +341,42 @@ func openFileDialogCallbackEnd(id C.uint) {
 		close(channel)
 	} else {
 		panic("No channel found for open file dialog")
+	}
+}
+
+type macosSaveFileDialog struct {
+	dialog *SaveFileDialog
+}
+
+func newSaveFileDialogImpl(d *SaveFileDialog) *macosSaveFileDialog {
+	return &macosSaveFileDialog{
+		dialog: d,
+	}
+}
+
+func (m *macosSaveFileDialog) show() (string, error) {
+	saveFileResponses[dialogID] = make(chan string)
+	nsWindow := unsafe.Pointer(nil)
+	if m.dialog.window != nil {
+		// get NSWindow from window
+		nsWindow = m.dialog.window.impl.(*macosWindow).nsWindow
+	}
+	C.showSaveFileDialog(C.uint(m.dialog.id),
+		C.bool(m.dialog.canCreateDirectories),
+		C.bool(m.dialog.showHiddenFiles),
+		nsWindow)
+	return <-saveFileResponses[m.dialog.id], nil
+}
+
+//export saveFileDialogCallback
+func saveFileDialogCallback(id C.uint, path *C.char) {
+	// Covert the path to a string
+	filePath := C.GoString(path)
+	// put response on channel
+	channel, ok := saveFileResponses[uint(id)]
+	if ok {
+		channel <- filePath
+	} else {
+		panic("No channel found for save file dialog")
 	}
 }

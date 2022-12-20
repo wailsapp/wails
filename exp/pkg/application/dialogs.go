@@ -7,6 +7,7 @@ import (
 
 type DialogType int
 
+// TODO: Make this a map and clear it when the dialog is closed
 var dialogID uint
 var dialogIDLock sync.RWMutex
 
@@ -18,6 +19,7 @@ func getDialogID() uint {
 }
 
 var openFileResponses = make(map[uint]chan string)
+var saveFileResponses = make(map[uint]chan string)
 
 const (
 	InfoDialog DialogType = iota
@@ -154,7 +156,7 @@ func (d *OpenFileDialog) AttachToWindow(window *Window) *OpenFileDialog {
 	return d
 }
 
-func (d *OpenFileDialog) PromptForSingleFile() (string, error) {
+func (d *OpenFileDialog) PromptForSingleSelection() (string, error) {
 	d.allowsMultipleSelection = false
 	if d.impl == nil {
 		d.impl = newOpenFileDialogImpl(d)
@@ -168,7 +170,7 @@ func (d *OpenFileDialog) PromptForSingleFile() (string, error) {
 	return result, err
 }
 
-func (d *OpenFileDialog) PromptForMultipleFiles() ([]string, error) {
+func (d *OpenFileDialog) PromptForMultipleSelection() ([]string, error) {
 	d.allowsMultipleSelection = true
 	if d.impl == nil {
 		d.impl = newOpenFileDialogImpl(d)
@@ -181,6 +183,48 @@ func newOpenFileDialog() *OpenFileDialog {
 		id:                   getDialogID(),
 		canChooseDirectories: false,
 		canChooseFiles:       true,
-		canCreateDirectories: false,
+		canCreateDirectories: true,
 	}
+}
+
+func newSaveFileDialog() *SaveFileDialog {
+	return &SaveFileDialog{
+		id:                   getDialogID(),
+		canCreateDirectories: true,
+	}
+}
+
+type SaveFileDialog struct {
+	id                   uint
+	canCreateDirectories bool
+	showHiddenFiles      bool
+	window               *Window
+
+	impl saveFileDialogImpl
+}
+
+type saveFileDialogImpl interface {
+	show() (string, error)
+}
+
+func (d *SaveFileDialog) CanCreateDirectories(canCreateDirectories bool) *SaveFileDialog {
+	d.canCreateDirectories = canCreateDirectories
+	return d
+}
+
+func (d *SaveFileDialog) ShowHiddenFiles(showHiddenFiles bool) *SaveFileDialog {
+	d.showHiddenFiles = showHiddenFiles
+	return d
+}
+
+func (d *SaveFileDialog) AttachToWindow(window *Window) *SaveFileDialog {
+	d.window = window
+	return d
+}
+
+func (d *SaveFileDialog) PromptForSingleSelection() (string, error) {
+	if d.impl == nil {
+		d.impl = newSaveFileDialogImpl(d)
+	}
+	return d.impl.show()
 }

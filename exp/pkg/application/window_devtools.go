@@ -24,11 +24,6 @@ void showDevTools(void *window) {
     WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)window delegate];
     dispatch_async(dispatch_get_main_queue(), ^{
         [delegate.webView._inspector show];
-        //dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC);
-        //dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-        //    // Detach must be deferred a little bit and is ignored directly after a show.
-        //    [delegate.webView._inspector detach];
-        //});
     });
 }
 

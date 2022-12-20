@@ -20,6 +20,28 @@ static void init(void) {
     [NSApplication sharedApplication];
     appDelegate = [[AppDelegate alloc] init];
     [NSApp setDelegate:appDelegate];
+
+	[NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskLeftMouseDown handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
+		NSWindow* eventWindow = [event window];
+		if (![eventWindow respondsToSelector:@selector(handleLeftMouseDown)]) {
+			return event;
+		}
+
+		WindowDelegate* windowDelegate = (WindowDelegate*)[eventWindow delegate];
+		[windowDelegate handleLeftMouseDown:event];
+		return event;
+	}];
+
+	[NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskLeftMouseUp handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
+		NSWindow* eventWindow = [event window];
+		if (![eventWindow respondsToSelector:@selector(handleLeftMouseUp)]) {
+			return event;
+		}
+
+		WindowDelegate* windowDelegate = (WindowDelegate*)[eventWindow delegate];
+		[windowDelegate handleLeftMouseUp:eventWindow];
+		return event;
+	}];
 }
 
 static void setActivationPolicy(int policy) {
@@ -79,12 +101,14 @@ import "C"
 import (
 	"unsafe"
 
+	"github.com/wailsapp/wails/exp/pkg/events"
+
 	"github.com/wailsapp/wails/exp/pkg/options"
 )
 
 type macosApp struct {
-	options         *options.Application
 	applicationMenu unsafe.Pointer
+	parent          *App
 }
 
 func (m *macosApp) setIcon(icon []byte) {
@@ -107,12 +131,19 @@ func (m *macosApp) setApplicationMenu(menu *Menu) {
 		menu = defaultApplicationMenu()
 	}
 	menu.Update()
+
 	// Convert impl to macosMenu object
 	m.applicationMenu = (menu.impl).(*macosMenu).nsMenu
 	C.setApplicationMenu(m.applicationMenu)
 }
 
 func (m *macosApp) run() error {
+	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func() {
+		if m.parent.options != nil && m.parent.options.Mac != nil {
+			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
+		}
+		C.activateIgnoringOtherApps()
+	})
 	C.run()
 	return nil
 }
@@ -121,15 +152,14 @@ func (m *macosApp) destroy() {
 	C.destroyApp()
 }
 
-func newPlatformApp(appOptions *options.Application) *macosApp {
+func newPlatformApp(app *App) *macosApp {
+	appOptions := app.options
 	if appOptions == nil {
 		appOptions = options.ApplicationDefaults
 	}
 	C.init()
-	C.setActivationPolicy(C.int(appOptions.Mac.ActivationPolicy))
-	C.activateIgnoringOtherApps()
 	return &macosApp{
-		options: appOptions,
+		parent: app,
 	}
 }
 

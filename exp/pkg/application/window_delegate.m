@@ -37,9 +37,25 @@ extern void processMessage(unsigned int, const char*);
     processMessage(self.windowId, _m);
 }
 
-- (void) mouseDown:(NSEvent*)someEvent {
-    NSLog(@"MOUSE DOWN!!!");
+- (void)handleLeftMouseDown:(NSEvent *)event {
+    self.leftMouseEvent = event;
+    NSWindow *window = [event window];
+    WindowDelegate* delegate = (WindowDelegate*)[window delegate];
+
+    if( self.invisibleTitleBarHeight > 0 ) {
+        NSPoint location = [event locationInWindow];
+        NSRect frame = [window frame];
+        if( location.y > frame.size.height - self.invisibleTitleBarHeight ) {
+            [window performWindowDragWithEvent:event];
+            return;
+        }
+    }
 }
+
+- (void)handleLeftMouseUp:(NSWindow *)window {
+    self.leftMouseEvent = nil;
+}
+
 
 // GENERATED EVENTS START
 - (void)windowDidBecomeKey:(NSNotification *)notification {

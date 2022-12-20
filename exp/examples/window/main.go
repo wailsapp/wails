@@ -23,7 +23,7 @@ func main() {
 		EnableDevTools: true,
 		Mac: &options.MacWindow{
 			Backdrop: options.MacBackdropTranslucent,
-			TitleBar: options.TitleBarHiddenInset,
+			TitleBar: options.TitleBarHiddenInsetUnified,
 		},
 	})
 	myWindow.On(events.Mac.WindowDidBecomeMain, func() {

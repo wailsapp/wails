@@ -11,6 +11,11 @@
 @property bool hideOnClose;
 @property (retain) WKWebView* webView;
 @property unsigned int windowId;
+@property (retain) NSEvent* leftMouseEvent;
+@property unsigned int invisibleTitleBarHeight;
+
+- (void)handleLeftMouseUp:(NSWindow *)window;
+- (void)handleLeftMouseDown:(NSEvent*)event;
 
 @end
 

@@ -140,7 +140,7 @@ func main() {
 	openMenu.Add("Open File").OnClick(func(ctx *application.Context) {
 		result, _ := app.NewOpenFileDialog().
 			CanChooseFiles(true).
-			PromptForSingleFile()
+			PromptForSingleSelection()
 		if result != "" {
 			app.NewInfoDialog().SetMessage(result).Show()
 		} else {
@@ -152,7 +152,7 @@ func main() {
 			CanChooseFiles(true).
 			CanCreateDirectories(true).
 			ShowHiddenFiles(true).
-			PromptForSingleFile()
+			PromptForSingleSelection()
 		if result != "" {
 			app.NewInfoDialog().SetMessage(result).Show()
 		} else {
@@ -165,7 +165,7 @@ func main() {
 			CanCreateDirectories(true).
 			ShowHiddenFiles(true).
 			AttachToWindow(app.GetCurrentWindow()).
-			PromptForSingleFile()
+			PromptForSingleSelection()
 		if result != "" {
 			app.NewInfoDialog().SetMessage(result).Show()
 		} else {
@@ -177,7 +177,7 @@ func main() {
 			CanChooseFiles(true).
 			CanCreateDirectories(true).
 			ShowHiddenFiles(true).
-			PromptForMultipleFiles()
+			PromptForMultipleSelection()
 		if len(result) > 0 {
 			app.NewInfoDialog().SetMessage(strings.Join(result, ",")).Show()
 		} else {
@@ -187,7 +187,7 @@ func main() {
 	openMenu.Add("Open Directory").OnClick(func(ctx *application.Context) {
 		result, _ := app.NewOpenFileDialog().
 			CanChooseDirectories(true).
-			PromptForSingleFile()
+			PromptForSingleSelection()
 		if result != "" {
 			app.NewInfoDialog().SetMessage(result).Show()
 		} else {
@@ -198,11 +198,44 @@ func main() {
 		result, _ := app.NewOpenFileDialog().
 			CanChooseDirectories(true).
 			CanCreateDirectories(true).
-			PromptForSingleFile()
+			PromptForSingleSelection()
 		if result != "" {
 			app.NewInfoDialog().SetMessage(result).Show()
 		} else {
 			app.NewInfoDialog().SetMessage("No directory selected").Show()
+		}
+	})
+
+	saveMenu := menu.AddSubmenu("Save")
+	saveMenu.Add("Select File (Defaults)").OnClick(func(ctx *application.Context) {
+		result, _ := app.NewSaveFileDialog().
+			PromptForSingleSelection()
+		if result != "" {
+			app.NewInfoDialog().SetMessage(result).Show()
+		}
+	})
+	saveMenu.Add("Select File (Attach To Window)").OnClick(func(ctx *application.Context) {
+		result, _ := app.NewSaveFileDialog().
+			AttachToWindow(app.GetCurrentWindow()).
+			PromptForSingleSelection()
+		if result != "" {
+			app.NewInfoDialog().SetMessage(result).Show()
+		}
+	})
+	saveMenu.Add("Select File (Show Hidden Files)").OnClick(func(ctx *application.Context) {
+		result, _ := app.NewSaveFileDialog().
+			ShowHiddenFiles(true).
+			PromptForSingleSelection()
+		if result != "" {
+			app.NewInfoDialog().SetMessage(result).Show()
+		}
+	})
+	saveMenu.Add("Select File (Cannot Create Directories)").OnClick(func(ctx *application.Context) {
+		result, _ := app.NewSaveFileDialog().
+			CanCreateDirectories(false).
+			PromptForSingleSelection()
+		if result != "" {
+			app.NewInfoDialog().SetMessage(result).Show()
 		}
 	})
 

@@ -56,6 +56,15 @@ void* windowNew(unsigned int id, int width, int height) {
 	return window;
 }
 
+// setInvisibleTitleBarHeight sets the invisible title bar height
+void setInvisibleTitleBarHeight(void* window, unsigned int height) {
+	NSWindow* nsWindow = (NSWindow*)window;
+	// Get delegate
+	WindowDelegate* delegate = (WindowDelegate*)[nsWindow delegate];
+	// Set height
+	delegate.invisibleTitleBarHeight = height;
+}
+
 //// Make window toggle frameless
 //void windowSetFrameless(void* window, bool frameless) {
 //	NSWindow* nsWindow = (NSWindow*)window;
@@ -80,6 +89,18 @@ void windowSetTransparent(void* nsWindow) {
 	[window setBackgroundColor:[NSColor clearColor]];
 	});
 }
+
+void windowSetInvisibleTitleBar(void* nsWindow, unsigned int height) {
+	// On main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSWindow* window = (NSWindow*)nsWindow;
+		// Get delegate
+		WindowDelegate* delegate = (WindowDelegate*)[window delegate];
+		// Set height
+		delegate.invisibleTitleBarHeight = height;
+	});
+}
+
 
 // Set the title of the NSWindow
 void windowSetTitle(void* nsWindow, char* title) {
@@ -407,7 +428,7 @@ void windowSetHideTitle(void* nsWindow, bool hideTitle) {
 }
 
 // Set Window use toolbar
-void windowSetUseToolbar(void* nsWindow, bool useToolbar) {
+void windowSetUseToolbar(void* nsWindow, bool useToolbar, int toolbarStyle) {
 	// Set window use toolbar on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		// get main window
@@ -416,10 +437,33 @@ void windowSetUseToolbar(void* nsWindow, bool useToolbar) {
 			NSToolbar *toolbar = [[NSToolbar alloc] initWithIdentifier:@"wails.toolbar"];
 			[toolbar autorelease];
 			[window setToolbar:toolbar];
+
+			// If macos 11 or higher, set toolbar style
+			if (@available(macOS 11.0, *)) {
+				[window setToolbarStyle:toolbarStyle];
+			}
+
 		} else {
 			[window setToolbar:nil];
 		}
 	});
+}
+
+// Set window toolbar style
+void windowSetToolbarStyle(void* nsWindow, int style) {
+	// use @available to check if the function is available
+	// if not, return
+	if (@available(macOS 11.0, *)) {
+		// Set window toolbar style on main thread
+		dispatch_async(dispatch_get_main_queue(), ^{
+			// get main window
+			NSWindow* window = (NSWindow*)nsWindow;
+			// get toolbar
+			NSToolbar* toolbar = [window toolbar];
+			// set toolbar style
+			[toolbar setShowsBaselineSeparator:style];
+		});
+	}
 }
 
 // Set Hide Toolbar Separator
@@ -808,7 +852,9 @@ func (w *macosWindow) run() {
 				C.windowSetHideTitleBar(w.nsWindow, C.bool(titleBarOptions.Hide))
 				C.windowSetHideTitle(w.nsWindow, C.bool(titleBarOptions.HideTitle))
 				C.windowSetFullSizeContent(w.nsWindow, C.bool(titleBarOptions.FullSizeContent))
-				C.windowSetUseToolbar(w.nsWindow, C.bool(titleBarOptions.UseToolbar))
+				if titleBarOptions.UseToolbar {
+					C.windowSetUseToolbar(w.nsWindow, C.bool(titleBarOptions.UseToolbar), C.int(titleBarOptions.ToolbarStyle))
+				}
 				C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBarOptions.HideToolbarSeparator))
 			}
 
@@ -816,15 +862,18 @@ func (w *macosWindow) run() {
 				C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
 			}
 
-			switch w.parent.options.StartState {
-			case options.WindowStateMaximised:
-				w.setMaximised()
-			case options.WindowStateMinimised:
-				w.setMinimised()
-			case options.WindowStateFullscreen:
-				w.setFullscreen()
-
+			if macOptions.InvisibleTitleBarHeight != 0 {
+				C.windowSetInvisibleTitleBar(w.nsWindow, C.uint(macOptions.InvisibleTitleBarHeight))
 			}
+		}
+
+		switch w.parent.options.StartState {
+		case options.WindowStateMaximised:
+			w.setMaximised()
+		case options.WindowStateMinimised:
+			w.setMinimised()
+		case options.WindowStateFullscreen:
+			w.setFullscreen()
 
 		}
 		C.windowCenter(w.nsWindow)
@@ -832,7 +881,7 @@ func (w *macosWindow) run() {
 		if w.parent.options.URL != "" {
 			w.navigateToURL(w.parent.options.URL)
 		}
-		// Ee need to wait for the HTML to load before we can execute the javascript
+		// We need to wait for the HTML to load before we can execute the javascript
 		w.parent.On(events.Mac.WebViewDidFinishNavigation, func() {
 			if w.parent.options.JS != "" {
 				w.execJS(w.parent.options.JS)

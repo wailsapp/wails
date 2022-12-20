@@ -22,11 +22,27 @@ const (
 	MacBackdropTranslucent
 )
 
+type MacToolbarStyle int
+
+const (
+	// MacToolbarStyleAutomatic - The default value. The style will be determined by the window's given configuration
+	MacToolbarStyleAutomatic MacToolbarStyle = iota
+	// MacToolbarStyleExpanded - The toolbar will appear below the window title
+	MacToolbarStyleExpanded
+	// MacToolbarStylePreference - The toolbar will appear below the window title and the items in the toolbar will attempt to have equal widths when possible
+	MacToolbarStylePreference
+	// MacToolbarStyleUnified - The window title will appear inline with the toolbar when visible
+	MacToolbarStyleUnified
+	// MacToolbarStyleUnifiedCompact - Same as MacToolbarStyleUnified, but with reduced margins in the toolbar allowing more focus to be on the contents of the window
+	MacToolbarStyleUnifiedCompact
+)
+
 // MacWindow contains macOS specific options
 type MacWindow struct {
-	Backdrop   MacBackdrop
-	TitleBar   *TitleBar
-	Appearance MacAppearanceType
+	Backdrop                MacBackdrop
+	TitleBar                *TitleBar
+	Appearance              MacAppearanceType
+	InvisibleTitleBarHeight int
 }
 
 // TitleBar contains options for the Mac titlebar
@@ -37,9 +53,10 @@ type TitleBar struct {
 	FullSizeContent      bool
 	UseToolbar           bool
 	HideToolbarSeparator bool
+	ToolbarStyle         MacToolbarStyle
 }
 
-// TitleBarDefault results in the default Mac Titlebar
+// TitleBarDefault results in the default Mac TitleBar
 var TitleBarDefault = &TitleBar{
 	AppearsTransparent:   false,
 	Hide:                 false,
@@ -72,6 +89,18 @@ var TitleBarHiddenInset = &TitleBar{
 	FullSizeContent:      true,
 	UseToolbar:           true,
 	HideToolbarSeparator: true,
+}
+
+// TitleBarHiddenInsetUnified results in a hidden title bar with an alternative look where
+// the traffic light buttons are even more inset from the window edge.
+var TitleBarHiddenInsetUnified = &TitleBar{
+	AppearsTransparent:   true,
+	Hide:                 false,
+	HideTitle:            true,
+	FullSizeContent:      true,
+	UseToolbar:           true,
+	HideToolbarSeparator: true,
+	ToolbarStyle:         MacToolbarStyleUnified,
 }
 
 // MacAppearanceType is a type of Appearance for Cocoa windows

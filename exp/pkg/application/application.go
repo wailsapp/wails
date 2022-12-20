@@ -152,7 +152,7 @@ func (a *App) NewSystemTray() *SystemTray {
 }
 
 func (a *App) Run() error {
-	a.impl = newPlatformApp(a.options)
+	a.impl = newPlatformApp(a)
 
 	a.running = true
 	go func() {
@@ -343,4 +343,8 @@ func (a *App) NewOpenDirectoryDialog() *MessageDialog {
 
 func (a *App) NewOpenFileDialog() *OpenFileDialog {
 	return newOpenFileDialog()
+}
+
+func (a *App) NewSaveFileDialog() *SaveFileDialog {
+	return newSaveFileDialog()
 }
