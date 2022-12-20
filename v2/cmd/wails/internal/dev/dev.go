@@ -75,7 +75,7 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 	cwd := lo.Must(os.Getwd())
 
 	// Update go.mod to use current wails version
-	err := gomod.SyncGoMod(logger, true)
+	err := gomod.SyncGoMod(logger, !f.NoSyncGoMod)
 	if err != nil {
 		return err
 	}
