@@ -107,9 +107,11 @@ func buildApplication(f *flags.Build) error {
 		return err
 	}
 
-	err = gomod.SyncGoMod(logger, f.UpdateWailsVersionGoMod)
-	if err != nil {
-		return err
+	if !f.NoSyncGoMod {
+		err = gomod.SyncGoMod(logger, f.UpdateWailsVersionGoMod)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Check platform
