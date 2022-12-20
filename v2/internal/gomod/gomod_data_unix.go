@@ -1,4 +1,4 @@
-//go:build unix
+//go:build darwin || linux
 
 package gomod
 
