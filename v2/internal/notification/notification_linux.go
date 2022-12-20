@@ -19,8 +19,7 @@ const (
 	signalNotificationClosed   = "org.freedesktop.Notifications.NotificationClosed"
 	signalActionInvoked        = "org.freedesktop.Notifications.ActionInvoked"
 	callGetCapabilities        = "org.freedesktop.Notifications.GetCapabilities"
-	//signalActivationToken      = "org.freedesktop.Notifications.ActivationToken"
-	callCloseNotification = "org.freedesktop.Notifications.CloseNotification"
+	callCloseNotification      = "org.freedesktop.Notifications.CloseNotification"
 
 	MethodNotifySend = "notify-send"
 	MethodDbus       = "dbus"
@@ -93,6 +92,16 @@ func (n *Notifier) init() error {
 		if err != nil {
 			return conn, err
 		}
+
+		// add a listener (matcher) in dbus for signals to Notification interface.
+		err = conn.AddMatchSignal(
+			dbus.WithMatchObjectPath(dbusObjectPath),
+			dbus.WithMatchInterface(dbusNotificationsInterface),
+		)
+		if err != nil {
+			return nil, err
+		}
+
 		return conn, nil
 	}
 
@@ -288,16 +297,6 @@ func (n *Notifier) sendViaKnotify(options frontend.NotificationOptions) (uint32,
 }
 
 func dbusListener(conn *dbus.Conn, logger *logger.Logger, notificationID uint32, options frontend.NotificationOptions) {
-	// add a listener (matcher) in dbus for signals to Notification interface.
-	err := conn.AddMatchSignal(
-		dbus.WithMatchObjectPath(dbusObjectPath),
-		dbus.WithMatchInterface(dbusNotificationsInterface),
-	)
-	if err != nil {
-		logger.Error("runtime dbus notification err: %v", err)
-		return
-	}
-
 	// register in dbus for signal delivery
 	signal := make(chan *dbus.Signal, notifyChannelBufferSize)
 	conn.Signal(signal)
@@ -314,13 +313,8 @@ func dbusListener(conn *dbus.Conn, logger *logger.Logger, notificationID uint32,
 				obj := conn.Object(dbusNotificationsInterface, dbusObjectPath)
 				call := obj.Call(callCloseNotification, 0, notificationID)
 				if call.Err != nil {
-					logger.Error("Notification cancel error %v", err)
+					logger.Error("Notification cancel error %v", call.Err)
 				}
-				if options.LinuxOptions.OnClose != nil {
-					options.LinuxOptions.OnClose(notificationID, "closed-by-call")
-					return
-				}
-				return
 			}
 		case s := <-signal:
 			if s == nil {
