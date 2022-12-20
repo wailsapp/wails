@@ -1,39 +1,44 @@
 package binding_test
 
-type EmptyStruct struct {
-	Empty struct{} `json:"empty"`
+type StructWithAnonymousSubStruct struct {
+	Name string `json:"name"`
+	Meta struct {
+		Age int `json:"age"`
+	} `json:"meta"`
 }
 
-func (s EmptyStruct) Get() EmptyStruct {
+func (s StructWithAnonymousSubStruct) Get() StructWithAnonymousSubStruct {
 	return s
 }
 
-var EmptyStructTest = BindingTest{
-	name: "EmptyStruct",
+var AnonymousSubStructTest = BindingTest{
+	name: "StructWithAnonymousSubStruct",
 	structs: []interface{}{
-		&EmptyStruct{},
+		&StructWithAnonymousSubStruct{},
 	},
 	exemptions:  nil,
 	shouldError: false,
 	want: `
 export namespace binding_test {
-	export class EmptyStruct {
-		// Go type: struct {}
-
-		empty: any;
-
+	export class StructWithAnonymousSubStruct {
+		name: string;
+		// Go type: struct { Age int "json:\"age\"" }
+		meta: any;
+	
 		static createFrom(source: any = {}) {
-			return new EmptyStruct(source);
+			return new StructWithAnonymousSubStruct(source);
 		}
+	
 		constructor(source: any = {}) {
 			if ('string' === typeof source) source = JSON.parse(source);
-			this.empty = this.convertValues(source["empty"], Object);
+			this.name = source["name"];
+			this.meta = this.convertValues(source["meta"], Object);
 		}
+	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
 			if (!a) {
 				return a;
 			}
-
 			if (a.slice) {
 				return (a as any[]).map(elem => this.convertValues(elem, classs));
 			} else if ("object" === typeof a) {
@@ -48,6 +53,7 @@ export namespace binding_test {
 			return a;
 		}
 	}
+
 }
 `,
 }
