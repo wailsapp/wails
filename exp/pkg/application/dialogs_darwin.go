@@ -123,17 +123,49 @@ static void processOpenFileDialogResults(NSOpenPanel *panel, NSInteger result, b
 }
 
 
-static void showOpenFileDialog(unsigned int dialogID, bool canChooseFiles, bool canChooseDirectories, bool canCreateDirectories, bool showHiddenFiles, bool allowsMultipleSelection, void *window) {
+static void showOpenFileDialog(unsigned int dialogID,
+	bool canChooseFiles,
+	bool canChooseDirectories,
+	bool canCreateDirectories,
+	bool showHiddenFiles,
+	bool allowsMultipleSelection,
+	bool resolvesAliases,
+	bool hideExtension,
+	bool treatsFilePackagesAsDirectories,
+	bool allowsOtherFileTypes,
+	char* message,
+	char* directory,
+	char* buttonText,
+	void *window) {
 
 	// run on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+		if (message != NULL) {
+			[panel setMessage:[NSString stringWithUTF8String:message]];
+			free(message);
+		}
+
+		if (directory != NULL) {
+			[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:directory]]];
+			free(directory);
+		}
+
+		if (buttonText != NULL) {
+			[panel setPrompt:[NSString stringWithUTF8String:buttonText]];
+			free(buttonText);
+		}
 
 		[panel setCanChooseFiles:canChooseFiles];
 		[panel setCanChooseDirectories:canChooseDirectories];
 		[panel setCanCreateDirectories:canCreateDirectories];
 		[panel setShowsHiddenFiles:showHiddenFiles];
 		[panel setAllowsMultipleSelection:allowsMultipleSelection];
+		[panel setResolvesAliases:resolvesAliases];
+		[panel setExtensionHidden:hideExtension];
+		[panel setTreatsFilePackagesAsDirectories:treatsFilePackagesAsDirectories];
+		[panel setAllowsOtherFileTypes:allowsOtherFileTypes];
 
 		if (window != NULL) {
 			[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
@@ -147,28 +179,49 @@ static void showOpenFileDialog(unsigned int dialogID, bool canChooseFiles, bool 
 	});
 }
 
-static void showSaveFileDialog(unsigned int dialogID, bool canCreateDirectories, bool showHiddenFiles, void *window) {
-	// run on main thread
+static void showSaveFileDialog(unsigned int dialogID,
+	bool canCreateDirectories,
+	bool showHiddenFiles,
+	bool canSelectHiddenExtension,
+	bool hideExtension,
+	bool treatsFilePackagesAsDirectories,
+	bool allowOtherFileTypes,
+	char* message,
+	char* directory,
+	char* buttonText,
+	char* filename,
+	void *window) {
+
+// run on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSSavePanel *panel = [NSSavePanel savePanel];
 
+		if (message != NULL) {
+			[panel setMessage:[NSString stringWithUTF8String:message]];
+			free(message);
+		}
+
+		if (directory != NULL) {
+			[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:directory]]];
+			free(directory);
+		}
+
+		if (filename != NULL) {
+			[panel setNameFieldStringValue:[NSString stringWithUTF8String:filename]];
+			free(filename);
+		}
+
+		if (buttonText != NULL) {
+			[panel setPrompt:[NSString stringWithUTF8String:buttonText]];
+			free(buttonText);
+		}
+
 		[panel setCanCreateDirectories:canCreateDirectories];
 		[panel setShowsHiddenFiles:showHiddenFiles];
-
-		//if (title != NULL) {
-		//	[panel setTitle:[NSString stringWithUTF8String:title]];
-		//	free(title);
-		//}
-
-		//if (defaultFilename != NULL) {
-		//	[panel setNameFieldStringValue:[NSString stringWithUTF8String:defaultFilename]];
-		//	free(defaultFilename);
-		//}
-		//
-		//if (defaultDirectory != NULL) {
-		//	[panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:defaultDirectory]]];
-		//	free(defaultDirectory);
-		//}
+		[panel setCanSelectHiddenExtension:canSelectHiddenExtension];
+		[panel setExtensionHidden:hideExtension];
+		[panel setTreatsFilePackagesAsDirectories:treatsFilePackagesAsDirectories];
+		[panel setAllowsOtherFileTypes:allowOtherFileTypes];
 
 		if (window != NULL) {
 			[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
@@ -300,6 +353,13 @@ func newOpenFileDialogImpl(d *OpenFileDialog) *macosOpenFileDialog {
 	}
 }
 
+func toCString(s string) *C.char {
+	if s == "" {
+		return nil
+	}
+	return C.CString(s)
+}
+
 func (m *macosOpenFileDialog) show() ([]string, error) {
 	openFileResponses[dialogID] = make(chan string)
 	nsWindow := unsafe.Pointer(nil)
@@ -313,6 +373,13 @@ func (m *macosOpenFileDialog) show() ([]string, error) {
 		C.bool(m.dialog.canCreateDirectories),
 		C.bool(m.dialog.showHiddenFiles),
 		C.bool(m.dialog.allowsMultipleSelection),
+		C.bool(m.dialog.resolvesAliases),
+		C.bool(m.dialog.hideExtension),
+		C.bool(m.dialog.treatsFilePackagesAsDirectories),
+		C.bool(m.dialog.allowsOtherFileTypes),
+		toCString(m.dialog.message),
+		toCString(m.dialog.directory),
+		toCString(m.dialog.buttonText),
 		nsWindow)
 	var result []string
 	for filename := range openFileResponses[m.dialog.id] {
@@ -364,6 +431,14 @@ func (m *macosSaveFileDialog) show() (string, error) {
 	C.showSaveFileDialog(C.uint(m.dialog.id),
 		C.bool(m.dialog.canCreateDirectories),
 		C.bool(m.dialog.showHiddenFiles),
+		C.bool(m.dialog.canSelectHiddenExtension),
+		C.bool(m.dialog.hideExtension),
+		C.bool(m.dialog.treatsFilePackagesAsDirectories),
+		C.bool(m.dialog.allowOtherFileTypes),
+		toCString(m.dialog.message),
+		toCString(m.dialog.directory),
+		toCString(m.dialog.buttonText),
+		toCString(m.dialog.filename),
 		nsWindow)
 	return <-saveFileResponses[m.dialog.id], nil
 }

@@ -3,6 +3,8 @@ package main
 import (
 	_ "embed"
 	"log"
+	"os"
+	"runtime"
 	"strings"
 
 	"github.com/wailsapp/wails/exp/pkg/application"
@@ -205,6 +207,63 @@ func main() {
 			app.NewInfoDialog().SetMessage("No directory selected").Show()
 		}
 	})
+	openMenu.Add("Open Directory (Resolves Aliases)").OnClick(func(ctx *application.Context) {
+		result, _ := app.NewOpenFileDialog().
+			CanChooseDirectories(true).
+			CanCreateDirectories(true).
+			ResolvesAliases(true).
+			PromptForSingleSelection()
+		if result != "" {
+			app.NewInfoDialog().SetMessage(result).Show()
+		} else {
+			app.NewInfoDialog().SetMessage("No directory selected").Show()
+		}
+	})
+	openMenu.Add("Open File/Directory (Set Title)").OnClick(func(ctx *application.Context) {
+		dialog := app.NewOpenFileDialog().
+			CanChooseDirectories(true).
+			CanCreateDirectories(true).
+			ResolvesAliases(true)
+		if runtime.GOOS == "darwin" {
+			dialog.SetMessage("Select a file/directory")
+		} else {
+			dialog.SetTitle("Select a file/directory")
+		}
+
+		result, _ := dialog.PromptForSingleSelection()
+		if result != "" {
+			app.NewInfoDialog().SetMessage(result).Show()
+		} else {
+			app.NewInfoDialog().SetMessage("No file/directory selected").Show()
+		}
+	})
+	openMenu.Add("Open (Full Example)").OnClick(func(ctx *application.Context) {
+		cwd, _ := os.Getwd()
+		dialog := app.NewOpenFileDialog().
+			SetTitle("Select a file").
+			SetMessage("Select a file to open").
+			SetButtonText("Let's do this!").
+			SetDirectory(cwd).
+			CanCreateDirectories(true).
+			ResolvesAliases(true).
+			AllowsOtherFileTypes(true).
+			TreatsFilePackagesAsDirectories(true).
+			ShowHiddenFiles(true).
+			CanSelectHiddenExtension(true)
+
+		if runtime.GOOS == "darwin" {
+			dialog.SetMessage("Select a file")
+		} else {
+			dialog.SetTitle("Select a file")
+		}
+
+		result, _ := dialog.PromptForSingleSelection()
+		if result != "" {
+			app.NewInfoDialog().SetMessage(result).Show()
+		} else {
+			app.NewInfoDialog().SetMessage("No file selected").Show()
+		}
+	})
 
 	saveMenu := menu.AddSubmenu("Save")
 	saveMenu.Add("Select File (Defaults)").OnClick(func(ctx *application.Context) {
@@ -233,6 +292,23 @@ func main() {
 	saveMenu.Add("Select File (Cannot Create Directories)").OnClick(func(ctx *application.Context) {
 		result, _ := app.NewSaveFileDialog().
 			CanCreateDirectories(false).
+			PromptForSingleSelection()
+		if result != "" {
+			app.NewInfoDialog().SetMessage(result).Show()
+		}
+	})
+	saveMenu.Add("Select File (Full Example)").OnClick(func(ctx *application.Context) {
+		result, _ := app.NewSaveFileDialog().
+			CanCreateDirectories(false).
+			ShowHiddenFiles(true).
+			SetMessage("Select a file").
+			SetDirectory("/Applications").
+			SetButtonText("Let's do this!").
+			SetFilename("README.md").
+			HideExtension(true).
+			AllowsOtherFileTypes(true).
+			TreatsFilePackagesAsDirectories(true).
+			ShowHiddenFiles(true).
 			PromptForSingleSelection()
 		if result != "" {
 			app.NewInfoDialog().SetMessage(result).Show()

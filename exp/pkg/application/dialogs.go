@@ -74,11 +74,6 @@ func (d *MessageDialog) SetTitle(title string) *MessageDialog {
 	return d
 }
 
-func (d *MessageDialog) SetMessage(message string) *MessageDialog {
-	d.message = message
-	return d
-}
-
 func (d *MessageDialog) Show() {
 	if d.impl == nil {
 		d.impl = newDialogImpl(d)
@@ -115,18 +110,33 @@ func (d *MessageDialog) SetCancelButton(button *Button) *MessageDialog {
 	return d
 }
 
+func (d *MessageDialog) SetMessage(title string) *MessageDialog {
+	d.title = title
+	return d
+}
+
 type openFileDialogImpl interface {
 	show() ([]string, error)
 }
 
 type OpenFileDialog struct {
-	id                      uint
-	canChooseDirectories    bool
-	canChooseFiles          bool
-	canCreateDirectories    bool
-	showHiddenFiles         bool
-	allowsMultipleSelection bool
-	window                  *Window
+	id                              uint
+	canChooseDirectories            bool
+	canChooseFiles                  bool
+	canCreateDirectories            bool
+	showHiddenFiles                 bool
+	resolvesAliases                 bool
+	allowsMultipleSelection         bool
+	hideExtension                   bool
+	canSelectHiddenExtension        bool
+	treatsFilePackagesAsDirectories bool
+	allowsOtherFileTypes            bool
+
+	title      string
+	message    string
+	buttonText string
+	directory  string
+	window     *Window
 
 	impl openFileDialogImpl
 }
@@ -146,13 +156,38 @@ func (d *OpenFileDialog) CanCreateDirectories(canCreateDirectories bool) *OpenFi
 	return d
 }
 
+func (d *OpenFileDialog) AllowsOtherFileTypes(allowsOtherFileTypes bool) *OpenFileDialog {
+	d.allowsOtherFileTypes = allowsOtherFileTypes
+	return d
+}
+
 func (d *OpenFileDialog) ShowHiddenFiles(showHiddenFiles bool) *OpenFileDialog {
 	d.showHiddenFiles = showHiddenFiles
 	return d
 }
 
+func (d *OpenFileDialog) HideExtension(hideExtension bool) *OpenFileDialog {
+	d.hideExtension = hideExtension
+	return d
+}
+
+func (d *OpenFileDialog) TreatsFilePackagesAsDirectories(treatsFilePackagesAsDirectories bool) *OpenFileDialog {
+	d.treatsFilePackagesAsDirectories = treatsFilePackagesAsDirectories
+	return d
+}
+
 func (d *OpenFileDialog) AttachToWindow(window *Window) *OpenFileDialog {
 	d.window = window
+	return d
+}
+
+func (d *OpenFileDialog) ResolvesAliases(resolvesAliases bool) *OpenFileDialog {
+	d.resolvesAliases = resolvesAliases
+	return d
+}
+
+func (d *OpenFileDialog) SetTitle(title string) *OpenFileDialog {
+	d.title = title
 	return d
 }
 
@@ -178,12 +213,33 @@ func (d *OpenFileDialog) PromptForMultipleSelection() ([]string, error) {
 	return d.impl.show()
 }
 
+func (d *OpenFileDialog) SetMessage(message string) *OpenFileDialog {
+	d.message = message
+	return d
+}
+
+func (d *OpenFileDialog) SetButtonText(text string) *OpenFileDialog {
+	d.buttonText = text
+	return d
+}
+
+func (d *OpenFileDialog) SetDirectory(directory string) *OpenFileDialog {
+	d.directory = directory
+	return d
+}
+
+func (d *OpenFileDialog) CanSelectHiddenExtension(canSelectHiddenExtension bool) *OpenFileDialog {
+	d.canSelectHiddenExtension = canSelectHiddenExtension
+	return d
+}
+
 func newOpenFileDialog() *OpenFileDialog {
 	return &OpenFileDialog{
 		id:                   getDialogID(),
 		canChooseDirectories: false,
 		canChooseFiles:       true,
 		canCreateDirectories: true,
+		resolvesAliases:      false,
 	}
 }
 
@@ -195,10 +251,19 @@ func newSaveFileDialog() *SaveFileDialog {
 }
 
 type SaveFileDialog struct {
-	id                   uint
-	canCreateDirectories bool
-	showHiddenFiles      bool
-	window               *Window
+	id                              uint
+	canCreateDirectories            bool
+	showHiddenFiles                 bool
+	canSelectHiddenExtension        bool
+	allowOtherFileTypes             bool
+	hideExtension                   bool
+	treatsFilePackagesAsDirectories bool
+	message                         string
+	directory                       string
+	filename                        string
+	buttonText                      string
+
+	window *Window
 
 	impl saveFileDialogImpl
 }
@@ -212,8 +277,23 @@ func (d *SaveFileDialog) CanCreateDirectories(canCreateDirectories bool) *SaveFi
 	return d
 }
 
+func (d *SaveFileDialog) CanSelectHiddenExtension(canSelectHiddenExtension bool) *SaveFileDialog {
+	d.canSelectHiddenExtension = canSelectHiddenExtension
+	return d
+}
+
 func (d *SaveFileDialog) ShowHiddenFiles(showHiddenFiles bool) *SaveFileDialog {
 	d.showHiddenFiles = showHiddenFiles
+	return d
+}
+
+func (d *SaveFileDialog) SetMessage(message string) *SaveFileDialog {
+	d.message = message
+	return d
+}
+
+func (d *SaveFileDialog) SetDirectory(directory string) *SaveFileDialog {
+	d.directory = directory
 	return d
 }
 
@@ -227,4 +307,29 @@ func (d *SaveFileDialog) PromptForSingleSelection() (string, error) {
 		d.impl = newSaveFileDialogImpl(d)
 	}
 	return d.impl.show()
+}
+
+func (d *SaveFileDialog) SetButtonText(text string) *SaveFileDialog {
+	d.buttonText = text
+	return d
+}
+
+func (d *SaveFileDialog) SetFilename(filename string) *SaveFileDialog {
+	d.filename = filename
+	return d
+}
+
+func (d *SaveFileDialog) AllowsOtherFileTypes(allowOtherFileTypes bool) *SaveFileDialog {
+	d.allowOtherFileTypes = allowOtherFileTypes
+	return d
+}
+
+func (d *SaveFileDialog) HideExtension(hideExtension bool) *SaveFileDialog {
+	d.hideExtension = hideExtension
+	return d
+}
+
+func (d *SaveFileDialog) TreatsFilePackagesAsDirectories(treatsFilePackagesAsDirectories bool) *SaveFileDialog {
+	d.treatsFilePackagesAsDirectories = treatsFilePackagesAsDirectories
+	return d
 }
