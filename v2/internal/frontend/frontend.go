@@ -121,4 +121,8 @@ type Frontend interface {
 
 	// Browser
 	BrowserOpenURL(url string)
+
+	// Clipboard
+	ClipboardGetText() (string, error)
+	ClipboardSetText(text string) error
 }

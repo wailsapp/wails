@@ -192,3 +192,11 @@ export function Hide() {
 export function Show() {
     window.runtime.Show();
 }
+
+export function ClipboardGetText() {
+    return window.runtime.ClipboardGetText();
+}
+
+export function ClipboardSetText(text) {
+    return window.runtime.ClipboardSetText(text);
+}
