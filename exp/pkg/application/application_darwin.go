@@ -23,23 +23,31 @@ static void init(void) {
 
 	[NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskLeftMouseDown handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
 		NSWindow* eventWindow = [event window];
-		if (![eventWindow respondsToSelector:@selector(handleLeftMouseDown)]) {
+		if (eventWindow == nil ) {
+			return event;
+        }
+		WindowDelegate* windowDelegate = (WindowDelegate*)[eventWindow delegate];
+		if (windowDelegate == nil) {
 			return event;
 		}
-
-		WindowDelegate* windowDelegate = (WindowDelegate*)[eventWindow delegate];
-		[windowDelegate handleLeftMouseDown:event];
+		if ([windowDelegate respondsToSelector:@selector(handleLeftMouseDown:)]) {
+			[windowDelegate handleLeftMouseDown:event];
+		}
 		return event;
 	}];
 
 	[NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskLeftMouseUp handler:^NSEvent * _Nullable(NSEvent * _Nonnull event) {
 		NSWindow* eventWindow = [event window];
-		if (![eventWindow respondsToSelector:@selector(handleLeftMouseUp)]) {
+		if (eventWindow == nil ) {
+			return event;
+        }
+		WindowDelegate* windowDelegate = (WindowDelegate*)[eventWindow delegate];
+		if (windowDelegate == nil) {
 			return event;
 		}
-
-		WindowDelegate* windowDelegate = (WindowDelegate*)[eventWindow delegate];
-		[windowDelegate handleLeftMouseUp:eventWindow];
+		if ([windowDelegate respondsToSelector:@selector(handleLeftMouseUp:)]) {
+			[windowDelegate handleLeftMouseUp:eventWindow];
+		}
 		return event;
 	}];
 }

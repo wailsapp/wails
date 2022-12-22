@@ -31,5 +31,4 @@ v2/test/kitchensink/frontend/package.json.md5
 v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
 .env
 /website/static/img/.cache.json
-/exp/examples/dialogs/menu
-/exp/examples/menu/menu
+

@@ -2,6 +2,7 @@ package application
 
 import "C"
 import (
+	"strings"
 	"sync"
 )
 
@@ -119,6 +120,11 @@ type openFileDialogImpl interface {
 	show() ([]string, error)
 }
 
+type fileFilter struct {
+	displayName string // Filter information EG: "Image Files (*.jpg, *.png)"
+	pattern     string // semicolon separated list of extensions, EG: "*.jpg;*.png"
+}
+
 type OpenFileDialog struct {
 	id                              uint
 	canChooseDirectories            bool
@@ -131,6 +137,7 @@ type OpenFileDialog struct {
 	canSelectHiddenExtension        bool
 	treatsFilePackagesAsDirectories bool
 	allowsOtherFileTypes            bool
+	filters                         []fileFilter
 
 	title      string
 	message    string
@@ -203,6 +210,16 @@ func (d *OpenFileDialog) PromptForSingleSelection() (string, error) {
 	}
 
 	return result, err
+}
+
+// AddFilter adds a filter to the dialog. The filter is a display name and a semicolon separated list of extensions.
+// EG: AddFilter("Image Files", "*.jpg;*.png")
+func (d *OpenFileDialog) AddFilter(displayName, pattern string) *OpenFileDialog {
+	d.filters = append(d.filters, fileFilter{
+		displayName: strings.TrimSpace(displayName),
+		pattern:     strings.TrimSpace(pattern),
+	})
+	return d
 }
 
 func (d *OpenFileDialog) PromptForMultipleSelection() ([]string, error) {

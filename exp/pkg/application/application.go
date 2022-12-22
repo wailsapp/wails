@@ -91,6 +91,7 @@ type App struct {
 	name        string
 	description string
 	icon        []byte
+	clipboard   *Clipboard
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -347,4 +348,11 @@ func (a *App) NewOpenFileDialog() *OpenFileDialog {
 
 func (a *App) NewSaveFileDialog() *SaveFileDialog {
 	return newSaveFileDialog()
+}
+
+func (a *App) Clipboard() *Clipboard {
+	if a.clipboard == nil {
+		a.clipboard = newClipboard()
+	}
+	return a.clipboard
 }

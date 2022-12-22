@@ -4,9 +4,12 @@ package application
 
 /*
 #cgo CFLAGS:  -x objective-c
-#cgo LDFLAGS: -framework Cocoa -mmacosx-version-min=10.13
+#cgo LDFLAGS: -framework Cocoa -mmacosx-version-min=10.13 -framework UniformTypeIdentifiers
 
 #import <Cocoa/Cocoa.h>
+
+#import <UniformTypeIdentifiers/UTType.h>
+#import "dialogs_delegate.h"
 
 extern void openFileDialogCallback(uint id, char* path);
 extern void openFileDialogCallbackEnd(uint id);
@@ -103,16 +106,16 @@ static void alertAddButton(void *dialog, char *label, bool isDefault, bool isCan
     }
 }
 
-static void processOpenFileDialogResults(NSOpenPanel *panel, NSInteger result, bool allowsMultipleSelection, uint dialogID) {
+static void processOpenFileDialogResults(NSOpenPanel *panel, NSInteger result, uint dialogID) {
 	const char *path = NULL;
 	if (result == NSModalResponseOK) {
-		if (allowsMultipleSelection) {
+		NSArray *urls = [panel URLs];
+		if ([urls count] > 0) {
 			NSArray *urls = [panel URLs];
 			for (NSURL *url in urls) {
 				path = [[url path] UTF8String];
 				openFileDialogCallback(dialogID, (char *)path);
 			}
-
 		} else {
 			NSURL *url = [panel URL];
 			path = [[url path] UTF8String];
@@ -133,14 +136,44 @@ static void showOpenFileDialog(unsigned int dialogID,
 	bool hideExtension,
 	bool treatsFilePackagesAsDirectories,
 	bool allowsOtherFileTypes,
+	char *filterPatterns,
+	unsigned int filterPatternsCount,
 	char* message,
 	char* directory,
 	char* buttonText,
+
 	void *window) {
 
 	// run on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
+
 		NSOpenPanel *panel = [NSOpenPanel openPanel];
+
+		// print out filterPatterns if length > 0
+		if (filterPatternsCount > 0) {
+			OpenPanelDelegate *delegate = [[OpenPanelDelegate alloc] init];
+			[panel setDelegate:delegate];
+			// Initialise NSString with bytes and UTF8 encoding
+			NSString *filterPatternsString = [[NSString alloc] initWithBytes:filterPatterns length:filterPatternsCount encoding:NSUTF8StringEncoding];
+			// Convert NSString to NSArray
+			delegate.allowedExtensions = [filterPatternsString componentsSeparatedByString:@";"];
+
+				// Use UTType if macOS 11 or higher to add file filters
+			if (@available(macOS 11, *)) {
+				NSMutableArray *filterTypes = [NSMutableArray array];
+				// Iterate the filtertypes, create uti's that are limited to the file extensions then add
+				for (NSString *filterType in delegate.allowedExtensions) {
+					[filterTypes addObject:[UTType typeWithFilenameExtension:filterType]];
+				}
+				[panel setAllowedContentTypes:filterTypes];
+			} else {
+				[panel setAllowedFileTypes:delegate.allowedExtensions];
+			}
+
+			// Free the memory
+			free(filterPatterns);
+		}
+
 
 		if (message != NULL) {
 			[panel setMessage:[NSString stringWithUTF8String:message]];
@@ -167,13 +200,15 @@ static void showOpenFileDialog(unsigned int dialogID,
 		[panel setTreatsFilePackagesAsDirectories:treatsFilePackagesAsDirectories];
 		[panel setAllowsOtherFileTypes:allowsOtherFileTypes];
 
+
+
 		if (window != NULL) {
 			[panel beginSheetModalForWindow:(__bridge NSWindow *)window completionHandler:^(NSInteger result) {
-				processOpenFileDialogResults(panel, result, allowsMultipleSelection, dialogID);
+				processOpenFileDialogResults(panel, result, dialogID);
 			}];
 		} else {
 			[panel beginWithCompletionHandler:^(NSInteger result) {
-				processOpenFileDialogResults(panel, result, allowsMultipleSelection, dialogID);
+				processOpenFileDialogResults(panel, result, dialogID);
 			}];
 		}
 	});
@@ -192,7 +227,7 @@ static void showSaveFileDialog(unsigned int dialogID,
 	char* filename,
 	void *window) {
 
-// run on main thread
+	// run on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSSavePanel *panel = [NSSavePanel savePanel];
 
@@ -249,6 +284,7 @@ static void showSaveFileDialog(unsigned int dialogID,
 */
 import "C"
 import (
+	"strings"
 	"unsafe"
 )
 
@@ -367,6 +403,25 @@ func (m *macosOpenFileDialog) show() ([]string, error) {
 		// get NSWindow from window
 		nsWindow = m.dialog.window.impl.(*macosWindow).nsWindow
 	}
+
+	// Massage filter patterns into macOS format
+	// We iterate all filter patterns, tidy them up and then join them with a semicolon
+	// This should produce a single string of extensions like "png;jpg;gif"
+	var filterPatterns string
+	if len(m.dialog.filters) > 0 {
+		var allPatterns []string
+		for _, filter := range m.dialog.filters {
+			patternComponents := strings.Split(filter.pattern, ";")
+			for i, component := range patternComponents {
+				filterPattern := strings.TrimSpace(component)
+				filterPattern = strings.TrimPrefix(filterPattern, "*.")
+				patternComponents[i] = filterPattern
+			}
+			allPatterns = append(allPatterns, strings.Join(patternComponents, ";"))
+		}
+		filterPatterns = strings.Join(allPatterns, ";")
+	}
+
 	C.showOpenFileDialog(C.uint(m.dialog.id),
 		C.bool(m.dialog.canChooseFiles),
 		C.bool(m.dialog.canChooseDirectories),
@@ -377,6 +432,8 @@ func (m *macosOpenFileDialog) show() ([]string, error) {
 		C.bool(m.dialog.hideExtension),
 		C.bool(m.dialog.treatsFilePackagesAsDirectories),
 		C.bool(m.dialog.allowsOtherFileTypes),
+		toCString(filterPatterns),
+		C.uint(len(filterPatterns)),
 		toCString(m.dialog.message),
 		toCString(m.dialog.directory),
 		toCString(m.dialog.buttonText),

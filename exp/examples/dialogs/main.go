@@ -249,7 +249,9 @@ func main() {
 			AllowsOtherFileTypes(true).
 			TreatsFilePackagesAsDirectories(true).
 			ShowHiddenFiles(true).
-			CanSelectHiddenExtension(true)
+			CanSelectHiddenExtension(true).
+			AddFilter("Text Files", "*.txt; *.md").
+			AddFilter("Video Files", "*.mov; *.mp4; *.avi")
 
 		if runtime.GOOS == "darwin" {
 			dialog.SetMessage("Select a file")
