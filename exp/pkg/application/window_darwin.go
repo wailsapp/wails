@@ -301,14 +301,25 @@ void webviewSetTransparent(void* nsWindow) {
 	});
 }
 
-// Set webview background color
-void webviewSetBackgroundColor(void* nsWindow, int r, int g, int b, int alpha) {
+// Set webview background colour
+void webviewSetBackgroundColour(void* nsWindow, int r, int g, int b, int alpha) {
 	// Set webview background color on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		// Get window delegate
 		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
 		// Set webview background color
 		[delegate.webView setValue:[NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:alpha/255.0] forKey:@"backgroundColor"];
+	});
+}
+
+// Set the window background colour
+void windowSetBackgroundColour(void* nsWindow, int r, int g, int b, int alpha) {
+	// Set window background color on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Get window
+		NSWindow* window = (NSWindow*)nsWindow;
+		// Set window background color
+		[window setBackgroundColor:[NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:alpha/255.0]];
 	});
 }
 
@@ -746,7 +757,7 @@ func (w *macosWindow) execJS(js string) {
 	C.windowExecJS(w.nsWindow, C.CString(js))
 }
 
-func (w *macosWindow) navigateToURL(url string) {
+func (w *macosWindow) setURL(url string) {
 	C.navigationLoadURL(w.nsWindow, C.CString(url))
 }
 
@@ -831,10 +842,8 @@ func (w *macosWindow) run() {
 		if w.parent.options.MaxWidth != 0 || w.parent.options.MaxHeight != 0 {
 			w.setMaxSize(w.parent.options.MaxWidth, w.parent.options.MaxHeight)
 		}
-		if w.parent.options.EnableDevTools {
-			w.enableDevTools()
-		}
-		w.setBackgroundColor(w.parent.options.BackgroundColour)
+		w.enableDevTools()
+		w.setBackgroundColour(w.parent.options.BackgroundColour)
 		if w.parent.options.Mac != nil {
 			macOptions := w.parent.options.Mac
 			switch macOptions.Backdrop {
@@ -879,7 +888,7 @@ func (w *macosWindow) run() {
 		C.windowCenter(w.nsWindow)
 
 		if w.parent.options.URL != "" {
-			w.navigateToURL(w.parent.options.URL)
+			w.setURL(w.parent.options.URL)
 		}
 		// We need to wait for the HTML to load before we can execute the javascript
 		w.parent.On(events.Mac.WebViewDidFinishNavigation, func() {
@@ -891,18 +900,18 @@ func (w *macosWindow) run() {
 			}
 		})
 		if w.parent.options.HTML != "" {
-			w.renderHTML(w.parent.options.HTML)
+			w.setHTML(w.parent.options.HTML)
 		}
 
 		C.windowShow(w.nsWindow)
 	})
 }
 
-func (w *macosWindow) setBackgroundColor(colour *options.RGBA) {
+func (w *macosWindow) setBackgroundColour(colour *options.RGBA) {
 	if colour == nil {
 		return
 	}
-	C.webviewSetBackgroundColor(w.nsWindow, C.int(colour.Red), C.int(colour.Green), C.int(colour.Blue), C.int(colour.Alpha))
+	C.windowSetBackgroundColour(w.nsWindow, C.int(colour.Red), C.int(colour.Green), C.int(colour.Blue), C.int(colour.Alpha))
 }
 
 func (w *macosWindow) position() (int, int) {
@@ -921,7 +930,7 @@ func (w *macosWindow) destroy() {
 	C.windowDestroy(w.nsWindow)
 }
 
-func (w *macosWindow) renderHTML(html string) {
+func (w *macosWindow) setHTML(html string) {
 	// Convert HTML to C string
 	cHTML := C.CString(html)
 	// Render HTML

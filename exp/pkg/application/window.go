@@ -12,11 +12,10 @@ type windowImpl interface {
 	setTitle(title string)
 	setSize(width, height int)
 	setAlwaysOnTop(alwaysOnTop bool)
-	navigateToURL(url string)
+	setURL(url string)
 	setResizable(resizable bool)
 	setMinSize(width, height int)
 	setMaxSize(width, height int)
-	enableDevTools()
 	execJS(js string)
 	setMaximised()
 	setMinimised()
@@ -25,7 +24,7 @@ type windowImpl interface {
 	isMaximised() bool
 	isFullscreen() bool
 	restore()
-	setBackgroundColor(color *options.RGBA)
+	setBackgroundColour(color *options.RGBA)
 	run()
 	center()
 	size() (int, int)
@@ -43,7 +42,7 @@ type windowImpl interface {
 	close()
 	zoom()
 	minimize()
-	renderHTML(html string)
+	setHTML(html string)
 }
 
 type Window struct {
@@ -80,97 +79,93 @@ func NewWindow(options *options.Window) *Window {
 	}
 }
 
-func (w *Window) SetTitle(title string) {
+func (w *Window) SetTitle(title string) *Window {
 	w.implLock.RLock()
 	defer w.implLock.RUnlock()
-	if w.impl == nil {
-		w.options.Title = title
-		return
+	w.options.Title = title
+	if w.impl != nil {
+		w.impl.setTitle(title)
 	}
-	w.impl.setTitle(title)
+	return w
 }
 
-func (w *Window) SetSize(width, height int) {
-	if w.impl == nil {
-		w.options.Width = width
-		w.options.Height = height
-		return
+func (w *Window) SetSize(width, height int) *Window {
+	w.options.Width = width
+	w.options.Height = height
+	if w.impl != nil {
+		w.impl.setSize(width, height)
 	}
-	w.impl.setSize(width, height)
+	return w
 }
 
 func (w *Window) Run() {
+	if w.impl != nil {
+		return
+	}
 	w.implLock.Lock()
 	w.impl = newWindowImpl(w)
 	w.implLock.Unlock()
 	w.impl.run()
 }
 
-func (w *Window) SetAlwaysOnTop(b bool) {
+func (w *Window) SetAlwaysOnTop(b bool) *Window {
+	w.options.AlwaysOnTop = b
 	if w.impl == nil {
-		w.options.AlwaysOnTop = b
-		return
+		w.impl.setAlwaysOnTop(b)
 	}
-	w.impl.setAlwaysOnTop(b)
+	return w
 }
 
-func (w *Window) NavigateToURL(s string) {
-	if w.impl == nil {
-		w.options.URL = s
-		return
+func (w *Window) SetURL(s string) *Window {
+	w.options.URL = s
+	if w.impl != nil {
+		w.impl.setURL(s)
 	}
-	w.impl.navigateToURL(s)
+	return w
 }
 
-func (w *Window) SetResizable(b bool) {
+func (w *Window) SetResizable(b bool) *Window {
 	w.options.DisableResize = !b
-	if w.impl == nil {
-		return
+	if w.impl != nil {
+		w.impl.setResizable(b)
 	}
-	w.impl.setResizable(b)
+	return w
 }
 
 func (w *Window) Resizable() bool {
 	return !w.options.DisableResize
 }
 
-func (w *Window) SetMinSize(minWidth, minHeight int) {
-	if w.impl == nil {
-		w.options.MinWidth = minWidth
-		if w.options.Width < minWidth {
-			w.options.Width = minWidth
-		}
-		w.options.MinHeight = minHeight
-		if w.options.Height < minHeight {
-			w.options.Height = minHeight
-		}
-		return
+func (w *Window) SetMinSize(minWidth, minHeight int) *Window {
+	w.options.MinWidth = minWidth
+	if w.options.Width < minWidth {
+		w.options.Width = minWidth
 	}
-	w.impl.setSize(w.options.Width, w.options.Height)
-	w.impl.setMinSize(minWidth, minHeight)
-}
-func (w *Window) SetMaxSize(maxWidth, maxHeight int) {
-	if w.impl == nil {
-		w.options.MinWidth = maxWidth
-		if w.options.Width > maxWidth {
-			w.options.Width = maxWidth
-		}
-		w.options.MinHeight = maxHeight
-		if w.options.Height > maxHeight {
-			w.options.Height = maxHeight
-		}
-		return
+	w.options.MinHeight = minHeight
+	if w.options.Height < minHeight {
+		w.options.Height = minHeight
 	}
-	w.impl.setSize(w.options.Width, w.options.Height)
-	w.impl.setMaxSize(maxWidth, maxHeight)
+	if w.impl != nil {
+		w.impl.setSize(w.options.Width, w.options.Height)
+		w.impl.setMinSize(minWidth, minHeight)
+	}
+	return w
 }
 
-func (w *Window) EnableDevTools() {
-	if w.impl == nil {
-		w.options.EnableDevTools = true
-		return
+func (w *Window) SetMaxSize(maxWidth, maxHeight int) *Window {
+	w.options.MinWidth = maxWidth
+	if w.options.Width > maxWidth {
+		w.options.Width = maxWidth
 	}
-	w.impl.enableDevTools()
+	w.options.MinHeight = maxHeight
+	if w.options.Height > maxHeight {
+		w.options.Height = maxHeight
+	}
+	if w.impl != nil {
+		w.impl.setSize(w.options.Width, w.options.Height)
+		w.impl.setMaxSize(maxWidth, maxHeight)
+	}
+	return w
 }
 
 func (w *Window) ExecJS(js string) {
@@ -180,30 +175,29 @@ func (w *Window) ExecJS(js string) {
 	w.impl.execJS(js)
 }
 
-func (w *Window) SetMaximized() {
+func (w *Window) SetMaximized() *Window {
 	w.options.StartState = options.WindowStateMaximised
-	if w.impl == nil {
-		return
+	if w.impl != nil {
+		w.impl.setMaximised()
 	}
-	w.impl.setMaximised()
+	return w
 }
 
 // Set Minimized
-func (w *Window) SetMinimized() {
+func (w *Window) SetMinimized() *Window {
 	w.options.StartState = options.WindowStateMinimised
 	if w.impl == nil {
-		return
+		w.impl.setMinimised()
 	}
-	w.impl.setMinimised()
+	return w
 }
 
-// Set Fullscreen
-func (w *Window) SetFullscreen() {
+func (w *Window) SetFullscreen() *Window {
 	w.options.StartState = options.WindowStateFullscreen
 	if w.impl == nil {
-		return
+		w.impl.setFullscreen()
 	}
-	w.impl.setFullscreen()
+	return w
 }
 
 // IsMinimised returns true if the window is minimised
@@ -240,12 +234,12 @@ func (w *Window) IsFullscreen() bool {
 	return w.impl.isFullscreen()
 }
 
-func (w *Window) SetBackgroundColor(color *options.RGBA) {
-	w.options.BackgroundColour = color
-	if w.impl == nil {
-		return
+func (w *Window) SetBackgroundColour(colour *options.RGBA) *Window {
+	w.options.BackgroundColour = colour
+	if w.impl != nil {
+		w.impl.setBackgroundColour(colour)
 	}
-	w.impl.setBackgroundColor(color)
+	return w
 }
 
 func (w *Window) handleMessage(message string) {
@@ -276,10 +270,6 @@ func (w *Window) handleWindowEvent(id uint) {
 		go callback()
 	}
 	w.eventListenersLock.RUnlock()
-}
-
-func (w *Window) ID() uint {
-	return w.id
 }
 
 func (w *Window) Width() int {
@@ -340,11 +330,12 @@ func (w *Window) ToggleDevTools() {
 	w.impl.toggleDevTools()
 }
 
-func (w *Window) ResetZoom() {
-	if w.impl == nil {
-		return
+func (w *Window) ResetZoom() *Window {
+	if w.impl != nil {
+		w.impl.resetZoom()
 	}
-	w.impl.resetZoom()
+	return w
+
 }
 
 func (w *Window) ZoomIn() {
@@ -382,9 +373,10 @@ func (w *Window) Zoom() {
 	w.impl.zoom()
 }
 
-func (w *Window) RenderHTML(html string) {
-	if w.impl == nil {
-		return
+func (w *Window) SetHTML(html string) *Window {
+	w.options.HTML = html
+	if w.impl != nil {
+		w.impl.setHTML(html)
 	}
-	w.impl.renderHTML(html)
+	return w
 }

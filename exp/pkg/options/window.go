@@ -27,7 +27,6 @@ type Window struct {
 	MinHeight        int
 	MaxWidth         int
 	MaxHeight        int
-	EnableDevTools   bool
 	StartState       WindowState
 	Mac              *MacWindow
 	BackgroundColour *RGBA
@@ -38,11 +37,10 @@ type Window struct {
 }
 
 var WindowDefaults = &Window{
-	Title:          "",
-	Width:          1024,
-	Height:         768,
-	URL:            "https://wails.io",
-	EnableDevTools: true,
+	Title:  "",
+	Width:  800,
+	Height: 600,
+	URL:    "",
 }
 
 type Assets struct {
@@ -50,9 +48,9 @@ type Assets struct {
 	URL string
 	// FS to use for loading assets from
 	FS fs.FS
-	// Handler is a custom handler to use for serving assets. If this is set, the `URL` and `FS` fields are ignored.
+	// Handler is a custom handler to use for serving assets. If this is set, the `SetURL` and `FS` fields are ignored.
 	Handler http.Handler
-	// Middleware is a custom middleware to use for serving assets. If this is set, the `URL` and `FS` fields are ignored.
+	// Middleware is a custom middleware to use for serving assets. If this is set, the `SetURL` and `FS` fields are ignored.
 	Middleware func(http.Handler) http.Handler
 }
 

@@ -109,12 +109,11 @@ func main() {
 	mySystray.SetIconPosition(application.NSImageLeading)
 
 	myWindow := app.NewWindowWithOptions(&options.Window{
-		Title:          "Kitchen Sink",
-		Width:          600,
-		Height:         400,
-		AlwaysOnTop:    true,
-		DisableResize:  false,
-		EnableDevTools: true,
+		Title:         "Kitchen Sink",
+		Width:         600,
+		Height:        400,
+		AlwaysOnTop:   true,
+		DisableResize: false,
 		BackgroundColour: &options.RGBA{
 			Red:   255,
 			Green: 255,
@@ -207,9 +206,8 @@ func main() {
 		myWindow2Lock.RLock()
 		myWindow.SetTitle("Wooooo")
 		myWindow.SetAlwaysOnTop(true)
-		myWindow2.EnableDevTools()
 		myWindow2.SetTitle("OMFG")
-		myWindow2.NavigateToURL("https://wails.io")
+		myWindow2.SetURL("https://wails.io")
 		myWindow.SetMinSize(600, 600)
 		myWindow.SetMaxSize(650, 650)
 		myWindow.Center()
