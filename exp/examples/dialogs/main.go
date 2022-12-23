@@ -166,7 +166,7 @@ func main() {
 			CanChooseFiles(true).
 			CanCreateDirectories(true).
 			ShowHiddenFiles(true).
-			AttachToWindow(app.GetCurrentWindow()).
+			AttachToWindow(app.CurrentWindow()).
 			PromptForSingleSelection()
 		if result != "" {
 			app.NewInfoDialog().SetMessage(result).Show()
@@ -277,7 +277,7 @@ func main() {
 	})
 	saveMenu.Add("Select File (Attach To Window)").OnClick(func(ctx *application.Context) {
 		result, _ := app.NewSaveFileDialog().
-			AttachToWindow(app.GetCurrentWindow()).
+			AttachToWindow(app.CurrentWindow()).
 			PromptForSingleSelection()
 		if result != "" {
 			app.NewInfoDialog().SetMessage(result).Show()

@@ -30,11 +30,11 @@ func main() {
 
 	// You can control the current window from the menu
 	myMenu.Add("Lock Window Resize").OnClick(func(ctx *application.Context) {
-		if app.GetCurrentWindow().Resizable() {
-			app.GetCurrentWindow().SetResizable(false)
+		if app.CurrentWindow().Resizable() {
+			app.CurrentWindow().SetResizable(false)
 			ctx.ClickedMenuItem().SetLabel("Unlock Window Resize")
 		} else {
-			app.GetCurrentWindow().SetResizable(true)
+			app.CurrentWindow().SetResizable(true)
 			ctx.ClickedMenuItem().SetLabel("Lock Window Resize")
 		}
 	})

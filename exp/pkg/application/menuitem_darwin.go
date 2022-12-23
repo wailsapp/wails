@@ -509,7 +509,7 @@ func newCloseMenuItem() *MenuItem {
 	return newMenuItem("Close").
 		SetAccelerator("CmdOrCtrl+w").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.GetCurrentWindow()
+			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.Close()
 			}
@@ -520,7 +520,7 @@ func newReloadMenuItem() *MenuItem {
 	return newMenuItem("Reload").
 		SetAccelerator("CmdOrCtrl+r").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.GetCurrentWindow()
+			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.Reload()
 			}
@@ -531,7 +531,7 @@ func newForceReloadMenuItem() *MenuItem {
 	return newMenuItem("Force Reload").
 		SetAccelerator("CmdOrCtrl+Shift+r").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.GetCurrentWindow()
+			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.ForceReload()
 			}
@@ -541,7 +541,7 @@ func newForceReloadMenuItem() *MenuItem {
 func newToggleFullscreenMenuItem() *MenuItem {
 	result := newMenuItem("Toggle Full Screen").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.GetCurrentWindow()
+			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.ToggleFullscreen()
 			}
@@ -558,7 +558,7 @@ func newToggleDevToolsMenuItem() *MenuItem {
 	return newMenuItem("Toggle Developer Tools").
 		SetAccelerator("Alt+Command+I").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.GetCurrentWindow()
+			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.ToggleDevTools()
 			}
@@ -570,7 +570,7 @@ func newResetZoomMenuItem() *MenuItem {
 	return newMenuItem("Actual Size").
 		SetAccelerator("CmdOrCtrl+0").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.GetCurrentWindow()
+			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.ResetZoom()
 			}
@@ -581,7 +581,7 @@ func newZoomInMenuItem() *MenuItem {
 	return newMenuItem("Zoom In").
 		SetAccelerator("CmdOrCtrl+plus").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.GetCurrentWindow()
+			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.ZoomIn()
 			}
@@ -592,7 +592,7 @@ func newZoomOutMenuItem() *MenuItem {
 	return newMenuItem("Zoom Out").
 		SetAccelerator("CmdOrCtrl+-").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.GetCurrentWindow()
+			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.ZoomOut()
 			}
@@ -603,7 +603,7 @@ func newMinimizeMenuItem() *MenuItem {
 	return newMenuItem("Minimize").
 		SetAccelerator("CmdOrCtrl+M").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.GetCurrentWindow()
+			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.Minimize()
 			}
@@ -613,7 +613,7 @@ func newMinimizeMenuItem() *MenuItem {
 func newZoomMenuItem() *MenuItem {
 	return newMenuItem("Zoom").
 		OnClick(func(ctx *Context) {
-			currentWindow := globalApplication.GetCurrentWindow()
+			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
 				currentWindow.Zoom()
 			}

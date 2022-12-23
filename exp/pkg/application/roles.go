@@ -140,7 +140,7 @@ func newWindowMenu() *MenuItem {
 func newHelpMenu() *MenuItem {
 	menu := NewMenu()
 	menu.Add("Learn More").OnClick(func(ctx *Context) {
-		globalApplication.GetCurrentWindow().NavigateToURL("https://wails.io")
+		globalApplication.CurrentWindow().NavigateToURL("https://wails.io")
 	})
 	subMenu := newSubMenuItem("Help")
 	subMenu.submenu = menu

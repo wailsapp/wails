@@ -245,7 +245,7 @@ func (a *App) handleMenuItemClicked(menuItemID uint) {
 	menuItem.handleClick()
 }
 
-func (a *App) GetCurrentWindow() *Window {
+func (a *App) CurrentWindow() *Window {
 	if a.impl == nil {
 		return nil
 	}
