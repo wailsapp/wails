@@ -49,6 +49,7 @@ type platformApp interface {
 	showAboutDialog(name string, description string, icon []byte)
 	setIcon(icon []byte)
 	on(id uint)
+	dispatchOnMainThread(id uint)
 }
 
 // Messages sent from javascript get routed here
@@ -366,4 +367,13 @@ func (a *App) Clipboard() *Clipboard {
 		a.clipboard = newClipboard()
 	}
 	return a.clipboard
+}
+
+func (a *App) dispatchOnMainThread(fn func()) {
+	mainThreadFunctionStoreLock.Lock()
+	id := generateFunctionStoreID()
+	mainThreadFunctionStore[id] = fn
+	mainThreadFunctionStoreLock.Unlock()
+	// Call platform specific dispatch function
+	a.impl.dispatchOnMainThread(id)
 }

@@ -314,7 +314,7 @@ type macosDialog struct {
 }
 
 func (m *macosDialog) show() {
-	DispatchOnMainThread(func() {
+	globalApplication.dispatchOnMainThread(func() {
 
 		// Mac can only have 4 buttons on a dialog
 		if len(m.dialog.buttons) > 4 {

@@ -8,23 +8,23 @@ package application
 
 #include "Cocoa/Cocoa.h"
 
-extern void dispatchCallback(unsigned int);
+extern void dispatchOnMainThreadCallback(unsigned int);
 
-static void dispatch(unsigned int id) {
+static void dispatchOnMainThread(unsigned int id) {
 	dispatch_async(dispatch_get_main_queue(), ^{
-		dispatchCallback(id);
+		dispatchOnMainThreadCallback(id);
 	});
 }
 
 */
 import "C"
 
-func platformDispatch(id uint) {
-	C.dispatch(C.uint(id))
+func (m *macosApp) dispatchOnMainThread(id uint) {
+	C.dispatchOnMainThread(C.uint(id))
 }
 
-//export dispatchCallback
-func dispatchCallback(callbackID C.uint) {
+//export dispatchOnMainThreadCallback
+func dispatchOnMainThreadCallback(callbackID C.uint) {
 	mainThreadFunctionStoreLock.RLock()
 	id := uint(callbackID)
 	fn := mainThreadFunctionStore[id]

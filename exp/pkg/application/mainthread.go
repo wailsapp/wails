@@ -19,12 +19,3 @@ func generateFunctionStoreID() uint {
 		}
 	}
 }
-
-func DispatchOnMainThread(fn func()) {
-	mainThreadFunctionStoreLock.Lock()
-	id := generateFunctionStoreID()
-	mainThreadFunctionStore[id] = fn
-	mainThreadFunctionStoreLock.Unlock()
-	// Call platform specific dispatch function
-	platformDispatch(id)
-}
