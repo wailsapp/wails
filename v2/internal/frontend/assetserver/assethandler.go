@@ -100,7 +100,7 @@ func (d *assetHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			}
 
 			if err != nil {
-				d.logError("Unable to load file '%s': %s", filename, err)
+				d.logError("Unable to handle request '%s': %s", url, err)
 				http.Error(rw, err.Error(), http.StatusInternalServerError)
 			}
 		}
@@ -129,13 +129,14 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, fi
 		return err
 	}
 
+	url := req.URL.Path
+	isDirectoryPath := url == "" || url[len(url)-1] == '/'
 	if statInfo.IsDir() {
-		url := req.URL.Path
-		if url != "" && url[len(url)-1] != '/' {
+		if !isDirectoryPath {
 			// If the URL doesn't end in a slash normally a http.redirect should be done, but that currently doesn't work on
-			// WebKit WebVies (macOS/Linux).
-			// So we handle this as a file that could not be found.
-			return os.ErrNotExist
+			// WebKit WebViews (macOS/Linux).
+			// So we handle this as a specific error
+			return fmt.Errorf("a directory has been requested without a trailing slash, please add a trailing slash to your request")
 		}
 
 		filename = path.Join(filename, indexHTML)
@@ -150,6 +151,8 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, fi
 		if err != nil {
 			return err
 		}
+	} else if isDirectoryPath {
+		return fmt.Errorf("a file has been requested with a trailing slash, please remove the trailing slash from your request")
 	}
 
 	var buf [512]byte
