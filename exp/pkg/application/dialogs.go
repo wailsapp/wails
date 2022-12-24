@@ -8,15 +8,30 @@ import (
 
 type DialogType int
 
-// TODO: Make this a map and clear it when the dialog is closed
-var dialogID uint
+var dialogMapID = make(map[uint]struct{})
 var dialogIDLock sync.RWMutex
 
 func getDialogID() uint {
 	dialogIDLock.Lock()
 	defer dialogIDLock.Unlock()
-	dialogID++
+	var dialogID uint
+	for {
+		if _, ok := dialogMapID[dialogID]; !ok {
+			dialogMapID[dialogID] = struct{}{}
+			break
+		}
+		dialogID++
+		if dialogID == 0 {
+			panic("no more dialog IDs")
+		}
+	}
 	return dialogID
+}
+
+func freeDialogID(id uint) {
+	dialogIDLock.Lock()
+	defer dialogIDLock.Unlock()
+	delete(dialogMapID, id)
 }
 
 var openFileResponses = make(map[uint]chan string)

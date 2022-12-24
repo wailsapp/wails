@@ -280,7 +280,6 @@ static void showSaveFileDialog(unsigned int dialogID,
 	});
 }
 
-
 */
 import "C"
 import (
@@ -397,7 +396,7 @@ func toCString(s string) *C.char {
 }
 
 func (m *macosOpenFileDialog) show() ([]string, error) {
-	openFileResponses[dialogID] = make(chan string)
+	openFileResponses[m.dialog.id] = make(chan string)
 	nsWindow := unsafe.Pointer(nil)
 	if m.dialog.window != nil {
 		// get NSWindow from window
@@ -446,23 +445,25 @@ func (m *macosOpenFileDialog) show() ([]string, error) {
 }
 
 //export openFileDialogCallback
-func openFileDialogCallback(id C.uint, path *C.char) {
-	// Covert the path to a string
-	filePath := C.GoString(path)
-	// put response on channel
-	channel, ok := openFileResponses[uint(id)]
+func openFileDialogCallback(cid C.uint, cpath *C.char) {
+	path := C.GoString(cpath)
+	id := uint(cid)
+	channel, ok := openFileResponses[id]
 	if ok {
-		channel <- filePath
+		channel <- path
 	} else {
 		panic("No channel found for open file dialog")
 	}
 }
 
 //export openFileDialogCallbackEnd
-func openFileDialogCallbackEnd(id C.uint) {
-	channel, ok := openFileResponses[uint(id)]
+func openFileDialogCallbackEnd(cid C.uint) {
+	id := uint(cid)
+	channel, ok := openFileResponses[id]
 	if ok {
 		close(channel)
+		delete(openFileResponses, id)
+		freeDialogID(id)
 	} else {
 		panic("No channel found for open file dialog")
 	}
@@ -479,7 +480,7 @@ func newSaveFileDialogImpl(d *SaveFileDialog) *macosSaveFileDialog {
 }
 
 func (m *macosSaveFileDialog) show() (string, error) {
-	saveFileResponses[dialogID] = make(chan string)
+	saveFileResponses[m.dialog.id] = make(chan string)
 	nsWindow := unsafe.Pointer(nil)
 	if m.dialog.window != nil {
 		// get NSWindow from window
@@ -501,13 +502,18 @@ func (m *macosSaveFileDialog) show() (string, error) {
 }
 
 //export saveFileDialogCallback
-func saveFileDialogCallback(id C.uint, path *C.char) {
+func saveFileDialogCallback(cid C.uint, cpath *C.char) {
 	// Covert the path to a string
-	filePath := C.GoString(path)
+	path := C.GoString(cpath)
+	id := uint(cid)
 	// put response on channel
-	channel, ok := saveFileResponses[uint(id)]
+	channel, ok := saveFileResponses[id]
 	if ok {
-		channel <- filePath
+		channel <- path
+		close(channel)
+		delete(saveFileResponses, id)
+		freeDialogID(id)
+
 	} else {
 		panic("No channel found for save file dialog")
 	}
