@@ -48,6 +48,7 @@ type platformApp interface {
 	getCurrentWindowID() uint
 	showAboutDialog(name string, description string, icon []byte)
 	setIcon(icon []byte)
+	on(id uint)
 }
 
 // Messages sent from javascript get routed here
@@ -59,8 +60,9 @@ type windowMessage struct {
 var windowMessageBuffer = make(chan *windowMessage)
 
 type App struct {
-	options                   *options.Application
-	applicationEventListeners map[uint][]func()
+	options                       *options.Application
+	applicationEventListeners     map[uint][]func()
+	applicationEventListenersLock sync.RWMutex
 
 	// Windows
 	windows           map[uint]*Window
@@ -102,7 +104,12 @@ func (a *App) getSystemTrayID() uint {
 }
 func (a *App) On(eventType events.ApplicationEventType, callback func()) {
 	eventID := uint(eventType)
+	a.applicationEventListenersLock.Lock()
+	defer a.applicationEventListenersLock.Unlock()
 	a.applicationEventListeners[eventID] = append(a.applicationEventListeners[eventID], callback)
+	if a.impl != nil {
+		a.impl.on(eventID)
+	}
 }
 func (a *App) NewWindow() *Window {
 	return a.NewWindowWithOptions(nil)
@@ -196,13 +203,17 @@ func (a *App) Run() error {
 	a.impl.setApplicationMenu(a.ApplicationMenu)
 
 	// set the application icon
-	a.impl.setIcon(a.icon)
+	if a.icon != nil {
+		a.impl.setIcon(a.icon)
+	}
 
 	return a.impl.run()
 }
 
 func (a *App) handleApplicationEvent(event uint) {
+	a.applicationEventListenersLock.RLock()
 	listeners, ok := a.applicationEventListeners[event]
+	a.applicationEventListenersLock.RUnlock()
 	if !ok {
 		return
 	}

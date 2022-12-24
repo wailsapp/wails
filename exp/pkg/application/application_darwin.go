@@ -12,6 +12,8 @@ package application
 #include "window_delegate.h"
 #include <stdlib.h>
 
+extern void registerListener(unsigned int event);
+
 #import <Cocoa/Cocoa.h>
 
 static AppDelegate *appDelegate = nil;
@@ -119,6 +121,10 @@ type macosApp struct {
 	parent          *App
 }
 
+func (m *macosApp) on(eventID uint) {
+	C.registerListener(C.uint(eventID))
+}
+
 func (m *macosApp) setIcon(icon []byte) {
 	C.setApplicationIcon(unsafe.Pointer(&icon[0]), C.int(len(icon)))
 }
@@ -146,12 +152,17 @@ func (m *macosApp) setApplicationMenu(menu *Menu) {
 }
 
 func (m *macosApp) run() error {
+	// Add a hook to the ApplicationDidFinishLaunching event
 	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func() {
 		if m.parent.options != nil && m.parent.options.Mac != nil {
 			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
 		}
 		C.activateIgnoringOtherApps()
 	})
+	// setup event listeners
+	for eventID := range m.parent.applicationEventListeners {
+		m.on(eventID)
+	}
 	C.run()
 	return nil
 }

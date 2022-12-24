@@ -34,6 +34,8 @@ type Window struct {
 	HTML             string
 	JS               string
 	CSS              string
+	X                int
+	Y                int
 }
 
 var WindowDefaults = &Window{

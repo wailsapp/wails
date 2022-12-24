@@ -5,15 +5,19 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/wailsapp/wails/exp/pkg/options"
+	"github.com/wailsapp/wails/exp/pkg/events"
 
 	"github.com/wailsapp/wails/exp/pkg/application"
+	"github.com/wailsapp/wails/exp/pkg/options"
 )
 
 func main() {
 	app := application.New()
 	app.SetName("Window Demo")
 	app.SetDescription("A demo of the windowing capabilities")
+	app.On(events.Mac.ApplicationDidFinishLaunching, func() {
+		log.Println("ApplicationDidFinishLaunching")
+	})
 
 	// Create a custom menu
 	menu := app.NewMenu()
@@ -22,7 +26,7 @@ func main() {
 	windowCounter := 1
 
 	// Let's make a "Demo" menu
-	myMenu := menu.AddSubmenu("Window")
+	myMenu := menu.AddSubmenu("New")
 	myMenu.Add("New Blank Window").OnClick(func(ctx *application.Context) {
 		app.NewWindow().SetTitle("Window " + strconv.Itoa(windowCounter)).Run()
 		windowCounter++
@@ -48,8 +52,11 @@ func main() {
 	})
 
 	// Disabled menu item
-	myMenu.Add("Not Enabled").SetEnabled(false)
-
+	adjustMenu := menu.AddSubmenu("Adjust")
+	adjustMenu.Add("Set Position (0,0)").OnClick(func(ctx *application.Context) {
+		app.CurrentWindow().SetPosition(0, 0)
+		windowCounter++
+	})
 	app.SetMenu(menu)
 	err := app.Run()
 

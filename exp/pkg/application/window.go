@@ -8,42 +8,46 @@ import (
 	"github.com/wailsapp/wails/exp/pkg/options"
 )
 
-type windowImpl interface {
-	setTitle(title string)
-	setSize(width, height int)
-	setAlwaysOnTop(alwaysOnTop bool)
-	setURL(url string)
-	setResizable(resizable bool)
-	setMinSize(width, height int)
-	setMaxSize(width, height int)
-	execJS(js string)
-	setMaximised()
-	setMinimised()
-	setFullscreen()
-	isMinimised() bool
-	isMaximised() bool
-	isFullscreen() bool
-	restore()
-	setBackgroundColour(color *options.RGBA)
-	run()
-	center()
-	size() (int, int)
-	width() int
-	height() int
-	position() (int, int)
-	destroy()
-	reload()
-	forceReload()
-	toggleFullscreen()
-	toggleDevTools()
-	resetZoom()
-	zoomIn()
-	zoomOut()
-	close()
-	zoom()
-	minimize()
-	setHTML(html string)
-}
+type (
+	windowImpl interface {
+		setTitle(title string)
+		setSize(width, height int)
+		setAlwaysOnTop(alwaysOnTop bool)
+		setURL(url string)
+		setResizable(resizable bool)
+		setMinSize(width, height int)
+		setMaxSize(width, height int)
+		execJS(js string)
+		setMaximised()
+		setMinimised()
+		setFullscreen()
+		isMinimised() bool
+		isMaximised() bool
+		isFullscreen() bool
+		restore()
+		setBackgroundColour(color *options.RGBA)
+		run()
+		center()
+		size() (int, int)
+		width() int
+		height() int
+		position() (int, int)
+		destroy()
+		reload()
+		forceReload()
+		toggleFullscreen()
+		toggleDevTools()
+		resetZoom()
+		zoomIn()
+		zoomOut()
+		close()
+		zoom()
+		minimize()
+		setHTML(html string)
+		setPosition(x int, y int)
+		on(eventID uint)
+	}
+)
 
 type Window struct {
 	options  *options.Window
@@ -260,8 +264,11 @@ func (w *Window) Center() {
 func (w *Window) On(eventType events.WindowEventType, callback func()) {
 	eventID := uint(eventType)
 	w.eventListenersLock.Lock()
+	defer w.eventListenersLock.Unlock()
 	w.eventListeners[eventID] = append(w.eventListeners[eventID], callback)
-	w.eventListenersLock.Unlock()
+	if w.impl != nil {
+		w.impl.on(eventID)
+	}
 }
 
 func (w *Window) handleWindowEvent(id uint) {
@@ -377,6 +384,15 @@ func (w *Window) SetHTML(html string) *Window {
 	w.options.HTML = html
 	if w.impl != nil {
 		w.impl.setHTML(html)
+	}
+	return w
+}
+
+func (w *Window) SetPosition(x, y int) *Window {
+	w.options.X = x
+	w.options.Y = y
+	if w.impl != nil {
+		w.impl.setPosition(x, y)
 	}
 	return w
 }

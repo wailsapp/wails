@@ -12,6 +12,7 @@ package application
 #include "Cocoa/Cocoa.h"
 #import <WebKit/WebKit.h>
 
+extern void registerListener(unsigned int event);
 
 // Create a new Window
 void* windowNew(unsigned int id, int width, int height) {
@@ -249,6 +250,14 @@ void windowZoomOut(void* nsWindow) {
 		} else {
 			[delegate.webView setMagnification:1.0];
 		}
+	});
+}
+
+// set the window position
+void windowSetPosition(void* nsWindow, int x, int y) {
+	// Set window position on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)nsWindow setFrameOrigin:NSMakePoint(x, y)];
 	});
 }
 
@@ -651,6 +660,10 @@ type macosWindow struct {
 	parent   *Window
 }
 
+func (w *macosWindow) on(eventID uint) {
+	C.registerListener(C.uint(eventID))
+}
+
 func (w *macosWindow) zoom() {
 	C.windowZoom(w.nsWindow)
 }
@@ -807,6 +820,10 @@ func (w *macosWindow) size() (int, int) {
 	return int(width), int(height)
 }
 
+func (w *macosWindow) setPosition(x, y int) {
+	C.windowSetPosition(w.nsWindow, C.int(x), C.int(y))
+}
+
 func (w *macosWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
@@ -831,6 +848,9 @@ func (w *macosWindow) height() int {
 }
 
 func (w *macosWindow) run() {
+	for eventId := range w.parent.eventListeners {
+		w.on(eventId)
+	}
 	DispatchOnMainThread(func() {
 		w.nsWindow = C.windowNew(C.uint(w.parent.id), C.int(w.parent.options.Width), C.int(w.parent.options.Height))
 		w.setTitle(w.parent.options.Title)

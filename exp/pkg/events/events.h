@@ -127,5 +127,7 @@ extern void processWindowEvent(unsigned int, unsigned int);
 #define EventWebViewDidFinishNavigation 118
 #define EventWebViewDidCommitNavigation 119
 
+#define MAX_EVENTS 120
+
 
 #endif

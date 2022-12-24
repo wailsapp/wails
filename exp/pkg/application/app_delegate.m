@@ -1,6 +1,10 @@
 //go:build darwin
+
 #import "app_delegate.h"
 #import "../events/events.h"
+
+extern bool hasListeners(unsigned int);
+
 @implementation AppDelegate
 - (void)dealloc
 {
@@ -9,83 +13,123 @@
 
 // GENERATED EVENTS START
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationDidBecomeActive);
+    if( hasListeners(EventApplicationDidBecomeActive) ) {
+        processApplicationEvent(EventApplicationDidBecomeActive);
+    }
 }
 
 - (void)applicationDidChangeBackingProperties:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationDidChangeBackingProperties);
+    if( hasListeners(EventApplicationDidChangeBackingProperties) ) {
+        processApplicationEvent(EventApplicationDidChangeBackingProperties);
+    }
 }
 
 - (void)applicationDidChangeEffectiveAppearance:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationDidChangeEffectiveAppearance);
+    if( hasListeners(EventApplicationDidChangeEffectiveAppearance) ) {
+        processApplicationEvent(EventApplicationDidChangeEffectiveAppearance);
+    }
 }
 
 - (void)applicationDidChangeIcon:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationDidChangeIcon);
+    if( hasListeners(EventApplicationDidChangeIcon) ) {
+        processApplicationEvent(EventApplicationDidChangeIcon);
+    }
 }
 
 - (void)applicationDidChangeOcclusionState:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationDidChangeOcclusionState);
+    if( hasListeners(EventApplicationDidChangeOcclusionState) ) {
+        processApplicationEvent(EventApplicationDidChangeOcclusionState);
+    }
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationDidChangeScreenParameters);
+    if( hasListeners(EventApplicationDidChangeScreenParameters) ) {
+        processApplicationEvent(EventApplicationDidChangeScreenParameters);
+    }
 }
 
 - (void)applicationDidChangeStatusBarFrame:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationDidChangeStatusBarFrame);
+    if( hasListeners(EventApplicationDidChangeStatusBarFrame) ) {
+        processApplicationEvent(EventApplicationDidChangeStatusBarFrame);
+    }
 }
 
 - (void)applicationDidChangeStatusBarOrientation:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationDidChangeStatusBarOrientation);
+    if( hasListeners(EventApplicationDidChangeStatusBarOrientation) ) {
+        processApplicationEvent(EventApplicationDidChangeStatusBarOrientation);
+    }
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationDidFinishLaunching);
+    if( hasListeners(EventApplicationDidFinishLaunching) ) {
+        processApplicationEvent(EventApplicationDidFinishLaunching);
+    }
 }
 
 - (void)applicationDidHide:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationDidHide);
+    if( hasListeners(EventApplicationDidHide) ) {
+        processApplicationEvent(EventApplicationDidHide);
+    }
 }
 
 - (void)applicationDidResignActive:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationDidResignActive);
+    if( hasListeners(EventApplicationDidResignActive) ) {
+        processApplicationEvent(EventApplicationDidResignActive);
+    }
 }
 
 - (void)applicationDidUnhide:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationDidUnhide);
+    if( hasListeners(EventApplicationDidUnhide) ) {
+        processApplicationEvent(EventApplicationDidUnhide);
+    }
 }
 
 - (void)applicationDidUpdate:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationDidUpdate);
+    if( hasListeners(EventApplicationDidUpdate) ) {
+        processApplicationEvent(EventApplicationDidUpdate);
+    }
 }
 
 - (void)applicationWillBecomeActive:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationWillBecomeActive);
+    if( hasListeners(EventApplicationWillBecomeActive) ) {
+        processApplicationEvent(EventApplicationWillBecomeActive);
+    }
 }
 
 - (void)applicationWillFinishLaunching:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationWillFinishLaunching);
+    if( hasListeners(EventApplicationWillFinishLaunching) ) {
+        processApplicationEvent(EventApplicationWillFinishLaunching);
+    }
 }
 
 - (void)applicationWillHide:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationWillHide);
+    if( hasListeners(EventApplicationWillHide) ) {
+        processApplicationEvent(EventApplicationWillHide);
+    }
 }
 
 - (void)applicationWillResignActive:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationWillResignActive);
+    if( hasListeners(EventApplicationWillResignActive) ) {
+        processApplicationEvent(EventApplicationWillResignActive);
+    }
 }
 
 - (void)applicationWillTerminate:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationWillTerminate);
+    if( hasListeners(EventApplicationWillTerminate) ) {
+        processApplicationEvent(EventApplicationWillTerminate);
+    }
 }
 
 - (void)applicationWillUnhide:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationWillUnhide);
+    if( hasListeners(EventApplicationWillUnhide) ) {
+        processApplicationEvent(EventApplicationWillUnhide);
+    }
 }
 
 - (void)applicationWillUpdate:(NSNotification *)notification {
-    processApplicationEvent(EventApplicationWillUpdate);
+    if( hasListeners(EventApplicationWillUpdate) ) {
+        processApplicationEvent(EventApplicationWillUpdate);
+    }
 }
 
 // GENERATED EVENTS END
