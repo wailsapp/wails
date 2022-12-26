@@ -18,10 +18,6 @@ type (
 		setMinSize(width, height int)
 		setMaxSize(width, height int)
 		execJS(js string)
-		setFullscreen()
-		isMinimised() bool
-		isMaximised() bool
-		isFullscreen() bool
 		restore()
 		setBackgroundColour(color *options.RGBA)
 		run()
@@ -45,9 +41,15 @@ type (
 		setPosition(x int, y int)
 		on(eventID uint)
 		minimise()
-		maximise()
 		unminimise()
+		maximise()
 		unmaximise()
+		fullscreen()
+		unfullscreen()
+		isMinimised() bool
+		isMaximised() bool
+		isFullscreen() bool
+		disableSizeConstraints()
 	}
 )
 
@@ -96,6 +98,10 @@ func (w *Window) SetTitle(title string) *Window {
 }
 
 func (w *Window) SetSize(width, height int) *Window {
+	// Don't set size if fullscreen
+	if w.IsFullscreen() {
+		return w
+	}
 	w.options.Width = width
 	w.options.Height = height
 	if w.impl != nil {
@@ -144,31 +150,53 @@ func (w *Window) Resizable() bool {
 
 func (w *Window) SetMinSize(minWidth, minHeight int) *Window {
 	w.options.MinWidth = minWidth
-	if w.options.Width < minWidth {
-		w.options.Width = minWidth
-	}
 	w.options.MinHeight = minHeight
-	if w.options.Height < minHeight {
-		w.options.Height = minHeight
+
+	currentWidth, currentHeight := w.Size()
+	newWidth, newHeight := currentWidth, currentHeight
+
+	var newSize bool
+	if minHeight != 0 && currentHeight < minHeight {
+		newHeight = minHeight
+		w.options.Height = newHeight
+		newSize = true
+	}
+	if minWidth != 0 && currentWidth < minWidth {
+		newWidth = minWidth
+		w.options.Width = newWidth
+		newSize = true
 	}
 	if w.impl != nil {
-		w.impl.setSize(w.options.Width, w.options.Height)
+		if newSize {
+			w.impl.setSize(newWidth, newHeight)
+		}
 		w.impl.setMinSize(minWidth, minHeight)
 	}
 	return w
 }
 
 func (w *Window) SetMaxSize(maxWidth, maxHeight int) *Window {
-	w.options.MinWidth = maxWidth
-	if w.options.Width > maxWidth {
-		w.options.Width = maxWidth
-	}
-	w.options.MinHeight = maxHeight
-	if w.options.Height > maxHeight {
+	w.options.MaxWidth = maxWidth
+	w.options.MaxHeight = maxHeight
+
+	currentWidth, currentHeight := w.Size()
+	newWidth, newHeight := currentWidth, currentHeight
+
+	var newSize bool
+	if maxHeight != 0 && currentHeight > maxHeight {
+		newHeight = maxHeight
 		w.options.Height = maxHeight
+		newSize = true
+	}
+	if maxWidth != 0 && currentWidth > maxWidth {
+		newWidth = maxWidth
+		w.options.Width = maxWidth
+		newSize = true
 	}
 	if w.impl != nil {
-		w.impl.setSize(w.options.Width, w.options.Height)
+		if newSize {
+			w.impl.setSize(newWidth, newHeight)
+		}
 		w.impl.setMaxSize(maxWidth, maxHeight)
 	}
 	return w
@@ -181,13 +209,14 @@ func (w *Window) ExecJS(js string) {
 	w.impl.execJS(js)
 }
 
-func (w *Window) SetFullscreen() *Window {
+func (w *Window) Fullscreen() *Window {
 	if w.impl == nil {
 		w.options.StartState = options.WindowStateFullscreen
 		return w
 	}
 	if !w.IsFullscreen() {
-		w.impl.setFullscreen()
+		w.disableSizeConstraints()
+		w.impl.fullscreen()
 	}
 	return w
 }
@@ -208,8 +237,8 @@ func (w *Window) IsMaximised() bool {
 	return w.impl.isMaximised()
 }
 
-// Size returns the current size of the window
-func (w *Window) Size() (int, int) {
+// Size returns the size of the window
+func (w *Window) Size() (width int, height int) {
 	if w.impl == nil {
 		return 0, 0
 	}
@@ -407,15 +436,53 @@ func (w *Window) Maximise() *Window {
 	return w
 }
 
+func (w *Window) UnMinimise() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.unminimise()
+}
+
+func (w *Window) UnMaximise() {
+	if w.impl == nil {
+		return
+	}
+	w.enableConstraints()
+	w.impl.unmaximise()
+}
+
+func (w *Window) UnFullscreen() {
+	if w.impl == nil {
+		return
+	}
+	w.enableConstraints()
+	w.impl.unfullscreen()
+}
+
 func (w *Window) Restore() {
 	if w.impl == nil {
 		return
 	}
 	if w.IsMinimised() {
-		w.impl.unminimise()
+		w.UnMinimise()
 	} else if w.IsMaximised() {
-		w.impl.unmaximise()
+		w.UnMaximise()
 	} else if w.IsFullscreen() {
-		w.impl.toggleFullscreen()
+		w.UnFullscreen()
 	}
+}
+
+func (w *Window) disableSizeConstraints() {
+	if w.impl == nil {
+		return
+	}
+	w.impl.disableSizeConstraints()
+}
+
+func (w *Window) enableConstraints() {
+	if w.impl == nil {
+		return
+	}
+	w.SetMinSize(w.options.MinWidth, w.options.MinHeight)
+	w.SetMaxSize(w.options.MaxWidth, w.options.MaxHeight)
 }

@@ -117,13 +117,11 @@ void windowSetTitle(void* nsWindow, char* title) {
 void windowSetSize(void* nsWindow, int width, int height) {
 	// Set window size on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[(NSWindow*)nsWindow setContentSize:NSMakeSize(width, height)];
-		NSRect frame = [(NSWindow*)nsWindow frame];
-		frame.size.width = width;
-		frame.size.height = height;
-		[(NSWindow*)nsWindow setFrame:frame display:YES animate:YES];
+		NSWindow* window = (NSWindow*)nsWindow;
+  		NSSize contentSize = [window contentRectForFrameRect:NSMakeRect(0, 0, width, height)].size;
+  		[window setContentSize:contentSize];
+  		[window setFrame:NSMakeRect(window.frame.origin.x, window.frame.origin.y, width, height) display:YES animate:YES];
 	});
-
 }
 
 // Show the NSWindow
@@ -178,7 +176,11 @@ void windowSetResizable(void* nsWindow, bool resizable) {
 void windowSetMinSize(void* nsWindow, int width, int height) {
 	// Set window min size on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[(NSWindow*)nsWindow setContentMinSize:NSMakeSize(width, height)];
+		NSWindow* window = (NSWindow*)nsWindow;
+  		NSSize contentSize = [window contentRectForFrameRect:NSMakeRect(0, 0, width, height)].size;
+  		[window setContentMinSize:contentSize];
+		NSSize size = { width, height };
+  		[window setMinSize:size];
 	});
 }
 
@@ -186,22 +188,13 @@ void windowSetMinSize(void* nsWindow, int width, int height) {
 void windowSetMaxSize(void* nsWindow, int width, int height) {
 	// Set window max size on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		[(NSWindow*)nsWindow setContentMaxSize:NSMakeSize(width, height)];
-	});
-}
-
-// Reset NSWindow min and max size
-void windowResetMinSize(void* nsWindow) {
-	// Reset window min size on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[(NSWindow*)nsWindow setContentMinSize:NSMakeSize(0, 0)];
-	});
-}
-
-void windowResetMaxSize(void* nsWindow) {
-	// Reset window max size on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[(NSWindow*)nsWindow setContentMaxSize:NSMakeSize(0, 0)];
+		NSSize size = { FLT_MAX, FLT_MAX };
+    	size.width = width > 0 ? width : FLT_MAX;
+    	size.height = height > 0 ? height : FLT_MAX;
+		NSWindow* window = (NSWindow*)nsWindow;
+  		NSSize contentSize = [window contentRectForFrameRect:NSMakeRect(0, 0, size.width, size.height)].size;
+  		[window setContentMaxSize:contentSize];
+  		[window setMaxSize:size];
 	});
 }
 
@@ -332,6 +325,18 @@ void windowSetBackgroundColour(void* nsWindow, int r, int g, int b, int alpha) {
 	});
 }
 
+bool windowIsMaximised(void* nsWindow) {
+	return [(NSWindow*)nsWindow isZoomed];
+}
+
+bool windowIsFullscreen(void* nsWindow) {
+	return [(NSWindow*)nsWindow styleMask] & NSWindowStyleMaskFullScreen;
+}
+
+bool windowIsMinimised(void* nsWindow) {
+	return [(NSWindow*)nsWindow isMiniaturized];
+}
+
 // toggle fullscreen
 void windowToggleFullscreen(void* nsWindow) {
 	// Toggle fullscreen on main thread
@@ -341,8 +346,17 @@ void windowToggleFullscreen(void* nsWindow) {
 }
 
 // Set Window fullscreen
-void windowSetFullscreen(void* nsWindow) {
-	// Set window fullscreen on main thread
+void windowFullscreen(void* nsWindow) {
+	if( windowIsFullscreen(nsWindow) ) {
+		return;
+	}
+	windowToggleFullscreen(nsWindow);
+}
+
+void windowUnFullscreen(void* nsWindow) {
+	if( !windowIsFullscreen(nsWindow) ) {
+		return;
+	}
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[(NSWindow*)nsWindow toggleFullScreen:nil];
 	});
@@ -365,18 +379,6 @@ void windowRestore(void* nsWindow) {
 			[(NSWindow*)nsWindow deminiaturize:nil];
 		}
 	});
-}
-
-bool windowIsMaximised(void* nsWindow) {
-	return [(NSWindow*)nsWindow isZoomed];
-}
-
-bool windowIsFullscreen(void* nsWindow) {
-	return [(NSWindow*)nsWindow styleMask] & NSWindowStyleMaskFullScreen;
-}
-
-bool windowIsMinimised(void* nsWindow) {
-	return [(NSWindow*)nsWindow isMiniaturized];
 }
 
 // Set the titlebar style
@@ -663,6 +665,16 @@ static void windowUnmaximise(void *window) {
 	});
 }
 
+static void windowDisableSizeConstraints(void *window) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// get main window
+		NSWindow* nsWindow = (NSWindow*)window;
+		// disable size constraints
+		[nsWindow setContentMinSize:CGSizeZero];
+		[nsWindow setContentMaxSize:CGSizeZero];
+	});
+}
+
 */
 import "C"
 import (
@@ -679,6 +691,18 @@ var showDevTools = func(window unsafe.Pointer) {}
 type macosWindow struct {
 	nsWindow unsafe.Pointer
 	parent   *Window
+}
+
+func (w *macosWindow) disableSizeConstraints() {
+	C.windowDisableSizeConstraints(w.nsWindow)
+}
+
+func (w *macosWindow) unfullscreen() {
+	C.windowUnFullscreen(w.nsWindow)
+}
+
+func (w *macosWindow) fullscreen() {
+	C.windowFullscreen(w.nsWindow)
 }
 
 func (w *macosWindow) unminimise() {
@@ -784,10 +808,6 @@ func (w *macosWindow) syncMainThreadReturningBool(fn func() bool) bool {
 func (w *macosWindow) restore() {
 	// restore window to normal size
 	C.windowRestore(w.nsWindow)
-}
-
-func (w *macosWindow) setFullscreen() {
-	C.windowSetFullscreen(w.nsWindow)
 }
 
 func (w *macosWindow) restoreWindow() {
@@ -931,7 +951,7 @@ func (w *macosWindow) run() {
 		case options.WindowStateMinimised:
 			w.minimise()
 		case options.WindowStateFullscreen:
-			w.setFullscreen()
+			w.fullscreen()
 
 		}
 		C.windowCenter(w.nsWindow)
