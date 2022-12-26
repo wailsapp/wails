@@ -104,6 +104,33 @@ func (w *Window) SetSize(width, height int) *Window {
 	}
 	w.options.Width = width
 	w.options.Height = height
+
+	var newMaxWidth = w.options.MaxWidth
+	var newMaxHeight = w.options.MaxHeight
+	if width > w.options.MaxWidth && w.options.MaxWidth != 0 {
+		newMaxWidth = width
+	}
+	if height > w.options.MaxHeight && w.options.MaxHeight != 0 {
+		newMaxHeight = height
+	}
+
+	if newMaxWidth != 0 || newMaxHeight != 0 {
+		w.SetMaxSize(newMaxWidth, newMaxHeight)
+	}
+
+	var newMinWidth = w.options.MinWidth
+	var newMinHeight = w.options.MinHeight
+	if width < w.options.MinWidth && w.options.MinWidth != 0 {
+		newMinWidth = width
+	}
+	if height < w.options.MinHeight && w.options.MinHeight != 0 {
+		newMinHeight = height
+	}
+
+	if newMinWidth != 0 || newMinHeight != 0 {
+		w.SetMinSize(newMinWidth, newMinHeight)
+	}
+
 	if w.impl != nil {
 		w.impl.setSize(width, height)
 	}
