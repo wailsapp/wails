@@ -121,7 +121,7 @@ void windowSetSize(void* nsWindow, int width, int height) {
 		NSRect frame = [(NSWindow*)nsWindow frame];
 		frame.size.width = width;
 		frame.size.height = height;
-		[(NSWindow*)nsWindow setFrame:frame display:YES];
+		[(NSWindow*)nsWindow setFrame:frame display:YES animate:YES];
 	});
 
 }
@@ -332,14 +332,6 @@ void windowSetBackgroundColour(void* nsWindow, int r, int g, int b, int alpha) {
 	});
 }
 
-// Set Window maximised
-void windowSetMaximised(void* nsWindow) {
-	// Set window maximized on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[(NSWindow*)nsWindow zoom:nil];
-	});
-}
-
 // toggle fullscreen
 void windowToggleFullscreen(void* nsWindow) {
 	// Toggle fullscreen on main thread
@@ -353,18 +345,6 @@ void windowSetFullscreen(void* nsWindow) {
 	// Set window fullscreen on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[(NSWindow*)nsWindow toggleFullScreen:nil];
-	});
-}
-
-// Set Window Minimised
-void windowSetMinimised(void* nsWindow) {
-	// Set window minimised on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// Get screen that the window is on
-		NSScreen* screen = [(NSWindow*)nsWindow screen];
-		NSRect screenRect = [screen frame];
-		// Set window to top left corner
-		[(NSWindow*)nsWindow setFrame:NSMakeRect(0, screenRect.size.height, 0, 0) display:YES];
 	});
 }
 
@@ -610,14 +590,6 @@ static void windowMiniaturize(void *window) {
 	});
 }
 
-// zoom maximizes the window to the screen dimensions
-static void windowMaximize(void *window) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// maximize window
-		[(NSWindow*)window zoom:nil];
-	});
-}
-
 // webviewRenderHTML renders the given HTML
 static void windowRenderHTML(void *window, const char *html) {
 	dispatch_async(dispatch_get_main_queue(), ^{
@@ -642,6 +614,55 @@ static void windowInjectCSS(void *window, const char *css) {
 	});
 }
 
+static void windowMinimise(void *window) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// minimize window
+		[(NSWindow*)window miniaturize:nil];
+	});
+}
+
+// zoom maximizes the window to the screen dimensions
+static void windowMaximise(void *window) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// maximize window
+		[(NSWindow*)window zoom:nil];
+	});
+}
+
+static bool isFullScreen(void *window) {
+	// get main window
+	NSWindow* nsWindow = (NSWindow*)window;
+    long mask = [nsWindow styleMask];
+    return (mask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen;
+}
+
+// windowSetFullScreen
+static void windowSetFullScreen(void *window, bool fullscreen) {
+	if (isFullScreen(window)) {
+		return;
+	}
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSWindow* nsWindow = (NSWindow*)window;
+		[nsWindow toggleFullScreen:nil];
+	});
+}
+
+// windowUnminimise
+static void windowUnminimise(void *window) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// unminimize window
+		[(NSWindow*)window deminiaturize:nil];
+	});
+}
+
+// windowUnmaximise
+static void windowUnmaximise(void *window) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// unmaximize window
+		[(NSWindow*)window zoom:nil];
+	});
+}
+
 */
 import "C"
 import (
@@ -658,6 +679,22 @@ var showDevTools = func(window unsafe.Pointer) {}
 type macosWindow struct {
 	nsWindow unsafe.Pointer
 	parent   *Window
+}
+
+func (w *macosWindow) unminimise() {
+	C.windowUnminimise(w.nsWindow)
+}
+
+func (w *macosWindow) unmaximise() {
+	C.windowUnmaximise(w.nsWindow)
+}
+
+func (w *macosWindow) maximise() {
+	C.windowMaximise(w.nsWindow)
+}
+
+func (w *macosWindow) minimise() {
+	C.windowMinimise(w.nsWindow)
 }
 
 func (w *macosWindow) on(eventID uint) {
@@ -716,19 +753,19 @@ func (w *macosWindow) center() {
 
 func (w *macosWindow) isMinimised() bool {
 	return w.syncMainThreadReturningBool(func() bool {
-		return C.windowIsMinimised(w.nsWindow) == C.bool(true)
+		return bool(C.windowIsMinimised(w.nsWindow))
 	})
 }
 
 func (w *macosWindow) isMaximised() bool {
 	return w.syncMainThreadReturningBool(func() bool {
-		return C.windowIsMaximised(w.nsWindow) == C.bool(true)
+		return bool(C.windowIsMaximised(w.nsWindow))
 	})
 }
 
 func (w *macosWindow) isFullscreen() bool {
 	return w.syncMainThreadReturningBool(func() bool {
-		return C.windowIsFullscreen(w.nsWindow) == C.bool(true)
+		return bool(C.windowIsFullscreen(w.nsWindow))
 	})
 }
 
@@ -747,14 +784,6 @@ func (w *macosWindow) syncMainThreadReturningBool(fn func() bool) bool {
 func (w *macosWindow) restore() {
 	// restore window to normal size
 	C.windowRestore(w.nsWindow)
-}
-
-func (w *macosWindow) setMaximised() {
-	C.windowSetMaximised(w.nsWindow)
-}
-
-func (w *macosWindow) setMinimised() {
-	C.windowSetMinimised(w.nsWindow)
 }
 
 func (w *macosWindow) setFullscreen() {
@@ -898,9 +927,9 @@ func (w *macosWindow) run() {
 
 		switch w.parent.options.StartState {
 		case options.WindowStateMaximised:
-			w.setMaximised()
+			w.maximise()
 		case options.WindowStateMinimised:
-			w.setMinimised()
+			w.minimise()
 		case options.WindowStateFullscreen:
 			w.setFullscreen()
 

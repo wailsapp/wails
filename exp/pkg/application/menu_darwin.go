@@ -24,6 +24,7 @@ void* createNSMenu(char* label) {
 		menu.title = [NSString stringWithUTF8String:label];
 		free(label);
 	}
+	[menu setAutoenablesItems:NO];
 	return (void*)menu;
 }
 

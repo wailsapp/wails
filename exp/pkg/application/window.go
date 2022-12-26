@@ -18,8 +18,6 @@ type (
 		setMinSize(width, height int)
 		setMaxSize(width, height int)
 		execJS(js string)
-		setMaximised()
-		setMinimised()
 		setFullscreen()
 		isMinimised() bool
 		isMaximised() bool
@@ -46,6 +44,10 @@ type (
 		setHTML(html string)
 		setPosition(x int, y int)
 		on(eventID uint)
+		minimise()
+		maximise()
+		unminimise()
+		unmaximise()
 	}
 )
 
@@ -179,26 +181,12 @@ func (w *Window) ExecJS(js string) {
 	w.impl.execJS(js)
 }
 
-func (w *Window) SetMaximized() *Window {
-	w.options.StartState = options.WindowStateMaximised
-	if w.impl != nil {
-		w.impl.setMaximised()
-	}
-	return w
-}
-
-// Set Minimized
-func (w *Window) SetMinimized() *Window {
-	w.options.StartState = options.WindowStateMinimised
-	if w.impl == nil {
-		w.impl.setMinimised()
-	}
-	return w
-}
-
 func (w *Window) SetFullscreen() *Window {
-	w.options.StartState = options.WindowStateFullscreen
 	if w.impl == nil {
+		w.options.StartState = options.WindowStateFullscreen
+		return w
+	}
+	if !w.IsFullscreen() {
 		w.impl.setFullscreen()
 	}
 	return w
@@ -395,4 +383,39 @@ func (w *Window) SetPosition(x, y int) *Window {
 		w.impl.setPosition(x, y)
 	}
 	return w
+}
+
+func (w *Window) Minimise() *Window {
+	if w.impl == nil {
+		w.options.StartState = options.WindowStateMinimised
+		return w
+	}
+	if !w.IsMinimised() {
+		w.impl.minimise()
+	}
+	return w
+}
+
+func (w *Window) Maximise() *Window {
+	if w.impl == nil {
+		w.options.StartState = options.WindowStateMaximised
+		return w
+	}
+	if !w.IsMaximised() {
+		w.impl.maximise()
+	}
+	return w
+}
+
+func (w *Window) Restore() {
+	if w.impl == nil {
+		return
+	}
+	if w.IsMinimised() {
+		w.impl.unminimise()
+	} else if w.IsMaximised() {
+		w.impl.unmaximise()
+	} else if w.IsFullscreen() {
+		w.impl.toggleFullscreen()
+	}
 }
