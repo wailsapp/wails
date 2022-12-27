@@ -44,7 +44,7 @@ func main() {
 				SetTitle("Window "+strconv.Itoa(windowCounter)).
 				SetPosition(rand.Intn(1000), rand.Intn(800)).
 				SetURL("https://wails.io").
-				Run()
+				Show()
 			windowCounter++
 		})
 
@@ -71,6 +71,13 @@ func main() {
 			w.SetMaxSize(600, 600)
 		})
 	})
+	sizeMenu.Add("Get Current Window Size").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.Window) {
+			width, height := w.Size()
+			app.NewInfoDialog().SetTitle("Current Window Size").SetMessage("Width: " + strconv.Itoa(width) + " Height: " + strconv.Itoa(height)).Show()
+		})
+	})
+
 	sizeMenu.Add("Reset Min Size").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.Window) {
 			w.SetMinSize(0, 0)
@@ -94,6 +101,14 @@ func main() {
 			w.SetPosition(rand.Intn(1000), rand.Intn(800))
 		})
 	})
+
+	positionMenu.Add("Get Position").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.Window) {
+			x, y := w.Position()
+			app.NewInfoDialog().SetTitle("Current Window Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
+		})
+	})
+
 	positionMenu.Add("Center").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.Window) {
 			w.Center()
@@ -125,6 +140,33 @@ func main() {
 	stateMenu.Add("Restore").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.Window) {
 			w.Restore()
+		})
+	})
+	stateMenu.Add("Hide (for 2 seconds)").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.Window) {
+			w.Hide()
+			time.Sleep(2 * time.Second)
+			w.Show()
+		})
+	})
+	stateMenu.Add("Always on Top").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.Window) {
+			w.SetAlwaysOnTop(true)
+		})
+	})
+	stateMenu.Add("Not always on Top").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.Window) {
+			w.SetAlwaysOnTop(false)
+		})
+	})
+	stateMenu.Add("Google.com").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.Window) {
+			w.SetURL("https://google.com")
+		})
+	})
+	stateMenu.Add("wails.io").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.Window) {
+			w.SetURL("https://wails.io")
 		})
 	})
 

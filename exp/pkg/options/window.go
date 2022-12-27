@@ -37,6 +37,7 @@ type Window struct {
 	X                       int
 	Y                       int
 	FullscreenButtonEnabled bool
+	Hidden                  bool
 }
 
 var WindowDefaults = &Window{

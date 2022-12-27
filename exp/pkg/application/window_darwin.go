@@ -125,22 +125,6 @@ void windowSetSize(void* nsWindow, int width, int height) {
 	});
 }
 
-// Show the NSWindow
-void windowShow(void* nsWindow) {
-	// Show window on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[(NSWindow*)nsWindow makeKeyAndOrderFront:nil];
-	});
-}
-
-// Hide the NSWindow
-void windowHide(void* nsWindow) {
-	// Hide window on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[(NSWindow*)nsWindow orderOut:nil];
-	});
-}
-
 // Set NSWindow always on top
 void windowSetAlwaysOnTop(void* nsWindow, bool alwaysOnTop) {
 	// Set window always on top on main thread
@@ -676,6 +660,19 @@ static void windowDisableSizeConstraints(void *window) {
 	});
 }
 
+static void windowShow(void *window) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// show window
+		[(NSWindow*)window makeKeyAndOrderFront:nil];
+	});
+}
+
+static void windowHide(void *window) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)window orderOut:nil];
+	});
+}
+
 */
 import "C"
 import (
@@ -692,6 +689,14 @@ var showDevTools = func(window unsafe.Pointer) {}
 type macosWindow struct {
 	nsWindow unsafe.Pointer
 	parent   *Window
+}
+
+func (w *macosWindow) show() {
+	C.windowShow(w.nsWindow)
+}
+
+func (w *macosWindow) hide() {
+	C.windowHide(w.nsWindow)
 }
 
 func (w *macosWindow) setFullscreenButtonEnabled(enabled bool) {
@@ -972,8 +977,9 @@ func (w *macosWindow) run() {
 		if w.parent.options.HTML != "" {
 			w.setHTML(w.parent.options.HTML)
 		}
-
-		C.windowShow(w.nsWindow)
+		if w.parent.options.Hidden == false {
+			C.windowShow(w.nsWindow)
+		}
 	})
 }
 

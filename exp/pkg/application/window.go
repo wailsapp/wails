@@ -50,6 +50,8 @@ type (
 		isFullscreen() bool
 		disableSizeConstraints()
 		setFullscreenButtonEnabled(enabled bool)
+		show()
+		hide()
 	}
 )
 
@@ -137,7 +139,7 @@ func (w *Window) SetSize(width, height int) *Window {
 	return w
 }
 
-func (w *Window) Run() {
+func (w *Window) run() {
 	if w.impl != nil {
 		return
 	}
@@ -151,6 +153,22 @@ func (w *Window) SetAlwaysOnTop(b bool) *Window {
 	w.options.AlwaysOnTop = b
 	if w.impl == nil {
 		w.impl.setAlwaysOnTop(b)
+	}
+	return w
+}
+
+func (w *Window) Show() *Window {
+	if w.impl == nil {
+		w.run()
+		return w
+	}
+	w.impl.show()
+	return w
+}
+func (w *Window) Hide() *Window {
+	w.options.Hidden = true
+	if w.impl != nil {
+		w.impl.hide()
 	}
 	return w
 }

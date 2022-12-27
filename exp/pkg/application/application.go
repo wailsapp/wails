@@ -140,7 +140,7 @@ func (a *App) NewWindowWithOptions(windowOptions *options.Window) *Window {
 		a.windowAliasesLock.Unlock()
 	}
 	if a.running {
-		newWindow.Run()
+		newWindow.run()
 	}
 
 	return newWindow
@@ -192,7 +192,7 @@ func (a *App) Run() error {
 
 	// run windows
 	for _, window := range a.windows {
-		go window.Run()
+		go window.run()
 	}
 
 	// run system trays
