@@ -29,7 +29,6 @@ type (
 		destroy()
 		reload()
 		forceReload()
-		toggleFullscreen()
 		toggleDevTools()
 		resetZoom()
 		zoomIn()
@@ -380,7 +379,11 @@ func (w *Window) ToggleFullscreen() {
 	if w.impl == nil {
 		return
 	}
-	w.impl.toggleFullscreen()
+	if w.IsFullscreen() {
+		w.UnFullscreen()
+	} else {
+		w.Fullscreen()
+	}
 }
 
 func (w *Window) ToggleDevTools() {
@@ -467,6 +470,7 @@ func (w *Window) Maximise() *Window {
 		return w
 	}
 	if !w.IsMaximised() {
+		w.disableSizeConstraints()
 		w.impl.maximise()
 	}
 	return w

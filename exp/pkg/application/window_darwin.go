@@ -338,27 +338,22 @@ bool windowIsMinimised(void* nsWindow) {
 	return [(NSWindow*)nsWindow isMiniaturized];
 }
 
-// toggle fullscreen
-void windowToggleFullscreen(void* nsWindow) {
-	// Toggle fullscreen on main thread
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[(NSWindow*)nsWindow toggleFullScreen:nil];
-	});
-}
-
 // Set Window fullscreen
 void windowFullscreen(void* nsWindow) {
 	if( windowIsFullscreen(nsWindow) ) {
 		return;
 	}
-	windowToggleFullscreen(nsWindow);
-}
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)nsWindow toggleFullScreen:nil];
+	});}
 
 void windowUnFullscreen(void* nsWindow) {
 	if( !windowIsFullscreen(nsWindow) ) {
 		return;
 	}
-	windowToggleFullscreen(nsWindow);
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[(NSWindow*)nsWindow toggleFullScreen:nil];
+	});
 }
 
 // restore window to normal size
@@ -771,10 +766,6 @@ func (w *macosWindow) resetZoom() {
 
 func (w *macosWindow) toggleDevTools() {
 	showDevTools(w.nsWindow)
-}
-
-func (w *macosWindow) toggleFullscreen() {
-	C.windowToggleFullscreen(w.nsWindow)
 }
 
 func (w *macosWindow) reload() {
