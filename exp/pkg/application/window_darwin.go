@@ -257,15 +257,9 @@ void windowSetPosition(void* nsWindow, int x, int y) {
 
 // Execute JS in NSWindow
 void windowExecJS(void* nsWindow, const char* js) {
-printf("windowExecJS\n");
 	// Execute JS on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-printf("windowExecJS 2\n");
-
-		// Get window delegate
 		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
-		// Execute JS in webview
-        printf("windowExecJS: %s\n", js);
 		[delegate.webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
 		free((void*)js);
 	});

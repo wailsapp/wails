@@ -48,7 +48,6 @@ void setMenuItemLabel(void* nsMenuItem, char *label) {
 void setMenuItemDisabled(void* nsMenuItem, bool disabled) {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		MenuItem *menuItem = (MenuItem *)nsMenuItem;
-		printf("setMenuItemDisabled: %d\n", disabled);
 		[menuItem setEnabled:!disabled];
 		// remove target
 		if( disabled ) {
