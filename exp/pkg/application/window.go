@@ -50,6 +50,7 @@ type (
 		isMaximised() bool
 		isFullscreen() bool
 		disableSizeConstraints()
+		setFullscreenButtonEnabled(enabled bool)
 	}
 )
 
@@ -244,6 +245,14 @@ func (w *Window) Fullscreen() *Window {
 	if !w.IsFullscreen() {
 		w.disableSizeConstraints()
 		w.impl.fullscreen()
+	}
+	return w
+}
+
+func (w *Window) SetFullscreenButtonEnabled(enabled bool) *Window {
+	w.options.FullscreenButtonEnabled = enabled
+	if w.impl != nil {
+		w.impl.setFullscreenButtonEnabled(enabled)
 	}
 	return w
 }
@@ -474,7 +483,7 @@ func (w *Window) UnMaximise() {
 	if w.impl == nil {
 		return
 	}
-	w.enableConstraints()
+	w.enableSizeConstraints()
 	w.impl.unmaximise()
 }
 
@@ -482,7 +491,7 @@ func (w *Window) UnFullscreen() {
 	if w.impl == nil {
 		return
 	}
-	w.enableConstraints()
+	w.enableSizeConstraints()
 	w.impl.unfullscreen()
 }
 
@@ -503,10 +512,11 @@ func (w *Window) disableSizeConstraints() {
 	if w.impl == nil {
 		return
 	}
-	w.impl.disableSizeConstraints()
+	w.impl.setMinSize(0, 0)
+	w.impl.setMaxSize(0, 0)
 }
 
-func (w *Window) enableConstraints() {
+func (w *Window) enableSizeConstraints() {
 	if w.impl == nil {
 		return
 	}

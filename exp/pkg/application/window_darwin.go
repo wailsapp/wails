@@ -11,6 +11,7 @@ package application
 #include <stdlib.h>
 #include "Cocoa/Cocoa.h"
 #import <WebKit/WebKit.h>
+#import <AppKit/AppKit.h>
 
 extern void registerListener(unsigned int event);
 
@@ -357,9 +358,7 @@ void windowUnFullscreen(void* nsWindow) {
 	if( !windowIsFullscreen(nsWindow) ) {
 		return;
 	}
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[(NSWindow*)nsWindow toggleFullScreen:nil];
-	});
+	windowToggleFullscreen(nsWindow);
 }
 
 // restore window to normal size
@@ -378,6 +377,17 @@ void windowRestore(void* nsWindow) {
 		if([(NSWindow*)nsWindow isMiniaturized]) {
 			[(NSWindow*)nsWindow deminiaturize:nil];
 		}
+	});
+}
+
+// disable window fullscreen button
+void setFullscreenButtonEnabled(void* nsWindow, bool enabled) {
+	// Disable fullscreen button on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Get window
+		NSWindow* window = (NSWindow*)nsWindow;
+		NSButton *fullscreenButton = [window standardWindowButton:NSWindowZoomButton];
+		fullscreenButton.enabled = enabled;
 	});
 }
 
@@ -645,6 +655,8 @@ static void windowSetFullScreen(void *window, bool fullscreen) {
 	}
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSWindow* nsWindow = (NSWindow*)window;
+		windowSetMaxSize(nsWindow, 0, 0);
+		windowSetMinSize(nsWindow, 0, 0);
 		[nsWindow toggleFullScreen:nil];
 	});
 }
@@ -691,6 +703,10 @@ var showDevTools = func(window unsafe.Pointer) {}
 type macosWindow struct {
 	nsWindow unsafe.Pointer
 	parent   *Window
+}
+
+func (w *macosWindow) setFullscreenButtonEnabled(enabled bool) {
+	C.setFullscreenButtonEnabled(w.nsWindow, C.bool(enabled))
 }
 
 func (w *macosWindow) disableSizeConstraints() {
