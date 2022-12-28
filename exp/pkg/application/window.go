@@ -52,6 +52,7 @@ type (
 		setFullscreenButtonEnabled(enabled bool)
 		show()
 		hide()
+		getScreen() (*Screen, error)
 	}
 )
 
@@ -544,4 +545,11 @@ func (w *Window) enableSizeConstraints() {
 	}
 	w.SetMinSize(w.options.MinWidth, w.options.MinHeight)
 	w.SetMaxSize(w.options.MaxWidth, w.options.MaxHeight)
+}
+
+func (w *Window) GetScreen() (*Screen, error) {
+	if w.impl == nil {
+		return nil, nil
+	}
+	return w.impl.getScreen()
 }

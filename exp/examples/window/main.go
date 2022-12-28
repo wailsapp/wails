@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"fmt"
 	"log"
 	"math/rand"
 	"strconv"
@@ -169,7 +170,37 @@ func main() {
 			w.SetURL("https://wails.io")
 		})
 	})
-
+	stateMenu.Add("Get Primary Screen").OnClick(func(ctx *application.Context) {
+		screen, err := app.GetPrimaryScreen()
+		if err != nil {
+			app.NewErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
+			return
+		}
+		msg := fmt.Sprintf("Screen: %+v", screen)
+		app.NewInfoDialog().SetTitle("Primary Screen").SetMessage(msg).Show()
+	})
+	stateMenu.Add("Get Screens").OnClick(func(ctx *application.Context) {
+		screens, err := app.GetScreens()
+		if err != nil {
+			app.NewErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
+			return
+		}
+		for _, screen := range screens {
+			msg := fmt.Sprintf("Screen: %+v", screen)
+			app.NewInfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
+		}
+	})
+	stateMenu.Add("Get Screen for Window").OnClick(func(ctx *application.Context) {
+		currentWindow(func(w *application.Window) {
+			screen, err := w.GetScreen()
+			if err != nil {
+				app.NewErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
+				return
+			}
+			msg := fmt.Sprintf("Screen: %+v", screen)
+			app.NewInfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
+		})
+	})
 	app.NewWindow()
 
 	app.SetMenu(menu)

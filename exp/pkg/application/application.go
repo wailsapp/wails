@@ -362,6 +362,14 @@ func (a *App) NewSaveFileDialog() *SaveFileDialog {
 	return newSaveFileDialog()
 }
 
+func (a *App) GetPrimaryScreen() (*Screen, error) {
+	return getPrimaryScreen()
+}
+
+func (a *App) GetScreens() ([]*Screen, error) {
+	return getScreens()
+}
+
 func (a *App) Clipboard() *Clipboard {
 	if a.clipboard == nil {
 		a.clipboard = newClipboard()

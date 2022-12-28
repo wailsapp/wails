@@ -691,6 +691,10 @@ type macosWindow struct {
 	parent   *Window
 }
 
+func (w *macosWindow) getScreen() (*Screen, error) {
+	return getScreenForWindow(w)
+}
+
 func (w *macosWindow) show() {
 	C.windowShow(w.nsWindow)
 }
