@@ -18,6 +18,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
+
 	"github.com/labstack/echo/v4"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
@@ -106,7 +108,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		log.Fatal(err)
 	}
 
-	assetServer, err := assetserver.NewDevAssetServer(assetHandler, wsHandler, bindingsJSON, ctx.Value("assetdir") != nil, myLogger)
+	assetServer, err := assetserver.NewDevAssetServer(assetHandler, wsHandler, bindingsJSON, ctx.Value("assetdir") != nil, myLogger, runtime.RuntimeAssetsBundle)
 	if err != nil {
 		log.Fatal(err)
 	}
