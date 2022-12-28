@@ -12,7 +12,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/wailsapp/wails/v2/internal/fs"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
@@ -45,12 +44,12 @@ func NewAssetHandler(options assetserver.Options, log Logger) (http.Handler, err
 			return nil, err
 		}
 
-		subDir, err := fs.FindPathToFile(vfs, indexHTML)
+		subDir, err := FindPathToFile(vfs, indexHTML)
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
 				msg := "no `index.html` could be found in your Assets fs.FS"
 				if embedFs, isEmbedFs := vfs.(embed.FS); isEmbedFs {
-					rootFolder, _ := fs.FindEmbedRootPath(embedFs)
+					rootFolder, _ := FindEmbedRootPath(embedFs)
 					msg += fmt.Sprintf(", please make sure the embedded directory '%s' is correct and contains your assets", rootFolder)
 				}
 
