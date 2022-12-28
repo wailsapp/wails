@@ -2,7 +2,6 @@ package assetserver
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -33,24 +32,24 @@ type AssetServer struct {
 	appendSpinnerToBody bool
 }
 
-func NewAssetServerMainPage(ctx context.Context, bindingsJSON string, options *options.App) (*AssetServer, error) {
+func NewAssetServerMainPage(bindingsJSON string, options *options.App, servingFromDisk bool, logger *logger.Logger) (*AssetServer, error) {
 	assetOptions, err := BuildAssetServerConfig(options)
 	if err != nil {
 		return nil, err
 	}
-	return NewAssetServer(ctx, bindingsJSON, assetOptions)
+	return NewAssetServer(bindingsJSON, assetOptions, servingFromDisk, logger)
 }
 
-func NewAssetServer(ctx context.Context, bindingsJSON string, options assetserver.Options) (*AssetServer, error) {
-	handler, err := NewAssetHandler(ctx, options)
+func NewAssetServer(bindingsJSON string, options assetserver.Options, servingFromDisk bool, logger *logger.Logger) (*AssetServer, error) {
+	handler, err := NewAssetHandler(options, logger)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewAssetServerWithHandler(ctx, handler, bindingsJSON)
+	return NewAssetServerWithHandler(handler, bindingsJSON, servingFromDisk, logger)
 }
 
-func NewAssetServerWithHandler(ctx context.Context, handler http.Handler, bindingsJSON string) (*AssetServer, error) {
+func NewAssetServerWithHandler(handler http.Handler, bindingsJSON string, servingFromDisk bool, logger *logger.Logger) (*AssetServer, error) {
 	var buffer bytes.Buffer
 	if bindingsJSON != "" {
 		buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")
@@ -65,11 +64,8 @@ func NewAssetServerWithHandler(ctx context.Context, handler http.Handler, bindin
 		// If so, this means we are in dev mode and are serving assets off disk.
 		// We indicate this through the `servingFromDisk` flag to ensure requests
 		// aren't cached in dev mode.
-		servingFromDisk: ctx.Value("assetdir") != nil,
-	}
-
-	if _logger := ctx.Value("logger"); _logger != nil {
-		result.logger = _logger.(*logger.Logger)
+		servingFromDisk: servingFromDisk,
+		logger:          logger,
 	}
 
 	return result, nil

@@ -4,11 +4,11 @@
 package assetserver
 
 import (
-	"context"
 	"net/http"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
+	"github.com/wailsapp/wails/v2/internal/logger"
 )
 
 /*
@@ -16,8 +16,8 @@ The assetserver for the dev mode.
 Depending on the UserAgent it injects a websocket based IPC script into `index.html` or the default desktop IPC. The
 default desktop IPC is injected when the webview accesses the devserver.
 */
-func NewDevAssetServer(ctx context.Context, handler http.Handler, wsHandler http.Handler, bindingsJSON string) (*AssetServer, error) {
-	result, err := NewAssetServerWithHandler(ctx, handler, bindingsJSON)
+func NewDevAssetServer(handler http.Handler, wsHandler http.Handler, bindingsJSON string, servingFromDisk bool, logger *logger.Logger) (*AssetServer, error) {
+	result, err := NewAssetServerWithHandler(handler, bindingsJSON, servingFromDisk, logger)
 	if err != nil {
 		return nil, err
 	}

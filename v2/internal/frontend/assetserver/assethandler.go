@@ -2,7 +2,6 @@ package assetserver
 
 import (
 	"bytes"
-	"context"
 	"embed"
 	"errors"
 	"fmt"
@@ -34,11 +33,7 @@ type assetHandler struct {
 	retryMissingFiles bool
 }
 
-func NewAssetHandler(ctx context.Context, options assetserver.Options) (http.Handler, error) {
-	var log *logger.Logger
-	if _logger := ctx.Value("logger"); _logger != nil {
-		log = _logger.(*logger.Logger)
-	}
+func NewAssetHandler(options assetserver.Options, log *logger.Logger) (http.Handler, error) {
 
 	vfs := options.Assets
 	if vfs != nil {
