@@ -10,7 +10,6 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
-	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
@@ -26,13 +25,13 @@ type AssetServer struct {
 	runtimeJS []byte
 	ipcJS     func(*http.Request) []byte
 
-	logger *logger.Logger
+	logger Logger
 
 	servingFromDisk     bool
 	appendSpinnerToBody bool
 }
 
-func NewAssetServerMainPage(bindingsJSON string, options *options.App, servingFromDisk bool, logger *logger.Logger) (*AssetServer, error) {
+func NewAssetServerMainPage(bindingsJSON string, options *options.App, servingFromDisk bool, logger Logger) (*AssetServer, error) {
 	assetOptions, err := BuildAssetServerConfig(options)
 	if err != nil {
 		return nil, err
@@ -40,7 +39,7 @@ func NewAssetServerMainPage(bindingsJSON string, options *options.App, servingFr
 	return NewAssetServer(bindingsJSON, assetOptions, servingFromDisk, logger)
 }
 
-func NewAssetServer(bindingsJSON string, options assetserver.Options, servingFromDisk bool, logger *logger.Logger) (*AssetServer, error) {
+func NewAssetServer(bindingsJSON string, options assetserver.Options, servingFromDisk bool, logger Logger) (*AssetServer, error) {
 	handler, err := NewAssetHandler(options, logger)
 	if err != nil {
 		return nil, err
@@ -49,7 +48,7 @@ func NewAssetServer(bindingsJSON string, options assetserver.Options, servingFro
 	return NewAssetServerWithHandler(handler, bindingsJSON, servingFromDisk, logger)
 }
 
-func NewAssetServerWithHandler(handler http.Handler, bindingsJSON string, servingFromDisk bool, logger *logger.Logger) (*AssetServer, error) {
+func NewAssetServerWithHandler(handler http.Handler, bindingsJSON string, servingFromDisk bool, logger Logger) (*AssetServer, error) {
 	var buffer bytes.Buffer
 	if bindingsJSON != "" {
 		buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")

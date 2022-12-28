@@ -13,9 +13,13 @@ import (
 	"strings"
 
 	"github.com/wailsapp/wails/v2/internal/fs"
-	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
+
+type Logger interface {
+	Debug(message string, args ...interface{})
+	Error(message string, args ...interface{})
+}
 
 //go:embed defaultindex.html
 var defaultHTML []byte
@@ -28,12 +32,12 @@ type assetHandler struct {
 	fs      iofs.FS
 	handler http.Handler
 
-	logger *logger.Logger
+	logger Logger
 
 	retryMissingFiles bool
 }
 
-func NewAssetHandler(options assetserver.Options, log *logger.Logger) (http.Handler, error) {
+func NewAssetHandler(options assetserver.Options, log Logger) (http.Handler, error) {
 
 	vfs := options.Assets
 	if vfs != nil {
