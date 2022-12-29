@@ -3,7 +3,7 @@ const personalToken = process.env.CROWDIN_PERSONAL_TOKEN;
 const projectId = 531392;
 
 // initialization of crowdin client
-const initClient = async () => {
+const initClient = () => {
   if (!personalToken) {
     console.warn(
       "No crowding personal token, some features might not work as expected"
