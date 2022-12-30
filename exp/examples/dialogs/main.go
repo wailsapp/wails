@@ -7,15 +7,20 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/wailsapp/wails/exp/pkg/options"
+
 	"github.com/wailsapp/wails/exp/pkg/application"
 )
 
 func main() {
 
-	app := application.New()
-	app.SetName("Dialogs Demo")
-	app.SetDescription("A demo of the Wails dialogs")
-
+	app := application.New(options.Application{
+		Name:        "Dialogs Demo",
+		Description: "A demo of the dialogs API",
+		Mac: options.Mac{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
+		},
+	})
 	// Create a custom menu
 	menu := app.NewMenu()
 	menu.AddRole(application.AppMenu)

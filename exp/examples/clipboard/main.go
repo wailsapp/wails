@@ -5,14 +5,20 @@ import (
 	"log"
 	"time"
 
+	"github.com/wailsapp/wails/exp/pkg/options"
+
 	"github.com/wailsapp/wails/exp/pkg/application"
 )
 
 func main() {
 
-	app := application.New()
-	app.SetName("Clipboard Demo")
-	app.SetDescription("A demo of the clipboard")
+	app := application.New(options.Application{
+		Name:        "Clipboard Demo",
+		Description: "A demo of the clipboard API",
+		Mac: options.Mac{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
+		},
+	})
 
 	// Create a custom menu
 	menu := app.NewMenu()

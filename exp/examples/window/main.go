@@ -17,10 +17,13 @@ import (
 )
 
 func main() {
-	app := application.New()
-	app.SetName("Window Demo")
-	app.ApplicationShouldTerminateAfterLastWindowClosed()
-	app.SetDescription("A demo of the windowing capabilities")
+	app := application.New(options.Application{
+		Name:        "Window Demo",
+		Description: "A demo of the Window API",
+		Mac: options.Mac{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
+		},
+	})
 	app.On(events.Mac.ApplicationDidFinishLaunching, func() {
 		log.Println("ApplicationDidFinishLaunching")
 	})

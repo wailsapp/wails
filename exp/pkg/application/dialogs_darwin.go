@@ -339,8 +339,8 @@ func (m *macosDialog) show() {
 		} else {
 			// if it's an error, use the application icon
 			if m.dialog.dialogType == ErrorDialog {
-				iconData = unsafe.Pointer(&globalApplication.icon[0])
-				iconLength = C.int(len(globalApplication.icon))
+				iconData = unsafe.Pointer(&globalApplication.options.Icon[0])
+				iconLength = C.int(len(globalApplication.options.Icon))
 			}
 		}
 

@@ -402,7 +402,7 @@ func newSpeechMenu() *MenuItem {
 }
 
 func newHideMenuItem() *MenuItem {
-	return newMenuItem("Hide " + globalApplication.Name()).
+	return newMenuItem("Hide " + globalApplication.options.Name).
 		SetAccelerator("CmdOrCtrl+h").
 		OnClick(func(ctx *Context) {
 			C.hideApplication()
@@ -482,7 +482,7 @@ func newDeleteMenuItem() *MenuItem {
 }
 
 func newQuitMenuItem() *MenuItem {
-	return newMenuItem("Quit " + globalApplication.Name()).
+	return newMenuItem("Quit " + globalApplication.options.Name).
 		SetAccelerator("CmdOrCtrl+q").
 		OnClick(func(ctx *Context) {
 			globalApplication.Quit()
@@ -498,7 +498,7 @@ func newSelectAllMenuItem() *MenuItem {
 }
 
 func newAboutMenuItem() *MenuItem {
-	return newMenuItem("About " + globalApplication.Name()).
+	return newMenuItem("About " + globalApplication.options.Name).
 		OnClick(func(ctx *Context) {
 			globalApplication.ShowAboutDialog()
 		})

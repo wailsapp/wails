@@ -16,26 +16,33 @@ func init() {
 	runtime.LockOSThread()
 }
 
-func New() *App {
+func New(appOptions options.Application) *App {
 	if globalApplication != nil {
 		return globalApplication
 	}
-	return NewWithOptions(options.ApplicationDefaults)
-}
 
-func NewWithOptions(appOptions options.Application) *App {
-	if globalApplication != nil {
-		return globalApplication
-	}
-	appOptions = options.ApplicationDefaults
+	mergeApplicationDefaults(&appOptions)
+
 	result := &App{
 		options:                   appOptions,
 		applicationEventListeners: make(map[uint][]func()),
 		systemTrays:               make(map[uint]*SystemTray),
-		icon:                      DefaultApplicationIcon,
 	}
 	globalApplication = result
 	return result
+}
+
+func mergeApplicationDefaults(o *options.Application) {
+	if o.Name == "" {
+		o.Name = "My Wails Application"
+	}
+	if o.Description == "" {
+		o.Description = "An application written using Wails"
+	}
+	if o.Icon == nil {
+		o.Icon = DefaultApplicationIcon
+	}
+
 }
 
 type platformApp interface {
@@ -89,10 +96,7 @@ type App struct {
 	ApplicationMenu *Menu
 
 	// About MessageDialog
-	name        string
-	description string
-	icon        []byte
-	clipboard   *Clipboard
+	clipboard *Clipboard
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -202,9 +206,7 @@ func (a *App) Run() error {
 	a.impl.setApplicationMenu(a.ApplicationMenu)
 
 	// set the application icon
-	if a.icon != nil {
-		a.impl.setIcon(a.icon)
-	}
+	a.impl.setIcon(a.options.Icon)
 
 	return a.impl.run()
 }
@@ -288,47 +290,15 @@ func (a *App) Quit() {
 	a.impl.destroy()
 }
 
-func (a *App) SetActivationPolicy(accessory options.ActivationPolicy) {
-	a.options.Mac.ActivationPolicy = accessory
-}
-
 func (a *App) SetMenu(menu *Menu) {
 	a.ApplicationMenu = menu
 	if a.impl != nil {
 		a.impl.setApplicationMenu(menu)
 	}
 }
-
-func (a *App) SetName(name string) {
-	a.name = name
-}
-
-func (a *App) Name() string {
-	return a.name
-}
-
-func (a *App) SetIcon(icon []byte) {
-	a.icon = icon
-	if a.impl != nil {
-		a.impl.setIcon(icon)
-	}
-}
-
-func (a *App) Icon() []byte {
-	return a.icon
-}
-
-func (a *App) SetDescription(description string) {
-	a.description = description
-}
-
-func (a *App) Description() string {
-	return a.description
-}
-
 func (a *App) ShowAboutDialog() {
 	if a.impl != nil {
-		a.impl.showAboutDialog(a.name, a.description, a.icon)
+		a.impl.showAboutDialog(a.options.Name, a.options.Description, a.options.Icon)
 	}
 }
 
@@ -382,9 +352,4 @@ func (a *App) dispatchOnMainThread(fn func()) {
 	mainThreadFunctionStoreLock.Unlock()
 	// Call platform specific dispatch function
 	a.impl.dispatchOnMainThread(id)
-}
-
-func (a *App) ApplicationShouldTerminateAfterLastWindowClosed() {
-	a.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed = true
-
 }

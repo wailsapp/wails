@@ -12,9 +12,11 @@ import (
 )
 
 func main() {
-	app := application.NewWithOptions(&options.Application{
-		Mac: &options.Mac{
-			//ActivationPolicy: options.ActivationPolicyAccessory,
+	app := application.New(options.Application{
+		Name:        "Menu Demo",
+		Description: "A demo of the menu system",
+		Mac: options.Mac{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
 	/*
@@ -121,7 +123,7 @@ func main() {
 			Alpha: 30,
 		},
 		StartState: options.WindowStateMaximised,
-		Mac: &options.MacWindow{
+		Mac: options.MacWindow{
 			Backdrop:   options.MacBackdropTranslucent,
 			Appearance: options.NSAppearanceNameDarkAqua,
 		},
@@ -189,7 +191,7 @@ func main() {
 		Height:      768,
 		AlwaysOnTop: false,
 		URL:         "https://google.com",
-		Mac: &options.MacWindow{
+		Mac: options.MacWindow{
 			Backdrop: options.MacBackdropTranslucent,
 		},
 	})
@@ -206,7 +208,7 @@ func main() {
 		myWindow2Lock.RLock()
 		myWindow.SetTitle("Wooooo")
 		myWindow.SetAlwaysOnTop(true)
-		myWindow2.SetTitle("OMFG")
+		myWindow2.SetTitle("OMG")
 		myWindow2.SetURL("https://wails.io")
 		myWindow.SetMinSize(600, 600)
 		myWindow.SetMaxSize(650, 650)

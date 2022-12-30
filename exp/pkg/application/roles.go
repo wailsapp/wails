@@ -98,7 +98,7 @@ func newAppMenu() *MenuItem {
 	appMenu.AddRole(UnHide)
 	appMenu.AddSeparator()
 	appMenu.AddRole(Quit)
-	subMenu := newSubMenuItem(globalApplication.Name())
+	subMenu := newSubMenuItem(globalApplication.options.Name)
 	subMenu.submenu = appMenu
 	return subMenu
 }

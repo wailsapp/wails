@@ -1,11 +1,8 @@
 package options
 
 type Application struct {
-	Mac Mac
-}
-
-var ApplicationDefaults = Application{
-	Mac: Mac{
-		ActivationPolicy: ActivationPolicyRegular,
-	},
+	Name        string
+	Description string
+	Icon        []byte
+	Mac         Mac
 }

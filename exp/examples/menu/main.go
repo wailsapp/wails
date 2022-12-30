@@ -4,14 +4,20 @@ import (
 	_ "embed"
 	"log"
 
+	"github.com/wailsapp/wails/exp/pkg/options"
+
 	"github.com/wailsapp/wails/exp/pkg/application"
 )
 
 func main() {
 
-	app := application.New()
-	app.SetName("Menu Demo")
-	app.SetDescription("A demo of the menu system")
+	app := application.New(options.Application{
+		Name:        "Menu Demo",
+		Description: "A demo of the menu system",
+		Mac: options.Mac{
+			ApplicationShouldTerminateAfterLastWindowClosed: true,
+		},
+	})
 
 	// Create a custom menu
 	menu := app.NewMenu()
