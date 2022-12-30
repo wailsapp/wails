@@ -67,21 +67,6 @@ void setInvisibleTitleBarHeight(void* window, unsigned int height) {
 	delegate.invisibleTitleBarHeight = height;
 }
 
-//// Make window toggle frameless
-//void windowSetFrameless(void* window, bool frameless) {
-//	NSWindow* nsWindow = (NSWindow*)window;
-//	if (frameless) {
-//		[nsWindow setStyleMask:NSWindowStyleMaskBorderless];
-//	} else {
-//		[nsWindow setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable];
-//	}
-//}
-
-void windowSetFrameless(void* window) {
-	NSWindow* nsWindow = (NSWindow*)window;
-	[nsWindow setStyleMask:NSWindowStyleMaskBorderless];
-}
-
 // Make NSWindow transparent
 void windowSetTransparent(void* nsWindow) {
     // On main thread
@@ -673,6 +658,20 @@ static void windowHide(void *window) {
 	});
 }
 
+// Make the given window frameless
+static void windowSetFrameless(void *window, bool frameless) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// get main window
+		NSWindow* nsWindow = (NSWindow*)window;
+		// set the window style to be frameless
+		if (frameless) {
+			[nsWindow setStyleMask:([nsWindow styleMask] | NSWindowStyleMaskFullSizeContentView)];
+		} else {
+			[nsWindow setStyleMask:([nsWindow styleMask] & ~NSWindowStyleMaskFullSizeContentView)];
+		}
+	});
+}
+
 */
 import "C"
 import (
@@ -689,6 +688,20 @@ var showDevTools = func(window unsafe.Pointer) {}
 type macosWindow struct {
 	nsWindow unsafe.Pointer
 	parent   *Window
+}
+
+func (w *macosWindow) setFrameless(frameless bool) {
+	C.windowSetFrameless(w.nsWindow, C.bool(frameless))
+	if frameless {
+		C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(true))
+		C.windowSetHideTitle(w.nsWindow, C.bool(true))
+	} else {
+		macOptions := w.parent.options.Mac
+		appearsTransparent := macOptions.TitleBar.AppearsTransparent
+		hideTitle := macOptions.TitleBar.HideTitle
+		C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(appearsTransparent))
+		C.windowSetHideTitle(w.nsWindow, C.bool(hideTitle))
+	}
 }
 
 func (w *macosWindow) getScreen() (*Screen, error) {
@@ -912,6 +925,7 @@ func (w *macosWindow) run() {
 	}
 	globalApplication.dispatchOnMainThread(func() {
 		w.nsWindow = C.windowNew(C.uint(w.parent.id), C.int(w.parent.options.Width), C.int(w.parent.options.Height))
+		w.setFrameless(w.parent.options.Frameless)
 		w.setTitle(w.parent.options.Title)
 		w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
 		w.setResizable(!w.parent.options.DisableResize)
@@ -923,36 +937,33 @@ func (w *macosWindow) run() {
 		}
 		w.enableDevTools()
 		w.setBackgroundColour(w.parent.options.BackgroundColour)
-		if w.parent.options.Mac != nil {
-			macOptions := w.parent.options.Mac
-			switch macOptions.Backdrop {
-			case options.MacBackdropTransparent:
-				C.windowSetTransparent(w.nsWindow)
-				C.webviewSetTransparent(w.nsWindow)
-			case options.MacBackdropTranslucent:
-				C.windowSetTranslucent(w.nsWindow)
-				C.webviewSetTransparent(w.nsWindow)
-			}
 
-			if macOptions.TitleBar != nil {
-				titleBarOptions := macOptions.TitleBar
-				C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(titleBarOptions.AppearsTransparent))
-				C.windowSetHideTitleBar(w.nsWindow, C.bool(titleBarOptions.Hide))
-				C.windowSetHideTitle(w.nsWindow, C.bool(titleBarOptions.HideTitle))
-				C.windowSetFullSizeContent(w.nsWindow, C.bool(titleBarOptions.FullSizeContent))
-				if titleBarOptions.UseToolbar {
-					C.windowSetUseToolbar(w.nsWindow, C.bool(titleBarOptions.UseToolbar), C.int(titleBarOptions.ToolbarStyle))
-				}
-				C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBarOptions.HideToolbarSeparator))
-			}
+		macOptions := w.parent.options.Mac
+		switch macOptions.Backdrop {
+		case options.MacBackdropTransparent:
+			C.windowSetTransparent(w.nsWindow)
+			C.webviewSetTransparent(w.nsWindow)
+		case options.MacBackdropTranslucent:
+			C.windowSetTranslucent(w.nsWindow)
+			C.webviewSetTransparent(w.nsWindow)
+		}
 
-			if macOptions.Appearance != "" {
-				C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
-			}
+		titleBarOptions := macOptions.TitleBar
+		C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(titleBarOptions.AppearsTransparent))
+		C.windowSetHideTitleBar(w.nsWindow, C.bool(titleBarOptions.Hide))
+		C.windowSetHideTitle(w.nsWindow, C.bool(titleBarOptions.HideTitle))
+		C.windowSetFullSizeContent(w.nsWindow, C.bool(titleBarOptions.FullSizeContent))
+		if titleBarOptions.UseToolbar {
+			C.windowSetUseToolbar(w.nsWindow, C.bool(titleBarOptions.UseToolbar), C.int(titleBarOptions.ToolbarStyle))
+		}
+		C.windowSetHideToolbarSeparator(w.nsWindow, C.bool(titleBarOptions.HideToolbarSeparator))
 
-			if macOptions.InvisibleTitleBarHeight != 0 {
-				C.windowSetInvisibleTitleBar(w.nsWindow, C.uint(macOptions.InvisibleTitleBarHeight))
-			}
+		if macOptions.Appearance != "" {
+			C.windowSetAppearanceTypeByName(w.nsWindow, C.CString(string(macOptions.Appearance)))
+		}
+
+		if macOptions.InvisibleTitleBarHeight != 0 {
+			C.windowSetInvisibleTitleBar(w.nsWindow, C.uint(macOptions.InvisibleTitleBarHeight))
 		}
 
 		switch w.parent.options.StartState {

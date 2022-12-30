@@ -11,7 +11,8 @@ const (
 type Mac struct {
 	// ActivationPolicy is the activation policy for the application. Defaults to
 	// applicationActivationPolicyRegular.
-	ActivationPolicy ActivationPolicy
+	ActivationPolicy                                ActivationPolicy
+	ApplicationShouldTerminateAfterLastWindowClosed bool
 }
 
 type MacBackdrop int
@@ -40,7 +41,7 @@ const (
 // MacWindow contains macOS specific options
 type MacWindow struct {
 	Backdrop                MacBackdrop
-	TitleBar                *TitleBar
+	TitleBar                TitleBar
 	Appearance              MacAppearanceType
 	InvisibleTitleBarHeight int
 }
@@ -57,7 +58,7 @@ type TitleBar struct {
 }
 
 // TitleBarDefault results in the default Mac TitleBar
-var TitleBarDefault = &TitleBar{
+var TitleBarDefault = TitleBar{
 	AppearsTransparent:   false,
 	Hide:                 false,
 	HideTitle:            false,
@@ -71,7 +72,7 @@ var TitleBarDefault = &TitleBar{
 // TitleBarHidden results in a hidden title bar and a full size content window,
 // yet the title bar still has the standard window controls (“traffic lights”)
 // in the top left.
-var TitleBarHidden = &TitleBar{
+var TitleBarHidden = TitleBar{
 	AppearsTransparent:   true,
 	Hide:                 false,
 	HideTitle:            true,
@@ -82,7 +83,7 @@ var TitleBarHidden = &TitleBar{
 
 // TitleBarHiddenInset results in a hidden title bar with an alternative look where
 // the traffic light buttons are slightly more inset from the window edge.
-var TitleBarHiddenInset = &TitleBar{
+var TitleBarHiddenInset = TitleBar{
 	AppearsTransparent:   true,
 	Hide:                 false,
 	HideTitle:            true,
@@ -93,7 +94,7 @@ var TitleBarHiddenInset = &TitleBar{
 
 // TitleBarHiddenInsetUnified results in a hidden title bar with an alternative look where
 // the traffic light buttons are even more inset from the window edge.
-var TitleBarHiddenInsetUnified = &TitleBar{
+var TitleBarHiddenInsetUnified = TitleBar{
 	AppearsTransparent:   true,
 	Hide:                 false,
 	HideTitle:            true,

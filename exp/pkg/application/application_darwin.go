@@ -54,6 +54,13 @@ static void init(void) {
 	}];
 }
 
+static void setApplicationShouldTerminateAfterLastWindowClosed(bool shouldTerminate) {
+	// Get the NSApp delegate
+	AppDelegate *appDelegate = (AppDelegate*)[NSApp delegate];
+	// Set the applicationShouldTerminateAfterLastWindowClosed boolean
+	appDelegate.shouldTerminateWhenLastWindowClosed = shouldTerminate;
+}
+
 static void setActivationPolicy(int policy) {
     [NSApp setActivationPolicy:policy];
 }
@@ -112,8 +119,6 @@ import (
 	"unsafe"
 
 	"github.com/wailsapp/wails/exp/pkg/events"
-
-	"github.com/wailsapp/wails/exp/pkg/options"
 )
 
 type macosApp struct {
@@ -154,9 +159,8 @@ func (m *macosApp) setApplicationMenu(menu *Menu) {
 func (m *macosApp) run() error {
 	// Add a hook to the ApplicationDidFinishLaunching event
 	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func() {
-		if m.parent.options != nil && m.parent.options.Mac != nil {
-			C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
-		}
+		C.setApplicationShouldTerminateAfterLastWindowClosed(C.bool(m.parent.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed))
+		C.setActivationPolicy(C.int(m.parent.options.Mac.ActivationPolicy))
 		C.activateIgnoringOtherApps()
 	})
 	// setup event listeners
@@ -172,10 +176,6 @@ func (m *macosApp) destroy() {
 }
 
 func newPlatformApp(app *App) *macosApp {
-	appOptions := app.options
-	if appOptions == nil {
-		appOptions = options.ApplicationDefaults
-	}
 	C.init()
 	return &macosApp{
 		parent: app,

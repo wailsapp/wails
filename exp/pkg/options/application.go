@@ -1,11 +1,11 @@
 package options
 
 type Application struct {
-	Mac *Mac
+	Mac Mac
 }
 
-var ApplicationDefaults = &Application{
-	Mac: &Mac{
+var ApplicationDefaults = Application{
+	Mac: Mac{
 		ActivationPolicy: ActivationPolicyRegular,
 	},
 }

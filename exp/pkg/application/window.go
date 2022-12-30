@@ -53,6 +53,7 @@ type (
 		show()
 		hide()
 		getScreen() (*Screen, error)
+		setFrameless(bool)
 	}
 )
 
@@ -552,4 +553,12 @@ func (w *Window) GetScreen() (*Screen, error) {
 		return nil, nil
 	}
 	return w.impl.getScreen()
+}
+
+func (w *Window) SetFrameless(frameless bool) *Window {
+	w.options.Frameless = frameless
+	if w.impl != nil {
+		w.impl.setFrameless(frameless)
+	}
+	return w
 }

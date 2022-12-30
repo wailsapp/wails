@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"runtime"
 	"strconv"
 	"time"
+
+	"github.com/wailsapp/wails/exp/pkg/options"
 
 	"github.com/wailsapp/wails/exp/pkg/events"
 
@@ -16,6 +19,7 @@ import (
 func main() {
 	app := application.New()
 	app.SetName("Window Demo")
+	app.ApplicationShouldTerminateAfterLastWindowClosed()
 	app.SetDescription("A demo of the windowing capabilities")
 	app.On(events.Mac.ApplicationDidFinishLaunching, func() {
 		log.Println("ApplicationDidFinishLaunching")
@@ -48,6 +52,61 @@ func main() {
 				Show()
 			windowCounter++
 		})
+	myMenu.Add("New Frameless Window").
+		SetAccelerator("CmdOrCtrl+F").
+		OnClick(func(ctx *application.Context) {
+			app.NewWindow().
+				SetTitle("Window "+strconv.Itoa(windowCounter)).
+				SetPosition(rand.Intn(1000), rand.Intn(800)).
+				SetURL("https://wails.io").
+				SetFrameless(true).
+				Show()
+			windowCounter++
+		})
+	if runtime.GOOS == "darwin" {
+		myMenu.Add("New Window (TitleBarHiddenInset)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWindowWithOptions(&options.Window{
+					Mac: options.MacWindow{
+						TitleBar:                options.TitleBarHiddenInset,
+						InvisibleTitleBarHeight: 25,
+					},
+				}).
+					SetTitle("Window "+strconv.Itoa(windowCounter)).
+					SetPosition(rand.Intn(1000), rand.Intn(800)).
+					SetHTML("<br/><br/><p>A TitleBarHiddenInset Window example</p>").
+					Show()
+				windowCounter++
+			})
+		myMenu.Add("New Window (TitleBarHiddenInsetUnified)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWindowWithOptions(&options.Window{
+					Mac: options.MacWindow{
+						TitleBar:                options.TitleBarHiddenInsetUnified,
+						InvisibleTitleBarHeight: 50,
+					},
+				}).
+					SetTitle("Window "+strconv.Itoa(windowCounter)).
+					SetPosition(rand.Intn(1000), rand.Intn(800)).
+					SetHTML("<br/><br/><p>A TitleBarHiddenInsetUnified Window example</p>").
+					Show()
+				windowCounter++
+			})
+		myMenu.Add("New Window (TitleBarHidden)").
+			OnClick(func(ctx *application.Context) {
+				app.NewWindowWithOptions(&options.Window{
+					Mac: options.MacWindow{
+						TitleBar:                options.TitleBarHidden,
+						InvisibleTitleBarHeight: 25,
+					},
+				}).
+					SetTitle("Window "+strconv.Itoa(windowCounter)).
+					SetPosition(rand.Intn(1000), rand.Intn(800)).
+					SetHTML("<br/><br/><p>A TitleBarHidden Window example</p>").
+					Show()
+				windowCounter++
+			})
+	}
 
 	sizeMenu := menu.AddSubmenu("Size")
 	sizeMenu.Add("Set Size (800,600)").OnClick(func(ctx *application.Context) {

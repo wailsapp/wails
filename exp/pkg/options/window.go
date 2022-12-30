@@ -28,7 +28,7 @@ type Window struct {
 	MaxWidth                int
 	MaxHeight               int
 	StartState              WindowState
-	Mac                     *MacWindow
+	Mac                     MacWindow
 	BackgroundColour        *RGBA
 	Assets                  Assets
 	HTML                    string

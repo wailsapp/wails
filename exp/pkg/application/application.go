@@ -20,16 +20,14 @@ func New() *App {
 	if globalApplication != nil {
 		return globalApplication
 	}
-	return NewWithOptions(nil)
+	return NewWithOptions(options.ApplicationDefaults)
 }
 
-func NewWithOptions(appOptions *options.Application) *App {
+func NewWithOptions(appOptions options.Application) *App {
 	if globalApplication != nil {
 		return globalApplication
 	}
-	if appOptions == nil {
-		appOptions = options.ApplicationDefaults
-	}
+	appOptions = options.ApplicationDefaults
 	result := &App{
 		options:                   appOptions,
 		applicationEventListeners: make(map[uint][]func()),
@@ -61,7 +59,7 @@ type windowMessage struct {
 var windowMessageBuffer = make(chan *windowMessage)
 
 type App struct {
-	options                       *options.Application
+	options                       options.Application
 	applicationEventListeners     map[uint][]func()
 	applicationEventListenersLock sync.RWMutex
 
@@ -384,4 +382,9 @@ func (a *App) dispatchOnMainThread(fn func()) {
 	mainThreadFunctionStoreLock.Unlock()
 	// Call platform specific dispatch function
 	a.impl.dispatchOnMainThread(id)
+}
+
+func (a *App) ApplicationShouldTerminateAfterLastWindowClosed() {
+	a.options.Mac.ApplicationShouldTerminateAfterLastWindowClosed = true
+
 }
