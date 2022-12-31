@@ -15,6 +15,8 @@
 #import "message.h"
 #import "Role.h"
 
+typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
+
 @implementation WailsWindow
 
 - (BOOL)canBecomeKeyWindow
@@ -107,7 +109,6 @@
     [self.mouseEvent release];
     [self.userContentController release];
     [self.urlRequests release];
-    [self.urlRequestsLock release];
     [self.applicationMenu release];
     [super dealloc];
 }
@@ -138,7 +139,6 @@
 
 - (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString*)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight {
     self.urlRequestsId = 0;
-    self.urlRequestsLock = [NSLock new];
     self.urlRequests = [NSMutableDictionary new];
     
     NSWindowStyleMask styleMask = 0;
@@ -250,7 +250,8 @@
     }
     
     [self.webview setNavigationDelegate:self];
-    
+    self.webview.UIDelegate = self;
+
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:FALSE forKey:@"NSAutomaticQuoteSubstitutionEnabled"];
     
@@ -407,37 +408,76 @@
    [self.webview evaluateJavaScript:script completionHandler:nil];
 }
 
-- (void) processURLResponse:(unsigned long long)requestId :(int)statusCode :(NSData *)headersJSON :(NSData *)data {
-    NSNumber *key = [NSNumber numberWithUnsignedLongLong:requestId];
-
-    [self.urlRequestsLock lock];
-    id<WKURLSchemeTask> urlSchemeTask = self.urlRequests[key];
-    [self.urlRequestsLock unlock];
+- (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters 
+    initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSArray<NSURL *> * URLs))completionHandler {
     
-    @try {
-        if (urlSchemeTask == nil) {
-            return;
-        }
+    NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+    openPanel.allowsMultipleSelection = parameters.allowsMultipleSelection;
+    if (@available(macOS 10.14, *)) {
+        openPanel.canChooseDirectories = parameters.allowsDirectories;
+    }
+    
+    [openPanel 
+        beginSheetModalForWindow:webView.window
+        completionHandler:^(NSInteger result) {
+            if (result == NSModalResponseOK)
+                completionHandler(openPanel.URLs);
+            else
+                completionHandler(nil);
+        }];
+}
 
+- (void) processURLDidReceiveResponse:(unsigned long long)requestId :(int)statusCode :(NSData *)headersJSON {
+    [self processURLSchemeTaskCall:requestId :^(id<WKURLSchemeTask> urlSchemeTask) {
         NSDictionary *headerFields = [NSJSONSerialization JSONObjectWithData: headersJSON options: NSJSONReadingMutableContainers error: nil];
         NSHTTPURLResponse *response = [[[NSHTTPURLResponse alloc] initWithURL:urlSchemeTask.request.URL statusCode:statusCode HTTPVersion:@"HTTP/1.1" headerFields:headerFields] autorelease];
 
-        @try {
-            [urlSchemeTask didReceiveResponse:response];
-            [urlSchemeTask didReceiveData:data];
-            [urlSchemeTask didFinish];
-        } @catch (NSException *exception) {
-            // This is very bad to detect a stopped schemeTask this should be implemented in a better way
-            // See todo in stopURLSchemeTask...
-            if (![exception.reason isEqualToString: @"This task has already been stopped"]) {
-                @throw exception;
+        [urlSchemeTask didReceiveResponse:response];
+    }];
+}
+
+- (bool) processURLDidReceiveData:(unsigned long long)requestId :(NSData *)data {
+    return [self processURLSchemeTaskCall:requestId :^(id<WKURLSchemeTask> urlSchemeTask) {
+        [urlSchemeTask didReceiveData:data];
+    }];
+}
+
+- (void) processURLDidFinish:(unsigned long long)requestId {
+    [self processURLSchemeTaskCall:requestId :^(id<WKURLSchemeTask> urlSchemeTask) {
+        [urlSchemeTask didFinish];
+    }];
+
+    NSNumber *key = [NSNumber numberWithUnsignedLongLong:requestId];
+    [self removeURLSchemeTask:key];
+}
+
+- (int) processURLRequestReadBodyStream:(unsigned long long)requestId :(void *)buf :(int)bufLen {
+    int res = 0;
+    int *pRes = &res;
+
+    bool hasRequest = [self processURLSchemeTaskCall:requestId :^(id<WKURLSchemeTask> urlSchemeTask) {
+        NSInputStream *stream = urlSchemeTask.request.HTTPBodyStream;
+        if (!stream) {
+            *pRes = -3;
+        } else {
+            NSStreamStatus status = stream.streamStatus;
+             if (status == NSStreamStatusAtEnd) {
+                *pRes = 0;
+            } else if (status != NSStreamStatusOpen) {
+                *pRes = -4;
+            } else if (!stream.hasBytesAvailable) {
+                *pRes = 0;
+            } else {
+                *pRes = [stream read:buf maxLength:bufLen];
             }
         }
-    } @finally {
-        [self.urlRequestsLock lock];
-        [self.urlRequests removeObjectForKey:key]; // This will release the urlSchemeTask which was retained from the dictionary
-        [self.urlRequestsLock unlock];
+    }];
+
+    if (!hasRequest) {
+        res = -2;
     }
+
+    return res;
 }
 
 - (void)webView:(nonnull WKWebView *)webView startURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
@@ -447,6 +487,7 @@
     const char *headerJSON = "";
     const void *body = nil;
     int bodyLen = 0;
+    int hasBodyStream = 0;
 
     NSData *headers = [NSJSONSerialization dataWithJSONObject: urlSchemeTask.request.allHTTPHeaderFields options:0 error: nil];
     if (headers) {
@@ -457,23 +498,85 @@
     if (urlSchemeTask.request.HTTPBody) {
         body = urlSchemeTask.request.HTTPBody.bytes;
         bodyLen = urlSchemeTask.request.HTTPBody.length;
-    } else {
-        // TODO handle HTTPBodyStream
+    } else if (urlSchemeTask.request.HTTPBodyStream) {
+        hasBodyStream = 1;
+        [urlSchemeTask.request.HTTPBodyStream open];
     }
 
-    [self.urlRequestsLock lock];
-    self.urlRequestsId++;
-    unsigned long long requestId = self.urlRequestsId;
-    NSNumber *key = [NSNumber numberWithUnsignedLongLong:requestId];
-    self.urlRequests[key] = urlSchemeTask;
-    [self.urlRequestsLock  unlock];
+    unsigned long long requestId;
+    @synchronized(self.urlRequests) {
+        self.urlRequestsId++;
+        requestId = self.urlRequestsId;
+        NSNumber *key = [NSNumber numberWithUnsignedLongLong:requestId];
+        self.urlRequests[key] = urlSchemeTask;
+    }
 
-    processURLRequest(self, requestId, url, method, headerJSON, body, bodyLen);
+    processURLRequest(self, requestId, url, method, headerJSON, body, bodyLen, hasBodyStream);
 }
 
 - (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
-    // TODO implement the stopping process here in a better way...
-    // As soon as we introduce response body streaming we need to rewrite this nevertheless.
+    NSArray<NSNumber*> *keys;
+    @synchronized(self.urlRequests) {
+        keys = [self.urlRequests allKeys];
+    }
+
+    for (NSNumber *key in keys) {
+        if (self.urlRequests[key] == urlSchemeTask) {
+            [self removeURLSchemeTask:key];
+        }
+    }
+}
+
+- (void) removeURLSchemeTask:(NSNumber *)urlSchemeTaskKey {
+    id<WKURLSchemeTask> urlSchemeTask = nil;
+    @synchronized(self.urlRequests) {
+        urlSchemeTask = self.urlRequests[urlSchemeTaskKey];
+    }
+
+    if (!urlSchemeTask) {
+        return;
+    }
+
+    NSInputStream *stream = urlSchemeTask.request.HTTPBodyStream;
+    if (stream) {
+        [stream close];
+    }
+
+    @synchronized(self.urlRequests) {
+        [self.urlRequests removeObjectForKey:urlSchemeTaskKey]; 
+    }
+}
+
+- (bool)processURLSchemeTaskCall:(unsigned long long)requestId :(schemeTaskCaller)fn {
+    NSNumber *key = [NSNumber numberWithUnsignedLongLong:requestId];
+
+    id<WKURLSchemeTask> urlSchemeTask;
+    @synchronized(self.urlRequests) {
+        urlSchemeTask = self.urlRequests[key];
+    }
+
+    if (urlSchemeTask == nil) {
+        // Stopped task, drop content...
+        return false;
+    }
+
+    @try {
+        fn(urlSchemeTask);
+    } @catch (NSException *exception) {
+        [self removeURLSchemeTask:key];
+
+        // This is very bad to detect a stopped schemeTask this should be implemented in a better way
+        // But it seems to be very tricky to not deadlock when keeping a lock curing executing fn()
+        // It seems like those call switch the thread back to the main thread and then deadlocks when they reentrant want
+        // to get the lock again to start another request or stop it.
+        if ([exception.reason isEqualToString: @"This task has already been stopped"]) {
+            return false;
+        }
+
+        @throw exception;
+    }
+
+    return true;
 }
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {

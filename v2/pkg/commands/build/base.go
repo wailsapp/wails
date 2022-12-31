@@ -302,8 +302,8 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	cmd.Env = os.Environ() // inherit env
 
 	if options.Platform != "windows" {
-		// Use upsertEnv so we don't overwrite user's CGO_CFLAGS
-		cmd.Env = upsertEnv(cmd.Env, "CGO_CFLAGS", func(v string) string {
+		// Use shell.UpsertEnv so we don't overwrite user's CGO_CFLAGS
+		cmd.Env = shell.UpsertEnv(cmd.Env, "CGO_CFLAGS", func(v string) string {
 			if options.Platform == "darwin" {
 				if v != "" {
 					v += " "
@@ -312,8 +312,8 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 			}
 			return v
 		})
-		// Use upsertEnv so we don't overwrite user's CGO_CXXFLAGS
-		cmd.Env = upsertEnv(cmd.Env, "CGO_CXXFLAGS", func(v string) string {
+		// Use shell.UpsertEnv so we don't overwrite user's CGO_CXXFLAGS
+		cmd.Env = shell.UpsertEnv(cmd.Env, "CGO_CXXFLAGS", func(v string) string {
 			if v != "" {
 				v += " "
 			}
@@ -321,7 +321,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 			return v
 		})
 
-		cmd.Env = upsertEnv(cmd.Env, "CGO_ENABLED", func(v string) string {
+		cmd.Env = shell.UpsertEnv(cmd.Env, "CGO_ENABLED", func(v string) string {
 			return "1"
 		})
 		if options.Platform == "darwin" {
@@ -338,7 +338,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 			}
 			addUTIFramework := majorVersion >= 11
 			// Set the minimum Mac SDK to 10.13
-			cmd.Env = upsertEnv(cmd.Env, "CGO_LDFLAGS", func(v string) string {
+			cmd.Env = shell.UpsertEnv(cmd.Env, "CGO_LDFLAGS", func(v string) string {
 				if v != "" {
 					v += " "
 				}
@@ -352,11 +352,11 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 		}
 	}
 
-	cmd.Env = upsertEnv(cmd.Env, "GOOS", func(v string) string {
+	cmd.Env = shell.UpsertEnv(cmd.Env, "GOOS", func(v string) string {
 		return options.Platform
 	})
 
-	cmd.Env = upsertEnv(cmd.Env, "GOARCH", func(v string) string {
+	cmd.Env = shell.UpsertEnv(cmd.Env, "GOARCH", func(v string) string {
 		return options.Arch
 	})
 
@@ -607,23 +607,4 @@ func (b *BaseBuilder) BuildFrontend(outputLogger *clilogger.CLILogger) error {
 
 	pterm.Println("Done.")
 	return nil
-}
-
-func upsertEnv(env []string, key string, update func(v string) string) []string {
-	newEnv := make([]string, len(env), len(env)+1)
-	found := false
-	for i := range env {
-		if strings.HasPrefix(env[i], key+"=") {
-			eqIndex := strings.Index(env[i], "=")
-			val := env[i][eqIndex+1:]
-			newEnv[i] = fmt.Sprintf("%s=%v", key, update(val))
-			found = true
-			continue
-		}
-		newEnv[i] = env[i]
-	}
-	if !found {
-		newEnv = append(newEnv, fmt.Sprintf("%s=%v", key, update("")))
-	}
-	return newEnv
 }

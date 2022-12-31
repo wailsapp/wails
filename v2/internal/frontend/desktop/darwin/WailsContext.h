@@ -29,7 +29,7 @@
 - (void) disableWindowConstraints;
 @end
 
-@interface WailsContext : NSObject <WKURLSchemeHandler,WKScriptMessageHandler,WKNavigationDelegate>
+@interface WailsContext : NSObject <WKURLSchemeHandler,WKScriptMessageHandler,WKNavigationDelegate,WKUIDelegate>
 
 @property (retain) WailsWindow* mainWindow;
 @property (retain) WKWebView* webview;
@@ -89,7 +89,10 @@
 - (void) SaveFileDialog :(NSString*)title :(NSString*)defaultFilename :(NSString*)defaultDirectory :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)showHiddenFiles :(NSString*)filters;
 
 - (void) loadRequest:(NSString*)url;
-- (void) processURLResponse:(unsigned long long)requestId :(int)statusCode :(NSData *)headersString :(NSData*)data;
+- (void) processURLDidReceiveResponse:(unsigned long long)requestId :(int)statusCode :(NSData *)headersJSON;
+- (bool) processURLDidReceiveData:(unsigned long long)requestId :(NSData *)data;
+- (void) processURLDidFinish:(unsigned long long)requestId;
+- (int)  processURLRequestReadBodyStream:(unsigned long long)requestId :(void *)buf :(int)bufLen;
 - (void) ExecJS:(NSString*)script;
 - (NSScreen*) getCurrentScreen;
 

@@ -18,10 +18,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/wailsapp/wails/v2/pkg/assetserver"
+
+	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
+
 	"github.com/labstack/echo/v4"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/menumanager"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -61,6 +64,8 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 
 	var assetHandler http.Handler
 	var wsHandler http.Handler
+	var myLogger *logger.Logger
+
 	_fronendDevServerURL, _ := ctx.Value("frontenddevserverurl").(string)
 	if _fronendDevServerURL == "" {
 		assetdir, _ := ctx.Value("assetdir").(string)
@@ -68,8 +73,11 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 			return c.String(http.StatusOK, assetdir)
 		})
 
+		if _logger := ctx.Value("logger"); _logger != nil {
+			myLogger = _logger.(*logger.Logger)
+		}
 		var err error
-		assetHandler, err = assetserver.NewAssetHandler(ctx, assetServerConfig)
+		assetHandler, err = assetserver.NewAssetHandler(assetServerConfig, myLogger)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -101,7 +109,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 		log.Fatal(err)
 	}
 
-	assetServer, err := assetserver.NewDevAssetServer(ctx, assetHandler, wsHandler, bindingsJSON)
+	assetServer, err := assetserver.NewDevAssetServer(assetHandler, wsHandler, bindingsJSON, ctx.Value("assetdir") != nil, myLogger, runtime.RuntimeAssetsBundle)
 	if err != nil {
 		log.Fatal(err)
 	}

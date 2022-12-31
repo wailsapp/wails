@@ -88,9 +88,11 @@ import (
 	"text/template"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v2/pkg/assetserver"
+
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
+	wailsruntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
@@ -159,7 +161,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		} else {
 			appBindings.DB().UpdateObfuscatedCallMap()
 		}
-		assets, err := assetserver.NewAssetServerMainPage(ctx, bindings, appoptions)
+		assets, err := assetserver.NewAssetServerMainPage(bindings, appoptions, ctx.Value("assetdir") != nil, myLogger, wailsruntime.RuntimeAssetsBundle)
 		if err != nil {
 			log.Fatal(err)
 		}

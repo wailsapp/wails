@@ -165,7 +165,6 @@ float xroot = 0.0f;
 float yroot = 0.0f;
 int dragTime = -1;
 uint mouseButton = 0;
-bool contextMenuDisabled = false;
 
 gboolean buttonPress(GtkWidget *widget, GdkEventButton *event, void* dummy)
 {
@@ -175,8 +174,8 @@ gboolean buttonPress(GtkWidget *widget, GdkEventButton *event, void* dummy)
 		return FALSE;
 	}
 	mouseButton = event->button;
-	if( event->button == 3 && contextMenuDisabled ) {
-		return TRUE;
+	if( event->button == 3 ) {
+		return FALSE;
 	}
 
 	if (event->type == GDK_BUTTON_PRESS && event->button == 1)
@@ -605,12 +604,15 @@ gboolean UnFullscreen(gpointer data) {
 	return G_SOURCE_REMOVE;
 }
 
-bool disableContextMenu(GtkWindow* window) {
+
+// function to disable the context menu but propogate the event
+gboolean disableContextMenu(GtkWidget *widget, WebKitContextMenu *context_menu, GdkEvent *event, WebKitHitTestResult *hit_test_result, gpointer data) {
+	// return true to disable the context menu
 	return TRUE;
 }
 
 void DisableContextMenu(void* webview) {
-	contextMenuDisabled = TRUE;
+	// Disable the context menu but propogate the event
 	g_signal_connect(WEBKIT_WEB_VIEW(webview), "context-menu", G_CALLBACK(disableContextMenu), NULL);
 }
 

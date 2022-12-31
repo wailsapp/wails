@@ -1,0 +1,387 @@
+# Assinatura de Código
+
+Este é um guia sobre como você pode assinar seus binários gerados com Wails no MacOS e Windows. O guia visará ambientes de CI, mais especificamente as GitHub Actions.
+
+## Windows
+
+Primeiro você precisa de um certificado de assinatura de código. Se você ainda não tiver uma, a página de informações da Microsoft lista alguns provedores [aqui](https://docs.microsoft.com/en-us/windows-hardware/drivers/dashboard/get-a-code-signing-certificate). Observe que um certificado EV não é necessário a menos que você precise escrever um software no nível kernel como drivers de dispositivos. Para assinar o seu aplicativo Wails, um certificado de assinatura de código padrão vai dar certo.
+
+Pode ser uma boa ideia verificar com seu provedor de certificados como assinar seus binários na sua máquina local antes de direcionar sistemas de compilação automatizada. só para que você saiba se há exigências especiais. Por exemplo, [aqui](https://www.ssl.com/how-to/using-your-code-signing-certificate/) é o guia de assinatura de código de SSL.com para Windows. Se você sabe como assinar localmente, será mais fácil solucionar quaisquer possíveis problemas em um ambiente de CI. Por exemplo, os certificados de assinatura de código SSL.com exigem a flag `/tr` para [SignTool.exe](https://docs.microsoft.com/en-us/windows/win32/seccrypto/signtool) enquanto outros provedores só precisam da flag `/t` para fornecer o servidor de marcação de tempo. GitHub Actions populares para assinar binários Windows como [este](https://github.com/Dana-Prajea/code-sign-action) não suporta a flag `/tr` no SignTool.exe. Portanto, este guia focará em assinar nosso aplicativo manualmente com comandos do PowerShell, mas você pode usar ações como a ação de [de co-sign-action](https://github.com/Dana-Prajea/code-sign-action) se preferir.
+
+Em primeiro lugar, vamos nos certificar de que somos capazes de construir nosso aplicativo Wails no nosso GitHub CI. Aqui está um pequeno modelo de fluxo de trabalho:
+
+```yaml
+name: "example"
+on:
+  workflow_dispatch:
+    # This Action only starts when you go to Actions and manually run the workflow.
+
+jobs:
+  package:
+    strategy:
+      matrix:
+        platform: [windows-latest, macos-latest]
+        go-version: [1.18]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      # You may need to manually build you frontend manually here, unless you have configured frontend build and install commands in wails.json.
+      - name: Get Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+      - name: Build Wails app
+        run: |
+          wails build
+      - name: upload artifacts macOS
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v2
+        with:
+          name: wails-binaries-macos
+          path: build/bin/*
+      - name: upload artifacts windows
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v2
+        with:
+          name: wails-binaries-windows
+          path: build/bin/*
+```
+
+Em seguida, precisamos dar ao fluxo de trabalho do GitHub acesso ao nosso certificado de assinatura. Isso é feito codificando seu certificado .pfx ou .p12 em uma string base64. Para fazer isso em PowerShell, use o seguinte comando assumindo que seu certificado se chama 'my-cert.p12':
+
+```PowerShell
+certutil -encode .\my-cert.p12 my-cert-base64.txt
+```
+
+Você deve ter seu arquivo .txt com o certificado codificado em base64. Deve começar com _-----BEGIN CERTIFICATE-----_ e terminar com _-----END CERTIFICATE-----_. Agora você precisa criar duas ações secretas no GitHub. Navegue até _Configurações -> Segredos -> Ações_ e crie os dois seguintes segredos:
+
+- **WIN_SIGNING_CERT** com o conteúdo de seu texto codificado no certificado base64.
+- **WIN_SIGNING_CERT_PASSWORD** com o conteúdo da sua senha do certificado.
+
+Agora estamos prontos para implementar a assinatura em nosso fluxo de trabalho usando um dos dois métodos:
+
+### Método 1: Assinar com comandos
+
+Esse método usa comandos PowerShell para assinar nosso aplicativo, e deixa o controle de todo o processo de assinatura.
+
+Após o passo `Build Wails app`, podemos adicionar o seguinte passo ao nosso fluxo de trabalho:
+
+```yaml
+- name: Sign Windows binaries
+    if: matrix.platform == 'windows-latest'
+    run: |
+        echo "Creating certificate file"
+        New-Item -ItemType directory -Path certificate
+        Set-Content -Path certificate\certificate.txt -Value '${{ secrets.WIN_SIGNING_CERT }}'
+        certutil -decode certificate\certificate.txt certificate\certificate.pfx
+        echo "Signing our binaries"
+        & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe' sign /fd <signing algorithm> /t <timestamping server> /f certificate\certificate.pfx /p '${{ secrets.WIN_SIGNING_CERT_PASSWORD }}' <path to binary>
+
+```
+
+Este script cria um novo diretório para o seu arquivo de certificado, cria o arquivo de certificado do nosso segredo base64, converte-o em um arquivo .pfx, e finalmente assina o binário. As seguintes variáveis precisam ser substituídas na última linha:
+
+- **signing algorithm**: geralmente sha256.
+- **timestamping server**: URL para o servidor de timestamping a ser usado com seu certificado.
+- **path to binary**: caminho para o binário que você deseja assinar.
+
+Dado que nossa configuração Wails tem `outputfilename` definido para "app.exe" e que temos um certificado de SSL.com, este é o nosso fluxo de trabalho:
+
+```yaml
+name: "example"
+on:
+  workflow_dispatch:
+    # This Action only starts when you go to Actions and manually run the workflow.
+
+jobs:
+  package:
+    strategy:
+      matrix:
+        platform: [windows-latest, macos-latest]
+        go-version: [1.18]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      # You may need to manually build you frontend here, unless you have configured frontend build and install commands in wails.json.
+      - name: Get Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+      - name: Build Wails app
+        run: |
+          wails build
+      - name: Sign Windows binaries
+        if: matrix.platform == 'windows-latest'
+        run: |
+          echo "Creating certificate file"
+          New-Item -ItemType directory -Path certificate
+          Set-Content -Path certificate\certificate.txt -Value '${{ secrets.WIN_SIGNING_CERT }}'
+          certutil -decode certificate\certificate.txt certificate\certificate.pfx
+          echo "Signing our binaries"
+          & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe' sign /fd sha256 /tr http://ts.ssl.com /f certificate\certificate.pfx /p '${{ secrets.WIN_SIGNING_CERT_PASSWORD }}' .\build\bin\app.exe
+
+      - name: upload artifacts macOS
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v2
+        with:
+          name: wails-binaries-macos
+          path: build/bin/*
+      - name: upload artifacts windows
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v2
+        with:
+          name: wails-binaries-windows
+          path: build/bin/*
+```
+
+### Método 2: assinar automaticamente com Action
+
+É possível usar um código Windows assinando uma ação como [este](https://github.com/marketplace/actions/code-sign-a-file-with-pfx-certificate) um, mas nota que requer um hash SHA1 para o certificado e um nome de certificado. Veja um exemplo de como configurá-lo na [loja da ações](https://github.com/marketplace/actions/code-sign-a-file-with-pfx-certificate).
+
+---
+
+## MacOS
+
+Primeiro você precisa do seu certificado de assinatura de código da Apple. Se você não tem uma, uma pesquisa simples do Google irá ajudá-lo a adquirir uma. Depois de ter o certificado, você precisa exportá-lo e codificá-lo para base64. [Este tutorial](https://localazy.com/blog/how-to-automatically-sign-macos-apps-using-github-actions) te mostra como fazer isso de uma maneira fácil. Depois de ter exportado seu arquivo de certificado .p12, você pode codificá-lo para base64, como visto no tutorial com o seguinte comando:
+
+```bash
+base64 Certificates.p12 | pbcopy
+```
+
+Agora você está pronto para criar alguns segredos de projeto do GitHub, assim como no Windows:
+
+- **APPLE_DEVELOPER_CERTIFICATE_P12_BASE64** com o conteúdo de seu certificado base64 recém-copiado.
+- **APPLE_DEVELOPER_CERTIFICATE_PASSWORD** com o conteúdo da senha do seu certificado.
+- **APPLE_PASSWORD** com o conteúdo de uma senha específica para sua conta Apple-ID que pode gerar [aqui](https://appleid.apple.com/account/manage).
+
+Vamos nos certificar de que somos capazes de construir nosso aplicativo Wails em nosso fluxo de trabalho do GitHub. Aqui está um pequeno modelo:
+
+```yaml
+name: "example"
+on:
+  workflow_dispatch:
+    # This Action only starts when you go to Actions and manually run the workflow.
+
+jobs:
+  package:
+    strategy:
+      matrix:
+        platform: [windows-latest, macos-latest]
+        go-version: [1.18]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      # You may need to manually build you frontend here, unless you have configured frontend build and install commands in wails.json.
+      - name: Get Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+      - name: Build Wails app
+        run: |
+          wails build
+      - name: upload artifacts macOS
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v2
+        with:
+          name: wails-binaries-macos
+          path: build/bin/*
+      - name: upload artifacts windows
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v2
+        with:
+          name: wails-binaries-windows
+          path: build/bin/*
+```
+
+Para assinar o código no macOS, [gon](https://github.com/mitchellh/gon) é uma ferramenta muito útil para a assinatura do código e a comunicação com os servidores Apple, também escrito em Go, e será usado neste guia.
+
+Após o passo `Build Wails app`, adicione o seguinte ao fluxo de trabalho:
+
+```yaml
+- name: MacOS download gon for code signing and app notarization
+  if: matrix.platform == 'macos-latest'
+  run: |
+    brew install mitchellh/gon/gon
+```
+
+Agora precisamos configurar alguns arquivos de configuração do gon no nosso diretório `build/darwin`:
+
+1. gon-sign.json:
+
+```json
+{
+  "source": ["./build/bin/app.app"],
+  "bundle_id": "app.myapp",
+  "apple_id": {
+    "username": "my-appleid@email.com",
+    "password": "@env:APPLE_PASSWORD"
+  },
+  "sign": {
+    "application_identity": "Developer ID Application: My Name"
+  }
+}
+```
+
+Onde o `source` é o binário do seu Wails, `bundle_id` é o seu ID do pacote, `apple_id` contém o seu nome de usuário do ID Apple e a senha do aplicativo que você criou antes, e `sign.application_identity` é sua identidade que você pode encontrar executando o seguinte comando:
+
+```bash
+security find-identity -v -p codesigning
+```
+
+2. entitlements.plist:
+
+```plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>com.apple.security.app-sandbox</key>
+  <true/>
+  <key>com.apple.security.network.client</key>
+  <true/>
+  <key>com.apple.security.network.server</key>
+  <true/>
+  <key>com.apple.security.files.user-selected.read-write</key>
+  <true/>
+  <key>com.apple.security.files.downloads.read-write</key>
+  <true/>
+</dict>
+</plist>
+```
+
+Neste arquivo, você configura os direitos que você precisa para seu aplicativo, por exemplo, permissões de câmera se seu app usa a câmera. Leia mais sobre entitlements [aqui](https://developer.apple.com/documentation/bundleresources/entitlements).
+
+Verifique se você atualizou seu arquivo `Info.plist` com o mesmo pacote de ID que você digitou em `gon-sign.json`. Aqui está um arquivo `Info.plis` de exemplo:
+
+```plist
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>CFBundleName</key><string>MyApp</string>
+    <key>CFBundleExecutable</key><string>app</string>
+    <key>CFBundleIdentifier</key><string>app.myapp</string>
+    <key>CFBundleVersion</key><string>0.1.0</string>
+    <key>CFBundleGetInfoString</key><string>My app is cool and nice and chill and</string>
+    <key>CFBundleShortVersionString</key><string>0.1.0</string>
+    <key>CFBundleIconFile</key><string>iconfile</string>
+    <key>LSMinimumSystemVersion</key><string>10.13.0</string>
+    <key>NSHighResolutionCapable</key><string>true</string>
+    <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
+    <key>NSHumanReadableCopyright</key><string>© Me</string>
+</dict></plist>
+```
+
+Agora estamos prontos para adicionar a etapa de assinatura em nosso fluxo de trabalho após a construção do aplicativo Wails:
+
+```yaml
+- name: Import Code-Signing Certificates for macOS
+  if: matrix.platform == 'macos-latest'
+  uses: Apple-Actions/import-codesign-certs@v1
+  with:
+    # The certificates in a PKCS12 file encoded as a base64 string
+    p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
+    # The password used to import the PKCS12 file.
+    p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
+- name: Sign our macOS binary
+  if: matrix.platform == 'macos-latest'
+  run: |
+    echo "Signing Package"
+    gon -log-level=info ./build/darwin/gon-sign.json
+```
+
+Por favor, note que a assinatura de binários com Apple pode levar a de minutos a horas.
+
+## Arquivo de fluxo combinado:
+
+Aqui está nosso arquivo de fluxo de trabalho do GitHub com Windows + macOS combinados:
+
+```yaml
+name: "example combined"
+on:
+  workflow_dispatch:
+  # This Action only starts when you go to Actions and manually run the workflow.
+
+jobs:
+  package:
+    strategy:
+      matrix:
+        platform: [windows-latest, macos-latest]
+        go-version: [1.18]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      # You may need to manually build you frontend here, unless you have configured frontend build and install commands in wails.json.
+      - name: Get Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+      - name: Build Wails app
+        run: |
+          wails build
+      - name: MacOS download gon for code signing and app notarization
+        if: matrix.platform == 'macos-latest'
+        run: |
+          brew install mitchellh/gon/gon
+      - name: Import Code-Signing Certificates for macOS
+        if: matrix.platform == 'macos-latest'
+        uses: Apple-Actions/import-codesign-certs@v1
+        with:
+          # The certificates in a PKCS12 file encoded as a base64 string
+          p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_P12_BASE64 }}
+          # The password used to import the PKCS12 file.
+          p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
+      - name: Sign our macOS binary
+        if: matrix.platform == 'macos-latest'
+        run: |
+          echo "Signing Package"
+          gon -log-level=info ./build/darwin/gon-sign.json
+      - name: Sign Windows binaries
+        if: matrix.platform == 'windows-latest'
+        run: |
+          echo "Creating certificate file"
+          New-Item -ItemType directory -Path certificate
+          Set-Content -Path certificate\certificate.txt -Value '${{ secrets.WIN_SIGNING_CERT }}'
+          certutil -decode certificate\certificate.txt certificate\certificate.pfx
+          echo "Signing our binaries"
+          & 'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe' sign /fd sha256 /tr http://ts.ssl.com /f certificate\certificate.pfx /p '${{ secrets.WIN_SIGNING_CERT_PASSWORD }}' .\build\bin\Monitor.exe
+      - name: upload artifacts macOS
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v2
+        with:
+          name: wails-binaries-macos
+          path: build/bin/*
+      - name: upload artifacts windows
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v2
+        with:
+          name: wails-binaries-windows
+          path: build/bin/*
+```
+
+# Notas finais
+
+Este guia inspirado no projeto RiftShare e seu fluxo de trabalho, o que é altamente recomendado para verificar [aqui](https://github.com/achhabra2/riftshare/blob/main/.github/workflows/build.yaml).

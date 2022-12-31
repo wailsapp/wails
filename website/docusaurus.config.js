@@ -225,12 +225,8 @@ module.exports = async function configCreatorAsync() {
                   href: "https://twitter.com/wailsapp",
                 },
                 {
-                  label: "Slack",
-                  href: "https://gophers.slack.com/messages/CJ4P9F7MZ/",
-                },
-                {
-                  label: "Slack invite",
-                  href: "https://invite.slack.golangbridge.org/",
+                  label: "Discord",
+                  href: "https://discord.gg/JDdSxwjhGf",
                 },
               ],
             },

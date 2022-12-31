@@ -32,6 +32,7 @@ func (y *Dnf) Packages() packagemap {
 			{Name: "gtk3-devel", SystemPackage: true, Library: true},
 		},
 		"libwebkit": []*Package{
+			{Name: "webkit2gtk4.0-devel", SystemPackage: true, Library: true},
 			{Name: "webkit2gtk3-devel", SystemPackage: true, Library: true},
 			// {Name: "webkitgtk3-devel", SystemPackage: true, Library: true},
 		},
