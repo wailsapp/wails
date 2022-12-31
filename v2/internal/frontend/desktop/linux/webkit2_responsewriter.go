@@ -21,7 +21,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/assetserver"
 )
 
 type webKitResponseWriter struct {
