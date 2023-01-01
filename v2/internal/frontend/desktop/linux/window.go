@@ -721,11 +721,16 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	C.webkit_user_content_manager_register_script_message_handler(result.cWebKitUserContentManager(), external)
 	C.setupInvokeSignal(result.contentManager)
 
+	var webviewGpuPolicy int
+	if appoptions.Linux != nil {
+		webviewGpuPolicy = int(appoptions.Linux.WebviewGpuPolicy)
+	}
+
 	webview := C.setupWebview(
 		result.contentManager,
 		result.asGTKWindow(),
 		bool2Cint(appoptions.HideWindowOnClose),
-		C.int(appoptions.Linux.WebviewGpuPolicy),
+		C.int(webviewGpuPolicy),
 	)
 	result.webview = unsafe.Pointer(webview)
 	buttonPressedName := C.CString("button-press-event")
