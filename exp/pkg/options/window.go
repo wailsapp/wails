@@ -14,7 +14,7 @@ const (
 	WindowStateFullscreen
 )
 
-type Window struct {
+type WebviewWindow struct {
 	// Alias is a human-readable name for the window. This can be used to reference the window in the frontend.
 	Alias                   string
 	Title                   string
@@ -40,7 +40,7 @@ type Window struct {
 	Hidden                  bool
 }
 
-var WindowDefaults = &Window{
+var WindowDefaults = &WebviewWindow{
 	Title:  "",
 	Width:  800,
 	Height: 600,

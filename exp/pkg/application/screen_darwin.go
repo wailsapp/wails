@@ -145,7 +145,7 @@ func getScreens() ([]*Screen, error) {
 	return displays, nil
 }
 
-func getScreenForWindow(window *macosWindow) (*Screen, error) {
+func getScreenForWindow(window *macosWebviewWindow) (*Screen, error) {
 	cScreen := C.getScreenForWindow(window.nsWindow)
 	return cScreenToScreen(cScreen), nil
 }

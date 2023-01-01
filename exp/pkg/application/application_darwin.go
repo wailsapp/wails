@@ -9,7 +9,7 @@ package application
 
 #include "application.h"
 #include "app_delegate.h"
-#include "window_delegate.h"
+#include "webview_window_delegate.h"
 #include <stdlib.h>
 
 extern void registerListener(unsigned int event);
@@ -28,7 +28,7 @@ static void init(void) {
 		if (eventWindow == nil ) {
 			return event;
         }
-		WindowDelegate* windowDelegate = (WindowDelegate*)[eventWindow delegate];
+		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[eventWindow delegate];
 		if (windowDelegate == nil) {
 			return event;
 		}
@@ -43,7 +43,7 @@ static void init(void) {
 		if (eventWindow == nil ) {
 			return event;
         }
-		WindowDelegate* windowDelegate = (WindowDelegate*)[eventWindow delegate];
+		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[eventWindow delegate];
 		if (windowDelegate == nil) {
 			return event;
 		}
@@ -100,7 +100,7 @@ static char* getAppName(void) {
 static unsigned int getCurrentWindowID(void) {
 	NSWindow *window = [NSApp keyWindow];
 	// Get the window delegate
-	WindowDelegate *delegate = (WindowDelegate*)[window delegate];
+	WebviewWindowDelegate *delegate = (WebviewWindowDelegate*)[window delegate];
 	return delegate.windowId;
 }
 

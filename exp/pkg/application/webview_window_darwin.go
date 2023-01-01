@@ -7,7 +7,7 @@ package application
 #cgo LDFLAGS: -framework Cocoa -framework WebKit
 
 #include "application.h"
-#include "window_delegate.h"
+#include "webview_window_delegate.h"
 #include <stdlib.h>
 #include "Cocoa/Cocoa.h"
 #import <WebKit/WebKit.h>
@@ -23,7 +23,7 @@ void* windowNew(unsigned int id, int width, int height) {
 		defer:NO];
 
 	// Create delegate
-	WindowDelegate* delegate = [[WindowDelegate alloc] init];
+	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
 	// Set delegate
 	[window setDelegate:delegate];
 	delegate.windowId = id;
@@ -62,7 +62,7 @@ void* windowNew(unsigned int id, int width, int height) {
 void setInvisibleTitleBarHeight(void* window, unsigned int height) {
 	NSWindow* nsWindow = (NSWindow*)window;
 	// Get delegate
-	WindowDelegate* delegate = (WindowDelegate*)[nsWindow delegate];
+	WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[nsWindow delegate];
 	// Set height
 	delegate.invisibleTitleBarHeight = height;
 }
@@ -82,7 +82,7 @@ void windowSetInvisibleTitleBar(void* nsWindow, unsigned int height) {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSWindow* window = (NSWindow*)nsWindow;
 		// Get delegate
-		WindowDelegate* delegate = (WindowDelegate*)[window delegate];
+		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[window delegate];
 		// Set height
 		delegate.invisibleTitleBarHeight = height;
 	});
@@ -124,7 +124,7 @@ void navigationLoadURL(void* nsWindow, char* url) {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSURL* nsURL = [NSURL URLWithString:[NSString stringWithUTF8String:url]];
 		NSURLRequest* request = [NSURLRequest requestWithURL:nsURL];
-		[[(WindowDelegate*)[(NSWindow*)nsWindow delegate] webView] loadRequest:request];
+		[[(WebviewWindowDelegate*)[(NSWindow*)nsWindow delegate] webView] loadRequest:request];
 		free(url);
 	});
 }
@@ -173,7 +173,7 @@ void windowEnableDevTools(void* nsWindow) {
 	// Enable devtools on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		// Get window delegate
-		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(NSWindow*)nsWindow delegate];
 		// Enable devtools in webview
 		[delegate.webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
 	});
@@ -184,7 +184,7 @@ void windowResetZoom(void* nsWindow) {
 	// Reset zoom on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		// Get window delegate
-		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(NSWindow*)nsWindow delegate];
 		// Reset zoom
 		[delegate.webView setMagnification:1.0];
 	});
@@ -195,7 +195,7 @@ void windowZoomIn(void* nsWindow) {
 	// Zoom in on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		// Get window delegate
-		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(NSWindow*)nsWindow delegate];
 		// Zoom in
 		[delegate.webView setMagnification:delegate.webView.magnification + 0.05];
 	});
@@ -206,7 +206,7 @@ void windowZoomOut(void* nsWindow) {
 	// Zoom out on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		// Get window delegate
-		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(NSWindow*)nsWindow delegate];
 		// Zoom out
 		if( delegate.webView.magnification > 1.05 ) {
 			[delegate.webView setMagnification:delegate.webView.magnification - 0.05];
@@ -228,7 +228,7 @@ void windowSetPosition(void* nsWindow, int x, int y) {
 void windowExecJS(void* nsWindow, const char* js) {
 	// Execute JS on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(NSWindow*)nsWindow delegate];
 		[delegate.webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
 		free((void*)js);
 	});
@@ -243,7 +243,7 @@ void windowSetTranslucent(void* nsWindow) {
 		NSWindow* window = (NSWindow*)nsWindow;
 
 		// Get window delegate
-		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(NSWindow*)nsWindow delegate];
 
 		id contentView = [window contentView];
 		NSVisualEffectView *effectView = [NSVisualEffectView alloc];
@@ -261,7 +261,7 @@ void webviewSetTransparent(void* nsWindow) {
 	// Set webview transparent on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		// Get window delegate
-		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(NSWindow*)nsWindow delegate];
 		// Set webview background transparent
 		[delegate.webView setValue:@NO forKey:@"drawsBackground"];
 	});
@@ -272,7 +272,7 @@ void webviewSetBackgroundColour(void* nsWindow, int r, int g, int b, int alpha) 
 	// Set webview background color on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		// Get window delegate
-		WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)nsWindow delegate];
+		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(NSWindow*)nsWindow delegate];
 		// Set webview background color
 		[delegate.webView setValue:[NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:alpha/255.0] forKey:@"backgroundColor"];
 	});
@@ -566,7 +566,7 @@ static void windowRenderHTML(void *window, const char *html) {
 		// get main window
 		NSWindow* nsWindow = (NSWindow*)window;
 		// get window delegate
-		WindowDelegate* windowDelegate = (WindowDelegate*)[nsWindow delegate];
+		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
 		// render html
 		[(WKWebView*)windowDelegate.webView loadHTMLString:[NSString stringWithUTF8String:html] baseURL:nil];
 	});
@@ -577,7 +577,7 @@ static void windowInjectCSS(void *window, const char *css) {
 		// get main window
 		NSWindow* nsWindow = (NSWindow*)window;
 		// get window delegate
-		WindowDelegate* windowDelegate = (WindowDelegate*)[nsWindow delegate];
+		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
 		// inject css
 		[(WKWebView*)windowDelegate.webView evaluateJavaScript:[NSString stringWithFormat:@"(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%@')); document.head.appendChild(style); })();", [NSString stringWithUTF8String:css]] completionHandler:nil];
         free((void*)css);
@@ -685,12 +685,12 @@ import (
 
 var showDevTools = func(window unsafe.Pointer) {}
 
-type macosWindow struct {
+type macosWebviewWindow struct {
 	nsWindow unsafe.Pointer
-	parent   *Window
+	parent   *WebviewWindow
 }
 
-func (w *macosWindow) setFrameless(frameless bool) {
+func (w *macosWebviewWindow) setFrameless(frameless bool) {
 	C.windowSetFrameless(w.nsWindow, C.bool(frameless))
 	if frameless {
 		C.windowSetTitleBarAppearsTransparent(w.nsWindow, C.bool(true))
@@ -704,119 +704,119 @@ func (w *macosWindow) setFrameless(frameless bool) {
 	}
 }
 
-func (w *macosWindow) getScreen() (*Screen, error) {
+func (w *macosWebviewWindow) getScreen() (*Screen, error) {
 	return getScreenForWindow(w)
 }
 
-func (w *macosWindow) show() {
+func (w *macosWebviewWindow) show() {
 	C.windowShow(w.nsWindow)
 }
 
-func (w *macosWindow) hide() {
+func (w *macosWebviewWindow) hide() {
 	C.windowHide(w.nsWindow)
 }
 
-func (w *macosWindow) setFullscreenButtonEnabled(enabled bool) {
+func (w *macosWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
 	C.setFullscreenButtonEnabled(w.nsWindow, C.bool(enabled))
 }
 
-func (w *macosWindow) disableSizeConstraints() {
+func (w *macosWebviewWindow) disableSizeConstraints() {
 	C.windowDisableSizeConstraints(w.nsWindow)
 }
 
-func (w *macosWindow) unfullscreen() {
+func (w *macosWebviewWindow) unfullscreen() {
 	C.windowUnFullscreen(w.nsWindow)
 }
 
-func (w *macosWindow) fullscreen() {
+func (w *macosWebviewWindow) fullscreen() {
 	C.windowFullscreen(w.nsWindow)
 }
 
-func (w *macosWindow) unminimise() {
+func (w *macosWebviewWindow) unminimise() {
 	C.windowUnminimise(w.nsWindow)
 }
 
-func (w *macosWindow) unmaximise() {
+func (w *macosWebviewWindow) unmaximise() {
 	C.windowUnmaximise(w.nsWindow)
 }
 
-func (w *macosWindow) maximise() {
+func (w *macosWebviewWindow) maximise() {
 	C.windowMaximise(w.nsWindow)
 }
 
-func (w *macosWindow) minimise() {
+func (w *macosWebviewWindow) minimise() {
 	C.windowMinimise(w.nsWindow)
 }
 
-func (w *macosWindow) on(eventID uint) {
+func (w *macosWebviewWindow) on(eventID uint) {
 	C.registerListener(C.uint(eventID))
 }
 
-func (w *macosWindow) zoom() {
+func (w *macosWebviewWindow) zoom() {
 	C.windowZoom(w.nsWindow)
 }
 
-func (w *macosWindow) minimize() {
+func (w *macosWebviewWindow) minimize() {
 	C.windowMiniaturize(w.nsWindow)
 }
 
-func (w *macosWindow) windowZoom() {
+func (w *macosWebviewWindow) windowZoom() {
 	C.windowZoom(w.nsWindow)
 }
 
-func (w *macosWindow) close() {
+func (w *macosWebviewWindow) close() {
 	C.windowClose(w.nsWindow)
 }
 
-func (w *macosWindow) zoomIn() {
+func (w *macosWebviewWindow) zoomIn() {
 	C.windowZoomIn(w.nsWindow)
 }
 
-func (w *macosWindow) zoomOut() {
+func (w *macosWebviewWindow) zoomOut() {
 	C.windowZoomOut(w.nsWindow)
 }
 
-func (w *macosWindow) resetZoom() {
+func (w *macosWebviewWindow) resetZoom() {
 	C.windowResetZoom(w.nsWindow)
 }
 
-func (w *macosWindow) toggleDevTools() {
+func (w *macosWebviewWindow) toggleDevTools() {
 	showDevTools(w.nsWindow)
 }
 
-func (w *macosWindow) reload() {
+func (w *macosWebviewWindow) reload() {
 	//TODO: Implement
-	println("reload called on Window", w.parent.id)
+	println("reload called on WebviewWindow", w.parent.id)
 }
 
-func (w *macosWindow) forceReload() {
+func (w *macosWebviewWindow) forceReload() {
 	//TODO: Implement
-	println("forceReload called on Window", w.parent.id)
+	println("forceReload called on WebviewWindow", w.parent.id)
 }
 
-func (w *macosWindow) center() {
+func (w *macosWebviewWindow) center() {
 	C.windowCenter(w.nsWindow)
 }
 
-func (w *macosWindow) isMinimised() bool {
+func (w *macosWebviewWindow) isMinimised() bool {
 	return w.syncMainThreadReturningBool(func() bool {
 		return bool(C.windowIsMinimised(w.nsWindow))
 	})
 }
 
-func (w *macosWindow) isMaximised() bool {
+func (w *macosWebviewWindow) isMaximised() bool {
 	return w.syncMainThreadReturningBool(func() bool {
 		return bool(C.windowIsMaximised(w.nsWindow))
 	})
 }
 
-func (w *macosWindow) isFullscreen() bool {
+func (w *macosWebviewWindow) isFullscreen() bool {
 	return w.syncMainThreadReturningBool(func() bool {
 		return bool(C.windowIsFullscreen(w.nsWindow))
 	})
 }
 
-func (w *macosWindow) syncMainThreadReturningBool(fn func() bool) bool {
+func (w *macosWebviewWindow) syncMainThreadReturningBool(fn func() bool) bool {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	var result bool
@@ -828,59 +828,59 @@ func (w *macosWindow) syncMainThreadReturningBool(fn func() bool) bool {
 	return result
 }
 
-func (w *macosWindow) restore() {
+func (w *macosWebviewWindow) restore() {
 	// restore window to normal size
 	C.windowRestore(w.nsWindow)
 }
 
-func (w *macosWindow) restoreWindow() {
+func (w *macosWebviewWindow) restoreWindow() {
 	C.windowRestore(w.nsWindow)
 }
 
-func (w *macosWindow) execJS(js string) {
-	println("execJS called on Window", w.parent.id)
+func (w *macosWebviewWindow) execJS(js string) {
+	println("execJS called on WebviewWindow", w.parent.id)
 	C.windowExecJS(w.nsWindow, C.CString(js))
 }
 
-func (w *macosWindow) setURL(url string) {
+func (w *macosWebviewWindow) setURL(url string) {
 	C.navigationLoadURL(w.nsWindow, C.CString(url))
 }
 
-func (w *macosWindow) setAlwaysOnTop(alwaysOnTop bool) {
+func (w *macosWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
 	C.windowSetAlwaysOnTop(w.nsWindow, C.bool(alwaysOnTop))
 }
 
-func newWindowImpl(parent *Window) *macosWindow {
-	result := &macosWindow{
+func newWindowImpl(parent *WebviewWindow) *macosWebviewWindow {
+	result := &macosWebviewWindow{
 		parent: parent,
 	}
 	return result
 }
 
-func (w *macosWindow) setTitle(title string) {
+func (w *macosWebviewWindow) setTitle(title string) {
 	cTitle := C.CString(title)
 	C.windowSetTitle(w.nsWindow, cTitle)
 }
 
-func (w *macosWindow) setSize(width, height int) {
+func (w *macosWebviewWindow) setSize(width, height int) {
 	C.windowSetSize(w.nsWindow, C.int(width), C.int(height))
 }
 
-func (w *macosWindow) setMinSize(width, height int) {
+func (w *macosWebviewWindow) setMinSize(width, height int) {
 	C.windowSetMinSize(w.nsWindow, C.int(width), C.int(height))
 }
-func (w *macosWindow) setMaxSize(width, height int) {
+func (w *macosWebviewWindow) setMaxSize(width, height int) {
 	C.windowSetMaxSize(w.nsWindow, C.int(width), C.int(height))
 }
 
-func (w *macosWindow) setResizable(resizable bool) {
+func (w *macosWebviewWindow) setResizable(resizable bool) {
 	C.windowSetResizable(w.nsWindow, C.bool(resizable))
 }
-func (w *macosWindow) enableDevTools() {
+func (w *macosWebviewWindow) enableDevTools() {
 	C.windowEnableDevTools(w.nsWindow)
 }
 
-func (w *macosWindow) size() (int, int) {
+func (w *macosWebviewWindow) size() (int, int) {
 	var width, height C.int
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -892,11 +892,11 @@ func (w *macosWindow) size() (int, int) {
 	return int(width), int(height)
 }
 
-func (w *macosWindow) setPosition(x, y int) {
+func (w *macosWebviewWindow) setPosition(x, y int) {
 	C.windowSetPosition(w.nsWindow, C.int(x), C.int(y))
 }
 
-func (w *macosWindow) width() int {
+func (w *macosWebviewWindow) width() int {
 	var width C.int
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -907,7 +907,7 @@ func (w *macosWindow) width() int {
 	wg.Wait()
 	return int(width)
 }
-func (w *macosWindow) height() int {
+func (w *macosWebviewWindow) height() int {
 	var height C.int
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -919,7 +919,7 @@ func (w *macosWindow) height() int {
 	return int(height)
 }
 
-func (w *macosWindow) run() {
+func (w *macosWebviewWindow) run() {
 	for eventId := range w.parent.eventListeners {
 		w.on(eventId)
 	}
@@ -998,14 +998,14 @@ func (w *macosWindow) run() {
 	})
 }
 
-func (w *macosWindow) setBackgroundColour(colour *options.RGBA) {
+func (w *macosWebviewWindow) setBackgroundColour(colour *options.RGBA) {
 	if colour == nil {
 		return
 	}
 	C.windowSetBackgroundColour(w.nsWindow, C.int(colour.Red), C.int(colour.Green), C.int(colour.Blue), C.int(colour.Alpha))
 }
 
-func (w *macosWindow) position() (int, int) {
+func (w *macosWebviewWindow) position() (int, int) {
 	var x, y C.int
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -1017,11 +1017,11 @@ func (w *macosWindow) position() (int, int) {
 	return int(x), int(y)
 }
 
-func (w *macosWindow) destroy() {
+func (w *macosWebviewWindow) destroy() {
 	C.windowDestroy(w.nsWindow)
 }
 
-func (w *macosWindow) setHTML(html string) {
+func (w *macosWebviewWindow) setHTML(html string) {
 	// Convert HTML to C string
 	cHTML := C.CString(html)
 	// Render HTML

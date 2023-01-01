@@ -280,7 +280,7 @@ func main() {
 			app.NewInfoDialog().SetMessage(result).Show()
 		}
 	})
-	saveMenu.Add("Select File (Attach To Window)").OnClick(func(ctx *application.Context) {
+	saveMenu.Add("Select File (Attach To WebviewWindow)").OnClick(func(ctx *application.Context) {
 		result, _ := app.NewSaveFileDialog().
 			AttachToWindow(app.CurrentWindow()).
 			PromptForSingleSelection()
@@ -324,8 +324,8 @@ func main() {
 
 	app.SetMenu(menu)
 
-	app.NewWindow()
-	app.NewWindow()
+	app.NewWebviewWindow()
+	app.NewWebviewWindow()
 
 	err := app.Run()
 

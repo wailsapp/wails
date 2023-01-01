@@ -132,7 +132,7 @@ func newWindowMenu() *MenuItem {
 	menu := NewMenu()
 	menu.AddRole(Minimize)
 	menu.AddRole(Zoom)
-	subMenu := newSubMenuItem("Window")
+	subMenu := newSubMenuItem("WebviewWindow")
 	subMenu.submenu = menu
 	return subMenu
 }

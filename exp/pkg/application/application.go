@@ -71,7 +71,7 @@ type App struct {
 	applicationEventListenersLock sync.RWMutex
 
 	// Windows
-	windows           map[uint]*Window
+	windows           map[uint]*WebviewWindow
 	windowsLock       sync.Mutex
 	windowAliases     map[string]uint
 	windowAliasesLock sync.Mutex
@@ -114,11 +114,11 @@ func (a *App) On(eventType events.ApplicationEventType, callback func()) {
 		a.impl.on(eventID)
 	}
 }
-func (a *App) NewWindow() *Window {
-	return a.NewWindowWithOptions(nil)
+func (a *App) NewWebviewWindow() *WebviewWindow {
+	return a.NewWebviewWindowWithOptions(nil)
 }
 
-func (a *App) NewWindowWithOptions(windowOptions *options.Window) *Window {
+func (a *App) NewWebviewWindowWithOptions(windowOptions *options.WebviewWindow) *WebviewWindow {
 	// Ensure we have sane defaults
 	if windowOptions == nil {
 		windowOptions = options.WindowDefaults
@@ -127,7 +127,7 @@ func (a *App) NewWindowWithOptions(windowOptions *options.Window) *Window {
 	newWindow := NewWindow(windowOptions)
 	id := newWindow.id
 	if a.windows == nil {
-		a.windows = make(map[uint]*Window)
+		a.windows = make(map[uint]*WebviewWindow)
 	}
 	a.windowsLock.Lock()
 	a.windows[id] = newWindow
@@ -229,7 +229,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	window, ok := a.windows[event.windowId]
 	a.windowsLock.Unlock()
 	if !ok {
-		log.Printf("Window #%d not found", event.windowId)
+		log.Printf("WebviewWindow #%d not found", event.windowId)
 		return
 	}
 	// Get callback from window
@@ -242,7 +242,7 @@ func (a *App) handleWindowEvent(event *WindowEvent) {
 	window, ok := a.windows[event.WindowID]
 	a.windowsLock.Unlock()
 	if !ok {
-		log.Printf("Window #%d not found", event.WindowID)
+		log.Printf("WebviewWindow #%d not found", event.WindowID)
 		return
 	}
 	window.handleWindowEvent(event.EventID)
@@ -257,7 +257,7 @@ func (a *App) handleMenuItemClicked(menuItemID uint) {
 	menuItem.handleClick()
 }
 
-func (a *App) CurrentWindow() *Window {
+func (a *App) CurrentWindow() *WebviewWindow {
 	if a.impl == nil {
 		return nil
 	}

@@ -2,13 +2,13 @@
 
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
-#import "window_delegate.h"
+#import "webview_window_delegate.h"
 #import "../events/events.h"
 
 extern void processMessage(unsigned int, const char*);
 extern bool hasListeners(unsigned int);
 
-@implementation WindowDelegate
+@implementation WebviewWindowDelegate
 
 - (BOOL)windowShouldClose:(NSWindow *)sender {
     if( self.hideOnClose ) {
@@ -39,7 +39,7 @@ extern bool hasListeners(unsigned int);
 - (void)handleLeftMouseDown:(NSEvent *)event {
     self.leftMouseEvent = event;
     NSWindow *window = [event window];
-    WindowDelegate* delegate = (WindowDelegate*)[window delegate];
+    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[window delegate];
     if( self.invisibleTitleBarHeight > 0 ) {
         NSPoint location = [event locationInWindow];
         NSRect frame = [window frame];

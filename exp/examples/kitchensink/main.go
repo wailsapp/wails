@@ -110,7 +110,7 @@ func main() {
 	mySystray.SetMenu(myMenu)
 	mySystray.SetIconPosition(application.NSImageLeading)
 
-	myWindow := app.NewWindowWithOptions(&options.Window{
+	myWindow := app.NewWebviewWindowWithOptions(&options.WebviewWindow{
 		Title:         "Kitchen Sink",
 		Width:         600,
 		Height:        400,
@@ -183,9 +183,9 @@ func main() {
 			println(myWindow.ID(), "WindowDidExitVersionBrowser")
 		})
 	*/
-	var myWindow2 *application.Window
+	var myWindow2 *application.WebviewWindow
 	var myWindow2Lock sync.RWMutex
-	myWindow2 = app.NewWindowWithOptions(&options.Window{
+	myWindow2 = app.NewWebviewWindowWithOptions(&options.WebviewWindow{
 		Title:       "#2",
 		Width:       1024,
 		Height:      768,

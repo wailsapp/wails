@@ -8,7 +8,7 @@ package application
 
 #import <Cocoa/Cocoa.h>
 
-#include "window_delegate.h"
+#include "webview_window_delegate.h"
 
 @interface _WKInspector : NSObject
 - (void)show;
@@ -21,7 +21,7 @@ package application
 
 void showDevTools(void *window) {
     // Get the window delegate
-    WindowDelegate* delegate = (WindowDelegate*)[(NSWindow*)window delegate];
+    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(NSWindow*)window delegate];
     dispatch_async(dispatch_get_main_queue(), ^{
         [delegate.webView._inspector show];
     });

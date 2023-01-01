@@ -158,7 +158,7 @@ type OpenFileDialog struct {
 	message    string
 	buttonText string
 	directory  string
-	window     *Window
+	window     *WebviewWindow
 
 	impl openFileDialogImpl
 }
@@ -198,7 +198,7 @@ func (d *OpenFileDialog) TreatsFilePackagesAsDirectories(treatsFilePackagesAsDir
 	return d
 }
 
-func (d *OpenFileDialog) AttachToWindow(window *Window) *OpenFileDialog {
+func (d *OpenFileDialog) AttachToWindow(window *WebviewWindow) *OpenFileDialog {
 	d.window = window
 	return d
 }
@@ -295,7 +295,7 @@ type SaveFileDialog struct {
 	filename                        string
 	buttonText                      string
 
-	window *Window
+	window *WebviewWindow
 
 	impl saveFileDialogImpl
 }
@@ -329,7 +329,7 @@ func (d *SaveFileDialog) SetDirectory(directory string) *SaveFileDialog {
 	return d
 }
 
-func (d *SaveFileDialog) AttachToWindow(window *Window) *SaveFileDialog {
+func (d *SaveFileDialog) AttachToWindow(window *WebviewWindow) *SaveFileDialog {
 	d.window = window
 	return d
 }
