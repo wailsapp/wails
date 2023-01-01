@@ -2,7 +2,6 @@ package assetserver
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -10,8 +9,6 @@ import (
 
 	"golang.org/x/net/html"
 
-	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
-	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
@@ -21,41 +18,48 @@ const (
 	ipcJSPath     = "/wails/ipc.js"
 )
 
+type RuntimeAssets interface {
+	DesktopIPC() []byte
+	WebsocketIPC() []byte
+	RuntimeDesktopJS() []byte
+}
+
 type AssetServer struct {
 	handler   http.Handler
 	wsHandler http.Handler
 	runtimeJS []byte
 	ipcJS     func(*http.Request) []byte
 
-	logger *logger.Logger
+	logger  Logger
+	runtime RuntimeAssets
 
 	servingFromDisk     bool
 	appendSpinnerToBody bool
 }
 
-func NewAssetServerMainPage(ctx context.Context, bindingsJSON string, options *options.App) (*AssetServer, error) {
+func NewAssetServerMainPage(bindingsJSON string, options *options.App, servingFromDisk bool, logger Logger, runtime RuntimeAssets) (*AssetServer, error) {
 	assetOptions, err := BuildAssetServerConfig(options)
 	if err != nil {
 		return nil, err
 	}
-	return NewAssetServer(ctx, bindingsJSON, assetOptions)
+	return NewAssetServer(bindingsJSON, assetOptions, servingFromDisk, logger, runtime)
 }
 
-func NewAssetServer(ctx context.Context, bindingsJSON string, options assetserver.Options) (*AssetServer, error) {
-	handler, err := NewAssetHandler(ctx, options)
+func NewAssetServer(bindingsJSON string, options assetserver.Options, servingFromDisk bool, logger Logger, runtime RuntimeAssets) (*AssetServer, error) {
+	handler, err := NewAssetHandler(options, logger)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewAssetServerWithHandler(ctx, handler, bindingsJSON)
+	return NewAssetServerWithHandler(handler, bindingsJSON, servingFromDisk, logger, runtime)
 }
 
-func NewAssetServerWithHandler(ctx context.Context, handler http.Handler, bindingsJSON string) (*AssetServer, error) {
+func NewAssetServerWithHandler(handler http.Handler, bindingsJSON string, servingFromDisk bool, logger Logger, runtime RuntimeAssets) (*AssetServer, error) {
 	var buffer bytes.Buffer
 	if bindingsJSON != "" {
 		buffer.WriteString(`window.wailsbindings='` + bindingsJSON + `';` + "\n")
 	}
-	buffer.Write(runtime.RuntimeDesktopJS)
+	buffer.Write(runtime.RuntimeDesktopJS())
 
 	result := &AssetServer{
 		handler:   handler,
@@ -65,11 +69,9 @@ func NewAssetServerWithHandler(ctx context.Context, handler http.Handler, bindin
 		// If so, this means we are in dev mode and are serving assets off disk.
 		// We indicate this through the `servingFromDisk` flag to ensure requests
 		// aren't cached in dev mode.
-		servingFromDisk: ctx.Value("assetdir") != nil,
-	}
-
-	if _logger := ctx.Value("logger"); _logger != nil {
-		result.logger = _logger.(*logger.Logger)
+		servingFromDisk: servingFromDisk,
+		logger:          logger,
+		runtime:         runtime,
 	}
 
 	return result, nil
@@ -121,7 +123,7 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		d.writeBlob(rw, path, d.runtimeJS)
 
 	case ipcJSPath:
-		content := runtime.DesktopIPC
+		content := d.runtime.DesktopIPC()
 		if d.ipcJS != nil {
 			content = d.ipcJS(req)
 		}
