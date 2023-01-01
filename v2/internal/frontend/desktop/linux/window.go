@@ -229,19 +229,18 @@ GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowO
 	WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
 	webkit_settings_set_user_agent_with_application_details(settings, "wails.io", "");
 
-	if(gpuPolicy < 0 || gpuPolicy > 2) {
-		gpuPolicy = 1; // fall back to on_demand when an unknown policy is set
-	}
 	switch (gpuPolicy) {
 		case 0:
-		  webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS);
+			webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS);
 		  break;
 		case 1:
-		  webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND);
+			webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND);
 		  break;
 		case 2:
-		  webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER);
+			webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER);
 		  break;
+		default:
+			webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND);
 	}
 	return webview;
 }
