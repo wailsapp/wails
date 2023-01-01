@@ -412,7 +412,12 @@ func (f *Frontend) setupChromium() {
 	if opts := f.frontendOptions.Windows; opts != nil {
 		chromium.DataPath = opts.WebviewUserDataPath
 		chromium.BrowserPath = opts.WebviewBrowserPath
+
+		if opts.WebviewGpuIsDisabled {
+			chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
+		}
 	}
+
 	chromium.MessageCallback = f.processMessage
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
@@ -420,6 +425,7 @@ func (f *Frontend) setupChromium() {
 		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
 		return false
 	}
+
 	chromium.Embed(f.mainWindow.Handle())
 	chromium.Resize()
 	settings, err := chromium.GetSettings()

@@ -2,6 +2,7 @@ package options
 
 import (
 	"context"
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"html"
 	"io/fs"
 	"log"
@@ -9,7 +10,6 @@ import (
 	"runtime"
 
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 
