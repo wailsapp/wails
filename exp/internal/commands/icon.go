@@ -9,14 +9,14 @@ import (
 	"strings"
 
 	"github.com/jackmordaunt/icns/v2"
-
 	"github.com/leaanthony/winicon"
+	"github.com/wailsapp/wails/exp/internal/commands/examples"
 )
 
 type IconOptions struct {
-	Input string `description:"The input image file"`
-	Sizes string `description:"The sizes to generate in .ico file (comma separated)"`
-
+	Example         bool   `description:"Generate example icon file (appicon.png) in the current directory"`
+	Input           string `description:"The input image file"`
+	Sizes           string `description:"The sizes to generate in .ico file (comma separated)"`
 	WindowsFilename string `description:"The output filename for the Windows icon"`
 	MacFilename     string `description:"The output filename for the Mac icon bundle"`
 }
@@ -29,7 +29,12 @@ func (i *IconOptions) Default() *IconOptions {
 	}
 }
 
-func Icon(options *IconOptions) error {
+func GenerateIcon(options *IconOptions) error {
+
+	if options.Example {
+		return generateExampleIcon()
+	}
+
 	if options.Input == "" {
 		return fmt.Errorf("input is required")
 	}
@@ -39,9 +44,13 @@ func Icon(options *IconOptions) error {
 	}
 
 	// Parse sizes
-	sizes, err := parseSizes(options.Sizes)
-	if err != nil {
-		return err
+	var sizes = []int{256, 128, 64, 48, 32, 16}
+	var err error
+	if options.Sizes != "" {
+		sizes, err = parseSizes(options.Sizes)
+		if err != nil {
+			return err
+		}
 	}
 
 	iconData, err := os.ReadFile(options.Input)
@@ -64,6 +73,10 @@ func Icon(options *IconOptions) error {
 	}
 
 	return nil
+}
+
+func generateExampleIcon() error {
+	return os.WriteFile("appicon.png", []byte(examples.AppIcon), 0644)
 }
 
 func parseSizes(sizes string) ([]int, error) {
