@@ -33,11 +33,11 @@
     "@babel/core": "^7.11.5",
     "@babel/plugin-transform-object-assign": "^7.10.4",
     "@babel/preset-env": "^7.11.5",
-    "babel-loader": "^8.1.0",
+    "babel-loader": "^8.3.0",
     "babel-preset-minify": "^0.5.1",
     "core-js": "^3.6.5",
     "eslint": "^7.8.1",
-    "webpack": "^4.44.1",
-    "webpack-cli": "^3.3.12"
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   }
 }
