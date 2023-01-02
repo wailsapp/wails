@@ -82,8 +82,8 @@ func generateExampleIcon() error {
 func parseSizes(sizes string) ([]int, error) {
 	// split the input string by comma and confirm that each one is an integer
 	parsedSizes := strings.Split(sizes, ",")
-	result := make([]int, len(parsedSizes))
-	for i, size := range parsedSizes {
+	var result []int
+	for _, size := range parsedSizes {
 		s, err := strconv.Atoi(size)
 		if err != nil {
 			return nil, err
@@ -91,7 +91,7 @@ func parseSizes(sizes string) ([]int, error) {
 		if s == 0 {
 			continue
 		}
-		result[i] = s
+		result = append(result, s)
 	}
 
 	// put all integers in a slice and return
