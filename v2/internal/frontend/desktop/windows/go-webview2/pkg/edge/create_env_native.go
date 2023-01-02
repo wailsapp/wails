@@ -26,8 +26,8 @@ func createCoreWebView2EnvironmentWithOptions(browserExecutableFolder, userDataF
 	hr, err := webviewloader.CreateCoreWebView2EnvironmentWithOptions(
 		browserPathPtr,
 		userPathPtr,
-		0,
 		uintptr(unsafe.Pointer(environmentCompletedHandle)),
+		additionalBrowserArgs,
 	)
 
 	if hr != 0 {
