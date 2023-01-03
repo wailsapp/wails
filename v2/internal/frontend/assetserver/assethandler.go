@@ -2,7 +2,6 @@ package assetserver
 
 import (
 	"bytes"
-	"context"
 	"embed"
 	"errors"
 	"fmt"
@@ -13,10 +12,13 @@ import (
 	"path"
 	"strings"
 
-	"github.com/wailsapp/wails/v2/internal/fs"
-	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
+
+type Logger interface {
+	Debug(message string, args ...interface{})
+	Error(message string, args ...interface{})
+}
 
 //go:embed defaultindex.html
 var defaultHTML []byte
@@ -29,16 +31,12 @@ type assetHandler struct {
 	fs      iofs.FS
 	handler http.Handler
 
-	logger *logger.Logger
+	logger Logger
 
 	retryMissingFiles bool
 }
 
-func NewAssetHandler(ctx context.Context, options assetserver.Options) (http.Handler, error) {
-	var log *logger.Logger
-	if _logger := ctx.Value("logger"); _logger != nil {
-		log = _logger.(*logger.Logger)
-	}
+func NewAssetHandler(options assetserver.Options, log Logger) (http.Handler, error) {
 
 	vfs := options.Assets
 	if vfs != nil {
@@ -46,12 +44,12 @@ func NewAssetHandler(ctx context.Context, options assetserver.Options) (http.Han
 			return nil, err
 		}
 
-		subDir, err := fs.FindPathToFile(vfs, indexHTML)
+		subDir, err := FindPathToFile(vfs, indexHTML)
 		if err != nil {
 			if errors.Is(err, os.ErrNotExist) {
 				msg := "no `index.html` could be found in your Assets fs.FS"
 				if embedFs, isEmbedFs := vfs.(embed.FS); isEmbedFs {
-					rootFolder, _ := fs.FindEmbedRootPath(embedFs)
+					rootFolder, _ := FindEmbedRootPath(embedFs)
 					msg += fmt.Sprintf(", please make sure the embedded directory '%s' is correct and contains your assets", rootFolder)
 				}
 

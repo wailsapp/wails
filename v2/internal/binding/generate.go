@@ -77,21 +77,27 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 					args.Add(arg + ":" + goTypeToTypescriptType(input.TypeName, &importNamespaces))
 				}
 				tsBody.WriteString(args.Join(",") + "):")
-				returnType := "Promise"
-				if methodDetails.OutputCount() > 0 {
+				// now build Typescript return types
+				// If there is no return value or only returning error, TS returns Promise<void>
+				// If returning single value, TS returns Promise<type>
+				// If returning single value or error, TS returns Promise<type>
+				// If returning two values, TS returns Promise<type1|type2>
+				// Otherwise, TS returns Promise<type1> (instead of throwing Go error?)
+				var returnType string
+				if methodDetails.OutputCount() == 0 {
+					returnType = "Promise<void>"
+				} else if methodDetails.OutputCount() == 1 && methodDetails.Outputs[0].TypeName == "error" {
+					returnType = "Promise<void>"
+				} else {
 					outputTypeName := entityFullReturnType(methodDetails.Outputs[0].TypeName, b.tsPrefix, b.tsSuffix, &importNamespaces)
 					firstType := goTypeToTypescriptType(outputTypeName, &importNamespaces)
-					returnType += "<" + firstType
-					if methodDetails.OutputCount() == 2 {
-						if methodDetails.Outputs[1].TypeName != "error" {
-							outputTypeName = entityFullReturnType(methodDetails.Outputs[1].TypeName, b.tsPrefix, b.tsSuffix, &importNamespaces)
-							secondType := goTypeToTypescriptType(outputTypeName, &importNamespaces)
-							returnType += "|" + secondType
-						}
+					returnType = "Promise<" + firstType
+					if methodDetails.OutputCount() == 2 && methodDetails.Outputs[1].TypeName != "error" {
+						outputTypeName = entityFullReturnType(methodDetails.Outputs[1].TypeName, b.tsPrefix, b.tsSuffix, &importNamespaces)
+						secondType := goTypeToTypescriptType(outputTypeName, &importNamespaces)
+						returnType += "|" + secondType
 					}
 					returnType += ">"
-				} else {
-					returnType = "Promise<void>"
 				}
 				tsBody.WriteString(returnType + ";\n")
 			}
