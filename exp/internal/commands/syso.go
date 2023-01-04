@@ -7,7 +7,6 @@ import (
 
 	"github.com/tc-hib/winres"
 	"github.com/tc-hib/winres/version"
-	"github.com/wailsapp/wails/exp/internal/commands/examples"
 )
 
 type SysoOptions struct {
@@ -21,8 +20,7 @@ type SysoOptions struct {
 
 func (i *SysoOptions) Default() *SysoOptions {
 	return &SysoOptions{
-		Arch: runtime.GOOS,
-		Out:  "wails-res.syso",
+		Arch: runtime.GOARCH,
 	}
 }
 
@@ -85,7 +83,7 @@ func GenerateSyso(options *SysoOptions) error {
 
 	targetFile := options.Out
 	if targetFile == "" {
-		targetFile = "wails-res.syso"
+		targetFile = "rsrc_windows_" + options.Arch + ".syso"
 	}
 	fout, err := os.Create(targetFile)
 	if err != nil {
@@ -112,12 +110,12 @@ func GenerateSyso(options *SysoOptions) error {
 
 func generateExampleSyso() error {
 	// Generate example info.json
-	err := os.WriteFile("info.json", examples.Info, 0644)
+	err := os.WriteFile("info.json", Info, 0644)
 	if err != nil {
 		return err
 	}
 	// Generate example manifest
-	err = os.WriteFile("wails.exe.manifest", examples.Manifest, 0644)
+	err = os.WriteFile("wails.exe.manifest", Manifest, 0644)
 	if err != nil {
 		return err
 	}

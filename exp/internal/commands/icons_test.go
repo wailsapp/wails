@@ -11,14 +11,14 @@ import (
 func TestGenerateIcon(t *testing.T) {
 	tests := []struct {
 		name    string
-		setup   func() *IconOptions
+		setup   func() *IconsOptions
 		wantErr bool
 		test    func() error
 	}{
 		{
 			name: "should generate an icon when using the `example` flag",
-			setup: func() *IconOptions {
-				return &IconOptions{
+			setup: func() *IconsOptions {
+				return &IconsOptions{
 					Example: true,
 				}
 			},
@@ -47,13 +47,13 @@ func TestGenerateIcon(t *testing.T) {
 		},
 		{
 			name: "should generate a .ico file when using the `input` flag and `windowsfilena   me` flag",
-			setup: func() *IconOptions {
+			setup: func() *IconsOptions {
 				// Get the directory of this file
 				_, thisFile, _, _ := runtime.Caller(1)
 				localDir := filepath.Dir(thisFile)
 				// Get the path to the example icon
 				exampleIcon := filepath.Join(localDir, "examples", "appicon.png")
-				return &IconOptions{
+				return &IconsOptions{
 					Input:           exampleIcon,
 					WindowsFilename: "appicon.ico",
 				}
@@ -89,13 +89,13 @@ func TestGenerateIcon(t *testing.T) {
 		},
 		{
 			name: "should generate a .icns file when using the `input` flag and `macfilename` flag",
-			setup: func() *IconOptions {
+			setup: func() *IconsOptions {
 				// Get the directory of this file
 				_, thisFile, _, _ := runtime.Caller(1)
 				localDir := filepath.Dir(thisFile)
 				// Get the path to the example icon
 				exampleIcon := filepath.Join(localDir, "examples", "appicon.png")
-				return &IconOptions{
+				return &IconsOptions{
 					Input:       exampleIcon,
 					MacFilename: "appicon.icns",
 				}
@@ -128,13 +128,13 @@ func TestGenerateIcon(t *testing.T) {
 		},
 		{
 			name: "should generate a small .ico file when using the `input` flag and `sizes` flag",
-			setup: func() *IconOptions {
+			setup: func() *IconsOptions {
 				// Get the directory of this file
 				_, thisFile, _, _ := runtime.Caller(1)
 				localDir := filepath.Dir(thisFile)
 				// Get the path to the example icon
 				exampleIcon := filepath.Join(localDir, "examples", "appicon.png")
-				return &IconOptions{
+				return &IconsOptions{
 					Input:           exampleIcon,
 					Sizes:           "16",
 					WindowsFilename: "appicon.ico",
@@ -169,20 +169,20 @@ func TestGenerateIcon(t *testing.T) {
 		},
 		{
 			name: "should error if no input file is provided",
-			setup: func() *IconOptions {
-				return &IconOptions{}
+			setup: func() *IconsOptions {
+				return &IconsOptions{}
 			},
 			wantErr: true,
 		},
 		{
 			name: "should error if neither mac or windows filename is provided",
-			setup: func() *IconOptions {
+			setup: func() *IconsOptions {
 				// Get the directory of this file
 				_, thisFile, _, _ := runtime.Caller(1)
 				localDir := filepath.Dir(thisFile)
 				// Get the path to the example icon
 				exampleIcon := filepath.Join(localDir, "examples", "appicon.png")
-				return &IconOptions{
+				return &IconsOptions{
 					Input: exampleIcon,
 				}
 			},
@@ -190,13 +190,13 @@ func TestGenerateIcon(t *testing.T) {
 		},
 		{
 			name: "should error if bad sizes provided",
-			setup: func() *IconOptions {
+			setup: func() *IconsOptions {
 				// Get the directory of this file
 				_, thisFile, _, _ := runtime.Caller(1)
 				localDir := filepath.Dir(thisFile)
 				// Get the path to the example icon
 				exampleIcon := filepath.Join(localDir, "examples", "appicon.png")
-				return &IconOptions{
+				return &IconsOptions{
 					Input:           exampleIcon,
 					WindowsFilename: "appicon.ico",
 					Sizes:           "bad",
@@ -206,13 +206,13 @@ func TestGenerateIcon(t *testing.T) {
 		},
 		{
 			name: "should ignore 0 size",
-			setup: func() *IconOptions {
+			setup: func() *IconsOptions {
 				// Get the directory of this file
 				_, thisFile, _, _ := runtime.Caller(1)
 				localDir := filepath.Dir(thisFile)
 				// Get the path to the example icon
 				exampleIcon := filepath.Join(localDir, "examples", "appicon.png")
-				return &IconOptions{
+				return &IconsOptions{
 					Input:           exampleIcon,
 					WindowsFilename: "appicon.ico",
 					Sizes:           "0,16",
@@ -245,8 +245,8 @@ func TestGenerateIcon(t *testing.T) {
 		},
 		{
 			name: "should error if the input file does not exist",
-			setup: func() *IconOptions {
-				return &IconOptions{
+			setup: func() *IconsOptions {
+				return &IconsOptions{
 					Input:           "doesnotexist.png",
 					WindowsFilename: "appicon.ico",
 				}
@@ -255,10 +255,10 @@ func TestGenerateIcon(t *testing.T) {
 		},
 		{
 			name: "should error if the input file is not a png",
-			setup: func() *IconOptions {
+			setup: func() *IconsOptions {
 				// Get the directory of this file
 				_, thisFile, _, _ := runtime.Caller(1)
-				return &IconOptions{
+				return &IconsOptions{
 					Input:           thisFile,
 					WindowsFilename: "appicon.ico",
 				}
@@ -270,7 +270,7 @@ func TestGenerateIcon(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			options := tt.setup()
-			err := GenerateIcon(options)
+			err := GenerateIcons(options)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GenerateIcon() error = %v, wantErr %v", err, tt.wantErr)
 				return

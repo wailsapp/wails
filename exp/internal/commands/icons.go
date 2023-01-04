@@ -10,10 +10,9 @@ import (
 
 	"github.com/jackmordaunt/icns/v2"
 	"github.com/leaanthony/winicon"
-	"github.com/wailsapp/wails/exp/internal/commands/examples"
 )
 
-type IconOptions struct {
+type IconsOptions struct {
 	Example         bool   `description:"Generate example icon file (appicon.png) in the current directory"`
 	Input           string `description:"The input image file"`
 	Sizes           string `description:"The sizes to generate in .ico file (comma separated)"`
@@ -21,15 +20,15 @@ type IconOptions struct {
 	MacFilename     string `description:"The output filename for the Mac icon bundle"`
 }
 
-func (i *IconOptions) Default() *IconOptions {
-	return &IconOptions{
+func (i *IconsOptions) Default() *IconsOptions {
+	return &IconsOptions{
 		Sizes:           "256,128,64,48,32,16",
 		MacFilename:     "icons.icns",
 		WindowsFilename: "icons.ico",
 	}
 }
 
-func GenerateIcon(options *IconOptions) error {
+func GenerateIcons(options *IconsOptions) error {
 
 	if options.Example {
 		return generateExampleIcon()
@@ -76,7 +75,7 @@ func GenerateIcon(options *IconOptions) error {
 }
 
 func generateExampleIcon() error {
-	return os.WriteFile("appicon.png", []byte(examples.AppIcon), 0644)
+	return os.WriteFile("appicon.png", []byte(AppIcon), 0644)
 }
 
 func parseSizes(sizes string) ([]int, error) {
@@ -98,7 +97,7 @@ func parseSizes(sizes string) ([]int, error) {
 	return result, nil
 }
 
-func generateMacIcon(iconData []byte, options *IconOptions) error {
+func generateMacIcon(iconData []byte, options *IconsOptions) error {
 
 	srcImg, _, err := image.Decode(bytes.NewBuffer(iconData))
 	if err != nil {
@@ -119,7 +118,7 @@ func generateMacIcon(iconData []byte, options *IconOptions) error {
 	return icns.Encode(dest, srcImg)
 }
 
-func generateWindowsIcon(iconData []byte, sizes []int, options *IconOptions) error {
+func generateWindowsIcon(iconData []byte, sizes []int, options *IconsOptions) error {
 
 	var output bytes.Buffer
 

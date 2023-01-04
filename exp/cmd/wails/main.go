@@ -8,12 +8,12 @@ import (
 )
 
 func main() {
-
 	app := clir.NewCli("wails", "The Wails CLI", "v3")
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
-	app.NewSubCommandFunction("build", "Build the project", commands.Build)
+	app.NewSubCommandFunction("run", "Run a task", commands.Run)
 	generate := app.NewSubCommand("generate", "Generation tools")
-	generate.NewSubCommandFunction("icon", "Generate icons", commands.GenerateIcon)
+	generate.NewSubCommandFunction("defaults", "Generate default build assets", commands.Defaults)
+	generate.NewSubCommandFunction("icons", "Generate icons", commands.GenerateIcons)
 	generate.NewSubCommandFunction("syso", "Generate Windows .syso file", commands.GenerateSyso)
 	err := app.Run()
 	if err != nil {

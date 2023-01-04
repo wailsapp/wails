@@ -5,9 +5,25 @@ There are a number of commands related to tooling, such as icon generation and a
 
 ## Commands
 
-### icon
+### run
 
-The `icon` command generates icons for your project. It takes a single argument which is the path to the icon file.
+The run command is for running tasks defined in `Taskfile.yml`. 
+
+| Flag               | Type   | Description                                          | Default               |
+|--------------------|--------|------------------------------------------------------|-----------------------|
+| `-t`               | string | The name of the task to run                          |                       |
+
+### generate
+
+The `generate` command is used to generate resources and assets for your Wails project.
+It can be used to generate many things including: 
+  - application icons, 
+  - resource files for Windows applications
+  - Info.plist files for macOS deployments
+
+#### icon
+
+The `icon` command generates icons for your project. 
 
 | Flag               | Type   | Description                                          | Default               |
 |--------------------|--------|------------------------------------------------------|-----------------------|
@@ -18,18 +34,18 @@ The `icon` command generates icons for your project. It takes a single argument 
 | `-macFilename`     | string | The output filename for the Mac icon bundle          | icons.icns            |
 
 ```bash
-wails icon -input myicon.png -sizes "32,64,128" -windowsFilename myicon.ico -macFilename myicon.icns       
+wails generate icon -input myicon.png -sizes "32,64,128" -windowsFilename myicon.ico -macFilename myicon.icns       
 ```
 
 This will generate icons for mac and windows and save them in the current directory as `myicon.ico`
 and `myicons.icns`.
 
-### syso
+#### syso
 
 The `syso` command generates a Windows resource file (aka `.syso`).
 
 ```bash
-wails syso <options>
+wails generate syso <options>
 ```
 
 | Flag        | Type   | Description                                | Default          |
@@ -54,3 +70,10 @@ NOTE: We use [winres](https://github.com/tc-hib/winres) to generate the syso fil
 refer to the winres documentation for more information.
 
 NOTE: Whilst the tool will work for 32-bit Windows, it is not supported. Please use 64-bit.
+
+#### defaults
+
+```bash
+wails icon -input myicon.png -sizes "32,64,128" -windowsFilename myicon.ico -macFilename myicon.icns       
+```
+This will generate all the default assets and resources in the current directory. I
