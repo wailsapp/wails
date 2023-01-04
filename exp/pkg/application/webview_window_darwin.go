@@ -16,7 +16,7 @@ package application
 extern void registerListener(unsigned int event);
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled) {
 	NSWindow* window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, width-1, height-1)
 		styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
 		backing:NSBackingStoreBuffered
@@ -38,6 +38,9 @@ void* windowNew(unsigned int id, int width, int height) {
 	WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
 	config.suppressesIncrementalRendering = true;
     config.applicationNameForUserAgent = @"wails.io";
+ 	if (@available(macOS 10.15, *)) {
+         config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
+	}
 
 	// Setup user content controller
     WKUserContentController* userContentController = [WKUserContentController new];
@@ -838,7 +841,6 @@ func (w *macosWebviewWindow) restoreWindow() {
 }
 
 func (w *macosWebviewWindow) execJS(js string) {
-	println("execJS called on WebviewWindow", w.parent.id)
 	C.windowExecJS(w.nsWindow, C.CString(js))
 }
 
@@ -924,7 +926,7 @@ func (w *macosWebviewWindow) run() {
 		w.on(eventId)
 	}
 	globalApplication.dispatchOnMainThread(func() {
-		w.nsWindow = C.windowNew(C.uint(w.parent.id), C.int(w.parent.options.Width), C.int(w.parent.options.Height))
+		w.nsWindow = C.windowNew(C.uint(w.parent.id), C.int(w.parent.options.Width), C.int(w.parent.options.Height), C.bool(w.parent.options.EnableFraudulentWebsiteWarnings))
 		w.setFrameless(w.parent.options.Frameless)
 		w.setTitle(w.parent.options.Title)
 		w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
