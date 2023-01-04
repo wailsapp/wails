@@ -252,6 +252,12 @@ func main() {
 
 名称: Assets<br/> 类型: `fs.FS`
 
+#### 开发模式下不开启桌面应用
+
+默认情况下，开发模式下(`wails dev`)将开启桌面端。 将此设置为 `true` 意味着开发模式下不会开启桌面端，请通过http://localhost:34115进行调试。
+
+名称：NoDesktopOnDev<br/> 类型：`bool`
+
 #### 处理程序
 
 资产处理程序是一个通用的 `http.Handler`，用于对无法找到的资产进行后备处理。

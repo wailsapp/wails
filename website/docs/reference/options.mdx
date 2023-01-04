@@ -41,6 +41,7 @@ func main() {
             Handler:    assetsHandler,
             Middleware: assetsMidldeware,
 		},
+		NoDesktopOnDev:     true,
         Menu:               app.applicationMenu(),
         Logger:             nil,
         LogLevel:           logger.DEBUG,
@@ -284,6 +285,12 @@ If set to nil, all GET requests will be forwarded to [Handler](#handler).
 
 Name: Assets<br/>
 Type: `fs.FS`
+
+#### NoDesktopOnDev
+
+By default, the desktop app will open during `wails dev`. Setting this to `true` means the desktop will not open during `wails dev`. Please use http://localhost:34115
+
+to debug you app.
 
 #### Handler
 

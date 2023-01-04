@@ -132,9 +132,17 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 	}
 
 	// Launch desktop app
-	err = d.Frontend.Run(ctx)
+	if d.NoDesktop() {
+		return err
+	} else {
+		err = d.Frontend.Run(ctx)
+	}
 
 	return err
+}
+
+func (d *DevWebServer) NoDesktop() bool {
+	return d.appoptions.NoDesktopOnDev && d.ctx.Value("buildtype").(string) == "dev"
 }
 
 func (d *DevWebServer) WindowReload() {
