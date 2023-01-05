@@ -214,7 +214,7 @@ gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void* data)
     return TRUE;
 }
 
-GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowOnClose) {
+GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowOnClose, int gpuPolicy) {
 	GtkWidget* webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager*)contentManager);
 	//gtk_container_add(GTK_CONTAINER(window), webview);
 	WebKitWebContext *context = webkit_web_context_get_default();
@@ -228,6 +228,20 @@ GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowO
 
 	WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
 	webkit_settings_set_user_agent_with_application_details(settings, "wails.io", "");
+
+	switch (gpuPolicy) {
+		case 0:
+			webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ALWAYS);
+		  break;
+		case 1:
+			webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND);
+		  break;
+		case 2:
+			webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER);
+		  break;
+		default:
+			webkit_settings_set_hardware_acceleration_policy(settings, WEBKIT_HARDWARE_ACCELERATION_POLICY_ON_DEMAND);
+	}
 	return webview;
 }
 
@@ -706,7 +720,17 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	C.webkit_user_content_manager_register_script_message_handler(result.cWebKitUserContentManager(), external)
 	C.setupInvokeSignal(result.contentManager)
 
-	webview := C.setupWebview(result.contentManager, result.asGTKWindow(), bool2Cint(appoptions.HideWindowOnClose))
+	var webviewGpuPolicy int
+	if appoptions.Linux != nil {
+		webviewGpuPolicy = int(appoptions.Linux.WebviewGpuPolicy)
+	}
+
+	webview := C.setupWebview(
+		result.contentManager,
+		result.asGTKWindow(),
+		bool2Cint(appoptions.HideWindowOnClose),
+		C.int(webviewGpuPolicy),
+	)
 	result.webview = unsafe.Pointer(webview)
 	buttonPressedName := C.CString("button-press-event")
 	defer C.free(unsafe.Pointer(buttonPressedName))

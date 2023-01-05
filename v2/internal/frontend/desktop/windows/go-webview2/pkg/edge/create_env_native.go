@@ -12,7 +12,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-func createCoreWebView2EnvironmentWithOptions(browserExecutableFolder, userDataFolder string, environmentCompletedHandle *iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler) error {
+func createCoreWebView2EnvironmentWithOptions(browserExecutableFolder, userDataFolder string, environmentCompletedHandle *iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler, additionalBrowserArgs string) error {
 	browserPathPtr, err := windows.UTF16PtrFromString(browserExecutableFolder)
 	if err != nil {
 		return fmt.Errorf("Error calling UTF16PtrFromString for %s: %v", browserExecutableFolder, err)
@@ -26,8 +26,8 @@ func createCoreWebView2EnvironmentWithOptions(browserExecutableFolder, userDataF
 	hr, err := webviewloader.CreateCoreWebView2EnvironmentWithOptions(
 		browserPathPtr,
 		userPathPtr,
-		0,
 		uintptr(unsafe.Pointer(environmentCompletedHandle)),
+		additionalBrowserArgs,
 	)
 
 	if hr != 0 {

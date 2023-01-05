@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"syscall"
 	"unsafe"
@@ -36,9 +37,10 @@ type Chromium struct {
 	padding Rect
 
 	// Settings
-	Debug       bool
-	DataPath    string
-	BrowserPath string
+	Debug                 bool
+	DataPath              string
+	BrowserPath           string
+	AdditionalBrowserArgs []string
 
 	// permissions
 	permissions      map[CoreWebView2PermissionKind]CoreWebView2PermissionState
@@ -98,7 +100,8 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 		}
 	}
 
-	if err := createCoreWebView2EnvironmentWithOptions(e.BrowserPath, dataPath, e.envCompleted); err != nil {
+	browserArgs := strings.Join(e.AdditionalBrowserArgs, " ")
+	if err := createCoreWebView2EnvironmentWithOptions(e.BrowserPath, dataPath, e.envCompleted, browserArgs); err != nil {
 		log.Printf("Error calling Webview2Loader: %v", err)
 		return false
 	}
