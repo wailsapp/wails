@@ -2,6 +2,7 @@ version: '3'
 
 tasks:
   build:
+    summary: Builds the application
     cmds:
       - go build -gcflags=all="-N -l" -o bin/testapp main.go
     vars:
@@ -11,16 +12,19 @@ tasks:
       CGO_LDFLAGS: "-mmacosx-version-min=10.13"
 
   generate-icons:
+    summary: Generates Windows `.ico` and Mac `.icns` files from an image
     dir: build
     cmds:
       # Generates both .ico and .icns files
       - wails generate icon -input appicon.png
 
   build-prod:
+    summary: Creates a production build of the application
     cmds:
       - go build -tags production -ldflags="-w -s" -o bin/testapp
 
   package-darwin:
+    summary: Packages a production build of the application into a `.app`
     deps:
         - build-prod
         - generate-icons
