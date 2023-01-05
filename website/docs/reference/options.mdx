@@ -51,6 +51,7 @@ func main() {
         OnBeforeClose:      app.beforeClose,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        EnableFraudulentWebsiteDetection: false,
         ZoomFactor:           1.0,
         IsZoomControlEnabled: false,
         Bind: []interface{}{
@@ -414,6 +415,15 @@ Indicates what value the `CSSDragProperty` style should have to drag the window.
 
 Name: CSSDragValue<br/>
 Type: `string`
+
+### EnableFraudulentWebsiteDetection
+
+EnableFraudulentWebsiteDetection enables scan services for fraudulent content, such as malware or phishing attempts.
+These services might send information from your app like URLs navigated to and possibly other content to cloud
+services of Apple and Microsoft.
+
+Name: EnableFraudulentWebsiteDetection<br/>
+Type: `bool`
 
 ### ZoomFactor
 
