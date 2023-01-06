@@ -67,6 +67,8 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 
 	title = c.String(frontendOptions.Title)
 
+	enableFraudulentWebsiteWarnings := C.bool(frontendOptions.EnableFraudulentWebsiteDetection)
+
 	if frontendOptions.Mac != nil {
 		mac := frontendOptions.Mac
 		if mac.TitleBar != nil {
@@ -85,7 +87,7 @@ func NewWindow(frontendOptions *options.App, debugMode bool) *Window {
 	var context *C.WailsContext = C.Create(title, width, height, frameless, resizable, fullscreen, fullSizeContent,
 		hideTitleBar, titlebarAppearsTransparent, hideTitle, useToolbar, hideToolbarSeparator, webviewIsTransparent,
 		alwaysOnTop, hideWindowOnClose, appearance, windowIsTranslucent, debug, windowStartState, startsHidden,
-		minWidth, minHeight, maxWidth, maxHeight)
+		minWidth, minHeight, maxWidth, maxHeight, enableFraudulentWebsiteWarnings)
 
 	// Create menu
 	result := &Window{

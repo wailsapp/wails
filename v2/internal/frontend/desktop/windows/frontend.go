@@ -409,6 +409,11 @@ func (f *Frontend) Quit() {
 func (f *Frontend) setupChromium() {
 	chromium := f.chromium
 
+	disableFeatues := []string{}
+	if !f.frontendOptions.EnableFraudulentWebsiteDetection {
+		disableFeatues = append(disableFeatues, "msSmartScreenProtection")
+	}
+
 	if opts := f.frontendOptions.Windows; opts != nil {
 		chromium.DataPath = opts.WebviewUserDataPath
 		chromium.BrowserPath = opts.WebviewBrowserPath
@@ -416,6 +421,11 @@ func (f *Frontend) setupChromium() {
 		if opts.WebviewGpuIsDisabled {
 			chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
 		}
+	}
+
+	if len(disableFeatues) > 0 {
+		arg := fmt.Sprintf("--disable-features=%s", strings.Join(disableFeatues, ","))
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
 	}
 
 	chromium.MessageCallback = f.processMessage
