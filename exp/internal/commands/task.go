@@ -49,6 +49,9 @@ func ListTasks(options *ListTaskOptions) error {
 	println()
 
 	for _, thisTask := range tasks {
+		if thisTask.Internal {
+			continue
+		}
 		var thisRow = make([]string, 2)
 		thisRow[0] = thisTask.Task
 		thisRow[1] = thisTask.Summary
