@@ -137,7 +137,7 @@ func main() {
 	sizeMenu.Add("Get Current WebviewWindow Size").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			width, height := w.Size()
-			app.NewInfoDialog().SetTitle("Current WebviewWindow Size").SetMessage("Width: " + strconv.Itoa(width) + " Height: " + strconv.Itoa(height)).Show()
+			app.InfoDialog().SetTitle("Current WebviewWindow Size").SetMessage("Width: " + strconv.Itoa(width) + " Height: " + strconv.Itoa(height)).Show()
 		})
 	})
 
@@ -168,7 +168,7 @@ func main() {
 	positionMenu.Add("Get Position").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			x, y := w.Position()
-			app.NewInfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
+			app.InfoDialog().SetTitle("Current WebviewWindow Position").SetMessage("X: " + strconv.Itoa(x) + " Y: " + strconv.Itoa(y)).Show()
 		})
 	})
 
@@ -235,32 +235,32 @@ func main() {
 	stateMenu.Add("Get Primary Screen").OnClick(func(ctx *application.Context) {
 		screen, err := app.GetPrimaryScreen()
 		if err != nil {
-			app.NewErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
+			app.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
 			return
 		}
 		msg := fmt.Sprintf("Screen: %+v", screen)
-		app.NewInfoDialog().SetTitle("Primary Screen").SetMessage(msg).Show()
+		app.InfoDialog().SetTitle("Primary Screen").SetMessage(msg).Show()
 	})
 	stateMenu.Add("Get Screens").OnClick(func(ctx *application.Context) {
 		screens, err := app.GetScreens()
 		if err != nil {
-			app.NewErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
+			app.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
 			return
 		}
 		for _, screen := range screens {
 			msg := fmt.Sprintf("Screen: %+v", screen)
-			app.NewInfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
+			app.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
 		}
 	})
 	stateMenu.Add("Get Screen for WebviewWindow").OnClick(func(ctx *application.Context) {
 		currentWindow(func(w *application.WebviewWindow) {
 			screen, err := w.GetScreen()
 			if err != nil {
-				app.NewErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
+				app.ErrorDialog().SetTitle("Error").SetMessage(err.Error()).Show()
 				return
 			}
 			msg := fmt.Sprintf("Screen: %+v", screen)
-			app.NewInfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
+			app.InfoDialog().SetTitle(fmt.Sprintf("Screen %s", screen.ID)).SetMessage(msg).Show()
 		})
 	})
 	app.NewWebviewWindow()

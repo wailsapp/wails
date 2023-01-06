@@ -26,7 +26,7 @@ func main() {
 
 	myMenu := app.NewMenu()
 	myMenu.Add("Hello World!").OnClick(func(ctx *application.Context) {
-		app.NewInfoDialog().SetTitle("Hello World!").SetMessage("Hello World!").Show()
+		app.InfoDialog().SetTitle("Hello World!").SetMessage("Hello World!").Show()
 	})
 	subMenu := myMenu.AddSubmenu("Submenu")
 	subMenu.Add("Click me!").OnClick(func(ctx *application.Context) {

@@ -302,31 +302,31 @@ func (a *App) ShowAboutDialog() {
 	}
 }
 
-func (a *App) NewInfoDialog() *MessageDialog {
+func (a *App) InfoDialog() *MessageDialog {
 	return newMessageDialog(InfoDialog)
 }
 
-func (a *App) NewQuestionDialog() *MessageDialog {
+func (a *App) QuestionDialog() *MessageDialog {
 	return newMessageDialog(QuestionDialog)
 }
 
-func (a *App) NewWarningDialog() *MessageDialog {
+func (a *App) WarningDialog() *MessageDialog {
 	return newMessageDialog(WarningDialog)
 }
 
-func (a *App) NewErrorDialog() *MessageDialog {
+func (a *App) ErrorDialog() *MessageDialog {
 	return newMessageDialog(ErrorDialog)
 }
 
-func (a *App) NewOpenDirectoryDialog() *MessageDialog {
+func (a *App) OpenDirectoryDialog() *MessageDialog {
 	return newMessageDialog(OpenDirectoryDialog)
 }
 
-func (a *App) NewOpenFileDialog() *OpenFileDialog {
+func (a *App) OpenFileDialog() *OpenFileDialog {
 	return newOpenFileDialog()
 }
 
-func (a *App) NewSaveFileDialog() *SaveFileDialog {
+func (a *App) SaveFileDialog() *SaveFileDialog {
 	return newSaveFileDialog()
 }
 
