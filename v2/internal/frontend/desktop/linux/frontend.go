@@ -71,7 +71,6 @@ static void install_signal_handlers()
 #endif
 }
 
-
 */
 import "C"
 import (
