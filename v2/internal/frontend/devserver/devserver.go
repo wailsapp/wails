@@ -132,7 +132,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 	}
 
 	// Launch desktop app
-	if d.NoDesktop() {
+	if d.noDesktop() {
 		return err
 	} else {
 		err = d.Frontend.Run(ctx)
@@ -141,7 +141,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 	return err
 }
 
-func (d *DevWebServer) NoDesktop() bool {
+func (d *DevWebServer) noDesktop() bool {
 	return d.appoptions.NoDesktopOnDev && d.ctx.Value("buildtype").(string) == "dev"
 }
 
