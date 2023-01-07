@@ -193,7 +193,7 @@ func (n *Notifier) sendViaDbus(options frontend.NotificationOptions) (result uin
 		if options.LinuxOptions.Sound.File != nil {
 			s, err := SoundPath(options.LinuxOptions.Sound.File)
 			if err != nil {
-				n.logger.Error("Notification sound error: %v")
+				n.logger.Error("Notification sound error: %v", err)
 			} else {
 				hints["sound-file"] = dbus.MakeVariant(s)
 			}
@@ -266,7 +266,7 @@ func (n *Notifier) sendViaNotifySend(options frontend.NotificationOptions) (uint
 		if options.LinuxOptions.Sound.File != nil {
 			s, err := SoundPath(options.LinuxOptions.Sound.File)
 			if err != nil {
-				n.logger.Error("Notification sound error: %v")
+				n.logger.Error("Notification sound error: %v", err)
 			} else {
 				args = append(args, fmt.Sprintf("--hint=string:sound-file:%s", s))
 			}
