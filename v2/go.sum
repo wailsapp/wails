@@ -210,6 +210,8 @@ github.com/valyala/fasttemplate v1.2.1 h1:TVEnxayobAdVkhQfrfes2IzOB6o+z4roRkPF52
 github.com/valyala/fasttemplate v1.2.1/go.mod h1:KHLXt3tVN2HBp8eijSv/kGJopbvo7S+qRAEEKiv+SiQ=
 github.com/wailsapp/mimetype v1.4.1 h1:pQN9ycO7uo4vsUUuPeHEYoUkLVkaRntMnHJxVwYhwHs=
 github.com/wailsapp/mimetype v1.4.1/go.mod h1:9aV5k31bBOv5z6u+QP8TltzvNGJPmNJD4XlAL3U+j3o=
+github.com/willdot/gomacosnotify v0.0.3 h1:Hk1fwBPF2Sjvok2V1WBH/FSh+h8vU3cgjsVz7toG7tw=
+github.com/willdot/gomacosnotify v0.0.3/go.mod h1:hd8a7Sopcr2n65m87u1+dNJ/kX1dUe7Vsq0l0Y6Aj/4=
 github.com/wzshiming/ctc v1.2.3 h1:q+hW3IQNsjIlOFBTGZZZeIXTElFM4grF4spW/errh/c=
 github.com/wzshiming/ctc v1.2.3/go.mod h1:2tVAtIY7SUyraSk0JxvwmONNPFL4ARavPuEsg5+KA28=
 github.com/wzshiming/winseq v0.0.0-20200112104235-db357dc107ae h1:tpXvBXC3hpQBDCc9OojJZCQMVRAbT3TTdUMP8WguXkY=
