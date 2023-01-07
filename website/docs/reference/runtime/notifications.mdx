@@ -1,5 +1,5 @@
 ---
-sidebar_position: 8
+sidebar_position: 9
 ---
 
 # Notifications
@@ -179,6 +179,12 @@ Type: `*runtime.WindowsOptions`
 
 Actions show up as buttons in notifications.
 
+:::info Implementation
+
+The current implementation only shows the actions, signals are not handled currently.
+
+:::
+
 Name: Actions<br/>
 Type: `[]runtime.WindowsNotificationAction`
 
@@ -254,6 +260,12 @@ Type: `string`
 
 Items to be shown in the dropdown input on the notifications.
 
+:::info Implementation
+
+The current implementation only shows the actions, signals are not handled currently.
+
+:::
+
 Name: Actions<br/>
 Type: `[]MacNotificationAction`
 
@@ -295,19 +307,26 @@ Type: `*runtime.LinuxNotificationOptions`
 #### Urgency
 
 Urgency represents the notifications urgency.
-	
-For low and normal urgencies, server implementations may display the notifications how they choose.
-They should, however, have a sane expiration timeout dependent on the urgency level.
-	
-Critical notifications should not automatically expire, as they are things that the user will most
-likely want to know about. They should only be closed when the user dismisses them, for example,
-by clicking on the notification.
- - 0 = low
- - 1 = normal
- - 2 = critical
+
+Available options:
+
+ - LinuxNotificationUrgencyLow
+ - LinuxNotificationUrgencyNormal
+ - LinuxNotificationUrgencyCritical
 
 Name: Urgency<br/>
-Type: `int`
+Type: [`runtime.LinuxNotificationUrgency`](#linuxnotificationurgency-type)
+
+##### LinuxNotificationUrgency type
+
+For low and normal urgencies, server implementations may display the notifications how they choose.
+They should, however, have a sane expiration timeout dependent on the urgency level.
+
+| Value                            | Description |
+| ---------------------------------| ----------- |
+| LinuxNotificationUrgencyLow      | For low urgencies, server implementations may display the notifications how they choose. |
+| LinuxNotificationUrgencyNormal   | For normal urgencies, server implementations may display the notifications how they choose. |
+| LinuxNotificationUrgencyCritical | Critical notifications are not expired automatically, they close when the user dismisses them, for example, by clicking on the notification. |
 
 #### ReplacesID
 

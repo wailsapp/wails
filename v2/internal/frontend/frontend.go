@@ -94,31 +94,26 @@ type LinuxNotificationSound struct {
 }
 
 // LinuxNotificationUrgency represents the notification's urgency.
-type LinuxNotificationUrgency int
+type LinuxNotificationUrgency uint
+
+const (
+	LinuxNotificationUrgencyLow LinuxNotificationUrgency = iota
+	LinuxNotificationUrgencyNormal
+	LinuxNotificationUrgencyCritical
+)
 
 // String returns urgency as a string
 func (u LinuxNotificationUrgency) String() string {
 	switch u {
-	case 0:
+	case LinuxNotificationUrgencyLow:
 		return "low"
-	case 1:
+	case LinuxNotificationUrgencyNormal:
 		return "normal"
-	case 2:
+	case LinuxNotificationUrgencyCritical:
 		return "critical"
 	default:
 		return "normal"
 	}
-}
-
-// String returns urgency as an unsigned integer acceptable for org.freedesktop.Notifications
-func (u LinuxNotificationUrgency) Uint() uint {
-	if u < 0 {
-		return 0
-	}
-	if u > 2 {
-		return 2
-	}
-	return uint(u)
 }
 
 // LinuxNotificationOptions contains options that are specific to linux
@@ -132,10 +127,10 @@ type LinuxNotificationOptions struct {
 	// Critical notifications should not automatically expire, as they are things that the user will most
 	// likely want to know about. They should only be closed when the user dismisses them, for example,
 	// by clicking on the notification.
-	//   - 0 = low
-	//   - 1 = normal
-	//   - 2 = critical
-	Urgency int
+	//   - LinuxNotificationUrgencyLow = 0 = low
+	//   - LinuxNotificationUrgencyNormal = 1 = normal
+	//   - LinuxNotificationUrgencyCritical = 2 = critical
+	Urgency LinuxNotificationUrgency
 
 	// ReplacesID is used to replace an existing notification.
 	ReplacesID uint32
@@ -225,9 +220,6 @@ type NotificationOptions struct {
 	// Timeout is the duration for how long a notification is shown.
 	Timeout time.Duration
 
-	// Close is a channel that clears an active notification
-	Close <-chan bool
-
 	// LinuxOptions holds the linux specific options for a notification.
 	LinuxOptions *LinuxNotificationOptions
 
@@ -301,7 +293,7 @@ type Frontend interface {
 	// Notification
 	SendNotification(notificationOptions NotificationOptions) error
 
-  // Clipboard
+	// Clipboard
 	ClipboardGetText() (string, error)
 	ClipboardSetText(text string) error
 }

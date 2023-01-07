@@ -6,6 +6,12 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend"
 )
 
+const (
+	LinuxNotificationUrgencyLow      = frontend.LinuxNotificationUrgencyLow
+	LinuxNotificationUrgencyNormal   = frontend.LinuxNotificationUrgencyNormal
+	LinuxNotificationUrgencyCritical = frontend.LinuxNotificationUrgencyCritical
+)
+
 // LinuxNotificationSound represents a sound to be played when a notification shows up
 type LinuxNotificationSound = frontend.LinuxNotificationSound
 
@@ -40,7 +46,7 @@ func SendNotification(ctx context.Context, notificationOptions NotificationOptio
 
 	if notificationOptions.LinuxOptions == nil {
 		notificationOptions.LinuxOptions = &LinuxNotificationOptions{
-			Urgency: -1,
+			Urgency: LinuxNotificationUrgencyNormal,
 		}
 	}
 

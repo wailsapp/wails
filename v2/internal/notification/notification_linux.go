@@ -5,10 +5,10 @@ package notification
 import (
 	"errors"
 	"fmt"
+	"github.com/godbus/dbus/v5"
 	"os/exec"
 	"sync"
 
-	"github.com/godbus/dbus/v5"
 	"github.com/wailsapp/wails/v2/internal/frontend"
 	"github.com/wailsapp/wails/v2/internal/logger"
 )
@@ -187,7 +187,7 @@ func (n *Notifier) sendViaDbus(options frontend.NotificationOptions) (result uin
 
 	hints := map[string]dbus.Variant{}
 
-	hints["urgency"] = dbus.MakeVariant(frontend.LinuxNotificationUrgency(options.LinuxOptions.Urgency).Uint())
+	hints["urgency"] = dbus.MakeVariant(options.LinuxOptions.Urgency)
 
 	if options.LinuxOptions.Sound != nil {
 		if options.LinuxOptions.Sound.File != nil {
@@ -308,14 +308,6 @@ func dbusListener(conn *dbus.Conn, logger *logger.Logger, notificationID uint32,
 
 	for {
 		select {
-		case c := <-options.Close:
-			if c {
-				obj := conn.Object(dbusNotificationsInterface, dbusObjectPath)
-				call := obj.Call(callCloseNotification, 0, notificationID)
-				if call.Err != nil {
-					logger.Error("Notification cancel error %v", call.Err)
-				}
-			}
 		case s := <-signal:
 			if s == nil {
 				logger.Error("Notification signal error: empty signal received")
