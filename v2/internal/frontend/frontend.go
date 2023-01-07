@@ -173,7 +173,19 @@ type WindowsNotificationAction struct {
 // WindowsNotificationOptions contains options that are specific to Windows.
 type WindowsNotificationOptions struct {
 	Actions []WindowsNotificationAction
-	Sound   string
+
+	// Sound sets the sound played when the notification is shown:
+	//   - default
+	//   - im
+	//   - mail
+	//   - reminder
+	//   - sms
+	//   - loopingalarm
+	//   - loopimgalarm[2-10]
+	//   - loopingcall
+	//   - loopingcall[2-10]
+	//   - silent
+	Sound string
 }
 
 // MacNotificationAction represents a Notification action for a notification

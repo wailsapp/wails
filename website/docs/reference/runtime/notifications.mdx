@@ -12,6 +12,14 @@ Notifications are currently unsupported in the JS runtime.
 
 :::
 
+
+:::info Windows
+
+On windows when the title and message strings contain special characters (eg. á, í, ű, ő) they need to be encoded to a
+windows character map for example windows-1250 otherwise the notification can show the wrong characters.
+
+:::
+
 ```go title="Simple Example"
 import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -173,7 +181,7 @@ Default: 0
 WindowsNotificationOptions contains options that are specific to Windows.
 
 Name: WindowsOptions<br/>
-Type: `*runtime.WindowsOptions`
+Type: `*runtime.WindowsNotificationOptions`
 
 #### Actions
 
@@ -213,31 +221,16 @@ Type: `string`
 
 The media file to play in place of the default sound. On Windows, this attribute can have one of the following string values:
 
-- ms-winsoundevent:Notification.Default
-- ms-winsoundevent:Notification.IM
-- ms-winsoundevent:Notification.Mail
-- ms-winsoundevent:Notification.Reminder
-- ms-winsoundevent:Notification.SMS
-- ms-winsoundevent:Notification.Looping.Alarm
-- ms-winsoundevent:Notification.Looping.Alarm2
-- ms-winsoundevent:Notification.Looping.Alarm3
-- ms-winsoundevent:Notification.Looping.Alarm4
-- ms-winsoundevent:Notification.Looping.Alarm5
-- ms-winsoundevent:Notification.Looping.Alarm6
-- ms-winsoundevent:Notification.Looping.Alarm7
-- ms-winsoundevent:Notification.Looping.Alarm8
-- ms-winsoundevent:Notification.Looping.Alarm9
-- ms-winsoundevent:Notification.Looping.Alarm10
-- ms-winsoundevent:Notification.Looping.Call
-- ms-winsoundevent:Notification.Looping.Call2
-- ms-winsoundevent:Notification.Looping.Call3
-- ms-winsoundevent:Notification.Looping.Call4
-- ms-winsoundevent:Notification.Looping.Call5
-- ms-winsoundevent:Notification.Looping.Call6
-- ms-winsoundevent:Notification.Looping.Call7
-- ms-winsoundevent:Notification.Looping.Call8
-- ms-winsoundevent:Notification.Looping.Call9
-- ms-winsoundevent:Notification.Looping.Call10
+- default
+- im
+- mail
+- reminder
+- sms
+- loopingalarm
+- loopimgalarm[2-10]
+- loopingcall
+- loopingcall[2-10]
+- silent
 
 Name: Sound<br/>
 Type: `string`
@@ -267,7 +260,7 @@ The current implementation only shows the actions, signals are not handled curre
 :::
 
 Name: Actions<br/>
-Type: `[]MacNotificationAction`
+Type: `[]runtime.MacNotificationAction`
 
 ##### Action Label
 
@@ -350,11 +343,11 @@ As an example one possible rendering of actions would be as buttons in the notif
 The default action (usually invoked my clicking the notification) should have a key named "default". The name can be anything, though implementations are free not to display it.
 
 Name: Actions<br/>
-Type: `[]LinuxNotificationAction`
+Type: `[]runtime.LinuxNotificationAction`
 
 ##### Action Key
 
-Key is the actions's identifier used by the notification server.
+Key is the actions' identifier used by the notification server.
 
 Name: Key<br/>
 Type: `string`
@@ -378,7 +371,7 @@ Type: `func(notificationID uint32)`
 Setting this will play a sound when a notification pops up. Some notification servers may ignore sounds.
 
 Name: Actions<br/>
-Type: `*LinuxNotificationSound`
+Type: `*runtime.LinuxNotificationSound`
 
 ##### Sound Name
 

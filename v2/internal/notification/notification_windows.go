@@ -36,13 +36,12 @@ func SendNotification(options frontend.NotificationOptions) error {
 		}
 	}
 
-	/*
-		if options.WindowsOptions != nil && options.WindowsOptions.Sound != "" {
-			a, err := toast.Audio(options.WindowsOptions.Sound); err == nil {
-				noty.Audio = a
-			}
+	if options.WindowsOptions != nil && options.WindowsOptions.Sound != "" {
+		a, err := toast.Audio(options.WindowsOptions.Sound);
+		if err == nil {
+			noty.Audio = a
 		}
-	*/
+	}
 
 	err := noty.Push()
 	if err != nil {
