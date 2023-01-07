@@ -1,6 +1,8 @@
 package dispatcher
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"strings"
@@ -44,6 +46,21 @@ func (d *Dispatcher) processSystemCall(payload callMessage, sender frontend.Fron
 		return sender.WindowIsFullscreen(), nil
 	case "Environment":
 		return runtime.Environment(d.ctx), nil
+	case "ClipboardGetText":
+		t, err := sender.ClipboardGetText()
+		return t, err
+	case "ClipboardSetText":
+		if len(payload.Args) < 1 {
+			return false, errors.New("empty argument, cannot set clipboard")
+		}
+		var arg string
+		if err := json.Unmarshal(payload.Args[0], &arg); err != nil {
+			return false, err
+		}
+		if err := sender.ClipboardSetText(arg); err != nil {
+			return false, err
+		}
+		return true, nil
 	default:
 		return nil, fmt.Errorf("unknown systemcall message: %s", payload.Name)
 	}

@@ -15,6 +15,7 @@ import {SetBindings} from "./bindings";
 import * as Window from "./window";
 import * as Screen from "./screen";
 import * as Browser from "./browser";
+import * as Clipboard from "./clipboard";
 
 
 export function Quit() {
@@ -39,6 +40,7 @@ window.runtime = {
     ...Window,
     ...Browser,
     ...Screen,
+    ...Clipboard,
     EventsOn,
     EventsOnce,
     EventsOnMultiple,

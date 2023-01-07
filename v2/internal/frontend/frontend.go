@@ -300,4 +300,8 @@ type Frontend interface {
 
 	// Notification
 	SendNotification(notificationOptions NotificationOptions) error
+
+  // Clipboard
+	ClipboardGetText() (string, error)
+	ClipboardSetText(text string) error
 }

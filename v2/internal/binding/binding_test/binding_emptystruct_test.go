@@ -27,7 +27,7 @@ export namespace binding_test {
 		}
 		constructor(source: any = {}) {
 			if ('string' === typeof source) source = JSON.parse(source);
-			this.empty = this.convertValues(source["empty"], null);
+			this.empty = this.convertValues(source["empty"], Object);
 		}
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
 			if (!a) {

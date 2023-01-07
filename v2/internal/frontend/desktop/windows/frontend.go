@@ -27,6 +27,7 @@ import (
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
+	wailsruntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -102,7 +103,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		appBindings.DB().UpdateObfuscatedCallMap()
 	}
 
-	assets, err := assetserver.NewAssetServerMainPage(ctx, bindings, appoptions)
+	assets, err := assetserver.NewAssetServerMainPage(bindings, appoptions, ctx.Value("assetdir") != nil, myLogger, wailsruntime.RuntimeAssetsBundle)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -412,10 +413,25 @@ func (f *Frontend) Quit() {
 func (f *Frontend) setupChromium() {
 	chromium := f.chromium
 
+	disableFeatues := []string{}
+	if !f.frontendOptions.EnableFraudulentWebsiteDetection {
+		disableFeatues = append(disableFeatues, "msSmartScreenProtection")
+	}
+
 	if opts := f.frontendOptions.Windows; opts != nil {
 		chromium.DataPath = opts.WebviewUserDataPath
 		chromium.BrowserPath = opts.WebviewBrowserPath
+
+		if opts.WebviewGpuIsDisabled {
+			chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
+		}
 	}
+
+	if len(disableFeatues) > 0 {
+		arg := fmt.Sprintf("--disable-features=%s", strings.Join(disableFeatues, ","))
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
+	}
+
 	chromium.MessageCallback = f.processMessage
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
@@ -423,6 +439,7 @@ func (f *Frontend) setupChromium() {
 		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
 		return false
 	}
+
 	chromium.Embed(f.mainWindow.Handle())
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
