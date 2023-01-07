@@ -1,12 +1,19 @@
 version: '3'
 
 tasks:
+
+  pre-build:
+    summary: Pre-build hooks
+
+  post-build:
+    summary: Post-build hooks
+
   build:
     summary: Builds the application
     cmds:
+      - task: pre-build
       - go build -gcflags=all="-N -l" -o bin/testapp main.go
-    vars:
-        BIN_NAME: $NAME
+      - task: post-build
     env:
       CGO_CFLAGS: "-mmacosx-version-min=10.13"
       CGO_LDFLAGS: "-mmacosx-version-min=10.13"
@@ -24,7 +31,7 @@ tasks:
       - go build -tags production -ldflags="-w -s" -o bin/testapp
 
   package-darwin:
-    summary: Packages a production build of the application into a `.app`
+    summary: Packages a production build of the application into a `.app` bundle
     deps:
         - build-prod
         - generate-icons

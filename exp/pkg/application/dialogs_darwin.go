@@ -3,7 +3,7 @@
 package application
 
 /*
-#cgo CFLAGS:  -x objective-c
+#cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
 #cgo LDFLAGS: -framework Cocoa -mmacosx-version-min=10.13 -framework UniformTypeIdentifiers
 
 #import <Cocoa/Cocoa.h>

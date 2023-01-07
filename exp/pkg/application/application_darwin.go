@@ -4,12 +4,12 @@ package application
 
 /*
 
-#cgo CFLAGS:  -x objective-c
+#cgo CFLAGS: -mmacosx-version-min=10.13 -x objective-c
 #cgo LDFLAGS: -framework Cocoa -mmacosx-version-min=10.13
 
 #include "application.h"
 #include "app_delegate.h"
-#include "webview_window_delegate.h"
+#include "webview_window.h"
 #include <stdlib.h>
 
 extern void registerListener(unsigned int event);

@@ -58,12 +58,14 @@ func main() {
 	myMenu.Add("New Frameless WebviewWindow").
 		SetAccelerator("CmdOrCtrl+F").
 		OnClick(func(ctx *application.Context) {
-			app.NewWebviewWindow().
-				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
-				SetPosition(rand.Intn(1000), rand.Intn(800)).
-				SetURL("https://wails.io").
-				SetFrameless(true).
-				Show()
+			app.NewWebviewWindowWithOptions(&options.WebviewWindow{
+				X:         rand.Intn(1000),
+				Y:         rand.Intn(800),
+				Frameless: true,
+				Mac: options.MacWindow{
+					InvisibleTitleBarHeight: 50,
+				},
+			}).Show()
 			windowCounter++
 		})
 	if runtime.GOOS == "darwin" {

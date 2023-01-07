@@ -8,7 +8,7 @@ package application
 
 #import <Cocoa/Cocoa.h>
 
-#include "webview_window_delegate.h"
+#include "webview_window.h"
 
 @interface _WKInspector : NSObject
 - (void)show;
