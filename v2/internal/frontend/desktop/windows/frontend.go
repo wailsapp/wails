@@ -338,6 +338,8 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 	}
 
 	f.mainWindow.Invoke(func() {
+		win32.SetBackgroundColour(f.mainWindow.Handle(), col.R, col.G, col.B)
+
 		controller := f.chromium.GetController()
 		controller2 := controller.GetICoreWebView2Controller2()
 
