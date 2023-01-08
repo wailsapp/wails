@@ -137,12 +137,20 @@ func (w *Window) Fullscreen() {
 }
 
 func (w *Window) UnFullscreen() {
-	if !w.IsFullScreen() {
+	if !w.Form.IsFullScreen() {
 		return
 	}
 	w.Form.UnFullscreen()
 	w.SetMinSize(w.minWidth, w.minHeight)
 	w.SetMaxSize(w.maxWidth, w.maxHeight)
+}
+
+func (w *Window) Restore() {
+	if w.Form.IsFullScreen() {
+		w.UnFullscreen()
+	} else {
+		w.Form.Restore()
+	}
 }
 
 func (w *Window) SetMinSize(minWidth int, minHeight int) {
@@ -205,7 +213,6 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			//}
 		}
 
-	// TODO move WM_DPICHANGED handling into winc
 	case 0x02E0: //w32.WM_DPICHANGED
 		newWindowSize := (*w32.RECT)(unsafe.Pointer(lparam))
 		w32.SetWindowPos(w.Handle(),
@@ -235,9 +242,10 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			// shown. We still need the WS_THICKFRAME style to enable resizing from the frontend.
 			if wparam != 0 {
 				rgrc := (*w32.RECT)(unsafe.Pointer(lparam))
-
-				style := uint32(w32.GetWindowLong(w.Handle(), w32.GWL_STYLE))
-				if style&w32.WS_MAXIMIZE != 0 {
+				if w.Form.IsFullScreen() {
+					// In Full-Screen mode we don't need to adjust anything
+					w.chromium.SetPadding(edge.Rect{})
+				} else if w.IsMaximised() {
 					// If the window is maximized we must adjust the client area to the work area of the monitor. Otherwise
 					// some content goes beyond the visible part of the monitor.
 					// Make sure to use the provided RECT to get the monitor, because during maximizig there might be
@@ -268,6 +276,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 						}
 					}
 					w.chromium.SetPadding(edge.Rect{})
+					return 0
 				} else {
 					// This is needed to workaround the resize flickering in frameless mode with WindowDecorations
 					// See: https://stackoverflow.com/a/6558508
@@ -277,9 +286,8 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 					// therefore let's pad the content with 1px at the bottom.
 					rgrc.Bottom += 1
 					w.chromium.SetPadding(edge.Rect{Bottom: 1})
+					return 0
 				}
-
-				return 0
 			}
 		}
 	}

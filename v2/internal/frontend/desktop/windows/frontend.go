@@ -296,6 +296,9 @@ func (f *Frontend) WindowToggleMaximise() {
 func (f *Frontend) WindowUnmaximise() {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
+	if f.mainWindow.Form.IsFullScreen() {
+		return
+	}
 	f.mainWindow.Restore()
 }
 
@@ -312,6 +315,9 @@ func (f *Frontend) WindowMinimise() {
 func (f *Frontend) WindowUnminimise() {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
+	if f.mainWindow.Form.IsFullScreen() {
+		return
+	}
 	f.mainWindow.Restore()
 }
 
