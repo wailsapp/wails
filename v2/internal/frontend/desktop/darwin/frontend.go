@@ -348,8 +348,7 @@ func (f *Frontend) processRequest(r *wkWebViewRequest) {
 	rw := &wkWebViewResponseWriter{r: r}
 	defer rw.Close()
 
-	f.assets.ProcessHTTPRequest(
-		r.url,
+	f.assets.ProcessHTTPRequestLegacy(
 		rw,
 		func() (*http.Request, error) {
 			req, err := r.GetHttpRequest()
