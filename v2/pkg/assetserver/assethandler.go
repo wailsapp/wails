@@ -154,16 +154,19 @@ func (d *assetHandler) serveFSFile(rw http.ResponseWriter, req *http.Request, fi
 	}
 
 	var buf [512]byte
-	n, err := file.Read(buf[:])
-	if err != nil && err != io.EOF {
-		return err
-	}
+	var n int
+	if _, haveType := rw.Header()[HeaderContentType]; !haveType {
+		// Detect MimeType by sniffing the first 512 bytes
+		n, err = file.Read(buf[:])
+		if err != nil && err != io.EOF {
+			return err
+		}
 
-	// Detect MimeType by sniffing the first 512 bytes
-	// Do the custom MimeType sniffing even though http.ServeContent would do it in case
-	// of an io.ReadSeeker. We would like to have a consistent behaviour in both cases.
-	if contentType := GetMimetype(filename, buf[:n]); contentType != "" {
-		rw.Header().Set(HeaderContentType, contentType)
+		// Do the custom MimeType sniffing even though http.ServeContent would do it in case
+		// of an io.ReadSeeker. We would like to have a consistent behaviour in both cases.
+		if contentType := GetMimetype(filename, buf[:n]); contentType != "" {
+			rw.Header().Set(HeaderContentType, contentType)
+		}
 	}
 
 	if fileSeeker, _ := file.(io.ReadSeeker); fileSeeker != nil {
