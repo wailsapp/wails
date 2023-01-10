@@ -123,7 +123,7 @@ window.addEventListener('mousedown', (e) => {
 });
 
 function setResize(cursor) {
-    document.body.style.cursor = cursor || window.wails.flags.defaultCursor;
+    document.documentElement.style.cursor = cursor || window.wails.flags.defaultCursor;
     window.wails.flags.resizeEdge = cursor;
 }
 
@@ -141,10 +141,10 @@ window.addEventListener('mousemove', function (e) {
         return;
     }
     if (window.wails.flags.defaultCursor == null) {
-        window.wails.flags.defaultCursor = document.body.style.cursor;
+        window.wails.flags.defaultCursor = document.documentElement.style.cursor;
     }
     if (window.outerWidth - e.clientX < window.wails.flags.borderThickness && window.outerHeight - e.clientY < window.wails.flags.borderThickness) {
-        document.body.style.cursor = "se-resize";
+        document.documentElement.style.cursor = "se-resize";
     }
     let rightBorder = window.outerWidth - e.clientX < window.wails.flags.borderThickness;
     let leftBorder = e.clientX < window.wails.flags.borderThickness;
