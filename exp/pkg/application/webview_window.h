@@ -16,7 +16,7 @@
 
 @end
 
-@interface WebviewWindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate>
+@interface WebviewWindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate, WKURLSchemeHandler>
 
 @property bool hideOnClose;
 @property (retain) WKWebView* webView;

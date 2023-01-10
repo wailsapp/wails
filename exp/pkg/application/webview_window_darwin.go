@@ -48,6 +48,7 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
 	config.suppressesIncrementalRendering = true;
     config.applicationNameForUserAgent = @"wails.io";
+	[config setURLSchemeHandler:delegate forURLScheme:@"wails"];
  	if (@available(macOS 10.15, *)) {
          config.preferences.fraudulentWebsiteWarningEnabled = fraudulentWebsiteWarningEnabled;
 	}
@@ -913,6 +914,11 @@ func (w *macosWebviewWindow) execJS(js string) {
 }
 
 func (w *macosWebviewWindow) setURL(url string) {
+	if url == "/" {
+		// TODO handle this in a central location and handle all urls without scheme and host. This might be platform
+		// dependant
+		url = "wails://wails/"
+	}
 	C.navigationLoadURL(w.nsWindow, C.CString(url))
 }
 

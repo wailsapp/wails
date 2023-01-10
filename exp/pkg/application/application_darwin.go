@@ -119,6 +119,7 @@ import (
 	"unsafe"
 
 	"github.com/wailsapp/wails/exp/pkg/events"
+	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
 )
 
 type macosApp struct {
@@ -200,6 +201,14 @@ func processMessage(windowID C.uint, message *C.char) {
 	windowMessageBuffer <- &windowMessage{
 		windowId: uint(windowID),
 		message:  C.GoString(message),
+	}
+}
+
+//export processURLRequest
+func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
+	webviewRequests <- &webViewAssetRequest{
+		windowId: uint(windowID),
+		request:  webview.NewRequest(wkUrlSchemeTask),
 	}
 }
 

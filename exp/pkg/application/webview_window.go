@@ -4,8 +4,12 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/wailsapp/wails/exp/internal/runtime"
 	"github.com/wailsapp/wails/exp/pkg/events"
 	"github.com/wailsapp/wails/exp/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
+	assetserveroptions "github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
 type (
@@ -63,6 +67,8 @@ type WebviewWindow struct {
 	implLock sync.RWMutex
 	id       uint
 
+	assets *assetserver.AssetServer
+
 	eventListeners     map[uint][]func()
 	eventListenersLock sync.RWMutex
 }
@@ -84,10 +90,21 @@ func NewWindow(options *options.WebviewWindow) *WebviewWindow {
 	if options.Height == 0 {
 		options.Height = 600
 	}
+
+	opts := assetserveroptions.Options{Assets: options.Assets.FS, Handler: options.Assets.Handler, Middleware: options.Assets.Middleware}
+	// TODO Bindings, Logger, ServingFrom disk?
+	srv, err := assetserver.NewAssetServer("", opts, false, nil, runtime.RuntimeAssetsBundle)
+	if err != nil {
+		// TODO handle errors
+		panic(err)
+	}
+
 	return &WebviewWindow{
 		id:             getWindowID(),
 		options:        options,
 		eventListeners: make(map[uint][]func()),
+
+		assets: srv,
 	}
 }
 
@@ -324,6 +341,12 @@ func (w *WebviewWindow) handleMessage(message string) {
 	if message == "test" {
 		w.SetTitle("Hello World")
 	}
+}
+
+func (w *WebviewWindow) handleWebViewRequest(request webview.Request) {
+	url, _ := request.URL()
+	fmt.Printf("[window %d] Request %s\n", w.id, url)
+	w.assets.ServeWebViewRequest(request)
 }
 
 func (w *WebviewWindow) Center() {

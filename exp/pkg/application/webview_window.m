@@ -6,6 +6,7 @@
 #import "../events/events.h"
 
 extern void processMessage(unsigned int, const char*);
+extern void processURLRequest(unsigned int, void *);
 extern bool hasListeners(unsigned int);
 
 @implementation WebviewWindow
@@ -82,6 +83,21 @@ extern bool hasListeners(unsigned int);
 - (void)handleLeftMouseUp:(NSWindow *)window {
     self.leftMouseEvent = nil;
 }
+
+- (void)webView:(nonnull WKWebView *)webView startURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
+    processURLRequest(self.windowId, urlSchemeTask);
+}
+
+- (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
+    NSInputStream *stream = urlSchemeTask.request.HTTPBodyStream;
+    if (stream) {
+        NSStreamStatus status = stream.streamStatus;
+        if (status != NSStreamStatusClosed && status != NSStreamStatusNotOpen) {
+            [stream close];
+        }
+    }
+}
+
 // GENERATED EVENTS START
 - (void)windowDidBecomeKey:(NSNotification *)notification {
     if( hasListeners(EventWindowDidBecomeKey) ) {

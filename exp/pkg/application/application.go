@@ -8,6 +8,8 @@ import (
 
 	"github.com/wailsapp/wails/exp/pkg/events"
 	"github.com/wailsapp/wails/exp/pkg/options"
+
+	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
 )
 
 var globalApplication *App
@@ -64,6 +66,13 @@ type windowMessage struct {
 }
 
 var windowMessageBuffer = make(chan *windowMessage)
+
+type webViewAssetRequest struct {
+	windowId uint
+	request  webview.Request
+}
+
+var webviewRequests = make(chan *webViewAssetRequest)
 
 type App struct {
 	options                       options.Application
@@ -180,6 +189,13 @@ func (a *App) Run() error {
 	}()
 	go func() {
 		for {
+			event := <-webviewRequests
+			a.handleWebViewRequest(event)
+			event.request.Release()
+		}
+	}()
+	go func() {
+		for {
 			event := <-windowMessageBuffer
 			a.handleWindowMessage(event)
 		}
@@ -234,6 +250,19 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	}
 	// Get callback from window
 	window.handleMessage(event.message)
+}
+
+func (a *App) handleWebViewRequest(event *webViewAssetRequest) {
+	// Get window from window map
+	a.windowsLock.Lock()
+	window, ok := a.windows[event.windowId]
+	a.windowsLock.Unlock()
+	if !ok {
+		log.Printf("WebviewWindow #%d not found", event.windowId)
+		return
+	}
+	// Get callback from window
+	window.handleWebViewRequest(event.request)
 }
 
 func (a *App) handleWindowEvent(event *WindowEvent) {
