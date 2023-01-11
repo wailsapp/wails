@@ -31,6 +31,8 @@ type Window struct {
 	theme        winoptions.Theme
 	themeChanged bool
 
+	framelessWithDecorations bool
+
 	OnSuspend func()
 	OnResume  func()
 	dragging  bool
@@ -39,6 +41,8 @@ type Window struct {
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo, chromium *edge.Chromium) *Window {
+	windowsOptions := appoptions.Windows
+
 	result := &Window{
 		frontendOptions: appoptions,
 		minHeight:       appoptions.MinHeight,
@@ -49,13 +53,15 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		isActive:        true,
 		themeChanged:    true,
 		chromium:        chromium,
+
+		framelessWithDecorations: appoptions.Frameless && (windowsOptions == nil || !windowsOptions.DisableFramelessWindowDecorations),
 	}
 	result.SetIsForm(true)
 
 	var exStyle int
-	if appoptions.Windows != nil {
+	if windowsOptions != nil {
 		exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
-		if appoptions.Windows.WindowIsTranslucent {
+		if windowsOptions.WindowIsTranslucent {
 			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
 	}
@@ -72,7 +78,7 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 	result.SetParent(parent)
 
 	loadIcon := true
-	if appoptions.Windows != nil && appoptions.Windows.DisableWindowIcon == true {
+	if windowsOptions != nil && windowsOptions.DisableWindowIcon == true {
 		loadIcon = false
 	}
 	if loadIcon {
@@ -85,8 +91,8 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		win32.SetBackgroundColour(result.Handle(), appoptions.BackgroundColour.R, appoptions.BackgroundColour.G, appoptions.BackgroundColour.B)
 	}
 
-	if appoptions.Windows != nil {
-		result.theme = appoptions.Windows.Theme
+	if windowsOptions != nil {
+		result.theme = windowsOptions.Theme
 	} else {
 		result.theme = winoptions.SystemDefault
 	}
@@ -102,18 +108,18 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 
 	result.UpdateTheme()
 
-	if appoptions.Windows != nil {
-		result.OnSuspend = appoptions.Windows.OnSuspend
-		result.OnResume = appoptions.Windows.OnResume
-		if appoptions.Windows.WindowIsTranslucent {
+	if windowsOptions != nil {
+		result.OnSuspend = windowsOptions.OnSuspend
+		result.OnResume = windowsOptions.OnResume
+		if windowsOptions.WindowIsTranslucent {
 			if !win32.SupportsBackdropTypes() {
 				result.SetTranslucentBackground()
 			} else {
-				win32.EnableTranslucency(result.Handle(), win32.BackdropType(appoptions.Windows.BackdropType))
+				win32.EnableTranslucency(result.Handle(), win32.BackdropType(windowsOptions.BackdropType))
 			}
 		}
 
-		if appoptions.Windows.DisableWindowIcon {
+		if windowsOptions.DisableWindowIcon {
 			result.DisableIcon()
 		}
 	}
@@ -131,6 +137,12 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 }
 
 func (w *Window) Fullscreen() {
+	if w.Form.IsFullScreen() {
+		return
+	}
+	if w.framelessWithDecorations {
+		win32.ExtendFrameIntoClientArea(w.Handle(), false)
+	}
 	w.Form.SetMaxSize(0, 0)
 	w.Form.SetMinSize(0, 0)
 	w.Form.Fullscreen()
@@ -139,6 +151,9 @@ func (w *Window) Fullscreen() {
 func (w *Window) UnFullscreen() {
 	if !w.Form.IsFullScreen() {
 		return
+	}
+	if w.framelessWithDecorations {
+		win32.ExtendFrameIntoClientArea(w.Handle(), true)
 	}
 	w.Form.UnFullscreen()
 	w.SetMinSize(w.minWidth, w.minHeight)
@@ -231,8 +246,8 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			// This Option is not affected by returning 0 in WM_NCCALCSIZE.
 			// As a result we have hidden the titlebar but still have the default window frame styling.
 			// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
-			if winoptions := w.frontendOptions.Windows; winoptions == nil || !winoptions.DisableFramelessWindowDecorations {
-				win32.ExtendFrameIntoClientArea(w.Handle())
+			if w.framelessWithDecorations {
+				win32.ExtendFrameIntoClientArea(w.Handle(), true)
 			}
 		case w32.WM_NCCALCSIZE:
 			// Disable the standard frame by allowing the client area to take the full
