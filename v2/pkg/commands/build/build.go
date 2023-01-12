@@ -405,6 +405,12 @@ func executeBuildHook(outputLogger *clilogger.CLILogger, options *Options, hookI
 
 	}
 
+	if !fs.DirExists(options.BinDirectory) {
+		if err := fs.MkDirs(options.BinDirectory); err != nil {
+			return fmt.Errorf("could not create target directory: %s", err.Error())
+		}
+	}
+
 	stdout, stderr, err := shell.RunCommand(options.BinDirectory, args[0], args[1:]...)
 	if options.Verbosity == VERBOSE {
 		pterm.Info.Println(stdout)

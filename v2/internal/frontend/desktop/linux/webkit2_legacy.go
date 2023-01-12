@@ -15,7 +15,7 @@ import (
 	"net/http"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/assetserver"
 )
 
 const webkit2MinMinorVersion = 0

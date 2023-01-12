@@ -176,14 +176,15 @@ func (fm *Form) Fullscreen() {
 	if !w32.GetWindowPlacement(fm.hwnd, &fm.previousWindowPlacement) {
 		return
 	}
-	w32.SetWindowLong(fm.hwnd, w32.GWL_STYLE, fm.previousWindowStyle & ^uint32(w32.WS_OVERLAPPEDWINDOW))
+	// According to https://devblogs.microsoft.com/oldnewthing/20050505-04/?p=35703 one should use w32.WS_POPUP | w32.WS_VISIBLE
+	w32.SetWindowLong(fm.hwnd, w32.GWL_STYLE, fm.previousWindowStyle & ^uint32(w32.WS_OVERLAPPEDWINDOW) | (w32.WS_POPUP|w32.WS_VISIBLE))
+	fm.isFullscreen = true
 	w32.SetWindowPos(fm.hwnd, w32.HWND_TOP,
 		int(monitorInfo.RcMonitor.Left),
 		int(monitorInfo.RcMonitor.Top),
 		int(monitorInfo.RcMonitor.Right-monitorInfo.RcMonitor.Left),
 		int(monitorInfo.RcMonitor.Bottom-monitorInfo.RcMonitor.Top),
 		w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
-	fm.isFullscreen = true
 }
 
 func (fm *Form) UnFullscreen() {
@@ -192,9 +193,9 @@ func (fm *Form) UnFullscreen() {
 	}
 	w32.SetWindowLong(fm.hwnd, w32.GWL_STYLE, fm.previousWindowStyle)
 	w32.SetWindowPlacement(fm.hwnd, &fm.previousWindowPlacement)
+	fm.isFullscreen = false
 	w32.SetWindowPos(fm.hwnd, 0, 0, 0, 0, 0,
 		w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
-	fm.isFullscreen = false
 }
 
 func (fm *Form) IsFullScreen() bool {

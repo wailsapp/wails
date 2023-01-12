@@ -81,14 +81,17 @@ type MONITORINFO struct {
 	DwFlags   uint32
 }
 
-func ExtendFrameIntoClientArea(hwnd uintptr) {
+func ExtendFrameIntoClientArea(hwnd uintptr, extend bool) {
 	// -1: Adds the default frame styling (aero shadow and e.g. rounded corners on Windows 11)
 	//     Also shows the caption buttons if transparent ant translucent but they don't work.
 	//  0: Adds the default frame styling but no aero shadow, does not show the caption buttons.
 	//  1: Adds the default frame styling (aero shadow and e.g. rounded corners on Windows 11) but no caption buttons
 	//     are shown if transparent ant translucent.
-	margins := &MARGINS{1, 1, 1, 1} // Only extend 1 pixel to have the default frame styling but no caption buttons
-	if err := dwmExtendFrameIntoClientArea(hwnd, margins); err != nil {
+	var margins MARGINS
+	if extend {
+		margins = MARGINS{1, 1, 1, 1} // Only extend 1 pixel to have the default frame styling but no caption buttons
+	}
+	if err := dwmExtendFrameIntoClientArea(hwnd, &margins); err != nil {
 		log.Fatal(fmt.Errorf("DwmExtendFrameIntoClientArea failed: %s", err))
 	}
 }

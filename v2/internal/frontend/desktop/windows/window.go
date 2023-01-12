@@ -31,6 +31,8 @@ type Window struct {
 	theme        winoptions.Theme
 	themeChanged bool
 
+	framelessWithDecorations bool
+
 	OnSuspend func()
 	OnResume  func()
 	dragging  bool
@@ -39,6 +41,8 @@ type Window struct {
 }
 
 func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo, chromium *edge.Chromium) *Window {
+	windowsOptions := appoptions.Windows
+
 	result := &Window{
 		frontendOptions: appoptions,
 		minHeight:       appoptions.MinHeight,
@@ -49,13 +53,15 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		isActive:        true,
 		themeChanged:    true,
 		chromium:        chromium,
+
+		framelessWithDecorations: appoptions.Frameless && (windowsOptions == nil || !windowsOptions.DisableFramelessWindowDecorations),
 	}
 	result.SetIsForm(true)
 
 	var exStyle int
-	if appoptions.Windows != nil {
+	if windowsOptions != nil {
 		exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
-		if appoptions.Windows.WindowIsTranslucent {
+		if windowsOptions.WindowIsTranslucent {
 			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
 	}
@@ -72,7 +78,7 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 	result.SetParent(parent)
 
 	loadIcon := true
-	if appoptions.Windows != nil && appoptions.Windows.DisableWindowIcon == true {
+	if windowsOptions != nil && windowsOptions.DisableWindowIcon == true {
 		loadIcon = false
 	}
 	if loadIcon {
@@ -85,8 +91,8 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		win32.SetBackgroundColour(result.Handle(), appoptions.BackgroundColour.R, appoptions.BackgroundColour.G, appoptions.BackgroundColour.B)
 	}
 
-	if appoptions.Windows != nil {
-		result.theme = appoptions.Windows.Theme
+	if windowsOptions != nil {
+		result.theme = windowsOptions.Theme
 	} else {
 		result.theme = winoptions.SystemDefault
 	}
@@ -102,18 +108,18 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 
 	result.UpdateTheme()
 
-	if appoptions.Windows != nil {
-		result.OnSuspend = appoptions.Windows.OnSuspend
-		result.OnResume = appoptions.Windows.OnResume
-		if appoptions.Windows.WindowIsTranslucent {
+	if windowsOptions != nil {
+		result.OnSuspend = windowsOptions.OnSuspend
+		result.OnResume = windowsOptions.OnResume
+		if windowsOptions.WindowIsTranslucent {
 			if !win32.SupportsBackdropTypes() {
 				result.SetTranslucentBackground()
 			} else {
-				win32.EnableTranslucency(result.Handle(), win32.BackdropType(appoptions.Windows.BackdropType))
+				win32.EnableTranslucency(result.Handle(), win32.BackdropType(windowsOptions.BackdropType))
 			}
 		}
 
-		if appoptions.Windows.DisableWindowIcon {
+		if windowsOptions.DisableWindowIcon {
 			result.DisableIcon()
 		}
 	}
@@ -131,18 +137,35 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 }
 
 func (w *Window) Fullscreen() {
+	if w.Form.IsFullScreen() {
+		return
+	}
+	if w.framelessWithDecorations {
+		win32.ExtendFrameIntoClientArea(w.Handle(), false)
+	}
 	w.Form.SetMaxSize(0, 0)
 	w.Form.SetMinSize(0, 0)
 	w.Form.Fullscreen()
 }
 
 func (w *Window) UnFullscreen() {
-	if !w.IsFullScreen() {
+	if !w.Form.IsFullScreen() {
 		return
+	}
+	if w.framelessWithDecorations {
+		win32.ExtendFrameIntoClientArea(w.Handle(), true)
 	}
 	w.Form.UnFullscreen()
 	w.SetMinSize(w.minWidth, w.minHeight)
 	w.SetMaxSize(w.maxWidth, w.maxHeight)
+}
+
+func (w *Window) Restore() {
+	if w.Form.IsFullScreen() {
+		w.UnFullscreen()
+	} else {
+		w.Form.Restore()
+	}
 }
 
 func (w *Window) SetMinSize(minWidth int, minHeight int) {
@@ -205,7 +228,6 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			//}
 		}
 
-	// TODO move WM_DPICHANGED handling into winc
 	case 0x02E0: //w32.WM_DPICHANGED
 		newWindowSize := (*w32.RECT)(unsafe.Pointer(lparam))
 		w32.SetWindowPos(w.Handle(),
@@ -224,8 +246,8 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			// This Option is not affected by returning 0 in WM_NCCALCSIZE.
 			// As a result we have hidden the titlebar but still have the default window frame styling.
 			// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
-			if winoptions := w.frontendOptions.Windows; winoptions == nil || !winoptions.DisableFramelessWindowDecorations {
-				win32.ExtendFrameIntoClientArea(w.Handle())
+			if w.framelessWithDecorations {
+				win32.ExtendFrameIntoClientArea(w.Handle(), true)
 			}
 		case w32.WM_NCCALCSIZE:
 			// Disable the standard frame by allowing the client area to take the full
@@ -235,9 +257,10 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			// shown. We still need the WS_THICKFRAME style to enable resizing from the frontend.
 			if wparam != 0 {
 				rgrc := (*w32.RECT)(unsafe.Pointer(lparam))
-
-				style := uint32(w32.GetWindowLong(w.Handle(), w32.GWL_STYLE))
-				if style&w32.WS_MAXIMIZE != 0 {
+				if w.Form.IsFullScreen() {
+					// In Full-Screen mode we don't need to adjust anything
+					w.chromium.SetPadding(edge.Rect{})
+				} else if w.IsMaximised() {
 					// If the window is maximized we must adjust the client area to the work area of the monitor. Otherwise
 					// some content goes beyond the visible part of the monitor.
 					// Make sure to use the provided RECT to get the monitor, because during maximizig there might be
@@ -268,6 +291,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 						}
 					}
 					w.chromium.SetPadding(edge.Rect{})
+					return 0
 				} else {
 					// This is needed to workaround the resize flickering in frameless mode with WindowDecorations
 					// See: https://stackoverflow.com/a/6558508
@@ -277,9 +301,8 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 					// therefore let's pad the content with 1px at the bottom.
 					rgrc.Bottom += 1
 					w.chromium.SetPadding(edge.Rect{Bottom: 1})
+					return 0
 				}
-
-				return 0
 			}
 		}
 	}

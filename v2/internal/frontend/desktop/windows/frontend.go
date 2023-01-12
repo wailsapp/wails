@@ -22,7 +22,6 @@ import (
 	"github.com/bep/debounce"
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
@@ -30,6 +29,7 @@ import (
 	wailsruntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
+	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
@@ -296,6 +296,9 @@ func (f *Frontend) WindowToggleMaximise() {
 func (f *Frontend) WindowUnmaximise() {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
+	if f.mainWindow.Form.IsFullScreen() {
+		return
+	}
 	f.mainWindow.Restore()
 }
 
@@ -312,6 +315,9 @@ func (f *Frontend) WindowMinimise() {
 func (f *Frontend) WindowUnminimise() {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
+	if f.mainWindow.Form.IsFullScreen() {
+		return
+	}
 	f.mainWindow.Restore()
 }
 
@@ -332,6 +338,8 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 	}
 
 	f.mainWindow.Invoke(func() {
+		win32.SetBackgroundColour(f.mainWindow.Handle(), col.R, col.G, col.B)
+
 		controller := f.chromium.GetController()
 		controller2 := controller.GetICoreWebView2Controller2()
 
