@@ -40,7 +40,7 @@ func (d *AssetServer) ServeWebViewRequest(req webview.Request) {
 		}
 
 		dispatchC := make(chan webview.Request)
-		go queueingDispatcher(dispatchC, workerC)
+		go queueingDispatcher(50, dispatchC, workerC)
 
 		d.dispatchReqC = dispatchC
 	})
@@ -137,25 +137,26 @@ func (d *AssetServer) webviewRequestErrorHandler(uri string, rw http.ResponseWri
 	http.Error(rw, err.Error(), http.StatusInternalServerError)
 }
 
-func queueingDispatcher(in <-chan webview.Request, out chan<- webview.Request) {
-	q := []webview.Request{}
+func queueingDispatcher[T any](minQueueSize uint, inC <-chan T, outC chan<- T) {
+	q := newRingqueue[T](minQueueSize)
 	for {
-		req, ok := <-in
+		in, ok := <-inC
 		if !ok {
 			return
 		}
 
-		q = append(q, req)
-		for len(q) != 0 {
+		q.Add(in)
+		for q.Len() != 0 {
+			out, _ := q.Peek()
 			select {
-			case out <- q[0]:
-				q = q[1:]
-			case req, ok := <-in:
+			case outC <- out:
+				q.Remove()
+			case in, ok := <-inC:
 				if !ok {
 					return
 				}
 
-				q = append(q, req)
+				q.Add(in)
 			}
 		}
 	}
