@@ -5,4 +5,5 @@ type Application struct {
 	Description string
 	Icon        []byte
 	Mac         Mac
+	Bind        []interface{}
 }

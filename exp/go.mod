@@ -8,6 +8,8 @@ require (
 	github.com/leaanthony/clir v1.3.0
 	github.com/leaanthony/winicon v1.0.0
 	github.com/pterm/pterm v0.12.51
+	github.com/samber/lo v1.37.0
+	github.com/stretchr/testify v1.8.1
 	github.com/tc-hib/winres v0.1.6
 )
 
@@ -15,6 +17,7 @@ require (
 	atomicgo.dev/cursor v0.1.1 // indirect
 	atomicgo.dev/keyboard v0.2.8 // indirect
 	github.com/containerd/console v1.0.3 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/gookit/color v1.5.2 // indirect
@@ -27,6 +30,7 @@ require (
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/radovskyb/watcher v1.0.7 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sajari/fuzzy v1.0.0 // indirect
