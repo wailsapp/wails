@@ -547,10 +547,8 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 		return
 	}
 
-	logInfo := strings.Replace(uri, f.startURL.String(), "", 1)
-
 	rw := httptest.NewRecorder()
-	f.assets.ProcessHTTPRequest(logInfo, rw, coreWebview2RequestToHttpRequest(req))
+	f.assets.ProcessHTTPRequestLegacy(rw, coreWebview2RequestToHttpRequest(req))
 
 	headers := []string{}
 	for k, v := range rw.Header() {

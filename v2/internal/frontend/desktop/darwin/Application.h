@@ -48,11 +48,6 @@ const bool IsFullScreen(void *ctx);
 const bool IsMinimised(void *ctx);
 const bool IsMaximised(void *ctx);
 
-void ProcessURLDidReceiveResponse(void *inctx, unsigned long long requestId, int statusCode, void *headersString, int headersStringLength);
-bool ProcessURLDidReceiveData(void *inctx, unsigned long long requestId, void* data, int datalength);
-void ProcessURLDidFinish(void *inctx, unsigned long long requestId);
-int ProcessURLRequestReadBodyStream(void *inctx, unsigned long long requestId, void *buf, int bufLen);
-
 /* Dialogs */
 
 void MessageDialog(void *inctx, const char* dialogType, const char* title, const char* message, const char* button1, const char* button2, const char* button3, const char* button4, const char* defaultButton, const char* cancelButton, void* iconData, int iconDataLength);

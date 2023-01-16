@@ -486,8 +486,7 @@ func (f *Frontend) processRequest(request unsafe.Pointer) {
 	rw := &webKitResponseWriter{req: req}
 	defer rw.Close()
 
-	f.assets.ProcessHTTPRequest(
-		goURI,
+	f.assets.ProcessHTTPRequestLegacy(
 		rw,
 		func() (*http.Request, error) {
 			method := webkit_uri_scheme_request_get_http_method(req)

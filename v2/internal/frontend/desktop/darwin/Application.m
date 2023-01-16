@@ -52,36 +52,6 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     return result;
 }
 
-void ProcessURLDidReceiveResponse(void *inctx, unsigned long long requestId, int statusCode, void *headersString, int headersStringLength) {
-    WailsContext *ctx = (__bridge WailsContext*) inctx;
-    @autoreleasepool {
-        NSData *nsHeadersJSON = [NSData dataWithBytes:headersString length:headersStringLength];
-        [ctx processURLDidReceiveResponse:requestId :statusCode :nsHeadersJSON];
-    }
-}
-
-bool ProcessURLDidReceiveData(void *inctx, unsigned long long requestId, void* data, int datalength) {
-    WailsContext *ctx = (__bridge WailsContext*) inctx;
-    @autoreleasepool {
-        NSData *nsdata = [NSData dataWithBytes:data length:datalength];
-        return [ctx processURLDidReceiveData:requestId :nsdata];
-    }
-}
-
-void ProcessURLDidFinish(void *inctx, unsigned long long requestId) {
-    WailsContext *ctx = (__bridge WailsContext*) inctx;
-    @autoreleasepool {
-        [ctx processURLDidFinish:requestId];
-    }
-}
-
-int ProcessURLRequestReadBodyStream(void *inctx, unsigned long long requestId, void *buf, int bufLen) {
-    WailsContext *ctx = (__bridge WailsContext*) inctx;
-    @autoreleasepool {
-        return [ctx processURLRequestReadBodyStream:requestId :buf :bufLen];
-    }
-}
-
 void ExecJS(void* inctx, const char *script) {
     WailsContext *ctx = (__bridge WailsContext*) inctx;
     NSString *nsscript = safeInit(script);
