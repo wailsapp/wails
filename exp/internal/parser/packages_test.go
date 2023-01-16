@@ -41,18 +41,21 @@ func TestParseDirectory(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			Debug = true
 			got, err := ParseDirectory(tt.dir)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ParseDirectory() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
+
 			for name, pkg := range got.packages {
-				println("Got package", name)
-				for _, boundStruct := range pkg.boundStructs {
-					println("Got bound struct", boundStruct.Name.Name)
-					require.True(t, lo.Contains(tt.want, name+"."+boundStruct.Name.Name))
+				for structName, _ := range pkg.boundStructs {
+					require.True(t, lo.Contains(tt.want, name+"."+structName))
+					tt.want = lo.Without(tt.want, name+"."+structName)
 				}
 			}
+			require.Empty(t, tt.want)
+
 		})
 	}
 }

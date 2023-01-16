@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -11,10 +12,18 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+var Debug = false
+
+func debug(msg string, args ...interface{}) {
+	if Debug {
+		println(fmt.Sprintf(msg, args...))
+	}
+}
+
 type parsedPackage struct {
 	name         string
 	pkg          *ast.Package
-	boundStructs []*ast.TypeSpec
+	boundStructs map[string]*ast.TypeSpec
 }
 
 type Context struct {
@@ -36,8 +45,9 @@ func ParseDirectory(dir string) (*Context, error) {
 	// Iterate through the packages
 	for _, pkg := range pkgs {
 		context.packages[pkg.Name] = &parsedPackage{
-			name: pkg.Name,
-			pkg:  pkg,
+			name:         pkg.Name,
+			pkg:          pkg,
+			boundStructs: make(map[string]*ast.TypeSpec),
 		}
 	}
 
@@ -52,7 +62,7 @@ func findApplicationNewCalls(context *Context) {
 
 	for _, packageName := range currentPackages {
 		thisPackage := context.packages[packageName]
-		println("Parsing package", packageName)
+		debug("Parsing package: %s", packageName)
 		// Iterate through the package's files
 		for _, file := range thisPackage.pkg.Files {
 			// Use an ast.Inspector to find the calls to application.New
@@ -140,12 +150,13 @@ func findApplicationNewCalls(context *Context) {
 							ident, ok := boundStructLit.Type.(*ast.Ident)
 							if ok {
 								if ident.Obj == nil {
-									println("Ident.Obj is nil - check")
+									debug("Ident.Obj is nil - check")
 									continue
 								}
 								// Check if the ident is a struct type
-								if _, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
-									thisPackage.boundStructs = append(thisPackage.boundStructs, ident.Obj.Decl.(*ast.TypeSpec))
+								if t, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
+									thisPackage.boundStructs[ident.Name] = t
+									findNestedStructs(t, file, packageName, context)
 									continue
 								}
 								// Check the typespec decl is a struct
@@ -171,12 +182,15 @@ func findApplicationNewCalls(context *Context) {
 }
 
 func getStructsFromSelector(selector *ast.SelectorExpr, file *ast.File, context *Context) {
+	debug("getStructsFromSelector called with selector '%s' on file '%s.go'", selector.Sel.Name, file.Name.Name)
+
 	// extract package name from selector
 	packageName := selector.X.(*ast.Ident).Name
 
 	if context.packages[packageName] == nil {
 		context.packages[packageName] = &parsedPackage{
-			name: packageName,
+			name:         packageName,
+			boundStructs: make(map[string]*ast.TypeSpec),
 		}
 	}
 
@@ -216,8 +230,12 @@ func getStructsFromSelector(selector *ast.SelectorExpr, file *ast.File, context 
 					case *ast.TypeSpec:
 						typeSpec := n.(*ast.TypeSpec)
 						if typeSpec.Name.Name == structName {
-							context.packages[packageName].boundStructs = append(context.packages[packageName].boundStructs, typeSpec)
-							findNestedStructs(typeSpec, parsedFile, packageName, context)
+							if _, ok := context.packages[packageName].boundStructs[structName]; !ok {
+								debug("Adding struct '%s' in package '%s'", structName, packageName)
+								context.packages[packageName].boundStructs[typeSpec.Name.Name] = typeSpec
+								findNestedStructs(typeSpec, parsedFile, packageName, context)
+							}
+							return false
 						}
 					}
 					return true
@@ -230,10 +248,11 @@ func getStructsFromSelector(selector *ast.SelectorExpr, file *ast.File, context 
 
 }
 
-func findNestedStructs(t *ast.TypeSpec, parsedFile *ast.File, pkgName string, context *Context) (localStructs []*ast.TypeSpec, externalStructs []*ast.SelectorExpr) {
+func findNestedStructs(t *ast.TypeSpec, parsedFile *ast.File, pkgName string, context *Context) {
+	debug("findNestedStructs called with type '%s' on file '%s.go'", t.Name.Name, parsedFile.Name.Name)
 	structType, ok := t.Type.(*ast.StructType)
 	if !ok {
-		return nil, nil
+		return
 	}
 	for _, field := range structType.Fields.List {
 		for _, ident := range field.Names {
@@ -244,7 +263,11 @@ func findNestedStructs(t *ast.TypeSpec, parsedFile *ast.File, pkgName string, co
 				}
 				if t.Obj.Kind == ast.Typ {
 					if _, ok := t.Obj.Decl.(*ast.TypeSpec); ok {
-						context.packages[pkgName].boundStructs = append(context.packages[pkgName].boundStructs, t.Obj.Decl.(*ast.TypeSpec))
+						if _, ok := context.packages[pkgName].boundStructs[t.Name]; !ok {
+							debug("Adding nested struct '%s' to package '%s'", t.Name, pkgName)
+							context.packages[pkgName].boundStructs[t.Name] = t.Obj.Decl.(*ast.TypeSpec)
+							findNestedStructs(t.Obj.Decl.(*ast.TypeSpec), parsedFile, pkgName, context)
+						}
 					}
 				}
 			case *ast.SelectorExpr:
@@ -264,5 +287,100 @@ func findNestedStructs(t *ast.TypeSpec, parsedFile *ast.File, pkgName string, co
 			}
 		}
 	}
-	return localStructs, externalStructs
+	findStructsInMethods(t.Name.Name, parsedFile, pkgName, context)
+
+}
+
+func findStructsInMethods(name string, parsedFile *ast.File, pkgName string, context *Context) {
+	debug("findStructsInMethods called with type '%s' on file '%s.go'", name, parsedFile.Name.Name)
+	// Find the struct declaration for the given name
+	var structDecl *ast.TypeSpec
+	for _, decl := range parsedFile.Decls {
+		if fn, ok := decl.(*ast.FuncDecl); ok {
+			// check the receiver name is the same as the name given
+			if fn.Recv == nil {
+				continue
+			}
+			// Check if the receiver is a pointer
+			if starExpr, ok := fn.Recv.List[0].Type.(*ast.StarExpr); ok {
+				if ident, ok := starExpr.X.(*ast.Ident); ok {
+					if ident.Name != name {
+						continue
+					}
+				}
+			} else {
+				if ident, ok := fn.Recv.List[0].Type.(*ast.Ident); ok {
+					if ident.Name != name {
+						continue
+					}
+				}
+			}
+			findStructsInMethodParams(fn, parsedFile, pkgName, context)
+		}
+	}
+	if structDecl == nil {
+		return
+	}
+	// Iterate the methods in the struct
+
+}
+
+func findStructsInMethodParams(f *ast.FuncDecl, parsedFile *ast.File, pkgName string, context *Context) {
+	debug("findStructsInMethodParams called with type '%s' on file '%s.go'", f.Name.Name, parsedFile.Name.Name)
+	if f.Type.Params == nil {
+		for _, field := range f.Type.Params.List {
+			parseField(field, parsedFile, pkgName, context)
+		}
+	}
+	if f.Type.Results != nil {
+		for _, field := range f.Type.Results.List {
+			parseField(field, parsedFile, pkgName, context)
+		}
+	}
+}
+
+func parseField(field *ast.Field, parsedFile *ast.File, pkgName string, context *Context) {
+	if se, ok := field.Type.(*ast.StarExpr); ok {
+		// Check if the star expr is a struct
+		if selExp, ok := se.X.(*ast.SelectorExpr); ok {
+			getStructsFromSelector(selExp, parsedFile, context)
+			return
+		}
+		if ident, ok := se.X.(*ast.Ident); ok {
+			if ident.Obj == nil {
+				return
+			}
+			if ident.Obj.Kind == ast.Typ {
+				if _, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
+					if _, ok := context.packages[pkgName].boundStructs[ident.Name]; !ok {
+						debug("Adding field struct '%s' to package '%s'", ident.Name, pkgName)
+						context.packages[pkgName].boundStructs[ident.Name] = ident.Obj.Decl.(*ast.TypeSpec)
+						findNestedStructs(ident.Obj.Decl.(*ast.TypeSpec), parsedFile, pkgName, context)
+					} else {
+						debug("Struct %s already bound", ident.Name)
+					}
+				}
+			}
+		}
+	}
+	if selExp, ok := field.Type.(*ast.SelectorExpr); ok {
+		getStructsFromSelector(selExp, parsedFile, context)
+		return
+	}
+	if ident, ok := field.Type.(*ast.Ident); ok {
+		if ident.Obj == nil {
+			return
+		}
+		if ident.Obj.Kind == ast.Typ {
+			if _, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
+				if _, ok := context.packages[pkgName].boundStructs[ident.Name]; !ok {
+					debug("Adding field struct '%s' to package '%s'", ident.Name, pkgName)
+					context.packages[pkgName].boundStructs[ident.Name] = ident.Obj.Decl.(*ast.TypeSpec)
+					findNestedStructs(ident.Obj.Decl.(*ast.TypeSpec), parsedFile, pkgName, context)
+				} else {
+					debug("Struct %s already bound", ident.Name)
+				}
+			}
+		}
+	}
 }

@@ -1,6 +1,8 @@
 package services
 
-import "github.com/wailsapp/wails/exp/examples/binding/models"
+import (
+	"github.com/wailsapp/wails/exp/examples/binding/models"
+)
 
 type GreetService struct {
 	SomeVariable int
@@ -10,4 +12,12 @@ type GreetService struct {
 
 func (*GreetService) Greet(name string) string {
 	return "Hello " + name
+}
+
+func (g *GreetService) GetPerson() *models.Person {
+	return g.Parent
+}
+
+func (g *GreetService) SetPerson(person *models.Person) {
+	g.Parent = person
 }
