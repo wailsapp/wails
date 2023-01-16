@@ -1,10 +1,12 @@
 package parser
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"strings"
 
 	"github.com/samber/lo"
@@ -28,6 +30,16 @@ type parsedPackage struct {
 
 type Context struct {
 	packages map[string]*parsedPackage
+}
+
+func (c *Context) GetBoundStructs() map[string][]*ast.TypeSpec {
+	structs := make(map[string][]*ast.TypeSpec)
+	for _, pkg := range c.packages {
+		for _, structType := range pkg.boundStructs {
+			structs[pkg.name] = append(structs[pkg.name], structType)
+		}
+	}
+	return structs
 }
 
 func ParseDirectory(dir string) (*Context, error) {
@@ -150,7 +162,9 @@ func findApplicationNewCalls(context *Context) {
 							ident, ok := boundStructLit.Type.(*ast.Ident)
 							if ok {
 								if ident.Obj == nil {
-									debug("Ident.Obj is nil - check")
+									structTypeSpec := findStructInPackage(thisPackage.pkg, ident.Name)
+									thisPackage.boundStructs[ident.Name] = structTypeSpec
+									findNestedStructs(structTypeSpec, file, packageName, context)
 									continue
 								}
 								// Check if the ident is a struct type
@@ -383,4 +397,81 @@ func parseField(field *ast.Field, parsedFile *ast.File, pkgName string, context 
 			}
 		}
 	}
+}
+
+func findStructInPackage(pkg *ast.Package, name string) *ast.TypeSpec {
+	for _, file := range pkg.Files {
+		for _, decl := range file.Decls {
+			if gen, ok := decl.(*ast.GenDecl); ok && gen.Tok == token.TYPE {
+				for _, spec := range gen.Specs {
+					if typeSpec, ok := spec.(*ast.TypeSpec); ok {
+						if typeSpec.Name.Name == name {
+							if _, ok := typeSpec.Type.(*ast.StructType); ok {
+								return typeSpec
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+var goToTS = map[string]string{
+	"int":     "number",
+	"int8":    "number",
+	"int16":   "number",
+	"int32":   "number",
+	"int64":   "number",
+	"uint":    "number",
+	"uint8":   "number",
+	"uint16":  "number",
+	"uint32":  "number",
+	"uint64":  "number",
+	"float32": "number",
+	"float64": "number",
+	"string":  "string",
+	"bool":    "boolean",
+}
+
+func GenerateTypeScript(specs map[string][]*ast.TypeSpec) ([]byte, error) {
+	var buf bytes.Buffer
+
+	for pkg, pkgSpecs := range specs {
+		if _, err := fmt.Fprintf(&buf, "namespace %s {\n", pkg); err != nil {
+			return nil, err
+		}
+
+		for _, spec := range pkgSpecs {
+			if structType, ok := spec.Type.(*ast.StructType); ok {
+				if _, err := fmt.Fprintf(&buf, "  class %s {\n", spec.Name.Name); err != nil {
+					return nil, err
+				}
+
+				for _, field := range structType.Fields.List {
+					// Get the Go type of the field
+					goType := types.ExprString(field.Type)
+					// Look up the corresponding TypeScript type
+					tsType, ok := goToTS[goType]
+					if !ok {
+						tsType = goType
+					}
+
+					if _, err := fmt.Fprintf(&buf, "    %s: %s;\n", field.Names[0].Name, tsType); err != nil {
+						return nil, err
+					}
+				}
+
+				if _, err := fmt.Fprintf(&buf, "  }\n"); err != nil {
+					return nil, err
+				}
+			}
+		}
+
+		if _, err := fmt.Fprintf(&buf, "}\n"); err != nil {
+			return nil, err
+		}
+	}
+	return buf.Bytes(), nil
 }

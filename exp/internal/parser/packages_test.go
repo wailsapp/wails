@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/samber/lo"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +18,7 @@ func TestParseDirectory(t *testing.T) {
 		{
 			name:    "should find single bound service",
 			dir:     "testdata/struct_literal_single",
-			want:    []string{"GreetService"},
+			want:    []string{"main.GreetService"},
 			wantErr: false,
 		},
 		{
@@ -55,6 +56,54 @@ func TestParseDirectory(t *testing.T) {
 				}
 			}
 			require.Empty(t, tt.want)
+		})
+	}
+}
+
+func TestGenerateTypeScript(t *testing.T) {
+	tests := []struct {
+		name    string
+		dir     string
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "should find single bound service",
+			dir:     "testdata/struct_literal_single",
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name:    "should find multiple bound services",
+			dir:     "testdata/struct_literal_multiple",
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name:    "should find multiple bound services over multiple files",
+			dir:     "testdata/struct_literal_multiple_files",
+			want:    "",
+			wantErr: false,
+		},
+		{
+			name:    "should find bound services from other packages",
+			dir:     "../../examples/binding",
+			want:    "",
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			Debug = true
+			context, err := ParseDirectory(tt.dir)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ParseDirectory() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			ts, err := GenerateTypeScript(context.GetBoundStructs())
+			require.NoError(t, err)
+			require.Equal(t, ts, tt.want)
 
 		})
 	}
