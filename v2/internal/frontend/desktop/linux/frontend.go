@@ -71,7 +71,6 @@ static void install_signal_handlers()
 #endif
 }
 
-
 */
 import "C"
 import (
@@ -88,9 +87,10 @@ import (
 	"text/template"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v2/pkg/assetserver"
+
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
 	wailsruntime "github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -404,7 +404,9 @@ func (f *Frontend) processMessage(message string) {
 	}
 
 	if message == "runtime:ready" {
-		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
+		cmd := fmt.Sprintf(
+			"window.wails.setCSSDragProperties('%s', '%s');\n"+
+				"window.wails.flags.deferDragToMouseMove = true;", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
 		f.ExecJS(cmd)
 
 		if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
