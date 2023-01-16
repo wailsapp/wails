@@ -66,6 +66,7 @@ window.wails = {
         defaultCursor: null,
         borderThickness: 6,
         shouldDrag: false,
+        deferDragToMouseMove: false,
         cssDragProperty: "--wails-draggable",
         cssDragValue: "drag",
     }
@@ -84,16 +85,27 @@ if (ENV === 1) {
     delete window.wailsbindings;
 }
 
-window.addEventListener('mouseup', () => {
-    window.wails.flags.shouldDrag = false;
-});
-
 let dragTest = function (e) {
     var val = window.getComputedStyle(e.target).getPropertyValue(window.wails.flags.cssDragProperty);
     if (val) {
       val = val.trim();
     }
-    return val === window.wails.flags.cssDragValue;
+    
+    if (val !== window.wails.flags.cssDragValue) {
+        return false;
+    }
+
+    if (e.buttons !== 1) {
+        // Do not start dragging if not the primary button has been clicked.
+        return false;
+    }
+
+    if (e.detail !== 1) {
+        // Do not start dragging if more than once has been clicked, e.g. when double clicking
+        return false;
+    }
+
+    return true;
 };
 
 window.wails.setCSSDragProperties = function (property, value) {
@@ -117,9 +129,20 @@ window.addEventListener('mousedown', (e) => {
                 return;
             }
         }
-        window.wails.flags.shouldDrag = true;
+        if (window.wails.flags.deferDragToMouseMove) {
+           window.wails.flags.shouldDrag = true;
+        } else {
+            e.preventDefault()
+            window.WailsInvoke("drag");
+        }
+        return;
+    } else {
+        window.wails.flags.shouldDrag = false;
     }
+});
 
+window.addEventListener('mouseup', () => {
+    window.wails.flags.shouldDrag = false;
 });
 
 function setResize(cursor) {
@@ -128,14 +151,14 @@ function setResize(cursor) {
 }
 
 window.addEventListener('mousemove', function (e) {
-    let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
-    if(window.wails.flags.shouldDrag && mousePressed <= 0) {
-        window.wails.flags.shouldDrag = false;
-    }
-    
     if (window.wails.flags.shouldDrag) {
-        window.WailsInvoke("drag");
-        return;
+        let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
+        if(mousePressed <= 0) {
+            window.wails.flags.shouldDrag = false;
+        } else {
+            window.WailsInvoke("drag");
+            return;
+        }
     }
     if (!window.wails.flags.enableResize) {
         return;
