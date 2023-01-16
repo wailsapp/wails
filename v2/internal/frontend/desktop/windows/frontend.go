@@ -645,7 +645,6 @@ func (f *Frontend) Callback(message string) {
 }
 
 func (f *Frontend) startDrag() error {
-	f.mainWindow.dragging = true
 	if !w32.ReleaseCapture() {
 		return fmt.Errorf("unable to release mouse capture")
 	}

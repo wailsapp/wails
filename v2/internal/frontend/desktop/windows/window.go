@@ -35,7 +35,6 @@ type Window struct {
 
 	OnSuspend func()
 	OnResume  func()
-	dragging  bool
 
 	chromium *edge.Chromium
 }
@@ -187,13 +186,6 @@ func (w *Window) IsVisible() bool {
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 	switch msg {
-	case w32.WM_EXITSIZEMOVE:
-		if w.dragging {
-			w.dragging = false
-			w.Invoke(func() {
-				w.chromium.Eval("wails.flags.shouldDrag = false;")
-			})
-		}
 	case win32.WM_POWERBROADCAST:
 		switch wparam {
 		case win32.PBT_APMSUSPEND:
@@ -291,7 +283,6 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 						}
 					}
 					w.chromium.SetPadding(edge.Rect{})
-					return 0
 				} else {
 					// This is needed to workaround the resize flickering in frameless mode with WindowDecorations
 					// See: https://stackoverflow.com/a/6558508
@@ -301,8 +292,8 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 					// therefore let's pad the content with 1px at the bottom.
 					rgrc.Bottom += 1
 					w.chromium.SetPadding(edge.Rect{Bottom: 1})
-					return 0
 				}
+				return 0
 			}
 		}
 	}

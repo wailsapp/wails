@@ -404,7 +404,9 @@ func (f *Frontend) processMessage(message string) {
 	}
 
 	if message == "runtime:ready" {
-		cmd := fmt.Sprintf("window.wails.setCSSDragProperties('%s', '%s');", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
+		cmd := fmt.Sprintf(
+			"window.wails.setCSSDragProperties('%s', '%s');\n"+
+				"window.wails.flags.deferDragToMouseMove = true;", f.frontendOptions.CSSDragProperty, f.frontendOptions.CSSDragValue)
 		f.ExecJS(cmd)
 
 		if f.frontendOptions.Frameless && f.frontendOptions.DisableResize == false {
