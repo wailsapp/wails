@@ -50,7 +50,7 @@ func TestParseDirectory(t *testing.T) {
 			}
 
 			for name, pkg := range got.packages {
-				for structName, _ := range pkg.boundStructs {
+				for structName := range pkg.boundStructs {
 					require.True(t, lo.Contains(tt.want, name+"."+structName))
 					tt.want = lo.Without(tt.want, name+"."+structName)
 				}

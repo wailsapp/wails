@@ -495,7 +495,7 @@ type allModels struct {
 	known map[string]map[string]struct{}
 }
 
-func NewAllModels(models map[string][]*ast.TypeSpec) *allModels {
+func newAllModels(models map[string][]*ast.TypeSpec) *allModels {
 	result := &allModels{known: make(map[string]map[string]struct{})}
 	// iterate over all models
 	for pkg, pkgSpecs := range models {
@@ -527,13 +527,13 @@ func (k *allModels) exists(name string) bool {
 
 func GenerateModels(specs map[string][]*ast.TypeSpec) ([]byte, error) {
 	var buf bytes.Buffer
-	var packages []Package
+	var pkgs []Package
 	for pkg, pkgSpecs := range specs {
-		packages = append(packages, Package{Name: pkg, Specs: pkgSpecs})
+		pkgs = append(pkgs, Package{Name: pkg, Specs: pkgSpecs})
 	}
-	knownStructs := NewAllModels(specs)
-	sort.Slice(packages, func(i, j int) bool { return packages[i].Name < packages[j].Name })
-	for _, pkg := range packages {
+	knownStructs := newAllModels(specs)
+	sort.Slice(pkgs, func(i, j int) bool { return pkgs[i].Name < pkgs[j].Name })
+	for _, pkg := range pkgs {
 		if _, err := fmt.Fprintf(&buf, "namespace %s {\n", pkg.Name); err != nil {
 			return nil, err
 		}
@@ -606,9 +606,4 @@ func GenerateModels(specs map[string][]*ast.TypeSpec) ([]byte, error) {
 		}
 	}
 	return buf.Bytes(), nil
-}
-
-func isLowerCaseFirstLetter(s string) bool {
-	r := []rune(s)
-	return unicode.IsLower(r[0])
 }
