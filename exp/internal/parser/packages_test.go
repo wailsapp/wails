@@ -68,27 +68,61 @@ func TestGenerateTypeScript(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "should find single bound service",
-			dir:     "testdata/struct_literal_single",
-			want:    "",
+			name: "should find single bound service",
+			dir:  "testdata/struct_literal_single",
+			want: `namespace main {
+  class GreetService {
+    SomeVariable: number;
+  }
+}
+`,
 			wantErr: false,
 		},
 		{
-			name:    "should find multiple bound services",
-			dir:     "testdata/struct_literal_multiple",
-			want:    "",
+			name: "should find multiple bound services",
+			dir:  "testdata/struct_literal_multiple",
+			want: `namespace main {
+  class GreetService {
+    SomeVariable: number;
+  }
+  class OtherService {
+  }
+}
+`,
 			wantErr: false,
 		},
 		{
-			name:    "should find multiple bound services over multiple files",
-			dir:     "testdata/struct_literal_multiple_files",
-			want:    "",
+			name: "should find multiple bound services over multiple files",
+			dir:  "testdata/struct_literal_multiple_files",
+			want: `namespace main {
+  class GreetService {
+    SomeVariable: number;
+  }
+  class OtherService {
+  }
+}
+`,
 			wantErr: false,
 		},
 		{
-			name:    "should find bound services from other packages",
-			dir:     "../../examples/binding",
-			want:    "",
+			name: "should find bound services from other packages",
+			dir:  "../../examples/binding",
+			want: `namespace main {
+  class localStruct {
+  }
+}
+namespace models {
+  class Person {
+    Name: string;
+  }
+}
+namespace services {
+  class GreetService {
+    SomeVariable: number;
+    Parent: models.Person;
+  }
+}
+`,
 			wantErr: false,
 		},
 	}
@@ -101,9 +135,9 @@ func TestGenerateTypeScript(t *testing.T) {
 				return
 			}
 
-			ts, err := GenerateTypeScript(context.GetBoundStructs())
+			ts, err := GenerateModels(context.GetBoundStructs())
 			require.NoError(t, err)
-			require.Equal(t, ts, tt.want)
+			require.Equal(t, tt.want, string(ts))
 
 		})
 	}

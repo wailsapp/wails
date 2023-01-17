@@ -7,7 +7,9 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
+	"sort"
 	"strings"
+	"unicode"
 
 	"github.com/samber/lo"
 
@@ -418,6 +420,11 @@ func findStructInPackage(pkg *ast.Package, name string) *ast.TypeSpec {
 	return nil
 }
 
+type Package struct {
+	Name  string
+	Specs []*ast.TypeSpec
+}
+
 var goToTS = map[string]string{
 	"int":     "number",
 	"int8":    "number",
@@ -435,31 +442,156 @@ var goToTS = map[string]string{
 	"bool":    "boolean",
 }
 
-func GenerateTypeScript(specs map[string][]*ast.TypeSpec) ([]byte, error) {
-	var buf bytes.Buffer
+//func GenerateModels(specs map[string][]*ast.TypeSpec) ([]byte, error) {
+//	var buf bytes.Buffer
+//	var packages []Package
+//	for pkg, pkgSpecs := range specs {
+//		packages = append(packages, Package{Name: pkg, Specs: pkgSpecs})
+//	}
+//	sort.Slice(packages, func(i, j int) bool { return packages[i].Name < packages[j].Name })
+//	for _, pkg := range packages {
+//		if _, err := fmt.Fprintf(&buf, "namespace %s {\n", pkg.Name); err != nil {
+//			return nil, err
+//		}
+//		sort.Slice(pkg.Specs, func(i, j int) bool { return pkg.Specs[i].Name.Name < pkg.Specs[j].Name.Name })
+//		for _, spec := range pkg.Specs {
+//			if structType, ok := spec.Type.(*ast.StructType); ok {
+//				if _, err := fmt.Fprintf(&buf, "  class %s {\n", spec.Name.Name); err != nil {
+//					return nil, err
+//				}
+//
+//				for _, field := range structType.Fields.List {
+//
+//					// Get the Go type of the field
+//					goType := types.ExprString(field.Type)
+//					// Look up the corresponding TypeScript type
+//					tsType, ok := goToTS[goType]
+//					if !ok {
+//						tsType = goType
+//					}
+//
+//					if _, err := fmt.Fprintf(&buf, "    %s: %s;\n", field.Names[0].Name, tsType); err != nil {
+//						return nil, err
+//					}
+//				}
+//
+//				if _, err := fmt.Fprintf(&buf, "  }\n"); err != nil {
+//					return nil, err
+//				}
+//				if _, err := fmt.Fprintf(&buf, "  }\n"); err != nil {
+//					return nil, err
+//				}
+//			}
+//		}
+//
+//		if _, err := fmt.Fprintf(&buf, "}\n"); err != nil {
+//			return nil, err
+//		}
+//	}
+//	return buf.Bytes(), nil
+//}
 
+type allModels struct {
+	known map[string]map[string]struct{}
+}
+
+func NewAllModels(models map[string][]*ast.TypeSpec) *allModels {
+	result := &allModels{known: make(map[string]map[string]struct{})}
+	// iterate over all models
+	for pkg, pkgSpecs := range models {
+		for _, spec := range pkgSpecs {
+			result.known[pkg] = make(map[string]struct{})
+			result.known[pkg][spec.Name.Name] = struct{}{}
+		}
+	}
+	return result
+}
+
+func (k *allModels) exists(name string) bool {
+	// Split the name into package and type
+	parts := strings.Split(name, ".")
+	typ := parts[0]
+	pkg := "main"
+	if len(parts) == 2 {
+		pkg = parts[0]
+		typ = parts[1]
+	}
+
+	knownPkg, ok := k.known[pkg]
+	if !ok {
+		return false
+	}
+	_, ok = knownPkg[typ]
+	return ok
+}
+
+func GenerateModels(specs map[string][]*ast.TypeSpec) ([]byte, error) {
+	var buf bytes.Buffer
+	var packages []Package
 	for pkg, pkgSpecs := range specs {
-		if _, err := fmt.Fprintf(&buf, "namespace %s {\n", pkg); err != nil {
+		packages = append(packages, Package{Name: pkg, Specs: pkgSpecs})
+	}
+	knownStructs := NewAllModels(specs)
+	sort.Slice(packages, func(i, j int) bool { return packages[i].Name < packages[j].Name })
+	for _, pkg := range packages {
+		if _, err := fmt.Fprintf(&buf, "namespace %s {\n", pkg.Name); err != nil {
 			return nil, err
 		}
-
-		for _, spec := range pkgSpecs {
+		sort.Slice(pkg.Specs, func(i, j int) bool { return pkg.Specs[i].Name.Name < pkg.Specs[j].Name.Name })
+		for _, spec := range pkg.Specs {
 			if structType, ok := spec.Type.(*ast.StructType); ok {
 				if _, err := fmt.Fprintf(&buf, "  class %s {\n", spec.Name.Name); err != nil {
 					return nil, err
 				}
 
 				for _, field := range structType.Fields.List {
-					// Get the Go type of the field
-					goType := types.ExprString(field.Type)
-					// Look up the corresponding TypeScript type
-					tsType, ok := goToTS[goType]
-					if !ok {
-						tsType = goType
+
+					// Ignore field names that have a lower case first letter
+					if !unicode.IsUpper(rune(field.Names[0].Name[0])) {
+						continue
 					}
 
-					if _, err := fmt.Fprintf(&buf, "    %s: %s;\n", field.Names[0].Name, tsType); err != nil {
-						return nil, err
+					// Get the Go type of the field
+					goType := types.ExprString(field.Type)
+					// Check if the type is an array
+					if arrayType, ok := field.Type.(*ast.ArrayType); ok {
+						// Get the element type of the array
+						elementType := types.ExprString(arrayType.Elt)
+						// Look up the corresponding TypeScript type
+						tsType, ok := goToTS[elementType]
+						if !ok {
+							// strip off the * prefix if it is there
+							if strings.HasPrefix(elementType, "*") {
+								elementType = elementType[1:]
+							}
+							if knownStructs.exists(elementType) {
+								tsType = elementType
+							} else {
+								tsType = "any"
+							}
+						}
+						// Output the field as an array of the corresponding TypeScript type
+						if _, err := fmt.Fprintf(&buf, "    %s: %s[];\n", field.Names[0].Name, tsType); err != nil {
+							return nil, err
+						}
+					} else {
+						// strip off the * prefix if it is there
+						if strings.HasPrefix(goType, "*") {
+							goType = goType[1:]
+						}
+						// Look up the corresponding TypeScript type
+						tsType, ok := goToTS[goType]
+						if !ok {
+							if knownStructs.exists(goType) {
+								tsType = goType
+							} else {
+								tsType = "any"
+							}
+						}
+						// Output the field as the corresponding TypeScript type
+						if _, err := fmt.Fprintf(&buf, "    %s: %s;\n", field.Names[0].Name, tsType); err != nil {
+							return nil, err
+						}
 					}
 				}
 
@@ -474,4 +606,9 @@ func GenerateTypeScript(specs map[string][]*ast.TypeSpec) ([]byte, error) {
 		}
 	}
 	return buf.Bytes(), nil
+}
+
+func isLowerCaseFirstLetter(s string) bool {
+	r := []rune(s)
+	return unicode.IsLower(r[0])
 }
