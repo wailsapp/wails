@@ -4,4 +4,6 @@ package options
 type Debug struct {
 	// OpenInspectorOnStartup opens the inspector on startup of the app.
 	OpenInspectorOnStartup bool
+	// StartHiddenOnDev Hidden desktop application on dev mode
+	StartHiddenOnDev bool
 }

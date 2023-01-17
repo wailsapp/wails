@@ -54,9 +54,7 @@ type App struct {
 	// Deprecated: Use AssetServer.Handler instead.
 	AssetsHandler http.Handler
 	// AssetServer configures the Assets for the application
-	AssetServer *assetserver.Options
-	// NoDesktopOnDev Disable open the desktop application
-	NoDesktopOnDev     bool
+	AssetServer        *assetserver.Options
 	Menu               *menu.Menu
 	Logger             logger.Logger `json:"-"`
 	LogLevel           logger.LogLevel

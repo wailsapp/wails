@@ -133,7 +133,7 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 	}
 
 	// Launch desktop app
-	if d.noDesktop() {
+	if d.startHidden() {
 		return err
 	} else {
 		err = d.Frontend.Run(ctx)
@@ -142,8 +142,8 @@ func (d *DevWebServer) Run(ctx context.Context) error {
 	return err
 }
 
-func (d *DevWebServer) noDesktop() bool {
-	return d.appoptions.NoDesktopOnDev && d.ctx.Value("buildtype").(string) == "dev"
+func (d *DevWebServer) startHidden() bool {
+	return d.appoptions.Debug.StartHiddenOnDev && d.ctx.Value("buildtype").(string) == "dev"
 }
 
 func (d *DevWebServer) WindowReload() {

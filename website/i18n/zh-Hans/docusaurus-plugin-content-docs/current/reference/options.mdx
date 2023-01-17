@@ -103,6 +103,7 @@ func main() {
         },
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
+			StartHiddenOnDev: false,
         },
     })
 
@@ -251,12 +252,6 @@ func main() {
 如果设置为 nil，则所有 GET 请求都将转发给 [处理程序](#处理程序)。
 
 名称: Assets<br/> 类型: `fs.FS`
-
-#### 开发模式下不开启桌面应用
-
-默认情况下，开发模式下(`wails dev`)将开启桌面端。 将此设置为 `true` 意味着开发模式下不会开启桌面端，请通过http://localhost:34115进行调试。
-
-名称：NoDesktopOnDev<br/> 类型：`bool`
 
 #### 处理程序
 
@@ -757,3 +752,11 @@ func main() {
 名称: OpenInspectorOnStartup<br/> 类型: `bool`
 
 [^1]: 这需要 WebKit2GTK 2.36+ 支持，并且您的应用程序需要使用构建标签 `webkit2_36` 来构建以激活对此功能的支持。 这也会将您应用程序的 WebKit2GTK 最低要求提高到 2.36。
+
+#### 开发模式下不开启桌面应用
+
+默认情况下，开发模式下(`wails dev`)将开启桌面端。 将此设置为 `true` 意味着开发模式下不会开启桌面端，请通过http://localhost:34115进行调试。
+
+名称：StartHiddenOnDev<br/> 类型：`bool`
+
+注意: 在开发模式下该选项设为true，则始终隐藏，不受`StartHidden`的影响

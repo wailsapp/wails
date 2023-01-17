@@ -41,7 +41,6 @@ func main() {
             Handler:    assetsHandler,
             Middleware: assetsMidldeware,
 		},
-		NoDesktopOnDev:     true,
         Menu:               app.applicationMenu(),
         Logger:             nil,
         LogLevel:           logger.DEBUG,
@@ -108,6 +107,7 @@ func main() {
         },
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
+			StartHiddenOnDev: false,
         },
     })
 
@@ -286,12 +286,6 @@ If set to nil, all GET requests will be forwarded to [Handler](#handler).
 
 Name: Assets<br/>
 Type: `fs.FS`
-
-#### NoDesktopOnDev
-
-By default, the desktop app will open during `wails dev`. Setting this to `true` means the desktop will not open during `wails dev`. Please use http://localhost:34115
-
-to debug you app.
 
 #### Handler
 
@@ -879,3 +873,13 @@ Setting this to `true` will open the WebInspector on startup of the application.
 
 Name: OpenInspectorOnStartup<br/>
 Type: `bool`
+
+#### StartHiddenOnDev
+
+By default, the desktop app will open during `wails dev`.
+
+Setting this to `true` means the desktop will not open during `wails dev`. Please use http://localhost:34115
+
+to debug you app.
+
+NOTE: Note: If this option is set to true in development mode, it will always be hidden and will not be affected by the `StartHidden` option.
