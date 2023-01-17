@@ -15,6 +15,28 @@ tags: [wails, v3]
 <br />
 ```
 
+# Introduction
+
+Wails is a project that simplifies the ability to write cross-platform desktop applications using
+Go. It uses native webview components for the frontend (not embedded browsers), bringing the power 
+of the world's most popular UI system to Go, whilst remaining lightweight. 
+
+Version 2 was released on the 22nd of September 2022 and brought with it a lot of enhancements
+including:
+
+- Live development, leveraging the popular Vite project
+- Rich functionality for managing windows and creating menus
+- Microsoft's WebView2 component
+- Generation of Typescript models that mirror your Go structs
+- Creating of NSIS Installer
+- Obfuscated builds
+
+Right now, Wails v2 provides powerful tooling for creating rich, cross-platform desktop 
+applications.
+
+This blog post aims to look at where the project is at right now and what we can improve 
+on moving forward.
+
 # Where are we now?
 
 It's been incredible to see the popularity of Wails rising since the v2 release. I'm constantly
@@ -23,14 +45,11 @@ With more popularity, comes more eyes on the project. And with that, more featur
 bug reports. 
 
 Over time, I've been able to identify some of the most pressing issues facing the project. 
-I've also been able to identify some of the things that are holding the project back. 
-
-This post is a summary of my thoughts on the future of Wails and what a v3 may look like.
+I've also been able to identify some of the things that are holding the project back.
 
 ## Current issues
 
-The first thing I want to address is what I see as some of the current issues that
-are holding the project back. I've identified the following as the most important:
+I've identified the following areas that I feel are holding the project back:
 
 - The API
 - Bindings generation
@@ -43,16 +62,12 @@ The API to build a Wails application currently consists of 2 parts:
 - The Application API
 - The Runtime API
 
-#### The Application API
-
 The Application API famously has only 1 function: `Run()` which takes a heap of 
 options which govern how the application will work. Whilst this is very simple to use, 
 it is also very limiting. It is a "declarative" approach which hides a lot of the
 underlying complexity. For instance, there is no handle to the main window, so you can't 
 interact with it directly. For that, you need to use the Runtime API. This is a problem
 when you start to want to do more complex things like create multiple windows. 
-
-#### The Runtime API
 
 The Runtime API provides a lot of utility functions for the developer. This includes:
 
@@ -85,7 +100,6 @@ func main() {
     app.Run()
 }
 ```
-
 
 This programmatic approach is far more intuitive and allows the developer to interact 
 with the application elements directly. All current runtime methods for windows would
@@ -222,4 +236,5 @@ Regards,
 &dash; Lea
 
 PS: If you or your company find Wails useful, please consider [sponsoring the project](https://github.com/sponsors/leaanthony). Thanks!
+
 PPS: Yes, that's a genuine screenshot of a multi-window application built with Wails. It's not a mockup. It's real. It's awesome. It's coming soon.
