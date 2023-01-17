@@ -2,14 +2,15 @@ package flags
 
 import (
 	"fmt"
-	"github.com/leaanthony/slicer"
-	"github.com/wailsapp/wails/v2/internal/system"
-	"github.com/wailsapp/wails/v2/pkg/commands/build"
-	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
+
+	"github.com/leaanthony/slicer"
+	"github.com/wailsapp/wails/v2/internal/system"
+	"github.com/wailsapp/wails/v2/pkg/commands/build"
+	"github.com/wailsapp/wails/v2/pkg/commands/buildtags"
 )
 
 const (
@@ -51,7 +52,6 @@ type Build struct {
 }
 
 func (b *Build) Default() *Build {
-
 	defaultPlatform := os.Getenv("GOOS")
 	if defaultPlatform == "" {
 		defaultPlatform = runtime.GOOS
@@ -64,13 +64,13 @@ func (b *Build) Default() *Build {
 			defaultArch = runtime.GOARCH
 		}
 	}
-	b.defaultArch = defaultArch
-	platform := defaultPlatform + "/" + defaultArch
 
 	result := &Build{
-		Platform:   platform,
+		Platform:   defaultPlatform + "/" + defaultArch,
 		WebView2:   "download",
 		GarbleArgs: "-literals -tiny -seed=random",
+
+		defaultArch: defaultArch,
 	}
 	result.BuildCommon = result.BuildCommon.Default()
 	return result
