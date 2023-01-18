@@ -32,5 +32,5 @@ v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
 .env
 /website/static/img/.cache.json
 
-/exp/.task
-/exp/examples/build/bin/testapp
+/v3/.task
+/v3/examples/build/bin/testapp
