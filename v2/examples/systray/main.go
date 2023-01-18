@@ -4,12 +4,13 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"time"
+
 	"github.com/wailsapp/wails/v2/pkg/application"
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"time"
 )
 
 //go:embed all:frontend/dist
