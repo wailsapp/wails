@@ -74,6 +74,14 @@ NOTE: Whilst the tool will work for 32-bit Windows, it is not supported. Please 
 #### defaults
 
 ```bash
-wails icon -input myicon.png -sizes "32,64,128" -windowsFilename myicon.ico -macFilename myicon.icns       
+wails generate defaults      
 ```
-This will generate all the default assets and resources in the current directory. I
+This will generate all the default assets and resources in the current directory.
+
+#### bindings
+
+```bash
+wails generate bindings
+```
+
+Generates bindings and models for your bound Go methods and structs.

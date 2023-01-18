@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	app := clir.NewCli("wails", "The Wails CLI", "v3")
+	app := clir.NewCli("Wails", "The Wails CLI", "v3")
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
 	task := app.NewSubCommand("task", "Run and list tasks")
 	task.NewSubCommandFunction("run", "Run a task", commands.RunTask)

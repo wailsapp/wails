@@ -3,7 +3,7 @@ module github.com/wailsapp/wails/v3
 go 1.19
 
 require (
-	github.com/go-task/task/v3 v3.19.1
+	github.com/go-task/task/v3 v3.20.0
 	github.com/jackmordaunt/icns/v2 v2.2.1
 	github.com/leaanthony/clir v1.5.0
 	github.com/leaanthony/winicon v1.0.0
@@ -52,5 +52,3 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	mvdan.cc/sh/v3 v3.6.0 // indirect
 )
-
-replace github.com/go-task/task/v3 v3.19.1 => github.com/wailsapp/task/v3 v3.19.1

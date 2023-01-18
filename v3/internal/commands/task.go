@@ -39,7 +39,10 @@ func ListTasks(options *ListTaskOptions) error {
 	if err := e.Setup(); err != nil {
 		return err
 	}
-	tasks := e.GetTaskList()
+	tasks, err := e.GetTaskList()
+	if err != nil {
+		return err
+	}
 	if len(tasks) == 0 {
 		return fmt.Errorf("no tasks found. Ensure there is a `Taskfile.yml` in your project. You can generate a default takfile by running `wails generate defaults`")
 	}
@@ -57,7 +60,7 @@ func ListTasks(options *ListTaskOptions) error {
 		thisRow[1] = thisTask.Summary
 		tableData = append(tableData, thisRow)
 	}
-	err := pterm.DefaultTable.WithHasHeader(true).WithHeaderRowSeparator("-").WithData(tableData).Render()
+	err = pterm.DefaultTable.WithHasHeader(true).WithHeaderRowSeparator("-").WithData(tableData).Render()
 	if err != nil {
 		return err
 	}
