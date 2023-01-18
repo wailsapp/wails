@@ -15,6 +15,7 @@ import {SetBindings} from "./bindings";
 import * as Window from "./window";
 import * as Screen from "./screen";
 import * as Browser from "./browser";
+import * as Clipboard from "./clipboard";
 
 
 export function Quit() {
@@ -39,6 +40,7 @@ window.runtime = {
     ...Window,
     ...Browser,
     ...Screen,
+    ...Clipboard,
     EventsOn,
     EventsOnce,
     EventsOnMultiple,
@@ -64,6 +66,7 @@ window.wails = {
         defaultCursor: null,
         borderThickness: 6,
         shouldDrag: false,
+        deferDragToMouseMove: false,
         cssDragProperty: "--wails-draggable",
         cssDragValue: "drag",
     }
@@ -82,16 +85,27 @@ if (ENV === 1) {
     delete window.wailsbindings;
 }
 
-window.addEventListener('mouseup', () => {
-    window.wails.flags.shouldDrag = false;
-});
-
 let dragTest = function (e) {
     var val = window.getComputedStyle(e.target).getPropertyValue(window.wails.flags.cssDragProperty);
     if (val) {
       val = val.trim();
     }
-    return val === window.wails.flags.cssDragValue;
+    
+    if (val !== window.wails.flags.cssDragValue) {
+        return false;
+    }
+
+    if (e.buttons !== 1) {
+        // Do not start dragging if not the primary button has been clicked.
+        return false;
+    }
+
+    if (e.detail !== 1) {
+        // Do not start dragging if more than once has been clicked, e.g. when double clicking
+        return false;
+    }
+
+    return true;
 };
 
 window.wails.setCSSDragProperties = function (property, value) {
@@ -115,34 +129,45 @@ window.addEventListener('mousedown', (e) => {
                 return;
             }
         }
-        window.wails.flags.shouldDrag = true;
+        if (window.wails.flags.deferDragToMouseMove) {
+           window.wails.flags.shouldDrag = true;
+        } else {
+            e.preventDefault()
+            window.WailsInvoke("drag");
+        }
+        return;
+    } else {
+        window.wails.flags.shouldDrag = false;
     }
+});
 
+window.addEventListener('mouseup', () => {
+    window.wails.flags.shouldDrag = false;
 });
 
 function setResize(cursor) {
-    document.body.style.cursor = cursor || window.wails.flags.defaultCursor;
+    document.documentElement.style.cursor = cursor || window.wails.flags.defaultCursor;
     window.wails.flags.resizeEdge = cursor;
 }
 
 window.addEventListener('mousemove', function (e) {
-    let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
-    if(window.wails.flags.shouldDrag && mousePressed <= 0) {
-        window.wails.flags.shouldDrag = false;
-    }
-    
     if (window.wails.flags.shouldDrag) {
-        window.WailsInvoke("drag");
-        return;
+        let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
+        if(mousePressed <= 0) {
+            window.wails.flags.shouldDrag = false;
+        } else {
+            window.WailsInvoke("drag");
+            return;
+        }
     }
     if (!window.wails.flags.enableResize) {
         return;
     }
     if (window.wails.flags.defaultCursor == null) {
-        window.wails.flags.defaultCursor = document.body.style.cursor;
+        window.wails.flags.defaultCursor = document.documentElement.style.cursor;
     }
     if (window.outerWidth - e.clientX < window.wails.flags.borderThickness && window.outerHeight - e.clientY < window.wails.flags.borderThickness) {
-        document.body.style.cursor = "se-resize";
+        document.documentElement.style.cursor = "se-resize";
     }
     let rightBorder = window.outerWidth - e.clientX < window.wails.flags.borderThickness;
     let leftBorder = e.clientX < window.wails.flags.borderThickness;

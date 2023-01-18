@@ -2,10 +2,8 @@ package assetserver
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 
 	"golang.org/x/net/html"
 
@@ -35,6 +33,8 @@ type AssetServer struct {
 
 	servingFromDisk     bool
 	appendSpinnerToBody bool
+
+	assetServerWebView
 }
 
 func NewAssetServerMainPage(bindingsJSON string, options *options.App, servingFromDisk bool, logger Logger, runtime RuntimeAssets) (*AssetServer, error) {
@@ -132,47 +132,6 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	default:
 		d.handler.ServeHTTP(rw, req)
 	}
-}
-
-// ProcessHTTPRequest processes the HTTP Request by faking a golang HTTP Server.
-// The request will be finished with a StatusNotImplemented code if no handler has written to the response.
-func (d *AssetServer) ProcessHTTPRequest(logInfo string, rw http.ResponseWriter, reqGetter func() (*http.Request, error)) {
-	rw = &contentTypeSniffer{rw: rw} // Make sure we have a Content-Type sniffer
-
-	req, err := reqGetter()
-	if err != nil {
-		d.logError("Error processing request '%s': %s (HttpResponse=500)", logInfo, err)
-
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if req.Body == nil {
-		req.Body = http.NoBody
-	}
-	defer req.Body.Close()
-
-	if req.RemoteAddr == "" {
-		// 192.0.2.0/24 is "TEST-NET" in RFC 5737
-		req.RemoteAddr = "192.0.2.1:1234"
-	}
-
-	if req.RequestURI == "" && req.URL != nil {
-		req.RequestURI = req.URL.String()
-	}
-
-	if req.ContentLength == 0 {
-		req.ContentLength, _ = strconv.ParseInt(req.Header.Get(HeaderContentLength), 10, 64)
-	} else {
-		req.Header.Set(HeaderContentLength, fmt.Sprintf("%d", req.ContentLength))
-	}
-
-	if host := req.Header.Get(HeaderHost); host != "" {
-		req.Host = host
-	}
-
-	d.ServeHTTP(rw, req)
-	rw.WriteHeader(http.StatusNotImplemented) // This is a NOP when a handler has already written and set the status
 }
 
 func (d *AssetServer) processIndexHTML(indexHTML []byte) ([]byte, error) {

@@ -35,10 +35,13 @@ function HomepageHeader() {
                                 <img src={useBaseUrl("/img/showcase/mac-app.png")}/>
                             </div>
                             <div className="slide-item-box">
-                                <img src={useBaseUrl("/img/showcase/ytd.webp")}/>
+                                <img src={useBaseUrl("/img/showcase/warmine1.png")}/>
                             </div>
                             <div className="slide-item-box">
                                 <img src={useBaseUrl("/img/showcase/varly2.webp")}/>
+                            </div>
+                            <div className="slide-item-box">
+                                <img src={useBaseUrl("/img/showcase/ytd.webp")}/>
                             </div>
                             <div className="slide-item-box">
                                 <img src={useBaseUrl("/img/showcase/wombat.webp")}/>

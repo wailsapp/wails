@@ -296,6 +296,9 @@ func (f *Frontend) WindowToggleMaximise() {
 func (f *Frontend) WindowUnmaximise() {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
+	if f.mainWindow.Form.IsFullScreen() {
+		return
+	}
 	f.mainWindow.Restore()
 }
 
@@ -312,6 +315,9 @@ func (f *Frontend) WindowMinimise() {
 func (f *Frontend) WindowUnminimise() {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
+	if f.mainWindow.Form.IsFullScreen() {
+		return
+	}
 	f.mainWindow.Restore()
 }
 
@@ -332,6 +338,8 @@ func (f *Frontend) WindowSetBackgroundColour(col *options.RGBA) {
 	}
 
 	f.mainWindow.Invoke(func() {
+		win32.SetBackgroundColour(f.mainWindow.Handle(), col.R, col.G, col.B)
+
 		controller := f.chromium.GetController()
 		controller2 := controller.GetICoreWebView2Controller2()
 
@@ -409,10 +417,25 @@ func (f *Frontend) Quit() {
 func (f *Frontend) setupChromium() {
 	chromium := f.chromium
 
+	disableFeatues := []string{}
+	if !f.frontendOptions.EnableFraudulentWebsiteDetection {
+		disableFeatues = append(disableFeatues, "msSmartScreenProtection")
+	}
+
 	if opts := f.frontendOptions.Windows; opts != nil {
 		chromium.DataPath = opts.WebviewUserDataPath
 		chromium.BrowserPath = opts.WebviewBrowserPath
+
+		if opts.WebviewGpuIsDisabled {
+			chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
+		}
 	}
+
+	if len(disableFeatues) > 0 {
+		arg := fmt.Sprintf("--disable-features=%s", strings.Join(disableFeatues, ","))
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, arg)
+	}
+
 	chromium.MessageCallback = f.processMessage
 	chromium.WebResourceRequestedCallback = f.processRequest
 	chromium.NavigationCompletedCallback = f.navigationCompleted
@@ -420,6 +443,7 @@ func (f *Frontend) setupChromium() {
 		w32.PostMessage(f.mainWindow.Handle(), w32.WM_KEYDOWN, uintptr(vkey), 0)
 		return false
 	}
+
 	chromium.Embed(f.mainWindow.Handle())
 	chromium.Resize()
 	settings, err := chromium.GetSettings()
@@ -523,10 +547,8 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 		return
 	}
 
-	logInfo := strings.Replace(uri, f.startURL.String(), "", 1)
-
 	rw := httptest.NewRecorder()
-	f.assets.ProcessHTTPRequest(logInfo, rw, coreWebview2RequestToHttpRequest(req))
+	f.assets.ProcessHTTPRequestLegacy(rw, coreWebview2RequestToHttpRequest(req))
 
 	headers := []string{}
 	for k, v := range rw.Header() {
@@ -621,7 +643,6 @@ func (f *Frontend) Callback(message string) {
 }
 
 func (f *Frontend) startDrag() error {
-	f.mainWindow.dragging = true
 	if !w32.ReleaseCapture() {
 		return fmt.Errorf("unable to release mouse capture")
 	}

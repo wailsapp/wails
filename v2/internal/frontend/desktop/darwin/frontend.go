@@ -19,9 +19,12 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"net/http"
 	"net/url"
 	"strconv"
+	"unsafe"
+
+	"github.com/wailsapp/wails/v2/pkg/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
 
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
 
@@ -35,7 +38,7 @@ import (
 const startURL = "wails://wails/"
 
 var messageBuffer = make(chan string, 100)
-var requestBuffer = make(chan *wkWebViewRequest, 100)
+var requestBuffer = make(chan webview.Request, 100)
 var callbackBuffer = make(chan uint, 10)
 
 type Frontend struct {
@@ -93,12 +96,10 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		if err != nil {
 			log.Fatal(err)
 		}
+		assets.ExpectedWebViewHost = result.startURL.Host
 		result.assets = assets
 
-		// Start 10 processors to handle requests in parallel
-		for i := 0; i < 10; i++ {
-			go result.startRequestProcessor()
-		}
+		go result.startRequestProcessor()
 	}
 
 	go result.startMessageProcessor()
@@ -114,7 +115,8 @@ func (f *Frontend) startMessageProcessor() {
 }
 func (f *Frontend) startRequestProcessor() {
 	for request := range requestBuffer {
-		f.processRequest(request)
+		f.assets.ServeWebViewRequest(request)
+		request.Release()
 	}
 }
 func (f *Frontend) startCallbackProcessor() {
@@ -344,31 +346,6 @@ func (f *Frontend) ExecJS(js string) {
 	f.mainWindow.ExecJS(js)
 }
 
-func (f *Frontend) processRequest(r *wkWebViewRequest) {
-	rw := &wkWebViewResponseWriter{r: r}
-	defer rw.Close()
-
-	f.assets.ProcessHTTPRequest(
-		r.url,
-		rw,
-		func() (*http.Request, error) {
-			req, err := r.GetHttpRequest()
-			if err != nil {
-				return nil, err
-			}
-
-			if req.URL.Host != f.startURL.Host {
-				if req.Body != nil {
-					req.Body.Close()
-				}
-
-				return nil, fmt.Errorf("Expected host '%s' in request, but was '%s'", f.startURL.Host, req.URL.Host)
-			}
-			return req, nil
-		},
-	)
-}
-
 //func (f *Frontend) processSystemEvent(message string) {
 //	sl := strings.Split(message, ":")
 //	if len(sl) != 2 {
@@ -394,4 +371,9 @@ func processMessage(message *C.char) {
 //export processCallback
 func processCallback(callbackID uint) {
 	callbackBuffer <- callbackID
+}
+
+//export processURLRequest
+func processURLRequest(ctx unsafe.Pointer, wkURLSchemeTask unsafe.Pointer) {
+	requestBuffer <- webview.NewRequest(wkURLSchemeTask)
 }

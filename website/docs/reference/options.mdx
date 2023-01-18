@@ -51,6 +51,7 @@ func main() {
         OnBeforeClose:      app.beforeClose,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        EnableFraudulentWebsiteDetection: false,
         ZoomFactor:           1.0,
         IsZoomControlEnabled: false,
         Bind: []interface{}{
@@ -78,7 +79,8 @@ func main() {
             // OnSuspend is called when Windows enters low power mode
             OnSuspend func()
             // OnResume is called when Windows resumes from low power mode
-            OnResume func()
+            OnResume func(),
+			WebviewGpuDisabled: false,
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -101,6 +103,7 @@ func main() {
         Linux: &linux.Options{
             Icon: icon,
             WindowIsTranslucent: false,
+			WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
         },
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
@@ -413,6 +416,15 @@ Indicates what value the `CSSDragProperty` style should have to drag the window.
 Name: CSSDragValue<br/>
 Type: `string`
 
+### EnableFraudulentWebsiteDetection
+
+EnableFraudulentWebsiteDetection enables scan services for fraudulent content, such as malware or phishing attempts.
+These services might send information from your app like URLs navigated to and possibly other content to cloud
+services of Apple and Microsoft.
+
+Name: EnableFraudulentWebsiteDetection<br/>
+Type: `bool`
+
 ### ZoomFactor
 
 Name: ZoomFactor<br/>
@@ -628,6 +640,13 @@ If set, this function will be called when Windows resumes from low power mode (s
 Name: OnResume<br/>
 Type: `func()`
 
+#### WebviewGpuIsDisabled
+
+Setting this to `true` will disable GPU hardware acceleration for the webview.
+
+Name: WebviewGpuIsDisabled<br/>
+Type: `bool`
+
 ### Mac
 
 This defines [Mac specific options](#mac).
@@ -823,6 +842,22 @@ Setting this to `true` will make the window background translucent. Some window 
 
 Name: WindowIsTranslucent<br/>
 Type: `bool`
+
+#### WebviewGpuPolicy
+
+This option is used for determining the webview's hardware acceleration policy.
+
+Name: WebviewGpuPolicy<br/>
+Type: [`options.WebviewGpuPolicy`](#webviewgpupolicy-type)<br/>
+Default: `WebviewGpuPolicyAlways`
+
+##### WebviewGpuPolicy type
+
+| Value                    | Description |
+| -------------------------| ----------- |
+| WebviewGpuPolicyAlways   | Hardware acceleration is always enabled|
+| WebviewGpuPolicyOnDemand | Hardware acceleration is enabled/disabled as request by web contents|
+| WebviewGpuPolicyNever    | Hardware acceleration is always disabled |
 
 ### Debug
 
