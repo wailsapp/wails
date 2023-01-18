@@ -19,6 +19,7 @@ func main() {
 	generate.NewSubCommandFunction("defaults", "Generate default build assets", commands.Defaults)
 	generate.NewSubCommandFunction("icons", "Generate icons", commands.GenerateIcons)
 	generate.NewSubCommandFunction("syso", "Generate Windows .syso file", commands.GenerateSyso)
+	generate.NewSubCommandFunction("bindings", "Generate bindings + models", commands.GenerateBindings)
 	err := app.Run()
 	if err != nil {
 		pterm.Error.Println(err)
