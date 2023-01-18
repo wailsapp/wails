@@ -135,7 +135,7 @@ namespace services {
 				return
 			}
 
-			ts, err := GenerateModels(context.GetBoundStructs())
+			ts, err := GenerateModels(context)
 			require.NoError(t, err)
 			require.Equal(t, tt.want, string(ts))
 

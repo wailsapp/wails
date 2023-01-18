@@ -5,12 +5,13 @@ go 1.19
 require (
 	github.com/go-task/task/v3 v3.19.1
 	github.com/jackmordaunt/icns/v2 v2.2.1
-	github.com/leaanthony/clir v1.4.0
+	github.com/leaanthony/clir v1.5.0
 	github.com/leaanthony/winicon v1.0.0
 	github.com/pterm/pterm v0.12.51
 	github.com/samber/lo v1.37.0
 	github.com/stretchr/testify v1.8.1
 	github.com/tc-hib/winres v0.1.6
+	github.com/wailsapp/wails/v2 v2.3.2-0.20230117193915-45c3a501d9e6
 	golang.org/x/tools v0.1.12
 )
 
@@ -38,7 +39,6 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sajari/fuzzy v1.0.0 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
-	github.com/wailsapp/wails/v2 v2.3.2-0.20230117193915-45c3a501d9e6 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
 	golang.org/x/exp v0.0.0-20220930202632-ec3f01382ef9 // indirect
 	golang.org/x/image v0.0.0-20201208152932-35266b937fa6 // indirect
