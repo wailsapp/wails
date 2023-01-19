@@ -13,7 +13,7 @@
 #import "WailsMenu.h"
 #import "WailsMenuItem.h"
 
-WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight) {
+WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled) {
     
     [NSApplication sharedApplication];
 
@@ -25,7 +25,7 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
         fullscreen = 1;
     }
 
-    [result CreateWindow:width :height :frameless :resizable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent :minWidth :minHeight :maxWidth :maxHeight];
+    [result CreateWindow:width :height :frameless :resizable :fullscreen :fullSizeContent :hideTitleBar :titlebarAppearsTransparent :hideTitle :useToolbar :hideToolbarSeparator :webviewIsTransparent :hideWindowOnClose :safeInit(appearance) :windowIsTranslucent :minWidth :minHeight :maxWidth :maxHeight :fraudulentWebsiteWarningEnabled];
     [result SetTitle:safeInit(title)];
     [result Center];
     
@@ -50,15 +50,6 @@ WailsContext* Create(const char* title, int width, int height, int frameless, in
     result.hideOnClose = hideWindowOnClose;
         
     return result;
-}
-
-void ProcessURLResponse(void *inctx, unsigned long long requestId, int statusCode, void *headersString, int headersStringLength, void* data, int datalength) {
-    WailsContext *ctx = (__bridge WailsContext*) inctx;
-    @autoreleasepool {
-        NSData *nsHeadersJSON = [NSData dataWithBytes:headersString length:headersStringLength];
-        NSData *nsdata = [NSData dataWithBytes:data length:datalength];
-        [ctx processURLResponse:requestId :statusCode :nsHeadersJSON :nsdata];
-    }
 }
 
 void ExecJS(void* inctx, const char *script) {

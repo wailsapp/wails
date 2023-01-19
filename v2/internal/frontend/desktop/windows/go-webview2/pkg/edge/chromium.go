@@ -8,12 +8,16 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
+	"syscall"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/internal/w32"
 	"golang.org/x/sys/windows"
 )
+
+type Rect = w32.Rect
 
 type Chromium struct {
 	hwnd                  uintptr
@@ -30,10 +34,13 @@ type Chromium struct {
 
 	environment *ICoreWebView2Environment
 
+	padding Rect
+
 	// Settings
-	Debug       bool
-	DataPath    string
-	BrowserPath string
+	Debug                 bool
+	DataPath              string
+	BrowserPath           string
+	AdditionalBrowserArgs []string
 
 	// permissions
 	permissions      map[CoreWebView2PermissionKind]CoreWebView2PermissionState
@@ -86,34 +93,19 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 		dataPath = filepath.Join(os.Getenv("AppData"), currentExeName)
 	}
 
-	var browserPathPtr *uint16 = nil
 	if e.BrowserPath != "" {
-		if _, err := os.Stat(e.BrowserPath); !errors.Is(err, os.ErrNotExist) {
-			browserPathPtr, err = windows.UTF16PtrFromString(e.BrowserPath)
-			if err != nil {
-				log.Printf("Error calling UTF16PtrFromString for %s: %v", e.BrowserPath, err)
-				return false
-			}
-		} else {
+		if _, err := os.Stat(e.BrowserPath); errors.Is(err, os.ErrNotExist) {
 			log.Printf("Browser path %s does not exist", e.BrowserPath)
 			return false
 		}
 	}
 
-	dataPathPtr, err := windows.UTF16PtrFromString(dataPath)
-	if err != nil {
-		log.Printf("Error calling UTF16PtrFromString for %s: %v", dataPath, err)
+	browserArgs := strings.Join(e.AdditionalBrowserArgs, " ")
+	if err := createCoreWebView2EnvironmentWithOptions(e.BrowserPath, dataPath, e.envCompleted, browserArgs); err != nil {
+		log.Printf("Error calling Webview2Loader: %v", err)
 		return false
 	}
 
-	res, err := createCoreWebView2EnvironmentWithOptions(browserPathPtr, dataPathPtr, 0, e.envCompleted)
-	if err != nil {
-		log.Printf("Error calling Webview2Loader: %v", err)
-		return false
-	} else if res != 0 {
-		log.Printf("Result: %08x", res)
-		return false
-	}
 	var msg w32.Msg
 	for {
 		if atomic.LoadUintptr(&e.inited) != 0 {
@@ -133,6 +125,33 @@ func (e *Chromium) Embed(hwnd uintptr) bool {
 	}
 	e.Init("window.external={invoke:s=>window.chrome.webview.postMessage(s)}")
 	return true
+}
+
+func (e *Chromium) SetPadding(padding Rect) {
+	if e.padding.Top == padding.Top && e.padding.Bottom == padding.Bottom &&
+		e.padding.Left == padding.Left && e.padding.Right == padding.Right {
+
+		return
+	}
+
+	e.padding = padding
+	e.Resize()
+}
+
+func (e *Chromium) Resize() {
+	if e.hwnd == 0 {
+		return
+	}
+
+	var bounds w32.Rect
+	w32.User32GetClientRect.Call(e.hwnd, uintptr(unsafe.Pointer(&bounds)))
+
+	bounds.Top += e.padding.Top
+	bounds.Bottom -= e.padding.Bottom
+	bounds.Left += e.padding.Left
+	bounds.Right -= e.padding.Right
+
+	e.SetSize(bounds)
 }
 
 func (e *Chromium) Navigate(url string) {
@@ -185,8 +204,8 @@ func (e *Chromium) Release() uintptr {
 }
 
 func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environment) uintptr {
-	if int64(res) < 0 {
-		log.Fatalf("Creating environment failed with %08x", res)
+	if int32(res) < 0 {
+		log.Fatalf("Creating environment failed with %08x: %s", res, syscall.Errno(res))
 	}
 	env.vtbl.AddRef.Call(uintptr(unsafe.Pointer(env)))
 	e.environment = env
@@ -200,8 +219,8 @@ func (e *Chromium) EnvironmentCompleted(res uintptr, env *ICoreWebView2Environme
 }
 
 func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller *ICoreWebView2Controller) uintptr {
-	if int64(res) < 0 {
-		log.Fatalf("Creating controller failed with %08x", res)
+	if int32(res) < 0 {
+		log.Fatalf("Creating controller failed with %08x: %s", res, syscall.Errno(res))
 	}
 	controller.vtbl.AddRef.Call(uintptr(unsafe.Pointer(controller)))
 	e.controller = controller
@@ -371,4 +390,15 @@ func (e *Chromium) Focus() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (e *Chromium) PutZoomFactor(zoomFactor float64) {
+	err := e.controller.PutZoomFactor(zoomFactor)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (e *Chromium) OpenDevToolsWindow() {
+	e.webview.OpenDevToolsWindow()
 }

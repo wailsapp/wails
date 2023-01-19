@@ -38,19 +38,23 @@ export interface EnvironmentInfo {
 export function EventsEmit(eventName: string, ...data: any): void;
 
 // [EventsOn](https://wails.io/docs/reference/runtime/events#eventson) sets up a listener for the given event name.
-export function EventsOn(eventName: string, callback: (...data: any) => void): void;
+export function EventsOn(eventName: string, callback: (...data: any) => void): () => void;
 
 // [EventsOnMultiple](https://wails.io/docs/reference/runtime/events#eventsonmultiple)
 // sets up a listener for the given event name, but will only trigger a given number times.
-export function EventsOnMultiple(eventName: string, callback: (...data: any) => void, maxCallbacks: number): void;
+export function EventsOnMultiple(eventName: string, callback: (...data: any) => void, maxCallbacks: number): () => void;
 
 // [EventsOnce](https://wails.io/docs/reference/runtime/events#eventsonce)
 // sets up a listener for the given event name, but will only trigger once.
-export function EventsOnce(eventName: string, callback: (...data: any) => void): void;
+export function EventsOnce(eventName: string, callback: (...data: any) => void): () => void;
 
-// [EventsOff](https://wails.io/docs/reference/runtime/events#eventsff)
+// [EventsOff](https://wails.io/docs/reference/runtime/events#eventsoff)
 // unregisters the listener for the given event name.
 export function EventsOff(eventName: string, ...additionalEventNames: string[]): void;
+
+// [EventsOffAll](https://wails.io/docs/reference/runtime/events#eventsoffall)
+// unregisters all listeners.
+export function EventsOffAll(): void;
 
 // [LogPrint](https://wails.io/docs/reference/runtime/log#logprint)
 // logs the given message as a raw message
@@ -88,6 +92,10 @@ export function WindowReload(): void;
 // [WindowReloadApp](https://wails.io/docs/reference/runtime/window#windowreloadapp)
 // Reloads the application frontend.
 export function WindowReloadApp(): void;
+
+// [WindowSetAlwaysOnTop](https://wails.io/docs/reference/runtime/window#windowsetalwaysontop)
+// Sets the window AlwaysOnTop or not on top.
+export function WindowSetAlwaysOnTop(b: boolean): void;
 
 // [WindowSetSystemDefaultTheme](https://wails.io/docs/next/reference/runtime/window#windowsetsystemdefaulttheme)
 // *Windows only*
@@ -217,3 +225,11 @@ export function Hide(): void;
 // [Show](https://wails.io/docs/reference/runtime/intro#show)
 // Shows the application.
 export function Show(): void;
+
+// [ClipboardGetText](https://wails.io/docs/reference/runtime/clipboard#clipboardgettext)
+// Returns the current text stored on clipboard
+export function ClipboardGetText(): Promise<string>;
+
+// [ClipboardSetText](https://wails.io/docs/reference/runtime/clipboard#clipboardsettext)
+// Sets a text on the clipboard
+export function ClipboardSetText(text: string): Promise<boolean>;

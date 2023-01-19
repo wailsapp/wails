@@ -1,6 +1,9 @@
+//go:build windows
+
 package edge
 
 import (
+	"math"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/internal/w32"
@@ -129,4 +132,29 @@ func (i *ICoreWebView2Controller) NotifyParentWindowPositionChanged() error {
 		return err
 	}
 	return nil
+}
+
+func (i *ICoreWebView2Controller) PutZoomFactor(zoomFactor float64) error {
+	var err error
+	_, _, err = i.vtbl.PutZoomFactor.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(math.Float64bits(zoomFactor)),
+	)
+	if err != windows.ERROR_SUCCESS {
+		return err
+	}
+	return nil
+}
+
+func (i *ICoreWebView2Controller) GetZoomFactor() (float64, error) {
+	var err error
+	var zoomFactorUint64 uint64
+	_, _, err = i.vtbl.GetZoomFactor.Call(
+		uintptr(unsafe.Pointer(i)),
+		uintptr(unsafe.Pointer(&zoomFactorUint64)),
+	)
+	if err != windows.ERROR_SUCCESS {
+		return 0.0, err
+	}
+	return math.Float64frombits(zoomFactorUint64), nil
 }

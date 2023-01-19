@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"runtime"
 
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
@@ -47,9 +48,13 @@ type App struct {
 	AlwaysOnTop       bool
 	// BackgroundColour is the background colour of the window
 	// You can use the options.NewRGB and options.NewRGBA functions to create a new colour
-	BackgroundColour   *RGBA
-	Assets             fs.FS
-	AssetsHandler      http.Handler
+	BackgroundColour *RGBA
+	// Deprecated: Use AssetServer.Assets instead.
+	Assets fs.FS
+	// Deprecated: Use AssetServer.Handler instead.
+	AssetsHandler http.Handler
+	// AssetServer configures the Assets for the application
+	AssetServer        *assetserver.Options
 	Menu               *menu.Menu
 	Logger             logger.Logger `json:"-"`
 	LogLevel           logger.LogLevel
@@ -67,12 +72,20 @@ type App struct {
 	// The CSS Value that the CSSDragProperty must have to be draggable, EG: "drag"
 	CSSDragValue string
 
+	// EnableFraudulentWebsiteDetection enables scan services for fraudulent content, such as malware or phishing attempts.
+	// These services might send information from your app like URLs navigated to and possibly other content to cloud
+	// services of Apple and Microsoft.
+	EnableFraudulentWebsiteDetection bool
+
 	Windows *windows.Options
 	Mac     *mac.Options
 	Linux   *linux.Options
 
 	// Experimental options
 	Experimental *Experimental
+
+	// Debug options for debug builds. These options will be ignored in a production build.
+	Debug Debug
 }
 
 type RGBA struct {

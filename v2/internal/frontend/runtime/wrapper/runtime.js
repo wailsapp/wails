@@ -65,6 +65,10 @@ export function WindowReloadApp() {
     window.runtime.WindowReloadApp();
 }
 
+export function WindowSetAlwaysOnTop(b) {
+    window.runtime.WindowSetAlwaysOnTop(b);
+}
+
 export function WindowSetSystemDefaultTheme() {
     window.runtime.WindowSetSystemDefaultTheme();
 }
@@ -187,4 +191,12 @@ export function Hide() {
 
 export function Show() {
     window.runtime.Show();
+}
+
+export function ClipboardGetText() {
+    return window.runtime.ClipboardGetText();
+}
+
+export function ClipboardSetText(text) {
+    return window.runtime.ClipboardSetText(text);
 }

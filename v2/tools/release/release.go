@@ -54,16 +54,13 @@ func main() {
 	}
 
 	s.CD("../../../website")
+	runCommand("pnpm", "install")
+
 	s.ECHO("Generating new Docs for version: " + newVersion)
 
-	runCommand("npm", "run", "docusaurus", "docs:version", newVersion)
+	runCommand("pnpm", "run", "docusaurus", "docs:version", newVersion)
 
-	// For the default language identifier, please refer to: https://github.com/facebook/docusaurus/tree/main/packages/docusaurus-theme-translations/locales
-	languages := []string{"en", "ja", "ko", "ru", "zh-Hans"}
-
-	for _, lang := range languages {
-		runCommand("npm", "run", "write-translations", "--", "--locale", lang)
-	}
+	runCommand("pnpm", "run", "write-translations")
 
 	// Load the version list/*
 	versionsData, err := os.ReadFile("versions.json")
@@ -86,5 +83,5 @@ func main() {
 	s.RM("version-" + oldestVersion + "-sidebars.json")
 	s.CD("..")
 
-	runCommand("npm", "run", "build")
+	runCommand("pnpm", "run", "build")
 }

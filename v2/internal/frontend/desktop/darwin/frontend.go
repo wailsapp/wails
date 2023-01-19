@@ -14,22 +14,21 @@ package darwin
 */
 import "C"
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"io"
 	"log"
-	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"strconv"
 	"unsafe"
 
+	"github.com/wailsapp/wails/v2/pkg/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
+
 	"github.com/wailsapp/wails/v2/internal/binding"
 	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/frontend/assetserver"
+	"github.com/wailsapp/wails/v2/internal/frontend/runtime"
 	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 )
@@ -37,7 +36,7 @@ import (
 const startURL = "wails://wails/"
 
 var messageBuffer = make(chan string, 100)
-var requestBuffer = make(chan *request, 100)
+var requestBuffer = make(chan webview.Request, 100)
 var callbackBuffer = make(chan uint, 10)
 
 type Frontend struct {
@@ -90,10 +89,12 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		} else {
 			appBindings.DB().UpdateObfuscatedCallMap()
 		}
-		assets, err := assetserver.NewAssetServer(ctx, appoptions.Assets, appoptions.AssetsHandler, bindings)
+
+		assets, err := assetserver.NewAssetServerMainPage(bindings, appoptions, ctx.Value("assetdir") != nil, myLogger, runtime.RuntimeAssetsBundle)
 		if err != nil {
 			log.Fatal(err)
 		}
+		assets.ExpectedWebViewHost = result.startURL.Host
 		result.assets = assets
 
 		go result.startRequestProcessor()
@@ -112,7 +113,8 @@ func (f *Frontend) startMessageProcessor() {
 }
 func (f *Frontend) startRequestProcessor() {
 	for request := range requestBuffer {
-		f.processRequest(request)
+		f.assets.ServeWebViewRequest(request)
+		request.Release()
 	}
 }
 func (f *Frontend) startCallbackProcessor() {
@@ -145,9 +147,7 @@ func (f *Frontend) WindowSetDarkTheme() {
 }
 
 func (f *Frontend) Run(ctx context.Context) error {
-
-	f.ctx = context.WithValue(ctx, "frontend", f)
-
+	f.ctx = ctx
 	var _debug = ctx.Value("debug")
 	if _debug != nil {
 		f.debug = _debug.(bool)
@@ -344,51 +344,6 @@ func (f *Frontend) ExecJS(js string) {
 	f.mainWindow.ExecJS(js)
 }
 
-func (f *Frontend) processRequest(r *request) {
-	rw := httptest.NewRecorder()
-	f.assets.ProcessHTTPRequest(
-		r.url,
-		rw,
-		func() (*http.Request, error) {
-			req, err := r.GetHttpRequest()
-			if err != nil {
-				return nil, err
-			}
-
-			if req.URL.Host != f.startURL.Host {
-				if req.Body != nil {
-					req.Body.Close()
-				}
-
-				return nil, fmt.Errorf("Expected host '%s' in request, but was '%s'", f.startURL.Host, req.URL.Host)
-			}
-			return req, nil
-		},
-	)
-
-	header := map[string]string{}
-	for k := range rw.Header() {
-		header[k] = rw.Header().Get(k)
-	}
-	headerData, _ := json.Marshal(header)
-
-	var content unsafe.Pointer
-	var contentLen int
-	if _contents := rw.Body.Bytes(); _contents != nil {
-		content = unsafe.Pointer(&_contents[0])
-		contentLen = len(_contents)
-	}
-
-	var headers unsafe.Pointer
-	var headersLen int
-	if len(headerData) != 0 {
-		headers = unsafe.Pointer(&headerData[0])
-		headersLen = len(headerData)
-	}
-
-	C.ProcessURLResponse(r.ctx, r.id, C.int(rw.Code), headers, C.int(headersLen), content, C.int(contentLen))
-}
-
 //func (f *Frontend) processSystemEvent(message string) {
 //	sl := strings.Split(message, ":")
 //	if len(sl) != 2 {
@@ -405,65 +360,18 @@ func (f *Frontend) processRequest(r *request) {
 //	}
 //}
 
-type request struct {
-	id      C.ulonglong
-	url     string
-	method  string
-	headers string
-	body    []byte
-
-	ctx unsafe.Pointer
-}
-
-func (r *request) GetHttpRequest() (*http.Request, error) {
-	var body io.Reader
-	if len(r.body) != 0 {
-		body = bytes.NewReader(r.body)
-	}
-
-	req, err := http.NewRequest(r.method, r.url, body)
-	if err != nil {
-		return nil, err
-	}
-
-	if r.headers != "" {
-		var h map[string]string
-		if err := json.Unmarshal([]byte(r.headers), &h); err != nil {
-			return nil, fmt.Errorf("Unable to unmarshal request headers: %s", err)
-		}
-
-		for k, v := range h {
-			req.Header.Add(k, v)
-		}
-	}
-
-	return req, nil
-}
-
 //export processMessage
 func processMessage(message *C.char) {
 	goMessage := C.GoString(message)
 	messageBuffer <- goMessage
 }
 
-//export processURLRequest
-func processURLRequest(ctx unsafe.Pointer, requestId C.ulonglong, url *C.char, method *C.char, headers *C.char, body unsafe.Pointer, bodyLen C.int) {
-	var goBody []byte
-	if body != nil && bodyLen != 0 {
-		goBody = C.GoBytes(body, bodyLen)
-	}
-
-	requestBuffer <- &request{
-		id:      requestId,
-		url:     C.GoString(url),
-		method:  C.GoString(method),
-		headers: C.GoString(headers),
-		body:    goBody,
-		ctx:     ctx,
-	}
-}
-
 //export processCallback
 func processCallback(callbackID uint) {
 	callbackBuffer <- callbackID
+}
+
+//export processURLRequest
+func processURLRequest(ctx unsafe.Pointer, wkURLSchemeTask unsafe.Pointer) {
+	requestBuffer <- webview.NewRequest(wkURLSchemeTask)
 }

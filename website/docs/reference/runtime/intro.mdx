@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Introduction
 
-The runtime is a library that provides utility methods for your application. There is both a Go and Javascript runtime
+The runtime is a library that provides utility methods for your application. There is both a Go and JavaScript runtime
 and the aim is to try and keep them at parity where possible.
 
 It has utility methods for:
@@ -15,6 +15,7 @@ It has utility methods for:
 - [Events](events.mdx)
 - [Browser](browser.mdx)
 - [Log](log.mdx)
+- [Clipboard](clipboard.mdx)
 
 The Go Runtime is available through importing `github.com/wailsapp/wails/v2/pkg/runtime`. All methods in this package
 take a context as the first parameter. This context should be obtained from the [OnStartup](../options.mdx#onstartup)
@@ -29,8 +30,8 @@ you wish to call runtime methods at startup, use [OnDomReady](../options.mdx#ond
 
 :::
 
-The Javascript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev`
-mode that provides Typescript declarations for the runtime. This should be located in the `wailsjs` directory in your
+The JavaScript library is available to the frontend via the `window.runtime` map. There is a runtime package generated when using `dev`
+mode that provides TypeScript declarations for the runtime. This should be located in the `wailsjs` directory in your
 frontend directory.
 
 ### Hide

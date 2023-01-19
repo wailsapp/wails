@@ -91,7 +91,7 @@ func checkNSIS() *packagemanager.Dependency {
 		Name:           "nsis ",
 		PackageName:    "N/A",
 		Installed:      installed,
-		InstallCommand: "Available at https://nsis.sourceforge.io/Download",
+		InstallCommand: "More info at https://wails.io/docs/guides/windows-installer/",
 		Version:        version,
 		Optional:       true,
 		External:       false,

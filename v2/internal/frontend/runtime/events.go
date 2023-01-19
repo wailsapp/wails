@@ -1,10 +1,15 @@
 package runtime
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/logger"
 	"sync"
+
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v2/internal/frontend"
 )
+
+type Logger interface {
+	Trace(format string, v ...interface{})
+}
 
 // eventListener holds a callback function which is invoked when
 // the event listened for is emitted. It has a counter which indicates
@@ -18,7 +23,7 @@ type eventListener struct {
 
 // Events handles eventing
 type Events struct {
-	log      *logger.Logger
+	log      Logger
 	frontend []frontend.Frontend
 
 	// Go event listeners
@@ -36,16 +41,16 @@ func (e *Events) Notify(sender frontend.Frontend, name string, data ...interface
 	}
 }
 
-func (e *Events) On(eventName string, callback func(...interface{})) {
-	e.registerListener(eventName, callback, -1)
+func (e *Events) On(eventName string, callback func(...interface{})) func() {
+	return e.registerListener(eventName, callback, -1)
 }
 
-func (e *Events) OnMultiple(eventName string, callback func(...interface{}), counter int) {
-	e.registerListener(eventName, callback, counter)
+func (e *Events) OnMultiple(eventName string, callback func(...interface{}), counter int) func() {
+	return e.registerListener(eventName, callback, counter)
 }
 
-func (e *Events) Once(eventName string, callback func(...interface{})) {
-	e.registerListener(eventName, callback, 1)
+func (e *Events) Once(eventName string, callback func(...interface{})) func() {
+	return e.registerListener(eventName, callback, 1)
 }
 
 func (e *Events) Emit(eventName string, data ...interface{}) {
@@ -59,8 +64,15 @@ func (e *Events) Off(eventName string) {
 	e.unRegisterListener(eventName)
 }
 
+func (e *Events) OffAll() {
+	e.notifyLock.Lock()
+	for eventName := range e.listeners {
+		delete(e.listeners, eventName)
+	}
+}
+
 // NewEvents creates a new log subsystem
-func NewEvents(log *logger.Logger) *Events {
+func NewEvents(log Logger) *Events {
 	result := &Events{
 		log:       log,
 		listeners: make(map[string][]*eventListener),
@@ -69,7 +81,7 @@ func NewEvents(log *logger.Logger) *Events {
 }
 
 // registerListener provides a means of subscribing to events of type "eventName"
-func (e *Events) registerListener(eventName string, callback func(...interface{}), counter int) {
+func (e *Events) registerListener(eventName string, callback func(...interface{}), counter int) func() {
 	// Create new eventListener
 	thisListener := &eventListener{
 		callback: callback,
@@ -80,6 +92,17 @@ func (e *Events) registerListener(eventName string, callback func(...interface{}
 	// Append the new listener to the listeners slice
 	e.listeners[eventName] = append(e.listeners[eventName], thisListener)
 	e.notifyLock.Unlock()
+	return func() {
+		e.notifyLock.Lock()
+		defer e.notifyLock.Unlock()
+
+		if _, ok := e.listeners[eventName]; !ok {
+			return
+		}
+		e.listeners[eventName] = lo.Filter(e.listeners[eventName], func(l *eventListener, i int) bool {
+			return l != thisListener
+		})
+	}
 }
 
 // unRegisterListener provides a means of unsubscribing to events of type "eventName"

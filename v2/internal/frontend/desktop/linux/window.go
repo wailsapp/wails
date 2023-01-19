@@ -7,594 +7,17 @@ package linux
 #cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0
 
 #include <JavaScriptCore/JavaScript.h>
-#include "gtk/gtk.h"
-#include "webkit2/webkit2.h"
+#include <gtk/gtk.h>
+#include <webkit2/webkit2.h>
 #include <stdio.h>
 #include <limits.h>
-#include "stdint.h"
-
-
-void ExecuteOnMainThread(void* f, gpointer jscallback) {
-    g_idle_add((GSourceFunc)f, (gpointer)jscallback);
-}
-
-static GtkWidget* GTKWIDGET(void *pointer) {
-	return GTK_WIDGET(pointer);
-}
-
-static GtkWindow* GTKWINDOW(void *pointer) {
-	return GTK_WINDOW(pointer);
-}
-
-static GtkContainer* GTKCONTAINER(void *pointer) {
-	return GTK_CONTAINER(pointer);
-}
-
-static GtkBox* GTKBOX(void *pointer) {
-	return GTK_BOX(pointer);
-}
-
-GdkMonitor* getCurrentMonitor(GtkWindow *window) {
-	// Get the monitor that the window is currently on
-	GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(window));
-	GdkWindow *gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
-	if( gdk_window == NULL ) {
-		return NULL;
-	}
-	GdkMonitor *monitor = gdk_display_get_monitor_at_window(display, gdk_window);
-
-	return GDK_MONITOR(monitor);
-}
-
-bool isNULLRectangle(GdkRectangle input) {
-	return input.x == -1 && input.y == -1 && input.width == -1 && input.height == -1;
-}
-
-GdkRectangle getCurrentMonitorGeometry(GtkWindow *window) {
-	GdkMonitor *monitor = getCurrentMonitor(window);
-	GdkRectangle result;
-	if( monitor == NULL ) {
-		result.x = result.y = result.height = result.width = -1;
-		return result;
-	}
-
-	// Get the geometry of the monitor
-	gdk_monitor_get_geometry (monitor,&result);
-	return result;
-}
-
-int getCurrentMonitorScaleFactor(GtkWindow *window) {
-	GdkMonitor *monitor = getCurrentMonitor(window);
-
-	return gdk_monitor_get_scale_factor(monitor);
-}
-
-static void SetMinMaxSize(GtkWindow* window, int min_width, int min_height, int max_width, int max_height) {
-    GdkGeometry size;
-    size.min_width = size.min_height = size.max_width = size.max_height = 0;
-
-	GdkRectangle monitorSize = getCurrentMonitorGeometry(window);
-	if( isNULLRectangle(monitorSize) ) {
-		return;
-	}
-  int flags = GDK_HINT_MAX_SIZE | GDK_HINT_MIN_SIZE;
-	size.max_height = (max_height == 0 ? monitorSize.height : max_height);
-	size.max_width = (max_width == 0 ? monitorSize.width : max_width);
-	size.min_height = min_height;
-	size.min_width = min_width;
-    gtk_window_set_geometry_hints(window, NULL, &size, flags);
-}
-
-gboolean Center(gpointer data) {
-	GtkWindow *window = (GtkWindow*)data;
-
-    // Get the geometry of the monitor
-    GdkRectangle m = getCurrentMonitorGeometry(window);
-	if( isNULLRectangle(m) ) {
-		return G_SOURCE_REMOVE;
-	}
-
-    // Get the window width/height
-    int windowWidth, windowHeight;
-    gtk_window_get_size(window, &windowWidth, &windowHeight);
-
-	int newX = ((m.width - windowWidth) / 2) + m.x;
-	int newY = ((m.height - windowHeight) / 2) + m.y;
-
-    // Place the window at the center of the monitor
-    gtk_window_move(window, newX, newY);
-
-    return G_SOURCE_REMOVE;
-}
-
-int IsFullscreen(GtkWidget *widget) {
-	GdkWindow *gdkwindow = gtk_widget_get_window(widget);
-	GdkWindowState state = gdk_window_get_state(GDK_WINDOW(gdkwindow));
-	return state & GDK_WINDOW_STATE_FULLSCREEN;
-}
-
-int IsMaximised(GtkWidget *widget) {
-	GdkWindow *gdkwindow = gtk_widget_get_window(widget);
-	GdkWindowState state = gdk_window_get_state(GDK_WINDOW(gdkwindow));
-	return state & GDK_WINDOW_STATE_MAXIMIZED && !(state & GDK_WINDOW_STATE_FULLSCREEN);
-}
-
-int IsMinimised(GtkWidget *widget) {
-	GdkWindow *gdkwindow = gtk_widget_get_window(widget);
-	GdkWindowState state = gdk_window_get_state(GDK_WINDOW(gdkwindow));
-	return state & GDK_WINDOW_STATE_ICONIFIED;
-}
-
-
-extern void processMessage(char*);
-
-static void sendMessageToBackend(WebKitUserContentManager *contentManager,
-                                 WebKitJavascriptResult *result,
-                                 void* data)
-{
-#if WEBKIT_MAJOR_VERSION >= 2 && WEBKIT_MINOR_VERSION >= 22
-    JSCValue *value = webkit_javascript_result_get_js_value(result);
-    char *message = jsc_value_to_string(value);
-#else
-    JSGlobalContextRef context = webkit_javascript_result_get_global_context(result);
-    JSValueRef value = webkit_javascript_result_get_value(result);
-    JSStringRef js = JSValueToStringCopy(context, value, NULL);
-    size_t messageSize = JSStringGetMaximumUTF8CStringSize(js);
-    char *message = g_new(char, messageSize);
-    JSStringGetUTF8CString(js, message, messageSize);
-    JSStringRelease(js);
-#endif
-    processMessage(message);
-    g_free(message);
-}
-
-static void webviewLoadChanged(WebKitWebView *web_view, WebKitLoadEvent load_event, gpointer data)
-{
-    if (load_event == WEBKIT_LOAD_FINISHED) {
-        processMessage("DomReady");
-    }
-}
-
-ulong setupInvokeSignal(void* contentManager) {
-	return g_signal_connect((WebKitUserContentManager*)contentManager, "script-message-received::external", G_CALLBACK(sendMessageToBackend), NULL);
-}
-
-// These are the x,y & time of the last mouse down event
-// It's used for window dragging
-float xroot = 0.0f;
-float yroot = 0.0f;
-int dragTime = -1;
-bool contextMenuDisabled = false;
-
-gboolean buttonPress(GtkWidget *widget, GdkEventButton *event, void* dummy)
-{
-	if( event == NULL ) {
-		xroot = yroot = 0.0f;
-		dragTime = -1;
-		return FALSE;
-	}
-
-	if( event->button == 3 && contextMenuDisabled ) {
-		return TRUE;
-	}
-
-	if (event->type == GDK_BUTTON_PRESS && event->button == 1)
-    {
-        xroot = event->x_root;
-        yroot = event->y_root;
-        dragTime = event->time;
-    }
-
-    return FALSE;
-}
-
-gboolean buttonRelease(GtkWidget *widget, GdkEventButton *event, void* dummy)
-{
-    if (event == NULL || (event->type == GDK_BUTTON_RELEASE && event->button == 1))
-    {
-		xroot = yroot = 0.0f;
-		dragTime = -1;
-    }
-    return FALSE;
-}
-
-void connectButtons(void* webview) {
-	g_signal_connect(WEBKIT_WEB_VIEW(webview), "button-press-event", G_CALLBACK(buttonPress), NULL);
-	g_signal_connect(WEBKIT_WEB_VIEW(webview), "button-release-event", G_CALLBACK(buttonRelease), NULL);
-}
-
-extern void processURLRequest(void *request);
-
-// This is called when the close button on the window is pressed
-gboolean close_button_pressed(GtkWidget *widget, GdkEvent *event, void* data)
-{
-   	processMessage("Q");
-    // since we handle the close in processMessage tell GTK to not invoke additional handlers - see:
-    // https://docs.gtk.org/gtk3/signal.Widget.delete-event.html
-    return TRUE;
-}
-
-GtkWidget* setupWebview(void* contentManager, GtkWindow* window, int hideWindowOnClose) {
-	GtkWidget* webview = webkit_web_view_new_with_user_content_manager((WebKitUserContentManager*)contentManager);
-	//gtk_container_add(GTK_CONTAINER(window), webview);
-	WebKitWebContext *context = webkit_web_context_get_default();
-	webkit_web_context_register_uri_scheme(context, "wails", (WebKitURISchemeRequestCallback)processURLRequest, NULL, NULL);
-	g_signal_connect(G_OBJECT(webview), "load-changed", G_CALLBACK(webviewLoadChanged), NULL);
-	if (hideWindowOnClose) {
-		g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-	} else {
-		g_signal_connect(GTK_WIDGET(window), "delete-event", G_CALLBACK(close_button_pressed), NULL);
-	}
-
-	WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
-	webkit_settings_set_user_agent_with_application_details(settings, "wails.io", "");
-	return webview;
-}
-
-void devtoolsEnabled(void* webview, int enabled) {
-	WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
-	gboolean genabled = enabled == 1 ? true : false;
-	webkit_settings_set_enable_developer_extras(settings, genabled);
-}
-
-void loadIndex(void* webview, char* url) {
-	webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview), url);
-}
-
-typedef struct DragOptions {
-	void *webview;
-	GtkWindow* mainwindow;
-} DragOptions;
-
-static gboolean startDrag(gpointer data) {
-	DragOptions* options = (DragOptions*)data;
-
-	// Ignore non-toplevel widgets
-	GtkWidget *window = gtk_widget_get_toplevel(GTK_WIDGET(options->webview));
-	if (!GTK_IS_WINDOW(window)) {
-		free(data);
-		return G_SOURCE_REMOVE;
-	}
-
-	gtk_window_begin_move_drag(options->mainwindow, 1, xroot, yroot, dragTime);
-	free(data);
-
-	return G_SOURCE_REMOVE;
-}
-
-static void StartDrag(void *webview, GtkWindow* mainwindow) {
-	DragOptions* data = malloc(sizeof(DragOptions));
-	data->webview = webview;
-	data->mainwindow = mainwindow;
-	ExecuteOnMainThread(startDrag, (gpointer)data);
-}
-
-typedef struct JSCallback {
-    void* webview;
-    char* script;
-} JSCallback;
-
-void executeJS(void *data) {
-    struct JSCallback *js = data;
-    webkit_web_view_run_javascript(js->webview, js->script, NULL, NULL, NULL);
-    free(js->script);
-}
-
-void extern processMessageDialogResult(char*);
-
-typedef struct MessageDialogOptions {
-	void* window;
-	char* title;
-	char* message;
-	int messageType;
-} MessageDialogOptions;
-
-void messageDialog(void *data) {
-	GtkDialogFlags flags;
-	GtkMessageType messageType;
-	MessageDialogOptions *options = (MessageDialogOptions*) data;
-	if( options->messageType == 0 ) {
-		messageType = GTK_MESSAGE_INFO;
-		flags = GTK_BUTTONS_OK;
-	} else if( options->messageType == 1 ) {
-		messageType = GTK_MESSAGE_ERROR;
-		flags = GTK_BUTTONS_OK;
-	} else if( options->messageType == 2 ) {
-		messageType = GTK_MESSAGE_QUESTION;
-		flags = GTK_BUTTONS_YES_NO;
-	} else {
-		messageType = GTK_MESSAGE_WARNING;
-		flags = GTK_BUTTONS_OK;
-	}
-
-	GtkWidget *dialog;
-	dialog = gtk_message_dialog_new(GTK_WINDOW(options->window),
-			GTK_DIALOG_DESTROY_WITH_PARENT,
-			messageType,
-			flags,
-			options->message, NULL);
-	gtk_window_set_title(GTK_WINDOW(dialog), options->title);
-	GtkResponseType result = gtk_dialog_run(GTK_DIALOG(dialog));
-	if ( result == GTK_RESPONSE_YES ) {
-		processMessageDialogResult("Yes");
-	} else if ( result == GTK_RESPONSE_NO ) {
-		processMessageDialogResult("No");
-	} else if ( result == GTK_RESPONSE_OK ) {
-		processMessageDialogResult("OK");
-	} else if ( result == GTK_RESPONSE_CANCEL ) {
-		processMessageDialogResult("Cancel");
-	} else {
-		processMessageDialogResult("");
-	}
-
-	gtk_widget_destroy(dialog);
-	free(options->title);
-	free(options->message);
-}
-
-void extern processOpenFileResult(void*);
-
-typedef struct OpenFileDialogOptions {
-    GtkWindow* window;
-    char* title;
-	char* defaultFilename;
-	char* defaultDirectory;
-	int createDirectories;
-	int multipleFiles;
-	int showHiddenFiles;
- 	GtkFileChooserAction action;
-	GtkFileFilter** filters;
-} OpenFileDialogOptions;
-
-GtkFileFilter** allocFileFilterArray(size_t ln) {
-	return (GtkFileFilter**) malloc(ln * sizeof(GtkFileFilter*));
-}
-
-void freeFileFilterArray(GtkFileFilter** filters) {
-	free(filters);
-}
-
-void opendialog(void *data) {
-    struct OpenFileDialogOptions *options = data;
-	char *label = "_Open";
-	if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE) {
-		label = "_Save";
-	}
-    GtkWidget *dlgWidget = gtk_file_chooser_dialog_new(options->title, options->window, options->action,
-          "_Cancel", GTK_RESPONSE_CANCEL,
-          label, GTK_RESPONSE_ACCEPT,
-			NULL);
-
-	GtkFileChooser *fc = GTK_FILE_CHOOSER(dlgWidget);
-	// filters
-	if (options->filters != 0) {
-		int index = 0;
-		GtkFileFilter* thisFilter;
-		while(options->filters[index] != NULL) {
-			thisFilter = options->filters[index];
-			gtk_file_chooser_add_filter(fc, thisFilter);
-			index++;
-		}
-	}
-
-	gtk_file_chooser_set_local_only(fc, FALSE);
-
-	if (options->multipleFiles == 1) {
-		gtk_file_chooser_set_select_multiple(fc, TRUE);
-	}
-	gtk_file_chooser_set_do_overwrite_confirmation(fc, TRUE);
-	if (options->createDirectories == 1) {
-		gtk_file_chooser_set_create_folders(fc, TRUE);
-	}
-	if (options->showHiddenFiles == 1) {
-		gtk_file_chooser_set_show_hidden(fc, TRUE);
-	}
-
-	if (options->defaultDirectory != NULL) {
-		gtk_file_chooser_set_current_folder (fc, options->defaultDirectory);
-		free(options->defaultDirectory);
-	}
-
-	if (options->action == GTK_FILE_CHOOSER_ACTION_SAVE) {
-		if (options->defaultFilename != NULL) {
-			gtk_file_chooser_set_current_name(fc, options->defaultFilename);
-			free(options->defaultFilename);
-		}
-	}
-
-	gint response = gtk_dialog_run(GTK_DIALOG(dlgWidget));
-
-	// Max 1024 files to select
-	char** result = calloc(1024, sizeof(char*));
-	int resultIndex = 0;
-
-    if (response == GTK_RESPONSE_ACCEPT) {
-        GSList* filenames = gtk_file_chooser_get_filenames(fc);
-		GSList *iter = filenames;
-		while(iter) {
-		  	result[resultIndex++] = (char *)iter->data;
-		  	iter = g_slist_next(iter);
-          	if (resultIndex == 1024) {
-				break;
-			}
-		}
-		processOpenFileResult(result);
-		iter = filenames;
-		while(iter) {
-		  g_free(iter->data);
-		  iter = g_slist_next(iter);
-		}
-    } else {
-		processOpenFileResult(result);
-	}
-	free(result);
-
-	// Release filters
-	if (options->filters != NULL) {
-		int index = 0;
-		GtkFileFilter* thisFilter;
-		while(options->filters[index] != 0) {
-			thisFilter = options->filters[index];
-			g_object_unref(thisFilter);
-			index++;
-		}
-		freeFileFilterArray(options->filters);
-	}
-    gtk_widget_destroy(dlgWidget);
-    free(options->title);
-}
-
-GtkFileFilter* newFileFilter() {
-	GtkFileFilter* result = gtk_file_filter_new();
-	g_object_ref(result);
-	return result;
-}
-
-typedef struct RGBAOptions {
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
-	uint8_t a;
-	void *webview;
-} RGBAOptions;
-
-void setBackgroundColour(void* data) {
-	RGBAOptions* options = (RGBAOptions*)data;
-	GdkRGBA colour = {options->r / 255.0, options->g / 255.0, options->b / 255.0, options->a / 255.0};
-	webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(options->webview), &colour);
-}
-
-typedef struct SetTitleArgs {
-	GtkWindow* window;
-	char* title;
-} SetTitleArgs;
-
-gboolean setTitle(gpointer data) {
-	SetTitleArgs* args = (SetTitleArgs*)data;
-	gtk_window_set_title(args->window, args->title);
-	free((void*)args->title);
-	free((void*)data);
-
-	return G_SOURCE_REMOVE;
-}
-
-void SetTitle(GtkWindow* window, char* title) {
-	SetTitleArgs* args = malloc(sizeof(SetTitleArgs));
-	args->window = window;
-	args->title = title;
-	ExecuteOnMainThread(setTitle, (gpointer)args);
-}
-
-typedef struct SetPositionArgs {
-	int x;
-	int y;
-	void* window;
-} SetPositionArgs;
-
-gboolean setPosition(gpointer data) {
-	SetPositionArgs* args = (SetPositionArgs*)data;
-	gtk_window_move((GtkWindow*)args->window, args->x, args->y);
-	free(args);
-
-	return G_SOURCE_REMOVE;
-}
-
-void SetPosition(void* window, int x, int y) {
-	GdkRectangle monitorDimensions = getCurrentMonitorGeometry(window);
-	if( isNULLRectangle(monitorDimensions) ) {
-		return;
-	}
-	SetPositionArgs* args = malloc(sizeof(SetPositionArgs));
-	args->window = window;
-	args->x = monitorDimensions.x + x;
-	args->y = monitorDimensions.y + y;
-	ExecuteOnMainThread(setPosition, (gpointer)args);
-}
-
-gboolean Show(gpointer data) {
-	gtk_widget_show((GtkWidget*)data);
-
-	return G_SOURCE_REMOVE;
-}
-
-gboolean Hide(gpointer data) {
-	gtk_widget_hide((GtkWidget*)data);
-
-	return G_SOURCE_REMOVE;
-}
-
-gboolean Maximise(gpointer data) {
-	gtk_window_maximize((GtkWindow*)data);
-
-	return G_SOURCE_REMOVE;
-}
-
-gboolean UnMaximise(gpointer data) {
-	gtk_window_unmaximize((GtkWindow*)data);
-
-	return G_SOURCE_REMOVE;
-}
-
-gboolean Minimise(gpointer data) {
-	gtk_window_iconify((GtkWindow*)data);
-
-	return G_SOURCE_REMOVE;
-}
-
-gboolean UnMinimise(gpointer data) {
-	gtk_window_present((GtkWindow*)data);
-
-	return G_SOURCE_REMOVE;
-}
-
-gboolean Fullscreen(gpointer data) {
-	GtkWindow* window = (GtkWindow*)data;
-
-	// Get the geometry of the monitor.
-	GdkRectangle m = getCurrentMonitorGeometry(window);
-	if( isNULLRectangle(m) ) {
-		return G_SOURCE_REMOVE;
-	}
-	int scale = getCurrentMonitorScaleFactor(window);
-	SetMinMaxSize(window, 0, 0, m.width * scale, m.height * scale);
-
-	gtk_window_fullscreen(window);
-
-	return G_SOURCE_REMOVE;
-}
-
-gboolean UnFullscreen(gpointer data) {
-	gtk_window_unfullscreen((GtkWindow*)data);
-
-	return G_SOURCE_REMOVE;
-}
-
-bool disableContextMenu(GtkWindow* window) {
-	return TRUE;
-}
-
-void DisableContextMenu(void* webview) {
-	contextMenuDisabled = TRUE;
-	g_signal_connect(WEBKIT_WEB_VIEW(webview), "context-menu", G_CALLBACK(disableContextMenu), NULL);
-}
-
-void SetWindowIcon(GtkWindow* window, const guchar* buf, gsize len) {
-	GdkPixbufLoader* loader = gdk_pixbuf_loader_new();
-	if (!loader) {
-		return;
-	}
-	if (gdk_pixbuf_loader_write(loader, buf, len, NULL) && gdk_pixbuf_loader_close(loader, NULL)) {
-		GdkPixbuf* pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
-		if (pixbuf) {
-			gtk_window_set_icon(window, pixbuf);
-		}
-	}
-	g_object_unref(loader);
-}
+#include <stdint.h>
+#include "window.h"
 
 */
 import "C"
 import (
+	"log"
 	"strings"
 	"sync"
 	"unsafe"
@@ -632,6 +55,7 @@ func bool2Cint(value bool) C.int {
 }
 
 func NewWindow(appoptions *options.App, debug bool) *Window {
+	validateWebKit2Version(appoptions)
 
 	result := &Window{
 		appoptions: appoptions,
@@ -653,16 +77,26 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	external := C.CString("external")
 	defer C.free(unsafe.Pointer(external))
 	C.webkit_user_content_manager_register_script_message_handler(result.cWebKitUserContentManager(), external)
-	C.setupInvokeSignal(result.contentManager)
+	C.SetupInvokeSignal(result.contentManager)
 
-	webview := C.setupWebview(result.contentManager, result.asGTKWindow(), bool2Cint(appoptions.HideWindowOnClose))
+	var webviewGpuPolicy int
+	if appoptions.Linux != nil {
+		webviewGpuPolicy = int(appoptions.Linux.WebviewGpuPolicy)
+	}
+
+	webview := C.SetupWebview(
+		result.contentManager,
+		result.asGTKWindow(),
+		bool2Cint(appoptions.HideWindowOnClose),
+		C.int(webviewGpuPolicy),
+	)
 	result.webview = unsafe.Pointer(webview)
 	buttonPressedName := C.CString("button-press-event")
 	defer C.free(unsafe.Pointer(buttonPressedName))
-	C.connectButtons(unsafe.Pointer(webview))
+	C.ConnectButtons(unsafe.Pointer(webview))
 
 	if debug {
-		C.devtoolsEnabled(unsafe.Pointer(webview), C.int(1))
+		C.DevtoolsEnabled(unsafe.Pointer(webview), C.int(1), C.bool(appoptions.Debug.OpenInspectorOnStartup))
 	} else {
 		C.DisableContextMenu(unsafe.Pointer(webview))
 	}
@@ -682,6 +116,9 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	if appoptions.Linux != nil {
 		if appoptions.Linux.Icon != nil {
 			result.SetWindowIcon(appoptions.Linux.Icon)
+		}
+		if appoptions.Linux.WindowIsTranslucent {
+			C.SetWindowTransparency(gtkWindow)
 		}
 	}
 
@@ -831,7 +268,7 @@ func (w *Window) SetBackgroundColour(r uint8, g uint8, b uint8, a uint8) {
 		a:       C.uchar(a),
 		webview: w.webview,
 	}
-	invokeOnMainThread(func() { C.setBackgroundColour(unsafe.Pointer(&data)) })
+	invokeOnMainThread(func() { C.SetBackgroundColour(unsafe.Pointer(&data)) })
 
 }
 
@@ -848,7 +285,7 @@ func (w *Window) Run(url string) {
 	}
 	C.gtk_box_pack_start(C.GTKBOX(unsafe.Pointer(w.vbox)), C.GTKWIDGET(w.webview), 1, 1, 0)
 	_url := C.CString(url)
-	C.loadIndex(w.webview, _url)
+	C.LoadIndex(w.webview, _url)
 	defer C.free(unsafe.Pointer(_url))
 	C.gtk_widget_show_all(w.asGTKWidget())
 	w.Center()
@@ -888,11 +325,15 @@ func (w *Window) ExecJS(js string) {
 		webview: w.webview,
 		script:  C.CString(js),
 	}
-	invokeOnMainThread(func() { C.executeJS(unsafe.Pointer(&jscallback)) })
+	invokeOnMainThread(func() { C.ExecuteJS(unsafe.Pointer(&jscallback)) })
 }
 
 func (w *Window) StartDrag() {
 	C.StartDrag(w.webview, w.asGTKWindow())
+}
+
+func (w *Window) StartResize(edge uintptr) {
+	C.StartResize(w.webview, w.asGTKWindow(), C.GdkWindowEdge(edge))
 }
 
 func (w *Window) Quit() {
@@ -912,7 +353,7 @@ func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multip
 		// Create filter array
 		mem := NewCalloc()
 		arraySize := len(dialogOptions.Filters) + 1
-		data.filters = C.allocFileFilterArray((C.size_t)(arraySize))
+		data.filters = C.AllocFileFilterArray((C.size_t)(arraySize))
 		filters := unsafe.Slice((**C.struct__GtkFileFilter)(unsafe.Pointer(data.filters)), arraySize)
 		for index, filter := range dialogOptions.Filters {
 			thisFilter := C.gtk_file_filter_new()
@@ -950,7 +391,7 @@ func (w *Window) OpenFileDialog(dialogOptions frontend.OpenDialogOptions, multip
 		data.defaultDirectory = C.CString(dialogOptions.DefaultDirectory)
 	}
 
-	invokeOnMainThread(func() { C.opendialog(unsafe.Pointer(&data)) })
+	invokeOnMainThread(func() { C.Opendialog(unsafe.Pointer(&data)) })
 }
 
 func (w *Window) MessageDialog(dialogOptions frontend.MessageDialogOptions) {
@@ -970,7 +411,7 @@ func (w *Window) MessageDialog(dialogOptions frontend.MessageDialogOptions) {
 	case frontend.WarningDialog:
 		data.messageType = C.int(3)
 	}
-	invokeOnMainThread(func() { C.messageDialog(unsafe.Pointer(&data)) })
+	invokeOnMainThread(func() { C.MessageDialog(unsafe.Pointer(&data)) })
 }
 
 func (w *Window) ToggleMaximise() {
@@ -979,4 +420,20 @@ func (w *Window) ToggleMaximise() {
 	} else {
 		w.Maximise()
 	}
+}
+
+// showModalDialogAndExit shows a modal dialog and exits the app.
+func showModalDialogAndExit(title, message string) {
+	go func() {
+		data := C.MessageDialogOptions{
+			title:       C.CString(title),
+			message:     C.CString(message),
+			messageType: C.int(1),
+		}
+
+		C.MessageDialog(unsafe.Pointer(&data))
+	}()
+
+	<-messageDialogResult
+	log.Fatal(message)
 }

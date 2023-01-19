@@ -1,0 +1,250 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://wails.io/schemas/config.v2.json",
+    "required": [],
+    "title": "Wails configuration schema",
+    "description": "A JSON representation of a Wails project config file.",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "The project name",
+            "default": "wailsapp"
+        },
+        "assetdir": {
+            "type": "string",
+            "description": "Relative path to the directory containing the compiled assets. This is normally inferred, and can be left empty."
+        },
+        "reloaddirs": {
+            "type": "string",
+            "description": "Additional directories to trigger reloads (comma separated). Often, this is only used for advanced asset configurations."
+        },
+        "build:dir": {
+            "type": "string",
+            "description": "The directory where the build files reside.",
+            "default": "build",
+            "examples": [
+                "./build",
+                "/absolute/path/to/build",
+                "C:\\absolute\\path\\to\\build"
+            ]
+        },
+        "frontend:dir": {
+            "type": "string",
+            "description": "The directory where the frontend files reside.",
+            "default": "frontend",
+            "examples": [
+                "./src",
+                "/absolute/path/to/frontend",
+                "C:\\absolute\\path\\to\\frontend"
+            ]
+        },
+        "frontend:install": {
+            "type": "string",
+            "description": "The command to install dependencies. Run in the frontend directory.",
+            "examples": [
+                "npm install"
+            ]
+        },
+        "frontend:build": {
+            "type": "string",
+            "description": "The command to build the assets. Run in the frontend directory.",
+            "examples": [
+                "npm run build"
+            ]
+        },
+        "frontend:dev": {
+            "type": "string",
+            "description": "[Deprecated] This command has been replaced by `frontend:dev:build`. If `frontend:dev:build` is not specified, Wails will fall back to this command. If this command is also not specified, Wails will fall back to `frontend:build`."
+        },
+        "frontend:dev:build": {
+            "type": "string",
+            "description": "The equivalent of `frontend:build` during development. If not specified, it falls back to `frontend:dev`."
+        },
+        "frontend:dev:install": {
+            "type": "string",
+            "description": "The equivalent of `frontend:install` during development. If not specified, it falls back to `frontend:install`."
+        },
+        "frontend:dev:watcher": {
+            "type": "string",
+            "description": "This command is run in a separate process on `wails dev`. Useful for third-party watchers or for starting third-party dev servers."
+        },
+        "frontend:dev:serverUrl": {
+            "type": "string",
+            "description": "URL to a 3rd party dev server to be used to serve assets (eg. Vite). If this is set to 'auto', then the devServerUrl will be inferred from the Vite output",
+            "examples": [ "auto", "http://localhost:3000" ],
+            "oneOf": [
+                { "format": "uri" },
+                { "const": "auto" }
+            ]
+        },
+        "wailsjsdir": {
+            "type": "string",
+            "description": "Relative path to the directory where the auto-generated JS modules will be created.",
+            "format": "uri-reference",
+            "default": "The value of frontend:dir"
+        },
+        "version": {
+            "description": "Project config version",
+            "default": "2",
+            "enum": [ "2" ]
+        },
+        "outputfilename": {
+            "type": "string",
+            "description": "The name of the binary"
+        },
+        "debounceMS": {
+            "type": "number",
+            "description": "The debounce time for hot-reload of the built-in dev server. Measured in milliseconds.",
+            "default": 100
+        },
+        "devServer": {
+            "type": "string",
+            "description": "The address to bind the wails dev server to.",
+            "default": "localhost:34115",
+            "format": "uri"
+        },
+        "appargs": {
+            "type": "string",
+            "description": "Arguments passed to the application in shell style when in dev mode."
+        },
+        "runNonNativeBuildHooks": {
+            "type": "boolean",
+            "description": "Whether to run build hooks that are defined for an OS other than the host OS.",
+            "default": false
+        },
+        "preBuildHooks": {
+            "$ref": "#/definitions/buildHooks"
+        },
+        "postBuildHooks": {
+            "$ref": "#/definitions/buildHooks"
+        },
+        "author": {
+            "type": "object",
+            "description": "The application author",
+            "properties": {
+                "name": { "type": "string" },
+                "email": {
+                    "type": "string",
+                    "format": "email"
+                }
+            }
+        },
+        "info": {
+            "type": "object",
+            "description": "Data used to populate manifests and version info.",
+            "properties": {
+                "companyName": {
+                    "type": "string",
+                    "description": "The company name. Defaults to the project name."
+                },
+                "productName": {
+                    "type": "string",
+                    "description": "The product name. Defaults to the project name."
+                },
+                "productVersion": {
+                    "type": "string",
+                    "description": "The version of the product",
+                    "default": "1.0.0"
+                },
+                "copyright": {
+                    "type": "string",
+                    "description": "A copyright string for the product",
+                    "default": "Copyright........."
+                },
+                "comments": {
+                    "type": "string",
+                    "description": "A short comment for the app",
+                    "default": "Built using Wails (https://wails.io)"
+                }
+            }
+        },
+        "nsisType": {
+            "type": "string",
+            "default": "multiple",
+            "description": "Type of NSIS Installer for Windows",
+            "oneOf": [
+                {
+                    "const": "multiple",
+                    "description": "One installer per architecture"
+                },
+                {
+                    "const": "single",
+                    "description": "Single universal installer for all architectures being built"
+                }
+            ]
+        },
+        "obfuscated": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether the binary should be obfuscated. Uses <https://github.com/burrowers/garble>."
+        },
+        "garbleargs": {
+            "type": "string",
+            "description": "The arguments to pass to the garble command when using the obfuscated flag"
+        }
+    },
+    "dependencies": {
+        "garbleargs": ["obfuscated"]
+    },
+    "definitions": {
+        "OsHook": {
+            "title": "GOOS/*",
+            "type": "string",
+            "description": "Executed at build level before/after a build of the specific platform"
+        },
+        "OsArchHook": {
+            "title": "GOOS/GOARCH",
+            "type": "string",
+            "description": "Executed at build level before/after a build of the specific platform and arch"
+        },
+        "buildHooks": {
+            "type": "object",
+            "description": "Build hooks for different targets.",
+            "additionalProperties": false,
+            "properties": {
+                "{GOOS}/{GOARCH}": { "$ref": "#/definitions/OsArchHook" },
+                "{GOOS}/*": { "$ref": "#/definitions/OsHook" },
+                "windows/*": { "$ref": "#/definitions/OsHook" },
+                "linux/*": { "$ref": "#/definitions/OsHook" },
+                "darwin/*": { "$ref": "#/definitions/OsHook" },
+                "*/*": {
+                    "type": "string",
+                    "description": "Executed at build level before/after a build"
+                }
+            },
+            "patternProperties": {
+                "^[a-zA-Z0-9]+/[a-zA-Z0-9]+$": {
+                    "type": "string",
+                    "title": "GOOS/GOARCH",
+                    "description": "Executed at build level before/after a build of the specific platform and arch"
+                },
+                "^[a-zA-Z0-9]+/\\*$": {
+                    "type": "string",
+                    "title": "GOOS/*",
+                    "description": "Executed at build level before/after a build of the specific platform"
+                }
+            }
+        }
+    },
+		"bindings": {
+				"type": "object",
+				"description": "Bindings configurations",
+				"properties": {
+						"ts_generation": { 
+								"type": "object",
+								"description": "model.ts file generation config",
+								"properties": {
+										"prefix": {
+												"type": "string",
+												"description": "All generated JavaScript entities will be prefixed with this value"
+										},
+										"suffix": {
+												"type": "string",
+												"description": "All generated JavaScript entities will be suffixed with this value"
+										}
+								}
+						}
+				}
+		}
+}

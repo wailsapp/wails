@@ -3,8 +3,9 @@
 package windows
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/edge"
 
 	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
@@ -20,7 +21,6 @@ type Window struct {
 	winc.Form
 	frontendOptions                          *options.App
 	applicationMenu                          *menu.Menu
-	notifyParentWindowPositionChanged        func() error
 	minWidth, minHeight, maxWidth, maxHeight int
 	versionInfo                              *operatingsystem.WindowsVersionInfo
 	isDarkMode                               bool
@@ -31,14 +31,17 @@ type Window struct {
 	theme        winoptions.Theme
 	themeChanged bool
 
+	framelessWithDecorations bool
+
 	OnSuspend func()
 	OnResume  func()
-	dragging  bool
 
 	chromium *edge.Chromium
 }
 
-func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo) *Window {
+func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *operatingsystem.WindowsVersionInfo, chromium *edge.Chromium) *Window {
+	windowsOptions := appoptions.Windows
+
 	result := &Window{
 		frontendOptions: appoptions,
 		minHeight:       appoptions.MinHeight,
@@ -48,13 +51,16 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		versionInfo:     versionInfo,
 		isActive:        true,
 		themeChanged:    true,
+		chromium:        chromium,
+
+		framelessWithDecorations: appoptions.Frameless && (windowsOptions == nil || !windowsOptions.DisableFramelessWindowDecorations),
 	}
 	result.SetIsForm(true)
 
 	var exStyle int
-	if appoptions.Windows != nil {
+	if windowsOptions != nil {
 		exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
-		if appoptions.Windows.WindowIsTranslucent {
+		if windowsOptions.WindowIsTranslucent {
 			exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
 		}
 	}
@@ -71,7 +77,7 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 	result.SetParent(parent)
 
 	loadIcon := true
-	if appoptions.Windows != nil && appoptions.Windows.DisableWindowIcon == true {
+	if windowsOptions != nil && windowsOptions.DisableWindowIcon == true {
 		loadIcon = false
 	}
 	if loadIcon {
@@ -84,8 +90,8 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 		win32.SetBackgroundColour(result.Handle(), appoptions.BackgroundColour.R, appoptions.BackgroundColour.G, appoptions.BackgroundColour.B)
 	}
 
-	if appoptions.Windows != nil {
-		result.theme = appoptions.Windows.Theme
+	if windowsOptions != nil {
+		result.theme = windowsOptions.Theme
 	} else {
 		result.theme = winoptions.SystemDefault
 	}
@@ -101,18 +107,18 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 
 	result.UpdateTheme()
 
-	if appoptions.Windows != nil {
-		result.OnSuspend = appoptions.Windows.OnSuspend
-		result.OnResume = appoptions.Windows.OnResume
-		if appoptions.Windows.WindowIsTranslucent {
+	if windowsOptions != nil {
+		result.OnSuspend = windowsOptions.OnSuspend
+		result.OnResume = windowsOptions.OnResume
+		if windowsOptions.WindowIsTranslucent {
 			if !win32.SupportsBackdropTypes() {
 				result.SetTranslucentBackground()
 			} else {
-				win32.EnableTranslucency(result.Handle(), win32.BackdropType(appoptions.Windows.BackdropType))
+				win32.EnableTranslucency(result.Handle(), win32.BackdropType(windowsOptions.BackdropType))
 			}
 		}
 
-		if appoptions.Windows.DisableWindowIcon {
+		if windowsOptions.DisableWindowIcon {
 			result.DisableIcon()
 		}
 	}
@@ -130,18 +136,35 @@ func NewWindow(parent winc.Controller, appoptions *options.App, versionInfo *ope
 }
 
 func (w *Window) Fullscreen() {
+	if w.Form.IsFullScreen() {
+		return
+	}
+	if w.framelessWithDecorations {
+		win32.ExtendFrameIntoClientArea(w.Handle(), false)
+	}
 	w.Form.SetMaxSize(0, 0)
 	w.Form.SetMinSize(0, 0)
 	w.Form.Fullscreen()
 }
 
 func (w *Window) UnFullscreen() {
-	if !w.IsFullScreen() {
+	if !w.Form.IsFullScreen() {
 		return
+	}
+	if w.framelessWithDecorations {
+		win32.ExtendFrameIntoClientArea(w.Handle(), true)
 	}
 	w.Form.UnFullscreen()
 	w.SetMinSize(w.minWidth, w.minHeight)
 	w.SetMaxSize(w.maxWidth, w.maxHeight)
+}
+
+func (w *Window) Restore() {
+	if w.Form.IsFullScreen() {
+		w.UnFullscreen()
+	} else {
+		w.Form.Restore()
+	}
 }
 
 func (w *Window) SetMinSize(minWidth int, minHeight int) {
@@ -163,13 +186,6 @@ func (w *Window) IsVisible() bool {
 func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 
 	switch msg {
-	case w32.WM_EXITSIZEMOVE:
-		if w.dragging {
-			w.dragging = false
-			w.Invoke(func() {
-				w.chromium.Eval("wails.flags.shouldDrag = false;")
-			})
-		}
 	case win32.WM_POWERBROADCAST:
 		switch wparam {
 		case win32.PBT_APMSUSPEND:
@@ -191,9 +207,7 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 	case w32.WM_NCLBUTTONDOWN:
 		w32.SetFocus(w.Handle())
 	case w32.WM_MOVE, w32.WM_MOVING:
-		if w.notifyParentWindowPositionChanged != nil {
-			_ = w.notifyParentWindowPositionChanged()
-		}
+		w.chromium.NotifyParentWindowPositionChanged()
 	case w32.WM_ACTIVATE:
 		//if !w.frontendOptions.Frameless {
 		w.themeChanged = true
@@ -206,7 +220,6 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			//}
 		}
 
-	// TODO move WM_DPICHANGED handling into winc
 	case 0x02E0: //w32.WM_DPICHANGED
 		newWindowSize := (*w32.RECT)(unsafe.Pointer(lparam))
 		w32.SetWindowPos(w.Handle(),
@@ -225,8 +238,8 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			// This Option is not affected by returning 0 in WM_NCCALCSIZE.
 			// As a result we have hidden the titlebar but still have the default window frame styling.
 			// See: https://docs.microsoft.com/en-us/windows/win32/api/dwmapi/nf-dwmapi-dwmextendframeintoclientarea#remarks
-			if winoptions := w.frontendOptions.Windows; winoptions == nil || !winoptions.DisableFramelessWindowDecorations {
-				win32.ExtendFrameIntoClientArea(w.Handle())
+			if w.framelessWithDecorations {
+				win32.ExtendFrameIntoClientArea(w.Handle(), true)
 			}
 		case w32.WM_NCCALCSIZE:
 			// Disable the standard frame by allowing the client area to take the full
@@ -236,16 +249,20 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 			// shown. We still need the WS_THICKFRAME style to enable resizing from the frontend.
 			if wparam != 0 {
 				rgrc := (*w32.RECT)(unsafe.Pointer(lparam))
-
-				style := uint32(w32.GetWindowLong(w.Handle(), w32.GWL_STYLE))
-				if style&w32.WS_MAXIMIZE != 0 {
+				if w.Form.IsFullScreen() {
+					// In Full-Screen mode we don't need to adjust anything
+					w.chromium.SetPadding(edge.Rect{})
+				} else if w.IsMaximised() {
 					// If the window is maximized we must adjust the client area to the work area of the monitor. Otherwise
 					// some content goes beyond the visible part of the monitor.
-					monitor := w32.MonitorFromWindow(w.Handle(), w32.MONITOR_DEFAULTTONEAREST)
+					// Make sure to use the provided RECT to get the monitor, because during maximizig there might be
+					// a wrong monitor returned in multi screen mode when using MonitorFromWindow.
+					// See: https://github.com/MicrosoftEdge/WebView2Feedback/issues/2549
+					monitor := w32.MonitorFromRect(rgrc, w32.MONITOR_DEFAULTTONULL)
 
 					var monitorInfo w32.MONITORINFO
 					monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
-					if w32.GetMonitorInfo(monitor, &monitorInfo) {
+					if monitor != 0 && w32.GetMonitorInfo(monitor, &monitorInfo) {
 						*rgrc = monitorInfo.RcWork
 
 						maxWidth := w.frontendOptions.MaxWidth
@@ -265,12 +282,17 @@ func (w *Window) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
 							}
 						}
 					}
+					w.chromium.SetPadding(edge.Rect{})
 				} else {
 					// This is needed to workaround the resize flickering in frameless mode with WindowDecorations
 					// See: https://stackoverflow.com/a/6558508
-					rgrc.Bottom -= 1
+					// The workaround originally suggests to decrese the bottom 1px, but that seems to bring up a thin
+					// white line on some Windows-Versions, due to DrawBackground using also this reduces ClientSize.
+					// Increasing the bottom also worksaround the flickering but we would loose 1px of the WebView content
+					// therefore let's pad the content with 1px at the bottom.
+					rgrc.Bottom += 1
+					w.chromium.SetPadding(edge.Rect{Bottom: 1})
 				}
-
 				return 0
 			}
 		}

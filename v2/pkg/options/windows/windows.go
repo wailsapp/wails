@@ -64,6 +64,9 @@ type Options struct {
 	WindowIsTranslucent  bool
 	DisableWindowIcon    bool
 
+	IsZoomControlEnabled bool
+	ZoomFactor           float64
+
 	// Disable all window decorations in Frameless mode, which means no "Aero Shadow" and no "Rounded Corner" will be shown.
 	// "Rounded Corners" are only available on Windows 11.
 	DisableFramelessWindowDecorations bool
@@ -93,8 +96,12 @@ type Options struct {
 
 	// OnSuspend is called when Windows enters low power mode
 	OnSuspend func()
+
 	// OnResume is called when Windows resumes from low power mode
 	OnResume func()
+
+	// WebviewGpuIsDisabled is used to enable / disable GPU acceleration for the webview
+	WebviewGpuIsDisabled bool
 }
 
 func DefaultMessages() *Messages {

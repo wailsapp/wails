@@ -3,6 +3,7 @@
 package app
 
 import (
+	"flag"
 	"os"
 	"path/filepath"
 
@@ -25,7 +26,34 @@ func (a *App) Run() error {
 		a.options.OnBeforeClose,
 	}
 
+	// Check for CLI Flags
+	bindingFlags := flag.NewFlagSet("bindings", flag.ContinueOnError)
+
+	var tsPrefixFlag *string
+	var tsPostfixFlag *string
+
+	tsPrefix := os.Getenv("tsprefix")
+	if tsPrefix == "" {
+		tsPrefixFlag = bindingFlags.String("tsprefix", "", "Prefix for generated typescript entities")
+	}
+
+	tsSuffix := os.Getenv("tssuffix")
+	if tsSuffix == "" {
+		tsPostfixFlag = bindingFlags.String("tssuffix", "", "Suffix for generated typescript entities")
+	}
+
+	_ = bindingFlags.Parse(os.Args[1:])
+	if tsPrefixFlag != nil {
+		tsPrefix = *tsPrefixFlag
+	}
+	if tsPostfixFlag != nil {
+		tsSuffix = *tsPostfixFlag
+	}
+
 	appBindings := binding.NewBindings(a.logger, a.options.Bind, bindingExemptions, IsObfuscated())
+
+	appBindings.SetTsPrefix(tsPrefix)
+	appBindings.SetTsSuffix(tsSuffix)
 
 	err := generateBindings(appBindings)
 	if err != nil {
@@ -60,29 +88,27 @@ func generateBindings(bindings *binding.Bindings) error {
 		return err
 	}
 
-	if projectConfig.WailsJSDir == "" {
-		projectConfig.WailsJSDir = filepath.Join(cwd, "frontend")
-	}
-	wrapperDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs", "runtime")
-	_ = os.RemoveAll(wrapperDir)
+	wailsjsbasedir := filepath.Join(projectConfig.GetWailsJSDir(), "wailsjs")
+
+	runtimeDir := filepath.Join(wailsjsbasedir, "runtime")
+	_ = os.RemoveAll(runtimeDir)
 	extractor := gosod.New(wrapper.RuntimeWrapper)
-	err = extractor.Extract(wrapperDir, nil)
+	err = extractor.Extract(runtimeDir, nil)
 	if err != nil {
 		return err
 	}
 
-	targetDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs", "go")
-	err = os.RemoveAll(targetDir)
+	goBindingsDir := filepath.Join(wailsjsbasedir, "go")
+	err = os.RemoveAll(goBindingsDir)
 	if err != nil {
 		return err
 	}
-	_ = fs.MkDirs(targetDir)
+	_ = fs.MkDirs(goBindingsDir)
 
-	err = bindings.GenerateGoBindings(targetDir)
+	err = bindings.GenerateGoBindings(goBindingsDir)
 	if err != nil {
 		return err
 	}
 
-	wailsJSDir := filepath.Join(projectConfig.WailsJSDir, "wailsjs")
-	return fs.SetPermissions(wailsJSDir, 0755)
+	return fs.SetPermissions(wailsjsbasedir, 0755)
 }

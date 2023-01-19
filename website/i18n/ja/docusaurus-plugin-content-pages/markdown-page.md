@@ -1,7 +1,7 @@
 ---
-title: Markdown page example
+title: Markdownページの例
 ---
 
-# Markdown page example
+# Markdownページの例
 
 シンプルな単一ページを作成する場合、Reactは必要ありません。

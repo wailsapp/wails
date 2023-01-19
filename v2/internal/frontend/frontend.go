@@ -66,6 +66,7 @@ type MessageDialogOptions struct {
 type Frontend interface {
 	Run(context.Context) error
 	RunMainLoop()
+	ExecJS(js string)
 	Hide()
 	Show()
 	Quit()
@@ -120,4 +121,8 @@ type Frontend interface {
 
 	// Browser
 	BrowserOpenURL(url string)
+
+	// Clipboard
+	ClipboardGetText() (string, error)
+	ClipboardSetText(text string) error
 }

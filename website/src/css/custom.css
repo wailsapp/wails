@@ -32,6 +32,7 @@ html[data-theme="light"] .button--secondary {
     --ifm-button-color: white;
     --ifm-container-width-xl: 95%;
     --ifm-font-color-base-inverse: #df0000;
+    --docusaurus-highlighted-code-line-bg: #8888;
 }
 
 .docusaurus-highlight-code-line {

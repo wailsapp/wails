@@ -1,3 +1,5 @@
+//go:build windows
+
 /*
  * Copyright (C) 2019 The Winc Authors. All Rights Reserved.
  * Copyright (C) 2010-2013 Allen Dang. All Rights Reserved.
@@ -24,6 +26,7 @@ type Form struct {
 	// Fullscreen / Unfullscreen
 	isFullscreen            bool
 	previousWindowStyle     uint32
+	previousWindowExStyle   uint32
 	previousWindowPlacement w32.WINDOWPLACEMENT
 }
 
@@ -165,6 +168,8 @@ func (fm *Form) Fullscreen() {
 	}
 
 	fm.previousWindowStyle = uint32(w32.GetWindowLongPtr(fm.hwnd, w32.GWL_STYLE))
+	fm.previousWindowExStyle = uint32(w32.GetWindowLong(fm.hwnd, w32.GWL_EXSTYLE))
+
 	monitor := w32.MonitorFromWindow(fm.hwnd, w32.MONITOR_DEFAULTTOPRIMARY)
 	var monitorInfo w32.MONITORINFO
 	monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
@@ -174,14 +179,16 @@ func (fm *Form) Fullscreen() {
 	if !w32.GetWindowPlacement(fm.hwnd, &fm.previousWindowPlacement) {
 		return
 	}
-	w32.SetWindowLong(fm.hwnd, w32.GWL_STYLE, fm.previousWindowStyle & ^uint32(w32.WS_OVERLAPPEDWINDOW))
+	// According to https://devblogs.microsoft.com/oldnewthing/20050505-04/?p=35703 one should use w32.WS_POPUP | w32.WS_VISIBLE
+	w32.SetWindowLong(fm.hwnd, w32.GWL_STYLE, fm.previousWindowStyle & ^uint32(w32.WS_OVERLAPPEDWINDOW) | (w32.WS_POPUP|w32.WS_VISIBLE))
+	w32.SetWindowLong(fm.hwnd, w32.GWL_EXSTYLE, fm.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME))
+	fm.isFullscreen = true
 	w32.SetWindowPos(fm.hwnd, w32.HWND_TOP,
 		int(monitorInfo.RcMonitor.Left),
 		int(monitorInfo.RcMonitor.Top),
 		int(monitorInfo.RcMonitor.Right-monitorInfo.RcMonitor.Left),
 		int(monitorInfo.RcMonitor.Bottom-monitorInfo.RcMonitor.Top),
 		w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
-	fm.isFullscreen = true
 }
 
 func (fm *Form) UnFullscreen() {
@@ -189,10 +196,11 @@ func (fm *Form) UnFullscreen() {
 		return
 	}
 	w32.SetWindowLong(fm.hwnd, w32.GWL_STYLE, fm.previousWindowStyle)
+	w32.SetWindowLong(fm.hwnd, w32.GWL_EXSTYLE, fm.previousWindowExStyle)
 	w32.SetWindowPlacement(fm.hwnd, &fm.previousWindowPlacement)
+	fm.isFullscreen = false
 	w32.SetWindowPos(fm.hwnd, 0, 0, 0, 0, 0,
 		w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
-	fm.isFullscreen = false
 }
 
 func (fm *Form) IsFullScreen() bool {
