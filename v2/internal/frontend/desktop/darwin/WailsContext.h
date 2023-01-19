@@ -47,9 +47,6 @@
 @property bool debug;
 
 @property (retain) WKUserContentController* userContentController;
-@property (retain) NSLock *urlRequestsLock;
-@property unsigned long long urlRequestsId;
-@property (retain) NSMutableDictionary *urlRequests;
 
 @property (retain) NSMenu* applicationMenu;
 
@@ -57,7 +54,7 @@
 @property (retain) NSString* aboutTitle;
 @property (retain) NSString* aboutDescription;
 
-- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent  :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString *)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight;
+- (void) CreateWindow:(int)width :(int)height :(bool)frameless :(bool)resizable :(bool)fullscreen :(bool)fullSizeContent :(bool)hideTitleBar :(bool)titlebarAppearsTransparent  :(bool)hideTitle :(bool)useToolbar :(bool)hideToolbarSeparator :(bool)webviewIsTransparent :(bool)hideWindowOnClose :(NSString *)appearance :(bool)windowIsTranslucent :(int)minWidth :(int)minHeight :(int)maxWidth :(int)maxHeight :(bool)fraudulentWebsiteWarningEnabled;
 - (void) SetSize:(int)width :(int)height;
 - (void) SetPosition:(int)x :(int) y;
 - (void) SetMinSize:(int)minWidth :(int)minHeight;
@@ -89,10 +86,6 @@
 - (void) SaveFileDialog :(NSString*)title :(NSString*)defaultFilename :(NSString*)defaultDirectory :(bool)canCreateDirectories :(bool)treatPackagesAsDirectories :(bool)showHiddenFiles :(NSString*)filters;
 
 - (void) loadRequest:(NSString*)url;
-- (void) processURLDidReceiveResponse:(unsigned long long)requestId :(int)statusCode :(NSData *)headersJSON;
-- (bool) processURLDidReceiveData:(unsigned long long)requestId :(NSData *)data;
-- (void) processURLDidFinish:(unsigned long long)requestId;
-- (int)  processURLRequestReadBodyStream:(unsigned long long)requestId :(void *)buf :(int)bufLen;
 - (void) ExecJS:(NSString*)script;
 - (NSScreen*) getCurrentScreen;
 

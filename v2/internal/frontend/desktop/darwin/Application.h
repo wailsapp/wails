@@ -17,7 +17,7 @@
 #define WindowStartsMinimised 2
 #define WindowStartsFullscreen 3
 
-WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight);
+WailsContext* Create(const char* title, int width, int height, int frameless, int resizable, int fullscreen, int fullSizeContent, int hideTitleBar, int titlebarAppearsTransparent, int hideTitle, int useToolbar, int hideToolbarSeparator, int webviewIsTransparent, int alwaysOnTop, int hideWindowOnClose, const char *appearance, int windowIsTranslucent, int debug, int windowStartState, int startsHidden, int minWidth, int minHeight, int maxWidth, int maxHeight, bool fraudulentWebsiteWarningEnabled);
 void Run(void*, const char* url);
 
 void SetTitle(void* ctx, const char *title);
@@ -47,11 +47,6 @@ const char* GetPosition(void *ctx);
 const bool IsFullScreen(void *ctx);
 const bool IsMinimised(void *ctx);
 const bool IsMaximised(void *ctx);
-
-void ProcessURLDidReceiveResponse(void *inctx, unsigned long long requestId, int statusCode, void *headersString, int headersStringLength);
-bool ProcessURLDidReceiveData(void *inctx, unsigned long long requestId, void* data, int datalength);
-void ProcessURLDidFinish(void *inctx, unsigned long long requestId);
-int ProcessURLRequestReadBodyStream(void *inctx, unsigned long long requestId, void *buf, int bufLen);
 
 /* Dialogs */
 

@@ -4,10 +4,11 @@ package win32
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
-	"golang.org/x/sys/windows"
 	"syscall"
 	"unsafe"
+
+	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
+	"golang.org/x/sys/windows"
 )
 
 var (
@@ -330,7 +331,7 @@ const (
 	WS_EX_APPWINDOW           = 0x00040000
 	WS_OVERLAPPEDWINDOW       = 0x00000000 | 0x00C00000 | 0x00080000 | 0x00040000 | 0x00020000 | 0x00010000
 	WS_EX_NOREDIRECTIONBITMAP = 0x00200000
-	CW_USEDEFAULT             = 0x80000000
+	CW_USEDEFAULT             = ^0x7fffffff
 
 	NIM_ADD        = 0x00000000
 	NIM_MODIFY     = 0x00000001

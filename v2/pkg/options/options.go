@@ -72,6 +72,11 @@ type App struct {
 	// The CSS Value that the CSSDragProperty must have to be draggable, EG: "drag"
 	CSSDragValue string
 
+	// EnableFraudulentWebsiteDetection enables scan services for fraudulent content, such as malware or phishing attempts.
+	// These services might send information from your app like URLs navigated to and possibly other content to cloud
+	// services of Apple and Microsoft.
+	EnableFraudulentWebsiteDetection bool
+
 	Windows *windows.Options
 	Mac     *mac.Options
 	Linux   *linux.Options
