@@ -18,13 +18,15 @@ import (
 var mapRegex *regexp.Regexp
 var keyPackageIndex int
 var keyTypeIndex int
+var valueArrayIndex int
 var valuePackageIndex int
 var valueTypeIndex int
 
 func init() {
-	mapRegex = regexp.MustCompile(`(?:map\[(?:(?P<keyPackage>\w+)\.)?(?P<keyType>\w+)])?(?:(?P<valuePackage>\w+)\.)?(?P<valueType>\w+)`)
+	mapRegex = regexp.MustCompile(`(?:map\[(?:(?P<keyPackage>\w+)\.)?(?P<keyType>\w+)])?(?P<valueArray>\[])?(?:(?P<valuePackage>\w+)\.)?(?P<valueType>\w+)`)
 	keyPackageIndex = mapRegex.SubexpIndex("keyPackage")
 	keyTypeIndex = mapRegex.SubexpIndex("keyType")
+	valueArrayIndex = mapRegex.SubexpIndex("valueArray")
 	valuePackageIndex = mapRegex.SubexpIndex("valuePackage")
 	valueTypeIndex = mapRegex.SubexpIndex("valueType")
 }
@@ -142,16 +144,52 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 	return nil
 }
 
+func fullyQualifiedName(packageName string, typeName string) string {
+	if len(packageName) > 0 {
+		return packageName + "." + typeName
+	}
+
+	switch true {
+	case len(typeName) == 0:
+		return ""
+	case typeName == "interface {}" || typeName == "interface{}":
+		return "any"
+	case typeName == "string":
+		return "string"
+	case typeName == "error":
+		return "Error"
+	case
+		strings.HasPrefix(typeName, "int"),
+		strings.HasPrefix(typeName, "uint"),
+		strings.HasPrefix(typeName, "float"):
+		return "number"
+	case typeName == "bool":
+		return "boolean"
+	default:
+		return "any"
+	}
+}
+
+func arrayifyValue(valueArray string, valueType string) string {
+	if len(valueArray) == 0 {
+		return valueType
+	}
+
+	return "Array<" + valueType + ">"
+}
+
 func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) string {
 	matches := mapRegex.FindStringSubmatch(input)
 	keyPackage := matches[keyPackageIndex]
 	keyType := matches[keyTypeIndex]
+	valueArray := matches[valueArrayIndex]
 	valuePackage := matches[valuePackageIndex]
 	valueType := matches[valueTypeIndex]
-	fmt.Printf("input=%s, keyPackage=%s, keyType=%s, valuePackage=%s, valueType=%s\n",
+	fmt.Printf("input=%s, keyPackage=%s, keyType=%s, valueArray=%s, valuePackage=%s, valueType=%s\n",
 		input,
 		keyPackage,
 		keyType,
+		valueArray,
 		valuePackage,
 		valueType)
 
@@ -163,56 +201,27 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 	if len(valuePackage) > 0 {
 		importNamespaces.Add(valuePackage)
 	}
-	
-	// Verifying this first to ensure we are not converting a type
-	// coming from a package that has a name matching a golang type, such as:
-	// - interactor -> int
-	// - mapper -> map
-	if strings.ContainsRune(input, '.') {
-		namespace := getPackageName(input)
-		importNamespaces.Add(namespace)
-		return namespace + "." + strings.Split(input, ".")[1]
+
+	key := fullyQualifiedName(keyPackage, keyType)
+	value := fullyQualifiedName(valuePackage, valueType)
+
+	// byte array is special case
+	if valueArray == "[]" && value == "byte" {
+		return "string"
 	}
 
-	switch true {
-	case input == "interface {}" || input == "interface{}":
-		return "any"
-	case input == "string":
-		return "string"
-	case input == "error":
-		return "Error"
-	case
-		strings.HasPrefix(input, "int"),
-		strings.HasPrefix(input, "uint"),
-		strings.HasPrefix(input, "float"):
-		return "number"
-	case input == "bool":
-		return "boolean"
-	case input == "[]byte":
-		return "string"
-	case strings.HasPrefix(input, "map"):
-		temp := strings.TrimPrefix(input, "map[")
-		// Split the string into the key and value types
-		tempSplit := strings.SplitN(temp, "]", 2)
-		if len(tempSplit) < 2 {
-			panic("Invalid map type provided: " + input)
-		}
-		keyType := tempSplit[0]
-		valueType := tempSplit[1]
-		return fmt.Sprintf("{[key: %s]: %s}", goTypeToJSDocType(keyType, importNamespaces), goTypeToJSDocType(valueType, importNamespaces))
-	case strings.HasPrefix(input, "[]"):
-		arrayType := goTypeToJSDocType(input[2:], importNamespaces)
-		return "Array<" + arrayType + ">"
-	default:
-		return "any"
+	if len(key) > 0 {
+		return fmt.Sprintf("{[key: %s]: %s}", key, arrayifyValue(valueArray, value))
 	}
+
+	return arrayifyValue(valueArray, value)
 }
 
 func goTypeToTypescriptType(input string, importNamespaces *slicer.StringSlicer) string {
-	if strings.HasPrefix(input, "[]") {
-		arrayType := goTypeToJSDocType(input[2:], importNamespaces)
-		return "Array<" + arrayType + ">"
-	}
+	//if strings.HasPrefix(input, "[]") {
+	//	arrayType := goTypeToJSDocType(input[2:], importNamespaces)
+	//	return "Array<" + arrayType + ">"
+	//}
 	return goTypeToJSDocType(input, importNamespaces)
 }
 
