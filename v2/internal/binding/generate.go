@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -13,6 +14,20 @@ import (
 
 	"github.com/leaanthony/slicer"
 )
+
+var mapRegex *regexp.Regexp
+var keyPackageIndex int
+var keyTypeIndex int
+var valuePackageIndex int
+var valueTypeIndex int
+
+func init() {
+	mapRegex = regexp.MustCompile(`(?:map\[(?:(?P<keyPackage>\w+)\.)?(?P<keyType>\w+)])?(?:(?P<valuePackage>\w+)\.)?(?P<valueType>\w+)`)
+	keyPackageIndex = mapRegex.SubexpIndex("keyPackage")
+	keyTypeIndex = mapRegex.SubexpIndex("keyType")
+	valuePackageIndex = mapRegex.SubexpIndex("valuePackage")
+	valueTypeIndex = mapRegex.SubexpIndex("valueType")
+}
 
 func (b *Bindings) GenerateGoBindings(baseDir string) error {
 	store := b.db.store
@@ -128,6 +143,27 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 }
 
 func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) string {
+	matches := mapRegex.FindStringSubmatch(input)
+	keyPackage := matches[keyPackageIndex]
+	keyType := matches[keyTypeIndex]
+	valuePackage := matches[valuePackageIndex]
+	valueType := matches[valueTypeIndex]
+	fmt.Printf("input=%s, keyPackage=%s, keyType=%s, valuePackage=%s, valueType=%s\n",
+		input,
+		keyPackage,
+		keyType,
+		valuePackage,
+		valueType)
+
+	// if any packages, make sure they're saved
+	if len(keyPackage) > 0 {
+		importNamespaces.Add(keyPackage)
+	}
+
+	if len(valuePackage) > 0 {
+		importNamespaces.Add(valuePackage)
+	}
+	
 	// Verifying this first to ensure we are not converting a type
 	// coming from a package that has a name matching a golang type, such as:
 	// - interactor -> int
