@@ -47,7 +47,7 @@ void systemTraySetIcon(void* nsStatusItem, void* nsImage, int position, bool isT
 		if( isTemplate ) {
 			[image setTemplate:YES];
 		}
-		statusItem.button.image = image;
+		statusItem.button.image = [image autorelease];
 		statusItem.button.imagePosition = position;
 	});
 }
