@@ -149,3 +149,8 @@ func ScreenToClientRect(hwnd w32.HWND, rect *w32.RECT) *Rect {
 func ScaleWithDPI(pixels int, dpi uint) int {
 	return (pixels * int(dpi)) / 96
 }
+
+// ScaleToDefaultDPI scales the pixels from scaled DPI-Space to default DPI-Space (96).
+func ScaleToDefaultDPI(pixels int, dpi uint) int {
+	return (pixels * 96) / int(dpi)
+}

@@ -250,6 +250,7 @@ func (cba *ControlBase) Size() (width, height int) {
 	rect := w32.GetWindowRect(cba.hwnd)
 	width = int(rect.Right - rect.Left)
 	height = int(rect.Bottom - rect.Top)
+	width, height = cba.scaleToDefaultDPI(width, height)
 	return
 }
 
@@ -494,6 +495,14 @@ func (cba *ControlBase) scaleWithWindowDPI(width, height int) (int, int) {
 	dpix, dpiy := cba.GetWindowDPI()
 	scaledWidth := ScaleWithDPI(width, dpix)
 	scaledHeight := ScaleWithDPI(height, dpiy)
+
+	return scaledWidth, scaledHeight
+}
+
+func (cba *ControlBase) scaleToDefaultDPI(width, height int) (int, int) {
+	dpix, dpiy := cba.GetWindowDPI()
+	scaledWidth := ScaleToDefaultDPI(width, dpix)
+	scaledHeight := ScaleToDefaultDPI(height, dpiy)
 
 	return scaledWidth, scaledHeight
 }
