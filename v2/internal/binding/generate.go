@@ -23,7 +23,7 @@ var valuePackageIndex int
 var valueTypeIndex int
 
 func init() {
-	mapRegex = regexp.MustCompile(`(?:map\[(?:(?P<keyPackage>\w+)\.)?(?P<keyType>\w+)])?(?P<valueArray>\[])?(?:(?P<valuePackage>\w+)\.)?(?P<valueType>\w+)`)
+	mapRegex = regexp.MustCompile(`(?:map\[(?:(?P<keyPackage>\w+)\.)?(?P<keyType>\w+)])?(?P<valueArray>\[])?(?:(?P<valuePackage>\w+)\.)?(?P<valueType>.+)`)
 	keyPackageIndex = mapRegex.SubexpIndex("keyPackage")
 	keyTypeIndex = mapRegex.SubexpIndex("keyType")
 	valueArrayIndex = mapRegex.SubexpIndex("valueArray")
@@ -152,7 +152,7 @@ func fullyQualifiedName(packageName string, typeName string) string {
 	switch true {
 	case len(typeName) == 0:
 		return ""
-	case typeName == "interface":
+	case typeName == "interface{}" || typeName == "interface {}":
 		return "any"
 	case typeName == "string":
 		return "string"
@@ -197,7 +197,7 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 	if valueArray == "[]" && valueType == "byte" {
 		return "string"
 	}
-	
+
 	// if any packages, make sure they're saved
 	if len(keyPackage) > 0 {
 		importNamespaces.Add(keyPackage)
@@ -208,7 +208,12 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 	}
 
 	key := fullyQualifiedName(keyPackage, keyType)
-	value := fullyQualifiedName(valuePackage, valueType)
+	var value string
+	if strings.HasPrefix(valueType, "map") {
+		value = goTypeToJSDocType(valueType, importNamespaces)
+	} else {
+		value = fullyQualifiedName(valuePackage, valueType)
+	}
 
 	if len(key) > 0 {
 		return fmt.Sprintf("{[key: %s]: %s}", key, arrayifyValue(valueArray, value))
