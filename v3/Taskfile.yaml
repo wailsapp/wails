@@ -134,3 +134,87 @@ tasks:
       - install-runtime-deps
     cmds:
       - task: build-runtime-all
+
+  recreate-template-dir:
+    dir: internal/templates
+    internal: true
+    silent: true
+    cmds:
+      - rm -rf {{.TEMPLATE_DIR}}
+      - mkdir -p {{.TEMPLATE_DIR}}
+
+  generate-template:
+    dir: internal/templates/{{.TEMPLATE}}
+    deps:
+      - task: recreate-template-dir
+        vars:
+          TEMPLATE_DIR: "{{.TEMPLATE}}"
+    silent: true
+    cmds:
+      - cmd: pnpm create vite frontend --template {{.TEMPLATE}}
+      - cmd: cp -rf ../_base/{{.TEMPLATE}}/* .
+        ignore_error: true
+      - cmd: cp -rf ../_base/default/* .
+        ignore_error: true
+      - cmd: rm frontend/public/vite.svg
+      - cmd: go run ../../../tasks/sed/sed.go replace -dir frontend -old Vite -new Wails -ext .ts,.js,.html -ignore vite.config.js,vite.config.ts,vite-env.d.ts
+      - cmd: go run ../../../tasks/sed/sed.go replace -dir frontend -old vite -new wails -ext .ts,.js,.html -ignore vite.config.js,vite.config.ts,vite-env.d.ts
+      - cmd: go run ../../../tasks/sed/sed.go replace -dir frontend -old wails.svg -new wails.png -ext .ts,.js,.html -ignore vite.config.js,vite.config.ts,vite-env.d.ts
+      - cmd: go run ../../../tasks/sed/sed.go replace -dir frontend -old wailsjs.dev -new wails.io -ext .ts,.js,.html -ignore vite.config.js,vite.config.ts,vite-env.d.ts
+      - cmd: go run ../../../tasks/sed/sed.go replace -dir frontend -old "framework powered by Wails" -new "framework powered by Vite" -ext .ts,.js,.html,.svelte -ignore vite.config.js,vite.config.ts,vite-env.d.ts
+
+  reinstall-cli:
+    dir: cmd/wails
+    internal: true
+    cmds:
+      - go install
+      - echo "Reinstalled wails CLI"
+
+  generate-templates:
+    dir: internal/templates/
+    deps:
+      - task: generate-template
+        vars:
+          TEMPLATE: svelte
+      - task: generate-template
+        vars:
+          TEMPLATE: svelte-ts
+      - task: generate-template
+        vars:
+          TEMPLATE: vue
+      - task: generate-template
+        vars:
+          TEMPLATE: vue-ts
+      - task: generate-template
+        vars:
+          TEMPLATE: react
+      - task: generate-template
+        vars:
+          TEMPLATE: react-ts
+      - task: generate-template
+        vars:
+          TEMPLATE: preact
+      - task: generate-template
+        vars:
+          TEMPLATE: preact-ts
+      - task: generate-template
+        vars:
+          TEMPLATE: lit
+      - task: generate-template
+        vars:
+          TEMPLATE: lit-ts
+      - task: generate-template
+        vars:
+          TEMPLATE: vanilla
+      - task: generate-template
+        vars:
+          TEMPLATE: vanilla-ts
+      - task: generate-template
+        vars:
+          TEMPLATE: react-swc
+      - task: generate-template
+        vars:
+          TEMPLATE: react-swc-ts
+    cmds:
+      - task: reinstall-cli
+      - echo "Generated templates"
