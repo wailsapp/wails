@@ -185,13 +185,13 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 	valueArray := matches[valueArrayIndex]
 	valuePackage := matches[valuePackageIndex]
 	valueType := matches[valueTypeIndex]
-	fmt.Printf("input=%s, keyPackage=%s, keyType=%s, valueArray=%s, valuePackage=%s, valueType=%s\n",
-		input,
-		keyPackage,
-		keyType,
-		valueArray,
-		valuePackage,
-		valueType)
+	//fmt.Printf("input=%s, keyPackage=%s, keyType=%s, valueArray=%s, valuePackage=%s, valueType=%s\n",
+	//	input,
+	//	keyPackage,
+	//	keyType,
+	//	valueArray,
+	//	valuePackage,
+	//	valueType)
 
 	// byte array is special case
 	if valueArray == "[]" && valueType == "byte" {
