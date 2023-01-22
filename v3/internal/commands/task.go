@@ -44,7 +44,7 @@ func ListTasks(options *ListTaskOptions) error {
 		return err
 	}
 	if len(tasks) == 0 {
-		return fmt.Errorf("no tasks found. Ensure there is a `Taskfile.yml` in your project. You can generate a default takfile by running `wails generate defaults`")
+		return fmt.Errorf("no tasks found. Ensure there is a `Taskfile.tmpl.yml` in your project. You can generate a default takfile by running `wails generate defaults`")
 	}
 	tableData := [][]string{
 		{"Task", "Summary"},
