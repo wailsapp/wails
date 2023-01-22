@@ -152,7 +152,7 @@ func fullyQualifiedName(packageName string, typeName string) string {
 	switch true {
 	case len(typeName) == 0:
 		return ""
-	case typeName == "interface {}" || typeName == "interface{}":
+	case typeName == "interface":
 		return "any"
 	case typeName == "string":
 		return "string"
@@ -193,6 +193,11 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 		valuePackage,
 		valueType)
 
+	// byte array is special case
+	if valueArray == "[]" && valueType == "byte" {
+		return "string"
+	}
+	
 	// if any packages, make sure they're saved
 	if len(keyPackage) > 0 {
 		importNamespaces.Add(keyPackage)
@@ -204,11 +209,6 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 
 	key := fullyQualifiedName(keyPackage, keyType)
 	value := fullyQualifiedName(valuePackage, valueType)
-
-	// byte array is special case
-	if valueArray == "[]" && value == "byte" {
-		return "string"
-	}
 
 	if len(key) > 0 {
 		return fmt.Sprintf("{[key: %s]: %s}", key, arrayifyValue(valueArray, value))
