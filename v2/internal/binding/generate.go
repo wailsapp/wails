@@ -223,10 +223,6 @@ func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) stri
 }
 
 func goTypeToTypescriptType(input string, importNamespaces *slicer.StringSlicer) string {
-	//if strings.HasPrefix(input, "[]") {
-	//	arrayType := goTypeToJSDocType(input[2:], importNamespaces)
-	//	return "Array<" + arrayType + ">"
-	//}
 	return goTypeToJSDocType(input, importNamespaces)
 }
 
