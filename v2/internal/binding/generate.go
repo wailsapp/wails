@@ -74,7 +74,8 @@ func (b *Bindings) GenerateGoBindings(baseDir string) error {
 				args.Clear()
 				for count, input := range methodDetails.Inputs {
 					arg := fmt.Sprintf("arg%d", count+1)
-					args.Add(arg + ":" + goTypeToTypescriptType(input.TypeName, &importNamespaces))
+					entityName := entityFullReturnType(input.TypeName, b.tsPrefix, b.tsSuffix, &importNamespaces)
+					args.Add(arg + ":" + goTypeToTypescriptType(entityName, &importNamespaces))
 				}
 				tsBody.WriteString(args.Join(",") + "):")
 				// now build Typescript return types
