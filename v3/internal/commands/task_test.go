@@ -4,7 +4,8 @@ import "testing"
 
 func TestBuild(t *testing.T) {
 	type args struct {
-		options *RunTaskOptions
+		options   *RunTaskOptions
+		otherArgs []string
 	}
 	tests := []struct {
 		name    string
@@ -30,7 +31,7 @@ func TestBuild(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := RunTask(tt.args.options); (err != nil) != tt.wantErr {
+			if err := RunTask(tt.args.options, tt.args.otherArgs); (err != nil) != tt.wantErr {
 				t.Errorf("Run() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

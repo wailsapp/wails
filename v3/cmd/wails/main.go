@@ -10,11 +10,16 @@ import (
 )
 
 func main() {
-	app := clir.NewCli("Wails", "The Wails CLI", "v3")
+	app := clir.NewCli("wails", "The Wails CLI", "v3")
+	app.NewSubCommandFunction("build", "Build the project", commands.Build)
 	app.NewSubCommandFunction("init", "Initialise a new project", commands.Init)
 	task := app.NewSubCommand("task", "Run and list tasks")
-	task.NewSubCommandFunction("run", "Run a task", commands.RunTask)
-	task.NewSubCommandFunction("list", "List tasks", commands.ListTasks)
+	var taskFlags commands.RunTaskOptions
+	task.AddFlags(&taskFlags)
+	task.Action(func() error {
+		return commands.RunTask(&taskFlags, task.OtherArgs())
+	})
+	task.LongDescription("\nUsage: wails task [taskname] [flags]\n\nTasks are defined in the `Taskfile.yaml` file. See https://taskfile.dev for more information.")
 	generate := app.NewSubCommand("generate", "Generation tools")
 	generate.NewSubCommandFunction("defaults", "Generate default build assets", commands.Defaults)
 	generate.NewSubCommandFunction("icons", "Generate icons", commands.GenerateIcons)
