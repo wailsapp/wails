@@ -49,13 +49,11 @@ var WindowDefaults = &WebviewWindow{
 }
 
 type Assets struct {
-	// URL to load the `index.html` file from. If this is a relative path, it will be resolved relative to the `FS` filesystem
-	URL string
 	// FS to use for loading assets from
 	FS fs.FS
-	// Handler is a custom handler to use for serving assets. If this is set, the `SetURL` and `FS` fields are ignored.
+	// Handler is a custom handler to use for serving assets. If this is set, the `URL` and `FS` fields are ignored.
 	Handler http.Handler
-	// Middleware is a custom middleware to use for serving assets. If this is set, the `SetURL` and `FS` fields are ignored.
+	// Middleware is a custom middleware to use for serving assets. If this is set, the `URL` and `FS` fields are ignored.
 	Middleware func(http.Handler) http.Handler
 }
 
