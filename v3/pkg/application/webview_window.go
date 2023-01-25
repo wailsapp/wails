@@ -177,6 +177,9 @@ func (w *WebviewWindow) SetAlwaysOnTop(b bool) *WebviewWindow {
 }
 
 func (w *WebviewWindow) Show() *WebviewWindow {
+	if globalApplication.impl == nil {
+		return w
+	}
 	if w.impl == nil {
 		w.run()
 		return w
