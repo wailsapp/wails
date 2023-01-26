@@ -15,17 +15,9 @@ import (
 type IconsOptions struct {
 	Example         bool   `description:"Generate example icon file (appicon.png) in the current directory"`
 	Input           string `description:"The input image file"`
-	Sizes           string `description:"The sizes to generate in .ico file (comma separated)"`
-	WindowsFilename string `description:"The output filename for the Windows icon"`
-	MacFilename     string `description:"The output filename for the Mac icon bundle"`
-}
-
-func (i *IconsOptions) Default() *IconsOptions {
-	return &IconsOptions{
-		Sizes:           "256,128,64,48,32,16",
-		MacFilename:     "icons.icns",
-		WindowsFilename: "icons.ico",
-	}
+	Sizes           string `description:"The sizes to generate in .ico file (comma separated)" default:"256,128,64,48,32,16"`
+	WindowsFilename string `description:"The output filename for the Windows icon" default:"icon.ico"`
+	MacFilename     string `description:"The output filename for the Mac icon bundle" default:"icons.icns"`
 }
 
 func GenerateIcons(options *IconsOptions) error {
@@ -51,7 +43,6 @@ func GenerateIcons(options *IconsOptions) error {
 			return err
 		}
 	}
-
 	iconData, err := os.ReadFile(options.Input)
 	if err != nil {
 		return err

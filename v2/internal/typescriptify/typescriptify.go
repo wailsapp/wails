@@ -839,13 +839,11 @@ func (t *typeScriptClassBuilder) AddEnumField(fieldName string, field reflect.St
 
 func (t *typeScriptClassBuilder) AddStructField(fieldName string, field reflect.StructField, isAnyType bool) {
 	strippedFieldName := strings.ReplaceAll(fieldName, "?", "")
-	fqname := field.Type.Name()
 	classname := "null"
-
 	namespace := strings.Split(field.Type.String(), ".")[0]
-
+	fqname := t.prefix + field.Type.Name() + t.suffix
 	if namespace != t.namespace {
-		fqname = field.Type.String()
+		fqname = namespace + "." + fqname
 	}
 
 	if !isAnyType {
@@ -892,6 +890,7 @@ func (t *typeScriptClassBuilder) addField(fld, fldType string, isAnyType bool) {
 		}
 	}
 	if isAnyType {
+		fldType = strings.Split(fldType, ".")[0]
 		t.fields = append(t.fields, fmt.Sprint(t.indent, "// Go type: ", fldType, "\n", t.indent, fld, ": any;"))
 	} else {
 		t.fields = append(t.fields, fmt.Sprint(t.indent, fld, ": ", fldType, ";"))

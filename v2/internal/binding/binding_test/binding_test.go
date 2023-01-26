@@ -39,6 +39,8 @@ func TestBindings_GenerateModels(t *testing.T) {
 		GeneratedJsEntityTest,
 		AnonymousSubStructTest,
 		AnonymousSubStructMultiLevelTest,
+		GeneratedJsEntityWithNestedStructTest,
+		EntityWithDiffNamespaces,
 	}
 
 	testLogger := &logger.Logger{}
@@ -50,8 +52,6 @@ func TestBindings_GenerateModels(t *testing.T) {
 				require.NoError(t, err)
 			}
 			b.SetTsPrefix(tt.TsPrefix)
-
-			// TODO - rename this to  SetTsSuffix
 			b.SetTsSuffix(tt.TsSuffix)
 			got, err := b.GenerateModels()
 			if (err != nil) != tt.shouldError {

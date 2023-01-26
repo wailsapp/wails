@@ -20,10 +20,9 @@ tasks:
 
   generate-icons:
     summary: Generates Windows `.ico` and Mac `.icns` files from an image
-    dir: build
     cmds:
       # Generates both .ico and .icns files
-      - wails generate icon -input appicon.png
+      - wails generate icons -input appicon.png
 
   build-prod:
     summary: Creates a production build of the application

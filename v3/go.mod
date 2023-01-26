@@ -5,7 +5,8 @@ go 1.19
 require (
 	github.com/go-task/task/v3 v3.20.0
 	github.com/jackmordaunt/icns/v2 v2.2.1
-	github.com/leaanthony/clir v1.5.0
+	github.com/leaanthony/clir v1.6.0
+	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/winicon v1.0.0
 	github.com/pterm/pterm v0.12.51
 	github.com/samber/lo v1.37.0
