@@ -67,7 +67,8 @@ type WebviewWindow struct {
 	implLock sync.RWMutex
 	id       uint
 
-	assets *assetserver.AssetServer
+	assets           *assetserver.AssetServer
+	messageProcessor *MessageProcessor
 
 	eventListeners     map[uint][]func()
 	eventListenersLock sync.RWMutex
@@ -90,6 +91,9 @@ func NewWindow(options *options.WebviewWindow) *WebviewWindow {
 	if options.Height == 0 {
 		options.Height = 600
 	}
+	if options.URL == "" {
+		options.URL = "/"
+	}
 
 	opts := assetserveroptions.Options{Assets: options.Assets.FS, Handler: options.Assets.Handler, Middleware: options.Assets.Middleware}
 	// TODO Bindings, Logger, ServingFrom disk?
@@ -99,13 +103,17 @@ func NewWindow(options *options.WebviewWindow) *WebviewWindow {
 		panic(err)
 	}
 
-	return &WebviewWindow{
+	result := &WebviewWindow{
 		id:             getWindowID(),
 		options:        options,
 		eventListeners: make(map[uint][]func()),
 
 		assets: srv,
 	}
+
+	result.messageProcessor = NewMessageProcessor(result)
+
+	return result
 }
 
 func (w *WebviewWindow) SetTitle(title string) *WebviewWindow {
@@ -339,11 +347,13 @@ func (w *WebviewWindow) SetBackgroundColour(colour *options.RGBA) *WebviewWindow
 }
 
 func (w *WebviewWindow) handleMessage(message string) {
-	fmt.Printf("[window %d] %s", w.id, message)
+	fmt.Printf("[window %d] %s\n", w.id, message)
 	// Check for special messages
 	if message == "test" {
 		w.SetTitle("Hello World")
 	}
+	w.messageProcessor.ProcessMessage(message)
+
 }
 
 func (w *WebviewWindow) handleWebViewRequest(request webview.Request) {

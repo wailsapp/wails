@@ -9,30 +9,12 @@ The electron alternative for Go
 */
 /* jshint esversion: 9 */
 
-import "./ipc.js";
+import {invoke} from "./ipc.js";
 import {Callback, callbacks} from './calls';
 import {EventsNotify, eventListeners} from "./events";
 import {SetBindings} from "./bindings";
 
-import * as Window from "./window";
-import * as Screen from "./screen";
-import * as Browser from "./browser";
-import * as Log from './log';
-
-let windowID = -1;
-
-
-export function Quit() {
-    window.WailsInvoke('Q');
-}
-
-export function Show() {
-    window.WailsInvoke('S');
-}
-
-export function Hide() {
-    window.WailsInvoke('H');
-}
+import {newWindow} from "./window";
 
 // export function Environment() {
 //     return Call(":wails:Environment");
@@ -45,34 +27,29 @@ window.wails = {
     EventsNotify,
     eventListeners,
     SetBindings,
-    window: {
-        ID: () => {
-            return windowID
-        },
-    }
 };
 
-window.runtime = {
-    ...Log,
-    ...Window,
-    ...Browser,
-    ...Screen,
-    EventsOn,
-    EventsOnce,
-    EventsOnMultiple,
-    EventsEmit,
-    EventsOff,
-    // Environment,
-    Show,
-    Hide,
-    Quit,
+
+export function newRuntime(id) {
+    return {
+        // Log: newLog(id),
+        // Browser: newBrowser(id),
+        // Screen: newScreen(id),
+        // Events: newEvents(id),
+        Window: newWindow(id),
+        Show: () => invoke("S"),
+        Hide: () => invoke("H"),
+        Quit: () => invoke("Q"),
+        // GetWindow: function (windowID) {
+        //     if (!windowID) {
+        //         return this.Window;
+        //     }
+        //     return newWindow(windowID);
+        // }
+    }
 }
 
-// Process the expected runtime config from the backend
-if( window.wails_config ) {
-    windowID = window.wails_config.windowID;
-    window.wails_config = null;
-}
+window.runtime = newRuntime(-1);
 
 if (DEBUG) {
     console.log("Wails v3.0.0 Debug Mode Enabled");

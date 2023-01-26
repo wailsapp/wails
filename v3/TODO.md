@@ -15,9 +15,14 @@ Informal and incomplete list of things needed in v3.
 
 ## Runtime
 
-- [ ] Pass window ID with runtime calls in JS
+- [x] Pass window ID with window calls in JS
 - [ ] Implement alias for `window` in JS
 - [ ] Implement runtime dispatcher
+  - [ ] Log
+  - [ ] Same Window
+  - [ ] Other Window
+  - [ ] Dialogs
+  - [ ] Events
 
 ## Templates
 
