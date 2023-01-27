@@ -31,6 +31,7 @@ export function newWindow(id) {
         SetAlwaysOnTop: (b) => call('SetAlwaysOnTop', {alwaysOnTop:b}),
         SetPosition: (x, y) => call('SetPosition', {x,y}),
         Position: () => { return call('Position') },
+        Screen: () => { return call('Screen') },
         Hide: () => call('Hide'),
         Maximise: () => call('Maximise'),
         Show: () => call('Show'),

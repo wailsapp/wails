@@ -163,6 +163,13 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		m.json(rw, map[string]interface{}{
 			"zoomLevel": zoomLevel,
 		})
+	case "Screen":
+		screen, err := window.GetScreen()
+		if err != nil {
+			m.httpError(rw, err.Error())
+			return
+		}
+		m.json(rw, screen)
 	case "SetZoom":
 		zoomLevel := params.Float64("zoomLevel")
 		if zoomLevel == nil {

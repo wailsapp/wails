@@ -15,7 +15,7 @@ func (m *MessageProcessor) processClipboardMethod(method string, rw http.Respons
 		}
 		globalApplication.Clipboard().SetText(*title)
 		m.ok(rw)
-	case "GetText":
+	case "Text":
 		text := globalApplication.Clipboard().Text()
 		m.text(rw, text)
 	default:

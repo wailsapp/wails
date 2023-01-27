@@ -18,6 +18,6 @@ export function SetText(text) {
     return call("SetText", {text});
 }
 
-export function GetText() {
-    return call("GetText");
+export function Text() {
+    return call("Text");
 }

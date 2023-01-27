@@ -24,6 +24,7 @@ Informal and incomplete list of things needed in v3.
   - [ ] Dialogs
   - [ ] Events
   - [x] Clipboard
+- [ ] Create `.d.ts` file
 
 ## Templates
 
