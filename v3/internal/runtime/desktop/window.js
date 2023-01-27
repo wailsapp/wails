@@ -10,46 +10,61 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
+const runtimeURL = window.location.origin + "/wails/runtime";
 
-import {Call} from "./calls";
-import {invoke} from "./ipc";
+function runtimeCall(method, args) {
+    let url = new URL(runtimeURL);
+    url.searchParams.append("method", method);
+    if (args) {
+        for (let key in args) {
+            url.searchParams.append(key, args[key]);
+        }
+    }
+    return new Promise((resolve, reject) => {
+        fetch(url)
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                reject(Error(response.statusText));
+            })
+            .then(data => resolve(data))
+            .catch(error => reject(error));
+    });
+}
 
 export function newWindow(id) {
+    let call = function(method, args) {
+        if (id !== -1) {
+            args["windowID"] = id;
+        }
+        return runtimeCall("window." + method, args);
+    }
     return {
-        // Reload: () => invoke('WR', id),
-        // ReloadApp: () => invoke('WR', id),
-        // SetSystemDefaultTheme: () => invoke('WASDT', id),
-        // SetLightTheme: () => invoke('WALT', id),
-        // SetDarkTheme: () => invoke('WADT', id),
-        Center: () => invoke('Wc', id),
-        SetTitle: (title) => invoke('WT' + title, id),
-        Fullscreen: () => invoke('WF', id),
-        UnFullscreen: () => invoke('Wf', id),
-        SetSize: (width, height) => invoke('WS' + width + ',' + height, id),
-        GetSize: () => {
-            return Call(":wails:WindowGetSize")
-        },
-        SetMaxSize: (width, height) => invoke('WZ:' + width + ':' + height, id),
-        SetMinSize: (width, height) => invoke('Wz:' + width + ':' + height, id),
-        SetAlwaysOnTop: (b) => invoke('WATP:' + (b ? '1' : '0'), id),
-        SetPosition: (x, y) => invoke('Wp:' + x + ':' + y, id),
-        GetPosition: () => {
-            return Call(":wails:WindowGetPos")
-        },
-        Hide: () => invoke('WH', id),
-        Maximise: () => invoke('WM', id),
-        Show: () => invoke('WS', id),
-        ToggleMaximise: () => invoke('Wt', id),
-        UnMaximise: () => invoke('WU', id),
-        Minimise: () => invoke('Wm', id),
-        UnMinimise: () => invoke('Wu', id),
-        SetBackgroundColour: (R, G, B, A) =>
-            invoke('Wr:' + JSON.stringify({
-                r: R || 0,
-                g: G || 0,
-                b: B || 0,
-                a: A || 255}, id)
-            ),
+        // Reload: () => call('WR'),
+        // ReloadApp: () => call('WR'),
+        // SetSystemDefaultTheme: () => call('WASDT'),
+        // SetLightTheme: () => call('WALT'),
+        // SetDarkTheme: () => call('WADT'),
+        Center: () => call('Center'),
+        SetTitle: (title) => call('SetTitle', {title}),
+        Fullscreen: () => call('Fullscreen'),
+        UnFullscreen: () => call('UnFullscreen'),
+        SetSize: (width, height) => call('SetSize', {width,height}),
+        GetSize: () => { return call('GetSize') },
+        SetMaxSize: (width, height) => call('SetMaxSize', {width,height}),
+        SetMinSize: (width, height) => call('SetMinSize', {width,height}),
+        SetAlwaysOnTop: (b) => call('SetAlwaysOnTop', {alwaysOnTop:b}),
+        SetPosition: (x, y) => call('SetPosition', {x,y}),
+        GetPosition: () => { return call('GetPosition') },
+        Hide: () => call('Hide'),
+        Maximise: () => call('Maximise'),
+        Show: () => call('Show'),
+        ToggleMaximise: () => call('ToggleMaximise'),
+        UnMaximise: () => call('UnMaximise'),
+        Minimise: () => call('Minimise'),
+        UnMinimise: () => call('UnMinimise'),
+        SetBackgroundColour: (r, g, b, a) => call('SetBackgroundColour', {R, G, B, A}),
     }
 }
 

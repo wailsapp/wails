@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/go-task/task/v3 v3.20.0
 	github.com/jackmordaunt/icns/v2 v2.2.1
+	github.com/json-iterator/go v1.1.12
 	github.com/leaanthony/clir v1.6.0
 	github.com/leaanthony/gosod v1.0.3
 	github.com/leaanthony/winicon v1.0.0
@@ -33,6 +34,8 @@ require (
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mattn/go-zglob v0.0.4 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

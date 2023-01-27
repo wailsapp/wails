@@ -114,6 +114,13 @@ func (a *App) getSystemTrayID() uint {
 	a.systemTrayID++
 	return a.systemTrayID
 }
+
+func (a *App) getWindowForID(id uint) *WebviewWindow {
+	a.windowsLock.Lock()
+	defer a.windowsLock.Unlock()
+	return a.windows[id]
+}
+
 func (a *App) On(eventType events.ApplicationEventType, callback func()) {
 	eventID := uint(eventType)
 	a.applicationEventListenersLock.Lock()

@@ -34,9 +34,11 @@ type (
 		reload()
 		forceReload()
 		toggleDevTools()
-		resetZoom()
+		zoomReset()
 		zoomIn()
 		zoomOut()
+		getZoom() float64
+		setZoom(zoom float64)
 		close()
 		zoom()
 		minimize()
@@ -112,6 +114,7 @@ func NewWindow(options *options.WebviewWindow) *WebviewWindow {
 	}
 
 	result.messageProcessor = NewMessageProcessor(result)
+	srv.UseRuntimeHandler(result.messageProcessor)
 
 	return result
 }
@@ -209,6 +212,21 @@ func (w *WebviewWindow) SetURL(s string) *WebviewWindow {
 		w.impl.setURL(s)
 	}
 	return w
+}
+
+func (w *WebviewWindow) SetZoom(magnification float64) *WebviewWindow {
+	w.options.Zoom = magnification
+	if w.impl != nil {
+		w.impl.setZoom(magnification)
+	}
+	return w
+}
+
+func (w *WebviewWindow) GetZoom() float64 {
+	if w.impl != nil {
+		return w.impl.getZoom()
+	}
+	return 1
 }
 
 func (w *WebviewWindow) SetResizable(b bool) *WebviewWindow {
@@ -449,9 +467,9 @@ func (w *WebviewWindow) ToggleDevTools() {
 	w.impl.toggleDevTools()
 }
 
-func (w *WebviewWindow) ResetZoom() *WebviewWindow {
+func (w *WebviewWindow) ZoomReset() *WebviewWindow {
 	if w.impl != nil {
-		w.impl.resetZoom()
+		w.impl.zoomReset()
 	}
 	return w
 

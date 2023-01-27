@@ -39,6 +39,7 @@ type WebviewWindow struct {
 	FullscreenButtonEnabled         bool
 	Hidden                          bool
 	EnableFraudulentWebsiteWarnings bool
+	Zoom                            float64
 }
 
 var WindowDefaults = &WebviewWindow{
