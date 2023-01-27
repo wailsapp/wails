@@ -10,36 +10,10 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
-const runtimeURL = window.location.origin + "/wails/runtime";
-
-function runtimeCall(method, args) {
-    let url = new URL(runtimeURL);
-    url.searchParams.append("method", method);
-    if (args) {
-        for (let key in args) {
-            url.searchParams.append(key, args[key]);
-        }
-    }
-    return new Promise((resolve, reject) => {
-        fetch(url)
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-                reject(Error(response.statusText));
-            })
-            .then(data => resolve(data))
-            .catch(error => reject(error));
-    });
-}
+import {newRuntimeCaller} from "./runtime";
 
 export function newWindow(id) {
-    let call = function(method, args) {
-        if (id !== -1) {
-            args["windowID"] = id;
-        }
-        return runtimeCall("window." + method, args);
-    }
+    let call = newRuntimeCaller("window", id);
     return {
         // Reload: () => call('WR'),
         // ReloadApp: () => call('WR'),
@@ -51,12 +25,12 @@ export function newWindow(id) {
         Fullscreen: () => call('Fullscreen'),
         UnFullscreen: () => call('UnFullscreen'),
         SetSize: (width, height) => call('SetSize', {width,height}),
-        GetSize: () => { return call('GetSize') },
+        Size: () => { return call('Size') },
         SetMaxSize: (width, height) => call('SetMaxSize', {width,height}),
         SetMinSize: (width, height) => call('SetMinSize', {width,height}),
         SetAlwaysOnTop: (b) => call('SetAlwaysOnTop', {alwaysOnTop:b}),
         SetPosition: (x, y) => call('SetPosition', {x,y}),
-        GetPosition: () => { return call('GetPosition') },
+        Position: () => { return call('Position') },
         Hide: () => call('Hide'),
         Maximise: () => call('Maximise'),
         Show: () => call('Show'),

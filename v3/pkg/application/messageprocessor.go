@@ -25,7 +25,6 @@ func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, arg
 }
 
 func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Request) {
-	m.Info("Processing runtime call")
 	// Read "method" from query string
 	method := r.URL.Query().Get("method")
 	if method == "" {
@@ -42,9 +41,24 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 	// Get the method
 	method = splitMethod[1]
 
+	params := QueryParams(r.URL.Query())
+
+	var targetWindow = m.window
+	windowID := params.UInt("windowID")
+	if windowID != nil {
+		// Get window for ID
+		targetWindow = globalApplication.getWindowForID(*windowID)
+		if targetWindow == nil {
+			m.Error("Window ID %s not found", *windowID)
+			return
+		}
+	}
+
 	switch object {
 	case "window":
-		m.processWindowMethod(method, rw, r)
+		m.processWindowMethod(method, rw, r, targetWindow, params)
+	case "clipboard":
+		m.processClipboardMethod(method, rw, r, targetWindow, params)
 	default:
 		m.httpError(rw, "Unknown runtime call: %s", object)
 	}
@@ -79,6 +93,20 @@ func (m *MessageProcessor) json(rw http.ResponseWriter, data any) {
 		m.Error("Unable to write json payload. Please report this to the Wails team! Error: %s", err)
 		return
 	}
-	rw.WriteHeader(http.StatusOK)
 	rw.Header().Set("Content-Type", "application/json")
+	m.ok(rw)
+}
+
+func (m *MessageProcessor) text(rw http.ResponseWriter, data string) {
+	_, err := rw.Write([]byte(data))
+	if err != nil {
+		m.Error("Unable to write json payload. Please report this to the Wails team! Error: %s", err)
+		return
+	}
+	rw.Header().Set("Content-Type", "text/plain")
+	m.ok(rw)
+}
+
+func (m *MessageProcessor) ok(rw http.ResponseWriter) {
+	rw.WriteHeader(http.StatusOK)
 }

@@ -14,6 +14,8 @@ import {Callback, callbacks} from './calls';
 import {EventsNotify, eventListeners} from "./events";
 import {SetBindings} from "./bindings";
 
+
+import * as Clipboard from './clipboard';
 import {newWindow} from "./window";
 
 // export function Environment() {
@@ -36,6 +38,9 @@ export function newRuntime(id) {
         // Browser: newBrowser(id),
         // Screen: newScreen(id),
         // Events: newEvents(id),
+        Clipboard: {
+            ...Clipboard
+        },
         Window: newWindow(id),
         Show: () => invoke("S"),
         Hide: () => invoke("H"),
