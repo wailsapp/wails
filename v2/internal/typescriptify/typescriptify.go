@@ -155,10 +155,11 @@ func (t *TypeScriptify) deepFields(typeOf reflect.Type) []reflect.StructField {
 		f := typeOf.Field(i)
 		kind := f.Type.Kind()
 		isPointer := kind == reflect.Ptr && f.Type.Elem().Kind() == reflect.Struct
-		if f.Anonymous && kind == reflect.Struct {
+		_, hasJsonTag := f.Tag.Lookup("json")
+		if f.Anonymous && kind == reflect.Struct && !hasJsonTag {
 			//fmt.Println(v.Interface())
 			fields = append(fields, t.deepFields(f.Type)...)
-		} else if f.Anonymous && isPointer {
+		} else if f.Anonymous && isPointer && !hasJsonTag {
 			//fmt.Println(v.Interface())
 			fields = append(fields, t.deepFields(f.Type.Elem())...)
 		} else {
