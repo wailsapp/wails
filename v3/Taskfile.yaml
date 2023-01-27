@@ -112,7 +112,12 @@ tasks:
   test-runtime:
     dir: internal/runtime
     cmds:
-      - npx vitest
+      - npx vitest run
+
+  update-runtime:
+    dir: internal/runtime
+    cmds:
+      - npx npm-check-updates -u
 
   build-runtime-all:
     dir: internal/runtime
