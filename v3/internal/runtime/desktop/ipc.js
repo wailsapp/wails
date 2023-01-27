@@ -16,7 +16,7 @@ let postMessage = null;
 (function () {
 	// Credit: https://stackoverflow.com/a/2631521
 	let _deeptest = function (s) {
-		var obj = window[s.shift()];
+		let obj = window[s.shift()];
 		while (obj && s.length) obj = obj[s.shift()];
 		return obj;
 	};

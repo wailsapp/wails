@@ -17,7 +17,7 @@ export const callbacks = {};
  * @returns number
  */
 function cryptoRandom() {
-	var array = new Uint32Array(1);
+	let array = new Uint32Array(1);
 	return window.crypto.getRandomValues(array)[0];
 }
 
@@ -32,7 +32,7 @@ function basicRandom() {
 }
 
 // Pick a random number function based on browser capability
-var randomFunc;
+let randomFunc;
 if (window.crypto) {
 	randomFunc = cryptoRandom;
 } else {
@@ -67,12 +67,12 @@ export function Call(name, args, timeout) {
 	return new Promise(function (resolve, reject) {
 
 		// Create a unique callbackID
-		var callbackID;
+		let callbackID;
 		do {
 			callbackID = name + '-' + randomFunc();
 		} while (callbacks[callbackID]);
 
-		var timeoutHandle;
+		let timeoutHandle;
 		// Set timeout
 		if (timeout > 0) {
 			timeoutHandle = setTimeout(function () {
@@ -115,12 +115,12 @@ window.ObfuscatedCall = (id, args, timeout) => {
     return new Promise(function (resolve, reject) {
 
         // Create a unique callbackID
-        var callbackID;
+        let callbackID;
         do {
             callbackID = id + '-' + randomFunc();
         } while (callbacks[callbackID]);
 
-        var timeoutHandle;
+        let timeoutHandle;
         // Set timeout
         if (timeout > 0) {
             timeoutHandle = setTimeout(function () {
