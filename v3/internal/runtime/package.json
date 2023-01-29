@@ -9,6 +9,7 @@
   "devDependencies": {
     "esbuild": "^0.17.5",
     "happy-dom": "^8.1.5",
+    "nanoid": "^4.0.0",
     "npm-check-updates": "^16.6.3",
     "vitest": "^0.28.3"
   }

@@ -22,8 +22,16 @@ Informal and incomplete list of things needed in v3.
   - [x] Same Window
   - [ ] Other Window
   - [ ] Dialogs
+    - [x] Info
+    - [x] Warning
+    - [x] Error
+    - [x] Question
+    - [x] OpenFile
+    - [ ] SaveFile
   - [ ] Events
+  - [ ] Screens
   - [x] Clipboard
+  - [ ] Application
 - [ ] Create `.d.ts` file
 
 ## Templates

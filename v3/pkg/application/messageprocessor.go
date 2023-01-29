@@ -21,7 +21,7 @@ func NewMessageProcessor(w *WebviewWindow) *MessageProcessor {
 func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, args ...any) {
 	m.Error(message, args...)
 	rw.WriteHeader(http.StatusBadRequest)
-	rw.Write([]byte(message))
+	rw.Write([]byte(fmt.Sprintf(message, args...)))
 }
 
 func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Request) {
@@ -59,6 +59,8 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 		m.processWindowMethod(method, rw, r, targetWindow, params)
 	case "clipboard":
 		m.processClipboardMethod(method, rw, r, targetWindow, params)
+	case "dialog":
+		m.processDialogMethod(method, rw, r, targetWindow, params)
 	default:
 		m.httpError(rw, "Unknown runtime call: %s", object)
 	}

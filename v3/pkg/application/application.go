@@ -228,7 +228,7 @@ func (a *App) Run() error {
 	// set the application menu
 	a.impl.setApplicationMenu(a.ApplicationMenu)
 
-	// set the application icon
+	// set the application Icon
 	a.impl.setIcon(a.options.Icon)
 
 	return a.impl.run()
@@ -388,4 +388,10 @@ func (a *App) dispatchOnMainThread(fn func()) {
 	mainThreadFunctionStoreLock.Unlock()
 	// Call platform specific dispatch function
 	a.impl.dispatchOnMainThread(id)
+}
+
+func (a *App) OpenFileDialogWithOptions(options *OpenFileDialogOptions) *OpenFileDialog {
+	result := a.OpenFileDialog()
+	result.SetOptions(options)
+	return result
 }

@@ -8,9 +8,15 @@ import (
 
 func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {
 
+	args, err := params.Args()
+	if err != nil {
+		m.httpError(rw, "Unable to parse arguments: %s", err)
+		return
+	}
+
 	switch method {
 	case "SetTitle":
-		title := params.String("title")
+		title := args.String("title")
 		if title == nil {
 			m.Error("SetTitle: title is required")
 			return
@@ -18,19 +24,19 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		window.SetTitle(*title)
 		m.ok(rw)
 	case "SetSize":
-		width := params.Int("width")
-		height := params.Int("height")
+		width := args.Int("width")
+		height := args.Int("height")
 		if width == nil || height == nil {
-			m.Error("Invalid SetSize message")
+			m.Error("Invalid SetSize Message")
 			return
 		}
 		window.SetSize(*width, *height)
 		m.ok(rw)
 	case "SetPosition":
-		x := params.Int("x")
-		y := params.Int("y")
+		x := args.Int("x")
+		y := args.Int("y")
 		if x == nil || y == nil {
-			m.Error("Invalid SetPosition message")
+			m.Error("Invalid SetPosition Message")
 			return
 		}
 		window.SetPosition(*x, *y)
@@ -78,24 +84,24 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 			"y": y,
 		})
 	case "SetBackgroundColour":
-		r := params.UInt8("r")
+		r := args.UInt8("r")
 		if r == nil {
-			m.Error("Invalid SetBackgroundColour message: 'r' value required")
+			m.Error("Invalid SetBackgroundColour Message: 'r' value required")
 			return
 		}
-		g := params.UInt8("g")
+		g := args.UInt8("g")
 		if g == nil {
-			m.Error("Invalid SetBackgroundColour message: 'g' value required")
+			m.Error("Invalid SetBackgroundColour Message: 'g' value required")
 			return
 		}
-		b := params.UInt8("b")
+		b := args.UInt8("b")
 		if b == nil {
-			m.Error("Invalid SetBackgroundColour message: 'b' value required")
+			m.Error("Invalid SetBackgroundColour Message: 'b' value required")
 			return
 		}
-		a := params.UInt8("a")
+		a := args.UInt8("a")
 		if a == nil {
-			m.Error("Invalid SetBackgroundColour message: 'a' value required")
+			m.Error("Invalid SetBackgroundColour Message: 'a' value required")
 			return
 		}
 		window.SetBackgroundColour(&options.RGBA{
@@ -106,35 +112,35 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		})
 		m.ok(rw)
 	case "SetAlwaysOnTop":
-		alwaysOnTop := params.Bool("alwaysOnTop")
+		alwaysOnTop := args.Bool("alwaysOnTop")
 		if alwaysOnTop == nil {
-			m.Error("Invalid SetAlwaysOnTop message: 'alwaysOnTop' value required")
+			m.Error("Invalid SetAlwaysOnTop Message: 'alwaysOnTop' value required")
 			return
 		}
 		window.SetAlwaysOnTop(*alwaysOnTop)
 		m.ok(rw)
 	case "SetResizable":
-		resizable := params.Bool("resizable")
+		resizable := args.Bool("resizable")
 		if resizable == nil {
-			m.Error("Invalid SetResizable message: 'resizable' value required")
+			m.Error("Invalid SetResizable Message: 'resizable' value required")
 			return
 		}
 		window.SetResizable(*resizable)
 		m.ok(rw)
 	case "SetMinSize":
-		width := params.Int("width")
-		height := params.Int("height")
+		width := args.Int("width")
+		height := args.Int("height")
 		if width == nil || height == nil {
-			m.Error("Invalid SetMinSize message")
+			m.Error("Invalid SetMinSize Message")
 			return
 		}
 		window.SetMinSize(*width, *height)
 		m.ok(rw)
 	case "SetMaxSize":
-		width := params.Int("width")
-		height := params.Int("height")
+		width := args.Int("width")
+		height := args.Int("height")
 		if width == nil || height == nil {
-			m.Error("Invalid SetMaxSize message")
+			m.Error("Invalid SetMaxSize Message")
 			return
 		}
 		window.SetMaxSize(*width, *height)
@@ -171,9 +177,9 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 		}
 		m.json(rw, screen)
 	case "SetZoom":
-		zoomLevel := params.Float64("zoomLevel")
+		zoomLevel := args.Float64("zoomLevel")
 		if zoomLevel == nil {
-			m.Error("Invalid SetZoom message: invalid 'zoomLevel' value")
+			m.Error("Invalid SetZoom Message: invalid 'zoomLevel' value")
 			return
 		}
 		window.SetZoom(*zoomLevel)

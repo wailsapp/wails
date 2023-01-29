@@ -15,6 +15,8 @@ import {EventsNotify, eventListeners} from "./events";
 import {SetBindings} from "./bindings";
 
 
+import {Info, Warning, Error, Question, OpenFile, dialogCallback, dialogErrorCallback, } from "./dialogs";
+
 import * as Clipboard from './clipboard';
 import {newWindow} from "./window";
 
@@ -24,12 +26,13 @@ import {newWindow} from "./window";
 
 // Internal wails endpoints
 window.wails = {
-    Callback,
-    callbacks,
-    EventsNotify,
-    eventListeners,
-    SetBindings,
+    ...newRuntime(-1),
 };
+
+window._wails = {
+    dialogCallback,
+    dialogErrorCallback,
+}
 
 
 export function newRuntime(id) {
@@ -41,10 +44,19 @@ export function newRuntime(id) {
         Clipboard: {
             ...Clipboard
         },
+        Dialog: {
+            Info,
+            Warning,
+            Error,
+            Question,
+            OpenFile,
+        },
         Window: newWindow(id),
-        Show: () => invoke("S"),
-        Hide: () => invoke("H"),
-        Quit: () => invoke("Q"),
+        Application: {
+            Show: () => invoke("S"),
+            Hide: () => invoke("H"),
+            Quit: () => invoke("Q"),
+        }
         // GetWindow: function (windowID) {
         //     if (!windowID) {
         //         return this.Window;
@@ -53,8 +65,6 @@ export function newRuntime(id) {
         // }
     }
 }
-
-window.runtime = newRuntime(-1);
 
 if (DEBUG) {
     console.log("Wails v3.0.0 Debug Mode Enabled");
