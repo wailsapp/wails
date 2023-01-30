@@ -102,6 +102,25 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 			}
 		}()
 		m.ok(rw)
+	case "SaveFile":
+		var options SaveFileDialogOptions
+		err := params.ToStruct(&options)
+		if err != nil {
+			m.httpError(rw, "Error parsing dialog options: %s", err.Error())
+			return
+		}
+		dialog := globalApplication.SaveFileDialogWithOptions(&options)
+
+		go func() {
+			file, err := dialog.PromptForSingleSelection()
+			if err != nil {
+				m.dialogErrorCallback("Error getting selection: %s", dialogID, err)
+				return
+			}
+			m.dialogCallback(dialogID, file, false)
+		}()
+		m.ok(rw)
+
 	default:
 		m.httpError(rw, "Unknown dialog method: %s", method)
 	}

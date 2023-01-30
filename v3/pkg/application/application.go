@@ -395,3 +395,9 @@ func (a *App) OpenFileDialogWithOptions(options *OpenFileDialogOptions) *OpenFil
 	result.SetOptions(options)
 	return result
 }
+
+func (a *App) SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialog {
+	result := a.SaveFileDialog()
+	result.SetOptions(s)
+	return result
+}

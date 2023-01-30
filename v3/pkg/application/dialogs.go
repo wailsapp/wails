@@ -331,6 +331,19 @@ func newSaveFileDialog() *SaveFileDialog {
 	}
 }
 
+type SaveFileDialogOptions struct {
+	CanCreateDirectories            bool
+	ShowHiddenFiles                 bool
+	CanSelectHiddenExtension        bool
+	AllowOtherFileTypes             bool
+	HideExtension                   bool
+	TreatsFilePackagesAsDirectories bool
+	Message                         string
+	Directory                       string
+	Filename                        string
+	ButtonText                      string
+}
+
 type SaveFileDialog struct {
 	id                              uint
 	canCreateDirectories            bool
@@ -351,6 +364,19 @@ type SaveFileDialog struct {
 
 type saveFileDialogImpl interface {
 	show() (string, error)
+}
+
+func (d *SaveFileDialog) SetOptions(options *SaveFileDialogOptions) {
+	d.canCreateDirectories = options.CanCreateDirectories
+	d.showHiddenFiles = options.ShowHiddenFiles
+	d.canSelectHiddenExtension = options.CanSelectHiddenExtension
+	d.allowOtherFileTypes = options.AllowOtherFileTypes
+	d.hideExtension = options.HideExtension
+	d.treatsFilePackagesAsDirectories = options.TreatsFilePackagesAsDirectories
+	d.message = options.Message
+	d.directory = options.Directory
+	d.filename = options.Filename
+	d.buttonText = options.ButtonText
 }
 
 func (d *SaveFileDialog) CanCreateDirectories(canCreateDirectories bool) *SaveFileDialog {

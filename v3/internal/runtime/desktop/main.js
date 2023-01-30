@@ -15,7 +15,7 @@ import {EventsNotify, eventListeners} from "./events";
 import {SetBindings} from "./bindings";
 
 
-import {Info, Warning, Error, Question, OpenFile, dialogCallback, dialogErrorCallback, } from "./dialogs";
+import {Info, Warning, Error, Question, OpenFile, SaveFile, dialogCallback, dialogErrorCallback, } from "./dialogs";
 
 import * as Clipboard from './clipboard';
 import {newWindow} from "./window";
@@ -50,6 +50,7 @@ export function newRuntime(id) {
             Error,
             Question,
             OpenFile,
+            SaveFile,
         },
         Window: newWindow(id),
         Application: {

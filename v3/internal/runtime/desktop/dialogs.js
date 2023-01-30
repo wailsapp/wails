@@ -78,3 +78,8 @@ export function Question(options) {
 export function OpenFile(options) {
     return dialog("OpenFile", options);
 }
+
+export function SaveFile(options) {
+    return dialog("SaveFile", options);
+}
+
