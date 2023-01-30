@@ -20,6 +20,10 @@ export function newWindow(id) {
         // SetSystemDefaultTheme: () => call('WASDT'),
         // SetLightTheme: () => call('WALT'),
         // SetDarkTheme: () => call('WADT'),
+        // IsFullscreen: () => call('WIF'),
+        // IsMaximized: () => call('WIM'),
+        // IsMinimized: () => call('WIMN'),
+        // IsWindowed: () => call('WIF'),
         Center: () => call('Center'),
         SetTitle: (title) => call('SetTitle', {title}),
         Fullscreen: () => call('Fullscreen'),
@@ -39,19 +43,6 @@ export function newWindow(id) {
         UnMaximise: () => call('UnMaximise'),
         Minimise: () => call('Minimise'),
         UnMinimise: () => call('UnMinimise'),
-        SetBackgroundColour: (r, g, b, a) => call('SetBackgroundColour', {R, G, B, A}),
+        SetBackgroundColour: (r, g, b, a) => call('SetBackgroundColour', {r, g, b, a}),
     }
 }
-
-// export function IsFullscreen: ()=> //     return Call(":wails:WindowIsFullscreen"),
-//
-
-// export function IsMaximised: ()=> //     return Call(":wails:WindowIsMaximised"),
-//
-
-// export function IsMinimised: ()=> //     return Call(":wails:WindowIsMinimised"),
-//
-
-// export function IsNormal: ()=> //     return Call(":wails:WindowIsNormal"),
-//
-

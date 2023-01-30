@@ -27,7 +27,7 @@ Informal and incomplete list of things needed in v3.
     - [x] Error
     - [x] Question
     - [x] OpenFile
-    - [ ] SaveFile
+    - [x] SaveFile
   - [ ] Events
   - [ ] Screens
   - [x] Clipboard

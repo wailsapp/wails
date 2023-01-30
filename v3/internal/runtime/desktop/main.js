@@ -9,20 +9,10 @@ The electron alternative for Go
 */
 /* jshint esversion: 9 */
 
-import {invoke} from "./ipc.js";
-import {Callback, callbacks} from './calls';
-import {EventsNotify, eventListeners} from "./events";
-import {SetBindings} from "./bindings";
-
-
 import {Info, Warning, Error, Question, OpenFile, SaveFile, dialogCallback, dialogErrorCallback, } from "./dialogs";
 
 import * as Clipboard from './clipboard';
 import {newWindow} from "./window";
-
-// export function Environment() {
-//     return Call(":wails:Environment");
-// }
 
 // Internal wails endpoints
 window.wails = {
@@ -37,10 +27,6 @@ window._wails = {
 
 export function newRuntime(id) {
     return {
-        // Log: newLog(id),
-        // Browser: newBrowser(id),
-        // Screen: newScreen(id),
-        // Events: newEvents(id),
         Clipboard: {
             ...Clipboard
         },
@@ -53,17 +39,6 @@ export function newRuntime(id) {
             SaveFile,
         },
         Window: newWindow(id),
-        Application: {
-            Show: () => invoke("S"),
-            Hide: () => invoke("H"),
-            Quit: () => invoke("Q"),
-        }
-        // GetWindow: function (windowID) {
-        //     if (!windowID) {
-        //         return this.Window;
-        //     }
-        //     return newWindow(windowID);
-        // }
     }
 }
 
