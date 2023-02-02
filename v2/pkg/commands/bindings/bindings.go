@@ -21,12 +21,12 @@ type Options struct {
 	GoModTidy        bool
 	TsPrefix         string
 	TsSuffix         string
+	AppArgs          string
 }
 
 // GenerateBindings generates bindings for the Wails project in the given ProjectDirectory.
 // If no project directory is given then the current working directory is used.
 func GenerateBindings(options Options) (string, error) {
-
 	filename, _ := lo.Coalesce(options.Filename, "wailsbindings")
 	if runtime.GOOS == "windows" {
 		filename += ".exe"
@@ -67,7 +67,9 @@ func GenerateBindings(options Options) (string, error) {
 	env = shell.SetEnv(env, "tsprefix", options.TsPrefix)
 	env = shell.SetEnv(env, "tssuffix", options.TsSuffix)
 
-	stdout, stderr, err = shell.RunCommandWithEnv(env, workingDirectory, filename)
+	// TODO: split arguments by matching quotes
+	appArgs := []string{options.AppArgs}
+	stdout, stderr, err = shell.RunCommandWithEnv(env, workingDirectory, filename, appArgs...)
 	if err != nil {
 		return stdout, fmt.Errorf("%s\n%s\n%s", stdout, stderr, err)
 	}

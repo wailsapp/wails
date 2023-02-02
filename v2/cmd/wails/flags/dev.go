@@ -2,14 +2,15 @@ package flags
 
 import (
 	"fmt"
-	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v2/internal/project"
-	"github.com/wailsapp/wails/v2/pkg/commands/build"
 	"net"
 	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v2/internal/project"
+	"github.com/wailsapp/wails/v2/pkg/commands/build"
 )
 
 type Dev struct {
@@ -26,7 +27,6 @@ type Dev struct {
 	ForceBuild           bool   `flag:"f" description:"Force build of application"`
 	Debounce             int    `flag:"debounce" description:"The amount of time to wait to trigger a reload on change"`
 	DevServer            string `flag:"devserver" description:"The address of the wails dev server"`
-	AppArgs              string `flag:"appargs" description:"arguments to pass to the underlying app (quoted and space separated)"`
 	Save                 bool   `flag:"save" description:"Save the given flags as defaults"`
 	FrontendDevServerURL string `flag:"frontenddevserverurl" description:"The url of the external frontend dev server to use"`
 
@@ -45,7 +45,6 @@ func (*Dev) Default() *Dev {
 }
 
 func (d *Dev) Process() error {
-
 	var err error
 	err = d.loadAndMergeProjectConfig()
 	if err != nil {
@@ -111,7 +110,6 @@ func (d *Dev) loadAndMergeProjectConfig() error {
 	}
 
 	return nil
-
 }
 
 // GenerateBuildOptions creates a build.Options using the flags
@@ -130,6 +128,7 @@ func (d *Dev) GenerateBuildOptions() *build.Options {
 		WailsJSDir:     d.WailsJSDir,
 		RaceDetector:   d.RaceDetector,
 		ProjectData:    d.projectConfig,
+		AppArgs:        d.AppArgs,
 	}
 
 	return result
