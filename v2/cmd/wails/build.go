@@ -75,6 +75,7 @@ func buildApplication(f *flags.Build) error {
 		GarbleArgs:        f.GarbleArgs,
 		SkipBindings:      f.SkipBindings,
 		ProjectData:       projectOptions,
+		AppArgs:           f.AppArgs,
 	}
 
 	tableData := pterm.TableData{
