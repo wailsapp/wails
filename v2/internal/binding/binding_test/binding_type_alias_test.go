@@ -15,11 +15,17 @@ const expectedTypeAliasBindings = `// Cynhyrchwyd y ffeil hon yn awtomatig. PEID
 import {binding_test} from '../models';
 import {int_package} from '../models';
 
+export function LocalMapTypes():Promise<{[key: binding_test.Key]: binding_test.Value}>;
+
 export function Map():Promise<{[key: string]: string}>;
 
 export function MapAlias():Promise<binding_test.MapAlias>;
 
 export function MapWithImportedStructValue():Promise<{[key: string]: int_package.SomeStruct}>;
+
+export function MapsOfMapsAsParameter(arg1:{[key: string]: {[key: binding_test.Key]: binding_test.Value}}):Promise<void>;
+
+export function ReturnMapsOfMaps():Promise<{[key: string]: {[key: binding_test.Key]: binding_test.Value}}>;
 
 export function Slice():Promise<Array<string>>;
 
@@ -29,9 +35,24 @@ export function SliceImportedStruct():Promise<Array<int_package.SomeStruct>>;
 type AliasTest struct{}
 type MapAlias map[string]string
 
+type Key struct {
+	Description string
+	Label       string
+}
+
+type Value struct {
+	Description string
+	Label       string
+}
+
+// TODO : func (h *AliasTest) LocalMapsTypesWithPointer() map[*Key]Value        { return nil }
+
+func (h *AliasTest) LocalMapTypes() map[Key]Value                                  { return nil }
+func (h *AliasTest) MapsOfMapsAsParameter(_ map[string]map[Key]Value)              {}
 func (h *AliasTest) Map() map[string]string                                        { return nil }
 func (h *AliasTest) MapAlias() MapAlias                                            { return nil }
 func (h *AliasTest) MapWithImportedStructValue() map[string]int_package.SomeStruct { return nil }
+func (h *AliasTest) ReturnMapsOfMaps() map[string]map[Key]Value                    { return nil }
 func (h *AliasTest) Slice() []string                                               { return nil }
 func (h *AliasTest) SliceImportedStruct() []int_package.SomeStruct                 { return nil }
 

@@ -111,7 +111,7 @@ func Test_goTypeToJSDocType(t *testing.T) {
 		{
 			name:  "anything else",
 			input: "foo",
-			want:  "any",
+			want:  "foo",
 		},
 		{
 			name:  "map",
@@ -119,9 +119,19 @@ func Test_goTypeToJSDocType(t *testing.T) {
 			want:  "{[key: string]: number}",
 		},
 		{
-			name:  "map",
+			name:  "map_of_map",
 			input: "map[string]map[string]float64",
 			want:  "{[key: string]: {[key: string]: number}}",
+		},
+		{
+			name:  "map_of_custom_type_with_package",
+			input: "map[string]pkg.SecondType",
+			want:  "{[key: string]: pkg.SecondType}",
+		},
+		{
+			name:  "map_of_custom_type_without_package",
+			input: "map[string]SecondType",
+			want:  "{[key: string]: SecondType}",
 		},
 		{
 			name:  "types",

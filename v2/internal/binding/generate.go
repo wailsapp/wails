@@ -167,7 +167,7 @@ func fullyQualifiedName(packageName string, typeName string) string {
 	case typeName == "bool":
 		return "boolean"
 	default:
-		return "any"
+		return typeName
 	}
 }
 
@@ -228,10 +228,27 @@ func goTypeToTypescriptType(input string, importNamespaces *slicer.StringSlicer)
 }
 
 func entityFullReturnType(input, prefix, suffix string, importNamespaces *slicer.StringSlicer) string {
-	if strings.ContainsRune(input, '.') {
-		nameSpace, returnType := getSplitReturn(input)
-		return nameSpace + "." + prefix + returnType + suffix
+	matches := mapRegex.FindStringSubmatch(input)
+	keyPackage := matches[keyPackageIndex]
+	keyType := matches[keyTypeIndex]
+	valueArray := matches[valueArrayIndex]
+	valuePackage := matches[valuePackageIndex]
+	valueType := matches[valueTypeIndex]
+
+	returnType := valueArray + buildFullTypeFromParts(valuePackage, prefix+valueType+suffix)
+
+	// handle maps
+	if len(keyType) > 0 {
+		return "map[" + buildFullTypeFromParts(keyPackage, prefix+keyType+suffix) + "]" + returnType
 	}
 
-	return input
+	return returnType
+}
+
+func buildFullTypeFromParts(pkg string, typ string) string {
+	if len(pkg) > 0 {
+		return pkg + "." + typ
+	}
+
+	return typ
 }
