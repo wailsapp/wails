@@ -58,6 +58,8 @@ type platformApp interface {
 	setIcon(icon []byte)
 	on(id uint)
 	dispatchOnMainThread(id uint)
+	hide()
+	show()
 }
 
 // Messages sent from javascript get routed here
@@ -415,5 +417,17 @@ func (a *App) SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialo
 func (a *App) dispatchEventToWindows(event *CustomEvent) {
 	for _, window := range a.windows {
 		window.dispatchCustomEvent(event)
+	}
+}
+
+func (a *App) Hide() {
+	if a.impl != nil {
+		a.impl.hide()
+	}
+}
+
+func (a *App) Show() {
+	if a.impl != nil {
+		a.impl.show()
 	}
 }

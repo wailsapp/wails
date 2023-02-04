@@ -9,11 +9,13 @@ The electron alternative for Go
 */
 /* jshint esversion: 9 */
 
-import {Info, Warning, Error, Question, OpenFile, SaveFile, dialogCallback, dialogErrorCallback, } from "./dialogs";
+import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
 
 import * as Clipboard from './clipboard';
+import * as Application from './application';
+
 import {newWindow} from "./window";
-import {dispatchCustomEvent, Emit, On, Off, OffAll, Once, OnMultiple} from "./events";
+import {dispatchCustomEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
 
 // Internal wails endpoints
 window.wails = {
@@ -31,6 +33,9 @@ export function newRuntime(id) {
     return {
         Clipboard: {
             ...Clipboard
+        },
+        Application: {
+            ...Application
         },
         Dialog: {
             Info,

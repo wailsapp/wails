@@ -63,6 +63,8 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 		m.processDialogMethod(method, rw, r, targetWindow, params)
 	case "events":
 		m.processEventsMethod(method, rw, r, targetWindow, params)
+	case "application":
+		m.processApplicationMethod(method, rw, r, targetWindow, params)
 	default:
 		m.httpError(rw, "Unknown runtime call: %s", object)
 	}
