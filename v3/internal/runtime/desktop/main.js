@@ -13,6 +13,7 @@ import {Info, Warning, Error, Question, OpenFile, SaveFile, dialogCallback, dial
 
 import * as Clipboard from './clipboard';
 import {newWindow} from "./window";
+import {dispatchCustomEvent, Emit, On, Off, OffAll, Once, OnMultiple} from "./events";
 
 // Internal wails endpoints
 window.wails = {
@@ -22,6 +23,7 @@ window.wails = {
 window._wails = {
     dialogCallback,
     dialogErrorCallback,
+    dispatchCustomEvent,
 }
 
 
@@ -37,6 +39,14 @@ export function newRuntime(id) {
             Question,
             OpenFile,
             SaveFile,
+        },
+        Events: {
+            Emit,
+            On,
+            Once,
+            OnMultiple,
+            Off,
+            OffAll,
         },
         Window: newWindow(id),
     }

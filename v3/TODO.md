@@ -20,15 +20,15 @@ Informal and incomplete list of things needed in v3.
 - [ ] Implement runtime dispatcher
   - [ ] Log
   - [x] Same Window
-  - [ ] Other Window
-  - [ ] Dialogs
+  - [x] Other Window
+  - [x] Dialogs
     - [x] Info
     - [x] Warning
     - [x] Error
     - [x] Question
     - [x] OpenFile
     - [x] SaveFile
-  - [ ] Events
+  - [x] Events
   - [ ] Screens
   - [x] Clipboard
   - [ ] Application

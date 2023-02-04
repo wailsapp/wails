@@ -30,6 +30,7 @@ func New(appOptions options.Application) *App {
 		applicationEventListeners: make(map[uint][]func()),
 		systemTrays:               make(map[uint]*SystemTray),
 	}
+	result.Events = NewCustomEventProcessor(result.dispatchEventToWindows)
 	globalApplication = result
 	return result
 }
@@ -74,6 +75,13 @@ type webViewAssetRequest struct {
 
 var webviewRequests = make(chan *webViewAssetRequest)
 
+type EventHandler interface {
+	On(eventName string, args any)
+	OnMultiple(eventName string, args any, count int)
+	Once(eventName string, args any)
+	Emit(eventName string, args any)
+}
+
 type App struct {
 	options                       options.Application
 	applicationEventListeners     map[uint][]func()
@@ -106,6 +114,8 @@ type App struct {
 
 	// About MessageDialog
 	clipboard *Clipboard
+
+	Events *EventProcessor
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -127,7 +137,7 @@ func (a *App) On(eventType events.ApplicationEventType, callback func()) {
 	defer a.applicationEventListenersLock.Unlock()
 	a.applicationEventListeners[eventID] = append(a.applicationEventListeners[eventID], callback)
 	if a.impl != nil {
-		a.impl.on(eventID)
+		go a.impl.on(eventID)
 	}
 }
 func (a *App) NewWebviewWindow() *WebviewWindow {
@@ -400,4 +410,10 @@ func (a *App) SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialo
 	result := a.SaveFileDialog()
 	result.SetOptions(s)
 	return result
+}
+
+func (a *App) dispatchEventToWindows(event *CustomEvent) {
+	for _, window := range a.windows {
+		window.dispatchCustomEvent(event)
+	}
 }
