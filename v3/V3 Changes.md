@@ -45,6 +45,8 @@ When emitting an event in JS, it now sends the event to the application. This wi
 
 The Window API has largely remained the same, however there are a few changes to note. 
 
+- Windows now have a Name that identifies them. This is used to identify the window when emitting events.
+
 ## ClipBoard
 
 The clipboard API has been simplified. There is now a single `Clipboard` object that can be used to read and write to the clipboard. The `Clipboard` object is available in both Go and JS. `SetText()` to set the text and `Text()` to get the text.
