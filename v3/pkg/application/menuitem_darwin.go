@@ -564,14 +564,14 @@ func newToggleDevToolsMenuItem() *MenuItem {
 		})
 }
 
-func newResetZoomMenuItem() *MenuItem {
+func newZoomResetMenuItem() *MenuItem {
 	// reset zoom menu item
 	return newMenuItem("Actual Size").
 		SetAccelerator("CmdOrCtrl+0").
 		OnClick(func(ctx *Context) {
 			currentWindow := globalApplication.CurrentWindow()
 			if currentWindow != nil {
-				currentWindow.ResetZoom()
+				currentWindow.ZoomReset()
 			}
 		})
 }

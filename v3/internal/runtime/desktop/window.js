@@ -10,58 +10,39 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
-
-import {Call} from "./calls";
-import {invoke} from "./ipc";
+import {newRuntimeCaller} from "./runtime";
 
 export function newWindow(id) {
+    let call = newRuntimeCaller("window", id);
     return {
-        // Reload: () => invoke('WR', id),
-        // ReloadApp: () => invoke('WR', id),
-        // SetSystemDefaultTheme: () => invoke('WASDT', id),
-        // SetLightTheme: () => invoke('WALT', id),
-        // SetDarkTheme: () => invoke('WADT', id),
-        Center: () => invoke('Wc', id),
-        SetTitle: (title) => invoke('WT' + title, id),
-        Fullscreen: () => invoke('WF', id),
-        UnFullscreen: () => invoke('Wf', id),
-        SetSize: (width, height) => invoke('WS' + width + ',' + height, id),
-        GetSize: () => {
-            return Call(":wails:WindowGetSize")
-        },
-        SetMaxSize: (width, height) => invoke('WZ:' + width + ':' + height, id),
-        SetMinSize: (width, height) => invoke('Wz:' + width + ':' + height, id),
-        SetAlwaysOnTop: (b) => invoke('WATP:' + (b ? '1' : '0'), id),
-        SetPosition: (x, y) => invoke('Wp:' + x + ':' + y, id),
-        GetPosition: () => {
-            return Call(":wails:WindowGetPos")
-        },
-        Hide: () => invoke('WH', id),
-        Maximise: () => invoke('WM', id),
-        Show: () => invoke('WS', id),
-        ToggleMaximise: () => invoke('Wt', id),
-        UnMaximise: () => invoke('WU', id),
-        Minimise: () => invoke('Wm', id),
-        UnMinimise: () => invoke('Wu', id),
-        SetBackgroundColour: (R, G, B, A) =>
-            invoke('Wr:' + JSON.stringify({
-                r: R || 0,
-                g: G || 0,
-                b: B || 0,
-                a: A || 255}, id)
-            ),
+        // Reload: () => call('WR'),
+        // ReloadApp: () => call('WR'),
+        // SetSystemDefaultTheme: () => call('WASDT'),
+        // SetLightTheme: () => call('WALT'),
+        // SetDarkTheme: () => call('WADT'),
+        // IsFullscreen: () => call('WIF'),
+        // IsMaximized: () => call('WIM'),
+        // IsMinimized: () => call('WIMN'),
+        // IsWindowed: () => call('WIF'),
+        Center: () => call('Center'),
+        SetTitle: (title) => call('SetTitle', {title}),
+        Fullscreen: () => call('Fullscreen'),
+        UnFullscreen: () => call('UnFullscreen'),
+        SetSize: (width, height) => call('SetSize', {width,height}),
+        Size: () => { return call('Size') },
+        SetMaxSize: (width, height) => call('SetMaxSize', {width,height}),
+        SetMinSize: (width, height) => call('SetMinSize', {width,height}),
+        SetAlwaysOnTop: (b) => call('SetAlwaysOnTop', {alwaysOnTop:b}),
+        SetPosition: (x, y) => call('SetPosition', {x,y}),
+        Position: () => { return call('Position') },
+        Screen: () => { return call('Screen') },
+        Hide: () => call('Hide'),
+        Maximise: () => call('Maximise'),
+        Show: () => call('Show'),
+        ToggleMaximise: () => call('ToggleMaximise'),
+        UnMaximise: () => call('UnMaximise'),
+        Minimise: () => call('Minimise'),
+        UnMinimise: () => call('UnMinimise'),
+        SetBackgroundColour: (r, g, b, a) => call('SetBackgroundColour', {r, g, b, a}),
     }
 }
-
-// export function IsFullscreen: ()=> //     return Call(":wails:WindowIsFullscreen"),
-//
-
-// export function IsMaximised: ()=> //     return Call(":wails:WindowIsMaximised"),
-//
-
-// export function IsMinimised: ()=> //     return Call(":wails:WindowIsMinimised"),
-//
-
-// export function IsNormal: ()=> //     return Call(":wails:WindowIsNormal"),
-//
-

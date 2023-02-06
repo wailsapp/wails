@@ -1,15 +1,18 @@
 /*
- _       __      _ __
-| |     / /___ _(_) /____
+ _	   __	  _ __
+| |	 / /___ _(_) /____
 | | /| / / __ `/ / / ___/
 | |/ |/ / /_/ / / (__  )
 |__/|__/\__,_/_/_/____/
 The electron alternative for Go
 (c) Lea Anthony 2019-present
 */
-/* jshint esversion: 6 */
 
-// Defines a single listener with a maximum number of times to callback
+/* jshint esversion: 9 */
+
+import {newRuntimeCaller} from "./runtime";
+
+let call = newRuntimeCaller("events");
 
 /**
  * The Listener class defines a listener! :-)
@@ -31,7 +34,7 @@ class Listener {
         // Callback invokes the callback with the given data
         // Returns true if this listener should be destroyed
         this.Callback = (data) => {
-            callback.apply(null, data);
+            callback(data);
             // If maxCallbacks is infinite, return false (do not destroy)
             if (this.maxCallbacks === -1) {
                 return false;
@@ -43,21 +46,41 @@ class Listener {
     }
 }
 
-export const eventListeners = {};
+
+/**
+ * CustomEvent defines a custom event. It is passed to event listeners.
+ *
+ * @class CustomEvent
+ */
+export class CustomEvent {
+    /**
+     * Creates an instance of CustomEvent.
+     * @param {string} name - Name of the event
+     * @param {any} data - Data associated with the event
+     * @memberof CustomEvent
+     */
+    constructor(name, data) {
+        this.name = name;
+        this.data = data;
+    }
+}
+
+export const eventListeners = new Map();
 
 /**
  * Registers an event listener that will be invoked `maxCallbacks` times before being destroyed
  *
  * @export
  * @param {string} eventName
- * @param {function} callback
+ * @param {function(CustomEvent): void} callback
  * @param {number} maxCallbacks
  * @returns {function} A function to cancel the listener
  */
-export function EventsOnMultiple(eventName, callback, maxCallbacks) {
-    eventListeners[eventName] = eventListeners[eventName] || [];
+export function OnMultiple(eventName, callback, maxCallbacks) {
+    let listeners = eventListeners.get(eventName) || [];
     const thisListener = new Listener(eventName, callback, maxCallbacks);
-    eventListeners[eventName].push(thisListener);
+    listeners.push(thisListener);
+    eventListeners.set(eventName, listeners);
     return () => listenerOff(thisListener);
 }
 
@@ -66,11 +89,11 @@ export function EventsOnMultiple(eventName, callback, maxCallbacks) {
  *
  * @export
  * @param {string} eventName
- * @param {function} callback
+ * @param {function(CustomEvent): void} callback
  * @returns {function} A function to cancel the listener
  */
-export function EventsOn(eventName, callback) {
-    return EventsOnMultiple(eventName, callback, -1);
+export function On(eventName, callback) {
+    return OnMultiple(eventName, callback, -1);
 }
 
 /**
@@ -78,135 +101,87 @@ export function EventsOn(eventName, callback) {
  *
  * @export
  * @param {string} eventName
- * @param {function} callback
+ * @param {function(CustomEvent): void} callback
  * @returns {function} A function to cancel the listener
  */
-export function EventsOnce(eventName, callback) {
-    return EventsOnMultiple(eventName, callback, 1);
+export function Once(eventName, callback) {
+    return OnMultiple(eventName, callback, 1);
 }
 
-function notifyListeners(eventData) {
+/**
+ * listenerOff unregisters a listener previously registered with On
+ *
+ * @param {Listener} listener
+ */
+function listenerOff(listener) {
+    const eventName = listener.eventName;
+    // Remove local listener
+    let listeners = eventListeners.get(eventName).filter(l => l !== listener);
+    if (listeners.length === 0) {
+        eventListeners.delete(eventName);
+    } else {
+        eventListeners.set(eventName, listeners);
+    }
+}
 
-    // Get the event name
-    let eventName = eventData.name;
-
-    // Check if we have any listeners for this event
-    if (eventListeners[eventName]) {
-
-        // Keep a list of listener indexes to destroy
-        const newEventListenerList = eventListeners[eventName].slice();
-
-        // Iterate listeners
-        for (let count = 0; count < eventListeners[eventName].length; count += 1) {
-
-            // Get next listener
-            const listener = eventListeners[eventName][count];
-
-            let data = eventData.data;
-
-            // Do the callback
-            const destroy = listener.Callback(data);
-            if (destroy) {
-                // if the listener indicated to destroy itself, add it to the destroy list
-                newEventListenerList.splice(count, 1);
+/**
+ * dispatches an event to all listeners
+ *
+ * @export
+ * @param {CustomEvent} event
+ */
+export function dispatchCustomEvent(event) {
+    console.log("dispatching event: ", {event});
+    let listeners = eventListeners.get(event.name);
+    if (listeners) {
+        // iterate listeners and call callback. If callback returns true, remove listener
+        let toRemove = [];
+        listeners.forEach(listener => {
+            let remove = listener.Callback(event)
+            if (remove) {
+                toRemove.push(listener);
+            }
+        });
+        // remove listeners
+        if (toRemove.length > 0) {
+            listeners = listeners.filter(l => !toRemove.includes(l));
+            if (listeners.length === 0) {
+                eventListeners.delete(event.name);
+            } else {
+                eventListeners.set(event.name, listeners);
             }
         }
-
-        // Update callbacks with new list of listeners
-        if (newEventListenerList.length === 0) {
-            removeListener(eventName);
-        } else {
-            eventListeners[eventName] = newEventListenerList;
-        }
     }
-}
-
-/**
- * Notify informs frontend listeners that an event was emitted with the given data
- *
- * @export
- * @param {string} notifyMessage - encoded notification message
-
- */
-export function EventsNotify(notifyMessage) {
-    // Parse the message
-    let message;
-    try {
-        message = JSON.parse(notifyMessage);
-    } catch (e) {
-        const error = 'Invalid JSON passed to Notify: ' + notifyMessage;
-        throw new Error(error);
-    }
-    notifyListeners(message);
-}
-
-/**
- * Emit an event with the given name and data
- *
- * @export
- * @param {string} eventName
- */
-export function EventsEmit(eventName) {
-
-    const payload = {
-        name: eventName,
-        data: [].slice.apply(arguments).slice(1),
-    };
-
-    // Notify JS listeners
-    notifyListeners(payload);
-
-    // Notify Go listeners
-    window.WailsInvoke('EE' + JSON.stringify(payload));
-}
-
-function removeListener(eventName) {
-    // Remove local listeners
-    delete eventListeners[eventName];
-
-    // Notify Go listeners
-    window.WailsInvoke('EX' + eventName);
 }
 
 /**
  * Off unregisters a listener previously registered with On,
- * optionally multiple listeneres can be unregistered via `additionalEventNames`
+ * optionally multiple listeners can be unregistered via `additionalEventNames`
+ *
+ [v3 CHANGE] Off only unregisters listeners within the current window
  *
  * @param {string} eventName
  * @param  {...string} additionalEventNames
  */
-export function EventsOff(eventName, ...additionalEventNames) {
-    removeListener(eventName)
-
-    if (additionalEventNames.length > 0) {
-        additionalEventNames.forEach(eventName => {
-            removeListener(eventName)
-        })
-    }
+export function Off(eventName, ...additionalEventNames) {
+    let eventsToRemove = [eventName, ...additionalEventNames];
+    eventsToRemove.forEach(eventName => {
+        eventListeners.delete(eventName);
+    })
 }
 
 /**
- * Off unregisters all event listeners previously registered with On
- */
- export function EventsOffAll() {
-    const eventNames = Object.keys(eventListeners);
-    for (let i = 0; i !== eventNames.length; i++) {
-        removeListener(eventNames[i]);
-    }
-}
-
-/**
- * listenerOff unregisters a listener previously registered with EventsOn
+ * OffAll unregisters all listeners
+ * [v3 CHANGE] OffAll only unregisters listeners within the current window
  *
- * @param {Listener} listener
  */
- function listenerOff(listener) {
-    const eventName = listener.eventName;
-    // Remove local listener
-    eventListeners[eventName] = eventListeners[eventName].filter(l => l !== listener);
+export function OffAll() {
+    eventListeners.clear();
+}
 
-    // Clean up if there are no event listeners left
-    if (eventListeners[eventName].length === 0) {
-        removeListener(eventName);
-    }
+/*
+   Emit emits an event to all listeners
+ */
+export function Emit(event) {
+    return call("Emit", event);
 }

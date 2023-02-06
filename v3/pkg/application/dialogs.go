@@ -46,9 +46,9 @@ const (
 )
 
 type Button struct {
-	label     string
-	isCancel  bool
-	isDefault bool
+	Label     string
+	IsCancel  bool
+	IsDefault bool
 	callback  func()
 }
 
@@ -60,12 +60,16 @@ type messageDialogImpl interface {
 	show()
 }
 
+type MessageDialogOptions struct {
+	DialogType DialogType
+	Title      string
+	Message    string
+	Buttons    []*Button
+	Icon       []byte
+}
+
 type MessageDialog struct {
-	dialogType DialogType
-	title      string
-	message    string
-	buttons    []*Button
-	icon       []byte
+	MessageDialogOptions
 
 	// platform independent
 	impl messageDialogImpl
@@ -80,13 +84,16 @@ var defaultTitles = map[DialogType]string{
 
 func newMessageDialog(dialogType DialogType) *MessageDialog {
 	return &MessageDialog{
-		dialogType: dialogType,
-		title:      defaultTitles[dialogType],
+		MessageDialogOptions: MessageDialogOptions{
+			DialogType: dialogType,
+			Title:      defaultTitles[dialogType],
+		},
+		impl: nil,
 	}
 }
 
 func (d *MessageDialog) SetTitle(title string) *MessageDialog {
-	d.title = title
+	d.Title = title
 	return d
 }
 
@@ -98,36 +105,41 @@ func (d *MessageDialog) Show() {
 }
 
 func (d *MessageDialog) SetIcon(icon []byte) *MessageDialog {
-	d.icon = icon
+	d.Icon = icon
 	return d
 }
 
 func (d *MessageDialog) AddButton(s string) *Button {
 	result := &Button{
-		label: s,
+		Label: s,
 	}
-	d.buttons = append(d.buttons, result)
+	d.Buttons = append(d.Buttons, result)
 	return result
 }
 
+func (d *MessageDialog) AddButtons(buttons []*Button) *MessageDialog {
+	d.Buttons = buttons
+	return d
+}
+
 func (d *MessageDialog) SetDefaultButton(button *Button) *MessageDialog {
-	for _, b := range d.buttons {
-		b.isDefault = false
+	for _, b := range d.Buttons {
+		b.IsDefault = false
 	}
-	button.isDefault = true
+	button.IsDefault = true
 	return d
 }
 
 func (d *MessageDialog) SetCancelButton(button *Button) *MessageDialog {
-	for _, b := range d.buttons {
-		b.isCancel = false
+	for _, b := range d.Buttons {
+		b.IsCancel = false
 	}
-	button.isCancel = true
+	button.IsCancel = true
 	return d
 }
 
-func (d *MessageDialog) SetMessage(title string) *MessageDialog {
-	d.title = title
+func (d *MessageDialog) SetMessage(message string) *MessageDialog {
+	d.Message = message
 	return d
 }
 
@@ -135,9 +147,28 @@ type openFileDialogImpl interface {
 	show() ([]string, error)
 }
 
-type fileFilter struct {
-	displayName string // Filter information EG: "Image Files (*.jpg, *.png)"
-	pattern     string // semicolon separated list of extensions, EG: "*.jpg;*.png"
+type FileFilter struct {
+	DisplayName string // Filter information EG: "Image Files (*.jpg, *.png)"
+	Pattern     string // semicolon separated list of extensions, EG: "*.jpg;*.png"
+}
+
+type OpenFileDialogOptions struct {
+	CanChooseDirectories            bool
+	CanChooseFiles                  bool
+	CanCreateDirectories            bool
+	ShowHiddenFiles                 bool
+	ResolvesAliases                 bool
+	AllowsMultipleSelection         bool
+	HideExtension                   bool
+	CanSelectHiddenExtension        bool
+	TreatsFilePackagesAsDirectories bool
+	AllowsOtherFileTypes            bool
+	Filters                         []FileFilter
+
+	Title      string
+	Message    string
+	ButtonText string
+	Directory  string
 }
 
 type OpenFileDialog struct {
@@ -152,7 +183,7 @@ type OpenFileDialog struct {
 	canSelectHiddenExtension        bool
 	treatsFilePackagesAsDirectories bool
 	allowsOtherFileTypes            bool
-	filters                         []fileFilter
+	filters                         []FileFilter
 
 	title      string
 	message    string
@@ -230,9 +261,9 @@ func (d *OpenFileDialog) PromptForSingleSelection() (string, error) {
 // AddFilter adds a filter to the dialog. The filter is a display name and a semicolon separated list of extensions.
 // EG: AddFilter("Image Files", "*.jpg;*.png")
 func (d *OpenFileDialog) AddFilter(displayName, pattern string) *OpenFileDialog {
-	d.filters = append(d.filters, fileFilter{
-		displayName: strings.TrimSpace(displayName),
-		pattern:     strings.TrimSpace(pattern),
+	d.filters = append(d.filters, FileFilter{
+		DisplayName: strings.TrimSpace(displayName),
+		Pattern:     strings.TrimSpace(pattern),
 	})
 	return d
 }
@@ -265,6 +296,24 @@ func (d *OpenFileDialog) CanSelectHiddenExtension(canSelectHiddenExtension bool)
 	return d
 }
 
+func (d *OpenFileDialog) SetOptions(options *OpenFileDialogOptions) {
+	d.title = options.Title
+	d.message = options.Message
+	d.buttonText = options.ButtonText
+	d.directory = options.Directory
+	d.canChooseDirectories = options.CanChooseDirectories
+	d.canChooseFiles = options.CanChooseFiles
+	d.canCreateDirectories = options.CanCreateDirectories
+	d.showHiddenFiles = options.ShowHiddenFiles
+	d.resolvesAliases = options.ResolvesAliases
+	d.allowsMultipleSelection = options.AllowsMultipleSelection
+	d.hideExtension = options.HideExtension
+	d.canSelectHiddenExtension = options.CanSelectHiddenExtension
+	d.treatsFilePackagesAsDirectories = options.TreatsFilePackagesAsDirectories
+	d.allowsOtherFileTypes = options.AllowsOtherFileTypes
+	d.filters = options.Filters
+}
+
 func newOpenFileDialog() *OpenFileDialog {
 	return &OpenFileDialog{
 		id:                   getDialogID(),
@@ -280,6 +329,19 @@ func newSaveFileDialog() *SaveFileDialog {
 		id:                   getDialogID(),
 		canCreateDirectories: true,
 	}
+}
+
+type SaveFileDialogOptions struct {
+	CanCreateDirectories            bool
+	ShowHiddenFiles                 bool
+	CanSelectHiddenExtension        bool
+	AllowOtherFileTypes             bool
+	HideExtension                   bool
+	TreatsFilePackagesAsDirectories bool
+	Message                         string
+	Directory                       string
+	Filename                        string
+	ButtonText                      string
 }
 
 type SaveFileDialog struct {
@@ -302,6 +364,19 @@ type SaveFileDialog struct {
 
 type saveFileDialogImpl interface {
 	show() (string, error)
+}
+
+func (d *SaveFileDialog) SetOptions(options *SaveFileDialogOptions) {
+	d.canCreateDirectories = options.CanCreateDirectories
+	d.showHiddenFiles = options.ShowHiddenFiles
+	d.canSelectHiddenExtension = options.CanSelectHiddenExtension
+	d.allowOtherFileTypes = options.AllowOtherFileTypes
+	d.hideExtension = options.HideExtension
+	d.treatsFilePackagesAsDirectories = options.TreatsFilePackagesAsDirectories
+	d.message = options.Message
+	d.directory = options.Directory
+	d.filename = options.Filename
+	d.buttonText = options.ButtonText
 }
 
 func (d *SaveFileDialog) CanCreateDirectories(canCreateDirectories bool) *SaveFileDialog {

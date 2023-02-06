@@ -3,23 +3,19 @@
 package runtime
 
 var RuntimeAssetsBundle = &RuntimeAssets{
-	desktopIPC:       DesktopIPC,
-	websocketIPC:     WebsocketIPC,
 	runtimeDesktopJS: DesktopRuntime,
 }
 
 type RuntimeAssets struct {
-	desktopIPC       []byte
-	websocketIPC     []byte
 	runtimeDesktopJS []byte
 }
 
 func (r *RuntimeAssets) DesktopIPC() []byte {
-	return r.desktopIPC
+	return []byte("")
 }
 
 func (r *RuntimeAssets) WebsocketIPC() []byte {
-	return r.websocketIPC
+	return []byte("")
 }
 
 func (r *RuntimeAssets) RuntimeDesktopJS() []byte {

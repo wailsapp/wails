@@ -12,12 +12,12 @@ The electron alternative for Go
 
 import {newRuntimeCaller} from "./runtime";
 
-let call = newRuntimeCaller("log");
+let call = newRuntimeCaller("clipboard");
 
-/**
- * Logs a message.
- * @param {message} Message to log
- */
-export function Log(message) {
-    return call("Log", message);
+export function SetText(text) {
+    return call("SetText", {text});
+}
+
+export function Text() {
+    return call("Text");
 }

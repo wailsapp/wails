@@ -1,47 +1,25 @@
 package application
 
-//
-//import "errors"
-//
-////var logLevelMap = map[byte]logger.LogLevel{
-////	'1': pkgLogger.TRACE,
-////	'2': pkgLogger.DEBUG,
-////	'3': pkgLogger.INFO,
-////	'4': pkgLogger.WARNING,
-////	'5': pkgLogger.ERROR,
-////}
-//
-//func (m *MessageProcessor) processLogMessage(message string) {
-//	if len(message) < 3 {
-//		m.Error("Invalid Log Message: " + message)
-//		return
-//	}
-//
-//	messageText := message[2:]
-//
-//	switch message[1] {
-//	case 'T':
-//		d.log.Trace(messageText)
-//	case 'P':
-//		d.log.Print(messageText)
-//	case 'D':
-//		d.log.Debug(messageText)
-//	case 'I':
-//		d.log.Info(messageText)
-//	case 'W':
-//		d.log.Warning(messageText)
-//	case 'E':
-//		d.log.Error(messageText)
-//	case 'F':
-//		d.log.Fatal(messageText)
-//	case 'S':
-//		loglevel, exists := logLevelMap[message[2]]
-//		if !exists {
-//			return "", errors.New("Invalid Set Log Level Message: " + message)
-//		}
-//		d.log.SetLogLevel(loglevel)
-//	default:
-//		return "", errors.New("Invalid Log Message: " + message)
-//	}
-//	return "", nil
-//}
+import (
+	"net/http"
+
+	"github.com/wailsapp/wails/v3/pkg/logger"
+)
+
+func (m *MessageProcessor) processLogMethod(method string, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {
+	switch method {
+	case "Log":
+		var msg logger.Message
+		err := params.ToStruct(&msg)
+		if err != nil {
+			m.httpError(rw, "error parsing log message: %s", err.Error())
+			return
+		}
+		msg.Sender = window.Name()
+		globalApplication.Log(&msg)
+		m.ok(rw)
+	default:
+		m.httpError(rw, "Unknown log method: %s", method)
+	}
+
+}
