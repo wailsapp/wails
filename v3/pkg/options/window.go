@@ -15,8 +15,7 @@ const (
 )
 
 type WebviewWindow struct {
-	// Alias is a human-readable name for the window. This can be used to reference the window in the frontend.
-	Alias                           string
+	Name                            string
 	Title                           string
 	Width, Height                   int
 	AlwaysOnTop                     bool

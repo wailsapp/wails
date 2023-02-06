@@ -1,7 +1,6 @@
 package application
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/wailsapp/wails/v3/pkg/logger"
@@ -16,7 +15,7 @@ func (m *MessageProcessor) processLogMethod(method string, rw http.ResponseWrite
 			m.httpError(rw, "error parsing log message: %s", err.Error())
 			return
 		}
-		msg.Sender = fmt.Sprintf("%d", window.id)
+		msg.Sender = window.Name()
 		globalApplication.Log(&msg)
 		m.ok(rw)
 	default:

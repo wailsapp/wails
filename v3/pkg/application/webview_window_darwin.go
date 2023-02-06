@@ -1105,7 +1105,6 @@ func (w *macosWebviewWindow) run() {
 		if w.parent.options.Hidden == false {
 			C.windowShow(w.nsWindow)
 		}
-		C.printWindowStyle(w.nsWindow)
 	})
 }
 

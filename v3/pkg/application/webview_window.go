@@ -131,6 +131,13 @@ func (w *WebviewWindow) SetTitle(title string) *WebviewWindow {
 	return w
 }
 
+func (w *WebviewWindow) Name() string {
+	if w.options.Name != "" {
+		return w.options.Name
+	}
+	return fmt.Sprintf("Window %d", w.id)
+}
+
 func (w *WebviewWindow) SetSize(width, height int) *WebviewWindow {
 	// Don't set size if fullscreen
 	if w.IsFullscreen() {
@@ -630,7 +637,7 @@ func (w *WebviewWindow) info(message string, args ...any) {
 		Level:   "INFO",
 		Message: message,
 		Data:    args,
-		Sender:  fmt.Sprintf("window %d", w.id),
+		Sender:  w.Name(),
 		Time:    time.Now(),
 	})
 }

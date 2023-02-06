@@ -92,10 +92,8 @@ type App struct {
 	applicationEventListenersLock sync.RWMutex
 
 	// Windows
-	windows           map[uint]*WebviewWindow
-	windowsLock       sync.Mutex
-	windowAliases     map[string]uint
-	windowAliasesLock sync.Mutex
+	windows     map[uint]*WebviewWindow
+	windowsLock sync.Mutex
 
 	// System Trays
 	systemTrays      map[uint]*SystemTray
@@ -196,14 +194,6 @@ func (a *App) NewWebviewWindowWithOptions(windowOptions *options.WebviewWindow) 
 	a.windows[id] = newWindow
 	a.windowsLock.Unlock()
 
-	if windowOptions.Alias != "" {
-		if a.windowAliases == nil {
-			a.windowAliases = make(map[string]uint)
-		}
-		a.windowAliasesLock.Lock()
-		a.windowAliases[windowOptions.Alias] = id
-		a.windowAliasesLock.Unlock()
-	}
 	if a.running {
 		newWindow.run()
 	}
@@ -245,7 +235,10 @@ func (a *App) Run() error {
 		for {
 			event := <-webviewRequests
 			a.handleWebViewRequest(event)
-			event.request.Release()
+			err := event.request.Release()
+			if err != nil {
+				a.error("Failed to release webview request: %s", err.Error())
+			}
 		}
 	}()
 	go func() {

@@ -1,11 +1,10 @@
 package application
 
 import (
-	"fmt"
 	"net/http"
 )
 
-func (m *MessageProcessor) processEventsMethod(method string, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {
+func (m *MessageProcessor) processEventsMethod(method string, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {
 
 	switch method {
 	case "Emit":
@@ -19,7 +18,7 @@ func (m *MessageProcessor) processEventsMethod(method string, rw http.ResponseWr
 			m.httpError(rw, "Event name must be specified")
 			return
 		}
-		event.Sender = fmt.Sprintf("%d", window.id)
+		event.Sender = window.Name()
 		globalApplication.Events.Emit(&event)
 		m.ok(rw)
 	default:
