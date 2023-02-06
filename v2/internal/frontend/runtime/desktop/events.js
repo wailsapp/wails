@@ -94,11 +94,10 @@ function notifyListeners(eventData) {
     if (eventListeners[eventName]) {
 
         // Keep a list of listener indexes to destroy
-        // const newEventListenerList = eventListeners[eventName].slice();
-        const newEventListenerList = [];
+        const newEventListenerList = eventListeners[eventName].slice();
 
         // Iterate listeners
-        for (let count = 0; count < eventListeners[eventName].length; count += 1) {
+        for (let count = eventListeners[eventName].length - 1; count >= 0; count -= 1) {
 
             // Get next listener
             const listener = eventListeners[eventName][count];
@@ -107,11 +106,9 @@ function notifyListeners(eventData) {
 
             // Do the callback
             const destroy = listener.Callback(data);
-            // if (destroy) {
-            if (!destroy) {
+            if (destroy) {
                 // if the listener indicated to destroy itself, add it to the destroy list
-                // newEventListenerList.splice(count, 1);
-                newEventListenerList.push(eventListeners[eventName][count]);
+                newEventListenerList.splice(count, 1);
             }
         }
 
