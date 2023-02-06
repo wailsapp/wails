@@ -32,6 +32,10 @@ Similarly, the `Emit` function has changed. Instead of taking a name and optiona
 
 In v2, `Off` and `OffAll` calls would remove events in both JS and Go. Due to the multi-window nature of v3, this has been changed so that these methods only apply to the context they are called in. For example, if you call `Off` in a window, it will only remove events for that window. If you use `Off` in Go, it will only remove events for Go.
 
+### Logging
+
+There was a lot of requests for different types of logging in v2 so for v3 we have simplified things to make it as customisable as you want. There is now a single call `Log` that takes a LogMessage object. This object contains the message, the level, and the source, the log message and any data to be printed out. The default logger is the Console logger, however any number of outputs to log to can be added. Simply add custom loggers to the `options.Application.Logger.CustomLoggers` slice. The default logger does not have log level filtering, however custom loggers can be added that do.
+
 ### Developer notes
 
 When emitting an event in Go, it will dispatch the event to local Go listeners and also each window in the application.
@@ -39,15 +43,17 @@ When emitting an event in JS, it now sends the event to the application. This wi
 
 ## Window
 
-TBD
+The Window API has largely remained the same, however there are a few changes to note. 
 
 ## ClipBoard
 
-TBD
+The clipboard API has been simplified. There is now a single `Clipboard` object that can be used to read and write to the clipboard. The `Clipboard` object is available in both Go and JS. `SetText()` to set the text and `Text()` to get the text.
 
 ## Bindings
 
 TBD
 
 ## Dialogs
+
+Dialogs are now available in JavaScript! 
 

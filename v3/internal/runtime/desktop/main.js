@@ -13,6 +13,7 @@ import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, Sa
 
 import * as Clipboard from './clipboard';
 import * as Application from './application';
+import * as Log from './log';
 
 import {newWindow} from "./window";
 import {dispatchCustomEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
@@ -37,6 +38,7 @@ export function newRuntime(id) {
         Application: {
             ...Application
         },
+        Log,
         Dialog: {
             Info,
             Warning,

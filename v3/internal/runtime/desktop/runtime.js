@@ -15,7 +15,9 @@ const runtimeURL = window.location.origin + "/wails/runtime";
 function runtimeCall(method, args) {
     let url = new URL(runtimeURL);
     url.searchParams.append("method", method);
-    url.searchParams.append("args", JSON.stringify(args));
+    if(args) {
+        url.searchParams.append("args", JSON.stringify(args));
+    }
     return new Promise((resolve, reject) => {
         fetch(url)
             .then(response => {
@@ -37,7 +39,6 @@ function runtimeCall(method, args) {
 export function newRuntimeCaller(object, id) {
     if (!id || id === -1) {
         return function (method, args) {
-            args = args || {};
             return runtimeCall(object + "." + method, args);
         };
     }

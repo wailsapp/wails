@@ -3,8 +3,11 @@ package application
 import "C"
 import (
 	"log"
+	"os"
 	"runtime"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/pkg/logger"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/options"
@@ -29,7 +32,13 @@ func New(appOptions options.Application) *App {
 		options:                   appOptions,
 		applicationEventListeners: make(map[uint][]func()),
 		systemTrays:               make(map[uint]*SystemTray),
+		log:                       logger.New(appOptions.Logger.CustomLoggers...),
 	}
+
+	if !appOptions.Logger.Silent {
+		result.log.AddOutput(&logger.Console{})
+	}
+
 	result.Events = NewCustomEventProcessor(result.dispatchEventToWindows)
 	globalApplication = result
 	return result
@@ -77,13 +86,6 @@ type webViewAssetRequest struct {
 
 var webviewRequests = make(chan *webViewAssetRequest)
 
-type EventHandler interface {
-	On(eventName string, args any)
-	OnMultiple(eventName string, args any, count int)
-	Once(eventName string, args any)
-	Emit(eventName string, args any)
-}
-
 type App struct {
 	options                       options.Application
 	applicationEventListeners     map[uint][]func()
@@ -114,10 +116,9 @@ type App struct {
 	// The main application menu
 	ApplicationMenu *Menu
 
-	// About MessageDialog
 	clipboard *Clipboard
-
-	Events *EventProcessor
+	Events    *EventProcessor
+	log       *logger.Logger
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -144,6 +145,40 @@ func (a *App) On(eventType events.ApplicationEventType, callback func()) {
 }
 func (a *App) NewWebviewWindow() *WebviewWindow {
 	return a.NewWebviewWindowWithOptions(nil)
+}
+
+func (a *App) info(message string, args ...any) {
+	a.Log(&logger.Message{
+		Level:   "INFO",
+		Message: message,
+		Data:    args,
+		Sender:  "Wails",
+	})
+}
+
+func (a *App) fatal(message string, args ...any) {
+	msg := "************** FATAL **************\n"
+	msg += message
+	msg += "***********************************\n"
+
+	a.Log(&logger.Message{
+		Level:   "FATAL",
+		Message: msg,
+		Data:    args,
+		Sender:  "Wails",
+	})
+
+	a.log.Flush()
+	os.Exit(1)
+}
+
+func (a *App) error(message string, args ...any) {
+	a.Log(&logger.Message{
+		Level:   "ERROR",
+		Message: message,
+		Data:    args,
+		Sender:  "Wails",
+	})
 }
 
 func (a *App) NewWebviewWindowWithOptions(windowOptions *options.WebviewWindow) *WebviewWindow {
@@ -177,7 +212,6 @@ func (a *App) NewWebviewWindowWithOptions(windowOptions *options.WebviewWindow) 
 }
 
 func (a *App) NewSystemTray() *SystemTray {
-
 	id := a.getSystemTrayID()
 	newSystemTray := NewSystemTray(id)
 	a.systemTraysLock.Lock()
@@ -191,6 +225,7 @@ func (a *App) NewSystemTray() *SystemTray {
 }
 
 func (a *App) Run() error {
+	a.info("Starting application")
 	a.impl = newPlatformApp(a)
 
 	a.running = true
@@ -430,4 +465,8 @@ func (a *App) Show() {
 	if a.impl != nil {
 		a.impl.show()
 	}
+}
+
+func (a *App) Log(message *logger.Message) {
+	a.log.Log(message)
 }

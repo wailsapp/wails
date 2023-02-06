@@ -3,6 +3,9 @@ package application
 import (
 	"fmt"
 	"sync"
+	"time"
+
+	"github.com/wailsapp/wails/v3/pkg/logger"
 
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
@@ -98,11 +101,10 @@ func NewWindow(options *options.WebviewWindow) *WebviewWindow {
 	}
 
 	opts := assetserveroptions.Options{Assets: options.Assets.FS, Handler: options.Assets.Handler, Middleware: options.Assets.Middleware}
-	// TODO Bindings, Logger, ServingFrom disk?
+	// TODO Bindings, ServingFrom disk?
 	srv, err := assetserver.NewAssetServer("", opts, false, nil, runtime.RuntimeAssetsBundle)
 	if err != nil {
-		// TODO handle errors
-		panic(err)
+		globalApplication.fatal(err.Error())
 	}
 
 	result := &WebviewWindow{
@@ -365,7 +367,7 @@ func (w *WebviewWindow) SetBackgroundColour(colour *options.RGBA) *WebviewWindow
 }
 
 func (w *WebviewWindow) handleMessage(message string) {
-	fmt.Printf("[window %d] %s\n", w.id, message)
+	w.info(message)
 	// Check for special messages
 	if message == "test" {
 		w.SetTitle("Hello World")
@@ -376,7 +378,7 @@ func (w *WebviewWindow) handleMessage(message string) {
 
 func (w *WebviewWindow) handleWebViewRequest(request webview.Request) {
 	url, _ := request.URL()
-	fmt.Printf("[window %d] Request %s\n", w.id, url)
+	w.info("Request: %s", url)
 	w.assets.ServeWebViewRequest(request)
 }
 
@@ -620,4 +622,15 @@ func (w *WebviewWindow) SetFrameless(frameless bool) *WebviewWindow {
 func (w *WebviewWindow) dispatchCustomEvent(event *CustomEvent) {
 	msg := fmt.Sprintf("_wails.dispatchCustomEvent(%s);", event.ToJSON())
 	w.ExecJS(msg)
+}
+
+func (w *WebviewWindow) info(message string, args ...any) {
+
+	globalApplication.Log(&logger.Message{
+		Level:   "INFO",
+		Message: message,
+		Data:    args,
+		Sender:  fmt.Sprintf("window %d", w.id),
+		Time:    time.Now(),
+	})
 }

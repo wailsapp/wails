@@ -183,5 +183,5 @@ export function OffAll() {
    Emit emits an event to all listeners
  */
 export function Emit(event) {
-    call("Emit", event);
+    return call("Emit", event);
 }

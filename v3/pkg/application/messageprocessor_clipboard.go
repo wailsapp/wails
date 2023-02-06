@@ -4,11 +4,11 @@ import (
 	"net/http"
 )
 
-func (m *MessageProcessor) processClipboardMethod(method string, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, args QueryParams) {
+func (m *MessageProcessor) processClipboardMethod(method string, rw http.ResponseWriter, _ *http.Request, _ *WebviewWindow, params QueryParams) {
 
 	switch method {
 	case "SetText":
-		title := args.String("text")
+		title := params.String("text")
 		if title == nil {
 			m.Error("SetText: text is required")
 			return
