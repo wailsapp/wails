@@ -1,4 +1,4 @@
-module github.com/wailsapp/wails/v3
+module github.com/ciderapp/wails/v3
 
 go 1.19
 
