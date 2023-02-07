@@ -10,7 +10,7 @@ func BrowserOpenURL(ctx context.Context, url string) {
 	appFrontend.BrowserOpenURL(url)
 }
 
-func OpenDevToolsWindows() {
+func OpenDevToolsWindows(ctx context.Context) {
 	appFrontend := getFrontend(ctx)
 	appFrontend.OpenDevToolsWindows()
 }
