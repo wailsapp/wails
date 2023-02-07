@@ -66,6 +66,12 @@ type App struct {
 	Bind               []interface{}
 	WindowStartState   WindowStartState
 
+	// Http headers for the client
+	Headers http.Header
+
+	// Start URL
+	StartUrl string
+
 	// CSS property to test for draggable elements. Default "--wails-draggable"
 	CSSDragProperty string
 

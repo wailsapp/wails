@@ -34,8 +34,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
-const startURL = "http://wails.localhost/"
-
 type Screen = frontend.Screen
 
 type Frontend struct {
@@ -85,7 +83,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 	}
 
 	// We currently can't use wails://wails/ as other platforms do, therefore we map the assets sever onto the following url.
-	result.startURL, _ = url.Parse(startURL)
+	result.startURL, _ = url.Parse(appoptions.StartUrl)
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
@@ -520,16 +518,10 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	// Setting the UserAgent on the CoreWebView2Settings clears the whole default UserAgent of the Edge browser, but
 	// we want to just append our ApplicationIdentifier. So we adjust the UserAgent for every request.
 	if reqHeaders, err := req.GetHeaders(); err == nil {
-		// Mark: Cider
-		useragent := "Cider-2;?client=dotnet"
-		reqHeaders.SetHeader(assetserver.HeaderUserAgent, useragent)
-		reqHeaders.SetHeader("DNT", "1")
-		reqHeaders.SetHeader("authority", "amp-api.music.apple.com")
-		reqHeaders.SetHeader("origin", "https://music.apple.com")
-		reqHeaders.SetHeader("referer", "https://music.apple.com")
-		reqHeaders.SetHeader("sec-fetch-dest", "empty")
-		reqHeaders.SetHeader("sec-fetch-mode", "cors")
-		reqHeaders.SetHeader("sec-fetch-site", "same-site")
+		// Mark: Cider, iterate over all of our set header in the config and set them overriding if needed
+		for name, value := range f.frontendOptions.Headers {
+			reqHeaders.SetHeader(name, strings.Join(value, ", "))
+		}
 		reqHeaders.Release()
 	}
 
