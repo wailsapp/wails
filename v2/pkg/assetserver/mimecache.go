@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/ciderapp/mimetype"
+	"github.com/wailsapp/mimetype"
 )
 
 var (
