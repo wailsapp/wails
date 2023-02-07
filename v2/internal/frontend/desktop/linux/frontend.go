@@ -96,8 +96,6 @@ import (
 	"github.com/ciderapp/wails/v2/pkg/options"
 )
 
-const startURL = "wails://wails/"
-
 type Frontend struct {
 
 	// Context
@@ -145,7 +143,7 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		dispatcher:      dispatcher,
 		ctx:             ctx,
 	}
-	result.startURL, _ = url.Parse(startURL)
+	result.startURL, _ = url.Parse(appoptions.StartUrl)
 
 	if _starturl, _ := ctx.Value("starturl").(*url.URL); _starturl != nil {
 		result.startURL = _starturl
@@ -480,6 +478,14 @@ func processURLRequest(request unsafe.Pointer) {
 
 func (f *Frontend) processRequest(request unsafe.Pointer) {
 	req := (*C.WebKitURISchemeRequest)(request)
+	if reqHeaders, err := req.GetHeaders(); err == nil {
+		// Mark: Cider, iterate over all of our set header in the config and set them overriding if needed
+		for name, value := range f.frontendOptions.Headers {
+			reqHeaders.SetHeader(name, strings.Join(value, ", "))
+		}
+		reqHeaders.Release()
+	}
+
 	uri := C.webkit_uri_scheme_request_get_uri(req)
 	goURI := C.GoString(uri)
 
