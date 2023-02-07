@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v2/internal/project"
+	"github.com/ciderapp/wails/v2/internal/project"
 )
 
 func TestProject_GetFrontendDir(t *testing.T) {

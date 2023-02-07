@@ -1,9 +1,9 @@
 package system
 
 import (
-	"github.com/wailsapp/wails/v2/internal/shell"
-	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
-	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
+	"github.com/ciderapp/wails/v2/internal/shell"
+	"github.com/ciderapp/wails/v2/internal/system/operatingsystem"
+	"github.com/ciderapp/wails/v2/internal/system/packagemanager"
 	"os/exec"
 	"strings"
 )

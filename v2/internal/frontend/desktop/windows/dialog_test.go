@@ -5,7 +5,7 @@ package windows
 import (
 	"testing"
 
-	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/ciderapp/wails/v2/internal/frontend"
 	"golang.org/x/sys/windows"
 )
 

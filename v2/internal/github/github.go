@@ -13,7 +13,7 @@ import (
 )
 
 func GetReleaseNotes(tagVersion string, noColour bool) string {
-	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/releases/tags/" + url.PathEscape(tagVersion))
+	resp, err := http.Get("https://api.github.com/repos/ciderapp/wails/releases/tags/" + url.PathEscape(tagVersion))
 	if err != nil {
 		return "Unable to retrieve release notes. Please check your network connection"
 	}
@@ -61,7 +61,7 @@ func GetVersionTags() ([]*SemanticVersion, error) {
 	result := []*SemanticVersion{}
 	var err error
 
-	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/tags")
+	resp, err := http.Get("https://api.github.com/repos/ciderapp/wails/tags")
 	if err != nil {
 		return result, err
 	}

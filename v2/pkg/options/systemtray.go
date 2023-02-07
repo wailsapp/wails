@@ -1,7 +1,7 @@
 package options
 
 import (
-	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/ciderapp/wails/v2/pkg/menu"
 )
 
 // SystemTray contains options for the system tray

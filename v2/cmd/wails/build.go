@@ -9,12 +9,12 @@ import (
 
 	"github.com/leaanthony/slicer"
 	"github.com/pterm/pterm"
-	"github.com/wailsapp/wails/v2/cmd/wails/flags"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/gomod"
-	"github.com/wailsapp/wails/v2/internal/colour"
-	"github.com/wailsapp/wails/v2/internal/project"
-	"github.com/wailsapp/wails/v2/pkg/clilogger"
-	"github.com/wailsapp/wails/v2/pkg/commands/build"
+	"github.com/ciderapp/wails/v2/cmd/wails/flags"
+	"github.com/ciderapp/wails/v2/cmd/wails/internal/gomod"
+	"github.com/ciderapp/wails/v2/internal/colour"
+	"github.com/ciderapp/wails/v2/internal/project"
+	"github.com/ciderapp/wails/v2/pkg/clilogger"
+	"github.com/ciderapp/wails/v2/pkg/commands/build"
 )
 
 func buildApplication(f *flags.Build) error {

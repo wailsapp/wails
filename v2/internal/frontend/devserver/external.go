@@ -10,8 +10,8 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/wailsapp/wails/v2/internal/logger"
-	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/ciderapp/wails/v2/internal/logger"
+	"github.com/ciderapp/wails/v2/pkg/options/assetserver"
 )
 
 func newExternalDevServerAssetHandler(logger *logger.Logger, url *url.URL, options assetserver.Options) http.Handler {

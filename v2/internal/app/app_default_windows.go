@@ -5,8 +5,8 @@ package app
 import (
 	"os/exec"
 
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
-	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/ciderapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
+	"github.com/ciderapp/wails/v2/pkg/options"
 )
 
 func (a *App) Run() error {

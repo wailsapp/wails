@@ -1,6 +1,6 @@
 package interfaces
 
-import "github.com/wailsapp/wails/lib/messages"
+import "github.com/ciderapp/wails/lib/messages"
 
 // BindingManager is the binding manager interface
 type BindingManager interface {

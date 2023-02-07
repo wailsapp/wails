@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/wailsapp/wails/v3/examples/binding/models"
+	"github.com/ciderapp/wails/v3/examples/binding/models"
 )
 
 type GreetService struct {

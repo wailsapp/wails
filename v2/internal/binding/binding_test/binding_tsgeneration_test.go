@@ -1,7 +1,7 @@
 package binding_test
 
 import (
-	"github.com/wailsapp/wails/v2/internal/binding/binding_test/binding_test_import"
+	"github.com/ciderapp/wails/v2/internal/binding/binding_test/binding_test_import"
 )
 
 type GeneratedJsEntity struct {

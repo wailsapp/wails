@@ -2,7 +2,7 @@ package menumanager
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/ciderapp/wails/v2/pkg/menu"
 	"sync"
 )
 

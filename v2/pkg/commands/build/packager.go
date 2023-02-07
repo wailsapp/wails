@@ -12,9 +12,9 @@ import (
 
 	"github.com/jackmordaunt/icns"
 	"github.com/pkg/errors"
-	"github.com/wailsapp/wails/v2/pkg/buildassets"
+	"github.com/ciderapp/wails/v2/pkg/buildassets"
 
-	"github.com/wailsapp/wails/v2/internal/fs"
+	"github.com/ciderapp/wails/v2/internal/fs"
 )
 
 // PackageProject packages the application

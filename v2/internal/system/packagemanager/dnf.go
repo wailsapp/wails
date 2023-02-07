@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/wailsapp/wails/v2/internal/shell"
+	"github.com/ciderapp/wails/v2/internal/shell"
 )
 
 // Dnf represents the Dnf manager

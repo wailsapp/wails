@@ -3,7 +3,7 @@
 package webviewloader
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/combridge"
+	"github.com/ciderapp/wails/v2/internal/frontend/desktop/windows/go-webview2/pkg/combridge"
 )
 
 // HRESULT

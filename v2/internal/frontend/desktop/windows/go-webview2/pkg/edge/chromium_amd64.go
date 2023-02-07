@@ -4,7 +4,7 @@
 package edge
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/internal/w32"
+	"github.com/ciderapp/wails/v2/internal/frontend/desktop/windows/go-webview2/internal/w32"
 	"unsafe"
 )
 

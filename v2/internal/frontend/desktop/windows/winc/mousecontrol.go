@@ -7,7 +7,7 @@
 package winc
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
+	"github.com/ciderapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 )
 
 // MouseControl used for creating custom controls that need mouse hover or mouse leave events.

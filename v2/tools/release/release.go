@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wailsapp/wails/v2/internal/s"
+	"github.com/ciderapp/wails/v2/internal/s"
 )
 
 const versionFile = "../../cmd/wails/internal/version.txt"

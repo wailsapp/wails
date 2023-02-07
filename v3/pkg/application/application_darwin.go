@@ -118,8 +118,8 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
-	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/ciderapp/wails/v2/pkg/assetserver/webview"
+	"github.com/ciderapp/wails/v3/pkg/events"
 )
 
 type macosApp struct {

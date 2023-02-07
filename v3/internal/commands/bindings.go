@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/wailsapp/wails/v3/internal/parser"
+	"github.com/ciderapp/wails/v3/internal/parser"
 )
 
 type GenerateBindingsOptions struct {

@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/leaanthony/spinner"
-	"github.com/wailsapp/wails/cmd"
+	"github.com/ciderapp/wails/cmd"
 )
 
 func init() {
@@ -151,7 +151,7 @@ func updateToVersion(targetVersion *cmd.SemanticVersion, force bool) error {
 		log.Fatal("Cannot find home directory! Please file a bug report!")
 	}
 
-	err = cmd.NewProgramHelper().RunCommandArray([]string{"go", "get", "github.com/wailsapp/wails/cmd/wails@" + desiredVersion}, homeDir)
+	err = cmd.NewProgramHelper().RunCommandArray([]string{"go", "get", "github.com/ciderapp/wails/cmd/wails@" + desiredVersion}, homeDir)
 	if err != nil {
 		updateSpinner.Error(err.Error())
 		return err

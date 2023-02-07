@@ -24,7 +24,7 @@ func (g *GitHubHelper) GetVersionTags() ([]*SemanticVersion, error) {
 	result := []*SemanticVersion{}
 	var err error
 
-	resp, err := http.Get("https://api.github.com/repos/wailsapp/wails/releases")
+	resp, err := http.Get("https://api.github.com/repos/ciderapp/wails/releases")
 	if err != nil {
 		return result, err
 	}

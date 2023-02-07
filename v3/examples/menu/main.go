@@ -4,9 +4,9 @@ import (
 	_ "embed"
 	"log"
 
-	"github.com/wailsapp/wails/v3/pkg/options"
+	"github.com/ciderapp/wails/v3/pkg/options"
 
-	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/ciderapp/wails/v3/pkg/application"
 )
 
 func main() {

@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
+	"github.com/ciderapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 )
 
 func genOFN(parent Controller, title, filter string, filterIndex uint, initialDir string, buf []uint16) *w32.OPENFILENAME {

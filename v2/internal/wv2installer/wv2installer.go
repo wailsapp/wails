@@ -5,9 +5,9 @@ package wv2installer
 import (
 	"fmt"
 
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webviewloader"
-	"github.com/wailsapp/wails/v2/pkg/options"
-	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	"github.com/ciderapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webviewloader"
+	"github.com/ciderapp/wails/v2/pkg/options"
+	"github.com/ciderapp/wails/v2/pkg/options/windows"
 )
 
 const MinimumRuntimeVersion string = "94.0.992.31" // WebView2 SDK 1.0.992.28

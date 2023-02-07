@@ -1,6 +1,6 @@
 package binding_test
 
-import "github.com/wailsapp/wails/v2/internal/binding/binding_test/binding_test_import"
+import "github.com/ciderapp/wails/v2/internal/binding/binding_test/binding_test_import"
 
 type ImportedSlice struct {
 	ASliceWrapperContainer binding_test_import.ASliceWrapper `json:"ASliceWrapperContainer"`

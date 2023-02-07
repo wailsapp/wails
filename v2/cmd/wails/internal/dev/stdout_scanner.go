@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/acarl005/stripansi"
-	"github.com/wailsapp/wails/v2/cmd/wails/internal/logutils"
+	"github.com/ciderapp/wails/v2/cmd/wails/internal/logutils"
 )
 
 // stdoutScanner acts as a stdout target that will scan the incoming

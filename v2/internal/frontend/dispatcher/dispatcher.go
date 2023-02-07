@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/wailsapp/wails/v2/internal/binding"
-	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/ciderapp/wails/v2/internal/binding"
+	"github.com/ciderapp/wails/v2/internal/frontend"
+	"github.com/ciderapp/wails/v2/internal/logger"
 )
 
 type Dispatcher struct {

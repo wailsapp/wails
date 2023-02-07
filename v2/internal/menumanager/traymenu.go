@@ -10,7 +10,7 @@ import (
 	"github.com/leaanthony/go-ansi-parser"
 
 	"github.com/pkg/errors"
-	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/ciderapp/wails/v2/pkg/menu"
 )
 
 var trayMenuID int

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/wailsapp/wails/lib/interfaces"
-	"github.com/wailsapp/wails/lib/logger"
-	"github.com/wailsapp/wails/lib/messages"
+	"github.com/ciderapp/wails/lib/interfaces"
+	"github.com/ciderapp/wails/lib/logger"
+	"github.com/ciderapp/wails/lib/messages"
 )
 
 // Manager handles and processes events

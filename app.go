@@ -5,14 +5,14 @@ import (
 	"syscall"
 
 	"github.com/syossan27/tebata"
-	"github.com/wailsapp/wails/cmd"
-	"github.com/wailsapp/wails/lib/binding"
-	"github.com/wailsapp/wails/lib/event"
-	"github.com/wailsapp/wails/lib/interfaces"
-	"github.com/wailsapp/wails/lib/ipc"
-	"github.com/wailsapp/wails/lib/logger"
-	"github.com/wailsapp/wails/lib/renderer"
-	wailsruntime "github.com/wailsapp/wails/runtime"
+	"github.com/ciderapp/wails/cmd"
+	"github.com/ciderapp/wails/lib/binding"
+	"github.com/ciderapp/wails/lib/event"
+	"github.com/ciderapp/wails/lib/interfaces"
+	"github.com/ciderapp/wails/lib/ipc"
+	"github.com/ciderapp/wails/lib/logger"
+	"github.com/ciderapp/wails/lib/renderer"
+	wailsruntime "github.com/ciderapp/wails/runtime"
 )
 
 // -------------------------------- Compile time Flags ------------------------------

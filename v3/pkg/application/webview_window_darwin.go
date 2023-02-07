@@ -750,9 +750,9 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/ciderapp/wails/v3/pkg/events"
 
-	"github.com/wailsapp/wails/v3/pkg/options"
+	"github.com/ciderapp/wails/v3/pkg/options"
 )
 
 var showDevTools = func(window unsafe.Pointer) {}

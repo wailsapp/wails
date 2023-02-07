@@ -1,6 +1,6 @@
 package binding_test
 
-import "github.com/wailsapp/wails/v2/internal/binding/binding_test/binding_test_import"
+import "github.com/ciderapp/wails/v2/internal/binding/binding_test/binding_test_import"
 
 type ImportedMap struct {
 	AMapWrapperContainer binding_test_import.AMapWrapper `json:"AMapWrapperContainer"`

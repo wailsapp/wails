@@ -42,7 +42,7 @@ Screen GetNThMonitor(int monitor_num, GtkWindow *window){
 import "C"
 import (
 	"github.com/pkg/errors"
-	"github.com/wailsapp/wails/v2/internal/frontend"
+	"github.com/ciderapp/wails/v2/internal/frontend"
 	"sync"
 )
 

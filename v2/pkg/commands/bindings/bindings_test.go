@@ -2,7 +2,7 @@ package bindings
 
 import (
 	"github.com/matryer/is"
-	"github.com/wailsapp/wails/v2/pkg/templates"
+	"github.com/ciderapp/wails/v2/pkg/templates"
 	"os"
 	"path/filepath"
 	"runtime"

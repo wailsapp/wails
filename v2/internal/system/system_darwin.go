@@ -9,9 +9,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
+	"github.com/ciderapp/wails/v2/internal/system/packagemanager"
 
-	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
+	"github.com/ciderapp/wails/v2/internal/system/operatingsystem"
 )
 
 // Determine if the app is running on Apple Silicon

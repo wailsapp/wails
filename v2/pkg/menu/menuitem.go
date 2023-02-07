@@ -3,7 +3,7 @@ package menu
 import (
 	"sync"
 
-	"github.com/wailsapp/wails/v2/pkg/menu/keys"
+	"github.com/ciderapp/wails/v2/pkg/menu/keys"
 )
 
 // MenuItem represents a menuitem contained in a menu

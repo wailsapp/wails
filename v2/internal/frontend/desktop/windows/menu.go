@@ -4,8 +4,8 @@
 package windows
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
-	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/ciderapp/wails/v2/internal/frontend/desktop/windows/winc"
+	"github.com/ciderapp/wails/v2/pkg/menu"
 )
 
 var checkboxMap = map[*menu.MenuItem][]*winc.MenuItem{}

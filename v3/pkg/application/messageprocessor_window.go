@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wailsapp/wails/v3/pkg/options"
+	"github.com/ciderapp/wails/v3/pkg/options"
 )
 
 func (m *MessageProcessor) mustAtoI(input string) int {

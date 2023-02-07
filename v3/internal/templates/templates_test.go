@@ -3,7 +3,7 @@ package templates
 import (
 	"testing"
 
-	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/ciderapp/wails/v3/internal/flags"
 )
 
 func TestInstall(t *testing.T) {

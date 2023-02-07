@@ -20,9 +20,9 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/ciderapp/wails/v2/pkg/menu"
 
-	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/ciderapp/wails/v2/pkg/options"
 )
 
 func init() {

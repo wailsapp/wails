@@ -95,14 +95,14 @@ const basicGo118 string = `module changeme
 
 go 1.18
 
-require github.com/wailsapp/wails/v2 v2.0.0-beta.7
+require github.com/ciderapp/wails/v2 v2.0.0-beta.7
 `
 
 const basicGo119 string = `module changeme
 
 go 1.19
 
-require github.com/wailsapp/wails/v2 v2.0.0-beta.7
+require github.com/ciderapp/wails/v2 v2.0.0-beta.7
 `
 
 func TestUpdateGoModGoVersion(t *testing.T) {

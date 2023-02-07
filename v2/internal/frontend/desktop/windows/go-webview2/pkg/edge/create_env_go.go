@@ -5,7 +5,7 @@ package edge
 import (
 	"unsafe"
 
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webviewloader"
+	"github.com/ciderapp/wails/v2/internal/frontend/desktop/windows/go-webview2/webviewloader"
 )
 
 func createCoreWebView2EnvironmentWithOptions(browserExecutableFolder, userDataFolder string, environmentCompletedHandle *iCoreWebView2CreateCoreWebView2EnvironmentCompletedHandler, additionalBrowserArgs string) error {

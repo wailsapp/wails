@@ -3,7 +3,7 @@ package main
 import (
 	"runtime"
 
-	"github.com/wailsapp/wails/cmd"
+	"github.com/ciderapp/wails/cmd"
 )
 
 func init() {

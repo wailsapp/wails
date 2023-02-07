@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	"github.com/wailsapp/wails/lib/messages"
+	"github.com/ciderapp/wails/lib/messages"
 )
 
 // Renderer is an interface describing a Wails target to render the app to

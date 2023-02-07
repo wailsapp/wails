@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/wailsapp/wails/v2/internal/binding"
-	"github.com/wailsapp/wails/v2/internal/logger"
+	"github.com/ciderapp/wails/v2/internal/binding"
+	"github.com/ciderapp/wails/v2/internal/logger"
 )
 
 type BindingTest struct {

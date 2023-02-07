@@ -6,7 +6,7 @@ import (
 	"io/fs"
 	"os"
 
-	"github.com/wailsapp/wails/v3/internal/flags"
+	"github.com/ciderapp/wails/v3/internal/flags"
 
 	"github.com/leaanthony/gosod"
 

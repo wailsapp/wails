@@ -6,7 +6,7 @@ package windows
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
+	"github.com/ciderapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 	"syscall"
 	"unsafe"
 )

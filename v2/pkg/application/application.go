@@ -2,10 +2,10 @@ package application
 
 import (
 	"context"
-	"github.com/wailsapp/wails/v2/internal/app"
-	"github.com/wailsapp/wails/v2/internal/signal"
-	"github.com/wailsapp/wails/v2/pkg/menu"
-	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/ciderapp/wails/v2/internal/app"
+	"github.com/ciderapp/wails/v2/internal/signal"
+	"github.com/ciderapp/wails/v2/pkg/menu"
+	"github.com/ciderapp/wails/v2/pkg/options"
 	"sync"
 )
 

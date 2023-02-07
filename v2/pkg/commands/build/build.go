@@ -10,15 +10,15 @@ import (
 	"github.com/pterm/pterm"
 	"github.com/samber/lo"
 
-	"github.com/wailsapp/wails/v2/internal/staticanalysis"
-	"github.com/wailsapp/wails/v2/pkg/commands/bindings"
+	"github.com/ciderapp/wails/v2/internal/staticanalysis"
+	"github.com/ciderapp/wails/v2/pkg/commands/bindings"
 
-	"github.com/wailsapp/wails/v2/internal/fs"
+	"github.com/ciderapp/wails/v2/internal/fs"
 
-	"github.com/wailsapp/wails/v2/internal/shell"
+	"github.com/ciderapp/wails/v2/internal/shell"
 
-	"github.com/wailsapp/wails/v2/internal/project"
-	"github.com/wailsapp/wails/v2/pkg/clilogger"
+	"github.com/ciderapp/wails/v2/internal/project"
+	"github.com/ciderapp/wails/v2/pkg/clilogger"
 )
 
 // Mode is the type used to indicate the build modes
@@ -337,11 +337,11 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 
 		tags := options.UserTags
 		if lo.Contains(tags, nativeWebView2Loader) {
-			message := "You are using the legacy native WebView2Loader. This loader will be deprecated in the near future. Please report any bugs related to the new loader: https://github.com/wailsapp/wails/issues/2004"
+			message := "You are using the legacy native WebView2Loader. This loader will be deprecated in the near future. Please report any bugs related to the new loader: https://github.com/ciderapp/wails/issues/2004"
 			pterm.Warning.Println(message)
 		} else {
 			tags = append(tags, nativeWebView2Loader)
-			message := fmt.Sprintf("Wails is now using the new Go WebView2Loader. If you encounter any issues with it, please report them to https://github.com/wailsapp/wails/issues/2004. You could also use the old legacy loader with `-tags %s`, but keep in mind this will be deprecated in the near future.", strings.Join(tags, ","))
+			message := fmt.Sprintf("Wails is now using the new Go WebView2Loader. If you encounter any issues with it, please report them to https://github.com/ciderapp/wails/issues/2004. You could also use the old legacy loader with `-tags %s`, but keep in mind this will be deprecated in the near future.", strings.Join(tags, ","))
 			pterm.Info.Println(message)
 		}
 	}

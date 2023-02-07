@@ -2,7 +2,7 @@ package runtime
 
 import (
 	"context"
-	"github.com/wailsapp/wails/v2/pkg/menu"
+	"github.com/ciderapp/wails/v2/pkg/menu"
 )
 
 func MenuSetApplicationMenu(ctx context.Context, menu *menu.Menu) {

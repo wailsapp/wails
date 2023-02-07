@@ -1,7 +1,7 @@
 package runtime
 
 import "context"
-import "github.com/wailsapp/wails/v2/internal/frontend"
+import "github.com/ciderapp/wails/v2/internal/frontend"
 
 type Screen = frontend.Screen
 

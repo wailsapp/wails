@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/options"
+	"github.com/ciderapp/wails/v3/pkg/application"
+	"github.com/ciderapp/wails/v3/pkg/options"
 )
 
 func main() {

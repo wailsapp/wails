@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/wailsapp/wails/v2/internal/shell"
+	"github.com/ciderapp/wails/v2/internal/shell"
 )
 
 func gitcommand() string {

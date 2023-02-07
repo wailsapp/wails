@@ -3,7 +3,7 @@ package ipc
 import (
 	"fmt"
 
-	"github.com/wailsapp/wails/lib/messages"
+	"github.com/ciderapp/wails/lib/messages"
 )
 
 func init() {

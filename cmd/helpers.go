@@ -13,7 +13,7 @@ import (
 
 	"github.com/leaanthony/slicer"
 	"github.com/leaanthony/spinner"
-	wailsruntime "github.com/wailsapp/wails/runtime"
+	wailsruntime "github.com/ciderapp/wails/runtime"
 )
 
 const xgoVersion = "1.16.3"
@@ -66,7 +66,7 @@ func InitializeCrossCompilation(verbose bool) error {
 	}
 
 	var packSpinner *spinner.Spinner
-	msg := fmt.Sprintf("Pulling wailsapp/xgo:%s docker image... (may take a while)", xgoVersion)
+	msg := fmt.Sprintf("Pulling ciderapp/xgo:%s docker image... (may take a while)", xgoVersion)
 	if !verbose {
 		packSpinner = spinner.New(msg)
 		packSpinner.SetSpinSpeed(50)
@@ -76,7 +76,7 @@ func InitializeCrossCompilation(verbose bool) error {
 	}
 
 	err := NewProgramHelper(verbose).RunCommandArray([]string{"docker",
-		"pull", fmt.Sprintf("wailsapp/xgo:%s", xgoVersion)})
+		"pull", fmt.Sprintf("ciderapp/xgo:%s", xgoVersion)})
 
 	if err != nil {
 		if packSpinner != nil {
@@ -91,7 +91,7 @@ func InitializeCrossCompilation(verbose bool) error {
 	return nil
 }
 
-// BuildDocker builds the project using the cross compiling wailsapp/xgo:<xgoVersion> container
+// BuildDocker builds the project using the cross compiling ciderapp/xgo:<xgoVersion> container
 func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOptions) error {
 	var packSpinner *spinner.Spinner
 	if buildMode == BuildModeBridge {
@@ -139,11 +139,11 @@ func BuildDocker(binaryName string, buildMode string, projectOptions *ProjectOpt
 		buildCommand.Add(fmt.Sprintf("%s:/go", projectOptions.GoPath))
 	}
 
-	buildCommand.Add(fmt.Sprintf("wailsapp/xgo:%s", xgoVersion))
+	buildCommand.Add(fmt.Sprintf("ciderapp/xgo:%s", xgoVersion))
 	buildCommand.Add(".")
 
 	compileMessage := fmt.Sprintf(
-		"Packing + Compiling project for %s/%s using docker image wailsapp/xgo:%s",
+		"Packing + Compiling project for %s/%s using docker image ciderapp/xgo:%s",
 		projectOptions.Platform, projectOptions.Architecture, xgoVersion)
 
 	if buildMode == BuildModeDebug {
@@ -447,14 +447,14 @@ func InstallFrontendDeps(projectDir string, projectOptions *ProjectOptions, forc
 
 // InstallBridge installs the relevant bridge javascript library
 func InstallBridge(projectDir string, projectOptions *ProjectOptions) error {
-	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
+	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@ciderapp", "runtime", "init.js")
 	err := fs.CreateFile(bridgeFileTarget, wailsruntime.BridgeJS)
 	return err
 }
 
 // InstallProdRuntime installs the production runtime
 func InstallProdRuntime(projectDir string, projectOptions *ProjectOptions) error {
-	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@wailsapp", "runtime", "init.js")
+	bridgeFileTarget := filepath.Join(projectDir, projectOptions.FrontEnd.Dir, "node_modules", "@ciderapp", "runtime", "init.js")
 	err := fs.CreateFile(bridgeFileTarget, wailsruntime.InitJS)
 	return err
 }
@@ -514,10 +514,10 @@ func ldFlags(po *ProjectOptions, buildMode string) string {
 	}
 
 	if po.UseFirebug {
-		ldflags += "-X github.com/wailsapp/wails/lib/renderer.UseFirebug=true "
+		ldflags += "-X github.com/ciderapp/wails/lib/renderer.UseFirebug=true "
 	}
 
-	ldflags += "-X github.com/wailsapp/wails.BuildMode=" + buildMode
+	ldflags += "-X github.com/ciderapp/wails.BuildMode=" + buildMode
 
 	// Add additional ldflags passed in via the `ldflags` cli flag
 	if len(po.LdFlags) > 0 {
@@ -529,7 +529,7 @@ func ldFlags(po *ProjectOptions, buildMode string) string {
 		cwd, err := os.Getwd()
 		if err == nil {
 			filename := filepath.Join(cwd, po.FrontEnd.Dir, po.typescriptDefsFilename)
-			ldflags += " -X github.com/wailsapp/wails/lib/binding.typescriptDefinitionFilename=" + filename
+			ldflags += " -X github.com/ciderapp/wails/lib/binding.typescriptDefinitionFilename=" + filename
 		}
 	}
 	return ldflags

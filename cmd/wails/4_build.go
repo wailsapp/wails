@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/leaanthony/spinner"
-	"github.com/wailsapp/wails/cmd"
+	"github.com/ciderapp/wails/cmd"
 )
 
 // getSupportedPlatforms returns a slice of platform/architecture

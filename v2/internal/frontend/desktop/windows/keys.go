@@ -4,8 +4,8 @@
 package windows
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc"
-	"github.com/wailsapp/wails/v2/pkg/menu/keys"
+	"github.com/ciderapp/wails/v2/internal/frontend/desktop/windows/winc"
+	"github.com/ciderapp/wails/v2/pkg/menu/keys"
 	"strings"
 )
 

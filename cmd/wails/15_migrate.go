@@ -10,7 +10,7 @@ import (
 
 	"github.com/Masterminds/semver"
 	"github.com/leaanthony/spinner"
-	"github.com/wailsapp/wails/cmd"
+	"github.com/ciderapp/wails/cmd"
 )
 
 // Constants
@@ -114,7 +114,7 @@ func init() {
 			logger.Yellow("  - Patch main.js")
 		}
 
-		logger.Yellow("  - Ensure '@wailsapp/runtime` module is installed")
+		logger.Yellow("  - Ensure '@ciderapp/runtime` module is installed")
 
 		if dryrun {
 			logger.White("Exiting: Dry Run")
@@ -299,7 +299,7 @@ func updateWailsVersion(currentVersion, latestVersion *semver.Version) error {
 	// Patch go.mod
 	checkSpinner.Start("Patching go.mod")
 
-	wailsModule := "github.com/wailsapp/wails"
+	wailsModule := "github.com/ciderapp/wails"
 	old := fmt.Sprintf("%s v%s", wailsModule, currentVersion)
 	new := fmt.Sprintf("%s v%s", wailsModule, latestVersion)
 
@@ -334,7 +334,7 @@ func patchMainJS() error {
 
 	// Patch import line
 	oldImportLine := `import Bridge from "./wailsbridge";`
-	newImportLine := `import * as Wails from "@wailsapp/runtime";`
+	newImportLine := `import * as Wails from "@ciderapp/runtime";`
 	mainJSContents = strings.Replace(mainJSContents, oldImportLine, newImportLine, -1)
 
 	// Patch Start line
@@ -354,7 +354,7 @@ func patchMainJS() error {
 
 func installWailsRuntime() error {
 
-	checkSpinner.Start("Installing @wailsapp/runtime module")
+	checkSpinner.Start("Installing @ciderapp/runtime module")
 
 	// Change to the frontend directory
 	err := os.Chdir(frontEndDir)
@@ -372,8 +372,8 @@ func installWailsRuntime() error {
 
 	switch packageManager {
 	case cmd.NPM:
-		// npm install --save @wailsapp/runtime
-		programHelper.InstallNPMPackage("@wailsapp/runtime", true)
+		// npm install --save @ciderapp/runtime
+		programHelper.InstallNPMPackage("@ciderapp/runtime", true)
 	default:
 		checkSpinner.Error()
 		return fmt.Errorf("Unknown package manager")

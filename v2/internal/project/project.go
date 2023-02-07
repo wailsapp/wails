@@ -157,7 +157,7 @@ func (p *Project) setDefaults() {
 	}
 	// Create default name if not given
 	if p.Name == "" {
-		p.Name = "wailsapp"
+		p.Name = "ciderapp"
 	}
 	if p.OutputFilename == "" {
 		p.OutputFilename = p.Name

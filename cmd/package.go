@@ -355,7 +355,7 @@ func (b *PackageHelper) PackageWindows(po *ProjectOptions, cleanUp bool) error {
 			"docker", "run", "--rm",
 			"-v", outputDir + ":/build",
 			"--entrypoint", "/bin/sh",
-			"wailsapp/xgo:1.16.3",
+			"ciderapp/xgo:1.16.3",
 			"-c", "/usr/bin/x86_64-w64-mingw32-windres -o /build/" + basename + "-res.syso /build/" + basename + ".rc",
 		}
 		if err := NewProgramHelper().RunCommandArray(args); err != nil {

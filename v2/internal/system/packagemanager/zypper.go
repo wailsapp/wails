@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/wailsapp/wails/v2/internal/shell"
+	"github.com/ciderapp/wails/v2/internal/shell"
 )
 
 // Zypper represents the Zypper package manager

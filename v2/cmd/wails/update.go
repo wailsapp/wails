@@ -6,11 +6,11 @@ import (
 
 	"github.com/labstack/gommon/color"
 	"github.com/pterm/pterm"
-	"github.com/wailsapp/wails/v2/cmd/wails/flags"
-	"github.com/wailsapp/wails/v2/internal/colour"
-	"github.com/wailsapp/wails/v2/internal/shell"
+	"github.com/ciderapp/wails/v2/cmd/wails/flags"
+	"github.com/ciderapp/wails/v2/internal/colour"
+	"github.com/ciderapp/wails/v2/internal/shell"
 
-	"github.com/wailsapp/wails/v2/internal/github"
+	"github.com/ciderapp/wails/v2/internal/github"
 )
 
 // AddSubcommand adds the `init` command for the Wails application
@@ -143,7 +143,7 @@ func updateToVersion(targetVersion *github.SemanticVersion, force bool, currentV
 		fatal("Cannot find home directory! Please file a bug report!")
 	}
 
-	sout, serr, err := shell.RunCommand(homeDir, "go", "install", "github.com/wailsapp/wails/v2/cmd/wails@"+desiredVersion)
+	sout, serr, err := shell.RunCommand(homeDir, "go", "install", "github.com/ciderapp/wails/v2/cmd/wails@"+desiredVersion)
 	if err != nil {
 		pterm.Println("Failed.")
 		pterm.Error.Println(sout + `\n` + serr)
@@ -151,7 +151,7 @@ func updateToVersion(targetVersion *github.SemanticVersion, force bool, currentV
 	}
 	pterm.Println("Done.")
 	pterm.Println(color.Green("\nMake sure you update your project go.mod file to use " + desiredVersion + ":"))
-	pterm.Println(color.Green("  require github.com/wailsapp/wails/v2 " + desiredVersion))
+	pterm.Println(color.Green("  require github.com/ciderapp/wails/v2 " + desiredVersion))
 	pterm.Println(color.Red("\nTo view the release notes, please run `wails show releasenotes`"))
 
 	return nil

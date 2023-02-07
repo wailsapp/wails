@@ -4,9 +4,9 @@
 package windows
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend"
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
-	"github.com/wailsapp/wails/v2/internal/go-common-file-dialog/cfd"
+	"github.com/ciderapp/wails/v2/internal/frontend"
+	"github.com/ciderapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
+	"github.com/ciderapp/wails/v2/internal/go-common-file-dialog/cfd"
 	"golang.org/x/sys/windows"
 	"path/filepath"
 	"strings"

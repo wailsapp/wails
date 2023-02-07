@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/wailsapp/wails/runtime"
+	"github.com/ciderapp/wails/runtime"
 )
 
 // AppConfig is the configuration structure used when creating a Wails App object

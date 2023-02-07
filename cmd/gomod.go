@@ -24,7 +24,7 @@ func GetWailsVersion() (*semver.Version, error) {
 	}
 
 	// Find wails version
-	versionRegexp := regexp.MustCompile(`.*github.com/wailsapp/wails.*(v\d+.\d+.\d+(?:-pre\d+)?)`)
+	versionRegexp := regexp.MustCompile(`.*github.com/ciderapp/wails.*(v\d+.\d+.\d+(?:-pre\d+)?)`)
 	versions := versionRegexp.FindStringSubmatch(goMod)
 
 	if len(versions) != 2 {
@@ -68,9 +68,9 @@ func UpdateGoModVersion() error {
 	}
 	currentVersionString := currentVersion.String()
 
-	requireLine := "-require=github.com/wailsapp/wails@v" + currentVersionString
+	requireLine := "-require=github.com/ciderapp/wails@v" + currentVersionString
 
-	// Issue: go mod edit -require=github.com/wailsapp/wails@1.0.2-pre5
+	// Issue: go mod edit -require=github.com/ciderapp/wails@1.0.2-pre5
 	helper := NewProgramHelper()
 	command := []string{"go", "mod", "edit", requireLine}
 	return helper.RunCommandArray(command)

@@ -5,8 +5,8 @@ package wv2installer
 
 import (
 	"fmt"
-	"github.com/wailsapp/wails/v2/internal/webview2runtime"
-	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	"github.com/ciderapp/wails/v2/internal/webview2runtime"
+	"github.com/ciderapp/wails/v2/pkg/options/windows"
 )
 
 func doInstallationStrategy(installStatus installationStatus, messages *windows.Messages) error {

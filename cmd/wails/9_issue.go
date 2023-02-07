@@ -11,7 +11,7 @@ import (
 
 	"github.com/pkg/browser"
 
-	"github.com/wailsapp/wails/cmd"
+	"github.com/ciderapp/wails/cmd"
 )
 
 func init() {
@@ -106,7 +106,7 @@ To help you in this process, we will ask for some information, add Go/Wails deta
 		fmt.Println("Processing template and preparing for upload.")
 
 		// Grab issue template
-		resp, err := http.Get("https://raw.githubusercontent.com/wailsapp/wails/master/.github/ISSUE_TEMPLATE/bug_report.md")
+		resp, err := http.Get("https://raw.githubusercontent.com/ciderapp/wails/master/.github/ISSUE_TEMPLATE/bug_report.md")
 		if err != nil {
 			logger.Red("Unable to read in issue template. Are you online?")
 			os.Exit(1)
@@ -115,7 +115,7 @@ To help you in this process, we will ask for some information, add Go/Wails deta
 		template, _ := io.ReadAll(resp.Body)
 		body := string(template)
 		body = "**Description**\n" + (strings.Split(body, "**Description**")[1])
-		fullURL := "https://github.com/wailsapp/wails/issues/new?"
+		fullURL := "https://github.com/ciderapp/wails/issues/new?"
 		body = strings.Replace(body, "A clear and concise description of what the bug is.", description, -1)
 		body = strings.Replace(body, "Please provide your platform, GO version and variables, etc", str.String(), -1)
 		params := "title=" + title + "&body=" + body

@@ -4,7 +4,7 @@
 package windows
 
 import (
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/win32"
+	"github.com/ciderapp/wails/v2/internal/frontend/desktop/windows/win32"
 )
 
 func (f *Frontend) ClipboardGetText() (string, error) {

@@ -12,7 +12,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/ciderapp/wails/v2/pkg/options/assetserver"
 )
 
 type Logger interface {

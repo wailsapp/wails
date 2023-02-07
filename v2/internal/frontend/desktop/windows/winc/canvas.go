@@ -10,7 +10,7 @@ package winc
 import (
 	"fmt"
 
-	"github.com/wailsapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
+	"github.com/ciderapp/wails/v2/internal/frontend/desktop/windows/winc/w32"
 )
 
 type Canvas struct {

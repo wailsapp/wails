@@ -2,7 +2,7 @@
 
 package menu
 
-import "github.com/wailsapp/wails/v2/internal/platform/win32"
+import "github.com/ciderapp/wails/v2/internal/platform/win32"
 
 type Menu struct {
 	menu win32.HMENU

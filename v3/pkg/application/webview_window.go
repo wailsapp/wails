@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/wailsapp/wails/v2/pkg/assetserver"
-	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
-	assetserveroptions "github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"github.com/wailsapp/wails/v3/internal/runtime"
-	"github.com/wailsapp/wails/v3/pkg/events"
-	"github.com/wailsapp/wails/v3/pkg/options"
+	"github.com/ciderapp/wails/v2/pkg/assetserver"
+	"github.com/ciderapp/wails/v2/pkg/assetserver/webview"
+	assetserveroptions "github.com/ciderapp/wails/v2/pkg/options/assetserver"
+	"github.com/ciderapp/wails/v3/internal/runtime"
+	"github.com/ciderapp/wails/v3/pkg/events"
+	"github.com/ciderapp/wails/v3/pkg/options"
 )
 
 type (

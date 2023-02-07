@@ -18,7 +18,7 @@ func platformInit() {
 
 // SetProcessDPIAware via user32.dll
 // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setprocessdpiaware
-// Also, thanks Jack Mordaunt! https://github.com/wailsapp/wails/issues/293
+// Also, thanks Jack Mordaunt! https://github.com/ciderapp/wails/issues/293
 func SetProcessDPIAware() error {
 	status, r, err := syscall.NewLazyDLL("user32.dll").NewProc("SetProcessDPIAware").Call()
 	if status == 0 {
