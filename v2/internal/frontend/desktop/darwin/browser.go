@@ -12,3 +12,7 @@ func (f *Frontend) BrowserOpenURL(url string) {
 	// Specific method implementation
 	_ = browser.OpenURL(url)
 }
+
+func (f *Frontend) OpenDevToolsWindow() {
+	// TODO implement darwin dev tools
+}

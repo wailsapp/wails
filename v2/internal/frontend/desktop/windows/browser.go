@@ -13,6 +13,6 @@ func (f *Frontend) BrowserOpenURL(url string) {
 	_ = browser.OpenURL(url)
 }
 
-func (f *Frontend) OpenDevToolsWindows() {
+func (f *Frontend) OpenDevToolsWindow() {
 	f.chromium.OpenDevToolsWindow()
 }
