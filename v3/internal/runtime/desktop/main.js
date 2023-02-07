@@ -9,47 +9,55 @@ The electron alternative for Go
 */
 /* jshint esversion: 9 */
 
-import {invoke} from "./ipc.js";
-import {Callback, callbacks} from './calls';
-import {EventsNotify, eventListeners} from "./events";
-import {SetBindings} from "./bindings";
+import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
+
+import * as Clipboard from './clipboard';
+import * as Application from './application';
+import * as Log from './log';
 
 import {newWindow} from "./window";
-
-// export function Environment() {
-//     return Call(":wails:Environment");
-// }
+import {dispatchCustomEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
 
 // Internal wails endpoints
 window.wails = {
-    Callback,
-    callbacks,
-    EventsNotify,
-    eventListeners,
-    SetBindings,
+    ...newRuntime(-1),
 };
+
+window._wails = {
+    dialogCallback,
+    dialogErrorCallback,
+    dispatchCustomEvent,
+}
 
 
 export function newRuntime(id) {
     return {
-        // Log: newLog(id),
-        // Browser: newBrowser(id),
-        // Screen: newScreen(id),
-        // Events: newEvents(id),
+        Clipboard: {
+            ...Clipboard
+        },
+        Application: {
+            ...Application
+        },
+        Log,
+        Dialog: {
+            Info,
+            Warning,
+            Error,
+            Question,
+            OpenFile,
+            SaveFile,
+        },
+        Events: {
+            Emit,
+            On,
+            Once,
+            OnMultiple,
+            Off,
+            OffAll,
+        },
         Window: newWindow(id),
-        Show: () => invoke("S"),
-        Hide: () => invoke("H"),
-        Quit: () => invoke("Q"),
-        // GetWindow: function (windowID) {
-        //     if (!windowID) {
-        //         return this.Window;
-        //     }
-        //     return newWindow(windowID);
-        // }
     }
 }
-
-window.runtime = newRuntime(-1);
 
 if (DEBUG) {
     console.log("Wails v3.0.0 Debug Mode Enabled");

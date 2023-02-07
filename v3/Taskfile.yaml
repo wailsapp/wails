@@ -87,32 +87,15 @@ tasks:
     cmds:
       - npm install
 
-  build-runtime-dev:
-    dir: internal/runtime/dev
-    deps:
-        - install-runtime-dev-deps
-    sources:
-      - ./*.js
-    generates:
-      - ../ipc_websocket.js
-    cmds:
-      - node build.js
-
-  build-runtime-ipc:
-    dir: internal/runtime
-    deps:
-        - install-runtime-dev-deps
-    sources:
-      - ./desktop/ipc.js
-    generates:
-      - ipc.js
-    cmds:
-      - npx esbuild desktop/ipc.js --bundle --minify --outfile=ipc.js
-
   test-runtime:
     dir: internal/runtime
     cmds:
-      - npx vitest
+      - npx vitest run
+
+  update-runtime:
+    dir: internal/runtime
+    cmds:
+      - npx npm-check-updates -u
 
   build-runtime-all:
     dir: internal/runtime
@@ -123,10 +106,9 @@ tasks:
       - build-runtime-debug-darwin
       - build-runtime-debug-windows
       - build-runtime-debug-linux
-      - build-runtime-dev
-      - build-runtime-ipc
+
     cmds:
-      - task: test-runtime
+      - cmd: echo "build complete"
 
   build-runtime:
     dir: internal/runtime

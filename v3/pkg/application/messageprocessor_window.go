@@ -1,95 +1,191 @@
 package application
 
 import (
-	"encoding/json"
-	"strconv"
-	"strings"
+	"net/http"
 
 	"github.com/wailsapp/wails/v3/pkg/options"
 )
 
-func (m *MessageProcessor) mustAtoI(input string) int {
-	result, err := strconv.Atoi(input)
+func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {
+
+	args, err := params.Args()
 	if err != nil {
-		m.Error("cannot convert %s to integer!", input)
-	}
-	return result
-}
-
-func (m *MessageProcessor) processWindowMessage(message string, window *WebviewWindow) {
-	if len(message) < 2 {
-		m.Error("Invalid Window Message: " + message)
+		m.httpError(rw, "Unable to parse arguments: %s", err)
+		return
 	}
 
-	switch message[1] {
-	case 'A':
-		switch message[2:] {
-		//case "SDT":
-		//	go window.WindowSetSystemDefaultTheme()
-		//case "LT":
-		//	go window.SetLightTheme()
-		//case "DT":
-		//	go window.SetDarkTheme()
-		case "TP:0", "TP:1":
-			if message[2:] == "TP:0" {
-				go window.SetAlwaysOnTop(false)
-			} else if message[2:] == "TP:1" {
-				go window.SetAlwaysOnTop(true)
-			}
+	switch method {
+	case "SetTitle":
+		title := args.String("title")
+		if title == nil {
+			m.Error("SetTitle: title is required")
+			return
 		}
-	case 'c':
-		go window.Center()
-	case 'T':
-		title := message[2:]
-		go window.SetTitle(title)
-	case 'F':
-		go window.Fullscreen()
-	case 'f':
-		go window.UnFullscreen()
-	case 's':
-		parts := strings.Split(message[3:], ":")
-		w := m.mustAtoI(parts[0])
-		h := m.mustAtoI(parts[1])
-		go window.SetSize(w, h)
-	case 'p':
-		parts := strings.Split(message[3:], ":")
-		x := m.mustAtoI(parts[0])
-		y := m.mustAtoI(parts[1])
-		go window.SetPosition(x, y)
-	case 'H':
-		go window.Hide()
-	case 'S':
-		go window.Show()
-	//case 'R':
-	//	go window.ReloadApp()
-	case 'r':
-		var rgba options.RGBA
-		err := json.Unmarshal([]byte(message[3:]), &rgba)
+		window.SetTitle(*title)
+		m.ok(rw)
+	case "SetSize":
+		width := args.Int("width")
+		height := args.Int("height")
+		if width == nil || height == nil {
+			m.Error("Invalid SetSize Message")
+			return
+		}
+		window.SetSize(*width, *height)
+		m.ok(rw)
+	case "SetPosition":
+		x := args.Int("x")
+		y := args.Int("y")
+		if x == nil || y == nil {
+			m.Error("Invalid SetPosition Message")
+			return
+		}
+		window.SetPosition(*x, *y)
+		m.ok(rw)
+	case "Fullscreen":
+		window.Fullscreen()
+		m.ok(rw)
+	case "UnFullscreen":
+		window.UnFullscreen()
+		m.ok(rw)
+	case "Minimise":
+		window.Minimize()
+		m.ok(rw)
+	case "UnMinimise":
+		window.UnMinimise()
+		m.ok(rw)
+	case "Maximise":
+		window.Maximise()
+		m.ok(rw)
+	case "UnMaximise":
+		window.UnMaximise()
+		m.ok(rw)
+	case "Show":
+		window.Show()
+		m.ok(rw)
+	case "Hide":
+		window.Hide()
+		m.ok(rw)
+	case "Close":
+		window.Close()
+		m.ok(rw)
+	case "Center":
+		window.Center()
+		m.ok(rw)
+	case "Size":
+		width, height := window.Size()
+		m.json(rw, map[string]interface{}{
+			"width":  width,
+			"height": height,
+		})
+	case "Position":
+		x, y := window.Position()
+		m.json(rw, map[string]interface{}{
+			"x": x,
+			"y": y,
+		})
+	case "SetBackgroundColour":
+		r := args.UInt8("r")
+		if r == nil {
+			m.Error("Invalid SetBackgroundColour Message: 'r' value required")
+			return
+		}
+		g := args.UInt8("g")
+		if g == nil {
+			m.Error("Invalid SetBackgroundColour Message: 'g' value required")
+			return
+		}
+		b := args.UInt8("b")
+		if b == nil {
+			m.Error("Invalid SetBackgroundColour Message: 'b' value required")
+			return
+		}
+		a := args.UInt8("a")
+		if a == nil {
+			m.Error("Invalid SetBackgroundColour Message: 'a' value required")
+			return
+		}
+		window.SetBackgroundColour(&options.RGBA{
+			Red:   *r,
+			Green: *g,
+			Blue:  *b,
+			Alpha: *a,
+		})
+		m.ok(rw)
+	case "SetAlwaysOnTop":
+		alwaysOnTop := args.Bool("alwaysOnTop")
+		if alwaysOnTop == nil {
+			m.Error("Invalid SetAlwaysOnTop Message: 'alwaysOnTop' value required")
+			return
+		}
+		window.SetAlwaysOnTop(*alwaysOnTop)
+		m.ok(rw)
+	case "SetResizable":
+		resizable := args.Bool("resizable")
+		if resizable == nil {
+			m.Error("Invalid SetResizable Message: 'resizable' value required")
+			return
+		}
+		window.SetResizable(*resizable)
+		m.ok(rw)
+	case "SetMinSize":
+		width := args.Int("width")
+		height := args.Int("height")
+		if width == nil || height == nil {
+			m.Error("Invalid SetMinSize Message")
+			return
+		}
+		window.SetMinSize(*width, *height)
+		m.ok(rw)
+	case "SetMaxSize":
+		width := args.Int("width")
+		height := args.Int("height")
+		if width == nil || height == nil {
+			m.Error("Invalid SetMaxSize Message")
+			return
+		}
+		window.SetMaxSize(*width, *height)
+		m.ok(rw)
+	case "Width":
+		width := window.Width()
+		m.json(rw, map[string]interface{}{
+			"width": width,
+		})
+	case "Height":
+		height := window.Height()
+		m.json(rw, map[string]interface{}{
+			"height": height,
+		})
+	case "ZoomIn":
+		window.ZoomIn()
+		m.ok(rw)
+	case "ZoomOut":
+		window.ZoomOut()
+		m.ok(rw)
+	case "ZoomReset":
+		window.ZoomReset()
+		m.ok(rw)
+	case "GetZoom":
+		zoomLevel := window.GetZoom()
+		m.json(rw, map[string]interface{}{
+			"zoomLevel": zoomLevel,
+		})
+	case "Screen":
+		screen, err := window.GetScreen()
 		if err != nil {
-			m.Error("Invalid RGBA Message: %s", err.Error())
+			m.httpError(rw, err.Error())
+			return
 		}
-		go window.SetBackgroundColour(&rgba)
-	case 'M':
-		go window.Maximise()
-	//case 't':
-	//	go window.ToggleMaximise()
-	case 'U':
-		go window.UnMaximise()
-	case 'm':
-		go window.Minimise()
-	case 'u':
-		go window.UnMinimise()
-	case 'Z':
-		parts := strings.Split(message[3:], ":")
-		w := m.mustAtoI(parts[0])
-		h := m.mustAtoI(parts[1])
-		go window.SetMaxSize(w, h)
-	case 'z':
-		parts := strings.Split(message[3:], ":")
-		w := m.mustAtoI(parts[0])
-		h := m.mustAtoI(parts[1])
-		go window.SetMinSize(w, h)
+		m.json(rw, screen)
+	case "SetZoom":
+		zoomLevel := args.Float64("zoomLevel")
+		if zoomLevel == nil {
+			m.Error("Invalid SetZoom Message: invalid 'zoomLevel' value")
+			return
+		}
+		window.SetZoom(*zoomLevel)
+		m.ok(rw)
 	default:
-		m.Error("unknown Window message: %s", message)
+		m.httpError(rw, "Unknown window method: %s", method)
 	}
+
 }

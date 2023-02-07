@@ -3,6 +3,9 @@ package application
 import (
 	"fmt"
 	"sync"
+	"time"
+
+	"github.com/wailsapp/wails/v3/pkg/logger"
 
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
@@ -34,9 +37,11 @@ type (
 		reload()
 		forceReload()
 		toggleDevTools()
-		resetZoom()
+		zoomReset()
 		zoomIn()
 		zoomOut()
+		getZoom() float64
+		setZoom(zoom float64)
 		close()
 		zoom()
 		minimize()
@@ -96,11 +101,10 @@ func NewWindow(options *options.WebviewWindow) *WebviewWindow {
 	}
 
 	opts := assetserveroptions.Options{Assets: options.Assets.FS, Handler: options.Assets.Handler, Middleware: options.Assets.Middleware}
-	// TODO Bindings, Logger, ServingFrom disk?
+	// TODO Bindings, ServingFrom disk?
 	srv, err := assetserver.NewAssetServer("", opts, false, nil, runtime.RuntimeAssetsBundle)
 	if err != nil {
-		// TODO handle errors
-		panic(err)
+		globalApplication.fatal(err.Error())
 	}
 
 	result := &WebviewWindow{
@@ -112,6 +116,7 @@ func NewWindow(options *options.WebviewWindow) *WebviewWindow {
 	}
 
 	result.messageProcessor = NewMessageProcessor(result)
+	srv.UseRuntimeHandler(result.messageProcessor)
 
 	return result
 }
@@ -124,6 +129,13 @@ func (w *WebviewWindow) SetTitle(title string) *WebviewWindow {
 		w.impl.setTitle(title)
 	}
 	return w
+}
+
+func (w *WebviewWindow) Name() string {
+	if w.options.Name != "" {
+		return w.options.Name
+	}
+	return fmt.Sprintf("Window %d", w.id)
 }
 
 func (w *WebviewWindow) SetSize(width, height int) *WebviewWindow {
@@ -209,6 +221,21 @@ func (w *WebviewWindow) SetURL(s string) *WebviewWindow {
 		w.impl.setURL(s)
 	}
 	return w
+}
+
+func (w *WebviewWindow) SetZoom(magnification float64) *WebviewWindow {
+	w.options.Zoom = magnification
+	if w.impl != nil {
+		w.impl.setZoom(magnification)
+	}
+	return w
+}
+
+func (w *WebviewWindow) GetZoom() float64 {
+	if w.impl != nil {
+		return w.impl.getZoom()
+	}
+	return 1
 }
 
 func (w *WebviewWindow) SetResizable(b bool) *WebviewWindow {
@@ -347,7 +374,7 @@ func (w *WebviewWindow) SetBackgroundColour(colour *options.RGBA) *WebviewWindow
 }
 
 func (w *WebviewWindow) handleMessage(message string) {
-	fmt.Printf("[window %d] %s\n", w.id, message)
+	w.info(message)
 	// Check for special messages
 	if message == "test" {
 		w.SetTitle("Hello World")
@@ -358,7 +385,7 @@ func (w *WebviewWindow) handleMessage(message string) {
 
 func (w *WebviewWindow) handleWebViewRequest(request webview.Request) {
 	url, _ := request.URL()
-	fmt.Printf("[window %d] Request %s\n", w.id, url)
+	w.info("Request: %s", url)
 	w.assets.ServeWebViewRequest(request)
 }
 
@@ -449,9 +476,9 @@ func (w *WebviewWindow) ToggleDevTools() {
 	w.impl.toggleDevTools()
 }
 
-func (w *WebviewWindow) ResetZoom() *WebviewWindow {
+func (w *WebviewWindow) ZoomReset() *WebviewWindow {
 	if w.impl != nil {
-		w.impl.resetZoom()
+		w.impl.zoomReset()
 	}
 	return w
 
@@ -597,4 +624,20 @@ func (w *WebviewWindow) SetFrameless(frameless bool) *WebviewWindow {
 		w.impl.setFrameless(frameless)
 	}
 	return w
+}
+
+func (w *WebviewWindow) dispatchCustomEvent(event *CustomEvent) {
+	msg := fmt.Sprintf("_wails.dispatchCustomEvent(%s);", event.ToJSON())
+	w.ExecJS(msg)
+}
+
+func (w *WebviewWindow) info(message string, args ...any) {
+
+	globalApplication.Log(&logger.Message{
+		Level:   "INFO",
+		Message: message,
+		Data:    args,
+		Sender:  w.Name(),
+		Time:    time.Now(),
+	})
 }
