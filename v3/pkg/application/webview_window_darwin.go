@@ -251,8 +251,8 @@ void windowEnableDevTools(void* nsWindow) {
 	});
 }
 
-// windowResetZoom
-void windowResetZoom(void* nsWindow) {
+// windowZoomReset
+void windowZoomReset(void* nsWindow) {
 	// Reset zoom on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
 		// Get window delegate
@@ -260,6 +260,24 @@ void windowResetZoom(void* nsWindow) {
 		// Reset zoom
 		[delegate.webView setMagnification:1.0];
 	});
+}
+
+// windowZoomSet
+void windowZoomSet(void* nsWindow, double zoom) {
+	// Reset zoom on main thread
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// Get window delegate
+		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(WebviewWindow*)nsWindow delegate];
+		// Reset zoom
+		[delegate.webView setMagnification:zoom];
+	});
+}
+
+// windowZoomGet
+float windowZoomGet(void* nsWindow) {
+	// Get zoom
+	WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(WebviewWindow*)nsWindow delegate];
+	return [delegate.webView magnification];
 }
 
 // windowZoomIn
@@ -762,6 +780,14 @@ type macosWebviewWindow struct {
 	parent   *WebviewWindow
 }
 
+func (w *macosWebviewWindow) getZoom() float64 {
+	return float64(C.windowZoomGet(w.nsWindow))
+}
+
+func (w *macosWebviewWindow) setZoom(zoom float64) {
+	C.windowZoomSet(w.nsWindow, C.double(zoom))
+}
+
 func (w *macosWebviewWindow) setFrameless(frameless bool) {
 	C.windowSetFrameless(w.nsWindow, C.bool(frameless))
 	if frameless {
@@ -848,8 +874,8 @@ func (w *macosWebviewWindow) zoomOut() {
 	C.windowZoomOut(w.nsWindow)
 }
 
-func (w *macosWebviewWindow) resetZoom() {
-	C.windowResetZoom(w.nsWindow)
+func (w *macosWebviewWindow) zoomReset() {
+	C.windowZoomReset(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) toggleDevTools() {
@@ -1017,6 +1043,7 @@ func (w *macosWebviewWindow) run() {
 		if w.parent.options.MaxWidth != 0 || w.parent.options.MaxHeight != 0 {
 			w.setMaxSize(w.parent.options.MaxWidth, w.parent.options.MaxHeight)
 		}
+		//w.setZoom(w.parent.options.Zoom)
 		w.enableDevTools()
 		w.setBackgroundColour(w.parent.options.BackgroundColour)
 
@@ -1078,7 +1105,6 @@ func (w *macosWebviewWindow) run() {
 		if w.parent.options.Hidden == false {
 			C.windowShow(w.nsWindow)
 		}
-		C.printWindowStyle(w.nsWindow)
 	})
 }
 

@@ -14,12 +14,17 @@ import (
 const (
 	runtimeJSPath = "/wails/runtime.js"
 	ipcJSPath     = "/wails/ipc.js"
+	runtimePath   = "/wails/runtime"
 )
 
 type RuntimeAssets interface {
 	DesktopIPC() []byte
 	WebsocketIPC() []byte
 	RuntimeDesktopJS() []byte
+}
+
+type RuntimeHandler interface {
+	HandleRuntimeCall(w http.ResponseWriter, r *http.Request)
 }
 
 type AssetServer struct {
@@ -33,6 +38,9 @@ type AssetServer struct {
 
 	servingFromDisk     bool
 	appendSpinnerToBody bool
+
+	// Use http based runtime
+	runtimeHandler RuntimeHandler
 
 	assetServerWebView
 }
@@ -75,6 +83,10 @@ func NewAssetServerWithHandler(handler http.Handler, bindingsJSON string, servin
 	}
 
 	return result, nil
+}
+
+func (d *AssetServer) UseRuntimeHandler(handler RuntimeHandler) {
+	d.runtimeHandler = handler
 }
 
 func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -121,6 +133,13 @@ func (d *AssetServer) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	case runtimeJSPath:
 		d.writeBlob(rw, path, d.runtimeJS)
+
+	case runtimePath:
+		if d.runtimeHandler != nil {
+			d.runtimeHandler.HandleRuntimeCall(rw, req)
+		} else {
+			d.handler.ServeHTTP(rw, req)
+		}
 
 	case ipcJSPath:
 		content := d.runtime.DesktopIPC()

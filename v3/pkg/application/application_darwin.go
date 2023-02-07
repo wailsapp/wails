@@ -113,6 +113,16 @@ static void setApplicationIcon(void *icon, int length) {
 	});
 }
 
+// Hide the application
+static void hide(void) {
+	[NSApp hide:nil];
+}
+
+// Show the application
+static void show(void) {
+	[NSApp unhide:nil];
+}
+
 */
 import "C"
 import (
@@ -125,6 +135,14 @@ import (
 type macosApp struct {
 	applicationMenu unsafe.Pointer
 	parent          *App
+}
+
+func (m *macosApp) hide() {
+	C.hide()
+}
+
+func (m *macosApp) show() {
+	C.show()
 }
 
 func (m *macosApp) on(eventID uint) {

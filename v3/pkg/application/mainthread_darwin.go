@@ -29,7 +29,7 @@ func dispatchOnMainThreadCallback(callbackID C.uint) {
 	id := uint(callbackID)
 	fn := mainThreadFunctionStore[id]
 	if fn == nil {
-		Fatal("dispatchCallback called with invalid id: ", id)
+		Fatal("dispatchCallback called with invalid id: %v", id)
 	}
 	delete(mainThreadFunctionStore, id)
 	mainThreadFunctionStoreLock.RUnlock()

@@ -163,7 +163,7 @@ func newRole(role Role) *MenuItem {
 	case ToggleDevTools:
 		return newToggleDevToolsMenuItem()
 	case ResetZoom:
-		return newResetZoomMenuItem()
+		return newZoomResetMenuItem()
 	case ZoomIn:
 		return newZoomInMenuItem()
 	case ZoomOut:
