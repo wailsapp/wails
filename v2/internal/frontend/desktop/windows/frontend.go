@@ -520,9 +520,16 @@ func (f *Frontend) processRequest(req *edge.ICoreWebView2WebResourceRequest, arg
 	// Setting the UserAgent on the CoreWebView2Settings clears the whole default UserAgent of the Edge browser, but
 	// we want to just append our ApplicationIdentifier. So we adjust the UserAgent for every request.
 	if reqHeaders, err := req.GetHeaders(); err == nil {
-		useragent, _ := reqHeaders.GetHeader(assetserver.HeaderUserAgent)
-		useragent = strings.Join([]string{useragent, assetserver.WailsUserAgentValue}, " ")
+		// Mark: Cider
+		useragent := "Cider-2;?client=dotnet"
 		reqHeaders.SetHeader(assetserver.HeaderUserAgent, useragent)
+		reqHeaders.SetHeader("DNT", "1")
+		reqHeaders.SetHeader("authority", "amp-api.music.apple.com")
+		reqHeaders.SetHeader("origin", "https://music.apple.com")
+		reqHeaders.SetHeader("referer", "https://music.apple.com")
+		reqHeaders.SetHeader("sec-fetch-dest", "empty")
+		reqHeaders.SetHeader("sec-fetch-mode", "cors")
+		reqHeaders.SetHeader("sec-fetch-site", "same-site")
 		reqHeaders.Release()
 	}
 
