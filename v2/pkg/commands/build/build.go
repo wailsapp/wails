@@ -262,9 +262,11 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 
 	// Compile the application
 	printBulletPoint("Compiling application: ")
+	outputFile := builder.OutputFilename(options)
+	options.ProjectData.OutputFilename = outputFile
+	options.ProjectData.Name = outputFile
 
 	if options.Platform == "darwin" && options.Arch == "universal" {
-		outputFile := builder.OutputFilename(options)
 		amd64Filename := outputFile + "-amd64"
 		arm64Filename := outputFile + "-arm64"
 
