@@ -2,11 +2,10 @@ package dispatcher
 
 import (
 	"context"
-
-	"github.com/pkg/errors"
 	"github.com/ciderapp/wails/v2/internal/binding"
 	"github.com/ciderapp/wails/v2/internal/frontend"
 	"github.com/ciderapp/wails/v2/internal/logger"
+	"github.com/pkg/errors"
 )
 
 type Dispatcher struct {

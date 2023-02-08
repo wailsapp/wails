@@ -408,6 +408,8 @@ typedef void (^schemeTaskCaller)(id<WKURLSchemeTask>);
    [self.webview evaluateJavaScript:script completionHandler:nil];
 }
 
+// TODO Support request intercept
+
 - (void)webView:(WKWebView *)webView runOpenPanelWithParameters:(WKOpenPanelParameters *)parameters 
     initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSArray<NSURL *> * URLs))completionHandler {
     
