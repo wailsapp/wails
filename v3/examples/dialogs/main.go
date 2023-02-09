@@ -7,17 +7,15 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/wailsapp/wails/v3/pkg/options"
-
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 func main() {
 
-	app := application.New(options.Application{
+	app := application.New(application.Options{
 		Name:        "Dialogs Demo",
 		Description: "A demo of the dialogs API",
-		Mac: options.Mac{
+		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})

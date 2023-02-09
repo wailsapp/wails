@@ -7,8 +7,6 @@ import (
 	"math/rand"
 	"strconv"
 
-	"github.com/wailsapp/wails/v3/pkg/options"
-
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -16,11 +14,11 @@ import (
 var assets embed.FS
 
 func main() {
-	app := application.New(options.Application{
+	app := application.New(application.Options{
 		Name:        "WebviewWindow Javascript Demo",
 		Description: "A demo of the WebviewWindow API from Javascript",
 		Icon:        nil,
-		Mac: options.Mac{
+		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
@@ -32,8 +30,8 @@ func main() {
 	windowCounter := 1
 
 	newWindow := func() {
-		app.NewWebviewWindowWithOptions(&options.WebviewWindow{
-			Assets: options.Assets{
+		app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+			Assets: application.AssetOptions{
 				FS: assets,
 			},
 		}).

@@ -126,6 +126,8 @@ type macEvents struct {
 	WebViewDidReceiveServerRedirectForProvisionalNavigation WindowEventType
 	WebViewDidFinishNavigation                              WindowEventType
 	WebViewDidCommitNavigation                              WindowEventType
+	WebViewDraggingEntered                                  WindowEventType
+	WebViewDraggingPerformed                                WindowEventType
 }
 
 func newMacEvents() macEvents {
@@ -250,5 +252,7 @@ func newMacEvents() macEvents {
 		WebViewDidReceiveServerRedirectForProvisionalNavigation: 117,
 		WebViewDidFinishNavigation:                              118,
 		WebViewDidCommitNavigation:                              119,
+		WebViewDraggingEntered:                                  120,
+		WebViewDraggingPerformed:                                121,
 	}
 }

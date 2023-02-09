@@ -5,17 +5,15 @@ import (
 	"log"
 	"time"
 
-	"github.com/wailsapp/wails/v3/pkg/options"
-
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 func main() {
 
-	app := application.New(options.Application{
+	app := application.New(application.Options{
 		Name:        "Clipboard Demo",
 		Description: "A demo of the clipboard API",
-		Mac: options.Mac{
+		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})

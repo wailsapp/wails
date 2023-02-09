@@ -16,7 +16,7 @@
 
 @end
 
-@interface WebviewWindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate, WKURLSchemeHandler>
+@interface WebviewWindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate, WKURLSchemeHandler, NSDraggingDestination>
 
 @property bool hideOnClose;
 @property (retain) WKWebView* webView;
@@ -28,7 +28,6 @@
 
 - (void)handleLeftMouseUp:(NSWindow *)window;
 - (void)handleLeftMouseDown:(NSEvent*)event;
-
 
 @end
 

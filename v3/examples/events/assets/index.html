@@ -4,18 +4,36 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>body{ text-align: center; color: white; background-color: rgba(0,0,0,0); user-select: none; -ms-user-select: none; -webkit-user-select: none; }</style>
+    <style>.file{ width: 100px; height: 100px; border: 3px solid black; }</style>
 </head>
 <body>
 <h1>Events Demo</h1>
 <br/>
+<div class="file" id="123abc" data-contextmenu-id="f" data-contextmenu-data="someid" draggable="true" ondragstart="dragstart()" ondragend="dragend()"></div>
+<div class="file" id="234abc" draggable="true" ondragstart="dragstart()" ondragend="dragend()"></div>
+<div class="file" id="345abc" draggable="true" ondragstart="dragstart()" ondragend="dragend()"></div>
 <div id="results"></div>
 </body>
 
 <script>
     wails.Events.On("myevent", function(data) {
         let currentHTML = document.getElementById("results").innerHTML;
-        document.getElementById("results").innerHTML = currentHTML + "<br/>" + JSON.stringify(data);;
+        document.getElementById("results").innerHTML = currentHTML + "<br/>" + JSON.stringify(data);
     })
+    window.addEventListener("dragstart", (event) =>
+        event.dataTransfer.setData("text/plain", "This text may be dragged")
+    );
+    window.addEventListener("contextmenu", (event) => {
+        console.log({event})
+        let element = event.target;
+        let contextMenuId = element.getAttribute("data-contextmenu-id");
+        if (contextMenuId) {
+            let contextMenuData = element.getAttribute("data-contextmenu-data");
+            console.log({contextMenuId, contextMenuData, x: event.clientX, y: event.clientY});
+            _wails.openContextMenu(contextMenuId, event.clientX, event.clientY, contextMenuData);
+            event.preventDefault();
+        }
+    });
 </script>
 
 </html>

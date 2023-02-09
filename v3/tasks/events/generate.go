@@ -143,7 +143,7 @@ func main() {
 	}
 
 	// Load the window_delegate.m file
-	windowDelegate, err := os.ReadFile("../../pkg/application/window_delegate.m")
+	windowDelegate, err := os.ReadFile("../../pkg/application/webview_window.m")
 	if err != nil {
 		panic(err)
 	}
@@ -173,7 +173,7 @@ func main() {
 			}
 		}
 	}
-	err = os.WriteFile("../../pkg/application/window_delegate.m", buffer.Bytes(), 0755)
+	err = os.WriteFile("../../pkg/application/webview_window.m", buffer.Bytes(), 0755)
 	if err != nil {
 		panic(err)
 	}

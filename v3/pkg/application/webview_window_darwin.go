@@ -12,6 +12,8 @@ package application
 #include "Cocoa/Cocoa.h"
 #import <WebKit/WebKit.h>
 #import <AppKit/AppKit.h>
+#import "webview_drag.h"
+
 
 extern void registerListener(unsigned int event);
 
@@ -69,6 +71,12 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
 	delegate.webView = webView;
 	delegate.hideOnClose = false;
+
+	WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
+	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+	[view addSubview:dragView];
+	dragView.windowId = id;
+
 	return window;
 }
 
@@ -769,8 +777,6 @@ import (
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
-
-	"github.com/wailsapp/wails/v3/pkg/options"
 )
 
 var showDevTools = func(window unsafe.Pointer) {}
@@ -1049,10 +1055,10 @@ func (w *macosWebviewWindow) run() {
 
 		macOptions := w.parent.options.Mac
 		switch macOptions.Backdrop {
-		case options.MacBackdropTransparent:
+		case MacBackdropTransparent:
 			C.windowSetTransparent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
-		case options.MacBackdropTranslucent:
+		case MacBackdropTranslucent:
 			C.windowSetTranslucent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
 		}
@@ -1077,11 +1083,11 @@ func (w *macosWebviewWindow) run() {
 		}
 
 		switch w.parent.options.StartState {
-		case options.WindowStateMaximised:
+		case WindowStateMaximised:
 			w.maximise()
-		case options.WindowStateMinimised:
+		case WindowStateMinimised:
 			w.minimise()
-		case options.WindowStateFullscreen:
+		case WindowStateFullscreen:
 			w.fullscreen()
 
 		}
@@ -1108,7 +1114,7 @@ func (w *macosWebviewWindow) run() {
 	})
 }
 
-func (w *macosWebviewWindow) setBackgroundColour(colour *options.RGBA) {
+func (w *macosWebviewWindow) setBackgroundColour(colour *RGBA) {
 	if colour == nil {
 		return
 	}
