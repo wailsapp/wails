@@ -29,9 +29,8 @@ extern void processDragItems(unsigned int windowId, char** arr, int length);
 }
 
 
-- (NSDragOperation)draggingExited:(id<NSDraggingInfo>)sender {
+- (void)draggingExited:(id<NSDraggingInfo>)sender {
     NSLog(@"I am here!!!!");
-    return NSDragOperationCopy;
 }
 
 - (BOOL)prepareForDragOperation:(id<NSDraggingInfo>)sender {

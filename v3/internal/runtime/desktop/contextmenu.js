@@ -6,7 +6,7 @@ function openContextMenu(id, x, y, data) {
     return call("OpenContextMenu", {id, x, y, data});
 }
 
-function enableContextMenus(enabled) {
+export function enableContextMenus(enabled) {
     if (enabled) {
         window.addEventListener('contextmenu', contextMenuHandler);
     } else {
@@ -14,15 +14,19 @@ function enableContextMenus(enabled) {
     }
 }
 
-function contextMenuHandler(e) {
-    let element = e.target;
-    let contextMenuId = element.getAttribute("data-contextmenu-id");
-    if (contextMenuId) {
-        let contextMenuData = element.getAttribute("data-contextmenu-data");
-        console.log({contextMenuId, contextMenuData, x: e.clientX, y: e.clientY});
-        e.preventDefault();
-        return openContextMenu(contextMenuId, e.clientX, e.clientY, contextMenuData);
-    }
+function contextMenuHandler(event) {
+    processContextMenu(event.target, event);
 }
 
-enableContextMenus(true);
+function processContextMenu(element, event) {
+    let id = element.getAttribute('data-contextmenu-id');
+    if (id) {
+        event.preventDefault();
+        openContextMenu(id, event.clientX, event.clientY, element.getAttribute('data-contextmenu-data'));
+    } else {
+        let parent = element.parentElement;
+        if (parent) {
+            processContextMenu(parent, event);
+        }
+    }
+}

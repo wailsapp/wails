@@ -23,17 +23,6 @@
     window.addEventListener("dragstart", (event) =>
         event.dataTransfer.setData("text/plain", "This text may be dragged")
     );
-    window.addEventListener("contextmenu", (event) => {
-        console.log({event})
-        let element = event.target;
-        let contextMenuId = element.getAttribute("data-contextmenu-id");
-        if (contextMenuId) {
-            let contextMenuData = element.getAttribute("data-contextmenu-data");
-            console.log({contextMenuId, contextMenuData, x: event.clientX, y: event.clientY});
-            _wails.openContextMenu(contextMenuId, event.clientX, event.clientY, contextMenuData);
-            event.preventDefault();
-        }
-    });
 </script>
 
 </html>

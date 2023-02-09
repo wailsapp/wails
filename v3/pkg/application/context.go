@@ -14,6 +14,7 @@ func newContext() *Context {
 const (
 	clickedMenuItem   string = "clickedMenuItem"
 	menuItemIsChecked string = "menuItemIsChecked"
+	contextMenuData   string = "contextMenuData"
 )
 
 func (c *Context) ClickedMenuItem() *MenuItem {
@@ -31,6 +32,9 @@ func (c *Context) IsChecked() bool {
 	}
 	return result.(bool)
 }
+func (c *Context) ContextMenuData() any {
+	return c.data[contextMenuData]
+}
 
 func (c *Context) withClickedMenuItem(menuItem *MenuItem) *Context {
 	c.data[clickedMenuItem] = menuItem
@@ -39,4 +43,12 @@ func (c *Context) withClickedMenuItem(menuItem *MenuItem) *Context {
 
 func (c *Context) withChecked(checked bool) {
 	c.data[menuItemIsChecked] = checked
+}
+
+func (c *Context) withContextMenuData(data *ContextMenuData) *Context {
+	if data == nil {
+		return c
+	}
+	c.data[contextMenuData] = data.Data
+	return c
 }

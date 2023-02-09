@@ -756,6 +756,24 @@ static void windowHide(void *window) {
 	});
 }
 
+// windowShowMenu opens an NSMenu at the given coordinates
+static void windowShowMenu(void *window, void *menu, int x, int y) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// get main window
+		WebviewWindow* nsWindow = (WebviewWindow*)window;
+		// get menu
+		NSMenu* nsMenu = (NSMenu*)menu;
+		// get webview
+		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
+		// get webview
+		WKWebView* webView = (WKWebView*)windowDelegate.webView;
+		NSPoint point = NSMakePoint(x, y);
+  		[nsMenu popUpMenuPositioningItem:nil atLocation:point inView:webView];
+	});
+}
+
+
+
 // Make the given window frameless
 static void windowSetFrameless(void *window, bool frameless) {
 	dispatch_async(dispatch_get_main_queue(), ^{
@@ -784,6 +802,13 @@ var showDevTools = func(window unsafe.Pointer) {}
 type macosWebviewWindow struct {
 	nsWindow unsafe.Pointer
 	parent   *WebviewWindow
+}
+
+func (w *macosWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
+	// Create the menu
+	thisMenu := newMenuImpl(menu)
+	thisMenu.update()
+	C.windowShowMenu(w.nsWindow, thisMenu.nsMenu, C.int(data.X), C.int(data.Y))
 }
 
 func (w *macosWebviewWindow) getZoom() float64 {

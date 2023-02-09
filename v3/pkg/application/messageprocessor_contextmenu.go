@@ -21,7 +21,7 @@ func (m *MessageProcessor) processContextMenuMethod(method string, rw http.Respo
 			m.httpError(rw, "error parsing contextmenu message: %s", err.Error())
 			return
 		}
-		window.openContextMenu(data)
+		window.openContextMenu(&data)
 		m.ok(rw)
 	default:
 		m.httpError(rw, "Unknown clipboard method: %s", method)

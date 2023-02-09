@@ -17,6 +17,7 @@ import * as Log from './log';
 import {newWindow} from "./window";
 import {dispatchCustomEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
 import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
+import {enableContextMenus} from "./contextmenu";
 
 window.wails = {
     ...newRuntime(-1),
@@ -63,4 +64,4 @@ if (DEBUG) {
     console.log("Wails v3.0.0 Debug Mode Enabled");
 }
 
-
+enableContextMenus(true);

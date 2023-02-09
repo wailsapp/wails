@@ -31,6 +31,7 @@ func New(appOptions Options) *App {
 		applicationEventListeners: make(map[uint][]func()),
 		systemTrays:               make(map[uint]*SystemTray),
 		log:                       logger.New(appOptions.Logger.CustomLoggers...),
+		contextMenus:              make(map[string]*Menu),
 	}
 
 	if !appOptions.Logger.Silent {
@@ -122,6 +123,9 @@ type App struct {
 	clipboard *Clipboard
 	Events    *EventProcessor
 	log       *logger.Logger
+
+	contextMenus     map[string]*Menu
+	contextMenusLock sync.Mutex
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -486,4 +490,18 @@ func (a *App) Show() {
 
 func (a *App) Log(message *logger.Message) {
 	a.log.Log(message)
+}
+
+func (a *App) RegisterContextMenu(name string, menu *Menu) {
+	a.contextMenusLock.Lock()
+	defer a.contextMenusLock.Unlock()
+	a.contextMenus[name] = menu
+}
+
+func (a *App) getContextMenu(name string) (*Menu, bool) {
+	a.contextMenusLock.Lock()
+	defer a.contextMenusLock.Unlock()
+	menu, ok := a.contextMenus[name]
+	return menu, ok
+
 }

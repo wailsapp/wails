@@ -62,6 +62,7 @@ type (
 		hide()
 		getScreen() (*Screen, error)
 		setFrameless(bool)
+		openContextMenu(menu *Menu, data *ContextMenuData)
 	}
 )
 
@@ -76,6 +77,9 @@ type WebviewWindow struct {
 
 	eventListeners     map[uint][]func()
 	eventListenersLock sync.RWMutex
+
+	contextMenus     map[string]*Menu
+	contextMenusLock sync.RWMutex
 }
 
 var windowID uint
@@ -110,6 +114,7 @@ func NewWindow(options *WebviewWindowOptions) *WebviewWindow {
 		id:             getWindowID(),
 		options:        options,
 		eventListeners: make(map[uint][]func()),
+		contextMenus:   make(map[string]*Menu),
 
 		assets: srv,
 	}
@@ -640,6 +645,16 @@ func (w *WebviewWindow) info(message string, args ...any) {
 		Time:    time.Now(),
 	})
 }
+func (w *WebviewWindow) error(message string, args ...any) {
+
+	globalApplication.Log(&logger.Message{
+		Level:   "ERROR",
+		Message: message,
+		Data:    args,
+		Sender:  w.Name(),
+		Time:    time.Now(),
+	})
+}
 
 func (w *WebviewWindow) handleDragAndDropMessage(event *dragAndDropMessage) {
 	println("Drag and drop message received for " + w.Name())
@@ -649,6 +664,25 @@ func (w *WebviewWindow) handleDragAndDropMessage(event *dragAndDropMessage) {
 	}
 }
 
-func (w *WebviewWindow) openContextMenu(data ContextMenuData) {
-	fmt.Printf("Opening context menu for %+v\n", data)
+func (w *WebviewWindow) openContextMenu(data *ContextMenuData) {
+	menu, ok := w.contextMenus[data.Id]
+	if !ok {
+		// try application level context menu
+		menu, ok = globalApplication.getContextMenu(data.Id)
+		if !ok {
+			w.error("No context menu found for id: %s", data.Id)
+			return
+		}
+	}
+	menu.setContextData(data)
+	if w.impl == nil {
+		return
+	}
+	w.impl.openContextMenu(menu, data)
+}
+
+func (w *WebviewWindow) RegisterContextMenu(name string, menu *Menu) {
+	w.contextMenusLock.Lock()
+	defer w.contextMenusLock.Unlock()
+	w.contextMenus[name] = menu
 }
