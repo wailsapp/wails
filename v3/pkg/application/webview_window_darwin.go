@@ -1122,7 +1122,7 @@ func (w *macosWebviewWindow) run() {
 			w.setURL(w.parent.options.URL)
 		}
 		// We need to wait for the HTML to load before we can execute the javascript
-		w.parent.On(events.Mac.WebViewDidFinishNavigation, func() {
+		w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEventContext) {
 			if w.parent.options.JS != "" {
 				w.execJS(w.parent.options.JS)
 			}

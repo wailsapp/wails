@@ -75,7 +75,7 @@ type WebviewWindow struct {
 	assets           *assetserver.AssetServer
 	messageProcessor *MessageProcessor
 
-	eventListeners     map[uint][]func()
+	eventListeners     map[uint][]func(ctx *WindowEventContext)
 	eventListenersLock sync.RWMutex
 
 	contextMenus     map[string]*Menu
@@ -113,7 +113,7 @@ func NewWindow(options *WebviewWindowOptions) *WebviewWindow {
 	result := &WebviewWindow{
 		id:             getWindowID(),
 		options:        options,
-		eventListeners: make(map[uint][]func()),
+		eventListeners: make(map[uint][]func(ctx *WindowEventContext)),
 		contextMenus:   make(map[string]*Menu),
 
 		assets: srv,
@@ -400,7 +400,7 @@ func (w *WebviewWindow) Center() {
 	w.impl.center()
 }
 
-func (w *WebviewWindow) On(eventType events.WindowEventType, callback func()) {
+func (w *WebviewWindow) On(eventType events.WindowEventType, callback func(ctx *WindowEventContext)) {
 	eventID := uint(eventType)
 	w.eventListenersLock.Lock()
 	defer w.eventListenersLock.Unlock()
@@ -413,7 +413,7 @@ func (w *WebviewWindow) On(eventType events.WindowEventType, callback func()) {
 func (w *WebviewWindow) handleWindowEvent(id uint) {
 	w.eventListenersLock.RLock()
 	for _, callback := range w.eventListeners[id] {
-		go callback()
+		go callback(blankWindowEventContext)
 	}
 	w.eventListenersLock.RUnlock()
 }

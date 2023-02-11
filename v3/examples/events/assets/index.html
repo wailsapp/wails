@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>body{ text-align: center; color: white; background-color: rgba(0,0,0,0); user-select: none; -ms-user-select: none; -webkit-user-select: none; }</style>
-    <style>.file{ width: 100px; height: 100px; border: 3px solid black; }</style>
 </head>
 <body>
 <h1>Events Demo</h1>
 <br/>
-<div class="file" id="123abc" data-contextmenu="f" data-contextmenu-data="someid" draggable="true" ondragstart="dragstart()" ondragend="dragend()"></div>
-<div class="file" id="234abc" draggable="true" ondragstart="dragstart()" ondragend="dragend()"></div>
-<div class="file" id="345abc" draggable="true" ondragstart="dragstart()" ondragend="dragend()"></div>
+The main program emits an event every 10s which will be displayed in the section below.
+To send an event from this window, click here: <button onclick="wails.Events.Emit({name:'myevent', data:'hello!'})">Send Event</button>
 <div id="results"></div>
 </body>
 
@@ -20,9 +18,6 @@
         let currentHTML = document.getElementById("results").innerHTML;
         document.getElementById("results").innerHTML = currentHTML + "<br/>" + JSON.stringify(data);
     })
-    window.addEventListener("dragstart", (event) =>
-        event.dataTransfer.setData("text/plain", "This text may be dragged")
-    );
 </script>
 
 </html>
