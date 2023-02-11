@@ -659,8 +659,10 @@ func (w *WebviewWindow) error(message string, args ...any) {
 func (w *WebviewWindow) handleDragAndDropMessage(event *dragAndDropMessage) {
 	println("Drag and drop message received for " + w.Name())
 	// Print filenames
-	for _, file := range event.filenames {
-		println(file)
+	ctx := newWindowEventContext()
+	ctx.setDroppedFiles(event.filenames)
+	for _, listener := range w.eventListeners[uint(events.FilesDropped)] {
+		listener(ctx)
 	}
 }
 

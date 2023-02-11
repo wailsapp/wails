@@ -12,6 +12,10 @@ var eventsGo = `package events
 type ApplicationEventType uint
 type WindowEventType      uint
 
+const (
+	FilesDropped WindowEventType = iota
+)
+
 var Mac = newMacEvents()
 
 type macEvents struct {
@@ -53,6 +57,9 @@ func main() {
 	var line []byte
 	// Loop over each line in the file
 	for id, line = range bytes.Split(eventNames, []byte{'\n'}) {
+
+		// First 1024 is reserved
+		id = id + 1024
 
 		// Skip empty lines
 		if len(line) == 0 {
