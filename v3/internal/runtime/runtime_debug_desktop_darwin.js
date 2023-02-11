@@ -291,7 +291,7 @@
     processContextMenu(event.target, event);
   }
   function processContextMenu(element, event) {
-    let id = element.getAttribute("data-contextmenu-id");
+    let id = element.getAttribute("data-contextmenu");
     if (id) {
       event.preventDefault();
       openContextMenu(id, event.clientX, event.clientY, element.getAttribute("data-contextmenu-data"));
