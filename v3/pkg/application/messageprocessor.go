@@ -2,7 +2,10 @@ package application
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 type MessageProcessor struct {
@@ -15,46 +18,63 @@ func NewMessageProcessor(w *WebviewWindow) *MessageProcessor {
 	}
 }
 
-func (m *MessageProcessor) ProcessMessage(message string) {
+func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, args ...any) {
+	m.Error(message, args...)
+	rw.WriteHeader(http.StatusBadRequest)
+	rw.Write([]byte(fmt.Sprintf(message, args...)))
+}
 
-	// TODO: Implement calls to other windows
-	// Check for prefix "WINDOWID"
-	// If prefix exists, get window ID by parsing: "WINDOWID:12:MESSAGE"
-
-	if strings.HasPrefix(message, "WINDOWID") {
-		m.Error("Window ID prefix not yet implemented")
+func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Request) {
+	// Read "method" from query string
+	method := r.URL.Query().Get("method")
+	if method == "" {
+		m.httpError(rw, "No method specified")
 		return
 	}
-
-	window := m.window
-
-	if message == "" {
-		m.Error("Blank message received")
+	splitMethod := strings.Split(method, ".")
+	if len(splitMethod) != 2 {
+		m.httpError(rw, "Invalid method format")
 		return
 	}
-	m.Info("Processing message: %s", message)
-	switch message[0] {
-	//case 'L':
-	//	m.processLogMessage(message)
-	//case 'E':
-	//	return m.processEventMessage(message)
-	//case 'C':
-	//	return m.processCallMessage(message)
-	//case 'c':
-	//	return m.processSecureCallMessage(message)
-	case 'W':
-		m.processWindowMessage(message, window)
-	//case 'B':
-	//	return m.processBrowserMessage(message)
-	case 'Q':
-		globalApplication.Quit()
-	case 'S':
-		//globalApplication.Show()
-	case 'H':
-		//globalApplication.Hide()
+	// Get the object
+	object := splitMethod[0]
+	// Get the method
+	method = splitMethod[1]
+
+	params := QueryParams(r.URL.Query())
+
+	var targetWindow = m.window
+	windowID := params.UInt("windowID")
+	if windowID != nil {
+		// Get window for ID
+		targetWindow = globalApplication.getWindowForID(*windowID)
+		if targetWindow == nil {
+			m.Error("Window ID %s not found", *windowID)
+			return
+		}
+	}
+
+	switch object {
+	case "window":
+		m.processWindowMethod(method, rw, r, targetWindow, params)
+	case "clipboard":
+		m.processClipboardMethod(method, rw, r, targetWindow, params)
+	case "dialog":
+		m.processDialogMethod(method, rw, r, targetWindow, params)
+	case "events":
+		m.processEventsMethod(method, rw, r, targetWindow, params)
+	case "application":
+		m.processApplicationMethod(method, rw, r, targetWindow, params)
+	case "log":
+		m.processLogMethod(method, rw, r, targetWindow, params)
 	default:
-		m.Error("Unknown message from front end:", message)
+		m.httpError(rw, "Unknown runtime call: %s", object)
 	}
+
+}
+
+func (m *MessageProcessor) ProcessMessage(message string) {
+	m.Info("ProcessMessage from front end:", message)
 }
 
 func (m *MessageProcessor) Error(message string, args ...any) {
@@ -63,4 +83,38 @@ func (m *MessageProcessor) Error(message string, args ...any) {
 
 func (m *MessageProcessor) Info(message string, args ...any) {
 	fmt.Printf("[MessageProcessor] Info: "+message, args...)
+}
+
+func (m *MessageProcessor) json(rw http.ResponseWriter, data any) {
+	// convert data to json
+	var jsonPayload = []byte("{}")
+	var err error
+	if data != nil {
+		jsonPayload, err = jsoniter.Marshal(data)
+		if err != nil {
+			m.Error("Unable to convert data to JSON. Please report this to the Wails team! Error: %s", err)
+			return
+		}
+	}
+	_, err = rw.Write(jsonPayload)
+	if err != nil {
+		m.Error("Unable to write json payload. Please report this to the Wails team! Error: %s", err)
+		return
+	}
+	rw.Header().Set("Content-Type", "application/json")
+	m.ok(rw)
+}
+
+func (m *MessageProcessor) text(rw http.ResponseWriter, data string) {
+	_, err := rw.Write([]byte(data))
+	if err != nil {
+		m.Error("Unable to write json payload. Please report this to the Wails team! Error: %s", err)
+		return
+	}
+	rw.Header().Set("Content-Type", "text/plain")
+	m.ok(rw)
+}
+
+func (m *MessageProcessor) ok(rw http.ResponseWriter) {
+	rw.WriteHeader(http.StatusOK)
 }

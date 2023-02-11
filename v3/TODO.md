@@ -19,10 +19,20 @@ Informal and incomplete list of things needed in v3.
 - [ ] Implement alias for `window` in JS
 - [ ] Implement runtime dispatcher
   - [ ] Log
-  - [ ] Same Window
-  - [ ] Other Window
-  - [ ] Dialogs
-  - [ ] Events
+  - [x] Same Window
+  - [x] Other Window
+  - [x] Dialogs
+    - [x] Info
+    - [x] Warning
+    - [x] Error
+    - [x] Question
+    - [x] OpenFile
+    - [x] SaveFile
+  - [x] Events
+  - [ ] Screens
+  - [x] Clipboard
+  - [ ] Application
+- [ ] Create `.d.ts` file
 
 ## Templates
 

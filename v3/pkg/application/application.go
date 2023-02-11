@@ -3,8 +3,11 @@ package application
 import "C"
 import (
 	"log"
+	"os"
 	"runtime"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/pkg/logger"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/options"
@@ -29,7 +32,14 @@ func New(appOptions options.Application) *App {
 		options:                   appOptions,
 		applicationEventListeners: make(map[uint][]func()),
 		systemTrays:               make(map[uint]*SystemTray),
+		log:                       logger.New(appOptions.Logger.CustomLoggers...),
 	}
+
+	if !appOptions.Logger.Silent {
+		result.log.AddOutput(&logger.Console{})
+	}
+
+	result.Events = NewCustomEventProcessor(result.dispatchEventToWindows)
 	globalApplication = result
 	return result
 }
@@ -57,6 +67,8 @@ type platformApp interface {
 	setIcon(icon []byte)
 	on(id uint)
 	dispatchOnMainThread(id uint)
+	hide()
+	show()
 }
 
 // Messages sent from javascript get routed here
@@ -80,10 +92,8 @@ type App struct {
 	applicationEventListenersLock sync.RWMutex
 
 	// Windows
-	windows           map[uint]*WebviewWindow
-	windowsLock       sync.Mutex
-	windowAliases     map[string]uint
-	windowAliasesLock sync.Mutex
+	windows     map[uint]*WebviewWindow
+	windowsLock sync.Mutex
 
 	// System Trays
 	systemTrays      map[uint]*SystemTray
@@ -104,8 +114,9 @@ type App struct {
 	// The main application menu
 	ApplicationMenu *Menu
 
-	// About MessageDialog
 	clipboard *Clipboard
+	Events    *EventProcessor
+	log       *logger.Logger
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -114,17 +125,58 @@ func (a *App) getSystemTrayID() uint {
 	a.systemTrayID++
 	return a.systemTrayID
 }
+
+func (a *App) getWindowForID(id uint) *WebviewWindow {
+	a.windowsLock.Lock()
+	defer a.windowsLock.Unlock()
+	return a.windows[id]
+}
+
 func (a *App) On(eventType events.ApplicationEventType, callback func()) {
 	eventID := uint(eventType)
 	a.applicationEventListenersLock.Lock()
 	defer a.applicationEventListenersLock.Unlock()
 	a.applicationEventListeners[eventID] = append(a.applicationEventListeners[eventID], callback)
 	if a.impl != nil {
-		a.impl.on(eventID)
+		go a.impl.on(eventID)
 	}
 }
 func (a *App) NewWebviewWindow() *WebviewWindow {
 	return a.NewWebviewWindowWithOptions(nil)
+}
+
+func (a *App) info(message string, args ...any) {
+	a.Log(&logger.Message{
+		Level:   "INFO",
+		Message: message,
+		Data:    args,
+		Sender:  "Wails",
+	})
+}
+
+func (a *App) fatal(message string, args ...any) {
+	msg := "************** FATAL **************\n"
+	msg += message
+	msg += "***********************************\n"
+
+	a.Log(&logger.Message{
+		Level:   "FATAL",
+		Message: msg,
+		Data:    args,
+		Sender:  "Wails",
+	})
+
+	a.log.Flush()
+	os.Exit(1)
+}
+
+func (a *App) error(message string, args ...any) {
+	a.Log(&logger.Message{
+		Level:   "ERROR",
+		Message: message,
+		Data:    args,
+		Sender:  "Wails",
+	})
 }
 
 func (a *App) NewWebviewWindowWithOptions(windowOptions *options.WebviewWindow) *WebviewWindow {
@@ -142,14 +194,6 @@ func (a *App) NewWebviewWindowWithOptions(windowOptions *options.WebviewWindow) 
 	a.windows[id] = newWindow
 	a.windowsLock.Unlock()
 
-	if windowOptions.Alias != "" {
-		if a.windowAliases == nil {
-			a.windowAliases = make(map[string]uint)
-		}
-		a.windowAliasesLock.Lock()
-		a.windowAliases[windowOptions.Alias] = id
-		a.windowAliasesLock.Unlock()
-	}
 	if a.running {
 		newWindow.run()
 	}
@@ -158,7 +202,6 @@ func (a *App) NewWebviewWindowWithOptions(windowOptions *options.WebviewWindow) 
 }
 
 func (a *App) NewSystemTray() *SystemTray {
-
 	id := a.getSystemTrayID()
 	newSystemTray := NewSystemTray(id)
 	a.systemTraysLock.Lock()
@@ -172,6 +215,7 @@ func (a *App) NewSystemTray() *SystemTray {
 }
 
 func (a *App) Run() error {
+	a.info("Starting application")
 	a.impl = newPlatformApp(a)
 
 	a.running = true
@@ -191,7 +235,10 @@ func (a *App) Run() error {
 		for {
 			event := <-webviewRequests
 			a.handleWebViewRequest(event)
-			event.request.Release()
+			err := event.request.Release()
+			if err != nil {
+				a.error("Failed to release webview request: %s", err.Error())
+			}
 		}
 	}()
 	go func() {
@@ -221,7 +268,7 @@ func (a *App) Run() error {
 	// set the application menu
 	a.impl.setApplicationMenu(a.ApplicationMenu)
 
-	// set the application icon
+	// set the application Icon
 	a.impl.setIcon(a.options.Icon)
 
 	return a.impl.run()
@@ -381,4 +428,38 @@ func (a *App) dispatchOnMainThread(fn func()) {
 	mainThreadFunctionStoreLock.Unlock()
 	// Call platform specific dispatch function
 	a.impl.dispatchOnMainThread(id)
+}
+
+func (a *App) OpenFileDialogWithOptions(options *OpenFileDialogOptions) *OpenFileDialog {
+	result := a.OpenFileDialog()
+	result.SetOptions(options)
+	return result
+}
+
+func (a *App) SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialog {
+	result := a.SaveFileDialog()
+	result.SetOptions(s)
+	return result
+}
+
+func (a *App) dispatchEventToWindows(event *CustomEvent) {
+	for _, window := range a.windows {
+		window.dispatchCustomEvent(event)
+	}
+}
+
+func (a *App) Hide() {
+	if a.impl != nil {
+		a.impl.hide()
+	}
+}
+
+func (a *App) Show() {
+	if a.impl != nil {
+		a.impl.show()
+	}
+}
+
+func (a *App) Log(message *logger.Message) {
+	a.log.Log(message)
 }

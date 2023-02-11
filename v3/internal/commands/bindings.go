@@ -37,6 +37,6 @@ func GenerateBindings(options *GenerateBindingsOptions) error {
 	if err != nil {
 		return fmt.Errorf("error writing models file: %v", err)
 	}
-
+	println("Generated models file '" + options.ModelsFilename + "'")
 	return nil
 }
