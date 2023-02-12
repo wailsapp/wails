@@ -115,7 +115,7 @@ func findApplicationNewCalls(context *Context) {
 					return true
 				}
 
-				// Check struct literal is of type "options.Application"
+				// Check struct literal is of type "application.Options"
 				selectorExpr, ok := structLit.Type.(*ast.SelectorExpr)
 				if !ok {
 					return true

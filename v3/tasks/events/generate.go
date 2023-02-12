@@ -12,6 +12,10 @@ var eventsGo = `package events
 type ApplicationEventType uint
 type WindowEventType      uint
 
+const (
+	FilesDropped WindowEventType = iota
+)
+
 var Mac = newMacEvents()
 
 type macEvents struct {
@@ -53,6 +57,9 @@ func main() {
 	var line []byte
 	// Loop over each line in the file
 	for id, line = range bytes.Split(eventNames, []byte{'\n'}) {
+
+		// First 1024 is reserved
+		id = id + 1024
 
 		// Skip empty lines
 		if len(line) == 0 {
@@ -143,7 +150,7 @@ func main() {
 	}
 
 	// Load the window_delegate.m file
-	windowDelegate, err := os.ReadFile("../../pkg/application/window_delegate.m")
+	windowDelegate, err := os.ReadFile("../../pkg/application/webview_window.m")
 	if err != nil {
 		panic(err)
 	}
@@ -173,7 +180,7 @@ func main() {
 			}
 		}
 	}
-	err = os.WriteFile("../../pkg/application/window_delegate.m", buffer.Bytes(), 0755)
+	err = os.WriteFile("../../pkg/application/webview_window.m", buffer.Bytes(), 0755)
 	if err != nil {
 		panic(err)
 	}

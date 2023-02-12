@@ -230,6 +230,20 @@ func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
 	}
 }
 
+//export processDragItems
+func processDragItems(windowID C.uint, arr **C.char, length C.int) {
+	var filenames []string
+	// Convert the C array to a Go slice
+	goSlice := (*[1 << 30]*C.char)(unsafe.Pointer(arr))[:length:length]
+	for _, str := range goSlice {
+		filenames = append(filenames, C.GoString(str))
+	}
+	windowDragAndDropBuffer <- &dragAndDropMessage{
+		windowId:  uint(windowID),
+		filenames: filenames,
+	}
+}
+
 //export processMenuItemClick
 func processMenuItemClick(menuID C.uint) {
 	menuItemClicked <- uint(menuID)

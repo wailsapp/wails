@@ -41,16 +41,17 @@ type menuItemImpl interface {
 }
 
 type MenuItem struct {
-	id          uint
-	label       string
-	tooltip     string
-	disabled    bool
-	checked     bool
-	submenu     *Menu
-	callback    func(*Context)
-	itemType    menuItemType
-	accelerator *accelerator
-	role        Role
+	id              uint
+	label           string
+	tooltip         string
+	disabled        bool
+	checked         bool
+	submenu         *Menu
+	callback        func(*Context)
+	itemType        menuItemType
+	accelerator     *accelerator
+	role            Role
+	contextMenuData *ContextMenuData
 
 	impl              menuItemImpl
 	radioGroupMembers []*MenuItem
@@ -187,7 +188,9 @@ func newServicesMenu() *MenuItem {
 }
 
 func (m *MenuItem) handleClick() {
-	var ctx = newContext().withClickedMenuItem(m)
+	var ctx = newContext().
+		withClickedMenuItem(m).
+		withContextMenuData(m.contextMenuData)
 	if m.itemType == checkbox {
 		m.checked = !m.checked
 		ctx.withChecked(m.checked)
@@ -271,4 +274,11 @@ func (m *MenuItem) Tooltip() string {
 
 func (m *MenuItem) Enabled() bool {
 	return !m.disabled
+}
+
+func (m *MenuItem) setContextData(data *ContextMenuData) {
+	m.contextMenuData = data
+	if m.submenu != nil {
+		m.submenu.setContextData(data)
+	}
 }

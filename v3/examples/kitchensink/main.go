@@ -8,14 +8,13 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/options"
 )
 
 func main() {
-	app := application.New(options.Application{
+	app := application.New(application.Options{
 		Name:        "Menu Demo",
 		Description: "A demo of the menu system",
-		Mac: options.Mac{
+		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
@@ -110,22 +109,22 @@ func main() {
 	mySystray.SetMenu(myMenu)
 	mySystray.SetIconPosition(application.NSImageLeading)
 
-	myWindow := app.NewWebviewWindowWithOptions(&options.WebviewWindow{
+	myWindow := app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title:         "Kitchen Sink",
 		Width:         600,
 		Height:        400,
 		AlwaysOnTop:   true,
 		DisableResize: false,
-		BackgroundColour: &options.RGBA{
+		BackgroundColour: &application.RGBA{
 			Red:   255,
 			Green: 255,
 			Blue:  255,
 			Alpha: 30,
 		},
-		StartState: options.WindowStateMaximised,
-		Mac: options.MacWindow{
-			Backdrop:   options.MacBackdropTranslucent,
-			Appearance: options.NSAppearanceNameDarkAqua,
+		StartState: application.WindowStateMaximised,
+		Mac: application.MacWindow{
+			Backdrop:   application.MacBackdropTranslucent,
+			Appearance: application.NSAppearanceNameDarkAqua,
 		},
 	})
 	/*
@@ -185,14 +184,14 @@ func main() {
 	*/
 	var myWindow2 *application.WebviewWindow
 	var myWindow2Lock sync.RWMutex
-	myWindow2 = app.NewWebviewWindowWithOptions(&options.WebviewWindow{
+	myWindow2 = app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title:       "#2",
 		Width:       1024,
 		Height:      768,
 		AlwaysOnTop: false,
 		URL:         "https://google.com",
-		Mac: options.MacWindow{
-			Backdrop: options.MacBackdropTranslucent,
+		Mac: application.MacWindow{
+			Backdrop: application.MacBackdropTranslucent,
 		},
 	})
 	//myWindow2.On(events.Mac.WindowDidMove, func() {

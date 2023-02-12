@@ -1,22 +1,17 @@
 //go:build darwin
-
 #import "app_delegate.h"
 #import "../events/events.h"
-
 extern bool hasListeners(unsigned int);
-
 @implementation AppDelegate
 - (void)dealloc
 {
     [super dealloc];
 }
-
 // Create the applicationShouldTerminateAfterLastWindowClosed: method
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication
 {
     return self.shouldTerminateWhenLastWindowClosed;
 }
-
 // GENERATED EVENTS START
 - (void)applicationDidBecomeActive:(NSNotification *)notification {
     if( hasListeners(EventApplicationDidBecomeActive) ) {

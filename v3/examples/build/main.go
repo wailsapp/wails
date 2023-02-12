@@ -9,18 +9,16 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/wailsapp/wails/v3/pkg/options"
-
 	"github.com/wailsapp/wails/v3/pkg/events"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 func main() {
-	app := application.New(options.Application{
+	app := application.New(application.Options{
 		Name:        "WebviewWindow Demo",
 		Description: "A demo of the WebviewWindow API",
-		Mac: options.Mac{
+		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
@@ -67,45 +65,45 @@ func main() {
 			windowCounter++
 		})
 	if runtime.GOOS == "darwin" {
-		myMenu.Add("New WebviewWindow (TitleBarHiddenInset)").
+		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInset)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(&options.WebviewWindow{
-					Mac: options.MacWindow{
-						TitleBar:                options.TitleBarHiddenInset,
+				app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+					Mac: application.MacWindow{
+						TitleBar:                application.MacTitleBarHiddenInset,
 						InvisibleTitleBarHeight: 25,
 					},
 				}).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 					SetPosition(rand.Intn(1000), rand.Intn(800)).
-					SetHTML("<br/><br/><p>A TitleBarHiddenInset WebviewWindow example</p>").
+					SetHTML("<br/><br/><p>A MacTitleBarHiddenInset WebviewWindow example</p>").
 					Show()
 				windowCounter++
 			})
-		myMenu.Add("New WebviewWindow (TitleBarHiddenInsetUnified)").
+		myMenu.Add("New WebviewWindow (MacTitleBarHiddenInsetUnified)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(&options.WebviewWindow{
-					Mac: options.MacWindow{
-						TitleBar:                options.TitleBarHiddenInsetUnified,
+				app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+					Mac: application.MacWindow{
+						TitleBar:                application.MacTitleBarHiddenInsetUnified,
 						InvisibleTitleBarHeight: 50,
 					},
 				}).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 					SetPosition(rand.Intn(1000), rand.Intn(800)).
-					SetHTML("<br/><br/><p>A TitleBarHiddenInsetUnified WebviewWindow example</p>").
+					SetHTML("<br/><br/><p>A MacTitleBarHiddenInsetUnified WebviewWindow example</p>").
 					Show()
 				windowCounter++
 			})
-		myMenu.Add("New WebviewWindow (TitleBarHidden)").
+		myMenu.Add("New WebviewWindow (MacTitleBarHidden)").
 			OnClick(func(ctx *application.Context) {
-				app.NewWebviewWindowWithOptions(&options.WebviewWindow{
-					Mac: options.MacWindow{
-						TitleBar:                options.TitleBarHidden,
+				app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+					Mac: application.MacWindow{
+						TitleBar:                application.MacTitleBarHidden,
 						InvisibleTitleBarHeight: 25,
 					},
 				}).
 					SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 					SetPosition(rand.Intn(1000), rand.Intn(800)).
-					SetHTML("<br/><br/><p>A TitleBarHidden WebviewWindow example</p>").
+					SetHTML("<br/><br/><p>A MacTitleBarHidden WebviewWindow example</p>").
 					Show()
 				windowCounter++
 			})
