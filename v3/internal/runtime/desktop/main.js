@@ -9,7 +9,6 @@ The electron alternative for Go
 */
 /* jshint esversion: 9 */
 
-import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
 
 import * as Clipboard from './clipboard';
 import * as Application from './application';
@@ -17,12 +16,14 @@ import * as Log from './log';
 
 import {newWindow} from "./window";
 import {dispatchCustomEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
+import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
+import {enableContextMenus} from "./contextmenu";
 
-// Internal wails endpoints
 window.wails = {
     ...newRuntime(-1),
 };
 
+// Internal wails endpoints
 window._wails = {
     dialogCallback,
     dialogErrorCallback,
@@ -63,3 +64,4 @@ if (DEBUG) {
     console.log("Wails v3.0.0 Debug Mode Enabled");
 }
 
+enableContextMenus(true);

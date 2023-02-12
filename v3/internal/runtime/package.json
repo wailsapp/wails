@@ -11,6 +11,7 @@
     "happy-dom": "^8.1.5",
     "nanoid": "^4.0.0",
     "npm-check-updates": "^16.6.3",
+    "svelte": "^3.55.1",
     "vitest": "^0.28.3"
   }
 }

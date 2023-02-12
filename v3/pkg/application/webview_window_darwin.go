@@ -12,6 +12,8 @@ package application
 #include "Cocoa/Cocoa.h"
 #import <WebKit/WebKit.h>
 #import <AppKit/AppKit.h>
+#import "webview_drag.h"
+
 
 extern void registerListener(unsigned int event);
 
@@ -69,6 +71,12 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
 	delegate.webView = webView;
 	delegate.hideOnClose = false;
+
+	WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
+	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+	[view addSubview:dragView];
+	dragView.windowId = id;
+
 	return window;
 }
 
@@ -748,6 +756,24 @@ static void windowHide(void *window) {
 	});
 }
 
+// windowShowMenu opens an NSMenu at the given coordinates
+static void windowShowMenu(void *window, void *menu, int x, int y) {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		// get main window
+		WebviewWindow* nsWindow = (WebviewWindow*)window;
+		// get menu
+		NSMenu* nsMenu = (NSMenu*)menu;
+		// get webview
+		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
+		// get webview
+		WKWebView* webView = (WKWebView*)windowDelegate.webView;
+		NSPoint point = NSMakePoint(x, y);
+  		[nsMenu popUpMenuPositioningItem:nil atLocation:point inView:webView];
+	});
+}
+
+
+
 // Make the given window frameless
 static void windowSetFrameless(void *window, bool frameless) {
 	dispatch_async(dispatch_get_main_queue(), ^{
@@ -769,8 +795,6 @@ import (
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
-
-	"github.com/wailsapp/wails/v3/pkg/options"
 )
 
 var showDevTools = func(window unsafe.Pointer) {}
@@ -778,6 +802,13 @@ var showDevTools = func(window unsafe.Pointer) {}
 type macosWebviewWindow struct {
 	nsWindow unsafe.Pointer
 	parent   *WebviewWindow
+}
+
+func (w *macosWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData) {
+	// Create the menu
+	thisMenu := newMenuImpl(menu)
+	thisMenu.update()
+	C.windowShowMenu(w.nsWindow, thisMenu.nsMenu, C.int(data.X), C.int(data.Y))
 }
 
 func (w *macosWebviewWindow) getZoom() float64 {
@@ -1049,10 +1080,10 @@ func (w *macosWebviewWindow) run() {
 
 		macOptions := w.parent.options.Mac
 		switch macOptions.Backdrop {
-		case options.MacBackdropTransparent:
+		case MacBackdropTransparent:
 			C.windowSetTransparent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
-		case options.MacBackdropTranslucent:
+		case MacBackdropTranslucent:
 			C.windowSetTranslucent(w.nsWindow)
 			C.webviewSetTransparent(w.nsWindow)
 		}
@@ -1077,11 +1108,11 @@ func (w *macosWebviewWindow) run() {
 		}
 
 		switch w.parent.options.StartState {
-		case options.WindowStateMaximised:
+		case WindowStateMaximised:
 			w.maximise()
-		case options.WindowStateMinimised:
+		case WindowStateMinimised:
 			w.minimise()
-		case options.WindowStateFullscreen:
+		case WindowStateFullscreen:
 			w.fullscreen()
 
 		}
@@ -1091,7 +1122,7 @@ func (w *macosWebviewWindow) run() {
 			w.setURL(w.parent.options.URL)
 		}
 		// We need to wait for the HTML to load before we can execute the javascript
-		w.parent.On(events.Mac.WebViewDidFinishNavigation, func() {
+		w.parent.On(events.Mac.WebViewDidFinishNavigation, func(_ *WindowEventContext) {
 			if w.parent.options.JS != "" {
 				w.execJS(w.parent.options.JS)
 			}
@@ -1108,7 +1139,7 @@ func (w *macosWebviewWindow) run() {
 	})
 }
 
-func (w *macosWebviewWindow) setBackgroundColour(colour *options.RGBA) {
+func (w *macosWebviewWindow) setBackgroundColour(colour *RGBA) {
 	if colour == nil {
 		return
 	}

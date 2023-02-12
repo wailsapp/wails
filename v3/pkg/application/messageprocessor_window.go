@@ -2,11 +2,9 @@ package application
 
 import (
 	"net/http"
-
-	"github.com/wailsapp/wails/v3/pkg/options"
 )
 
-func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {
+func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWriter, _ *http.Request, window *WebviewWindow, params QueryParams) {
 
 	args, err := params.Args()
 	if err != nil {
@@ -104,7 +102,7 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 			m.Error("Invalid SetBackgroundColour Message: 'a' value required")
 			return
 		}
-		window.SetBackgroundColour(&options.RGBA{
+		window.SetBackgroundColour(&RGBA{
 			Red:   *r,
 			Green: *g,
 			Blue:  *b,

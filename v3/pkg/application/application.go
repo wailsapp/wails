@@ -9,10 +9,8 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/logger"
 
-	"github.com/wailsapp/wails/v3/pkg/events"
-	"github.com/wailsapp/wails/v3/pkg/options"
-
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 var globalApplication *App
@@ -21,7 +19,7 @@ func init() {
 	runtime.LockOSThread()
 }
 
-func New(appOptions options.Application) *App {
+func New(appOptions Options) *App {
 	if globalApplication != nil {
 		return globalApplication
 	}
@@ -33,6 +31,7 @@ func New(appOptions options.Application) *App {
 		applicationEventListeners: make(map[uint][]func()),
 		systemTrays:               make(map[uint]*SystemTray),
 		log:                       logger.New(appOptions.Logger.CustomLoggers...),
+		contextMenus:              make(map[string]*Menu),
 	}
 
 	if !appOptions.Logger.Silent {
@@ -44,7 +43,7 @@ func New(appOptions options.Application) *App {
 	return result
 }
 
-func mergeApplicationDefaults(o *options.Application) {
+func mergeApplicationDefaults(o *Options) {
 	if o.Name == "" {
 		o.Name = "My Wails Application"
 	}
@@ -79,6 +78,13 @@ type windowMessage struct {
 
 var windowMessageBuffer = make(chan *windowMessage)
 
+type dragAndDropMessage struct {
+	windowId  uint
+	filenames []string
+}
+
+var windowDragAndDropBuffer = make(chan *dragAndDropMessage)
+
 type webViewAssetRequest struct {
 	windowId uint
 	request  webview.Request
@@ -87,7 +93,7 @@ type webViewAssetRequest struct {
 var webviewRequests = make(chan *webViewAssetRequest)
 
 type App struct {
-	options                       options.Application
+	options                       Options
 	applicationEventListeners     map[uint][]func()
 	applicationEventListenersLock sync.RWMutex
 
@@ -117,6 +123,9 @@ type App struct {
 	clipboard *Clipboard
 	Events    *EventProcessor
 	log       *logger.Logger
+
+	contextMenus     map[string]*Menu
+	contextMenusLock sync.Mutex
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -179,10 +188,10 @@ func (a *App) error(message string, args ...any) {
 	})
 }
 
-func (a *App) NewWebviewWindowWithOptions(windowOptions *options.WebviewWindow) *WebviewWindow {
+func (a *App) NewWebviewWindowWithOptions(windowOptions *WebviewWindowOptions) *WebviewWindow {
 	// Ensure we have sane defaults
 	if windowOptions == nil {
-		windowOptions = options.WindowDefaults
+		windowOptions = WebviewWindowDefaults
 	}
 
 	newWindow := NewWindow(windowOptions)
@@ -247,6 +256,12 @@ func (a *App) Run() error {
 			a.handleWindowMessage(event)
 		}
 	}()
+	go func() {
+		for {
+			dragAndDropMessage := <-windowDragAndDropBuffer
+			a.handleDragAndDropMessage(dragAndDropMessage)
+		}
+	}()
 
 	go func() {
 		for {
@@ -284,6 +299,19 @@ func (a *App) handleApplicationEvent(event uint) {
 	for _, listener := range listeners {
 		go listener()
 	}
+}
+
+func (a *App) handleDragAndDropMessage(event *dragAndDropMessage) {
+	// Get window from window map
+	a.windowsLock.Lock()
+	window, ok := a.windows[event.windowId]
+	a.windowsLock.Unlock()
+	if !ok {
+		log.Printf("WebviewWindow #%d not found", event.windowId)
+		return
+	}
+	// Get callback from window
+	window.handleDragAndDropMessage(event)
 }
 
 func (a *App) handleWindowMessage(event *windowMessage) {
@@ -462,4 +490,18 @@ func (a *App) Show() {
 
 func (a *App) Log(message *logger.Message) {
 	a.log.Log(message)
+}
+
+func (a *App) RegisterContextMenu(name string, menu *Menu) {
+	a.contextMenusLock.Lock()
+	defer a.contextMenusLock.Unlock()
+	a.contextMenus[name] = menu
+}
+
+func (a *App) getContextMenu(name string) (*Menu, bool) {
+	a.contextMenusLock.Lock()
+	defer a.contextMenusLock.Unlock()
+	menu, ok := a.contextMenus[name]
+	return menu, ok
+
 }
