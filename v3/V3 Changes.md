@@ -43,8 +43,8 @@ When emitting an event in JS, it now sends the event to the application. This wi
 
 ## Window
 
-The Window API has largely remained the same, however there are a few changes to note. 
-
+The Window API has largely remained the same, however the methods are now on an instance of a window rather than the runtime. 
+Some notable differences are:
 - Windows now have a Name that identifies them. This is used to identify the window when emitting events.
 
 ## ClipBoard
@@ -61,11 +61,11 @@ Dialogs are now available in JavaScript!
 
 ## Drag and Drop
 
-TBD
+Native drag and drop can be enabled per-window. Simply set the `EnableDragAndDrop` window config option to `true` and the window will allow files to be dragged onto it. When this happens, the `events.FilesDropped` event will be emitted. The filenames can then be retrieved from the WindowEventContext using the `DroppedFiles()` method. This returns a slice of strings containing the filenames.
 
 ## Context Menus
 
-Context menus are contextual menus that are shown when the user right clicks on an element. Creating a context menu is the same as creating a standard menu , by using `app.NewMenu()`. To make the context menu available to a window, call `window.RegisterContextMenu(name, menu)`. The name will be the id of the context menu and used by the frontend.
+Context menus are contextual menus that are shown when the user right-clicks on an element. Creating a context menu is the same as creating a standard menu , by using `app.NewMenu()`. To make the context menu available to a window, call `window.RegisterContextMenu(name, menu)`. The name will be the id of the context menu and used by the frontend.
 
 To indicate that an element has a context menu, add the `data-contextmenu` attribute to the element. The value of this attribute should be the name of a context menu previously registered with the window.
 

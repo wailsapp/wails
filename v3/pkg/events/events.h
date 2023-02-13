@@ -126,10 +126,11 @@ extern void processWindowEvent(unsigned int, unsigned int);
 #define EventWebViewDidReceiveServerRedirectForProvisionalNavigation 1141
 #define EventWebViewDidFinishNavigation 1142
 #define EventWebViewDidCommitNavigation 1143
-#define EventWebViewDraggingEntered 1144
-#define EventWebViewDraggingPerformed 1145
+#define EventWindowFileDraggingEntered 1144
+#define EventWindowFileDraggingPerformed 1145
+#define EventWindowFileDraggingExited 1146
 
-#define MAX_EVENTS 1146
+#define MAX_EVENTS 1147
 
 
 #endif

@@ -22,7 +22,7 @@ extern void processDragItems(unsigned int windowId, char** arr, int length);
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
     NSPasteboard *pasteboard = [sender draggingPasteboard];
     if ([[pasteboard types] containsObject:NSFilenamesPboardType]) {
-        processWindowEvent(self.windowId, EventWebViewDraggingEntered);
+        processWindowEvent(self.windowId, EventWindowFileDraggingEntered);
         return NSDragOperationCopy;
     }
     return NSDragOperationNone;
@@ -30,7 +30,7 @@ extern void processDragItems(unsigned int windowId, char** arr, int length);
 
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
-    NSLog(@"I am here!!!!");
+    processWindowEvent(self.windowId, EventWindowFileDraggingExited);
 }
 
 - (BOOL)prepareForDragOperation:(id<NSDraggingInfo>)sender {
@@ -39,6 +39,7 @@ extern void processDragItems(unsigned int windowId, char** arr, int length);
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
     NSPasteboard *pasteboard = [sender draggingPasteboard];
+    processWindowEvent(self.windowId, EventWindowFileDraggingPerformed);
     if ([[pasteboard types] containsObject:NSFilenamesPboardType]) {
         NSArray *files = [pasteboard propertyListForType:NSFilenamesPboardType];
 		NSUInteger count = [files count];

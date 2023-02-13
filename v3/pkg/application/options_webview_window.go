@@ -39,6 +39,7 @@ type WebviewWindowOptions struct {
 	Hidden                          bool
 	EnableFraudulentWebsiteWarnings bool
 	Zoom                            float64
+	EnableDragAndDrop               bool
 }
 
 var WebviewWindowDefaults = &WebviewWindowOptions{

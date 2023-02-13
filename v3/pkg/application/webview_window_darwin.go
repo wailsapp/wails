@@ -18,7 +18,7 @@ package application
 extern void registerListener(unsigned int event);
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop) {
 
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
@@ -72,10 +72,12 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	delegate.webView = webView;
 	delegate.hideOnClose = false;
 
-	WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
-	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-	[view addSubview:dragView];
-	dragView.windowId = id;
+	if( enableDragAndDrop ) {
+		WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
+		[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+		[view addSubview:dragView];
+		dragView.windowId = id;
+	}
 
 	return window;
 }
@@ -1064,6 +1066,7 @@ func (w *macosWebviewWindow) run() {
 			C.int(w.parent.options.Height),
 			C.bool(w.parent.options.EnableFraudulentWebsiteWarnings),
 			C.bool(w.parent.options.Frameless),
+			C.bool(w.parent.options.EnableDragAndDrop),
 		)
 		w.setTitle(w.parent.options.Title)
 		w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)

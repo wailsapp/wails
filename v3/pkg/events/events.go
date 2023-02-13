@@ -130,8 +130,9 @@ type macEvents struct {
 	WebViewDidReceiveServerRedirectForProvisionalNavigation WindowEventType
 	WebViewDidFinishNavigation                              WindowEventType
 	WebViewDidCommitNavigation                              WindowEventType
-	WebViewDraggingEntered                                  WindowEventType
-	WebViewDraggingPerformed                                WindowEventType
+	WindowFileDraggingEntered                               WindowEventType
+	WindowFileDraggingPerformed                             WindowEventType
+	WindowFileDraggingExited                                WindowEventType
 }
 
 func newMacEvents() macEvents {
@@ -256,7 +257,8 @@ func newMacEvents() macEvents {
 		WebViewDidReceiveServerRedirectForProvisionalNavigation: 1141,
 		WebViewDidFinishNavigation:                              1142,
 		WebViewDidCommitNavigation:                              1143,
-		WebViewDraggingEntered:                                  1144,
-		WebViewDraggingPerformed:                                1145,
+		WindowFileDraggingEntered:                               1144,
+		WindowFileDraggingPerformed:                             1145,
+		WindowFileDraggingExited:                                1146,
 	}
 }

@@ -525,6 +525,24 @@ extern bool hasListeners(unsigned int);
     }
 }
 
+- (void)windowFileDraggingEntered:(NSNotification *)notification {
+    if( hasListeners(EventWindowFileDraggingEntered) ) {
+        processWindowEvent(self.windowId, EventWindowFileDraggingEntered);
+    }
+}
+
+- (void)windowFileDraggingPerformed:(NSNotification *)notification {
+    if( hasListeners(EventWindowFileDraggingPerformed) ) {
+        processWindowEvent(self.windowId, EventWindowFileDraggingPerformed);
+    }
+}
+
+- (void)windowFileDraggingExited:(NSNotification *)notification {
+    if( hasListeners(EventWindowFileDraggingExited) ) {
+        processWindowEvent(self.windowId, EventWindowFileDraggingExited);
+    }
+}
+
 - (void)webView:(WKWebView *)webview didStartProvisionalNavigation:(WKNavigation *)navigation {
     if( hasListeners(EventWebViewDidStartProvisionalNavigation) ) {
         processWindowEvent(self.windowId, EventWebViewDidStartProvisionalNavigation);
@@ -546,18 +564,6 @@ extern bool hasListeners(unsigned int);
 - (void)webView:(WKWebView *)webview didCommitNavigation:(WKNavigation *)navigation {
     if( hasListeners(EventWebViewDidCommitNavigation) ) {
         processWindowEvent(self.windowId, EventWebViewDidCommitNavigation);
-    }
-}
-
-- (void)webView:(WKWebView *)webview draggingEntered:(WKNavigation *)navigation {
-    if( hasListeners(EventWebViewDraggingEntered) ) {
-        processWindowEvent(self.windowId, EventWebViewDraggingEntered);
-    }
-}
-
-- (void)webView:(WKWebView *)webview draggingPerformed:(WKNavigation *)navigation {
-    if( hasListeners(EventWebViewDraggingPerformed) ) {
-        processWindowEvent(self.windowId, EventWebViewDraggingPerformed);
     }
 }
 
