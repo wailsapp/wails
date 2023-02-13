@@ -103,6 +103,7 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 	signal.Notify(quitChannel, os.Interrupt, os.Kill, syscall.SIGTERM)
 	exitCodeChannel := make(chan int, 1)
 
+	skipBindings := buildOptions.SkipBindings
 	// Build the frontend if requested, but ignore building the application itself.
 	ignoreFrontend := buildOptions.IgnoreFrontend
 	if !ignoreFrontend {
@@ -131,8 +132,10 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 
 	// Do initial build but only for the application.
 	logger.Println("Building application for development...")
+	buildOptions.SkipBindings = true
 	buildOptions.IgnoreFrontend = true
 	debugBinaryProcess, appBinary, err := restartApp(buildOptions, nil, f, exitCodeChannel)
+	buildOptions.SkipBindings = skipBindings
 	buildOptions.IgnoreFrontend = ignoreFrontend || f.FrontendDevServerURL != ""
 	if err != nil {
 		return err

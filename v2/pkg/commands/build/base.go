@@ -14,9 +14,6 @@ import (
 
 	"github.com/wailsapp/wails/v2/internal/system"
 
-	"github.com/leaanthony/gosod"
-	"github.com/wailsapp/wails/v2/internal/frontend/runtime/wrapper"
-
 	"github.com/pkg/errors"
 
 	"github.com/leaanthony/slicer"
@@ -159,13 +156,6 @@ func (b *BaseBuilder) OutputFilename(options *Options) string {
 
 // CompileProject compiles the project
 func (b *BaseBuilder) CompileProject(options *Options) error {
-
-	// Check if the runtime wrapper exists
-	err := generateRuntimeWrapper(options)
-	if err != nil {
-		return err
-	}
-
 	verbose := options.Verbosity == VERBOSE
 	// Run go mod tidy first
 	if !options.SkipModTidy {
@@ -175,8 +165,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 			println("")
 			cmd.Stdout = os.Stdout
 		}
-		err = cmd.Run()
-		if err != nil {
+		if err := cmd.Run(); err != nil {
 			return err
 		}
 	}
@@ -267,8 +256,7 @@ func (b *BaseBuilder) CompileProject(options *Options) error {
 	// Get application build directory
 	appDir := options.BinDirectory
 	if options.CleanBinDirectory {
-		err = cleanBinDirectory(options)
-		if err != nil {
+		if err := cleanBinDirectory(options); err != nil {
 			return err
 		}
 	}
@@ -415,26 +403,6 @@ Please reinstall by doing the following:
 	pterm.Println("Done.")
 	if verbose {
 		pterm.Info.Println(string(output))
-	}
-
-	return nil
-}
-
-func generateRuntimeWrapper(options *Options) error {
-
-	if options.WailsJSDir == "" {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-		options.WailsJSDir = filepath.Join(cwd, "frontend")
-	}
-	wrapperDir := filepath.Join(options.WailsJSDir, "wailsjs", "runtime")
-	_ = os.RemoveAll(wrapperDir)
-	extractor := gosod.New(wrapper.RuntimeWrapper)
-	err := extractor.Extract(wrapperDir, nil)
-	if err != nil {
-		return err
 	}
 
 	return nil
