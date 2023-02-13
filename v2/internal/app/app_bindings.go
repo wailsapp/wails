@@ -42,6 +42,8 @@ func (a *App) Run() error {
 		tsPostfixFlag = bindingFlags.String("tssuffix", "", "Suffix for generated typescript entities")
 	}
 
+	skipRuntime := (os.Getenv("skipruntime") != "")
+
 	_ = bindingFlags.Parse(os.Args[1:])
 	if tsPrefixFlag != nil {
 		tsPrefix = *tsPrefixFlag
@@ -55,7 +57,7 @@ func (a *App) Run() error {
 	appBindings.SetTsPrefix(tsPrefix)
 	appBindings.SetTsSuffix(tsSuffix)
 
-	err := generateBindings(appBindings)
+	err := generateBindings(appBindings, skipRuntime)
 	if err != nil {
 		return err
 	}
@@ -77,7 +79,7 @@ func CreateApp(appoptions *options.App) (*App, error) {
 
 }
 
-func generateBindings(bindings *binding.Bindings) error {
+func generateBindings(bindings *binding.Bindings, skipRuntime bool) error {
 
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -90,12 +92,14 @@ func generateBindings(bindings *binding.Bindings) error {
 
 	wailsjsbasedir := filepath.Join(projectConfig.GetWailsJSDir(), "wailsjs")
 
-	runtimeDir := filepath.Join(wailsjsbasedir, "runtime")
-	_ = os.RemoveAll(runtimeDir)
-	extractor := gosod.New(wrapper.RuntimeWrapper)
-	err = extractor.Extract(runtimeDir, nil)
-	if err != nil {
-		return err
+	if !skipRuntime {
+		runtimeDir := filepath.Join(wailsjsbasedir, "runtime")
+		_ = os.RemoveAll(runtimeDir)
+		extractor := gosod.New(wrapper.RuntimeWrapper)
+		err = extractor.Extract(runtimeDir, nil)
+		if err != nil {
+			return err
+		}
 	}
 
 	goBindingsDir := filepath.Join(wailsjsbasedir, "go")

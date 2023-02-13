@@ -67,6 +67,7 @@ type Options struct {
 	Obfuscated        bool                 // Indicates that bound methods should be obfuscated
 	GarbleArgs        string               // The arguments for Garble
 	SkipBindings      bool                 // Skip binding generation
+	SkipRuntime       bool                 // Skip runtime js generation
 }
 
 // Build the project!
@@ -222,10 +223,11 @@ func GenerateBindings(buildOptions *Options) error {
 
 	// Generate Bindings
 	output, err := bindings.GenerateBindings(bindings.Options{
-		Tags:      buildOptions.UserTags,
-		GoModTidy: !buildOptions.SkipModTidy,
-		TsPrefix:  buildOptions.ProjectData.Bindings.TsGeneration.Prefix,
-		TsSuffix:  buildOptions.ProjectData.Bindings.TsGeneration.Suffix,
+		Tags:        buildOptions.UserTags,
+		GoModTidy:   !buildOptions.SkipModTidy,
+		TsPrefix:    buildOptions.ProjectData.Bindings.TsGeneration.Prefix,
+		TsSuffix:    buildOptions.ProjectData.Bindings.TsGeneration.Suffix,
+		SkipRuntime: buildOptions.SkipRuntime,
 	})
 	if err != nil {
 		return err

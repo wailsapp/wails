@@ -132,6 +132,7 @@ func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 
 	// Do initial build but only for the application.
 	logger.Println("Building application for development...")
+	buildOptions.SkipRuntime = true // runtime JS scripts never need to be written again, they never change during a dev loop.
 	buildOptions.SkipBindings = true
 	buildOptions.IgnoreFrontend = true
 	debugBinaryProcess, appBinary, err := restartApp(buildOptions, nil, f, exitCodeChannel)

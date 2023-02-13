@@ -21,6 +21,8 @@ type Options struct {
 	GoModTidy        bool
 	TsPrefix         string
 	TsSuffix         string
+
+	SkipRuntime bool
 }
 
 // GenerateBindings generates bindings for the Wails project in the given ProjectDirectory.
@@ -66,6 +68,9 @@ func GenerateBindings(options Options) (string, error) {
 	env := os.Environ()
 	env = shell.SetEnv(env, "tsprefix", options.TsPrefix)
 	env = shell.SetEnv(env, "tssuffix", options.TsSuffix)
+	if options.SkipRuntime {
+		env = shell.SetEnv(env, "skipruntime", "1")
+	}
 
 	stdout, stderr, err = shell.RunCommandWithEnv(env, workingDirectory, filename)
 	if err != nil {
