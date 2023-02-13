@@ -77,6 +77,8 @@ Function .onInit
 FunctionEnd
 
 Section
+    !insertmacro wails.setShellContext
+
     !insertmacro wails.webview2runtime
 
     SetOutPath $INSTDIR
@@ -90,6 +92,8 @@ Section
 SectionEnd
 
 Section "uninstall" 
+    !insertmacro wails.setShellContext
+
     RMDir /r "$AppData\${PRODUCT_EXECUTABLE}" # Remove the WebView2 DataPath
 
     RMDir /r $INSTDIR
