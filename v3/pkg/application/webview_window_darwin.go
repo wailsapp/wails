@@ -212,12 +212,9 @@ void windowSetResizable(void* nsWindow, bool resizable) {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		WebviewWindow* window = (WebviewWindow*)nsWindow;
 		if (resizable) {
-			printf("Setting resizable to true\n");
 			NSWindowStyleMask styleMask = [window styleMask] | NSWindowStyleMaskResizable;
 			[window setStyleMask:styleMask];
-
 		} else {
-			printf("Setting resizable to false\n");
 			NSWindowStyleMask styleMask = [window styleMask] & ~NSWindowStyleMaskResizable;
 			[window setStyleMask:styleMask];
 		}

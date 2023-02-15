@@ -13,6 +13,7 @@ The electron alternative for Go
 import * as Clipboard from './clipboard';
 import * as Application from './application';
 import * as Log from './log';
+import * as Screens from './screens';
 
 import {newWindow} from "./window";
 import {dispatchCustomEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
@@ -40,6 +41,7 @@ export function newRuntime(id) {
             ...Application
         },
         Log,
+        Screens,
         Dialog: {
             Info,
             Warning,
