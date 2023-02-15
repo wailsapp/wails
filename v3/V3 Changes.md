@@ -70,3 +70,26 @@ Context menus are contextual menus that are shown when the user right-clicks on 
 To indicate that an element has a context menu, add the `data-contextmenu` attribute to the element. The value of this attribute should be the name of a context menu previously registered with the window.
 
 It is possible to register a context menu at the application level, making it available to all windows. This can be done using `app.RegisterContextMenu(name, menu)`. If a context menu cannot be found at the window level, the application context menus will be checked. A demo of this can be found in `v3/examples/contextmenus`.
+
+## Wails Markup Language (WML)
+
+The Wails Markup Language is a simple markup language that allows you to add functionality to standard HTML elements without the use of Javascript. 
+
+The following tags are currently supported:
+
+### `data-wml-event` 
+
+This specifies that a Wails event will be emitted when the element is clicked. The value of the attribute should be the name of the event to emit. 
+
+Example:
+```html
+<button data-wml-event="myevent">Click Me</button>
+```
+Sometimes you need the user to confirm an action. This can be done by adding the `data-wml-confirm` attribute to the element. The value of this attribute will be the message to display to the user.
+
+Example:
+```html
+<button data-wml-event="delete-all-items" data-wml-confirm="Are you sure?">Delete All Items</button>
+```
+
+### `data-wml-window`
