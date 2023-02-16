@@ -93,3 +93,18 @@ Example:
 ```
 
 ### `data-wml-window`
+
+Any `wails.window` method can be called by adding the `data-wml-window` attribute to an element. The value of the attribute should be the name of the method to call. The method name should be in the same case as the method.
+
+```html
+<button data-wml-window="Close">Close Window</button>
+```
+
+### `data-wml-trigger`
+
+This attribute specifies which javascript event should trigger the action. The default is `click`. 
+
+```html
+<button data-wml-event="hover-box" data-wml-trigger="mouseover">Hover over me!</button>
+```
+

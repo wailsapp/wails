@@ -12,6 +12,7 @@ function addWMLEventListeners() {
         const element = elements[i];
         const eventType = element.getAttribute('data-wml-event');
         const confirm = element.getAttribute('data-wml-confirm');
+        const trigger = element.getAttribute('data-wml-trigger') || "click";
 
         let callback = function () {
             if (confirm) {
@@ -25,10 +26,11 @@ function addWMLEventListeners() {
             sendEvent(eventType);
         }
         // Remove existing listeners
-        element.removeEventListener("click", callback);
+
+        element.removeEventListener(trigger, callback);
 
         // Add new listener
-        element.addEventListener("click", callback);
+        element.addEventListener(trigger, callback);
     }
 }
 
@@ -45,6 +47,7 @@ function addWMLWindowListeners() {
         const element = elements[i];
         const windowMethod = element.getAttribute('data-wml-window');
         const confirm = element.getAttribute('data-wml-confirm');
+        const trigger = element.getAttribute('data-wml-trigger') || "click";
 
         let callback = function () {
             if (confirm) {
@@ -57,15 +60,16 @@ function addWMLWindowListeners() {
             }
             callWindowMethod(windowMethod);
         }
+
         // Remove existing listeners
-        element.removeEventListener("click", callback);
+        element.removeEventListener(trigger, callback);
 
         // Add new listener
-        element.addEventListener("click", callback);
+        element.addEventListener(trigger, callback);
     }
 }
 
-export function addEventListeners() {
+export function refresh() {
     addWMLEventListeners();
     addWMLWindowListeners();
 }
