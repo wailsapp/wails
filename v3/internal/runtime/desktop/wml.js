@@ -69,7 +69,7 @@ function addWMLWindowListeners() {
     }
 }
 
-export function refresh() {
+export function reloadWML() {
     addWMLEventListeners();
     addWMLWindowListeners();
 }

@@ -19,7 +19,7 @@ import {newWindow} from "./window";
 import {dispatchCustomEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
 import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
 import {enableContextMenus} from "./contextmenu";
-import {refresh} from "./wml";
+import {reloadWML} from "./wml";
 
 window.wails = {
     ...newRuntime(-1),
@@ -44,7 +44,7 @@ export function newRuntime(id) {
         Log,
         Screens,
         WML: {
-            Refresh: refresh,
+            Reload: reloadWML,
         },
         Dialog: {
             Info,
@@ -73,5 +73,5 @@ if (DEBUG) {
 enableContextMenus(true);
 
 document.addEventListener("DOMContentLoaded", function(event) {
-    refresh();
+    reloadWML();
 });
