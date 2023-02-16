@@ -265,6 +265,7 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 	outputFile := builder.OutputFilename(options)
 	options.ProjectData.OutputFilename = outputFile
 	options.ProjectData.Name = outputFile
+	options.ProjectData.Info.ProductName = outputFile
 
 	if options.Platform == "darwin" && options.Arch == "universal" {
 		amd64Filename := outputFile + "-amd64"
