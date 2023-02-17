@@ -3,14 +3,14 @@ package parser
 import (
 	"fmt"
 	"go/ast"
+	"go/build"
 	"go/parser"
 	"go/token"
 	"os"
-	"strings"
+	"path/filepath"
+	"strconv"
 
 	"github.com/samber/lo"
-
-	"golang.org/x/tools/go/packages"
 )
 
 var Debug = false
@@ -21,24 +21,68 @@ func debug(msg string, args ...interface{}) {
 	}
 }
 
+type BoundStruct struct {
+	Name     string
+	Methods  map[string]*FuncSignature
+	Comments []string
+}
+
 type parsedPackage struct {
 	name         string
 	pkg          *ast.Package
-	boundStructs map[string]*ast.TypeSpec
+	boundStructs map[string]*BoundStruct
 }
 
 type Context struct {
 	packages map[string]*parsedPackage
+	dir      string
 }
 
-func (c *Context) GetBoundStructs() map[string][]*ast.TypeSpec {
-	structs := make(map[string][]*ast.TypeSpec)
-	for _, pkg := range c.packages {
-		for _, structType := range pkg.boundStructs {
-			structs[pkg.name] = append(structs[pkg.name], structType)
+func (c *Context) findImportPackage(pkgName string, pkg *ast.Package) (*ast.Package, error) {
+	for _, file := range pkg.Files {
+		for _, imp := range file.Imports {
+			path, err := strconv.Unquote(imp.Path.Value)
+			if err != nil {
+				return nil, err
+			}
+			if imp.Name != nil && imp.Name.Name == pkgName {
+				return c.getPackageFromPath(path)
+			} else {
+				_, pkgName := filepath.Split(path)
+				if pkgName == pkgName {
+					return c.getPackageFromPath(path)
+				}
+			}
 		}
 	}
-	return structs
+	return nil, fmt.Errorf("package '%s' not found in %s", pkgName, pkg.Name)
+}
+
+func (c *Context) getPackageFromPath(path string) (*ast.Package, error) {
+	dir, err := filepath.Abs(c.dir)
+	if err != nil {
+		return nil, err
+	}
+	if !filepath.IsAbs(path) {
+		dir = filepath.Join(dir, path)
+	} else {
+		impPkgDir, err := build.Import(path, dir, build.ImportMode(0))
+		if err != nil {
+			return nil, err
+		}
+		dir = impPkgDir.Dir
+	}
+	impPkg, err := parser.ParseDir(token.NewFileSet(), dir, nil, parser.AllErrors)
+	if err != nil {
+		return nil, err
+	}
+	for impName, impPkg := range impPkg {
+		if impName == "main" {
+			continue
+		}
+		return impPkg, nil
+	}
+	return nil, fmt.Errorf("Package not found in imported package %s", path)
 }
 
 func ParseDirectory(dir string) (*Context, error) {
@@ -52,12 +96,13 @@ func ParseDirectory(dir string) (*Context, error) {
 		dir = cwd
 	}
 	println("Parsing directory " + dir)
-	pkgs, err := parser.ParseDir(fset, dir, nil, parser.AllErrors)
+	pkgs, err := parser.ParseDir(fset, dir, nil, parser.ParseComments)
 	if err != nil {
 		return nil, err
 	}
 
 	context := &Context{
+		dir:      dir,
 		packages: make(map[string]*parsedPackage),
 	}
 
@@ -66,16 +111,46 @@ func ParseDirectory(dir string) (*Context, error) {
 		context.packages[pkg.Name] = &parsedPackage{
 			name:         pkg.Name,
 			pkg:          pkg,
-			boundStructs: make(map[string]*ast.TypeSpec),
+			boundStructs: make(map[string]*BoundStruct),
 		}
 	}
 
 	findApplicationNewCalls(context)
+	err = findStructDefinitions(context)
+	if err != nil {
+		return nil, err
+	}
 
 	return context, nil
 }
 
+func findStructDefinitions(context *Context) error {
+	// iterate over the packages
+	for _, pkg := range context.packages {
+		// iterate the struct names
+		for structName, _ := range pkg.boundStructs {
+			structSpec, methods, comments := getStructTypeSpec(pkg.pkg, structName)
+			if structSpec == nil {
+				return fmt.Errorf("unable to find struct %s in package %s", structName, pkg.name)
+			}
+			pkg.boundStructs[structName] = &BoundStruct{
+				Name:     structName,
+				Comments: comments,
+			}
+			if pkg.boundStructs[structName].Methods == nil {
+				pkg.boundStructs[structName].Methods = make(map[string]*FuncSignature)
+			}
+			for _, method := range methods {
+				pkg.boundStructs[structName].Methods[method.Name] = FuncTypeToSignature(method.Type)
+				pkg.boundStructs[structName].Methods[method.Name].Comments = method.Comments
+			}
+		}
+	}
+	return nil
+}
+
 func findApplicationNewCalls(context *Context) {
+	println("Finding application.New calls")
 	// Iterate through the packages
 	currentPackages := lo.Keys(context.packages)
 
@@ -120,10 +195,10 @@ func findApplicationNewCalls(context *Context) {
 				if !ok {
 					return true
 				}
-				if selectorExpr.Sel.Name != "Application" {
+				if selectorExpr.Sel.Name != "Options" {
 					return true
 				}
-				if id, ok := selectorExpr.X.(*ast.Ident); !ok || id.Name != "options" {
+				if id, ok := selectorExpr.X.(*ast.Ident); !ok || id.Name != "application" {
 					return true
 				}
 
@@ -169,15 +244,16 @@ func findApplicationNewCalls(context *Context) {
 							ident, ok := boundStructLit.Type.(*ast.Ident)
 							if ok {
 								if ident.Obj == nil {
-									structTypeSpec := findStructInPackage(thisPackage.pkg, ident.Name)
-									thisPackage.boundStructs[ident.Name] = structTypeSpec
-									findNestedStructs(structTypeSpec, file, packageName, context)
+									thisPackage.boundStructs[ident.Name] = &BoundStruct{
+										Name: ident.Name,
+									}
 									continue
 								}
 								// Check if the ident is a struct type
-								if t, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
-									thisPackage.boundStructs[ident.Name] = t
-									findNestedStructs(t, file, packageName, context)
+								if _, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
+									thisPackage.boundStructs[ident.Name] = &BoundStruct{
+										Name: ident.Name,
+									}
 									continue
 								}
 								// Check the typespec decl is a struct
@@ -189,7 +265,25 @@ func findApplicationNewCalls(context *Context) {
 							// Check if the lit is a selector
 							selector, ok := boundStructLit.Type.(*ast.SelectorExpr)
 							if ok {
-								getStructsFromSelector(selector, file, context)
+								// Check if the selector is an ident
+								if ident, ok := selector.X.(*ast.Ident); ok {
+									// Check if the ident is a package
+									if _, ok := context.packages[ident.Name]; !ok {
+										externalPackage, err := context.getPackageFromPath(ident.Name)
+										if err != nil {
+											println("Error getting package from path: " + err.Error())
+											return true
+										}
+										context.packages[ident.Name] = &parsedPackage{
+											name:         ident.Name,
+											pkg:          externalPackage,
+											boundStructs: make(map[string]*BoundStruct),
+										}
+									}
+									context.packages[ident.Name].boundStructs[selector.Sel.Name] = &BoundStruct{
+										Name: selector.Sel.Name,
+									}
+								}
 								continue
 							}
 						}
@@ -202,330 +296,163 @@ func findApplicationNewCalls(context *Context) {
 	}
 }
 
-func getStructsFromSelector(selector *ast.SelectorExpr, file *ast.File, context *Context) {
-	debug("getStructsFromSelector called with selector '%s' on file '%s.go'", selector.Sel.Name, file.Name.Name)
+//type Method struct {
+//	Name string
+//	Type *ast.FuncType
+//}
 
-	// extract package name from selector
-	packageName := selector.X.(*ast.Ident).Name
-
-	if context.packages[packageName] == nil {
-		context.packages[packageName] = &parsedPackage{
-			name:         packageName,
-			boundStructs: make(map[string]*ast.TypeSpec),
-		}
-	}
-
-	// extract struct name from selector
-	structName := selector.Sel.Name
-
-	// Find the package name from the imports
-	for _, imp := range file.Imports {
-		var match bool
-		if imp.Name == nil || imp.Name.Name == packageName {
-			match = true
-		}
-		if match == false {
-			pathSplit := strings.Split(imp.Path.Value, "/")
-			endPath := strings.Trim(pathSplit[len(pathSplit)-1], `"`)
-			match = endPath == packageName
-		}
-
-		if match {
-			// We have the import
-			cfg := &packages.Config{
-				Mode: packages.NeedName | packages.NeedFiles | packages.NeedImports | packages.NeedDeps | packages.NeedTypes | packages.NeedSyntax | packages.NeedTypesInfo | packages.NeedModule,
-			}
-			pkgs, err := packages.Load(cfg, strings.Trim(imp.Path.Value, `"`))
-			if err != nil {
-				panic(err)
-			}
-			foundPackage := pkgs[0]
-
-			// Iterate the files in the package and find struct types
-			for _, parsedFile := range foundPackage.Syntax {
-				ast.Inspect(parsedFile, func(n ast.Node) bool {
-					if n == nil {
-						return false
-					}
-					switch n.(type) {
-					case *ast.TypeSpec:
-						typeSpec := n.(*ast.TypeSpec)
-						if typeSpec.Name.Name == structName {
-							if _, ok := context.packages[packageName].boundStructs[structName]; !ok {
-								debug("Adding struct '%s' in package '%s'", structName, packageName)
-								context.packages[packageName].boundStructs[typeSpec.Name.Name] = typeSpec
-								findNestedStructs(typeSpec, parsedFile, packageName, context)
-							}
-							return false
-						}
-					}
-					return true
-				})
-			}
-
-			continue
-		}
-	}
-
-}
-
-func findNestedStructs(t *ast.TypeSpec, parsedFile *ast.File, pkgName string, context *Context) {
-	debug("findNestedStructs called with type '%s' on file '%s.go'", t.Name.Name, parsedFile.Name.Name)
-	structType, ok := t.Type.(*ast.StructType)
-	if !ok {
-		return
-	}
-	for _, field := range structType.Fields.List {
-		for _, ident := range field.Names {
-			switch t := ident.Obj.Decl.(*ast.Field).Type.(type) {
-			case *ast.Ident:
-				if t.Obj == nil {
-					continue
-				}
-				if t.Obj.Kind == ast.Typ {
-					if _, ok := t.Obj.Decl.(*ast.TypeSpec); ok {
-						if _, ok := context.packages[pkgName].boundStructs[t.Name]; !ok {
-							debug("Adding nested struct '%s' to package '%s'", t.Name, pkgName)
-							context.packages[pkgName].boundStructs[t.Name] = t.Obj.Decl.(*ast.TypeSpec)
-							findNestedStructs(t.Obj.Decl.(*ast.TypeSpec), parsedFile, pkgName, context)
-						}
-					}
-				}
-			case *ast.SelectorExpr:
-				if ident, ok := t.X.(*ast.Ident); ok {
-					if ident.IsExported() {
-						getStructsFromSelector(t, parsedFile, context)
-					}
-				}
-			case *ast.StarExpr:
-				if sel, ok := t.X.(*ast.SelectorExpr); ok {
-					if _, ok := sel.X.(*ast.Ident); ok {
-						if ident.IsExported() {
-							getStructsFromSelector(sel, parsedFile, context)
-						}
-					}
-				}
-			}
-		}
-	}
-	findStructsInMethods(t.Name.Name, parsedFile, pkgName, context)
-
-}
-
-func findStructsInMethods(name string, parsedFile *ast.File, pkgName string, context *Context) {
-	debug("findStructsInMethods called with type '%s' on file '%s.go'", name, parsedFile.Name.Name)
-	// Find the struct declaration for the given name
-	var structDecl *ast.TypeSpec
-	for _, decl := range parsedFile.Decls {
-		if fn, ok := decl.(*ast.FuncDecl); ok {
-			// check the receiver name is the same as the name given
-			if fn.Recv == nil {
-				continue
-			}
-			// Check if the receiver is a pointer
-			if starExpr, ok := fn.Recv.List[0].Type.(*ast.StarExpr); ok {
-				if ident, ok := starExpr.X.(*ast.Ident); ok {
-					if ident.Name != name {
-						continue
-					}
-				}
-			} else {
-				if ident, ok := fn.Recv.List[0].Type.(*ast.Ident); ok {
-					if ident.Name != name {
-						continue
-					}
-				}
-			}
-			findStructsInMethodParams(fn, parsedFile, pkgName, context)
-		}
-	}
-	if structDecl == nil {
-		return
-	}
-	// Iterate the methods in the struct
-
-}
-
-func findStructsInMethodParams(f *ast.FuncDecl, parsedFile *ast.File, pkgName string, context *Context) {
-	debug("findStructsInMethodParams called with type '%s' on file '%s.go'", f.Name.Name, parsedFile.Name.Name)
-	if f.Type.Params == nil {
-		for _, field := range f.Type.Params.List {
-			parseField(field, parsedFile, pkgName, context)
-		}
-	}
-	if f.Type.Results != nil {
-		for _, field := range f.Type.Results.List {
-			parseField(field, parsedFile, pkgName, context)
-		}
-	}
-}
-
-func parseField(field *ast.Field, parsedFile *ast.File, pkgName string, context *Context) {
-	if se, ok := field.Type.(*ast.StarExpr); ok {
-		// Check if the star expr is a struct
-		if selExp, ok := se.X.(*ast.SelectorExpr); ok {
-			getStructsFromSelector(selExp, parsedFile, context)
-			return
-		}
-		if ident, ok := se.X.(*ast.Ident); ok {
-			if ident.Obj == nil {
-				return
-			}
-			if ident.Obj.Kind == ast.Typ {
-				if _, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
-					if _, ok := context.packages[pkgName].boundStructs[ident.Name]; !ok {
-						debug("Adding field struct '%s' to package '%s'", ident.Name, pkgName)
-						context.packages[pkgName].boundStructs[ident.Name] = ident.Obj.Decl.(*ast.TypeSpec)
-						findNestedStructs(ident.Obj.Decl.(*ast.TypeSpec), parsedFile, pkgName, context)
-					} else {
-						debug("Struct %s already bound", ident.Name)
-					}
-				}
-			}
-		}
-	}
-	if selExp, ok := field.Type.(*ast.SelectorExpr); ok {
-		getStructsFromSelector(selExp, parsedFile, context)
-		return
-	}
-	if ident, ok := field.Type.(*ast.Ident); ok {
-		if ident.Obj == nil {
-			return
-		}
-		if ident.Obj.Kind == ast.Typ {
-			if _, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
-				if _, ok := context.packages[pkgName].boundStructs[ident.Name]; !ok {
-					debug("Adding field struct '%s' to package '%s'", ident.Name, pkgName)
-					context.packages[pkgName].boundStructs[ident.Name] = ident.Obj.Decl.(*ast.TypeSpec)
-					findNestedStructs(ident.Obj.Decl.(*ast.TypeSpec), parsedFile, pkgName, context)
-				} else {
-					debug("Struct %s already bound", ident.Name)
-				}
-			}
-		}
-	}
-}
-
-func findStructInPackage(pkg *ast.Package, name string) *ast.TypeSpec {
-	for _, file := range pkg.Files {
-		for _, decl := range file.Decls {
-			if gen, ok := decl.(*ast.GenDecl); ok && gen.Tok == token.TYPE {
-				for _, spec := range gen.Specs {
-					if typeSpec, ok := spec.(*ast.TypeSpec); ok {
-						if typeSpec.Name.Name == name {
-							if _, ok := typeSpec.Type.(*ast.StructType); ok {
-								return typeSpec
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	return nil
-}
-
-type Package struct {
-	Name  string
-	Specs []*ast.TypeSpec
-}
-
-var goToTS = map[string]string{
-	"int":     "number",
-	"int8":    "number",
-	"int16":   "number",
-	"int32":   "number",
-	"int64":   "number",
-	"uint":    "number",
-	"uint8":   "number",
-	"uint16":  "number",
-	"uint32":  "number",
-	"uint64":  "number",
-	"float32": "number",
-	"float64": "number",
-	"string":  "string",
-	"bool":    "boolean",
-}
-
-//func GenerateModels(specs map[string][]*ast.TypeSpec) ([]byte, error) {
-//	var buf bytes.Buffer
-//	var packages []Package
-//	for pkg, pkgSpecs := range specs {
-//		packages = append(packages, Package{Name: pkg, Specs: pkgSpecs})
-//	}
-//	sort.Slice(packages, func(i, j int) bool { return packages[i].Name < packages[j].Name })
-//	for _, pkg := range packages {
-//		if _, err := fmt.Fprintf(&buf, "namespace %s {\n", pkg.Name); err != nil {
-//			return nil, err
-//		}
-//		sort.Slice(pkg.Specs, func(i, j int) bool { return pkg.Specs[i].Name.Name < pkg.Specs[j].Name.Name })
-//		for _, spec := range pkg.Specs {
-//			if structType, ok := spec.Type.(*ast.StructType); ok {
-//				if _, err := fmt.Fprintf(&buf, "  class %s {\n", spec.Name.Name); err != nil {
-//					return nil, err
-//				}
+//func getStructTypeSpec(pkg *ast.Package, structName string) (*ast.TypeSpec, []Method) {
+//	var typeSpec *ast.TypeSpec
+//	var methods []Method
 //
-//				for _, field := range structType.Fields.List {
-//
-//					// Get the Go type of the field
-//					goType := types.ExprString(field.Type)
-//					// Look up the corresponding TypeScript type
-//					tsType, ok := goToTS[goType]
-//					if !ok {
-//						tsType = goType
-//					}
-//
-//					if _, err := fmt.Fprintf(&buf, "    %s: %s;\n", field.Names[0].Name, tsType); err != nil {
-//						return nil, err
+//	// Iterate over all files in the package
+//	for _, file := range pkg.Files {
+//		// Iterate over all declarations in the file
+//		for _, decl := range file.Decls {
+//			// Check if the declaration is a type declaration
+//			if genDecl, ok := decl.(*ast.GenDecl); ok && genDecl.Tok == token.TYPE {
+//				// Iterate over all type specifications in the type declaration
+//				for _, spec := range genDecl.Specs {
+//					// Check if the type specification is a struct type specification
+//					if tSpec, ok := spec.(*ast.TypeSpec); ok && tSpec.Name.Name == structName {
+//						// Check if the type specification is a struct type
+//						if _, ok := tSpec.Type.(*ast.StructType); ok {
+//							typeSpec = tSpec
+//						}
 //					}
 //				}
-//
-//				if _, err := fmt.Fprintf(&buf, "  }\n"); err != nil {
-//					return nil, err
-//				}
-//				if _, err := fmt.Fprintf(&buf, "  }\n"); err != nil {
-//					return nil, err
+//			} else if funcDecl, ok := decl.(*ast.FuncDecl); ok && funcDecl.Recv != nil {
+//				// Check if the function has a receiver argument of the struct type
+//				recvType, ok := funcDecl.Recv.List[0].Type.(*ast.StarExpr)
+//				if ok {
+//					if ident, ok := recvType.X.(*ast.Ident); ok && ident.Name == structName {
+//						// Add the method to the list of methods
+//						method := Method{
+//							Name: funcDecl.Name.Name,
+//							Type: funcDecl.Type,
+//						}
+//						methods = append(methods, method)
+//					}
 //				}
 //			}
 //		}
-//
-//		if _, err := fmt.Fprintf(&buf, "}\n"); err != nil {
-//			return nil, err
-//		}
 //	}
-//	return buf.Bytes(), nil
+//
+//	return typeSpec, methods
 //}
 
-type allModels struct {
-	known map[string]map[string]struct{}
+type Arg struct {
+	Name string
+	Type string
 }
 
-func newAllModels(models map[string][]*ast.TypeSpec) *allModels {
-	result := &allModels{known: make(map[string]map[string]struct{})}
-	// iterate over all models
-	for pkg, pkgSpecs := range models {
-		for _, spec := range pkgSpecs {
-			result.known[pkg] = make(map[string]struct{})
-			result.known[pkg][spec.Name.Name] = struct{}{}
+type FuncSignature struct {
+	Comments []string
+	Inputs   []Arg
+	Outputs  []Arg
+}
+
+func FuncTypeToSignature(ft *ast.FuncType) *FuncSignature {
+	sig := &FuncSignature{}
+
+	// process input arguments
+	if ft.Params != nil {
+		for _, field := range ft.Params.List {
+			arg := Arg{}
+			for _, name := range field.Names {
+				arg.Name = name.Name
+			}
+			arg.Type = tokenToString(field.Type)
+			sig.Inputs = append(sig.Inputs, arg)
 		}
 	}
-	return result
+
+	// process output arguments
+	if ft.Results != nil {
+		for _, field := range ft.Results.List {
+			arg := Arg{}
+			arg.Type = tokenToString(field.Type)
+			sig.Outputs = append(sig.Outputs, arg)
+		}
+	}
+
+	return sig
 }
 
-func (k *allModels) exists(name string) bool {
-	// Split the name into package and type
-	parts := strings.Split(name, ".")
-	typ := parts[0]
-	pkg := "main"
-	if len(parts) == 2 {
-		pkg = parts[0]
-		typ = parts[1]
+func tokenToString(t ast.Expr) string {
+	switch t := t.(type) {
+	case *ast.Ident:
+		return t.Name
+	case *ast.StarExpr:
+		return "*" + tokenToString(t.X)
+	case *ast.SelectorExpr:
+		return tokenToString(t.X) + "." + t.Sel.Name
+	case *ast.ArrayType:
+		return "[]" + tokenToString(t.Elt)
+	case *ast.StructType:
+		return "struct"
+	default:
+		return ""
+	}
+}
+
+type Method struct {
+	Name     string
+	Type     *ast.FuncType
+	Comments []string // Add a field to capture comments for the method
+}
+
+func getStructTypeSpec(pkg *ast.Package, structName string) (*ast.TypeSpec, []Method, []string) {
+	var typeSpec *ast.TypeSpec
+	var methods []Method
+	var structComments []string
+
+	// Iterate over all files in the package
+	for _, file := range pkg.Files {
+		// Iterate over all declarations in the file
+		for _, decl := range file.Decls {
+			// Check if the declaration is a type declaration
+			if genDecl, ok := decl.(*ast.GenDecl); ok && genDecl.Tok == token.TYPE {
+				// Iterate over all type specifications in the type declaration
+				for _, spec := range genDecl.Specs {
+					// Check if the type specification is a struct type specification
+					if tSpec, ok := spec.(*ast.TypeSpec); ok && tSpec.Name.Name == structName {
+						// Check if the type specification is a struct type
+						if _, ok := tSpec.Type.(*ast.StructType); ok {
+							// Get comments associated with the struct
+							if genDecl.Doc != nil {
+								for _, comment := range genDecl.Doc.List {
+									structComments = append(structComments, comment.Text)
+								}
+							}
+							typeSpec = tSpec
+						}
+					}
+				}
+			} else if funcDecl, ok := decl.(*ast.FuncDecl); ok && funcDecl.Recv != nil {
+				// Check if the function has a receiver argument of the struct type
+				recvType, ok := funcDecl.Recv.List[0].Type.(*ast.StarExpr)
+				if ok {
+					if ident, ok := recvType.X.(*ast.Ident); ok && ident.Name == structName {
+						// Get comments associated with the method
+						if funcDecl.Doc != nil {
+							var comments []string
+							for _, comment := range funcDecl.Doc.List {
+								comments = append(comments, comment.Text)
+							}
+							// Add the method to the list of methods
+							method := Method{
+								Name:     funcDecl.Name.Name,
+								Type:     funcDecl.Type,
+								Comments: comments,
+							}
+							methods = append(methods, method)
+						}
+					}
+				}
+			}
+		}
 	}
 
-	knownPkg, ok := k.known[pkg]
-	if !ok {
-		return false
-	}
-	_, ok = knownPkg[typ]
-	return ok
+	return typeSpec, methods, structComments
 }

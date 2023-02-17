@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/wailsapp/wails/v3/examples/binding/services"
-
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
