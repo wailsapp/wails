@@ -12,11 +12,21 @@ import (
 type GreetService struct {
 	SomeVariable int
 	lowerCase    string
+	target       *Person
+}
+
+type Person struct {
+	Name string
 }
 
 // Greet does XYZ
 func (*GreetService) Greet(name string) string {
 	return "Hello " + name
+}
+
+// NewPerson creates a new person
+func (*GreetService) NewPerson(name string) *Person {
+	return &Person{Name: name}
 }
 
 func main() {

@@ -7,6 +7,6 @@ type OtherService struct {
 }
 
 // Yay does this and that
-func (o *OtherService) Yay() {
-
+func (o *OtherService) Yay() []int {
+	return []int{0, 1, 2}
 }

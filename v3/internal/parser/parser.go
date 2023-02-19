@@ -3,89 +3,76 @@ package parser
 import (
 	"fmt"
 	"go/ast"
-	"go/build"
 	"go/parser"
 	"go/token"
 	"os"
-	"path/filepath"
-	"strconv"
-
-	"github.com/samber/lo"
 )
 
-var Debug = false
+var packageCache = make(map[string]*ParsedPackage)
 
-func debug(msg string, args ...interface{}) {
-	if Debug {
-		println(fmt.Sprintf(msg, args...))
-	}
+type packageName = string
+type structName = string
+
+type Parameter struct {
+	Name      string
+	Type      string
+	IsStruct  bool
+	IsSlice   bool
+	IsPointer bool
 }
 
-type BoundStruct struct {
+type BoundMethod struct {
+	Name       string
+	DocComment string
+	Inputs     []*Parameter
+	Outputs    []*Parameter
+}
+
+type Model struct {
+	Name   string
+	Fields []*Field
+}
+
+type Field struct {
 	Name     string
-	Methods  map[string]*FuncSignature
-	Comments []string
+	Type     string
+	IsStruct bool
+	IsSlice  bool
 }
 
-type parsedPackage struct {
-	name         string
-	pkg          *ast.Package
-	boundStructs map[string]*BoundStruct
+type ParsedPackage struct {
+	Pkg *ast.Package
 }
 
-type Context struct {
-	packages map[string]*parsedPackage
-	dir      string
+type Project struct {
+	Path         string
+	BoundMethods map[packageName]map[structName][]*BoundMethod
+	Models       map[packageName]map[structName]*Model
 }
 
-func (c *Context) findImportPackage(pkgName string, pkg *ast.Package) (*ast.Package, error) {
-	for _, file := range pkg.Files {
-		for _, imp := range file.Imports {
-			path, err := strconv.Unquote(imp.Path.Value)
-			if err != nil {
-				return nil, err
-			}
-			if imp.Name != nil && imp.Name.Name == pkgName {
-				return c.getPackageFromPath(path)
-			} else {
-				_, pkgName := filepath.Split(path)
-				if pkgName == pkgName {
-					return c.getPackageFromPath(path)
-				}
-			}
-		}
+func ParseProject(projectPath string) (*Project, error) {
+	result := &Project{
+		BoundMethods: make(map[packageName]map[structName][]*BoundMethod),
+		Models:       make(map[packageName]map[structName]*Model),
 	}
-	return nil, fmt.Errorf("package '%s' not found in %s", pkgName, pkg.Name)
-}
-
-func (c *Context) getPackageFromPath(path string) (*ast.Package, error) {
-	dir, err := filepath.Abs(c.dir)
+	pkgs, err := result.parseDirectory(projectPath)
 	if err != nil {
 		return nil, err
 	}
-	if !filepath.IsAbs(path) {
-		dir = filepath.Join(dir, path)
-	} else {
-		impPkgDir, err := build.Import(path, dir, build.ImportMode(0))
-		if err != nil {
-			return nil, err
-		}
-		dir = impPkgDir.Dir
-	}
-	impPkg, err := parser.ParseDir(token.NewFileSet(), dir, nil, parser.AllErrors)
+	println("Parsed " + projectPath)
+	err = result.findApplicationNewCalls(pkgs)
 	if err != nil {
 		return nil, err
 	}
-	for impName, impPkg := range impPkg {
-		if impName == "main" {
-			continue
-		}
-		return impPkg, nil
-	}
-	return nil, fmt.Errorf("Package not found in imported package %s", path)
+	return result, nil
 }
 
-func ParseDirectory(dir string) (*Context, error) {
+func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) {
+	println("Parsing directory " + dir)
+	if packageCache[dir] != nil {
+		println("Found directory in cache!")
+		return map[string]*ParsedPackage{dir: packageCache[dir]}, nil
+	}
 	// Parse the directory
 	fset := token.NewFileSet()
 	if dir == "." || dir == "" {
@@ -95,70 +82,28 @@ func ParseDirectory(dir string) (*Context, error) {
 		}
 		dir = cwd
 	}
-	println("Parsing directory " + dir)
 	pkgs, err := parser.ParseDir(fset, dir, nil, parser.ParseComments)
 	if err != nil {
 		return nil, err
 	}
-
-	context := &Context{
-		dir:      dir,
-		packages: make(map[string]*parsedPackage),
+	var result = make(map[string]*ParsedPackage)
+	for packageName, pkg := range pkgs {
+		parsedPackage := &ParsedPackage{Pkg: pkg}
+		packageCache[dir] = parsedPackage
+		result[packageName] = parsedPackage
 	}
-
-	// Iterate through the packages
-	for _, pkg := range pkgs {
-		context.packages[pkg.Name] = &parsedPackage{
-			name:         pkg.Name,
-			pkg:          pkg,
-			boundStructs: make(map[string]*BoundStruct),
-		}
-	}
-
-	findApplicationNewCalls(context)
-	err = findStructDefinitions(context)
-	if err != nil {
-		return nil, err
-	}
-
-	return context, nil
+	return result, nil
 }
 
-func findStructDefinitions(context *Context) error {
-	// iterate over the packages
-	for _, pkg := range context.packages {
-		// iterate the struct names
-		for structName, _ := range pkg.boundStructs {
-			structSpec, methods, comments := getStructTypeSpec(pkg.pkg, structName)
-			if structSpec == nil {
-				return fmt.Errorf("unable to find struct %s in package %s", structName, pkg.name)
-			}
-			pkg.boundStructs[structName] = &BoundStruct{
-				Name:     structName,
-				Comments: comments,
-			}
-			if pkg.boundStructs[structName].Methods == nil {
-				pkg.boundStructs[structName].Methods = make(map[string]*FuncSignature)
-			}
-			for _, method := range methods {
-				pkg.boundStructs[structName].Methods[method.Name] = FuncTypeToSignature(method.Type)
-				pkg.boundStructs[structName].Methods[method.Name].Comments = method.Comments
-			}
-		}
-	}
-	return nil
-}
+func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err error) {
 
-func findApplicationNewCalls(context *Context) {
-	println("Finding application.New calls")
-	// Iterate through the packages
-	currentPackages := lo.Keys(context.packages)
+	var callFound bool
 
-	for _, packageName := range currentPackages {
-		thisPackage := context.packages[packageName]
-		debug("Parsing package: %s", packageName)
+	for packageName, pkg := range pkgs {
+		thisPackage := pkg.Pkg
+		println("  - Looking in package: " + packageName)
 		// Iterate through the package's files
-		for _, file := range thisPackage.pkg.Files {
+		for _, file := range thisPackage.Files {
 			// Use an ast.Inspector to find the calls to application.New
 			ast.Inspect(file, func(n ast.Node) bool {
 				// Check if the node is a call expression
@@ -225,6 +170,7 @@ func findApplicationNewCalls(context *Context) {
 					if _, ok := arrayType.Elt.(*ast.InterfaceType); !ok {
 						continue
 					}
+					callFound = true
 					// Iterate through the slice elements
 					for _, elt := range sliceExpr.Elts {
 						// Check the element is a unary expression
@@ -243,46 +189,59 @@ func findApplicationNewCalls(context *Context) {
 							// Check if the lit is an ident
 							ident, ok := boundStructLit.Type.(*ast.Ident)
 							if ok {
-								if ident.Obj == nil {
-									thisPackage.boundStructs[ident.Name] = &BoundStruct{
-										Name: ident.Name,
-									}
-									continue
+								err = p.parseBoundStructMethods(ident.Name, thisPackage)
+								if err != nil {
+									return true
 								}
+								continue
 								// Check if the ident is a struct type
-								if _, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
-									thisPackage.boundStructs[ident.Name] = &BoundStruct{
-										Name: ident.Name,
-									}
-									continue
-								}
+								//if typeSpec, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
+								//	var parsedStruct *StructDefinition
+								//	parsedStruct, err = p.parseStruct(typeSpec, thisPackage)
+								//	if err != nil {
+								//		return true
+								//	}
+								//	p.addModel(thisPackage.Name, parsedStruct)
+								//	p.addBoundStruct(thisPackage.Name, ident.Name)
+								//	continue
+								//}
+								//// Check if the ident is a struct type
+								//if _, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
+								//	thisPackage.boundStructs[ident.Name] = &BoundStruct{
+								//		Name: ident.Name,
+								//	}
+								//	continue
+								//}
 								// Check the typespec decl is a struct
-								if _, ok := ident.Obj.Decl.(*ast.StructType); ok {
-									continue
-								}
+								//if _, ok := ident.Obj.Decl.(*ast.StructType); ok {
+								//	continue
+								//}
 
 							}
 							// Check if the lit is a selector
 							selector, ok := boundStructLit.Type.(*ast.SelectorExpr)
 							if ok {
 								// Check if the selector is an ident
-								if ident, ok := selector.X.(*ast.Ident); ok {
-									// Check if the ident is a package
-									if _, ok := context.packages[ident.Name]; !ok {
-										externalPackage, err := context.getPackageFromPath(ident.Name)
-										if err != nil {
-											println("Error getting package from path: " + err.Error())
-											return true
-										}
-										context.packages[ident.Name] = &parsedPackage{
-											name:         ident.Name,
-											pkg:          externalPackage,
-											boundStructs: make(map[string]*BoundStruct),
-										}
-									}
-									context.packages[ident.Name].boundStructs[selector.Sel.Name] = &BoundStruct{
-										Name: selector.Sel.Name,
-									}
+								if _, ok := selector.X.(*ast.Ident); ok {
+									//// Check if the ident is a package
+									//if _, ok := context.packages[ident.Name]; !ok {
+									//	externalPackage, err := context.getPackageFromPath(ident.Name)
+									//	if err != nil {
+									//		println("Error getting package from path: " + err.Error())
+									//		return true
+									//	}
+									//	context.packages[ident.Name] = &parsedPackage{
+									//		name:         ident.Name,
+									//		pkg:          externalPackage,
+									//		boundStructs: make(map[string]*BoundStruct),
+									//	}
+									//}
+									//context.packages[ident.Name].boundStructs[selector.Sel.Name] = &BoundStruct{
+									//	Name: selector.Sel.Name,
+									//}
+									//p.parseStructFromExternalPackage(selector.Sel.Name, ident.Name, thisPackage)
+									//p.addBoundStruct(ident.Name, selector.Sel.Name)
+									continue
 								}
 								continue
 							}
@@ -293,166 +252,121 @@ func findApplicationNewCalls(context *Context) {
 				return true
 			})
 		}
-	}
-}
-
-//type Method struct {
-//	Name string
-//	Type *ast.FuncType
-//}
-
-//func getStructTypeSpec(pkg *ast.Package, structName string) (*ast.TypeSpec, []Method) {
-//	var typeSpec *ast.TypeSpec
-//	var methods []Method
-//
-//	// Iterate over all files in the package
-//	for _, file := range pkg.Files {
-//		// Iterate over all declarations in the file
-//		for _, decl := range file.Decls {
-//			// Check if the declaration is a type declaration
-//			if genDecl, ok := decl.(*ast.GenDecl); ok && genDecl.Tok == token.TYPE {
-//				// Iterate over all type specifications in the type declaration
-//				for _, spec := range genDecl.Specs {
-//					// Check if the type specification is a struct type specification
-//					if tSpec, ok := spec.(*ast.TypeSpec); ok && tSpec.Name.Name == structName {
-//						// Check if the type specification is a struct type
-//						if _, ok := tSpec.Type.(*ast.StructType); ok {
-//							typeSpec = tSpec
-//						}
-//					}
-//				}
-//			} else if funcDecl, ok := decl.(*ast.FuncDecl); ok && funcDecl.Recv != nil {
-//				// Check if the function has a receiver argument of the struct type
-//				recvType, ok := funcDecl.Recv.List[0].Type.(*ast.StarExpr)
-//				if ok {
-//					if ident, ok := recvType.X.(*ast.Ident); ok && ident.Name == structName {
-//						// Add the method to the list of methods
-//						method := Method{
-//							Name: funcDecl.Name.Name,
-//							Type: funcDecl.Type,
-//						}
-//						methods = append(methods, method)
-//					}
-//				}
-//			}
-//		}
-//	}
-//
-//	return typeSpec, methods
-//}
-
-type Arg struct {
-	Name string
-	Type string
-}
-
-type FuncSignature struct {
-	Comments []string
-	Inputs   []Arg
-	Outputs  []Arg
-}
-
-func FuncTypeToSignature(ft *ast.FuncType) *FuncSignature {
-	sig := &FuncSignature{}
-
-	// process input arguments
-	if ft.Params != nil {
-		for _, field := range ft.Params.List {
-			arg := Arg{}
-			for _, name := range field.Names {
-				arg.Name = name.Name
-			}
-			arg.Type = tokenToString(field.Type)
-			sig.Inputs = append(sig.Inputs, arg)
+		if !callFound {
+			return fmt.Errorf("no Bound structs found")
 		}
 	}
+	return nil
+}
 
-	// process output arguments
-	if ft.Results != nil {
-		for _, field := range ft.Results.List {
-			arg := Arg{}
-			arg.Type = tokenToString(field.Type)
-			sig.Outputs = append(sig.Outputs, arg)
-		}
+func (p *Project) addBoundMethods(packageName string, name string, boundMethods []*BoundMethod) {
+	_, ok := p.BoundMethods[packageName]
+	if !ok {
+		p.BoundMethods[packageName] = make(map[structName][]*BoundMethod)
 	}
-
-	return sig
+	p.BoundMethods[packageName][name] = boundMethods
 }
 
-func tokenToString(t ast.Expr) string {
-	switch t := t.(type) {
-	case *ast.Ident:
-		return t.Name
-	case *ast.StarExpr:
-		return "*" + tokenToString(t.X)
-	case *ast.SelectorExpr:
-		return tokenToString(t.X) + "." + t.Sel.Name
-	case *ast.ArrayType:
-		return "[]" + tokenToString(t.Elt)
-	case *ast.StructType:
-		return "struct"
-	default:
-		return ""
-	}
-}
-
-type Method struct {
-	Name     string
-	Type     *ast.FuncType
-	Comments []string // Add a field to capture comments for the method
-}
-
-func getStructTypeSpec(pkg *ast.Package, structName string) (*ast.TypeSpec, []Method, []string) {
-	var typeSpec *ast.TypeSpec
-	var methods []Method
-	var structComments []string
-
+func (p *Project) parseBoundStructMethods(name string, pkg *ast.Package) error {
+	var methods []*BoundMethod
 	// Iterate over all files in the package
 	for _, file := range pkg.Files {
 		// Iterate over all declarations in the file
 		for _, decl := range file.Decls {
 			// Check if the declaration is a type declaration
-			if genDecl, ok := decl.(*ast.GenDecl); ok && genDecl.Tok == token.TYPE {
-				// Iterate over all type specifications in the type declaration
-				for _, spec := range genDecl.Specs {
-					// Check if the type specification is a struct type specification
-					if tSpec, ok := spec.(*ast.TypeSpec); ok && tSpec.Name.Name == structName {
-						// Check if the type specification is a struct type
-						if _, ok := tSpec.Type.(*ast.StructType); ok {
-							// Get comments associated with the struct
-							if genDecl.Doc != nil {
-								for _, comment := range genDecl.Doc.List {
-									structComments = append(structComments, comment.Text)
-								}
-							}
-							typeSpec = tSpec
-						}
-					}
-				}
-			} else if funcDecl, ok := decl.(*ast.FuncDecl); ok && funcDecl.Recv != nil {
+			if funcDecl, ok := decl.(*ast.FuncDecl); ok && funcDecl.Recv != nil {
 				// Check if the function has a receiver argument of the struct type
 				recvType, ok := funcDecl.Recv.List[0].Type.(*ast.StarExpr)
 				if ok {
-					if ident, ok := recvType.X.(*ast.Ident); ok && ident.Name == structName {
-						// Get comments associated with the method
-						if funcDecl.Doc != nil {
-							var comments []string
-							for _, comment := range funcDecl.Doc.List {
-								comments = append(comments, comment.Text)
-							}
-							// Add the method to the list of methods
-							method := Method{
-								Name:     funcDecl.Name.Name,
-								Type:     funcDecl.Type,
-								Comments: comments,
-							}
-							methods = append(methods, method)
+					if ident, ok := recvType.X.(*ast.Ident); ok && ident.Name == name {
+						// Add the method to the list of methods
+						method := &BoundMethod{
+							Name:       funcDecl.Name.Name,
+							DocComment: funcDecl.Doc.Text(),
+							Inputs:     make([]*Parameter, 0),
+							Outputs:    make([]*Parameter, 0),
 						}
+
+						method.Inputs = p.parseParameters(funcDecl.Type.Params)
+						method.Outputs = p.parseParameters(funcDecl.Type.Results)
+
+						methods = append(methods, method)
 					}
 				}
 			}
 		}
 	}
+	p.addBoundMethods(pkg.Name, name, methods)
+	return nil
+}
 
-	return typeSpec, methods, structComments
+func (p *Project) parseParameters(params *ast.FieldList) []*Parameter {
+	var result []*Parameter
+	for _, field := range params.List {
+		var theseFields []*Parameter
+		if len(field.Names) > 0 {
+			for _, name := range field.Names {
+				theseFields = append(theseFields, &Parameter{
+					Name: name.Name,
+				})
+			}
+		} else {
+			theseFields = append(theseFields, &Parameter{
+				Name: "",
+			})
+		}
+		// loop over fields
+		for _, thisField := range theseFields {
+			thisField.Type = getTypeString(field.Type)
+			switch t := field.Type.(type) {
+			case *ast.StarExpr:
+				thisField.IsStruct = isStructType(t.X)
+				thisField.IsPointer = true
+			case *ast.StructType:
+				thisField.IsStruct = true
+			case *ast.ArrayType:
+				thisField.IsSlice = true
+				thisField.IsStruct = isStructType(t.Elt)
+			case *ast.MapType:
+				thisField.IsSlice = true
+				thisField.IsStruct = isStructType(t.Value)
+			}
+			result = append(result, thisField)
+		}
+	}
+	return result
+}
+
+func getTypeString(expr ast.Expr) string {
+	switch t := expr.(type) {
+	case *ast.Ident:
+		return t.Name
+	case *ast.StarExpr:
+		return getTypeString(t.X)
+	case *ast.ArrayType:
+		return getTypeString(t.Elt)
+	//case *ast.MapType:
+	//	return "map[" + getTypeString(t.Key) + "]" + getTypeString(t.Value)
+	default:
+		return "any"
+	}
+}
+
+func isStructType(expr ast.Expr) bool {
+	switch e := expr.(type) {
+	case *ast.StructType:
+		return true
+	case *ast.StarExpr:
+		return isStructType(e.X)
+	case *ast.SelectorExpr:
+		return isStructType(e.Sel)
+	case *ast.ArrayType:
+		return isStructType(e.Elt)
+	case *ast.SliceExpr:
+		return isStructType(e.X)
+	case *ast.Ident:
+		return e.Obj != nil && e.Obj.Kind == ast.Typ
+	default:
+		return false
+	}
 }
