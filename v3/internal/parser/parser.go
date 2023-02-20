@@ -10,7 +10,6 @@ import (
 )
 
 var packageCache = make(map[string]*ParsedPackage)
-var structCache = make(map[string]map[structName]*StructDef)
 
 type packageName = string
 type structName = string
@@ -48,9 +47,10 @@ type Field struct {
 }
 
 type ParsedPackage struct {
-	Pkg  *ast.Package
-	Name string
-	Dir  string
+	Pkg         *ast.Package
+	Name        string
+	Dir         string
+	structCache map[structName]*StructDef
 }
 
 type Project struct {
@@ -96,12 +96,13 @@ func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) 
 	var result = make(map[string]*ParsedPackage)
 	for packageName, pkg := range pkgs {
 		parsedPackage := &ParsedPackage{
-			Pkg: pkg,
-			Dir: getDirectoryForPackage(pkg),
+			Pkg:         pkg,
+			Name:        packageName,
+			Dir:         getDirectoryForPackage(pkg),
+			structCache: make(map[structName]*StructDef),
 		}
 		packageCache[dir] = parsedPackage
 		result[packageName] = parsedPackage
-		structCache[packageName] = make(map[structName]*StructDef)
 	}
 	return result, nil
 }
@@ -200,7 +201,7 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 							// Check if the lit is an ident
 							ident, ok := boundStructLit.Type.(*ast.Ident)
 							if ok {
-								err = p.parseBoundStructMethods(ident.Name, thisPackage)
+								err = p.parseBoundStructMethods(ident.Name, pkg)
 								if err != nil {
 									return true
 								}
@@ -278,10 +279,10 @@ func (p *Project) addBoundMethods(packageName string, name string, boundMethods 
 	p.BoundMethods[packageName][name] = boundMethods
 }
 
-func (p *Project) parseBoundStructMethods(name string, pkg *ast.Package) error {
+func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error {
 	var methods []*BoundMethod
 	// Iterate over all files in the package
-	for _, file := range pkg.Files {
+	for _, file := range pkg.Pkg.Files {
 		// Iterate over all declarations in the file
 		for _, decl := range file.Decls {
 			// Check if the declaration is a type declaration
@@ -315,7 +316,7 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ast.Package) error {
 	return nil
 }
 
-func (p *Project) parseParameters(params *ast.FieldList, pkg *ast.Package) []*Parameter {
+func (p *Project) parseParameters(params *ast.FieldList, pkg *ParsedPackage) []*Parameter {
 	var result []*Parameter
 	for _, field := range params.List {
 		var theseFields []*Parameter
@@ -339,7 +340,7 @@ func (p *Project) parseParameters(params *ast.FieldList, pkg *ast.Package) []*Pa
 	return result
 }
 
-func (p *Project) parseParameterType(field *ast.Field, pkg *ast.Package) *ParameterType {
+func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *ParameterType {
 	var result ParameterType
 	result.Name = getTypeString(field.Type)
 	switch t := field.Type.(type) {
@@ -359,7 +360,7 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ast.Package) *Parame
 	default:
 	}
 	if result.IsStruct {
-		_, ok := structCache[pkg.Name][result.Name]
+		_, ok := pkg.structCache[result.Name]
 		if !ok {
 			p.getStructDef(result.Name, pkg)
 		}
@@ -367,13 +368,13 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ast.Package) *Parame
 	return &result
 }
 
-func (p *Project) getStructDef(name string, pkg *ast.Package) {
-	_, ok := structCache[pkg.Name][name]
+func (p *Project) getStructDef(name string, pkg *ParsedPackage) {
+	_, ok := pkg.structCache[name]
 	if ok {
 		return
 	}
 	// Iterate over all files in the package
-	for _, file := range pkg.Files {
+	for _, file := range pkg.Pkg.Files {
 		// Iterate over all declarations in the file
 		for _, decl := range file.Decls {
 			// Check if the declaration is a type declaration
@@ -388,7 +389,7 @@ func (p *Project) getStructDef(name string, pkg *ast.Package) {
 										Name:       name,
 										DocComment: typeDecl.Doc.Text(),
 									}
-									structCache[pkg.Name][name] = result
+									pkg.structCache[name] = result
 									result.Fields = p.parseStructFields(structType, pkg)
 								}
 							}
@@ -400,7 +401,7 @@ func (p *Project) getStructDef(name string, pkg *ast.Package) {
 	}
 }
 
-func (p *Project) parseStructFields(structType *ast.StructType, pkg *ast.Package) []*Field {
+func (p *Project) parseStructFields(structType *ast.StructType, pkg *ParsedPackage) []*Field {
 	var result []*Field
 	for _, field := range structType.Fields.List {
 		var theseFields []*Field
@@ -419,7 +420,7 @@ func (p *Project) parseStructFields(structType *ast.StructType, pkg *ast.Package
 		for _, thisField := range theseFields {
 			paramType := p.parseParameterType(field, pkg)
 			if paramType.IsStruct {
-				_, ok := structCache[pkg.Name][paramType.Name]
+				_, ok := pkg.structCache[paramType.Name]
 				if !ok {
 					p.getStructDef(paramType.Name, pkg)
 				}
@@ -466,8 +467,13 @@ func isStructType(expr ast.Expr) bool {
 }
 
 func getDirectoryForPackage(pkg *ast.Package) string {
-	for _, file := range pkg.Files {
-		return filepath.Dir(file.Name.Name)
+	for filename, _ := range pkg.Files {
+		path := filepath.Dir(filename)
+		abs, err := filepath.Abs(path)
+		if err != nil {
+			panic(err)
+		}
+		return abs
 	}
 	return ""
 }
