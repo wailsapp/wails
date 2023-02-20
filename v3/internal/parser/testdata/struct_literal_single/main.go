@@ -9,7 +9,8 @@ import (
 )
 
 type Person struct {
-	Name string
+	Name   string
+	Parent *Person
 }
 
 // GreetService is great
@@ -47,12 +48,40 @@ func (*GreetService) IntPointerInputNamedOutputs(in *int) (output *int, err erro
 	return in, nil
 }
 
+func (*GreetService) IntInIntOut(in int) int {
+	return in
+}
+
+func (*GreetService) UIntInUIntOut(in uint) uint {
+	return in
+}
+func (*GreetService) Float32InFloat32Out(in float32) float32 {
+	return in
+}
+func (*GreetService) Float64InFloat64Out(in float64) float64 {
+	return in
+}
+
+func (*GreetService) BoolInBoolOut(in bool) bool {
+	return in
+}
+
 func (*GreetService) StructPointerInputErrorOutput(in *Person) error {
 	return nil
 }
 
 func (*GreetService) StructPointerInputStructPointerOutput(in *Person) *Person {
 	return in
+}
+
+func (*GreetService) MapIntInt(in map[int]int) {
+}
+
+func (*GreetService) MapIntSliceInt(in map[int][]int) {
+}
+
+func (*GreetService) MapIntSliceIntInMapIntSliceIntOut(in map[int][]int) (out map[int][]int) {
+	return nil
 }
 
 func main() {

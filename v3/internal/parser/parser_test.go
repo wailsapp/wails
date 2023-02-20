@@ -25,18 +25,18 @@ func TestParseDirectory(t *testing.T) {
 							DocComment: "Greet someone\n",
 							Inputs: []*Parameter{
 								{
-									Name:     "name",
-									Type:     "string",
-									IsStruct: false,
-									IsSlice:  false,
+									Name: "name",
+									Type: &ParameterType{
+										Name: "string",
+									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
-									Name:     "",
-									Type:     "string",
-									IsStruct: false,
-									IsSlice:  false,
+									Name: "",
+									Type: &ParameterType{
+										Name: "string",
+									},
 								},
 							},
 						},
@@ -46,10 +46,10 @@ func TestParseDirectory(t *testing.T) {
 							Inputs:     nil,
 							Outputs: []*Parameter{
 								{
-									Name:     "",
-									Type:     "string",
-									IsStruct: false,
-									IsSlice:  false,
+									Name: "",
+									Type: &ParameterType{
+										Name: "string",
+									},
 								},
 							},
 						},
@@ -57,14 +57,18 @@ func TestParseDirectory(t *testing.T) {
 							Name: "StringArrayInputStringOut",
 							Inputs: []*Parameter{
 								{
-									Name:    "in",
-									Type:    "string",
-									IsSlice: true,
+									Name: "in",
+									Type: &ParameterType{
+										Name:    "string",
+										IsSlice: true,
+									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
-									Type: "string",
+									Type: &ParameterType{
+										Name: "string",
+									},
 								},
 							},
 						},
@@ -72,15 +76,19 @@ func TestParseDirectory(t *testing.T) {
 							Name: "StringArrayInputStringArrayOut",
 							Inputs: []*Parameter{
 								{
-									Name:    "in",
-									Type:    "string",
-									IsSlice: true,
+									Name: "in",
+									Type: &ParameterType{
+										Name:    "string",
+										IsSlice: true,
+									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
-									Type:    "string",
-									IsSlice: true,
+									Type: &ParameterType{
+										Name:    "string",
+										IsSlice: true,
+									},
 								},
 							},
 						},
@@ -88,16 +96,20 @@ func TestParseDirectory(t *testing.T) {
 							Name: "StringArrayInputNamedOutput",
 							Inputs: []*Parameter{
 								{
-									Name:    "in",
-									Type:    "string",
-									IsSlice: true,
+									Name: "in",
+									Type: &ParameterType{
+										Name:    "string",
+										IsSlice: true,
+									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
-									Name:    "output",
-									Type:    "string",
-									IsSlice: true,
+									Name: "output",
+									Type: &ParameterType{
+										Name:    "string",
+										IsSlice: true,
+									},
 								},
 							},
 						},
@@ -105,20 +117,26 @@ func TestParseDirectory(t *testing.T) {
 							Name: "StringArrayInputNamedOutputs",
 							Inputs: []*Parameter{
 								{
-									Name:    "in",
-									Type:    "string",
-									IsSlice: true,
+									Name: "in",
+									Type: &ParameterType{
+										Name:    "string",
+										IsSlice: true,
+									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
-									Name:    "output",
-									Type:    "string",
-									IsSlice: true,
+									Name: "output",
+									Type: &ParameterType{
+										Name:    "string",
+										IsSlice: true,
+									},
 								},
 								{
 									Name: "err",
-									Type: "error",
+									Type: &ParameterType{
+										Name: "error",
+									},
 								},
 							},
 						},
@@ -126,20 +144,115 @@ func TestParseDirectory(t *testing.T) {
 							Name: "IntPointerInputNamedOutputs",
 							Inputs: []*Parameter{
 								{
-									Name:      "in",
-									Type:      "int",
-									IsPointer: true,
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "int",
+										IsPointer: true,
+									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
-									Name:      "output",
-									Type:      "int",
-									IsPointer: true,
+									Name: "output",
+									Type: &ParameterType{
+										Name:      "int",
+										IsPointer: true,
+									},
 								},
 								{
 									Name: "err",
-									Type: "error",
+									Type: &ParameterType{
+										Name: "error",
+									}},
+							},
+						},
+						{
+							Name: "IntInIntOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "int",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name: "int",
+									},
+								},
+							},
+						},
+						{
+							Name: "UIntInUIntOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "uint",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name: "uint",
+									},
+								},
+							},
+						},
+						{
+							Name: "Float32InFloat32Out",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "float32",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name: "float32",
+									},
+								},
+							},
+						},
+						{
+							Name: "Float64InFloat64Out",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "float64",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name: "float64",
+									},
+								},
+							},
+						},
+						{
+							Name: "BoolInBoolOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "bool",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name: "bool",
+									},
 								},
 							},
 						},
@@ -147,15 +260,19 @@ func TestParseDirectory(t *testing.T) {
 							Name: "StructPointerInputErrorOutput",
 							Inputs: []*Parameter{
 								{
-									Name:      "in",
-									Type:      "Person",
-									IsStruct:  true,
-									IsPointer: true,
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "Person",
+										IsPointer: true,
+										IsStruct:  true,
+									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
-									Type: "error",
+									Type: &ParameterType{
+										Name: "error",
+									},
 								},
 							},
 						},
@@ -163,17 +280,91 @@ func TestParseDirectory(t *testing.T) {
 							Name: "StructPointerInputStructPointerOutput",
 							Inputs: []*Parameter{
 								{
-									Name:      "in",
-									Type:      "Person",
-									IsStruct:  true,
-									IsPointer: true,
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "Person",
+										IsPointer: true,
+										IsStruct:  true,
+									},
 								},
 							},
 							Outputs: []*Parameter{
 								{
-									Type:      "Person",
-									IsPointer: true,
-									IsStruct:  true,
+									Type: &ParameterType{
+										Name:      "Person",
+										IsPointer: true,
+										IsStruct:  true,
+									},
+								},
+							},
+						},
+						{
+							Name: "MapIntInt",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "map",
+										MapKey: &ParameterType{
+											Name: "int",
+										},
+										MapValue: &ParameterType{
+											Name: "int",
+										},
+									},
+								},
+							},
+							Outputs: []*Parameter{},
+						},
+						{
+							Name: "MapIntSliceInt",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "map",
+										MapKey: &ParameterType{
+											Name: "int",
+										},
+										MapValue: &ParameterType{
+											Name:    "int",
+											IsSlice: true,
+										},
+									},
+								},
+							},
+							Outputs: []*Parameter{},
+						},
+						{
+							Name: "MapIntSliceIntInMapIntSliceIntOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "map",
+										MapKey: &ParameterType{
+											Name: "int",
+										},
+										MapValue: &ParameterType{
+											Name:    "int",
+											IsSlice: true,
+										},
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Name: "out",
+									Type: &ParameterType{
+										Name: "map",
+										MapKey: &ParameterType{
+											Name: "int",
+										},
+										MapValue: &ParameterType{
+											Name:    "int",
+											IsSlice: true,
+										},
+									},
 								},
 							},
 						},
@@ -208,7 +399,6 @@ func TestParseDirectory(t *testing.T) {
 				t.Errorf("ParseDirectory() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
 			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}

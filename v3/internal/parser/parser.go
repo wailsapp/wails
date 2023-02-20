@@ -6,19 +6,33 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"path/filepath"
 )
 
 var packageCache = make(map[string]*ParsedPackage)
+var structCache = make(map[string]map[structName]*StructDef)
 
 type packageName = string
 type structName = string
 
-type Parameter struct {
+type StructDef struct {
+	Name       string
+	DocComment string
+	Fields     []*Field
+}
+
+type ParameterType struct {
 	Name      string
-	Type      string
 	IsStruct  bool
 	IsSlice   bool
 	IsPointer bool
+	MapKey    *ParameterType
+	MapValue  *ParameterType
+}
+
+type Parameter struct {
+	Name string
+	Type *ParameterType
 }
 
 type BoundMethod struct {
@@ -28,32 +42,25 @@ type BoundMethod struct {
 	Outputs    []*Parameter
 }
 
-type Model struct {
-	Name   string
-	Fields []*Field
-}
-
 type Field struct {
-	Name     string
-	Type     string
-	IsStruct bool
-	IsSlice  bool
+	Name string
+	Type *ParameterType
 }
 
 type ParsedPackage struct {
-	Pkg *ast.Package
+	Pkg  *ast.Package
+	Name string
+	Dir  string
 }
 
 type Project struct {
 	Path         string
 	BoundMethods map[packageName]map[structName][]*BoundMethod
-	Models       map[packageName]map[structName]*Model
 }
 
 func ParseProject(projectPath string) (*Project, error) {
 	result := &Project{
 		BoundMethods: make(map[packageName]map[structName][]*BoundMethod),
-		Models:       make(map[packageName]map[structName]*Model),
 	}
 	pkgs, err := result.parseDirectory(projectPath)
 	if err != nil {
@@ -88,9 +95,13 @@ func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) 
 	}
 	var result = make(map[string]*ParsedPackage)
 	for packageName, pkg := range pkgs {
-		parsedPackage := &ParsedPackage{Pkg: pkg}
+		parsedPackage := &ParsedPackage{
+			Pkg: pkg,
+			Dir: getDirectoryForPackage(pkg),
+		}
 		packageCache[dir] = parsedPackage
 		result[packageName] = parsedPackage
+		structCache[packageName] = make(map[structName]*StructDef)
 	}
 	return result, nil
 }
@@ -287,8 +298,12 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ast.Package) error {
 							Outputs:    make([]*Parameter, 0),
 						}
 
-						method.Inputs = p.parseParameters(funcDecl.Type.Params)
-						method.Outputs = p.parseParameters(funcDecl.Type.Results)
+						if funcDecl.Type.Params != nil {
+							method.Inputs = p.parseParameters(funcDecl.Type.Params, pkg)
+						}
+						if funcDecl.Type.Results != nil {
+							method.Outputs = p.parseParameters(funcDecl.Type.Results, pkg)
+						}
 
 						methods = append(methods, method)
 					}
@@ -300,7 +315,7 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ast.Package) error {
 	return nil
 }
 
-func (p *Project) parseParameters(params *ast.FieldList) []*Parameter {
+func (p *Project) parseParameters(params *ast.FieldList, pkg *ast.Package) []*Parameter {
 	var result []*Parameter
 	for _, field := range params.List {
 		var theseFields []*Parameter
@@ -317,20 +332,99 @@ func (p *Project) parseParameters(params *ast.FieldList) []*Parameter {
 		}
 		// loop over fields
 		for _, thisField := range theseFields {
-			thisField.Type = getTypeString(field.Type)
-			switch t := field.Type.(type) {
-			case *ast.StarExpr:
-				thisField.IsStruct = isStructType(t.X)
-				thisField.IsPointer = true
-			case *ast.StructType:
-				thisField.IsStruct = true
-			case *ast.ArrayType:
-				thisField.IsSlice = true
-				thisField.IsStruct = isStructType(t.Elt)
-			case *ast.MapType:
-				thisField.IsSlice = true
-				thisField.IsStruct = isStructType(t.Value)
+			thisField.Type = p.parseParameterType(field, pkg)
+			result = append(result, thisField)
+		}
+	}
+	return result
+}
+
+func (p *Project) parseParameterType(field *ast.Field, pkg *ast.Package) *ParameterType {
+	var result ParameterType
+	result.Name = getTypeString(field.Type)
+	switch t := field.Type.(type) {
+	case *ast.StarExpr:
+		result.IsStruct = isStructType(t.X)
+		result.IsPointer = true
+	case *ast.StructType:
+		result.IsStruct = true
+	case *ast.ArrayType:
+		result.IsSlice = true
+		result.IsStruct = isStructType(t.Elt)
+	case *ast.MapType:
+		tempfield := &ast.Field{Type: t.Key}
+		result.MapKey = p.parseParameterType(tempfield, pkg)
+		tempfield.Type = t.Value
+		result.MapValue = p.parseParameterType(tempfield, pkg)
+	default:
+	}
+	if result.IsStruct {
+		_, ok := structCache[pkg.Name][result.Name]
+		if !ok {
+			p.getStructDef(result.Name, pkg)
+		}
+	}
+	return &result
+}
+
+func (p *Project) getStructDef(name string, pkg *ast.Package) {
+	_, ok := structCache[pkg.Name][name]
+	if ok {
+		return
+	}
+	// Iterate over all files in the package
+	for _, file := range pkg.Files {
+		// Iterate over all declarations in the file
+		for _, decl := range file.Decls {
+			// Check if the declaration is a type declaration
+			if typeDecl, ok := decl.(*ast.GenDecl); ok {
+				// Check if the type declaration is a struct type
+				if typeDecl.Tok == token.TYPE {
+					for _, spec := range typeDecl.Specs {
+						if typeSpec, ok := spec.(*ast.TypeSpec); ok {
+							if structType, ok := typeSpec.Type.(*ast.StructType); ok {
+								if typeSpec.Name.Name == name {
+									result := &StructDef{
+										Name:       name,
+										DocComment: typeDecl.Doc.Text(),
+									}
+									structCache[pkg.Name][name] = result
+									result.Fields = p.parseStructFields(structType, pkg)
+								}
+							}
+						}
+					}
+				}
 			}
+		}
+	}
+}
+
+func (p *Project) parseStructFields(structType *ast.StructType, pkg *ast.Package) []*Field {
+	var result []*Field
+	for _, field := range structType.Fields.List {
+		var theseFields []*Field
+		if len(field.Names) > 0 {
+			for _, name := range field.Names {
+				theseFields = append(theseFields, &Field{
+					Name: name.Name,
+				})
+			}
+		} else {
+			theseFields = append(theseFields, &Field{
+				Name: "",
+			})
+		}
+		// loop over fields
+		for _, thisField := range theseFields {
+			paramType := p.parseParameterType(field, pkg)
+			if paramType.IsStruct {
+				_, ok := structCache[pkg.Name][paramType.Name]
+				if !ok {
+					p.getStructDef(paramType.Name, pkg)
+				}
+			}
+			thisField.Type = paramType
 			result = append(result, thisField)
 		}
 	}
@@ -345,8 +439,8 @@ func getTypeString(expr ast.Expr) string {
 		return getTypeString(t.X)
 	case *ast.ArrayType:
 		return getTypeString(t.Elt)
-	//case *ast.MapType:
-	//	return "map[" + getTypeString(t.Key) + "]" + getTypeString(t.Value)
+	case *ast.MapType:
+		return "map"
 	default:
 		return "any"
 	}
@@ -369,4 +463,11 @@ func isStructType(expr ast.Expr) bool {
 	default:
 		return false
 	}
+}
+
+func getDirectoryForPackage(pkg *ast.Package) string {
+	for _, file := range pkg.Files {
+		return filepath.Dir(file.Name.Name)
+	}
+	return ""
 }
