@@ -167,6 +167,206 @@ func TestParseDirectory(t *testing.T) {
 							},
 						},
 						{
+							Name: "UIntPointerInAndOutput",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "uint",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "uint",
+										IsPointer: true,
+									},
+								},
+							},
+						},
+						{
+							Name: "UInt8PointerInAndOutput",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "uint8",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "uint8",
+										IsPointer: true,
+									},
+								},
+							},
+						},
+						{
+							Name: "UInt16PointerInAndOutput",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "uint16",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "uint16",
+										IsPointer: true,
+									},
+								},
+							},
+						},
+						{
+							Name: "UInt32PointerInAndOutput",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "uint32",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "uint32",
+										IsPointer: true,
+									},
+								},
+							},
+						},
+						{
+							Name: "UInt64PointerInAndOutput",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "uint64",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "uint64",
+										IsPointer: true,
+									},
+								},
+							},
+						},
+						{
+							Name: "IntPointerInAndOutput",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "int",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "int",
+										IsPointer: true,
+									},
+								},
+							},
+						},
+						{
+							Name: "Int8PointerInAndOutput",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "int8",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "int8",
+										IsPointer: true,
+									},
+								},
+							},
+						},
+						{
+							Name: "Int16PointerInAndOutput",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "int16",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "int16",
+										IsPointer: true,
+									},
+								},
+							},
+						},
+						{
+							Name: "Int32PointerInAndOutput",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "int32",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "int32",
+										IsPointer: true,
+									},
+								},
+							},
+						},
+						{
+							Name: "Int64PointerInAndOutput",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "int64",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "int64",
+										IsPointer: true,
+									},
+								},
+							},
+						},
+						{
 							Name: "IntInIntOut",
 							Inputs: []*Parameter{
 								{
@@ -185,6 +385,78 @@ func TestParseDirectory(t *testing.T) {
 							},
 						},
 						{
+							Name: "Int8InIntOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "int8",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name: "int8",
+									},
+								},
+							},
+						},
+						{
+							Name: "Int16InIntOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "int16",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name: "int16",
+									},
+								},
+							},
+						},
+						{
+							Name: "Int32InIntOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "int32",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name: "int32",
+									},
+								},
+							},
+						},
+						{
+							Name: "Int64InIntOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "int64",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name: "int64",
+									},
+								},
+							},
+						},
+						{
 							Name: "UIntInUIntOut",
 							Inputs: []*Parameter{
 								{
@@ -198,6 +470,78 @@ func TestParseDirectory(t *testing.T) {
 								{
 									Type: &ParameterType{
 										Name: "uint",
+									},
+								},
+							},
+						},
+						{
+							Name: "UInt8InUIntOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "uint8",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name: "uint8",
+									},
+								},
+							},
+						},
+						{
+							Name: "UInt16InUIntOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "uint16",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name: "uint16",
+									},
+								},
+							},
+						},
+						{
+							Name: "UInt32InUIntOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "uint32",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name: "uint32",
+									},
+								},
+							},
+						},
+						{
+							Name: "UInt64InUIntOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "uint64",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name: "uint64",
 									},
 								},
 							},
@@ -239,6 +583,46 @@ func TestParseDirectory(t *testing.T) {
 							},
 						},
 						{
+							Name: "PointerFloat32InFloat32Out",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "float32",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "float32",
+										IsPointer: true,
+									},
+								},
+							},
+						},
+						{
+							Name: "PointerFloat64InFloat64Out",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "float64",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "float64",
+										IsPointer: true,
+									},
+								},
+							},
+						},
+						{
 							Name: "BoolInBoolOut",
 							Inputs: []*Parameter{
 								{
@@ -252,6 +636,46 @@ func TestParseDirectory(t *testing.T) {
 								{
 									Type: &ParameterType{
 										Name: "bool",
+									},
+								},
+							},
+						},
+						{
+							Name: "PointerBoolInBoolOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "bool",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "bool",
+										IsPointer: true,
+									},
+								},
+							},
+						},
+						{
+							Name: "PointerStringInStringOut",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "string",
+										IsPointer: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "string",
+										IsPointer: true,
 									},
 								},
 							},
@@ -317,6 +741,44 @@ func TestParseDirectory(t *testing.T) {
 							Outputs: []*Parameter{},
 						},
 						{
+							Name: "PointerMapIntInt",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:      "map",
+										IsPointer: true,
+										MapKey: &ParameterType{
+											Name: "int",
+										},
+										MapValue: &ParameterType{
+											Name: "int",
+										},
+									},
+								},
+							},
+							Outputs: []*Parameter{},
+						},
+						{
+							Name: "MapIntPointerInt",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name: "map",
+										MapKey: &ParameterType{
+											Name:      "int",
+											IsPointer: true,
+										},
+										MapValue: &ParameterType{
+											Name: "int",
+										},
+									},
+								},
+							},
+							Outputs: []*Parameter{},
+						},
+						{
 							Name: "MapIntSliceInt",
 							Inputs: []*Parameter{
 								{
@@ -367,6 +829,19 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
+						},
+						{
+							Name: "ArrayInt",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:    "int",
+										IsSlice: true,
+									},
+								},
+							},
+							Outputs: []*Parameter{},
 						},
 					},
 				},

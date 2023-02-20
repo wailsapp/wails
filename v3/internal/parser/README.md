@@ -16,23 +16,23 @@ This package contains the static analyser used for parsing Wails projects so tha
     - [x] Multiple input parameters
     - [x] Multiple output parameters
     - [x] Named output parameters
-    - [x] int
+    - [x] int/8/16/32/64
       - [x] Pointer
-    - [x] uint
-      - [ ] Pointer
+    - [x] uint/8/16/32/64
+      - [x] Pointer
     - [x] float
-      - [ ] Pointer
+      - [x] Pointer
     - [x] string
-      - [ ] Pointer
+      - [x] Pointer
     - [x] bool
-      - [ ] Pointer
+      - [x] Pointer
     - [ ] Struct
       - [x] Pointer
-    - [x] Slices 
-      - [ ] Pointer
       - [x] Recursive
+    - [x] Slices 
+      - [x] Pointer
     - [x] Maps
-      - [ ] Pointer
+      - [x] Pointer
 - [ ] Model Parsing
   - [x] In same package
   - [ ] In different package

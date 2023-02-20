@@ -341,12 +341,13 @@ func (p *Project) parseParameters(params *ast.FieldList, pkg *ParsedPackage) []*
 }
 
 func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *ParameterType {
-	var result ParameterType
+	result := &ParameterType{}
 	result.Name = getTypeString(field.Type)
 	switch t := field.Type.(type) {
 	case *ast.StarExpr:
-		result.IsStruct = isStructType(t.X)
+		result = p.parseParameterType(&ast.Field{Type: t.X}, pkg)
 		result.IsPointer = true
+		result.IsStruct = isStructType(t.X)
 	case *ast.StructType:
 		result.IsStruct = true
 	case *ast.ArrayType:
@@ -365,7 +366,7 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 			p.getStructDef(result.Name, pkg)
 		}
 	}
-	return &result
+	return result
 }
 
 func (p *Project) getStructDef(name string, pkg *ParsedPackage) {
@@ -467,7 +468,7 @@ func isStructType(expr ast.Expr) bool {
 }
 
 func getDirectoryForPackage(pkg *ast.Package) string {
-	for filename, _ := range pkg.Files {
+	for filename := range pkg.Files {
 		path := filepath.Dir(filename)
 		abs, err := filepath.Abs(path)
 		if err != nil {
