@@ -738,7 +738,6 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
-							Outputs: []*Parameter{},
 						},
 						{
 							Name: "PointerMapIntInt",
@@ -757,7 +756,6 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
-							Outputs: []*Parameter{},
 						},
 						{
 							Name: "MapIntPointerInt",
@@ -776,7 +774,6 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
-							Outputs: []*Parameter{},
 						},
 						{
 							Name: "MapIntSliceInt",
@@ -795,7 +792,6 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
-							Outputs: []*Parameter{},
 						},
 						{
 							Name: "MapIntSliceIntInMapIntSliceIntOut",
@@ -841,25 +837,84 @@ func TestParseDirectory(t *testing.T) {
 									},
 								},
 							},
-							Outputs: []*Parameter{},
 						},
 					},
 				},
 			},
 			wantErr: false,
 		},
-		//{
-		//	name: "should find multiple bound services",
-		//	dir:  "testdata/struct_literal_multiple",
-		//	//wantModels: []string{"main.GreetService", "main.OtherService"},
-		//	wantErr: false,
-		//},
-		//{
-		//	name: "should find multiple bound services over multiple files",
-		//	dir:  "testdata/struct_literal_multiple_files",
-		//	//wantModels: []string{"main.GreetService", "main.OtherService"},
-		//	wantErr: false,
-		//},
+		{
+			name: "should find multiple bound services",
+			dir:  "testdata/struct_literal_multiple",
+			wantBoundMethods: map[string]map[string][]*BoundMethod{
+				"main": {
+					"GreetService": {
+						{
+							Name:       "Greet",
+							DocComment: "",
+							Inputs: []*Parameter{
+								{
+									Name: "name",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Name: "",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+						},
+					},
+					"OtherService": {
+						{
+							Name: "Hello",
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "should find multiple bound services over multiple files",
+			dir:  "testdata/struct_literal_multiple_files",
+			wantBoundMethods: map[string]map[string][]*BoundMethod{
+				"main": {
+					"GreetService": {
+						{
+							Name:       "Greet",
+							DocComment: "",
+							Inputs: []*Parameter{
+								{
+									Name: "name",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Name: "",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+						},
+					},
+					"OtherService": {
+						{
+							Name: "Hello",
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
 		//{
 		//	name: "should find multiple bound services over multiple packages",
 		//	dir:  "testdata/struct_literal_multiple_other",

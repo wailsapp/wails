@@ -295,8 +295,6 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 						method := &BoundMethod{
 							Name:       funcDecl.Name.Name,
 							DocComment: funcDecl.Doc.Text(),
-							Inputs:     make([]*Parameter, 0),
-							Outputs:    make([]*Parameter, 0),
 						}
 
 						if funcDecl.Type.Params != nil {
