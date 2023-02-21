@@ -25,10 +25,11 @@ func TestGetMimetype(t *testing.T) {
 		want string
 	}{
 		// TODO: Add test cases.
-		{"nil data", args{"nil.svg", nil}, "text/plain"},
-		{"empty data", args{"empty.html", emptyMsg}, "text/plain"},
+		{"nil data", args{"nil.svg", nil}, "image/svg+xml"},
+		{"empty data", args{"empty.html", emptyMsg}, "text/html; charset=utf-8"},
 		{"css", args{"test.css", css}, "text/css; charset=utf-8"},
-		{"js", args{"test.js", []byte("let foo = 'bar'; console.log(foo);")}, "application/javascript"},
+		{"js", args{"test.js", []byte("let foo = 'bar'; console.log(foo);")}, "text/javascript; charset=utf-8"},
+		{"mjs", args{"test.mjs", []byte("let foo = 'bar'; console.log(foo);")}, "text/javascript; charset=utf-8"},
 		{"html-utf8", args{"test_utf8.html", html}, "text/html; charset=utf-8"},
 		{"html-bom-utf8", args{"test_bom_utf8.html", bomHtml}, "text/html; charset=utf-8"},
 		{"svg", args{"test.svg", svg}, "image/svg+xml"},
