@@ -915,12 +915,74 @@ func TestParseDirectory(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		//{
-		//	name: "should find multiple bound services over multiple packages",
-		//	dir:  "testdata/struct_literal_multiple_other",
-		//	//wantModels: []string{"main.GreetService", "services.OtherService", "main.Person"},
-		//	wantErr: false,
-		//},
+		{
+			name:    "should find multiple bound services over multiple packages",
+			dir:     "testdata/struct_literal_multiple_other",
+			wantErr: false,
+			wantBoundMethods: map[string]map[string][]*BoundMethod{
+				"main": {
+					"GreetService": {
+						{
+							Name:       "Greet",
+							DocComment: "Greet does XYZ\n",
+							Inputs: []*Parameter{
+								{
+									Name: "name",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Name: "",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+						},
+						{
+							Name:       "NewPerson",
+							DocComment: "NewPerson creates a new person\n",
+							Inputs: []*Parameter{
+								{
+									Name: "name",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Name: "",
+									Type: &ParameterType{
+										Name:      "Person",
+										IsPointer: true,
+										IsStruct:  true,
+									},
+								},
+							},
+						},
+					},
+				},
+				"services": {
+					"OtherService": {
+						{
+							Name: "Yay",
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:    "int",
+										IsSlice: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

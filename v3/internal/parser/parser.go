@@ -3,10 +3,12 @@ package parser
 import (
 	"fmt"
 	"go/ast"
+	"go/build"
 	"go/parser"
 	"go/token"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 var packageCache = make(map[string]*ParsedPackage)
@@ -235,24 +237,16 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 							if ok {
 								// Check if the selector is an ident
 								if _, ok := selector.X.(*ast.Ident); ok {
-									//// Check if the ident is a package
-									//if _, ok := context.packages[ident.Name]; !ok {
-									//	externalPackage, err := context.getPackageFromPath(ident.Name)
-									//	if err != nil {
-									//		println("Error getting package from path: " + err.Error())
-									//		return true
-									//	}
-									//	context.packages[ident.Name] = &parsedPackage{
-									//		name:         ident.Name,
-									//		pkg:          externalPackage,
-									//		boundStructs: make(map[string]*BoundStruct),
-									//	}
-									//}
-									//context.packages[ident.Name].boundStructs[selector.Sel.Name] = &BoundStruct{
-									//	Name: selector.Sel.Name,
-									//}
-									//p.parseStructFromExternalPackage(selector.Sel.Name, ident.Name, thisPackage)
-									//p.addBoundStruct(ident.Name, selector.Sel.Name)
+									// Look up the package
+									var parsedPackage *ParsedPackage
+									parsedPackage, err = p.getParsedPackageFromName(selector.X.(*ast.Ident).Name, pkg)
+									if err != nil {
+										return true
+									}
+									err = p.parseBoundStructMethods(selector.Sel.Name, parsedPackage)
+									if err != nil {
+										return true
+									}
 									continue
 								}
 								continue
@@ -429,6 +423,58 @@ func (p *Project) parseStructFields(structType *ast.StructType, pkg *ParsedPacka
 		}
 	}
 	return result
+}
+
+func (p *Project) getParsedPackageFromName(packageName string, currentPackage *ParsedPackage) (*ParsedPackage, error) {
+	for _, file := range currentPackage.Pkg.Files {
+		for _, imp := range file.Imports {
+			path, err := strconv.Unquote(imp.Path.Value)
+			if err != nil {
+				return nil, err
+			}
+			_, lastPathElement := filepath.Split(path)
+			if imp.Name != nil && imp.Name.Name == packageName || lastPathElement == packageName {
+				// Get the directory for the package
+				dir, err := getPackageDir(path)
+				if err != nil {
+					return nil, err
+				}
+				pkg, err := p.getPackageFromPath(dir, path)
+				if err != nil {
+					return nil, err
+				}
+				return &ParsedPackage{
+					Pkg:         pkg,
+					Name:        packageName,
+					Dir:         dir,
+					structCache: make(map[string]*StructDef),
+				}, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("package %s not found in %s", packageName, currentPackage.Name)
+}
+
+func getPackageDir(importPath string) (string, error) {
+	pkg, err := build.Import(importPath, "", build.FindOnly)
+	if err != nil {
+		return "", err
+	}
+	return pkg.Dir, nil
+}
+
+func (p *Project) getPackageFromPath(packagedir string, packagepath string) (*ast.Package, error) {
+	impPkg, err := parser.ParseDir(token.NewFileSet(), packagedir, nil, parser.AllErrors)
+	if err != nil {
+		return nil, err
+	}
+	for impName, impPkg := range impPkg {
+		if impName == "main" {
+			continue
+		}
+		return impPkg, nil
+	}
+	return nil, fmt.Errorf("package not found in imported package %s", packagepath)
 }
 
 func getTypeString(expr ast.Expr) string {
