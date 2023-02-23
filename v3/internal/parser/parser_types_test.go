@@ -966,7 +966,7 @@ func TestParseDirectory(t *testing.T) {
 						},
 					},
 				},
-				"services": {
+				"github.com/wailsapp/wails/v3/internal/parser/testdata/struct_literal_multiple_other/services": {
 					"OtherService": {
 						{
 							Name: "Yay",

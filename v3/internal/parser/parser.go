@@ -13,7 +13,7 @@ import (
 
 var packageCache = make(map[string]*ParsedPackage)
 
-type packageName = string
+type packagePath = string
 type structName = string
 
 type StructDef struct {
@@ -51,18 +51,19 @@ type Field struct {
 type ParsedPackage struct {
 	Pkg         *ast.Package
 	Name        string
+	Path        string
 	Dir         string
-	structCache map[structName]*StructDef
+	StructCache map[structName]*StructDef
 }
 
 type Project struct {
 	Path         string
-	BoundMethods map[packageName]map[structName][]*BoundMethod
+	BoundMethods map[packagePath]map[structName][]*BoundMethod
 }
 
 func ParseProject(projectPath string) (*Project, error) {
 	result := &Project{
-		BoundMethods: make(map[packageName]map[structName][]*BoundMethod),
+		BoundMethods: make(map[packagePath]map[structName][]*BoundMethod),
 	}
 	pkgs, err := result.parseDirectory(projectPath)
 	if err != nil {
@@ -100,8 +101,9 @@ func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) 
 		parsedPackage := &ParsedPackage{
 			Pkg:         pkg,
 			Name:        packageName,
+			Path:        packageName,
 			Dir:         getDirectoryForPackage(pkg),
-			structCache: make(map[structName]*StructDef),
+			StructCache: make(map[structName]*StructDef),
 		}
 		packageCache[dir] = parsedPackage
 		result[packageName] = parsedPackage
@@ -265,12 +267,12 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 	return nil
 }
 
-func (p *Project) addBoundMethods(packageName string, name string, boundMethods []*BoundMethod) {
-	_, ok := p.BoundMethods[packageName]
+func (p *Project) addBoundMethods(packagePath string, name string, boundMethods []*BoundMethod) {
+	_, ok := p.BoundMethods[packagePath]
 	if !ok {
-		p.BoundMethods[packageName] = make(map[structName][]*BoundMethod)
+		p.BoundMethods[packagePath] = make(map[structName][]*BoundMethod)
 	}
-	p.BoundMethods[packageName][name] = boundMethods
+	p.BoundMethods[packagePath][name] = boundMethods
 }
 
 func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error {
@@ -304,7 +306,7 @@ func (p *Project) parseBoundStructMethods(name string, pkg *ParsedPackage) error
 			}
 		}
 	}
-	p.addBoundMethods(pkg.Name, name, methods)
+	p.addBoundMethods(pkg.Path, name, methods)
 	return nil
 }
 
@@ -353,7 +355,7 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 	default:
 	}
 	if result.IsStruct {
-		_, ok := pkg.structCache[result.Name]
+		_, ok := pkg.StructCache[result.Name]
 		if !ok {
 			p.getStructDef(result.Name, pkg)
 		}
@@ -362,7 +364,7 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 }
 
 func (p *Project) getStructDef(name string, pkg *ParsedPackage) {
-	_, ok := pkg.structCache[name]
+	_, ok := pkg.StructCache[name]
 	if ok {
 		return
 	}
@@ -382,7 +384,7 @@ func (p *Project) getStructDef(name string, pkg *ParsedPackage) {
 										Name:       name,
 										DocComment: typeDecl.Doc.Text(),
 									}
-									pkg.structCache[name] = result
+									pkg.StructCache[name] = result
 									result.Fields = p.parseStructFields(structType, pkg)
 								}
 							}
@@ -413,7 +415,7 @@ func (p *Project) parseStructFields(structType *ast.StructType, pkg *ParsedPacka
 		for _, thisField := range theseFields {
 			paramType := p.parseParameterType(field, pkg)
 			if paramType.IsStruct {
-				_, ok := pkg.structCache[paramType.Name]
+				_, ok := pkg.StructCache[paramType.Name]
 				if !ok {
 					p.getStructDef(paramType.Name, pkg)
 				}
@@ -446,8 +448,9 @@ func (p *Project) getParsedPackageFromName(packageName string, currentPackage *P
 				return &ParsedPackage{
 					Pkg:         pkg,
 					Name:        packageName,
+					Path:        path,
 					Dir:         dir,
-					structCache: make(map[string]*StructDef),
+					StructCache: make(map[string]*StructDef),
 				}, nil
 			}
 		}
