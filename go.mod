@@ -19,9 +19,8 @@ require (
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/syossan27/tebata v0.0.0-20180602121909-b283fe4bc5ba
 	golang.org/x/image v0.0.0-20200430140353-33d19683fad8
-	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
-	golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359
-	golang.org/x/text v0.3.0
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
+	golang.org/x/text v0.3.8
 	gopkg.in/AlecAivazis/survey.v1 v1.8.4
 	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
 )
