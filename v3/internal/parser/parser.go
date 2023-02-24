@@ -59,9 +59,10 @@ type ParsedPackage struct {
 }
 
 type Project struct {
-	Path         string
-	BoundMethods map[packagePath]map[structName][]*BoundMethod
-	Models       map[packagePath]map[structName]*StructDef
+	Path                     string
+	BoundMethods             map[packagePath]map[structName][]*BoundMethod
+	Models                   map[packagePath]map[structName]*StructDef
+	anonymousStructIDCounter int
 }
 
 func ParseProject(projectPath string) (*Project, error) {
@@ -353,6 +354,20 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 		result.IsPointer = true
 	case *ast.StructType:
 		result.IsStruct = true
+		if result.Name == "" {
+			// Anonymous struct
+			result.Name = p.anonymousStructID()
+			// Create a new struct definition
+			result := &StructDef{
+				Name: result.Name,
+			}
+			pkg.StructCache[result.Name] = result
+			// Parse the fields
+			result.Fields = p.parseStructFields(&ast.StructType{
+				Fields: t.Fields,
+			}, pkg)
+			_ = result
+		}
 	case *ast.SelectorExpr:
 		extPackage, err := p.getParsedPackageFromName(t.X.(*ast.Ident).Name, pkg)
 		if err != nil {
@@ -503,6 +518,11 @@ func (p *Project) getPackageFromPath(packagedir string, packagepath string) (*as
 	return nil, fmt.Errorf("package not found in imported package %s", packagepath)
 }
 
+func (p *Project) anonymousStructID() string {
+	p.anonymousStructIDCounter++
+	return fmt.Sprintf("anon%d", p.anonymousStructIDCounter)
+}
+
 func getTypeString(expr ast.Expr) string {
 	switch t := expr.(type) {
 	case *ast.Ident:
@@ -516,7 +536,7 @@ func getTypeString(expr ast.Expr) string {
 	case *ast.SelectorExpr:
 		return getTypeString(t.Sel)
 	default:
-		return "any"
+		return ""
 	}
 }
 

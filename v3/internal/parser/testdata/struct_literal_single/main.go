@@ -9,8 +9,11 @@ import (
 )
 
 type Person struct {
-	Name   string
-	Parent *Person
+	Name    string
+	Parent  *Person
+	Details struct {
+		Age int
+	}
 }
 
 // GreetService is great
