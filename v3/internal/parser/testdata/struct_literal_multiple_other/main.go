@@ -16,7 +16,8 @@ type GreetService struct {
 }
 
 type Person struct {
-	Name string
+	Name    string
+	Address *services.Address
 }
 
 // Greet does XYZ

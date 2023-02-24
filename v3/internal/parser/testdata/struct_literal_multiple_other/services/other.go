@@ -6,7 +6,17 @@ type OtherService struct {
 	t int
 }
 
+type Address struct {
+	Street  string
+	State   string
+	Country string
+}
+
 // Yay does this and that
-func (o *OtherService) Yay() []int {
-	return []int{0, 1, 2}
+func (o *OtherService) Yay() *Address {
+	return &Address{
+		Street:  "123 Pitt Street",
+		State:   "New South Wales",
+		Country: "Australia",
+	}
 }

@@ -6,6 +6,7 @@ import (
 	"go/build"
 	"go/parser"
 	"go/token"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -29,6 +30,7 @@ type ParameterType struct {
 	IsPointer bool
 	MapKey    *ParameterType
 	MapValue  *ParameterType
+	Package   string
 }
 
 type Parameter struct {
@@ -59,6 +61,7 @@ type ParsedPackage struct {
 type Project struct {
 	Path         string
 	BoundMethods map[packagePath]map[structName][]*BoundMethod
+	Models       map[packagePath]map[structName]*StructDef
 }
 
 func ParseProject(projectPath string) (*Project, error) {
@@ -74,13 +77,19 @@ func ParseProject(projectPath string) (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
+	for _, pkg := range packageCache {
+		if len(pkg.StructCache) > 0 {
+			if result.Models == nil {
+				result.Models = make(map[packagePath]map[structName]*StructDef)
+			}
+			result.Models[pkg.Path] = pkg.StructCache
+		}
+	}
 	return result, nil
 }
 
 func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) {
-	println("Parsing directory " + dir)
 	if packageCache[dir] != nil {
-		println("Found directory in cache!")
 		return map[string]*ParsedPackage{dir: packageCache[dir]}, nil
 	}
 	// Parse the directory
@@ -105,7 +114,7 @@ func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) 
 			Dir:         getDirectoryForPackage(pkg),
 			StructCache: make(map[structName]*StructDef),
 		}
-		packageCache[dir] = parsedPackage
+		packageCache[packageName] = parsedPackage
 		result[packageName] = parsedPackage
 	}
 	return result, nil
@@ -115,9 +124,8 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 
 	var callFound bool
 
-	for packageName, pkg := range pkgs {
+	for _, pkg := range pkgs {
 		thisPackage := pkg.Pkg
-		println("  - Looking in package: " + packageName)
 		// Iterate through the package's files
 		for _, file := range thisPackage.Files {
 			// Use an ast.Inspector to find the calls to application.New
@@ -338,12 +346,20 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 	result := &ParameterType{}
 	result.Name = getTypeString(field.Type)
 	switch t := field.Type.(type) {
+	case *ast.Ident:
+		result.IsStruct = isStructType(t)
 	case *ast.StarExpr:
 		result = p.parseParameterType(&ast.Field{Type: t.X}, pkg)
 		result.IsPointer = true
-		result.IsStruct = isStructType(t.X)
 	case *ast.StructType:
 		result.IsStruct = true
+	case *ast.SelectorExpr:
+		extPackage, err := p.getParsedPackageFromName(t.X.(*ast.Ident).Name, pkg)
+		if err != nil {
+			log.Fatal(err)
+		}
+		result.IsStruct = p.getStructDef(t.Sel.Name, extPackage)
+		result.Package = extPackage.Path
 	case *ast.ArrayType:
 		result.IsSlice = true
 		result.IsStruct = isStructType(t.Elt)
@@ -355,18 +371,18 @@ func (p *Project) parseParameterType(field *ast.Field, pkg *ParsedPackage) *Para
 	default:
 	}
 	if result.IsStruct {
-		_, ok := pkg.StructCache[result.Name]
-		if !ok {
-			p.getStructDef(result.Name, pkg)
+		p.getStructDef(result.Name, pkg)
+		if result.Package == "" {
+			result.Package = pkg.Path
 		}
 	}
 	return result
 }
 
-func (p *Project) getStructDef(name string, pkg *ParsedPackage) {
+func (p *Project) getStructDef(name string, pkg *ParsedPackage) bool {
 	_, ok := pkg.StructCache[name]
 	if ok {
-		return
+		return true
 	}
 	// Iterate over all files in the package
 	for _, file := range pkg.Pkg.Files {
@@ -386,6 +402,7 @@ func (p *Project) getStructDef(name string, pkg *ParsedPackage) {
 									}
 									pkg.StructCache[name] = result
 									result.Fields = p.parseStructFields(structType, pkg)
+									return true
 								}
 							}
 						}
@@ -394,6 +411,7 @@ func (p *Project) getStructDef(name string, pkg *ParsedPackage) {
 			}
 		}
 	}
+	return false
 }
 
 func (p *Project) parseStructFields(structType *ast.StructType, pkg *ParsedPackage) []*Field {
@@ -418,6 +436,9 @@ func (p *Project) parseStructFields(structType *ast.StructType, pkg *ParsedPacka
 				_, ok := pkg.StructCache[paramType.Name]
 				if !ok {
 					p.getStructDef(paramType.Name, pkg)
+				}
+				if paramType.Package == "" {
+					paramType.Package = pkg.Path
 				}
 			}
 			thisField.Type = paramType
@@ -445,13 +466,15 @@ func (p *Project) getParsedPackageFromName(packageName string, currentPackage *P
 				if err != nil {
 					return nil, err
 				}
-				return &ParsedPackage{
+				result := &ParsedPackage{
 					Pkg:         pkg,
 					Name:        packageName,
 					Path:        path,
 					Dir:         dir,
 					StructCache: make(map[string]*StructDef),
-				}, nil
+				}
+				packageCache[path] = result
+				return result, nil
 			}
 		}
 	}
@@ -490,6 +513,8 @@ func getTypeString(expr ast.Expr) string {
 		return getTypeString(t.Elt)
 	case *ast.MapType:
 		return "map"
+	case *ast.SelectorExpr:
+		return getTypeString(t.Sel)
 	default:
 		return "any"
 	}

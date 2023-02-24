@@ -11,6 +11,7 @@ func TestParseDirectory(t *testing.T) {
 		name             string
 		dir              string
 		wantBoundMethods map[string]map[string][]*BoundMethod
+		wantModels       map[string]map[string]*StructDef
 		wantErr          bool
 	}{
 		{
@@ -689,6 +690,7 @@ func TestParseDirectory(t *testing.T) {
 										Name:      "Person",
 										IsPointer: true,
 										IsStruct:  true,
+										Package:   "main",
 									},
 								},
 							},
@@ -709,6 +711,7 @@ func TestParseDirectory(t *testing.T) {
 										Name:      "Person",
 										IsPointer: true,
 										IsStruct:  true,
+										Package:   "main",
 									},
 								},
 							},
@@ -718,6 +721,7 @@ func TestParseDirectory(t *testing.T) {
 										Name:      "Person",
 										IsPointer: true,
 										IsStruct:  true,
+										Package:   "main",
 									},
 								},
 							},
@@ -835,6 +839,30 @@ func TestParseDirectory(t *testing.T) {
 										Name:    "int",
 										IsSlice: true,
 									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantModels: map[string]map[string]*StructDef{
+				"main": {
+					"Person": {
+						Name: "Person",
+						Fields: []*Field{
+							{
+								Name: "Name",
+								Type: &ParameterType{
+									Name: "string",
+								},
+							},
+							{
+								Name: "Parent",
+								Type: &ParameterType{
+									Name:      "Person",
+									IsStruct:  true,
+									IsPointer: true,
+									Package:   "main",
 								},
 							},
 						},
@@ -960,6 +988,7 @@ func TestParseDirectory(t *testing.T) {
 										Name:      "Person",
 										IsPointer: true,
 										IsStruct:  true,
+										Package:   "main",
 									},
 								},
 							},
@@ -973,9 +1002,60 @@ func TestParseDirectory(t *testing.T) {
 							Outputs: []*Parameter{
 								{
 									Type: &ParameterType{
-										Name:    "int",
-										IsSlice: true,
+										Name:      "Address",
+										IsStruct:  true,
+										IsPointer: true,
+										Package:   "github.com/wailsapp/wails/v3/internal/parser/testdata/struct_literal_multiple_other/services",
 									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantModels: map[string]map[string]*StructDef{
+				"main": {
+					"Person": {
+						Name: "Person",
+						Fields: []*Field{
+							{
+								Name: "Name",
+								Type: &ParameterType{
+									Name: "string",
+								},
+							},
+							{
+								Name: "Address",
+								Type: &ParameterType{
+									Name:      "Address",
+									IsStruct:  true,
+									IsPointer: true,
+									Package:   "github.com/wailsapp/wails/v3/internal/parser/testdata/struct_literal_multiple_other/services",
+								},
+							},
+						},
+					},
+				},
+				"github.com/wailsapp/wails/v3/internal/parser/testdata/struct_literal_multiple_other/services": {
+					"Address": {
+						Name: "Address",
+						Fields: []*Field{
+							{
+								Name: "Street",
+								Type: &ParameterType{
+									Name: "string",
+								},
+							},
+							{
+								Name: "State",
+								Type: &ParameterType{
+									Name: "string",
+								},
+							},
+							{
+								Name: "Country",
+								Type: &ParameterType{
+									Name: "string",
 								},
 							},
 						},
@@ -992,6 +1072,9 @@ func TestParseDirectory(t *testing.T) {
 				return
 			}
 			if diff := cmp.Diff(tt.wantBoundMethods, got.BoundMethods); diff != "" {
+				t.Errorf("ParseDirectory() failed:\n" + diff)
+			}
+			if diff := cmp.Diff(tt.wantModels, got.Models); diff != "" {
 				t.Errorf("ParseDirectory() failed:\n" + diff)
 			}
 		})
