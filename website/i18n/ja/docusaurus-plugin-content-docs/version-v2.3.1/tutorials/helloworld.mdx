@@ -4,27 +4,27 @@ sidebar_position: 10
 
 # Hello World
 
-このチュートリアルの目的は、Wailsを使った最も基本的なアプリケーションを立ち上げ、実行することです。以下のことができるようになります:
+The aim of this tutorial is to get you up and running with the most basic application using Wails. You will be able to:
 
-- 新しいWailsアプリケーションを作成する
-- アプリケーションをビルドする
-- アプリケーションを実行する
+- Create a new Wails application
+- Build the application
+- Run the application
 
 :::note
 
-このチュートリアルでは、ターゲットプラットフォームとしてWindowsを使用しています。出力はお使いのOSによって若干異なります。
+This tutorial uses Windows as the target platform. Output will vary slightly depending on your operating system.
 
 :::
 
-## Wailsの新規アプリケーションを作成する
+## Create a new Wails application
 
-デフォルトのVanilla JSテンプレートを使って新しいWailsアプリケーションを作成するには、次のコマンドを実行する必要があります。
+To create a new Wails application using the default vanilla JS template, you need to run the following command:
 
 ```bash
 wails init -n helloworld
 ```
 
-以下のようなものが表示されるはずです:
+You should see something similar to the following:
 
 ```
 Wails CLI v2.0.0
@@ -40,7 +40,7 @@ Template Support:  https://wails.io
 Initialised project 'helloworld' in 232ms.
 ```
 
-これにより、カレントディレクトリには`helloworld`という新しいディレクトリが作成されます。このディレクトリの中に、いくつかのファイルがあります:
+This will create a new directory called `helloworld` in the current directory. In this directory, you will find a number of files:
 
 ```
 build/       - Contains the build files + compiled application
@@ -52,15 +52,15 @@ go.mod       - The go module file
 go.sum       - The go module checksum file
 ```
 
-## アプリケーションをビルドする
+## Build the application
 
-アプリケーションをビルドするには、新しい`helloworld`プロジェクトディレクトリに移動して、以下のコマンドを実行します:
+To build the application, change to the new `helloworld` project directory and run the following command:
 
 ```bash
 wails build
 ```
 
-以下のような画面が表示されるはずです:
+You should see something like the following:
 
 ```
 Wails CLI v2.0.0
@@ -86,13 +86,11 @@ Building target: windows/amd64
 Built 'C:\Users\leaan\tutorial\helloworld\build\bin\helloworld.exe' in 10.616s.
 ```
 
-これで、アプリケーションがコンパイルされ、`build/bin`ディレクトリに保存されました。
+This has compiled the application and saved it in the `build/bin` directory.
 
-## アプリケーションを実行する
+## Run the application
 
-Windowsエクスプローラーで`build/bin`ディレクトリを表示すると、プロジェクトのバイナリが表示されるはずです:
-
-
+If we view the `build/bin` directory in Windows Explorer, we should see our project binary:
 
 ```mdx-code-block
 <div class="text--center">
@@ -104,13 +102,13 @@ Windowsエクスプローラーで`build/bin`ディレクトリを表示する�
 <br />
 ```
 
-`helloworld.exe`ファイルをダブルクリックするだけで実行できます。
+We can run it by simply double-clicking the `helloworld.exe` file.
 
-Macでは、Wailsは`helloworld.app`ファイルを生成し、それをダブルクリックすることによって実行できます。
+On Mac, Wails generates a `helloworld.app` file which can be run by double-clicking it.
 
-Linuxでは、`build/bin`ディレクトリにある、`./helloworld`を使って実行することができます。
+On Linux, you can run the application using `./helloworld` from the `build/bin` directory.
 
-アプリケーションが期待通りに動作していることが確認できるはずです:
+You should see the application working as expected:
 
 ```mdx-code-block
 <div class="text--center">
