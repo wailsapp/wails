@@ -12,8 +12,6 @@ import (
 	"strconv"
 )
 
-var packageCache = make(map[string]*ParsedPackage)
-
 type packagePath = string
 type structName = string
 
@@ -59,6 +57,7 @@ type ParsedPackage struct {
 }
 
 type Project struct {
+	packageCache             map[string]*ParsedPackage
 	Path                     string
 	BoundMethods             map[packagePath]map[structName][]*BoundMethod
 	Models                   map[packagePath]map[structName]*StructDef
@@ -68,6 +67,7 @@ type Project struct {
 func ParseProject(projectPath string) (*Project, error) {
 	result := &Project{
 		BoundMethods: make(map[packagePath]map[structName][]*BoundMethod),
+		packageCache: make(map[string]*ParsedPackage),
 	}
 	pkgs, err := result.parseDirectory(projectPath)
 	if err != nil {
@@ -78,7 +78,7 @@ func ParseProject(projectPath string) (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, pkg := range packageCache {
+	for _, pkg := range result.packageCache {
 		if len(pkg.StructCache) > 0 {
 			if result.Models == nil {
 				result.Models = make(map[packagePath]map[structName]*StructDef)
@@ -90,8 +90,8 @@ func ParseProject(projectPath string) (*Project, error) {
 }
 
 func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) {
-	if packageCache[dir] != nil {
-		return map[string]*ParsedPackage{dir: packageCache[dir]}, nil
+	if p.packageCache[dir] != nil {
+		return map[string]*ParsedPackage{dir: p.packageCache[dir]}, nil
 	}
 	// Parse the directory
 	fset := token.NewFileSet()
@@ -115,7 +115,7 @@ func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) 
 			Dir:         getDirectoryForPackage(pkg),
 			StructCache: make(map[structName]*StructDef),
 		}
-		packageCache[packageName] = parsedPackage
+		p.packageCache[packageName] = parsedPackage
 		result[packageName] = parsedPackage
 	}
 	return result, nil
@@ -201,66 +201,44 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 						// Check the element is a unary expression
 						unaryExpr, ok := elt.(*ast.UnaryExpr)
 						if ok {
-							// Check the unary expression is a composite lit
-							boundStructLit, ok := unaryExpr.X.(*ast.CompositeLit)
-							if !ok {
+							result, shouldContinue := p.parseBoundUnaryExpression(unaryExpr, pkg)
+							if shouldContinue {
 								continue
 							}
-							// Check if the composite lit is a struct
-							if _, ok := boundStructLit.Type.(*ast.StructType); ok {
-								// Parse struct
+							return result
+						}
+						// Check the element is a variable
+						ident, ok := elt.(*ast.Ident)
+						if ok {
+							println("found: ", ident.Name)
+							if ident.Obj == nil {
 								continue
 							}
-							// Check if the lit is an ident
-							ident, ok := boundStructLit.Type.(*ast.Ident)
-							if ok {
-								err = p.parseBoundStructMethods(ident.Name, pkg)
-								if err != nil {
-									return true
-								}
+							// Check if the variable is a struct
+							if _, ok := ident.Obj.Decl.(*ast.StructType); ok {
 								continue
-								// Check if the ident is a struct type
-								//if typeSpec, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
-								//	var parsedStruct *StructDefinition
-								//	parsedStruct, err = p.parseStruct(typeSpec, thisPackage)
-								//	if err != nil {
-								//		return true
-								//	}
-								//	p.addModel(thisPackage.Name, parsedStruct)
-								//	p.addBoundStruct(thisPackage.Name, ident.Name)
-								//	continue
-								//}
-								//// Check if the ident is a struct type
-								//if _, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
-								//	thisPackage.boundStructs[ident.Name] = &BoundStruct{
-								//		Name: ident.Name,
-								//	}
-								//	continue
-								//}
-								// Check the typespec decl is a struct
-								//if _, ok := ident.Obj.Decl.(*ast.StructType); ok {
-								//	continue
-								//}
-
 							}
-							// Check if the lit is a selector
-							selector, ok := boundStructLit.Type.(*ast.SelectorExpr)
-							if ok {
-								// Check if the selector is an ident
-								if _, ok := selector.X.(*ast.Ident); ok {
-									// Look up the package
-									var parsedPackage *ParsedPackage
-									parsedPackage, err = p.getParsedPackageFromName(selector.X.(*ast.Ident).Name, pkg)
-									if err != nil {
-										return true
-									}
-									err = p.parseBoundStructMethods(selector.Sel.Name, parsedPackage)
-									if err != nil {
-										return true
-									}
+							// Check if the variable is a type
+							if typeSpec, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
+								// Check if the type is a struct
+								if _, ok := typeSpec.Type.(*ast.StructType); ok {
 									continue
 								}
-								continue
+							}
+							// Check if it's an assignment
+							if assign, ok := ident.Obj.Decl.(*ast.AssignStmt); ok {
+								// Check if the assignment is a struct
+								if _, ok := assign.Rhs[0].(*ast.StructType); ok {
+									continue
+								}
+								if _, ok := assign.Rhs[0].(*ast.UnaryExpr); ok {
+									result, shouldContinue := p.parseBoundUnaryExpression(assign.Rhs[0].(*ast.UnaryExpr), pkg)
+									if shouldContinue {
+										continue
+									}
+									return result
+								}
+
 							}
 						}
 					}
@@ -274,6 +252,47 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 		}
 	}
 	return nil
+}
+
+func (p *Project) parseBoundUnaryExpression(unaryExpr *ast.UnaryExpr, pkg *ParsedPackage) (bool, bool) {
+	// Check the unary expression is a composite lit
+	boundStructLit, ok := unaryExpr.X.(*ast.CompositeLit)
+	if !ok {
+		return false, true
+	}
+	// Check if the composite lit is a struct
+	if _, ok := boundStructLit.Type.(*ast.StructType); ok {
+		// Parse struct
+		return false, true
+	}
+	// Check if the lit is an ident
+	ident, ok := boundStructLit.Type.(*ast.Ident)
+	if ok {
+		err := p.parseBoundStructMethods(ident.Name, pkg)
+		if err != nil {
+			return true, false
+		}
+	}
+	// Check if the lit is a selector
+	selector, ok := boundStructLit.Type.(*ast.SelectorExpr)
+	if ok {
+		// Check if the selector is an ident
+		if _, ok := selector.X.(*ast.Ident); ok {
+			// Look up the package
+			var parsedPackage *ParsedPackage
+			parsedPackage, err := p.getParsedPackageFromName(selector.X.(*ast.Ident).Name, pkg)
+			if err != nil {
+				return true, false
+			}
+			err = p.parseBoundStructMethods(selector.Sel.Name, parsedPackage)
+			if err != nil {
+				return true, false
+			}
+			return false, true
+		}
+		return false, true
+	}
+	return false, true
 }
 
 func (p *Project) addBoundMethods(packagePath string, name string, boundMethods []*BoundMethod) {
@@ -488,7 +507,7 @@ func (p *Project) getParsedPackageFromName(packageName string, currentPackage *P
 					Dir:         dir,
 					StructCache: make(map[string]*StructDef),
 				}
-				packageCache[path] = result
+				p.packageCache[path] = result
 				return result, nil
 			}
 		}

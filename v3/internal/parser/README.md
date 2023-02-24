@@ -7,9 +7,17 @@ This package contains the static analyser used for parsing Wails projects so tha
 
 ## Implemented
 
-- [ ] Parsing of bound methods
+- [ ] Bound types
+  - [x] Struct Literal Pointer
+  - [ ] Variable
+    - [ ] Assignment
+      - [x] Struct Literal Pointer
+      - [ ] Function
+  - [ ] Function
+
+- [x] Parsing of bound methods
   - [x] Method names
-  - [ ] Method parameters
+  - [x] Method parameters
     - [x] Zero parameters
     - [x] Single input parameter
     - [x] Single output parameter
@@ -26,22 +34,22 @@ This package contains the static analyser used for parsing Wails projects so tha
       - [x] Pointer
     - [x] bool
       - [x] Pointer
-    - [ ] Struct
+    - [x] Struct
       - [x] Pointer
-      - [x] Recursive
     - [x] Slices 
       - [x] Pointer
     - [x] Maps
       - [x] Pointer
-- [ ] Model Parsing
+- [x] Model Parsing
   - [x] In same package
-  - [ ] In different package
-  - [ ] Multiple named fields, e.g. one,two,three string
-  - [ ] Scalars
-  - [ ] Arrays
-  - [ ] Maps
-  - [ ] Structs
-    - [ ] Anonymous structs
+  - [x] In different package
+  - [x] Multiple named fields, e.g. one,two,three string
+  - [x] Scalars
+  - [x] Arrays
+  - [x] Maps
+  - [x] Structs
+    - [x] Recursive
+    - [x] Anonymous
 - [ ] Generation of models
   - [ ] Scalars
   - [ ] Arrays
@@ -51,7 +59,7 @@ This package contains the static analyser used for parsing Wails projects so tha
 
 ## Limitations
 
-There are many ways to write a Go program so there are many different program structures that we would need to support. This is a work in progress and will be improved over time. The current limitations are:
+There are many ways to write a Go program so there are many program structures that we would need to support. This is a work in progress and will be improved over time. The current limitations are:
 
 - The call to `application.New()` must be in the `main` package
 - Bound structs must be declared as struct literals

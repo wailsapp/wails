@@ -160,6 +160,10 @@ func (*GreetService) StructPointerInputErrorOutput(in *Person) error {
 	return nil
 }
 
+func (*GreetService) StructInputStructOutput(in Person) Person {
+	return in
+}
+
 func (*GreetService) StructPointerInputStructPointerOutput(in *Person) *Person {
 	return in
 }

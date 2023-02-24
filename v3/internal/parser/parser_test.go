@@ -703,6 +703,28 @@ func TestParseDirectory(t *testing.T) {
 							},
 						},
 						{
+							Name: "StructInputStructOutput",
+							Inputs: []*Parameter{
+								{
+									Name: "in",
+									Type: &ParameterType{
+										Name:     "Person",
+										IsStruct: true,
+										Package:  "main",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:     "Person",
+										IsStruct: true,
+										Package:  "main",
+									},
+								},
+							},
+						},
+						{
 							Name: "StructPointerInputStructPointerOutput",
 							Inputs: []*Parameter{
 								{
@@ -1094,6 +1116,37 @@ func TestParseDirectory(t *testing.T) {
 								Name: "Country",
 								Type: &ParameterType{
 									Name: "string",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:    "should find a bound services using a variable",
+			dir:     "testdata/variable_single",
+			wantErr: false,
+			wantBoundMethods: map[string]map[string][]*BoundMethod{
+				"main": {
+					"GreetService": {
+						{
+							Name:       "Greet",
+							DocComment: "Greet someone\n",
+							Inputs: []*Parameter{
+								{
+									Name: "name",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Name: "",
+									Type: &ParameterType{
+										Name: "string",
+									},
 								},
 							},
 						},
