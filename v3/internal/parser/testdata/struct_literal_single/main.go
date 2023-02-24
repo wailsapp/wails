@@ -12,7 +12,10 @@ type Person struct {
 	Name    string
 	Parent  *Person
 	Details struct {
-		Age int
+		Age     int
+		Address struct {
+			Street string
+		}
 	}
 }
 

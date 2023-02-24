@@ -884,6 +884,25 @@ func TestParseDirectory(t *testing.T) {
 									Name: "int",
 								},
 							},
+							{
+								Name: "Address",
+								Type: &ParameterType{
+									Name:     "anon2",
+									IsStruct: true,
+									Package:  "main",
+								},
+							},
+						},
+					},
+					"anon2": {
+						Name: "anon2",
+						Fields: []*Field{
+							{
+								Name: "Street",
+								Type: &ParameterType{
+									Name: "string",
+								},
+							},
 						},
 					},
 				},
