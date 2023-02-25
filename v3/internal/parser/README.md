@@ -13,6 +13,8 @@ This package contains the static analyser used for parsing Wails projects so tha
     - [ ] Assignment
       - [x] Struct Literal Pointer
       - [ ] Function
+        - [ ] Same package
+        - [ ] Different package
   - [ ] Function
 
 - [x] Parsing of bound methods
