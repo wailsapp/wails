@@ -198,53 +198,12 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 					callFound = true
 					// Iterate through the slice elements
 					for _, elt := range sliceExpr.Elts {
-						// Check the element is a unary expression
-						unaryExpr, ok := elt.(*ast.UnaryExpr)
-						if ok {
-							result, shouldContinue := p.parseBoundUnaryExpression(unaryExpr, pkg)
-							if shouldContinue {
-								continue
-							}
-							return result
+						result, shouldContinue := p.parseBoundExpression(elt, pkg)
+						if shouldContinue {
+							continue
 						}
-						// Check the element is a variable
-						ident, ok := elt.(*ast.Ident)
-						if ok {
-							println("found: ", ident.Name)
-							if ident.Obj == nil {
-								continue
-							}
-							// Check if the variable is a struct
-							if _, ok := ident.Obj.Decl.(*ast.StructType); ok {
-								continue
-							}
-							// Check if the variable is a type
-							if typeSpec, ok := ident.Obj.Decl.(*ast.TypeSpec); ok {
-								// Check if the type is a struct
-								if _, ok := typeSpec.Type.(*ast.StructType); ok {
-									continue
-								}
-							}
-							// Check if it's an assignment
-							if assign, ok := ident.Obj.Decl.(*ast.AssignStmt); ok {
-								// Check if the assignment is a struct
-								if _, ok := assign.Rhs[0].(*ast.StructType); ok {
-									continue
-								}
-								if _, ok := assign.Rhs[0].(*ast.UnaryExpr); ok {
-									result, shouldContinue := p.parseBoundUnaryExpression(assign.Rhs[0].(*ast.UnaryExpr), pkg)
-									if shouldContinue {
-										continue
-									}
-									return result
-								}
+						return result
 
-								// Check if the assignment is the result of a function call
-								if _, ok := assign.Rhs[0].(*ast.CallExpr); ok {
-									println("TODO: Parsing call expression")
-								}
-							}
-						}
 					}
 				}
 
@@ -260,43 +219,13 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 
 func (p *Project) parseBoundUnaryExpression(unaryExpr *ast.UnaryExpr, pkg *ParsedPackage) (bool, bool) {
 	// Check the unary expression is a composite lit
-	boundStructLit, ok := unaryExpr.X.(*ast.CompositeLit)
-	if !ok {
-		return false, true
-	}
-	// Check if the composite lit is a struct
-	if _, ok := boundStructLit.Type.(*ast.StructType); ok {
-		// Parse struct
-		return false, true
-	}
-	// Check if the lit is an ident
-	ident, ok := boundStructLit.Type.(*ast.Ident)
-	if ok {
-		err := p.parseBoundStructMethods(ident.Name, pkg)
-		if err != nil {
-			return true, false
-		}
-	}
-	// Check if the lit is a selector
-	selector, ok := boundStructLit.Type.(*ast.SelectorExpr)
-	if ok {
-		// Check if the selector is an ident
-		if _, ok := selector.X.(*ast.Ident); ok {
-			// Look up the package
-			var parsedPackage *ParsedPackage
-			parsedPackage, err := p.getParsedPackageFromName(selector.X.(*ast.Ident).Name, pkg)
-			if err != nil {
-				return true, false
-			}
-			err = p.parseBoundStructMethods(selector.Sel.Name, parsedPackage)
-			if err != nil {
-				return true, false
-			}
-			return false, true
-		}
-		return false, true
+
+	switch t := unaryExpr.X.(type) {
+	case *ast.CompositeLit:
+		return p.parseBoundCompositeLit(t, pkg)
 	}
 	return false, true
+
 }
 
 func (p *Project) addBoundMethods(packagePath string, name string, boundMethods []*BoundMethod) {
@@ -544,6 +473,98 @@ func (p *Project) getPackageFromPath(packagedir string, packagepath string) (*as
 func (p *Project) anonymousStructID() string {
 	p.anonymousStructIDCounter++
 	return fmt.Sprintf("anon%d", p.anonymousStructIDCounter)
+}
+
+func (p *Project) parseBoundExpression(elt ast.Expr, pkg *ParsedPackage) (bool, bool) {
+
+	switch t := elt.(type) {
+	case *ast.UnaryExpr:
+		return p.parseBoundUnaryExpression(t, pkg)
+	case *ast.Ident:
+		return p.parseBoundIdent(t, pkg)
+	}
+
+	return false, false
+}
+
+func (p *Project) parseBoundIdent(ident *ast.Ident, pkg *ParsedPackage) (bool, bool) {
+	println("found: ", ident.Name)
+	if ident.Obj == nil {
+		return false, true
+	}
+	switch t := ident.Obj.Decl.(type) {
+	case *ast.StructType:
+		// return p.parseBoundStruct(t, pkg)
+		return false, true
+	case *ast.TypeSpec:
+		// return p.parseBoundTypeSpec(t, pkg)
+		return false, true
+	case *ast.AssignStmt:
+		return p.parseBoundAssignment(t, pkg)
+	}
+	return false, false
+}
+
+func (p *Project) parseBoundAssignment(assign *ast.AssignStmt, pkg *ParsedPackage) (bool, bool) {
+
+	switch t := assign.Rhs[0].(type) {
+	case *ast.UnaryExpr:
+		return p.parseBoundUnaryExpression(t, pkg)
+	case *ast.CallExpr:
+		//return p.parseBoundCallExpression(t, pkg)
+		return false, true
+	case *ast.Ident:
+		return p.parseBoundIdent(t, pkg)
+	case *ast.SelectorExpr:
+		//return p.parseBoundSelectorExpression(t, pkg)
+		return false, true
+	case *ast.CompositeLit:
+		//return p.parseBoundCompositeLiteral(t, pkg)
+		return false, true
+	case *ast.StructType:
+		//return p.parseBoundStructType(t, pkg)
+		return false, true
+	}
+
+	return false, false
+}
+
+func (p *Project) parseBoundCompositeLit(lit *ast.CompositeLit, pkg *ParsedPackage) (bool, bool) {
+
+	switch t := lit.Type.(type) {
+	case *ast.StructType:
+		//return p.parseBoundStructType(t, pkg)
+		return false, true
+	case *ast.Ident:
+		err := p.parseBoundStructMethods(t.Name, pkg)
+		if err != nil {
+			return true, false
+		}
+		return false, true
+	case *ast.SelectorExpr:
+		return p.parseBoundSelectorExpression(t, pkg)
+	}
+
+	return false, true
+}
+
+func (p *Project) parseBoundSelectorExpression(selector *ast.SelectorExpr, pkg *ParsedPackage) (bool, bool) {
+
+	switch t := selector.X.(type) {
+	case *ast.Ident:
+		// Look up the package
+		var parsedPackage *ParsedPackage
+		parsedPackage, err := p.getParsedPackageFromName(t.Name, pkg)
+		if err != nil {
+			return true, false
+		}
+		err = p.parseBoundStructMethods(selector.Sel.Name, parsedPackage)
+		if err != nil {
+			return true, false
+		}
+		return false, true
+	}
+	return false, true
 }
 
 func getTypeString(expr ast.Expr) string {
