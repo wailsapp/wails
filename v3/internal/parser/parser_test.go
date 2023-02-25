@@ -1154,6 +1154,37 @@ func TestParseDirectory(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:    "should find a bound services using a variable from function call",
+			dir:     "testdata/variable_single_from_function",
+			wantErr: false,
+			wantBoundMethods: map[string]map[string][]*BoundMethod{
+				"main": {
+					"GreetService": {
+						{
+							Name:       "Greet",
+							DocComment: "Greet someone\n",
+							Inputs: []*Parameter{
+								{
+									Name: "name",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Name: "",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
