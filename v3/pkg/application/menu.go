@@ -87,6 +87,12 @@ func (m *Menu) SetLabel(label string) {
 	m.label = label
 }
 
+func (m *Menu) setContextData(data *ContextMenuData) {
+	for _, item := range m.items {
+		item.setContextData(data)
+	}
+}
+
 func (a *App) NewMenu() *Menu {
 	return &Menu{}
 }

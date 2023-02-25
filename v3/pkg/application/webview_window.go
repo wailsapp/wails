@@ -12,7 +12,6 @@ import (
 	assetserveroptions "github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
-	"github.com/wailsapp/wails/v3/pkg/options"
 )
 
 type (
@@ -26,7 +25,7 @@ type (
 		setMaxSize(width, height int)
 		execJS(js string)
 		restore()
-		setBackgroundColour(color *options.RGBA)
+		setBackgroundColour(color *RGBA)
 		run()
 		center()
 		size() (int, int)
@@ -63,11 +62,12 @@ type (
 		hide()
 		getScreen() (*Screen, error)
 		setFrameless(bool)
+		openContextMenu(menu *Menu, data *ContextMenuData)
 	}
 )
 
 type WebviewWindow struct {
-	options  *options.WebviewWindow
+	options  *WebviewWindowOptions
 	impl     webviewWindowImpl
 	implLock sync.RWMutex
 	id       uint
@@ -75,8 +75,11 @@ type WebviewWindow struct {
 	assets           *assetserver.AssetServer
 	messageProcessor *MessageProcessor
 
-	eventListeners     map[uint][]func()
+	eventListeners     map[uint][]func(ctx *WindowEventContext)
 	eventListenersLock sync.RWMutex
+
+	contextMenus     map[string]*Menu
+	contextMenusLock sync.RWMutex
 }
 
 var windowID uint
@@ -89,7 +92,7 @@ func getWindowID() uint {
 	return windowID
 }
 
-func NewWindow(options *options.WebviewWindow) *WebviewWindow {
+func NewWindow(options *WebviewWindowOptions) *WebviewWindow {
 	if options.Width == 0 {
 		options.Width = 800
 	}
@@ -110,7 +113,8 @@ func NewWindow(options *options.WebviewWindow) *WebviewWindow {
 	result := &WebviewWindow{
 		id:             getWindowID(),
 		options:        options,
-		eventListeners: make(map[uint][]func()),
+		eventListeners: make(map[uint][]func(ctx *WindowEventContext)),
+		contextMenus:   make(map[string]*Menu),
 
 		assets: srv,
 	}
@@ -313,7 +317,7 @@ func (w *WebviewWindow) ExecJS(js string) {
 
 func (w *WebviewWindow) Fullscreen() *WebviewWindow {
 	if w.impl == nil {
-		w.options.StartState = options.WindowStateFullscreen
+		w.options.StartState = WindowStateFullscreen
 		return w
 	}
 	if !w.IsFullscreen() {
@@ -365,7 +369,7 @@ func (w *WebviewWindow) IsFullscreen() bool {
 	return w.impl.isFullscreen()
 }
 
-func (w *WebviewWindow) SetBackgroundColour(colour *options.RGBA) *WebviewWindow {
+func (w *WebviewWindow) SetBackgroundColour(colour *RGBA) *WebviewWindow {
 	w.options.BackgroundColour = colour
 	if w.impl != nil {
 		w.impl.setBackgroundColour(colour)
@@ -396,7 +400,7 @@ func (w *WebviewWindow) Center() {
 	w.impl.center()
 }
 
-func (w *WebviewWindow) On(eventType events.WindowEventType, callback func()) {
+func (w *WebviewWindow) On(eventType events.WindowEventType, callback func(ctx *WindowEventContext)) {
 	eventID := uint(eventType)
 	w.eventListenersLock.Lock()
 	defer w.eventListenersLock.Unlock()
@@ -409,7 +413,7 @@ func (w *WebviewWindow) On(eventType events.WindowEventType, callback func()) {
 func (w *WebviewWindow) handleWindowEvent(id uint) {
 	w.eventListenersLock.RLock()
 	for _, callback := range w.eventListeners[id] {
-		go callback()
+		go callback(blankWindowEventContext)
 	}
 	w.eventListenersLock.RUnlock()
 }
@@ -538,7 +542,7 @@ func (w *WebviewWindow) SetPosition(x, y int) *WebviewWindow {
 
 func (w *WebviewWindow) Minimise() *WebviewWindow {
 	if w.impl == nil {
-		w.options.StartState = options.WindowStateMinimised
+		w.options.StartState = WindowStateMinimised
 		return w
 	}
 	if !w.IsMinimised() {
@@ -549,7 +553,7 @@ func (w *WebviewWindow) Minimise() *WebviewWindow {
 
 func (w *WebviewWindow) Maximise() *WebviewWindow {
 	if w.impl == nil {
-		w.options.StartState = options.WindowStateMaximised
+		w.options.StartState = WindowStateMaximised
 		return w
 	}
 	if !w.IsMaximised() {
@@ -640,4 +644,45 @@ func (w *WebviewWindow) info(message string, args ...any) {
 		Sender:  w.Name(),
 		Time:    time.Now(),
 	})
+}
+func (w *WebviewWindow) error(message string, args ...any) {
+
+	globalApplication.Log(&logger.Message{
+		Level:   "ERROR",
+		Message: message,
+		Data:    args,
+		Sender:  w.Name(),
+		Time:    time.Now(),
+	})
+}
+
+func (w *WebviewWindow) handleDragAndDropMessage(event *dragAndDropMessage) {
+	ctx := newWindowEventContext()
+	ctx.setDroppedFiles(event.filenames)
+	for _, listener := range w.eventListeners[uint(events.FilesDropped)] {
+		listener(ctx)
+	}
+}
+
+func (w *WebviewWindow) openContextMenu(data *ContextMenuData) {
+	menu, ok := w.contextMenus[data.Id]
+	if !ok {
+		// try application level context menu
+		menu, ok = globalApplication.getContextMenu(data.Id)
+		if !ok {
+			w.error("No context menu found for id: %s", data.Id)
+			return
+		}
+	}
+	menu.setContextData(data)
+	if w.impl == nil {
+		return
+	}
+	w.impl.openContextMenu(menu, data)
+}
+
+func (w *WebviewWindow) RegisterContextMenu(name string, menu *Menu) {
+	w.contextMenusLock.Lock()
+	defer w.contextMenusLock.Unlock()
+	w.contextMenus[name] = menu
 }

@@ -43,8 +43,8 @@ When emitting an event in JS, it now sends the event to the application. This wi
 
 ## Window
 
-The Window API has largely remained the same, however there are a few changes to note. 
-
+The Window API has largely remained the same, however the methods are now on an instance of a window rather than the runtime. 
+Some notable differences are:
 - Windows now have a Name that identifies them. This is used to identify the window when emitting events.
 
 ## ClipBoard
@@ -58,4 +58,53 @@ TBD
 ## Dialogs
 
 Dialogs are now available in JavaScript! 
+
+## Drag and Drop
+
+Native drag and drop can be enabled per-window. Simply set the `EnableDragAndDrop` window config option to `true` and the window will allow files to be dragged onto it. When this happens, the `events.FilesDropped` event will be emitted. The filenames can then be retrieved from the WindowEventContext using the `DroppedFiles()` method. This returns a slice of strings containing the filenames.
+
+## Context Menus
+
+Context menus are contextual menus that are shown when the user right-clicks on an element. Creating a context menu is the same as creating a standard menu , by using `app.NewMenu()`. To make the context menu available to a window, call `window.RegisterContextMenu(name, menu)`. The name will be the id of the context menu and used by the frontend.
+
+To indicate that an element has a context menu, add the `data-contextmenu` attribute to the element. The value of this attribute should be the name of a context menu previously registered with the window.
+
+It is possible to register a context menu at the application level, making it available to all windows. This can be done using `app.RegisterContextMenu(name, menu)`. If a context menu cannot be found at the window level, the application context menus will be checked. A demo of this can be found in `v3/examples/contextmenus`.
+
+## Wails Markup Language (WML)
+
+The Wails Markup Language is a simple markup language that allows you to add functionality to standard HTML elements without the use of Javascript. 
+
+The following tags are currently supported:
+
+### `data-wml-event` 
+
+This specifies that a Wails event will be emitted when the element is clicked. The value of the attribute should be the name of the event to emit. 
+
+Example:
+```html
+<button data-wml-event="myevent">Click Me</button>
+```
+Sometimes you need the user to confirm an action. This can be done by adding the `data-wml-confirm` attribute to the element. The value of this attribute will be the message to display to the user.
+
+Example:
+```html
+<button data-wml-event="delete-all-items" data-wml-confirm="Are you sure?">Delete All Items</button>
+```
+
+### `data-wml-window`
+
+Any `wails.window` method can be called by adding the `data-wml-window` attribute to an element. The value of the attribute should be the name of the method to call. The method name should be in the same case as the method.
+
+```html
+<button data-wml-window="Close">Close Window</button>
+```
+
+### `data-wml-trigger`
+
+This attribute specifies which javascript event should trigger the action. The default is `click`. 
+
+```html
+<button data-wml-event="hover-box" data-wml-trigger="mouseover">Hover over me!</button>
+```
 

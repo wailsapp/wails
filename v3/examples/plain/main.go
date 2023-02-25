@@ -5,36 +5,38 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/wailsapp/wails/v3/pkg/options"
-
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 func main() {
-	app := application.New(options.Application{
+	app := application.New(application.Options{
 		Name:        "Plain",
 		Description: "A demo of using raw HTML & CSS",
-		Mac: options.Mac{
+		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
 	// Create window
-	app.NewWebviewWindowWithOptions(&options.WebviewWindow{
+	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title: "Plain Bundle",
-		CSS:   `body { background-color: rgba(255, 255, 255, 0); } .main { color: white; margin: 20%; }`,
-		Mac: options.MacWindow{
+		CSS:   `body { background-color: rgba(255, 255, 255, 0); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; user-select: none; -ms-user-select: none; -webkit-user-select: none; } .main { color: white; margin: 20%; }`,
+		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
-			Backdrop:                options.MacBackdropTranslucent,
-			TitleBar:                options.TitleBarHiddenInset,
+			Backdrop:                application.MacBackdropTranslucent,
+			TitleBar:                application.MacTitleBarHiddenInsetUnified,
 		},
 
 		URL: "/",
-		Assets: options.Assets{
+		Assets: application.AssetOptions{
 			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
-				w.Write([]byte(`<html><head><title>Plain Bundle</title></head><body><div class="main"><h1>Plain Bundle</h1><p>This is a plain bundle. It has no frontend code but this was Served by the AssetServer's Handler</p></div></body></html>`))
+				w.Write([]byte(`<html><head><title>Plain Bundle</title></head><body><div class="main"><h1>Plain Bundle</h1><p>This is a plain bundle. It has no frontend code but this was Served by the AssetServer's Handler.</p><br/><br/><p data-wml-event="clicked">Clicking this paragraph emits an event...<p></div></body></html>`))
 			}),
 		},
+	})
+
+	app.Events.On("clicked", func(_ *application.CustomEvent) {
+		println("clicked")
 	})
 
 	err := app.Run()

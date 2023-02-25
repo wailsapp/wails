@@ -23,7 +23,7 @@ function runtimeCall(method, args) {
             .then(response => {
                 if (response.ok) {
                     // check content type
-                    if (response.headers.get("content-type") && response.headers.get("content-type").indexOf("application/json") !== -1) {
+                    if (response.headers.get("Content-Type") && response.headers.get("Content-Type").indexOf("application/json") !== -1) {
                         return response.json();
                     } else {
                         return response.text();

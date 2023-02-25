@@ -5,17 +5,15 @@ import (
 	"log"
 	"runtime"
 
-	"github.com/wailsapp/wails/v3/pkg/options"
-
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 func main() {
-	app := application.New(options.Application{
+	app := application.New(application.Options{
 		Name:        "Systray Demo",
 		Description: "A demo of the Systray API",
-		Mac: options.Mac{
-			ActivationPolicy: options.ActivationPolicyAccessory,
+		Mac: application.MacOptions{
+			ActivationPolicy: application.ActivationPolicyAccessory,
 		},
 	})
 

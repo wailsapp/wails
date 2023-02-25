@@ -39,6 +39,7 @@ export function newWindow(id) {
         Hide: () => call('Hide'),
         Maximise: () => call('Maximise'),
         Show: () => call('Show'),
+        Close: () => call('Close'),
         ToggleMaximise: () => call('ToggleMaximise'),
         UnMaximise: () => call('UnMaximise'),
         Minimise: () => call('Minimise'),

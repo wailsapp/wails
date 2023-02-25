@@ -5,11 +5,10 @@ import (
 	"log"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/options"
 )
 
 func main() {
-	app := application.New(options.Application{
+	app := application.New(application.Options{
 		Bind: []interface{}{
 			&GreetService{},
 			&OtherService{},

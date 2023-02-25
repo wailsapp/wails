@@ -18,12 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Webview GPU acceleration options for [Windows](/docs/reference/options#webviewgpuisdisabled) and [Linux](/docs/reference/options#webviewgpupolicy). Added by @Lyimmi in [PR](https://github.com/wailsapp/wails/pull/2266)
 - Added `EnableFraudulentWebsiteDetection` option to opt-in to scan services for fraudulent content, such as malware or phishing attempts. Older releases had the scan services per default activated. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2269)
 - Allow an [AssetServer Middleware](/docs/reference/options#middleware) to specify the `Content-Type` of a file served by the [Assets](/docs/reference/options#assets-1) `fs.FS`. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2286)
+- The AssetServer now detects more mimetypes by extension, e.g. `.mjs`. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2391)
 
 ### Changed
 - Improved fullscreen mode for frameless window on Windows. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279), [PR](https://github.com/wailsapp/wails/pull/2288) and [PR](https://github.com/wailsapp/wails/pull/2299)
 - On Windows unmaximising a window has no effect anymore when the window is in fullscreen mode, this makes it consistent with e.g. macOS. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279)
 - Frameless resize now sets the cursor on documentElement, otherwise resizing cursor won't be shown outside of the body rectangle. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2289)
 - Improved the `--wails-draggable` experience to be more reactive. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2302)
+- NSIS template now installs the shortcuts for all users and not only for the current user. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2373)
 
 ### Fixed
 - Fixed failing build hooks when `build/bin` was missing. Fixed by @Lyimmi in [PR](https://github.com/wailsapp/wails/pull/2273) 
@@ -32,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed the showing of a white border around a fullscreen window when `DisableWindowIcon` is active on Windows. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2299)
 - Fixed the sometimes lagging drag experience with `--wails-draggable` on Windows.  Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2302)
 - Fixed applying the default arch to platform flag in wails cli. If only a `GOOS` has been supplied as platform flag e.g. `wails build --platform windows` the current architecture wasn't applied and the build failed. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2309)
+- Fixed a segfault on opening the inspector on older macOS versions. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2397)
+- Fixed the macos single architecture builds not respecting an output file name specified with the '-o' flag. Fixed by @gwynforthewyn in [PR](https://github.com/wailsapp/wails/pull/2358)
 
 ## v2.3.0 - 2022-12-29
 

@@ -17,25 +17,25 @@ sidebar_position: 20
 
 :::note
 
-This tutorial has been kindly provided by [@tatadan](https://twitter.com/tatadan) and forms part of their [Wails Examples Repository](https://github.com/tataDan/wails-v2-examples).
+このチュートリアルは[@tatadan](https://twitter.com/tatadan)の好意により提供されたもので、[Wails Examples Repository](https://github.com/tataDan/wails-v2-examples)の一部を構成しています。
 
 :::
 
-In this tutorial we are going to develop an application that retrieves photos of dogs from the web and then displays them.
+このチュートリアルでは、Web上から犬の写真を取得し、表示するアプリケーションを開発します。
 
-### Create the project
+### プロジェクトを作成する
 
-Let's create the application. From a terminal enter: `wails init -n dogs-api -t svelte`
+では、アプリケーションを作成しましょう。ターミナルで次のコマンドを入力します: `wails init -n dogs-api -t svelte`
 
-Note: We could optionally add `-ide vscode` or `-ide goland` to the end of this command if you wanted to add IDE support.
+注: IDEサポートを追加したい場合は、オプションでこのコマンドの最後に`-ide vscode`または`ide goland`を追加することができます。
 
-Now let's `cd dogs-api` and start editing the project files.
+では、cd `dogs-api`をして、プロジェクトファイルの編集を始めましょう。
 
-### Remove unused code
+### 未使用のコードを削除する
 
-We will start by removing some elements that we know we will not use:
+まず、使用しないことがわかっているいくつかの要素を削除することから始めます:
 
-- Open `app.go` and remove the following lines:
+- `app.go`を開き、以下の行を削除してください:
 
 ```go
 // Greet returns a greeting for the given name
@@ -44,14 +44,14 @@ func (a *App) Greet(name string) string {
 }
 ```
 
-- Open `frontend/src/App.svelte` and delete all lines.
-- Delete the `frontend/src/assets/images/logo-universal.png` file
+- `frontend/src/App.svelte`を開き、すべての行を削除します。
+- `frontend/src/assets/images/logo-universal.png`ファイルを削除します。
 
-### Creating our application
+### アプリケーションの作成
 
-Now let's add our new Go code.
+では、新しいGoのコードを追加してみましょう。
 
-Add the following struct declarations to `app.go` before the function definitions:
+`app.go`の関数定義の前に、次の構造体宣言を追加します:
 
 ```go
 type RandomImage struct {
@@ -70,7 +70,7 @@ type ImagesByBreed struct {
 }
 ```
 
-Add the following functions to `app.go` (perhaps after the existing function definitions):
+以下の関数を`app.go`に追加します（既存の関数定義の後ろに追加するかもしれません）:
 
 ```go
 func (a *App) GetRandomImageUrl() string {
@@ -135,7 +135,7 @@ func (a *App) GetImageUrlsByBreed(breed string) []string {
 }
 ```
 
-Modify the `import` section of `app.go` to look like this:
+`app.go`の`import`セクションを次のように変更します:
 
 ```go
 import (
@@ -149,7 +149,9 @@ import (
 )
 ```
 
-Add the following lines to `frontend/src/App.svelte`:
+以下の行を`frontend/src/App.svelte`に追加します:
+
+```html
 
 <!-- prettier-ignore-start -->
 ```html
@@ -236,10 +238,10 @@ Add the following lines to `frontend/src/App.svelte`:
 ```
 <!-- prettier-ignore-end -->
 
-### Testing the application
+### アプリケーションのテスト
 
-To generate the bindings and test the application, run `wails dev`.
+バインディングを生成し、アプリケーションをテストするには、`wails dev`を実行します。
 
-### Compiling the application
+### アプリケーションのコンパイル
 
-To compile the application to a single, production grade binary, run `wails build`.
+アプリケーションを単一の、本番用のバイナリにコンパイルするには、`wails build`を実行します。
