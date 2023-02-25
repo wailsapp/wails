@@ -1,4 +1,4 @@
-package options
+package application
 
 type ActivationPolicy int
 
@@ -10,7 +10,7 @@ const (
 	ActivationPolicyProhibited
 )
 
-type Mac struct {
+type MacOptions struct {
 	// ActivationPolicy is the activation policy for the application. Defaults to
 	// applicationActivationPolicyRegular.
 	ActivationPolicy ActivationPolicy
@@ -44,13 +44,13 @@ const (
 // MacWindow contains macOS specific options
 type MacWindow struct {
 	Backdrop                MacBackdrop
-	TitleBar                TitleBar
+	TitleBar                MacTitleBar
 	Appearance              MacAppearanceType
 	InvisibleTitleBarHeight int
 }
 
-// TitleBar contains options for the Mac titlebar
-type TitleBar struct {
+// MacTitleBar contains options for the Mac titlebar
+type MacTitleBar struct {
 	AppearsTransparent   bool
 	Hide                 bool
 	HideTitle            bool
@@ -60,8 +60,8 @@ type TitleBar struct {
 	ToolbarStyle         MacToolbarStyle
 }
 
-// TitleBarDefault results in the default Mac TitleBar
-var TitleBarDefault = TitleBar{
+// MacTitleBarDefault results in the default Mac MacTitleBar
+var MacTitleBarDefault = MacTitleBar{
 	AppearsTransparent:   false,
 	Hide:                 false,
 	HideTitle:            false,
@@ -72,10 +72,10 @@ var TitleBarDefault = TitleBar{
 
 // Credit: Comments from Electron site
 
-// TitleBarHidden results in a hidden title bar and a full size content window,
+// MacTitleBarHidden results in a hidden title bar and a full size content window,
 // yet the title bar still has the standard window controls (“traffic lights”)
 // in the top left.
-var TitleBarHidden = TitleBar{
+var MacTitleBarHidden = MacTitleBar{
 	AppearsTransparent:   true,
 	Hide:                 false,
 	HideTitle:            true,
@@ -84,9 +84,9 @@ var TitleBarHidden = TitleBar{
 	HideToolbarSeparator: false,
 }
 
-// TitleBarHiddenInset results in a hidden title bar with an alternative look where
+// MacTitleBarHiddenInset results in a hidden title bar with an alternative look where
 // the traffic light buttons are slightly more inset from the window edge.
-var TitleBarHiddenInset = TitleBar{
+var MacTitleBarHiddenInset = MacTitleBar{
 	AppearsTransparent:   true,
 	Hide:                 false,
 	HideTitle:            true,
@@ -95,9 +95,9 @@ var TitleBarHiddenInset = TitleBar{
 	HideToolbarSeparator: true,
 }
 
-// TitleBarHiddenInsetUnified results in a hidden title bar with an alternative look where
+// MacTitleBarHiddenInsetUnified results in a hidden title bar with an alternative look where
 // the traffic light buttons are even more inset from the window edge.
-var TitleBarHiddenInsetUnified = TitleBar{
+var MacTitleBarHiddenInsetUnified = MacTitleBar{
 	AppearsTransparent:   true,
 	Hide:                 false,
 	HideTitle:            true,

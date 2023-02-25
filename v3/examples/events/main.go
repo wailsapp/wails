@@ -6,11 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/wailsapp/wails/v3/pkg/events"
-
-	"github.com/wailsapp/wails/v3/pkg/options"
-
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
 //go:embed assets
@@ -18,10 +15,10 @@ var assets embed.FS
 
 func main() {
 
-	app := application.New(options.Application{
+	app := application.New(application.Options{
 		Name:        "Events Demo",
 		Description: "A demo of the Events API",
-		Mac: options.Mac{
+		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
@@ -41,25 +38,25 @@ func main() {
 		}
 	})
 
-	app.NewWebviewWindowWithOptions(&options.WebviewWindow{
+	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title: "Events Demo",
-		Assets: options.Assets{
+		Assets: application.AssetOptions{
 			FS: assets,
 		},
-		Mac: options.MacWindow{
-			Backdrop:                options.MacBackdropTranslucent,
-			TitleBar:                options.TitleBarHiddenInsetUnified,
+		Mac: application.MacWindow{
+			Backdrop:                application.MacBackdropTranslucent,
+			TitleBar:                application.MacTitleBarHiddenInsetUnified,
 			InvisibleTitleBarHeight: 50,
 		},
 	})
-	app.NewWebviewWindowWithOptions(&options.WebviewWindow{
+	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title: "Events Demo",
-		Assets: options.Assets{
+		Assets: application.AssetOptions{
 			FS: assets,
 		},
-		Mac: options.MacWindow{
-			Backdrop:                options.MacBackdropTranslucent,
-			TitleBar:                options.TitleBarHiddenInsetUnified,
+		Mac: application.MacWindow{
+			Backdrop:                application.MacBackdropTranslucent,
+			TitleBar:                application.MacTitleBarHiddenInsetUnified,
 			InvisibleTitleBarHeight: 50,
 		},
 	})

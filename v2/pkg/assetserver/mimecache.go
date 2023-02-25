@@ -9,24 +9,44 @@ import (
 )
 
 var (
-	cache = map[string]string{}
-	mutex sync.Mutex
+	mimeCache = map[string]string{}
+	mimeMutex sync.Mutex
+
+	// The list of builtin mime-types by extension as defined by
+	// the golang standard lib package "mime"
+	// The standard lib also takes into account mime type definitions from
+	// etc files like '/etc/apache2/mime.types' but we want to have the
+	// same behavivour on all platforms and not depend on some external file.
+	mimeTypesByExt = map[string]string{
+		".avif": "image/avif",
+		".css":  "text/css; charset=utf-8",
+		".gif":  "image/gif",
+		".htm":  "text/html; charset=utf-8",
+		".html": "text/html; charset=utf-8",
+		".jpeg": "image/jpeg",
+		".jpg":  "image/jpeg",
+		".js":   "text/javascript; charset=utf-8",
+		".json": "application/json",
+		".mjs":  "text/javascript; charset=utf-8",
+		".pdf":  "application/pdf",
+		".png":  "image/png",
+		".svg":  "image/svg+xml",
+		".wasm": "application/wasm",
+		".webp": "image/webp",
+		".xml":  "text/xml; charset=utf-8",
+	}
 )
 
 func GetMimetype(filename string, data []byte) string {
-	mutex.Lock()
-	defer mutex.Unlock()
+	mimeMutex.Lock()
+	defer mimeMutex.Unlock()
 
-	// short-circuit .js, .css to ensure the
-	// browser evaluates them in the right context
-	switch filepath.Ext(filename) {
-	case ".js":
-		return "application/javascript"
-	case ".css":
-		return "text/css; charset=utf-8"
+	result := mimeTypesByExt[filepath.Ext(filename)]
+	if result != "" {
+		return result
 	}
 
-	result := cache[filename]
+	result = mimeCache[filename]
 	if result != "" {
 		return result
 	}
@@ -42,6 +62,6 @@ func GetMimetype(filename string, data []byte) string {
 		result = "application/octet-stream"
 	}
 
-	cache[filename] = result
+	mimeCache[filename] = result
 	return result
 }

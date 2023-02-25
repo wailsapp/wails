@@ -1,16 +1,12 @@
 //go:build darwin
-
 #import <Foundation/Foundation.h>
 #import <Cocoa/Cocoa.h>
 #import "webview_window.h"
 #import "../events/events.h"
-
 extern void processMessage(unsigned int, const char*);
 extern void processURLRequest(unsigned int, void *);
 extern bool hasListeners(unsigned int);
-
 @implementation WebviewWindow
-
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 {
     self = [super initWithContentRect:contentRect styleMask:windowStyle backing:bufferingType defer:deferCreation];
@@ -20,11 +16,9 @@ extern bool hasListeners(unsigned int);
     [self setMovableByWindowBackground:YES];
     return self;
 }
-
 - (BOOL)canBecomeKeyWindow {
     return YES;
 }
-
 - (BOOL) canBecomeMainWindow {
     return YES;
 }
@@ -38,9 +32,7 @@ extern bool hasListeners(unsigned int);
     return YES;
 }
 @end
-
 @implementation WebviewWindowDelegate
-
 - (BOOL)windowShouldClose:(NSWindow *)sender {
     if( self.hideOnClose ) {
         [NSApp hide:nil];
@@ -48,7 +40,6 @@ extern bool hasListeners(unsigned int);
     }
     return true;
 }
-
 // Handle script messages from the external bridge
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
     NSString *m = message.body;
@@ -83,11 +74,9 @@ extern bool hasListeners(unsigned int);
 - (void)handleLeftMouseUp:(NSWindow *)window {
     self.leftMouseEvent = nil;
 }
-
 - (void)webView:(nonnull WKWebView *)webView startURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
     processURLRequest(self.windowId, urlSchemeTask);
 }
-
 - (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
     NSInputStream *stream = urlSchemeTask.request.HTTPBodyStream;
     if (stream) {
@@ -97,7 +86,6 @@ extern bool hasListeners(unsigned int);
         }
     }
 }
-
 // GENERATED EVENTS START
 - (void)windowDidBecomeKey:(NSNotification *)notification {
     if( hasListeners(EventWindowDidBecomeKey) ) {
@@ -534,6 +522,24 @@ extern bool hasListeners(unsigned int);
 - (void)windowWillUseStandardFrame:(NSNotification *)notification {
     if( hasListeners(EventWindowWillUseStandardFrame) ) {
         processWindowEvent(self.windowId, EventWindowWillUseStandardFrame);
+    }
+}
+
+- (void)windowFileDraggingEntered:(NSNotification *)notification {
+    if( hasListeners(EventWindowFileDraggingEntered) ) {
+        processWindowEvent(self.windowId, EventWindowFileDraggingEntered);
+    }
+}
+
+- (void)windowFileDraggingPerformed:(NSNotification *)notification {
+    if( hasListeners(EventWindowFileDraggingPerformed) ) {
+        processWindowEvent(self.windowId, EventWindowFileDraggingPerformed);
+    }
+}
+
+- (void)windowFileDraggingExited:(NSNotification *)notification {
+    if( hasListeners(EventWindowFileDraggingExited) ) {
+        processWindowEvent(self.windowId, EventWindowFileDraggingExited);
     }
 }
 

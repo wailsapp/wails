@@ -9,20 +9,23 @@ The electron alternative for Go
 */
 /* jshint esversion: 9 */
 
-import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
 
 import * as Clipboard from './clipboard';
 import * as Application from './application';
 import * as Log from './log';
+import * as Screens from './screens';
 
 import {newWindow} from "./window";
 import {dispatchCustomEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
+import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
+import {enableContextMenus} from "./contextmenu";
+import {reloadWML} from "./wml";
 
-// Internal wails endpoints
 window.wails = {
     ...newRuntime(-1),
 };
 
+// Internal wails endpoints
 window._wails = {
     dialogCallback,
     dialogErrorCallback,
@@ -39,6 +42,10 @@ export function newRuntime(id) {
             ...Application
         },
         Log,
+        Screens,
+        WML: {
+            Reload: reloadWML,
+        },
         Dialog: {
             Info,
             Warning,
@@ -63,3 +70,8 @@ if (DEBUG) {
     console.log("Wails v3.0.0 Debug Mode Enabled");
 }
 
+enableContextMenus(true);
+
+document.addEventListener("DOMContentLoaded", function(event) {
+    reloadWML();
+});

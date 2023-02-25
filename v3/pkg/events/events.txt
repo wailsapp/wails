@@ -118,4 +118,7 @@ mac:WebViewDidStartProvisionalNavigation
 mac:WebViewDidReceiveServerRedirectForProvisionalNavigation
 mac:WebViewDidFinishNavigation
 mac:WebViewDidCommitNavigation
+mac:WindowFileDraggingEntered
+mac:WindowFileDraggingPerformed
+mac:WindowFileDraggingExited
 

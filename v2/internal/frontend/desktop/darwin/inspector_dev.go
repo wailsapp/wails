@@ -21,14 +21,28 @@ package darwin
 @end
 
 void showInspector(void *inctx) {
-    WailsContext *ctx = (__bridge WailsContext*) inctx;
+	if (@available(macOS 12.0, *)) {
+		WailsContext *ctx = (__bridge WailsContext*) inctx;
 
-	[ctx.webview._inspector show];
-	dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC);
-	dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
-		// Detach must be deferred a little bit and is ignored directly after a show.
-  		[ctx.webview._inspector detach];
-	});
+		@try {
+			[ctx.webview._inspector show];
+		} @catch (NSException *exception) {
+			NSLog(@"Opening the inspector failed: %@", exception.reason);
+			return;
+		}
+
+		dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC);
+		dispatch_after(popTime, dispatch_get_main_queue(), ^(void){
+			// Detach must be deferred a little bit and is ignored directly after a show.
+			@try {
+				[ctx.webview._inspector detach];
+			} @catch (NSException *exception) {
+				NSLog(@"Detaching the inspector failed: %@", exception.reason);
+			}
+		});
+	} else {
+		NSLog(@"Opening the inspector needs at least MacOS 12");
+	}
 }
 */
 import "C"

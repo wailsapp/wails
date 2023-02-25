@@ -1,13 +1,15 @@
-package options
+package application
 
-import "github.com/wailsapp/wails/v3/pkg/logger"
+import (
+	"github.com/wailsapp/wails/v3/pkg/logger"
+)
 
-type Application struct {
+type Options struct {
 	Name        string
 	Description string
 	Icon        []byte
-	Mac         Mac
-	Bind        []interface{}
+	Mac         MacOptions
+	Bind        []any
 	Logger      struct {
 		Silent        bool
 		CustomLoggers []logger.Output

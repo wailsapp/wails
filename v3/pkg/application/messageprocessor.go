@@ -67,6 +67,10 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 		m.processApplicationMethod(method, rw, r, targetWindow, params)
 	case "log":
 		m.processLogMethod(method, rw, r, targetWindow, params)
+	case "contextmenu":
+		m.processContextMenuMethod(method, rw, r, targetWindow, params)
+	case "screens":
+		m.processScreensMethod(method, rw, r, targetWindow, params)
 	default:
 		m.httpError(rw, "Unknown runtime call: %s", object)
 	}
@@ -86,6 +90,7 @@ func (m *MessageProcessor) Info(message string, args ...any) {
 }
 
 func (m *MessageProcessor) json(rw http.ResponseWriter, data any) {
+	rw.Header().Set("Content-Type", "application/json")
 	// convert data to json
 	var jsonPayload = []byte("{}")
 	var err error
@@ -101,7 +106,6 @@ func (m *MessageProcessor) json(rw http.ResponseWriter, data any) {
 		m.Error("Unable to write json payload. Please report this to the Wails team! Error: %s", err)
 		return
 	}
-	rw.Header().Set("Content-Type", "application/json")
 	m.ok(rw)
 }
 
@@ -112,7 +116,7 @@ func (m *MessageProcessor) text(rw http.ResponseWriter, data string) {
 		return
 	}
 	rw.Header().Set("Content-Type", "text/plain")
-	m.ok(rw)
+	rw.WriteHeader(http.StatusOK)
 }
 
 func (m *MessageProcessor) ok(rw http.ResponseWriter) {

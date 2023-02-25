@@ -5,8 +5,6 @@ import (
 	_ "embed"
 	"log"
 
-	"github.com/wailsapp/wails/v3/pkg/options"
-
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -14,25 +12,25 @@ import (
 var assets embed.FS
 
 func main() {
-	app := application.New(options.Application{
+	app := application.New(application.Options{
 		Name:        "{{.ProjectName}}",
 		Description: "A demo of using raw HTML & CSS",
-		Mac: options.Mac{
+		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 	})
 	// Create window
-	app.NewWebviewWindowWithOptions(&options.WebviewWindow{
+	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title: "Plain Bundle",
 		CSS:   `body { background-color: rgba(255, 255, 255, 0); } .main { color: white; margin: 20%; }`,
-		Mac: options.MacWindow{
+		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
-			Backdrop:                options.MacBackdropTranslucent,
-			TitleBar:                options.TitleBarHiddenInset,
+			Backdrop:                application.MacBackdropTranslucent,
+			TitleBar:                application.MacTitleBarHiddenInset,
 		},
 
 		URL: "/",
-		Assets: options.Assets{
+		Assets: application.AssetOptions{
 			FS: assets,
 		},
 	})

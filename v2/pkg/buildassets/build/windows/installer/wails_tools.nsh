@@ -134,6 +134,14 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
     DeleteRegKey HKLM "${UNINST_KEY}"
 !macroend
 
+!macro wails.setShellContext
+    ${If} ${REQUEST_EXECUTION_LEVEL} == "admin"
+        SetShellVarContext all
+    ${else}
+        SetShellVarContext current
+    ${EndIf}
+!macroend
+
 # Install webview2 by launching the bootstrapper
 # See https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#online-only-deployment
 !macro wails.webview2runtime
