@@ -239,6 +239,10 @@ func (p *Project) findApplicationNewCalls(pkgs map[string]*ParsedPackage) (err e
 									return result
 								}
 
+								// Check if the assignment is the result of a function call
+								if _, ok := assign.Rhs[0].(*ast.CallExpr); ok {
+									println("TODO: Parsing call expression")
+								}
 							}
 						}
 					}
