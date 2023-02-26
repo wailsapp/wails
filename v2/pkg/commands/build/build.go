@@ -263,59 +263,53 @@ func execBuildApplication(builder Builder, options *Options) (string, error) {
 	// Compile the application
 	printBulletPoint("Compiling application: ")
 
-	if options.Platform == "darwin" {
+	if options.Platform == "darwin" && options.Arch == "universal" {
 		outputFile := builder.OutputFilename(options)
-		if options.Arch == "universal" {
-			amd64Filename := outputFile + "-amd64"
-			arm64Filename := outputFile + "-arm64"
+		amd64Filename := outputFile + "-amd64"
+		arm64Filename := outputFile + "-arm64"
 
-			// Build amd64 first
-			options.Arch = "amd64"
-			options.OutputFile = amd64Filename
-			options.CleanBinDirectory = false
-			if options.Verbosity == VERBOSE {
-				pterm.Println("Building AMD64 Target: " + filepath.Join(options.BinDirectory, options.OutputFile))
-			}
-			err := builder.CompileProject(options)
-			if err != nil {
-				return "", err
-			}
-			// Build arm64
-			options.Arch = "arm64"
-			options.OutputFile = arm64Filename
-			options.CleanBinDirectory = false
-			if options.Verbosity == VERBOSE {
-				pterm.Println("Building ARM64 Target: " + filepath.Join(options.BinDirectory, options.OutputFile))
-			}
-			err = builder.CompileProject(options)
-
-			if err != nil {
-				return "", err
-			}
-			// Run lipo
-			if options.Verbosity == VERBOSE {
-				pterm.Println(fmt.Sprintf("Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename))
-			}
-			_, stderr, err := shell.RunCommand(options.BinDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
-			if err != nil {
-				return "", fmt.Errorf("%s - %s", err.Error(), stderr)
-			}
-			// Remove temp binaries
-			err = fs.DeleteFile(filepath.Join(options.BinDirectory, amd64Filename))
-			if err != nil {
-				return "", err
-			}
-			err = fs.DeleteFile(filepath.Join(options.BinDirectory, arm64Filename))
-			if err != nil {
-				return "", err
-			}
-			options.ProjectData.OutputFilename = outputFile
-			options.CompiledBinary = filepath.Join(options.BinDirectory, outputFile)
-		} else {
-			options.ProjectData.OutputFilename = outputFile
-			options.ProjectData.Name = outputFile
-			options.ProjectData.Info.ProductName = outputFile
+		// Build amd64 first
+		options.Arch = "amd64"
+		options.OutputFile = amd64Filename
+		options.CleanBinDirectory = false
+		if options.Verbosity == VERBOSE {
+			pterm.Println("Building AMD64 Target: " + filepath.Join(options.BinDirectory, options.OutputFile))
 		}
+		err := builder.CompileProject(options)
+		if err != nil {
+			return "", err
+		}
+		// Build arm64
+		options.Arch = "arm64"
+		options.OutputFile = arm64Filename
+		options.CleanBinDirectory = false
+		if options.Verbosity == VERBOSE {
+			pterm.Println("Building ARM64 Target: " + filepath.Join(options.BinDirectory, options.OutputFile))
+		}
+		err = builder.CompileProject(options)
+
+		if err != nil {
+			return "", err
+		}
+		// Run lipo
+		if options.Verbosity == VERBOSE {
+			pterm.Println(fmt.Sprintf("Running lipo: lipo -create -output %s %s %s", outputFile, amd64Filename, arm64Filename))
+		}
+		_, stderr, err := shell.RunCommand(options.BinDirectory, "lipo", "-create", "-output", outputFile, amd64Filename, arm64Filename)
+		if err != nil {
+			return "", fmt.Errorf("%s - %s", err.Error(), stderr)
+		}
+		// Remove temp binaries
+		err = fs.DeleteFile(filepath.Join(options.BinDirectory, amd64Filename))
+		if err != nil {
+			return "", err
+		}
+		err = fs.DeleteFile(filepath.Join(options.BinDirectory, arm64Filename))
+		if err != nil {
+			return "", err
+		}
+		options.ProjectData.OutputFilename = outputFile
+		options.CompiledBinary = filepath.Join(options.BinDirectory, outputFile)
 	} else {
 		err := builder.CompileProject(options)
 		if err != nil {
