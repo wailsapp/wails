@@ -112,7 +112,8 @@ type App struct {
 	menuItemsLock sync.Mutex
 
 	// Running
-	running bool
+	running  bool
+	bindings *Bindings
 
 	// platform app
 	impl platformApp
@@ -269,6 +270,12 @@ func (a *App) Run() error {
 			a.handleMenuItemClicked(menuItemID)
 		}
 	}()
+
+	var err error
+	a.bindings, err = NewBindings(a.options.Bind)
+	if err != nil {
+		return err
+	}
 
 	// run windows
 	for _, window := range a.windows {
