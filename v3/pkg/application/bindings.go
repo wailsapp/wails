@@ -2,10 +2,18 @@ package application
 
 import (
 	"fmt"
+	"github.com/samber/lo"
 	"reflect"
 	"runtime"
 	"strings"
 )
+
+type CallOptions struct {
+	PackageName string `json:"packageName"`
+	StructName  string `json:"structName"`
+	MethodName  string `json:"methodName"`
+	Args        []any  `json:"args"`
+}
 
 // Parameter defines a Go method parameter
 type Parameter struct {
@@ -88,6 +96,22 @@ func (b *Bindings) Add(structPtr interface{}) error {
 	return nil
 }
 
+func (b *Bindings) Get(options *CallOptions) *BoundMethod {
+	_, ok := b.boundMethods[options.PackageName]
+	if !ok {
+		return nil
+	}
+	_, ok = b.boundMethods[options.PackageName][options.StructName]
+	if !ok {
+		return nil
+	}
+	method, ok := b.boundMethods[options.PackageName][options.StructName][options.MethodName]
+	if !ok {
+		return nil
+	}
+	return method
+}
+
 func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 
 	// Create result placeholder
@@ -106,7 +130,7 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 			return nil, fmt.Errorf("%s is a function, not a pointer to a struct. Wails v2 has deprecated the binding of functions. Please wrap your functions up in a struct and bind a pointer to that struct.", name)
 		}
 
-		return nil, fmt.Errorf("not a pointer to a struct.")
+		return nil, fmt.Errorf("not a pointer to a struct")
 	}
 
 	// Process Struct
@@ -120,13 +144,14 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 		methodDef := structType.Method(i)
 		methodName := methodDef.Name
 		packageName, structName, _ := strings.Cut(baseName, ".")
-		fullMethodName := baseName + "." + methodName
 		method := structValue.MethodByName(methodName)
+		packagePath, _ := lo.Coalesce(structType.PkgPath(), "main")
 
 		// Create new method
 		boundMethod := &BoundMethod{
-			Name:        fullMethodName,
+			Name:        methodName,
 			PackageName: packageName,
+			PackagePath: packagePath,
 			StructName:  structName,
 			Inputs:      nil,
 			Outputs:     nil,
@@ -141,34 +166,6 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 		for inputIndex := 0; inputIndex < inputParamCount; inputIndex++ {
 			input := methodType.In(inputIndex)
 			thisParam := newParameter("", input)
-			//
-			//thisInput := input
-			//
-			//if thisInput.Kind() == reflect.Slice {
-			//	thisInput = thisInput.Elem()
-			//}
-			//
-			//// Process struct pointer params
-			//if thisInput.Kind() == reflect.Ptr {
-			//	if thisInput.Elem().Kind() == reflect.Struct {
-			//		typ := thisInput.Elem()
-			//		a := reflect.New(typ)
-			//		s := reflect.Indirect(a).Interface()
-			//		name := typ.Name()
-			//		packageName := getPackageName(thisInput.String())
-			//		b.AddStructToGenerateTS(packageName, name, s)
-			//	}
-			//}
-			//
-			//// Process struct params
-			//if thisInput.Kind() == reflect.Struct {
-			//	a := reflect.New(thisInput)
-			//	s := reflect.Indirect(a).Interface()
-			//	name := thisInput.Name()
-			//	packageName := getPackageName(thisInput.String())
-			//	b.AddStructToGenerateTS(packageName, name, s)
-			//}
-
 			inputs = append(inputs, thisParam)
 		}
 
@@ -179,33 +176,6 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 		for outputIndex := 0; outputIndex < outputParamCount; outputIndex++ {
 			output := methodType.Out(outputIndex)
 			thisParam := newParameter("", output)
-			//
-			//thisOutput := output
-			//
-			//if thisOutput.Kind() == reflect.Slice {
-			//	thisOutput = thisOutput.Elem()
-			//}
-			//
-			//// Process struct pointer params
-			//if thisOutput.Kind() == reflect.Ptr {
-			//	if thisOutput.Elem().Kind() == reflect.Struct {
-			//		typ := thisOutput.Elem()
-			//		a := reflect.New(typ)
-			//		s := reflect.Indirect(a).Interface()
-			//		name := typ.Name()
-			//		packageName := getPackageName(thisOutput.String())
-			//	}
-			//}
-			//
-			//// Process struct params
-			//if thisOutput.Kind() == reflect.Struct {
-			//	a := reflect.New(thisOutput)
-			//	s := reflect.Indirect(a).Interface()
-			//	name := thisOutput.Name()
-			//	packageName := getPackageName(thisOutput.String())
-			//	b.AddStructToGenerateTS(packageName, name, s)
-			//}
-
 			outputs = append(outputs, thisParam)
 		}
 		boundMethod.Outputs = outputs
@@ -215,6 +185,56 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 
 	}
 	return result, nil
+}
+
+// Call will attempt to call this bound method with the given args
+func (b *BoundMethod) Call(args []interface{}) (interface{}, error) {
+	// Check inputs
+	expectedInputLength := len(b.Inputs)
+	actualInputLength := len(args)
+	if expectedInputLength != actualInputLength {
+		return nil, fmt.Errorf("%s takes %d inputs. Received %d", b.Name, expectedInputLength, actualInputLength)
+	}
+
+	/** Convert inputs to reflect values **/
+
+	// Create slice for the input arguments to the method call
+	callArgs := make([]reflect.Value, expectedInputLength)
+
+	// Iterate over given arguments
+	for index, arg := range args {
+		// Save the converted argument
+		callArgs[index] = reflect.ValueOf(arg)
+	}
+
+	// Do the call
+	callResults := b.Method.Call(callArgs)
+
+	//** Check results **//
+	var returnValue interface{}
+	var err error
+
+	switch len(b.Outputs) {
+	case 1:
+		// Loop over results and determine if the result
+		// is an error or not
+		for _, result := range callResults {
+			interfac := result.Interface()
+			temp, ok := interfac.(error)
+			if ok {
+				err = temp
+			} else {
+				returnValue = interfac
+			}
+		}
+	case 2:
+		returnValue = callResults[0].Interface()
+		if temp, ok := callResults[1].Interface().(error); ok {
+			err = temp
+		}
+	}
+
+	return returnValue, err
 }
 
 // isStructPtr returns true if the value given is a
@@ -232,11 +252,4 @@ func isFunction(value interface{}) bool {
 // isStructPtr returns true if the value given is a struct
 func isStruct(value interface{}) bool {
 	return reflect.ValueOf(value).Kind() == reflect.Struct
-}
-
-func getPackageName(in string) string {
-	result := strings.Split(in, ".")[0]
-	result = strings.ReplaceAll(result, "[]", "")
-	result = strings.ReplaceAll(result, "*", "")
-	return result
 }
