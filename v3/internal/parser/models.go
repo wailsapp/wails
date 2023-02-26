@@ -1,5 +1,33 @@
 package parser
 
+import (
+	"io"
+	"text/template"
+)
+
+func jsName(field Field) string {
+	return field.JSName()
+}
+
+func GenerateClass(wr io.Writer, def *StructDef) error {
+	funcMap := template.FuncMap{
+		"jsName": jsName,
+	}
+
+	tmpl, err := template.New("class.ts.tmpl").Funcs(funcMap).ParseFiles("templates/class.ts.tmpl")
+	if err != nil {
+		println("Unable to create class template: " + err.Error())
+		return err
+	}
+
+	err = tmpl.ExecuteTemplate(wr, "class.ts.tmpl", def)
+	if err != nil {
+		println("Problem executing template: " + err.Error())
+		return err
+	}
+	return nil
+}
+
 //
 //import (
 //	"bytes"
