@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strconv"
 )
 
@@ -482,51 +483,34 @@ func (p *Project) parseBoundExpression(elt ast.Expr, pkg *ParsedPackage) (bool, 
 		return p.parseBoundUnaryExpression(t, pkg)
 	case *ast.Ident:
 		return p.parseBoundIdent(t, pkg)
+	case *ast.CallExpr:
+		return p.parseBoundCallExpression(t, pkg)
+	default:
+		println("unhandled expression type", reflect.TypeOf(t).String())
 	}
 
 	return false, false
 }
 
 func (p *Project) parseBoundIdent(ident *ast.Ident, pkg *ParsedPackage) (bool, bool) {
-	println("found: ", ident.Name)
 	if ident.Obj == nil {
 		return false, true
 	}
 	switch t := ident.Obj.Decl.(type) {
-	case *ast.StructType:
-		// return p.parseBoundStruct(t, pkg)
-		return false, true
+	//case *ast.StructType:
+	//	return p.parseBoundStruct(t, pkg)
 	case *ast.TypeSpec:
-		// return p.parseBoundTypeSpec(t, pkg)
-		return false, true
+		return p.parseBoundTypeSpec(t, pkg)
 	case *ast.AssignStmt:
 		return p.parseBoundAssignment(t, pkg)
+	default:
+		println("unhandled ident type", reflect.TypeOf(t).String())
 	}
 	return false, false
 }
 
 func (p *Project) parseBoundAssignment(assign *ast.AssignStmt, pkg *ParsedPackage) (bool, bool) {
-
-	switch t := assign.Rhs[0].(type) {
-	case *ast.UnaryExpr:
-		return p.parseBoundUnaryExpression(t, pkg)
-	case *ast.CallExpr:
-		//return p.parseBoundCallExpression(t, pkg)
-		return false, true
-	case *ast.Ident:
-		return p.parseBoundIdent(t, pkg)
-	case *ast.SelectorExpr:
-		//return p.parseBoundSelectorExpression(t, pkg)
-		return false, true
-	case *ast.CompositeLit:
-		//return p.parseBoundCompositeLiteral(t, pkg)
-		return false, true
-	case *ast.StructType:
-		//return p.parseBoundStructType(t, pkg)
-		return false, true
-	}
-
-	return false, false
+	return p.parseBoundExpression(assign.Rhs[0], pkg)
 }
 
 func (p *Project) parseBoundCompositeLit(lit *ast.CompositeLit, pkg *ParsedPackage) (bool, bool) {
@@ -563,8 +547,87 @@ func (p *Project) parseBoundSelectorExpression(selector *ast.SelectorExpr, pkg *
 			return true, false
 		}
 		return false, true
+	default:
+		println("unhandled selector type", reflect.TypeOf(t).String())
 	}
 	return false, true
+}
+
+func (p *Project) parseBoundCallExpression(callExpr *ast.CallExpr, pkg *ParsedPackage) (bool, bool) {
+
+	// Check if this call returns a struct pointer
+	switch t := callExpr.Fun.(type) {
+	case *ast.Ident:
+		if t.Obj == nil {
+			return false, true
+		}
+		switch t := t.Obj.Decl.(type) {
+		case *ast.FuncDecl:
+			return p.parseBoundFuncDecl(t, pkg)
+		}
+
+	case *ast.SelectorExpr:
+		// Get package for selector
+		var parsedPackage *ParsedPackage
+		parsedPackage, err := p.getParsedPackageFromName(t.X.(*ast.Ident).Name, pkg)
+		if err != nil {
+			return true, false
+		}
+		// Get function from package
+		var extFundDecl *ast.FuncDecl
+		extFundDecl, err = p.getFunctionFromName(t.Sel.Name, parsedPackage)
+		if err != nil {
+			return true, false
+		}
+		return p.parseBoundFuncDecl(extFundDecl, parsedPackage)
+	default:
+		println("unhandled call type", reflect.TypeOf(t).String())
+	}
+
+	return false, true
+}
+
+func (p *Project) parseBoundFuncDecl(t *ast.FuncDecl, pkg *ParsedPackage) (bool, bool) {
+	if t.Type.Results == nil {
+		return false, true
+	}
+	if len(t.Type.Results.List) != 1 {
+		return false, true
+	}
+	switch t := t.Type.Results.List[0].Type.(type) {
+	case *ast.StarExpr:
+		return p.parseBoundExpression(t.X, pkg)
+	default:
+		println("Unhandled funcdecl type", reflect.TypeOf(t).String())
+	}
+	return false, false
+}
+
+func (p *Project) parseBoundTypeSpec(typeSpec *ast.TypeSpec, pkg *ParsedPackage) (bool, bool) {
+	switch t := typeSpec.Type.(type) {
+	case *ast.StructType:
+		err := p.parseBoundStructMethods(typeSpec.Name.Name, pkg)
+		if err != nil {
+			return true, false
+		}
+	default:
+		println("unhandled type spec type", reflect.TypeOf(t).String())
+	}
+	return false, true
+}
+
+func (p *Project) getFunctionFromName(name string, parsedPackage *ParsedPackage) (*ast.FuncDecl, error) {
+	for _, f := range parsedPackage.Pkg.Files {
+		for _, decl := range f.Decls {
+			switch t := decl.(type) {
+			case *ast.FuncDecl:
+				if t.Name.Name == name {
+					return t, nil
+				}
+			}
+		}
+	}
+	return nil, fmt.Errorf("function not found")
 }
 
 func getTypeString(expr ast.Expr) string {
