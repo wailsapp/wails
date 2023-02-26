@@ -181,7 +181,10 @@ func buildApplication(f *flags.Build) error {
 			macTargets := targets.Filter(func(platform string) bool {
 				return strings.HasPrefix(platform, "darwin")
 			})
-			if macTargets.Length() == 2 {
+			switch macTargets.Length() {
+			case 1:
+				buildOptions.BundleName = fmt.Sprintf("%s.app", desiredFilename)
+			case 2:
 				buildOptions.BundleName = fmt.Sprintf("%s-%s.app", desiredFilename, buildOptions.Arch)
 			}
 		}
