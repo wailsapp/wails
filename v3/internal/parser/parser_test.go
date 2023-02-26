@@ -1305,6 +1305,157 @@ func TestParseDirectory(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:    "should find a bound service returned from a function call",
+			dir:     "testdata/function_single",
+			wantErr: false,
+			wantBoundMethods: map[string]map[string][]*BoundMethod{
+				"main": {
+					"GreetService": {
+						{
+							Name:       "Greet",
+							DocComment: "Greet someone\n",
+							Inputs: []*Parameter{
+								{
+									Name: "name",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Name: "",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:    "should find a bound service returned from a function call in another package",
+			dir:     "testdata/function_from_imported_package",
+			wantErr: false,
+			wantBoundMethods: map[string]map[string][]*BoundMethod{
+				"main": {
+					"GreetService": {
+						{
+							Name:       "Greet",
+							DocComment: "Greet does XYZ\n",
+							Inputs: []*Parameter{
+								{
+									Name: "name",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Name: "",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+						},
+						{
+							Name:       "NewPerson",
+							DocComment: "NewPerson creates a new person\n",
+							Inputs: []*Parameter{
+								{
+									Name: "name",
+									Type: &ParameterType{
+										Name: "string",
+									},
+								},
+							},
+							Outputs: []*Parameter{
+								{
+									Name: "",
+									Type: &ParameterType{
+										Name:      "Person",
+										IsPointer: true,
+										IsStruct:  true,
+										Package:   "main",
+									},
+								},
+							},
+						},
+					},
+				},
+				"github.com/wailsapp/wails/v3/internal/parser/testdata/variable_single_from_other_function/services": {
+					"OtherService": {
+						{
+							Name: "Yay",
+							Outputs: []*Parameter{
+								{
+									Type: &ParameterType{
+										Name:      "Address",
+										IsStruct:  true,
+										IsPointer: true,
+										Package:   "github.com/wailsapp/wails/v3/internal/parser/testdata/variable_single_from_other_function/services",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantModels: map[string]map[string]*StructDef{
+				"main": {
+					"Person": {
+						Name: "Person",
+						Fields: []*Field{
+							{
+								Name: "Name",
+								Type: &ParameterType{
+									Name: "string",
+								},
+							},
+							{
+								Name: "Address",
+								Type: &ParameterType{
+									Name:      "Address",
+									IsStruct:  true,
+									IsPointer: true,
+									Package:   "github.com/wailsapp/wails/v3/internal/parser/testdata/variable_single_from_other_function/services",
+								},
+							},
+						},
+					},
+				},
+				"github.com/wailsapp/wails/v3/internal/parser/testdata/variable_single_from_other_function/services": {
+					"Address": {
+						Name: "Address",
+						Fields: []*Field{
+							{
+								Name: "Street",
+								Type: &ParameterType{
+									Name: "string",
+								},
+							},
+							{
+								Name: "State",
+								Type: &ParameterType{
+									Name: "string",
+								},
+							},
+							{
+								Name: "Country",
+								Type: &ParameterType{
+									Name: "string",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
