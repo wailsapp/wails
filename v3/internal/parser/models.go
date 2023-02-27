@@ -5,28 +5,40 @@ import (
 	"text/template"
 )
 
-func jsName(field Field) string {
-	return field.JSName()
+type ModelDefinitions struct {
+	Package string
+	Models  map[string]*StructDef
 }
 
-func GenerateClass(wr io.Writer, def *StructDef) error {
-	funcMap := template.FuncMap{
-		"jsName": jsName,
-	}
-
-	tmpl, err := template.New("class.ts.tmpl").Funcs(funcMap).ParseFiles("templates/class.ts.tmpl")
+func GenerateModel(wr io.Writer, def *ModelDefinitions) error {
+	tmpl, err := template.New("model.ts.tmpl").ParseFiles("templates/model.ts.tmpl")
 	if err != nil {
 		println("Unable to create class template: " + err.Error())
 		return err
 	}
 
-	err = tmpl.ExecuteTemplate(wr, "class.ts.tmpl", def)
+	err = tmpl.ExecuteTemplate(wr, "model.ts.tmpl", def)
 	if err != nil {
 		println("Problem executing template: " + err.Error())
 		return err
 	}
 	return nil
 }
+
+//func GenerateClass(wr io.Writer, def *StructDef) error {
+//	tmpl, err := template.New("class.ts.tmpl").ParseFiles("templates/class.ts.tmpl")
+//	if err != nil {
+//		println("Unable to create class template: " + err.Error())
+//		return err
+//	}
+//
+//	err = tmpl.ExecuteTemplate(wr, "class.ts.tmpl", def)
+//	if err != nil {
+//		println("Problem executing template: " + err.Error())
+//		return err
+//	}
+//	return nil
+//}
 
 //
 //import (

@@ -1,0 +1,21 @@
+{{$pkg := .Package}}
+export namespace {{.Package}} {
+  {{range $name, $def := .Models}}
+  export class {{$def.Name}} {
+    {{range $def.Fields}}{{.JSDef $pkg}}
+    {{end}}
+    static createFrom(source: any = {}) {
+      return new {{$def.Name}}(source);
+    }
+
+    constructor(source: any = {}) {
+      if ('string' === typeof source) {
+        source = JSON.parse(source);
+      }
+
+      {{range $def.Fields}}this.{{.JSName}} = source["{{.JSName}}"]
+      {{end}}
+    }
+  }
+  {{end}}
+}

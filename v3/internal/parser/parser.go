@@ -54,14 +54,15 @@ func (f *Field) JSName() string {
 	return strings.ToLower(f.Name[0:1]) + f.Name[1:]
 }
 
-func (f *Field) String() string {
+func (f *Field) JSDef(pkg string) string {
 	name := f.JSName()
 
-	if f.Type.Package == "" {
+	if f.Type.Package == "" || f.Type.Package == pkg {
 		return fmt.Sprintf("%s: %s;", name, f.Type.Name)
 	}
 
-	return fmt.Sprintf("%s: %s.%s;", name, f.Type.Package, f.Type.Name)
+	parts := strings.Split(f.Type.Package, "/")
+	return fmt.Sprintf("%s: %s.%s;", name, parts[len(parts)-1], f.Type.Name)
 }
 
 type ParsedPackage struct {
