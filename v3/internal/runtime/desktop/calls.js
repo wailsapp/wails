@@ -37,6 +37,7 @@ export function callCallback(id, data, isJSON) {
         callResponses.delete(id);
     }
 }
+
 export function callErrorCallback(id, message) {
     let p = callResponses.get(id);
     if (p) {
@@ -45,7 +46,7 @@ export function callErrorCallback(id, message) {
     }
 }
 
-function dialog(type, options) {
+function callBinding(type, options) {
     return new Promise((resolve, reject) => {
         let id = generateID();
         options = options || {};
@@ -60,6 +61,6 @@ function dialog(type, options) {
 
 
 export function Call(options) {
-    return dialog("Call", options);
+    return callBinding("Call", options);
 }
 
