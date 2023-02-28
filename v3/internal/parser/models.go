@@ -1,5 +1,45 @@
 package parser
 
+import (
+	"io"
+	"text/template"
+)
+
+type ModelDefinitions struct {
+	Package string
+	Models  map[string]*StructDef
+}
+
+func GenerateModel(wr io.Writer, def *ModelDefinitions) error {
+	tmpl, err := template.New("model.ts.tmpl").ParseFiles("templates/model.ts.tmpl")
+	if err != nil {
+		println("Unable to create class template: " + err.Error())
+		return err
+	}
+
+	err = tmpl.ExecuteTemplate(wr, "model.ts.tmpl", def)
+	if err != nil {
+		println("Problem executing template: " + err.Error())
+		return err
+	}
+	return nil
+}
+
+//func GenerateClass(wr io.Writer, def *StructDef) error {
+//	tmpl, err := template.New("class.ts.tmpl").ParseFiles("templates/class.ts.tmpl")
+//	if err != nil {
+//		println("Unable to create class template: " + err.Error())
+//		return err
+//	}
+//
+//	err = tmpl.ExecuteTemplate(wr, "class.ts.tmpl", def)
+//	if err != nil {
+//		println("Problem executing template: " + err.Error())
+//		return err
+//	}
+//	return nil
+//}
+
 //
 //import (
 //	"bytes"

@@ -1,0 +1,16 @@
+  export class {{.Name}} {
+    {{range .Fields}}{{.}}
+    {{end}}
+    static createFrom(source: any = {}) {
+      return new {{.Name}}(source);
+    }
+
+    constructor(source: any = {}) {
+      if ('string' === typeof source) {
+        source = JSON.parse(source);
+      }
+
+      {{range .Fields}}this.{{jsName .}} = source["{{jsName .}}"]
+      {{end}}
+    }
+  }

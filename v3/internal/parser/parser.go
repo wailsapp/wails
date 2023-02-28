@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 type packagePath = string
@@ -47,6 +48,21 @@ type BoundMethod struct {
 type Field struct {
 	Name string
 	Type *ParameterType
+}
+
+func (f *Field) JSName() string {
+	return strings.ToLower(f.Name[0:1]) + f.Name[1:]
+}
+
+func (f *Field) JSDef(pkg string) string {
+	name := f.JSName()
+
+	if f.Type.Package == "" || f.Type.Package == pkg {
+		return fmt.Sprintf("%s: %s;", name, f.Type.Name)
+	}
+
+	parts := strings.Split(f.Type.Package, "/")
+	return fmt.Sprintf("%s: %s.%s;", name, parts[len(parts)-1], f.Type.Name)
 }
 
 type ParsedPackage struct {
