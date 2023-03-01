@@ -17,10 +17,9 @@ function Greet(name) {
     return wails.Call(GreetService("Greet", name));
 }
 
-window.go = {
-    main: {
-        GreetService: {
-            Greet,
-        }
+window.go = window.go || {};
+Object.window.go.main = {
+    GreetService: {
+        Greet,
     }
 };

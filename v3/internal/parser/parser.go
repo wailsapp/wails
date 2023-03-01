@@ -38,6 +38,42 @@ type Parameter struct {
 	Type *ParameterType
 }
 
+func (p *Parameter) JSType() string {
+	// Convert type to javascript equivalent type
+	var typeName string
+	switch p.Type.Name {
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr":
+		typeName = "number"
+	case "string":
+		typeName = "string"
+	case "bool":
+		typeName = "boolean"
+	default:
+		typeName = p.Type.Name
+	}
+
+	// if the type is a struct, we need to add the package name
+	if p.Type.IsStruct {
+		if p.Type.Package != "" {
+			parts := strings.Split(p.Type.Package, "/")
+			typeName = parts[len(parts)-1] + "." + typeName
+			// TODO: Check if this is a duplicate package name
+		}
+	}
+
+	// Add slice suffix
+	if p.Type.IsSlice {
+		typeName += "[]"
+	}
+
+	// Add pointer suffix
+	if p.Type.IsPointer {
+		typeName += " | null"
+	}
+
+	return typeName
+}
+
 type BoundMethod struct {
 	Name       string
 	DocComment string
