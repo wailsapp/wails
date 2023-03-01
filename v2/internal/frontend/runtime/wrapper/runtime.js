@@ -37,11 +37,11 @@ export function LogFatal(message) {
 }
 
 export function EventsOnMultiple(eventName, callback, maxCallbacks) {
-    window.runtime.EventsOnMultiple(eventName, callback, maxCallbacks);
+    return window.runtime.EventsOnMultiple(eventName, callback, maxCallbacks);
 }
 
 export function EventsOn(eventName, callback) {
-    EventsOnMultiple(eventName, callback, -1);
+    return EventsOnMultiple(eventName, callback, -1);
 }
 
 export function EventsOff(eventName, ...additionalEventNames) {
@@ -49,7 +49,7 @@ export function EventsOff(eventName, ...additionalEventNames) {
 }
 
 export function EventsOnce(eventName, callback) {
-    EventsOnMultiple(eventName, callback, 1);
+    return EventsOnMultiple(eventName, callback, 1);
 }
 
 export function EventsEmit(eventName) {
