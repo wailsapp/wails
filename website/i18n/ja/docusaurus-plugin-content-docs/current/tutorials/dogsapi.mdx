@@ -2,7 +2,7 @@
 sidebar_position: 20
 ---
 
-# Dogs API
+# ドッグAPI
 
 ```mdx-code-block
 <div class="text--center">
@@ -17,25 +17,25 @@ sidebar_position: 20
 
 :::note
 
-このチュートリアルは[@tatadan](https://twitter.com/tatadan)の好意により提供されたもので、[Wails Examples Repository](https://github.com/tataDan/wails-v2-examples)の一部を構成しています。
+このチュートリアルは[@tatadan](https://twitter.com/tatadan)より提供されたもので、[Wails Examples Repository](https://github.com/tataDan/wails-v2-examples)の一部になります。
 
 :::
 
-このチュートリアルでは、Web上から犬の写真を取得し、表示するアプリケーションを開発します。
+このチュートリアルでは、Webから犬の写真を取得して表示するためのアプリケーションを開発していきます。
 
-### プロジェクトを作成する
+### プロジェクトの作成
 
-では、アプリケーションを作成しましょう。ターミナルで次のコマンドを入力します: `wails init -n dogs-api -t svelte`
+アプリケーションを作成していきましょう。 ターミナルで次のように入力します: `wails init -n dogs-api -t svelte`
 
-注: IDEサポートを追加したい場合は、オプションでこのコマンドの最後に`-ide vscode`または`ide goland`を追加することができます。
+注意: IDEサポートが欲しい場合は、コマンドの末尾に、`-ide vscode`オプションまたは`-ide goland`オプションを付与してください。
 
-では、cd `dogs-api`をして、プロジェクトファイルの編集を始めましょう。
+では、`cd dogs-api`で移動し、プロジェクトファイルの編集を始めましょう。
 
-### 未使用のコードを削除する
+### 未使用コードの削除
 
-まず、使用しないことがわかっているいくつかの要素を削除することから始めます:
+まず、使用しないと分かっているいくつかの要素を削除していきます:
 
-- `app.go`を開き、以下の行を削除してください:
+- `app.go`を開き、次の行を削除します:
 
 ```go
 // Greet returns a greeting for the given name
@@ -49,9 +49,9 @@ func (a *App) Greet(name string) string {
 
 ### アプリケーションの作成
 
-では、新しいGoのコードを追加してみましょう。
+では、新しいGoコードを書いていきましょう。
 
-`app.go`の関数定義の前に、次の構造体宣言を追加します:
+関数を定義する前に、`app.go`に下記の構造体の宣言を追加します:
 
 ```go
 type RandomImage struct {
@@ -70,7 +70,7 @@ type ImagesByBreed struct {
 }
 ```
 
-以下の関数を`app.go`に追加します（既存の関数定義の後ろに追加するかもしれません）:
+下記の関数を`app.go`に追加します(おそらく既存の関数定義の後ろ側に追加することになります):
 
 ```go
 func (a *App) GetRandomImageUrl() string {
@@ -149,9 +149,7 @@ import (
 )
 ```
 
-以下の行を`frontend/src/App.svelte`に追加します:
-
-```html
+`frontend/src/App.svelte`に次の行を追加します:
 
 <!-- prettier-ignore-start -->
 ```html
@@ -240,8 +238,8 @@ import (
 
 ### アプリケーションのテスト
 
-バインディングを生成し、アプリケーションをテストするには、`wails dev`を実行します。
+バインディングを生成してアプリケーションをテストするには、`wails dev`コマンドを実行してください。
 
 ### アプリケーションのコンパイル
 
-アプリケーションを単一の、本番用のバイナリにコンパイルするには、`wails build`を実行します。
+アプリケーションを本番用の単一バイナリにコンパイルするには、`wails build`コマンドを実行してください。

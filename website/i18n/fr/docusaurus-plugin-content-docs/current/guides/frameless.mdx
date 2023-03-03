@@ -1,8 +1,8 @@
-# Frameless Applications
+# Applications sans cadre
 
-Wails supports application that have no frames. This can be achieved by using the [frameless](../reference/options.mdx#frameless) field in [Application Options](../reference/options.mdx#application-options).
+Wails prend en charge la création d'applications qui n'ont pas de cadres. Ceci peut être réalisé en utilisant le champ [frameless](../reference/options.mdx#frameless) dans [Application Options](../reference/options.mdx#application-options).
 
-Wails offers a simple solution for dragging the window: Any HTML element that has the CSS style `--wails-draggable:drag` will act as a "drag handle". This property applies to all child elements. If you need to indicate that a nested element should not drag, then use the attribute '--wails-draggable:no-drag' on that element.
+Wails offre une solution simple pour faire glisser la fenêtre: N'importe quel élément HTML qui a le style CSS `--wails-draggable:drag` agira comme une "poignée de glisser". Cette propriété s'applique à tous les éléments enfants. Si vous devez indiquer qu'un élément imbriqué ne doit pas glisser, alors utilisez l'attribut '--wails-draggable:no-drag' sur cet élément.
 
 ```html
 <html>
@@ -23,7 +23,7 @@ Wails offers a simple solution for dragging the window: Any HTML element that ha
 </html>
 ```
 
-For some projects, using a CSS variable may not be possible due to dynamic styling. In this case, you can use the `CSSDragProperty` and `CSSDragValue` application options to define a property and value that will be used to indicate draggable regions:
+Pour certains projets, l'utilisation d'une variable CSS peut ne pas être possible en raison du style dynamique. Dans ce cas, vous pouvez utiliser les options `CSSDragProperty` et `CSSDragValue` pour définir une propriété et une valeur qui seront utilisées pour indiquer régions glissables :
 
 ```go title=main.go
 package main
@@ -80,8 +80,8 @@ func main() {
 </html>
 ```
 
-:::info Fullscreen
+:::info Plein écran
 
-If you allow your application to go fullscreen, this drag functionality will be disabled.
+Si vous autorisez votre application à être en plein écran, cette fonctionnalité de glissement sera désactivée.
 
 :::

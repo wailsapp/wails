@@ -159,4 +159,8 @@ In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/Sy
 
 最好将 `frontend/node_modules` 和 `frontend/package-lock.json` 添加到您的 `.gitignore` 中。 否则，当在另一台可能安装了不同版本 Node 的机器上打开您的存储库时，您可能无法运行您的应用程序。
 
-如果发生这种情况，只需删除 `frontend/node_modules` 和 `frontend/package-lock.json` 并再次运行 `wails build` 或 `wails dev` 命令。 
+如果发生这种情况，只需删除 `frontend/node_modules` 和 `frontend/package-lock.json` 并再次运行 `wails build` 或 `wails dev` 命令。
+
+## 构建过程停留在“生成绑定”
+
+绑定生成过程在特殊模式下运行应用程序。 如果应用程序有意或无意地包含一个无限循环(即在 `wails.Run()` 结束后不退出)，这可能导致构建过程停留在绑定生成阶段。 请确保您的代码正确退出。

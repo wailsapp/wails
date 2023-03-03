@@ -34,4 +34,4 @@ Go: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optio
 
 Este método emite o evento fornecido. Os dados opcionais podem ser passados com o evento. Isto irá acionar quaisquer ouvintes de eventos.
 
-Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/> JS: `EventsEmit(ctx context, optionalData function(optionalData?: any))`
+Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/> JS: `EventsEmit(eventName: string, ...optionalData: any)`

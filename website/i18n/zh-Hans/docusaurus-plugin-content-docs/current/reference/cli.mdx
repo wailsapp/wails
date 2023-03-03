@@ -71,6 +71,7 @@ Wails CLI 有许多用于管理项目的命令。 所有命令都以此方式运
 | -windowsconsole | 保留Windows构建控制台窗口                                                                                              |                                                                                                            |
 | -obfuscate      | 使用 [garble](https://github.com/burrowers/garble) 混淆应用程序                                                       | false                                                                                                      |
 | -garbleargs     | 传递给 garble 的参数                                                                                                | `-literals -tiny -seed=random`                                                                             |
+| -nosyncgomod    | 不同步 go.mod 中的 Wails 版本                                                                                        | false                                                                                                      |
 
 有关 `webview2` 标志的详细描述，请参阅 [Windows 系统指南](../guides/windows)。
 
@@ -80,8 +81,10 @@ Wails CLI 有许多用于管理项目的命令。 所有命令都以此方式运
 
 `wails build -clean -o myproject.exe`
 
-:::Info
-在 Mac 上，应用程序将与 `Info.plist` 捆绑在一起，而不是 `Info.dev.plist`。
+:::info
+
+在 Mac 上，应用程序将被绑定到 `Info.plist`，而不是 `Info.dev.plist`。
+
 :::
 
 :::info 苹果芯片上的 UPX
@@ -184,6 +187,9 @@ Your system is ready for Wails development!
 | -save                        | 将指定的 `assetdir`、 `reloaddirs`、 `wailsjsdir`、 `debounce` 、 `devserver` 和 `frontenddevserverurl` 标志的值保存到 `wails.json` 以成为后续调用的默认值。 |                   |
 | -race                        | 使用 Go 的竞态检测器构建                                                                                                                   | false             |
 | -s                           | 跳过前端构建                                                                                                                           | false             |
+| -nosyncgomod                 | 不同步 go.mod 中的 Wails 版本                                                                                                           | false             |
+
+
 
 示例：
 

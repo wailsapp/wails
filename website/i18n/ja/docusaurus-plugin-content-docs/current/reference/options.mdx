@@ -50,6 +50,7 @@ func main() {
         OnBeforeClose:      app.beforeClose,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        EnableFraudulentWebsiteDetection: false,
         ZoomFactor:           1.0,
         IsZoomControlEnabled: false,
         Bind: []interface{}{
@@ -77,7 +78,8 @@ func main() {
             // OnSuspendはWindowsが省電力モードに移行した場合に呼び出されます
             OnSuspend func()
             // OnResumeはWindowsが省電力モードから復帰した場合に呼び出されます
-            OnResume func()
+            OnResume func(),
+            WebviewGpuDisabled: false,
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -100,6 +102,7 @@ func main() {
         Linux: &linux.Options{
             Icon: icon,
             WindowIsTranslucent: false,
+            WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
         },
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
@@ -232,11 +235,11 @@ AssetServerの固有オプションを定義します。 静的なアセット�
 | DELETE                  | ✅   | ✅   | ✅ [^1] |
 | Request Headers         | ✅   | ✅   | ✅ [^1] |
 | Request Body            | ✅   | ✅   | ❌      |
-| Request Body Streaming  | ❌   | ❌   | ❌      |
+| Request Body Streaming  | ✅   | ✅   | ❌      |
 | Response StatusCodes    | ✅   | ✅   | ✅ [^1] |
 | Response Headers        | ✅   | ✅   | ✅ [^1] |
 | Response Body           | ✅   | ✅   | ✅      |
-| Response Body Streaming | ❌   | ❌   | ✅      |
+| Response Body Streaming | ❌   | ✅   | ✅      |
 | WebSockets              | ❌   | ❌   | ❌      |
 | HTTP Redirects 30x      | ✅   | ❌   | ❌      |
 
@@ -355,6 +358,12 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 ウィンドウのドラッグを有効にするために、`CSSDragProperty`スタイルが持つべき値を設定します。 デフォルト値: `drag`
 
 名前: CSSDragValue<br/> データ型: `string`
+
+### EnableFraudulentWebsiteDetection
+
+EnableFraudulentWebsiteDetectionは、マルウェアやフィッシング詐欺などの不正コンテンツのスキャンサービスを有効にします。 これらのサービスは、ナビゲートされたURLやその他コンテンツ情報を、アプリからAppleおよびMicrosoftのクラウドサービスに送信する可能性があります。
+
+名前: EnableFraudulentWebsiteDetection<br/> データ型: `bool`
 
 ### ZoomFactor
 
@@ -542,6 +551,12 @@ Windowsがローパワーモード(サスペンド/休止状態) から復帰し
 
 名前: OnResume<br/> データ型: `func()`
 
+#### WebviewGpuIsDisabled
+
+`true`に設定すると、webviewのGPUハードウェアアクセラレーションが無効化されます。
+
+名前: WebviewGpuIsDisabled<br/> データ型: `bool`
+
 ### Mac
 
 [Mac固有のオプション](#mac)を定義します。
@@ -721,6 +736,20 @@ func main() {
 この値を`true`に設定すると、ウィンドウの背景が半透明になります。 ウィンドウマネージャによっては、この設定を無視したり、ブラックウィンドウになる場合があります。
 
 名前: WindowIsTranslucent<br/> データ型: `bool`
+
+#### WebviewGpuPolicy
+
+このオプションでは、webviewのハードウェアアクセラレーションポリシーを指定することができます。
+
+名前: WebviewGpuPolicy<br/> データ型: [`options.WebviewGpuPolicy`](#webviewgpupolicy-type)<br/> デフォルト値: `WebviewGpuPolicyAlways`
+
+##### WebviewGpuPolicy型
+
+| 値                        | 説明                                            |
+| ------------------------ | --------------------------------------------- |
+| WebviewGpuPolicyAlways   | ハードウェアアクセラレーションを常に有効にする                       |
+| WebviewGpuPolicyOnDemand | Webコンテンツからの要求に応じて、ハードウェアアクセラレーションの有効/無効を切り替える |
+| WebviewGpuPolicyNever    | ハードウェアアクセラレーションを常に無効にする                       |
 
 ### Debug
 

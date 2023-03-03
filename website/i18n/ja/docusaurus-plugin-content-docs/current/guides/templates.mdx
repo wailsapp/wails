@@ -1,17 +1,17 @@
-# Templates
+# テンプレート
 
-Wails generates projects from pre-created templates. In v1, this was a difficult to maintain set of projects that were subject to going out of date. In v2, to empower the community, a couple of new features have been added for templates:
+Wailsは、事前に作成されたテンプレートからプロジェクトを生成します。 v1では、テンプレートがメンテナンス困難なプロジェクトとなり、時代遅れとなってしまう可能性がありました。 v2では、コミュニティを強化するために、テンプレートにいくつかの新機能が追加されました:
 
-- Ability to generate projects from [Remote Templates](../reference/cli.mdx#remote-templates)
-- Tooling to help create your own templates
+- [リモート点テンプレート](../reference/cli.mdx#remote-templates)からプロジェクトを生成する機能
+- 独自のテンプレートの作成に役立つツール
 
-## Creating Templates
+## テンプレートの作成
 
-To create a template, you can use the `wails generate template` command. To generate a default template, run:
+テンプレートを作成するには、`wails generate template`コマンドを使用します。 デフォルトのテンプレートを生成する場合は、次のコマンドを実行してください:
 
 `wails generate template -name mytemplate`
 
-This creates the directory "mytemplate" with default files:
+これにより、デフォルトのファイルが含まれた"mytemplate"ディレクトリが作成されます:
 
 ```shell title=mytemplate/
 .
@@ -35,31 +35,31 @@ This creates the directory "mytemplate" with default files:
 `-- wails.tmpl.json
 ```
 
-### Template Overview
+### テンプレートの概要
 
-The default template consists of the following files and directories:
+デフォルトのテンプレートは、次のファイルおよびディレクトリで構成されています:
 
-| Filename / Dir  | Description                                  |
-| --------------- | -------------------------------------------- |
-| NEXTSTEPS.md    | Instructions on how to complete the template |
-| README.md       | The README published with the template       |
-| app.tmpl.go     | `app.go` template file                       |
-| frontend/       | The directory containing frontend assets     |
-| go.mod.tmpl     | `go.mod` template file                       |
-| main.tmpl.go    | `main.go` template file                      |
-| template.json   | The template metadata                        |
-| wails.tmpl.json | `wails.json` template file                   |
+| ファイル名 / ディレクトリ名 | 説明                      |
+| --------------- | ----------------------- |
+| NEXTSTEPS.md    | テンプレートを完成させる手順を記した説明    |
+| README.md       | テンプレートとともに公開されるREADME   |
+| app.tmpl.go     | `app.go`のテンプレートファイル     |
+| frontend/       | フロントエンドアセットを含むディレクトリ    |
+| go.mod.tmpl     | `go.mod`のテンプレートファイル     |
+| main.tmpl.go    | `main.go`のテンプレートファイル    |
+| template.json   | テンプレートのメタデータ            |
+| wails.tmpl.json | `wails.json`のテンプレートファイル |
 
-At this point it is advisable to follow the steps in `NEXTSTEPS.md`.
+このあとは、`NEXTSTEPS.md`に記述されている手順に従うことを推奨します。
 
-## Creating a Template from an Existing Project
+## 既存プロジェクトからのテンプレート作成
 
-It's possible to create a template from an existing frontend project by passing the path to the project when generating the template. We will now walk through how to create a Vue 3 template:
+テンプレートの生成時にプロジェクトへのパスを渡すことで、既存のフロントエンドプロジェクトから、テンプレートを作成することができます。 ここでは、Vue3テンプレートの作成方法を説明します:
 
-- Install the vue cli: `npm install -g @vue/cli`
-- Create the default project: `vue create vue3-base`
-  - Select `Default (Vue 3) ([Vue 3] babel, eslint)`
-- After the project has been generated, run:
+- Vue Cliをインストールする: `npm install -g @vue/cli`
+- デフォルトのプロジェクトを作成する: `vue create vue3-base`
+  - その際、`Default (Vue 3) ([Vue 3] babel, eslint)`を選択します
+- プロジェクトが作成されたあとに、次のコマンドを実行する:
 
 ```shell
 > wails generate template -name wails-vue3-template -frontend .\vue3-base\
@@ -71,11 +71,11 @@ Updating package-lock.json data...
 Renaming package-lock.json -> package-lock.tmpl.json...
 ```
 
-- The template may now be customised as specified in the `NEXTSTEPS.md` file
-- Once the files are ready, it can be tested by running: `wails init -n my-vue3-project -t .\wails-vue3-template\`
-- To test the new project, run: `cd my-vue3-project` then `wails build`
-- Once the project has compiled, run it: `.\build\bin\my-vue3-project.exe`
-- You should have a fully functioning Vue3 application:
+- `NEXTSTEPS.md`ファイルに記述されているように、テンプレートをカスタマイズする
+- ファイルの準備ができたら、次のコマンドを実行してテストする: `wails init -n my-vue3-project -t .\wails-vue3-template\`
+- 新しいプロジェクトの動作をテストするために、次のコマンドを実行する: `cd my-vue3-project`および`wails build`
+- プロジェクトがコンパイルされたら、実行する: `.\build\bin\my-vue3-project.exe`
+- Vue3アプリケーションが完全に動作していることを確認する
 
 ```mdx-code-block
 <div className="text--center">
@@ -86,12 +86,12 @@ Renaming package-lock.json -> package-lock.tmpl.json...
 </div>
 ```
 
-## Publishing Templates
+## テンプレートの公開
 
-Publishing a template is simply pushing the files to GitHub. The following best practice is encouraged:
+テンプレートを公開するためにすることは、ファイルをGitHubにプッシュすることだけです。 以下のベストプラクティスを実施することを推奨します:
 
-- Remove any unwanted files and directories (such as `.git`) from your frontend directory
-- Ensure that `template.json` is complete, especially `helpurl`
-- Push the files to GitHub
-- Create a PR on the [Community Templates](../community/templates.mdx) page
-- Announce the template on the [Template Announcement](https://github.com/wailsapp/wails/discussions/825) discussion board
+- 不要なファイルやディレクトリ(`.git`など)をフロントエンドディレクトリから削除する
+- `template.json`がきちんと記述されていること、とくに`helpurl`が記述されていることを確認する
+- ファイルをGitHubにプッシュする
+- [コミュニティのテンプレート](../community/templates.mdx)ページにプルリクエストを作成する
+- [Template Announcement](https://github.com/wailsapp/wails/discussions/825)のディスカッションボードでテンプレートをアナウンスする

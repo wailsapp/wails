@@ -19,13 +19,13 @@ tags:
 <br />
 ```
 
-Today marks the first beta release of Wails v2 for Mac! It's taken quite a while to get to this point and I'm hoping that today's release will give you something that's reasonably useful. There have been a number of twists and turns to get to this point and I'm hoping, with your help, to iron out the crinkles and get the Mac port polished for the final v2 release.
+Aujourd'hui marque la première version bêta de Wails v2 pour Mac! Il a fallu un certain temps pour arriver à ce point et j'espère que la version d'aujourd'hui vous donnera quelque chose de raisonnablement utile. Il y a eu un certain nombre de virages et détours pour atteindre ce point et j'espère, avec votre aide, pour aplanir les croupes et faire polir le portage sur Mac pour la version définitive de la v2.
 
-You mean this isn't ready for production? For your use case, it may well be ready, but there are still a number of known issues so keep your eye on [this project board](https://github.com/wailsapp/wails/projects/7) and if you would like to contribute, you'd be very welcome!
+Vous voulez dire que ce n'est pas prêt pour la production ? Pour votre cas d'utilisation, il peut être prêt, mais il y a encore un certain nombre de problèmes connus donc gardez votre œil sur [ce tableau de projet](https://github.com/wailsapp/wails/projects/7) et si vous souhaitez contribuer, vous serez les bienvenus !
 
-So what's new for Wails v2 for Mac vs v1? Hint: It's pretty similar to the Windows Beta :wink:
+Alors quoi de neuf pour Wails v2 pour Mac vs v1 ? Indice : C'est assez similaire à la bêta de Windows :wink:
 
-### New Features
+### Nouvelles fonctionnalités
 
 ```mdx-code-block
 <div class="text--center">
@@ -38,47 +38,47 @@ So what's new for Wails v2 for Mac vs v1? Hint: It's pretty similar to the Windo
 <br />
 ```
 
-There were a lot of requests for native menu support. Wails has finally got you covered. Application menus are now available and include support for most native menu features. This includes standard menu items, checkboxes, radio groups, submenus and separators.
+Il y avait beaucoup de demandes pour le support des menus natifs. Wails a enfin ce qu'il vous faut. Les menus des applications sont maintenant disponibles et incluent la prise en charge de la plupart des fonctions natives de menu. Cela inclut les éléments de menu standard, les cases à cocher, les groupes radio, les sous-menus et les séparateurs.
 
-There were a huge number of requests in v1 for the ability to have greater control of the window itself. I'm happy to announce that there's new runtime APIs specifically for this. It's feature-rich and supports multi-monitor configurations. There is also an improved dialogs API: Now, you can have modern, native dialogs with rich configuration to cater for all your dialog needs.
+Il y avait un grand nombre de demandes dans la v1 pour avoir un plus grand contrôle de la fenêtre elle-même. Je suis heureux d'annoncer qu'il y a de nouvelles API runtime spécifiquement pour cela. Il est riche en fonctionnalités et supporte les configurations multi-moniteurs. Il y a aussi une API de boite de dialogues améliorée : maintenant, vous pouvez avoir des boites de dialogues modernes et natives avec une configuration enrichie pour répondre à tous vos besoins.
 
-### Mac Specific Options
+### Options spécifiques à Mac
 
-In addition to the normal application options, Wails v2 for Mac also brings some Mac extras:
+En plus des options d'application normales, Wails v2 pour Mac apporte également quelques options supplémentaires pour Mac :
 
-- Make your window all funky and translucent, like all the pretty swift apps!
-- Highly customisable titlebar
-- We support the NSAppearance options for the application
-- Simple config to auto-create an "About" menu
+- Faites de votre fenêtre une fenêtre funky et transparente, comme toutes les applications assez rapides !
+- Barre de titre hautement personnalisable
+- Nous prenons en charge les options NSAppearance pour l'application
+- Configuration simple pour créer automatiquement un menu "À propos"
 
-### No requirement to bundle assets
+### Pas d'obligation de regrouper les ressources
 
-A huge pain-point of v1 was the need to condense your entire application down to single JS & CSS files. I'm happy to announce that for v2, there is no requirement to bundle assets, in any way, shape or form. Want to load a local image? Use an `<img>` tag with a local src path. Want to use a cool font? Copy it in and add the path to it in your CSS.
+Un énorme point de douleur de v1 était le besoin de condenser toute votre application en un seul fichier JS & CSS. Je suis heureux d'annoncer que, pour la v2, il n'y a pas d'obligation de regrouper des ressources, de quelque manière que ce soit. Vous voulez charger une image locale? Utilisez un tag `<img>` avec un chemin src local. Vous voulez utiliser une police de caractères cool ? Copiez-la et ajoutez le chemin d'accès dans votre CSS.
 
-> Wow, that sounds like a webserver...
+> Wow, ça ressemble à un serveur web...
 
-Yes, it works just like a webserver, except it isn't.
+Oui, il fonctionne comme un serveur web, sauf que ce n'est pas le cas.
 
-> So how do I include my assets?
+> Comment puis-je inclure mes ressources ?
 
-You just pass a single `embed.FS` that contains all your assets into your application configuration. They don't even need to be in the top directory - Wails will just work it out for you.
+Vous passez simplement un seul `embed.FS` qui contient tous vos actifs dans la configuration de votre application. Ils n'ont même pas besoin d'être dans le répertoire racine du projet - Wails s'assurera de le faire fonctionner pour vous.
 
-### New Development Experience
+### Nouvelle expérience de développement
 
-Now that assets don't need to be bundled, it's enabled a whole new development experience. The new `wails dev` command will build and run your application, but instead of using the assets in the `embed.FS`, it loads them directly from disk.
+Maintenant que les actifs n'ont pas besoin d'être regroupés, cela permet de vivre une toute nouvelle expérience de développement. La nouvelle commande `wails dev` construira et exécutera votre application, mais au lieu d'utiliser les ressources embarquées dans `embed.FS`, il les charge directement à partir du disque.
 
-It also provides the additional features:
+Il fournit également les fonctionnalités supplémentaires :
 
-- Hot reload - Any changes to frontend assets will trigger and auto reload of the application frontend
-- Auto rebuild - Any changes to your Go code will rebuild and relaunch your application
+- Rechargement à chaud - Toutes les modifications apportées aux ressources du frontend déclencheront le rechargement automatique du frontend de l'application
+- Reconstruction automatique - Toutes les modifications apportées à votre code Go déclencheront une reconstruction automatique avant de relancer votre application
 
-In addition to this, a webserver will start on port 34115. This will serve your application to any browser that connects to it. All connected web browsers will respond to system events like hot reload on asset change.
+En plus de cela, un serveur web démarrera sur le port 34115. Cela servira votre application à n'importe quel navigateur qui s'y connecte. Tous les navigateurs Web connectés recevront les événements du système tels que le rechargement chaud en cas de modification.
 
-In Go, we are used to dealing with structs in our applications. It's often useful to send structs to our frontend and use them as state in our application. In v1, this was a very manual process and a bit of a burden on the developer. I'm happy to announce that in v2, any application run in dev mode will automatically generate TypeScript models for all structs that are input or output parameters to bound methods. This enables seamless interchange of data models between the two worlds.
+Avec Go, nous sommes habitués à traiter avec des structs dans nos applications. Il est souvent utile d'envoyer des structs sur notre site et de les utiliser dans notre application. Dans la v1, c'était un processus manuel et un peu lourd pour le développeur. Je suis heureux de vous annoncer qu'en v2, toute application exécutée en mode dev générera automatiquement des modèles TypeScript pour tous les structs qui sont des paramètres d'entrée ou de sortie aux méthodes Go liées au frontend. Cela permet un échange transparent de modèles de données entre les deux mondes.
 
-In addition to this, another JS module is dynamically generated wrapping all your bound methods. This provides JSDoc for your methods, providing code completion and hinting in your IDE. It's really cool when you get data models auto-imported when hitting tab in an auto-generated module wrapping your Go code!
+En plus de cela, un autre module JS est généré dynamiquement en enveloppant toutes vos méthodes liées. Cela fournit la JSDoc pour vos méthodes, en fournissant la complétion de code et des suggestions dans votre IDE. C'est vraiment cool quand vous obtenez des modèles de données auto-importés en appuyant sur la touche tab dans un module généré automatiquement à partir de votre code Go !
 
-### Remote Templates
+### Modèles distants
 
 ```mdx-code-block
 <div class="text--center">
@@ -91,13 +91,13 @@ In addition to this, another JS module is dynamically generated wrapping all you
 <br />
 ```
 
-Getting an application up and running quickly was always a key goal for the Wails project. When we launched, we tried to cover a lot of the modern frameworks at the time: react, vue and angular. The world of frontend development is very opinionated, fast moving and hard to keep on top of! As a result, we found our base templates getting out of date pretty quickly and this caused a maintenance headache. It also meant that we didn't have cool modern templates for the latest and greatest tech stacks.
+La mise en place rapide d'une application a toujours été un objectif clé pour le projet Wails. Quand nous avons lancé le projet, nous avons essayé de couvrir beaucoup de frameworks modernes à l'époque : react, vue et angular. Le monde du développement du frontend évolue très vite et est difficile à garder à jour ! En conséquence, nous avons trouvé que nos modèles de base étaient obsolètes rapidement et cela a causé des maux de tête de maintenance. Cela signifie également que nous n'avons pas de modèles modernes et cool pour les dernières grandes technologies.
 
-With v2, I wanted to empower the community by giving you the ability to create and host templates yourselves, rather than rely on the Wails project. So now you can create projects using community supported templates! I hope this will inspire developers to create a vibrant ecosystem of project templates. I'm really quite excited about what our developer community can create!
+Avec la v2, je voulais donner à la communauté la possibilité de créer et d'héberger des modèles vous-même, plutôt que que de compter sur le projet Wails. Maintenant vous pouvez créer des projets en utilisant des modèles supportés par la communauté! J'espère que cela inspirera les développeurs à créer un écosystème de modèles de projet. Je suis vraiment très excité par ce que notre communauté de développeurs peut créer !
 
-### Native M1 Support
+### Prise en charge native de M1
 
-Thanks to the amazing support of [Mat Ryer](https://github.com/matryer/), the Wails project now supports M1 native builds:
+Grâce au support incroyable de [Mat Ryer](https://github.com/matryer/), le projet Wails prend maintenant en charge les versions natives de M1 :
 
 ```mdx-code-block
 <div class="text--center">
@@ -110,7 +110,7 @@ Thanks to the amazing support of [Mat Ryer](https://github.com/matryer/), the Wa
 <br />
 ```
 
-You can also specify `darwin/amd64` as a target too:
+Vous pouvez également spécifier `darwin/amd64` comme cible :
 
 ```mdx-code-block
 <div class="text--center">
@@ -123,7 +123,7 @@ You can also specify `darwin/amd64` as a target too:
 <br />
 ```
 
-Oh, I almost forgot.... you can also do `darwin/universal`.... :wink:
+Oh, j'ai presque oublié.... vous pouvez aussi faire `darwin/universal`.... :wink:
 
 ```mdx-code-block
 <div class="text--center">
@@ -136,9 +136,9 @@ Oh, I almost forgot.... you can also do `darwin/universal`.... :wink:
 <br />
 ```
 
-### Cross Compilation to Windows
+### Cross Compilation sur Windows
 
-Because Wails v2 for Windows is pure Go, you can target Windows builds without docker.
+Parce que Wails v2 pour Windows est pur Go, vous pouvez cibler les versions Windows sans docker.
 
 ```mdx-code-block
 <div class="text--center">
@@ -153,18 +153,18 @@ Because Wails v2 for Windows is pure Go, you can target Windows builds without d
 
 ### WKWebView Renderer
 
-V1 relied on a (now deprecated) WebView component. V2 uses the most recent WKWebKit component so expect the latest and greatest from Apple.
+V1 s'est appuyé sur un composant WebView (maintenant obsolète). V2 utilise le composant WKWebKit le plus récent, donc attendez-vous au meilleur d'Apple.
 
-### In Conclusion
+### En conclusion
 
-As I'd said in the Windows release notes, Wails v2 represents a new foundation for the project. The aim of this release is to get feedback on the new approach, and to iron out any bugs before a full release. Your input would be most welcome! Please direct any feedback to the [v2 Beta](https://github.com/wailsapp/wails/discussions/828) discussion board.
+Comme je l'ai dit dans les notes de version de Windows, Wails v2 représente une nouvelle base pour le projet. Le but de cette version est d'obtenir des commentaires sur la nouvelle approche et d'éliminer tout bug avant une version complète. Vos commentaires sont les bienvenus! Veuillez diriger tout commentaire vers le forum de discussion [v2 Bêta](https://github.com/wailsapp/wails/discussions/828) .
 
-And finally, I'd like to give a special thank you to all the [project sponsors](/credits#sponsors), including [JetBrains](https://www.jetbrains.com?from=Wails), whose support drive the project in many ways behind the scenes.
+Enfin, je voudrais remercier tout particulièrement tous les [sponsors du projet](/credits#sponsors), y compris [JetBrains](https://www.jetbrains.com?from=Wails), dont le soutien anime le projet de plusieurs manières en coulisses.
 
-I look forward to seeing what people build with Wails in this next exciting phase of the project!
+J'ai hâte de voir ce que les gens construisent avec Wails dans cette prochaine phase excitante du projet!
 
 Lea.
 
-PS: Linux users, you're next!
+PS: Les utilisateurs de Linux, vous êtes les prochains !
 
-PPS: If you or your company find Wails useful, please consider [sponsoring the project](https://github.com/sponsors/leaanthony). Thanks!
+PPS : Si vous ou votre entreprise trouvez Wails utile, veuillez envisager [de parrainer le projet](https://github.com/sponsors/leaanthony). Merci !

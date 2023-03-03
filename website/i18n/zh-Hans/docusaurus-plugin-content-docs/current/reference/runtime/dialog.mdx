@@ -2,7 +2,7 @@
 sidebar_position: 5
 ---
 
-# 对话框
+# Dialog  对话框
 
 运行时的这一部分提供对原生对话框的调用，例如文件选择器和消息框。
 
@@ -12,7 +12,7 @@ JS 运行时当前不支持对话框。
 
 :::
 
-### 打开选择目录对话框
+### OpenDirectoryDialog  打开选择目录对话框
 
 打开一个对话框，提示用户选择目录。 可以使用 [ 打开选择文件对话框参数选项](#打开选择文件对话框参数选项) 进行自定义。
 
@@ -20,7 +20,7 @@ Go: `OpenDirectoryDialog(ctx context.Context, dialogOptions OpenDialogOptions) (
 
 返回值: 所选目录（如果用户取消则为空白）或错误
 
-### 打开选择文件对话框
+### OpenFileDialog  打开选择文件对话框
 
 打开一个对话框，提示用户选择文件。 可以使用 [ 打开选择文件对话框参数选项](#打开选择文件对话框参数选项) 进行自定义。
 
@@ -28,7 +28,7 @@ Go: `OpenFileDialog(ctx context.Context, dialogOptions OpenDialogOptions) (strin
 
 返回值: 所选文件（如果用户取消则为空白）或错误
 
-### 打开选择多文件对话框
+### OpenMultipleFilesDialog  打开选择多文件对话框
 
 打开一个对话框，提示用户选择多个文件。 可以使用 [ 打开选择文件对话框参数选项](#打开选择文件对话框参数选项) 进行自定义。
 
@@ -36,7 +36,7 @@ Go: `OpenMultipleFilesDialog(ctx context.Context, dialogOptions OpenDialogOption
 
 返回值: 选定的文件（如果用户取消则为 nil）或错误
 
-### 保存文件对话框
+### SaveFileDialog  保存文件对话框
 
 打开一个对话框，提示用户选择文件名以进行保存。 可以使用 [保存文件对话框参数选项](#保存文件对话框参数选项) 自定义。
 
@@ -44,7 +44,7 @@ Go: `SaveFileDialog(ctx context.Context, dialogOptions SaveDialogOptions) (strin
 
 返回值: 所选文件（如果用户取消则为空白）或错误
 
-### 消息对话框
+### MessageDialog  消息对话框
 
 使用消息对话框显示消息。 可以使用 [消息对话框参数选项](#消息对话框参数选项) 进行自定义。
 

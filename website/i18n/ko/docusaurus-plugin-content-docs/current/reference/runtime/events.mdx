@@ -34,4 +34,4 @@ Go: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optio
 
 This method emits the given event. Optional data may be passed with the event. This will trigger any event listeners.
 
-Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/> JS: `EventsEmit(ctx context, optionalData function(optionalData?: any))`
+Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/> JS: `EventsEmit(eventName: string, ...optionalData: any)`

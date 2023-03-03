@@ -2,36 +2,36 @@
 sidebar_position: 2
 ---
 
-# Events
+# Événements
 
-The Wails runtime provides a unified events system, where events can be emitted or received by either Go or JavaScript. Optionally, data may be passed with the events. Listeners will receive the data in the local data types.
+Le runtime Wails fournit un système d'événements unifiés, où les événements peuvent être émis ou reçus par Go ou JavaScript. En option, des données peuvent être transmises avec les événements. Les écouteurs vont recevoir les données dans les types de donnée du langage correspondant.
 
 ### EventsOn
 
-This method sets up a listener for the given event name. When an event of type `eventName` is [emitted](#EventsEmit), the callback is triggered. Any additional data sent with the emitted event will be passed to the callback. It returns a function to cancel the listener.
+Cette méthode définit un listener pour le nom d'événement donné. Lorsqu'un événement de type `eventName` est [émis](#EventsEmit), la méthode définie en callback est déclenchée. Toutes les données supplémentaires envoyées avec l'événement émis seront passées en paramètre à la méthode définie en callback. Il renvoie une fonction pour annuler l'écouteur.
 
 Go: `EventsOn(ctx context.Context, eventName string, callback func(optionalData ...interface{})) func()`<br/> JS: `EventsOn(eventName string, callback function(optionalData?: any)): () => void`
 
 ### EventsOff
 
-This method unregisters the listener for the given event name, optionally multiple listeneres can be unregistered via `additionalEventNames`.
+Cette méthode désactive l'évènement correspondant au nom donné, éventuellement plusieurs évènements peuvent être désinscrits via `additionalEventNames`.
 
 Go: `EventsOff(ctx context.Context, eventName string, additionalEventNames ...string)`<br/> JS: `EventsOff(eventName string, ...additionalEventNames)`
 
 ### EventsOnce
 
-This method sets up a listener for the given event name, but will only trigger once. It returns a function to cancel the listener.
+Cette méthode définit un évènement pour le nom donné, mais ne se déclenchera qu'une seule fois. Il renvoie une fonction pour annuler l'évènement.
 
 Go: `EventsOnce(ctx context.Context, eventName string, callback func(optionalData ...interface{})) func()`<br/> JS: `EventsOnce(eventName string, callback function(optionalData?: any)): () => void`
 
 ### EventsOnMultiple
 
-This method sets up a listener for the given event name, but will only trigger a maximum of `counter` times. It returns a function to cancel the listener.
+Cette méthode définit un évènement pour le nom donné, mais ne se déclenchera au maximum qu'un certain nombre de fois, définit avec le paramètre `counter`. Il renvoie une fonction pour annuler l'écouteur.
 
 Go: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optionalData ...interface{}), counter int) func()`<br/> JS: `EventsOnMultiple(eventName string, callback function(optionalData?: any), counter int): () => void`
 
 ### EventsEmit
 
-This method emits the given event. Optional data may be passed with the event. This will trigger any event listeners.
+Cette méthode émet l'événement donné. En option, des données peuvent être transmises avec l'événement. Cela déclenchera tous les événements.
 
-Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/> JS: `EventsEmit(ctx context, optionalData function(optionalData?: any))`
+Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/> JS: `EventsEmit(eventName: string, ...optionalData: any)`

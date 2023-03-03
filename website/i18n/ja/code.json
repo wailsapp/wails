@@ -411,5 +411,13 @@
   "theme.SearchModal.placeholder": {
     "message": "ドキュメントを検索",
     "description": "The placeholder of the input of the DocSearch pop-up modal"
+  },
+  "theme.docs.sidebar.closeSidebarButtonAriaLabel": {
+    "message": "ナビゲーションバーを閉じる",
+    "description": "The ARIA label for close button of mobile sidebar"
+  },
+  "theme.docs.sidebar.toggleSidebarButtonAriaLabel": {
+    "message": "ナビゲーションバーの表示/非表示を切り替え",
+    "description": "The ARIA label for hamburger menu button of mobile navigation"
   }
 }

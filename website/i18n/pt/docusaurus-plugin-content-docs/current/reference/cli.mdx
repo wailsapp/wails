@@ -71,6 +71,7 @@ If you are unsure about a template, inspect `package.json` and `wails.json` for 
 | -windowsconsole      | Manter a janela de console para builds do Windows                                                                                                                                  |                                                                                                                                                       |
 | -obfuscate           | Ofuscar a aplicação usando [garble](https://github.com/burrowers/garble)                                                                                                           | false                                                                                                                                                 |
 | -garbleargs          | Argumentos para passar para o garble                                                                                                                                               | `-literals -tiny -seed=random`                                                                                                                        |
+| -nosyncgomod         | Do not sync go.mod with the Wails version                                                                                                                                          | false                                                                                                                                                 |
 
 Para uma descrição detalhada do sinalizador `webview2`, consulte o guia [Windows](../guides/windows.mdx).
 
@@ -80,8 +81,10 @@ Exemplo:
 
 `wails build -clean -o myproject.exe`
 
-:::Info
+:::info
+
 On Mac, the application will be bundled with `Info.plist`, not `Info.dev.plist`.
+
 :::
 
 :::info UPX no Apple Silicon
@@ -184,6 +187,9 @@ Your system is ready for Wails development!
 | -save                             | Salva o `assetdir`, `reloaddirs`,`wailsjsdir`,`debounce`,`devserver` e `frontenddevserverurl` passado, flag em `wails.json` para realizar chamadas subsequentes. |                       |
 | -race                             | Realiza build com o Go race detector                                                                                                                             | false                 |
 | -s                                | Pular build do frontend                                                                                                                                          | false                 |
+| -nosyncgomod                      | Do not sync go.mod with the Wails version                                                                                                                        | false                 |
+
+
 
 Exemplo:
 

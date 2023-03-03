@@ -4,9 +4,9 @@ Il n'y a pas de règles gravées dans le marbre pour le développement d'applica
 
 ## Configuration de l'application
 
-The pattern used by the default templates are that `main.go` is used for configuring and running the application, whilst `app.go` is used for defining the application logic.
+Le modèle utilisé par défaut défini que `main.go` est utilisé pour configurer et démarrer l'application, tandis que `app.go` est utilisé pour définir la logique de l'application.
 
-The `app.go` file will define a struct that has 2 methods which act as hooks into the main application:
+Le fichier `app.go` va définir une structure qui a 2 méthodes qui agissent comme crochets dans l'application principale:
 
 ```go title="app.go"
 type App struct {
@@ -25,11 +25,11 @@ func (a *App) shutdown(ctx context.Context) {
 }
 ```
 
-- The startup method is called as soon as Wails allocates the resources it needs and is a good place for creating resources, setting up event listeners and anything else the application needs at startup. It is given a `context.Context` which is usually saved in a struct field. This context is needed for calling the [runtime](../reference/runtime/intro.mdx). If this method returns an error, the application will terminate. In dev mode, the error will be output to the console.
+- La méthode startup est appelée d-s que Wails a donné les ressources nécessaires et qu'il est dans un bon état pour créer les ressources, mettre en place les event listeners et tout ce dont l'application peut avoir besoin pour démarrer. Il est donné un `context.Context` qui est généralement sauvegardé dans un champ struct. Ce contexte est nécessaire pour appeler le [runtime](../reference/runtime/intro.mdx). Si cette méthode renvoie une erreur, l'application se fermera. En mode développement, l'erreur sera affichée dans la console.
 
-- The shutdown method will be called by Wails right at the end of the shutdown process. This is a good place to deallocate memory and perform any shutdown tasks.
+- La méthode d'arrêt sera appelée par Wails à la fin du processus d'arrêt. C'est un bon endroit pour vider la mémoire et effectuer toutes les tâches d'arrêt.
 
-The `main.go` file generally consists of a single call to `wails.Run()`, which accepts the application configuration. The pattern used by the templates is that before the call to `wails.Run()`, an instance of the struct we defined in `app.go` is created and saved in a variable called `app`. This configuration is where we add our callbacks:
+Le fichier `main.go` consiste généralement en un seul appel à `wails.Run()`, qui accepte la configuration de l'application. Le modèle utilisé par les templates fait qu'avant l'appel à `wails.Run()`, une instance du struct que l'on a définie dans `app.go` est créée et instanciée dans une variable appelée `app`. Cette configuration est l'endroit où nous ajoutons nos callbacks :
 
 ```go {3,9,10} title="main.go"
 func main() {
@@ -50,11 +50,11 @@ func main() {
 
 ```
 
-More information on application lifecycle hooks can be found [here](../howdoesitwork.mdx#application-lifecycle-callbacks).
+Plus d'informations sur les crochets du cycle de vie des applications peuvent être trouvées [ici](../howdoesitwork.mdx#application-lifecycle-callbacks).
 
-## Binding Methods
+## Méthodes de liaison
 
-It is likely that you will want to call Go methods from the frontend. This is normally done by adding public methods to the already defined struct in `app.go`:
+Il est probable que vous vouliez appeler les méthodes Go depuis le frontend. Cela se fait normalement en ajoutant des méthodes publiques à le struct déjà défini dans `app.go`:
 
 ```go {16-18} title="app.go"
 type App struct {
@@ -77,7 +77,7 @@ func (a *App) Greet(name string) string {
 }
 ```
 
-In the main application configuration, the `Bind` key is where we can tell Wails what we want to bind:
+Dans la configuration principale de l'application, le paramètre `Bind` est l'endroit où nous pouvons dire à Wails ce que nous voulons lier :
 
 ```go {11-13} title="main.go"
 func main() {
@@ -101,11 +101,11 @@ func main() {
 
 ```
 
-This will bind all public methods in our `App` struct (it will never bind the startup and shutdown methods).
+Cela liera toutes les méthodes publiques de notre structure `App` (cela ne liera jamais les méthodes de démarrage et d'arrêt du système).
 
-### Dealing with context when binding multiple structs
+### Traiter avec le contexte lors de la liaison de plusieurs structures
 
-If you want to bind methods for multiple structs but want each struct to keep a reference to the context so that you can use the runtime functions, a good pattern is to pass the context from the `OnStartup` method to your struct instances :
+Si vous voulez lier des méthodes pour des structures multiples, mais que vous voulez que chaque struct conserve une référence au contexte pour que vous puissiez utiliser les fonctions d'exécution... Un bon choix est de passer le contexte de la méthode `OnStartup` à vos instances struct :
 
 ```go
 func main() {
@@ -133,11 +133,11 @@ func main() {
 }
 ```
 
-More information on Binding can be found [here](../howdoesitwork.mdx#method-binding).
+Plus d'informations à sur Binding peuvent être trouvées [ici](../howdoesitwork.mdx#method-binding).
 
-## Application Menu
+## Menu de l’application
 
-Wails supports adding a menu to your application. This is done by passing a [Menu](../reference/menus.mdx#menu) struct to application config. It's common to use a method that returns a Menu, and even more common for that to be a method on the `App` struct used for the lifecycle hooks.
+Wails prend en charge l'ajout d'un menu à votre application. Ceci est fait en passant un [Menu](../reference/menus.mdx#menu) structuré à la configuration de l'application. Il est courant d'utiliser une méthode qui renvoie un Menu, et encore plus courant pour que cela soit une méthode sur la struct de l'`app` qui soit utilisée pour les hooks du cycle de vie.
 
 ```go {11} title="main.go"
 func main() {
@@ -162,33 +162,33 @@ func main() {
 
 ```
 
-## Assets
+## Ressources
 
-The great thing about the way Wails v2 handles assets is that it doesn't! The only thing you need to give Wails is an `embed.FS`. How you get to that is entirely up to you. You can use vanilla html/css/js files like the vanilla template. You could have some complicated build system, it doesn't matter.
+La grande chose à propos de la façon dont Wails v2 gère les ressources pour le frontend, est que ce n'est pas le cas! La seule chose que vous devez donner à Wails est un `embed.FS`. C'est à vous de décider comment vous y arrivez. Vous pouvez utiliser les fichiers html/css/js vanilla comme dans le modèle vanilla. Vous pourriez avoir un système de compilation compliqué, peu importe.
 
-When `wails build` is run, it will check the `wails.json` project file at the project root. There are 2 keys in the project file that are read:
+Quand la commande `wails dev` est exécutée, elle vérifiera le fichier de projet `wails.json` à la racine du projet. Il y a 2 clés dans le fichier du projet qui sont lues :
 
 - "frontend:install"
 - "frontend:build"
 
-The first, if given, will be executed in the `frontend` directory to install the node modules. The second, if given, will be executed in the `frontend` directory to build the frontend project.
+Le premier, si fourni, sera exécuté dans le répertoire `frontend` pour installer les modules. Le second, si fourni, sera exécuté dans le répertoire `frontend` pour construire le projet frontend.
 
-If these 2 keys aren't given, then Wails does absolutely nothing with the frontend. It is only expecting that `embed.FS`.
+Si ces 2 clés ne sont pas fournies, alors Wails ne fait absolument rien avec le frontend. Il n'attend que `embed.FS`.
 
 ### AssetsHandler
 
-A Wails v2 app can optionally define a `http.Handler` in the `options.App`, which allows hooking into the AssetServer to create files on the fly or process POST/PUT requests. GET requests are always first handled by the `assets` FS. If the FS doesn't find the requested file the request will be forwarded to the `http.Handler` for serving. Any requests other than GET will be directly processed by the `AssetsHandler` if specified. It's also possible to only use the `AssetsHandler` by specifiy `nil` as the `Assets` option.
+Une application Wails v2 peut éventuellement définir un `http.Handler` dans `options.app`, qui permet de se connecter à l'AssetServer pour créer des fichiers à la volée ou traiter les requêtes POST/PUT. Les requêtes GET sont toujours traitées d'abord par le `assets` FS. Si le FS ne trouve pas le fichier demandé, la requête sera transmise au `http.Handler`. Toute requête autre que GET sera traitée directement par le `AssetsHandler` si spécifié. Il est également possible d'utiliser le `AssetsHandler` uniquement en spécifiant `nil` dans l'option `Assets`.
 
-## Built in Dev Server
+## Serveur de développement embarqué
 
-Running `wails dev` will start the built in dev server which will start a file watcher in your project directory. By default, if any file changes, wails checks if it was an application file (default: `.go`, configurable with `-e` flag). If it was, then it will rebuild your application and relaunch it. If the changed file was in the assets, it will issue a reload after a short amount of time.
+Exécuter `wails dev` démarrera le serveur de développement intégré qui démarrera un observateur de fichiers dans votre répertoire de projet. Par par défaut, si un fichier change, wails vérifie s'il s'agit d'un fichier d'application (par défaut: `.go`, configurable avec l'option `-e`). Si c'est le cas, il reconstruira votre application et la relancera. Si le fichier modifié se trouvait dans les actifs, il lancera un rechargement après un court laps de temps.
 
-The dev server uses a technique called "debouncing" which means it doesn't reload straight away, as there may be multiple files changed in a short amount of time. When a trigger occurs, it waits for a set amount of time before issuing a reload. If another trigger happens, it resets to the wait time again. By default this value is `100ms`. If this value doesn't work for your project, it can be configured using the `-debounce` flag. If used, this value will be saved to your project config and become the default.
+Le serveur de développement utilise une technique appelée "debouncing", ce qui signifie qu'il ne se recharge pas tout de suite, comme il peut y avoir plusieurs fichiers modifiés en un court laps de temps. Lorsqu'un déclencheur se produit, il attend un temps défini avant d'émettre un rechargement. Si un autre déclencheur se produit, le temps d'attente se réinitialise avant un prochain rechargement. Par défaut, cette période est définie à `100ms`. Si cette valeur ne fonctionne pas pour votre projet, elle peut être configurée en utilisant l'option `-debounce`. Si elle est utilisée, cette valeur sera enregistrée dans la configuration de votre projet et deviendra la valeur par défaut.
 
-## External Dev Server
+## Serveur de développement externe
 
-Some frameworks come with their own live-reloading server, however they will not be able to take advantage of the Wails Go bindings. In this scenario, it is best to run a watcher script that rebuilds the project into the build directory, which Wails will be watching. For an example, see the default svelte template that uses [rollup](https://rollupjs.org/guide/en/). For [create-react-app](https://create-react-app.dev/), it's possible to use [this script](https://gist.github.com/int128/e0cdec598c5b3db728ff35758abdbafd) to achieve a similar result.
+Certains frameworks sont fournis avec leur propre serveur de rechargement en direct, cependant ils ne seront pas en mesure de tirer parti des liaisons Wails Go. Dans ce scénario, il est préférable d'exécuter un script qui va surveiller le projet dans dossier build, dossier que Wails surveille aussi. Pour un exemple, voir le modèle svelte par défaut qui utilise [rollup](https://rollupjs.org/guide/en/). Pour [create-react-app](https://create-react-app.dev/), il est possible d'utiliser [ce script](https://gist.github.com/int128/e0cdec598c5b3db728ff35758abdbafd) pour obtenir un résultat similaire.
 
-## Go Module
+## Module Go
 
-The default Wails templates generate a `go.mod` file that contains the module name "changeme". You should change this to something more appropriate after project generation.
+Les modèles Wails par défaut génèrent un fichier `go.mod` qui contient le nom de module "changeme". Vous devriez changer ceci pour quelque chose de plus approprié après la génération du projet.

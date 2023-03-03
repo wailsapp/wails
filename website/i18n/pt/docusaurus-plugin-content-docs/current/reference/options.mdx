@@ -50,6 +50,7 @@ func main() {
         OnBeforeClose:      app.beforeClose,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        EnableFraudulentWebsiteDetection: false,
         ZoomFactor:           1.0,
         IsZoomControlEnabled: false,
         Bind: []interface{}{
@@ -77,7 +78,8 @@ func main() {
             // OnSuspend is called when Windows enters low power mode
             OnSuspend func()
             // OnResume is called when Windows resumes from low power mode
-            OnResume func()
+            OnResume func(),
+            WebviewGpuDisabled: false,
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -100,6 +102,7 @@ func main() {
         Linux: &linux.Options{
             Icon: icon,
             WindowIsTranslucent: false,
+            WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
         },
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
@@ -232,11 +235,11 @@ Not all features of an `http.Request` are currently supported, please see the fo
 | DELETE                  | ✅   | ✅   | ✅ [^1] |
 | Request Headers         | ✅   | ✅   | ✅ [^1] |
 | Request Body            | ✅   | ✅   | ❌      |
-| Request Body Streaming  | ❌   | ❌   | ❌      |
+| Request Body Streaming  | ✅   | ✅   | ❌      |
 | Response StatusCodes    | ✅   | ✅   | ✅ [^1] |
 | Response Headers        | ✅   | ✅   | ✅ [^1] |
 | Response Body           | ✅   | ✅   | ✅      |
-| Response Body Streaming | ❌   | ❌   | ✅      |
+| Response Body Streaming | ❌   | ✅   | ✅      |
 | WebSockets              | ❌   | ❌   | ❌      |
 | HTTP Redirects 30x      | ✅   | ❌   | ❌      |
 
@@ -355,6 +358,12 @@ Name: CSSDragProperty<br/> Type: `string`
 Indicates what value the `CSSDragProperty` style should have to drag the window. Default: `drag`.
 
 Name: CSSDragValue<br/> Type: `string`
+
+### EnableFraudulentWebsiteDetection
+
+EnableFraudulentWebsiteDetection enables scan services for fraudulent content, such as malware or phishing attempts. These services might send information from your app like URLs navigated to and possibly other content to cloud services of Apple and Microsoft.
+
+Name: EnableFraudulentWebsiteDetection<br/> Type: `bool`
 
 ### ZoomFactor
 
@@ -542,6 +551,12 @@ If set, this function will be called when Windows resumes from low power mode (s
 
 Name: OnResume<br/> Type: `func()`
 
+#### WebviewGpuIsDisabled
+
+Setting this to `true` will disable GPU hardware acceleration for the webview.
+
+Name: WebviewGpuIsDisabled<br/> Type: `bool`
+
 ### Mac
 
 This defines [Mac specific options](#mac).
@@ -721,6 +736,20 @@ The icon should be provided in whatever size it was naturally drawn; that is, do
 Setting this to `true` will make the window background translucent. Some window managers may ignore it, or result in a black window.
 
 Name: WindowIsTranslucent<br/> Type: `bool`
+
+#### WebviewGpuPolicy
+
+This option is used for determining the webview's hardware acceleration policy.
+
+Name: WebviewGpuPolicy<br/> Type: [`options.WebviewGpuPolicy`](#webviewgpupolicy-type)<br/> Default: `WebviewGpuPolicyAlways`
+
+##### WebviewGpuPolicy type
+
+| Value                    | Description                                                          |
+| ------------------------ | -------------------------------------------------------------------- |
+| WebviewGpuPolicyAlways   | Hardware acceleration is always enabled                              |
+| WebviewGpuPolicyOnDemand | Hardware acceleration is enabled/disabled as request by web contents |
+| WebviewGpuPolicyNever    | Hardware acceleration is always disabled                             |
 
 ### Debug
 

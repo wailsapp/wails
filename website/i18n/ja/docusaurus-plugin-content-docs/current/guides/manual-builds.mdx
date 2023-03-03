@@ -1,95 +1,95 @@
-# Manual Builds
+# 手動ビルド
 
-The Wails CLI does a lot of heavy lifting for the project, but sometimes it's desirable to manually build your project. This document will discuss the different operations the CLI does and how this may be achieved in different ways.
+Wails CLIは、プロジェクトに関する様々な面倒な作業を担ってくれていますが、ときにはプロジェクトを手動でビルドできたほうが望ましい場合もあるでしょう。 このドキュメントでは、CLIが実行する多くの操作や、これらの操作を別の手段で実現するための方法について説明します。
 
-## Build Process
+## ビルドプロセス
 
-When either `wails build` or `wails dev` are used, the Wails CLI performs a common build process:
+Wails CLIは、`wails build`コマンドまたは`wails dev`コマンドが使用されると、共通のビルドプロセスを実行します:
 
-    - Install frontend dependencies
-    - Build frontend project
-    - Generate build assets
-    - Compile application
-    - [optional] Compress application
+    - フロントエンド依存関係のインストール
+    - フロントエンドのビルド
+    - ビルドアセットの生成
+    - アプリケーションのコンパイル
+    - [任意] アプリケーションの圧縮
 
-### Install frontend dependencies
+### フロントエンド依存関係のインストール
 
-#### CLI Steps
+#### CLIが実行する手順
 
-- If the `-s` flag is given, this step is skipped
-- Checks `wails.json` to see if there is an install command in the key `frontend:install`
-- If there isn't, it skips this step
-- If there is, it checks if `package.json` exists in the frontend directory. If it doesn't exist, it skips this step
-- An MD5 sum is generated from the `package.json` file contents
-- It checks for the existence of `package.json.md5` and if it exists, will compare the contents of it (an MD5 sum) with the one generated to see if the contents have changed. If they are the same, this step is skipped
-- If `package.json.md5` does not exist, it creates it using the generated MD5 sum
-- If a build is now required, or `node_modules` does not exist, or the `-f` flag is given, the install command is executed in the frontend directory
+- `-s`フラグが指定された場合、この手順をスキップします。
+- `wails.json`ファイル内で、`frontend:install`キーにインストールコマンドが記述されているかを確認します。
+- 記述されていない場合、この手順をスキップします。
+- 記述されている場合、フロントエンドディレクトリ内に`package.json`ファイルが存在するか確認します。 存在しない場合、この手順をスキップします。
+- `package.json`ファイルの内容をもとに、MD5チェックサムを生成します。
+- `package.json.md5`ファイルが存在するか確認し、存在する場合は、さきほど生成したMD5チェックサムと比較して、内容が変更されていないかどうかを確認します。 内容が同じ場合、この手順をスキップします。
+- `package.json.md5`ファイルが存在しない場合、ファイルを作成し、さきほど生成したMD5チェックサムを書き込みます。
+- この時点でビルドが必要と判断された場合、`node_modules`ディレクトリが存在しない場合、または`-f`フラグが指定された場合は、フロントエンドディレクトリ内でインストールコマンドを実行します。
 
-#### Manual Steps
+#### 手動で実行する手順
 
-This step could be done from the command line or a script with `npm install`.
+コマンドライン、または`npm install`のスクリプトを用いて、この手順を実行してください。
 
-### Build frontend project
+### フロントエンドのビルド
 
-#### Wails CLI
+#### Wails CLIでの手順
 
-- If the `-s` flag is given, this step is skipped
-- Checks `wails.json` to see if there is a build command in the key `frontend:build`
-- If there isn't, it skips this step
-- If there is, it is executed in the frontend directory
+- `-s`フラグが指定された場合、この手順をスキップします。
+- `wails.json`ファイル内で、`frontend:build`キーにビルドコマンドが記述されているかを確認します。
+- 記述されていない場合、この手順をスキップします。
+- 記述されている場合、フロントエンドディレクトリ内でコマンドが実行されます。
 
-#### Manual Steps
+#### 手動で実行する手順
 
-This step could be done from the command line or a script with `npm run build` or whatever the frontend build script is.
+コマンドライン、`npm run build`のスクリプト、またはフロントエンドのビルドスクリプトを用いて、この手順を実行してください。
 
-### Generate assets
+### アセットの生成
 
-#### Wails CLI
+#### Wails CLIでの手順
 
-- If `-nopackage` flag is set, this stage is skipped
-- If the `build/appicon.png` file does not exist, a default one is created
-- For Windows, see [Bundling for Windows](#windows)
-- If `build/windows/icon.ico` does not exist, it will create it from the `build/appicon.png` image.
+- `-nopackage`フラグが指定された場合、この手順をスキップします。
+- `build/appicon.png`ファイルが存在しない場合、デフォルトのファイルを作成します。
+- Windowsの場合、[Windowsバンドル](#windows)の節を参照してください。
+- `build/windows/icon.ico`ファイルが存在しない場合、`build/appicon.png`画像ファイルから新規作成します。
 
 ##### Windows
 
-- If `build/windows/icon.ico` does not exist, it will create it from `build/appicon.png` using icon sizes of 256, 128, 64, 48, 32 and 16. This is done using [winicon](https://github.com/leaanthony/winicon).
-- If the `build/windows/<projectname>.manifest` file does not exist, it creates it from a default version.
-- Compiles the application as a production build (above)
-- Uses [winres](https://github.com/tc-hib/winres) to bundle the icon and manifest into a `.syso` file ready for linking.
+- `build/windows/icon.ico`ファイルが存在しない場合、`build/appicon.png`ファイルをもとに、256、128、64、48、32、16サイズのアイコンを新規作成します。 この処理は[winicon](https://github.com/leaanthony/winicon)によって実現しています。
+- `build/windows/<projectname>.manifest`ファイルが存在しない場合、デフォルトバージョンから新規作成します。
+- アプリケーションを本番ビルドとしてコンパイルします(上記のとおり)。
+- [winres](https://github.com/tc-hib/winres)を使用して、アイコンとマニフェストをリンクできる`.syso`ファイルにバンドルします。
 
-#### Manual Steps
+#### 手動で実行する手順
 
-- Create `icon.ico` using the [winicon](https://github.com/leaanthony/winicon) CLI tool (or any other tool).
-- Create / Update a `.manifest` file for your application
-- Use the [winres CLI](https://github.com/tc-hib/go-winres) to generate a `.syso` file.
+- [winicon](https://github.com/leaanthony/winicon)のCLIツール(または他の任意ツール)を使用して、`icon.ico`を作成します。
+- アプリケーションの`.manifest`ファイルを作成または更新します。
+- [winres CLI](https://github.com/tc-hib/go-winres)を使用して、`.syso`ファイルを生成します。
 
-### Compile application
+### アプリケーションのコンパイル
 
-#### Wails CLI
+#### Wails CLIでの手順
 
-- If the `-clean` flag is provided, the `build` directory is deleted and recreated
-- For `wails dev`, the following default Go flags are used: `-tags dev -gcflags "all=-N -l"`
-- For `wails build`, the following default Go flags are used: `-tags desktop,production -ldflags "-w -s"`
-  - On Windows, `-ldflags "-w -h -H windowsgui"`
-- Additional tags passed to the CLI using `-tags` are added to the defaults
-- Additional ldflags passed to the CLI using `-ldflags` are added to the defaults
-- The `-o` flag is passed through
-- The Go compiler specified by `-compiler` will be used for compilation
+- `-clean`フラグが指定された場合、`build`ディレクトリを削除して再作成します。
+- `wails dev`コマンドの場合、デフォルトで次のGoフラグを使用するようにします: `-tags dev -gcflags "all=-N -l"`
+- `wails build`コマンドの場合、デフォルトで次のGoフラグを使用するようにします: `-tags desktop,production -ldflags "-w -s"`
+  - Windowsの場合: `-ldflags "-w -h -H windowsgui"`
+- `-tags`フラグを使用してCLIに指定された追加タグを、デフォルトのタグに追記します。
+- `-ldflags`フラグを使用してCLIに指定された追加のldflagsを、デフォルトのタグに追記します。
+- `-o`フラグのパラメータをパススルーさせます。
+- `-compiler`フラグで指定されたGoコンパイラを、コンパイル時に使用するようにします。
 
-#### Manual steps
+#### 手動で実行する手順
 
-- For dev build, the minimum command would be: `go build -tags dev -gcflags "all=-N -l"`
-- For production build, the minimum command would be: `go build -tags desktop,production -ldflags "-w -s -H windowsgui"`
-- Ensure that you compile in the same directory as the `.syso` file
+- 開発ビルドの場合、最小のコマンドは次のとおりです: `go build -tags dev -gcflags "all=-N -l"`
+- 本番ビルドの場合、最小のコマンドは次のとおりです: `go build -tags desktop,production -ldflags "-w -s -H windowsgui"`
+- `.syso`ファイルと同じディレクトリでコンパイルするようにしてください。
 
-### Compress application
+### アプリケーションの圧縮
 
-#### Wails CLI
+#### Wails CLIでの手順
 
-- If the `-upx` flag has been given, the `upx` program will be run to compress the application with the default settings
-- If `-upxflags` is also passed, these flags are used instead of the default ones
+- `-upx`フラグが指定された場合、アプリケーションを圧縮するために、`upx`プログラムをデフォルト設定で実行します。
+- `-upxflags`フラグも指定された場合、デフォルト設定の代わりにこれらのフラグを使用します。
 
-#### Manual steps
+#### 手動で実行する手順
 
-- Run `upx [flags]` manually to compress the application.
+- `upx [flags]`を手動で実行して、アプリケーションを圧縮します。
