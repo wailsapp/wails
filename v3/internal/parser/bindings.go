@@ -2,6 +2,8 @@ package parser
 
 import (
 	"strings"
+
+	"github.com/samber/lo"
 )
 
 const helperTemplate = `function {{structName}}(method) {
@@ -11,7 +13,8 @@ const helperTemplate = `function {{structName}}(method) {
         methodName: method,
         args: Array.prototype.slice.call(arguments, 1),
     };
-}`
+}
+`
 
 func GenerateHelper(packageName, structName string) string {
 	result := strings.ReplaceAll(helperTemplate, "{{packageName}}", packageName)
@@ -20,45 +23,109 @@ func GenerateHelper(packageName, structName string) string {
 }
 
 const bindingTemplate = `
-
 /**
  * {{structName}}.{{methodName}}
  * Comments
  * @param name {string}
  * @returns {Promise<string>}
- */
-function {{methodName}}({{args}}) {
-    return wails.Call({{structName}}("{{methodName}}", {{args}}));
+ **/
+function {{methodName}}({{inputs}}) {
+    return wails.Call({{structName}}("{{methodName}}"{{args}}));
 }
 `
 
-func GenerateBinding(structName string, method *BoundMethod) string {
+func sanitiseJSVarName(name string) string {
+	// if the name is a reserved word, prefix with an
+	// underscore
+	if strings.Contains("break,case,catch,class,const,continue,debugger,default,delete,do,else,enum,export,extends,false,finally,for,function,if,implements,import,in,instanceof,interface,let,new,null,package,private,protected,public,return,static,super,switch,this,throw,true,try,typeof,var,void,while,with,yield", name) {
+		return "_" + name
+	}
+	return name
+}
+
+func GenerateBinding(structName string, method *BoundMethod) (string, []string) {
+	var models []string
 	result := strings.ReplaceAll(bindingTemplate, "{{structName}}", structName)
 	result = strings.ReplaceAll(result, "{{methodName}}", method.Name)
-	result = strings.ReplaceAll(result, "Comments", strings.TrimSpace(method.DocComment))
+	comments := strings.TrimSpace(method.DocComment)
+	result = strings.ReplaceAll(result, "Comments", comments)
 	var params string
 	for _, input := range method.Inputs {
-		params += " * @param " + input.Name + " {" + input.JSType() + "}\n"
+		pkgName := getPackageName(input)
+		if pkgName != "" {
+			models = append(models, pkgName)
+		}
+		params += " * @param " + sanitiseJSVarName(input.Name) + " {" + input.JSType() + "}\n"
 	}
 	params = strings.TrimSuffix(params, "\n")
-	result = strings.ReplaceAll(result, " * @param name {string}", params)
-	var args string
-	for _, input := range method.Inputs {
-		args += input.Name + ", "
+	if len(params) == 0 {
+		params = " *"
 	}
-	args = strings.TrimSuffix(args, ", ")
+	////params += "\n"
+	result = strings.ReplaceAll(result, " * @param name {string}", params)
+	var inputs string
+	for _, input := range method.Inputs {
+		pkgName := getPackageName(input)
+		if pkgName != "" {
+			models = append(models, pkgName)
+		}
+		inputs += sanitiseJSVarName(input.Name) + ", "
+	}
+	inputs = strings.TrimSuffix(inputs, ", ")
+	args := inputs
+	if len(args) > 0 {
+		args = ", " + args
+	}
+	result = strings.ReplaceAll(result, "{{inputs}}", inputs)
 	result = strings.ReplaceAll(result, "{{args}}", args)
+
+	// outputs
+	var returns string
+	if len(method.Outputs) == 0 {
+		returns = " * @returns {Promise<void>}"
+	} else {
+		returns = " * @returns {Promise<"
+		for _, output := range method.Outputs {
+			pkgName := getPackageName(output)
+			if pkgName != "" {
+				models = append(models, pkgName)
+			}
+			jsType := output.JSType()
+			if jsType == "error" {
+				jsType = "void"
+			}
+			returns += jsType + ", "
+		}
+		returns = strings.TrimSuffix(returns, ", ")
+		returns += ">}"
+	}
+	result = strings.ReplaceAll(result, " * @returns {Promise<string>}", returns)
+
+	return result, lo.Uniq(models)
+}
+
+func getPackageName(input *Parameter) string {
+	if !input.Type.IsStruct {
+		return ""
+	}
+	result := input.Type.Package
+	if result == "" {
+		result = "main"
+	}
 	return result
 }
 
 func GenerateBindings(bindings map[string]map[string][]*BoundMethod) string {
 
 	var result string
+	var allModels []string
 	for packageName, packageBindings := range bindings {
 		for structName, bindings := range packageBindings {
 			result += GenerateHelper(packageName, structName)
 			for _, binding := range bindings {
-				result += GenerateBinding(structName, binding)
+				thisBinding, models := GenerateBinding(structName, binding)
+				result += thisBinding
+				allModels = append(allModels, models...)
 			}
 		}
 	}
@@ -76,5 +143,10 @@ window.go = window.go || {};
 		}
 		result += "};\n"
 	}
+
+	// add imports
+	imports := "import {" + strings.Join(lo.Uniq(allModels), ", ") + "} from './models';\n"
+	result = imports + "\n" + result
+
 	return result
 }

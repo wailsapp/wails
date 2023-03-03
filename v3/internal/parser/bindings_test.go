@@ -1,66 +1,46 @@
 package parser
 
 import (
-	"github.com/google/go-cmp/cmp"
+	"os"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
-const expectedGreetService = `function GreetService(method) {
-    return {
-        packageName: "main",
-        serviceName: "GreetService",
-        methodName: method,
-        args: Array.prototype.slice.call(arguments, 1),
-    };
-}
+func TestGenerateBindings(t *testing.T) {
 
-/**
- * GreetService.Greet
- * Greet someone
- * @param name {string}
- * @returns {Promise<string>}
- */
-function Greet(name) {
-    return wails.Call(GreetService("Greet", name));
-}
-
-window.go = window.go || {};
-Object.window.go.main = {
-    GreetService: {
-        Greet,
-    }
-};
-`
-
-func TestGenerateGreetService(t *testing.T) {
-	parsedMethods := map[string]map[string][]*BoundMethod{
-		"main": {
-			"GreetService": {
-				{
-					Name:       "Greet",
-					DocComment: "Greet someone\n",
-					Inputs: []*Parameter{
-						{
-							Name: "name",
-							Type: &ParameterType{
-								Name: "string",
-							},
-						},
-					},
-					Outputs: []*Parameter{
-						{
-							Name: "",
-							Type: &ParameterType{
-								Name: "string",
-							},
-						},
-					},
-				},
-			},
-		},
+	tests := []string{
+		"struct_literal_single",
 	}
-	got := GenerateBindings(parsedMethods)
-	if diff := cmp.Diff(expectedGreetService, got); diff != "" {
-		t.Fatalf("GenerateService() mismatch (-want +got):\n%s", diff)
+	for _, projectDir := range tests {
+		t.Run(projectDir, func(t *testing.T) {
+			projectDir = "testdata/" + projectDir
+			// Run parser on directory
+			project, err := ParseProject(projectDir)
+			if err != nil {
+				t.Errorf("ParseProject() error = %v", err)
+				return
+			}
+
+			// Generate Bindings
+			got := GenerateBindings(project.BoundMethods)
+			// Write file to project directory
+			err = os.WriteFile(projectDir+"/bindings.got.js", []byte(got), 0644)
+			if err != nil {
+				t.Errorf("os.WriteFile() error = %v", err)
+				return
+			}
+			// Load bindings.js from project directory
+			expected, err := os.ReadFile(projectDir + "/bindings.js")
+			if err != nil {
+				t.Errorf("os.ReadFile() error = %v", err)
+				return
+			}
+
+			// Compare
+			if diff := cmp.Diff(string(expected), got); diff != "" {
+				t.Fatalf("GenerateService() mismatch (-want +got):\n%s", diff)
+			}
+		})
 	}
 }

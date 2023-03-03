@@ -42,7 +42,7 @@ func (p *Parameter) JSType() string {
 	// Convert type to javascript equivalent type
 	var typeName string
 	switch p.Type.Name {
-	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr":
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
 		typeName = "number"
 	case "string":
 		typeName = "string"
