@@ -14,8 +14,8 @@ func TestMergeDefaultsWH(t *testing.T) {
 		{
 			name:       "No width and height",
 			appoptions: &App{},
-			wantWidth:  Default.Width,
-			wantHeight: Default.Height,
+			wantWidth:  1024,
+			wantHeight: 768,
 		},
 		{
 			name: "Basic width and height",
