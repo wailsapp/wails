@@ -4,16 +4,20 @@ go 1.18
 
 require (
 	github.com/Masterminds/semver v1.5.0
+	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
+	github.com/bep/debounce v1.2.1
+	github.com/bitfield/script v0.19.0
+	github.com/charmbracelet/glamour v0.5.0
 	github.com/flytam/filenamify v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/go-git/go-billy/v5 v5.2.0 // indirect
 	github.com/go-git/go-git/v5 v5.3.0
+	github.com/go-ole/go-ole v1.2.6
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/uuid v1.1.2
-	github.com/imdario/mergo v0.3.12
 	github.com/jackmordaunt/icns v1.0.0
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e
 	github.com/labstack/echo/v4 v4.9.0
+	github.com/labstack/gommon v0.3.1
 	github.com/leaanthony/clir v1.3.0
 	github.com/leaanthony/debme v1.2.1
 	github.com/leaanthony/go-ansi-parser v1.0.1
@@ -23,6 +27,10 @@ require (
 	github.com/matryer/is v1.4.0
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2
 	github.com/pkg/errors v0.9.1
+	github.com/pterm/pterm v0.12.49
+	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
+	github.com/samber/lo v1.27.1
+	github.com/stretchr/testify v1.8.0
 	github.com/tc-hib/winres v0.1.5
 	github.com/tidwall/sjson v1.1.7
 	github.com/tkrajina/go-reflector v0.5.5
@@ -31,19 +39,6 @@ require (
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
-)
-
-require (
-	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
-	github.com/bep/debounce v1.2.1
-	github.com/bitfield/script v0.19.0
-	github.com/charmbracelet/glamour v0.5.0
-	github.com/go-ole/go-ole v1.2.6
-	github.com/labstack/gommon v0.3.1
-	github.com/pterm/pterm v0.12.49
-	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
-	github.com/samber/lo v1.27.1
-	github.com/stretchr/testify v1.8.0
 	golang.org/x/tools v0.1.12
 )
 
@@ -59,8 +54,10 @@ require (
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
+	github.com/go-git/go-billy/v5 v5.2.0 // indirect
 	github.com/gookit/color v1.5.2 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
+	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
