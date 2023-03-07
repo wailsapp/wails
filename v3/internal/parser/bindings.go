@@ -153,70 +153,66 @@ func normalisePackageNames(packageNames []string) map[string]string {
 	return result
 }
 
-func GenerateBindings(bindings map[string]map[string][]*BoundMethod) string {
+func GenerateBindings(bindings map[string]map[string][]*BoundMethod) map[string]string {
 
-	var result string
-	var allModels []string
+	var result = make(map[string]string)
+
 	var normalisedPackageNames = normalisePackageNames(lo.Keys(bindings))
 	// sort the bindings keys
 	packageNames := lo.Keys(bindings)
 	sort.Strings(packageNames)
 	for _, packageName := range packageNames {
+		var allModels []string
+
 		packageBindings := bindings[packageName]
 		structNames := lo.Keys(packageBindings)
 		sort.Strings(structNames)
 		for _, structName := range structNames {
-			result += GenerateHelper(normalisedPackageNames[packageName], structName)
+			result[normalisedPackageNames[packageName]] += GenerateHelper(normalisedPackageNames[packageName], structName)
 			methods := packageBindings[structName]
 			sort.Slice(methods, func(i, j int) bool {
 				return methods[i].Name < methods[j].Name
 			})
 			for _, method := range methods {
 				thisBinding, models := GenerateBinding(structName, method)
-				result += thisBinding
+				result[normalisedPackageNames[packageName]] += thisBinding
 				allModels = append(allModels, models...)
 			}
 		}
-	}
 
-	result += `
+		result[normalisedPackageNames[packageName]] += `
 window.go = window.go || {};
 `
-	// Iterate over the sorted bindings keys
-	packageNames = lo.Keys(bindings)
-	for _, packageName := range packageNames {
-		packageBindings := bindings[packageName]
-		structNames := lo.Keys(packageBindings)
-		sort.Strings(structNames)
-		result += "window.go." + normalisedPackageNames[packageName] + " = {\n"
+		// Iterate over the sorted struct keys
+		result[normalisedPackageNames[packageName]] += "window.go." + normalisedPackageNames[packageName] + " = {\n"
 		for _, structName := range structNames {
-			result += "    " + structName + ": {\n"
+			result[normalisedPackageNames[packageName]] += "    " + structName + ": {\n"
 			methods := packageBindings[structName]
 			sort.Slice(methods, func(i, j int) bool {
 				return methods[i].Name < methods[j].Name
 			})
 			for _, method := range methods {
-				result += "        " + method.Name + ",\n"
+				result[normalisedPackageNames[packageName]] += "        " + method.Name + ",\n"
 			}
-			result += "    },\n"
+			result[normalisedPackageNames[packageName]] += "    },\n"
 		}
-		result += "};\n"
-	}
+		result[normalisedPackageNames[packageName]] += "};\n"
 
-	// add imports
-	if len(allModels) > 0 {
-		allModels := lo.Uniq(allModels)
-		var models []string
-		for _, model := range allModels {
-			models = append(models, normalisedPackageNames[model])
+		// add imports
+		if len(allModels) > 0 {
+			allModels := lo.Uniq(allModels)
+			var models []string
+			for _, model := range allModels {
+				models = append(models, normalisedPackageNames[model])
+			}
+			sort.Strings(models)
+			result[normalisedPackageNames[packageName]] += "\n"
+			imports := "import {" + strings.Join(models, ", ") + "} from './models';\n"
+			result[normalisedPackageNames[packageName]] = imports + "\n" + result[normalisedPackageNames[packageName]]
 		}
-		sort.Strings(models)
-		result += "\n"
-		imports := "import {" + strings.Join(models, ", ") + "} from './models';\n"
-		result = imports + "\n" + result
-	}
 
-	result = header + result
+		result[normalisedPackageNames[packageName]] = header + result[normalisedPackageNames[packageName]]
+	}
 
 	return result
 }

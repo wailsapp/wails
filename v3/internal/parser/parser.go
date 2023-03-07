@@ -126,7 +126,6 @@ func ParseProject(projectPath string) (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
-	println("Parsed " + projectPath)
 	err = result.findApplicationNewCalls(pkgs)
 	if err != nil {
 		return nil, err
@@ -140,6 +139,51 @@ func ParseProject(projectPath string) (*Project, error) {
 		}
 	}
 	return result, nil
+}
+
+func GenerateBindingsAndModels(projectDir string, outputDir string) error {
+	p, err := ParseProject(projectDir)
+	if err != nil {
+		return err
+	}
+
+	if p.BoundMethods == nil {
+		return nil
+	}
+	err = os.MkdirAll(outputDir, 0755)
+	if err != nil {
+		return err
+	}
+	generatedMethods := GenerateBindings(p.BoundMethods)
+	for pkg, text := range generatedMethods {
+		// Write the file
+		err = os.WriteFile(filepath.Join(outputDir, "bindings_"+pkg+".js"), []byte(text), 0644)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Generate Models
+	if len(p.Models) > 0 {
+		generatedModels := GenerateModels(p.Models)
+		err = os.WriteFile(filepath.Join(outputDir, "models.js"), []byte(generatedModels), 0644)
+		if err != nil {
+			return err
+		}
+	}
+
+	absPath, err := filepath.Abs(projectDir)
+	if err != nil {
+		return err
+	}
+	println("Generated bindings and models for project: " + absPath)
+	absPath, err = filepath.Abs(outputDir)
+	if err != nil {
+		return err
+	}
+	println("Output directory: " + absPath)
+
+	return nil
 }
 
 func (p *Project) parseDirectory(dir string) (map[string]*ParsedPackage, error) {

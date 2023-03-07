@@ -25,6 +25,10 @@ func GenerateModel(wr io.Writer, def *ModelDefinitions) error {
 	return nil
 }
 
+func GenerateModels(models map[packagePath]map[structName]*StructDef) string {
+	return ""
+}
+
 //func GenerateClass(wr io.Writer, def *StructDef) error {
 //	tmpl, err := template.New("class.ts.tmpl").ParseFiles("templates/class.ts.tmpl")
 //	if err != nil {
