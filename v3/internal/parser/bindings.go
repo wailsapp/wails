@@ -42,10 +42,78 @@ function {{methodName}}({{inputs}}) {
 }
 `
 
+var reservedWords = []string{
+	"abstract",
+	"arguments",
+	"await",
+	"boolean",
+	"break",
+	"byte",
+	"case",
+	"catch",
+	"char",
+	"class",
+	"const",
+	"continue",
+	"debugger",
+	"default",
+	"delete",
+	"do",
+	"double",
+	"else",
+	"enum",
+	"eval",
+	"export",
+	"extends",
+	"false",
+	"final",
+	"finally",
+	"float",
+	"for",
+	"function",
+	"goto",
+	"if",
+	"implements",
+	"import",
+	"in",
+	"instanceof",
+	"int",
+	"interface",
+	"let",
+	"long",
+	"native",
+	"new",
+	"null",
+	"package",
+	"private",
+	"protected",
+	"public",
+	"return",
+	"short",
+	"static",
+	"super",
+	"switch",
+	"synchronized",
+	"this",
+	"throw",
+	"throws",
+	"transient",
+	"true",
+	"try",
+	"typeof",
+	"var",
+	"void",
+	"volatile",
+	"while",
+	"with",
+	"yield",
+	"object",
+}
+
 func sanitiseJSVarName(name string) string {
 	// if the name is a reserved word, prefix with an
 	// underscore
-	if strings.Contains("break,case,catch,class,const,continue,debugger,default,delete,do,else,enum,export,extends,false,finally,for,function,if,implements,import,in,instanceof,interface,let,new,null,package,private,protected,public,return,static,super,switch,this,throw,true,try,typeof,var,void,while,with,yield", name) {
+	if lo.Contains(reservedWords, name) {
 		return "_" + name
 	}
 	return name
@@ -69,7 +137,6 @@ func GenerateBinding(structName string, method *BoundMethod) (string, []string) 
 	if len(params) == 0 {
 		params = " *"
 	}
-	////params += "\n"
 	result = strings.ReplaceAll(result, " * @param name {string}", params)
 	var inputs string
 	for _, input := range method.Inputs {

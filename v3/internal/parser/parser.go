@@ -93,12 +93,20 @@ func (f *Field) JSName() string {
 func (f *Field) JSDef(pkg string) string {
 	name := f.JSName()
 
+	var result string
+
 	if f.Type.Package == "" || f.Type.Package == pkg {
-		return fmt.Sprintf("%s: %s;", name, f.Type.Name)
+		result += fmt.Sprintf("%s: %s;", name, f.Type.Name)
+	} else {
+		parts := strings.Split(f.Type.Package, "/")
+		result += fmt.Sprintf("%s: %s.%s;", name, parts[len(parts)-1], f.Type.Name)
 	}
 
-	parts := strings.Split(f.Type.Package, "/")
-	return fmt.Sprintf("%s: %s.%s;", name, parts[len(parts)-1], f.Type.Name)
+	if !ast.IsExported(f.Name) {
+		result += " // Warning: this is unexported in the Go struct."
+	}
+
+	return result
 }
 
 type ParsedPackage struct {
@@ -165,8 +173,11 @@ func GenerateBindingsAndModels(projectDir string, outputDir string) error {
 
 	// Generate Models
 	if len(p.Models) > 0 {
-		generatedModels := GenerateModels(p.Models)
-		err = os.WriteFile(filepath.Join(outputDir, "models.js"), []byte(generatedModels), 0644)
+		generatedModels, err := GenerateModels(p.Models)
+		if err != nil {
+			return err
+		}
+		err = os.WriteFile(filepath.Join(outputDir, "models.ts"), []byte(generatedModels), 0644)
 		if err != nil {
 			return err
 		}
