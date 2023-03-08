@@ -4,7 +4,7 @@ type Init struct {
 	Common
 
 	TemplateName string `name:"t" description:"Name of built-in template to use, path to template or template url" default:"vanilla"`
-	ProjectName  string `name:"n" description:"Name of project" default:"."`
+	ProjectName  string `name:"n" description:"Name of project" default:""`
 	//CIMode       bool   `name:"ci" description:"CI Mode"`
 	ProjectDir string `name:"d" description:"Project directory" default:"."`
 	Quiet      bool   `name:"q" description:"Suppress output to console"`
