@@ -69,6 +69,7 @@ func (e *Events) OffAll() {
 	for eventName := range e.listeners {
 		delete(e.listeners, eventName)
 	}
+	e.notifyLock.Unlock()
 }
 
 // NewEvents creates a new log subsystem
@@ -115,6 +116,8 @@ func (e *Events) unRegisterListener(eventName string) {
 
 // Notify backend for the given event name
 func (e *Events) notifyBackend(eventName string, data ...interface{}) {
+	e.notifyLock.Lock()
+	defer e.notifyLock.Unlock()
 
 	// Get list of event listeners
 	listeners := e.listeners[eventName]
@@ -122,9 +125,6 @@ func (e *Events) notifyBackend(eventName string, data ...interface{}) {
 		e.log.Trace("No listeners for event '%s'", eventName)
 		return
 	}
-
-	// Lock the listeners
-	e.notifyLock.Lock()
 
 	// We have a dirty flag to indicate that there are items to delete
 	itemsToDelete := false
@@ -163,9 +163,6 @@ func (e *Events) notifyBackend(eventName string, data ...interface{}) {
 			delete(e.listeners, eventName)
 		}
 	}
-
-	// Unlock
-	e.notifyLock.Unlock()
 }
 
 func (e *Events) AddFrontend(appFrontend frontend.Frontend) {

@@ -97,7 +97,7 @@ function notifyListeners(eventData) {
         const newEventListenerList = eventListeners[eventName].slice();
 
         // Iterate listeners
-        for (let count = 0; count < eventListeners[eventName].length; count += 1) {
+        for (let count = eventListeners[eventName].length - 1; count >= 0; count -= 1) {
 
             // Get next listener
             const listener = eventListeners[eventName][count];

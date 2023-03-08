@@ -81,8 +81,8 @@
         case EditMenu:
         {
             WailsMenu *editMenu = [[[WailsMenu new] initWithNSTitle:@"Edit"] autorelease];
-            [editMenu addItem:[self newMenuItem:@"Undo" :@selector(undoActionName) :@"z" :NSEventModifierFlagCommand]];
-            [editMenu addItem:[self newMenuItem:@"Redo" :@selector(redoActionName) :@"z" :(NSEventModifierFlagShift | NSEventModifierFlagCommand)]];
+            [editMenu addItem:[self newMenuItem:@"Undo" :@selector(undo:) :@"z" :NSEventModifierFlagCommand]];
+            [editMenu addItem:[self newMenuItem:@"Redo" :@selector(redo:) :@"z" :(NSEventModifierFlagShift | NSEventModifierFlagCommand)]];
             [editMenu addItem:[NSMenuItem separatorItem]];
             [editMenu addItem:[self newMenuItem:@"Cut" :@selector(cut:) :@"x" :NSEventModifierFlagCommand]];
             [editMenu addItem:[self newMenuItem:@"Copy" :@selector(copy:) :@"c" :NSEventModifierFlagCommand]];
