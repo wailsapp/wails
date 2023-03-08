@@ -1841,6 +1841,24 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "allcontributors[bot]",
+      "name": "allcontributors[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/in/23186?v=4",
+      "profile": "https://github.com/apps/allcontributors",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "wandercn",
+      "name": "wander",
+      "avatar_url": "https://avatars.githubusercontent.com/u/77320953?v=4",
+      "profile": "https://www.ffactory.org/",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 8,
