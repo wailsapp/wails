@@ -22,7 +22,7 @@ require (
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
 	golang.org/x/text v0.7.0
 	gopkg.in/AlecAivazis/survey.v1 v1.8.4
-	gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
+	gopkg.in/yaml.v3 v3.0.0
 )
 
 go 1.16
