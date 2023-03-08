@@ -1,0 +1,24 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  check-contributors:
+    cmds:
+      - npx -y all-contributors-cli check
+
+  update-contributors:
+    cmds:
+      - go run v3/tasks/contribs/main.go
+
+  build-contributors:
+    cmds:
+      - npx -y all-contributors-cli generate
+
+  release:
+    dir: v2/tools/release
+    cmds:
+      - go run release.go

@@ -10,6 +10,7 @@ specifiers:
   '@swc/core': ^1.3.7
   clsx: ^1.2.1
   file-loader: ^6.2.0
+  pnpm: ^7.29.1
   prettier: ^2.7.1
   prism-react-renderer: ^1.3.5
   react: ^17.0.2
@@ -26,6 +27,7 @@ dependencies:
   '@swc/core': 1.3.19
   clsx: 1.2.1
   file-loader: 6.2.0_webpack@5.75.0
+  pnpm: 7.29.1
   prism-react-renderer: 1.3.5_react@17.0.2
   react: 17.0.2
   react-dom: 17.0.2_react@17.0.2
@@ -6614,6 +6616,12 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       find-up: 3.0.0
+    dev: false
+
+  /pnpm/7.29.1:
+    resolution: {integrity: sha512-dn+65B2XpMIin7sQZvBIJ2Zyx8Z7LK95qyAvgEPE8qXkWYL/LuwpfMfK9Muc7+zNnpPwiQgtGEsxgOtuabFibQ==}
+    engines: {node: '>=14.6'}
+    hasBin: true
     dev: false
 
   /postcss-calc/8.2.4_postcss@8.4.19:
