@@ -61,7 +61,7 @@ var jsReservedKeywords []string = []string{
 	"typeof",
 	"var",
 	"void",
-	"volotile",
+	"volatile",
 	"while",
 	"with",
 	"yield",

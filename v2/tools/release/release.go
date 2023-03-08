@@ -54,13 +54,13 @@ func main() {
 	}
 
 	s.CD("../../../website")
-	runCommand("pnpm", "install")
+	runCommand("npx", "-y", "pnpm", "install")
 
 	s.ECHO("Generating new Docs for version: " + newVersion)
 
-	runCommand("pnpm", "run", "docusaurus", "docs:version", newVersion)
+	runCommand("npx", "pnpm", "run", "docusaurus", "docs:version", newVersion)
 
-	runCommand("pnpm", "run", "write-translations")
+	runCommand("npx", "pnpm", "run", "write-translations")
 
 	// Load the version list/*
 	versionsData, err := os.ReadFile("versions.json")
@@ -83,5 +83,5 @@ func main() {
 	s.RM("version-" + oldestVersion + "-sidebars.json")
 	s.CD("..")
 
-	runCommand("pnpm", "run", "build")
+	runCommand("npx", "pnpm", "run", "build")
 }

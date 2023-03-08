@@ -17,7 +17,7 @@ func main() {
 		},
 	})
 	// Create window
-	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+	myWindow := app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title: "Plain Bundle",
 		CSS:   `body { background-color: rgba(255, 255, 255, 0); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; user-select: none; -ms-user-select: none; -webkit-user-select: none; } .main { color: white; margin: 20%; }`,
 		Mac: application.MacWindow{
@@ -25,7 +25,6 @@ func main() {
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
 		},
-
 		URL: "/",
 		Assets: application.AssetOptions{
 			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

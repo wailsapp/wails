@@ -4,8 +4,8 @@ Informal and incomplete list of things needed in v3.
 
 ## General
 
-- [ ] Generate Bindings
-- [ ] Generate TS Models
+- [x] Generate Bindings
+- [x] Generate TS Models
 - [ ] Dev Mode
 - [ ] Generate Info.Plist from `info.json`
 

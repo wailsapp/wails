@@ -91,9 +91,12 @@ The installation instructions are on the [official website](https://wails.io/doc
 
 ## Sponsors
 
+
 This project is supported by these kind people / companies:
 <img src="website/static/img/sponsors.svg" style="width:100%;max-width:800px;"/>
-
+<p align="center">
+<img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
+</p>
 ## FAQ
 
 - Is this an alternative to Electron?

@@ -20,6 +20,8 @@ type OtherService struct {
 	t int
 }
 
+func (o *OtherService) Hello() {}
+
 func main() {
 	app := application.New(application.Options{
 		Bind: []interface{}{
