@@ -29,6 +29,8 @@ type Options struct {
 	//   - WebviewGpuPolicyOnDemand
 	//   - WebviewGpuPolicyNever
 	WebviewGpuPolicy WebviewGpuPolicy
+
+	WebviewTlsErrorsPolicyIgnore bool
 }
 
 type Messages struct {

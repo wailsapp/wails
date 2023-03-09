@@ -80,8 +80,10 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 	C.SetupInvokeSignal(result.contentManager)
 
 	var webviewGpuPolicy int
+	var webviewTlsErrorsPolicy bool
 	if appoptions.Linux != nil {
 		webviewGpuPolicy = int(appoptions.Linux.WebviewGpuPolicy)
+		webviewTlsErrorsPolicy = appoptions.Linux.WebviewTlsErrorsPolicyIgnore
 	}
 
 	webview := C.SetupWebview(
@@ -89,6 +91,7 @@ func NewWindow(appoptions *options.App, debug bool) *Window {
 		result.asGTKWindow(),
 		bool2Cint(appoptions.HideWindowOnClose),
 		C.int(webviewGpuPolicy),
+		C.bool(webviewTlsErrorsPolicy),
 	)
 	result.webview = unsafe.Pointer(webview)
 	buttonPressedName := C.CString("button-press-event")
