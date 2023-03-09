@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-
 	"github.com/wailsapp/wails/v3/internal/flags"
 	"github.com/wailsapp/wails/v3/internal/templates"
 

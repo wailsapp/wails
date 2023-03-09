@@ -3,6 +3,7 @@ package templates
 import (
 	"embed"
 	"fmt"
+	"github.com/wailsapp/wails/v3/internal/debug"
 	"io/fs"
 	"os"
 
@@ -144,7 +145,17 @@ func GetDefaultTemplates() []TemplateData {
 	return defaultTemplates
 }
 
+type TemplateOptions struct {
+	*flags.Init
+	LocalModulePath string
+}
+
 func Install(options *flags.Init) error {
+
+	templateData := TemplateOptions{
+		options,
+		debug.LocalModulePath,
+	}
 	template, found := lo.Find(defaultTemplates, func(template TemplateData) bool {
 		return template.Name == options.TemplateName
 	})
@@ -153,13 +164,14 @@ func Install(options *flags.Init) error {
 	}
 
 	if options.ProjectDir == "." || options.ProjectDir == "" {
-		options.ProjectDir = lo.Must(os.Getwd())
+		templateData.ProjectDir = lo.Must(os.Getwd())
 	}
-	targetDir := fmt.Sprintf("%s/%s", options.ProjectDir, options.ProjectName)
-	fmt.Printf("Installing template '%s' into '%s'\n", options.TemplateName, targetDir)
+	templateData.ProjectDir = fmt.Sprintf("%s/%s", options.ProjectDir, options.ProjectName)
+	fmt.Printf("Installing template '%s' into '%s'\n", options.TemplateName, options.ProjectDir)
 	tfs, err := fs.Sub(template.FS, options.TemplateName)
 	if err != nil {
 		return err
 	}
-	return gosod.New(tfs).Extract(targetDir, options)
+
+	return gosod.New(tfs).Extract(options.ProjectDir, templateData)
 }
