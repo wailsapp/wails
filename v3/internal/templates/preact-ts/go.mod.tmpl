@@ -11,3 +11,7 @@ require (
 	github.com/wailsapp/wails/v2 v2.3.2-0.20230117193915-45c3a501d9e6 // indirect
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
 )
+{{if gt (len .LocalModulePath) 0}}
+replace github.com/wailsapp/wails/v3 => {{.LocalModulePath}}/v3
+replace github.com/wailsapp/wails/v2 => {{.LocalModulePath}}/v2
+{{end}}
