@@ -71,6 +71,8 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 		m.processContextMenuMethod(method, rw, r, targetWindow, params)
 	case "screens":
 		m.processScreensMethod(method, rw, r, targetWindow, params)
+	case "call":
+		m.processCallMethod(method, rw, r, targetWindow, params)
 	default:
 		m.httpError(rw, "Unknown runtime call: %s", object)
 	}

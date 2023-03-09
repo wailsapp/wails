@@ -12,7 +12,7 @@ The electron alternative for Go
 
 import {newRuntimeCaller} from "./runtime";
 
-import { nanoid } from 'nanoid/non-secure'
+import { nanoid } from 'nanoid/non-secure';
 
 let call = newRuntimeCaller("dialog");
 
@@ -54,7 +54,7 @@ function dialog(type, options) {
         call(type, options).catch((error) => {
             reject(error);
             dialogResponses.delete(id);
-        })
+        });
     });
 }
 

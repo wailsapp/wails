@@ -14,7 +14,7 @@ import * as Clipboard from './clipboard';
 import * as Application from './application';
 import * as Log from './log';
 import * as Screens from './screens';
-
+import {Call, callErrorCallback, callCallback} from "./calls";
 import {newWindow} from "./window";
 import {dispatchCustomEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
 import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
@@ -30,8 +30,9 @@ window._wails = {
     dialogCallback,
     dialogErrorCallback,
     dispatchCustomEvent,
-}
-
+    callCallback,
+    callErrorCallback,
+};
 
 export function newRuntime(id) {
     return {
@@ -43,6 +44,7 @@ export function newRuntime(id) {
         },
         Log,
         Screens,
+        Call,
         WML: {
             Reload: reloadWML,
         },
