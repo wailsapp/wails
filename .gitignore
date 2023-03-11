@@ -34,3 +34,4 @@ v2/cmd/wails/internal/commands/initialise/templates/testtemplates/
 
 /v3/.task
 /v3/examples/build/bin/testapp
+/websitev3/site/

@@ -54,7 +54,10 @@ tasks:
   build-app-prod-darwin:
     summary: Creates a production build of the application
     cmds:
+      - task: pre-build
+      - task: build-frontend
       - GOOS=darwin GOARCH={{ "{{.ARCH}}" }} go build -tags production -ldflags="-w -s" -o build/bin/{{ "{{.APP_NAME}}" }}
+      - task: post-build
     env:
       CGO_CFLAGS: "-mmacosx-version-min=10.13"
       CGO_LDFLAGS: "-mmacosx-version-min=10.13"
