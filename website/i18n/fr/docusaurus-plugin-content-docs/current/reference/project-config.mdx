@@ -28,30 +28,30 @@ La configuration du projet se trouve dans le fichier `wails.json` du répertoire
     "appargs": "[Arguments passés à l'application en mode shell lors du mode dev]",
     "runNonNativeBuildHooks": false, // Définit si les évènements de compilation doivent être exécutés même s'ils sont définis pour un système d'exploitation autre que le système d'exploitation hôte.
     "preBuildHooks": {
-        "GOOS/GOARCH": "[La commande qui sera exécutée avant une compilation du GOOS/GOARCH: ${platform} est remplacée par le "GOOS/GOARCH". The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.]",
-        "GOOS/*": "[The command that will be executed before a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/*" hook is executed before the "*/*" hook.]",
-        "*/*": "[The command that will be executed before every build: ${platform} is replaced with the "GOOS/GOARCH".]"
+        "GOOS/GOARCH": "[La commande qui sera exécutée avant une compilation du GOOS/GOARCH: ${platform} est remplacée par le "GOOS/GOARCH". Le crochet "GOOS/GOARCH" est exécuté avant les crochets "GOOS/*" et"*/*" .]",
+        "GOOS/*": "[Cette commande sera exécutée avant la construction du GOOS spécifié: ${platform} est remplacé avec "GOOS/GOARCH". Le crochet "GOOS/*" est exécuté avant le crochet "*/*".]",
+        "*/*": "[La commande sera exécutée avant tout autre chose lors de la construction: ${platform} est remplacé avec "GOOS/GOARCH".]"
     },
     "postBuildHooks": {
-        "GOOS/GOARCH": "[The command that will be executed after a build of the specified GOOS/GOARCH: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary. The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.]",
-        "GOOS/*": "[The command that will be executed after a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary. The "GOOS/*" hook is executed before the "*/*" hook.]",
-        "*/*": "[The command that will be executed after every build: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary.]"
+        "GOOS/GOARCH": "[La command sera exécutée après une construction du GOOS/GOARCH spécifié: ${platform} est remplacé par "GOOS/GOARCH" et ${bin} avec le chemin vers le binaire compilé. Le crochet "GOOS/GOARCH"  est exécuté avant les crochets "GOOS/*" et "*/*".]",
+        "GOOS/*": "[La commande sera exécutée après une construction du GOOS spécifié: ${platform} est remplacé par "GOOS/GOARCH" et ${bin} avec le chemin vers le binaire compilé. Le crochet "GOOS/*" est exécuté avant le crochet "*/*".]",
+        "*/*": "[La commande sera exécutée après chaque construction: ${platform} est remplacé par "GOOS/GOARCH" et ${bin} avec le chemin vers le binaire compilé.]"
     },
-    "info": { // Data used to populate manifests and version info.
-        "companyName": "[The company name. Default: [The project name]]",
-        "productName": "[The product name. Default: [The project name]]",
-        "productVersion": "[The version of the product. Default: '1.0.0']",
-        "copyright": "[The copyright of the product. Default: 'Copyright.........']",
-        "comments": "[A short comment of the app. Default: 'Built using Wails (https://wails.app)']"
+    "info": { // Data utilisée pour remplir le manifests et version info.
+        "companyName": "[Le nom de la société. Par défaut: [Le nom du projet]]",
+        "productName": "[Le nom du produit. Par défaut: [Le nom du projet]]",
+        "productVersion": "[La version du produit. Par défaut: '1.0.0']",
+        "copyright": "[Le copyright du produit. Par défaut: 'Copyright.........']",
+        "comments": "[Un bref commentaire de l'application. Par défaut: 'Built using Wails (https://wails.app)']"
     },
-    "nsisType": "['multiple': One installer per architecture. 'single': Single universal installer for all architectures being built. Default: 'multiple']",
-    "obfuscated": "[Whether the app should be obfuscated. Default: false]",
-    "garbleargs": "[The arguments to pass to the garble command when using the obfuscated flag]"
+    "nsisType": "['multiple': Un installateur par architecture. 'single' : un seul installateur universel pour toutes les architectures en cours de construction. Par défaut: 'multiple']",
+    "obfuscated": "[Si l'application doit être masquée. Par défaut: false]",
+    "garbleargs": "[Les arguments à passer à la commande garble lors de l'utilisation de l'option obfuscated ]"
 }
 ```
 
-This file is read by the Wails CLI when running `wails build` or `wails dev`.
+Ce fichier est lu par le CLI Wails lorsque vous exécutez `wails build` ou `wails dev`.
 
-The `assetdir`, `reloaddirs`, `wailsjsdir`, `debounceMS`, `devserver` and `frontenddevserverurl` flags in `wails build/dev` will update the project config and thus become defaults for subsequent runs.
+Les options `assetdir`, `reloaddirs`, `wailsjsdir`, `debounceMS`, `devserver` and `frontenddevserverurl` dans `wails build/dev` vont mettre à jour les configs du projet qui deviendront les configurations par défaut pour les éxécutions suivantes.
 
-The JSON Schema for this file is located [here](https://wails.io/schemas/config.v2.json).
+Le schéma JSON pour ce fichier se trouve [ici](https://wails.io/schemas/config.v2.json).

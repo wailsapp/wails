@@ -4,9 +4,9 @@ sidebar_position: 4
 
 # Menus
 
-It is possible to add an application menu to Wails projects. This is achieved by defining a [Menu](#menu) struct and setting it in the [`Menu`](../reference/options.mdx#menu) application config, or by calling the runtime method [MenuSetApplicationMenu](../reference/runtime/menu.mdx#menusetapplicationmenu).
+Il est possible d'ajouter un menu applicatif aux projets Wails. Ceci est réalisé en définissant une structure [Menu](#menu) et en la définissant dans la configuration de l'application [`Menu`](../reference/options.mdx#menu) , ou en appelant la méthode d'exécution [MenuSetApplicationMenu](../reference/runtime/menu.mdx#menusetapplicationmenu).
 
-An example of how to create a menu:
+Un exemple de définition d'un menu :
 
 ```go
     AppMenu := menu.NewMenu()
@@ -33,13 +33,13 @@ An example of how to create a menu:
     // ...
 ```
 
-It is also possible to dynamically update the menu, by updating the menu struct and calling [MenuUpdateApplicationMenu](../reference/runtime/menu.mdx#menuupdateapplicationmenu).
+Il est également possible de mettre à jour dynamiquement le menu, en mettant à jour le menu struct et en appelant [MenuUpdateApplicationMenu](../reference/runtime/menu.mdx#menuupdateapplicationmenu).
 
-The example above uses helper methods, however it's possible to build the menu structs manually.
+L'exemple ci-dessus utilise des méthodes d'aide, cependant il est possible de construire le menu manuellement.
 
 ## Menu
 
-A Menu is a collection of MenuItems:
+Un Menu est une collection de MenuItems:
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
 type Menu struct {
@@ -47,19 +47,19 @@ type Menu struct {
 }
 ```
 
-For the Application menu, each MenuItem represents a single menu such as "Edit".
+Pour le menu de l'application, chaque MenuItem représente un seul menu tel que "Edit".
 
-A simple helper method is provided for building menus:
+Une méthode simple d'aide est fournie pour les menus de construction :
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
 func NewMenuFromItems(first *MenuItem, rest ...*MenuItem) *Menu
 ```
 
-This makes the layout of the code more like that of a menu without the need to add the menu items manually after creating them. Alternatively, you can just create the menu items and add them to the menu manually.
+Cela rend la mise en page du code plus semblable à celle d'un menu sans avoir à ajouter les éléments de menu manuellement après leur création. Vous pouvez également créer les liens de menu et les ajouter au menu manuellement.
 
 ## MenuItem
 
-A MenuItem represents an item within a Menu.
+Un MenuItem représente un élément dans un Menu.
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
 // MenuItem represents a menu item contained in a menu
@@ -76,52 +76,52 @@ type MenuItem struct {
 }
 ```
 
-| Field       | Type                                 | Notes                                                         |
-| ----------- | ------------------------------------ | ------------------------------------------------------------- |
-| Label       | string                               | The menu text                                                 |
-| Accelerator | [\*keys.Accelerator](#accelerator) | Key binding for this menu item                                |
-| Type        | [Type](#type)                        | Type of MenuItem                                              |
-| Disabled    | bool                                 | Disables the menu item                                        |
-| Hidden      | bool                                 | Hides this menu item                                          |
-| Checked     | bool                                 | Adds check to item (Checkbox & Radio types)                   |
-| SubMenu     | [\*Menu](#menu)                    | Sets the submenu                                              |
-| Click       | [Callback](#callback)                | Callback function when menu clicked                           |
-| Role        | string                               | Defines a [role](#role) for this menu item. Mac only for now. |
+| Champ       | Type                                 | Notes                                                                                   |
+| ----------- | ------------------------------------ | --------------------------------------------------------------------------------------- |
+| Label       | string                               | Le texte du menu                                                                        |
+| Accelerator | [\*keys.Accelerator](#accelerator) | Raccourci pour ce lien de menu                                                          |
+| Type        | [Type](#type)                        | Type de MenuItem                                                                        |
+| Disabled    | bool                                 | Désactive l'élément de menu                                                             |
+| Hidden      | bool                                 | Masque cet élément de menu                                                              |
+| Checked     | bool                                 | Ajoute une coche à l'élément (case à cocher & Types de radio)                           |
+| SubMenu     | [\*Menu](#menu)                    | Définit un sous-menu                                                                    |
+| Click       | [Callback](#callback)                | Fonction à appeler quand un click est fait sur cet élément du menu.                     |
+| Role        | string                               | Définit un rôle [](#role) pour cet élément de menu. Pour Mac seulement, pour le moment. |
 
 ### Accelerator
 
-Accelerators (sometimes called keyboard shortcuts) define a binding between a keystroke and a menu item. Wails defines an Accelerator as a combination or key + [Modifier](#modifier). They are available in the `"github.com/wailsapp/wails/v2/pkg/menu/keys"` package.
+Les accélérateurs (parfois appelés raccourcis clavier) définissent une liaison entre une clé et un élément du menu. Wails définit un accélérateur comme une combinaison ou une clé + [modificateur](#modifier). Ils sont disponibles dans le paquet `"github.com/wailsapp/wails/v2/pkg/menu/keys"`.
 
-Example:
+Exemple:
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
     // Defines cmd+o on Mac and ctrl-o on Window/Linux
     myShortcut := keys.CmdOrCtrl("o")
 ```
 
-Keys are any single character on a keyboard with the exception of `+`, which is defined as `plus`. Some keys cannot be represented as characters so there are a set of named characters that may be used:
+Les clés sont n'importe quel caractère sur un clavier à l'exception de `+`, qui est défini comme `plus`. Certaines clés ne peuvent pas être représentées comme des caractères, il y a donc un ensemble de caractères nommés qui peuvent être utilisés :
 
-|             |       |       |           |
-|:-----------:|:-----:|:-----:|:---------:|
-| `backspace` | `f1`  | `f16` |   `f31`   |
-|    `tab`    | `f2`  | `f17` |   `f32`   |
-|  `return`   | `f3`  | `f18` |   `f33`   |
-|   `enter`   | `f4`  | `f19` |   `f34`   |
-|  `escape`   | `f5`  | `f20` |   `f35`   |
-|   `left`    | `f6`  | `f21` | `numlock` |
-|   `right`   | `f7`  | `f22` |           |
-|    `up`     | `f8`  | `f23` |           |
-|   `down`    | `f9`  | `f24` |           |
-|   `space`   | `f10` | `f25` |           |
-|  `delete`   | `f11` | `f36` |           |
-|   `home`    | `f12` | `f37` |           |
-|    `end`    | `f13` | `f38` |           |
-|  `page up`  | `f14` | `f39` |           |
-| `page down` | `f15` | `f30` |           |
+|                  |       |       |           |
+|:----------------:|:-----:|:-----:|:---------:|
+| `retour arrière` | `f1`  | `f16` |   `f31`   |
+|   `tabulation`   | `f2`  | `f17` |   `f32`   |
+|     `retour`     | `f3`  | `f18` |   `f33`   |
+|     `entrée`     | `f4`  | `f19` |   `f34`   |
+|     `echap`      | `f5`  | `f20` |   `f35`   |
+|     `gauche`     | `f6`  | `f21` | `numlock` |
+|     `droite`     | `f7`  | `f22` |           |
+|      `haut`      | `f8`  | `f23` |           |
+|      `bas`       | `f9`  | `f24` |           |
+|     `espace`     | `f10` | `f25` |           |
+|     `suppr`      | `f11` | `f36` |           |
+|     `début`      | `f12` | `f37` |           |
+|      `fin`       | `f13` | `f38` |           |
+|   `page haut`    | `f14` | `f39` |           |
+|    `page bas`    | `f15` | `f30` |           |
 
-Wails also supports parsing accelerators using the same syntax as Electron. This is useful for storing accelerators in config files.
+Wails prend également en charge l'analyse des accélérateurs en utilisant la même syntaxe qu'Electron. Ceci est utile pour stocker les accélérateurs dans les fichiers de configuration .
 
-Example:
+Exemple:
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
     // Defines cmd+o on Mac and ctrl-o on Window/Linux
@@ -130,7 +130,7 @@ Example:
 
 #### Modifier
 
-The following modifiers are keys that may be used in combination with the accelerator key:
+Les modificateurs suivants sont des touches qui peuvent être utilisées en combinaison avec la touche accélérateur:
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
 const (
@@ -145,7 +145,7 @@ const (
 )
 ```
 
-A number of helper methods are available to create Accelerators using modifiers:
+Un certain nombre de méthodes d'aide sont disponibles pour créer des accélérateurs en utilisant des modificateurs:
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
 func CmdOrCtrl(key string) *Accelerator
@@ -154,7 +154,7 @@ func Shift(key string) *Accelerator
 func Control(key string) *Accelerator
 ```
 
-Modifiers can be combined using `keys.Combo(key string, modifier1 Modifier, modifier2 Modifier, rest ...Modifier)`:
+Les modificateurs peuvent être combinés en utilisant `keys.Combo(key string, modifier1 Modifier, modifier2 Modifier, rest ...Modifier)`:
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu/keys"
     // Defines "Ctrl+Option+A" on Mac and "Ctrl+Alt+A" on Window/Linux
@@ -163,7 +163,7 @@ Modifiers can be combined using `keys.Combo(key string, modifier1 Modifier, modi
 
 ### Type
 
-Each menu item must have a type and there are 5 types available:
+Chaque lien de menu doit avoir un type et il y a 5 types disponibles:
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
 const (
@@ -175,7 +175,7 @@ const (
 )
 ```
 
-For convenience, helper methods are provided to quickly create a menu item:
+Pour plus de commodité, des méthodes d'aide sont fournies pour créer rapidement un lien de menu :
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
 func Text(label string, accelerator *keys.Accelerator, click Callback) *MenuItem
@@ -185,7 +185,7 @@ func Checkbox(label string, checked bool, accelerator *keys.Accelerator, click C
 func SubMenu(label string, menu *Menu) *Menu
 ```
 
-You can also create menu items directly on a menu by using the "Add" helpers:
+Vous pouvez également créer des liens directement dans un menu en utilisant les méthodes "Add" :
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
 func (m *Menu) AddText(label string, accelerator *keys.Accelerator, click Callback) *MenuItem
@@ -195,11 +195,11 @@ func (m *Menu) AddCheckbox(label string, checked bool, accelerator *keys.Acceler
 func (m *Menu) AddSubMenu(label string, menu *Menu) *MenuI
 ```
 
-A note on radio groups: A radio group is defined as a number of radio menu items that are next to each other in the menu. This means that you do not need to group items together as it is automatic. However, that also means you cannot have 2 radio groups next to each other - there must be a non-radio item between them.
+Une note sur les groupes radio : Un groupe radio est défini comme un certain nombre d'éléments du menu radio qui sont à côté l'un de l'autre dans le menu. Cela signifie que vous n'avez pas besoin de regrouper les éléments car il est automatique. Cependant, cela signifie également que vous ne pouvez pas avoir 2 groupes radio les uns à côté des autres - il doit y avoir un élément non-radio entre eux.
 
 ### Callback
 
-Each menu item may have a callback that is executed when the item is clicked:
+Chaque lien de menu peut avoir une fonction qui est exécutée lorsque l'élément est cliqué :
 
 ```go title="Package: github.com/wailsapp/wails/v2/pkg/menu"
 type Callback func(*CallbackData)
@@ -209,19 +209,19 @@ type CallbackData struct {
 }
 ```
 
-The function is given a `CallbackData` struct which indicates which menu item triggered the callback. This is useful when using radio groups that may share a callback.
+La fonction reçoit une structure `CallbackData` qui indique quel élément de menu a été cliqué. Ceci est utile lorsque utilise des groupes radio qui peuvent partager une fonction.
 
 ### Role
 
 :::info Roles
 
-Roles are currently supported on Mac only.
+Les rôles ne sont actuellement pris en charge que sur Mac.
 
 :::
 
-A menu item may have a role, which is essentially a pre-defined menu item. We currently support the following roles:
+Un lien de menu peut avoir un rôle, qui est essentiellement un lien de menu prédéfini. Nous supportons actuellement les rôles suivants :
 
-| Role         | Description                                                              |
-| ------------ | ------------------------------------------------------------------------ |
-| AppMenuRole  | The standard Mac application menu. Can be created using `menu.AppMenu()` |
-| EditMenuRole | The standard Mac edit menu. Can be created using `menu.EditMenu()`       |
+| Role         | Description                                                                         |
+| ------------ | ----------------------------------------------------------------------------------- |
+| AppMenuRole  | Le menu standard de l'application Mac. Peut être créé en utilisant `menu.AppMenu()` |
+| EditMenuRole | Le menu d'édition standard pour Mac. Peut être créé en utilisant `menu.EditMenu()`  |

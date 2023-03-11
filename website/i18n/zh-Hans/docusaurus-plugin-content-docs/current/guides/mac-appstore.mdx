@@ -21,6 +21,12 @@
 3. 根据 Apple 的要求，使用正确的屏幕截图、描述等填充您的应用程序
 4. 创建新版本的应用
 
+#### 创建配置文件
+1. 转到 [Apple 开发者资料](https://developer.apple.com/account/resources/profiles/list) 页面
+2. 为 Mac App Store Distribution 添加新的配置文件
+3. 将 Profile Type 设置为 Mac 并为上面创建的应用程序选择 App ID
+4. 选择 Mac App Distribution 证书
+5. 命名嵌入式配置文件并下载创建的配置文件。
 
 ## Mac 应用商店流程
 
@@ -30,7 +36,7 @@
 
 **示例授权文件**
 
-这是来自 [RiftShare](https://github.com/achhabra2/riftshare) 应用程序的示例授权文件。 作为参考，请输入您的应用所需的权限。 有关详细信息，请参阅 [此站点](https://developer.apple.com/documentation/bundleresources/entitlements)。
+这是来自 [RiftShare](https://github.com/achhabra2/riftshare) 应用程序的示例授权文件。 作为参考，请输入您的应用所需的权限。 有关详细信息，请参阅 [此站点](https://developer.apple.com/documentation/bundleresources/entitlements)。 您需要将团队 ID 和应用程序名称替换为您上面注册的名称。
 
 ```xml title="entitlements.plist"
 <?xml version="1.0" encoding="UTF-8"?>
@@ -47,9 +53,15 @@
     <true/>
     <key>com.apple.security.files.downloads.read-write</key>
     <true/>
+    <key>com.apple.application-identifier</key>
+    <string>TEAM_ID.APP_NAME</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>TEAM_ID</string>
 </dict>
 </plist>
 ```
+
+上面 **添加嵌入式配置文件** 创建的配置文件需要添加到应用程序的根目录中。 它需要命名为 embedded.provisionprofile。
 
 #### 构建并签署应用程序包
 
@@ -65,6 +77,8 @@ PKG_CERTIFICATE="3rd Party Mac Developer Installer: YOUR NAME (CODE)"
 APP_NAME="YourApp"
 
 wails build -platform darwin/universal -clean
+
+cp ./embedded.provisionprofile "./build/bin/$APP_NAME.app/Contents"
 
 codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements ./build/darwin/entitlements.plist ./build/bin/$APP_NAME.app
 

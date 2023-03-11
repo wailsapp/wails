@@ -56,7 +56,7 @@ import TabItem from "@theme/TabItem";
     Wails 는 <a href="https://developer.microsoft.com/en-us/microsoft-edge/webview2/">WebView2</a> 런타임 설치를 필요로 합니다. 몇몇 Windows는 이미 설치되어 있습니다. <code>wails doctor</code> 명령을 사용하여 확인할 수 있습니다.
   </TabItem>
   <TabItem value={"Linux"}>
-    리눅스는 표준 <code>gcc</code> 빌드 툴과 <code>libgtk3</code> 과 <code>libwebkit</code>를 필요로 합니다. 다양한 배포판에 대한 수 많은 명령을 나열하는 대신 Wail는 특정 배포판에 대한 설치 명령이 무엇인지 결정할 수 있습니다. <code>wails doctor</code> 명령을 실행하면 설치 후 종속성을 설치하는 방법을 보여줍니다. 만약 배포판/패키지 매니저가 지원하지 않는다면, <a href={"/docs/guides/linux-distro-support"}> 를 통해 문의하세요. 리눅스 배포판</a> 추가 가이드
+    Linux requires the standard <code>gcc</code> build tools plus <code>libgtk3</code> and <code>libwebkit</code>. 다양한 배포판에 대한 수 많은 명령을 나열하는 대신 Wail는 특정 배포판에 대한 설치 명령이 무엇인지 결정할 수 있습니다. <code>wails doctor</code> 명령을 실행하면 설치 후 종속성을 설치하는 방법을 보여줍니다. 만약 배포판/패키지 매니저가 지원하지 않는다면, <a href={"/docs/guides/linux-distro-support"}> 를 통해 문의하세요. 리눅스 배포판</a> 추가 가이드
   </TabItem>
 </Tabs>
 ```
@@ -68,7 +68,7 @@ import TabItem from "@theme/TabItem";
 
 ## Wails 설치
 
-`go install github.com/wailsapp/wails/v2/cmd/wails@latest`을 실행하여 Wails CLI를 설치합니다.
+`go install github.com/wailsapp/wails/v2/cmd/wails@latest` 명령을 실행하여 Wails CLI를 설치합니다.
 
 참고: 다음과 비슷한 오류가 발생하는 경우:
 
@@ -84,6 +84,6 @@ go version
 
 `wails doctor`를 실행하면 의존성이 올바르게 설치되어 있는지 점검할 수 있습니다. 문제가 있는 의존성에 대해서는 문제 해결을 위한 도움을 줄 수 있습니다.
 
-## The `wails` command appears to be missing?
+## `wails` 명령이 사라졌다고 나오나요?
 
-If your system is reporting that the `wails` command is missing, make sure you have followed the Go installation guide correctly. 일반적으로, 사용자의 홈 디렉토리에 있는 `go/bin` 디렉토리가 `PATH` 환경 변수에 없음을 의미합니다. 또한, 설치 프로그램이 수행한 환경 변경 사항이 명령 프롬프트에 반영되도록 일반적으로 열려 있는 모든 명령 프롬프트를 닫았다가 다시 열어야합니다.
+시스템에서 `wails` 명령이 누락되었다고 뜨는 경우 Go 설치 가이드를 바르게 따랐는지 확인하세요. 일반적으로, 사용자의 홈 디렉토리에 있는 `go/bin` 디렉토리가 `PATH` 환경 변수에 없음을 의미합니다. 또한, 설치 프로그램이 수행한 환경 변경 사항이 명령 프롬프트에 반영되도록 일반적으로 열려 있는 모든 명령 프롬프트를 닫았다가 다시 열어야합니다.

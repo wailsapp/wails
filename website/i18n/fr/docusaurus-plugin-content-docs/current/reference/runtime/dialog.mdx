@@ -128,11 +128,11 @@ type MessageDialogOptions struct {
 
 #### Windows
 
-Windows has standard dialog types in which the buttons are not customisable. The value returned will be one of: "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "Try Again" or "Continue".
+Windows a des boites de dialogue standard dans lesquels les boutons ne sont pas personnalisables. La valeur retournée sera une des valeurs suivantes : "Ok", "Cancel", "Abort", "Retry", "Ignore", "Yes", "No", "Try Again" ou "Continue".
 
-For Question dialogs, the default button is "Yes" and the cancel button is "No". This can be changed by setting the `DefaultButton` value to `"No"`.
+Pour les boites de dialogues pour les questions, le bouton par défaut est "Oui" et le bouton d'annulation est "Non". Cela peut être modifié en définissant la valeur `DefaultButton` à `"No"`.
 
-Example:
+Exemple:
 ```go
     result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
         Type:          runtime.QuestionDialog,
@@ -144,23 +144,23 @@ Example:
 
 #### Linux
 
-Linux has standard dialog types in which the buttons are not customisable. The value returned will be one of: "Ok", "Cancel", "Yes", "No"
+Linux a des boites de dialogue standard dans lesquels les boutons ne sont pas personnalisables. La valeur retournée sera de :"Ok", "Cancel", "Yes", "No"
 
 #### Mac
 
-A message dialog on Mac may specify up to 4 buttons. If no `DefaultButton` or `CancelButton` is given, the first button is considered default and is bound to the `return` key.
+Une boîte de dialogue sur Mac peut avoir jusqu'à 4 boutons. Si aucun `DefaultButton` ou `CancelButton` n'est donné, le premier bouton est considéré comme par défaut et est lié à la touche `entrée`.
 
-For the following code:
+Pour le code suivant :
 
 ```go
 selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
-    Title:        "It's your turn!",
-    Message:      "Select a number",
-    Buttons:      []string{"one", "two", "three", "four"},
+    Title:        "C'est ton tour",
+    Message:      "Choisi un nombre",
+    Buttons:      []string{"un", "deux", "trois", "quatre"},
 })
 ```
 
-the first button is shown as default:
+le premier bouton est affiché comme étant celui par défaut :
 
 ```mdx-code-block
 <div class="text--center">
@@ -173,7 +173,7 @@ the first button is shown as default:
 <br />
 ```
 
-And if we specify `DefaultButton` to be "two":
+Et si nous spécifions que le `DefaultButton` est "deux":
 
 ```go
 selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
@@ -184,7 +184,7 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 })
 ```
 
-the second button is shown as default. When `return` is pressed, the value "two" is returned.
+le deuxième bouton est affiché comme étant la réponse par défaut. Lorsque la touche `entrée` est appuyée, la valeur "deux" est retournée.
 
 ```mdx-code-block
 <div class="text--center">
@@ -197,7 +197,7 @@ the second button is shown as default. When `return` is pressed, the value "two"
 <br />
 ```
 
-If we now specify `CancelButton` to be "three":
+Si nous spécifions maintenant `CancelButton` à "trois":
 
 ```go
 selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
@@ -209,7 +209,7 @@ selection, err := runtime.MessageDialog(b.ctx, runtime.MessageDialogOptions{
 })
 ```
 
-the button with "three" is shown at the bottom of the dialog. When `escape` is pressed, the value "three" is returned:
+le bouton avec "trois" est affiché en bas de la boîte de dialogue. Si la touche `echap` est appuyée, la valeur "trois" est retournée:
 
 ```mdx-code-block
 <div class="text--center">
@@ -246,7 +246,7 @@ type FileFilter struct {
 
 #### Windows
 
-Windows allows you to use multiple file filters in dialog boxes. Each FileFilter will show up as a separate entry in the dialog:
+Windows vous permet d'utiliser plusieurs filtres de fichiers dans les boîtes de dialogue. Chaque FileFilter s'affichera comme une entrée séparée dans la boîte de dialogue :
 
 ```mdx-code-block
 <div class="text--center">
@@ -263,7 +263,7 @@ Windows allows you to use multiple file filters in dialog boxes. Each FileFilter
 
 #### Linux
 
-Linux allows you to use multiple file filters in dialog boxes. Each FileFilter will show up as a separate entry in the dialog:
+Linux vous permet d'utiliser plusieurs filtres de fichiers dans les boîtes de dialogue. Chaque FileFilter s'affichera comme une entrée séparée dans la boîte de dialogue :
 
 ```mdx-code-block
 <div class="text--center">
@@ -280,7 +280,7 @@ Linux allows you to use multiple file filters in dialog boxes. Each FileFilter w
 
 #### Mac
 
-Mac dialogs only have the concept of a single set of patterns to filter files. If multiple FileFilters are provided, Wails will use all the Patterns defined.
+Les dialogues Mac n'ont qu'un ensemble unique de motifs pour filtrer les fichiers. Si plusieurs filtres de fichiers sont fournis, Wails utilisera tous les modèles définis.
 
 Exemple:
 
@@ -299,4 +299,4 @@ Exemple:
     })
 ```
 
-This will result in the Open File dialog using `*.png,*.jpg,*.mov,*.mp4` as a filter.
+Cela se traduira par l'ouverture de la boîte de dialogue "Ouvrir un fichier" en utilisant `*.png,*.jpg,*.mov,*.mp4` comme filtres.

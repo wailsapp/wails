@@ -71,6 +71,7 @@ If you are unsure about a template, inspect `package.json` and `wails.json` for 
 | -windowsconsole      | Keep the console window for Windows builds                                                                                                                                  |                                                                                                                                                     |
 | -obfuscate           | Obfuscate the application using [garble](https://github.com/burrowers/garble)                                                                                               | false                                                                                                                                               |
 | -garbleargs          | Arguments to pass to garble                                                                                                                                                 | `-literals -tiny -seed=random`                                                                                                                      |
+| -nosyncgomod         | Do not sync go.mod with the Wails version                                                                                                                                   | false                                                                                                                                               |
 
 For a detailed description of the `webview2` flag, please refer to the [Windows](../guides/windows.mdx) Guide.
 
@@ -80,8 +81,10 @@ Example:
 
 `wails build -clean -o myproject.exe`
 
-:::Info
+:::info
+
 On Mac, the application will be bundled with `Info.plist`, not `Info.dev.plist`.
+
 :::
 
 :::info UPX on Apple Silicon
@@ -184,6 +187,9 @@ Your system is ready for Wails development!
 | -save                        | Saves the given `assetdir`, `reloaddirs`, `wailsjsdir`, `debounce`, `devserver` and `frontenddevserverurl` flags in `wails.json` to become the defaults for subsequent invocations. |                       |
 | -race                        | Build with Go's race detector                                                                                                                                                       | false                 |
 | -s                           | Skip building the frontend                                                                                                                                                          | false                 |
+| -nosyncgomod                 | Do not sync go.mod with the Wails version                                                                                                                                           | false                 |
+
+
 
 Example:
 

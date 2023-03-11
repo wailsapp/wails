@@ -117,7 +117,7 @@ Wails 要求您传入结构体的 _实例_ 以使其正确绑定
 
 在此示例中，我们创建一个新的 `App` 实例，然后将此实例添加到 `wails.Run` 中的 `Bind` 选项：
 
-```go {16,24} title="main.go"
+```go {17,27} title="main.go"
 package main
 
 import (
@@ -164,7 +164,7 @@ func (a *App) Greet(name string) string {
 
 您可以绑定任意数量的结构体。 只需确保创建它的实例并将其传递给 `Bind`：
 
-```go {8-10}
+```go {10-12}
     //...
     err := wails.Run(&options.App{
         Title:  "Basic Demo",
@@ -236,7 +236,7 @@ export function Greet(arg1: string): Promise<string>;
 
 :::info 注意
 
-结构体字段 *必须* 具有有效的 `json` 标签，以包含在生成的 TypeScript 中。
+结构体字段 _必须_ 具有有效的 `json` 标签，以包含在生成的 TypeScript 中。
 
 目前不支持嵌套匿名结构体。
 

@@ -1,14 +1,14 @@
-# Migrating from v1
+# v1からの移行
 
-## Overview
+## 概要
 
-Wails v2 is a significant change from v1. This document aims to highlight the changes and the steps in migrating an existing project.
+Wails v2は、v1から大幅に変更されています。 このドキュメントでは、変更点、および既存のプロジェクトを移行する方法に焦点をあてて説明します。
 
-### Creating the Application
+### アプリケーションの作成
 
-In v1, the main application is created using `wails.CreateApp`, bindings are added with `app.Bind`, then the application is run using `app.Run()`.
+v1では、`wails.CreateApp`でメインアプリケーションを作成して、`app.Bind`でバインディングを追加し、`app.Run()`でアプリケーションを起動していました。
 
-Example:
+例:
 
 ```go title="v1"
  app := wails.CreateApp(&wails.AppConfig{
@@ -23,7 +23,7 @@ Example:
   app.Run()
 ```
 
-In v2, there is just a single method, `wails.Run()`, that accepts [application options](../reference/options.mdx#application-options).
+v2では、`wails.Run()`メソッドだけが、[アプリケーションオプション](../reference/options.mdx#application-options)を指定することができます。
 
 ```go title="v2"
     err := wails.Run(&options.App{
@@ -39,9 +39,9 @@ In v2, there is just a single method, `wails.Run()`, that accepts [application o
     })
 ```
 
-### Binding
+### バインディング
 
-In v1, it was possible to bind both arbitrary functions and structs. In v2, this has been simplified to only binding structs. The struct instances that were previously passed to the `Bind()` method in v1, are now specified in the `Bind` field of the [application options](../reference/options.mdx#application-options):
+v1では、任意の関数と構造体の両方をバインドすることが可能でした。 v2では、構造体のみバインドできるようになり、シンプルになりました。 v1において`Bind()`メソッドに渡していた構造体のインスタンスは、[アプリケーションオプション](../reference/options.mdx#application-options)の`Bind`フィールドで指定できます。
 
 ```go title="v1"
   app := wails.CreateApp(/* options */)
@@ -57,19 +57,19 @@ In v1, it was possible to bind both arbitrary functions and structs. In v2, this
     })
 ```
 
-In v1, bound methods were available to the frontend at `window.backend`. This has changed to `window.go`.``
+v1では、バインドされたメソッドをフロントエンドから利用するには`window.backend`を使用していました。 これは`window.go`に変更されました。
 
-### Application Lifecycle
+### アプリケーションライフサイクル
 
-In v1, there were 2 special methods in a bound struct: `WailsInit()` and `WailsShutdown()`. These have been replaced with 3 lifecycle hooks as part of the [application options](../reference/options.mdx#application-options):
+v1では、バインドされた構造体の中に、`WailsInit()`および`WailsShutdown()`という2つの特別なメソッドが存在しました。 これらは、[アプリケーションオプション](../reference/options.mdx#application-options)の一部として、3つのライフサイクルフックに置き換えられています:
 
 - [OnStartup](../reference/options.mdx#onstartup)
 - [OnShutdown](../reference/options.mdx#onshutdown)
 - [OnDomReady](../reference/options.mdx#ondomready)
 
-Note: [OnDomReady](../reference/options.mdx#ondomready) replaces the `wails:ready` system event in v1.
+注意: [OnDomReady](../reference/options.mdx#ondomready)は、v1での`wails:ready`システムイベントに代わるものです。
 
-These methods can be standard functions, but a common practice is to have them part of a struct:
+これらのメソッドは標準的な関数を指定できますが、一般的には、それらのメソッドを構造体の一部として保持しておきます:
 
 ```go title="v2"
     basic := NewBasicApp()
@@ -89,11 +89,11 @@ func (b *Basic) startup(ctx context.Context) {
 ...
 ```
 
-### Runtime
+### ランタイム
 
-The runtime in v2 is much richer than v1 with support for menus, window manipulation and better dialogs. The signature of the methods has changed slightly - please refer the the [Runtime Reference](../reference/runtime/intro.mdx).
+v2のランタイムはv1よりも非常に充実しており、メニュー、ウィンドウ操作、優れたダイアログをサポートしています。 メソッドのシグネチャが若干変更されていますので、詳しくは[ランタイムのリファレンス](../reference/runtime/intro.mdx)を参照してください。
 
-In v1, the [runtime](../reference/runtime/intro.mdx) was available via a struct passed to `WailsInit()`. In v2, the runtime has been moved out to its own package. Each method in the runtime takes the `context.Context` that is passed to the [OnStartup](../reference/options.mdx#onstartup) method.
+v1では、`WailsInit()`に渡された構造体を介して[ランタイム](../reference/runtime/intro.mdx)を利用できていました。 v2では、ランタイムは独自のパッケージとして移植されています。 ランタイムの各メソッドは、[OnStartup](../reference/options.mdx#onstartup)メソッドで受け渡される`context.Context`を引数に取ります。
 
 ```go title="Runtime Example"
 package main
@@ -104,7 +104,7 @@ type Basic struct {
     ctx context.Context
 }
 
-// startup is called at application startup
+// startupはアプリケーション起動時に呼び出される
 func (a *App) startup(ctx context.Context) {
     a.ctx = ctx
     runtime.LogInfo(ctx, "Application Startup called!")
@@ -112,24 +112,24 @@ func (a *App) startup(ctx context.Context) {
 
 ```
 
-### Assets
+### アセット
 
-The _biggest_ change in v2 is how assets are handled.
+v2での_最も大きな_変更は、アセットの取り扱い方です。
 
-In v1, assets were passed via 2 application options:
+v1では、2つのアプリケーションオプションを介してアセットを指定していました:
 
-- `JS` - The application's JavaScript
-- `CSS` - The application's CSS
+- `JS` - アプリケーションのJavaScript
+- `CSS` - アプリケーションのCSS
 
-This meant that the responsibility of generating a single JS and CSS file was on the developer. This essentially required the use of complicated packers such as webpack.
+これは、単一のJSファイルおよびCSSファイルを、開発者が責任をもって作成する必要があることを意味していました。 基本的には、webpackのような複雑なパッカーを使用する必要がありました。
 
-In v2, Wails makes no assumptions about your frontend assets, just like a webserver. All of your application assets are passed to the application options as an `embed.FS`.
+v2では、Wailsは一般的なWebサーバと同じように、フロントエンドアセットは何でも構いません。 すべてのアプリケーションアセットは、`embed.FS`インスタンスとしてアプリケーションオプションに渡されます。
 
-**This means there is no requirement to bundle your assets, encode images as Base64 or attempt the dark art of bundler configuration to use custom fonts**.
+**つまりアセットをバンドルしたり、画像をBase64でエンコードしたり、カスタムフォントを使用するためにバンドラーの設定を工夫したりする必要は一切ありません**。
 
-At startup, Wails will scan the given `embed.FS` for `index.html` and use its location as the root path for all the other application assets - just like a webserver would.
+アプリケーション起動時に、Wailsは、あらかじめ`embed.FS`で指定されたディレクトリ内をスキャンして`index.html`を探し、Webサーバの挙動のように、その場所をすべてのアプリケーションアセットのルートパスとみなします。
 
-Example: An application has the following project layout. All final assets are placed in the `frontend/dist` directory:
+例: とあるアプリケーションのプロジェクトディレクトリの構成が次のようになっているとします。 この場合、最終的に必要なすべてのアセットは`frontend/dist`ディレクトリ配下に配置される必要があります:
 
 ```shell
 .
@@ -144,7 +144,7 @@ Example: An application has the following project layout. All final assets are p
 └── wails.json
 ```
 
-Those assets may be used by the application by simply creating an `embed.FS`:
+これらのアセットは、`embed.FS`を定義するだけで、アプリケーションから使用することができます:
 
 ```go title="Assets Example"
 //go:embed all:frontend/dist
@@ -160,32 +160,32 @@ func main() {
 }
 ```
 
-Of course, bundlers can be used if you wish to. The only requirement is to pass the final application assets directory to Wails using an `embed.FS` in the `Assets` key of the [application options](../reference/options.mdx#application-options).
+もちろん、必要に応じてバンドラを使用することもできます。 唯一行わなければいけないことは、[アプリケーションオプション](../reference/options.mdx#application-options)の`Assets`キーに`embed.FS`インスタンスを指定して、Wailsにアプリケーションアセットディレクトリを教えてあげることです。
 
-### Project Configuration
+### プロジェクト構成
 
-In v1, the project configuration was stored in the `project.json` file in the project root. In v2, the project configuration is stored in the `wails.json` file in the project root.
+v1では、プロジェクトルートに存在する`project.json`ファイルで、プロジェクト構成を管理していました。 v2では、プロジェクトルートにある`wails.json`ファイルでプロジェクト構成を管理します。
 
-The format of the file is slightly different. Here is a comparison:
+フォーマットは若干変更されています。 比較表は次のとおりです:
 
 <p align="center">
 
-| v1                 | v2               | Notes                                                                                                                                                                      |
+| v1                 | v2               | 備考 |
 | ------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| name               | name             |                                                                                                                                                                            |
-| description        |                  | Removed                                                                                                                                                                    |
-| author / name      | author / name    |                                                                                                                                                                            |
-| author / email     | author / email   |                                                                                                                                                                            |
-| version            | version          |                                                                                                                                                                            |
-| binaryname         | outputfilename   | Changed                                                                                                                                                                    |
-| frontend / dir     |                  | Removed                                                                                                                                                                    |
-| frontend / install | frontend:install | Changed                                                                                                                                                                    |
-| frontend / build   | frontend:build   | Changed                                                                                                                                                                    |
-| frontend / bridge  |                  | Removed                                                                                                                                                                    |
-| frontend / serve   |                  | Removed                                                                                                                                                                    |
-| tags               |                  | Removed                                                                                                                                                                    |
-|                    | wailsjsdir       | The directory to generate wailsjs modules                                                                                                                                  |
-|                    | assetdir         | The directory of the compiled frontend assets for `dev` mode. This is normally inferred and could be left empty.                                                           |
-|                    | reloaddirs       | Comma separated list of additional directories to watch for changes and to trigger reloads in `dev` mode. This is only needed for some more advanced asset configurations. |
+| name | name |  |
+| description |  | 消去されました |
+| author / name | author / name |  |
+| author / email | author / email |  |
+| version | version |  |
+| binaryname | outputfilename | 変更されました |
+| frontend / dir |  | 消去されました |
+| frontend / install | frontend:install | 変更されました |
+| frontend / build   | frontend:build | 変更されました |
+| frontend / bridge |  | 消去されました |
+| frontend / serve |  | 消去されました |
+| tags |  | 消去されました |
+|  | wailsjsdir | wailsjsモジュールを生成するディレクトリ |
+|  | assetdir | `dev`モードでコンパイルされたフロントエンドアセットのディレクトリ。 通常は自動推定されるため、空のままで構いません。                                                           |
+|  | reloaddirs | `dev`モードでリロードをトリガーさせたい追加のディレクトリを指定するための、カンマ区切りのリスト。 高度なアセット構成をとる場合にのみ必要です。 |
 
 </p>

@@ -117,7 +117,7 @@ Wailsで構造体を正しくバインドするためには、構造体の*イ�
 
 下記のコードでは、新しく`App`インスタンスを作成し、`wails.Run`関数の`Bind`オプションの中で、そのインスタンスを追加しています:
 
-```go {16,24} title="main.go"
+```go {17,27} title="main.go"
 package main
 
 import (
@@ -164,7 +164,7 @@ func (a *App) Greet(name string) string {
 
 構造体は、好きな数だけバインドできます。 `Bind`には、構造体のインスタンスを渡すようにしてください:
 
-```go {8-10}
+```go {10-12}
     //...
     err := wails.Run(&options.App{
         Title:  "Basic Demo",
@@ -236,7 +236,7 @@ export function Greet(arg1: string): Promise<string>;
 
 :::info 備考
 
-TypeScript型定義を正しく自動生成するために、構造体のフィールドには、有効な`json`タグを*必ず*付与するようにしてください。
+TypeScript型定義を正しく自動生成するために、構造体のフィールドには、有効な`json`タグを_必ず_付与するようにしてください。
 
 ネストされた匿名構造体(無名構造体) は、現時点ではサポートされていません。
 

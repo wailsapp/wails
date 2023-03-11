@@ -21,6 +21,12 @@ This page gives a brief overview of how to submit your Wails App to the Mac App 
 3. Populate your app with the correct screen shots, descriptions, etc. as required by Apple
 4. Create a new version of your app
 
+#### Create Provisioning Profile
+1. Go to the [Apple Developer Profiles](https://developer.apple.com/account/resources/profiles/list) page
+2. Add a new provisioning profile for Mac App Store Distribution
+3. Set the Profile Type as Mac and select the App ID for the application created above
+4. Select the Mac App Distribution certificate
+5. Name the Provisioning Profile embedded and download the created profile.
 
 ## Mac App Store Process
 
@@ -30,7 +36,7 @@ Apps submitted to the Mac App Store must run under Apple's [App Sandbox](https:/
 
 **Example Entitlements File**
 
-This is an example entitlements file from the [RiftShare](https://github.com/achhabra2/riftshare) app. For reference please put in the entitlements your app requires. Refer to [this site](https://developer.apple.com/documentation/bundleresources/entitlements) for more information.
+This is an example entitlements file from the [RiftShare](https://github.com/achhabra2/riftshare) app. For reference please put in the entitlements your app requires. Refer to [this site](https://developer.apple.com/documentation/bundleresources/entitlements) for more information. You will need to replace the Team ID and Application Name with the ones you registered above.
 
 ```xml title="entitlements.plist"
 <?xml version="1.0" encoding="UTF-8"?>
@@ -47,9 +53,15 @@ This is an example entitlements file from the [RiftShare](https://github.com/ach
     <true/>
     <key>com.apple.security.files.downloads.read-write</key>
     <true/>
+    <key>com.apple.application-identifier</key>
+    <string>TEAM_ID.APP_NAME</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>TEAM_ID</string>
 </dict>
 </plist>
 ```
+
+**Add the Embedded Provisioning Profile** The Provisioning Profile created above needs to be added to the root of the applicaton. It needs to be named embedded.provisionprofile.
 
 #### Build and Sign the App Package
 
@@ -65,6 +77,8 @@ PKG_CERTIFICATE="3rd Party Mac Developer Installer: YOUR NAME (CODE)"
 APP_NAME="YourApp"
 
 wails build -platform darwin/universal -clean
+
+cp ./embedded.provisionprofile "./build/bin/$APP_NAME.app/Contents"
 
 codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements ./build/darwin/entitlements.plist ./build/bin/$APP_NAME.app
 

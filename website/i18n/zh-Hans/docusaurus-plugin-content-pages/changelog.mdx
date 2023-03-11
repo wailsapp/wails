@@ -13,6 +13,37 @@
 
 ## [即将发布]
 
+## v2.4.0 - 2022-03-08
+
+### 新增
+- 为 [Windows](/docs/reference/options#webviewgpuisdisabled) 和 [Linux 添加了WebView GPU 加速选项](/docs/reference/options#webviewgpupolicy). @Lyimmi 在 [PR](https://github.com/wailsapp/wails/pull/2266) 中添加
+- Added `EnableFraudulentWebsiteDetection` option to opt-in to scan services for fraudulent content, such as malware or phishing attempts. Older releases had the scan services per default activated. @stffabi 在 [PR](https://github.com/wailsapp/wails/pull/2269) 中添加
+- Allow an [AssetServer Middleware](/docs/reference/options#middleware) to specify the `Content-Type` of a file served by the [Assets](/docs/reference/options#assets-1) `fs.FS`. @stffabi 在 [PR](https://github.com/wailsapp/wails/pull/2286) 中添加
+- The AssetServer now detects more mimetypes by extension, e.g. `.mjs`. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2391)
+
+### 变更
+- Improved fullscreen mode for frameless window on Windows. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279), [PR](https://github.com/wailsapp/wails/pull/2288) and [PR](https://github.com/wailsapp/wails/pull/2299)
+- On Windows unmaximising a window has no effect anymore when the window is in fullscreen mode, this makes it consistent with e.g. macOS. @stffabi 在 [PR](https://github.com/wailsapp/wails/pull/2279) 中修改
+- Frameless resize now sets the cursor on documentElement, otherwise resizing cursor won't be shown outside of the body rectangle. @stffabi 在 [PR](https://github.com/wailsapp/wails/pull/2289) 中修改
+- Improved the `--wails-draggable` experience to be more reactive. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2302)
+- NSIS template now installs the shortcuts for all users and not only for the current user. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2373)
+
+### 修复
+- Fixed failing build hooks when `build/bin` was missing. @Lyimmi 在 [PR](https://github.com/wailsapp/wails/pull/2273) 中修复
+- Fixed fullscreen mode for frameless window on Windows to fully cover the taskbar when changing into fullscreen from maximised state. @stffabi 在 [PR](https://github.com/wailsapp/wails/pull/2279) 中修复
+- Fixed set window background colour on Windows when setting the colour via runtime. @stffabi 在 [PR](https://github.com/wailsapp/wails/pull/2279) 中修复
+- Fixed the showing of a white border around a fullscreen window when `DisableWindowIcon` is active on Windows. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2299)
+- Fixed the sometimes lagging drag experience with `--wails-draggable` on Windows.  Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2302)
+- Fixed applying the default arch to platform flag in wails cli. If only a `GOOS` has been supplied as platform flag e.g. `wails build --platform windows` the current architecture wasn't applied and the build failed. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2309)
+- Fixed a segfault on opening the inspector on older macOS versions. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2397)
+- Fixed the macos single architecture builds not respecting an output file name specified with the '-o' flag. Fixed by @gwynforthewyn in [PR](https://github.com/wailsapp/wails/pull/2358)
+- Fixed `undo`/`redo` on macOS. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2430)
+- Fixed `Events*` runtime functions in JavaScript not returning the function to cancel the watcher. Fixed by @zllovesuki in [PR](https://github.com/wailsapp/wails/pull/2434)
+- Fixed AppOptions merging defaults when a custom logger is used. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2452)
+- Fixed race condition and missing unlock of mutex in events handling. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2453)
+
+## v2.3.0 - 2022-12-29
+
 ### 新增
 - 添加 `OpenInspectorOnStartup` 到调试选项以允许在调试模式下启动应用程序期间打开 Web 检查器。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2080) 中添加。
 - 在 macOS 上的 `wails doctor`，现在也会显示安装的 Xcode 版本。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2089) 中添加。
@@ -21,15 +52,36 @@
 - `WindowSetAlwaysOnTop` 方法现在在 JS 运行时中公开。 由 @gotid 在这个 [PR](https://github.com/wailsapp/wails/pull/2128) 中修复。
 - [AssetServer](/docs/reference/options#资产服务器) 现在支持在请求目录时提供 index.html 文件。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2110) 中添加
 - 在 Linux 上添加了对 WebKit2GTK 2.36+ 的支持。 这为 [AssetServer](/docs/reference/options#资产服务器) 带来了额外的特性，例如对 HTTP 方法和标头的支持。 该应用程序必须使用 Go 构建标签 `webkit2_36` 进行编译，以激活对此功能的支持。 这也会将您应用程序的 WebKit2GTK 最低要求提高到 2.36。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2151) 中修复
+- Added support for file input selection on macOS. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2209)
+- Added support Request/Response streaming of the AssetServer on macOS. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2219)
+- Added request path checks for the AssetServer. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2235)
+- Added new App Store guide. Added by @achhabra2 in [PR](https://github.com/wailsapp/wails/pull/2142)
+- Added extra libwebkit check for dnf package manager (required for latest Fedora). Fixed by @NullCode1337 in this [PR](https://github.com/wailsapp/wails/pull/2218)
+- Added new `-nomodsync` flag to disable the automatic syncing of the `go.mod` file. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2215)
+- Added support for adding prefix and postfix text to generated Typescript classes. 由 @OlegGulevskyy 在这个 [PR](https://github.com/wailsapp/wails/pull/2101) 中修复。
+- Added reference to NSIS as optional dependency. Added by @acheong08 in [PR](https://github.com/wailsapp/wails/pull/2070)
+- Added Korean translation for the website. Added by @cybertramp in [PR](https://github.com/wailsapp/wails/pull/2093)
 
 ### 修复
 - wails dev 中 `noreload` 标志未被应用。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2081) 中修复。
 - `build/bin` 文件夹在 `wails dev` 模式下每次重新加载时都会复制自身。 由 @OlegGulevskyy 在这个 [PR](https://github.com/wailsapp/wails/pull/2103) 中修复。
 - 防止 Windows 上的无边框窗口底部出现细白线。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2111) 中修复。
 - 更好的 Linux 信号处理。 由 @leaanthony 在这个 [PR](https://github.com/wailsapp/wails/pull/2152) 中修复
+- Running the docs locally was broken due to mandatory crowdin token requirement. Fixed by @OlegGulevskyy in this [PR](https://github.com/wailsapp/wails/pull/2231)
+- Generated typescript for Go functions that returned a single error was incorrect. Fixed by @ATenderholt in this [PR](https://github.com/wailsapp/wails/pull/2247)
+- The right mouse event was not being raised correctly for Linux. Fixed by @leaanthony in this [PR](https://github.com/wailsapp/wails/pull/2190)
+- Remove extra spaces in Wails version when querying `go.mod`. Fixed by @matholt in this [PR](https://github.com/wailsapp/wails/pull/2197)
+- Fix go tests failure on Mac. Fixed by @avengerweb in this [PR](https://github.com/wailsapp/wails/pull/2187)
+- Fix go test errors. Fixed by @misitebao & @avengerweb in [these](https://github.com/wailsapp/wails/pull/2169) [PRs](https://github.com/wailsapp/wails/pull/2187)
+- Added `WindowSetAlwaysOnTop` to the JS runtime. 由 @gotid 在这个 [PR](https://github.com/wailsapp/wails/pull/2128) 中修复。
+- Fixed obfuscated flag typo in docs. Fixed by @ckilb in [PR](https://github.com/wailsapp/wails/pull/2102)
+- Fixed React Hash Router link in docs. Fixed by @marvinhosea in [PR](https://github.com/wailsapp/wails/pull/2050)
 
 ### 变更
 - 如果在资产中找不到 `index.html` 并且验证资产服务器选项，则改进错误消息。 由 @stffabi 在这个 [PR](https://github.com/wailsapp/wails/pull/2110) 中变更
+- Promote the Go WebView2Loader from experimental to stable. This means now per default all Wails build use the new loader introduced with `v2.2.0`. The old loader remains usable with build tag `native_webview2loader` for the next few releases. Changed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2199)
+- Refactored CLI. Changed by @leaanthony in this [PR](https://github.com/wailsapp/wails/pull/2123)
+- Remove unreachable code. Changed by @tmclane in this [PR](https://github.com/wailsapp/wails/pull/2182)
 
 ## v2.2.0 - 2022-11-09
 

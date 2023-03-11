@@ -13,6 +13,37 @@ O formato é baseado em [Manter um Log de Alterações](https://keepachangelog.c
 
 ## [Unreleased]
 
+## v2.4.0 - 2022-03-08
+
+### Adicionado
+- Added Webview GPU acceleration options for [Windows](/docs/reference/options#webviewgpuisdisabled) and [Linux](/docs/reference/options#webviewgpupolicy). Added by @Lyimmi in [PR](https://github.com/wailsapp/wails/pull/2266)
+- Added `EnableFraudulentWebsiteDetection` option to opt-in to scan services for fraudulent content, such as malware or phishing attempts. Older releases had the scan services per default activated. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2269)
+- Allow an [AssetServer Middleware](/docs/reference/options#middleware) to specify the `Content-Type` of a file served by the [Assets](/docs/reference/options#assets-1) `fs.FS`. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2286)
+- The AssetServer now detects more mimetypes by extension, e.g. `.mjs`. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2391)
+
+### Alterado
+- Improved fullscreen mode for frameless window on Windows. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279), [PR](https://github.com/wailsapp/wails/pull/2288) and [PR](https://github.com/wailsapp/wails/pull/2299)
+- On Windows unmaximising a window has no effect anymore when the window is in fullscreen mode, this makes it consistent with e.g. macOS. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279)
+- Frameless resize now sets the cursor on documentElement, otherwise resizing cursor won't be shown outside of the body rectangle. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2289)
+- Improved the `--wails-draggable` experience to be more reactive. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2302)
+- NSIS template now installs the shortcuts for all users and not only for the current user. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2373)
+
+### Corrigido
+- Fixed failing build hooks when `build/bin` was missing. Fixed by @Lyimmi in [PR](https://github.com/wailsapp/wails/pull/2273)
+- Fixed fullscreen mode for frameless window on Windows to fully cover the taskbar when changing into fullscreen from maximised state. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279)
+- Fixed set window background colour on Windows when setting the colour via runtime. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279)
+- Fixed the showing of a white border around a fullscreen window when `DisableWindowIcon` is active on Windows. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2299)
+- Fixed the sometimes lagging drag experience with `--wails-draggable` on Windows.  Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2302)
+- Fixed applying the default arch to platform flag in wails cli. If only a `GOOS` has been supplied as platform flag e.g. `wails build --platform windows` the current architecture wasn't applied and the build failed. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2309)
+- Fixed a segfault on opening the inspector on older macOS versions. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2397)
+- Fixed the macos single architecture builds not respecting an output file name specified with the '-o' flag. Fixed by @gwynforthewyn in [PR](https://github.com/wailsapp/wails/pull/2358)
+- Fixed `undo`/`redo` on macOS. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2430)
+- Fixed `Events*` runtime functions in JavaScript not returning the function to cancel the watcher. Fixed by @zllovesuki in [PR](https://github.com/wailsapp/wails/pull/2434)
+- Fixed AppOptions merging defaults when a custom logger is used. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2452)
+- Fixed race condition and missing unlock of mutex in events handling. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2453)
+
+## v2.3.0 - 2022-12-29
+
 ### Adicionado
 - Added `OpenInspectorOnStartup` to debug options to allow opening the WebInspector during startup of the application in debug mode. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2080)
 - On macOS `wails doctor` now also shows the version of Xcode installed. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2089)
@@ -21,15 +52,36 @@ O formato é baseado em [Manter um Log de Alterações](https://keepachangelog.c
 - The `WindowSetAlwaysOnTop` method is now exposed in the JS runtime. Fixed by @gotid in [PR](https://github.com/wailsapp/wails/pull/2128)
 - The [AssetServer](/docs/reference/options#assetserver) now supports serving the index.html file when requesting a directory. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2110)
 - Added support for WebKit2GTK 2.36+ on Linux. This brings additional features for the [AssetServer](/docs/reference/options#assetserver), like support for HTTP methods and Headers. The app must be compiled with the Go build tag `webkit2_36` to activate support for this features. This also bumps the minimum requirement of WebKit2GTK to 2.36 for your app. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2151)
+- Added support for file input selection on macOS. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2209)
+- Added support Request/Response streaming of the AssetServer on macOS. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2219)
+- Added request path checks for the AssetServer. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2235)
+- Added new App Store guide. Added by @achhabra2 in [PR](https://github.com/wailsapp/wails/pull/2142)
+- Added extra libwebkit check for dnf package manager (required for latest Fedora). Fixed by @NullCode1337 in this [PR](https://github.com/wailsapp/wails/pull/2218)
+- Added new `-nomodsync` flag to disable the automatic syncing of the `go.mod` file. Added by @leaanthony in [PR](https://github.com/wailsapp/wails/pull/2215)
+- Added support for adding prefix and postfix text to generated Typescript classes. Added by @OlegGulevskyy in [PR](https://github.com/wailsapp/wails/pull/2101)
+- Added reference to NSIS as optional dependency. Added by @acheong08 in [PR](https://github.com/wailsapp/wails/pull/2070)
+- Added Korean translation for the website. Added by @cybertramp in [PR](https://github.com/wailsapp/wails/pull/2093)
 
 ### Corrigido
 - The `noreload` flag in wails dev wasn't applied. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2081)
 - `build/bin` folder was duplicating itself on each reload in `wails dev` mode. Fixed by @OlegGulevskyy in this [PR](https://github.com/wailsapp/wails/pull/2103)
 - Prevent a thin white line at the bottom of a frameless window on Windows. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2111)
 - Better signal handling for Linux. Fixed by @leaanthony in this [PR](https://github.com/wailsapp/wails/pull/2152)
+- Running the docs locally was broken due to mandatory crowdin token requirement. Fixed by @OlegGulevskyy in this [PR](https://github.com/wailsapp/wails/pull/2231)
+- Generated typescript for Go functions that returned a single error was incorrect. Fixed by @ATenderholt in this [PR](https://github.com/wailsapp/wails/pull/2247)
+- The right mouse event was not being raised correctly for Linux. Fixed by @leaanthony in this [PR](https://github.com/wailsapp/wails/pull/2190)
+- Remove extra spaces in Wails version when querying `go.mod`. Fixed by @matholt in this [PR](https://github.com/wailsapp/wails/pull/2197)
+- Fix go tests failure on Mac. Fixed by @avengerweb in this [PR](https://github.com/wailsapp/wails/pull/2187)
+- Fix go test errors. Fixed by @misitebao & @avengerweb in [these](https://github.com/wailsapp/wails/pull/2169) [PRs](https://github.com/wailsapp/wails/pull/2187)
+- Added `WindowSetAlwaysOnTop` to the JS runtime. Fixed by @gotid in [PR](https://github.com/wailsapp/wails/pull/2128)
+- Fixed obfuscated flag typo in docs. Fixed by @ckilb in [PR](https://github.com/wailsapp/wails/pull/2102)
+- Fixed React Hash Router link in docs. Fixed by @marvinhosea in [PR](https://github.com/wailsapp/wails/pull/2050)
 
 ### Alterado
 - Improve error message if no `index.html` could be found in the assets and validate assetserver options. Changed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2110)
+- Promote the Go WebView2Loader from experimental to stable. This means now per default all Wails build use the new loader introduced with `v2.2.0`. The old loader remains usable with build tag `native_webview2loader` for the next few releases. Changed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2199)
+- Refactored CLI. Changed by @leaanthony in this [PR](https://github.com/wailsapp/wails/pull/2123)
+- Remove unreachable code. Changed by @tmclane in this [PR](https://github.com/wailsapp/wails/pull/2182)
 
 ## v2.2.0 - 2022-11-09
 

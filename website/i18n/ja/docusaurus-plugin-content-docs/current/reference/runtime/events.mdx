@@ -34,4 +34,4 @@ Go: `EventsOnMultiple(ctx context.Context, eventName string, callback func(optio
 
 このメソッドは、指定されたイベントを発行します。 必要に応じて、イベント発行時にデータを渡すこともできます。 このメソッドによって、任意のイベントリスナーをトリガーさせることができます。
 
-Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/> JS: `EventsEmit(ctx context, optionalData function(optionalData?: any))`
+Go: `EventsEmit(ctx context.Context, eventName string, optionalData ...interface{})`<br/> JS: `EventsEmit(eventName: string, ...optionalData: any)`
