@@ -2,4 +2,4 @@
 
 cd ../website
 
-npx @crowdin/cli@latest pull -b master
+npx @crowdin/cli@latest pull -b master --export-only-approved
