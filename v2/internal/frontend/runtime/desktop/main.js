@@ -130,7 +130,7 @@ window.addEventListener('mousedown', (e) => {
             }
         }
         if (window.wails.flags.deferDragToMouseMove) {
-           window.wails.flags.shouldDrag = true;
+            window.wails.flags.shouldDrag = true;
         } else {
             e.preventDefault()
             window.WailsInvoke("drag");
@@ -152,10 +152,9 @@ function setResize(cursor) {
 
 window.addEventListener('mousemove', function (e) {
     if (window.wails.flags.shouldDrag) {
+        window.wails.flags.shouldDrag = false;
         let mousePressed = e.buttons !== undefined ? e.buttons : e.which;
-        if(mousePressed <= 0) {
-            window.wails.flags.shouldDrag = false;
-        } else {
+        if (mousePressed > 0) {
             window.WailsInvoke("drag");
             return;
         }
