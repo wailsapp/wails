@@ -43,6 +43,10 @@ func pkgAlias(fullPkg string) string {
 }
 
 func GenerateModels(models map[packagePath]map[structName]*StructDef) (string, error) {
+	if models == nil {
+		return "", nil
+	}
+
 	var buffer bytes.Buffer
 	buffer.WriteString(modelsHeader)
 

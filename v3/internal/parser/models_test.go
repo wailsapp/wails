@@ -15,7 +15,7 @@ func TestGenerateModels(t *testing.T) {
 	}{
 		{
 			"testdata/function_single",
-			getFile("testdata/function_single/models.ts"),
+			"",
 		},
 		{
 			"testdata/function_from_imported_package",
@@ -23,11 +23,11 @@ func TestGenerateModels(t *testing.T) {
 		},
 		{
 			"testdata/variable_single",
-			getFile("testdata/variable_single/models.ts"),
+			"",
 		},
 		{
 			"testdata/variable_single_from_function",
-			getFile("testdata/variable_single_from_function/models.ts"),
+			"",
 		},
 		{
 			"testdata/variable_single_from_other_function",
@@ -39,7 +39,7 @@ func TestGenerateModels(t *testing.T) {
 		},
 		{
 			"testdata/struct_literal_multiple",
-			getFile("testdata/struct_literal_multiple/models.ts"),
+			"",
 		},
 		{
 			"testdata/struct_literal_multiple_other",
@@ -47,7 +47,7 @@ func TestGenerateModels(t *testing.T) {
 		},
 		{
 			"testdata/struct_literal_multiple_files",
-			getFile("testdata/struct_literal_multiple_files/models.ts"),
+			"",
 		},
 	}
 	for _, tt := range tests {
