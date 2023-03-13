@@ -20,7 +20,7 @@ export namespace main {
 
       this.name = source['name'];
       this.parent = Person.createFrom(source['parent']);
-      this.details = source['details'];
+      this.details = anon1.createFrom(source['details']);
       
     }
   }
@@ -39,7 +39,7 @@ export namespace main {
       }
 
       this.age = source['age'];
-      this.address = source['address'];
+      this.address = anon2.createFrom(source['address']);
       
     }
   }

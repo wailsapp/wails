@@ -97,19 +97,32 @@ func (f *Field) TSBuild(pkg string) string {
 		return fmt.Sprintf("source['%s']", f.JSName())
 	}
 
-	return fmt.Sprintf("%s.%s.createFrom(source['%s'])", pkgAlias(f.Type.Package), f.Name, f.JSName())
+	if f.Type.Package == "" || f.Type.Package == pkg {
+		return fmt.Sprintf("%s.createFrom(source['%s'])", f.Type.Name, f.JSName())
+	}
+
+	return fmt.Sprintf("%s.%s.createFrom(source['%s'])", pkgAlias(f.Type.Package), f.Type.Name, f.JSName())
 }
 
 func (f *Field) JSDef(pkg string) string {
-	name := f.JSName()
+	var jsType string
+	switch f.Type.Name {
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr", "float32", "float64":
+		jsType = "number"
+	case "string":
+		jsType = "string"
+	case "bool":
+		jsType = "boolean"
+	default:
+		jsType = f.Type.Name
+	}
 
 	var result string
-
 	if f.Type.Package == "" || f.Type.Package == pkg {
-		result += fmt.Sprintf("%s: %s;", name, f.Type.Name)
+		result += fmt.Sprintf("%s: %s;", f.JSName(), jsType)
 	} else {
 		parts := strings.Split(f.Type.Package, "/")
-		result += fmt.Sprintf("%s: %s.%s;", name, parts[len(parts)-1], f.Type.Name)
+		result += fmt.Sprintf("%s: %s.%s;", f.JSName(), parts[len(parts)-1], jsType)
 	}
 
 	if !ast.IsExported(f.Name) {
