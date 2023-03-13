@@ -17,8 +17,8 @@ export namespace main {
         source = JSON.parse(source);
       }
 
-      this.name = source["name"];
-      this.address = services.Address.createFrom(source["address"]);
+      this.name = source['name'];
+      this.address = services.Address.createFrom(source['address']);
       
     }
   }
@@ -41,9 +41,9 @@ export namespace services {
         source = JSON.parse(source);
       }
 
-      this.street = source["street"];
-      this.state = source["state"];
-      this.country = source["country"];
+      this.street = source['street'];
+      this.state = source['state'];
+      this.country = source['country'];
       
     }
   }

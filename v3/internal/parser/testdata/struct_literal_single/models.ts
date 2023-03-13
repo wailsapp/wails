@@ -18,9 +18,9 @@ export namespace main {
         source = JSON.parse(source);
       }
 
-      this.name = source["name"];
-      this.parent = Person.createFrom(source["parent"]);
-      this.details = source["details"];
+      this.name = source['name'];
+      this.parent = Person.createFrom(source['parent']);
+      this.details = source['details'];
       
     }
   }
@@ -38,8 +38,8 @@ export namespace main {
         source = JSON.parse(source);
       }
 
-      this.age = source["age"];
-      this.address = source["address"];
+      this.age = source['age'];
+      this.address = source['address'];
       
     }
   }
@@ -56,7 +56,7 @@ export namespace main {
         source = JSON.parse(source);
       }
 
-      this.street = source["street"];
+      this.street = source['street'];
       
     }
   }
