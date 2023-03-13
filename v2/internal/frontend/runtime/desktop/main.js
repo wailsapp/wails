@@ -66,7 +66,7 @@ window.wails = {
         defaultCursor: null,
         borderThickness: 6,
         shouldDrag: false,
-        deferDragToMouseMove: false,
+        deferDragToMouseMove: true,
         cssDragProperty: "--wails-draggable",
         cssDragValue: "drag",
     }
