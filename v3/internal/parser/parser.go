@@ -90,6 +90,16 @@ func (f *Field) JSName() string {
 	return strings.ToLower(f.Name[0:1]) + f.Name[1:]
 }
 
+// TSBuild contains the typescript to build a field for a JS object
+// via assignment for simple types or constructors for structs
+func (f *Field) TSBuild(pkg string) string {
+	if !f.Type.IsStruct {
+		return fmt.Sprintf("source['%s']", f.JSName())
+	}
+
+	return fmt.Sprintf("%s.%s.createFrom(source['%s'])", pkgAlias(f.Type.Package), f.Name, f.JSName())
+}
+
 func (f *Field) JSDef(pkg string) string {
 	name := f.JSName()
 
