@@ -180,6 +180,9 @@ func arrayifyValue(valueArray string, valueType string) string {
 }
 
 func goTypeToJSDocType(input string, importNamespaces *slicer.StringSlicer) string {
+	// remove usage of reference
+	input = strings.TrimPrefix(input, "*")
+
 	matches := mapRegex.FindStringSubmatch(input)
 	keyPackage := matches[keyPackageIndex]
 	keyType := matches[keyTypeIndex]
