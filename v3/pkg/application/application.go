@@ -45,7 +45,12 @@ func New(appOptions Options) *App {
 
 	result.Events = NewCustomEventProcessor(result.dispatchEventToWindows)
 
-	opts := assetserveroptions.Options{Assets: appOptions.Assets.FS, Handler: appOptions.Assets.Handler, Middleware: appOptions.Assets.Middleware}
+	opts := assetserveroptions.Options{
+		Assets:     appOptions.Assets.FS,
+		Handler:    appOptions.Assets.Handler,
+		Middleware: assetserveroptions.Middleware(appOptions.Assets.Middleware),
+	}
+
 	// TODO ServingFrom disk?
 	srv, err := assetserver.NewAssetServer("", opts, false, nil, wailsruntime.RuntimeAssetsBundle)
 	if err != nil {
