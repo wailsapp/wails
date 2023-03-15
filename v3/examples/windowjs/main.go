@@ -21,6 +21,9 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+		Assets: application.AssetOptions{
+			FS: assets,
+		},
 	})
 
 	// Create a custom menu
@@ -30,11 +33,7 @@ func main() {
 	windowCounter := 1
 
 	newWindow := func() {
-		app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
-			Assets: application.AssetOptions{
-				FS: assets,
-			},
-		}).
+		app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{}).
 			SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
 			SetPosition(rand.Intn(1000), rand.Intn(800)).
 			Show()

@@ -790,6 +790,7 @@ static void windowSetFrameless(void *window, bool frameless) {
 */
 import "C"
 import (
+	"net/url"
 	"sync"
 	"unsafe"
 
@@ -969,13 +970,17 @@ func (w *macosWebviewWindow) execJS(js string) {
 	C.windowExecJS(w.nsWindow, C.CString(js))
 }
 
-func (w *macosWebviewWindow) setURL(url string) {
-	if url == "/" {
-		// TODO handle this in a central location and handle all urls without scheme and host. This might be platform
-		// dependant
-		url = "wails://wails/"
+func (w *macosWebviewWindow) setURL(uri string) {
+	if uri != "" {
+		url, err := url.Parse(uri)
+		if err == nil && url.Scheme == "" && url.Host == "" {
+			// TODO handle this in a central location, the scheme and host might be platform dependant.
+			url.Scheme = "wails"
+			url.Host = "wails"
+			uri = url.String()
+		}
 	}
-	C.navigationLoadURL(w.nsWindow, C.CString(url))
+	C.navigationLoadURL(w.nsWindow, C.CString(uri))
 }
 
 func (w *macosWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {

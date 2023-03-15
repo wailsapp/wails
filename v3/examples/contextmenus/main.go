@@ -20,13 +20,13 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+		Assets: application.AssetOptions{
+			FS: assets,
+		},
 	})
 
 	mainWindow := app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title: "Context Menu Demo",
-		Assets: application.AssetOptions{
-			FS: assets,
-		},
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
@@ -36,9 +36,6 @@ func main() {
 
 	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title: "Context Menu Demo",
-		Assets: application.AssetOptions{
-			FS: assets,
-		},
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,

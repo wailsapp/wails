@@ -8,16 +8,16 @@ import (
 	"strconv"
 )
 
-func (m *MessageProcessor) dialogErrorCallback(message string, dialogID *string, err error) {
+func (m *MessageProcessor) dialogErrorCallback(window *WebviewWindow, message string, dialogID *string, err error) {
 	errorMsg := fmt.Sprintf(message, err)
 	m.Error(errorMsg)
 	msg := "_wails.dialogErrorCallback('" + *dialogID + "', " + strconv.Quote(errorMsg) + ");"
-	m.window.ExecJS(msg)
+	window.ExecJS(msg)
 }
 
-func (m *MessageProcessor) dialogCallback(dialogID *string, result string, isJSON bool) {
+func (m *MessageProcessor) dialogCallback(window *WebviewWindow, dialogID *string, result string, isJSON bool) {
 	msg := fmt.Sprintf("_wails.dialogCallback('%s', %s, %v);", *dialogID, strconv.Quote(result), isJSON)
-	m.window.ExecJS(msg)
+	window.ExecJS(msg)
 }
 
 func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWriter, r *http.Request, window *WebviewWindow, params QueryParams) {
@@ -37,7 +37,7 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		var options MessageDialogOptions
 		err := params.ToStruct(&options)
 		if err != nil {
-			m.dialogErrorCallback("Error parsing dialog options: %s", dialogID, err)
+			m.dialogErrorCallback(window, "Error parsing dialog options: %s", dialogID, err)
 			return
 		}
 		if len(options.Buttons) == 0 {
@@ -63,7 +63,7 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		for _, button := range options.Buttons {
 			label := button.Label
 			button.OnClick(func() {
-				m.dialogCallback(dialogID, label, false)
+				m.dialogCallback(window, dialogID, label, false)
 			})
 		}
 		dialog.AddButtons(options.Buttons)
@@ -82,23 +82,23 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 			if options.AllowsMultipleSelection {
 				files, err := dialog.PromptForMultipleSelection()
 				if err != nil {
-					m.dialogErrorCallback("Error getting selection: %s", dialogID, err)
+					m.dialogErrorCallback(window, "Error getting selection: %s", dialogID, err)
 					return
 				} else {
 					result, err := json.Marshal(files)
 					if err != nil {
-						m.dialogErrorCallback("Error marshalling files: %s", dialogID, err)
+						m.dialogErrorCallback(window, "Error marshalling files: %s", dialogID, err)
 						return
 					}
-					m.dialogCallback(dialogID, string(result), true)
+					m.dialogCallback(window, dialogID, string(result), true)
 				}
 			} else {
 				file, err := dialog.PromptForSingleSelection()
 				if err != nil {
-					m.dialogErrorCallback("Error getting selection: %s", dialogID, err)
+					m.dialogErrorCallback(window, "Error getting selection: %s", dialogID, err)
 					return
 				}
-				m.dialogCallback(dialogID, file, false)
+				m.dialogCallback(window, dialogID, file, false)
 			}
 		}()
 		m.ok(rw)
@@ -114,10 +114,10 @@ func (m *MessageProcessor) processDialogMethod(method string, rw http.ResponseWr
 		go func() {
 			file, err := dialog.PromptForSingleSelection()
 			if err != nil {
-				m.dialogErrorCallback("Error getting selection: %s", dialogID, err)
+				m.dialogErrorCallback(window, "Error getting selection: %s", dialogID, err)
 				return
 			}
-			m.dialogCallback(dialogID, file, false)
+			m.dialogCallback(window, dialogID, file, false)
 		}()
 		m.ok(rw)
 

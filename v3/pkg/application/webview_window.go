@@ -7,10 +7,6 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/logger"
 
-	"github.com/wailsapp/wails/v2/pkg/assetserver"
-	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
-	assetserveroptions "github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -72,9 +68,6 @@ type WebviewWindow struct {
 	implLock sync.RWMutex
 	id       uint
 
-	assets           *assetserver.AssetServer
-	messageProcessor *MessageProcessor
-
 	eventListeners     map[uint][]func(ctx *WindowEventContext)
 	eventListenersLock sync.RWMutex
 
@@ -103,24 +96,12 @@ func NewWindow(options *WebviewWindowOptions) *WebviewWindow {
 		options.URL = "/"
 	}
 
-	opts := assetserveroptions.Options{Assets: options.Assets.FS, Handler: options.Assets.Handler, Middleware: options.Assets.Middleware}
-	// TODO Bindings, ServingFrom disk?
-	srv, err := assetserver.NewAssetServer("", opts, false, nil, runtime.RuntimeAssetsBundle)
-	if err != nil {
-		globalApplication.fatal(err.Error())
-	}
-
 	result := &WebviewWindow{
 		id:             getWindowID(),
 		options:        options,
 		eventListeners: make(map[uint][]func(ctx *WindowEventContext)),
 		contextMenus:   make(map[string]*Menu),
-
-		assets: srv,
 	}
-
-	result.messageProcessor = NewMessageProcessor(result)
-	srv.UseRuntimeHandler(result.messageProcessor)
 
 	return result
 }
@@ -383,14 +364,8 @@ func (w *WebviewWindow) handleMessage(message string) {
 	if message == "test" {
 		w.SetTitle("Hello World")
 	}
-	w.messageProcessor.ProcessMessage(message)
+	w.info("ProcessMessage from front end:", message)
 
-}
-
-func (w *WebviewWindow) handleWebViewRequest(request webview.Request) {
-	url, _ := request.URL()
-	w.info("Request: %s", url)
-	w.assets.ServeWebViewRequest(request)
 }
 
 func (w *WebviewWindow) Center() {

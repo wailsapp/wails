@@ -3,19 +3,19 @@ package application
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
 )
 
-type MessageProcessor struct {
-	window *WebviewWindow
-}
+// TODO maybe we could use a new struct that has the targetWindow as an attribute so we could get rid of passing the targetWindow
+// as parameter through every function call.
 
-func NewMessageProcessor(w *WebviewWindow) *MessageProcessor {
-	return &MessageProcessor{
-		window: w,
-	}
+type MessageProcessor struct{}
+
+func NewMessageProcessor() *MessageProcessor {
+	return &MessageProcessor{}
 }
 
 func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, args ...any) {
@@ -43,15 +43,27 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 
 	params := QueryParams(r.URL.Query())
 
-	var targetWindow = m.window
-	windowID := params.UInt("windowID")
-	if windowID != nil {
-		// Get window for ID
-		targetWindow = globalApplication.getWindowForID(*windowID)
-		if targetWindow == nil {
-			m.Error("Window ID %s not found", *windowID)
+	var windowID uint
+	if hWindowID := r.Header.Get(webViewRequestHeaderWindowId); hWindowID != "" {
+		// Get windowID out of the request header
+		wID, err := strconv.ParseUint(hWindowID, 10, 64)
+		if err != nil {
+			m.Error("Window ID '%s' not parsable: %s", hWindowID, err)
 			return
 		}
+
+		windowID = uint(wID)
+	}
+
+	if qWindowID := params.UInt("windowID"); qWindowID != nil {
+		// Get windowID out of the query parameters if provided
+		windowID = *qWindowID
+	}
+
+	targetWindow := globalApplication.getWindowForID(windowID)
+	if targetWindow == nil {
+		m.Error("Window ID %s not found", windowID)
+		return
 	}
 
 	switch object {
@@ -77,10 +89,6 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 		m.httpError(rw, "Unknown runtime call: %s", object)
 	}
 
-}
-
-func (m *MessageProcessor) ProcessMessage(message string) {
-	m.Info("ProcessMessage from front end:", message)
 }
 
 func (m *MessageProcessor) Error(message string, args ...any) {
