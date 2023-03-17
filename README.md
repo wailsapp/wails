@@ -97,6 +97,7 @@ This project is supported by these kind people / companies:
 <p align="center">
 <img src="https://wails.io/img/sponsor/jetbrains-grayscale.webp" style="width: 100px"/>
 </p>
+
 ## FAQ
 
 - Is this an alternative to Electron?
