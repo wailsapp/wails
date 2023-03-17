@@ -59,8 +59,10 @@ function callBinding(type, options) {
     });
 }
 
-
 export function Call(options) {
     return callBinding("Call", options);
 }
 
+export function Plugin(options) {
+    return callBinding("Plugin", options);
+}

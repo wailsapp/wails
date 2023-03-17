@@ -17,7 +17,8 @@ type Options struct {
 		Silent        bool
 		CustomLoggers []logger.Output
 	}
-	Assets AssetOptions
+	Assets  AssetOptions
+	Plugins map[string]Plugin
 }
 
 // AssetOptions defines the configuration of the AssetServer.

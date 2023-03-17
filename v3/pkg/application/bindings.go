@@ -15,6 +15,11 @@ type CallOptions struct {
 	Args        []any  `json:"args"`
 }
 
+type PluginCallOptions struct {
+	Name string `json:"name"`
+	Args []any  `json:"args"`
+}
+
 // Parameter defines a Go method parameter
 type Parameter struct {
 	Name        string `json:"name,omitempty"`

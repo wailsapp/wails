@@ -57,7 +57,8 @@ func New(appOptions Options) *App {
 		result.fatal(err.Error())
 	}
 
-	srv.UseRuntimeHandler(NewMessageProcessor())
+	pluginManager := NewPluginManager(appOptions.Plugins)
+	srv.UseRuntimeHandler(NewMessageProcessor(pluginManager))
 	result.assets = srv
 
 	globalApplication = result

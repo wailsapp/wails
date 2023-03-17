@@ -12,10 +12,14 @@ import (
 // TODO maybe we could use a new struct that has the targetWindow as an attribute so we could get rid of passing the targetWindow
 // as parameter through every function call.
 
-type MessageProcessor struct{}
+type MessageProcessor struct {
+	pluginManager *PluginManager
+}
 
-func NewMessageProcessor() *MessageProcessor {
-	return &MessageProcessor{}
+func NewMessageProcessor(pluginManager *PluginManager) *MessageProcessor {
+	return &MessageProcessor{
+		pluginManager: pluginManager,
+	}
 }
 
 func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, args ...any) {

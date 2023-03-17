@@ -167,7 +167,7 @@ export function Off(eventName, ...additionalEventNames) {
     let eventsToRemove = [eventName, ...additionalEventNames];
     eventsToRemove.forEach(eventName => {
         eventListeners.delete(eventName);
-    })
+    });
 }
 
 /**

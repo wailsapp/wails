@@ -14,7 +14,7 @@ import * as Clipboard from './clipboard';
 import * as Application from './application';
 import * as Log from './log';
 import * as Screens from './screens';
-import {Call, callErrorCallback, callCallback} from "./calls";
+import {Plugin, Call, callErrorCallback, callCallback} from "./calls";
 import {newWindow} from "./window";
 import {dispatchCustomEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
 import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
@@ -45,6 +45,7 @@ export function newRuntime(id) {
         Log,
         Screens,
         Call,
+        Plugin,
         WML: {
             Reload: reloadWML,
         },
@@ -65,7 +66,7 @@ export function newRuntime(id) {
             OffAll,
         },
         Window: newWindow(id),
-    }
+    };
 }
 
 if (DEBUG) {
