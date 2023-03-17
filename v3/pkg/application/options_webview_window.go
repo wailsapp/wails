@@ -1,10 +1,5 @@
 package application
 
-import (
-	"io/fs"
-	"net/http"
-)
-
 type WindowState int
 
 const (
@@ -29,7 +24,6 @@ type WebviewWindowOptions struct {
 	StartState                      WindowState
 	Mac                             MacWindow
 	BackgroundColour                *RGBA
-	Assets                          AssetOptions
 	HTML                            string
 	JS                              string
 	CSS                             string
@@ -49,14 +43,6 @@ var WebviewWindowDefaults = &WebviewWindowOptions{
 	URL:    "",
 }
 
-type AssetOptions struct {
-	// FS to use for loading assets from
-	FS fs.FS
-	// Handler is a custom handler to use for serving assets. If this is set, the `URL` and `FS` fields are ignored.
-	Handler http.Handler
-	// Middleware is a custom middleware to use for serving assets. If this is set, the `URL` and `FS` fields are ignored.
-	Middleware func(http.Handler) http.Handler
-}
 
 type RGBA struct {
 	Red, Green, Blue, Alpha uint8

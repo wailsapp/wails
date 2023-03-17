@@ -3,14 +3,19 @@ package application
 import "C"
 import (
 	"log"
+	"net/http"
 	"os"
 	"runtime"
+	"strconv"
 	"sync"
 
-	"github.com/wailsapp/wails/v3/pkg/logger"
-
+	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
+	assetserveroptions "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+
+	wailsruntime "github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/logger"
 )
 
 var globalApplication *App
@@ -39,6 +44,22 @@ func New(appOptions Options) *App {
 	}
 
 	result.Events = NewCustomEventProcessor(result.dispatchEventToWindows)
+
+	opts := assetserveroptions.Options{
+		Assets:     appOptions.Assets.FS,
+		Handler:    appOptions.Assets.Handler,
+		Middleware: assetserveroptions.Middleware(appOptions.Assets.Middleware),
+	}
+
+	// TODO ServingFrom disk?
+	srv, err := assetserver.NewAssetServer("", opts, false, nil, wailsruntime.RuntimeAssetsBundle)
+	if err != nil {
+		result.fatal(err.Error())
+	}
+
+	srv.UseRuntimeHandler(NewMessageProcessor())
+	result.assets = srv
+
 	globalApplication = result
 	return result
 }
@@ -85,9 +106,24 @@ type dragAndDropMessage struct {
 
 var windowDragAndDropBuffer = make(chan *dragAndDropMessage)
 
+var _ webview.Request = &webViewAssetRequest{}
+
+const webViewRequestHeaderWindowId = "x-wails-window-id"
+
 type webViewAssetRequest struct {
+	webview.Request
 	windowId uint
-	request  webview.Request
+}
+
+func (r *webViewAssetRequest) Header() (http.Header, error) {
+	h, err := r.Request.Header()
+	if err != nil {
+		return nil, err
+	}
+
+	hh := h.Clone()
+	hh.Set(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(r.windowId), 10))
+	return hh, nil
 }
 
 var webviewRequests = make(chan *webViewAssetRequest)
@@ -127,6 +163,8 @@ type App struct {
 
 	contextMenus     map[string]*Menu
 	contextMenusLock sync.Mutex
+
+	assets *assetserver.AssetServer
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -243,9 +281,9 @@ func (a *App) Run() error {
 	}()
 	go func() {
 		for {
-			event := <-webviewRequests
-			a.handleWebViewRequest(event)
-			err := event.request.Release()
+			request := <-webviewRequests
+			a.handleWebViewRequest(request)
+			err := request.Release()
 			if err != nil {
 				a.error("Failed to release webview request: %s", err.Error())
 			}
@@ -334,17 +372,11 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	window.handleMessage(event.message)
 }
 
-func (a *App) handleWebViewRequest(event *webViewAssetRequest) {
+func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 	// Get window from window map
-	a.windowsLock.Lock()
-	window, ok := a.windows[event.windowId]
-	a.windowsLock.Unlock()
-	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
-		return
-	}
-	// Get callback from window
-	window.handleWebViewRequest(event.request)
+	url, _ := request.URL()
+	a.info("Window: %d, Request: %s", request.windowId, url)
+	a.assets.ServeWebViewRequest(request)
 }
 
 func (a *App) handleWindowEvent(event *WindowEvent) {

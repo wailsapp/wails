@@ -21,6 +21,9 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+		Assets: application.AssetOptions{
+			FS: assets,
+		},
 	})
 
 	app.Events.On("myevent", func(e *application.CustomEvent) {
@@ -40,9 +43,6 @@ func main() {
 
 	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title: "Events Demo",
-		Assets: application.AssetOptions{
-			FS: assets,
-		},
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
@@ -51,9 +51,6 @@ func main() {
 	})
 	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title: "Events Demo",
-		Assets: application.AssetOptions{
-			FS: assets,
-		},
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,

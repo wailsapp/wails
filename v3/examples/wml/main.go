@@ -19,15 +19,15 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+		Assets: application.AssetOptions{
+			FS: assets,
+		},
 	})
 
 	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title:  "Wails ML Demo",
 		Width:  800,
 		Height: 600,
-		Assets: application.AssetOptions{
-			FS: assets,
-		},
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
