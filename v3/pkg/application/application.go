@@ -57,8 +57,7 @@ func New(appOptions Options) *App {
 		result.fatal(err.Error())
 	}
 
-	pluginManager := NewPluginManager(appOptions.Plugins)
-	srv.UseRuntimeHandler(NewMessageProcessor(pluginManager))
+	srv.UseRuntimeHandler(NewMessageProcessor())
 	result.assets = srv
 
 	globalApplication = result
@@ -151,6 +150,7 @@ type App struct {
 	// Running
 	running  bool
 	bindings *Bindings
+	plugins  *PluginManager
 
 	// platform app
 	impl platformApp
@@ -316,6 +316,14 @@ func (a *App) Run() error {
 		return err
 	}
 
+	a.plugins = NewPluginManager(a.options.Plugins)
+	err = a.plugins.Init()
+	if err != nil {
+		return err
+	}
+
+	a.bindings.AddPlugins(a.options.Plugins)
+
 	// run windows
 	for _, window := range a.windows {
 		go window.run()
@@ -332,7 +340,14 @@ func (a *App) Run() error {
 	// set the application Icon
 	a.impl.setIcon(a.options.Icon)
 
-	return a.impl.run()
+	err = a.impl.run()
+	if err != nil {
+		return err
+	}
+
+	a.plugins.Shutdown()
+
+	return nil
 }
 
 func (a *App) handleApplicationEvent(event uint) {

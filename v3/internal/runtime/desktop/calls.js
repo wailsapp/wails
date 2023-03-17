@@ -64,5 +64,10 @@ export function Call(options) {
 }
 
 export function Plugin(options) {
-    return callBinding("Plugin", options);
+    return callBinding("Call", {
+        packageName: "wails-plugins",
+        structName: options.plugin,
+        methodName: options.methodName,
+        args: options.args,
+    });
 }

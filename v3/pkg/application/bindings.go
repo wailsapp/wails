@@ -20,6 +20,12 @@ type PluginCallOptions struct {
 	Args []any  `json:"args"`
 }
 
+var reservedPluginMethods = []string{
+	"Name",
+	"Init",
+	"Shutdown",
+}
+
 // Parameter defines a Go method parameter
 type Parameter struct {
 	Name        string `json:"name,omitempty"`
@@ -96,7 +102,34 @@ func (b *Bindings) Add(structPtr interface{}) error {
 			b.boundMethods[packageName][structName] = make(map[string]*BoundMethod)
 		}
 		b.boundMethods[packageName][structName][methodName] = method
-		//b.db.AddMethod(packageName, structName, methodName, method)
+	}
+	return nil
+}
+
+func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
+	for pluginID, plugin := range plugins {
+		methods, err := b.getMethods(plugin)
+		if err != nil {
+			return fmt.Errorf("cannot add plugin '%s' to app: %s", pluginID, err.Error())
+		}
+
+		for _, method := range methods {
+			if lo.Contains(reservedPluginMethods, method.Name) {
+				continue
+			}
+			packageName := "wails-plugins"
+			structName := pluginID
+			methodName := method.Name
+
+			// Add it as a regular method
+			if _, ok := b.boundMethods[packageName]; !ok {
+				b.boundMethods[packageName] = make(map[string]map[string]*BoundMethod)
+			}
+			if _, ok := b.boundMethods[packageName][structName]; !ok {
+				b.boundMethods[packageName][structName] = make(map[string]*BoundMethod)
+			}
+			b.boundMethods[packageName][structName][methodName] = method
+		}
 	}
 	return nil
 }

@@ -16,10 +16,8 @@ type MessageProcessor struct {
 	pluginManager *PluginManager
 }
 
-func NewMessageProcessor(pluginManager *PluginManager) *MessageProcessor {
-	return &MessageProcessor{
-		pluginManager: pluginManager,
-	}
+func NewMessageProcessor() *MessageProcessor {
+	return &MessageProcessor{}
 }
 
 func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, args ...any) {

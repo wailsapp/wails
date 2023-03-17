@@ -13,6 +13,8 @@ var assets embed.FS
 
 type RandomNumberPlugin struct{}
 
+func (r *RandomNumberPlugin) Shutdown() {}
+
 func (r *RandomNumberPlugin) Name() string {
 	return "Random Number Plugin"
 }
@@ -21,8 +23,8 @@ func (r *RandomNumberPlugin) Init(_ *application.App) error {
 	return nil
 }
 
-func (r *RandomNumberPlugin) Call(args []any) (any, error) {
-	return rand.Intn(100), nil
+func (r *RandomNumberPlugin) RandInt() int {
+	return rand.Intn(100)
 }
 
 func main() {

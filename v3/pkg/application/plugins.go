@@ -1,13 +1,9 @@
 package application
 
-import (
-	"fmt"
-)
-
 type Plugin interface {
 	Name() string
 	Init(app *App) error
-	Call(args []any) (any, error)
+	Shutdown()
 }
 
 type PluginManager struct {
@@ -31,10 +27,9 @@ func (p *PluginManager) Init() error {
 	return nil
 }
 
-func (p *PluginManager) Call(name string, args []any) (any, error) {
-	plugin, ok := p.plugins[name]
-	if !ok {
-		return nil, fmt.Errorf("plugin '%s' not found", name)
+func (p *PluginManager) Shutdown() {
+	for _, plugin := range p.plugins {
+		plugin.Shutdown()
+		globalApplication.info("Plugin '%s' shutdown", plugin.Name())
 	}
-	return plugin.Call(args)
 }

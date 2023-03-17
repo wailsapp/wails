@@ -58,28 +58,6 @@ func (m *MessageProcessor) processCallMethod(method string, rw http.ResponseWrit
 			m.callCallback(window, callID, string(jsonResult), true)
 		}()
 		m.ok(rw)
-	case "Plugin":
-		var options PluginCallOptions
-		err := params.ToStruct(&options)
-		if err != nil {
-			m.callErrorCallback(window, "Error parsing plugin options: %s", callID, err)
-			return
-		}
-		go func() {
-			result, err := m.pluginManager.Call(options.Name, options.Args)
-			if err != nil {
-				m.callErrorCallback(window, "Error calling plugin: %s", callID, err)
-				return
-			}
-			// convert result to json
-			jsonResult, err := json.Marshal(result)
-			if err != nil {
-				m.callErrorCallback(window, "Error converting result to json: %s", callID, err)
-				return
-			}
-			m.callCallback(window, callID, string(jsonResult), true)
-		}()
-		m.ok(rw)
 	default:
 		m.httpError(rw, "Unknown dialog method: %s", method)
 	}
