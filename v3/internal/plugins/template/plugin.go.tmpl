@@ -1,0 +1,75 @@
+package github.com/myuser/wails-plugin-{{.PackageName}}
+
+import (
+	"crypto/md5"
+	"crypto/sha1"
+	"crypto/sha256"
+	"encoding/hex"
+	"github.com/wailsapp/wails/v3/pkg/application"
+)
+
+// ---------------- Plugin Setup ----------------
+// This is the main plugin struct. It can be named anything you like.
+// It must implement the application.Plugin interface.
+// Both the Init() and Shutdown() methods are called synchronously when the app starts and stops.
+
+type Plugin struct{}
+
+func NewPlugin() *Plugin {
+	return &Plugin{}
+}
+
+// Shutdown is called when the app is shutting down
+// You can use this to clean up any resources you have allocated
+func (r *Plugin) Shutdown() {}
+
+// Name returns the name of the plugin
+// You should use the go module format here (e.g. github.com/myuser/myrepo)
+func (r *Plugin) Name() string {
+	return "github.com/myuser/{{.Name}}"
+}
+
+func (r *Plugin) Init(_ *application.App) error {
+	return nil
+}
+
+// ---------------- Plugin Methods ----------------
+// Plugin methods are just normal Go methods. You can add as many as you like.
+// The only requirement is that they are exported (start with a capital letter).
+// You can also return any type that is JSON serializable.
+// See https://golang.org/pkg/encoding/json/#Marshal for more information.
+
+// Hashes contains all hashes of a string
+type Hashes struct {
+	MD5    string
+	SHA1   string
+	SHA256 string
+}
+
+// MD5 returns the MD5 hash of the given string
+func (r *Plugin) MD5(s string) string {
+	md5Hash := md5.Sum([]byte(s))
+	return hex.EncodeToString(md5Hash[:])
+}
+
+// SHA1 returns the SHA1 hash of the given string
+func (r *Plugin) SHA1(s string) string {
+	sha1Hash := sha1.Sum([]byte(s))
+	return hex.EncodeToString(sha1Hash[:])
+}
+
+// SHA256 returns the SHA256 hash of the given string
+func (r *Plugin) SHA256(s string) string {
+	sha256Hash := sha256.Sum256([]byte(s))
+	return hex.EncodeToString(sha256Hash[:])
+}
+
+// All returns all hashes of the given string
+// This is an example of returning a struct from a plugin method.
+func (r *Plugin) All(s string) Hashes {
+	return Hashes{
+		MD5:    r.MD5(s),
+		SHA1:   r.SHA1(s),
+		SHA256: r.SHA256(s),
+	}
+}

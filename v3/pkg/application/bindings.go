@@ -129,6 +129,7 @@ func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
 				b.boundMethods[packageName][structName] = make(map[string]*BoundMethod)
 			}
 			b.boundMethods[packageName][structName][methodName] = method
+			globalApplication.info("Added %s plugin method: %s", structName, methodName)
 		}
 	}
 	return nil

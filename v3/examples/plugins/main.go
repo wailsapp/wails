@@ -5,27 +5,11 @@ import (
 	_ "embed"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"log"
-	"math/rand"
+	"plugin_demo/plugins/hashes"
 )
 
 //go:embed assets/*
 var assets embed.FS
-
-type RandomNumberPlugin struct{}
-
-func (r *RandomNumberPlugin) Shutdown() {}
-
-func (r *RandomNumberPlugin) Name() string {
-	return "Random Number Plugin"
-}
-
-func (r *RandomNumberPlugin) Init(_ *application.App) error {
-	return nil
-}
-
-func (r *RandomNumberPlugin) RandInt() int {
-	return rand.Intn(100)
-}
 
 func main() {
 
@@ -36,7 +20,7 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 		Plugins: map[string]application.Plugin{
-			"random": &RandomNumberPlugin{},
+			"hashes": hashes.NewPlugin(),
 		},
 		Assets: application.AssetOptions{
 			FS: assets,
