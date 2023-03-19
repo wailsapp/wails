@@ -13,6 +13,10 @@ O formato é baseado em [Manter um Log de Alterações](https://keepachangelog.c
 
 ## [Unreleased]
 
+### Corrigido
+- Fixed panic when using `wails dev` and the AssetServer tried to log to the logger. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2481)
+- Fixed compatibility with WebView2 Runtime > `110.0.1587.69` which showed a `connection refused` html page before doing a reload of the frontend. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2496)
+
 ## v2.4.0 - 2022-03-08
 
 ### Adicionado
