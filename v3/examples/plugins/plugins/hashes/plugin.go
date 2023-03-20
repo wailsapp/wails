@@ -26,6 +26,12 @@ func (r *Plugin) Init(_ *application.App) error {
 	return nil
 }
 
+func (r *Plugin) Exported() []string {
+	return []string{
+		"Generate",
+	}
+}
+
 // ---------------- Plugin Methods ----------------
 
 type Hashes struct {

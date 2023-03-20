@@ -3,6 +3,7 @@ package kvstore
 import (
 	"encoding/json"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/logger"
 	"io"
 	"os"
 	"sync"
@@ -14,6 +15,7 @@ type KeyValueStore struct {
 	data     map[string]any
 	unsaved  bool
 	lock     sync.RWMutex
+	app      *application.App
 }
 
 type Config struct {
@@ -47,7 +49,8 @@ func (kvs *KeyValueStore) Name() string {
 
 // Init is called when the plugin is loaded. It is passed the application.App
 // instance. This is where you should do any setup.
-func (kvs *KeyValueStore) Init(_ *application.App) error {
+func (kvs *KeyValueStore) Init(app *application.App) error {
+	kvs.app = app
 	err := kvs.open(kvs.config.Filename)
 	if err != nil {
 		return err
@@ -56,9 +59,17 @@ func (kvs *KeyValueStore) Init(_ *application.App) error {
 	return nil
 }
 
+func (kvs *KeyValueStore) Exported() []string {
+	return []string{
+		"Set",
+		"Get",
+		"Save",
+	}
+}
+
 // ---------------- Plugin Methods ----------------
 
-func (kvs *KeyValueStore) open(filename string) error {
+func (kvs *KeyValueStore) open(filename string) (err error) {
 	kvs.filename = filename
 	kvs.data = make(map[string]any)
 
@@ -69,7 +80,19 @@ func (kvs *KeyValueStore) open(filename string) error {
 		}
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		err2 := file.Close()
+		if err2 != nil {
+			if err == nil {
+				err = err2
+			} else {
+				kvs.app.Log(&logger.Message{
+					Level:   "error",
+					Message: err.Error(),
+				})
+			}
+		}
+	}()
 
 	bytes, err := io.ReadAll(file)
 	if err != nil {
@@ -120,7 +143,11 @@ func (kvs *KeyValueStore) Get(key string) any {
 // Set sets the value for the given key. If AutoSave is true, the store is saved to disk.
 func (kvs *KeyValueStore) Set(key string, value any) error {
 	kvs.lock.Lock()
-	kvs.data[key] = value
+	if value == nil {
+		delete(kvs.data, key)
+	} else {
+		kvs.data[key] = value
+	}
 	kvs.lock.Unlock()
 	if kvs.config.AutoSave {
 		err := kvs.Save()

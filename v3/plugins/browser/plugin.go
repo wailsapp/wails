@@ -26,6 +26,13 @@ func (p *Plugin) Init(_ *application.App) error {
 	return nil
 }
 
+func (p *Plugin) Exported() []string {
+	return []string{
+		"OpenURL",
+		"OpenFile",
+	}
+}
+
 // ---------------- Plugin Methods ----------------
 
 func (p *Plugin) OpenURL(url string) error {

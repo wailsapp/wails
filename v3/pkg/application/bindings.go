@@ -24,6 +24,7 @@ var reservedPluginMethods = []string{
 	"Name",
 	"Init",
 	"Shutdown",
+	"Exported",
 }
 
 // Parameter defines a Go method parameter
@@ -113,8 +114,15 @@ func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
 			return fmt.Errorf("cannot add plugin '%s' to app: %s", pluginID, err.Error())
 		}
 
+		exportedMethods := plugin.Exported()
+
 		for _, method := range methods {
+			// Do not expose reserved methods
 			if lo.Contains(reservedPluginMethods, method.Name) {
+				continue
+			}
+			// Do not expose methods that are not in the exported list
+			if !lo.Contains(exportedMethods, method.Name) {
 				continue
 			}
 			packageName := "wails-plugins"
