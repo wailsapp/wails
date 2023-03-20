@@ -42,3 +42,8 @@ Informal and incomplete list of things needed in v3.
 
 - [ ] To log or not to log?
 - [ ] Unify cross-platform events, eg. `onClose`
+
+## Plugins
+
+- [ ] Move logins to `v3/plugins`
+- [ ] Expose application logger to plugins

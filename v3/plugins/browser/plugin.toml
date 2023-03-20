@@ -1,0 +1,11 @@
+# This is the plugin definition file for the "browser" plugin.
+
+Name = "browser"
+Description = "Opens URLs and files in the default browser."
+Author = "Lea Anthony"
+Version = "v1.0.0"
+Website = "https://wails.io"
+Repository = "https://github.com/wailsapp/wails/v3/plugins/browser"
+License = "MIT"
+
+

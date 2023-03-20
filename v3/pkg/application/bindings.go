@@ -30,14 +30,14 @@ var reservedPluginMethods = []string{
 type Parameter struct {
 	Name        string `json:"name,omitempty"`
 	TypeName    string `json:"type"`
-	reflectType reflect.Type
+	ReflectType reflect.Type
 }
 
 func newParameter(Name string, Type reflect.Type) *Parameter {
 	return &Parameter{
 		Name:        Name,
 		TypeName:    Type.String(),
-		reflectType: Type,
+		ReflectType: Type,
 	}
 }
 
@@ -243,6 +243,10 @@ func (b *BoundMethod) Call(args []interface{}) (interface{}, error) {
 	// Iterate over given arguments
 	for index, arg := range args {
 		// Save the converted argument
+		if arg == nil {
+			callArgs[index] = reflect.Zero(b.Inputs[index].ReflectType)
+			continue
+		}
 		callArgs[index] = reflect.ValueOf(arg)
 	}
 

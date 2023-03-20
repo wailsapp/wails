@@ -2,10 +2,12 @@ package main
 
 import (
 	"embed"
-	_ "embed"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/plugins/browser"
+	"github.com/wailsapp/wails/v3/plugins/kvstore"
 	"log"
 	"plugin_demo/plugins/hashes"
+	//"plugin_demo/plugins/hashes"
 )
 
 //go:embed assets/*
@@ -20,7 +22,12 @@ func main() {
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
 		Plugins: map[string]application.Plugin{
-			"hashes": hashes.NewPlugin(),
+			"hashes":  hashes.NewPlugin(),
+			"browser": browser.NewPlugin(),
+			"kvstore": kvstore.NewPlugin(&kvstore.Config{
+				Filename: "store.json",
+				AutoSave: true,
+			}),
 		},
 		Assets: application.AssetOptions{
 			FS: assets,
