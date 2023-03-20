@@ -16,6 +16,8 @@ extern bool hasListeners(unsigned int);
     [self setMovableByWindowBackground:YES];
     return self;
 }
+- (void)keyDown:(NSEvent *)event {
+}
 - (BOOL)canBecomeKeyWindow {
     return YES;
 }
