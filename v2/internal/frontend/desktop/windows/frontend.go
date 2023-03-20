@@ -13,7 +13,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"runtime"
-	"strconv"
 	"strings"
 	"sync"
 	"text/template"
@@ -637,8 +636,12 @@ func (f *Frontend) processMessage(message string) {
 }
 
 func (f *Frontend) Callback(message string) {
+	escaped, err := json.Marshal(message)
+	if err != nil {
+		panic(err)
+	}
 	f.mainWindow.Invoke(func() {
-		f.chromium.Eval(`window.wails.Callback(` + strconv.Quote(message) + `);`)
+		f.chromium.Eval(`window.wails.Callback(` + string(escaped) + `);`)
 	})
 }
 
