@@ -166,6 +166,9 @@ type App struct {
 	contextMenusLock sync.Mutex
 
 	assets *assetserver.AssetServer
+
+	// Hooks
+	windowCreatedCallbacks []func(window *WebviewWindow)
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -242,6 +245,11 @@ func (a *App) NewWebviewWindowWithOptions(windowOptions *WebviewWindowOptions) *
 	a.windowsLock.Lock()
 	a.windows[id] = newWindow
 	a.windowsLock.Unlock()
+
+	// Call hooks
+	for _, hook := range a.windowCreatedCallbacks {
+		hook(newWindow)
+	}
 
 	if a.running {
 		newWindow.run()
@@ -559,4 +567,8 @@ func (a *App) getContextMenu(name string) (*Menu, bool) {
 	menu, ok := a.contextMenus[name]
 	return menu, ok
 
+}
+
+func (a *App) OnWindowCreation(callback func(window *WebviewWindow)) {
+	a.windowCreatedCallbacks = append(a.windowCreatedCallbacks, callback)
 }

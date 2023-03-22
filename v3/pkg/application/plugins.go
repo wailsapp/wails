@@ -4,8 +4,8 @@ type Plugin interface {
 	Name() string
 	Init(app *App) error
 	Shutdown()
-	// Exported is a list of method names that should be exposed to the frontend
 	CallableByJS() []string
+	InjectJS() string
 }
 
 type PluginManager struct {
@@ -13,9 +13,11 @@ type PluginManager struct {
 }
 
 func NewPluginManager(plugins map[string]Plugin) *PluginManager {
-	return &PluginManager{
+	result := &PluginManager{
 		plugins: plugins,
 	}
+	globalApplication.OnWindowCreation(result.onWindowCreation)
+	return result
 }
 
 func (p *PluginManager) Init() error {
@@ -23,6 +25,10 @@ func (p *PluginManager) Init() error {
 		err := plugin.Init(globalApplication)
 		if err != nil {
 			return err
+		}
+		injectJS := plugin.InjectJS()
+		if injectJS != "" {
+
 		}
 		globalApplication.info("Plugin '%s' initialised", plugin.Name())
 	}
@@ -33,5 +39,14 @@ func (p *PluginManager) Shutdown() {
 	for _, plugin := range p.plugins {
 		plugin.Shutdown()
 		globalApplication.info("Plugin '%s' shutdown", plugin.Name())
+	}
+}
+
+func (p *PluginManager) onWindowCreation(window *WebviewWindow) {
+	for _, plugin := range p.plugins {
+		injectJS := plugin.InjectJS()
+		if injectJS != "" {
+			window.ExecJS(injectJS)
+		}
 	}
 }
