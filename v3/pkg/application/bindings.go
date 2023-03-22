@@ -239,14 +239,22 @@ func (b *BoundMethod) Call(args []interface{}) (interface{}, error) {
 	// Check inputs
 	expectedInputLength := len(b.Inputs)
 	actualInputLength := len(args)
-	if expectedInputLength != actualInputLength {
-		return nil, fmt.Errorf("%s takes %d inputs. Received %d", b.Name, expectedInputLength, actualInputLength)
+
+	// If the method is variadic, we need to check the minimum number of inputs
+	if b.Method.Type().IsVariadic() {
+		if actualInputLength < expectedInputLength-1 {
+			return nil, fmt.Errorf("%s takes at least %d inputs. Received %d", b.Name, expectedInputLength, actualInputLength)
+		}
+	} else {
+		if expectedInputLength != actualInputLength {
+			return nil, fmt.Errorf("%s takes %d inputs. Received %d", b.Name, expectedInputLength, actualInputLength)
+		}
 	}
 
 	/** Convert inputs to reflect values **/
 
 	// Create slice for the input arguments to the method call
-	callArgs := make([]reflect.Value, expectedInputLength)
+	callArgs := make([]reflect.Value, actualInputLength)
 
 	// Iterate over given arguments
 	for index, arg := range args {
