@@ -114,7 +114,7 @@ func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
 			return fmt.Errorf("cannot add plugin '%s' to app: %s", pluginID, err.Error())
 		}
 
-		exportedMethods := plugin.Exported()
+		exportedMethods := plugin.CallableByJS()
 
 		for _, method := range methods {
 			// Do not expose reserved methods

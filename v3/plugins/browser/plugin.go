@@ -26,7 +26,7 @@ func (p *Plugin) Init(_ *application.App) error {
 	return nil
 }
 
-func (p *Plugin) Exported() []string {
+func (p *Plugin) CallableByJS() []string {
 	return []string{
 		"OpenURL",
 		"OpenFile",

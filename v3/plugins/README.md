@@ -11,7 +11,7 @@ type Plugin interface {
     Name() string
     Init(*application.App) error
     Shutdown() 
-    Exported() []string
+    CallableByJS() []string
 }
 ```
 
@@ -23,7 +23,7 @@ the application from starting.
 
 The `Shutdown()` method is called when the application is shutting down. 
 
-The `Exported()` method returns a list of exported functions that can be called from 
+The `CallableByJS()` method returns a list of exported functions that can be called from 
 the frontend. These method names must exactly match the names of the methods exported 
 by the plugin.
 

@@ -5,7 +5,7 @@ type Plugin interface {
 	Init(app *App) error
 	Shutdown()
 	// Exported is a list of method names that should be exposed to the frontend
-	Exported() []string
+	CallableByJS() []string
 }
 
 type PluginManager struct {

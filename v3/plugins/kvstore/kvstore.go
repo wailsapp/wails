@@ -59,7 +59,7 @@ func (kvs *KeyValueStore) Init(app *application.App) error {
 	return nil
 }
 
-func (kvs *KeyValueStore) Exported() []string {
+func (kvs *KeyValueStore) CallableByJS() []string {
 	return []string{
 		"Set",
 		"Get",

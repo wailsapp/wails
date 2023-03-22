@@ -26,7 +26,7 @@ func (r *Plugin) Init(_ *application.App) error {
 	return nil
 }
 
-func (r *Plugin) Exported() []string {
+func (r *Plugin) CallableByJS() []string {
 	return []string{
 		"Generate",
 	}

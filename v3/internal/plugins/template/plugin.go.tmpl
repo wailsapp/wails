@@ -1,10 +1,6 @@
-package github.com/myuser/wails-plugin-{{.PackageName}}
+package {{.Name}}
 
 import (
-	"crypto/md5"
-	"crypto/sha1"
-	"crypto/sha256"
-	"encoding/hex"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -13,63 +9,54 @@ import (
 // It must implement the application.Plugin interface.
 // Both the Init() and Shutdown() methods are called synchronously when the app starts and stops.
 
-type Plugin struct{}
+type Config struct {
+    // Add any configuration options here
+}
 
-func NewPlugin() *Plugin {
-	return &Plugin{}
+type Plugin struct{
+    config *Config
+    app *application.App
+}
+
+func NewPlugin(config *Config) *Plugin {
+	return &Plugin{
+        config: config,
+    }
 }
 
 // Shutdown is called when the app is shutting down
 // You can use this to clean up any resources you have allocated
-func (r *Plugin) Shutdown() {}
+func (p *Plugin) Shutdown() {}
 
-// Name returns the name of the plugin
-// You should use the go module format here (e.g. github.com/myuser/myrepo)
-func (r *Plugin) Name() string {
+// Name returns the name of the plugin.
+// You should use the go module format e.g. github.com/myuser/myplugin
+func (p *Plugin) Name() string {
 	return "github.com/myuser/{{.Name}}"
 }
 
-func (r *Plugin) Init(_ *application.App) error {
+// Init is called when the app is starting up. You can use this to
+// initialise any resources you need. You can also access the application
+// instance via the app property.
+func (p *Plugin) Init(app *application.App) error {
+    p.app = app
 	return nil
+}
+
+// Exported returns a list of exported methods that can be called from the frontend
+func (p *Plugin) CallableByJS() []string {
+    return []string{
+        "Greet",
+    }
 }
 
 // ---------------- Plugin Methods ----------------
 // Plugin methods are just normal Go methods. You can add as many as you like.
 // The only requirement is that they are exported (start with a capital letter).
 // You can also return any type that is JSON serializable.
+// Any methods that you want to be callable from the frontend must be returned by the
+// CallableByJS() method above.
 // See https://golang.org/pkg/encoding/json/#Marshal for more information.
 
-// Hashes contains all hashes of a string
-type Hashes struct {
-	MD5    string
-	SHA1   string
-	SHA256 string
-}
-
-// MD5 returns the MD5 hash of the given string
-func (r *Plugin) MD5(s string) string {
-	md5Hash := md5.Sum([]byte(s))
-	return hex.EncodeToString(md5Hash[:])
-}
-
-// SHA1 returns the SHA1 hash of the given string
-func (r *Plugin) SHA1(s string) string {
-	sha1Hash := sha1.Sum([]byte(s))
-	return hex.EncodeToString(sha1Hash[:])
-}
-
-// SHA256 returns the SHA256 hash of the given string
-func (r *Plugin) SHA256(s string) string {
-	sha256Hash := sha256.Sum256([]byte(s))
-	return hex.EncodeToString(sha256Hash[:])
-}
-
-// All returns all hashes of the given string
-// This is an example of returning a struct from a plugin method.
-func (r *Plugin) All(s string) Hashes {
-	return Hashes{
-		MD5:    r.MD5(s),
-		SHA1:   r.SHA1(s),
-		SHA256: r.SHA256(s),
-	}
+func (p *Plugin) Greet(name string) string {
+    return "Hello " + name
 }
