@@ -5,7 +5,8 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/plugins/browser"
 	"github.com/wailsapp/wails/v3/plugins/kvstore"
-	"log"
+	"github.com/wailsapp/wails/v3/plugins/log"
+	"os"
 	"plugin_demo/plugins/hashes"
 	//"plugin_demo/plugins/hashes"
 )
@@ -24,6 +25,7 @@ func main() {
 		Plugins: map[string]application.Plugin{
 			"hashes":  hashes.NewPlugin(),
 			"browser": browser.NewPlugin(),
+			"log":     log.NewPlugin(),
 			"kvstore": kvstore.NewPlugin(&kvstore.Config{
 				Filename: "store.json",
 				AutoSave: true,
@@ -40,6 +42,7 @@ func main() {
 	err := app.Run()
 
 	if err != nil {
-		log.Fatal(err.Error())
+		println(err.Error())
+		os.Exit(1)
 	}
 }
