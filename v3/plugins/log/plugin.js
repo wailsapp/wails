@@ -8,7 +8,7 @@
  * @param args {...any} - The arguments for the log message.
  * @returns {Promise<void|Error>}
  */
-export function Trace(input, ...args) {
+function Trace(input, ...args) {
     return wails.Plugin("log", "Trace", input, ...args);
 }
 
@@ -19,7 +19,7 @@ export function Trace(input, ...args) {
  * @returns {Promise<void|Error>}
  */
 
-export function Debug(input, ...args) {
+function Debug(input, ...args) {
     return wails.Plugin("log", "Debug", input, ...args);
 }
 
@@ -29,7 +29,7 @@ export function Debug(input, ...args) {
  * @param args {...any} - The arguments for the log message.
  * @returns {Promise<void|Error>}
  */
-export function Info(input, ...args) {
+function Info(input, ...args) {
     return wails.Plugin("log", "Info", input, ...args);
 }
 
@@ -39,7 +39,7 @@ export function Info(input, ...args) {
  * @param args {...any} - The arguments for the log message.
  * @returns {Promise<void|Error>}
  */
-export function Warning(input, ...args) {
+function Warning(input, ...args) {
     return wails.Plugin("log", "Warning", input, ...args);
 }
 
@@ -49,7 +49,7 @@ export function Warning(input, ...args) {
  * @param args {...any} - The arguments for the log message.
  * @returns {Promise<void|Error>}
  */
-export function Error(input, ...args) {
+function Error(input, ...args) {
     return wails.Plugin("log", "Error", input, ...args);
 }
 
@@ -59,6 +59,40 @@ export function Error(input, ...args) {
  * @param args {...any} - The arguments for the log message.
  * @returns {Promise<void|Error>}
  */
-export function Fatal(input, ...args) {
+function Fatal(input, ...args) {
     return wails.Plugin("log", "Fatal", input, ...args);
+}
+
+/**
+ * SetLevel sets the logging level
+ * @param level {Level} The log level to set
+ * @returns {Promise<void>}
+ */
+function SetLevel(level) {
+    return wails.Plugin("log", "SetLevel", level);
+}
+
+/**
+ * Log Level.
+ * @readonly
+ * @enum {number}
+ */
+let Level = {
+    Trace: 1,
+    Debug: 2,
+    Info: 3,
+    Warning: 4,
+    Error: 5,
+    Fatal: 6,
+};
+
+window.Logger = {
+    Trace,
+    Debug,
+    Info,
+    Warning,
+    Error,
+    Fatal,
+    SetLevel,
+    Level,
 }

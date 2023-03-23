@@ -2,11 +2,12 @@ package kvstore
 
 import (
 	"encoding/json"
-	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/logger"
 	"io"
 	"os"
 	"sync"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/logger"
 )
 
 type KeyValueStore struct {
@@ -16,6 +17,10 @@ type KeyValueStore struct {
 	unsaved  bool
 	lock     sync.RWMutex
 	app      *application.App
+}
+
+func (kvs *KeyValueStore) InjectJS() string {
+	return ""
 }
 
 type Config struct {
@@ -65,6 +70,10 @@ func (kvs *KeyValueStore) CallableByJS() []string {
 		"Get",
 		"Save",
 	}
+}
+
+func (p *Plugin) InjectJS() string {
+	return ""
 }
 
 // ---------------- Plugin Methods ----------------

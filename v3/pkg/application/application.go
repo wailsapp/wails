@@ -38,6 +38,7 @@ func New(appOptions Options) *App {
 		log:                       logger.New(appOptions.Logger.CustomLoggers...),
 		contextMenus:              make(map[string]*Menu),
 	}
+	globalApplication = result
 
 	if !appOptions.Logger.Silent {
 		result.log.AddOutput(&logger.Console{})
@@ -60,7 +61,24 @@ func New(appOptions Options) *App {
 	srv.UseRuntimeHandler(NewMessageProcessor())
 	result.assets = srv
 
-	globalApplication = result
+	result.bindings, err = NewBindings(appOptions.Bind)
+	if err != nil {
+		println("Fatal error in application initialisation: ", err.Error())
+		os.Exit(1)
+	}
+	err = result.bindings.AddPlugins(appOptions.Plugins)
+	if err != nil {
+		println("Fatal error in application initialisation: ", err.Error())
+		os.Exit(1)
+	}
+
+	result.plugins = NewPluginManager(appOptions.Plugins, srv)
+	err = result.plugins.Init()
+	if err != nil {
+		println("Fatal error in application initialisation: ", err.Error())
+		os.Exit(1)
+	}
+
 	return result
 }
 
@@ -318,20 +336,6 @@ func (a *App) Run() error {
 		}
 	}()
 
-	var err error
-	a.bindings, err = NewBindings(a.options.Bind)
-	if err != nil {
-		return err
-	}
-
-	a.plugins = NewPluginManager(a.options.Plugins)
-	err = a.plugins.Init()
-	if err != nil {
-		return err
-	}
-
-	a.bindings.AddPlugins(a.options.Plugins)
-
 	// run windows
 	for _, window := range a.windows {
 		go window.run()
@@ -348,7 +352,7 @@ func (a *App) Run() error {
 	// set the application Icon
 	a.impl.setIcon(a.options.Icon)
 
-	err = a.impl.run()
+	err := a.impl.run()
 	if err != nil {
 		return err
 	}

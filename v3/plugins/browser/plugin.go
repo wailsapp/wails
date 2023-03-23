@@ -33,6 +33,10 @@ func (p *Plugin) CallableByJS() []string {
 	}
 }
 
+func (p *Plugin) InjectJS() string {
+	return ""
+}
+
 // ---------------- Plugin Methods ----------------
 
 func (p *Plugin) OpenURL(url string) error {

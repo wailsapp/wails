@@ -1,18 +1,23 @@
 package log
 
 import (
+	_ "embed"
 	"fmt"
-	"github.com/wailsapp/wails/v3/pkg/application"
 	"io"
 	"os"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
+
+//go:embed plugin.js
+var pluginJS string
 
 // ---------------- Plugin Setup ----------------
 // This is the main plugin struct. It can be named anything you like.
 // It must implement the application.Plugin interface.
 // Both the Init() and Shutdown() methods are called synchronously when the app starts and stops.
 
-type LogLevel int
+type LogLevel = float64
 
 const (
 	Trace LogLevel = iota + 1
@@ -55,6 +60,7 @@ func NewPluginWithConfig(config *Config) *Plugin {
 	}
 	return &Plugin{
 		config: config,
+		level:  config.Level,
 	}
 }
 
@@ -88,7 +94,12 @@ func (p *Plugin) CallableByJS() []string {
 		"Warning",
 		"Error",
 		"Fatal",
+		"SetLevel",
 	}
+}
+
+func (p *Plugin) InjectJS() string {
+	return pluginJS
 }
 
 // ---------------- Plugin Methods ----------------
@@ -98,7 +109,7 @@ func (p *Plugin) CallableByJS() []string {
 // See https://golang.org/pkg/encoding/json/#Marshal for more information.
 
 func (p *Plugin) write(prefix string, level LogLevel, message string, args ...any) {
-	if level >= p.config.Level {
+	if level >= p.level {
 		if !p.config.DisablePrefix {
 			message = prefix + " " + message
 		}
@@ -134,5 +145,8 @@ func (p *Plugin) Fatal(message string, args ...any) {
 }
 
 func (p *Plugin) SetLevel(newLevel LogLevel) {
+	if newLevel == 0 {
+		newLevel = Debug
+	}
 	p.level = newLevel
 }

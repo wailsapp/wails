@@ -108,3 +108,75 @@ This attribute specifies which javascript event should trigger the action. The d
 <button data-wml-event="hover-box" data-wml-trigger="mouseover">Hover over me!</button>
 ```
 
+## Plugins
+
+Plugins are a way to extend the functionality of your Wails application.
+
+### Creating a plugin
+
+Plugins are standard Go structure that adhere to the following interface:
+
+```go
+type Plugin interface {
+    Name() string
+    Init(*application.App) error
+    Shutdown() 
+    CallableByJS() []string
+    InjectJS() string
+}
+```
+
+The `Name()` method returns the name of the plugin. This is used for logging purposes.
+
+The `Init(*application.App) error` method is called when the plugin is loaded. The `*application.App`
+parameter is the application that the plugin is being loaded into. Any errors will prevent
+the application from starting.
+
+The `Shutdown()` method is called when the application is shutting down.
+
+The `CallableByJS()` method returns a list of exported functions that can be called from
+the frontend. These method names must exactly match the names of the methods exported
+by the plugin.
+
+The `InjectJS()` method returns JavaScript that should be injected into all windows as they are created. This is useful for adding custom JavaScript functions that complement the plugin.
+
+### Tips
+
+#### Enums
+
+In Go, enums are often defined as a type and a set of constants. For example:
+
+```go
+type MyEnum int
+
+const (
+    MyEnumOne MyEnum = iota
+    MyEnumTwo
+    MyEnumThree
+)
+```
+
+Due to incompatibility between Go and JavaScript, custom types cannot be used in this way. The best strategy is to use a type alias for float64:
+
+```go
+type MyEnum = float64
+
+const (
+    MyEnumOne MyEnum = iota
+    MyEnumTwo
+    MyEnumThree
+)
+```
+
+In Javascript, you can then use the following:
+
+```js
+const MyEnum = {
+    MyEnumOne: 0,
+    MyEnumTwo: 1,
+    MyEnumThree: 2
+}
+```
+
+- Why use `float64`? Can't we use `int`? 
+  - Because JavaScript doesn't have a concept of `int`. Everything is a `number`, which translates to `float64` in Go. There are also restrictions on casting types in Go's reflection package, which means using `int` doesn't work. 

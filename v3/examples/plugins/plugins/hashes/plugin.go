@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
+
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -30,6 +31,10 @@ func (r *Plugin) CallableByJS() []string {
 	return []string{
 		"Generate",
 	}
+}
+
+func (r *Plugin) InjectJS() string {
+	return ""
 }
 
 // ---------------- Plugin Methods ----------------

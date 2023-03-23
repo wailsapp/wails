@@ -2,10 +2,11 @@ package application
 
 import (
 	"fmt"
-	"github.com/samber/lo"
 	"reflect"
 	"runtime"
 	"strings"
+
+	"github.com/samber/lo"
 )
 
 type CallOptions struct {
@@ -174,7 +175,7 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 
 		if isFunction(value) {
 			name := runtime.FuncForPC(reflect.ValueOf(value).Pointer()).Name()
-			return nil, fmt.Errorf("%s is a function, not a pointer to a struct. Wails v2 has deprecated the binding of functions. Please wrap your functions up in a struct and bind a pointer to that struct.", name)
+			return nil, fmt.Errorf("%s is a function, not a pointer to a struct. Wails v2 has deprecated the binding of functions. Please wrap your functions up in a struct and bind a pointer to that struct", name)
 		}
 
 		return nil, fmt.Errorf("not a pointer to a struct")
