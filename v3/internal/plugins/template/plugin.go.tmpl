@@ -49,6 +49,11 @@ func (p *Plugin) CallableByJS() []string {
     }
 }
 
+// InjectJS returns any JS that should be injected into the frontend
+func (p *Plugin) InjectJS() string {
+	return ""
+}
+
 // ---------------- Plugin Methods ----------------
 // Plugin methods are just normal Go methods. You can add as many as you like.
 // The only requirement is that they are exported (start with a capital letter).

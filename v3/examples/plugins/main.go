@@ -6,9 +6,9 @@ import (
 	"github.com/wailsapp/wails/v3/plugins/browser"
 	"github.com/wailsapp/wails/v3/plugins/kvstore"
 	"github.com/wailsapp/wails/v3/plugins/log"
+	"github.com/wailsapp/wails/v3/plugins/sqlite"
 	"os"
 	"plugin_demo/plugins/hashes"
-	//"plugin_demo/plugins/hashes"
 )
 
 //go:embed assets/*
@@ -26,6 +26,7 @@ func main() {
 			"hashes":  hashes.NewPlugin(),
 			"browser": browser.NewPlugin(),
 			"log":     log.NewPlugin(),
+			"sqlite":  sqlite.NewPlugin(&sqlite.Config{}),
 			"kvstore": kvstore.NewPlugin(&kvstore.Config{
 				Filename: "store.json",
 				AutoSave: true,

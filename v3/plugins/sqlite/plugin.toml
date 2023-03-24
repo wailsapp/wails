@@ -1,0 +1,11 @@
+# This is the plugin definition file for the "sqlite" plugin.
+
+Name = "sqlite"
+Description = "Provides easy access to SQLite DBs"
+Author = "Lea Anthony"
+Version = "v1.0.0"
+Website = "https://wails.io/plugins/sqlite"
+Repository = "https://github.com/wailsapp/wails/v3/plugins/sqlite"
+License = "MIT"
+
+
