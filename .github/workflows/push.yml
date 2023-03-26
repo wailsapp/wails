@@ -22,12 +22,12 @@ jobs:
             website/**/*.json
 
       - name: Set node
-        if: steps.verify-changed-files.outputs.files_changed != 'true'
         uses: actions/setup-node@v2
         with:
           node-version: 16.x
 
       - name: Push files
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
         env:
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
         run: |
