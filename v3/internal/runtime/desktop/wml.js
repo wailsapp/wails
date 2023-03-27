@@ -24,9 +24,8 @@ function addWMLEventListeners() {
                 return;
             }
             sendEvent(eventType);
-        }
+        };
         // Remove existing listeners
-
         element.removeEventListener(trigger, callback);
 
         // Add new listener
@@ -59,7 +58,7 @@ function addWMLWindowListeners() {
                 return;
             }
             callWindowMethod(windowMethod);
-        }
+        };
 
         // Remove existing listeners
         element.removeEventListener(trigger, callback);

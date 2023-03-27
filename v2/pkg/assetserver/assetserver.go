@@ -43,6 +43,7 @@ type AssetServer struct {
 	runtimeHandler RuntimeHandler
 
 	assetServerWebView
+	disableRuntime bool
 }
 
 func NewAssetServerMainPage(bindingsJSON string, options *options.App, servingFromDisk bool, logger Logger, runtime RuntimeAssets) (*AssetServer, error) {
@@ -166,8 +167,10 @@ func (d *AssetServer) processIndexHTML(indexHTML []byte) ([]byte, error) {
 		}
 	}
 
-	if err := insertScriptInHead(htmlNode, runtimeJSPath); err != nil {
-		return nil, err
+	if !d.disableRuntime {
+		if err := insertScriptInHead(htmlNode, runtimeJSPath); err != nil {
+			return nil, err
+		}
 	}
 
 	if err := insertScriptInHead(htmlNode, ipcJSPath); err != nil {
@@ -205,4 +208,8 @@ func (d *AssetServer) logError(message string, args ...interface{}) {
 	if d.logger != nil {
 		d.logger.Error("[AssetServer] "+message, args...)
 	}
+}
+
+func (d *AssetServer) DisableRuntime() {
+	d.disableRuntime = true
 }

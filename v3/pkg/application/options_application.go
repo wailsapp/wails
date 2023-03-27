@@ -14,4 +14,6 @@ type Options struct {
 		Silent        bool
 		CustomLoggers []logger.Output
 	}
+	// InjectRuntime will inject the JS runtime into all created webview windows.
+	InjectRuntime bool
 }

@@ -121,6 +121,9 @@ func NewWindow(options *WebviewWindowOptions) *WebviewWindow {
 
 	result.messageProcessor = NewMessageProcessor(result)
 	srv.UseRuntimeHandler(result.messageProcessor)
+	if !globalApplication.options.InjectRuntime {
+		srv.DisableRuntime()
+	}
 
 	return result
 }

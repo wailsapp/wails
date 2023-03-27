@@ -31,7 +31,8 @@ Informal and incomplete list of things needed in v3.
   - [x] Screens
   - [x] Clipboard
   - [x] Application
-- [ ] Create `.d.ts` file
+- [ ] Move to typescript module
+- [ ] Move WML to plugin
 
 ## Templates
 
