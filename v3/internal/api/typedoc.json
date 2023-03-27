@@ -1,0 +1,16 @@
+{
+  "entryPoints": [
+    "src/application.ts",
+    "src/clipboard.ts",
+    "src/contextmenu.ts",
+    "src/dialogs.ts",
+    "src/events.ts",
+    "src/screens.ts",
+    "src/window.ts"
+  ],
+  "githubPages": false,
+  "readme": "none",
+  "out": "docs",
+  "json": "docs/api.json",
+  "pretty": true
+}

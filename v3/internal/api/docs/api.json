@@ -1,0 +1,4547 @@
+{
+	"id": 0,
+	"name": "api",
+	"kind": 1,
+	"flags": {},
+	"originalName": "",
+	"children": [
+		{
+			"id": 1,
+			"name": "application",
+			"kind": 2,
+			"kindString": "Module",
+			"flags": {},
+			"children": [
+				{
+					"id": 2,
+					"name": "Hide",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "application.ts",
+							"line": 17,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/application.ts#L17"
+						}
+					],
+					"signatures": [
+						{
+							"id": 3,
+							"name": "Hide",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "intrinsic",
+										"name": "void"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				},
+				{
+					"id": 6,
+					"name": "Quit",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "application.ts",
+							"line": 25,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/application.ts#L25"
+						}
+					],
+					"signatures": [
+						{
+							"id": 7,
+							"name": "Quit",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "intrinsic",
+										"name": "void"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				},
+				{
+					"id": 4,
+					"name": "Show",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "application.ts",
+							"line": 21,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/application.ts#L21"
+						}
+					],
+					"signatures": [
+						{
+							"id": 5,
+							"name": "Show",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "intrinsic",
+										"name": "void"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				}
+			],
+			"groups": [
+				{
+					"title": "Functions",
+					"children": [
+						2,
+						6,
+						4
+					]
+				}
+			],
+			"sources": [
+				{
+					"fileName": "application.ts",
+					"line": 13,
+					"character": 0,
+					"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/application.ts#L13"
+				}
+			]
+		},
+		{
+			"id": 8,
+			"name": "clipboard",
+			"kind": 2,
+			"kindString": "Module",
+			"flags": {},
+			"children": [
+				{
+					"id": 9,
+					"name": "SetText",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "clipboard.ts",
+							"line": 18,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/clipboard.ts#L18"
+						}
+					],
+					"signatures": [
+						{
+							"id": 10,
+							"name": "SetText",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"parameters": [
+								{
+									"id": 11,
+									"name": "text",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "intrinsic",
+										"name": "string"
+									}
+								}
+							],
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "intrinsic",
+										"name": "void"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				},
+				{
+					"id": 12,
+					"name": "Text",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "clipboard.ts",
+							"line": 23,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/clipboard.ts#L23"
+						}
+					],
+					"signatures": [
+						{
+							"id": 13,
+							"name": "Text",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "intrinsic",
+										"name": "string"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				}
+			],
+			"groups": [
+				{
+					"title": "Functions",
+					"children": [
+						9,
+						12
+					]
+				}
+			],
+			"sources": [
+				{
+					"fileName": "clipboard.ts",
+					"line": 13,
+					"character": 0,
+					"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/clipboard.ts#L13"
+				}
+			]
+		},
+		{
+			"id": 14,
+			"name": "dialogs",
+			"kind": 2,
+			"kindString": "Module",
+			"flags": {},
+			"children": [
+				{
+					"id": 42,
+					"name": "DialogType",
+					"kind": 8,
+					"kindString": "Enumeration",
+					"flags": {},
+					"children": [
+						{
+							"id": 46,
+							"name": "ErrorDialog",
+							"kind": 16,
+							"kindString": "Enumeration Member",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 67,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L67"
+								}
+							],
+							"type": {
+								"type": "literal",
+								"value": 3
+							}
+						},
+						{
+							"id": 43,
+							"name": "InfoDialog",
+							"kind": 16,
+							"kindString": "Enumeration Member",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 64,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L64"
+								}
+							],
+							"type": {
+								"type": "literal",
+								"value": 0
+							}
+						},
+						{
+							"id": 47,
+							"name": "OpenDirectoryDialog",
+							"kind": 16,
+							"kindString": "Enumeration Member",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 68,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L68"
+								}
+							],
+							"type": {
+								"type": "literal",
+								"value": 4
+							}
+						},
+						{
+							"id": 44,
+							"name": "QuestionDialog",
+							"kind": 16,
+							"kindString": "Enumeration Member",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 65,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L65"
+								}
+							],
+							"type": {
+								"type": "literal",
+								"value": 1
+							}
+						},
+						{
+							"id": 45,
+							"name": "WarningDialog",
+							"kind": 16,
+							"kindString": "Enumeration Member",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 66,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L66"
+								}
+							],
+							"type": {
+								"type": "literal",
+								"value": 2
+							}
+						}
+					],
+					"groups": [
+						{
+							"title": "Enumeration Members",
+							"children": [
+								46,
+								43,
+								47,
+								44,
+								45
+							]
+						}
+					],
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 63,
+							"character": 12,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L63"
+						}
+					]
+				},
+				{
+					"id": 48,
+					"name": "Button",
+					"kind": 256,
+					"kindString": "Interface",
+					"flags": {},
+					"children": [
+						{
+							"id": 50,
+							"name": "IsCancel",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 74,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L74"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 51,
+							"name": "IsDefault",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 75,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L75"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 49,
+							"name": "Label",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 73,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L73"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						}
+					],
+					"groups": [
+						{
+							"title": "Properties",
+							"children": [
+								50,
+								51,
+								49
+							]
+						}
+					],
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 72,
+							"character": 17,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L72"
+						}
+					]
+				},
+				{
+					"id": 73,
+					"name": "FileFilter",
+					"kind": 256,
+					"kindString": "Interface",
+					"flags": {},
+					"children": [
+						{
+							"id": 74,
+							"name": "DisplayName",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 107,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L107"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						},
+						{
+							"id": 75,
+							"name": "Pattern",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 108,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L108"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						}
+					],
+					"groups": [
+						{
+							"title": "Properties",
+							"children": [
+								74,
+								75
+							]
+						}
+					],
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 106,
+							"character": 17,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L106"
+						}
+					]
+				},
+				{
+					"id": 52,
+					"name": "MessageDialogOptions",
+					"kind": 256,
+					"kindString": "Interface",
+					"flags": {},
+					"children": [
+						{
+							"id": 56,
+							"name": "Buttons",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 83,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L83"
+								}
+							],
+							"type": {
+								"type": "array",
+								"elementType": {
+									"type": "reference",
+									"id": 48,
+									"name": "Button"
+								}
+							}
+						},
+						{
+							"id": 53,
+							"name": "DialogType",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 80,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L80"
+								}
+							],
+							"type": {
+								"type": "reference",
+								"id": 42,
+								"name": "DialogType"
+							}
+						},
+						{
+							"id": 55,
+							"name": "Message",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 82,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L82"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						},
+						{
+							"id": 54,
+							"name": "Title",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 81,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L81"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						}
+					],
+					"groups": [
+						{
+							"title": "Properties",
+							"children": [
+								56,
+								53,
+								55,
+								54
+							]
+						}
+					],
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 79,
+							"character": 17,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L79"
+						}
+					]
+				},
+				{
+					"id": 57,
+					"name": "OpenFileDialogOptions",
+					"kind": 256,
+					"kindString": "Interface",
+					"flags": {},
+					"children": [
+						{
+							"id": 63,
+							"name": "AllowsMultipleSelection",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 93,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L93"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 67,
+							"name": "AllowsOtherFileTypes",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 97,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L97"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 71,
+							"name": "ButtonText",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 102,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L102"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						},
+						{
+							"id": 58,
+							"name": "CanChooseDirectories",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 88,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L88"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 59,
+							"name": "CanChooseFiles",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 89,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L89"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 60,
+							"name": "CanCreateDirectories",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 90,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L90"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 65,
+							"name": "CanSelectHiddenExtension",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 95,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L95"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 72,
+							"name": "Directory",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 103,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L103"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						},
+						{
+							"id": 68,
+							"name": "Filters",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 98,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L98"
+								}
+							],
+							"type": {
+								"type": "array",
+								"elementType": {
+									"type": "reference",
+									"id": 73,
+									"name": "FileFilter"
+								}
+							}
+						},
+						{
+							"id": 64,
+							"name": "HideExtension",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 94,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L94"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 70,
+							"name": "Message",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 101,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L101"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						},
+						{
+							"id": 62,
+							"name": "ResolvesAliases",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 92,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L92"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 61,
+							"name": "ShowHiddenFiles",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 91,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L91"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 69,
+							"name": "Title",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 100,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L100"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						},
+						{
+							"id": 66,
+							"name": "TreatsFilePackagesAsDirectories",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 96,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L96"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						}
+					],
+					"groups": [
+						{
+							"title": "Properties",
+							"children": [
+								63,
+								67,
+								71,
+								58,
+								59,
+								60,
+								65,
+								72,
+								68,
+								64,
+								70,
+								62,
+								61,
+								69,
+								66
+							]
+						}
+					],
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 87,
+							"character": 17,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L87"
+						}
+					]
+				},
+				{
+					"id": 76,
+					"name": "SaveFileDialogOptions",
+					"kind": 256,
+					"kindString": "Interface",
+					"flags": {},
+					"children": [
+						{
+							"id": 80,
+							"name": "AllowOtherFileTypes",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 115,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L115"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 86,
+							"name": "ButtonText",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 121,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L121"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						},
+						{
+							"id": 77,
+							"name": "CanCreateDirectories",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 112,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L112"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 79,
+							"name": "CanSelectHiddenExtension",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 114,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L114"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 84,
+							"name": "Directory",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 119,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L119"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						},
+						{
+							"id": 85,
+							"name": "Filename",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 120,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L120"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						},
+						{
+							"id": 81,
+							"name": "HideExtension",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 116,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L116"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 83,
+							"name": "Message",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 118,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L118"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						},
+						{
+							"id": 78,
+							"name": "ShowHiddenFiles",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 113,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L113"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 82,
+							"name": "TreatsFilePackagesAsDirectories",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "dialogs.ts",
+									"line": 117,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L117"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						}
+					],
+					"groups": [
+						{
+							"title": "Properties",
+							"children": [
+								80,
+								86,
+								77,
+								79,
+								84,
+								85,
+								81,
+								83,
+								78,
+								82
+							]
+						}
+					],
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 111,
+							"character": 17,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L111"
+						}
+					]
+				},
+				{
+					"id": 30,
+					"name": "Error",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 132,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L132"
+						}
+					],
+					"signatures": [
+						{
+							"id": 31,
+							"name": "Error",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"parameters": [
+								{
+									"id": 32,
+									"name": "options",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "reference",
+										"id": 52,
+										"name": "MessageDialogOptions"
+									}
+								}
+							],
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "intrinsic",
+										"name": "unknown"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				},
+				{
+					"id": 24,
+					"name": "Info",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 124,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L124"
+						}
+					],
+					"signatures": [
+						{
+							"id": 25,
+							"name": "Info",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"parameters": [
+								{
+									"id": 26,
+									"name": "options",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "reference",
+										"id": 52,
+										"name": "MessageDialogOptions"
+									}
+								}
+							],
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "intrinsic",
+										"name": "unknown"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				},
+				{
+					"id": 36,
+					"name": "OpenFile",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 140,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L140"
+						}
+					],
+					"signatures": [
+						{
+							"id": 37,
+							"name": "OpenFile",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"parameters": [
+								{
+									"id": 38,
+									"name": "options",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "reference",
+										"id": 57,
+										"name": "OpenFileDialogOptions"
+									}
+								}
+							],
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "intrinsic",
+										"name": "unknown"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				},
+				{
+					"id": 33,
+					"name": "Question",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 136,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L136"
+						}
+					],
+					"signatures": [
+						{
+							"id": 34,
+							"name": "Question",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"parameters": [
+								{
+									"id": 35,
+									"name": "options",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "reference",
+										"id": 52,
+										"name": "MessageDialogOptions"
+									}
+								}
+							],
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "intrinsic",
+										"name": "unknown"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				},
+				{
+					"id": 39,
+					"name": "SaveFile",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 144,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L144"
+						}
+					],
+					"signatures": [
+						{
+							"id": 40,
+							"name": "SaveFile",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"parameters": [
+								{
+									"id": 41,
+									"name": "options",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "reference",
+										"id": 76,
+										"name": "SaveFileDialogOptions"
+									}
+								}
+							],
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "intrinsic",
+										"name": "unknown"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				},
+				{
+					"id": 27,
+					"name": "Warning",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 128,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L128"
+						}
+					],
+					"signatures": [
+						{
+							"id": 28,
+							"name": "Warning",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"parameters": [
+								{
+									"id": 29,
+									"name": "options",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "reference",
+										"id": 52,
+										"name": "MessageDialogOptions"
+									}
+								}
+							],
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "intrinsic",
+										"name": "unknown"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				},
+				{
+					"id": 15,
+					"name": "dialogCallback",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 29,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L29"
+						}
+					],
+					"signatures": [
+						{
+							"id": 16,
+							"name": "dialogCallback",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"parameters": [
+								{
+									"id": 17,
+									"name": "id",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "intrinsic",
+										"name": "string"
+									}
+								},
+								{
+									"id": 18,
+									"name": "data",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "intrinsic",
+										"name": "any"
+									}
+								},
+								{
+									"id": 19,
+									"name": "isJSON",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "intrinsic",
+										"name": "boolean"
+									}
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "void"
+							}
+						}
+					]
+				},
+				{
+					"id": 20,
+					"name": "dialogErrorCallback",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "dialogs.ts",
+							"line": 41,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L41"
+						}
+					],
+					"signatures": [
+						{
+							"id": 21,
+							"name": "dialogErrorCallback",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"parameters": [
+								{
+									"id": 22,
+									"name": "id",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "intrinsic",
+										"name": "string"
+									}
+								},
+								{
+									"id": 23,
+									"name": "message",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "intrinsic",
+										"name": "string"
+									}
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "void"
+							}
+						}
+					]
+				}
+			],
+			"groups": [
+				{
+					"title": "Enumerations",
+					"children": [
+						42
+					]
+				},
+				{
+					"title": "Interfaces",
+					"children": [
+						48,
+						73,
+						52,
+						57,
+						76
+					]
+				},
+				{
+					"title": "Functions",
+					"children": [
+						30,
+						24,
+						36,
+						33,
+						39,
+						27,
+						15,
+						20
+					]
+				}
+			],
+			"sources": [
+				{
+					"fileName": "dialogs.ts",
+					"line": 13,
+					"character": 0,
+					"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/dialogs.ts#L13"
+				}
+			]
+		},
+		{
+			"id": 87,
+			"name": "events",
+			"kind": 2,
+			"kindString": "Module",
+			"flags": {},
+			"children": [
+				{
+					"id": 128,
+					"name": "CustomEvent",
+					"kind": 128,
+					"kindString": "Class",
+					"flags": {},
+					"comment": {
+						"summary": [
+							{
+								"kind": "text",
+								"text": "CustomEvent defines a custom event. It is passed to event listeners."
+							}
+						]
+					},
+					"children": [
+						{
+							"id": 129,
+							"name": "constructor",
+							"kind": 512,
+							"kindString": "Constructor",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "events.ts",
+									"line": 67,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L67"
+								}
+							],
+							"signatures": [
+								{
+									"id": 130,
+									"name": "new CustomEvent",
+									"kind": 16384,
+									"kindString": "Constructor signature",
+									"flags": {},
+									"comment": {
+										"summary": [
+											{
+												"kind": "text",
+												"text": "Creates an instance of CustomEvent."
+											}
+										],
+										"blockTags": [
+											{
+												"tag": "@memberof",
+												"content": [
+													{
+														"kind": "text",
+														"text": "CustomEvent"
+													}
+												]
+											}
+										]
+									},
+									"parameters": [
+										{
+											"id": 131,
+											"name": "name",
+											"kind": 32768,
+											"kindString": "Parameter",
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "Name of the event"
+													}
+												]
+											},
+											"type": {
+												"type": "intrinsic",
+												"name": "string"
+											}
+										},
+										{
+											"id": 132,
+											"name": "data",
+											"kind": 32768,
+											"kindString": "Parameter",
+											"flags": {},
+											"comment": {
+												"summary": [
+													{
+														"kind": "text",
+														"text": "Data associated with the event"
+													}
+												]
+											},
+											"type": {
+												"type": "intrinsic",
+												"name": "any"
+											}
+										}
+									],
+									"type": {
+										"type": "reference",
+										"id": 128,
+										"name": "CustomEvent"
+									}
+								}
+							]
+						},
+						{
+							"id": 134,
+							"name": "data",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "events.ts",
+									"line": 60,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L60"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "any"
+							}
+						},
+						{
+							"id": 133,
+							"name": "name",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "events.ts",
+									"line": 59,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L59"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						}
+					],
+					"groups": [
+						{
+							"title": "Constructors",
+							"children": [
+								129
+							]
+						},
+						{
+							"title": "Properties",
+							"children": [
+								134,
+								133
+							]
+						}
+					],
+					"sources": [
+						{
+							"fileName": "events.ts",
+							"line": 58,
+							"character": 13,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L58"
+						}
+					]
+				},
+				{
+					"id": 135,
+					"name": "eventListeners",
+					"kind": 32,
+					"kindString": "Variable",
+					"flags": {
+						"isConst": true
+					},
+					"sources": [
+						{
+							"fileName": "events.ts",
+							"line": 73,
+							"character": 13,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L73"
+						}
+					],
+					"type": {
+						"type": "reference",
+						"typeArguments": [
+							{
+								"type": "intrinsic",
+								"name": "any"
+							},
+							{
+								"type": "intrinsic",
+								"name": "any"
+							}
+						],
+						"name": "Map",
+						"qualifiedName": "Map",
+						"package": "typescript"
+					},
+					"defaultValue": "..."
+				},
+				{
+					"id": 125,
+					"name": "Emit",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "events.ts",
+							"line": 190,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L190"
+						}
+					],
+					"signatures": [
+						{
+							"id": 126,
+							"name": "Emit",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"parameters": [
+								{
+									"id": 127,
+									"name": "event",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "reference",
+										"id": 128,
+										"name": "CustomEvent"
+									}
+								}
+							],
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "intrinsic",
+										"name": "any"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				},
+				{
+					"id": 119,
+					"name": "Off",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "events.ts",
+							"line": 171,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L171"
+						}
+					],
+					"signatures": [
+						{
+							"id": 120,
+							"name": "Off",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"comment": {
+								"summary": [
+									{
+										"kind": "text",
+										"text": "Off unregisters a listener previously registered with On,\noptionally multiple listeners can be unregistered via "
+									},
+									{
+										"kind": "code",
+										"text": "`additionalEventNames`"
+									},
+									{
+										"kind": "text",
+										"text": "\n\n[v3 CHANGE] Off only unregisters listeners within the current window"
+									}
+								]
+							},
+							"parameters": [
+								{
+									"id": 121,
+									"name": "eventName",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "intrinsic",
+										"name": "string"
+									}
+								},
+								{
+									"id": 122,
+									"name": "additionalEventNames",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {
+										"isRest": true
+									},
+									"type": {
+										"type": "array",
+										"elementType": {
+											"type": "intrinsic",
+											"name": "string"
+										}
+									}
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "void"
+							}
+						}
+					]
+				},
+				{
+					"id": 123,
+					"name": "OffAll",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "events.ts",
+							"line": 183,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L183"
+						}
+					],
+					"signatures": [
+						{
+							"id": 124,
+							"name": "OffAll",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"comment": {
+								"summary": [
+									{
+										"kind": "text",
+										"text": "OffAll unregisters all listeners\n[v3 CHANGE] OffAll only unregisters listeners within the current window"
+									}
+								]
+							},
+							"type": {
+								"type": "intrinsic",
+								"name": "void"
+							}
+						}
+					]
+				},
+				{
+					"id": 98,
+					"name": "On",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "events.ts",
+							"line": 100,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L100"
+						}
+					],
+					"signatures": [
+						{
+							"id": 99,
+							"name": "On",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"comment": {
+								"summary": [
+									{
+										"kind": "text",
+										"text": "Registers an event listener that will be invoked every time the event is emitted"
+									}
+								],
+								"blockTags": [
+									{
+										"tag": "@export",
+										"content": []
+									},
+									{
+										"tag": "@returns",
+										"content": [
+											{
+												"kind": "text",
+												"text": "A function to cancel the listener"
+											}
+										]
+									}
+								]
+							},
+							"parameters": [
+								{
+									"id": 100,
+									"name": "eventName",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "intrinsic",
+										"name": "string"
+									}
+								},
+								{
+									"id": 101,
+									"name": "callback",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "reflection",
+										"declaration": {
+											"id": 102,
+											"name": "__type",
+											"kind": 65536,
+											"kindString": "Type literal",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "events.ts",
+													"line": 100,
+													"character": 48,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L100"
+												}
+											],
+											"signatures": [
+												{
+													"id": 103,
+													"name": "__type",
+													"kind": 4096,
+													"kindString": "Call signature",
+													"flags": {},
+													"parameters": [
+														{
+															"id": 104,
+															"name": "data",
+															"kind": 32768,
+															"kindString": "Parameter",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"id": 128,
+																"name": "CustomEvent"
+															}
+														}
+													],
+													"type": {
+														"type": "intrinsic",
+														"name": "void"
+													}
+												}
+											]
+										}
+									}
+								}
+							],
+							"type": {
+								"type": "reflection",
+								"declaration": {
+									"id": 105,
+									"name": "__type",
+									"kind": 65536,
+									"kindString": "Type literal",
+									"flags": {},
+									"sources": [
+										{
+											"fileName": "events.ts",
+											"line": 89,
+											"character": 11,
+											"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L89"
+										}
+									],
+									"signatures": [
+										{
+											"id": 106,
+											"name": "__type",
+											"kind": 4096,
+											"kindString": "Call signature",
+											"flags": {},
+											"type": {
+												"type": "intrinsic",
+												"name": "void"
+											}
+										}
+									]
+								}
+							}
+						}
+					]
+				},
+				{
+					"id": 88,
+					"name": "OnMultiple",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "events.ts",
+							"line": 84,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L84"
+						}
+					],
+					"signatures": [
+						{
+							"id": 89,
+							"name": "OnMultiple",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"comment": {
+								"summary": [
+									{
+										"kind": "text",
+										"text": "Registers an event listener that will be invoked "
+									},
+									{
+										"kind": "code",
+										"text": "`maxCallbacks`"
+									},
+									{
+										"kind": "text",
+										"text": " times before being destroyed"
+									}
+								],
+								"blockTags": [
+									{
+										"tag": "@export",
+										"content": []
+									},
+									{
+										"tag": "@returns",
+										"content": [
+											{
+												"kind": "text",
+												"text": "A function to cancel the listener"
+											}
+										]
+									}
+								]
+							},
+							"parameters": [
+								{
+									"id": 90,
+									"name": "eventName",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "intrinsic",
+										"name": "string"
+									}
+								},
+								{
+									"id": 91,
+									"name": "callback",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "reflection",
+										"declaration": {
+											"id": 92,
+											"name": "__type",
+											"kind": 65536,
+											"kindString": "Type literal",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "events.ts",
+													"line": 84,
+													"character": 56,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L84"
+												}
+											],
+											"signatures": [
+												{
+													"id": 93,
+													"name": "__type",
+													"kind": 4096,
+													"kindString": "Call signature",
+													"flags": {},
+													"parameters": [
+														{
+															"id": 94,
+															"name": "data",
+															"kind": 32768,
+															"kindString": "Parameter",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"id": 128,
+																"name": "CustomEvent"
+															}
+														}
+													],
+													"type": {
+														"type": "intrinsic",
+														"name": "void"
+													}
+												}
+											]
+										}
+									}
+								},
+								{
+									"id": 95,
+									"name": "maxCallbacks",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "intrinsic",
+										"name": "number"
+									}
+								}
+							],
+							"type": {
+								"type": "reflection",
+								"declaration": {
+									"id": 96,
+									"name": "__type",
+									"kind": 65536,
+									"kindString": "Type literal",
+									"flags": {},
+									"sources": [
+										{
+											"fileName": "events.ts",
+											"line": 89,
+											"character": 11,
+											"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L89"
+										}
+									],
+									"signatures": [
+										{
+											"id": 97,
+											"name": "__type",
+											"kind": 4096,
+											"kindString": "Call signature",
+											"flags": {},
+											"type": {
+												"type": "intrinsic",
+												"name": "void"
+											}
+										}
+									]
+								}
+							}
+						}
+					]
+				},
+				{
+					"id": 107,
+					"name": "Once",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "events.ts",
+							"line": 112,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L112"
+						}
+					],
+					"signatures": [
+						{
+							"id": 108,
+							"name": "Once",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"comment": {
+								"summary": [
+									{
+										"kind": "text",
+										"text": "Registers an event listener that will be invoked once then destroyed"
+									}
+								],
+								"blockTags": [
+									{
+										"tag": "@export",
+										"content": []
+									},
+									{
+										"tag": "@returns",
+										"content": [
+											{
+												"kind": "text",
+												"text": "A function to cancel the listener"
+											}
+										]
+									}
+								]
+							},
+							"parameters": [
+								{
+									"id": 109,
+									"name": "eventName",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "intrinsic",
+										"name": "string"
+									}
+								},
+								{
+									"id": 110,
+									"name": "callback",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "reflection",
+										"declaration": {
+											"id": 111,
+											"name": "__type",
+											"kind": 65536,
+											"kindString": "Type literal",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "events.ts",
+													"line": 112,
+													"character": 50,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L112"
+												}
+											],
+											"signatures": [
+												{
+													"id": 112,
+													"name": "__type",
+													"kind": 4096,
+													"kindString": "Call signature",
+													"flags": {},
+													"parameters": [
+														{
+															"id": 113,
+															"name": "data",
+															"kind": 32768,
+															"kindString": "Parameter",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"id": 128,
+																"name": "CustomEvent"
+															}
+														}
+													],
+													"type": {
+														"type": "intrinsic",
+														"name": "void"
+													}
+												}
+											]
+										}
+									}
+								}
+							],
+							"type": {
+								"type": "reflection",
+								"declaration": {
+									"id": 114,
+									"name": "__type",
+									"kind": 65536,
+									"kindString": "Type literal",
+									"flags": {},
+									"sources": [
+										{
+											"fileName": "events.ts",
+											"line": 89,
+											"character": 11,
+											"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L89"
+										}
+									],
+									"signatures": [
+										{
+											"id": 115,
+											"name": "__type",
+											"kind": 4096,
+											"kindString": "Call signature",
+											"flags": {},
+											"type": {
+												"type": "intrinsic",
+												"name": "void"
+											}
+										}
+									]
+								}
+							}
+						}
+					]
+				},
+				{
+					"id": 116,
+					"name": "dispatchCustomEvent",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "events.ts",
+							"line": 138,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L138"
+						}
+					],
+					"signatures": [
+						{
+							"id": 117,
+							"name": "dispatchCustomEvent",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"comment": {
+								"summary": [
+									{
+										"kind": "text",
+										"text": "dispatches an event to all listeners"
+									}
+								],
+								"blockTags": [
+									{
+										"tag": "@export",
+										"content": []
+									}
+								]
+							},
+							"parameters": [
+								{
+									"id": 118,
+									"name": "event",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "reference",
+										"id": 128,
+										"name": "CustomEvent"
+									}
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "void"
+							}
+						}
+					]
+				}
+			],
+			"groups": [
+				{
+					"title": "Classes",
+					"children": [
+						128
+					]
+				},
+				{
+					"title": "Variables",
+					"children": [
+						135
+					]
+				},
+				{
+					"title": "Functions",
+					"children": [
+						125,
+						119,
+						123,
+						98,
+						88,
+						107,
+						116
+					]
+				}
+			],
+			"sources": [
+				{
+					"fileName": "events.ts",
+					"line": 13,
+					"character": 0,
+					"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/events.ts#L13"
+				}
+			]
+		},
+		{
+			"id": 136,
+			"name": "screens",
+			"kind": 2,
+			"kindString": "Module",
+			"flags": {},
+			"children": [
+				{
+					"id": 154,
+					"name": "Rect",
+					"kind": 256,
+					"kindString": "Interface",
+					"flags": {},
+					"children": [
+						{
+							"id": 158,
+							"name": "Height",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 36,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L36"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							}
+						},
+						{
+							"id": 157,
+							"name": "Width",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 35,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L35"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							}
+						},
+						{
+							"id": 155,
+							"name": "X",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 33,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L33"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							}
+						},
+						{
+							"id": 156,
+							"name": "Y",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 34,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L34"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							}
+						}
+					],
+					"groups": [
+						{
+							"title": "Properties",
+							"children": [
+								158,
+								157,
+								155,
+								156
+							]
+						}
+					],
+					"sources": [
+						{
+							"fileName": "screens.ts",
+							"line": 31,
+							"character": 17,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L31"
+						}
+					]
+				},
+				{
+					"id": 143,
+					"name": "Screen",
+					"kind": 256,
+					"kindString": "Interface",
+					"flags": {},
+					"children": [
+						{
+							"id": 150,
+							"name": "Bounds",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 25,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L25"
+								}
+							],
+							"type": {
+								"type": "reference",
+								"id": 154,
+								"name": "Rect"
+							}
+						},
+						{
+							"id": 144,
+							"name": "ID",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 19,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L19"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						},
+						{
+							"id": 152,
+							"name": "IsPrimary",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 27,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L27"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						},
+						{
+							"id": 145,
+							"name": "Name",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 20,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L20"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "string"
+							}
+						},
+						{
+							"id": 153,
+							"name": "Rotation",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 28,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L28"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							}
+						},
+						{
+							"id": 146,
+							"name": "Scale",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 21,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L21"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							}
+						},
+						{
+							"id": 149,
+							"name": "Size",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 24,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L24"
+								}
+							],
+							"type": {
+								"type": "reference",
+								"id": 159,
+								"name": "Size"
+							}
+						},
+						{
+							"id": 151,
+							"name": "WorkArea",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 26,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L26"
+								}
+							],
+							"type": {
+								"type": "reference",
+								"id": 154,
+								"name": "Rect"
+							}
+						},
+						{
+							"id": 147,
+							"name": "X",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 22,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L22"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							}
+						},
+						{
+							"id": 148,
+							"name": "Y",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 23,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L23"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							}
+						}
+					],
+					"groups": [
+						{
+							"title": "Properties",
+							"children": [
+								150,
+								144,
+								152,
+								145,
+								153,
+								146,
+								149,
+								151,
+								147,
+								148
+							]
+						}
+					],
+					"sources": [
+						{
+							"fileName": "screens.ts",
+							"line": 17,
+							"character": 17,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L17"
+						}
+					]
+				},
+				{
+					"id": 159,
+					"name": "Size",
+					"kind": 256,
+					"kindString": "Interface",
+					"flags": {},
+					"children": [
+						{
+							"id": 161,
+							"name": "Height",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 42,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L42"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							}
+						},
+						{
+							"id": 160,
+							"name": "Width",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "screens.ts",
+									"line": 41,
+									"character": 4,
+									"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L41"
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							}
+						}
+					],
+					"groups": [
+						{
+							"title": "Properties",
+							"children": [
+								161,
+								160
+							]
+						}
+					],
+					"sources": [
+						{
+							"fileName": "screens.ts",
+							"line": 39,
+							"character": 17,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L39"
+						}
+					]
+				},
+				{
+					"id": 137,
+					"name": "GetAll",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "screens.ts",
+							"line": 46,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L46"
+						}
+					],
+					"signatures": [
+						{
+							"id": 138,
+							"name": "GetAll",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "array",
+										"elementType": {
+											"type": "reference",
+											"id": 143,
+											"name": "Screen"
+										}
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				},
+				{
+					"id": 141,
+					"name": "GetCurrent",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "screens.ts",
+							"line": 56,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L56"
+						}
+					],
+					"signatures": [
+						{
+							"id": 142,
+							"name": "GetCurrent",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "reference",
+										"id": 143,
+										"name": "Screen"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				},
+				{
+					"id": 139,
+					"name": "GetPrimary",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "screens.ts",
+							"line": 51,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L51"
+						}
+					],
+					"signatures": [
+						{
+							"id": 140,
+							"name": "GetPrimary",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"type": {
+								"type": "reference",
+								"typeArguments": [
+									{
+										"type": "reference",
+										"id": 143,
+										"name": "Screen"
+									}
+								],
+								"name": "Promise",
+								"qualifiedName": "Promise",
+								"package": "typescript"
+							}
+						}
+					]
+				}
+			],
+			"groups": [
+				{
+					"title": "Interfaces",
+					"children": [
+						154,
+						143,
+						159
+					]
+				},
+				{
+					"title": "Functions",
+					"children": [
+						137,
+						141,
+						139
+					]
+				}
+			],
+			"sources": [
+				{
+					"fileName": "screens.ts",
+					"line": 13,
+					"character": 0,
+					"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/screens.ts#L13"
+				}
+			]
+		},
+		{
+			"id": 162,
+			"name": "window",
+			"kind": 2,
+			"kindString": "Module",
+			"flags": {},
+			"children": [
+				{
+					"id": 163,
+					"name": "newWindow",
+					"kind": 64,
+					"kindString": "Function",
+					"flags": {},
+					"sources": [
+						{
+							"fileName": "window.ts",
+							"line": 15,
+							"character": 16,
+							"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L15"
+						}
+					],
+					"signatures": [
+						{
+							"id": 164,
+							"name": "newWindow",
+							"kind": 4096,
+							"kindString": "Call signature",
+							"flags": {},
+							"parameters": [
+								{
+									"id": 165,
+									"name": "id",
+									"kind": 32768,
+									"kindString": "Parameter",
+									"flags": {},
+									"type": {
+										"type": "intrinsic",
+										"name": "number"
+									}
+								}
+							],
+							"type": {
+								"type": "reflection",
+								"declaration": {
+									"id": 166,
+									"name": "__type",
+									"kind": 65536,
+									"kindString": "Type literal",
+									"flags": {},
+									"children": [
+										{
+											"id": 167,
+											"name": "Center",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 27,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L27"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 168,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 27,
+															"character": 16,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L27"
+														}
+													],
+													"signatures": [
+														{
+															"id": 169,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 222,
+											"name": "Close",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 42,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L42"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 223,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 42,
+															"character": 15,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L42"
+														}
+													],
+													"signatures": [
+														{
+															"id": 224,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 174,
+											"name": "Fullscreen",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 29,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L29"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 175,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 29,
+															"character": 20,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L29"
+														}
+													],
+													"signatures": [
+														{
+															"id": 176,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 213,
+											"name": "Hide",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 39,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L39"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 214,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 39,
+															"character": 14,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L39"
+														}
+													],
+													"signatures": [
+														{
+															"id": 215,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 216,
+											"name": "Maximise",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 40,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L40"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 217,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 40,
+															"character": 18,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L40"
+														}
+													],
+													"signatures": [
+														{
+															"id": 218,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 231,
+											"name": "Minimise",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 45,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L45"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 232,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 45,
+															"character": 18,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L45"
+														}
+													],
+													"signatures": [
+														{
+															"id": 233,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 207,
+											"name": "Position",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 37,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L37"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 208,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 37,
+															"character": 18,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L37"
+														}
+													],
+													"signatures": [
+														{
+															"id": 209,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 210,
+											"name": "Screen",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 38,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L38"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 211,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 38,
+															"character": 16,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L38"
+														}
+													],
+													"signatures": [
+														{
+															"id": 212,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 198,
+											"name": "SetAlwaysOnTop",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 35,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L35"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 199,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 35,
+															"character": 24,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L35"
+														}
+													],
+													"signatures": [
+														{
+															"id": 200,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"parameters": [
+																{
+																	"id": 201,
+																	"name": "b",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "boolean"
+																	}
+																}
+															],
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 237,
+											"name": "SetBackgroundColour",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 47,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L47"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 238,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 47,
+															"character": 29,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L47"
+														}
+													],
+													"signatures": [
+														{
+															"id": 239,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"parameters": [
+																{
+																	"id": 240,
+																	"name": "r",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "number"
+																	}
+																},
+																{
+																	"id": 241,
+																	"name": "g",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "number"
+																	}
+																},
+																{
+																	"id": 242,
+																	"name": "b",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "number"
+																	}
+																},
+																{
+																	"id": 243,
+																	"name": "a",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "number"
+																	}
+																}
+															],
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 188,
+											"name": "SetMaxSize",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 33,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L33"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 189,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 33,
+															"character": 20,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L33"
+														}
+													],
+													"signatures": [
+														{
+															"id": 190,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"parameters": [
+																{
+																	"id": 191,
+																	"name": "width",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "number"
+																	}
+																},
+																{
+																	"id": 192,
+																	"name": "height",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "number"
+																	}
+																}
+															],
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 193,
+											"name": "SetMinSize",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 34,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L34"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 194,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 34,
+															"character": 20,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L34"
+														}
+													],
+													"signatures": [
+														{
+															"id": 195,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"parameters": [
+																{
+																	"id": 196,
+																	"name": "width",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "number"
+																	}
+																},
+																{
+																	"id": 197,
+																	"name": "height",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "number"
+																	}
+																}
+															],
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 202,
+											"name": "SetPosition",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 36,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L36"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 203,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 36,
+															"character": 21,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L36"
+														}
+													],
+													"signatures": [
+														{
+															"id": 204,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"parameters": [
+																{
+																	"id": 205,
+																	"name": "x",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "number"
+																	}
+																},
+																{
+																	"id": 206,
+																	"name": "y",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "number"
+																	}
+																}
+															],
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 180,
+											"name": "SetSize",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 31,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L31"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 181,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 31,
+															"character": 17,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L31"
+														}
+													],
+													"signatures": [
+														{
+															"id": 182,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"parameters": [
+																{
+																	"id": 183,
+																	"name": "width",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "number"
+																	}
+																},
+																{
+																	"id": 184,
+																	"name": "height",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "number"
+																	}
+																}
+															],
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 170,
+											"name": "SetTitle",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 28,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L28"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 171,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 28,
+															"character": 18,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L28"
+														}
+													],
+													"signatures": [
+														{
+															"id": 172,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"parameters": [
+																{
+																	"id": 173,
+																	"name": "title",
+																	"kind": 32768,
+																	"kindString": "Parameter",
+																	"flags": {},
+																	"type": {
+																		"type": "intrinsic",
+																		"name": "string"
+																	}
+																}
+															],
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 219,
+											"name": "Show",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 41,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L41"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 220,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 41,
+															"character": 14,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L41"
+														}
+													],
+													"signatures": [
+														{
+															"id": 221,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 185,
+											"name": "Size",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 32,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L32"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 186,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 32,
+															"character": 14,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L32"
+														}
+													],
+													"signatures": [
+														{
+															"id": 187,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 225,
+											"name": "ToggleMaximise",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 43,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L43"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 226,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 43,
+															"character": 24,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L43"
+														}
+													],
+													"signatures": [
+														{
+															"id": 227,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 177,
+											"name": "UnFullscreen",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 30,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L30"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 178,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 30,
+															"character": 22,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L30"
+														}
+													],
+													"signatures": [
+														{
+															"id": 179,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 228,
+											"name": "UnMaximise",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 44,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L44"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 229,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 44,
+															"character": 20,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L44"
+														}
+													],
+													"signatures": [
+														{
+															"id": 230,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										},
+										{
+											"id": 234,
+											"name": "UnMinimise",
+											"kind": 1024,
+											"kindString": "Property",
+											"flags": {},
+											"sources": [
+												{
+													"fileName": "window.ts",
+													"line": 46,
+													"character": 8,
+													"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L46"
+												}
+											],
+											"type": {
+												"type": "reflection",
+												"declaration": {
+													"id": 235,
+													"name": "__type",
+													"kind": 65536,
+													"kindString": "Type literal",
+													"flags": {},
+													"sources": [
+														{
+															"fileName": "window.ts",
+															"line": 46,
+															"character": 20,
+															"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L46"
+														}
+													],
+													"signatures": [
+														{
+															"id": 236,
+															"name": "__type",
+															"kind": 4096,
+															"kindString": "Call signature",
+															"flags": {},
+															"type": {
+																"type": "reference",
+																"typeArguments": [
+																	{
+																		"type": "intrinsic",
+																		"name": "any"
+																	}
+																],
+																"name": "Promise",
+																"qualifiedName": "Promise",
+																"package": "typescript"
+															}
+														}
+													]
+												}
+											},
+											"defaultValue": "..."
+										}
+									],
+									"groups": [
+										{
+											"title": "Properties",
+											"children": [
+												167,
+												222,
+												174,
+												213,
+												216,
+												231,
+												207,
+												210,
+												198,
+												237,
+												188,
+												193,
+												202,
+												180,
+												170,
+												219,
+												185,
+												225,
+												177,
+												228,
+												234
+											]
+										}
+									],
+									"sources": [
+										{
+											"fileName": "window.ts",
+											"line": 17,
+											"character": 11,
+											"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L17"
+										}
+									]
+								}
+							}
+						}
+					]
+				}
+			],
+			"groups": [
+				{
+					"title": "Functions",
+					"children": [
+						163
+					]
+				}
+			],
+			"sources": [
+				{
+					"fileName": "window.ts",
+					"line": 13,
+					"character": 0,
+					"url": "https://github.com/wailsapp/wails/blob/130fab6c/v3/internal/api/src/window.ts#L13"
+				}
+			]
+		}
+	],
+	"groups": [
+		{
+			"title": "Modules",
+			"children": [
+				1,
+				8,
+				14,
+				87,
+				136,
+				162
+			]
+		}
+	]
+}

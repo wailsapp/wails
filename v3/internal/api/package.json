@@ -1,0 +1,29 @@
+{
+  "name": "api",
+  "version": "3.0.0-alpha.0",
+  "description": "Wails API",
+  "scripts": {
+    "build": "rm -rf dist && node build.js && tsc --emitDeclarationOnly --declaration --outDir dist",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs": "typedoc"
+  },
+  "files": [
+    "dist/*"
+  ],
+  "module": "dist/index.esm.js",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "keywords": [
+    "Wails",
+    "API"
+  ],
+  "author": "Lea Anthony",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.15.8",
+    "esbuild": "^0.17.13",
+    "nanoid": "^4.0.0",
+    "typedoc": "^0.23.28",
+    "typescript": "^5.0.2"
+  }
+}

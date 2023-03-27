@@ -65,7 +65,7 @@ export function newRuntime(id) {
             OffAll,
         },
         Window: newWindow(id),
-    }
+    };
 }
 
 if (DEBUG) {
