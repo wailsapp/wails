@@ -53,10 +53,10 @@ This package contains the static analyser used for parsing Wails projects so tha
     - [x] Recursive
     - [x] Anonymous
 - [ ] Generation of models
-  - [ ] Scalars
+  - [x] Scalars
   - [ ] Arrays
   - [ ] Maps
-  - [ ] Structs
+  - [x] Structs
 - [ ] Generation of bindings
 
 ## Limitations
