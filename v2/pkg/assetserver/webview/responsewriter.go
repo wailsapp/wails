@@ -1,7 +1,18 @@
 package webview
 
 import (
+	"errors"
 	"net/http"
+)
+
+const (
+	HeaderContentLength = "Content-Length"
+	HeaderContentType   = "Content-Type"
+)
+
+var (
+	errRequestStopped   = errors.New("request has been stopped")
+	errResponseFinished = errors.New("response has been finished")
 )
 
 // A ResponseWriter interface is used by an HTTP handler to

@@ -1,7 +1,7 @@
 //go:build linux
 // +build linux
 
-package linux
+package webview
 
 /*
 #cgo linux pkg-config: gtk+-3.0 webkit2gtk-4.0 gio-unix-2.0
@@ -20,28 +20,31 @@ import (
 	"strconv"
 	"syscall"
 	"unsafe"
-
-	"github.com/wailsapp/wails/v2/pkg/assetserver"
 )
 
-type webKitResponseWriter struct {
+type responseWriter struct {
 	req *C.WebKitURISchemeRequest
 
 	header      http.Header
 	wroteHeader bool
+	finished    bool
 
 	w    io.WriteCloser
 	wErr error
 }
 
-func (rw *webKitResponseWriter) Header() http.Header {
+func (rw *responseWriter) Header() http.Header {
 	if rw.header == nil {
 		rw.header = http.Header{}
 	}
 	return rw.header
 }
 
-func (rw *webKitResponseWriter) Write(buf []byte) (int, error) {
+func (rw *responseWriter) Write(buf []byte) (int, error) {
+	if rw.finished {
+		return 0, errResponseFinished
+	}
+
 	rw.WriteHeader(http.StatusOK)
 	if rw.wErr != nil {
 		return 0, rw.wErr
@@ -49,14 +52,14 @@ func (rw *webKitResponseWriter) Write(buf []byte) (int, error) {
 	return rw.w.Write(buf)
 }
 
-func (rw *webKitResponseWriter) WriteHeader(code int) {
-	if rw.wroteHeader {
+func (rw *responseWriter) WriteHeader(code int) {
+	if rw.wroteHeader || rw.finished {
 		return
 	}
 	rw.wroteHeader = true
 
 	contentLength := int64(-1)
-	if sLen := rw.Header().Get(assetserver.HeaderContentLength); sLen != "" {
+	if sLen := rw.Header().Get(HeaderContentLength); sLen != "" {
 		if pLen, _ := strconv.ParseInt(sLen, 10, 64); pLen > 0 {
 			contentLength = pLen
 		}
@@ -72,7 +75,7 @@ func (rw *webKitResponseWriter) WriteHeader(code int) {
 	}
 	rw.w = w
 
-	stream := C.g_unix_input_stream_new(C.int(rFD), gtkBool(true))
+	stream := C.g_unix_input_stream_new(C.int(rFD), C.gboolean(1))
 	defer C.g_object_unref(C.gpointer(stream))
 
 	if err := webkit_uri_scheme_request_finish(rw.req, code, rw.Header(), stream, contentLength); err != nil {
@@ -81,13 +84,22 @@ func (rw *webKitResponseWriter) WriteHeader(code int) {
 	}
 }
 
-func (rw *webKitResponseWriter) Close() {
+func (rw *responseWriter) Finish() error {
+	if !rw.wroteHeader {
+		rw.WriteHeader(http.StatusNotImplemented)
+	}
+
+	if rw.finished {
+		return nil
+	}
+	rw.finished = true
 	if rw.w != nil {
 		rw.w.Close()
 	}
+	return nil
 }
 
-func (rw *webKitResponseWriter) finishWithError(code int, err error) {
+func (rw *responseWriter) finishWithError(code int, err error) {
 	if rw.w != nil {
 		rw.w.Close()
 		rw.w = &nopCloser{io.Discard}
