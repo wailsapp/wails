@@ -46,5 +46,5 @@ export function newRuntimeCaller(object, id) {
         args = args || {};
         args["windowID"] = id;
         return runtimeCall(object + "." + method, args);
-    }
+    };
 }

@@ -14,14 +14,24 @@ import {newRuntimeCaller} from "./runtime";
 
 let call = newRuntimeCaller("application");
 
+/**
+ * Hide the application
+ */
 export function Hide() {
-    return call("Hide");
+    void call("Hide");
 }
 
+/**
+ * Show the application
+ */
 export function Show() {
-    return call("Show");
+    void call("Show");
 }
 
+
+/**
+ * Quit the application
+ */
 export function Quit() {
-    return call("Quit");
+    void call("Quit");
 }
