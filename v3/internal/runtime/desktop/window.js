@@ -11,9 +11,9 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 /**
- * @typedef {import("../api/types/Window").Size} Size
- * @typedef {import("../api/types/Window").Position} Position
- * @typedef {import("../api/types/Screen").Screen} Screen
+ * @typedef {import("../api/types").Size} Size
+ * @typedef {import("../api/types").Position} Position
+ * @typedef {import("../api/types").Screen} Screen
  */
 
 import {newRuntimeCaller} from "./runtime";
@@ -82,9 +82,9 @@ export function newWindow(id) {
 
         /**
          * Set window to be always on top.
-         * @param {boolean} Whether the window should be always on top
+         * @param {boolean} onTop Whether the window should be always on top
          */
-        SetAlwaysOnTop: (b) => void call('SetAlwaysOnTop', {alwaysOnTop:b}),
+        SetAlwaysOnTop: (onTop) => void call('SetAlwaysOnTop', {alwaysOnTop:onTop}),
 
         /**
          * Set the window position.

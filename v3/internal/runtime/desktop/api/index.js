@@ -13,6 +13,10 @@ The electron alternative for Go
  * @typedef {import("./types").MessageDialogOptions} MessageDialogOptions
  * @typedef {import("./types").OpenDialogOptions} OpenDialogOptions
  * @typedef {import("./types").SaveDialogOptions} SaveDialogOptions
+ * @typedef {import("./types").Screen} Screen
+ * @typedef {import("./types").Size} Size
+ * @typedef {import("./types").Position} Position
+ *
  */
 
 /**

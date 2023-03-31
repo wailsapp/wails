@@ -11,7 +11,7 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 /**
- * @typedef {import("./screens") Screen} Screen
+ * @typedef {import("./api/types").Screen} Screen
  */
 
 import {newRuntimeCaller} from "./runtime";

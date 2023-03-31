@@ -11,7 +11,7 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 /**
- * @typedef {import("./events").CustomEvent} CustomEvent
+ * @typedef {import("./api/types").CustomEvent} CustomEvent
  */
 
 import {newRuntimeCaller} from "./runtime";

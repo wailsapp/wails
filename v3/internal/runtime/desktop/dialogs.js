@@ -11,9 +11,9 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 /**
- * @typedef {import("./oldapi/types").MessageDialogOptions} MessageDialogOptions
- * @typedef {import("./dialogs").OpenDialogOptions} OpenDialogOptions
- * @typedef {import("./dialogs").SaveDialogOptions} SaveDialogOptions
+ * @typedef {import("./api/types").MessageDialogOptions} MessageDialogOptions
+ * @typedef {import("./api/types").OpenDialogOptions} OpenDialogOptions
+ * @typedef {import("./api/types").SaveDialogOptions} SaveDialogOptions
  */
 
 import {newRuntimeCaller} from "./runtime";

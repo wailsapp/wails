@@ -3,7 +3,7 @@ import {Emit} from "./events";
 import {Question} from "./dialogs";
 
 function sendEvent(event) {
-   let _ = Emit({name: event} );
+    Emit(event);
 }
 
 function addWMLEventListeners() {
@@ -23,7 +23,7 @@ function addWMLEventListeners() {
                 return;
             }
             sendEvent(eventType);
-        }
+        };
         // Remove existing listeners
 
         element.removeEventListener(trigger, callback);
@@ -57,7 +57,7 @@ function addWMLWindowListeners() {
                 return;
             }
             callWindowMethod(windowMethod);
-        }
+        };
 
         // Remove existing listeners
         element.removeEventListener(trigger, callback);
