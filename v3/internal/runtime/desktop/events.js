@@ -10,6 +10,10 @@ The electron alternative for Go
 
 /* jshint esversion: 9 */
 
+/**
+ * @typedef {import("./api/types").CustomEvent} CustomEvent
+ */
+
 import {newRuntimeCaller} from "./runtime";
 
 let call = newRuntimeCaller("events");
@@ -102,7 +106,7 @@ export function On(eventName, callback) {
  * @export
  * @param {string} eventName
  * @param {function(CustomEvent): void} callback
- * @returns {function} A function to cancel the listener
+ @returns {function} A function to cancel the listener
  */
 export function Once(eventName, callback) {
     return OnMultiple(eventName, callback, 1);
@@ -137,7 +141,7 @@ export function dispatchCustomEvent(event) {
         // iterate listeners and call callback. If callback returns true, remove listener
         let toRemove = [];
         listeners.forEach(listener => {
-            let remove = listener.Callback(event)
+            let remove = listener.Callback(event);
             if (remove) {
                 toRemove.push(listener);
             }
@@ -179,9 +183,10 @@ export function OffAll() {
     eventListeners.clear();
 }
 
-/*
-   Emit emits an event to all listeners
+/**
+ * Emit an event
+ * @param {CustomEvent} event The event to emit
  */
 export function Emit(event) {
-    return call("Emit", event);
+    void call("Emit", event);
 }

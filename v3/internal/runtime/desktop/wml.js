@@ -3,13 +3,12 @@ import {Emit} from "./events";
 import {Question} from "./dialogs";
 
 function sendEvent(event) {
-   let _ = Emit({name: event} );
+    Emit(event);
 }
 
 function addWMLEventListeners() {
     const elements = document.querySelectorAll('[data-wml-event]');
-    for (let i = 0; i < elements.length; i++) {
-        const element = elements[i];
+    elements.forEach(function (element) {
         const eventType = element.getAttribute('data-wml-event');
         const confirm = element.getAttribute('data-wml-confirm');
         const trigger = element.getAttribute('data-wml-trigger') || "click";
@@ -24,14 +23,14 @@ function addWMLEventListeners() {
                 return;
             }
             sendEvent(eventType);
-        }
+        };
         // Remove existing listeners
 
         element.removeEventListener(trigger, callback);
 
         // Add new listener
         element.addEventListener(trigger, callback);
-    }
+    });
 }
 
 function callWindowMethod(method) {
@@ -43,8 +42,7 @@ function callWindowMethod(method) {
 
 function addWMLWindowListeners() {
     const elements = document.querySelectorAll('[data-wml-window]');
-    for (let i = 0; i < elements.length; i++) {
-        const element = elements[i];
+    elements.forEach(function (element) {
         const windowMethod = element.getAttribute('data-wml-window');
         const confirm = element.getAttribute('data-wml-confirm');
         const trigger = element.getAttribute('data-wml-trigger') || "click";
@@ -59,14 +57,14 @@ function addWMLWindowListeners() {
                 return;
             }
             callWindowMethod(windowMethod);
-        }
+        };
 
         // Remove existing listeners
         element.removeEventListener(trigger, callback);
 
         // Add new listener
         element.addEventListener(trigger, callback);
-    }
+    });
 }
 
 export function reloadWML() {
