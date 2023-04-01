@@ -37,6 +37,7 @@ func New(appOptions Options) *App {
 		systemTrays:               make(map[uint]*SystemTray),
 		log:                       logger.New(appOptions.Logger.CustomLoggers...),
 		contextMenus:              make(map[string]*Menu),
+		pid:                       os.Getpid(),
 	}
 	globalApplication = result
 
@@ -187,6 +188,7 @@ type App struct {
 
 	// Hooks
 	windowCreatedCallbacks []func(window *WebviewWindow)
+	pid                    int
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -213,6 +215,10 @@ func (a *App) On(eventType events.ApplicationEventType, callback func()) {
 }
 func (a *App) NewWebviewWindow() *WebviewWindow {
 	return a.NewWebviewWindowWithOptions(nil)
+}
+
+func (a *App) GetPID() int {
+	return a.pid
 }
 
 func (a *App) info(message string, args ...any) {
@@ -458,7 +464,9 @@ func (a *App) Quit() {
 		wg.Done()
 	}()
 	wg.Wait()
-	a.impl.destroy()
+	if a.impl != nil {
+		a.impl.destroy()
+	}
 }
 
 func (a *App) SetMenu(menu *Menu) {

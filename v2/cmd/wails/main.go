@@ -41,7 +41,7 @@ func printBulletPoint(text string, args ...any) {
 		fatal(err.Error())
 	}
 	t = strings.Trim(t, "\n\r")
-	pterm.Printf(t, args...)
+	pterm.Printfln(t, args...)
 }
 
 func printFooter() {

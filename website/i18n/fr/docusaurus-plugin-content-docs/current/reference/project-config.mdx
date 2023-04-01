@@ -2,56 +2,91 @@
 sidebar_position: 5
 ---
 
-# Configuration du projet
+# Project Config
 
-La configuration du projet se trouve dans le fichier `wails.json` du répertoire du projet. La structure de la configuration est :
+The project config resides in the `wails.json` file in the project directory. The structure of the config is:
 
 ```json
 {
-    "name": "[Le nom du projet]",
-    "assetdir": "[Chemin relatif vers le répertoire contenant les ressources compilées, ceci est normalement déduit et pourrait être laissé vide]",
-    "reloaddirs": "[Répertoires supplémentaires pour déclencher des recharges automatiques (séparés par des virgules), ceci n'est utilisé que pour certaines configurations d'actifs avancées]",
-    "build:dir": "[Le répertoire où se trouvent les fichiers de compilation. Par défaut, 'build']",
-    "frontend:dir": "[Chemin relatif vers le répertoire du frontend. Par défaut, 'frontend']',
-    "frontend:install": "[La commande pour installer les dépendances de node, exécuté dans le répertoire du frontend - souvent `npm install`]",
-    "frontend:build": "[La commande pour construire l'application, exécuté dans le répertoire frontend - souvent `npm run build`]",
-    "frontend:dev": "[Cette commande a été remplacée par frontend:dev:build. Si frontend:dev:build n'est pas spécifié, cela retombera dans cette commande. \nSi cette commande n'est pas non plus spécifiée va revenir sur frontend:build]",
-    "frontend:dev:build": "[Cette commande est l'équivalent en dev de frontend:build. Si non spécifié, revient à frontend:dev]",
-    "frontend:dev:install": "[Cette commande est l'équivalent en dev de frontend:install. Si non spécifié, revient à frontend:install]",
-    "frontend:dev:watcher": "[Cette commande est exécutée dans un processus séparé sur `wails dev`. Utile pour les observateurs tiers ou les serveurs de développement de parties tierces]",
-    "frontend:dev:serverUrl": "[URL vers un serveur de développement tiers pour exposer l'application, EG Vite. \nSi cette valeur est définie à 'auto', alors le devServerUrl sera déduit de la sortie Vite]",
-    "wailsjsdir": "[Chemin relatif au répertoire qui vont contenir les modules JS automatiquement créés]",
-    "version": "[Version de configuration du projet]",
-    "outputfilename": "[Le nom du binaire]",
-    "debounceMS": 100, // Nombre de millisecondes durant lesquelles le serveur de dev attend de se recharger quand il détecte un changement dans les ressourcces
-    "devServer": "[Adresse pour se connecter au serveur de dev de wails. Par défaut: localhost:34115]",
-    "appargs": "[Arguments passés à l'application en mode shell lors du mode dev]",
-    "runNonNativeBuildHooks": false, // Définit si les évènements de compilation doivent être exécutés même s'ils sont définis pour un système d'exploitation autre que le système d'exploitation hôte.
-    "preBuildHooks": {
-        "GOOS/GOARCH": "[La commande qui sera exécutée avant une compilation du GOOS/GOARCH: ${platform} est remplacée par le "GOOS/GOARCH". Le crochet "GOOS/GOARCH" est exécuté avant les crochets "GOOS/*" et"*/*" .]",
-        "GOOS/*": "[Cette commande sera exécutée avant la construction du GOOS spécifié: ${platform} est remplacé avec "GOOS/GOARCH". Le crochet "GOOS/*" est exécuté avant le crochet "*/*".]",
-        "*/*": "[La commande sera exécutée avant tout autre chose lors de la construction: ${platform} est remplacé avec "GOOS/GOARCH".]"
-    },
-    "postBuildHooks": {
-        "GOOS/GOARCH": "[La command sera exécutée après une construction du GOOS/GOARCH spécifié: ${platform} est remplacé par "GOOS/GOARCH" et ${bin} avec le chemin vers le binaire compilé. Le crochet "GOOS/GOARCH"  est exécuté avant les crochets "GOOS/*" et "*/*".]",
-        "GOOS/*": "[La commande sera exécutée après une construction du GOOS spécifié: ${platform} est remplacé par "GOOS/GOARCH" et ${bin} avec le chemin vers le binaire compilé. Le crochet "GOOS/*" est exécuté avant le crochet "*/*".]",
-        "*/*": "[La commande sera exécutée après chaque construction: ${platform} est remplacé par "GOOS/GOARCH" et ${bin} avec le chemin vers le binaire compilé.]"
-    },
-    "info": { // Data utilisée pour remplir le manifests et version info.
-        "companyName": "[Le nom de la société. Par défaut: [Le nom du projet]]",
-        "productName": "[Le nom du produit. Par défaut: [Le nom du projet]]",
-        "productVersion": "[La version du produit. Par défaut: '1.0.0']",
-        "copyright": "[Le copyright du produit. Par défaut: 'Copyright.........']",
-        "comments": "[Un bref commentaire de l'application. Par défaut: 'Built using Wails (https://wails.app)']"
-    },
-    "nsisType": "['multiple': Un installateur par architecture. 'single' : un seul installateur universel pour toutes les architectures en cours de construction. Par défaut: 'multiple']",
-    "obfuscated": "[Si l'application doit être masquée. Par défaut: false]",
-    "garbleargs": "[Les arguments à passer à la commande garble lors de l'utilisation de l'option obfuscated ]"
+  // Project config version
+  "version": "",
+  // The project name
+  "name": "",
+  // Relative path to the directory containing the compiled assets, this is normally inferred and could be left empty
+  "assetdir": "",
+  // Additional directories to trigger reloads (comma separated), this is only used for some advanced asset configurations
+  "reloaddirs": "",
+  // The directory where the build files reside. Defaults to 'build'
+  "build:dir": "",
+  // Relative path to the frontend directory. Defaults to 'frontend'
+  "frontend:dir": "",
+  // The command to install node dependencies, run in the frontend directory - often `npm install`
+  "frontend:install": "",
+  // The command to build the assets, run in the frontend directory - often `npm run build`
+  "frontend:build": "",
+  // This command has been replaced by frontend:dev:build. If frontend:dev:build is not specified will falls back to this command. \nIf this command is also not specified will falls back to frontend:build
+  "frontend:dev": "",
+  // This command is the dev equivalent of frontend:build. If not specified falls back to frontend:dev
+  "frontend:dev:build": "",
+  // This command is the dev equivalent of frontend:install. If not specified falls back to frontend:install
+  "frontend:dev:install": "",
+  // This command is run in a separate process on `wails dev`. Useful for 3rd party watchers or starting 3d party dev servers
+  "frontend:dev:watcher": "",
+  // URL to a 3rd party dev server to be used to serve assets, EG Vite. \nIf this is set to 'auto' then the devServerUrl will be inferred from the Vite output
+  "frontend:dev:serverUrl": "",
+  // Relative path to the directory that the auto-generated JS modules will be created
+  "wailsjsdir": "",
+  // The name of the binary
+  "outputfilename": "",
+  // The default time the dev server waits to reload when it detects a change in assets
+  "debounceMS": 100,
+  // Address to bind the wails dev sever to. Default: localhost:34115
+  "devServer": "",
+  // Arguments passed to the application in shell style when in dev mode
+  "appargs": "",
+  // Defines if build hooks should be run though they are defined for an OS other than the host OS.
+  "runNonNativeBuildHooks": false,
+  "preBuildHooks": {
+    // The command that will be executed before a build of the specified GOOS/GOARCH: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.
+    "GOOS/GOARCH": "",
+    // The command that will be executed before a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/*" hook is executed before the "*/*" hook.
+    "GOOS/*": "",
+    // The command that will be executed before every build: ${platform} is replaced with the "GOOS/GOARCH".
+    "*/*": ""
+  },
+  "postBuildHooks": {
+    // The command that will be executed after a build of the specified GOOS/GOARCH: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary. The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.
+    "GOOS/GOARCH": "",
+    // The command that will be executed after a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary. The "GOOS/*" hook is executed before the "*/*" hook.
+    "GOOS/*": "",
+    // The command that will be executed after every build: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary.
+    "*/*": ""
+  },
+  // Data used to populate manifests and version info.
+  "info": {
+    // The company name. Default: [The project name]
+    "companyName": "",
+    // The product name. Default: [The project name]
+    "productName": "",
+    // The version of the product. Default: '1.0.0'
+    "productVersion": "",
+    // The copyright of the product. Default: 'Copyright.........'
+    "copyright": "",
+    // A short comment of the app. Default: 'Built using Wails (https://wails.app)'
+    "comments": ""
+  },
+  // 'multiple': One installer per architecture. 'single': Single universal installer for all architectures being built. Default: 'multiple'
+  "nsisType": "",
+  // Whether the app should be obfuscated. Default: false
+  "obfuscated": "",
+  // The arguments to pass to the garble command when using the obfuscated flag
+  "garbleargs": ""
 }
 ```
 
-Ce fichier est lu par le CLI Wails lorsque vous exécutez `wails build` ou `wails dev`.
+This file is read by the Wails CLI when running `wails build` or `wails dev`.
 
-Les options `assetdir`, `reloaddirs`, `wailsjsdir`, `debounceMS`, `devserver` and `frontenddevserverurl` dans `wails build/dev` vont mettre à jour les configs du projet qui deviendront les configurations par défaut pour les éxécutions suivantes.
+The `assetdir`, `reloaddirs`, `wailsjsdir`, `debounceMS`, `devserver` and `frontenddevserverurl` flags in `wails build/dev` will update the project config
+and thus become defaults for subsequent runs.
 
-Le schéma JSON pour ce fichier se trouve [ici](https://wails.io/schemas/config.v2.json).
+The JSON Schema for this file is located [here](https://wails.io/schemas/config.v2.json).
