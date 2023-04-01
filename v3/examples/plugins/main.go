@@ -6,6 +6,7 @@ import (
 	"github.com/wailsapp/wails/v3/plugins/browser"
 	"github.com/wailsapp/wails/v3/plugins/kvstore"
 	"github.com/wailsapp/wails/v3/plugins/log"
+	"github.com/wailsapp/wails/v3/plugins/single_instance"
 	"github.com/wailsapp/wails/v3/plugins/sqlite"
 	"os"
 	"plugin_demo/plugins/hashes"
@@ -30,6 +31,10 @@ func main() {
 			"kvstore": kvstore.NewPlugin(&kvstore.Config{
 				Filename: "store.json",
 				AutoSave: true,
+			}),
+			"single_instance": single_instance.NewPlugin(&single_instance.Config{
+				// When true, the original app will be activated when a second instance is launched
+				ActivateAppOnSubsequentLaunch: true,
 			}),
 		},
 		Assets: application.AssetOptions{
