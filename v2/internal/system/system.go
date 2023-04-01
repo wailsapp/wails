@@ -42,7 +42,9 @@ func checkNodejs() *packagemanager.Dependency {
 	if err != nil {
 		installed = false
 	} else {
-		version = strings.TrimSpace(strings.Split(string(output), "\n")[0])[1:]
+		if len(output) > 0 {
+			version = strings.TrimSpace(strings.Split(string(output), "\n")[0])[1:]
+		}
 	}
 	return &packagemanager.Dependency{
 		Name:           "Nodejs",
