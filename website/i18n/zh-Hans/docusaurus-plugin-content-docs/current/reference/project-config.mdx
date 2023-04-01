@@ -8,45 +8,84 @@ sidebar_position: 5
 
 ```json
 {
-    "name": "[The project name]",
-    "assetdir": "[Relative path to the directory containing the compiled assets, this is normally inferred and could be left empty]",
-    "reloaddirs": "[Additional directories to trigger reloads (comma separated), this is only used for some advanced asset configurations]",
-    "build:dir": "[The directory where the build files reside. Defaults to 'build']",
-    "frontend:dir": "[Relative path to the frontend directory. Defaults to 'frontend']",
-    "frontend:install": "[The command to install node dependencies, run in the frontend directory - often `npm install`]",
-    "frontend:build": "[The command to build the assets, run in the frontend directory - often `npm run build`]",
-    "frontend:dev": "[This command has been replaced by frontend:dev:build. If frontend:dev:build is not specified will falls back to this command. \nIf this command is also not specified will falls back to frontend:build]",
-    "frontend:dev:build": "[This command is the dev equivalent of frontend:build. If not specified falls back to frontend:dev]",
-    "frontend:dev:install": "[This command is the dev equivalent of frontend:install. If not specified falls back to frontend:install]",
-    "frontend:dev:watcher": "[This command is run in a separate process on `wails dev`. Useful for 3rd party watchers or starting 3d party dev servers]",
-    "frontend:dev:serverUrl": "[URL to a 3rd party dev server to be used to serve assets, EG Vite. \nIf this is set to 'auto' then the devServerUrl will be inferred from the Vite output]",
-    "wailsjsdir": "[Relative path to the directory that the auto-generated JS modules will be created]",
-    "version": "[Project config version]",
-    "outputfilename": "[The name of the binary]",
-    "debounceMS": 100, // The default time the dev server waits to reload when it detects a change in assets
-    "devServer": "[Address to bind the wails dev sever to. Default: localhost:34115]",
-    "appargs": "[Arguments passed to the application in shell style when in dev mode]",
-    "runNonNativeBuildHooks": false, // Defines if build hooks should be run though they are defined for an OS other than the host OS.
-    "preBuildHooks": {
-        "GOOS/GOARCH": "[The command that will be executed before a build of the specified GOOS/GOARCH: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.]",
-        "GOOS/*": "[The command that will be executed before a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH". The "GOOS/*" hook is executed before the "*/*" hook.]",
-        "*/*": "[The command that will be executed before every build: ${platform} is replaced with the "GOOS/GOARCH".]"
-    },
-    "postBuildHooks": {
-        "GOOS/GOARCH": "[The command that will be executed after a build of the specified GOOS/GOARCH: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary. The "GOOS/GOARCH" hook is executed before the "GOOS/*" and "*/*" hook.]",
-        "GOOS/*": "[The command that will be executed after a build of the specified GOOS: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary. The "GOOS/*" hook is executed before the "*/*" hook.]",
-        "*/*": "[The command that will be executed after every build: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary.]"
-    },
-    "info": { // Data used to populate manifests and version info.
-        "companyName": "[The company name. Default: [The project name]]",
-        "productName": "[The product name. Default: [The project name]]",
-        "productVersion": "[The version of the product. Default: '1.0.0']",
-        "copyright": "[The copyright of the product. Default: 'Copyright.........']",
-        "comments": "[A short comment of the app. Default: 'Built using Wails (https://wails.app)']"
-    },
-    "nsisType": "['multiple': One installer per architecture. 'single': Single universal installer for all architectures being built. Default: 'multiple']",
-    "obfuscated": "[Whether the app should be obfuscated. Default: false]",
-    "garbleargs": "[The arguments to pass to the garble command when using the obfuscated flag]"
+  // 项目配置版本
+  "version": "",
+  // 项目名称
+  "name": "",
+  // 包含编译资产的目录的相对路径，这通常是推断的并且可以留空
+  "assetdir": "",
+  // 触发重新加载的附加目录（逗号分隔），这仅用于某些高级资产配置
+  "reloaddirs": "",
+  // 构建文件所在的目录。默认为“build”
+  "build:dir": "",
+  // 前端目录的相对路径。默认为“frontend”
+  "frontend:dir": "",
+  // 安装 Node 依赖的命令，在前端目录运行 - 通常是`npm install`
+  "frontend:install": "",
+  // 构建资产的命令，在前端目录中运行 - 通常是 `npm run build`
+  "frontend:build": "",
+  // 此命令已被 frontend:dev:build 取代。如果未指定 frontend:dev:build 将回退到此命令。如果此命令也未指定，将回退到 frontend:build
+  "frontend:dev": "",
+  // 此命令是 frontend:build 的 dev 等价物。如果未指定回退到 frontend:dev
+  "frontend:dev:build": "",
+  // 此命令是 frontend:install 的 dev 等价物。如果未指定回退到 frontend:install
+  "frontend:dev:install": "",
+  // 此命令在 `wails dev`上的单独进程中运行。用于第 3 方观察者或启动 3d 方开发服务器
+  "frontend:dev:watcher": "",
+  // 用于服务资产的第 3 方开发服务器的 URL，比如 Vite。如果设置为 'auto' 那么 devServerUrl 将从 Vite 输出中推断出来
+  "frontend:dev:serverUrl": "",
+  // 创建自动生成的 JS 模块的目录的相对路径
+  "wailsjsdir": "",
+  // 二进制文件的名称
+  "outputfilename": "",
+  // 开发服务器在检测到资产更改时等待重新加载的默认时间
+  "debounceMS": 100,
+  // 将 wails 开发服务器绑定到的地址。默认为：localhost:34115
+  "devServer": "",
+  // 在开发模式下以 shell 样式传递给应用程序的参数
+  "appargs": "",
+  // 定义是否应该运行构建 Hooks，尽管它们是为主机操作系统以外的操作系统定义的。
+  "runNonNativeBuildHooks": false,
+  // 构建前 Hooks
+  "preBuildHooks": {
+    // 在构建指定的 GOOS/GOARCH 之前将执行的命令：${platform} 被替换为“GOOS/GOARCH”。 “GOOS/GOARCH” hook 在“GOOS/*”和“*/*” hook 之前执行。
+    "GOOS/GOARCH": "",
+    // 在指定 GOOS 的构建之前将执行的命令：${platform} 被替换为“GOOS/GOARCH”。 “GOOS/*” hook 在“*/*” hook 之前执行。
+    "GOOS/*": "",
+    // 将在每次构建之前执行的命令：${platform} 替换为“GOOS/GOARCH”。
+    "*/*": ""
+  },
+  // 构建后 Hooks
+  "postBuildHooks": {
+    // 在构建指定的 GOOS/GOARCH 之后将执行的命令：${platform} 替换为“GOOS/GOARCH”，${bin} 替换为已编译二进制文件的路径。 “GOOS/GOARCH” hook 在“GOOS/*”和“*/*” hook 之前执行。
+    "GOOS/GOARCH": "",
+    // 在构建指定的 GOOS 之后将执行的命令：${platform} 替换为“GOOS/GOARCH”，${bin} 替换为已编译二进制文件的路径。 “GOOS/*” hook 在“*/*” hook 之前执行。
+    "GOOS/*": "",
+    // The command that will be executed after every build: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary.
+    // 每次构建后将执行的命令：${platform} 替换为“GOOS/GOARCH”，${bin} 替换为已编译二进制文件的路径。
+    "*/*": ""
+  },
+  // 用于填充 manifest 和版本信息的数据。
+  "info": {
+    // 公司名称。 默认值：[项目名]
+    "companyName": "",
+    // 产品名称。 默认值：[项目名]
+    "productName": "",
+    // 产品版本。默认值：'1.0.0'
+    "productVersion": "",
+    // 产品的版权。默认值：'Copyright.........'
+    "copyright": "",
+    // 该应用程序的简短评论。默认值：'Built using Wails (https://wails.app)'
+    "comments": ""
+  },
+  // 'multiple': 每个架构一个安装程序。
+  // 'single': 适用于正在构建的所有体系结构的单一通用安装程序。
+  // 默认值：'multiple'
+  "nsisType": "",
+  // 应用程序是否应该被混淆。默认值：false
+  "obfuscated": "",
+  // 使用 obfuscated 标志时传递给乱码命令的参数
+  "garbleargs": ""
 }
 ```
 
@@ -54,4 +93,4 @@ sidebar_position: 5
 
 `wails build/dev` 命令中的 `assetdir`、`reloaddirs`、`wailsjsdir`、`debounceMS`、`devserver` 和 `frontenddevserverurl` 标志将覆盖项目配置并作为后续运行的默认值。
 
-此文件的 JSON 模型位于 [此处](https://wails.io/schemas/config.v2.json)。
+此文件的 `JSON Schema` 位于 [此处](https://wails.io/schemas/config.v2.json)。
