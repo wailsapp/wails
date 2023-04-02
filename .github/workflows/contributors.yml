@@ -10,7 +10,9 @@ on:
 jobs:
   contributors:
     runs-on: ubuntu-latest
+    if: github.repository == 'wailsapp/wails'
     steps:
+      - uses: actions/checkout@v3
       - uses: wow-actions/contributors-list@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
