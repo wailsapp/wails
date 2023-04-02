@@ -5,7 +5,7 @@ on:
     - cron: '0 1 * * 0' # At 01:00 on Sunday.
   push:
     branches:
-      - master
+      - 'v2/update-contrib-svg'
 
 jobs:
   contributors:
@@ -13,10 +13,17 @@ jobs:
     if: github.repository == 'wailsapp/wails'
     steps:
       - uses: actions/checkout@v3
+
+      - name: Show files
+        run: ls -la
+
+      - name: Show full path
+        run: ls -la ./website/static/img
+
       - uses: wow-actions/contributors-list@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          svgPath: website/static/img/contributors.svg
+          svgPath: ./website/static/img/contributors.svg
           noCommit: true
 
       - name: Create Pull Request
