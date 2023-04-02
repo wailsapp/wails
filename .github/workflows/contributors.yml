@@ -15,3 +15,13 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           svgPath: website/static/img/contributors.svg
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: "chore: update contributors.svg"
+          add-paths: "website/static/img/contributors.svg"
+          title: Update Contributors Image
+          body: Generated new image
+          branch: update-contributors
+          delete-branch: true
