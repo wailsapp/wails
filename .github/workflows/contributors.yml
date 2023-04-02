@@ -15,6 +15,7 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           svgPath: website/static/img/contributors.svg
+          noCommit: true
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
