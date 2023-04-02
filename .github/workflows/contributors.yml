@@ -14,12 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Show files
-        run: ls -la
-
-      - name: Show full path
-        run: ls -la ./website/static/img
-
       - uses: wow-actions/contributors-list@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
