@@ -1,20 +1,20 @@
 # https://taskfile.dev
 
-version: '3'
+version: "3"
 
 vars:
   GREETING: Hello, World!
 
 tasks:
-  check-contributors:
+  contributors:check:
     cmds:
       - npx -y all-contributors-cli check
 
-  update-contributors:
+  contributors:update:
     cmds:
       - go run v3/tasks/contribs/main.go
 
-  build-contributors:
+  contributors:build:
     cmds:
       - npx -y all-contributors-cli generate
 
