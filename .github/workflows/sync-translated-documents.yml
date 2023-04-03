@@ -27,5 +27,6 @@ jobs:
           title: "docs: sync translations"
           body: "- [x] Sync translated documents"
           branch: chore/sync-translations
+          labels: translation
           delete-branch: true
           draft: true
