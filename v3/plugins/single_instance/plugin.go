@@ -1,6 +1,7 @@
 package single_instance
 
 import (
+	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"os"
 	"path/filepath"
@@ -71,7 +72,7 @@ func (p *Plugin) Init(app *application.App) error {
 				return err
 			}
 		}
-		os.Exit(0)
+		return fmt.Errorf("another instance of this application is already running")
 	}
 	return nil
 }

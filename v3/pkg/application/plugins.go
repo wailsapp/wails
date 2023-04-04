@@ -11,8 +11,9 @@ type Plugin interface {
 }
 
 type PluginManager struct {
-	plugins     map[string]Plugin
-	assetServer *assetserver.AssetServer
+	plugins            map[string]Plugin
+	assetServer        *assetserver.AssetServer
+	initialisedPlugins []Plugin
 }
 
 func NewPluginManager(plugins map[string]Plugin, assetServer *assetserver.AssetServer) *PluginManager {
@@ -27,8 +28,11 @@ func (p *PluginManager) Init() error {
 	for _, plugin := range p.plugins {
 		err := plugin.Init(globalApplication)
 		if err != nil {
+			globalApplication.error("Plugin '%s' failed to initialise: %s", plugin.Name(), err.Error())
+			p.Shutdown()
 			return err
 		}
+		p.initialisedPlugins = append(p.initialisedPlugins, plugin)
 		injectJS := plugin.InjectJS()
 		if injectJS != "" {
 			p.assetServer.AddPluginScript(plugin.Name(), injectJS)
@@ -39,7 +43,7 @@ func (p *PluginManager) Init() error {
 }
 
 func (p *PluginManager) Shutdown() {
-	for _, plugin := range p.plugins {
+	for _, plugin := range p.initialisedPlugins {
 		plugin.Shutdown()
 		globalApplication.info("Plugin '%s' shutdown", plugin.Name())
 	}

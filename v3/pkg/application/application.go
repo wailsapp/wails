@@ -76,7 +76,7 @@ func New(appOptions Options) *App {
 	result.plugins = NewPluginManager(appOptions.Plugins, srv)
 	err = result.plugins.Init()
 	if err != nil {
-		println("Fatal error in application initialisation: ", err.Error())
+		result.Quit()
 		os.Exit(1)
 	}
 
