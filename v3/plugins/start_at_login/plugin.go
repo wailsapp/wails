@@ -2,9 +2,6 @@ package start_at_login
 
 import (
 	"github.com/wailsapp/wails/v3/pkg/application"
-	"github.com/wailsapp/wails/v3/pkg/logger"
-	"github.com/wailsapp/wails/v3/pkg/mac"
-	"runtime"
 )
 
 type Plugin struct {
@@ -28,16 +25,10 @@ func (p *Plugin) Name() string {
 
 func (p *Plugin) Init(app *application.App) error {
 	p.app = app
-	if runtime.GOOS == "darwin" {
-		bundleID := mac.GetBundleID()
-		if bundleID == "" {
-			p.app.Log(&logger.Message{
-				Level:   "INFO",
-				Message: "Application is not in bundle. StartAtLogin will not work.",
-			})
-			p.disabled = true
-			return nil
-		}
+	// OS specific initialiser
+	err := p.init()
+	if err != nil {
+		return err
 	}
 	return nil
 }
