@@ -55,7 +55,10 @@ static void addServicesMenu(void* menu) {
 
 */
 import "C"
-import "unsafe"
+import (
+	"fmt"
+	"unsafe"
+)
 
 type macosMenu struct {
 	menu *Menu
@@ -66,40 +69,45 @@ type macosMenu struct {
 func newMenuImpl(menu *Menu) *macosMenu {
 	result := &macosMenu{
 		menu: menu,
+		nsMenu: unsafe.Pointer(C.createNSMenu(C.CString(menu.label))),
 	}
 	return result
 }
 
 func (m *macosMenu) update() {
+	fmt.Println("macosMenu.update()")
 	if m.nsMenu == nil {
 		m.nsMenu = C.createNSMenu(C.CString(m.menu.label))
 	} else {
 		C.clearMenu(m.nsMenu)
 	}
-	m.processMenu(m.nsMenu, m.menu)
 }
 
-func (m *macosMenu) processMenu(parent unsafe.Pointer, menu *Menu) {
-	for _, item := range menu.items {
-		switch item.itemType {
-		case submenu:
-			submenu := item.submenu
-			nsSubmenu := C.createNSMenu(C.CString(item.label))
-			m.processMenu(nsSubmenu, submenu)
-			menuItem := newMenuItemImpl(item)
-			item.impl = menuItem
-			C.addMenuItem(parent, menuItem.nsMenuItem)
-			C.setMenuItemSubmenu(menuItem.nsMenuItem, nsSubmenu)
-			if item.role == ServicesMenu {
-				C.addServicesMenu(nsSubmenu)
-			}
-		case text, checkbox, radio:
-			menuItem := newMenuItemImpl(item)
-			item.impl = menuItem
-			C.addMenuItem(parent, menuItem.nsMenuItem)
-		case separator:
-			C.addMenuSeparator(parent)
-		}
+func (m *macosMenu) addMenuItem(parent *Menu, menu *MenuItem) {
+	C.addMenuItem(unsafe.Pointer(parent.impl.(*macosMenu).nsMenu),
+		unsafe.Pointer((menu.impl).(*macosMenuItem).nsMenuItem))
+}
 
+func (l *macosMenu) addMenuItemSubMenu(item *MenuItem, menu *Menu) {
+	C.setMenuItemSubmenu(unsafe.Pointer((item.impl).(*macosMenuItem).nsMenuItem),
+		unsafe.Pointer((menu.impl).(*macosMenu).nsMenu))
+}
+
+func (l *macosMenu) addMenuSeparator(menu *Menu) {
+	C.addMenuSeparator(unsafe.Pointer(menu.impl.(*macosMenu).nsMenu))
+}
+
+func (l *macosMenu) addServicesMenu(menu *Menu) {
+	C.addServicesMenu(unsafe.Pointer(menu.impl.(*macosMenu).nsMenu))
+}
+
+func (l *macosMenu) createMenu(name string) *Menu {
+	impl := newMenuImpl(&Menu{label: name})
+	menu := &Menu{
+		label:  name,
+		items:  []*MenuItem{},
+		impl: impl,
 	}
+	impl.menu = menu
+	return menu
 }

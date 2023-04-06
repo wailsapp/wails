@@ -1,6 +1,11 @@
 package application
 
 type menuImpl interface {
+	addMenuItem(parent *Menu, menu *MenuItem)
+	addMenuItemSubMenu(menuItem *MenuItem, menu *Menu)
+	addMenuSeparator(parent *Menu)
+	addServicesMenu(menu *Menu)
+	createMenu(name string) *Menu
 	update()
 }
 
@@ -44,6 +49,7 @@ func (m *Menu) Update() {
 		m.impl = newMenuImpl(m)
 	}
 	m.impl.update()
+	m.processMenu(m, m)
 }
 
 func (m *Menu) AddSubmenu(s string) *Menu {
@@ -90,6 +96,29 @@ func (m *Menu) SetLabel(label string) {
 func (m *Menu) setContextData(data *ContextMenuData) {
 	for _, item := range m.items {
 		item.setContextData(data)
+	}
+}
+
+func (m *Menu) processMenu(parent *Menu, menu *Menu) {
+	for _, item := range menu.items {
+		switch item.itemType {
+		case submenu:
+			submenu := item.submenu
+			nsSubmenu := m.impl.createMenu(item.label)
+			m.processMenu(nsSubmenu, submenu)
+			item.impl = newMenuItemImpl(item)
+			m.impl.addMenuItem(parent, item)
+			m.impl.addMenuItemSubMenu(item, nsSubmenu)
+			if item.role == ServicesMenu {
+				m.impl.addServicesMenu(nsSubmenu)
+			}
+		case text, checkbox, radio:
+			item.impl = newMenuItemImpl(item)
+			m.impl.addMenuItem(parent, item)
+		case separator:
+			m.impl.addMenuSeparator(parent)
+		}
+
 	}
 }
 

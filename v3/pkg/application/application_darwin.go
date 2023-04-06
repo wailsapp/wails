@@ -170,7 +170,7 @@ func (m *macosApp) setApplicationMenu(menu *Menu) {
 	}
 	menu.Update()
 
-	// Convert impl to macosMenu object
+	// Convert impl to macosMenu object 
 	m.applicationMenu = (menu.impl).(*macosMenu).nsMenu
 	C.setApplicationMenu(m.applicationMenu)
 }
