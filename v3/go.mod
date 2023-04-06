@@ -17,7 +17,6 @@ require (
 	github.com/samber/lo v1.37.0
 	github.com/tc-hib/winres v0.1.6
 	github.com/wailsapp/wails/v2 v2.3.2-0.20230117193915-45c3a501d9e6
-	golang.design/x/hotkey v0.4.1
 	modernc.org/sqlite v1.21.0
 )
 
