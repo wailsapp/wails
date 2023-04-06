@@ -3,7 +3,7 @@ import {Emit} from "./events";
 import {Question} from "./dialogs";
 
 function sendEvent(event) {
-    Emit(event);
+    Emit({name: event});
 }
 
 function addWMLEventListeners() {
