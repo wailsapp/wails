@@ -225,8 +225,9 @@ func processMessage(windowID C.uint, message *C.char) {
 //export processURLRequest
 func processURLRequest(windowID C.uint, wkUrlSchemeTask unsafe.Pointer) {
 	webviewRequests <- &webViewAssetRequest{
-		Request:  webview.NewRequest(wkUrlSchemeTask),
-		windowId: uint(windowID),
+		Request:    webview.NewRequest(wkUrlSchemeTask),
+		windowId:   uint(windowID),
+		windowName: globalApplication.getWindowForID(uint(windowID)).Name(),
 	}
 }
 

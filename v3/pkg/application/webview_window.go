@@ -117,10 +117,7 @@ func (w *WebviewWindow) SetTitle(title string) *WebviewWindow {
 }
 
 func (w *WebviewWindow) Name() string {
-	if w.options.Name != "" {
-		return w.options.Name
-	}
-	return fmt.Sprintf("Window %d", w.id)
+	return w.options.Name
 }
 
 func (w *WebviewWindow) SetSize(width, height int) *WebviewWindow {

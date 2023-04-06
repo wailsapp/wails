@@ -12,14 +12,20 @@ The electron alternative for Go
 
 const runtimeURL = window.location.origin + "/wails/runtime";
 
-function runtimeCall(method, args) {
+function runtimeCall(method, windowName, args) {
     let url = new URL(runtimeURL);
     url.searchParams.append("method", method);
-    if(args) {
+    if (args) {
         url.searchParams.append("args", JSON.stringify(args));
     }
+    let fetchOptions = {
+        headers: {},
+    };
+    if (windowName) {
+        fetchOptions.headers["x-wails-window-name"] = windowName;
+    }
     return new Promise((resolve, reject) => {
-        fetch(url)
+        fetch(url, fetchOptions)
             .then(response => {
                 if (response.ok) {
                     // check content type
@@ -36,15 +42,8 @@ function runtimeCall(method, args) {
     });
 }
 
-export function newRuntimeCaller(object, id) {
-    if (!id || id === -1) {
-        return function (method, args) {
-            return runtimeCall(object + "." + method, args);
-        };
-    }
-    return function (method, args) {
-        args = args || {};
-        args.windowID = id;
-        return runtimeCall(object + "." + method, args);
+export function newRuntimeCaller(object, windowName) {
+    return function (method, args=null) {
+        return runtimeCall(object + "." + method, windowName, args);
     };
 }

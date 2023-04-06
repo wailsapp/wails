@@ -26,6 +26,28 @@ func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, arg
 	rw.Write([]byte(fmt.Sprintf(message, args...)))
 }
 
+func (m *MessageProcessor) getTargetWindow(r *http.Request) *WebviewWindow {
+	windowName := r.Header.Get(webViewRequestHeaderWindowName)
+	if windowName != "" {
+		return globalApplication.GetWindowByName(windowName)
+	}
+	windowID := r.Header.Get(webViewRequestHeaderWindowId)
+	if windowID == "" {
+		return nil
+	}
+	wID, err := strconv.ParseUint(windowID, 10, 64)
+	if err != nil {
+		m.Error("Window ID '%s' not parsable: %s", windowID, err)
+		return nil
+	}
+	targetWindow := globalApplication.getWindowForID(uint(wID))
+	if targetWindow == nil {
+		m.Error("Window ID %d not found", wID)
+		return nil
+	}
+	return targetWindow
+}
+
 func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Request) {
 	// Read "method" from query string
 	method := r.URL.Query().Get("method")
@@ -45,26 +67,9 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 
 	params := QueryParams(r.URL.Query())
 
-	var windowID uint
-	if hWindowID := r.Header.Get(webViewRequestHeaderWindowId); hWindowID != "" {
-		// Get windowID out of the request header
-		wID, err := strconv.ParseUint(hWindowID, 10, 64)
-		if err != nil {
-			m.Error("Window ID '%s' not parsable: %s", hWindowID, err)
-			return
-		}
-
-		windowID = uint(wID)
-	}
-
-	if qWindowID := params.UInt("windowID"); qWindowID != nil {
-		// Get windowID out of the query parameters if provided
-		windowID = *qWindowID
-	}
-
-	targetWindow := globalApplication.getWindowForID(windowID)
+	targetWindow := m.getTargetWindow(r)
 	if targetWindow == nil {
-		m.Error("Window ID %s not found", windowID)
+		m.Error("No valid window found")
 		return
 	}
 
