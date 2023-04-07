@@ -22,7 +22,7 @@ import {enableContextMenus} from "./contextmenu";
 import {reloadWML} from "./wml";
 
 window.wails = {
-    ...newRuntime(-1),
+    ...newRuntime(null),
 };
 
 // Internal wails endpoints
@@ -34,13 +34,16 @@ window._wails = {
     callErrorCallback,
 };
 
-export function newRuntime(id) {
+export function newRuntime(windowName) {
     return {
         Clipboard: {
             ...Clipboard
         },
         Application: {
-            ...Application
+            ...Application,
+            GetWindowByName(windowName) {
+                return newRuntime(windowName);
+            }
         },
         Log,
         Screens,
@@ -65,7 +68,7 @@ export function newRuntime(id) {
             Off,
             OffAll,
         },
-        Window: newWindow(id),
+        Window: newWindow(windowName),
     };
 }
 

@@ -12,6 +12,7 @@ require (
 	github.com/leaanthony/winicon v1.0.0
 	github.com/matryer/is v1.4.0
 	github.com/pkg/browser v0.0.0-20210706143420-7d21f8c997e2
+	github.com/pkg/errors v0.9.1
 	github.com/pterm/pterm v0.12.51
 	github.com/samber/lo v1.37.0
 	github.com/tc-hib/winres v0.1.6
