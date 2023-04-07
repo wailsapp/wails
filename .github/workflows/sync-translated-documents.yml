@@ -1,4 +1,4 @@
-name: Sync Translated Documents
+name: Sync Translations
 
 on:
   workflow_dispatch:
@@ -23,9 +23,10 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
-          commit-message: "docs: sync documents"
-          title: "docs: sync documents"
+          commit-message: "docs: sync translations"
+          title: "docs: sync translations"
           body: "- [x] Sync translated documents"
-          branch: feature/documents
+          branch: chore/sync-translations
+          labels: translation
           delete-branch: true
           draft: true

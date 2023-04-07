@@ -26,5 +26,5 @@ jobs:
           add-paths: "website/static/img/contributors.svg"
           title: Update Contributors Image
           body: Generated new image
-          branch: update-contributors
+          branch: chore/update-contributors
           delete-branch: true
