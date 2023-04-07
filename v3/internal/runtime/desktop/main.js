@@ -16,7 +16,7 @@ import * as Log from './log';
 import * as Screens from './screens';
 import {Plugin, Call, callErrorCallback, callCallback} from "./calls";
 import {newWindow} from "./window";
-import {dispatchCustomEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
+import {dispatchWailsEvent, Emit, Off, OffAll, On, Once, OnMultiple} from "./events";
 import {dialogCallback, dialogErrorCallback, Error, Info, OpenFile, Question, SaveFile, Warning,} from "./dialogs";
 import {enableContextMenus} from "./contextmenu";
 import {reloadWML} from "./wml";
@@ -29,7 +29,7 @@ window.wails = {
 window._wails = {
     dialogCallback,
     dialogErrorCallback,
-    dispatchCustomEvent,
+    dispatchWailsEvent,
     callCallback,
     callErrorCallback,
 };

@@ -34,7 +34,7 @@ func main() {
 		URL: "/",
 	})
 
-	app.Events.On("clicked", func(_ *application.CustomEvent) {
+	app.Events.On("clicked", func(_ *application.WailsEvent) {
 		println("clicked")
 	})
 

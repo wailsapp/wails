@@ -1,34 +1,34 @@
-import { On, Off, OffAll, OnMultiple, CustomEvent, dispatchCustomEvent, eventListeners, Once } from './events'
-import { expect, describe, it, vi, afterEach, beforeEach } from 'vitest'
+import { On, Off, OffAll, OnMultiple, WailsEvent, dispatchWailsEvent, eventListeners, Once } from './events';
+import { expect, describe, it, vi, afterEach, beforeEach } from 'vitest';
 
 afterEach(() => {
   OffAll();
-  vi.resetAllMocks()
-})
+  vi.resetAllMocks();
+});
 
 describe('OnMultiple', () => {
-  let testEvent = new CustomEvent('a', {})
+  let testEvent = new WailsEvent('a', {});
 
   it('should stop after a specified number of times', () => {
-    const cb = vi.fn()
-    OnMultiple('a', cb, 5)
-    dispatchCustomEvent(testEvent)
-    dispatchCustomEvent(testEvent)
-    dispatchCustomEvent(testEvent)
-    dispatchCustomEvent(testEvent)
-    dispatchCustomEvent(testEvent)
-    dispatchCustomEvent(testEvent)
+    const cb = vi.fn();
+    OnMultiple('a', cb, 5);
+    dispatchWailsEvent(testEvent);
+    dispatchWailsEvent(testEvent);
+    dispatchWailsEvent(testEvent);
+    dispatchWailsEvent(testEvent);
+    dispatchWailsEvent(testEvent);
+    dispatchWailsEvent(testEvent);
     expect(cb).toBeCalledTimes(5);
-  })
+  });
 
   it('should return a cancel fn', () => {
     const cb = vi.fn()
     const cancel = OnMultiple('a', cb, 5)
-    dispatchCustomEvent(testEvent)
-    dispatchCustomEvent(testEvent)
+    dispatchWailsEvent(testEvent)
+    dispatchWailsEvent(testEvent)
     cancel()
-    dispatchCustomEvent(testEvent)
-    dispatchCustomEvent(testEvent)
+    dispatchWailsEvent(testEvent)
+    dispatchWailsEvent(testEvent)
     expect(cb).toBeCalledTimes(2)
   })
 })

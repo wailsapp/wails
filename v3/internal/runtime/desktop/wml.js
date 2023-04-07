@@ -1,9 +1,10 @@
 
-import {Emit} from "./events";
+import {Emit, WailsEvent} from "./events";
 import {Question} from "./dialogs";
 
-function sendEvent(event) {
-    Emit({name: event});
+function sendEvent(eventName, data=null) {
+    let event = new WailsEvent(eventName, data);
+    Emit(event);
 }
 
 function addWMLEventListeners() {
