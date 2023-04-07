@@ -6,3 +6,4 @@ cmd/wails/wails
 /examples/menu/menu
 /examples/clipboard/clipboard
 /examples/plain/plain
+/website/venv/
