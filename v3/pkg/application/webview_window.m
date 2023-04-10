@@ -33,6 +33,21 @@ extern bool hasListeners(unsigned int);
 - (BOOL) resignFirstResponder {
     return YES;
 }
+- (void) setDelegate:(id<NSWindowDelegate>) delegate {
+    [delegate retain];
+    [super setDelegate: delegate];
+}
+- (void) dealloc {
+    NSLog(@"WebviewWindow dealloc called");
+    // Remove the script handler, otherwise WebviewWindowDelegate won't get deallocated
+    // See: https://stackoverflow.com/questions/26383031/wkwebview-causes-my-view-controller-to-leak
+    [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"external"];
+
+    if (self.delegate) {
+        [self.delegate release];
+    }
+    [super dealloc];
+}
 @end
 @implementation WebviewWindowDelegate
 - (BOOL)windowShouldClose:(NSWindow *)sender {
@@ -41,6 +56,12 @@ extern bool hasListeners(unsigned int);
         return false;
     }
     return true;
+}
+- (void) dealloc {
+    NSLog(@"WebviewWindowDelegate dealloc called");
+    // Makes sure to remove the retained proeprties so the reference counter of the retaines are decreased
+    self.leftMouseEvent = nil;
+    [super dealloc];
 }
 // Handle script messages from the external bridge
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
