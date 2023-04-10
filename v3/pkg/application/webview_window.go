@@ -39,7 +39,6 @@ type (
 		setZoom(zoom float64)
 		close()
 		zoom()
-		minimize()
 		setHTML(html string)
 		setPosition(x int, y int)
 		on(eventID uint)
@@ -485,7 +484,7 @@ func (w *WebviewWindow) Minimize() {
 	if w.impl == nil {
 		return
 	}
-	w.impl.minimize()
+	w.impl.minimise()
 }
 
 func (w *WebviewWindow) Zoom() {
