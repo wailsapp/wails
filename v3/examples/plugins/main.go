@@ -8,6 +8,7 @@ import (
 	"github.com/wailsapp/wails/v3/plugins/log"
 	"github.com/wailsapp/wails/v3/plugins/single_instance"
 	"github.com/wailsapp/wails/v3/plugins/sqlite"
+	"github.com/wailsapp/wails/v3/plugins/start_at_login"
 	"os"
 	"plugin_demo/plugins/hashes"
 )
@@ -27,7 +28,9 @@ func main() {
 			"hashes":  hashes.NewPlugin(),
 			"browser": browser.NewPlugin(),
 			"log":     log.NewPlugin(),
-			"sqlite":  sqlite.NewPlugin(&sqlite.Config{}),
+			"sqlite": sqlite.NewPlugin(&sqlite.Config{
+				DBFile: "test.db",
+			}),
 			"kvstore": kvstore.NewPlugin(&kvstore.Config{
 				Filename: "store.json",
 				AutoSave: true,
@@ -36,6 +39,7 @@ func main() {
 				// When true, the original app will be activated when a second instance is launched
 				ActivateAppOnSubsequentLaunch: true,
 			}),
+			"start_at_login": start_at_login.NewPlugin(),
 		},
 		Assets: application.AssetOptions{
 			FS: assets,

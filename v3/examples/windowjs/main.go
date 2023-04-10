@@ -33,8 +33,11 @@ func main() {
 	windowCounter := 1
 
 	newWindow := func() {
-		app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{}).
-			SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
+		windowName := "WebviewWindow " + strconv.Itoa(windowCounter)
+		app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+			Name: windowName,
+		}).
+			SetTitle(windowName).
 			SetPosition(rand.Intn(1000), rand.Intn(800)).
 			Show()
 		windowCounter++
@@ -49,6 +52,7 @@ func main() {
 			newWindow()
 		})
 
+	newWindow()
 	newWindow()
 
 	app.SetMenu(menu)

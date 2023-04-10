@@ -1,19 +1,3 @@
-/**
- * Open a sqlite DB.
- * @param filename {string} - file to open.
- * @returns {Promise<void>}
- */
-function Open(filename) {
-    return wails.Plugin("sqlite", "Open", filename);
-}
-
-/**
- * Close a sqlite DB.
- * @returns {Promise<void>}
- */
-function Close() {
-    return wails.Plugin("sqlite", "Close");
-}
 
 /**
  * Execute a SQL statement.
@@ -34,11 +18,3 @@ function Execute(statement, ...args) {
 function Select(statement, ...args) {
     return wails.Plugin("sqlite", "Select", statement, ...args);
 }
-
-window.sqlite = {
-    Open: Open,
-    Close: Close,
-    Execute: Execute,
-    Select: Select
-};
-

@@ -67,14 +67,15 @@ func New(appOptions Options) *App {
 		println("Fatal error in application initialisation: ", err.Error())
 		os.Exit(1)
 	}
-	err = result.bindings.AddPlugins(appOptions.Plugins)
-	if err != nil {
-		println("Fatal error in application initialisation: ", err.Error())
-		os.Exit(1)
-	}
 
 	result.plugins = NewPluginManager(appOptions.Plugins, srv)
 	err = result.plugins.Init()
+	if err != nil {
+		result.Quit()
+		os.Exit(1)
+	}
+
+	err = result.bindings.AddPlugins(appOptions.Plugins)
 	if err != nil {
 		println("Fatal error in application initialisation: ", err.Error())
 		os.Exit(1)
@@ -128,10 +129,12 @@ var windowDragAndDropBuffer = make(chan *dragAndDropMessage)
 var _ webview.Request = &webViewAssetRequest{}
 
 const webViewRequestHeaderWindowId = "x-wails-window-id"
+const webViewRequestHeaderWindowName = "x-wails-window-name"
 
 type webViewAssetRequest struct {
 	webview.Request
-	windowId uint
+	windowId   uint
+	windowName string
 }
 
 func (r *webViewAssetRequest) Header() (http.Header, error) {
@@ -214,7 +217,7 @@ func (a *App) On(eventType events.ApplicationEventType, callback func()) {
 	}
 }
 func (a *App) NewWebviewWindow() *WebviewWindow {
-	return a.NewWebviewWindowWithOptions(nil)
+	return a.NewWebviewWindowWithOptions(&WebviewWindowOptions{})
 }
 
 func (a *App) GetPID() int {
@@ -260,7 +263,6 @@ func (a *App) NewWebviewWindowWithOptions(windowOptions *WebviewWindowOptions) *
 	if windowOptions == nil {
 		windowOptions = WebviewWindowDefaults
 	}
-
 	newWindow := NewWindow(windowOptions)
 	id := newWindow.id
 	if a.windows == nil {
@@ -409,7 +411,7 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 	// Get window from window map
 	url, _ := request.URL()
-	a.info("Window: %d, Request: %s", request.windowId, url)
+	a.info("Window: '%s', Request: %s", request.windowName, url)
 	a.assets.ServeWebViewRequest(request)
 }
 
@@ -583,4 +585,15 @@ func (a *App) getContextMenu(name string) (*Menu, bool) {
 
 func (a *App) OnWindowCreation(callback func(window *WebviewWindow)) {
 	a.windowCreatedCallbacks = append(a.windowCreatedCallbacks, callback)
+}
+
+func (a *App) GetWindowByName(name string) *WebviewWindow {
+	a.windowsLock.Lock()
+	defer a.windowsLock.Unlock()
+	for _, window := range a.windows {
+		if window.Name() == name {
+			return window
+		}
+	}
+	return nil
 }

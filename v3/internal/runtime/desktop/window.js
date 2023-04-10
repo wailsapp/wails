@@ -18,8 +18,8 @@ The electron alternative for Go
 
 import {newRuntimeCaller} from "./runtime";
 
-export function newWindow(id) {
-    let call = newRuntimeCaller("window", id);
+export function newWindow(windowName) {
+    let call = newRuntimeCaller("window", windowName);
     return {
         // Reload: () => call('WR'),
         // ReloadApp: () => call('WR'),

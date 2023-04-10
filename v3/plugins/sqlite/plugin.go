@@ -4,12 +4,20 @@ import (
 	"database/sql"
 	_ "embed"
 	"errors"
+	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	_ "modernc.org/sqlite"
+	"strings"
 )
 
-//go:embed plugin.js
-var js string
+//go:embed sqlite_close.js
+var closejs string
+
+//go:embed sqlite_open.js
+var openjs string
+
+//go:embed sqlite_execute_select.js
+var executeselectjs string
 
 // ---------------- Plugin Setup ----------------
 // This is the main plugin struct. It can be named anything you like.
@@ -28,6 +36,7 @@ type Plugin struct {
 	app             *application.App
 	conn            *sql.DB
 	callableMethods []string
+	js              string
 }
 
 func NewPlugin(config *Config) *Plugin {
@@ -56,18 +65,24 @@ func (p *Plugin) Name() string {
 func (p *Plugin) Init(app *application.App) error {
 	p.app = app
 	p.callableMethods = []string{"Execute", "Select"}
+	p.js = executeselectjs
 	if p.config.CanOpenFromJS {
 		p.callableMethods = append(p.callableMethods, "Open")
+		p.js += openjs
 	}
 	if p.config.CanCloseFromJS {
 		p.callableMethods = append(p.callableMethods, "Close")
+		p.js += closejs
 	}
-	if p.config.DBFile != "" {
-		_, err := p.Open(p.config.DBFile)
-		if err != nil {
-			return err
-		}
+	if p.config.DBFile == "" {
+		return errors.New(`no database file specified. Please set DBFile in the config to either a filename or use ":memory:" to use an in-memory database`)
 	}
+	_, err := p.Open(p.config.DBFile)
+	if err != nil {
+		return err
+	}
+
+	p.js += fmt.Sprintf("\nwindow.sqlite = { %s };", strings.Join(p.callableMethods, ", "))
 	return nil
 }
 
@@ -77,7 +92,7 @@ func (p *Plugin) CallableByJS() []string {
 }
 
 func (p *Plugin) InjectJS() string {
-	return js
+	return p.js
 }
 
 // ---------------- Plugin Methods ----------------
