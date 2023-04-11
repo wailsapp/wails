@@ -10,14 +10,14 @@ on:
 jobs:
   contributors:
     runs-on: ubuntu-latest
-    if: github.repository == 'wailsapp/wails'
+    if: github.repository == 'wailsapp/wails' && github.ref == 'refs/heads/chore/fix-contribs-svg'
     steps:
       - uses: actions/checkout@v3
-      - uses: wow-actions/contributors-list@v1
+      - uses: jaywcjlove/github-action-contributors@main
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          svgPath: website/static/img/contributors.svg
-          noCommit: true
+          filter-author: (renovate\[bot\]|renovate-bot|dependabot\[bot\])
+          output: website/static/img/contributors.svg
+          avatarSize: 42
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
