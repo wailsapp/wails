@@ -19,6 +19,7 @@ func (i *Info) discover() error {
 	i.OS = osinfo
 
 	i.Dependencies = append(i.Dependencies, checkWebView2())
+	i.Dependencies = append(i.Dependencies, checkNodejs())
 	i.Dependencies = append(i.Dependencies, checkNPM())
 	i.Dependencies = append(i.Dependencies, checkUPX())
 	i.Dependencies = append(i.Dependencies, checkNSIS())
