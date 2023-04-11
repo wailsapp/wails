@@ -22,8 +22,8 @@ jobs:
       - name: Modify htmlTable credits.md
         uses: jaywcjlove/github-action-modify-file-content@main
         with:
-          openDelimiter: '<!--GAMFC-->'
-          closeDelimiter: '<!--GAMFC-END-->'
+          openDelimiter: ' <!--GAMFC_DELIMITER-->'
+          closeDelimiter: '<!--GAMFC_DELIMITER-END-->'
           path: website/src/pages/credits.mdx
           body: '${{steps.contributors.outputs.htmlTable}}'
 
