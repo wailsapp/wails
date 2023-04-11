@@ -207,6 +207,12 @@ func (a *App) getWindowForID(id uint) *WebviewWindow {
 	return a.windows[id]
 }
 
+func (a *App) deleteWindowByID(id uint) {
+	a.windowsLock.Lock()
+	defer a.windowsLock.Unlock()
+	delete(a.windows, id)
+}
+
 func (a *App) On(eventType events.ApplicationEventType, callback func()) {
 	eventID := uint(eventType)
 	a.applicationEventListenersLock.Lock()

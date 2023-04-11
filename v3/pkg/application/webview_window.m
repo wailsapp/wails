@@ -38,11 +38,9 @@ extern bool hasListeners(unsigned int);
     [super setDelegate: delegate];
 }
 - (void) dealloc {
-    NSLog(@"WebviewWindow dealloc called");
     // Remove the script handler, otherwise WebviewWindowDelegate won't get deallocated
     // See: https://stackoverflow.com/questions/26383031/wkwebview-causes-my-view-controller-to-leak
     [self.webView.configuration.userContentController removeScriptMessageHandlerForName:@"external"];
-
     if (self.delegate) {
         [self.delegate release];
     }
@@ -52,14 +50,13 @@ extern bool hasListeners(unsigned int);
 @implementation WebviewWindowDelegate
 - (BOOL)windowShouldClose:(NSWindow *)sender {
     if( self.hideOnClose ) {
-        [NSApp hide:nil];
+        [sender orderOut:nil];
         return false;
     }
     return true;
 }
 - (void) dealloc {
-    NSLog(@"WebviewWindowDelegate dealloc called");
-    // Makes sure to remove the retained proeprties so the reference counter of the retaines are decreased
+    // Makes sure to remove the retained properties so the reference counter of the retains are decreased
     self.leftMouseEvent = nil;
     [super dealloc];
 }
@@ -233,12 +230,6 @@ extern bool hasListeners(unsigned int);
 - (void)windowDidChangeVisibility:(NSNotification *)notification {
     if( hasListeners(EventWindowDidChangeVisibility) ) {
         processWindowEvent(self.windowId, EventWindowDidChangeVisibility);
-    }
-}
-
-- (void)windowDidClose:(NSNotification *)notification {
-    if( hasListeners(EventWindowDidClose) ) {
-        processWindowEvent(self.windowId, EventWindowDidClose);
     }
 }
 

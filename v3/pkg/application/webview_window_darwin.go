@@ -18,7 +18,7 @@ package application
 extern void registerListener(unsigned int event);
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop) {
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, bool hideOnClose) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable;
@@ -77,7 +77,7 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	// Ensure webview resizes with the window
 	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
-	delegate.hideOnClose = false;
+	delegate.hideOnClose = hideOnClose;
 
 	if( enableDragAndDrop ) {
 		WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
@@ -901,6 +901,9 @@ func (w *macosWebviewWindow) windowZoom() {
 
 func (w *macosWebviewWindow) close() {
 	C.windowClose(w.nsWindow)
+	if !w.parent.options.HideOnClose {
+		globalApplication.deleteWindowByID(w.parent.id)
+	}
 }
 
 func (w *macosWebviewWindow) zoomIn() {
@@ -1075,6 +1078,7 @@ func (w *macosWebviewWindow) run() {
 			C.bool(w.parent.options.EnableFraudulentWebsiteWarnings),
 			C.bool(w.parent.options.Frameless),
 			C.bool(w.parent.options.EnableDragAndDrop),
+			C.bool(w.parent.options.HideOnClose),
 		)
 		w.setTitle(w.parent.options.Title)
 		w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
@@ -1141,6 +1145,11 @@ func (w *macosWebviewWindow) run() {
 				C.windowInjectCSS(w.nsWindow, C.CString(w.parent.options.CSS))
 			}
 		})
+
+		w.parent.On(events.Mac.WindowWillClose, func(_ *WindowEventContext) {
+			globalApplication.deleteWindowByID(w.parent.id)
+		})
+
 		if w.parent.options.HTML != "" {
 			w.setHTML(w.parent.options.HTML)
 		}
