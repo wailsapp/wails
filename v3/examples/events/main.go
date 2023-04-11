@@ -26,14 +26,14 @@ func main() {
 		},
 	})
 
-	app.Events.On("myevent", func(e *application.CustomEvent) {
-		log.Printf("[Go] CustomEvent received: %+v\n", e)
+	app.Events.On("myevent", func(e *application.WailsEvent) {
+		log.Printf("[Go] WailsEvent received: %+v\n", e)
 	})
 
 	app.On(events.Mac.ApplicationDidFinishLaunching, func() {
 		for {
 			log.Println("Sending event")
-			app.Events.Emit(&application.CustomEvent{
+			app.Events.Emit(&application.WailsEvent{
 				Name: "myevent",
 				Data: "hello",
 			})

@@ -107,7 +107,7 @@ export interface Rect {
     Height: number;
 }
 
-export interface CustomEvent {
+export interface WailsEvent {
     // The name of the event
     Name: string;
     // The data associated with the event

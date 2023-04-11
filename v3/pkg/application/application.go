@@ -45,7 +45,7 @@ func New(appOptions Options) *App {
 		result.log.AddOutput(&logger.Console{})
 	}
 
-	result.Events = NewCustomEventProcessor(result.dispatchEventToWindows)
+	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
 
 	opts := assetserveroptions.Options{
 		Assets:     appOptions.Assets.FS,
@@ -547,9 +547,9 @@ func (a *App) SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialo
 	return result
 }
 
-func (a *App) dispatchEventToWindows(event *CustomEvent) {
+func (a *App) dispatchEventToWindows(event *WailsEvent) {
 	for _, window := range a.windows {
-		window.dispatchCustomEvent(event)
+		window.dispatchWailsEvent(event)
 	}
 }
 

@@ -11,7 +11,7 @@ The electron alternative for Go
 /* jshint esversion: 9 */
 
 /**
- * @typedef {import("./api/types").CustomEvent} CustomEvent
+ * @typedef {import("./api/types").WailsEvent} WailsEvent
  */
 
 import {newRuntimeCaller} from "./runtime";
@@ -52,18 +52,20 @@ class Listener {
 
 
 /**
- * CustomEvent defines a custom event. It is passed to event listeners.
+ * WailsEvent defines a custom event. It is passed to event listeners.
  *
- * @class CustomEvent
+ * @class WailsEvent
+ * @property {string} name - Name of the event
+ * @property {any} data - Data associated with the event
  */
-export class CustomEvent {
+export class WailsEvent {
     /**
-     * Creates an instance of CustomEvent.
+     * Creates an instance of WailsEvent.
      * @param {string} name - Name of the event
-     * @param {any} data - Data associated with the event
-     * @memberof CustomEvent
+     * @param {any=null} data - Data associated with the event
+     * @memberof WailsEvent
      */
-    constructor(name, data) {
+    constructor(name, data = null) {
         this.name = name;
         this.data = data;
     }
@@ -76,7 +78,7 @@ export const eventListeners = new Map();
  *
  * @export
  * @param {string} eventName
- * @param {function(CustomEvent): void} callback
+ * @param {function(WailsEvent): void} callback
  * @param {number} maxCallbacks
  * @returns {function} A function to cancel the listener
  */
@@ -93,7 +95,7 @@ export function OnMultiple(eventName, callback, maxCallbacks) {
  *
  * @export
  * @param {string} eventName
- * @param {function(CustomEvent): void} callback
+ * @param {function(WailsEvent): void} callback
  * @returns {function} A function to cancel the listener
  */
 export function On(eventName, callback) {
@@ -105,7 +107,7 @@ export function On(eventName, callback) {
  *
  * @export
  * @param {string} eventName
- * @param {function(CustomEvent): void} callback
+ * @param {function(WailsEvent): void} callback
  @returns {function} A function to cancel the listener
  */
 export function Once(eventName, callback) {
@@ -132,9 +134,9 @@ function listenerOff(listener) {
  * dispatches an event to all listeners
  *
  * @export
- * @param {CustomEvent} event
+ * @param {WailsEvent} event
  */
-export function dispatchCustomEvent(event) {
+export function dispatchWailsEvent(event) {
     console.log("dispatching event: ", {event});
     let listeners = eventListeners.get(event.name);
     if (listeners) {
@@ -185,7 +187,7 @@ export function OffAll() {
 
 /**
  * Emit an event
- * @param {CustomEvent} event The event to emit
+ * @param {WailsEvent} event The event to emit
  */
 export function Emit(event) {
     void call("Emit", event);

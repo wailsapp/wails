@@ -37,7 +37,7 @@ func main() {
 
 	window.On(events.FilesDropped, func(ctx *application.WindowEventContext) {
 		files := ctx.DroppedFiles()
-		app.Events.Emit(&application.CustomEvent{
+		app.Events.Emit(&application.WailsEvent{
 			Name: "files",
 			Data: files,
 		})
