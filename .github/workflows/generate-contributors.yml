@@ -26,13 +26,4 @@ jobs:
           closeDelimiter: '<!--GAMFC_DELIMITER-END-->'
           path: website/src/pages/credits.mdx
           body: '${{steps.contributors.outputs.htmlTable}}'
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
-        with:
-          commit-message: "chore: update contributors.svg"
-          add-paths: "website/src/pages/credits.mdx"
-          title: Update Contributors Image
-          body: Generated new image
           branch: chore/update-contributors
-          delete-branch: true
