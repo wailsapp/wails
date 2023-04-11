@@ -14,16 +14,24 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: jaywcjlove/github-action-contributors@main
+        id: contributors
         with:
           filter-author: (renovate\[bot\]|renovate-bot|dependabot\[bot\])
-          output: website/static/img/contributors.svg
-          avatarSize: 42
+          openDelimiter: '<!--GAMFC_DELIMITER-->'
+          closeDelimiter: '<!--GAMFC_DELIMITER-END-->'
+          avatarSize: 100  # Set the avatar size.
+          
+      - name: Modify htmlTable credits.md
+        uses: jaywcjlove/github-action-modify-file-content@main
+        with:
+          path: website/src/pages/credits.mdx
+          body: '${{steps.contributors.outputs.htmlTable}}'
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
           commit-message: "chore: update contributors.svg"
-          add-paths: "website/static/img/contributors.svg"
+          add-paths: "website/src/pages/credits.mdx"
           title: Update Contributors Image
           body: Generated new image
           branch: chore/update-contributors
