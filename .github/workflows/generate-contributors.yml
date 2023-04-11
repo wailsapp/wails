@@ -26,4 +26,4 @@ jobs:
           closeDelimiter: '<!--GAMFC_DELIMITER-END-->'
           path: website/src/pages/credits.mdx
           body: '${{steps.contributors.outputs.htmlTable}}'
-          branch: chore/update-contributors
+          ref: chore/update-contributors
