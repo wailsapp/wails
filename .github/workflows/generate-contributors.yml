@@ -17,13 +17,13 @@ jobs:
         id: contributors
         with:
           filter-author: (renovate\[bot\]|renovate-bot|dependabot\[bot\])
-          openDelimiter: '<!--GAMFC_DELIMITER-->'
-          closeDelimiter: '<!--GAMFC_DELIMITER-END-->'
           avatarSize: 100  # Set the avatar size.
           
       - name: Modify htmlTable credits.md
         uses: jaywcjlove/github-action-modify-file-content@main
         with:
+          openDelimiter: '<!--GAMFC-->'
+          closeDelimiter: '<!--GAMFC-END-->'
           path: website/src/pages/credits.mdx
           body: '${{steps.contributors.outputs.htmlTable}}'
 
