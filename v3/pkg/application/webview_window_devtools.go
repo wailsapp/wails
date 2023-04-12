@@ -20,10 +20,10 @@ package application
 @end
 
 void showDevTools(void *window) {
-    // Get the window delegate
-    WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(NSWindow*)window delegate];
+    // get main window
+    WebviewWindow* nsWindow = (WebviewWindow*)window;
     dispatch_async(dispatch_get_main_queue(), ^{
-        [delegate.webView._inspector show];
+        [nsWindow.webView._inspector show];
     });
 }
 
