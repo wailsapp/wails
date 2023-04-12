@@ -1,6 +1,7 @@
 package application
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -103,6 +104,39 @@ func NewWindow(options *WebviewWindowOptions) *WebviewWindow {
 	}
 
 	return result
+}
+
+// formatJS ensures the 'data' provided marshals to valid json or panics
+func (w *WebviewWindow) formatJS(f string, callID string, data string) string {
+	j, err := json.Marshal(data)
+	if err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf(f, callID, j)
+}
+
+func (w *WebviewWindow) CallError(callID *string, result string) {
+	if w.impl != nil {
+		w.impl.execJS(w.formatJS("_wails.callErrorCallback('%s', %s);", *callID, result))
+	}
+}
+
+func (w *WebviewWindow) CallResponse(callID *string, result string) {
+	if w.impl != nil {
+		w.impl.execJS(w.formatJS("_wails.callCallback('%s', %s, true);", *callID, result))
+	}
+}
+
+func (w *WebviewWindow) DialogError(dialogID *string, result string) {
+	if w.impl != nil {
+		w.impl.execJS(w.formatJS("_wails.dialogErrorCallback('%s', %s);", *dialogID, result))
+	}
+}
+
+func (w *WebviewWindow) DialogResponse(dialogID *string, result string) {
+	if w.impl != nil {
+		w.impl.execJS(w.formatJS("_wails.dialogCallback('%s', %s, true);", *dialogID, result))
+	}
 }
 
 func (w *WebviewWindow) SetTitle(title string) *WebviewWindow {
@@ -602,8 +636,9 @@ func (w *WebviewWindow) SetFrameless(frameless bool) *WebviewWindow {
 }
 
 func (w *WebviewWindow) dispatchWailsEvent(event *WailsEvent) {
-	msg := fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON())
-	w.ExecJS(msg)
+	if w.impl != nil {
+		w.impl.execJS(fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON()))
+	}
 }
 
 func (w *WebviewWindow) info(message string, args ...any) {
