@@ -33,7 +33,7 @@ func (z *Zypper) Packages() packagemap {
 			{Name: "gtk3-devel", SystemPackage: true, Library: true},
 		},
 		"libwebkit": []*Package{
-			{Name: "webkit2gtk3-devel", SystemPackage: true, Library: true},
+			{Name: "webkit2gtk3-soup2-devel", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{
 			{Name: "gcc-c++", SystemPackage: true},
