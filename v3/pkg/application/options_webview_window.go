@@ -29,6 +29,7 @@ type WebviewWindowOptions struct {
 	CSS                             string
 	X                               int
 	Y                               int
+	HideOnClose                     bool
 	FullscreenButtonEnabled         bool
 	Hidden                          bool
 	EnableFraudulentWebsiteWarnings bool
@@ -42,7 +43,6 @@ var WebviewWindowDefaults = &WebviewWindowOptions{
 	Height: 600,
 	URL:    "",
 }
-
 
 type RGBA struct {
 	Red, Green, Blue, Alpha uint8

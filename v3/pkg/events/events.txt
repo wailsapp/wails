@@ -39,7 +39,6 @@ mac:WindowDidChangeSpaceOrderingMode
 mac:WindowDidChangeTitle
 mac:WindowDidChangeToolbar
 mac:WindowDidChangeVisibility
-mac:WindowDidClose
 mac:WindowDidDeminiaturize
 mac:WindowDidEndSheet
 mac:WindowDidEnterFullScreen
