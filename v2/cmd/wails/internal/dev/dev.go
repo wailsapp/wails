@@ -44,31 +44,6 @@ func sliceToMap(input []string) map[string]struct{} {
 	return result
 }
 
-type devFlags struct {
-	ldflags         string
-	compilerCommand string
-	assetDir        string
-	extensions      string
-	reloadDirs      string
-	openBrowser     bool
-	noReload        bool
-	skipBindings    bool
-	wailsjsdir      string
-	tags            string
-	verbosity       int
-	loglevel        string
-	forceBuild      bool
-	debounceMS      int
-	devServer       string
-	appargs         string
-	saveConfig      bool
-	raceDetector    bool
-
-	frontendDevServerURL string
-	skipFrontend         bool
-	noColour             bool
-}
-
 // Application runs the application in dev mode
 func Application(f *flags.Dev, logger *clilogger.CLILogger) error {
 
