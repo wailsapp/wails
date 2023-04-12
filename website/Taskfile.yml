@@ -7,6 +7,7 @@ tasks:
     desc: Install Dependencies
     aliases: [i]
     cmds:
+      - corepack enable
       - corepack prepare pnpm@8.2.0 --activate
       - pnpm install
     sources:
