@@ -12,52 +12,52 @@ import (
 
 type (
 	webviewWindowImpl interface {
-		setTitle(title string)
-		setSize(width, height int)
-		setAlwaysOnTop(alwaysOnTop bool)
-		setURL(url string)
-		setResizable(resizable bool)
-		setMinSize(width, height int)
-		setMaxSize(width, height int)
-		execJS(js string)
-		restore()
-		setBackgroundColour(color *RGBA)
-		run()
 		center()
-		size() (int, int)
-		width() int
-		height() int
-		position() (int, int)
+		close()
 		destroy()
-		reload()
+		disableSizeConstraints()
+		execJS(js string)
 		forceReload()
+		fullscreen()
+		getScreen() (*Screen, error)
+		getZoom() float64
+		height() int
+		hide()
+		isFullscreen() bool
+		isMaximised() bool
+		isMinimised() bool
+		maximise()
+		minimise()
+		on(eventID uint)
+		openContextMenu(menu *Menu, data *ContextMenuData)
+		position() (int, int)
+		reload()
+		restore()
+		run()
+		setAlwaysOnTop(alwaysOnTop bool)
+		setBackgroundColour(color *RGBA)
+		setFrameless(bool)
+		setFullscreenButtonEnabled(enabled bool)
+		setHTML(html string)
+		setMaxSize(width, height int)
+		setMinSize(width, height int)
+		setPosition(x int, y int)
+		setResizable(resizable bool)
+		setSize(width, height int)
+		setTitle(title string)
+		setURL(url string)
+		setZoom(zoom float64)
+		show()
+		size() (int, int)
 		toggleDevTools()
-		zoomReset()
+		unfullscreen()
+		unmaximise()
+		unminimise()
+		width() int
+		zoom()
 		zoomIn()
 		zoomOut()
-		getZoom() float64
-		setZoom(zoom float64)
-		close()
-		zoom()
-		setHTML(html string)
-		setPosition(x int, y int)
-		on(eventID uint)
-		minimise()
-		unminimise()
-		maximise()
-		unmaximise()
-		fullscreen()
-		unfullscreen()
-		isMinimised() bool
-		isMaximised() bool
-		isFullscreen() bool
-		disableSizeConstraints()
-		setFullscreenButtonEnabled(enabled bool)
-		show()
-		hide()
-		getScreen() (*Screen, error)
-		setFrameless(bool)
-		openContextMenu(menu *Menu, data *ContextMenuData)
+		zoomReset()
 	}
 )
 
