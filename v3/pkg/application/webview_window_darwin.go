@@ -649,14 +649,6 @@ static void windowZoom(void *window) {
 	});
 }
 
-// miniaturize
-static void windowMiniaturize(void *window) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// miniaturize window
-		[(WebviewWindow*)window miniaturize:nil];
-	});
-}
-
 // webviewRenderHTML renders the given HTML
 static void windowRenderHTML(void *window, const char *html) {
 	dispatch_async(dispatch_get_main_queue(), ^{
@@ -883,10 +875,6 @@ func (w *macosWebviewWindow) on(eventID uint) {
 
 func (w *macosWebviewWindow) zoom() {
 	C.windowZoom(w.nsWindow)
-}
-
-func (w *macosWebviewWindow) minimize() {
-	C.windowMiniaturize(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) windowZoom() {
