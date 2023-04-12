@@ -2,14 +2,15 @@ package flags
 
 import (
 	"fmt"
-	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v2/internal/project"
-	"github.com/wailsapp/wails/v2/pkg/commands/build"
 	"net"
 	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v2/internal/project"
+	"github.com/wailsapp/wails/v2/pkg/commands/build"
 )
 
 type Dev struct {
@@ -126,6 +127,7 @@ func (d *Dev) GenerateBuildOptions() *build.Options {
 		Compiler:       d.Compiler,
 		ForceBuild:     d.ForceBuild,
 		IgnoreFrontend: d.SkipFrontend,
+		SkipBindings:   d.SkipBindings,
 		Verbosity:      d.Verbosity,
 		WailsJSDir:     d.WailsJSDir,
 		RaceDetector:   d.RaceDetector,
