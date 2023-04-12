@@ -110,6 +110,17 @@
             
             break;
         }
+        case WindowMenu:
+        {
+            WailsMenu *windowMenu = [[[WailsMenu new] initWithNSTitle:@"Window"] autorelease];
+            [windowMenu addItem:[self newMenuItem:@"Minimize" :@selector(performMiniaturize:) :@"m" :NSEventModifierFlagCommand]];
+            [windowMenu addItem:[self newMenuItem:@"Zoom" :@selector(performZoom:) :@""]];
+            [windowMenu addItem:[NSMenuItem separatorItem]];
+            [windowMenu addItem:[self newMenuItem:@"Full Screen" :@selector(enterFullScreenMode:) :@"f" :(NSEventModifierFlagControl | NSEventModifierFlagCommand)]];
+            [self appendSubmenu:windowMenu];
+            
+            break;
+        }
     }
 }
 
