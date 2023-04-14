@@ -1,29 +1,40 @@
-name: Generate Contributors Image
+name: update-contributors-svg
 
 on:
+  workflow_dispatch: # Can trigger manually
   schedule:
-    - cron: '0 1 * * 0' # At 01:00 on Sunday.
-  push:
-    branches:
-      - master
+    - cron: '0 7 * * *' # Schedule on everyday 7:00
 
 jobs:
-  contributors:
-    runs-on: ubuntu-latest
-    if: github.repository == 'wailsapp/wails'
+  update-svg:
+    name: Update contributors SVG
+    runs-on: ubuntu-latest # You can also try macos-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: jaywcjlove/github-action-contributors@main
-        id: contributors
+
+      - name: Set node
+        uses: actions/setup-node@v3
         with:
-          filter-author: (renovate\[bot\]|renovate-bot|dependabot\[bot\])
-          avatarSize: 100  # Set the avatar size.
-          
-      - name: Modify htmlTable credits.md
-        uses: jaywcjlove/github-action-modify-file-content@main
+          node-version: lts/*
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2.2.2
         with:
-          openDelimiter: ' <!--GAMFC_DELIMITER-->'
-          closeDelimiter: '<!--GAMFC_DELIMITER-END-->'
-          path: website/src/pages/credits.mdx
-          body: '${{steps.contributors.outputs.htmlTable}}'
-          ref: chore/update-contributors
+          version: 7
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Run SVG generation script
+        run: pnpx make-github-contributor-svg -t ${{ secrets.GITHUB_TOKEN }} -o wailsapp -r wails
+
+      - name: Move svg
+        run: mv .github-contributors/*.svg website/static/img/
+
+      - name: Commit
+        uses: EndBug/add-and-commit@v4
+        with:
+          message: "chore(workflow): update contributors image"
+          add: "website/static/img/*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
