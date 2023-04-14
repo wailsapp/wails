@@ -22,9 +22,6 @@ jobs:
         with:
           version: 7
 
-      - name: Install deps
-        run: pnpm install
-
       - name: Run SVG generation script
         run: pnpx make-github-contributor-svg -t ${{ secrets.GITHUB_TOKEN }} -o wailsapp -r wails
 
