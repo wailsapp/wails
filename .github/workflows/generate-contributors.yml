@@ -29,7 +29,7 @@ jobs:
         run: mv .github-contributors/*.svg website/static/img/
 
       - name: Commit
-        uses: EndBug/add-and-commit@v4
+        uses: EndBug/add-and-commit@v9
         with:
           message: "chore(workflow): update contributors image"
           add: "website/static/img/*"
