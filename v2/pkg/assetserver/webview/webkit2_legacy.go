@@ -1,4 +1,4 @@
-//go:build linux && !webkit2_36
+//go:build linux && !(webkit2_36 || webkit2_40)
 
 package webview
 
@@ -12,6 +12,7 @@ import "C"
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"unsafe"
 )
@@ -24,6 +25,10 @@ func webkit_uri_scheme_request_get_http_method(_ *C.WebKitURISchemeRequest) stri
 
 func webkit_uri_scheme_request_get_http_headers(_ *C.WebKitURISchemeRequest) http.Header {
 	return http.Header{}
+}
+
+func webkit_uri_scheme_request_get_http_body(_ *C.WebKitURISchemeRequest) io.ReadCloser {
+	return http.NoBody
 }
 
 func webkit_uri_scheme_request_finish(req *C.WebKitURISchemeRequest, code int, header http.Header, stream *C.GInputStream, streamLength int64) error {

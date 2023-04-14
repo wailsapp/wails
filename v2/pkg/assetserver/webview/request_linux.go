@@ -69,8 +69,7 @@ func (r *request) Body() (io.ReadCloser, error) {
 		return r.body, nil
 	}
 
-	// WebKit2GTK has currently no support for request bodies.
-	r.body = http.NoBody
+	r.body = webkit_uri_scheme_request_get_http_body(r.req)
 
 	return r.body, nil
 }
