@@ -36,5 +36,6 @@ jobs:
         with:
           message: "chore(workflow): update contributors image"
           add: "website/static/img/*"
+          new_branch: "chore/update-contributors-svg"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
