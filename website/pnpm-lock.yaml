@@ -25,9 +25,6 @@ dependencies:
   file-loader:
     specifier: ^6.2.0
     version: 6.2.0(webpack@5.78.0)
-  pnpm:
-    specifier: ^8.0.0
-    version: 8.0.0
   prism-react-renderer:
     specifier: ^1.3.5
     version: 1.3.5(react@17.0.2)
@@ -6572,12 +6569,6 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       find-up: 3.0.0
-    dev: false
-
-  /pnpm@8.0.0:
-    resolution: {integrity: sha512-Crsvd8LKb+SoEB/bQxRZrtSt5Ri8g9jmPg6MKyexMTI1pdLd44gPwVV6cZLq2jYYPv5q+gADPkYTbYr8SeFCeA==}
-    engines: {node: '>=16.14'}
-    hasBin: true
     dev: false
 
   /postcss-calc@8.2.4(postcss@8.4.21):
