@@ -1,17 +1,24 @@
 {{$pkg := .Package}}
 export namespace {{.Package}} {
   {{range $name, $def := .Models}}
+  export type {{$def.Name}}Source = Partial<{
+    {{range $i, $v := $def.Fields}}{{if last $i $def.Fields}}{{.JSDef $pkg}}{{- else}}{{.JSDef $pkg}}
+    {{end}}{{end}}
+  }>
+  
   export class {{$def.Name}} {
     {{range $def.Fields}}{{.JSDef $pkg}}
     {{end}}
-    static createFrom(source: any = {}) {
+    static createFrom(source: string | {{$def.Name}}Source = {}) {
       return new {{$def.Name}}(source);
     }
 
-    constructor(source: any = {}) {
+    constructor(source: string | {{$def.Name}}Source = {}) {
       if ('string' === typeof source) {
         source = JSON.parse(source);
       }
+
+      
 
       {{range $def.Fields}}this.{{.JSName}} = {{.TSBuild $pkg}};
       {{end}}

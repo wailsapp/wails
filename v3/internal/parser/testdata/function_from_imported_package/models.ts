@@ -4,15 +4,20 @@
 
 export namespace main {
   
+  export type PersonSource = Partial<{
+    name: string;
+    address: services.Address;
+  }>
+  
   export class Person {
     name: string;
     address: services.Address;
     
-    static createFrom(source: any = {}) {
+    static createFrom(source: string | PersonSource = {}) {
       return new Person(source);
     }
 
-    constructor(source: any = {}) {
+    constructor(source: string | PersonSource = {}) {
       if ('string' === typeof source) {
         source = JSON.parse(source);
       }
@@ -27,16 +32,22 @@ export namespace main {
 
 export namespace services {
   
+  export type AddressSource = Partial<{
+    street: string;
+    state: string;
+    country: string;
+  }>
+  
   export class Address {
     street: string;
     state: string;
     country: string;
     
-    static createFrom(source: any = {}) {
+    static createFrom(source: string | AddressSource = {}) {
       return new Address(source);
     }
 
-    constructor(source: any = {}) {
+    constructor(source: string | AddressSource = {}) {
       if ('string' === typeof source) {
         source = JSON.parse(source);
       }

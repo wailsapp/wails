@@ -4,16 +4,22 @@
 
 export namespace main {
   
+  export type PersonSource = Partial<{
+    name: string;
+    parent: Person;
+    details: anon1;
+  }>
+  
   export class Person {
     name: string;
     parent: Person;
     details: anon1;
     
-    static createFrom(source: any = {}) {
+    static createFrom(source: string | PersonSource = {}) {
       return new Person(source);
     }
 
-    constructor(source: any = {}) {
+    constructor(source: string | PersonSource = {}) {
       if ('string' === typeof source) {
         source = JSON.parse(source);
       }
@@ -25,15 +31,20 @@ export namespace main {
     }
   }
   
+  export type anon1Source = Partial<{
+    age: number;
+    address: anon2;
+  }>
+  
   export class anon1 {
     age: number;
     address: anon2;
     
-    static createFrom(source: any = {}) {
+    static createFrom(source: string | anon1Source = {}) {
       return new anon1(source);
     }
 
-    constructor(source: any = {}) {
+    constructor(source: string | anon1Source = {}) {
       if ('string' === typeof source) {
         source = JSON.parse(source);
       }
@@ -44,14 +55,18 @@ export namespace main {
     }
   }
   
+  export type anon2Source = Partial<{
+    street: string;
+  }>
+  
   export class anon2 {
     street: string;
     
-    static createFrom(source: any = {}) {
+    static createFrom(source: string | anon2Source = {}) {
       return new anon2(source);
     }
 
-    constructor(source: any = {}) {
+    constructor(source: string | anon2Source = {}) {
       if ('string' === typeof source) {
         source = JSON.parse(source);
       }

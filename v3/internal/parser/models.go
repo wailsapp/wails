@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"io"
+	"reflect"
 	"sort"
 	"strings"
 	"text/template"
@@ -17,8 +18,14 @@ type ModelDefinitions struct {
 	Models  map[string]*StructDef
 }
 
+var templateFns = template.FuncMap{
+	"last": func(x int, a interface{}) bool {
+		return x == reflect.ValueOf(a).Len()-1
+	},
+}
+
 func GenerateModel(wr io.Writer, def *ModelDefinitions) error {
-	tmpl, err := template.New("model.ts.tmpl").ParseFS(templates, "templates/model.ts.tmpl")
+	tmpl, err := template.New("model.ts.tmpl").Funcs(templateFns).ParseFS(templates, "templates/model.ts.tmpl")
 	if err != nil {
 		println("Unable to create class template: " + err.Error())
 		return err
