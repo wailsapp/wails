@@ -1,10 +1,10 @@
-# Routing
+# ルーティング
 
-Routing is a popular way to switch views in an application. This page offers some guidance around how to do that.
+アプリケーションでビューを切り替える一般的な方法は、ルーティングです。 このページでは、ルーティングを実現する方法をいくつか紹介します。
 
 ## Vue
 
-The recommended approach for routing in Vue is [Hash Mode](https://next.router.vuejs.org/guide/essentials/history-mode.html#hash-mode):
+Vueにおいてルーティングで推奨されるアプローチは、[ハッシュモード](https://next.router.vuejs.org/guide/essentials/history-mode.html#hash-mode)となります:
 
 ```js
 import { createRouter, createWebHashHistory } from "vue-router";
@@ -19,7 +19,7 @@ const router = createRouter({
 
 ## Angular
 
-The recommended approach for routing in Angular is [HashLocationStrategy](https://codecraft.tv/courses/angular/routing/routing-strategies#_hashlocationstrategy):
+Angularにおいてルーティングで推奨されるアプローチは、[HashLocationStrategy](https://codecraft.tv/courses/angular/routing/routing-strategies#_hashlocationstrategy)となります:
 
 ```ts
 RouterModule.forRoot(routes, { useHash: true });
@@ -27,7 +27,7 @@ RouterModule.forRoot(routes, { useHash: true });
 
 ## React
 
-The recommended approach for routing in React is [HashRouter](https://reactrouter.com/docs/en/v6/routers/hash-router):
+Reactにおいてルーティングで推奨されるアプローチは、[HashRouter](https://reactrouter.com/docs/en/v6/routers/hash-router)となります:
 
 ```jsx
 import { HashRouter } from "react-router-dom";

@@ -1,32 +1,32 @@
-# Obfuscated Builds
+# 難読化されたビルド
 
-Wails includes support for obfuscating your application using [garble](https://github.com/burrowers/garble).
+Wailsでは、[garble](https://github.com/burrowers/garble)を使用したアプリケーションの難読化をサポートしています。
 
-To produce an obfuscated build, you can use the `-obfuscate` flag with the `wails build` command:
+`wails build`コマンドで`-obfuscate`フラグを使用することで、ビルド時に難読化を有効にすることができます:
 
 ```bash
 wails build -obfuscated
 ```
 
-To customise the obfuscation settings, you can use the `-garbleargs` flag:
+また、難読化に関する設定をカスタマイズするために、`-garbleargs`フラグを使用できます:
 
 ```bash
 wails build -obfuscated -garbleargs "-literals -tiny -seed=myrandomseed"
 ```
 
-These settings may be persisted in your [project config](../reference/project-config).
+これらの設定は、[プロジェクト構成](../reference/project-config)で記述されている場合もあります。
 
-## How it works
+## 動作の仕組み
 
-In a standard build, all bound methods are available in the frontend under the `window.go` variable. When these methods are called, the corresponding backend method is called using the fully qualified function name. When using an obfuscated build, methods are bound using an ID instead of a name. The bindings generated in the `wailsjs` directory use these IDs to call the backend functions.
+標準のビルドでは、バインドされたすべてのメソッドは、フロントエンドの`window.go`変数から利用することができます。 これらのメソッドが呼び出されると、対応するバックエンドメソッドが完全修飾関数名で呼び出されます。 難読化ビルドの場合、メソッドは名前の代わりにIDでバインドされます。 `wailsjs`ディレクトリに生成されたバインディングは、このIDを使用してバックエンドの関数を呼び出します。
 
 :::note
 
-To ensure that your application will work in obfuscated mode, you must use the generated bindings under the `wailsjs` directory in your application.
+アプリケーションを難読化した状態で動作させるためには、`wailsjs`ディレクトリの配下に生成されたバインディングを使用する必要があります。
 
 :::
 
-## Example
+## 例
 
 Importing the "Greet" method from the bindings like this:
 
@@ -37,4 +37,4 @@ import { Greet } from "../../wailsjs/go/main/App";
 Greet("World");
 ```
 
-will ensure that the method will work correctly in obfuscated mode, as the bindings will be regenerated with IDs and the call mechanism updated.
+これは、バインディングがIDで再生成され、呼び出しメカニズムが更新されるため、難読化モードでメソッドが正しく動作することを保証します。

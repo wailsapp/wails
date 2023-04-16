@@ -4,6 +4,7 @@
 package edge
 
 import (
+	"fmt"
 	"log"
 	"runtime"
 	"syscall"
@@ -249,7 +250,7 @@ func (e *ICoreWebView2Environment) CreateWebResourceResponse(content []byte, sta
 		return nil, err
 	}
 	var response *ICoreWebView2WebResourceResponse
-	_, _, err = e.vtbl.CreateWebResourceResponse.Call(
+	hr, _, err := e.vtbl.CreateWebResourceResponse.Call(
 		uintptr(unsafe.Pointer(e)),
 		stream,
 		uintptr(statusCode),
@@ -257,7 +258,14 @@ func (e *ICoreWebView2Environment) CreateWebResourceResponse(content []byte, sta
 		uintptr(unsafe.Pointer(_headers)),
 		uintptr(unsafe.Pointer(&response)),
 	)
-	if err != windows.ERROR_SUCCESS {
+	if windows.Handle(hr) != windows.S_OK {
+		return nil, syscall.Errno(hr)
+	}
+
+	if response == nil {
+		if err == nil {
+			err = fmt.Errorf("unknown error")
+		}
 		return nil, err
 	}
 	return response, nil

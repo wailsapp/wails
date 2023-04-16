@@ -1,26 +1,26 @@
-# Manual Builds
+# Compilations manuelles
 
-The Wails CLI does a lot of heavy lifting for the project, but sometimes it's desirable to manually build your project. This document will discuss the different operations the CLI does and how this may be achieved in different ways.
+Le CLI Wails fait beaucoup de travail pour le projet, mais il est parfois souhaitable de construire manuellement votre projet. Ce document discutera des différentes opérations que fait le CLI et des différentes façons d'y parvenir.
 
-## Build Process
+## Processus de construction
 
-When either `wails build` or `wails dev` are used, the Wails CLI performs a common build process:
+Lorsque `wails build` ou `wails dev` sont utilisés, le CLI Wails effectue un processus de construction commun:
 
-    - Install frontend dependencies
-    - Build frontend project
-    - Generate build assets
-    - Compile application
-    - [optional] Compress application
+    - Installation des dépendances frontend
+    - Construire le projet frontend
+    - Générer des ressources de construction
+    - Compiler l'application
+    - [optionnel] Compresser l'application
 
-### Install frontend dependencies
+### Installation des dépendances frontend
 
-#### CLI Steps
+#### Étapes CLI
 
-- If the `-s` flag is given, this step is skipped
-- Checks `wails.json` to see if there is an install command in the key `frontend:install`
-- If there isn't, it skips this step
-- If there is, it checks if `package.json` exists in the frontend directory. If it doesn't exist, it skips this step
-- An MD5 sum is generated from the `package.json` file contents
+- Si l'option `-s` est donné, cette étape est ignorée
+- Vérifie `wails.json` pour voir s'il y a une commande install dans `frontend:install`
+- S'il n'y en a pas, il saute cette étape
+- Si le fichier existe, vérifie si `package.json` existe dans le répertoire du frontend. S'il n'existe pas, il saute cette étape
+- Un hash MD5 est générée à partir du contenu du fichier `package.json`
 - It checks for the existence of `package.json.md5` and if it exists, will compare the contents of it (an MD5 sum) with the one generated to see if the contents have changed. If they are the same, this step is skipped
 - If `package.json.md5` does not exist, it creates it using the generated MD5 sum
 - If a build is now required, or `node_modules` does not exist, or the `-f` flag is given, the install command is executed in the frontend directory
@@ -29,13 +29,13 @@ When either `wails build` or `wails dev` are used, the Wails CLI performs a comm
 
 This step could be done from the command line or a script with `npm install`.
 
-### Build frontend project
+### Construire le projet frontend
 
 #### Wails CLI
 
-- If the `-s` flag is given, this step is skipped
+- Si l'option `-s` est donné, cette étape est ignorée
 - Checks `wails.json` to see if there is a build command in the key `frontend:build`
-- If there isn't, it skips this step
+- S'il n'y en a pas, il saute cette étape
 - If there is, it is executed in the frontend directory
 
 #### Manual Steps
@@ -64,7 +64,7 @@ This step could be done from the command line or a script with `npm run build` o
 - Create / Update a `.manifest` file for your application
 - Use the [winres CLI](https://github.com/tc-hib/go-winres) to generate a `.syso` file.
 
-### Compile application
+### Compiler l'application
 
 #### Wails CLI
 

@@ -49,6 +49,7 @@ func checkLocallyInstalled(checker func() *packagemanager.Dependency, dependency
 }
 
 var checkerFunctions = map[string]func() *packagemanager.Dependency{
+	"Nodejs":     checkNodejs,
 	"npm":        checkNPM,
 	"docker":     checkDocker,
 	"upx":        checkUPX,

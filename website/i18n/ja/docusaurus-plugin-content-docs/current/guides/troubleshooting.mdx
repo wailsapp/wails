@@ -1,25 +1,25 @@
 # トラブルシューティング
 
-An assortment of troubleshooting tips.
+このページは、トラブルシューティングを手助けするヒント集です。
 
 ## `wails`コマンドが見つからないのですが?
 
 `wails`コマンドが見つからないとシステムに怒られた場合は、Goが、公式のGoインストール手順に従って導入されているかを確認してください。 コマンドが見つからないほとんどの理由は、あなたのホームディレクトリ配下にある`go/bin`ディレクトリのパスが、`PATH`環境変数に含まれていないからです。 また、インストールによって行われた環境変更を反映させるために、もともと開いていたコマンドプロンプト(ターミナル)がある場合はそれらをいったん閉じて、再度開きなおしてください。
 
-## My application is displaying a white/blank screen
+## アプリケーションがホワイト/ブラックスクリーン表示になってしまいます
 
-Check that your application includes the assets from the correct directory. In your `main.go` file, you will have something similar to the following code:
+アプリケーション内で、正しいディレクトリでアセットが指定されていることを確認してください。 `main.go`ファイル内には、以下のようなコードが存在します:
 
 ```go
 //go:embed all:frontend/dist
 var assets embed.FS
 ```
 
-Check that `frontend/dist` contains your application assets.
+また、`frontend/dist`ディレクトリ内に、アプリケーションアセットがきちんと含まれているか確認してください。
 
 ### Mac
 
-If this happens on Mac, try adding the following to your `Info.plist`:
+この事象がMacで発生した場合は、`Info.plist`に以下の記述を追加してみてください:
 
 ```xml
 <key>NSAppTransportSecurity</key>
@@ -29,11 +29,11 @@ If this happens on Mac, try adding the following to your `Info.plist`:
 </dict>
 ```
 
-Reference: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
+参考: https://github.com/wailsapp/wails/issues/1504#issuecomment-1174317433
 
-## Mac application not valid
+## Macのアプリケーションが無効になっています
 
-If your built application looks like this in finder:
+ビルドしたアプリケーションが次のように表示される場合:
 
 ```mdx-code-block
 <p className="text--center">
@@ -45,11 +45,11 @@ If your built application looks like this in finder:
 </p>
 ```
 
-it's likely that your application's `info.plist` is invalid. Update the file in `build/<yourapp>.app/Contents/info.plist` and check if the data is valid, EG check the binary name is correct. To persist the changes, copy the file back to the `build/darwin` directory.
+アプリケーションの`info.plist`が無効である可能性があります。 `build/<yourapp>.app/Contents/info.plist`ファイルを更新し、データが有効かどうかを確認します。たとえば、バイナリ名が正しいかどうかを確認してください。 変更を反映するには、ファイルを`build/darwin`ディレクトリにコピーします。
 
-## Cannot call backend method from frontend with variadic arguments
+## 可変長引数を持つバックエンドメソッドをフロントエンドから呼び出せません
 
-If you have a backend method defined with variadic parameters, eg:
+次のように、可変長引数を持つバックエンドメソッドが定義されている場合:
 
 ```go
 func (a *App) TestFunc(msg string, args ...interface{}) error {
@@ -57,7 +57,7 @@ func (a *App) TestFunc(msg string, args ...interface{}) error {
 }
 ```
 
-calling this method from the frontend like this will fail:
+このメソッドを、次のようにフロントエンドから呼び出すと失敗します:
 
 ```js
 var msg = "Hello: ";
@@ -71,7 +71,7 @@ window.go.main.App.TestFunc(msg, ...args)
   });
 ```
 
-Workaround:
+回避方法:
 
 ```js
 var msg = "Hello ";
@@ -86,32 +86,32 @@ window.go.main.App.TestFunc(msg, args)
   });
 ```
 
-Credit: https://github.com/wailsapp/wails/issues/1186
+出典: https://github.com/wailsapp/wails/issues/1186
 
-## I'm having getting proxy errors when trying to install Wails
+## Wailsのインストール時にプロキシエラーが発生します
 
-If you are getting errors like this:
+次のようなエラーが発生する場合:
 
 ```
 "https://proxy.golang.org/github.com/wailsapp/wails/cmd/wails/@v/list": dial tcp 172.217.163.49:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
 ```
 
-it's probably because the official Go Proxy is being blocked (Users in China have reported this). The solution is to set up the proxy manually, eg:
+おそらく、公式のGo Proxyがブロックされています (中国のユーザより報告されています)。 解決するには、次のように、プロキシを手動で設定します:
 
 ```
 go env -w GO111MODULE=on
 go env -w GOPROXY=https://goproxy.cn,direct
 ```
 
-Source: https://github.com/wailsapp/wails/issues/1233
+出典: https://github.com/wailsapp/wails/issues/1233
 
-## The generated TypeScript doesn't have the correct types
+## 生成されたTypeScriptの型定義が正しくありません
 
-Sometimes the generated TypeScript doesn't have the correct types. To mitigate this, it is possible to specify what types should be generated using the `ts_type` struct tag. For more details, please read [this](https://github.com/tkrajina/typescriptify-golang-structs#custom-types).
+場合によっては、生成されるTypeScriptの型定義が誤っていることがあります。 この事象を軽減させるために、`ts_type`という構造体のタグを使用して、生成する型を指定することができます。 詳しくは、[こちら](https://github.com/tkrajina/typescriptify-golang-structs#custom-types)をご覧ください。
 
-## When I navigate away from `index.html`, I am unable to call methods on the frontend
+## `index.html`から移動するとフロントエンド上でメソッドを呼び出すことができません
 
-If you navigate away from `index.html` to a new html file, the context will be lost. This can be fixed by adding the following imports to the `<head>` section of any new page you navigate to:
+`index.html`から新しいhtmlファイルへ遷移すると、コンテキスト情報は失われてしまいます。 この事象を修正するには、遷移先の新しいページの`<head>`セクションに、次のインポートコードを追加します:
 
 ```html
 <head>
@@ -120,17 +120,17 @@ If you navigate away from `index.html` to a new html file, the context will be l
 </head>
 ```
 
-Source: https://github.com/wailsapp/wails/discussions/1512
+出典: https://github.com/wailsapp/wails/discussions/1512
 
-## I get `too many open files` errors on my Mac when I run `wails dev`
+## Macで`wails dev`を実行すると`too many open files`エラーが発生します
 
-By default, macOS will only allow you to open a maximum of 256 files. This can affect the `wails dev` command. This limit can be increased by running: `ulimit -n 1024` in the terminal.
+デフォルトでは、macOSは最大で256個のファイルしか開くことができません。 この制限により、`wails dev`コマンド実行時に影響が発生する場合があります。 この制限は、ターミナルで次のようなコマンドを実行することで、緩和することができます: `ulimit -n 1024`。
 
-FSNotify is [looking to move to Apple's fsevents](https://github.com/fsnotify/fsnotify/issues/11) for Mac. If this isn't completed soon, we will create our own implementation, tracked [here](https://github.com/wailsapp/wails/issues/1733).
+FSNotifyは、Macのために、[Appleのfseventsへの移行を検討しています](https://github.com/fsnotify/fsnotify/issues/11)。 この移行が完了しない間は、[こちら](https://github.com/wailsapp/wails/issues/1733)で言及されているように、独自で実装を行います。
 
-## My Mac app gives me weird compilation errors
+## Macアプリで不可解なコンパイルエラーが発生します
 
-A few users have reported seeing compilation errors such as the following:
+一部のユーザより、次のようなコンパイルエラーが発生することがあるという報告を受けています:
 
 ```shell
 # github.com/wailsapp/wails/v2/internal/frontend/desktop/darwin
@@ -143,20 +143,24 @@ In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX12.1.sdk/Sy
         #define NS_FORMAT_ARGUMENT(A) __attribute__ ((format_arg(A)))
 ```
 
-This is _normally_ due to a mismatch with the OS version you are running and the version of the XCode Command Line Tools installed. If you see an error like this, try upgrading your XCode Command Line Tools to the latest version.
+これは_一般的に_、実行されているOSのバージョンと、インストールされているXCodeコマンドラインツールのバージョンが不一致であることが原因です。 このようなエラーが発生した場合は、XCodeコマンドラインツールを最新バージョンに更新してみてください。
 
-If reinstalling Xcode Command Tools still fails, you can check the path where the toolkit is located using:
+XCodeコマンドラインツールの再インストールが引き続き失敗する場合は、次のコマンドを使用して、ツールキットがどこに配置されているかを確認できます:
 
 `xcode-select -p`
 
-If `/Applications/Xcode.app/Contents/Developer` is displayed, run `sudo xcode-select --switch /Library/Developer/CommandLineTools`
+`/Applications/Xcode.app/Contents/Developer`と表示された場合、`sudo xcode-select --switch /Library/Developer/CommandLineTools`というコマンドを実行してください。
 
-Sources: https://github.com/wailsapp/wails/issues/1806 and https://github.com/wailsapp/wails/issues/1140#issuecomment-1290446496
+出典: https://github.com/wailsapp/wails/issues/1806 および https://github.com/wailsapp/wails/issues/1140#issuecomment-1290446496
 
 --
 
 ## Cannot start service: Host version "x.x.x does not match binary version "x.x.x"
 
-It's preferable to add `frontend/node_modules` and `frontend/package-lock.json` to your `.gitignore`. Otherwise when opening your repository on another machine that may have different versions of Node installed, you may not be able to run your application.
+`frontend/node_modules`と`frontend/package-lock.json`を`.gitignore`に追加することをお勧めします。 そうしないと、異なるバージョンのNodeがインストールされている別のマシンでリポジトリを開いた際に、アプリケーションが実行できなくなる場合があります。
 
-If this does happen, simply delete `frontend/node_modules` and `frontend/package-lock.json` and run your `wails build` or `wails dev` command again. 
+この事象が発生した場合は、単純に`frontend/node_modules`と`frontend/package-lock.json`を削除し、`wails build`コマンドおよび`wails dev`コマンドを再実行してください。
+
+## ビルドプロセスが"Generating bindings"で停止します
+
+バインディングの生成プロセスは、アプリケーションを特別なモードで実行します。 アプリケーションに、意図に有無にかかわらず無限ループ(`wails.Run()`のあとに終了されないコード)が含まれている場合、バインディングの生成の段階でビルドプロセスが停止する可能性があります。 コードが正しく終了していることを確認してください。

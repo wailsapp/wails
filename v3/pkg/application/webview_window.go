@@ -7,10 +7,6 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/logger"
 
-	"github.com/wailsapp/wails/v2/pkg/assetserver"
-	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
-	assetserveroptions "github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	"github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
 
@@ -43,7 +39,6 @@ type (
 		setZoom(zoom float64)
 		close()
 		zoom()
-		minimize()
 		setHTML(html string)
 		setPosition(x int, y int)
 		on(eventID uint)
@@ -71,9 +66,6 @@ type WebviewWindow struct {
 	impl     webviewWindowImpl
 	implLock sync.RWMutex
 	id       uint
-
-	assets           *assetserver.AssetServer
-	messageProcessor *MessageProcessor
 
 	eventListeners     map[uint][]func(ctx *WindowEventContext)
 	eventListenersLock sync.RWMutex
@@ -103,24 +95,12 @@ func NewWindow(options *WebviewWindowOptions) *WebviewWindow {
 		options.URL = "/"
 	}
 
-	opts := assetserveroptions.Options{Assets: options.Assets.FS, Handler: options.Assets.Handler, Middleware: options.Assets.Middleware}
-	// TODO Bindings, ServingFrom disk?
-	srv, err := assetserver.NewAssetServer("", opts, false, nil, runtime.RuntimeAssetsBundle)
-	if err != nil {
-		globalApplication.fatal(err.Error())
-	}
-
 	result := &WebviewWindow{
 		id:             getWindowID(),
 		options:        options,
 		eventListeners: make(map[uint][]func(ctx *WindowEventContext)),
 		contextMenus:   make(map[string]*Menu),
-
-		assets: srv,
 	}
-
-	result.messageProcessor = NewMessageProcessor(result)
-	srv.UseRuntimeHandler(result.messageProcessor)
 
 	return result
 }
@@ -136,10 +116,7 @@ func (w *WebviewWindow) SetTitle(title string) *WebviewWindow {
 }
 
 func (w *WebviewWindow) Name() string {
-	if w.options.Name != "" {
-		return w.options.Name
-	}
-	return fmt.Sprintf("Window %d", w.id)
+	return w.options.Name
 }
 
 func (w *WebviewWindow) SetSize(width, height int) *WebviewWindow {
@@ -383,14 +360,8 @@ func (w *WebviewWindow) handleMessage(message string) {
 	if message == "test" {
 		w.SetTitle("Hello World")
 	}
-	w.messageProcessor.ProcessMessage(message)
+	w.info("ProcessMessage from front end:", message)
 
-}
-
-func (w *WebviewWindow) handleWebViewRequest(request webview.Request) {
-	url, _ := request.URL()
-	w.info("Request: %s", url)
-	w.assets.ServeWebViewRequest(request)
 }
 
 func (w *WebviewWindow) Center() {
@@ -513,7 +484,7 @@ func (w *WebviewWindow) Minimize() {
 	if w.impl == nil {
 		return
 	}
-	w.impl.minimize()
+	w.impl.minimise()
 }
 
 func (w *WebviewWindow) Zoom() {
@@ -630,8 +601,8 @@ func (w *WebviewWindow) SetFrameless(frameless bool) *WebviewWindow {
 	return w
 }
 
-func (w *WebviewWindow) dispatchCustomEvent(event *CustomEvent) {
-	msg := fmt.Sprintf("_wails.dispatchCustomEvent(%s);", event.ToJSON())
+func (w *WebviewWindow) dispatchWailsEvent(event *WailsEvent) {
+	msg := fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON())
 	w.ExecJS(msg)
 }
 

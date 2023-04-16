@@ -1,0 +1,16 @@
+{
+  "name": "@wailsapp/api",
+  "version": "3.0.0-alpha.3",
+  "description": "Wails Runtime API",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wailsapp/wails.git"
+  },
+  "author": "The Wails Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wailsapp/wails/issues"
+  },
+  "homepage": "https://wails.io"
+}

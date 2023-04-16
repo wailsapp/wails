@@ -14,10 +14,17 @@ import {newRuntimeCaller} from "./runtime";
 
 let call = newRuntimeCaller("clipboard");
 
+/**
+ * Set the Clipboard text
+ */
 export function SetText(text) {
-    return call("SetText", {text});
+    void call("SetText", {text});
 }
 
+/**
+ * Get the Clipboard text
+ * @returns {Promise<string>}
+ */
 export function Text() {
     return call("Text");
 }

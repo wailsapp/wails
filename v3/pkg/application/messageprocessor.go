@@ -3,25 +3,49 @@ package application
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	jsoniter "github.com/json-iterator/go"
 )
 
+// TODO maybe we could use a new struct that has the targetWindow as an attribute so we could get rid of passing the targetWindow
+// as parameter through every function call.
+
 type MessageProcessor struct {
-	window *WebviewWindow
+	pluginManager *PluginManager
 }
 
-func NewMessageProcessor(w *WebviewWindow) *MessageProcessor {
-	return &MessageProcessor{
-		window: w,
-	}
+func NewMessageProcessor() *MessageProcessor {
+	return &MessageProcessor{}
 }
 
 func (m *MessageProcessor) httpError(rw http.ResponseWriter, message string, args ...any) {
 	m.Error(message, args...)
 	rw.WriteHeader(http.StatusBadRequest)
 	rw.Write([]byte(fmt.Sprintf(message, args...)))
+}
+
+func (m *MessageProcessor) getTargetWindow(r *http.Request) *WebviewWindow {
+	windowName := r.Header.Get(webViewRequestHeaderWindowName)
+	if windowName != "" {
+		return globalApplication.GetWindowByName(windowName)
+	}
+	windowID := r.Header.Get(webViewRequestHeaderWindowId)
+	if windowID == "" {
+		return nil
+	}
+	wID, err := strconv.ParseUint(windowID, 10, 64)
+	if err != nil {
+		m.Error("Window ID '%s' not parsable: %s", windowID, err)
+		return nil
+	}
+	targetWindow := globalApplication.getWindowForID(uint(wID))
+	if targetWindow == nil {
+		m.Error("Window ID %d not found", wID)
+		return nil
+	}
+	return targetWindow
 }
 
 func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Request) {
@@ -43,15 +67,10 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 
 	params := QueryParams(r.URL.Query())
 
-	var targetWindow = m.window
-	windowID := params.UInt("windowID")
-	if windowID != nil {
-		// Get window for ID
-		targetWindow = globalApplication.getWindowForID(*windowID)
-		if targetWindow == nil {
-			m.Error("Window ID %s not found", *windowID)
-			return
-		}
+	targetWindow := m.getTargetWindow(r)
+	if targetWindow == nil {
+		m.Error("No valid window found")
+		return
 	}
 
 	switch object {
@@ -77,10 +96,6 @@ func (m *MessageProcessor) HandleRuntimeCall(rw http.ResponseWriter, r *http.Req
 		m.httpError(rw, "Unknown runtime call: %s", object)
 	}
 
-}
-
-func (m *MessageProcessor) ProcessMessage(message string) {
-	m.Info("ProcessMessage from front end:", message)
 }
 
 func (m *MessageProcessor) Error(message string, args ...any) {

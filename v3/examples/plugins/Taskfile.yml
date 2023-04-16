@@ -1,0 +1,41 @@
+version: '3'
+
+tasks:
+
+  pre-build:
+    summary: Pre-build hooks
+
+  post-build:
+    summary: Post-build hooks
+
+  build:
+    summary: Builds the application
+    cmds:
+      - task: pre-build
+      - go build -gcflags=all="-N -l" -o bin/testapp main.go
+      - task: post-build
+    env:
+      CGO_CFLAGS: "-mmacosx-version-min=10.13"
+      CGO_LDFLAGS: "-mmacosx-version-min=10.13"
+
+  generate-icons:
+    summary: Generates Windows `.ico` and Mac `.icns` files from an image
+    cmds:
+      # Generates both .ico and .icns files
+      - wails generate icons -input build/appicon.png
+
+  build-prod:
+    summary: Creates a production build of the application
+    cmds:
+      - go build -tags production -ldflags="-w -s" -o bin/testapp
+
+  package-darwin:
+    summary: Packages a production build of the application into a `.app` bundle
+    deps:
+        - build-prod
+        - generate-icons
+    cmds:
+      - mkdir -p buildtest.app/Contents/{MacOS,Resources}
+      - cp build/icons.icns buildtest.app/Contents/Resources
+      - cp bin/testapp buildtest.app/Contents/MacOS
+      - cp build/Info.plist buildtest.app/Contents

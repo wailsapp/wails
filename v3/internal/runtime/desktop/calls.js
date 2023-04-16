@@ -59,8 +59,22 @@ function callBinding(type, options) {
     });
 }
 
-
 export function Call(options) {
     return callBinding("Call", options);
 }
 
+/**
+ * Call a plugin method
+ * @param {string} pluginName - name of the plugin
+ * @param {string} methodName - name of the method
+ * @param {...any} args - arguments to pass to the method
+ * @returns {Promise<any>} - promise that resolves with the result
+ */
+export function Plugin(pluginName, methodName, ...args) {
+    return callBinding("Call", {
+        packageName: "wails-plugins",
+        structName: pluginName,
+        methodName: methodName,
+        args: args,
+    });
+}

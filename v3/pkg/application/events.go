@@ -18,13 +18,13 @@ var windowEvents = make(chan *WindowEvent)
 
 var menuItemClicked = make(chan uint)
 
-type CustomEvent struct {
+type WailsEvent struct {
 	Name   string `json:"name"`
 	Data   any    `json:"data"`
 	Sender string `json:"sender"`
 }
 
-func (e CustomEvent) ToJSON() string {
+func (e WailsEvent) ToJSON() string {
 	marshal, err := json.Marshal(&e)
 	if err != nil {
 		// TODO: Fatal error? log?
@@ -38,9 +38,9 @@ func (e CustomEvent) ToJSON() string {
 // how the total number of events it is interested in. A value of zero
 // means it does not expire (default).
 type eventListener struct {
-	callback func(*CustomEvent) // Function to call with emitted event data
-	counter  int                // The number of times this callback may be called. -1 = infinite
-	delete   bool               // Flag to indicate that this listener should be deleted
+	callback func(*WailsEvent) // Function to call with emitted event data
+	counter  int               // The number of times this callback may be called. -1 = infinite
+	delete   bool              // Flag to indicate that this listener should be deleted
 }
 
 // EventProcessor handles custom events
@@ -48,10 +48,10 @@ type EventProcessor struct {
 	// Go event listeners
 	listeners              map[string][]*eventListener
 	notifyLock             sync.RWMutex
-	dispatchEventToWindows func(*CustomEvent)
+	dispatchEventToWindows func(*WailsEvent)
 }
 
-func NewCustomEventProcessor(dispatchEventToWindows func(*CustomEvent)) *EventProcessor {
+func NewWailsEventProcessor(dispatchEventToWindows func(*WailsEvent)) *EventProcessor {
 	return &EventProcessor{
 		listeners:              make(map[string][]*eventListener),
 		dispatchEventToWindows: dispatchEventToWindows,
@@ -59,22 +59,22 @@ func NewCustomEventProcessor(dispatchEventToWindows func(*CustomEvent)) *EventPr
 }
 
 // On is the equivalent of Javascript's `addEventListener`
-func (e *EventProcessor) On(eventName string, callback func(event *CustomEvent)) func() {
+func (e *EventProcessor) On(eventName string, callback func(event *WailsEvent)) func() {
 	return e.registerListener(eventName, callback, -1)
 }
 
 // OnMultiple is the same as `On` but will unregister after `count` events
-func (e *EventProcessor) OnMultiple(eventName string, callback func(event *CustomEvent), counter int) func() {
+func (e *EventProcessor) OnMultiple(eventName string, callback func(event *WailsEvent), counter int) func() {
 	return e.registerListener(eventName, callback, counter)
 }
 
 // Once is the same as `On` but will unregister after the first event
-func (e *EventProcessor) Once(eventName string, callback func(event *CustomEvent)) func() {
+func (e *EventProcessor) Once(eventName string, callback func(event *WailsEvent)) func() {
 	return e.registerListener(eventName, callback, 1)
 }
 
 // Emit sends an event to all listeners
-func (e *EventProcessor) Emit(thisEvent *CustomEvent) {
+func (e *EventProcessor) Emit(thisEvent *WailsEvent) {
 	if thisEvent == nil {
 		return
 	}
@@ -93,7 +93,7 @@ func (e *EventProcessor) OffAll() {
 }
 
 // registerListener provides a means of subscribing to events of type "eventName"
-func (e *EventProcessor) registerListener(eventName string, callback func(*CustomEvent), counter int) func() {
+func (e *EventProcessor) registerListener(eventName string, callback func(*WailsEvent), counter int) func() {
 	// Create new eventListener
 	thisListener := &eventListener{
 		callback: callback,
@@ -125,7 +125,7 @@ func (e *EventProcessor) unRegisterListener(eventName string) {
 }
 
 // dispatchEventToListeners calls all registered listeners event name
-func (e *EventProcessor) dispatchEventToListeners(event *CustomEvent) {
+func (e *EventProcessor) dispatchEventToListeners(event *WailsEvent) {
 
 	e.notifyLock.Lock()
 	defer e.notifyLock.Unlock()

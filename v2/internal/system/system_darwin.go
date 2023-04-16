@@ -9,9 +9,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
-
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
+	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
 )
 
 // Determine if the app is running on Apple Silicon
@@ -34,6 +33,7 @@ func (i *Info) discover() error {
 	i.OS = osinfo
 
 	i.Dependencies = append(i.Dependencies, checkXCodeSelect())
+	i.Dependencies = append(i.Dependencies, checkNodejs())
 	i.Dependencies = append(i.Dependencies, checkNPM())
 	i.Dependencies = append(i.Dependencies, checkXCodeBuild())
 	i.Dependencies = append(i.Dependencies, checkUPX())

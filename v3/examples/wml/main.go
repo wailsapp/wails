@@ -19,15 +19,15 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+		Assets: application.AssetOptions{
+			FS: assets,
+		},
 	})
 
 	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title:  "Wails ML Demo",
 		Width:  800,
 		Height: 600,
-		Assets: application.AssetOptions{
-			FS: assets,
-		},
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
@@ -35,10 +35,10 @@ func main() {
 		},
 	})
 
-	app.Events.On("button-pressed", func(_ *application.CustomEvent) {
+	app.Events.On("button-pressed", func(_ *application.WailsEvent) {
 		println("Button Pressed!")
 	})
-	app.Events.On("hover", func(_ *application.CustomEvent) {
+	app.Events.On("hover", func(_ *application.WailsEvent) {
 		println("Hover time!")
 	})
 

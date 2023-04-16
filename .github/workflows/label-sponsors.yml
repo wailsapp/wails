@@ -1,9 +1,9 @@
-name: Label sponsors
+name: Label Sponsors
 on:
   pull_request:
-    types: [ opened ]
+    types: [opened]
   issues:
-    types: [ opened ]
+    types: [opened]
 jobs:
   build:
     name: is-sponsor-label
@@ -11,5 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: JasonEtco/is-sponsor-label-action@v1
+        with:
+          label: Sponsor ❤️
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

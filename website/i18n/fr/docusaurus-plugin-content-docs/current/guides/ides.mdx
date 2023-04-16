@@ -1,8 +1,8 @@
 # IDEs
 
-Wails aims to provide a great development experience. To that aim, we now support generating IDE specific configuration to provide smoother project setup.
+Wails vise à fournir une grande expérience de développement. À cet effet, nous supportons maintenant la génération d'une configuration spécifique IDE pour fournir une configuration plus souple du projet.
 
-Currently, we support [Visual Studio Code](https://code.visualstudio.com/) but aim to support other IDEs such as Goland.
+Actuellement, nous prenons en charge [Visual Studio Code](https://code.visualstudio.com/) mais nous visons à prendre en charge d'autres IDE comme Goland.
 
 ## Visual Studio Code
 
@@ -15,9 +15,9 @@ Currently, we support [Visual Studio Code](https://code.visualstudio.com/) but a
 </p>
 ```
 
-When generating a project using the `-ide vscode` flags, IDE files will be created alongside the other project files. These files are placed into the `.vscode` directory and provide the correct configuration for debugging your application.
+Lors de la génération d'un projet en utilisant l'option `-ide vscode` , les fichiers IDE seront créés à côté des autres fichiers du projet. Ces fichiers sont placés dans le répertoire `.vscode` et fournissent la configuration correcte pour déboguer votre application.
 
-The 2 files generated are `tasks.json` and `launch.json`. Below are the files generated for the default vanilla project:
+Les 2 fichiers générés sont `tasks.json` et `launch.json`. Ci-dessous se trouvent les fichiers générés par défaut :
 
 ```json title="tasks.json"
 {
@@ -62,9 +62,9 @@ The 2 files generated are `tasks.json` and `launch.json`. Below are the files ge
 }
 ```
 
-### Configuring the install and build steps
+### Configuration des étapes d'installation et de construction
 
-The `tasks.json` file is simple for the default project as there is no `npm install` or `npm run build` step needed. For projects that have a frontend build step, such as the svelte template, we would need to edit `tasks.json` to add the install and build steps:
+Le fichier `tasks.json` est simple pour le projet par défaut car il n'y a pas d'étapes `npm install` ou `npm build` nécessaire. Pour les projets qui ont une étape de construction en frontend comme avec Svelte, nous devrions modifier `tasks.json` pour ajouter les étapes d'installation et de construction suivantes :
 
 ```json title="tasks.json"
 {
@@ -120,8 +120,8 @@ The `tasks.json` file is simple for the default project as there is no `npm inst
 }
 ```
 
-:::info Future Enhancement
+:::info Améliorations futures
 
-In the future, we hope to generate a `tasks.json` that includes the install and build steps automatically.
+Dans le futur, nous espérons générer un `tasks.json` qui inclut les étapes d'installation et de construction automatiquement.
 
 :::

@@ -1,0 +1,10 @@
+# This is the plugin definition file for the "Hashes" plugin.
+
+Name = "Hashes"
+Description = "Provides a method to generate a number of hashes."
+Author = "Lea Anthony"
+Version = "v1.0.0"
+Website = "https://wails.io"
+License = "MIT"
+
+

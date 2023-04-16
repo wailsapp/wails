@@ -77,7 +77,7 @@ func (a *App) Greet(name string) string {
 }
 ```
 
-In the main application configuration, the `Bind` key is where we can tell Wails what we want to bind:
+메인 어플리케이션 구성에서, `Bind` 키는 Wails에 무엇을 바인딩할지 알릴 수 있는 부분입니다.
 
 ```go {11-13} title="main.go"
 func main() {
@@ -101,11 +101,11 @@ func main() {
 
 ```
 
-This will bind all public methods in our `App` struct (it will never bind the startup and shutdown methods).
+이렇게 하면 `App` 구조체의 모든 공개 메서드가 바인딩됩니다(시작 및 종료 메서드는 바인딩되지 않음).
 
-### Dealing with context when binding multiple structs
+### 여러 구조체를 바인딩할 때의 컨텍스트 처리
 
-If you want to bind methods for multiple structs but want each struct to keep a reference to the context so that you can use the runtime functions, a good pattern is to pass the context from the `OnStartup` method to your struct instances :
+여러 구조체에 대한 메서드를 바인딩하고 싶지만 런타임을 사용할 수 있도록 각 구조체가 컨텍스트에 대한 참조를 유지하기를 원하는 경우, 함수에서 좋은 패턴은 `OnStartup` 메서드에서 구조체 인스턴스로 컨텍스트를 전달하는 것입니다.
 
 ```go
 func main() {
@@ -133,11 +133,11 @@ func main() {
 }
 ```
 
-More information on Binding can be found [here](../howdoesitwork.mdx#method-binding).
+바인딩에 대한 더 많은 정보는 [여기](../howdoesitwork.mdx#method-binding)에서 확인할 수 있습니다.
 
 ## Application Menu
 
-Wails supports adding a menu to your application. This is done by passing a [Menu](../reference/menus.mdx#menu) struct to application config. It's common to use a method that returns a Menu, and even more common for that to be a method on the `App` struct used for the lifecycle hooks.
+Wails는 당신의 애플리케이션에 메뉴 추가를 지원합니다. 이것은 [Menu](../reference/menus.mdx#menu) 구조체를 애플리케이션 구성에 전달하여 수행됩니다. Menu를 반환하는 메서드를 사용하는 것이 일반적이며 lifecycle hooks에 사용되는 `App` 구조체의 메서드인 경우에는 훨씬 더 일반적입니다.
 
 ```go {11} title="main.go"
 func main() {
@@ -164,31 +164,31 @@ func main() {
 
 ## Assets
 
-The great thing about the way Wails v2 handles assets is that it doesn't! The only thing you need to give Wails is an `embed.FS`. How you get to that is entirely up to you. You can use vanilla html/css/js files like the vanilla template. You could have some complicated build system, it doesn't matter.
+Wails v2가 assets을 처리하는 방식의 장점은 그렇지 않다는 것입니다! Wails에 제공해야 하는 유일한 것은 `embed.FS`입니다. 당신이 어떻게 얻어내는가는 전적으로 당신에게 달렸습니다. 바닐라 템플릿과 같은 바닐라 html/css/js를 사용할 수 있습니다. 복잡한 빌드 시스템을 가질 수 있으나, 중요하지 않습니다.
 
-When `wails build` is run, it will check the `wails.json` project file at the project root. There are 2 keys in the project file that are read:
+`wails build`가 실행되면 프로젝트 최상위에서 `wails.json` 프로젝트 파일을 확인합니다. 프로젝트 파일에는 2개의 키가 있습니다.
 
 - "frontend:install"
 - "frontend:build"
 
-The first, if given, will be executed in the `frontend` directory to install the node modules. The second, if given, will be executed in the `frontend` directory to build the frontend project.
+첫 번째는 노드 모듈을 설치하기 위해 `frontend` 디렉토리에서 실행됩니다. 두 번째는 프런트엔드 프로젝트를 빌드하기 위해 `frontend` 디렉토리에서 실행됩니다.
 
-If these 2 keys aren't given, then Wails does absolutely nothing with the frontend. It is only expecting that `embed.FS`.
+이 2개의 키가 주어지지 않으면 Wails는 프런트엔드에서 아무 작업도 수행하지 않습니다. 그것은 `embed.FS`에서만 기대합니다.
 
 ### AssetsHandler
 
-A Wails v2 app can optionally define a `http.Handler` in the `options.App`, which allows hooking into the AssetServer to create files on the fly or process POST/PUT requests. GET requests are always first handled by the `assets` FS. If the FS doesn't find the requested file the request will be forwarded to the `http.Handler` for serving. Any requests other than GET will be directly processed by the `AssetsHandler` if specified. It's also possible to only use the `AssetsHandler` by specifiy `nil` as the `Assets` option.
+Wails v2 앱은 선택적으로 `options.App`에서 `http.Handler`를 정의할 수 있습니다. 즉석에서 파일을 생성하거나 POST/PUT 요청을 처리합니다. GET 요청은 항상 `assets` FS에서 먼저 처리됩니다. FS가 요청된 파일을 찾지 못하면 요청은 제공을 위해 `http.Handler`로 전달됩니다. GET 이외의 모든 요청은 지정된 경우 `AssetsHandler`에서 직접 처리됩니다. `Assets` 옵션으로 `nil`을 지정하여 `AssetsHandler`만 사용할 수도 있습니다.
 
 ## Built in Dev Server
 
-Running `wails dev` will start the built in dev server which will start a file watcher in your project directory. By default, if any file changes, wails checks if it was an application file (default: `.go`, configurable with `-e` flag). If it was, then it will rebuild your application and relaunch it. If the changed file was in the assets, it will issue a reload after a short amount of time.
+`wails dev`를 실행하면 내장된 dev 서버가 시작되어 프로젝트 디렉토리에서 file watcher를 시작합니다. 기본적으로 파일이 변경되면 wails는 응용 프로그램 파일인지 확인합니다(기본값: `.go`, `-e` 플래그로 구성 가능). 그렇다면 응용 프로그램을 다시 빌드하고 다시 시작합니다. 변경된 파일이 assets에 있는 경우 짧은 시간 후에 다시 로드를 발행합니다.
 
-The dev server uses a technique called "debouncing" which means it doesn't reload straight away, as there may be multiple files changed in a short amount of time. When a trigger occurs, it waits for a set amount of time before issuing a reload. If another trigger happens, it resets to the wait time again. By default this value is `100ms`. If this value doesn't work for your project, it can be configured using the `-debounce` flag. If used, this value will be saved to your project config and become the default.
+개발 서버는 "debouncing"이라는 기술을 사용합니다. 즉, 짧은 시간에 여러 파일이 변경될 수 있으므로 바로 다시 로드되지 않습니다. 트리거가 발생하면 다시 로드하기 전에 설정된 시간 동안 기다립니다. 다른 트리거가 발생하면 다시 대기 시간으로 재설정됩니다. 기본 값은 `100ms` 입니다. 이 값이 프로젝트에서 작동하지 않는 경우 `-debounce` 플래그를 사용하여 구성할 수 있습니다. 사용하는 경우 이 값은 프로젝트 구성에 저장되고 기본값이 됩니다.
 
 ## External Dev Server
 
-Some frameworks come with their own live-reloading server, however they will not be able to take advantage of the Wails Go bindings. In this scenario, it is best to run a watcher script that rebuilds the project into the build directory, which Wails will be watching. For an example, see the default svelte template that uses [rollup](https://rollupjs.org/guide/en/). For [create-react-app](https://create-react-app.dev/), it's possible to use [this script](https://gist.github.com/int128/e0cdec598c5b3db728ff35758abdbafd) to achieve a similar result.
+일부 프레임워크는 자체 라이브 리로딩 서버와 함께 제공되지만 Wails Go 바인딩을 활용할 수 없습니다. 이 시나리오에서는 Wails가 감시할 빌드 디렉토리에 프로젝트를 다시 빌드하는 watcher script를 실행하는 것이 가장 좋습니다. 예를 보려면 [rollup](https://rollupjs.org/guide/en/)을 사용하는 기본 svelte 템플릿을 참조하세요. [create-react-app](https://create-react-app.dev/)의 경우 다음을 사용할 수 있습니다. [this script](https://gist.github.com/int128/e0cdec598c5b3db728ff35758abdbafd)를 사용하여 유사한 결과를 얻을 수 있습니다.
 
 ## Go Module
 
-The default Wails templates generate a `go.mod` file that contains the module name "changeme". You should change this to something more appropriate after project generation.
+기본 Wails 템플릿은 "changeme"라는 모듈 이름이 포함된 `go.mod` 파일을 생성합니다. 프로젝트 생성 후에 이 파일의 이름을 변경해야 합니다.

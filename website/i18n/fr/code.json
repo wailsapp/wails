@@ -411,5 +411,13 @@
   "theme.SearchModal.placeholder": {
     "message": "Rechercher des docs",
     "description": "The placeholder of the input of the DocSearch pop-up modal"
+  },
+  "theme.docs.sidebar.closeSidebarButtonAriaLabel": {
+    "message": "Fermer la barre de navigation",
+    "description": "The ARIA label for close button of mobile sidebar"
+  },
+  "theme.docs.sidebar.toggleSidebarButtonAriaLabel": {
+    "message": "Ouvrir/fermer la barre de navigation",
+    "description": "The ARIA label for hamburger menu button of mobile navigation"
   }
 }

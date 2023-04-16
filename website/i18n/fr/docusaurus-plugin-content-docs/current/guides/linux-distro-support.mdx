@@ -1,8 +1,8 @@
-# Linux Distro Support
+# Prise en charge des distributions Linux
 
-## Overview
+## Vue d'ensemble
 
-Wails offers Linux support but providing installation instructions for all available distributions is an impossible task. Instead, Wails tries to determine if the packages you need to develop applications are available via your system's package manager. Currently, we support the following package managers:
+Wails offre le support de Linux, mais fournir des instructions d'installation pour toutes les distributions disponibles est une tâche impossible. À la place, Wails essaie de déterminer si les paquets dont vous avez besoin pour développer des applications sont disponibles via le gestionnaire de paquets de votre système. Actuellement, nous supportons les gestionnaires de paquets suivants :
 
 - apt
 - dnf
@@ -12,11 +12,11 @@ Wails offers Linux support but providing installation instructions for all avail
 - pacman
 - zypper
 
-## Adding package names
+## Ajout des noms de paquets
 
-There may be circumstances where your distro uses one of the supported package managers but the package name is different. For example, you may use an Ubuntu derivative, but the package name for gtk may be different. Wails attempts to find the correct package by iterating through a list of package names. The list of packages are stored in the packagemanager specific file in the `v2/internal/system/packagemanager` directory. In our example, this would be `v2/internal/system/packagemanager/apt.go`.
+Il peut y avoir des cas où votre distribution de linux utilise un des gestionnaires de paquets pris en charge mais le nom du paquet est différent. Par exemple, vous pouvez utiliser un dérivé Ubuntu, mais le nom du paquet pour gtk peut être différent. Wails tente de trouver le paquet correct en itérant une liste de noms de paquets. La liste des paquets est stockée dans un fichier spécifique dans le dossier `v2/internal/system/packagemanager` . Dans notre exemple, ce serait `v2/internal/system/packagemanager/apt.go`.
 
-In this file, the list of packages are defined by the `Packages()` method:
+Dans ce fichier, la liste des paquets est définie par la méthode `Packages()`:
 
 ```go
 func (a *Apt) Packages() packagemap {
@@ -43,7 +43,7 @@ func (a *Apt) Packages() packagemap {
 }
 ```
 
-Let's assume that in our linux distro, `libgtk-3` is packaged under the name `lib-gtk3-dev`. We could add support for this by adding the following line:
+Supposons que dans notre distribution linux, `libgtk-3` est empaqueté sous le nom `lib-gtk3-dev`. Nous pourrions ajouter le support de ce paquet en ajoutant la ligne suivante :
 
 ```go {5}
 func (a *Apt) Packages() packagemap {
@@ -71,12 +71,12 @@ func (a *Apt) Packages() packagemap {
 }
 ```
 
-## Adding new package managers
+## Ajout de nouveaux gestionnaires de paquets
 
-To add a new package manager, perform the following steps:
+Pour ajouter un nouveau gestionnaire de paquets, effectuez les étapes suivantes :
 
-- Create a new file in `v2/internal/system/packagemanager` called `<pm>.go`, where `<pm>` is the name of the package manager.
-- Define a struct that conforms to the package manager interface defined in `pm.go`:
+- Créez un nouveau fichier dans `v2/internal/system/packagemanager` appelé `<pm>.go`, où `<pm>` est le nom du gestionnaire de paquets.
+- Définit une structure conforme à l'interface du gestionnaire de paquets définie dans `pm.go`:
 
 ```go
 type PackageManager interface {
@@ -88,16 +88,16 @@ type PackageManager interface {
 }
 ```
 
-- `Name()` should return the name of the package manager
-- `Packages()` should return a `packagemap`, that provides candidate filenames for dependencies
-- `PackageInstalled()` should return `true` if the given package is installed
-- `PackageAvailable()` should return `true` if the given package is not installed but available for installation
-- `InstallCommand()` should return the exact command to install the given package name
+- `Name()` doit retourner le nom du gestionnaire de paquets
+- `Packages()` doit retourner une `packagemap`, qui fournit des noms de fichiers candidats pour les dépendances
+- `PackageInstalled()` devrait retourner `true` si le paquet donné est installé
+- `PackageAvailable()` devrait retourner `true` si le paquet donné n'est pas installé mais disponible pour l'installation
+- `InstallCommand()` doit retourner la commande exacte pour installer le nom du paquet donné
 
-Take a look at the other package managers code to get an idea how this works.
+Jetez un coup d'œil au code des autres gestionnaires de paquets pour avoir une idée de comment cela fonctionne.
 
-:::info Remember
+:::info Rappel
 
-If you add support for a new package manager, don't forget to also update this page!
+Si vous ajoutez le support d'un nouveau gestionnaire de paquets, n'oubliez pas de mettre également à jour cette page !
 
 :::

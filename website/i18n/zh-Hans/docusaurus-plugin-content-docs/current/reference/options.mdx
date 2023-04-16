@@ -50,6 +50,7 @@ func main() {
         OnBeforeClose:      app.beforeClose,
         CSSDragProperty:   "--wails-draggable",
         CSSDragValue:      "drag",
+        EnableFraudulentWebsiteDetection: false,
         ZoomFactor:           1.0,
         IsZoomControlEnabled: false,
         Bind: []interface{}{
@@ -72,12 +73,13 @@ func main() {
                 LightModeTitleText: windows.RGB(20, 20, 20),
                 LightModeBorder:    windows.RGB(200, 200, 200),
             },
-            // User messages that can be customised
+            // 可自定义的用户消息
             Messages *windows.Messages
-            // OnSuspend is called when Windows enters low power mode
+            // 当 Windows 进入低电量模式时调用 OnSuspend
             OnSuspend func()
-            // OnResume is called when Windows resumes from low power mode
-            OnResume func()
+            // 当 Windows 从低电量模式恢复时调用 OnResume
+            OnResume func(),
+            WebviewGpuDisabled: false,
         },
         Mac: &mac.Options{
             TitleBar: &mac.TitleBar{
@@ -100,6 +102,7 @@ func main() {
         Linux: &linux.Options{
             Icon: icon,
             WindowIsTranslucent: false,
+            WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
         },
         Debug: options.Debug{
             OpenInspectorOnStartup: false,
@@ -232,11 +235,11 @@ func main() {
 | DELETE                  | ✅   | ✅   | ✅ [^1] |
 | Request Headers         | ✅   | ✅   | ✅ [^1] |
 | Request Body            | ✅   | ✅   | ❌      |
-| Request Body Streaming  | ❌   | ❌   | ❌      |
+| Request Body Streaming  | ✅   | ✅   | ❌      |
 | Response StatusCodes    | ✅   | ✅   | ✅ [^1] |
 | Response Headers        | ✅   | ✅   | ✅ [^1] |
 | Response Body           | ✅   | ✅   | ✅      |
-| Response Body Streaming | ❌   | ❌   | ✅      |
+| Response Body Streaming | ❌   | ✅   | ✅      |
 | WebSockets              | ❌   | ❌   | ❌      |
 | HTTP Redirects 30x      | ✅   | ❌   | ❌      |
 
@@ -355,6 +358,12 @@ func (b *App) beforeClose(ctx context.Context) (prevent bool) {
 指示 `CSSDragProperty` 样式应该具有什么值才能拖动窗口。 默认值：`drag`
 
 名称：CSSDragValue<br/> 类型：`string`
+
+### 启用欺诈网站检测
+
+EnableFraudulentWebsiteDetection 启用针对欺诈内容（例如恶意软件或网络钓鱼尝试）的扫描服务。 这些服务可能会从你的应用中发送信息，比如导航到苹果和微软的云服务的url和其他内容。
+
+名称：EnableFraudulentWebsiteDetection<br/> 类型：`bool`
 
 ### 缩放比例
 
@@ -541,6 +550,12 @@ ResizeDebounceMS 是调整窗口大小时去抖动 webview2 重绘的时间量�
 如果设置，当 Windows 从低功耗模式（挂起/休眠）恢复时将调用此函数
 
 名称：OnResume<br/> 类型：`func()`
+
+#### 禁用 Webview GPU 硬件加速
+
+设置为 `true` 将禁用 webview 的 GPU 硬件加速。
+
+名称：WebviewGpuIsDisabled<br/> 类型：`bool`
 
 ### Mac
 
@@ -737,6 +752,20 @@ func main() {
 将此设置为 `true` 将使窗口半透明。 某些窗口管理员可能忽略它，或导致黑窗口。
 
 名称：WindowIsTranslucent<br/> 类型：`bool`
+
+#### Webview GPU 策略
+
+该选项用于决定 webview 的硬件加速策略。
+
+名称：WebviewGpuPolicy<br/> 类型：[`options.WebviewGpuPolicy`](#webviewgpupolicy-type)<br/> 默认：`WebviewGpuPolicyAlways`
+
+##### Webview GPU 策略类型
+
+| 值                        | 描述                    |
+| ------------------------ | --------------------- |
+| WebviewGpuPolicyAlways   | 始终启用硬件加速              |
+| WebviewGpuPolicyOnDemand | 根据 Web 内容的请求启用/禁用硬件加速 |
+| WebviewGpuPolicyNever    | 硬件加速始终处于禁用状态          |
 
 ### 调试
 

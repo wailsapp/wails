@@ -1,4 +1,4 @@
-# NSIS installer
+# Installateur NSIS
 
 ```mdx-code-block
 <p style={{ "text-align": "center" }}>
@@ -10,33 +10,33 @@
 </p>
 ```
 
-Wails supports generating Windows installers using the [NSIS installer](https://nsis.sourceforge.io/).
+Wails prend en charge la génération d'installateurs Windows en utilisant l'installateur [NSIS](https://nsis.sourceforge.io/).
 
-## Installing NSIS
+## Installation de NSIS
 
 ### Windows
 
-The installer is available on the [NSIS Download](https://nsis.sourceforge.io/Download) page.
+L'installateur est disponible sur la page [de téléchargement NSIS](https://nsis.sourceforge.io/Download).
 
-If you use the chocolatey package manager, run the following script:
+Si vous utilisez le gestionnaire de paquets chocolatey, exécutez le script suivant :
 
 ```
 choco install nsis
 ```
 
-If you install NSIS manually, you need to add the _Bin_ folder, which contains `makensis.exe`, in your NSIS installation to your path. [Here](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) is a good tutorial on how to add to path on Windows.
+Si vous installez NSIS manuellement, vous devez ajouter le dossier _Bin_ , qui contient `makensis.exe`, dans la variable d'environnement PATH. [Cette page](https://www.architectryan.com/2018/03/17/add-to-the-path-on-windows-10/) est un bon tutoriel sur comment ajouter un dossier dans votre variable d'environnement PATH sur Windows.
 
 ### Linux
 
-The `nsis` package should be available through your distribution's package manager.
+Le paquet `nsis` devrait être disponible via le gestionnaire de paquets de votre distribution.
 
 ### MacOS
 
-NSIS is available to install through homebrew: `brew install nsis`.
+NSIS est disponible via homebrew en utilisant : `brew install nsis`.
 
-## Generating the installer
+## Génération de l'installateur
 
-When a new project is created, Wails generates the NSIS configuration files in `build/windows/installer`. The config data is read from `installer/info.json` and that is configured to use the project's `wails.json` Info section:
+Lorsqu'un nouveau projet est créé, Wails génère les fichiers de configuration NSIS dans `build/windows/installer`. La configuration est lue dans `installer/info.json`, et est configuré pour utiliser la section info du fichier `wails.json` :
 
 ```json
 // ...
@@ -49,10 +49,10 @@ When a new project is created, Wails generates the NSIS configuration files in `
   },
 ```
 
-To generate an installer for your application, use the `-nsis` flag with `wails build`:
+Pour générer l'installateur de votre application, utilisez l'option `-nsis` avec la commande `wails build`:
 
 ```
 wails build -nsis
 ```
 
-The installer will now be available in the `build/bin` directory.
+L'installateur sera ensuite disponible dans le dossier `build/bin`.

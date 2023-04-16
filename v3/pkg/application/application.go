@@ -3,14 +3,19 @@ package application
 import "C"
 import (
 	"log"
+	"net/http"
 	"os"
 	"runtime"
+	"strconv"
 	"sync"
 
-	"github.com/wailsapp/wails/v3/pkg/logger"
-
+	"github.com/wailsapp/wails/v2/pkg/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
+	assetserveroptions "github.com/wailsapp/wails/v2/pkg/options/assetserver"
+
+	wailsruntime "github.com/wailsapp/wails/v3/internal/runtime"
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/logger"
 )
 
 var globalApplication *App
@@ -32,14 +37,50 @@ func New(appOptions Options) *App {
 		systemTrays:               make(map[uint]*SystemTray),
 		log:                       logger.New(appOptions.Logger.CustomLoggers...),
 		contextMenus:              make(map[string]*Menu),
+		pid:                       os.Getpid(),
 	}
+	globalApplication = result
 
 	if !appOptions.Logger.Silent {
 		result.log.AddOutput(&logger.Console{})
 	}
 
-	result.Events = NewCustomEventProcessor(result.dispatchEventToWindows)
-	globalApplication = result
+	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
+
+	opts := assetserveroptions.Options{
+		Assets:     appOptions.Assets.FS,
+		Handler:    appOptions.Assets.Handler,
+		Middleware: assetserveroptions.Middleware(appOptions.Assets.Middleware),
+	}
+
+	// TODO ServingFrom disk?
+	srv, err := assetserver.NewAssetServer("", opts, false, nil, wailsruntime.RuntimeAssetsBundle)
+	if err != nil {
+		result.fatal(err.Error())
+	}
+
+	srv.UseRuntimeHandler(NewMessageProcessor())
+	result.assets = srv
+
+	result.bindings, err = NewBindings(appOptions.Bind)
+	if err != nil {
+		println("Fatal error in application initialisation: ", err.Error())
+		os.Exit(1)
+	}
+
+	result.plugins = NewPluginManager(appOptions.Plugins, srv)
+	err = result.plugins.Init()
+	if err != nil {
+		result.Quit()
+		os.Exit(1)
+	}
+
+	err = result.bindings.AddPlugins(appOptions.Plugins)
+	if err != nil {
+		println("Fatal error in application initialisation: ", err.Error())
+		os.Exit(1)
+	}
+
 	return result
 }
 
@@ -85,9 +126,26 @@ type dragAndDropMessage struct {
 
 var windowDragAndDropBuffer = make(chan *dragAndDropMessage)
 
+var _ webview.Request = &webViewAssetRequest{}
+
+const webViewRequestHeaderWindowId = "x-wails-window-id"
+const webViewRequestHeaderWindowName = "x-wails-window-name"
+
 type webViewAssetRequest struct {
-	windowId uint
-	request  webview.Request
+	webview.Request
+	windowId   uint
+	windowName string
+}
+
+func (r *webViewAssetRequest) Header() (http.Header, error) {
+	h, err := r.Request.Header()
+	if err != nil {
+		return nil, err
+	}
+
+	hh := h.Clone()
+	hh.Set(webViewRequestHeaderWindowId, strconv.FormatUint(uint64(r.windowId), 10))
+	return hh, nil
 }
 
 var webviewRequests = make(chan *webViewAssetRequest)
@@ -114,6 +172,7 @@ type App struct {
 	// Running
 	running  bool
 	bindings *Bindings
+	plugins  *PluginManager
 
 	// platform app
 	impl platformApp
@@ -127,6 +186,12 @@ type App struct {
 
 	contextMenus     map[string]*Menu
 	contextMenusLock sync.Mutex
+
+	assets *assetserver.AssetServer
+
+	// Hooks
+	windowCreatedCallbacks []func(window *WebviewWindow)
+	pid                    int
 }
 
 func (a *App) getSystemTrayID() uint {
@@ -142,6 +207,12 @@ func (a *App) getWindowForID(id uint) *WebviewWindow {
 	return a.windows[id]
 }
 
+func (a *App) deleteWindowByID(id uint) {
+	a.windowsLock.Lock()
+	defer a.windowsLock.Unlock()
+	delete(a.windows, id)
+}
+
 func (a *App) On(eventType events.ApplicationEventType, callback func()) {
 	eventID := uint(eventType)
 	a.applicationEventListenersLock.Lock()
@@ -152,7 +223,11 @@ func (a *App) On(eventType events.ApplicationEventType, callback func()) {
 	}
 }
 func (a *App) NewWebviewWindow() *WebviewWindow {
-	return a.NewWebviewWindowWithOptions(nil)
+	return a.NewWebviewWindowWithOptions(&WebviewWindowOptions{})
+}
+
+func (a *App) GetPID() int {
+	return a.pid
 }
 
 func (a *App) info(message string, args ...any) {
@@ -194,7 +269,6 @@ func (a *App) NewWebviewWindowWithOptions(windowOptions *WebviewWindowOptions) *
 	if windowOptions == nil {
 		windowOptions = WebviewWindowDefaults
 	}
-
 	newWindow := NewWindow(windowOptions)
 	id := newWindow.id
 	if a.windows == nil {
@@ -203,6 +277,11 @@ func (a *App) NewWebviewWindowWithOptions(windowOptions *WebviewWindowOptions) *
 	a.windowsLock.Lock()
 	a.windows[id] = newWindow
 	a.windowsLock.Unlock()
+
+	// Call hooks
+	for _, hook := range a.windowCreatedCallbacks {
+		hook(newWindow)
+	}
 
 	if a.running {
 		newWindow.run()
@@ -243,9 +322,9 @@ func (a *App) Run() error {
 	}()
 	go func() {
 		for {
-			event := <-webviewRequests
-			a.handleWebViewRequest(event)
-			err := event.request.Release()
+			request := <-webviewRequests
+			a.handleWebViewRequest(request)
+			err := request.Release()
 			if err != nil {
 				a.error("Failed to release webview request: %s", err.Error())
 			}
@@ -271,12 +350,6 @@ func (a *App) Run() error {
 		}
 	}()
 
-	var err error
-	a.bindings, err = NewBindings(a.options.Bind)
-	if err != nil {
-		return err
-	}
-
 	// run windows
 	for _, window := range a.windows {
 		go window.run()
@@ -293,7 +366,14 @@ func (a *App) Run() error {
 	// set the application Icon
 	a.impl.setIcon(a.options.Icon)
 
-	return a.impl.run()
+	err := a.impl.run()
+	if err != nil {
+		return err
+	}
+
+	a.plugins.Shutdown()
+
+	return nil
 }
 
 func (a *App) handleApplicationEvent(event uint) {
@@ -334,17 +414,11 @@ func (a *App) handleWindowMessage(event *windowMessage) {
 	window.handleMessage(event.message)
 }
 
-func (a *App) handleWebViewRequest(event *webViewAssetRequest) {
+func (a *App) handleWebViewRequest(request *webViewAssetRequest) {
 	// Get window from window map
-	a.windowsLock.Lock()
-	window, ok := a.windows[event.windowId]
-	a.windowsLock.Unlock()
-	if !ok {
-		log.Printf("WebviewWindow #%d not found", event.windowId)
-		return
-	}
-	// Get callback from window
-	window.handleWebViewRequest(event.request)
+	url, _ := request.URL()
+	a.info("Window: '%s', Request: %s", request.windowName, url)
+	a.assets.ServeWebViewRequest(request)
 }
 
 func (a *App) handleWindowEvent(event *WindowEvent) {
@@ -398,7 +472,9 @@ func (a *App) Quit() {
 		wg.Done()
 	}()
 	wg.Wait()
-	a.impl.destroy()
+	if a.impl != nil {
+		a.impl.destroy()
+	}
 }
 
 func (a *App) SetMenu(menu *Menu) {
@@ -477,9 +553,9 @@ func (a *App) SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialo
 	return result
 }
 
-func (a *App) dispatchEventToWindows(event *CustomEvent) {
+func (a *App) dispatchEventToWindows(event *WailsEvent) {
 	for _, window := range a.windows {
-		window.dispatchCustomEvent(event)
+		window.dispatchWailsEvent(event)
 	}
 }
 
@@ -511,4 +587,19 @@ func (a *App) getContextMenu(name string) (*Menu, bool) {
 	menu, ok := a.contextMenus[name]
 	return menu, ok
 
+}
+
+func (a *App) OnWindowCreation(callback func(window *WebviewWindow)) {
+	a.windowCreatedCallbacks = append(a.windowCreatedCallbacks, callback)
+}
+
+func (a *App) GetWindowByName(name string) *WebviewWindow {
+	a.windowsLock.Lock()
+	defer a.windowsLock.Unlock()
+	for _, window := range a.windows {
+		if window.Name() == name {
+			return window
+		}
+	}
+	return nil
 }

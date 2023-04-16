@@ -1,0 +1,38 @@
+{
+  "version.label": {
+    "message": "v2.4.0",
+    "description": "The label for version v2.4.0"
+  },
+  "sidebar.docs.category.Getting Started": {
+    "message": "시작하기",
+    "description": "The label for category Getting Started in sidebar docs"
+  },
+  "sidebar.docs.category.Reference": {
+    "message": "레퍼런스",
+    "description": "The label for category Reference in sidebar docs"
+  },
+  "sidebar.docs.category.Runtime": {
+    "message": "실행 시간",
+    "description": "The label for category Runtime in sidebar docs"
+  },
+  "sidebar.docs.category.Community": {
+    "message": "커뮤니티",
+    "description": "The label for category Community in sidebar docs"
+  },
+  "sidebar.docs.category.Showcase": {
+    "message": "쇼케이스",
+    "description": "The label for category Showcase in sidebar docs"
+  },
+  "sidebar.docs.category.Guides": {
+    "message": "가이드",
+    "description": "The label for category Guides in sidebar docs"
+  },
+  "sidebar.docs.category.Tutorials": {
+    "message": "튜토리얼",
+    "description": "The label for category Tutorials in sidebar docs"
+  },
+  "sidebar.docs.link.Contributing": {
+    "message": "기여",
+    "description": "The label for link Contributing in sidebar docs, linking to /community-guide#ways-of-contributing"
+  }
+}

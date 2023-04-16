@@ -71,6 +71,7 @@ WailsではGitHubでホストされているリモートテンプレートをサ
 | -windowsconsole      | Windiws向けビルドでコンソールウィンドウを維持する                                                                                                     |                                                                                                                                                     |
 | -obfuscate           | [garble](https://github.com/burrowers/garble)を使用してアプリケーションを難読化する                                                                 | false                                                                                                                                               |
 | -garbleargs          | garbleへ渡す引数                                                                                                                      | `-literals -tiny -seed=random`                                                                                                                      |
+| -nosyncgomod         | go.modとWailsのバージョンを同期させない                                                                                                        | false                                                                                                                                               |
 
 `webview2`フラグの詳細については、[Windows](../guides/windows.mdx)ガイドをご覧ください。
 
@@ -80,8 +81,10 @@ WailsではGitHubでホストされているリモートテンプレートをサ
 
 `wails build -clean -o myproject.exe`
 
-:::Info
-Macでは、アプリケーションは`Info.dev.plist`ではなく`Info.plist`でバンドルされます。
+:::info
+
+Macの場合、`Info.dev.plist`ではなく`Info.plist`がアプリケーションにバンドルされます。
+
 :::
 
 :::info AppleシリコンでのUPX
@@ -184,6 +187,9 @@ Your system is ready for Wails development!
 | -save                        | 指定された`assetdir`、`reloaddirs`、`wailsjsdir`、`debounce`、`devserver`、`frontenddevserverurl`フラグの値を、`wails.json`へ保存し、次回以降のデフォルト値にする |                       |
 | -race                        | Goのrace detectorを使用してビルドする                                                                                                    | false                 |
 | -s                           | フロントエンドのビルドをスキップ                                                                                                              | false                 |
+| -nosyncgomod                 | go.modとWailsのバージョンを同期させない                                                                                                     | false                 |
+
+
 
 例:
 

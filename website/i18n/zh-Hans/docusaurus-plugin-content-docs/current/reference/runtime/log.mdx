@@ -2,7 +2,7 @@
 sidebar_position: 3
 ---
 
-# 日志
+# Log  日志
 
 Wails 运行时提供了一种可以从 Go 或 JavaScript 调用日志记录的机制。 像大多数记录器一样，有许多日志级别：
 
@@ -15,91 +15,91 @@ Wails 运行时提供了一种可以从 Go 或 JavaScript 调用日志记录的�
 
 记录器将输出当前或更高日志级别的任何日志消息。 示例：`Debug`日志级别将输出除`Trace`消息之外的所有消息。
 
-### Print 日志
+### LogPrint  Print 日志
 
 将给定的消息记录为原始消息。
 
 Go: `LogPrint(ctx context.Context, message string)`<br/> JS: `LogPrint(message: string)`
 
-### 格式化 Print 日志
+### LogPrintf  格式化 Print 日志
 
 将给定的消息记录为原始消息。
 
 Go: `LogPrintf(ctx context.Context, format string, args ...interface{})`<br/>
 
-### Trace 日志
+### LogTrace  Trace 日志
 
 在 `Trace` 日志级别记录给定的消息。
 
 Go: `LogTrace(ctx context.Context, message string)`<br/> JS: `LogTrace(message: string)`
 
-### 格式化 Trace 日志
+### LogTracef  格式化 Trace 日志
 
 在 `Trace` 日志级别记录给定的消息。
 
 Go: `LogTracef(ctx context.Context, format string, args ...interface{})`<br/>
 
-### Debug 日志
+### LogDebug  Debug 日志
 
 在 `Debug` 日志级别记录给定的消息。
 
 Go: `LogDebug(ctx context.Context, message string)`<br/> JS: `LogDebug(message: string)`
 
-### 格式化 Debug 日志
+### LogDebugf  格式化 Debug 日志
 
 在 `Debug` 日志级别记录给定的消息。
 
 Go: `LogDebugf(ctx context.Context, format string, args ...interface{})`<br/>
 
-### Info 日志
+### LogInfo  Info 日志
 
 在`Info`日志级别记录给定的消息。
 
 Go: `LogInfo(ctx context.Context, message string)`<br/> JS: `LogInfo(message: string)`
 
-### 格式化 Info 日志
+### LogInfof  格式化 Info 日志
 
 在`Info`日志级别记录给定的消息。
 
 Go: `LogInfof(ctx context.Context, format string, args ...interface{})`<br/>
 
-### Warning 日志
+### LogWarning  Warning 日志
 
 在 `Warning` 日志级别记录给定的消息。
 
 Go: `LogWarning(ctx context.Context, message string)`<br/> JS: `LogWarning(message: string)`
 
-### 格式化 Warning 日志
+### LogWarningf  格式化 Warning 日志
 
 在 `Warning` 日志级别记录给定的消息。
 
 Go: `LogWarningf(ctx context.Context, format string, args ...interface{})`<br/>
 
-### Error 日志
+### LogError  Error 日志
 
 在 `Error` 日志级别记录给定的消息。
 
 Go: `LogError(ctx context.Context, message string)`<br/> JS: `LogError(message: string)`
 
-### 格式化 Error 日志
+### LogErrorf  格式化 Error 日志
 
 在 `Error` 日志级别记录给定的消息。
 
 Go: `LogErrorf(ctx context.Context, format string, args ...interface{})`<br/>
 
-### Fatal 日志
+### LogFatal  Fatal 日志
 
 在 `Fatal` 日志级别记录给定的消息。
 
 Go: `LogFatal(ctx context.Context, message string)`<br/> JS: `LogFatal(message: string)`
 
-### 格式化 Fatal 日志
+### LogFatalf  格式化 Fatal 日志
 
 在 `Fatal` 日志级别记录给定的消息。
 
 Go: `LogFatalf(ctx context.Context, format string, args ...interface{})`<br/>
 
-### 设置日志级别
+### LogSetLogLevel  设置日志级别
 
 设置日志级别。 在 JavaScript 中，该数字与以下日志级别有关：
 

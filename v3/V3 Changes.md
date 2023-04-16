@@ -18,15 +18,15 @@ Window events are events that are emitted by a window. These events include nati
 
 ### Custom Events
 
-Events that the user defines are called `CustomEvents`. This is to differentiate them from the `Event` object that is used to communicate with the browser. CustomEvents are now objects that encapsulate all the details of an event. This includes the event name, the data, and the source of the event.
+Events that the user defines are called `WailsEvents`. This is to differentiate them from the `Event` object that is used to communicate with the browser. WailsEvents are now objects that encapsulate all the details of an event. This includes the event name, the data, and the source of the event.
 
-The data associated with a CustomEvent is now a single value. If multiple values are required, then a struct can be used.
+The data associated with a WailsEvent is now a single value. If multiple values are required, then a struct can be used.
 
 ### Event callbacks and `Emit` function signature
 
-The signatures events callbacks (as used by `On`, `Once` & `OnMultiple`) have changed. In v2, the callback function received optional data. In v3, the callback function receives a `CustomEvent` object that contains all data related to the event.
+The signatures events callbacks (as used by `On`, `Once` & `OnMultiple`) have changed. In v2, the callback function received optional data. In v3, the callback function receives a `WailsEvent` object that contains all data related to the event.
 
-Similarly, the `Emit` function has changed. Instead of taking a name and optional data, it now takes a single `CustomEvent` object that it will emit.
+Similarly, the `Emit` function has changed. Instead of taking a name and optional data, it now takes a single `WailsEvent` object that it will emit.
 
 ### `Off` and `OffAll`
 
@@ -108,3 +108,75 @@ This attribute specifies which javascript event should trigger the action. The d
 <button data-wml-event="hover-box" data-wml-trigger="mouseover">Hover over me!</button>
 ```
 
+## Plugins
+
+Plugins are a way to extend the functionality of your Wails application.
+
+### Creating a plugin
+
+Plugins are standard Go structure that adhere to the following interface:
+
+```go
+type Plugin interface {
+    Name() string
+    Init(*application.App) error
+    Shutdown() 
+    CallableByJS() []string
+    InjectJS() string
+}
+```
+
+The `Name()` method returns the name of the plugin. This is used for logging purposes.
+
+The `Init(*application.App) error` method is called when the plugin is loaded. The `*application.App`
+parameter is the application that the plugin is being loaded into. Any errors will prevent
+the application from starting.
+
+The `Shutdown()` method is called when the application is shutting down.
+
+The `CallableByJS()` method returns a list of exported functions that can be called from
+the frontend. These method names must exactly match the names of the methods exported
+by the plugin.
+
+The `InjectJS()` method returns JavaScript that should be injected into all windows as they are created. This is useful for adding custom JavaScript functions that complement the plugin.
+
+### Tips
+
+#### Enums
+
+In Go, enums are often defined as a type and a set of constants. For example:
+
+```go
+type MyEnum int
+
+const (
+    MyEnumOne MyEnum = iota
+    MyEnumTwo
+    MyEnumThree
+)
+```
+
+Due to incompatibility between Go and JavaScript, custom types cannot be used in this way. The best strategy is to use a type alias for float64:
+
+```go
+type MyEnum = float64
+
+const (
+    MyEnumOne MyEnum = iota
+    MyEnumTwo
+    MyEnumThree
+)
+```
+
+In Javascript, you can then use the following:
+
+```js
+const MyEnum = {
+    MyEnumOne: 0,
+    MyEnumTwo: 1,
+    MyEnumThree: 2
+}
+```
+
+- Why use `float64`? Can't we use `int`? 
+  - Because JavaScript doesn't have a concept of `int`. Everything is a `number`, which translates to `float64` in Go. There are also restrictions on casting types in Go's reflection package, which means using `int` doesn't work. 

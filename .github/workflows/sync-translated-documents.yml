@@ -1,4 +1,4 @@
-name: Sync Translated Documents
+name: Sync Translations
 
 on:
   workflow_dispatch:
@@ -10,22 +10,30 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set node
+      - name: Setup Nodejs
         uses: actions/setup-node@v2
         with:
-          node-version: 16.x
+          node-version: 18.x
+
+      - name: Install Task
+        uses: arduino/setup-task@v1
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Sync Translated Documents
-        run: cd scripts && chmod 755 ./sync-translated-documents.sh && ./sync-translated-documents.sh
         env:
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+        working-directory: ./website
+        run: task crowdin:pull
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
-          commit-message: "docs: sync documents"
-          title: "docs: sync documents"
+          commit-message: "docs: sync translations"
+          title: "docs: sync translations"
           body: "- [x] Sync translated documents"
-          branch: feature/documents
+          branch: chore/sync-translations
+          labels: translation
           delete-branch: true
           draft: true

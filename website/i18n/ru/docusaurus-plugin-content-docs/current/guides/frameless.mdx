@@ -1,8 +1,8 @@
-# Frameless Applications
+# Безрамочные приложения
 
-Wails supports application that have no frames. This can be achieved by using the [frameless](../reference/options.mdx#frameless) field in [Application Options](../reference/options.mdx#application-options).
+Wails поддерживает приложения, не имеющие рамок. Этого можно добиться, используя поле [frameless](../reference/options.mdx#frameless) в [опциях приложения](../reference/options.mdx#application-options).
 
-Wails offers a simple solution for dragging the window: Any HTML element that has the CSS style `--wails-draggable:drag` will act as a "drag handle". This property applies to all child elements. If you need to indicate that a nested element should not drag, then use the attribute '--wails-draggable:no-drag' on that element.
+Wails предоставляет легкое решение для перемещения окна: любой HTML элемент имеющий стиль `--wails-draggable:drag` будет работать как "ручка для перетаскивания". Это свойство применяется для всех дочерних элементов. Если вам необходимо указать, что вложенный элемент не должен перестаскивать окно, то используйте атрибут '--wails-draggable:no-drag' на этом элементе.
 
 ```html
 <html>
@@ -23,7 +23,7 @@ Wails offers a simple solution for dragging the window: Any HTML element that ha
 </html>
 ```
 
-For some projects, using a CSS variable may not be possible due to dynamic styling. In this case, you can use the `CSSDragProperty` and `CSSDragValue` application options to define a property and value that will be used to indicate draggable regions:
+Для некоторых проектов использование CSS переменной может оказаться невозможным из-за динамических стилей. В этом случае вы можете использовать параметры `CSSDragProperty` и `CSSDragValue` в опциях приожения для определения свойства и значения, которые будут использоваться для указания перетаскиваемых областей:
 
 ```go title=main.go
 package main
@@ -40,10 +40,10 @@ import (
 var assets embed.FS
 
 func main() {
-    // Create an instance of the app structure
+    // Создаем экземляр структуры приложения
     app := NewApp()
 
-    // Create application with options
+    // Создаем приложение с опциями
     err := wails.Run(&options.App{
         Title:  "alwaysontop",
         Width:  1024,
@@ -82,6 +82,6 @@ func main() {
 
 :::info Fullscreen
 
-If you allow your application to go fullscreen, this drag functionality will be disabled.
+Если вы разрешите приложению перейти в полноэкранный режим, функция перетаскивания будет отключена.
 
 :::

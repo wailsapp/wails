@@ -25,6 +25,11 @@ func main() {
 	generate.NewSubCommandFunction("icons", "Generate icons", commands.GenerateIcons)
 	generate.NewSubCommandFunction("syso", "Generate Windows .syso file", commands.GenerateSyso)
 	generate.NewSubCommandFunction("bindings", "Generate bindings + models", commands.GenerateBindings)
+	plugin := app.NewSubCommand("plugin", "Plugin tools")
+	//plugin.NewSubCommandFunction("list", "List plugins", commands.PluginList)
+	plugin.NewSubCommandFunction("init", "Initialise a new plugin", commands.PluginInit)
+	//plugin.NewSubCommandFunction("add", "Add a plugin", commands.PluginAdd)
+
 	err := app.Run()
 	if err != nil {
 		pterm.Error.Println(err)

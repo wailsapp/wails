@@ -20,13 +20,13 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+		Assets: application.AssetOptions{
+			FS: assets,
+		},
 	})
 
 	window := app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title: "Drag-n-drop Demo",
-		Assets: application.AssetOptions{
-			FS: assets,
-		},
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
@@ -37,7 +37,7 @@ func main() {
 
 	window.On(events.FilesDropped, func(ctx *application.WindowEventContext) {
 		files := ctx.DroppedFiles()
-		app.Events.Emit(&application.CustomEvent{
+		app.Events.Emit(&application.WailsEvent{
 			Name: "files",
 			Data: files,
 		})

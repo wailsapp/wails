@@ -8,7 +8,7 @@ func (m *MessageProcessor) processEventsMethod(method string, rw http.ResponseWr
 
 	switch method {
 	case "Emit":
-		var event CustomEvent
+		var event WailsEvent
 		err := params.ToStruct(&event)
 		if err != nil {
 			m.httpError(rw, "Error parsing event: %s", err)

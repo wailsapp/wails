@@ -2,10 +2,11 @@ package application
 
 import (
 	"fmt"
-	"github.com/samber/lo"
 	"reflect"
 	"runtime"
 	"strings"
+
+	"github.com/samber/lo"
 )
 
 type CallOptions struct {
@@ -15,18 +16,30 @@ type CallOptions struct {
 	Args        []any  `json:"args"`
 }
 
+type PluginCallOptions struct {
+	Name string `json:"name"`
+	Args []any  `json:"args"`
+}
+
+var reservedPluginMethods = []string{
+	"Name",
+	"Init",
+	"Shutdown",
+	"Exported",
+}
+
 // Parameter defines a Go method parameter
 type Parameter struct {
 	Name        string `json:"name,omitempty"`
 	TypeName    string `json:"type"`
-	reflectType reflect.Type
+	ReflectType reflect.Type
 }
 
 func newParameter(Name string, Type reflect.Type) *Parameter {
 	return &Parameter{
 		Name:        Name,
 		TypeName:    Type.String(),
-		reflectType: Type,
+		ReflectType: Type,
 	}
 }
 
@@ -91,7 +104,42 @@ func (b *Bindings) Add(structPtr interface{}) error {
 			b.boundMethods[packageName][structName] = make(map[string]*BoundMethod)
 		}
 		b.boundMethods[packageName][structName][methodName] = method
-		//b.db.AddMethod(packageName, structName, methodName, method)
+	}
+	return nil
+}
+
+func (b *Bindings) AddPlugins(plugins map[string]Plugin) error {
+	for pluginID, plugin := range plugins {
+		methods, err := b.getMethods(plugin)
+		if err != nil {
+			return fmt.Errorf("cannot add plugin '%s' to app: %s", pluginID, err.Error())
+		}
+
+		exportedMethods := plugin.CallableByJS()
+
+		for _, method := range methods {
+			// Do not expose reserved methods
+			if lo.Contains(reservedPluginMethods, method.Name) {
+				continue
+			}
+			// Do not expose methods that are not in the exported list
+			if !lo.Contains(exportedMethods, method.Name) {
+				continue
+			}
+			packageName := "wails-plugins"
+			structName := pluginID
+			methodName := method.Name
+
+			// Add it as a regular method
+			if _, ok := b.boundMethods[packageName]; !ok {
+				b.boundMethods[packageName] = make(map[string]map[string]*BoundMethod)
+			}
+			if _, ok := b.boundMethods[packageName][structName]; !ok {
+				b.boundMethods[packageName][structName] = make(map[string]*BoundMethod)
+			}
+			b.boundMethods[packageName][structName][methodName] = method
+			globalApplication.info("Added %s plugin method: %s", structName, methodName)
+		}
 	}
 	return nil
 }
@@ -127,7 +175,7 @@ func (b *Bindings) getMethods(value interface{}) ([]*BoundMethod, error) {
 
 		if isFunction(value) {
 			name := runtime.FuncForPC(reflect.ValueOf(value).Pointer()).Name()
-			return nil, fmt.Errorf("%s is a function, not a pointer to a struct. Wails v2 has deprecated the binding of functions. Please wrap your functions up in a struct and bind a pointer to that struct.", name)
+			return nil, fmt.Errorf("%s is a function, not a pointer to a struct. Wails v2 has deprecated the binding of functions. Please wrap your functions up in a struct and bind a pointer to that struct", name)
 		}
 
 		return nil, fmt.Errorf("not a pointer to a struct")
@@ -192,18 +240,30 @@ func (b *BoundMethod) Call(args []interface{}) (interface{}, error) {
 	// Check inputs
 	expectedInputLength := len(b.Inputs)
 	actualInputLength := len(args)
-	if expectedInputLength != actualInputLength {
-		return nil, fmt.Errorf("%s takes %d inputs. Received %d", b.Name, expectedInputLength, actualInputLength)
+
+	// If the method is variadic, we need to check the minimum number of inputs
+	if b.Method.Type().IsVariadic() {
+		if actualInputLength < expectedInputLength-1 {
+			return nil, fmt.Errorf("%s takes at least %d inputs. Received %d", b.Name, expectedInputLength, actualInputLength)
+		}
+	} else {
+		if expectedInputLength != actualInputLength {
+			return nil, fmt.Errorf("%s takes %d inputs. Received %d", b.Name, expectedInputLength, actualInputLength)
+		}
 	}
 
 	/** Convert inputs to reflect values **/
 
 	// Create slice for the input arguments to the method call
-	callArgs := make([]reflect.Value, expectedInputLength)
+	callArgs := make([]reflect.Value, actualInputLength)
 
 	// Iterate over given arguments
 	for index, arg := range args {
 		// Save the converted argument
+		if arg == nil {
+			callArgs[index] = reflect.Zero(b.Inputs[index].ReflectType)
+			continue
+		}
 		callArgs[index] = reflect.ValueOf(arg)
 	}
 

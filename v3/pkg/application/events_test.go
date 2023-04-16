@@ -10,33 +10,33 @@ import (
 )
 
 type mockNotifier struct {
-	Events []*application.CustomEvent
+	Events []*application.WailsEvent
 }
 
-func (m *mockNotifier) dispatchEventToWindows(event *application.CustomEvent) {
+func (m *mockNotifier) dispatchEventToWindows(event *application.WailsEvent) {
 	m.Events = append(m.Events, event)
 }
 
 func (m *mockNotifier) Reset() {
-	m.Events = []*application.CustomEvent{}
+	m.Events = []*application.WailsEvent{}
 }
 
 func Test_EventsOn(t *testing.T) {
 	i := is.New(t)
 	notifier := &mockNotifier{}
-	eventProcessor := application.NewCustomEventProcessor(notifier.dispatchEventToWindows)
+	eventProcessor := application.NewWailsEventProcessor(notifier.dispatchEventToWindows)
 
 	// Test On
 	eventName := "test"
 	counter := 0
 	var wg sync.WaitGroup
 	wg.Add(1)
-	unregisterFn := eventProcessor.On(eventName, func(event *application.CustomEvent) {
+	unregisterFn := eventProcessor.On(eventName, func(event *application.WailsEvent) {
 		// This is called in a goroutine
 		counter++
 		wg.Done()
 	})
-	eventProcessor.Emit(&application.CustomEvent{
+	eventProcessor.Emit(&application.WailsEvent{
 		Name: "test",
 		Data: "test payload",
 	})
@@ -47,7 +47,7 @@ func Test_EventsOn(t *testing.T) {
 	notifier.Reset()
 	unregisterFn()
 	counter = 0
-	eventProcessor.Emit(&application.CustomEvent{
+	eventProcessor.Emit(&application.WailsEvent{
 		Name: "test",
 		Data: "test payload",
 	})
@@ -58,23 +58,23 @@ func Test_EventsOn(t *testing.T) {
 func Test_EventsOnce(t *testing.T) {
 	i := is.New(t)
 	notifier := &mockNotifier{}
-	eventProcessor := application.NewCustomEventProcessor(notifier.dispatchEventToWindows)
+	eventProcessor := application.NewWailsEventProcessor(notifier.dispatchEventToWindows)
 
 	// Test On
 	eventName := "test"
 	counter := 0
 	var wg sync.WaitGroup
 	wg.Add(1)
-	unregisterFn := eventProcessor.Once(eventName, func(event *application.CustomEvent) {
+	unregisterFn := eventProcessor.Once(eventName, func(event *application.WailsEvent) {
 		// This is called in a goroutine
 		counter++
 		wg.Done()
 	})
-	eventProcessor.Emit(&application.CustomEvent{
+	eventProcessor.Emit(&application.WailsEvent{
 		Name: "test",
 		Data: "test payload",
 	})
-	eventProcessor.Emit(&application.CustomEvent{
+	eventProcessor.Emit(&application.WailsEvent{
 		Name: "test",
 		Data: "test payload",
 	})
@@ -85,7 +85,7 @@ func Test_EventsOnce(t *testing.T) {
 	notifier.Reset()
 	unregisterFn()
 	counter = 0
-	eventProcessor.Emit(&application.CustomEvent{
+	eventProcessor.Emit(&application.WailsEvent{
 		Name: "test",
 		Data: "test payload",
 	})
@@ -95,27 +95,27 @@ func Test_EventsOnce(t *testing.T) {
 func Test_EventsOnMultiple(t *testing.T) {
 	i := is.New(t)
 	notifier := &mockNotifier{}
-	eventProcessor := application.NewCustomEventProcessor(notifier.dispatchEventToWindows)
+	eventProcessor := application.NewWailsEventProcessor(notifier.dispatchEventToWindows)
 
 	// Test On
 	eventName := "test"
 	counter := 0
 	var wg sync.WaitGroup
 	wg.Add(2)
-	unregisterFn := eventProcessor.OnMultiple(eventName, func(event *application.CustomEvent) {
+	unregisterFn := eventProcessor.OnMultiple(eventName, func(event *application.WailsEvent) {
 		// This is called in a goroutine
 		counter++
 		wg.Done()
 	}, 2)
-	eventProcessor.Emit(&application.CustomEvent{
+	eventProcessor.Emit(&application.WailsEvent{
 		Name: "test",
 		Data: "test payload",
 	})
-	eventProcessor.Emit(&application.CustomEvent{
+	eventProcessor.Emit(&application.WailsEvent{
 		Name: "test",
 		Data: "test payload",
 	})
-	eventProcessor.Emit(&application.CustomEvent{
+	eventProcessor.Emit(&application.WailsEvent{
 		Name: "test",
 		Data: "test payload",
 	})
@@ -126,7 +126,7 @@ func Test_EventsOnMultiple(t *testing.T) {
 	notifier.Reset()
 	unregisterFn()
 	counter = 0
-	eventProcessor.Emit(&application.CustomEvent{
+	eventProcessor.Emit(&application.WailsEvent{
 		Name: "test",
 		Data: "test payload",
 	})

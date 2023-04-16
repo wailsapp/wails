@@ -1,36 +1,42 @@
-# Mac App Store Guide
+# Guide pour Mac App Store
 
-This page gives a brief overview of how to submit your Wails App to the Mac App Store.
+Cette page donne un bref aperçu de la façon de soumettre votre application Wails au Mac App Store.
 
-## Prerequisites
+## Prérequis
 
-- You will need to have an Apple Developer account. Please find more information on the [Apple Developer Program](https://developer.apple.com/support/compare-memberships/) site
-- You will need to have your Certificates, Identifiers, and App created on the developer portal. More on this below
-- Xcode command line tools will need to be installed on your local machine
+- Vous devrez avoir un compte développeur Apple. Veuillez trouver plus d'informations sur le site [Apple Developer Program](https://developer.apple.com/support/compare-memberships/)
+- Vous aurez besoin que vos certificats, identifiants et applications soient créés sur le portail développeur. Plus d'infos sur ce sujet ci-dessous
+- L'utilitaire Xcode devront être installés sur votre machine locale pour être utilisé en ligne de commandes
 
-#### Create Certificates and Identifiers
+#### Créer des certificats et des identifiants
 
-1. Go to your [Apple Developer Account](https://developer.apple.com/account/)
-2. Under `Certificates, Identifiers & Profiles`, click `Identifiers` and Register a New App ID. Use the format (com.example.app)
-3. Under the same page click `Certificates` and generate new Certificates for Mac App Store Distribution.  Download them and import the certificates into Keychain on your local machine.
+1. Allez sur votre [Compte Développeur Apple](https://developer.apple.com/account/)
+2. Sous `Certificats, Identificateurs & Profils`, cliquez sur `Identifiants` et Enregistrez un nouvel identifiant d'application. Utiliser le format (com.example.app)
+3. Sous la même page, cliquez sur `Certificats` et générez de nouveaux certificats pour la distribution de l'App Store Mac.  Téléchargez-les et importez les certificats dans votre trousseau sur votre machine locale.
 
-#### Create App Submission
+#### Créer une soumission d'application
 
-1. Go to the [App Store Connect Site](https://appstoreconnect.apple.com/apps)
-2. Register a new application and link the bundle ID that you created in the previous step
-3. Populate your app with the correct screen shots, descriptions, etc. as required by Apple
-4. Create a new version of your app
+1. Allez sur le [site de connexion de l'App Store](https://appstoreconnect.apple.com/apps)
+2. Enregistrez une nouvelle application et liez l'ID du lot que vous avez créé à l'étape précédente
+3. Remplissez votre application avec les bonnes captures d'écran, descriptions, etc. selon les besoins d'Apple
+4. Créer une nouvelle version de votre application
 
+#### Create Provisioning Profile
+1. Go to the [Apple Developer Profiles](https://developer.apple.com/account/resources/profiles/list) page
+2. Add a new provisioning profile for Mac App Store Distribution
+3. Set the Profile Type as Mac and select the App ID for the application created above
+4. Select the Mac App Distribution certificate
+5. Name the Provisioning Profile embedded and download the created profile.
 
-## Mac App Store Process
+## Processus Mac App Store
 
-#### Enable Apple's App Sandbox
+#### Activation du Sandbox Apple
 
-Apps submitted to the Mac App Store must run under Apple's [App Sandbox](https://developer.apple.com/app-sandboxing/). You must create an `entitlements.plist` file for this to work. The recommendation is to create this file under this path `{PROJECT_DIR}/build/darwin/entitlements.plist`.
+Les applications soumises au Mac App Store doivent tourner dans la [Sandbox](https://developer.apple.com/app-sandboxing/) Apple. Vous devez créer un fichier `entitlements.plist` pour que cela fonctionne. La recommandation est de créer ce fichier sous ce chemin `{PROJECT_DIR}/build/darwin/entitlements.plist`.
 
-**Example Entitlements File**
+**Example de fichier Entitlements**
 
-This is an example entitlements file from the [RiftShare](https://github.com/achhabra2/riftshare) app. For reference please put in the entitlements your app requires. Refer to [this site](https://developer.apple.com/documentation/bundleresources/entitlements) for more information.
+Ceci est un exemple du fichier entitlements de l'application [RiftShare](https://github.com/achhabra2/riftshare). Pour référence, veuillez mettre dans les droits requis par votre application. Reportez-vous à [ce site](https://developer.apple.com/documentation/bundleresources/entitlements) pour plus d'informations. You will need to replace the Team ID and Application Name with the ones you registered above.
 
 ```xml title="entitlements.plist"
 <?xml version="1.0" encoding="UTF-8"?>
@@ -47,15 +53,21 @@ This is an example entitlements file from the [RiftShare](https://github.com/ach
     <true/>
     <key>com.apple.security.files.downloads.read-write</key>
     <true/>
+    <key>com.apple.application-identifier</key>
+    <string>TEAM_ID.APP_NAME</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>TEAM_ID</string>
 </dict>
 </plist>
 ```
 
-#### Build and Sign the App Package
+**Add the Embedded Provisioning Profile** The Provisioning Profile created above needs to be added to the root of the applicaton. It needs to be named embedded.provisionprofile.
 
-The following is an example script for building and signing your app for Mac App Store submission. It assumes you are running the script from your root project directory.
+#### Construire et signer le package de l'application
 
-Note the certificates for signing the app and signing the installer are different. Please make sure both are imported into Keychain. Find the strings in Keychain and insert them below. Populate your certificate names, and app name below. Running the following script will generate a signed `app.pkg` file in the root directory of your app.
+Ce qui suit est un exemple de script pour construire et signer votre application pour la soumission de l'App Store Mac. Il suppose que vous exécutez le script depuis la racine de votre projet.
+
+Notez que les certificats pour signer l'application et l'installateur sont différents. Veuillez vous assurer que les deux sont importés dans votre trousseau. Trouvez les chaînes de caractères dans Trousseau et insérez-les ci-dessous. Remplissez le nom de votre certificat et le nom de l'application ci-dessous. Exécuter le script suivant générera un fichier `app.pkg` signé à la racine de votre application.
 
 ```bash title="macappstore-build.sh"
 #!/bin/bash
@@ -66,18 +78,20 @@ APP_NAME="YourApp"
 
 wails build -platform darwin/universal -clean
 
+cp ./embedded.provisionprofile "./build/bin/$APP_NAME.app/Contents"
+
 codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements ./build/darwin/entitlements.plist ./build/bin/$APP_NAME.app
 
 productbuild --sign "$PKG_CERTIFICATE" --component ./build/bin/$APP_NAME.app /Applications ./$APP_NAME.pkg
 ```
 
-#### Upload App Bundle
+#### Télécharger l'application
 
-You will need to upload the generated package file and associate it to your Application before you will be able to submit it for review.
+Vous devrez télécharger le fichier de package généré et l'associer à votre application avant de pouvoir le soumettre pour vérification.
 
-1. Download the [Transporter App](https://apps.apple.com/us/app/transporter/id1450874784) from the Mac App Store
-2. Open it and sign in with your Apple ID
-3. Click the + sign and select the `APP_NAME.pkg` file that you generated in the previous step. Upload it
-4. Go back to the [App Store Connect](https://appstoreconnect.apple.com/apps) site and navigate back into your app submission. Select the version that you are ready to make available on the App Store. Under `Build` select the package that you uploaded via Transporter.
+1. Téléchargez l' [App Transporter](https://apps.apple.com/us/app/transporter/id1450874784) depuis le Mac App Store
+2. Ouvrez-le et connectez-vous avec votre identifiant Apple
+3. Cliquez sur le signe + et sélectionnez le fichier `APP_NAME.pkg` que vous avez généré à l'étape précédente. Télécharger le
+4. Retournez sur le site [App Store Connect](https://appstoreconnect.apple.com/apps) et retournez dans la soumission de votre application. Sélectionnez la version que vous êtes prêt à mettre à disposition sur l'App Store. Sous `Build` sélectionnez le package que vous avez téléchargé via Transporter.
 
-That's it! You can now use the site to submit your App for review. After a few business days if all goes well you should see your App live on the Mac App Store. 
+C'est terminé ! Vous pouvez maintenant utiliser le site pour soumettre votre application pour vérification. Après quelques jours ouvrables si tout se passe bien, vous devriez voir votre application en direct sur le Mac App Store. 

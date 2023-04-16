@@ -21,6 +21,12 @@
 3. Appleの要求する正規のスクリーンショットや説明文などを、アプリに追加します。
 4. アプリの新しいバージョンを作成します。
 
+#### プロビジョニングプロファイルの作成
+1. [Apple Developerプロフィール](https://developer.apple.com/account/resources/profiles/list)ページへアクセスします。
+2. Mac App Storeへの配布用に、新しいプロビジョニングプロファイルを追加します。
+3. プロファイルタイプをMacに設定し、先ほど作成したアプリケーションのApp IDを選択します。
+4. Mac App Distribution証明書を選択します。
+5. 埋め込みプロビジョニングプロファイルに名前をつけ、作成されたプロファイルをダウンロードします。
 
 ## Mac App Storeへの公開手順
 
@@ -30,7 +36,7 @@ Mac App Storeへ提出されるアプリは、Appleの[App Sandbox](https://deve
 
 **entitlementsファイルの例**
 
-ここでは、[RiftShare](https://github.com/achhabra2/riftshare)というアプリのentitlementsファイルを例として示します。 参考として、アプリが必要とする権限を入力してください。 詳しくは、[こちらのサイト](https://developer.apple.com/documentation/bundleresources/entitlements)をご覧ください。
+ここでは、[RiftShare](https://github.com/achhabra2/riftshare)というアプリのentitlementsファイルを例として示します。 参考として、アプリが必要とする権限を入力してください。 詳しくは、[こちらのサイト](https://developer.apple.com/documentation/bundleresources/entitlements)をご覧ください。 チーム ID とアプリケーション名を上記で登録したものに置き換える必要があります。
 
 ```xml title="entitlements.plist"
 <?xml version="1.0" encoding="UTF-8"?>
@@ -47,9 +53,15 @@ Mac App Storeへ提出されるアプリは、Appleの[App Sandbox](https://deve
     <true/>
     <key>com.apple.security.files.downloads.read-write</key>
     <true/>
+    <key>com.apple.application-identifier</key>
+    <string>TEAM_ID.APP_NAME</string>
+    <key>com.apple.developer.team-identifier</key>
+    <string>TEAM_ID</string>
 </dict>
 </plist>
 ```
+
+**組み込みプロビジョニング プロファイルの追加** 上記で作成したプロビジョニング プロファイルは、アプリケーションのルートに追加する必要があります。 embedded.provisionprofile という名前にする必要があります。
 
 #### アプリパッケージのビルドと署名
 
@@ -65,6 +77,8 @@ PKG_CERTIFICATE="3rd Party Mac Developer Installer: YOUR NAME (CODE)"
 APP_NAME="YourApp"
 
 wails build -platform darwin/universal -clean
+
+cp ./embedded.provisionprofile "./build/bin/$APP_NAME.app/Contents"
 
 codesign --timestamp --options=runtime -s "$APP_CERTIFICATE" -v --entitlements ./build/darwin/entitlements.plist ./build/bin/$APP_NAME.app
 

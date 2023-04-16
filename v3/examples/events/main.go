@@ -21,16 +21,19 @@ func main() {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+		Assets: application.AssetOptions{
+			FS: assets,
+		},
 	})
 
-	app.Events.On("myevent", func(e *application.CustomEvent) {
-		log.Printf("[Go] CustomEvent received: %+v\n", e)
+	app.Events.On("myevent", func(e *application.WailsEvent) {
+		log.Printf("[Go] WailsEvent received: %+v\n", e)
 	})
 
 	app.On(events.Mac.ApplicationDidFinishLaunching, func() {
 		for {
 			log.Println("Sending event")
-			app.Events.Emit(&application.CustomEvent{
+			app.Events.Emit(&application.WailsEvent{
 				Name: "myevent",
 				Data: "hello",
 			})
@@ -40,9 +43,6 @@ func main() {
 
 	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title: "Events Demo",
-		Assets: application.AssetOptions{
-			FS: assets,
-		},
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
@@ -51,9 +51,6 @@ func main() {
 	})
 	app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
 		Title: "Events Demo",
-		Assets: application.AssetOptions{
-			FS: assets,
-		},
 		Mac: application.MacWindow{
 			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInsetUnified,
