@@ -73,11 +73,11 @@ func main() {
                 LightModeTitleText: windows.RGB(20, 20, 20),
                 LightModeBorder:    windows.RGB(200, 200, 200),
             },
-            // 可自定义的用户消息
+            // User messages that can be customised
             Messages *windows.Messages
-            // 当 Windows 进入低电量模式时调用 OnSuspend
+            // OnSuspend is called when Windows enters low power mode
             OnSuspend func()
-            // 当 Windows 从低电量模式恢复时调用 OnResume
+            // OnResume is called when Windows resumes from low power mode
             OnResume func(),
             WebviewGpuDisabled: false,
         },
@@ -234,8 +234,8 @@ func main() {
 | PATCH                   | ✅   | ✅   | ✅ [^1] |
 | DELETE                  | ✅   | ✅   | ✅ [^1] |
 | Request Headers         | ✅   | ✅   | ✅ [^1] |
-| Request Body            | ✅   | ✅   | ❌      |
-| Request Body Streaming  | ✅   | ✅   | ❌      |
+| Request Body            | ✅   | ✅   | ✅ [^2] |
+| Request Body Streaming  | ✅   | ✅   | ✅ [^2] |
 | Response StatusCodes    | ✅   | ✅   | ✅ [^1] |
 | Response Headers        | ✅   | ✅   | ✅ [^1] |
 | Response Body           | ✅   | ✅   | ✅      |
@@ -780,3 +780,4 @@ func main() {
 名称: OpenInspectorOnStartup<br/> 类型: `bool`
 
 [^1]: 这需要 WebKit2GTK 2.36+ 支持，并且您的应用程序需要使用构建标签 `webkit2_36` 来构建以激活对此功能的支持。 这也会将您应用程序的 WebKit2GTK 最低要求提高到 2.36。
+[^2]: 这需要 WebKit2GTK 2.40+ 支持，并且您的应用程序需要使用构建标签 `webkit2_40` 来构建以激活对此功能的支持。 这也将您的应用程序的 WebKit2GTK 最低要求提高到 2.40。

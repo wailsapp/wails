@@ -13,28 +13,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Added Nodejs version in `wails doctor`. Added by @misitebao in [PR](https://github.com/wailsapp/wails/pull/2546)
+- Added support for WebKit2GTK 2.40+ on Linux. This brings additional features for the [AssetServer](/docs/reference/options#assetserver), like support for HTTP Request Bodies. The app must be compiled with the Go build tag `webkit2_40` to activate support for this features. This also bumps the minimum requirement of WebKit2GTK to 2.40 for your app. Added by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2592)
+
 ### Changed
+
 - [v3] Typescript model generation using `StructDef`s from new AST-based parser. Added by @ATenderholt in [PR1](https://github.com/wailsapp/wails/pull/2428/files) and [PR2](https://github.com/wailsapp/wails/pull/2485).
 
+### Fixed
+
+- Fixed console printing in `wails generate template`. Fixed by @misitebao in [PR](https://github.com/wailsapp/wails/pull/2483)
+- Fixed unicode encoding of strings for multi-rune characters. Fixed by @joshbuddy in [PR](https://github.com/wailsapp/wails/pull/2509)
+- Fixed `-skipbindings` flag in `wails dev`. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2584)
+- Fixed `runtime.MenuUpdateApplicationMenu` on macOS. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2588)
+- Fixed add package name for `libwebkit`/`pkg-config` and use shell.RunCommandWithENV instead of shell.RunCommand in `zypper.go`. Fixed by @wgjtyu in [PR](https://github.com/wailsapp/wails/pull/2593)
+- Make sure to start the CommonFileDialogs on Windows on the Main-Thread. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2606)
 
 ## v2.4.1 - 2023-03-20
 
 ### Changed
+
 - Support single clicks on items with `--wails-draggable: drag` again on Windows. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2482)
 
 ### Fixed
+
 - Fixed panic when using `wails dev` and the AssetServer tried to log to the logger. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2481)
 - Fixed compatibility with WebView2 Runtime > `110.0.1587.69` which showed a `connection refused` html page before doing a reload of the frontend. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2496)
 
 ## v2.4.0 - 2023-03-08
 
 ### Added
+
 - Added Webview GPU acceleration options for [Windows](/docs/reference/options#webviewgpuisdisabled) and [Linux](/docs/reference/options#webviewgpupolicy). Added by @Lyimmi in [PR](https://github.com/wailsapp/wails/pull/2266)
 - Added `EnableFraudulentWebsiteDetection` option to opt-in to scan services for fraudulent content, such as malware or phishing attempts. Older releases had the scan services per default activated. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2269)
 - Allow an [AssetServer Middleware](/docs/reference/options#middleware) to specify the `Content-Type` of a file served by the [Assets](/docs/reference/options#assets-1) `fs.FS`. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2286)
 - The AssetServer now detects more mimetypes by extension, e.g. `.mjs`. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2391)
 
 ### Changed
+
 - Improved fullscreen mode for frameless window on Windows. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279), [PR](https://github.com/wailsapp/wails/pull/2288) and [PR](https://github.com/wailsapp/wails/pull/2299)
 - On Windows unmaximising a window has no effect anymore when the window is in fullscreen mode, this makes it consistent with e.g. macOS. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279)
 - Frameless resize now sets the cursor on documentElement, otherwise resizing cursor won't be shown outside of the body rectangle. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2289)
@@ -42,11 +60,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - NSIS template now installs the shortcuts for all users and not only for the current user. Changed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2373)
 
 ### Fixed
+
 - Fixed failing build hooks when `build/bin` was missing. Fixed by @Lyimmi in [PR](https://github.com/wailsapp/wails/pull/2273)
 - Fixed fullscreen mode for frameless window on Windows to fully cover the taskbar when changing into fullscreen from maximised state. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279)
 - Fixed set window background colour on Windows when setting the colour via runtime. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2279)
 - Fixed the showing of a white border around a fullscreen window when `DisableWindowIcon` is active on Windows. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2299)
-- Fixed the sometimes lagging drag experience with `--wails-draggable` on Windows.  Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2302)
+- Fixed the sometimes lagging drag experience with `--wails-draggable` on Windows. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2302)
 - Fixed applying the default arch to platform flag in wails cli. If only a `GOOS` has been supplied as platform flag e.g. `wails build --platform windows` the current architecture wasn't applied and the build failed. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2309)
 - Fixed a segfault on opening the inspector on older macOS versions. Fixed by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2397)
 - Fixed the macos single architecture builds not respecting an output file name specified with the '-o' flag. Fixed by @gwynforthewyn in [PR](https://github.com/wailsapp/wails/pull/2358)
@@ -58,6 +77,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## v2.3.0 - 2022-12-29
 
 ### Added
+
 - Added `OpenInspectorOnStartup` to debug options to allow opening the WebInspector during startup of the application in debug mode. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2080)
 - On macOS `wails doctor` now also shows the version of Xcode installed. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2089)
 - The [AssetServer](/docs/reference/options#assetserver) now supports handling range-requests if the [Assets](/docs/reference/options/#assets-1) `fs.FS` provides an `io.ReadSeeker`. Added by @stffabi in [PR](https://github.com/wailsapp/wails/pull/2091)
@@ -76,6 +96,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added Korean translation for the website. Added by @cybertramp in [PR](https://github.com/wailsapp/wails/pull/2093)
 
 ### Fixed
+
 - The `noreload` flag in wails dev wasn't applied. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2081)
 - `build/bin` folder was duplicating itself on each reload in `wails dev` mode. Fixed by @OlegGulevskyy in this [PR](https://github.com/wailsapp/wails/pull/2103)
 - Prevent a thin white line at the bottom of a frameless window on Windows. Fixed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2111)
@@ -91,6 +112,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Fixed React Hash Router link in docs. Fixed by @marvinhosea in [PR](https://github.com/wailsapp/wails/pull/2050)
 
 ### Changed
+
 - Improve error message if no `index.html` could be found in the assets and validate assetserver options. Changed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2110)
 - Promote the Go WebView2Loader from experimental to stable. This means now per default all Wails build use the new loader introduced with `v2.2.0`. The old loader remains usable with build tag `native_webview2loader` for the next few releases. Changed by @stffabi in this [PR](https://github.com/wailsapp/wails/pull/2199)
 - Refactored CLI. Changed by @leaanthony in this [PR](https://github.com/wailsapp/wails/pull/2123)

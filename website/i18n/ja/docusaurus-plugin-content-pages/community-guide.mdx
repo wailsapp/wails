@@ -53,44 +53,44 @@ Wailsはオープンソースであり、コミュニティ主導のプロジェ
 - 機能をテストする準備ができたら、プルリクエストのドラフトを作成してください。 プルリクエストの説明欄には、テストシナリオおよびチェックマーク付きのテストケースをリストアップしてください。これにより、何をテストすべきなのかを他の人が把握できるようになります。
 - すべてのテストが完了したら、プルリクエストのステータスをドラフトから更新し、メッセージを残してください。
 
-:::備考
+:::note
 自分でチケットをオープンして作業することを止めはしませんが、すべての機能強化リクエストは、それが適切かどうかを審査されているという点に留意してください。 すべてのアイデアが採択されるわけでは無いため、まずは当該機能強化についてディスカッションすることを推奨します。
 :::
 
-:::警告
+:::warning
 紐づくチケットが無い状態でオープンされたプルリクエストは、リジェクトされることがあります。
 :::
 
-### Fixing Bugs
+### バグの修正
 
-The process for fixing bugs are as follows:
+バグを修正するプロセスは次のとおりです:
 
-- Check the current [Backlog](https://github.com/orgs/wailsapp/projects/1/views/1) and select a bug to fix
+- 現時点での[バックログ](https://github.com/orgs/wailsapp/projects/1/views/1)を確認し、修正するつもりのバグを選んでください。
 - 開発を始める前に、チケットに以下の情報が含まれていることを確認してください:
-- The scope of the issue including platforms affected
-- The steps to reproduce. Sometimes bugs are opened that are not Wails issues and the onus is on the reporter to prove that it is a Wails issue with a [minimal reproducible example](https://stackoverflow.com/help/minimal-reproducible-example)
-- The output of `wails doctor`
-- A test that can reproduce the bug
+- 影響のあるプラットフォームといった、イシューの対象範囲。
+- バグの再現手順。 Sometimes bugs are opened that are not Wails issues and the onus is on the reporter to prove that it is a Wails issue with a [minimal reproducible example](https://stackoverflow.com/help/minimal-reproducible-example)
+- `wails doctor`の出力内容。
+- バグを再現できるテスト。
 - チケットにこれらの情報が含まれていない場合、チケットをオープンした人に、これらの情報をリクエストしてください。
-- Comment on the ticket stating you wish to develop a fix
-- Clone the repository and create a branch with the format `bugfix/<ticket_number>_<ticket_title>`
-- Once the fix is ready for testing, create a draft PR. プルリクエストの説明欄には、テストシナリオおよびチェックマーク付きのテストケースをリストアップしてください。これにより、何をテストすべきなのかを他の人が把握できるようになります。
+- 修正作業を実施する旨を、チケットにコメントしてください。
+- リポジトリをクローンし、`bugfix/<ticket_number>_<ticket_title>`の命名形式でブランチを作成してください。
+- 修正をテストする準備ができたら、プルリクエストのドラフトを作成してください。 プルリクエストの説明欄には、テストシナリオおよびチェックマーク付きのテストケースをリストアップしてください。これにより、何をテストすべきなのかを他の人が把握できるようになります。
 - すべてのテストが完了したら、プルリクエストのステータスをドラフトから更新し、メッセージを残してください。
 
 :::note
-There is nothing stopping you from opening a ticket and working on it yourself, but please be aware that all bugfixes should be discussed as the approach may have unintended side effects.
+自分でチケットをオープンして作業することを止めはしませんが、あなたの修正アプローチには副作用が発生する可能性もあるため、どのようなバグ修正であっても、議論をするようにしてください。
 :::
 
-:::警告
+:::warning
 紐づくチケットが無い状態でオープンされたプルリクエストは、リジェクトされることがあります。
 :::
 
 ### テスト
 
-Testing is vitally important to ensure quality in the project. There are a couple of scenarios where testing can really help the project:
+テストは、プロジェクトの品質を保つために極めて重要なものです。 実際に、テストがプロジェクトに役立つ場面はいくつかあります:
 
-- Testing if a bug is reproducible on your local system
-- Testing PRs to ensure that they work correctly
+- ローカルマシンでバグが再現するかどうかのテスト
+- プルリクエストの内容が正しく動作するかを確認するテスト
 
 If you chose to test if someone's bug report is reproducible on your local system, then feel free to add a comment on the ticket confirming this with the output of `wails doctor`.
 
@@ -98,7 +98,7 @@ To test PRs, choose a PR to test and check if the PR description has the testing
 
 If you ever need more clarity or help on testing, please ask a question in the [Contributing to Wails](https://github.com/wailsapp/wails/discussions/1520) discussion or on slack.
 
-### Documenting
+### ドキュメント
 
 This website is also the main documentation site for the project. Sometimes this gets out of date and needs some slight adjustments. Some of the documentation isn't written to the best standards either. Developing documentation is hard and so any contribution to this is greatly appreciated. Features without documentation are unfinished so to the project, it's _as important_ as the code.
 
@@ -113,7 +113,7 @@ To set up a local documentation development environment, do the following:
 
 After it has all installed and is running, you should see the site at [`http://localhost:3000`](http://localhost:3000). Any changes made to the site text will be immediately reflected in the browser.
 
-#### Versioning
+#### バージョン管理
 
 We employ a versioning system where we have the "latest" documentation AKA "Next Version" which has all the changes that have occurred since the last release. We also keep the last release documentation as well as the version before that.
 
@@ -121,7 +121,7 @@ There isn't usually a reason to update released documentation so we don't genera
 
 The "next version" docs are mainly in `website/docs` with some "version independent" documents in `src/pages`. Any updates should be made in the `website/docs` directory.
 
-#### Languages
+#### 翻訳
 
 The default documents of the Wails project are English documents. We use the "crowdin" tool to translate documents in other languages and synchronize them to the website. You can [join our project](https://crowdin.com/project/wails) and submit your translations to make contributions.
 
