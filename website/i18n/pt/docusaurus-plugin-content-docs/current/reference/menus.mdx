@@ -9,12 +9,15 @@ It is possible to add an application menu to Wails projects. This is achieved by
 An example of how to create a menu:
 
 ```go
+
+    app := NewApp()
+
     AppMenu := menu.NewMenu()
     FileMenu := AppMenu.AddSubmenu("File")
     FileMenu.AddText("&Open", keys.CmdOrCtrl("o"), openFile)
     FileMenu.AddSeparator()
     FileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
-        runtime.Quit()
+        runtime.Quit(app.ctx)
     })
 
     if runtime.GOOS == "darwin" {
@@ -25,7 +28,7 @@ An example of how to create a menu:
         Title:             "Menus Demo",
         Width:             800,
         Height:            600,
-        Menu:              AppMenu,
+        Menu:              AppMenu, // reference the menu above
         Bind: []interface{}{
             app,
         },

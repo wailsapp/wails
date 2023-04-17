@@ -234,8 +234,8 @@ Not all features of an `http.Request` are currently supported, please see the fo
 | PATCH                   | ✅   | ✅   | ✅ [^1] |
 | DELETE                  | ✅   | ✅   | ✅ [^1] |
 | Request Headers         | ✅   | ✅   | ✅ [^1] |
-| Request Body            | ✅   | ✅   | ❌      |
-| Request Body Streaming  | ✅   | ✅   | ❌      |
+| Request Body            | ✅   | ✅   | ✅ [^2] |
+| Request Body Streaming  | ✅   | ✅   | ✅ [^2] |
 | Response StatusCodes    | ✅   | ✅   | ✅ [^1] |
 | Response Headers        | ✅   | ✅   | ✅ [^1] |
 | Response Body           | ✅   | ✅   | ✅      |
@@ -763,4 +763,5 @@ Setting this to `true` will open the WebInspector on startup of the application.
 
 Name: OpenInspectorOnStartup<br/> Type: `bool`
 
-[^1]: This requires WebKit2GTK 2.36+ support and your app needs to be build with the  build tag `webkit2_36` to activate support for this feature. This also bumps the minimum requirement of WebKit2GTK to 2.36 for your app.
+[^1]: This requires WebKit2GTK 2.36+ support and your app needs to be build with the build tag `webkit2_36` to activate support for this feature. This also bumps the minimum requirement of WebKit2GTK to 2.36 for your app.
+[^2]: This requires WebKit2GTK 2.40+ support and your app needs to be build with the build tag `webkit2_40` to activate support for this feature. This also bumps the minimum requirement of WebKit2GTK to 2.40 for your app.
