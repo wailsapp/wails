@@ -22,7 +22,7 @@ func (m *Menu) Add(label string) *MenuItem {
 }
 
 func (m *Menu) AddSeparator() {
-	result := newMenuItemSeperator()
+	result := newMenuItemSeparator()
 	m.items = append(m.items, result)
 }
 

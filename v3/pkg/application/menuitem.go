@@ -67,7 +67,7 @@ func newMenuItem(label string) *MenuItem {
 	return result
 }
 
-func newMenuItemSeperator() *MenuItem {
+func newMenuItemSeparator() *MenuItem {
 	result := &MenuItem{
 		itemType: separator,
 	}
