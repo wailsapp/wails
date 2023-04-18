@@ -8,9 +8,11 @@ import (
 	"flag"
 	"fmt"
 	iofs "io/fs"
+	"net"
 	"net/url"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
 
@@ -104,17 +106,35 @@ func CreateApp(appoptions *options.App) (*App, error) {
 	}
 
 	if frontendDevServerURL != "" {
-		if devServer == "" {
-			return nil, fmt.Errorf("Unable to use FrontendDevServerUrl without a DevServer address")
+		if os.Getenv("legacyusedevsererinsteadofcustomscheme") != "" {
+			startURL, err := url.Parse("http://" + devServer)
+			if err != nil {
+				return nil, err
+			}
+
+			ctx = context.WithValue(ctx, "starturl", startURL)
 		}
 
-		startURL, err := url.Parse("http://" + devServer)
+		ctx = context.WithValue(ctx, "frontenddevserverurl", frontendDevServerURL)
+
+		externalURL, err := url.Parse(frontendDevServerURL)
 		if err != nil {
 			return nil, err
 		}
 
-		ctx = context.WithValue(ctx, "starturl", startURL)
-		ctx = context.WithValue(ctx, "frontenddevserverurl", frontendDevServerURL)
+		if externalURL.Host == "" {
+			return nil, fmt.Errorf("Invalid frontend:dev:serverUrl missing protocol scheme?")
+		}
+
+		waitCb := func() { myLogger.Debug("Waiting for frontend DevServer '%s' to be ready", externalURL) }
+		if !checkPortIsOpen(externalURL.Host, time.Minute, waitCb) {
+			myLogger.Error("Timeout waiting for frontend DevServer")
+		}
+
+		handler := assetserver.NewExternalAssetsHandler(myLogger, assetConfig, externalURL)
+		assetConfig.Assets = nil
+		assetConfig.Handler = handler
+		assetConfig.Middleware = nil
 
 		myLogger.Info("Serving assets from frontend DevServer URL: %s", frontendDevServerURL)
 	} else {
@@ -245,4 +265,23 @@ func tryInferAssetDirFromFS(assets iofs.FS) (string, error) {
 	}
 
 	return path, nil
+}
+
+func checkPortIsOpen(host string, timeout time.Duration, waitCB func()) (ret bool) {
+	if timeout == 0 {
+		timeout = time.Minute
+	}
+
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		conn, _ := net.DialTimeout("tcp", host, 2*time.Second)
+		if conn != nil {
+			conn.Close()
+			return true
+		}
+
+		waitCB()
+		time.Sleep(1 * time.Second)
+	}
+	return false
 }
