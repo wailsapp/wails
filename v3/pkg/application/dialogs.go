@@ -1,6 +1,5 @@
 package application
 
-import "C"
 import (
 	"strings"
 	"sync"

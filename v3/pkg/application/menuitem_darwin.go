@@ -1,3 +1,5 @@
+//go:build darwin
+
 package application
 
 /*
@@ -329,29 +331,29 @@ import (
 	"unsafe"
 )
 
-type macosMenuItem struct {
+type windowsMenuItem struct {
 	menuItem *MenuItem
 
 	nsMenuItem unsafe.Pointer
 }
 
-func (m macosMenuItem) setTooltip(tooltip string) {
+func (m windowsMenuItem) setTooltip(tooltip string) {
 	C.setMenuItemTooltip(m.nsMenuItem, C.CString(tooltip))
 }
 
-func (m macosMenuItem) setLabel(s string) {
+func (m windowsMenuItem) setLabel(s string) {
 	C.setMenuItemLabel(m.nsMenuItem, C.CString(s))
 }
 
-func (m macosMenuItem) setDisabled(disabled bool) {
+func (m windowsMenuItem) setDisabled(disabled bool) {
 	C.setMenuItemDisabled(m.nsMenuItem, C.bool(disabled))
 }
 
-func (m macosMenuItem) setChecked(checked bool) {
+func (m windowsMenuItem) setChecked(checked bool) {
 	C.setMenuItemChecked(m.nsMenuItem, C.bool(checked))
 }
 
-func (m macosMenuItem) setAccelerator(accelerator *accelerator) {
+func (m windowsMenuItem) setAccelerator(accelerator *accelerator) {
 	// Set the keyboard shortcut of the menu item
 	var modifier C.int
 	var key *C.char
@@ -364,8 +366,8 @@ func (m macosMenuItem) setAccelerator(accelerator *accelerator) {
 	C.setMenuItemKeyEquivalent(m.nsMenuItem, key, modifier)
 }
 
-func newMenuItemImpl(item *MenuItem) *macosMenuItem {
-	result := &macosMenuItem{
+func newMenuItemImpl(item *MenuItem) *windowsMenuItem {
+	result := &windowsMenuItem{
 		menuItem: item,
 	}
 

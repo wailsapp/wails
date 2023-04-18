@@ -1,6 +1,5 @@
 package application
 
-import "C"
 import (
 	"log"
 	"net/http"
@@ -97,19 +96,23 @@ func mergeApplicationDefaults(o *Options) {
 
 }
 
-type platformApp interface {
-	run() error
-	destroy()
-	setApplicationMenu(menu *Menu)
-	name() string
-	getCurrentWindowID() uint
-	showAboutDialog(name string, description string, icon []byte)
-	setIcon(icon []byte)
-	on(id uint)
-	dispatchOnMainThread(id uint)
-	hide()
-	show()
-}
+type (
+	platformApp interface {
+		run() error
+		destroy()
+		setApplicationMenu(menu *Menu)
+		name() string
+		getCurrentWindowID() uint
+		showAboutDialog(name string, description string, icon []byte)
+		setIcon(icon []byte)
+		on(id uint)
+		dispatchOnMainThread(id uint)
+		hide()
+		show()
+		getPrimaryScreen() (*Screen, error)
+		getScreens() ([]*Screen, error)
+	}
+)
 
 // Messages sent from javascript get routed here
 type windowMessage struct {
@@ -514,11 +517,11 @@ func (a *App) SaveFileDialog() *SaveFileDialog {
 }
 
 func (a *App) GetPrimaryScreen() (*Screen, error) {
-	return getPrimaryScreen()
+	return a.impl.getPrimaryScreen()
 }
 
 func (a *App) GetScreens() ([]*Screen, error) {
-	return getScreens()
+	return a.impl.getScreens()
 }
 
 func (a *App) Clipboard() *Clipboard {

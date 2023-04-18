@@ -1,7 +1,5 @@
 package application
 
-import "C"
-
 type clipboardImpl interface {
 	setText(text string) bool
 	text() string

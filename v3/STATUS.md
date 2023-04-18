@@ -19,6 +19,8 @@ Application interface methods
 | dispatchOnMainThread(id uint)                                 |         |       | ✅   |       |
 | hide()                                                        |         |       | ✅   |       |
 | show()                                                        |         |       | ✅   |       |
+| getPrimaryScreen() (*Screen, error)                           |         |       | ✅   |       |
+| getScreens() ([]*Screen, error)                               |         |       | ✅   |       |
 
 ## Webview Window
 
@@ -117,35 +119,35 @@ Webview Window Interface Methods
 
 ### Window
 
-| Feature             | Windows | Linux | Mac | Notes                  |
-|---------------------|---------|-------|-----|------------------------|
-| SetTitle            |         |       | ✅   |                        |
-| SetSize             |         |       | ✅   |                        |
-| Size                |         |       | ✅   |                        |
-| SetPosition         |         |       | ✅   |                        |
-| Position            |         |       | ✅   |                        |
-| FullScreen          |         |       | ✅   |                        |
-| UnFullscreen        |         |       | ✅   |                        |
-| Minimise            |         |       | ✅   |                        |
-| UnMinimise          |         |       | ✅   |                        |
-| Maximise            |         |       | ✅   |                        |
-| UnMaximise          |         |       | ✅   |                        |
-| Show                |         |       | ✅   |                        |
-| Hide                |         |       | ✅   |                        |
-| Center              |         |       | ✅   |                        |
-| SetBackgroundColour |         |       | ✅   |                        |
-| SetAlwaysOnTop      |         |       | ✅   |                        |
-| SetResizable        |         |       | ✅   |                        |
-| SetMinSize          |         |       | ✅   |                        |
-| SetMaxSize          |         |       | ✅   |                        |
-| Width               |         |       | ✅   |                        |
-| Height              |         |       | ✅   |                        |
-| ZoomIn              |         |       | ✅   | Increase view scale    |
-| ZoomOut             |         |       | ✅   | Decrease view scale    |
-| ZoomReset           |         |       | ✅   | Reset view scale       |
-| GetZoom             |         |       | ✅   | Get current view scale |
-| SetZoom             |         |       | ✅   | Set view scale         |
-| Screen              |         |       | ✅   | Get screen for window  |
+| Feature             | Windows | Linux | Mac | Notes                                                                                |
+|---------------------|---------|-------|-----|--------------------------------------------------------------------------------------|
+| SetTitle            |         |       | ✅   |                                                                                      |
+| SetSize             |         |       | ✅   |                                                                                      |
+| Size                |         |       | ✅   |                                                                                      |
+| SetPosition         |         |       | ✅   |                                                                                      |
+| Position            |         |       | ✅   |                                                                                      |
+| FullScreen          |         |       | ✅   |                                                                                      |
+| UnFullscreen        |         |       | ✅   |                                                                                      |
+| Minimise            |         |       | ✅   |                                                                                      |
+| UnMinimise          |         |       | ✅   |                                                                                      |
+| Maximise            |         |       | ✅   |                                                                                      |
+| UnMaximise          |         |       | ✅   |                                                                                      |
+| Show                |         |       | ✅   |                                                                                      |
+| Hide                |         |       | ✅   |                                                                                      |
+| Center              |         |       | ✅   |                                                                                      |
+| SetBackgroundColour |         |       | ✅   | https://github.com/MicrosoftEdge/WebView2Feedback/issues/1621#issuecomment-938234294 |
+| SetAlwaysOnTop      |         |       | ✅   |                                                                                      |
+| SetResizable        |         |       | ✅   |                                                                                      |
+| SetMinSize          |         |       | ✅   |                                                                                      |
+| SetMaxSize          |         |       | ✅   |                                                                                      |
+| Width               |         |       | ✅   |                                                                                      |
+| Height              |         |       | ✅   |                                                                                      |
+| ZoomIn              |         |       | ✅   | Increase view scale                                                                  |
+| ZoomOut             |         |       | ✅   | Decrease view scale                                                                  |
+| ZoomReset           |         |       | ✅   | Reset view scale                                                                     |
+| GetZoom             |         |       | ✅   | Get current view scale                                                               |
+| SetZoom             |         |       | ✅   | Set view scale                                                                       |
+| Screen              |         |       | ✅   | Get screen for window                                                                |
 
 ### Log
 
