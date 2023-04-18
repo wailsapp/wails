@@ -16,6 +16,6 @@ require (
     golang.org/x/net v0.7.0 // indirect
 )
 {{if gt (len .LocalModulePath) 0}}
-replace github.com/wailsapp/wails/v3 => {{.LocalModulePath}}/v3
-replace github.com/wailsapp/wails/v2 => {{.LocalModulePath}}/v2
+replace github.com/wailsapp/wails/v3 => {{.LocalModulePath}}v3
+replace github.com/wailsapp/wails/v2 => {{.LocalModulePath}}v2
 {{end}}
