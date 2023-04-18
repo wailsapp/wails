@@ -3,9 +3,11 @@ package templates
 import (
 	"embed"
 	"fmt"
+	"github.com/pterm/pterm"
 	"github.com/wailsapp/wails/v3/internal/debug"
 	"io/fs"
 	"os"
+	"path/filepath"
 
 	"github.com/wailsapp/wails/v3/internal/flags"
 
@@ -154,7 +156,7 @@ func Install(options *flags.Init) error {
 
 	templateData := TemplateOptions{
 		options,
-		debug.LocalModulePath,
+		filepath.FromSlash(debug.LocalModulePath + "/"),
 	}
 	template, found := lo.Find(defaultTemplates, func(template TemplateData) bool {
 		return template.Name == options.TemplateName
@@ -167,7 +169,7 @@ func Install(options *flags.Init) error {
 		templateData.ProjectDir = lo.Must(os.Getwd())
 	}
 	templateData.ProjectDir = fmt.Sprintf("%s/%s", options.ProjectDir, options.ProjectName)
-	fmt.Printf("Installing template '%s' into '%s'\n", options.TemplateName, options.ProjectDir)
+	pterm.Printf("Installing template '%s' into '%s'\n", options.TemplateName, filepath.FromSlash(options.ProjectDir))
 	tfs, err := fs.Sub(template.FS, options.TemplateName)
 	if err != nil {
 		return err
