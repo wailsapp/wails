@@ -1,12 +1,12 @@
 package debug
 
 import (
-	"github.com/samber/lo"
 	"path/filepath"
 	"runtime"
-)
+	"runtime/debug"
 
-import "runtime/debug"
+	"github.com/samber/lo"
+)
 
 // Why go doesn't provide this as a map already is beyond me.
 var buildSettings = map[string]string{}
@@ -20,7 +20,7 @@ func init() {
 	buildSettings = lo.Associate(buildInfo.Settings, func(setting debug.BuildSetting) (string, string) {
 		return setting.Key, setting.Value
 	})
-	if isLocalBuild() {
+	if isLocalBuild() || buildInfo.Path == "" {
 		modulePath := RelativePath("..", "..", "..")
 		LocalModulePath, _ = filepath.Abs(modulePath)
 	}
