@@ -84,19 +84,18 @@ func (rw *responseWriter) WriteHeader(code int) {
 	}
 }
 
-func (rw *responseWriter) Finish() error {
+func (rw *responseWriter) Finish() {
 	if !rw.wroteHeader {
 		rw.WriteHeader(http.StatusNotImplemented)
 	}
 
 	if rw.finished {
-		return nil
+		return
 	}
 	rw.finished = true
 	if rw.w != nil {
 		rw.w.Close()
 	}
-	return nil
 }
 
 func (rw *responseWriter) finishWithError(code int, err error) {
