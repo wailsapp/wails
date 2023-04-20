@@ -8,8 +8,9 @@ type Role int
 
 // These constants need to be kept in sync with `v2/internal/frontend/desktop/darwin/Role.h`
 const (
-	AppMenuRole  Role = 1
-	EditMenuRole      = 2
+	AppMenuRole    Role = 1
+	EditMenuRole        = 2
+	WindowMenuRole      = 3
 	//AboutRole              Role = "about"
 	//UndoRole               Role = "undo"
 	//RedoRole               Role = "redo"
@@ -142,14 +143,16 @@ func ViewMenu() *MenuItem {
 		Role: ViewMenuRole,
 	}
 }
+*/
 
 // WindowMenu provides a MenuItem with the whole default "Window" menu (Minimize, Zoom, etc.).
+// On MacOS currently all options in there won't work if the window is frameless.
 func WindowMenu() *MenuItem {
 	return &MenuItem{
 		Role: WindowMenuRole,
 	}
 }
-*/
+
 // These roles are Mac only
 
 // AppMenu provides a MenuItem with the whole default "App" menu (About, Services, etc.)
