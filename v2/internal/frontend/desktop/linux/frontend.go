@@ -466,7 +466,6 @@ var requestBuffer = make(chan webview.Request, 100)
 func (f *Frontend) startRequestProcessor() {
 	for request := range requestBuffer {
 		f.assets.ServeWebViewRequest(request)
-		request.Release()
 	}
 }
 

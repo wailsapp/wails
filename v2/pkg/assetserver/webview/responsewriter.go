@@ -20,6 +20,6 @@ var (
 type ResponseWriter interface {
 	http.ResponseWriter
 
-	// Finish the response and flush all data.
-	Finish() error
+	// Finish the response and flush all data. A Finish after the request has already been finished has no effect.
+	Finish()
 }

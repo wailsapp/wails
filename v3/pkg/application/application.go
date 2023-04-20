@@ -327,10 +327,6 @@ func (a *App) Run() error {
 		for {
 			request := <-webviewRequests
 			a.handleWebViewRequest(request)
-			err := request.Release()
-			if err != nil {
-				a.error("Failed to release webview request: %s", err.Error())
-			}
 		}
 	}()
 	go func() {
