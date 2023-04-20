@@ -1,7 +1,7 @@
 //go:build dev
 // +build dev
 
-package devserver
+package assetserver
 
 import (
 	"errors"
@@ -10,21 +10,12 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/wailsapp/wails/v2/internal/logger"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
-func newExternalDevServerAssetHandler(logger *logger.Logger, url *url.URL, options assetserver.Options) http.Handler {
-	handler := newExternalAssetsHandler(logger, url, options.Handler)
+func NewExternalAssetsHandler(logger Logger, options assetserver.Options, url *url.URL) http.Handler {
+	baseHandler := options.Handler
 
-	if middleware := options.Middleware; middleware != nil {
-		handler = middleware(handler)
-	}
-
-	return handler
-}
-
-func newExternalAssetsHandler(logger *logger.Logger, url *url.URL, handler http.Handler) http.Handler {
 	errSkipProxy := fmt.Errorf("skip proxying")
 
 	proxy := httputil.NewSingleHostReverseProxy(url)
@@ -37,7 +28,7 @@ func newExternalAssetsHandler(logger *logger.Logger, url *url.URL, handler http.
 	}
 
 	proxy.ModifyResponse = func(res *http.Response) error {
-		if handler == nil {
+		if baseHandler == nil {
 			return nil
 		}
 
@@ -53,11 +44,11 @@ func newExternalAssetsHandler(logger *logger.Logger, url *url.URL, handler http.
 	}
 
 	proxy.ErrorHandler = func(rw http.ResponseWriter, r *http.Request, err error) {
-		if handler != nil && errors.Is(err, errSkipProxy) {
+		if baseHandler != nil && errors.Is(err, errSkipProxy) {
 			if logger != nil {
-				logger.Debug("[ExternalAssetHandler] Loading '%s' failed, using AssetHandler", r.URL)
+				logger.Debug("[ExternalAssetHandler] Loading '%s' failed, using original AssetHandler", r.URL)
 			}
-			handler.ServeHTTP(rw, r)
+			baseHandler.ServeHTTP(rw, r)
 		} else {
 			if logger != nil {
 				logger.Error("[ExternalAssetHandler] Proxy error: %v", err)
@@ -66,18 +57,24 @@ func newExternalAssetsHandler(logger *logger.Logger, url *url.URL, handler http.
 		}
 	}
 
-	return http.HandlerFunc(
+	var result http.Handler = http.HandlerFunc(
 		func(rw http.ResponseWriter, req *http.Request) {
 			if req.Method == http.MethodGet {
 				proxy.ServeHTTP(rw, req)
 				return
 			}
 
-			if handler != nil {
-				handler.ServeHTTP(rw, req)
+			if baseHandler != nil {
+				baseHandler.ServeHTTP(rw, req)
 				return
 			}
 
 			rw.WriteHeader(http.StatusMethodNotAllowed)
 		})
+
+	if middleware := options.Middleware; middleware != nil {
+		result = middleware(result)
+	}
+
+	return result
 }
