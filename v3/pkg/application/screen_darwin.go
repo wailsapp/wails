@@ -128,12 +128,12 @@ func cScreenToScreen(screen C.Screen) *Screen {
 	}
 }
 
-func getPrimaryScreen() (*Screen, error) {
+func (m *macosApp) getPrimaryScreen() (*Screen, error) {
 	cScreen := C.GetPrimaryScreen()
 	return cScreenToScreen(cScreen), nil
 }
 
-func getScreens() ([]*Screen, error) {
+func (m *macosApp) getScreens() ([]*Screen, error) {
 	cScreens := C.getAllScreens()
 	defer C.free(unsafe.Pointer(cScreens))
 	numScreens := int(C.GetNumScreens())
