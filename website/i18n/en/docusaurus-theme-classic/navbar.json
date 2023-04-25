@@ -38,5 +38,9 @@
   "item.label.Code of Conduct": {
     "message": "Code of Conduct",
     "description": "Navbar item with label Code of Conduct"
+  },
+  "logo.alt": {
+    "message": "Wails Logo",
+    "description": "The alt text of navbar logo"
   }
 }

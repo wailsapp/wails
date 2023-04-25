@@ -45,7 +45,7 @@ func New(appOptions Options) *App {
 		result.log.AddOutput(&logger.Console{})
 	}
 
-	result.Events = NewCustomEventProcessor(result.dispatchEventToWindows)
+	result.Events = NewWailsEventProcessor(result.dispatchEventToWindows)
 
 	opts := assetserveroptions.Options{
 		Assets:     appOptions.Assets.FS,
@@ -207,6 +207,12 @@ func (a *App) getWindowForID(id uint) *WebviewWindow {
 	return a.windows[id]
 }
 
+func (a *App) deleteWindowByID(id uint) {
+	a.windowsLock.Lock()
+	defer a.windowsLock.Unlock()
+	delete(a.windows, id)
+}
+
 func (a *App) On(eventType events.ApplicationEventType, callback func()) {
 	eventID := uint(eventType)
 	a.applicationEventListenersLock.Lock()
@@ -318,10 +324,6 @@ func (a *App) Run() error {
 		for {
 			request := <-webviewRequests
 			a.handleWebViewRequest(request)
-			err := request.Release()
-			if err != nil {
-				a.error("Failed to release webview request: %s", err.Error())
-			}
 		}
 	}()
 	go func() {
@@ -547,9 +549,9 @@ func (a *App) SaveFileDialogWithOptions(s *SaveFileDialogOptions) *SaveFileDialo
 	return result
 }
 
-func (a *App) dispatchEventToWindows(event *CustomEvent) {
+func (a *App) dispatchEventToWindows(event *WailsEvent) {
 	for _, window := range a.windows {
-		window.dispatchCustomEvent(event)
+		window.dispatchWailsEvent(event)
 	}
 }
 

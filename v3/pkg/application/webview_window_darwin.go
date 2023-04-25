@@ -18,8 +18,7 @@ package application
 extern void registerListener(unsigned int event);
 
 // Create a new Window
-void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop) {
-
+void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWarningEnabled, bool frameless, bool enableDragAndDrop, bool hideOnClose) {
 	NSWindowStyleMask styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 	if (frameless) {
 		styleMask = NSWindowStyleMaskBorderless | NSWindowStyleMaskResizable;
@@ -31,13 +30,16 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
 	// Create delegate
 	WebviewWindowDelegate* delegate = [[WebviewWindowDelegate alloc] init];
+	[delegate autorelease];
+
 	// Set delegate
 	[window setDelegate:delegate];
 	delegate.windowId = id;
-	delegate.window = window;
 
 	// Add NSView to window
 	NSView* view = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
+	[view autorelease];
+
 	[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 	if( frameless ) {
 		[view setWantsLayer:YES];
@@ -48,6 +50,8 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	// Embed wkwebview in window
 	NSRect frame = NSMakeRect(0, 0, width, height);
 	WKWebViewConfiguration* config = [[WKWebViewConfiguration alloc] init];
+	[config autorelease];
+
 	config.suppressesIncrementalRendering = true;
     config.applicationNameForUserAgent = @"wails.io";
 	[config setURLSchemeHandler:delegate forURLScheme:@"wails"];
@@ -57,10 +61,14 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 
 	// Setup user content controller
     WKUserContentController* userContentController = [WKUserContentController new];
+	[userContentController autorelease];
+
     [userContentController addScriptMessageHandler:delegate name:@"external"];
     config.userContentController = userContentController;
 
 	WKWebView* webView = [[WKWebView alloc] initWithFrame:frame configuration:config];
+	[webView autorelease];
+
 	[view addSubview:webView];
 
     // support webview events
@@ -69,16 +77,18 @@ void* windowNew(unsigned int id, int width, int height, bool fraudulentWebsiteWa
 	// Ensure webview resizes with the window
 	[webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
-	delegate.webView = webView;
-	delegate.hideOnClose = false;
+	delegate.hideOnClose = hideOnClose;
 
 	if( enableDragAndDrop ) {
 		WebviewDrag* dragView = [[WebviewDrag alloc] initWithFrame:NSMakeRect(0, 0, width-1, height-1)];
+		[dragView autorelease];
+
 		[view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 		[view addSubview:dragView];
 		dragView.windowId = id;
 	}
 
+	window.webView = webView;
 	return window;
 }
 
@@ -201,7 +211,8 @@ void navigationLoadURL(void* nsWindow, char* url) {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSURL* nsURL = [NSURL URLWithString:[NSString stringWithUTF8String:url]];
 		NSURLRequest* request = [NSURLRequest requestWithURL:nsURL];
-		[[(WebviewWindowDelegate*)[(WebviewWindow*)nsWindow delegate] webView] loadRequest:request];
+		WebviewWindow* window = (WebviewWindow*)nsWindow;
+		[window.webView loadRequest:request];
 		free(url);
 	});
 }
@@ -251,10 +262,10 @@ void windowSetMaxSize(void* nsWindow, int width, int height) {
 void windowEnableDevTools(void* nsWindow) {
 	// Enable devtools on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		// Get window delegate
-		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(WebviewWindow*)nsWindow delegate];
+		// get main window
+		WebviewWindow* window = (WebviewWindow*)nsWindow;
 		// Enable devtools in webview
-		[delegate.webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
+		[window.webView.configuration.preferences setValue:@YES forKey:@"developerExtrasEnabled"];
 	});
 }
 
@@ -262,10 +273,10 @@ void windowEnableDevTools(void* nsWindow) {
 void windowZoomReset(void* nsWindow) {
 	// Reset zoom on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		// Get window delegate
-		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(WebviewWindow*)nsWindow delegate];
+		// get main window
+		WebviewWindow* window = (WebviewWindow*)nsWindow;
 		// Reset zoom
-		[delegate.webView setMagnification:1.0];
+		[window.webView setMagnification:1.0];
 	});
 }
 
@@ -273,28 +284,29 @@ void windowZoomReset(void* nsWindow) {
 void windowZoomSet(void* nsWindow, double zoom) {
 	// Reset zoom on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		// Get window delegate
-		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(WebviewWindow*)nsWindow delegate];
+		// get main window
+		WebviewWindow* window = (WebviewWindow*)nsWindow;
 		// Reset zoom
-		[delegate.webView setMagnification:zoom];
+		[window.webView setMagnification:zoom];
 	});
 }
 
 // windowZoomGet
 float windowZoomGet(void* nsWindow) {
+	// get main window
+	WebviewWindow* window = (WebviewWindow*)nsWindow;
 	// Get zoom
-	WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(WebviewWindow*)nsWindow delegate];
-	return [delegate.webView magnification];
+	return [window.webView magnification];
 }
 
 // windowZoomIn
 void windowZoomIn(void* nsWindow) {
 	// Zoom in on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		// Get window delegate
-		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(WebviewWindow*)nsWindow delegate];
+		// get main window
+		WebviewWindow* window = (WebviewWindow*)nsWindow;
 		// Zoom in
-		[delegate.webView setMagnification:delegate.webView.magnification + 0.05];
+		[window.webView setMagnification:window.webView.magnification + 0.05];
 	});
 }
 
@@ -302,13 +314,13 @@ void windowZoomIn(void* nsWindow) {
 void windowZoomOut(void* nsWindow) {
 	// Zoom out on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		// Get window delegate
-		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(WebviewWindow*)nsWindow delegate];
+		// get main window
+		WebviewWindow* window = (WebviewWindow*)nsWindow;
 		// Zoom out
-		if( delegate.webView.magnification > 1.05 ) {
-			[delegate.webView setMagnification:delegate.webView.magnification - 0.05];
+		if( window.webView.magnification > 1.05 ) {
+			[window.webView setMagnification:window.webView.magnification - 0.05];
 		} else {
-			[delegate.webView setMagnification:1.0];
+			[window.webView setMagnification:1.0];
 		}
 	});
 }
@@ -325,8 +337,9 @@ void windowSetPosition(void* nsWindow, int x, int y) {
 void windowExecJS(void* nsWindow, const char* js) {
 	// Execute JS on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(WebviewWindow*)nsWindow delegate];
-		[delegate.webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
+		// get main window
+		WebviewWindow* window = (WebviewWindow*)nsWindow;
+		[window.webView evaluateJavaScript:[NSString stringWithUTF8String:js] completionHandler:nil];
 		free((void*)js);
 	});
 }
@@ -338,9 +351,6 @@ void windowSetTranslucent(void* nsWindow) {
 
 		// Get window
 		WebviewWindow* window = (WebviewWindow*)nsWindow;
-
-		// Get window delegate
-		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(WebviewWindow*)nsWindow delegate];
 
 		id contentView = [window contentView];
 		NSVisualEffectView *effectView = [NSVisualEffectView alloc];
@@ -357,10 +367,10 @@ void windowSetTranslucent(void* nsWindow) {
 void webviewSetTransparent(void* nsWindow) {
 	// Set webview transparent on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		// Get window delegate
-		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(WebviewWindow*)nsWindow delegate];
+		// get main window
+		WebviewWindow* window = (WebviewWindow*)nsWindow;
 		// Set webview background transparent
-		[delegate.webView setValue:@NO forKey:@"drawsBackground"];
+		[window.webView setValue:@NO forKey:@"drawsBackground"];
 	});
 }
 
@@ -368,10 +378,10 @@ void webviewSetTransparent(void* nsWindow) {
 void webviewSetBackgroundColour(void* nsWindow, int r, int g, int b, int alpha) {
 	// Set webview background color on main thread
 	dispatch_async(dispatch_get_main_queue(), ^{
-		// Get window delegate
-		WebviewWindowDelegate* delegate = (WebviewWindowDelegate*)[(WebviewWindow*)nsWindow delegate];
+		// get main window
+		WebviewWindow* window = (WebviewWindow*)nsWindow;
 		// Set webview background color
-		[delegate.webView setValue:[NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:alpha/255.0] forKey:@"backgroundColor"];
+		[window.webView setValue:[NSColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:alpha/255.0] forKey:@"backgroundColor"];
 	});
 }
 
@@ -649,14 +659,6 @@ static void windowZoom(void *window) {
 	});
 }
 
-// miniaturize
-static void windowMiniaturize(void *window) {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		// miniaturize window
-		[(WebviewWindow*)window miniaturize:nil];
-	});
-}
-
 // webviewRenderHTML renders the given HTML
 static void windowRenderHTML(void *window, const char *html) {
 	dispatch_async(dispatch_get_main_queue(), ^{
@@ -665,7 +667,7 @@ static void windowRenderHTML(void *window, const char *html) {
 		// get window delegate
 		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
 		// render html
-		[(WKWebView*)windowDelegate.webView loadHTMLString:[NSString stringWithUTF8String:html] baseURL:nil];
+		[nsWindow.webView loadHTMLString:[NSString stringWithUTF8String:html] baseURL:nil];
 	});
 }
 
@@ -673,10 +675,8 @@ static void windowInjectCSS(void *window, const char *css) {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		// get main window
 		WebviewWindow* nsWindow = (WebviewWindow*)window;
-		// get window delegate
-		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
 		// inject css
-		[(WKWebView*)windowDelegate.webView evaluateJavaScript:[NSString stringWithFormat:@"(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%@')); document.head.appendChild(style); })();", [NSString stringWithUTF8String:css]] completionHandler:nil];
+		[nsWindow.webView evaluateJavaScript:[NSString stringWithFormat:@"(function() { var style = document.createElement('style'); style.appendChild(document.createTextNode('%@')); document.head.appendChild(style); })();", [NSString stringWithUTF8String:css]] completionHandler:nil];
         free((void*)css);
 	});
 }
@@ -763,9 +763,7 @@ static void windowShowMenu(void *window, void *menu, int x, int y) {
 		// get menu
 		NSMenu* nsMenu = (NSMenu*)menu;
 		// get webview
-		WebviewWindowDelegate* windowDelegate = (WebviewWindowDelegate*)[nsWindow delegate];
-		// get webview
-		WKWebView* webView = (WKWebView*)windowDelegate.webView;
+		WKWebView* webView = nsWindow.webView;
 		NSPoint point = NSMakePoint(x, y);
   		[nsMenu popUpMenuPositioningItem:nil atLocation:point inView:webView];
 	});
@@ -885,16 +883,15 @@ func (w *macosWebviewWindow) zoom() {
 	C.windowZoom(w.nsWindow)
 }
 
-func (w *macosWebviewWindow) minimize() {
-	C.windowMiniaturize(w.nsWindow)
-}
-
 func (w *macosWebviewWindow) windowZoom() {
 	C.windowZoom(w.nsWindow)
 }
 
 func (w *macosWebviewWindow) close() {
 	C.windowClose(w.nsWindow)
+	if !w.parent.options.HideOnClose {
+		globalApplication.deleteWindowByID(w.parent.id)
+	}
 }
 
 func (w *macosWebviewWindow) zoomIn() {
@@ -1069,6 +1066,7 @@ func (w *macosWebviewWindow) run() {
 			C.bool(w.parent.options.EnableFraudulentWebsiteWarnings),
 			C.bool(w.parent.options.Frameless),
 			C.bool(w.parent.options.EnableDragAndDrop),
+			C.bool(w.parent.options.HideOnClose),
 		)
 		w.setTitle(w.parent.options.Title)
 		w.setAlwaysOnTop(w.parent.options.AlwaysOnTop)
@@ -1135,6 +1133,11 @@ func (w *macosWebviewWindow) run() {
 				C.windowInjectCSS(w.nsWindow, C.CString(w.parent.options.CSS))
 			}
 		})
+
+		w.parent.On(events.Mac.WindowWillClose, func(_ *WindowEventContext) {
+			globalApplication.deleteWindowByID(w.parent.id)
+		})
+
 		if w.parent.options.HTML != "" {
 			w.setHTML(w.parent.options.HTML)
 		}

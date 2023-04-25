@@ -39,7 +39,6 @@ type (
 		setZoom(zoom float64)
 		close()
 		zoom()
-		minimize()
 		setHTML(html string)
 		setPosition(x int, y int)
 		on(eventID uint)
@@ -485,7 +484,7 @@ func (w *WebviewWindow) Minimize() {
 	if w.impl == nil {
 		return
 	}
-	w.impl.minimize()
+	w.impl.minimise()
 }
 
 func (w *WebviewWindow) Zoom() {
@@ -602,8 +601,8 @@ func (w *WebviewWindow) SetFrameless(frameless bool) *WebviewWindow {
 	return w
 }
 
-func (w *WebviewWindow) dispatchCustomEvent(event *CustomEvent) {
-	msg := fmt.Sprintf("_wails.dispatchCustomEvent(%s);", event.ToJSON())
+func (w *WebviewWindow) dispatchWailsEvent(event *WailsEvent) {
+	msg := fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON())
 	w.ExecJS(msg)
 }
 

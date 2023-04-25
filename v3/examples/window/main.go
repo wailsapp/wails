@@ -53,6 +53,16 @@ func main() {
 				Show()
 			windowCounter++
 		})
+	myMenu.Add("New WebviewWindow (Hide on Close").
+		SetAccelerator("CmdOrCtrl+H").
+		OnClick(func(ctx *application.Context) {
+			app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{HideOnClose: true}).
+				SetTitle("WebviewWindow "+strconv.Itoa(windowCounter)).
+				SetPosition(rand.Intn(1000), rand.Intn(800)).
+				SetURL("https://wails.io").
+				Show()
+			windowCounter++
+		})
 	myMenu.Add("New Frameless WebviewWindow").
 		SetAccelerator("CmdOrCtrl+F").
 		OnClick(func(ctx *application.Context) {

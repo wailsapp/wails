@@ -20,7 +20,6 @@ import (
 	"html/template"
 	"log"
 	"net/url"
-	"strconv"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v2/pkg/assetserver"
@@ -114,7 +113,6 @@ func (f *Frontend) startMessageProcessor() {
 func (f *Frontend) startRequestProcessor() {
 	for request := range requestBuffer {
 		f.assets.ServeWebViewRequest(request)
-		request.Release()
 	}
 }
 func (f *Frontend) startCallbackProcessor() {
@@ -337,7 +335,11 @@ func (f *Frontend) processMessage(message string) {
 }
 
 func (f *Frontend) Callback(message string) {
-	f.ExecJS(`window.wails.Callback(` + strconv.Quote(message) + `);`)
+	escaped, err := json.Marshal(message)
+	if err != nil {
+		panic(err)
+	}
+	f.ExecJS(`window.wails.Callback(` + string(escaped) + `);`)
 }
 
 func (f *Frontend) ExecJS(js string) {

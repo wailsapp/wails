@@ -14,14 +14,14 @@
 - (BOOL) resignFirstResponder;
 - (WebviewWindow*) initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)deferCreation;
 
+@property (assign) WKWebView* webView; // We already retain WKWebView since it's part of the Window.
+
 @end
 
 @interface WebviewWindowDelegate : NSObject <NSWindowDelegate, WKScriptMessageHandler, WKNavigationDelegate, WKURLSchemeHandler, NSDraggingDestination>
 
 @property bool hideOnClose;
-@property (retain) WKWebView* webView;
 @property unsigned int windowId;
-@property (retain) NSWindow* window;
 @property (retain) NSEvent* leftMouseEvent;
 @property unsigned int invisibleTitleBarHeight;
 @property NSWindowStyleMask previousStyleMask; // Used to restore the window style mask when using frameless

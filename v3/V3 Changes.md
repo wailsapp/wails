@@ -18,15 +18,15 @@ Window events are events that are emitted by a window. These events include nati
 
 ### Custom Events
 
-Events that the user defines are called `CustomEvents`. This is to differentiate them from the `Event` object that is used to communicate with the browser. CustomEvents are now objects that encapsulate all the details of an event. This includes the event name, the data, and the source of the event.
+Events that the user defines are called `WailsEvents`. This is to differentiate them from the `Event` object that is used to communicate with the browser. WailsEvents are now objects that encapsulate all the details of an event. This includes the event name, the data, and the source of the event.
 
-The data associated with a CustomEvent is now a single value. If multiple values are required, then a struct can be used.
+The data associated with a WailsEvent is now a single value. If multiple values are required, then a struct can be used.
 
 ### Event callbacks and `Emit` function signature
 
-The signatures events callbacks (as used by `On`, `Once` & `OnMultiple`) have changed. In v2, the callback function received optional data. In v3, the callback function receives a `CustomEvent` object that contains all data related to the event.
+The signatures events callbacks (as used by `On`, `Once` & `OnMultiple`) have changed. In v2, the callback function received optional data. In v3, the callback function receives a `WailsEvent` object that contains all data related to the event.
 
-Similarly, the `Emit` function has changed. Instead of taking a name and optional data, it now takes a single `CustomEvent` object that it will emit.
+Similarly, the `Emit` function has changed. Instead of taking a name and optional data, it now takes a single `WailsEvent` object that it will emit.
 
 ### `Off` and `OffAll`
 

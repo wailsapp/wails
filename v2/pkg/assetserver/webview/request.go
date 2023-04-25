@@ -13,6 +13,5 @@ type Request interface {
 
 	Response() ResponseWriter
 
-	AddRef() error
-	Release() error
+	Close() error
 }

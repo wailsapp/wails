@@ -1,0 +1,47 @@
+# https://taskfile.dev
+
+version: "3"
+
+tasks:
+  install:
+    desc: Install Dependencies
+    aliases: [i]
+    cmds:
+      - corepack enable
+      - corepack prepare pnpm@8.2.0 --activate
+      - pnpm install
+    sources:
+      - package.json
+      - pnpm-lock.yaml
+
+  default:
+    desc: Start Website
+    deps: [install]
+    aliases: [s, start]
+    cmds:
+      - npx docusaurus start
+
+  build:
+    desc: Build Website
+    deps: [install]
+    cmds:
+      - npx docusaurus build
+
+  preview:
+    desc: Preview Website
+    deps: [build]
+    aliases: [serve]
+    cmds:
+      - npx docusaurus serve
+
+  crowdin:push:
+    desc: Upload source files to Crowdin
+    deps: [install]
+    cmds:
+      - npx crowdin push -b master
+
+  crowdin:pull:
+    desc: Download approved translation files from Crowdin to local
+    deps: [install]
+    cmds:
+      - npx crowdin pull -b master --export-only-approved

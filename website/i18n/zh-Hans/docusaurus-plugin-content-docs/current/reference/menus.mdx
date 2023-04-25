@@ -9,12 +9,15 @@ sidebar_position: 4
 如何创建菜单的示例：
 
 ```go
+
+    app := NewApp()
+
     AppMenu := menu.NewMenu()
     FileMenu := AppMenu.AddSubmenu("File")
     FileMenu.AddText("&Open", keys.CmdOrCtrl("o"), openFile)
     FileMenu.AddSeparator()
     FileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
-        runtime.Quit()
+        runtime.Quit(app.ctx)
     })
 
     if runtime.GOOS == "darwin" {
@@ -25,7 +28,7 @@ sidebar_position: 4
         Title:             "Menus Demo",
         Width:             800,
         Height:            600,
-        Menu:              AppMenu,
+        Menu:              AppMenu, // reference the menu above
         Bind: []interface{}{
             app,
         },

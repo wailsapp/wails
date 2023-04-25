@@ -1,8 +1,9 @@
-name: Push Checks
+name: Upload Source Documents
 
 on:
   push:
     branches: [master]
+  workflow_dispatch:
 
 jobs:
   push_files_to_crowdin:
@@ -21,17 +22,20 @@ jobs:
             website/**/*.md
             website/**/*.json
 
-      - name: Set node
+      - name: Setup Nodejs
         uses: actions/setup-node@v2
         with:
-          node-version: 16.x
+          node-version: 18.x
 
-      - name: Push files
+      - name: Setup Task
+        uses: arduino/setup-task@v1
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload source documents
         if: steps.changed-files.outputs.any_changed == 'true'
         env:
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
-        run: |
-          cd website
-          corepack enable
-          pnpm install
-          pnpm run crowdin push -b master
+        working-directory: ./website
+        run: task crowdin:push

@@ -234,8 +234,8 @@ Toutes les fonctionnalités d'une `http.Request` ne sont pas actuellement prises
 | PATCH                   | ✅   | ✅   | ✅ [^1] |
 | DELETE                  | ✅   | ✅   | ✅ [^1] |
 | Request Headers         | ✅   | ✅   | ✅ [^1] |
-| Request Body            | ✅   | ✅   | ❌      |
-| Request Body Streaming  | ✅   | ✅   | ❌      |
+| Request Body            | ✅   | ✅   | ✅ [^2] |
+| Request Body Streaming  | ✅   | ✅   | ✅ [^2] |
 | Response StatusCodes    | ✅   | ✅   | ✅ [^1] |
 | Response Headers        | ✅   | ✅   | ✅ [^1] |
 | Response Body           | ✅   | ✅   | ✅      |
@@ -763,4 +763,5 @@ Définir cette option à `true` ouvrira l'inspecteur Web au démarrage de l'appl
 
 Nom: OpenInspectorOnStartup<br/> Type: `bool`
 
-[^1]: Cela nécessite la prise en charge de WebKit2GTK 2.36+ et votre application doit être construite avec la balise de compilation `webkit2_36` pour activer le support de cette fonctionnalité. Cela augmente aussi la version minnimale de WebKit2GTK à 2.36 pour votre application.
+[^1]: This requires WebKit2GTK 2.36+ support and your app needs to be build with the build tag `webkit2_36` to activate support for this feature. This also bumps the minimum requirement of WebKit2GTK to 2.36 for your app.
+[^2]: This requires WebKit2GTK 2.40+ support and your app needs to be build with the build tag `webkit2_40` to activate support for this feature. This also bumps the minimum requirement of WebKit2GTK to 2.40 for your app.

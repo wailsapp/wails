@@ -160,10 +160,14 @@ func processMenus(appoptions *App) {
 	switch runtime.GOOS {
 	case "darwin":
 		if appoptions.Menu == nil {
-			appoptions.Menu = menu.NewMenuFromItems(
-				menu.AppMenu(),
+			items := []*menu.MenuItem{
 				menu.EditMenu(),
-			)
+			}
+			if !appoptions.Frameless {
+				items = append(items, menu.WindowMenu()) // Current options in Window Menu only work if not frameless
+			}
+
+			appoptions.Menu = menu.NewMenuFromItems(menu.AppMenu(), items...)
 		}
 	}
 }

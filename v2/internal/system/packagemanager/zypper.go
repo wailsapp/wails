@@ -33,6 +33,7 @@ func (z *Zypper) Packages() packagemap {
 			{Name: "gtk3-devel", SystemPackage: true, Library: true},
 		},
 		"libwebkit": []*Package{
+			{Name: "webkit2gtk3-soup2-devel", SystemPackage: true, Library: true},
 			{Name: "webkit2gtk3-devel", SystemPackage: true, Library: true},
 		},
 		"gcc": []*Package{
@@ -40,6 +41,7 @@ func (z *Zypper) Packages() packagemap {
 		},
 		"pkg-config": []*Package{
 			{Name: "pkg-config", SystemPackage: true},
+			{Name: "pkgconf-pkg-config", SystemPackage: true},
 		},
 		"npm": []*Package{
 			{Name: "npm10", SystemPackage: true},
@@ -60,7 +62,9 @@ func (z *Zypper) PackageInstalled(pkg *Package) (bool, error) {
 	if pkg.SystemPackage == false {
 		return false, nil
 	}
-	stdout, _, err := shell.RunCommand(".", "zypper", "info", pkg.Name)
+	var env []string
+	env = shell.SetEnv(env, "LANGUAGE", "en_US.utf-8")
+	stdout, _, err := shell.RunCommandWithEnv(env, ".", "zypper", "info", pkg.Name)
 	if err != nil {
 		_, ok := err.(*exec.ExitError)
 		if ok {
@@ -83,7 +87,9 @@ func (z *Zypper) PackageAvailable(pkg *Package) (bool, error) {
 	if pkg.SystemPackage == false {
 		return false, nil
 	}
-	stdout, _, err := shell.RunCommand(".", "zypper", "info", pkg.Name)
+	var env []string
+	env = shell.SetEnv(env, "LANGUAGE", "en_US.utf-8")
+	stdout, _, err := shell.RunCommandWithEnv(env, ".", "zypper", "info", pkg.Name)
 	// We add a space to ensure we get a full match, not partial match
 	if err != nil {
 		_, ok := err.(*exec.ExitError)

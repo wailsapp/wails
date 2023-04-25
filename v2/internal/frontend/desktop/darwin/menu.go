@@ -130,6 +130,5 @@ func (f *Frontend) MenuSetApplicationMenu(menu *menu.Menu) {
 }
 
 func (f *Frontend) MenuUpdateApplicationMenu() {
-	f.MenuSetApplicationMenu(f.frontendOptions.Menu)
 	f.mainWindow.UpdateApplicationMenu()
 }

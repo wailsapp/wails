@@ -1,11 +1,12 @@
 package system
 
 import (
+	"os/exec"
+	"strings"
+
 	"github.com/wailsapp/wails/v2/internal/shell"
 	"github.com/wailsapp/wails/v2/internal/system/operatingsystem"
 	"github.com/wailsapp/wails/v2/internal/system/packagemanager"
-	"os/exec"
-	"strings"
 )
 
 var (
@@ -30,6 +31,30 @@ func GetInfo() (*Info, error) {
 		return nil, err
 	}
 	return &result, nil
+}
+
+func checkNodejs() *packagemanager.Dependency {
+
+	// Check for Nodejs
+	output, err := exec.Command("node", "-v").Output()
+	installed := true
+	version := ""
+	if err != nil {
+		installed = false
+	} else {
+		if len(output) > 0 {
+			version = strings.TrimSpace(strings.Split(string(output), "\n")[0])[1:]
+		}
+	}
+	return &packagemanager.Dependency{
+		Name:           "Nodejs",
+		PackageName:    "N/A",
+		Installed:      installed,
+		InstallCommand: "Available at https://nodejs.org/en/download/",
+		Version:        version,
+		Optional:       false,
+		External:       false,
+	}
 }
 
 func checkNPM() *packagemanager.Dependency {

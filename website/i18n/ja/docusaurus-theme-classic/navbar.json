@@ -38,5 +38,9 @@
   "item.label.Code of Conduct": {
     "message": "行動規範",
     "description": "Navbar item with label Code of Conduct"
+  },
+  "logo.alt": {
+    "message": "Wails ロゴ",
+    "description": "The alt text of navbar logo"
   }
 }

@@ -234,8 +234,8 @@ AssetServerの固有オプションを定義します。 静的なアセット�
 | PATCH                   | ✅   | ✅   | ✅ [^1] |
 | DELETE                  | ✅   | ✅   | ✅ [^1] |
 | Request Headers         | ✅   | ✅   | ✅ [^1] |
-| Request Body            | ✅   | ✅   | ❌      |
-| Request Body Streaming  | ✅   | ✅   | ❌      |
+| Request Body            | ✅   | ✅   | ✅ [^2] |
+| Request Body Streaming  | ✅   | ✅   | ✅ [^2] |
 | Response StatusCodes    | ✅   | ✅   | ✅ [^1] |
 | Response Headers        | ✅   | ✅   | ✅ [^1] |
 | Response Body           | ✅   | ✅   | ✅      |
@@ -764,3 +764,4 @@ func main() {
 名前: OpenInspectorOnStartup<br/> データ型: `bool`
 
 [^1]: この機能の動作には、WebKit2GTK 2.36以上が必要となるため、機能を確実に対応させたい場合は、アプリビルド時にビルドタグ`webkit2_36`を付与してください。 これにより、アプリに必要なWebKit2GTKの最小バージョン要件が2.36に引き上げられます。
+[^2]: この機能の動作には、WebKit2GTK 2.40以上が必要となるため、機能を確実に対応させたい場合は、アプリビルド時にビルドタグ`webkit2_40`を付与してください。 これにより、アプリに必要なWebKit2GTKの最小バージョン要件が2.40に引き上げられます。

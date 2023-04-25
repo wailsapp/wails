@@ -24,15 +24,18 @@ sidebar_position: 5
   "frontend:install": "",
   // 构建资产的命令，在前端目录中运行 - 通常是 `npm run build`
   "frontend:build": "",
-  // 此命令已被 frontend:dev:build 取代。如果未指定 frontend:dev:build 将回退到此命令。如果此命令也未指定，将回退到 frontend:build
+  // 此命令已被 frontend:dev:build 取代。如果未指定 frontend:dev:build 将回退到此命令。
+  // 如果此命令也未指定，将回退到 frontend:build
   "frontend:dev": "",
-  // 此命令是 frontend:build 的 dev 等价物。如果未指定回退到 frontend:dev
+  // 此命令是 frontend:build 的 dev 等价物。
+  // 如果未指定回退到 frontend:dev
   "frontend:dev:build": "",
   // 此命令是 frontend:install 的 dev 等价物。如果未指定回退到 frontend:install
   "frontend:dev:install": "",
   // 此命令在 `wails dev`上的单独进程中运行。用于第 3 方观察者或启动 3d 方开发服务器
   "frontend:dev:watcher": "",
-  // 用于服务资产的第 3 方开发服务器的 URL，比如 Vite。如果设置为 'auto' 那么 devServerUrl 将从 Vite 输出中推断出来
+  // 用于服务资产的第 3 方开发服务器的 URL，比如 Vite。
+  // 如果设置为 'auto' 那么 devServerUrl 将从 Vite 输出中推断出来
   "frontend:dev:serverUrl": "",
   // 创建自动生成的 JS 模块的目录的相对路径
   "wailsjsdir": "",
@@ -48,21 +51,25 @@ sidebar_position: 5
   "runNonNativeBuildHooks": false,
   // 构建前 Hooks
   "preBuildHooks": {
-    // 在构建指定的 GOOS/GOARCH 之前将执行的命令：${platform} 被替换为“GOOS/GOARCH”。 “GOOS/GOARCH” hook 在“GOOS/*”和“*/*” hook 之前执行。
+    // 在构建指定的 GOOS/GOARCH 之前将执行的命令：${platform} 被替换为“GOOS/GOARCH”。
+    //  “GOOS/GOARCH” hook 在“GOOS/*”和“*/*” hook 之前执行。
     "GOOS/GOARCH": "",
-    // 在指定 GOOS 的构建之前将执行的命令：${platform} 被替换为“GOOS/GOARCH”。 “GOOS/*” hook 在“*/*” hook 之前执行。
+    // 在指定 GOOS 的构建之前将执行的命令：${platform} 被替换为“GOOS/GOARCH”。
+    // “GOOS/*” hook 在“*/*” hook 之前执行。
     "GOOS/*": "",
     // 将在每次构建之前执行的命令：${platform} 替换为“GOOS/GOARCH”。
     "*/*": ""
   },
   // 构建后 Hooks
   "postBuildHooks": {
-    // 在构建指定的 GOOS/GOARCH 之后将执行的命令：${platform} 替换为“GOOS/GOARCH”，${bin} 替换为已编译二进制文件的路径。 “GOOS/GOARCH” hook 在“GOOS/*”和“*/*” hook 之前执行。
+    // 在构建指定的 GOOS/GOARCH 之后将执行的命令：${platform} 替换为“GOOS/GOARCH”，
+    // ${bin} 替换为已编译二进制文件的路径。 “GOOS/GOARCH” hook 在“GOOS/*”和“*/*” hook 之前执行。
     "GOOS/GOARCH": "",
-    // 在构建指定的 GOOS 之后将执行的命令：${platform} 替换为“GOOS/GOARCH”，${bin} 替换为已编译二进制文件的路径。 “GOOS/*” hook 在“*/*” hook 之前执行。
+    // 在构建指定的 GOOS 之后将执行的命令：${platform} 替换为“GOOS/GOARCH”，
+    // ${bin} 替换为已编译二进制文件的路径。 “GOOS/*” hook 在“*/*” hook 之前执行。
     "GOOS/*": "",
-    // The command that will be executed after every build: ${platform} is replaced with the "GOOS/GOARCH" and ${bin} with the path to the compiled binary.
-    // 每次构建后将执行的命令：${platform} 替换为“GOOS/GOARCH”，${bin} 替换为已编译二进制文件的路径。
+    // 每次构建后将执行的命令：${platform} 替换为“GOOS/GOARCH”，
+    // ${bin} 替换为已编译二进制文件的路径。
     "*/*": ""
   },
   // 用于填充 manifest 和版本信息的数据。
@@ -87,6 +94,7 @@ sidebar_position: 5
   // 使用 obfuscated 标志时传递给乱码命令的参数
   "garbleargs": ""
 }
+
 ```
 
 该文件将在运行 `wails build` 或 `wails dev` 时，由 Wails CLI 读取。
