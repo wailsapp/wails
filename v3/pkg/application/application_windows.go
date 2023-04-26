@@ -3,10 +3,11 @@
 package application
 
 import (
-	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v3/internal/w32"
 	"syscall"
 	"unsafe"
+
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/w32"
 )
 
 var windowClassName = lo.Must(syscall.UTF16PtrFromString("WailsWebviewWindow"))
@@ -15,11 +16,9 @@ type windowsApp struct {
 	parent *App
 
 	instance w32.HINSTANCE
-}
 
-func (m *windowsApp) dispatchOnMainThread(id uint) {
-	//TODO implement me
-	panic("implement me")
+	mainThreadID         w32.HANDLE
+	mainThreadWindowHWND w32.HWND
 }
 
 func (m *windowsApp) getPrimaryScreen() (*Screen, error) {
@@ -116,25 +115,18 @@ func (m *windowsApp) init() {
 
 func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) uintptr {
 	switch msg {
-	case w32.WM_SIZE, w32.WM_PAINT:
+	case w32.WM_SIZE:
 		return 0
 	case w32.WM_CLOSE:
 		w32.PostQuitMessage(0)
 		return 0
+	case wmInvokeCallback:
+		if hwnd == m.mainThreadWindowHWND {
+			m.invokeCallback(wParam, lParam)
+			return 0
+		}
 	}
 	return w32.DefWindowProc(hwnd, msg, wParam, lParam)
-}
-
-func (m *windowsApp) runMainLoop() int {
-	msg := (*w32.MSG)(unsafe.Pointer(w32.GlobalAlloc(0, uint32(unsafe.Sizeof(w32.MSG{})))))
-	defer w32.GlobalFree(w32.HGLOBAL(unsafe.Pointer(m)))
-
-	for w32.GetMessage(msg, 0, 0, 0) != 0 {
-		w32.TranslateMessage(msg)
-		w32.DispatchMessage(msg)
-	}
-
-	return int(msg.WParam)
 }
 
 func newPlatformApp(app *App) *windowsApp {
@@ -144,6 +136,7 @@ func newPlatformApp(app *App) *windowsApp {
 	}
 
 	result.init()
+	result.initMainLoop()
 
 	return result
 }

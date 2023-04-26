@@ -225,6 +225,7 @@ var (
 	destroyCursor                    = user32.NewProc("DestroyCursor")
 	getDlgCtrlID                     = user32.NewProc("GetDlgCtrlID")
 	systemParametersInfo             = user32.NewProc("SystemParametersInfoW")
+	registerWindowMessage            = user32.NewProc("RegisterWindowMessageW")
 
 	regCreateKeyEx             = advapi32.NewProc("RegCreateKeyExW")
 	regOpenKeyEx               = advapi32.NewProc("RegOpenKeyExW")
@@ -364,6 +365,7 @@ var (
 	mulDiv                     = kernel32.NewProc("MulDiv")
 	getConsoleWindow           = kernel32.NewProc("GetConsoleWindow")
 	getCurrentThread           = kernel32.NewProc("GetCurrentThread")
+	getCurrentThreadId         = kernel32.NewProc("GetCurrentThreadId")
 	getLogicalDrives           = kernel32.NewProc("GetLogicalDrives")
 	getDriveType               = kernel32.NewProc("GetDriveTypeW")
 	getUserDefaultLCID         = kernel32.NewProc("GetUserDefaultLCID")
@@ -481,6 +483,14 @@ var (
 
 	setProcessDpiAwareness = shcore.NewProc("SetProcessDpiAwareness")
 )
+
+func RegisterWindowMessage(name string) uint32 {
+	ret, _, _ := registerWindowMessage.Call(
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(name))),
+	)
+
+	return uint32(ret)
+}
 
 // RegisterClassEx sets the Size of the WNDCLASSEX automatically.
 func RegisterClassEx(wndClassEx *WNDCLASSEX) ATOM {
@@ -3671,6 +3681,11 @@ func GetConsoleWindow() HWND {
 
 func GetCurrentThread() HANDLE {
 	ret, _, _ := getCurrentThread.Call()
+	return HANDLE(ret)
+}
+
+func GetCurrentThreadId() HANDLE {
+	ret, _, _ := getCurrentThreadId.Call()
 	return HANDLE(ret)
 }
 

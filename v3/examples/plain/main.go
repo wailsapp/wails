@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -37,6 +38,21 @@ func main() {
 	app.Events.On("clicked", func(_ *application.WailsEvent) {
 		println("clicked")
 	})
+
+	go func() {
+		time.Sleep(5 * time.Second)
+
+		app.NewWebviewWindowWithOptions(&application.WebviewWindowOptions{
+			Title:  "Plain Bundle new Window from GoRoutine",
+			Width:  500,
+			Height: 500,
+			Mac: application.MacWindow{
+				Backdrop:                application.MacBackdropTranslucent,
+				TitleBar:                application.MacTitleBarHiddenInsetUnified,
+				InvisibleTitleBarHeight: 50,
+			},
+		})
+	}()
 
 	err := app.Run()
 
