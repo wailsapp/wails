@@ -3,10 +3,11 @@
 package application
 
 import (
-	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v3/internal/w32"
 	"syscall"
 	"unsafe"
+
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/w32"
 )
 
 var showDevTools = func(window unsafe.Pointer) {}
@@ -67,7 +68,10 @@ func (w *windowsWebviewWindow) setBackgroundColour(color *RGBA) {
 }
 
 func (w *windowsWebviewWindow) run() {
+	globalApplication.dispatchOnMainThread(w._run)
+}
 
+func (w *windowsWebviewWindow) _run() {
 	var exStyle uint
 	options := w.parent.options
 	windowsOptions := options.Windows
@@ -84,7 +88,7 @@ func (w *windowsWebviewWindow) run() {
 	hwnd = w32.CreateWindowEx(
 		exStyle,
 		windowClassName,
-		lo.Must(syscall.UTF16PtrFromString("My Window Title")),
+		lo.Must(syscall.UTF16PtrFromString(options.Title)),
 		w32.WS_OVERLAPPEDWINDOW|w32.WS_VISIBLE,
 		w32.CW_USEDEFAULT,
 		w32.CW_USEDEFAULT,
