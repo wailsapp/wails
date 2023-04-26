@@ -42,8 +42,9 @@ const (
 	ZoomOut            Role = iota
 	ToggleFullscreen   Role = iota
 
-	Minimize Role = iota
-	Zoom     Role = iota
+	Minimize   Role = iota
+	Zoom       Role = iota
+	FullScreen Role = iota
 	//Front      Role = iota
 	//WindowRole Role = iota
 
@@ -132,6 +133,12 @@ func newWindowMenu() *MenuItem {
 	menu := NewMenu()
 	menu.AddRole(Minimize)
 	menu.AddRole(Zoom)
+	if runtime.GOOS == "darwin" {
+		menu.AddSeparator()
+		menu.AddRole(FullScreen)
+	} else {
+		menu.AddRole(Close)
+	}
 	subMenu := newSubMenuItem("Window")
 	subMenu.submenu = menu
 	return subMenu
