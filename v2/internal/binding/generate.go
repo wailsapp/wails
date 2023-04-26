@@ -23,7 +23,7 @@ var valuePackageIndex int
 var valueTypeIndex int
 
 func init() {
-	mapRegex = regexp.MustCompile(`(?:map\[(?:(?P<keyPackage>\w+)\.)?(?P<keyType>\w+)])?(?P<valueArray>\[])?(?:(?P<valuePackage>\w+)\.)?(?P<valueType>.+)`)
+	mapRegex = regexp.MustCompile(`(?:map\[(?:(?P<keyPackage>\w+)\.)?(?P<keyType>\w+)])?(?P<valueArray>\[])?(?:\*?(?P<valuePackage>\w+)\.)?(?P<valueType>.+)`)
 	keyPackageIndex = mapRegex.SubexpIndex("keyPackage")
 	keyTypeIndex = mapRegex.SubexpIndex("keyType")
 	valueArrayIndex = mapRegex.SubexpIndex("valueArray")
