@@ -3,6 +3,9 @@
 package application
 
 import (
+	"github.com/samber/lo"
+	"github.com/wailsapp/wails/v3/internal/w32"
+	"syscall"
 	"unsafe"
 )
 
@@ -64,8 +67,43 @@ func (w *windowsWebviewWindow) setBackgroundColour(color *RGBA) {
 }
 
 func (w *windowsWebviewWindow) run() {
-	//TODO implement me
-	panic("implement me")
+
+	var exStyle uint
+	options := w.parent.options
+	windowsOptions := options.Windows
+	//if windowsOptions != nil {
+	exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
+	//	if windowsOptions.WindowIsTranslucent {
+	//		exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
+	//	}
+	//}
+	if windowsOptions.AlwaysOnTop {
+		exStyle |= w32.WS_EX_TOPMOST
+	}
+	var hwnd w32.HWND
+	hwnd = w32.CreateWindowEx(
+		exStyle,
+		windowClassName,
+		lo.Must(syscall.UTF16PtrFromString("My Window Title")),
+		w32.WS_OVERLAPPEDWINDOW|w32.WS_VISIBLE,
+		w32.CW_USEDEFAULT,
+		w32.CW_USEDEFAULT,
+		options.Width,
+		options.Height,
+		0,
+		0,
+		w32.GetModuleHandle(""),
+		nil)
+
+	if hwnd == 0 {
+		panic("Unable to create window")
+	}
+
+	if !options.Hidden {
+		w32.ShowWindow(hwnd, w32.SW_SHOW)
+		w32.UpdateWindow(hwnd)
+	}
+	w32.SetForegroundWindow(hwnd)
 }
 
 func (w *windowsWebviewWindow) center() {
@@ -242,6 +280,7 @@ func newWindowImpl(parent *WebviewWindow) *windowsWebviewWindow {
 	result := &windowsWebviewWindow{
 		parent: parent,
 	}
+
 	return result
 }
 

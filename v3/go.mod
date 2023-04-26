@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/go-task/task/v3 v3.20.0
+	github.com/gonutz/w32/v2 v2.7.0
 	github.com/google/go-cmp v0.5.9
 	github.com/jackmordaunt/icns/v2 v2.2.1
 	github.com/json-iterator/go v1.1.12

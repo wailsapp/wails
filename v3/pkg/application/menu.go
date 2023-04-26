@@ -96,14 +96,3 @@ func (m *Menu) setContextData(data *ContextMenuData) {
 func (a *App) NewMenu() *Menu {
 	return &Menu{}
 }
-
-func defaultApplicationMenu() *Menu {
-	menu := NewMenu()
-	menu.AddRole(AppMenu)
-	menu.AddRole(FileMenu)
-	menu.AddRole(EditMenu)
-	menu.AddRole(ViewMenu)
-	menu.AddRole(WindowMenu)
-	menu.AddRole(HelpMenu)
-	return menu
-}

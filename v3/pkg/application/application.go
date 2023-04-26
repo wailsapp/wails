@@ -360,10 +360,10 @@ func (a *App) Run() error {
 	}
 
 	// set the application menu
-	a.impl.setApplicationMenu(a.ApplicationMenu)
-
-	// set the application Icon
-	a.impl.setIcon(a.options.Icon)
+	if runtime.GOOS == "darwin" {
+		a.impl.setApplicationMenu(a.ApplicationMenu)
+		a.impl.setIcon(a.options.Icon)
+	}
 
 	err := a.impl.run()
 	if err != nil {
