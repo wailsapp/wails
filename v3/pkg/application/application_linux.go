@@ -48,6 +48,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"unsafe"
 
 	"github.com/wailsapp/wails/v3/pkg/events"
@@ -63,7 +64,11 @@ type linuxApp struct {
 	applicationMenu unsafe.Pointer
 	parent          *App
 
-	startupActions []func() // startupActions should contain actions to take after `activate` signal arrival
+	startupActions []func()
+
+	// Native -> uint
+	windows     map[*C.GtkWindow]uint
+	windowsLock sync.Mutex
 }
 
 func (m *linuxApp) hide() {
@@ -112,16 +117,17 @@ func (m *linuxApp) name() string {
 
 func (m *linuxApp) getCurrentWindowID() uint {
 	// TODO: Add extra metadata to window
-	window := C.gtk_application_get_active_window((*C.GtkApplication)(m.application))
-	if window != nil {
-		//		return uint(window.id)
-		fmt.Println("getCurrentWindowID", window)
+	window := (*C.GtkWindow)(C.gtk_application_get_active_window((*C.GtkApplication)(m.application)))
+	if window == nil {
+		return uint(1)
+	}
+	m.windowsLock.Lock()
+	defer m.windowsLock.Unlock()
+	identifier, ok := m.windows[window]
+	if ok {
+		return identifier
 	}
 	return uint(1)
-}
-
-func (m *linuxApp) afterActivation(fn func()) {
-	m.startupActions = append(m.startupActions, fn)
 }
 
 func (m *linuxApp) setApplicationMenu(menu *Menu) {
@@ -129,9 +135,12 @@ func (m *linuxApp) setApplicationMenu(menu *Menu) {
 		// Create a default menu
 		menu = defaultApplicationMenu()
 	}
+	globalApplication.dispatchOnMainThread(func() {
+		fmt.Println("setApplicationMenu")
 
-	menu.Update()
-	m.applicationMenu = (menu.impl).(*linuxMenu).native
+		menu.Update()
+		m.applicationMenu = (menu.impl).(*linuxMenu).native
+	})
 }
 
 func (m *linuxApp) run() error {
@@ -140,7 +149,9 @@ func (m *linuxApp) run() error {
 	// FIXME: add Wails specific events - i.e. Shouldn't platform specific ones be translated to Wails events?
 	m.parent.On(events.Mac.ApplicationDidFinishLaunching, func() {
 		// Do we need to do anything now?
+		fmt.Println("events.Mac.ApplicationDidFinishLaunching received!")
 	})
+
 	var app C.App
 	app.app = unsafe.Pointer(m)
 	C.run(m.application, m.application)
@@ -149,6 +160,13 @@ func (m *linuxApp) run() error {
 
 func (m *linuxApp) destroy() {
 	C.g_application_quit((*C.GApplication)(m.application))
+}
+
+// register our window to our parent mapping
+func (m *linuxApp) registerWindow(window *C.GtkWindow, id uint) {
+	m.windowsLock.Lock()
+	m.windows[window] = id
+	m.windowsLock.Unlock()
 }
 
 func newPlatformApp(parent *App) *linuxApp {
@@ -161,6 +179,7 @@ func newPlatformApp(parent *App) *linuxApp {
 		parent:      parent,
 		application: unsafe.Pointer(C.init(nameC)),
 		//		name:        fmt.Sprintf("org.wails.%s", name),
+		windows: map[*C.GtkWindow]uint{},
 	}
 	C.free(unsafe.Pointer(nameC))
 	return app
@@ -176,7 +195,7 @@ func (m *linuxApp) executeStartupActions() {
 
 //export activateLinux
 func activateLinux(data unsafe.Pointer) {
-	globalApplication.activate()
+	//	globalApplication.activate()
 	app := (globalApplication.impl).(*linuxApp)
 	app.executeStartupActions()
 }

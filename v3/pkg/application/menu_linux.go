@@ -44,8 +44,6 @@ func handleClick(idPtr unsafe.Pointer) {
 		if menuItem.isChecked() {
 			processMenuItemClick(C.uint(item.id))
 		}
-	default:
-		fmt.Println("handleClick", item.itemType, item.id)
 	}
 }
 
@@ -187,5 +185,16 @@ func (l *linuxMenu) createMenu(name string, items []*MenuItem) *Menu {
 		impl:  impl,
 	}
 	impl.menu = menu
+	return menu
+}
+
+func defaultApplicationMenu() *Menu {
+	menu := NewMenu()
+	menu.AddRole(AppMenu)
+	menu.AddRole(FileMenu)
+	menu.AddRole(EditMenu)
+	menu.AddRole(ViewMenu)
+	menu.AddRole(WindowMenu)
+	menu.AddRole(HelpMenu)
 	return menu
 }
