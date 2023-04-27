@@ -29,7 +29,13 @@ func main() {
 
 	// Click callbacks
 	myMenu.Add("Click Me!").OnClick(func(ctx *application.Context) {
-		ctx.ClickedMenuItem().SetLabel("Thanks mate!")
+		label := ctx.ClickedMenuItem().Label()
+		if label == "Click Me!" {
+			label = "Thanks mate!"
+		} else {
+			label = "Click Me!"
+		}
+		ctx.ClickedMenuItem().SetLabel(label)
 	})
 
 	// You can control the current window from the menu
