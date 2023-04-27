@@ -83,9 +83,11 @@ func (w *linuxWebviewWindow) newWebview(gpuPolicy int) uintptr {
 	purego.RegisterLibFunc(&g_signal_connect, gtk, "g_signal_connect_data")
 
 	loadChanged := purego.NewCallback(func(window uintptr) {
-		fmt.Println("loadChanged", window)
+		//fmt.Println("loadChanged", window)
 	})
-	g_signal_connect(webview, "load-changed", loadChanged, 0, false, 0)
+	if g_signal_connect(webview, "load-changed", loadChanged, 0, false, 0) == 0 {
+		fmt.Println("failed to connect 'load-changed' event")
+	}
 
 	if g_signal_connect(webview, "button-press-event", purego.NewCallback(w.buttonPress), 0, false, 0) == 0 {
 		fmt.Println("failed to connect 'button-press-event")
@@ -343,6 +345,8 @@ func (w linuxWebviewWindow) getCurrentMonitorGeometry() (x int, y int, width int
 }
 
 func (w *linuxWebviewWindow) center() {
+	fmt.Println("attempting to set in the center")
+
 	x, y, width, height, _ := w.getCurrentMonitorGeometry()
 	if x == -1 && y == -1 && width == -1 && height == -1 {
 		return
@@ -610,8 +614,6 @@ func (w *linuxWebviewWindow) run() {
 			w.fullscreen()
 
 		}
-		w.center()
-
 		if w.parent.options.URL != "" {
 			w.setURL(w.parent.options.URL)
 		}
@@ -633,7 +635,6 @@ func (w *linuxWebviewWindow) run() {
 			if w.parent.options.X != 0 || w.parent.options.Y != 0 {
 				w.setPosition(w.parent.options.X, w.parent.options.Y)
 			} else {
-				fmt.Println("attempting to set in the center")
 				w.center()
 			}
 		}
