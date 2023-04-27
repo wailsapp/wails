@@ -625,6 +625,7 @@ func (w *linuxWebviewWindow) run() {
 
 	globalApplication.dispatchOnMainThread(func() {
 		w.window = unsafe.Pointer(C.gtk_application_window_new((*C.GtkApplication)(w.application)))
+		app.registerWindow((*C.GtkWindow)(w.window), w.parent.id) // record our mapping
 		C.g_object_ref_sink(C.gpointer(w.window))
 		w.webview = w.newWebview(1)
 		w.connectSignals()
