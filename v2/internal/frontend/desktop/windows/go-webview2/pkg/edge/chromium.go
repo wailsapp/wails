@@ -31,6 +31,7 @@ type Chromium struct {
 	webResourceRequested  *iCoreWebView2WebResourceRequestedEventHandler
 	acceleratorKeyPressed *ICoreWebView2AcceleratorKeyPressedEventHandler
 	navigationCompleted   *ICoreWebView2NavigationCompletedEventHandler
+	processFailed         *ICoreWebView2ProcessFailedEventHandler
 
 	environment *ICoreWebView2Environment
 
@@ -50,6 +51,7 @@ type Chromium struct {
 	MessageCallback              func(string)
 	WebResourceRequestedCallback func(request *ICoreWebView2WebResourceRequest, args *ICoreWebView2WebResourceRequestedEventArgs)
 	NavigationCompletedCallback  func(sender *ICoreWebView2, args *ICoreWebView2NavigationCompletedEventArgs)
+	ProcessFailedCallback        func(sender *ICoreWebView2, args *ICoreWebView2ProcessFailedEventArgs)
 	AcceleratorKeyCallback       func(uint) bool
 }
 
@@ -73,6 +75,7 @@ func NewChromium() *Chromium {
 	e.webResourceRequested = newICoreWebView2WebResourceRequestedEventHandler(e)
 	e.acceleratorKeyPressed = newICoreWebView2AcceleratorKeyPressedEventHandler(e)
 	e.navigationCompleted = newICoreWebView2NavigationCompletedEventHandler(e)
+	e.processFailed = newICoreWebView2ProcessFailedEventHandler(e)
 	e.permissions = make(map[CoreWebView2PermissionKind]CoreWebView2PermissionState)
 
 	return e
@@ -253,6 +256,11 @@ func (e *Chromium) CreateCoreWebView2ControllerCompleted(res uintptr, controller
 		uintptr(unsafe.Pointer(e.navigationCompleted)),
 		uintptr(unsafe.Pointer(&token)),
 	)
+	e.webview.vtbl.AddProcessFailed.Call(
+		uintptr(unsafe.Pointer(e.webview)),
+		uintptr(unsafe.Pointer(e.processFailed)),
+		uintptr(unsafe.Pointer(&token)),
+	)
 
 	e.controller.AddAcceleratorKeyPressed(e.acceleratorKeyPressed, &token)
 
@@ -372,6 +380,13 @@ func boolToInt(input bool) int {
 func (e *Chromium) NavigationCompleted(sender *ICoreWebView2, args *ICoreWebView2NavigationCompletedEventArgs) uintptr {
 	if e.NavigationCompletedCallback != nil {
 		e.NavigationCompletedCallback(sender, args)
+	}
+	return 0
+}
+
+func (e *Chromium) ProcessFailed(sender *ICoreWebView2, args *ICoreWebView2ProcessFailedEventArgs) uintptr {
+	if e.ProcessFailedCallback != nil {
+		e.ProcessFailedCallback(sender, args)
 	}
 	return 0
 }

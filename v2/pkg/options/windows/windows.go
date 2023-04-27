@@ -13,6 +13,7 @@ type Messages struct {
 	PressOKToInstall     string
 	ContactAdmin         string
 	InvalidFixedWebview2 string
+	WebView2ProcessCrash string
 }
 
 const (
@@ -126,5 +127,6 @@ func DefaultMessages() *Messages {
 		PressOKToInstall:     "Press Ok to install.",
 		ContactAdmin:         "The WebView2 runtime is required to run this application. Please contact your system administrator.",
 		InvalidFixedWebview2: "The WebView2 runtime is manually specified, but It is not valid. Check minimum required version and webview2 path.",
+		WebView2ProcessCrash: "The WebView2 process crashed and the application needs to be restarted.",
 	}
 }
