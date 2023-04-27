@@ -96,6 +96,7 @@ import (
 )
 
 const startURL = "wails://wails/"
+var haveGtk = true
 
 type Frontend struct {
 
@@ -132,7 +133,10 @@ func init() {
 		_ = os.Setenv("GDK_BACKEND", "x11")
 	}
 
-	C.gtk_init(nil, nil)
+	gtkInit := C.gtk_init_check(nil, nil)
+	if gtkInit != 1 {
+		haveGtk = false
+	}
 }
 
 func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.Logger, appBindings *binding.Bindings, dispatcher frontend.Dispatcher) *Frontend {
