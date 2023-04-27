@@ -122,11 +122,9 @@ func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
 
 	switch item.itemType {
 	case text:
-		fmt.Println("text", item.label)
 		result.native = newWithLabel(item.label)
 
 	case checkbox:
-		fmt.Println("cb", item.label)
 		result.native = newCBWithLabel(item.label)
 		result.setChecked(item.checked)
 		if item.accelerator != nil {
@@ -136,7 +134,6 @@ func newMenuItemImpl(item *MenuItem) *linuxMenuItem {
 		panic("Shouldn't get here with a radio item")
 
 	case submenu:
-		fmt.Println("submenu", item.label)
 		result.native = newWithLabel(item.label)
 
 	default:

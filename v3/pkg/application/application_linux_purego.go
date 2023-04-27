@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
+	"sync"
 
 	"github.com/ebitengine/purego"
 	"github.com/wailsapp/wails/v2/pkg/assetserver/webview"
@@ -55,6 +55,10 @@ type linuxApp struct {
 	application     uintptr
 	applicationMenu uintptr
 	parent          *App
+
+	// Native -> uint
+	windows     map[uintptr]uint
+	windowsLock sync.Mutex
 }
 
 func (m *linuxApp) hide() {
@@ -67,6 +71,7 @@ func (m *linuxApp) show() {
 
 func (m *linuxApp) on(eventID uint) {
 	log.Println("linuxApp.on()", eventID)
+
 	// TODO: Setup signal handling as appropriate
 	// Note: GTK signals seem to be strings!
 }
@@ -80,15 +85,19 @@ func (m *linuxApp) name() string {
 }
 
 func (m *linuxApp) getCurrentWindowID() uint {
-	fmt.Println("getCurrentWindowID")
 	var getCurrentWindow func(uintptr) uintptr
 	purego.RegisterLibFunc(&getCurrentWindow, gtk, "gtk_application_get_active_window")
-	// window := getCurrentWindow(m.application)
-	// if window != 0 {
-	// 	webview := (*WebviewWindow)(window)
-	// 	return webview.id
-	// }
-	return uint(1)
+	window := getCurrentWindow(m.application)
+	if window == 0 {
+		return 1
+	}
+	m.windowsLock.Lock()
+	defer m.windowsLock.Unlock()
+	if identifier, ok := m.windows[window]; ok {
+		return identifier
+	}
+
+	return 1
 }
 
 func (m *linuxApp) setApplicationMenu(menu *Menu) {
@@ -96,19 +105,21 @@ func (m *linuxApp) setApplicationMenu(menu *Menu) {
 		// Create a default menu
 		menu = defaultApplicationMenu()
 	}
-
-	menu.Update()
-	m.applicationMenu = (menu.impl).(*linuxMenu).native
+	globalApplication.dispatchOnMainThread(func() {
+		menu.Update()
+		m.applicationMenu = (menu.impl).(*linuxMenu).native
+	})
 }
 
 func (m *linuxApp) activate() {
 	fmt.Println("linuxApp.activated!", m.application)
 	var hold func(uintptr)
 	purego.RegisterLibFunc(&hold, gtk, "g_application_hold")
+
 	hold(m.application)
 
-	time.Sleep(50 * time.Millisecond)
-	m.parent.activate()
+	//	time.Sleep(50 * time.Millisecond)
+	//	m.parent.activate()
 }
 
 func (m *linuxApp) run() error {
@@ -119,6 +130,11 @@ func (m *linuxApp) run() error {
 			fmt.Println("ApplicationDidFinishLaunching!")
 		})
 	*/
+	m.parent.OnWindowCreation(func(window *WebviewWindow) {
+		fmt.Println("OnWindowCreation: ", window)
+
+	})
+
 	var g_signal_connect func(uintptr, string, uintptr, uintptr, bool, int) int
 	purego.RegisterLibFunc(&g_signal_connect, gtk, "g_signal_connect_data")
 	g_signal_connect(m.application, "activate", purego.NewCallback(m.activate), m.application, false, 0)
@@ -146,6 +162,12 @@ func (m *linuxApp) destroy() {
 	quit(m.application)
 }
 
+func (m *linuxApp) registerWindow(address uintptr, window uint) {
+	m.windowsLock.Lock()
+	m.windows[address] = window
+	m.windowsLock.Unlock()
+}
+
 func newPlatformApp(parent *App) *linuxApp {
 	name := strings.ToLower(parent.options.Name)
 	if name == "" {
@@ -159,6 +181,7 @@ func newPlatformApp(parent *App) *linuxApp {
 		appName:     identifier,
 		parent:      parent,
 		application: gtkNew(identifier, 0),
+		windows:     map[uintptr]uint{},
 	}
 	return app
 }
