@@ -3,6 +3,7 @@ module github.com/wailsapp/wails/v3
 go 1.19
 
 require (
+	github.com/ebitengine/purego v0.3.2
 	github.com/go-task/task/v3 v3.20.0
 	github.com/google/go-cmp v0.5.9
 	github.com/jackmordaunt/icns/v2 v2.2.1
@@ -72,3 +73,5 @@ require (
 )
 
 replace github.com/wailsapp/wails/v2 => ../v2
+
+replace github.com/ebitengine/purego v0.3.2 => github.com/TotallyGamerJet/purego v0.2.0-alpha.0.20230404174033-5655abccca7e

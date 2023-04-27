@@ -363,6 +363,13 @@ func (a *App) Run() error {
 		}
 	}()
 
+	a.impl.setApplicationMenu(a.ApplicationMenu)
+
+	// set the application menu
+	if runtime.GOOS == "darwin" {
+		a.impl.setIcon(a.options.Icon)
+	}
+
 	// run windows
 	for _, window := range a.windows {
 		go window.run()
@@ -371,12 +378,6 @@ func (a *App) Run() error {
 	// run system trays
 	for _, systray := range a.systemTrays {
 		go systray.Run()
-	}
-
-	// set the application menu
-	if runtime.GOOS == "darwin" {
-		a.impl.setApplicationMenu(a.ApplicationMenu)
-		a.impl.setIcon(a.options.Icon)
 	}
 
 	err := a.impl.run()

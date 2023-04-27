@@ -1,11 +1,13 @@
 package application
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/samber/lo"
 	"sync"
 	"time"
+
+	"github.com/samber/lo"
 
 	"github.com/wailsapp/wails/v3/pkg/logger"
 
@@ -14,54 +16,57 @@ import (
 
 type (
 	webviewWindowImpl interface {
-		setTitle(title string)
-		setSize(width, height int)
-		setAlwaysOnTop(alwaysOnTop bool)
-		setURL(url string)
-		setResizable(resizable bool)
-		setMinSize(width, height int)
-		setMaxSize(width, height int)
-		execJS(js string)
-		setBackgroundColour(color RGBA)
-		run()
 		center()
-		size() (int, int)
-		width() int
-		height() int
-		position() (int, int)
-		destroy()
-		reload()
-		forceReload()
-		toggleDevTools()
-		zoomReset()
-		zoomIn()
-		zoomOut()
-		getZoom() float64
-		setZoom(zoom float64)
 		close()
-		zoom()
-		setHTML(html string)
-		setPosition(x int, y int)
-		on(eventID uint)
-		minimise()
-		unminimise()
-		maximise()
-		unmaximise()
+		destroy()
+		disableSizeConstraints()
+		execJS(js string)
+		focus()
+		forceReload()
 		fullscreen()
-		unfullscreen()
-		isMinimised() bool
-		isMaximised() bool
+		getScreen() (*Screen, error)
+		getZoom() float64
+		height() int
+		hide()
+		hide()
 		isFullscreen() bool
+		isMaximised() bool
+		isMinimised() bool
 		isNormal() bool
 		isVisible() bool
-		setFullscreenButtonEnabled(enabled bool)
-		focus()
-		show()
-		hide()
-		getScreen() (*Screen, error)
-		setFrameless(bool)
-		openContextMenu(menu *Menu, data *ContextMenuData)
+		maximise()
+		minimise()
 		nativeWindowHandle() uintptr
+		on(eventID uint)
+		openContextMenu(menu *Menu, data *ContextMenuData)
+		position() (int, int)
+		reload()
+		restore() // FIXME: not used
+		run()
+		setAlwaysOnTop(alwaysOnTop bool)
+		setBackgroundColour(color RGBA)
+		setFrameless(bool)
+		setFullscreenButtonEnabled(enabled bool)
+		setHTML(html string)
+		setMaxSize(width, height int)
+		setMinSize(width, height int)
+		setPosition(x int, y int)
+		setResizable(resizable bool)
+		setSize(width, height int)
+		setTitle(title string)
+		setURL(url string)
+		setZoom(zoom float64)
+		show()
+		size() (int, int)
+		toggleDevTools()
+		unfullscreen()
+		unmaximise()
+		unminimise()
+		width() int
+		zoom()
+		zoomIn()
+		zoomOut()
+		zoomReset()
 	}
 )
 
@@ -129,6 +134,39 @@ func (w *WebviewWindow) addCancellationFunction(canceller func()) {
 	w.cancellersLock.Lock()
 	defer w.cancellersLock.Unlock()
 	w.cancellers = append(w.cancellers, canceller)
+}
+
+// formatJS ensures the 'data' provided marshals to valid json or panics
+func (w *WebviewWindow) formatJS(f string, callID string, data string) string {
+	j, err := json.Marshal(data)
+	if err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf(f, callID, j)
+}
+
+func (w *WebviewWindow) CallError(callID *string, result string) {
+	if w.impl != nil {
+		w.impl.execJS(w.formatJS("_wails.callErrorCallback('%s', %s);", *callID, result))
+	}
+}
+
+func (w *WebviewWindow) CallResponse(callID *string, result string) {
+	if w.impl != nil {
+		w.impl.execJS(w.formatJS("_wails.callCallback('%s', %s, true);", *callID, result))
+	}
+}
+
+func (w *WebviewWindow) DialogError(dialogID *string, result string) {
+	if w.impl != nil {
+		w.impl.execJS(w.formatJS("_wails.dialogErrorCallback('%s', %s);", *dialogID, result))
+	}
+}
+
+func (w *WebviewWindow) DialogResponse(dialogID *string, result string) {
+	if w.impl != nil {
+		w.impl.execJS(w.formatJS("_wails.dialogCallback('%s', %s, true);", *dialogID, result))
+	}
 }
 
 // SetTitle sets the title of the window
@@ -744,8 +782,9 @@ func (w *WebviewWindow) SetFrameless(frameless bool) *WebviewWindow {
 }
 
 func (w *WebviewWindow) dispatchWailsEvent(event *WailsEvent) {
-	msg := fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON())
-	w.ExecJS(msg)
+	if w.impl != nil {
+		w.impl.execJS(fmt.Sprintf("_wails.dispatchWailsEvent(%s);", event.ToJSON()))
+	}
 }
 
 func (w *WebviewWindow) info(message string, args ...any) {
