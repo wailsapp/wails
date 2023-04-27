@@ -84,3 +84,13 @@ func (r *request) Response() ResponseWriter {
 	r.rw = &responseWriter{req: r.req}
 	return r.rw
 }
+
+func (r *request) Close() error {
+	var err error
+	if r.body != nil {
+		err = r.body.Close()
+	}
+	r.Response().Finish()
+	r.Release()
+	return err
+}

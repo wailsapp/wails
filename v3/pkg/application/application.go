@@ -390,6 +390,27 @@ func (a *App) Run() error {
 	return nil
 }
 
+// activate is called by the implementation to notify it is ready to run
+func (a *App) activate() {
+	a.info("Starting window(s)")
+	// run windows
+	for _, window := range a.windows {
+		go window.run()
+	}
+
+	a.info("Starting systray(s)")
+	// run system trays
+	for _, systray := range a.systemTrays {
+		go systray.Run()
+	}
+
+	//	set the application menu
+	a.impl.setApplicationMenu(a.ApplicationMenu)
+
+	//	set the application Icon
+	a.impl.setIcon(a.options.Icon)
+}
+
 func (a *App) handleApplicationEvent(event uint) {
 	a.applicationEventListenersLock.RLock()
 	listeners, ok := a.applicationEventListeners[event]
