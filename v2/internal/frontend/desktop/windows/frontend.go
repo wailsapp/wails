@@ -428,6 +428,9 @@ func (f *Frontend) setupChromium() {
 		if opts.WebviewGpuIsDisabled {
 			chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-gpu")
 		}
+		if opts.WebviewDisableRendererCodeIntegrity {
+			disableFeatues = append(disableFeatues, "RendererCodeIntegrity")
+		}
 	}
 
 	if len(disableFeatues) > 0 {

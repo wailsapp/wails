@@ -102,6 +102,16 @@ type Options struct {
 
 	// WebviewGpuIsDisabled is used to enable / disable GPU acceleration for the webview
 	WebviewGpuIsDisabled bool
+
+	// WebviewDisableRendererCodeIntegrity disables the `RendererCodeIntegrity` of WebView2. Some Security Endpoint
+	// Protection Software inject themself into the WebView2 with unsigned or wrongly signed dlls, which is not allowed
+	// and will stop the WebView2 processes. Those security software need an update to fix this issue or one can disable
+	// the integrity check with this flag.
+	//
+	// The event viewer log contains `Code Integrity Errors` like mentioned here: https://github.com/MicrosoftEdge/WebView2Feedback/issues/2051
+	//
+	// !! Please keep in mind when disabling this feature, this also allows malicious software to inject into the WebView2 !!
+	WebviewDisableRendererCodeIntegrity bool
 }
 
 func DefaultMessages() *Messages {
