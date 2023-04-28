@@ -1,61 +1,228 @@
-// Copyright 2010-2012 The W32 Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
+//go:build windows
+
+/*
+ * Copyright (C) 2019 Tad Vizbaras. All Rights Reserved.
+ * Copyright (C) 2010-2012 The W32 Authors. All Rights Reserved.
+ */
 
 package w32
 
 import (
-	"syscall"
-	"time"
-	"unicode/utf16"
+	"fmt"
 	"unsafe"
 )
 
 // From MSDN: Windows Data Types
 // http://msdn.microsoft.com/en-us/library/s3f49ktz.aspx
 // http://msdn.microsoft.com/en-us/library/windows/desktop/aa383751.aspx
+// ATOM                  WORD
+// BOOL                  int32
+// BOOLEAN               byte
+// BYTE                  byte
+// CCHAR                 int8
+// CHAR                  int8
+// COLORREF              DWORD
+// DWORD                 uint32
+// DWORDLONG             ULONGLONG
+// DWORD_PTR             ULONG_PTR
+// DWORD32               uint32
+// DWORD64               uint64
+// FLOAT                 float32
+// HACCEL                HANDLE
+// HALF_PTR              struct{} // ???
+// HANDLE                PVOID
+// HBITMAP               HANDLE
+// HBRUSH                HANDLE
+// HCOLORSPACE           HANDLE
+// HCONV                 HANDLE
+// HCONVLIST             HANDLE
+// HCURSOR               HANDLE
+// HDC                   HANDLE
+// HDDEDATA              HANDLE
+// HDESK                 HANDLE
+// HDROP                 HANDLE
+// HDWP                  HANDLE
+// HENHMETAFILE          HANDLE
+// HFILE                 HANDLE
+// HFONT                 HANDLE
+// HGDIOBJ               HANDLE
+// HGLOBAL               HANDLE
+// HHOOK                 HANDLE
+// HICON                 HANDLE
+// HINSTANCE             HANDLE
+// HKEY                  HANDLE
+// HKL                   HANDLE
+// HLOCAL                HANDLE
+// HMENU                 HANDLE
+// HMETAFILE             HANDLE
+// HMODULE               HANDLE
+// HPALETTE              HANDLE
+// HPEN                  HANDLE
+// HRESULT               int32
+// HRGN                  HANDLE
+// HSZ                   HANDLE
+// HWINSTA               HANDLE
+// HWND                  HANDLE
+// INT                   int32
+// INT_PTR               uintptr
+// INT8                  int8
+// INT16                 int16
+// INT32                 int32
+// INT64                 int64
+// LANGID                WORD
+// LCID                  DWORD
+// LCTYPE                DWORD
+// LGRPID                DWORD
+// LONG                  int32
+// LONGLONG              int64
+// LONG_PTR              uintptr
+// LONG32                int32
+// LONG64                int64
+// LPARAM                LONG_PTR
+// LPBOOL                *BOOL
+// LPBYTE                *BYTE
+// LPCOLORREF            *COLORREF
+// LPCSTR                *int8
+// LPCTSTR               LPCWSTR
+// LPCVOID               unsafe.Pointer
+// LPCWSTR               *WCHAR
+// LPDWORD               *DWORD
+// LPHANDLE              *HANDLE
+// LPINT                 *INT
+// LPLONG                *LONG
+// LPSTR                 *CHAR
+// LPTSTR                LPWSTR
+// LPVOID                unsafe.Pointer
+// LPWORD                *WORD
+// LPWSTR                *WCHAR
+// LRESULT               LONG_PTR
+// PBOOL                 *BOOL
+// PBOOLEAN              *BOOLEAN
+// PBYTE                 *BYTE
+// PCHAR                 *CHAR
+// PCSTR                 *CHAR
+// PCTSTR                PCWSTR
+// PCWSTR                *WCHAR
+// PDWORD                *DWORD
+// PDWORDLONG            *DWORDLONG
+// PDWORD_PTR            *DWORD_PTR
+// PDWORD32              *DWORD32
+// PDWORD64              *DWORD64
+// PFLOAT                *FLOAT
+// PHALF_PTR             *HALF_PTR
+// PHANDLE               *HANDLE
+// PHKEY                 *HKEY
+// PINT_PTR              *INT_PTR
+// PINT8                 *INT8
+// PINT16                *INT16
+// PINT32                *INT32
+// PINT64                *INT64
+// PLCID                 *LCID
+// PLONG                 *LONG
+// PLONGLONG             *LONGLONG
+// PLONG_PTR             *LONG_PTR
+// PLONG32               *LONG32
+// PLONG64               *LONG64
+// POINTER_32            struct{} // ???
+// POINTER_64            struct{} // ???
+// POINTER_SIGNED        uintptr
+// POINTER_UNSIGNED      uintptr
+// PSHORT                *SHORT
+// PSIZE_T               *SIZE_T
+// PSSIZE_T              *SSIZE_T
+// PSTR                  *CHAR
+// PTBYTE                *TBYTE
+// PTCHAR                *TCHAR
+// PTSTR                 PWSTR
+// PUCHAR                *UCHAR
+// PUHALF_PTR            *UHALF_PTR
+// PUINT                 *UINT
+// PUINT_PTR             *UINT_PTR
+// PUINT8                *UINT8
+// PUINT16               *UINT16
+// PUINT32               *UINT32
+// PUINT64               *UINT64
+// PULONG                *ULONG
+// PULONGLONG            *ULONGLONG
+// PULONG_PTR            *ULONG_PTR
+// PULONG32              *ULONG32
+// PULONG64              *ULONG64
+// PUSHORT               *USHORT
+// PVOID                 unsafe.Pointer
+// PWCHAR                *WCHAR
+// PWORD                 *WORD
+// PWSTR                 *WCHAR
+// QWORD                 uint64
+// SC_HANDLE             HANDLE
+// SC_LOCK               LPVOID
+// SERVICE_STATUS_HANDLE HANDLE
+// SHORT                 int16
+// SIZE_T                ULONG_PTR
+// SSIZE_T               LONG_PTR
+// TBYTE                 WCHAR
+// TCHAR                 WCHAR
+// UCHAR                 uint8
+// UHALF_PTR             struct{} // ???
+// UINT                  uint32
+// UINT_PTR              uintptr
+// UINT8                 uint8
+// UINT16                uint16
+// UINT32                uint32
+// UINT64                uint64
+// ULONG                 uint32
+// ULONGLONG             uint64
+// ULONG_PTR             uintptr
+// ULONG32               uint32
+// ULONG64               uint64
+// USHORT                uint16
+// USN                   LONGLONG
+// WCHAR                 uint16
+// WORD                  uint16
+// WPARAM                UINT_PTR
 type (
-	ATOM            uint16
-	BOOL            int32
-	COLORREF        uint32
-	DWM_FRAME_COUNT uint64
-	DWORD           uint32
-	HACCEL          HANDLE
-	HANDLE          uintptr
-	HBITMAP         HANDLE
-	HBRUSH          HANDLE
-	HCURSOR         HANDLE
-	HDC             HANDLE
-	HDROP           HANDLE
-	HDWP            HANDLE
-	HENHMETAFILE    HANDLE
-	HFONT           HANDLE
-	HGDIOBJ         HANDLE
-	HGLOBAL         HANDLE
-	HGLRC           HANDLE
-	HHOOK           HANDLE
-	HICON           HANDLE
-	HIMAGELIST      HANDLE
-	HINSTANCE       HANDLE
-	HKEY            HANDLE
-	HKL             HANDLE
-	HMENU           HANDLE
-	HMODULE         HANDLE
-	HMONITOR        HANDLE
-	HPEN            HANDLE
-	HRESULT         int32
-	HRGN            HANDLE
-	HRSRC           HANDLE
-	HTHUMBNAIL      HANDLE
-	HWND            HANDLE
-	LPARAM          uintptr
-	LPCVOID         unsafe.Pointer
-	LRESULT         uintptr
-	PVOID           unsafe.Pointer
-	QPC_TIME        uint64
-	ULONG_PTR       uintptr
-	WPARAM          uintptr
-	HRAWINPUT       HANDLE
+	ATOM            = uint16
+	BOOL            = int32
+	COLORREF        = uint32
+	DWM_FRAME_COUNT = uint64
+	WORD            = uint16
+	DWORD           = uint32
+	HACCEL          = HANDLE
+	HANDLE          = uintptr
+	HBITMAP         = HANDLE
+	HBRUSH          = HANDLE
+	HCURSOR         = HANDLE
+	HDC             = HANDLE
+	HDROP           = HANDLE
+	HDWP            = HANDLE
+	HENHMETAFILE    = HANDLE
+	HFONT           = HANDLE
+	HGDIOBJ         = HANDLE
+	HGLOBAL         = HANDLE
+	HGLRC           = HANDLE
+	HHOOK           = HANDLE
+	HICON           = HANDLE
+	HIMAGELIST      = HANDLE
+	HINSTANCE       = HANDLE
+	HKEY            = HANDLE
+	HKL             = HANDLE
+	HMENU           = HANDLE
+	HMODULE         = HANDLE
+	HMONITOR        = HANDLE
+	HPEN            = HANDLE
+	HRESULT         = int32
+	HRGN            = HANDLE
+	HRSRC           = HANDLE
+	HTHUMBNAIL      = HANDLE
+	HWND            = HANDLE
+	LPARAM          = uintptr
+	LPCVOID         = unsafe.Pointer
+	LRESULT         = uintptr
+	PVOID           = unsafe.Pointer
+	QPC_TIME        = uint64
+	ULONG_PTR       = uintptr
+	SIZE_T          = ULONG_PTR
+	WPARAM          = uintptr
+	UINT            = uint
 )
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd162805.aspx
@@ -68,12 +235,8 @@ type RECT struct {
 	Left, Top, Right, Bottom int32
 }
 
-func (r *RECT) Width() int32 {
-	return r.Right - r.Left
-}
-
-func (r *RECT) Height() int32 {
-	return r.Bottom - r.Top
+func (r *RECT) String() string {
+	return fmt.Sprintf("RECT (%p): Left: %d, Top: %d, Right: %d, Bottom: %d", r, r.Left, r.Top, r.Right, r.Bottom)
 }
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms633577.aspx
@@ -92,6 +255,11 @@ type WNDCLASSEX struct {
 	IconSm     HICON
 }
 
+type TPMPARAMS struct {
+	CbSize    uint32
+	RcExclude RECT
+}
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms644958.aspx
 type MSG struct {
 	Hwnd    HWND
@@ -100,6 +268,15 @@ type MSG struct {
 	LParam  uintptr
 	Time    uint32
 	Pt      POINT
+}
+
+// https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-minmaxinfo
+type MINMAXINFO struct {
+	PtReserved     POINT
+	PtMaxSize      POINT
+	PtMaxPosition  POINT
+	PtMinTrackSize POINT
+	PtMaxTrackSize POINT
 }
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd145037.aspx
@@ -118,106 +295,6 @@ type LOGFONT struct {
 	Quality        byte
 	PitchAndFamily byte
 	FaceName       [LF_FACESIZE]uint16
-}
-
-func toString(s []uint16) string {
-	for i, c := range s {
-		if c == 0 {
-			return string(utf16.Decode(s[:i]))
-		}
-	}
-	return string(utf16.Decode(s))
-}
-
-func (f *LOGFONT) GetFaceName() string {
-	return toString(f.FaceName[:])
-}
-
-func (f *LOGFONT) SetFaceName(name string) {
-	s := utf16.Encode([]rune(name))
-	max := len(f.FaceName) - 1
-	if len(s) > max {
-		s = s[:max]
-	}
-	copy(f.FaceName[:], s)
-	f.FaceName[len(s)] = 0
-}
-
-type ENUMLOGFONTEX struct {
-	LOGFONT
-	FullName [LF_FULLFACESIZE]uint16
-	Style    [LF_FACESIZE]uint16
-	Script   [LF_FACESIZE]uint16
-}
-
-func (f *ENUMLOGFONTEX) GetFullName() string {
-	return toString(f.FullName[:])
-}
-
-func (f *ENUMLOGFONTEX) GetStyle() string {
-	return toString(f.Style[:])
-}
-
-func (f *ENUMLOGFONTEX) GetScript() string {
-	return toString(f.Script[:])
-}
-
-type ENUMTEXTMETRIC struct {
-	NEWTEXTMETRICEX
-	AXESLIST
-}
-
-type NEWTEXTMETRICEX struct {
-	NEWTEXTMETRIC
-	FONTSIGNATURE
-}
-
-type NEWTEXTMETRIC struct {
-	Height           int32
-	Ascent           int32
-	Descent          int32
-	InternalLeading  int32
-	ExternalLeading  int32
-	AveCharWidth     int32
-	MaxCharWidth     int32
-	Weight           int32
-	Overhang         int32
-	DigitizedAspectX int32
-	DigitizedAspectY int32
-	FirstChar        uint16
-	LastChar         uint16
-	DefaultChar      uint16
-	BreakChar        uint16
-	Italic           byte
-	Underlined       byte
-	StruckOut        byte
-	PitchAndFamily   byte
-	CharSet          byte
-	Flags            uint32
-	SizeEM           uint32
-	CellHeight       uint32
-	AvgWidth         uint32
-}
-
-type FONTSIGNATURE struct {
-	Usb [4]uint32
-	Csb [2]uint32
-}
-
-type AXESLIST struct {
-	Reserved uint32
-	NumAxes  uint32
-	AxisInfo [MM_MAX_NUMAXES]AXISINFO
-}
-
-type AXISINFO struct {
-	MinValue int32
-	MaxValue int32
-	AxisName [MM_MAX_AXES_NAMELEN]uint16
-}
-
-func (i *AXISINFO) GetAxisName() string {
-	return toString(i.AxisName[:])
 }
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms646839.aspx
@@ -382,15 +459,6 @@ type BITMAP struct {
 	BmBits       unsafe.Pointer
 }
 
-// https://msdn.microsoft.com/en-us/library/windows/desktop/dd183374(v=vs.85).aspx
-type BITMAPFILEHEADER struct {
-	BfType      uint16
-	BfSize      uint32
-	BfReserved1 uint16
-	BfReserved2 uint16
-	BfOffBits   uint32
-}
-
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd183567.aspx
 type DIBSECTION struct {
 	DsBm        BITMAP
@@ -468,12 +536,6 @@ type NMHDR struct {
 	Code     uint32
 }
 
-type NMUPDOWN struct {
-	Hdr   NMHDR
-	Pos   int32
-	Delta int32
-}
-
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb774743.aspx
 type LVCOLUMN struct {
 	Mask       uint32
@@ -484,9 +546,6 @@ type LVCOLUMN struct {
 	ISubItem   int32
 	IImage     int32
 	IOrder     int32
-	CxMin      int32
-	CxDefault  int32
-	CxIdeal    int32
 }
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb774760.aspx
@@ -504,8 +563,14 @@ type LVITEM struct {
 	IGroupId   int32
 	CColumns   uint32
 	PuColumns  uint32
-	PiColFmt   *int32
-	IGroup     int32
+}
+
+type LVFINDINFO struct {
+	Flags       uint32
+	PszText     *uint16
+	LParam      uintptr
+	Pt          POINT
+	VkDirection uint32
 }
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb774754.aspx
@@ -530,6 +595,12 @@ type NMITEMACTIVATE struct {
 	UKeyFlags uint32
 }
 
+type NMLVKEYDOWN struct {
+	Hdr   NMHDR
+	WVKey uint16
+	Flags uint32
+}
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb774773.aspx
 type NMLISTVIEW struct {
 	Hdr       NMHDR
@@ -550,8 +621,8 @@ type NMLVDISPINFO struct {
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb775507.aspx
 type INITCOMMONCONTROLSEX struct {
-	size uint32
-	ICC  uint32
+	DwSize uint32
+	DwICC  uint32
 }
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/bb760256.aspx
@@ -630,6 +701,73 @@ type SERVICE_STATUS struct {
 	DwWaitHint                uint32
 }
 
+/* -------------------------
+    Undocumented API
+------------------------- */
+
+type ACCENT_STATE DWORD
+
+const (
+	ACCENT_DISABLED                   ACCENT_STATE = 0
+	ACCENT_ENABLE_GRADIENT            ACCENT_STATE = 1
+	ACCENT_ENABLE_TRANSPARENTGRADIENT ACCENT_STATE = 2
+	ACCENT_ENABLE_BLURBEHIND          ACCENT_STATE = 3
+	ACCENT_ENABLE_ACRYLICBLURBEHIND   ACCENT_STATE = 4 // RS4 1803
+	ACCENT_ENABLE_HOSTBACKDROP        ACCENT_STATE = 5 // RS5 1809
+	ACCENT_INVALID_STATE              ACCENT_STATE = 6
+)
+
+type ACCENT_POLICY struct {
+	AccentState   ACCENT_STATE
+	AccentFlags   DWORD
+	GradientColor DWORD
+	AnimationId   DWORD
+}
+
+type WINDOWCOMPOSITIONATTRIBDATA struct {
+	Attrib WINDOWCOMPOSITIONATTRIB
+	PvData PVOID
+	CbData SIZE_T
+}
+
+type WINDOWCOMPOSITIONATTRIB DWORD
+
+const (
+	WCA_UNDEFINED                     WINDOWCOMPOSITIONATTRIB = 0
+	WCA_NCRENDERING_ENABLED           WINDOWCOMPOSITIONATTRIB = 1
+	WCA_NCRENDERING_POLICY            WINDOWCOMPOSITIONATTRIB = 2
+	WCA_TRANSITIONS_FORCEDISABLED     WINDOWCOMPOSITIONATTRIB = 3
+	WCA_ALLOW_NCPAINT                 WINDOWCOMPOSITIONATTRIB = 4
+	WCA_CAPTION_BUTTON_BOUNDS         WINDOWCOMPOSITIONATTRIB = 5
+	WCA_NONCLIENT_RTL_LAYOUT          WINDOWCOMPOSITIONATTRIB = 6
+	WCA_FORCE_ICONIC_REPRESENTATION   WINDOWCOMPOSITIONATTRIB = 7
+	WCA_EXTENDED_FRAME_BOUNDS         WINDOWCOMPOSITIONATTRIB = 8
+	WCA_HAS_ICONIC_BITMAP             WINDOWCOMPOSITIONATTRIB = 9
+	WCA_THEME_ATTRIBUTES              WINDOWCOMPOSITIONATTRIB = 10
+	WCA_NCRENDERING_EXILED            WINDOWCOMPOSITIONATTRIB = 11
+	WCA_NCADORNMENTINFO               WINDOWCOMPOSITIONATTRIB = 12
+	WCA_EXCLUDED_FROM_LIVEPREVIEW     WINDOWCOMPOSITIONATTRIB = 13
+	WCA_VIDEO_OVERLAY_ACTIVE          WINDOWCOMPOSITIONATTRIB = 14
+	WCA_FORCE_ACTIVEWINDOW_APPEARANCE WINDOWCOMPOSITIONATTRIB = 15
+	WCA_DISALLOW_PEEK                 WINDOWCOMPOSITIONATTRIB = 16
+	WCA_CLOAK                         WINDOWCOMPOSITIONATTRIB = 17
+	WCA_CLOAKED                       WINDOWCOMPOSITIONATTRIB = 18
+	WCA_ACCENT_POLICY                 WINDOWCOMPOSITIONATTRIB = 19
+	WCA_FREEZE_REPRESENTATION         WINDOWCOMPOSITIONATTRIB = 20
+	WCA_EVER_UNCLOAKED                WINDOWCOMPOSITIONATTRIB = 21
+	WCA_VISUAL_OWNER                  WINDOWCOMPOSITIONATTRIB = 22
+	WCA_HOLOGRAPHIC                   WINDOWCOMPOSITIONATTRIB = 23
+	WCA_EXCLUDED_FROM_DDA             WINDOWCOMPOSITIONATTRIB = 24
+	WCA_PASSIVEUPDATEMODE             WINDOWCOMPOSITIONATTRIB = 25
+	WCA_USEDARKMODECOLORS             WINDOWCOMPOSITIONATTRIB = 26
+	WCA_CORNER_STYLE                  WINDOWCOMPOSITIONATTRIB = 27
+	WCA_PART_COLOR                    WINDOWCOMPOSITIONATTRIB = 28
+	WCA_DISABLE_MOVESIZE_FEEDBACK     WINDOWCOMPOSITIONATTRIB = 29
+	WCA_LAST                          WINDOWCOMPOSITIONATTRIB = 30
+)
+
+// -------------------------
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms684225.aspx
 type MODULEENTRY32 struct {
 	Size         uint32
@@ -648,23 +786,6 @@ type MODULEENTRY32 struct {
 type FILETIME struct {
 	DwLowDateTime  uint32
 	DwHighDateTime uint32
-}
-
-func (t FILETIME) Uint64() uint64 {
-	return uint64(t.DwHighDateTime)<<32 | uint64(t.DwLowDateTime)
-}
-
-func (t FILETIME) Time() time.Time {
-	// https://docs.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
-	ref := time.Date(1601, time.January, 1, 0, 0, 0, 0, time.UTC)
-	const tick = 100 * time.Nanosecond
-	// The FILETIME is a uint64 of 100-nanosecond intervals since 1601.
-	// Unfortunately time.Duration is really an int64 so if we cast our uint64
-	// to a time.Duration it becomes negative. Thus we do it in 2 steps, adding
-	// half the time each step to avoid overflow.
-	return ref.
-		Add(time.Duration(t.Uint64()) * (tick / 2)).
-		Add(time.Duration(t.Uint64()) * (tick / 2))
 }
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms682119.aspx
@@ -799,6 +920,44 @@ type MONITORINFO struct {
 	DwFlags   uint32
 }
 
+type WINDOWINFO struct {
+	CbSize          DWORD
+	RcWindow        RECT
+	RcClient        RECT
+	DwStyle         DWORD
+	DwExStyle       DWORD
+	DwWindowStatus  DWORD
+	CxWindowBorders UINT
+	CyWindowBorders UINT
+	AtomWindowType  ATOM
+	WCreatorVersion WORD
+}
+
+type MONITOR_DPI_TYPE int32
+
+const (
+	MDT_EFFECTIVE_DPI MONITOR_DPI_TYPE = 0
+	MDT_ANGULAR_DPI   MONITOR_DPI_TYPE = 1
+	MDT_RAW_DPI       MONITOR_DPI_TYPE = 2
+	MDT_DEFAULT       MONITOR_DPI_TYPE = 0
+)
+
+func (w *WINDOWINFO) isStyle(style DWORD) bool {
+	return w.DwStyle&style == style
+}
+
+func (w *WINDOWINFO) IsPopup() bool {
+	return w.isStyle(WS_POPUP)
+}
+
+func (m *MONITORINFO) Dump() {
+	fmt.Printf("MONITORINFO (%p)\n", m)
+	fmt.Printf("  CbSize   : %d\n", m.CbSize)
+	fmt.Printf("  RcMonitor: %s\n", &m.RcMonitor)
+	fmt.Printf("  RcWork   : %s\n", &m.RcWork)
+	fmt.Printf("  DwFlags  : %d\n", m.DwFlags)
+}
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/dd145066.aspx
 type MONITORINFOEX struct {
 	MONITORINFO
@@ -830,6 +989,55 @@ type PIXELFORMATDESCRIPTOR struct {
 	DwDamageMask           uint32
 }
 
+// http://msdn.microsoft.com/en-us/library/windows/desktop/ms646270(v=vs.85).aspx
+type INPUT struct {
+	Type uint32
+	Mi   MOUSEINPUT
+	Ki   KEYBDINPUT
+	Hi   HARDWAREINPUT
+}
+
+// http://msdn.microsoft.com/en-us/library/windows/desktop/ms646273(v=vs.85).aspx
+type MOUSEINPUT struct {
+	Dx          int32
+	Dy          int32
+	MouseData   uint32
+	DwFlags     uint32
+	Time        uint32
+	DwExtraInfo uintptr
+}
+
+// http://msdn.microsoft.com/en-us/library/windows/desktop/ms646271(v=vs.85).aspx
+type KEYBDINPUT struct {
+	WVk         uint16
+	WScan       uint16
+	DwFlags     uint32
+	Time        uint32
+	DwExtraInfo uintptr
+}
+
+// http://msdn.microsoft.com/en-us/library/windows/desktop/ms646269(v=vs.85).aspx
+type HARDWAREINPUT struct {
+	UMsg    uint32
+	WParamL uint16
+	WParamH uint16
+}
+
+type KbdInput struct {
+	typ uint32
+	ki  KEYBDINPUT
+}
+
+type MouseInput struct {
+	typ uint32
+	mi  MOUSEINPUT
+}
+
+type HardwareInput struct {
+	typ uint32
+	hi  HARDWAREINPUT
+}
+
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms724950(v=vs.85).aspx
 type SYSTEMTIME struct {
 	Year         uint16
@@ -840,19 +1048,6 @@ type SYSTEMTIME struct {
 	Minute       uint16
 	Second       uint16
 	Milliseconds uint16
-}
-
-func (t SYSTEMTIME) Time() time.Time {
-	return time.Date(
-		int(t.Year),
-		time.Month(t.Month),
-		int(t.Day),
-		int(t.Hour),
-		int(t.Minute),
-		int(t.Second),
-		int(t.Milliseconds)*int(time.Millisecond/time.Nanosecond),
-		time.UTC,
-	)
 }
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms644967(v=vs.85).aspx
@@ -875,423 +1070,12 @@ type WINDOWPLACEMENT struct {
 	RcNormalPosition RECT
 }
 
-type MINMAXINFO struct {
-	PtReserved     POINT
-	PtMaxSize      POINT
-	PtMaxPosition  POINT
-	PtMinTrackSize POINT
-	PtMaxTrackSize POINT
-}
-
-type RAWINPUTHEADER struct {
-	Type   uint32
-	Size   uint32
-	Device HANDLE
-	WParam WPARAM
-}
-
-type RAWINPUT struct {
-	Header RAWINPUTHEADER
-	// NOTE that there is no support for C unions in Go, this would actually be
-	// a union of RAWMOUSE, RAWKEYBOARD and RAWHID. Since RAWMOUSE is the
-	// largest of those three, use it here and cast unsafely to get the other
-	// types.
-	mouse RAWMOUSE
-}
-
-// GetMouse returns the raw input as a RAWMOUSE. Make sure to check the Header's
-// Type flag so this is valid.
-func (i *RAWINPUT) GetMouse() RAWMOUSE {
-	return i.mouse
-}
-
-// GetKeyboard returns the raw input as a RAWKEYBOARD. Make sure to check the
-// Header's Type flag so this is valid.
-func (i *RAWINPUT) GetKeyboard() RAWKEYBOARD {
-	return *((*RAWKEYBOARD)(unsafe.Pointer(&i.mouse)))
-}
-
-// GetHid returns the raw input as a RAWHID. Make sure to check the Header's
-// Type flag so this is valid.
-func (i *RAWINPUT) GetHid() RAWHID {
-	return *((*RAWHID)(unsafe.Pointer(&i.mouse)))
-}
-
-type RAWKEYBOARD struct {
-	MakeCode         uint16
-	Flags            uint16
-	Reserved         uint16
-	VKey             uint16
-	Message          uint32
-	ExtraInformation uint32
-}
-
-type RAWHID struct {
-	SizeHid uint32
-	Count   uint32
-	RawData [1]byte
-}
-
-type RAWMOUSE struct {
-	Flags            uint16
-	Buttons          uint32
-	RawButtons       uint32
-	LastX            int32
-	LastY            int32
-	ExtraInformation uint32
-}
-
-func (m *RAWMOUSE) ButtonFlags() uint16 {
-	return uint16(m.Buttons & 0xFFFF)
-}
-
-func (m *RAWMOUSE) ButtonData() uint16 {
-	return uint16((m.Buttons & 0xFFFF0000) >> 16)
-}
-
-type RAWINPUTDEVICE struct {
-	UsagePage uint16
-	Usage     uint16
-	Flags     uint32
-	Target    HWND
-}
-
-// INPUT is used in SendInput. To create a concrete INPUT type, use the helper
-// functions MouseInput, KeyboardInput and HardwareInput. These are necessary
-// because the C API uses a union here, which Go does not provide.
-type INPUT struct {
-	Type uint32
-	// use MOUSEINPUT for the union because it is the largest of all allowed
-	// structures
-	mouse MOUSEINPUT
-}
-
-type MOUSEINPUT struct {
-	Dx        int32
-	Dy        int32
-	MouseData uint32
-	Flags     uint32
-	Time      uint32
-	ExtraInfo uintptr
-}
-
-type KEYBDINPUT struct {
-	Vk        uint16
-	Scan      uint16
-	Flags     uint32
-	Time      uint32
-	ExtraInfo uintptr
-}
-
-type HARDWAREINPUT struct {
-	Msg    uint32
-	ParamL uint16
-	ParamH uint16
-}
-
-func MouseInput(input MOUSEINPUT) INPUT {
-	return INPUT{
-		Type:  INPUT_MOUSE,
-		mouse: input,
-	}
-}
-
-func KeyboardInput(input KEYBDINPUT) INPUT {
-	return INPUT{
-		Type:  INPUT_KEYBOARD,
-		mouse: *((*MOUSEINPUT)(unsafe.Pointer(&input))),
-	}
-}
-
-func HardwareInput(input HARDWAREINPUT) INPUT {
-	return INPUT{
-		Type:  INPUT_HARDWARE,
-		mouse: *((*MOUSEINPUT)(unsafe.Pointer(&input))),
-	}
-}
-
-type VS_FIXEDFILEINFO struct {
-	Signature        uint32
-	StrucVersion     uint32
-	FileVersionMS    uint32
-	FileVersionLS    uint32
-	ProductVersionMS uint32
-	ProductVersionLS uint32
-	FileFlagsMask    uint32
-	FileFlags        uint32
-	FileOS           uint32
-	FileType         uint32
-	FileSubtype      uint32
-	FileDateMS       uint32
-	FileDateLS       uint32
-}
-
-// FileVersion concatenates FileVersionMS and FileVersionLS to a uint64 value.
-func (fi VS_FIXEDFILEINFO) FileVersion() uint64 {
-	return uint64(fi.FileVersionMS)<<32 | uint64(fi.FileVersionLS)
-}
-
-// FileDate concatenates FileDateMS and FileDateLS to a uint64 value.
-func (fi VS_FIXEDFILEINFO) FileDate() uint64 {
-	return uint64(fi.FileDateMS)<<32 | uint64(fi.FileDateLS)
-}
-
-type ACCEL struct {
-	// Virt is a bit mask which may contain:
-	//   FALT, FCONTROL, FSHIFT: keys to be held for the accelerator
-	//   FVIRTKEY: means that Key is a virtual key code, if not set, Key is
-	//             interpreted as a character code
-	Virt byte
-	// Key can either be a virtual key code VK_... or a character
-	Key uint16
-	// Cmd is the value passed to WM_COMMAND or WM_SYSCOMMAND when the
-	// accelerator triggers
-	Cmd uint16
-}
-
-type PHYSICAL_MONITOR struct {
-	Monitor     HANDLE
-	Description [128]uint16
-}
-
-type MENUITEMINFO struct {
-	Size         uint32
-	Mask         uint32
-	Type         uint32
-	State        uint32
-	ID           uint32
-	SubMenu      HMENU
-	BmpChecked   HBITMAP
-	BmpUnChecked HBITMAP
-	ItemData     uintptr
-	TypeData     uintptr // UTF-16 string
-	CCH          uint32
-	BmpItem      HBITMAP
-}
-
-type TPMPARAMS struct {
-	Size    uint32
-	Exclude RECT
-}
-
-type MENUINFO struct {
-	size          uint32
-	Mask          uint32
-	Style         uint32
-	YMax          uint32
-	Back          HBRUSH
-	ContextHelpID uint32
-	MenuData      uintptr
-}
-
-type MENUBARINFO struct {
-	size       uint32
-	Bar        RECT
-	Menu       HMENU
-	Window     HWND
-	BarFocused int32 // bool
-	Focused    int32 // bool
-}
-
-type ACTCTX struct {
-	size                  uint32
-	Flags                 uint32
-	Source                *uint16 // UTF-16 string
-	ProcessorArchitecture uint16
-	LangID                uint16
-	AssemblyDirectory     *uint16 // UTF-16 string
-	ResourceName          *uint16 // UTF-16 string
-	ApplicationName       *uint16 // UTF-16 string
-	Module                HMODULE
-}
-
-type DRAWITEMSTRUCT struct {
-	CtlType    uint32
-	CtlID      uint32
-	ItemID     uint32
-	ItemAction uint32
-	ItemState  uint32
-	HwndItem   HWND
-	HDC        HDC
-	RcItem     RECT
-	ItemData   uintptr
-}
-
-type BLENDFUNC struct {
-	BlendOp             byte
-	BlendFlags          byte
-	SourceConstantAlpha byte
-	AlphaFormat         byte
-}
-
-type NETRESOURCE struct {
-	Scope       uint32
-	Type        uint32
-	DisplayType uint32
-	Usage       uint32
-	LocalName   string
-	RemoteName  string
-	Comment     string
-	Provider    string
-}
-
-func (n *NETRESOURCE) toInternal() *netresource {
-	internal := &netresource{
-		Scope:       n.Scope,
-		Type:        n.Type,
-		DisplayType: n.DisplayType,
-		Usage:       n.Usage,
-	}
-	if n.LocalName != "" {
-		internal.LocalName = syscall.StringToUTF16Ptr(n.LocalName)
-	}
-	if n.RemoteName != "" {
-		internal.RemoteName = syscall.StringToUTF16Ptr(n.RemoteName)
-	}
-	if n.Comment != "" {
-		internal.Comment = syscall.StringToUTF16Ptr(n.Comment)
-	}
-	if n.Provider != "" {
-		internal.Provider = syscall.StringToUTF16Ptr(n.Provider)
-	}
-	return internal
-}
-
-type netresource struct {
-	Scope       uint32
-	Type        uint32
-	DisplayType uint32
-	Usage       uint32
-	LocalName   *uint16
-	RemoteName  *uint16
-	Comment     *uint16
-	Provider    *uint16
-}
-
-type NMLVODSTATECHANGE struct {
-	Hdr      NMHDR
-	From     int32
-	To       int32
-	NewState uint32
-	OldState uint32
-}
-
-type SECURITY_ATTRIBUTES struct {
-	Length             uint32
-	SecurityDescriptor unsafe.Pointer
-	InheritHandle      uint32 // bool value
-}
-
-type OVERLAPPED struct {
-	Internal     uintptr
-	InternalHigh uintptr
-	Pointer      uintptr
-	Event        HANDLE
-}
-
-type STORAGE_DEVICE_DESCRIPTOR struct {
-	Version               uint32
-	Size                  uint32
-	DeviceType            byte
-	DeviceTypeModifier    byte
-	RemovableMedia        byte // bool value
-	CommandQueueing       byte // bool value
-	VendorIdOffset        uint32
-	ProductIdOffset       uint32
-	ProductRevisionOffset uint32
-	SerialNumberOffset    uint32
-	BusType               uint32 // STORAGE_BUS_TYPE
-	RawPropertiesLength   uint32
-	RawDeviceProperties   [1]byte
-}
-
-type STORAGE_PROPERTY_QUERY struct {
-	PropertyId           uint32
-	QueryType            uint32
-	AdditionalParameters [1]byte
-}
-
-// https://docs.microsoft.com/en-us/windows/desktop/api/fileapi/ns-fileapi-_win32_find_stream_data
-type WIN32_FIND_STREAM_DATA struct {
-	Size int64
-	Name [MAX_PATH + 36]uint16
-}
-
-type MSGBOXPARAMS struct {
-	Size           uint32
-	Owner          HWND
-	Instance       HINSTANCE
-	Text           *uint16
-	Caption        *uint16
-	Style          uint32
-	Icon           *uint16
-	ContextHelpId  *uint32
-	MsgBoxCallback uintptr
-	LanguageId     uint32
-}
-
-type POWERBROADCAST_SETTING struct {
-	PowerSetting GUID
-	DataLength   uint32
-	Data         [1]byte
-}
-
-// https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_osversioninfoexw
-type RTL_OSVERSIONINFOEXW struct {
-	OSVersionInfoSize uint32
-	MajorVersion      uint32
-	MinorVersion      uint32
-	BuildNumber       uint32
-	PlatformId        uint32
-	CSDVersion        [128]uint16
-	ServicePackMajor  uint16
-	ServicePackMinor  uint16
-	SuiteMask         uint16
-	ProductType       byte
-	Reserved          byte
-}
-
-// https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-system_info
-type SYSTEM_INFO struct {
-	ProcessorArchitecture     uint16
-	Reserved                  uint16
-	PageSize                  uint32
-	MinimumApplicationAddress LPCVOID
-	MaximumApplicationAddress LPCVOID
-	ActiveProcessorMask       *uint32
-	NumberOfProcessors        uint32
-	ProcessorType             uint32
-	AllocationGranularity     uint32
-	ProcessorLevel            uint16
-	ProcessorRevision         uint16
-}
-
-type SP_DEVINFO_DATA struct {
-	Size      uint32
-	ClassGuid GUID
-	DevInst   uint32
-	Reserved  uintptr
-}
-
-type WINDOWPOS struct {
-	Hwnd            HWND
-	HwndInsertAfter HWND
-	X               int32
-	Y               int32
-	Cx              int32
-	Cy              int32
-	Flags           uint32
-}
-
-type WINDOWINFO struct {
-	Cbsize          uint32
-	RcWindow        RECT
-	RcClient        RECT
-	DwStyle         uint32
-	DwExStyle       uint32
-	DwWindowStatus  uint32
-	CxWindowBorders uint32
-	CyWindowBorders uint32
-	AtomWindowType  uint16
-	WCreatorVersion uint16
+type SCROLLINFO struct {
+	CbSize    uint32
+	FMask     uint32
+	NMin      int32
+	NMax      int32
+	NPage     uint32
+	NPos      int32
+	NTrackPos int32
 }

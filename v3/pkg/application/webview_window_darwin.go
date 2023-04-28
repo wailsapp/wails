@@ -1147,7 +1147,7 @@ func (w *macosWebviewWindow) run() {
 	})
 }
 
-func (w *macosWebviewWindow) setBackgroundColour(colour *RGBA) {
+func (w *macosWebviewWindow) setBackgroundColour(colour RGBA) {
 	if colour == nil {
 		return
 	}

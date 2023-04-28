@@ -1,9 +1,10 @@
-package w32
+//go:build windows
 
-// TODO Check that these messages are correct:
-// WM_*
-// TTM_*
-// TBM_*
+/*
+ * Copyright (C) 2019 The Winc Authors. All Rights Reserved.
+ * Copyright (C) 2010-2012 The W32 Authors. All Rights Reserved.
+ */
+package w32
 
 const (
 	FALSE = 0
@@ -19,7 +20,6 @@ const (
 	ERROR_INVALID_HANDLE             = 6
 	ERROR_BAD_FORMAT                 = 11
 	ERROR_INVALID_NAME               = 123
-	ERROR_ALREADY_EXISTS             = 183
 	ERROR_MORE_DATA                  = 234
 	ERROR_NO_MORE_ITEMS              = 259
 	ERROR_INVALID_SERVICE_CONTROL    = 1052
@@ -53,7 +53,14 @@ const (
 )
 
 const (
-	CW_USEDEFAULT = ^0x7FFFFFFF
+	CW_USEDEFAULT = ^0x7fffffff
+)
+
+const (
+	IMAGE_BITMAP      = 0
+	IMAGE_ICON        = 1
+	IMAGE_CURSOR      = 2
+	IMAGE_ENHMETAFILE = 3
 )
 
 // ShowWindow constants
@@ -121,7 +128,6 @@ const (
 	IDI_EXCLAMATION = 32515
 	IDI_ASTERISK    = 32516
 	IDI_WINLOGO     = 32517
-	IDI_SHIELD      = 32518
 	IDI_WARNING     = IDI_EXCLAMATION
 	IDI_ERROR       = IDI_HAND
 	IDI_INFORMATION = IDI_ASTERISK
@@ -155,6 +161,8 @@ const (
 	BS_USERBUTTON      = 8
 	BS_VCENTER         = 0xC00
 	BS_FLAT            = 0x8000
+	BS_SPLITBUTTON     = 0x000C // >= Vista
+	BS_DEFSPLITBUTTON  = 0x000D // >= Vista
 )
 
 // Button state constants
@@ -166,316 +174,42 @@ const (
 	BST_PUSHED        = 4
 )
 
-// Combo box style constants
+// Predefined brushes constants
 const (
-	CBS_SIMPLE            = 0x0001
-	CBS_DROPDOWN          = 0x0002
-	CBS_DROPDOWNLIST      = 0x0003
-	CBS_OWNERDRAWFIXED    = 0x0010
-	CBS_OWNERDRAWVARIABLE = 0x0020
-	CBS_AUTOHSCROLL       = 0x0040
-	CBS_OEMCONVERT        = 0x0080
-	CBS_SORT              = 0x0100
-	CBS_HASSTRINGS        = 0x0200
-	CBS_NOINTEGRALHEIGHT  = 0x0400
-	CBS_DISABLENOSCROLL   = 0x0800
-	CBS_UPPERCASE         = 0x2000
-	CBS_LOWERCASE         = 0x4000
-)
-
-// Combo box message constants
-const (
-	CB_GETEDITSEL            = 0x0140
-	CB_LIMITTEXT             = 0x0141
-	CB_SETEDITSEL            = 0x0142
-	CB_ADDSTRING             = 0x0143
-	CB_DELETESTRING          = 0x0144
-	CB_DIR                   = 0x0145
-	CB_GETCOUNT              = 0x0146
-	CB_GETCURSEL             = 0x0147
-	CB_GETLBTEXT             = 0x0148
-	CB_GETLBTEXTLEN          = 0x0149
-	CB_INSERTSTRING          = 0x014A
-	CB_RESETCONTENT          = 0x014B
-	CB_FINDSTRING            = 0x014C
-	CB_SELECTSTRING          = 0x014D
-	CB_SETCURSEL             = 0x014E
-	CB_SHOWDROPDOWN          = 0x014F
-	CB_GETITEMDATA           = 0x0150
-	CB_SETITEMDATA           = 0x0151
-	CB_GETDROPPEDCONTROLRECT = 0x0152
-	CB_SETITEMHEIGHT         = 0x0153
-	CB_GETITEMHEIGHT         = 0x0154
-	CB_SETEXTENDEDUI         = 0x0155
-	CB_GETEXTENDEDUI         = 0x0156
-	CB_GETDROPPEDSTATE       = 0x0157
-	CB_FINDSTRINGEXACT       = 0x0158
-	CB_SETLOCALE             = 0x0159
-	CB_GETLOCALE             = 0x015A
-	CB_GETTOPINDEX           = 0x015B
-	CB_SETTOPINDEX           = 0x015C
-	CB_GETHORIZONTALEXTENT   = 0x015D
-	CB_SETHORIZONTALEXTENT   = 0x015E
-	CB_GETDROPPEDWIDTH       = 0x015F
-	CB_SETDROPPEDWIDTH       = 0x0160
-	CB_INITSTORAGE           = 0x0161
-	CB_MULTIPLEADDSTRING     = 0x0163
-	CB_GETCOMBOBOXINFO       = 0x0164
-	CB_MSGMAX                = 0x0165
-)
-
-// Combo box return values
-const (
-	CB_OKAY     = 0
-	CB_ERR      = -1
-	CB_ERRSPACE = -2
-)
-
-// Combo box notification codes
-const (
-	CBN_ERRSPACE     = -1
-	CBN_SELCHANGE    = 1
-	CBN_DBLCLK       = 2
-	CBN_SETFOCUS     = 3
-	CBN_KILLFOCUS    = 4
-	CBN_EDITCHANGE   = 5
-	CBN_EDITUPDATE   = 6
-	CBN_DROPDOWN     = 7
-	CBN_CLOSEUP      = 8
-	CBN_SELENDOK     = 9
-	CBN_SELENDCANCEL = 10
-)
-
-// List box message constants
-const (
-	LB_ADDSTRING           = 384
-	LB_INSERTSTRING        = 385
-	LB_DELETESTRING        = 386
-	LB_SELITEMRANGEEX      = 387
-	LB_RESETCONTENT        = 388
-	LB_SETSEL              = 389
-	LB_SETCURSEL           = 390
-	LB_GETSEL              = 391
-	LB_GETCURSEL           = 392
-	LB_GETTEXT             = 393
-	LB_GETTEXTLEN          = 394
-	LB_GETCOUNT            = 395
-	LB_SELECTSTRING        = 396
-	LB_DIR                 = 397
-	LB_GETTOPINDEX         = 398
-	LB_FINDSTRING          = 399
-	LB_GETSELCOUNT         = 400
-	LB_GETSELITEMS         = 401
-	LB_SETTABSTOPS         = 402
-	LB_GETHORIZONTALEXTENT = 403
-	LB_SETHORIZONTALEXTENT = 404
-	LB_SETCOLUMNWIDTH      = 405
-	LB_ADDFILE             = 406
-	LB_SETTOPINDEX         = 407
-	LB_GETITEMRECT         = 408
-	LB_GETITEMDATA         = 409
-	LB_SETITEMDATA         = 410
-	LB_SELITEMRANGE        = 411
-	LB_SETANCHORINDEX      = 412
-	LB_GETANCHORINDEX      = 413
-	LB_SETCARETINDEX       = 414
-	LB_GETCARETINDEX       = 415
-	LB_SETITEMHEIGHT       = 416
-	LB_GETITEMHEIGHT       = 417
-	LB_FINDSTRINGEXACT     = 418
-	LB_SETLOCALE           = 421
-	LB_GETLOCALE           = 422
-	LB_SETCOUNT            = 423
-	LB_INITSTORAGE         = 424
-	LB_ITEMFROMPOINT       = 425
-	LB_SETTEXT             = 426
-	LB_GETCHECKMARK        = 427
-	LB_SETCHECKMARK        = 428
-	LB_GETITEMADDDATA      = 429
-	LB_SETITEMADDDATA      = 430
-)
-
-// List box styles
-const (
-	LBS_NOTIFY            = 0x0001
-	LBS_SORT              = 0x0002
-	LBS_NOREDRAW          = 0x0004
-	LBS_MULTIPLESEL       = 0x0008
-	LBS_OWNERDRAWFIXED    = 0x0010
-	LBS_OWNERDRAWVARIABLE = 0x0020
-	LBS_HASSTRINGS        = 0x0040
-	LBS_USETABSTOPS       = 0x0080
-	LBS_NOINTEGRALHEIGHT  = 0x0100
-	LBS_MULTICOLUMN       = 0x0200
-	LBS_WANTKEYBOARDINPUT = 0x0400
-	LBS_EXTENDEDSEL       = 0x0800
-	LBS_STANDARD          = LBS_NOTIFY | LBS_SORT | WS_VSCROLL | WS_BORDER
-	LBS_CHECKBOX          = 0x1000
-	LBS_USEICON           = 0x2000
-	LBS_AUTOCHECK         = 0x4000
-	LBS_AUTOCHECKBOX      = 0x5000
-	LBS_PRELOADED         = 0x4000
-	LBS_COMBOLBOX         = 0x8000
-)
-
-// List box notification messages
-const (
-	LBN_ERRSPACE       = -2
-	LBN_SELCHANGE      = 1
-	LBN_DBLCLK         = 2
-	LBN_SELCANCEL      = 3
-	LBN_SETFOCUS       = 4
-	LBN_KILLFOCUS      = 5
-	LBN_CLICKCHECKMARK = 6
-)
-
-// List box return values
-const (
-	LB_OKAY     = 0
-	LB_ERR      = -1
-	LB_ERRSPACE = -2
-)
-
-// Predefined color/brush constants.
-const (
-	// Scroll bar gray area.
-	COLOR_SCROLLBAR = 0
-
-	// Desktop.
-	COLOR_BACKGROUND = 1
-
-	// Desktop.
-	COLOR_DESKTOP = 1
-
-	// Active window title bar. The associated foreground color is
-	// COLOR_CAPTIONTEXT. Specifies the left side color in the color gradient of
-	// an active window's title bar if the gradient effect is enabled.
-	COLOR_ACTIVECAPTION = 2
-
-	// Inactive window caption.
-	// The associated foreground color is COLOR_INACTIVECAPTIONTEXT.
-	// Specifies the left side color in the color gradient of an inactive window's title bar if the gradient effect is enabled.
-	COLOR_INACTIVECAPTION = 3
-
-	// Menu background. The associated foreground color is COLOR_MENUTEXT.
-	COLOR_MENU = 4
-
-	// Window background. The associated foreground colors are COLOR_WINDOWTEXT
-	// and COLOR_HOTLITE.
-	COLOR_WINDOW = 5
-
-	// Window frame.
-	COLOR_WINDOWFRAME = 6
-
-	// Text in menus. The associated background color is COLOR_MENU.
-	COLOR_MENUTEXT = 7
-
-	// Text in windows. The associated background color is COLOR_WINDOW.
-	COLOR_WINDOWTEXT = 8
-
-	// Text in caption, size box, and scroll bar arrow box. The associated
-	// background color is COLOR_ACTIVECAPTION.
-	COLOR_CAPTIONTEXT = 9
-
-	// Active window border.
-	COLOR_ACTIVEBORDER = 10
-
-	// Inactive window border.
-	COLOR_INACTIVEBORDER = 11
-
-	// Background color of multiple document interface (MDI) applications.
-	COLOR_APPWORKSPACE = 12
-
-	// Item(s) selected in a control. The associated foreground color is
-	// COLOR_HIGHLIGHTTEXT.
-	COLOR_HIGHLIGHT = 13
-
-	// Text of item(s) selected in a control. The associated background color is
-	// COLOR_HIGHLIGHT.
-	COLOR_HIGHLIGHTTEXT = 14
-
-	// Face color for three-dimensional display elements and for dialog box
-	// backgrounds.
-	COLOR_3DFACE = 15
-
-	// Face color for three-dimensional display elements and for dialog box
-	// backgrounds. The associated foreground color is COLOR_BTNTEXT.
-	COLOR_BTNFACE = 15
-
-	// Shadow color for three-dimensional display elements (for edges facing
-	// away from the light source).
-	COLOR_3DSHADOW = 16
-
-	// Shadow color for three-dimensional display elements (for edges facing
-	// away from the light source).
-	COLOR_BTNSHADOW = 16
-
-	// Grayed (disabled) text. This color is set to 0 if the current display
-	// driver does not support a solid gray color.
-	COLOR_GRAYTEXT = 17
-
-	// Text on push buttons. The associated background color is COLOR_BTNFACE.
-	COLOR_BTNTEXT = 18
-
-	// Color of text in an inactive caption. The associated background color is
-	// COLOR_INACTIVECAPTION.
-	COLOR_INACTIVECAPTIONTEXT = 19
-
-	// Highlight color for three-dimensional display elements (for edges facing
-	// the light source.)
-	COLOR_3DHIGHLIGHT = 20
-
-	// Highlight color for three-dimensional display elements (for edges facing
-	// the light source.)
-	COLOR_3DHILIGHT = 20
-
-	// Highlight color for three-dimensional display elements (for edges facing
-	// the light source.)
-	COLOR_BTNHIGHLIGHT = 20
-
-	// Highlight color for three-dimensional display elements (for edges facing
-	// the light source.)
-	COLOR_BTNHILIGHT = 20
-
-	// Dark shadow for three-dimensional display elements.
-	COLOR_3DDKSHADOW = 21
-
-	// Light color for three-dimensional display elements (for edges facing the
-	// light source.)
-	COLOR_3DLIGHT = 22
-
-	// Text color for tooltip controls. The associated background color is
-	// COLOR_INFOBK.
-	COLOR_INFOTEXT = 23
-
-	// Background color for tooltip controls. The associated foreground color is
-	// COLOR_INFOTEXT.
-	COLOR_INFOBK = 24
-
-	// Color for a hyperlink or hot-tracked item. The associated background
-	// color is COLOR_WINDOW.
-	COLOR_HOTLIGHT = 26
-
-	// Right side color in the color gradient of an active window's title bar.
-	// COLOR_ACTIVECAPTION specifies the left side color. Use
-	// SPI_GETGRADIENTCAPTIONS with the SystemParametersInfo function to
-	// determine whether the gradient effect is enabled.
-	COLOR_GRADIENTACTIVECAPTION = 27
-
-	// Right side color in the color gradient of an inactive window's title bar.
-	// COLOR_INACTIVECAPTION specifies the left side color.
+	COLOR_3DDKSHADOW              = 21
+	COLOR_3DFACE                  = 15
+	COLOR_3DHILIGHT               = 20
+	COLOR_3DHIGHLIGHT             = 20
+	COLOR_3DLIGHT                 = 22
+	COLOR_BTNHILIGHT              = 20
+	COLOR_3DSHADOW                = 16
+	COLOR_ACTIVEBORDER            = 10
+	COLOR_ACTIVECAPTION           = 2
+	COLOR_APPWORKSPACE            = 12
+	COLOR_BACKGROUND              = 1
+	COLOR_DESKTOP                 = 1
+	COLOR_BTNFACE                 = 15
+	COLOR_BTNHIGHLIGHT            = 20
+	COLOR_BTNSHADOW               = 16
+	COLOR_BTNTEXT                 = 18
+	COLOR_CAPTIONTEXT             = 9
+	COLOR_GRAYTEXT                = 17
+	COLOR_HIGHLIGHT               = 13
+	COLOR_HIGHLIGHTTEXT           = 14
+	COLOR_INACTIVEBORDER          = 11
+	COLOR_INACTIVECAPTION         = 3
+	COLOR_INACTIVECAPTIONTEXT     = 19
+	COLOR_INFOBK                  = 24
+	COLOR_INFOTEXT                = 23
+	COLOR_MENU                    = 4
+	COLOR_MENUTEXT                = 7
+	COLOR_SCROLLBAR               = 0
+	COLOR_WINDOW                  = 5
+	COLOR_WINDOWFRAME             = 6
+	COLOR_WINDOWTEXT              = 8
+	COLOR_HOTLIGHT                = 26
+	COLOR_GRADIENTACTIVECAPTION   = 27
 	COLOR_GRADIENTINACTIVECAPTION = 28
-
-	// The color used to highlight menu items when the menu appears as a flat
-	// menu (see SystemParametersInfo). The highlighted menu item is outlined
-	// with COLOR_HIGHLIGHT. Windows 2000: This value is not supported.
-	COLOR_MENUHILIGHT = 29
-
-	// The background color for the menu bar when menus appear as flat menus
-	// (see SystemParametersInfo). However, COLOR_MENU continues to specify the
-	// background color of the menu popup. Windows 2000: This value is not
-	// supported.
-	COLOR_MENUBAR = 30
 )
 
 // Button message constants
@@ -503,6 +237,27 @@ const (
 	BN_DBLCLK        = BN_DOUBLECLICKED
 	BN_SETFOCUS      = 6
 	BN_KILLFOCUS     = 7
+)
+
+// TrackPopupMenu[Ex] flags
+const (
+	TPM_CENTERALIGN     = 0x0004
+	TPM_LEFTALIGN       = 0x0000
+	TPM_RIGHTALIGN      = 0x0008
+	TPM_BOTTOMALIGN     = 0x0020
+	TPM_TOPALIGN        = 0x0000
+	TPM_VCENTERALIGN    = 0x0010
+	TPM_NONOTIFY        = 0x0080
+	TPM_RETURNCMD       = 0x0100
+	TPM_LEFTBUTTON      = 0x0000
+	TPM_RIGHTBUTTON     = 0x0002
+	TPM_HORNEGANIMATION = 0x0800
+	TPM_HORPOSANIMATION = 0x0400
+	TPM_NOANIMATION     = 0x4000
+	TPM_VERNEGANIMATION = 0x2000
+	TPM_VERPOSANIMATION = 0x1000
+	TPM_HORIZONTAL      = 0x0000
+	TPM_VERTICAL        = 0x0040
 )
 
 // GetWindowLong and GetWindowLongPtr constants
@@ -553,32 +308,32 @@ const (
 
 // Extended window style constants
 const (
-	WS_EX_DLGMODALFRAME    = 0x00000001
-	WS_EX_NOPARENTNOTIFY   = 0x00000004
-	WS_EX_TOPMOST          = 0x00000008
-	WS_EX_ACCEPTFILES      = 0x00000010
-	WS_EX_TRANSPARENT      = 0x00000020
-	WS_EX_MDICHILD         = 0x00000040
-	WS_EX_TOOLWINDOW       = 0x00000080
-	WS_EX_WINDOWEDGE       = 0x00000100
-	WS_EX_CLIENTEDGE       = 0x00000200
-	WS_EX_CONTEXTHELP      = 0x00000400
-	WS_EX_RIGHT            = 0x00001000
-	WS_EX_LEFT             = 0x00000000
-	WS_EX_RTLREADING       = 0x00002000
-	WS_EX_LTRREADING       = 0x00000000
-	WS_EX_LEFTSCROLLBAR    = 0x00004000
-	WS_EX_RIGHTSCROLLBAR   = 0x00000000
-	WS_EX_CONTROLPARENT    = 0x00010000
-	WS_EX_STATICEDGE       = 0x00020000
-	WS_EX_APPWINDOW        = 0x00040000
-	WS_EX_OVERLAPPEDWINDOW = 0x00000100 | 0x00000200
-	WS_EX_PALETTEWINDOW    = 0x00000100 | 0x00000080 | 0x00000008
-	WS_EX_LAYERED          = 0x00080000
-	WS_EX_NOINHERITLAYOUT  = 0x00100000
-	WS_EX_LAYOUTRTL        = 0x00400000
-	WS_EX_COMPOSITED       = 0x02000000
-	WS_EX_NOACTIVATE       = 0x08000000
+	WS_EX_DLGMODALFRAME       = 0x00000001
+	WS_EX_NOPARENTNOTIFY      = 0x00000004
+	WS_EX_TOPMOST             = 0x00000008
+	WS_EX_ACCEPTFILES         = 0x00000010
+	WS_EX_TRANSPARENT         = 0x00000020
+	WS_EX_MDICHILD            = 0x00000040
+	WS_EX_TOOLWINDOW          = 0x00000080
+	WS_EX_WINDOWEDGE          = 0x00000100
+	WS_EX_CLIENTEDGE          = 0x00000200
+	WS_EX_CONTEXTHELP         = 0x00000400
+	WS_EX_RIGHT               = 0x00001000
+	WS_EX_LEFT                = 0x00000000
+	WS_EX_RTLREADING          = 0x00002000
+	WS_EX_LTRREADING          = 0x00000000
+	WS_EX_LEFTSCROLLBAR       = 0x00004000
+	WS_EX_RIGHTSCROLLBAR      = 0x00000000
+	WS_EX_CONTROLPARENT       = 0x00010000
+	WS_EX_STATICEDGE          = 0x00020000
+	WS_EX_APPWINDOW           = 0x00040000
+	WS_EX_OVERLAPPEDWINDOW    = 0x00000100 | 0x00000200
+	WS_EX_PALETTEWINDOW       = 0x00000100 | 0x00000080 | 0x00000008
+	WS_EX_LAYERED             = 0x00080000
+	WS_EX_NOINHERITLAYOUT     = 0x00100000
+	WS_EX_NOREDIRECTIONBITMAP = 0x00200000
+	WS_EX_LAYOUTRTL           = 0x00400000
+	WS_EX_NOACTIVATE          = 0x08000000
 )
 
 // Window message constants
@@ -599,7 +354,7 @@ const (
 	WM_CLEAR                  = 771
 	WM_CLOSE                  = 16
 	WM_COMMAND                = 273
-	WM_COMMNOTIFY             = 68 // obsolete
+	WM_COMMNOTIFY             = 68 /* OBSOLETE */
 	WM_COMPACTING             = 65
 	WM_COMPAREITEM            = 57
 	WM_CONTEXTMENU            = 123
@@ -765,7 +520,7 @@ const (
 	WM_WINDOWPOSCHANGING      = 70
 	WM_WININICHANGE           = 26
 	WM_KEYFIRST               = 256
-	WM_KEYLAST                = 265
+	WM_KEYLAST                = 264
 	WM_SYNCPAINT              = 136
 	WM_MOUSEACTIVATE          = 33
 	WM_MOUSEMOVE              = 512
@@ -779,12 +534,11 @@ const (
 	WM_MBUTTONUP              = 520
 	WM_MBUTTONDBLCLK          = 521
 	WM_MOUSEWHEEL             = 522
-	WM_MOUSEHWHEEL            = 526
 	WM_MOUSEFIRST             = 512
 	WM_XBUTTONDOWN            = 523
 	WM_XBUTTONUP              = 524
 	WM_XBUTTONDBLCLK          = 525
-	WM_MOUSELAST              = 526
+	WM_MOUSELAST              = 525
 	WM_MOUSEHOVER             = 0x2A1
 	WM_MOUSELEAVE             = 0x2A3
 	WM_CLIPBOARDUPDATE        = 0x031D
@@ -797,15 +551,7 @@ const (
 	WA_CLICKACTIVE = 2
 )
 
-const (
-	LF_FACESIZE     = 32
-	LF_FULLFACESIZE = 64
-)
-
-const (
-	MM_MAX_NUMAXES      = 16
-	MM_MAX_AXES_NAMELEN = 16
-)
+const LF_FACESIZE = 32
 
 // Font weight constants
 const (
@@ -848,6 +594,23 @@ const (
 	JOHAB_CHARSET       = 130
 	VIETNAMESE_CHARSET  = 163
 	MAC_CHARSET         = 77
+)
+
+const (
+	// PBT_APMPOWERSTATUSCHANGE - Power status has changed.
+	PBT_APMPOWERSTATUSCHANGE = 10
+
+	// PBT_APMRESUMEAUTOMATIC -Operation is resuming automatically from a low-power state. This message is sent every time the system resumes.
+	PBT_APMRESUMEAUTOMATIC = 18
+
+	// PBT_APMRESUMESUSPEND - Operation is resuming from a low-power state. This message is sent after PBT_APMRESUMEAUTOMATIC if the resume is triggered by user input, such as pressing a key.
+	PBT_APMRESUMESUSPEND = 7
+
+	// PBT_APMSUSPEND - System is suspending operation.
+	PBT_APMSUSPEND = 4
+
+	// PBT_POWERSETTINGCHANGE - A power setting change event has been received.
+	PBT_POWERSETTINGCHANGE = 32787
 )
 
 // Font output precision constants
@@ -1110,10 +873,10 @@ const (
 	SS_GRAYRECT        = 5
 	SS_ICON            = 3
 	SS_LEFT            = 0
-	SS_LEFTNOWORDWRAP  = 0xC
+	SS_LEFTNOWORDWRAP  = 0xc
 	SS_NOPREFIX        = 128
 	SS_NOTIFY          = 256
-	SS_OWNERDRAW       = 0xD
+	SS_OWNERDRAW       = 0xd
 	SS_REALSIZECONTROL = 0x040
 	SS_REALSIZEIMAGE   = 0x800
 	SS_RIGHT           = 2
@@ -1164,135 +927,63 @@ const (
 
 // Edit messages
 const (
-	EM_GETSEL               = 0x00B0
-	EM_SETSEL               = 0x00B1
-	EM_GETRECT              = 0x00B2
-	EM_SETRECT              = 0x00B3
-	EM_SETRECTNP            = 0x00B4
-	EM_SCROLL               = 0x00B5
-	EM_LINESCROLL           = 0x00B6
-	EM_SCROLLCARET          = 0x00B7
-	EM_GETMODIFY            = 0x00B8
-	EM_SETMODIFY            = 0x00B9
-	EM_GETLINECOUNT         = 0x00BA
-	EM_LINEINDEX            = 0x00BB
-	EM_SETHANDLE            = 0x00BC
-	EM_GETHANDLE            = 0x00BD
-	EM_GETTHUMB             = 0x00BE
-	EM_LINELENGTH           = 0x00C1
-	EM_REPLACESEL           = 0x00C2
-	EM_GETLINE              = 0x00C4
-	EM_LIMITTEXT            = 0x00C5
-	EM_CANUNDO              = 0x00C6
-	EM_UNDO                 = 0x00C7
-	EM_FMTLINES             = 0x00C8
-	EM_LINEFROMCHAR         = 0x00C9
-	EM_SETTABSTOPS          = 0x00CB
-	EM_SETPASSWORDCHAR      = 0x00CC
-	EM_EMPTYUNDOBUFFER      = 0x00CD
-	EM_GETFIRSTVISIBLELINE  = 0x00CE
-	EM_SETREADONLY          = 0x00CF
-	EM_SETWORDBREAKPROC     = 0x00D0
-	EM_GETWORDBREAKPROC     = 0x00D1
-	EM_GETPASSWORDCHAR      = 0x00D2
-	EM_SETMARGINS           = 0x00D3
-	EM_GETMARGINS           = 0x00D4
-	EM_SETLIMITTEXT         = EM_LIMITTEXT
-	EM_GETLIMITTEXT         = 0x00D5
-	EM_POSFROMCHAR          = 0x00D6
-	EM_CHARFROMPOS          = 0x00D7
-	EM_SETIMESTATUS         = 0x00D8
-	EM_GETIMESTATUS         = 0x00D9
-	EM_SETCUEBANNER         = 0x1501
-	EM_GETCUEBANNER         = 0x1502
-	EM_AUTOURLDETECT        = 0x45B
-	EM_CANPASTE             = 0x432
-	EM_CANREDO              = 0x455
-	EM_DISPLAYBAND          = 0x433
-	EM_EXGETSEL             = 0x434
-	EM_EXLIMITTEXT          = 0x435
-	EM_EXLINEFROMCHAR       = 0x436
-	EM_EXSETSEL             = 0x437
-	EM_FINDTEXT             = 0x438
-	EM_FINDTEXTEX           = 0x44F
-	EM_FINDTEXTEXW          = 0x47C
-	EM_FINDTEXTW            = 0x47B
-	EM_FINDWORDBREAK        = 0x44C
-	EM_FORMATRANGE          = 0x439
-	EM_GETAUTOURLDETECT     = 0x45C
-	EM_GETBIDIOPTIONS       = 0x4C9
-	EM_GETCHARFORMAT        = 0x43A
-	EM_GETEDITSTYLE         = 0x4CD
-	EM_GETEVENTMASK         = 0x43B
-	EM_GETIMECOLOR          = 0x469
-	EM_GETIMECOMPMODE       = 0x47A
-	EM_GETIMEOPTIONS        = 0x46B
-	EM_GETLANGOPTIONS       = 0x479
-	EM_GETOLEINTERFACE      = 0x43C
-	EM_GETOPTIONS           = 0x44E
-	EM_GETPARAFORMAT        = 0x43D
-	EM_GETPUNCTUATION       = 0x465
-	EM_GETREDONAME          = 0x457
-	EM_GETSCROLLPOS         = 0x4DD
-	EM_GETSELTEXT           = 0x43E
-	EM_GETTEXTEX            = 0x45E
-	EM_GETTEXTLENGTHEX      = 0x45F
-	EM_GETTEXTMODE          = 0x45A
-	EM_GETTEXTRANGE         = 0x44B
-	EM_GETTYPOGRAPHYOPTIONS = 0x4CB
-	EM_GETUNDONAME          = 0x456
-	EM_GETWORDBREAKPROCEX   = 0x450
-	EM_GETWORDWRAPMODE      = 0x467
-	EM_GETZOOM              = 0x4E0
-	EM_HIDESELECTION        = 0x43F
-	EM_PASTESPECIAL         = 0x440
-	EM_RECONVERSION         = 0x47D
-	EM_REDO                 = 0x454
-	EM_REQUESTRESIZE        = 0x441
-	EM_SELECTIONTYPE        = 0x442
-	EM_SETBIDIOPTIONS       = 0x4C8
-	EM_SETBKGNDCOLOR        = 0x443
-	EM_SETCHARFORMAT        = 0x444
-	EM_SETEDITSTYLE         = 0x4CC
-	EM_SETEVENTMASK         = 0x445
-	EM_SETFONTSIZE          = 0x4DF
-	EM_SETIMECOLOR          = 0x468
-	EM_SETIMEOPTIONS        = 0x46A
-	EM_SETLANGOPTIONS       = 0x478
-	EM_SETOLECALLBACK       = 0x446
-	EM_SETOPTIONS           = 0x44D
-	EM_SETPALETTE           = 0x45D
-	EM_SETPARAFORMAT        = 0x447
-	EM_SETPUNCTUATION       = 0x464
-	EM_SETSCROLLPOS         = 0x4DE
-	EM_SETTARGETDEVICE      = 0x448
-	EM_SETTEXTEX            = 0x461
-	EM_SETTEXTMODE          = 0x459
-	EM_SETTYPOGRAPHYOPTIONS = 0x4CA
-	EM_SETUNDOLIMIT         = 0x452
-	EM_SETWORDBREAKPROCEX   = 0x451
-	EM_SETWORDWRAPMODE      = 0x466
-	EM_SETZOOM              = 0x4E1
-	EM_SHOWSCROLLBAR        = 0x460
-	EM_STOPGROUPTYPING      = 0x458
-	EM_STREAMIN             = 0x449
-	EM_STREAMOUT            = 0x44A
+	EM_GETSEL              = 0x00B0
+	EM_SETSEL              = 0x00B1
+	EM_GETRECT             = 0x00B2
+	EM_SETRECT             = 0x00B3
+	EM_SETRECTNP           = 0x00B4
+	EM_SCROLL              = 0x00B5
+	EM_LINESCROLL          = 0x00B6
+	EM_SCROLLCARET         = 0x00B7
+	EM_GETMODIFY           = 0x00B8
+	EM_SETMODIFY           = 0x00B9
+	EM_GETLINECOUNT        = 0x00BA
+	EM_LINEINDEX           = 0x00BB
+	EM_SETHANDLE           = 0x00BC
+	EM_GETHANDLE           = 0x00BD
+	EM_GETTHUMB            = 0x00BE
+	EM_LINELENGTH          = 0x00C1
+	EM_REPLACESEL          = 0x00C2
+	EM_GETLINE             = 0x00C4
+	EM_LIMITTEXT           = 0x00C5
+	EM_CANUNDO             = 0x00C6
+	EM_UNDO                = 0x00C7
+	EM_FMTLINES            = 0x00C8
+	EM_LINEFROMCHAR        = 0x00C9
+	EM_SETTABSTOPS         = 0x00CB
+	EM_SETPASSWORDCHAR     = 0x00CC
+	EM_EMPTYUNDOBUFFER     = 0x00CD
+	EM_GETFIRSTVISIBLELINE = 0x00CE
+	EM_SETREADONLY         = 0x00CF
+	EM_SETWORDBREAKPROC    = 0x00D0
+	EM_GETWORDBREAKPROC    = 0x00D1
+	EM_GETPASSWORDCHAR     = 0x00D2
+	EM_SETMARGINS          = 0x00D3
+	EM_GETMARGINS          = 0x00D4
+	EM_SETLIMITTEXT        = EM_LIMITTEXT
+	EM_GETLIMITTEXT        = 0x00D5
+	EM_POSFROMCHAR         = 0x00D6
+	EM_CHARFROMPOS         = 0x00D7
+	EM_SETIMESTATUS        = 0x00D8
+	EM_GETIMESTATUS        = 0x00D9
+	EM_SETCUEBANNER        = 0x1501
+	EM_GETCUEBANNER        = 0x1502
 )
 
 const (
 	CCM_FIRST            = 0x2000
-	CCM_LAST             = CCM_FIRST + 0x0200
-	CCM_SETBKCOLOR       = CCM_FIRST + 1
-	CCM_SETCOLORSCHEME   = CCM_FIRST + 2
-	CCM_GETCOLORSCHEME   = CCM_FIRST + 3
-	CCM_GETDROPTARGET    = CCM_FIRST + 4
-	CCM_SETUNICODEFORMAT = CCM_FIRST + 5
-	CCM_GETUNICODEFORMAT = CCM_FIRST + 6
-	CCM_SETVERSION       = CCM_FIRST + 7
-	CCM_GETVERSION       = CCM_FIRST + 8
-	CCM_SETNOTIFYWINDOW  = CCM_FIRST + 9
-	CCM_SETWINDOWTHEME   = CCM_FIRST + 11
-	CCM_DPISCALE         = CCM_FIRST + 12
+	CCM_LAST             = CCM_FIRST + 0x200
+	CCM_SETBKCOLOR       = 8193
+	CCM_SETCOLORSCHEME   = 8194
+	CCM_GETCOLORSCHEME   = 8195
+	CCM_GETDROPTARGET    = 8196
+	CCM_SETUNICODEFORMAT = 8197
+	CCM_GETUNICODEFORMAT = 8198
+	CCM_SETVERSION       = 0x2007
+	CCM_GETVERSION       = 0x2008
+	CCM_SETNOTIFYWINDOW  = 0x2009
+	CCM_SETWINDOWTHEME   = 0x200b
+	CCM_DPISCALE         = 0x200c
 )
 
 // Common controls styles
@@ -1313,25 +1004,82 @@ const (
 // ProgressBar messages
 const (
 	PROGRESS_CLASS  = "msctls_progress32"
-	PBM_SETRANGE    = WM_USER + 1
 	PBM_SETPOS      = WM_USER + 2
 	PBM_DELTAPOS    = WM_USER + 3
 	PBM_SETSTEP     = WM_USER + 4
 	PBM_STEPIT      = WM_USER + 5
-	PBM_SETRANGE32  = WM_USER + 6
-	PBM_GETRANGE    = WM_USER + 7
-	PBM_GETPOS      = WM_USER + 8
-	PBM_SETBARCOLOR = WM_USER + 9
-	PBM_SETMARQUEE  = WM_USER + 10
+	PBM_SETRANGE32  = 1030
+	PBM_GETRANGE    = 1031
+	PBM_GETPOS      = 1032
+	PBM_SETBARCOLOR = 1033
 	PBM_SETBKCOLOR  = CCM_SETBKCOLOR
+	PBS_SMOOTH      = 1
+	PBS_VERTICAL    = 4
 )
 
-// Progress bar styles.
+// Trackbar messages and constants
 const (
-	PBS_SMOOTH        = 0x01
-	PBS_VERTICAL      = 0x04
-	PBS_MARQUEE       = 0x08
-	PBS_SMOOTHREVERSE = 0x10
+	TBS_AUTOTICKS      = 1
+	TBS_VERT           = 2
+	TBS_HORZ           = 0
+	TBS_TOP            = 4
+	TBS_BOTTOM         = 0
+	TBS_LEFT           = 4
+	TBS_RIGHT          = 0
+	TBS_BOTH           = 8
+	TBS_NOTICKS        = 16
+	TBS_ENABLESELRANGE = 32
+	TBS_FIXEDLENGTH    = 64
+	TBS_NOTHUMB        = 128
+	TBS_TOOLTIPS       = 0x0100
+)
+
+const (
+	TBM_GETPOS         = (WM_USER)
+	TBM_GETRANGEMIN    = (WM_USER + 1)
+	TBM_GETRANGEMAX    = (WM_USER + 2)
+	TBM_GETTIC         = (WM_USER + 3)
+	TBM_SETTIC         = (WM_USER + 4)
+	TBM_SETPOS         = (WM_USER + 5)
+	TBM_SETRANGE       = (WM_USER + 6)
+	TBM_SETRANGEMIN    = (WM_USER + 7)
+	TBM_SETRANGEMAX    = (WM_USER + 8)
+	TBM_CLEARTICS      = (WM_USER + 9)
+	TBM_SETSEL         = (WM_USER + 10)
+	TBM_SETSELSTART    = (WM_USER + 11)
+	TBM_SETSELEND      = (WM_USER + 12)
+	TBM_GETPTICS       = (WM_USER + 14)
+	TBM_GETTICPOS      = (WM_USER + 15)
+	TBM_GETNUMTICS     = (WM_USER + 16)
+	TBM_GETSELSTART    = (WM_USER + 17)
+	TBM_GETSELEND      = (WM_USER + 18)
+	TBM_CLEARSEL       = (WM_USER + 19)
+	TBM_SETTICFREQ     = (WM_USER + 20)
+	TBM_SETPAGESIZE    = (WM_USER + 21)
+	TBM_GETPAGESIZE    = (WM_USER + 22)
+	TBM_SETLINESIZE    = (WM_USER + 23)
+	TBM_GETLINESIZE    = (WM_USER + 24)
+	TBM_GETTHUMBRECT   = (WM_USER + 25)
+	TBM_GETCHANNELRECT = (WM_USER + 26)
+	TBM_SETTHUMBLENGTH = (WM_USER + 27)
+	TBM_GETTHUMBLENGTH = (WM_USER + 28)
+	TBM_SETTOOLTIPS    = (WM_USER + 29)
+	TBM_GETTOOLTIPS    = (WM_USER + 30)
+	TBM_SETTIPSIDE     = (WM_USER + 31)
+	TBM_SETBUDDY       = (WM_USER + 32)
+	TBM_GETBUDDY       = (WM_USER + 33)
+)
+
+const (
+	TB_LINEUP        = 0
+	TB_LINEDOWN      = 1
+	TB_PAGEUP        = 2
+	TB_PAGEDOWN      = 3
+	TB_THUMBPOSITION = 4
+	TB_THUMBTRACK    = 5
+	TB_TOP           = 6
+	TB_BOTTOM        = 7
+	TB_ENDTRACK      = 8
 )
 
 // GetOpenFileName and GetSaveFileName extended flags
@@ -1412,7 +1160,6 @@ const (
 	MB_DEFBUTTON2        = 0x00000100
 	MB_DEFBUTTON3        = 0x00000200
 	MB_DEFBUTTON4        = 0x00000300
-	MB_TOPMOST           = 0x00040000
 )
 
 // COM
@@ -1520,7 +1267,7 @@ const (
 	SM_MEDIACENTER          = 87
 	SM_STARTER              = 88
 	SM_SERVERR2             = 89
-	SM_CMETRICS             = 97
+	SM_CMETRICS             = 91
 	SM_REMOTESESSION        = 0x1000
 	SM_SHUTTINGDOWN         = 0x2000
 	SM_REMOTECONTROL        = 0x2001
@@ -1533,7 +1280,7 @@ const (
 	CLSCTX_LOCAL_SERVER    = 4
 	CLSCTX_INPROC_SERVER16 = 8
 	CLSCTX_REMOTE_SERVER   = 16
-	CLSCTX_ALL             = CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER | CLSCTX_REMOTE_SERVER
+	CLSCTX_ALL             = CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_LOCAL_SERVER
 	CLSCTX_INPROC          = CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER
 	CLSCTX_SERVER          = CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER | CLSCTX_REMOTE_SERVER
 )
@@ -1553,17 +1300,17 @@ const (
 )
 
 const (
-	CC_FASTCALL   = 0
-	CC_CDECL      = 1
-	CC_MSCPASCAL  = 2
-	CC_PASCAL     = CC_MSCPASCAL
-	CC_MACPASCAL  = 3
-	CC_STDCALL    = 4
-	CC_FPFASTCALL = 5
-	CC_SYSCALL    = 6
-	CC_MPWCDECL   = 7
-	CC_MPWPASCAL  = 8
-	CC_MAX        = 9
+	CC_FASTCALL = iota
+	CC_CDECL
+	CC_MSCPASCAL
+	CC_PASCAL = CC_MSCPASCAL
+	CC_MACPASCAL
+	CC_STDCALL
+	CC_FPFASTCALL
+	CC_SYSCALL
+	CC_MPWCDECL
+	CC_MPWPASCAL
+	CC_MAX = CC_MPWPASCAL
 )
 
 const (
@@ -1577,11 +1324,11 @@ const (
 	VT_DATE            = 0x7
 	VT_BSTR            = 0x8
 	VT_DISPATCH        = 0x9
-	VT_ERROR           = 0xA
-	VT_BOOL            = 0xB
-	VT_VARIANT         = 0xC
-	VT_UNKNOWN         = 0xD
-	VT_DECIMAL         = 0xE
+	VT_ERROR           = 0xa
+	VT_BOOL            = 0xb
+	VT_VARIANT         = 0xc
+	VT_UNKNOWN         = 0xd
+	VT_DECIMAL         = 0xe
 	VT_I1              = 0x10
 	VT_UI1             = 0x11
 	VT_UI2             = 0x12
@@ -1592,12 +1339,12 @@ const (
 	VT_UINT            = 0x17
 	VT_VOID            = 0x18
 	VT_HRESULT         = 0x19
-	VT_PTR             = 0x1A
-	VT_SAFEARRAY       = 0x1B
-	VT_CARRAY          = 0x1C
-	VT_USERDEFINED     = 0x1D
-	VT_LPSTR           = 0x1E
-	VT_LPWSTR          = 0x1F
+	VT_PTR             = 0x1a
+	VT_SAFEARRAY       = 0x1b
+	VT_CARRAY          = 0x1c
+	VT_USERDEFINED     = 0x1d
+	VT_LPSTR           = 0x1e
+	VT_LPWSTR          = 0x1f
 	VT_RECORD          = 0x24
 	VT_INT_PTR         = 0x25
 	VT_UINT_PTR        = 0x26
@@ -1610,14 +1357,14 @@ const (
 	VT_BLOB_OBJECT     = 0x46
 	VT_CF              = 0x47
 	VT_CLSID           = 0x48
-	VT_BSTR_BLOB       = 0xFFF
+	VT_BSTR_BLOB       = 0xfff
 	VT_VECTOR          = 0x1000
 	VT_ARRAY           = 0x2000
 	VT_BYREF           = 0x4000
 	VT_RESERVED        = 0x8000
-	VT_ILLEGAL         = 0xFFFF
-	VT_ILLEGALMASKED   = 0xFFF
-	VT_TYPEMASK        = 0xFFF
+	VT_ILLEGAL         = 0xffff
+	VT_ILLEGALMASKED   = 0xfff
+	VT_TYPEMASK        = 0xfff
 )
 
 const (
@@ -1683,122 +1430,121 @@ const (
 
 // ListView messages
 const (
-	// https://wiki.winehq.org/List_Of_Windows_Messages
 	LVM_FIRST                    = 0x1000
-	LVM_GETITEMCOUNT             = 0x1004
-	LVM_SETIMAGELIST             = 0x1003
-	LVM_GETIMAGELIST             = 0x1002
-	LVM_GETITEM                  = 0x104B
-	LVM_SETITEM                  = 0x104C
-	LVM_INSERTITEM               = 0x104D
-	LVM_DELETEITEM               = 0x1008
-	LVM_DELETEALLITEMS           = 0x1009
-	LVM_GETCALLBACKMASK          = 0x100A
-	LVM_SETCALLBACKMASK          = 0x100B
-	LVM_SETUNICODEFORMAT         = 0x2005
-	LVM_GETNEXTITEM              = 0x100C
-	LVM_FINDITEM                 = 0x1053
-	LVM_GETITEMRECT              = 0x100E
-	LVM_GETSTRINGWIDTH           = 0x1057
-	LVM_HITTEST                  = 0x1012
-	LVM_ENSUREVISIBLE            = 0x1013
-	LVM_SCROLL                   = 0x1014
-	LVM_REDRAWITEMS              = 0x1015
-	LVM_ARRANGE                  = 0x1016
-	LVM_EDITLABEL                = 0x1076
-	LVM_GETEDITCONTROL           = 0x1018
-	LVM_GETCOLUMN                = 0x105F
-	LVM_SETCOLUMN                = 0x1060
-	LVM_INSERTCOLUMN             = 0x1061
-	LVM_DELETECOLUMN             = 0x101C
-	LVM_GETCOLUMNWIDTH           = 0x101D
-	LVM_SETCOLUMNWIDTH           = 0x101E
-	LVM_GETHEADER                = 0x101F
-	LVM_CREATEDRAGIMAGE          = 0x1021
-	LVM_GETVIEWRECT              = 0x1022
-	LVM_GETTEXTCOLOR             = 0x1023
-	LVM_SETTEXTCOLOR             = 0x1024
-	LVM_GETTEXTBKCOLOR           = 0x1025
-	LVM_SETTEXTBKCOLOR           = 0x1026
-	LVM_GETTOPINDEX              = 0x1027
-	LVM_GETCOUNTPERPAGE          = 0x1028
-	LVM_GETORIGIN                = 0x1029
-	LVM_UPDATE                   = 0x102A
-	LVM_SETITEMSTATE             = 0x102B
-	LVM_GETITEMSTATE             = 0x102C
-	LVM_GETITEMTEXT              = 0x1073
-	LVM_SETITEMTEXT              = 0x1074
-	LVM_SETITEMCOUNT             = 0x102F
-	LVM_SORTITEMS                = 0x1030
-	LVM_SETITEMPOSITION32        = 0x1031
-	LVM_GETSELECTEDCOUNT         = 0x1032
-	LVM_GETITEMSPACING           = 0x1033
-	LVM_GETISEARCHSTRING         = 0x1075
-	LVM_SETICONSPACING           = 0x1035
-	LVM_SETEXTENDEDLISTVIEWSTYLE = 0x1036
-	LVM_GETEXTENDEDLISTVIEWSTYLE = 0x1037
-	LVM_GETSUBITEMRECT           = 0x1038
-	LVM_SUBITEMHITTEST           = 0x1039
-	LVM_SETCOLUMNORDERARRAY      = 0x103A
-	LVM_GETCOLUMNORDERARRAY      = 0x103B
-	LVM_SETHOTITEM               = 0x103C
-	LVM_GETHOTITEM               = 0x103D
-	LVM_SETHOTCURSOR             = 0x103E
-	LVM_GETHOTCURSOR             = 0x103F
-	LVM_APPROXIMATEVIEWRECT      = 0x1040
-	LVM_SETWORKAREAS             = 0x1041
-	LVM_GETWORKAREAS             = 0x1046
-	LVM_GETNUMBEROFWORKAREAS     = 0x1049
-	LVM_GETSELECTIONMARK         = 0x1042
-	LVM_SETSELECTIONMARK         = 0x1043
-	LVM_SETHOVERTIME             = 0x1047
-	LVM_GETHOVERTIME             = 0x1048
-	LVM_SETTOOLTIPS              = 0x104A
-	LVM_GETTOOLTIPS              = 0x104E
-	LVM_SORTITEMSEX              = 0x1051
-	LVM_SETBKIMAGE               = 0x1044
-	LVM_GETBKIMAGE               = 0x108B
-	LVM_SETSELECTEDCOLUMN        = 0x108C
-	LVM_SETVIEW                  = 0x108E
-	LVM_GETVIEW                  = 0x108F
-	LVM_INSERTGROUP              = 0x1091
-	LVM_SETGROUPINFO             = 0x1093
-	LVM_GETGROUPINFO             = 0x1095
-	LVM_REMOVEGROUP              = 0x1096
-	LVM_MOVEGROUP                = 0x1097
-	LVM_GETGROUPCOUNT            = 0x1098
-	LVM_GETGROUPINFOBYINDEX      = 0x1099
-	LVM_MOVEITEMTOGROUP          = 0x109A
-	LVM_GETGROUPRECT             = 0x1062
-	LVM_SETGROUPMETRICS          = 0x109B
-	LVM_GETGROUPMETRICS          = 0x109C
-	LVM_ENABLEGROUPVIEW          = 0x109D
-	LVM_SORTGROUPS               = 0x109E
-	LVM_INSERTGROUPSORTED        = 0x109F
-	LVM_REMOVEALLGROUPS          = 0x10A0
-	LVM_HASGROUP                 = 0x10A1
-	LVM_GETGROUPSTATE            = 0x105C
-	LVM_GETFOCUSEDGROUP          = 0x105D
-	LVM_SETTILEVIEWINFO          = 0x10A2
-	LVM_GETTILEVIEWINFO          = 0x10A3
-	LVM_SETTILEINFO              = 0x10A4
-	LVM_GETTILEINFO              = 0x10A5
-	LVM_SETINSERTMARK            = 0x10A6
-	LVM_GETINSERTMARK            = 0x10A7
-	LVM_INSERTMARKHITTEST        = 0x10A8
-	LVM_GETINSERTMARKRECT        = 0x10A9
-	LVM_SETINSERTMARKCOLOR       = 0x10AA
-	LVM_GETINSERTMARKCOLOR       = 0x10AB
-	LVM_SETINFOTIP               = 0x10AD
-	LVM_GETSELECTEDCOLUMN        = 0x10AE
-	LVM_ISGROUPVIEWENABLED       = 0x10AF
-	LVM_GETOUTLINECOLOR          = 0x10B0
-	LVM_SETOUTLINECOLOR          = 0x10B1
-	LVM_CANCELEDITLABEL          = 0x10B3
-	LVM_MAPINDEXTOID             = 0x10B4
-	LVM_MAPIDTOINDEX             = 0x10B5
-	LVM_ISITEMVISIBLE            = 0x10B6
-	LVM_GETNEXTITEMINDEX         = 0x10D3
+	LVM_GETITEMCOUNT             = LVM_FIRST + 4
+	LVM_SETIMAGELIST             = LVM_FIRST + 3
+	LVM_GETIMAGELIST             = LVM_FIRST + 2
+	LVM_GETITEM                  = LVM_FIRST + 75
+	LVM_SETITEM                  = LVM_FIRST + 76
+	LVM_INSERTITEM               = LVM_FIRST + 77
+	LVM_DELETEITEM               = LVM_FIRST + 8
+	LVM_DELETEALLITEMS           = LVM_FIRST + 9
+	LVM_GETCALLBACKMASK          = LVM_FIRST + 10
+	LVM_SETCALLBACKMASK          = LVM_FIRST + 11
+	LVM_SETUNICODEFORMAT         = CCM_SETUNICODEFORMAT
+	LVM_GETNEXTITEM              = LVM_FIRST + 12
+	LVM_FINDITEM                 = LVM_FIRST + 83
+	LVM_GETITEMRECT              = LVM_FIRST + 14
+	LVM_GETSTRINGWIDTH           = LVM_FIRST + 87
+	LVM_HITTEST                  = LVM_FIRST + 18
+	LVM_ENSUREVISIBLE            = LVM_FIRST + 19
+	LVM_SCROLL                   = LVM_FIRST + 20
+	LVM_REDRAWITEMS              = LVM_FIRST + 21
+	LVM_ARRANGE                  = LVM_FIRST + 22
+	LVM_EDITLABEL                = LVM_FIRST + 118
+	LVM_GETEDITCONTROL           = LVM_FIRST + 24
+	LVM_GETCOLUMN                = LVM_FIRST + 95
+	LVM_SETCOLUMN                = LVM_FIRST + 96
+	LVM_INSERTCOLUMN             = LVM_FIRST + 97
+	LVM_DELETECOLUMN             = LVM_FIRST + 28
+	LVM_GETCOLUMNWIDTH           = LVM_FIRST + 29
+	LVM_SETCOLUMNWIDTH           = LVM_FIRST + 30
+	LVM_GETHEADER                = LVM_FIRST + 31
+	LVM_CREATEDRAGIMAGE          = LVM_FIRST + 33
+	LVM_GETVIEWRECT              = LVM_FIRST + 34
+	LVM_GETTEXTCOLOR             = LVM_FIRST + 35
+	LVM_SETTEXTCOLOR             = LVM_FIRST + 36
+	LVM_GETTEXTBKCOLOR           = LVM_FIRST + 37
+	LVM_SETTEXTBKCOLOR           = LVM_FIRST + 38
+	LVM_GETTOPINDEX              = LVM_FIRST + 39
+	LVM_GETCOUNTPERPAGE          = LVM_FIRST + 40
+	LVM_GETORIGIN                = LVM_FIRST + 41
+	LVM_UPDATE                   = LVM_FIRST + 42
+	LVM_SETITEMSTATE             = LVM_FIRST + 43
+	LVM_GETITEMSTATE             = LVM_FIRST + 44
+	LVM_GETITEMTEXT              = LVM_FIRST + 115
+	LVM_SETITEMTEXT              = LVM_FIRST + 116
+	LVM_SETITEMCOUNT             = LVM_FIRST + 47
+	LVM_SORTITEMS                = LVM_FIRST + 48
+	LVM_SETITEMPOSITION32        = LVM_FIRST + 49
+	LVM_GETSELECTEDCOUNT         = LVM_FIRST + 50
+	LVM_GETITEMSPACING           = LVM_FIRST + 51
+	LVM_GETISEARCHSTRING         = LVM_FIRST + 117
+	LVM_SETICONSPACING           = LVM_FIRST + 53
+	LVM_SETEXTENDEDLISTVIEWSTYLE = LVM_FIRST + 54
+	LVM_GETEXTENDEDLISTVIEWSTYLE = LVM_FIRST + 55
+	LVM_GETSUBITEMRECT           = LVM_FIRST + 56
+	LVM_SUBITEMHITTEST           = LVM_FIRST + 57
+	LVM_SETCOLUMNORDERARRAY      = LVM_FIRST + 58
+	LVM_GETCOLUMNORDERARRAY      = LVM_FIRST + 59
+	LVM_SETHOTITEM               = LVM_FIRST + 60
+	LVM_GETHOTITEM               = LVM_FIRST + 61
+	LVM_SETHOTCURSOR             = LVM_FIRST + 62
+	LVM_GETHOTCURSOR             = LVM_FIRST + 63
+	LVM_APPROXIMATEVIEWRECT      = LVM_FIRST + 64
+	LVM_SETWORKAREAS             = LVM_FIRST + 65
+	LVM_GETWORKAREAS             = LVM_FIRST + 70
+	LVM_GETNUMBEROFWORKAREAS     = LVM_FIRST + 73
+	LVM_GETSELECTIONMARK         = LVM_FIRST + 66
+	LVM_SETSELECTIONMARK         = LVM_FIRST + 67
+	LVM_SETHOVERTIME             = LVM_FIRST + 71
+	LVM_GETHOVERTIME             = LVM_FIRST + 72
+	LVM_SETTOOLTIPS              = LVM_FIRST + 74
+	LVM_GETTOOLTIPS              = LVM_FIRST + 78
+	LVM_SORTITEMSEX              = LVM_FIRST + 81
+	LVM_SETBKIMAGE               = LVM_FIRST + 138
+	LVM_GETBKIMAGE               = LVM_FIRST + 139
+	LVM_SETSELECTEDCOLUMN        = LVM_FIRST + 140
+	LVM_SETVIEW                  = LVM_FIRST + 142
+	LVM_GETVIEW                  = LVM_FIRST + 143
+	LVM_INSERTGROUP              = LVM_FIRST + 145
+	LVM_SETGROUPINFO             = LVM_FIRST + 147
+	LVM_GETGROUPINFO             = LVM_FIRST + 149
+	LVM_REMOVEGROUP              = LVM_FIRST + 150
+	LVM_MOVEGROUP                = LVM_FIRST + 151
+	LVM_GETGROUPCOUNT            = LVM_FIRST + 152
+	LVM_GETGROUPINFOBYINDEX      = LVM_FIRST + 153
+	LVM_MOVEITEMTOGROUP          = LVM_FIRST + 154
+	LVM_GETGROUPRECT             = LVM_FIRST + 98
+	LVM_SETGROUPMETRICS          = LVM_FIRST + 155
+	LVM_GETGROUPMETRICS          = LVM_FIRST + 156
+	LVM_ENABLEGROUPVIEW          = LVM_FIRST + 157
+	LVM_SORTGROUPS               = LVM_FIRST + 158
+	LVM_INSERTGROUPSORTED        = LVM_FIRST + 159
+	LVM_REMOVEALLGROUPS          = LVM_FIRST + 160
+	LVM_HASGROUP                 = LVM_FIRST + 161
+	LVM_GETGROUPSTATE            = LVM_FIRST + 92
+	LVM_GETFOCUSEDGROUP          = LVM_FIRST + 93
+	LVM_SETTILEVIEWINFO          = LVM_FIRST + 162
+	LVM_GETTILEVIEWINFO          = LVM_FIRST + 163
+	LVM_SETTILEINFO              = LVM_FIRST + 164
+	LVM_GETTILEINFO              = LVM_FIRST + 165
+	LVM_SETINSERTMARK            = LVM_FIRST + 166
+	LVM_GETINSERTMARK            = LVM_FIRST + 167
+	LVM_INSERTMARKHITTEST        = LVM_FIRST + 168
+	LVM_GETINSERTMARKRECT        = LVM_FIRST + 169
+	LVM_SETINSERTMARKCOLOR       = LVM_FIRST + 170
+	LVM_GETINSERTMARKCOLOR       = LVM_FIRST + 171
+	LVM_SETINFOTIP               = LVM_FIRST + 173
+	LVM_GETSELECTEDCOLUMN        = LVM_FIRST + 174
+	LVM_ISGROUPVIEWENABLED       = LVM_FIRST + 175
+	LVM_GETOUTLINECOLOR          = LVM_FIRST + 176
+	LVM_SETOUTLINECOLOR          = LVM_FIRST + 177
+	LVM_CANCELEDITLABEL          = LVM_FIRST + 179
+	LVM_MAPINDEXTOID             = LVM_FIRST + 180
+	LVM_MAPIDTOINDEX             = LVM_FIRST + 181
+	LVM_ISITEMVISIBLE            = LVM_FIRST + 182
+	LVM_GETNEXTITEMINDEX         = LVM_FIRST + 211
 )
 
 // ListView notifications
@@ -1823,14 +1569,19 @@ const (
 	LVN_ITEMACTIVATE      = LVN_FIRST - 14
 	LVN_ODSTATECHANGED    = LVN_FIRST - 15
 	LVN_HOTTRACK          = LVN_FIRST - 21
-	LVN_GETDISPINFO       = LVN_FIRST - 50
-	LVN_SETDISPINFO       = LVN_FIRST - 51
+	LVN_GETDISPINFO       = LVN_FIRST - 77
+	LVN_SETDISPINFO       = LVN_FIRST - 78
 	LVN_KEYDOWN           = LVN_FIRST - 55
 	LVN_MARQUEEBEGIN      = LVN_FIRST - 56
-	LVN_GETINFOTIP        = LVN_FIRST - 57
-	LVN_INCREMENTALSEARCH = LVN_FIRST - 62
+	LVN_GETINFOTIP        = LVN_FIRST - 58
+	LVN_INCREMENTALSEARCH = LVN_FIRST - 63
 	LVN_BEGINSCROLL       = LVN_FIRST - 80
 	LVN_ENDSCROLL         = LVN_FIRST - 81
+)
+
+const (
+	LVSCW_AUTOSIZE           = ^uintptr(0)
+	LVSCW_AUTOSIZE_USEHEADER = ^uintptr(1)
 )
 
 // ListView LVNI constants
@@ -1863,10 +1614,10 @@ const (
 	LVS_EDITLABELS      = 0x0200
 	LVS_OWNERDATA       = 0x1000
 	LVS_NOSCROLL        = 0x2000
-	LVS_TYPESTYLEMASK   = 0xFC00
+	LVS_TYPESTYLEMASK   = 0xfc00
 	LVS_ALIGNTOP        = 0x0000
 	LVS_ALIGNLEFT       = 0x0800
-	LVS_ALIGNMASK       = 0x0C00
+	LVS_ALIGNMASK       = 0x0c00
 	LVS_OWNERDRAWFIXED  = 0x0400
 	LVS_NOCOLUMNHEADER  = 0x4000
 	LVS_NOSORTHEADER    = 0x8000
@@ -1929,6 +1680,8 @@ const (
 	LVIF_GROUPID     = 0x00000100
 	LVIF_COLUMNS     = 0x00000200
 )
+
+const LVFI_PARAM = 0x0001
 
 // ListView item states
 const (
@@ -2045,9 +1798,9 @@ const (
 	RRF_RT_REG_DWORD        = 0x00000010
 	RRF_RT_REG_MULTI_SZ     = 0x00000020
 	RRF_RT_REG_QWORD        = 0x00000040
-	RRF_RT_DWORD            = RRF_RT_REG_BINARY | RRF_RT_REG_DWORD
-	RRF_RT_QWORD            = RRF_RT_REG_BINARY | RRF_RT_REG_QWORD
-	RRF_RT_ANY              = 0x0000FFFF
+	RRF_RT_DWORD            = (RRF_RT_REG_BINARY | RRF_RT_REG_DWORD)
+	RRF_RT_QWORD            = (RRF_RT_REG_BINARY | RRF_RT_REG_QWORD)
+	RRF_RT_ANY              = 0x0000ffff
 	RRF_NOEXPAND            = 0x10000000
 	RRF_ZEROONFAILURE       = 0x20000000
 	REG_PROCESS_APPKEY      = 0x00000001
@@ -2089,6 +1842,7 @@ const (
 )
 
 // Virtual-Key Codes
+/*
 const (
 	VK_LBUTTON             = 0x01
 	VK_RBUTTON             = 0x02
@@ -2108,12 +1862,10 @@ const (
 	VK_KANA                = 0x15
 	VK_HANGEUL             = 0x15
 	VK_HANGUL              = 0x15
-	VK_IME_ON              = 0x16
 	VK_JUNJA               = 0x17
 	VK_FINAL               = 0x18
 	VK_HANJA               = 0x19
 	VK_KANJI               = 0x19
-	VK_IME_OFF             = 0x1A
 	VK_ESCAPE              = 0x1B
 	VK_CONVERT             = 0x1C
 	VK_NONCONVERT          = 0x1D
@@ -2229,7 +1981,6 @@ const (
 	VK_ICO_00              = 0xE4
 	VK_PROCESSKEY          = 0xE5
 	VK_ICO_CLEAR           = 0xE6
-	VK_PACKET              = 0xE7
 	VK_OEM_RESET           = 0xE9
 	VK_OEM_JUMP            = 0xEA
 	VK_OEM_PA1             = 0xEB
@@ -2252,7 +2003,7 @@ const (
 	VK_NONAME              = 0xFC
 	VK_PA1                 = 0xFD
 	VK_OEM_CLEAR           = 0xFE
-)
+)*/
 
 // Registry Value Types
 const (
@@ -2285,39 +2036,39 @@ const (
 
 // Tooltip messages
 const (
-	TTM_ACTIVATE        = WM_USER + 1
-	TTM_SETDELAYTIME    = WM_USER + 3
-	TTM_ADDTOOL         = WM_USER + 4
-	TTM_DELTOOL         = WM_USER + 5
-	TTM_NEWTOOLRECT     = WM_USER + 6
-	TTM_RELAYEVENT      = WM_USER + 7
-	TTM_GETTOOLINFO     = WM_USER + 8
-	TTM_SETTOOLINFO     = WM_USER + 9
-	TTM_HITTEST         = WM_USER + 10
-	TTM_GETTEXT         = WM_USER + 11
-	TTM_UPDATETIPTEXT   = WM_USER + 12
-	TTM_GETTOOLCOUNT    = WM_USER + 13
-	TTM_ENUMTOOLS       = WM_USER + 14
-	TTM_GETCURRENTTOOL  = WM_USER + 15
-	TTM_WINDOWFROMPOINT = WM_USER + 16
-	TTM_TRACKACTIVATE   = WM_USER + 17
-	TTM_TRACKPOSITION   = WM_USER + 18
-	TTM_SETTIPBKCOLOR   = WM_USER + 19
-	TTM_SETTIPTEXTCOLOR = WM_USER + 20
-	TTM_GETDELAYTIME    = WM_USER + 21
-	TTM_GETTIPBKCOLOR   = WM_USER + 22
-	TTM_GETTIPTEXTCOLOR = WM_USER + 23
-	TTM_SETMAXTIPWIDTH  = WM_USER + 24
-	TTM_GETMAXTIPWIDTH  = WM_USER + 25
-	TTM_SETMARGIN       = WM_USER + 26
-	TTM_GETMARGIN       = WM_USER + 27
-	TTM_POP             = WM_USER + 28
-	TTM_UPDATE          = WM_USER + 29
-	TTM_GETBUBBLESIZE   = WM_USER + 30
-	TTM_ADJUSTRECT      = WM_USER + 31
-	TTM_SETTITLE        = WM_USER + 32
-	TTM_POPUP           = WM_USER + 34
-	TTM_GETTITLE        = WM_USER + 35
+	TTM_ACTIVATE        = (WM_USER + 1)
+	TTM_SETDELAYTIME    = (WM_USER + 3)
+	TTM_ADDTOOL         = (WM_USER + 50)
+	TTM_DELTOOL         = (WM_USER + 51)
+	TTM_NEWTOOLRECT     = (WM_USER + 52)
+	TTM_RELAYEVENT      = (WM_USER + 7)
+	TTM_GETTOOLINFO     = (WM_USER + 53)
+	TTM_SETTOOLINFO     = (WM_USER + 54)
+	TTM_HITTEST         = (WM_USER + 55)
+	TTM_GETTEXT         = (WM_USER + 56)
+	TTM_UPDATETIPTEXT   = (WM_USER + 57)
+	TTM_GETTOOLCOUNT    = (WM_USER + 13)
+	TTM_ENUMTOOLS       = (WM_USER + 58)
+	TTM_GETCURRENTTOOL  = (WM_USER + 59)
+	TTM_WINDOWFROMPOINT = (WM_USER + 16)
+	TTM_TRACKACTIVATE   = (WM_USER + 17)
+	TTM_TRACKPOSITION   = (WM_USER + 18)
+	TTM_SETTIPBKCOLOR   = (WM_USER + 19)
+	TTM_SETTIPTEXTCOLOR = (WM_USER + 20)
+	TTM_GETDELAYTIME    = (WM_USER + 21)
+	TTM_GETTIPBKCOLOR   = (WM_USER + 22)
+	TTM_GETTIPTEXTCOLOR = (WM_USER + 23)
+	TTM_SETMAXTIPWIDTH  = (WM_USER + 24)
+	TTM_GETMAXTIPWIDTH  = (WM_USER + 25)
+	TTM_SETMARGIN       = (WM_USER + 26)
+	TTM_GETMARGIN       = (WM_USER + 27)
+	TTM_POP             = (WM_USER + 28)
+	TTM_UPDATE          = (WM_USER + 29)
+	TTM_GETBUBBLESIZE   = (WM_USER + 30)
+	TTM_ADJUSTRECT      = (WM_USER + 31)
+	TTM_SETTITLE        = (WM_USER + 33)
+	TTM_POPUP           = (WM_USER + 34)
+	TTM_GETTITLE        = (WM_USER + 35)
 )
 
 // Tooltip icons
@@ -2335,10 +2086,10 @@ const (
 const (
 	TTN_FIRST       = -520
 	TTN_LAST        = -549
-	TTN_GETDISPINFO = TTN_FIRST
-	TTN_SHOW        = TTN_FIRST - 1
-	TTN_POP         = TTN_FIRST - 2
-	TTN_LINKCLICK   = TTN_FIRST - 3
+	TTN_GETDISPINFO = (TTN_FIRST - 10)
+	TTN_SHOW        = (TTN_FIRST - 1)
+	TTN_POP         = (TTN_FIRST - 2)
+	TTN_LINKCLICK   = (TTN_FIRST - 3)
 	TTN_NEEDTEXT    = TTN_GETDISPINFO
 )
 
@@ -2482,8 +2233,8 @@ const (
 
 // WM_NCHITTEST and MOUSEHOOKSTRUCT Mouse Position Codes
 const (
-	HTERROR       = -2
-	HTTRANSPARENT = -1
+	HTERROR       = (-2)
+	HTTRANSPARENT = (-1)
 	HTNOWHERE     = 0
 	HTCLIENT      = 1
 	HTCAPTION     = 2
@@ -2566,8 +2317,8 @@ const (
 	GMEM_LOWER          = GMEM_NOT_BANKED
 	GMEM_VALID_FLAGS    = 0x7F72
 	GMEM_INVALID_HANDLE = 0x8000
-	GHND                = GMEM_MOVEABLE | GMEM_ZEROINIT
-	GPTR                = GMEM_FIXED | GMEM_ZEROINIT
+	GHND                = (GMEM_MOVEABLE | GMEM_ZEROINIT)
+	GPTR                = (GMEM_FIXED | GMEM_ZEROINIT)
 )
 
 // Ternary raster operations
@@ -2638,6 +2389,10 @@ const (
 	DIB_RGB_COLORS = 0
 )
 
+const (
+	STANDARD_RIGHTS_REQUIRED = 0x000F
+)
+
 // Service Control Manager object specific access types
 const (
 	SC_MANAGER_CONNECT            = 0x0001
@@ -2660,7 +2415,7 @@ const (
 	SERVICE_WIN32_SHARE_PROCESS = 0x00000020
 	SERVICE_WIN32               = SERVICE_WIN32_OWN_PROCESS | SERVICE_WIN32_SHARE_PROCESS
 	SERVICE_INTERACTIVE_PROCESS = 0x00000100
-	SERVICE_TYPE_ALL            = 1023
+	SERVICE_TYPE_ALL            = SERVICE_WIN32 | SERVICE_ADAPTER | SERVICE_DRIVER | SERVICE_INTERACTIVE_PROCESS
 )
 
 // Service State -- for CurrentState
@@ -2794,12 +2549,13 @@ const (
 // enum-lite implementation for the following constant structure
 type DWM_SOURCE_FRAME_SAMPLING int32
 
-// Flags used by the DwmSetPresentParameters function to specify the frame
-// sampling type
+// TODO: need to verify this construction
+// Flags used by the DwmSetPresentParameters function
+// to specify the frame sampling type
 const (
-	DWM_SOURCE_FRAME_SAMPLING_POINT    = 0
-	DWM_SOURCE_FRAME_SAMPLING_COVERAGE = 1
-	DWM_SOURCE_FRAME_SAMPLING_LAST     = 2
+	DWM_SOURCE_FRAME_SAMPLING_POINT = iota + 1
+	DWM_SOURCE_FRAME_SAMPLING_COVERAGE
+	DWM_SOURCE_FRAME_SAMPLING_LAST
 )
 
 // Flags used by the DWM_THUMBNAIL_PROPERTIES structure to
@@ -2815,25 +2571,27 @@ const (
 // enum-lite implementation for the following constant structure
 type DWMFLIP3DWINDOWPOLICY int32
 
-// Flags used by the DwmSetWindowAttribute function to specify the Flip3D window
-// policy
+// TODO: need to verify this construction
+// Flags used by the DwmSetWindowAttribute function
+// to specify the Flip3D window policy
 const (
-	DWMFLIP3D_DEFAULT      = 0
-	DWMFLIP3D_EXCLUDEBELOW = 1
-	DWMFLIP3D_EXCLUDEABOVE = 2
-	DWMFLIP3D_LAST         = 3
+	DWMFLIP3D_DEFAULT = iota + 1
+	DWMFLIP3D_EXCLUDEBELOW
+	DWMFLIP3D_EXCLUDEABOVE
+	DWMFLIP3D_LAST
 )
 
 // enum-lite implementation for the following constant structure
 type DWMNCRENDERINGPOLICY int32
 
-// Flags used by the DwmSetWindowAttribute function to specify the non-client
-// area rendering policy
+// TODO: need to verify this construction
+// Flags used by the DwmSetWindowAttribute function
+// to specify the non-client area rendering policy
 const (
-	DWMNCRP_USEWINDOWSTYLE = 0
-	DWMNCRP_DISABLED       = 1
-	DWMNCRP_ENABLED        = 2
-	DWMNCRP_LAST           = 3
+	DWMNCRP_USEWINDOWSTYLE = iota + 1
+	DWMNCRP_DISABLED
+	DWMNCRP_ENABLED
+	DWMNCRP_LAST
 )
 
 // enum-lite implementation for the following constant structure
@@ -2844,39 +2602,32 @@ const (
 	DWMTRANSITION_OWNEDWINDOW_REPOSITION = 0
 )
 
-// enum-lite implementation for the following constant structure
-type DWMWINDOWATTRIBUTE int32
-
+// TODO: need to verify this construction
 // Flags used by the DwmGetWindowAttribute and DwmSetWindowAttribute functions
 // to specify window attributes for non-client rendering
 const (
-	DWMWA_NCRENDERING_ENABLED         = 1
-	DWMWA_NCRENDERING_POLICY          = 2
-	DWMWA_TRANSITIONS_FORCEDISABLED   = 3
-	DWMWA_ALLOW_NCPAINT               = 4
-	DWMWA_CAPTION_BUTTON_BOUNDS       = 5
-	DWMWA_NONCLIENT_RTL_LAYOUT        = 6
-	DWMWA_FORCE_ICONIC_REPRESENTATION = 7
-	DWMWA_FLIP3D_POLICY               = 8
-	DWMWA_EXTENDED_FRAME_BOUNDS       = 9
-	DWMWA_HAS_ICONIC_BITMAP           = 10
-	DWMWA_DISALLOW_PEEK               = 11
-	DWMWA_EXCLUDED_FROM_PEEK          = 12
-	DWMWA_CLOAK                       = 13
-	DWMWA_CLOAKED                     = 14
-	DWMWA_FREEZE_REPRESENTATION       = 15
-	DWMWA_LAST                        = 16
-)
-
-const (
-	DWM_CLOAKED_APP       = 1
-	DWM_CLOAKED_SHELL     = 2
-	DWM_CLOAKED_INHERITED = 4
+	DWMWA_NCRENDERING_ENABLED = iota + 1
+	DWMWA_NCRENDERING_POLICY
+	DWMWA_TRANSITIONS_FORCEDISABLED
+	DWMWA_ALLOW_NCPAINT
+	DWMWA_CAPTION_BUTTON_BOUNDS
+	DWMWA_NONCLIENT_RTL_LAYOUT
+	DWMWA_FORCE_ICONIC_REPRESENTATION
+	DWMWA_FLIP3D_POLICY
+	DWMWA_EXTENDED_FRAME_BOUNDS
+	DWMWA_HAS_ICONIC_BITMAP
+	DWMWA_DISALLOW_PEEK
+	DWMWA_EXCLUDED_FROM_PEEK
+	DWMWA_CLOAK
+	DWMWA_CLOAKED
+	DWMWA_FREEZE_REPRESENTATION
+	DWMWA_LAST
 )
 
 // enum-lite implementation for the following constant structure
 type GESTURE_TYPE int32
 
+// TODO: use iota?
 // Identifies the gesture type
 const (
 	GT_PEN_TAP                 = 0
@@ -3029,13 +2780,6 @@ const (
 	MOUSEEVENTF_XUP             = 0x0100
 )
 
-const (
-	KEYEVENTF_EXTENDEDKEY = 0x0001
-	KEYEVENTF_KEYUP       = 0x0002
-	KEYEVENTF_SCANCODE    = 0x0008
-	KEYEVENTF_UNICODE     = 0x0004
-)
-
 // Windows Hooks (WH_*)
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ms644990(v=vs.85).aspx
 const (
@@ -3056,562 +2800,451 @@ const (
 	WH_SYSMSGFILTER    = 6
 )
 
-// Process Security and Access Rights
-// https://msdn.microsoft.com/en-us/library/windows/desktop/ms684880(v=vs.85).aspx
+// ComboBox return values
 const (
-	PROCESS_TERMINATE                 = 0x0001
-	PROCESS_CREATE_THREAD             = 0x0002
-	PROCESS_SET_SESSIONID             = 0x0004
-	PROCESS_VM_OPERATION              = 0x0008
-	PROCESS_VM_READ                   = 0x0010
-	PROCESS_VM_WRITE                  = 0x0020
-	PROCESS_DUP_HANDLE                = 0x0040
-	PROCESS_CREATE_PROCESS            = 0x0080
-	PROCESS_SET_QUOTA                 = 0x0100
-	PROCESS_SET_INFORMATION           = 0x0200
-	PROCESS_QUERY_INFORMATION         = 0x0400
-	PROCESS_SUSPEND_RESUME            = 0x0800
-	PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
-	PROCESS_SET_LIMITED_INFORMATION   = 0x2000
+	CB_OKAY     = 0
+	CB_ERR      = ^uintptr(0) // -1
+	CB_ERRSPACE = ^uintptr(1) // -2
 )
 
+// ComboBox notifications
 const (
-	IMAGE_BITMAP = 0
-	IMAGE_ICON   = 1
-	IMAGE_CURSOR = 2
+	CBN_ERRSPACE     = -1
+	CBN_SELCHANGE    = 1
+	CBN_DBLCLK       = 2
+	CBN_SETFOCUS     = 3
+	CBN_KILLFOCUS    = 4
+	CBN_EDITCHANGE   = 5
+	CBN_EDITUPDATE   = 6
+	CBN_DROPDOWN     = 7
+	CBN_CLOSEUP      = 8
+	CBN_SELENDOK     = 9
+	CBN_SELENDCANCEL = 10
 )
 
+// ComboBox styles
 const (
-	LR_DEFAULTCOLOR     = 0x0000
-	LR_MONOCHROME       = 0x0001
-	LR_COLOR            = 0x0002
-	LR_COPYRETURNORG    = 0x0004
-	LR_COPYDELETEORG    = 0x0008
-	LR_LOADFROMFILE     = 0x0010
-	LR_LOADTRANSPARENT  = 0x0020
-	LR_DEFAULTSIZE      = 0x0040
-	LR_VGACOLOR         = 0x0080
-	LR_LOADMAP3DCOLORS  = 0x1000
-	LR_CREATEDIBSECTION = 0x2000
-	LR_COPYFROMRESOURCE = 0x4000
-	LR_SHARED           = 0x8000
+	CBS_SIMPLE            = 0x0001
+	CBS_DROPDOWN          = 0x0002
+	CBS_DROPDOWNLIST      = 0x0003
+	CBS_OWNERDRAWFIXED    = 0x0010
+	CBS_OWNERDRAWVARIABLE = 0x0020
+	CBS_AUTOHSCROLL       = 0x0040
+	CBS_OEMCONVERT        = 0x0080
+	CBS_SORT              = 0x0100
+	CBS_HASSTRINGS        = 0x0200
+	CBS_NOINTEGRALHEIGHT  = 0x0400
+	CBS_DISABLENOSCROLL   = 0x0800
+	CBS_UPPERCASE         = 0x2000
+	CBS_LOWERCASE         = 0x4000
 )
 
+// ComboBox messages
 const (
-	MF_BITMAP       = 0x0004
-	MF_CHECKED      = 0x0008
-	MF_DISABLED     = 0x0002
-	MF_ENABLED      = 0x0000
-	MF_GRAYED       = 0x0001
-	MF_MENUBARBREAK = 0x0020
-	MF_MENUBREAK    = 0x0040
-	MF_OWNERDRAW    = 0x0100
-	MF_POPUP        = 0x0010
-	MF_SEPARATOR    = 0x0800
-	MF_STRING       = 0x0000
-	MF_UNCHECKED    = 0x0000
-	MF_BYCOMMAND    = 0x0000
-	MF_BYPOSITION   = 0x0400
+	CB_GETEDITSEL            = 0x0140
+	CB_LIMITTEXT             = 0x0141
+	CB_SETEDITSEL            = 0x0142
+	CB_ADDSTRING             = 0x0143
+	CB_DELETESTRING          = 0x0144
+	CB_DIR                   = 0x0145
+	CB_GETCOUNT              = 0x0146
+	CB_GETCURSEL             = 0x0147
+	CB_GETLBTEXT             = 0x0148
+	CB_GETLBTEXTLEN          = 0x0149
+	CB_INSERTSTRING          = 0x014A
+	CB_RESETCONTENT          = 0x014B
+	CB_FINDSTRING            = 0x014C
+	CB_SELECTSTRING          = 0x014D
+	CB_SETCURSEL             = 0x014E
+	CB_SHOWDROPDOWN          = 0x014F
+	CB_GETITEMDATA           = 0x0150
+	CB_SETITEMDATA           = 0x0151
+	CB_GETDROPPEDCONTROLRECT = 0x0152
+	CB_SETITEMHEIGHT         = 0x0153
+	CB_GETITEMHEIGHT         = 0x0154
+	CB_SETEXTENDEDUI         = 0x0155
+	CB_GETEXTENDEDUI         = 0x0156
+	CB_GETDROPPEDSTATE       = 0x0157
+	CB_FINDSTRINGEXACT       = 0x0158
+	CB_SETLOCALE             = 0x0159
+	CB_GETLOCALE             = 0x015A
+	CB_GETTOPINDEX           = 0x015b
+	CB_SETTOPINDEX           = 0x015c
+	CB_GETHORIZONTALEXTENT   = 0x015d
+	CB_SETHORIZONTALEXTENT   = 0x015e
+	CB_GETDROPPEDWIDTH       = 0x015f
+	CB_SETDROPPEDWIDTH       = 0x0160
+	CB_INITSTORAGE           = 0x0161
+	CB_MULTIPLEADDSTRING     = 0x0163
+	CB_GETCOMBOBOXINFO       = 0x0164
 )
 
+// TreeView styles
 const (
-	RID_INPUT  = 0x10000003
-	RID_HEADER = 0x10000005
-)
-
-const (
-	RIM_TYPEMOUSE    = 0
-	RIM_TYPEKEYBOARD = 1
-	RIM_TYPEHID      = 2
-)
-
-const (
-	RI_KEY_MAKE            = 0 // key is down
-	RI_KEY_BREAK           = 1 // key is up
-	RI_KEY_E0              = 2 // scan code has e0 prefix
-	RI_KEY_E1              = 4 // scan code has e1 prefix
-	RI_KEY_TERMSRV_SET_LED = 8
-	RI_KEY_TERMSRV_SHADOW  = 0x10
-)
-
-const (
-	MOUSE_MOVE_RELATIVE      = 0
-	MOUSE_MOVE_ABSOLUTE      = 1
-	MOUSE_VIRTUAL_DESKTOP    = 0x02
-	MOUSE_ATTRIBUTES_CHANGED = 0x04
-	MOUSE_MOVE_NOCOALESCE    = 0x08
-)
-
-const (
-	RI_MOUSE_LEFT_BUTTON_DOWN   = 0x0001
-	RI_MOUSE_LEFT_BUTTON_UP     = 0x0002
-	RI_MOUSE_RIGHT_BUTTON_DOWN  = 0x0004
-	RI_MOUSE_RIGHT_BUTTON_UP    = 0x0008
-	RI_MOUSE_MIDDLE_BUTTON_DOWN = 0x0010
-	RI_MOUSE_MIDDLE_BUTTON_UP   = 0x0020
-	RI_MOUSE_BUTTON_1_DOWN      = RI_MOUSE_LEFT_BUTTON_DOWN
-	RI_MOUSE_BUTTON_1_UP        = RI_MOUSE_LEFT_BUTTON_UP
-	RI_MOUSE_BUTTON_2_DOWN      = RI_MOUSE_RIGHT_BUTTON_DOWN
-	RI_MOUSE_BUTTON_2_UP        = RI_MOUSE_RIGHT_BUTTON_UP
-	RI_MOUSE_BUTTON_3_DOWN      = RI_MOUSE_MIDDLE_BUTTON_DOWN
-	RI_MOUSE_BUTTON_3_UP        = RI_MOUSE_MIDDLE_BUTTON_UP
-	RI_MOUSE_BUTTON_4_DOWN      = 0x0040 // XBUTTON1 changed to down
-	RI_MOUSE_BUTTON_4_UP        = 0x0080 // XBUTTON1 changed to up
-	RI_MOUSE_BUTTON_5_DOWN      = 0x100  // XBUTTON2 changed to down
-	RI_MOUSE_BUTTON_5_UP        = 0x0200 // XBUTTON2 changed to up
-	RI_MOUSE_WHEEL              = 0x0400
+	TVS_HASBUTTONS      = 0x0001
+	TVS_HASLINES        = 0x0002
+	TVS_LINESATROOT     = 0x0004
+	TVS_EDITLABELS      = 0x0008
+	TVS_DISABLEDRAGDROP = 0x0010
+	TVS_SHOWSELALWAYS   = 0x0020
+	TVS_RTLREADING      = 0x0040
+	TVS_NOTOOLTIPS      = 0x0080
+	TVS_CHECKBOXES      = 0x0100
+	TVS_TRACKSELECT     = 0x0200
+	TVS_SINGLEEXPAND    = 0x0400
+	TVS_INFOTIP         = 0x0800
+	TVS_FULLROWSELECT   = 0x1000
+	TVS_NOSCROLL        = 0x2000
+	TVS_NONEVENHEIGHT   = 0x4000
+	TVS_NOHSCROLL       = 0x8000
 )
 
 const (
-	RIDEV_REMOVE       = 0x00000001
-	RIDEV_EXCLUDE      = 0x00000010
-	RIDEV_PAGEONLY     = 0x00000020
-	RIDEV_NOLEGACY     = 0x00000030
-	RIDEV_INPUTSINK    = 0x00000100
-	RIDEV_CAPTUREMOUSE = 0x00000200
-	RIDEV_NOHOTKEYS    = 0x00000200
-	RIDEV_APPKEYS      = 0x00000400
-	RIDEV_EXINPUTSINK  = 0x00001000
-	RIDEV_DEVNOTIFY    = 0x00002000
-)
-
-// GDI+ constants
-const (
-	Ok                        = 0
-	GenericError              = 1
-	InvalidParameter          = 2
-	OutOfMemory               = 3
-	ObjectBusy                = 4
-	InsufficientBuffer        = 5
-	NotImplemented            = 6
-	Win32Error                = 7
-	WrongState                = 8
-	Aborted                   = 9
-	FileNotFound              = 10
-	ValueOverflow             = 11
-	AccessDenied              = 12
-	UnknownImageFormat        = 13
-	FontFamilyNotFound        = 14
-	FontStyleNotFound         = 15
-	NotTrueTypeFont           = 16
-	UnsupportedGdiplusVersion = 17
-	GdiplusNotInitialized     = 18
-	PropertyNotFound          = 19
-	PropertyNotSupported      = 20
-	ProfileNotFound           = 21
-)
-
-var (
-	IID_NULL                      = &GUID{0x00000000, 0x0000, 0x0000, [8]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}}
-	IID_IUnknown                  = &GUID{0x00000000, 0x0000, 0x0000, [8]byte{0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}}
-	IID_IDispatch                 = &GUID{0x00020400, 0x0000, 0x0000, [8]byte{0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46}}
-	IID_IConnectionPointContainer = &GUID{0xB196B284, 0xBAB4, 0x101A, [8]byte{0xB6, 0x9C, 0x00, 0xAA, 0x00, 0x34, 0x1D, 0x07}}
-	IID_IConnectionPoint          = &GUID{0xB196B286, 0xBAB4, 0x101A, [8]byte{0xB6, 0x9C, 0x00, 0xAA, 0x00, 0x34, 0x1D, 0x07}}
+	TVS_EX_NOSINGLECOLLAPSE    = 0x0001
+	TVS_EX_MULTISELECT         = 0x0002
+	TVS_EX_DOUBLEBUFFER        = 0x0004
+	TVS_EX_NOINDENTSTATE       = 0x0008
+	TVS_EX_RICHTOOLTIP         = 0x0010
+	TVS_EX_AUTOHSCROLL         = 0x0020
+	TVS_EX_FADEINOUTEXPANDOS   = 0x0040
+	TVS_EX_PARTIALCHECKBOXES   = 0x0080
+	TVS_EX_EXCLUSIONCHECKBOXES = 0x0100
+	TVS_EX_DIMMEDCHECKBOXES    = 0x0200
+	TVS_EX_DRAWIMAGEASYNC      = 0x0400
 )
 
 const (
-	VS_FF_DEBUG        = 0x00000001
-	VS_FF_INFOINFERRED = 0x00000010
-	VS_FF_PATCHED      = 0x00000004
-	VS_FF_PRERELEASE   = 0x00000002
-	VS_FF_PRIVATEBUILD = 0x00000008
-	VS_FF_SPECIALBUILD = 0x00000020
-
-	VOS_DOS        = 0x00010000
-	VOS_NT         = 0x00040000
-	VOS__WINDOWS16 = 0x00000001
-	VOS__WINDOWS32 = 0x00000004
-	VOS_OS216      = 0x00020000
-	VOS_OS232      = 0x00030000
-	VOS__PM16      = 0x00000002
-	VOS__PM32      = 0x00000003
-	VOS_UNKNOWN    = 0x00000000
-
-	VOS_DOS_WINDOWS16 = 0x00010001
-	VOS_DOS_WINDOWS32 = 0x00010004
-	VOS_NT_WINDOWS32  = 0x00040004
-	VOS_OS216_PM16    = 0x00020002
-	VOS_OS232_PM32    = 0x00030003
-
-	VFT_APP        = 0x00000001
-	VFT_DLL        = 0x00000002
-	VFT_DRV        = 0x00000003
-	VFT_FONT       = 0x00000004
-	VFT_STATIC_LIB = 0x00000007
-	VFT_UNKNOWN    = 0x00000000
-	VFT_VXD        = 0x00000005
-
-	VFT2_DRV_COMM              = 0x0000000A
-	VFT2_DRV_DISPLAY           = 0x00000004
-	VFT2_DRV_INSTALLABLE       = 0x00000008
-	VFT2_DRV_KEYBOARD          = 0x00000002
-	VFT2_DRV_LANGUAGE          = 0x00000003
-	VFT2_DRV_MOUSE             = 0x00000005
-	VFT2_DRV_NETWORK           = 0x00000006
-	VFT2_DRV_PRINTER           = 0x00000001
-	VFT2_DRV_SOUND             = 0x00000009
-	VFT2_DRV_SYSTEM            = 0x00000007
-	VFT2_DRV_VERSIONED_PRINTER = 0x0000000C
-	VFT2_UNKNOWN               = 0x00000000
-
-	VFT2_FONT_RASTER   = 0x00000001
-	VFT2_FONT_TRUETYPE = 0x00000003
-	VFT2_FONT_VECTOR   = 0x00000002
+	TVIF_TEXT          = 0x0001
+	TVIF_IMAGE         = 0x0002
+	TVIF_PARAM         = 0x0004
+	TVIF_STATE         = 0x0008
+	TVIF_HANDLE        = 0x0010
+	TVIF_SELECTEDIMAGE = 0x0020
+	TVIF_CHILDREN      = 0x0040
+	TVIF_INTEGRAL      = 0x0080
+	TVIF_STATEEX       = 0x0100
+	TVIF_EXPANDEDIMAGE = 0x0200
 )
 
 const (
-	SND_SYNC        = 0
-	SND_ASYNC       = 1
-	SND_NODEFAULT   = 2
-	SND_MEMORY      = 4
-	SND_LOOP        = 8
-	SND_NOSTOP      = 16
-	SND_NOWAIT      = 0x2000
-	SND_ALIAS       = 0x10000
-	SND_ALIAS_ID    = 0x110000
-	SND_FILENAME    = 0x20000
-	SND_RESOURCE    = 0x40004
-	SND_PURGE       = 0x40
-	SND_APPLICATION = 0x80
-	SND_ALIAS_START = 0
+	TVIS_SELECTED       = 0x0002
+	TVIS_CUT            = 0x0004
+	TVIS_DROPHILITED    = 0x0008
+	TVIS_BOLD           = 0x0010
+	TVIS_EXPANDED       = 0x0020
+	TVIS_EXPANDEDONCE   = 0x0040
+	TVIS_EXPANDPARTIAL  = 0x0080
+	TVIS_OVERLAYMASK    = 0x0F00
+	TVIS_STATEIMAGEMASK = 0xF000
+	TVIS_USERMASK       = 0xF000
 )
 
 const (
-	BLACKONWHITE        = 1
-	WHITEONBLACK        = 2
-	COLORONCOLOR        = 3
-	HALFTONE            = 4
-	STRETCH_ANDSCANS    = BLACKONWHITE
-	STRETCH_DELETESCANS = COLORONCOLOR
-	STRETCH_HALFTONE    = HALFTONE
-	STRETCH_ORSCANS     = WHITEONBLACK
+	TVIS_EX_FLAT     = 0x0001
+	TVIS_EX_DISABLED = 0x0002
+	TVIS_EX_ALL      = 0x0002
 )
 
 const (
-	GW_HWNDFIRST    = 0
-	GW_HWNDLAST     = 1
-	GW_HWNDNEXT     = 2
-	GW_HWNDPREV     = 3
-	GW_OWNER        = 4
-	GW_CHILD        = 5
-	GW_ENABLEDPOPUP = 6
+	TVI_ROOT  = ^HTREEITEM(0xffff)
+	TVI_FIRST = ^HTREEITEM(0xfffe)
+	TVI_LAST  = ^HTREEITEM(0xfffd)
+	TVI_SORT  = ^HTREEITEM(0xfffc)
 )
 
-// ACCEL behavior flags
+// TVM_EXPAND action flags
 const (
-	FVIRTKEY  = 0x01
-	FNOINVERT = 0x02
-	FSHIFT    = 0x04
-	FCONTROL  = 0x08
-	FALT      = 0x10
-)
-
-// Mouse key flags
-const (
-	MK_LBUTTON  = 0x0001
-	MK_RBUTTON  = 0x0002
-	MK_SHIFT    = 0x0004
-	MK_CONTROL  = 0x0008
-	MK_MBUTTON  = 0x0010
-	MK_XBUTTON1 = 0x0020
-	MK_XBUTTON2 = 0x0040
-)
-
-const UPDOWN_CLASS = "msctls_updown32"
-
-const (
-	UDS_WRAP        = 1
-	UDS_SETBUDDYINT = 2
-	UDS_ALIGNRIGHT  = 4
-	UDS_ALIGNLEFT   = 8
-	UDS_AUTOBUDDY   = 16
-	UDS_ARROWKEYS   = 32
-	UDS_HORZ        = 64
-	UDS_NOTHOUSANDS = 128
+	TVE_COLLAPSE      = 0x0001
+	TVE_EXPAND        = 0x0002
+	TVE_TOGGLE        = 0x0003
+	TVE_EXPANDPARTIAL = 0x4000
+	TVE_COLLAPSERESET = 0x8000
 )
 
 const (
-	UDN_FIRST    = 4294966575
-	UDN_LAST     = 4294966567
-	UDN_DELTAPOS = UDN_FIRST - 1
+	TVGN_CARET = 9
+)
+
+// TreeView messages
+const (
+	TV_FIRST = 0x1100
+
+	TVM_INSERTITEM          = TV_FIRST + 50
+	TVM_DELETEITEM          = TV_FIRST + 1
+	TVM_EXPAND              = TV_FIRST + 2
+	TVM_GETITEMRECT         = TV_FIRST + 4
+	TVM_GETCOUNT            = TV_FIRST + 5
+	TVM_GETINDENT           = TV_FIRST + 6
+	TVM_SETINDENT           = TV_FIRST + 7
+	TVM_GETIMAGELIST        = TV_FIRST + 8
+	TVM_SETIMAGELIST        = TV_FIRST + 9
+	TVM_GETNEXTITEM         = TV_FIRST + 10
+	TVM_SELECTITEM          = TV_FIRST + 11
+	TVM_GETITEM             = TV_FIRST + 62
+	TVM_SETITEM             = TV_FIRST + 63
+	TVM_EDITLABEL           = TV_FIRST + 65
+	TVM_GETEDITCONTROL      = TV_FIRST + 15
+	TVM_GETVISIBLECOUNT     = TV_FIRST + 16
+	TVM_HITTEST             = TV_FIRST + 17
+	TVM_CREATEDRAGIMAGE     = TV_FIRST + 18
+	TVM_SORTCHILDREN        = TV_FIRST + 19
+	TVM_ENSUREVISIBLE       = TV_FIRST + 20
+	TVM_SORTCHILDRENCB      = TV_FIRST + 21
+	TVM_ENDEDITLABELNOW     = TV_FIRST + 22
+	TVM_GETISEARCHSTRING    = TV_FIRST + 64
+	TVM_SETTOOLTIPS         = TV_FIRST + 24
+	TVM_GETTOOLTIPS         = TV_FIRST + 25
+	TVM_SETINSERTMARK       = TV_FIRST + 26
+	TVM_SETUNICODEFORMAT    = CCM_SETUNICODEFORMAT
+	TVM_GETUNICODEFORMAT    = CCM_GETUNICODEFORMAT
+	TVM_SETITEMHEIGHT       = TV_FIRST + 27
+	TVM_GETITEMHEIGHT       = TV_FIRST + 28
+	TVM_SETBKCOLOR          = TV_FIRST + 29
+	TVM_SETTEXTCOLOR        = TV_FIRST + 30
+	TVM_GETBKCOLOR          = TV_FIRST + 31
+	TVM_GETTEXTCOLOR        = TV_FIRST + 32
+	TVM_SETSCROLLTIME       = TV_FIRST + 33
+	TVM_GETSCROLLTIME       = TV_FIRST + 34
+	TVM_SETINSERTMARKCOLOR  = TV_FIRST + 37
+	TVM_GETINSERTMARKCOLOR  = TV_FIRST + 38
+	TVM_GETITEMSTATE        = TV_FIRST + 39
+	TVM_SETLINECOLOR        = TV_FIRST + 40
+	TVM_GETLINECOLOR        = TV_FIRST + 41
+	TVM_MAPACCIDTOHTREEITEM = TV_FIRST + 42
+	TVM_MAPHTREEITEMTOACCID = TV_FIRST + 43
+	TVM_SETEXTENDEDSTYLE    = TV_FIRST + 44
+	TVM_GETEXTENDEDSTYLE    = TV_FIRST + 45
+	TVM_SETAUTOSCROLLINFO   = TV_FIRST + 59
+)
+
+// TreeView notifications
+const (
+	TVN_FIRST = ^uint32(399)
+
+	TVN_SELCHANGING    = TVN_FIRST - 50
+	TVN_SELCHANGED     = TVN_FIRST - 51
+	TVN_GETDISPINFO    = TVN_FIRST - 52
+	TVN_ITEMEXPANDING  = TVN_FIRST - 54
+	TVN_ITEMEXPANDED   = TVN_FIRST - 55
+	TVN_BEGINDRAG      = TVN_FIRST - 56
+	TVN_BEGINRDRAG     = TVN_FIRST - 57
+	TVN_DELETEITEM     = TVN_FIRST - 58
+	TVN_BEGINLABELEDIT = TVN_FIRST - 59
+	TVN_ENDLABELEDIT   = TVN_FIRST - 60
+	TVN_KEYDOWN        = TVN_FIRST - 12
+	TVN_GETINFOTIP     = TVN_FIRST - 14
+	TVN_SINGLEEXPAND   = TVN_FIRST - 15
+	TVN_ITEMCHANGING   = TVN_FIRST - 17
+	TVN_ITEMCHANGED    = TVN_FIRST - 19
+	TVN_ASYNCDRAW      = TVN_FIRST - 20
+)
+
+// TreeView hit test constants
+const (
+	TVHT_NOWHERE         = 1
+	TVHT_ONITEMICON      = 2
+	TVHT_ONITEMLABEL     = 4
+	TVHT_ONITEM          = TVHT_ONITEMICON | TVHT_ONITEMLABEL | TVHT_ONITEMSTATEICON
+	TVHT_ONITEMINDENT    = 8
+	TVHT_ONITEMBUTTON    = 16
+	TVHT_ONITEMRIGHT     = 32
+	TVHT_ONITEMSTATEICON = 64
+	TVHT_ABOVE           = 256
+	TVHT_BELOW           = 512
+	TVHT_TORIGHT         = 1024
+	TVHT_TOLEFT          = 2048
+)
+
+type HTREEITEM HANDLE
+
+type TVITEM struct {
+	Mask           uint32
+	HItem          HTREEITEM
+	State          uint32
+	StateMask      uint32
+	PszText        uintptr
+	CchTextMax     int32
+	IImage         int32
+	ISelectedImage int32
+	CChildren      int32
+	LParam         uintptr
+}
+
+/*type TVITEMEX struct {
+	mask           UINT
+	hItem          HTREEITEM
+	state          UINT
+	stateMask      UINT
+	pszText        LPWSTR
+	cchTextMax     int
+	iImage         int
+	iSelectedImage int
+	cChildren      int
+	lParam         LPARAM
+	iIntegral      int
+	uStateEx       UINT
+	hwnd           HWND
+	iExpandedImage int
+}*/
+
+type TVINSERTSTRUCT struct {
+	HParent      HTREEITEM
+	HInsertAfter HTREEITEM
+	Item         TVITEM
+	//	itemex       TVITEMEX
+}
+
+type NMTREEVIEW struct {
+	Hdr     NMHDR
+	Action  uint32
+	ItemOld TVITEM
+	ItemNew TVITEM
+	PtDrag  POINT
+}
+
+type NMTVDISPINFO struct {
+	Hdr  NMHDR
+	Item TVITEM
+}
+
+type NMTVKEYDOWN struct {
+	Hdr   NMHDR
+	WVKey uint16
+	Flags uint32
+}
+
+type TVHITTESTINFO struct {
+	Pt    POINT
+	Flags uint32
+	HItem HTREEITEM
+}
+
+// TabPage support
+
+const TCM_FIRST = 0x1300
+const TCN_FIRST = -550
+
+const (
+	TCS_SCROLLOPPOSITE    = 0x0001
+	TCS_BOTTOM            = 0x0002
+	TCS_RIGHT             = 0x0002
+	TCS_MULTISELECT       = 0x0004
+	TCS_FLATBUTTONS       = 0x0008
+	TCS_FORCEICONLEFT     = 0x0010
+	TCS_FORCELABELLEFT    = 0x0020
+	TCS_HOTTRACK          = 0x0040
+	TCS_VERTICAL          = 0x0080
+	TCS_TABS              = 0x0000
+	TCS_BUTTONS           = 0x0100
+	TCS_SINGLELINE        = 0x0000
+	TCS_MULTILINE         = 0x0200
+	TCS_RIGHTJUSTIFY      = 0x0000
+	TCS_FIXEDWIDTH        = 0x0400
+	TCS_RAGGEDRIGHT       = 0x0800
+	TCS_FOCUSONBUTTONDOWN = 0x1000
+	TCS_OWNERDRAWFIXED    = 0x2000
+	TCS_TOOLTIPS          = 0x4000
+	TCS_FOCUSNEVER        = 0x8000
 )
 
 const (
-	UDM_SETRANGE         = WM_USER + 101
-	UDM_GETRANGE         = WM_USER + 102
-	UDM_SETPOS           = WM_USER + 103
-	UDM_GETPOS           = WM_USER + 104
-	UDM_SETBUDDY         = WM_USER + 105
-	UDM_GETBUDDY         = WM_USER + 106
-	UDM_SETACCEL         = WM_USER + 107
-	UDM_GETACCEL         = WM_USER + 108
-	UDM_SETBASE          = WM_USER + 109
-	UDM_GETBASE          = WM_USER + 110
-	UDM_SETRANGE32       = WM_USER + 111
-	UDM_GETRANGE32       = WM_USER + 112
-	UDM_SETPOS32         = WM_USER + 113
-	UDM_GETPOS32         = WM_USER + 114
-	UDM_SETUNICODEFORMAT = 0x2005
-	UDM_GETUNICODEFORMAT = 0x2006
+	TCS_EX_FLATSEPARATORS = 0x00000001
+	TCS_EX_REGISTERDROP   = 0x00000002
 )
 
 const (
-	GCL_CBCLSEXTRA     = -20
-	GCL_CBWNDEXTRA     = -18
-	GCLP_HBRBACKGROUND = -10
-	GCLP_HCURSOR       = -12
-	GCLP_HICON         = -14
-	GCLP_HICONSM       = -34
-	GCLP_HMODULE       = -16
-	GCLP_MENUNAME      = -8
-	GCL_STYLE          = -26
-	GCLP_WNDPROC       = -24
-)
-
-// system commands
-const (
-	SC_CLOSE        = 0xF060
-	SC_CONTEXTHELP  = 0xF180
-	SC_DEFAULT      = 0xF160
-	SC_HOTKEY       = 0xF150
-	SC_HSCROLL      = 0xF080
-	SCF_ISSECURE    = 0x0001
-	SC_KEYMENU      = 0xF100
-	SC_MAXIMIZE     = 0xF030
-	SC_MINIMIZE     = 0xF020
-	SC_MONITORPOWER = 0xF170
-	SC_MOUSEMENU    = 0xF090
-	SC_MOVE         = 0xF010
-	SC_NEXTWINDOW   = 0xF040
-	SC_PREVWINDOW   = 0xF050
-	SC_RESTORE      = 0xF120
-	SC_SCREENSAVE   = 0xF140
-	SC_SIZE         = 0xF000
-	SC_TASKLIST     = 0xF130
-	SC_VSCROLL      = 0xF070
-)
-
-const AC_SRC_OVER = 0
-
-const AC_SRC_ALPHA = 1
-
-const (
-	RESOURCE_CONNECTED  = 0x00000001
-	RESOURCE_GLOBALNET  = 0x00000002
-	RESOURCE_REMEMBERED = 0x00000003
-	RESOURCE_RECENT     = 0x00000004
-	RESOURCE_CONTEXT    = 0x00000005
+	TCM_GETIMAGELIST     = TCM_FIRST + 2
+	TCM_SETIMAGELIST     = TCM_FIRST + 3
+	TCM_GETITEMCOUNT     = TCM_FIRST + 4
+	TCM_GETITEM          = TCM_FIRST + 60
+	TCM_SETITEM          = TCM_FIRST + 61
+	TCM_INSERTITEM       = TCM_FIRST + 62
+	TCM_DELETEITEM       = TCM_FIRST + 8
+	TCM_DELETEALLITEMS   = TCM_FIRST + 9
+	TCM_GETITEMRECT      = TCM_FIRST + 10
+	TCM_GETCURSEL        = TCM_FIRST + 11
+	TCM_SETCURSEL        = TCM_FIRST + 12
+	TCM_HITTEST          = TCM_FIRST + 13
+	TCM_SETITEMEXTRA     = TCM_FIRST + 14
+	TCM_ADJUSTRECT       = TCM_FIRST + 40
+	TCM_SETITEMSIZE      = TCM_FIRST + 41
+	TCM_REMOVEIMAGE      = TCM_FIRST + 42
+	TCM_SETPADDING       = TCM_FIRST + 43
+	TCM_GETROWCOUNT      = TCM_FIRST + 44
+	TCM_GETTOOLTIPS      = TCM_FIRST + 45
+	TCM_SETTOOLTIPS      = TCM_FIRST + 46
+	TCM_GETCURFOCUS      = TCM_FIRST + 47
+	TCM_SETCURFOCUS      = TCM_FIRST + 48
+	TCM_SETMINTABWIDTH   = TCM_FIRST + 49
+	TCM_DESELECTALL      = TCM_FIRST + 50
+	TCM_HIGHLIGHTITEM    = TCM_FIRST + 51
+	TCM_SETEXTENDEDSTYLE = TCM_FIRST + 52
+	TCM_GETEXTENDEDSTYLE = TCM_FIRST + 53
+	TCM_SETUNICODEFORMAT = CCM_SETUNICODEFORMAT
+	TCM_GETUNICODEFORMAT = CCM_GETUNICODEFORMAT
 )
 
 const (
-	RESOURCETYPE_ANY      = 0x00000000
-	RESOURCETYPE_DISK     = 0x00000001
-	RESOURCETYPE_PRINT    = 0x00000002
-	RESOURCETYPE_RESERVED = 0x00000008
-	RESOURCETYPE_UNKNOWN  = 0xFFFFFFFF
+	TCIF_TEXT       = 0x0001
+	TCIF_IMAGE      = 0x0002
+	TCIF_RTLREADING = 0x0004
+	TCIF_PARAM      = 0x0008
+	TCIF_STATE      = 0x0010
 )
 
 const (
-	RESOURCEUSAGE_CONNECTABLE   = 0x00000001
-	RESOURCEUSAGE_CONTAINER     = 0x00000002
-	RESOURCEUSAGE_NOLOCALDEVICE = 0x00000004
-	RESOURCEUSAGE_SIBLING       = 0x00000008
-	RESOURCEUSAGE_ATTACHED      = 0x00000010
-	RESOURCEUSAGE_ALL           = RESOURCEUSAGE_CONNECTABLE | RESOURCEUSAGE_CONTAINER | RESOURCEUSAGE_ATTACHED
-	RESOURCEUSAGE_RESERVED      = 0x80000000
+	TCIS_BUTTONPRESSED = 0x0001
+	TCIS_HIGHLIGHTED   = 0x0002
 )
 
 const (
-	RESOURCEDISPLAYTYPE_GENERIC      = 0x00000000
-	RESOURCEDISPLAYTYPE_DOMAIN       = 0x00000001
-	RESOURCEDISPLAYTYPE_SERVER       = 0x00000002
-	RESOURCEDISPLAYTYPE_SHARE        = 0x00000003
-	RESOURCEDISPLAYTYPE_FILE         = 0x00000004
-	RESOURCEDISPLAYTYPE_GROUP        = 0x00000005
-	RESOURCEDISPLAYTYPE_NETWORK      = 0x00000006
-	RESOURCEDISPLAYTYPE_ROOT         = 0x00000007
-	RESOURCEDISPLAYTYPE_SHAREADMIN   = 0x00000008
-	RESOURCEDISPLAYTYPE_DIRECTORY    = 0x00000009
-	RESOURCEDISPLAYTYPE_TREE         = 0x0000000A
-	RESOURCEDISPLAYTYPE_NDSCONTAINER = 0x0000000B
-)
-
-const NETPROPERTY_PERSISTENT = 1
-
-const (
-	CONNECT_UPDATE_PROFILE = 0x00000001
-	CONNECT_UPDATE_RECENT  = 0x00000002
-	CONNECT_TEMPORARY      = 0x00000004
-	CONNECT_INTERACTIVE    = 0x00000008
-	CONNECT_PROMPT         = 0x00000010
-	CONNECT_NEED_DRIVE     = 0x00000020
-	CONNECT_REFCOUNT       = 0x00000040
-	CONNECT_REDIRECT       = 0x00000080
-	CONNECT_LOCALDRIVE     = 0x00000100
-	CONNECT_CURRENT_MEDIA  = 0x00000200
-	CONNECT_DEFERRED       = 0x00000400
-	CONNECT_RESERVED       = 0xFF000000
-	CONNECT_COMMANDLINE    = 0x00000800
-	CONNECT_CMD_SAVECRED   = 0x00001000
-)
-
-const PW_CLIENTONLY = 1
-
-const (
-	SEM_FAILCRITICALERRORS     = 0x0001
-	SEM_NOALIGNMENTFAULTEXCEPT = 0x0004
-	SEM_NOGPFAULTERRORBOX      = 0x0002
-	SEM_NOOPENFILEERRORBOX     = 0x8000
+	TCHT_NOWHERE     = 0x0001
+	TCHT_ONITEMICON  = 0x0002
+	TCHT_ONITEMLABEL = 0x0004
+	TCHT_ONITEM      = TCHT_ONITEMICON | TCHT_ONITEMLABEL
 )
 
 const (
-	GENERIC_ALL     = 0x10000000
-	GENERIC_EXECUTE = 0x20000000
-	GENERIC_WRITE   = 0x40000000
-	GENERIC_READ    = 0x80000000
+	TCN_KEYDOWN     = TCN_FIRST - 0
+	TCN_SELCHANGE   = TCN_FIRST - 1
+	TCN_SELCHANGING = TCN_FIRST - 2
+	TCN_GETOBJECT   = TCN_FIRST - 3
+	TCN_FOCUSCHANGE = TCN_FIRST - 4
 )
 
-const SYNCHRONIZE = 0x100000
+type TCITEMHEADER struct {
+	Mask        uint32
+	LpReserved1 uint32
+	LpReserved2 uint32
+	PszText     *uint16
+	CchTextMax  int32
+	IImage      int32
+}
 
-const (
-	STANDARD_RIGHTS_REQUIRED = 0xF0000
-	STANDARD_RIGHTS_READ     = 0x20000
-	STANDARD_RIGHTS_WRITE    = 0x20000
-	STANDARD_RIGHTS_EXECUTE  = 0x20000
-	STANDARD_RIGHTS_ALL      = 0x1F0000
-	SPECIFIC_RIGHTS_ALL      = 0xFFFF
-	ACCESS_SYSTEM_SECURITY   = 0x1000000
-)
+type TCITEM struct {
+	Mask        uint32
+	DwState     uint32
+	DwStateMask uint32
+	PszText     *uint16
+	CchTextMax  int32
+	IImage      int32
+	LParam      uintptr
+}
 
-const (
-	FILE_READ_DATA                     = 1
-	FILE_LIST_DIRECTORY                = 1
-	FILE_WRITE_DATA                    = 2
-	FILE_ADD_FILE                      = 2
-	FILE_APPEND_DATA                   = 4
-	FILE_ADD_SUBDIRECTORY              = 4
-	FILE_CREATE_PIPE_INSTANCE          = 4
-	FILE_READ_EA                       = 8
-	FILE_READ_PROPERTIES               = 8
-	FILE_WRITE_EA                      = 16
-	FILE_WRITE_PROPERTIES              = 16
-	FILE_EXECUTE                       = 32
-	FILE_TRAVERSE                      = 32
-	FILE_DELETE_CHILD                  = 64
-	FILE_READ_ATTRIBUTES               = 128
-	FILE_WRITE_ATTRIBUTES              = 256
-	FILE_ALL_ACCESS                    = STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0x1FF
-	FILE_GENERIC_READ                  = STANDARD_RIGHTS_READ | FILE_READ_DATA | FILE_READ_ATTRIBUTES | FILE_READ_EA | SYNCHRONIZE
-	FILE_GENERIC_WRITE                 = STANDARD_RIGHTS_WRITE | FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES | FILE_WRITE_EA | FILE_APPEND_DATA | SYNCHRONIZE
-	FILE_GENERIC_EXECUTE               = STANDARD_RIGHTS_EXECUTE | FILE_READ_ATTRIBUTES | FILE_EXECUTE | SYNCHRONIZE
-	FILE_SHARE_READ                    = 1
-	FILE_SHARE_WRITE                   = 2
-	FILE_SHARE_DELETE                  = 4
-	FILE_ATTRIBUTE_READONLY            = 1
-	FILE_ATTRIBUTE_HIDDEN              = 2
-	FILE_ATTRIBUTE_SYSTEM              = 4
-	FILE_ATTRIBUTE_DIRECTORY           = 16
-	FILE_ATTRIBUTE_ARCHIVE             = 32
-	FILE_ATTRIBUTE_ENCRYPTED           = 16384
-	FILE_ATTRIBUTE_NORMAL              = 128
-	FILE_ATTRIBUTE_TEMPORARY           = 256
-	FILE_ATTRIBUTE_SPARSE_FILE         = 512
-	FILE_ATTRIBUTE_REPARSE_POINT       = 1024
-	FILE_ATTRIBUTE_COMPRESSED          = 2048
-	FILE_ATTRIBUTE_OFFLINE             = 0x1000
-	FILE_ATTRIBUTE_NOT_CONTENT_INDEXED = 0x2000
-	FILE_NOTIFY_CHANGE_FILE_NAME       = 1
-	FILE_NOTIFY_CHANGE_DIR_NAME        = 2
-	FILE_NOTIFY_CHANGE_ATTRIBUTES      = 4
-	FILE_NOTIFY_CHANGE_SIZE            = 8
-	FILE_NOTIFY_CHANGE_LAST_WRITE      = 16
-	FILE_NOTIFY_CHANGE_LAST_ACCESS     = 32
-	FILE_NOTIFY_CHANGE_CREATION        = 64
-	FILE_NOTIFY_CHANGE_SECURITY        = 256
-	FILE_CASE_SENSITIVE_SEARCH         = 1
-	FILE_CASE_PRESERVED_NAMES          = 2
-	FILE_UNICODE_ON_DISK               = 4
-	FILE_PERSISTENT_ACLS               = 8
-	FILE_FILE_COMPRESSION              = 16
-	FILE_VOLUME_QUOTAS                 = 32
-	FILE_SUPPORTS_SPARSE_FILES         = 64
-	FILE_SUPPORTS_REPARSE_POINTS       = 128
-)
+type TCHITTESTINFO struct {
+	Pt    POINT
+	flags uint32
+}
 
-const (
-	CREATE_NEW        = 1
-	CREATE_ALWAYS     = 2
-	OPEN_EXISTING     = 3
-	OPEN_ALWAYS       = 4
-	TRUNCATE_EXISTING = 5
-)
+type NMTCKEYDOWN struct {
+	Hdr   NMHDR
+	WVKey uint16
+	Flags uint32
+}
 
-const (
-	SECURITY_CONTEXT_TRACKING = 0x00040000
-	SECURITY_EFFECTIVE_ONLY   = 0x00080000
-	SECURITY_SQOS_PRESENT     = 0x00100000
-	SECURITY_VALID_SQOS_FLAGS = 0x001F0000
-)
+// Menu support constants
 
-const INVALID_HANDLE_VALUE = ^HANDLE(0)
-
-// STORAGE_BUS_TYPE values
-const (
-	BusTypeUnknown           = 0
-	BusTypeScsi              = 1
-	BusTypeAtapi             = 2
-	BusTypeAta               = 3
-	BusType1394              = 4
-	BusTypeSsa               = 5
-	BusTypeFibre             = 6
-	BusTypeUsb               = 7
-	BusTypeRAID              = 8
-	BusTypeiScsi             = 9
-	BusTypeSas               = 10
-	BusTypeSata              = 11
-	BusTypeSd                = 12
-	BusTypeMmc               = 13
-	BusTypeVirtual           = 14
-	BusTypeFileBackedVirtual = 15
-	BusTypeSpaces            = 16
-	BusTypeNvme              = 17
-	BusTypeMax               = 20
-	BusTypeMaxReserved       = 0x7F
-)
-
-// STORAGE_QUERY_TYPE values
-const (
-	PropertyStandardQuery   = 0
-	PropertyExistsQuery     = 1
-	PropertyMaskQuery       = 2
-	PropertyQueryMaxDefined = 3
-)
-
-// STORAGE_PROPERTY_ID values
-const (
-	StorageDeviceProperty                 = 0
-	StorageAdapterProperty                = 1
-	StorageDeviceIdProperty               = 2
-	StorageDeviceUniqueIdProperty         = 3
-	StorageDeviceWriteCacheProperty       = 4
-	StorageMiniportProperty               = 5
-	StorageAccessAlignmentProperty        = 6
-	StorageDeviceSeekPenaltyProperty      = 7
-	StorageDeviceTrimProperty             = 8
-	StorageDeviceWriteAggregationProperty = 9
-	StorageDeviceDeviceTelemetryProperty  = 10
-	StorageDeviceLBProvisioningProperty   = 11
-	StorageDevicePowerProperty            = 12
-	StorageDeviceCopyOffloadProperty      = 13
-	StorageDeviceResiliencyProperty       = 14
-	StorageDeviceMediumProductType        = 15
-)
-
-// STREAM_INFO_LEVELS
-const (
-	FindStreamInfoStandard = 0
-)
-
+// Constants for MENUITEMINFO.fMask
 const (
 	MIIM_STATE      = 1
 	MIIM_ID         = 2
@@ -3624,6 +3257,7 @@ const (
 	MIIM_FTYPE      = 256
 )
 
+// Constants for MENUITEMINFO.fType
 const (
 	MFT_BITMAP       = 4
 	MFT_MENUBARBREAK = 32
@@ -3636,6 +3270,7 @@ const (
 	MFT_STRING       = 0
 )
 
+// Constants for MENUITEMINFO.fState
 const (
 	MFS_CHECKED   = 8
 	MFS_DEFAULT   = 4096
@@ -3647,1229 +3282,259 @@ const (
 	MFS_UNHILITE  = 0
 )
 
+// Constants for MENUITEMINFO.hbmp*
 const (
-	// DEVICE_NOTIFY_WINDOW_HANDLE
-	// Notifications are sent using WM_POWERBROADCAST messages with a wParam
-	// parameter of PBT_POWERSETTINGCHANGE.
-	DEVICE_NOTIFY_WINDOW_HANDLE = 0
-
-	// DEVICE_NOTIFY_SERVICE_HANDLE
-	// Notifications are sent to the HandlerEx callback function with a
-	// dwControl parameter of SERVICE_CONTROL_POWEREVENT and a dwEventType of
-	// PBT_POWERSETTINGCHANGE.
-	DEVICE_NOTIFY_SERVICE_HANDLE = 1
+	HBMMENU_CALLBACK        = -1
+	HBMMENU_SYSTEM          = 1
+	HBMMENU_MBAR_RESTORE    = 2
+	HBMMENU_MBAR_MINIMIZE   = 3
+	HBMMENU_MBAR_CLOSE      = 5
+	HBMMENU_MBAR_CLOSE_D    = 6
+	HBMMENU_MBAR_MINIMIZE_D = 7
+	HBMMENU_POPUP_CLOSE     = 8
+	HBMMENU_POPUP_RESTORE   = 9
+	HBMMENU_POPUP_MAXIMIZE  = 10
+	HBMMENU_POPUP_MINIMIZE  = 11
 )
 
-// Power setting GUIDs identify power change events. This topic lists power
-// setting GUIDs for notifications that are most useful to applications. An
-// application should register for each power change event that might impact its
-// behavior. Notification is sent each time a setting changes, through
-// WM_POWERBROADCAST.
-var (
-	// GUID_ACDC_POWER_SOURCE
-	//
-	// The system power source has changed. The Data member is a uint32 with
-	// values from the SYSTEM_POWER_CONDITION enumeration that indicates the
-	// current power source.
-	//
-	// PoAc (0) - The computer is powered by an AC power source (or similar,
-	// such as a laptop powered by a 12V automotive adapter).
-	//
-	// PoDc (1) - The computer is powered by an onboard battery power source.
-	//
-	// PoHot (2) - The computer is powered by a short-term power source such as
-	// a UPS device.
-	GUID_ACDC_POWER_SOURCE = &GUID{0x5d3e9a59, 0xe9D5, 0x4b00, [8]byte{0xa6, 0xbd, 0xff, 0x34, 0xff, 0x51, 0x65, 0x48}}
+// MENUINFO mask constants
+const (
+	MIM_APPLYTOSUBMENUS = 0x80000000
+	MIM_BACKGROUND      = 0x00000002
+	MIM_HELPID          = 0x00000004
+	MIM_MAXHEIGHT       = 0x00000001
+	MIM_MENUDATA        = 0x00000008
+	MIM_STYLE           = 0x00000010
+)
 
-	// GUID_BATTERY_PERCENTAGE_REMAINING
-	//
-	// The remaining battery capacity has changed. The granularity varies from
-	// system to system but the finest granularity is 1 percent. The Data member
-	// is a uint32 that indicates the current battery capacity remaining as a
-	// percentage from 0 through 100.
-	GUID_BATTERY_PERCENTAGE_REMAINING = &GUID{0xa7ad8041, 0xb45a, 0x4cae, [8]byte{0x87, 0xa3, 0xee, 0xcb, 0xb4, 0x68, 0xa9, 0xe1}}
-
-	// GUID_CONSOLE_DISPLAY_STATE
-	//
-	// The current monitor's display state has changed.
-	//
-	// Windows 7, Windows Server 2008 R2, Windows Vista and Windows Server 2008:
-	// This notification is available starting with Windows 8 and Windows Server
-	// 2012.
-	//
-	// The Data member is a uint32 with one of the following values.
-	//
-	// 0x0 - The display is off.
-	//
-	// 0x1 - The display is on.
-	//
-	// 0x2 - The display is dimmed.
-	GUID_CONSOLE_DISPLAY_STATE = &GUID{0x6fe69556, 0x704a, 0x47a0, [8]byte{0x8f, 0x24, 0xc2, 0x8d, 0x93, 0x6f, 0xda, 0x47}}
-
-	// GUID_GLOBAL_USER_PRESENCE
-	//
-	// The user status associated with any session has changed. This represents
-	// the combined status of user presence across all local and remote sessions
-	// on the system.
-	//
-	// This notification is sent only to services and other programs running in
-	// session 0. User-mode applications should register for
-	// GUID_SESSION_USER_PRESENCE instead.
-	//
-	// Windows 7, Windows Server 2008 R2, Windows Vista and Windows Server 2008:
-	// This notification is available starting with Windows 8 and Windows Server
-	// 2012.
-	//
-	// The Data member is a DWORD with one of the following values.
-	//
-	// PowerUserPresent (0) - The user is present in any local or remote session
-	// on the system.
-	//
-	// PowerUserInactive (2) - The user is not present in any local or remote
-	// session on the system.
-	GUID_GLOBAL_USER_PRESENCE = &GUID{0x786E8A1D, 0xB427, 0x4344, [8]byte{0x92, 0x07, 0x09, 0xE7, 0x0B, 0xDC, 0xBE, 0xA9}}
-
-	// GUID_IDLE_BACKGROUND_TASK
-	//
-	// The system is busy. This indicates that the system will not be moving
-	// into an idle state in the near future and that the current time is a good
-	// time for components to perform background or idle tasks that would
-	// otherwise prevent the computer from entering an idle state.
-	//
-	// There is no notification when the system is able to move into an idle
-	// state. The idle background task notification does not indicate whether a
-	// user is present at the computer. The Data member has no information and
-	// can be ignored.
-	GUID_IDLE_BACKGROUND_TASK = &GUID{0x515c31d8, 0xf734, 0x163d, [8]byte{0xa0, 0xfd, 0x11, 0xa0, 0x8c, 0x91, 0xe8, 0xf1}}
-
-	// GUID_MONITOR_POWER_ON
-	//
-	// The primary system monitor has been powered on or off. This notification
-	// is useful for components that actively render content to the display
-	// device, such as media visualization. These applications should register
-	// for this notification and stop rendering graphics content when the
-	// monitor is off to reduce system power consumption. The Data member is a
-	// DWORD that indicates the current monitor state.
-	//
-	// 0x0 - The monitor is off.
-	//
-	// 0x1 - The monitor is on.
-	//
-	// Windows 8 and Windows Server 2012: New applications should use
-	// GUID_CONSOLE_DISPLAY_STATE instead of this notification.
-	GUID_MONITOR_POWER_ON = &GUID{0x02731015, 0x4510, 0x4526, [8]byte{0x99, 0xe6, 0xe5, 0xa1, 0x7e, 0xbd, 0x1a, 0xea}}
-
-	// GUID_POWER_SAVING_STATUS
-	//
-	// Battery saver has been turned off or on in response to changing power
-	// conditions. This notification is useful for components that participate
-	// in energy conservation. These applications should register for this
-	// notification and save power when battery saver is on.
-	//
-	// The Data member is a DWORD that indicates battery saver state.
-	//
-	// 0x0 - Battery saver is off.
-	//
-	// 0x1 - Battery saver is on. Save energy where possible.
-	//
-	// For general information about battery saver, see battery saver (in the
-	// hardware component guidelines).
-	GUID_POWER_SAVING_STATUS = &GUID{0xE00958C0, 0xC213, 0x4ACE, [8]byte{0xAC, 0x77, 0xFE, 0xCC, 0xED, 0x2E, 0xEE, 0xA5}}
-
-	// GUID_POWERSCHEME_PERSONALITY
-	//
-	// The active power scheme personality has changed. All power schemes map to
-	// one of these personalities. The Data member is a GUID that indicates the
-	// new active power scheme personality (GUID_MIN_POWER_SAVINGS,
-	// GUID_MAX_POWER_SAVINGS or GUID_TYPICAL_POWER_SAVINGS).
-	GUID_POWERSCHEME_PERSONALITY = &GUID{0x245d8541, 0x3943, 0x4422, [8]byte{0xb0, 0x25, 0x13, 0xA7, 0x84, 0xF6, 0x79, 0xB7}}
-
-	// GUID_MIN_POWER_SAVINGS
-	//
-	// High Performance - The scheme is designed to deliver maximum performance
-	// at the expense of power consumption savings.
-	GUID_MIN_POWER_SAVINGS = &GUID{0x8c5e7fda, 0xe8bf, 0x4a96, [8]byte{0x9a, 0x85, 0xa6, 0xe2, 0x3a, 0x8c, 0x63, 0x5c}}
-
-	// GUID_MAX_POWER_SAVINGS
-	//
-	// Power Saver - The scheme is designed to deliver maximum power consumption
-	// savings at the expense of system performance and responsiveness.
-	GUID_MAX_POWER_SAVINGS = &GUID{0xa1841308, 0x3541, 0x4fab, [8]byte{0xbc, 0x81, 0xf7, 0x15, 0x56, 0xf2, 0x0b, 0x4a}}
-
-	// GUID_TYPICAL_POWER_SAVINGS
-	//
-	// Automatic - The scheme is designed to automatically balance performance
-	// and power consumption savings.
-	GUID_TYPICAL_POWER_SAVINGS = &GUID{0x381b4222, 0xf694, 0x41f0, [8]byte{0x96, 0x85, 0xff, 0x5b, 0xb2, 0x60, 0xdf, 0x2e}}
-
-	// GUID_SESSION_DISPLAY_STATUS
-	//
-	// The display associated with the application's session has been powered on
-	// or off.
-	//
-	// Windows 7, Windows Server 2008 R2, Windows Vista and Windows Server 2008:
-	// This notification is available starting with Windows 8 and Windows Server
-	// 2012.
-	//
-	// This notification is sent only to user-mode applications. Services and
-	// other programs running in session 0 do not receive this notification. The
-	// Data member is a DWORD with one of the following values.
-	//
-	// 0x0 - The display is off.
-	//
-	// 0x1 - The display is on.
-	//
-	// 0x2 - The display is dimmed.
-	GUID_SESSION_DISPLAY_STATUS = &GUID{0x2B84C20E, 0xAD23, 0x4ddf, [8]byte{0x93, 0xDB, 0x05, 0xFF, 0xBD, 0x7E, 0xFC, 0xA5}}
-
-	// GUID_SESSION_USER_PRESENCE
-	//
-	// The user status associated with the application's session has changed.
-	//
-	// Windows 7, Windows Server 2008 R2, Windows Vista and Windows Server 2008:
-	// This notification is available starting with Windows 8 and Windows Server
-	// 2012.
-	//
-	// This notification is sent only to user-mode applications running in an
-	// interactive session. Services and other programs running in session 0
-	// should register for GUID_GLOBAL_USER_PRESENCE. The Data member is a DWORD
-	// with one of the following values.
-	//
-	// PowerUserPresent (0) - The user is providing input to the session.
-	//
-	// PowerUserInactive (2) - The user activity timeout has elapsed with no
-	// interaction from the user.
-	//
-	// NOTE All applications that run in an interactive user-mode session should
-	// use this setting. When kernel mode applications register for monitor
-	// status they should use GUID_CONSOLE_DISPLAY_STATUS instead.
-	GUID_SESSION_USER_PRESENCE = &GUID{0x3C0F4548, 0xC03F, 0x4c4d, [8]byte{0xB9, 0xF2, 0x23, 0x7E, 0xDE, 0x68, 0x63, 0x76}}
-
-	// GUID_SYSTEM_AWAYMODE
-	//
-	// The system is entering or exiting away mode. The Data member is a DWORD
-	// that indicates the current away mode state.
-	//
-	// 0x0 - The computer is exiting away mode.
-	//
-	// 0x1 - The computer is entering away mode.
-	GUID_SYSTEM_AWAYMODE = &GUID{0x98a7f580, 0x01f7, 0x48aa, [8]byte{0x9c, 0x0f, 0x44, 0x35, 0x2c, 0x29, 0xe5, 0xC0}}
-
-	// GUID_DEVINTERFACE_COMPORT is defined for COM ports.
-	GUID_DEVINTERFACE_COMPORT = &GUID{0x86E0D1E0, 0x8089, 0x11D0, [8]byte{0x9C, 0xE4, 0x08, 0x00, 0x3E, 0x30, 0x1F, 0x73}}
+// MENUINFO style constants
+const (
+	MNS_AUTODISMISS = 0x10000000
+	MNS_CHECKORBMP  = 0x04000000
+	MNS_DRAGDROP    = 0x20000000
+	MNS_MODELESS    = 0x40000000
+	MNS_NOCHECK     = 0x80000000
+	MNS_NOTIFYBYPOS = 0x08000000
 )
 
 const (
-	// Power status has changed.
-	PBT_APMPOWERSTATUSCHANGE = 0x000A
-
-	// Operation is resuming automatically from a low-power state. This message
-	// is sent every time the system resumes.
-	PBT_APMRESUMEAUTOMATIC = 0x0012
-
-	// Operation is resuming from a low-power state. This message is sent after
-	// PBT_APMRESUMEAUTOMATIC if the resume is triggered by user input, such as
-	// pressing a key.
-	PBT_APMRESUMESUSPEND = 0x0007
-
-	// System is suspending operation.
-	PBT_APMSUSPEND = 0x0004
-
-	// A power setting change event has been received.
-	PBT_POWERSETTINGCHANGE = 0x8013
+	MF_BYCOMMAND  = 0x00000000
+	MF_BYPOSITION = 0x00000400
 )
 
-// SYSTEM_POWER_CONDITION enumeration
+type MENUITEMINFO struct {
+	CbSize        uint32
+	FMask         uint32
+	FType         uint32
+	FState        uint32
+	WID           uint32
+	HSubMenu      HMENU
+	HbmpChecked   HBITMAP
+	HbmpUnchecked HBITMAP
+	DwItemData    uintptr
+	DwTypeData    *uint16
+	Cch           uint32
+	HbmpItem      HBITMAP
+}
+
+type MENUINFO struct {
+	CbSize          uint32
+	FMask           uint32
+	DwStyle         uint32
+	CyMax           uint32
+	HbrBack         HBRUSH
+	DwContextHelpID uint32
+	DwMenuData      uintptr
+}
+
+// UI state constants
 const (
-	// PoAc: the computer is powered by an AC power source (or similar, such as
-	// a laptop powered by a 12V automotive adapter).
-	PoAc = 0
-	// PoDc: the system is receiving power from built-in batteries.
-	PoDc = 1
-	// PoHot: the computer is powered by a short-term power source such as a UPS
-	// device.
-	PoHot = 2
-	// PoConditionMaximum: values equal to or greater than this value indicate
-	// an out of range value.
-	PoConditionMaximum = 3
+	UIS_SET        = 1
+	UIS_CLEAR      = 2
+	UIS_INITIALIZE = 3
 )
 
+// UI state constants
 const (
-	CSIDL_DESKTOP                 = 0x0000         // <desktop>
-	CSIDL_INTERNET                = 0x0001         // Internet Explorer (icon on desktop)
-	CSIDL_PROGRAMS                = 0x0002         // Start Menu\Programs
-	CSIDL_CONTROLS                = 0x0003         // My Computer\Control Panel
-	CSIDL_PRINTERS                = 0x0004         // My Computer\Printers
-	CSIDL_PERSONAL                = 0x0005         // My Documents
-	CSIDL_FAVORITES               = 0x0006         // <user name>\Favorites
-	CSIDL_STARTUP                 = 0x0007         // Start Menu\Programs\Startup
-	CSIDL_RECENT                  = 0x0008         // <user name>\Recent
-	CSIDL_SENDTO                  = 0x0009         // <user name>\SendTo
-	CSIDL_BITBUCKET               = 0x000A         // <desktop>\Recycle Bin
-	CSIDL_STARTMENU               = 0x000B         // <user name>\Start Menu
-	CSIDL_MYDOCUMENTS             = CSIDL_PERSONAL //  Personal was just a silly name for My Documents
-	CSIDL_MYMUSIC                 = 0x000D         // "My Music" folder
-	CSIDL_MYVIDEO                 = 0x000E         // "My Videos" folder
-	CSIDL_DESKTOPDIRECTORY        = 0x0010         // <user name>\Desktop
-	CSIDL_DRIVES                  = 0x0011         // My Computer
-	CSIDL_NETWORK                 = 0x0012         // Network Neighborhood (My Network Places)
-	CSIDL_NETHOOD                 = 0x0013         // <user name>\nethood
-	CSIDL_FONTS                   = 0x0014         // windows\fonts
-	CSIDL_TEMPLATES               = 0x0015
-	CSIDL_COMMON_STARTMENU        = 0x0016 // All Users\Start Menu
-	CSIDL_COMMON_PROGRAMS         = 0x0017 // All Users\Start Menu\Programs
-	CSIDL_COMMON_STARTUP          = 0x0018 // All Users\Startup
-	CSIDL_COMMON_DESKTOPDIRECTORY = 0x0019 // All Users\Desktop
-	CSIDL_APPDATA                 = 0x001A // <user name>\Application Data
-	CSIDL_PRINTHOOD               = 0x001B // <user name>\PrintHood
-	CSIDL_LOCAL_APPDATA           = 0x001C // <user name>\Local Settings\Applicaiton Data (non roaming)
-	CSIDL_ALTSTARTUP              = 0x001D // non localized startup
-	CSIDL_COMMON_ALTSTARTUP       = 0x001E // non localized common startup
-	CSIDL_COMMON_FAVORITES        = 0x001F
-	CSIDL_INTERNET_CACHE          = 0x0020
-	CSIDL_COOKIES                 = 0x0021
-	CSIDL_HISTORY                 = 0x0022
-	CSIDL_COMMON_APPDATA          = 0x0023 // All Users\Application Data
-	CSIDL_WINDOWS                 = 0x0024 // GetWindowsDirectory()
-	CSIDL_SYSTEM                  = 0x0025 // GetSystemDirectory()
-	CSIDL_PROGRAM_FILES           = 0x0026 // C:\Program Files
-	CSIDL_MYPICTURES              = 0x0027 // C:\Program Files\My Pictures
-	CSIDL_PROFILE                 = 0x0028 // USERPROFILE
-	CSIDL_SYSTEMX86               = 0x0029 // x86 system directory on RISC
-	CSIDL_PROGRAM_FILESX86        = 0x002A // x86 C:\Program Files on RISC
-	CSIDL_PROGRAM_FILES_COMMON    = 0x002B // C:\Program Files\Common
-	CSIDL_PROGRAM_FILES_COMMONX86 = 0x002C // x86 Program Files\Common on RISC
-	CSIDL_COMMON_TEMPLATES        = 0x002D // All Users\Templates
-	CSIDL_COMMON_DOCUMENTS        = 0x002E // All Users\Documents
-	CSIDL_COMMON_ADMINTOOLS       = 0x002F // All Users\Start Menu\Programs\Administrative Tools
-	CSIDL_ADMINTOOLS              = 0x0030 // <user name>\Start Menu\Programs\Administrative Tools
-	CSIDL_CONNECTIONS             = 0x0031 // Network and Dial-up Connections
-	CSIDL_COMMON_MUSIC            = 0x0035 // All Users\My Music
-	CSIDL_COMMON_PICTURES         = 0x0036 // All Users\My Pictures
-	CSIDL_COMMON_VIDEO            = 0x0037 // All Users\My Video
-	CSIDL_RESOURCES               = 0x0038 // Resource Direcotry
+	UISF_HIDEFOCUS = 0x1
+	UISF_HIDEACCEL = 0x2
+	UISF_ACTIVE    = 0x4
 )
 
-// Drive types to use with GetDriveType.
+// Virtual key codes
 const (
-	DRIVE_UNKNOWN     = 0
-	DRIVE_NO_ROOT_DIR = 1
-	DRIVE_REMOVABLE   = 2
-	DRIVE_FIXED       = 3
-	DRIVE_REMOTE      = 4
-	DRIVE_CDROM       = 5
-	DRIVE_RAMDISK     = 6
+	VK_LBUTTON             = 1
+	VK_RBUTTON             = 2
+	VK_CANCEL              = 3
+	VK_MBUTTON             = 4
+	VK_XBUTTON1            = 5
+	VK_XBUTTON2            = 6
+	VK_BACK                = 8
+	VK_TAB                 = 9
+	VK_CLEAR               = 12
+	VK_RETURN              = 13
+	VK_SHIFT               = 16
+	VK_CONTROL             = 17
+	VK_MENU                = 18
+	VK_PAUSE               = 19
+	VK_CAPITAL             = 20
+	VK_KANA                = 0x15
+	VK_HANGEUL             = 0x15
+	VK_HANGUL              = 0x15
+	VK_JUNJA               = 0x17
+	VK_FINAL               = 0x18
+	VK_HANJA               = 0x19
+	VK_KANJI               = 0x19
+	VK_ESCAPE              = 0x1B
+	VK_CONVERT             = 0x1C
+	VK_NONCONVERT          = 0x1D
+	VK_ACCEPT              = 0x1E
+	VK_MODECHANGE          = 0x1F
+	VK_SPACE               = 32
+	VK_PRIOR               = 33
+	VK_NEXT                = 34
+	VK_END                 = 35
+	VK_HOME                = 36
+	VK_LEFT                = 37
+	VK_UP                  = 38
+	VK_RIGHT               = 39
+	VK_DOWN                = 40
+	VK_SELECT              = 41
+	VK_PRINT               = 42
+	VK_EXECUTE             = 43
+	VK_SNAPSHOT            = 44
+	VK_INSERT              = 45
+	VK_DELETE              = 46
+	VK_HELP                = 47
+	VK_LWIN                = 0x5B
+	VK_RWIN                = 0x5C
+	VK_APPS                = 0x5D
+	VK_SLEEP               = 0x5F
+	VK_NUMPAD0             = 0x60
+	VK_NUMPAD1             = 0x61
+	VK_NUMPAD2             = 0x62
+	VK_NUMPAD3             = 0x63
+	VK_NUMPAD4             = 0x64
+	VK_NUMPAD5             = 0x65
+	VK_NUMPAD6             = 0x66
+	VK_NUMPAD7             = 0x67
+	VK_NUMPAD8             = 0x68
+	VK_NUMPAD9             = 0x69
+	VK_MULTIPLY            = 0x6A
+	VK_ADD                 = 0x6B
+	VK_SEPARATOR           = 0x6C
+	VK_SUBTRACT            = 0x6D
+	VK_DECIMAL             = 0x6E
+	VK_DIVIDE              = 0x6F
+	VK_F1                  = 0x70
+	VK_F2                  = 0x71
+	VK_F3                  = 0x72
+	VK_F4                  = 0x73
+	VK_F5                  = 0x74
+	VK_F6                  = 0x75
+	VK_F7                  = 0x76
+	VK_F8                  = 0x77
+	VK_F9                  = 0x78
+	VK_F10                 = 0x79
+	VK_F11                 = 0x7A
+	VK_F12                 = 0x7B
+	VK_F13                 = 0x7C
+	VK_F14                 = 0x7D
+	VK_F15                 = 0x7E
+	VK_F16                 = 0x7F
+	VK_F17                 = 0x80
+	VK_F18                 = 0x81
+	VK_F19                 = 0x82
+	VK_F20                 = 0x83
+	VK_F21                 = 0x84
+	VK_F22                 = 0x85
+	VK_F23                 = 0x86
+	VK_F24                 = 0x87
+	VK_NUMLOCK             = 0x90
+	VK_SCROLL              = 0x91
+	VK_LSHIFT              = 0xA0
+	VK_RSHIFT              = 0xA1
+	VK_LCONTROL            = 0xA2
+	VK_RCONTROL            = 0xA3
+	VK_LMENU               = 0xA4
+	VK_RMENU               = 0xA5
+	VK_BROWSER_BACK        = 0xA6
+	VK_BROWSER_FORWARD     = 0xA7
+	VK_BROWSER_REFRESH     = 0xA8
+	VK_BROWSER_STOP        = 0xA9
+	VK_BROWSER_SEARCH      = 0xAA
+	VK_BROWSER_FAVORITES   = 0xAB
+	VK_BROWSER_HOME        = 0xAC
+	VK_VOLUME_MUTE         = 0xAD
+	VK_VOLUME_DOWN         = 0xAE
+	VK_VOLUME_UP           = 0xAF
+	VK_MEDIA_NEXT_TRACK    = 0xB0
+	VK_MEDIA_PREV_TRACK    = 0xB1
+	VK_MEDIA_STOP          = 0xB2
+	VK_MEDIA_PLAY_PAUSE    = 0xB3
+	VK_LAUNCH_MAIL         = 0xB4
+	VK_LAUNCH_MEDIA_SELECT = 0xB5
+	VK_LAUNCH_APP1         = 0xB6
+	VK_LAUNCH_APP2         = 0xB7
+	VK_OEM_1               = 0xBA
+	VK_OEM_PLUS            = 0xBB
+	VK_OEM_COMMA           = 0xBC
+	VK_OEM_MINUS           = 0xBD
+	VK_OEM_PERIOD          = 0xBE
+	VK_OEM_2               = 0xBF
+	VK_OEM_3               = 0xC0
+	VK_OEM_4               = 0xDB
+	VK_OEM_5               = 0xDC
+	VK_OEM_6               = 0xDD
+	VK_OEM_7               = 0xDE
+	VK_OEM_8               = 0xDF
+	VK_OEM_102             = 0xE2
+	VK_PROCESSKEY          = 0xE5
+	VK_PACKET              = 0xE7
+	VK_ATTN                = 0xF6
+	VK_CRSEL               = 0xF7
+	VK_EXSEL               = 0xF8
+	VK_EREOF               = 0xF9
+	VK_PLAY                = 0xFA
+	VK_ZOOM                = 0xFB
+	VK_NONAME              = 0xFC
+	VK_PA1                 = 0xFD
+	VK_OEM_CLEAR           = 0xFE
 )
 
-// https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoexw
+// ScrollBar constants
 const (
-	VER_PLATFORM_WIN32_NT = 2
+	SB_HORZ = 0
+	SB_VERT = 1
+	SB_CTL  = 2
+	SB_BOTH = 3
 )
 
-// https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoexw
+// ScrollBar commands
 const (
-	VER_NT_SERVER            = 0x0000003
-	VER_NT_DOMAIN_CONTROLLER = 0x0000002
-	VER_NT_WORKSTATION       = 0x0000001
+	SB_LINEUP        = 0
+	SB_LINELEFT      = 0
+	SB_LINEDOWN      = 1
+	SB_LINERIGHT     = 1
+	SB_PAGEUP        = 2
+	SB_PAGELEFT      = 2
+	SB_PAGEDOWN      = 3
+	SB_PAGERIGHT     = 3
+	SB_THUMBPOSITION = 4
+	SB_THUMBTRACK    = 5
+	SB_TOP           = 6
+	SB_LEFT          = 6
+	SB_BOTTOM        = 7
+	SB_RIGHT         = 7
+	SB_ENDSCROLL     = 8
 )
 
-// https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoexw
+// [Get|Set]ScrollInfo mask constants
 const (
-	VER_SUITE_BACKOFFICE               = 0x00000004
-	VER_SUITE_BLADE                    = 0x00000400
-	VER_SUITE_COMPUTE_SERVER           = 0x00004000
-	VER_SUITE_DATACENTER               = 0x00000080
-	VER_SUITE_ENTERPRISE               = 0x00000002
-	VER_SUITE_EMBEDDEDNT               = 0x00000040
-	VER_SUITE_PERSONAL                 = 0x00000200
-	VER_SUITE_SINGLEUSERTS             = 0x00000100
-	VER_SUITE_SMALLBUSINESS            = 0x00000001
-	VER_SUITE_SMALLBUSINESS_RESTRICTED = 0x00000020
-	VER_SUITE_STORAGE_SERVER           = 0x00002000
-	VER_SUITE_TERMINAL                 = 0x00000010
-	VER_SUITE_WH_SERVER                = 0x00008000
-	VER_SUITE_MULTIUSERTS              = 0x00020000
-)
-
-// https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-system_info
-const (
-	PROCESSOR_ARCHITECTURE_AMD64   = 9
-	PROCESSOR_ARCHITECTURE_ARM     = 5
-	PROCESSOR_ARCHITECTURE_ARM64   = 12
-	PROCESSOR_ARCHITECTURE_IA64    = 6
-	PROCESSOR_ARCHITECTURE_INTEL   = 0
-	PROCESSOR_ARCHITECTURE_UNKNOWN = 0xFFFF
-)
-
-// Flags for SetLayeredWindowAttributes.
-const (
-	LWA_COLORKEY = 0x1
-	LWA_ALPHA    = 0x2
-)
-
-// Flags for RedrawWindow.
-const (
-	RDW_INVALIDATE      = 0x0001
-	RDW_INTERNALPAINT   = 0x0002
-	RDW_ERASE           = 0x0004
-	RDW_VALIDATE        = 0x0008
-	RDW_NOINTERNALPAINT = 0x0010
-	RDW_NOERASE         = 0x0020
-	RDW_NOCHILDREN      = 0x0040
-	RDW_ALLCHILDREN     = 0x0080
-	RDW_UPDATENOW       = 0x0100
-	RDW_ERASENOW        = 0x0200
-	RDW_FRAME           = 0x0400
-	RDW_NOFRAME         = 0x0800
-)
-
-// DrawIconEx flags.
-const (
-	DI_COMPAT      = 0x0004
-	DI_DEFAULTSIZE = 0x0008
-	DI_IMAGE       = 0x0002
-	DI_MASK        = 0x0001
-	DI_NOMIRROR    = 0x0010
-	DI_NORMAL      = DI_IMAGE | DI_MASK
-)
-
-// Track bar messages.
-const (
-	TBM_GETPOS         = WM_USER
-	TBM_GETRANGEMIN    = WM_USER + 1
-	TBM_GETRANGEMAX    = WM_USER + 2
-	TBM_GETTIC         = WM_USER + 3
-	TBM_SETTIC         = WM_USER + 4
-	TBM_SETPOS         = WM_USER + 5
-	TBM_SETRANGE       = WM_USER + 6
-	TBM_SETRANGEMIN    = WM_USER + 7
-	TBM_SETRANGEMAX    = WM_USER + 8
-	TBM_CLEARTICS      = WM_USER + 9
-	TBM_SETSEL         = WM_USER + 10
-	TBM_SETSELSTART    = WM_USER + 11
-	TBM_SETSELEND      = WM_USER + 12
-	TBM_GETPTICS       = WM_USER + 14
-	TBM_GETTICPOS      = WM_USER + 15
-	TBM_GETNUMTICS     = WM_USER + 16
-	TBM_GETSELSTART    = WM_USER + 17
-	TBM_GETSELEND      = WM_USER + 18
-	TBM_CLEARSEL       = WM_USER + 19
-	TBM_SETTICFREQ     = WM_USER + 20
-	TBM_SETPAGESIZE    = WM_USER + 21
-	TBM_GETPAGESIZE    = WM_USER + 22
-	TBM_SETLINESIZE    = WM_USER + 23
-	TBM_GETLINESIZE    = WM_USER + 24
-	TBM_GETTHUMBRECT   = WM_USER + 25
-	TBM_GETCHANNELRECT = WM_USER + 26
-	TBM_SETTHUMBLENGTH = WM_USER + 27
-	TBM_GETTHUMBLENGTH = WM_USER + 28
-)
-
-// Track bar styles.
-const (
-	TBS_AUTOTICKS      = 1
-	TBS_VERT           = 2
-	TBS_HORZ           = 0
-	TBS_TOP            = 4
-	TBS_BOTTOM         = 0
-	TBS_LEFT           = 4
-	TBS_RIGHT          = 0
-	TBS_BOTH           = 8
-	TBS_NOTICKS        = 16
-	TBS_ENABLESELRANGE = 32
-	TBS_FIXEDLENGTH    = 64
-	TBS_NOTHUMB        = 128
-)
-
-// Track bar scroll notifications.
-const (
-	TB_LINEUP        = 0
-	TB_LINEDOWN      = 1
-	TB_PAGEUP        = 2
-	TB_PAGEDOWN      = 3
-	TB_THUMBPOSITION = 4
-	TB_THUMBTRACK    = 5
-	TB_TOP           = 6
-	TB_BOTTOM        = 7
-	TB_ENDTRACK      = 8
-)
-
-// Clip region types, e.g. returned from IntersectClipRect.
-const (
-	ERROR         = 0
-	NULLREGION    = 1
-	SIMPLEREGION  = 2
-	COMPLEXREGION = 3
-)
-
-// Modes for CombineRgn.
-const (
-	RGN_AND  = 1
-	RGN_OR   = 2
-	RGN_XOR  = 3
-	RGN_DIFF = 4
-	RGN_COPY = 5
-	RGN_MIN  = RGN_AND
-	RGN_MAX  = RGN_COPY
-)
-
-const (
-	DIGCF_PRESENT         = 0x0002
-	DIGCF_ALLCLASSES      = 0x0004
-	DIGCF_PROFILE         = 0x0008
-	DIGCF_DEVICEINTERFACE = 0x0010
-	DIGCF_INTERFACEDEVICE = DIGCF_DEVICEINTERFACE
-)
-
-const (
-	DICS_FLAG_GLOBAL         = 0x00000001
-	DICS_FLAG_CONFIGSPECIFIC = 0x00000002
-	DICS_FLAG_CONFIGGENERAL  = 0x00000004
-)
-
-const (
-	DIREG_DEV  = 0x00000001
-	DIREG_DRV  = 0x00000002
-	DIREG_BOTH = 0x00000004
-)
-
-const (
-	ABM_NEW              = 0x0
-	ABM_REMOVE           = 0x1
-	ABM_QUERYPOS         = 0x2
-	ABM_SETPOS           = 0x3
-	ABM_GETSTATE         = 0x4
-	ABM_GETTASKBARPOS    = 0x5
-	ABM_ACTIVATE         = 0x6
-	ABM_GETAUTOHIDEBAR   = 0x7
-	ABM_SETAUTOHIDEBAR   = 0x8
-	ABM_WINDOWPOSCHANGED = 0x9
-	ABM_SETSTATE         = 0xA
-)
-
-const (
-	ACM_OPEN = 0x464
-	ACM_PLAY = 0x465
-	ACM_STOP = 0x466
-)
-
-const (
-	CBEM_GETCOMBOCONTROL  = 0x406
-	CBEM_GETEDITCONTROL   = 0x407
-	CBEM_GETEXSTYLE       = 0x409
-	CBEM_GETEXTENDEDSTYLE = 0x409
-	CBEM_GETIMAGELIST     = 0x403
-	CBEM_GETITEMA         = 0x404
-	CBEM_GETITEMW         = 0x40D
-	CBEM_HASEDITCHANGED   = 0x40A
-	CBEM_INSERTITEMA      = 0x401
-	CBEM_INSERTITEMW      = 0x40B
-	CBEM_SETEXSTYLE       = 0x408
-	CBEM_SETEXTENDEDSTYLE = 0x40E
-	CBEM_SETIMAGELIST     = 0x402
-	CBEM_SETITEMA         = 0x405
-	CBEM_SETITEMW         = 0x40C
-	CBEM_GETUNICODEFORMAT = 0x2006
-	CBEM_SETUNICODEFORMAT = 0x2005
-)
-
-const (
-	CDM_GETFILEPATH     = 0x465
-	CDM_GETFOLDERIDLIST = 0x467
-	CDM_GETFOLDERPATH   = 0x466
-	CDM_GETSPEC         = 0x464
-	CDM_HIDECONTROL     = 0x469
-	CDM_SETCONTROLTEXT  = 0x468
-	CDM_SETDEFEXT       = 0x46A
-)
-
-const (
-	DL_BEGINDRAG  = 0x485
-	DL_CANCELDRAG = 0x488
-	DL_COPYCURSOR = 0x002
-	DL_CURSORSET  = 0x000
-	DL_DRAGGING   = 0x486
-	DL_DROPPED    = 0x487
-	DL_MOVECURSOR = 0x003
-	DL_STOPCURSOR = 0x001
-)
-
-const (
-	DM_GETDEFID   = 0x400
-	DM_REPOSITION = 0x402
-	DM_SETDEFID   = 0x401
-)
-
-const (
-	DTM_GETMCCOLOR    = 0x1007
-	DTM_GETMCFONT     = 0x100A
-	DTM_GETMONTHCAL   = 0x1008
-	DTM_GETRANGE      = 0x1003
-	DTM_GETSYSTEMTIME = 0x1001
-	DTM_SETFORMATA    = 0x1005
-	DTM_SETFORMATW    = 0x1032
-	DTM_SETMCCOLOR    = 0x1006
-	DTM_SETMCFONT     = 0x1009
-	DTM_SETRANGE      = 0x1004
-	DTM_SETSYSTEMTIME = 0x1002
-)
-
-const (
-	HDM_CLEARFILTER            = 0x1218
-	HDM_CREATEDRAGIMAGE        = 0x1210
-	HDM_DELETEITEM             = 0x1202
-	HDM_EDITFILTER             = 0x1217
-	HDM_GETBITMAPMARGIN        = 0x1215
-	HDM_GETIMAGELIST           = 0x1209
-	HDM_GETITEM                = 0x1203
-	HDM_GETITEMCOUNT           = 0x1200
-	HDM_GETITEMRECT            = 0x1207
-	HDM_GETORDERARRAY          = 0x1211
-	HDM_GETUNICODEFORMAT       = 0x2006
-	HDM_HITTEST                = 0x1206
-	HDM_INSERTITEM             = 0x1201
-	HDM_LAYOUT                 = 0x1205
-	HDM_ORDERTOINDEX           = 0x120F
-	HDM_SETBITMAPMARGIN        = 0x1214
-	HDM_SETFILTERCHANGETIMEOUT = 0x1216
-	HDM_SETHOTDIVIDER          = 0x1213
-	HDM_SETIMAGELIST           = 0x1208
-	HDM_SETITEM                = 0x1204
-	HDM_SETORDERARRAY          = 0x1212
-	HDM_SETUNICODEFORMAT       = 0x2005
-)
-
-const (
-	HKM_GETHOTKEY = 0x402
-	HKM_SETHOTKEY = 0x401
-	HKM_SETRULES  = 0x403
-)
-
-const (
-	IPM_CLEARADDRESS = 0x464
-	IPM_GETADDRESS   = 0x466
-	IPM_ISBLANK      = 0x469
-	IPM_SETADDRESS   = 0x465
-	IPM_SETFOCUS     = 0x468
-	IPM_SETRANGE     = 0x467
-)
-
-const (
-	LBCB_CARETOFF = 0x01A4
-	LBCB_CARETON  = 0x01A3
-)
-
-const (
-	MCM_GETCOLOR          = 0x100B
-	MCM_GETCURSEL         = 0x1001
-	MCM_GETFIRSTDAYOFWEEK = 0x1010
-	MCM_GETMAXSELCOUNT    = 0x1003
-	MCM_GETMAXTODAYWIDTH  = 0x1015
-	MCM_GETMINREQRECT     = 0x1009
-	MCM_GETMONTHDELTA     = 0x1013
-	MCM_GETMONTHRANGE     = 0x1007
-	MCM_GETRANGE          = 0x1011
-	MCM_GETSELRANGE       = 0x1005
-	MCM_GETTODAY          = 0x100D
-	MCM_GETUNICODEFORMAT  = 0x2006
-	MCM_HITTEST           = 0x100E
-	MCM_SETCOLOR          = 0x100A
-	MCM_SETCURSEL         = 0x1002
-	MCM_SETDAYSTATE       = 0x1008
-	MCM_SETFIRSTDAYOFWEEK = 0x100F
-	MCM_SETMAXSELCOUNT    = 0x1004
-	MCM_SETMONTHDELTA     = 0x1014
-	MCM_SETRANGE          = 0x1012
-	MCM_SETSELRANGE       = 0x1006
-	MCM_SETTODAY          = 0x100C
-	MCM_SETUNICODEFORMAT  = 0x2005
-)
-
-const (
-	MN_BUTTONDOWN              = 0x01ED
-	MN_BUTTONUP                = 0x01EF
-	MN_CANCELMENUS             = 0x01E6
-	MN_CLOSEHIERARCHY          = 0x01E4
-	MN_DBLCLK                  = 0x01F1
-	MN_FINDMENUWINDOWFROMPOINT = 0x01EB
-	MN_GETHMENU                = 0x01E1
-	MN_GETPPOPUPMENU           = 0x01EA
-	MN_MOUSEMOVE               = 0x01EE
-	MN_OPENHIERARCHY           = 0x01E3
-	MN_SELECTFIRSTVALIDITEM    = 0x01E7
-	MN_SELECTITEM              = 0x01E5
-	MN_SETHMENU                = 0x01E0
-	MN_SETTIMERTOOPENHIERARCHY = 0x01F0
-	MN_SHOWPOPUPWINDOW         = 0x01EC
-	MN_SIZEWINDOW              = 0x01E2
-)
-
-const (
-	OCM_CHARTOITEM        = 0x202F
-	OCM_COMMAND           = 0x2111
-	OCM_COMPAREITEM       = 0x2039
-	OCM_CTLCOLORBTN       = 0x2135
-	OCM_CTLCOLORDLG       = 0x2136
-	OCM_CTLCOLOREDIT      = 0x2133
-	OCM_CTLCOLORLISTBOX   = 0x2134
-	OCM_CTLCOLORMSGBOX    = 0x2132
-	OCM_CTLCOLORSCROLLBAR = 0x2137
-	OCM_CTLCOLORSTATIC    = 0x2138
-	OCM_DELETEITEM        = 0x202D
-	OCM_DRAWITEM          = 0x202B
-	OCM_HSCROLL           = 0x2114
-	OCM_MEASUREITEM       = 0x202C
-	OCM_NOTIFY            = 0x204E
-	OCM_PARENTNOTIFY      = 0x2210
-	OCM_VKEYTOITEM        = 0x202E
-	OCM_VSCROLL           = 0x2115
-)
-
-const (
-	PGM_FORWARDMOUSE   = 0x1403
-	PGM_GETBKCOLOR     = 0x1405
-	PGM_GETBORDER      = 0x1407
-	PGM_GETBUTTONSIZE  = 0x140B
-	PGM_GETBUTTONSTATE = 0x140C
-	PGM_GETDROPTARGET  = 0x2004
-	PGM_GETPOS         = 0x1409
-	PGM_RECALCSIZE     = 0x1402
-	PGM_SETBKCOLOR     = 0x1404
-	PGM_SETBORDER      = 0x1406
-	PGM_SETBUTTONSIZE  = 0x140A
-	PGM_SETCHILD       = 0x1401
-	PGM_SETPOS         = 0x1408
-)
-
-const (
-	PSM_ADDPAGE            = 0x467
-	PSM_APPLY              = 0x46E
-	PSM_CANCELTOCLOSE      = 0x46B
-	PSM_CHANGED            = 0x468
-	PSM_GETCURRENTPAGEHWND = 0x476
-	PSM_GETRESULT          = 0x487
-	PSM_GETTABCONTROL      = 0x474
-	PSM_HWNDTOINDEX        = 0x481
-	PSM_IDTOINDEX          = 0x485
-	PSM_INDEXTOHWND        = 0x482
-	PSM_INDEXTOID          = 0x486
-	PSM_INDEXTOPAGE        = 0x484
-	PSM_INSERTPAGE         = 0x477
-	PSM_ISDIALOGMESSAGE    = 0x475
-	PSM_PAGETOINDEX        = 0x483
-	PSM_PRESSBUTTON        = 0x471
-	PSM_QUERYSIBLINGS      = 0x46C
-	PSM_REBOOTSYSTEM       = 0x46A
-	PSM_RECALCPAGESIZES    = 0x488
-	PSM_REMOVEPAGE         = 0x466
-	PSM_RESTARTWINDOWS     = 0x469
-	PSM_SETCURSEL          = 0x465
-	PSM_SETCURSELID        = 0x472
-	PSM_SETFINISHTEXT      = 0x473
-	PSM_SETHEADERSUBTITLEA = 0x47F
-	PSM_SETHEADERSUBTITLEW = 0x480
-	PSM_SETHEADERTITLEA    = 0x47D
-	PSM_SETHEADERTITLEW    = 0x47E
-	PSM_SETTITLE           = 0x46F
-	PSM_SETWIZBUTTONS      = 0x470
-	PSM_UNCHANGED          = 0x46D
-)
-
-const (
-	RB_BEGINDRAG        = 0x418
-	RB_DELETEBAND       = 0x402
-	RB_DRAGMOVE         = 0x41A
-	RB_ENDDRAG          = 0x419
-	RB_GETBANDBORDERS   = 0x422
-	RB_GETBANDCOUNT     = 0x40C
-	RB_GETBANDINFO      = 0x41D
-	RB_GETBANDINFOA     = 0x41D
-	RB_GETBANDINFOW     = 0x41C
-	RB_GETBARHEIGHT     = 0x41B
-	RB_GETBARINFO       = 0x403
-	RB_GETBKCOLOR       = 0x414
-	RB_GETPALETTE       = 0x426
-	RB_GETRECT          = 0x409
-	RB_GETROWCOUNT      = 0x40D
-	RB_GETROWHEIGHT     = 0x40E
-	RB_GETTEXTCOLOR     = 0x416
-	RB_GETTOOLTIPS      = 0x411
-	RB_HITTEST          = 0x408
-	RB_IDTOINDEX        = 0x410
-	RB_INSERTBAND       = 0x401
-	RB_INSERTBANDA      = 0x401
-	RB_INSERTBANDW      = 0x40A
-	RB_MAXIMIZEBAND     = 0x41F
-	RB_MINIMIZEBAND     = 0x41E
-	RB_MOVEBAND         = 0x427
-	RB_PUSHCHEVRON      = 0x42B
-	RB_SETBANDINFO      = 0x406
-	RB_SETBANDINFOA     = 0x406
-	RB_SETBANDINFOW     = 0x40B
-	RB_SETBARINFO       = 0x404
-	RB_SETBKCOLOR       = 0x413
-	RB_SETPALETTE       = 0x425
-	RB_SETPARENT        = 0x407
-	RB_SETTEXTCOLOR     = 0x415
-	RB_SETTOOLTIPS      = 0x412
-	RB_SHOWBAND         = 0x423
-	RB_SIZETORECT       = 0x417
-	RB_SETCOLORSCHEME   = 0x2002
-	RB_GETCOLORSCHEME   = 0x2003
-	RB_GETDROPTARGET    = 0x2004
-	RB_SETUNICODEFORMAT = 0x2005
-	RB_GETUNICODEFORMAT = 0x2006
-)
-
-const (
-	SBM_ENABLE_ARROWS  = 0xE4
-	SBM_GETPOS         = 0xE1
-	SBM_GETRANGE       = 0xE3
-	SBM_GETSCROLLINFO  = 0xEA
-	SBM_SETPOS         = 0xE0
-	SBM_SETRANGE       = 0xE2
-	SBM_SETRANGEREDRAW = 0xE6
-	SBM_SETSCROLLINFO  = 0xE9
-)
-
-const (
-	SB_GETBORDERS       = 0x407
-	SB_GETICON          = 0x414
-	SB_GETPARTS         = 0x406
-	SB_GETRECT          = 0x40A
-	SB_GETTEXTA         = 0x402
-	SB_GETTEXTLENGTHA   = 0x403
-	SB_GETTEXTLENGTHW   = 0x40C
-	SB_GETTEXTW         = 0x40D
-	SB_GETTIPTEXTA      = 0x412
-	SB_GETTIPTEXTW      = 0x413
-	SB_ISSIMPLE         = 0x40E
-	SB_SETICON          = 0x40F
-	SB_SETMINHEIGHT     = 0x408
-	SB_SETPARTS         = 0x404
-	SB_SETTEXTA         = 0x401
-	SB_SETTEXTW         = 0x40B
-	SB_SETTIPTEXTA      = 0x410
-	SB_SETTIPTEXTW      = 0x411
-	SB_SIMPLE           = 0x409
-	SB_SETBKCOLOR       = 0x2001
-	SB_SETUNICODEFORMAT = 0x2005
-	SB_GETUNICODEFORMAT = 0x2006
-)
-
-const (
-	STM_GETICON  = 0x171
-	STM_GETIMAGE = 0x173
-	STM_SETICON  = 0x170
-	STM_SETIMAGE = 0x172
-)
-
-const (
-	TB_ADDBITMAP             = 0x413
-	TB_ADDBUTTONS            = 0x414
-	TB_ADDSTRING             = 0x41C
-	TB_AUTOSIZE              = 0x421
-	TB_BUTTONCOUNT           = 0x418
-	TB_BUTTONSTRUCTSIZE      = 0x41E
-	TB_CHANGEBITMAP          = 0x42B
-	TB_CHECKBUTTON           = 0x402
-	TB_COMMANDTOINDEX        = 0x419
-	TB_CUSTOMIZE             = 0x41B
-	TB_DELETEBUTTON          = 0x416
-	TB_ENABLEBUTTON          = 0x401
-	TB_GETANCHORHIGHLIGHT    = 0x44A
-	TB_GETBITMAP             = 0x42C
-	TB_GETBITMAPFLAGS        = 0x429
-	TB_GETBUTTON             = 0x417
-	TB_GETBUTTONINFOA        = 0x441
-	TB_GETBUTTONINFOW        = 0x43F
-	TB_GETBUTTONSIZE         = 0x43A
-	TB_GETBUTTONTEXT         = 0x42D
-	TB_GETCOLORSCHEME        = 0x2003
-	TB_GETDISABLEDIMAGELIST  = 0x437
-	TB_GETEXTENDEDSTYLE      = 0x455
-	TB_GETHOTIMAGELIST       = 0x435
-	TB_GETHOTITEM            = 0x447
-	TB_GETIMAGELIST          = 0x431
-	TB_GETINSERTMARK         = 0x44F
-	TB_GETINSERTMARKCOLOR    = 0x459
-	TB_GETITEMRECT           = 0x41D
-	TB_GETMAXSIZE            = 0x453
-	TB_GETOBJECT             = 0x43E
-	TB_GETPADDING            = 0x456
-	TB_GETRECT               = 0x433
-	TB_GETROWS               = 0x428
-	TB_GETSTATE              = 0x412
-	TB_GETSTRING             = 0x45C
-	TB_GETSTYLE              = 0x439
-	TB_GETTEXTROWS           = 0x43D
-	TB_GETTOOLTIPS           = 0x423
-	TB_GETUNICODEFORMAT      = 0x2006
-	TB_HIDEBUTTON            = 0x404
-	TB_HITTEST               = 0x445
-	TB_INDETERMINATE         = 0x405
-	TB_INSERTBUTTON          = 0x415
-	TB_INSERTMARKHITTEST     = 0x451
-	TB_ISBUTTONCHECKED       = 0x40A
-	TB_ISBUTTONENABLED       = 0x409
-	TB_ISBUTTONHIDDEN        = 0x40C
-	TB_ISBUTTONHIGHLIGHTED   = 0x40E
-	TB_ISBUTTONINDETERMINATE = 0x40D
-	TB_ISBUTTONPRESSED       = 0x40B
-	TB_LOADIMAGES            = 0x432
-	TB_MAPACCELERATORA       = 0x44E
-	TB_MAPACCELERATORW       = 0x45A
-	TB_MARKBUTTON            = 0x406
-	TB_MOVEBUTTON            = 0x452
-	TB_PRESSBUTTON           = 0x403
-	TB_REPLACEBITMAP         = 0x42E
-	TB_SAVERESTORE           = 0x41A
-	TB_SETANCHORHIGHLIGHT    = 0x449
-	TB_SETBITMAPSIZE         = 0x420
-	TB_SETBUTTONINFOA        = 0x442
-	TB_SETBUTTONINFOW        = 0x440
-	TB_SETBUTTONSIZE         = 0x41F
-	TB_SETBUTTONWIDTH        = 0x43B
-	TB_SETCMDID              = 0x42A
-	TB_SETCOLORSCHEME        = 0x2002
-	TB_SETDISABLEDIMAGELIST  = 0x436
-	TB_SETDRAWTEXTFLAGS      = 0x446
-	TB_SETEXTENDEDSTYLE      = 0x454
-	TB_SETHOTIMAGELIST       = 0x434
-	TB_SETHOTITEM            = 0x448
-	TB_SETIMAGELIST          = 0x430
-	TB_SETINDENT             = 0x42F
-	TB_SETINSERTMARK         = 0x450
-	TB_SETINSERTMARKCOLOR    = 0x458
-	TB_SETMAXTEXTROWS        = 0x43C
-	TB_SETPADDING            = 0x457
-	TB_SETPARENT             = 0x425
-	TB_SETROWS               = 0x427
-	TB_SETSTATE              = 0x411
-	TB_SETSTYLE              = 0x438
-	TB_SETTOOLTIPS           = 0x424
-	TB_SETUNICODEFORMAT      = 0x2005
-)
-
-const (
-	TCM_ADJUSTRECT       = 0x1328
-	TCM_DELETEALLITEMS   = 0x1309
-	TCM_DELETEITEM       = 0x1308
-	TCM_DESELECTALL      = 0x1332
-	TCM_GETCURFOCUS      = 0x132F
-	TCM_GETCURSEL        = 0x130B
-	TCM_GETEXTENDEDSTYLE = 0x1335
-	TCM_GETIMAGELIST     = 0x1302
-	TCM_GETITEM          = 0x1305
-	TCM_GETITEMCOUNT     = 0x1304
-	TCM_GETITEMRECT      = 0x130A
-	TCM_GETROWCOUNT      = 0x132C
-	TCM_GETTOOLTIPS      = 0x132D
-	TCM_GETUNICODEFORMAT = 0x2006
-	TCM_HIGHLIGHTITEM    = 0x1333
-	TCM_HITTEST          = 0x130D
-	TCM_INSERTITEM       = 0x1307
-	TCM_REMOVEIMAGE      = 0x132A
-	TCM_SETCURFOCUS      = 0x1330
-	TCM_SETCURSEL        = 0x130C
-	TCM_SETEXTENDEDSTYLE = 0x1334
-	TCM_SETIMAGELIST     = 0x1303
-	TCM_SETITEM          = 0x1306
-	TCM_SETITEMEXTRA     = 0x130E
-	TCM_SETITEMSIZE      = 0x1329
-	TCM_SETMINTABWIDTH   = 0x1331
-	TCM_SETPADDING       = 0x132B
-	TCM_SETTOOLTIPS      = 0x132E
-	TCM_SETUNICODEFORMAT = 0x2005
-)
-
-const (
-	TVM_CREATEDRAGIMAGE    = 0x1112
-	TVM_DELETEITEM         = 0x1101
-	TVM_EDITLABEL          = 0x110E
-	TVM_ENDEDITLABELNOW    = 0x1116
-	TVM_ENSUREVISIBLE      = 0x1114
-	TVM_EXPAND             = 0x1102
-	TVM_GETBKCOLOR         = 0x111F
-	TVM_GETCOUNT           = 0x1105
-	TVM_GETEDITCONTROL     = 0x110F
-	TVM_GETIMAGELIST       = 0x1108
-	TVM_GETINDENT          = 0x1106
-	TVM_GETINSERTMARKCOLOR = 0x1126
-	TVM_GETISEARCHSTRING   = 0x1117
-	TVM_GETITEM            = 0x110C
-	TVM_GETITEMHEIGHT      = 0x111C
-	TVM_GETITEMRECT        = 0x1104
-	TVM_GETITEMSTATE       = 0x1127
-	TVM_GETLINECOLOR       = 0x1129
-	TVM_GETNEXTITEM        = 0x110A
-	TVM_GETSCROLLTIME      = 0x1122
-	TVM_GETTEXTCOLOR       = 0x1120
-	TVM_GETTOOLTIPS        = 0x1119
-	TVM_GETUNICODEFORMAT   = 0x2006
-	TVM_GETVISIBLECOUNT    = 0x1110
-	TVM_HITTEST            = 0x1111
-	TVM_INSERTITEM         = 0x1100
-	TVM_SELECTITEM         = 0x110B
-	TVM_SETBKCOLOR         = 0x111D
-	TVM_SETIMAGELIST       = 0x1109
-	TVM_SETINDENT          = 0x1107
-	TVM_SETINSERTMARK      = 0x111A
-	TVM_SETINSERTMARKCOLOR = 0x1125
-	TVM_SETITEM            = 0x110D
-	TVM_SETITEMHEIGHT      = 0x111B
-	TVM_SETLINECOLOR       = 0x1128
-	TVM_SETSCROLLTIME      = 0x1121
-	TVM_SETTEXTCOLOR       = 0x111E
-	TVM_SETTOOLTIPS        = 0x1118
-	TVM_SETUNICODEFORMAT   = 0x2005
-	TVM_SORTCHILDREN       = 0x1113
-	TVM_SORTCHILDRENCB     = 0x1115
-)
-
-// PROCESS_DPI_AWARENESS
-const (
-	PROCESS_DPI_UNAWARE           = 0
-	PROCESS_SYSTEM_DPI_AWARE      = 1
-	PROCESS_PER_MONITOR_DPI_AWARE = 2
-)
-
-// WM_DEVICECHANGE WPARAM options
-const (
-	DBT_DEVNODES_CHANGED        = 0x0007
-	DBT_QUERYCHANGECONFIG       = 0x0017
-	DBT_CONFIGCHANGED           = 0x0018
-	DBT_CONFIGCHANGECANCELED    = 0x0019
-	DBT_DEVICEARRIVAL           = 0x8000
-	DBT_DEVICEQUERYREMOVE       = 0x8001
-	DBT_DEVICEQUERYREMOVEFAILED = 0x8002
-	DBT_DEVICEREMOVEPENDING     = 0x8003
-	DBT_DEVICEREMOVECOMPLETE    = 0x8004
-	DBT_DEVICETYPESPECIFIC      = 0x8005
-	DBT_CUSTOMEVENT             = 0x8006
-	DBT_USERDEFINED             = 0xFFFF
-)
-
-const (
-	SPI_GETACCESSTIMEOUT            = 0x003C
-	SPI_GETAUDIODESCRIPTION         = 0x0074
-	SPI_GETCLIENTAREAANIMATION      = 0x1042
-	SPI_GETDISABLEOVERLAPPEDCONTENT = 0x1040
-	SPI_GETFILTERKEYS               = 0x0032
-	SPI_GETFOCUSBORDERHEIGHT        = 0x2010
-	SPI_GETFOCUSBORDERWIDTH         = 0x200E
-	SPI_GETHIGHCONTRAST             = 0x0042
-	SPI_GETLOGICALDPIOVERRIDE       = 0x009E
-	SPI_GETMESSAGEDURATION          = 0x2016
-	SPI_GETMOUSECLICKLOCK           = 0x101E
-	SPI_GETMOUSECLICKLOCKTIME       = 0x2008
-	SPI_GETMOUSEKEYS                = 0x0036
-	SPI_GETMOUSESONAR               = 0x101C
-	SPI_GETMOUSEVANISH              = 0x1020
-	SPI_GETSCREENREADER             = 0x0046
-	SPI_GETSERIALKEYS               = 0x003E
-	SPI_GETSHOWSOUNDS               = 0x0038
-	SPI_GETSOUNDSENTRY              = 0x0040
-	SPI_GETSTICKYKEYS               = 0x003A
-	SPI_GETTOGGLEKEYS               = 0x0034
-	SPI_SETACCESSTIMEOUT            = 0x003D
-	SPI_SETAUDIODESCRIPTION         = 0x0075
-	SPI_SETCLIENTAREAANIMATION      = 0x1043
-	SPI_SETDISABLEOVERLAPPEDCONTENT = 0x1041
-	SPI_SETFILTERKEYS               = 0x0033
-	SPI_SETFOCUSBORDERHEIGHT        = 0x2011
-	SPI_SETFOCUSBORDERWIDTH         = 0x200F
-	SPI_SETHIGHCONTRAST             = 0x0043
-	SPI_SETLOGICALDPIOVERRIDE       = 0x009F
-	SPI_SETMESSAGEDURATION          = 0x2017
-	SPI_SETMOUSECLICKLOCK           = 0x101F
-	SPI_SETMOUSECLICKLOCKTIME       = 0x2009
-	SPI_SETMOUSEKEYS                = 0x0037
-	SPI_SETMOUSESONAR               = 0x101D
-	SPI_SETMOUSEVANISH              = 0x1021
-	SPI_SETSCREENREADER             = 0x0047
-	SPI_SETSERIALKEYS               = 0x003F
-	SPI_SETSHOWSOUNDS               = 0x0039
-	SPI_SETSOUNDSENTRY              = 0x0041
-	SPI_SETSTICKYKEYS               = 0x003B
-	SPI_SETTOGGLEKEYS               = 0x0035
-	SPI_GETCLEARTYPE                = 0x1048
-	SPI_GETDESKWALLPAPER            = 0x0073
-	SPI_GETDROPSHADOW               = 0x1024
-	SPI_GETFLATMENU                 = 0x1022
-	SPI_GETFONTSMOOTHING            = 0x004A
-	SPI_GETFONTSMOOTHINGCONTRAST    = 0x200C
-	SPI_GETFONTSMOOTHINGORIENTATION = 0x2012
-	SPI_GETFONTSMOOTHINGTYPE        = 0x200A
-	SPI_GETWORKAREA                 = 0x0030
-	SPI_SETCLEARTYPE                = 0x1049
-	SPI_SETCURSORS                  = 0x0057
-	SPI_SETDESKPATTERN              = 0x0015
-	SPI_SETDESKWALLPAPER            = 0x0014
-	SPI_SETDROPSHADOW               = 0x1025
-	SPI_SETFLATMENU                 = 0x1023
-	SPI_SETFONTSMOOTHING            = 0x004B
-	SPI_SETFONTSMOOTHINGCONTRAST    = 0x200D
-	SPI_SETFONTSMOOTHINGORIENTATION = 0x2013
-	SPI_SETFONTSMOOTHINGTYPE        = 0x200B
-	SPI_SETWORKAREA                 = 0x002F
-	SPI_GETICONMETRICS              = 0x002D
-	SPI_GETICONTITLELOGFONT         = 0x001F
-	SPI_GETICONTITLEWRAP            = 0x0019
-	SPI_ICONHORIZONTALSPACING       = 0x000D
-	SPI_ICONVERTICALSPACING         = 0x0018
-	SPI_SETICONMETRICS              = 0x002E
-	SPI_SETICONS                    = 0x0058
-	SPI_SETICONTITLELOGFONT         = 0x0022
-	SPI_SETICONTITLEWRAP            = 0x001A
-	SPI_GETBEEP                     = 0x0001
-	SPI_GETBLOCKSENDINPUTRESETS     = 0x1026
-	SPI_GETCONTACTVISUALIZATION     = 0x2018
-	SPI_GETDEFAULTINPUTLANG         = 0x0059
-	SPI_GETGESTUREVISUALIZATION     = 0x201A
-	SPI_GETKEYBOARDCUES             = 0x100A
-	SPI_GETKEYBOARDDELAY            = 0x0016
-	SPI_GETKEYBOARDPREF             = 0x0044
-	SPI_GETKEYBOARDSPEED            = 0x000A
-	SPI_GETMOUSE                    = 0x0003
-	SPI_GETMOUSEHOVERHEIGHT         = 0x0064
-	SPI_GETMOUSEHOVERTIME           = 0x0066
-	SPI_GETMOUSEHOVERWIDTH          = 0x0062
-	SPI_GETMOUSESPEED               = 0x0070
-	SPI_GETMOUSETRAILS              = 0x005E
-	SPI_GETMOUSEWHEELROUTING        = 0x201C
-	SPI_GETPENVISUALIZATION         = 0x201E
-	SPI_GETSNAPTODEFBUTTON          = 0x005F
-	SPI_GETSYSTEMLANGUAGEBAR        = 0x1050
-	SPI_GETTHREADLOCALINPUTSETTINGS = 0x104E
-	SPI_GETWHEELSCROLLCHARS         = 0x006C
-	SPI_GETWHEELSCROLLLINES         = 0x0068
-	SPI_SETBEEP                     = 0x0002
-	SPI_SETBLOCKSENDINPUTRESETS     = 0x1027
-	SPI_SETCONTACTVISUALIZATION     = 0x2019
-	SPI_SETDEFAULTINPUTLANG         = 0x005A
-	SPI_SETDOUBLECLICKTIME          = 0x0020
-	SPI_SETDOUBLECLKHEIGHT          = 0x001E
-	SPI_SETDOUBLECLKWIDTH           = 0x001D
-	SPI_SETGESTUREVISUALIZATION     = 0x201B
-	SPI_SETKEYBOARDCUES             = 0x100B
-	SPI_SETKEYBOARDDELAY            = 0x0017
-	SPI_SETKEYBOARDPREF             = 0x0045
-	SPI_SETKEYBOARDSPEED            = 0x000B
-	SPI_SETLANGTOGGLE               = 0x005B
-	SPI_SETMOUSE                    = 0x0004
-	SPI_SETMOUSEBUTTONSWAP          = 0x0021
-	SPI_SETMOUSEHOVERHEIGHT         = 0x0065
-	SPI_SETMOUSEHOVERTIME           = 0x0067
-	SPI_SETMOUSEHOVERWIDTH          = 0x0063
-	SPI_SETMOUSESPEED               = 0x0071
-	SPI_SETMOUSETRAILS              = 0x005D
-	SPI_SETMOUSEWHEELROUTING        = 0x201D
-	SPI_SETPENVISUALIZATION         = 0x201F
-	SPI_SETSNAPTODEFBUTTON          = 0x0060
-	SPI_SETSYSTEMLANGUAGEBAR        = 0x1051
-	SPI_SETTHREADLOCALINPUTSETTINGS = 0x104F
-	SPI_SETWHEELSCROLLCHARS         = 0x006D
-	SPI_SETWHEELSCROLLLINES         = 0x0069
-	SPI_GETMENUDROPALIGNMENT        = 0x001B
-	SPI_GETMENUFADE                 = 0x1012
-	SPI_GETMENUSHOWDELAY            = 0x006A
-	SPI_SETMENUDROPALIGNMENT        = 0x001C
-	SPI_SETMENUFADE                 = 0x1013
-	SPI_SETMENUSHOWDELAY            = 0x006B
-	SPI_GETLOWPOWERACTIVE           = 0x0053
-	SPI_GETLOWPOWERTIMEOUT          = 0x004F
-	SPI_GETPOWEROFFACTIVE           = 0x0054
-	SPI_GETPOWEROFFTIMEOUT          = 0x0050
-	SPI_SETLOWPOWERACTIVE           = 0x0055
-	SPI_SETLOWPOWERTIMEOUT          = 0x0051
-	SPI_SETPOWEROFFACTIVE           = 0x0056
-	SPI_SETPOWEROFFTIMEOUT          = 0x0052
-	SPI_GETSCREENSAVEACTIVE         = 0x0010
-	SPI_GETSCREENSAVERRUNNING       = 0x0072
-	SPI_GETSCREENSAVESECURE         = 0x0076
-	SPI_GETSCREENSAVETIMEOUT        = 0x000E
-	SPI_SETSCREENSAVEACTIVE         = 0x0011
-	SPI_SETSCREENSAVESECURE         = 0x0077
-	SPI_SETSCREENSAVETIMEOUT        = 0x000F
-	SPI_GETHUNGAPPTIMEOUT           = 0x0078
-	SPI_GETWAITTOKILLTIMEOUT        = 0x007A
-	SPI_GETWAITTOKILLSERVICETIMEOUT = 0x007C
-	SPI_SETHUNGAPPTIMEOUT           = 0x0079
-	SPI_SETWAITTOKILLTIMEOUT        = 0x007B
-	SPI_SETWAITTOKILLSERVICETIMEOUT = 0x007D
-	SPI_GETCOMBOBOXANIMATION        = 0x1004
-	SPI_GETCURSORSHADOW             = 0x101A
-	SPI_GETGRADIENTCAPTIONS         = 0x1008
-	SPI_GETHOTTRACKING              = 0x100E
-	SPI_GETLISTBOXSMOOTHSCROLLING   = 0x1006
-	SPI_GETMENUANIMATION            = 0x1002
-	SPI_GETMENUUNDERLINES           = 0x100A
-	SPI_GETSELECTIONFADE            = 0x1014
-	SPI_GETTOOLTIPANIMATION         = 0x1016
-	SPI_GETTOOLTIPFADE              = 0x1018
-	SPI_GETUIEFFECTS                = 0x103E
-	SPI_SETCOMBOBOXANIMATION        = 0x1005
-	SPI_SETCURSORSHADOW             = 0x101B
-	SPI_SETGRADIENTCAPTIONS         = 0x1009
-	SPI_SETHOTTRACKING              = 0x100F
-	SPI_SETLISTBOXSMOOTHSCROLLING   = 0x1007
-	SPI_SETMENUANIMATION            = 0x1003
-	SPI_SETMENUUNDERLINES           = 0x100B
-	SPI_SETSELECTIONFADE            = 0x1015
-	SPI_SETTOOLTIPANIMATION         = 0x1017
-	SPI_SETTOOLTIPFADE              = 0x1019
-	SPI_SETUIEFFECTS                = 0x103F
-	SPI_GETACTIVEWINDOWTRACKING     = 0x1000
-	SPI_GETACTIVEWNDTRKZORDER       = 0x100C
-	SPI_GETACTIVEWNDTRKTIMEOUT      = 0x2002
-	SPI_GETANIMATION                = 0x0048
-	SPI_GETBORDER                   = 0x0005
-	SPI_GETCARETWIDTH               = 0x2006
-	SPI_GETDOCKMOVING               = 0x0090
-	SPI_GETDRAGFROMMAXIMIZE         = 0x008C
-	SPI_GETDRAGFULLWINDOWS          = 0x0026
-	SPI_GETFOREGROUNDFLASHCOUNT     = 0x2004
-	SPI_GETFOREGROUNDLOCKTIMEOUT    = 0x2000
-	SPI_GETMINIMIZEDMETRICS         = 0x002B
-	SPI_GETMOUSEDOCKTHRESHOLD       = 0x007E
-	SPI_GETMOUSEDRAGOUTTHRESHOLD    = 0x0084
-	SPI_GETMOUSESIDEMOVETHRESHOLD   = 0x0088
-	SPI_GETNONCLIENTMETRICS         = 0x0029
-	SPI_GETPENDOCKTHRESHOLD         = 0x0080
-	SPI_GETPENDRAGOUTTHRESHOLD      = 0x0086
-	SPI_GETPENSIDEMOVETHRESHOLD     = 0x008A
-	SPI_GETSHOWIMEUI                = 0x006E
-	SPI_GETSNAPSIZING               = 0x008E
-	SPI_GETWINARRANGING             = 0x0082
-	SPI_SETACTIVEWINDOWTRACKING     = 0x1001
-	SPI_SETACTIVEWNDTRKZORDER       = 0x100D
-	SPI_SETACTIVEWNDTRKTIMEOUT      = 0x2003
-	SPI_SETANIMATION                = 0x0049
-	SPI_SETBORDER                   = 0x0006
-	SPI_SETCARETWIDTH               = 0x2007
-	SPI_SETDOCKMOVING               = 0x0091
-	SPI_SETDRAGFROMMAXIMIZE         = 0x008D
-	SPI_SETDRAGFULLWINDOWS          = 0x0025
-	SPI_SETDRAGHEIGHT               = 0x004D
-	SPI_SETDRAGWIDTH                = 0x004C
-	SPI_SETFOREGROUNDFLASHCOUNT     = 0x2005
-	SPI_SETFOREGROUNDLOCKTIMEOUT    = 0x2001
-	SPI_SETMINIMIZEDMETRICS         = 0x002C
-	SPI_SETMOUSEDOCKTHRESHOLD       = 0x007F
-	SPI_SETMOUSEDRAGOUTTHRESHOLD    = 0x0085
-	SPI_SETMOUSESIDEMOVETHRESHOLD   = 0x0089
-	SPI_SETNONCLIENTMETRICS         = 0x002A
-	SPI_SETPENDOCKTHRESHOLD         = 0x0081
-	SPI_SETPENDRAGOUTTHRESHOLD      = 0x0087
-	SPI_SETPENSIDEMOVETHRESHOLD     = 0x008B
-	SPI_SETSHOWIMEUI                = 0x006F
-	SPI_SETSNAPSIZING               = 0x008F
-	SPI_SETWINARRANGING             = 0x0083
-)
-
-const (
-	SPIF_UPDATEINIFILE    = 0x1
-	SPIF_SENDCHANGE       = 0x2
-	SPIF_SENDWININICHANGE = SPIF_SENDCHANGE
+	SIF_RANGE           = 1
+	SIF_PAGE            = 2
+	SIF_POS             = 4
+	SIF_DISABLENOSCROLL = 8
+	SIF_TRACKPOS        = 16
+	SIF_ALL             = SIF_RANGE + SIF_PAGE + SIF_POS + SIF_TRACKPOS
 )

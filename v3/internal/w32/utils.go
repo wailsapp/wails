@@ -1,92 +1,81 @@
+//go:build windows
+
+/*
+ * Copyright (C) 2019 Tad Vizbaras. All Rights Reserved.
+ * Copyright (C) 2010-2012 The W32 Authors. All Rights Reserved.
+ */
+
 package w32
 
 import (
-	"errors"
 	"syscall"
 	"unicode/utf16"
 	"unsafe"
 )
 
-type pIUnknownVtbl struct {
-	queryInterface uintptr
-	addRef         uintptr
-	release        uintptr
+func MustLoadLibrary(name string) uintptr {
+	lib, err := syscall.LoadLibrary(name)
+	if err != nil {
+		panic(err)
+	}
+
+	return uintptr(lib)
 }
 
-type IUnknown struct {
-	lpVtbl *pIUnknownVtbl
+func MustGetProcAddress(lib uintptr, name string) uintptr {
+	addr, err := syscall.GetProcAddress(syscall.Handle(lib), name)
+	if err != nil {
+		panic(err)
+	}
+
+	return uintptr(addr)
 }
 
-func (u *IUnknown) QueryInterface(id *GUID) (*IDispatch, HRESULT) {
-	return ComQueryInterface(u, id)
+func SUCCEEDED(hr HRESULT) bool {
+	return hr >= 0
 }
 
-func (u *IUnknown) AddRef() int32 {
-	return ComAddRef(u)
+func FAILED(hr HRESULT) bool {
+	return hr < 0
 }
 
-func (u *IUnknown) Release() int32 {
-	return ComRelease(u)
+func LOWORD(dw uint32) uint16 {
+	return uint16(dw)
 }
 
-type pIDispatchVtbl struct {
-	queryInterface   uintptr
-	addRef           uintptr
-	release          uintptr
-	getTypeInfoCount uintptr
-	getTypeInfo      uintptr
-	getIDsOfNames    uintptr
-	invoke           uintptr
+func HIWORD(dw uint32) uint16 {
+	return uint16(dw >> 16 & 0xffff)
 }
 
-type IDispatch struct {
-	lpVtbl *pIDispatchVtbl
+func MAKELONG(lo, hi uint16) uint32 {
+	return uint32(uint32(lo) | ((uint32(hi)) << 16))
 }
 
-func (d *IDispatch) QueryInterface(id *GUID) (*IDispatch, HRESULT) {
-	return ComQueryInterface((*IUnknown)(unsafe.Pointer(d)), id)
+func BoolToBOOL(value bool) BOOL {
+	if value {
+		return 1
+	}
+
+	return 0
 }
 
-func (d *IDispatch) AddRef() int32 {
-	return ComAddRef((*IUnknown)(unsafe.Pointer(d)))
-}
+func UTF16PtrToString(cstr *uint16) string {
+	if cstr != nil {
+		us := make([]uint16, 0, 256)
+		for p := uintptr(unsafe.Pointer(cstr)); ; p += 2 {
+			u := *(*uint16)(unsafe.Pointer(p))
+			if u == 0 {
+				return string(utf16.Decode(us))
+			}
+			us = append(us, u)
+		}
+	}
 
-func (d *IDispatch) Release() int32 {
-	return ComRelease((*IUnknown)(unsafe.Pointer(d)))
-}
-
-func (d *IDispatch) GetIDsOfName(names []string) ([]int32, HRESULT) {
-	return ComGetIDsOfName(d, names)
-}
-
-func (d *IDispatch) Invoke(dispid int32, dispatch int16, params ...interface{}) (*VARIANT, error) {
-	return ComInvoke(d, dispid, dispatch, params...)
-}
-
-type pIStreamVtbl struct {
-	qeryInterface uintptr
-	addRef        uintptr
-	release       uintptr
-}
-
-type IStream struct {
-	lpVtbl *pIStreamVtbl
-}
-
-func (s *IStream) QueryInterface(id *GUID) (*IDispatch, HRESULT) {
-	return ComQueryInterface((*IUnknown)(unsafe.Pointer(s)), id)
-}
-
-func (s *IStream) AddRef() int32 {
-	return ComAddRef((*IUnknown)(unsafe.Pointer(s)))
-}
-
-func (s *IStream) Release() int32 {
-	return ComRelease((*IUnknown)(unsafe.Pointer(s)))
+	return ""
 }
 
 func ComAddRef(unknown *IUnknown) int32 {
-	ret, _, _ := syscall.Syscall(unknown.lpVtbl.addRef, 1,
+	ret, _, _ := syscall.Syscall(unknown.lpVtbl.pAddRef, 1,
 		uintptr(unsafe.Pointer(unknown)),
 		0,
 		0)
@@ -94,41 +83,45 @@ func ComAddRef(unknown *IUnknown) int32 {
 }
 
 func ComRelease(unknown *IUnknown) int32 {
-	ret, _, _ := syscall.Syscall(unknown.lpVtbl.release, 1,
+	ret, _, _ := syscall.Syscall(unknown.lpVtbl.pRelease, 1,
 		uintptr(unsafe.Pointer(unknown)),
 		0,
 		0)
 	return int32(ret)
 }
 
-func ComQueryInterface(unknown *IUnknown, id *GUID) (*IDispatch, HRESULT) {
+func ComQueryInterface(unknown *IUnknown, id *GUID) *IDispatch {
 	var disp *IDispatch
-	hr, _, _ := syscall.Syscall(unknown.lpVtbl.queryInterface, 3,
+	hr, _, _ := syscall.Syscall(unknown.lpVtbl.pQueryInterface, 3,
 		uintptr(unsafe.Pointer(unknown)),
 		uintptr(unsafe.Pointer(id)),
-		uintptr(unsafe.Pointer(&disp)),
-	)
-	return disp, HRESULT(hr)
+		uintptr(unsafe.Pointer(&disp)))
+	if hr != 0 {
+		panic("Invoke QieryInterface error.")
+	}
+	return disp
 }
 
-func ComGetIDsOfName(disp *IDispatch, names []string) ([]int32, HRESULT) {
+func ComGetIDsOfName(disp *IDispatch, names []string) []int32 {
 	wnames := make([]*uint16, len(names))
 	dispid := make([]int32, len(names))
 	for i := 0; i < len(names); i++ {
 		wnames[i] = syscall.StringToUTF16Ptr(names[i])
 	}
-	hr, _, _ := syscall.Syscall6(disp.lpVtbl.getIDsOfNames, 6,
+	hr, _, _ := syscall.Syscall6(disp.lpVtbl.pGetIDsOfNames, 6,
 		uintptr(unsafe.Pointer(disp)),
 		uintptr(unsafe.Pointer(IID_NULL)),
 		uintptr(unsafe.Pointer(&wnames[0])),
 		uintptr(len(names)),
 		uintptr(GetUserDefaultLCID()),
-		uintptr(unsafe.Pointer(&dispid[0])),
-	)
-	return dispid, HRESULT(hr)
+		uintptr(unsafe.Pointer(&dispid[0])))
+	if hr != 0 {
+		panic("Invoke GetIDsOfName error.")
+	}
+	return dispid
 }
 
-func ComInvoke(disp *IDispatch, dispid int32, dispatch int16, params ...interface{}) (result *VARIANT, err error) {
+func ComInvoke(disp *IDispatch, dispid int32, dispatch int16, params ...interface{}) (result *VARIANT) {
 	var dispparams DISPPARAMS
 
 	if dispatch&DISPATCH_PROPERTYPUT != 0 {
@@ -140,6 +133,7 @@ func ComInvoke(disp *IDispatch, dispid int32, dispatch int16, params ...interfac
 	if len(params) > 0 {
 		vargs = make([]VARIANT, len(params))
 		for i, v := range params {
+			//n := len(params)-i-1
 			n := len(params) - i - 1
 			VariantInit(&vargs[n])
 			switch v.(type) {
@@ -200,7 +194,7 @@ func ComInvoke(disp *IDispatch, dispid int32, dispatch int16, params ...interfac
 			case *VARIANT:
 				vargs[n] = VARIANT{VT_VARIANT | VT_BYREF, 0, 0, 0, int64(uintptr(unsafe.Pointer(v.(*VARIANT))))}
 			default:
-				return nil, errors.New("w32.ComInvoke: unknown variant type")
+				panic("unknown type")
 			}
 		}
 		dispparams.Rgvarg = uintptr(unsafe.Pointer(&vargs[0]))
@@ -210,7 +204,7 @@ func ComInvoke(disp *IDispatch, dispid int32, dispatch int16, params ...interfac
 	var ret VARIANT
 	var excepInfo EXCEPINFO
 	VariantInit(&ret)
-	hr, _, _ := syscall.Syscall9(disp.lpVtbl.invoke, 8,
+	hr, _, _ := syscall.Syscall9(disp.lpVtbl.pInvoke, 8,
 		uintptr(unsafe.Pointer(disp)),
 		uintptr(dispid),
 		uintptr(unsafe.Pointer(IID_NULL)),
@@ -223,7 +217,7 @@ func ComInvoke(disp *IDispatch, dispid int32, dispatch int16, params ...interfac
 	if hr != 0 {
 		if excepInfo.BstrDescription != nil {
 			bs := UTF16PtrToString(excepInfo.BstrDescription)
-			return nil, errors.New(bs)
+			panic(bs)
 		}
 	}
 	for _, varg := range vargs {
@@ -233,19 +227,4 @@ func ComInvoke(disp *IDispatch, dispid int32, dispatch int16, params ...interfac
 	}
 	result = &ret
 	return
-}
-
-func UTF16PtrToString(cstr *uint16) string {
-	if cstr != nil {
-		us := make([]uint16, 0, 256)
-		for p := uintptr(unsafe.Pointer(cstr)); ; p += 2 {
-			u := *(*uint16)(unsafe.Pointer(p))
-			if u == 0 {
-				return string(utf16.Decode(us))
-			}
-			us = append(us, u)
-		}
-	}
-
-	return ""
 }
