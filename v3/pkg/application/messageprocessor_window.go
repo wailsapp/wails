@@ -102,7 +102,7 @@ func (m *MessageProcessor) processWindowMethod(method string, rw http.ResponseWr
 			m.Error("Invalid SetBackgroundColour Message: 'a' value required")
 			return
 		}
-		window.SetBackgroundColour(&RGBA{
+		window.SetBackgroundColour(RGBA{
 			Red:   *r,
 			Green: *g,
 			Blue:  *b,

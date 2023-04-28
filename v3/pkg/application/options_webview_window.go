@@ -23,7 +23,8 @@ type WebviewWindowOptions struct {
 	MaxHeight                       int
 	StartState                      WindowState
 	Mac                             MacWindow
-	BackgroundColour                *RGBA
+	BackgroundType                  BackgroundType
+	BackgroundColour                RGBA
 	HTML                            string
 	JS                              string
 	CSS                             string
@@ -43,8 +44,22 @@ var WebviewWindowDefaults = &WebviewWindowOptions{
 	Width:  800,
 	Height: 600,
 	URL:    "",
+	BackgroundColour: RGBA{
+		Red:   255,
+		Green: 255,
+		Blue:  255,
+		Alpha: 255,
+	},
 }
 
 type RGBA struct {
 	Red, Green, Blue, Alpha uint8
 }
+
+type BackgroundType int
+
+const (
+	BackgroundTypeSolid BackgroundType = iota
+	BackgroundTypeTransparent
+	BackgroundTypeTranslucent
+)

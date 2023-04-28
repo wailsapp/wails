@@ -21,7 +21,7 @@ type (
 		setMaxSize(width, height int)
 		execJS(js string)
 		restore()
-		setBackgroundColour(color *RGBA)
+		setBackgroundColour(color RGBA)
 		run()
 		center()
 		size() (int, int)
@@ -171,7 +171,7 @@ func (w *WebviewWindow) run() {
 
 func (w *WebviewWindow) SetAlwaysOnTop(b bool) *WebviewWindow {
 	w.options.AlwaysOnTop = b
-	if w.impl == nil {
+	if w.impl != nil {
 		w.impl.setAlwaysOnTop(b)
 	}
 	return w
@@ -346,7 +346,7 @@ func (w *WebviewWindow) IsFullscreen() bool {
 	return w.impl.isFullscreen()
 }
 
-func (w *WebviewWindow) SetBackgroundColour(colour *RGBA) *WebviewWindow {
+func (w *WebviewWindow) SetBackgroundColour(colour RGBA) *WebviewWindow {
 	w.options.BackgroundColour = colour
 	if w.impl != nil {
 		w.impl.setBackgroundColour(colour)

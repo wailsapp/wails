@@ -1,0 +1,36 @@
+//go:build windows
+
+package w32
+
+import (
+	"syscall"
+	"unsafe"
+)
+
+var (
+	moddwmapi = syscall.NewLazyDLL("dwmapi.dll")
+
+	procDwmSetWindowAttribute        = moddwmapi.NewProc("DwmSetWindowAttribute")
+	procDwmExtendFrameIntoClientArea = moddwmapi.NewProc("DwmExtendFrameIntoClientArea")
+)
+
+func DwmSetWindowAttribute(hwnd HWND, dwAttribute DWMWINDOWATTRIBUTE, pvAttribute LPCVOID, cbAttribute uint32) HRESULT {
+	ret, _, _ := procDwmSetWindowAttribute.Call(
+		hwnd,
+		uintptr(dwAttribute),
+		uintptr(pvAttribute),
+		uintptr(cbAttribute))
+	return HRESULT(ret)
+}
+
+func dwmExtendFrameIntoClientArea(hwnd uintptr, margins *MARGINS) error {
+	ret, _, _ := procDwmExtendFrameIntoClientArea.Call(
+		hwnd,
+		uintptr(unsafe.Pointer(margins)))
+
+	if ret != 0 {
+		return syscall.GetLastError()
+	}
+
+	return nil
+}

@@ -17,7 +17,7 @@ var (
 )
 
 func init() {
-	wmInvokeCallback = w32.RegisterWindowMessage("WailsV0.InvokeCallback")
+	wmInvokeCallback = w32.RegisterWindowMessage(w32.MustStringToUTF16Ptr("WailsV0.InvokeCallback"))
 }
 
 // initMainLoop must be called with the same OSThread that is used to call runMainLoop() later.

@@ -3,11 +3,13 @@
 package application
 
 import (
+	"errors"
+	"fmt"
+	"github.com/wailsapp/wails/v3/internal/w32"
 	"syscall"
 	"unsafe"
 
 	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v3/internal/w32"
 )
 
 var showDevTools = func(window unsafe.Pointer) {}
@@ -15,6 +17,7 @@ var showDevTools = func(window unsafe.Pointer) {}
 type windowsWebviewWindow struct {
 	windowImpl unsafe.Pointer
 	parent     *WebviewWindow
+	hwnd       w32.HWND
 }
 
 func (w *windowsWebviewWindow) setTitle(title string) {
@@ -23,13 +26,18 @@ func (w *windowsWebviewWindow) setTitle(title string) {
 }
 
 func (w *windowsWebviewWindow) setSize(width, height int) {
-	//TODO implement me
-	panic("implement me")
+	x, y := w.position()
+	w32.MoveWindow(w.hwnd, x, y, width, height, true)
 }
 
 func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
-	//TODO implement me
-	panic("implement me")
+	globalApplication.dispatchOnMainThread(func() {
+		position := w32.HWND_NOTOPMOST
+		if alwaysOnTop {
+			position = w32.HWND_TOPMOST
+		}
+		w32.SetWindowPos(w.hwnd, position, 0, 0, 0, 0, uint(w32.SWP_NOMOVE|w32.SWP_NOSIZE))
+	})
 }
 
 func (w *windowsWebviewWindow) setURL(url string) {
@@ -38,8 +46,9 @@ func (w *windowsWebviewWindow) setURL(url string) {
 }
 
 func (w *windowsWebviewWindow) setResizable(resizable bool) {
-	//TODO implement me
-	panic("implement me")
+	globalApplication.dispatchOnMainThread(func() {
+		w.setStyle(resizable, w32.WS_THICKFRAME)
+	})
 }
 
 func (w *windowsWebviewWindow) setMinSize(width, height int) {
@@ -62,9 +71,8 @@ func (w *windowsWebviewWindow) restore() {
 	panic("implement me")
 }
 
-func (w *windowsWebviewWindow) setBackgroundColour(color *RGBA) {
-	//TODO implement me
-	panic("implement me")
+func (w *windowsWebviewWindow) setBackgroundColour(color RGBA) {
+	w32.SetBackgroundColour(w.hwnd, color.Red, color.Green, color.Blue)
 }
 
 func (w *windowsWebviewWindow) run() {
@@ -74,22 +82,18 @@ func (w *windowsWebviewWindow) run() {
 func (w *windowsWebviewWindow) _run() {
 	var exStyle uint
 	options := w.parent.options
-	windowsOptions := options.Windows
-	//if windowsOptions != nil {
 	exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
-	//	if windowsOptions.WindowIsTranslucent {
-	//		exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
-	//	}
-	//}
-	if windowsOptions.AlwaysOnTop {
+	if options.BackgroundType != BackgroundTypeSolid {
+		exStyle |= w32.WS_EX_NOREDIRECTIONBITMAP
+	}
+	if options.AlwaysOnTop {
 		exStyle |= w32.WS_EX_TOPMOST
 	}
-	var hwnd w32.HWND
-	hwnd = w32.CreateWindowEx(
+	w.hwnd = w32.CreateWindowEx(
 		exStyle,
 		windowClassName,
 		lo.Must(syscall.UTF16PtrFromString(options.Title)),
-		w32.WS_OVERLAPPEDWINDOW|w32.WS_VISIBLE,
+		w32.WS_OVERLAPPEDWINDOW,
 		w32.CW_USEDEFAULT,
 		w32.CW_USEDEFAULT,
 		options.Width,
@@ -99,15 +103,38 @@ func (w *windowsWebviewWindow) _run() {
 		w32.GetModuleHandle(""),
 		nil)
 
-	if hwnd == 0 {
+	if w.hwnd == 0 {
 		panic("Unable to create window")
 	}
 
-	if !options.Hidden {
-		w32.ShowWindow(hwnd, w32.SW_SHOW)
-		w32.UpdateWindow(hwnd)
+	if options.DisableResize {
+		w.setResizable(false)
 	}
-	w32.SetForegroundWindow(hwnd)
+
+	// Icon
+	if !options.Windows.DisableIcon {
+		// App icon ID is 3
+		icon, err := NewIconFromResource(w32.GetModuleHandle(""), uint16(3))
+		if err == nil {
+			w.setIcon(icon)
+		}
+	} else {
+		w.disableIcon()
+	}
+
+	switch options.BackgroundType {
+	case BackgroundTypeSolid:
+		w.setBackgroundColour(options.BackgroundColour)
+	case BackgroundTypeTransparent:
+	case BackgroundTypeTranslucent:
+		w.setBackdropType(options.Windows.BackdropType)
+	}
+
+	if !options.Hidden {
+		w.show()
+		w.update()
+	}
+	w.setForeground()
 }
 
 func (w *windowsWebviewWindow) center() {
@@ -120,19 +147,27 @@ func (w *windowsWebviewWindow) size() (int, int) {
 	panic("implement me")
 }
 
+func (w *windowsWebviewWindow) setForeground() {
+	w32.SetForegroundWindow(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) update() {
+	w32.UpdateWindow(w.hwnd)
+}
+
 func (w *windowsWebviewWindow) width() int {
-	//TODO implement me
-	panic("implement me")
+	rect := w32.GetWindowRect(w.hwnd)
+	return int(rect.Right - rect.Left)
 }
 
 func (w *windowsWebviewWindow) height() int {
-	//TODO implement me
-	panic("implement me")
+	rect := w32.GetWindowRect(w.hwnd)
+	return int(rect.Bottom - rect.Top)
 }
 
 func (w *windowsWebviewWindow) position() (int, int) {
-	//TODO implement me
-	panic("implement me")
+	rect := w32.GetWindowRect(w.hwnd)
+	return int(rect.Left), int(rect.Right)
 }
 
 func (w *windowsWebviewWindow) destroy() {
@@ -261,8 +296,7 @@ func (w *windowsWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
 }
 
 func (w *windowsWebviewWindow) show() {
-	//TODO implement me
-	panic("implement me")
+	w32.ShowWindow(w.hwnd, w32.SW_SHOW)
 }
 
 func (w *windowsWebviewWindow) hide() {
@@ -293,4 +327,77 @@ func (w *windowsWebviewWindow) openContextMenu(menu *Menu, data *ContextMenuData
 	thisMenu := newMenuImpl(menu)
 	thisMenu.update()
 	//C.windowShowMenu(w.nsWindow, thisMenu.nsMenu, C.int(data.X), C.int(data.Y))
+}
+
+func (w *windowsWebviewWindow) setStyle(b bool, style int) {
+	currentStyle := int(w32.GetWindowLongPtr(w.hwnd, w32.GWL_STYLE))
+	if currentStyle != 0 {
+		if b {
+			currentStyle |= style
+		} else {
+			currentStyle &^= style
+		}
+		w32.SetWindowLongPtr(w.hwnd, w32.GWL_STYLE, uintptr(currentStyle))
+	}
+}
+func (w *windowsWebviewWindow) setExStyle(b bool, style int) {
+	currentStyle := int(w32.GetWindowLongPtr(w.hwnd, w32.GWL_EXSTYLE))
+	if currentStyle != 0 {
+		if b {
+			currentStyle |= style
+		} else {
+			currentStyle &^= style
+		}
+		w32.SetWindowLongPtr(w.hwnd, w32.GWL_EXSTYLE, uintptr(currentStyle))
+	}
+}
+
+func (w *windowsWebviewWindow) setBackdropType(backdropType BackdropType) {
+	if !w32.IsWindowsVersionAtLeast(10, 0, 22621) {
+		var accent = w32.ACCENT_POLICY{
+			AccentState: w32.ACCENT_ENABLE_BLURBEHIND,
+		}
+		var data w32.WINDOWCOMPOSITIONATTRIBDATA
+		data.Attrib = w32.WCA_ACCENT_POLICY
+		data.PvData = w32.PVOID(&accent)
+		data.CbData = w32.SIZE_T(unsafe.Sizeof(accent))
+
+		w32.SetWindowCompositionAttribute(w.hwnd, &data)
+	} else {
+		backdropValue := backdropType
+		// We default to None, but in win32 None = 1 and Auto = 0
+		// So we check if the value given was Auto and set it to 0
+		if backdropType == Auto {
+			backdropValue = None
+		}
+		w32.DwmSetWindowAttribute(w.hwnd, w32.DwmwaSystemBackdropType, w32.LPCVOID(&backdropValue), uint32(unsafe.Sizeof(backdropValue)))
+	}
+}
+
+func (w *windowsWebviewWindow) setIcon(icon w32.HICON) {
+	w32.SendMessage(w.hwnd, w32.BM_SETIMAGE, w32.IMAGE_ICON, uintptr(icon))
+}
+
+func (w *windowsWebviewWindow) disableIcon() {
+
+	// TODO: If frameless, return
+
+	exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE)
+	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, uint32(exStyle|w32.WS_EX_DLGMODALFRAME))
+	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0,
+		uint(
+			w32.SWP_FRAMECHANGED|
+				w32.SWP_NOMOVE|
+				w32.SWP_NOSIZE|
+				w32.SWP_NOZORDER),
+	)
+}
+
+func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (w32.HICON, error) {
+	var err error
+	var result w32.HICON
+	if result = w32.LoadIconWithResourceID(instance, resId); result == 0 {
+		err = errors.New(fmt.Sprintf("Cannot load icon from resource with id %v", resId))
+	}
+	return result, err
 }
