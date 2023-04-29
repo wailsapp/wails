@@ -260,3 +260,15 @@ func newMacEvents() macEvents {
 		WindowFileDraggingExited:                                1145,
 	}
 }
+
+var Windows = newWindowsEvents()
+
+type windowsEvents struct {
+	SystemThemeChanged ApplicationEventType
+}
+
+func newWindowsEvents() windowsEvents {
+	return windowsEvents{
+		SystemThemeChanged: 1146,
+	}
+}

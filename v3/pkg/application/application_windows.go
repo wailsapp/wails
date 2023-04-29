@@ -3,6 +3,7 @@
 package application
 
 import (
+	"github.com/wailsapp/wails/v3/pkg/events"
 	"syscall"
 	"unsafe"
 
@@ -17,8 +18,13 @@ type windowsApp struct {
 
 	instance w32.HINSTANCE
 
+	windowMap map[w32.HWND]*windowsWebviewWindow
+
 	mainThreadID         w32.HANDLE
 	mainThreadWindowHWND w32.HWND
+
+	// system theme
+	isDarkMode bool
 }
 
 func (m *windowsApp) getPrimaryScreen() (*Screen, error) {
@@ -111,28 +117,57 @@ func (m *windowsApp) init() {
 	if ret := w32.RegisterClassEx(&wc); ret == 0 {
 		panic(syscall.GetLastError())
 	}
+
+	m.isDarkMode = w32.IsCurrentlyDarkMode()
 }
 
 func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) uintptr {
-	switch msg {
-	case w32.WM_SIZE:
+
+	// Handle the invoke callback
+	if msg == wmInvokeCallback {
+		m.invokeCallback(wParam, lParam)
 		return 0
-	case w32.WM_CLOSE:
-		w32.PostQuitMessage(0)
-		return 0
-	case wmInvokeCallback:
-		if hwnd == m.mainThreadWindowHWND {
-			m.invokeCallback(wParam, lParam)
-			return 0
-		}
 	}
+	switch msg {
+	case w32.WM_SETTINGCHANGE:
+		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lParam)))
+		if settingChanged == "ImmersiveColorSet" {
+			isDarkMode := w32.IsCurrentlyDarkMode()
+			if isDarkMode != m.isDarkMode {
+				applicationEvents <- uint(events.Windows.SystemThemeChanged)
+				m.isDarkMode = isDarkMode
+			}
+		}
+		return 0
+	}
+
+	if window, ok := m.windowMap[hwnd]; ok {
+		return window.WndProc(msg, wParam, lParam)
+	}
+
+	// Dispatch the message to the appropriate window
+
 	return w32.DefWindowProc(hwnd, msg, wParam, lParam)
+}
+
+func (m *windowsApp) registerWindow(result *windowsWebviewWindow) {
+	m.windowMap[result.hwnd] = result
+}
+
+func (m *windowsApp) unregisterWindow(w *windowsWebviewWindow) {
+	delete(m.windowMap, w.hwnd)
+
+	// If this was the last window...
+	if len(m.windowMap) == 0 {
+		w32.PostQuitMessage(0)
+	}
 }
 
 func newPlatformApp(app *App) *windowsApp {
 	result := &windowsApp{
-		parent:   app,
-		instance: w32.GetModuleHandle(""),
+		parent:    app,
+		instance:  w32.GetModuleHandle(""),
+		windowMap: make(map[w32.HWND]*windowsWebviewWindow),
 	}
 
 	result.init()
