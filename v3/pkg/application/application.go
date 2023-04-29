@@ -1,6 +1,7 @@
 package application
 
 import (
+	"github.com/samber/lo"
 	"log"
 	"net/http"
 	"os"
@@ -23,6 +24,10 @@ func init() {
 	runtime.LockOSThread()
 }
 
+type EventListener struct {
+	callback func()
+}
+
 func New(appOptions Options) *App {
 	if globalApplication != nil {
 		return globalApplication
@@ -32,7 +37,7 @@ func New(appOptions Options) *App {
 
 	result := &App{
 		options:                   appOptions,
-		applicationEventListeners: make(map[uint][]func()),
+		applicationEventListeners: make(map[uint][]*EventListener),
 		systemTrays:               make(map[uint]*SystemTray),
 		log:                       logger.New(appOptions.Logger.CustomLoggers...),
 		contextMenus:              make(map[string]*Menu),
@@ -155,7 +160,7 @@ var webviewRequests = make(chan *webViewAssetRequest)
 
 type App struct {
 	options                       Options
-	applicationEventListeners     map[uint][]func()
+	applicationEventListeners     map[uint][]*EventListener
 	applicationEventListenersLock sync.RWMutex
 
 	// Windows
@@ -216,13 +221,24 @@ func (a *App) deleteWindowByID(id uint) {
 	delete(a.windows, id)
 }
 
-func (a *App) On(eventType events.ApplicationEventType, callback func()) {
+func (a *App) On(eventType events.ApplicationEventType, callback func()) func() {
 	eventID := uint(eventType)
 	a.applicationEventListenersLock.Lock()
 	defer a.applicationEventListenersLock.Unlock()
-	a.applicationEventListeners[eventID] = append(a.applicationEventListeners[eventID], callback)
+	listener := &EventListener{
+		callback: callback,
+	}
+	a.applicationEventListeners[eventID] = append(a.applicationEventListeners[eventID], listener)
 	if a.impl != nil {
 		go a.impl.on(eventID)
+	}
+
+	return func() {
+		// lock the map
+		a.applicationEventListenersLock.Lock()
+		defer a.applicationEventListenersLock.Unlock()
+		// Remove listener
+		a.applicationEventListeners[eventID] = lo.Without(a.applicationEventListeners[eventID], listener)
 	}
 }
 func (a *App) NewWebviewWindow() *WebviewWindow {
@@ -383,7 +399,7 @@ func (a *App) handleApplicationEvent(event uint) {
 		return
 	}
 	for _, listener := range listeners {
-		go listener()
+		go listener.callback()
 	}
 }
 

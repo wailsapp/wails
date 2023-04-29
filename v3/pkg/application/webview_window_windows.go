@@ -140,7 +140,8 @@ func (w *windowsWebviewWindow) _run() {
 	switch options.Windows.Theme {
 	case SystemDefault:
 		w.updateTheme(w32.IsCurrentlyDarkMode())
-		globalApplication.On(events.Windows.SystemThemeChanged, func() {
+		// Setup a listener to respond to theme changes
+		w.parent.onApplicationEvent(events.Windows.SystemThemeChanged, func() {
 			w.updateTheme(w32.IsCurrentlyDarkMode())
 		})
 	case Light:
