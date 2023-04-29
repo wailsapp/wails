@@ -264,11 +264,21 @@ func newMacEvents() macEvents {
 var Windows = newWindowsEvents()
 
 type windowsEvents struct {
-	SystemThemeChanged ApplicationEventType
+	SystemThemeChanged    ApplicationEventType
+	APMPowerStatusChange  ApplicationEventType
+	APMSuspend            ApplicationEventType
+	APMResumeAutomatic    ApplicationEventType
+	APMResumeSuspend      ApplicationEventType
+	APMPowerSettingChange ApplicationEventType
 }
 
 func newWindowsEvents() windowsEvents {
 	return windowsEvents{
-		SystemThemeChanged: 1146,
+		SystemThemeChanged:    1146,
+		APMPowerStatusChange:  1147,
+		APMSuspend:            1148,
+		APMResumeAutomatic:    1149,
+		APMResumeSuspend:      1150,
+		APMPowerSettingChange: 1151,
 	}
 }

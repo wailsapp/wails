@@ -121,3 +121,8 @@ mac:WindowFileDraggingEntered
 mac:WindowFileDraggingPerformed
 mac:WindowFileDraggingExited
 windows:SystemThemeChanged
+windows:APMPowerStatusChange
+windows:APMSuspend
+windows:APMResumeAutomatic
+windows:APMResumeSuspend
+windows:APMPowerSettingChange

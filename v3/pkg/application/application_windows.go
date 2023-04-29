@@ -139,6 +139,20 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 			}
 		}
 		return 0
+	case w32.WM_POWERBROADCAST:
+		switch wParam {
+		case w32.PBT_APMPOWERSTATUSCHANGE:
+			applicationEvents <- uint(events.Windows.APMPowerStatusChange)
+		case w32.PBT_APMSUSPEND:
+			applicationEvents <- uint(events.Windows.APMSuspend)
+		case w32.PBT_APMRESUMEAUTOMATIC:
+			applicationEvents <- uint(events.Windows.APMResumeAutomatic)
+		case w32.PBT_APMRESUMESUSPEND:
+			applicationEvents <- uint(events.Windows.APMResumeSuspend)
+		case w32.PBT_POWERSETTINGCHANGE:
+			applicationEvents <- uint(events.Windows.APMPowerSettingChange)
+		}
+		return 0
 	}
 
 	if window, ok := m.windowMap[hwnd]; ok {
