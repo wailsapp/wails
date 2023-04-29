@@ -25,6 +25,18 @@ func newMacEvents() macEvents {
 	return macEvents{
 $$MACEVENTSVALUES	}
 }
+
+var Windows = newWindowsEvents()
+
+type windowsEvents struct {
+$$WINDOWSEVENTSDECL}
+
+func newWindowsEvents() windowsEvents {
+	return windowsEvents{
+$$WINDOWSEVENTSVALUES	}
+}
+
+
 `
 
 var eventsH = `//go:build darwin
@@ -53,7 +65,11 @@ func main() {
 	applicationDelegateEvents := bytes.NewBufferString("")
 	webviewDelegateEvents := bytes.NewBufferString("")
 
+	windowsEventsDecl := bytes.NewBufferString("")
+	windowsEventsValues := bytes.NewBufferString("")
+
 	var id int
+	var maxMacEvents int
 	var line []byte
 	// Loop over each line in the file
 	for id, line = range bytes.Split(eventNames, []byte{'\n'}) {
@@ -94,6 +110,7 @@ func main() {
 			macEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
 			macEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
 			cHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
+			maxMacEvents = id
 			if ignoreEvent {
 				continue
 			}
@@ -128,15 +145,61 @@ func main() {
 
 `)
 			}
-
+		case "windows":
+			eventType := "ApplicationEventType"
+			if strings.HasPrefix(event, "Window") {
+				eventType = "WindowEventType"
+			}
+			if strings.HasPrefix(event, "WebView") {
+				eventType = "WindowEventType"
+			}
+			windowsEventsDecl.WriteString("\t" + eventTitle + " " + eventType + "\n")
+			windowsEventsValues.WriteString("\t\t" + event + ": " + strconv.Itoa(id) + ",\n")
+			//			cHeaderEvents.WriteString("#define Event" + eventTitle + " " + strconv.Itoa(id) + "\n")
+			//			if ignoreEvent {
+			//				continue
+			//			}
+			//			// Check if this is a window event
+			//			if strings.HasPrefix(event, "Window") {
+			//				windowDelegateEvents.WriteString(`- (void)` + delegateEventFunction + `:(NSNotification *)notification {
+			//    if( hasListeners(Event` + eventTitle + `) ) {
+			//        processWindowEvent(self.windowId, Event` + eventTitle + `);
+			//    }
+			//}
+			//
+			//`)
+			//			}
+			//			// Check if this is a webview event
+			//			if strings.HasPrefix(event, "WebView") {
+			//				webViewFunction := strings.TrimPrefix(event, "WebView")
+			//				webViewFunction = string(bytes.ToLower([]byte{webViewFunction[0]})) + webViewFunction[1:]
+			//				webviewDelegateEvents.WriteString(`- (void)webView:(WKWebView *)webview ` + webViewFunction + `:(WKNavigation *)navigation {
+			//    if( hasListeners(Event` + eventTitle + `) ) {
+			//        processWindowEvent(self.windowId, Event` + eventTitle + `);
+			//    }
+			//}
+			//
+			//`)
+			//			}
+			//			if strings.HasPrefix(event, "Application") {
+			//				applicationDelegateEvents.WriteString(`- (void)` + delegateEventFunction + `:(NSNotification *)notification {
+			//    if( hasListeners(Event` + eventTitle + `) ) {
+			//        processApplicationEvent(Event` + eventTitle + `);
+			//    }
+			//}
+			//
+			//`)
+			//			}
 		}
 	}
 
-	cHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(id-1) + "\n")
+	cHeaderEvents.WriteString("\n#define MAX_EVENTS " + strconv.Itoa(maxMacEvents+1) + "\n")
 
 	// Save the eventsGo template substituting the values and decls
 	templateToWrite := strings.ReplaceAll(eventsGo, "$$MACEVENTSDECL", macEventsDecl.String())
 	templateToWrite = strings.ReplaceAll(templateToWrite, "$$MACEVENTSVALUES", macEventsValues.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSEVENTSDECL", windowsEventsDecl.String())
+	templateToWrite = strings.ReplaceAll(templateToWrite, "$$WINDOWSEVENTSVALUES", windowsEventsValues.String())
 	err = os.WriteFile("../../pkg/events/events.go", []byte(templateToWrite), 0644)
 	if err != nil {
 		panic(err)

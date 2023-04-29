@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/wailsapp/wails/v3/internal/w32"
+	"github.com/wailsapp/wails/v3/pkg/events"
 	"syscall"
 	"unsafe"
 
@@ -107,6 +108,10 @@ func (w *windowsWebviewWindow) _run() {
 		panic("Unable to create window")
 	}
 
+	// Register the window with the application
+	windowsApp := globalApplication.impl.(*windowsApp)
+	windowsApp.registerWindow(w)
+
 	if options.DisableResize {
 		w.setResizable(false)
 	}
@@ -129,12 +134,25 @@ func (w *windowsWebviewWindow) _run() {
 	case BackgroundTypeTranslucent:
 		w.setBackdropType(options.Windows.BackdropType)
 	}
+	w.setForeground()
+
+	// Process the theme
+	switch options.Windows.Theme {
+	case SystemDefault:
+		w.updateTheme(w32.IsCurrentlyDarkMode())
+		globalApplication.On(events.Windows.SystemThemeChanged, func() {
+			w.updateTheme(w32.IsCurrentlyDarkMode())
+		})
+	case Light:
+		w.updateTheme(false)
+	case Dark:
+		w.updateTheme(true)
+	}
 
 	if !options.Hidden {
 		w.show()
 		w.update()
 	}
-	w.setForeground()
 }
 
 func (w *windowsWebviewWindow) center() {
@@ -365,7 +383,7 @@ func (w *windowsWebviewWindow) setBackdropType(backdropType BackdropType) {
 		w32.SetWindowCompositionAttribute(w.hwnd, &data)
 	} else {
 		backdropValue := backdropType
-		// We default to None, but in win32 None = 1 and Auto = 0
+		// We default to None, but in w32 None = 1 and Auto = 0
 		// So we check if the value given was Auto and set it to 0
 		if backdropType == Auto {
 			backdropValue = None
@@ -391,6 +409,65 @@ func (w *windowsWebviewWindow) disableIcon() {
 				w32.SWP_NOSIZE|
 				w32.SWP_NOZORDER),
 	)
+}
+
+func (w *windowsWebviewWindow) updateTheme(isDarkMode bool) {
+
+	if w32.IsCurrentlyHighContrastMode() {
+		return
+	}
+
+	if !w32.SupportsThemes() {
+		return
+	}
+
+	w32.SetTheme(w.hwnd, isDarkMode)
+
+	// Custom theme processing
+	customTheme := w.parent.options.Windows.CustomTheme
+	// Custom theme
+	if w32.SupportsCustomThemes() && customTheme != nil {
+		if w.isActive() {
+			if isDarkMode {
+				w32.SetTitleBarColour(w.hwnd, customTheme.DarkModeTitleBar)
+				w32.SetTitleTextColour(w.hwnd, customTheme.DarkModeTitleText)
+				w32.SetBorderColour(w.hwnd, customTheme.DarkModeBorder)
+			} else {
+				w32.SetTitleBarColour(w.hwnd, customTheme.LightModeTitleBar)
+				w32.SetTitleTextColour(w.hwnd, customTheme.LightModeTitleText)
+				w32.SetBorderColour(w.hwnd, customTheme.LightModeBorder)
+			}
+		} else {
+			if isDarkMode {
+				w32.SetTitleBarColour(w.hwnd, customTheme.DarkModeTitleBarInactive)
+				w32.SetTitleTextColour(w.hwnd, customTheme.DarkModeTitleTextInactive)
+				w32.SetBorderColour(w.hwnd, customTheme.DarkModeBorderInactive)
+			} else {
+				w32.SetTitleBarColour(w.hwnd, customTheme.LightModeTitleBarInactive)
+				w32.SetTitleTextColour(w.hwnd, customTheme.LightModeTitleTextInactive)
+				w32.SetBorderColour(w.hwnd, customTheme.LightModeBorderInactive)
+			}
+		}
+	}
+}
+
+func (w *windowsWebviewWindow) isActive() bool {
+	return w32.GetForegroundWindow() == w.hwnd
+}
+
+func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintptr {
+	switch msg {
+	case w32.WM_SIZE:
+		return 0
+	case w32.WM_CLOSE:
+		w32.PostMessage(w.hwnd, w32.WM_QUIT, 0, 0)
+		// Unregister the window with the application
+		windowsApp := globalApplication.impl.(*windowsApp)
+		windowsApp.unregisterWindow(w)
+		return 0
+	default:
+		return w32.DefWindowProc(w.hwnd, msg, wparam, lparam)
+	}
 }
 
 func NewIconFromResource(instance w32.HINSTANCE, resId uint16) (w32.HICON, error) {

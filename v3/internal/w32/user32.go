@@ -136,6 +136,7 @@ var (
 	procSetWindowsHookEx              = moduser32.NewProc("SetWindowsHookExW")
 	procUnhookWindowsHookEx           = moduser32.NewProc("UnhookWindowsHookEx")
 	procCallNextHookEx                = moduser32.NewProc("CallNextHookEx")
+	procGetForegroundWindow           = moduser32.NewProc("GetForegroundWindow")
 
 	procSystemParametersInfo = moduser32.NewProc("SystemParametersInfoW")
 	procSetClassLong         = moduser32.NewProc("SetClassLongW")
@@ -299,6 +300,11 @@ func HasGetDpiForWindowFunc() bool {
 func GetDpiForWindow(hwnd HWND) UINT {
 	dpi, _, _ := procGetDpiForWindow.Call(hwnd)
 	return uint(dpi)
+}
+
+func GetForegroundWindow() HWND {
+	ret, _, _ := procGetForegroundWindow.Call()
+	return HWND(ret)
 }
 
 func SetWindowCompositionAttribute(hwnd HWND, data *WINDOWCOMPOSITIONATTRIBDATA) bool {
