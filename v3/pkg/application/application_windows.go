@@ -128,6 +128,15 @@ func (m *windowsApp) wndProc(hwnd w32.HWND, msg uint32, wParam, lParam uintptr) 
 		m.invokeCallback(wParam, lParam)
 		return 0
 	}
+
+	// If the WndProcInterceptor is set in options, pass the message on
+	if m.parent.options.Windows.WndProcInterceptor != nil {
+		returnValue, shouldReturn := m.parent.options.Windows.WndProcInterceptor(hwnd, msg, wParam, lParam)
+		if shouldReturn {
+			return returnValue
+		}
+	}
+
 	switch msg {
 	case w32.WM_SETTINGCHANGE:
 		settingChanged := w32.UTF16PtrToString((*uint16)(unsafe.Pointer(lParam)))

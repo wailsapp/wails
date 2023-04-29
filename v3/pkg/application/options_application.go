@@ -12,6 +12,7 @@ type Options struct {
 	Description string
 	Icon        []byte
 	Mac         MacOptions
+	Windows     WindowsApplicationOptions
 	Bind        []any
 	Logger      struct {
 		Silent        bool
