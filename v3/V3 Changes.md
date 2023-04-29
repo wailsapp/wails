@@ -202,3 +202,17 @@ On Windows, if the `BackgroundType` is set to `BackgroundTypeTranslucent`, the t
 - `Tabbed` - The window will use the tabbed effect
 
 
+## Windows Application Options
+
+### WndProcInterceptor
+
+If this is set, the WndProc will be intercepted and the function will be called. This allows you to handle Windows 
+messages directly. The function should have the following signature:
+
+```go
+func(hwnd uintptr, msg uint32, wParam, lParam uintptr) (returnValue uintptr, shouldReturn)
+```
+
+The `shouldReturn` value should be set to `true` if the returnValue should be returned by the main wndProc method. 
+If it is set to `false`, the return value will be ignored and the message will continue to be processed by the main 
+wndProc method.

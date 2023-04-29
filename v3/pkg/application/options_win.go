@@ -1,5 +1,13 @@
 package application
 
+type WindowsApplicationOptions struct {
+	// WndProcInterceptor is a function that will be called for every message sent in the application.
+	// Use this to hook into the main message loop. This is useful for handling custom window messages.
+	// If `shouldReturn` is `true` then `returnCode` will be returned by the main message loop.
+	// If `shouldReturn` is `false` then returnCode will be ignored and the message will be processed by the main message loop.
+	WndProcInterceptor func(hwnd uintptr, msg uint32, wParam, lParam uintptr) (returnCode uintptr, shouldReturn bool)
+}
+
 type BackdropType int32
 
 const (
