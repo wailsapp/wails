@@ -2,6 +2,7 @@ package application
 
 import (
 	"fmt"
+	"github.com/samber/lo"
 	"sync"
 	"time"
 
@@ -61,17 +62,25 @@ type (
 	}
 )
 
+type WindowEventListener struct {
+	callback func(ctx *WindowEventContext)
+}
+
 type WebviewWindow struct {
 	options  *WebviewWindowOptions
 	impl     webviewWindowImpl
 	implLock sync.RWMutex
 	id       uint
 
-	eventListeners     map[uint][]func(ctx *WindowEventContext)
+	eventListeners     map[uint][]*WindowEventListener
 	eventListenersLock sync.RWMutex
 
 	contextMenus     map[string]*Menu
 	contextMenusLock sync.RWMutex
+
+	// A map of listener cancellation functions
+	cancellersLock sync.RWMutex
+	cancellers     []func()
 }
 
 var windowID uint
@@ -82,6 +91,13 @@ func getWindowID() uint {
 	defer windowIDLock.Unlock()
 	windowID++
 	return windowID
+}
+
+// Use onApplicationEvent to register a callback for an application event from a window.
+// This will handle tidying up the callback when the window is destroyed
+func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType, callback func()) {
+	cancelFn := globalApplication.On(eventType, callback)
+	w.addCancellationFunction(cancelFn)
 }
 
 func NewWindow(options *WebviewWindowOptions) *WebviewWindow {
@@ -98,11 +114,17 @@ func NewWindow(options *WebviewWindowOptions) *WebviewWindow {
 	result := &WebviewWindow{
 		id:             getWindowID(),
 		options:        options,
-		eventListeners: make(map[uint][]func(ctx *WindowEventContext)),
+		eventListeners: make(map[uint][]*WindowEventListener),
 		contextMenus:   make(map[string]*Menu),
 	}
 
 	return result
+}
+
+func (w *WebviewWindow) addCancellationFunction(canceller func()) {
+	w.cancellersLock.Lock()
+	defer w.cancellersLock.Unlock()
+	w.cancellers = append(w.cancellers, canceller)
 }
 
 func (w *WebviewWindow) SetTitle(title string) *WebviewWindow {
@@ -371,20 +393,30 @@ func (w *WebviewWindow) Center() {
 	w.impl.center()
 }
 
-func (w *WebviewWindow) On(eventType events.WindowEventType, callback func(ctx *WindowEventContext)) {
+func (w *WebviewWindow) On(eventType events.WindowEventType, callback func(ctx *WindowEventContext)) func() {
 	eventID := uint(eventType)
 	w.eventListenersLock.Lock()
 	defer w.eventListenersLock.Unlock()
-	w.eventListeners[eventID] = append(w.eventListeners[eventID], callback)
+	windowEventListener := &WindowEventListener{
+		callback: callback,
+	}
+	w.eventListeners[eventID] = append(w.eventListeners[eventID], windowEventListener)
 	if w.impl != nil {
 		w.impl.on(eventID)
 	}
+
+	return func() {
+		w.eventListenersLock.Lock()
+		defer w.eventListenersLock.Unlock()
+		w.eventListeners[eventID] = lo.Without(w.eventListeners[eventID], windowEventListener)
+	}
+
 }
 
 func (w *WebviewWindow) handleWindowEvent(id uint) {
 	w.eventListenersLock.RLock()
-	for _, callback := range w.eventListeners[id] {
-		go callback(blankWindowEventContext)
+	for _, listener := range w.eventListeners[id] {
+		go listener.callback(blankWindowEventContext)
 	}
 	w.eventListenersLock.RUnlock()
 }
@@ -415,6 +447,10 @@ func (w *WebviewWindow) Position() (int, int) {
 func (w *WebviewWindow) Destroy() {
 	if w.impl == nil {
 		return
+	}
+	// Cancel the callbacks
+	for _, cancelFunc := range w.cancellers {
+		cancelFunc()
 	}
 	w.impl.destroy()
 }
@@ -631,7 +667,7 @@ func (w *WebviewWindow) handleDragAndDropMessage(event *dragAndDropMessage) {
 	ctx := newWindowEventContext()
 	ctx.setDroppedFiles(event.filenames)
 	for _, listener := range w.eventListeners[uint(events.FilesDropped)] {
-		listener(ctx)
+		listener.callback(ctx)
 	}
 }
 
