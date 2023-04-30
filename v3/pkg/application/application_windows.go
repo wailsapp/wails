@@ -4,11 +4,11 @@ package application
 
 import (
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/w32"
 	"syscall"
 	"unsafe"
 
 	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v3/internal/w32"
 )
 
 var windowClassName = lo.Must(syscall.UTF16PtrFromString("WailsWebviewWindow"))
