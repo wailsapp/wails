@@ -1,6 +1,7 @@
 package application
 
 import (
+	"errors"
 	"fmt"
 	"github.com/samber/lo"
 	"sync"
@@ -59,6 +60,7 @@ type (
 		getScreen() (*Screen, error)
 		setFrameless(bool)
 		openContextMenu(menu *Menu, data *ContextMenuData)
+		nativeWindowHandle() uintptr
 	}
 )
 
@@ -692,4 +694,11 @@ func (w *WebviewWindow) RegisterContextMenu(name string, menu *Menu) {
 	w.contextMenusLock.Lock()
 	defer w.contextMenusLock.Unlock()
 	w.contextMenus[name] = menu
+}
+
+func (w *WebviewWindow) NativeWindowHandle() (uintptr, error) {
+	if w.impl == nil {
+		return 0, errors.New("native handle unavailable as window is not running")
+	}
+	return w.impl.nativeWindowHandle(), nil
 }
