@@ -135,3 +135,39 @@ func MustUTF16FromString(input string) []uint16 {
 	}
 	return ret
 }
+
+func CenterWindow(hwnd HWND) {
+	windowInfo := getWindowInfo(hwnd)
+	frameless := windowInfo.IsPopup()
+
+	info := getMonitorInfo(hwnd)
+	workRect := info.RcWork
+	screenMiddleW := workRect.Left + (workRect.Right-workRect.Left)/2
+	screenMiddleH := workRect.Top + (workRect.Bottom-workRect.Top)/2
+	var winRect *RECT
+	if !frameless {
+		winRect = GetWindowRect(hwnd)
+	} else {
+		winRect = GetClientRect(hwnd)
+	}
+	winWidth := winRect.Right - winRect.Left
+	winHeight := winRect.Bottom - winRect.Top
+	windowX := screenMiddleW - (winWidth / 2)
+	windowY := screenMiddleH - (winHeight / 2)
+	SetWindowPos(hwnd, HWND_TOP, int(windowX), int(windowY), int(winWidth), int(winHeight), SWP_NOSIZE)
+}
+
+func getWindowInfo(hwnd HWND) *WINDOWINFO {
+	var info WINDOWINFO
+	info.CbSize = uint32(unsafe.Sizeof(info))
+	GetWindowInfo(hwnd, &info)
+	return &info
+}
+
+func getMonitorInfo(hwnd HWND) *MONITORINFO {
+	currentMonitor := MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST)
+	var info MONITORINFO
+	info.CbSize = uint32(unsafe.Sizeof(info))
+	GetMonitorInfo(currentMonitor, &info)
+	return &info
+}
