@@ -5,8 +5,8 @@ package application
 import (
 	"errors"
 	"fmt"
-	"github.com/wailsapp/wails/v3/internal/w32"
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/w32"
 	"syscall"
 	"unsafe"
 

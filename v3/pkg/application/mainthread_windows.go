@@ -3,13 +3,13 @@
 package application
 
 import (
+	"github.com/wailsapp/wails/v3/pkg/w32"
 	"runtime"
 	"sort"
 	"syscall"
 	"unsafe"
 
 	"github.com/samber/lo"
-	"github.com/wailsapp/wails/v3/internal/w32"
 )
 
 var (
