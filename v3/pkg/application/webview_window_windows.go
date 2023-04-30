@@ -21,6 +21,10 @@ type windowsWebviewWindow struct {
 	hwnd       w32.HWND
 }
 
+func (w *windowsWebviewWindow) nativeWindowHandle() uintptr {
+	return w.hwnd
+}
+
 func (w *windowsWebviewWindow) setTitle(title string) {
 	//TODO implement me
 	panic("implement me")
