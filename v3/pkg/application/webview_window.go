@@ -22,7 +22,6 @@ type (
 		setMinSize(width, height int)
 		setMaxSize(width, height int)
 		execJS(js string)
-		restore()
 		setBackgroundColour(color RGBA)
 		run()
 		center()
@@ -53,6 +52,7 @@ type (
 		isMinimised() bool
 		isMaximised() bool
 		isFullscreen() bool
+		isNormal() bool
 		disableSizeConstraints()
 		setFullscreenButtonEnabled(enabled bool)
 		show()
@@ -102,6 +102,7 @@ func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType
 	w.addCancellationFunction(cancelFn)
 }
 
+// NewWindow creates a new window with the given options
 func NewWindow(options *WebviewWindowOptions) *WebviewWindow {
 	if options.Width == 0 {
 		options.Width = 800
@@ -129,6 +130,7 @@ func (w *WebviewWindow) addCancellationFunction(canceller func()) {
 	w.cancellers = append(w.cancellers, canceller)
 }
 
+// SetTitle sets the title of the window
 func (w *WebviewWindow) SetTitle(title string) *WebviewWindow {
 	w.implLock.RLock()
 	defer w.implLock.RUnlock()
@@ -139,10 +141,12 @@ func (w *WebviewWindow) SetTitle(title string) *WebviewWindow {
 	return w
 }
 
+// Name returns the name of the window
 func (w *WebviewWindow) Name() string {
 	return w.options.Name
 }
 
+// SetSize sets the size of the window
 func (w *WebviewWindow) SetSize(width, height int) *WebviewWindow {
 	// Don't set size if fullscreen
 	if w.IsFullscreen() {
@@ -193,6 +197,7 @@ func (w *WebviewWindow) run() {
 	w.impl.run()
 }
 
+// SetAlwaysOnTop sets the window to be always on top.
 func (w *WebviewWindow) SetAlwaysOnTop(b bool) *WebviewWindow {
 	w.options.AlwaysOnTop = b
 	if w.impl != nil {
@@ -201,6 +206,7 @@ func (w *WebviewWindow) SetAlwaysOnTop(b bool) *WebviewWindow {
 	return w
 }
 
+// Show shows the window.
 func (w *WebviewWindow) Show() *WebviewWindow {
 	if globalApplication.impl == nil {
 		return w
@@ -212,6 +218,8 @@ func (w *WebviewWindow) Show() *WebviewWindow {
 	w.impl.show()
 	return w
 }
+
+// Hide hides the window.
 func (w *WebviewWindow) Hide() *WebviewWindow {
 	w.options.Hidden = true
 	if w.impl != nil {
@@ -228,6 +236,7 @@ func (w *WebviewWindow) SetURL(s string) *WebviewWindow {
 	return w
 }
 
+// SetZoom sets the zoom level of the window.
 func (w *WebviewWindow) SetZoom(magnification float64) *WebviewWindow {
 	w.options.Zoom = magnification
 	if w.impl != nil {
@@ -236,6 +245,7 @@ func (w *WebviewWindow) SetZoom(magnification float64) *WebviewWindow {
 	return w
 }
 
+// GetZoom returns the current zoom level of the window.
 func (w *WebviewWindow) GetZoom() float64 {
 	if w.impl != nil {
 		return w.impl.getZoom()
@@ -243,6 +253,7 @@ func (w *WebviewWindow) GetZoom() float64 {
 	return 1
 }
 
+// SetResizable sets whether the window is resizable.
 func (w *WebviewWindow) SetResizable(b bool) *WebviewWindow {
 	w.options.DisableResize = !b
 	if w.impl != nil {
@@ -251,10 +262,12 @@ func (w *WebviewWindow) SetResizable(b bool) *WebviewWindow {
 	return w
 }
 
+// Resizable returns true if the window is resizable.
 func (w *WebviewWindow) Resizable() bool {
 	return !w.options.DisableResize
 }
 
+// SetMinSize sets the minimum size of the window.
 func (w *WebviewWindow) SetMinSize(minWidth, minHeight int) *WebviewWindow {
 	w.options.MinWidth = minWidth
 	w.options.MinHeight = minHeight
@@ -282,6 +295,7 @@ func (w *WebviewWindow) SetMinSize(minWidth, minHeight int) *WebviewWindow {
 	return w
 }
 
+// SetMaxSize sets the maximum size of the window.
 func (w *WebviewWindow) SetMaxSize(maxWidth, maxHeight int) *WebviewWindow {
 	w.options.MaxWidth = maxWidth
 	w.options.MaxHeight = maxHeight
@@ -309,6 +323,7 @@ func (w *WebviewWindow) SetMaxSize(maxWidth, maxHeight int) *WebviewWindow {
 	return w
 }
 
+// ExecJS executes the given javascript in the context of the window.
 func (w *WebviewWindow) ExecJS(js string) {
 	if w.impl == nil {
 		return
@@ -316,6 +331,7 @@ func (w *WebviewWindow) ExecJS(js string) {
 	w.impl.execJS(js)
 }
 
+// Fullscreen sets the window to fullscreen mode. Min/Max size constraints are disabled.
 func (w *WebviewWindow) Fullscreen() *WebviewWindow {
 	if w.impl == nil {
 		w.options.StartState = WindowStateFullscreen
@@ -370,6 +386,7 @@ func (w *WebviewWindow) IsFullscreen() bool {
 	return w.impl.isFullscreen()
 }
 
+// SetBackgroundColour sets the background colour of the window
 func (w *WebviewWindow) SetBackgroundColour(colour RGBA) *WebviewWindow {
 	w.options.BackgroundColour = colour
 	if w.impl != nil {
@@ -388,6 +405,7 @@ func (w *WebviewWindow) handleMessage(message string) {
 
 }
 
+// Center centers the window on the screen
 func (w *WebviewWindow) Center() {
 	if w.impl == nil {
 		return
@@ -395,6 +413,7 @@ func (w *WebviewWindow) Center() {
 	w.impl.center()
 }
 
+// On registers a callback for the given window event
 func (w *WebviewWindow) On(eventType events.WindowEventType, callback func(ctx *WindowEventContext)) func() {
 	eventID := uint(eventType)
 	w.eventListenersLock.Lock()
@@ -423,6 +442,7 @@ func (w *WebviewWindow) handleWindowEvent(id uint) {
 	w.eventListenersLock.RUnlock()
 }
 
+// Width returns the width of the window
 func (w *WebviewWindow) Width() int {
 	if w.impl == nil {
 		return 0
@@ -430,6 +450,7 @@ func (w *WebviewWindow) Width() int {
 	return w.impl.width()
 }
 
+// Height returns the height of the window
 func (w *WebviewWindow) Height() int {
 	if w.impl == nil {
 		return 0
@@ -437,6 +458,7 @@ func (w *WebviewWindow) Height() int {
 	return w.impl.height()
 }
 
+// Position returns the position of the window
 func (w *WebviewWindow) Position() (int, int) {
 	w.implLock.RLock()
 	defer w.implLock.RUnlock()
@@ -457,6 +479,7 @@ func (w *WebviewWindow) Destroy() {
 	w.impl.destroy()
 }
 
+// Reload reloads the page assets
 func (w *WebviewWindow) Reload() {
 	if w.impl == nil {
 		return
@@ -464,6 +487,7 @@ func (w *WebviewWindow) Reload() {
 	w.impl.reload()
 }
 
+// ForceReload forces the window to reload the page assets
 func (w *WebviewWindow) ForceReload() {
 	if w.impl == nil {
 		return
@@ -471,6 +495,7 @@ func (w *WebviewWindow) ForceReload() {
 	w.impl.forceReload()
 }
 
+// ToggleFullscreen toggles the window between fullscreen and normal
 func (w *WebviewWindow) ToggleFullscreen() {
 	if w.impl == nil {
 		return
@@ -489,6 +514,7 @@ func (w *WebviewWindow) ToggleDevTools() {
 	w.impl.toggleDevTools()
 }
 
+// ZoomReset resets the zoom level of the webview content to 100%
 func (w *WebviewWindow) ZoomReset() *WebviewWindow {
 	if w.impl != nil {
 		w.impl.zoomReset()
@@ -497,6 +523,7 @@ func (w *WebviewWindow) ZoomReset() *WebviewWindow {
 
 }
 
+// ZoomIn increases the zoom level of the webview content
 func (w *WebviewWindow) ZoomIn() {
 	if w.impl == nil {
 		return
@@ -504,6 +531,7 @@ func (w *WebviewWindow) ZoomIn() {
 	w.impl.zoomIn()
 }
 
+// ZoomOut decreases the zoom level of the webview content
 func (w *WebviewWindow) ZoomOut() {
 	if w.impl == nil {
 		return
@@ -511,18 +539,12 @@ func (w *WebviewWindow) ZoomOut() {
 	w.impl.zoomOut()
 }
 
+// Close closes the window
 func (w *WebviewWindow) Close() {
 	if w.impl == nil {
 		return
 	}
 	w.impl.close()
-}
-
-func (w *WebviewWindow) Minimize() {
-	if w.impl == nil {
-		return
-	}
-	w.impl.minimise()
 }
 
 func (w *WebviewWindow) Zoom() {
@@ -532,6 +554,7 @@ func (w *WebviewWindow) Zoom() {
 	w.impl.zoom()
 }
 
+// SetHTML sets the HTML of the window to the given html string.
 func (w *WebviewWindow) SetHTML(html string) *WebviewWindow {
 	w.options.HTML = html
 	if w.impl != nil {
@@ -540,6 +563,7 @@ func (w *WebviewWindow) SetHTML(html string) *WebviewWindow {
 	return w
 }
 
+// SetPosition sets the position of the window.
 func (w *WebviewWindow) SetPosition(x, y int) *WebviewWindow {
 	w.options.X = x
 	w.options.Y = y
@@ -549,6 +573,7 @@ func (w *WebviewWindow) SetPosition(x, y int) *WebviewWindow {
 	return w
 }
 
+// Minimise minimises the window.
 func (w *WebviewWindow) Minimise() *WebviewWindow {
 	if w.impl == nil {
 		w.options.StartState = WindowStateMinimised
@@ -560,6 +585,7 @@ func (w *WebviewWindow) Minimise() *WebviewWindow {
 	return w
 }
 
+// Maximise maximises the window. Min/Max size constraints are disabled.
 func (w *WebviewWindow) Maximise() *WebviewWindow {
 	if w.impl == nil {
 		w.options.StartState = WindowStateMaximised
@@ -572,29 +598,39 @@ func (w *WebviewWindow) Maximise() *WebviewWindow {
 	return w
 }
 
+// UnMinimise un-minimises the window. Min/Max size constraints are re-enabled.
 func (w *WebviewWindow) UnMinimise() {
 	if w.impl == nil {
 		return
 	}
-	w.impl.unminimise()
+	if w.IsMinimised() {
+		w.impl.unminimise()
+	}
 }
 
+// UnMaximise un-maximises the window.
 func (w *WebviewWindow) UnMaximise() {
 	if w.impl == nil {
 		return
 	}
-	w.enableSizeConstraints()
-	w.impl.unmaximise()
+	if w.IsMaximised() {
+		w.enableSizeConstraints()
+		w.impl.unmaximise()
+	}
 }
 
+// UnFullscreen un-fullscreens the window.
 func (w *WebviewWindow) UnFullscreen() {
 	if w.impl == nil {
 		return
 	}
-	w.enableSizeConstraints()
-	w.impl.unfullscreen()
+	if w.IsFullscreen() {
+		w.enableSizeConstraints()
+		w.impl.unfullscreen()
+	}
 }
 
+// Restore restores the window to its previous state if it was previously minimised, maximised or fullscreen.
 func (w *WebviewWindow) Restore() {
 	if w.impl == nil {
 		return
@@ -612,18 +648,27 @@ func (w *WebviewWindow) disableSizeConstraints() {
 	if w.impl == nil {
 		return
 	}
-	w.impl.setMinSize(0, 0)
-	w.impl.setMaxSize(0, 0)
+	if w.options.MinWidth > 0 && w.options.MinHeight > 0 {
+		w.impl.setMinSize(0, 0)
+	}
+	if w.options.MaxWidth > 0 && w.options.MaxHeight > 0 {
+		w.impl.setMaxSize(0, 0)
+	}
 }
 
 func (w *WebviewWindow) enableSizeConstraints() {
 	if w.impl == nil {
 		return
 	}
-	w.SetMinSize(w.options.MinWidth, w.options.MinHeight)
-	w.SetMaxSize(w.options.MaxWidth, w.options.MaxHeight)
+	if w.options.MinWidth > 0 && w.options.MinHeight > 0 {
+		w.SetMinSize(w.options.MinWidth, w.options.MinHeight)
+	}
+	if w.options.MaxWidth > 0 && w.options.MaxHeight > 0 {
+		w.SetMaxSize(w.options.MaxWidth, w.options.MaxHeight)
+	}
 }
 
+// GetScreen returns the screen that the window is on
 func (w *WebviewWindow) GetScreen() (*Screen, error) {
 	if w.impl == nil {
 		return nil, nil
@@ -631,6 +676,7 @@ func (w *WebviewWindow) GetScreen() (*Screen, error) {
 	return w.impl.getScreen()
 }
 
+// SetFrameless removes the window frame and title bar
 func (w *WebviewWindow) SetFrameless(frameless bool) *WebviewWindow {
 	w.options.Frameless = frameless
 	if w.impl != nil {
@@ -690,12 +736,14 @@ func (w *WebviewWindow) openContextMenu(data *ContextMenuData) {
 	w.impl.openContextMenu(menu, data)
 }
 
+// RegisterContextMenu registers a context menu and assigns it the given name.
 func (w *WebviewWindow) RegisterContextMenu(name string, menu *Menu) {
 	w.contextMenusLock.Lock()
 	defer w.contextMenusLock.Unlock()
 	w.contextMenus[name] = menu
 }
 
+// NativeWindowHandle returns the platform native window handle for the window.
 func (w *WebviewWindow) NativeWindowHandle() (uintptr, error) {
 	if w.impl == nil {
 		return 0, errors.New("native handle unavailable as window is not running")

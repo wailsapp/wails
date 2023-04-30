@@ -26,12 +26,12 @@ func (w *windowsWebviewWindow) nativeWindowHandle() uintptr {
 }
 
 func (w *windowsWebviewWindow) setTitle(title string) {
-	//TODO implement me
-	panic("implement me")
+	w32.SetWindowText(w.hwnd, title)
 }
 
 func (w *windowsWebviewWindow) setSize(width, height int) {
 	x, y := w.position()
+	// TODO: Take scaling/DPI into consideration
 	w32.MoveWindow(w.hwnd, x, y, width, height, true)
 }
 
@@ -67,11 +67,6 @@ func (w *windowsWebviewWindow) setMaxSize(width, height int) {
 }
 
 func (w *windowsWebviewWindow) execJS(js string) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (w *windowsWebviewWindow) restore() {
 	//TODO implement me
 	panic("implement me")
 }
@@ -161,8 +156,7 @@ func (w *windowsWebviewWindow) _run() {
 }
 
 func (w *windowsWebviewWindow) center() {
-	//TODO implement me
-	panic("implement me")
+	w32.CenterWindow(w.hwnd)
 }
 
 func (w *windowsWebviewWindow) size() (int, int) {
@@ -264,23 +258,29 @@ func (w *windowsWebviewWindow) on(eventID uint) {
 }
 
 func (w *windowsWebviewWindow) minimise() {
-	//TODO implement me
-	panic("implement me")
+	globalApplication.dispatchOnMainThread(func() {
+		w32.ShowWindow(w.hwnd, w32.SW_MINIMIZE)
+	})
 }
 
 func (w *windowsWebviewWindow) unminimise() {
-	//TODO implement me
-	panic("implement me")
+	w.restore()
 }
 
 func (w *windowsWebviewWindow) maximise() {
-	//TODO implement me
-	panic("implement me")
+	globalApplication.dispatchOnMainThread(func() {
+		w32.ShowWindow(w.hwnd, w32.SW_MAXIMIZE)
+	})
 }
 
 func (w *windowsWebviewWindow) unmaximise() {
-	//TODO implement me
-	panic("implement me")
+	w.restore()
+}
+
+func (w *windowsWebviewWindow) restore() {
+	globalApplication.dispatchOnMainThread(func() {
+		w32.ShowWindow(w.hwnd, w32.SW_RESTORE)
+	})
 }
 
 func (w *windowsWebviewWindow) fullscreen() {
@@ -294,18 +294,22 @@ func (w *windowsWebviewWindow) unfullscreen() {
 }
 
 func (w *windowsWebviewWindow) isMinimised() bool {
-	//TODO implement me
-	panic("implement me")
+	style := uint32(w32.GetWindowLong(w.hwnd, w32.GWL_STYLE))
+	return style&w32.WS_MINIMIZE != 0
 }
 
 func (w *windowsWebviewWindow) isMaximised() bool {
-	//TODO implement me
-	panic("implement me")
+	style := uint32(w32.GetWindowLong(w.hwnd, w32.GWL_STYLE))
+	return style&w32.WS_MAXIMIZE != 0
 }
 
 func (w *windowsWebviewWindow) isFullscreen() bool {
 	//TODO implement me
 	panic("implement me")
+}
+
+func (w *windowsWebviewWindow) isNormal() bool {
+	return !w.isMinimised() && !w.isMaximised() && !w.isFullscreen()
 }
 
 func (w *windowsWebviewWindow) disableSizeConstraints() {
@@ -319,12 +323,15 @@ func (w *windowsWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
 }
 
 func (w *windowsWebviewWindow) show() {
-	w32.ShowWindow(w.hwnd, w32.SW_SHOW)
+	globalApplication.dispatchOnMainThread(func() {
+		w32.ShowWindow(w.hwnd, w32.SW_SHOW)
+	})
 }
 
 func (w *windowsWebviewWindow) hide() {
-	//TODO implement me
-	panic("implement me")
+	globalApplication.dispatchOnMainThread(func() {
+		w32.ShowWindow(w.hwnd, w32.SW_HIDE)
+	})
 }
 
 func (w *windowsWebviewWindow) getScreen() (*Screen, error) {
@@ -404,7 +411,6 @@ func (w *windowsWebviewWindow) setIcon(icon w32.HICON) {
 func (w *windowsWebviewWindow) disableIcon() {
 
 	// TODO: If frameless, return
-
 	exStyle := w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE)
 	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, uint32(exStyle|w32.WS_EX_DLGMODALFRAME))
 	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0,
