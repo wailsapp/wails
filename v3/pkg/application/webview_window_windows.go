@@ -190,8 +190,8 @@ func (w *windowsWebviewWindow) enableSizeConstraints() {
 }
 
 func (w *windowsWebviewWindow) size() (int, int) {
-	//TODO implement me
-	panic("implement me")
+	rect := w32.GetWindowRect(w.hwnd)
+	return int(rect.Right - rect.Left), int(rect.Bottom - rect.Top)
 }
 
 func (w *windowsWebviewWindow) setForeground() {

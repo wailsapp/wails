@@ -614,3 +614,35 @@ func (a *App) GetWindowByName(name string) *WebviewWindow {
 	}
 	return nil
 }
+
+func invokeSync(fn func()) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	globalApplication.dispatchOnMainThread(func() {
+		fn()
+		wg.Done()
+	})
+	wg.Wait()
+}
+
+func invokeSyncWithResult[T any](fn func() T) (res T) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	globalApplication.dispatchOnMainThread(func() {
+		res = fn()
+		wg.Done()
+	})
+	wg.Wait()
+	return res
+}
+
+func invokeSyncWithResultAndError[T any](fn func() (T, error)) (res T, err error) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	globalApplication.dispatchOnMainThread(func() {
+		res, err = fn()
+		wg.Done()
+	})
+	wg.Wait()
+	return res, err
+}
