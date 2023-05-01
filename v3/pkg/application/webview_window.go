@@ -69,7 +69,7 @@ type WindowEventListener struct {
 }
 
 type WebviewWindow struct {
-	options  *WebviewWindowOptions
+	options  WebviewWindowOptions
 	impl     webviewWindowImpl
 	implLock sync.RWMutex
 	id       uint
@@ -103,7 +103,7 @@ func (w *WebviewWindow) onApplicationEvent(eventType events.ApplicationEventType
 }
 
 // NewWindow creates a new window with the given options
-func NewWindow(options *WebviewWindowOptions) *WebviewWindow {
+func NewWindow(options WebviewWindowOptions) *WebviewWindow {
 	if options.Width == 0 {
 		options.Width = 800
 	}

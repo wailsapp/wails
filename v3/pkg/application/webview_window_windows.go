@@ -17,9 +17,11 @@ type windowsWebviewWindow struct {
 	parent     *WebviewWindow
 	hwnd       w32.HWND
 
-	// Size Restrictions
-	minWidth, minHeight int
-	maxWidth, maxHeight int
+	// Fullscreen flags
+	isCurrentlyFullscreen   bool
+	previousWindowStyle     uint32
+	previousWindowExStyle   uint32
+	previousWindowPlacement w32.WINDOWPLACEMENT
 }
 
 func (w *windowsWebviewWindow) nativeWindowHandle() uintptr {
@@ -37,13 +39,11 @@ func (w *windowsWebviewWindow) setSize(width, height int) {
 }
 
 func (w *windowsWebviewWindow) setAlwaysOnTop(alwaysOnTop bool) {
-	globalApplication.dispatchOnMainThread(func() {
-		position := w32.HWND_NOTOPMOST
-		if alwaysOnTop {
-			position = w32.HWND_TOPMOST
-		}
-		w32.SetWindowPos(w.hwnd, position, 0, 0, 0, 0, uint(w32.SWP_NOMOVE|w32.SWP_NOSIZE))
-	})
+	position := w32.HWND_NOTOPMOST
+	if alwaysOnTop {
+		position = w32.HWND_TOPMOST
+	}
+	w32.SetWindowPos(w.hwnd, position, 0, 0, 0, 0, uint(w32.SWP_NOMOVE|w32.SWP_NOSIZE))
 }
 
 func (w *windowsWebviewWindow) setURL(url string) {
@@ -52,19 +52,17 @@ func (w *windowsWebviewWindow) setURL(url string) {
 }
 
 func (w *windowsWebviewWindow) setResizable(resizable bool) {
-	globalApplication.dispatchOnMainThread(func() {
-		w.setStyle(resizable, w32.WS_THICKFRAME)
-	})
+	w.setStyle(resizable, w32.WS_THICKFRAME)
 }
 
 func (w *windowsWebviewWindow) setMinSize(width, height int) {
-	w.minWidth = width
-	w.minHeight = height
+	w.parent.options.MinWidth = width
+	w.parent.options.MinHeight = height
 }
 
 func (w *windowsWebviewWindow) setMaxSize(width, height int) {
-	w.maxWidth = width
-	w.maxHeight = height
+	w.parent.options.MaxWidth = width
+	w.parent.options.MaxHeight = height
 }
 
 func (w *windowsWebviewWindow) execJS(js string) {
@@ -80,14 +78,13 @@ func (w *windowsWebviewWindow) run() {
 	globalApplication.dispatchOnMainThread(w._run)
 }
 
+func (w *windowsWebviewWindow) framelessWithDecorations() bool {
+	return w.parent.options.Frameless && !w.parent.options.Windows.DisableFramelessWindowDecorations
+}
+
 func (w *windowsWebviewWindow) _run() {
 
-	// Copy options
 	options := w.parent.options
-	w.minWidth = options.MinWidth
-	w.minHeight = options.MinHeight
-	w.maxWidth = options.MaxWidth
-	w.maxHeight = options.MaxHeight
 
 	var exStyle uint
 	exStyle = w32.WS_EX_CONTROLPARENT | w32.WS_EX_APPWINDOW
@@ -119,9 +116,7 @@ func (w *windowsWebviewWindow) _run() {
 	windowsApp := globalApplication.impl.(*windowsApp)
 	windowsApp.registerWindow(w)
 
-	if options.DisableResize {
-		w.setResizable(false)
-	}
+	w.setResizable(!options.DisableResize)
 
 	// Icon
 	if !options.Windows.DisableIcon {
@@ -141,7 +136,6 @@ func (w *windowsWebviewWindow) _run() {
 	case BackgroundTypeTranslucent:
 		w.setBackdropType(options.Windows.BackdropType)
 	}
-	w.setForeground()
 
 	// Process the theme
 	switch options.Windows.Theme {
@@ -156,6 +150,20 @@ func (w *windowsWebviewWindow) _run() {
 		w.updateTheme(true)
 	}
 
+	// Process StartState
+	switch options.StartState {
+	case WindowStateMaximised:
+		if w.parent.Resizable() {
+			w.maximise()
+		}
+	case WindowStateMinimised:
+		w.minimise()
+	case WindowStateFullscreen:
+		w.fullscreen()
+	}
+
+	w.setForeground()
+
 	if !options.Hidden {
 		w.show()
 		w.update()
@@ -164,6 +172,21 @@ func (w *windowsWebviewWindow) _run() {
 
 func (w *windowsWebviewWindow) center() {
 	w32.CenterWindow(w.hwnd)
+}
+
+func (w *windowsWebviewWindow) disableSizeConstraints() {
+	w.setMaxSize(0, 0)
+	w.setMinSize(0, 0)
+}
+
+func (w *windowsWebviewWindow) enableSizeConstraints() {
+	options := w.parent.options
+	if options.MinWidth > 0 || options.MinHeight > 0 {
+		w.setMinSize(options.MinWidth, options.MinHeight)
+	}
+	if options.MaxWidth > 0 || options.MaxHeight > 0 {
+		w.setMaxSize(options.MaxWidth, options.MaxHeight)
+	}
 }
 
 func (w *windowsWebviewWindow) size() (int, int) {
@@ -267,9 +290,7 @@ func (w *windowsWebviewWindow) on(eventID uint) {
 }
 
 func (w *windowsWebviewWindow) minimise() {
-	globalApplication.dispatchOnMainThread(func() {
-		w32.ShowWindow(w.hwnd, w32.SW_MINIMIZE)
-	})
+	w32.ShowWindow(w.hwnd, w32.SW_MINIMIZE)
 }
 
 func (w *windowsWebviewWindow) unminimise() {
@@ -277,9 +298,7 @@ func (w *windowsWebviewWindow) unminimise() {
 }
 
 func (w *windowsWebviewWindow) maximise() {
-	globalApplication.dispatchOnMainThread(func() {
-		w32.ShowWindow(w.hwnd, w32.SW_MAXIMIZE)
-	})
+	w32.ShowWindow(w.hwnd, w32.SW_MAXIMIZE)
 }
 
 func (w *windowsWebviewWindow) unmaximise() {
@@ -287,19 +306,54 @@ func (w *windowsWebviewWindow) unmaximise() {
 }
 
 func (w *windowsWebviewWindow) restore() {
-	globalApplication.dispatchOnMainThread(func() {
-		w32.ShowWindow(w.hwnd, w32.SW_RESTORE)
-	})
+	w32.ShowWindow(w.hwnd, w32.SW_RESTORE)
 }
 
 func (w *windowsWebviewWindow) fullscreen() {
-	//TODO implement me
-	panic("implement me")
+	if w.isFullscreen() {
+		return
+	}
+	if w.framelessWithDecorations() {
+		w32.ExtendFrameIntoClientArea(w.hwnd, false)
+	}
+	w.disableSizeConstraints()
+	w.previousWindowStyle = uint32(w32.GetWindowLongPtr(w.hwnd, w32.GWL_STYLE))
+	w.previousWindowExStyle = uint32(w32.GetWindowLong(w.hwnd, w32.GWL_EXSTYLE))
+	monitor := w32.MonitorFromWindow(w.hwnd, w32.MONITOR_DEFAULTTOPRIMARY)
+	var monitorInfo w32.MONITORINFO
+	monitorInfo.CbSize = uint32(unsafe.Sizeof(monitorInfo))
+	if !w32.GetMonitorInfo(monitor, &monitorInfo) {
+		return
+	}
+	if !w32.GetWindowPlacement(w.hwnd, &w.previousWindowPlacement) {
+		return
+	}
+	// According to https://devblogs.microsoft.com/oldnewthing/20050505-04/?p=35703 one should use w32.WS_POPUP | w32.WS_VISIBLE
+	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w.previousWindowStyle & ^uint32(w32.WS_OVERLAPPEDWINDOW) | (w32.WS_POPUP|w32.WS_VISIBLE))
+	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, w.previousWindowExStyle & ^uint32(w32.WS_EX_DLGMODALFRAME))
+	w32.SetWindowPos(w.hwnd, w32.HWND_TOP,
+		int(monitorInfo.RcMonitor.Left),
+		int(monitorInfo.RcMonitor.Top),
+		int(monitorInfo.RcMonitor.Right-monitorInfo.RcMonitor.Left),
+		int(monitorInfo.RcMonitor.Bottom-monitorInfo.RcMonitor.Top),
+		w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
+	w.isCurrentlyFullscreen = true
 }
 
 func (w *windowsWebviewWindow) unfullscreen() {
-	//TODO implement me
-	panic("implement me")
+	if !w.isFullscreen() {
+		return
+	}
+	if w.framelessWithDecorations() {
+		w32.ExtendFrameIntoClientArea(w.hwnd, true)
+	}
+	w32.SetWindowLong(w.hwnd, w32.GWL_STYLE, w.previousWindowStyle)
+	w32.SetWindowLong(w.hwnd, w32.GWL_EXSTYLE, w.previousWindowExStyle)
+	w32.SetWindowPlacement(w.hwnd, &w.previousWindowPlacement)
+	w32.SetWindowPos(w.hwnd, 0, 0, 0, 0, 0,
+		w32.SWP_NOMOVE|w32.SWP_NOSIZE|w32.SWP_NOZORDER|w32.SWP_NOOWNERZORDER|w32.SWP_FRAMECHANGED)
+	w.enableSizeConstraints()
+	w.isCurrentlyFullscreen = false
 }
 
 func (w *windowsWebviewWindow) isMinimised() bool {
@@ -313,8 +367,8 @@ func (w *windowsWebviewWindow) isMaximised() bool {
 }
 
 func (w *windowsWebviewWindow) isFullscreen() bool {
-	//TODO implement me
-	panic("implement me")
+	// TODO: Actually calculate this based on size of window against screen size
+	return w.isCurrentlyFullscreen
 }
 
 func (w *windowsWebviewWindow) isNormal() bool {
@@ -331,15 +385,11 @@ func (w *windowsWebviewWindow) setFullscreenButtonEnabled(_ bool) {
 }
 
 func (w *windowsWebviewWindow) show() {
-	globalApplication.dispatchOnMainThread(func() {
-		w32.ShowWindow(w.hwnd, w32.SW_SHOW)
-	})
+	w32.ShowWindow(w.hwnd, w32.SW_SHOW)
 }
 
 func (w *windowsWebviewWindow) hide() {
-	globalApplication.dispatchOnMainThread(func() {
-		w32.ShowWindow(w.hwnd, w32.SW_HIDE)
-	})
+	w32.ShowWindow(w.hwnd, w32.SW_HIDE)
 }
 
 func (w *windowsWebviewWindow) getScreen() (*Screen, error) {
@@ -487,10 +537,11 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 	case w32.WM_GETMINMAXINFO:
 		mmi := (*w32.MINMAXINFO)(unsafe.Pointer(lparam))
 		hasConstraints := false
-		if w.minWidth > 0 || w.minHeight > 0 {
+		options := w.parent.options
+		if options.MinWidth > 0 || options.MinHeight > 0 {
 			hasConstraints = true
 
-			width, height := w.scaleWithWindowDPI(w.minWidth, w.minHeight)
+			width, height := w.scaleWithWindowDPI(options.MinWidth, options.MinHeight)
 			if width > 0 {
 				mmi.PtMinTrackSize.X = int32(width)
 			}
@@ -498,10 +549,10 @@ func (w *windowsWebviewWindow) WndProc(msg uint32, wparam, lparam uintptr) uintp
 				mmi.PtMinTrackSize.Y = int32(height)
 			}
 		}
-		if w.maxWidth > 0 || w.maxHeight > 0 {
+		if options.MaxWidth > 0 || options.MaxHeight > 0 {
 			hasConstraints = true
 
-			width, height := w.scaleWithWindowDPI(w.maxWidth, w.maxHeight)
+			width, height := w.scaleWithWindowDPI(options.MaxWidth, options.MaxHeight)
 			if width > 0 {
 				mmi.PtMaxTrackSize.X = int32(width)
 			}
