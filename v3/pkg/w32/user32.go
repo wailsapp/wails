@@ -1151,6 +1151,14 @@ func GetMonitorInfo(hMonitor HMONITOR, lmpi *MONITORINFO) bool {
 	return ret != 0
 }
 
+func GetMonitorInfoEx(hMonitor HMONITOR, lmpi *MONITORINFOEX) bool {
+	ret, _, _ := procGetMonitorInfo.Call(
+		uintptr(hMonitor),
+		uintptr(unsafe.Pointer(lmpi)),
+	)
+	return ret != 0
+}
+
 func EnumDisplayMonitors(hdc HDC, clip *RECT, fnEnum uintptr, dwData unsafe.Pointer) bool {
 	ret, _, _ := procEnumDisplayMonitors.Call(
 		hdc,

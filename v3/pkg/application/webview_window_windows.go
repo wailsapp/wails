@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/w32"
+	"strconv"
+	"unicode/utf16"
 	"unsafe"
 )
 
@@ -392,9 +394,63 @@ func (w *windowsWebviewWindow) hide() {
 	w32.ShowWindow(w.hwnd, w32.SW_HIDE)
 }
 
+// Get the screen for the current window
 func (w *windowsWebviewWindow) getScreen() (*Screen, error) {
-	//TODO implement me
-	panic("implement me")
+	hMonitor := w32.MonitorFromWindow(w.hwnd, w32.MONITOR_DEFAULTTONEAREST)
+
+	var mi w32.MONITORINFOEX
+	mi.CbSize = uint32(unsafe.Sizeof(mi))
+	w32.GetMonitorInfoEx(hMonitor, &mi)
+	var thisScreen Screen
+	thisScreen.X = int(mi.RcMonitor.Left)
+	thisScreen.Y = int(mi.RcMonitor.Top)
+	thisScreen.Size = Size{
+		Width:  int(mi.RcMonitor.Right - mi.RcMonitor.Left),
+		Height: int(mi.RcMonitor.Bottom - mi.RcMonitor.Top),
+	}
+	thisScreen.Bounds = Rect{
+		X:      int(mi.RcMonitor.Left),
+		Y:      int(mi.RcMonitor.Top),
+		Width:  int(mi.RcMonitor.Right - mi.RcMonitor.Left),
+		Height: int(mi.RcMonitor.Bottom - mi.RcMonitor.Top),
+	}
+	thisScreen.WorkArea = Rect{
+		X:      int(mi.RcWork.Left),
+		Y:      int(mi.RcWork.Top),
+		Width:  int(mi.RcWork.Right - mi.RcWork.Left),
+		Height: int(mi.RcWork.Bottom - mi.RcWork.Top),
+	}
+	thisScreen.ID = strconv.Itoa(int(hMonitor))
+	thisScreen.Name = string(utf16.Decode(mi.SzDevice[:]))
+	var xdpi, ydpi w32.UINT
+	w32.GetDPIForMonitor(hMonitor, w32.MDT_EFFECTIVE_DPI, &xdpi, &ydpi)
+	thisScreen.Scale = float32(xdpi) / 96.0
+	thisScreen.IsPrimary = mi.DwFlags&w32.MONITORINFOF_PRIMARY != 0
+
+	// TODO: Get screen rotation
+	// https://docs.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-devmodea
+
+	//// get display settings for monitor
+	//var dm w32.DEVMODE
+	//dm.DmSize = uint16(unsafe.Sizeof(dm))
+	//dm.DmDriverExtra = 0
+	//w32.EnumDisplaySettingsEx(&mi.SzDevice[0], w32.ENUM_CURRENT_SETTINGS, &dm, 0)
+	//
+	//// check display settings for rotation
+	//rotationAngle := dm.DmDi
+	//if rotationAngle == DMDO_0 {
+	//	printf("Monitor is not rotated\n")
+	//} else if rotationAngle == DMDO_90 {
+	//	printf("Monitor is rotated 90 degrees\n")
+	//} else if rotationAngle == DMDO_180 {
+	//	printf("Monitor is rotated 180 degrees\n")
+	//} else if rotationAngle == DMDO_270 {
+	//	printf("Monitor is rotated 270 degrees\n")
+	//} else {
+	//	printf("Monitor is rotated at an unknown angle\n")
+	//}
+
+	return &thisScreen, nil
 }
 
 func (w *windowsWebviewWindow) setFrameless(b bool) {
