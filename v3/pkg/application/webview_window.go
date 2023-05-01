@@ -53,7 +53,7 @@ type (
 		isMaximised() bool
 		isFullscreen() bool
 		isNormal() bool
-		disableSizeConstraints()
+		isVisible() bool
 		setFullscreenButtonEnabled(enabled bool)
 		show()
 		hide()
@@ -358,6 +358,14 @@ func (w *WebviewWindow) IsMinimised() bool {
 		return false
 	}
 	return w.impl.isMinimised()
+}
+
+// IsVisible returns true if the window is visible
+func (w *WebviewWindow) IsVisible() bool {
+	if w.impl == nil {
+		return false
+	}
+	return w.impl.isVisible()
 }
 
 // IsMaximised returns true if the window is maximised

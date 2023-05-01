@@ -276,6 +276,16 @@ const (
 	GWLP_USERDATA   = -21
 )
 
+const (
+	GW_HWNDFIRST    = 0
+	GW_HWNDLAST     = 1
+	GW_HWNDNEXT     = 2
+	GW_HWNDPREV     = 3
+	GW_OWNER        = 4
+	GW_CHILD        = 5
+	GW_ENABLEDPOPUP = 6
+)
+
 // Window style constants
 const (
 	WS_OVERLAPPED       = 0x00000000

@@ -260,6 +260,7 @@ func (w *windowsWebviewWindow) setPosition(x int, y int) {
 	w32.SetWindowPos(w.hwnd, w32.HWND_TOP, int(workRect.Left)+x, int(workRect.Top)+y, 0, 0, w32.SWP_NOSIZE)
 }
 
+// on is used to indicate that a particular event should be listened for
 func (w *windowsWebviewWindow) on(eventID uint) {
 	//TODO implement me
 	panic("implement me")
@@ -320,14 +321,13 @@ func (w *windowsWebviewWindow) isNormal() bool {
 	return !w.isMinimised() && !w.isMaximised() && !w.isFullscreen()
 }
 
-func (w *windowsWebviewWindow) disableSizeConstraints() {
-	//TODO implement me
-	panic("implement me")
+func (w *windowsWebviewWindow) isVisible() bool {
+	style := uint32(w32.GetWindowLong(w.hwnd, w32.GWL_STYLE))
+	return style&w32.WS_VISIBLE != 0
 }
 
-func (w *windowsWebviewWindow) setFullscreenButtonEnabled(enabled bool) {
-	//TODO implement me
-	panic("implement me")
+func (w *windowsWebviewWindow) setFullscreenButtonEnabled(_ bool) {
+	// Unused in Windows
 }
 
 func (w *windowsWebviewWindow) show() {
